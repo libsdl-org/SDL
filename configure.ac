@@ -3197,34 +3197,24 @@ CheckHIDAPI()
 {
     # The hidraw support doesn't catch Xbox, PS4 and Nintendo controllers,
     # so we'll just use libusb when it's available.
-    #
-    # libusb does not support iOS, so we default to yes on iOS.
-    # TODO: Windows can support libusb, the hid.c file just depends on Unix APIs
-    skiplibusb=no
     case "$host" in
-        *-*-cygwin* | *-*-mingw32* | arm*-apple-darwin* | *-ios-* )
+        # TODO: Windows can support libusb, the hid.c file just depends on Unix APIs
+        *-*-cygwin* | *-*-mingw32* )
             skiplibusb=yes
             ;;
-    esac
-
-    # On the other hand, *BSD specifically uses libusb only, so we make a
-    # special case just for them.
-    onlylibusb=no
-    case "$host" in
+        # libusb does not support iOS
+        arm*-apple-darwin* | *-ios-* )
+            skiplibusb=yes
+            ;;
+        # On the other hand, *BSD specifically uses libusb only
         *-*-*bsd* )
             onlylibusb=yes
             ;;
     esac
 
     AC_ARG_ENABLE(hidapi,
-AS_HELP_STRING([--enable-hidapi], [use HIDAPI for low level joystick drivers [[default=maybe]]]),
-                  , enable_hidapi=maybe)
-    hidapi_support=no
-
-    if test x$enable_hidapi = xmaybe; then
-      enable_hidapi=$skiplibusb
-    fi
-
+AS_HELP_STRING([--enable-hidapi], [use HIDAPI for low level joystick drivers [[default=yes]]]),
+                  , enable_hidapi=yes)
     if test x$enable_joystick = xyes -a x$enable_hidapi = xyes; then
         if test x$skiplibusb = xyes; then
             hidapi_support=yes
@@ -3236,12 +3226,10 @@ AS_HELP_STRING([--enable-hidapi], [use HIDAPI for low level joystick drivers [[d
             CFLAGS="$save_CFLAGS"
             if test x$have_libusb_h = xyes; then
                 hidapi_support=yes
-            elif test x$onlylibusb = xno; then
-                case "$host" in
-                *-*-darwin* )
-                    hidapi_support=yes
-                    ;;
-                esac
+            elif test x$onlylibusb = xyes; then
+                hidapi_support=no
+            else
+                hidapi_support=yes
             fi
         fi
 
@@ -3250,17 +3238,11 @@ AS_HELP_STRING([--enable-hidapi], [use HIDAPI for low level joystick drivers [[d
             EXTRA_CFLAGS="$EXTRA_CFLAGS -I$srcdir/src/hidapi/hidapi"
             SOURCES="$SOURCES $srcdir/src/joystick/hidapi/*.c"
 
-            if test x$skiplibusb = xno; then
+            if test x$have_libusb_h = xyes; then
                 EXTRA_CFLAGS="$EXTRA_CFLAGS $LIBUSB_CFLAGS"
                 if test x$onlylibusb = xyes; then
                     SOURCES="$SOURCES $srcdir/src/hidapi/libusb/hid.c"
                     EXTRA_LDFLAGS="$EXTRA_LDFLAGS $LIBUSB_LIBS"
-                elif test x$have_libusb_h != xyes ; then
-                    case "$host" in
-                    *-*-darwin* )
-                        SOURCES="$SOURCES $srcdir/src/hidapi/mac/hid.c"
-                        ;;
-                    esac
                 else
                     if test x$have_loadso != xyes; then
                         AC_MSG_WARN([You must have SDL_LoadObject() support for dynamic libusb loading])
@@ -3281,6 +3263,15 @@ AS_HELP_STRING([--enable-hidapi], [use HIDAPI for low level joystick drivers [[d
                     fi
                     AC_DEFINE_UNQUOTED(SDL_LIBUSB_DYNAMIC, "$libusb_lib", [ ])
                 fi
+            else
+                case "$host" in
+                *-*-cygwin* | *-*-mingw32* )
+                    SOURCES="$SOURCES $srcdir/src/hidapi/windows/hid.c"
+                    ;;
+                *-*-darwin* )
+                    SOURCES="$SOURCES $srcdir/src/hidapi/mac/hid.c"
+                    ;;
+                esac
             fi
         fi
 
@@ -3640,10 +3631,6 @@ AS_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
             fi
             SOURCES="$SOURCES $srcdir/src/joystick/windows/*.c"
             have_joystick=yes
-            # TODO: Remove this block once SDL_hidapi.c supports Windows!
-            if test x$hidapi_support = xyes; then
-                SOURCES="$SOURCES $srcdir/src/hidapi/windows/hid.c"
-            fi
         fi
         if test x$enable_haptic = xyes; then
             if test x$have_dinput = xyes -o x$have_xinput = xyes; then
