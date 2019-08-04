@@ -57,13 +57,11 @@ main(int argc, char *argv[])
             success = SDL_sscanf(argv[1] + 2, "%llx", &seed);
         else
             success = SDL_sscanf(argv[1], "%llu", &seed);
-        if (!success)
-        {
+        if (!success) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Invalid seed. Use a decimal or hexadecimal number.\n");
             return 1;
         }
-        if (seed <= 0xffffffff)
-        {
+        if (seed <= ((Uint64)0xffffffff)) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Seed must be equal or greater than 0x100000000.\n");
             return 1;
         }

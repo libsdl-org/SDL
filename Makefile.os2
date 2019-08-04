@@ -89,6 +89,9 @@ SDL_cpuinfo.obj: SDL_cpuinfo.c
 SDL_rwops.obj: SDL_rwops.c
     wcc386 $(CFLAGS) -wcd=136 -fo=$^@ $<
 
+SDL_wave.obj: SDL_wave.c
+    wcc386 $(CFLAGS) -wcd=124 -fo=$^@ $<
+
 SDL_blendfillrect.obj: SDL_blendfillrect.c
     wcc386 $(CFLAGS) -wcd=200 -fo=$^@ $<
 
