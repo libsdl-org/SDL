@@ -26,6 +26,8 @@
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
 
 #include "SDL_log.h"
+#include "SDL_mouse.h"
+#include "SDL_keyboard.h"
 #include "SDL_waylandtouch.h"
 #include "../../events/SDL_touch_c.h"
 
@@ -88,20 +90,29 @@ touch_handle_touch(void *data,
     uint32_t capabilities = flags >> 16;
     */
 
+    SDL_Window* window = NULL;
+
     SDL_TouchID deviceId = 1;
     if (SDL_AddTouch(deviceId, SDL_TOUCH_DEVICE_DIRECT, "qt_touch_extension") < 0) {
          SDL_Log("error: can't add touch %s, %d", __FILE__, __LINE__);
     }
 
+    /* FIXME: This should be the window the given wayland surface is associated
+     * with, but how do we get the wayland surface? */
+    window = SDL_GetMouseFocus();
+    if (window == NULL) {
+        window = SDL_GetKeyboardFocus();
+    }
+
     switch (touchState) {
         case QtWaylandTouchPointPressed:
         case QtWaylandTouchPointReleased:
-            SDL_SendTouch(deviceId, (SDL_FingerID)id, /* FIXME: window */,
+            SDL_SendTouch(deviceId, (SDL_FingerID)id, window,
                     (touchState == QtWaylandTouchPointPressed) ? SDL_TRUE : SDL_FALSE,
                     xf, yf, pressuref);
             break;
         case QtWaylandTouchPointMoved:
-            SDL_SendTouchMotion(deviceId, (SDL_FingerID)id, /* FIXME: window */, xf, yf, pressuref);
+            SDL_SendTouchMotion(deviceId, (SDL_FingerID)id, window, xf, yf, pressuref);
             break;
         default:
             /* Should not happen */
