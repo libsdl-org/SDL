@@ -3205,10 +3205,6 @@ CheckHIDAPI()
     # The hidraw support doesn't catch Xbox, PS4 and Nintendo controllers,
     # so we'll just use libusb when it's available.
     case "$host" in
-        # TODO: Windows can support libusb, the hid.c file just depends on Unix APIs
-        *-*-cygwin* | *-*-mingw32* )
-            skiplibusb=yes
-            ;;
         # libusb does not support iOS
         arm*-apple-darwin* | *-ios-* )
             skiplibusb=yes
