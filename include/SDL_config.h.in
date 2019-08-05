@@ -383,6 +383,9 @@
 /* Enable Vulkan support */
 #undef SDL_VIDEO_VULKAN
 
+/* Enable Metal support */
+#undef SDL_VIDEO_METAL
+
 /* Enable system power support */
 #undef SDL_POWER_LINUX
 #undef SDL_POWER_WINDOWS

@@ -388,6 +388,9 @@
 /* Enable Vulkan support */
 #cmakedefine SDL_VIDEO_VULKAN @SDL_VIDEO_VULKAN@
 
+/* Enable Metal support */
+#cmakedefine SDL_VIDEO_METAL @SDL_VIDEO_METAL@
+
 /* Enable system power support */
 #cmakedefine SDL_POWER_ANDROID @SDL_POWER_ANDROID@
 #cmakedefine SDL_POWER_LINUX @SDL_POWER_LINUX@

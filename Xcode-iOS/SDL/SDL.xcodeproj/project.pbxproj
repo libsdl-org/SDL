@@ -717,6 +717,7 @@
 		F3E3C75B224138AE007D243C /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3E3C657224069CE007D243C /* SDL_uikit_main.c */; };
 		FA1DC2721C62BE65008F99A0 /* SDL_uikitclipboard.h in Headers */ = {isa = PBXBuildFile; fileRef = FA1DC2701C62BE65008F99A0 /* SDL_uikitclipboard.h */; };
 		FA1DC2731C62BE65008F99A0 /* SDL_uikitclipboard.m in Sources */ = {isa = PBXBuildFile; fileRef = FA1DC2711C62BE65008F99A0 /* SDL_uikitclipboard.m */; };
+		FA24348D21D4201400B8918A /* SDL_metal.h in Headers */ = {isa = PBXBuildFile; fileRef = FA24348C21D4201400B8918A /* SDL_metal.h */; };
 		FAB5981D1BB5C31500BE72C5 /* SDL_atomic.c in Sources */ = {isa = PBXBuildFile; fileRef = 04FFAB8912E23B8D00BA343D /* SDL_atomic.c */; };
 		FAB5981E1BB5C31500BE72C5 /* SDL_spinlock.c in Sources */ = {isa = PBXBuildFile; fileRef = 04FFAB8A12E23B8D00BA343D /* SDL_spinlock.c */; };
 		FAB5981F1BB5C31500BE72C5 /* SDL_coreaudio.m in Sources */ = {isa = PBXBuildFile; fileRef = 56EA86F913E9EC2B002E47EB /* SDL_coreaudio.m */; };
@@ -1064,6 +1065,7 @@
 		F3E3C75F224138AE007D243C /* libSDLmain.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libSDLmain.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		FA1DC2701C62BE65008F99A0 /* SDL_uikitclipboard.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_uikitclipboard.h; sourceTree = "<group>"; };
 		FA1DC2711C62BE65008F99A0 /* SDL_uikitclipboard.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDL_uikitclipboard.m; sourceTree = "<group>"; };
+		FA24348C21D4201400B8918A /* SDL_metal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_metal.h; sourceTree = "<group>"; };
 		FAB598141BB5C1B100BE72C5 /* libSDL2.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libSDL2.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		FAD4F7011BA3C4E8008346CE /* SDL_sysjoystick_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_sysjoystick_c.h; sourceTree = "<group>"; };
 		FD0BBFEF0E3933DD00D833B1 /* SDL_uikitview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_uikitview.h; sourceTree = "<group>"; };
@@ -1576,15 +1578,14 @@
 			children = (
 				AA7558651595D55500BBD41B /* begin_code.h */,
 				AA7558661595D55500BBD41B /* close_code.h */,
-				AA7558971595D55500BBD41B /* SDL.h */,
 				AA7558671595D55500BBD41B /* SDL_assert.h */,
 				AA7558681595D55500BBD41B /* SDL_atomic.h */,
 				AA7558691595D55500BBD41B /* SDL_audio.h */,
 				AADA5B8E16CCAB7C00107CF7 /* SDL_bits.h */,
 				AA75586A1595D55500BBD41B /* SDL_blendmode.h */,
 				AA75586B1595D55500BBD41B /* SDL_clipboard.h */,
-				AA75586D1595D55500BBD41B /* SDL_config.h */,
 				AA75586C1595D55500BBD41B /* SDL_config_iphoneos.h */,
+				AA75586D1595D55500BBD41B /* SDL_config.h */,
 				AA75586E1595D55500BBD41B /* SDL_copying.h */,
 				AA75586F1595D55500BBD41B /* SDL_cpuinfo.h */,
 				AA7558701595D55500BBD41B /* SDL_endian.h */,
@@ -1602,6 +1603,7 @@
 				AA75587B1595D55500BBD41B /* SDL_log.h */,
 				AA75587C1595D55500BBD41B /* SDL_main.h */,
 				AA9FF9501637C6E5000DF050 /* SDL_messagebox.h */,
+				FA24348C21D4201400B8918A /* SDL_metal.h */,
 				AA75587D1595D55500BBD41B /* SDL_mouse.h */,
 				AA75587E1595D55500BBD41B /* SDL_mutex.h */,
 				AA75587F1595D55500BBD41B /* SDL_name.h */,
@@ -1630,6 +1632,7 @@
 				AA7558951595D55500BBD41B /* SDL_version.h */,
 				AA7558961595D55500BBD41B /* SDL_video.h */,
 				4D7516FE1EE1C5B400820EEA /* SDL_vulkan.h */,
+				AA7558971595D55500BBD41B /* SDL.h */,
 			);
 			name = "Public Headers";
 			path = ../../include;
@@ -2183,6 +2186,7 @@
 				AA75589D1595D55500BBD41B /* SDL_blendmode.h in Headers */,
 				F30D9C9E212CD0990047DF2E /* SDL_sensor_c.h in Headers */,
 				AA75589E1595D55500BBD41B /* SDL_clipboard.h in Headers */,
+				FA24348D21D4201400B8918A /* SDL_metal.h in Headers */,
 				AA75589F1595D55500BBD41B /* SDL_config_iphoneos.h in Headers */,
 				AA7558A01595D55500BBD41B /* SDL_config.h in Headers */,
 				AA7558A11595D55500BBD41B /* SDL_copying.h in Headers */,

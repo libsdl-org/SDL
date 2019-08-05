@@ -26,16 +26,16 @@
 #include "SDL_log.h"
 #include "SDL_assert.h"
 #include "SDL_syswm.h"
+#include "SDL_metal.h"
 #include "../SDL_sysrender.h"
 
-#ifdef __MACOSX__
-#include "../../video/cocoa/SDL_cocoametalview.h"
-#else
-#include "../../video/uikit/SDL_uikitmetalview.h"
-#endif
 #include <Availability.h>
 #import <Metal/Metal.h>
 #import <QuartzCore/CAMetalLayer.h>
+
+#ifdef __MACOSX__
+#import <AppKit/NSView.h>
+#endif
 
 /* Regenerate these with build-metal-shaders.sh */
 #ifdef __MACOSX__
@@ -118,6 +118,7 @@ typedef struct METAL_ShaderPipelines
     @property (nonatomic, retain) id<MTLSamplerState> mtlsamplerlinear;
     @property (nonatomic, retain) id<MTLBuffer> mtlbufconstants;
     @property (nonatomic, retain) id<MTLBuffer> mtlbufquadindices;
+    @property (nonatomic, assign) SDL_MetalView mtlview;
     @property (nonatomic, retain) CAMetalLayer *mtllayer;
     @property (nonatomic, retain) MTLRenderPassDescriptor *mtlpassdesc;
     @property (nonatomic, assign) METAL_ShaderPipelines *activepipelines;
@@ -1475,6 +1476,8 @@ METAL_DestroyRenderer(SDL_Renderer * renderer)
         }
 
         DestroyAllPipelines(data.allpipelines, data.pipelinescount);
+
+        SDL_Metal_DestroyView(data.mtlview);
     }
 
     SDL_free(renderer);
@@ -1501,6 +1504,8 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
     SDL_Renderer *renderer = NULL;
     METAL_RenderData *data = NULL;
     id<MTLDevice> mtldevice = nil;
+    SDL_MetalView view = NULL;
+    CAMetalLayer *layer = nil;
     SDL_SysWMinfo syswm;
 
     SDL_VERSION(&syswm.version);
@@ -1527,26 +1532,36 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
         return NULL;
     }
 
+    view = SDL_Metal_CreateView(window);
+
+    if (view == NULL) {
+        SDL_free(renderer);
+        return NULL;
+    }
+
     // !!! FIXME: error checking on all of this.
     data = [[METAL_RenderData alloc] init];
+
+    if (data == nil) {
+        SDL_Metal_DestroyView(view);
+        SDL_free(renderer);
+        return NULL;
+    }
 
     renderer->driverdata = (void*)CFBridgingRetain(data);
     renderer->window = window;
 
+    data.mtlview = view;
+
 #ifdef __MACOSX__
-    NSView *view = Cocoa_Mtl_AddMetalView(window);
-    CAMetalLayer *layer = (CAMetalLayer *)[view layer];
+    layer = (CAMetalLayer *)[(NSView *)view layer];
+#else
+    layer = (CAMetalLayer *)[(__bridge UIView *)view layer];
+#endif
 
     layer.device = mtldevice;
 
-    //layer.colorspace = nil;
-
-#else
-    UIView *view = UIKit_Mtl_AddMetalView(window);
-    CAMetalLayer *layer = (CAMetalLayer *)[view layer];
-#endif
-
-    // Necessary for RenderReadPixels.
+    /* Necessary for RenderReadPixels. */
     layer.framebufferOnly = NO;
 
     data.mtldevice = layer.device;
@@ -1763,7 +1778,6 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
     [mtlsamplerlinear release];
     [mtlbufconstants release];
     [mtlbufquadindices release];
-    [view release];
     [data release];
     [mtldevice release];
 #endif

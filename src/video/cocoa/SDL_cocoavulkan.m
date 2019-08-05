@@ -194,6 +194,7 @@ SDL_bool Cocoa_Vulkan_CreateSurface(_THIS,
                                             "vkCreateMacOSSurfaceMVK");
     VkMacOSSurfaceCreateInfoMVK createInfo = {};
     VkResult result;
+    SDL_MetalView metalview;
 
     if (!_this->vulkan_config.loader_handle) {
         SDL_SetError("Vulkan is not loaded");
@@ -205,23 +206,38 @@ SDL_bool Cocoa_Vulkan_CreateSurface(_THIS,
                      " extension is not enabled in the Vulkan instance.");
         return SDL_FALSE;
     }
+
+    metalview = Cocoa_Metal_CreateView(_this, window);
+    if (metalview == NULL) {
+        return SDL_FALSE;
+    }
+
     createInfo.sType = VK_STRUCTURE_TYPE_MACOS_SURFACE_CREATE_INFO_MVK;
     createInfo.pNext = NULL;
     createInfo.flags = 0;
-    createInfo.pView = Cocoa_Mtl_AddMetalView(window);
+    createInfo.pView = (const void *)metalview;
     result = vkCreateMacOSSurfaceMVK(instance, &createInfo,
                                        NULL, surface);
     if (result != VK_SUCCESS) {
+        Cocoa_Metal_DestroyView(_this, metalview);
         SDL_SetError("vkCreateMacOSSurfaceMVK failed: %s",
                      SDL_Vulkan_GetResultString(result));
         return SDL_FALSE;
     }
+
+    /* Unfortunately there's no SDL_Vulkan_DestroySurface function we can call
+     * Metal_DestroyView from. Right now the metal view's ref count is +2 (one
+     * from returning a new view object in CreateView, and one because it's
+     * a subview of the window.) If we release the view here to make it +1, it
+     * will be destroyed when the window is destroyed. */
+    CFBridgingRelease(metalview);
+
     return SDL_TRUE;
 }
 
 void Cocoa_Vulkan_GetDrawableSize(_THIS, SDL_Window *window, int *w, int *h)
 {
-    Cocoa_Mtl_GetDrawableSize(window, w, h);
+    Cocoa_Metal_GetDrawableSize(window, w, h);
 }
 
 #endif

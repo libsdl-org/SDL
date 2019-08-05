@@ -919,6 +919,7 @@
 		F3950CD8212BC88D00F51292 /* SDL_sensor.h in Headers */ = {isa = PBXBuildFile; fileRef = F3950CD7212BC88D00F51292 /* SDL_sensor.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F3950CD9212BC88D00F51292 /* SDL_sensor.h in Headers */ = {isa = PBXBuildFile; fileRef = F3950CD7212BC88D00F51292 /* SDL_sensor.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F3950CDA212BC88D00F51292 /* SDL_sensor.h in Headers */ = {isa = PBXBuildFile; fileRef = F3950CD7212BC88D00F51292 /* SDL_sensor.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		FA24348B21D41FFB00B8918A /* SDL_metal.h in Headers */ = {isa = PBXBuildFile; fileRef = FA24348A21D41FFB00B8918A /* SDL_metal.h */; };
 		FA73671D19A540EF004122E4 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA73671C19A540EF004122E4 /* CoreVideo.framework */; };
 		FA73671E19A54140004122E4 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA73671C19A540EF004122E4 /* CoreVideo.framework */; };
 		FA73671F19A54144004122E4 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA73671C19A540EF004122E4 /* CoreVideo.framework */; };
@@ -1252,6 +1253,7 @@
 		F59C710300D5CB5801000001 /* ReadMe.txt */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = ReadMe.txt; sourceTree = "<group>"; };
 		F59C710600D5CB5801000001 /* SDL.info */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = SDL.info; sourceTree = "<group>"; };
 		F5A2EF3900C6A39A01000001 /* BUGS.txt */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = BUGS.txt; path = ../../BUGS.txt; sourceTree = SOURCE_ROOT; };
+		FA24348A21D41FFB00B8918A /* SDL_metal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_metal.h; sourceTree = "<group>"; };
 		FA73671C19A540EF004122E4 /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
 		FABA34C61D8B5DB100915323 /* SDL_coreaudio.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDL_coreaudio.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -1342,6 +1344,7 @@
 				AA7557DD1595D4D800BBD41B /* SDL_log.h */,
 				AA7557DE1595D4D800BBD41B /* SDL_main.h */,
 				AA9FF9591637CBF9000DF050 /* SDL_messagebox.h */,
+				FA24348A21D41FFB00B8918A /* SDL_metal.h */,
 				AA7557DF1595D4D800BBD41B /* SDL_mouse.h */,
 				AA7557E01595D4D800BBD41B /* SDL_mutex.h */,
 				AA7557E11595D4D800BBD41B /* SDL_name.h */,
@@ -2029,6 +2032,7 @@
 				AA75580E1595D4D800BBD41B /* SDL_cpuinfo.h in Headers */,
 				AA7558101595D4D800BBD41B /* SDL_endian.h in Headers */,
 				AA7558121595D4D800BBD41B /* SDL_error.h in Headers */,
+				FA24348B21D41FFB00B8918A /* SDL_metal.h in Headers */,
 				AA7558141595D4D800BBD41B /* SDL_events.h in Headers */,
 				567E2F2117C44C35005F1892 /* SDL_filesystem.h in Headers */,
 				A77E6EB4167AB0A90010E40B /* SDL_gamecontroller.h in Headers */,
