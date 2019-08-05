@@ -780,3 +780,5 @@ SDL_DYNAPI_PROC(size_t,SDL_RWread,(SDL_RWops *a, void *b, size_t c, size_t d),(a
 SDL_DYNAPI_PROC(size_t,SDL_RWwrite,(SDL_RWops *a, const void *b, size_t c, size_t d),(a,b,c,d),return)
 SDL_DYNAPI_PROC(int,SDL_RWclose,(SDL_RWops *a),(a),return)
 SDL_DYNAPI_PROC(void*,SDL_LoadFile,(const char *a, size_t *b),(a,b),return)
+SDL_DYNAPI_PROC(SDL_MetalView,SDL_Metal_CreateView,(SDL_Window *a),(a),return)
+SDL_DYNAPI_PROC(void,SDL_Metal_DestroyView,(SDL_MetalView a),(a),)

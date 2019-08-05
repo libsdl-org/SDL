@@ -38,6 +38,7 @@
 #include "SDL_uikitopengles.h"
 #include "SDL_uikitclipboard.h"
 #include "SDL_uikitvulkan.h"
+#include "SDL_uikitmetalview.h"
 
 #define UIKITVID_DRIVER_NAME "uikit"
 
@@ -131,6 +132,11 @@ UIKit_CreateDevice(int devindex)
                                      = UIKit_Vulkan_GetInstanceExtensions;
         device->Vulkan_CreateSurface = UIKit_Vulkan_CreateSurface;
         device->Vulkan_GetDrawableSize = UIKit_Vulkan_GetDrawableSize;
+#endif
+
+#if SDL_VIDEO_METAL
+        device->Metal_CreateView = UIKit_Metal_CreateView;
+        device->Metal_DestroyView = UIKit_Metal_DestroyView;
 #endif
 
         device->gl_config.accelerated = 1;

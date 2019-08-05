@@ -31,7 +31,7 @@
 #import "../SDL_sysvideo.h"
 #import "SDL_cocoawindow.h"
 
-#if SDL_VIDEO_DRIVER_COCOA && (SDL_VIDEO_VULKAN || SDL_VIDEO_RENDER_METAL)
+#if SDL_VIDEO_DRIVER_COCOA && (SDL_VIDEO_VULKAN || SDL_VIDEO_METAL)
 
 #import <Cocoa/Cocoa.h>
 #import <Metal/Metal.h>
@@ -51,11 +51,12 @@
 
 @end
 
-SDL_cocoametalview* Cocoa_Mtl_AddMetalView(SDL_Window* window);
+SDL_MetalView Cocoa_Metal_CreateView(_THIS, SDL_Window * window);
+void Cocoa_Metal_DestroyView(_THIS, SDL_MetalView view);
 
-void Cocoa_Mtl_GetDrawableSize(SDL_Window * window, int * w, int * h);
+void Cocoa_Metal_GetDrawableSize(SDL_Window * window, int * w, int * h);
 
-#endif /* SDL_VIDEO_DRIVER_COCOA && (SDL_VIDEO_VULKAN || SDL_VIDEO_RENDER_METAL) */
+#endif /* SDL_VIDEO_DRIVER_COCOA && (SDL_VIDEO_VULKAN || SDL_VIDEO_METAL) */
 
 #endif /* SDL_cocoametalview_h_ */
 

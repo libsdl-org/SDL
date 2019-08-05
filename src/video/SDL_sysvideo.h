@@ -26,6 +26,7 @@
 #include "SDL_messagebox.h"
 #include "SDL_shape.h"
 #include "SDL_thread.h"
+#include "SDL_metal.h"
 
 #include "SDL_vulkan_internal.h"
 
@@ -273,6 +274,13 @@ struct SDL_VideoDevice
     SDL_bool (*Vulkan_GetInstanceExtensions) (_THIS, SDL_Window *window, unsigned *count, const char **names);
     SDL_bool (*Vulkan_CreateSurface) (_THIS, SDL_Window *window, VkInstance instance, VkSurfaceKHR *surface);
     void (*Vulkan_GetDrawableSize) (_THIS, SDL_Window * window, int *w, int *h);
+
+    /* * * */
+    /*
+     * Metal support
+     */
+    SDL_MetalView (*Metal_CreateView) (_THIS, SDL_Window * window);
+    void (*Metal_DestroyView) (_THIS, SDL_MetalView view);
 
     /* * * */
     /*

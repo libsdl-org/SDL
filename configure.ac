@@ -2048,10 +2048,13 @@ AS_HELP_STRING([--enable-video-cocoa], [use Cocoa video driver [[default=yes]]])
 
 CheckMETAL()
 {
+    AC_ARG_ENABLE(video-metal,
+AC_HELP_STRING([--enable-video-metal], [include Metal support [[default=yes]]]),
+              , enable_video_metal=yes)
     AC_ARG_ENABLE(render-metal,
 AS_HELP_STRING([--enable-render-metal], [enable the Metal render driver [[default=yes]]]),
                                 , enable_render_metal=yes)
-    if test x$enable_render = xyes -a x$enable_render_metal = xyes; then
+    if test x$enable_video = xyes -a x$enable_video_metal = xyes; then
         save_CFLAGS="$CFLAGS"
         dnl Work around that we don't have Objective-C support in autoconf
         CFLAGS="$CFLAGS -x objective-c"
@@ -2072,10 +2075,14 @@ AS_HELP_STRING([--enable-render-metal], [enable the Metal render driver [[defaul
         CFLAGS="$save_CFLAGS"
         AC_MSG_RESULT($have_metal)
         if test x$have_metal = xyes; then
-            AC_DEFINE(SDL_VIDEO_RENDER_METAL, 1, [ ])
-            SOURCES="$SOURCES $srcdir/src/render/metal/*.m"
+            AC_DEFINE(SDL_VIDEO_METAL, 1, [ ])
+            if test x$enable_render = xyes -a x$enable_render_metal = xyes; then
+                AC_DEFINE(SDL_VIDEO_RENDER_METAL, 1, [ ])
+                SOURCES="$SOURCES $srcdir/src/render/metal/*.m"
+            fi
             SUMMARY_video="${SUMMARY_video} metal"
         else
+            enable_video_metal=no
             enable_render_metal=no
         fi
     fi
@@ -3828,7 +3835,7 @@ AS_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,QuartzCore"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,UIKit"
 
-        if test x$enable_render = xyes -a x$enable_render_metal = xyes; then
+        if test x$enable_video_metal = xyes -o x$enable_video_vulkan = xyes; then
             EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,Metal"
         fi
         ;;
@@ -3910,7 +3917,7 @@ AS_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,Carbon"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,IOKit"
 
-        if test x$enable_render = xyes -a x$enable_render_metal = xyes; then
+        if test x$enable_video_metal = xyes -o x$enable_video_vulkan = xyes; then
             EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-weak_framework,QuartzCore -Wl,-weak_framework,Metal"
         fi
         ;;
