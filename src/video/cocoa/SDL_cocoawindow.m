@@ -1190,7 +1190,7 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
              * relative coordinates via [touch locationInView:].
              */
             if ([touch type] == NSTouchTypeDirect) {
-                return;
+                continue;
             }
         }
 #endif
