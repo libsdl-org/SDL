@@ -48,6 +48,7 @@ struct qt_windowmanager;
 
 typedef struct {
     struct wl_display *display;
+    int display_disconnected;
     struct wl_registry *registry;
     struct wl_compositor *compositor;
     struct wl_shm *shm;

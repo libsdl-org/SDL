@@ -412,10 +412,9 @@ static const struct wl_registry_listener registry_listener = {
 int
 Wayland_VideoInit(_THIS)
 {
-    SDL_VideoData *data = SDL_malloc(sizeof *data);
+    SDL_VideoData *data = SDL_calloc(1, sizeof(*data));
     if (data == NULL)
         return SDL_OutOfMemory();
-    memset(data, 0, sizeof *data);
 
     _this->driverdata = data;
 
