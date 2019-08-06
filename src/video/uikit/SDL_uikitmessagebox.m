@@ -91,6 +91,10 @@ UIKit_ShowMessageBoxAlertController(const SDL_MessageBoxData *messageboxdata, in
 				                            clickedindex = (int)(sdlButton - messageboxdata->buttons);
                                         }];
         [alert addAction:action];
+
+        if (sdlButton->flags & SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT) {
+            alert.preferredAction = action;
+        }
     }
 
     if (messageboxdata->window) {
