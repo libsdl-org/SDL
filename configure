@@ -22731,7 +22731,7 @@ fi
 
 $as_echo "#define SDL_USE_IME 1" >>confdefs.h
 
-            SOURCES="$SOURCES $srcdir/src/core/linux/SDL_ime.c"
+        SOURCES="$SOURCES $srcdir/src/core/linux/SDL_ime.c"
     fi
 }
 
