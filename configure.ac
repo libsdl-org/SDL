@@ -2602,7 +2602,7 @@ AS_HELP_STRING([--enable-ime], [enable IME support [[default=yes]]]),
                   , enable_ime=yes)
     if test x$enable_ime = xyes; then
         AC_DEFINE(SDL_USE_IME, 1, [ ])
-            SOURCES="$SOURCES $srcdir/src/core/linux/SDL_ime.c"
+        SOURCES="$SOURCES $srcdir/src/core/linux/SDL_ime.c"
     fi
 }
 
