@@ -34,6 +34,7 @@
 #ifdef SDL_JOYSTICK_HIDAPI
 
 #include <libusb.h>
+#include <locale.h> /* setlocale */
 
 #include "hidapi.h"
 
@@ -452,20 +453,16 @@ static char *make_path(libusb_device *dev, int interface_number)
 int HID_API_EXPORT hid_init(void)
 {
 	if (!usb_context) {
-#ifndef _WIN32 /* TODO: Win32 setlocale */
 		const char *locale;
-#endif /* _WIN32 */
 
 		/* Init Libusb */
 		if (libusb_init(&usb_context))
 			return -1;
 
-#ifndef _WIN32 /* TODO: Win32 setlocale */
 		/* Set the locale if it's not set. */
 		locale = setlocale(LC_CTYPE, NULL);
 		if (!locale)
 			setlocale(LC_CTYPE, "");
-#endif /* _WIN32 */
 	}
 
 	return 0;
@@ -1357,7 +1354,6 @@ struct lang_map_entry {
 	uint16_t usb_code;
 };
 
-#ifndef _WIN32 /* TODO: Win32 setlocale */
 #define LANG(name,code,usb_code) { name, code, usb_code }
 static struct lang_map_entry lang_map[] = {
 	LANG("Afrikaans", "af", 0x0436),
@@ -1495,11 +1491,9 @@ static struct lang_map_entry lang_map[] = {
 	LANG("Zulu", "zu", 0x0435),
 	LANG(NULL, NULL, 0x0),
 };
-#endif /* _WIN32 */
 
 uint16_t get_usb_code_for_current_locale(void)
 {
-#ifndef _WIN32 /* TODO: Win32 setlocale? */
 	char *locale;
 	char search_string[64];
 	char *ptr;
@@ -1557,7 +1551,6 @@ uint16_t get_usb_code_for_current_locale(void)
 	}
 #endif
 
-#endif /* _WIN32 */
 	/* Found nothing. */
 	return 0x0;
 }
