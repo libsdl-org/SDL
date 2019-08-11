@@ -925,7 +925,9 @@ if(ANDROID)
     set(HAVE_SDL_VIDEO TRUE)
 
     # Core stuff
-    find_library(ANDROID_DL_LIBRARY dl)
+    # find_library(ANDROID_DL_LIBRARY dl)
+    # FIXME failing dlopen https://github.com/android-ndk/ndk/issues/929
+    find_library(ANDROID_DL_LIBRARY NAMES libdl.so dl)
     find_library(ANDROID_LOG_LIBRARY log)
     find_library(ANDROID_LIBRARY_LIBRARY android)
     list(APPEND EXTRA_LIBS ${ANDROID_DL_LIBRARY} ${ANDROID_LOG_LIBRARY} ${ANDROID_LIBRARY_LIBRARY})
@@ -1903,7 +1905,9 @@ if(ANDROID)
     set_target_properties(hidapi PROPERTIES LINK_FLAGS_DEBUG "/NODEFAULTLIB")
     set_target_properties(hidapi PROPERTIES STATIC_LIBRARY_FLAGS "/NODEFAULTLIB")
   endif()
-  target_link_libraries(hidapi log)
+  if(HAVE_HIDAPI)
+    target_link_libraries(hidapi log)
+  endif()
 endif()
 
 if(SDL_STATIC)
