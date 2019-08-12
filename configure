@@ -1677,7 +1677,7 @@ Optional Features:
   --enable-wasapi         use the Windows WASAPI audio driver [[default=yes]]
   --enable-sdl-dlopen     use dlopen for shared object loading [[default=yes]]
   --enable-hidapi         use HIDAPI for low level joystick drivers
-                          [[default=yes]]
+                          [[default=no]]
   --enable-clock_gettime  use clock_gettime() instead of gettimeofday() on
                           UNIX [[default=yes]]
   --enable-rpath          use an rpath when linking SDL [[default=yes]]
@@ -24135,7 +24135,7 @@ CheckHIDAPI()
 if test "${enable_hidapi+set}" = set; then :
   enableval=$enable_hidapi;
 else
-  enable_hidapi=yes
+  enable_hidapi=no
 fi
 
     if test x$enable_joystick = xyes -a x$enable_hidapi = xyes; then
