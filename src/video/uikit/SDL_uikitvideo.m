@@ -192,7 +192,15 @@ UIKit_IsSystemVersionAtLeast(double version)
 CGRect
 UIKit_ComputeViewFrame(SDL_Window *window, UIScreen *screen)
 {
+    SDL_WindowData *data = (__bridge SDL_WindowData *) window->driverdata;
     CGRect frame = screen.bounds;
+
+    /* Use the UIWindow bounds instead of the UIScreen bounds, when possible.
+     * The uiwindow bounds may be smaller than the screen bounds when Split View
+     * is used on an iPad. */
+    if (data != nil && data.uiwindow != nil) {
+        frame = data.uiwindow.bounds;
+    }
 
 #if !TARGET_OS_TV && (__IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_7_0)
     BOOL hasiOS7 = UIKit_IsSystemVersionAtLeast(7.0);
@@ -214,9 +222,12 @@ UIKit_ComputeViewFrame(SDL_Window *window, UIScreen *screen)
      * https://forums.developer.apple.com/thread/65337 */
     if (UIKit_IsSystemVersionAtLeast(8.0)) {
         UIInterfaceOrientation orient = [UIApplication sharedApplication].statusBarOrientation;
-        BOOL isLandscape = UIInterfaceOrientationIsLandscape(orient);
+        BOOL landscape = UIInterfaceOrientationIsLandscape(orient);
+        BOOL fullscreen = CGRectEqualToRect(screen.bounds, frame);
 
-        if (isLandscape != (frame.size.width > frame.size.height)) {
+        /* The orientation flip doesn't make sense when the window is smaller
+         * than the screen (iPad Split View, for example). */
+        if (fullscreen && (landscape != (frame.size.width > frame.size.height))) {
             float height = frame.size.width;
             frame.size.width = frame.size.height;
             frame.size.height = height;
