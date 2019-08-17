@@ -1065,6 +1065,7 @@
 		F3E3C75F224138AE007D243C /* libSDLmain.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libSDLmain.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		FA1DC2701C62BE65008F99A0 /* SDL_uikitclipboard.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_uikitclipboard.h; sourceTree = "<group>"; };
 		FA1DC2711C62BE65008F99A0 /* SDL_uikitclipboard.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDL_uikitclipboard.m; sourceTree = "<group>"; };
+		FA20874D2307894C0029758C /* SDL_shaders_metal_tvos.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SDL_shaders_metal_tvos.h; sourceTree = "<group>"; };
 		FA24348C21D4201400B8918A /* SDL_metal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_metal.h; sourceTree = "<group>"; };
 		FAB598141BB5C1B100BE72C5 /* libSDL2.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libSDL2.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		FAD4F7011BA3C4E8008346CE /* SDL_sysjoystick_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_sysjoystick_c.h; sourceTree = "<group>"; };
@@ -1407,6 +1408,7 @@
 			children = (
 				AADC5A621FDA10C800960936 /* SDL_render_metal.m */,
 				AADC5A611FDA10C800960936 /* SDL_shaders_metal_ios.h */,
+				FA20874D2307894C0029758C /* SDL_shaders_metal_tvos.h */,
 			);
 			path = metal;
 			sourceTree = "<group>";
