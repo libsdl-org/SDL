@@ -265,8 +265,36 @@ MakePipelineState(METAL_RenderData *data, METAL_PipelineCache *cache,
     mtlpipedesc.vertexFunction = mtlvertfn;
     mtlpipedesc.fragmentFunction = mtlfragfn;
 
-    MTLRenderPipelineColorAttachmentDescriptor *rtdesc = mtlpipedesc.colorAttachments[0];
+    MTLVertexDescriptor *vertdesc = [MTLVertexDescriptor vertexDescriptor];
 
+    switch (cache->vertexFunction) {
+        case SDL_METAL_VERTEX_SOLID:
+            /* position (float2) */
+            vertdesc.layouts[0].stride = sizeof(float) * 2;
+            vertdesc.layouts[0].stepFunction = MTLStepFunctionPerVertex;
+
+            vertdesc.attributes[0].format = MTLVertexFormatFloat2;
+            vertdesc.attributes[0].offset = 0;
+            vertdesc.attributes[0].bufferIndex = 0;
+            break;
+        case SDL_METAL_VERTEX_COPY:
+            /* position (float2), texcoord (float2) */
+            vertdesc.layouts[0].stride = sizeof(float) * 4;
+            vertdesc.layouts[0].stepFunction = MTLStepFunctionPerVertex;
+
+            vertdesc.attributes[0].format = MTLVertexFormatFloat2;
+            vertdesc.attributes[0].offset = 0;
+            vertdesc.attributes[0].bufferIndex = 0;
+
+            vertdesc.attributes[1].format = MTLVertexFormatFloat2;
+            vertdesc.attributes[1].offset = sizeof(float) * 2;
+            vertdesc.attributes[1].bufferIndex = 0;
+            break;
+    }
+
+    mtlpipedesc.vertexDescriptor = vertdesc;
+
+    MTLRenderPipelineColorAttachmentDescriptor *rtdesc = mtlpipedesc.colorAttachments[0];
     rtdesc.pixelFormat = cache->renderTargetFormat;
 
     if (blendmode != SDL_BLENDMODE_NONE) {
@@ -412,7 +440,7 @@ ChoosePipelineState(METAL_RenderData *data, METAL_ShaderPipelines *pipelines, SD
 }
 
 static void
-METAL_ActivateRenderCommandEncoder(SDL_Renderer * renderer, MTLLoadAction load, MTLClearColor *clear_color)
+METAL_ActivateRenderCommandEncoder(SDL_Renderer * renderer, MTLLoadAction load, MTLClearColor *clear_color, id<MTLBuffer> vertex_buffer)
 {
     METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
 
@@ -453,6 +481,13 @@ METAL_ActivateRenderCommandEncoder(SDL_Renderer * renderer, MTLLoadAction load, 
             data.mtlcmdencoder.label = @"SDL metal renderer backbuffer";
         } else {
             data.mtlcmdencoder.label = @"SDL metal renderer render target";
+        }
+
+        /* Set up buffer bindings for positions, texcoords, and color once here,
+         * the offsets are adjusted in the code that uses them. */
+        if (vertex_buffer != nil) {
+            [data.mtlcmdencoder setVertexBuffer:vertex_buffer offset:0 atIndex:0];
+            [data.mtlcmdencoder setFragmentBuffer:vertex_buffer offset:0 atIndex:0];
         }
 
         data.activepipelines = ChooseShaderPipelines(data, mtltexture.pixelFormat);
@@ -1042,21 +1077,24 @@ METAL_QueueCopy(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * t
 
     cmd->data.draw.count = 1;
 
+    /* Interleaved positions and texture coordinates */
     *(verts++) = dstrect->x;
     *(verts++) = dstrect->y + dstrect->h;
-    *(verts++) = dstrect->x;
-    *(verts++) = dstrect->y;
-    *(verts++) = dstrect->x + dstrect->w;
-    *(verts++) = dstrect->y + dstrect->h;
-    *(verts++) = dstrect->x + dstrect->w;
-    *(verts++) = dstrect->y;
-
     *(verts++) = normtex(srcrect->x, texw);
     *(verts++) = normtex(srcrect->y + srcrect->h, texh);
+
+    *(verts++) = dstrect->x;
+    *(verts++) = dstrect->y;
     *(verts++) = normtex(srcrect->x, texw);
     *(verts++) = normtex(srcrect->y, texh);
+
+    *(verts++) = dstrect->x + dstrect->w;
+    *(verts++) = dstrect->y + dstrect->h;
     *(verts++) = normtex(srcrect->x + srcrect->w, texw);
     *(verts++) = normtex(srcrect->y + srcrect->h, texh);
+
+    *(verts++) = dstrect->x + dstrect->w;
+    *(verts++) = dstrect->y;
     *(verts++) = normtex(srcrect->x + srcrect->w, texw);
     *(verts++) = normtex(srcrect->y, texh);
 
@@ -1117,23 +1155,24 @@ METAL_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture *
         minv = tmp;
     }
 
-    // vertices
+    /* Interleaved positions and texture coordinates */
     *(verts++) = -center->x;
     *(verts++) = dstrect->h - center->y;
-    *(verts++) = -center->x;
-    *(verts++) = -center->y;
-    *(verts++) = dstrect->w - center->x;
-    *(verts++) = dstrect->h - center->y;
-    *(verts++) = dstrect->w - center->x;
-    *(verts++) = -center->y;
-
-    // texcoords
     *(verts++) = minu;
     *(verts++) = maxv;
+
+    *(verts++) = -center->x;
+    *(verts++) = -center->y;
     *(verts++) = minu;
     *(verts++) = minv;
+
+    *(verts++) = dstrect->w - center->x;
+    *(verts++) = dstrect->h - center->y;
     *(verts++) = maxu;
     *(verts++) = maxv;
+
+    *(verts++) = dstrect->w - center->x;
+    *(verts++) = -center->y;
     *(verts++) = maxu;
     *(verts++) = minv;
 
@@ -1145,8 +1184,10 @@ typedef struct
 {
     #if __has_feature(objc_arc)
     __unsafe_unretained id<MTLRenderPipelineState> pipeline;
+    __unsafe_unretained id<MTLBuffer> vertex_buffer;
     #else
     id<MTLRenderPipelineState> pipeline;
+    id<MTLBuffer> vertex_buffer;
     #endif
     size_t constants_offset;
     SDL_Texture *texture;
@@ -1169,7 +1210,7 @@ SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, const SDL_Met
     size_t first = cmd->data.draw.first;
     id<MTLRenderPipelineState> newpipeline;
 
-    METAL_ActivateRenderCommandEncoder(renderer, MTLLoadActionLoad, NULL);
+    METAL_ActivateRenderCommandEncoder(renderer, MTLLoadActionLoad, NULL, statecache->vertex_buffer);
 
     if (statecache->viewport_dirty) {
         MTLViewport viewport;
@@ -1205,7 +1246,7 @@ SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, const SDL_Met
     }
 
     if (statecache->color_dirty) {
-        [data.mtlcmdencoder setFragmentBuffer:mtlbufvertex offset:statecache->color_offset atIndex:0];
+        [data.mtlcmdencoder setFragmentBufferOffset:statecache->color_offset atIndex:0];
         statecache->color_dirty = SDL_FALSE;
     }
 
@@ -1222,7 +1263,7 @@ SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, const SDL_Met
         statecache->constants_offset = constants_offset;
     }
 
-    [data.mtlcmdencoder setVertexBuffer:mtlbufvertex offset:first atIndex:0];  // position
+    [data.mtlcmdencoder setVertexBufferOffset:first atIndex:0]; /* position/texcoords */
 }
 
 static void
@@ -1234,8 +1275,6 @@ SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, const size_t 
     METAL_TextureData *texturedata = (__bridge METAL_TextureData *)texture->driverdata;
 
     SetDrawState(renderer, cmd, texturedata.fragmentFunction, constants_offset, mtlbufvertex, statecache);
-
-    [data.mtlcmdencoder setVertexBuffer:mtlbufvertex offset:cmd->data.draw.first+(8*sizeof (float)) atIndex:1];  // texcoords
 
     if (texture != statecache->texture) {
         METAL_TextureData *oldtexturedata = NULL;
@@ -1263,6 +1302,7 @@ METAL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
     id<MTLBuffer> mtlbufvertex = nil;
 
     statecache.pipeline = nil;
+    statecache.vertex_buffer = nil;
     statecache.constants_offset = CONSTANTS_OFFSET_INVALID;
     statecache.texture = NULL;
     statecache.color_dirty = SDL_TRUE;
@@ -1286,6 +1326,8 @@ METAL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
         #endif
         mtlbufvertex.label = @"SDL vertex data";
         SDL_memcpy([mtlbufvertex contents], vertices, vertsize);
+
+        statecache.vertex_buffer = mtlbufvertex;
     }
 
     // If there's a command buffer here unexpectedly (app requested one?). Commit it so we can start fresh.
@@ -1344,7 +1386,7 @@ METAL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
                 MTLClearColor color = MTLClearColorMake(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f);
 
                 // get new command encoder, set up with an initial clear operation.
-                METAL_ActivateRenderCommandEncoder(renderer, MTLLoadActionClear, &color);
+                METAL_ActivateRenderCommandEncoder(renderer, MTLLoadActionClear, &color, mtlbufvertex);
                 break;
             }
 
@@ -1403,7 +1445,7 @@ METAL_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
                     Uint32 pixel_format, void * pixels, int pitch)
 { @autoreleasepool {
     METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
-    METAL_ActivateRenderCommandEncoder(renderer, MTLLoadActionLoad, NULL);
+    METAL_ActivateRenderCommandEncoder(renderer, MTLLoadActionLoad, NULL, nil);
 
     [data.mtlcmdencoder endEncoding];
     id<MTLTexture> mtltexture = data.mtlpassdesc.colorAttachments[0].texture;
@@ -1498,7 +1540,7 @@ METAL_GetMetalLayer(SDL_Renderer * renderer)
 static void *
 METAL_GetMetalCommandEncoder(SDL_Renderer * renderer)
 { @autoreleasepool {
-    METAL_ActivateRenderCommandEncoder(renderer, MTLLoadActionLoad, NULL);
+    METAL_ActivateRenderCommandEncoder(renderer, MTLLoadActionLoad, NULL, nil);
     METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
     return (__bridge void*)data.mtlcmdencoder;
 }}
