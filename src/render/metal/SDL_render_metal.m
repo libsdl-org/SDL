@@ -40,6 +40,8 @@
 /* Regenerate these with build-metal-shaders.sh */
 #ifdef __MACOSX__
 #include "SDL_shaders_metal_osx.h"
+#elif defined(__TVOS__)
+#include "SDL_shaders_metal_tvos.h"
 #else
 #include "SDL_shaders_metal_ios.h"
 #endif
