@@ -202,8 +202,6 @@ DebugLogRenderCommands(const SDL_RenderCommand *cmd)
 static int
 FlushRenderCommands(SDL_Renderer *renderer)
 {
-    SDL_AllocVertGap *prevgap = &renderer->vertex_data_gaps;
-    SDL_AllocVertGap *gap = prevgap;
     int retval;
 
     SDL_assert((renderer->render_commands == NULL) == (renderer->render_commands_tail == NULL));
@@ -216,14 +214,6 @@ FlushRenderCommands(SDL_Renderer *renderer)
     DebugLogRenderCommands(renderer->render_commands);
 
     retval = renderer->RunCommandQueue(renderer, renderer->render_commands, renderer->vertex_data, renderer->vertex_data_used);
-
-    while (gap) {
-        prevgap = gap;
-        gap = gap->next;
-    }
-    prevgap->next = renderer->vertex_data_gaps_pool;
-    renderer->vertex_data_gaps_pool = renderer->vertex_data_gaps.next;
-    renderer->vertex_data_gaps.next = NULL;
 
     /* Move the whole render command queue to the unused pool so we can reuse them next time. */
     if (renderer->render_commands_tail != NULL) {
@@ -263,79 +253,23 @@ SDL_RenderFlush(SDL_Renderer * renderer)
     return FlushRenderCommands(renderer);
 }
 
-static SDL_AllocVertGap *
-AllocateVertexGap(SDL_Renderer *renderer)
-{
-    SDL_AllocVertGap *retval = renderer->vertex_data_gaps_pool;
-    if (retval) {
-        renderer->vertex_data_gaps_pool = retval->next;
-        retval->next = NULL;
-    } else {
-        retval = (SDL_AllocVertGap *) SDL_malloc(sizeof (SDL_AllocVertGap));
-        if (!retval) {
-            SDL_OutOfMemory();
-        }
-    }
-    return retval;
-}
-
-
 void *
 SDL_AllocateRenderVertices(SDL_Renderer *renderer, const size_t numbytes, const size_t alignment, size_t *offset)
 {
     const size_t needed = renderer->vertex_data_used + numbytes + alignment;
-    size_t aligner, aligned;
-    void *retval;
+    size_t current_offset = renderer->vertex_data_used;
 
-    SDL_AllocVertGap *prevgap = &renderer->vertex_data_gaps;
-    SDL_AllocVertGap *gap = prevgap->next;
-    while (gap) {
-        const size_t gapoffset = gap->offset;
-        aligner = (alignment && ((gap->offset % alignment) != 0)) ? (alignment - (gap->offset % alignment)) : 0;
-        aligned = gapoffset + aligner;
+    size_t aligner = (alignment && ((current_offset & (alignment - 1)) != 0)) ? (alignment - (current_offset & (alignment - 1))) : 0;
+    size_t aligned = current_offset + aligner;
 
-        /* Can we use this gap? */
-        if ((aligner < gap->len) && ((gap->len - aligner) >= numbytes)) {
-            /* we either finished this gap off, trimmed the left, trimmed the right, or split it into two gaps. */
-            if (gap->len == numbytes) {  /* finished it off, remove it */
-                SDL_assert(aligned == gapoffset);
-                prevgap->next = gap->next;
-                gap->next = renderer->vertex_data_gaps_pool;
-                renderer->vertex_data_gaps_pool = gap;
-            } else if (aligned == gapoffset) {  /* trimmed the left */
-                gap->offset += numbytes;
-                gap->len -= numbytes;
-            } else if (((aligned - gapoffset) + numbytes) == gap->len) {  /* trimmed the right */
-                gap->len -= numbytes;
-            } else {  /* split into two gaps */
-                SDL_AllocVertGap *newgap = AllocateVertexGap(renderer);
-                if (!newgap) {
-                    return NULL;
-                }
-                newgap->offset = aligned + numbytes;
-                newgap->len = gap->len - (aligner + numbytes);
-                newgap->next = gap->next;
-                // gap->offset doesn't change.
-                gap->len = aligner;
-                gap->next = newgap;
-            }
-
-            if (offset) {
-                *offset = aligned;
-            }
-            return ((Uint8 *) renderer->vertex_data) + aligned;
-        }
-
-        /* Try the next gap */
-        prevgap = gap;
-        gap = gap->next;
-    }
-
-    /* no gaps with enough space; get a new piece of the vertex buffer */
-    while (needed > renderer->vertex_data_allocation) {
+    if (renderer->vertex_data_allocation < needed) {
         const size_t current_allocation = renderer->vertex_data ? renderer->vertex_data_allocation : 1024;
-        const size_t newsize = current_allocation * 2;
-        void *ptr = SDL_realloc(renderer->vertex_data, newsize);
+        size_t newsize = current_allocation * 2;
+        void *ptr;
+        while (newsize < needed) {
+            newsize *= 2;
+        }
+        ptr = SDL_realloc(renderer->vertex_data, newsize);
         if (ptr == NULL) {
             SDL_OutOfMemory();
             return NULL;
@@ -344,27 +278,13 @@ SDL_AllocateRenderVertices(SDL_Renderer *renderer, const size_t numbytes, const 
         renderer->vertex_data_allocation = newsize;
     }
 
-    aligner = (alignment && ((renderer->vertex_data_used % alignment) != 0)) ? (alignment - (renderer->vertex_data_used % alignment)) : 0;
-    aligned = renderer->vertex_data_used + aligner;
-
-    retval = ((Uint8 *) renderer->vertex_data) + aligned;
     if (offset) {
         *offset = aligned;
     }
 
-    if (aligner) {  /* made a new gap... */
-        SDL_AllocVertGap *newgap = AllocateVertexGap(renderer);
-        if (newgap) {  /* just let it slide as lost space if malloc fails. */
-            newgap->offset = renderer->vertex_data_used;
-            newgap->len = aligner;
-            newgap->next = NULL;
-            prevgap->next = newgap;
-        }
-    }
-
     renderer->vertex_data_used += aligner + numbytes;
 
-    return retval;
+    return ((Uint8 *) renderer->vertex_data) + aligned;
 }
 
 static SDL_RenderCommand *
@@ -3177,8 +3097,6 @@ void
 SDL_DestroyRenderer(SDL_Renderer * renderer)
 {
     SDL_RenderCommand *cmd;
-    SDL_AllocVertGap *gap;
-    SDL_AllocVertGap *nextgap;
 
     CHECK_RENDERER_MAGIC(renderer, );
 
@@ -3202,16 +3120,6 @@ SDL_DestroyRenderer(SDL_Renderer * renderer)
     }
 
     SDL_free(renderer->vertex_data);
-
-    for (gap = renderer->vertex_data_gaps.next; gap; gap = nextgap) {
-        nextgap = gap->next;
-        SDL_free(gap);
-    }
-
-    for (gap = renderer->vertex_data_gaps_pool; gap; gap = nextgap) {
-        nextgap = gap->next;
-        SDL_free(gap);
-    }
 
     /* Free existing textures for this renderer */
     while (renderer->textures) {

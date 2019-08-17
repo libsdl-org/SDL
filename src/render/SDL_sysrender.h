@@ -110,13 +110,6 @@ typedef struct SDL_RenderCommand
     struct SDL_RenderCommand *next;
 } SDL_RenderCommand;
 
-typedef struct SDL_AllocVertGap
-{
-    size_t offset;
-    size_t len;
-    struct SDL_AllocVertGap *next;
-} SDL_AllocVertGap;
-
 
 /* Define the SDL renderer structure */
 struct SDL_Renderer
@@ -226,8 +219,6 @@ struct SDL_Renderer
     void *vertex_data;
     size_t vertex_data_used;
     size_t vertex_data_allocation;
-    SDL_AllocVertGap vertex_data_gaps;
-    SDL_AllocVertGap *vertex_data_gaps_pool;
 
     void *driverdata;
 };
