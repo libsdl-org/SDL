@@ -20,7 +20,7 @@ vertex SolidVertexOutput SDL_Solid_vertex(const device float2 *position [[buffer
     return v;
 }
 
-fragment float4 SDL_Solid_fragment(constant float4 &col [[buffer(0)]])
+fragment float4 SDL_Solid_fragment(const device float4 &col [[buffer(0)]])
 {
     return col;
 }
@@ -44,7 +44,7 @@ vertex CopyVertexOutput SDL_Copy_vertex(const device float2 *position [[buffer(0
 }
 
 fragment float4 SDL_Copy_fragment(CopyVertexOutput vert [[stage_in]],
-                                  constant float4 &col [[buffer(0)]],
+                                  const device float4 &col [[buffer(0)]],
                                   texture2d<float> tex [[texture(0)]],
                                   sampler s [[sampler(0)]])
 {
@@ -60,7 +60,7 @@ struct YUVDecode
 };
 
 fragment float4 SDL_YUV_fragment(CopyVertexOutput vert [[stage_in]],
-                                 constant float4 &col [[buffer(0)]],
+                                 const device float4 &col [[buffer(0)]],
                                  constant YUVDecode &decode [[buffer(1)]],
                                  texture2d<float> texY [[texture(0)]],
                                  texture2d_array<float> texUV [[texture(1)]],
@@ -77,7 +77,7 @@ fragment float4 SDL_YUV_fragment(CopyVertexOutput vert [[stage_in]],
 }
 
 fragment float4 SDL_NV12_fragment(CopyVertexOutput vert [[stage_in]],
-                                 constant float4 &col [[buffer(0)]],
+                                 const device float4 &col [[buffer(0)]],
                                  constant YUVDecode &decode [[buffer(1)]],
                                  texture2d<float> texY [[texture(0)]],
                                  texture2d<float> texUV [[texture(1)]],
@@ -93,7 +93,7 @@ fragment float4 SDL_NV12_fragment(CopyVertexOutput vert [[stage_in]],
 }
 
 fragment float4 SDL_NV21_fragment(CopyVertexOutput vert [[stage_in]],
-                                 constant float4 &col [[buffer(0)]],
+                                 const device float4 &col [[buffer(0)]],
                                  constant YUVDecode &decode [[buffer(1)]],
                                  texture2d<float> texY [[texture(0)]],
                                  texture2d<float> texUV [[texture(1)]],
