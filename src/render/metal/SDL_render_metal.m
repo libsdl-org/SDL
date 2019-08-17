@@ -49,20 +49,23 @@
 /* Apple Metal renderer implementation */
 
 /* macOS requires constants in a buffer to have a 256 byte alignment. */
+/* Use native type alignments from https://developer.apple.com/metal/Metal-Shading-Language-Specification.pdf */
 #ifdef __MACOSX__
-#define CONSTANT_ALIGN 256
+#define CONSTANT_ALIGN(x) (256)
 #else
-#define CONSTANT_ALIGN 4
+#define CONSTANT_ALIGN(x) (x < 4 ? 4 : x)
 #endif
 
-#define ALIGN_CONSTANTS(size) ((size + CONSTANT_ALIGN - 1) & (~(CONSTANT_ALIGN - 1)))
+#define DEVICE_ALIGN(x) (x < 4 ? 4 : x)
+
+#define ALIGN_CONSTANTS(align, size) ((size + CONSTANT_ALIGN(align) - 1) & (~(CONSTANT_ALIGN(align) - 1)))
 
 static const size_t CONSTANTS_OFFSET_INVALID = 0xFFFFFFFF;
 static const size_t CONSTANTS_OFFSET_IDENTITY = 0;
-static const size_t CONSTANTS_OFFSET_HALF_PIXEL_TRANSFORM = ALIGN_CONSTANTS(CONSTANTS_OFFSET_IDENTITY + sizeof(float) * 16);
-static const size_t CONSTANTS_OFFSET_DECODE_JPEG = ALIGN_CONSTANTS(CONSTANTS_OFFSET_HALF_PIXEL_TRANSFORM + sizeof(float) * 16);
-static const size_t CONSTANTS_OFFSET_DECODE_BT601 = ALIGN_CONSTANTS(CONSTANTS_OFFSET_DECODE_JPEG + sizeof(float) * 4 * 4);
-static const size_t CONSTANTS_OFFSET_DECODE_BT709 = ALIGN_CONSTANTS(CONSTANTS_OFFSET_DECODE_BT601 + sizeof(float) * 4 * 4);
+static const size_t CONSTANTS_OFFSET_HALF_PIXEL_TRANSFORM = ALIGN_CONSTANTS(16, CONSTANTS_OFFSET_IDENTITY + sizeof(float) * 16);
+static const size_t CONSTANTS_OFFSET_DECODE_JPEG = ALIGN_CONSTANTS(16, CONSTANTS_OFFSET_HALF_PIXEL_TRANSFORM + sizeof(float) * 16);
+static const size_t CONSTANTS_OFFSET_DECODE_BT601 = ALIGN_CONSTANTS(16, CONSTANTS_OFFSET_DECODE_JPEG + sizeof(float) * 4 * 4);
+static const size_t CONSTANTS_OFFSET_DECODE_BT709 = ALIGN_CONSTANTS(16, CONSTANTS_OFFSET_DECODE_BT601 + sizeof(float) * 4 * 4);
 static const size_t CONSTANTS_LENGTH = CONSTANTS_OFFSET_DECODE_BT709 + sizeof(float) * 4 * 4;
 
 typedef enum SDL_MetalVertexFunction
@@ -940,7 +943,7 @@ METAL_QueueSetViewport(SDL_Renderer * renderer, SDL_RenderCommand *cmd)
     const int w = cmd->data.viewport.rect.w;
     const int h = cmd->data.viewport.rect.h;
     const size_t matrixlen = sizeof (projection);
-    float *matrix = (float *) SDL_AllocateRenderVertices(renderer, matrixlen, CONSTANT_ALIGN, &cmd->data.viewport.first);
+    float *matrix = (float *) SDL_AllocateRenderVertices(renderer, matrixlen, CONSTANT_ALIGN(16), &cmd->data.viewport.first);
     if (!matrix) {
         return -1;
     }
@@ -962,7 +965,7 @@ static int
 METAL_QueueSetDrawColor(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
 {
     const size_t vertlen = sizeof (float) * 4;
-    float *verts = (float *) SDL_AllocateRenderVertices(renderer, vertlen, 16, &cmd->data.color.first);
+    float *verts = (float *) SDL_AllocateRenderVertices(renderer, vertlen, DEVICE_ALIGN(16), &cmd->data.color.first);
     if (!verts) {
         return -1;
     }
@@ -977,7 +980,7 @@ static int
 METAL_QueueDrawPoints(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FPoint * points, int count)
 {
     const size_t vertlen = (sizeof (float) * 2) * count;
-    float *verts = (float *) SDL_AllocateRenderVertices(renderer, vertlen, 0, &cmd->data.draw.first);
+    float *verts = (float *) SDL_AllocateRenderVertices(renderer, vertlen, DEVICE_ALIGN(8), &cmd->data.draw.first);
     if (!verts) {
         return -1;
     }
@@ -990,7 +993,7 @@ static int
 METAL_QueueFillRects(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FRect * rects, int count)
 {
     const size_t vertlen = (sizeof (float) * 8) * count;
-    float *verts = (float *) SDL_AllocateRenderVertices(renderer, vertlen, 0, &cmd->data.draw.first);
+    float *verts = (float *) SDL_AllocateRenderVertices(renderer, vertlen, DEVICE_ALIGN(8), &cmd->data.draw.first);
     if (!verts) {
         return -1;
     }
@@ -1032,7 +1035,7 @@ METAL_QueueCopy(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * t
     const float texh = (float) texture->h;
     // !!! FIXME: use an index buffer
     const size_t vertlen = (sizeof (float) * 16);
-    float *verts = (float *) SDL_AllocateRenderVertices(renderer, vertlen, 0, &cmd->data.draw.first);
+    float *verts = (float *) SDL_AllocateRenderVertices(renderer, vertlen, DEVICE_ALIGN(8), &cmd->data.draw.first);
     if (!verts) {
         return -1;
     }
@@ -1074,7 +1077,7 @@ METAL_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture *
     float *verts;
 
     // cheat and store this offset in (count) because it needs to be aligned in ways other fields don't and we aren't using count otherwise.
-    verts = (float *) SDL_AllocateRenderVertices(renderer, vertlen, CONSTANT_ALIGN, &cmd->data.draw.count);
+    verts = (float *) SDL_AllocateRenderVertices(renderer, vertlen, CONSTANT_ALIGN(16), &cmd->data.draw.count);
     if (!verts) {
         return -1;
     }
@@ -1093,7 +1096,7 @@ METAL_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture *
     verts[13] = dstrect->y + center->y;
 
     // rest of the vertices don't need the aggressive alignment. Pack them in.
-    verts = (float *) SDL_AllocateRenderVertices(renderer, vertlen, 0, &cmd->data.draw.first);
+    verts = (float *) SDL_AllocateRenderVertices(renderer, vertlen, DEVICE_ALIGN(8), &cmd->data.draw.first);
     if (!verts) {
         return -1;
     }
