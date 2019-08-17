@@ -962,7 +962,7 @@ static int
 METAL_QueueSetDrawColor(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
 {
     const size_t vertlen = sizeof (float) * 4;
-    float *verts = (float *) SDL_AllocateRenderVertices(renderer, vertlen, CONSTANT_ALIGN, &cmd->data.color.first);
+    float *verts = (float *) SDL_AllocateRenderVertices(renderer, vertlen, 16, &cmd->data.color.first);
     if (!verts) {
         return -1;
     }
