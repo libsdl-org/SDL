@@ -1403,17 +1403,21 @@ METAL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
                 const size_t count = cmd->data.draw.count;
                 const size_t maxcount = UINT16_MAX / 4;
                 SetDrawState(renderer, cmd, SDL_METAL_FRAGMENT_SOLID, CONSTANTS_OFFSET_IDENTITY, mtlbufvertex, &statecache);
-                /* Our index buffer has 16 bit indices, so we can only draw 65k
-                 * vertices (16k rects) at a time. */
-                for (size_t i = 0; i < count; i += maxcount) {
-                    /* Set the vertex buffer offset for our current positions.
-                     * The vertex buffer itself was bound in SetDrawState. */
-                    [data.mtlcmdencoder setVertexBufferOffset:cmd->data.draw.first + i*sizeof(float)*8 atIndex:0];
-                    [data.mtlcmdencoder drawIndexedPrimitives:MTLPrimitiveTypeTriangle
-                                                   indexCount:SDL_min(maxcount, count - i) * 6
-                                                    indexType:MTLIndexTypeUInt16
-                                                  indexBuffer:data.mtlbufquadindices
-                                            indexBufferOffset:0];
+                if (count == 1) {
+                    [data.mtlcmdencoder drawPrimitives:MTLPrimitiveTypeTriangleStrip vertexStart:0 vertexCount:4];
+                } else {
+                    /* Our index buffer has 16 bit indices, so we can only draw
+                     * 65k vertices (16k rects) at a time. */
+                    for (size_t i = 0; i < count; i += maxcount) {
+                        /* Set the vertex buffer offset for our current positions.
+                         * The vertex buffer itself was bound in SetDrawState. */
+                        [data.mtlcmdencoder setVertexBufferOffset:cmd->data.draw.first + i*sizeof(float)*8 atIndex:0];
+                        [data.mtlcmdencoder drawIndexedPrimitives:MTLPrimitiveTypeTriangle
+                                                       indexCount:SDL_min(maxcount, count - i) * 6
+                                                        indexType:MTLIndexTypeUInt16
+                                                      indexBuffer:data.mtlbufquadindices
+                                                indexBufferOffset:0];
+                    }
                 }
                 break;
             }
