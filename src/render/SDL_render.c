@@ -410,14 +410,17 @@ QueueCmdClear(SDL_Renderer *renderer)
 static int
 PrepQueueCmdDraw(SDL_Renderer *renderer, const Uint8 r, const Uint8 g, const Uint8 b, const Uint8 a)
 {
+    /* Guarantee that the draw color, viewport, and clip rect are set before
+     * draws, so the backends don't have to worry about that state not being
+     * valid at draw time. */
     int retval = 0;
-    if (retval == 0) {
+    if (retval == 0 && !renderer->color_queued) {
         retval = QueueCmdSetDrawColor(renderer, r, g, b, a);
     }
-    if (retval == 0) {
+    if (retval == 0 && !renderer->viewport_queued) {
         retval = QueueCmdSetViewport(renderer);
     }
-    if (retval == 0) {
+    if (retval == 0 && !renderer->cliprect_queued) {
         retval = QueueCmdSetClipRect(renderer);
     }
     return retval;
