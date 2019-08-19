@@ -482,7 +482,7 @@ SDL_Convert_U16_to_F32_SSE2(SDL_AudioCVT *cvt, SDL_AudioFormat format)
     if ((((size_t) src) & 15) == 0) {
         /* Aligned! Do SSE blocks as long as we have 16 bytes available. */
         const __m128 divby32768 = _mm_set1_ps(DIVBY32768);
-        const __m128 minus1 = _mm_set1_ps(1.0f);
+        const __m128 minus1 = _mm_set1_ps(-1.0f);
         while (i >= 8) {   /* 8 * 16-bit */
             const __m128i ints = _mm_load_si128((__m128i const *) src);  /* get 8 sint16 into an XMM register. */
             /* treat as int32, shift left to clear every other sint16, then back right with zero-extend. Now sint32. */
