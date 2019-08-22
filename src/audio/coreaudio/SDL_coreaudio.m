@@ -417,7 +417,35 @@ outputCallback(void *inUserData, AudioQueueRef inAQ, AudioQueueBufferRef inBuffe
     if (!SDL_AtomicGet(&this->enabled) || SDL_AtomicGet(&this->paused)) {
         /* Supply silence if audio is not enabled or paused */
         SDL_memset(inBuffer->mAudioData, this->spec.silence, inBuffer->mAudioDataBytesCapacity);
-    } else {
+	} else if (this->stream ) {
+		UInt32 remaining = inBuffer->mAudioDataBytesCapacity;
+		Uint8 *ptr = (Uint8 *) inBuffer->mAudioData;
+		
+		while (remaining > 0) {
+			if ( SDL_AudioStreamAvailable(this->stream) == 0 ) {
+				/* Generate the data */
+				SDL_LockMutex(this->mixer_lock);
+				(*this->callbackspec.callback)(this->callbackspec.userdata,
+											   this->hidden->buffer, this->hidden->bufferSize);
+				SDL_UnlockMutex(this->mixer_lock);
+				this->hidden->bufferOffset = 0;
+				SDL_AudioStreamPut(this->stream, this->hidden->buffer, this->hidden->bufferSize);
+			}
+			if ( SDL_AudioStreamAvailable(this->stream) > 0 ) {
+				int got;
+				UInt32 len = SDL_AudioStreamAvailable(this->stream);
+				if ( len > remaining )
+					len = remaining;
+				got = SDL_AudioStreamGet(this->stream, ptr, len);
+				SDL_assert((got < 0) || (got == len));
+                if (got != len) {
+                    SDL_memset(ptr, this->spec.silence, len);
+                }
+				ptr = ptr + len;
+				remaining -= len;
+			}
+		}
+	} else {
         UInt32 remaining = inBuffer->mAudioDataBytesCapacity;
         Uint8 *ptr = (Uint8 *) inBuffer->mAudioData;
 
