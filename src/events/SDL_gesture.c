@@ -335,7 +335,7 @@ static float bestDollarDifference(SDL_FloatPoint* points,SDL_FloatPoint* templ)
 }
 
 /* DollarPath contains raw points, plus (possibly) the calculated length */
-static int dollarNormalize(const SDL_DollarPath *path,SDL_FloatPoint *points)
+static int dollarNormalize(const SDL_DollarPath *path,SDL_FloatPoint *points, SDL_bool is_recording)
 {
     int i;
     float interval;
@@ -381,7 +381,9 @@ static int dollarNormalize(const SDL_DollarPath *path,SDL_FloatPoint *points)
         dist += d;
     }
     if (numPoints < DOLLARNPOINTS-1) {
-        SDL_SetError("ERROR: NumPoints = %i", numPoints);
+        if (is_recording) {
+            SDL_SetError("ERROR: NumPoints = %i", numPoints);
+        }
         return 0;
     }
     /* copy the last point */
@@ -435,7 +437,7 @@ static float dollarRecognize(const SDL_DollarPath *path,int *bestTempl,SDL_Gestu
 
     SDL_memset(points, 0, sizeof(points));
 
-    dollarNormalize(path,points);
+    dollarNormalize(path, points, SDL_FALSE);
 
     /* PrintPath(points); */
     *bestTempl = -1;
@@ -576,7 +578,7 @@ void SDL_GestureProcessEvent(SDL_Event* event)
 #if defined(ENABLE_DOLLAR)
             if (inTouch->recording) {
                 inTouch->recording = SDL_FALSE;
-                dollarNormalize(&inTouch->dollarPath,path);
+                dollarNormalize(&inTouch->dollarPath, path, SDL_TRUE);
                 /* PrintPath(path); */
                 if (recordAll) {
                     index = SDL_AddDollarGesture(NULL,path);
