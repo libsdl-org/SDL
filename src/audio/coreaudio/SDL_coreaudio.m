@@ -376,7 +376,7 @@ static BOOL update_audio_session(_THIS, SDL_bool open)
             /* An interruption end notification is not guaranteed to be sent if
              we were previously interrupted... resuming if needed when the app
              becomes active seems to be the way to go. */
-			// Note: object: below needs to be nil, as otherwise it filters by the object, and session doesn't send foreground / active notifications.  johna
+            // Note: object: below needs to be nil, as otherwise it filters by the object, and session doesn't send foreground / active notifications.  johna
             [center addObserver:listener
                        selector:@selector(applicationBecameActive:)
                            name:UIApplicationDidBecomeActiveNotification
@@ -417,35 +417,35 @@ outputCallback(void *inUserData, AudioQueueRef inAQ, AudioQueueBufferRef inBuffe
     if (!SDL_AtomicGet(&this->enabled) || SDL_AtomicGet(&this->paused)) {
         /* Supply silence if audio is not enabled or paused */
         SDL_memset(inBuffer->mAudioData, this->spec.silence, inBuffer->mAudioDataBytesCapacity);
-	} else if (this->stream ) {
-		UInt32 remaining = inBuffer->mAudioDataBytesCapacity;
-		Uint8 *ptr = (Uint8 *) inBuffer->mAudioData;
-		
-		while (remaining > 0) {
-			if ( SDL_AudioStreamAvailable(this->stream) == 0 ) {
-				/* Generate the data */
-				SDL_LockMutex(this->mixer_lock);
-				(*this->callbackspec.callback)(this->callbackspec.userdata,
-											   this->hidden->buffer, this->hidden->bufferSize);
-				SDL_UnlockMutex(this->mixer_lock);
-				this->hidden->bufferOffset = 0;
-				SDL_AudioStreamPut(this->stream, this->hidden->buffer, this->hidden->bufferSize);
-			}
-			if ( SDL_AudioStreamAvailable(this->stream) > 0 ) {
-				int got;
-				UInt32 len = SDL_AudioStreamAvailable(this->stream);
-				if ( len > remaining )
-					len = remaining;
-				got = SDL_AudioStreamGet(this->stream, ptr, len);
-				SDL_assert((got < 0) || (got == len));
+    } else if (this->stream ) {
+        UInt32 remaining = inBuffer->mAudioDataBytesCapacity;
+        Uint8 *ptr = (Uint8 *) inBuffer->mAudioData;
+
+        while (remaining > 0) {
+            if ( SDL_AudioStreamAvailable(this->stream) == 0 ) {
+                /* Generate the data */
+                SDL_LockMutex(this->mixer_lock);
+                (*this->callbackspec.callback)(this->callbackspec.userdata,
+                                               this->hidden->buffer, this->hidden->bufferSize);
+                SDL_UnlockMutex(this->mixer_lock);
+                this->hidden->bufferOffset = 0;
+                SDL_AudioStreamPut(this->stream, this->hidden->buffer, this->hidden->bufferSize);
+            }
+            if ( SDL_AudioStreamAvailable(this->stream) > 0 ) {
+                int got;
+                UInt32 len = SDL_AudioStreamAvailable(this->stream);
+                if ( len > remaining )
+                    len = remaining;
+                got = SDL_AudioStreamGet(this->stream, ptr, len);
+                SDL_assert((got < 0) || (got == len));
                 if (got != len) {
                     SDL_memset(ptr, this->spec.silence, len);
                 }
-				ptr = ptr + len;
-				remaining -= len;
-			}
-		}
-	} else {
+                ptr = ptr + len;
+                remaining -= len;
+            }
+        }
+    } else {
         UInt32 remaining = inBuffer->mAudioDataBytesCapacity;
         Uint8 *ptr = (Uint8 *) inBuffer->mAudioData;
 
