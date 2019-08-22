@@ -77,8 +77,8 @@
 - (void)updateDrawableSize
 {
     CAMetalLayer *metalLayer = (CAMetalLayer *)self.layer;
-    CGSize size = self.bounds.size;
-    CGSize backingSize = size;
+    NSSize size = self.bounds.size;
+    NSSize backingSize = size;
 
     if (self.highDPI) {
         /* Note: NSHighResolutionCapable must be set to true in the app's
@@ -88,7 +88,7 @@
     }
 
     metalLayer.contentsScale = backingSize.height / size.height;
-    metalLayer.drawableSize = backingSize;
+    metalLayer.drawableSize = NSSizeToCGSize(backingSize);
 }
 
 /* Set the size of the metal drawables when the view is resized. */
