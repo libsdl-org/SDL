@@ -226,6 +226,9 @@ RPI_FreeCursor(SDL_Cursor * cursor)
             SDL_free(cursor->driverdata);
         }
         SDL_free(cursor);
+        if (cursor == global_cursor) {
+            global_cursor = NULL;
+        }
     }
 }
 
