@@ -586,16 +586,22 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                         SDL_SendMouseMotion(data->window, 0, 1, (int)rawmouse->lLastX, (int)rawmouse->lLastY);
                     } else {
                         /* synthesize relative moves from the abs position */
-                        static SDL_Point initialMousePoint;
-                        if (initialMousePoint.x == 0 && initialMousePoint.y == 0) {
-                            initialMousePoint.x = rawmouse->lLastX;
-                            initialMousePoint.y = rawmouse->lLastY;
+                        static SDL_Point lastMousePoint;
+                        SDL_bool virtual_desktop = (rawmouse->usFlags & MOUSE_VIRTUAL_DESKTOP) ? SDL_TRUE : SDL_FALSE;
+                        int w = GetSystemMetrics(virtual_desktop ? SM_CXVIRTUALSCREEN : SM_CXSCREEN);
+                        int h = GetSystemMetrics(virtual_desktop ? SM_CYVIRTUALSCREEN : SM_CYSCREEN);
+                        int x = (int)(((float)rawmouse->lLastX / 65535.0f) * w);
+                        int y = (int)(((float)rawmouse->lLastY / 65535.0f) * h);
+
+                        if (lastMousePoint.x == 0 && lastMousePoint.y == 0) {
+                            lastMousePoint.x = x;
+                            lastMousePoint.y = y;
                         }
 
-                        SDL_SendMouseMotion(data->window, 0, 1, (int)(rawmouse->lLastX-initialMousePoint.x), (int)(rawmouse->lLastY-initialMousePoint.y));
+                        SDL_SendMouseMotion(data->window, 0, 1, (int)(x-lastMousePoint.x), (int)(y-lastMousePoint.y));
 
-                        initialMousePoint.x = rawmouse->lLastX;
-                        initialMousePoint.y = rawmouse->lLastY;
+                        lastMousePoint.x = x;
+                        lastMousePoint.y = y;
                     }
                     WIN_CheckRawMouseButtons(rawmouse->usButtonFlags, data);
                 } else if (isCapture) {
