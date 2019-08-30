@@ -1221,6 +1221,7 @@ SDL_ConvertPixels_Planar2x2_to_Planar2x2(int width, int height,
     return SDL_SetError("SDL_ConvertPixels_Planar2x2_to_Planar2x2: Unsupported YUV conversion: %s -> %s", SDL_GetPixelFormatName(src_format), SDL_GetPixelFormatName(dst_format));
 }
 
+#ifdef __SSE2__
 #define PACKED4_TO_PACKED4_ROW_SSE2(shuffle)                                                        \
     while (x >= 4) {                                                                                \
         __m128i yuv = _mm_loadu_si128((__m128i*)srcYUV);                                            \
@@ -1236,6 +1237,8 @@ SDL_ConvertPixels_Planar2x2_to_Planar2x2(int width, int height,
         dstYUV += 16;                                                                               \
         x -= 4;                                                                                     \
     }                                                                                               \
+
+#endif
 
 static int
 SDL_ConvertPixels_YUY2_to_UYVY(int width, int height, const void *src, int src_pitch, void *dst, int dst_pitch)
