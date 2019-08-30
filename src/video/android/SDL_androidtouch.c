@@ -35,8 +35,8 @@
 #define ACTION_DOWN 0
 #define ACTION_UP 1
 #define ACTION_MOVE 2
-#define ACTION_CANCEL 3
-#define ACTION_OUTSIDE 4
+/* #define ACTION_CANCEL 3 */
+/* #define ACTION_OUTSIDE 4 */
 #define ACTION_POINTER_DOWN 5
 #define ACTION_POINTER_UP 6
 

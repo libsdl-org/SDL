@@ -497,7 +497,7 @@ Android_RemoveJoystick(int device_id)
 }
 
 
-static void ANDROID_JoystickDetect();
+static void ANDROID_JoystickDetect(void);
 
 static int
 ANDROID_JoystickInit(void)
