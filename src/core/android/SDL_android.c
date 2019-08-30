@@ -2400,7 +2400,7 @@ int Android_JNI_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *bu
     if (messageboxdata->colorScheme) {
         colors = (*env)->NewIntArray(env, SDL_MESSAGEBOX_COLOR_MAX);
         for (i = 0; i < SDL_MESSAGEBOX_COLOR_MAX; ++i) {
-            temp = ((unsigned int)0xFF << 24) |
+            temp = (0xFFU << 24) |
                    (messageboxdata->colorScheme->colors[i].r << 16) |
                    (messageboxdata->colorScheme->colors[i].g << 8) |
                    (messageboxdata->colorScheme->colors[i].b << 0);

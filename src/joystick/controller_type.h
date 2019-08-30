@@ -61,7 +61,7 @@ typedef enum
 	k_eControllertype_GenericMouse = 800,
 } EControllerType;
 
-#define MAKE_CONTROLLER_ID( nVID, nPID )	(unsigned int)( (unsigned int)nVID << 16 | nPID )
+#define MAKE_CONTROLLER_ID( nVID, nPID )	(unsigned int)( (unsigned int)nVID << 16 | (unsigned int)nPID )
 typedef struct
 {
 	unsigned int m_unDeviceID;
