@@ -47,9 +47,6 @@
 #include "wmmsg.h"
 #endif
 
-/* For processing mouse WM_*BUTTON* and WM_MOUSEMOVE message-data from GetMessageExtraInfo() */
-#define MOUSEEVENTF_FROMTOUCH 0xFF515700
-
 /* Masks for processing the windows KEYDOWN and KEYUP messages */
 #define REPEATED_KEYMASK    (1<<30)
 #define EXTENDED_KEYMASK    (1<<24)
@@ -246,7 +243,7 @@ WIN_CheckWParamMouseButton(SDL_bool bwParamMousePressed, SDL_bool bSDLMousePress
 
 /*
 * Some windows systems fail to send a WM_LBUTTONDOWN sometimes, but each mouse move contains the current button state also
-*  so this funciton reconciles our view of the world with the current buttons reported by windows
+*  so this function reconciles our view of the world with the current buttons reported by windows
 */
 static void
 WIN_CheckWParamMouseButtons(WPARAM wParam, SDL_WindowData *data, SDL_MouseID mouseID)
@@ -365,26 +362,40 @@ static SDL_bool isVistaOrNewer = SDL_FALSE;
    This is used to implement a workaround.. */
 static SDL_bool isWin10FCUorNewer = SDL_FALSE;
 
-/* Checks a mouse or raw packet for touch indication.
-   returns: 0 for not touch input, 1 for touch input.
-*/
-static LPARAM
-GetMessageExtraInfoAndCheckMousePacketTouch(int *checkTouch) {
+/* We want to generate mouse events from mouse and pen, and touch events from touchscreens */
+#define MI_WP_SIGNATURE         0xFF515700
+#define MI_WP_SIGNATURE_MASK    0xFFFFFF00
+#define IsTouchEvent(dw) ((dw) & MI_WP_SIGNATURE_MASK) == MI_WP_SIGNATURE
+
+typedef enum
+{
+    SDL_MOUSE_EVENT_SOURCE_UNKNOWN,
+    SDL_MOUSE_EVENT_SOURCE_MOUSE,
+    SDL_MOUSE_EVENT_SOURCE_TOUCH,
+    SDL_MOUSE_EVENT_SOURCE_PEN,
+} SDL_MOUSE_EVENT_SOURCE;
+
+static SDL_MOUSE_EVENT_SOURCE GetMouseMessageSource()
+{
     LPARAM extrainfo = GetMessageExtraInfo();
     /* Mouse data (ignoring synthetic mouse events generated for touchscreens) */
     /* Versions below Vista will set the low 7 bits to the Mouse ID and don't use bit 7:
        Check bits 8-32 for the signature (which will indicate a Tablet PC Pen or Touch Device).
        Only check bit 7 when Vista and up(Cleared=Pen, Set=Touch(which we need to filter out)),
        when the signature is set. The Mouse ID will be zero for an actual mouse. */
-    *checkTouch = (!(((extrainfo & 0x7F) && (isVistaOrNewer ? (extrainfo & 0x80) : 1)) || ((extrainfo & 0xFFFFFF00) == 0xFF515700)));
-    return extrainfo;
+    if (IsTouchEvent(extrainfo)) {
+        if (extrainfo & 0x80) {
+            return SDL_MOUSE_EVENT_SOURCE_TOUCH;
+        } else {
+            return SDL_MOUSE_EVENT_SOURCE_PEN;
+        }
+    }
+    return SDL_MOUSE_EVENT_SOURCE_MOUSE;
 }
 
 LRESULT CALLBACK
 WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-    int checkTouch = -1; /* Default to -1 for not yet loaded */
-    LPARAM extrainfo;    /* The extra info when checkTouch >= 0. */
     SDL_WindowData *data;
     LRESULT returnCode = -1;
 
@@ -512,10 +523,9 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     case WM_MOUSEMOVE:
         {
             SDL_Mouse *mouse = SDL_GetMouse();
-            extrainfo = GetMessageExtraInfoAndCheckMousePacketTouch(&checkTouch); /* load */
             if (!mouse->relative_mode || mouse->relative_mode_warp) {
                 /* Only generate mouse events for real mouse */
-                if (((extrainfo & MOUSEEVENTF_FROMTOUCH) != MOUSEEVENTF_FROMTOUCH) && checkTouch) {
+                if (GetMouseMessageSource() != SDL_MOUSE_EVENT_SOURCE_TOUCH) {
                     SDL_SendMouseMotion(data->window, 0, 0, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
                     if (isWin10FCUorNewer && mouse->relative_mode_warp) {
                         /* To work around #3931, Win10 bug introduced in Fall Creators Update, where
@@ -546,11 +556,8 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     case WM_XBUTTONDBLCLK:
         {
             SDL_Mouse *mouse = SDL_GetMouse();
-            if (checkTouch < 0) {
-                extrainfo = GetMessageExtraInfoAndCheckMousePacketTouch(&checkTouch);
-            }
             if (!mouse->relative_mode || mouse->relative_mode_warp) {
-                if (((extrainfo & MOUSEEVENTF_FROMTOUCH) != MOUSEEVENTF_FROMTOUCH) && checkTouch) {
+                if (GetMouseMessageSource() != SDL_MOUSE_EVENT_SOURCE_TOUCH) {
                     WIN_CheckWParamMouseButtons(wParam, data, 0);
                 }
             }
@@ -576,9 +583,9 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
             /* Mouse data (ignoring synthetic mouse events generated for touchscreens) */
             if (inp.header.dwType == RIM_TYPEMOUSE) {
-                extrainfo = GetMessageExtraInfoAndCheckMousePacketTouch(&checkTouch);
-                if (!checkTouch)
+                if (GetMouseMessageSource() == SDL_MOUSE_EVENT_SOURCE_TOUCH) {
                     break;
+                }
                 if (isRelative) {
                     RAWMOUSE* rawmouse = &inp.data.mouse;
 
