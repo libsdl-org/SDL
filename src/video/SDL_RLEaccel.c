@@ -295,10 +295,10 @@
     } while(0)
 
 #define ALPHA_BLIT16_565_50(to, from, length, bpp, alpha)       \
-    ALPHA_BLIT16_50(to, from, length, bpp, alpha, 0xf7de)
+    ALPHA_BLIT16_50(to, from, length, bpp, alpha, (unsigned int)0xf7de)
 
 #define ALPHA_BLIT16_555_50(to, from, length, bpp, alpha)       \
-    ALPHA_BLIT16_50(to, from, length, bpp, alpha, 0xfbde)
+    ALPHA_BLIT16_50(to, from, length, bpp, alpha, (unsigned int)0xfbde)
 
 #define CHOOSE_BLIT(blitter, alpha, fmt)                        \
     do {                                                        \

@@ -24,10 +24,6 @@
 #pragma once
 #endif
 
-#ifndef __cplusplus
-#define inline SDL_INLINE
-#endif
-
 //-----------------------------------------------------------------------------
 // Purpose: Steam Controller models 
 // WARNING: DO NOT RENUMBER EXISTING VALUES - STORED IN A DATABASE
@@ -65,7 +61,7 @@ typedef enum
 	k_eControllertype_GenericMouse = 800,
 } EControllerType;
 
-#define MAKE_CONTROLLER_ID( nVID, nPID )	(unsigned int)( nVID << 16 | nPID )
+#define MAKE_CONTROLLER_ID( nVID, nPID )	(unsigned int)( (unsigned int)nVID << 16 | nPID )
 typedef struct
 {
 	unsigned int m_unDeviceID;
@@ -424,7 +420,7 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x28de, 0x1202 ), k_eControllerType_SteamControllerV2 },	// Valve Bluetooth Steam Controller (HEADCRAB)
 };
 
-static inline EControllerType GuessControllerType( int nVID, int nPID )
+static SDL_INLINE EControllerType GuessControllerType( int nVID, int nPID )
 {
 	unsigned int unDeviceID = MAKE_CONTROLLER_ID( nVID, nPID );
 	int iIndex;

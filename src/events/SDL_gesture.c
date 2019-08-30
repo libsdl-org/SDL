@@ -36,12 +36,14 @@
 
 #define MAXPATHSIZE 1024
 
-#define DOLLARNPOINTS 64
-#define DOLLARSIZE 256
-
 #define ENABLE_DOLLAR
 
-#define PHI 0.618033989
+#define DOLLARNPOINTS 64
+
+#if defined(ENABLE_DOLLAR)
+#  define DOLLARSIZE 256
+#  define PHI 0.618033989
+#endif
 
 typedef struct {
     float x,y;
