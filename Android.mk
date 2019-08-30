@@ -64,7 +64,12 @@ LOCAL_CFLAGS += \
 	-Wmissing-variable-declarations \
 	-Wfloat-conversion \
 	-Wshorten-64-to-32 \
-	-Wunreachable-code-return
+	-Wunreachable-code-return \
+	-Wshift-sign-overflow \
+	-Wunused-macros \
+	-Wstrict-prototypes \
+	-Wkeyword-macro \
+
 
 # Warnings we haven't fixed (yet)
 LOCAL_CFLAGS += -Wno-unused-parameter -Wno-sign-compare
