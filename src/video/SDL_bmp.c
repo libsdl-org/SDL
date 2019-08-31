@@ -173,7 +173,7 @@ SDL_Surface *
 SDL_LoadBMP_RW(SDL_RWops * src, int freesrc)
 {
     SDL_bool was_error;
-    Sint64 fp_offset;
+    Sint64 fp_offset = 0;
     int bmpPitch;
     int i, pad;
     SDL_Surface *surface;
@@ -199,15 +199,15 @@ SDL_LoadBMP_RW(SDL_RWops * src, int freesrc)
 
     /* The Win32 BITMAPINFOHEADER struct (40 bytes) */
     Uint32 biSize;
-    Sint32 biWidth;
+    Sint32 biWidth = 0;
     Sint32 biHeight = 0;
     Uint16 biPlanes;
-    Uint16 biBitCount;
-    Uint32 biCompression;
+    Uint16 biBitCount = 0;
+    Uint32 biCompression = 0;
     Uint32 biSizeImage;
     Sint32 biXPelsPerMeter;
     Sint32 biYPelsPerMeter;
-    Uint32 biClrUsed;
+    Uint32 biClrUsed = 0;
     Uint32 biClrImportant;
 
     /* Make sure we are passed a valid data source */
@@ -390,7 +390,7 @@ SDL_LoadBMP_RW(SDL_RWops * src, int freesrc)
     }
 
     /* Create a compatible surface, note that the colors are RGB ordered */
-    surface = SDL_CreateRGBSurface(SDL_SWSURFACE,
+    surface = SDL_CreateRGBSurface(0,
             biWidth, biHeight, biBitCount, Rmask, Gmask, Bmask, Amask);
     if ( surface == NULL ) {
         was_error = SDL_TRUE;
