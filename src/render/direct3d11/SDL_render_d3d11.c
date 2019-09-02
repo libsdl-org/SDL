@@ -1862,6 +1862,8 @@ D3D11_UpdateVertexBuffer(SDL_Renderer *renderer,
             return -1;
         }
 
+        rendererData->vertexBufferSizes[vbidx] = dataSizeInBytes;
+
         ID3D11DeviceContext_IASetVertexBuffers(rendererData->d3dContext,
             0,
             1,
