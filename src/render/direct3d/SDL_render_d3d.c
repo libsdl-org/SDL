@@ -234,6 +234,10 @@ D3D_InitRenderState(D3D_RenderData *data)
     D3DMATRIX matrix;
 
     IDirect3DDevice9 *device = data->device;
+    IDirect3DDevice9_SetPixelShader(device, NULL);
+    IDirect3DDevice9_SetTexture(device, 0, NULL);
+    IDirect3DDevice9_SetTexture(device, 1, NULL);
+    IDirect3DDevice9_SetTexture(device, 2, NULL);
     IDirect3DDevice9_SetFVF(device, D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1);
     IDirect3DDevice9_SetVertexShader(device, NULL);
     IDirect3DDevice9_SetRenderState(device, D3DRS_ZENABLE, D3DZB_FALSE);
@@ -708,8 +712,14 @@ D3D_UnlockTexture(SDL_Renderer * renderer, SDL_Texture * texture)
         texturedata->texture.dirty = SDL_TRUE;
         if (data->drawstate.texture == texture) {
             data->drawstate.texture = NULL;
+            IDirect3DDevice9_SetPixelShader(data->device, NULL);
+            IDirect3DDevice9_SetTexture(data->device, 0, NULL);
+            if (texturedata->yuv) {
+                IDirect3DDevice9_SetTexture(data->device, 1, NULL);
+                IDirect3DDevice9_SetTexture(data->device, 2, NULL);
+            }
         }
-   }
+    }
 }
 
 static int
@@ -1513,6 +1523,12 @@ D3D_DestroyTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 
     if (renderdata->drawstate.texture == texture) {
         renderdata->drawstate.texture = NULL;
+        IDirect3DDevice9_SetPixelShader(renderdata->device, NULL);
+        IDirect3DDevice9_SetTexture(renderdata->device, 0, NULL);
+        if (data->yuv) {
+            IDirect3DDevice9_SetTexture(renderdata->device, 1, NULL);
+            IDirect3DDevice9_SetTexture(renderdata->device, 2, NULL);
+        }
     }
 
     if (!data) {
