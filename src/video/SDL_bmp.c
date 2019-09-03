@@ -331,6 +331,7 @@ SDL_LoadBMP_RW(SDL_RWops * src, int freesrc)
         ExpandBMP = biBitCount;
         biBitCount = 8;
         break;
+    case 0:
     case 2:
     case 3:
     case 5:
