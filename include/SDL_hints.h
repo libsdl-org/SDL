@@ -198,6 +198,12 @@ extern "C" {
 #define SDL_HINT_VIDEO_X11_XRANDR           "SDL_VIDEO_X11_XRANDR"
 
 /**
+ *  \brief  A variable forcing the visual ID chosen for new X11 windows
+ *
+ */
+#define SDL_HINT_VIDEO_X11_WINDOW_VISUALID      "SDL_VIDEO_X11_WINDOW_VISUALID"
+
+/**
  *  \brief  A variable controlling whether the X11 _NET_WM_PING protocol should be supported.
  *
  *  This variable can be set to the following values:
