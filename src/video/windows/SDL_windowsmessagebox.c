@@ -547,7 +547,6 @@ WIN_ShowOldMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
 {
     WIN_DialogData *dialog;
     int i, x, y, retval;
-    const SDL_MessageBoxButtonData *buttons = messageboxdata->buttons;
     HFONT DialogFont;
     SIZE Size;
     RECT TextSize;
