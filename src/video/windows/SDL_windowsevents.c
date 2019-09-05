@@ -259,7 +259,6 @@ WIN_CheckWParamMouseButtons(WPARAM wParam, SDL_WindowData *data, SDL_MouseID mou
     }
 }
 
-
 static void
 WIN_CheckRawMouseButtons(ULONG rawButtons, SDL_WindowData *data)
 {
@@ -356,7 +355,6 @@ ShouldGenerateWindowCloseOnAltF4(void)
     return !SDL_GetHintBoolean(SDL_HINT_WINDOWS_NO_CLOSE_ON_ALT_F4, SDL_FALSE);
 }
 
-static SDL_bool isVistaOrNewer = SDL_FALSE;
 /* Win10 "Fall Creators Update" introduced the bug that SetCursorPos() (as used by SDL_WarpMouseInWindow())
    doesn't reliably generate WM_MOUSEMOVE events anymore (see #3931) which breaks relative mouse mode via warping.
    This is used to implement a workaround.. */
@@ -480,7 +478,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                         data->focus_click_pending |= SDL_BUTTON_X2MASK;
                     }
                 }
-                
+
                 SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_SHOWN, 0, 0);
                 if (SDL_GetKeyboardFocus() != data->window) {
                     SDL_SetKeyboardFocus(data->window);
@@ -767,8 +765,9 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             int max_w, max_h;
             BOOL constrain_max_size;
 
-            if (SDL_IsShapedWindow(data->window))
+            if (SDL_IsShapedWindow(data->window)) {
                 Win32_ResizeWindowShape(data->window);
+            }
 
             /* If this is an expected size change, allow it */
             if (data->expected_resize) {
@@ -870,8 +869,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
             w = rect.right - rect.left;
             h = rect.bottom - rect.top;
-            SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_RESIZED, w,
-                                h);
+            SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_RESIZED, w, h);
 
             /* Forces a WM_PAINT event */
             InvalidateRect(hwnd, NULL, FALSE);
@@ -920,8 +918,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             RECT rect;
             if (GetUpdateRect(hwnd, &rect, FALSE)) {
                 ValidateRect(hwnd, NULL);
-                SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_EXPOSED,
-                                    0, 0);
+                SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_EXPOSED, 0, 0);
             }
         }
         returnCode = 0;
@@ -1270,7 +1267,6 @@ SDL_RegisterApp(char *name, Uint32 style, void *hInst)
         return SDL_SetError("Couldn't register application class");
     }
 
-    isVistaOrNewer = WIN_IsWindowsVistaOrGreater();
     isWin10FCUorNewer = IsWin10FCUorNewer();
 
     app_registered = 1;
