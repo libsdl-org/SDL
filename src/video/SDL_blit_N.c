@@ -165,6 +165,34 @@ calc_swizzle32(const SDL_PixelFormat * srcfmt, const SDL_PixelFormat * dstfmt)
     return (vswiz);
 }
 
+#if defined(__powerpc__) && (SDL_BYTEORDER == SDL_LIL_ENDIAN)
+/* reorder bytes for PowerPC little endian */
+static vector unsigned char reorder_ppc64le_vec(vector unsigned char vpermute)
+{
+    /* The result vector of calc_swizzle32 reorder bytes using vec_perm.
+       The LE transformation for vec_perm has an implicit assumption
+       that the permutation is being used to reorder vector elements,
+       not to reorder bytes within those elements.  
+       Unfortunatly the result order is not the expected one for powerpc
+       little endian when the two first vector parameters of vec_perm are
+       not of type 'vector char'. This is because the numbering from the
+       left for BE, and numbering from the right for LE, produces a
+       different interpretation of what the odd and even lanes are.
+       Refer to fedora bug 1392465
+     */
+
+    const vector unsigned char ppc64le_reorder = VECUINT8_LITERAL(
+                                      0x01, 0x00, 0x03, 0x02,
+                                      0x05, 0x04, 0x07, 0x06,
+                                      0x09, 0x08, 0x0B, 0x0A,
+                                      0x0D, 0x0C, 0x0F, 0x0E );
+
+    vector unsigned char vswiz_ppc64le;
+    vswiz_ppc64le = vec_perm(vpermute, vpermute, ppc64le_reorder);
+    return(vswiz_ppc64le);
+}
+#endif
+
 static void Blit_RGB888_RGB565(SDL_BlitInfo * info);
 static void
 Blit_RGB888_RGB565Altivec(SDL_BlitInfo * info)
@@ -658,6 +686,10 @@ Blit32to32KeyAltivec(SDL_BlitInfo * info)
                 /* vsel is set for items that match the key */
                 vsel = (vector unsigned char) vec_and(vs, vrgbmask);
                 vsel = (vector unsigned char) vec_cmpeq(vs, vckey);
+#if defined(__powerpc__) && (SDL_BYTEORDER == SDL_LIL_ENDIAN)
+                /* reorder bytes for PowerPC little endian */
+                vpermute = reorder_ppc64le_vec(vpermute);
+#endif
                 /* permute the src vec to the dest format */
                 vs = vec_perm(vs, valpha, vpermute);
                 /* load the destination vec */
@@ -737,6 +769,10 @@ ConvertAltivec32to32_noprefetch(SDL_BlitInfo * info)
             src += 4;
             width -= 4;
             vbits = vec_perm(vbits, voverflow, valigner);       /* src is ready. */
+#if defined(__powerpc__) && (SDL_BYTEORDER == SDL_LIL_ENDIAN)
+            /* reorder bytes for PowerPC little endian */
+            vpermute = reorder_ppc64le_vec(vpermute);
+#endif
             vbits = vec_perm(vbits, vzero, vpermute);   /* swizzle it. */
             vec_st(vbits, 0, dst);      /* store it back out. */
             dst += 4;
@@ -828,6 +864,10 @@ ConvertAltivec32to32_prefetch(SDL_BlitInfo * info)
             src += 4;
             width -= 4;
             vbits = vec_perm(vbits, voverflow, valigner);       /* src is ready. */
+#if defined(__powerpc__) && (SDL_BYTEORDER == SDL_LIL_ENDIAN)
+            /* reorder bytes for PowerPC little endian */
+            vpermute = reorder_ppc64le_vec(vpermute);
+#endif
             vbits = vec_perm(vbits, vzero, vpermute);   /* swizzle it. */
             vec_st(vbits, 0, dst);      /* store it back out. */
             dst += 4;
