@@ -34,6 +34,7 @@
 #include "SDL_assert.h"
 #include "SDL_loadso.h"
 #include "SDL_timer.h"
+#include "SDL_hints.h"
 #include "../unix/SDL_poll.h"
 
 static const char *SDL_UDEV_LIBS[] = { "libudev.so.1", "libudev.so.0" };
@@ -420,6 +421,12 @@ device_event(SDL_UDEV_deviceevent type, struct udev_device *dev)
         if (val != NULL && SDL_strcmp(val, "1") == 0 ) {
             devclass |= SDL_UDEV_DEVICE_JOYSTICK;
         }
+
+        val = _this->syms.udev_device_get_property_value(dev, "ID_INPUT_ACCELEROMETER");
+        if (SDL_GetHintBoolean(SDL_HINT_ACCELEROMETER_AS_JOYSTICK, SDL_TRUE) &&
+            val != NULL && SDL_strcmp(val, "1") == 0 ) {
+            devclass |= SDL_UDEV_DEVICE_JOYSTICK;
+	}
         
         val = _this->syms.udev_device_get_property_value(dev, "ID_INPUT_MOUSE");
         if (val != NULL && SDL_strcmp(val, "1") == 0 ) {
