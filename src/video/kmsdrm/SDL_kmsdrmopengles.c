@@ -140,32 +140,24 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window) {
     if (fb_info == NULL) {
         return 0;
     }
-    if (_this->egl_data->egl_swapinterval == 0) {
-        /* Swap buffers instantly, possible tearing */
-        /* SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "drmModeSetCrtc(%d, %u, %u, 0, 0, &%u, 1, &%ux%u@%u)",
-            vdata->drm_fd, displaydata->crtc_id, fb_info->fb_id, vdata->saved_conn_id,
-            displaydata->cur_mode.hdisplay, displaydata->cur_mode.vdisplay, displaydata->cur_mode.vrefresh); */
-        ret = KMSDRM_drmModeSetCrtc(vdata->drm_fd, displaydata->crtc_id, fb_info->fb_id,
-                                    0, 0, &vdata->saved_conn_id, 1, &displaydata->cur_mode);
-        if(ret != 0) {
-            SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Could not pageflip with drmModeSetCrtc: %d", ret);
+
+    /* Have we already setup the CRTC to one of the GBM buffers? Do so if we have not,
+       or FlipPage won't work in some cases. */
+    if (!wdata->crtc_ready) {
+        if(!KMSDRM_GLES_SetupCrtc(_this, window)) {
+            SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Could not set up CRTC for doing pageflips");
+            return 0;
         }
-    } else {
+    }
+
+    /* SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "drmModePageFlip(%d, %u, %u, DRM_MODE_PAGE_FLIP_EVENT, &wdata->waiting_for_flip)",
+        vdata->drm_fd, displaydata->crtc_id, fb_info->fb_id); */
+    ret = KMSDRM_drmModePageFlip(vdata->drm_fd, displaydata->crtc_id, fb_info->fb_id,
+                                 DRM_MODE_PAGE_FLIP_EVENT, &wdata->waiting_for_flip);
+
+    if (_this->egl_data->egl_swapinterval == 1) {
         /* Queue page flip at vsync */
 
-        /* Have we already setup the CRTC to one of the GBM buffers? Do so if we have not,
-           or FlipPage won't work in some cases. */
-        if (!wdata->crtc_ready) {
-            if(!KMSDRM_GLES_SetupCrtc(_this, window)) {
-                SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Could not set up CRTC for doing vsync-ed pageflips");
-                return 0;
-            }
-        }
-
-        /* SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "drmModePageFlip(%d, %u, %u, DRM_MODE_PAGE_FLIP_EVENT, &wdata->waiting_for_flip)",
-            vdata->drm_fd, displaydata->crtc_id, fb_info->fb_id); */
-        ret = KMSDRM_drmModePageFlip(vdata->drm_fd, displaydata->crtc_id, fb_info->fb_id,
-                                     DRM_MODE_PAGE_FLIP_EVENT, &wdata->waiting_for_flip);
         if (ret == 0) {
             wdata->waiting_for_flip = SDL_TRUE;
         } else {
