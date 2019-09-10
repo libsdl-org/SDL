@@ -367,7 +367,7 @@ int
 main(int argc, char *argv[])
 {
     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL compiled without Joystick support.\n");
-    exit(1);
+    return 1;
 }
 
 #endif
