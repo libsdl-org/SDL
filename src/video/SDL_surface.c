@@ -959,6 +959,8 @@ SDL_ConvertSurface(SDL_Surface * surface, const SDL_PixelFormat * format,
     SDL_Color copy_color;
     SDL_Rect bounds;
     int ret;
+    int palette_ck_transform = 0;
+    int palette_ck_value = 0;
 
     if (!surface) {
         SDL_InvalidParamError("surface");
@@ -1019,7 +1021,22 @@ SDL_ConvertSurface(SDL_Surface * surface, const SDL_PixelFormat * format,
     bounds.y = 0;
     bounds.w = surface->w;
     bounds.h = surface->h;
+
+    /* Transform colorkey to alpha. for cases where source palette has duplicate values, and colorkey is one of them */
+    if (copy_flags & SDL_COPY_COLORKEY) {
+        if (surface->format->palette && !format->palette) {
+            palette_ck_transform = 1;
+            palette_ck_value = surface->format->palette->colors[surface->map->info.colorkey].a;
+            surface->format->palette->colors[surface->map->info.colorkey].a = SDL_ALPHA_TRANSPARENT;
+        }
+    }
+
     ret = SDL_LowerBlit(surface, &bounds, convert, &bounds);
+
+    /* Restore value */
+    if (palette_ck_transform) {
+        surface->format->palette->colors[surface->map->info.colorkey].a = palette_ck_value;
+    }
 
     /* Clean up the original surface, and update converted surface */
     convert->map->info.r = copy_color.r;
@@ -1055,7 +1072,9 @@ SDL_ConvertSurface(SDL_Surface * surface, const SDL_PixelFormat * format,
                   surface->format->palette->ncolors * sizeof(SDL_Color)) == 0)) {
                 /* The palette is identical, just set the same colorkey */
                 SDL_SetColorKey(convert, 1, surface->map->info.colorkey);
-            } else if (format->Amask) {
+            } else if (!format->palette) {
+                /* Was done by 'palette_ck_transform' */
+            }else if (format->Amask) {
                 set_colorkey_by_color = SDL_TRUE;
                 ignore_alpha = SDL_FALSE;
             } else {
