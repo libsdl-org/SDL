@@ -62,7 +62,7 @@ $(TESTLIB): $(COBJS)
   wlink SYS os2v2 libpath $(LIBPATH) lib {$(LIBS)} op q op el file {$<} name $@
 
 .c.obj:
-  wcc386 $(CFLAGS) -wcd=107 -fo=$^@ $<
+  wcc386 $(CFLAGS) -fo=$^@ $<
 
 # specials
 testautomation.exe: $(TAOBJS)
