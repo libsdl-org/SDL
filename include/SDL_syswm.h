@@ -49,6 +49,9 @@ struct SDL_SysWMinfo;
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
+#ifndef NOMINMAX   /* don't define min() and max(). */
+#define NOMINMAX
+#endif
 #include <windows.h>
 #endif
 
