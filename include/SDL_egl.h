@@ -390,6 +390,9 @@ typedef enum {
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN 1
 #endif
+#ifndef NOMINMAX   /* don't define min() and max(). */
+#define NOMINMAX
+#endif
 #include <windows.h>
 
 #if __WINRT__
