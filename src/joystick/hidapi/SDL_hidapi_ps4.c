@@ -140,83 +140,6 @@ static Uint32 crc32(Uint32 crc, const void *data, int count)
     return crc;
 }
 
-#if defined(__WIN32__) && defined(HAVE_ENDPOINTVOLUME_H)
-#include "../../core/windows/SDL_windows.h"
-
-#ifndef NTDDI_VISTA
-#define NTDDI_VISTA    0x06000000
-#endif
-#ifndef _WIN32_WINNT_VISTA
-#define _WIN32_WINNT_VISTA 0x0600
-#endif
-
-/* Define Vista for the Audio related includes below to work */
-#undef NTDDI_VERSION
-#define NTDDI_VERSION NTDDI_VISTA
-#undef _WIN32_WINNT
-#define _WIN32_WINNT _WIN32_WINNT_VISTA
-#define COBJMACROS
-#include <mmdeviceapi.h>
-#include <audioclient.h>
-#include <endpointvolume.h>
-
-#undef DEFINE_GUID
-#define DEFINE_GUID(n,l,w1,w2,b1,b2,b3,b4,b5,b6,b7,b8) static const GUID n = {l,w1,w2,{b1,b2,b3,b4,b5,b6,b7,b8}}
-DEFINE_GUID(SDL_CLSID_MMDeviceEnumerator, 0xBCDE0395, 0xE52F, 0x467C, 0x8E, 0x3D, 0xC4, 0x57, 0x92, 0x91, 0x69, 0x2E);
-DEFINE_GUID(SDL_IID_IMMDeviceEnumerator, 0xA95664D2, 0x9614, 0x4F35, 0xA7, 0x46, 0xDE, 0x8D, 0xB6, 0x36, 0x17, 0xE6);
-DEFINE_GUID(SDL_IID_IAudioEndpointVolume, 0x5CDF2C82, 0x841E, 0x4546, 0x97, 0x22, 0x0C, 0xF7, 0x40, 0x78, 0x22, 0x9A);
-#endif
-
-
-
-static float GetSystemVolume(void)
-{
-    float volume = -1.0f;    /* Return this if we can't get system volume */
-
-#if defined(__WIN32__) && defined(HAVE_ENDPOINTVOLUME_H)
-    HRESULT hr = WIN_CoInitialize();
-    if (SUCCEEDED(hr)) {
-        IMMDeviceEnumerator *pEnumerator;
-
-        /* This should gracefully fail on XP and succeed on everything Vista and above */
-        hr = CoCreateInstance(&SDL_CLSID_MMDeviceEnumerator, NULL, CLSCTX_ALL, &SDL_IID_IMMDeviceEnumerator, (LPVOID*)&pEnumerator);
-        if (SUCCEEDED(hr)) {
-            IMMDevice *pDevice;
-
-            hr = IMMDeviceEnumerator_GetDefaultAudioEndpoint(pEnumerator, eRender, eConsole, &pDevice);
-            if (SUCCEEDED(hr)) {
-                IAudioEndpointVolume *pEndpointVolume;
-
-                hr = IMMDevice_Activate(pDevice, &SDL_IID_IAudioEndpointVolume, CLSCTX_ALL, NULL, (LPVOID*)&pEndpointVolume);
-                if (SUCCEEDED(hr)) {
-                    IAudioEndpointVolume_GetMasterVolumeLevelScalar(pEndpointVolume, &volume);
-                    IUnknown_Release(pEndpointVolume);
-                }
-                IUnknown_Release(pDevice);
-            }
-            IUnknown_Release(pEnumerator);
-        }
-        WIN_CoUninitialize();
-    }
-#endif /* __WIN32__ */
-
-    return volume;
-}
-
-static uint8_t GetPlaystationVolumeFromFloat(float fVolume)
-{
-    const int k_nVolumeFitRatio = 15;
-    const int k_nVolumeFitOffset = 9;
-    float fVolLog;
-
-    if (fVolume > 1.0f || fVolume < 0.0f) {
-        fVolume = 0.30f;
-    }
-    fVolLog = SDL_logf(fVolume * 100);
-
-    return (Uint8)((fVolLog * k_nVolumeFitRatio) + k_nVolumeFitOffset);
-}
-
 static SDL_bool
 HIDAPI_DriverPS4_IsSupportedDevice(Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number)
 {
@@ -362,20 +285,6 @@ HIDAPI_DriverPS4_Rumble(SDL_Joystick *joystick, hid_device *dev, void *context, 
     effects->ucLedRed = 0;
     effects->ucLedGreen = 0;
     effects->ucLedBlue = 80;
-
-    if (ctx->audio_supported) {
-        Uint32 now = SDL_GetTicks();
-        if (!ctx->last_volume_check ||
-            SDL_TICKS_PASSED(now, ctx->last_volume_check + VOLUME_CHECK_INTERVAL_MS)) {
-            ctx->volume = GetPlaystationVolumeFromFloat(GetSystemVolume());
-            ctx->last_volume_check = now;
-        }
-
-        effects->ucVolumeRight = ctx->volume;
-        effects->ucVolumeLeft = ctx->volume;
-        effects->ucVolumeSpeaker = ctx->volume;
-        effects->ucVolumeMic = 0xFF;
-    }
 
     if (ctx->is_bluetooth) {
         /* Bluetooth reports need a CRC at the end of the packet (at least on Linux) */
