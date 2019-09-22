@@ -40,7 +40,7 @@ typedef enum
     SDL_MESSAGEBOX_WARNING               = 0x00000020,   /**< warning dialog */
     SDL_MESSAGEBOX_INFORMATION           = 0x00000040,   /**< informational dialog */
     SDL_MESSAGEBOX_BUTTONS_LEFT_TO_RIGHT = 0x00000080,   /**< buttons placed left to right */
-    SDL_MESSAGEBOX_BUTTONS_RIGHT_TO_LEFT = 0x00000100,   /**< buttons placed right to left */
+    SDL_MESSAGEBOX_BUTTONS_RIGHT_TO_LEFT = 0x00000100    /**< buttons placed right to left */
 } SDL_MessageBoxFlags;
 
 /**
