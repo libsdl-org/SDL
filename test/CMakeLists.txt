@@ -145,6 +145,8 @@ if(APPLE)
             if(TARGET_TYPE STREQUAL "EXECUTABLE")
                 set_target_properties("${CURRENT_TARGET}" PROPERTIES
                     MACOSX_BUNDLE_GUI_IDENTIFIER "org.libsdl.${CURRENT_TARGET}"
+                    MACOSX_BUNDLE_BUNDLE_VERSION "${SDL_VERSION}"
+                    MACOSX_BUNDLE_SHORT_VERSION_STRING "${SDL_VERSION}"
                 )
             endif()
         endforeach()
