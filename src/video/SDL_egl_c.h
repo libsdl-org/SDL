@@ -98,8 +98,8 @@ typedef struct SDL_EGL_VideoData
     EGLint(EGLAPIENTRY *eglGetError)(void);
 
     EGLBoolean(EGLAPIENTRY *eglQueryDevicesEXT)(EGLint max_devices,
-                                            EGLDeviceEXT* devices,
-                                            EGLint* num_devices);
+                                            void **devices,
+                                            EGLint *num_devices);
 
     /* whether EGL display was offscreen */
     int is_offscreen;

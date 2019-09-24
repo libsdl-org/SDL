@@ -502,7 +502,7 @@ SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_displa
 int
 SDL_EGL_InitializeOffscreen(_THIS, int device)
 {
-    EGLDeviceEXT egl_devices[SDL_EGL_MAX_DEVICES];
+    void *egl_devices[SDL_EGL_MAX_DEVICES];
     EGLint num_egl_devices = 0;
     const char *egl_device_hint;
 
