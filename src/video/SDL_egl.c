@@ -82,6 +82,13 @@
 #define DEFAULT_OGL_ES "libGLESv1_CM.so.1"
 #endif /* SDL_VIDEO_DRIVER_RPI */
 
+/** If we happen to not have this defined because of an older EGL version, just define it 0x0
+    as eglGetPlatformDisplayEXT will most likely be NULL if this is missing
+*/
+#ifndef EGL_PLATFORM_DEVICE_EXT
+#define EGL_PLATFORM_DEVICE_EXT 0x0
+#endif
+
 #ifdef SDL_VIDEO_STATIC_ANGLE
 #define LOAD_FUNC(NAME) \
 _this->egl_data->NAME = (void *)NAME;
