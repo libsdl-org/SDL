@@ -29,6 +29,8 @@
 
 #include "SDL_sysvideo.h"
 
+#define SDL_EGL_MAX_DEVICES     8
+
 typedef struct SDL_EGL_VideoData
 {
     void *egl_dll_handle, *dll_handle;
@@ -81,6 +83,8 @@ typedef struct SDL_EGL_VideoData
     EGLBoolean(EGLAPIENTRY *eglSwapInterval) (EGLDisplay dpy, EGLint interval);
     
     const char *(EGLAPIENTRY *eglQueryString) (EGLDisplay dpy, EGLint name);
+
+    EGLenum(EGLAPIENTRY *eglQueryAPI)(void);
     
     EGLBoolean(EGLAPIENTRY  *eglGetConfigAttrib) (EGLDisplay dpy, EGLConfig config,
                                      EGLint attribute, EGLint * value);
@@ -93,6 +97,13 @@ typedef struct SDL_EGL_VideoData
 
     EGLint(EGLAPIENTRY *eglGetError)(void);
 
+    EGLBoolean(EGLAPIENTRY *eglQueryDevicesEXT)(EGLint max_devices,
+                                            EGLDeviceEXT* devices,
+                                            EGLint* num_devices);
+
+    /* whether EGL display was offscreen */
+    int is_offscreen;
+
 } SDL_EGL_VideoData;
 
 /* OpenGLES functions */
@@ -100,6 +111,7 @@ extern int SDL_EGL_GetAttribute(_THIS, SDL_GLattr attrib, int *value);
 /* SDL_EGL_LoadLibrary can get a display for a specific platform (EGL_PLATFORM_*)
  * or, if 0 is passed, let the implementation decide.
  */
+extern int SDL_EGL_LoadLibraryOnly(_THIS, const char *path);
 extern int SDL_EGL_LoadLibrary(_THIS, const char *path, NativeDisplayType native_display, EGLenum platform);
 extern void *SDL_EGL_GetProcAddress(_THIS, const char *proc);
 extern void SDL_EGL_UnloadLibrary(_THIS);
@@ -110,6 +122,10 @@ extern int SDL_EGL_GetSwapInterval(_THIS);
 extern void SDL_EGL_DeleteContext(_THIS, SDL_GLContext context);
 extern EGLSurface *SDL_EGL_CreateSurface(_THIS, NativeWindowType nw);
 extern void SDL_EGL_DestroySurface(_THIS, EGLSurface egl_surface);
+
+extern EGLSurface SDL_EGL_CreateOffscreenSurface(_THIS, int width, int height);
+/* Assumes that LoadLibraryOnly() has succeeded */
+extern int SDL_EGL_InitializeOffscreen(_THIS, int device);
 
 /* These need to be wrapped to get the surface for the window by the platform GLES implementation */
 extern SDL_GLContext SDL_EGL_CreateContext(_THIS, EGLSurface egl_surface);
