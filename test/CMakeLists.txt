@@ -86,6 +86,7 @@ add_executable(testbounds testbounds.c)
 add_executable(testcustomcursor testcustomcursor.c)
 add_executable(controllermap controllermap.c)
 add_executable(testvulkan testvulkan.c)
+add_executable(testoffscreen testoffscreen.c)
 
 # HACK: Dummy target to cause the resource files to be copied to the build directory.
 # Need to make it an executable so we can use the TARGET_FILE_DIR generator expression.
