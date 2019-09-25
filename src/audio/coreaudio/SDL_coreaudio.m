@@ -819,13 +819,11 @@ COREAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
 
     while ((!valid_datatype) && (test_format)) {
         this->spec.format = test_format;
-        /* Just a list of valid SDL formats, so people don't pass junk here. */
+        /* CoreAudio handles most of SDL's formats natively, but not U16, apparently. */
         switch (test_format) {
         case AUDIO_U8:
         case AUDIO_S8:
-        case AUDIO_U16LSB:
         case AUDIO_S16LSB:
-        case AUDIO_U16MSB:
         case AUDIO_S16MSB:
         case AUDIO_S32LSB:
         case AUDIO_S32MSB:
@@ -840,6 +838,10 @@ COREAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
                 strdesc->mFormatFlags |= kLinearPCMFormatFlagIsFloat;
             else if (SDL_AUDIO_ISSIGNED(this->spec.format))
                 strdesc->mFormatFlags |= kLinearPCMFormatFlagIsSignedInteger;
+            break;
+
+        default:
+            test_format = SDL_NextAudioFormat();
             break;
         }
     }
