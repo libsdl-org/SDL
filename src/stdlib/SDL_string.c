@@ -1602,7 +1602,7 @@ SDL_PrintFloat(char *text, size_t maxlen, SDL_FormatInfo *info, double arg)
 
         if (end != textstart) {
             const size_t filllen = SDL_min(len, ((size_t) (end - textstart)) - 1);
-            SDL_memset(textstart, fill, fillen);
+            SDL_memset(textstart, fill, filllen);
         }
     }
 
