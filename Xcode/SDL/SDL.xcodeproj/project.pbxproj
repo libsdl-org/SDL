@@ -919,7 +919,7 @@
 		F3950CD8212BC88D00F51292 /* SDL_sensor.h in Headers */ = {isa = PBXBuildFile; fileRef = F3950CD7212BC88D00F51292 /* SDL_sensor.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F3950CD9212BC88D00F51292 /* SDL_sensor.h in Headers */ = {isa = PBXBuildFile; fileRef = F3950CD7212BC88D00F51292 /* SDL_sensor.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F3950CDA212BC88D00F51292 /* SDL_sensor.h in Headers */ = {isa = PBXBuildFile; fileRef = F3950CD7212BC88D00F51292 /* SDL_sensor.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		FA24348B21D41FFB00B8918A /* SDL_metal.h in Headers */ = {isa = PBXBuildFile; fileRef = FA24348A21D41FFB00B8918A /* SDL_metal.h */; };
+		FA24348B21D41FFB00B8918A /* SDL_metal.h in Headers */ = {isa = PBXBuildFile; fileRef = FA24348A21D41FFB00B8918A /* SDL_metal.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		FA73671D19A540EF004122E4 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA73671C19A540EF004122E4 /* CoreVideo.framework */; };
 		FA73671E19A54140004122E4 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA73671C19A540EF004122E4 /* CoreVideo.framework */; };
 		FA73671F19A54144004122E4 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA73671C19A540EF004122E4 /* CoreVideo.framework */; };
@@ -1256,6 +1256,7 @@
 		FA24348A21D41FFB00B8918A /* SDL_metal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_metal.h; sourceTree = "<group>"; };
 		FA73671C19A540EF004122E4 /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
 		FABA34C61D8B5DB100915323 /* SDL_coreaudio.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDL_coreaudio.m; sourceTree = "<group>"; };
+		FAF136422308312A00F414DE /* SDL_shaders_metal.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = SDL_shaders_metal.metal; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1963,6 +1964,7 @@
 			children = (
 				AADC5A421FDA035D00960936 /* SDL_render_metal.m */,
 				AADC5A411FDA035D00960936 /* SDL_shaders_metal_osx.h */,
+				FAF136422308312A00F414DE /* SDL_shaders_metal.metal */,
 			);
 			path = metal;
 			sourceTree = "<group>";
@@ -2032,7 +2034,6 @@
 				AA75580E1595D4D800BBD41B /* SDL_cpuinfo.h in Headers */,
 				AA7558101595D4D800BBD41B /* SDL_endian.h in Headers */,
 				AA7558121595D4D800BBD41B /* SDL_error.h in Headers */,
-				FA24348B21D41FFB00B8918A /* SDL_metal.h in Headers */,
 				AA7558141595D4D800BBD41B /* SDL_events.h in Headers */,
 				567E2F2117C44C35005F1892 /* SDL_filesystem.h in Headers */,
 				A77E6EB4167AB0A90010E40B /* SDL_gamecontroller.h in Headers */,
@@ -2042,6 +2043,7 @@
 				AA75581E1595D4D800BBD41B /* SDL_joystick.h in Headers */,
 				AA7558201595D4D800BBD41B /* SDL_keyboard.h in Headers */,
 				F3950CD8212BC88D00F51292 /* SDL_sensor.h in Headers */,
+				FA24348B21D41FFB00B8918A /* SDL_metal.h in Headers */,
 				AA7558221595D4D800BBD41B /* SDL_keycode.h in Headers */,
 				F30D9C84212BC94F0047DF2E /* SDL_sensor_c.h in Headers */,
 				AA7558241595D4D800BBD41B /* SDL_loadso.h in Headers */,
