@@ -30,7 +30,7 @@
 #include <pthread.h>
 #include "SDL_system.h"
 
-#if SDL_USE_LIBDBUS
+#if HAVE_DBUS_DBUS_H
 #include "SDL_dbus.h"
 /* d-bus queries to org.freedesktop.RealtimeKit1. */
 #define RTKIT_DBUS_NODE "org.freedesktop.RealtimeKit1"
@@ -88,14 +88,15 @@ SDL_LinuxSetThreadPriority(Sint64 threadID, int priority)
     }
 
 #if SDL_USE_LIBDBUS
-    /* Note that this fails if you're trying to set high priority
-       and you don't have root permission. BUT DON'T RUN AS ROOT!
-
-       You can grant the ability to increase thread priority by
-       running the following command on your application binary:
-          sudo setcap 'cap_sys_nice=eip' <application>
-
-       Let's try setting priority with RealtimeKit...
+    /* Note that this fails you most likely:
+         * Have your process's scheduler incorrectly configured.
+           See the requirements at:
+           http://git.0pointer.net/rtkit.git/tree/README#n16
+         * Encountered dbus/polkit security restrictions. Note
+           that the RealtimeKit1 dbus endpoint is inaccessible
+           over ssh connections for most common distro configs.
+           You might want to check your local config for details:
+           /usr/share/polkit-1/actions/org.freedesktop.RealtimeKit1.policy
 
        README and sample code at: http://git.0pointer.net/rtkit.git
     */
