@@ -189,6 +189,9 @@ struct SDL_Renderer
     /* The pixel to point coordinate scale */
     SDL_FPoint dpi_scale;
 
+    /* Whether or not to scale relative mouse motion */
+    SDL_bool relative_scaling;
+
     /* Remainder from scaled relative motion */
     float xrel;
     float yrel;

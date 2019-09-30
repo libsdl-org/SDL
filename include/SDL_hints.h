@@ -315,6 +315,17 @@ extern "C" {
 #define SDL_HINT_MOUSE_RELATIVE_SPEED_SCALE    "SDL_MOUSE_RELATIVE_SPEED_SCALE"
 
 /**
+ *  \brief  A variable controlling whether relative mouse motion is affected by renderer scaling
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - Relative motion is unaffected by DPI or renderer's logical size
+ *    "1"       - Relative motion is scaled according to DPI scaling and logical size
+ *
+ *  By default relative mouse deltas are affected by DPI and renderer scaling
+ */
+#define SDL_HINT_MOUSE_RELATIVE_SCALING "SDL_MOUSE_RELATIVE_SCALING"
+
+/**
  *  \brief  A variable controlling whether relative mouse mode is implemented using mouse warping
  *
  *  This variable can be set to the following values:
