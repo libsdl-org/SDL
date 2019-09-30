@@ -660,13 +660,13 @@ SDL_RendererEventWatch(void *userdata, SDL_Event *event)
                 event->motion.y -= (int)(viewport.y * renderer->dpi_scale.y);
                 event->motion.x = (int)(event->motion.x / (scale.x * renderer->dpi_scale.x));
                 event->motion.y = (int)(event->motion.y / (scale.y * renderer->dpi_scale.y));
-                if (event->motion.xrel != 0) {
+                if (event->motion.xrel != 0 && renderer->relative_scaling) {
                     float rel = renderer->xrel + event->motion.xrel / (scale.x * renderer->dpi_scale.x);
                     float trunc = SDL_truncf(rel);
                     renderer->xrel = rel - trunc;
                     event->motion.xrel = trunc;
                 }
-                if (event->motion.yrel != 0) {
+                if (event->motion.yrel != 0 && renderer->relative_scaling) {
                     float rel = renderer->yrel + event->motion.yrel / (scale.y * renderer->dpi_scale.y);
                     float trunc = SDL_truncf(rel);
                     renderer->yrel = rel - trunc;
@@ -874,6 +874,8 @@ SDL_CreateRenderer(SDL_Window * window, int index, Uint32 flags)
             renderer->dpi_scale.y = (float)window_h / output_h;
         }
     }
+
+    renderer->relative_scaling = SDL_GetHintBoolean(SDL_HINT_MOUSE_RELATIVE_SCALING, SDL_TRUE);
 
     if (SDL_GetWindowFlags(window) & (SDL_WINDOW_HIDDEN|SDL_WINDOW_MINIMIZED)) {
         renderer->hidden = SDL_TRUE;
