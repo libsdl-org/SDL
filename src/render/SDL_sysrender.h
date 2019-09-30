@@ -60,6 +60,7 @@ struct SDL_Texture
     void *pixels;
     int pitch;
     SDL_Rect locked_rect;
+    SDL_Surface *locked_surface;  /**< Locked region exposed as a SDL surface */
 
     Uint32 last_command_generation; /* last command queue generation this texture was in. */
 
