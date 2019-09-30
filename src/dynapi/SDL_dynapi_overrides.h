@@ -315,7 +315,6 @@
 #define SDL_UpdateTexture SDL_UpdateTexture_REAL
 #define SDL_UpdateYUVTexture SDL_UpdateYUVTexture_REAL
 #define SDL_LockTexture SDL_LockTexture_REAL
-#define SDL_LockTextureToSurface SDL_LockTextureToSurface_REAL
 #define SDL_UnlockTexture SDL_UnlockTexture_REAL
 #define SDL_RenderTargetSupported SDL_RenderTargetSupported_REAL
 #define SDL_SetRenderTarget SDL_SetRenderTarget_REAL
@@ -727,3 +726,4 @@
 #define SDL_LoadFile SDL_LoadFile_REAL
 #define SDL_Metal_CreateView SDL_Metal_CreateView_REAL
 #define SDL_Metal_DestroyView SDL_Metal_DestroyView_REAL
+#define SDL_LockTextureToSurface SDL_LockTextureToSurface_REAL
