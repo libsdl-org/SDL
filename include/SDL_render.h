@@ -431,9 +431,30 @@ extern DECLSPEC int SDLCALL SDL_LockTexture(SDL_Texture * texture,
                                             void **pixels, int *pitch);
 
 /**
+ *  \brief Lock a portion of the texture for write-only pixel access.
+ *         Expose it as a SDL surface.
+ *
+ *  \param texture   The texture to lock for access, which was created with
+ *                   ::SDL_TEXTUREACCESS_STREAMING.
+ *  \param rect      A pointer to the rectangle to lock for access. If the rect
+ *                   is NULL, the entire texture will be locked.
+ *  \param surface   This is filled in with a SDL surface representing the locked area
+ *                   Surface is freed internally after calling SDL_UnlockTexture or SDL_DestroyTexture.
+ *
+ *  \return 0 on success, or -1 if the texture is not valid or was not created with ::SDL_TEXTUREACCESS_STREAMING.
+ *
+ *  \sa SDL_UnlockTexture()
+ */
+extern DECLSPEC int SDLCALL SDL_LockTextureToSurface(SDL_Texture *texture,
+                                            const SDL_Rect *rect,
+                                            SDL_Surface **surface);
+
+/**
  *  \brief Unlock a texture, uploading the changes to video memory, if needed.
+ *         If SDL_LockTextureToSurface() was called for locking, the SDL surface is freed.
  *
  *  \sa SDL_LockTexture()
+ *  \sa SDL_LockTextureToSurface()
  */
 extern DECLSPEC void SDLCALL SDL_UnlockTexture(SDL_Texture * texture);
 

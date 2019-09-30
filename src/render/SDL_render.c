@@ -1680,6 +1680,45 @@ SDL_LockTexture(SDL_Texture * texture, const SDL_Rect * rect,
     }
 }
 
+int
+SDL_LockTextureToSurface(SDL_Texture *texture, const SDL_Rect *rect,
+                         SDL_Surface **surface)
+{
+    SDL_Rect r;
+    void *pixels = NULL;
+    int pitch, ret;
+
+    if (texture == NULL || surface == NULL) {
+        return -1;
+    }
+
+    if (rect == NULL) {
+        r.x = 0;
+        r.y = 0;
+        r.w = texture->w;
+        r.h = texture->h;
+    } else {
+        r.x = rect->x;
+        r.y = rect->y;
+        r.w = SDL_min(texture->w - rect->x, rect->w);
+        r.h = SDL_min(texture->h - rect->y, rect->h);
+    }
+
+    ret = SDL_LockTexture(texture, &r, &pixels, &pitch);
+    if (ret < 0) {
+        return ret;
+    }
+
+    texture->locked_surface = SDL_CreateRGBSurfaceWithFormatFrom(pixels, r.w, r.h, 0, pitch, texture->format);
+    if (texture->locked_surface == NULL) {
+        SDL_UnlockTexture(texture);
+        return -1;
+    }
+
+    *surface = texture->locked_surface;
+    return 0;
+}
+
 static void
 SDL_UnlockTextureYUV(SDL_Texture * texture)
 {
@@ -1738,6 +1777,9 @@ SDL_UnlockTexture(SDL_Texture * texture)
         SDL_Renderer *renderer = texture->renderer;
         renderer->UnlockTexture(renderer, texture);
     }
+
+    SDL_FreeSurface(texture->locked_surface);
+    texture->locked_surface = NULL;
 }
 
 SDL_bool
@@ -3090,6 +3132,10 @@ SDL_DestroyTexture(SDL_Texture * texture)
     SDL_free(texture->pixels);
 
     renderer->DestroyTexture(renderer, texture);
+
+    SDL_FreeSurface(texture->locked_surface);
+    texture->locked_surface = NULL;
+
     SDL_free(texture);
 }
 
