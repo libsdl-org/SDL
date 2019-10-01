@@ -1684,7 +1684,7 @@ int
 SDL_LockTextureToSurface(SDL_Texture *texture, const SDL_Rect *rect,
                          SDL_Surface **surface)
 {
-    SDL_Rect r;
+    SDL_Rect real_rect;
     void *pixels = NULL;
     int pitch, ret;
 
@@ -1692,24 +1692,21 @@ SDL_LockTextureToSurface(SDL_Texture *texture, const SDL_Rect *rect,
         return -1;
     }
 
-    if (rect == NULL) {
-        r.x = 0;
-        r.y = 0;
-        r.w = texture->w;
-        r.h = texture->h;
-    } else {
-        r.x = rect->x;
-        r.y = rect->y;
-        r.w = SDL_min(texture->w - rect->x, rect->w);
-        r.h = SDL_min(texture->h - rect->y, rect->h);
+    real_rect.x = 0;
+    real_rect.y = 0;
+    real_rect.w = texture->w;
+    real_rect.h = texture->h;
+
+    if (rect) {
+        SDL_IntersectRect(rect, &real_rect, &real_rect);
     }
 
-    ret = SDL_LockTexture(texture, &r, &pixels, &pitch);
+    ret = SDL_LockTexture(texture, &real_rect, &pixels, &pitch);
     if (ret < 0) {
         return ret;
     }
 
-    texture->locked_surface = SDL_CreateRGBSurfaceWithFormatFrom(pixels, r.w, r.h, 0, pitch, texture->format);
+    texture->locked_surface = SDL_CreateRGBSurfaceWithFormatFrom(pixels, real_rect.w, real_rect.h, 0, pitch, texture->format);
     if (texture->locked_surface == NULL) {
         SDL_UnlockTexture(texture);
         return -1;
