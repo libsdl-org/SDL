@@ -33,7 +33,7 @@
 
 /* Make sure that this isn't included by Visual C++ */
 #ifdef _MSC_VER
-#error You should run hg revert SDL_config.h 
+#error You should run hg revert SDL_config.h
 #endif
 
 /* C language features */
@@ -192,9 +192,9 @@
 #undef HAVE__EXIT
 
 #else
-#define HAVE_STDARG_H   1
-#define HAVE_STDDEF_H   1
-#define HAVE_STDINT_H   1
+#define HAVE_STDARG_H 1
+#define HAVE_STDDEF_H 1
+#define HAVE_STDINT_H 1
 #endif /* HAVE_LIBC */
 
 #undef HAVE_ALTIVEC_H
@@ -210,7 +210,6 @@
 #undef HAVE_DSOUND_H
 #undef HAVE_DXGI_H
 #undef HAVE_XINPUT_H
-#undef HAVE_ENDPOINTVOLUME_H
 #undef HAVE_MMDEVICEAPI_H
 #undef HAVE_AUDIOCLIENT_H
 #undef HAVE_XINPUT_GAMEPAD_EX

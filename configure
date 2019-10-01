@@ -23623,14 +23623,6 @@ fi
 
     fi
 
-    ac_fn_c_check_header_mongrel "$LINENO" "endpointvolume.h" "ac_cv_header_endpointvolume_h" "$ac_includes_default"
-if test "x$ac_cv_header_endpointvolume_h" = xyes; then :
-  $as_echo "#define HAVE_ENDPOINTVOLUME_H 1" >>confdefs.h
-
-fi
-
-
-
     # Check whether --enable-wasapi was given.
 if test "${enable_wasapi+set}" = set; then :
   enableval=$enable_wasapi;

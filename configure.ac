@@ -2291,7 +2291,7 @@ CheckOpenGLESX11()
         if test x$video_opengl_egl = xyes; then
             AC_DEFINE(SDL_VIDEO_OPENGL_EGL, 1, [ ])
         fi
-            
+        
         if test x$enable_video_opengles1 = xyes; then
             AC_MSG_CHECKING(for OpenGL ES v1 headers)
             video_opengles_v1=no
@@ -3021,8 +3021,6 @@ XINPUT_STATE_EX s1;
         AC_DEFINE(HAVE_AUDIOCLIENT_H,1,[])
     fi
 
-    AC_CHECK_HEADER(endpointvolume.h,AC_DEFINE(HAVE_ENDPOINTVOLUME_H,1,[]))
-
     AC_ARG_ENABLE(wasapi,
 AS_HELP_STRING([--enable-wasapi], [use the Windows WASAPI audio driver [[default=yes]]]),
                                 , enable_wasapi=yes)
@@ -3074,7 +3072,7 @@ CheckUSBHID()
                     AC_CHECK_HEADER(libusb.h, [USB_CFLAGS="-DHAVE_LIBUSB_H"])
                     AC_CHECK_LIB(usb, hid_init, [USB_LIBS="$USB_LIBS -lusb"])
                 fi
-                    
+                
                 save_CFLAGS="$CFLAGS"
                 CFLAGS="$CFLAGS $USB_CFLAGS"
 
