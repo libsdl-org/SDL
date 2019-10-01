@@ -48,8 +48,6 @@
 
 #define USB_PACKET_LENGTH   64
 
-#define VOLUME_CHECK_INTERVAL_MS    (10 * 1000)
-
 typedef enum
 {
     k_EPS4ReportIdUsbState = 1,
