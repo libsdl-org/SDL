@@ -49,9 +49,9 @@ open(SDL_DYNAPI_PROCS_H, '>>', $sdl_dynapi_procs_h) or die("Can't open $sdl_dyna
 open(SDL_DYNAPI_OVERRIDES_H, '>>', $sdl_dynapi_overrides_h) or die("Can't open $sdl_dynapi_overrides_h: $!\n");
 
 opendir(HEADERS, 'include') or die("Can't open include dir: $!\n");
-while (readdir(HEADERS)) {
-    next if not /\.h\Z/;
-    my $header = "include/$_";
+while (my $d = readdir(HEADERS)) {
+    next if not $d =~ /\.h\Z/;
+    my $header = "include/$d";
     open(HEADER, '<', $header) or die("Can't open $header: $!\n");
     while (<HEADER>) {
         chomp;
