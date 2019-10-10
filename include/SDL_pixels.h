@@ -48,7 +48,7 @@ extern "C" {
 /* @} */
 
 /** Pixel type. */
-enum
+typedef enum
 {
     SDL_PIXELTYPE_UNKNOWN,
     SDL_PIXELTYPE_INDEX1,
@@ -62,18 +62,18 @@ enum
     SDL_PIXELTYPE_ARRAYU32,
     SDL_PIXELTYPE_ARRAYF16,
     SDL_PIXELTYPE_ARRAYF32
-};
+} SDL_PixelTypeEnum;
 
 /** Bitmap pixel order, high bit -> low bit. */
-enum
+typedef enum
 {
     SDL_BITMAPORDER_NONE,
     SDL_BITMAPORDER_4321,
     SDL_BITMAPORDER_1234
-};
+} SDL_BitmapOrderEnum;
 
 /** Packed component order, high bit -> low bit. */
-enum
+typedef enum
 {
     SDL_PACKEDORDER_NONE,
     SDL_PACKEDORDER_XRGB,
@@ -84,12 +84,12 @@ enum
     SDL_PACKEDORDER_BGRX,
     SDL_PACKEDORDER_ABGR,
     SDL_PACKEDORDER_BGRA
-};
+} SDL_PackedOrderEnum;
 
 /** Array component order, low byte -> high byte. */
 /* !!! FIXME: in 2.1, make these not overlap differently with
    !!! FIXME:  SDL_PACKEDORDER_*, so we can simplify SDL_ISPIXELFORMAT_ALPHA */
-enum
+typedef enum
 {
     SDL_ARRAYORDER_NONE,
     SDL_ARRAYORDER_RGB,
@@ -98,10 +98,10 @@ enum
     SDL_ARRAYORDER_BGR,
     SDL_ARRAYORDER_BGRA,
     SDL_ARRAYORDER_ABGR
-};
+} SDL_ArrayOrderEnum;
 
 /** Packed component layout. */
-enum
+typedef enum
 {
     SDL_PACKEDLAYOUT_NONE,
     SDL_PACKEDLAYOUT_332,
@@ -112,7 +112,7 @@ enum
     SDL_PACKEDLAYOUT_8888,
     SDL_PACKEDLAYOUT_2101010,
     SDL_PACKEDLAYOUT_1010102
-};
+} SDL_PackedLayoutEnum;
 
 #define SDL_DEFINE_PIXELFOURCC(A, B, C, D) SDL_FOURCC(A, B, C, D)
 
