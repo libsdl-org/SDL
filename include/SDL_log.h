@@ -61,7 +61,7 @@ extern "C" {
  *  at the VERBOSE level and all other categories are enabled at the
  *  CRITICAL level.
  */
-enum
+typedef enum
 {
     SDL_LOG_CATEGORY_APPLICATION,
     SDL_LOG_CATEGORY_ERROR,
@@ -94,7 +94,7 @@ enum
        };
      */
     SDL_LOG_CATEGORY_CUSTOM
-};
+} SDL_LogCategoryEnum;
 
 /**
  *  \brief The predefined log priorities

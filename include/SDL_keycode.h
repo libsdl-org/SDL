@@ -47,7 +47,7 @@ typedef Sint32 SDL_Keycode;
 #define SDLK_SCANCODE_MASK (1<<30)
 #define SDL_SCANCODE_TO_KEYCODE(X)  (X | SDLK_SCANCODE_MASK)
 
-enum
+typedef enum
 {
     SDLK_UNKNOWN = 0,
 
@@ -317,7 +317,7 @@ enum
 
     SDLK_AUDIOREWIND = SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_AUDIOREWIND),
     SDLK_AUDIOFASTFORWARD = SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_AUDIOFASTFORWARD)
-};
+} SDL_KeyCodeEnum;
 
 /**
  * \brief Enumeration of valid key mods (possibly OR'd together).
