@@ -317,7 +317,7 @@ typedef enum
 
     SDLK_AUDIOREWIND = SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_AUDIOREWIND),
     SDLK_AUDIOFASTFORWARD = SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_AUDIOFASTFORWARD)
-} SDL_KeyCodeEnum;
+} SDL_KeyCode;
 
 /**
  * \brief Enumeration of valid key mods (possibly OR'd together).
