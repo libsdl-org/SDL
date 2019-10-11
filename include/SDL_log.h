@@ -94,7 +94,7 @@ typedef enum
        };
      */
     SDL_LOG_CATEGORY_CUSTOM
-} SDL_LogCategoryEnum;
+} SDL_LogCategory;
 
 /**
  *  \brief The predefined log priorities
