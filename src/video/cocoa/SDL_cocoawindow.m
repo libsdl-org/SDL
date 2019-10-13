@@ -262,6 +262,22 @@ GetHintCtrlClickEmulateRightClick()
 }
 
 static NSUInteger
+GetWindowWindowedStyle(SDL_Window * window)
+{
+    NSUInteger style = 0;
+
+    if (window->flags & SDL_WINDOW_BORDERLESS) {
+        style = NSWindowStyleMaskBorderless;
+    } else {
+        style = (NSWindowStyleMaskTitled|NSWindowStyleMaskClosable|NSWindowStyleMaskMiniaturizable);
+    }
+    if (window->flags & SDL_WINDOW_RESIZABLE) {
+        style |= NSWindowStyleMaskResizable;
+    }
+    return style;
+}
+
+static NSUInteger
 GetWindowStyle(SDL_Window * window)
 {
     NSUInteger style = 0;
@@ -269,14 +285,7 @@ GetWindowStyle(SDL_Window * window)
     if (window->flags & SDL_WINDOW_FULLSCREEN) {
         style = NSWindowStyleMaskBorderless;
     } else {
-        if (window->flags & SDL_WINDOW_BORDERLESS) {
-            style = NSWindowStyleMaskBorderless;
-        } else {
-            style = (NSWindowStyleMaskTitled|NSWindowStyleMaskClosable|NSWindowStyleMaskMiniaturizable);
-        }
-        if (window->flags & SDL_WINDOW_RESIZABLE) {
-            style |= NSWindowStyleMaskResizable;
-        }
+        style = GetWindowWindowedStyle(window);
     }
     return style;
 }
@@ -754,10 +763,15 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
     isFullscreenSpace = NO;
     inFullscreenTransition = YES;
 
-    /* As of OS X 10.11, the window seems to need to be resizable when exiting
+    /* As of macOS 10.11, the window seems to need to be resizable when exiting
        a Space, in order for it to resize back to its windowed-mode size.
+       As of macOS 10.15, the window decorations can go missing sometimes after
+       certain fullscreen-desktop->exlusive-fullscreen->windowed mode flows
+       sometimes. Making sure the style mask always uses the windowed mode style
+       when returning to windowed mode from a space (instead of using a pending
+       fullscreen mode style mask) seems to work around that issue.
      */
-    SetWindowStyle(window, GetWindowStyle(window) | NSWindowStyleMaskResizable);
+    SetWindowStyle(window, GetWindowWindowedStyle(window) | NSWindowStyleMaskResizable);
 }
 
 - (void)windowDidFailToExitFullScreen:(NSNotification *)aNotification
@@ -783,7 +797,13 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
 
     inFullscreenTransition = NO;
 
-    SetWindowStyle(window, GetWindowStyle(window));
+    /* As of macOS 10.15, the window decorations can go missing sometimes after
+       certain fullscreen-desktop->exlusive-fullscreen->windowed mode flows
+       sometimes. Making sure the style mask always uses the windowed mode style
+       when returning to windowed mode from a space (instead of using a pending
+       fullscreen mode style mask) seems to work around that issue.
+     */
+    SetWindowStyle(window, GetWindowWindowedStyle(window));
 
     [nswindow setLevel:kCGNormalWindowLevel];
 
@@ -1769,7 +1789,13 @@ Cocoa_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display
         rect.size.height = window->windowed.h;
         ConvertNSRect([nswindow screen], fullscreen, &rect);
 
-        [nswindow setStyleMask:GetWindowStyle(window)];
+        /* The window is not meant to be fullscreen, but its flags might have a
+         * fullscreen bit set if it's scheduled to go fullscreen immediately
+         * after. Always using the windowed mode style here works around bugs in
+         * macOS 10.15 where the window doesn't properly restore the windowed
+         * mode decorations after exiting fullscreen-desktop, when the window
+         * was created as fullscreen-desktop. */
+        [nswindow setStyleMask:GetWindowWindowedStyle(window)];
 
         /* Hack to restore window decorations on Mac OS X 10.10 */
         NSRect frameRect = [nswindow frame];
