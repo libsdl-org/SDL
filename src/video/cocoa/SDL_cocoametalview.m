@@ -30,6 +30,28 @@
 #if SDL_VIDEO_DRIVER_COCOA && (SDL_VIDEO_VULKAN || SDL_VIDEO_METAL)
 
 #include "SDL_assert.h"
+#include "SDL_events.h"
+
+static int SDLCALL
+SDL_MetalViewEventWatch(void *userdata, SDL_Event *event)
+{
+    /* Update the drawable size when SDL receives a size changed event for
+     * the window that contains the metal view. It would be nice to use
+     * - (void)resizeWithOldSuperviewSize:(NSSize)oldSize and
+     * - (void)viewDidChangeBackingProperties instead, but SDL's size change
+     * events don't always happen in the same frame (for example when a
+     * resizable window exits a fullscreen Space via the user pressing the OS
+     * exit-space button). */
+    if (event->type == SDL_WINDOWEVENT && event->window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
+        @autoreleasepool {
+            SDL_cocoametalview *view = (__bridge SDL_cocoametalview *)userdata;
+            if (view.sdlWindowID == event->window.windowID) {
+                [view updateDrawableSize];
+            }
+        }
+    }
+    return 0;
+}
 
 @implementation SDL_cocoametalview
 
@@ -55,18 +77,28 @@
 
 - (instancetype)initWithFrame:(NSRect)frame
                       highDPI:(BOOL)highDPI
+                     windowID:(Uint32)windowID;
 {
     if ((self = [super initWithFrame:frame])) {
         self.highDPI = highDPI;
+        self.sdlWindowID = windowID;
         self.wantsLayer = YES;
 
         /* Allow resize. */
         self.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
 
+        SDL_AddEventWatch(SDL_MetalViewEventWatch, self);
+
         [self updateDrawableSize];
     }
   
     return self;
+}
+
+- (void)dealloc
+{
+    SDL_DelEventWatch(SDL_MetalViewEventWatch, self);
+    [super dealloc];
 }
 
 - (NSInteger)tag
@@ -91,13 +123,6 @@
     metalLayer.drawableSize = NSSizeToCGSize(backingSize);
 }
 
-/* Set the size of the metal drawables when the view is resized. */
-- (void)resizeWithOldSuperviewSize:(NSSize)oldSize
-{
-    [super resizeWithOldSuperviewSize:oldSize];
-    [self updateDrawableSize];
-}
-
 @end
 
 SDL_MetalView
@@ -106,10 +131,13 @@ Cocoa_Metal_CreateView(_THIS, SDL_Window * window)
     SDL_WindowData* data = (__bridge SDL_WindowData *)window->driverdata;
     NSView *view = data->nswindow.contentView;
     BOOL highDPI = (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) != 0;
+    Uint32 windowID = SDL_GetWindowID(window);
     SDL_cocoametalview *newview;
     SDL_MetalView metalview;
 
-    newview = [[SDL_cocoametalview alloc] initWithFrame:view.frame highDPI:highDPI];
+    newview = [[SDL_cocoametalview alloc] initWithFrame:view.frame
+                                                highDPI:highDPI
+                                                windowID:windowID];
     if (newview == nil) {
         return NULL;
     }
