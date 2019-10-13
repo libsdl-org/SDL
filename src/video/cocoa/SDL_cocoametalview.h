@@ -42,12 +42,16 @@
 @interface SDL_cocoametalview : NSView
 
 - (instancetype)initWithFrame:(NSRect)frame
-                      highDPI:(BOOL)highDPI;
+                      highDPI:(BOOL)highDPI
+                     windowID:(Uint32)windowID;
+
+- (void)updateDrawableSize;
 
 /* Override superclass tag so this class can set it. */
 @property (assign, readonly) NSInteger tag;
 
 @property (nonatomic) BOOL highDPI;
+@property (nonatomic) Uint32 sdlWindowID;
 
 @end
 
