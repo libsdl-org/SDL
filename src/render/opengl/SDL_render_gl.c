@@ -1210,6 +1210,7 @@ GL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
                         data->glVertex2f(verts[0], verts[1]);
                     }
                     data->glEnd();
+                    verts -= 2 * count;
 
                     /* The line is half open, so we need one more point to complete it.
                      * http://www.opengl.org/documentation/specs/version1.1/glspec1.1/node47.html
