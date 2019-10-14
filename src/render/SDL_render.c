@@ -689,9 +689,13 @@ SDL_RendererEventWatch(void *userdata, SDL_Event *event)
         SDL_FPoint scale;
         GetWindowViewportValues(renderer, &logical_w, &logical_h, &viewport, &scale);
         if (logical_w) {
-            int w = 1;
-            int h = 1;
-            SDL_GetRendererOutputSize(renderer, &w, &h);
+            int w, h;
+
+            if (renderer->GetOutputSize) {
+                renderer->GetOutputSize(renderer, &w, &h);
+            } else {
+                SDL_GetWindowSize(renderer->window, &w, &h);
+            }
 
             event->tfinger.x *= (w - 1);
             event->tfinger.y *= (h - 1);
