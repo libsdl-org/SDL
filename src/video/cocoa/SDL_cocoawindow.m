@@ -1266,23 +1266,32 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
     _sdlWindow = window;
 }
 
-/* this is used on older macOS revisions. 10.8 and later use updateLayer. */
+/* this is used on older macOS revisions, and newer ones which emulate old
+   NSOpenGLContext behaviour while still using a layer under the hood. 10.8 and
+   later use updateLayer, up until 10.14.2 or so, which uses drawRect without
+   a GraphicsContext and with a layer active instead (for OpenGL contexts). */
 - (void)drawRect:(NSRect)dirtyRect
 {
     /* Force the graphics context to clear to black so we don't get a flash of
        white until the app is ready to draw. In practice on modern macOS, this
        only gets called for window creation and other extraordinary events. */
-    [[NSColor blackColor] setFill];
-    NSRectFill(dirtyRect);
+    if ([NSGraphicsContext currentContext]) {
+        [[NSColor blackColor] setFill];
+        NSRectFill(dirtyRect);
+    } else if (self.layer) {
+        self.layer.backgroundColor = CGColorGetConstantColor(kCGColorBlack);
+    }
+
     SDL_SendWindowEvent(_sdlWindow, SDL_WINDOWEVENT_EXPOSED, 0, 0);
 }
 
--(BOOL) wantsUpdateLayer
+- (BOOL)wantsUpdateLayer
 {
     return YES;
 }
 
--(void) updateLayer
+/* This is also called when a Metal layer is active. */
+- (void)updateLayer
 {
     /* Force the graphics context to clear to black so we don't get a flash of
        white until the app is ready to draw. In practice on modern macOS, this
