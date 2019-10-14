@@ -264,29 +264,58 @@ static SDL_INLINE void *get_sdlapi_entry(const char *fname, const char *sym)
 #endif
 
 
+static void dynapi_warn(const char *msg)
+{
+    const char *caption = "SDL Dynamic API Failure!";
+    /* SDL_ShowSimpleMessageBox() is a too heavy for here. */
+    #if defined(WIN32) || defined(_WIN32) || defined(__CYGWIN__)
+    MessageBoxA(NULL, msg, caption, MB_OK | MB_ICONERROR);
+    #else
+    fprintf(stderr, "\n\n%s\n%s\n\n", caption, msg);
+    fflush(stderr);
+    #endif
+}
+
+/* This is not declared in any header, although it is shared between some
+    parts of SDL, because we don't want anything calling it without an
+    extremely good reason. */
+#if defined(__WATCOMC__)
+void SDL_ExitProcess(const int exitcode);
+#pragma aux SDL_ExitProcess aborts;
+#endif
+SDL_NORETURN void SDL_ExitProcess(const int exitcode);
+
+
 static void
 SDL_InitDynamicAPILocked(void)
 {
     const char *libname = SDL_getenv_REAL("SDL_DYNAMIC_API");
     SDL_DYNAPI_ENTRYFN entry = NULL;  /* funcs from here by default. */
+    SDL_bool use_internal = SDL_TRUE;
 
     if (libname) {
         entry = (SDL_DYNAPI_ENTRYFN) get_sdlapi_entry(libname, "SDL_DYNAPI_entry");
         if (!entry) {
-            /* !!! FIXME: fail to startup here instead? */
-            /* !!! FIXME: definitely warn user. */
-            /* Just fill in the function pointers from this library. */
+            dynapi_warn("Couldn't load overriding SDL library. Please fix or remove the SDL_DYNAMIC_API environment variable. Using the default SDL.");
+            /* Just fill in the function pointers from this library, later. */
         }
     }
 
-    if (!entry || (entry(SDL_DYNAPI_VERSION, &jump_table, sizeof (jump_table)) < 0)) {
-        /* !!! FIXME: fail to startup here instead? */
-        /* !!! FIXME: definitely warn user. */
-        /* Just fill in the function pointers from this library. */
-        if (!entry) {
-            if (!initialize_jumptable(SDL_DYNAPI_VERSION, &jump_table, sizeof (jump_table))) {
-                /* !!! FIXME: now we're screwed. Should definitely abort now. */
-            }
+    if (entry) {
+        if (entry(SDL_DYNAPI_VERSION, &jump_table, sizeof (jump_table)) < 0) {
+            dynapi_warn("Couldn't override SDL library. Using a newer SDL build might help. Please fix or remove the SDL_DYNAMIC_API environment variable. Using the default SDL.");
+            /* Just fill in the function pointers from this library, later. */
+        } else {
+            use_internal = SDL_FALSE;   /* We overrode SDL! Don't use the internal version! */
+        }
+    }
+
+    /* Just fill in the function pointers from this library. */
+    if (use_internal) {
+        if (initialize_jumptable(SDL_DYNAPI_VERSION, &jump_table, sizeof (jump_table)) < 0) {
+            /* Now we're screwed. Should definitely abort now. */
+            dynapi_warn("Failed to initialize internal SDL dynapi. As this would otherwise crash, we have to abort now.");
+            SDL_ExitProcess(86);
         }
     }
 
