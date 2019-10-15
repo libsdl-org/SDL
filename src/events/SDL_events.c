@@ -728,7 +728,7 @@ SDL_WaitEventTimeout(SDL_Event * event, int timeout)
                 /* Timeout expired and no events */
                 return 0;
             }
-            SDL_Delay(1);
+            SDL_Delay(10);
             break;
         default:
             /* Has events */
