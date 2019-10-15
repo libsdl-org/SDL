@@ -805,7 +805,11 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
      */
     SetWindowStyle(window, GetWindowWindowedStyle(window));
 
-    [nswindow setLevel:kCGNormalWindowLevel];
+    if (window->flags & SDL_WINDOW_ALWAYS_ON_TOP) {
+        [nswindow setLevel:NSFloatingWindowLevel];
+    } else {
+        [nswindow setLevel:kCGNormalWindowLevel];
+    }
 
     if (pendingWindowOperation == PENDING_OPERATION_ENTER_FULLSCREEN) {
         pendingWindowOperation = PENDING_OPERATION_NONE;
@@ -1485,6 +1489,10 @@ Cocoa_CreateWindow(_THIS, SDL_Window * window)
         }
     }
 
+    if (window->flags & SDL_WINDOW_ALWAYS_ON_TOP) {
+        [nswindow setLevel:NSFloatingWindowLevel];
+    }
+
     /* Create a default view for this window */
     rect = [nswindow contentRectForFrameRect:[nswindow frame]];
     SDLView *contentView = [[SDLView alloc] initWithFrame:rect];
@@ -1831,6 +1839,8 @@ Cocoa_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display
     if (SDL_ShouldAllowTopmost() && fullscreen) {
         /* OpenGL is rendering to the window, so make it visible! */
         [nswindow setLevel:CGShieldingWindowLevel()];
+    } else if (window->flags & SDL_WINDOW_ALWAYS_ON_TOP) {
+        [nswindow setLevel:NSFloatingWindowLevel];
     } else {
         [nswindow setLevel:kCGNormalWindowLevel];
     }
@@ -1924,6 +1934,8 @@ Cocoa_SetWindowGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
             /* OpenGL is rendering to the window, so make it visible! */
             /* Doing this in 10.11 while in a Space breaks things (bug #3152) */
             [data->nswindow setLevel:CGShieldingWindowLevel()];
+        } else if (window->flags & SDL_WINDOW_ALWAYS_ON_TOP) {
+            [data->nswindow setLevel:NSFloatingWindowLevel];
         } else {
             [data->nswindow setLevel:kCGNormalWindowLevel];
         }
