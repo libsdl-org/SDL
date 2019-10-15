@@ -210,7 +210,7 @@ SDLTest_SetTestTimeout(int timeout, void (*callback)(void))
 #pragma aux SDLTest_BailOut aborts;
 #endif
 static SDL_NORETURN void
-SDLTest_BailOut()
+SDLTest_BailOut(void)
 {
     SDLTest_LogError("TestCaseTimeout timer expired. Aborting test run.");
     exit(TEST_ABORTED); /* bail out from the test */
