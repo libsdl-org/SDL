@@ -236,9 +236,6 @@ SDL_FillRect4(Uint8 * pixels, int pitch, Uint32 color, int w, int h)
 int
 SDL_FillRect(SDL_Surface * dst, const SDL_Rect * rect, Uint32 color)
 {
-    SDL_Rect clipped;
-    Uint8 *pixels;
-
     if (!dst) {
         return SDL_SetError("Passed NULL destination surface");
     }
