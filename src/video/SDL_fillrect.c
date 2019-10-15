@@ -259,7 +259,7 @@ SDL_FillRects(SDL_Surface * dst, const SDL_Rect * rects, int count,
     SDL_Rect clipped;
     Uint8 *pixels;
     const SDL_Rect* rect;
-    void (*fill_function)(Uint8 * pixels, int pitch, Uint32 color, int w, int h);
+    void (*fill_function)(Uint8 * pixels, int pitch, Uint32 color, int w, int h) = NULL;
     int i;
 
     if (!dst) {
@@ -326,6 +326,9 @@ SDL_FillRects(SDL_Surface * dst, const SDL_Rect * rects, int count,
             fill_function = SDL_FillRect4;
             break;
         }
+
+    default:
+        return SDL_SetError("Unsupported pixel format");
     }
 
 
