@@ -19886,10 +19886,10 @@ fi
                 # This isn't necessary for X11, but fixes GLX detection
                 if test "x$x_includes" = xNONE && \
                    test "x$x_libraries" = xNONE && \
-                   test -d /usr/X11R6/include && \
-                   test -d /usr/X11R6/lib; then
-                    x_includes="/usr/X11R6/include"
-                    x_libraries="/usr/X11R6/lib"
+                   test -d /opt/X11/include && \
+                   test -d /opt/X11/lib; then
+                    x_includes="/opt/X11/include"
+                    x_libraries="/opt/X11/lib"
                 fi
                 ;;
         esac
@@ -20587,15 +20587,16 @@ fi
 
             case "$host" in
                 *-*-darwin*)
-                    x11_lib='/usr/X11R6/lib/libX11.6.dylib'
-                    x11ext_lib='/usr/X11R6/lib/libXext.6.dylib'
-                    xcursor_lib='/usr/X11R6/lib/libXcursor.1.dylib'
-                    xinerama_lib='/usr/X11R6/lib/libXinerama.1.dylib'
-                    xinput_lib='/usr/X11R6/lib/libXi.6.dylib'
-                    xrandr_lib='/usr/X11R6/lib/libXrandr.2.dylib'
-                    xrender_lib='/usr/X11R6/lib/libXrender.1.dylib'
-                    xss_lib='/usr/X11R6/lib/libXss.1.dylib'
-                    xvidmode_lib='/usr/X11R6/lib/libXxf86vm.1.dylib'
+                    # Apple now puts this in /opt/X11
+                    x11_lib='/opt/X11/lib/libX11.6.dylib'
+                    x11ext_lib='/opt/X11/lib/libXext.6.dylib'
+                    xcursor_lib='/opt/X11/lib/libXcursor.1.dylib'
+                    xinerama_lib='/opt/X11/lib/libXinerama.1.dylib'
+                    xinput_lib='/opt/X11/lib/libXi.6.dylib'
+                    xrandr_lib='/opt/X11/lib/libXrandr.2.dylib'
+                    xrender_lib='/opt/X11/lib/libXrender.1.dylib'
+                    xss_lib='/opt/X11/lib/libXss.1.dylib'
+                    xvidmode_lib='/opt/X11/lib/libXxf86vm.1.dylib'
                     ;;
                 *-*-openbsd*)
                     x11_lib='libX11.so'

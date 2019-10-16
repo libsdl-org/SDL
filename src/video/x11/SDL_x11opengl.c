@@ -36,7 +36,7 @@
 /* IRIX doesn't have a GL library versioning system */
 #define DEFAULT_OPENGL  "libGL.so"
 #elif defined(__MACOSX__)
-#define DEFAULT_OPENGL  "/usr/X11R6/lib/libGL.1.dylib"
+#define DEFAULT_OPENGL  "/opt/X11/lib/libGL.1.dylib"
 #elif defined(__QNXNTO__)
 #define DEFAULT_OPENGL  "libGL.so.3"
 #else
