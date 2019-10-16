@@ -24,6 +24,10 @@
 #include "core/windows/SDL_windows.h"
 #endif
 
+#if defined(__EMSCRIPTEN__)
+#include <emscripten.h>
+#endif
+
 /* Initialization code for SDL */
 
 #include "SDL.h"
