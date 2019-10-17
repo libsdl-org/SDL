@@ -1172,6 +1172,13 @@ SDL_IsJoystickNintendoSwitchPro(Uint16 vendor, Uint16 product)
 }
 
 SDL_bool
+SDL_IsJoystickNintendoSwitchProInputOnly(Uint16 vendor, Uint16 product)
+{
+    EControllerType eType = GuessControllerType(vendor, product);
+    return (eType == k_eControllerType_SwitchInputOnlyController);
+}
+
+SDL_bool
 SDL_IsJoystickSteamController(Uint16 vendor, Uint16 product)
 {
     EControllerType eType = GuessControllerType(vendor, product);
