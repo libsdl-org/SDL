@@ -271,7 +271,7 @@ MakePipelineState(METAL_RenderData *data, METAL_PipelineCache *cache,
         case SDL_METAL_VERTEX_SOLID:
             /* position (float2) */
             vertdesc.layouts[0].stride = sizeof(float) * 2;
-            vertdesc.layouts[0].stepFunction = MTLStepFunctionPerVertex;
+            vertdesc.layouts[0].stepFunction = MTLVertexStepFunctionPerVertex;
 
             vertdesc.attributes[0].format = MTLVertexFormatFloat2;
             vertdesc.attributes[0].offset = 0;
@@ -280,7 +280,7 @@ MakePipelineState(METAL_RenderData *data, METAL_PipelineCache *cache,
         case SDL_METAL_VERTEX_COPY:
             /* position (float2), texcoord (float2) */
             vertdesc.layouts[0].stride = sizeof(float) * 4;
-            vertdesc.layouts[0].stepFunction = MTLStepFunctionPerVertex;
+            vertdesc.layouts[0].stepFunction = MTLVertexStepFunctionPerVertex;
 
             vertdesc.attributes[0].format = MTLVertexFormatFloat2;
             vertdesc.attributes[0].offset = 0;
