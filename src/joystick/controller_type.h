@@ -175,12 +175,15 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x0c12, 0x0e15 ), k_eControllerType_PS4Controller },		// Game:Pad 4
 	{ MAKE_CONTROLLER_ID( 0x11c0, 0x4001 ), k_eControllerType_PS4Controller },		// "PS4 Fun Controller" added from user log
 
-	{ MAKE_CONTROLLER_ID( 0x1532, 0x1007 ), k_eControllerType_PS4Controller },		// Razer Raiju 2 Tournament edition USB- untested and added for razer
-	{ MAKE_CONTROLLER_ID( 0x1532, 0x100A ), k_eControllerType_PS4Controller },		// Razer Raiju 2 Tournament edition BT - untested and added for razer
-	{ MAKE_CONTROLLER_ID( 0x1532, 0x1004 ), k_eControllerType_PS4Controller },		// Razer Raiju 2 Ultimate USB - untested and added for razer
-	{ MAKE_CONTROLLER_ID( 0x1532, 0x1009 ), k_eControllerType_PS4Controller },		// Razer Raiju 2 Ultimate BT - untested and added for razer
-	{ MAKE_CONTROLLER_ID( 0x1532, 0x1008 ), k_eControllerType_PS4Controller },		// Razer Panthera Evo Fightstick - untested and added for razer
+	{ MAKE_CONTROLLER_ID( 0x1532, 0x1007 ), k_eControllerType_PS4Controller },		// Razer Raiju 2 Tournament edition USB
+	{ MAKE_CONTROLLER_ID( 0x1532, 0x100A ), k_eControllerType_PS4Controller },		// Razer Raiju 2 Tournament edition BT
+	{ MAKE_CONTROLLER_ID( 0x1532, 0x1004 ), k_eControllerType_PS4Controller },		// Razer Raiju 2 Ultimate USB
+	{ MAKE_CONTROLLER_ID( 0x1532, 0x1009 ), k_eControllerType_PS4Controller },		// Razer Raiju 2 Ultimate BT
+	{ MAKE_CONTROLLER_ID( 0x1532, 0x1008 ), k_eControllerType_PS4Controller },		// Razer Panthera Evo Fightstick
 	{ MAKE_CONTROLLER_ID( 0x9886, 0x0025 ), k_eControllerType_PS4Controller },		// Astro C40
+	{ MAKE_CONTROLLER_ID( 0x1532, 0x1100 ), k_eControllerType_PS4Controller },		// Razer AION Fightstick - Trackpad, no gyro, lightbar hardcoded to green - UNANNOUNCED PRODUCT
+	{ MAKE_CONTROLLER_ID( 0x146b, 0x0d10 ), k_eControllerType_PS4Controller },		// NACON Revolution Infinite - has gyro
+	{ MAKE_CONTROLLER_ID( 0x20d6, 0x792a ), k_eControllerType_PS4Controller },		// PowerA - Fusion Fight Pad
 
 	{ MAKE_CONTROLLER_ID( 0x056e, 0x2004 ), k_eControllerType_XBox360Controller },	// Elecom JC-U3613M
 	{ MAKE_CONTROLLER_ID( 0x06a3, 0xf51a ), k_eControllerType_XBox360Controller },	// Saitek P3600
@@ -379,6 +382,68 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x79, 0x18a1 ), k_eControllerType_XBoxOneController },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0x1038, 0xb360 ), k_eControllerType_XBox360Controller },	// SteelSeries Nimbus/Stratus XL
 
+	/* Added from Minidumps 10-9-19 */
+	{ MAKE_CONTROLLER_ID( 0x0,		0x6686 ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0x1038,	0x1430 ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0x1038,	0x1431 ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0x11ff,	0x511 ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0x12ab,	0x304 ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0x1430,	0x291 ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0x1430,	0x2a9 ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0x1430,	0x70b ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0x146b,	0x604 ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0x146b,	0x605 ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0x146b,	0x606 ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0x146b,	0x609 ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0x1532,	0xa14 ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0x1bad,	0x28e ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0x1bad,	0x2a0 ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0x1bad,	0x5500 ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0x20ab,	0x55ef ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0x24c6,	0x5509 ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0x2516,	0x69 ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0x25b1,	0x360 ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0x2c22,	0x2203 ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0x2f24,	0x11 ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0x2f24,	0x53 ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0x2f24,	0xb7 ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0x45e,	0x28e ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0x45e,	0x2a9 ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0x46d,	0x0 ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0x46d,	0x1004 ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0x46d,	0x1008 ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0x46d,	0xc21d ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0x46d,	0xf301 ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0x738,	0x2a0 ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0x738,	0x7263 ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0x738,	0xb738 ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0x738,	0xcb29 ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0x738,	0xf401 ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0x79,		0x18c2 ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0x79,		0x18c8 ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0x79,		0x18cf ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0xc12,	0xe17 ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0xc12,	0xe1c ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0xc12,	0xe22 ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0xc12,	0xe30 ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0xd2d2,	0xd2d2 ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0xd62,	0x9a1a ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0xd62,	0x9a1b ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0xe00,	0xe00 ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0xe6f,	0x12a ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0xe6f,	0x2a1 ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0xe6f,	0x2a2 ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0xe6f,	0x2a5 ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0xe6f,	0x2b2 ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0xe6f,	0x2bd ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0xe6f,	0x2bf ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0xe6f,	0x2c0 ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0xe6f,	0x2c6 ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0xf0d,	0x97 ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0xf0d,	0xba ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0xf0d,	0xd8 ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0xfff,	0x2a1 ), k_eControllerType_XBoxOneController },	// Unknown Controller
+
 																					
 	//{ MAKE_CONTROLLER_ID( 0x1949, 0x0402 ), /*android*/ },	// Unknown Controller
 
@@ -407,7 +472,7 @@ static const ControllerDescription_t arrControllers[] = {
     { MAKE_CONTROLLER_ID( 0x0e6f, 0x0185 ), k_eControllerType_SwitchInputOnlyController },  // PDP Wired Fight Pad Pro for Nintendo Switch
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0180 ), k_eControllerType_SwitchInputOnlyController },  // PDP Faceoff Wired Pro Controller for Nintendo Switch
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0181 ), k_eControllerType_SwitchInputOnlyController },  // PDP Faceoff Deluxe Wired Pro Controller for Nintendo Switch
-
+	{ MAKE_CONTROLLER_ID( 0x20d6, 0xa712 ), k_eControllerType_SwitchInputOnlyController },  // PowerA - Fusion Fight Pad
 
 	// Valve products - don't add to public list
     { MAKE_CONTROLLER_ID( 0x0000, 0x11fb ), k_eControllerType_MobileTouch },		// Streaming mobile touch virtual controls
