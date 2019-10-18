@@ -227,12 +227,10 @@ SDL_EGL_GetProcAddress(_THIS, const char *proc)
     void *retval = NULL;
 
     /* eglGetProcAddress is busted on Android http://code.google.com/p/android/issues/detail?id=7681 */
-#if !defined(SDL_VIDEO_DRIVER_ANDROID)
     /* EGL 1.5 can use eglGetProcAddress() for any symbol. 1.4 and earlier can't use it for core entry points. */
     if (!retval && is_egl_15_or_later && _this->egl_data->eglGetProcAddress) {
         retval = _this->egl_data->eglGetProcAddress(proc);
     }
-#endif
 
     /* Try SDL_LoadFunction() first for EGL <= 1.4, or as a fallback for >= 1.5. */
     if (!retval) {
@@ -247,7 +245,6 @@ SDL_EGL_GetProcAddress(_THIS, const char *proc)
     }
 
     /* eglGetProcAddress is busted on Android http://code.google.com/p/android/issues/detail?id=7681 */
-#if !defined(SDL_VIDEO_DRIVER_ANDROID)
     /* Try eglGetProcAddress if we on <= 1.4 and still searching... */
     if (!retval && !is_egl_15_or_later && _this->egl_data->eglGetProcAddress) {
         retval = _this->egl_data->eglGetProcAddress(proc);
@@ -255,7 +252,6 @@ SDL_EGL_GetProcAddress(_THIS, const char *proc)
             return retval;
         }
     }
-#endif
 
     return retval;
 }
