@@ -446,29 +446,36 @@ SDL_EGL_LoadLibraryOnly(_THIS, const char *egl_path)
     return 0;
 }
 
+static void
+SDL_EGL_GetVersion(_THIS) {
+    if (_this->egl_data->eglQueryString) {
+        const char *egl_version = _this->egl_data->eglQueryString(_this->egl_data->egl_display, EGL_VERSION);
+        if (egl_version) {
+            int major = 0, minor = 0;
+            if (SDL_sscanf(egl_version, "%d.%d", &major, &minor) == 2) {
+                _this->egl_data->egl_version_major = major;
+                _this->egl_data->egl_version_minor = minor;
+            } else {
+                SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO, "Could not parse EGL version string: %s", egl_version);
+            }
+        }
+    }
+}
+
 int
 SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_display, EGLenum platform)
 {
-    int egl_version_major = 0, egl_version_minor = 0;
+    int egl_version_major, egl_version_minor;
     int library_load_retcode = SDL_EGL_LoadLibraryOnly(_this, egl_path);
     if (library_load_retcode != 0) {
         return library_load_retcode;
     }
 
-    if (_this->egl_data->eglQueryString) {
-        /* EGL 1.5 allows querying for client version */
-        const char *egl_version = _this->egl_data->eglQueryString(EGL_NO_DISPLAY, EGL_VERSION);
-        if (egl_version != NULL) {
-            if (SDL_sscanf(egl_version, "%d.%d", &egl_version_major, &egl_version_minor) != 2) {
-                egl_version_major = 0;
-                egl_version_minor = 0;
-                SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO, "Could not parse EGL version string: %s", egl_version);
-            }
-        }
-    }
+    /* EGL 1.5 allows querying for client version with EGL_NO_DISPLAY */
+    SDL_EGL_GetVersion(_this);
 
-    _this->egl_data->egl_version_major = egl_version_major;
-    _this->egl_data->egl_version_minor = egl_version_minor;
+    egl_version_major = _this->egl_data->egl_version_major;
+    egl_version_minor = _this->egl_data->egl_version_minor;
 
     if (egl_version_major == 1 && egl_version_minor == 5) {
         LOAD_FUNC(eglGetPlatformDisplay);
@@ -505,17 +512,8 @@ SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_displa
     }
 #endif
 
-    /* Get the EGL version */
-    if (_this->egl_data->eglQueryString && _this->egl_data->egl_version_major == 0 && _this->egl_data->egl_version_major == 0) {
-        const char *egl_version = _this->egl_data->eglQueryString(_this->egl_data->egl_display, EGL_VERSION);
-        int major = 0, minor = 0;
-        if (egl_version != NULL) {
-            if (SDL_sscanf(egl_version, "%d.%d", &major, &minor) == 2) {
-                _this->egl_data->egl_version_major = major;
-                _this->egl_data->egl_version_minor = minor;
-            }
-        }
-    }
+    /* Get the EGL version with a valid egl_display, for EGL <= 1.4 */
+    SDL_EGL_GetVersion(_this);
 
     _this->egl_data->is_offscreen = 0;
 
@@ -602,17 +600,8 @@ SDL_EGL_InitializeOffscreen(_THIS, int device)
         }
     }
 
-    /* Get the EGL version */
-    if (_this->egl_data->eglQueryString && _this->egl_data->egl_version_major == 0 && _this->egl_data->egl_version_major == 0) {
-        const char *egl_version = _this->egl_data->eglQueryString(_this->egl_data->egl_display, EGL_VERSION);
-        int major = 0, minor = 0;
-        if (egl_version != NULL) {
-            if (SDL_sscanf(egl_version, "%d.%d", &major, &minor) == 2) {
-                _this->egl_data->egl_version_major = major;
-                _this->egl_data->egl_version_minor = minor;
-            }
-        }
-    }
+    /* Get the EGL version with a valid egl_display, for EGL <= 1.4 */
+    SDL_EGL_GetVersion(_this);
 
     _this->egl_data->is_offscreen = 1;
 
