@@ -57,7 +57,6 @@ UIKit_ShowMessageBoxAlertController(const SDL_MessageBoxData *messageboxdata, in
 {
     int i;
     int __block clickedindex = messageboxdata->numbuttons;
-    const SDL_MessageBoxButtonData *buttons = messageboxdata->buttons;
     UIWindow *window = nil;
     UIWindow *alertwindow = nil;
 
