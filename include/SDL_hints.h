@@ -489,6 +489,29 @@ extern "C" {
 #define SDL_HINT_GAMECONTROLLER_IGNORE_DEVICES_EXCEPT "SDL_GAMECONTROLLER_IGNORE_DEVICES_EXCEPT"
 
 /**
+ *  \brief  If set, game controller face buttons report their values according to their labels instead of their positional layout.
+ * 
+ *  For example, on Nintendo Switch controllers, normally you'd get:
+ *
+ *      (Y)
+ *  (X)     (B)
+ *      (A)
+ *
+ *  but if this hint is set, you'll get:
+ *
+ *      (X)
+ *  (Y)     (A)
+ *      (B)
+ *
+ *  The variable can be set to the following values:
+ *    "0"       - Report the face buttons by position, as though they were on an Xbox controller.
+ *    "1"       - Report the face buttons by label instead of position
+ *
+ *  The default value is "0".  This hint may be set at any time.
+ */
+#define SDL_HINT_GAMECONTROLLER_USE_BUTTON_LABELS "SDL_GAMECONTROLLER_USE_BUTTON_LABELS"
+
+/**
  *  \brief  A variable that lets you enable joystick (and gamecontroller) events even when your app is in the background.
  *
  *  The variable can be set to the following values:
