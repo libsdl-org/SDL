@@ -509,6 +509,18 @@ SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_displa
     }
 #endif
 
+    /* Get the EGL version */
+    if (_this->egl_data->eglQueryString && _this->egl_data->egl_version_major == 0 && _this->egl_data->egl_version_major == 0) {
+        const char *egl_version = _this->egl_data->eglQueryString(_this->egl_data->egl_display, EGL_VERSION);
+        int major = 0, minor = 0;
+        if (egl_version != NULL) {
+            if (SDL_sscanf(egl_version, "%d.%d", &major, &minor) == 2) {
+                _this->egl_data->egl_version_major = major;
+                _this->egl_data->egl_version_minor = minor;
+            }
+        }
+    }
+
     _this->egl_data->is_offscreen = 0;
 
     return 0;
@@ -591,6 +603,18 @@ SDL_EGL_InitializeOffscreen(_THIS, int device)
 
         if (!found) {
             return SDL_SetError("Could not find a valid EGL device to initialize");
+        }
+    }
+
+    /* Get the EGL version */
+    if (_this->egl_data->eglQueryString && _this->egl_data->egl_version_major == 0 && _this->egl_data->egl_version_major == 0) {
+        const char *egl_version = _this->egl_data->eglQueryString(_this->egl_data->egl_display, EGL_VERSION);
+        int major = 0, minor = 0;
+        if (egl_version != NULL) {
+            if (SDL_sscanf(egl_version, "%d.%d", &major, &minor) == 2) {
+                _this->egl_data->egl_version_major = major;
+                _this->egl_data->egl_version_minor = minor;
+            }
         }
     }
 
