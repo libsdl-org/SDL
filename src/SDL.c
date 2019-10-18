@@ -25,7 +25,6 @@
 #elif !defined(__WINRT__)
 #include <unistd.h> // For _exit(), etc.
 #endif
-#endif
 
 #if defined(__EMSCRIPTEN__)
 #include <emscripten.h>
