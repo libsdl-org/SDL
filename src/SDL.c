@@ -23,6 +23,9 @@
 #if defined(__WIN32__)
 #include "core/windows/SDL_windows.h"
 #endif
+#if defined(__IPHONEOS__)
+#include <unistd.h>
+#endif
 
 #if defined(__EMSCRIPTEN__)
 #include <emscripten.h>
