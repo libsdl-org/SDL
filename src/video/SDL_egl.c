@@ -222,25 +222,41 @@ static SDL_bool SDL_EGL_HasExtension(_THIS, SDL_EGL_ExtensionType type, const ch
 void *
 SDL_EGL_GetProcAddress(_THIS, const char *proc)
 {
-    static char procname[1024];
-    void *retval;
-    
+    const Uint32 eglver = (((Uint32) _this->egl_data->egl_version_major) << 16) | ((Uint32) _this->egl_data->egl_version_minor);
+    const SDL_bool is_egl_15_or_later = eglver >= ((((Uint32) 1) << 16) | 5);
+    void *retval = NULL;
+
     /* eglGetProcAddress is busted on Android http://code.google.com/p/android/issues/detail?id=7681 */
 #if !defined(SDL_VIDEO_DRIVER_ANDROID)
-    if (_this->egl_data->eglGetProcAddress) {
+    /* EGL 1.5 can use eglGetProcAddress() for any symbol. 1.4 and earlier can't use it for core entry points. */
+    if (!retval && is_egl_15_or_later && _this->egl_data->eglGetProcAddress) {
+        retval = _this->egl_data->eglGetProcAddress(proc);
+    }
+#endif
+
+    /* Try SDL_LoadFunction() first for EGL <= 1.4, or as a fallback for >= 1.5. */
+    if (!retval) {
+        static char procname[64];
+        retval = SDL_LoadFunction(_this->egl_data->egl_dll_handle, proc);
+        /* just in case you need an underscore prepended... */
+        if (!retval && (SDL_strlen(proc) < (sizeof (procname) - 1))) {
+            procname[0] = '_';
+            SDL_strlcpy(procname + 1, proc, sizeof (procname) - 1);
+            retval = SDL_LoadFunction(_this->egl_data->egl_dll_handle, procname);
+        }
+    }
+
+    /* eglGetProcAddress is busted on Android http://code.google.com/p/android/issues/detail?id=7681 */
+#if !defined(SDL_VIDEO_DRIVER_ANDROID)
+    /* Try eglGetProcAddress if we on <= 1.4 and still searching... */
+    if (!retval && !is_egl_15_or_later && _this->egl_data->eglGetProcAddress) {
         retval = _this->egl_data->eglGetProcAddress(proc);
         if (retval) {
             return retval;
         }
     }
 #endif
-    
-    retval = SDL_LoadFunction(_this->egl_data->egl_dll_handle, proc);
-    if (!retval && SDL_strlen(proc) <= 1022) {
-        procname[0] = '_';
-        SDL_strlcpy(procname + 1, proc, 1022);
-        retval = SDL_LoadFunction(_this->egl_data->egl_dll_handle, procname);
-    }
+
     return retval;
 }
 
