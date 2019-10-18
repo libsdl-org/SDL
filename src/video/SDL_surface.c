@@ -42,11 +42,11 @@ SDL_CalculatePitch(Uint32 format, int width)
 {
     int pitch;
 
-	if (SDL_ISPIXELFORMAT_FOURCC(format) || SDL_BITSPERPIXEL(format) >= 8) {
-		pitch = (width * SDL_BYTESPERPIXEL(format));
-	} else {
-		pitch = ((width * SDL_BITSPERPIXEL(format)) + 7) / 8;
-	}
+    if (SDL_ISPIXELFORMAT_FOURCC(format) || SDL_BITSPERPIXEL(format) >= 8) {
+        pitch = (width * SDL_BYTESPERPIXEL(format));
+    } else {
+        pitch = ((width * SDL_BITSPERPIXEL(format)) + 7) / 8;
+    }
     pitch = (pitch + 3) & ~3;   /* 4-byte aligning for speed */
     return pitch;
 }
