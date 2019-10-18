@@ -22,9 +22,9 @@
 
 #if defined(__WIN32__)
 #include "core/windows/SDL_windows.h"
+#elif !defined(__WINRT__)
+#include <unistd.h> // For _exit(), etc.
 #endif
-#if defined(__IPHONEOS__)
-#include <unistd.h>
 #endif
 
 #if defined(__EMSCRIPTEN__)

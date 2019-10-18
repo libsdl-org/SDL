@@ -36,12 +36,9 @@
 #ifndef WS_OVERLAPPEDWINDOW
 #define WS_OVERLAPPEDWINDOW 0
 #endif
-#else  /* fprintf, _exit(), etc. */
+#else  /* fprintf, etc. */
 #include <stdio.h>
 #include <stdlib.h>
-#if ! defined(__WINRT__)
-#include <unistd.h>
-#endif
 #endif
 
 #if defined(__EMSCRIPTEN__)
@@ -124,10 +121,10 @@ static void SDL_GenerateAssertionReport(void)
     parts of SDL, because we don't want anything calling it without an
     extremely good reason. */
 #if defined(__WATCOMC__)
-void SDL_ExitProcess(const int exitcode);
+extern void SDL_ExitProcess(const int exitcode);
 #pragma aux SDL_ExitProcess aborts;
 #endif
-SDL_NORETURN void SDL_ExitProcess(const int exitcode);
+extern SDL_NORETURN void SDL_ExitProcess(const int exitcode);
 
 
 #if defined(__WATCOMC__)
