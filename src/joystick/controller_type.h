@@ -200,7 +200,7 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x0738, 0xcb02 ), k_eControllerType_XBox360Controller },	// Saitek Cyborg Rumble Pad - PC/Xbox 360
 	{ MAKE_CONTROLLER_ID( 0x0738, 0xcb03 ), k_eControllerType_XBox360Controller },	// Saitek P3200 Rumble Pad - PC/Xbox 360
 	{ MAKE_CONTROLLER_ID( 0x0738, 0xf738 ), k_eControllerType_XBox360Controller },	// Super SFIV FightStick TE S
-	{ MAKE_CONTROLLER_ID( 0x0955, 0xb400 ), k_eControllerType_XBox360Controller },	// NVIDIA Shield streaming controller
+	//{ MAKE_CONTROLLER_ID( 0x0955, 0xb400 ), k_eControllerType_XBox360Controller },	// NVIDIA Shield streaming controller
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0105 ), k_eControllerType_XBox360Controller },	// HSM3 Xbox360 dancepad
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0113 ), k_eControllerType_XBox360Controller },	// Afterglow AX.1 Gamepad for Xbox 360
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x011f ), k_eControllerType_XBox360Controller },	// Rock Candy Gamepad Wired Controller
@@ -318,7 +318,7 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x24c6, 0xfafc ), k_eControllerType_XBox360Controller },	// Afterglow Gamepad 1
 	{ MAKE_CONTROLLER_ID( 0x24c6, 0xfafe ), k_eControllerType_XBox360Controller },	// Rock Candy Gamepad for Xbox 360
 	{ MAKE_CONTROLLER_ID( 0x24c6, 0xfafd ), k_eControllerType_XBox360Controller },	// Afterglow Gamepad 3
-	{ MAKE_CONTROLLER_ID( 0x0955, 0x7210 ), k_eControllerType_XBox360Controller },	// Nvidia Shield local controller
+	//{ MAKE_CONTROLLER_ID( 0x0955, 0x7210 ), k_eControllerType_XBox360Controller },	// Nvidia Shield local controller
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0205 ), k_eControllerType_XBoxOneController },	// Victrix Pro FS Xbox One Edition
 	
 	// These have been added via Minidump for unrecognized Xinput controller assert
