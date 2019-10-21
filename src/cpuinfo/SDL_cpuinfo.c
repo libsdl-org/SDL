@@ -620,7 +620,7 @@ SDL_GetCPUFeatures(void)
     if (SDL_CPUFeatures == 0xFFFFFFFF) {
         CPU_calcCPUIDFeatures();
         SDL_CPUFeatures = 0;
-        SDL_SIMDAlignment = 4;  /* a good safe base value */
+        SDL_SIMDAlignment = sizeof(void *);  /* a good safe base value */
         if (CPU_haveRDTSC()) {
             SDL_CPUFeatures |= CPU_HAS_RDTSC;
         }
