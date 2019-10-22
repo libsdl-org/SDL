@@ -344,7 +344,7 @@ Android_AddJoystick(int device_id, const char *name, const char *desc, int vendo
     }
 
 #ifdef SDL_JOYSTICK_HIDAPI
-    if (HIDAPI_IsDevicePresent(vendor_id, product_id, 0)) {
+    if (HIDAPI_IsDevicePresent(vendor_id, product_id, 0, name)) {
         /* The HIDAPI driver is taking care of this device */
         return -1;
     }

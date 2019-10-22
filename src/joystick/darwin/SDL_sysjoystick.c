@@ -451,7 +451,7 @@ GetDeviceInfo(IOHIDDeviceRef hidDevice, recDevice *pDevice)
     }
 
 #ifdef SDL_JOYSTICK_HIDAPI
-    if (HIDAPI_IsDevicePresent(vendor, product, version)) {
+    if (HIDAPI_IsDevicePresent(vendor, product, version, pDevice->product)) {
         /* The HIDAPI driver is taking care of this device */
         return 0;
     }
