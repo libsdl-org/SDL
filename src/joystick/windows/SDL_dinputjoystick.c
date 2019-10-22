@@ -535,7 +535,7 @@ EnumJoysticksCallback(const DIDEVICEINSTANCE * pdidInstance, VOID * pContext)
     }
 
 #ifdef SDL_JOYSTICK_HIDAPI
-    if (HIDAPI_IsDevicePresent(vendor, product, 0)) {
+    if (HIDAPI_IsDevicePresent(vendor, product, 0, pNewJoystick->joystickname)) {
         /* The HIDAPI driver is taking care of this device */
         SDL_free(pNewJoystick);
         return DIENUM_CONTINUE;

@@ -131,7 +131,7 @@ typedef struct {
 
 
 static SDL_bool
-HIDAPI_DriverXboxOne_IsSupportedDevice(Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number)
+HIDAPI_DriverXboxOne_IsSupportedDevice(Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, const char *name)
 {
     return SDL_IsJoystickXboxOne(vendor_id, product_id);
 }

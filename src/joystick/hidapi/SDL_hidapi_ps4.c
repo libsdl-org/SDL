@@ -139,7 +139,7 @@ static Uint32 crc32(Uint32 crc, const void *data, int count)
 }
 
 static SDL_bool
-HIDAPI_DriverPS4_IsSupportedDevice(Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number)
+HIDAPI_DriverPS4_IsSupportedDevice(Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, const char *name)
 {
     return SDL_IsJoystickPS4(vendor_id, product_id);
 }

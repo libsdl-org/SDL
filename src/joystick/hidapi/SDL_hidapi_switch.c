@@ -193,6 +193,7 @@ typedef struct
 typedef struct {
     hid_device *dev;
     SDL_bool m_bInputOnly;
+    SDL_bool m_bHasHomeLED;
     SDL_bool m_bUsingBluetooth;
     SDL_bool m_bUseButtonLabels;
     Uint8 m_nCommandNumber;
@@ -222,8 +223,17 @@ typedef struct {
 
 
 static SDL_bool
-HIDAPI_DriverSwitch_IsSupportedDevice(Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number)
+HIDAPI_DriverSwitch_IsSupportedDevice(Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, const char *name)
 {
+    if (vendor_id == 0 && product_id == 0) {
+        /* Some devices are only identifiable by their name */
+        if (SDL_strcmp(name, "Lic Pro Controller") == 0 ||
+            SDL_strcmp(name, "Nintendo Wireless Gamepad") == 0 ||
+            SDL_strcmp(name, "Wireless Gamepad") == 0) {
+            /* HORI or PowerA Switch Pro Controller clone */
+            return SDL_TRUE;
+        }
+    }
     return SDL_IsJoystickNintendoSwitchPro(vendor_id, product_id);
 }
 
@@ -231,10 +241,7 @@ static const char *
 HIDAPI_DriverSwitch_GetDeviceName(Uint16 vendor_id, Uint16 product_id)
 {
     /* Give a user friendly name for this controller */
-    if (SDL_IsJoystickNintendoSwitchPro(vendor_id, product_id)) {
-        return "Nintendo Switch Pro Controller";
-    }
-    return NULL;
+    return "Nintendo Switch Pro Controller";
 }
 
 static int ReadInput(SDL_DriverSwitch_Context *ctx)
@@ -624,6 +631,9 @@ HIDAPI_DriverSwitch_Init(SDL_Joystick *joystick, hid_device *dev, Uint16 vendor_
     /* Find out whether or not we can send output reports */
     ctx->m_bInputOnly = SDL_IsJoystickNintendoSwitchProInputOnly(vendor_id, product_id);
     if (!ctx->m_bInputOnly) {
+        /* The Power A Nintendo Switch Pro controllers don't have a Home LED */
+        ctx->m_bHasHomeLED = (vendor_id != 0 && product_id != 0) ? SDL_TRUE : SDL_FALSE;
+
         /* Initialize rumble data */
         SetNeutralRumble(&ctx->m_RumblePacket.rumbleData[0]);
         SetNeutralRumble(&ctx->m_RumblePacket.rumbleData[1]);
@@ -668,7 +678,9 @@ HIDAPI_DriverSwitch_Init(SDL_Joystick *joystick, hid_device *dev, Uint16 vendor_
         }
 
         /* Set the LED state */
-        SetHomeLED(ctx, 100);
+        if (ctx->m_bHasHomeLED) {
+            SetHomeLED(ctx, 100);
+        }
         SetSlotLED(ctx, (joystick->instance_id % 4));
     }
 

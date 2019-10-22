@@ -564,13 +564,13 @@ HIDAPI_XboxControllerName(Uint16 vendor_id, Uint16 product_id)
 }
 
 static SDL_bool
-HIDAPI_IsDeviceSupported(Uint16 vendor_id, Uint16 product_id, Uint16 version)
+HIDAPI_IsDeviceSupported(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
 {
     int i;
 
     for (i = 0; i < SDL_arraysize(SDL_HIDAPI_drivers); ++i) {
         SDL_HIDAPI_DeviceDriver *driver = SDL_HIDAPI_drivers[i];
-        if (driver->enabled && driver->IsSupportedDevice(vendor_id, product_id, version, -1)) {
+        if (driver->enabled && driver->IsSupportedDevice(vendor_id, product_id, version, -1, name)) {
             return SDL_TRUE;
         }
     }
@@ -599,7 +599,7 @@ HIDAPI_GetDeviceDriver(SDL_HIDAPI_Device *device)
 
     for (i = 0; i < SDL_arraysize(SDL_HIDAPI_drivers); ++i) {
         SDL_HIDAPI_DeviceDriver *driver = SDL_HIDAPI_drivers[i];
-        if (driver->enabled && driver->IsSupportedDevice(device->vendor_id, device->product_id, device->version, device->interface_number)) {
+        if (driver->enabled && driver->IsSupportedDevice(device->vendor_id, device->product_id, device->version, device->interface_number, device->name)) {
             return driver;
         }
     }
@@ -914,7 +914,7 @@ HIDAPI_UpdateDeviceList(void)
 }
 
 SDL_bool
-HIDAPI_IsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version)
+HIDAPI_IsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
 {
     SDL_HIDAPI_Device *device;
 
@@ -924,13 +924,17 @@ HIDAPI_IsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version)
     }
 
     /* Don't update the device list for devices we know aren't supported */
-    if (!HIDAPI_IsDeviceSupported(vendor_id, product_id, version)) {
+    if (!HIDAPI_IsDeviceSupported(vendor_id, product_id, version, name)) {
         return SDL_FALSE;
     }
 
     /* Make sure the device list is completely up to date when we check for device presence */
     HIDAPI_UpdateDeviceList();
 
+    /* Note that this isn't a perfect check - there may be multiple devices with 0 VID/PID,
+       or a different name than we have it listed here, etc, but if we support the device
+       and we have something similar in our device list, mark it as present.
+     */
     device = SDL_HIDAPI_devices;
     while (device) {
         if (device->vendor_id == vendor_id && device->product_id == product_id && device->driver) {

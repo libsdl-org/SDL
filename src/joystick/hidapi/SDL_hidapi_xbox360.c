@@ -247,7 +247,7 @@ HIDAPI_DriverXbox360_QuitWindowsGamingInput(SDL_DriverXbox360_Context *ctx)
 #endif /* SDL_JOYSTICK_HIDAPI_WINDOWS_GAMING_INPUT */
 
 static SDL_bool
-HIDAPI_DriverXbox360_IsSupportedDevice(Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number)
+HIDAPI_DriverXbox360_IsSupportedDevice(Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, const char *name)
 {
 #if defined(__MACOSX__) || defined(__WIN32__)
     if (vendor_id == 0x045e && product_id == 0x028e && version == 1) {
