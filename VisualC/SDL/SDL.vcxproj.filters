@@ -259,7 +259,7 @@
     <ClInclude Include="..\..\src\haptic\windows\SDL_dinputhaptic_c.h" />
     <ClInclude Include="..\..\src\haptic\windows\SDL_windowshaptic_c.h" />
     <ClInclude Include="..\..\src\haptic\windows\SDL_xinputhaptic_c.h" />
-    <ClInclude Include="..\..\src\joystick\hidapi\controller_type.h" />
+    <ClInclude Include="..\..\src\joystick\controller_type.h" />
     <ClInclude Include="..\..\src\joystick\hidapi\SDL_hidapijoystick_c.h" />
     <ClInclude Include="..\..\src\joystick\SDL_joystick_c.h" />
     <ClInclude Include="..\..\src\joystick\SDL_sysjoystick.h" />
