@@ -465,7 +465,7 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x057e, 0x2009 ), k_eControllerType_SwitchProController },        // Nintendo Switch Pro Controller
     
     { MAKE_CONTROLLER_ID( 0x0f0d, 0x00c1 ), k_eControllerType_SwitchInputOnlyController },  // HORIPAD for Nintendo Switch
-    { MAKE_CONTROLLER_ID( 0x0f0d, 0x0092 ), k_eControllerType_SwitchInputOnlyController },  // HORI Pokken Tournament DX Pro Pad
+    { MAKE_CONTROLLER_ID( 0x0f0d, 0x0092 ), k_eControllerType_SwitchInputOnlyController },  // HOR                                    I Pokken Tournament DX Pro Pad
     { MAKE_CONTROLLER_ID( 0x0f0d, 0x00f6 ), k_eControllerType_SwitchProController },        // HORI Wireless Switch Pad
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x00dc ), k_eControllerType_XInputSwitchController },     // HORI Battle Pad. Is a Switch controller but shows up through XInput on Windows.
     { MAKE_CONTROLLER_ID( 0x20d6, 0xa711 ), k_eControllerType_SwitchInputOnlyController },  // PowerA Wired Controller Plus/PowerA Wired Controller Nintendo GameCube Style
@@ -473,6 +473,7 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0180 ), k_eControllerType_SwitchInputOnlyController },  // PDP Faceoff Wired Pro Controller for Nintendo Switch
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0181 ), k_eControllerType_SwitchInputOnlyController },  // PDP Faceoff Deluxe Wired Pro Controller for Nintendo Switch
 	{ MAKE_CONTROLLER_ID( 0x20d6, 0xa712 ), k_eControllerType_SwitchInputOnlyController },  // PowerA - Fusion Fight Pad
+	{ MAKE_CONTROLLER_ID( 0x20d6, 0xa713 ), k_eControllerType_SwitchInputOnlyController },  // PowerA - Super Mario Controller
 
 	// Valve products - don't add to public list
     { MAKE_CONTROLLER_ID( 0x0000, 0x11fb ), k_eControllerType_MobileTouch },		// Streaming mobile touch virtual controls
