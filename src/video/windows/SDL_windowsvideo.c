@@ -386,7 +386,7 @@ SDL_DXGIGetOutputInfo(int displayIndex, int *adapterIndex, int *outputIndex)
     void *pDXGIDLL;
     char *displayName;
     int nAdapter, nOutput;
-    IDXGIFactory *pDXGIFactory;
+    IDXGIFactory *pDXGIFactory = NULL;
     IDXGIAdapter *pDXGIAdapter;
     IDXGIOutput* pDXGIOutput;
 
