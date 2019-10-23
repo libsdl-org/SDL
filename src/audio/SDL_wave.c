@@ -717,7 +717,7 @@ MS_ADPCM_Decode(WaveFile *file, Uint8 **audio_buf, Uint32 *audio_len)
         result = MS_ADPCM_DecodeBlockData(&state);
         if (result == -1) {
             /* Unexpected end. Stop decoding and return partial data if necessary. */
-            if (file->trunchint == TruncVeryStrict || file->trunchint == TruncVeryStrict) {
+            if (file->trunchint == TruncVeryStrict || file->trunchint == TruncStrict) {
                 SDL_free(state.output.data);
                 return SDL_SetError("Truncated data chunk");
             } else if (file->trunchint != TruncDropFrame) {
@@ -1114,7 +1114,7 @@ IMA_ADPCM_Decode(WaveFile *file, Uint8 **audio_buf, Uint32 *audio_len)
 
         if (result == -1) {
             /* Unexpected end. Stop decoding and return partial data if necessary. */
-            if (file->trunchint == TruncVeryStrict || file->trunchint == TruncVeryStrict) {
+            if (file->trunchint == TruncVeryStrict || file->trunchint == TruncStrict) {
                 SDL_free(state.output.data);
                 SDL_free(cstate);
                 return SDL_SetError("Truncated data chunk");
