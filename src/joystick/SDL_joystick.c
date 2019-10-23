@@ -1018,7 +1018,7 @@ void
 SDL_JoystickUpdate(void)
 {
     int i;
-    SDL_Joystick *joystick;
+    SDL_Joystick *joystick, *next;
 
     if (!SDL_WasInit(SDL_INIT_JOYSTICK)) {
         return;
@@ -1074,7 +1074,8 @@ SDL_JoystickUpdate(void)
     SDL_updating_joystick = SDL_FALSE;
 
     /* If any joysticks were closed while updating, free them here */
-    for (joystick = SDL_joysticks; joystick; joystick = joystick->next) {
+    for (joystick = SDL_joysticks; joystick; joystick = next) {
+        next = joystick->next;
         if (joystick->ref_count <= 0) {
             SDL_JoystickClose(joystick);
         }
