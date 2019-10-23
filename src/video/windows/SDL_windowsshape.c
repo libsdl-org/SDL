@@ -34,6 +34,7 @@ Win32_CreateShaper(SDL_Window * window) {
     result->mode.mode = ShapeModeDefault;
     result->mode.parameters.binarizationCutoff = 1;
     result->userx = result->usery = 0;
+    result->hasshape = SDL_FALSE;
     result->driverdata = (SDL_ShapeData*)SDL_malloc(sizeof(SDL_ShapeData));
     ((SDL_ShapeData*)result->driverdata)->mask_tree = NULL;
     /* Put some driver-data here. */
