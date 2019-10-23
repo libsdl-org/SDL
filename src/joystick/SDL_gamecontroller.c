@@ -691,7 +691,9 @@ static void SDL_PrivateLoadButtonMapping(SDL_GameController *gamecontroller, con
 
     gamecontroller->name = pchName;
     gamecontroller->num_bindings = 0;
-    SDL_memset(gamecontroller->last_match_axis, 0, gamecontroller->joystick->naxes * sizeof(*gamecontroller->last_match_axis));
+    if (gamecontroller->joystick->naxes) {
+        SDL_memset(gamecontroller->last_match_axis, 0, gamecontroller->joystick->naxes * sizeof(*gamecontroller->last_match_axis));
+    }
 
     SDL_PrivateGameControllerParseControllerConfigString(gamecontroller, pchMapping);
 
