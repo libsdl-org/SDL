@@ -507,7 +507,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     WIN_ResetDeadKeys();
                 }
 
-                if (GetClipCursor(&rect) && SDL_memcmp(&rect, &data->cursor_clipped_rect, sizeof(rect) == 0)) {
+                if (GetClipCursor(&rect) && SDL_memcmp(&rect, &data->cursor_clipped_rect, sizeof(rect)) == 0) {
                     ClipCursor(NULL);
                     SDL_zero(data->cursor_clipped_rect);
                 }
