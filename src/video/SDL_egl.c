@@ -226,7 +226,6 @@ SDL_EGL_GetProcAddress(_THIS, const char *proc)
     const SDL_bool is_egl_15_or_later = eglver >= ((((Uint32) 1) << 16) | 5);
     void *retval = NULL;
 
-    /* eglGetProcAddress is busted on Android http://code.google.com/p/android/issues/detail?id=7681 */
     /* EGL 1.5 can use eglGetProcAddress() for any symbol. 1.4 and earlier can't use it for core entry points. */
     if (!retval && is_egl_15_or_later && _this->egl_data->eglGetProcAddress) {
         retval = _this->egl_data->eglGetProcAddress(proc);
@@ -244,7 +243,6 @@ SDL_EGL_GetProcAddress(_THIS, const char *proc)
         }
     }
 
-    /* eglGetProcAddress is busted on Android http://code.google.com/p/android/issues/detail?id=7681 */
     /* Try eglGetProcAddress if we on <= 1.4 and still searching... */
     if (!retval && !is_egl_15_or_later && _this->egl_data->eglGetProcAddress) {
         retval = _this->egl_data->eglGetProcAddress(proc);
