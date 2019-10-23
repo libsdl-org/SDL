@@ -503,7 +503,7 @@ void
 SDL_SensorUpdate(void)
 {
     int i;
-    SDL_Sensor *sensor;
+    SDL_Sensor *sensor, *next;
 
     if (!SDL_WasInit(SDL_INIT_SENSOR)) {
         return;
@@ -531,7 +531,8 @@ SDL_SensorUpdate(void)
     SDL_updating_sensor = SDL_FALSE;
 
     /* If any sensors were closed while updating, free them here */
-    for (sensor = SDL_sensors; sensor; sensor = sensor->next) {
+    for (sensor = SDL_sensors; sensor; sensor = next) {
+        next = sensor->next;
         if (sensor->ref_count <= 0) {
             SDL_SensorClose(sensor);
         }
