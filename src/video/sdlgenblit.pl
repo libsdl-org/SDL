@@ -68,8 +68,8 @@ my %get_rgba_string_ignore_alpha = (
 );
 
 my %get_rgba_string = (
-    "RGB888" => $get_rgba_string_ignore_alpha{"RGB888"} . " _A = 0xFF;",
-    "BGR888" => $get_rgba_string_ignore_alpha{"BGR888"} . " _A = 0xFF;",
+    "RGB888" => $get_rgba_string_ignore_alpha{"RGB888"},
+    "BGR888" => $get_rgba_string_ignore_alpha{"BGR888"},
     "ARGB8888" => $get_rgba_string_ignore_alpha{"ARGB8888"} . " _A = (Uint8)(_pixel >> 24);",
     "RGBA8888" => $get_rgba_string_ignore_alpha{"RGBA8888"} . " _A = (Uint8)_pixel;",
     "ABGR8888" => $get_rgba_string_ignore_alpha{"ABGR8888"} . " _A = (Uint8)(_pixel >> 24);",
@@ -212,6 +212,8 @@ sub output_copycore
     my $dst = shift;
     my $modulate = shift;
     my $blend = shift;
+    my $is_modulateA_done = shift;
+    my $A_is_const_FF = shift;
     my $s = "";
     my $d = "";
 
@@ -243,7 +245,7 @@ __EOF__
                 ${s}B = (${s}B * modulateB) / 255;
             }
 __EOF__
-        if (not $ignore_dst_alpha) {
+        if (!$ignore_dst_alpha && !$is_modulateA_done) {
             print FILE <<__EOF__;
             if (flags & SDL_COPY_MODULATE_ALPHA) {
                 ${s}A = (${s}A * modulateA) / 255;
@@ -252,7 +254,8 @@ __EOF__
         }
     }
     if ( $blend ) {
-        print FILE <<__EOF__;
+        if (!$A_is_const_FF) {
+            print FILE <<__EOF__;
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (${s}A < 255) {
@@ -261,17 +264,35 @@ __EOF__
                     ${s}B = (${s}B * ${s}A) / 255;
                 }
             }
+__EOF__
+        }
+        print FILE <<__EOF__;
             switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
             case SDL_COPY_BLEND:
+__EOF__
+        if ($A_is_const_FF) {
+            print FILE <<__EOF__;
+                ${d}R = ${s}R;
+                ${d}G = ${s}G;
+                ${d}B = ${s}B;
+__EOF__
+        } else {
+            print FILE <<__EOF__;
                 ${d}R = ${s}R + ((255 - ${s}A) * ${d}R) / 255;
                 ${d}G = ${s}G + ((255 - ${s}A) * ${d}G) / 255;
                 ${d}B = ${s}B + ((255 - ${s}A) * ${d}B) / 255;
 __EOF__
-
+        }
         if ( $dst_has_alpha ) {
-            print FILE <<__EOF__;
+            if ($A_is_const_FF) {
+                print FILE <<__EOF__;
+                ${d}A = 0xFF;
+__EOF__
+            } else {
+                print FILE <<__EOF__;
                 ${d}A = ${s}A + ((255 - ${s}A) * ${d}A) / 255;
 __EOF__
+            }
         }
 
         print FILE <<__EOF__;
@@ -306,6 +327,11 @@ sub output_copyfunc
 
     my $dst_has_alpha = ($dst =~ /A/) ? 1 : 0;
     my $ignore_dst_alpha = !$dst_has_alpha && !$blend;
+    
+    my $src_has_alpha = ($src =~ /A/) ? 1 : 0;
+
+    my $is_modulateA_done = 0;
+    my $A_is_const_FF = 0;
 
     output_copyfuncname("static void", $src, $dst, $modulate, $blend, $scale, 1, "\n");
     print FILE <<__EOF__;
@@ -331,7 +357,25 @@ __EOF__
     if ( $blend ) {
         print FILE <<__EOF__;
     Uint32 srcpixel;
+__EOF__
+        if (!$ignore_dst_alpha && !$src_has_alpha) {
+            if ($modulate){
+                $is_modulateA_done = 1;
+                print FILE <<__EOF__;
+    const Uint32 srcA = (flags & SDL_COPY_MODULATE_ALPHA) ? modulateA : 0xFF;
+__EOF__
+            } else {
+                $A_is_const_FF = 1;
+            }
+            print FILE <<__EOF__;
+    Uint32 srcR, srcG, srcB;
+__EOF__
+        } else {
+            print FILE <<__EOF__;
     Uint32 srcR, srcG, srcB, srcA;
+__EOF__
+        }
+        print FILE <<__EOF__;
     Uint32 dstpixel;
 __EOF__
         if ($dst_has_alpha) {
@@ -347,7 +391,22 @@ __EOF__
         print FILE <<__EOF__;
     Uint32 pixel;
 __EOF__
-        if (!$ignore_dst_alpha) {
+        if (!$ignore_dst_alpha && !$src_has_alpha) {
+            if ($modulate){
+                $is_modulateA_done = 1;
+                print FILE <<__EOF__;
+    const Uint32 A = (flags & SDL_COPY_MODULATE_ALPHA) ? modulateA : 0xFF;
+__EOF__
+            } else {
+                $A_is_const_FF = 1;
+                print FILE <<__EOF__;
+    const Uint32 A = 0xFF;
+__EOF__
+            }
+            print FILE <<__EOF__;
+    Uint32 R, G, B;
+__EOF__
+        } elsif (!$ignore_dst_alpha) {
             print FILE <<__EOF__;
     Uint32 R, G, B, A;
 __EOF__
@@ -392,7 +451,7 @@ __EOF__
         print FILE <<__EOF__;
             }
 __EOF__
-        output_copycore($src, $dst, $modulate, $blend);
+        output_copycore($src, $dst, $modulate, $blend, $is_modulateA_done, $A_is_const_FF);
         print FILE <<__EOF__;
             posx += incx;
             ++dst;
@@ -410,7 +469,7 @@ __EOF__
         int n = info->dst_w;
         while (n--) {
 __EOF__
-        output_copycore($src, $dst, $modulate, $blend);
+        output_copycore($src, $dst, $modulate, $blend, $is_modulateA_done, $A_is_const_FF);
         print FILE <<__EOF__;
             ++src;
             ++dst;
