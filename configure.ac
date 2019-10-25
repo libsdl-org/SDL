@@ -1303,6 +1303,42 @@ AS_HELP_STRING([--enable-libsamplerate-shared], [dynamically load libsamplerate 
     fi
 }
 
+dnl Check for ARM instruction support using gas syntax
+CheckARM()
+{
+    AC_ARG_ENABLE(arm-simd,
+AC_HELP_STRING([--enable-arm-simd], [use SIMD assembly blitters on ARM [[default=yes]]]),
+                  enable_arm_simd=$enableval, enable_arm_simd=yes)
+    if test x$enable_video = xyes -a x$enable_assembly = xyes -a x$enable_arm_simd = xyes; then
+        save_CFLAGS="$CFLAGS"
+        have_arm_simd=no
+        CFLAGS="-x assembler-with-cpp $CFLAGS"
+        
+        AC_MSG_CHECKING(for ARM SIMD)
+        AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
+        .text
+        .arch armv6
+        .object_arch armv4
+        .arm
+        .altmacro
+        #ifndef __ARM_EABI__
+        #error EABI is required (to be sure that calling conventions are compatible)
+        #endif
+        pld [r0]
+        uqadd8 r0, r0, r0
+        ]])], have_arm_simd=yes)
+        AC_MSG_RESULT($have_arm_simd)
+        
+        CFLAGS="$save_CFLAGS"
+        
+        if test x$have_arm_simd = xyes; then
+            AC_DEFINE(SDL_ARM_SIMD_BLITTERS)
+dnl            SOURCES="$SOURCES $srcdir/src/video/arm/pixman-arm-simd*.c"
+            SOURCES="$SOURCES $srcdir/src/video/arm/pixman-arm-simd*.S"
+        fi
+    fi
+}
+
 dnl See if GCC's -fvisibility=hidden is supported (gcc4 and later, usually).
 dnl  Details of this flag are here: http://gcc.gnu.org/wiki/Visibility
 CheckVisibilityHidden()
@@ -3396,6 +3432,7 @@ case "$host" in
         CheckDiskAudio
         CheckDummyAudio
         CheckDLOPEN
+        CheckARM
         CheckOSS
         CheckALSA
         CheckPulseAudio
