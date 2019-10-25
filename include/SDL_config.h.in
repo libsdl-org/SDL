@@ -407,6 +407,7 @@
 /* Enable assembly routines */
 #undef SDL_ASSEMBLY_ROUTINES
 #undef SDL_ALTIVEC_BLITTERS
+#undef SDL_ARM_SIMD_BLITTERS
 
 /* Enable ime support */
 #undef SDL_USE_IME

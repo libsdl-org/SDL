@@ -187,6 +187,11 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasAVX2(void);
 extern DECLSPEC SDL_bool SDLCALL SDL_HasAVX512F(void);
 
 /**
+ *  This function returns true if the CPU has ARM SIMD (ARMv6) features.
+ */
+extern DECLSPEC SDL_bool SDLCALL SDL_HasARMSIMD(void);
+
+/**
  *  This function returns true if the CPU has NEON (ARM SIMD) features.
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_HasNEON(void);
