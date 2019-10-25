@@ -852,6 +852,8 @@ enable_diskaudio
 enable_dummyaudio
 enable_libsamplerate
 enable_libsamplerate_shared
+enable_arm_simd
+enable_arm_neon
 enable_video_wayland
 enable_video_wayland_qt_touch
 enable_wayland_shared
@@ -1622,6 +1624,8 @@ Optional Features:
                           [[default=yes]]
   --enable-libsamplerate-shared
                           dynamically load libsamplerate [[default=yes]]
+  --enable-arm-simd       use SIMD assembly blitters on ARM [[default=yes]]
+  --enable-arm-neon       use NEON assembly blitters on ARM [[default=yes]]
   --enable-video-wayland  use Wayland video driver [[default=yes]]
   --enable-video-wayland-qt-touch
                           QtWayland server support for Wayland video driver
@@ -19358,6 +19362,106 @@ _ACEOF
     fi
 }
 
+CheckARM()
+{
+    # Check whether --enable-arm-simd was given.
+if test "${enable_arm_simd+set}" = set; then :
+  enableval=$enable_arm_simd; enable_arm_simd=$enableval
+else
+  enable_arm_simd=yes
+fi
+
+    if test x$enable_video = xyes -a x$enable_assembly = xyes -a x$enable_arm_simd = xyes; then
+        save_CFLAGS="$CFLAGS"
+        have_arm_simd=no
+        CFLAGS="-x assembler-with-cpp $CFLAGS"
+
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ARM SIMD" >&5
+$as_echo_n "checking for ARM SIMD... " >&6; }
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+        .text
+        .arch armv6
+        .object_arch armv4
+        .arm
+        .altmacro
+        #ifndef __ARM_EABI__
+        #error EABI is required (to be sure that calling conventions are compatible)
+        #endif
+        pld [r0]
+        uqadd8 r0, r0, r0
+
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  have_arm_simd=yes
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_arm_simd" >&5
+$as_echo "$have_arm_simd" >&6; }
+
+        CFLAGS="$save_CFLAGS"
+
+        if test x$have_arm_simd = xyes; then
+            $as_echo "#define SDL_ARM_SIMD_BLITTERS 1" >>confdefs.h
+
+            SOURCES="$SOURCES $srcdir/src/video/arm/pixman-arm-simd*.S"
+            WARN_ABOUT_ARM_SIMD_ASM_MIT="yes"
+        fi
+    fi
+}
+
+CheckNEON()
+{
+    # Check whether --enable-arm-neon was given.
+if test "${enable_arm_neon+set}" = set; then :
+  enableval=$enable_arm_neon; enable_arm_neon=$enableval
+else
+  enable_arm_neon=yes
+fi
+
+    if test x$enable_video = xyes -a x$enable_assembly = xyes -a x$enable_arm_neon = xyes; then
+        save_CFLAGS="$CFLAGS"
+        have_arm_neon=no
+        CFLAGS="-x assembler-with-cpp $CFLAGS"
+
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ARM NEON" >&5
+$as_echo_n "checking for ARM NEON... " >&6; }
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+        .text
+        .fpu neon
+        .arch armv7a
+        .object_arch armv4
+        .eabi_attribute 10, 0
+        .arm
+        .altmacro
+        #ifndef __ARM_EABI__
+        #error EABI is required (to be sure that calling conventions are compatible)
+        #endif
+        pld [r0]
+        vmovn.u16 d0, q0
+
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  have_arm_neon=yes
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_arm_neon" >&5
+$as_echo "$have_arm_neon" >&6; }
+
+        CFLAGS="$save_CFLAGS"
+
+        if test x$have_arm_neon = xyes; then
+            $as_echo "#define SDL_ARM_NEON_BLITTERS 1" >>confdefs.h
+
+            SOURCES="$SOURCES $srcdir/src/video/arm/pixman-arm-neon*.S"
+            WARN_ABOUT_ARM_NEON_ASM_MIT="yes"
+        fi
+    fi
+}
+
 CheckVisibilityHidden()
 {
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for GCC -fvisibility=hidden option" >&5
@@ -24486,6 +24590,8 @@ case "$host" in
         CheckDiskAudio
         CheckDummyAudio
         CheckDLOPEN
+        CheckARM
+        CheckNEON
         CheckOSS
         CheckALSA
         CheckPulseAudio
@@ -25551,6 +25657,23 @@ if test x$have_fcitx_frontend_h_hdr = xyes; then
 else
     SUMMARY="${SUMMARY}Using fcitx         : NO\n"
 fi
+
+if test x$WARN_ABOUT_ARM_SIMD_ASM_MIT = xyes; then
+    SUMMARY="${SUMMARY}\nSDL is being built with ARM SIMD optimizations, which\n"
+    SUMMARY="${SUMMARY}uses code licensed under the MIT license. If this is a\n"
+    SUMMARY="${SUMMARY}problem, please disable that code by rerunning the\n"
+    SUMMARY="${SUMMARY}configure script with:\n"
+    SUMMARY="${SUMMARY}\n    --disable-arm-simd\n"
+fi
+
+if test x$WARN_ABOUT_ARM_NEON_ASM_MIT = xyes; then
+    SUMMARY="${SUMMARY}\nSDL is being built with ARM NEON optimizations, which\n"
+    SUMMARY="${SUMMARY}uses code licensed under the MIT license. If this is a\n"
+    SUMMARY="${SUMMARY}problem, please disable that code by rerunning the\n"
+    SUMMARY="${SUMMARY}configure script with:\n"
+    SUMMARY="${SUMMARY}\n    --disable-arm-neon\n"
+fi
+
 ac_config_commands="$ac_config_commands summary"
 
 
