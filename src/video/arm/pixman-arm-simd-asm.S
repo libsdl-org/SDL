@@ -363,3 +363,45 @@ generate_composite_function \
     nop_macro, /* cleanup */ \
     ARGBto565PixelAlpha_process_head, \
     ARGBto565PixelAlpha_process_tail
+
+ /******************************************************************************/
+
+.macro BGR888toRGB888_1pixel cond, reg, tmp
+        uxtb16&cond  tmp, WK&reg, ror #8
+        uxtb16&cond  WK&reg, WK&reg, ror #16
+        orr&cond     WK&reg, WK&reg, tmp, lsl #8
+.endm
+
+.macro BGR888toRGB888_2pixels cond, reg1, reg2, tmp1, tmp2
+        uxtb16&cond  tmp1, WK&reg1, ror #8
+        uxtb16&cond  WK&reg1, WK&reg1, ror #16
+        uxtb16&cond  tmp2, WK&reg2, ror #8
+        uxtb16&cond  WK&reg2, WK&reg2, ror #16
+        orr&cond     WK&reg1, WK&reg1, tmp1, lsl #8
+        orr&cond     WK&reg2, WK&reg2, tmp2, lsl #8
+.endm
+
+.macro BGR888toRGB888_process_head  cond, numbytes, firstreg, unaligned_src, unaligned_mask, preload
+        pixld   cond, numbytes, firstreg, SRC, unaligned_src
+.endm
+
+.macro BGR888toRGB888_process_tail  cond, numbytes, firstreg
+ .if numbytes >= 8
+        BGR888toRGB888_2pixels cond, %(firstreg+0), %(firstreg+1), MASK, STRIDE_M
+  .if numbytes == 16
+        BGR888toRGB888_2pixels cond, %(firstreg+2), %(firstreg+3), MASK, STRIDE_M
+  .endif
+ .else @ numbytes == 4
+        BGR888toRGB888_1pixel cond, %(firstreg+0), MASK
+ .endif
+.endm
+
+generate_composite_function \
+    Blit_BGR888_RGB888ARMSIMDAsm, 32, 0, 32, \
+    FLAG_DST_WRITEONLY | FLAG_COND_EXEC | FLAG_PROCESS_PRESERVES_SCRATCH, \
+    2, /* prefetch distance */ \
+    nop_macro, /* init */ \
+    nop_macro, /* newline */ \
+    nop_macro, /* cleanup */ \
+    BGR888toRGB888_process_head, \
+    BGR888toRGB888_process_tail
