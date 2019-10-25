@@ -1339,6 +1339,44 @@ dnl            SOURCES="$SOURCES $srcdir/src/video/arm/pixman-arm-simd*.c"
     fi
 }
 
+dnl Check for ARM NEON instruction support using gas syntax
+CheckNEON()
+{
+    AC_ARG_ENABLE(arm-neon,
+AC_HELP_STRING([--enable-arm-neon], [use NEON assembly blitters on ARM [[default=yes]]]),
+                  enable_arm_neon=$enableval, enable_arm_neon=yes)
+    if test x$enable_video = xyes -a x$enable_assembly = xyes -a x$enable_arm_neon = xyes; then
+        save_CFLAGS="$CFLAGS"
+        have_arm_neon=no
+        CFLAGS="-x assembler-with-cpp $CFLAGS"
+        
+        AC_MSG_CHECKING(for ARM NEON)
+        AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
+        .text
+        .fpu neon
+        .arch armv7a
+        .object_arch armv4
+        .eabi_attribute 10, 0
+        .arm
+        .altmacro
+        #ifndef __ARM_EABI__
+        #error EABI is required (to be sure that calling conventions are compatible)
+        #endif
+        pld [r0]
+        vmovn.u16 d0, q0
+        ]])], have_arm_neon=yes)
+        AC_MSG_RESULT($have_arm_neon)
+        
+        CFLAGS="$save_CFLAGS"
+        
+        if test x$have_arm_neon = xyes; then
+            AC_DEFINE(SDL_ARM_NEON_BLITTERS)
+dnl            SOURCES="$SOURCES $srcdir/src/video/arm/pixman-arm-neon*.c"
+            SOURCES="$SOURCES $srcdir/src/video/arm/pixman-arm-neon*.S"
+        fi
+    fi
+}
+
 dnl See if GCC's -fvisibility=hidden is supported (gcc4 and later, usually).
 dnl  Details of this flag are here: http://gcc.gnu.org/wiki/Visibility
 CheckVisibilityHidden()
@@ -3433,6 +3471,7 @@ case "$host" in
         CheckDummyAudio
         CheckDLOPEN
         CheckARM
+        CheckNEON
         CheckOSS
         CheckALSA
         CheckPulseAudio
