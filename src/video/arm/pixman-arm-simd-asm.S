@@ -47,6 +47,74 @@
 
 /******************************************************************************/
 
+.macro FillRect32_init
+        ldr     SRC, [sp, #ARGS_STACK_OFFSET]
+        mov     STRIDE_S, SRC
+        mov     MASK, SRC
+        mov     STRIDE_M, SRC
+.endm
+
+.macro FillRect16_init
+        ldrh    SRC, [sp, #ARGS_STACK_OFFSET]
+        orr     SRC, SRC, lsl #16
+        mov     STRIDE_S, SRC
+        mov     MASK, SRC
+        mov     STRIDE_M, SRC
+.endm
+
+.macro FillRect8_init
+        ldrb    SRC, [sp, #ARGS_STACK_OFFSET]
+        orr     SRC, SRC, lsl #8
+        orr     SRC, SRC, lsl #16
+        mov     STRIDE_S, SRC
+        mov     MASK, SRC
+        mov     STRIDE_M, SRC
+.endm
+
+.macro FillRect_process_tail  cond, numbytes, firstreg
+    WK4     .req    SRC
+    WK5     .req    STRIDE_S
+    WK6     .req    MASK
+    WK7     .req    STRIDE_M
+        pixst   cond, numbytes, 4, DST
+    .unreq  WK4
+    .unreq  WK5
+    .unreq  WK6
+    .unreq  WK7
+.endm
+
+generate_composite_function \
+    FillRect32ARMSIMDAsm, 0, 0, 32, \
+    FLAG_DST_WRITEONLY | FLAG_COND_EXEC | FLAG_PROCESS_PRESERVES_PSR | FLAG_PROCESS_DOES_STORE | FLAG_PROCESS_PRESERVES_SCRATCH \
+    0, /* prefetch distance doesn't apply */ \
+    FillRect32_init \
+    nop_macro, /* newline */ \
+    nop_macro /* cleanup */ \
+    nop_macro /* process head */ \
+    FillRect_process_tail
+
+generate_composite_function \
+    FillRect16ARMSIMDAsm, 0, 0, 16, \
+    FLAG_DST_WRITEONLY | FLAG_COND_EXEC | FLAG_PROCESS_PRESERVES_PSR | FLAG_PROCESS_DOES_STORE | FLAG_PROCESS_PRESERVES_SCRATCH \
+    0, /* prefetch distance doesn't apply */ \
+    FillRect16_init \
+    nop_macro, /* newline */ \
+    nop_macro /* cleanup */ \
+    nop_macro /* process head */ \
+    FillRect_process_tail
+
+generate_composite_function \
+    FillRect8ARMSIMDAsm, 0, 0, 8, \
+    FLAG_DST_WRITEONLY | FLAG_COND_EXEC | FLAG_PROCESS_PRESERVES_PSR | FLAG_PROCESS_DOES_STORE | FLAG_PROCESS_PRESERVES_SCRATCH \
+    0, /* prefetch distance doesn't apply */ \
+    FillRect8_init \
+    nop_macro, /* newline */ \
+    nop_macro /* cleanup */ \
+    nop_macro /* process head */ \
+    FillRect_process_tail
+
+/******************************************************************************/
+
 /* This differs from the over_8888_8888 routine in Pixman in that the destination
  * alpha component is always left unchanged, and RGB components are not
  * premultiplied by alpha. It differs from BlitRGBtoRGBPixelAlpha in that
