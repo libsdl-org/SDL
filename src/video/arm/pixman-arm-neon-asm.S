@@ -157,3 +157,91 @@ generate_composite_function \
     RGBtoRGBPixelAlpha_process_pixblock_head, \
     RGBtoRGBPixelAlpha_process_pixblock_tail, \
     RGBtoRGBPixelAlpha_process_pixblock_tail_head
+
+ /******************************************************************************/
+
+.macro ARGBto565PixelAlpha_process_pixblock_head
+    vmvn        d6, d3
+    vshr.u8     d1, #2
+    vshr.u8     d3, #3
+    vshr.u8     d0, #3
+    vshrn.u16   d7, q2, #3
+    vshrn.u16   d25, q2, #8
+    vbic.i16    q2, #0xe0
+    vshr.u8     d6, #3
+    vshr.u8     d7, #2
+    vshr.u8     d2, #3
+    vmovn.u16   d24, q2
+    vshr.u8     d25, #3
+    vmull.u8    q13, d1, d3
+    vmlal.u8    q13, d7, d6
+    vmull.u8    q14, d0, d3
+    vmlal.u8    q14, d24, d6
+    vmull.u8    q15, d2, d3
+    vmlal.u8    q15, d25, d6
+.endm
+
+.macro ARGBto565PixelAlpha_process_pixblock_tail
+    vsra.u16    q13, #5
+    vsra.u16    q14, #5
+    vsra.u16    q15, #5
+    vrshr.u16   q13, #5
+    vrshr.u16   q14, #5
+    vrshr.u16   q15, #5
+    vsli.u16    q14, q13, #5
+    vsli.u16    q14, q15, #11
+.endm
+
+.macro ARGBto565PixelAlpha_process_pixblock_tail_head
+    vld4.8      {d0-d3}, [SRC]!
+                                    PF add PF_X, PF_X, #8
+        vsra.u16    q13, #5
+                                    PF tst PF_CTL, #0xF
+        vsra.u16    q14, #5
+                                    PF addne PF_X, PF_X, #8
+        vsra.u16    q15, #5
+                                    PF subne PF_CTL, PF_CTL, #1
+        vrshr.u16   q13, #5
+                                    PF cmp PF_X, ORIG_W
+        vrshr.u16   q14, #5
+                                    PF pld, [PF_SRC, PF_X, lsl #src_bpp_shift]
+        vrshr.u16   q15, #5
+                                    PF pld, [PF_DST, PF_X, lsl #dst_bpp_shift]
+    vld1.8      {d4-d5}, [DST_R]!
+                                    PF subge PF_X, PF_X, ORIG_W
+        vsli.u16    q14, q13, #5
+                                    PF subges PF_CTL, PF_CTL, #0x10
+        vsli.u16    q14, q15, #11
+                                    PF ldrgeb DUMMY, [PF_SRC, SRC_STRIDE, lsl #src_bpp_shift]!
+        vst1.8      {q14}, [DST_W :128]!
+    vmvn        d6, d3
+    vshr.u8     d1, #2
+    vshr.u8     d3, #3
+    vshr.u8     d0, #3
+    vshrn.u16   d7, q2, #3
+    vshrn.u16   d25, q2, #8
+    vbic.i16    q2, #0xe0
+                                    PF ldrgeb DUMMY, [PF_DST, DST_STRIDE, lsl #dst_bpp_shift]!
+    vshr.u8     d6, #3
+    vshr.u8     d7, #2
+    vshr.u8     d2, #3
+    vmovn.u16   d24, q2
+    vshr.u8     d25, #3
+    vmull.u8    q13, d1, d3
+    vmlal.u8    q13, d7, d6
+    vmull.u8    q14, d0, d3
+    vmlal.u8    q14, d24, d6
+    vmull.u8    q15, d2, d3
+    vmlal.u8    q15, d25, d6
+.endm
+
+generate_composite_function \
+    BlitARGBto565PixelAlphaARMNEONAsm, 32, 0, 16, \
+    FLAG_DST_READWRITE | FLAG_DEINTERLEAVE_32BPP, \
+    8, /* number of pixels, processed in a single block */ \
+    6, /* prefetch distance */ \
+    default_init, \
+    default_cleanup, \
+    ARGBto565PixelAlpha_process_pixblock_head, \
+    ARGBto565PixelAlpha_process_pixblock_tail, \
+    ARGBto565PixelAlpha_process_pixblock_tail_head
