@@ -281,6 +281,27 @@ SDL_FillRects(SDL_Surface * dst, const SDL_Rect * rects, int count,
         return SDL_SetError("SDL_FillRects() passed NULL rects");
     }
 
+#if SDL_ARM_NEON_BLITTERS
+    if (SDL_HasNEON() && dst->format->BytesPerPixel != 3) {
+        void FillRect8ARMNEONAsm(int32_t w, int32_t h, uint8_t *dst, int32_t dst_stride, uint8_t src);
+        void FillRect16ARMNEONAsm(int32_t w, int32_t h, uint16_t *dst, int32_t dst_stride, uint16_t src);
+        void FillRect32ARMNEONAsm(int32_t w, int32_t h, uint32_t *dst, int32_t dst_stride, uint32_t src);
+        switch (dst->format->BytesPerPixel) {
+        case 1:
+            FillRect8ARMNEONAsm(rect->w, rect->h, (uint8_t *) pixels, dst->pitch >> 0, color);
+            break;
+        case 2:
+            FillRect16ARMNEONAsm(rect->w, rect->h, (uint16_t *) pixels, dst->pitch >> 1, color);
+            break;
+        case 4:
+            FillRect32ARMNEONAsm(rect->w, rect->h, (uint32_t *) pixels, dst->pitch >> 2, color);
+            break;
+        }
+
+        SDL_UnlockSurface(dst);
+        return(0);
+    }
+#endif
 #if SDL_ARM_SIMD_BLITTERS
     if (SDL_HasARMSIMD() && dst->format->BytesPerPixel != 3) {
         void FillRect8ARMSIMDAsm(int32_t w, int32_t h, uint8_t *dst, int32_t dst_stride, uint8_t src);
