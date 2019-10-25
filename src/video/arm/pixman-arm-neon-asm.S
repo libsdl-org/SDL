@@ -95,6 +95,134 @@
 
 /******************************************************************************/
 
+/* We can actually do significantly better than the Pixman macros, at least for
+ * the case of fills, by using a carefully scheduled inner loop. Cortex-A53
+ * shows an improvement of up to 78% in ideal cases (large fills to L1 cache).
+ */
+
+.macro generate_fillrect_function name, bpp, log2Bpp
+/*
+ * void name(int32_t w, int32_t h, uint8_t *dst, int32_t dst_stride, uint8_t src);
+ * On entry:
+ * a1 = width, pixels
+ * a2 = height, rows
+ * a3 = pointer to top-left destination pixel
+ * a4 = stride, pixels
+ * [sp] = pixel value to fill with
+ * Within the function:
+ * v1 = width remaining
+ * v2 = vst offset
+ * v3 = alternate pointer
+ * ip = data ARM register
+ */
+pixman_asm_function name
+    vld1.\bpp   {d0[],d1[]}, [sp]
+    sub         a4, a1
+    vld1.\bpp   {d2[],d3[]}, [sp]
+    cmp         a1, #(15+64) >> \log2Bpp
+    push        {v1-v3,lr}
+    vmov        ip, s0
+    blo         51f
+
+    /* Long-row case */
+    mov         v2, #64
+1:  mov         v1, a1
+    ands        v3, a3, #15
+    beq         2f
+    /* Leading pixels */
+    rsb         v3, v3, #16  /* number of leading bytes until 16-byte aligned */
+    sub         v1, v1, v3, lsr #\log2Bpp
+    rbit        v3, v3
+.if bpp <= 16
+.if bpp == 8
+    tst         a3, #1       /* bit 0 unaffected by rsb so can avoid register interlock */
+    strneb      ip, [a3], #1
+    tst         v3, #1<<30
+.else
+    tst         a3, #2       /* bit 1 unaffected by rsb (assuming halfword alignment) so can avoid register interlock */
+.endif
+    strneh      ip, [a3], #2
+.endif
+    movs        v3, v3, lsl #3
+    vstmcs      a3!, {s0}
+    vstmmi      a3!, {d0}
+2:  sub         v1, v1, #64 >> \log2Bpp /* simplifies inner loop termination */
+    add         v3, a3, #32
+    /* Inner loop */
+3:  vst1.\bpp   {q0-q1}, [a3 :128], v2
+    subs        v1, v1, #64 >> \log2Bpp
+    vst1.\bpp   {q0-q1}, [v3 :128], v2
+    bhs         3b
+    /* Trailing pixels */
+4:  movs        v1, v1, lsl #27 + \log2Bpp
+    bcc         5f
+    vst1.\bpp   {q0-q1}, [a3 :128]!
+5:  bpl         6f
+    vst1.\bpp   {q0}, [a3 :128]!
+6:  movs        v1, v1, lsl #2
+    vstmcs      a3!, {d0}
+    vstmmi      a3!, {s0}
+.if bpp <= 16
+    movs        v1, v1, lsl #2
+    strcsh      ip, [a3], #2
+.if bpp == 8
+    strmib      ip, [a3], #1
+.endif
+.endif
+    subs        a2, a2, #1
+    add         a3, a3, a4, lsl #\log2Bpp
+    bhi         1b
+    pop         {v1-v3,pc}
+
+    /* Short-row case */
+51: movs        v1, a1
+.if bpp == 8
+    tst         a3, #3
+    beq         53f
+52: subs        v1, v1, #1
+    blo         57f
+    strb        ip, [a3], #1
+    tst         a3, #3
+    bne         52b
+.elseif bpp == 16
+    tstne       a3, #2
+    subne       v1, v1, #1
+    strneh      ip, [a3], #2
+.endif
+53: cmp         v1, #32 >> \log2Bpp
+    bcc         54f
+    vst1.\bpp   {q0-q1}, [a3]!
+    sub         v1, v1, #32 >> \log2Bpp
+    /* Trailing pixels */
+54: movs        v1, v1, lsl #27 + \log2Bpp
+    bcc         55f
+    vst1.\bpp   {q0-q1}, [a3]!
+55: bpl         56f
+    vst1.\bpp   {q0}, [a3]!
+56: movs        v1, v1, lsl #2
+    vstmcs      a3!, {d0}
+    vstmmi      a3!, {s0}
+.if bpp <= 16
+    movs        v1, v1, lsl #2
+    strcsh      ip, [a3], #2
+.if bpp == 8
+    strmib      ip, [a3], #1
+.endif
+.endif
+    subs        a2, a2, #1
+    add         a3, a3, a4, lsl #\log2Bpp
+    bhi         51b
+57: pop         {v1-v3,pc}
+
+.endfunc
+.endm
+
+generate_fillrect_function FillRect32ARMNEONAsm, 32, 2
+generate_fillrect_function FillRect16ARMNEONAsm, 16, 1
+generate_fillrect_function FillRect8ARMNEONAsm,  8,  0
+
+/******************************************************************************/
+
 .macro RGBtoRGBPixelAlpha_process_pixblock_head
     vmvn        d30, d3  /* get inverted source alpha */
     vmov        d31, d7  /* dest alpha is always unchanged */
