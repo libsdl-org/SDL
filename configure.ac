@@ -1335,6 +1335,7 @@ AC_HELP_STRING([--enable-arm-simd], [use SIMD assembly blitters on ARM [[default
             AC_DEFINE(SDL_ARM_SIMD_BLITTERS)
 dnl            SOURCES="$SOURCES $srcdir/src/video/arm/pixman-arm-simd*.c"
             SOURCES="$SOURCES $srcdir/src/video/arm/pixman-arm-simd*.S"
+            WARN_ABOUT_ARM_SIMD_ASM_MIT="yes"
         fi
     fi
 }
@@ -1373,6 +1374,7 @@ AC_HELP_STRING([--enable-arm-neon], [use NEON assembly blitters on ARM [[default
             AC_DEFINE(SDL_ARM_NEON_BLITTERS)
 dnl            SOURCES="$SOURCES $srcdir/src/video/arm/pixman-arm-neon*.c"
             SOURCES="$SOURCES $srcdir/src/video/arm/pixman-arm-neon*.S"
+            WARN_ABOUT_ARM_NEON_ASM_MIT="yes"
         fi
     fi
 }
@@ -4324,6 +4326,23 @@ if test x$have_fcitx_frontend_h_hdr = xyes; then
 else
     SUMMARY="${SUMMARY}Using fcitx         : NO\n"
 fi
+
+if test x$WARN_ABOUT_ARM_SIMD_ASM_MIT = xyes; then
+    SUMMARY="${SUMMARY}\nSDL is being built with ARM SIMD optimizations, which\n"
+    SUMMARY="${SUMMARY}uses code licensed under the MIT license. If this is a\n"
+    SUMMARY="${SUMMARY}problem, please disable that code by rerunning the\n"
+    SUMMARY="${SUMMARY}configure script with:\n"
+    SUMMARY="${SUMMARY}\n    --disable-arm-simd\n"
+fi
+
+if test x$WARN_ABOUT_ARM_NEON_ASM_MIT = xyes; then
+    SUMMARY="${SUMMARY}\nSDL is being built with ARM NEON optimizations, which\n"
+    SUMMARY="${SUMMARY}uses code licensed under the MIT license. If this is a\n"
+    SUMMARY="${SUMMARY}problem, please disable that code by rerunning the\n"
+    SUMMARY="${SUMMARY}configure script with:\n"
+    SUMMARY="${SUMMARY}\n    --disable-arm-neon\n"
+fi
+
 AC_CONFIG_COMMANDS([summary], [echo -en "$SUMMARY"], [SUMMARY="$SUMMARY"])
 
 AC_OUTPUT
