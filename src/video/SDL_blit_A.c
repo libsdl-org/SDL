@@ -390,6 +390,21 @@ BlitRGBtoRGBPixelAlphaMMX(SDL_BlitInfo * info)
 #endif /* __MMX__ */
 
 #if SDL_ARM_SIMD_BLITTERS
+void BlitARGBto565PixelAlphaARMSIMDAsm(int32_t w, int32_t h, uint16_t *dst, int32_t dst_stride, uint32_t *src, int32_t src_stride);
+
+static void
+BlitARGBto565PixelAlphaARMSIMD(SDL_BlitInfo * info)
+{
+	int32_t width = info->dst_w;
+	int32_t height = info->dst_h;
+	uint16_t *dstp = (uint16_t *)info->dst;
+	int32_t dststride = width + (info->dst_skip >> 1);
+	uint32_t *srcp = (uint32_t *)info->src;
+	int32_t srcstride = width + (info->src_skip >> 2);
+
+	BlitARGBto565PixelAlphaARMSIMDAsm(width, height, dstp, dststride, srcp, srcstride);
+}
+
 void BlitRGBtoRGBPixelAlphaARMSIMDAsm(int32_t w, int32_t h, uint32_t *dst, int32_t dst_stride, uint32_t *src, int32_t src_stride);
 
 static void
@@ -1301,6 +1316,15 @@ SDL_CalculateBlitA(SDL_Surface * surface)
             }
 
         case 2:
+#if SDL_ARM_SIMD_BLITTERS
+                if (sf->BytesPerPixel == 4 && sf->Amask == 0xff000000
+                    && sf->Gmask == 0xff00 && df->Gmask == 0x7e0
+                    && ((sf->Rmask == 0xff && df->Rmask == 0x1f)
+                    || (sf->Bmask == 0xff && df->Bmask == 0x1f))
+                    && SDL_HasARMSIMD())
+                        return BlitARGBto565PixelAlphaARMSIMD;
+                else
+#endif
                 if (sf->BytesPerPixel == 4 && sf->Amask == 0xff000000
                     && sf->Gmask == 0xff00
                     && ((sf->Rmask == 0xff && df->Rmask == 0x1f)

@@ -166,3 +166,200 @@ generate_composite_function \
     RGBtoRGBPixelAlpha_process_tail
 
 /******************************************************************************/
+
+.macro ARGBto565PixelAlpha_init
+        line_saved_regs STRIDE_D, STRIDE_S, ORIG_W
+        mov     MASK, #0x001f
+        mov     STRIDE_M, #0x0010
+        orr     MASK, MASK, MASK, lsl #16
+        orr     STRIDE_M, STRIDE_M, STRIDE_M, lsl #16
+.endm
+
+.macro ARGBto565PixelAlpha_newline
+        mov     STRIDE_S, #0x0200
+.endm
+
+/* On entry:
+ * s1 holds 1 32bpp source pixel
+ * d holds 1 16bpp destination pixel
+ * rbmask, rbhalf, ghalf hold 0x001f001f, 0x00100010, 0x00000200 respectively
+ * other registers are temporaries
+ * On exit:
+ * Constant registers preserved
+ */
+
+.macro ARGBto565PixelAlpha_1pixel_translucent  s, d, rbmask, rbhalf, ghalf, alpha, rb, g, misc
+        mov     alpha, s, lsr #27
+        and     misc, s, #0xfc00
+        and     g, d, #0x07e0
+        pkhbt   rb, d, d, lsl #5
+        rsb     misc, g, misc, lsr #5
+        and     s, rbmask, s, lsr #3
+        and     rb, rbmask, rb
+        sub     s, s, rb
+        smlabb  misc, misc, alpha, ghalf
+        mla     s, s, alpha, rbhalf
+        add     misc, misc, misc, lsl #5
+        add     g, g, misc, asr #10
+        add     s, s, s, lsl #5
+        and     g, g, #0x07e0
+        add     rb, rb, s, asr #10
+        and     rb, rb, rbmask
+        pkhbt   rb, rb, rb, lsl #11
+        orr     d, rb, g
+        orr     d, d, rb, lsr #16
+.endm
+
+/* On entry:
+ * s1 holds 1 32bpp source pixel
+ * d holds 1 16bpp destination pixel
+ * rbmask holds 0x001f001f
+ * On exit:
+ * Constant registers preserved
+ */
+
+.macro ARGBto565PixelAlpha_1pixel_opaque  s, d, rbmask
+        and     d, rbmask, s, lsr #3
+        and     s, s, #0xfc00
+        orr     d, d, d, lsr #5
+        orr     d, d, s, lsr #5
+.endm
+
+/* On entry:
+ * s1, s2 hold 2 32bpp source pixels
+ * d holds 2 16bpp destination pixels
+ * rbmask, rbhalf, ghalf hold 0x001f001f, 0x00100010, 0x00000200 respectively
+ * other registers are temporaries
+ * On exit:
+ * Constant registers preserved
+ * Blended results have been written through destination pointer
+ */
+
+.macro ARGBto565PixelAlpha_2pixels_translucent  s1, s2, d, rbmask, rbhalf, ghalf, alpha, rb, g, misc
+        mov     alpha, s1, lsr #27
+        and     misc, s1, #0xfc00
+        and     g, d, #0x07e0
+        pkhbt   rb, d, d, lsl #5
+        rsb     misc, g, misc, lsr #5
+        and     s1, rbmask, s1, lsr #3
+        and     rb, rbmask, rb
+        sub     s1, s1, rb
+        smlabb  misc, misc, alpha, ghalf
+        mla     s1, s1, alpha, rbhalf
+          uxth    d, d, ror #16
+        add     misc, misc, misc, lsl #5
+          mov     alpha, s2, lsr #27
+        add     g, g, misc, asr #10
+        add     s1, s1, s1, lsl #5
+        and     g, g, #0x07e0
+        add     rb, rb, s1, asr #10
+        and     rb, rb, rbmask
+          and     misc, s2, #0xfc00
+        pkhbt   rb, rb, rb, lsl #11
+          and     s1, d, #0x07e0
+          pkhbt   d, d, d, lsl #5
+          rsb     misc, s1, misc, lsr #5
+          and     s2, rbmask, s2, lsr #3
+          and     d, rbmask, d
+          sub     s2, s2, d
+          smlabb  misc, misc, alpha, ghalf
+          mla     s2, s2, alpha, rbhalf
+        orr     alpha, rb, g
+          add     misc, misc, misc, lsl #5
+        orr     alpha, alpha, rb, lsr #16
+          add     s1, s1, misc, asr #10
+          add     s2, s2, s2, lsl #5
+          and     s1, s1, #0x07e0
+          add     d, d, s2, asr #10
+          and     d, d, rbmask
+        strh    alpha, [DST, #-4]
+          pkhbt   d, d, d, lsl #11
+          orr     alpha, d, s1
+          orr     alpha, alpha, d, lsr #16
+          strh    alpha, [DST, #-2]
+.endm
+
+/* On entry:
+ * s1, s2 hold 2 32bpp source pixels
+ * rbmask holds 0x001f001f
+ * other registers are temporaries
+ * On exit:
+ * Constant registers preserved
+ * Blended results have been written through destination pointer
+ */
+
+.macro ARGBto565PixelAlpha_2pixels_opaque  s1, s2, d, rbmask, g
+        and     g, s1, #0xfc00
+        and     d, rbmask, s1, lsr #3
+          and     s1, rbmask, s2, lsr #3
+        orr     d, d, d, lsr #5
+        orr     d, d, g, lsr #5
+          and     g, s2, #0xfc00
+        strh    d, [DST, #-4]
+          orr     s1, s1, s1, lsr #5
+          orr     s1, s1, g, lsr #5
+          strh    s1, [DST, #-2]
+.endm
+
+.macro ARGBto565PixelAlpha_2pixels_head
+        ldrd    WK0, WK1, [SRC], #8
+        ldr     WK2, [DST], #4
+        orr     SCRATCH, WK0, WK1
+        and     ORIG_W, WK0, WK1
+        tst     SCRATCH, #0xff000000
+.endm
+
+.macro ARGBto565PixelAlpha_2pixels_tail
+        beq     20f @ all transparent
+        cmp     ORIG_W, #0xff000000
+        bhs     10f @ all opaque
+        ARGBto565PixelAlpha_2pixels_translucent  WK0, WK1, WK2, MASK, STRIDE_M, STRIDE_S, STRIDE_D, WK3, SCRATCH, ORIG_W
+        b       20f
+10:     ARGBto565PixelAlpha_2pixels_opaque  WK0, WK1, WK2, MASK, SCRATCH
+20:
+.endm
+
+.macro ARGBto565PixelAlpha_process_head  cond, numbytes, firstreg, unaligned_src, unaligned_mask, preload
+ .if numbytes == 16
+        ARGBto565PixelAlpha_2pixels_head
+        ARGBto565PixelAlpha_2pixels_tail
+        ARGBto565PixelAlpha_2pixels_head
+        ARGBto565PixelAlpha_2pixels_tail
+ .endif
+ .if numbytes >= 8
+        ARGBto565PixelAlpha_2pixels_head
+        ARGBto565PixelAlpha_2pixels_tail
+ .endif
+ .if numbytes >= 4
+        ARGBto565PixelAlpha_2pixels_head
+ .else // numbytes == 2
+        ldr     WK0, [SRC], #4
+        ldrh    WK2, [DST], #2
+        tst     WK0, #0xff000000
+ .endif
+.endm
+
+.macro ARGBto565PixelAlpha_process_tail  cond, numbytes, firstreg
+ .if numbytes >= 4
+        ARGBto565PixelAlpha_2pixels_tail
+ .else // numbytes == 2
+        beq     20f @ all transparent
+        cmp     WK0, #0xff000000
+        bhs     10f @ opaque
+        ARGBto565PixelAlpha_1pixel_translucent  WK0, WK2, MASK, STRIDE_M, STRIDE_S, STRIDE_D, WK3, SCRATCH, ORIG_W
+        b       19f
+10:     ARGBto565PixelAlpha_1pixel_opaque WK0, WK2, MASK
+19:     strh    WK2, [DST, #-2]
+20:
+ .endif
+.endm
+
+generate_composite_function \
+    BlitARGBto565PixelAlphaARMSIMDAsm, 32, 0, 16, \
+    FLAG_DST_READWRITE | FLAG_BRANCH_OVER | FLAG_PROCESS_CORRUPTS_PSR | FLAG_PROCESS_DOES_STORE | FLAG_SPILL_LINE_VARS | FLAG_PROCESS_CORRUPTS_WK0, \
+    2, /* prefetch distance */ \
+    ARGBto565PixelAlpha_init, \
+    ARGBto565PixelAlpha_newline, \
+    nop_macro, /* cleanup */ \
+    ARGBto565PixelAlpha_process_head, \
+    ARGBto565PixelAlpha_process_tail
