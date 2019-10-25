@@ -473,3 +473,60 @@ generate_composite_function \
     nop_macro, /* cleanup */ \
     BGR888toRGB888_process_head, \
     BGR888toRGB888_process_tail
+
+/******************************************************************************/
+
+.macro RGB444toRGB888_init
+        ldr     MASK, =0x0f0f0f0f
+        /* Set GE[3:0] to 0101 so SEL instructions do what we want */
+        msr     CPSR_s, #0x50000
+.endm
+
+.macro RGB444toRGB888_1pixel reg, mask, tmp
+        pkhbt   WK&reg, WK&reg, WK&reg, lsl #12      @ 0000aaaarrrrggggaaaarrrrggggbbbb
+        and     WK&reg, mask, WK&reg                 @ 0000aaaa0000gggg0000rrrr0000bbbb
+        orr     WK&reg, WK&reg, WK&reg, lsl #4       @ aaaaaaaaggggggggrrrrrrrrbbbbbbbb
+        pkhtb   tmp, WK&reg, WK&reg, asr #8          @ aaaaaaaaggggggggggggggggrrrrrrrr
+        pkhbt   WK&reg, WK&reg, WK&reg, lsl #8       @ ggggggggrrrrrrrrrrrrrrrrbbbbbbbb
+        sel     WK&reg, WK&reg, tmp                  @ aaaaaaaarrrrrrrrggggggggbbbbbbbb
+.endm
+
+.macro RGB444toRGB888_2pixels in, out1, out2, mask, tmp1, tmp2
+        and     tmp1, mask, WK&in                    @ 0000RRRR0000BBBB0000rrrr0000bbbb
+        and     tmp2, mask, WK&in, lsr #4            @ 0000AAAA0000GGGG0000aaaa0000gggg
+        orr     tmp1, tmp1, tmp1, lsl #4             @ RRRRRRRRBBBBBBBBrrrrrrrrbbbbbbbb
+        orr     tmp2, tmp2, tmp2, lsl #4             @ AAAAAAAAGGGGGGGGaaaaaaaagggggggg
+        pkhtb   WK&out2, tmp2, tmp1, asr #16         @ AAAAAAAAGGGGGGGGRRRRRRRRBBBBBBBB
+        pkhbt   WK&out1, tmp1, tmp2, lsl #16         @ aaaaaaaaggggggggrrrrrrrrbbbbbbbb
+        pkhtb   tmp2, WK&out2, WK&out2, asr #8       @ AAAAAAAAGGGGGGGGGGGGGGGGRRRRRRRR
+        pkhtb   tmp1, WK&out1, WK&out1, asr #8       @ aaaaaaaaggggggggggggggggrrrrrrrr
+        pkhbt   WK&out1, WK&out1, WK&out1, lsl #8    @ ggggggggrrrrrrrrrrrrrrrrbbbbbbbb
+        pkhbt   WK&out2, WK&out2, WK&out2, lsl #8    @ GGGGGGGGRRRRRRRRRRRRRRRRBBBBBBBB
+        sel     WK&out1, WK&out1, tmp1               @ aaaaaaaarrrrrrrrggggggggbbbbbbbb
+        sel     WK&out2, WK&out2, tmp2               @ AAAAAAAARRRRRRRRGGGGGGGGBBBBBBBB
+.endm
+
+.macro RGB444toRGB888_process_head  cond, numbytes, firstreg, unaligned_src, unaligned_mask, preload
+        pixld   cond, numbytes/2, firstreg, SRC, unaligned_src
+.endm
+
+.macro RGB444toRGB888_process_tail  cond, numbytes, firstreg
+ .if numbytes >= 8
+  .if numbytes == 16
+        RGB444toRGB888_2pixels %(firstreg+1), %(firstreg+2), %(firstreg+3), MASK, STRIDE_M, SCRATCH
+  .endif
+        RGB444toRGB888_2pixels %(firstreg+0), %(firstreg+0), %(firstreg+1), MASK, STRIDE_M, SCRATCH
+ .else @ numbytes == 4
+        RGB444toRGB888_1pixel %(firstreg+0), MASK, SCRATCH
+ .endif
+.endm
+
+generate_composite_function \
+    Blit_RGB444_RGB888ARMSIMDAsm, 16, 0, 32, \
+    FLAG_DST_WRITEONLY | FLAG_BRANCH_OVER, \
+    2, /* prefetch distance */ \
+    RGB444toRGB888_init, \
+    nop_macro, /* newline */ \
+    nop_macro, /* cleanup */ \
+    RGB444toRGB888_process_head, \
+    RGB444toRGB888_process_tail
