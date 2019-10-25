@@ -326,8 +326,10 @@ CPU_haveAltiVec(void)
     return altivec;
 }
 
-#ifdef __linux__
+#if !defined(__ARM_ARCH)
+static SDL_bool CPU_haveARMSIMD(void) { return 0; }
 
+#elif defined(__linux__)
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -359,14 +361,12 @@ CPU_haveARMSIMD(void)
 }
 
 #else
-
 static SDL_bool
 CPU_haveARMSIMD(void)
 {
-#warning SDL_HasARMSIMD is not implemented for this ARM platform. Write me.
+    #warning SDL_HasARMSIMD is not implemented for this ARM platform. Write me.
     return 0;
 }
-
 #endif
 
 #if (defined(__LINUX__) || defined(__ANDROID__)) && defined(__ARM_ARCH) && !defined(HAVE_GETAUXVAL)
