@@ -38,6 +38,12 @@
 
 /* Functions to blit from N-bit surfaces to other surfaces */
 
+enum blit_features {
+	BLIT_FEATURE_HAS_MMX = 1,
+	BLIT_FEATURE_HAS_ALTIVEC = 2,
+	BLIT_FEATURE_ALTIVEC_DONT_USE_PREFETCH = 4
+};
+
 #if SDL_ALTIVEC_BLITTERS
 #ifdef HAVE_ALTIVEC_H
 #include <altivec.h>
@@ -894,25 +900,26 @@ ConvertAltivec32to32_prefetch(SDL_BlitInfo * info)
     vec_dss(DST_CHAN_DEST);
 }
 
-static Uint32
+static enum blit_features
 GetBlitFeatures(void)
 {
-    static Uint32 features = 0xffffffff;
-    if (features == 0xffffffff) {
+    static enum blit_features features = -1;
+    if (features == (enum blit_features) -1) {
         /* Provide an override for testing .. */
         char *override = SDL_getenv("SDL_ALTIVEC_BLIT_FEATURES");
         if (override) {
-            features = 0;
-            SDL_sscanf(override, "%u", &features);
+            unsigned int features_as_uint = 0;
+            SDL_sscanf(override, "%u", &features_as_uint);
+            features = (enum blit_features) features_as_uint;
         } else {
             features = (0
                         /* Feature 1 is has-MMX */
-                        | ((SDL_HasMMX())? 1 : 0)
+                        | ((SDL_HasMMX())? BLIT_FEATURE_HAS_MMX : 0)
                         /* Feature 2 is has-AltiVec */
-                        | ((SDL_HasAltiVec())? 2 : 0)
+                        | ((SDL_HasAltiVec())? BLIT_FEATURE_HAS_ALTIVEC : 0)
                         /* Feature 4 is dont-use-prefetch */
                         /* !!!! FIXME: Check for G5 or later, not the cache size! Always prefetch on a G4. */
-                        | ((GetL3CacheSize() == 0) ? 4 : 0)
+                        | ((GetL3CacheSize() == 0) ? BLIT_FEATURE_ALTIVEC_DONT_USE_PREFETCH : 0)
                 );
         }
     }
@@ -924,7 +931,7 @@ GetBlitFeatures(void)
 #endif
 #else
 /* Feature 1 is has-MMX */
-#define GetBlitFeatures() ((Uint32)(SDL_HasMMX() ? 1 : 0))
+#define GetBlitFeatures() (SDL_HasMMX() ? BLIT_FEATURE_HAS_MMX : 0)
 #endif
 
 /* This is now endian dependent */
@@ -3185,7 +3192,7 @@ struct blit_table
     Uint32 srcR, srcG, srcB;
     int dstbpp;
     Uint32 dstR, dstG, dstB;
-    Uint32 blit_features;
+    enum blit_features blit_features;
     SDL_BlitFunc blitfunc;
     Uint32 alpha;  /* bitwise NO_ALPHA, SET_ALPHA, COPY_ALPHA */
 };
@@ -3198,9 +3205,9 @@ static const struct blit_table normal_blit_2[] = {
 #if SDL_ALTIVEC_BLITTERS
     /* has-altivec */
     {0x0000F800, 0x000007E0, 0x0000001F, 4, 0x00000000, 0x00000000, 0x00000000,
-     2, Blit_RGB565_32Altivec, NO_ALPHA | COPY_ALPHA | SET_ALPHA},
+     BLIT_FEATURE_HAS_ALTIVEC, Blit_RGB565_32Altivec, NO_ALPHA | COPY_ALPHA | SET_ALPHA},
     {0x00007C00, 0x000003E0, 0x0000001F, 4, 0x00000000, 0x00000000, 0x00000000,
-     2, Blit_RGB555_32Altivec, NO_ALPHA | COPY_ALPHA | SET_ALPHA},
+     BLIT_FEATURE_HAS_ALTIVEC, Blit_RGB555_32Altivec, NO_ALPHA | COPY_ALPHA | SET_ALPHA},
 #endif
     {0x0000F800, 0x000007E0, 0x0000001F, 4, 0x00FF0000, 0x0000FF00, 0x000000FF,
      0, Blit_RGB565_ARGB8888, NO_ALPHA | COPY_ALPHA | SET_ALPHA},
@@ -3255,13 +3262,13 @@ static const struct blit_table normal_blit_4[] = {
 #if SDL_ALTIVEC_BLITTERS
     /* has-altivec | dont-use-prefetch */
     {0x00000000, 0x00000000, 0x00000000, 4, 0x00000000, 0x00000000, 0x00000000,
-     6, ConvertAltivec32to32_noprefetch, NO_ALPHA | COPY_ALPHA | SET_ALPHA},
+     BLIT_FEATURE_HAS_ALTIVEC | BLIT_FEATURE_ALTIVEC_DONT_USE_PREFETCH, ConvertAltivec32to32_noprefetch, NO_ALPHA | COPY_ALPHA | SET_ALPHA},
     /* has-altivec */
     {0x00000000, 0x00000000, 0x00000000, 4, 0x00000000, 0x00000000, 0x00000000,
-     2, ConvertAltivec32to32_prefetch, NO_ALPHA | COPY_ALPHA | SET_ALPHA},
+     BLIT_FEATURE_HAS_ALTIVEC, ConvertAltivec32to32_prefetch, NO_ALPHA | COPY_ALPHA | SET_ALPHA},
     /* has-altivec */
     {0x00000000, 0x00000000, 0x00000000, 2, 0x0000F800, 0x000007E0, 0x0000001F,
-     2, Blit_RGB888_RGB565Altivec, NO_ALPHA},
+     BLIT_FEATURE_HAS_ALTIVEC, Blit_RGB888_RGB565Altivec, NO_ALPHA},
 #endif
     /* 4->3 with same rgb triplet */
     {0x000000FF, 0x0000FF00, 0x00FF0000, 3, 0x000000FF, 0x0000FF00, 0x00FF0000,
