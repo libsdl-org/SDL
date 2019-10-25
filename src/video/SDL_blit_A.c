@@ -389,6 +389,23 @@ BlitRGBtoRGBPixelAlphaMMX(SDL_BlitInfo * info)
 
 #endif /* __MMX__ */
 
+#if SDL_ARM_SIMD_BLITTERS
+void BlitRGBtoRGBPixelAlphaARMSIMDAsm(int32_t w, int32_t h, uint32_t *dst, int32_t dst_stride, uint32_t *src, int32_t src_stride);
+
+static void
+BlitRGBtoRGBPixelAlphaARMSIMD(SDL_BlitInfo * info)
+{
+    int32_t width = info->dst_w;
+    int32_t height = info->dst_h;
+    uint32_t *dstp = (uint32_t *)info->dst;
+    int32_t dststride = width + (info->dst_skip >> 2);
+    uint32_t *srcp = (uint32_t *)info->src;
+    int32_t srcstride = width + (info->src_skip >> 2);
+
+    BlitRGBtoRGBPixelAlphaARMSIMDAsm(width, height, dstp, dststride, srcp, srcstride);
+}
+#endif
+
 /* fast RGB888->(A)RGB888 blending with surface alpha=128 special case */
 static void
 BlitRGBtoRGBSurfaceAlpha128(SDL_BlitInfo * info)
@@ -1315,6 +1332,10 @@ SDL_CalculateBlitA(SDL_Surface * surface)
                 }
 #endif /* __MMX__ || __3dNOW__ */
                 if (sf->Amask == 0xff000000) {
+#if SDL_ARM_SIMD_BLITTERS
+                    if (SDL_HasARMSIMD())
+                        return BlitRGBtoRGBPixelAlphaARMSIMD;
+#endif
                     return BlitRGBtoRGBPixelAlpha;
                 }
             }
