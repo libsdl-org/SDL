@@ -1818,6 +1818,10 @@ D3D11_UpdateVertexBuffer(SDL_Renderer *renderer,
     HRESULT result = S_OK;
     const int vbidx = rendererData->currentVertexBuffer;
 
+    if (dataSizeInBytes == 0) {
+        return 0;  /* nothing to do. */
+    }
+
     if (rendererData->vertexBuffers[vbidx] && rendererData->vertexBufferSizes[vbidx] >= dataSizeInBytes) {
         D3D11_MAPPED_SUBRESOURCE mappedResource;
         result = ID3D11DeviceContext_Map(rendererData->d3dContext,
