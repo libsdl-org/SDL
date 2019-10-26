@@ -173,6 +173,7 @@ typedef struct METAL_ShaderPipelines
     [_mtltexture release];
     [_mtltexture_uv release];
     [_mtlsampler release];
+    [_lockedbuffer release];
     [super dealloc];
 }
 #endif
@@ -831,6 +832,7 @@ METAL_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
     METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
     METAL_TextureData *texturedata = (__bridge METAL_TextureData *)texture->driverdata;
     int buffersize = 0;
+    id<MTLBuffer> lockedbuffer = nil;
 
     if (rect->w <= 0 || rect->h <= 0) {
         return SDL_SetError("Invalid rectangle dimensions for LockTexture.");
@@ -844,13 +846,19 @@ METAL_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
         buffersize = (*pitch) * rect->h;
     }
 
-    texturedata.lockedrect = *rect;
-    texturedata.lockedbuffer = [data.mtldevice newBufferWithLength:buffersize options:MTLResourceStorageModeShared];
-    if (texturedata.lockedbuffer == nil) {
+    lockedbuffer = [data.mtldevice newBufferWithLength:buffersize options:MTLResourceStorageModeShared];
+    if (lockedbuffer == nil) {
         return SDL_OutOfMemory();
     }
 
-    *pixels = [texturedata.lockedbuffer contents];
+    texturedata.lockedrect = *rect;
+    texturedata.lockedbuffer = lockedbuffer;
+    *pixels = [lockedbuffer contents];
+
+    /* METAL_TextureData.lockedbuffer retains. */
+#if !__has_feature(objc_arc)
+    [lockedbuffer release];
+#endif
 
     return 0;
 }}
@@ -934,11 +942,7 @@ METAL_UnlockTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     [data.mtlcmdbuffer commit];
     data.mtlcmdbuffer = nil;
 
-#if !__has_feature(objc_arc)
-    [texturedata.lockedbuffer release];
-#endif
-
-    texturedata.lockedbuffer = nil;
+    texturedata.lockedbuffer = nil; /* Retained property, so it calls release. */
     texturedata.hasdata = YES;
 }}
 
@@ -1299,6 +1303,8 @@ METAL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
 { @autoreleasepool {
     METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
     METAL_DrawStateCache statecache;
+    SDL_zero(statecache);
+
     id<MTLBuffer> mtlbufvertex = nil;
 
     statecache.pipeline = nil;
@@ -1586,6 +1592,9 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
     view = SDL_Metal_CreateView(window);
 
     if (view == NULL) {
+#if !__has_feature(objc_arc)
+        [mtldevice release];
+#endif
         SDL_free(renderer);
         return NULL;
     }
@@ -1594,6 +1603,9 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
     data = [[METAL_RenderData alloc] init];
 
     if (data == nil) {
+#if !__has_feature(objc_arc)
+        [mtldevice release];
+#endif
         SDL_Metal_DestroyView(view);
         SDL_free(renderer);
         return NULL;
