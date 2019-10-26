@@ -30,7 +30,7 @@ typedef struct
 
 typedef struct
 {
-    CGDisplayModeRef moderef;
+    CFMutableArrayRef modes;
 } SDL_DisplayModeData;
 
 extern void Cocoa_InitModes(_THIS);
