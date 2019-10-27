@@ -286,7 +286,8 @@ SDL_HideHomeIndicatorHintChanged(void *userdata, const char *name, const char *o
     [center addObserver:self selector:@selector(textFieldTextDidChange:) name:UITextFieldTextDidChangeNotification object:nil];
 }
 
-- (NSArray *) keyCommands {
+- (NSArray *)keyCommands
+{
     NSMutableArray *commands = [[NSMutableArray alloc] init];
     [commands addObject:[UIKeyCommand keyCommandWithInput:UIKeyInputUpArrow modifierFlags:kNilOptions action:@selector(handleCommand:)]];
     [commands addObject:[UIKeyCommand keyCommandWithInput:UIKeyInputDownArrow modifierFlags:kNilOptions action:@selector(handleCommand:)]];
@@ -296,18 +297,20 @@ SDL_HideHomeIndicatorHintChanged(void *userdata, const char *name, const char *o
     return [NSArray arrayWithArray:commands];
 }
 
-- (void) handleCommand: (UIKeyCommand *) keyCommand {
+- (void)handleCommand:(UIKeyCommand *)keyCommand
+{
     SDL_Scancode scancode = SDL_SCANCODE_UNKNOWN;
+    NSString *input = keyCommand.input;
 
-    if (keyCommand.input == UIKeyInputUpArrow) {
+    if (input == UIKeyInputUpArrow) {
         scancode = SDL_SCANCODE_UP;
-    } else if (keyCommand.input == UIKeyInputDownArrow) {
+    } else if (input == UIKeyInputDownArrow) {
         scancode = SDL_SCANCODE_DOWN;
-    } else if (keyCommand.input == UIKeyInputLeftArrow) {
+    } else if (input == UIKeyInputLeftArrow) {
         scancode = SDL_SCANCODE_LEFT;
-    } else if (keyCommand.input == UIKeyInputRightArrow) {
+    } else if (input == UIKeyInputRightArrow) {
         scancode = SDL_SCANCODE_RIGHT;
-    } else if (keyCommand.input == UIKeyInputEscape) {
+    } else if (input == UIKeyInputEscape) {
         scancode = SDL_SCANCODE_ESCAPE;
     }
 
@@ -315,10 +318,6 @@ SDL_HideHomeIndicatorHintChanged(void *userdata, const char *name, const char *o
         SDL_SendKeyboardKey(SDL_PRESSED, scancode);
         SDL_SendKeyboardKey(SDL_RELEASED, scancode);
     }
-}
-
-- (void) downArrow: (UIKeyCommand *) keyCommand {
-    NSLog(@"down arrow!");
 }
 
 - (void)setView:(UIView *)view
