@@ -285,7 +285,7 @@ void SDL_NSLog(const char *text)
  */
 SDL_bool SDL_IsIPad(void)
 {
-    return (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad);
+    return ([UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPad);
 }
 
 #endif /* SDL_VIDEO_DRIVER_UIKIT */
