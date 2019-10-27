@@ -39,6 +39,7 @@
 /* Functions to blit from N-bit surfaces to other surfaces */
 
 enum blit_features {
+	BLIT_FEATURE_NONE = 0,
 	BLIT_FEATURE_HAS_MMX = 1,
 	BLIT_FEATURE_HAS_ALTIVEC = 2,
 	BLIT_FEATURE_ALTIVEC_DONT_USE_PREFETCH = 4,
