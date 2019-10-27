@@ -67,6 +67,13 @@
 #ifndef AT_HWCAP
 #define AT_HWCAP 16
 #endif
+#ifndef AT_PLATFORM
+#define AT_PLATFORM 15
+#endif
+/* Prevent compilation error when including elf.h would also try to define AT_* as an enum */
+#ifndef AT_NULL
+#define AT_NULL 0
+#endif
 #ifndef HWCAP_NEON
 #define HWCAP_NEON (1 << 12)
 #endif
