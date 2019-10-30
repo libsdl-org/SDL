@@ -289,7 +289,7 @@ static SDL_bool
 next_string(char **_ptr, char **_str)
 {
     char *ptr = *_ptr;
-    char *str = *_str;
+    char *str;
 
     while (*ptr == ' ') {       /* skip any spaces... */
         ptr++;
