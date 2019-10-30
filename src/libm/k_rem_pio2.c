@@ -149,7 +149,7 @@ one    = 1.0,
 two24   =  1.67772160000000000000e+07, /* 0x41700000, 0x00000000 */
 twon24  =  5.96046447753906250000e-08; /* 0x3E700000, 0x00000000 */
 
-int32_t attribute_hidden __kernel_rem_pio2(double *x, double *y, int e0, int nx, const unsigned int prec, const int32_t *ipio2)
+int32_t attribute_hidden __kernel_rem_pio2(const double *x, double *y, int e0, int nx, const unsigned int prec, const int32_t *ipio2)
 {
 	int32_t jz,jx,jv,jp,jk,carry,n,iq[20],i,j,k,m,q0,ih;
 	double z,fw,f[20],fq[20],q[20];

@@ -42,7 +42,7 @@ static int xinput2_multitouch_supported = 0;
  * this extension */
 static int xinput2_opcode;
 
-static void parse_valuators(const double *input_values,unsigned char *mask,int mask_len,
+static void parse_valuators(const double *input_values, const unsigned char *mask,int mask_len,
                             double *output_values,int output_values_len) {
     int i = 0,z = 0;
     int top = mask_len * 8;

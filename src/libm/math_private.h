@@ -221,7 +221,7 @@ __ieee754_sqrt(double)
      extern double __kernel_sin(double, double, int) attribute_hidden;
      extern double __kernel_cos(double, double) attribute_hidden;
      extern double __kernel_tan(double, double, int) attribute_hidden;
-     extern int32_t __kernel_rem_pio2(double *, double *, int, int, const unsigned int,
+     extern int32_t __kernel_rem_pio2(const double *, double *, int, int, const unsigned int,
                                   const int32_t *) attribute_hidden;
 
 #endif /* _MATH_PRIVATE_H_ */
