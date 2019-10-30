@@ -1812,7 +1812,7 @@ GLES2_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
     int status;
 
     temp_pitch = rect->w * SDL_BYTESPERPIXEL(temp_format);
-    buflen = (size_t) (rect->h * temp_pitch);
+    buflen = rect->h * temp_pitch;
     if (buflen == 0) {
         return 0;  /* nothing to do. */
     }
