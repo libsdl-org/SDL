@@ -41,9 +41,6 @@ typedef struct
     const char *libname;
 } waylanddynlib;
 
-#ifndef SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC
-#define SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC NULL
-#endif
 #ifndef SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_EGL
 #define SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_EGL NULL
 #endif
