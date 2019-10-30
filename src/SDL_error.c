@@ -26,16 +26,6 @@
 #include "SDL_error.h"
 #include "SDL_error_c.h"
 
-
-/* Routine to get the thread-specific error variable */
-#if SDL_THREADS_DISABLED
-/* The default (non-thread-safe) global error variable */
-static SDL_error SDL_global_error;
-#define SDL_GetErrBuf() (&SDL_global_error)
-#else
-extern SDL_error *SDL_GetErrBuf(void);
-#endif /* SDL_THREADS_DISABLED */
-
 #define SDL_ERRBUFIZE   1024
 
 /* Private functions */
