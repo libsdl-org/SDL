@@ -151,10 +151,14 @@ touch_del(SDL_TouchID id, float* x, float* y, struct wl_surface **surface)
                 touch_points.tail = tp->prev;
             }
 
-            SDL_free(tp);
+            {
+                struct SDL_WaylandTouchPoint *next = tp->next;
+                SDL_free(tp);
+                tp = next;
+            }
+        } else {
+            tp = tp->next;
         }
-
-        tp = tp->next;
     }
 }
 
