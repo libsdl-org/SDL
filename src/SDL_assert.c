@@ -121,10 +121,10 @@ static void SDL_GenerateAssertionReport(void)
     parts of SDL, because we don't want anything calling it without an
     extremely good reason. */
 #if defined(__WATCOMC__)
-extern void SDL_ExitProcess(const int exitcode);
+extern void SDL_ExitProcess(int exitcode);
 #pragma aux SDL_ExitProcess aborts;
 #endif
-extern SDL_NORETURN void SDL_ExitProcess(const int exitcode);
+extern SDL_NORETURN void SDL_ExitProcess(int exitcode);
 
 
 #if defined(__WATCOMC__)
