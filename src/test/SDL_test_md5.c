@@ -56,7 +56,7 @@
 #include "SDL_test.h"
 
 /* Forward declaration of static helper function */
-static void SDLTest_Md5Transform(MD5UINT4 * buf, MD5UINT4 * in);
+static void SDLTest_Md5Transform(MD5UINT4 * buf, const MD5UINT4 * in);
 
 static unsigned char MD5PADDING[64] = {
   0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -229,7 +229,7 @@ void SDLTest_Md5Final(SDLTest_Md5Context * mdContext)
 
 /* Basic MD5 step. Transforms buf based on in.
  */
-static void SDLTest_Md5Transform(MD5UINT4 * buf, MD5UINT4 * in)
+static void SDLTest_Md5Transform(MD5UINT4 * buf, const MD5UINT4 * in)
 {
   MD5UINT4  a = buf[0], b = buf[1], c = buf[2], d = buf[3];
 

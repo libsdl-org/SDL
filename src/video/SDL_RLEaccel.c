@@ -1237,19 +1237,19 @@ RLEAlphaSurface(SDL_Surface * surface)
 }
 
 static Uint32
-getpix_8(Uint8 * srcbuf)
+getpix_8(const Uint8 * srcbuf)
 {
     return *srcbuf;
 }
 
 static Uint32
-getpix_16(Uint8 * srcbuf)
+getpix_16(const Uint8 * srcbuf)
 {
     return *(Uint16 *) srcbuf;
 }
 
 static Uint32
-getpix_24(Uint8 * srcbuf)
+getpix_24(const Uint8 * srcbuf)
 {
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
     return srcbuf[0] + (srcbuf[1] << 8) + (srcbuf[2] << 16);
