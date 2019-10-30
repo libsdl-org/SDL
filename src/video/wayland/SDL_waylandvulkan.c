@@ -153,7 +153,7 @@ SDL_bool Wayland_Vulkan_CreateSurface(_THIS,
         (PFN_vkGetInstanceProcAddr)_this->vulkan_config.vkGetInstanceProcAddr;
     PFN_vkCreateWaylandSurfaceKHR vkCreateWaylandSurfaceKHR =
         (PFN_vkCreateWaylandSurfaceKHR)vkGetInstanceProcAddr(
-                                            (VkInstance)instance,
+                                            instance,
                                             "vkCreateWaylandSurfaceKHR");
     VkWaylandSurfaceCreateInfoKHR createInfo;
     VkResult result;

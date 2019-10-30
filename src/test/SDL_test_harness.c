@@ -434,7 +434,7 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
 	/* Count the total number of tests */
     suiteCounter = 0;
     while (testSuites[suiteCounter]) {
-        testSuite=(SDLTest_TestSuiteReference *)testSuites[suiteCounter];
+        testSuite = testSuites[suiteCounter];
         suiteCounter++;
         testCounter = 0;
         while (testSuite->testCases[testCounter])
@@ -457,7 +457,7 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
         /* Loop over all suites to check if we have a filter match */
         suiteCounter = 0;
         while (testSuites[suiteCounter] && suiteFilter == 0) {
-            testSuite=(SDLTest_TestSuiteReference *)testSuites[suiteCounter];
+            testSuite = testSuites[suiteCounter];
             suiteCounter++;
             if (testSuite->name != NULL && SDL_strcmp(filter, testSuite->name) == 0) {
                 /* Matched a suite name */
@@ -496,8 +496,8 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
     /* Loop over all suites */
     suiteCounter = 0;
     while(testSuites[suiteCounter]) {
-        testSuite=(SDLTest_TestSuiteReference *)testSuites[suiteCounter];
-        currentSuiteName = (char *)((testSuite->name) ? testSuite->name : SDLTEST_INVALID_NAME_FORMAT);
+        testSuite = testSuites[suiteCounter];
+        currentSuiteName = (testSuite->name ? testSuite->name : SDLTEST_INVALID_NAME_FORMAT);
         suiteCounter++;
 
         /* Filter suite if flag set and we have a name */
@@ -527,7 +527,7 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
             while(testSuite->testCases[testCounter])
             {
                 testCase = testSuite->testCases[testCounter];
-                currentTestName = (char *)((testCase->name) ? testCase->name : SDLTEST_INVALID_NAME_FORMAT);
+                currentTestName = (testCase->name ? testCase->name : SDLTEST_INVALID_NAME_FORMAT);
                 testCounter++;
 
                 /* Filter tests if flag set and we have a name */
