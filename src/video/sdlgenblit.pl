@@ -77,12 +77,12 @@ my %get_rgba_string = (
 );
 
 my %set_rgba_string = (
-    "RGB888" => "_pixel = ((Uint32)_R << 16) | ((Uint32)_G << 8) | _B;",
-    "BGR888" => "_pixel = ((Uint32)_B << 16) | ((Uint32)_G << 8) | _R;",
-    "ARGB8888" => "_pixel = ((Uint32)_A << 24) | ((Uint32)_R << 16) | ((Uint32)_G << 8) | _B;",
-    "RGBA8888" => "_pixel = ((Uint32)_R << 24) | ((Uint32)_G << 16) | ((Uint32)_B << 8) | _A;",
-    "ABGR8888" => "_pixel = ((Uint32)_A << 24) | ((Uint32)_B << 16) | ((Uint32)_G << 8) | _R;",
-    "BGRA8888" => "_pixel = ((Uint32)_B << 24) | ((Uint32)_G << 16) | ((Uint32)_R << 8) | _A;",
+    "RGB888" => "_pixel = (_R << 16) | (_G << 8) | _B;",
+    "BGR888" => "_pixel = (_B << 16) | (_G << 8) | _R;",
+    "ARGB8888" => "_pixel = (_A << 24) | (_R << 16) | (_G << 8) | _B;",
+    "RGBA8888" => "_pixel = (_R << 24) | (_G << 16) | (_B << 8) | _A;",
+    "ABGR8888" => "_pixel = (_A << 24) | (_B << 16) | (_G << 8) | _R;",
+    "BGRA8888" => "_pixel = (_B << 24) | (_G << 16) | (_R << 8) | _A;",
 );
 
 sub open_file {
