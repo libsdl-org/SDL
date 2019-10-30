@@ -56,7 +56,7 @@ SDL_Blit_Slow(SDL_BlitInfo * info)
 
     while (info->dst_h--) {
         Uint8 *src = 0;
-        Uint8 *dst = (Uint8 *) info->dst;
+        Uint8 *dst = info->dst;
         int n = info->dst_w;
         srcx = -1;
         posx = 0x10000L;

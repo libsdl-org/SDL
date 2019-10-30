@@ -113,7 +113,7 @@ SDL_SYS_CreateThread(SDL_Thread * thread, void *args)
     
     /* Set caller-requested stack size. Otherwise: use the system default. */
     if (thread->stacksize) {
-        pthread_attr_setstacksize(&type, (size_t) thread->stacksize);
+        pthread_attr_setstacksize(&type, thread->stacksize);
     }
 
     /* Create the thread and go! */

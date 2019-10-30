@@ -478,7 +478,7 @@ mem_read(SDL_RWops * context, void *ptr, size_t size, size_t maxnum)
 
     total_bytes = (maxnum * size);
     if ((maxnum <= 0) || (size <= 0)
-        || ((total_bytes / maxnum) != (size_t) size)) {
+        || ((total_bytes / maxnum) != size)) {
         return 0;
     }
 

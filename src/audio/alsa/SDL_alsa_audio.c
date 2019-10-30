@@ -349,7 +349,7 @@ static void
 ALSA_PlayDevice(_THIS)
 {
     const Uint8 *sample_buf = (const Uint8 *) this->hidden->mixbuf;
-    const int frame_size = (((int) SDL_AUDIO_BITSIZE(this->spec.format)) / 8) *
+    const int frame_size = ((SDL_AUDIO_BITSIZE(this->spec.format)) / 8) *
                                 this->spec.channels;
     snd_pcm_uframes_t frames_left = ((snd_pcm_uframes_t) this->spec.samples);
 
@@ -398,7 +398,7 @@ static int
 ALSA_CaptureFromDevice(_THIS, void *buffer, int buflen)
 {
     Uint8 *sample_buf = (Uint8 *) buffer;
-    const int frame_size = (((int) SDL_AUDIO_BITSIZE(this->spec.format)) / 8) *
+    const int frame_size = ((SDL_AUDIO_BITSIZE(this->spec.format)) / 8) *
                                 this->spec.channels;
     const int total_frames = buflen / frame_size;
     snd_pcm_uframes_t frames_left = total_frames;

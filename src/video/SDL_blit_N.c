@@ -1466,7 +1466,7 @@ Blit_RGB565_32(SDL_BlitInfo * info, const Uint32 * map)
     /* Set up some basic variables */
     width = info->dst_w;
     height = info->dst_h;
-    src = (Uint8 *) info->src;
+    src = info->src;
     srcskip = info->src_skip;
     dst = (Uint32 *) info->dst;
     dstskip = info->dst_skip / 4;

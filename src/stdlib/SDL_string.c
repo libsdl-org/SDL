@@ -818,7 +818,7 @@ int SDL_atoi(const char *string)
 double SDL_atof(const char *string)
 {
 #ifdef HAVE_ATOF
-    return (double) atof(string);
+    return atof(string);
 #else
     return SDL_strtod(string, NULL);
 #endif /* HAVE_ATOF */

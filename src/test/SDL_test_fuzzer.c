@@ -307,7 +307,7 @@ SDLTest_RandomUint64BoundaryValue(Uint64 boundary1, Uint64 boundary2, SDL_bool v
     /* max value for Uint64 */
     const Uint64 maxValue = UINT64_MAX;
     return SDLTest_GenerateUnsignedBoundaryValues(maxValue,
-                (Uint64) boundary1, (Uint64) boundary2,
+                boundary1, boundary2,
                 validDomain);
 }
 
@@ -457,7 +457,7 @@ SDLTest_RandomUnitFloat()
 float
 SDLTest_RandomFloat()
 {
-        return (float) (SDLTest_RandomUnitDouble() * (double)2.0 * (double)FLT_MAX - (double)(FLT_MAX));
+        return (float) (SDLTest_RandomUnitDouble() * 2.0 * (double)FLT_MAX - (double)(FLT_MAX));
 }
 
 double

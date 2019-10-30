@@ -140,7 +140,7 @@ SDL_GetBasePath(void)
         if (retval == NULL) {
             /* older kernels don't have /proc/self ... try PID version... */
             char path[64];
-            const int rc = (int) SDL_snprintf(path, sizeof(path),
+            const int rc = SDL_snprintf(path, sizeof(path),
                                               "/proc/%llu/exe",
                                               (unsigned long long) getpid());
             if ( (rc > 0) && (rc < sizeof(path)) ) {

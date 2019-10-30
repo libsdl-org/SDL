@@ -182,7 +182,7 @@ SDL_bool X11_Vulkan_CreateSurface(_THIS,
     if(videoData->vulkan_xlib_xcb_library)
     {
         PFN_vkCreateXcbSurfaceKHR vkCreateXcbSurfaceKHR =
-            (PFN_vkCreateXcbSurfaceKHR)vkGetInstanceProcAddr((VkInstance)instance,
+            (PFN_vkCreateXcbSurfaceKHR)vkGetInstanceProcAddr(instance,
                                                              "vkCreateXcbSurfaceKHR");
         VkXcbSurfaceCreateInfoKHR createInfo;
         VkResult result;
@@ -213,7 +213,7 @@ SDL_bool X11_Vulkan_CreateSurface(_THIS,
     else
     {
         PFN_vkCreateXlibSurfaceKHR vkCreateXlibSurfaceKHR =
-            (PFN_vkCreateXlibSurfaceKHR)vkGetInstanceProcAddr((VkInstance)instance,
+            (PFN_vkCreateXlibSurfaceKHR)vkGetInstanceProcAddr(instance,
                                                               "vkCreateXlibSurfaceKHR");
         VkXlibSurfaceCreateInfoKHR createInfo;
         VkResult result;
