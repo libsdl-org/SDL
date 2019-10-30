@@ -180,7 +180,7 @@ GL_ClearErrors(SDL_Renderer *renderer)
         }
     } else if (data->glGetError != NULL) {
         while (data->glGetError() != GL_NO_ERROR) {
-            continue;
+            /* continue; */
         }
     }
 }
