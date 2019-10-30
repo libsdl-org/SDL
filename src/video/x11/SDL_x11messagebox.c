@@ -625,7 +625,7 @@ X11_MessageBoxDraw( SDL_MessageBoxDataX11 *data, GC ctx )
 }
 
 static Bool
-X11_MessageBoxEventTest(Display *display, XEvent *event, const XPointer arg)
+X11_MessageBoxEventTest(Display *display, XEvent *event, XPointer arg)
 {
     const SDL_MessageBoxDataX11 *data = (const SDL_MessageBoxDataX11 *) arg;
     return ((event->xany.display == data->display) && (event->xany.window == data->window)) ? True : False;
