@@ -205,6 +205,11 @@ SDL_Generic_SetTLSData(SDL_TLSData *storage)
 SDL_error *
 SDL_GetErrBuf(void)
 {
+#if SDL_THREADS_DISABLED
+    /* Non-thread-safe global error variable */
+    static SDL_error SDL_global_error;
+    return &SDL_global_error;
+#else
     static SDL_SpinLock tls_lock;
     static SDL_bool tls_being_created;
     static SDL_TLSID tls_errbuf;
@@ -249,6 +254,7 @@ SDL_GetErrBuf(void)
         SDL_TLSSet(tls_errbuf, errbuf, SDL_free);
     }
     return errbuf;
+#endif /* SDL_THREADS_DISABLED */
 }
 
 
