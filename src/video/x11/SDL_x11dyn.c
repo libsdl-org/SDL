@@ -41,9 +41,6 @@ typedef struct
     const char *libname;
 } x11dynlib;
 
-#ifndef SDL_VIDEO_DRIVER_X11_DYNAMIC
-#define SDL_VIDEO_DRIVER_X11_DYNAMIC NULL
-#endif
 #ifndef SDL_VIDEO_DRIVER_X11_DYNAMIC_XEXT
 #define SDL_VIDEO_DRIVER_X11_DYNAMIC_XEXT NULL
 #endif
