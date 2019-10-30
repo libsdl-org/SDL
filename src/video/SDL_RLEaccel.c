@@ -1245,7 +1245,7 @@ getpix_8(const Uint8 * srcbuf)
 static Uint32
 getpix_16(const Uint8 * srcbuf)
 {
-    return *(Uint16 *) srcbuf;
+    return *(const Uint16 *) srcbuf;
 }
 
 static Uint32
@@ -1259,12 +1259,12 @@ getpix_24(const Uint8 * srcbuf)
 }
 
 static Uint32
-getpix_32(Uint8 * srcbuf)
+getpix_32(const Uint8 * srcbuf)
 {
-    return *(Uint32 *) srcbuf;
+    return *(const Uint32 *) srcbuf;
 }
 
-typedef Uint32(*getpix_func) (Uint8 *);
+typedef Uint32(*getpix_func) (const Uint8 *);
 
 static const getpix_func getpixes[4] = {
     getpix_8, getpix_16, getpix_24, getpix_32
