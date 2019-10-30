@@ -2317,7 +2317,6 @@ get_permutation(SDL_PixelFormat *srcfmt, SDL_PixelFormat *dstfmt,
     if (_alpha_channel) {
         *_alpha_channel = alpha_channel;
     }
-    return;
 }
 
 
@@ -3109,7 +3108,6 @@ Blit_3or4_to_3or4__same_rgb(SDL_BlitInfo * info)
             dst += dstskip;
         }
     }
-    return;
 }
 
 /* Blit_3or4_to_3or4__inversed_rgb: 3 or 4 bpp, inversed RGB triplet */
@@ -3214,7 +3212,6 @@ Blit_3or4_to_3or4__inversed_rgb(SDL_BlitInfo * info)
             dst += dstskip;
         }
     }
-    return;
 }
 
 /* Normal N to N optimized blitters */

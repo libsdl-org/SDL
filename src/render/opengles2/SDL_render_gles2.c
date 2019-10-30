@@ -208,7 +208,7 @@ GL_ClearErrors(SDL_Renderer *renderer)
         return;
     }
     while (data->glGetError() != GL_NO_ERROR) {
-        continue;
+        /* continue; */
     }
 }
 

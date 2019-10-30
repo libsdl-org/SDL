@@ -340,7 +340,6 @@ swizzle_alsa_channels(_THIS, void *buffer, Uint32 bufferlen)
 static void
 no_swizzle(_THIS, void *buffer, Uint32 bufferlen)
 {
-    return;
 }
 #endif /* SND_CHMAP_API_VERSION */
 
