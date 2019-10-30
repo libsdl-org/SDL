@@ -280,10 +280,10 @@ static void dynapi_warn(const char *msg)
     parts of SDL, because we don't want anything calling it without an
     extremely good reason. */
 #if defined(__WATCOMC__)
-void SDL_ExitProcess(const int exitcode);
+void SDL_ExitProcess(int exitcode);
 #pragma aux SDL_ExitProcess aborts;
 #endif
-SDL_NORETURN void SDL_ExitProcess(const int exitcode);
+SDL_NORETURN void SDL_ExitProcess(int exitcode);
 
 
 static void
