@@ -137,7 +137,7 @@ SDL_bool Android_Vulkan_CreateSurface(_THIS,
         (PFN_vkGetInstanceProcAddr)_this->vulkan_config.vkGetInstanceProcAddr;
     PFN_vkCreateAndroidSurfaceKHR vkCreateAndroidSurfaceKHR =
         (PFN_vkCreateAndroidSurfaceKHR)vkGetInstanceProcAddr(
-                                            (VkInstance)instance,
+                                            instance,
                                             "vkCreateAndroidSurfaceKHR");
     VkAndroidSurfaceCreateInfoKHR createInfo;
     VkResult result;
