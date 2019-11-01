@@ -559,7 +559,7 @@ typedef union SDL_Event
 {
     Uint32 type;                    /**< Event type, shared with all events */
     SDL_CommonEvent common;         /**< Common event data */
-    SDL_DisplayEvent display;       /**< Window event data */
+    SDL_DisplayEvent display;       /**< Display event data */
     SDL_WindowEvent window;         /**< Window event data */
     SDL_KeyboardEvent key;          /**< Keyboard event data */
     SDL_TextEditingEvent edit;      /**< Text editing event data */
