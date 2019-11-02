@@ -577,6 +577,9 @@ SDLTest_PrintPixelFormat(char *text, size_t maxlen, Uint32 format)
     case SDL_PIXELFORMAT_RGB444:
         SDL_snprintfcat(text, maxlen, "RGB444");
         break;
+    case SDL_PIXELFORMAT_BGR444:
+        SDL_snprintfcat(text, maxlen, "BGR444");
+        break;
     case SDL_PIXELFORMAT_RGB555:
         SDL_snprintfcat(text, maxlen, "RGB555");
         break;
