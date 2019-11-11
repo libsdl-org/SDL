@@ -1,6 +1,7 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2019 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 2018 EXL <exlmotodev@gmail.com>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -18,24 +19,27 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+
+#ifndef SDL_BMESSAGEBOX_H
+#define SDL_BMESSAGEBOX_H
+
 #include "../../SDL_internal.h"
+
+#if SDL_VIDEO_DRIVER_HAIKU
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-/* Handle the BeApp specific portions of the application */
 
-/* Initialize the Be Application, if it's not already started */
-extern int SDL_InitBeApp(void);
-
-/* Quit the Be Application, if there's nothing left to do */
-extern void SDL_QuitBeApp(void);
-
-/* Be Application Signature*/
-extern const char *signature;
-
-/* vi: set ts=4 sw=4 expandtab: */
+extern int
+BE_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid);
 
 #ifdef __cplusplus
 }
 #endif
+
+#endif /* SDL_VIDEO_DRIVER_HAIKU */
+
+#endif
+
+/* vi: set ts=4 sw=4 expandtab: */
