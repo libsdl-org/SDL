@@ -228,7 +228,6 @@ private:
             return;
         }
         win = GetSDLWindow(winID);
-        SDL_SendMouseMotion(win, 0, 0, x, y);
 
 		// Simple relative mode support for mouse.
 		if ((SDL_GetMouse()->relative_mode ||
@@ -237,10 +236,14 @@ private:
 			int winWidth, winHeight, winPosX, winPosY;
 			SDL_GetWindowSize(win, &winWidth, &winHeight);
 			SDL_GetWindowPosition(win, &winPosX, &winPosY);
+			int dx = x - (winWidth / 2);
+			int dy = y - (winHeight / 2);
+			SDL_SendMouseMotion(win, 0, SDL_GetMouse()->relative_mode, dx, dy);
 			set_mouse_position((winPosX + winWidth / 2), (winPosY + winHeight / 2));
 			if (!be_app->IsCursorHidden())
 				be_app->HideCursor();
 		} else {
+			SDL_SendMouseMotion(win, 0, 0, x, y);
 			if (be_app->IsCursorHidden())
 				be_app->ShowCursor();
 		}

@@ -319,22 +319,17 @@ class SDL_BWin:public BDirectWindow
                 && msg->FindInt32("be:transit", &transit) == B_OK) {
                 _MouseMotionEvent(where, transit);
             }
-
-            /* FIXME: Apparently a button press/release event might be dropped
-               if made before before a different button is released.  Does
-               B_MOUSE_MOVED have the data needed to check if a mouse button
-               state has changed? */
-            if (msg->FindInt32("buttons", &buttons) == B_OK) {
-                _MouseButtonEvent(buttons);
-            }
             break;
 
         case B_MOUSE_DOWN:
-        case B_MOUSE_UP:
-            /* _MouseButtonEvent() detects any and all buttons that may have
-               changed state, as well as that button's new state */
             if (msg->FindInt32("buttons", &buttons) == B_OK) {
-                _MouseButtonEvent(buttons);
+                _MouseButtonEvent(buttons, SDL_PRESSED);
+            }
+            break;
+
+        case B_MOUSE_UP:
+            if (msg->FindInt32("buttons", &buttons) == B_OK) {
+                _MouseButtonEvent(buttons, SDL_RELEASED);
             }
             break;
 
@@ -497,26 +492,17 @@ private:
  if true:  SDL_SetCursor(NULL); */
     }
 
-    void _MouseButtonEvent(int32 buttons) {
+    void _MouseButtonEvent(int32 buttons, Uint8 state) {
         int32 buttonStateChange = buttons ^ _last_buttons;
 
-        /* Make sure at least one button has changed state */
-        if( !(buttonStateChange) ) {
-            return;
-        }
-
-        /* Add any mouse button events */
         if(buttonStateChange & B_PRIMARY_MOUSE_BUTTON) {
-            _SendMouseButton(SDL_BUTTON_LEFT, buttons &
-                B_PRIMARY_MOUSE_BUTTON);
+            _SendMouseButton(SDL_BUTTON_LEFT, state);
         }
         if(buttonStateChange & B_SECONDARY_MOUSE_BUTTON) {
-            _SendMouseButton(SDL_BUTTON_RIGHT, buttons &
-                B_PRIMARY_MOUSE_BUTTON);
+            _SendMouseButton(SDL_BUTTON_RIGHT, state);
         }
         if(buttonStateChange & B_TERTIARY_MOUSE_BUTTON) {
-            _SendMouseButton(SDL_BUTTON_MIDDLE, buttons &
-                B_PRIMARY_MOUSE_BUTTON);
+            _SendMouseButton(SDL_BUTTON_MIDDLE, state);
         }
 
         _last_buttons = buttons;
