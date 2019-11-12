@@ -230,6 +230,21 @@ private:
         win = GetSDLWindow(winID);
         SDL_SendMouseMotion(win, 0, 0, x, y);
 
+		// Simple relative mode support for mouse.
+		if ((SDL_GetMouse()->relative_mode ||
+			(win->flags & SDL_WINDOW_INPUT_GRABBED)) &&
+			(win->flags & SDL_WINDOW_INPUT_FOCUS)) {
+			int winWidth, winHeight, winPosX, winPosY;
+			SDL_GetWindowSize(win, &winWidth, &winHeight);
+			SDL_GetWindowPosition(win, &winPosX, &winPosY);
+			set_mouse_position((winPosX + winWidth / 2), (winPosY + winHeight / 2));
+			if (!be_app->IsCursorHidden())
+				be_app->HideCursor();
+		} else {
+			if (be_app->IsCursorHidden())
+				be_app->ShowCursor();
+		}
+
         /* Tell the application that the mouse passed over, redraw needed */
         HAIKU_UpdateWindowFramebuffer(NULL,win,NULL,-1);
     }
