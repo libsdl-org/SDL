@@ -1,7 +1,7 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
-  Copyright (C) 2018 EXL <exlmotodev@gmail.com>
+  Copyright (C) 1997-2019 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 2018-2019 EXL <exlmotodev@gmail.com>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -54,7 +54,7 @@ enum
 	G_MAX_STRING_LENGTH_BYTES = 120
 };
 
-class BE_SDL_MessageBox : public BAlert
+class HAIKU_SDL_MessageBox : public BAlert
 {
 	float fComputedMessageBoxWidth;
 
@@ -68,9 +68,9 @@ class BE_SDL_MessageBox : public BAlert
 	rgb_color fTextColor;
 
 	const char *fTitle;
-	const char *BE_SDL_DefTitle;
-	const char *BE_SDL_DefMessage;
-	const char *BE_SDL_DefButton;
+	const char *HAIKU_SDL_DefTitle;
+	const char *HAIKU_SDL_DefMessage;
+	const char *HAIKU_SDL_DefButton;
 
 	std::vector<const SDL_MessageBoxButtonData *> fButtons;
 
@@ -133,15 +133,15 @@ class BE_SDL_MessageBox : public BAlert
 	{
 		if (aMessageBoxData == NULL)
 		{
-			SetTitle(BE_SDL_DefTitle);
-			SetMessageText(BE_SDL_DefMessage);
-			AddButton(BE_SDL_DefButton);
+			SetTitle(HAIKU_SDL_DefTitle);
+			SetMessageText(HAIKU_SDL_DefMessage);
+			AddButton(HAIKU_SDL_DefButton);
 			return;
 		}
 
 		if (aMessageBoxData->numbuttons <= 0)
 		{
-			AddButton(BE_SDL_DefButton);
+			AddButton(HAIKU_SDL_DefButton);
 		}
 		else
 		{
@@ -155,9 +155,9 @@ class BE_SDL_MessageBox : public BAlert
 		}
 
 		(aMessageBoxData->title != NULL) ?
-			SetTitle(aMessageBoxData->title) : SetTitle(BE_SDL_DefTitle);
+			SetTitle(aMessageBoxData->title) : SetTitle(HAIKU_SDL_DefTitle);
 		(aMessageBoxData->message != NULL) ?
-			SetMessageText(aMessageBoxData->message) : SetMessageText(BE_SDL_DefMessage);
+			SetMessageText(aMessageBoxData->message) : SetMessageText(HAIKU_SDL_DefMessage);
 
 		SetType(ConvertMessageBoxType(static_cast<SDL_MessageBoxFlags>(aMessageBoxData->flags)));
 	}
@@ -274,7 +274,7 @@ class BE_SDL_MessageBox : public BAlert
 			fButtons.push_back(&aButtons[i]);
 		}
 
-		std::sort(fButtons.begin(), fButtons.end(), &BE_SDL_MessageBox::SortButtonsPredicate);
+		std::sort(fButtons.begin(), fButtons.end(), &HAIKU_SDL_MessageBox::SortButtonsPredicate);
 
 		size_t countButtons = fButtons.size();
 		for (size_t i = 0; i < countButtons; ++i)
@@ -304,14 +304,14 @@ class BE_SDL_MessageBox : public BAlert
 
 public:
 	explicit
-	BE_SDL_MessageBox(const SDL_MessageBoxData *aMessageBoxData)
+	HAIKU_SDL_MessageBox(const SDL_MessageBoxData *aMessageBoxData)
 		: BAlert(NULL, NULL, NULL, NULL, NULL, B_WIDTH_FROM_LABEL, B_WARNING_ALERT),
 		  fComputedMessageBoxWidth(0.0f),
 		  fCloseButton(G_CLOSE_BUTTON_ID), fDefaultButton(G_DEFAULT_BUTTON_ID),
 		  fCustomColorScheme(false), fThereIsLongLine(false),
-		  BE_SDL_DefTitle("SDL2 MessageBox"),
-		  BE_SDL_DefMessage("Some information has been lost."),
-		  BE_SDL_DefButton("OK")
+		  HAIKU_SDL_DefTitle("SDL2 MessageBox"),
+		  HAIKU_SDL_DefMessage("Some information has been lost."),
+		  HAIKU_SDL_DefButton("OK")
 	{
 		// MessageBox settings.
 		// We need a title to display it.
@@ -333,7 +333,7 @@ public:
 	}
 
 	virtual
-	~BE_SDL_MessageBox(void)
+	~HAIKU_SDL_MessageBox(void)
 	{
 		fButtons.clear();
 	}
@@ -365,7 +365,7 @@ extern "C" {
 #endif
 
 int
-BE_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
+HAIKU_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
 {
 	// Initialize button by closed or error value first.
 	*buttonid = G_CLOSE_BUTTON_ID;
@@ -384,10 +384,10 @@ BE_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
 		}
 	}
 
-	BE_SDL_MessageBox *SDL_MessageBox = new(std::nothrow) BE_SDL_MessageBox(messageboxdata);
+	HAIKU_SDL_MessageBox *SDL_MessageBox = new(std::nothrow) HAIKU_SDL_MessageBox(messageboxdata);
 	if (SDL_MessageBox == NULL)
 	{
-		return SDL_SetError("Cannot create the BE_SDL_MessageBox (BAlert inheritor) object. Lack of memory?");
+		return SDL_SetError("Cannot create the HAIKU_SDL_MessageBox (BAlert inheritor) object. Lack of memory?");
 	}
 	const int closeButton = SDL_MessageBox->GetCloseButtonId();
 	int pushedButton = SDL_MessageBox->Go();
