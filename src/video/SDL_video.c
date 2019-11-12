@@ -3947,7 +3947,7 @@ SDL_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
 #if SDL_VIDEO_DRIVER_HAIKU
     if (retval == -1 &&
         SDL_MessageboxValidForDriver(messageboxdata, SDL_SYSWM_HAIKU) &&
-        BE_ShowMessageBox(messageboxdata, buttonid) == 0) {
+        HAIKU_ShowMessageBox(messageboxdata, buttonid) == 0) {
         retval = 0;
     }
 #endif
