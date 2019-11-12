@@ -230,9 +230,7 @@ private:
         win = GetSDLWindow(winID);
 
 		// Simple relative mode support for mouse.
-		if ((SDL_GetMouse()->relative_mode ||
-			(win->flags & SDL_WINDOW_INPUT_GRABBED)) &&
-			(win->flags & SDL_WINDOW_INPUT_FOCUS)) {
+		if (SDL_GetMouse()->relative_mode) {
 			int winWidth, winHeight, winPosX, winPosY;
 			SDL_GetWindowSize(win, &winWidth, &winHeight);
 			SDL_GetWindowPosition(win, &winPosX, &winPosY);
