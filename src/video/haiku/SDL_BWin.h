@@ -86,6 +86,7 @@ class SDL_BWin:public BDirectWindow
         _buffer_locker = new BLocker();
         _bitmap = NULL;
         _clips = NULL;
+        _num_clips = 0;
 
 #ifdef DRAWTHREAD
         _draw_thread_id = spawn_thread(HAIKU_DrawThread, "drawing_thread",
@@ -179,13 +180,17 @@ class SDL_BWin:public BDirectWindow
             _connected = true;
 
         case B_DIRECT_MODIFY:
-            if(_clips) {
-                free(_clips);
-                _clips = NULL;
+            if (info->clip_list_count > _num_clips)
+            {
+                if(_clips) {
+                    free(_clips);
+                    _clips = NULL;
+                }
             }
 
             _num_clips = info->clip_list_count;
-            _clips = (clipping_rect *)malloc(_num_clips*sizeof(clipping_rect));
+            if (_clips == NULL)
+                _clips = (clipping_rect *)malloc(_num_clips*sizeof(clipping_rect));
             if(_clips) {
                 memcpy(_clips, info->clip_list,
                     _num_clips*sizeof(clipping_rect));
@@ -652,7 +657,7 @@ private:
     clipping_rect   _bounds;
     BLocker        *_buffer_locker;
     clipping_rect  *_clips;
-    int32           _num_clips;
+    uint32          _num_clips;
     int32           _bytes_per_px;
     thread_id       _draw_thread_id;
 
