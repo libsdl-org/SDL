@@ -244,7 +244,7 @@ private:
 				be_app->HideCursor();
 		} else {
 			SDL_SendMouseMotion(win, 0, 0, x, y);
-			if (be_app->IsCursorHidden())
+			if (SDL_ShowCursor(-1) && be_app->IsCursorHidden())
 				be_app->ShowCursor();
 		}
 

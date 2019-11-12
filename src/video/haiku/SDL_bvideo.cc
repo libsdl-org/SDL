@@ -19,6 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 #include "../../SDL_internal.h"
+#include "../../main/haiku/SDL_BApp.h"
 
 #if SDL_VIDEO_DRIVER_HAIKU
 
@@ -132,6 +133,33 @@ void HAIKU_DeleteDevice(SDL_VideoDevice * device)
     SDL_free(device);
 }
 
+static int HAIKU_ShowCursor(SDL_Cursor *cur)
+{
+	SDL_Mouse *mouse = SDL_GetMouse();
+	int show;
+	if (!mouse)
+		return 0;
+	show = (cur || !mouse->focus);
+	if (show) {
+		if (be_app->IsCursorHidden())
+			be_app->ShowCursor();
+	} else {
+		if (!be_app->IsCursorHidden())
+			be_app->HideCursor();
+	}
+	return 0;
+}
+
+static void HAIKU_MouseInit(_THIS)
+{
+	SDL_Mouse *mouse = SDL_GetMouse();
+	if (!mouse)
+		return;
+	mouse->ShowCursor = HAIKU_ShowCursor;
+	mouse->cur_cursor = (SDL_Cursor*)0x1;
+	mouse->def_cursor = (SDL_Cursor*)0x2;
+}
+
 int HAIKU_VideoInit(_THIS)
 {
     /* Initialize the Be Application for appserver interaction */
@@ -144,6 +172,8 @@ int HAIKU_VideoInit(_THIS)
 
     /* Init the keymap */
     HAIKU_InitOSKeymap();
+
+    HAIKU_MouseInit(_this);
 
 #if SDL_VIDEO_OPENGL
         /* testgl application doesn't load library, just tries to load symbols */
