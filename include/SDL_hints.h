@@ -507,7 +507,7 @@ extern "C" {
  *    "0"       - Report the face buttons by position, as though they were on an Xbox controller.
  *    "1"       - Report the face buttons by label instead of position
  *
- *  The default value is "0".  This hint may be set at any time.
+ *  The default value is "1".  This hint may be set at any time.
  */
 #define SDL_HINT_GAMECONTROLLER_USE_BUTTON_LABELS "SDL_GAMECONTROLLER_USE_BUTTON_LABELS"
 
