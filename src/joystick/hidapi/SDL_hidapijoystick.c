@@ -31,6 +31,7 @@
 #include "SDL_joystick.h"
 #include "../SDL_sysjoystick.h"
 #include "SDL_hidapijoystick_c.h"
+#include "../../SDL_hints_c.h"
 
 #if defined(__WIN32__)
 #include "../../core/windows/SDL_windows.h"
@@ -641,7 +642,7 @@ SDL_HIDAPIDriverHintChanged(void *userdata, const char *name, const char *oldVal
 {
     int i;
     SDL_HIDAPI_Device *device = SDL_HIDAPI_devices;
-    SDL_bool enabled = (!hint || !*hint || ((*hint != '0') && (SDL_strcasecmp(hint, "false") != 0)));
+    SDL_bool enabled = SDL_GetStringBoolean(hint, SDL_TRUE);
 
     if (SDL_strcmp(name, SDL_HINT_JOYSTICK_HIDAPI) == 0) {
         for (i = 0; i < SDL_arraysize(SDL_HIDAPI_drivers); ++i) {

@@ -27,6 +27,7 @@
 #include "SDL_timer.h"
 #include "SDL_events.h"
 #include "SDL_events_c.h"
+#include "../SDL_hints_c.h"
 #include "../video/SDL_sysvideo.h"
 #ifdef __WIN32__
 #include "../core/windows/SDL_windows.h"    // For GetDoubleClickTime()
@@ -100,30 +101,21 @@ SDL_TouchMouseEventsChanged(void *userdata, const char *name, const char *oldVal
 {
     SDL_Mouse *mouse = (SDL_Mouse *)userdata;
 
-    if (hint && (*hint == '0' || SDL_strcasecmp(hint, "false") == 0)) {
-        mouse->touch_mouse_events = SDL_FALSE;
-    } else {
-        mouse->touch_mouse_events = SDL_TRUE;
-    }
+    mouse->touch_mouse_events = SDL_GetStringBoolean(hint, SDL_TRUE);
 }
 
 static void SDLCALL
 SDL_MouseTouchEventsChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
     SDL_Mouse *mouse = (SDL_Mouse *)userdata;
+    SDL_bool default_value;
 
-    if (hint == NULL || *hint == '\0') {
-        /* Default */
 #if defined(__ANDROID__) || (defined(__IPHONEOS__) && !defined(__TVOS__))
-        mouse->mouse_touch_events = SDL_TRUE;
+    default_value = SDL_TRUE;
 #else
-        mouse->mouse_touch_events = SDL_FALSE;
+    default_value = SDL_FALSE;
 #endif
-    } else if (*hint == '1' || SDL_strcasecmp(hint, "true") == 0) {
-        mouse->mouse_touch_events = SDL_TRUE;
-    } else {
-        mouse->mouse_touch_events = SDL_FALSE;
-    }
+    mouse->mouse_touch_events = SDL_GetStringBoolean(hint, default_value);
 
     if (mouse->mouse_touch_events) {
         SDL_AddTouch(SDL_MOUSE_TOUCHID, SDL_TOUCH_DEVICE_DIRECT, "mouse_input");
