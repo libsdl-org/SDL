@@ -22,6 +22,7 @@
 
 #include "SDL_hints.h"
 #include "SDL_error.h"
+#include "SDL_hints_c.h"
 
 
 /* Assuming there aren't many hints set and they aren't being queried in
