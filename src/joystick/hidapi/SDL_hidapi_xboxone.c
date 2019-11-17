@@ -133,6 +133,13 @@ typedef struct {
 static SDL_bool
 HIDAPI_DriverXboxOne_IsSupportedDevice(Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, const char *name)
 {
+#ifdef __LINUX__
+    /* Check to see if it's the Xbox One S in Bluetooth mode */
+    if (vendor_id == 0x045e && product_id == 0x02fd) {
+        /* We can't do rumble on this device, hid_write() fails, so don't try to open it here */
+        return SDL_FALSE;
+    }
+#endif
     return SDL_IsJoystickXboxOne(vendor_id, product_id);
 }
 
