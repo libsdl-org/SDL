@@ -131,11 +131,24 @@ typedef struct {
 
 
 static SDL_bool
+IsBluetoothXboxOneController(Uint16 vendor_id, Uint16 product_id)
+{
+    /* Check to see if it's the Xbox One S or Xbox One Elite Series 2 in Bluetooth mode */
+    const Uint16 USB_VENDOR_MICROSOFT = 0x045e;
+    const Uint16 USB_PRODUCT_XBOX_ONE_S = 0x02fd;
+    const Uint16 USB_PRODUCT_XBOX_ONE_ELITE_SERIES_2 = 0x0b05;
+
+    if (vendor_id == USB_VENDOR_MICROSOFT && (product_id == USB_PRODUCT_XBOX_ONE_S || product_id == USB_PRODUCT_XBOX_ONE_ELITE_SERIES_2)) {
+        return SDL_TRUE;
+    }
+    return SDL_FALSE;
+}
+
+static SDL_bool
 HIDAPI_DriverXboxOne_IsSupportedDevice(Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, const char *name)
 {
 #ifdef __LINUX__
-    /* Check to see if it's the Xbox One S in Bluetooth mode */
-    if (vendor_id == 0x045e && product_id == 0x02fd) {
+    if (IsBluetoothXboxOneController(vendor_id, product_id)) {
         /* We can't do rumble on this device, hid_write() fails, so don't try to open it here */
         return SDL_FALSE;
     }
@@ -155,7 +168,6 @@ HIDAPI_DriverXboxOne_Init(SDL_Joystick *joystick, hid_device *dev, Uint16 vendor
     SDL_DriverXboxOne_Context *ctx;
     int i;
     Uint8 init_packet[USB_PACKET_LENGTH];
-    SDL_bool is_bluetooth = SDL_FALSE;
 
     ctx = (SDL_DriverXboxOne_Context *)SDL_calloc(1, sizeof(*ctx));
     if (!ctx) {
@@ -164,10 +176,7 @@ HIDAPI_DriverXboxOne_Init(SDL_Joystick *joystick, hid_device *dev, Uint16 vendor
     }
     *context = ctx;
 
-    if (vendor_id == 0x045e && product_id == 0x02fd) {
-        is_bluetooth = SDL_TRUE;
-    }
-    if (!is_bluetooth) {
+    if (!IsBluetoothXboxOneController(vendor_id, product_id)) {
         /* Send the controller init data */
         for (i = 0; i < SDL_arraysize(xboxone_init_packets); ++i) {
             const SDL_DriverXboxOne_InitPacket *packet = &xboxone_init_packets[i];
