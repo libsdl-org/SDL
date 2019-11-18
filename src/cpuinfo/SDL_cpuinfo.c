@@ -384,7 +384,7 @@ CPU_haveARMSIMD(void)
 }
 #endif
 
-#if (defined(__LINUX__) || defined(__ANDROID__)) && defined(__ARM_ARCH) && !defined(HAVE_GETAUXVAL)
+#if defined(__LINUX__) && defined(__ARM_ARCH) && !defined(HAVE_GETAUXVAL)
 static int
 readProcAuxvForNeon(void)
 {
@@ -403,7 +403,6 @@ readProcAuxvForNeon(void)
     return neon;
 }
 #endif
-
 
 static int
 CPU_haveNEON(void)
