@@ -593,6 +593,9 @@
     <ClCompile Include="..\..\src\stdlib\SDL_string.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\stdlib\SDL_strtokr.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\thread\SDL_thread.c">
       <Filter>Source Files</Filter>
     </ClCompile>

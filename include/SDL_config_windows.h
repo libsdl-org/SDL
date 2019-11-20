@@ -117,6 +117,10 @@ typedef unsigned int uintptr_t;
 #define HAVE_STRCHR 1
 #define HAVE_STRRCHR 1
 #define HAVE_STRSTR 1
+/* #undef HAVE_STRTOK_R */
+#if defined(_MSC_VER)
+#define HAVE_STRTOK_S 1
+#endif
 /* These functions have security warnings, so we won't use them */
 /* #undef HAVE__LTOA */
 /* #undef HAVE__ULTOA */

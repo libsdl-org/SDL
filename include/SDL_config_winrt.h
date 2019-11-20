@@ -130,6 +130,7 @@ typedef unsigned int uintptr_t;
 #define HAVE_STRCHR 1
 #define HAVE_STRRCHR 1
 #define HAVE_STRSTR 1
+#define HAVE_STRTOK_S 1
 //#define HAVE_ITOA 1   // TODO, WinRT: consider using _itoa_s instead
 //#define HAVE__LTOA 1  // TODO, WinRT: consider using _ltoa_s instead
 //#define HAVE__ULTOA 1 // TODO, WinRT: consider using _ultoa_s instead

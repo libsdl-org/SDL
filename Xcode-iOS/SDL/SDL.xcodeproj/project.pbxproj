@@ -355,6 +355,10 @@
 		56ED04E1118A8EE200A56AA6 /* SDL_power.c in Sources */ = {isa = PBXBuildFile; fileRef = 56ED04E0118A8EE200A56AA6 /* SDL_power.c */; };
 		56ED04E3118A8EFD00A56AA6 /* SDL_syspower.m in Sources */ = {isa = PBXBuildFile; fileRef = 56ED04E2118A8EFD00A56AA6 /* SDL_syspower.m */; };
 		56F9D5601DF73BA400C15B5D /* SDL_dataqueue.c in Sources */ = {isa = PBXBuildFile; fileRef = 566726431DF72CF5001DD3DB /* SDL_dataqueue.c */; };
+		63CC93C723849391002A5C54 /* SDL_strtokr.c in Sources */ = {isa = PBXBuildFile; fileRef = 63CC93C623849391002A5C54 /* SDL_strtokr.c */; };
+		63CC93C823849391002A5C54 /* SDL_strtokr.c in Sources */ = {isa = PBXBuildFile; fileRef = 63CC93C623849391002A5C54 /* SDL_strtokr.c */; };
+		63CC93C923849391002A5C54 /* SDL_strtokr.c in Sources */ = {isa = PBXBuildFile; fileRef = 63CC93C623849391002A5C54 /* SDL_strtokr.c */; };
+		63CC93CA23849391002A5C54 /* SDL_strtokr.c in Sources */ = {isa = PBXBuildFile; fileRef = 63CC93C623849391002A5C54 /* SDL_strtokr.c */; };
 		93CB792313FC5E5200BD3E05 /* SDL_uikitviewcontroller.h in Headers */ = {isa = PBXBuildFile; fileRef = 93CB792213FC5E5200BD3E05 /* SDL_uikitviewcontroller.h */; };
 		93CB792613FC5F5300BD3E05 /* SDL_uikitviewcontroller.m in Sources */ = {isa = PBXBuildFile; fileRef = 93CB792513FC5F5300BD3E05 /* SDL_uikitviewcontroller.m */; };
 		A704172E20F7E74800A82227 /* controller_type.h in Headers */ = {isa = PBXBuildFile; fileRef = A704172D20F7E74800A82227 /* controller_type.h */; };
@@ -963,6 +967,7 @@
 		56EA86FA13E9EC2B002E47EB /* SDL_coreaudio.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_coreaudio.h; sourceTree = "<group>"; };
 		56ED04E0118A8EE200A56AA6 /* SDL_power.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_power.c; sourceTree = "<group>"; };
 		56ED04E2118A8EFD00A56AA6 /* SDL_syspower.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDL_syspower.m; sourceTree = "<group>"; };
+		63CC93C623849391002A5C54 /* SDL_strtokr.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_strtokr.c; sourceTree = "<group>"; };
 		93CB792213FC5E5200BD3E05 /* SDL_uikitviewcontroller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_uikitviewcontroller.h; sourceTree = "<group>"; };
 		93CB792513FC5F5300BD3E05 /* SDL_uikitviewcontroller.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDL_uikitviewcontroller.m; sourceTree = "<group>"; };
 		A704172D20F7E74800A82227 /* controller_type.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = controller_type.h; sourceTree = "<group>"; };
@@ -1491,6 +1496,7 @@
 		FD3F4A6F0DEA620800C5B771 /* stdlib */ = {
 			isa = PBXGroup;
 			children = (
+				63CC93C623849391002A5C54 /* SDL_strtokr.c */,
 				FD3F4A700DEA620800C5B771 /* SDL_getenv.c */,
 				FD3F4A710DEA620800C5B771 /* SDL_iconv.c */,
 				FD3F4A720DEA620800C5B771 /* SDL_malloc.c */,
@@ -2568,6 +2574,7 @@
 				52ED1E56222889500061FCE0 /* SDL_gamecontroller.c in Sources */,
 				52ED1E57222889500061FCE0 /* SDL_systls.c in Sources */,
 				52ED1E58222889500061FCE0 /* SDL_sysfilesystem.m in Sources */,
+				63CC93C823849391002A5C54 /* SDL_strtokr.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2696,6 +2703,7 @@
 				F3E3C7452241389A007D243C /* SDL_gamecontroller.c in Sources */,
 				F3E3C7462241389A007D243C /* SDL_systls.c in Sources */,
 				F3E3C7472241389A007D243C /* SDL_sysfilesystem.m in Sources */,
+				63CC93CA23849391002A5C54 /* SDL_strtokr.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2822,6 +2830,7 @@
 				FAB598BD1BB5C31600BE72C5 /* SDL_hints.c in Sources */,
 				FAB598BE1BB5C31600BE72C5 /* SDL_log.c in Sources */,
 				FAB598BF1BB5C31600BE72C5 /* SDL.c in Sources */,
+				63CC93C923849391002A5C54 /* SDL_strtokr.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2942,6 +2951,7 @@
 				AA0AD06216647BBB00CE5896 /* SDL_gamecontroller.c in Sources */,
 				AA0F8495178D5F1A00823F9D /* SDL_systls.c in Sources */,
 				56C181E217C44D7A00406AE3 /* SDL_sysfilesystem.m in Sources */,
+				63CC93C723849391002A5C54 /* SDL_strtokr.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

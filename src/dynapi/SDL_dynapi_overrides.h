@@ -728,3 +728,4 @@
 #define SDL_Metal_DestroyView SDL_Metal_DestroyView_REAL
 #define SDL_LockTextureToSurface SDL_LockTextureToSurface_REAL
 #define SDL_HasARMSIMD SDL_HasARMSIMD_REAL
+#define SDL_strtokr SDL_strtokr_REAL
