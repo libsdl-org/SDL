@@ -504,8 +504,7 @@ EnumJoysticksCallback(const DIDEVICEINSTANCE * pdidInstance, VOID * pContext)
         return DIENUM_CONTINUE; /* better luck next time? */
     }
 
-    SDL_memcpy(&(pNewJoystick->dxdevice), pdidInstance,
-        sizeof(DIDEVICEINSTANCE));
+    SDL_memcpy(&pNewJoystick->dxdevice, pdidInstance, sizeof(DIDEVICEINSTANCE));
 
     SDL_memset(pNewJoystick->guid.data, 0, sizeof(pNewJoystick->guid.data));
 
@@ -529,7 +528,17 @@ EnumJoysticksCallback(const DIDEVICEINSTANCE * pdidInstance, VOID * pContext)
         SDL_strlcpy((char*)guid16, pNewJoystick->joystickname, sizeof(pNewJoystick->guid.data) - 4);
     }
 
+    if (SDL_strstr(pNewJoystick->joystickname, " XINPUT ") != NULL) {
+        /* This is a duplicate interface for a controller that will show up with XInput,
+           e.g. Xbox One Elite Series 2 in Bluetooth mode.
+         */
+        SDL_free(pNewJoystick->joystickname);
+        SDL_free(pNewJoystick);
+        return DIENUM_CONTINUE;
+    }
+
     if (SDL_ShouldIgnoreJoystick(pNewJoystick->joystickname, pNewJoystick->guid)) {
+        SDL_free(pNewJoystick->joystickname);
         SDL_free(pNewJoystick);
         return DIENUM_CONTINUE;
     }
@@ -537,6 +546,7 @@ EnumJoysticksCallback(const DIDEVICEINSTANCE * pdidInstance, VOID * pContext)
 #ifdef SDL_JOYSTICK_HIDAPI
     if (HIDAPI_IsDevicePresent(vendor, product, 0, pNewJoystick->joystickname)) {
         /* The HIDAPI driver is taking care of this device */
+        SDL_free(pNewJoystick->joystickname);
         SDL_free(pNewJoystick);
         return DIENUM_CONTINUE;
     }
