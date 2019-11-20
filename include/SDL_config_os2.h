@@ -110,6 +110,7 @@
 #define HAVE_STRCHR 1
 #define HAVE_STRRCHR 1
 #define HAVE_STRSTR 1
+/* #undef HAVE_STRTOK_R */
 #define HAVE_ITOA 1
 #define HAVE__LTOA 1
 #define HAVE__ULTOA 1

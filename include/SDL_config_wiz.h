@@ -67,6 +67,7 @@
 #define HAVE_STRCHR 1
 #define HAVE_STRRCHR 1
 #define HAVE_STRSTR 1
+#define HAVE_STRTOK_R 1
 #define HAVE_STRTOL 1
 #define HAVE_STRTOUL 1
 #define HAVE_STRTOLL 1
