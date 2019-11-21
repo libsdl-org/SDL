@@ -123,12 +123,21 @@
 #define HAVE_STRTOD 1
 #define HAVE_ATOI 1
 #define HAVE_ATOF 1
+#define HAVE_WCSLEN 1
+#define HAVE_WCSLCPY 1
+#define HAVE_WCSLCAT 1
+/* #define HAVE_WCSDUP 1 */
+/* #define wcsdup _wcsdup */
+#define HAVE_WCSSTR 1
+#define HAVE_WCSCMP 1
+#define HAVE_WCSNCMP 1
 #define HAVE_STRCMP 1
 #define HAVE_STRNCMP 1
 #define HAVE_STRICMP 1
 #define HAVE_STRCASECMP 1
 #define HAVE_STRNCASECMP 1
-#define HAVE_SSCANF 1
+#define HAVE_SSCANF  1
+#define HAVE_VSSCANF 1
 #define HAVE_SNPRINTF 1
 #define HAVE_VSNPRINTF 1
 #define HAVE_SETJMP 1
