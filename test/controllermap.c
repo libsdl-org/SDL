@@ -21,6 +21,9 @@
 
 #ifndef SDL_JOYSTICK_DISABLED
 
+/* Define this for verbose output while mapping controllers */
+#define DEBUG_CONTROLLERMAP
+
 #ifdef __IPHONEOS__
 #define SCREEN_WIDTH    320
 #define SCREEN_HEIGHT   480
