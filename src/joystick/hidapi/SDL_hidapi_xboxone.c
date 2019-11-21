@@ -36,8 +36,11 @@
 
 #define USB_PACKET_LENGTH   64
 
+/* The amount of time to wait after hotplug to send controller init sequence */
+#define CONTROLLER_INIT_DELAY_MS    100
+
 /*
- * This packet is required for Xbox One Elite Series 2 pad
+ * This packet is required for Xbox One Elite Series 2 pad, initial firmware version
  */
 static const Uint8 xboxone_elite_series2_init[] = {
     0x04, 0x20, 0x01, 0x00
@@ -117,12 +120,8 @@ static const SDL_DriverXboxOne_InitPacket xboxone_init_packets[] = {
     { 0x0f0d, 0x0067, xboxone_hori_init, sizeof(xboxone_hori_init) },
     { 0x045e, 0x0b00, xboxone_elite_series2_init, sizeof(xboxone_elite_series2_init) },
     { 0x0000, 0x0000, xboxone_fw2015_init, sizeof(xboxone_fw2015_init) },
-    { 0x0e6f, 0x0246, xboxone_pdp_init1, sizeof(xboxone_pdp_init1) },
-    { 0x0e6f, 0x0246, xboxone_pdp_init2, sizeof(xboxone_pdp_init2) },
-    { 0x0e6f, 0x02ab, xboxone_pdp_init1, sizeof(xboxone_pdp_init1) },
-    { 0x0e6f, 0x02ab, xboxone_pdp_init2, sizeof(xboxone_pdp_init2) },
-    { 0x0e6f, 0x02a4, xboxone_pdp_init1, sizeof(xboxone_pdp_init1) },
-    { 0x0e6f, 0x02a4, xboxone_pdp_init2, sizeof(xboxone_pdp_init2) },
+    { 0x0e6f, 0x0000, xboxone_pdp_init1, sizeof(xboxone_pdp_init1) },
+    { 0x0e6f, 0x0000, xboxone_pdp_init2, sizeof(xboxone_pdp_init2) },
     { 0x24c6, 0x541a, xboxone_rumblebegin_init, sizeof(xboxone_rumblebegin_init) },
     { 0x24c6, 0x542a, xboxone_rumblebegin_init, sizeof(xboxone_rumblebegin_init) },
     { 0x24c6, 0x543a, xboxone_rumblebegin_init, sizeof(xboxone_rumblebegin_init) },
@@ -132,6 +131,10 @@ static const SDL_DriverXboxOne_InitPacket xboxone_init_packets[] = {
 };
 
 typedef struct {
+    Uint16 vendor_id;
+    Uint16 product_id;
+    Uint32 start_time;
+    SDL_bool initialized;
     Uint8 sequence;
     Uint8 last_state[USB_PACKET_LENGTH];
     Uint32 rumble_expiration;
@@ -151,6 +154,39 @@ IsBluetoothXboxOneController(Uint16 vendor_id, Uint16 product_id)
     }
     return SDL_FALSE;
 }
+
+static SDL_bool
+SendControllerInit(hid_device *dev, SDL_DriverXboxOne_Context *ctx)
+{
+    Uint16 vendor_id = ctx->vendor_id;
+    Uint16 product_id = ctx->product_id;
+
+    if (!IsBluetoothXboxOneController(vendor_id, product_id)) {
+        int i;
+        Uint8 init_packet[USB_PACKET_LENGTH];
+
+        for (i = 0; i < SDL_arraysize(xboxone_init_packets); ++i) {
+            const SDL_DriverXboxOne_InitPacket *packet = &xboxone_init_packets[i];
+
+            if (packet->vendor_id && (vendor_id != packet->vendor_id)) {
+                continue;
+            }
+
+            if (packet->product_id && (product_id != packet->product_id)) {
+                continue;
+            }
+
+            SDL_memcpy(init_packet, packet->data, packet->size);
+            init_packet[2] = ctx->sequence++;
+            if (hid_write(dev, init_packet, packet->size) != packet->size) {
+                SDL_SetError("Couldn't write Xbox One initialization packet");
+                return SDL_FALSE;
+            }
+        }
+    }
+    return SDL_TRUE;
+}
+
 
 static SDL_bool
 HIDAPI_DriverXboxOne_IsSupportedDevice(Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, const char *name)
@@ -174,8 +210,6 @@ static SDL_bool
 HIDAPI_DriverXboxOne_Init(SDL_Joystick *joystick, hid_device *dev, Uint16 vendor_id, Uint16 product_id, void **context)
 {
     SDL_DriverXboxOne_Context *ctx;
-    int i;
-    Uint8 init_packet[USB_PACKET_LENGTH];
 
     ctx = (SDL_DriverXboxOne_Context *)SDL_calloc(1, sizeof(*ctx));
     if (!ctx) {
@@ -184,21 +218,9 @@ HIDAPI_DriverXboxOne_Init(SDL_Joystick *joystick, hid_device *dev, Uint16 vendor
     }
     *context = ctx;
 
-    if (!IsBluetoothXboxOneController(vendor_id, product_id)) {
-        /* Send the controller init data */
-        for (i = 0; i < SDL_arraysize(xboxone_init_packets); ++i) {
-            const SDL_DriverXboxOne_InitPacket *packet = &xboxone_init_packets[i];
-            if (!packet->vendor_id || (vendor_id == packet->vendor_id && product_id == packet->product_id)) {
-                SDL_memcpy(init_packet, packet->data, packet->size);
-                init_packet[2] = ctx->sequence++;
-                if (hid_write(dev, init_packet, packet->size) != packet->size) {
-                    SDL_SetError("Couldn't write Xbox One initialization packet");
-                    SDL_free(ctx);
-                    return SDL_FALSE;
-                }
-            }
-        }
-    }
+    ctx->vendor_id = vendor_id;
+    ctx->product_id = product_id;
+    ctx->start_time = SDL_GetTicks();
 
     /* Initialize the joystick capabilities */
     joystick->nbuttons = SDL_CONTROLLER_BUTTON_MAX;
@@ -213,6 +235,10 @@ HIDAPI_DriverXboxOne_Rumble(SDL_Joystick *joystick, hid_device *dev, void *conte
 {
     SDL_DriverXboxOne_Context *ctx = (SDL_DriverXboxOne_Context *)context;
     Uint8 rumble_packet[] = { 0x09, 0x00, 0x00, 0x09, 0x00, 0x0F, 0x00, 0x00, 0x00, 0x00, 0xFF, 0x00, 0xFF };
+
+    if (!ctx->initialized) {
+        return 0;
+    }
 
     /* Magnitude is 1..100 so scale the 16-bit input here */
     rumble_packet[2] = ctx->sequence++;
@@ -297,6 +323,15 @@ HIDAPI_DriverXboxOne_Update(SDL_Joystick *joystick, hid_device *dev, void *conte
     SDL_DriverXboxOne_Context *ctx = (SDL_DriverXboxOne_Context *)context;
     Uint8 data[USB_PACKET_LENGTH];
     int size;
+
+    if (!ctx->initialized) {
+        if (SDL_TICKS_PASSED(SDL_GetTicks(), ctx->start_time + CONTROLLER_INIT_DELAY_MS)) {
+            if (!SendControllerInit(dev, ctx)) {
+                return SDL_FALSE;
+            }
+            ctx->initialized = SDL_TRUE;
+        }
+    }
 
     while ((size = hid_read_timeout(dev, data, sizeof(data), 0)) > 0) {
 #ifdef DEBUG_XBOX_PROTOCOL
