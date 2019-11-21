@@ -99,7 +99,10 @@
 #undef HAVE_WCSLEN
 #undef HAVE_WCSLCPY
 #undef HAVE_WCSLCAT
+#undef HAVE_WCSDUP
+#undef HAVE_WCSSTR
 #undef HAVE_WCSCMP
+#undef HAVE_WCSNCMP
 #undef HAVE_STRLEN
 #undef HAVE_STRLCPY
 #undef HAVE_STRLCAT

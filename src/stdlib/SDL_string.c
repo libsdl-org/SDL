@@ -421,17 +421,6 @@ SDL_strlen(const char *string)
 #endif /* HAVE_STRLEN */
 }
 
-wchar_t *
-SDL_wcsdup(const wchar_t *string)
-{
-    size_t len = ((SDL_wcslen(string) + 1) * sizeof(wchar_t));
-    wchar_t *newstr = (wchar_t *)SDL_malloc(len);
-    if (newstr) {
-        SDL_memcpy(newstr, string, len);
-    }
-    return newstr;
-}
-
 size_t
 SDL_wcslen(const wchar_t * string)
 {
@@ -477,6 +466,34 @@ SDL_wcslcat(SDL_INOUT_Z_CAP(maxlen) wchar_t *dst, const wchar_t *src, size_t max
 #endif /* HAVE_WCSLCAT */
 }
 
+wchar_t *
+SDL_wcsdup(const wchar_t *string)
+{
+    size_t len = ((SDL_wcslen(string) + 1) * sizeof(wchar_t));
+    wchar_t *newstr = (wchar_t *)SDL_malloc(len);
+    if (newstr) {
+        SDL_memcpy(newstr, string, len);
+    }
+    return newstr;
+}
+
+wchar_t *
+SDL_wcsstr(const wchar_t *haystack, const wchar_t *needle)
+{
+#if defined(HAVE_WCSSTR)
+    return SDL_const_cast(wchar_t*,wcsstr(haystack, needle));
+#else
+    size_t length = SDL_wcslen(needle);
+    while (*haystack) {
+        if (SDL_wcsncmp(haystack, needle, length) == 0) {
+            return (wchar_t *)haystack;
+        }
+        ++haystack;
+    }
+    return NULL;
+#endif /* HAVE_WCSSTR */
+}
+
 int
 SDL_wcscmp(const wchar_t *str1, const wchar_t *str2)
 {
@@ -491,6 +508,22 @@ SDL_wcscmp(const wchar_t *str1, const wchar_t *str2)
     }
     return (int)(*str1 - *str2);
 #endif /* HAVE_WCSCMP */
+}
+
+int
+SDL_wcsncmp(const wchar_t *str1, const wchar_t *str2, size_t maxlen)
+{
+#if defined(HAVE_WCSNCMP)
+    return wcsncmp(str1, str2, maxlen);
+#else
+    while (*str1 && *str2) {
+        if (*str1 != *str2)
+            break;
+        ++str1;
+        ++str2;
+    }
+    return (int)(*str1 - *str2);
+#endif /* HAVE_WCSNCMP */
 }
 
 size_t
