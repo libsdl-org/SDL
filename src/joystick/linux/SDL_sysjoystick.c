@@ -80,7 +80,8 @@ static SDL_joylist_item *SDL_joylist_tail = NULL;
 static int numjoysticks = 0;
 
 #if !SDL_USE_LIBUDEV
-static Uint32 last_joy_detect_time = 0;
+static Uint32 last_joy_detect_time;
+static time_t last_input_dir_mtime;
 #endif
 
 #define test_bit(nr, addr) \
@@ -421,21 +422,28 @@ LINUX_JoystickDetect(void)
     Uint32 now = SDL_GetTicks();
 
     if (!last_joy_detect_time || SDL_TICKS_PASSED(now, last_joy_detect_time + SDL_JOY_DETECT_INTERVAL_MS)) {
-        DIR *folder;
-        struct dirent *dent;
+        struct stat sb;
 
-        folder = opendir("/dev/input");
-        if (folder) {
-            while ((dent = readdir(folder))) {
-                int len = SDL_strlen(dent->d_name);
-                if (len > 5 && SDL_strncmp(dent->d_name, "event", 5) == 0) {
-                    char path[PATH_MAX];
-                    SDL_snprintf(path, SDL_arraysize(path), "/dev/input/%s", dent->d_name);
-                    MaybeAddDevice(path);
+        /* Opening input devices can generate synchronous device I/O, so avoid it if we can */
+        if (stat("/dev/input", &sb) == 0 && sb.st_mtime != last_input_dir_mtime) {
+            DIR *folder;
+            struct dirent *dent;
+
+            folder = opendir("/dev/input");
+            if (folder) {
+                while ((dent = readdir(folder))) {
+                    int len = SDL_strlen(dent->d_name);
+                    if (len > 5 && SDL_strncmp(dent->d_name, "event", 5) == 0) {
+                        char path[PATH_MAX];
+                        SDL_snprintf(path, SDL_arraysize(path), "/dev/input/%s", dent->d_name);
+                        MaybeAddDevice(path);
+                    }
                 }
+
+                closedir(folder);
             }
 
-            closedir(folder);
+            last_input_dir_mtime = sb.st_mtime;
         }
 
         last_joy_detect_time = now;
@@ -483,6 +491,10 @@ LINUX_JoystickInit(void)
     /* Force a scan to build the initial device list */
     SDL_UDEV_Scan();
 #else
+    /* Force immediate joystick detection */
+    last_joy_detect_time = 0;
+    last_input_dir_mtime = 0;
+
     /* Report all devices currently present */
     LINUX_JoystickDetect();
 #endif
