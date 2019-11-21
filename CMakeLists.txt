@@ -800,7 +800,8 @@ if(LIBC)
             _strrev _strupr _strlwr strchr strrchr strstr strtok_r itoa _ltoa
             _uitoa _ultoa strtol strtoul _i64toa _ui64toa strtoll strtoull
             atoi atof strcmp strncmp _stricmp strcasecmp _strnicmp strncasecmp
-            vsscanf vsnprintf fopen64 fseeko fseeko64 sigaction setjmp
+            wcscmp wcsdup wcslcat wcslcpy wcslen wcsncmp wcsstr
+            sscanf vsscanf vsnprintf fopen64 fseeko fseeko64 sigaction setjmp
             nanosleep sysconf sysctlbyname getauxval poll _Exit
             )
       string(TOUPPER ${_FN} _UPPER)
@@ -812,8 +813,10 @@ if(LIBC)
     if(HAVE_LIBM)
       set(CMAKE_REQUIRED_LIBRARIES m)
       foreach(_FN
-              atan atan2 ceil copysign cos cosf fabs floor log pow scalbn sin
-              sinf sqrt sqrtf tan tanf acos asin)
+              atan atan2 atanf atan2f ceil ceilf copysign copysignf cos cosf
+              exp expf fabs fabsf floor floorf fmod fmodf log logf log10 log10f
+              pow powf scalbn scalbnf sin sinf sqrt sqrtf tan tanf acos acosf
+              asin asinf)
         string(TOUPPER ${_FN} _UPPER)
         set(_HAVEVAR "HAVE_${_UPPER}")
         check_function_exists("${_FN}" ${_HAVEVAR})
