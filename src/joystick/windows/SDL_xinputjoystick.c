@@ -26,6 +26,7 @@
 
 #include "SDL_assert.h"
 #include "SDL_hints.h"
+#include "SDL_log.h"
 #include "SDL_timer.h"
 #include "SDL_windowsjoystick_c.h"
 #include "SDL_xinputjoystick_c.h"
@@ -138,6 +139,28 @@ GuessXInputDevice(Uint8 userid, Uint16 *pVID, Uint16 *pPID, Uint16 *pVersion)
         return;  /* oh well. */
     }
 
+    /* First see if we have a cached entry for this index */
+    if (s_arrXInputDevicePath[userid]) {
+        for (i = 0; i < device_count; i++) {
+            RID_DEVICE_INFO rdi;
+            char devName[128];
+            UINT rdiSize = sizeof(rdi);
+            UINT nameSize = SDL_arraysize(devName);
+
+            rdi.cbSize = sizeof(rdi);
+            if (devices[i].dwType == RIM_TYPEHID &&
+                GetRawInputDeviceInfoA(devices[i].hDevice, RIDI_DEVICEINFO, &rdi, &rdiSize) != (UINT)-1 &&
+                GetRawInputDeviceInfoA(devices[i].hDevice, RIDI_DEVICENAME, devName, &nameSize) != (UINT)-1) {
+                if (SDL_strcmp(devName, s_arrXInputDevicePath[userid]) == 0) {
+                    *pVID = (Uint16)rdi.hid.dwVendorId;
+                    *pPID = (Uint16)rdi.hid.dwProductId;
+                    *pVersion = (Uint16)rdi.hid.dwVersionNumber;
+                    return;
+                }
+            }
+        }
+    }
+
     for (i = 0; i < device_count; i++) {
         RID_DEVICE_INFO rdi;
         char devName[128];
@@ -145,44 +168,50 @@ GuessXInputDevice(Uint8 userid, Uint16 *pVID, Uint16 *pPID, Uint16 *pVersion)
         UINT nameSize = SDL_arraysize(devName);
 
         rdi.cbSize = sizeof(rdi);
-        if ((devices[i].dwType == RIM_TYPEHID) &&
-            (GetRawInputDeviceInfoA(devices[i].hDevice, RIDI_DEVICEINFO, &rdi, &rdiSize) != ((UINT)-1)) &&
-            (GetRawInputDeviceInfoA(devices[i].hDevice, RIDI_DEVICENAME, devName, &nameSize) != ((UINT)-1)) &&
-            (SDL_strstr(devName, "IG_") != NULL)) {
-            SDL_bool found = SDL_FALSE;
-            for (j = 0; j < SDL_arraysize(s_arrXInputDevicePath); ++j) {
-                if (j == userid) {
+        if (devices[i].dwType == RIM_TYPEHID &&
+            GetRawInputDeviceInfoA(devices[i].hDevice, RIDI_DEVICEINFO, &rdi, &rdiSize) != (UINT)-1 &&
+            GetRawInputDeviceInfoA(devices[i].hDevice, RIDI_DEVICENAME, devName, &nameSize) != (UINT)-1) {
+#ifdef DEBUG_JOYSTICK
+            SDL_Log("Raw input device: VID = 0x%x, PID = 0x%x, %s\n", rdi.hid.dwVendorId, rdi.hid.dwProductId, devName);
+#endif
+            if (SDL_strstr(devName, "IG_") != NULL) {
+                SDL_bool found = SDL_FALSE;
+                for (j = 0; j < SDL_arraysize(s_arrXInputDevicePath); ++j) {
+                    if (!s_arrXInputDevicePath[j]) {
+                        continue;
+                    }
+                    if (SDL_strcmp(devName, s_arrXInputDevicePath[j]) == 0) {
+                        found = SDL_TRUE;
+                        break;
+                    }
+                }
+                if (found) {
+                    /* We already have this device in our XInput device list */
                     continue;
                 }
-                if (!s_arrXInputDevicePath[j]) {
-                    continue;
-                }
-                if (SDL_strcmp(devName, s_arrXInputDevicePath[j]) == 0) {
-                    found = SDL_TRUE;
-                    break;
-                }
-            }
-            if (found) {
-                /* We already have this device in our XInput device list */
-                continue;
-            }
 
-            /* We don't actually know if this is the right device for this
-             * userid, but we'll record it so we'll at least be consistent
-             * when the raw device list changes.
-             */
-            *pVID = (Uint16)rdi.hid.dwVendorId;
-            *pPID = (Uint16)rdi.hid.dwProductId;
-            *pVersion = (Uint16)rdi.hid.dwVersionNumber;
-            if (s_arrXInputDevicePath[userid]) {
-                SDL_free(s_arrXInputDevicePath[userid]);
+                /* We don't actually know if this is the right device for this
+                 * userid, but we'll record it so we'll at least be consistent
+                 * when the raw device list changes.
+                 */
+                *pVID = (Uint16)rdi.hid.dwVendorId;
+                *pPID = (Uint16)rdi.hid.dwProductId;
+                *pVersion = (Uint16)rdi.hid.dwVersionNumber;
+                if (s_arrXInputDevicePath[userid]) {
+                    SDL_free(s_arrXInputDevicePath[userid]);
+                }
+                s_arrXInputDevicePath[userid] = SDL_strdup(devName);
+                return;
             }
-            s_arrXInputDevicePath[userid] = SDL_strdup(devName);
-            break;
         }
     }
     SDL_free(devices);
 #endif  /* ifndef __WINRT__ */
+
+    /* The device wasn't in the raw HID device list, it's probably Bluetooth */
+    *pVID = 0x045e; /* Microsoft */
+    *pPID = 0x02fd; /* XBox One S Bluetooth */
+    *pVersion = 0;
 }
 
 static void
