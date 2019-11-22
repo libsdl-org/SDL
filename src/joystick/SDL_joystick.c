@@ -1159,17 +1159,56 @@ void SDL_GetJoystickGUIDInfo(SDL_JoystickGUID guid, Uint16 *vendor, Uint16 *prod
 }
 
 SDL_bool
-SDL_IsJoystickPS4(Uint16 vendor, Uint16 product)
-{
-    return (GuessControllerType(vendor, product) == k_eControllerType_PS4Controller);
-}
-
-SDL_bool
 SDL_IsJoystickNintendoSwitchPro(Uint16 vendor, Uint16 product)
 {
     EControllerType eType = GuessControllerType(vendor, product);
     return (eType == k_eControllerType_SwitchProController ||
             eType == k_eControllerType_SwitchInputOnlyController);
+}
+
+SDL_GameControllerType
+SDL_GetGameControllerTypeFromGUID(SDL_JoystickGUID guid)
+{
+    SDL_GameControllerType type;
+    Uint16 vendor, product;
+
+    SDL_GetJoystickGUIDInfo(guid, &vendor, &product, NULL);
+    type = SDL_GetGameControllerType(vendor, product);
+    if (type == SDL_CONTROLLER_TYPE_UNKNOWN) {
+        if (SDL_IsJoystickXInput(guid)) {
+            /* This is probably an Xbox One controller */
+            return SDL_CONTROLLER_TYPE_XBOXONE;
+        }
+    }
+    return type;
+}
+
+SDL_GameControllerType
+SDL_GetGameControllerType(Uint16 vendor, Uint16 product)
+{
+    /* Filter out some bogus values here */
+    if (vendor == 0x0000 && product == 0x0000) {
+        return SDL_CONTROLLER_TYPE_UNKNOWN;
+    }
+    if (vendor == 0x0001 && product == 0x0001) {
+        return SDL_CONTROLLER_TYPE_UNKNOWN;
+    }
+
+    switch (GuessControllerType(vendor, product)) {
+    case k_eControllerType_XBox360Controller:
+        return SDL_CONTROLLER_TYPE_XBOX360;
+    case k_eControllerType_XBoxOneController:
+        return SDL_CONTROLLER_TYPE_XBOXONE;
+    case k_eControllerType_PS3Controller:
+        return SDL_CONTROLLER_TYPE_PS3;
+    case k_eControllerType_PS4Controller:
+        return SDL_CONTROLLER_TYPE_PS4;
+    case k_eControllerType_SwitchProController:
+    case k_eControllerType_SwitchInputOnlyController:
+        return SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO;
+    default:
+        return SDL_CONTROLLER_TYPE_UNKNOWN;
+    }
 }
 
 SDL_bool
@@ -1185,25 +1224,6 @@ SDL_IsJoystickSteamController(Uint16 vendor, Uint16 product)
     EControllerType eType = GuessControllerType(vendor, product);
     return (eType == k_eControllerType_SteamController ||
             eType == k_eControllerType_SteamControllerV2);
-}
-
-SDL_bool
-SDL_IsJoystickXbox360(Uint16 vendor, Uint16 product)
-{
-    /* Filter out some bogus values here */
-    if (vendor == 0x0000 && product == 0x0000) {
-        return SDL_FALSE;
-    }
-    if (vendor == 0x0001 && product == 0x0001) {
-        return SDL_FALSE;
-    }
-    return (GuessControllerType(vendor, product) == k_eControllerType_XBox360Controller);
-}
-
-SDL_bool
-SDL_IsJoystickXboxOne(Uint16 vendor, Uint16 product)
-{
-    return (GuessControllerType(vendor, product) == k_eControllerType_XBoxOneController);
 }
 
 SDL_bool
@@ -1481,7 +1501,7 @@ SDL_bool SDL_ShouldIgnoreJoystick(const char *name, SDL_JoystickGUID guid)
         }
     }
 
-    if (SDL_IsJoystickPS4(vendor, product) && SDL_IsPS4RemapperRunning()) {
+    if (SDL_GetGameControllerType(vendor, product) == SDL_CONTROLLER_TYPE_PS4 && SDL_IsPS4RemapperRunning()) {
         return SDL_TRUE;
     }
 

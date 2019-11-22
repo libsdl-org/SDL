@@ -249,6 +249,8 @@ HIDAPI_DriverXbox360_QuitWindowsGamingInput(SDL_DriverXbox360_Context *ctx)
 static SDL_bool
 HIDAPI_DriverXbox360_IsSupportedDevice(Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, const char *name)
 {
+    SDL_GameControllerType type = SDL_GameControllerType(vendor_id, product_id);
+
 #if defined(__MACOSX__) || defined(__WIN32__)
     if (vendor_id == 0x045e && product_id == 0x028e && version == 1) {
         /* This is the Steam Virtual Gamepad, which isn't supported by this driver */
@@ -258,9 +260,9 @@ HIDAPI_DriverXbox360_IsSupportedDevice(Uint16 vendor_id, Uint16 product_id, Uint
         /* This is the old Bluetooth Xbox One S firmware, which isn't supported by this driver */
         return SDL_FALSE;
     }
-    return SDL_IsJoystickXbox360(vendor_id, product_id) || SDL_IsJoystickXboxOne(vendor_id, product_id);
+    return (type == SDL_CONTROLLER_TYPE_XBOX360 || type == SDL_CONTROLLER_TYPE_XBOXONE);
 #else
-    return SDL_IsJoystickXbox360(vendor_id, product_id);
+    return (type == SDL_CONTROLLER_TYPE_XBOX360);
 #endif
 }
 

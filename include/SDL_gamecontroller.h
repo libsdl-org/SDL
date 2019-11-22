@@ -57,6 +57,15 @@ extern "C" {
 struct _SDL_GameController;
 typedef struct _SDL_GameController SDL_GameController;
 
+typedef enum
+{
+    SDL_CONTROLLER_TYPE_UNKNOWN = 0,
+    SDL_CONTROLLER_TYPE_XBOX360,
+    SDL_CONTROLLER_TYPE_XBOXONE,
+    SDL_CONTROLLER_TYPE_PS3,
+    SDL_CONTROLLER_TYPE_PS4,
+    SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO,
+} SDL_GameControllerType;
 
 typedef enum
 {
@@ -176,6 +185,12 @@ extern DECLSPEC SDL_bool SDLCALL SDL_IsGameController(int joystick_index);
 extern DECLSPEC const char *SDLCALL SDL_GameControllerNameForIndex(int joystick_index);
 
 /**
+ *  Get the type of a game controller.
+ *  This can be called before any controllers are opened.
+ */
+extern DECLSPEC SDL_GameControllerType SDLCALL SDL_GameControllerTypeForIndex(int joystick_index);
+
+/**
  *  Get the mapping of a game controller.
  *  This can be called before any controllers are opened.
  *
@@ -203,6 +218,11 @@ extern DECLSPEC SDL_GameController *SDLCALL SDL_GameControllerFromInstanceID(SDL
  *  Return the name for this currently opened controller
  */
 extern DECLSPEC const char *SDLCALL SDL_GameControllerName(SDL_GameController *gamecontroller);
+
+/**
+ *  Return the type of this currently opened controller
+ */
+extern DECLSPEC SDL_GameControllerType SDLCALL SDL_GameControllerGetType(SDL_GameController *gamecontroller);
 
 /**
  *  Get the player index of an opened game controller, or -1 if it's not available
