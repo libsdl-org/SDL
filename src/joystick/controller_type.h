@@ -145,6 +145,7 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x20d6, 0x576d ), k_eControllerType_PS3Controller },		// Power A PS3
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x6302 ), k_eControllerType_PS3Controller },		// From SDL
 	{ MAKE_CONTROLLER_ID( 0x056e, 0x200f ), k_eControllerType_PS3Controller },		// From SDL
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0109 ), k_eControllerType_PS3Controller },		// PDP Versus Fighting Pad
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x1314 ), k_eControllerType_PS3Controller },		// PDP Afterglow Wireless PS3 controller
 	{ MAKE_CONTROLLER_ID( 0x0738, 0x3180 ), k_eControllerType_PS3Controller },		// Mad Catz Alpha PS3 mode
 	{ MAKE_CONTROLLER_ID( 0x0738, 0x8180 ), k_eControllerType_PS3Controller },		// Mad Catz Alpha PS4 mode (no touchpad on device)
