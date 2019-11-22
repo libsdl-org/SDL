@@ -1167,13 +1167,13 @@ SDL_IsJoystickNintendoSwitchPro(Uint16 vendor, Uint16 product)
 }
 
 SDL_GameControllerType
-SDL_GetGameControllerTypeFromGUID(SDL_JoystickGUID guid)
+SDL_GetJoystickGameControllerTypeFromGUID(SDL_JoystickGUID guid, const char *name)
 {
     SDL_GameControllerType type;
     Uint16 vendor, product;
 
     SDL_GetJoystickGUIDInfo(guid, &vendor, &product, NULL);
-    type = SDL_GetGameControllerType(vendor, product);
+    type = SDL_GetJoystickGameControllerType(vendor, product, name);
     if (type == SDL_CONTROLLER_TYPE_UNKNOWN) {
         if (SDL_IsJoystickXInput(guid)) {
             /* This is probably an Xbox One controller */
@@ -1184,10 +1184,16 @@ SDL_GetGameControllerTypeFromGUID(SDL_JoystickGUID guid)
 }
 
 SDL_GameControllerType
-SDL_GetGameControllerType(Uint16 vendor, Uint16 product)
+SDL_GetJoystickGameControllerType(Uint16 vendor, Uint16 product, const char *name)
 {
-    /* Filter out some bogus values here */
     if (vendor == 0x0000 && product == 0x0000) {
+        /* Some devices are only identifiable by their name */
+        if (SDL_strcmp(name, "Lic Pro Controller") == 0 ||
+            SDL_strcmp(name, "Nintendo Wireless Gamepad") == 0 ||
+            SDL_strcmp(name, "Wireless Gamepad") == 0) {
+            /* HORI or PowerA Switch Pro Controller clone */
+            return SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO;
+        }
         return SDL_CONTROLLER_TYPE_UNKNOWN;
     }
     if (vendor == 0x0001 && product == 0x0001) {
@@ -1501,7 +1507,7 @@ SDL_bool SDL_ShouldIgnoreJoystick(const char *name, SDL_JoystickGUID guid)
         }
     }
 
-    if (SDL_GetGameControllerType(vendor, product) == SDL_CONTROLLER_TYPE_PS4 && SDL_IsPS4RemapperRunning()) {
+    if (SDL_GetJoystickGameControllerType(vendor, product, name) == SDL_CONTROLLER_TYPE_PS4 && SDL_IsPS4RemapperRunning()) {
         return SDL_TRUE;
     }
 

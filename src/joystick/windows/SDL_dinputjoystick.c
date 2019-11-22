@@ -374,7 +374,7 @@ SDL_IsXInputDevice(const GUID* pGuidProductFromDirectInput)
     if (SDL_memcmp(&pGuidProductFromDirectInput->Data4[2], "PIDVID", 6) == 0) {
         Uint16 vendor_id = (Uint16)LOWORD(pGuidProductFromDirectInput->Data1);
         Uint16 product_id = (Uint16)HIWORD(pGuidProductFromDirectInput->Data1);
-        SDL_GameControllerType type = SDL_GetGameControllerType(vendor_id, product_id);
+        SDL_GameControllerType type = SDL_GetJoystickGameControllerType(vendor_id, product_id, "");
         if (type == SDL_CONTROLLER_TYPE_XBOX360 ||
             type == SDL_CONTROLLER_TYPE_XBOXONE ||
             (vendor_id == 0x28DE && product_id == 0x11FF)) {
