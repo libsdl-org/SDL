@@ -246,139 +246,141 @@ static const IID IID_IWbemLocator = { 0xdc12a687, 0x737f, 0x11cf,{ 0x88, 0x4d, 0
 static SDL_bool
 WIN_IsXInputDevice(const GUID* pGuidProductFromDirectInput)
 {
-	IWbemLocator*           pIWbemLocator = NULL;
-	IEnumWbemClassObject*   pEnumDevices = NULL;
-	IWbemClassObject*       pDevices[20];
-	IWbemServices*          pIWbemServices = NULL;
-	BSTR                    bstrNamespace = NULL;
-	BSTR                    bstrDeviceID = NULL;
-	BSTR                    bstrClassName = NULL;
-	DWORD                   uReturned = 0;
-	SDL_bool                bIsXinputDevice = SDL_FALSE;
-	UINT                    iDevice = 0;
-	VARIANT                 var;
-	HRESULT                 hr;
+    IWbemLocator*           pIWbemLocator = NULL;
+    IEnumWbemClassObject*   pEnumDevices = NULL;
+    IWbemClassObject*       pDevices[20];
+    IWbemServices*          pIWbemServices = NULL;
+    BSTR                    bstrNamespace = NULL;
+    BSTR                    bstrDeviceID = NULL;
+    BSTR                    bstrClassName = NULL;
+    DWORD                   uReturned = 0;
+    SDL_bool                bIsXinputDevice = SDL_FALSE;
+    UINT                    iDevice = 0;
+    VARIANT                 var;
+    HRESULT                 hr;
 
-	SDL_zero(pDevices);
+    SDL_zero(pDevices);
 
-	// Create WMI
-	hr = CoCreateInstance(&CLSID_WbemLocator,
-		NULL,
-		CLSCTX_INPROC_SERVER,
-		&IID_IWbemLocator,
-		(LPVOID*)&pIWbemLocator);
-	if (FAILED(hr) || pIWbemLocator == NULL)
-		goto LCleanup;
+    // Create WMI
+    hr = CoCreateInstance(&CLSID_WbemLocator,
+        NULL,
+        CLSCTX_INPROC_SERVER,
+        &IID_IWbemLocator,
+        (LPVOID*)&pIWbemLocator);
+    if (FAILED(hr) || pIWbemLocator == NULL)
+        goto LCleanup;
 
-	bstrNamespace = SysAllocString(L"\\\\.\\root\\cimv2"); if (bstrNamespace == NULL) goto LCleanup;
-	bstrClassName = SysAllocString(L"Win32_PNPEntity");   if (bstrClassName == NULL) goto LCleanup;
-	bstrDeviceID = SysAllocString(L"DeviceID");          if (bstrDeviceID == NULL)  goto LCleanup;
+    bstrNamespace = SysAllocString(L"\\\\.\\root\\cimv2"); if (bstrNamespace == NULL) goto LCleanup;
+    bstrClassName = SysAllocString(L"Win32_PNPEntity");   if (bstrClassName == NULL) goto LCleanup;
+    bstrDeviceID = SysAllocString(L"DeviceID");          if (bstrDeviceID == NULL)  goto LCleanup;
 
-	// Connect to WMI 
-	hr = IWbemLocator_ConnectServer(pIWbemLocator, bstrNamespace, NULL, NULL, 0L,
-		0L, NULL, NULL, &pIWbemServices);
-	if (FAILED(hr) || pIWbemServices == NULL) {
-		goto LCleanup;
+    // Connect to WMI 
+    hr = IWbemLocator_ConnectServer(pIWbemLocator, bstrNamespace, NULL, NULL, 0L,
+        0L, NULL, NULL, &pIWbemServices);
+    if (FAILED(hr) || pIWbemServices == NULL) {
+        goto LCleanup;
     }
 
-	// Switch security level to IMPERSONATE. 
-	CoSetProxyBlanket((IUnknown *)pIWbemServices, RPC_C_AUTHN_WINNT, RPC_C_AUTHZ_NONE, NULL,
-		RPC_C_AUTHN_LEVEL_CALL, RPC_C_IMP_LEVEL_IMPERSONATE, NULL, EOAC_NONE);
+    // Switch security level to IMPERSONATE. 
+    CoSetProxyBlanket((IUnknown *)pIWbemServices, RPC_C_AUTHN_WINNT, RPC_C_AUTHZ_NONE, NULL,
+        RPC_C_AUTHN_LEVEL_CALL, RPC_C_IMP_LEVEL_IMPERSONATE, NULL, EOAC_NONE);
 
-	hr = IWbemServices_CreateInstanceEnum(pIWbemServices, bstrClassName, 0, NULL, &pEnumDevices);
-	if (FAILED(hr) || pEnumDevices == NULL)
-		goto LCleanup;
+    hr = IWbemServices_CreateInstanceEnum(pIWbemServices, bstrClassName, 0, NULL, &pEnumDevices);
+    if (FAILED(hr) || pEnumDevices == NULL)
+        goto LCleanup;
 
-	// Loop over all devices
-	for (;;) {
-		// Get 20 at a time
-		hr = IEnumWbemClassObject_Next(pEnumDevices, 10000, SDL_arraysize(pDevices), pDevices, &uReturned);
-		if (FAILED(hr)) {
-			goto LCleanup;
+    // Loop over all devices
+    for (;;) {
+        // Get 20 at a time
+        hr = IEnumWbemClassObject_Next(pEnumDevices, 10000, SDL_arraysize(pDevices), pDevices, &uReturned);
+        if (FAILED(hr)) {
+            goto LCleanup;
         }
-		if (uReturned == 0) {
-			break;
+        if (uReturned == 0) {
+            break;
         }
 
-		for (iDevice = 0; iDevice < uReturned; iDevice++) {
-			// For each device, get its device ID
-			hr = IWbemClassObject_Get(pDevices[iDevice], bstrDeviceID, 0L, &var, NULL, NULL);
-			if (SUCCEEDED(hr) && var.vt == VT_BSTR && var.bstrVal != NULL) {
-				// Check if the device ID contains "IG_".  If it does, then it's an XInput device
-				// This information can not be found from DirectInput 
-				if (SDL_wcsstr(var.bstrVal, L"IG_")) {
-					char *bstrVal = WIN_StringToUTF8(var.bstrVal);
+        for (iDevice = 0; iDevice < uReturned; iDevice++) {
+            // For each device, get its device ID
+            hr = IWbemClassObject_Get(pDevices[iDevice], bstrDeviceID, 0L, &var, NULL, NULL);
+            if (SUCCEEDED(hr) && var.vt == VT_BSTR && var.bstrVal != NULL) {
+                // Check if the device ID contains "IG_".  If it does, then it's an XInput device
+                // This information can not be found from DirectInput 
+                if (SDL_wcsstr(var.bstrVal, L"IG_")) {
+                    char *bstrVal = WIN_StringToUTF8(var.bstrVal);
 
-					// If it does, then get the VID/PID from var.bstrVal
-					DWORD dwPid = 0, dwVid = 0, dwVidPid;
-					const char *strVid, *strPid;
-					strVid = SDL_strstr(bstrVal, "VID_");
-					if (strVid && SDL_sscanf(strVid, "VID_%4X", &dwVid) != 1)
-						dwVid = 0;
-					strPid = SDL_strstr(bstrVal, "PID_");
-					if (strPid && SDL_sscanf(strPid, "PID_%4X", &dwPid) != 1)
-						dwPid = 0;
+                    // If it does, then get the VID/PID from var.bstrVal
+                    DWORD dwPid = 0, dwVid = 0, dwVidPid;
+                    const char *strVid, *strPid;
+                    strVid = SDL_strstr(bstrVal, "VID_");
+                    if (strVid && SDL_sscanf(strVid, "VID_%4X", &dwVid) != 1)
+                        dwVid = 0;
+                    strPid = SDL_strstr(bstrVal, "PID_");
+                    if (strPid && SDL_sscanf(strPid, "PID_%4X", &dwPid) != 1)
+                        dwPid = 0;
 
-					SDL_free(bstrVal);
+                    SDL_free(bstrVal);
 
-					// Compare the VID/PID to the DInput device
-					dwVidPid = MAKELONG(dwVid, dwPid);
-					if (dwVidPid == pGuidProductFromDirectInput->Data1) {
-						bIsXinputDevice = SDL_TRUE;
-						goto LCleanup;
-					}
-				}
-			}
-			IWbemClassObject_Release(pDevices[iDevice]);
-		}
-	}
+                    // Compare the VID/PID to the DInput device
+                    dwVidPid = MAKELONG(dwVid, dwPid);
+                    if (dwVidPid == pGuidProductFromDirectInput->Data1) {
+                        bIsXinputDevice = SDL_TRUE;
+                        goto LCleanup;
+                    }
+                }
+            }
+            IWbemClassObject_Release(pDevices[iDevice]);
+        }
+    }
 
 LCleanup:
-	if (bstrNamespace) {
-		SysFreeString(bstrNamespace);
+    if (bstrNamespace) {
+        SysFreeString(bstrNamespace);
     }
-	if (bstrDeviceID) {
-		SysFreeString(bstrDeviceID);
+    if (bstrDeviceID) {
+        SysFreeString(bstrDeviceID);
     }
-	if (bstrClassName) {
-		SysFreeString(bstrClassName);
+    if (bstrClassName) {
+        SysFreeString(bstrClassName);
     }
-	for (iDevice = 0; iDevice < SDL_arraysize(pDevices); iDevice++) {
-		if (pDevices[iDevice]) {
-			IWbemClassObject_Release(pDevices[iDevice]);
-		}
-	}
-	if (pEnumDevices) {
-		IEnumWbemClassObject_Release(pEnumDevices);
-	}
-	if (pIWbemLocator) {
-		IWbemLocator_Release(pIWbemLocator);
-	}
-	if (pIWbemServices) {
-		IWbemServices_Release(pIWbemServices);
-	}
+    for (iDevice = 0; iDevice < SDL_arraysize(pDevices); iDevice++) {
+        if (pDevices[iDevice]) {
+            IWbemClassObject_Release(pDevices[iDevice]);
+        }
+    }
+    if (pEnumDevices) {
+        IEnumWbemClassObject_Release(pEnumDevices);
+    }
+    if (pIWbemLocator) {
+        IWbemLocator_Release(pIWbemLocator);
+    }
+    if (pIWbemServices) {
+        IWbemServices_Release(pIWbemServices);
+    }
 
-	return bIsXinputDevice;
+    return bIsXinputDevice;
 }
 #endif /* 0 */
 
 static SDL_bool
 SDL_IsXInputDevice(const GUID* pGuidProductFromDirectInput)
 {
-	UINT i;
+    UINT i;
 
-	if (!SDL_XINPUT_Enabled()) {
-		return SDL_FALSE;
-	}
+    if (!SDL_XINPUT_Enabled()) {
+        return SDL_FALSE;
+    }
 
-	if (SDL_memcmp(&pGuidProductFromDirectInput->Data4[2], "PIDVID", 6) == 0) {
-		Uint16 vendor_id = (Uint16)LOWORD(pGuidProductFromDirectInput->Data1);
-		Uint16 product_id = (Uint16)HIWORD(pGuidProductFromDirectInput->Data1);
-		if (SDL_IsJoystickXbox360(vendor_id, product_id) || SDL_IsJoystickXboxOne(vendor_id, product_id) ||
-			(vendor_id == 0x28DE && product_id == 0x11FF)) {
-			return SDL_TRUE;
-		}
-	}
+    if (SDL_memcmp(&pGuidProductFromDirectInput->Data4[2], "PIDVID", 6) == 0) {
+        Uint16 vendor_id = (Uint16)LOWORD(pGuidProductFromDirectInput->Data1);
+        Uint16 product_id = (Uint16)HIWORD(pGuidProductFromDirectInput->Data1);
+        SDL_GameControllerType type = SDL_GetGameControllerType(vendor_id, product_id);
+        if (type == SDL_CONTROLLER_TYPE_XBOX360 ||
+            type == SDL_CONTROLLER_TYPE_XBOXONE ||
+            (vendor_id == 0x28DE && product_id == 0x11FF)) {
+            return SDL_TRUE;
+        }
+    }
 
     /* Go through RAWINPUT (WinXP and later) to find HID devices. */
     /* Cache this if we end up using it. */

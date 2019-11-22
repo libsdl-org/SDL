@@ -1413,6 +1413,17 @@ SDL_GameControllerNameForIndex(int device_index)
 
 
 /**
+ *  Get the type of a game controller.
+ */
+SDL_GameControllerType
+SDL_GameControllerTypeForIndex(int joystick_index)
+{
+    SDL_JoystickGUID guid = SDL_JoystickGetDeviceGUID(joystick_index);
+    return SDL_GetGameControllerTypeFromGUID(guid);
+}
+
+
+/**
  *  Get the mapping of a game controller.
  *  This can be called before any controllers are opened.
  *  If no mapping can be found, this function returns NULL.
@@ -1741,6 +1752,15 @@ SDL_GameControllerName(SDL_GameController * gamecontroller)
     } else {
         return gamecontroller->name;
     }
+}
+
+SDL_GameControllerType
+SDL_GameControllerGetType(SDL_GameController *gamecontroller)
+{
+    if (!gamecontroller) {
+        return SDL_CONTROLLER_TYPE_UNKNOWN;
+    }
+    return SDL_GetGameControllerTypeFromGUID(gamecontroller->joystick->guid);
 }
 
 int

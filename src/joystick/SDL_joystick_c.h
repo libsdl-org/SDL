@@ -25,6 +25,7 @@
 #include "../SDL_internal.h"
 
 /* Useful functions and variables from SDL_joystick.c */
+#include "SDL_gamecontroller.h"
 #include "SDL_joystick.h"
 
 struct _SDL_JoystickDriver;
@@ -51,21 +52,15 @@ extern int SDL_JoystickGetDeviceIndexFromInstanceID(SDL_JoystickID instance_id);
 /* Function to extract information from an SDL joystick GUID */
 extern void SDL_GetJoystickGUIDInfo(SDL_JoystickGUID guid, Uint16 *vendor, Uint16 *product, Uint16 *version);
 
-/* Function to return whether a joystick is a PS4 controller */
-extern SDL_bool SDL_IsJoystickPS4(Uint16 vendor_id, Uint16 product_id);
+/* Function to return the type of a controller */
+extern SDL_GameControllerType SDL_GetGameControllerTypeFromGUID(SDL_JoystickGUID guid);
+extern SDL_GameControllerType SDL_GetGameControllerType(Uint16 vendor, Uint16 product);
 
 /* Function to return whether a joystick is a Nintendo Switch Pro controller */
-extern SDL_bool SDL_IsJoystickNintendoSwitchPro( Uint16 vendor_id, Uint16 product_id );
 extern SDL_bool SDL_IsJoystickNintendoSwitchProInputOnly(Uint16 vendor_id, Uint16 product_id);
 
 /* Function to return whether a joystick is a Steam Controller */
 extern SDL_bool SDL_IsJoystickSteamController(Uint16 vendor_id, Uint16 product_id);
-
-/* Function to return whether a joystick is an Xbox 360 controller */
-extern SDL_bool SDL_IsJoystickXbox360(Uint16 vendor_id, Uint16 product_id);
-
-/* Function to return whether a joystick is an Xbox One controller */
-extern SDL_bool SDL_IsJoystickXboxOne(Uint16 vendor_id, Uint16 product_id);
 
 /* Function to return whether a joystick guid comes from the XInput driver */
 extern SDL_bool SDL_IsJoystickXInput(SDL_JoystickGUID guid);

@@ -197,7 +197,7 @@ HIDAPI_DriverXboxOne_IsSupportedDevice(Uint16 vendor_id, Uint16 product_id, Uint
         return SDL_FALSE;
     }
 #endif
-    return SDL_IsJoystickXboxOne(vendor_id, product_id);
+    return (SDL_GetGameControllerType(vendor_id, product_id) == SDL_CONTROLLER_TYPE_XBOXONE);
 }
 
 static const char *
