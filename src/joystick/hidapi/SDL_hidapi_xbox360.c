@@ -249,7 +249,7 @@ HIDAPI_DriverXbox360_QuitWindowsGamingInput(SDL_DriverXbox360_Context *ctx)
 static SDL_bool
 HIDAPI_DriverXbox360_IsSupportedDevice(Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, const char *name)
 {
-    SDL_GameControllerType type = SDL_GameControllerType(vendor_id, product_id);
+    SDL_GameControllerType type = SDL_GetJoystickGameControllerType(vendor_id, product_id, name);
 
 #if defined(__MACOSX__) || defined(__WIN32__)
     if (vendor_id == 0x045e && product_id == 0x028e && version == 1) {

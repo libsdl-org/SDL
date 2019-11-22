@@ -1418,8 +1418,7 @@ SDL_GameControllerNameForIndex(int device_index)
 SDL_GameControllerType
 SDL_GameControllerTypeForIndex(int joystick_index)
 {
-    SDL_JoystickGUID guid = SDL_JoystickGetDeviceGUID(joystick_index);
-    return SDL_GetGameControllerTypeFromGUID(guid);
+    return SDL_GetJoystickGameControllerTypeFromGUID(SDL_JoystickGetDeviceGUID(joystick_index), SDL_JoystickNameForIndex(joystick_index));
 }
 
 
@@ -1757,10 +1756,7 @@ SDL_GameControllerName(SDL_GameController * gamecontroller)
 SDL_GameControllerType
 SDL_GameControllerGetType(SDL_GameController *gamecontroller)
 {
-    if (!gamecontroller) {
-        return SDL_CONTROLLER_TYPE_UNKNOWN;
-    }
-    return SDL_GetGameControllerTypeFromGUID(gamecontroller->joystick->guid);
+    return SDL_GetJoystickGameControllerTypeFromGUID(SDL_JoystickGetGUID(SDL_GameControllerGetJoystick(gamecontroller)), SDL_JoystickName(SDL_GameControllerGetJoystick(gamecontroller)));
 }
 
 int

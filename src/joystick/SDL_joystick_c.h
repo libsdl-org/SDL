@@ -53,8 +53,8 @@ extern int SDL_JoystickGetDeviceIndexFromInstanceID(SDL_JoystickID instance_id);
 extern void SDL_GetJoystickGUIDInfo(SDL_JoystickGUID guid, Uint16 *vendor, Uint16 *product, Uint16 *version);
 
 /* Function to return the type of a controller */
-extern SDL_GameControllerType SDL_GetGameControllerTypeFromGUID(SDL_JoystickGUID guid);
-extern SDL_GameControllerType SDL_GetGameControllerType(Uint16 vendor, Uint16 product);
+extern SDL_GameControllerType SDL_GetJoystickGameControllerTypeFromGUID(SDL_JoystickGUID guid, const char *name);
+extern SDL_GameControllerType SDL_GetJoystickGameControllerType(Uint16 vendor, Uint16 product, const char *name);
 
 /* Function to return whether a joystick is a Nintendo Switch Pro controller */
 extern SDL_bool SDL_IsJoystickNintendoSwitchProInputOnly(Uint16 vendor_id, Uint16 product_id);
