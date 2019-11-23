@@ -259,7 +259,7 @@ WIN_IsXInputDevice(const GUID* pGuidProductFromDirectInput)
     VARIANT                 var;
     HRESULT                 hr;
 
-    SDL_zero(pDevices);
+    SDL_zeroa(pDevices);
 
     // Create WMI
     hr = CoCreateInstance(&CLSID_WbemLocator,
