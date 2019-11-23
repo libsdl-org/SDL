@@ -40,13 +40,6 @@
 #define CONTROLLER_INIT_DELAY_MS    100
 
 /*
- * This packet is required for Xbox One Elite Series 2 pad, initial firmware version
- */
-static const Uint8 xboxone_elite_series2_init[] = {
-    0x04, 0x20, 0x01, 0x00
-};
-
-/*
  * This packet is required for all Xbox One pads with 2015
  * or later firmware installed (or present from the factory).
  */
@@ -118,7 +111,6 @@ typedef struct {
 static const SDL_DriverXboxOne_InitPacket xboxone_init_packets[] = {
     { 0x0e6f, 0x0165, xboxone_hori_init, sizeof(xboxone_hori_init) },
     { 0x0f0d, 0x0067, xboxone_hori_init, sizeof(xboxone_hori_init) },
-    { 0x045e, 0x0b00, xboxone_elite_series2_init, sizeof(xboxone_elite_series2_init) },
     { 0x0000, 0x0000, xboxone_fw2015_init, sizeof(xboxone_fw2015_init) },
     { 0x0e6f, 0x0000, xboxone_pdp_init1, sizeof(xboxone_pdp_init1) },
     { 0x0e6f, 0x0000, xboxone_pdp_init2, sizeof(xboxone_pdp_init2) },
