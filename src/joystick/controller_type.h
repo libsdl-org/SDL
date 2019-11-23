@@ -102,7 +102,7 @@ static const ControllerDescription_t arrControllers[] = {
 	//{ MAKE_CONTROLLER_ID( 0x0738, 0x3250 ), k_eControllerType_PS3Controller },		// madcats fightpad pro ps3 already in ps4 list.. does this work??
 	{ MAKE_CONTROLLER_ID( 0x0738, 0x8250 ), k_eControllerType_PS3Controller },		// madcats fightpad pro ps4
 	{ MAKE_CONTROLLER_ID( 0x0079, 0x181a ), k_eControllerType_PS3Controller },		// Venom Arcade Stick
-	{ MAKE_CONTROLLER_ID( 0x0079, 0x0006 ), k_eControllerType_PS3Controller },		// PC Twin Shock Controller - looks like a DS3 but the face buttons are 1-4 instead of symbols
+	{ MAKE_CONTROLLER_ID( 0x0079, 0x0006 ), k_eControllerType_UnknownNonSteamController },	// DragonRise Generic USB PCB, sometimes configured as a PC Twin Shock Controller - looks like a DS3 but the face buttons are 1-4 instead of symbols
 	{ MAKE_CONTROLLER_ID( 0x0079, 0x1844 ), k_eControllerType_PS3Controller },		// From SDL
 	{ MAKE_CONTROLLER_ID( 0x8888, 0x0308 ), k_eControllerType_PS3Controller },		// From SDL
 	{ MAKE_CONTROLLER_ID( 0x2563, 0x0575 ), k_eControllerType_PS3Controller },		// From SDL
