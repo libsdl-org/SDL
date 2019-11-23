@@ -3349,6 +3349,9 @@ AS_HELP_STRING([--enable-hidapi], [use HIDAPI for low level joystick drivers [[d
                 *-*-darwin* )
                     SOURCES="$SOURCES $srcdir/src/hidapi/mac/hid.c"
                     ;;
+                * )
+                    SOURCES="$SOURCES $srcdir/src/hidapi/linux/hid.c"
+                    ;;
                 esac
             fi
         fi

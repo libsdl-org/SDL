@@ -24371,6 +24371,9 @@ _ACEOF
                 *-*-darwin* )
                     SOURCES="$SOURCES $srcdir/src/hidapi/mac/hid.c"
                     ;;
+                * )
+                    SOURCES="$SOURCES $srcdir/src/hidapi/linux/hid.c"
+                    ;;
                 esac
             fi
         fi
