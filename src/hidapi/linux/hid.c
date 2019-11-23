@@ -48,7 +48,8 @@
 #include <linux/hidraw.h>
 #include <linux/version.h>
 #include <linux/input.h>
-#include <libudev.h>
+//#include <libudev.h>
+#include "../../core/linux/SDL_udev.h"
 
 #include "hidapi.h"
 
@@ -65,6 +66,8 @@ namespace NAMESPACE
 #ifndef HIDIOCGFEATURE
 #define HIDIOCGFEATURE(len)    _IOC(_IOC_WRITE|_IOC_READ, 'H', 0x07, len)
 #endif
+
+static const SDL_UDEV_Symbols *udev_syms;
 
 /* USB HID device property names */
 const char *device_string_names[] = {
@@ -147,7 +150,7 @@ static wchar_t *utf8_to_wchar_t(const char *utf8)
    string. The returned string must be freed with free() when done.*/
 static wchar_t *copy_udev_string(struct udev_device *dev, const char *udev_name)
 {
-	return utf8_to_wchar_t(udev_device_get_sysattr_value(dev, udev_name));
+	return utf8_to_wchar_t(udev_syms->udev_device_get_sysattr_value(dev, udev_name));
 }
 
 /* uses_numbered_reports() returns 1 if report_descriptor describes a device
@@ -277,7 +280,7 @@ static int is_bluetooth(hid_device *dev)
 	int ret = -1;
 
 	/* Create the udev object */
-	udev = udev_new();
+	udev = udev_syms->udev_new();
 	if (!udev) {
 		printf("Can't create udev\n");
 		return -1;
@@ -286,14 +289,14 @@ static int is_bluetooth(hid_device *dev)
 	/* Get the dev_t (major/minor numbers) from the file handle. */
 	ret = fstat(dev->device_handle, &s);
 	if (-1 == ret) {
-		udev_unref(udev);
+		udev_syms->udev_unref(udev);
 		return ret;
 	}
 
 	/* Open a udev device from the dev_t. 'c' means character device. */
-	udev_dev = udev_device_new_from_devnum(udev, 'c', s.st_rdev);
+	udev_dev = udev_syms->udev_device_new_from_devnum(udev, 'c', s.st_rdev);
 	if (udev_dev) {
-		hid_dev = udev_device_get_parent_with_subsystem_devtype(
+		hid_dev = udev_syms->udev_device_get_parent_with_subsystem_devtype(
 			udev_dev,
 			"hid",
 			NULL);
@@ -305,7 +308,7 @@ static int is_bluetooth(hid_device *dev)
 			char *product_name_utf8 = NULL;
 
 			ret = parse_uevent_info(
-			           udev_device_get_sysattr_value(hid_dev, "uevent"),
+			           udev_syms->udev_device_get_sysattr_value(hid_dev, "uevent"),
 			           &bus_type,
 			           &dev_vid,
 			           &dev_pid,
@@ -319,10 +322,10 @@ static int is_bluetooth(hid_device *dev)
 			/* hid_dev doesn't need to be (and can't be) unref'd.
 			   I'm not sure why, but it'll throw double-free() errors. */
 		}
-		udev_device_unref(udev_dev);
+		udev_syms->udev_device_unref(udev_dev);
 	}
 
-	udev_unref(udev);
+	udev_syms->udev_unref(udev);
 
 	return ret;
 }
@@ -339,7 +342,7 @@ static int get_device_string(hid_device *dev, enum device_string_id key, wchar_t
 	char *tmp;
 
 	/* Create the udev object */
-	udev = udev_new();
+	udev = udev_syms->udev_new();
 	if (!udev) {
 		printf("Can't create udev\n");
 		return -1;
@@ -348,13 +351,13 @@ static int get_device_string(hid_device *dev, enum device_string_id key, wchar_t
 	/* Get the dev_t (major/minor numbers) from the file handle. */
 	ret = fstat(dev->device_handle, &s);
 	if (-1 == ret) {
-		udev_unref(udev);
+		udev_syms->udev_unref(udev);
 		return ret;
 	}
 	/* Open a udev device from the dev_t. 'c' means character device. */
-	udev_dev = udev_device_new_from_devnum(udev, 'c', s.st_rdev);
+	udev_dev = udev_syms->udev_device_new_from_devnum(udev, 'c', s.st_rdev);
 	if (udev_dev) {
-		hid_dev = udev_device_get_parent_with_subsystem_devtype(
+		hid_dev = udev_syms->udev_device_get_parent_with_subsystem_devtype(
 			udev_dev,
 			"hid",
 			NULL);
@@ -365,7 +368,7 @@ static int get_device_string(hid_device *dev, enum device_string_id key, wchar_t
 			size_t retm;
 
 			ret = parse_uevent_info(
-			           udev_device_get_sysattr_value(hid_dev, "uevent"),
+			           udev_syms->udev_device_get_sysattr_value(hid_dev, "uevent"),
 			           &bus_type,
 			           &dev_vid,
 			           &dev_pid,
@@ -401,7 +404,7 @@ static int get_device_string(hid_device *dev, enum device_string_id key, wchar_t
 			}
 			else {
 				/* This is a USB device. Find its parent USB Device node. */
-				parent = udev_device_get_parent_with_subsystem_devtype(
+				parent = udev_syms->udev_device_get_parent_with_subsystem_devtype(
 					   udev_dev,
 					   "usb",
 					   "usb_device");
@@ -416,7 +419,7 @@ static int get_device_string(hid_device *dev, enum device_string_id key, wchar_t
 						goto end;
 					}
 
-					str = udev_device_get_sysattr_value(parent, key_str);
+					str = udev_syms->udev_device_get_sysattr_value(parent, key_str);
 					if (str) {
 						/* Convert the string from UTF-8 to wchar_t */
 						retm = mbstowcs(string, str, maxlen);
@@ -432,10 +435,10 @@ end:
         free(serial_number_utf8);
         free(product_name_utf8);
 
-	udev_device_unref(udev_dev);
+	udev_syms->udev_device_unref(udev_dev);
 	/* parent and hid_dev don't need to be (and can't be) unref'd.
 	   I'm not sure why, but they'll throw double-free() errors. */
-	udev_unref(udev);
+	udev_syms->udev_unref(udev);
 
 	return ret;
 }
@@ -451,11 +454,17 @@ int HID_API_EXPORT hid_init(void)
 
 	kernel_version = detect_kernel_version();
 
+	udev_syms = SDL_UDEV_GetUdevSyms();
+	if (!udev_syms)
+		return -1;
+	
 	return 0;
 }
 
 int HID_API_EXPORT hid_exit(void)
 {
+	SDL_UDEV_ReleaseUdevSyms();
+
 	/* Nothing to do for this in the Linux/hidraw implementation. */
 	return 0;
 }
@@ -474,20 +483,23 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 	hid_init();
 
 	/* Create the udev object */
-	udev = udev_new();
+	udev = udev_syms->udev_new();
 	if (!udev) {
 		printf("Can't create udev\n");
 		return NULL;
 	}
 
 	/* Create a list of the devices in the 'hidraw' subsystem. */
-	enumerate = udev_enumerate_new(udev);
-	udev_enumerate_add_match_subsystem(enumerate, "hidraw");
-	udev_enumerate_scan_devices(enumerate);
-	devices = udev_enumerate_get_list_entry(enumerate);
+	enumerate = udev_syms->udev_enumerate_new(udev);
+	udev_syms->udev_enumerate_add_match_subsystem(enumerate, "hidraw");
+	udev_syms->udev_enumerate_scan_devices(enumerate);
+	devices = udev_syms->udev_enumerate_get_list_entry(enumerate);
 	/* For each item, see if it matches the vid/pid, and if so
 	   create a udev_device record for it */
-	udev_list_entry_foreach(dev_list_entry, devices) {
+        for (dev_list_entry = devices;
+             dev_list_entry;
+             dev_list_entry = udev_syms->udev_list_entry_get_next(dev_list_entry)) {
+
 		const char *sysfs_path;
 		const char *dev_path;
 		const char *str;
@@ -504,11 +516,11 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 
 		/* Get the filename of the /sys entry for the device
 		   and create a udev_device object (dev) representing it */
-		sysfs_path = udev_list_entry_get_name(dev_list_entry);
-		raw_dev = udev_device_new_from_syspath(udev, sysfs_path);
-		dev_path = udev_device_get_devnode(raw_dev);
+		sysfs_path = udev_syms->udev_list_entry_get_name(dev_list_entry);
+		raw_dev = udev_syms->udev_device_new_from_syspath(udev, sysfs_path);
+		dev_path = udev_syms->udev_device_get_devnode(raw_dev);
 
-		hid_dev = udev_device_get_parent_with_subsystem_devtype(
+		hid_dev = udev_syms->udev_device_get_parent_with_subsystem_devtype(
 			raw_dev,
 			"hid",
 			NULL);
@@ -519,7 +531,7 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 		}
 
 		result = parse_uevent_info(
-			udev_device_get_sysattr_value(hid_dev, "uevent"),
+			udev_syms->udev_device_get_sysattr_value(hid_dev, "uevent"),
 			&bus_type,
 			&dev_vid,
 			&dev_pid,
@@ -582,7 +594,7 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 					   subsystem/devtype pair of "usb"/"usb_device". This will
 					   be several levels up the tree, but the function will find
 					   it. */
-					usb_dev = udev_device_get_parent_with_subsystem_devtype(
+					usb_dev = udev_syms->udev_device_get_parent_with_subsystem_devtype(
 							raw_dev,
 							"usb",
 							"usb_device");
@@ -610,16 +622,16 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 					cur_dev->product_string = copy_udev_string(usb_dev, device_string_names[DEVICE_STRING_PRODUCT]);
 
 					/* Release Number */
-					str = udev_device_get_sysattr_value(usb_dev, "bcdDevice");
+					str = udev_syms->udev_device_get_sysattr_value(usb_dev, "bcdDevice");
 					cur_dev->release_number = (str)? strtol(str, NULL, 16): 0x0;
 
 					/* Get a handle to the interface's udev node. */
-					intf_dev = udev_device_get_parent_with_subsystem_devtype(
+					intf_dev = udev_syms->udev_device_get_parent_with_subsystem_devtype(
 							raw_dev,
 							"usb",
 							"usb_interface");
 					if (intf_dev) {
-						str = udev_device_get_sysattr_value(intf_dev, "bInterfaceNumber");
+						str = udev_syms->udev_device_get_sysattr_value(intf_dev, "bInterfaceNumber");
 						cur_dev->interface_number = (str)? strtol(str, NULL, 16): -1;
 					}
 
@@ -642,14 +654,14 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 	next:
 		free(serial_number_utf8);
 		free(product_name_utf8);
-		udev_device_unref(raw_dev);
+		udev_syms->udev_device_unref(raw_dev);
 		/* hid_dev, usb_dev and intf_dev don't need to be (and can't be)
 		   unref()d.  It will cause a double-free() error.  I'm not
 		   sure why.  */
 	}
 	/* Free the enumerator and udev objects. */
-	udev_enumerate_unref(enumerate);
-	udev_unref(udev);
+	udev_syms->udev_enumerate_unref(enumerate);
+	udev_syms->udev_unref(udev);
 
 	return root;
 }
