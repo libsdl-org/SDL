@@ -387,8 +387,8 @@ static const ControllerDescription_t arrControllers[] = {
 
 	/* Added from Minidumps 10-9-19 */
 	{ MAKE_CONTROLLER_ID( 0x0,		0x6686 ), k_eControllerType_XBoxOneController },	// Unknown Controller
-	{ MAKE_CONTROLLER_ID( 0x1038,	0x1430 ), k_eControllerType_XBoxOneController },	// Unknown Controller
-	{ MAKE_CONTROLLER_ID( 0x1038,	0x1431 ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0x1038,	0x1430 ), k_eControllerType_XBox360Controller },	// SteelSeries Stratus Duo
+	{ MAKE_CONTROLLER_ID( 0x1038,	0x1431 ), k_eControllerType_XBox360Controller },	// SteelSeries Stratus Duo
 	{ MAKE_CONTROLLER_ID( 0x11ff,	0x511 ), k_eControllerType_XBoxOneController },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0x12ab,	0x304 ), k_eControllerType_XBoxOneController },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0x1430,	0x291 ), k_eControllerType_XBoxOneController },	// Unknown Controller
