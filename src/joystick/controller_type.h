@@ -224,6 +224,9 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x021f ), k_eControllerType_XBox360Controller },	// Rock Candy Gamepad for Xbox 360
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0246 ), k_eControllerType_XBoxOneController },	// Rock Candy Gamepad for Xbox One 2015
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x02a0 ), k_eControllerType_XBox360Controller },	// Counterfeit 360Controller
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x02ab ), k_eControllerType_XBoxOneController },	// PDP Controller for Xbox One
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x02a4 ), k_eControllerType_XBoxOneController },	// PDP Wired Controller for Xbox One - Stealth Series
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x02a6 ), k_eControllerType_XBoxOneController },	// PDP Wired Controller for Xbox One - Camo Series
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0301 ), k_eControllerType_XBox360Controller },	// Logic3 Controller
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0346 ), k_eControllerType_XBoxOneController },	// Rock Candy Gamepad for Xbox One 2016
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0401 ), k_eControllerType_XBox360Controller },	// Logic3 Controller
@@ -324,6 +327,7 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x24c6, 0xfafc ), k_eControllerType_XBox360Controller },	// Afterglow Gamepad 1
 	{ MAKE_CONTROLLER_ID( 0x24c6, 0xfafe ), k_eControllerType_XBox360Controller },	// Rock Candy Gamepad for Xbox 360
 	{ MAKE_CONTROLLER_ID( 0x24c6, 0xfafd ), k_eControllerType_XBox360Controller },	// Afterglow Gamepad 3
+	{ MAKE_CONTROLLER_ID( 0x2e24, 0x1688 ), k_eControllerType_XBoxOneController },	// Hyperkin X91
 	//{ MAKE_CONTROLLER_ID( 0x0955, 0x7210 ), k_eControllerType_XBox360Controller },	// Nvidia Shield local controller
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0205 ), k_eControllerType_XBoxOneController },	// Victrix Pro FS Xbox One Edition
 	
