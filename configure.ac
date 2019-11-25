@@ -3315,6 +3315,7 @@ AS_HELP_STRING([--enable-hidapi], [use HIDAPI for low level joystick drivers [[d
             AC_DEFINE(SDL_JOYSTICK_HIDAPI, 1, [ ])
             EXTRA_CFLAGS="$EXTRA_CFLAGS -I$srcdir/src/hidapi/hidapi"
             SOURCES="$SOURCES $srcdir/src/joystick/hidapi/*.c"
+            SOURCES="$SOURCES $srcdir/src/hidapi/SDL_hidapi.c"
 
             if test x$have_libusb_h = xyes; then
                 EXTRA_CFLAGS="$EXTRA_CFLAGS $LIBUSB_CFLAGS"
@@ -3342,17 +3343,7 @@ AS_HELP_STRING([--enable-hidapi], [use HIDAPI for low level joystick drivers [[d
                     AC_DEFINE_UNQUOTED(SDL_LIBUSB_DYNAMIC, "$libusb_lib", [ ])
                 fi
             else
-                case "$host" in
-                *-*-cygwin* | *-*-mingw32* )
-                    SOURCES="$SOURCES $srcdir/src/hidapi/windows/hid.c"
-                    ;;
-                *-*-darwin* )
-                    SOURCES="$SOURCES $srcdir/src/hidapi/mac/hid.c"
-                    ;;
-                * )
-                    SOURCES="$SOURCES $srcdir/src/hidapi/linux/hid.c"
-                    ;;
-                esac
+                SOURCES="$SOURCES $srcdir/src/hidapi/SDL_hidapi.c"
             fi
         fi
 

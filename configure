@@ -24364,17 +24364,7 @@ _ACEOF
 
                 fi
             else
-                case "$host" in
-                *-*-cygwin* | *-*-mingw32* )
-                    SOURCES="$SOURCES $srcdir/src/hidapi/windows/hid.c"
-                    ;;
-                *-*-darwin* )
-                    SOURCES="$SOURCES $srcdir/src/hidapi/mac/hid.c"
-                    ;;
-                * )
-                    SOURCES="$SOURCES $srcdir/src/hidapi/linux/hid.c"
-                    ;;
-                esac
+                SOURCES="$SOURCES $srcdir/src/hidapi/SDL_hidapi.c"
             fi
         fi
 
