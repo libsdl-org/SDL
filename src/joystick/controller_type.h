@@ -240,6 +240,9 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0067 ), k_eControllerType_XBoxOneController },	// HORIPAD ONE
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0078 ), k_eControllerType_XBoxOneController },	// Hori Real Arcade Pro V Kai Xbox One
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x008c ), k_eControllerType_XBox360Controller },	// Hori Real Arcade Pro 4
+	{ MAKE_CONTROLLER_ID( 0x1038, 0x1430 ), k_eControllerType_XBox360Controller },	// SteelSeries Stratus Duo
+	{ MAKE_CONTROLLER_ID( 0x1038, 0x1431 ), k_eControllerType_XBox360Controller },	// SteelSeries Stratus Duo
+	{ MAKE_CONTROLLER_ID( 0x1038, 0xb360 ), k_eControllerType_XBox360Controller },	// SteelSeries Nimbus/Stratus XL
 	{ MAKE_CONTROLLER_ID( 0x11c9, 0x55f0 ), k_eControllerType_XBox360Controller },	// Nacon GC-100XF
 	{ MAKE_CONTROLLER_ID( 0x12ab, 0x0004 ), k_eControllerType_XBox360Controller },	// Honey Bee Xbox360 dancepad
 	{ MAKE_CONTROLLER_ID( 0x12ab, 0x0301 ), k_eControllerType_XBox360Controller },	// PDP AFTERGLOW AX.1
@@ -383,12 +386,9 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0xe6f, 0x2a8 ), k_eControllerType_XBoxOneController },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0x2c22, 0x2503 ), k_eControllerType_XBoxOneController },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0x79, 0x18a1 ), k_eControllerType_XBoxOneController },	// Unknown Controller
-	{ MAKE_CONTROLLER_ID( 0x1038, 0xb360 ), k_eControllerType_XBox360Controller },	// SteelSeries Nimbus/Stratus XL
 
 	/* Added from Minidumps 10-9-19 */
 	{ MAKE_CONTROLLER_ID( 0x0,		0x6686 ), k_eControllerType_XBoxOneController },	// Unknown Controller
-	{ MAKE_CONTROLLER_ID( 0x1038,	0x1430 ), k_eControllerType_XBox360Controller },	// SteelSeries Stratus Duo
-	{ MAKE_CONTROLLER_ID( 0x1038,	0x1431 ), k_eControllerType_XBox360Controller },	// SteelSeries Stratus Duo
 	{ MAKE_CONTROLLER_ID( 0x11ff,	0x511 ), k_eControllerType_XBoxOneController },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0x12ab,	0x304 ), k_eControllerType_XBoxOneController },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0x1430,	0x291 ), k_eControllerType_XBoxOneController },	// Unknown Controller
@@ -447,7 +447,6 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0xf0d,	0xd8 ), k_eControllerType_XBoxOneController },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0xfff,	0x2a1 ), k_eControllerType_XBoxOneController },	// Unknown Controller
 
-																					
 	//{ MAKE_CONTROLLER_ID( 0x1949, 0x0402 ), /*android*/ },	// Unknown Controller
 
 	{ MAKE_CONTROLLER_ID( 0x05ac, 0x0001 ), k_eControllerType_AppleController },	// MFI Extended Gamepad (generic entry for iOS/tvOS)
@@ -467,11 +466,11 @@ static const ControllerDescription_t arrControllers[] = {
     // * Sunwaytek Wireless Motion Controller for Nintendo Switch
 	{ MAKE_CONTROLLER_ID( 0x057e, 0x2009 ), k_eControllerType_SwitchProController },        // Nintendo Switch Pro Controller
     
-    { MAKE_CONTROLLER_ID( 0x0f0d, 0x00c1 ), k_eControllerType_SwitchInputOnlyController },  // HORIPAD for Nintendo Switch
-    { MAKE_CONTROLLER_ID( 0x0f0d, 0x0092 ), k_eControllerType_SwitchInputOnlyController },  // HORI Pokken Tournament DX Pro Pad
-    { MAKE_CONTROLLER_ID( 0x0f0d, 0x00f6 ), k_eControllerType_SwitchProController },        // HORI Wireless Switch Pad
-	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x00dc ), k_eControllerType_XInputSwitchController },     // HORI Battle Pad. Is a Switch controller but shows up through XInput on Windows.
-    { MAKE_CONTROLLER_ID( 0x0e6f, 0x0185 ), k_eControllerType_SwitchInputOnlyController },  // PDP Wired Fight Pad Pro for Nintendo Switch
+	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x00c1 ), k_eControllerType_SwitchInputOnlyController },  // HORIPAD for Nintendo Switch
+	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0092 ), k_eControllerType_SwitchInputOnlyController },  // HORI Pokken Tournament DX Pro Pad
+	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x00f6 ), k_eControllerType_SwitchProController },		// HORI Wireless Switch Pad
+	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x00dc ), k_eControllerType_XInputSwitchController },	 // HORI Battle Pad. Is a Switch controller but shows up through XInput on Windows.
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0185 ), k_eControllerType_SwitchInputOnlyController },  // PDP Wired Fight Pad Pro for Nintendo Switch
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0180 ), k_eControllerType_SwitchInputOnlyController },  // PDP Faceoff Wired Pro Controller for Nintendo Switch
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0181 ), k_eControllerType_SwitchInputOnlyController },  // PDP Faceoff Deluxe Wired Pro Controller for Nintendo Switch
 	{ MAKE_CONTROLLER_ID( 0x20d6, 0xa711 ), k_eControllerType_SwitchInputOnlyController },  // PowerA Wired Controller Plus/PowerA Wired Controller Nintendo GameCube Style
