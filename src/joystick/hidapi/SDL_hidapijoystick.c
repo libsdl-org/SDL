@@ -555,6 +555,7 @@ HIDAPI_XboxControllerName(Uint16 vendor_id, Uint16 product_id)
         { MAKE_VIDPID(0x24c6, 0x550e), "Hori Real Arcade Pro V Kai 360" },
         { MAKE_VIDPID(0x24c6, 0x551a), "PowerA FUSION Pro Controller" },
         { MAKE_VIDPID(0x24c6, 0x561a), "PowerA FUSION Controller" },
+        { MAKE_VIDPID(0x24c6, 0x591a), "PowerA FUSION Pro Controller" },
         { MAKE_VIDPID(0x24c6, 0x5b00), "ThrustMaster Ferrari 458 Racing Wheel" },
         { MAKE_VIDPID(0x24c6, 0x5b02), "Thrustmaster, Inc. GPX Controller" },
         { MAKE_VIDPID(0x24c6, 0x5b03), "Thrustmaster Ferrari 458 Racing Wheel" },
