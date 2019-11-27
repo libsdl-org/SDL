@@ -560,6 +560,7 @@ HIDAPI_XboxControllerName(Uint16 vendor_id, Uint16 product_id)
         { MAKE_VIDPID(0x24c6, 0x5b02), "Thrustmaster, Inc. GPX Controller" },
         { MAKE_VIDPID(0x24c6, 0x5b03), "Thrustmaster Ferrari 458 Racing Wheel" },
         { MAKE_VIDPID(0x24c6, 0x5d04), "Razer Sabertooth" },
+        { MAKE_VIDPID(0x24c6, 0x791a), "PowerA Fusion Fight Pad" },
         { MAKE_VIDPID(0x24c6, 0xfafe), "Rock Candy Gamepad for Xbox 360" },
         { MAKE_VIDPID(0x2e24, 0x1688), "Hyperkin X91" },
     };
