@@ -102,7 +102,6 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x004d ), k_eControllerType_PS3Controller },	// Horipad 3
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x005e ), k_eControllerType_PS3Controller },	// HORI Fighting commander ps4
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x005f ), k_eControllerType_PS3Controller },	// HORI Fighting commander ps3
-	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0066 ), k_eControllerType_PS3Controller },	// HORI horipad4 ps4
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x006a ), k_eControllerType_PS3Controller },	// Real Arcade Pro 4
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x006e ), k_eControllerType_PS3Controller },	// HORI horipad4 ps3
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0085 ), k_eControllerType_PS3Controller },	// HORI Fighting Commander PS3
@@ -115,7 +114,6 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x146b, 0x0603 ), k_eControllerType_PS3Controller },	// From SDL
 	{ MAKE_CONTROLLER_ID( 0x146b, 0x5500 ), k_eControllerType_PS3Controller },	// From SDL
 	{ MAKE_CONTROLLER_ID( 0x1a34, 0x0836 ), k_eControllerType_PS3Controller },	// Afterglow PS3
-	{ MAKE_CONTROLLER_ID( 0x1a34, 0x0836 ), k_eControllerType_PS3Controller },	// Afterglow ps3
 	{ MAKE_CONTROLLER_ID( 0x20bc, 0x5500 ), k_eControllerType_PS3Controller },	// ShanWan PS3
 	{ MAKE_CONTROLLER_ID( 0x20d6, 0x576d ), k_eControllerType_PS3Controller },	// Power A PS3
 	{ MAKE_CONTROLLER_ID( 0x20d6, 0xca6d ), k_eControllerType_PS3Controller },	// From SDL
@@ -126,7 +124,6 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x2c22, 0x2000 ), k_eControllerType_PS3Controller },	// Quanba Drone
 	{ MAKE_CONTROLLER_ID( 0x2c22, 0x2003 ), k_eControllerType_PS3Controller },	// From SDL
 	{ MAKE_CONTROLLER_ID( 0x8380, 0x0003 ), k_eControllerType_PS3Controller },	// BTP 2163
-	{ MAKE_CONTROLLER_ID( 0x8888, 0x0308 ), k_eControllerType_PS3Controller },	// From SDL
 	{ MAKE_CONTROLLER_ID( 0x8888, 0x0308 ), k_eControllerType_PS3Controller },	// Sony PS3 Controller
 
 	{ MAKE_CONTROLLER_ID( 0x0079, 0x181b ), k_eControllerType_PS4Controller },	// Venom Arcade Stick - XXX:this may not work and may need to be called a ps3 controller
@@ -338,7 +335,6 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x0000, 0x0000 ), k_eControllerType_XBox360Controller },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0x045e, 0x02a2 ), k_eControllerType_XBox360Controller },	// Unknown Controller - Microsoft VID
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x1414 ), k_eControllerType_XBox360Controller },	// Unknown Controller
-	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x1314 ), k_eControllerType_XBox360Controller },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0159 ), k_eControllerType_XBox360Controller },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0x24c6, 0xfaff ), k_eControllerType_XBox360Controller },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x006d ), k_eControllerType_XBox360Controller },	// Unknown Controller
@@ -355,8 +351,6 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x056e, 0x2012 ), k_eControllerType_XBox360Controller },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0x146b, 0x0602 ), k_eControllerType_XBox360Controller },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x00ae ), k_eControllerType_XBox360Controller },	// Unknown Controller
-	{ MAKE_CONTROLLER_ID( 0x146b, 0x0603 ), k_eControllerType_XBox360Controller },	// Unknown Controller
-	{ MAKE_CONTROLLER_ID( 0x056e, 0x2013 ), k_eControllerType_XBox360Controller },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0x046d, 0x0401 ), k_eControllerType_XBox360Controller },	// logitech xinput
 	{ MAKE_CONTROLLER_ID( 0x046d, 0x0301 ), k_eControllerType_XBox360Controller },	// logitech xinput
 	{ MAKE_CONTROLLER_ID( 0x046d, 0xcaa3 ), k_eControllerType_XBox360Controller },	// logitech xinput
@@ -365,11 +359,7 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x0079, 0x18d3 ), k_eControllerType_XBox360Controller },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x00b1 ), k_eControllerType_XBox360Controller },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0x0001, 0x0001 ), k_eControllerType_XBox360Controller },	// Unknown Controller
-	{ MAKE_CONTROLLER_ID( 0x1345, 0x6005 ), k_eControllerType_XBox360Controller },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0x0079, 0x188e ), k_eControllerType_XBox360Controller },	// Unknown Controller
-	{ MAKE_CONTROLLER_ID( 0x0079, 0x18d4 ), k_eControllerType_XBox360Controller },	// Unknown Controller
-	{ MAKE_CONTROLLER_ID( 0x2c22, 0x2003 ), k_eControllerType_XBox360Controller },	// Unknown Controller
-	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x00b1 ), k_eControllerType_XBox360Controller },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0x0079, 0x187c ), k_eControllerType_XBox360Controller },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0x0079, 0x189c ), k_eControllerType_XBox360Controller },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0x0079, 0x1874 ), k_eControllerType_XBox360Controller },	// Unknown Controller
@@ -379,14 +369,12 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x2f24, 0x2e ), k_eControllerType_XBoxOneController },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0x9886, 0x24 ), k_eControllerType_XBoxOneController },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0x2f24, 0x91 ), k_eControllerType_XBoxOneController },	// Unknown Controller
-	{ MAKE_CONTROLLER_ID( 0xe6f, 0x2a4 ), k_eControllerType_XBoxOneController },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0x1430, 0x719 ), k_eControllerType_XBoxOneController },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0xf0d, 0xed ), k_eControllerType_XBoxOneController },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0x3eb, 0xff02 ), k_eControllerType_XBoxOneController },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0xf0d, 0xc0 ), k_eControllerType_XBoxOneController },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0xe6f, 0x152 ), k_eControllerType_XBoxOneController },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0xe6f, 0x2a7 ), k_eControllerType_XBoxOneController },	// Unknown Controller
-	{ MAKE_CONTROLLER_ID( 0xe6f, 0x2a6 ), k_eControllerType_XBoxOneController },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0x46d, 0x1007 ), k_eControllerType_XBoxOneController },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0xe6f, 0x2b8 ), k_eControllerType_XBoxOneController },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0xe6f, 0x2a8 ), k_eControllerType_XBoxOneController },	// Unknown Controller
@@ -416,12 +404,10 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x2f24,	0x11 ), k_eControllerType_XBoxOneController },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0x2f24,	0x53 ), k_eControllerType_XBoxOneController },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0x2f24,	0xb7 ), k_eControllerType_XBoxOneController },	// Unknown Controller
-	{ MAKE_CONTROLLER_ID( 0x45e,	0x28e ), k_eControllerType_XBoxOneController },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0x45e,	0x2a9 ), k_eControllerType_XBoxOneController },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0x46d,	0x0 ), k_eControllerType_XBoxOneController },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0x46d,	0x1004 ), k_eControllerType_XBoxOneController },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0x46d,	0x1008 ), k_eControllerType_XBoxOneController },	// Unknown Controller
-	{ MAKE_CONTROLLER_ID( 0x46d,	0xc21d ), k_eControllerType_XBoxOneController },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0x46d,	0xf301 ), k_eControllerType_XBoxOneController },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0x738,	0x2a0 ), k_eControllerType_XBoxOneController },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0x738,	0x7263 ), k_eControllerType_XBoxOneController },	// Unknown Controller
@@ -496,6 +482,27 @@ static const ControllerDescription_t arrControllers[] = {
 
 static SDL_INLINE EControllerType GuessControllerType( int nVID, int nPID )
 {
+#if 0//def _DEBUG
+	// Verify that there are no duplicates in the controller list
+	// If the list were sorted, we could do this much more efficiently, as well as improve lookup speed.
+	static bool s_bCheckedForDuplicates;
+	if ( !s_bCheckedForDuplicates )
+	{
+		s_bCheckedForDuplicates = true;
+
+		for ( int i = 0; i < sizeof( arrControllers ) / sizeof( arrControllers[ 0 ] ); ++i )
+		{
+			for ( int j = i + 1; j < sizeof( arrControllers ) / sizeof( arrControllers[ 0 ] ); ++j )
+			{
+				if ( arrControllers[ i ].m_unDeviceID == arrControllers[ j ].m_unDeviceID )
+				{
+					Log( "Duplicate controller entry found for VID 0x%.4x PID 0x%.4x\n", ( arrControllers[ i ].m_unDeviceID >> 16 ), arrControllers[ i ].m_unDeviceID & 0xFFFF );
+				}
+			}
+		}
+	}
+#endif // _DEBUG
+
 	unsigned int unDeviceID = MAKE_CONTROLLER_ID( nVID, nPID );
 	int iIndex;
 	for ( iIndex = 0; iIndex < sizeof( arrControllers ) / sizeof( arrControllers[0] ); ++iIndex )
