@@ -99,6 +99,9 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0066 ), k_eControllerType_PS3Controller },		// HORI horipad4 ps4
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x005f ), k_eControllerType_PS3Controller },		// HORI Fighting commander ps3
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x005e ), k_eControllerType_PS3Controller },		// HORI Fighting commander ps4
+	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0084 ), k_eControllerType_PS4Controller },		// HORI Fighting Commander PS4
+	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0085 ), k_eControllerType_PS3Controller },		// HORI Fighting Commander PS3
+	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0086 ), k_eControllerType_PS3Controller },		// HORI Fighting Commander PC (Uses the Xbox 360 protocol, but has PS3 buttons)
 	//{ MAKE_CONTROLLER_ID( 0x0738, 0x3250 ), k_eControllerType_PS3Controller },		// madcats fightpad pro ps3 already in ps4 list.. does this work??
 	{ MAKE_CONTROLLER_ID( 0x0738, 0x8250 ), k_eControllerType_PS3Controller },		// madcats fightpad pro ps4
 	{ MAKE_CONTROLLER_ID( 0x0079, 0x181a ), k_eControllerType_PS3Controller },		// Venom Arcade Stick
@@ -340,7 +343,6 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x1314 ), k_eControllerType_XBox360Controller },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0159 ), k_eControllerType_XBox360Controller },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0x24c6, 0xfaff ), k_eControllerType_XBox360Controller },	// Unknown Controller
-	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0086 ), k_eControllerType_XBox360Controller },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x006d ), k_eControllerType_XBox360Controller },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x00a4 ), k_eControllerType_XBox360Controller },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0x0079, 0x1832 ), k_eControllerType_XBox360Controller },	// Unknown Controller
