@@ -323,6 +323,7 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x24c6, 0x5b02 ), k_eControllerType_XBox360Controller },	// Thrustmaster, Inc. GPX Controller
 	{ MAKE_CONTROLLER_ID( 0x24c6, 0x5b03 ), k_eControllerType_XBox360Controller },	// Thrustmaster Ferrari 458 Racing Wheel
 	{ MAKE_CONTROLLER_ID( 0x24c6, 0x5d04 ), k_eControllerType_XBox360Controller },	// Razer Sabertooth
+	{ MAKE_CONTROLLER_ID( 0x24c6, 0x791a ), k_eControllerType_XBoxOneController },	// PowerA Fusion Fight Pad
 	{ MAKE_CONTROLLER_ID( 0x24c6, 0xfafa ), k_eControllerType_XBox360Controller },	// Aplay Controller
 	{ MAKE_CONTROLLER_ID( 0x24c6, 0xfafb ), k_eControllerType_XBox360Controller },	// Aplay Controller
 	{ MAKE_CONTROLLER_ID( 0x24c6, 0xfafc ), k_eControllerType_XBox360Controller },	// Afterglow Gamepad 1
