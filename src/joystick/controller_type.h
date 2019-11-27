@@ -102,8 +102,7 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0084 ), k_eControllerType_PS4Controller },		// HORI Fighting Commander PS4
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0085 ), k_eControllerType_PS3Controller },		// HORI Fighting Commander PS3
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0086 ), k_eControllerType_PS3Controller },		// HORI Fighting Commander PC (Uses the Xbox 360 protocol, but has PS3 buttons)
-	//{ MAKE_CONTROLLER_ID( 0x0738, 0x3250 ), k_eControllerType_PS3Controller },		// madcats fightpad pro ps3 already in ps4 list.. does this work??
-	{ MAKE_CONTROLLER_ID( 0x0738, 0x8250 ), k_eControllerType_PS3Controller },		// madcats fightpad pro ps4
+	{ MAKE_CONTROLLER_ID( 0x0738, 0x3250 ), k_eControllerType_PS3Controller },		// madcats fightpad pro ps3
 	{ MAKE_CONTROLLER_ID( 0x0079, 0x181a ), k_eControllerType_PS3Controller },		// Venom Arcade Stick
 	{ MAKE_CONTROLLER_ID( 0x0079, 0x0006 ), k_eControllerType_UnknownNonSteamController },	// DragonRise Generic USB PCB, sometimes configured as a PC Twin Shock Controller - looks like a DS3 but the face buttons are 1-4 instead of symbols
 	{ MAKE_CONTROLLER_ID( 0x0079, 0x1844 ), k_eControllerType_PS3Controller },		// From SDL
@@ -173,7 +172,6 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x009c ), k_eControllerType_PS4Controller },		// HORI TAC PRO mousething
 	{ MAKE_CONTROLLER_ID( 0x0c12, 0x0ef6 ), k_eControllerType_PS4Controller },		// Hitbox Arcade Stick
 	{ MAKE_CONTROLLER_ID( 0x0079, 0x181b ), k_eControllerType_PS4Controller },		// Venom Arcade Stick - XXX:this may not work and may need to be called a ps3 controller
-	{ MAKE_CONTROLLER_ID( 0x0738, 0x3250 ), k_eControllerType_PS4Controller },		// Mad Catz FightPad PRO - controller shaped with 6 face buttons
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x00ee ), k_eControllerType_PS4Controller },		// Hori mini wired https://www.playstation.com/en-us/explore/accessories/gaming-controllers/mini-wired-gamepad/
 	{ MAKE_CONTROLLER_ID( 0x0738, 0x8481 ), k_eControllerType_PS4Controller },		// Mad Catz FightStick TE 2+ PS4
 	{ MAKE_CONTROLLER_ID( 0x0738, 0x8480 ), k_eControllerType_PS4Controller },		// Mad Catz FightStick TE 2 PS4
