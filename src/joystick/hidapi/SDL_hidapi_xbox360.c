@@ -251,6 +251,10 @@ HIDAPI_DriverXbox360_IsSupportedDevice(Uint16 vendor_id, Uint16 product_id, Uint
 {
     SDL_GameControllerType type = SDL_GetJoystickGameControllerType(vendor_id, product_id, name);
 
+    if (vendor_id == 0x0955) {
+        /* This is the NVIDIA Shield controller which doesn't talk XBox controller protocol */
+        return SDL_FALSE;
+    }
 #if defined(__MACOSX__) || defined(__WIN32__)
     if (vendor_id == 0x045e && product_id == 0x028e && version == 1) {
         /* This is the Steam Virtual Gamepad, which isn't supported by this driver */

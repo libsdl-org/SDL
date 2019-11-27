@@ -69,6 +69,104 @@ typedef struct
 } ControllerDescription_t;
 
 static const ControllerDescription_t arrControllers[] = {
+	{ MAKE_CONTROLLER_ID( 0x0079, 0x181a ), k_eControllerType_PS3Controller },	// Venom Arcade Stick
+	{ MAKE_CONTROLLER_ID( 0x0079, 0x1844 ), k_eControllerType_PS3Controller },	// From SDL
+	{ MAKE_CONTROLLER_ID( 0x044f, 0xb315 ), k_eControllerType_PS3Controller },	// Firestorm Dual Analog 3
+	{ MAKE_CONTROLLER_ID( 0x044f, 0xd007 ), k_eControllerType_PS3Controller },	// Thrustmaster wireless 3-1
+	{ MAKE_CONTROLLER_ID( 0x054c, 0x0268 ), k_eControllerType_PS3Controller },	// Sony PS3 Controller
+	{ MAKE_CONTROLLER_ID( 0x056e, 0x200f ), k_eControllerType_PS3Controller },	// From SDL
+	{ MAKE_CONTROLLER_ID( 0x056e, 0x2013 ), k_eControllerType_PS3Controller },	// JC-U4113SBK
+	{ MAKE_CONTROLLER_ID( 0x05b8, 0x1004 ), k_eControllerType_PS3Controller },	// From SDL
+	{ MAKE_CONTROLLER_ID( 0x05b8, 0x1006 ), k_eControllerType_PS3Controller },	// JC-U3412SBK
+	{ MAKE_CONTROLLER_ID( 0x06a3, 0xf622 ), k_eControllerType_PS3Controller },	// Cyborg V3
+	{ MAKE_CONTROLLER_ID( 0x0738, 0x3180 ), k_eControllerType_PS3Controller },	// Mad Catz Alpha PS3 mode
+	{ MAKE_CONTROLLER_ID( 0x0738, 0x3250 ), k_eControllerType_PS3Controller },	// madcats fightpad pro ps3
+	{ MAKE_CONTROLLER_ID( 0x0738, 0x8180 ), k_eControllerType_PS3Controller },	// Mad Catz Alpha PS4 mode (no touchpad on device)
+	{ MAKE_CONTROLLER_ID( 0x0738, 0x8838 ), k_eControllerType_PS3Controller },	// Madcatz Fightstick Pro
+	{ MAKE_CONTROLLER_ID( 0x0810, 0x0001 ), k_eControllerType_PS3Controller },	// actually ps2 - maybe break out later
+	{ MAKE_CONTROLLER_ID( 0x0810, 0x0003 ), k_eControllerType_PS3Controller },	// actually ps2 - maybe break out later
+	{ MAKE_CONTROLLER_ID( 0x0925, 0x0005 ), k_eControllerType_PS3Controller },	// Sony PS3 Controller
+	{ MAKE_CONTROLLER_ID( 0x0925, 0x8866 ), k_eControllerType_PS3Controller },	// PS2 maybe break out later
+	{ MAKE_CONTROLLER_ID( 0x0925, 0x8888 ), k_eControllerType_PS3Controller },	// Actually ps2 -maybe break out later Lakeview Research WiseGroup Ltd, MP-8866 Dual Joypad
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0109 ), k_eControllerType_PS3Controller },	// PDP Versus Fighting Pad
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x011e ), k_eControllerType_PS3Controller },	// Rock Candy PS4
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0128 ), k_eControllerType_PS3Controller },	// Rock Candy PS3
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0203 ), k_eControllerType_PS3Controller },	// Victrix Pro FS (PS4 peripheral but no trackpad/lightbar)
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0214 ), k_eControllerType_PS3Controller },	// afterglow ps3
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x1314 ), k_eControllerType_PS3Controller },	// PDP Afterglow Wireless PS3 controller
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x6302 ), k_eControllerType_PS3Controller },	// From SDL
+	{ MAKE_CONTROLLER_ID( 0x0e8f, 0x0008 ), k_eControllerType_PS3Controller },	// Green Asia
+	{ MAKE_CONTROLLER_ID( 0x0e8f, 0x3075 ), k_eControllerType_PS3Controller },	// SpeedLink Strike FX
+	{ MAKE_CONTROLLER_ID( 0x0e8f, 0x310d ), k_eControllerType_PS3Controller },	// From SDL
+	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0009 ), k_eControllerType_PS3Controller },	// HORI BDA GP1
+	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x004d ), k_eControllerType_PS3Controller },	// Horipad 3
+	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x005e ), k_eControllerType_PS3Controller },	// HORI Fighting commander ps4
+	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x005f ), k_eControllerType_PS3Controller },	// HORI Fighting commander ps3
+	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0066 ), k_eControllerType_PS3Controller },	// HORI horipad4 ps4
+	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x006a ), k_eControllerType_PS3Controller },	// Real Arcade Pro 4
+	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x006e ), k_eControllerType_PS3Controller },	// HORI horipad4 ps3
+	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0085 ), k_eControllerType_PS3Controller },	// HORI Fighting Commander PS3
+	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0086 ), k_eControllerType_PS3Controller },	// HORI Fighting Commander PC (Uses the Xbox 360 protocol, but has PS3 buttons)
+	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0087 ), k_eControllerType_PS3Controller },	// HORI fighting mini stick
+	{ MAKE_CONTROLLER_ID( 0x0f30, 0x1100 ), k_eControllerType_PS3Controller },	// Quanba Q1 fight stick
+	{ MAKE_CONTROLLER_ID( 0x11ff, 0x3331 ), k_eControllerType_PS3Controller },	// SRXJ-PH2400
+	{ MAKE_CONTROLLER_ID( 0x1345, 0x1000 ), k_eControllerType_PS3Controller },	// PS2 ACME GA-D5
+	{ MAKE_CONTROLLER_ID( 0x1345, 0x6005 ), k_eControllerType_PS3Controller },	// ps2 maybe break out later
+	{ MAKE_CONTROLLER_ID( 0x146b, 0x0603 ), k_eControllerType_PS3Controller },	// From SDL
+	{ MAKE_CONTROLLER_ID( 0x146b, 0x5500 ), k_eControllerType_PS3Controller },	// From SDL
+	{ MAKE_CONTROLLER_ID( 0x1a34, 0x0836 ), k_eControllerType_PS3Controller },	// Afterglow PS3
+	{ MAKE_CONTROLLER_ID( 0x1a34, 0x0836 ), k_eControllerType_PS3Controller },	// Afterglow ps3
+	{ MAKE_CONTROLLER_ID( 0x20bc, 0x5500 ), k_eControllerType_PS3Controller },	// ShanWan PS3
+	{ MAKE_CONTROLLER_ID( 0x20d6, 0x576d ), k_eControllerType_PS3Controller },	// Power A PS3
+	{ MAKE_CONTROLLER_ID( 0x20d6, 0xca6d ), k_eControllerType_PS3Controller },	// From SDL
+	{ MAKE_CONTROLLER_ID( 0x2563, 0x0523 ), k_eControllerType_PS3Controller },	// Digiflip GP006
+	{ MAKE_CONTROLLER_ID( 0x2563, 0x0575 ), k_eControllerType_PS3Controller },	// From SDL
+	{ MAKE_CONTROLLER_ID( 0x25f0, 0x83c3 ), k_eControllerType_PS3Controller },	// gioteck vx2
+	{ MAKE_CONTROLLER_ID( 0x25f0, 0xc121 ), k_eControllerType_PS3Controller },	//
+	{ MAKE_CONTROLLER_ID( 0x2c22, 0x2000 ), k_eControllerType_PS3Controller },	// Quanba Drone
+	{ MAKE_CONTROLLER_ID( 0x2c22, 0x2003 ), k_eControllerType_PS3Controller },	// From SDL
+	{ MAKE_CONTROLLER_ID( 0x8380, 0x0003 ), k_eControllerType_PS3Controller },	// BTP 2163
+	{ MAKE_CONTROLLER_ID( 0x8888, 0x0308 ), k_eControllerType_PS3Controller },	// From SDL
+	{ MAKE_CONTROLLER_ID( 0x8888, 0x0308 ), k_eControllerType_PS3Controller },	// Sony PS3 Controller
+
+	{ MAKE_CONTROLLER_ID( 0x0079, 0x181b ), k_eControllerType_PS4Controller },	// Venom Arcade Stick - XXX:this may not work and may need to be called a ps3 controller
+	{ MAKE_CONTROLLER_ID( 0x054c, 0x05c4 ), k_eControllerType_PS4Controller },	// Sony PS4 Controller
+	{ MAKE_CONTROLLER_ID( 0x054c, 0x05c5 ), k_eControllerType_PS4Controller },	// STRIKEPAD PS4 Grip Add-on
+	{ MAKE_CONTROLLER_ID( 0x054c, 0x09cc ), k_eControllerType_PS4Controller },	// Sony PS4 Slim Controller
+	{ MAKE_CONTROLLER_ID( 0x054c, 0x0ba0 ), k_eControllerType_PS4Controller },	// Sony PS4 Controller (Wireless dongle)
+	{ MAKE_CONTROLLER_ID( 0x0738, 0x8250 ), k_eControllerType_PS4Controller },	// Mad Catz FightPad Pro PS4
+	{ MAKE_CONTROLLER_ID( 0x0738, 0x8384 ), k_eControllerType_PS4Controller },	// Mad Catz FightStick TE S+ PS4
+	{ MAKE_CONTROLLER_ID( 0x0738, 0x8480 ), k_eControllerType_PS4Controller },	// Mad Catz FightStick TE 2 PS4
+	{ MAKE_CONTROLLER_ID( 0x0738, 0x8481 ), k_eControllerType_PS4Controller },	// Mad Catz FightStick TE 2+ PS4
+	{ MAKE_CONTROLLER_ID( 0x0C12, 0x0E10 ), k_eControllerType_PS4Controller },	// Armor Armor 3 Pad PS4
+	{ MAKE_CONTROLLER_ID( 0x0C12, 0x1CF6 ), k_eControllerType_PS4Controller },	// EMIO PS4 Elite Controller
+	{ MAKE_CONTROLLER_ID( 0x0c12, 0x0e15 ), k_eControllerType_PS4Controller },	// Game:Pad 4
+	{ MAKE_CONTROLLER_ID( 0x0c12, 0x0ef6 ), k_eControllerType_PS4Controller },	// Hitbox Arcade Stick
+	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0055 ), k_eControllerType_PS4Controller },	// HORIPAD 4 FPS
+	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0066 ), k_eControllerType_PS4Controller },	// HORIPAD 4 FPS Plus 
+	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0084 ), k_eControllerType_PS4Controller },	// HORI Fighting Commander PS4
+	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x008a ), k_eControllerType_PS4Controller },	// HORI Real Arcade Pro 4
+	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x009c ), k_eControllerType_PS4Controller },	// HORI TAC PRO mousething
+	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x00a0 ), k_eControllerType_PS4Controller },	// HORI TAC4 mousething
+	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x00ee ), k_eControllerType_PS4Controller },	// Hori mini wired https://www.playstation.com/en-us/explore/accessories/gaming-controllers/mini-wired-gamepad/
+	{ MAKE_CONTROLLER_ID( 0x11c0, 0x4001 ), k_eControllerType_PS4Controller },	// "PS4 Fun Controller" added from user log
+	{ MAKE_CONTROLLER_ID( 0x146b, 0x0d01 ), k_eControllerType_PS4Controller },	// Nacon Revolution Pro Controller - has gyro
+	{ MAKE_CONTROLLER_ID( 0x146b, 0x0d02 ), k_eControllerType_PS4Controller },	// Nacon Revolution Pro Controller v2 - has gyro
+	{ MAKE_CONTROLLER_ID( 0x146b, 0x0d10 ), k_eControllerType_PS4Controller },	// NACON Revolution Infinite - has gyro
+	{ MAKE_CONTROLLER_ID( 0x1532, 0X0401 ), k_eControllerType_PS4Controller },	// Razer Panthera PS4 Controller
+	{ MAKE_CONTROLLER_ID( 0x1532, 0x1000 ), k_eControllerType_PS4Controller },	// Razer Raiju PS4 Controller
+	{ MAKE_CONTROLLER_ID( 0x1532, 0x1004 ), k_eControllerType_PS4Controller },	// Razer Raiju 2 Ultimate USB
+	{ MAKE_CONTROLLER_ID( 0x1532, 0x1007 ), k_eControllerType_PS4Controller },	// Razer Raiju 2 Tournament edition USB
+	{ MAKE_CONTROLLER_ID( 0x1532, 0x1008 ), k_eControllerType_PS4Controller },	// Razer Panthera Evo Fightstick
+	{ MAKE_CONTROLLER_ID( 0x1532, 0x1009 ), k_eControllerType_PS4Controller },	// Razer Raiju 2 Ultimate BT
+	{ MAKE_CONTROLLER_ID( 0x1532, 0x100A ), k_eControllerType_PS4Controller },	// Razer Raiju 2 Tournament edition BT
+	{ MAKE_CONTROLLER_ID( 0x1532, 0x1100 ), k_eControllerType_PS4Controller },	// Razer AION Fightstick - Trackpad, no gyro, lightbar hardcoded to green - UNANNOUNCED PRODUCT
+	{ MAKE_CONTROLLER_ID( 0x20d6, 0x792a ), k_eControllerType_PS4Controller },	// PowerA - Fusion Fight Pad
+	{ MAKE_CONTROLLER_ID( 0x7545, 0x0104 ), k_eControllerType_PS4Controller },	// Armor 3 or Level Up Cobra - At least one variant has gyro
+	{ MAKE_CONTROLLER_ID( 0x9886, 0x0025 ), k_eControllerType_PS4Controller },	// Astro C40
+
+	{ MAKE_CONTROLLER_ID( 0x0079, 0x0006 ), k_eControllerType_UnknownNonSteamController },	// DragonRise Generic USB PCB, sometimes configured as a PC Twin Shock Controller - looks like a DS3 but the face buttons are 1-4 instead of symbols
+
 	{ MAKE_CONTROLLER_ID( 0x0079, 0x18d4 ), k_eControllerType_XBox360Controller },	// GPD Win 2 X-Box Controller
 	{ MAKE_CONTROLLER_ID( 0x044f, 0xb326 ), k_eControllerType_XBox360Controller },	// Thrustmaster Gamepad GP XID
 	{ MAKE_CONTROLLER_ID( 0x045e, 0x028e ), k_eControllerType_XBox360Controller },	// Microsoft X-Box 360 pad
@@ -76,119 +174,11 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x045e, 0x0291 ), k_eControllerType_XBox360Controller },	// Xbox 360 Wireless Receiver (XBOX)
 	{ MAKE_CONTROLLER_ID( 0x045e, 0x02a0 ), k_eControllerType_XBox360Controller },	// Microsoft X-Box 360 Big Button IR
 	{ MAKE_CONTROLLER_ID( 0x045e, 0x02a1 ), k_eControllerType_XBox360Controller },	// Microsoft X-Box 360 pad
-	{ MAKE_CONTROLLER_ID( 0x045e, 0x02d1 ), k_eControllerType_XBoxOneController },	// Microsoft X-Box One pad
-	{ MAKE_CONTROLLER_ID( 0x045e, 0x02dd ), k_eControllerType_XBoxOneController },	// Microsoft X-Box One pad (Firmware 2015)
-	{ MAKE_CONTROLLER_ID( 0x045e, 0x02e0 ), k_eControllerType_XBoxOneController },	// Microsoft X-Box One S pad (Bluetooth)
-	{ MAKE_CONTROLLER_ID( 0x045e, 0x02e3 ), k_eControllerType_XBoxOneController },	// Microsoft X-Box One Elite pad
-	{ MAKE_CONTROLLER_ID( 0x045e, 0x02ea ), k_eControllerType_XBoxOneController },	// Microsoft X-Box One S pad
-	{ MAKE_CONTROLLER_ID( 0x045e, 0x02fd ), k_eControllerType_XBoxOneController },	// Microsoft X-Box One S pad (Bluetooth)
-	{ MAKE_CONTROLLER_ID( 0x045e, 0x02ff ), k_eControllerType_XBoxOneController },	// Microsoft X-Box One Elite pad
-	{ MAKE_CONTROLLER_ID( 0x045e, 0x0b00 ), k_eControllerType_XBoxOneController },	// Microsoft X-Box One Elite Series 2 pad
-	{ MAKE_CONTROLLER_ID( 0x045e, 0x0b05 ), k_eControllerType_XBoxOneController },	// Microsoft X-Box One Elite Series 2 pad (Bluetooth)
 	{ MAKE_CONTROLLER_ID( 0x045e, 0x0719 ), k_eControllerType_XBox360Controller },	// Xbox 360 Wireless Receiver
 	{ MAKE_CONTROLLER_ID( 0x046d, 0xc21d ), k_eControllerType_XBox360Controller },	// Logitech Gamepad F310
 	{ MAKE_CONTROLLER_ID( 0x046d, 0xc21e ), k_eControllerType_XBox360Controller },	// Logitech Gamepad F510
 	{ MAKE_CONTROLLER_ID( 0x046d, 0xc21f ), k_eControllerType_XBox360Controller },	// Logitech Gamepad F710
 	{ MAKE_CONTROLLER_ID( 0x046d, 0xc242 ), k_eControllerType_XBox360Controller },	// Logitech Chillstream Controller
-
-	{ MAKE_CONTROLLER_ID( 0x054c, 0x0268 ), k_eControllerType_PS3Controller },		// Sony PS3 Controller
-	{ MAKE_CONTROLLER_ID( 0x0925, 0x0005 ), k_eControllerType_PS3Controller },		// Sony PS3 Controller
-	{ MAKE_CONTROLLER_ID( 0x8888, 0x0308 ), k_eControllerType_PS3Controller },		// Sony PS3 Controller
-	{ MAKE_CONTROLLER_ID( 0x1a34, 0x0836 ), k_eControllerType_PS3Controller },		// Afterglow ps3
-	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x006e ), k_eControllerType_PS3Controller },		// HORI horipad4 ps3
-	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0066 ), k_eControllerType_PS3Controller },		// HORI horipad4 ps4
-	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x005f ), k_eControllerType_PS3Controller },		// HORI Fighting commander ps3
-	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x005e ), k_eControllerType_PS3Controller },		// HORI Fighting commander ps4
-	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0084 ), k_eControllerType_PS4Controller },		// HORI Fighting Commander PS4
-	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0085 ), k_eControllerType_PS3Controller },		// HORI Fighting Commander PS3
-	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0086 ), k_eControllerType_PS3Controller },		// HORI Fighting Commander PC (Uses the Xbox 360 protocol, but has PS3 buttons)
-	{ MAKE_CONTROLLER_ID( 0x0738, 0x3250 ), k_eControllerType_PS3Controller },		// madcats fightpad pro ps3
-	{ MAKE_CONTROLLER_ID( 0x0079, 0x181a ), k_eControllerType_PS3Controller },		// Venom Arcade Stick
-	{ MAKE_CONTROLLER_ID( 0x0079, 0x0006 ), k_eControllerType_UnknownNonSteamController },	// DragonRise Generic USB PCB, sometimes configured as a PC Twin Shock Controller - looks like a DS3 but the face buttons are 1-4 instead of symbols
-	{ MAKE_CONTROLLER_ID( 0x0079, 0x1844 ), k_eControllerType_PS3Controller },		// From SDL
-	{ MAKE_CONTROLLER_ID( 0x8888, 0x0308 ), k_eControllerType_PS3Controller },		// From SDL
-	{ MAKE_CONTROLLER_ID( 0x2563, 0x0575 ), k_eControllerType_PS3Controller },		// From SDL
-	{ MAKE_CONTROLLER_ID( 0x0810, 0x0001 ), k_eControllerType_PS3Controller },		// actually ps2 - maybe break out later
-	{ MAKE_CONTROLLER_ID( 0x0810, 0x0003 ), k_eControllerType_PS3Controller },		// actually ps2 - maybe break out later
-	{ MAKE_CONTROLLER_ID( 0x2563, 0x0523 ), k_eControllerType_PS3Controller },		// Digiflip GP006
-	{ MAKE_CONTROLLER_ID( 0x11ff, 0x3331 ), k_eControllerType_PS3Controller },		// SRXJ-PH2400
-	{ MAKE_CONTROLLER_ID( 0x20bc, 0x5500 ), k_eControllerType_PS3Controller },		// ShanWan PS3
-	{ MAKE_CONTROLLER_ID( 0x05b8, 0x1004 ), k_eControllerType_PS3Controller },		// From SDL
-	{ MAKE_CONTROLLER_ID( 0x146b, 0x0603 ), k_eControllerType_PS3Controller },		// From SDL
-	{ MAKE_CONTROLLER_ID( 0x044f, 0xb315 ), k_eControllerType_PS3Controller },		// Firestorm Dual Analog 3
-	{ MAKE_CONTROLLER_ID( 0x0925, 0x8888 ), k_eControllerType_PS3Controller },		// Actually ps2 -maybe break out later Lakeview Research WiseGroup Ltd, MP-8866 Dual Joypad
-	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x004d ), k_eControllerType_PS3Controller },		// Horipad 3
-	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0009 ), k_eControllerType_PS3Controller },		// HORI BDA GP1
-	{ MAKE_CONTROLLER_ID( 0x0e8f, 0x0008 ), k_eControllerType_PS3Controller },		// Green Asia
-	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x006a ), k_eControllerType_PS3Controller },		// Real Arcade Pro 4
-	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x011e ), k_eControllerType_PS3Controller },		// Rock Candy PS4
-	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0214 ), k_eControllerType_PS3Controller },		// afterglow ps3
-	{ MAKE_CONTROLLER_ID( 0x0925, 0x8866 ), k_eControllerType_PS3Controller },		// PS2 maybe break out later
-	{ MAKE_CONTROLLER_ID( 0x0e8f, 0x310d ), k_eControllerType_PS3Controller },		// From SDL
-	{ MAKE_CONTROLLER_ID( 0x2c22, 0x2003 ), k_eControllerType_PS3Controller },		// From SDL
-	{ MAKE_CONTROLLER_ID( 0x056e, 0x2013 ), k_eControllerType_PS3Controller },		// JC-U4113SBK
-	{ MAKE_CONTROLLER_ID( 0x0738, 0x8838 ), k_eControllerType_PS3Controller },		// Madcatz Fightstick Pro
-	{ MAKE_CONTROLLER_ID( 0x1a34, 0x0836 ), k_eControllerType_PS3Controller },		// Afterglow PS3
-	{ MAKE_CONTROLLER_ID( 0x0f30, 0x1100 ), k_eControllerType_PS3Controller },		// Quanba Q1 fight stick
-	{ MAKE_CONTROLLER_ID( 0x1345, 0x6005 ), k_eControllerType_PS3Controller },		// ps2 maybe break out later
-	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0087 ), k_eControllerType_PS3Controller },		// HORI fighting mini stick
-	{ MAKE_CONTROLLER_ID( 0x146b, 0x5500 ), k_eControllerType_PS3Controller },		// From SDL
-	{ MAKE_CONTROLLER_ID( 0x20d6, 0xca6d ), k_eControllerType_PS3Controller },		// From SDL
-	{ MAKE_CONTROLLER_ID( 0x25f0, 0xc121 ), k_eControllerType_PS3Controller },		//
-	{ MAKE_CONTROLLER_ID( 0x8380, 0x0003 ), k_eControllerType_PS3Controller },		// BTP 2163
-	{ MAKE_CONTROLLER_ID( 0x1345, 0x1000 ), k_eControllerType_PS3Controller },		// PS2 ACME GA-D5
-	{ MAKE_CONTROLLER_ID( 0x0e8f, 0x3075 ), k_eControllerType_PS3Controller },		// SpeedLink Strike FX
-	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0128 ), k_eControllerType_PS3Controller },		// Rock Candy PS3
-	{ MAKE_CONTROLLER_ID( 0x2c22, 0x2000 ), k_eControllerType_PS3Controller },		// Quanba Drone
-	{ MAKE_CONTROLLER_ID( 0x06a3, 0xf622 ), k_eControllerType_PS3Controller },		// Cyborg V3
-	{ MAKE_CONTROLLER_ID( 0x044f, 0xd007 ), k_eControllerType_PS3Controller },		// Thrustmaster wireless 3-1
-	{ MAKE_CONTROLLER_ID( 0x25f0, 0x83c3 ), k_eControllerType_PS3Controller },		// gioteck vx2
-	{ MAKE_CONTROLLER_ID( 0x05b8, 0x1006 ), k_eControllerType_PS3Controller },		// JC-U3412SBK
-	{ MAKE_CONTROLLER_ID( 0x20d6, 0x576d ), k_eControllerType_PS3Controller },		// Power A PS3
-	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x6302 ), k_eControllerType_PS3Controller },		// From SDL
-	{ MAKE_CONTROLLER_ID( 0x056e, 0x200f ), k_eControllerType_PS3Controller },		// From SDL
-	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0109 ), k_eControllerType_PS3Controller },		// PDP Versus Fighting Pad
-	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x1314 ), k_eControllerType_PS3Controller },		// PDP Afterglow Wireless PS3 controller
-	{ MAKE_CONTROLLER_ID( 0x0738, 0x3180 ), k_eControllerType_PS3Controller },		// Mad Catz Alpha PS3 mode
-	{ MAKE_CONTROLLER_ID( 0x0738, 0x8180 ), k_eControllerType_PS3Controller },		// Mad Catz Alpha PS4 mode (no touchpad on device)
-	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0203 ), k_eControllerType_PS3Controller },		// Victrix Pro FS (PS4 peripheral but no trackpad/lightbar)
-
-	{ MAKE_CONTROLLER_ID( 0x054c, 0x05c4 ), k_eControllerType_PS4Controller },		// Sony PS4 Controller
-	{ MAKE_CONTROLLER_ID( 0x054c, 0x09cc ), k_eControllerType_PS4Controller },		// Sony PS4 Slim Controller
-	{ MAKE_CONTROLLER_ID( 0x054c, 0x0ba0 ), k_eControllerType_PS4Controller },		// Sony PS4 Controller (Wireless dongle)
-	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x008a ), k_eControllerType_PS4Controller },		// HORI Real Arcade Pro 4
-	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0055 ), k_eControllerType_PS4Controller },		// HORIPAD 4 FPS
-	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0066 ), k_eControllerType_PS4Controller },		// HORIPAD 4 FPS Plus 
-	{ MAKE_CONTROLLER_ID( 0x0738, 0x8384 ), k_eControllerType_PS4Controller },		// Mad Catz FightStick TE S+ PS4
-	{ MAKE_CONTROLLER_ID( 0x0738, 0x8250 ), k_eControllerType_PS4Controller },		// Mad Catz FightPad Pro PS4
-	{ MAKE_CONTROLLER_ID( 0x0C12, 0x0E10 ), k_eControllerType_PS4Controller },		// Armor Armor 3 Pad PS4
-	{ MAKE_CONTROLLER_ID( 0x0C12, 0x1CF6 ), k_eControllerType_PS4Controller },		// EMIO PS4 Elite Controller
-	{ MAKE_CONTROLLER_ID( 0x1532, 0x1000 ), k_eControllerType_PS4Controller },		// Razer Raiju PS4 Controller
-	{ MAKE_CONTROLLER_ID( 0x1532, 0X0401 ), k_eControllerType_PS4Controller },		// Razer Panthera PS4 Controller
-	{ MAKE_CONTROLLER_ID( 0x054c, 0x05c5 ), k_eControllerType_PS4Controller },		// STRIKEPAD PS4 Grip Add-on
-	{ MAKE_CONTROLLER_ID( 0x146b, 0x0d01 ), k_eControllerType_PS4Controller },		// Nacon Revolution Pro Controller - has gyro
-	{ MAKE_CONTROLLER_ID( 0x146b, 0x0d02 ), k_eControllerType_PS4Controller },		// Nacon Revolution Pro Controller v2 - has gyro
-	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x00a0 ), k_eControllerType_PS4Controller },		// HORI TAC4 mousething
-	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x009c ), k_eControllerType_PS4Controller },		// HORI TAC PRO mousething
-	{ MAKE_CONTROLLER_ID( 0x0c12, 0x0ef6 ), k_eControllerType_PS4Controller },		// Hitbox Arcade Stick
-	{ MAKE_CONTROLLER_ID( 0x0079, 0x181b ), k_eControllerType_PS4Controller },		// Venom Arcade Stick - XXX:this may not work and may need to be called a ps3 controller
-	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x00ee ), k_eControllerType_PS4Controller },		// Hori mini wired https://www.playstation.com/en-us/explore/accessories/gaming-controllers/mini-wired-gamepad/
-	{ MAKE_CONTROLLER_ID( 0x0738, 0x8481 ), k_eControllerType_PS4Controller },		// Mad Catz FightStick TE 2+ PS4
-	{ MAKE_CONTROLLER_ID( 0x0738, 0x8480 ), k_eControllerType_PS4Controller },		// Mad Catz FightStick TE 2 PS4
-	{ MAKE_CONTROLLER_ID( 0x7545, 0x0104 ), k_eControllerType_PS4Controller },		// Armor 3 or Level Up Cobra - At least one variant has gyro
-	{ MAKE_CONTROLLER_ID( 0x0c12, 0x0e15 ), k_eControllerType_PS4Controller },		// Game:Pad 4
-	{ MAKE_CONTROLLER_ID( 0x11c0, 0x4001 ), k_eControllerType_PS4Controller },		// "PS4 Fun Controller" added from user log
-
-	{ MAKE_CONTROLLER_ID( 0x1532, 0x1007 ), k_eControllerType_PS4Controller },		// Razer Raiju 2 Tournament edition USB
-	{ MAKE_CONTROLLER_ID( 0x1532, 0x100A ), k_eControllerType_PS4Controller },		// Razer Raiju 2 Tournament edition BT
-	{ MAKE_CONTROLLER_ID( 0x1532, 0x1004 ), k_eControllerType_PS4Controller },		// Razer Raiju 2 Ultimate USB
-	{ MAKE_CONTROLLER_ID( 0x1532, 0x1009 ), k_eControllerType_PS4Controller },		// Razer Raiju 2 Ultimate BT
-	{ MAKE_CONTROLLER_ID( 0x1532, 0x1008 ), k_eControllerType_PS4Controller },		// Razer Panthera Evo Fightstick
-	{ MAKE_CONTROLLER_ID( 0x9886, 0x0025 ), k_eControllerType_PS4Controller },		// Astro C40
-	{ MAKE_CONTROLLER_ID( 0x1532, 0x1100 ), k_eControllerType_PS4Controller },		// Razer AION Fightstick - Trackpad, no gyro, lightbar hardcoded to green - UNANNOUNCED PRODUCT
-	{ MAKE_CONTROLLER_ID( 0x146b, 0x0d10 ), k_eControllerType_PS4Controller },		// NACON Revolution Infinite - has gyro
-	{ MAKE_CONTROLLER_ID( 0x20d6, 0x792a ), k_eControllerType_PS4Controller },		// PowerA - Fusion Fight Pad
-
 	{ MAKE_CONTROLLER_ID( 0x056e, 0x2004 ), k_eControllerType_XBox360Controller },	// Elecom JC-U3613M
 	{ MAKE_CONTROLLER_ID( 0x06a3, 0xf51a ), k_eControllerType_XBox360Controller },	// Saitek P3600
 	{ MAKE_CONTROLLER_ID( 0x0738, 0x4716 ), k_eControllerType_XBox360Controller },	// Mad Catz Wired Xbox 360 Controller
@@ -198,38 +188,23 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x0738, 0x4736 ), k_eControllerType_XBox360Controller },	// Mad Catz MicroCon Gamepad
 	{ MAKE_CONTROLLER_ID( 0x0738, 0x4738 ), k_eControllerType_XBox360Controller },	// Mad Catz Wired Xbox 360 Controller (SFIV)
 	{ MAKE_CONTROLLER_ID( 0x0738, 0x4740 ), k_eControllerType_XBox360Controller },	// Mad Catz Beat Pad
-	{ MAKE_CONTROLLER_ID( 0x0738, 0x4a01 ), k_eControllerType_XBoxOneController },	// Mad Catz FightStick TE 2
 	{ MAKE_CONTROLLER_ID( 0x0738, 0xb726 ), k_eControllerType_XBox360Controller },	// Mad Catz Xbox controller - MW2
 	{ MAKE_CONTROLLER_ID( 0x0738, 0xbeef ), k_eControllerType_XBox360Controller },	// Mad Catz JOYTECH NEO SE Advanced GamePad
 	{ MAKE_CONTROLLER_ID( 0x0738, 0xcb02 ), k_eControllerType_XBox360Controller },	// Saitek Cyborg Rumble Pad - PC/Xbox 360
 	{ MAKE_CONTROLLER_ID( 0x0738, 0xcb03 ), k_eControllerType_XBox360Controller },	// Saitek P3200 Rumble Pad - PC/Xbox 360
 	{ MAKE_CONTROLLER_ID( 0x0738, 0xf738 ), k_eControllerType_XBox360Controller },	// Super SFIV FightStick TE S
-	//{ MAKE_CONTROLLER_ID( 0x0955, 0xb400 ), k_eControllerType_XBox360Controller },	// NVIDIA Shield streaming controller
+	{ MAKE_CONTROLLER_ID( 0x0955, 0x7210 ), k_eControllerType_XBox360Controller },	// Nvidia Shield local controller
+	{ MAKE_CONTROLLER_ID( 0x0955, 0xb400 ), k_eControllerType_XBox360Controller },	// NVIDIA Shield streaming controller
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0105 ), k_eControllerType_XBox360Controller },	// HSM3 Xbox360 dancepad
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0113 ), k_eControllerType_XBox360Controller },	// Afterglow AX.1 Gamepad for Xbox 360
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x011f ), k_eControllerType_XBox360Controller },	// Rock Candy Gamepad Wired Controller
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0131 ), k_eControllerType_XBox360Controller },	// PDP EA Sports Controller
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0133 ), k_eControllerType_XBox360Controller },	// Xbox 360 Wired Controller
-	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0139 ), k_eControllerType_XBoxOneController },	// Afterglow Prismatic Wired Controller
-	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x013a ), k_eControllerType_XBoxOneController },	// PDP Xbox One Controller
-	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0146 ), k_eControllerType_XBoxOneController },	// Rock Candy Wired Controller for Xbox One
-	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0147 ), k_eControllerType_XBoxOneController },	// PDP Marvel Xbox One Controller
-	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x015c ), k_eControllerType_XBoxOneController },	// PDP Xbox One Arcade Stick
-	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0161 ), k_eControllerType_XBoxOneController },	// PDP Xbox One Controller
-	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0162 ), k_eControllerType_XBoxOneController },	// PDP Xbox One Controller
-	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0163 ), k_eControllerType_XBoxOneController },	// PDP Xbox One Controller
-	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0164 ), k_eControllerType_XBoxOneController },	// PDP Battlefield One
-	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0165 ), k_eControllerType_XBoxOneController },	// PDP Titanfall 2
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0201 ), k_eControllerType_XBox360Controller },	// Pelican PL-3601 'TSZ' Wired Xbox 360 Controller
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0213 ), k_eControllerType_XBox360Controller },	// Afterglow Gamepad for Xbox 360
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x021f ), k_eControllerType_XBox360Controller },	// Rock Candy Gamepad for Xbox 360
-	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0246 ), k_eControllerType_XBoxOneController },	// Rock Candy Gamepad for Xbox One 2015
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x02a0 ), k_eControllerType_XBox360Controller },	// Counterfeit 360Controller
-	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x02ab ), k_eControllerType_XBoxOneController },	// PDP Controller for Xbox One
-	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x02a4 ), k_eControllerType_XBoxOneController },	// PDP Wired Controller for Xbox One - Stealth Series
-	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x02a6 ), k_eControllerType_XBoxOneController },	// PDP Wired Controller for Xbox One - Camo Series
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0301 ), k_eControllerType_XBox360Controller },	// Logic3 Controller
-	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0346 ), k_eControllerType_XBoxOneController },	// Rock Candy Gamepad for Xbox One 2016
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0401 ), k_eControllerType_XBox360Controller },	// Logic3 Controller
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0413 ), k_eControllerType_XBox360Controller },	// Afterglow AX.1 Gamepad for Xbox 360
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0501 ), k_eControllerType_XBox360Controller },	// PDP Xbox 360 Controller
@@ -240,9 +215,6 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x000d ), k_eControllerType_XBox360Controller },	// Hori Fighting Stick EX2
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0016 ), k_eControllerType_XBox360Controller },	// Hori Real Arcade Pro.EX
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x001b ), k_eControllerType_XBox360Controller },	// Hori Real Arcade Pro VX
-	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0063 ), k_eControllerType_XBoxOneController },	// Hori Real Arcade Pro Hayabusa (USA) Xbox One
-	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0067 ), k_eControllerType_XBoxOneController },	// HORIPAD ONE
-	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0078 ), k_eControllerType_XBoxOneController },	// Hori Real Arcade Pro V Kai Xbox One
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x008c ), k_eControllerType_XBox360Controller },	// Hori Real Arcade Pro 4
 	{ MAKE_CONTROLLER_ID( 0x1038, 0x1430 ), k_eControllerType_XBox360Controller },	// SteelSeries Stratus Duo
 	{ MAKE_CONTROLLER_ID( 0x1038, 0x1431 ), k_eControllerType_XBox360Controller },	// SteelSeries Stratus Duo
@@ -256,8 +228,6 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x1430, 0xf801 ), k_eControllerType_XBox360Controller },	// RedOctane Controller
 	{ MAKE_CONTROLLER_ID( 0x146b, 0x0601 ), k_eControllerType_XBox360Controller },	// BigBen Interactive XBOX 360 Controller
 	{ MAKE_CONTROLLER_ID( 0x1532, 0x0037 ), k_eControllerType_XBox360Controller },	// Razer Sabertooth
-	{ MAKE_CONTROLLER_ID( 0x1532, 0x0a00 ), k_eControllerType_XBoxOneController },	// Razer Atrox Arcade Stick
-	{ MAKE_CONTROLLER_ID( 0x1532, 0x0a03 ), k_eControllerType_XBoxOneController },	// Razer Wildcat
 	{ MAKE_CONTROLLER_ID( 0x15e4, 0x3f00 ), k_eControllerType_XBox360Controller },	// Power A Mini Pro Elite
 	{ MAKE_CONTROLLER_ID( 0x15e4, 0x3f0a ), k_eControllerType_XBox360Controller },	// Xbox Airflo wired controller
 	{ MAKE_CONTROLLER_ID( 0x15e4, 0x3f10 ), k_eControllerType_XBox360Controller },	// Batarang Xbox 360 controller
@@ -306,34 +276,64 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x24c6, 0x530a ), k_eControllerType_XBox360Controller },	// Xbox 360 Pro EX Controller
 	{ MAKE_CONTROLLER_ID( 0x24c6, 0x531a ), k_eControllerType_XBox360Controller },	// PowerA Pro Ex
 	{ MAKE_CONTROLLER_ID( 0x24c6, 0x5397 ), k_eControllerType_XBox360Controller },	// FUS1ON Tournament Controller
-	{ MAKE_CONTROLLER_ID( 0x24c6, 0x541a ), k_eControllerType_XBoxOneController },	// PowerA Xbox One Mini Wired Controller
-	{ MAKE_CONTROLLER_ID( 0x24c6, 0x542a ), k_eControllerType_XBoxOneController },	// Xbox ONE spectra
-	{ MAKE_CONTROLLER_ID( 0x24c6, 0x543a ), k_eControllerType_XBoxOneController },	// PowerA Xbox One wired controller
 	{ MAKE_CONTROLLER_ID( 0x24c6, 0x5500 ), k_eControllerType_XBox360Controller },	// Hori XBOX 360 EX 2 with Turbo
 	{ MAKE_CONTROLLER_ID( 0x24c6, 0x5501 ), k_eControllerType_XBox360Controller },	// Hori Real Arcade Pro VX-SA
 	{ MAKE_CONTROLLER_ID( 0x24c6, 0x5502 ), k_eControllerType_XBox360Controller },	// Hori Fighting Stick VX Alt
 	{ MAKE_CONTROLLER_ID( 0x24c6, 0x5503 ), k_eControllerType_XBox360Controller },	// Hori Fighting Edge
 	{ MAKE_CONTROLLER_ID( 0x24c6, 0x5506 ), k_eControllerType_XBox360Controller },	// Hori SOULCALIBUR V Stick
-	{ MAKE_CONTROLLER_ID( 0x24c6, 0x5510 ), k_eControllerType_XBox360Controller },	// Hori Fighting Commander ONE
 	{ MAKE_CONTROLLER_ID( 0x24c6, 0x550d ), k_eControllerType_XBox360Controller },	// Hori GEM Xbox controller
 	{ MAKE_CONTROLLER_ID( 0x24c6, 0x550e ), k_eControllerType_XBox360Controller },	// Hori Real Arcade Pro V Kai 360
-	{ MAKE_CONTROLLER_ID( 0x24c6, 0x551a ), k_eControllerType_XBoxOneController },	// PowerA FUSION Pro Controller
-	{ MAKE_CONTROLLER_ID( 0x24c6, 0x561a ), k_eControllerType_XBoxOneController },	// PowerA FUSION Controller
-	{ MAKE_CONTROLLER_ID( 0x24c6, 0x591a ), k_eControllerType_XBoxOneController },	// PowerA FUSION Pro Controller
+	{ MAKE_CONTROLLER_ID( 0x24c6, 0x5510 ), k_eControllerType_XBox360Controller },	// Hori Fighting Commander ONE
 	{ MAKE_CONTROLLER_ID( 0x24c6, 0x5b00 ), k_eControllerType_XBox360Controller },	// ThrustMaster Ferrari Italia 458 Racing Wheel
 	{ MAKE_CONTROLLER_ID( 0x24c6, 0x5b02 ), k_eControllerType_XBox360Controller },	// Thrustmaster, Inc. GPX Controller
 	{ MAKE_CONTROLLER_ID( 0x24c6, 0x5b03 ), k_eControllerType_XBox360Controller },	// Thrustmaster Ferrari 458 Racing Wheel
 	{ MAKE_CONTROLLER_ID( 0x24c6, 0x5d04 ), k_eControllerType_XBox360Controller },	// Razer Sabertooth
-	{ MAKE_CONTROLLER_ID( 0x24c6, 0x791a ), k_eControllerType_XBoxOneController },	// PowerA Fusion Fight Pad
 	{ MAKE_CONTROLLER_ID( 0x24c6, 0xfafa ), k_eControllerType_XBox360Controller },	// Aplay Controller
 	{ MAKE_CONTROLLER_ID( 0x24c6, 0xfafb ), k_eControllerType_XBox360Controller },	// Aplay Controller
 	{ MAKE_CONTROLLER_ID( 0x24c6, 0xfafc ), k_eControllerType_XBox360Controller },	// Afterglow Gamepad 1
-	{ MAKE_CONTROLLER_ID( 0x24c6, 0xfafe ), k_eControllerType_XBox360Controller },	// Rock Candy Gamepad for Xbox 360
 	{ MAKE_CONTROLLER_ID( 0x24c6, 0xfafd ), k_eControllerType_XBox360Controller },	// Afterglow Gamepad 3
-	{ MAKE_CONTROLLER_ID( 0x2e24, 0x1688 ), k_eControllerType_XBoxOneController },	// Hyperkin X91
-	//{ MAKE_CONTROLLER_ID( 0x0955, 0x7210 ), k_eControllerType_XBox360Controller },	// Nvidia Shield local controller
+	{ MAKE_CONTROLLER_ID( 0x24c6, 0xfafe ), k_eControllerType_XBox360Controller },	// Rock Candy Gamepad for Xbox 360
+
+	{ MAKE_CONTROLLER_ID( 0x045e, 0x02d1 ), k_eControllerType_XBoxOneController },	// Microsoft X-Box One pad
+	{ MAKE_CONTROLLER_ID( 0x045e, 0x02dd ), k_eControllerType_XBoxOneController },	// Microsoft X-Box One pad (Firmware 2015)
+	{ MAKE_CONTROLLER_ID( 0x045e, 0x02e0 ), k_eControllerType_XBoxOneController },	// Microsoft X-Box One S pad (Bluetooth)
+	{ MAKE_CONTROLLER_ID( 0x045e, 0x02e3 ), k_eControllerType_XBoxOneController },	// Microsoft X-Box One Elite pad
+	{ MAKE_CONTROLLER_ID( 0x045e, 0x02ea ), k_eControllerType_XBoxOneController },	// Microsoft X-Box One S pad
+	{ MAKE_CONTROLLER_ID( 0x045e, 0x02fd ), k_eControllerType_XBoxOneController },	// Microsoft X-Box One S pad (Bluetooth)
+	{ MAKE_CONTROLLER_ID( 0x045e, 0x02ff ), k_eControllerType_XBoxOneController },	// Microsoft X-Box One Elite pad
+	{ MAKE_CONTROLLER_ID( 0x045e, 0x0b00 ), k_eControllerType_XBoxOneController },	// Microsoft X-Box One Elite Series 2 pad
+	{ MAKE_CONTROLLER_ID( 0x045e, 0x0b05 ), k_eControllerType_XBoxOneController },	// Microsoft X-Box One Elite Series 2 pad (Bluetooth)
+	{ MAKE_CONTROLLER_ID( 0x0738, 0x4a01 ), k_eControllerType_XBoxOneController },	// Mad Catz FightStick TE 2
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0139 ), k_eControllerType_XBoxOneController },	// Afterglow Prismatic Wired Controller
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x013a ), k_eControllerType_XBoxOneController },	// PDP Xbox One Controller
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0146 ), k_eControllerType_XBoxOneController },	// Rock Candy Wired Controller for Xbox One
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0147 ), k_eControllerType_XBoxOneController },	// PDP Marvel Xbox One Controller
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x015c ), k_eControllerType_XBoxOneController },	// PDP Xbox One Arcade Stick
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0161 ), k_eControllerType_XBoxOneController },	// PDP Xbox One Controller
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0162 ), k_eControllerType_XBoxOneController },	// PDP Xbox One Controller
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0163 ), k_eControllerType_XBoxOneController },	// PDP Xbox One Controller
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0164 ), k_eControllerType_XBoxOneController },	// PDP Battlefield One
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0165 ), k_eControllerType_XBoxOneController },	// PDP Titanfall 2
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0205 ), k_eControllerType_XBoxOneController },	// Victrix Pro FS Xbox One Edition
-	
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0246 ), k_eControllerType_XBoxOneController },	// Rock Candy Gamepad for Xbox One 2015
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x02a4 ), k_eControllerType_XBoxOneController },	// PDP Wired Controller for Xbox One - Stealth Series
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x02a6 ), k_eControllerType_XBoxOneController },	// PDP Wired Controller for Xbox One - Camo Series
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x02ab ), k_eControllerType_XBoxOneController },	// PDP Controller for Xbox One
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0346 ), k_eControllerType_XBoxOneController },	// Rock Candy Gamepad for Xbox One 2016
+	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0063 ), k_eControllerType_XBoxOneController },	// Hori Real Arcade Pro Hayabusa (USA) Xbox One
+	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0067 ), k_eControllerType_XBoxOneController },	// HORIPAD ONE
+	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0078 ), k_eControllerType_XBoxOneController },	// Hori Real Arcade Pro V Kai Xbox One
+	{ MAKE_CONTROLLER_ID( 0x1532, 0x0a00 ), k_eControllerType_XBoxOneController },	// Razer Atrox Arcade Stick
+	{ MAKE_CONTROLLER_ID( 0x1532, 0x0a03 ), k_eControllerType_XBoxOneController },	// Razer Wildcat
+	{ MAKE_CONTROLLER_ID( 0x24c6, 0x541a ), k_eControllerType_XBoxOneController },	// PowerA Xbox One Mini Wired Controller
+	{ MAKE_CONTROLLER_ID( 0x24c6, 0x542a ), k_eControllerType_XBoxOneController },	// Xbox ONE spectra
+	{ MAKE_CONTROLLER_ID( 0x24c6, 0x543a ), k_eControllerType_XBoxOneController },	// PowerA Xbox One wired controller
+	{ MAKE_CONTROLLER_ID( 0x24c6, 0x551a ), k_eControllerType_XBoxOneController },	// PowerA FUSION Pro Controller
+	{ MAKE_CONTROLLER_ID( 0x24c6, 0x561a ), k_eControllerType_XBoxOneController },	// PowerA FUSION Controller
+	{ MAKE_CONTROLLER_ID( 0x24c6, 0x591a ), k_eControllerType_XBoxOneController },	// PowerA FUSION Pro Controller
+	{ MAKE_CONTROLLER_ID( 0x24c6, 0x791a ), k_eControllerType_XBoxOneController },	// PowerA Fusion Fight Pad
+	{ MAKE_CONTROLLER_ID( 0x2e24, 0x1688 ), k_eControllerType_XBoxOneController },	// Hyperkin X91
+
 	// These have been added via Minidump for unrecognized Xinput controller assert
 	{ MAKE_CONTROLLER_ID( 0x0000, 0x0000 ), k_eControllerType_XBox360Controller },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0x045e, 0x02a2 ), k_eControllerType_XBox360Controller },	// Unknown Controller - Microsoft VID
@@ -484,7 +484,7 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x20d6, 0xa713 ), k_eControllerType_SwitchInputOnlyController },  // PowerA - Super Mario Controller
 
 	// Valve products - don't add to public list
-    { MAKE_CONTROLLER_ID( 0x0000, 0x11fb ), k_eControllerType_MobileTouch },		// Streaming mobile touch virtual controls
+	{ MAKE_CONTROLLER_ID( 0x0000, 0x11fb ), k_eControllerType_MobileTouch },	// Streaming mobile touch virtual controls
 	{ MAKE_CONTROLLER_ID( 0x28de, 0x1101 ), k_eControllerType_SteamController },	// Valve Legacy Steam Controller (CHELL)
 	{ MAKE_CONTROLLER_ID( 0x28de, 0x1102 ), k_eControllerType_SteamController },	// Valve wired Steam Controller (D0G)
 	{ MAKE_CONTROLLER_ID( 0x28de, 0x1105 ), k_eControllerType_SteamController },	// Valve Bluetooth Steam Controller (D0G)
