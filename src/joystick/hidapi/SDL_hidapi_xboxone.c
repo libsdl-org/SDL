@@ -171,11 +171,16 @@ IsBluetoothXboxOneController(Uint16 vendor_id, Uint16 product_id)
 {
     /* Check to see if it's the Xbox One S or Xbox One Elite Series 2 in Bluetooth mode */
     const Uint16 USB_VENDOR_MICROSOFT = 0x045e;
-    const Uint16 USB_PRODUCT_XBOX_ONE_S = 0x02fd;
+    const Uint16 USB_PRODUCT_XBOX_ONE_S_REV1 = 0x02e0;
+    const Uint16 USB_PRODUCT_XBOX_ONE_S_REV2 = 0x02fd;
     const Uint16 USB_PRODUCT_XBOX_ONE_ELITE_SERIES_2 = 0x0b05;
 
-    if (vendor_id == USB_VENDOR_MICROSOFT && (product_id == USB_PRODUCT_XBOX_ONE_S || product_id == USB_PRODUCT_XBOX_ONE_ELITE_SERIES_2)) {
-        return SDL_TRUE;
+    if (vendor_id == USB_VENDOR_MICROSOFT) {
+        if (product_id == USB_PRODUCT_XBOX_ONE_S_REV1 ||
+            product_id == USB_PRODUCT_XBOX_ONE_S_REV2 ||
+            product_id == USB_PRODUCT_XBOX_ONE_ELITE_SERIES_2) {
+            return SDL_TRUE;
+        }
     }
     return SDL_FALSE;
 }
