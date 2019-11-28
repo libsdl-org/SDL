@@ -35,6 +35,7 @@ typedef struct _SDL_JoystickAxisInfo
     Sint16 value;               /* Current axis state */
     Sint16 zero;                /* Zero point on the axis (-32768 for triggers) */
     SDL_bool has_initial_value; /* Whether we've seen a value on the axis yet */
+    SDL_bool has_second_value;  /* Whether we've seen a second value on the axis yet */
     SDL_bool sent_initial_value; /* Whether we've sent the initial axis value */
 } SDL_JoystickAxisInfo;
 

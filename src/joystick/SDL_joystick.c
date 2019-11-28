@@ -833,43 +833,49 @@ int
 SDL_PrivateJoystickAxis(SDL_Joystick * joystick, Uint8 axis, Sint16 value)
 {
     int posted;
+    SDL_JoystickAxisInfo *info;
 
     /* Make sure we're not getting garbage or duplicate events */
     if (axis >= joystick->naxes) {
         return 0;
     }
-    if (!joystick->axes[axis].has_initial_value) {
-        joystick->axes[axis].initial_value = value;
-        joystick->axes[axis].value = value;
-        joystick->axes[axis].zero = value;
-        joystick->axes[axis].has_initial_value = SDL_TRUE;
+
+    info = &joystick->axes[axis];
+    if (!info->has_initial_value ||
+        (!info->has_second_value && info->initial_value == -32768 && value == 0)) {
+        info->initial_value = value;
+        info->value = value;
+        info->zero = value;
+        info->has_initial_value = SDL_TRUE;
+    } else {
+        info->has_second_value = SDL_TRUE;
     }
-    if (value == joystick->axes[axis].value) {
+    if (value == info->value) {
         return 0;
     }
-    if (!joystick->axes[axis].sent_initial_value) {
+    if (!info->sent_initial_value) {
         /* Make sure we don't send motion until there's real activity on this axis */
         const int MAX_ALLOWED_JITTER = SDL_JOYSTICK_AXIS_MAX / 80;  /* ShanWan PS3 controller needed 96 */
-        if (SDL_abs(value - joystick->axes[axis].value) <= MAX_ALLOWED_JITTER) {
+        if (SDL_abs(value - info->value) <= MAX_ALLOWED_JITTER) {
             return 0;
         }
-        joystick->axes[axis].sent_initial_value = SDL_TRUE;
-        joystick->axes[axis].value = value; /* Just so we pass the check above */
-        SDL_PrivateJoystickAxis(joystick, axis, joystick->axes[axis].initial_value);
+        info->sent_initial_value = SDL_TRUE;
+        info->value = value; /* Just so we pass the check above */
+        SDL_PrivateJoystickAxis(joystick, axis, info->initial_value);
     }
 
     /* We ignore events if we don't have keyboard focus, except for centering
      * events.
      */
     if (SDL_PrivateJoystickShouldIgnoreEvent()) {
-        if ((value > joystick->axes[axis].zero && value >= joystick->axes[axis].value) ||
-            (value < joystick->axes[axis].zero && value <= joystick->axes[axis].value)) {
+        if ((value > info->zero && value >= info->value) ||
+            (value < info->zero && value <= info->value)) {
             return 0;
         }
     }
 
     /* Update internal joystick state */
-    joystick->axes[axis].value = value;
+    info->value = value;
 
     /* Post the event, if desired */
     posted = 0;

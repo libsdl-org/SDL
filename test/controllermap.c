@@ -413,13 +413,6 @@ WatchJoystick(SDL_Joystick * joystick)
 
     s_nNumAxes = SDL_JoystickNumAxes(joystick);
     s_arrAxisState = (AxisState *)SDL_calloc(s_nNumAxes, sizeof(*s_arrAxisState));
-    for (iIndex = 0; iIndex < s_nNumAxes; ++iIndex) {
-        AxisState *pAxisState = &s_arrAxisState[iIndex];
-        Sint16 nInitialValue;
-        pAxisState->m_bMoving = SDL_JoystickGetAxisInitialState(joystick, iIndex, &nInitialValue);
-        pAxisState->m_nStartingValue = nInitialValue;
-        pAxisState->m_nFarthestValue = nInitialValue;
-    }
 
     /* Loop, getting joystick events! */
     while (!done && !s_bBindingComplete) {
@@ -472,9 +465,10 @@ WatchJoystick(SDL_Joystick * joystick)
                     int nValue = event.jaxis.value;
                     int nCurrentDistance, nFarthestDistance;
                     if (!pAxisState->m_bMoving) {
-                        pAxisState->m_bMoving = SDL_TRUE;
-                        pAxisState->m_nStartingValue = nValue;
-                        pAxisState->m_nFarthestValue = nValue;
+                        Sint16 nInitialValue;
+                        pAxisState->m_bMoving = SDL_JoystickGetAxisInitialState(joystick, event.jaxis.axis, &nInitialValue);
+                        pAxisState->m_nStartingValue = nInitialValue;
+                        pAxisState->m_nFarthestValue = nInitialValue;
                     }
                     nCurrentDistance = SDL_abs(nValue - pAxisState->m_nStartingValue);
                     nFarthestDistance = SDL_abs(pAxisState->m_nFarthestValue - pAxisState->m_nStartingValue);
