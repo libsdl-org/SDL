@@ -39,6 +39,32 @@
 /* The amount of time to wait after hotplug to send controller init sequence */
 #define CONTROLLER_INIT_DELAY_MS    100
 
+/* This is the full init sequence for the Xbox One Elite Series 2 controller.
+   Normally it isn't needed, but this switches the controller back to wired report mode after being in Bluetooth mode.
+*/
+static const Uint8 xboxone_elite_init0[] = {
+    0x04, 0x20, 0x01, 0x00
+};
+static const Uint8 xboxone_elite_init1[] = {
+    0x01, 0x20, 0x28, 0x09, 0x00, 0x04, 0x20, 0x3A,
+    0x00, 0x00, 0x00, 0x31, 0x01
+};
+static const Uint8 xboxone_elite_init2[] = {
+    0x01, 0x20, 0x28, 0x09, 0x00, 0x04, 0x20, 0x6B,
+    0x01, 0x00, 0x00, 0x00, 0x00
+};
+static const Uint8 xboxone_elite_init3[] = {
+    0x05, 0x20, 0x02, 0x0F, 0x06, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x55, 0x53, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00
+};
+static const Uint8 xboxone_elite_init4[] = {
+    0x05, 0x20, 0x03, 0x01, 0x00
+};
+static const Uint8 xboxone_elite_init5[] = {
+    0x0A, 0x20, 0x04, 0x03, 0x00, 0x01, 0x14
+};
+
 /*
  * This packet is required for all Xbox One pads with 2015
  * or later firmware installed (or present from the factory).
@@ -108,9 +134,16 @@ typedef struct {
     int size;
 } SDL_DriverXboxOne_InitPacket;
 
+
 static const SDL_DriverXboxOne_InitPacket xboxone_init_packets[] = {
     { 0x0e6f, 0x0165, xboxone_hori_init, sizeof(xboxone_hori_init) },
     { 0x0f0d, 0x0067, xboxone_hori_init, sizeof(xboxone_hori_init) },
+    { 0x045e, 0x0b00, xboxone_elite_init0, sizeof(xboxone_elite_init0) },
+    { 0x045e, 0x0b00, xboxone_elite_init1, sizeof(xboxone_elite_init1) },
+    { 0x045e, 0x0b00, xboxone_elite_init2, sizeof(xboxone_elite_init2) },
+    { 0x045e, 0x0b00, xboxone_elite_init3, sizeof(xboxone_elite_init3) },
+    { 0x045e, 0x0b00, xboxone_elite_init4, sizeof(xboxone_elite_init4) },
+    { 0x045e, 0x0b00, xboxone_elite_init5, sizeof(xboxone_elite_init5) },
     { 0x0000, 0x0000, xboxone_fw2015_init, sizeof(xboxone_fw2015_init) },
     { 0x0e6f, 0x0000, xboxone_pdp_init1, sizeof(xboxone_pdp_init1) },
     { 0x0e6f, 0x0000, xboxone_pdp_init2, sizeof(xboxone_pdp_init2) },
