@@ -267,6 +267,25 @@ GetApplicationName(void)
     return appName;
 }
 
+static bool
+LoadMainMenuNibIfAvailable(void)
+{
+    NSDictionary *infoDict;
+    NSString *mainNibFileName;
+    bool success = false;
+    
+    infoDict = [[NSBundle mainBundle] infoDictionary];
+    if (infoDict) {
+        mainNibFileName = [infoDict valueForKey:@"NSMainNibFile"];
+        
+        if (mainNibFileName) {
+            success = [[NSBundle mainBundle] loadNibNamed:mainNibFileName owner:[NSApplication sharedApplication] topLevelObjects:nil];
+        }
+    }
+    
+    return success;
+}
+
 static void
 CreateApplicationMenus(void)
 {
@@ -281,7 +300,7 @@ CreateApplicationMenus(void)
     if (NSApp == nil) {
         return;
     }
-
+    
     mainMenu = [[NSMenu alloc] init];
 
     /* Create the main menu bar */
@@ -385,8 +404,17 @@ Cocoa_RegisterApp(void)
             [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
         }
 
+        /* If there aren't already menus in place, look to see if there's
+         * a nib we should use. If not, then manually create the basic
+         * menus we meed.
+         */
         if ([NSApp mainMenu] == nil) {
-            CreateApplicationMenus();
+            bool nibLoaded;
+            
+            nibLoaded = LoadMainMenuNibIfAvailable();
+            if (!nibLoaded) {
+                CreateApplicationMenus();
+            }
         }
         [NSApp finishLaunching];
         if ([NSApp delegate]) {
