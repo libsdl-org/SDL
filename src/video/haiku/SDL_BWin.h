@@ -140,6 +140,7 @@ class SDL_BWin:public BDirectWindow
             _gl_type = gl_flags;
         }
         AddChild(_SDL_GLView);
+        _SDL_GLView->SetEventMask(B_POINTER_EVENTS | B_KEYBOARD_EVENTS, B_NO_POINTER_HISTORY);
         _SDL_GLView->EnableDirectMode(true);
         _SDL_GLView->LockGL();  /* "New" GLViews are created */
         Unlock();
