@@ -1728,82 +1728,88 @@ D3D11_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture *
     float minx, miny, maxx, maxy;
     float minu, maxu, minv, maxv;
 
-    if (flip & SDL_FLIP_HORIZONTAL) {
-        minu = (float) srcrect->x / texture->w;
-        maxu = (float) (srcrect->x + srcrect->w) / texture->w;
-    } else {
-        minu = (float) (srcrect->x + srcrect->w) / texture->w;
-        maxu = (float) srcrect->x / texture->w;
+    if (!verts) {
+        return -1;
     }
 
-    if (flip & SDL_FLIP_VERTICAL) {
-        minv = (float) srcrect->y / texture->h;
-        maxv = (float) (srcrect->y + srcrect->h) / texture->h;
-    } else {
-        minv = (float) (srcrect->y + srcrect->h) / texture->h;
-        maxv = (float) srcrect->y / texture->h;
-    }
+    cmd->data.draw.count = 1;
 
     minx = -center->x;
     maxx = dstrect->w - center->x;
     miny = -center->y;
     maxy = dstrect->h - center->y;
 
-    cmd->data.draw.count = 1;
+    if (flip & SDL_FLIP_HORIZONTAL) {
+        minu = (float) (srcrect->x + srcrect->w) / texture->w;
+        maxu = (float) srcrect->x / texture->w;
+    } else {
+        minu = (float) srcrect->x / texture->w;
+        maxu = (float) (srcrect->x + srcrect->w) / texture->w;
+    }
+
+    if (flip & SDL_FLIP_VERTICAL) {
+        minv = (float) (srcrect->y + srcrect->h) / texture->h;
+        maxv = (float) srcrect->y / texture->h;
+    } else {
+        minv = (float) srcrect->y / texture->h;
+        maxv = (float) (srcrect->y + srcrect->h) / texture->h;
+    }
+
+
 
     verts->pos.x = minx;
     verts->pos.y = miny;
     verts->pos.z = 0.0f;
-    verts->tex.x = minu;
-    verts->tex.y = minv;
     verts->color.x = r;
     verts->color.y = g;
     verts->color.z = b;
     verts->color.w = a;
+    verts->tex.x = minu;
+    verts->tex.y = minv;
     verts++;
 
     verts->pos.x = minx;
     verts->pos.y = maxy;
     verts->pos.z = 0.0f;
-    verts->tex.x = minu;
-    verts->tex.y = maxv;
     verts->color.x = r;
     verts->color.y = g;
     verts->color.z = b;
     verts->color.w = a;
+    verts->tex.x = minu;
+    verts->tex.y = maxv;
     verts++;
 
     verts->pos.x = maxx;
     verts->pos.y = miny;
     verts->pos.z = 0.0f;
-    verts->tex.x = maxu;
-    verts->tex.y = minv;
     verts->color.x = r;
     verts->color.y = g;
     verts->color.z = b;
     verts->color.w = a;
+    verts->tex.x = maxu;
+    verts->tex.y = minv;
     verts++;
 
     verts->pos.x = maxx;
     verts->pos.y = maxy;
     verts->pos.z = 0.0f;
-    verts->tex.x = maxu;
-    verts->tex.y = maxv;
     verts->color.x = r;
     verts->color.y = g;
     verts->color.z = b;
     verts->color.w = a;
+    verts->tex.x = maxu;
+    verts->tex.y = maxv;
     verts++;
 
     verts->pos.x = dstrect->x + center->x;  /* X translation */
     verts->pos.y = dstrect->y + center->y;  /* Y translation */
     verts->pos.z = (float)(M_PI * (float) angle / 180.0f);  /* rotation */
-    verts->tex.x = 0.0f;
-    verts->tex.y = 0.0f;
     verts->color.x = 0;
     verts->color.y = 0;
     verts->color.z = 0;
     verts->color.w = 0;
+    verts->tex.x = 0.0f;
+    verts->tex.y = 0.0f;
     verts++;
 
     return 0;
