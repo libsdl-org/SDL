@@ -429,7 +429,7 @@ PULSEAUDIO_FlushCapture(_THIS)
         h->capturelen = 0;
     }
 
-    while (SDL_TRUE) {
+    while (SDL_AtomicGet(&this->enabled)) {
         if (PULSEAUDIO_pa_context_get_state(h->context) != PA_CONTEXT_READY ||
             PULSEAUDIO_pa_stream_get_state(h->stream) != PA_STREAM_READY ||
             PULSEAUDIO_pa_mainloop_iterate(h->mainloop, 1, NULL) < 0) {
