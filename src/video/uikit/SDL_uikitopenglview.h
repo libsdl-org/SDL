@@ -19,6 +19,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
+#if SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2
+
 #import <UIKit/UIKit.h>
 #import <OpenGLES/EAGL.h>
 #import <OpenGLES/ES3/gl.h>
@@ -56,5 +58,7 @@
 - (void)updateFrame;
 
 @end
+
+#endif // SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2
 
 /* vi: set ts=4 sw=4 expandtab: */

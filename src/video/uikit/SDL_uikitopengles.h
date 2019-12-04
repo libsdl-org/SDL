@@ -21,6 +21,8 @@
 #ifndef SDL_uikitopengles_
 #define SDL_uikitopengles_
 
+#if SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2
+
 #include "../SDL_sysvideo.h"
 
 extern int UIKit_GL_MakeCurrent(_THIS, SDL_Window * window,
@@ -34,6 +36,8 @@ extern void *UIKit_GL_GetProcAddress(_THIS, const char *proc);
 extern int UIKit_GL_LoadLibrary(_THIS, const char *path);
 
 extern void UIKit_GL_RestoreCurrentContext(void);
+
+#endif // SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2
 
 #endif /* SDL_uikitopengles_ */
 
