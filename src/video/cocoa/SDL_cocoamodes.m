@@ -443,27 +443,41 @@ Cocoa_GetDisplayUsableBounds(_THIS, SDL_VideoDisplay * display, SDL_Rect * rect)
 
 int
 Cocoa_GetDisplayDPI(_THIS, SDL_VideoDisplay * display, float * ddpi, float * hdpi, float * vdpi)
+{ @autoreleasepool
 {
     const float MM_IN_INCH = 25.4f;
 
     SDL_DisplayData *data = (SDL_DisplayData *) display->driverdata;
 
-    CGSize displaySize = CGDisplayScreenSize(data->display);
-    int pixelWidth =  (int) CGDisplayPixelsWide(data->display);
-    int pixelHeight = (int) CGDisplayPixelsHigh(data->display);
+    /* we need the backingScaleFactor for Retina displays, which is only exposed through NSScreen, not CGDisplay, afaik, so find our screen... */
+    CGFloat scaleFactor = 1.0f;
+    NSArray<NSScreen *> *screens = [NSScreen screens];
+    for (NSScreen *screen in screens) {
+        const CGDirectDisplayID dpyid = (const CGDirectDisplayID ) [[[screen deviceDescription] objectForKey:@"NSScreenNumber"] unsignedIntValue];
+        if (dpyid == data->display) {
+            if ([screen respondsToSelector:@selector(backingScaleFactor)]) {  // Mac OS X 10.7 and later
+                scaleFactor = [screen backingScaleFactor];
+                break;
+            }
+        }
+    }
+
+    const CGSize displaySize = CGDisplayScreenSize(data->display);
+    const int pixelWidth =  (int) CGDisplayPixelsWide(data->display);
+    const int pixelHeight = (int) CGDisplayPixelsHigh(data->display);
 
     if (ddpi) {
-        *ddpi = SDL_ComputeDiagonalDPI(pixelWidth, pixelHeight, displaySize.width / MM_IN_INCH, displaySize.height / MM_IN_INCH);
+        *ddpi = (SDL_ComputeDiagonalDPI(pixelWidth, pixelHeight, displaySize.width / MM_IN_INCH, displaySize.height / MM_IN_INCH)) * scaleFactor;
     }
     if (hdpi) {
-        *hdpi = pixelWidth * MM_IN_INCH / displaySize.width;
+        *hdpi = (pixelWidth * MM_IN_INCH / displaySize.width) * scaleFactor;
     }
     if (vdpi) {
-        *vdpi = pixelHeight * MM_IN_INCH / displaySize.height;
+        *vdpi = (pixelHeight * MM_IN_INCH / displaySize.height) * scaleFactor;
     }
 
     return 0;
-}
+}}
 
 void
 Cocoa_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
