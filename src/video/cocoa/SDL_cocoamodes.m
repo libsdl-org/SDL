@@ -451,7 +451,7 @@ Cocoa_GetDisplayDPI(_THIS, SDL_VideoDisplay * display, float * ddpi, float * hdp
 
     /* we need the backingScaleFactor for Retina displays, which is only exposed through NSScreen, not CGDisplay, afaik, so find our screen... */
     CGFloat scaleFactor = 1.0f;
-    NSArray<NSScreen *> *screens = [NSScreen screens];
+    NSArray *screens = [NSScreen screens];
     for (NSScreen *screen in screens) {
         const CGDirectDisplayID dpyid = (const CGDirectDisplayID ) [[[screen deviceDescription] objectForKey:@"NSScreenNumber"] unsignedIntValue];
         if (dpyid == data->display) {
