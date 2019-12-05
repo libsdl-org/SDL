@@ -143,6 +143,7 @@ static SDL_GameControllerExtendedBind s_arrBindings[BINDING_COUNT];
 typedef struct
 {
     SDL_bool m_bMoving;
+    int m_nLastValue;
     int m_nStartingValue;
     int m_nFarthestValue;
 } AxisState;
@@ -461,14 +462,20 @@ WatchJoystick(SDL_Joystick * joystick)
                 break;
             case SDL_JOYAXISMOTION:
                 if (event.jaxis.which == nJoystickID) {
+                    const int MAX_ALLOWED_JITTER = SDL_JOYSTICK_AXIS_MAX / 80;  /* ShanWan PS3 controller needed 96 */
                     AxisState *pAxisState = &s_arrAxisState[event.jaxis.axis];
                     int nValue = event.jaxis.value;
                     int nCurrentDistance, nFarthestDistance;
                     if (!pAxisState->m_bMoving) {
                         Sint16 nInitialValue;
                         pAxisState->m_bMoving = SDL_JoystickGetAxisInitialState(joystick, event.jaxis.axis, &nInitialValue);
+                        pAxisState->m_nLastValue = nInitialValue;
                         pAxisState->m_nStartingValue = nInitialValue;
                         pAxisState->m_nFarthestValue = nInitialValue;
+                    } else if (SDL_abs(nValue - pAxisState->m_nLastValue) <= MAX_ALLOWED_JITTER) {
+                        break;
+                    } else {
+                        pAxisState->m_nLastValue = nValue;
                     }
                     nCurrentDistance = SDL_abs(nValue - pAxisState->m_nStartingValue);
                     nFarthestDistance = SDL_abs(pAxisState->m_nFarthestValue - pAxisState->m_nStartingValue);
