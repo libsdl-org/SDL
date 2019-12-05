@@ -842,7 +842,7 @@ SDL_PrivateJoystickAxis(SDL_Joystick * joystick, Uint8 axis, Sint16 value)
 
     info = &joystick->axes[axis];
     if (!info->has_initial_value ||
-        (!info->has_second_value && info->initial_value == -32768 && value == 0)) {
+        (!info->has_second_value && info->initial_value == -32768 && SDL_abs(value) < (SDL_JOYSTICK_AXIS_MAX / 4))) {
         info->initial_value = value;
         info->value = value;
         info->zero = value;
