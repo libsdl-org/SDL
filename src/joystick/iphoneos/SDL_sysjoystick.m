@@ -129,6 +129,9 @@ IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controlle
 
     if (controller.extendedGamepad) {
         GCExtendedGamepad *gamepad = controller.extendedGamepad;
+        BOOL is_xbox = [controller.vendorName containsString: @"Xbox"];
+        BOOL is_ps4 = [controller.vendorName containsString: @"DUALSHOCK"];
+        BOOL is_MFi = (!is_xbox && !is_ps4);
         int nbuttons = 0;
 
         /* These buttons are part of the original MFi spec */
@@ -155,20 +158,24 @@ IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controlle
             device->button_mask |= (1 << SDL_CONTROLLER_BUTTON_BACK);
             ++nbuttons;
         }
-        if ([gamepad respondsToSelector:@selector(buttonMenu)] && gamepad.buttonMenu) {
-            device->button_mask |= (1 << SDL_CONTROLLER_BUTTON_START);
-            ++nbuttons;
-        } else {
-            device->button_mask |= (1 << SDL_CONTROLLER_BUTTON_START);
-            ++nbuttons;
+        BOOL has_direct_menu = [gamepad respondsToSelector:@selector(buttonMenu)] && gamepad.buttonMenu;
+#if TARGET_OS_TV
+        /* On tvOS MFi controller menu button brings you to the home screen */
+        if (is_MFi) {
+            has_direct_menu = FALSE;
+        }
+#endif
+        device->button_mask |= (1 << SDL_CONTROLLER_BUTTON_START);
+        ++nbuttons;
+        if (!has_direct_menu) {
             device->uses_pause_handler = SDL_TRUE;
         }
 #pragma clang diagnostic pop
 
-        if ([controller.vendorName containsString: @"Xbox"]) {
+        if (is_xbox) {
             vendor = VENDOR_MICROSOFT;
             product = 0x02E0; /* Assume Xbox One S BLE Controller unless/until GCController flows VID/PID */
-        } else if ([controller.vendorName containsString: @"DUALSHOCK"]) {
+        } else if (is_ps4) {
             vendor = VENDOR_SONY;
             product = 0x09CC; /* Assume DS4 Slim unless/until GCController flows VID/PID */
         } else {
