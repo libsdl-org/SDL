@@ -218,14 +218,9 @@ IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controlle
         device->button_mask |= (1 << SDL_CONTROLLER_BUTTON_B); /* Button X on microGamepad */
         nbuttons += 2;
 
-        if ([gamepad respondsToSelector:@selector(buttonMenu)] && gamepad.buttonMenu) {
-            device->button_mask |= (1 << SDL_CONTROLLER_BUTTON_START);
-            ++nbuttons;
-        } else {
-            device->button_mask |= (1 << SDL_CONTROLLER_BUTTON_START);
-            ++nbuttons;
-            device->uses_pause_handler = SDL_TRUE;
-        }
+        device->button_mask |= (1 << SDL_CONTROLLER_BUTTON_START);
+        ++nbuttons;
+        device->uses_pause_handler = SDL_TRUE;
 
         vendor = VENDOR_APPLE;
         product = 3;
