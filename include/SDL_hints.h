@@ -165,6 +165,21 @@ extern "C" {
 #define SDL_HINT_VIDEO_ALLOW_SCREENSAVER    "SDL_VIDEO_ALLOW_SCREENSAVER"
 
 /**
+ * \brief A variable controlling whether the graphics context is externally managed.
+ *
+ * This variable can be set to the following values:
+ *  "0"         - SDL will manage graphics contexts that are attached to windows.
+ *  "1"         - Disable graphics context management on windows.
+ *
+ * By default SDL will manage OpenGL contexts in certain situations. For example, on Android the
+ * context will be automatically saved and restored when pausing the application. Additionally, some
+ * platforms will assume usage of OpenGL if Vulkan isn't used. Setting this to "1" will prevent this
+ * behavior, which is desireable when the application manages the graphics context, such as
+ * an externally managed OpenGL context or attaching a Vulkan surface to the window.
+ */
+#define SDL_HINT_VIDEO_EXTERNAL_CONTEXT    "SDL_VIDEO_EXTERNAL_CONTEXT"
+
+/**
  *  \brief  A variable controlling whether the X11 VidMode extension should be used.
  *
  *  This variable can be set to the following values:

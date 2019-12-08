@@ -439,6 +439,7 @@ extern int SDL_GetIndexOfDisplay(SDL_VideoDisplay *display);
 extern SDL_VideoDisplay *SDL_GetDisplay(int displayIndex);
 extern SDL_VideoDisplay *SDL_GetDisplayForWindow(SDL_Window *window);
 extern void *SDL_GetDisplayDriverData( int displayIndex );
+extern SDL_bool SDL_IsVideoContextExternal(void);
 
 extern void SDL_GL_DeduceMaxSupportedESProfile(int* major, int* minor);
 
