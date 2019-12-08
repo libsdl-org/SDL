@@ -664,6 +664,12 @@ SDL_GetDisplayDriverData(int displayIndex)
     return _this->displays[displayIndex].driverdata;
 }
 
+SDL_bool
+SDL_IsVideoContextExternal(void)
+{
+    return SDL_GetHintBoolean(SDL_HINT_VIDEO_EXTERNAL_CONTEXT, SDL_FALSE);
+}
+
 const char *
 SDL_GetDisplayName(int displayIndex)
 {
@@ -1437,7 +1443,7 @@ SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
 
     /* Some platforms have OpenGL enabled by default */
 #if (SDL_VIDEO_OPENGL && __MACOSX__) || __IPHONEOS__ || __ANDROID__ || __NACL__
-    if (!_this->is_dummy && !(flags & SDL_WINDOW_VULKAN)) {
+    if (!_this->is_dummy && !(flags & SDL_WINDOW_VULKAN) && !SDL_IsVideoContextExternal()) {
         flags |= SDL_WINDOW_OPENGL;
     }
 #endif
