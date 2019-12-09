@@ -226,6 +226,10 @@ HIDAPI_DriverXboxOne_IsSupportedDevice(Uint16 vendor_id, Uint16 product_id, Uint
         /* We can't do rumble on this device, hid_write() fails, so don't try to open it here */
         return SDL_FALSE;
     }
+    if (vendor_id == 0x24c6 && product_id == 0x541a) {
+        /* The PowerA Mini controller blocks while writing feature reports */
+        return SDL_FALSE;
+    }
 #endif
     return (SDL_GetJoystickGameControllerType(vendor_id, product_id, name) == SDL_CONTROLLER_TYPE_XBOXONE);
 }
