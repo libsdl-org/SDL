@@ -556,6 +556,7 @@ HIDAPI_XboxControllerName(Uint16 vendor_id, Uint16 product_id)
         { MAKE_VIDPID(0x24c6, 0x5506), "Hori SOULCALIBUR V Stick" },
         { MAKE_VIDPID(0x24c6, 0x550d), "Hori GEM Xbox controller" },
         { MAKE_VIDPID(0x24c6, 0x550e), "Hori Real Arcade Pro V Kai 360" },
+        { MAKE_VIDPID(0x24c6, 0x5510), "Hori Fighting Commander ONE" },
         { MAKE_VIDPID(0x24c6, 0x551a), "PowerA FUSION Pro Controller" },
         { MAKE_VIDPID(0x24c6, 0x561a), "PowerA FUSION Controller" },
         { MAKE_VIDPID(0x24c6, 0x591a), "PowerA FUSION Pro Controller" },
@@ -564,6 +565,10 @@ HIDAPI_XboxControllerName(Uint16 vendor_id, Uint16 product_id)
         { MAKE_VIDPID(0x24c6, 0x5b03), "Thrustmaster Ferrari 458 Racing Wheel" },
         { MAKE_VIDPID(0x24c6, 0x5d04), "Razer Sabertooth" },
         { MAKE_VIDPID(0x24c6, 0x791a), "PowerA Fusion Fight Pad" },
+        { MAKE_VIDPID(0x24c6, 0xfafa), "Aplay Controller" },
+        { MAKE_VIDPID(0x24c6, 0xfafb), "Aplay Controller" },
+        { MAKE_VIDPID(0x24c6, 0xfafc), "Afterglow Gamepad 1" },
+        { MAKE_VIDPID(0x24c6, 0xfafd), "Afterglow Gamepad 3" },
         { MAKE_VIDPID(0x24c6, 0xfafe), "Rock Candy Gamepad for Xbox 360" },
         { MAKE_VIDPID(0x2e24, 0x1688), "Hyperkin X91" },
     };
