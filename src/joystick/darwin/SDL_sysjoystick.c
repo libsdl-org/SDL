@@ -399,6 +399,8 @@ GetDeviceInfo(IOHIDDeviceRef hidDevice, recDevice *pDevice)
     Sint32 vendor = 0;
     Sint32 product = 0;
     Sint32 version = 0;
+    char manufacturer_string[256];
+    char product_string[256];
     CFTypeRef refCF = NULL;
     CFArrayRef array = NULL;
     Uint16 *guid16 = (Uint16 *)pDevice->guid.data;
@@ -426,13 +428,18 @@ GetDeviceInfo(IOHIDDeviceRef hidDevice, recDevice *pDevice)
     pDevice->deviceRef = hidDevice;
 
     /* get device name */
-    refCF = IOHIDDeviceGetProperty(hidDevice, CFSTR(kIOHIDProductKey));
-    if (!refCF) {
-        /* Maybe we can't get "AwesomeJoystick2000", but we can get "Logitech"? */
-        refCF = IOHIDDeviceGetProperty(hidDevice, CFSTR(kIOHIDManufacturerKey));
+    refCF = IOHIDDeviceGetProperty(hidDevice, CFSTR(kIOHIDManufacturerKey));
+    if ((!refCF) || (!CFStringGetCString(refCF, manufacturer_string, sizeof(manufacturer_string), kCFStringEncodingUTF8))) {
+        manufacturer_string[0] = '\0';
     }
-    if ((!refCF) || (!CFStringGetCString(refCF, pDevice->product, sizeof (pDevice->product), kCFStringEncodingUTF8))) {
-        SDL_strlcpy(pDevice->product, "Unidentified joystick", sizeof (pDevice->product));
+    refCF = IOHIDDeviceGetProperty(hidDevice, CFSTR(kIOHIDProductKey));
+    if ((!refCF) || (!CFStringGetCString(refCF, product_string, sizeof(product_string), kCFStringEncodingUTF8))) {
+        SDL_strlcpy(product_string, "Unidentified joystick", sizeof(product_string));
+    }
+    if (SDL_strncasecmp(manufacturer_string, product_string, SDL_strlen(manufacturer_string)) == 0) {
+        SDL_strlcpy(pDevice->product, product_string, sizeof(pDevice->product));
+    } else {
+        SDL_snprintf(pDevice->product, sizeof(pDevice->product), "%s %s", manufacturer_string, product_string);
     }
 
     refCF = IOHIDDeviceGetProperty(hidDevice, CFSTR(kIOHIDVendorIDKey));
