@@ -806,7 +806,11 @@ HIDAPI_AddDevice(struct hid_device_info *info)
             size_t name_size = (SDL_strlen(manufacturer_string) + 1 + SDL_strlen(product_string) + 1);
             device->name = (char *)SDL_malloc(name_size);
             if (device->name) {
-                SDL_snprintf(device->name, name_size, "%s %s", manufacturer_string, product_string);
+                if (SDL_strncasecmp(manufacturer_string, product_string, SDL_strlen(manufacturer_string)) == 0) {
+                    SDL_strlcpy(device->name, product_string, name_size);
+                } else {
+                    SDL_snprintf(device->name, name_size, "%s %s", manufacturer_string, product_string);
+                }
             }
         }
         if (manufacturer_string) {
