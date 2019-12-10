@@ -89,10 +89,25 @@ static time_t last_input_dir_mtime;
 #define NBITS(x) ((((x)-1)/(sizeof(long) * 8))+1)
 
 static int
+PrefixMatch(const char *a, const char *b)
+{
+    int matchlen = 0;
+    while (*a && *b) {
+        if (*a++ == *b++) {
+            ++matchlen;
+        } else {
+            break;
+        }
+    }
+    return matchlen;
+}
+
+static int
 IsJoystick(int fd, char *namebuf, const size_t namebuflen, SDL_JoystickGUID *guid)
 {
     struct input_id inpid;
     Uint16 *guid16 = (Uint16 *)guid->data;
+    const char *spot;
 
 #if !SDL_USE_LIBUDEV
     /* When udev is enabled we only get joystick devices here, so there's no need to test them */
@@ -114,6 +129,15 @@ IsJoystick(int fd, char *namebuf, const size_t namebuflen, SDL_JoystickGUID *gui
 
     if (ioctl(fd, EVIOCGNAME(namebuflen), namebuf) < 0) {
         return 0;
+    }
+
+    /* Remove duplicate manufacturer in the name */
+    for (spot = namebuf + 1; *spot; ++spot) {
+        int matchlen = PrefixMatch(namebuf, spot);
+        if (matchlen > 0 && spot[matchlen - 1] == ' ') {
+            SDL_memmove(namebuf, spot, SDL_strlen(spot)+1);
+            break;
+        }
     }
 
     if (ioctl(fd, EVIOCGID, &inpid) < 0) {
