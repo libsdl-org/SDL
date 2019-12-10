@@ -192,7 +192,7 @@ SendControllerInit(hid_device *dev, SDL_DriverXboxOne_Context *ctx)
     Uint16 product_id = ctx->product_id;
 
     if (!IsBluetoothXboxOneController(vendor_id, product_id)) {
-        int i;
+        int i, j;
         Uint8 init_packet[USB_PACKET_LENGTH];
 
         for (i = 0; i < SDL_arraysize(xboxone_init_packets); ++i) {
@@ -212,6 +212,16 @@ SendControllerInit(hid_device *dev, SDL_DriverXboxOne_Context *ctx)
                 SDL_SetError("Couldn't write Xbox One initialization packet");
                 return SDL_FALSE;
             }
+
+            /* After the init we need to sync up the rumble sequence */
+            if (packet->data == xboxone_fw2015_init) {
+                for (j = 0; j < 255; ++j) {
+                    if (hid_write(dev, xboxone_rumbleend_init, sizeof(xboxone_rumbleend_init)) != sizeof(xboxone_rumbleend_init)) {
+                        SDL_SetError("Couldn't write Xbox One initialization packet");
+                        return SDL_FALSE;
+                    }
+                }
+            }
         }
     }
     return SDL_TRUE;
@@ -227,7 +237,7 @@ HIDAPI_DriverXboxOne_IsSupportedDevice(Uint16 vendor_id, Uint16 product_id, Uint
         return SDL_FALSE;
     }
     if (vendor_id == 0x24c6 && product_id == 0x541a) {
-        /* The PowerA Mini controller blocks while writing feature reports */
+        /* The PowerA Mini controller, model 1240245-01, blocks while writing feature reports */
         return SDL_FALSE;
     }
 #endif
