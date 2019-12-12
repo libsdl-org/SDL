@@ -554,13 +554,7 @@ static int should_enumerate_interface(unsigned short vendor_id, const struct lib
 
 	/* Also enumerate Xbox 360 controllers */
 	if (is_xbox360(vendor_id, intf_desc))
-	{
-		/* hid_write() to Xbox 360 controllers doesn't seem to work on Linux:
-		   - xpad 1-2:1.0: xpad_try_sending_next_out_packet - usb_submit_urb failed with result -2
-		   Xbox 360 controller support is good on Linux anyway, so we'll ignore this for now.
 		return 1;
-		*/
-	}
 
 	/* Also enumerate Xbox One controllers */
 	if (is_xboxone(vendor_id, intf_desc))
@@ -1057,17 +1051,17 @@ hid_device * HID_API_EXPORT hid_open_path(const char *path, int bExclusive)
 int HID_API_EXPORT hid_write(hid_device *dev, const unsigned char *data, size_t length)
 {
 	int res;
-	int report_number = data[0];
-	int skipped_report_id = 0;
-
-	if (report_number == 0x0) {
-		data++;
-		length--;
-		skipped_report_id = 1;
-	}
-
 
 	if (dev->output_endpoint <= 0) {
+		int report_number = data[0];
+		int skipped_report_id = 0;
+
+		if (report_number == 0x0) {
+			data++;
+			length--;
+			skipped_report_id = 1;
+		}
+
 		/* No interrupt out endpoint. Use the Control Endpoint */
 		res = libusb_control_transfer(dev->device_handle,
 			LIBUSB_REQUEST_TYPE_CLASS|LIBUSB_RECIPIENT_INTERFACE|LIBUSB_ENDPOINT_OUT,
@@ -1096,9 +1090,6 @@ int HID_API_EXPORT hid_write(hid_device *dev, const unsigned char *data, size_t 
 
 		if (res < 0)
 			return -1;
-
-		if (skipped_report_id)
-			actual_length++;
 
 		return actual_length;
 	}
