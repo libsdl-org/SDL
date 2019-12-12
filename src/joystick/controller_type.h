@@ -167,12 +167,12 @@ static const ControllerDescription_t arrControllers[] = {
 
 	{ MAKE_CONTROLLER_ID( 0x0079, 0x18d4 ), k_eControllerType_XBox360Controller, NULL },	// GPD Win 2 X-Box Controller
 	{ MAKE_CONTROLLER_ID( 0x044f, 0xb326 ), k_eControllerType_XBox360Controller, NULL },	// Thrustmaster Gamepad GP XID
-	{ MAKE_CONTROLLER_ID( 0x045e, 0x028e ), k_eControllerType_XBox360Controller, NULL },	// Microsoft X-Box 360 pad
-	{ MAKE_CONTROLLER_ID( 0x045e, 0x028f ), k_eControllerType_XBox360Controller, NULL },	// Microsoft X-Box 360 pad v2
+	{ MAKE_CONTROLLER_ID( 0x045e, 0x028e ), k_eControllerType_XBox360Controller, "Xbox 360 Controller" },	// Microsoft X-Box 360 pad
+	{ MAKE_CONTROLLER_ID( 0x045e, 0x028f ), k_eControllerType_XBox360Controller, "Xbox 360 Controller" },	// Microsoft X-Box 360 pad v2
 	{ MAKE_CONTROLLER_ID( 0x045e, 0x0291 ), k_eControllerType_XBox360Controller, NULL },	// Xbox 360 Wireless Receiver (XBOX)
 	{ MAKE_CONTROLLER_ID( 0x045e, 0x02a0 ), k_eControllerType_XBox360Controller, NULL },	// Microsoft X-Box 360 Big Button IR
 	{ MAKE_CONTROLLER_ID( 0x045e, 0x02a1 ), k_eControllerType_XBox360Controller, NULL },	// Microsoft X-Box 360 pad
-	{ MAKE_CONTROLLER_ID( 0x045e, 0x0719 ), k_eControllerType_XBox360Controller, NULL },	// Xbox 360 Wireless Receiver
+	{ MAKE_CONTROLLER_ID( 0x045e, 0x0719 ), k_eControllerType_XBox360Controller, "Xbox 360 Wireless Controller" },	// Xbox 360 Wireless Receiver
 	{ MAKE_CONTROLLER_ID( 0x046d, 0xc21d ), k_eControllerType_XBox360Controller, NULL },	// Logitech Gamepad F310
 	{ MAKE_CONTROLLER_ID( 0x046d, 0xc21e ), k_eControllerType_XBox360Controller, NULL },	// Logitech Gamepad F510
 	{ MAKE_CONTROLLER_ID( 0x046d, 0xc21f ), k_eControllerType_XBox360Controller, NULL },	// Logitech Gamepad F710
@@ -296,15 +296,15 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x24c6, 0xfafd ), k_eControllerType_XBox360Controller, NULL },	// Afterglow Gamepad 3
 	{ MAKE_CONTROLLER_ID( 0x24c6, 0xfafe ), k_eControllerType_XBox360Controller, NULL },	// Rock Candy Gamepad for Xbox 360
 
-	{ MAKE_CONTROLLER_ID( 0x045e, 0x02d1 ), k_eControllerType_XBoxOneController, NULL },	// Microsoft X-Box One pad
-	{ MAKE_CONTROLLER_ID( 0x045e, 0x02dd ), k_eControllerType_XBoxOneController, NULL },	// Microsoft X-Box One pad (Firmware 2015)
-	{ MAKE_CONTROLLER_ID( 0x045e, 0x02e0 ), k_eControllerType_XBoxOneController, NULL },	// Microsoft X-Box One S pad (Bluetooth)
-	{ MAKE_CONTROLLER_ID( 0x045e, 0x02e3 ), k_eControllerType_XBoxOneController, NULL },	// Microsoft X-Box One Elite pad
-	{ MAKE_CONTROLLER_ID( 0x045e, 0x02ea ), k_eControllerType_XBoxOneController, NULL },	// Microsoft X-Box One S pad
-	{ MAKE_CONTROLLER_ID( 0x045e, 0x02fd ), k_eControllerType_XBoxOneController, NULL },	// Microsoft X-Box One S pad (Bluetooth)
-	{ MAKE_CONTROLLER_ID( 0x045e, 0x02ff ), k_eControllerType_XBoxOneController, NULL },	// Microsoft X-Box One Elite pad
-	{ MAKE_CONTROLLER_ID( 0x045e, 0x0b00 ), k_eControllerType_XBoxOneController, NULL },	// Microsoft X-Box One Elite Series 2 pad
-	{ MAKE_CONTROLLER_ID( 0x045e, 0x0b05 ), k_eControllerType_XBoxOneController, NULL },	// Microsoft X-Box One Elite Series 2 pad (Bluetooth)
+	{ MAKE_CONTROLLER_ID( 0x045e, 0x02d1 ), k_eControllerType_XBoxOneController, "Xbox One Controller" },	// Microsoft X-Box One pad
+	{ MAKE_CONTROLLER_ID( 0x045e, 0x02dd ), k_eControllerType_XBoxOneController, "Xbox One Controller" },	// Microsoft X-Box One pad (Firmware 2015)
+	{ MAKE_CONTROLLER_ID( 0x045e, 0x02e0 ), k_eControllerType_XBoxOneController, "Xbox One S Controller" },	// Microsoft X-Box One S pad (Bluetooth)
+	{ MAKE_CONTROLLER_ID( 0x045e, 0x02e3 ), k_eControllerType_XBoxOneController, "Xbox One Elite Controller" },	// Microsoft X-Box One Elite pad
+	{ MAKE_CONTROLLER_ID( 0x045e, 0x02ea ), k_eControllerType_XBoxOneController, "Xbox One S Controller" },	// Microsoft X-Box One S pad
+	{ MAKE_CONTROLLER_ID( 0x045e, 0x02fd ), k_eControllerType_XBoxOneController, "Xbox One S Controller" },	// Microsoft X-Box One S pad (Bluetooth)
+	{ MAKE_CONTROLLER_ID( 0x045e, 0x02ff ), k_eControllerType_XBoxOneController, "Xbox One Elite Controller" },	// Microsoft X-Box One Elite pad
+	{ MAKE_CONTROLLER_ID( 0x045e, 0x0b00 ), k_eControllerType_XBoxOneController, "Xbox One Elite 2 Controller" },	// Microsoft X-Box One Elite Series 2 pad
+	{ MAKE_CONTROLLER_ID( 0x045e, 0x0b05 ), k_eControllerType_XBoxOneController, "Xbox One Elite 2 Controller" },	// Microsoft X-Box One Elite Series 2 pad (Bluetooth)
 	{ MAKE_CONTROLLER_ID( 0x0738, 0x4a01 ), k_eControllerType_XBoxOneController, NULL },	// Mad Catz FightStick TE 2
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0139 ), k_eControllerType_XBoxOneController, "PDP Xbox One Afterglow" },	// PDP Afterglow Wired Controller for Xbox One
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x013B ), k_eControllerType_XBoxOneController, "PDP Xbox One Face-Off Controller" },	// PDP Face-Off Gamepad for Xbox One
