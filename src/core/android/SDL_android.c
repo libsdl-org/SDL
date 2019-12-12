@@ -492,10 +492,10 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved)
         return JNI_VERSION_1_4;
     }
 
-    register_methods(env, "org/libsdl/app/SDLActivity", SDLActivity_tab, sizeof (SDLActivity_tab) / sizeof (SDLActivity_tab[0]));
-    register_methods(env, "org/libsdl/app/SDLInputConnection", SDLInputConnection_tab, sizeof (SDLInputConnection_tab) / sizeof (SDLInputConnection_tab[0]));
-    register_methods(env, "org/libsdl/app/SDLAudioManager", SDLAudioManager_tab, sizeof (SDLAudioManager_tab) / sizeof (SDLAudioManager_tab[0]));
-    register_methods(env, "org/libsdl/app/SDLControllerManager", SDLControllerManager_tab, sizeof (SDLControllerManager_tab) / sizeof (SDLControllerManager_tab[0]));
+    register_methods(env, "org/libsdl/app/SDLActivity", SDLActivity_tab, SDL_arraysize(SDLActivity_tab)); 
+    register_methods(env, "org/libsdl/app/SDLInputConnection", SDLInputConnection_tab, SDL_arraysize(SDLInputConnection_tab));
+    register_methods(env, "org/libsdl/app/SDLAudioManager", SDLAudioManager_tab, SDL_arraysize(SDLAudioManager_tab));
+    register_methods(env, "org/libsdl/app/SDLControllerManager", SDLControllerManager_tab, SDL_arraysize(SDLControllerManager_tab));
 
     return JNI_VERSION_1_4;
 }
@@ -2271,7 +2271,7 @@ int Android_JNI_GetPowerInfo(int *plugged, int *charged, int *battery, int *seco
 #define GET_INT_EXTRA(var, key) \
     int var; \
     iname = (*env)->NewStringUTF(env, key); \
-    var = (*env)->CallIntMethod(env, intent, imid, iname, -1); \
+    (var) = (*env)->CallIntMethod(env, intent, imid, iname, -1); \
     (*env)->DeleteLocalRef(env, iname);
 
     bmid = (*env)->GetMethodID(env, cls, "getBooleanExtra", "(Ljava/lang/String;Z)Z");
@@ -2280,7 +2280,7 @@ int Android_JNI_GetPowerInfo(int *plugged, int *charged, int *battery, int *seco
 #define GET_BOOL_EXTRA(var, key) \
     int var; \
     bname = (*env)->NewStringUTF(env, key); \
-    var = (*env)->CallBooleanMethod(env, intent, bmid, bname, JNI_FALSE); \
+    (var) = (*env)->CallBooleanMethod(env, intent, bmid, bname, JNI_FALSE); \
     (*env)->DeleteLocalRef(env, bname);
 
     if (plugged) {
