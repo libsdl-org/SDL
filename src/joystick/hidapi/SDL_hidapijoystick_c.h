@@ -66,9 +66,6 @@ extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXboxOne;
 /* Return true if a HID device is present and supported as a joystick */
 extern SDL_bool HIDAPI_IsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name);
 
-/* Return the name of an Xbox 360 or Xbox One controller */
-extern const char *HIDAPI_XboxControllerName(Uint16 vendor_id, Uint16 product_id);
-
 #endif /* SDL_JOYSTICK_HIDAPI_H */
 
 /* vi: set ts=4 sw=4 expandtab: */
