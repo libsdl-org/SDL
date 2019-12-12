@@ -1164,6 +1164,12 @@ void SDL_GetJoystickGUIDInfo(SDL_JoystickGUID guid, Uint16 *vendor, Uint16 *prod
     }
 }
 
+const char *
+SDL_GetCustomJoystickName(Uint16 vendor, Uint16 product)
+{
+    return GuessControllerName(vendor, product);
+}
+
 SDL_bool
 SDL_IsJoystickNintendoSwitchPro(Uint16 vendor, Uint16 product)
 {

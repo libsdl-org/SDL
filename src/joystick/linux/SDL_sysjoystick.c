@@ -107,6 +107,7 @@ IsJoystick(int fd, char *namebuf, const size_t namebuflen, SDL_JoystickGUID *gui
 {
     struct input_id inpid;
     Uint16 *guid16 = (Uint16 *)guid->data;
+    const char *name;
     const char *spot;
 
 #if !SDL_USE_LIBUDEV
@@ -127,21 +128,26 @@ IsJoystick(int fd, char *namebuf, const size_t namebuflen, SDL_JoystickGUID *gui
     }
 #endif
 
-    if (ioctl(fd, EVIOCGNAME(namebuflen), namebuf) < 0) {
-        return 0;
-    }
-
-    /* Remove duplicate manufacturer in the name */
-    for (spot = namebuf + 1; *spot; ++spot) {
-        int matchlen = PrefixMatch(namebuf, spot);
-        if (matchlen > 0 && spot[matchlen - 1] == ' ') {
-            SDL_memmove(namebuf, spot, SDL_strlen(spot)+1);
-            break;
-        }
-    }
-
     if (ioctl(fd, EVIOCGID, &inpid) < 0) {
         return 0;
+    }
+
+    name = SDL_GetCustomJoystickName(inpid.vendor, inpid.product);
+    if (name) {
+        SDL_strlcpy(namebuf, name, namebuflen);
+    } else {
+        if (ioctl(fd, EVIOCGNAME(namebuflen), namebuf) < 0) {
+            return 0;
+        }
+
+        /* Remove duplicate manufacturer in the name */
+        for (spot = namebuf + 1; *spot; ++spot) {
+            int matchlen = PrefixMatch(namebuf, spot);
+            if (matchlen > 0 && spot[matchlen - 1] == ' ') {
+                SDL_memmove(namebuf, spot, SDL_strlen(spot)+1);
+                break;
+            }
+        }
     }
 
 #ifdef SDL_JOYSTICK_HIDAPI

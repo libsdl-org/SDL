@@ -521,6 +521,7 @@ EnumJoysticksCallback(const DIDEVICEINSTANCE * pdidInstance, VOID * pContext)
     Uint16 product = 0;
     Uint16 version = 0;
     WCHAR hidPath[MAX_PATH];
+    const char *name;
 
     if (devtype == DI8DEVTYPE_SUPPLEMENTAL) {
         /* Add any supplemental devices that should be ignored here */
@@ -605,14 +606,7 @@ EnumJoysticksCallback(const DIDEVICEINSTANCE * pdidInstance, VOID * pContext)
 
     SDL_zerop(pNewJoystick);
     SDL_wcslcpy(pNewJoystick->hidPath, hidPath, SDL_arraysize(pNewJoystick->hidPath));
-    pNewJoystick->joystickname = WIN_StringToUTF8(pdidInstance->tszProductName);
-    if (!pNewJoystick->joystickname) {
-        SDL_free(pNewJoystick);
-        return DIENUM_CONTINUE; /* better luck next time? */
-    }
-
     SDL_memcpy(&pNewJoystick->dxdevice, pdidInstance, sizeof(DIDEVICEINSTANCE));
-
     SDL_memset(pNewJoystick->guid.data, 0, sizeof(pNewJoystick->guid.data));
 
     guid16 = (Uint16 *)pNewJoystick->guid.data;
@@ -633,6 +627,17 @@ EnumJoysticksCallback(const DIDEVICEINSTANCE * pdidInstance, VOID * pContext)
         *guid16++ = SDL_SwapLE16(SDL_HARDWARE_BUS_BLUETOOTH);
         *guid16++ = 0;
         SDL_strlcpy((char*)guid16, pNewJoystick->joystickname, sizeof(pNewJoystick->guid.data) - 4);
+    }
+
+    name = SDL_GetCustomJoystickName(vendor, product);
+    if (name) {
+        pNewJoystick->joystickname = SDL_strdup(name);
+    } else {
+        pNewJoystick->joystickname = WIN_StringToUTF8(pdidInstance->tszProductName);
+    }
+    if (!pNewJoystick->joystickname) {
+        SDL_free(pNewJoystick);
+        return DIENUM_CONTINUE; /* better luck next time? */
     }
 
     if (SDL_strstr(pNewJoystick->joystickname, " XINPUT ") != NULL) {

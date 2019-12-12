@@ -603,6 +603,12 @@ HIDAPI_AddDevice(struct hid_device_info *info)
     }
 
     /* Need the device name before getting the driver to know whether to ignore this device */
+    if (!device->name) {
+        const char *name = SDL_GetCustomJoystickName(device->vendor_id, device->product_id);
+        if (name) {
+            device->name = SDL_strdup(name);
+        }
+    }
     if (!device->name && info->manufacturer_string && info->product_string) {
         char *manufacturer_string = SDL_iconv_string("UTF-8", "WCHAR_T", (char*)info->manufacturer_string, (SDL_wcslen(info->manufacturer_string)+1)*sizeof(wchar_t));
         char *product_string = SDL_iconv_string("UTF-8", "WCHAR_T", (char*)info->product_string, (SDL_wcslen(info->product_string)+1)*sizeof(wchar_t));
