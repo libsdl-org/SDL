@@ -52,6 +52,9 @@ extern int SDL_JoystickGetDeviceIndexFromInstanceID(SDL_JoystickID instance_id);
 /* Function to extract information from an SDL joystick GUID */
 extern void SDL_GetJoystickGUIDInfo(SDL_JoystickGUID guid, Uint16 *vendor, Uint16 *product, Uint16 *version);
 
+/* Function to get a custom name for a controller, if it's available */
+extern const char *SDL_GetCustomJoystickName(Uint16 vendor, Uint16 product);
+
 /* Function to return the type of a controller */
 extern SDL_GameControllerType SDL_GetJoystickGameControllerTypeFromGUID(SDL_JoystickGUID guid, const char *name);
 extern SDL_GameControllerType SDL_GetJoystickGameControllerType(Uint16 vendor, Uint16 product, const char *name);

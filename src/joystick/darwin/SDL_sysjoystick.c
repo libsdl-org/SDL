@@ -399,6 +399,7 @@ GetDeviceInfo(IOHIDDeviceRef hidDevice, recDevice *pDevice)
     Sint32 vendor = 0;
     Sint32 product = 0;
     Sint32 version = 0;
+    const char *name;
     char manufacturer_string[256];
     char product_string[256];
     CFTypeRef refCF = NULL;
@@ -427,21 +428,6 @@ GetDeviceInfo(IOHIDDeviceRef hidDevice, recDevice *pDevice)
 
     pDevice->deviceRef = hidDevice;
 
-    /* get device name */
-    refCF = IOHIDDeviceGetProperty(hidDevice, CFSTR(kIOHIDManufacturerKey));
-    if ((!refCF) || (!CFStringGetCString(refCF, manufacturer_string, sizeof(manufacturer_string), kCFStringEncodingUTF8))) {
-        manufacturer_string[0] = '\0';
-    }
-    refCF = IOHIDDeviceGetProperty(hidDevice, CFSTR(kIOHIDProductKey));
-    if ((!refCF) || (!CFStringGetCString(refCF, product_string, sizeof(product_string), kCFStringEncodingUTF8))) {
-        SDL_strlcpy(product_string, "Unidentified joystick", sizeof(product_string));
-    }
-    if (SDL_strncasecmp(manufacturer_string, product_string, SDL_strlen(manufacturer_string)) == 0) {
-        SDL_strlcpy(pDevice->product, product_string, sizeof(pDevice->product));
-    } else {
-        SDL_snprintf(pDevice->product, sizeof(pDevice->product), "%s %s", manufacturer_string, product_string);
-    }
-
     refCF = IOHIDDeviceGetProperty(hidDevice, CFSTR(kIOHIDVendorIDKey));
     if (refCF) {
         CFNumberGetValue(refCF, kCFNumberSInt32Type, &vendor);
@@ -455,6 +441,26 @@ GetDeviceInfo(IOHIDDeviceRef hidDevice, recDevice *pDevice)
     refCF = IOHIDDeviceGetProperty(hidDevice, CFSTR(kIOHIDVersionNumberKey));
     if (refCF) {
         CFNumberGetValue(refCF, kCFNumberSInt32Type, &version);
+    }
+
+    /* get device name */
+    name = SDL_GetCustomJoystickName(vendor, product);
+    if (name) {
+        SDL_strlcpy(pDevice->product, name, sizeof(pDevice->product));
+    } else {
+        refCF = IOHIDDeviceGetProperty(hidDevice, CFSTR(kIOHIDManufacturerKey));
+        if ((!refCF) || (!CFStringGetCString(refCF, manufacturer_string, sizeof(manufacturer_string), kCFStringEncodingUTF8))) {
+            manufacturer_string[0] = '\0';
+        }
+        refCF = IOHIDDeviceGetProperty(hidDevice, CFSTR(kIOHIDProductKey));
+        if ((!refCF) || (!CFStringGetCString(refCF, product_string, sizeof(product_string), kCFStringEncodingUTF8))) {
+            SDL_strlcpy(product_string, "Unidentified joystick", sizeof(product_string));
+        }
+        if (SDL_strncasecmp(manufacturer_string, product_string, SDL_strlen(manufacturer_string)) == 0) {
+            SDL_strlcpy(pDevice->product, product_string, sizeof(pDevice->product));
+        } else {
+            SDL_snprintf(pDevice->product, sizeof(pDevice->product), "%s %s", manufacturer_string, product_string);
+        }
     }
 
 #ifdef SDL_JOYSTICK_HIDAPI

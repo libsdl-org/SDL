@@ -220,6 +220,7 @@ AddXInputDevice(Uint8 userid, BYTE SubType, JoyStick_DeviceData **pContext)
     Uint16 vendor = 0;
     Uint16 product = 0;
     Uint16 version = 0;
+    const char *name;
     JoyStick_DeviceData *pPrevJoystick = NULL;
     JoyStick_DeviceData *pNewJoystick = *pContext;
 
@@ -247,22 +248,13 @@ AddXInputDevice(Uint8 userid, BYTE SubType, JoyStick_DeviceData **pContext)
         pNewJoystick = pNewJoystick->pNext;
     }
 
-    pNewJoystick = (JoyStick_DeviceData *)SDL_malloc(sizeof(JoyStick_DeviceData));
+    pNewJoystick = (JoyStick_DeviceData *)SDL_calloc(1, sizeof(JoyStick_DeviceData));
     if (!pNewJoystick) {
-        return; /* better luck next time? */
-    }
-    SDL_zerop(pNewJoystick);
-
-    pNewJoystick->joystickname = GetXInputName(userid, SubType);
-    if (!pNewJoystick->joystickname) {
-        SDL_free(pNewJoystick);
         return; /* better luck next time? */
     }
 
     pNewJoystick->bXInputDevice = SDL_TRUE;
-    if (SDL_XInputUseOldJoystickMapping()) {
-        SDL_zero(pNewJoystick->guid);
-    } else {
+    if (!SDL_XInputUseOldJoystickMapping()) {
         Uint16 *guid16 = (Uint16 *)pNewJoystick->guid.data;
 
         GuessXInputDevice(userid, &vendor, &product, &version);
@@ -282,6 +274,17 @@ AddXInputDevice(Uint8 userid, BYTE SubType, JoyStick_DeviceData **pContext)
     }
     pNewJoystick->SubType = SubType;
     pNewJoystick->XInputUserId = userid;
+
+    name = SDL_GetCustomJoystickName(vendor, product);
+    if (name) {
+        pNewJoystick->joystickname = SDL_strdup(name);
+    } else {
+        pNewJoystick->joystickname = GetXInputName(userid, SubType);
+    }
+    if (!pNewJoystick->joystickname) {
+        SDL_free(pNewJoystick);
+        return; /* better luck next time? */
+    }
 
     if (SDL_ShouldIgnoreJoystick(pNewJoystick->joystickname, pNewJoystick->guid)) {
         SDL_free(pNewJoystick);
