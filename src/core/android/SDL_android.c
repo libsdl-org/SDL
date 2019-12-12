@@ -147,9 +147,6 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetenv)(
         JNIEnv *env, jclass cls,
         jstring name, jstring value);
 
-JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeEnvironmentVariablesSet)(
-        JNIEnv *env, jclass cls);
-
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeOrientationChanged)(
         JNIEnv *env, jclass cls,
         jint orientation);
@@ -157,6 +154,35 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeOrientationChanged)(
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeAddTouch)(
         JNIEnv* env, jclass cls,
         jint touchId, jstring name);
+
+static JNINativeMethod SDLActivity_tab[] = {
+    { "nativeSetupJNI",             "()I", SDL_JAVA_INTERFACE(nativeSetupJNI) },
+    { "nativeRunMain",              "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;)I", SDL_JAVA_INTERFACE(nativeRunMain) },
+    { "onNativeDropFile",           "(Ljava/lang/String;)V", SDL_JAVA_INTERFACE(onNativeDropFile) },
+    { "nativeSetScreenResolution",  "(IIIIIF)V", SDL_JAVA_INTERFACE(nativeSetScreenResolution) },
+    { "onNativeResize",             "()V", SDL_JAVA_INTERFACE(onNativeResize) },
+    { "onNativeSurfaceCreated",     "()V", SDL_JAVA_INTERFACE(onNativeSurfaceCreated) },
+    { "onNativeSurfaceChanged",     "()V", SDL_JAVA_INTERFACE(onNativeSurfaceChanged) },
+    { "onNativeSurfaceDestroyed",   "()V", SDL_JAVA_INTERFACE(onNativeSurfaceDestroyed) },
+    { "onNativeKeyDown",            "(I)V", SDL_JAVA_INTERFACE(onNativeKeyDown) },
+    { "onNativeKeyUp",              "(I)V", SDL_JAVA_INTERFACE(onNativeKeyUp) },
+    { "onNativeSoftReturnKey",      "()Z", SDL_JAVA_INTERFACE(onNativeSoftReturnKey) },
+    { "onNativeKeyboardFocusLost",  "()V", SDL_JAVA_INTERFACE(onNativeKeyboardFocusLost) },
+    { "onNativeTouch",              "(IIIFFF)V", SDL_JAVA_INTERFACE(onNativeTouch) },
+    { "onNativeMouse",              "(IIFFZ)V", SDL_JAVA_INTERFACE(onNativeMouse) },
+    { "onNativeAccel",              "(FFF)V", SDL_JAVA_INTERFACE(onNativeAccel) },
+    { "onNativeClipboardChanged",   "()V", SDL_JAVA_INTERFACE(onNativeClipboardChanged) },
+    { "nativeLowMemory",            "()V", SDL_JAVA_INTERFACE(nativeLowMemory) },
+    { "nativeSendQuit",             "()V", SDL_JAVA_INTERFACE(nativeSendQuit) },
+    { "nativeQuit",                 "()V", SDL_JAVA_INTERFACE(nativeQuit) },
+    { "nativePause",                "()V", SDL_JAVA_INTERFACE(nativePause) },
+    { "nativeResume",               "()V", SDL_JAVA_INTERFACE(nativeResume) },
+    { "nativeFocusChanged",         "(Z)V", SDL_JAVA_INTERFACE(nativeFocusChanged) },
+    { "nativeGetHint",              "(Ljava/lang/String;)Ljava/lang/String;", SDL_JAVA_INTERFACE(nativeGetHint) },
+    { "nativeSetenv",               "(Ljava/lang/String;Ljava/lang/String;)V", SDL_JAVA_INTERFACE(nativeSetenv) },
+    { "onNativeOrientationChanged", "(I)V", SDL_JAVA_INTERFACE(onNativeOrientationChanged) },
+    { "nativeAddTouch",             "(ILjava/lang/String;)V", SDL_JAVA_INTERFACE(nativeAddTouch) }
+};
 
 /* Java class SDLInputConnection */
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE_INPUT_CONNECTION(nativeCommitText)(
@@ -171,9 +197,19 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE_INPUT_CONNECTION(nativeSetComposingTex
         JNIEnv *env, jclass cls,
         jstring text, jint newCursorPosition);
 
+static JNINativeMethod SDLInputConnection_tab[] = {
+    { "nativeCommitText",                   "(Ljava/lang/String;I)V", SDL_JAVA_INTERFACE_INPUT_CONNECTION(nativeCommitText) },
+    { "nativeGenerateScancodeForUnichar",   "(C)V", SDL_JAVA_INTERFACE_INPUT_CONNECTION(nativeGenerateScancodeForUnichar) },
+    { "nativeSetComposingText",             "(Ljava/lang/String;I)V", SDL_JAVA_INTERFACE_INPUT_CONNECTION(nativeSetComposingText) }
+};
+
 /* Java class SDLAudioManager */
 JNIEXPORT void JNICALL SDL_JAVA_AUDIO_INTERFACE(nativeSetupJNI)(
         JNIEnv *env, jclass jcls);
+
+static JNINativeMethod SDLAudioManager_tab[] = {
+    { "nativeSetupJNI", "()I", SDL_JAVA_AUDIO_INTERFACE(nativeSetupJNI) }
+};
 
 /* Java class SDLControllerManager */
 JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeSetupJNI)(
@@ -212,6 +248,17 @@ JNIEXPORT jint JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeRemoveHaptic)(
         JNIEnv *env, jclass jcls,
         jint device_id);
 
+static JNINativeMethod SDLControllerManager_tab[] = {
+    { "nativeSetupJNI",         "()I", SDL_JAVA_CONTROLLER_INTERFACE(nativeSetupJNI) },
+    { "onNativePadDown",        "(II)I", SDL_JAVA_CONTROLLER_INTERFACE(onNativePadDown) },
+    { "onNativePadUp",          "(II)I", SDL_JAVA_CONTROLLER_INTERFACE(onNativePadUp) },
+    { "onNativeJoy",            "(IIF)V", SDL_JAVA_CONTROLLER_INTERFACE(onNativeJoy) },
+    { "onNativeHat",            "(IIII)V", SDL_JAVA_CONTROLLER_INTERFACE(onNativeHat) },
+    { "nativeAddJoystick",      "(ILjava/lang/String;Ljava/lang/String;IIZIIII)I", SDL_JAVA_CONTROLLER_INTERFACE(nativeAddJoystick) },
+    { "nativeRemoveJoystick",   "(I)I", SDL_JAVA_CONTROLLER_INTERFACE(nativeRemoveJoystick) },
+    { "nativeAddHaptic",        "(ILjava/lang/String;)I", SDL_JAVA_CONTROLLER_INTERFACE(nativeAddHaptic) },
+    { "nativeRemoveHaptic",     "(I)I", SDL_JAVA_CONTROLLER_INTERFACE(nativeRemoveHaptic) }
+};
 
 
 /* Uncomment this to log messages entering and exiting methods in this file */
@@ -424,10 +471,32 @@ Android_JNI_CreateKey_once(void)
     }
 }
 
+static void
+register_methods(JNIEnv *env, const char *classname, JNINativeMethod *methods, int nb) 
+{
+    jclass clazz = (*env)->FindClass(env, classname);
+    if (clazz == NULL || (*env)->RegisterNatives(env, clazz, methods, nb) < 0) {
+        __android_log_print(ANDROID_LOG_ERROR, "SDL", "Failed to register methods of %s", classname);
+        return;
+    }
+}
+
 /* Library init */
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved)
 {
     mJavaVM = vm;
+    JNIEnv *env = NULL;
+
+    if ((*mJavaVM)->GetEnv(mJavaVM, (void **)&env, JNI_VERSION_1_4) != JNI_OK) {
+        __android_log_print(ANDROID_LOG_ERROR, "SDL", "Failed to get JNI Env");
+        return JNI_VERSION_1_4;
+    }
+
+    register_methods(env, "org/libsdl/app/SDLActivity", SDLActivity_tab, sizeof (SDLActivity_tab) / sizeof (SDLActivity_tab[0]));
+    register_methods(env, "org/libsdl/app/SDLInputConnection", SDLInputConnection_tab, sizeof (SDLInputConnection_tab) / sizeof (SDLInputConnection_tab[0]));
+    register_methods(env, "org/libsdl/app/SDLAudioManager", SDLAudioManager_tab, sizeof (SDLAudioManager_tab) / sizeof (SDLAudioManager_tab[0]));
+    register_methods(env, "org/libsdl/app/SDLControllerManager", SDLControllerManager_tab, sizeof (SDLControllerManager_tab) / sizeof (SDLControllerManager_tab[0]));
+
     return JNI_VERSION_1_4;
 }
 
