@@ -193,20 +193,24 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x0955, 0x7210 ), k_eControllerType_XBox360Controller },	// Nvidia Shield local controller
 	{ MAKE_CONTROLLER_ID( 0x0955, 0xb400 ), k_eControllerType_XBox360Controller },	// NVIDIA Shield streaming controller
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0105 ), k_eControllerType_XBox360Controller },	// HSM3 Xbox360 dancepad
-	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0113 ), k_eControllerType_XBox360Controller },	// Afterglow AX.1 Gamepad for Xbox 360
-	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x011f ), k_eControllerType_XBox360Controller },	// Rock Candy Gamepad Wired Controller
-	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0131 ), k_eControllerType_XBox360Controller },	// PDP EA Sports Controller
-	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0133 ), k_eControllerType_XBox360Controller },	// Xbox 360 Wired Controller
-	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0201 ), k_eControllerType_XBox360Controller },	// Pelican PL-3601 'TSZ' Wired Xbox 360 Controller
-	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0213 ), k_eControllerType_XBox360Controller },	// Afterglow Gamepad for Xbox 360
-	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x021f ), k_eControllerType_XBox360Controller },	// Rock Candy Gamepad for Xbox 360
-	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x02a0 ), k_eControllerType_XBox360Controller },	// Counterfeit 360Controller
-	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0301 ), k_eControllerType_XBox360Controller },	// Logic3 Controller
-	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0401 ), k_eControllerType_XBox360Controller },	// Logic3 Controller
-	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0413 ), k_eControllerType_XBox360Controller },	// Afterglow AX.1 Gamepad for Xbox 360
-	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0501 ), k_eControllerType_XBox360Controller },	// PDP Xbox 360 Controller
-	{ MAKE_CONTROLLER_ID( 0x0e6f, 0xf501 ), k_eControllerType_XBox360Controller },	// Counterfeit 360 Controller
-	{ MAKE_CONTROLLER_ID( 0x0e6f, 0xf900 ), k_eControllerType_XBox360Controller },	// PDP Afterglow AX.1
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0113 ), k_eControllerType_XBox360Controller },	// PDP Afterglow Gamepad for Xbox 360
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x011f ), k_eControllerType_XBox360Controller },	// PDP Rock Candy Gamepad for Xbox 360
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0125 ), k_eControllerType_XBox360Controller },	// PDP INJUSTICE FightStick for Xbox 360
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0127 ), k_eControllerType_XBox360Controller },	// PDP INJUSTICE FightPad for Xbox 360
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0131 ), k_eControllerType_XBox360Controller },	// PDP EA Soccer Gamepad
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0133 ), k_eControllerType_XBox360Controller },	// PDP Battlefield 4 Gamepad
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0143 ), k_eControllerType_XBox360Controller },	// PDP MK X Fight Stick for Xbox 360
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0147 ), k_eControllerType_XBox360Controller },	// PDP Marvel Controller for Xbox 360
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0201 ), k_eControllerType_XBox360Controller },	// PDP Gamepad for Xbox 360
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0213 ), k_eControllerType_XBox360Controller },	// PDP Afterglow Gamepad for Xbox 360
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x021f ), k_eControllerType_XBox360Controller },	// PDP Rock Candy Gamepad for Xbox 360
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0301 ), k_eControllerType_XBox360Controller },	// PDP Gamepad for Xbox 360
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0313 ), k_eControllerType_XBox360Controller },	// PDP Afterglow Gamepad for Xbox 360
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0314 ), k_eControllerType_XBox360Controller },	// PDP Afterglow Gamepad for Xbox 360
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0401 ), k_eControllerType_XBox360Controller },	// PDP Gamepad for Xbox 360
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0413 ), k_eControllerType_XBox360Controller },	// PDP Afterglow AX.1 (unlisted)
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0501 ), k_eControllerType_XBox360Controller },	// PDP Xbox 360 Controller (unlisted)
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0xf900 ), k_eControllerType_XBox360Controller },	// PDP Afterglow AX.1 (unlisted)
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x000a ), k_eControllerType_XBox360Controller },	// Hori Co. DOA4 FightStick
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x000c ), k_eControllerType_XBox360Controller },	// Hori PadEX Turbo
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x000d ), k_eControllerType_XBox360Controller },	// Hori Fighting Stick EX2
@@ -301,22 +305,70 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x045e, 0x0b00 ), k_eControllerType_XBoxOneController },	// Microsoft X-Box One Elite Series 2 pad
 	{ MAKE_CONTROLLER_ID( 0x045e, 0x0b05 ), k_eControllerType_XBoxOneController },	// Microsoft X-Box One Elite Series 2 pad (Bluetooth)
 	{ MAKE_CONTROLLER_ID( 0x0738, 0x4a01 ), k_eControllerType_XBoxOneController },	// Mad Catz FightStick TE 2
-	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0139 ), k_eControllerType_XBoxOneController },	// Afterglow Prismatic Wired Controller
-	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x013a ), k_eControllerType_XBoxOneController },	// PDP Xbox One Controller
-	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0146 ), k_eControllerType_XBoxOneController },	// Rock Candy Wired Controller for Xbox One
-	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0147 ), k_eControllerType_XBoxOneController },	// PDP Marvel Xbox One Controller
-	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x015c ), k_eControllerType_XBoxOneController },	// PDP Xbox One Arcade Stick
-	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0161 ), k_eControllerType_XBoxOneController },	// PDP Xbox One Controller
-	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0162 ), k_eControllerType_XBoxOneController },	// PDP Xbox One Controller
-	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0163 ), k_eControllerType_XBoxOneController },	// PDP Xbox One Controller
-	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0164 ), k_eControllerType_XBoxOneController },	// PDP Battlefield One
-	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0165 ), k_eControllerType_XBoxOneController },	// PDP Titanfall 2
-	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0205 ), k_eControllerType_XBoxOneController },	// Victrix Pro FS Xbox One Edition
-	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0246 ), k_eControllerType_XBoxOneController },	// Rock Candy Gamepad for Xbox One 2015
-	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x02a4 ), k_eControllerType_XBoxOneController },	// PDP Wired Controller for Xbox One - Stealth Series
-	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x02a6 ), k_eControllerType_XBoxOneController },	// PDP Wired Controller for Xbox One - Camo Series
-	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x02ab ), k_eControllerType_XBoxOneController },	// PDP Controller for Xbox One
-	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0346 ), k_eControllerType_XBoxOneController },	// Rock Candy Gamepad for Xbox One 2016
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0139 ), k_eControllerType_XBoxOneController },	// PDP Afterglow Wired Controller for Xbox One
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x013B ), k_eControllerType_XBoxOneController },	// PDP Face-Off Gamepad for Xbox One
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x013a ), k_eControllerType_XBoxOneController },	// PDP Xbox One Controller (unlisted)
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0145 ), k_eControllerType_XBoxOneController },	// PDP MK X Fight Pad for Xbox One
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0146 ), k_eControllerType_XBoxOneController },	// PDP Rock Candy Wired Controller for Xbox One
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x015b ), k_eControllerType_XBoxOneController },	// PDP Fallout 4 Vault Boy Wired Controller for Xbox One
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x015c ), k_eControllerType_XBoxOneController },	// PDP @Play Wired Controlller for Xbox One 
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x015d ), k_eControllerType_XBoxOneController },	// PDP Mirror's Edge Wired Controller for Xbox One
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x015f ), k_eControllerType_XBoxOneController },	// PDP Metallic Wired Controller for Xbox One
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0160 ), k_eControllerType_XBoxOneController },	// PDP NFL Official Face-Off Wired Controller for Xbox One
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0161 ), k_eControllerType_XBoxOneController },	// PDP PDP Camo Wired Controller for Xbox One
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0162 ), k_eControllerType_XBoxOneController },	// PDP Wired Controller for Xbox One
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0163 ), k_eControllerType_XBoxOneController },	// PDP Legendary Collection: Deliverer of Truth
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0164 ), k_eControllerType_XBoxOneController },	// PDP Battlefield 1 Official Wired Controller for Xbox One
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0165 ), k_eControllerType_XBoxOneController },	// PDP Titanfall 2 Official Wired Controller for Xbox One
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0166 ), k_eControllerType_XBoxOneController },	// PDP Mass Effect: Andromeda Official Wired Controller for Xbox One
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0167 ), k_eControllerType_XBoxOneController },	// PDP Halo Wars 2 Official Face-Off Wired Controller for Xbox One
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0205 ), k_eControllerType_XBoxOneController },	// PDP Victrix Pro Fight Stick
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0206 ), k_eControllerType_XBoxOneController },	// PDP Mortal Kombat 25 Anniversary Edition Stick (Xbox One)
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0246 ), k_eControllerType_XBoxOneController },	// PDP Rock Candy Wired Controller for Xbox One
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0261 ), k_eControllerType_XBoxOneController },	// PDP Camo Wired Controller for Xbox One
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0262 ), k_eControllerType_XBoxOneController },	// PDP Wired Controller for Xbox One
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x02a0 ), k_eControllerType_XBoxOneController },	// PDP Wired Controller for Xbox One - Midnight Blue
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x02a1 ), k_eControllerType_XBoxOneController },	// PDP Wired Controller for Xbox One - Verdant Green
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x02a2 ), k_eControllerType_XBoxOneController },	// PDP Wired Controller for Xbox One - Crimson Red
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x02a3 ), k_eControllerType_XBoxOneController },	// PDP Wired Controller for Xbox One - Arctic White
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x02a4 ), k_eControllerType_XBoxOneController },	// PDP Wired Controller for Xbox One - Stealth Series | Phantom Black
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x02a5 ), k_eControllerType_XBoxOneController },	// PDP Wired Controller for Xbox One - Stealth Series | Ghost White
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x02a6 ), k_eControllerType_XBoxOneController },	// PDP Wired Controller for Xbox One - Stealth Series | Revenant Blue
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x02a7 ), k_eControllerType_XBoxOneController },	// PDP Wired Controller for Xbox One - Raven Black
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x02a8 ), k_eControllerType_XBoxOneController },	// PDP Wired Controller for Xbox One - Arctic White
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x02a9 ), k_eControllerType_XBoxOneController },	// PDP Wired Controller for Xbox One - Midnight Blue
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x02aa ), k_eControllerType_XBoxOneController },	// PDP Wired Controller for Xbox One - Verdant Green
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x02ab ), k_eControllerType_XBoxOneController },	// PDP Wired Controller for Xbox One - Crismon Red
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x02ac ), k_eControllerType_XBoxOneController },	// PDP Wired Controller for Xbox One - Ember Orange
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x02ad ), k_eControllerType_XBoxOneController },	// PDP Wired Controller for Xbox One - Stealth Series | Phantom Black
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x02ae ), k_eControllerType_XBoxOneController },	// PDP Wired Controller for Xbox One - Stealth Series | Ghost White
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x02af ), k_eControllerType_XBoxOneController },	// PDP Wired Controller for Xbox One - Stealth Series | Revenant Blue
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x02b0 ), k_eControllerType_XBoxOneController },	// PDP Wired Controller for Xbox One - Raven Black
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x02b1 ), k_eControllerType_XBoxOneController },	// PDP Wired Controller for Xbox One - Arctic White
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x02b3 ), k_eControllerType_XBoxOneController },	// PDP Afterglow Prismatic Wired Controller for Xbox One
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x02b5 ), k_eControllerType_XBoxOneController },	// PDP GAMEware Wired Controller Xbox One
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x02b6 ), k_eControllerType_XBoxOneController },	// PDP One-Handed Joystick for Xbox One Adaptive Controller
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x02bd ), k_eControllerType_XBoxOneController },	// PDP Wired Controller for Xbox One - Royal Purple
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x02be ), k_eControllerType_XBoxOneController },	// PDP Deluxe Wired Controller for Xbox One - Raven Black
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x02bf ), k_eControllerType_XBoxOneController },	// PDP Deluxe Wired Controller for Xbox One - Midnight Blue
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x02c0 ), k_eControllerType_XBoxOneController },	// PDP Deluxe Wired Controller for Xbox One - Stealth Series | Phantom Black
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x02c1 ), k_eControllerType_XBoxOneController },	// PDP Deluxe Wired Controller for Xbox One - Stealth Series | Ghost White
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x02c2 ), k_eControllerType_XBoxOneController },	// PDP Deluxe Wired Controller for Xbox One - Stealth Series | Revenant Blue
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x02c3 ), k_eControllerType_XBoxOneController },	// PDP Deluxe Wired Controller for Xbox One - Verdant Green
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x02c4 ), k_eControllerType_XBoxOneController },	// PDP Deluxe Wired Controller for Xbox One - Ember Orange
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x02c5 ), k_eControllerType_XBoxOneController },	// PDP Deluxe Wired Controller for Xbox One - Royal Purple
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x02c6 ), k_eControllerType_XBoxOneController },	// PDP Deluxe Wired Controller for Xbox One - Crimson Red
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x02c7 ), k_eControllerType_XBoxOneController },	// PDP Deluxe Wired Controller for Xbox One - Arctic White
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x02c8 ), k_eControllerType_XBoxOneController },	// PDP Kingdom Hearts Wired Controller for Xbox One
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x02c9 ), k_eControllerType_XBoxOneController },	// PDP Deluxe Wired Controller for Xbox One - Stealth Series | Phantasm Red
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x02ca ), k_eControllerType_XBoxOneController },	// PDP Deluxe Wired Controller for Xbox One - Stealth Series | Specter Violet
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x02cb ), k_eControllerType_XBoxOneController },	// PDP Wired Controller for Xbox One - Stealth Series | Specter Violet
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x02cd ), k_eControllerType_XBoxOneController },	// PDP Rock Candy Wired Controller for Xbox One - Blu-merang
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x02ce ), k_eControllerType_XBoxOneController },	// PDP Rock Candy Wired Controller for Xbox One - Cranblast
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x02cf ), k_eControllerType_XBoxOneController },	// PDP Rock Candy Wired Controller for Xbox One - Aqualime
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x02d5 ), k_eControllerType_XBoxOneController },	// PDP Wired Controller for Xbox One - Red Camo
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0346 ), k_eControllerType_XBoxOneController },	// PDP RC Gamepad for Xbox One
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0446 ), k_eControllerType_XBoxOneController },	// PDP RC Gamepad for Xbox One
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0063 ), k_eControllerType_XBoxOneController },	// Hori Real Arcade Pro Hayabusa (USA) Xbox One
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0067 ), k_eControllerType_XBoxOneController },	// HORIPAD ONE
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0078 ), k_eControllerType_XBoxOneController },	// Hori Real Arcade Pro V Kai Xbox One
