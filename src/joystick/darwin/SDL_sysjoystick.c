@@ -405,6 +405,7 @@ GetDeviceInfo(IOHIDDeviceRef hidDevice, recDevice *pDevice)
     CFTypeRef refCF = NULL;
     CFArrayRef array = NULL;
     Uint16 *guid16 = (Uint16 *)pDevice->guid.data;
+    int i;
 
     /* get usage page and usage */
     refCF = IOHIDDeviceGetProperty(hidDevice, CFSTR(kIOHIDPrimaryUsagePageKey));
@@ -455,6 +456,13 @@ GetDeviceInfo(IOHIDDeviceRef hidDevice, recDevice *pDevice)
         refCF = IOHIDDeviceGetProperty(hidDevice, CFSTR(kIOHIDProductKey));
         if ((!refCF) || (!CFStringGetCString(refCF, product_string, sizeof(product_string), kCFStringEncodingUTF8))) {
             SDL_strlcpy(product_string, "Unidentified joystick", sizeof(product_string));
+        }
+        for (i = SDL_strlen(manufacturer_string) - 1; i > 0; --i) {
+            if (SDL_isspace(manufacturer_string[i])) {
+                manufacturer_string[i] = '\0';
+            } else {
+                break;
+            }
         }
         if (SDL_strncasecmp(manufacturer_string, product_string, SDL_strlen(manufacturer_string)) == 0) {
             SDL_strlcpy(pDevice->product, product_string, sizeof(pDevice->product));
