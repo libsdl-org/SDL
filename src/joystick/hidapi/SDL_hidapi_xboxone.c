@@ -74,6 +74,13 @@ static const Uint8 xboxone_fw2015_init[] = {
 };
 
 /*
+ * This packet turns on the LED on some controllers, including PowerA
+ */
+static const Uint8 xboxone_led_enable[] = {
+    0x0A, 0x20, 0x04, 0x03, 0x00, 0x01, 0x14
+};
+
+/*
  * This packet is required for the Titanfall 2 Xbox One pads
  * (0x0e6f:0x0165) to finish initialization and for Hori pads
  * (0x0f0d:0x0067) to make the analog sticks work.
@@ -145,14 +152,11 @@ static const SDL_DriverXboxOne_InitPacket xboxone_init_packets[] = {
     { 0x045e, 0x0b00, xboxone_elite_init4, sizeof(xboxone_elite_init4) },
     { 0x045e, 0x0b00, xboxone_elite_init5, sizeof(xboxone_elite_init5) },
     { 0x0000, 0x0000, xboxone_fw2015_init, sizeof(xboxone_fw2015_init) },
+    { 0x0000, 0x0000, xboxone_led_enable, sizeof(xboxone_led_enable) },
     { 0x0e6f, 0x0000, xboxone_pdp_init1, sizeof(xboxone_pdp_init1) },
     { 0x0e6f, 0x0000, xboxone_pdp_init2, sizeof(xboxone_pdp_init2) },
-    { 0x24c6, 0x541a, xboxone_rumblebegin_init, sizeof(xboxone_rumblebegin_init) },
-    { 0x24c6, 0x542a, xboxone_rumblebegin_init, sizeof(xboxone_rumblebegin_init) },
-    { 0x24c6, 0x543a, xboxone_rumblebegin_init, sizeof(xboxone_rumblebegin_init) },
-    { 0x24c6, 0x541a, xboxone_rumbleend_init, sizeof(xboxone_rumbleend_init) },
-    { 0x24c6, 0x542a, xboxone_rumbleend_init, sizeof(xboxone_rumbleend_init) },
-    { 0x24c6, 0x543a, xboxone_rumbleend_init, sizeof(xboxone_rumbleend_init) },
+    { 0x24c6, 0x0000, xboxone_rumblebegin_init, sizeof(xboxone_rumblebegin_init) },
+    { 0x24c6, 0x0000, xboxone_rumbleend_init, sizeof(xboxone_rumbleend_init) },
 };
 
 typedef struct {
