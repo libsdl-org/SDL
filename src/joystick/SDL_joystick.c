@@ -1165,6 +1165,19 @@ void SDL_GetJoystickGUIDInfo(SDL_JoystickGUID guid, Uint16 *vendor, Uint16 *prod
 }
 
 const char *
+SDL_GetCustomJoystickManufacturer(const char *manufacturer)
+{
+    if (manufacturer) {
+        if (SDL_strcmp(manufacturer, "Performance Designed Products") == 0) {
+            return "PDP";
+        } else if (SDL_strcmp(manufacturer, "HORI CO.,LTD") == 0) {
+            return "HORI";
+        }
+    }
+    return manufacturer;
+}
+
+const char *
 SDL_GetCustomJoystickName(Uint16 vendor, Uint16 product)
 {
     return GuessControllerName(vendor, product);

@@ -610,6 +610,7 @@ HIDAPI_AddDevice(struct hid_device_info *info)
         }
     }
     if (!device->name && info->manufacturer_string && info->product_string) {
+        const char *manufacturer_remapped;
         char *manufacturer_string = SDL_iconv_string("UTF-8", "WCHAR_T", (char*)info->manufacturer_string, (SDL_wcslen(info->manufacturer_string)+1)*sizeof(wchar_t));
         char *product_string = SDL_iconv_string("UTF-8", "WCHAR_T", (char*)info->product_string, (SDL_wcslen(info->product_string)+1)*sizeof(wchar_t));
         if (!manufacturer_string && !product_string) {
@@ -621,15 +622,15 @@ HIDAPI_AddDevice(struct hid_device_info *info)
                 product_string = SDL_iconv_string("UTF-8", "UCS-4-INTERNAL", (char*)info->product_string, (SDL_wcslen(info->product_string)+1)*sizeof(wchar_t));
             }
         }
+
+        manufacturer_remapped = SDL_GetCustomJoystickManufacturer(manufacturer_string);
+        if (manufacturer_remapped != manufacturer_string) {
+            SDL_free(manufacturer_string);
+            manufacturer_string = SDL_strdup(manufacturer_remapped);
+        }
+
         if (manufacturer_string && product_string) {
-            size_t name_size;
-
-            if (SDL_strcmp(manufacturer_string, "Performance Designed Products") == 0) {
-                /* Shorten this so controller names are more manageable */
-                SDL_memcpy(manufacturer_string, "PDP", 4);
-            }
-
-            name_size = (SDL_strlen(manufacturer_string) + 1 + SDL_strlen(product_string) + 1);
+            size_t name_size = (SDL_strlen(manufacturer_string) + 1 + SDL_strlen(product_string) + 1);
             device->name = (char *)SDL_malloc(name_size);
             if (device->name) {
                 if (SDL_strncasecmp(manufacturer_string, product_string, SDL_strlen(manufacturer_string)) == 0) {
