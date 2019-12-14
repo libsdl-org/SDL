@@ -400,6 +400,7 @@ GetDeviceInfo(IOHIDDeviceRef hidDevice, recDevice *pDevice)
     Sint32 product = 0;
     Sint32 version = 0;
     const char *name;
+    const char *manufacturer_remapped;
     char manufacturer_string[256];
     char product_string[256];
     CFTypeRef refCF = NULL;
@@ -464,6 +465,12 @@ GetDeviceInfo(IOHIDDeviceRef hidDevice, recDevice *pDevice)
                 break;
             }
         }
+
+        manufacturer_remapped = SDL_GetCustomJoystickManufacturer(manufacturer_string);
+        if (manufacturer_remapped != manufacturer_string) {
+            SDL_strlcpy(manufacturer_string, manufacturer_remapped, sizeof(manufacturer_string));
+        }
+
         if (SDL_strncasecmp(manufacturer_string, product_string, SDL_strlen(manufacturer_string)) == 0) {
             SDL_strlcpy(pDevice->product, product_string, sizeof(pDevice->product));
         } else {

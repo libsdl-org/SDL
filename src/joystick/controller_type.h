@@ -381,6 +381,7 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x24c6, 0x543a ), k_eControllerType_XBoxOneController, NULL },	// PowerA Xbox One wired controller
 	{ MAKE_CONTROLLER_ID( 0x24c6, 0x551a ), k_eControllerType_XBoxOneController, NULL },	// PowerA FUSION Pro Controller
 	{ MAKE_CONTROLLER_ID( 0x24c6, 0x561a ), k_eControllerType_XBoxOneController, NULL },	// PowerA FUSION Controller
+	{ MAKE_CONTROLLER_ID( 0x24c6, 0x581a ), k_eControllerType_XBoxOneController, NULL },	// BDA XB1 Classic Controller
 	{ MAKE_CONTROLLER_ID( 0x24c6, 0x591a ), k_eControllerType_XBoxOneController, NULL },	// PowerA FUSION Pro Controller
 	{ MAKE_CONTROLLER_ID( 0x24c6, 0x791a ), k_eControllerType_XBoxOneController, NULL },	// PowerA Fusion Fight Pad
 	{ MAKE_CONTROLLER_ID( 0x2e24, 0x1688 ), k_eControllerType_XBoxOneController, NULL },	// Hyperkin X91
@@ -419,7 +420,6 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x0079, 0x1874 ), k_eControllerType_XBox360Controller, NULL },	// Unknown Controller
 
 	{ MAKE_CONTROLLER_ID( 0x2f24, 0x0050 ), k_eControllerType_XBoxOneController, NULL },	// Unknown Controller
-	{ MAKE_CONTROLLER_ID( 0x24c6, 0x581a ), k_eControllerType_XBoxOneController, NULL },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0x2f24, 0x2e ), k_eControllerType_XBoxOneController, NULL },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0x9886, 0x24 ), k_eControllerType_XBoxOneController, NULL },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0x2f24, 0x91 ), k_eControllerType_XBoxOneController, NULL },	// Unknown Controller
