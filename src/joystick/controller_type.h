@@ -285,6 +285,7 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x24c6, 0x5506 ), k_eControllerType_XBox360Controller, NULL },	// Hori SOULCALIBUR V Stick
 	{ MAKE_CONTROLLER_ID( 0x24c6, 0x550d ), k_eControllerType_XBox360Controller, NULL },	// Hori GEM Xbox controller
 	{ MAKE_CONTROLLER_ID( 0x24c6, 0x550e ), k_eControllerType_XBox360Controller, NULL },	// Hori Real Arcade Pro V Kai 360
+	{ MAKE_CONTROLLER_ID( 0x24c6, 0x5508 ), k_eControllerType_XBox360Controller, NULL },	// Hori PAD A
 	{ MAKE_CONTROLLER_ID( 0x24c6, 0x5510 ), k_eControllerType_XBox360Controller, NULL },	// Hori Fighting Commander ONE
 	{ MAKE_CONTROLLER_ID( 0x24c6, 0x5b00 ), k_eControllerType_XBox360Controller, NULL },	// ThrustMaster Ferrari Italia 458 Racing Wheel
 	{ MAKE_CONTROLLER_ID( 0x24c6, 0x5b02 ), k_eControllerType_XBox360Controller, NULL },	// Thrustmaster, Inc. GPX Controller
