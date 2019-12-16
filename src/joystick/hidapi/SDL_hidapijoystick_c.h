@@ -43,6 +43,9 @@
 #undef SDL_JOYSTICK_HIDAPI_XBOXONE
 #endif
 
+/* Prevent rumble duration overflow */
+#define SDL_MAX_RUMBLE_DURATION_MS  0x0fffffff
+
 typedef struct _SDL_HIDAPI_DeviceDriver
 {
     const char *hint;
