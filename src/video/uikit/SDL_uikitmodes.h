@@ -27,7 +27,7 @@
 
 @interface SDL_DisplayData : NSObject
 
-- (instancetype)init;
+- (instancetype)initWithScreen:(UIScreen*)screen;
 
 @property (nonatomic, strong) UIScreen *uiscreen;
 @property (nonatomic) float screenDPI;
