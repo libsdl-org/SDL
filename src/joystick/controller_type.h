@@ -218,8 +218,8 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0016 ), k_eControllerType_XBox360Controller, NULL },	// Hori Real Arcade Pro.EX
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x001b ), k_eControllerType_XBox360Controller, NULL },	// Hori Real Arcade Pro VX
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x008c ), k_eControllerType_XBox360Controller, NULL },	// Hori Real Arcade Pro 4
-	{ MAKE_CONTROLLER_ID( 0x1038, 0x1430 ), k_eControllerType_XBox360Controller, NULL },	// SteelSeries Stratus Duo
-	{ MAKE_CONTROLLER_ID( 0x1038, 0x1431 ), k_eControllerType_XBox360Controller, NULL },	// SteelSeries Stratus Duo
+	{ MAKE_CONTROLLER_ID( 0x1038, 0x1430 ), k_eControllerType_XBox360Controller, "SteelSeries Stratus Duo" },	// SteelSeries Stratus Duo
+	{ MAKE_CONTROLLER_ID( 0x1038, 0x1431 ), k_eControllerType_XBox360Controller, "SteelSeries Stratus Duo" },	// SteelSeries Stratus Duo
 	{ MAKE_CONTROLLER_ID( 0x1038, 0xb360 ), k_eControllerType_XBox360Controller, NULL },	// SteelSeries Nimbus/Stratus XL
 	{ MAKE_CONTROLLER_ID( 0x11c9, 0x55f0 ), k_eControllerType_XBox360Controller, NULL },	// Nacon GC-100XF
 	{ MAKE_CONTROLLER_ID( 0x12ab, 0x0004 ), k_eControllerType_XBox360Controller, NULL },	// Honey Bee Xbox360 dancepad

@@ -493,6 +493,7 @@ static int is_xbox360(unsigned short vendor_id, const struct libusb_interface_de
 		0x07ff, /* Mad Catz */
 		0x0e6f, /* PDP */
 		0x0f0d, /* Hori */
+		0x1038, /* SteelSeries */
 		0x11c9, /* Nacon */
 		0x12ab, /* Unknown */
 		0x1430, /* RedOctane */
