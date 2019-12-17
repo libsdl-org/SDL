@@ -275,8 +275,9 @@ public class HIDDeviceManager {
             0x06a3, // Saitek
             0x0738, // Mad Catz
             0x07ff, // Mad Catz
-            0x0e6f, // Unknown
+            0x0e6f, // PDP
             0x0f0d, // Hori
+            0x1038, // SteelSeries
             0x11c9, // Nacon
             0x12ab, // Unknown
             0x1430, // RedOctane
@@ -289,7 +290,8 @@ public class HIDDeviceManager {
             0x24c6, // PowerA
         };
 
-        if (usbInterface.getInterfaceClass() == UsbConstants.USB_CLASS_VENDOR_SPEC &&
+        if (usbInterface.getId() == 0 &&
+            usbInterface.getInterfaceClass() == UsbConstants.USB_CLASS_VENDOR_SPEC &&
             usbInterface.getInterfaceSubclass() == XB360_IFACE_SUBCLASS &&
             usbInterface.getInterfaceProtocol() == XB360_IFACE_PROTOCOL) {
             int vendor_id = usbDevice.getVendorId();
@@ -308,13 +310,15 @@ public class HIDDeviceManager {
         final int[] SUPPORTED_VENDORS = {
             0x045e, // Microsoft
             0x0738, // Mad Catz
-            0x0e6f, // Unknown
+            0x0e6f, // PDP
             0x0f0d, // Hori
             0x1532, // Razer Wildcat
             0x24c6, // PowerA
+            0x2e24, // Hyperkin
         };
 
-        if (usbInterface.getInterfaceClass() == UsbConstants.USB_CLASS_VENDOR_SPEC &&
+        if (usbInterface.getId() == 0 &&
+            usbInterface.getInterfaceClass() == UsbConstants.USB_CLASS_VENDOR_SPEC &&
             usbInterface.getInterfaceSubclass() == XB1_IFACE_SUBCLASS &&
             usbInterface.getInterfaceProtocol() == XB1_IFACE_PROTOCOL) {
             int vendor_id = usbDevice.getVendorId();
