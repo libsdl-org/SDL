@@ -1183,14 +1183,6 @@ SDL_GetCustomJoystickName(Uint16 vendor, Uint16 product)
     return GuessControllerName(vendor, product);
 }
 
-SDL_bool
-SDL_IsJoystickNintendoSwitchPro(Uint16 vendor, Uint16 product)
-{
-    EControllerType eType = GuessControllerType(vendor, product);
-    return (eType == k_eControllerType_SwitchProController ||
-            eType == k_eControllerType_SwitchInputOnlyController);
-}
-
 SDL_GameControllerType
 SDL_GetJoystickGameControllerTypeFromGUID(SDL_JoystickGUID guid, const char *name)
 {

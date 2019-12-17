@@ -255,6 +255,10 @@ HIDAPI_DriverXbox360_IsSupportedDevice(Uint16 vendor_id, Uint16 product_id, Uint
         /* This is the NVIDIA Shield controller which doesn't talk Xbox controller protocol */
         return SDL_FALSE;
     }
+    if (interface_number > 0) {
+        /* This is the chatpad or other input interface, not the Xbox 360 interface */
+        return SDL_FALSE;
+    }
 #if defined(__MACOSX__) || defined(__WIN32__)
     if (vendor_id == 0x045e && product_id == 0x028e && version == 1) {
         /* This is the Steam Virtual Gamepad, which isn't supported by this driver */
