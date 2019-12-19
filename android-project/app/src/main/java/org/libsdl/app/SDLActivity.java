@@ -633,6 +633,8 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
                     imm.hideSoftInputFromWindow(mTextEdit.getWindowToken(), 0);
 
                     mScreenKeyboardShown = false;
+
+                    mSurface.requestFocus();
                 }
                 break;
             case COMMAND_SET_KEEP_SCREEN_ON:
