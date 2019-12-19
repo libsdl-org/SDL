@@ -458,7 +458,7 @@ GetDeviceInfo(IOHIDDeviceRef hidDevice, recDevice *pDevice)
         if ((!refCF) || (!CFStringGetCString(refCF, product_string, sizeof(product_string), kCFStringEncodingUTF8))) {
             SDL_strlcpy(product_string, "Unidentified joystick", sizeof(product_string));
         }
-        for (i = SDL_strlen(manufacturer_string) - 1; i > 0; --i) {
+        for (i = (int)SDL_strlen(manufacturer_string) - 1; i > 0; --i) {
             if (SDL_isspace(manufacturer_string[i])) {
                 manufacturer_string[i] = '\0';
             } else {
