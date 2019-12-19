@@ -223,6 +223,23 @@ typedef struct {
 } SDL_DriverSwitch_Context;
 
 
+static SDL_bool IsGameCubeFormFactor(int vendor_id, int product_id)
+{
+    static Uint32 gamecube_formfactor[] = {
+        MAKE_VIDPID(0x0e6f, 0x0185),    /* PDP Wired Fight Pad Pro for Nintendo Switch */
+        MAKE_VIDPID(0x20d6, 0xa711),    /* Core (Plus) Wired Controller */
+    };
+    Uint32 id = MAKE_VIDPID(vendor_id, product_id);
+    int i;
+
+    for (i = 0; i < SDL_arraysize(gamecube_formfactor); ++i) {
+        if (id == gamecube_formfactor[i]) {
+            return SDL_TRUE;
+        }
+    }
+    return SDL_FALSE;
+}
+
 static SDL_bool
 HIDAPI_DriverSwitch_IsSupportedDevice(Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, const char *name)
 {
@@ -604,9 +621,15 @@ static Uint8 RemapButton(SDL_DriverSwitch_Context *ctx, Uint8 button)
     }
     return button;
 }
-        
+ 
 static SDL_bool
-HIDAPI_DriverSwitch_Init(SDL_Joystick *joystick, hid_device *dev, Uint16 vendor_id, Uint16 product_id, void **context)
+HIDAPI_DriverSwitch_InitDevice(SDL_HIDAPI_Device *device)
+{
+    return HIDAPI_JoystickConnected(device, NULL);
+}
+
+static SDL_bool
+HIDAPI_DriverSwitch_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     SDL_DriverSwitch_Context *ctx;
     Uint8 input_mode;
@@ -616,15 +639,19 @@ HIDAPI_DriverSwitch_Init(SDL_Joystick *joystick, hid_device *dev, Uint16 vendor_
         SDL_OutOfMemory();
         return SDL_FALSE;
     }
-    ctx->dev = dev;
 
-    *context = ctx;
+    device->dev = ctx->dev = hid_open_path(device->path, 0);
+    if (!device->dev) {
+        SDL_SetError("Couldn't open %s", device->path);
+        goto error;
+    }
+    device->context = ctx;
 
     /* Find out whether or not we can send output reports */
-    ctx->m_bInputOnly = SDL_IsJoystickNintendoSwitchProInputOnly(vendor_id, product_id);
+    ctx->m_bInputOnly = SDL_IsJoystickNintendoSwitchProInputOnly(device->vendor_id, device->product_id);
     if (!ctx->m_bInputOnly) {
         /* The Power A Nintendo Switch Pro controllers don't have a Home LED */
-        ctx->m_bHasHomeLED = (vendor_id != 0 && product_id != 0) ? SDL_TRUE : SDL_FALSE;
+        ctx->m_bHasHomeLED = (device->vendor_id != 0 && device->product_id != 0) ? SDL_TRUE : SDL_FALSE;
 
         /* Initialize rumble data */
         SetNeutralRumble(&ctx->m_RumblePacket.rumbleData[0]);
@@ -637,14 +664,12 @@ HIDAPI_DriverSwitch_Init(SDL_Joystick *joystick, hid_device *dev, Uint16 vendor_
 
         if (!LoadStickCalibration(ctx)) {
             SDL_SetError("Couldn't load stick calibration");
-            SDL_free(ctx);
-            return SDL_FALSE;
+            goto error;
         }
 
         if (!SetVibrationEnabled(ctx, 1)) {
             SDL_SetError("Couldn't enable vibration");
-            SDL_free(ctx);
-            return SDL_FALSE;
+            goto error;
         }
 
         /* Set the desired input mode */
@@ -655,8 +680,7 @@ HIDAPI_DriverSwitch_Init(SDL_Joystick *joystick, hid_device *dev, Uint16 vendor_
         }
         if (!SetInputMode(ctx, input_mode)) {
             SDL_SetError("Couldn't set input mode");
-            SDL_free(ctx);
-            return SDL_FALSE;
+            goto error;
         }
 
         /* Start sending USB reports */
@@ -664,8 +688,7 @@ HIDAPI_DriverSwitch_Init(SDL_Joystick *joystick, hid_device *dev, Uint16 vendor_
             /* ForceUSB doesn't generate an ACK, so don't wait for a reply */
             if (!WriteProprietary(ctx, k_eSwitchProprietaryCommandIDs_ForceUSB, NULL, 0, SDL_FALSE)) {
                 SDL_SetError("Couldn't start USB reports");
-                SDL_free(ctx);
-                return SDL_FALSE;
+                goto error;
             }
         }
 
@@ -676,7 +699,7 @@ HIDAPI_DriverSwitch_Init(SDL_Joystick *joystick, hid_device *dev, Uint16 vendor_
         SetSlotLED(ctx, (joystick->instance_id % 4));
     }
 
-    if (vendor_id == 0x0e6f && product_id == 0x0185) {
+    if (IsGameCubeFormFactor(device->vendor_id, device->product_id)) {
         /* This is a controller shaped like a GameCube controller, with a large central A button */
         ctx->m_bUseButtonLabels = SDL_TRUE;
     } else {
@@ -690,12 +713,23 @@ HIDAPI_DriverSwitch_Init(SDL_Joystick *joystick, hid_device *dev, Uint16 vendor_
     joystick->epowerlevel = SDL_JOYSTICK_POWER_WIRED;
 
     return SDL_TRUE;
+
+error:
+    if (device->dev) {
+        hid_close(device->dev);
+        device->dev = NULL;
+    }
+    if (device->context) {
+        SDL_free(device->context);
+        device->context = NULL;
+    }
+    return SDL_FALSE;
 }
 
 static int
-HIDAPI_DriverSwitch_Rumble(SDL_Joystick *joystick, hid_device *dev, void *context, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms)
+HIDAPI_DriverSwitch_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms)
 {
-    SDL_DriverSwitch_Context *ctx = (SDL_DriverSwitch_Context *)context;
+    SDL_DriverSwitch_Context *ctx = (SDL_DriverSwitch_Context *)device->context;
 
     /* Experimentally determined rumble values. These will only matter on some controllers as tested ones
      * seem to disregard these and just use any non-zero rumble values as a binary flag for constant rumble
@@ -996,10 +1030,18 @@ static void HandleFullControllerState(SDL_Joystick *joystick, SDL_DriverSwitch_C
 }
 
 static SDL_bool
-HIDAPI_DriverSwitch_Update(SDL_Joystick *joystick, hid_device *dev, void *context)
+HIDAPI_DriverSwitch_UpdateDevice(SDL_HIDAPI_Device *device)
 {
-    SDL_DriverSwitch_Context *ctx = (SDL_DriverSwitch_Context *)context;
+    SDL_DriverSwitch_Context *ctx = (SDL_DriverSwitch_Context *)device->context;
+    SDL_Joystick *joystick = NULL;
     int size;
+
+    if (device->num_joysticks > 0) {
+        joystick = SDL_JoystickFromInstanceID(device->joysticks[0]);
+    }
+    if (!joystick) {
+        return SDL_FALSE;
+    }
 
     while ((size = ReadInput(ctx)) > 0) {
         if (ctx->m_bInputOnly) {
@@ -1021,17 +1063,21 @@ HIDAPI_DriverSwitch_Update(SDL_Joystick *joystick, hid_device *dev, void *contex
     if (ctx->m_nRumbleExpiration) {
         Uint32 now = SDL_GetTicks();
         if (SDL_TICKS_PASSED(now, ctx->m_nRumbleExpiration)) {
-            HIDAPI_DriverSwitch_Rumble(joystick, dev, context, 0, 0, 0);
+            HIDAPI_DriverSwitch_RumbleJoystick(device, joystick, 0, 0, 0);
         }
     }
 
+    if (size < 0) {
+        /* Read error, device is disconnected */
+        HIDAPI_JoystickDisconnected(device, joystick->instance_id);
+    }
     return (size >= 0);
 }
 
 static void
-HIDAPI_DriverSwitch_Quit(SDL_Joystick *joystick, hid_device *dev, void *context)
+HIDAPI_DriverSwitch_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
-    SDL_DriverSwitch_Context *ctx = (SDL_DriverSwitch_Context *)context;
+    SDL_DriverSwitch_Context *ctx = (SDL_DriverSwitch_Context *)device->context;
 
     if (!ctx->m_bInputOnly) {
         /* Restore simple input mode for other applications */
@@ -1041,7 +1087,16 @@ HIDAPI_DriverSwitch_Quit(SDL_Joystick *joystick, hid_device *dev, void *context)
     SDL_DelHintCallback(SDL_HINT_GAMECONTROLLER_USE_BUTTON_LABELS,
                         SDL_GameControllerButtonReportingHintChanged, ctx);
 
-    SDL_free(context);
+    hid_close(device->dev);
+    device->dev = NULL;
+
+    SDL_free(device->context);
+    device->context = NULL;
+}
+
+static void
+HIDAPI_DriverSwitch_FreeDevice(SDL_HIDAPI_Device *device)
+{
 }
 
 SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSwitch =
@@ -1050,10 +1105,12 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSwitch =
     SDL_TRUE,
     HIDAPI_DriverSwitch_IsSupportedDevice,
     HIDAPI_DriverSwitch_GetDeviceName,
-    HIDAPI_DriverSwitch_Init,
-    HIDAPI_DriverSwitch_Rumble,
-    HIDAPI_DriverSwitch_Update,
-    HIDAPI_DriverSwitch_Quit
+    HIDAPI_DriverSwitch_InitDevice,
+    HIDAPI_DriverSwitch_UpdateDevice,
+    HIDAPI_DriverSwitch_OpenJoystick,
+    HIDAPI_DriverSwitch_RumbleJoystick,
+    HIDAPI_DriverSwitch_CloseJoystick,
+    HIDAPI_DriverSwitch_FreeDevice
 };
 
 #endif /* SDL_JOYSTICK_HIDAPI_SWITCH */
