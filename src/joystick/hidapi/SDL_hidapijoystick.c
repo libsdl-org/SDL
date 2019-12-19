@@ -74,6 +74,9 @@ static SDL_HIDAPI_DeviceDriver *SDL_HIDAPI_drivers[] = {
 #ifdef SDL_JOYSTICK_HIDAPI_XBOXONE
     &SDL_HIDAPI_DriverXboxOne,
 #endif
+#ifdef SDL_JOYSTICK_HIDAPI_GAMECUBE
+    &SDL_HIDAPI_DriverGameCube,
+#endif
 };
 static int SDL_HIDAPI_numdrivers = 0;
 static SDL_mutex *SDL_HIDAPI_mutex;
@@ -569,6 +572,7 @@ HIDAPI_JoystickInit(void)
                         SDL_HIDAPIDriverHintChanged, NULL);
     HIDAPI_InitializeDiscovery();
     HIDAPI_JoystickDetect();
+    HIDAPI_UpdateDevices();
 
     initialized = SDL_TRUE;
 
@@ -842,14 +846,18 @@ HIDAPI_IsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, cons
 static void
 HIDAPI_JoystickDetect(void)
 {
-    SDL_HIDAPI_Device *device;
-
     HIDAPI_UpdateDiscovery();
     if (SDL_HIDAPI_discovery.m_bHaveDevicesChanged) {
         /* FIXME: We probably need to schedule an update in a few seconds as well */
         HIDAPI_UpdateDeviceList();
         SDL_HIDAPI_discovery.m_bHaveDevicesChanged = SDL_FALSE;
     }
+}
+
+void
+HIDAPI_UpdateDevices(void)
+{
+    SDL_HIDAPI_Device *device;
 
     /* Update the devices, which may change connected joysticks and send events */
     SDL_LockMutex(SDL_HIDAPI_mutex);
@@ -961,7 +969,7 @@ HIDAPI_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint
 static void
 HIDAPI_JoystickUpdate(SDL_Joystick * joystick)
 {
-    /* This is handled in HIDAPI_JoystickDetect() */
+    /* This is handled in SDL_HIDAPI_UpdateDevices() */
 }
 
 static void

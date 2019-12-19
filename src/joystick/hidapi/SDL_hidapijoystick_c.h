@@ -30,6 +30,7 @@
 #define SDL_JOYSTICK_HIDAPI_SWITCH
 #define SDL_JOYSTICK_HIDAPI_XBOX360
 #define SDL_JOYSTICK_HIDAPI_XBOXONE
+#define SDL_JOYSTICK_HIDAPI_GAMECUBE
 
 #ifdef __WINDOWS__
 /* On Windows, Xbox One controllers are handled by the Xbox 360 driver */
@@ -95,10 +96,12 @@ extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSwitch;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXbox360;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXbox360W;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXboxOne;
+extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverGameCube;
 
 /* Return true if a HID device is present and supported as a joystick */
 extern SDL_bool HIDAPI_IsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name);
 
+extern void HIDAPI_UpdateDevices(void);
 extern SDL_bool HIDAPI_JoystickConnected(SDL_HIDAPI_Device *device, SDL_JoystickID *pJoystickID);
 extern void HIDAPI_JoystickDisconnected(SDL_HIDAPI_Device *device, SDL_JoystickID joystickID);
 

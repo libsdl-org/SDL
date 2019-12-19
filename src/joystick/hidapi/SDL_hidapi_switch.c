@@ -637,15 +637,15 @@ HIDAPI_DriverSwitch_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joysti
     ctx = (SDL_DriverSwitch_Context *)SDL_calloc(1, sizeof(*ctx));
     if (!ctx) {
         SDL_OutOfMemory();
-        return SDL_FALSE;
+        goto error;
     }
+    device->context = ctx;
 
     device->dev = ctx->dev = hid_open_path(device->path, 0);
     if (!device->dev) {
         SDL_SetError("Couldn't open %s", device->path);
         goto error;
     }
-    device->context = ctx;
 
     /* Find out whether or not we can send output reports */
     ctx->m_bInputOnly = SDL_IsJoystickNintendoSwitchProInputOnly(device->vendor_id, device->product_id);

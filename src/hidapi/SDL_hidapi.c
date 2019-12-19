@@ -66,6 +66,7 @@
 #if __LINUX__
 
 #include "../../core/linux/SDL_udev.h"
+#undef SDL_USE_LIBUDEV
 #if SDL_USE_LIBUDEV
 static const SDL_UDEV_Symbols *udev_ctx = NULL;
 
