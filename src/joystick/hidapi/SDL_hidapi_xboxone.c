@@ -255,7 +255,13 @@ HIDAPI_DriverXboxOne_GetDeviceName(Uint16 vendor_id, Uint16 product_id)
 }
 
 static SDL_bool
-HIDAPI_DriverXboxOne_Init(SDL_Joystick *joystick, hid_device *dev, Uint16 vendor_id, Uint16 product_id, void **context)
+HIDAPI_DriverXboxOne_InitDevice(SDL_HIDAPI_Device *device)
+{
+    return HIDAPI_JoystickConnected(device, NULL);
+}
+
+static SDL_bool
+HIDAPI_DriverXboxOne_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     SDL_DriverXboxOne_Context *ctx;
 
@@ -264,10 +270,17 @@ HIDAPI_DriverXboxOne_Init(SDL_Joystick *joystick, hid_device *dev, Uint16 vendor
         SDL_OutOfMemory();
         return SDL_FALSE;
     }
-    *context = ctx;
 
-    ctx->vendor_id = vendor_id;
-    ctx->product_id = product_id;
+    device->dev = hid_open_path(device->path, 0);
+    if (!device->dev) {
+        SDL_free(ctx);
+        SDL_SetError("Couldn't open %s", device->path);
+        return SDL_FALSE;
+    }
+    device->context = ctx;
+
+    ctx->vendor_id = device->vendor_id;
+    ctx->product_id = device->product_id;
     ctx->start_time = SDL_GetTicks();
 
     /* Initialize the joystick capabilities */
@@ -279,9 +292,9 @@ HIDAPI_DriverXboxOne_Init(SDL_Joystick *joystick, hid_device *dev, Uint16 vendor
 }
 
 static int
-HIDAPI_DriverXboxOne_Rumble(SDL_Joystick *joystick, hid_device *dev, void *context, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms)
+HIDAPI_DriverXboxOne_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms)
 {
-    SDL_DriverXboxOne_Context *ctx = (SDL_DriverXboxOne_Context *)context;
+    SDL_DriverXboxOne_Context *ctx = (SDL_DriverXboxOne_Context *)device->context;
     Uint8 rumble_packet[] = { 0x09, 0x00, 0x00, 0x09, 0x00, 0x0F, 0x00, 0x00, 0x00, 0x00, 0xFF, 0x00, 0xFF };
 
     if (!ctx->initialized) {
@@ -293,7 +306,7 @@ HIDAPI_DriverXboxOne_Rumble(SDL_Joystick *joystick, hid_device *dev, void *conte
     rumble_packet[8] = low_frequency_rumble / 655;
     rumble_packet[9] = high_frequency_rumble / 655;
 
-    if (hid_write(dev, rumble_packet, sizeof(rumble_packet)) != sizeof(rumble_packet)) {
+    if (hid_write(device->dev, rumble_packet, sizeof(rumble_packet)) != sizeof(rumble_packet)) {
         return SDL_SetError("Couldn't send rumble packet");
     }
 
@@ -366,22 +379,31 @@ HIDAPI_DriverXboxOne_HandleModePacket(SDL_Joystick *joystick, hid_device *dev, S
 }
 
 static SDL_bool
-HIDAPI_DriverXboxOne_Update(SDL_Joystick *joystick, hid_device *dev, void *context)
+HIDAPI_DriverXboxOne_UpdateDevice(SDL_HIDAPI_Device *device)
 {
-    SDL_DriverXboxOne_Context *ctx = (SDL_DriverXboxOne_Context *)context;
+    SDL_DriverXboxOne_Context *ctx = (SDL_DriverXboxOne_Context *)device->context;
+    SDL_Joystick *joystick = NULL;
     Uint8 data[USB_PACKET_LENGTH];
     int size;
 
+    if (device->num_joysticks > 0) {
+        joystick = SDL_JoystickFromInstanceID(device->joysticks[0]);
+    }
+    if (!joystick) {
+        return SDL_FALSE;
+    }
+
     if (!ctx->initialized) {
         if (SDL_TICKS_PASSED(SDL_GetTicks(), ctx->start_time + CONTROLLER_INIT_DELAY_MS)) {
-            if (!SendControllerInit(dev, ctx)) {
+            if (!SendControllerInit(device->dev, ctx)) {
+                HIDAPI_JoystickDisconnected(device, joystick->instance_id);
                 return SDL_FALSE;
             }
             ctx->initialized = SDL_TRUE;
         }
     }
 
-    while ((size = hid_read_timeout(dev, data, sizeof(data), 0)) > 0) {
+    while ((size = hid_read_timeout(device->dev, data, sizeof(data), 0)) > 0) {
 #ifdef DEBUG_XBOX_PROTOCOL
         SDL_Log("Xbox One packet: size = %d\n"
                 "                 0x%.2x 0x%.2x 0x%.2x 0x%.2x 0x%.2x 0x%.2x 0x%.2x 0x%.2x\n"
@@ -394,10 +416,10 @@ HIDAPI_DriverXboxOne_Update(SDL_Joystick *joystick, hid_device *dev, void *conte
 #endif
         switch (data[0]) {
         case 0x20:
-            HIDAPI_DriverXboxOne_HandleStatePacket(joystick, dev, ctx, data, size);
+            HIDAPI_DriverXboxOne_HandleStatePacket(joystick, device->dev, ctx, data, size);
             break;
         case 0x07:
-            HIDAPI_DriverXboxOne_HandleModePacket(joystick, dev, ctx, data, size);
+            HIDAPI_DriverXboxOne_HandleModePacket(joystick, device->dev, ctx, data, size);
             break;
         default:
 #ifdef DEBUG_JOYSTICK
@@ -410,17 +432,30 @@ HIDAPI_DriverXboxOne_Update(SDL_Joystick *joystick, hid_device *dev, void *conte
     if (ctx->rumble_expiration) {
         Uint32 now = SDL_GetTicks();
         if (SDL_TICKS_PASSED(now, ctx->rumble_expiration)) {
-            HIDAPI_DriverXboxOne_Rumble(joystick, dev, context, 0, 0, 0);
+            HIDAPI_DriverXboxOne_RumbleJoystick(device, joystick, 0, 0, 0);
         }
     }
 
+    if (size < 0) {
+        /* Read error, device is disconnected */
+        HIDAPI_JoystickDisconnected(device, joystick->instance_id);
+    }
     return (size >= 0);
 }
 
 static void
-HIDAPI_DriverXboxOne_Quit(SDL_Joystick *joystick, hid_device *dev, void *context)
+HIDAPI_DriverXboxOne_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
-    SDL_free(context);
+    hid_close(device->dev);
+    device->dev = NULL;
+
+    SDL_free(device->context);
+    device->context = NULL;
+}
+
+static void
+HIDAPI_DriverXboxOne_FreeDevice(SDL_HIDAPI_Device *device)
+{
 }
 
 SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXboxOne =
@@ -429,10 +464,12 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXboxOne =
     SDL_TRUE,
     HIDAPI_DriverXboxOne_IsSupportedDevice,
     HIDAPI_DriverXboxOne_GetDeviceName,
-    HIDAPI_DriverXboxOne_Init,
-    HIDAPI_DriverXboxOne_Rumble,
-    HIDAPI_DriverXboxOne_Update,
-    HIDAPI_DriverXboxOne_Quit
+    HIDAPI_DriverXboxOne_InitDevice,
+    HIDAPI_DriverXboxOne_UpdateDevice,
+    HIDAPI_DriverXboxOne_OpenJoystick,
+    HIDAPI_DriverXboxOne_RumbleJoystick,
+    HIDAPI_DriverXboxOne_CloseJoystick,
+    HIDAPI_DriverXboxOne_FreeDevice
 };
 
 #endif /* SDL_JOYSTICK_HIDAPI_XBOXONE */

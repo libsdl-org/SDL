@@ -291,7 +291,13 @@ static SDL_bool SetSlotLED(hid_device *dev, Uint8 slot)
 }
 
 static SDL_bool
-HIDAPI_DriverXbox360_Init(SDL_Joystick *joystick, hid_device *dev, Uint16 vendor_id, Uint16 product_id, void **context)
+HIDAPI_DriverXbox360_InitDevice(SDL_HIDAPI_Device *device)
+{
+    return HIDAPI_JoystickConnected(device, NULL);
+}
+
+static SDL_bool
+HIDAPI_DriverXbox360_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     SDL_DriverXbox360_Context *ctx;
 
@@ -300,6 +306,15 @@ HIDAPI_DriverXbox360_Init(SDL_Joystick *joystick, hid_device *dev, Uint16 vendor
         SDL_OutOfMemory();
         return SDL_FALSE;
     }
+
+    device->dev = hid_open_path(device->path, 0);
+    if (!device->dev) {
+        SDL_free(ctx);
+        SDL_SetError("Couldn't open %s", device->path);
+        return SDL_FALSE;
+    }
+    device->context = ctx;
+
 #ifdef SDL_JOYSTICK_HIDAPI_WINDOWS_XINPUT
     ctx->xinput_enabled = SDL_GetHintBoolean(SDL_HINT_XINPUT_ENABLED, SDL_TRUE);
     if (ctx->xinput_enabled && WIN_LoadXInputDLL() < 0) {
@@ -310,10 +325,9 @@ HIDAPI_DriverXbox360_Init(SDL_Joystick *joystick, hid_device *dev, Uint16 vendor
 #ifdef SDL_JOYSTICK_HIDAPI_WINDOWS_GAMING_INPUT
     HIDAPI_DriverXbox360_InitWindowsGamingInput(ctx);
 #endif
-    *context = ctx;
 
     /* Set the controller LED */
-    SetSlotLED(dev, (joystick->instance_id % 4));
+    SetSlotLED(device->dev, (joystick->instance_id % 4));
 
     /* Initialize the joystick capabilities */
     joystick->nbuttons = SDL_CONTROLLER_BUTTON_MAX;
@@ -324,9 +338,9 @@ HIDAPI_DriverXbox360_Init(SDL_Joystick *joystick, hid_device *dev, Uint16 vendor
 }
 
 static int
-HIDAPI_DriverXbox360_Rumble(SDL_Joystick *joystick, hid_device *dev, void *context, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms)
+HIDAPI_DriverXbox360_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms)
 {
-    SDL_DriverXbox360_Context *ctx = (SDL_DriverXbox360_Context *)context;
+    SDL_DriverXbox360_Context *ctx = (SDL_DriverXbox360_Context *)device->context;
 
 #ifdef __WIN32__
     SDL_bool rumbled = SDL_FALSE;
@@ -379,7 +393,7 @@ HIDAPI_DriverXbox360_Rumble(SDL_Joystick *joystick, hid_device *dev, void *conte
     rumble_packet[4] = (high_frequency_rumble >> 8);
 #endif
 
-    if (hid_write(dev, rumble_packet, sizeof(rumble_packet)) != sizeof(rumble_packet)) {
+    if (hid_write(device->dev, rumble_packet, sizeof(rumble_packet)) != sizeof(rumble_packet)) {
         return SDL_SetError("Couldn't send rumble packet");
     }
 #endif /* __WIN32__ */
@@ -719,26 +733,34 @@ HIDAPI_DriverXboxOneS_HandleGuidePacket(SDL_Joystick *joystick, hid_device *dev,
 #endif /* __MACOSX__ */
 
 static SDL_bool
-HIDAPI_DriverXbox360_Update(SDL_Joystick *joystick, hid_device *dev, void *context)
+HIDAPI_DriverXbox360_UpdateDevice(SDL_HIDAPI_Device *device)
 {
-    SDL_DriverXbox360_Context *ctx = (SDL_DriverXbox360_Context *)context;
+    SDL_DriverXbox360_Context *ctx = (SDL_DriverXbox360_Context *)device->context;
+    SDL_Joystick *joystick = NULL;
     Uint8 data[USB_PACKET_LENGTH];
     int size;
 
-    while ((size = hid_read_timeout(dev, data, sizeof(data), 0)) > 0) {
+    if (device->num_joysticks > 0) {
+        joystick = SDL_JoystickFromInstanceID(device->joysticks[0]);
+    }
+    if (!joystick) {
+        return SDL_FALSE;
+    }
+
+    while ((size = hid_read_timeout(device->dev, data, sizeof(data), 0)) > 0) {
 #ifdef __WIN32__
-        HIDAPI_DriverXbox360_HandleStatePacket(joystick, dev, ctx, data, size);
+        HIDAPI_DriverXbox360_HandleStatePacket(joystick, device->dev, ctx, data, size);
 #else
         switch (data[0]) {
         case 0x00:
-            HIDAPI_DriverXbox360_HandleStatePacket(joystick, dev, ctx, data, size);
+            HIDAPI_DriverXbox360_HandleStatePacket(joystick, device->dev, ctx, data, size);
             break;
 #ifdef __MACOSX__
         case 0x01:
-            HIDAPI_DriverXboxOneS_HandleStatePacket(joystick, dev, ctx, data, size);
+            HIDAPI_DriverXboxOneS_HandleStatePacket(joystick, device->dev, ctx, data, size);
             break;
         case 0x02:
-            HIDAPI_DriverXboxOneS_HandleGuidePacket(joystick, dev, ctx, data, size);
+            HIDAPI_DriverXboxOneS_HandleGuidePacket(joystick, device->dev, ctx, data, size);
             break;
 #endif
         default:
@@ -756,18 +778,22 @@ HIDAPI_DriverXbox360_Update(SDL_Joystick *joystick, hid_device *dev, void *conte
     if (ctx->rumble_expiration) {
         Uint32 now = SDL_GetTicks();
         if (SDL_TICKS_PASSED(now, ctx->rumble_expiration)) {
-            HIDAPI_DriverXbox360_Rumble(joystick, dev, context, 0, 0, 0);
+            HIDAPI_DriverXbox360_RumbleJoystick(device, joystick, 0, 0, 0);
         }
     }
 
+    if (size < 0) {
+        /* Read error, device is disconnected */
+        HIDAPI_JoystickDisconnected(device, joystick->instance_id);
+    }
     return (size >= 0);
 }
 
 static void
-HIDAPI_DriverXbox360_Quit(SDL_Joystick *joystick, hid_device *dev, void *context)
+HIDAPI_DriverXbox360_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
 #if defined(SDL_JOYSTICK_HIDAPI_WINDOWS_XINPUT) || defined(SDL_JOYSTICK_HIDAPI_WINDOWS_GAMING_INPUT)
-    SDL_DriverXbox360_Context *ctx = (SDL_DriverXbox360_Context *)context;
+    SDL_DriverXbox360_Context *ctx = (SDL_DriverXbox360_Context *)device->context;
 #endif
 
 #ifdef SDL_JOYSTICK_HIDAPI_WINDOWS_XINPUT
@@ -777,9 +803,19 @@ HIDAPI_DriverXbox360_Quit(SDL_Joystick *joystick, hid_device *dev, void *context
     }
 #endif
 #ifdef SDL_JOYSTICK_HIDAPI_WINDOWS_GAMING_INPUT
-    HIDAPI_DriverXbox360_InitWindowsGamingInput(ctx);
+    HIDAPI_DriverXbox360_QuitWindowsGamingInput(ctx);
 #endif
-    SDL_free(context);
+
+    hid_close(device->dev);
+    device->dev = NULL;
+
+    SDL_free(device->context);
+    device->context = NULL;
+}
+
+static void
+HIDAPI_DriverXbox360_FreeDevice(SDL_HIDAPI_Device *device)
+{
 }
 
 SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXbox360 =
@@ -788,10 +824,12 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXbox360 =
     SDL_TRUE,
     HIDAPI_DriverXbox360_IsSupportedDevice,
     HIDAPI_DriverXbox360_GetDeviceName,
-    HIDAPI_DriverXbox360_Init,
-    HIDAPI_DriverXbox360_Rumble,
-    HIDAPI_DriverXbox360_Update,
-    HIDAPI_DriverXbox360_Quit
+    HIDAPI_DriverXbox360_InitDevice,
+    HIDAPI_DriverXbox360_UpdateDevice,
+    HIDAPI_DriverXbox360_OpenJoystick,
+    HIDAPI_DriverXbox360_RumbleJoystick,
+    HIDAPI_DriverXbox360_CloseJoystick,
+    HIDAPI_DriverXbox360_FreeDevice
 };
 
 #endif /* SDL_JOYSTICK_HIDAPI_XBOX360 */
