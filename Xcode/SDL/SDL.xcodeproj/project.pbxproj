@@ -484,6 +484,12 @@
 		A7381E971D8B6A0300B177DD /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A7381E931D8B69C300B177DD /* AudioToolbox.framework */; };
 		A77E6EB4167AB0A90010E40B /* SDL_gamecontroller.h in Headers */ = {isa = PBXBuildFile; fileRef = A77E6EB3167AB0A90010E40B /* SDL_gamecontroller.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		A77E6EB5167AB0A90010E40B /* SDL_gamecontroller.h in Headers */ = {isa = PBXBuildFile; fileRef = A77E6EB3167AB0A90010E40B /* SDL_gamecontroller.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		A7FF6B6D23AC3C18005876C6 /* SDL_hidapi_gamecube.c in Sources */ = {isa = PBXBuildFile; fileRef = A7FF6B6B23AC3C17005876C6 /* SDL_hidapi_gamecube.c */; };
+		A7FF6B6E23AC3C18005876C6 /* SDL_hidapi_gamecube.c in Sources */ = {isa = PBXBuildFile; fileRef = A7FF6B6B23AC3C17005876C6 /* SDL_hidapi_gamecube.c */; };
+		A7FF6B6F23AC3C18005876C6 /* SDL_hidapi_gamecube.c in Sources */ = {isa = PBXBuildFile; fileRef = A7FF6B6B23AC3C17005876C6 /* SDL_hidapi_gamecube.c */; };
+		A7FF6B7023AC3C18005876C6 /* SDL_hidapi_xbox360w.c in Sources */ = {isa = PBXBuildFile; fileRef = A7FF6B6C23AC3C18005876C6 /* SDL_hidapi_xbox360w.c */; };
+		A7FF6B7123AC3C18005876C6 /* SDL_hidapi_xbox360w.c in Sources */ = {isa = PBXBuildFile; fileRef = A7FF6B6C23AC3C18005876C6 /* SDL_hidapi_xbox360w.c */; };
+		A7FF6B7223AC3C18005876C6 /* SDL_hidapi_xbox360w.c in Sources */ = {isa = PBXBuildFile; fileRef = A7FF6B6C23AC3C18005876C6 /* SDL_hidapi_xbox360w.c */; };
 		AA0AD09D16648D1700CE5896 /* SDL_gamecontroller.c in Sources */ = {isa = PBXBuildFile; fileRef = BBFC088A164C6514003E6A99 /* SDL_gamecontroller.c */; };
 		AA0F8491178D5ECC00823F9D /* SDL_systls.c in Sources */ = {isa = PBXBuildFile; fileRef = AA0F8490178D5ECC00823F9D /* SDL_systls.c */; };
 		AA0F8492178D5ECC00823F9D /* SDL_systls.c in Sources */ = {isa = PBXBuildFile; fileRef = AA0F8490178D5ECC00823F9D /* SDL_systls.c */; };
@@ -1166,6 +1172,8 @@
 		A7381E931D8B69C300B177DD /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		A7381E951D8B69D600B177DD /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudio.framework; path = System/Library/Frameworks/CoreAudio.framework; sourceTree = SDKROOT; };
 		A77E6EB3167AB0A90010E40B /* SDL_gamecontroller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_gamecontroller.h; sourceTree = "<group>"; };
+		A7FF6B6B23AC3C17005876C6 /* SDL_hidapi_gamecube.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_gamecube.c; sourceTree = "<group>"; };
+		A7FF6B6C23AC3C18005876C6 /* SDL_hidapi_xbox360w.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_xbox360w.c; sourceTree = "<group>"; };
 		AA0F8490178D5ECC00823F9D /* SDL_systls.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_systls.c; sourceTree = "<group>"; };
 		AA628AC8159367B7005138DD /* SDL_rotate.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_rotate.c; sourceTree = "<group>"; };
 		AA628AC9159367B7005138DD /* SDL_rotate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_rotate.h; sourceTree = "<group>"; };
@@ -1937,9 +1945,11 @@
 		A704170C20F09AA600A82227 /* hidapi */ = {
 			isa = PBXGroup;
 			children = (
+				A7FF6B6B23AC3C17005876C6 /* SDL_hidapi_gamecube.c */,
 				A704171120F09AC900A82227 /* SDL_hidapi_ps4.c */,
 				A704170F20F09AC800A82227 /* SDL_hidapi_switch.c */,
 				A704171320F09AC900A82227 /* SDL_hidapi_xbox360.c */,
+				A7FF6B6C23AC3C18005876C6 /* SDL_hidapi_xbox360w.c */,
 				A704171220F09AC900A82227 /* SDL_hidapi_xboxone.c */,
 				A704170E20F09AC800A82227 /* SDL_hidapijoystick_c.h */,
 				A704170D20F09AC800A82227 /* SDL_hidapijoystick.c */,
@@ -2692,6 +2702,7 @@
 				56115BBB1DF72C6D00F47E1E /* SDL_dataqueue.c in Sources */,
 				04BD000812E6671800899322 /* SDL_diskaudio.c in Sources */,
 				04BD001012E6671800899322 /* SDL_dummyaudio.c in Sources */,
+				A7FF6B6D23AC3C18005876C6 /* SDL_hidapi_gamecube.c in Sources */,
 				04BD002612E6671800899322 /* SDL_audio.c in Sources */,
 				04BD002812E6671800899322 /* SDL_audiocvt.c in Sources */,
 				04BD002912E6671800899322 /* SDL_audiodev.c in Sources */,
@@ -2704,6 +2715,7 @@
 				A704172620F09AC900A82227 /* SDL_hidapi_xbox360.c in Sources */,
 				04BD004C12E6671800899322 /* SDL_gesture.c in Sources */,
 				04BD004E12E6671800899322 /* SDL_keyboard.c in Sources */,
+				A7FF6B7023AC3C18005876C6 /* SDL_hidapi_xbox360w.c in Sources */,
 				04BD005012E6671800899322 /* SDL_mouse.c in Sources */,
 				04BD005212E6671800899322 /* SDL_quit.c in Sources */,
 				04BD005412E6671800899322 /* SDL_touch.c in Sources */,
@@ -2831,6 +2843,7 @@
 				4D1664561EDD61DA003DE88E /* SDL_vulkan_utils.c in Sources */,
 				04BD021712E6671800899322 /* SDL_atomic.c in Sources */,
 				04BD021812E6671800899322 /* SDL_spinlock.c in Sources */,
+				A7FF6B6E23AC3C18005876C6 /* SDL_hidapi_gamecube.c in Sources */,
 				56F9D55C1DF73B6B00C15B5D /* SDL_dataqueue.c in Sources */,
 				04BD022412E6671800899322 /* SDL_diskaudio.c in Sources */,
 				04BD022C12E6671800899322 /* SDL_dummyaudio.c in Sources */,
@@ -2843,6 +2856,7 @@
 				A704172720F09AC900A82227 /* SDL_hidapi_xbox360.c in Sources */,
 				04BD025C12E6671800899322 /* SDL_cpuinfo.c in Sources */,
 				04BD026312E6671800899322 /* SDL_clipboardevents.c in Sources */,
+				A7FF6B7123AC3C18005876C6 /* SDL_hidapi_xbox360w.c in Sources */,
 				04BD026512E6671800899322 /* SDL_events.c in Sources */,
 				5C2EF6FB1FC9EE64003F5197 /* SDL_egl.c in Sources */,
 				AA41F88014B8F1F500993C4F /* SDL_dropevents.c in Sources */,
@@ -2970,6 +2984,7 @@
 				4D1664591EDD621B003DE88E /* SDL_vulkan_utils.c in Sources */,
 				DB313FFE17554B71006C0E22 /* SDL_atomic.c in Sources */,
 				DB313FFF17554B71006C0E22 /* SDL_spinlock.c in Sources */,
+				A7FF6B6F23AC3C18005876C6 /* SDL_hidapi_gamecube.c in Sources */,
 				56F9D55D1DF73B6C00C15B5D /* SDL_dataqueue.c in Sources */,
 				DB31400017554B71006C0E22 /* SDL_diskaudio.c in Sources */,
 				DB31400117554B71006C0E22 /* SDL_dummyaudio.c in Sources */,
@@ -2982,6 +2997,7 @@
 				A704172820F09AC900A82227 /* SDL_hidapi_xbox360.c in Sources */,
 				DB31400917554B71006C0E22 /* SDL_cpuinfo.c in Sources */,
 				DB31400A17554B71006C0E22 /* SDL_clipboardevents.c in Sources */,
+				A7FF6B7223AC3C18005876C6 /* SDL_hidapi_xbox360w.c in Sources */,
 				DB31400B17554B71006C0E22 /* SDL_events.c in Sources */,
 				5C2EF6FE1FC9EE65003F5197 /* SDL_egl.c in Sources */,
 				DB31400C17554B71006C0E22 /* SDL_dropevents.c in Sources */,
