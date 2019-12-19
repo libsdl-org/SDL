@@ -481,7 +481,8 @@ int HID_API_EXPORT hid_exit(void)
 static int is_xbox360(unsigned short vendor_id, const struct libusb_interface_descriptor *intf_desc)
 {
 	static const int XB360_IFACE_SUBCLASS = 93;
-	static const int XB360_IFACE_PROTOCOL = 1; /* Wired only */
+	static const int XB360_IFACE_PROTOCOL = 1; /* Wired */
+	static const int XB360W_IFACE_PROTOCOL = 129; /* Wireless */
 	static const int SUPPORTED_VENDORS[] = {
 		0x0079, /* GPD Win 2 */
 		0x044f, /* Thrustmaster */
@@ -506,10 +507,10 @@ static int is_xbox360(unsigned short vendor_id, const struct libusb_interface_de
 		0x24c6, /* PowerA */
 	};
 
-	if (intf_desc->bInterfaceNumber == 0 &&
-	    intf_desc->bInterfaceClass == LIBUSB_CLASS_VENDOR_SPEC &&
+	if (intf_desc->bInterfaceClass == LIBUSB_CLASS_VENDOR_SPEC &&
 	    intf_desc->bInterfaceSubClass == XB360_IFACE_SUBCLASS &&
-	    intf_desc->bInterfaceProtocol == XB360_IFACE_PROTOCOL) {
+	    (intf_desc->bInterfaceProtocol == XB360_IFACE_PROTOCOL ||
+	     intf_desc->bInterfaceProtocol == XB360W_IFACE_PROTOCOL)) {
 		int i;
 		for (i = 0; i < sizeof(SUPPORTED_VENDORS)/sizeof(SUPPORTED_VENDORS[0]); ++i) {
 			if (vendor_id == SUPPORTED_VENDORS[i]) {

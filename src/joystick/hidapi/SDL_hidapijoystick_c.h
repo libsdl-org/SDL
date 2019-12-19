@@ -93,6 +93,7 @@ extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverPS4;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSteam;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSwitch;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXbox360;
+extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXbox360W;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXboxOne;
 
 /* Return true if a HID device is present and supported as a joystick */
