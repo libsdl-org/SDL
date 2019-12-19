@@ -33,6 +33,7 @@
 #include "../events/SDL_events_c.h"
 #endif
 #include "../video/SDL_sysvideo.h"
+#include "hidapi/SDL_hidapijoystick_c.h"
 
 /* This is included in only one place because it has a large static list of controllers */
 #include "controller_type.h"
@@ -1042,6 +1043,11 @@ SDL_JoystickUpdate(void)
 
     /* Make sure the list is unlocked while dispatching events to prevent application deadlocks */
     SDL_UnlockJoysticks();
+
+#ifdef SDL_JOYSTICK_HIDAPI
+    /* Special function for HIDAPI devices, as a single device can provide multiple SDL_Joysticks */
+    HIDAPI_UpdateDevices();
+#endif /* SDL_JOYSTICK_HIDAPI */
 
     for (joystick = SDL_joysticks; joystick; joystick = joystick->next) {
         if (joystick->attached) {
