@@ -535,7 +535,9 @@ struct hid_device_info HID_API_EXPORT * HID_API_CALL hid_enumerate(unsigned shor
     struct PLATFORM_hid_device_info *raw_dev;
 #endif /* HAVE_PLATFORM_BACKEND */
     struct hid_device_info *devs = NULL, *last = NULL, *new_dev;
+#ifdef SDL_LIBUSB_DYNAMIC
     SDL_bool bFound;
+#endif
 
     if (SDL_hidapi_wasinit == SDL_FALSE) {
         hid_init();
