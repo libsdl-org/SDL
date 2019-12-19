@@ -918,7 +918,7 @@ HIDAPI_JoystickGetDeviceGUID(int device_index)
 static SDL_JoystickID
 HIDAPI_JoystickGetDeviceInstanceID(int device_index)
 {
-    SDL_JoystickID joystickID;
+    SDL_JoystickID joystickID = -1;
     SDL_LockMutex(SDL_HIDAPI_mutex);
     HIDAPI_GetDeviceByIndex(device_index, &joystickID);
     SDL_UnlockMutex(SDL_HIDAPI_mutex);
