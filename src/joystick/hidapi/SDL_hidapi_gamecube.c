@@ -147,7 +147,6 @@ HIDAPI_DriverGameCube_UpdateDevice(SDL_HIDAPI_Device *device)
     SDL_Joystick *joystick;
     Uint8 packet[37];
     Uint8 *curSlot;
-    Uint32 now;
     Uint8 i;
     int size;
 
@@ -225,9 +224,9 @@ HIDAPI_DriverGameCube_UpdateDevice(SDL_HIDAPI_Device *device)
     }
 
     /* Write rumble packet */
-    now = SDL_GetTicks();
     for (i = 0; i < 4; i += 1) {
-        if (ctx->rumbleExpiration[i] > 0) {
+        if (ctx->rumbleExpiration[i] || (ctx->rumble[1 + i] && !ctx->rumbleAllowed[i])) {
+            Uint32 now = SDL_GetTicks();
             if (SDL_TICKS_PASSED(now, ctx->rumbleExpiration[i]) || !ctx->rumbleAllowed[i]) {
                 ctx->rumble[1 + i] = 0;
                 ctx->rumbleExpiration[i] = 0;
@@ -279,8 +278,8 @@ HIDAPI_DriverGameCube_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *jo
                 ctx->rumble[i + 1] = val;
                 ctx->rumbleUpdate = SDL_TRUE;
             }
-            if (val && duration_ms < SDL_HAPTIC_INFINITY) {
-                ctx->rumbleExpiration[i] = SDL_GetTicks() + duration_ms;
+            if (val && duration_ms) {
+                ctx->rumbleExpiration[i] = SDL_GetTicks() + SDL_min(duration_ms, SDL_MAX_RUMBLE_DURATION_MS);
             } else {
                 ctx->rumbleExpiration[i] = 0;
             }
