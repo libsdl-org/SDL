@@ -250,10 +250,18 @@ static SDL_bool
 HIDAPI_DriverXbox360_IsSupportedDevice(Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, const char *name)
 {
     SDL_GameControllerType type = SDL_GetJoystickGameControllerType(vendor_id, product_id, name);
+    const Uint16 MICROSOFT_USB_VID = 0x045e;
+    const Uint16 NVIDIA_USB_VID = 0x0955;
 
-    if (vendor_id == 0x0955) {
+    if (vendor_id == NVIDIA_USB_VID) {
         /* This is the NVIDIA Shield controller which doesn't talk Xbox controller protocol */
         return SDL_FALSE;
+    }
+    if (vendor_id == MICROSOFT_USB_VID) {
+        if (product_id == 0x0291 || product_id == 0x0719) {
+            /* This is the wireless dongle, which talks a different protocol */
+            return SDL_FALSE;
+        }
     }
     if (interface_number > 0) {
         /* This is the chatpad or other input interface, not the Xbox 360 interface */
@@ -282,7 +290,8 @@ HIDAPI_DriverXbox360_GetDeviceName(Uint16 vendor_id, Uint16 product_id)
 
 static SDL_bool SetSlotLED(hid_device *dev, Uint8 slot)
 {
-    const Uint8 led_packet[] = { 0x01, 0x03, (2 + slot) };
+    Uint8 mode = 0x02 + slot;
+    const Uint8 led_packet[] = { 0x01, 0x03, mode };
 
     if (hid_write(dev, led_packet, sizeof(led_packet)) != sizeof(led_packet)) {
         return SDL_FALSE;
