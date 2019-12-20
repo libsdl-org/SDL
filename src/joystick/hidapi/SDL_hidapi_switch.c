@@ -760,7 +760,10 @@ HIDAPI_DriverSwitch_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joys
     }
 
     if ((low_frequency_rumble || high_frequency_rumble) && duration_ms) {
-        ctx->m_nRumbleExpiration = SDL_GetTicks() + duration_ms;
+        ctx->m_nRumbleExpiration = SDL_GetTicks() + SDL_min(duration_ms, SDL_MAX_RUMBLE_DURATION_MS);
+        if (!ctx->m_nRumbleExpiration) {
+            ctx->m_nRumbleExpiration = 1;
+        }
     } else {
         ctx->m_nRumbleExpiration = 0;
     }
