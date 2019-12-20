@@ -280,6 +280,9 @@ HIDAPI_DriverGameCube_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *jo
             }
             if (val && duration_ms) {
                 ctx->rumbleExpiration[i] = SDL_GetTicks() + SDL_min(duration_ms, SDL_MAX_RUMBLE_DURATION_MS);
+                if (!ctx->rumbleExpiration[i]) {
+                    ctx->rumbleExpiration[i] = 1;
+                }
             } else {
                 ctx->rumbleExpiration[i] = 0;
             }
