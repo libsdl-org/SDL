@@ -50,8 +50,8 @@ typedef struct
 #endif
 
 static kmsdrmdynlib kmsdrmlibs[] = {
-    {NULL, SDL_VIDEO_DRIVER_KMSDRM_DYNAMIC},
-    {NULL, SDL_VIDEO_DRIVER_KMSDRM_DYNAMIC_GBM}
+    {NULL, SDL_VIDEO_DRIVER_KMSDRM_DYNAMIC_GBM},
+    {NULL, SDL_VIDEO_DRIVER_KMSDRM_DYNAMIC}
 };
 
 static void *
