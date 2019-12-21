@@ -1173,23 +1173,13 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativePause)(
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeResume)(
                                     JNIEnv *env, jclass cls)
 {
-    SDL_LockMutex(Android_ActivityMutex);
-
     __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "nativeResume()");
-
-    if (Android_Window) {
-        SDL_SendAppEvent(SDL_APP_WILLENTERFOREGROUND);
-        SDL_SendAppEvent(SDL_APP_DIDENTERFOREGROUND);
-        SDL_SendWindowEvent(Android_Window, SDL_WINDOWEVENT_RESTORED, 0, 0);
-    }
 
     /* Signal the resume semaphore so the event loop knows to resume and restore the GL Context
      * We can't restore the GL Context here because it needs to be done on the SDL main thread
      * and this function will be called from the Java thread instead.
      */
     SDL_SemPost(Android_ResumeSem);
-
-    SDL_UnlockMutex(Android_ActivityMutex);
 }
 
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeFocusChanged)(
