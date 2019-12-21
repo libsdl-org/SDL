@@ -27,6 +27,7 @@
 #include "SDL_androidkeyboard.h"
 #include "SDL_androidwindow.h"
 #include "../SDL_sysvideo.h"
+#include "../../events/SDL_events_c.h"
 
 /* Can't include sysaudio "../../audio/android/SDL_androidaudio.h"
  * because of THIS redefinition */
@@ -129,6 +130,14 @@ Android_PumpEvents_Blocking(_THIS)
         }
     } else {
         if (videodata->isPausing || SDL_SemTryWait(Android_PauseSem) == 0) {
+
+            /* Android_PauseSem was signaled */
+            if (videodata->isPausing == 0) {
+                SDL_SendWindowEvent(Android_Window, SDL_WINDOWEVENT_MINIMIZED, 0, 0);
+                SDL_SendAppEvent(SDL_APP_WILLENTERBACKGROUND);
+                SDL_SendAppEvent(SDL_APP_DIDENTERBACKGROUND);
+            }
+
             /* We've been signaled to pause (potentially several times), but before we block ourselves,
              * we need to make sure that the very last event (of the first pause sequence, if several)
              * has reached the app */
@@ -187,6 +196,14 @@ Android_PumpEvents_NonBlocking(_THIS)
         }
     } else {
         if (videodata->isPausing || SDL_SemTryWait(Android_PauseSem) == 0) {
+
+            /* Android_PauseSem was signaled */
+            if (videodata->isPausing == 0) {
+                SDL_SendWindowEvent(Android_Window, SDL_WINDOWEVENT_MINIMIZED, 0, 0);
+                SDL_SendAppEvent(SDL_APP_WILLENTERBACKGROUND);
+                SDL_SendAppEvent(SDL_APP_DIDENTERBACKGROUND);
+            }
+
             /* We've been signaled to pause (potentially several times), but before we block ourselves,
              * we need to make sure that the very last event (of the first pause sequence, if several)
              * has reached the app */

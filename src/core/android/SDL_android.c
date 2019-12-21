@@ -1162,23 +1162,11 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeQuit)(
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativePause)(
                                     JNIEnv *env, jclass cls)
 {
-    SDL_LockMutex(Android_ActivityMutex);
-
     __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "nativePause()");
 
-    if (Android_Window) {
-        SDL_SendWindowEvent(Android_Window, SDL_WINDOWEVENT_MINIMIZED, 0, 0);
-        SDL_SendAppEvent(SDL_APP_WILLENTERBACKGROUND);
-        SDL_SendAppEvent(SDL_APP_DIDENTERBACKGROUND);
-    }
-
-    /* *After* sending the relevant events, signal the pause semaphore
-     * so the event loop knows to pause and (optionally) block itself.
-     * Sometimes 2 pauses can be queued (eg pause/resume/pause), so it's
-     * always increased. */
+    /* Signal the pause semaphore so the event loop knows to pause and (optionally) block itself.
+     * Sometimes 2 pauses can be queued (eg pause/resume/pause), so it's always increased. */
     SDL_SemPost(Android_PauseSem);
-
-    SDL_UnlockMutex(Android_ActivityMutex);
 }
 
 /* Resume */
