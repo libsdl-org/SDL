@@ -559,7 +559,7 @@ struct hid_device_info HID_API_EXPORT * HID_API_CALL hid_enumerate(unsigned shor
             for (raw_dev = raw_devs; raw_dev; raw_dev = raw_dev->next) {
                 if (usb_dev->vendor_id == raw_dev->vendor_id &&
                     usb_dev->product_id == raw_dev->product_id &&
-                    usb_dev->interface_number == raw_dev->interface_number) {
+                    (raw_dev->interface_number < 0 || usb_dev->interface_number == raw_dev->interface_number)) {
                     bFound = SDL_TRUE;
                     break;
                 }
