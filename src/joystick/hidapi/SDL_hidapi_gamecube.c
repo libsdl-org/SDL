@@ -140,6 +140,25 @@ error:
     return SDL_FALSE;
 }
 
+static int
+HIDAPI_DriverGameCube_GetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id)
+{
+    SDL_DriverGameCube_Context *ctx = (SDL_DriverGameCube_Context *)device->context;
+    Uint8 i;
+
+    for (i = 0; i < 4; ++i) {
+        if (instance_id == ctx->joysticks[i]) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+static void
+HIDAPI_DriverGameCube_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id, int player_index)
+{
+}
+
 static SDL_bool
 HIDAPI_DriverGameCube_UpdateDevice(SDL_HIDAPI_Device *device)
 {
@@ -253,7 +272,6 @@ HIDAPI_DriverGameCube_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joys
             joystick->nbuttons = 12;
             joystick->naxes = 6;
             joystick->epowerlevel = ctx->wireless[i] ? SDL_JOYSTICK_POWER_UNKNOWN : SDL_JOYSTICK_POWER_WIRED;
-            joystick->player_index = i;
             return SDL_TRUE;
         }
     }
@@ -331,6 +349,8 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverGameCube =
     HIDAPI_DriverGameCube_IsSupportedDevice,
     HIDAPI_DriverGameCube_GetDeviceName,
     HIDAPI_DriverGameCube_InitDevice,
+    HIDAPI_DriverGameCube_GetDevicePlayerIndex,
+    HIDAPI_DriverGameCube_SetDevicePlayerIndex,
     HIDAPI_DriverGameCube_UpdateDevice,
     HIDAPI_DriverGameCube_OpenJoystick,
     HIDAPI_DriverGameCube_RumbleJoystick,

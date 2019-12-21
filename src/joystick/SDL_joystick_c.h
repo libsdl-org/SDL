@@ -101,7 +101,7 @@ extern void SDL_PrivateJoystickBatteryLevel(SDL_Joystick * joystick,
                                             SDL_JoystickPowerLevel ePowerLevel);
 
 /* Internal sanity checking functions */
-extern int SDL_PrivateJoystickValid(SDL_Joystick * joystick);
+extern SDL_bool SDL_PrivateJoystickValid(SDL_Joystick * joystick);
 
 #endif /* SDL_joystick_c_h_ */
 

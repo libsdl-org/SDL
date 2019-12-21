@@ -288,6 +288,11 @@ EMSCRIPTEN_JoystickGetDevicePlayerIndex(int device_index)
     return -1;
 }
 
+static void
+EMSCRIPTEN_JoystickSetDevicePlayerIndex(int device_index, int player_index)
+{
+}
+
 static SDL_JoystickID
 EMSCRIPTEN_JoystickGetDeviceInstanceID(int device_index)
 {
@@ -406,6 +411,7 @@ SDL_JoystickDriver SDL_EMSCRIPTEN_JoystickDriver =
     EMSCRIPTEN_JoystickDetect,
     EMSCRIPTEN_JoystickGetDeviceName,
     EMSCRIPTEN_JoystickGetDevicePlayerIndex,
+    EMSCRIPTEN_JoystickSetDevicePlayerIndex,
     EMSCRIPTEN_JoystickGetDeviceGUID,
     EMSCRIPTEN_JoystickGetDeviceInstanceID,
     EMSCRIPTEN_JoystickOpen,

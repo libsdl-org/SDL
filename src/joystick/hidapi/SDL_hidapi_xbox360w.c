@@ -94,7 +94,7 @@ HIDAPI_DriverXbox360W_InitDevice(SDL_HIDAPI_Device *device)
     SDL_DriverXbox360W_Context *ctx;
 
     /* Requests controller presence information from the wireless dongle */
-	const Uint8 init_packet[] = { 0x08, 0x00, 0x0F, 0xC0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+    const Uint8 init_packet[] = { 0x08, 0x00, 0x0F, 0xC0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 
     ctx = (SDL_DriverXbox360W_Context *)SDL_calloc(1, sizeof(*ctx));
     if (!ctx) {
@@ -116,6 +116,18 @@ HIDAPI_DriverXbox360W_InitDevice(SDL_HIDAPI_Device *device)
     }
 
     return SDL_TRUE;
+}
+
+static int
+HIDAPI_DriverXbox360W_GetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id)
+{
+    return -1;
+}
+
+static void
+HIDAPI_DriverXbox360W_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id, int player_index)
+{
+    SetSlotLED(device->dev, (player_index % 4));
 }
 
 static SDL_bool
@@ -300,6 +312,8 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXbox360W =
     HIDAPI_DriverXbox360W_IsSupportedDevice,
     HIDAPI_DriverXbox360W_GetDeviceName,
     HIDAPI_DriverXbox360W_InitDevice,
+    HIDAPI_DriverXbox360W_GetDevicePlayerIndex,
+    HIDAPI_DriverXbox360W_SetDevicePlayerIndex,
     HIDAPI_DriverXbox360W_UpdateDevice,
     HIDAPI_DriverXbox360W_OpenJoystick,
     HIDAPI_DriverXbox360W_RumbleJoystick,

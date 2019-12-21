@@ -894,7 +894,32 @@ HIDAPI_JoystickGetDeviceName(int device_index)
 static int
 HIDAPI_JoystickGetDevicePlayerIndex(int device_index)
 {
-    return -1;
+    SDL_HIDAPI_Device *device;
+    SDL_JoystickID instance_id;
+    int player_index = -1;
+
+    SDL_LockMutex(SDL_HIDAPI_mutex);
+    device = HIDAPI_GetDeviceByIndex(device_index, &instance_id);
+    if (device) {
+        player_index = device->driver->GetDevicePlayerIndex(device, instance_id);
+    }
+    SDL_UnlockMutex(SDL_HIDAPI_mutex);
+
+    return player_index;
+}
+
+static void
+HIDAPI_JoystickSetDevicePlayerIndex(int device_index, int player_index)
+{
+    SDL_HIDAPI_Device *device;
+    SDL_JoystickID instance_id;
+
+    SDL_LockMutex(SDL_HIDAPI_mutex);
+    device = HIDAPI_GetDeviceByIndex(device_index, &instance_id);
+    if (device) {
+        device->driver->SetDevicePlayerIndex(device, instance_id, player_index);
+    }
+    SDL_UnlockMutex(SDL_HIDAPI_mutex);
 }
 
 static SDL_JoystickGUID
@@ -1023,6 +1048,7 @@ SDL_JoystickDriver SDL_HIDAPI_JoystickDriver =
     HIDAPI_JoystickDetect,
     HIDAPI_JoystickGetDeviceName,
     HIDAPI_JoystickGetDevicePlayerIndex,
+    HIDAPI_JoystickSetDevicePlayerIndex,
     HIDAPI_JoystickGetDeviceGUID,
     HIDAPI_JoystickGetDeviceInstanceID,
     HIDAPI_JoystickOpen,
