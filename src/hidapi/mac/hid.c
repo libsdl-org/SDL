@@ -372,6 +372,27 @@ static int make_path(IOHIDDeviceRef device, char *buf, size_t len)
 	return res+1;
 }
 
+static void hid_device_removal_callback(void *context, IOReturn result,
+                                        void *sender, IOHIDDeviceRef hid_ref)
+{
+	// The device removal callback is sometimes called even after being
+	// unregistered, leading to a crash when trying to access fields in
+	// the already freed hid_device. We keep a linked list of all created
+	// hid_device's so that the one being removed can be checked against
+	// the list to see if it really hasn't been closed yet and needs to
+	// be dealt with here.
+	struct hid_device_list_node *node = device_list;
+	while (node) {
+		if (node->dev->device_handle == hid_ref) {
+			node->dev->disconnected = 1;
+			CFRunLoopStop(node->dev->run_loop);
+			break;
+		}
+
+		node = node->next;
+	}
+}
+
 /* Initialize the IOHIDManager. Return 0 for success and -1 for failure. */
 static int init_hid_manager(void)
 {
@@ -381,6 +402,7 @@ static int init_hid_manager(void)
 	if (hid_mgr) {
 		IOHIDManagerSetDeviceMatching(hid_mgr, NULL);
 		IOHIDManagerScheduleWithRunLoop(hid_mgr, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
+		IOHIDManagerRegisterDeviceRemovalCallback(hid_mgr, hid_device_removal_callback, NULL);
 		return 0;
 	}
 	
@@ -569,30 +591,6 @@ hid_device * HID_API_EXPORT hid_open(unsigned short vendor_id, unsigned short pr
 	return handle;
 }
 
-static void hid_device_removal_callback(void *context, IOReturn result,
-                                        void *sender)
-{
-	/* Stop the Run Loop for this device. */
-	hid_device *dev = (hid_device *)context;
-
-	// The device removal callback is sometimes called even after being
-	// unregistered, leading to a crash when trying to access fields in
-	// the already freed hid_device. We keep a linked list of all created
-	// hid_device's so that the one being removed can be checked against
-	// the list to see if it really hasn't been closed yet and needs to
-	// be dealt with here.
-	struct hid_device_list_node *node = device_list;
-	while (node) {
-		if (node->dev == dev) {
-			dev->disconnected = 1;
-			CFRunLoopStop(dev->run_loop);
-			break;
-		}
-
-		node = node->next;
-	}
-}
-
 /* The Run Loop calls this function for each input report received.
  This function puts the data into a linked list to be picked up by
  hid_read(). */
@@ -766,7 +764,6 @@ hid_device * HID_API_EXPORT hid_open_path(const char *path, int bExclusive)
 				IOHIDDeviceRegisterInputReportCallback(
 													   os_dev, dev->input_report_buf, dev->max_input_report_len,
 													   &hid_report_callback, dev);
-				IOHIDDeviceRegisterRemovalCallback(dev->device_handle, hid_device_removal_callback, dev);
 
 				struct hid_device_list_node *node = (struct hid_device_list_node *)calloc(1, sizeof(struct hid_device_list_node));
 				node->dev = dev;
@@ -1042,7 +1039,6 @@ void HID_API_EXPORT hid_close(hid_device *dev)
 		IOHIDDeviceRegisterInputReportCallback(
 											   dev->device_handle, dev->input_report_buf, dev->max_input_report_len,
 											   NULL, dev);
-		IOHIDDeviceRegisterRemovalCallback(dev->device_handle, NULL, dev);
 		IOHIDDeviceUnscheduleFromRunLoop(dev->device_handle, dev->run_loop, dev->run_loop_mode);
 		IOHIDDeviceScheduleWithRunLoop(dev->device_handle, CFRunLoopGetMain(), kCFRunLoopDefaultMode);
 	}
