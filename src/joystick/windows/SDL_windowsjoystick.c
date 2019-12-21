@@ -419,6 +419,11 @@ WINDOWS_JoystickGetDevicePlayerIndex(int device_index)
     return device->bXInputDevice ? (int)device->XInputUserId : -1;
 }
 
+static void
+WINDOWS_JoystickSetDevicePlayerIndex(int device_index, int player_index)
+{
+}
+
 /* return the stable device guid for this device index */
 static SDL_JoystickGUID
 WINDOWS_JoystickGetDeviceGUID(int device_index)
@@ -557,6 +562,7 @@ SDL_JoystickDriver SDL_WINDOWS_JoystickDriver =
     WINDOWS_JoystickDetect,
     WINDOWS_JoystickGetDeviceName,
     WINDOWS_JoystickGetDevicePlayerIndex,
+    WINDOWS_JoystickSetDevicePlayerIndex,
     WINDOWS_JoystickGetDeviceGUID,
     WINDOWS_JoystickGetDeviceInstanceID,
     WINDOWS_JoystickOpen,

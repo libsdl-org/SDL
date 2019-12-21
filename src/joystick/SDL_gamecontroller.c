@@ -1765,6 +1765,15 @@ SDL_GameControllerGetPlayerIndex(SDL_GameController *gamecontroller)
     return SDL_JoystickGetPlayerIndex(SDL_GameControllerGetJoystick(gamecontroller));
 }
 
+/**
+ *  Set the player index of an opened game controller
+ */
+void
+SDL_GameControllerSetPlayerIndex(SDL_GameController *gamecontroller, int player_index)
+{
+    SDL_JoystickSetPlayerIndex(SDL_GameControllerGetJoystick(gamecontroller), player_index);
+}
+
 Uint16
 SDL_GameControllerGetVendor(SDL_GameController * gamecontroller)
 {
@@ -1809,7 +1818,7 @@ SDL_Joystick *SDL_GameControllerGetJoystick(SDL_GameController * gamecontroller)
 
 
 /*
- * Find the SDL_GameController that owns this instance id
+ * Return the SDL_GameController associated with an instance id.
  */
 SDL_GameController *
 SDL_GameControllerFromInstanceID(SDL_JoystickID joyid)
@@ -1826,6 +1835,19 @@ SDL_GameControllerFromInstanceID(SDL_JoystickID joyid)
         gamecontroller = gamecontroller->next;
     }
     SDL_UnlockJoysticks();
+    return NULL;
+}
+
+
+/**
+ * Return the SDL_GameController associated with a player index.
+ */
+SDL_GameController *SDL_GameControllerFromPlayerIndex(int player_index)
+{
+    SDL_Joystick *joystick = SDL_JoystickFromPlayerIndex(player_index);
+    if (joystick) {
+        return SDL_GameControllerFromInstanceID(joystick->instance_id);
+    }
     return NULL;
 }
 

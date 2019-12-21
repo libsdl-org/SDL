@@ -628,6 +628,17 @@ HIDAPI_DriverSwitch_InitDevice(SDL_HIDAPI_Device *device)
     return HIDAPI_JoystickConnected(device, NULL);
 }
 
+static int
+HIDAPI_DriverSwitch_GetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id)
+{
+    return -1;
+}
+
+static void
+HIDAPI_DriverSwitch_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id, int player_index)
+{
+}
+
 static SDL_bool
 HIDAPI_DriverSwitch_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
@@ -1109,6 +1120,8 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSwitch =
     HIDAPI_DriverSwitch_IsSupportedDevice,
     HIDAPI_DriverSwitch_GetDeviceName,
     HIDAPI_DriverSwitch_InitDevice,
+    HIDAPI_DriverSwitch_GetDevicePlayerIndex,
+    HIDAPI_DriverSwitch_SetDevicePlayerIndex,
     HIDAPI_DriverSwitch_UpdateDevice,
     HIDAPI_DriverSwitch_OpenJoystick,
     HIDAPI_DriverSwitch_RumbleJoystick,

@@ -789,3 +789,7 @@ SDL_DYNAPI_PROC(wchar_t*,SDL_wcsstr,(const wchar_t *a, const wchar_t *b),(a,b),r
 SDL_DYNAPI_PROC(int,SDL_wcsncmp,(const wchar_t *a, const wchar_t *b, size_t c),(a,b,c),return)
 SDL_DYNAPI_PROC(SDL_GameControllerType,SDL_GameControllerTypeForIndex,(int a),(a),return)
 SDL_DYNAPI_PROC(SDL_GameControllerType,SDL_GameControllerGetType,(SDL_GameController *a),(a),return)
+SDL_DYNAPI_PROC(SDL_GameController*,SDL_GameControllerFromPlayerIndex,(int a),(a),return)
+SDL_DYNAPI_PROC(void,SDL_GameControllerSetPlayerIndex,(SDL_GameController *a, int b),(a,b),)
+SDL_DYNAPI_PROC(SDL_Joystick*,SDL_JoystickFromPlayerIndex,(int a),(a),return)
+SDL_DYNAPI_PROC(void,SDL_JoystickSetPlayerIndex,(SDL_Joystick *a, int b),(a,b),)

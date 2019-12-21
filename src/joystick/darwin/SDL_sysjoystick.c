@@ -734,6 +734,11 @@ DARWIN_JoystickGetDevicePlayerIndex(int device_index)
     return -1;
 }
 
+static void
+DARWIN_JoystickSetDevicePlayerIndex(int device_index, int player_index)
+{
+}
+
 static SDL_JoystickGUID
 DARWIN_JoystickGetDeviceGUID( int device_index )
 {
@@ -1033,6 +1038,7 @@ SDL_JoystickDriver SDL_DARWIN_JoystickDriver =
     DARWIN_JoystickDetect,
     DARWIN_JoystickGetDeviceName,
     DARWIN_JoystickGetDevicePlayerIndex,
+    DARWIN_JoystickSetDevicePlayerIndex,
     DARWIN_JoystickGetDeviceGUID,
     DARWIN_JoystickGetDeviceInstanceID,
     DARWIN_JoystickOpen,

@@ -569,6 +569,11 @@ LINUX_JoystickGetDevicePlayerIndex(int device_index)
     return -1;
 }
 
+static void
+LINUX_JoystickSetDevicePlayerIndex(int device_index, int player_index)
+{
+}
+
 static SDL_JoystickGUID
 LINUX_JoystickGetDeviceGUID( int device_index )
 {
@@ -1086,6 +1091,7 @@ SDL_JoystickDriver SDL_LINUX_JoystickDriver =
     LINUX_JoystickDetect,
     LINUX_JoystickGetDeviceName,
     LINUX_JoystickGetDevicePlayerIndex,
+    LINUX_JoystickSetDevicePlayerIndex,
     LINUX_JoystickGetDeviceGUID,
     LINUX_JoystickGetDeviceInstanceID,
     LINUX_JoystickOpen,

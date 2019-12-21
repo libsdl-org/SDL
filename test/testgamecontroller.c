@@ -316,9 +316,9 @@ main(int argc, char *argv[])
             name = SDL_JoystickNameForIndex(i);
             description = "Joystick";
         }
-        SDL_Log("%s %d: %s (guid %s, VID 0x%.4x, PID 0x%.4x)\n",
+        SDL_Log("%s %d: %s (guid %s, VID 0x%.4x, PID 0x%.4x, player index = %d)\n",
             description, i, name ? name : "Unknown", guid,
-            SDL_JoystickGetDeviceVendor(i), SDL_JoystickGetDeviceProduct(i));
+            SDL_JoystickGetDeviceVendor(i), SDL_JoystickGetDeviceProduct(i), SDL_JoystickGetDevicePlayerIndex(i));
     }
     SDL_Log("There are %d game controller(s) attached (%d joystick(s))\n", nController, SDL_NumJoysticks());
 

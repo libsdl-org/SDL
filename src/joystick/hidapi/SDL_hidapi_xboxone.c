@@ -260,6 +260,17 @@ HIDAPI_DriverXboxOne_InitDevice(SDL_HIDAPI_Device *device)
     return HIDAPI_JoystickConnected(device, NULL);
 }
 
+static int
+HIDAPI_DriverXboxOne_GetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id)
+{
+    return -1;
+}
+
+static void
+HIDAPI_DriverXboxOne_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id, int player_index)
+{
+}
+
 static SDL_bool
 HIDAPI_DriverXboxOne_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
@@ -468,6 +479,8 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXboxOne =
     HIDAPI_DriverXboxOne_IsSupportedDevice,
     HIDAPI_DriverXboxOne_GetDeviceName,
     HIDAPI_DriverXboxOne_InitDevice,
+    HIDAPI_DriverXboxOne_GetDevicePlayerIndex,
+    HIDAPI_DriverXboxOne_SetDevicePlayerIndex,
     HIDAPI_DriverXboxOne_UpdateDevice,
     HIDAPI_DriverXboxOne_OpenJoystick,
     HIDAPI_DriverXboxOne_RumbleJoystick,

@@ -305,10 +305,25 @@ HIDAPI_DriverXbox360_InitDevice(SDL_HIDAPI_Device *device)
     return HIDAPI_JoystickConnected(device, NULL);
 }
 
+static int
+HIDAPI_DriverXbox360_GetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id)
+{
+    return -1;
+}
+
+static void
+HIDAPI_DriverXbox360_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id, int player_index)
+{
+    if (device->dev) {
+        SetSlotLED(device->dev, (player_index % 4));
+    }
+}
+
 static SDL_bool
 HIDAPI_DriverXbox360_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     SDL_DriverXbox360_Context *ctx;
+    int player_index;
 
     ctx = (SDL_DriverXbox360_Context *)SDL_calloc(1, sizeof(*ctx));
     if (!ctx) {
@@ -336,7 +351,10 @@ HIDAPI_DriverXbox360_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joyst
 #endif
 
     /* Set the controller LED */
-    SetSlotLED(device->dev, (joystick->instance_id % 4));
+    player_index = SDL_JoystickGetPlayerIndex(joystick);
+    if (player_index >= 0) {
+        SetSlotLED(device->dev, (player_index % 4));
+    }
 
     /* Initialize the joystick capabilities */
     joystick->nbuttons = SDL_CONTROLLER_BUTTON_MAX;
@@ -837,6 +855,8 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXbox360 =
     HIDAPI_DriverXbox360_IsSupportedDevice,
     HIDAPI_DriverXbox360_GetDeviceName,
     HIDAPI_DriverXbox360_InitDevice,
+    HIDAPI_DriverXbox360_GetDevicePlayerIndex,
+    HIDAPI_DriverXbox360_SetDevicePlayerIndex,
     HIDAPI_DriverXbox360_UpdateDevice,
     HIDAPI_DriverXbox360_OpenJoystick,
     HIDAPI_DriverXbox360_RumbleJoystick,
