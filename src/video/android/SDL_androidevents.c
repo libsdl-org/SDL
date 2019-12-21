@@ -113,6 +113,11 @@ Android_PumpEvents_Blocking(_THIS)
 
             videodata->isPaused = 0;
 
+            /* Android_ResumeSem was signaled */
+            SDL_SendAppEvent(SDL_APP_WILLENTERFOREGROUND);
+            SDL_SendAppEvent(SDL_APP_DIDENTERFOREGROUND);
+            SDL_SendWindowEvent(Android_Window, SDL_WINDOWEVENT_RESTORED, 0, 0);
+
             ANDROIDAUDIO_ResumeDevices();
             openslES_ResumeDevices();
 
@@ -178,6 +183,11 @@ Android_PumpEvents_NonBlocking(_THIS)
         if (SDL_SemTryWait(Android_ResumeSem) == 0) {
 
             videodata->isPaused = 0;
+
+            /* Android_ResumeSem was signaled */
+            SDL_SendAppEvent(SDL_APP_WILLENTERFOREGROUND);
+            SDL_SendAppEvent(SDL_APP_DIDENTERFOREGROUND);
+            SDL_SendWindowEvent(Android_Window, SDL_WINDOWEVENT_RESTORED, 0, 0);
 
             ANDROIDAUDIO_ResumeDevices();
             openslES_ResumeDevices();
