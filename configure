@@ -24332,6 +24332,7 @@ $as_echo "#define SDL_JOYSTICK_HIDAPI 1" >>confdefs.h
 
             EXTRA_CFLAGS="$EXTRA_CFLAGS -I$srcdir/src/hidapi/hidapi"
             SOURCES="$SOURCES $srcdir/src/joystick/hidapi/*.c"
+            SOURCES="$SOURCES $srcdir/src/hidapi/SDL_hidapi.c"
 
             if test x$have_libusb_h = xyes; then
                 EXTRA_CFLAGS="$EXTRA_CFLAGS $LIBUSB_CFLAGS"
@@ -24343,7 +24344,6 @@ $as_echo "#define SDL_JOYSTICK_HIDAPI 1" >>confdefs.h
                         { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: You must have SDL_LoadObject() support for dynamic libusb loading" >&5
 $as_echo "$as_me: WARNING: You must have SDL_LoadObject() support for dynamic libusb loading" >&2;}
                     fi
-                    SOURCES="$SOURCES $srcdir/src/hidapi/SDL_hidapi.c"
                     # libusb is loaded dynamically, so don't add it to LDFLAGS
                     libusb_lib=""
                     case "$host" in
@@ -24363,8 +24363,6 @@ cat >>confdefs.h <<_ACEOF
 _ACEOF
 
                 fi
-            else
-                SOURCES="$SOURCES $srcdir/src/hidapi/SDL_hidapi.c"
             fi
         fi
 

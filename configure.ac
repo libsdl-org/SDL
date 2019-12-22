@@ -3326,7 +3326,6 @@ AS_HELP_STRING([--enable-hidapi], [use HIDAPI for low level joystick drivers [[d
                     if test x$have_loadso != xyes; then
                         AC_MSG_WARN([You must have SDL_LoadObject() support for dynamic libusb loading])
                     fi
-                    SOURCES="$SOURCES $srcdir/src/hidapi/SDL_hidapi.c"
                     # libusb is loaded dynamically, so don't add it to LDFLAGS
                     libusb_lib=""
                     case "$host" in
@@ -3342,8 +3341,6 @@ AS_HELP_STRING([--enable-hidapi], [use HIDAPI for low level joystick drivers [[d
                     fi
                     AC_DEFINE_UNQUOTED(SDL_LIBUSB_DYNAMIC, "$libusb_lib", [ ])
                 fi
-            else
-                SOURCES="$SOURCES $srcdir/src/hidapi/SDL_hidapi.c"
             fi
         fi
 
