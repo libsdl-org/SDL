@@ -1388,6 +1388,33 @@ SDL_GetTextureBlendMode(SDL_Texture * texture, SDL_BlendMode *blendMode)
     return 0;
 }
 
+int
+SDL_SetTextureScaleMode(SDL_Texture * texture, SDL_ScaleMode scaleMode)
+{
+    SDL_Renderer *renderer;
+
+    CHECK_TEXTURE_MAGIC(texture, -1);
+
+    renderer = texture->renderer;
+    renderer->SetTextureScaleMode(renderer, texture, scaleMode);
+    texture->scaleMode = scaleMode;
+    if (texture->native) {
+        return SDL_SetTextureScaleMode(texture->native, scaleMode);
+    }
+    return 0;
+}
+
+int
+SDL_GetTextureScaleMode(SDL_Texture * texture, SDL_ScaleMode *scaleMode)
+{
+    CHECK_TEXTURE_MAGIC(texture, -1);
+
+    if (scaleMode) {
+        *scaleMode = texture->scaleMode;
+    }
+    return 0;
+}
+
 static int
 SDL_UpdateTextureYUV(SDL_Texture * texture, const SDL_Rect * rect,
                      const void *pixels, int pitch)

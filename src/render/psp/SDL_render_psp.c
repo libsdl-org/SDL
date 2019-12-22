@@ -428,6 +428,12 @@ PSP_UnlockTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     PSP_UpdateTexture(renderer, texture, &rect, psp_texture->data, psp_texture->pitch);
 }
 
+static void
+PSP_SetTextureScaleMode(SDL_Renderer * renderer, SDL_Texture * texture, SDL_ScaleMode scaleMode)
+{
+    /* Nothing to do because TextureActivate takes care of it */
+}
+
 static int
 PSP_SetRenderTarget(SDL_Renderer * renderer, SDL_Texture * texture)
 {
@@ -938,6 +944,7 @@ PSP_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->UpdateTexture = PSP_UpdateTexture;
     renderer->LockTexture = PSP_LockTexture;
     renderer->UnlockTexture = PSP_UnlockTexture;
+    renderer->SetTextureScaleMode = PSP_SetTextureScaleMode;
     renderer->SetRenderTarget = PSP_SetRenderTarget;
     renderer->QueueSetViewport = PSP_QueueSetViewport;
     renderer->QueueSetDrawColor = PSP_QueueSetViewport;  /* SetViewport and SetDrawColor are (currently) no-ops. */

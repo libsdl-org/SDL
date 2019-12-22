@@ -768,6 +768,43 @@ GL_UnlockTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     GL_UpdateTexture(renderer, texture, rect, pixels, data->pitch);
 }
 
+static void
+GL_SetTextureScaleMode(SDL_Renderer * renderer, SDL_Texture * texture, SDL_ScaleMode scaleMode)
+{
+    GL_RenderData *renderdata = (GL_RenderData *) renderer->driverdata;
+    const GLenum textype = renderdata->textype;
+    GL_TextureData *data = (GL_TextureData *) texture->driverdata;
+    GLenum glScaleMode = (scaleMode == SDL_ScaleModeNearest) ? GL_NEAREST : GL_LINEAR;
+
+    renderdata->glEnable(textype);
+    renderdata->glBindTexture(textype, data->texture);
+    renderdata->glTexParameteri(textype, GL_TEXTURE_MIN_FILTER, glScaleMode);
+    renderdata->glTexParameteri(textype, GL_TEXTURE_MAG_FILTER, glScaleMode);
+    renderdata->glDisable(textype);
+
+    if (texture->format == SDL_PIXELFORMAT_YV12 ||
+        texture->format == SDL_PIXELFORMAT_IYUV) {
+        renderdata->glEnable(textype);
+        renderdata->glBindTexture(textype, data->utexture);
+        renderdata->glTexParameteri(textype, GL_TEXTURE_MIN_FILTER, glScaleMode);
+        renderdata->glTexParameteri(textype, GL_TEXTURE_MAG_FILTER, glScaleMode);
+
+        renderdata->glBindTexture(textype, data->vtexture);
+        renderdata->glTexParameteri(textype, GL_TEXTURE_MIN_FILTER, glScaleMode);
+        renderdata->glTexParameteri(textype, GL_TEXTURE_MAG_FILTER, glScaleMode);
+        renderdata->glDisable(textype);
+    }
+
+    if (texture->format == SDL_PIXELFORMAT_NV12 ||
+        texture->format == SDL_PIXELFORMAT_NV21) {
+        renderdata->glEnable(textype);
+        renderdata->glBindTexture(textype, data->utexture);
+        renderdata->glTexParameteri(textype, GL_TEXTURE_MIN_FILTER, glScaleMode);
+        renderdata->glTexParameteri(textype, GL_TEXTURE_MAG_FILTER, glScaleMode);
+        renderdata->glDisable(textype);
+    }
+}
+
 static int
 GL_SetRenderTarget(SDL_Renderer * renderer, SDL_Texture * texture)
 {
@@ -1577,6 +1614,7 @@ GL_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->UpdateTextureYUV = GL_UpdateTextureYUV;
     renderer->LockTexture = GL_LockTexture;
     renderer->UnlockTexture = GL_UnlockTexture;
+    renderer->SetTextureScaleMode = GL_SetTextureScaleMode;
     renderer->SetRenderTarget = GL_SetRenderTarget;
     renderer->QueueSetViewport = GL_QueueSetViewport;
     renderer->QueueSetDrawColor = GL_QueueSetViewport;  /* SetViewport and SetDrawColor are (currently) no-ops. */

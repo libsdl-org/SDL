@@ -793,3 +793,5 @@ SDL_DYNAPI_PROC(SDL_GameController*,SDL_GameControllerFromPlayerIndex,(int a),(a
 SDL_DYNAPI_PROC(void,SDL_GameControllerSetPlayerIndex,(SDL_GameController *a, int b),(a,b),)
 SDL_DYNAPI_PROC(SDL_Joystick*,SDL_JoystickFromPlayerIndex,(int a),(a),return)
 SDL_DYNAPI_PROC(void,SDL_JoystickSetPlayerIndex,(SDL_Joystick *a, int b),(a,b),)
+SDL_DYNAPI_PROC(int,SDL_SetTextureScaleMode,(SDL_Texture *a, SDL_ScaleMode b),(a,b),return)
+SDL_DYNAPI_PROC(int,SDL_GetTextureScaleMode,(SDL_Texture *a, SDL_ScaleMode *b),(a,b),return)

@@ -179,6 +179,11 @@ SW_UnlockTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 {
 }
 
+static void
+SW_SetTextureScaleMode(SDL_Renderer * renderer, SDL_Texture * texture, SDL_ScaleMode scaleMode)
+{
+}
+
 static int
 SW_SetRenderTarget(SDL_Renderer * renderer, SDL_Texture * texture)
 {
@@ -830,6 +835,7 @@ SW_CreateRendererForSurface(SDL_Surface * surface)
     renderer->UpdateTexture = SW_UpdateTexture;
     renderer->LockTexture = SW_LockTexture;
     renderer->UnlockTexture = SW_UnlockTexture;
+    renderer->SetTextureScaleMode = SW_SetTextureScaleMode;
     renderer->SetRenderTarget = SW_SetRenderTarget;
     renderer->QueueSetViewport = SW_QueueSetViewport;
     renderer->QueueSetDrawColor = SW_QueueSetViewport;  /* SetViewport and SetDrawColor are (currently) no-ops. */

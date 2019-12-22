@@ -550,6 +550,11 @@ DirectFB_UnlockTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     }
 }
 
+static void
+DirectFB_SetTextureScaleMode()
+{
+}
+
 #if 0
 static void
 DirectFB_DirtyTexture(SDL_Renderer * renderer, SDL_Texture * texture,
@@ -966,6 +971,7 @@ DirectFB_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->UpdateTexture = DirectFB_UpdateTexture;
     renderer->LockTexture = DirectFB_LockTexture;
     renderer->UnlockTexture = DirectFB_UnlockTexture;
+    renderer->SetTextureScaleMode = DirectFB_SetTextureScaleMode;
     renderer->QueueSetViewport = DirectFB_QueueSetViewport;
     renderer->QueueSetDrawColor = DirectFB_QueueSetViewport;  /* SetViewport and SetDrawColor are (currently) no-ops. */
     renderer->QueueDrawPoints = DirectFB_QueueDrawPoints;
