@@ -1523,6 +1523,18 @@ D3D11_UnlockTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     SAFE_RELEASE(textureData->stagingTexture);
 }
 
+static void
+D3D11_SetTextureScaleMode(SDL_Renderer * renderer, SDL_Texture * texture, SDL_ScaleMode scaleMode)
+{
+    D3D11_TextureData *textureData = (D3D11_TextureData *) texture->driverdata;
+    
+    if (!textureData) {
+        return;
+    }
+
+    textureData->scaleMode = (scaleMode == SDL_ScaleModeNearest) ?  D3D11_FILTER_MIN_MAG_MIP_POINT : D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+}
+
 static int
 D3D11_SetRenderTarget(SDL_Renderer * renderer, SDL_Texture * texture)
 {
@@ -2498,6 +2510,7 @@ D3D11_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->UpdateTextureYUV = D3D11_UpdateTextureYUV;
     renderer->LockTexture = D3D11_LockTexture;
     renderer->UnlockTexture = D3D11_UnlockTexture;
+    renderer->SetTextureScaleMode = D3D11_SetTextureScaleMode;
     renderer->SetRenderTarget = D3D11_SetRenderTarget;
     renderer->QueueSetViewport = D3D11_QueueSetViewport;
     renderer->QueueSetDrawColor = D3D11_QueueSetViewport;  /* SetViewport and SetDrawColor are (currently) no-ops. */

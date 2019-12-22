@@ -737,3 +737,5 @@
 #define SDL_GameControllerSetPlayerIndex SDL_GameControllerSetPlayerIndex_REAL
 #define SDL_JoystickFromPlayerIndex SDL_JoystickFromPlayerIndex_REAL
 #define SDL_JoystickSetPlayerIndex SDL_JoystickSetPlayerIndex_REAL
+#define SDL_SetTextureScaleMode SDL_SetTextureScaleMode_REAL
+#define SDL_GetTextureScaleMode SDL_GetTextureScaleMode_REAL

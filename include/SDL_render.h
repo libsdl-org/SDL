@@ -86,6 +86,16 @@ typedef struct SDL_RendererInfo
 } SDL_RendererInfo;
 
 /**
+ *  \brief The scaling mode for a texture.
+ */
+typedef enum
+{
+    SDL_ScaleModeNearest, /**< nearest pixel sampling */
+    SDL_ScaleModeLinear,  /**< linear filtering */
+    SDL_ScaleModeBest     /**< anisotropic filtering */
+} SDL_ScaleMode;
+
+/**
  *  \brief The access pattern allowed for a texture.
  */
 typedef enum
@@ -365,6 +375,35 @@ extern DECLSPEC int SDLCALL SDL_SetTextureBlendMode(SDL_Texture * texture,
  */
 extern DECLSPEC int SDLCALL SDL_GetTextureBlendMode(SDL_Texture * texture,
                                                     SDL_BlendMode *blendMode);
+
+/**
+ *  \brief Set the scale mode used for texture scale operations.
+ *
+ *  \param texture The texture to update.
+ *  \param scaleMode ::SDL_ScaleMode to use for texture scaling.
+ *
+ *  \return 0 on success, or -1 if the texture is not valid.
+ *
+ *  \note If the scale mode is not supported, the closest supported mode is
+ *        chosen.
+ *
+ *  \sa SDL_GetTextureScaleMode()
+ */
+extern DECLSPEC int SDLCALL SDL_SetTextureScaleMode(SDL_Texture * texture,
+                                                    SDL_ScaleMode scaleMode);
+
+/**
+ *  \brief Get the scale mode used for texture scale operations.
+ *
+ *  \param texture   The texture to query.
+ *  \param scaleMode A pointer filled in with the current scale mode.
+ *
+ *  \return 0 on success, or -1 if the texture is not valid.
+ *
+ *  \sa SDL_SetTextureScaleMode()
+ */
+extern DECLSPEC int SDLCALL SDL_GetTextureScaleMode(SDL_Texture * texture,
+                                                    SDL_ScaleMode *scaleMode);
 
 /**
  *  \brief Update the given texture rectangle with new pixel data.

@@ -722,6 +722,18 @@ D3D_UnlockTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     }
 }
 
+static void
+D3D_SetTextureScaleMode(SDL_Renderer * renderer, SDL_Texture * texture, SDL_ScaleMode scaleMode)
+{
+    D3D_TextureData *texturedata = (D3D_TextureData *)texture->driverdata;
+
+    if (!texturedata) {
+        return;
+    }
+
+    texturedata->scaleMode = (scaleMode == SDL_ScaleModeNearest) ? D3DTEXF_POINT : D3DTEXF_LINEAR;
+}
+
 static int
 D3D_SetRenderTargetInternal(SDL_Renderer * renderer, SDL_Texture * texture)
 {
@@ -1704,6 +1716,7 @@ D3D_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->UpdateTextureYUV = D3D_UpdateTextureYUV;
     renderer->LockTexture = D3D_LockTexture;
     renderer->UnlockTexture = D3D_UnlockTexture;
+    renderer->SetTextureScaleMode = D3D_SetTextureScaleMode;
     renderer->SetRenderTarget = D3D_SetRenderTarget;
     renderer->QueueSetViewport = D3D_QueueSetViewport;
     renderer->QueueSetDrawColor = D3D_QueueSetViewport;  /* SetViewport and SetDrawColor are (currently) no-ops. */

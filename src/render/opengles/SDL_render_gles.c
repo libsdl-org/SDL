@@ -492,6 +492,19 @@ GLES_UnlockTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     GLES_UpdateTexture(renderer, texture, &rect, data->pixels, data->pitch);
 }
 
+static void
+GLES_SetTextureScaleMode(SDL_Renderer * renderer, SDL_Texture * texture, SDL_ScaleMode scaleMode)
+{
+    GLES_RenderData *renderdata = (GLES_RenderData *) renderer->driverdata;
+    const GLenum textype = renderdata->textype;
+    GLES_TextureData *data = (GLES_TextureData *) texture->driverdata;
+    GLenum glScaleMode = (scaleMode == SDL_ScaleModeNearest) ? GL_NEAREST : GL_LINEAR;
+
+    renderdata->glBindTexture(data->type, data->texture);
+    renderdata->glTexParameteri(data->type, GL_TEXTURE_MIN_FILTER, glScaleMode);
+    renderdata->glTexParameteri(data->type, GL_TEXTURE_MAG_FILTER, glScaleMode);
+}
+
 static int
 GLES_SetRenderTarget(SDL_Renderer * renderer, SDL_Texture * texture)
 {
@@ -1141,6 +1154,7 @@ GLES_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->UpdateTexture = GLES_UpdateTexture;
     renderer->LockTexture = GLES_LockTexture;
     renderer->UnlockTexture = GLES_UnlockTexture;
+    renderer->SetTextureScaleMode = GLES_SetTextureScaleMode;
     renderer->SetRenderTarget = GLES_SetRenderTarget;
     renderer->QueueSetViewport = GLES_QueueSetViewport;
     renderer->QueueSetDrawColor = GLES_QueueSetViewport;  /* SetViewport and SetDrawColor are (currently) no-ops. */

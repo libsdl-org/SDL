@@ -946,6 +946,18 @@ METAL_UnlockTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     texturedata.hasdata = YES;
 }}
 
+static void
+METAL_SetTextureScaleMode(SDL_Renderer * renderer, SDL_Texture * texture, SDL_ScaleMode scaleMode)
+{ @autoreleasepool {
+    METAL_TextureData *texturedata = (__bridge METAL_TextureData *)texture->driverdata;
+
+    if (scaleMode == SDL_ScaleModeNearest) {
+        texturedata.mtlsampler = data.mtlsamplernearest;
+    } else {
+        texturedata.mtlsampler = data.mtlsamplerlinear;
+    }
+}}
+
 static int
 METAL_SetRenderTarget(SDL_Renderer * renderer, SDL_Texture * texture)
 { @autoreleasepool {
@@ -1763,6 +1775,7 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->UpdateTextureYUV = METAL_UpdateTextureYUV;
     renderer->LockTexture = METAL_LockTexture;
     renderer->UnlockTexture = METAL_UnlockTexture;
+    renderer->SetTextureScaleMode = METAL_SetTextureScaleMode;
     renderer->SetRenderTarget = METAL_SetRenderTarget;
     renderer->QueueSetViewport = METAL_QueueSetViewport;
     renderer->QueueSetDrawColor = METAL_QueueSetDrawColor;
