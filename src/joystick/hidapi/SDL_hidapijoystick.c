@@ -484,20 +484,18 @@ HIDAPI_SetupDeviceDriver(SDL_HIDAPI_Device *device)
 static void
 HIDAPI_CleanupDeviceDriver(SDL_HIDAPI_Device *device)
 {
-    int i;
-
     if (!device->driver) {
         /* Already cleaned up */
         return;
     }
 
     /* Disconnect any joysticks */
-    for (i = 0; i < device->num_joysticks; ++i) {
-        SDL_Joystick *joystick = SDL_JoystickFromInstanceID(device->joysticks[i]);
+    while (device->num_joysticks) {
+        SDL_Joystick *joystick = SDL_JoystickFromInstanceID(device->joysticks[0]);
         if (joystick) {
             HIDAPI_JoystickClose(joystick);
         }
-        HIDAPI_JoystickDisconnected(device, device->joysticks[i]);
+        HIDAPI_JoystickDisconnected(device, device->joysticks[0]);
     }
 
     device->driver->FreeDevice(device);
