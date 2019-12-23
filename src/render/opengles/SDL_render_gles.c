@@ -496,7 +496,6 @@ static void
 GLES_SetTextureScaleMode(SDL_Renderer * renderer, SDL_Texture * texture, SDL_ScaleMode scaleMode)
 {
     GLES_RenderData *renderdata = (GLES_RenderData *) renderer->driverdata;
-    const GLenum textype = renderdata->textype;
     GLES_TextureData *data = (GLES_TextureData *) texture->driverdata;
     GLenum glScaleMode = (scaleMode == SDL_ScaleModeNearest) ? GL_NEAREST : GL_LINEAR;
 
