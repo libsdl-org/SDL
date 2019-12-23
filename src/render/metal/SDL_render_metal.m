@@ -949,6 +949,7 @@ METAL_UnlockTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 static void
 METAL_SetTextureScaleMode(SDL_Renderer * renderer, SDL_Texture * texture, SDL_ScaleMode scaleMode)
 { @autoreleasepool {
+    METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
     METAL_TextureData *texturedata = (__bridge METAL_TextureData *)texture->driverdata;
 
     if (scaleMode == SDL_ScaleModeNearest) {
