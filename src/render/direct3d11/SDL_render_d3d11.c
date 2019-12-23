@@ -1835,6 +1835,8 @@ D3D11_UpdateVertexBuffer(SDL_Renderer *renderer,
     D3D11_RenderData *rendererData = (D3D11_RenderData *) renderer->driverdata;
     HRESULT result = S_OK;
     const int vbidx = rendererData->currentVertexBuffer;
+    const UINT stride = sizeof(VertexPositionColor);
+    const UINT offset = 0;
 
     if (dataSizeInBytes == 0) {
         return 0;  /* nothing to do. */
@@ -1858,8 +1860,6 @@ D3D11_UpdateVertexBuffer(SDL_Renderer *renderer,
     } else {
         D3D11_BUFFER_DESC vertexBufferDesc;
         D3D11_SUBRESOURCE_DATA vertexBufferData;
-        const UINT stride = sizeof(VertexPositionColor);
-        const UINT offset = 0;
 
         SAFE_RELEASE(rendererData->vertexBuffers[vbidx]);
 
@@ -1885,15 +1885,15 @@ D3D11_UpdateVertexBuffer(SDL_Renderer *renderer,
         }
 
         rendererData->vertexBufferSizes[vbidx] = dataSizeInBytes;
-
-        ID3D11DeviceContext_IASetVertexBuffers(rendererData->d3dContext,
-            0,
-            1,
-            &rendererData->vertexBuffers[vbidx],
-            &stride,
-            &offset
-            );
     }
+
+    ID3D11DeviceContext_IASetVertexBuffers(rendererData->d3dContext,
+        0,
+        1,
+        &rendererData->vertexBuffers[vbidx],
+        &stride,
+        &offset
+        );
 
     rendererData->currentVertexBuffer++;
     if (rendererData->currentVertexBuffer >= SDL_arraysize(rendererData->vertexBuffers)) {
