@@ -734,11 +734,11 @@ HIDAPI_AddDevice(struct hid_device_info *info)
         SDL_HIDAPI_devices = device;
     }
 
-#ifdef DEBUG_HIDAPI
-    SDL_Log("Added HIDAPI device '%s' VID 0x%.4x, PID 0x%.4x, version %d, interface %d, usage page 0x%.4x, usage 0x%.4x, driver = %s\n", device->name, device->vendor_id, device->product_id, device->version, device->interface_number, device->usage_page, device->usage, device->driver ? device->driver->hint : "NONE");
-#endif
-
     HIDAPI_SetupDeviceDriver(device);
+
+#ifdef DEBUG_HIDAPI
+    SDL_Log("Added HIDAPI device '%s' VID 0x%.4x, PID 0x%.4x, version %d, interface %d, usage page 0x%.4x, usage 0x%.4x, path = %s, driver = %s\n", device->name, device->vendor_id, device->product_id, device->version, device->interface_number, device->usage_page, device->usage, device->path, device->driver ? device->driver->hint : "NONE");
+#endif
 }
 
 

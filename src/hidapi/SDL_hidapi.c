@@ -535,9 +535,7 @@ struct hid_device_info HID_API_EXPORT * HID_API_CALL hid_enumerate(unsigned shor
     struct PLATFORM_hid_device_info *raw_dev;
 #endif /* HAVE_PLATFORM_BACKEND */
     struct hid_device_info *devs = NULL, *last = NULL, *new_dev;
-#ifdef SDL_LIBUSB_DYNAMIC
     SDL_bool bFound;
-#endif
 
     if (SDL_hidapi_wasinit == SDL_FALSE) {
         hid_init();
@@ -557,6 +555,10 @@ struct hid_device_info HID_API_EXPORT * HID_API_CALL hid_enumerate(unsigned shor
             bFound = SDL_FALSE;
 #if HAVE_PLATFORM_BACKEND
             for (raw_dev = raw_devs; raw_dev; raw_dev = raw_dev->next) {
+                if (raw_dev->vendor_id == 0x057e && raw_dev->product_id == 0x0337) {
+                    /* The GameCube adapter is handled by the USB HIDAPI driver */
+                    continue;
+                }
                 if (usb_dev->vendor_id == raw_dev->vendor_id &&
                     usb_dev->product_id == raw_dev->product_id &&
                     (raw_dev->interface_number < 0 || usb_dev->interface_number == raw_dev->interface_number)) {
@@ -585,16 +587,28 @@ struct hid_device_info HID_API_EXPORT * HID_API_CALL hid_enumerate(unsigned shor
 #if HAVE_PLATFORM_BACKEND
     if (udev_ctx) {
         for (raw_dev = raw_devs; raw_dev; raw_dev = raw_dev->next) {
-            new_dev = (struct hid_device_info*) SDL_malloc(sizeof(struct hid_device_info));
-            PLATFORM_CopyHIDDeviceInfo(raw_dev, new_dev);
-            new_dev->next = NULL;
-
-            if (last != NULL) {
-                last->next = new_dev;
-            } else {
-                devs = new_dev;
+            bFound = SDL_FALSE;
+            for (new_dev = devs; new_dev; new_dev = new_dev->next) {
+                if (raw_dev->vendor_id == new_dev->vendor_id &&
+                    raw_dev->product_id == new_dev->product_id &&
+                    raw_dev->interface_number == new_dev->interface_number) {
+                    bFound = SDL_TRUE;
+                    break;
+                }
             }
-            last = new_dev;
+
+            if (!bFound) {
+                new_dev = (struct hid_device_info*) SDL_malloc(sizeof(struct hid_device_info));
+                PLATFORM_CopyHIDDeviceInfo(raw_dev, new_dev);
+                new_dev->next = NULL;
+
+                if (last != NULL) {
+                    last->next = new_dev;
+                } else {
+                    devs = new_dev;
+                }
+                last = new_dev;
+            }
         }
         PLATFORM_hid_free_enumeration(raw_devs);
     }

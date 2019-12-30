@@ -98,6 +98,9 @@ HIDAPI_DriverGameCube_InitDevice(SDL_HIDAPI_Device *device)
         goto error;
     }
 
+    /* Wait for the adapter to initialize */
+    SDL_Delay(10);
+
     /* Add all the applicable joysticks */
     while ((size = hid_read_timeout(device->dev, packet, sizeof(packet), 0)) > 0) {
         if (size < 37 || packet[0] != 0x21) {
