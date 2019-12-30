@@ -158,9 +158,8 @@ SDL_SetJoystickIDForPlayerIndex(int player_index, SDL_JoystickID instance_id)
         }
 
         SDL_joystick_players = new_players;
-        while (SDL_joystick_player_count <= player_index) {
-            SDL_joystick_players[SDL_joystick_player_count++] = -1;
-        }
+		SDL_memset(&SDL_joystick_players[SDL_joystick_player_count], 0xFF, (player_index - SDL_joystick_player_count + 1) * sizeof(SDL_joystick_players[0]));
+		SDL_joystick_player_count = player_index + 1;
     }
 
     SDL_joystick_players[player_index] = instance_id;
