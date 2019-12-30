@@ -29,7 +29,6 @@
 #include <IOKit/hid/IOHIDKeys.h>
 #include <CoreFoundation/CoreFoundation.h>
 #include <wchar.h>
-#include <locale.h>
 #include <pthread.h>
 #include <sys/time.h>
 #include <unistd.h>
@@ -447,8 +446,6 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 	struct hid_device_info *cur_dev = NULL;
 	CFIndex num_devices;
 	int i;
-	
-	setlocale(LC_ALL,"");
 	
 	/* Set up the HID Manager if it hasn't been done */
 	if (hid_init() < 0)
@@ -1152,8 +1149,6 @@ int main(void)
 	CFIndex num_devices = CFSetGetCount(device_set);
 	IOHIDDeviceRef *device_array = calloc(num_devices, sizeof(IOHIDDeviceRef));
 	CFSetGetValues(device_set, (const void **) device_array);
-	
-	setlocale(LC_ALL, "");
 	
 	for (i = 0; i < num_devices; i++) {
 		IOHIDDeviceRef dev = device_array[i];
