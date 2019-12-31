@@ -3856,6 +3856,12 @@ AS_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
         #    have_haptic=yes
         #    EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,ForceFeedback"
         #fi
+        # Set up files for the sensor library
+        if test x$enable_sensor = xyes; then
+            AC_DEFINE(SDL_SENSOR_COREMOTION, 1, [ ])
+            SOURCES="$SOURCES $srcdir/src/sensor/coremotion/*.m"
+            have_sensor=yes
+        fi
         # Set up files for the power library
         if test x$enable_power = xyes; then
             AC_DEFINE(SDL_POWER_UIKIT, 1, [ ])
