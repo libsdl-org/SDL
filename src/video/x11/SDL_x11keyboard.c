@@ -267,8 +267,11 @@ X11_InitKeyboard(_THIS)
     int best_index;
     int distance;
     Bool xkb_repeat = 0;
+    XKeyboardState values = { .global_auto_repeat = AutoRepeatModeOff };
     
-    X11_XAutoRepeatOn(data->display);
+    X11_XGetKeyboardControl(data->display, &values);
+    if (values.global_auto_repeat != AutoRepeatModeOn)
+        X11_XAutoRepeatOn(data->display);
 
 #if SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM
     {
