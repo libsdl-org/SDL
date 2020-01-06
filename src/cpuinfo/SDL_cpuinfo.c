@@ -90,6 +90,11 @@
 #endif
 #endif
 
+#ifdef __RISCOS__
+#include <kernel.h>
+#include <swis.h>
+#endif
+
 #define CPU_HAS_RDTSC   (1 << 0)
 #define CPU_HAS_ALTIVEC (1 << 1)
 #define CPU_HAS_MMX     (1 << 2)
@@ -333,7 +338,7 @@ CPU_haveAltiVec(void)
     return altivec;
 }
 
-#if !defined(__ARM_ARCH)
+#if !defined(__arm__)
 static int
 CPU_haveARMSIMD(void)
 {
@@ -371,6 +376,27 @@ CPU_haveARMSIMD(void)
         close(fd);
     }
     return arm_simd;
+}
+
+#elif defined(__RISCOS__)
+
+static int
+CPU_haveARMSIMD(void)
+{
+	_kernel_swi_regs regs;
+	regs.r[0] = 0;
+	if (_kernel_swi(OS_PlatformFeatures, &regs, &regs) != NULL)
+		return 0;
+
+	if (!(regs.r[0] & (1<<31)))
+		return 0;
+
+	regs.r[0] = 34;
+	regs.r[1] = 29;
+	if (_kernel_swi(OS_PlatformFeatures, &regs, &regs) != NULL)
+		return 0;
+
+	return regs.r[0];
 }
 
 #else
@@ -419,7 +445,7 @@ CPU_haveNEON(void)
 #  endif
 /* All WinRT ARM devices are required to support NEON, but just in case. */
     return IsProcessorFeaturePresent(PF_ARM_NEON_INSTRUCTIONS_AVAILABLE) != 0;
-#elif !defined(__ARM_ARCH)
+#elif !defined(__arm__)
     return 0;  /* not an ARM CPU at all. */
 #elif __ARM_ARCH >= 8
     return 1;  /* ARMv8 always has non-optional NEON support. */
@@ -441,6 +467,18 @@ CPU_haveNEON(void)
         if (cpu_family == ANDROID_CPU_FAMILY_ARM) {
             uint64_t cpu_features = android_getCpuFeatures();
             if ((cpu_features & ANDROID_CPU_ARM_FEATURE_NEON) != 0) {
+                return 1;
+            }
+        }
+        return 0;
+    }
+#elif defined(__RISCOS__)
+    /* Use the VFPSupport_Features SWI to access the MVFR registers */
+    {
+        _kernel_swi_regs regs;
+	regs.r[0] = 0;
+        if (_kernel_swi(VFPSupport_Features, &regs, &regs) == NULL) {
+            if ((regs.r[2] & 0xFFF000) == 0x111000) {
                 return 1;
             }
         }
@@ -869,6 +907,15 @@ SDL_GetSystemRAM(void)
             Uint32 sysram = 0;
             DosQuerySysInfo(QSV_TOTPHYSMEM, QSV_TOTPHYSMEM, &sysram, 4);
             SDL_SystemRAM = (int) (sysram / 0x100000U);
+        }
+#endif
+#ifdef __RISCOS__
+        if (SDL_SystemRAM <= 0) {
+            _kernel_swi_regs regs;
+            regs.r[0] = 0x108;
+            if (_kernel_swi(OS_Memory, &regs, &regs) == NULL) {
+                SDL_SystemRAM = (int)(regs.r[1] * regs.r[2] / (1024 * 1024));
+            }
         }
 #endif
 #endif
