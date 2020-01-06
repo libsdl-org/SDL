@@ -2119,7 +2119,7 @@ install(TARGETS ${_INSTALL_LIBS} EXPORT SDL2Targets
 if (WINDOWS)
   set(PKG_PREFIX "cmake")
 else ()
-  set(PKG_PREFIX "lib/cmake/SDL2")
+  set(PKG_PREFIX "lib${LIB_SUFFIX}/cmake/SDL2")
 endif ()
 
 include(CMakePackageConfigHelpers)
