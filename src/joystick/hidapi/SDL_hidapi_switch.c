@@ -445,7 +445,8 @@ static SDL_bool BTrySetupUSB(SDL_DriverSwitch_Context *ctx)
         return SDL_FALSE;
     }
     if (!WriteProprietary(ctx, k_eSwitchProprietaryCommandIDs_HighSpeed, NULL, 0, SDL_TRUE)) {
-        return SDL_FALSE;
+        /* The 8BitDo M30 doesn't respond to this command, but otherwise works correctly */
+        /*return SDL_FALSE;*/
     }
     if (!WriteProprietary(ctx, k_eSwitchProprietaryCommandIDs_Handshake, NULL, 0, SDL_TRUE)) {
         return SDL_FALSE;
