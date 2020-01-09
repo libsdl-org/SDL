@@ -190,6 +190,19 @@ IsBluetoothXboxOneController(Uint16 vendor_id, Uint16 product_id)
 }
 
 static SDL_bool
+ControllerSilentUntilInit(Uint16 vendor_id, Uint16 product_id)
+{
+    /* Return true if this controller doesn't send the 0x02 "waiting for init" packet */
+    const Uint16 USB_VENDOR_PDP = 0x0e6f;
+    const Uint16 USB_VENDOR_POWERA = 0x24c6;
+
+    if (vendor_id == USB_VENDOR_PDP || vendor_id == USB_VENDOR_POWERA) {
+        return SDL_TRUE;
+    }
+    return SDL_FALSE;
+}
+
+static SDL_bool
 SendControllerInit(hid_device *dev, SDL_DriverXboxOne_Context *ctx)
 {
     Uint16 vendor_id = ctx->vendor_id;
@@ -407,7 +420,7 @@ HIDAPI_DriverXboxOne_UpdateDevice(SDL_HIDAPI_Device *device)
         return SDL_FALSE;
     }
 
-    if (!ctx->initialized) {
+    if (!ctx->initialized && ControllerSilentUntilInit(device->vendor_id, device->product_id)) {
         if (SDL_TICKS_PASSED(SDL_GetTicks(), ctx->start_time + CONTROLLER_INIT_DELAY_MS)) {
             if (!SendControllerInit(device->dev, ctx)) {
                 HIDAPI_JoystickDisconnected(device, joystick->instance_id);
@@ -429,6 +442,17 @@ HIDAPI_DriverXboxOne_UpdateDevice(SDL_HIDAPI_Device *device)
                     data[16], data[17], data[18], data[19]);
 #endif
         switch (data[0]) {
+        case 0x02:
+            /* Controller is connected and waiting for initialization */
+            if (!SendControllerInit(device->dev, ctx)) {
+                HIDAPI_JoystickDisconnected(device, joystick->instance_id);
+                return SDL_FALSE;
+            }
+            ctx->initialized = SDL_TRUE;
+            break;
+        case 0x03:
+            /* Controller heartbeat */
+            break;
         case 0x20:
             HIDAPI_DriverXboxOne_HandleStatePacket(joystick, device->dev, ctx, data, size);
             break;
