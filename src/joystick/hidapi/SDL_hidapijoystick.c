@@ -491,10 +491,6 @@ HIDAPI_CleanupDeviceDriver(SDL_HIDAPI_Device *device)
 
     /* Disconnect any joysticks */
     while (device->num_joysticks) {
-        SDL_Joystick *joystick = SDL_JoystickFromInstanceID(device->joysticks[0]);
-        if (joystick) {
-            HIDAPI_JoystickClose(joystick);
-        }
         HIDAPI_JoystickDisconnected(device, device->joysticks[0]);
     }
 
@@ -606,6 +602,11 @@ HIDAPI_JoystickDisconnected(SDL_HIDAPI_Device *device, SDL_JoystickID joystickID
 
     for (i = 0; i < device->num_joysticks; ++i) {
         if (device->joysticks[i] == joystickID) {
+            SDL_Joystick *joystick = SDL_JoystickFromInstanceID(joystickID);
+            if (joystick) {
+                HIDAPI_JoystickClose(joystick);
+            }
+
             SDL_memcpy(&device->joysticks[i], &device->joysticks[i+1], device->num_joysticks - i - 1);
             --device->num_joysticks;
             --SDL_HIDAPI_numjoysticks;
