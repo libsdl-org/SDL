@@ -677,7 +677,7 @@ SDL_BuildAudioTypeCVTFromFloat(SDL_AudioCVT *cvt, const SDL_AudioFormat dst_fmt)
         }
 
         if (!filter) {
-            return SDL_SetError("No conversion from float to destination format available");
+            return SDL_SetError("No conversion from float to format 0x.4x available", dst_fmt);
         }
 
         if (SDL_AddAudioCVTFilter(cvt, filter) < 0) {
