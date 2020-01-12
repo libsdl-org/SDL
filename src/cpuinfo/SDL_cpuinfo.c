@@ -338,7 +338,7 @@ CPU_haveAltiVec(void)
     return altivec;
 }
 
-#if !defined(__arm__)
+#if !defined(__ARM_ARCH)
 static int
 CPU_haveARMSIMD(void)
 {
@@ -445,7 +445,7 @@ CPU_haveNEON(void)
 #  endif
 /* All WinRT ARM devices are required to support NEON, but just in case. */
     return IsProcessorFeaturePresent(PF_ARM_NEON_INSTRUCTIONS_AVAILABLE) != 0;
-#elif !defined(__arm__)
+#elif !defined(__ARM_ARCH)
     return 0;  /* not an ARM CPU at all. */
 #elif __ARM_ARCH >= 8
     return 1;  /* ARMv8 always has non-optional NEON support. */
