@@ -9,6 +9,7 @@ import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
 import android.bluetooth.BluetoothGattService;
+import android.hardware.usb.UsbDevice;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
@@ -562,6 +563,11 @@ class HIDDeviceBLESteamController extends BluetoothGattCallback implements HIDDe
     public String getProductName() {
         return "Steam Controller";
     }
+
+	@Override
+    public UsbDevice getDevice() {
+		return null;
+	}
 
     @Override
     public boolean open() {

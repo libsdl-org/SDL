@@ -29,7 +29,7 @@ class HIDDeviceUSB implements HIDDevice {
     }
 
     public String getIdentifier() {
-        return String.format("%s/%x/%x", mDevice.getDeviceName(), mDevice.getVendorId(), mDevice.getProductId());
+        return String.format("%s/%x/%x/%d", mDevice.getDeviceName(), mDevice.getVendorId(), mDevice.getProductId(), mInterface);
     }
 
     @Override
@@ -88,6 +88,7 @@ class HIDDeviceUSB implements HIDDevice {
         return result;
     }
 
+	@Override
     public UsbDevice getDevice() {
         return mDevice;
     }
@@ -104,19 +105,15 @@ class HIDDeviceUSB implements HIDDevice {
             return false;
         }
 
-        // Force claim all interfaces
-        for (int i = 0; i < mDevice.getInterfaceCount(); i++) {
-            UsbInterface iface = mDevice.getInterface(i);
-
-            if (!mConnection.claimInterface(iface, true)) {
-                Log.w(TAG, "Failed to claim interfaces on USB device " + getDeviceName());
-                close();
-                return false;
-            }
+        // Force claim our interface
+        UsbInterface iface = mDevice.getInterface(mInterface);
+        if (!mConnection.claimInterface(iface, true)) {
+            Log.w(TAG, "Failed to claim interfaces on USB device " + getDeviceName());
+            close();
+            return false;
         }
 
         // Find the endpoints
-        UsbInterface iface = mDevice.getInterface(mInterface);
         for (int j = 0; j < iface.getEndpointCount(); j++) {
             UsbEndpoint endpt = iface.getEndpoint(j);
             switch (endpt.getDirection()) {
@@ -250,10 +247,8 @@ class HIDDeviceUSB implements HIDDevice {
             mInputThread = null;
         }
         if (mConnection != null) {
-            for (int i = 0; i < mDevice.getInterfaceCount(); i++) {
-                UsbInterface iface = mDevice.getInterface(i);
-                mConnection.releaseInterface(iface);
-            }
+            UsbInterface iface = mDevice.getInterface(mInterface);
+            mConnection.releaseInterface(iface);
             mConnection.close();
             mConnection = null;
         }
