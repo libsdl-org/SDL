@@ -245,9 +245,6 @@ HIDAPI_DriverXbox360W_UpdateDevice(SDL_HIDAPI_Device *device)
 
                     HIDAPI_JoystickConnected(device, &joystickID);
 
-                    /* Set the controller LED */
-                    SetSlotLED(device->dev, joystickID);
-
                 } else if (device->num_joysticks > 0) {
                     HIDAPI_JoystickDisconnected(device, device->joysticks[0]);
                 }
