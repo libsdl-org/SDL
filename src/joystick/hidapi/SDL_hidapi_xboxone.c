@@ -42,26 +42,26 @@
 /* This is the full init sequence for the Xbox One Elite Series 2 controller.
    Normally it isn't needed, but this switches the controller back to wired report mode after being in Bluetooth mode.
 */
-static const Uint8 xboxone_elite_init0[] = {
+static const Uint8 xboxone_ms_init0[] = {
     0x04, 0x20, 0x01, 0x00
 };
-static const Uint8 xboxone_elite_init1[] = {
+static const Uint8 xboxone_ms_init1[] = {
     0x01, 0x20, 0x28, 0x09, 0x00, 0x04, 0x20, 0x3A,
     0x00, 0x00, 0x00, 0x31, 0x01
 };
-static const Uint8 xboxone_elite_init2[] = {
+static const Uint8 xboxone_ms_init2[] = {
     0x01, 0x20, 0x28, 0x09, 0x00, 0x04, 0x20, 0x6B,
     0x01, 0x00, 0x00, 0x00, 0x00
 };
-static const Uint8 xboxone_elite_init3[] = {
+static const Uint8 xboxone_ms_init3[] = {
     0x05, 0x20, 0x02, 0x0F, 0x06, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x55, 0x53, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00
 };
-static const Uint8 xboxone_elite_init4[] = {
+static const Uint8 xboxone_ms_init4[] = {
     0x05, 0x20, 0x03, 0x01, 0x00
 };
-static const Uint8 xboxone_elite_init5[] = {
+static const Uint8 xboxone_ms_init5[] = {
     0x0A, 0x20, 0x04, 0x03, 0x00, 0x01, 0x14
 };
 
@@ -145,12 +145,12 @@ typedef struct {
 static const SDL_DriverXboxOne_InitPacket xboxone_init_packets[] = {
     { 0x0e6f, 0x0165, xboxone_hori_init, sizeof(xboxone_hori_init) },
     { 0x0f0d, 0x0067, xboxone_hori_init, sizeof(xboxone_hori_init) },
-    { 0x045e, 0x0b00, xboxone_elite_init0, sizeof(xboxone_elite_init0) },
-    { 0x045e, 0x0b00, xboxone_elite_init1, sizeof(xboxone_elite_init1) },
-    { 0x045e, 0x0b00, xboxone_elite_init2, sizeof(xboxone_elite_init2) },
-    { 0x045e, 0x0b00, xboxone_elite_init3, sizeof(xboxone_elite_init3) },
-    { 0x045e, 0x0b00, xboxone_elite_init4, sizeof(xboxone_elite_init4) },
-    { 0x045e, 0x0b00, xboxone_elite_init5, sizeof(xboxone_elite_init5) },
+    { 0x045e, 0x0000, xboxone_ms_init0, sizeof(xboxone_ms_init0) },
+    { 0x045e, 0x0000, xboxone_ms_init1, sizeof(xboxone_ms_init1) },
+    { 0x045e, 0x0000, xboxone_ms_init2, sizeof(xboxone_ms_init2) },
+    { 0x045e, 0x0000, xboxone_ms_init3, sizeof(xboxone_ms_init3) },
+    { 0x045e, 0x0000, xboxone_ms_init4, sizeof(xboxone_ms_init4) },
+    { 0x045e, 0x0000, xboxone_ms_init5, sizeof(xboxone_ms_init5) },
     { 0x0000, 0x0000, xboxone_fw2015_init, sizeof(xboxone_fw2015_init) },
     { 0x0000, 0x0000, xboxone_led_enable, sizeof(xboxone_led_enable) },
     { 0x0e6f, 0x0000, xboxone_pdp_init1, sizeof(xboxone_pdp_init1) },
@@ -175,31 +175,36 @@ IsBluetoothXboxOneController(Uint16 vendor_id, Uint16 product_id)
 {
     /* Check to see if it's the Xbox One S or Xbox One Elite Series 2 in Bluetooth mode */
     const Uint16 USB_VENDOR_MICROSOFT = 0x045e;
-    const Uint16 USB_PRODUCT_XBOX_ONE_S_REV1 = 0x02e0;
-    const Uint16 USB_PRODUCT_XBOX_ONE_S_REV2 = 0x02fd;
-    const Uint16 USB_PRODUCT_XBOX_ONE_ELITE_SERIES_2 = 0x0b05;
+    const Uint16 USB_PRODUCT_XBOX_ONE_S_REV1_BLUETOOTH = 0x02e0;
+    const Uint16 USB_PRODUCT_XBOX_ONE_S_REV2_BLUETOOTH = 0x02fd;
+    const Uint16 USB_PRODUCT_XBOX_ONE_ELITE_SERIES_2_BLUETOOTH = 0x0b05;
 
     if (vendor_id == USB_VENDOR_MICROSOFT) {
-        if (product_id == USB_PRODUCT_XBOX_ONE_S_REV1 ||
-            product_id == USB_PRODUCT_XBOX_ONE_S_REV2 ||
-            product_id == USB_PRODUCT_XBOX_ONE_ELITE_SERIES_2) {
+        if (product_id == USB_PRODUCT_XBOX_ONE_S_REV1_BLUETOOTH ||
+            product_id == USB_PRODUCT_XBOX_ONE_S_REV2_BLUETOOTH ||
+            product_id == USB_PRODUCT_XBOX_ONE_ELITE_SERIES_2_BLUETOOTH) {
             return SDL_TRUE;
         }
     }
     return SDL_FALSE;
 }
 
+/* Return true if this controller sends the 0x02 "waiting for init" packet */
 static SDL_bool
-ControllerSilentUntilInit(Uint16 vendor_id, Uint16 product_id)
+ControllerSendsWaitingForInit(Uint16 vendor_id, Uint16 product_id)
 {
-    /* Return true if this controller doesn't send the 0x02 "waiting for init" packet */
-    const Uint16 USB_VENDOR_PDP = 0x0e6f;
-    const Uint16 USB_VENDOR_POWERA = 0x24c6;
+    const Uint16 USB_VENDOR_HYPERKIN = 0x2e24;
 
-    if (vendor_id == USB_VENDOR_PDP || vendor_id == USB_VENDOR_POWERA) {
+    if (vendor_id == USB_VENDOR_HYPERKIN) {
+        /* The Hyperkin controllers always send 0x02 when waiting for init,
+           and the Hyperkin Duke plays an Xbox startup animation, so we want
+           to make sure we don't send the init sequence if it isn't needed.
+        */
         return SDL_TRUE;
+    } else {
+        /* Other controllers may or may not send 0x02, but it doesn't hurt */
+        return SDL_FALSE;
     }
-    return SDL_FALSE;
 }
 
 static SDL_bool
@@ -420,7 +425,7 @@ HIDAPI_DriverXboxOne_UpdateDevice(SDL_HIDAPI_Device *device)
         return SDL_FALSE;
     }
 
-    if (!ctx->initialized && ControllerSilentUntilInit(device->vendor_id, device->product_id)) {
+    if (!ctx->initialized && !ControllerSendsWaitingForInit(device->vendor_id, device->product_id)) {
         if (SDL_TICKS_PASSED(SDL_GetTicks(), ctx->start_time + CONTROLLER_INIT_DELAY_MS)) {
             if (!SendControllerInit(device->dev, ctx)) {
                 HIDAPI_JoystickDisconnected(device, joystick->instance_id);
