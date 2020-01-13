@@ -19,8 +19,9 @@ import android.hardware.usb.*;
 import android.os.Handler;
 import android.os.Looper;
 
-import java.util.HashMap;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 
 public class HIDDeviceManager {
@@ -50,7 +51,6 @@ public class HIDDeviceManager {
 
     private Context mContext;
     private HashMap<Integer, HIDDevice> mDevicesById = new HashMap<Integer, HIDDevice>();
-    private HashMap<UsbDevice, HIDDeviceUSB> mUSBDevices = new HashMap<UsbDevice, HIDDeviceUSB>();
     private HashMap<BluetoothDevice, HIDDeviceBLESteamController> mBluetoothDevices = new HashMap<BluetoothDevice, HIDDeviceBLESteamController>();
     private int mNextDeviceId = 0;
     private SharedPreferences mSharedPreferences = null;
@@ -337,27 +337,30 @@ public class HIDDeviceManager {
     }
 
     private void handleUsbDeviceDetached(UsbDevice usbDevice) {
-        HIDDeviceUSB device = mUSBDevices.get(usbDevice);
-        if (device == null)
-            return;
-
-        int id = device.getId();
-        mUSBDevices.remove(usbDevice);
-        mDevicesById.remove(id);
-        device.shutdown();
-        HIDDeviceDisconnected(id);
+        List<Integer> devices = new ArrayList<Integer>();
+        for (HIDDevice device : mDevicesById.values()) {
+            if (usbDevice.equals(device.getDevice())) {
+                devices.add(device.getId());
+            }
+        }
+        for (int id : devices) {
+            HIDDevice device = mDevicesById.get(id);
+            mDevicesById.remove(id);
+            device.shutdown();
+            HIDDeviceDisconnected(id);
+        }
     }
 
     private void handleUsbDevicePermission(UsbDevice usbDevice, boolean permission_granted) {
-        HIDDeviceUSB device = mUSBDevices.get(usbDevice);
-        if (device == null)
-            return;
-
-        boolean opened = false;
-        if (permission_granted) {
-            opened = device.open();
+        for (HIDDevice device : mDevicesById.values()) {
+            if (usbDevice.equals(device.getDevice())) {
+                boolean opened = false;
+                if (permission_granted) {
+                    opened = device.open();
+                }
+                HIDDeviceOpenResult(device.getId(), opened);
+            }
         }
-        HIDDeviceOpenResult(device.getId(), opened);
     }
 
     private void connectHIDDeviceUSB(UsbDevice usbDevice) {
@@ -366,10 +369,8 @@ public class HIDDeviceManager {
                 if (isHIDDeviceInterface(usbDevice, interface_number)) {
                     HIDDeviceUSB device = new HIDDeviceUSB(this, usbDevice, interface_number);
                     int id = device.getId();
-                    mUSBDevices.put(usbDevice, device);
                     mDevicesById.put(id, device);
                     HIDDeviceConnected(id, device.getIdentifier(), device.getVendorId(), device.getProductId(), device.getSerialNumber(), device.getVersion(), device.getManufacturerName(), device.getProductName(), interface_number);
-                    break;
                 }
             }
         }
@@ -566,33 +567,27 @@ public class HIDDeviceManager {
     //////////////////////////////////////////////////////////////////////////////////////////////////////
 
     public boolean openDevice(int deviceID) {
+        Log.v(TAG, "openDevice deviceID=" + deviceID);
+        HIDDevice device = getDevice(deviceID);
+        if (device == null) {
+            HIDDeviceDisconnected(deviceID);
+            return false;
+        }
+
         // Look to see if this is a USB device and we have permission to access it
-        for (HIDDeviceUSB device : mUSBDevices.values()) {
-            if (deviceID == device.getId()) {
-                UsbDevice usbDevice = device.getDevice();
-                if (!mUsbManager.hasPermission(usbDevice)) {
-                    HIDDeviceOpenPending(deviceID);
-                    try {
-                        mUsbManager.requestPermission(usbDevice, PendingIntent.getBroadcast(mContext, 0, new Intent(HIDDeviceManager.ACTION_USB_PERMISSION), 0));
-                    } catch (Exception e) {
-                        Log.v(TAG, "Couldn't request permission for USB device " + usbDevice);
-                        HIDDeviceOpenResult(deviceID, false);
-                    }
-                    return false;
-                }
-                break;
+        UsbDevice usbDevice = device.getDevice();
+        if (usbDevice != null && !mUsbManager.hasPermission(usbDevice)) {
+            HIDDeviceOpenPending(deviceID);
+            try {
+                mUsbManager.requestPermission(usbDevice, PendingIntent.getBroadcast(mContext, 0, new Intent(HIDDeviceManager.ACTION_USB_PERMISSION), 0));
+            } catch (Exception e) {
+                Log.v(TAG, "Couldn't request permission for USB device " + usbDevice);
+                HIDDeviceOpenResult(deviceID, false);
             }
+            return false;
         }
 
         try {
-            Log.v(TAG, "openDevice deviceID=" + deviceID);
-            HIDDevice device;
-            device = getDevice(deviceID);
-            if (device == null) {
-                HIDDeviceDisconnected(deviceID);
-                return false;
-            }
-
             return device.open();
         } catch (Exception e) {
             Log.e(TAG, "Got exception: " + Log.getStackTraceString(e));
@@ -602,7 +597,7 @@ public class HIDDeviceManager {
 
     public int sendOutputReport(int deviceID, byte[] report) {
         try {
-            Log.v(TAG, "sendOutputReport deviceID=" + deviceID + " length=" + report.length);
+            //Log.v(TAG, "sendOutputReport deviceID=" + deviceID + " length=" + report.length);
             HIDDevice device;
             device = getDevice(deviceID);
             if (device == null) {
@@ -619,7 +614,7 @@ public class HIDDeviceManager {
 
     public int sendFeatureReport(int deviceID, byte[] report) {
         try {
-            Log.v(TAG, "sendFeatureReport deviceID=" + deviceID + " length=" + report.length);
+            //Log.v(TAG, "sendFeatureReport deviceID=" + deviceID + " length=" + report.length);
             HIDDevice device;
             device = getDevice(deviceID);
             if (device == null) {
@@ -636,7 +631,7 @@ public class HIDDeviceManager {
 
     public boolean getFeatureReport(int deviceID, byte[] report) {
         try {
-            Log.v(TAG, "getFeatureReport deviceID=" + deviceID);
+            //Log.v(TAG, "getFeatureReport deviceID=" + deviceID);
             HIDDevice device;
             device = getDevice(deviceID);
             if (device == null) {
