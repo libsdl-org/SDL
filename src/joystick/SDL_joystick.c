@@ -751,10 +751,17 @@ SDL_JoystickSetPlayerIndex(SDL_Joystick * joystick, int player_index)
 int
 SDL_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms)
 {
+	int result;
+
     if (!SDL_PrivateJoystickValid(joystick)) {
         return -1;
     }
-    return joystick->driver->Rumble(joystick, low_frequency_rumble, high_frequency_rumble, duration_ms);
+
+	SDL_LockJoysticks();
+    result = joystick->driver->Rumble(joystick, low_frequency_rumble, high_frequency_rumble, duration_ms);
+	SDL_UnlockJoysticks();
+
+	return result;
 }
 
 /*
