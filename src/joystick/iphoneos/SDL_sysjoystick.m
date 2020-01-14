@@ -211,7 +211,6 @@ IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controlle
     }
 #if TARGET_OS_TV
     else if (controller.microGamepad) {
-        GCMicroGamepad *gamepad = controller.microGamepad;
         int nbuttons = 0;
 
         device->button_mask |= (1 << SDL_CONTROLLER_BUTTON_A);
