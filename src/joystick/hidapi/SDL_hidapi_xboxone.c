@@ -34,6 +34,9 @@
 
 #ifdef SDL_JOYSTICK_HIDAPI_XBOXONE
 
+/* Define this if you want to log all packets from the controller */
+/*#define DEBUG_XBOX_PROTOCOL*/
+
 #define USB_PACKET_LENGTH   64
 
 /* The amount of time to wait after hotplug to send controller init sequence */
@@ -100,8 +103,9 @@ static const SDL_DriverXboxOne_InitPacket xboxone_init_packets[] = {
     { 0x0000, 0x0000, 0x0000, 0x0000, xboxone_init2, sizeof(xboxone_init2), { 0x00, 0x00 } },
     { 0x0000, 0x0000, 0x0000, 0x0000, xboxone_init3, sizeof(xboxone_init3), { 0x00, 0x00 } },
     { 0x0000, 0x0000, 0x0000, 0x0000, xboxone_init4, sizeof(xboxone_init4), { 0x00, 0x00 } },
+
     /* These next packets are required for third party controllers (PowerA, PDP, HORI),
-       but are the wrong protocol for Microsoft Xbox controllers.
+       but aren't the correct protocol for Microsoft Xbox controllers.
      */
     { 0x0000, 0x0000, 0x045e, 0x0000, xboxone_init5, sizeof(xboxone_init5), { 0x00, 0x00 } },
     { 0x0000, 0x0000, 0x045e, 0x0000, xboxone_init6, sizeof(xboxone_init6), { 0x00, 0x00 } },
@@ -116,8 +120,28 @@ typedef struct {
     Uint8 last_state[USB_PACKET_LENGTH];
     SDL_bool rumble_synchronized;
     Uint32 rumble_expiration;
+    SDL_bool has_paddles;
 } SDL_DriverXboxOne_Context;
 
+
+#ifdef DEBUG_XBOX_PROTOCOL
+static void
+DumpPacket(const char *prefix, Uint8 *data, int size)
+{
+    int i;
+    char buffer[5*USB_PACKET_LENGTH];
+
+    SDL_snprintf(buffer, sizeof(buffer), prefix, size);
+    for (i = 0; i < size; ++i) {
+        if ((i % 8) == 0) {
+            SDL_snprintf(&buffer[SDL_strlen(buffer)], sizeof(buffer) - SDL_strlen(buffer), "\n%.2d:      ", i);
+        }
+        SDL_snprintf(&buffer[SDL_strlen(buffer)], sizeof(buffer) - SDL_strlen(buffer), " 0x%.2x", data[i]);
+    }
+    SDL_strlcat(buffer, "\n", sizeof(buffer));
+    SDL_Log("%s", buffer);
+}
+#endif /* DEBUG_XBOX_PROTOCOL */
 
 static SDL_bool
 IsBluetoothXboxOneController(Uint16 vendor_id, Uint16 product_id)
@@ -134,6 +158,21 @@ IsBluetoothXboxOneController(Uint16 vendor_id, Uint16 product_id)
             product_id == USB_PRODUCT_XBOX_ONE_ELITE_SERIES_2_BLUETOOTH) {
             return SDL_TRUE;
         }
+    }
+    return SDL_FALSE;
+}
+
+static SDL_bool
+ControllerHasPaddles(Uint16 vendor_id, Uint16 product_id)
+{
+    const Uint16 USB_VENDOR_MICROSOFT = 0x045e;
+    const Uint16 USB_PRODUCT_XBOX_ONE_ELITE_SERIES_2 = 0x0b00;
+
+    if (vendor_id == USB_VENDOR_MICROSOFT) {
+        if (product_id == USB_PRODUCT_XBOX_ONE_ELITE_SERIES_2) {
+            return SDL_TRUE;
+        }
+        /* The original Elite controller probably works here, but I don't have one to test... */
     }
     return SDL_FALSE;
 }
@@ -251,14 +290,7 @@ SendControllerInit(hid_device *dev, SDL_DriverXboxOne_Context *ctx)
 
                     while ((size = hid_read_timeout(dev, data, sizeof(data), 0)) > 0) {
 #ifdef DEBUG_XBOX_PROTOCOL
-                        SDL_Log("Xbox One INIT packet: size = %d\n"
-                                "                 0x%.2x 0x%.2x 0x%.2x 0x%.2x 0x%.2x 0x%.2x 0x%.2x 0x%.2x\n"
-                                "                 0x%.2x 0x%.2x 0x%.2x 0x%.2x 0x%.2x 0x%.2x 0x%.2x 0x%.2x\n"
-                                "                 0x%.2x 0x%.2x 0x%.2x 0x%.2x\n",
-                                    size,
-                                    data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7],
-                                    data[8], data[9], data[10], data[11], data[12], data[13], data[14], data[15],
-                                    data[16], data[17], data[18], data[19]);
+                        DumpPacket("Xbox One INIT packet: size = %d", data, size);
 #endif
                         if (size >= 2 && data[0] == packet->response[0] && data[1] == packet->response[1]) {
                             got_response = SDL_TRUE;
@@ -339,9 +371,10 @@ HIDAPI_DriverXboxOne_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joyst
     ctx->product_id = device->product_id;
     ctx->start_time = SDL_GetTicks();
     ctx->sequence = 1;
+    ctx->has_paddles = ControllerHasPaddles(ctx->vendor_id, ctx->product_id);
 
     /* Initialize the joystick capabilities */
-    joystick->nbuttons = SDL_CONTROLLER_BUTTON_MAX;
+    joystick->nbuttons = ctx->has_paddles ? SDL_CONTROLLER_BUTTON_MAX : (SDL_CONTROLLER_BUTTON_MAX + 4);
     joystick->naxes = SDL_CONTROLLER_AXIS_MAX;
     joystick->epowerlevel = SDL_JOYSTICK_POWER_WIRED;
 
@@ -399,6 +432,20 @@ HIDAPI_DriverXboxOne_HandleStatePacket(SDL_Joystick *joystick, hid_device *dev, 
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_RIGHTSHOULDER, (data[5] & 0x20) ? SDL_PRESSED : SDL_RELEASED);
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_LEFTSTICK, (data[5] & 0x40) ? SDL_PRESSED : SDL_RELEASED);
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_RIGHTSTICK, (data[5] & 0x80) ? SDL_PRESSED : SDL_RELEASED);
+    }
+
+    if (ctx->has_paddles && size >= 20) {
+        /* data[19] is the paddle remapping mode, 0 = no remapping */
+        if (data[19] != 0) {
+            /* Respect that the paddles are being used for other controls and don't pass them on to the app */
+            data[18] = 0;
+        }
+        if (ctx->last_state[18] != data[18]) {
+            SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_MAX+0, (data[18] & 0x01) ? SDL_PRESSED : SDL_RELEASED);
+            SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_MAX+1, (data[18] & 0x02) ? SDL_PRESSED : SDL_RELEASED);
+            SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_MAX+2, (data[18] & 0x04) ? SDL_PRESSED : SDL_RELEASED);
+            SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_MAX+3, (data[18] & 0x08) ? SDL_PRESSED : SDL_RELEASED);
+        }
     }
 
     axis = ((int)*(Sint16*)(&data[6]) * 64) - 32768;
@@ -464,14 +511,7 @@ HIDAPI_DriverXboxOne_UpdateDevice(SDL_HIDAPI_Device *device)
 
     while ((size = hid_read_timeout(device->dev, data, sizeof(data), 0)) > 0) {
 #ifdef DEBUG_XBOX_PROTOCOL
-        SDL_Log("Xbox One packet: size = %d\n"
-                "                 0x%.2x 0x%.2x 0x%.2x 0x%.2x 0x%.2x 0x%.2x 0x%.2x 0x%.2x\n"
-                "                 0x%.2x 0x%.2x 0x%.2x 0x%.2x 0x%.2x 0x%.2x 0x%.2x 0x%.2x\n"
-                "                 0x%.2x 0x%.2x 0x%.2x 0x%.2x\n",
-                    size,
-                    data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7],
-                    data[8], data[9], data[10], data[11], data[12], data[13], data[14], data[15],
-                    data[16], data[17], data[18], data[19]);
+        DumpPacket("Xbox One packet: size = %d", data, size);
 #endif
         switch (data[0]) {
         case 0x02:
