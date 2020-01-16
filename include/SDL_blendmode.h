@@ -50,6 +50,9 @@ typedef enum
     SDL_BLENDMODE_MOD = 0x00000004,      /**< color modulate
                                               dstRGB = srcRGB * dstRGB
                                               dstA = dstA */
+    SDL_BLENDMODE_MUL = 0x00000008,      /**< color multiply
+                                              dstRGB = (srcRGB * dstRGB) + (dstRGB * (1-srcA))
+                                              dstA = (srcA * dstA) + (dstA * (1-srcA)) */
     SDL_BLENDMODE_INVALID = 0x7FFFFFFF
 
     /* Additional custom blend modes can be returned by SDL_ComposeCustomBlendMode() */

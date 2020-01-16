@@ -75,6 +75,10 @@
     SDL_COMPOSE_BLENDMODE(SDL_BLENDFACTOR_ZERO, SDL_BLENDFACTOR_SRC_COLOR, SDL_BLENDOPERATION_ADD, \
                           SDL_BLENDFACTOR_ZERO, SDL_BLENDFACTOR_ONE, SDL_BLENDOPERATION_ADD)
 
+#define SDL_BLENDMODE_MUL_FULL \
+    SDL_COMPOSE_BLENDMODE(SDL_BLENDFACTOR_DST_COLOR, SDL_BLENDFACTOR_ONE_MINUS_SRC_ALPHA, SDL_BLENDOPERATION_ADD, \
+                          SDL_BLENDFACTOR_DST_ALPHA, SDL_BLENDFACTOR_ONE_MINUS_SRC_ALPHA, SDL_BLENDOPERATION_ADD)
+
 #if !SDL_RENDER_DISABLED
 static const SDL_RenderDriver *render_drivers[] = {
 #if SDL_VIDEO_RENDER_D3D
@@ -970,6 +974,7 @@ IsSupportedBlendMode(SDL_Renderer * renderer, SDL_BlendMode blendMode)
     case SDL_BLENDMODE_BLEND:
     case SDL_BLENDMODE_ADD:
     case SDL_BLENDMODE_MOD:
+    case SDL_BLENDMODE_MUL:
         return SDL_TRUE;
 
     default:
@@ -3288,6 +3293,9 @@ SDL_GetShortBlendMode(SDL_BlendMode blendMode)
     if (blendMode == SDL_BLENDMODE_MOD_FULL) {
         return SDL_BLENDMODE_MOD;
     }
+    if (blendMode == SDL_BLENDMODE_MUL_FULL) {
+        return SDL_BLENDMODE_MUL;
+    }
     return blendMode;
 }
 
@@ -3305,6 +3313,9 @@ SDL_GetLongBlendMode(SDL_BlendMode blendMode)
     }
     if (blendMode == SDL_BLENDMODE_MOD) {
         return SDL_BLENDMODE_MOD_FULL;
+    }
+    if (blendMode == SDL_BLENDMODE_MUL) {
+        return SDL_BLENDMODE_MUL_FULL;
     }
     return blendMode;
 }

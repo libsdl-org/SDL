@@ -474,8 +474,8 @@ SDLgfx_rotateSurface(SDL_Surface * src, double angle, int centerx, int centery, 
         SDL_FillRect(rz_dst, NULL, colorkey);
     } else if (blendmode == SDL_BLENDMODE_NONE) {
         blendmode = SDL_BLENDMODE_BLEND;
-    } else if (blendmode == SDL_BLENDMODE_MOD) {
-        /* Without a colorkey, the target texture has to be white for the MOD blend mode so
+    } else if (blendmode == SDL_BLENDMODE_MOD || blendmode == SDL_BLENDMODE_MUL) {
+        /* Without a colorkey, the target texture has to be white for the MOD and MUL blend mode so
          * that the pixels outside the rotated area don't affect the destination surface.
          */
         colorkey = SDL_MapRGBA(rz_dst->format, 255, 255, 255, 0);

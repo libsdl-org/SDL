@@ -199,6 +199,14 @@ SetBlendMode(DirectFB_RenderData * data, int blendMode,
 
             break;
         }
+        case SDL_BLENDMODE_MUL:
+            data->blitFlags = DSBLIT_BLEND_ALPHACHANNEL;
+            data->drawFlags = DSDRAW_BLEND;
+            SDL_DFB_CHECK(destsurf->SetSrcBlendFunction(destsurf, DSBF_DSTCOLOR));
+            SDL_DFB_CHECK(destsurf->SetDstBlendFunction(destsurf, DSBF_INVSRCALPHA));
+
+            break;
+        }
         data->lastBlendMode = blendMode;
     }
 }
@@ -223,6 +231,7 @@ PrepareDraw(SDL_Renderer * renderer, const SDL_RenderCommand *cmd)
         break;
     case SDL_BLENDMODE_ADD:
     case SDL_BLENDMODE_MOD:
+    case SDL_BLENDMODE_MUL:
         r = ((int) r * (int) a) / 255;
         g = ((int) g * (int) a) / 255;
         b = ((int) b * (int) a) / 255;

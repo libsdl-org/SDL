@@ -495,7 +495,7 @@ SDL_SetSurfaceBlendMode(SDL_Surface * surface, SDL_BlendMode blendMode)
     status = 0;
     flags = surface->map->info.flags;
     surface->map->info.flags &=
-        ~(SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD);
+        ~(SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL);
     switch (blendMode) {
     case SDL_BLENDMODE_NONE:
         break;
@@ -507,6 +507,9 @@ SDL_SetSurfaceBlendMode(SDL_Surface * surface, SDL_BlendMode blendMode)
         break;
     case SDL_BLENDMODE_MOD:
         surface->map->info.flags |= SDL_COPY_MOD;
+        break;
+    case SDL_BLENDMODE_MUL:
+        surface->map->info.flags |= SDL_COPY_MUL;
         break;
     default:
         status = SDL_Unsupported();
@@ -532,7 +535,7 @@ SDL_GetSurfaceBlendMode(SDL_Surface * surface, SDL_BlendMode *blendMode)
     }
 
     switch (surface->map->
-            info.flags & (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD)) {
+            info.flags & (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL)) {
     case SDL_COPY_BLEND:
         *blendMode = SDL_BLENDMODE_BLEND;
         break;
@@ -541,6 +544,9 @@ SDL_GetSurfaceBlendMode(SDL_Surface * surface, SDL_BlendMode *blendMode)
         break;
     case SDL_COPY_MOD:
         *blendMode = SDL_BLENDMODE_MOD;
+        break;
+    case SDL_COPY_MUL:
+        *blendMode = SDL_BLENDMODE_MUL;
         break;
     default:
         *blendMode = SDL_BLENDMODE_NONE;
@@ -874,7 +880,7 @@ SDL_LowerBlitScaled(SDL_Surface * src, SDL_Rect * srcrect,
 {
     static const Uint32 complex_copy_flags = (
         SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA |
-        SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD |
+        SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL |
         SDL_COPY_COLORKEY
     );
 

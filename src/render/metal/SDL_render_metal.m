@@ -357,6 +357,7 @@ MakePipelineCache(METAL_RenderData *data, METAL_PipelineCache *cache, const char
     MakePipelineState(data, cache, @" (blend=blend)", SDL_BLENDMODE_BLEND);
     MakePipelineState(data, cache, @" (blend=add)", SDL_BLENDMODE_ADD);
     MakePipelineState(data, cache, @" (blend=mod)", SDL_BLENDMODE_MOD);
+    MakePipelineState(data, cache, @" (blend=mul)", SDL_BLENDMODE_MUL);
 }
 
 static void
