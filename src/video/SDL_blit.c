@@ -128,11 +128,11 @@ static SDL_BlitFunc
 SDL_ChooseBlitFunc(Uint32 src_format, Uint32 dst_format, int flags,
                    SDL_BlitFuncEntry * entries)
 {
-    int i, flagcheck;
-    static Uint32 features = 0xffffffff;
+    int i, flagcheck = (flags & (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL | SDL_COPY_COLORKEY | SDL_COPY_NEAREST));
+    static int features = 0x7fffffff;
 
     /* Get the available CPU features */
-    if (features == 0xffffffff) {
+    if (features == 0x7fffffff) {
         const char *override = SDL_getenv("SDL_BLIT_CPU_FEATURES");
 
         features = SDL_CPU_ANY;
@@ -172,36 +172,13 @@ SDL_ChooseBlitFunc(Uint32 src_format, Uint32 dst_format, int flags,
             continue;
         }
 
-        /* Check modulation flags */
-        flagcheck =
-            (flags & (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA));
-        if ((flagcheck & entries[i].flags) != flagcheck) {
-            continue;
-        }
-
-        /* Check blend flags */
-        flagcheck =
-            (flags &
-             (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL));
-        if ((flagcheck & entries[i].flags) != flagcheck) {
-            continue;
-        }
-
-        /* Check colorkey flag */
-        flagcheck = (flags & SDL_COPY_COLORKEY);
-        if ((flagcheck & entries[i].flags) != flagcheck) {
-            continue;
-        }
-
-        /* Check scaling flags */
-        flagcheck = (flags & SDL_COPY_NEAREST);
+        /* Check flags */
         if ((flagcheck & entries[i].flags) != flagcheck) {
             continue;
         }
 
         /* Check CPU features */
-        flagcheck = entries[i].cpu;
-        if ((flagcheck & features) != flagcheck) {
+        if ((entries[i].cpu & features) != entries[i].cpu) {
             continue;
         }
 
