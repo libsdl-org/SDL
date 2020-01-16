@@ -86,6 +86,8 @@ static const Uint8 xboxone_rumble_reset[] = {
 typedef struct {
     Uint16 vendor_id;
     Uint16 product_id;
+    Uint16 exclude_vendor_id;
+    Uint16 exclude_product_id;
     const Uint8 *data;
     int size;
     const Uint8 response[2];
@@ -93,13 +95,16 @@ typedef struct {
 
 
 static const SDL_DriverXboxOne_InitPacket xboxone_init_packets[] = {
-    { 0x0000, 0x0000, xboxone_init0, sizeof(xboxone_init0), { 0x04, 0xf0 } },
-    { 0x0000, 0x0000, xboxone_init1, sizeof(xboxone_init1), { 0x04, 0xb0 } },
-    { 0x0000, 0x0000, xboxone_init2, sizeof(xboxone_init2), { 0x00, 0x00 } },
-    { 0x0000, 0x0000, xboxone_init3, sizeof(xboxone_init3), { 0x00, 0x00 } },
-    { 0x0000, 0x0000, xboxone_init4, sizeof(xboxone_init4), { 0x00, 0x00 } },
-    { 0x0000, 0x0000, xboxone_init5, sizeof(xboxone_init5), { 0x00, 0x00 } },
-    { 0x0000, 0x0000, xboxone_init6, sizeof(xboxone_init6), { 0x00, 0x00 } },
+    { 0x0000, 0x0000, 0x0000, 0x0000, xboxone_init0, sizeof(xboxone_init0), { 0x04, 0xf0 } },
+    { 0x0000, 0x0000, 0x0000, 0x0000, xboxone_init1, sizeof(xboxone_init1), { 0x04, 0xb0 } },
+    { 0x0000, 0x0000, 0x0000, 0x0000, xboxone_init2, sizeof(xboxone_init2), { 0x00, 0x00 } },
+    { 0x0000, 0x0000, 0x0000, 0x0000, xboxone_init3, sizeof(xboxone_init3), { 0x00, 0x00 } },
+    { 0x0000, 0x0000, 0x0000, 0x0000, xboxone_init4, sizeof(xboxone_init4), { 0x00, 0x00 } },
+    /* These next packets are required for third party controllers (PowerA, PDP, HORI),
+       but are the wrong protocol for Microsoft Xbox controllers.
+     */
+    { 0x0000, 0x0000, 0x045e, 0x0000, xboxone_init5, sizeof(xboxone_init5), { 0x00, 0x00 } },
+    { 0x0000, 0x0000, 0x045e, 0x0000, xboxone_init6, sizeof(xboxone_init6), { 0x00, 0x00 } },
 };
 
 typedef struct {
@@ -137,14 +142,10 @@ static SDL_bool
 ControllerNeedsRumbleSequenceSynchronized(Uint16 vendor_id, Uint16 product_id)
 {
     const Uint16 USB_VENDOR_MICROSOFT = 0x045e;
-    const Uint16 USB_PRODUCT_XBOX_ONE_MODEL_1708 = 0x02ea;      /* Needed with the latest firmware */
-    const Uint16 USB_PRODUCT_XBOX_ONE_ELITE_SERIES2 = 0x0b00;
 
     if (vendor_id == USB_VENDOR_MICROSOFT) {
-        if (product_id == USB_PRODUCT_XBOX_ONE_MODEL_1708 ||
-            product_id == USB_PRODUCT_XBOX_ONE_ELITE_SERIES2) {
-            return SDL_TRUE;
-        }
+        /* All Xbox One controllers, from model 1537 through Elite Series 2, appear to need this */
+        return SDL_TRUE;
     }
     return SDL_FALSE;
 }
@@ -177,12 +178,12 @@ SynchronizeRumbleSequence(hid_device *dev, SDL_DriverXboxOne_Context *ctx)
     return SDL_TRUE;
 }
 
-
 /* Return true if this controller sends the 0x02 "waiting for init" packet */
 static SDL_bool
 ControllerSendsWaitingForInit(Uint16 vendor_id, Uint16 product_id)
 {
     const Uint16 USB_VENDOR_HYPERKIN = 0x2e24;
+    const Uint16 USB_VENDOR_PDP = 0x0e6f;
 
     if (vendor_id == USB_VENDOR_HYPERKIN) {
         /* The Hyperkin controllers always send 0x02 when waiting for init,
@@ -190,11 +191,15 @@ ControllerSendsWaitingForInit(Uint16 vendor_id, Uint16 product_id)
            to make sure we don't send the init sequence if it isn't needed.
         */
         return SDL_TRUE;
-    } else {
-        /* Other controllers may or may not send 0x02, but it doesn't hurt to reinit */
-        /* The PDP and PowerA controllers don't always send 0x02 when plugged in on Linux */
+    }
+    if (vendor_id == USB_VENDOR_PDP) {
+        /* The PDP Rock Candy (PID 0x0246) doesn't send 0x02 on Linux for some reason */
         return SDL_FALSE;
     }
+
+    /* It doesn't hurt to reinit, especially if a driver has misconfigured the controller */
+    /*return SDL_TRUE;*/
+    return SDL_FALSE;
 }
 
 static SDL_bool
@@ -215,6 +220,14 @@ SendControllerInit(hid_device *dev, SDL_DriverXboxOne_Context *ctx)
             }
 
             if (packet->product_id && (product_id != packet->product_id)) {
+                continue;
+            }
+
+            if (packet->exclude_vendor_id && (vendor_id == packet->exclude_vendor_id)) {
+                continue;
+            }
+
+            if (packet->exclude_product_id && (product_id == packet->exclude_product_id)) {
                 continue;
             }
 

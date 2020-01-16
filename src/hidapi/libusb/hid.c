@@ -913,6 +913,39 @@ static int read_thread(void *param)
 	return 0;
 }
 
+static void init_xboxone(libusb_device_handle *device_handle, struct libusb_config_descriptor *conf_desc)
+{
+        static const int XB1_IFACE_SUBCLASS = 71;
+        static const int XB1_IFACE_PROTOCOL = 208;
+	int j, k, res;
+
+	for (j = 0; j < conf_desc->bNumInterfaces; j++) {
+		const struct libusb_interface *intf = &conf_desc->interface[j];
+		for (k = 0; k < intf->num_altsetting; k++) {
+			const struct libusb_interface_descriptor *intf_desc;
+			intf_desc = &intf->altsetting[k];
+
+			if (intf_desc->bInterfaceNumber != 0 &&
+			    intf_desc->bAlternateSetting == 0 &&
+			    intf_desc->bInterfaceClass == LIBUSB_CLASS_VENDOR_SPEC &&
+			    intf_desc->bInterfaceSubClass == XB1_IFACE_SUBCLASS &&
+			    intf_desc->bInterfaceProtocol == XB1_IFACE_PROTOCOL) {
+				res = libusb_claim_interface(device_handle, intf_desc->bInterfaceNumber);
+				if (res < 0) {
+					LOG("can't claim interface %d: %d\n", intf_desc->bInterfaceNumber, res);
+					continue;
+				}
+
+				res = libusb_set_interface_alt_setting(device_handle, intf_desc->bInterfaceNumber, intf_desc->bAlternateSetting);
+				if (res < 0) {
+					LOG("xbox init: can't set alt setting %d: %d\n", intf_desc->bInterfaceNumber, res);
+				}
+
+				libusb_release_interface(device_handle, intf_desc->bInterfaceNumber);
+			}
+		}
+	}
+}
 
 hid_device * HID_API_EXPORT hid_open_path(const char *path, int bExclusive)
 {
@@ -934,6 +967,7 @@ hid_device * HID_API_EXPORT hid_open_path(const char *path, int bExclusive)
 		struct libusb_device_descriptor desc;
 		struct libusb_config_descriptor *conf_desc = NULL;
 		int i,j,k;
+
 		libusb_get_device_descriptor(usb_dev, &desc);
 
 		res = libusb_get_active_config_descriptor(usb_dev, &conf_desc);
@@ -959,6 +993,7 @@ hid_device * HID_API_EXPORT hid_open_path(const char *path, int bExclusive)
 							break;
 						}
 						good_open = 1;
+
 #ifdef DETACH_KERNEL_DRIVER
 						/* Detach the kernel driver, but only if the
 						   device is managed by the kernel */
@@ -973,6 +1008,7 @@ hid_device * HID_API_EXPORT hid_open_path(const char *path, int bExclusive)
 							}
 						}
 #endif
+
 						res = libusb_claim_interface(dev->device_handle, intf_desc->bInterfaceNumber);
 						if (res < 0) {
 							LOG("can't claim interface %d: %d\n", intf_desc->bInterfaceNumber, res);
@@ -980,6 +1016,11 @@ hid_device * HID_API_EXPORT hid_open_path(const char *path, int bExclusive)
 							libusb_close(dev->device_handle);
 							good_open = 0;
 							break;
+						}
+
+						/* Initialize XBox One controllers */
+						if (is_xboxone(desc.idVendor, intf_desc)) {
+							init_xboxone(dev->device_handle, conf_desc);
 						}
 
 						/* Store off the string descriptor indexes */
