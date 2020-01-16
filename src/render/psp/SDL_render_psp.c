@@ -676,7 +676,12 @@ PSP_SetBlendMode(SDL_Renderer * renderer, int blendMode)
         case SDL_BLENDMODE_MOD:
                 sceGuTexFunc(GU_TFX_MODULATE , GU_TCC_RGBA);
                 sceGuEnable(GU_BLEND);
-                sceGuBlendFunc( GU_ADD, GU_FIX, GU_SRC_COLOR, 0, 0);
+                sceGuBlendFunc(GU_ADD, GU_FIX, GU_SRC_COLOR, 0, 0);
+            break;
+        case SDL_BLENDMODE_MUL:
+                sceGuTexFunc(GU_TFX_MODULATE , GU_TCC_RGBA);
+                sceGuEnable(GU_BLEND);
+                sceGuBlendFunc(GU_ADD, GU_DST_COLOR, GU_ONE_MINUS_SRC_ALPHA, 0, 0);
             break;
         }
         data->currentBlendMode = blendMode;

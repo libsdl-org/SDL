@@ -118,7 +118,7 @@ SDL_Blit_Slow(SDL_BlitInfo * info)
                     srcB = (srcB * srcA) / 255;
                 }
             }
-            switch (flags & (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL)) {
             case 0:
                 dstR = srcR;
                 dstG = srcG;
@@ -146,6 +146,20 @@ SDL_Blit_Slow(SDL_BlitInfo * info)
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
+                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255;
+                if (dstR > 255)
+                    dstR = 255;
+                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255;
+                if (dstG > 255)
+                    dstG = 255;
+                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255;
+                if (dstB > 255)
+                    dstB = 255;
+                dstA = ((srcA * dstA) + (dstA * (255 - srcA))) / 255;
+                if (dstA > 255)
+                    dstA = 255;
                 break;
             }
             if (dst_fmt->Amask) {

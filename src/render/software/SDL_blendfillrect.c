@@ -42,6 +42,9 @@ SDL_BlendFillRect_RGB555(SDL_Surface * dst, const SDL_Rect * rect,
     case SDL_BLENDMODE_MOD:
         FILLRECT(Uint16, DRAW_SETPIXEL_MOD_RGB555);
         break;
+    case SDL_BLENDMODE_MUL:
+        FILLRECT(Uint16, DRAW_SETPIXEL_MUL_RGB555);
+        break;
     default:
         FILLRECT(Uint16, DRAW_SETPIXEL_RGB555);
         break;
@@ -64,6 +67,9 @@ SDL_BlendFillRect_RGB565(SDL_Surface * dst, const SDL_Rect * rect,
         break;
     case SDL_BLENDMODE_MOD:
         FILLRECT(Uint16, DRAW_SETPIXEL_MOD_RGB565);
+        break;
+    case SDL_BLENDMODE_MUL:
+        FILLRECT(Uint16, DRAW_SETPIXEL_MUL_RGB565);
         break;
     default:
         FILLRECT(Uint16, DRAW_SETPIXEL_RGB565);
@@ -88,6 +94,9 @@ SDL_BlendFillRect_RGB888(SDL_Surface * dst, const SDL_Rect * rect,
     case SDL_BLENDMODE_MOD:
         FILLRECT(Uint32, DRAW_SETPIXEL_MOD_RGB888);
         break;
+    case SDL_BLENDMODE_MUL:
+        FILLRECT(Uint32, DRAW_SETPIXEL_MUL_RGB888);
+        break;
     default:
         FILLRECT(Uint32, DRAW_SETPIXEL_RGB888);
         break;
@@ -110,6 +119,9 @@ SDL_BlendFillRect_ARGB8888(SDL_Surface * dst, const SDL_Rect * rect,
         break;
     case SDL_BLENDMODE_MOD:
         FILLRECT(Uint32, DRAW_SETPIXEL_MOD_ARGB8888);
+        break;
+    case SDL_BLENDMODE_MUL:
+        FILLRECT(Uint32, DRAW_SETPIXEL_MUL_ARGB8888);
         break;
     default:
         FILLRECT(Uint32, DRAW_SETPIXEL_ARGB8888);
@@ -137,6 +149,9 @@ SDL_BlendFillRect_RGB(SDL_Surface * dst, const SDL_Rect * rect,
         case SDL_BLENDMODE_MOD:
             FILLRECT(Uint16, DRAW_SETPIXEL_MOD_RGB);
             break;
+        case SDL_BLENDMODE_MUL:
+            FILLRECT(Uint16, DRAW_SETPIXEL_MUL_RGB);
+            break;
         default:
             FILLRECT(Uint16, DRAW_SETPIXEL_RGB);
             break;
@@ -152,6 +167,9 @@ SDL_BlendFillRect_RGB(SDL_Surface * dst, const SDL_Rect * rect,
             break;
         case SDL_BLENDMODE_MOD:
             FILLRECT(Uint32, DRAW_SETPIXEL_MOD_RGB);
+            break;
+        case SDL_BLENDMODE_MUL:
+            FILLRECT(Uint32, DRAW_SETPIXEL_MUL_RGB);
             break;
         default:
             FILLRECT(Uint32, DRAW_SETPIXEL_RGB);
@@ -181,6 +199,9 @@ SDL_BlendFillRect_RGBA(SDL_Surface * dst, const SDL_Rect * rect,
             break;
         case SDL_BLENDMODE_MOD:
             FILLRECT(Uint32, DRAW_SETPIXEL_MOD_RGBA);
+            break;
+        case SDL_BLENDMODE_MUL:
+            FILLRECT(Uint32, DRAW_SETPIXEL_MUL_RGBA);
             break;
         default:
             FILLRECT(Uint32, DRAW_SETPIXEL_RGBA);

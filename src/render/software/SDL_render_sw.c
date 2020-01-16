@@ -399,8 +399,8 @@ SW_RenderCopyEx(SDL_Renderer * renderer, SDL_Surface *surface, SDL_Texture * tex
         blitRequired = SDL_TRUE;
     }
 
-    /* The color and alpha modulation has to be applied before the rotation when using the NONE and MOD blend modes. */
-    if ((blendmode == SDL_BLENDMODE_NONE || blendmode == SDL_BLENDMODE_MOD) && (alphaMod & rMod & gMod & bMod) != 255) {
+    /* The color and alpha modulation has to be applied before the rotation when using the NONE, MOD or MUL blend modes. */
+    if ((blendmode == SDL_BLENDMODE_NONE || blendmode == SDL_BLENDMODE_MOD || blendmode == SDL_BLENDMODE_MUL) && (alphaMod & rMod & gMod & bMod) != 255) {
         applyModulation = SDL_TRUE;
         SDL_SetSurfaceAlphaMod(src_clone, alphaMod);
         SDL_SetSurfaceColorMod(src_clone, rMod, gMod, bMod);
@@ -573,7 +573,7 @@ PrepTextureForCopy(const SDL_RenderCommand *cmd)
     SDL_Surface *surface = (SDL_Surface *) texture->driverdata;
     const SDL_bool colormod = ((r & g & b) != 0xFF);
     const SDL_bool alphamod = (a != 0xFF);
-    const SDL_bool blending = ((blend == SDL_BLENDMODE_ADD) || (blend == SDL_BLENDMODE_MOD));
+    const SDL_bool blending = ((blend == SDL_BLENDMODE_ADD) || (blend == SDL_BLENDMODE_MOD) || (blend == SDL_BLENDMODE_MUL));
 
     if (colormod || alphamod || blending) {
         SDL_SetSurfaceRLE(surface, 0);

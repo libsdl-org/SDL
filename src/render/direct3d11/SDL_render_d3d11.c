@@ -636,7 +636,8 @@ D3D11_CreateDeviceResources(SDL_Renderer * renderer)
     /* Create blending states: */
     if (!D3D11_CreateBlendState(renderer, SDL_BLENDMODE_BLEND) ||
         !D3D11_CreateBlendState(renderer, SDL_BLENDMODE_ADD) ||
-        !D3D11_CreateBlendState(renderer, SDL_BLENDMODE_MOD)) {
+        !D3D11_CreateBlendState(renderer, SDL_BLENDMODE_MOD) ||
+        !D3D11_CreateBlendState(renderer, SDL_BLENDMODE_MUL)) {
         /* D3D11_CreateBlendMode will set the SDL error, if it fails */
         goto done;
     }

@@ -42,6 +42,9 @@ SDL_BlendPoint_RGB555(SDL_Surface * dst, int x, int y, SDL_BlendMode blendMode, 
     case SDL_BLENDMODE_MOD:
         DRAW_SETPIXELXY_MOD_RGB555(x, y);
         break;
+    case SDL_BLENDMODE_MUL:
+        DRAW_SETPIXELXY_MUL_RGB555(x, y);
+        break;
     default:
         DRAW_SETPIXELXY_RGB555(x, y);
         break;
@@ -64,6 +67,9 @@ SDL_BlendPoint_RGB565(SDL_Surface * dst, int x, int y, SDL_BlendMode blendMode, 
         break;
     case SDL_BLENDMODE_MOD:
         DRAW_SETPIXELXY_MOD_RGB565(x, y);
+        break;
+    case SDL_BLENDMODE_MUL:
+        DRAW_SETPIXELXY_MUL_RGB565(x, y);
         break;
     default:
         DRAW_SETPIXELXY_RGB565(x, y);
@@ -88,6 +94,9 @@ SDL_BlendPoint_RGB888(SDL_Surface * dst, int x, int y, SDL_BlendMode blendMode, 
     case SDL_BLENDMODE_MOD:
         DRAW_SETPIXELXY_MOD_RGB888(x, y);
         break;
+    case SDL_BLENDMODE_MUL:
+        DRAW_SETPIXELXY_MUL_RGB888(x, y);
+        break;
     default:
         DRAW_SETPIXELXY_RGB888(x, y);
         break;
@@ -110,6 +119,9 @@ SDL_BlendPoint_ARGB8888(SDL_Surface * dst, int x, int y, SDL_BlendMode blendMode
         break;
     case SDL_BLENDMODE_MOD:
         DRAW_SETPIXELXY_MOD_ARGB8888(x, y);
+        break;
+    case SDL_BLENDMODE_MUL:
+        DRAW_SETPIXELXY_MUL_ARGB8888(x, y);
         break;
     default:
         DRAW_SETPIXELXY_ARGB8888(x, y);
@@ -137,6 +149,9 @@ SDL_BlendPoint_RGB(SDL_Surface * dst, int x, int y, SDL_BlendMode blendMode, Uin
         case SDL_BLENDMODE_MOD:
             DRAW_SETPIXELXY2_MOD_RGB(x, y);
             break;
+        case SDL_BLENDMODE_MUL:
+            DRAW_SETPIXELXY2_MUL_RGB(x, y);
+            break;
         default:
             DRAW_SETPIXELXY2_RGB(x, y);
             break;
@@ -152,6 +167,9 @@ SDL_BlendPoint_RGB(SDL_Surface * dst, int x, int y, SDL_BlendMode blendMode, Uin
             break;
         case SDL_BLENDMODE_MOD:
             DRAW_SETPIXELXY4_MOD_RGB(x, y);
+            break;
+        case SDL_BLENDMODE_MUL:
+            DRAW_SETPIXELXY4_MUL_RGB(x, y);
             break;
         default:
             DRAW_SETPIXELXY4_RGB(x, y);
@@ -181,6 +199,9 @@ SDL_BlendPoint_RGBA(SDL_Surface * dst, int x, int y, SDL_BlendMode blendMode, Ui
             break;
         case SDL_BLENDMODE_MOD:
             DRAW_SETPIXELXY4_MOD_RGBA(x, y);
+            break;
+        case SDL_BLENDMODE_MUL:
+            DRAW_SETPIXELXY4_MUL_RGBA(x, y);
             break;
         default:
             DRAW_SETPIXELXY4_RGBA(x, y);

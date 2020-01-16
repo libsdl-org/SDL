@@ -1430,7 +1430,7 @@ SDL_RLESurface(SDL_Surface * surface)
     /* Pass on combinations not supported */
     if ((flags & SDL_COPY_MODULATE_COLOR) ||
         ((flags & SDL_COPY_MODULATE_ALPHA) && surface->format->Amask) ||
-        (flags & (SDL_COPY_ADD | SDL_COPY_MOD)) ||
+        (flags & (SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL)) ||
         (flags & SDL_COPY_NEAREST)) {
         return -1;
     }

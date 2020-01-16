@@ -267,7 +267,7 @@ __EOF__
 __EOF__
         }
         print FILE <<__EOF__;
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
 __EOF__
         if ($A_is_const_FF) {
@@ -306,6 +306,35 @@ __EOF__
                 ${d}R = (${s}R * ${d}R) / 255;
                 ${d}G = (${s}G * ${d}G) / 255;
                 ${d}B = (${s}B * ${d}B) / 255;
+                break;
+            case SDL_COPY_MUL:
+__EOF__
+        if ($A_is_const_FF) {
+            print FILE <<__EOF__;
+                ${d}R = (${s}R * ${d}R) / 255;
+                ${d}G = (${s}G * ${d}G) / 255;
+                ${d}B = (${s}B * ${d}B) / 255;
+__EOF__
+        } else {
+            print FILE <<__EOF__;
+                ${d}R = ((${s}R * ${d}R) + (${d}R * (255 - ${s}A))) / 255; if (${d}R > 255) ${d}R = 255;
+                ${d}G = ((${s}G * ${d}G) + (${d}G * (255 - ${s}A))) / 255; if (${d}G > 255) ${d}G = 255;
+                ${d}B = ((${s}B * ${d}B) + (${d}B * (255 - ${s}A))) / 255; if (${d}B > 255) ${d}B = 255;
+__EOF__
+        }
+        if ( $dst_has_alpha ) {
+            if ($A_is_const_FF) {
+                print FILE <<__EOF__;
+                ${d}A = 0xFF;
+__EOF__
+            } else {
+                print FILE <<__EOF__;
+                ${d}A = ((${s}A * ${d}A) + (${d}A * (255 - ${s}A))) / 255; if (${d}A > 255) ${d}A = 255;
+__EOF__
+            }
+        }
+
+        print FILE <<__EOF__;
                 break;
             }
 __EOF__
@@ -524,7 +553,7 @@ __EOF__
                                 }
                             }
                             if ( $blend ) {
-                                $flag = "SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD";
+                                $flag = "SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL";
                                 if ( $flags eq "" ) {
                                     $flags = $flag;
                                 } else {

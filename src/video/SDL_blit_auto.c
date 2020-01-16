@@ -82,7 +82,7 @@ static void SDL_Blit_RGB888_RGB888_Blend(SDL_BlitInfo *info)
             srcR = (Uint8)(srcpixel >> 16); srcG = (Uint8)(srcpixel >> 8); srcB = (Uint8)srcpixel;
             dstpixel = *dst;
             dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel;
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR;
                 dstG = srcG;
@@ -94,6 +94,11 @@ static void SDL_Blit_RGB888_RGB888_Blend(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
+                dstR = (srcR * dstR) / 255;
+                dstG = (srcG * dstG) / 255;
+                dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
@@ -147,7 +152,7 @@ static void SDL_Blit_RGB888_RGB888_Blend_Scale(SDL_BlitInfo *info)
             srcR = (Uint8)(srcpixel >> 16); srcG = (Uint8)(srcpixel >> 8); srcB = (Uint8)srcpixel;
             dstpixel = *dst;
             dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel;
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR;
                 dstG = srcG;
@@ -159,6 +164,11 @@ static void SDL_Blit_RGB888_RGB888_Blend_Scale(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
+                dstR = (srcR * dstR) / 255;
+                dstG = (srcG * dstG) / 255;
+                dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
@@ -292,7 +302,7 @@ static void SDL_Blit_RGB888_RGB888_Modulate_Blend(SDL_BlitInfo *info)
                     srcB = (srcB * srcA) / 255;
                 }
             }
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR + ((255 - srcA) * dstR) / 255;
                 dstG = srcG + ((255 - srcA) * dstG) / 255;
@@ -307,6 +317,11 @@ static void SDL_Blit_RGB888_RGB888_Modulate_Blend(SDL_BlitInfo *info)
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
+                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
+                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
+                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
                 break;
             }
             dstpixel = (dstR << 16) | (dstG << 8) | dstB;
@@ -375,7 +390,7 @@ static void SDL_Blit_RGB888_RGB888_Modulate_Blend_Scale(SDL_BlitInfo *info)
                     srcB = (srcB * srcA) / 255;
                 }
             }
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR + ((255 - srcA) * dstR) / 255;
                 dstG = srcG + ((255 - srcA) * dstG) / 255;
@@ -390,6 +405,11 @@ static void SDL_Blit_RGB888_RGB888_Modulate_Blend_Scale(SDL_BlitInfo *info)
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
+                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
+                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
+                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
                 break;
             }
             dstpixel = (dstR << 16) | (dstG << 8) | dstB;
@@ -462,7 +482,7 @@ static void SDL_Blit_RGB888_BGR888_Blend(SDL_BlitInfo *info)
             srcR = (Uint8)(srcpixel >> 16); srcG = (Uint8)(srcpixel >> 8); srcB = (Uint8)srcpixel;
             dstpixel = *dst;
             dstB = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstR = (Uint8)dstpixel;
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR;
                 dstG = srcG;
@@ -474,6 +494,11 @@ static void SDL_Blit_RGB888_BGR888_Blend(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
+                dstR = (srcR * dstR) / 255;
+                dstG = (srcG * dstG) / 255;
+                dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
@@ -527,7 +552,7 @@ static void SDL_Blit_RGB888_BGR888_Blend_Scale(SDL_BlitInfo *info)
             srcR = (Uint8)(srcpixel >> 16); srcG = (Uint8)(srcpixel >> 8); srcB = (Uint8)srcpixel;
             dstpixel = *dst;
             dstB = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstR = (Uint8)dstpixel;
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR;
                 dstG = srcG;
@@ -539,6 +564,11 @@ static void SDL_Blit_RGB888_BGR888_Blend_Scale(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
+                dstR = (srcR * dstR) / 255;
+                dstG = (srcG * dstG) / 255;
+                dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
@@ -672,7 +702,7 @@ static void SDL_Blit_RGB888_BGR888_Modulate_Blend(SDL_BlitInfo *info)
                     srcB = (srcB * srcA) / 255;
                 }
             }
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR + ((255 - srcA) * dstR) / 255;
                 dstG = srcG + ((255 - srcA) * dstG) / 255;
@@ -687,6 +717,11 @@ static void SDL_Blit_RGB888_BGR888_Modulate_Blend(SDL_BlitInfo *info)
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
+                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
+                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
+                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
                 break;
             }
             dstpixel = (dstB << 16) | (dstG << 8) | dstR;
@@ -755,7 +790,7 @@ static void SDL_Blit_RGB888_BGR888_Modulate_Blend_Scale(SDL_BlitInfo *info)
                     srcB = (srcB * srcA) / 255;
                 }
             }
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR + ((255 - srcA) * dstR) / 255;
                 dstG = srcG + ((255 - srcA) * dstG) / 255;
@@ -770,6 +805,11 @@ static void SDL_Blit_RGB888_BGR888_Modulate_Blend_Scale(SDL_BlitInfo *info)
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
+                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
+                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
+                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
                 break;
             }
             dstpixel = (dstB << 16) | (dstG << 8) | dstR;
@@ -843,7 +883,7 @@ static void SDL_Blit_RGB888_ARGB8888_Blend(SDL_BlitInfo *info)
             srcR = (Uint8)(srcpixel >> 16); srcG = (Uint8)(srcpixel >> 8); srcB = (Uint8)srcpixel;
             dstpixel = *dst;
             dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel; dstA = (Uint8)(dstpixel >> 24);
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR;
                 dstG = srcG;
@@ -859,6 +899,12 @@ static void SDL_Blit_RGB888_ARGB8888_Blend(SDL_BlitInfo *info)
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
+                dstR = (srcR * dstR) / 255;
+                dstG = (srcG * dstG) / 255;
+                dstB = (srcB * dstB) / 255;
+                dstA = 0xFF;
                 break;
             }
             dstpixel = (dstA << 24) | (dstR << 16) | (dstG << 8) | dstB;
@@ -909,7 +955,7 @@ static void SDL_Blit_RGB888_ARGB8888_Blend_Scale(SDL_BlitInfo *info)
             srcR = (Uint8)(srcpixel >> 16); srcG = (Uint8)(srcpixel >> 8); srcB = (Uint8)srcpixel;
             dstpixel = *dst;
             dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel; dstA = (Uint8)(dstpixel >> 24);
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR;
                 dstG = srcG;
@@ -925,6 +971,12 @@ static void SDL_Blit_RGB888_ARGB8888_Blend_Scale(SDL_BlitInfo *info)
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
+                dstR = (srcR * dstR) / 255;
+                dstG = (srcG * dstG) / 255;
+                dstB = (srcB * dstB) / 255;
+                dstA = 0xFF;
                 break;
             }
             dstpixel = (dstA << 24) | (dstR << 16) | (dstG << 8) | dstB;
@@ -1059,7 +1111,7 @@ static void SDL_Blit_RGB888_ARGB8888_Modulate_Blend(SDL_BlitInfo *info)
                     srcB = (srcB * srcA) / 255;
                 }
             }
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR + ((255 - srcA) * dstR) / 255;
                 dstG = srcG + ((255 - srcA) * dstG) / 255;
@@ -1075,6 +1127,12 @@ static void SDL_Blit_RGB888_ARGB8888_Modulate_Blend(SDL_BlitInfo *info)
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
+                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
+                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
+                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                dstA = ((srcA * dstA) + (dstA * (255 - srcA))) / 255; if (dstA > 255) dstA = 255;
                 break;
             }
             dstpixel = (dstA << 24) | (dstR << 16) | (dstG << 8) | dstB;
@@ -1143,7 +1201,7 @@ static void SDL_Blit_RGB888_ARGB8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
                     srcB = (srcB * srcA) / 255;
                 }
             }
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR + ((255 - srcA) * dstR) / 255;
                 dstG = srcG + ((255 - srcA) * dstG) / 255;
@@ -1159,6 +1217,12 @@ static void SDL_Blit_RGB888_ARGB8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
+                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
+                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
+                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                dstA = ((srcA * dstA) + (dstA * (255 - srcA))) / 255; if (dstA > 255) dstA = 255;
                 break;
             }
             dstpixel = (dstA << 24) | (dstR << 16) | (dstG << 8) | dstB;
@@ -1231,7 +1295,7 @@ static void SDL_Blit_BGR888_RGB888_Blend(SDL_BlitInfo *info)
             srcB = (Uint8)(srcpixel >> 16); srcG = (Uint8)(srcpixel >> 8); srcR = (Uint8)srcpixel;
             dstpixel = *dst;
             dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel;
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR;
                 dstG = srcG;
@@ -1243,6 +1307,11 @@ static void SDL_Blit_BGR888_RGB888_Blend(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
+                dstR = (srcR * dstR) / 255;
+                dstG = (srcG * dstG) / 255;
+                dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
@@ -1296,7 +1365,7 @@ static void SDL_Blit_BGR888_RGB888_Blend_Scale(SDL_BlitInfo *info)
             srcB = (Uint8)(srcpixel >> 16); srcG = (Uint8)(srcpixel >> 8); srcR = (Uint8)srcpixel;
             dstpixel = *dst;
             dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel;
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR;
                 dstG = srcG;
@@ -1308,6 +1377,11 @@ static void SDL_Blit_BGR888_RGB888_Blend_Scale(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
+                dstR = (srcR * dstR) / 255;
+                dstG = (srcG * dstG) / 255;
+                dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
@@ -1441,7 +1515,7 @@ static void SDL_Blit_BGR888_RGB888_Modulate_Blend(SDL_BlitInfo *info)
                     srcB = (srcB * srcA) / 255;
                 }
             }
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR + ((255 - srcA) * dstR) / 255;
                 dstG = srcG + ((255 - srcA) * dstG) / 255;
@@ -1456,6 +1530,11 @@ static void SDL_Blit_BGR888_RGB888_Modulate_Blend(SDL_BlitInfo *info)
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
+                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
+                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
+                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
                 break;
             }
             dstpixel = (dstR << 16) | (dstG << 8) | dstB;
@@ -1524,7 +1603,7 @@ static void SDL_Blit_BGR888_RGB888_Modulate_Blend_Scale(SDL_BlitInfo *info)
                     srcB = (srcB * srcA) / 255;
                 }
             }
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR + ((255 - srcA) * dstR) / 255;
                 dstG = srcG + ((255 - srcA) * dstG) / 255;
@@ -1539,6 +1618,11 @@ static void SDL_Blit_BGR888_RGB888_Modulate_Blend_Scale(SDL_BlitInfo *info)
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
+                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
+                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
+                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
                 break;
             }
             dstpixel = (dstR << 16) | (dstG << 8) | dstB;
@@ -1606,7 +1690,7 @@ static void SDL_Blit_BGR888_BGR888_Blend(SDL_BlitInfo *info)
             srcB = (Uint8)(srcpixel >> 16); srcG = (Uint8)(srcpixel >> 8); srcR = (Uint8)srcpixel;
             dstpixel = *dst;
             dstB = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstR = (Uint8)dstpixel;
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR;
                 dstG = srcG;
@@ -1618,6 +1702,11 @@ static void SDL_Blit_BGR888_BGR888_Blend(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
+                dstR = (srcR * dstR) / 255;
+                dstG = (srcG * dstG) / 255;
+                dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
@@ -1671,7 +1760,7 @@ static void SDL_Blit_BGR888_BGR888_Blend_Scale(SDL_BlitInfo *info)
             srcB = (Uint8)(srcpixel >> 16); srcG = (Uint8)(srcpixel >> 8); srcR = (Uint8)srcpixel;
             dstpixel = *dst;
             dstB = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstR = (Uint8)dstpixel;
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR;
                 dstG = srcG;
@@ -1683,6 +1772,11 @@ static void SDL_Blit_BGR888_BGR888_Blend_Scale(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
+                dstR = (srcR * dstR) / 255;
+                dstG = (srcG * dstG) / 255;
+                dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
@@ -1816,7 +1910,7 @@ static void SDL_Blit_BGR888_BGR888_Modulate_Blend(SDL_BlitInfo *info)
                     srcB = (srcB * srcA) / 255;
                 }
             }
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR + ((255 - srcA) * dstR) / 255;
                 dstG = srcG + ((255 - srcA) * dstG) / 255;
@@ -1831,6 +1925,11 @@ static void SDL_Blit_BGR888_BGR888_Modulate_Blend(SDL_BlitInfo *info)
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
+                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
+                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
+                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
                 break;
             }
             dstpixel = (dstB << 16) | (dstG << 8) | dstR;
@@ -1899,7 +1998,7 @@ static void SDL_Blit_BGR888_BGR888_Modulate_Blend_Scale(SDL_BlitInfo *info)
                     srcB = (srcB * srcA) / 255;
                 }
             }
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR + ((255 - srcA) * dstR) / 255;
                 dstG = srcG + ((255 - srcA) * dstG) / 255;
@@ -1914,6 +2013,11 @@ static void SDL_Blit_BGR888_BGR888_Modulate_Blend_Scale(SDL_BlitInfo *info)
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
+                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
+                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
+                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
                 break;
             }
             dstpixel = (dstB << 16) | (dstG << 8) | dstR;
@@ -1987,7 +2091,7 @@ static void SDL_Blit_BGR888_ARGB8888_Blend(SDL_BlitInfo *info)
             srcB = (Uint8)(srcpixel >> 16); srcG = (Uint8)(srcpixel >> 8); srcR = (Uint8)srcpixel;
             dstpixel = *dst;
             dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel; dstA = (Uint8)(dstpixel >> 24);
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR;
                 dstG = srcG;
@@ -2003,6 +2107,12 @@ static void SDL_Blit_BGR888_ARGB8888_Blend(SDL_BlitInfo *info)
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
+                dstR = (srcR * dstR) / 255;
+                dstG = (srcG * dstG) / 255;
+                dstB = (srcB * dstB) / 255;
+                dstA = 0xFF;
                 break;
             }
             dstpixel = (dstA << 24) | (dstR << 16) | (dstG << 8) | dstB;
@@ -2053,7 +2163,7 @@ static void SDL_Blit_BGR888_ARGB8888_Blend_Scale(SDL_BlitInfo *info)
             srcB = (Uint8)(srcpixel >> 16); srcG = (Uint8)(srcpixel >> 8); srcR = (Uint8)srcpixel;
             dstpixel = *dst;
             dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel; dstA = (Uint8)(dstpixel >> 24);
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR;
                 dstG = srcG;
@@ -2069,6 +2179,12 @@ static void SDL_Blit_BGR888_ARGB8888_Blend_Scale(SDL_BlitInfo *info)
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
+                dstR = (srcR * dstR) / 255;
+                dstG = (srcG * dstG) / 255;
+                dstB = (srcB * dstB) / 255;
+                dstA = 0xFF;
                 break;
             }
             dstpixel = (dstA << 24) | (dstR << 16) | (dstG << 8) | dstB;
@@ -2203,7 +2319,7 @@ static void SDL_Blit_BGR888_ARGB8888_Modulate_Blend(SDL_BlitInfo *info)
                     srcB = (srcB * srcA) / 255;
                 }
             }
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR + ((255 - srcA) * dstR) / 255;
                 dstG = srcG + ((255 - srcA) * dstG) / 255;
@@ -2219,6 +2335,12 @@ static void SDL_Blit_BGR888_ARGB8888_Modulate_Blend(SDL_BlitInfo *info)
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
+                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
+                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
+                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                dstA = ((srcA * dstA) + (dstA * (255 - srcA))) / 255; if (dstA > 255) dstA = 255;
                 break;
             }
             dstpixel = (dstA << 24) | (dstR << 16) | (dstG << 8) | dstB;
@@ -2287,7 +2409,7 @@ static void SDL_Blit_BGR888_ARGB8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
                     srcB = (srcB * srcA) / 255;
                 }
             }
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR + ((255 - srcA) * dstR) / 255;
                 dstG = srcG + ((255 - srcA) * dstG) / 255;
@@ -2303,6 +2425,12 @@ static void SDL_Blit_BGR888_ARGB8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
+                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
+                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
+                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                dstA = ((srcA * dstA) + (dstA * (255 - srcA))) / 255; if (dstA > 255) dstA = 255;
                 break;
             }
             dstpixel = (dstA << 24) | (dstR << 16) | (dstG << 8) | dstB;
@@ -2383,7 +2511,7 @@ static void SDL_Blit_ARGB8888_RGB888_Blend(SDL_BlitInfo *info)
                     srcB = (srcB * srcA) / 255;
                 }
             }
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR + ((255 - srcA) * dstR) / 255;
                 dstG = srcG + ((255 - srcA) * dstG) / 255;
@@ -2398,6 +2526,11 @@ static void SDL_Blit_ARGB8888_RGB888_Blend(SDL_BlitInfo *info)
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
+                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
+                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
+                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
                 break;
             }
             dstpixel = (dstR << 16) | (dstG << 8) | dstB;
@@ -2456,7 +2589,7 @@ static void SDL_Blit_ARGB8888_RGB888_Blend_Scale(SDL_BlitInfo *info)
                     srcB = (srcB * srcA) / 255;
                 }
             }
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR + ((255 - srcA) * dstR) / 255;
                 dstG = srcG + ((255 - srcA) * dstG) / 255;
@@ -2471,6 +2604,11 @@ static void SDL_Blit_ARGB8888_RGB888_Blend_Scale(SDL_BlitInfo *info)
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
+                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
+                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
+                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
                 break;
             }
             dstpixel = (dstR << 16) | (dstG << 8) | dstB;
@@ -2603,7 +2741,7 @@ static void SDL_Blit_ARGB8888_RGB888_Modulate_Blend(SDL_BlitInfo *info)
                     srcB = (srcB * srcA) / 255;
                 }
             }
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR + ((255 - srcA) * dstR) / 255;
                 dstG = srcG + ((255 - srcA) * dstG) / 255;
@@ -2618,6 +2756,11 @@ static void SDL_Blit_ARGB8888_RGB888_Modulate_Blend(SDL_BlitInfo *info)
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
+                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
+                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
+                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
                 break;
             }
             dstpixel = (dstR << 16) | (dstG << 8) | dstB;
@@ -2688,7 +2831,7 @@ static void SDL_Blit_ARGB8888_RGB888_Modulate_Blend_Scale(SDL_BlitInfo *info)
                     srcB = (srcB * srcA) / 255;
                 }
             }
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR + ((255 - srcA) * dstR) / 255;
                 dstG = srcG + ((255 - srcA) * dstG) / 255;
@@ -2703,6 +2846,11 @@ static void SDL_Blit_ARGB8888_RGB888_Modulate_Blend_Scale(SDL_BlitInfo *info)
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
+                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
+                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
+                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
                 break;
             }
             dstpixel = (dstR << 16) | (dstG << 8) | dstB;
@@ -2783,7 +2931,7 @@ static void SDL_Blit_ARGB8888_BGR888_Blend(SDL_BlitInfo *info)
                     srcB = (srcB * srcA) / 255;
                 }
             }
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR + ((255 - srcA) * dstR) / 255;
                 dstG = srcG + ((255 - srcA) * dstG) / 255;
@@ -2798,6 +2946,11 @@ static void SDL_Blit_ARGB8888_BGR888_Blend(SDL_BlitInfo *info)
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
+                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
+                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
+                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
                 break;
             }
             dstpixel = (dstB << 16) | (dstG << 8) | dstR;
@@ -2856,7 +3009,7 @@ static void SDL_Blit_ARGB8888_BGR888_Blend_Scale(SDL_BlitInfo *info)
                     srcB = (srcB * srcA) / 255;
                 }
             }
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR + ((255 - srcA) * dstR) / 255;
                 dstG = srcG + ((255 - srcA) * dstG) / 255;
@@ -2871,6 +3024,11 @@ static void SDL_Blit_ARGB8888_BGR888_Blend_Scale(SDL_BlitInfo *info)
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
+                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
+                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
+                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
                 break;
             }
             dstpixel = (dstB << 16) | (dstG << 8) | dstR;
@@ -3003,7 +3161,7 @@ static void SDL_Blit_ARGB8888_BGR888_Modulate_Blend(SDL_BlitInfo *info)
                     srcB = (srcB * srcA) / 255;
                 }
             }
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR + ((255 - srcA) * dstR) / 255;
                 dstG = srcG + ((255 - srcA) * dstG) / 255;
@@ -3018,6 +3176,11 @@ static void SDL_Blit_ARGB8888_BGR888_Modulate_Blend(SDL_BlitInfo *info)
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
+                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
+                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
+                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
                 break;
             }
             dstpixel = (dstB << 16) | (dstG << 8) | dstR;
@@ -3088,7 +3251,7 @@ static void SDL_Blit_ARGB8888_BGR888_Modulate_Blend_Scale(SDL_BlitInfo *info)
                     srcB = (srcB * srcA) / 255;
                 }
             }
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR + ((255 - srcA) * dstR) / 255;
                 dstG = srcG + ((255 - srcA) * dstG) / 255;
@@ -3103,6 +3266,11 @@ static void SDL_Blit_ARGB8888_BGR888_Modulate_Blend_Scale(SDL_BlitInfo *info)
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
+                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
+                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
+                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
                 break;
             }
             dstpixel = (dstB << 16) | (dstG << 8) | dstR;
@@ -3178,7 +3346,7 @@ static void SDL_Blit_ARGB8888_ARGB8888_Blend(SDL_BlitInfo *info)
                     srcB = (srcB * srcA) / 255;
                 }
             }
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR + ((255 - srcA) * dstR) / 255;
                 dstG = srcG + ((255 - srcA) * dstG) / 255;
@@ -3194,6 +3362,12 @@ static void SDL_Blit_ARGB8888_ARGB8888_Blend(SDL_BlitInfo *info)
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
+                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
+                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
+                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                dstA = ((srcA * dstA) + (dstA * (255 - srcA))) / 255; if (dstA > 255) dstA = 255;
                 break;
             }
             dstpixel = (dstA << 24) | (dstR << 16) | (dstG << 8) | dstB;
@@ -3252,7 +3426,7 @@ static void SDL_Blit_ARGB8888_ARGB8888_Blend_Scale(SDL_BlitInfo *info)
                     srcB = (srcB * srcA) / 255;
                 }
             }
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR + ((255 - srcA) * dstR) / 255;
                 dstG = srcG + ((255 - srcA) * dstG) / 255;
@@ -3268,6 +3442,12 @@ static void SDL_Blit_ARGB8888_ARGB8888_Blend_Scale(SDL_BlitInfo *info)
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
+                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
+                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
+                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                dstA = ((srcA * dstA) + (dstA * (255 - srcA))) / 255; if (dstA > 255) dstA = 255;
                 break;
             }
             dstpixel = (dstA << 24) | (dstR << 16) | (dstG << 8) | dstB;
@@ -3408,7 +3588,7 @@ static void SDL_Blit_ARGB8888_ARGB8888_Modulate_Blend(SDL_BlitInfo *info)
                     srcB = (srcB * srcA) / 255;
                 }
             }
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR + ((255 - srcA) * dstR) / 255;
                 dstG = srcG + ((255 - srcA) * dstG) / 255;
@@ -3424,6 +3604,12 @@ static void SDL_Blit_ARGB8888_ARGB8888_Modulate_Blend(SDL_BlitInfo *info)
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
+                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
+                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
+                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                dstA = ((srcA * dstA) + (dstA * (255 - srcA))) / 255; if (dstA > 255) dstA = 255;
                 break;
             }
             dstpixel = (dstA << 24) | (dstR << 16) | (dstG << 8) | dstB;
@@ -3494,7 +3680,7 @@ static void SDL_Blit_ARGB8888_ARGB8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
                     srcB = (srcB * srcA) / 255;
                 }
             }
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR + ((255 - srcA) * dstR) / 255;
                 dstG = srcG + ((255 - srcA) * dstG) / 255;
@@ -3510,6 +3696,12 @@ static void SDL_Blit_ARGB8888_ARGB8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
+                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
+                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
+                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                dstA = ((srcA * dstA) + (dstA * (255 - srcA))) / 255; if (dstA > 255) dstA = 255;
                 break;
             }
             dstpixel = (dstA << 24) | (dstR << 16) | (dstG << 8) | dstB;
@@ -3590,7 +3782,7 @@ static void SDL_Blit_RGBA8888_RGB888_Blend(SDL_BlitInfo *info)
                     srcB = (srcB * srcA) / 255;
                 }
             }
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR + ((255 - srcA) * dstR) / 255;
                 dstG = srcG + ((255 - srcA) * dstG) / 255;
@@ -3605,6 +3797,11 @@ static void SDL_Blit_RGBA8888_RGB888_Blend(SDL_BlitInfo *info)
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
+                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
+                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
+                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
                 break;
             }
             dstpixel = (dstR << 16) | (dstG << 8) | dstB;
@@ -3663,7 +3860,7 @@ static void SDL_Blit_RGBA8888_RGB888_Blend_Scale(SDL_BlitInfo *info)
                     srcB = (srcB * srcA) / 255;
                 }
             }
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR + ((255 - srcA) * dstR) / 255;
                 dstG = srcG + ((255 - srcA) * dstG) / 255;
@@ -3678,6 +3875,11 @@ static void SDL_Blit_RGBA8888_RGB888_Blend_Scale(SDL_BlitInfo *info)
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
+                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
+                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
+                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
                 break;
             }
             dstpixel = (dstR << 16) | (dstG << 8) | dstB;
@@ -3810,7 +4012,7 @@ static void SDL_Blit_RGBA8888_RGB888_Modulate_Blend(SDL_BlitInfo *info)
                     srcB = (srcB * srcA) / 255;
                 }
             }
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR + ((255 - srcA) * dstR) / 255;
                 dstG = srcG + ((255 - srcA) * dstG) / 255;
@@ -3825,6 +4027,11 @@ static void SDL_Blit_RGBA8888_RGB888_Modulate_Blend(SDL_BlitInfo *info)
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
+                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
+                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
+                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
                 break;
             }
             dstpixel = (dstR << 16) | (dstG << 8) | dstB;
@@ -3895,7 +4102,7 @@ static void SDL_Blit_RGBA8888_RGB888_Modulate_Blend_Scale(SDL_BlitInfo *info)
                     srcB = (srcB * srcA) / 255;
                 }
             }
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR + ((255 - srcA) * dstR) / 255;
                 dstG = srcG + ((255 - srcA) * dstG) / 255;
@@ -3910,6 +4117,11 @@ static void SDL_Blit_RGBA8888_RGB888_Modulate_Blend_Scale(SDL_BlitInfo *info)
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
+                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
+                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
+                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
                 break;
             }
             dstpixel = (dstR << 16) | (dstG << 8) | dstB;
@@ -3990,7 +4202,7 @@ static void SDL_Blit_RGBA8888_BGR888_Blend(SDL_BlitInfo *info)
                     srcB = (srcB * srcA) / 255;
                 }
             }
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR + ((255 - srcA) * dstR) / 255;
                 dstG = srcG + ((255 - srcA) * dstG) / 255;
@@ -4005,6 +4217,11 @@ static void SDL_Blit_RGBA8888_BGR888_Blend(SDL_BlitInfo *info)
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
+                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
+                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
+                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
                 break;
             }
             dstpixel = (dstB << 16) | (dstG << 8) | dstR;
@@ -4063,7 +4280,7 @@ static void SDL_Blit_RGBA8888_BGR888_Blend_Scale(SDL_BlitInfo *info)
                     srcB = (srcB * srcA) / 255;
                 }
             }
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR + ((255 - srcA) * dstR) / 255;
                 dstG = srcG + ((255 - srcA) * dstG) / 255;
@@ -4078,6 +4295,11 @@ static void SDL_Blit_RGBA8888_BGR888_Blend_Scale(SDL_BlitInfo *info)
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
+                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
+                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
+                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
                 break;
             }
             dstpixel = (dstB << 16) | (dstG << 8) | dstR;
@@ -4210,7 +4432,7 @@ static void SDL_Blit_RGBA8888_BGR888_Modulate_Blend(SDL_BlitInfo *info)
                     srcB = (srcB * srcA) / 255;
                 }
             }
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR + ((255 - srcA) * dstR) / 255;
                 dstG = srcG + ((255 - srcA) * dstG) / 255;
@@ -4225,6 +4447,11 @@ static void SDL_Blit_RGBA8888_BGR888_Modulate_Blend(SDL_BlitInfo *info)
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
+                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
+                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
+                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
                 break;
             }
             dstpixel = (dstB << 16) | (dstG << 8) | dstR;
@@ -4295,7 +4522,7 @@ static void SDL_Blit_RGBA8888_BGR888_Modulate_Blend_Scale(SDL_BlitInfo *info)
                     srcB = (srcB * srcA) / 255;
                 }
             }
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR + ((255 - srcA) * dstR) / 255;
                 dstG = srcG + ((255 - srcA) * dstG) / 255;
@@ -4310,6 +4537,11 @@ static void SDL_Blit_RGBA8888_BGR888_Modulate_Blend_Scale(SDL_BlitInfo *info)
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
+                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
+                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
+                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
                 break;
             }
             dstpixel = (dstB << 16) | (dstG << 8) | dstR;
@@ -4390,7 +4622,7 @@ static void SDL_Blit_RGBA8888_ARGB8888_Blend(SDL_BlitInfo *info)
                     srcB = (srcB * srcA) / 255;
                 }
             }
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR + ((255 - srcA) * dstR) / 255;
                 dstG = srcG + ((255 - srcA) * dstG) / 255;
@@ -4406,6 +4638,12 @@ static void SDL_Blit_RGBA8888_ARGB8888_Blend(SDL_BlitInfo *info)
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
+                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
+                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
+                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                dstA = ((srcA * dstA) + (dstA * (255 - srcA))) / 255; if (dstA > 255) dstA = 255;
                 break;
             }
             dstpixel = (dstA << 24) | (dstR << 16) | (dstG << 8) | dstB;
@@ -4464,7 +4702,7 @@ static void SDL_Blit_RGBA8888_ARGB8888_Blend_Scale(SDL_BlitInfo *info)
                     srcB = (srcB * srcA) / 255;
                 }
             }
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR + ((255 - srcA) * dstR) / 255;
                 dstG = srcG + ((255 - srcA) * dstG) / 255;
@@ -4480,6 +4718,12 @@ static void SDL_Blit_RGBA8888_ARGB8888_Blend_Scale(SDL_BlitInfo *info)
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
+                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
+                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
+                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                dstA = ((srcA * dstA) + (dstA * (255 - srcA))) / 255; if (dstA > 255) dstA = 255;
                 break;
             }
             dstpixel = (dstA << 24) | (dstR << 16) | (dstG << 8) | dstB;
@@ -4620,7 +4864,7 @@ static void SDL_Blit_RGBA8888_ARGB8888_Modulate_Blend(SDL_BlitInfo *info)
                     srcB = (srcB * srcA) / 255;
                 }
             }
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR + ((255 - srcA) * dstR) / 255;
                 dstG = srcG + ((255 - srcA) * dstG) / 255;
@@ -4636,6 +4880,12 @@ static void SDL_Blit_RGBA8888_ARGB8888_Modulate_Blend(SDL_BlitInfo *info)
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
+                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
+                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
+                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                dstA = ((srcA * dstA) + (dstA * (255 - srcA))) / 255; if (dstA > 255) dstA = 255;
                 break;
             }
             dstpixel = (dstA << 24) | (dstR << 16) | (dstG << 8) | dstB;
@@ -4706,7 +4956,7 @@ static void SDL_Blit_RGBA8888_ARGB8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
                     srcB = (srcB * srcA) / 255;
                 }
             }
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR + ((255 - srcA) * dstR) / 255;
                 dstG = srcG + ((255 - srcA) * dstG) / 255;
@@ -4722,6 +4972,12 @@ static void SDL_Blit_RGBA8888_ARGB8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
+                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
+                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
+                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                dstA = ((srcA * dstA) + (dstA * (255 - srcA))) / 255; if (dstA > 255) dstA = 255;
                 break;
             }
             dstpixel = (dstA << 24) | (dstR << 16) | (dstG << 8) | dstB;
@@ -4802,7 +5058,7 @@ static void SDL_Blit_ABGR8888_RGB888_Blend(SDL_BlitInfo *info)
                     srcB = (srcB * srcA) / 255;
                 }
             }
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR + ((255 - srcA) * dstR) / 255;
                 dstG = srcG + ((255 - srcA) * dstG) / 255;
@@ -4817,6 +5073,11 @@ static void SDL_Blit_ABGR8888_RGB888_Blend(SDL_BlitInfo *info)
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
+                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
+                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
+                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
                 break;
             }
             dstpixel = (dstR << 16) | (dstG << 8) | dstB;
@@ -4875,7 +5136,7 @@ static void SDL_Blit_ABGR8888_RGB888_Blend_Scale(SDL_BlitInfo *info)
                     srcB = (srcB * srcA) / 255;
                 }
             }
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR + ((255 - srcA) * dstR) / 255;
                 dstG = srcG + ((255 - srcA) * dstG) / 255;
@@ -4890,6 +5151,11 @@ static void SDL_Blit_ABGR8888_RGB888_Blend_Scale(SDL_BlitInfo *info)
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
+                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
+                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
+                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
                 break;
             }
             dstpixel = (dstR << 16) | (dstG << 8) | dstB;
@@ -5022,7 +5288,7 @@ static void SDL_Blit_ABGR8888_RGB888_Modulate_Blend(SDL_BlitInfo *info)
                     srcB = (srcB * srcA) / 255;
                 }
             }
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR + ((255 - srcA) * dstR) / 255;
                 dstG = srcG + ((255 - srcA) * dstG) / 255;
@@ -5037,6 +5303,11 @@ static void SDL_Blit_ABGR8888_RGB888_Modulate_Blend(SDL_BlitInfo *info)
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
+                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
+                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
+                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
                 break;
             }
             dstpixel = (dstR << 16) | (dstG << 8) | dstB;
@@ -5107,7 +5378,7 @@ static void SDL_Blit_ABGR8888_RGB888_Modulate_Blend_Scale(SDL_BlitInfo *info)
                     srcB = (srcB * srcA) / 255;
                 }
             }
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR + ((255 - srcA) * dstR) / 255;
                 dstG = srcG + ((255 - srcA) * dstG) / 255;
@@ -5122,6 +5393,11 @@ static void SDL_Blit_ABGR8888_RGB888_Modulate_Blend_Scale(SDL_BlitInfo *info)
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
+                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
+                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
+                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
                 break;
             }
             dstpixel = (dstR << 16) | (dstG << 8) | dstB;
@@ -5202,7 +5478,7 @@ static void SDL_Blit_ABGR8888_BGR888_Blend(SDL_BlitInfo *info)
                     srcB = (srcB * srcA) / 255;
                 }
             }
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR + ((255 - srcA) * dstR) / 255;
                 dstG = srcG + ((255 - srcA) * dstG) / 255;
@@ -5217,6 +5493,11 @@ static void SDL_Blit_ABGR8888_BGR888_Blend(SDL_BlitInfo *info)
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
+                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
+                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
+                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
                 break;
             }
             dstpixel = (dstB << 16) | (dstG << 8) | dstR;
@@ -5275,7 +5556,7 @@ static void SDL_Blit_ABGR8888_BGR888_Blend_Scale(SDL_BlitInfo *info)
                     srcB = (srcB * srcA) / 255;
                 }
             }
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR + ((255 - srcA) * dstR) / 255;
                 dstG = srcG + ((255 - srcA) * dstG) / 255;
@@ -5290,6 +5571,11 @@ static void SDL_Blit_ABGR8888_BGR888_Blend_Scale(SDL_BlitInfo *info)
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
+                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
+                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
+                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
                 break;
             }
             dstpixel = (dstB << 16) | (dstG << 8) | dstR;
@@ -5422,7 +5708,7 @@ static void SDL_Blit_ABGR8888_BGR888_Modulate_Blend(SDL_BlitInfo *info)
                     srcB = (srcB * srcA) / 255;
                 }
             }
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR + ((255 - srcA) * dstR) / 255;
                 dstG = srcG + ((255 - srcA) * dstG) / 255;
@@ -5437,6 +5723,11 @@ static void SDL_Blit_ABGR8888_BGR888_Modulate_Blend(SDL_BlitInfo *info)
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
+                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
+                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
+                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
                 break;
             }
             dstpixel = (dstB << 16) | (dstG << 8) | dstR;
@@ -5507,7 +5798,7 @@ static void SDL_Blit_ABGR8888_BGR888_Modulate_Blend_Scale(SDL_BlitInfo *info)
                     srcB = (srcB * srcA) / 255;
                 }
             }
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR + ((255 - srcA) * dstR) / 255;
                 dstG = srcG + ((255 - srcA) * dstG) / 255;
@@ -5522,6 +5813,11 @@ static void SDL_Blit_ABGR8888_BGR888_Modulate_Blend_Scale(SDL_BlitInfo *info)
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
+                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
+                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
+                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
                 break;
             }
             dstpixel = (dstB << 16) | (dstG << 8) | dstR;
@@ -5602,7 +5898,7 @@ static void SDL_Blit_ABGR8888_ARGB8888_Blend(SDL_BlitInfo *info)
                     srcB = (srcB * srcA) / 255;
                 }
             }
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR + ((255 - srcA) * dstR) / 255;
                 dstG = srcG + ((255 - srcA) * dstG) / 255;
@@ -5618,6 +5914,12 @@ static void SDL_Blit_ABGR8888_ARGB8888_Blend(SDL_BlitInfo *info)
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
+                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
+                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
+                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                dstA = ((srcA * dstA) + (dstA * (255 - srcA))) / 255; if (dstA > 255) dstA = 255;
                 break;
             }
             dstpixel = (dstA << 24) | (dstR << 16) | (dstG << 8) | dstB;
@@ -5676,7 +5978,7 @@ static void SDL_Blit_ABGR8888_ARGB8888_Blend_Scale(SDL_BlitInfo *info)
                     srcB = (srcB * srcA) / 255;
                 }
             }
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR + ((255 - srcA) * dstR) / 255;
                 dstG = srcG + ((255 - srcA) * dstG) / 255;
@@ -5692,6 +5994,12 @@ static void SDL_Blit_ABGR8888_ARGB8888_Blend_Scale(SDL_BlitInfo *info)
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
+                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
+                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
+                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                dstA = ((srcA * dstA) + (dstA * (255 - srcA))) / 255; if (dstA > 255) dstA = 255;
                 break;
             }
             dstpixel = (dstA << 24) | (dstR << 16) | (dstG << 8) | dstB;
@@ -5832,7 +6140,7 @@ static void SDL_Blit_ABGR8888_ARGB8888_Modulate_Blend(SDL_BlitInfo *info)
                     srcB = (srcB * srcA) / 255;
                 }
             }
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR + ((255 - srcA) * dstR) / 255;
                 dstG = srcG + ((255 - srcA) * dstG) / 255;
@@ -5848,6 +6156,12 @@ static void SDL_Blit_ABGR8888_ARGB8888_Modulate_Blend(SDL_BlitInfo *info)
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
+                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
+                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
+                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                dstA = ((srcA * dstA) + (dstA * (255 - srcA))) / 255; if (dstA > 255) dstA = 255;
                 break;
             }
             dstpixel = (dstA << 24) | (dstR << 16) | (dstG << 8) | dstB;
@@ -5918,7 +6232,7 @@ static void SDL_Blit_ABGR8888_ARGB8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
                     srcB = (srcB * srcA) / 255;
                 }
             }
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR + ((255 - srcA) * dstR) / 255;
                 dstG = srcG + ((255 - srcA) * dstG) / 255;
@@ -5934,6 +6248,12 @@ static void SDL_Blit_ABGR8888_ARGB8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
+                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
+                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
+                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                dstA = ((srcA * dstA) + (dstA * (255 - srcA))) / 255; if (dstA > 255) dstA = 255;
                 break;
             }
             dstpixel = (dstA << 24) | (dstR << 16) | (dstG << 8) | dstB;
@@ -6014,7 +6334,7 @@ static void SDL_Blit_BGRA8888_RGB888_Blend(SDL_BlitInfo *info)
                     srcB = (srcB * srcA) / 255;
                 }
             }
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR + ((255 - srcA) * dstR) / 255;
                 dstG = srcG + ((255 - srcA) * dstG) / 255;
@@ -6029,6 +6349,11 @@ static void SDL_Blit_BGRA8888_RGB888_Blend(SDL_BlitInfo *info)
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
+                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
+                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
+                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
                 break;
             }
             dstpixel = (dstR << 16) | (dstG << 8) | dstB;
@@ -6087,7 +6412,7 @@ static void SDL_Blit_BGRA8888_RGB888_Blend_Scale(SDL_BlitInfo *info)
                     srcB = (srcB * srcA) / 255;
                 }
             }
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR + ((255 - srcA) * dstR) / 255;
                 dstG = srcG + ((255 - srcA) * dstG) / 255;
@@ -6102,6 +6427,11 @@ static void SDL_Blit_BGRA8888_RGB888_Blend_Scale(SDL_BlitInfo *info)
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
+                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
+                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
+                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
                 break;
             }
             dstpixel = (dstR << 16) | (dstG << 8) | dstB;
@@ -6234,7 +6564,7 @@ static void SDL_Blit_BGRA8888_RGB888_Modulate_Blend(SDL_BlitInfo *info)
                     srcB = (srcB * srcA) / 255;
                 }
             }
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR + ((255 - srcA) * dstR) / 255;
                 dstG = srcG + ((255 - srcA) * dstG) / 255;
@@ -6249,6 +6579,11 @@ static void SDL_Blit_BGRA8888_RGB888_Modulate_Blend(SDL_BlitInfo *info)
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
+                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
+                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
+                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
                 break;
             }
             dstpixel = (dstR << 16) | (dstG << 8) | dstB;
@@ -6319,7 +6654,7 @@ static void SDL_Blit_BGRA8888_RGB888_Modulate_Blend_Scale(SDL_BlitInfo *info)
                     srcB = (srcB * srcA) / 255;
                 }
             }
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR + ((255 - srcA) * dstR) / 255;
                 dstG = srcG + ((255 - srcA) * dstG) / 255;
@@ -6334,6 +6669,11 @@ static void SDL_Blit_BGRA8888_RGB888_Modulate_Blend_Scale(SDL_BlitInfo *info)
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
+                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
+                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
+                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
                 break;
             }
             dstpixel = (dstR << 16) | (dstG << 8) | dstB;
@@ -6414,7 +6754,7 @@ static void SDL_Blit_BGRA8888_BGR888_Blend(SDL_BlitInfo *info)
                     srcB = (srcB * srcA) / 255;
                 }
             }
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR + ((255 - srcA) * dstR) / 255;
                 dstG = srcG + ((255 - srcA) * dstG) / 255;
@@ -6429,6 +6769,11 @@ static void SDL_Blit_BGRA8888_BGR888_Blend(SDL_BlitInfo *info)
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
+                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
+                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
+                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
                 break;
             }
             dstpixel = (dstB << 16) | (dstG << 8) | dstR;
@@ -6487,7 +6832,7 @@ static void SDL_Blit_BGRA8888_BGR888_Blend_Scale(SDL_BlitInfo *info)
                     srcB = (srcB * srcA) / 255;
                 }
             }
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR + ((255 - srcA) * dstR) / 255;
                 dstG = srcG + ((255 - srcA) * dstG) / 255;
@@ -6502,6 +6847,11 @@ static void SDL_Blit_BGRA8888_BGR888_Blend_Scale(SDL_BlitInfo *info)
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
+                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
+                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
+                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
                 break;
             }
             dstpixel = (dstB << 16) | (dstG << 8) | dstR;
@@ -6634,7 +6984,7 @@ static void SDL_Blit_BGRA8888_BGR888_Modulate_Blend(SDL_BlitInfo *info)
                     srcB = (srcB * srcA) / 255;
                 }
             }
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR + ((255 - srcA) * dstR) / 255;
                 dstG = srcG + ((255 - srcA) * dstG) / 255;
@@ -6649,6 +6999,11 @@ static void SDL_Blit_BGRA8888_BGR888_Modulate_Blend(SDL_BlitInfo *info)
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
+                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
+                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
+                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
                 break;
             }
             dstpixel = (dstB << 16) | (dstG << 8) | dstR;
@@ -6719,7 +7074,7 @@ static void SDL_Blit_BGRA8888_BGR888_Modulate_Blend_Scale(SDL_BlitInfo *info)
                     srcB = (srcB * srcA) / 255;
                 }
             }
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR + ((255 - srcA) * dstR) / 255;
                 dstG = srcG + ((255 - srcA) * dstG) / 255;
@@ -6734,6 +7089,11 @@ static void SDL_Blit_BGRA8888_BGR888_Modulate_Blend_Scale(SDL_BlitInfo *info)
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
+                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
+                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
+                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
                 break;
             }
             dstpixel = (dstB << 16) | (dstG << 8) | dstR;
@@ -6814,7 +7174,7 @@ static void SDL_Blit_BGRA8888_ARGB8888_Blend(SDL_BlitInfo *info)
                     srcB = (srcB * srcA) / 255;
                 }
             }
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR + ((255 - srcA) * dstR) / 255;
                 dstG = srcG + ((255 - srcA) * dstG) / 255;
@@ -6830,6 +7190,12 @@ static void SDL_Blit_BGRA8888_ARGB8888_Blend(SDL_BlitInfo *info)
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
+                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
+                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
+                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                dstA = ((srcA * dstA) + (dstA * (255 - srcA))) / 255; if (dstA > 255) dstA = 255;
                 break;
             }
             dstpixel = (dstA << 24) | (dstR << 16) | (dstG << 8) | dstB;
@@ -6888,7 +7254,7 @@ static void SDL_Blit_BGRA8888_ARGB8888_Blend_Scale(SDL_BlitInfo *info)
                     srcB = (srcB * srcA) / 255;
                 }
             }
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR + ((255 - srcA) * dstR) / 255;
                 dstG = srcG + ((255 - srcA) * dstG) / 255;
@@ -6904,6 +7270,12 @@ static void SDL_Blit_BGRA8888_ARGB8888_Blend_Scale(SDL_BlitInfo *info)
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
+                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
+                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
+                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                dstA = ((srcA * dstA) + (dstA * (255 - srcA))) / 255; if (dstA > 255) dstA = 255;
                 break;
             }
             dstpixel = (dstA << 24) | (dstR << 16) | (dstG << 8) | dstB;
@@ -7044,7 +7416,7 @@ static void SDL_Blit_BGRA8888_ARGB8888_Modulate_Blend(SDL_BlitInfo *info)
                     srcB = (srcB * srcA) / 255;
                 }
             }
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR + ((255 - srcA) * dstR) / 255;
                 dstG = srcG + ((255 - srcA) * dstG) / 255;
@@ -7060,6 +7432,12 @@ static void SDL_Blit_BGRA8888_ARGB8888_Modulate_Blend(SDL_BlitInfo *info)
                 dstR = (srcR * dstR) / 255;
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
+                break;
+            case SDL_COPY_MUL:
+                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
+                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
+                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                dstA = ((srcA * dstA) + (dstA * (255 - srcA))) / 255; if (dstA > 255) dstA = 255;
                 break;
             }
             dstpixel = (dstA << 24) | (dstR << 16) | (dstG << 8) | dstB;
@@ -7130,7 +7508,7 @@ static void SDL_Blit_BGRA8888_ARGB8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
                     srcB = (srcB * srcA) / 255;
                 }
             }
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD)) {
+            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
                 dstR = srcR + ((255 - srcA) * dstR) / 255;
                 dstG = srcG + ((255 - srcA) * dstG) / 255;
@@ -7147,6 +7525,12 @@ static void SDL_Blit_BGRA8888_ARGB8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
                 dstG = (srcG * dstG) / 255;
                 dstB = (srcB * dstB) / 255;
                 break;
+            case SDL_COPY_MUL:
+                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
+                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
+                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                dstA = ((srcA * dstA) + (dstA * (255 - srcA))) / 255; if (dstA > 255) dstA = 255;
+                break;
             }
             dstpixel = (dstA << 24) | (dstR << 16) | (dstG << 8) | dstB;
             *dst = dstpixel;
@@ -7160,131 +7544,131 @@ static void SDL_Blit_BGRA8888_ARGB8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
 
 SDL_BlitFuncEntry SDL_GeneratedBlitFuncTable[] = {
     { SDL_PIXELFORMAT_RGB888, SDL_PIXELFORMAT_RGB888, (SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_RGB888_RGB888_Scale },
-    { SDL_PIXELFORMAT_RGB888, SDL_PIXELFORMAT_RGB888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD), SDL_CPU_ANY, SDL_Blit_RGB888_RGB888_Blend },
-    { SDL_PIXELFORMAT_RGB888, SDL_PIXELFORMAT_RGB888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_RGB888_RGB888_Blend_Scale },
+    { SDL_PIXELFORMAT_RGB888, SDL_PIXELFORMAT_RGB888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL), SDL_CPU_ANY, SDL_Blit_RGB888_RGB888_Blend },
+    { SDL_PIXELFORMAT_RGB888, SDL_PIXELFORMAT_RGB888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_RGB888_RGB888_Blend_Scale },
     { SDL_PIXELFORMAT_RGB888, SDL_PIXELFORMAT_RGB888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA), SDL_CPU_ANY, SDL_Blit_RGB888_RGB888_Modulate },
     { SDL_PIXELFORMAT_RGB888, SDL_PIXELFORMAT_RGB888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_RGB888_RGB888_Modulate_Scale },
-    { SDL_PIXELFORMAT_RGB888, SDL_PIXELFORMAT_RGB888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD), SDL_CPU_ANY, SDL_Blit_RGB888_RGB888_Modulate_Blend },
-    { SDL_PIXELFORMAT_RGB888, SDL_PIXELFORMAT_RGB888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_RGB888_RGB888_Modulate_Blend_Scale },
+    { SDL_PIXELFORMAT_RGB888, SDL_PIXELFORMAT_RGB888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL), SDL_CPU_ANY, SDL_Blit_RGB888_RGB888_Modulate_Blend },
+    { SDL_PIXELFORMAT_RGB888, SDL_PIXELFORMAT_RGB888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_RGB888_RGB888_Modulate_Blend_Scale },
     { SDL_PIXELFORMAT_RGB888, SDL_PIXELFORMAT_BGR888, (SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_RGB888_BGR888_Scale },
-    { SDL_PIXELFORMAT_RGB888, SDL_PIXELFORMAT_BGR888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD), SDL_CPU_ANY, SDL_Blit_RGB888_BGR888_Blend },
-    { SDL_PIXELFORMAT_RGB888, SDL_PIXELFORMAT_BGR888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_RGB888_BGR888_Blend_Scale },
+    { SDL_PIXELFORMAT_RGB888, SDL_PIXELFORMAT_BGR888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL), SDL_CPU_ANY, SDL_Blit_RGB888_BGR888_Blend },
+    { SDL_PIXELFORMAT_RGB888, SDL_PIXELFORMAT_BGR888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_RGB888_BGR888_Blend_Scale },
     { SDL_PIXELFORMAT_RGB888, SDL_PIXELFORMAT_BGR888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA), SDL_CPU_ANY, SDL_Blit_RGB888_BGR888_Modulate },
     { SDL_PIXELFORMAT_RGB888, SDL_PIXELFORMAT_BGR888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_RGB888_BGR888_Modulate_Scale },
-    { SDL_PIXELFORMAT_RGB888, SDL_PIXELFORMAT_BGR888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD), SDL_CPU_ANY, SDL_Blit_RGB888_BGR888_Modulate_Blend },
-    { SDL_PIXELFORMAT_RGB888, SDL_PIXELFORMAT_BGR888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_RGB888_BGR888_Modulate_Blend_Scale },
+    { SDL_PIXELFORMAT_RGB888, SDL_PIXELFORMAT_BGR888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL), SDL_CPU_ANY, SDL_Blit_RGB888_BGR888_Modulate_Blend },
+    { SDL_PIXELFORMAT_RGB888, SDL_PIXELFORMAT_BGR888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_RGB888_BGR888_Modulate_Blend_Scale },
     { SDL_PIXELFORMAT_RGB888, SDL_PIXELFORMAT_ARGB8888, (SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_RGB888_ARGB8888_Scale },
-    { SDL_PIXELFORMAT_RGB888, SDL_PIXELFORMAT_ARGB8888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD), SDL_CPU_ANY, SDL_Blit_RGB888_ARGB8888_Blend },
-    { SDL_PIXELFORMAT_RGB888, SDL_PIXELFORMAT_ARGB8888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_RGB888_ARGB8888_Blend_Scale },
+    { SDL_PIXELFORMAT_RGB888, SDL_PIXELFORMAT_ARGB8888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL), SDL_CPU_ANY, SDL_Blit_RGB888_ARGB8888_Blend },
+    { SDL_PIXELFORMAT_RGB888, SDL_PIXELFORMAT_ARGB8888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_RGB888_ARGB8888_Blend_Scale },
     { SDL_PIXELFORMAT_RGB888, SDL_PIXELFORMAT_ARGB8888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA), SDL_CPU_ANY, SDL_Blit_RGB888_ARGB8888_Modulate },
     { SDL_PIXELFORMAT_RGB888, SDL_PIXELFORMAT_ARGB8888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_RGB888_ARGB8888_Modulate_Scale },
-    { SDL_PIXELFORMAT_RGB888, SDL_PIXELFORMAT_ARGB8888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD), SDL_CPU_ANY, SDL_Blit_RGB888_ARGB8888_Modulate_Blend },
-    { SDL_PIXELFORMAT_RGB888, SDL_PIXELFORMAT_ARGB8888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_RGB888_ARGB8888_Modulate_Blend_Scale },
+    { SDL_PIXELFORMAT_RGB888, SDL_PIXELFORMAT_ARGB8888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL), SDL_CPU_ANY, SDL_Blit_RGB888_ARGB8888_Modulate_Blend },
+    { SDL_PIXELFORMAT_RGB888, SDL_PIXELFORMAT_ARGB8888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_RGB888_ARGB8888_Modulate_Blend_Scale },
     { SDL_PIXELFORMAT_BGR888, SDL_PIXELFORMAT_RGB888, (SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_BGR888_RGB888_Scale },
-    { SDL_PIXELFORMAT_BGR888, SDL_PIXELFORMAT_RGB888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD), SDL_CPU_ANY, SDL_Blit_BGR888_RGB888_Blend },
-    { SDL_PIXELFORMAT_BGR888, SDL_PIXELFORMAT_RGB888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_BGR888_RGB888_Blend_Scale },
+    { SDL_PIXELFORMAT_BGR888, SDL_PIXELFORMAT_RGB888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL), SDL_CPU_ANY, SDL_Blit_BGR888_RGB888_Blend },
+    { SDL_PIXELFORMAT_BGR888, SDL_PIXELFORMAT_RGB888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_BGR888_RGB888_Blend_Scale },
     { SDL_PIXELFORMAT_BGR888, SDL_PIXELFORMAT_RGB888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA), SDL_CPU_ANY, SDL_Blit_BGR888_RGB888_Modulate },
     { SDL_PIXELFORMAT_BGR888, SDL_PIXELFORMAT_RGB888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_BGR888_RGB888_Modulate_Scale },
-    { SDL_PIXELFORMAT_BGR888, SDL_PIXELFORMAT_RGB888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD), SDL_CPU_ANY, SDL_Blit_BGR888_RGB888_Modulate_Blend },
-    { SDL_PIXELFORMAT_BGR888, SDL_PIXELFORMAT_RGB888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_BGR888_RGB888_Modulate_Blend_Scale },
+    { SDL_PIXELFORMAT_BGR888, SDL_PIXELFORMAT_RGB888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL), SDL_CPU_ANY, SDL_Blit_BGR888_RGB888_Modulate_Blend },
+    { SDL_PIXELFORMAT_BGR888, SDL_PIXELFORMAT_RGB888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_BGR888_RGB888_Modulate_Blend_Scale },
     { SDL_PIXELFORMAT_BGR888, SDL_PIXELFORMAT_BGR888, (SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_BGR888_BGR888_Scale },
-    { SDL_PIXELFORMAT_BGR888, SDL_PIXELFORMAT_BGR888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD), SDL_CPU_ANY, SDL_Blit_BGR888_BGR888_Blend },
-    { SDL_PIXELFORMAT_BGR888, SDL_PIXELFORMAT_BGR888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_BGR888_BGR888_Blend_Scale },
+    { SDL_PIXELFORMAT_BGR888, SDL_PIXELFORMAT_BGR888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL), SDL_CPU_ANY, SDL_Blit_BGR888_BGR888_Blend },
+    { SDL_PIXELFORMAT_BGR888, SDL_PIXELFORMAT_BGR888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_BGR888_BGR888_Blend_Scale },
     { SDL_PIXELFORMAT_BGR888, SDL_PIXELFORMAT_BGR888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA), SDL_CPU_ANY, SDL_Blit_BGR888_BGR888_Modulate },
     { SDL_PIXELFORMAT_BGR888, SDL_PIXELFORMAT_BGR888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_BGR888_BGR888_Modulate_Scale },
-    { SDL_PIXELFORMAT_BGR888, SDL_PIXELFORMAT_BGR888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD), SDL_CPU_ANY, SDL_Blit_BGR888_BGR888_Modulate_Blend },
-    { SDL_PIXELFORMAT_BGR888, SDL_PIXELFORMAT_BGR888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_BGR888_BGR888_Modulate_Blend_Scale },
+    { SDL_PIXELFORMAT_BGR888, SDL_PIXELFORMAT_BGR888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL), SDL_CPU_ANY, SDL_Blit_BGR888_BGR888_Modulate_Blend },
+    { SDL_PIXELFORMAT_BGR888, SDL_PIXELFORMAT_BGR888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_BGR888_BGR888_Modulate_Blend_Scale },
     { SDL_PIXELFORMAT_BGR888, SDL_PIXELFORMAT_ARGB8888, (SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_BGR888_ARGB8888_Scale },
-    { SDL_PIXELFORMAT_BGR888, SDL_PIXELFORMAT_ARGB8888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD), SDL_CPU_ANY, SDL_Blit_BGR888_ARGB8888_Blend },
-    { SDL_PIXELFORMAT_BGR888, SDL_PIXELFORMAT_ARGB8888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_BGR888_ARGB8888_Blend_Scale },
+    { SDL_PIXELFORMAT_BGR888, SDL_PIXELFORMAT_ARGB8888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL), SDL_CPU_ANY, SDL_Blit_BGR888_ARGB8888_Blend },
+    { SDL_PIXELFORMAT_BGR888, SDL_PIXELFORMAT_ARGB8888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_BGR888_ARGB8888_Blend_Scale },
     { SDL_PIXELFORMAT_BGR888, SDL_PIXELFORMAT_ARGB8888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA), SDL_CPU_ANY, SDL_Blit_BGR888_ARGB8888_Modulate },
     { SDL_PIXELFORMAT_BGR888, SDL_PIXELFORMAT_ARGB8888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_BGR888_ARGB8888_Modulate_Scale },
-    { SDL_PIXELFORMAT_BGR888, SDL_PIXELFORMAT_ARGB8888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD), SDL_CPU_ANY, SDL_Blit_BGR888_ARGB8888_Modulate_Blend },
-    { SDL_PIXELFORMAT_BGR888, SDL_PIXELFORMAT_ARGB8888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_BGR888_ARGB8888_Modulate_Blend_Scale },
+    { SDL_PIXELFORMAT_BGR888, SDL_PIXELFORMAT_ARGB8888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL), SDL_CPU_ANY, SDL_Blit_BGR888_ARGB8888_Modulate_Blend },
+    { SDL_PIXELFORMAT_BGR888, SDL_PIXELFORMAT_ARGB8888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_BGR888_ARGB8888_Modulate_Blend_Scale },
     { SDL_PIXELFORMAT_ARGB8888, SDL_PIXELFORMAT_RGB888, (SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_ARGB8888_RGB888_Scale },
-    { SDL_PIXELFORMAT_ARGB8888, SDL_PIXELFORMAT_RGB888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD), SDL_CPU_ANY, SDL_Blit_ARGB8888_RGB888_Blend },
-    { SDL_PIXELFORMAT_ARGB8888, SDL_PIXELFORMAT_RGB888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_ARGB8888_RGB888_Blend_Scale },
+    { SDL_PIXELFORMAT_ARGB8888, SDL_PIXELFORMAT_RGB888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL), SDL_CPU_ANY, SDL_Blit_ARGB8888_RGB888_Blend },
+    { SDL_PIXELFORMAT_ARGB8888, SDL_PIXELFORMAT_RGB888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_ARGB8888_RGB888_Blend_Scale },
     { SDL_PIXELFORMAT_ARGB8888, SDL_PIXELFORMAT_RGB888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA), SDL_CPU_ANY, SDL_Blit_ARGB8888_RGB888_Modulate },
     { SDL_PIXELFORMAT_ARGB8888, SDL_PIXELFORMAT_RGB888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_ARGB8888_RGB888_Modulate_Scale },
-    { SDL_PIXELFORMAT_ARGB8888, SDL_PIXELFORMAT_RGB888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD), SDL_CPU_ANY, SDL_Blit_ARGB8888_RGB888_Modulate_Blend },
-    { SDL_PIXELFORMAT_ARGB8888, SDL_PIXELFORMAT_RGB888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_ARGB8888_RGB888_Modulate_Blend_Scale },
+    { SDL_PIXELFORMAT_ARGB8888, SDL_PIXELFORMAT_RGB888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL), SDL_CPU_ANY, SDL_Blit_ARGB8888_RGB888_Modulate_Blend },
+    { SDL_PIXELFORMAT_ARGB8888, SDL_PIXELFORMAT_RGB888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_ARGB8888_RGB888_Modulate_Blend_Scale },
     { SDL_PIXELFORMAT_ARGB8888, SDL_PIXELFORMAT_BGR888, (SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_ARGB8888_BGR888_Scale },
-    { SDL_PIXELFORMAT_ARGB8888, SDL_PIXELFORMAT_BGR888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD), SDL_CPU_ANY, SDL_Blit_ARGB8888_BGR888_Blend },
-    { SDL_PIXELFORMAT_ARGB8888, SDL_PIXELFORMAT_BGR888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_ARGB8888_BGR888_Blend_Scale },
+    { SDL_PIXELFORMAT_ARGB8888, SDL_PIXELFORMAT_BGR888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL), SDL_CPU_ANY, SDL_Blit_ARGB8888_BGR888_Blend },
+    { SDL_PIXELFORMAT_ARGB8888, SDL_PIXELFORMAT_BGR888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_ARGB8888_BGR888_Blend_Scale },
     { SDL_PIXELFORMAT_ARGB8888, SDL_PIXELFORMAT_BGR888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA), SDL_CPU_ANY, SDL_Blit_ARGB8888_BGR888_Modulate },
     { SDL_PIXELFORMAT_ARGB8888, SDL_PIXELFORMAT_BGR888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_ARGB8888_BGR888_Modulate_Scale },
-    { SDL_PIXELFORMAT_ARGB8888, SDL_PIXELFORMAT_BGR888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD), SDL_CPU_ANY, SDL_Blit_ARGB8888_BGR888_Modulate_Blend },
-    { SDL_PIXELFORMAT_ARGB8888, SDL_PIXELFORMAT_BGR888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_ARGB8888_BGR888_Modulate_Blend_Scale },
+    { SDL_PIXELFORMAT_ARGB8888, SDL_PIXELFORMAT_BGR888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL), SDL_CPU_ANY, SDL_Blit_ARGB8888_BGR888_Modulate_Blend },
+    { SDL_PIXELFORMAT_ARGB8888, SDL_PIXELFORMAT_BGR888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_ARGB8888_BGR888_Modulate_Blend_Scale },
     { SDL_PIXELFORMAT_ARGB8888, SDL_PIXELFORMAT_ARGB8888, (SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_ARGB8888_ARGB8888_Scale },
-    { SDL_PIXELFORMAT_ARGB8888, SDL_PIXELFORMAT_ARGB8888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD), SDL_CPU_ANY, SDL_Blit_ARGB8888_ARGB8888_Blend },
-    { SDL_PIXELFORMAT_ARGB8888, SDL_PIXELFORMAT_ARGB8888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_ARGB8888_ARGB8888_Blend_Scale },
+    { SDL_PIXELFORMAT_ARGB8888, SDL_PIXELFORMAT_ARGB8888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL), SDL_CPU_ANY, SDL_Blit_ARGB8888_ARGB8888_Blend },
+    { SDL_PIXELFORMAT_ARGB8888, SDL_PIXELFORMAT_ARGB8888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_ARGB8888_ARGB8888_Blend_Scale },
     { SDL_PIXELFORMAT_ARGB8888, SDL_PIXELFORMAT_ARGB8888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA), SDL_CPU_ANY, SDL_Blit_ARGB8888_ARGB8888_Modulate },
     { SDL_PIXELFORMAT_ARGB8888, SDL_PIXELFORMAT_ARGB8888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_ARGB8888_ARGB8888_Modulate_Scale },
-    { SDL_PIXELFORMAT_ARGB8888, SDL_PIXELFORMAT_ARGB8888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD), SDL_CPU_ANY, SDL_Blit_ARGB8888_ARGB8888_Modulate_Blend },
-    { SDL_PIXELFORMAT_ARGB8888, SDL_PIXELFORMAT_ARGB8888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_ARGB8888_ARGB8888_Modulate_Blend_Scale },
+    { SDL_PIXELFORMAT_ARGB8888, SDL_PIXELFORMAT_ARGB8888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL), SDL_CPU_ANY, SDL_Blit_ARGB8888_ARGB8888_Modulate_Blend },
+    { SDL_PIXELFORMAT_ARGB8888, SDL_PIXELFORMAT_ARGB8888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_ARGB8888_ARGB8888_Modulate_Blend_Scale },
     { SDL_PIXELFORMAT_RGBA8888, SDL_PIXELFORMAT_RGB888, (SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_RGBA8888_RGB888_Scale },
-    { SDL_PIXELFORMAT_RGBA8888, SDL_PIXELFORMAT_RGB888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD), SDL_CPU_ANY, SDL_Blit_RGBA8888_RGB888_Blend },
-    { SDL_PIXELFORMAT_RGBA8888, SDL_PIXELFORMAT_RGB888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_RGBA8888_RGB888_Blend_Scale },
+    { SDL_PIXELFORMAT_RGBA8888, SDL_PIXELFORMAT_RGB888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL), SDL_CPU_ANY, SDL_Blit_RGBA8888_RGB888_Blend },
+    { SDL_PIXELFORMAT_RGBA8888, SDL_PIXELFORMAT_RGB888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_RGBA8888_RGB888_Blend_Scale },
     { SDL_PIXELFORMAT_RGBA8888, SDL_PIXELFORMAT_RGB888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA), SDL_CPU_ANY, SDL_Blit_RGBA8888_RGB888_Modulate },
     { SDL_PIXELFORMAT_RGBA8888, SDL_PIXELFORMAT_RGB888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_RGBA8888_RGB888_Modulate_Scale },
-    { SDL_PIXELFORMAT_RGBA8888, SDL_PIXELFORMAT_RGB888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD), SDL_CPU_ANY, SDL_Blit_RGBA8888_RGB888_Modulate_Blend },
-    { SDL_PIXELFORMAT_RGBA8888, SDL_PIXELFORMAT_RGB888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_RGBA8888_RGB888_Modulate_Blend_Scale },
+    { SDL_PIXELFORMAT_RGBA8888, SDL_PIXELFORMAT_RGB888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL), SDL_CPU_ANY, SDL_Blit_RGBA8888_RGB888_Modulate_Blend },
+    { SDL_PIXELFORMAT_RGBA8888, SDL_PIXELFORMAT_RGB888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_RGBA8888_RGB888_Modulate_Blend_Scale },
     { SDL_PIXELFORMAT_RGBA8888, SDL_PIXELFORMAT_BGR888, (SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_RGBA8888_BGR888_Scale },
-    { SDL_PIXELFORMAT_RGBA8888, SDL_PIXELFORMAT_BGR888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD), SDL_CPU_ANY, SDL_Blit_RGBA8888_BGR888_Blend },
-    { SDL_PIXELFORMAT_RGBA8888, SDL_PIXELFORMAT_BGR888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_RGBA8888_BGR888_Blend_Scale },
+    { SDL_PIXELFORMAT_RGBA8888, SDL_PIXELFORMAT_BGR888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL), SDL_CPU_ANY, SDL_Blit_RGBA8888_BGR888_Blend },
+    { SDL_PIXELFORMAT_RGBA8888, SDL_PIXELFORMAT_BGR888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_RGBA8888_BGR888_Blend_Scale },
     { SDL_PIXELFORMAT_RGBA8888, SDL_PIXELFORMAT_BGR888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA), SDL_CPU_ANY, SDL_Blit_RGBA8888_BGR888_Modulate },
     { SDL_PIXELFORMAT_RGBA8888, SDL_PIXELFORMAT_BGR888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_RGBA8888_BGR888_Modulate_Scale },
-    { SDL_PIXELFORMAT_RGBA8888, SDL_PIXELFORMAT_BGR888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD), SDL_CPU_ANY, SDL_Blit_RGBA8888_BGR888_Modulate_Blend },
-    { SDL_PIXELFORMAT_RGBA8888, SDL_PIXELFORMAT_BGR888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_RGBA8888_BGR888_Modulate_Blend_Scale },
+    { SDL_PIXELFORMAT_RGBA8888, SDL_PIXELFORMAT_BGR888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL), SDL_CPU_ANY, SDL_Blit_RGBA8888_BGR888_Modulate_Blend },
+    { SDL_PIXELFORMAT_RGBA8888, SDL_PIXELFORMAT_BGR888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_RGBA8888_BGR888_Modulate_Blend_Scale },
     { SDL_PIXELFORMAT_RGBA8888, SDL_PIXELFORMAT_ARGB8888, (SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_RGBA8888_ARGB8888_Scale },
-    { SDL_PIXELFORMAT_RGBA8888, SDL_PIXELFORMAT_ARGB8888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD), SDL_CPU_ANY, SDL_Blit_RGBA8888_ARGB8888_Blend },
-    { SDL_PIXELFORMAT_RGBA8888, SDL_PIXELFORMAT_ARGB8888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_RGBA8888_ARGB8888_Blend_Scale },
+    { SDL_PIXELFORMAT_RGBA8888, SDL_PIXELFORMAT_ARGB8888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL), SDL_CPU_ANY, SDL_Blit_RGBA8888_ARGB8888_Blend },
+    { SDL_PIXELFORMAT_RGBA8888, SDL_PIXELFORMAT_ARGB8888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_RGBA8888_ARGB8888_Blend_Scale },
     { SDL_PIXELFORMAT_RGBA8888, SDL_PIXELFORMAT_ARGB8888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA), SDL_CPU_ANY, SDL_Blit_RGBA8888_ARGB8888_Modulate },
     { SDL_PIXELFORMAT_RGBA8888, SDL_PIXELFORMAT_ARGB8888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_RGBA8888_ARGB8888_Modulate_Scale },
-    { SDL_PIXELFORMAT_RGBA8888, SDL_PIXELFORMAT_ARGB8888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD), SDL_CPU_ANY, SDL_Blit_RGBA8888_ARGB8888_Modulate_Blend },
-    { SDL_PIXELFORMAT_RGBA8888, SDL_PIXELFORMAT_ARGB8888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_RGBA8888_ARGB8888_Modulate_Blend_Scale },
+    { SDL_PIXELFORMAT_RGBA8888, SDL_PIXELFORMAT_ARGB8888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL), SDL_CPU_ANY, SDL_Blit_RGBA8888_ARGB8888_Modulate_Blend },
+    { SDL_PIXELFORMAT_RGBA8888, SDL_PIXELFORMAT_ARGB8888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_RGBA8888_ARGB8888_Modulate_Blend_Scale },
     { SDL_PIXELFORMAT_ABGR8888, SDL_PIXELFORMAT_RGB888, (SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_ABGR8888_RGB888_Scale },
-    { SDL_PIXELFORMAT_ABGR8888, SDL_PIXELFORMAT_RGB888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD), SDL_CPU_ANY, SDL_Blit_ABGR8888_RGB888_Blend },
-    { SDL_PIXELFORMAT_ABGR8888, SDL_PIXELFORMAT_RGB888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_ABGR8888_RGB888_Blend_Scale },
+    { SDL_PIXELFORMAT_ABGR8888, SDL_PIXELFORMAT_RGB888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL), SDL_CPU_ANY, SDL_Blit_ABGR8888_RGB888_Blend },
+    { SDL_PIXELFORMAT_ABGR8888, SDL_PIXELFORMAT_RGB888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_ABGR8888_RGB888_Blend_Scale },
     { SDL_PIXELFORMAT_ABGR8888, SDL_PIXELFORMAT_RGB888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA), SDL_CPU_ANY, SDL_Blit_ABGR8888_RGB888_Modulate },
     { SDL_PIXELFORMAT_ABGR8888, SDL_PIXELFORMAT_RGB888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_ABGR8888_RGB888_Modulate_Scale },
-    { SDL_PIXELFORMAT_ABGR8888, SDL_PIXELFORMAT_RGB888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD), SDL_CPU_ANY, SDL_Blit_ABGR8888_RGB888_Modulate_Blend },
-    { SDL_PIXELFORMAT_ABGR8888, SDL_PIXELFORMAT_RGB888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_ABGR8888_RGB888_Modulate_Blend_Scale },
+    { SDL_PIXELFORMAT_ABGR8888, SDL_PIXELFORMAT_RGB888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL), SDL_CPU_ANY, SDL_Blit_ABGR8888_RGB888_Modulate_Blend },
+    { SDL_PIXELFORMAT_ABGR8888, SDL_PIXELFORMAT_RGB888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_ABGR8888_RGB888_Modulate_Blend_Scale },
     { SDL_PIXELFORMAT_ABGR8888, SDL_PIXELFORMAT_BGR888, (SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_ABGR8888_BGR888_Scale },
-    { SDL_PIXELFORMAT_ABGR8888, SDL_PIXELFORMAT_BGR888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD), SDL_CPU_ANY, SDL_Blit_ABGR8888_BGR888_Blend },
-    { SDL_PIXELFORMAT_ABGR8888, SDL_PIXELFORMAT_BGR888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_ABGR8888_BGR888_Blend_Scale },
+    { SDL_PIXELFORMAT_ABGR8888, SDL_PIXELFORMAT_BGR888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL), SDL_CPU_ANY, SDL_Blit_ABGR8888_BGR888_Blend },
+    { SDL_PIXELFORMAT_ABGR8888, SDL_PIXELFORMAT_BGR888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_ABGR8888_BGR888_Blend_Scale },
     { SDL_PIXELFORMAT_ABGR8888, SDL_PIXELFORMAT_BGR888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA), SDL_CPU_ANY, SDL_Blit_ABGR8888_BGR888_Modulate },
     { SDL_PIXELFORMAT_ABGR8888, SDL_PIXELFORMAT_BGR888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_ABGR8888_BGR888_Modulate_Scale },
-    { SDL_PIXELFORMAT_ABGR8888, SDL_PIXELFORMAT_BGR888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD), SDL_CPU_ANY, SDL_Blit_ABGR8888_BGR888_Modulate_Blend },
-    { SDL_PIXELFORMAT_ABGR8888, SDL_PIXELFORMAT_BGR888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_ABGR8888_BGR888_Modulate_Blend_Scale },
+    { SDL_PIXELFORMAT_ABGR8888, SDL_PIXELFORMAT_BGR888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL), SDL_CPU_ANY, SDL_Blit_ABGR8888_BGR888_Modulate_Blend },
+    { SDL_PIXELFORMAT_ABGR8888, SDL_PIXELFORMAT_BGR888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_ABGR8888_BGR888_Modulate_Blend_Scale },
     { SDL_PIXELFORMAT_ABGR8888, SDL_PIXELFORMAT_ARGB8888, (SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_ABGR8888_ARGB8888_Scale },
-    { SDL_PIXELFORMAT_ABGR8888, SDL_PIXELFORMAT_ARGB8888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD), SDL_CPU_ANY, SDL_Blit_ABGR8888_ARGB8888_Blend },
-    { SDL_PIXELFORMAT_ABGR8888, SDL_PIXELFORMAT_ARGB8888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_ABGR8888_ARGB8888_Blend_Scale },
+    { SDL_PIXELFORMAT_ABGR8888, SDL_PIXELFORMAT_ARGB8888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL), SDL_CPU_ANY, SDL_Blit_ABGR8888_ARGB8888_Blend },
+    { SDL_PIXELFORMAT_ABGR8888, SDL_PIXELFORMAT_ARGB8888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_ABGR8888_ARGB8888_Blend_Scale },
     { SDL_PIXELFORMAT_ABGR8888, SDL_PIXELFORMAT_ARGB8888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA), SDL_CPU_ANY, SDL_Blit_ABGR8888_ARGB8888_Modulate },
     { SDL_PIXELFORMAT_ABGR8888, SDL_PIXELFORMAT_ARGB8888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_ABGR8888_ARGB8888_Modulate_Scale },
-    { SDL_PIXELFORMAT_ABGR8888, SDL_PIXELFORMAT_ARGB8888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD), SDL_CPU_ANY, SDL_Blit_ABGR8888_ARGB8888_Modulate_Blend },
-    { SDL_PIXELFORMAT_ABGR8888, SDL_PIXELFORMAT_ARGB8888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_ABGR8888_ARGB8888_Modulate_Blend_Scale },
+    { SDL_PIXELFORMAT_ABGR8888, SDL_PIXELFORMAT_ARGB8888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL), SDL_CPU_ANY, SDL_Blit_ABGR8888_ARGB8888_Modulate_Blend },
+    { SDL_PIXELFORMAT_ABGR8888, SDL_PIXELFORMAT_ARGB8888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_ABGR8888_ARGB8888_Modulate_Blend_Scale },
     { SDL_PIXELFORMAT_BGRA8888, SDL_PIXELFORMAT_RGB888, (SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_BGRA8888_RGB888_Scale },
-    { SDL_PIXELFORMAT_BGRA8888, SDL_PIXELFORMAT_RGB888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD), SDL_CPU_ANY, SDL_Blit_BGRA8888_RGB888_Blend },
-    { SDL_PIXELFORMAT_BGRA8888, SDL_PIXELFORMAT_RGB888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_BGRA8888_RGB888_Blend_Scale },
+    { SDL_PIXELFORMAT_BGRA8888, SDL_PIXELFORMAT_RGB888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL), SDL_CPU_ANY, SDL_Blit_BGRA8888_RGB888_Blend },
+    { SDL_PIXELFORMAT_BGRA8888, SDL_PIXELFORMAT_RGB888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_BGRA8888_RGB888_Blend_Scale },
     { SDL_PIXELFORMAT_BGRA8888, SDL_PIXELFORMAT_RGB888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA), SDL_CPU_ANY, SDL_Blit_BGRA8888_RGB888_Modulate },
     { SDL_PIXELFORMAT_BGRA8888, SDL_PIXELFORMAT_RGB888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_BGRA8888_RGB888_Modulate_Scale },
-    { SDL_PIXELFORMAT_BGRA8888, SDL_PIXELFORMAT_RGB888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD), SDL_CPU_ANY, SDL_Blit_BGRA8888_RGB888_Modulate_Blend },
-    { SDL_PIXELFORMAT_BGRA8888, SDL_PIXELFORMAT_RGB888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_BGRA8888_RGB888_Modulate_Blend_Scale },
+    { SDL_PIXELFORMAT_BGRA8888, SDL_PIXELFORMAT_RGB888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL), SDL_CPU_ANY, SDL_Blit_BGRA8888_RGB888_Modulate_Blend },
+    { SDL_PIXELFORMAT_BGRA8888, SDL_PIXELFORMAT_RGB888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_BGRA8888_RGB888_Modulate_Blend_Scale },
     { SDL_PIXELFORMAT_BGRA8888, SDL_PIXELFORMAT_BGR888, (SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_BGRA8888_BGR888_Scale },
-    { SDL_PIXELFORMAT_BGRA8888, SDL_PIXELFORMAT_BGR888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD), SDL_CPU_ANY, SDL_Blit_BGRA8888_BGR888_Blend },
-    { SDL_PIXELFORMAT_BGRA8888, SDL_PIXELFORMAT_BGR888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_BGRA8888_BGR888_Blend_Scale },
+    { SDL_PIXELFORMAT_BGRA8888, SDL_PIXELFORMAT_BGR888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL), SDL_CPU_ANY, SDL_Blit_BGRA8888_BGR888_Blend },
+    { SDL_PIXELFORMAT_BGRA8888, SDL_PIXELFORMAT_BGR888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_BGRA8888_BGR888_Blend_Scale },
     { SDL_PIXELFORMAT_BGRA8888, SDL_PIXELFORMAT_BGR888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA), SDL_CPU_ANY, SDL_Blit_BGRA8888_BGR888_Modulate },
     { SDL_PIXELFORMAT_BGRA8888, SDL_PIXELFORMAT_BGR888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_BGRA8888_BGR888_Modulate_Scale },
-    { SDL_PIXELFORMAT_BGRA8888, SDL_PIXELFORMAT_BGR888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD), SDL_CPU_ANY, SDL_Blit_BGRA8888_BGR888_Modulate_Blend },
-    { SDL_PIXELFORMAT_BGRA8888, SDL_PIXELFORMAT_BGR888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_BGRA8888_BGR888_Modulate_Blend_Scale },
+    { SDL_PIXELFORMAT_BGRA8888, SDL_PIXELFORMAT_BGR888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL), SDL_CPU_ANY, SDL_Blit_BGRA8888_BGR888_Modulate_Blend },
+    { SDL_PIXELFORMAT_BGRA8888, SDL_PIXELFORMAT_BGR888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_BGRA8888_BGR888_Modulate_Blend_Scale },
     { SDL_PIXELFORMAT_BGRA8888, SDL_PIXELFORMAT_ARGB8888, (SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_BGRA8888_ARGB8888_Scale },
-    { SDL_PIXELFORMAT_BGRA8888, SDL_PIXELFORMAT_ARGB8888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD), SDL_CPU_ANY, SDL_Blit_BGRA8888_ARGB8888_Blend },
-    { SDL_PIXELFORMAT_BGRA8888, SDL_PIXELFORMAT_ARGB8888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_BGRA8888_ARGB8888_Blend_Scale },
+    { SDL_PIXELFORMAT_BGRA8888, SDL_PIXELFORMAT_ARGB8888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL), SDL_CPU_ANY, SDL_Blit_BGRA8888_ARGB8888_Blend },
+    { SDL_PIXELFORMAT_BGRA8888, SDL_PIXELFORMAT_ARGB8888, (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_BGRA8888_ARGB8888_Blend_Scale },
     { SDL_PIXELFORMAT_BGRA8888, SDL_PIXELFORMAT_ARGB8888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA), SDL_CPU_ANY, SDL_Blit_BGRA8888_ARGB8888_Modulate },
     { SDL_PIXELFORMAT_BGRA8888, SDL_PIXELFORMAT_ARGB8888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_BGRA8888_ARGB8888_Modulate_Scale },
-    { SDL_PIXELFORMAT_BGRA8888, SDL_PIXELFORMAT_ARGB8888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD), SDL_CPU_ANY, SDL_Blit_BGRA8888_ARGB8888_Modulate_Blend },
-    { SDL_PIXELFORMAT_BGRA8888, SDL_PIXELFORMAT_ARGB8888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_BGRA8888_ARGB8888_Modulate_Blend_Scale },
+    { SDL_PIXELFORMAT_BGRA8888, SDL_PIXELFORMAT_ARGB8888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL), SDL_CPU_ANY, SDL_Blit_BGRA8888_ARGB8888_Modulate_Blend },
+    { SDL_PIXELFORMAT_BGRA8888, SDL_PIXELFORMAT_ARGB8888, (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL | SDL_COPY_NEAREST), SDL_CPU_ANY, SDL_Blit_BGRA8888_ARGB8888_Modulate_Blend_Scale },
     { 0, 0, 0, 0, NULL }
 };
 
