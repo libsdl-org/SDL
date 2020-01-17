@@ -39,6 +39,7 @@ typedef struct
 {
     EGLSurface egl_surface;
     EGLContext egl_context; /* We use this to preserve the context when losing focus */
+    SDL_bool   backup_done;
     ANativeWindow *native_window;
     
 } SDL_WindowData;

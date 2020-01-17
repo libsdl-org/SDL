@@ -472,7 +472,7 @@ Android_JNI_CreateKey_once(void)
 }
 
 static void
-register_methods(JNIEnv *env, const char *classname, JNINativeMethod *methods, int nb) 
+register_methods(JNIEnv *env, const char *classname, JNINativeMethod *methods, int nb)
 {
     jclass clazz = (*env)->FindClass(env, classname);
     if (clazz == NULL || (*env)->RegisterNatives(env, clazz, methods, nb) < 0) {
@@ -492,7 +492,7 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved)
         return JNI_VERSION_1_4;
     }
 
-    register_methods(env, "org/libsdl/app/SDLActivity", SDLActivity_tab, SDL_arraysize(SDLActivity_tab)); 
+    register_methods(env, "org/libsdl/app/SDLActivity", SDLActivity_tab, SDL_arraysize(SDLActivity_tab));
     register_methods(env, "org/libsdl/app/SDLInputConnection", SDLInputConnection_tab, SDL_arraysize(SDLInputConnection_tab));
     register_methods(env, "org/libsdl/app/SDLAudioManager", SDLAudioManager_tab, SDL_arraysize(SDLAudioManager_tab));
     register_methods(env, "org/libsdl/app/SDLControllerManager", SDLControllerManager_tab, SDL_arraysize(SDLControllerManager_tab));
@@ -994,6 +994,10 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeSurfaceChanged)(JNIEnv *env, j
 /* Called from surfaceDestroyed() */
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeSurfaceDestroyed)(JNIEnv *env, jclass jcls)
 {
+    int nb_attempt = 50;
+
+retry:
+
     SDL_LockMutex(Android_ActivityMutex);
 
     if (Android_Window)
@@ -1001,21 +1005,27 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeSurfaceDestroyed)(JNIEnv *env,
         SDL_VideoDevice *_this = SDL_GetVideoDevice();
         SDL_WindowData  *data  = (SDL_WindowData *) Android_Window->driverdata;
 
-        /* We have to clear the current context and destroy the egl surface here
-         * Otherwise there's BAD_NATIVE_WINDOW errors coming from eglCreateWindowSurface on resume
-         * Ref: http://stackoverflow.com/questions/8762589/eglcreatewindowsurface-on-ics-and-switching-from-2d-to-3d
-         */
+        /* Wait for Main thread being paused and context un-activated to release 'egl_surface' */
+        if (! data->backup_done) {
+            nb_attempt -= 1;
+            if (nb_attempt == 0) {
+                SDL_SetError("Try to release egl_surface with context probably still active");
+            } else {
+                SDL_UnlockMutex(Android_ActivityMutex);
+                SDL_Delay(10);
+                goto retry;
+            }
+        }
 
         if (data->egl_surface != EGL_NO_SURFACE) {
-            SDL_EGL_MakeCurrent(_this, NULL, NULL);
             SDL_EGL_DestroySurface(_this, data->egl_surface);
             data->egl_surface = EGL_NO_SURFACE;
         }
 
         if (data->native_window) {
             ANativeWindow_release(data->native_window);
+            data->native_window = NULL;
         }
-        data->native_window = NULL;
 
         /* GL Context handling is done in the event loop because this function is run from the Java thread */
     }
@@ -1190,7 +1200,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeFocusChanged)(
     if (Android_Window) {
         __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "nativeFocusChanged()");
         SDL_SendWindowEvent(Android_Window, (hasFocus ? SDL_WINDOWEVENT_FOCUS_GAINED : SDL_WINDOWEVENT_FOCUS_LOST), 0, 0);
-    } 
+    }
 
     SDL_UnlockMutex(Android_ActivityMutex);
 }
