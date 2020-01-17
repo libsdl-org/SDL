@@ -415,6 +415,11 @@ WatchJoystick(SDL_Joystick * joystick)
     s_nNumAxes = SDL_JoystickNumAxes(joystick);
     s_arrAxisState = (AxisState *)SDL_calloc(s_nNumAxes, sizeof(*s_arrAxisState));
 
+	/* Skip any spurious events at start */
+	while (SDL_PollEvent(&event) > 0) {
+		continue;
+	}
+
     /* Loop, getting joystick events! */
     while (!done && !s_bBindingComplete) {
         int iElement = s_arrBindingOrder[s_iCurrentBinding];
