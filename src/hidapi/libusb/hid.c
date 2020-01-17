@@ -141,6 +141,7 @@ struct hid_device_ {
 
 	/* The interface number of the HID */
 	int interface;
+	int detached_driver;
 
 	/* Indexes of Strings */
 	int manufacturer_index;
@@ -983,6 +984,8 @@ hid_device * HID_API_EXPORT hid_open_path(const char *path, int bExclusive)
 				if (should_enumerate_interface(desc.idVendor, intf_desc)) {
 					char *dev_path = make_path(usb_dev, intf_desc->bInterfaceNumber);
 					if (!strcmp(dev_path, path)) {
+						int detached_driver = 0;
+
 						/* Matched Paths. Open this device */
 
 						/* OPEN HERE */
@@ -1006,6 +1009,7 @@ hid_device * HID_API_EXPORT hid_open_path(const char *path, int bExclusive)
 								good_open = 0;
 								break;
 							}
+							detached_driver = 1;
 						}
 #endif
 
@@ -1030,6 +1034,7 @@ hid_device * HID_API_EXPORT hid_open_path(const char *path, int bExclusive)
 
 						/* Store off the interface number */
 						dev->interface = intf_desc->bInterfaceNumber;
+						dev->detached_driver = detached_driver;
 
 						/* Find the INPUT and OUTPUT endpoints. An
 						   OUTPUT endpoint is not required. */
@@ -1334,6 +1339,15 @@ void HID_API_EXPORT hid_close(hid_device *dev)
 
 	/* release the interface */
 	libusb_release_interface(dev->device_handle, dev->interface);
+
+#ifdef DETACH_KERNEL_DRIVER
+	/* Re-attach kernel driver if necessary. */
+	if (dev->detached_driver) {
+		int res = libusb_attach_kernel_driver(dev->device_handle, dev->interface);
+		if (res < 0)
+			LOG("Couldn't re-attach kernel driver.\n");
+	}
+#endif
 
 	/* Close the handle */
 	libusb_close(dev->device_handle);

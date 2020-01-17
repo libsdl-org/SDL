@@ -165,6 +165,7 @@ static struct
     int (*release_interface)(libusb_device_handle *dev_handle, int interface_number);
     int (*kernel_driver_active)(libusb_device_handle *dev_handle, int interface_number);
     int (*detach_kernel_driver)(libusb_device_handle *dev_handle, int interface_number);
+    int (*attach_kernel_driver)(libusb_device_handle *dev_handle, int interface_number);
     int (*set_interface_alt_setting)(libusb_device_handle *dev, int interface_number, int alternate_setting);
     struct libusb_transfer * (*alloc_transfer)(int iso_packets);
     int (*submit_transfer)(struct libusb_transfer *transfer);
@@ -208,6 +209,7 @@ static struct
 #define libusb_release_interface               libusb_ctx.release_interface
 #define libusb_kernel_driver_active            libusb_ctx.kernel_driver_active
 #define libusb_detach_kernel_driver            libusb_ctx.detach_kernel_driver
+#define libusb_attach_kernel_driver            libusb_ctx.attach_kernel_driver
 #define libusb_set_interface_alt_setting       libusb_ctx.set_interface_alt_setting
 #define libusb_alloc_transfer                  libusb_ctx.alloc_transfer
 #define libusb_submit_transfer                 libusb_ctx.submit_transfer
@@ -474,6 +476,7 @@ int HID_API_EXPORT HID_API_CALL hid_init(void)
         LOAD_LIBUSB_SYMBOL(release_interface)
         LOAD_LIBUSB_SYMBOL(kernel_driver_active)
         LOAD_LIBUSB_SYMBOL(detach_kernel_driver)
+        LOAD_LIBUSB_SYMBOL(attach_kernel_driver)
         LOAD_LIBUSB_SYMBOL(set_interface_alt_setting)
         LOAD_LIBUSB_SYMBOL(alloc_transfer)
         LOAD_LIBUSB_SYMBOL(submit_transfer)
