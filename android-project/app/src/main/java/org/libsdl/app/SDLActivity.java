@@ -817,39 +817,62 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
      */
     public void setOrientationBis(int w, int h, boolean resizable, String hint)
     {
-        int orientation = -1;
+        int orientation_landscape = -1;
+        int orientation_portrait = -1;
 
+        /* If set, hint "explicitly controls which UI orientations are allowed". */
         if (hint.contains("LandscapeRight") && hint.contains("LandscapeLeft")) {
-            orientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE;
+            orientation_landscape = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE;
         } else if (hint.contains("LandscapeRight")) {
-            orientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
+            orientation_landscape = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
         } else if (hint.contains("LandscapeLeft")) {
-            orientation = ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE;
-        } else if (hint.contains("Portrait") && hint.contains("PortraitUpsideDown")) {
-            orientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT;
-        } else if (hint.contains("Portrait")) {
-            orientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
-        } else if (hint.contains("PortraitUpsideDown")) {
-            orientation = ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT;
+            orientation_landscape = ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE;
         }
 
-        /* no valid hint */
-        if (orientation == -1) {
+        if (hint.contains("Portrait") && hint.contains("PortraitUpsideDown")) {
+            orientation_portrait = ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT;
+        } else if (hint.contains("Portrait")) {
+            orientation_portrait = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+        } else if (hint.contains("PortraitUpsideDown")) {
+            orientation_portrait = ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT;
+        }
+
+        boolean is_landscape_allowed = (orientation_landscape == -1 ? false : true);
+        boolean is_portrait_allowed = (orientation_portrait == -1 ? false : true);
+        int req = -1; /* Requested orientation */
+
+        /* No valid hint, nothing is explicitly allowed */
+        if (!is_portrait_allowed && !is_landscape_allowed) {
             if (resizable) {
-                /* no fixed orientation */
+                /* All orientations are allowed */
+                req = ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR;
             } else {
-                if (w > h) {
-                    orientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE;
+                /* Fixed window and nothing specified. Get orientation from w/h of created window */
+                req = (w > h ? ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE : ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT);
+            }
+        } else {
+            /* At least one orientation is allowed */
+            if (resizable) {
+                if (is_portrait_allowed && is_landscape_allowed) {
+                    /* hint allows both landscape and portrait, promote to full sensor */
+                    req = ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR;
                 } else {
-                    orientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT;
+                    /* Use the only one allowed "orientation" */
+                    req = (is_landscape_allowed ? orientation_landscape : orientation_portrait);
+                }
+            } else {
+                /* Fixed window and both orientations are allowed. Choose one. */
+                if (is_portrait_allowed && is_landscape_allowed) {
+                    req = (w > h ? orientation_landscape : orientation_portrait);
+                } else {
+                    /* Use the only one allowed "orientation" */
+                    req = (is_landscape_allowed ? orientation_landscape : orientation_portrait);
                 }
             }
         }
 
-        Log.v("SDL", "setOrientation() orientation=" + orientation + " width=" + w +" height="+ h +" resizable=" + resizable + " hint=" + hint);
-        if (orientation != -1) {
-            mSingleton.setRequestedOrientation(orientation);
-        }
+        Log.v("SDL", "setOrientation() requestedOrientation=" + req + " width=" + w +" height="+ h +" resizable=" + resizable + " hint=" + hint);
+        mSingleton.setRequestedOrientation(req);
     }
 
     /**
