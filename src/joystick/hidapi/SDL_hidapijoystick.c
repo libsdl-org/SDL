@@ -844,6 +844,14 @@ HIDAPI_IsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, cons
     }
     SDL_UnlockJoysticks();
 
+    /* If we're looking for the wireless XBox 360 controller, also look for the dongle */
+    if (!result && vendor_id == 0x045e && product_id == 0x02a1) {
+        return HIDAPI_IsDevicePresent(0x045e, 0x0719, version, name);
+    }
+
+#ifdef DEBUG_HIDAPI
+    SDL_Log("HIDAPI_IsDevicePresent() returning %s for 0x%.4x / 0x%.4x\n", result ? "true" : "false", vendor_id, product_id);
+#endif
     return result;
 }
 
