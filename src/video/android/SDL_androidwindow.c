@@ -58,7 +58,6 @@ Android_CreateWindow(_THIS, SDL_Window * window)
     window->w = Android_SurfaceWidth;
     window->h = Android_SurfaceHeight;
 
-    window->flags &= ~SDL_WINDOW_RESIZABLE;     /* window is NEVER resizeable */
     window->flags &= ~SDL_WINDOW_HIDDEN;
     window->flags |= SDL_WINDOW_SHOWN;          /* only one window on Android */
 
