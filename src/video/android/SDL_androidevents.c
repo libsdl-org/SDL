@@ -68,6 +68,7 @@ android_egl_context_restore(SDL_Window *window)
             event.type = SDL_RENDER_DEVICE_RESET;
             SDL_PushEvent(&event);
         }
+        data->backup_done = 0;
     }
 }
 
@@ -80,6 +81,7 @@ android_egl_context_backup(SDL_Window *window)
         data->egl_context = SDL_GL_GetCurrentContext();
         /* We need to do this so the EGLSurface can be freed */
         SDL_GL_MakeCurrent(window, NULL);
+        data->backup_done = 1;
     }
 }
 
