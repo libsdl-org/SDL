@@ -419,6 +419,9 @@ LIBUSB_CopyHIDDeviceInfo(struct LIBUSB_hid_device_info *pSrc,
     pDst->usage_page = pSrc->usage_page;
     pDst->usage = pSrc->usage;
     pDst->interface_number = pSrc->interface_number;
+    pDst->interface_class = pSrc->interface_class;
+    pDst->interface_subclass = pSrc->interface_subclass;
+    pDst->interface_protocol = pSrc->interface_protocol;
     pDst->next = NULL;
 }
 #endif /* SDL_LIBUSB_DYNAMIC */
@@ -438,6 +441,9 @@ PLATFORM_CopyHIDDeviceInfo(struct PLATFORM_hid_device_info *pSrc,
     pDst->usage_page = pSrc->usage_page;
     pDst->usage = pSrc->usage;
     pDst->interface_number = pSrc->interface_number;
+    pDst->interface_class = pSrc->interface_class;
+    pDst->interface_subclass = pSrc->interface_subclass;
+    pDst->interface_protocol = pSrc->interface_protocol;
     pDst->next = NULL;
 }
 #endif /* HAVE_PLATFORM_BACKEND */

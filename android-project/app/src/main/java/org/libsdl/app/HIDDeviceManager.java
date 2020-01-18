@@ -241,17 +241,7 @@ public class HIDDeviceManager {
         }
     }
 
-    private boolean isHIDDeviceUSB(UsbDevice usbDevice) {
-        for (int interface_number = 0; interface_number < usbDevice.getInterfaceCount(); ++interface_number) {
-            if (isHIDDeviceInterface(usbDevice, interface_number)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private boolean isHIDDeviceInterface(UsbDevice usbDevice, int interface_number) {
-        UsbInterface usbInterface = usbDevice.getInterface(interface_number);
+    private boolean isHIDDeviceInterface(UsbDevice usbDevice, UsbInterface usbInterface) {
         if (usbInterface.getInterfaceClass() == UsbConstants.USB_CLASS_HID) {
             return true;
         }
@@ -331,9 +321,7 @@ public class HIDDeviceManager {
     }
 
     private void handleUsbDeviceAttached(UsbDevice usbDevice) {
-        if (isHIDDeviceUSB(usbDevice)) {
-            connectHIDDeviceUSB(usbDevice);
-        }
+        connectHIDDeviceUSB(usbDevice);
     }
 
     private void handleUsbDeviceDetached(UsbDevice usbDevice) {
@@ -366,11 +354,12 @@ public class HIDDeviceManager {
     private void connectHIDDeviceUSB(UsbDevice usbDevice) {
         synchronized (this) {
             for (int interface_number = 0; interface_number < usbDevice.getInterfaceCount(); interface_number++) {
-                if (isHIDDeviceInterface(usbDevice, interface_number)) {
-                    HIDDeviceUSB device = new HIDDeviceUSB(this, usbDevice, interface_number);
+                UsbInterface usbInterface = usbDevice.getInterface(interface_number);
+                if (isHIDDeviceInterface(usbDevice, usbInterface)) {
+                    HIDDeviceUSB device = new HIDDeviceUSB(this, usbDevice, usbInterface.getId());
                     int id = device.getId();
                     mDevicesById.put(id, device);
-                    HIDDeviceConnected(id, device.getIdentifier(), device.getVendorId(), device.getProductId(), device.getSerialNumber(), device.getVersion(), device.getManufacturerName(), device.getProductName(), interface_number);
+                    HIDDeviceConnected(id, device.getIdentifier(), device.getVendorId(), device.getProductId(), device.getSerialNumber(), device.getVersion(), device.getManufacturerName(), device.getProductName(), usbInterface.getId(), usbInterface.getInterfaceClass(), usbInterface.getInterfaceSubclass(), usbInterface.getInterfaceProtocol());
                 }
             }
         }
@@ -670,7 +659,7 @@ public class HIDDeviceManager {
     private native void HIDDeviceRegisterCallback();
     private native void HIDDeviceReleaseCallback();
 
-    native void HIDDeviceConnected(int deviceID, String identifier, int vendorId, int productId, String serial_number, int release_number, String manufacturer_string, String product_string, int interface_number);
+    native void HIDDeviceConnected(int deviceID, String identifier, int vendorId, int productId, String serial_number, int release_number, String manufacturer_string, String product_string, int interface_number, int interface_class, int interface_subclass, int interface_protocol);
     native void HIDDeviceOpenPending(int deviceID);
     native void HIDDeviceOpenResult(int deviceID, boolean opened);
     native void HIDDeviceDisconnected(int deviceID);

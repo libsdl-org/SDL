@@ -37,15 +37,6 @@
 
 #ifdef SDL_JOYSTICK_HIDAPI_PS4
 
-#define SONY_USB_VID        0x054C
-#define SONY_DS4_PID        0x05C4
-#define SONY_DS4_DONGLE_PID 0x0BA0
-#define SONY_DS4_SLIM_PID   0x09CC
-
-#define RAZER_USB_VID       0x1532
-#define RAZER_PANTHERA_PID  0X0401
-#define RAZER_PANTHERA_EVO_PID  0x1008
-
 #define USB_PACKET_LENGTH   64
 
 typedef enum
@@ -139,15 +130,15 @@ static Uint32 crc32(Uint32 crc, const void *data, int count)
 }
 
 static SDL_bool
-HIDAPI_DriverPS4_IsSupportedDevice(Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, const char *name)
+HIDAPI_DriverPS4_IsSupportedDevice(const char *name, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
-    return (SDL_GetJoystickGameControllerType(vendor_id, product_id, name) == SDL_CONTROLLER_TYPE_PS4);
+    return (SDL_GetJoystickGameControllerType(name, vendor_id, product_id, interface_number, interface_class, interface_subclass, interface_protocol) == SDL_CONTROLLER_TYPE_PS4);
 }
 
 static const char *
 HIDAPI_DriverPS4_GetDeviceName(Uint16 vendor_id, Uint16 product_id)
 {
-    if (vendor_id == SONY_USB_VID) {
+    if (vendor_id == USB_VENDOR_SONY) {
         return "PS4 Controller";
     }
     return NULL;
@@ -186,8 +177,8 @@ static SDL_bool CheckUSBConnected(hid_device *dev)
 static SDL_bool HIDAPI_DriverPS4_CanRumble(Uint16 vendor_id, Uint16 product_id)
 {
     /* The Razer Panthera fight stick hangs when trying to rumble */
-    if (vendor_id == RAZER_USB_VID &&
-        (product_id == RAZER_PANTHERA_PID || product_id == RAZER_PANTHERA_EVO_PID)) {
+    if (vendor_id == USB_VENDOR_RAZER &&
+        (product_id == USB_PRODUCT_RAZER_PANTHERA || product_id == USB_PRODUCT_RAZER_PANTHERA_EVO)) {
         return SDL_FALSE;
     }
     return SDL_TRUE;
@@ -232,10 +223,10 @@ HIDAPI_DriverPS4_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
     device->context = ctx;
 
     /* Check for type of connection */
-    ctx->is_dongle = (device->vendor_id == SONY_USB_VID && device->product_id == SONY_DS4_DONGLE_PID);
+    ctx->is_dongle = (device->vendor_id == USB_VENDOR_SONY && device->product_id == USB_PRODUCT_SONY_DS4_DONGLE);
     if (ctx->is_dongle) {
         ctx->is_bluetooth = SDL_FALSE;
-    } else if (device->vendor_id == SONY_USB_VID) {
+    } else if (device->vendor_id == USB_VENDOR_SONY) {
         ctx->is_bluetooth = !CheckUSBConnected(device->dev);
     } else {
         /* Third party controllers appear to all be wired */
@@ -246,8 +237,8 @@ HIDAPI_DriverPS4_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 #endif
 
     /* Check to see if audio is supported */
-    if (device->vendor_id == SONY_USB_VID &&
-        (device->product_id == SONY_DS4_SLIM_PID || device->product_id == SONY_DS4_DONGLE_PID )) {
+    if (device->vendor_id == USB_VENDOR_SONY &&
+        (device->product_id == USB_PRODUCT_SONY_DS4_SLIM || device->product_id == USB_PRODUCT_SONY_DS4_DONGLE)) {
         ctx->audio_supported = SDL_TRUE;
     }
 
@@ -491,6 +482,12 @@ HIDAPI_DriverPS4_UpdateDevice(SDL_HIDAPI_Device *device)
 static void
 HIDAPI_DriverPS4_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
+    SDL_DriverPS4_Context *ctx = (SDL_DriverPS4_Context *)device->context;
+
+    if (ctx->rumble_expiration) {
+        HIDAPI_DriverPS4_RumbleJoystick(device, joystick, 0, 0, 0);
+    }
+
     hid_close(device->dev);
     device->dev = NULL;
 

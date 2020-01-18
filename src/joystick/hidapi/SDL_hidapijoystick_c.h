@@ -24,6 +24,7 @@
 #define SDL_JOYSTICK_HIDAPI_H
 
 #include "../../hidapi/hidapi/hidapi.h"
+#include "../usb_ids.h"
 
 /* This is the full set of HIDAPI drivers available */
 #define SDL_JOYSTICK_HIDAPI_PS4
@@ -59,6 +60,9 @@ typedef struct _SDL_HIDAPI_Device
     Uint16 version;
     SDL_JoystickGUID guid;
     int interface_number;   /* Available on Windows and Linux */
+    int interface_class;
+    int interface_subclass;
+    int interface_protocol;
     Uint16 usage_page;      /* Available on Windows and Mac OS X */
     Uint16 usage;           /* Available on Windows and Mac OS X */
 
@@ -78,7 +82,7 @@ typedef struct _SDL_HIDAPI_DeviceDriver
 {
     const char *hint;
     SDL_bool enabled;
-    SDL_bool (*IsSupportedDevice)(Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, const char *name);
+    SDL_bool (*IsSupportedDevice)(const char *name, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol);
     const char *(*GetDeviceName)(Uint16 vendor_id, Uint16 product_id);
     SDL_bool (*InitDevice)(SDL_HIDAPI_Device *device);
     int (*GetDevicePlayerIndex)(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id);

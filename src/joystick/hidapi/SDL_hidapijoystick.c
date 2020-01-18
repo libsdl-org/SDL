@@ -389,7 +389,7 @@ HIDAPI_IsDeviceSupported(Uint16 vendor_id, Uint16 product_id, Uint16 version, co
 
     for (i = 0; i < SDL_arraysize(SDL_HIDAPI_drivers); ++i) {
         SDL_HIDAPI_DeviceDriver *driver = SDL_HIDAPI_drivers[i];
-        if (driver->enabled && driver->IsSupportedDevice(vendor_id, product_id, version, -1, name)) {
+        if (driver->enabled && driver->IsSupportedDevice(name, vendor_id, product_id, version, -1, 0, 0, 0)) {
             return SDL_TRUE;
         }
     }
@@ -418,7 +418,7 @@ HIDAPI_GetDeviceDriver(SDL_HIDAPI_Device *device)
 
     for (i = 0; i < SDL_arraysize(SDL_HIDAPI_drivers); ++i) {
         SDL_HIDAPI_DeviceDriver *driver = SDL_HIDAPI_drivers[i];
-        if (driver->enabled && driver->IsSupportedDevice(device->vendor_id, device->product_id, device->version, device->interface_number, device->name)) {
+        if (driver->enabled && driver->IsSupportedDevice(device->name, device->vendor_id, device->product_id, device->version, device->interface_number, device->interface_class, device->interface_subclass, device->interface_protocol)) {
             return driver;
         }
     }
@@ -647,6 +647,9 @@ HIDAPI_AddDevice(struct hid_device_info *info)
     device->product_id = info->product_id;
     device->version = info->release_number;
     device->interface_number = info->interface_number;
+    device->interface_class = info->interface_class;
+    device->interface_subclass = info->interface_subclass;
+    device->interface_protocol = info->interface_protocol;
     device->usage_page = info->usage_page;
     device->usage = info->usage;
     {
@@ -736,7 +739,7 @@ HIDAPI_AddDevice(struct hid_device_info *info)
     HIDAPI_SetupDeviceDriver(device);
 
 #ifdef DEBUG_HIDAPI
-    SDL_Log("Added HIDAPI device '%s' VID 0x%.4x, PID 0x%.4x, version %d, interface %d, usage page 0x%.4x, usage 0x%.4x, path = %s, driver = %s\n", device->name, device->vendor_id, device->product_id, device->version, device->interface_number, device->usage_page, device->usage, device->path, device->driver ? device->driver->hint : "NONE");
+    SDL_Log("Added HIDAPI device '%s' VID 0x%.4x, PID 0x%.4x, version %d, interface %d, interface_class %d, interface_subclass %d, interface_protocol %d, usage page 0x%.4x, usage 0x%.4x, path = %s, driver = %s\n", device->name, device->vendor_id, device->product_id, device->version, device->interface_number, device->interface_class, device->interface_subclass, device->interface_protocol, device->usage_page, device->usage, device->path, device->driver ? device->driver->hint : "NONE");
 #endif
 }
 
@@ -812,6 +815,7 @@ SDL_bool
 HIDAPI_IsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
 {
     SDL_HIDAPI_Device *device;
+    SDL_bool supported = SDL_FALSE;
     SDL_bool result = SDL_FALSE;
 
     /* Make sure we're initialized, as this could be called from other drivers during startup */
@@ -819,15 +823,24 @@ HIDAPI_IsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, cons
         return SDL_FALSE;
     }
 
-    /* Don't update the device list for devices we know aren't supported */
-    if (!HIDAPI_IsDeviceSupported(vendor_id, product_id, version, name)) {
-        return SDL_FALSE;
+    /* Only update the device list for devices we know might be supported.
+       If we did this for every device, it would hit the USB driver too hard and potentially 
+       lock up the system. This won't catch devices that we support but can only detect using 
+       USB interface details, like Xbox controllers, but hopefully the device list update is
+       responsive enough to catch those.
+     */
+    supported = HIDAPI_IsDeviceSupported(vendor_id, product_id, version, name);
+#if defined(SDL_JOYSTICK_HIDAPI_XBOX360) || defined(SDL_JOYSTICK_HIDAPI_XBOXONE)
+    if (!supported &&
+        (SDL_strstr(name, "Xbox") || SDL_strstr(name, "X-Box") || SDL_strstr(name, "XBOX"))) {
+        supported = SDL_TRUE;
     }
-
-    /* Make sure the device list is completely up to date when we check for device presence */
-    if (SDL_AtomicTryLock(&SDL_HIDAPI_spinlock)) {
-        HIDAPI_UpdateDeviceList();
-        SDL_AtomicUnlock(&SDL_HIDAPI_spinlock);
+#endif /* SDL_JOYSTICK_HIDAPI_XBOX360 || SDL_JOYSTICK_HIDAPI_XBOXONE */
+    if (supported) {
+        if (SDL_AtomicTryLock(&SDL_HIDAPI_spinlock)) {
+            HIDAPI_UpdateDeviceList();
+            SDL_AtomicUnlock(&SDL_HIDAPI_spinlock);
+        }
     }
 
     /* Note that this isn't a perfect check - there may be multiple devices with 0 VID/PID,
@@ -845,8 +858,8 @@ HIDAPI_IsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, cons
     SDL_UnlockJoysticks();
 
     /* If we're looking for the wireless XBox 360 controller, also look for the dongle */
-    if (!result && vendor_id == 0x045e && product_id == 0x02a1) {
-        return HIDAPI_IsDevicePresent(0x045e, 0x0719, version, name);
+    if (!result && vendor_id == USB_VENDOR_MICROSOFT && product_id == 0x02a1) {
+        return HIDAPI_IsDevicePresent(USB_VENDOR_MICROSOFT, 0x0719, version, name);
     }
 
 #ifdef DEBUG_HIDAPI

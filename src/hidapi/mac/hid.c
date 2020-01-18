@@ -41,10 +41,10 @@
  StackOverflow. It is used with his permission. */
 typedef int pthread_barrierattr_t;
 typedef struct pthread_barrier {
-    pthread_mutex_t mutex;
-    pthread_cond_t cond;
-    int count;
-    int trip_count;
+	pthread_mutex_t mutex;
+	pthread_cond_t cond;
+	int count;
+	int trip_count;
 } pthread_barrier_t;
 
 static int pthread_barrier_init(pthread_barrier_t *barrier, const pthread_barrierattr_t *attr, unsigned int count)
@@ -178,22 +178,22 @@ static void free_hid_device(hid_device *dev)
 	free(dev->input_report_buf);
 
 	if (device_list) {
-    	if (device_list->dev == dev) {
-    		device_list = device_list->next;
-    	}
-    	else {
-    		struct hid_device_list_node *node = device_list;
-    		while (node) {
-    			if (node->next && node->next->dev == dev) {
-    				struct hid_device_list_node *new_next = node->next->next;
-    				free(node->next);
-    				node->next = new_next;
-    				break;
-    			}
+		if (device_list->dev == dev) {
+			device_list = device_list->next;
+		}
+		else {
+			struct hid_device_list_node *node = device_list;
+			while (node) {
+				if (node->next && node->next->dev == dev) {
+					struct hid_device_list_node *new_next = node->next->next;
+					free(node->next);
+					node->next = new_next;
+					break;
+				}
 
-    			node = node->next;
-    		}
-    	}
+				node = node->next;
+			}
+		}
 	}
 	
 	/* Clean up the thread objects */
@@ -478,9 +478,10 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 		
 		IOHIDDeviceRef dev = device_array[i];
 		
-        if (!dev) {
-            continue;
-        }
+		if (!dev) {
+			continue;
+		}
+
 		dev_vid = get_vendor_id(dev);
 		dev_pid = get_product_id(dev);
 		

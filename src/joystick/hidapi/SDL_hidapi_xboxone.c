@@ -147,11 +147,6 @@ static SDL_bool
 IsBluetoothXboxOneController(Uint16 vendor_id, Uint16 product_id)
 {
     /* Check to see if it's the Xbox One S or Xbox One Elite Series 2 in Bluetooth mode */
-    const Uint16 USB_VENDOR_MICROSOFT = 0x045e;
-    const Uint16 USB_PRODUCT_XBOX_ONE_S_REV1_BLUETOOTH = 0x02e0;
-    const Uint16 USB_PRODUCT_XBOX_ONE_S_REV2_BLUETOOTH = 0x02fd;
-    const Uint16 USB_PRODUCT_XBOX_ONE_ELITE_SERIES_2_BLUETOOTH = 0x0b05;
-
     if (vendor_id == USB_VENDOR_MICROSOFT) {
         if (product_id == USB_PRODUCT_XBOX_ONE_S_REV1_BLUETOOTH ||
             product_id == USB_PRODUCT_XBOX_ONE_S_REV2_BLUETOOTH ||
@@ -165,9 +160,6 @@ IsBluetoothXboxOneController(Uint16 vendor_id, Uint16 product_id)
 static SDL_bool
 ControllerHasPaddles(Uint16 vendor_id, Uint16 product_id)
 {
-    const Uint16 USB_VENDOR_MICROSOFT = 0x045e;
-    const Uint16 USB_PRODUCT_XBOX_ONE_ELITE_SERIES_2 = 0x0b00;
-
     if (vendor_id == USB_VENDOR_MICROSOFT) {
         if (product_id == USB_PRODUCT_XBOX_ONE_ELITE_SERIES_2) {
             return SDL_TRUE;
@@ -180,8 +172,6 @@ ControllerHasPaddles(Uint16 vendor_id, Uint16 product_id)
 static SDL_bool
 ControllerNeedsRumbleSequenceSynchronized(Uint16 vendor_id, Uint16 product_id)
 {
-    const Uint16 USB_VENDOR_MICROSOFT = 0x045e;
-
     if (vendor_id == USB_VENDOR_MICROSOFT) {
         /* All Xbox One controllers, from model 1537 through Elite Series 2, appear to need this */
         return SDL_TRUE;
@@ -221,9 +211,6 @@ SynchronizeRumbleSequence(hid_device *dev, SDL_DriverXboxOne_Context *ctx)
 static SDL_bool
 ControllerSendsWaitingForInit(Uint16 vendor_id, Uint16 product_id)
 {
-    const Uint16 USB_VENDOR_HYPERKIN = 0x2e24;
-    const Uint16 USB_VENDOR_PDP = 0x0e6f;
-
     if (vendor_id == USB_VENDOR_HYPERKIN) {
         /* The Hyperkin controllers always send 0x02 when waiting for init,
            and the Hyperkin Duke plays an Xbox startup animation, so we want
@@ -310,19 +297,19 @@ SendControllerInit(hid_device *dev, SDL_DriverXboxOne_Context *ctx)
 }
 
 static SDL_bool
-HIDAPI_DriverXboxOne_IsSupportedDevice(Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, const char *name)
+HIDAPI_DriverXboxOne_IsSupportedDevice(const char *name, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
 #ifdef __LINUX__
     if (IsBluetoothXboxOneController(vendor_id, product_id)) {
         /* We can't do rumble on this device, hid_write() fails, so don't try to open it here */
         return SDL_FALSE;
     }
-    if (vendor_id == 0x24c6 && product_id == 0x541a) {
+    if (vendor_id == USB_VENDOR_POWERA && product_id == 0x541a) {
         /* The PowerA Mini controller, model 1240245-01, blocks while writing feature reports */
         return SDL_FALSE;
     }
 #endif
-    return (SDL_GetJoystickGameControllerType(vendor_id, product_id, name) == SDL_CONTROLLER_TYPE_XBOXONE);
+    return (SDL_GetJoystickGameControllerType(name, vendor_id, product_id, interface_number, interface_class, interface_subclass, interface_protocol) == SDL_CONTROLLER_TYPE_XBOXONE);
 }
 
 static const char *

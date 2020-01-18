@@ -247,32 +247,30 @@ HIDAPI_DriverXbox360_QuitWindowsGamingInput(SDL_DriverXbox360_Context *ctx)
 #endif /* SDL_JOYSTICK_HIDAPI_WINDOWS_GAMING_INPUT */
 
 static SDL_bool
-HIDAPI_DriverXbox360_IsSupportedDevice(Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, const char *name)
+HIDAPI_DriverXbox360_IsSupportedDevice(const char *name, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
-    SDL_GameControllerType type = SDL_GetJoystickGameControllerType(vendor_id, product_id, name);
-    const Uint16 MICROSOFT_USB_VID = 0x045e;
-    const Uint16 NVIDIA_USB_VID = 0x0955;
+    const int XB360W_IFACE_PROTOCOL = 129; /* Wireless */
+    SDL_GameControllerType type = SDL_GetJoystickGameControllerType(name, vendor_id, product_id, interface_number, interface_class, interface_subclass, interface_protocol);
 
-    if (vendor_id == NVIDIA_USB_VID) {
+    if (vendor_id == USB_VENDOR_NVIDIA) {
         /* This is the NVIDIA Shield controller which doesn't talk Xbox controller protocol */
         return SDL_FALSE;
     }
-    if (vendor_id == MICROSOFT_USB_VID) {
-        if (product_id == 0x0291 || product_id == 0x0719) {
-            /* This is the wireless dongle, which talks a different protocol */
-            return SDL_FALSE;
-        }
+    if ((vendor_id == USB_VENDOR_MICROSOFT && (product_id == 0x0291 || product_id == 0x0719)) ||
+        (type == SDL_CONTROLLER_TYPE_XBOX360 && interface_protocol == XB360W_IFACE_PROTOCOL)) {
+        /* This is the wireless dongle, which talks a different protocol */
+        return SDL_FALSE;
     }
     if (interface_number > 0) {
         /* This is the chatpad or other input interface, not the Xbox 360 interface */
         return SDL_FALSE;
     }
 #if defined(__MACOSX__) || defined(__WIN32__)
-    if (vendor_id == 0x045e && product_id == 0x028e && version == 1) {
+    if (vendor_id == USB_VENDOR_MICROSOFT && product_id == 0x028e && version == 1) {
         /* This is the Steam Virtual Gamepad, which isn't supported by this driver */
         return SDL_FALSE;
     }
-    if (vendor_id == 0x045e && product_id == 0x02e0) {
+    if (vendor_id == USB_VENDOR_MICROSOFT && product_id == 0x02e0) {
         /* This is the old Bluetooth Xbox One S firmware, which isn't supported by this driver */
         return SDL_FALSE;
     }
@@ -822,9 +820,11 @@ HIDAPI_DriverXbox360_UpdateDevice(SDL_HIDAPI_Device *device)
 static void
 HIDAPI_DriverXbox360_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
-#if defined(SDL_JOYSTICK_HIDAPI_WINDOWS_XINPUT) || defined(SDL_JOYSTICK_HIDAPI_WINDOWS_GAMING_INPUT)
     SDL_DriverXbox360_Context *ctx = (SDL_DriverXbox360_Context *)device->context;
-#endif
+
+    if (ctx->rumble_expiration) {
+        HIDAPI_DriverXbox360_RumbleJoystick(device, joystick, 0, 0, 0);
+    }
 
 #ifdef SDL_JOYSTICK_HIDAPI_WINDOWS_XINPUT
     if (ctx->xinput_enabled) {
