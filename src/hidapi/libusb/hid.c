@@ -714,6 +714,9 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 
 							/* Interface Number */
 							cur_dev->interface_number = interface_num;
+							cur_dev->interface_class = intf_desc->bInterfaceClass;
+							cur_dev->interface_subclass = intf_desc->bInterfaceSubClass;
+							cur_dev->interface_protocol = intf_desc->bInterfaceProtocol;
 						}
 					}
 				} /* altsettings */

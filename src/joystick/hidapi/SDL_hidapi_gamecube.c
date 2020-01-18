@@ -50,9 +50,9 @@ typedef struct {
 } SDL_DriverGameCube_Context;
 
 static SDL_bool
-HIDAPI_DriverGameCube_IsSupportedDevice(Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, const char *name)
+HIDAPI_DriverGameCube_IsSupportedDevice(const char *name, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
-    if (vendor_id == 0x057e && product_id == 0x0337) {
+    if (vendor_id == USB_VENDOR_NINTENDO && product_id == USB_PRODUCT_NINTENDO_GAMECUBE_ADAPTER) {
         /* Nintendo Co., Ltd.  Wii U GameCube Controller Adapter */
         return SDL_TRUE;
     }

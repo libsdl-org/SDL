@@ -241,9 +241,9 @@ static SDL_bool IsGameCubeFormFactor(int vendor_id, int product_id)
 }
 
 static SDL_bool
-HIDAPI_DriverSwitch_IsSupportedDevice(Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, const char *name)
+HIDAPI_DriverSwitch_IsSupportedDevice(const char *name, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
-    return (SDL_GetJoystickGameControllerType(vendor_id, product_id, name) == SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO);
+    return (SDL_GetJoystickGameControllerType(name, vendor_id, product_id, interface_number, interface_class, interface_subclass, interface_protocol) == SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO);
 }
 
 static const char *
@@ -1093,6 +1093,10 @@ static void
 HIDAPI_DriverSwitch_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     SDL_DriverSwitch_Context *ctx = (SDL_DriverSwitch_Context *)device->context;
+
+    if (ctx->m_nRumbleExpiration) {
+        HIDAPI_DriverSwitch_RumbleJoystick(device, joystick, 0, 0, 0);
+    }
 
     if (!ctx->m_bInputOnly) {
         /* Restore simple input mode for other applications */

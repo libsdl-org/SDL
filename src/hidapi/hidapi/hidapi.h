@@ -78,6 +78,12 @@ namespace NAMESPACE {
 			    only if the device contains more than one interface. */
 			int interface_number;
 
+			/** Additional information about the USB interface.
+			    Valid on libusb and Android implementations. */
+			int interface_class;
+			int interface_subclass;
+			int interface_protocol;
+
 			/** Pointer to the next device */
 			struct hid_device_info *next;
 		};
