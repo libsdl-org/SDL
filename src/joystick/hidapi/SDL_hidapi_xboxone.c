@@ -297,7 +297,7 @@ SendControllerInit(hid_device *dev, SDL_DriverXboxOne_Context *ctx)
 }
 
 static SDL_bool
-HIDAPI_DriverXboxOne_IsSupportedDevice(const char *name, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
+HIDAPI_DriverXboxOne_IsSupportedDevice(const char *name, SDL_GameControllerType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
 #ifdef __LINUX__
     if (IsBluetoothXboxOneController(vendor_id, product_id)) {
@@ -309,7 +309,7 @@ HIDAPI_DriverXboxOne_IsSupportedDevice(const char *name, Uint16 vendor_id, Uint1
         return SDL_FALSE;
     }
 #endif
-    return (SDL_GetJoystickGameControllerType(name, vendor_id, product_id, interface_number, interface_class, interface_subclass, interface_protocol) == SDL_CONTROLLER_TYPE_XBOXONE);
+    return (type == SDL_CONTROLLER_TYPE_XBOXONE);
 }
 
 static const char *

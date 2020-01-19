@@ -130,9 +130,9 @@ static Uint32 crc32(Uint32 crc, const void *data, int count)
 }
 
 static SDL_bool
-HIDAPI_DriverPS4_IsSupportedDevice(const char *name, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
+HIDAPI_DriverPS4_IsSupportedDevice(const char *name, SDL_GameControllerType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
-    return (SDL_GetJoystickGameControllerType(name, vendor_id, product_id, interface_number, interface_class, interface_subclass, interface_protocol) == SDL_CONTROLLER_TYPE_PS4);
+    return (type == SDL_CONTROLLER_TYPE_PS4);
 }
 
 static const char *

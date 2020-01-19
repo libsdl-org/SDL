@@ -386,10 +386,11 @@ static SDL_bool
 HIDAPI_IsDeviceSupported(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
 {
     int i;
+    SDL_GameControllerType type = SDL_GetJoystickGameControllerType(name, vendor_id, product_id, -1, 0, 0, 0);
 
     for (i = 0; i < SDL_arraysize(SDL_HIDAPI_drivers); ++i) {
         SDL_HIDAPI_DeviceDriver *driver = SDL_HIDAPI_drivers[i];
-        if (driver->enabled && driver->IsSupportedDevice(name, vendor_id, product_id, version, -1, 0, 0, 0)) {
+        if (driver->enabled && driver->IsSupportedDevice(name, type, vendor_id, product_id, version, -1, 0, 0, 0)) {
             return SDL_TRUE;
         }
     }
@@ -404,6 +405,7 @@ HIDAPI_GetDeviceDriver(SDL_HIDAPI_Device *device)
     const Uint16 USAGE_GAMEPAD = 0x0005;
     const Uint16 USAGE_MULTIAXISCONTROLLER = 0x0008;
     int i;
+    SDL_GameControllerType type = SDL_GetJoystickGameControllerType(device->name, device->vendor_id, device->product_id, device->interface_number, device->interface_class, device->interface_subclass, device->interface_protocol);
 
     if (SDL_ShouldIgnoreJoystick(device->name, device->guid)) {
         return NULL;
@@ -418,7 +420,7 @@ HIDAPI_GetDeviceDriver(SDL_HIDAPI_Device *device)
 
     for (i = 0; i < SDL_arraysize(SDL_HIDAPI_drivers); ++i) {
         SDL_HIDAPI_DeviceDriver *driver = SDL_HIDAPI_drivers[i];
-        if (driver->enabled && driver->IsSupportedDevice(device->name, device->vendor_id, device->product_id, device->version, device->interface_number, device->interface_class, device->interface_subclass, device->interface_protocol)) {
+        if (driver->enabled && driver->IsSupportedDevice(device->name, type, device->vendor_id, device->product_id, device->version, device->interface_number, device->interface_class, device->interface_subclass, device->interface_protocol)) {
             return driver;
         }
     }
