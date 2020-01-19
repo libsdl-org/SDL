@@ -241,9 +241,9 @@ static SDL_bool IsGameCubeFormFactor(int vendor_id, int product_id)
 }
 
 static SDL_bool
-HIDAPI_DriverSwitch_IsSupportedDevice(const char *name, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
+HIDAPI_DriverSwitch_IsSupportedDevice(const char *name, SDL_GameControllerType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
-    return (SDL_GetJoystickGameControllerType(name, vendor_id, product_id, interface_number, interface_class, interface_subclass, interface_protocol) == SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO);
+    return (type == SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO);
 }
 
 static const char *
