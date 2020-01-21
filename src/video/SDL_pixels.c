@@ -1003,9 +1003,11 @@ SDL_MapSurface(SDL_Surface * src, SDL_Surface * dst)
 
     /* Clear out any previous mapping */
     map = src->map;
+#if SDL_HAVE_RLE
     if ((src->flags & SDL_RLEACCEL) == SDL_RLEACCEL) {
         SDL_UnRLESurface(src, 1);
     }
+#endif
     SDL_InvalidateMap(map);
 
     /* Figure out what kind of mapping we're doing */

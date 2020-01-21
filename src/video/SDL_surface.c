@@ -905,11 +905,13 @@ int
 SDL_LockSurface(SDL_Surface * surface)
 {
     if (!surface->locked) {
+#if SDL_HAVE_RLE
         /* Perform the lock */
         if (surface->flags & SDL_RLEACCEL) {
             SDL_UnRLESurface(surface, 1);
             surface->flags |= SDL_RLEACCEL;     /* save accel'd state */
         }
+#endif
     }
 
     /* Increment the surface lock count, for recursive locks */
@@ -930,11 +932,13 @@ SDL_UnlockSurface(SDL_Surface * surface)
         return;
     }
 
+#if SDL_HAVE_RLE
     /* Update RLE encoded surface with new data */
     if ((surface->flags & SDL_RLEACCEL) == SDL_RLEACCEL) {
         surface->flags &= ~SDL_RLEACCEL;        /* stop lying */
         SDL_RLESurface(surface);
     }
+#endif
 }
 
 /*
@@ -1210,6 +1214,7 @@ int SDL_ConvertPixels(int width, int height,
         return SDL_InvalidParamError("dst_pitch");
     }
 
+#if SDL_HAVE_YUV
     if (SDL_ISPIXELFORMAT_FOURCC(src_format) && SDL_ISPIXELFORMAT_FOURCC(dst_format)) {
         return SDL_ConvertPixels_YUV_to_YUV(width, height, src_format, src, src_pitch, dst_format, dst, dst_pitch);
     } else if (SDL_ISPIXELFORMAT_FOURCC(src_format)) {
@@ -1217,6 +1222,12 @@ int SDL_ConvertPixels(int width, int height,
     } else if (SDL_ISPIXELFORMAT_FOURCC(dst_format)) {
         return SDL_ConvertPixels_RGB_to_YUV(width, height, src_format, src, src_pitch, dst_format, dst, dst_pitch);
     }
+#else
+    if (SDL_ISPIXELFORMAT_FOURCC(src_format) || SDL_ISPIXELFORMAT_FOURCC(dst_format)) {
+        SDL_SetError("SDL not built with YUV support");
+        return -1;
+    }
+#endif
 
     /* Fast path for same format copy */
     if (src_format == dst_format) {
@@ -1269,9 +1280,11 @@ SDL_FreeSurface(SDL_Surface * surface)
     while (surface->locked > 0) {
         SDL_UnlockSurface(surface);
     }
+#if SDL_HAVE_RLE
     if (surface->flags & SDL_RLEACCEL) {
         SDL_UnRLESurface(surface, 0);
     }
+#endif
     if (surface->format) {
         SDL_SetSurfacePalette(surface, NULL);
         SDL_FreeFormat(surface->format);
