@@ -105,7 +105,9 @@ static const SDL_RenderDriver *render_drivers[] = {
 #if SDL_VIDEO_RENDER_PSP
     &PSP_RenderDriver,
 #endif
+#if SDL_VIDEO_RENDER_SW
     &SW_RenderDriver
+#endif
 };
 #endif /* !SDL_RENDER_DISABLED */
 
@@ -907,7 +909,7 @@ error:
 SDL_Renderer *
 SDL_CreateSoftwareRenderer(SDL_Surface * surface)
 {
-#if !SDL_RENDER_DISABLED
+#if !SDL_RENDER_DISABLED && SDL_VIDEO_RENDER_SW
     SDL_Renderer *renderer;
 
     renderer = SW_CreateRendererForSurface(surface);
@@ -1114,7 +1116,11 @@ SDL_CreateTexture(SDL_Renderer * renderer, Uint32 format, int access, int w, int
         renderer->textures = texture;
 
         if (SDL_ISPIXELFORMAT_FOURCC(texture->format)) {
+#if SDL_HAVE_YUV
             texture->yuv = SDL_SW_CreateYUVTexture(format, w, h);
+#else
+            SDL_SetError("SDL not built with YUV support");
+#endif
             if (!texture->yuv) {
                 SDL_DestroyTexture(texture);
                 return NULL;
@@ -1532,8 +1538,10 @@ SDL_UpdateTexture(SDL_Texture * texture, const SDL_Rect * rect,
 
     if ((rect->w == 0) || (rect->h == 0)) {
         return 0;  /* nothing to do. */
+#if SDL_HAVE_YUV
     } else if (texture->yuv) {
         return SDL_UpdateTextureYUV(texture, rect, pixels, pitch);
+#endif
     } else if (texture->native) {
         return SDL_UpdateTextureNative(texture, rect, pixels, pitch);
     } else {
@@ -1602,6 +1610,7 @@ int SDL_UpdateYUVTexture(SDL_Texture * texture, const SDL_Rect * rect,
                          const Uint8 *Uplane, int Upitch,
                          const Uint8 *Vplane, int Vpitch)
 {
+#if SDL_HAVE_YUV
     SDL_Renderer *renderer;
     SDL_Rect full_rect;
 
@@ -1658,6 +1667,9 @@ int SDL_UpdateYUVTexture(SDL_Texture * texture, const SDL_Rect * rect,
             return SDL_Unsupported();
         }
     }
+#else
+    return -1;
+#endif
 }
 
 static int
@@ -1699,12 +1711,15 @@ SDL_LockTexture(SDL_Texture * texture, const SDL_Rect * rect,
         rect = &full_rect;
     }
 
+#if SDL_HAVE_YUV
     if (texture->yuv) {
         if (FlushRenderCommandsIfTextureNeeded(texture) < 0) {
             return -1;
         }
         return SDL_LockTextureYUV(texture, rect, pixels, pitch);
-    } else if (texture->native) {
+    } else
+#endif
+    if (texture->native) {
         /* Calls a real SDL_LockTexture/SDL_UnlockTexture on unlock, flushing then. */
         return SDL_LockTextureNative(texture, rect, pixels, pitch);
     } else {
@@ -1802,9 +1817,12 @@ SDL_UnlockTexture(SDL_Texture * texture)
     if (texture->access != SDL_TEXTUREACCESS_STREAMING) {
         return;
     }
+#if SDL_HAVE_YUV
     if (texture->yuv) {
         SDL_UnlockTextureYUV(texture);
-    } else if (texture->native) {
+    } else
+#endif
+    if (texture->native) {
         SDL_UnlockTextureNative(texture);
     } else {
         SDL_Renderer *renderer = texture->renderer;
@@ -3159,9 +3177,11 @@ SDL_DestroyTexture(SDL_Texture * texture)
     if (texture->native) {
         SDL_DestroyTexture(texture->native);
     }
+#if SDL_HAVE_YUV
     if (texture->yuv) {
         SDL_SW_DestroyYUVTexture(texture->yuv);
     }
+#endif
     SDL_free(texture->pixels);
 
     renderer->DestroyTexture(renderer, texture);

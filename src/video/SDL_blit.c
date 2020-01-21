@@ -202,22 +202,27 @@ SDL_CalculateBlit(SDL_Surface * surface)
         return SDL_SetError("Blit combination not supported");
     }
 
+#if SDL_HAVE_RLE
     /* Clean everything out to start */
     if ((surface->flags & SDL_RLEACCEL) == SDL_RLEACCEL) {
         SDL_UnRLESurface(surface, 1);
     }
+#endif
+
     map->blit = SDL_SoftBlit;
     map->info.src_fmt = surface->format;
     map->info.src_pitch = surface->pitch;
     map->info.dst_fmt = dst->format;
     map->info.dst_pitch = dst->pitch;
 
+#if SDL_HAVE_RLE
     /* See if we can do RLE acceleration */
     if (map->info.flags & SDL_COPY_RLE_DESIRED) {
         if (SDL_RLESurface(surface) == 0) {
             return 0;
         }
     }
+#endif
 
     /* Choose a standard blit function */
     if (map->identity && !(map->info.flags & ~SDL_COPY_RLE_DESIRED)) {
@@ -226,17 +231,30 @@ SDL_CalculateBlit(SDL_Surface * surface)
         /* Greater than 8 bits per channel not supported yet */
         SDL_InvalidateMap(map);
         return SDL_SetError("Blit combination not supported");
-    } else if (surface->format->BitsPerPixel < 8 &&
+    }
+#if SDL_HAVE_BLIT_0
+    else if (surface->format->BitsPerPixel < 8 &&
                SDL_ISPIXELFORMAT_INDEXED(surface->format->format)) {
         blit = SDL_CalculateBlit0(surface);
-    } else if (surface->format->BytesPerPixel == 1 &&
+    }
+#endif
+#if SDL_HAVE_BLIT_1
+    else if (surface->format->BytesPerPixel == 1 &&
                SDL_ISPIXELFORMAT_INDEXED(surface->format->format)) {
         blit = SDL_CalculateBlit1(surface);
-    } else if (map->info.flags & SDL_COPY_BLEND) {
+    }
+#endif
+#if SDL_HAVE_BLIT_A
+    else if (map->info.flags & SDL_COPY_BLEND) {
         blit = SDL_CalculateBlitA(surface);
-    } else {
+    }
+#endif
+#if SDL_HAVE_BLIT_N
+    else {
         blit = SDL_CalculateBlitN(surface);
     }
+#endif
+#if SDL_HAVE_BLIT_AUTO
     if (blit == NULL) {
         Uint32 src_format = surface->format->format;
         Uint32 dst_format = dst->format->format;
@@ -245,6 +263,8 @@ SDL_CalculateBlit(SDL_Surface * surface)
             SDL_ChooseBlitFunc(src_format, dst_format, map->info.flags,
                                SDL_GeneratedBlitFuncTable);
     }
+#endif
+
 #ifndef TEST_SLOW_BLIT
     if (blit == NULL)
 #endif
