@@ -1668,9 +1668,9 @@ Uint8
 SDL_SilenceValueForFormat(const SDL_AudioFormat format)
 {
     switch (format) {
-        // !!! FIXME: 0x80 isn't perfect for U16, but we can't fit 0x8000 in a
-        // !!! FIXME:  byte for memset() use. This is actually 0.1953 percent off
-        //  from silence. Maybe just don't use U16.
+        /* !!! FIXME: 0x80 isn't perfect for U16, but we can't fit 0x8000 in a
+           !!! FIXME:  byte for memset() use. This is actually 0.1953 percent
+           !!! FIXME:  off from silence. Maybe just don't use U16. */
         case AUDIO_U16LSB:
         case AUDIO_U16MSB:
         case AUDIO_U8:
