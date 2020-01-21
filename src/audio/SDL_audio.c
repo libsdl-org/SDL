@@ -1664,24 +1664,28 @@ SDL_NextAudioFormat(void)
     return format_list[format_idx][format_idx_sub++];
 }
 
+Uint8
+SDL_SilenceValueForFormat(const SDL_AudioFormat format)
+{
+    switch (format) {
+        // !!! FIXME: 0x80 isn't perfect for U16, but we can't fit 0x8000 in a
+        // !!! FIXME:  byte for memset() use. This is actually 0.1953 percent off
+        //  from silence. Maybe just don't use U16.
+        case AUDIO_U16LSB:
+        case AUDIO_U16MSB:
+        case AUDIO_U8:
+            return 0x80;
+
+        default: break;
+    }            
+
+    return 0x00;
+}
+
 void
 SDL_CalculateAudioSpec(SDL_AudioSpec * spec)
 {
-    switch (spec->format) {
-    case AUDIO_U8:
-
-    // !!! FIXME: 0x80 isn't perfect for U16, but we can't fit 0x8000 in a
-    // !!! FIXME:  byte for memset() use. This is actually 0.1953 percent off
-    //  from silence. Maybe just don't use U16.
-    case AUDIO_U16LSB:
-    case AUDIO_U16MSB:
-        spec->silence = 0x80;
-        break;
-
-    default:
-        spec->silence = 0x00;
-        break;
-    }
+    spec->silence = SDL_SilenceValueForFormat(spec->format);
     spec->size = SDL_AUDIO_BITSIZE(spec->format) / 8;
     spec->size *= spec->channels;
     spec->size *= spec->samples;
