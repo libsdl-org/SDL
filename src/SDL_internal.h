@@ -57,6 +57,7 @@
 #define SDL_HAVE_BLIT_1                 1
 #define SDL_HAVE_BLIT_A                 1
 #define SDL_HAVE_BLIT_N                 1
+#define SDL_HAVE_BLIT_N_RGB565          1
 #define SDL_HAVE_BLIT_AUTO              1
 #define SDL_HAVE_RLE                    1
 #define SDL_VIDEO_RENDER_SW             1
