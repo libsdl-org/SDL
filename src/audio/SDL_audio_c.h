@@ -52,6 +52,7 @@ extern SDL_AudioFormat SDL_FirstAudioFormat(SDL_AudioFormat format);
 extern SDL_AudioFormat SDL_NextAudioFormat(void);
 
 /* Function to calculate the size and silence for a SDL_AudioSpec */
+extern Uint8 SDL_SilenceValueForFormat(const SDL_AudioFormat format);
 extern void SDL_CalculateAudioSpec(SDL_AudioSpec * spec);
 
 /* Choose the audio filter functions below */

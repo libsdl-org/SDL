@@ -2081,6 +2081,8 @@ WaveLoad(SDL_RWops *src, WaveFile *file, SDL_AudioSpec *spec, Uint8 **audio_buf,
         break;
     }
 
+    spec->silence = SDL_SilenceValueForFormat(spec->format);
+
     /* Report the end position back to the cleanup code. */
     if (RIFFlengthknown) {
         chunk->position = RIFFend;
