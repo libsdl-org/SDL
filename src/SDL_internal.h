@@ -52,15 +52,47 @@
 #include "SDL_config.h"
 
 /* A few #defines to reduce SDL2 footprint.
-   Only applied when library is statically linked */
+   Only effective when library is statically linked.
+   You have to manually edit this file. */
+
+/* Optimized functions from 'SDL_blit_0.c'
+   - blit with source BitsPerPixel < 8, palette */
 #define SDL_HAVE_BLIT_0                 1
+
+/* Optimized functions from 'SDL_blit_1.c'
+   - blit with source BytesPerPixel == 1, palette */
 #define SDL_HAVE_BLIT_1                 1
+
+/* Optimized functions from 'SDL_blit_A.c'
+   - blit with 'SDL_BLENDMODE_BLEND' blending mode */
 #define SDL_HAVE_BLIT_A                 1
+
+/* Optimized functions from 'SDL_blit_N.c'
+   - blit with COLORKEY mode, or nothing */
 #define SDL_HAVE_BLIT_N                 1
+
+/* Optimized functions from 'SDL_blit_N.c'
+   - RGB565 conversion with Lookup tables */
 #define SDL_HAVE_BLIT_N_RGB565          1
+
+/* Optimized functions from 'SDL_blit_AUTO.c'
+   - blit with modulate color, modulate alpha, any blending mode
+   - scaling or not */
 #define SDL_HAVE_BLIT_AUTO              1
+
+/* Run-Length-Encoding
+   - SDL_SetColorKey() called with SDL_RLEACCEL flag */
 #define SDL_HAVE_RLE                    1
+
+/* Software SDL_Renderer
+   - creation of software renderer
+   - *not* general blitting functions
+   - {blend,draw}{fillrect,line,point} internal functions */
 #define SDL_VIDEO_RENDER_SW             1
+
+/* YUV formats
+   - handling of YUV surfaces
+   - blitting and conversion functions */
 #define SDL_HAVE_YUV                    1
 
 #endif /* SDL_internal_h_ */
