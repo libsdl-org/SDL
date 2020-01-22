@@ -161,10 +161,10 @@ static SDL_bool
 ControllerHasPaddles(Uint16 vendor_id, Uint16 product_id)
 {
     if (vendor_id == USB_VENDOR_MICROSOFT) {
-        if (product_id == USB_PRODUCT_XBOX_ONE_ELITE_SERIES_2) {
+        if (product_id == USB_PRODUCT_XBOX_ONE_ELITE_SERIES_1 ||
+            product_id == USB_PRODUCT_XBOX_ONE_ELITE_SERIES_2) {
             return SDL_TRUE;
         }
-        /* The original Elite controller probably works here, but I don't have one to test... */
     }
     return SDL_FALSE;
 }
@@ -421,17 +421,64 @@ HIDAPI_DriverXboxOne_HandleStatePacket(SDL_Joystick *joystick, hid_device *dev, 
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_RIGHTSTICK, (data[5] & 0x80) ? SDL_PRESSED : SDL_RELEASED);
     }
 
-    if (ctx->has_paddles && size >= 20) {
-        /* data[19] is the paddle remapping mode, 0 = no remapping */
-        if (data[19] != 0) {
-            /* Respect that the paddles are being used for other controls and don't pass them on to the app */
-            data[18] = 0;
+    /* Xbox One S report is 18 bytes
+       Xbox One Elite Series 1 report is 33 bytes, paddles in data[32], mode in data[32] & 0x10, both modes have mapped paddles by default
+        Paddle bits:
+            UL: 0x01 (A)    UR: 0x02 (B)
+            LL: 0x04 (X)    LR: 0x08 (Y)
+       Xbox One Elite Series 2 report is 38 bytes, paddles in data[18], mode in data[19], mode 0 has no mapped paddles by default
+        Paddle bits:
+            UL: 0x04 (A)    UR: 0x01 (B)
+            LL: 0x08 (X)    LR: 0x02 (Y)
+    */
+    if (ctx->has_paddles && (size == 33 || size == 38)) {
+        int paddle_index;
+        int button1_bit;
+        int button2_bit;
+        int button3_bit;
+        int button4_bit;
+        SDL_bool paddles_mapped;
+
+        if (size == 33) {
+            /* XBox One Elite Series 1 */
+            paddle_index = 32;
+            button1_bit = 0x01;
+            button2_bit = 0x02;
+            button3_bit = 0x04;
+            button4_bit = 0x08;
+
+            /* The mapped controller state is at offset 4, the raw state is at offset 18, compare them to see if the paddles are mapped */
+            paddles_mapped = (SDL_memcmp(&data[4], &data[18], 14) != 0);
+
+        } else if (size == 38) {
+            /* XBox One Elite Series 2 */
+            paddle_index = 18;
+            button1_bit = 0x04;
+            button2_bit = 0x01;
+            button3_bit = 0x08;
+            button4_bit = 0x02;
+            paddles_mapped = (data[19] != 0);
         }
-        if (ctx->last_state[18] != data[18]) {
-            SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_MAX+0, (data[18] & 0x01) ? SDL_PRESSED : SDL_RELEASED);
-            SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_MAX+1, (data[18] & 0x02) ? SDL_PRESSED : SDL_RELEASED);
-            SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_MAX+2, (data[18] & 0x04) ? SDL_PRESSED : SDL_RELEASED);
-            SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_MAX+3, (data[18] & 0x08) ? SDL_PRESSED : SDL_RELEASED);
+#ifdef DEBUG_XBOX_PROTOCOL
+        SDL_Log(">>> Paddles: %d,%d,%d,%d mapped = %s\n",
+            (data[paddle_index] & button1_bit) ? 1 : 0,
+            (data[paddle_index] & button2_bit) ? 1 : 0,
+            (data[paddle_index] & button3_bit) ? 1 : 0,
+            (data[paddle_index] & button4_bit) ? 1 : 0,
+            paddles_mapped ? "TRUE" : "FALSE"
+        );
+#endif
+
+        if (paddles_mapped) {
+            /* Respect that the paddles are being used for other controls and don't pass them on to the app */
+            data[paddle_index] = 0;
+        }
+
+        if (ctx->last_state[paddle_index] != data[paddle_index]) {
+            SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_MAX+0, (data[paddle_index] & button1_bit) ? SDL_PRESSED : SDL_RELEASED);
+            SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_MAX+1, (data[paddle_index] & button2_bit) ? SDL_PRESSED : SDL_RELEASED);
+            SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_MAX+2, (data[paddle_index] & button3_bit) ? SDL_PRESSED : SDL_RELEASED);
+            SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_MAX+3, (data[paddle_index] & button4_bit) ? SDL_PRESSED : SDL_RELEASED);
         }
     }
 

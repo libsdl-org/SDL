@@ -40,6 +40,7 @@
 #define USB_PRODUCT_SONY_DS4                            0x05c4
 #define USB_PRODUCT_SONY_DS4_DONGLE                     0x0ba0
 #define USB_PRODUCT_SONY_DS4_SLIM                       0x09cc
+#define USB_PRODUCT_XBOX_ONE_ELITE_SERIES_1             0x02e3
 #define USB_PRODUCT_XBOX_ONE_ELITE_SERIES_2             0x0b00
 #define USB_PRODUCT_XBOX_ONE_ELITE_SERIES_2_BLUETOOTH   0x0b05
 #define USB_PRODUCT_XBOX_ONE_S_REV1_BLUETOOTH           0x02e0
