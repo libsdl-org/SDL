@@ -37,6 +37,7 @@ struct joystick_hwdata
     SDL_bool ff_rumble;
     SDL_bool ff_sine;
     struct ff_effect effect;
+    Uint32 effect_expiration;
 
     /* The current Linux joystick driver maps hats to two axes */
     struct hwdata_hat
