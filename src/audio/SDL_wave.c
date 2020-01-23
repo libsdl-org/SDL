@@ -38,6 +38,7 @@
 #include "SDL_hints.h"
 #include "SDL_audio.h"
 #include "SDL_wave.h"
+#include "SDL_audio_c.h"
 
 /* Reads the value stored at the location of the f1 pointer, multiplies it
  * with the second argument and then stores the result to f1.
