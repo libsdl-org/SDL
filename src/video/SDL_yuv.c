@@ -56,6 +56,8 @@ SDL_YUV_CONVERSION_MODE SDL_GetYUVConversionModeForResolution(int width, int hei
     return mode;
 }
 
+#if SDL_HAVE_YUV
+
 static int GetYUVConversionType(int width, int height, YCbCrType *yuv_type)
 {
     switch (SDL_GetYUVConversionModeForResolution(width, height)) {
@@ -1809,11 +1811,14 @@ SDL_ConvertPixels_Packed4_to_Planar2x2(int width, int height,
     return 0;
 }
 
+#endif /* SDL_HAVE_YUV */
+
 int
 SDL_ConvertPixels_YUV_to_YUV(int width, int height,
          Uint32 src_format, const void *src, int src_pitch,
          Uint32 dst_format, void *dst, int dst_pitch)
 {
+#if SDL_HAVE_YUV
     if (src_format == dst_format) {
         if (src == dst) {
             /* Nothing to do */
@@ -1833,6 +1838,9 @@ SDL_ConvertPixels_YUV_to_YUV(int width, int height,
     } else {
         return SDL_SetError("SDL_ConvertPixels_YUV_to_YUV: Unsupported YUV conversion: %s -> %s", SDL_GetPixelFormatName(src_format), SDL_GetPixelFormatName(dst_format));
     }
+#else
+	return SDL_SetError("SDL not built with YUV support");
+#endif
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

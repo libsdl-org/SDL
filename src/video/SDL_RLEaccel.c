@@ -20,6 +20,8 @@
 */
 #include "../SDL_internal.h"
 
+#if SDL_HAVE_RLE
+
 /*
  * RLE encoding for software colorkey and alpha-channel acceleration
  *
@@ -1583,5 +1585,7 @@ SDL_UnRLESurface(SDL_Surface * surface, int recode)
         surface->map->data = NULL;
     }
 }
+
+#endif /* SDL_HAVE_RLE */
 
 /* vi: set ts=4 sw=4 expandtab: */

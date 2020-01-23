@@ -99,6 +99,8 @@ SDL_SoftBlit(SDL_Surface * src, SDL_Rect * srcrect,
     return (okay ? 0 : -1);
 }
 
+#if SDL_HAVE_BLIT_AUTO
+
 #ifdef __MACOSX__
 #include <sys/sysctl.h>
 
@@ -187,6 +189,7 @@ SDL_ChooseBlitFunc(Uint32 src_format, Uint32 dst_format, int flags,
     }
     return NULL;
 }
+#endif /* SDL_HAVE_BLIT_AUTO */
 
 /* Figure out which of many blit routines to set up on a surface */
 int

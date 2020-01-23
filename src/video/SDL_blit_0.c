@@ -20,6 +20,8 @@
 */
 #include "../SDL_internal.h"
 
+#if SDL_HAVE_BLIT_0
+
 #include "SDL_video.h"
 #include "SDL_blit.h"
 
@@ -479,5 +481,7 @@ SDL_CalculateBlit0(SDL_Surface * surface)
     }
     return (SDL_BlitFunc) NULL;
 }
+
+#endif /* SDL_HAVE_BLIT_0 */
 
 /* vi: set ts=4 sw=4 expandtab: */
