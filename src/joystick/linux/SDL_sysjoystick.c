@@ -803,16 +803,30 @@ LINUX_JoystickOpen(SDL_Joystick * joystick, int device_index)
     return (0);
 }
 
+#define MAX_KERNEL_RUMBLE_DURATION_MS  0xFFFF
+
 static int
 LINUX_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms)
 {
     struct input_event event;
 
+    if (duration_ms > MAX_KERNEL_RUMBLE_DURATION_MS) {
+        duration_ms = MAX_KERNEL_RUMBLE_DURATION_MS;
+    }
+    if ((low_frequency_rumble || high_frequency_rumble) && duration_ms) {
+        joystick->hwdata->effect_expiration = SDL_GetTicks() + duration_ms;
+        if (!joystick->hwdata->effect_expiration) {
+            joystick->hwdata->effect_expiration = 1;
+        }
+    } else {
+        joystick->hwdata->effect_expiration = 0;
+    }
+
     if (joystick->hwdata->ff_rumble) {
         struct ff_effect *effect = &joystick->hwdata->effect;
 
         effect->type = FF_RUMBLE;
-        effect->replay.length = SDL_min(duration_ms, 32767);
+        effect->replay.length = duration_ms;
         effect->u.rumble.strong_magnitude = low_frequency_rumble;
         effect->u.rumble.weak_magnitude = high_frequency_rumble;
     } else if (joystick->hwdata->ff_sine) {
@@ -821,7 +835,7 @@ LINUX_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint1
         struct ff_effect *effect = &joystick->hwdata->effect;
 
         effect->type = FF_PERIODIC;
-        effect->replay.length = SDL_min(duration_ms, 32767);
+        effect->replay.length = duration_ms;
         effect->u.periodic.waveform = FF_SINE;
         effect->u.periodic.magnitude = magnitude;
     } else {
@@ -1038,6 +1052,13 @@ LINUX_JoystickUpdate(SDL_Joystick * joystick)
             SDL_PrivateJoystickBall(joystick, (Uint8) i, xrel, yrel);
         }
     }
+
+    if (joystick->hwdata->effect_expiration) {
+        Uint32 now = SDL_GetTicks();
+        if (SDL_TICKS_PASSED(now, joystick->hwdata->effect_expiration)) {
+            LINUX_JoystickRumble(joystick, 0, 0, 0);
+        }
+    }
 }
 
 /* Function to close a joystick after use */
@@ -1045,6 +1066,9 @@ static void
 LINUX_JoystickClose(SDL_Joystick * joystick)
 {
     if (joystick->hwdata) {
+        if (joystick->hwdata->effect_expiration) {
+            LINUX_JoystickRumble(joystick, 0, 0, 0);
+        }
         if (joystick->hwdata->effect.id >= 0) {
             ioctl(joystick->hwdata->fd, EVIOCRMFF, joystick->hwdata->effect.id);
             joystick->hwdata->effect.id = -1;
