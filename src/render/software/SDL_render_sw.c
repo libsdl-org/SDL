@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if !SDL_RENDER_DISABLED
+#if SDL_VIDEO_RENDER_SW && !SDL_RENDER_DISABLED
 
 #include "../SDL_sysrender.h"
 #include "SDL_render_sw_c.h"
@@ -889,6 +889,6 @@ SDL_RenderDriver SW_RenderDriver = {
      0}
 };
 
-#endif /* !SDL_RENDER_DISABLED */
+#endif /* SDL_VIDEO_RENDER_SW && !SDL_RENDER_DISABLED */
 
 /* vi: set ts=4 sw=4 expandtab: */

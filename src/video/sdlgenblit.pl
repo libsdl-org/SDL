@@ -112,6 +112,8 @@ sub open_file {
 */
 #include "../SDL_internal.h"
 
+#if SDL_HAVE_BLIT_AUTO
+
 /* *INDENT-OFF* */
 
 __EOF__
@@ -121,6 +123,8 @@ sub close_file {
     my $name = shift;
     print FILE <<__EOF__;
 /* *INDENT-ON* */
+
+#endif /* SDL_HAVE_BLIT_AUTO */
 
 /* vi: set ts=4 sw=4 expandtab: */
 __EOF__

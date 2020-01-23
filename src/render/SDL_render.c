@@ -1426,6 +1426,7 @@ SDL_GetTextureScaleMode(SDL_Texture * texture, SDL_ScaleMode *scaleMode)
     return 0;
 }
 
+#if SDL_HAVE_YUV
 static int
 SDL_UpdateTextureYUV(SDL_Texture * texture, const SDL_Rect * rect,
                      const void *pixels, int pitch)
@@ -1471,6 +1472,7 @@ SDL_UpdateTextureYUV(SDL_Texture * texture, const SDL_Rect * rect,
     }
     return 0;
 }
+#endif /* SDL_HAVE_YUV */
 
 static int
 SDL_UpdateTextureNative(SDL_Texture * texture, const SDL_Rect * rect,
@@ -1553,6 +1555,7 @@ SDL_UpdateTexture(SDL_Texture * texture, const SDL_Rect * rect,
     }
 }
 
+#if SDL_HAVE_YUV
 static int
 SDL_UpdateTextureYUVPlanar(SDL_Texture * texture, const SDL_Rect * rect,
                            const Uint8 *Yplane, int Ypitch,
@@ -1604,6 +1607,7 @@ SDL_UpdateTextureYUVPlanar(SDL_Texture * texture, const SDL_Rect * rect,
     }
     return 0;
 }
+#endif /* SDL_HAVE_YUV */
 
 int SDL_UpdateYUVTexture(SDL_Texture * texture, const SDL_Rect * rect,
                          const Uint8 *Yplane, int Ypitch,
@@ -1672,12 +1676,14 @@ int SDL_UpdateYUVTexture(SDL_Texture * texture, const SDL_Rect * rect,
 #endif
 }
 
+#if SDL_HAVE_YUV
 static int
 SDL_LockTextureYUV(SDL_Texture * texture, const SDL_Rect * rect,
                    void **pixels, int *pitch)
 {
     return SDL_SW_LockYUVTexture(texture->yuv, rect, pixels, pitch);
 }
+#endif /* SDL_HAVE_YUV */
 
 static int
 SDL_LockTextureNative(SDL_Texture * texture, const SDL_Rect * rect,
@@ -1767,6 +1773,7 @@ SDL_LockTextureToSurface(SDL_Texture *texture, const SDL_Rect *rect,
     return 0;
 }
 
+#if SDL_HAVE_YUV
 static void
 SDL_UnlockTextureYUV(SDL_Texture * texture)
 {
@@ -1787,6 +1794,7 @@ SDL_UnlockTextureYUV(SDL_Texture * texture)
                         rect.w, rect.h, native_pixels, native_pitch);
     SDL_UnlockTexture(native);
 }
+#endif /* SDL_HAVE_YUV */
 
 static void
 SDL_UnlockTextureNative(SDL_Texture * texture)

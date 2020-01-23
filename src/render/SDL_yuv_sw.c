@@ -22,6 +22,8 @@
 
 /* This is the software implementation of the YUV texture support */
 
+#if SDL_HAVE_YUV
+
 #include "SDL_assert.h"
 
 #include "SDL_yuv_sw_c.h"
@@ -410,5 +412,7 @@ SDL_SW_DestroyYUVTexture(SDL_SW_YUVTexture * swdata)
         SDL_free(swdata);
     }
 }
+
+#endif /* SDL_HAVE_YUV */
 
 /* vi: set ts=4 sw=4 expandtab: */

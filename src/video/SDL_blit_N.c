@@ -20,6 +20,8 @@
 */
 #include "../SDL_internal.h"
 
+#if SDL_HAVE_BLIT_N
+
 #include "SDL_video.h"
 #include "SDL_endian.h"
 #include "SDL_cpuinfo.h"
@@ -1450,6 +1452,8 @@ Blit_RGB888_RGB565(SDL_BlitInfo * info)
 }
 
 
+#if SDL_HAVE_BLIT_N_RGB565
+
 /* Special optimized blit for RGB 5-6-5 --> 32-bit RGB surfaces */
 #define RGB565_32(dst, src, map) (map[src[LO]*2] + map[src[HI]*2+1])
 static void
@@ -2067,6 +2071,8 @@ Blit_RGB565_BGRA8888(SDL_BlitInfo * info)
 {
     Blit_RGB565_32(info, RGB565_BGRA8888_LUT);
 }
+
+#endif /* SDL_HAVE_BLIT_N_RGB565 */
 
 static void
 BlitNto1(SDL_BlitInfo * info)
@@ -3460,5 +3466,7 @@ SDL_CalculateBlitN(SDL_Surface * surface)
 
     return NULL;
 }
+
+#endif /* SDL_HAVE_BLIT_N */
 
 /* vi: set ts=4 sw=4 expandtab: */
