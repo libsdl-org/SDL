@@ -55,7 +55,7 @@
    Only effective when library is statically linked.
    You have to manually edit this file. */
 #ifndef SDL_LEAN_AND_MEAN
-#define SDL_LEAN_AND_MEAN               1
+#define SDL_LEAN_AND_MEAN               0
 #endif
 
 /* Optimized functions from 'SDL_blit_0.c'
