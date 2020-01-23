@@ -102,6 +102,23 @@ PrefixMatch(const char *a, const char *b)
     return matchlen;
 }
 
+static void
+FixupDeviceInfoForMapping(int fd, struct input_id *inpid)
+{
+    if (inpid->vendor == 0x045e && inpid->product == 0x0b05 && inpid->version == 0x0903) {
+        /* This is a Microsoft Xbox One Elite Series 2 controller */
+        unsigned long keybit[NBITS(KEY_MAX)] = { 0 };
+
+        /* The first version of the firmware duplicated all the inputs */
+        if ((ioctl(fd, EVIOCGBIT(EV_KEY, sizeof(keybit)), keybit) >= 0) &&
+            test_bit(0x2c0, keybit)) {
+            /* Change the version to 0x0902, so we can map it differently */
+            inpid->version = 0x0902;
+        }
+    }
+}
+
+
 static int
 IsJoystick(int fd, char *namebuf, const size_t namebuflen, SDL_JoystickGUID *guid)
 {
@@ -156,6 +173,8 @@ IsJoystick(int fd, char *namebuf, const size_t namebuflen, SDL_JoystickGUID *gui
         return 0;
     }
 #endif
+
+    FixupDeviceInfoForMapping(fd, &inpid);
 
 #ifdef DEBUG_JOYSTICK
     printf("Joystick: %s, bustype = %d, vendor = 0x%.4x, product = 0x%.4x, version = %d\n", namebuf, inpid.bustype, inpid.vendor, inpid.product, inpid.version);
@@ -819,6 +838,9 @@ LINUX_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint1
             joystick->hwdata->effect_expiration = 1;
         }
     } else {
+        if (!joystick->hwdata->effect_expiration) {
+            return 0;
+        }
         joystick->hwdata->effect_expiration = 0;
     }
 
