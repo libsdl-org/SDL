@@ -450,7 +450,7 @@ HIDAPI_DriverXboxOne_HandleStatePacket(SDL_Joystick *joystick, hid_device *dev, 
             /* The mapped controller state is at offset 4, the raw state is at offset 18, compare them to see if the paddles are mapped */
             paddles_mapped = (SDL_memcmp(&data[4], &data[18], 14) != 0);
 
-        } else if (size == 38) {
+        } else /* if (size == 38) */ {
             /* XBox One Elite Series 2 */
             paddle_index = 18;
             button1_bit = 0x04;
