@@ -608,25 +608,25 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 						/* Check the VID/PID against the arguments */
 						if ((vendor_id == 0x0 || vendor_id == dev_vid) &&
 						    (product_id == 0x0 || product_id == dev_pid)) {
-							struct hid_device_info *tmp;
-
-							/* VID/PID match. Create the record. */
-							tmp = (struct hid_device_info*) calloc(1, sizeof(struct hid_device_info));
-							if (cur_dev) {
-								cur_dev->next = tmp;
-							}
-							else {
-								root = tmp;
-							}
-							cur_dev = tmp;
-
-							/* Fill out the record */
-							cur_dev->next = NULL;
-							cur_dev->path = make_path(dev, interface_num);
-
 							res = libusb_open(dev, &handle);
 
 							if (res >= 0) {
+								struct hid_device_info *tmp;
+
+								/* VID/PID match. Create the record. */
+								tmp = (struct hid_device_info*) calloc(1, sizeof(struct hid_device_info));
+								if (cur_dev) {
+									cur_dev->next = tmp;
+								}
+								else {
+									root = tmp;
+								}
+								cur_dev = tmp;
+
+								/* Fill out the record */
+								cur_dev->next = NULL;
+								cur_dev->path = make_path(dev, interface_num);
+
 								/* Serial Number */
 								if (desc.iSerialNumber > 0)
 									cur_dev->serial_number =
@@ -704,19 +704,22 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 #endif /* INVASIVE_GET_USAGE */
 
 								libusb_close(handle);
-							}
-							/* VID/PID */
-							cur_dev->vendor_id = dev_vid;
-							cur_dev->product_id = dev_pid;
 
-							/* Release Number */
-							cur_dev->release_number = desc.bcdDevice;
+								/* VID/PID */
+								cur_dev->vendor_id = dev_vid;
+								cur_dev->product_id = dev_pid;
 
-							/* Interface Number */
-							cur_dev->interface_number = interface_num;
-							cur_dev->interface_class = intf_desc->bInterfaceClass;
-							cur_dev->interface_subclass = intf_desc->bInterfaceSubClass;
-							cur_dev->interface_protocol = intf_desc->bInterfaceProtocol;
+								/* Release Number */
+								cur_dev->release_number = desc.bcdDevice;
+
+								/* Interface Number */
+								cur_dev->interface_number = interface_num;
+								cur_dev->interface_class = intf_desc->bInterfaceClass;
+								cur_dev->interface_subclass = intf_desc->bInterfaceSubClass;
+								cur_dev->interface_protocol = intf_desc->bInterfaceProtocol;
+
+							} else
+								LOG("Can't open device 0x%.4x/0x%.4x during enumeration: %d\n", dev_vid, dev_pid, res);
 						}
 					}
 				} /* altsettings */
