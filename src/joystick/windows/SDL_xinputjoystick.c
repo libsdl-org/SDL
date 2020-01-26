@@ -480,7 +480,7 @@ SDL_XINPUT_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, 
     }
 
     if ((low_frequency_rumble || high_frequency_rumble) && duration_ms) {
-        joystick->hwdata->rumble_expiration = SDL_GetTicks() + duration_ms;
+        joystick->hwdata->rumble_expiration = SDL_GetTicks() + SDL_min(duration_ms, SDL_MAX_RUMBLE_DURATION_MS);
     } else {
         joystick->hwdata->rumble_expiration = 0;
     }
