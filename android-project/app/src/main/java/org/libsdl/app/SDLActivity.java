@@ -283,10 +283,6 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
             return;
         }
 
-        if (mHIDDeviceManager != null) {
-            mHIDDeviceManager.setFrozen(true);
-        }
-
         SDLActivity.handleNativeState();
     }
 
@@ -298,10 +294,6 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
            return;
         }
 
-        if (mHIDDeviceManager != null) {
-            mHIDDeviceManager.setFrozen(false);
-        }
-
         SDLActivity.handleNativeState();
     }
 
@@ -310,6 +302,10 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     protected void onPause() {
         Log.v(TAG, "onPause()");
         super.onPause();
+
+        if (mHIDDeviceManager != null) {
+            mHIDDeviceManager.setFrozen(true);
+        }
         if (!mHasMultiWindow) {
             pauseNativeThread();
         }
@@ -319,6 +315,10 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     protected void onResume() {
         Log.v(TAG, "onResume()");
         super.onResume();
+
+        if (mHIDDeviceManager != null) {
+            mHIDDeviceManager.setFrozen(false);
+        }
         if (!mHasMultiWindow) {
             resumeNativeThread();
         }
