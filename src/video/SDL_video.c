@@ -706,12 +706,24 @@ SDL_GetDisplayBounds(int displayIndex, SDL_Rect * rect)
     return 0;  /* !!! FIXME: should this be an error if (rect==NULL) ? */
 }
 
-int SDL_GetDisplayUsableBounds(int displayIndex, SDL_Rect * rect)
+static int
+ParseDisplayUsableBoundsHint(SDL_Rect *rect)
+{
+    const char *hint = SDL_GetHint(SDL_HINT_DISPLAY_USABLE_BOUNDS);
+    return hint && (SDL_sscanf(hint, "%d,%d,%d,%d", &rect->x, &rect->y, &rect->w, &rect->h) == 4);
+}
+
+int
+SDL_GetDisplayUsableBounds(int displayIndex, SDL_Rect * rect)
 {
     CHECK_DISPLAY_INDEX(displayIndex, -1);
 
     if (rect) {
         SDL_VideoDisplay *display = &_this->displays[displayIndex];
+
+        if ((displayIndex == 0) && ParseDisplayUsableBoundsHint(rect)) {
+            return 0;
+        }
 
         if (_this->GetDisplayUsableBounds) {
             if (_this->GetDisplayUsableBounds(_this, display, rect) == 0) {
