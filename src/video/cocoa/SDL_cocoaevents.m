@@ -238,6 +238,11 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
      * of here. https://bugzilla.libsdl.org/show_bug.cgi?id=3051
      */
     if (!SDL_GetHintBoolean(SDL_HINT_MAC_BACKGROUND_APP, SDL_FALSE)) {
+        /* Get more aggressive for Catalina: activate the Dock first so we definitely reset all activation state. */
+        for (NSRunningApplication *i in [NSRunningApplication runningApplicationsWithBundleIdentifier:@"com.apple.dock"]) {
+            [i activateWithOptions:NSApplicationActivateIgnoringOtherApps];
+            break;
+        }
         [NSApp activateIgnoringOtherApps:YES];
     }
 
