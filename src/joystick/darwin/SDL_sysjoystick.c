@@ -161,7 +161,7 @@ GetHIDElementState(recDevice *pDevice, recElement *pElement, SInt32 *pValue)
     SInt32 value = 0;
     int returnValue = SDL_FALSE;
 
-    if (pDevice && pElement) {
+    if (pDevice && pDevice->deviceRef && pElement) {
         IOHIDValueRef valueRef;
         if (IOHIDDeviceGetValue(pDevice->deviceRef, pElement->elementRef, &valueRef) == kIOReturnSuccess) {
             value = (SInt32) IOHIDValueGetIntegerValue(valueRef);
