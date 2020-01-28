@@ -810,7 +810,7 @@ X11_SetWindowPosition(_THIS, SDL_Window * window)
 
     /*Attempt to move the window*/
     X11_XMoveWindow(display, data->xwindow, window->x - data->border_left, window->y - data->border_top);
-    X11_XFlush(display);
+    X11_XSync(display, False);
 
     /*If the window is not moved, then the coordinates on the window structure are out of sync, so we
       update them here. */
