@@ -11,8 +11,8 @@ class HIDDeviceUSB implements HIDDevice {
 
     protected HIDDeviceManager mManager;
     protected UsbDevice mDevice;
-    protected int mInterface;
     protected int mInterfaceIndex;
+    protected int mInterface;
     protected int mDeviceId;
     protected UsbDeviceConnection mConnection;
     protected UsbEndpoint mInputEndpoint;
