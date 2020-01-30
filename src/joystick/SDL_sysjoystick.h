@@ -74,14 +74,6 @@ struct _SDL_Joystick
     struct _SDL_Joystick *next; /* pointer to next joystick we have allocated */
 };
 
-#if defined(__IPHONEOS__) || defined(__ANDROID__)
-#define HAVE_STEAMCONTROLLERS
-#define USE_STEAMCONTROLLER_HIDAPI
-#elif defined(__LINUX__)
-#define HAVE_STEAMCONTROLLERS
-#define USE_STEAMCONTROLLER_LINUX
-#endif
-
 /* Device bus definitions */
 #define SDL_HARDWARE_BUS_USB        0x03
 #define SDL_HARDWARE_BUS_BLUETOOTH  0x05

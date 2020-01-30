@@ -138,7 +138,7 @@
 
 /* Enable MFi joystick support */
 #define SDL_JOYSTICK_MFI 1
-/*#define SDL_JOYSTICK_HIDAPI 1*/
+#define SDL_JOYSTICK_HIDAPI 1
 
 #ifdef __TVOS__
 #define SDL_SENSOR_DUMMY    1

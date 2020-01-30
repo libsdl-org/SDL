@@ -45,6 +45,11 @@
 #undef SDL_JOYSTICK_HIDAPI_XBOXONE
 #endif
 
+#if defined(__IPHONEOS__) || defined(__TVOS__) || defined(__ANDROID__)
+/* Very basic Steam Controller support on mobile devices */
+#define SDL_JOYSTICK_HIDAPI_STEAM
+#endif
+
 /* Prevent rumble duration overflow */
 #define SDL_MAX_RUMBLE_DURATION_MS  0x0fffffff
 
