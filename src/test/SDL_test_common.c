@@ -19,7 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-/* Ported from original test\common.c file. */
+/* Ported from original test/common.c file. */
 
 #include "SDL_config.h"
 #include "SDL_test.h"
