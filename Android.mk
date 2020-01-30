@@ -66,7 +66,6 @@ LOCAL_CFLAGS += \
 	-Wshorten-64-to-32 \
 	-Wunreachable-code-return \
 	-Wshift-sign-overflow \
-	-Wunused-macros \
 	-Wstrict-prototypes \
 	-Wkeyword-macro \
 
