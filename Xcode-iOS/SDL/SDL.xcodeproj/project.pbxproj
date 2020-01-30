@@ -365,6 +365,8 @@
 		A704172F20F7E76000A82227 /* SDL_gamecontroller.c in Sources */ = {isa = PBXBuildFile; fileRef = AA0AD06116647BBB00CE5896 /* SDL_gamecontroller.c */; };
 		A704173120F7F39900A82227 /* SDL_hidapi_steam.c in Sources */ = {isa = PBXBuildFile; fileRef = A704173020F7F39400A82227 /* SDL_hidapi_steam.c */; };
 		A704173220F7F39900A82227 /* SDL_hidapi_steam.c in Sources */ = {isa = PBXBuildFile; fileRef = A704173020F7F39400A82227 /* SDL_hidapi_steam.c */; };
+		A75FDAB723E288E400529352 /* SDL_hidapi_steam.c in Sources */ = {isa = PBXBuildFile; fileRef = A704173020F7F39400A82227 /* SDL_hidapi_steam.c */; };
+		A75FDAB823E2890000529352 /* SDL_hidapi_steam.c in Sources */ = {isa = PBXBuildFile; fileRef = A704173020F7F39400A82227 /* SDL_hidapi_steam.c */; };
 		A7C19D29212E552C00DF2152 /* SDL_displayevents_c.h in Headers */ = {isa = PBXBuildFile; fileRef = A7C19D27212E552B00DF2152 /* SDL_displayevents_c.h */; };
 		A7C19D2A212E552C00DF2152 /* SDL_displayevents.c in Sources */ = {isa = PBXBuildFile; fileRef = A7C19D28212E552B00DF2152 /* SDL_displayevents.c */; };
 		A7C19D2B212E552C00DF2152 /* SDL_displayevents.c in Sources */ = {isa = PBXBuildFile; fileRef = A7C19D28212E552B00DF2152 /* SDL_displayevents.c */; };
@@ -2518,6 +2520,7 @@
 				52ED1E0D222889500061FCE0 /* SDL_stdlib.c in Sources */,
 				52ED1E0E222889500061FCE0 /* SDL_blit.c in Sources */,
 				52ED1E0F222889500061FCE0 /* SDL_blit_0.c in Sources */,
+				A75FDAB723E288E400529352 /* SDL_hidapi_steam.c in Sources */,
 				52ED1E10222889500061FCE0 /* SDL_yuv.c in Sources */,
 				52ED1E11222889500061FCE0 /* SDL_blit_1.c in Sources */,
 				52ED1E12222889500061FCE0 /* SDL_dataqueue.c in Sources */,
@@ -2649,6 +2652,7 @@
 				F3E3C6FB2241389A007D243C /* SDL_stdlib.c in Sources */,
 				F3E3C6FC2241389A007D243C /* SDL_blit.c in Sources */,
 				F3E3C6FD2241389A007D243C /* SDL_blit_0.c in Sources */,
+				A75FDAB823E2890000529352 /* SDL_hidapi_steam.c in Sources */,
 				F3E3C6FE2241389A007D243C /* SDL_yuv.c in Sources */,
 				F3E3C6FF2241389A007D243C /* SDL_blit_1.c in Sources */,
 				F3E3C7002241389A007D243C /* SDL_dataqueue.c in Sources */,
