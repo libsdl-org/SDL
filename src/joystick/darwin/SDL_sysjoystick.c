@@ -128,6 +128,7 @@ FreeDevice(recDevice *removeDevice)
     if (removeDevice) {
         if (removeDevice->deviceRef) {
             IOHIDDeviceUnscheduleFromRunLoop(removeDevice->deviceRef, CFRunLoopGetCurrent(), SDL_JOYSTICK_RUNLOOP_MODE);
+            CFRelease(removeDevice->deviceRef);
             removeDevice->deviceRef = NULL;
         }
 
@@ -206,7 +207,11 @@ JoystickDeviceWasRemovedCallback(void *ctx, IOReturn result, void *sender)
 {
     recDevice *device = (recDevice *) ctx;
     device->removed = SDL_TRUE;
-    device->deviceRef = NULL; // deviceRef was invalidated due to the remove
+    if (device->deviceRef) {
+        // deviceRef was invalidated due to the remove
+        CFRelease(device->deviceRef);
+        device->deviceRef = NULL;
+    }
     if (device->ffeffect_ref) {
         FFDeviceReleaseEffect(device->ffdevice, device->ffeffect_ref);
         device->ffeffect_ref = NULL;
@@ -428,6 +433,15 @@ GetDeviceInfo(IOHIDDeviceRef hidDevice, recDevice *pDevice)
         return SDL_FALSE; /* Filter device list to non-keyboard/mouse stuff */
     }
 
+    /* Make sure we retain the use of the IOKit-provided device-object,
+       lest the device get disconnected and we try to use it.  (Fixes
+       SDL-Bugzilla #4961, aka. https://bugzilla.libsdl.org/show_bug.cgi?id=4961 )
+    */
+    CFRetain(hidDevice);
+
+    /* Now that we've CFRetain'ed the device-object (for our use), we'll
+       save the reference to it.
+    */
     pDevice->deviceRef = hidDevice;
 
     refCF = IOHIDDeviceGetProperty(hidDevice, CFSTR(kIOHIDVendorIDKey));
@@ -546,12 +560,12 @@ JoystickDeviceWasAddedCallback(void *ctx, IOReturn res, void *sender, IOHIDDevic
     }
 
     if (!GetDeviceInfo(ioHIDDeviceObject, device)) {
-        SDL_free(device);
+        FreeDevice(device);
         return;   /* not a device we care about, probably. */
     }
 
     if (SDL_ShouldIgnoreJoystick(device->product, device->guid)) {
-        SDL_free(device);
+        FreeDevice(device);
         return;
     }
 
