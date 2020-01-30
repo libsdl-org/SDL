@@ -282,6 +282,7 @@ typedef enum
 		NSLog( @"connected peripheral: %@", peripheral );
 		if ( [peripheral.name isEqualToString:@"SteamController"] )
 		{
+			self.nPendingPairs += 1;
 			HIDBLEDevice *steamController = [[HIDBLEDevice alloc] initWithPeripheral:peripheral];
 			[self.deviceMap setObject:steamController forKey:peripheral];
 			[self.centralManager connectPeripheral:peripheral options:nil];

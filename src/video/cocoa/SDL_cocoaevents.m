@@ -21,6 +21,7 @@
 #include "../../SDL_internal.h"
 
 #if SDL_VIDEO_DRIVER_COCOA
+
 #include "SDL_timer.h"
 
 #include "SDL_cocoavideo.h"

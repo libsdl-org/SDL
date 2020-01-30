@@ -730,7 +730,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
                 }
             }
 
-            if (bShouldWait) {
+            if (bShouldWait && (SDLActivity.getContext() != null)) {
                 // We'll wait for the surfaceChanged() method, which will notify us
                 // when called.  That way, we know our current size is really the
                 // size we need, instead of grabbing a size that's still got
@@ -1026,6 +1026,9 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
      * This method is called by SDL using JNI.
      */
     public static boolean isChromebook() {
+        if (getContext() == null) {
+            return false;
+        }
         return getContext().getPackageManager().hasSystemFeature("org.chromium.arc.device_management");
     }
 

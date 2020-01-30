@@ -24,14 +24,16 @@
  * Thanks to Alex Szpakowski, @slime73 on GitHub, for his gist showing
  * how to add a CAMetalLayer backed view.
  */
+#include "../../SDL_internal.h"
 
 #ifndef SDL_cocoametalview_h_
 #define SDL_cocoametalview_h_
 
-#import "../SDL_sysvideo.h"
-#import "SDL_cocoawindow.h"
-
 #if SDL_VIDEO_DRIVER_COCOA && (SDL_VIDEO_VULKAN || SDL_VIDEO_METAL)
+
+#import "../SDL_sysvideo.h"
+
+#import "SDL_cocoawindow.h"
 
 #import <Cocoa/Cocoa.h>
 #import <Metal/Metal.h>

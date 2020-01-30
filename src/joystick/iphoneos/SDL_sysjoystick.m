@@ -24,7 +24,7 @@
 #include "SDL_sysjoystick_c.h"
 
 /* needed for SDL_IPHONE_MAX_GFORCE macro */
-#include "SDL_config_iphoneos.h"
+#include "../../../include/SDL_config_iphoneos.h"
 
 #include "SDL_assert.h"
 #include "SDL_events.h"
@@ -131,7 +131,9 @@ IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controlle
         GCExtendedGamepad *gamepad = controller.extendedGamepad;
         BOOL is_xbox = [controller.vendorName containsString: @"Xbox"];
         BOOL is_ps4 = [controller.vendorName containsString: @"DUALSHOCK"];
+#if TARGET_OS_TV
         BOOL is_MFi = (!is_xbox && !is_ps4);
+#endif
         int nbuttons = 0;
 
         /* These buttons are part of the original MFi spec */
