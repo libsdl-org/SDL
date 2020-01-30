@@ -35,7 +35,7 @@ static const char *video_usage[] = {
     "[--min-geometry WxH]", "[--max-geometry WxH]", "[--logical WxH]",
     "[--scale N]", "[--depth N]", "[--refresh R]", "[--vsync]", "[--noframe]",
     "[--resize]", "[--minimize]", "[--maximize]", "[--grab]",
-    "[--allow-highdpi]"
+    "[--allow-highdpi]", "[--usable-bounds]"
 };
 
 static const char *audio_usage[] = {
@@ -281,6 +281,15 @@ SDLTest_CommonArg(SDLTest_CommonState * state, int index)
         state->window_x = SDL_atoi(x);
         state->window_y = SDL_atoi(y);
         return 2;
+    }
+    if (SDL_strcasecmp(argv[index], "--usable-bounds") == 0) {
+        /* !!! FIXME: this is a bit of a hack, but I don't want to add a
+           !!! FIXME:  flag to the public structure in 2.0.x */
+        state->window_x = -1;
+        state->window_y = -1;
+        state->window_w = -1;
+        state->window_h = -1;
+        return 1;
     }
     if (SDL_strcasecmp(argv[index], "--geometry") == 0) {
         char *w, *h;
@@ -959,6 +968,15 @@ SDLTest_CommonInit(SDLTest_CommonState * state)
         }
         for (i = 0; i < state->num_windows; ++i) {
             char title[1024];
+            SDL_Rect r = {
+                state->window_x, state->window_y,
+                state->window_w, state->window_h
+            };
+
+            /* !!! FIXME: hack to make --usable-bounds work for now. */
+            if ((r.x == -1) && (r.y == -1) && (r.w == -1) && (r.h == -1)) {
+                SDL_GetDisplayUsableBounds(state->display, &r);
+            }
 
             if (state->num_windows > 1) {
                 SDL_snprintf(title, SDL_arraysize(title), "%s %d",
@@ -967,9 +985,7 @@ SDLTest_CommonInit(SDLTest_CommonState * state)
                 SDL_strlcpy(title, state->window_title, SDL_arraysize(title));
             }
             state->windows[i] =
-                SDL_CreateWindow(title, state->window_x, state->window_y,
-                                 state->window_w, state->window_h,
-                                 state->window_flags);
+                SDL_CreateWindow(title, r.x, r.y, r.w, r.h, state->window_flags);
             if (!state->windows[i]) {
                 SDL_Log("Couldn't create window: %s\n",
                         SDL_GetError());
