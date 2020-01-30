@@ -45,7 +45,7 @@ double scalbln(double x, long n)
 	}
 	if (k == 0x7ff)
 		return x + x; /* NaN or Inf */
-	k = k + n;
+	k = (int32_t)(k + n);
 	if (k > 0x7fe)
 		return huge * copysign(huge, x); /* overflow */
 	if (n < -50000)
