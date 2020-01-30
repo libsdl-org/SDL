@@ -166,13 +166,13 @@ class HIDDeviceBLESteamController extends BluetoothGattCallback implements HIDDe
         mHandler = new Handler(Looper.getMainLooper());
 
         mGatt = connectGatt();
-        final HIDDeviceBLESteamController finalThis = this;
-        mHandler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                finalThis.checkConnectionForChromebookIssue();
-            }
-        }, CHROMEBOOK_CONNECTION_CHECK_INTERVAL);
+        // final HIDDeviceBLESteamController finalThis = this;
+        // mHandler.postDelayed(new Runnable() {
+        //     @Override
+        //     public void run() {
+        //         finalThis.checkConnectionForChromebookIssue();
+        //     }
+        // }, CHROMEBOOK_CONNECTION_CHECK_INTERVAL);
     }
 
     public String getIdentifier() {

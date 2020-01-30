@@ -341,8 +341,8 @@ SDL_HideHomeIndicatorHintChanged(void *userdata, const char *name, const char *o
     rotatingOrientation = YES;
     [coordinator animateAlongsideTransition:^(id<UIViewControllerTransitionCoordinatorContext> context) {}
                                  completion:^(id<UIViewControllerTransitionCoordinatorContext> context) {
-                                     rotatingOrientation = NO;
-                                 }];
+        self->rotatingOrientation = NO;
+	}];
 }
 #else
 - (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration {
