@@ -89,7 +89,7 @@ extern DECLSPEC int SDLCALL SDL_LinuxSetThreadPriority(Sint64 threadID, int prio
 #endif /* __LINUX__ */
 	
 /* Platform specific functions for iOS */
-#if defined(__IPHONEOS__) && __IPHONEOS__
+#ifdef __IPHONEOS__
 
 #define SDL_iOSSetAnimationCallback(window, interval, callback, callbackParam) SDL_iPhoneSetAnimationCallback(window, interval, callback, callbackParam)
 extern DECLSPEC int SDLCALL SDL_iPhoneSetAnimationCallback(SDL_Window * window, int interval, void (*callback)(void*), void *callbackParam);
@@ -101,7 +101,7 @@ extern DECLSPEC void SDLCALL SDL_iPhoneSetEventPump(SDL_bool enabled);
 
 
 /* Platform specific functions for Android */
-#if defined(__ANDROID__) && __ANDROID__
+#ifdef __ANDROID__
 
 /**
    \brief Get the JNI environment for the current thread
@@ -175,7 +175,7 @@ extern DECLSPEC const char * SDLCALL SDL_AndroidGetExternalStoragePath(void);
 #endif /* __ANDROID__ */
 
 /* Platform specific functions for WinRT */
-#if defined(__WINRT__) && __WINRT__
+#ifdef __WINRT__
 
 /**
  *  \brief WinRT / Windows Phone path types
@@ -267,6 +267,17 @@ extern DECLSPEC SDL_WinRT_DeviceFamily SDLCALL SDL_WinRTGetDeviceFamily();
  \brief Return true if the current device is a tablet.
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_IsTablet(void);
+
+/* Functions used by iOS application delegates to notify SDL about state changes */
+extern DECLSPEC void SDLCALL SDL_OnApplicationWillTerminate(void);
+extern DECLSPEC void SDLCALL SDL_OnApplicationDidReceiveMemoryWarning(void);
+extern DECLSPEC void SDLCALL SDL_OnApplicationWillResignActive(void);
+extern DECLSPEC void SDLCALL SDL_OnApplicationDidEnterBackground(void);
+extern DECLSPEC void SDLCALL SDL_OnApplicationWillEnterForeground(void);
+extern DECLSPEC void SDLCALL SDL_OnApplicationDidBecomeActive(void);
+#ifdef __IPHONEOS__
+extern DECLSPEC void SDLCALL SDL_OnApplicationDidChangeStatusBarOrientation(void);
+#endif
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

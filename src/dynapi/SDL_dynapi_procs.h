@@ -795,3 +795,12 @@ SDL_DYNAPI_PROC(SDL_Joystick*,SDL_JoystickFromPlayerIndex,(int a),(a),return)
 SDL_DYNAPI_PROC(void,SDL_JoystickSetPlayerIndex,(SDL_Joystick *a, int b),(a,b),)
 SDL_DYNAPI_PROC(int,SDL_SetTextureScaleMode,(SDL_Texture *a, SDL_ScaleMode b),(a,b),return)
 SDL_DYNAPI_PROC(int,SDL_GetTextureScaleMode,(SDL_Texture *a, SDL_ScaleMode *b),(a,b),return)
+SDL_DYNAPI_PROC(void,SDL_OnApplicationWillTerminate,(void),(),)
+SDL_DYNAPI_PROC(void,SDL_OnApplicationDidReceiveMemoryWarning,(void),(),)
+SDL_DYNAPI_PROC(void,SDL_OnApplicationWillResignActive,(void),(),)
+SDL_DYNAPI_PROC(void,SDL_OnApplicationDidEnterBackground,(void),(),)
+SDL_DYNAPI_PROC(void,SDL_OnApplicationWillEnterForeground,(void),(),)
+SDL_DYNAPI_PROC(void,SDL_OnApplicationDidBecomeActive,(void),(),)
+#ifdef __IPHONEOS__
+SDL_DYNAPI_PROC(void,SDL_OnApplicationDidChangeStatusBarOrientation,(void),(),)
+#endif
