@@ -551,15 +551,15 @@ HIDAPI_JoystickInit(void)
         return 0;
     }
 
-#if defined(__IPHONEOS__) || defined(__TVOS__)
-	/* The hidapi framwork is weak-linked on iOS and tvOS */
+#if defined(__MACOSX__) || defined(__IPHONEOS__) || defined(__TVOS__)
+	/* The hidapi framwork is weak-linked on Apple platforms */
     int HID_API_EXPORT HID_API_CALL hid_init(void) __attribute__((weak_import));
 
     if (hid_init == NULL) {
         SDL_SetError("Couldn't initialize hidapi, framework not available");
         return -1;
     }
-#endif /* __IPHONEOS__ || __TVOS__ */
+#endif /* __MACOSX__ || __IPHONEOS__ || __TVOS__ */
 
     if (hid_init() < 0) {
         SDL_SetError("Couldn't initialize hidapi");
