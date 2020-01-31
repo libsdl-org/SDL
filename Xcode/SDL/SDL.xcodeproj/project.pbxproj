@@ -898,7 +898,6 @@
 		A75FDB5123E39D1700529352 /* hid.m in Sources */ = {isa = PBXBuildFile; fileRef = A75FDAA523E2792500529352 /* hid.m */; };
 		A75FDB5223E39D1700529352 /* hid.m in Sources */ = {isa = PBXBuildFile; fileRef = A75FDAA523E2792500529352 /* hid.m */; };
 		A75FDB5323E39D1C00529352 /* hid.m in Sources */ = {isa = PBXBuildFile; fileRef = A75FDAA523E2792500529352 /* hid.m */; };
-		A75FDB5423E39D7200529352 /* hidapi.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A75FDB4923E399AC00529352 /* hidapi.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		A75FDB5523E39DAC00529352 /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A75FDAC323E28BA700529352 /* CoreBluetooth.framework */; };
 		A75FDB5623E39DE900529352 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A7D88BBB23E24A2F00DCD162 /* UIKit.framework */; };
 		A75FDB5823E39E6100529352 /* hidapi.h in Headers */ = {isa = PBXBuildFile; fileRef = A75FDB5723E39E6100529352 /* hidapi.h */; };
@@ -915,7 +914,39 @@
 		A75FDB6623E3A2C900529352 /* hid.m in Sources */ = {isa = PBXBuildFile; fileRef = A75FDAA523E2792500529352 /* hid.m */; };
 		A75FDB6823E3A2C900529352 /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A75FDAC323E28BA700529352 /* CoreBluetooth.framework */; };
 		A75FDB6923E3A2C900529352 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A7D88BBB23E24A2F00DCD162 /* UIKit.framework */; };
-		A75FDB7023E3A34200529352 /* hidapi.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A75FDB6E23E3A2C900529352 /* hidapi.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		A75FDB8223E4C74400529352 /* hidapi.h in Headers */ = {isa = PBXBuildFile; fileRef = A75FDB5723E39E6100529352 /* hidapi.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		A75FDB8F23E4C80B00529352 /* SDL_hidapi.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A81423E2513F00DCD162 /* SDL_hidapi.c */; };
+		A75FDB9023E4C80D00529352 /* SDL_hidapi.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A81423E2513F00DCD162 /* SDL_hidapi.c */; };
+		A75FDB9323E4C8DB00529352 /* hid.c in Sources */ = {isa = PBXBuildFile; fileRef = A75FDB9223E4C8DB00529352 /* hid.c */; };
+		A75FDB9423E4C91300529352 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0073179F0858DECD00B2BC32 /* IOKit.framework */; };
+		A75FDB9523E4C93600529352 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00D0D08310675DD9004B05EF /* CoreFoundation.framework */; };
+		A75FDB9A23E4CAEF00529352 /* hidapi.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A75FDB8C23E4C74400529352 /* hidapi.framework */; };
+		A75FDB9B23E4CAEF00529352 /* hidapi.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = A75FDB8C23E4C74400529352 /* hidapi.framework */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		A75FDB9D23E4CAFA00529352 /* hidapi.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A75FDB4923E399AC00529352 /* hidapi.framework */; };
+		A75FDB9E23E4CAFA00529352 /* hidapi.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = A75FDB4923E399AC00529352 /* hidapi.framework */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		A75FDBA023E4CAFF00529352 /* hidapi.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A75FDB6E23E3A2C900529352 /* hidapi.framework */; };
+		A75FDBA123E4CAFF00529352 /* hidapi.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = A75FDB6E23E3A2C900529352 /* hidapi.framework */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		A75FDBA823E4CB7000529352 /* LICENSE-bsd.txt in Resources */ = {isa = PBXBuildFile; fileRef = A75FDBA323E4CB6F00529352 /* LICENSE-bsd.txt */; };
+		A75FDBA923E4CB7000529352 /* LICENSE-bsd.txt in Resources */ = {isa = PBXBuildFile; fileRef = A75FDBA323E4CB6F00529352 /* LICENSE-bsd.txt */; };
+		A75FDBAA23E4CB7000529352 /* LICENSE-bsd.txt in Resources */ = {isa = PBXBuildFile; fileRef = A75FDBA323E4CB6F00529352 /* LICENSE-bsd.txt */; };
+		A75FDBAB23E4CB7000529352 /* AUTHORS.txt in Resources */ = {isa = PBXBuildFile; fileRef = A75FDBA423E4CB6F00529352 /* AUTHORS.txt */; };
+		A75FDBAC23E4CB7000529352 /* AUTHORS.txt in Resources */ = {isa = PBXBuildFile; fileRef = A75FDBA423E4CB6F00529352 /* AUTHORS.txt */; };
+		A75FDBAD23E4CB7000529352 /* AUTHORS.txt in Resources */ = {isa = PBXBuildFile; fileRef = A75FDBA423E4CB6F00529352 /* AUTHORS.txt */; };
+		A75FDBAE23E4CB7000529352 /* LICENSE-orig.txt in Resources */ = {isa = PBXBuildFile; fileRef = A75FDBA523E4CB6F00529352 /* LICENSE-orig.txt */; };
+		A75FDBAF23E4CB7000529352 /* LICENSE-orig.txt in Resources */ = {isa = PBXBuildFile; fileRef = A75FDBA523E4CB6F00529352 /* LICENSE-orig.txt */; };
+		A75FDBB023E4CB7000529352 /* LICENSE-orig.txt in Resources */ = {isa = PBXBuildFile; fileRef = A75FDBA523E4CB6F00529352 /* LICENSE-orig.txt */; };
+		A75FDBB123E4CB7000529352 /* LICENSE-gpl3.txt in Resources */ = {isa = PBXBuildFile; fileRef = A75FDBA623E4CB6F00529352 /* LICENSE-gpl3.txt */; };
+		A75FDBB223E4CB7000529352 /* LICENSE-gpl3.txt in Resources */ = {isa = PBXBuildFile; fileRef = A75FDBA623E4CB6F00529352 /* LICENSE-gpl3.txt */; };
+		A75FDBB323E4CB7000529352 /* LICENSE-gpl3.txt in Resources */ = {isa = PBXBuildFile; fileRef = A75FDBA623E4CB6F00529352 /* LICENSE-gpl3.txt */; };
+		A75FDBB423E4CB7000529352 /* LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = A75FDBA723E4CB6F00529352 /* LICENSE.txt */; };
+		A75FDBB523E4CB7000529352 /* LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = A75FDBA723E4CB6F00529352 /* LICENSE.txt */; };
+		A75FDBB623E4CB7000529352 /* LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = A75FDBA723E4CB6F00529352 /* LICENSE.txt */; };
+		A75FDBB723E4CBC700529352 /* License.txt in Resources */ = {isa = PBXBuildFile; fileRef = 00794D3F09D0C461003FC8A1 /* License.txt */; };
+		A75FDBB823E4CBC700529352 /* ReadMe.txt in Resources */ = {isa = PBXBuildFile; fileRef = F59C710300D5CB5801000001 /* ReadMe.txt */; };
+		A75FDBB923E4CBC700529352 /* License.txt in Resources */ = {isa = PBXBuildFile; fileRef = 00794D3F09D0C461003FC8A1 /* License.txt */; };
+		A75FDBBA23E4CBC700529352 /* ReadMe.txt in Resources */ = {isa = PBXBuildFile; fileRef = F59C710300D5CB5801000001 /* ReadMe.txt */; };
+		A75FDBBB23E4CBC800529352 /* License.txt in Resources */ = {isa = PBXBuildFile; fileRef = 00794D3F09D0C461003FC8A1 /* License.txt */; };
+		A75FDBBC23E4CBC800529352 /* ReadMe.txt in Resources */ = {isa = PBXBuildFile; fileRef = F59C710300D5CB5801000001 /* ReadMe.txt */; };
 		A769B08423E259AE00872273 /* SDL_shaders_metal_tvos.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A8E323E2514000DCD162 /* SDL_shaders_metal_tvos.h */; };
 		A769B08523E259AE00872273 /* SDL_filesystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 567E2F2017C44C35005F1892 /* SDL_filesystem.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		A769B08723E259AE00872273 /* begin_code.h in Headers */ = {isa = PBXBuildFile; fileRef = AA7557C71595D4D800BBD41B /* begin_code.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -2931,9 +2962,6 @@
 		A7D8B63223E2514300DCD162 /* SDL_sysfilesystem.m in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A7FE23E2513F00DCD162 /* SDL_sysfilesystem.m */; };
 		A7D8B63323E2514300DCD162 /* SDL_sysfilesystem.m in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A7FE23E2513F00DCD162 /* SDL_sysfilesystem.m */; };
 		A7D8B63423E2514300DCD162 /* SDL_sysfilesystem.m in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A7FE23E2513F00DCD162 /* SDL_sysfilesystem.m */; };
-		A7D8B66B23E2514300DCD162 /* SDL_hidapi.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A81423E2513F00DCD162 /* SDL_hidapi.c */; };
-		A7D8B66E23E2514300DCD162 /* SDL_hidapi.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A81423E2513F00DCD162 /* SDL_hidapi.c */; };
-		A7D8B67023E2514300DCD162 /* SDL_hidapi.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A81423E2513F00DCD162 /* SDL_hidapi.c */; };
 		A7D8B75223E2514300DCD162 /* SDL_sysloadso.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A85F23E2513F00DCD162 /* SDL_sysloadso.c */; };
 		A7D8B75323E2514300DCD162 /* SDL_sysloadso.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A85F23E2513F00DCD162 /* SDL_sysloadso.c */; };
 		A7D8B75423E2514300DCD162 /* SDL_sysloadso.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A85F23E2513F00DCD162 /* SDL_sysloadso.c */; };
@@ -3872,6 +3900,42 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		A75FDB9C23E4CAEF00529352 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				A75FDB9B23E4CAEF00529352 /* hidapi.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A75FDB9F23E4CAFA00529352 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				A75FDB9E23E4CAFA00529352 /* hidapi.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A75FDBA223E4CAFF00529352 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				A75FDBA123E4CAFF00529352 /* hidapi.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		0073179D0858DECD00B2BC32 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		0073179F0858DECD00B2BC32 /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
@@ -3913,6 +3977,14 @@
 		A75FDB4C23E399AC00529352 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A75FDB5723E39E6100529352 /* hidapi.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = hidapi.h; path = hidapi/hidapi.h; sourceTree = "<group>"; };
 		A75FDB6E23E3A2C900529352 /* hidapi.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = hidapi.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		A75FDB8C23E4C74400529352 /* hidapi.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = hidapi.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		A75FDB8D23E4C74400529352 /* hidapi-iOS copy-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "hidapi-iOS copy-Info.plist"; path = "/Users/saml/projects/SDL/Xcode/SDL/hidapi-iOS copy-Info.plist"; sourceTree = "<absolute>"; };
+		A75FDB9223E4C8DB00529352 /* hid.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = hid.c; sourceTree = "<group>"; };
+		A75FDBA323E4CB6F00529352 /* LICENSE-bsd.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "LICENSE-bsd.txt"; sourceTree = "<group>"; };
+		A75FDBA423E4CB6F00529352 /* AUTHORS.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = AUTHORS.txt; sourceTree = "<group>"; };
+		A75FDBA523E4CB6F00529352 /* LICENSE-orig.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "LICENSE-orig.txt"; sourceTree = "<group>"; };
+		A75FDBA623E4CB6F00529352 /* LICENSE-gpl3.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "LICENSE-gpl3.txt"; sourceTree = "<group>"; };
+		A75FDBA723E4CB6F00529352 /* LICENSE.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE.txt; sourceTree = "<group>"; };
 		A769B23D23E259AE00872273 /* libSDL2.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libSDL2.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		A77E6EB3167AB0A90010E40B /* SDL_gamecontroller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_gamecontroller.h; sourceTree = "<group>"; };
 		A7D88B5423E2437C00DCD162 /* SDL2.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = SDL2.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -4412,6 +4484,15 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A75FDB8523E4C74400529352 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A75FDB9523E4C93600529352 /* CoreFoundation.framework in Frameworks */,
+				A75FDB9423E4C91300529352 /* IOKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		A769B22E23E259AE00872273 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -4428,6 +4509,7 @@
 				A7D88B4C23E2437C00DCD162 /* CoreAudio.framework in Frameworks */,
 				A75FDAB423E2797600529352 /* CoreBluetooth.framework in Frameworks */,
 				A7D88B4D23E2437C00DCD162 /* CoreFoundation.framework in Frameworks */,
+				A75FDB9D23E4CAFA00529352 /* hidapi.framework in Frameworks */,
 				A7D88BC823E24B0300DCD162 /* CoreGraphics.framework in Frameworks */,
 				A7D88BC223E24A8800DCD162 /* CoreMotion.framework in Frameworks */,
 				A7D88B4E23E2437C00DCD162 /* CoreVideo.framework in Frameworks */,
@@ -4437,7 +4519,6 @@
 				A7D88BC023E24A7700DCD162 /* OpenGLES.framework in Frameworks */,
 				A7D88B4823E2437C00DCD162 /* QuartzCore.framework in Frameworks */,
 				A7D88BBC23E24A2F00DCD162 /* UIKit.framework in Frameworks */,
-				A75FDB5423E39D7200529352 /* hidapi.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4456,8 +4537,8 @@
 				A7D88D0E23E24BED00DCD162 /* Metal.framework in Frameworks */,
 				A7D88D0F23E24BED00DCD162 /* OpenGLES.framework in Frameworks */,
 				A7D88D1023E24BED00DCD162 /* QuartzCore.framework in Frameworks */,
+				A75FDBA023E4CAFF00529352 /* hidapi.framework in Frameworks */,
 				A7D88D1123E24BED00DCD162 /* UIKit.framework in Frameworks */,
-				A75FDB7023E3A34200529352 /* hidapi.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4475,6 +4556,7 @@
 				564624381FF821DA0074AC87 /* Metal.framework in Frameworks */,
 				564624361FF821C20074AC87 /* QuartzCore.framework in Frameworks */,
 				A7381E971D8B6A0300B177DD /* AudioToolbox.framework in Frameworks */,
+				A75FDB9A23E4CAEF00529352 /* hidapi.framework in Frameworks */,
 				00D0D0D810675E46004B05EF /* Carbon.framework in Frameworks */,
 				007317A40858DECD00B2BC32 /* Cocoa.framework in Frameworks */,
 				A7381E961D8B69D600B177DD /* CoreAudio.framework in Frameworks */,
@@ -4599,6 +4681,7 @@
 				A75FD06C23E25AC700529352 /* libSDL2.dylib */,
 				A75FDB4923E399AC00529352 /* hidapi.framework */,
 				A75FDB6E23E3A2C900529352 /* hidapi.framework */,
+				A75FDB8C23E4C74400529352 /* hidapi.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -4614,6 +4697,7 @@
 				034768DDFF38A45A11DB9C8B /* Products */,
 				BECDF66B0761BA81005FE872 /* Info-Framework.plist */,
 				564624341FF821B70074AC87 /* Frameworks */,
+				A75FDB8D23E4C74400529352 /* hidapi-iOS copy-Info.plist */,
 			);
 			comments = "To build Universal Binaries, we have experimented with a variety of different options.\nThe complication is that we must retain compatibility with at least 10.2. \nThe Universal Binary defaults only work for > 10.3.9\n\nSo far, we have found:\ngcc 4.0.0 with Xcode 2.1 always links against libgcc_s. gcc 4.0.1 from Xcode 2.2 fixes this problem.\n\nBut gcc 4.0 will not work with < 10.3.9 because we continue to get an undefined symbol to _fprintf$LDBL128.\nSo we must use gcc 3.3 on PPC to accomplish 10.2 support. (But 4.0 is required for i386.)\n\nSetting the deployment target to 10.4 will disable prebinding, so for PPC, we set it less than 10.4 to preserve prebinding for legacy support.\n\nSetting the PPC SDKROOT to /Developers/SDKs/MacOSX10.2.8.sdk will link to 63.0.0 libSystem.B.dylib. Leaving it at current or 10.4u links to 88.1.2. However, as long as we are using gcc 3.3, it doesn't seem to matter as testing has demonstrated both will run. We have decided not to invoke the 10.2.8 SDK because it is not a default installed component with Xcode which will probably cause most people problems. However, rather than deleting the SDKROOT_ppc entry entirely, we have mapped it to 10.4u in case we decide we need to change this setting.\n\nTo use Altivec or SSE, we needed architecture specific flags:\nOTHER_CFLAGS_ppc\nOTHER_CFLAGS_i386\nOTHER_CFLAGS=$(OTHER_CFLAGS_($CURRENT_ARCH))\n\nThe general OTHER_CFLAGS needed to be manually mapped to architecture specific options because Xcode didn't do this automatically for us.\n\n\n";
 			indentWidth = 4;
@@ -4717,6 +4801,14 @@
 				A75FDB4C23E399AC00529352 /* Info.plist */,
 			);
 			path = hidapi;
+			sourceTree = "<group>";
+		};
+		A75FDB9123E4C8B800529352 /* mac */ = {
+			isa = PBXGroup;
+			children = (
+				A75FDB9223E4C8DB00529352 /* hid.c */,
+			);
+			path = mac;
 			sourceTree = "<group>";
 		};
 		A7D8A57223E2513D00DCD162 /* atomic */ = {
@@ -5283,7 +5375,13 @@
 		A7D8A80923E2513F00DCD162 /* hidapi */ = {
 			isa = PBXGroup;
 			children = (
+				A75FDBA423E4CB6F00529352 /* AUTHORS.txt */,
+				A75FDBA323E4CB6F00529352 /* LICENSE-bsd.txt */,
+				A75FDBA623E4CB6F00529352 /* LICENSE-gpl3.txt */,
+				A75FDBA523E4CB6F00529352 /* LICENSE-orig.txt */,
+				A75FDBA723E4CB6F00529352 /* LICENSE.txt */,
 				A75FDB5723E39E6100529352 /* hidapi.h */,
+				A75FDB9123E4C8B800529352 /* mac */,
 				A75FDAA423E2790500529352 /* ios */,
 				A7D8A81423E2513F00DCD162 /* SDL_hidapi.c */,
 			);
@@ -6033,6 +6131,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				A75FDB6423E3A2C900529352 /* hidapi.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A75FDB8123E4C74400529352 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A75FDB8223E4C74400529352 /* hidapi.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -7794,6 +7900,24 @@
 			productReference = A75FDB6E23E3A2C900529352 /* hidapi.framework */;
 			productType = "com.apple.product-type.framework";
 		};
+		A75FDB8023E4C74400529352 /* hidapi */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A75FDB8923E4C74400529352 /* Build configuration list for PBXNativeTarget "hidapi" */;
+			buildPhases = (
+				A75FDB8123E4C74400529352 /* Headers */,
+				A75FDB8323E4C74400529352 /* Sources */,
+				A75FDB8523E4C74400529352 /* Frameworks */,
+				A75FDB8823E4C74400529352 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = hidapi;
+			productName = hidapi;
+			productReference = A75FDB8C23E4C74400529352 /* hidapi.framework */;
+			productType = "com.apple.product-type.framework";
+		};
 		A769B08223E259AE00872273 /* Static Library-tvOS */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = A769B23A23E259AE00872273 /* Build configuration list for PBXNativeTarget "Static Library-tvOS" */;
@@ -7822,6 +7946,7 @@
 				A7D88ABE23E2437C00DCD162 /* Resources */,
 				A7D88ABF23E2437C00DCD162 /* Sources */,
 				A7D88B4623E2437C00DCD162 /* Frameworks */,
+				A75FDB9F23E4CAFA00529352 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -7842,6 +7967,7 @@
 				A7D88C7723E24BED00DCD162 /* Resources */,
 				A7D88C7823E24BED00DCD162 /* Sources */,
 				A7D88D0423E24BED00DCD162 /* Frameworks */,
+				A75FDBA223E4CAFF00529352 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -7882,6 +8008,7 @@
 				BECDF62A0761BA81005FE872 /* Resources */,
 				BECDF62C0761BA81005FE872 /* Sources */,
 				BECDF6680761BA81005FE872 /* Frameworks */,
+				A75FDB9C23E4CAEF00529352 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -7988,6 +8115,7 @@
 				A75FCCFB23E25AB700529352 /* Shared Library-iOS */,
 				A75FCEB423E25AC700529352 /* Shared Library-tvOS */,
 				BECDF6BB0761BA81005FE872 /* Standard DMG */,
+				A75FDB8023E4C74400529352 /* hidapi */,
 				A75FDB4823E399AC00529352 /* hidapi-iOS */,
 				A75FDB6223E3A2C900529352 /* hidapi-tvOS */,
 			);
@@ -7999,6 +8127,11 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A75FDBB223E4CB7000529352 /* LICENSE-gpl3.txt in Resources */,
+				A75FDBA923E4CB7000529352 /* LICENSE-bsd.txt in Resources */,
+				A75FDBAC23E4CB7000529352 /* AUTHORS.txt in Resources */,
+				A75FDBB523E4CB7000529352 /* LICENSE.txt in Resources */,
+				A75FDBAF23E4CB7000529352 /* LICENSE-orig.txt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -8006,6 +8139,23 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A75FDBB323E4CB7000529352 /* LICENSE-gpl3.txt in Resources */,
+				A75FDBAA23E4CB7000529352 /* LICENSE-bsd.txt in Resources */,
+				A75FDBAD23E4CB7000529352 /* AUTHORS.txt in Resources */,
+				A75FDBB623E4CB7000529352 /* LICENSE.txt in Resources */,
+				A75FDBB023E4CB7000529352 /* LICENSE-orig.txt in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A75FDB8823E4C74400529352 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A75FDBB123E4CB7000529352 /* LICENSE-gpl3.txt in Resources */,
+				A75FDBA823E4CB7000529352 /* LICENSE-bsd.txt in Resources */,
+				A75FDBAB23E4CB7000529352 /* AUTHORS.txt in Resources */,
+				A75FDBB423E4CB7000529352 /* LICENSE.txt in Resources */,
+				A75FDBAE23E4CB7000529352 /* LICENSE-orig.txt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -8013,6 +8163,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A75FDBBA23E4CBC700529352 /* ReadMe.txt in Resources */,
+				A75FDBB923E4CBC700529352 /* License.txt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -8020,6 +8172,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A75FDBBC23E4CBC800529352 /* ReadMe.txt in Resources */,
+				A75FDBBB23E4CBC800529352 /* License.txt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -8027,6 +8181,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A75FDBB823E4CBC700529352 /* ReadMe.txt in Resources */,
+				A75FDBB723E4CBC700529352 /* License.txt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -8491,6 +8647,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				A75FDB6623E3A2C900529352 /* hid.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A75FDB8323E4C74400529352 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A75FDB9323E4C8DB00529352 /* hid.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -9389,7 +9553,6 @@
 				A7D8B8A823E2514400DCD162 /* SDL_diskaudio.c in Sources */,
 				A7D8AFC023E2514200DCD162 /* SDL_egl.c in Sources */,
 				A7D8AC3323E2514100DCD162 /* SDL_RLEaccel.c in Sources */,
-				A7D8B66B23E2514300DCD162 /* SDL_hidapi.c in Sources */,
 				A7D8BBB123E2514500DCD162 /* SDL_assert.c in Sources */,
 				A7D8B3DA23E2514300DCD162 /* SDL_bmp.c in Sources */,
 				A7D8B96E23E2514400DCD162 /* SDL_stdlib.c in Sources */,
@@ -9580,7 +9743,6 @@
 				A7D8B8AB23E2514400DCD162 /* SDL_diskaudio.c in Sources */,
 				A7D8AFC323E2514200DCD162 /* SDL_egl.c in Sources */,
 				A7D8AC3623E2514100DCD162 /* SDL_RLEaccel.c in Sources */,
-				A7D8B66E23E2514300DCD162 /* SDL_hidapi.c in Sources */,
 				A7D8BBB423E2514500DCD162 /* SDL_assert.c in Sources */,
 				A7D8B3DD23E2514300DCD162 /* SDL_bmp.c in Sources */,
 				A7D8B97123E2514400DCD162 /* SDL_stdlib.c in Sources */,
@@ -9593,6 +9755,7 @@
 				A7D8B20323E2514200DCD162 /* SDL_x11opengles.c in Sources */,
 				A7D8AE9723E2514100DCD162 /* SDL_cocoamodes.m in Sources */,
 				A7D8BAA623E2514400DCD162 /* k_rem_pio2.c in Sources */,
+				A75FDB9023E4C80D00529352 /* SDL_hidapi.c in Sources */,
 				A7D8B57823E2514300DCD162 /* SDL_sysjoystick.c in Sources */,
 				A7D8BB9C23E2514500DCD162 /* SDL_gesture.c in Sources */,
 				A7D8B95923E2514400DCD162 /* SDL_getenv.c in Sources */,
@@ -9772,7 +9935,6 @@
 				A7D8B8AD23E2514400DCD162 /* SDL_diskaudio.c in Sources */,
 				A7D8AFC523E2514200DCD162 /* SDL_egl.c in Sources */,
 				A7D8AC3823E2514100DCD162 /* SDL_RLEaccel.c in Sources */,
-				A7D8B67023E2514300DCD162 /* SDL_hidapi.c in Sources */,
 				A7D8BBB623E2514500DCD162 /* SDL_assert.c in Sources */,
 				A7D8B3DF23E2514300DCD162 /* SDL_bmp.c in Sources */,
 				A7D8B97323E2514400DCD162 /* SDL_stdlib.c in Sources */,
@@ -9785,6 +9947,7 @@
 				A7D8AC8623E2514100DCD162 /* SDL_uikitopengles.m in Sources */,
 				A7D8B20523E2514200DCD162 /* SDL_x11opengles.c in Sources */,
 				A7D8AE9923E2514100DCD162 /* SDL_cocoamodes.m in Sources */,
+				A75FDB8F23E4C80B00529352 /* SDL_hidapi.c in Sources */,
 				A7D8BAA823E2514400DCD162 /* k_rem_pio2.c in Sources */,
 				A7D8B57A23E2514300DCD162 /* SDL_sysjoystick.c in Sources */,
 				A7D8BB9E23E2514500DCD162 /* SDL_gesture.c in Sources */,
@@ -9926,7 +10089,6 @@
 		00CFA623106A567900758660 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_ENABLE_OBJC_WEAK = YES;
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				SKIP_INSTALL = YES;
 			};
@@ -10007,7 +10169,6 @@
 		00CFA629106A568900758660 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_ENABLE_OBJC_WEAK = YES;
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				SKIP_INSTALL = YES;
 			};
@@ -10129,6 +10290,32 @@
 			};
 			name = Release;
 		};
+		A75FDB8A23E4C74400529352 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_ARC = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				GCC_PREPROCESSOR_DEFINITIONS = "HID_API_EXPORT=\"__attribute__ ((visibility(\\\"default\\\")))\"";
+				INFOPLIST_FILE = hidapi/Info.plist;
+				PRODUCT_BUNDLE_IDENTIFIER = org.libsdl.hidapi;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		A75FDB8B23E4C74400529352 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_ARC = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				GCC_PREPROCESSOR_DEFINITIONS = "HID_API_EXPORT=\"__attribute__ ((visibility(\\\"default\\\")))\"";
+				INFOPLIST_FILE = hidapi/Info.plist;
+				PRODUCT_BUNDLE_IDENTIFIER = org.libsdl.hidapi;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
 		A769B23B23E259AE00872273 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -10222,7 +10409,6 @@
 		DB31407517554B71006C0E22 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_ENABLE_OBJC_WEAK = YES;
 				EXECUTABLE_PREFIX = lib;
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				INSTALL_PATH = "@rpath";
@@ -10232,7 +10418,6 @@
 		DB31407617554B71006C0E22 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_ENABLE_OBJC_WEAK = YES;
 				EXECUTABLE_PREFIX = lib;
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				INSTALL_PATH = "@rpath";
@@ -10310,6 +10495,15 @@
 			buildConfigurations = (
 				A75FDB6C23E3A2C900529352 /* Debug */,
 				A75FDB6D23E3A2C900529352 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		A75FDB8923E4C74400529352 /* Build configuration list for PBXNativeTarget "hidapi" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A75FDB8A23E4C74400529352 /* Debug */,
+				A75FDB8B23E4C74400529352 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
