@@ -898,7 +898,7 @@
 		A75FDB5123E39D1700529352 /* hid.m in Sources */ = {isa = PBXBuildFile; fileRef = A75FDAA523E2792500529352 /* hid.m */; };
 		A75FDB5223E39D1700529352 /* hid.m in Sources */ = {isa = PBXBuildFile; fileRef = A75FDAA523E2792500529352 /* hid.m */; };
 		A75FDB5323E39D1C00529352 /* hid.m in Sources */ = {isa = PBXBuildFile; fileRef = A75FDAA523E2792500529352 /* hid.m */; };
-		A75FDB5423E39D7200529352 /* hidapi.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A75FDB4923E399AC00529352 /* hidapi.framework */; };
+		A75FDB5423E39D7200529352 /* hidapi.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A75FDB4923E399AC00529352 /* hidapi.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		A75FDB5523E39DAC00529352 /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A75FDAC323E28BA700529352 /* CoreBluetooth.framework */; };
 		A75FDB5623E39DE900529352 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A7D88BBB23E24A2F00DCD162 /* UIKit.framework */; };
 		A75FDB5823E39E6100529352 /* hidapi.h in Headers */ = {isa = PBXBuildFile; fileRef = A75FDB5723E39E6100529352 /* hidapi.h */; };
@@ -915,7 +915,7 @@
 		A75FDB6623E3A2C900529352 /* hid.m in Sources */ = {isa = PBXBuildFile; fileRef = A75FDAA523E2792500529352 /* hid.m */; };
 		A75FDB6823E3A2C900529352 /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A75FDAC323E28BA700529352 /* CoreBluetooth.framework */; };
 		A75FDB6923E3A2C900529352 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A7D88BBB23E24A2F00DCD162 /* UIKit.framework */; };
-		A75FDB7023E3A34200529352 /* hidapi.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A75FDB6E23E3A2C900529352 /* hidapi.framework */; };
+		A75FDB7023E3A34200529352 /* hidapi.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A75FDB6E23E3A2C900529352 /* hidapi.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		A769B08423E259AE00872273 /* SDL_shaders_metal_tvos.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A8E323E2514000DCD162 /* SDL_shaders_metal_tvos.h */; };
 		A769B08523E259AE00872273 /* SDL_filesystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 567E2F2017C44C35005F1892 /* SDL_filesystem.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		A769B08723E259AE00872273 /* begin_code.h in Headers */ = {isa = PBXBuildFile; fileRef = AA7557C71595D4D800BBD41B /* begin_code.h */; settings = {ATTRIBUTES = (Public, ); }; };
