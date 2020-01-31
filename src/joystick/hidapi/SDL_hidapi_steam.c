@@ -1122,6 +1122,8 @@ HIDAPI_DriverSteam_UpdateDevice(SDL_HIDAPI_Device *device)
 
             SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_LEFTX, ctx->m_state.sLeftStickX);
             SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_LEFTY, ~ctx->m_state.sLeftStickY);
+            SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_RIGHTX, ctx->m_state.sRightPadX);
+            SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_RIGHTY, ~ctx->m_state.sRightPadY);
 
             ctx->m_last_state = ctx->m_state;
         }
