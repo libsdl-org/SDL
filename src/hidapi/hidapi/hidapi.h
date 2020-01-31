@@ -33,8 +33,12 @@
       #define HID_API_EXPORT __declspec(dllexport)
       #define HID_API_CALL
 #else
+#ifndef HID_API_EXPORT
       #define HID_API_EXPORT /**< API export macro */
+#endif
+#ifndef HID_API_CALL
       #define HID_API_CALL /**< API call macro */
+#endif
 #endif
 
 #define HID_API_EXPORT_CALL HID_API_EXPORT HID_API_CALL /**< API export and call macro*/
