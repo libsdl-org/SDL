@@ -72,6 +72,15 @@ struct SDL_WaylandInput {
         struct xkb_keymap *keymap;
         struct xkb_state *state;
     } xkb;
+
+    /* information about axis events on current frame */
+    struct {
+        SDL_bool is_x_discrete;
+        float x;
+
+        SDL_bool is_y_discrete;
+        float y;
+    } pointer_curr_axis_info;
 };
 
 struct SDL_WaylandTouchPoint {
@@ -361,8 +370,8 @@ pointer_handle_button(void *data, struct wl_pointer *pointer, uint32_t serial,
 }
 
 static void
-pointer_handle_axis_common(struct SDL_WaylandInput *input,
-                           uint32_t time, uint32_t axis, wl_fixed_t value)
+pointer_handle_axis_common_v1(struct SDL_WaylandInput *input,
+                              uint32_t time, uint32_t axis, wl_fixed_t value)
 {
     SDL_WindowData *window = input->pointer_focus;
     enum wl_pointer_axis a = axis;
@@ -387,13 +396,92 @@ pointer_handle_axis_common(struct SDL_WaylandInput *input,
 }
 
 static void
+pointer_handle_axis_common(struct SDL_WaylandInput *input, SDL_bool discrete,
+                           uint32_t axis, wl_fixed_t value)
+{
+    enum wl_pointer_axis a = axis;
+
+    if (input->pointer_focus) {
+        switch (a) {
+            case WL_POINTER_AXIS_VERTICAL_SCROLL:
+                if (discrete) {
+                    /* this is a discrete axis event so we process it and flag
+                     * to ignore future continuous axis events in this frame */
+                    input->pointer_curr_axis_info.is_y_discrete = SDL_TRUE;
+                } else if(input->pointer_curr_axis_info.is_y_discrete) {
+                    /* this is a continuous axis event and we have already
+                     * processed a discrete axis event before so we ignore it */
+                    break;
+                }
+                input->pointer_curr_axis_info.y = 0 - (float)wl_fixed_to_double(value);
+                break;
+            case WL_POINTER_AXIS_HORIZONTAL_SCROLL:
+                if (discrete) {
+                    /* this is a discrete axis event so we process it and flag
+                     * to ignore future continuous axis events in this frame */
+                    input->pointer_curr_axis_info.is_x_discrete = SDL_TRUE;
+                } else if(input->pointer_curr_axis_info.is_x_discrete) {
+                    /* this is a continuous axis event and we have already
+                     * processed a discrete axis event before so we ignore it */
+                    break;
+                }
+                input->pointer_curr_axis_info.x = 0 - (float)wl_fixed_to_double(value);
+                break;
+        }
+    }
+}
+
+static void
 pointer_handle_axis(void *data, struct wl_pointer *pointer,
                     uint32_t time, uint32_t axis, wl_fixed_t value)
 {
     struct SDL_WaylandInput *input = data;
 
-    pointer_handle_axis_common(input, time, axis, value);
+    if(wl_seat_interface.version >= 5)
+        pointer_handle_axis_common(input, SDL_FALSE, axis, value);
+    else
+        pointer_handle_axis_common_v1(input, time, axis, value);
 }
+
+static void
+pointer_handle_frame(void *data, struct wl_pointer *pointer)
+{
+    struct SDL_WaylandInput *input = data;
+    SDL_WindowData *window = input->pointer_focus;
+    float x = input->pointer_curr_axis_info.x, y = input->pointer_curr_axis_info.y;
+
+    /* clear pointer_curr_axis_info for next frame */
+    memset(&input->pointer_curr_axis_info, 0, sizeof input->pointer_curr_axis_info);
+
+    if(x == 0.0f && y == 0.0f)
+        return;
+    else
+        SDL_SendMouseWheel(window->sdlwindow, 0, x, y, SDL_MOUSEWHEEL_NORMAL);
+}
+
+static void
+pointer_handle_axis_source(void *data, struct wl_pointer *pointer,
+                           uint32_t axis_source)
+{
+    /* unimplemented */
+}
+
+static void
+pointer_handle_axis_stop(void *data, struct wl_pointer *pointer,
+                         uint32_t time, uint32_t axis)
+{
+    /* unimplemented */
+}
+
+static void
+pointer_handle_axis_discrete(void *data, struct wl_pointer *pointer,
+                             uint32_t axis, int32_t discrete)
+{
+    struct SDL_WaylandInput *input = data;
+
+    pointer_handle_axis_common(input, SDL_TRUE, axis, wl_fixed_from_int(discrete));
+}
+
 
 static const struct wl_pointer_listener pointer_listener = {
     pointer_handle_enter,
@@ -401,10 +489,10 @@ static const struct wl_pointer_listener pointer_listener = {
     pointer_handle_motion,
     pointer_handle_button,
     pointer_handle_axis,
-    NULL, /* frame */
-    NULL, /* axis_source */
-    NULL, /* axis_stop */
-    NULL, /* axis_discrete */
+    pointer_handle_frame,           // Version 5
+    pointer_handle_axis_source,     // Version 5
+    pointer_handle_axis_stop,       // Version 5
+    pointer_handle_axis_discrete,   // Version 5
 };
 
 static void
@@ -604,13 +692,20 @@ keyboard_handle_modifiers(void *data, struct wl_keyboard *keyboard,
                           mods_locked, 0, 0, group);
 }
 
+static void
+keyboard_handle_repeat_info(void *data, struct wl_keyboard *wl_keyboard,
+                            int32_t rate, int32_t delay)
+{
+    /* unimplemented */
+}
+
 static const struct wl_keyboard_listener keyboard_listener = {
     keyboard_handle_keymap,
     keyboard_handle_enter,
     keyboard_handle_leave,
     keyboard_handle_key,
     keyboard_handle_modifiers,
-    NULL, /* repeat_info */
+    keyboard_handle_repeat_info,    // Version 4
 };
 
 static void
@@ -621,6 +716,7 @@ seat_handle_capabilities(void *data, struct wl_seat *seat,
 
     if ((caps & WL_SEAT_CAPABILITY_POINTER) && !input->pointer) {
         input->pointer = wl_seat_get_pointer(seat);
+        memset(&input->pointer_curr_axis_info, 0, sizeof input->pointer_curr_axis_info);
         input->display->pointer = input->pointer;
         wl_pointer_set_user_data(input->pointer, input);
         wl_pointer_add_listener(input->pointer, &pointer_listener,
@@ -654,9 +750,15 @@ seat_handle_capabilities(void *data, struct wl_seat *seat,
     }
 }
 
+static void
+seat_handle_name(void *data, struct wl_seat *wl_seat, const char *name)
+{
+    /* unimplemented */
+}
+
 static const struct wl_seat_listener seat_listener = {
     seat_handle_capabilities,
-    NULL, /* name */
+    seat_handle_name,           // Version 2
 };
 
 static void
@@ -906,7 +1008,10 @@ Wayland_display_add_input(SDL_VideoData *d, uint32_t id)
         return;
 
     input->display = d;
-    input->seat = wl_registry_bind(d->registry, id, &wl_seat_interface, 1);
+    if (wl_seat_interface.version >= 5)
+        input->seat = wl_registry_bind(d->registry, id, &wl_seat_interface, 5);
+    else
+        input->seat = wl_registry_bind(d->registry, id, &wl_seat_interface, 1);
     input->sx_w = wl_fixed_from_int(0);
     input->sy_w = wl_fixed_from_int(0);
     d->input = input;
