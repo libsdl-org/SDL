@@ -27,6 +27,7 @@
 #include "SDL_video.h"
 #include "SDL_mouse.h"
 #include "SDL_timer.h"
+#include "SDL_hints.h"
 #include "../SDL_sysvideo.h"
 #include "../SDL_pixels_c.h"
 
@@ -276,16 +277,23 @@ X11_CreateDevice(int devindex)
     device->GL_GetSwapInterval = X11_GL_GetSwapInterval;
     device->GL_SwapWindow = X11_GL_SwapWindow;
     device->GL_DeleteContext = X11_GL_DeleteContext;
-#elif SDL_VIDEO_OPENGL_EGL
-    device->GL_LoadLibrary = X11_GLES_LoadLibrary;
-    device->GL_GetProcAddress = X11_GLES_GetProcAddress;
-    device->GL_UnloadLibrary = X11_GLES_UnloadLibrary;
-    device->GL_CreateContext = X11_GLES_CreateContext;
-    device->GL_MakeCurrent = X11_GLES_MakeCurrent;
-    device->GL_SetSwapInterval = X11_GLES_SetSwapInterval;
-    device->GL_GetSwapInterval = X11_GLES_GetSwapInterval;
-    device->GL_SwapWindow = X11_GLES_SwapWindow;
-    device->GL_DeleteContext = X11_GLES_DeleteContext;
+#endif
+#if SDL_VIDEO_OPENGL_EGL
+#if SDL_VIDEO_OPENGL_GLX
+    if (SDL_GetHintBoolean(SDL_HINT_VIDEO_X11_FORCE_EGL, SDL_FALSE)) {
+#endif
+        device->GL_LoadLibrary = X11_GLES_LoadLibrary;
+        device->GL_GetProcAddress = X11_GLES_GetProcAddress;
+        device->GL_UnloadLibrary = X11_GLES_UnloadLibrary;
+        device->GL_CreateContext = X11_GLES_CreateContext;
+        device->GL_MakeCurrent = X11_GLES_MakeCurrent;
+        device->GL_SetSwapInterval = X11_GLES_SetSwapInterval;
+        device->GL_GetSwapInterval = X11_GLES_GetSwapInterval;
+        device->GL_SwapWindow = X11_GLES_SwapWindow;
+        device->GL_DeleteContext = X11_GLES_DeleteContext;
+#if SDL_VIDEO_OPENGL_GLX
+    }
+#endif
 #endif
 
     device->SetClipboardText = X11_SetClipboardText;

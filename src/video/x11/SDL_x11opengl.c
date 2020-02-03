@@ -238,7 +238,8 @@ X11_GL_LoadLibrary(_THIS, const char *path)
     /* If we need a GL ES context and there's no  
      * GLX_EXT_create_context_es2_profile extension, switch over to X11_GLES functions  
      */
-    if (_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES && 
+    if (((_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES) ||
+         SDL_GetHintBoolean(SDL_HINT_VIDEO_X11_FORCE_EGL, SDL_FALSE)) &&
         X11_GL_UseEGL(_this) ) {
 #if SDL_VIDEO_OPENGL_EGL
         X11_GL_UnloadLibrary(_this);
@@ -649,8 +650,13 @@ SDL_bool
 X11_GL_UseEGL(_THIS)
 {
     SDL_assert(_this->gl_data != NULL);
-    SDL_assert(_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES);
+    if (SDL_GetHintBoolean(SDL_HINT_VIDEO_X11_FORCE_EGL, SDL_FALSE))
+    {
+        /* use of EGL has been requested, even for desktop GL */
+        return SDL_TRUE;
+    }
 
+    SDL_assert(_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES);
     return (SDL_GetHintBoolean(SDL_HINT_OPENGL_ES_DRIVER, SDL_FALSE)
             || _this->gl_config.major_version == 1 /* No GLX extension for OpenGL ES 1.x profiles. */
             || _this->gl_config.major_version > _this->gl_data->es_profile_max_supported_version.major

@@ -245,6 +245,17 @@ extern "C" {
 #define SDL_HINT_VIDEO_X11_NET_WM_BYPASS_COMPOSITOR "SDL_VIDEO_X11_NET_WM_BYPASS_COMPOSITOR"
 
 /**
+ * \brief A variable controlling whether X11 should use GLX or EGL by default
+ *
+ * This variable can be set to the following values:
+ * "0" - Use GLX
+ * "1" - Use EGL
+ *
+ * By default SDL will use GLX when both are present.
+ */
+#define SDL_HINT_VIDEO_X11_FORCE_EGL "SDL_VIDEO_X11_FORCE_EGL"
+
+/**
  *  \brief  A variable controlling whether the window frame and title bar are interactive when the cursor is hidden 
  *
  *  This variable can be set to the following values:
