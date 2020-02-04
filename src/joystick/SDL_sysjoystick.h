@@ -60,6 +60,10 @@ struct _SDL_Joystick
     int nbuttons;               /* Number of buttons on the joystick */
     Uint8 *buttons;             /* Current button states */
 
+    Uint16 low_frequency_rumble;
+    Uint16 high_frequency_rumble;
+    Uint32 rumble_expiration;
+
     SDL_bool attached;
     SDL_bool is_game_controller;
     SDL_bool delayed_guide_button; /* SDL_TRUE if this device has the guide button event delayed */
@@ -118,7 +122,7 @@ typedef struct _SDL_JoystickDriver
     int (*Open)(SDL_Joystick * joystick, int device_index);
 
     /* Rumble functionality */
-    int (*Rumble)(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms);
+    int (*Rumble)(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble);
 
     /* Function to update the state of a joystick - called as a device poll.
      * This function shouldn't update the joystick structure directly,
@@ -134,6 +138,9 @@ typedef struct _SDL_JoystickDriver
     void (*Quit)(void);
 
 } SDL_JoystickDriver;
+
+/* Windows and Mac OSX has a limit of MAX_DWORD / 1000, Linux kernel has a limit of 0xFFFF */
+#define SDL_MAX_RUMBLE_DURATION_MS  0xFFFF
 
 /* The available joystick drivers */
 extern SDL_JoystickDriver SDL_ANDROID_JoystickDriver;

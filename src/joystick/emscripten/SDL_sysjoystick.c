@@ -399,7 +399,7 @@ EMSCRIPTEN_JoystickGetDeviceGUID(int device_index)
 }
 
 static int
-EMSCRIPTEN_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms)
+EMSCRIPTEN_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     return SDL_Unsupported();
 }

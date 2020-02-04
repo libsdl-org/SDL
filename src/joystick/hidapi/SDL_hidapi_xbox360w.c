@@ -34,13 +34,10 @@
 
 #ifdef SDL_JOYSTICK_HIDAPI_XBOX360
 
-#define USB_PACKET_LENGTH   64
-
 
 typedef struct {
     SDL_bool connected;
     Uint8 last_state[USB_PACKET_LENGTH];
-    Uint32 rumble_expiration;
 } SDL_DriverXbox360W_Context;
 
 
@@ -147,10 +144,8 @@ HIDAPI_DriverXbox360W_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joys
 }
 
 static int
-HIDAPI_DriverXbox360W_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms)
+HIDAPI_DriverXbox360W_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
-    SDL_DriverXbox360W_Context *ctx = (SDL_DriverXbox360W_Context *)device->context;
-
     Uint8 rumble_packet[] = { 0x00, 0x01, 0x0f, 0xc0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 
     rumble_packet[5] = (low_frequency_rumble >> 8);
@@ -158,15 +153,6 @@ HIDAPI_DriverXbox360W_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *jo
 
     if (hid_write(device->dev, rumble_packet, sizeof(rumble_packet)) != sizeof(rumble_packet)) {
         return SDL_SetError("Couldn't send rumble packet");
-    }
-
-    if ((low_frequency_rumble || high_frequency_rumble) && duration_ms) {
-        ctx->rumble_expiration = SDL_GetTicks() + SDL_min(duration_ms, SDL_MAX_RUMBLE_DURATION_MS);
-        if (!ctx->rumble_expiration) {
-            ctx->rumble_expiration = 1;
-        }
-    } else {
-        ctx->rumble_expiration = 0;
     }
     return 0;
 }
@@ -273,13 +259,6 @@ HIDAPI_DriverXbox360W_UpdateDevice(SDL_HIDAPI_Device *device)
     }
 
     if (joystick) {
-        if (ctx->rumble_expiration) {
-            Uint32 now = SDL_GetTicks();
-            if (SDL_TICKS_PASSED(now, ctx->rumble_expiration)) {
-                HIDAPI_DriverXbox360W_RumbleJoystick(device, joystick, 0, 0, 0);
-            }
-        }
-
         if (size < 0) {
             /* Read error, device is disconnected */
             HIDAPI_JoystickDisconnected(device, joystick->instance_id);
@@ -291,11 +270,6 @@ HIDAPI_DriverXbox360W_UpdateDevice(SDL_HIDAPI_Device *device)
 static void
 HIDAPI_DriverXbox360W_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
-    SDL_DriverXbox360W_Context *ctx = (SDL_DriverXbox360W_Context *)device->context;
-
-    if (ctx->rumble_expiration) {
-        HIDAPI_DriverXbox360W_RumbleJoystick(device, joystick, 0, 0, 0);
-    }
 }
 
 static void

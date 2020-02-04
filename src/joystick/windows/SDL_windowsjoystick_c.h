@@ -66,7 +66,6 @@ typedef struct input_t
 struct joystick_hwdata
 {
     SDL_JoystickGUID guid;
-    Uint32 rumble_expiration;
 
 #if SDL_JOYSTICK_DINPUT
     LPDIRECTINPUTDEVICE8 InputDevice;

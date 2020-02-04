@@ -758,7 +758,26 @@ SDL_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 
     }
 
     SDL_LockJoysticks();
-    result = joystick->driver->Rumble(joystick, low_frequency_rumble, high_frequency_rumble, duration_ms);
+    if (low_frequency_rumble == joystick->low_frequency_rumble &&
+        high_frequency_rumble == joystick->high_frequency_rumble) {
+        /* Just update the expiration */
+        result = 0;
+    } else {
+        result = joystick->driver->Rumble(joystick, low_frequency_rumble, high_frequency_rumble);
+    }
+
+    /* Save the rumble value regardless of success, so we don't spam the driver */
+    joystick->low_frequency_rumble = low_frequency_rumble;
+    joystick->high_frequency_rumble = high_frequency_rumble;
+
+    if ((low_frequency_rumble || high_frequency_rumble) && duration_ms) {
+        joystick->rumble_expiration = SDL_GetTicks() + SDL_min(duration_ms, SDL_MAX_RUMBLE_DURATION_MS);
+        if (!joystick->rumble_expiration) {
+            joystick->rumble_expiration = 1;
+        }
+    } else {
+        joystick->rumble_expiration = 0;
+    }
     SDL_UnlockJoysticks();
 
     return result;
@@ -788,6 +807,10 @@ SDL_JoystickClose(SDL_Joystick * joystick)
     if (SDL_updating_joystick) {
         SDL_UnlockJoysticks();
         return;
+    }
+
+    if (joystick->rumble_expiration) {
+        SDL_JoystickRumble(joystick, 0, 0, 0);
     }
 
     joystick->driver->Close(joystick);
@@ -1215,6 +1238,16 @@ SDL_JoystickUpdate(void)
             if (joystick->delayed_guide_button) {
                 SDL_GameControllerHandleDelayedGuideButton(joystick);
             }
+        }
+
+        if (joystick->rumble_expiration) {
+            SDL_LockJoysticks();
+            /* Double check now that the lock is held */
+            if (joystick->rumble_expiration &&
+                SDL_TICKS_PASSED(SDL_GetTicks(), joystick->rumble_expiration)) {
+                SDL_JoystickRumble(joystick, 0, 0, 0);
+            }
+            SDL_UnlockJoysticks();
         }
 
         if (joystick->force_recentering) {
