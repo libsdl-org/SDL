@@ -727,7 +727,7 @@ ConfigJoystick(SDL_Joystick * joystick, int fd)
                        absinfo.value, absinfo.minimum, absinfo.maximum,
                        absinfo.fuzz, absinfo.flat);
 #endif /* DEBUG_INPUT_EVENTS */
-                joystick->hwdata->hats_indices[joystick->nhats++] = hat_index;
+                joystick->hwdata->hats_indices[hat_index] = joystick->nhats++;
             }
         }
         if (test_bit(REL_X, relbit) || test_bit(REL_Y, relbit)) {
