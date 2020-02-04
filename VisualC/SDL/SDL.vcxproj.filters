@@ -362,6 +362,7 @@
     <ClCompile Include="..\..\src\hidapi\windows\hid.c" />
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_gamecube.c" />
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_ps4.c" />
+    <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_rumble.c" />
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_switch.c" />
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_xbox360.c" />
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_xbox360w.c" />
