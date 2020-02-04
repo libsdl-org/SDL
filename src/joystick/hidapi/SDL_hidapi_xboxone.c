@@ -30,6 +30,7 @@
 #include "SDL_gamecontroller.h"
 #include "../SDL_sysjoystick.h"
 #include "SDL_hidapijoystick_c.h"
+#include "SDL_hidapi_rumble.h"
 
 
 #ifdef SDL_JOYSTICK_HIDAPI_XBOXONE
@@ -177,7 +178,7 @@ ControllerNeedsRumbleSequenceSynchronized(Uint16 vendor_id, Uint16 product_id)
 }
 
 static SDL_bool
-SynchronizeRumbleSequence(hid_device *dev, SDL_DriverXboxOne_Context *ctx)
+SynchronizeRumbleSequence(SDL_HIDAPI_Device *device, SDL_DriverXboxOne_Context *ctx)
 {
     Uint16 vendor_id = ctx->vendor_id;
     Uint16 product_id = ctx->product_id;
@@ -193,7 +194,7 @@ SynchronizeRumbleSequence(hid_device *dev, SDL_DriverXboxOne_Context *ctx)
         SDL_memcpy(init_packet, xboxone_rumble_reset, sizeof(xboxone_rumble_reset));
         for (i = 0; i < 255; ++i) {
             init_packet[2] = ((ctx->sequence + i) % 255);
-            if (hid_write(dev, init_packet, sizeof(xboxone_rumble_reset)) != sizeof(xboxone_rumble_reset)) {
+            if (SDL_HIDAPI_SendRumble(device, init_packet, sizeof(xboxone_rumble_reset)) != sizeof(xboxone_rumble_reset)) {
                 SDL_SetError("Couldn't write Xbox One initialization packet");
                 return SDL_FALSE;
             }
@@ -226,7 +227,7 @@ ControllerSendsWaitingForInit(Uint16 vendor_id, Uint16 product_id)
 }
 
 static SDL_bool
-SendControllerInit(hid_device *dev, SDL_DriverXboxOne_Context *ctx)
+SendControllerInit(SDL_HIDAPI_Device *device, SDL_DriverXboxOne_Context *ctx)
 {
     Uint16 vendor_id = ctx->vendor_id;
     Uint16 product_id = ctx->product_id;
@@ -258,7 +259,7 @@ SendControllerInit(hid_device *dev, SDL_DriverXboxOne_Context *ctx)
             if (init_packet[0] != 0x01) {
                 init_packet[2] = ctx->sequence++;
             }
-            if (hid_write(dev, init_packet, packet->size) != packet->size) {
+            if (hid_write(device->dev, init_packet, packet->size) != packet->size) {
                 SDL_SetError("Couldn't write Xbox One initialization packet");
                 return SDL_FALSE;
             }
@@ -272,7 +273,7 @@ SendControllerInit(hid_device *dev, SDL_DriverXboxOne_Context *ctx)
                     Uint8 data[USB_PACKET_LENGTH];
                     int size;
 
-                    while ((size = hid_read_timeout(dev, data, sizeof(data), 0)) > 0) {
+                    while ((size = hid_read_timeout(device->dev, data, sizeof(data), 0)) > 0) {
 #ifdef DEBUG_XBOX_PROTOCOL
                         DumpPacket("Xbox One INIT packet: size = %d", data, size);
 #endif
@@ -288,7 +289,7 @@ SendControllerInit(hid_device *dev, SDL_DriverXboxOne_Context *ctx)
         }
     }
 
-    SynchronizeRumbleSequence(dev, ctx);
+    SynchronizeRumbleSequence(device, ctx);
 
     return SDL_TRUE;
 }
@@ -371,14 +372,14 @@ HIDAPI_DriverXboxOne_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joy
     SDL_DriverXboxOne_Context *ctx = (SDL_DriverXboxOne_Context *)device->context;
     Uint8 rumble_packet[] = { 0x09, 0x00, 0x00, 0x09, 0x00, 0x0F, 0x00, 0x00, 0x00, 0x00, 0xFF, 0x00, 0xFF };
 
-    SynchronizeRumbleSequence(device->dev, ctx);
+    SynchronizeRumbleSequence(device, ctx);
 
     /* Magnitude is 1..100 so scale the 16-bit input here */
     rumble_packet[2] = ctx->sequence++;
     rumble_packet[8] = low_frequency_rumble / 655;
     rumble_packet[9] = high_frequency_rumble / 655;
 
-    if (hid_write(device->dev, rumble_packet, sizeof(rumble_packet)) != sizeof(rumble_packet)) {
+    if (SDL_HIDAPI_SendRumble(device, rumble_packet, sizeof(rumble_packet)) != sizeof(rumble_packet)) {
         return SDL_SetError("Couldn't send rumble packet");
     }
     return 0;
@@ -523,7 +524,7 @@ HIDAPI_DriverXboxOne_UpdateDevice(SDL_HIDAPI_Device *device)
     if (!ctx->initialized &&
         !ControllerSendsWaitingForInit(device->vendor_id, device->product_id)) {
         if (SDL_TICKS_PASSED(SDL_GetTicks(), ctx->start_time + CONTROLLER_INIT_DELAY_MS)) {
-            if (!SendControllerInit(device->dev, ctx)) {
+            if (!SendControllerInit(device, ctx)) {
                 HIDAPI_JoystickDisconnected(device, joystick->instance_id);
                 return SDL_FALSE;
             }
@@ -542,7 +543,7 @@ HIDAPI_DriverXboxOne_UpdateDevice(SDL_HIDAPI_Device *device)
 #ifdef DEBUG_XBOX_PROTOCOL
                 SDL_Log("Delay after init: %ums\n", SDL_GetTicks() - ctx->start_time);
 #endif
-                if (!SendControllerInit(device->dev, ctx)) {
+                if (!SendControllerInit(device, ctx)) {
                     HIDAPI_JoystickDisconnected(device, joystick->instance_id);
                     return SDL_FALSE;
                 }

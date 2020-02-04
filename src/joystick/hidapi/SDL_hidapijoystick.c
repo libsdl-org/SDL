@@ -32,6 +32,7 @@
 #include "SDL_joystick.h"
 #include "../SDL_sysjoystick.h"
 #include "SDL_hidapijoystick_c.h"
+#include "SDL_hidapi_rumble.h"
 #include "../../SDL_hints_c.h"
 
 #if defined(__WIN32__)
@@ -682,6 +683,7 @@ HIDAPI_AddDevice(struct hid_device_info *info)
         device->guid.data[14] = 'h';
         device->guid.data[15] = 0;
     }
+    device->dev_lock = SDL_CreateMutex();
 
     /* Need the device name before getting the driver to know whether to ignore this device */
     if (!device->name) {
@@ -768,6 +770,7 @@ HIDAPI_DelDevice(SDL_HIDAPI_Device *device)
 
             HIDAPI_CleanupDeviceDriver(device);
 
+            SDL_DestroyMutex(device->dev_lock);
             SDL_free(device->name);
             SDL_free(device->path);
             SDL_free(device);
@@ -904,7 +907,10 @@ HIDAPI_UpdateDevices(void)
         device = SDL_HIDAPI_devices;
         while (device) {
             if (device->driver) {
-                device->driver->UpdateDevice(device);
+                if (SDL_TryLockMutex(device->dev_lock) == 0) {
+                    device->driver->UpdateDevice(device);
+                    SDL_UnlockMutex(device->dev_lock);
+                }
             }
             device = device->next;
         }
@@ -1029,6 +1035,11 @@ HIDAPI_JoystickClose(SDL_Joystick * joystick)
     if (joystick->hwdata) {
         SDL_HIDAPI_Device *device = joystick->hwdata->device;
 
+        /* Wait for pending rumble to complete */
+        while (SDL_AtomicGet(&device->rumble_pending) > 0) {
+            SDL_Delay(10);
+        }
+
         device->driver->CloseJoystick(device, joystick);
 
         SDL_free(joystick->hwdata);
@@ -1048,6 +1059,9 @@ HIDAPI_JoystickQuit(void)
     while (SDL_HIDAPI_devices) {
         HIDAPI_DelDevice(SDL_HIDAPI_devices);
     }
+
+    SDL_HIDAPI_QuitRumble();
+
     for (i = 0; i < SDL_arraysize(SDL_HIDAPI_drivers); ++i) {
         SDL_HIDAPI_DeviceDriver *driver = SDL_HIDAPI_drivers[i];
         SDL_DelHintCallback(driver->hint, SDL_HIDAPIDriverHintChanged, NULL);
