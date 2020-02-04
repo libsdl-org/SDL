@@ -24,7 +24,7 @@
 
 /* Handle rumble on a separate thread so it doesn't block the application */
 int SDL_HIDAPI_SendRumble(SDL_HIDAPI_Device *device, const Uint8 *data, int size);
-void SDL_HIDAPI_QuitRumble();
+void SDL_HIDAPI_QuitRumble(void);
 
 #endif /* SDL_JOYSTICK_HIDAPI */
 

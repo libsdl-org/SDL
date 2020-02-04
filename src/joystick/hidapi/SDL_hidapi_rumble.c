@@ -141,7 +141,7 @@ int SDL_HIDAPI_SendRumble(SDL_HIDAPI_Device *device, const Uint8 *data, int size
     SDL_HIDAPI_RumbleRequest *request;
 
     if (size > sizeof(request->data)) {
-        return SDL_SetError("Couldn't send rumble, size %d is greater than %d", size, sizeof(request->data));
+        return SDL_SetError("Couldn't send rumble, size %d is greater than %d", size, (int)sizeof(request->data));
     }
 
     if (!ctx->running) {
@@ -174,7 +174,7 @@ int SDL_HIDAPI_SendRumble(SDL_HIDAPI_Device *device, const Uint8 *data, int size
     return size;
 }
 
-void SDL_HIDAPI_QuitRumble()
+void SDL_HIDAPI_QuitRumble(void)
 {
     SDL_HIDAPI_RumbleContext *ctx = &rumble_context;
 
