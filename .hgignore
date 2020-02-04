@@ -4,12 +4,29 @@ autom4te*
 config.cache
 config.log
 config.status
+libtool
 Makefile
-sdl-config
+Makefile.rules
+sdl2-config
+sdl2-config.cmake
+sdl2.pc
 SDL2.spec
 build
 gen
 Build
+
+# for CMake
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+cmake_uninstall.cmake
+SDL2ConfigVersion.cmake
+*.a
+*.la
+*.so
+*.so.*
+.ninja_*
+*.ninja
 
 # for CLion
 .idea
@@ -61,8 +78,6 @@ VisualC/visualtest/testsprite2_sample.parameters
 
 # for Android
 android-project/local.properties
-
-sdl.pc
 
 test/aclocal.m4
 test/autom4te*
@@ -128,10 +143,13 @@ test/testthread
 test/testtimer
 test/testver
 test/testviewport
+test/testvulkan
 test/testwm2
 test/testyuv
 test/torturethread
 test/*.exe
+test/*,e1f
+test/*,ff8
 test/*.dSYM
 buildbot
 test/buildbot
