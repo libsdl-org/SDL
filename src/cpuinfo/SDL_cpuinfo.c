@@ -338,7 +338,14 @@ CPU_haveAltiVec(void)
     return altivec;
 }
 
-#if !defined(__ARM_ARCH)
+#if defined(__ARM_ARCH) && (__ARM_ARCH >= 6)
+static int
+CPU_haveARMSIMD(void)
+{
+	return 1;
+}
+
+#elif !defined(__arm__)
 static int
 CPU_haveARMSIMD(void)
 {
@@ -403,10 +410,8 @@ CPU_haveARMSIMD(void)
 static int
 CPU_haveARMSIMD(void)
 {
-#if !defined(__ANDROID__) && !defined(__IPHONEOS__) && !defined(__TVOS__)
-#warning SDL_HasARMSIMD is not implemented for this ARM platform, defaulting to TRUE
-#endif
-    return 1;
+#warning SDL_HasARMSIMD is not implemented for this ARM platform. Write me.
+    return 0;
 }
 #endif
 
@@ -445,15 +450,15 @@ CPU_haveNEON(void)
 #  endif
 /* All WinRT ARM devices are required to support NEON, but just in case. */
     return IsProcessorFeaturePresent(PF_ARM_NEON_INSTRUCTIONS_AVAILABLE) != 0;
-#elif !defined(__ARM_ARCH)
-    return 0;  /* not an ARM CPU at all. */
-#elif __ARM_ARCH >= 8
+#elif defined(__ARM_ARCH) && (__ARM_ARCH >= 8)
     return 1;  /* ARMv8 always has non-optional NEON support. */
-#elif defined(__APPLE__) && (__ARM_ARCH >= 7)
+#elif defined(__APPLE__) && defined(__ARM_ARCH) && (__ARM_ARCH >= 7)
     /* (note that sysctlbyname("hw.optional.neon") doesn't work!) */
     return 1;  /* all Apple ARMv7 chips and later have NEON. */
 #elif defined(__APPLE__)
     return 0;  /* assume anything else from Apple doesn't have NEON. */
+#elif !defined(__arm__)
+    return 0;  /* not an ARM CPU at all. */
 #elif defined(__QNXNTO__)
     return SYSPAGE_ENTRY(cpuinfo)->flags & ARM_CPU_FLAG_NEON;
 #elif (defined(__LINUX__) || defined(__ANDROID__)) && defined(HAVE_GETAUXVAL)
