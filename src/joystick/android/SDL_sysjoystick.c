@@ -629,7 +629,7 @@ ANDROID_JoystickOpen(SDL_Joystick * joystick, int device_index)
 }
 
 static int
-ANDROID_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms)
+ANDROID_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     return SDL_Unsupported();
 }

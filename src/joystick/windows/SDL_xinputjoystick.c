@@ -465,7 +465,7 @@ UpdateXInputJoystickState(SDL_Joystick * joystick, XINPUT_STATE_EX *pXInputState
 }
 
 int
-SDL_XINPUT_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms)
+SDL_XINPUT_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     XINPUT_VIBRATION XVibration;
 
@@ -477,12 +477,6 @@ SDL_XINPUT_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, 
     XVibration.wRightMotorSpeed = high_frequency_rumble;
     if (XINPUTSETSTATE(joystick->hwdata->userid, &XVibration) != ERROR_SUCCESS) {
         return SDL_SetError("XInputSetState() failed");
-    }
-
-    if ((low_frequency_rumble || high_frequency_rumble) && duration_ms) {
-        joystick->hwdata->rumble_expiration = SDL_GetTicks() + SDL_min(duration_ms, SDL_MAX_RUMBLE_DURATION_MS);
-    } else {
-        joystick->hwdata->rumble_expiration = 0;
     }
     return 0;
 }
@@ -515,13 +509,6 @@ SDL_XINPUT_JoystickUpdate(SDL_Joystick * joystick)
             UpdateXInputJoystickState(joystick, &XInputState, &XBatteryInformation);
         }
         joystick->hwdata->dwPacketNumber = XInputState.dwPacketNumber;
-    }
-
-    if (joystick->hwdata->rumble_expiration) {
-        Uint32 now = SDL_GetTicks();
-        if (SDL_TICKS_PASSED(now, joystick->hwdata->rumble_expiration)) {
-            SDL_XINPUT_JoystickRumble(joystick, 0, 0, 0);
-        }
     }
 }
 
@@ -565,7 +552,7 @@ SDL_XINPUT_JoystickOpen(SDL_Joystick * joystick, JoyStick_DeviceData *joystickde
 }
 
 int
-SDL_XINPUT_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms)
+SDL_XINPUT_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     return SDL_Unsupported();
 }

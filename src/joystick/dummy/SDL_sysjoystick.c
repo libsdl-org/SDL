@@ -84,7 +84,7 @@ DUMMY_JoystickOpen(SDL_Joystick * joystick, int device_index)
 }
 
 static int
-DUMMY_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms)
+DUMMY_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     return SDL_Unsupported();
 }

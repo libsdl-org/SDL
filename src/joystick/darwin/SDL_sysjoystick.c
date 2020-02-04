@@ -52,7 +52,7 @@ void FreeRumbleEffectData(FFEFFECT *effect)
     SDL_free(effect);
 }
 
-FFEFFECT *CreateRumbleEffectData(Sint16 magnitude, Uint32 duration_ms)
+FFEFFECT *CreateRumbleEffectData(Sint16 magnitude)
 {
     FFEFFECT *effect;
     FFPERIODIC *periodic;
@@ -65,7 +65,7 @@ FFEFFECT *CreateRumbleEffectData(Sint16 magnitude, Uint32 duration_ms)
     effect->dwSize = sizeof(*effect);
     effect->dwGain = 10000;
     effect->dwFlags = FFEFF_OBJECTOFFSETS;
-    effect->dwDuration = duration_ms * 1000; /* In microseconds. */
+    effect->dwDuration = SDL_MAX_RUMBLE_DURATION_MS * 1000; /* In microseconds. */
     effect->dwTriggerButton = FFEB_NOTRIGGER;
 
     effect->cAxes = 2;
@@ -832,7 +832,7 @@ FFStrError(unsigned int err)
 }
 
 static int
-DARWIN_JoystickInitRumble(recDevice *device, Sint16 magnitude, Uint32 duration_ms)
+DARWIN_JoystickInitRumble(recDevice *device, Sint16 magnitude)
 {
     HRESULT result;
 
@@ -855,7 +855,7 @@ DARWIN_JoystickInitRumble(recDevice *device, Sint16 magnitude, Uint32 duration_m
     }
 
     /* Create the effect */
-    device->ffeffect = CreateRumbleEffectData(magnitude, duration_ms);
+    device->ffeffect = CreateRumbleEffectData(magnitude);
     if (!device->ffeffect) {
         return SDL_OutOfMemory();
     }
@@ -869,7 +869,7 @@ DARWIN_JoystickInitRumble(recDevice *device, Sint16 magnitude, Uint32 duration_m
 }
 
 static int
-DARWIN_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms)
+DARWIN_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     HRESULT result;
     recDevice *device = joystick->hwdata;
@@ -883,7 +883,6 @@ DARWIN_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint
 
     if (device->ff_initialized) {
         FFPERIODIC *periodic = ((FFPERIODIC *)device->ffeffect->lpvTypeSpecificParams);
-        device->ffeffect->dwDuration = duration_ms * 1000; /* In microseconds. */
         periodic->dwMagnitude = CONVERT_MAGNITUDE(magnitude);
 
         result = FFEffectSetParameters(device->ffeffect_ref, device->ffeffect,
@@ -892,7 +891,7 @@ DARWIN_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint
             return SDL_SetError("Unable to update rumble effect: %s", FFStrError(result));
         }
     } else {
-        if (DARWIN_JoystickInitRumble(device, magnitude, duration_ms) < 0) {
+        if (DARWIN_JoystickInitRumble(device, magnitude) < 0) {
             return -1;
         }
         device->ff_initialized = SDL_TRUE;

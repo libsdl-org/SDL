@@ -37,8 +37,6 @@
 
 #ifdef SDL_JOYSTICK_HIDAPI_PS4
 
-#define USB_PACKET_LENGTH   64
-
 typedef enum
 {
     k_EPS4ReportIdUsbState = 1,
@@ -103,7 +101,6 @@ typedef struct {
     SDL_bool rumble_supported;
     Uint8 volume;
     Uint32 last_volume_check;
-    Uint32 rumble_expiration;
     PS4StatePacket_t last_state;
 } SDL_DriverPS4_Context;
 
@@ -201,7 +198,7 @@ HIDAPI_DriverPS4_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID 
 {
 }
 
-static int HIDAPI_DriverPS4_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms);
+static int HIDAPI_DriverPS4_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble);
 
 static SDL_bool
 HIDAPI_DriverPS4_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
@@ -251,7 +248,7 @@ HIDAPI_DriverPS4_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
     }
 
     /* Initialize LED and effect state */
-    HIDAPI_DriverPS4_RumbleJoystick(device, joystick, 0, 0, 0);
+    HIDAPI_DriverPS4_RumbleJoystick(device, joystick, 0, 0);
 
     /* Initialize the joystick capabilities */
     joystick->nbuttons = 16;
@@ -262,7 +259,7 @@ HIDAPI_DriverPS4_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 }
 
 static int
-HIDAPI_DriverPS4_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms)
+HIDAPI_DriverPS4_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     SDL_DriverPS4_Context *ctx = (SDL_DriverPS4_Context *)device->context;
     DS4EffectsState_t *effects;
@@ -310,15 +307,6 @@ HIDAPI_DriverPS4_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystic
 
     if (hid_write(device->dev, data, report_size) != report_size) {
         return SDL_SetError("Couldn't send rumble packet");
-    }
-
-    if ((low_frequency_rumble || high_frequency_rumble) && duration_ms) {
-        ctx->rumble_expiration = SDL_GetTicks() + SDL_min(duration_ms, SDL_MAX_RUMBLE_DURATION_MS);
-        if (!ctx->rumble_expiration) {
-            ctx->rumble_expiration = 1;
-        }
-    } else {
-        ctx->rumble_expiration = 0;
     }
     return 0;
 }
@@ -465,13 +453,6 @@ HIDAPI_DriverPS4_UpdateDevice(SDL_HIDAPI_Device *device)
         }
     }
 
-    if (ctx->rumble_expiration) {
-        Uint32 now = SDL_GetTicks();
-        if (SDL_TICKS_PASSED(now, ctx->rumble_expiration)) {
-            HIDAPI_DriverPS4_RumbleJoystick(device, joystick, 0, 0, 0);
-        }
-    }
-
     if (size < 0) {
         /* Read error, device is disconnected */
         HIDAPI_JoystickDisconnected(device, joystick->instance_id);
@@ -482,12 +463,6 @@ HIDAPI_DriverPS4_UpdateDevice(SDL_HIDAPI_Device *device)
 static void
 HIDAPI_DriverPS4_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
-    SDL_DriverPS4_Context *ctx = (SDL_DriverPS4_Context *)device->context;
-
-    if (ctx->rumble_expiration) {
-        HIDAPI_DriverPS4_RumbleJoystick(device, joystick, 0, 0, 0);
-    }
-
     hid_close(device->dev);
     device->dev = NULL;
 

@@ -50,12 +50,9 @@
 #include "windows.gaming.input.h"
 #endif
 
-#define USB_PACKET_LENGTH   64
-
 
 typedef struct {
     Uint8 last_state[USB_PACKET_LENGTH];
-    Uint32 rumble_expiration;
 #ifdef SDL_JOYSTICK_HIDAPI_WINDOWS_XINPUT
     SDL_bool xinput_enabled;
     Uint8 xinput_slot;
@@ -362,9 +359,11 @@ HIDAPI_DriverXbox360_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joyst
 }
 
 static int
-HIDAPI_DriverXbox360_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms)
+HIDAPI_DriverXbox360_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
+#if defined(SDL_JOYSTICK_HIDAPI_WINDOWS_GAMING_INPUT) || defined(SDL_JOYSTICK_HIDAPI_WINDOWS_XINPUT)
     SDL_DriverXbox360_Context *ctx = (SDL_DriverXbox360_Context *)device->context;
+#endif
 
 #ifdef __WIN32__
     SDL_bool rumbled = SDL_FALSE;
@@ -422,14 +421,6 @@ HIDAPI_DriverXbox360_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joy
     }
 #endif /* __WIN32__ */
 
-    if ((low_frequency_rumble || high_frequency_rumble) && duration_ms) {
-        ctx->rumble_expiration = SDL_GetTicks() + SDL_min(duration_ms, SDL_MAX_RUMBLE_DURATION_MS);
-        if (!ctx->rumble_expiration) {
-            ctx->rumble_expiration = 1;
-        }
-    } else {
-        ctx->rumble_expiration = 0;
-    }
     return 0;
 }
 
@@ -802,13 +793,6 @@ HIDAPI_DriverXbox360_UpdateDevice(SDL_HIDAPI_Device *device)
 #endif /* __WIN32__ */
     }
 
-    if (ctx->rumble_expiration) {
-        Uint32 now = SDL_GetTicks();
-        if (SDL_TICKS_PASSED(now, ctx->rumble_expiration)) {
-            HIDAPI_DriverXbox360_RumbleJoystick(device, joystick, 0, 0, 0);
-        }
-    }
-
     if (size < 0) {
         /* Read error, device is disconnected */
         HIDAPI_JoystickDisconnected(device, joystick->instance_id);
@@ -819,11 +803,9 @@ HIDAPI_DriverXbox360_UpdateDevice(SDL_HIDAPI_Device *device)
 static void
 HIDAPI_DriverXbox360_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
+#if defined(SDL_JOYSTICK_HIDAPI_WINDOWS_XINPUT) || defined(SDL_JOYSTICK_HIDAPI_WINDOWS_GAMING_INPUT)
     SDL_DriverXbox360_Context *ctx = (SDL_DriverXbox360_Context *)device->context;
-
-    if (ctx->rumble_expiration) {
-        HIDAPI_DriverXbox360_RumbleJoystick(device, joystick, 0, 0, 0);
-    }
+#endif
 
 #ifdef SDL_JOYSTICK_HIDAPI_WINDOWS_XINPUT
     if (ctx->xinput_enabled) {

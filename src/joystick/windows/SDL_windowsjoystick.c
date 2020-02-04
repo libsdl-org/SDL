@@ -481,12 +481,12 @@ WINDOWS_JoystickOpen(SDL_Joystick * joystick, int device_index)
 }
 
 static int
-WINDOWS_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms)
+WINDOWS_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     if (joystick->hwdata->bXInputDevice) {
-        return SDL_XINPUT_JoystickRumble(joystick, low_frequency_rumble, high_frequency_rumble, duration_ms);
+        return SDL_XINPUT_JoystickRumble(joystick, low_frequency_rumble, high_frequency_rumble);
     } else {
-        return SDL_DINPUT_JoystickRumble(joystick, low_frequency_rumble, high_frequency_rumble, duration_ms);
+        return SDL_DINPUT_JoystickRumble(joystick, low_frequency_rumble, high_frequency_rumble);
     }
 }
 

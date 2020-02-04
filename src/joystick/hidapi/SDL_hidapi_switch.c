@@ -199,7 +199,6 @@ typedef struct {
     SDL_bool m_bUseButtonLabels;
     Uint8 m_nCommandNumber;
     SwitchCommonOutputPacket_t m_RumblePacket;
-    Uint32 m_nRumbleExpiration;
     Uint8 m_rgucReadBuffer[k_unSwitchMaxOutputPacketLength];
 
     SwitchInputOnlyControllerStatePacket_t m_lastInputOnlyState;
@@ -739,7 +738,7 @@ error:
 }
 
 static int
-HIDAPI_DriverSwitch_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms)
+HIDAPI_DriverSwitch_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     SDL_DriverSwitch_Context *ctx = (SDL_DriverSwitch_Context *)device->context;
 
@@ -769,15 +768,6 @@ HIDAPI_DriverSwitch_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joys
     if (!WriteRumble(ctx)) {
         SDL_SetError("Couldn't send rumble packet");
         return -1;
-    }
-
-    if ((low_frequency_rumble || high_frequency_rumble) && duration_ms) {
-        ctx->m_nRumbleExpiration = SDL_GetTicks() + SDL_min(duration_ms, SDL_MAX_RUMBLE_DURATION_MS);
-        if (!ctx->m_nRumbleExpiration) {
-            ctx->m_nRumbleExpiration = 1;
-        }
-    } else {
-        ctx->m_nRumbleExpiration = 0;
     }
     return 0;
 }
@@ -1075,13 +1065,6 @@ HIDAPI_DriverSwitch_UpdateDevice(SDL_HIDAPI_Device *device)
         }
     }
 
-    if (ctx->m_nRumbleExpiration) {
-        Uint32 now = SDL_GetTicks();
-        if (SDL_TICKS_PASSED(now, ctx->m_nRumbleExpiration)) {
-            HIDAPI_DriverSwitch_RumbleJoystick(device, joystick, 0, 0, 0);
-        }
-    }
-
     if (size < 0) {
         /* Read error, device is disconnected */
         HIDAPI_JoystickDisconnected(device, joystick->instance_id);
@@ -1093,10 +1076,6 @@ static void
 HIDAPI_DriverSwitch_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     SDL_DriverSwitch_Context *ctx = (SDL_DriverSwitch_Context *)device->context;
-
-    if (ctx->m_nRumbleExpiration) {
-        HIDAPI_DriverSwitch_RumbleJoystick(device, joystick, 0, 0, 0);
-    }
 
     if (!ctx->m_bInputOnly) {
         /* Restore simple input mode for other applications */

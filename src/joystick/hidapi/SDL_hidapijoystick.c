@@ -1001,14 +1001,14 @@ HIDAPI_JoystickOpen(SDL_Joystick * joystick, int device_index)
 }
 
 static int
-HIDAPI_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms)
+HIDAPI_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     int result;
 
     if (joystick->hwdata) {
         SDL_HIDAPI_Device *device = joystick->hwdata->device;
 
-        result = device->driver->RumbleJoystick(device, joystick, low_frequency_rumble, high_frequency_rumble, duration_ms);
+        result = device->driver->RumbleJoystick(device, joystick, low_frequency_rumble, high_frequency_rumble);
     } else {
         SDL_SetError("Rumble failed, device disconnected");
         result = -1;
