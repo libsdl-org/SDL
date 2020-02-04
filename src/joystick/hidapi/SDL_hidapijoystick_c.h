@@ -23,6 +23,10 @@
 #ifndef SDL_JOYSTICK_HIDAPI_H
 #define SDL_JOYSTICK_HIDAPI_H
 
+#include "SDL_atomic.h"
+#include "SDL_mutex.h"
+#include "SDL_joystick.h"
+#include "SDL_gamecontroller.h"
 #include "../../hidapi/hidapi/hidapi.h"
 #include "../usb_ids.h"
 
@@ -50,6 +54,9 @@
 #define SDL_JOYSTICK_HIDAPI_STEAM
 #endif
 
+/* The maximum size of a USB packet for HID devices */
+#define USB_PACKET_LENGTH   64
+
 /* Forward declaration */
 struct _SDL_HIDAPI_DeviceDriver;
 
@@ -70,7 +77,9 @@ typedef struct _SDL_HIDAPI_Device
 
     struct _SDL_HIDAPI_DeviceDriver *driver;
     void *context;
+    SDL_mutex *dev_lock;
     hid_device *dev;
+    SDL_atomic_t rumble_pending;
     int num_joysticks;
     SDL_JoystickID *joysticks;
 
@@ -97,9 +106,6 @@ typedef struct _SDL_HIDAPI_DeviceDriver
 
 } SDL_HIDAPI_DeviceDriver;
 
-
-/* The maximum size of a USB packet for HID devices */
-#define USB_PACKET_LENGTH   64
 
 /* HIDAPI device support */
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverPS4;

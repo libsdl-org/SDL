@@ -31,6 +31,7 @@
 #include "SDL_gamecontroller.h"
 #include "../SDL_sysjoystick.h"
 #include "SDL_hidapijoystick_c.h"
+#include "SDL_hidapi_rumble.h"
 
 
 #ifdef SDL_JOYSTICK_HIDAPI_GAMECUBE
@@ -285,7 +286,7 @@ HIDAPI_DriverGameCube_UpdateDevice(SDL_HIDAPI_Device *device)
 
     /* Write rumble packet */
     if (ctx->rumbleUpdate) {
-        hid_write(device->dev, ctx->rumble, sizeof(ctx->rumble));
+        SDL_HIDAPI_SendRumble(device, ctx->rumble, sizeof(ctx->rumble));
         ctx->rumbleUpdate = SDL_FALSE;
     }
 
@@ -343,7 +344,7 @@ HIDAPI_DriverGameCube_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joy
 
     /* Stop rumble activity */
     if (ctx->rumbleUpdate) {
-        hid_write(device->dev, ctx->rumble, sizeof(ctx->rumble));
+        SDL_HIDAPI_SendRumble(device, ctx->rumble, sizeof(ctx->rumble));
         ctx->rumbleUpdate = SDL_FALSE;
     }
 }
