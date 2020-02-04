@@ -11,6 +11,10 @@ build
 gen
 Build
 
+# for CLion
+.idea
+cmake-build-*
+
 # for Xcode
 *.orig
 *.swp
