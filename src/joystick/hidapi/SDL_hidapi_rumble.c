@@ -28,6 +28,7 @@
 #include "SDL_thread.h"
 #include "SDL_hidapijoystick_c.h"
 #include "SDL_hidapi_rumble.h"
+#include "../../thread/SDL_systhread.h"
 
 
 typedef struct SDL_HIDAPI_RumbleRequest
@@ -127,7 +128,7 @@ SDL_HIDAPI_StartRumbleThread(SDL_HIDAPI_RumbleContext *ctx)
     }
 
     ctx->running = SDL_TRUE;
-    ctx->thread = SDL_CreateThread(SDL_HIDAPI_RumbleThread, "HIDAPI Rumble", ctx);
+    ctx->thread = SDL_CreateThreadInternal(SDL_HIDAPI_RumbleThread, "HIDAPI Rumble", 0, ctx);
     if (!ctx->thread) {
         SDL_HIDAPI_StopRumbleThread(ctx);
         return -1;
