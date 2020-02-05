@@ -1494,8 +1494,8 @@ SDL_bool SDL_ShouldIgnoreGameController(const char *name, SDL_JoystickGUID guid)
     Uint32 vidpid;
 
 #if defined(__LINUX__)
-    if (name && SDL_strstr(name, "Wireless Controller Motion Sensors")) {
-        /* Don't treat the PS4 motion controls as a separate game controller */
+    if (name && SDL_strstr(name, "Controller Motion Sensors")) {
+        /* Don't treat the PS3 and PS4 motion controls as a separate game controller */
         return SDL_TRUE;
     }
 #endif
