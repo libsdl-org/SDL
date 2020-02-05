@@ -137,7 +137,7 @@ FreeDevice(recDevice *removeDevice)
 
         if ( gpDeviceList == removeDevice ) {
             gpDeviceList = pDeviceNext;
-        } else {
+        } else if (gpDeviceList) {
             recDevice *device = gpDeviceList;
             while (device->pNext != removeDevice) {
                 device = device->pNext;
