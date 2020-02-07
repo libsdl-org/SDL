@@ -23,6 +23,14 @@
 #ifdef SDL_JOYSTICK_HIDAPI
 
 /* Handle rumble on a separate thread so it doesn't block the application */
+
+/* Advanced API */
+int SDL_HIDAPI_LockRumble(void);
+SDL_bool SDL_HIDAPI_GetPendingRumbleLocked(SDL_HIDAPI_Device *device, Uint8 **data, int **size, int *maximum_size);
+int SDL_HIDAPI_SendRumbleAndUnlock(SDL_HIDAPI_Device *device, const Uint8 *data, int size);
+void SDL_HIDAPI_UnlockRumble(void);
+
+/* Simple API, will replace any pending rumble with the new data */
 int SDL_HIDAPI_SendRumble(SDL_HIDAPI_Device *device, const Uint8 *data, int size);
 void SDL_HIDAPI_QuitRumble(void);
 
