@@ -31,9 +31,10 @@
 #include "SDL_timer.h"
 #include "SDL_joystick.h"
 #include "SDL_gamecontroller.h"
+#include "../../SDL_hints_c.h"
 #include "../SDL_sysjoystick.h"
 #include "SDL_hidapijoystick_c.h"
-#include "../../SDL_hints_c.h"
+#include "SDL_hidapi_rumble.h"
 
 
 #ifdef SDL_JOYSTICK_HIDAPI_SWITCH
@@ -192,7 +193,7 @@ typedef struct
 #pragma pack()
 
 typedef struct {
-    hid_device *dev;
+    SDL_HIDAPI_Device *device;
     SDL_bool m_bInputOnly;
     SDL_bool m_bHasHomeLED;
     SDL_bool m_bUsingBluetooth;
@@ -200,6 +201,8 @@ typedef struct {
     Uint8 m_nCommandNumber;
     SwitchCommonOutputPacket_t m_RumblePacket;
     Uint8 m_rgucReadBuffer[k_unSwitchMaxOutputPacketLength];
+    SDL_bool m_bRumbleActive;
+    Uint32 m_unRumbleRefresh;
 
     SwitchInputOnlyControllerStatePacket_t m_lastInputOnlyState;
     SwitchSimpleStatePacket_t m_lastSimpleState;
@@ -254,12 +257,21 @@ HIDAPI_DriverSwitch_GetDeviceName(Uint16 vendor_id, Uint16 product_id)
 
 static int ReadInput(SDL_DriverSwitch_Context *ctx)
 {
-    return hid_read_timeout(ctx->dev, ctx->m_rgucReadBuffer, sizeof(ctx->m_rgucReadBuffer), 0);
+    /* Make sure we don't try to read at the same time a write is happening */
+    if (SDL_AtomicGet(&ctx->device->rumble_pending) > 0) {
+        return 0;
+    }
+
+    return hid_read_timeout(ctx->device->dev, ctx->m_rgucReadBuffer, sizeof(ctx->m_rgucReadBuffer), 0);
 }
 
-static int WriteOutput(SDL_DriverSwitch_Context *ctx, Uint8 *data, int size)
+static int WriteOutput(SDL_DriverSwitch_Context *ctx, const Uint8 *data, int size)
 {
-    return hid_write(ctx->dev, data, size);
+    /* Use the rumble thread for general asynchronous writes */
+    if (SDL_HIDAPI_LockRumble() < 0) {
+        return -1;
+    }
+    return SDL_HIDAPI_SendRumbleAndUnlock(ctx->device, data, size);
 }
 
 static SwitchSubcommandInputPacket_t *ReadSubcommandReply(SDL_DriverSwitch_Context *ctx, ESwitchSubcommandIDs expectedID)
@@ -429,6 +441,16 @@ static SDL_bool WriteRumble(SDL_DriverSwitch_Context *ctx)
     ctx->m_RumblePacket.ucPacketType = k_eSwitchOutputReportIDs_Rumble;
     ctx->m_RumblePacket.ucPacketNumber = ctx->m_nCommandNumber;
     ctx->m_nCommandNumber = (ctx->m_nCommandNumber + 1) & 0xF;
+
+    /* Refresh the rumble state periodically */
+    if (ctx->m_bRumbleActive) {
+        ctx->m_unRumbleRefresh = SDL_GetTicks() + 1000;
+        if (!ctx->m_unRumbleRefresh) {
+            ctx->m_unRumbleRefresh = 1;
+        }
+    } else {
+        ctx->m_unRumbleRefresh = 0;
+    }
 
     return WritePacket(ctx, (Uint8 *)&ctx->m_RumblePacket, sizeof(ctx->m_RumblePacket));
 }
@@ -650,9 +672,10 @@ HIDAPI_DriverSwitch_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joysti
         SDL_OutOfMemory();
         goto error;
     }
+    ctx->device = device;
     device->context = ctx;
 
-    device->dev = ctx->dev = hid_open_path(device->path, 0);
+    device->dev = hid_open_path(device->path, 0);
     if (!device->dev) {
         SDL_SetError("Couldn't open %s", device->path);
         goto error;
@@ -764,6 +787,8 @@ HIDAPI_DriverSwitch_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joys
     } else {
         SetNeutralRumble(&ctx->m_RumblePacket.rumbleData[1]);
     }
+
+    ctx->m_bRumbleActive = (low_frequency_rumble || high_frequency_rumble) ? SDL_TRUE : SDL_FALSE;
 
     if (!WriteRumble(ctx)) {
         SDL_SetError("Couldn't send rumble packet");
@@ -1063,6 +1088,11 @@ HIDAPI_DriverSwitch_UpdateDevice(SDL_HIDAPI_Device *device)
                 break;
             }
         }
+    }
+
+    if (ctx->m_bRumbleActive &&
+        SDL_TICKS_PASSED(SDL_GetTicks(), ctx->m_unRumbleRefresh)) {
+        WriteRumble(ctx);
     }
 
     if (size < 0) {
