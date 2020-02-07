@@ -118,6 +118,7 @@ typedef struct {
     Uint8 sequence;
     Uint8 last_state[USB_PACKET_LENGTH];
     SDL_bool rumble_synchronized;
+    SDL_bool rumble_synchronization_complete;
     SDL_bool has_paddles;
 } SDL_DriverXboxOne_Context;
 
@@ -194,7 +195,10 @@ SynchronizeRumbleSequence(SDL_HIDAPI_Device *device, SDL_DriverXboxOne_Context *
         SDL_memcpy(init_packet, xboxone_rumble_reset, sizeof(xboxone_rumble_reset));
         for (i = 0; i < 255; ++i) {
             init_packet[2] = ((ctx->sequence + i) % 255);
-            if (SDL_HIDAPI_SendRumble(device, init_packet, sizeof(xboxone_rumble_reset)) != sizeof(xboxone_rumble_reset)) {
+            if (SDL_HIDAPI_LockRumble() < 0) {
+                return SDL_FALSE;
+            }
+            if (SDL_HIDAPI_SendRumbleAndUnlock(device, init_packet, sizeof(xboxone_rumble_reset)) != sizeof(xboxone_rumble_reset)) {
                 SDL_SetError("Couldn't write Xbox One initialization packet");
                 return SDL_FALSE;
             }
@@ -371,16 +375,39 @@ HIDAPI_DriverXboxOne_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joy
 {
     SDL_DriverXboxOne_Context *ctx = (SDL_DriverXboxOne_Context *)device->context;
     Uint8 rumble_packet[] = { 0x09, 0x00, 0x00, 0x09, 0x00, 0x0F, 0x00, 0x00, 0x00, 0x00, 0xFF, 0x00, 0xFF };
+    Uint8 *pending_rumble;
+    int *pending_size;
+    int maximum_size;
 
     SynchronizeRumbleSequence(device, ctx);
 
-    /* Magnitude is 1..100 so scale the 16-bit input here */
-    rumble_packet[2] = ctx->sequence++;
-    rumble_packet[8] = low_frequency_rumble / 655;
-    rumble_packet[9] = high_frequency_rumble / 655;
+    if (SDL_HIDAPI_LockRumble() < 0) {
+        return -1;
+    }
 
-    if (SDL_HIDAPI_SendRumble(device, rumble_packet, sizeof(rumble_packet)) != sizeof(rumble_packet)) {
-        return SDL_SetError("Couldn't send rumble packet");
+    if (!ctx->rumble_synchronization_complete) {
+        if (!SDL_HIDAPI_GetPendingRumbleLocked(device, &pending_rumble, &pending_size, &maximum_size)) {
+            /* Rumble synchronization has drained */
+            ctx->rumble_synchronization_complete = SDL_TRUE;
+        }
+    }
+
+    /* Try to overwrite any pending rumble with the new value */
+    if (ctx->rumble_synchronization_complete && 
+        SDL_HIDAPI_GetPendingRumbleLocked(device, &pending_rumble, &pending_size, &maximum_size)) {
+        /* Magnitude is 1..100 so scale the 16-bit input here */
+        pending_rumble[8] = low_frequency_rumble / 655;
+        pending_rumble[9] = high_frequency_rumble / 655;
+        SDL_HIDAPI_UnlockRumble();
+    } else {
+        /* Magnitude is 1..100 so scale the 16-bit input here */
+        rumble_packet[2] = ctx->sequence++;
+        rumble_packet[8] = low_frequency_rumble / 655;
+        rumble_packet[9] = high_frequency_rumble / 655;
+
+        if (SDL_HIDAPI_SendRumbleAndUnlock(device, rumble_packet, sizeof(rumble_packet)) != sizeof(rumble_packet)) {
+            return SDL_SetError("Couldn't send rumble packet");
+        }
     }
     return 0;
 }
