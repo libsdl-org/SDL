@@ -391,7 +391,9 @@ static SDL_bool WriteProprietary(SDL_DriverSwitch_Context *ctx, ESwitchProprieta
 
         packet.ucPacketType = k_eSwitchOutputReportIDs_Proprietary;
         packet.ucProprietaryID = ucCommand;
-        SDL_memcpy(packet.rgucProprietaryData, pBuf, ucLen);
+        if (pBuf) {
+            SDL_memcpy(packet.rgucProprietaryData, pBuf, ucLen);
+        }
 
         if (!WritePacket(ctx, &packet, sizeof(packet))) {
             continue;
