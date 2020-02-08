@@ -125,6 +125,9 @@ AC_MSG_CHECKING(for OpenGL support)
 have_opengl=no
 AC_TRY_COMPILE([
  #include "SDL_opengl.h"
+ #ifndef SDL_VIDEO_OPENGL
+ #error SDL_VIDEO_OPENGL
+ #endif
 ],[
 ],[
 have_opengl=yes
@@ -135,11 +138,10 @@ dnl Check for OpenGL ES
 AC_MSG_CHECKING(for OpenGL ES support)
 have_opengles=no
 AC_TRY_COMPILE([
- #if defined (__IPHONEOS__)
-    #include <OpenGLES/ES1/gl.h>
- #else
-    #include <GLES/gl.h>
- #endif /* __QNXNTO__ */
+ #include "SDL_opengles.h"
+ #ifndef SDL_VIDEO_OPENGL_ES
+ #error SDL_VIDEO_OPENGL_ES
+ #endif
 ],[
 ],[
 have_opengles=yes
@@ -150,12 +152,9 @@ dnl Check for OpenGL ES2
 AC_MSG_CHECKING(for OpenGL ES2 support)
 have_opengles2=no
 AC_TRY_COMPILE([
- #if defined (__IPHONEOS__)
-    #include <OpenGLES/ES2/gl.h>
-    #include <OpenGLES/ES2/glext.h>
- #else
-    #include <GLES2/gl2.h>
-    #include <GLES2/gl2ext.h>
+ #include "SDL_opengles2.h"
+ #ifndef SDL_VIDEO_OPENGL_ES2
+ #error SDL_VIDEO_OPENGL_ES2
  #endif
 ],[
 ],[
