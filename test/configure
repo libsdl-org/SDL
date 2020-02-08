@@ -3825,6 +3825,9 @@ cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
  #include "SDL_opengl.h"
+ #ifndef SDL_VIDEO_OPENGL
+ #error SDL_VIDEO_OPENGL
+ #endif
 
 int
 main ()
@@ -3850,11 +3853,10 @@ have_opengles=no
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
- #if defined (__IPHONEOS__)
-    #include <OpenGLES/ES1/gl.h>
- #else
-    #include <GLES/gl.h>
- #endif /* __QNXNTO__ */
+ #include "SDL_opengles.h"
+ #ifndef SDL_VIDEO_OPENGL_ES
+ #error SDL_VIDEO_OPENGL_ES
+ #endif
 
 int
 main ()
@@ -3880,12 +3882,9 @@ have_opengles2=no
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
- #if defined (__IPHONEOS__)
-    #include <OpenGLES/ES2/gl.h>
-    #include <OpenGLES/ES2/glext.h>
- #else
-    #include <GLES2/gl2.h>
-    #include <GLES2/gl2ext.h>
+ #include "SDL_opengles2.h"
+ #ifndef SDL_VIDEO_OPENGL_ES2
+ #error SDL_VIDEO_OPENGL_ES2
  #endif
 
 int
