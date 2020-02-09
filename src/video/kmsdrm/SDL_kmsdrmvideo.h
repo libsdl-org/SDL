@@ -28,7 +28,6 @@
 
 #include <fcntl.h>
 #include <unistd.h>
-#include <poll.h>
 #include <xf86drm.h>
 #include <xf86drmMode.h>
 #include <gbm.h>
@@ -41,32 +40,39 @@ typedef struct SDL_VideoData
     int devindex;               /* device index that was passed on creation */
     int drm_fd;                 /* DRM file desc */
     struct gbm_device *gbm;
-    drmEventContext drm_evctx;  /* DRM event context */
-    struct pollfd drm_pollfd;   /* pollfd containing DRM file desc */
-    drmModeCrtc *saved_crtc;    /* Saved CRTC to restore on quit */
-    uint32_t saved_conn_id;     /* Saved DRM connector ID */
-    uint32_t crtc_id;           /* CRTC in use */
+
+    SDL_Window **windows;
+    int max_windows;
+    int num_windows;
 } SDL_VideoData;
+
+
+typedef struct SDL_DisplayModeData
+{
+    int mode_index;
+} SDL_DisplayModeData;
 
 
 typedef struct SDL_DisplayData
 {
-    uint32_t encoder_id;
     uint32_t crtc_id;
-    drmModeModeInfo cur_mode;
+    drmModeConnector *conn;
+    drmModeModeInfo mode;
+    drmModeCrtc *saved_crtc;    /* CRTC to restore on quit */
 } SDL_DisplayData;
 
 
 typedef struct SDL_WindowData
 {
+    SDL_VideoData *viddata;
     struct gbm_surface *gs;
-    struct gbm_bo *current_bo;
+    struct gbm_bo *curr_bo;
     struct gbm_bo *next_bo;
     struct gbm_bo *crtc_bo;
     SDL_bool waiting_for_flip;
-    SDL_bool crtc_ready;
     SDL_bool double_buffer;
 #if SDL_VIDEO_OPENGL_EGL
+    int egl_surface_dirty;
     EGLSurface egl_surface;
 #endif
 } SDL_WindowData;
@@ -78,8 +84,9 @@ typedef struct KMSDRM_FBInfo
 } KMSDRM_FBInfo;
 
 /* Helper functions */
+int KMSDRM_CreateSurfaces(_THIS, SDL_Window * window);
 KMSDRM_FBInfo *KMSDRM_FBFromBO(_THIS, struct gbm_bo *bo);
-SDL_bool KMSDRM_WaitPageFlip(_THIS, SDL_WindowData *wdata, int timeout);
+SDL_bool KMSDRM_WaitPageFlip(_THIS, SDL_WindowData *windata, int timeout);
 
 /****************************************************************************/
 /* SDL_VideoDevice functions declaration                                    */
