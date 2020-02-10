@@ -23,7 +23,9 @@
    configure script knows the C runtime has it and enables it. */
 #ifndef __QNXNTO__
 /* Need this so Linux systems define fseek64o, ftell64o and off64_t */
+#ifndef _LARGEFILE64_SOURCE
 #define _LARGEFILE64_SOURCE
+#endif
 #endif
 
 #include "../SDL_internal.h"
