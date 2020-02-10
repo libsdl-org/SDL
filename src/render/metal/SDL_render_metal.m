@@ -1362,6 +1362,7 @@ METAL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
                 SDL_memcpy(&statecache.viewport, &cmd->data.viewport.rect, sizeof (statecache.viewport));
                 statecache.projection_offset = cmd->data.viewport.first;
                 statecache.viewport_dirty = SDL_TRUE;
+                statecache.cliprect_dirty = SDL_TRUE;
                 break;
             }
 
