@@ -22,6 +22,7 @@
 
 #ifdef __LINUX__
 
+#include "SDL_error.h"
 #include "SDL_stdinc.h"
 
 #if !SDL_THREADS_DISABLED
