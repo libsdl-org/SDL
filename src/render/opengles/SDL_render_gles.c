@@ -561,6 +561,60 @@ GLES_QueueDrawPoints(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_
 }
 
 static int
+GLES_QueueDrawLines(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FPoint * points, int count)
+{
+    GLfloat *verts;
+    int i;
+
+    SDL_assert(count >= 2);  /* should have been checked at the higher level. */
+
+    verts = (GLfloat *) SDL_AllocateRenderVertices(renderer, (count-1) * 4 * sizeof (GLfloat), 0, &cmd->data.draw.first);
+    if (!verts) {
+        return -1;
+    }
+
+    cmd->data.draw.count = count;
+
+    /* GL_LINE_STRIP seems to be unreliable on various drivers, so try
+       to build out our own GL_LINES.  :(
+       If the line segment is completely horizontal or vertical,
+       make it one pixel longer, to satisfy the diamond-exit rule.
+       We should probably do this for diagonal lines too, but we'd have to
+       do some trigonometry to figure out the correct pixel and generally
+       when we have problems with pixel perfection, it's for straight lines
+       that are missing a pixel that frames something and not arbitrary
+       angles. Maybe !!! FIXME for later, though. */
+
+    for (i = 0; i < count-1; i++, points++) {
+        GLfloat xstart = 0.5f + points[0].x;   /* 0.5f to get to the center of the pixel. */
+        GLfloat ystart = 0.5f + points[0].y;
+        GLfloat xend = 0.5f + points[1].x;
+        GLfloat yend = 0.5f + points[1].y;
+
+        if (xstart == xend) {  /* vertical line */
+            if (yend > ystart) {
+                yend += 1.0f;
+            } else {
+                ystart += 1.0f;
+            }
+        } else if (ystart == yend) {  /* horizontal line */
+            if (xend > xstart) {
+                xend += 1.0f;
+            } else {
+                xstart += 1.0f;
+            }
+        }
+
+        *(verts++) = xstart;
+        *(verts++) = ystart;
+        *(verts++) = xend;
+        *(verts++) = yend;
+    }
+
+    return 0;
+}
+
+static int
 GLES_QueueFillRects(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FRect * rects, int count)
 {
     GLfloat *verts = (GLfloat *) SDL_AllocateRenderVertices(renderer, count * 8 * sizeof (GLfloat), 0, &cmd->data.draw.first);
@@ -900,16 +954,10 @@ GLES_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vert
             case SDL_RENDERCMD_DRAW_LINES: {
                 const GLfloat *verts = (GLfloat *) (((Uint8 *) vertices) + cmd->data.draw.first);
                 const size_t count = cmd->data.draw.count;
+                SDL_assert(count >= 2);
                 SetDrawState(data, cmd);
                 data->glVertexPointer(2, GL_FLOAT, 0, verts);
-                if (count > 2 && (verts[0] == verts[(count-1)*2]) && (verts[1] == verts[(count*2)-1])) {
-                    /* GL_LINE_LOOP takes care of the final segment */
-                    data->glDrawArrays(GL_LINE_LOOP, 0, (GLsizei) (count - 1));
-                } else {
-                    data->glDrawArrays(GL_LINE_STRIP, 0, (GLsizei) count);
-                    /* We need to close the endpoint of the line */
-                    data->glDrawArrays(GL_POINTS, (GLsizei) (count - 1), 1);
-                }
+                data->glDrawArrays(GL_LINES, 0, (GLsizei) ((count-1) * 2));
                 break;
             }
 
@@ -1158,7 +1206,7 @@ GLES_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->QueueSetViewport = GLES_QueueSetViewport;
     renderer->QueueSetDrawColor = GLES_QueueSetViewport;  /* SetViewport and SetDrawColor are (currently) no-ops. */
     renderer->QueueDrawPoints = GLES_QueueDrawPoints;
-    renderer->QueueDrawLines = GLES_QueueDrawPoints;  /* lines and points queue vertices the same way. */
+    renderer->QueueDrawLines = GLES_QueueDrawLines;
     renderer->QueueFillRects = GLES_QueueFillRects;
     renderer->QueueCopy = GLES_QueueCopy;
     renderer->QueueCopyEx = GLES_QueueCopyEx;
