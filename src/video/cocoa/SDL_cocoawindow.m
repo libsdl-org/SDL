@@ -1796,8 +1796,10 @@ Cocoa_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display
         /* Hack to fix origin on Mac OS X 10.4
            This is no longer needed as of Mac OS X 10.15, according to bug 4822.
          */
-        NSOperatingSystemVersion version = [[NSProcessInfo processInfo] operatingSystemVersion];
-        if ((version.majorVersion == 10) && (version.minorVersion < 15)) {
+        NSProcessInfo *processInfo = [NSProcessInfo processInfo];
+        NSOperatingSystemVersion version = { 10, 15, 0 };
+        if (![processInfo respondsToSelector:@selector(isOperatingSystemAtLeastVersion:)] ||
+            ![processInfo isOperatingSystemAtLeastVersion:version]) {
             NSRect screenRect = [[nswindow screen] frame];
             if (screenRect.size.height >= 1.0f) {
                 rect.origin.y += (screenRect.size.height - rect.size.height);
