@@ -59,6 +59,9 @@ void SDL_WAYLAND_UnloadSymbols(void);
 }
 #endif
 
+/* Must be included before our #defines, see Bugzilla #4957 */
+#include "wayland-client-core.h"
+
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC
 
 #ifdef _WAYLAND_CLIENT_H
@@ -99,7 +102,6 @@ void SDL_WAYLAND_UnloadSymbols(void);
 
 #endif /* SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC */
 
-#include "wayland-client-core.h"
 #include "wayland-client-protocol.h"
 #include "wayland-egl.h"
 
