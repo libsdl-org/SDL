@@ -938,11 +938,14 @@ WIN_UpdateClipCursor(SDL_Window *window)
                 data->cursor_clipped_rect = rect;
             }
         } else {
+            RECT clipped_rect;
             if (GetClientRect(data->hwnd, &rect) && !IsRectEmpty(&rect)) {
                 ClientToScreen(data->hwnd, (LPPOINT) & rect);
                 ClientToScreen(data->hwnd, (LPPOINT) & rect + 1);
-                if (ClipCursor(&rect)) {
-                    data->cursor_clipped_rect = rect;
+                if (!GetClipCursor(&clipped_rect) || SDL_memcmp(&rect, &clipped_rect, sizeof(rect)) != 0) {
+                    if (ClipCursor(&rect)) {
+                        data->cursor_clipped_rect = rect;
+                    }
                 }
             }
         }
