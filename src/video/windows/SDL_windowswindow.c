@@ -93,9 +93,14 @@ GetWindowStyle(SDL_Window * window)
             style |= STYLE_NORMAL;
         }
 
-        /* You can have a borderless resizable window */
         if (window->flags & SDL_WINDOW_RESIZABLE) {
-            style |= STYLE_RESIZABLE;
+            /* You can have a borderless resizable window, but Windows doesn't always draw it correctly,
+               see https://bugzilla.libsdl.org/show_bug.cgi?id=4466
+             */
+            if (!(window->flags & SDL_WINDOW_BORDERLESS) ||
+                SDL_GetHintBoolean("SDL_BORDERLESS_RESIZABLE_STYLE", SDL_FALSE)) {
+                style |= STYLE_RESIZABLE;
+            }
         }
 
         /* Need to set initialize minimize style, or when we call ShowWindow with WS_MINIMIZE it will activate a random window */
