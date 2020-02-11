@@ -69,7 +69,7 @@ typedef enum {
  */
 typedef int (SDLCALL * SDL_ThreadFunction) (void *data);
 
-#if defined(__WIN32__) && !defined(HAVE_LIBC)
+#if defined(__WIN32__)
 /**
  *  \file SDL_thread.h
  *
