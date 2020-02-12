@@ -32,14 +32,10 @@
 
 struct SDL_PrivateAudioData
 {
-    /* The file descriptor for the audio device */
     Uint8   *mixbuff;
     int      next_buffer;
     Uint8   *pmixbuff[NUM_BUFFERS];
     SDL_sem *playsem;
-#if 0
-    SDL_sem *recsem;
-#endif
 };
 
 void openslES_ResumeDevices(void);
