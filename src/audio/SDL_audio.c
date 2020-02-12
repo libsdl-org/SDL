@@ -1076,7 +1076,7 @@ SDL_GetAudioDeviceName(int index, int iscapture)
         return NULL;
     }
 
-    if ((iscapture) && (!current_audio.impl.HasCaptureSupport)) {
+    if (iscapture && !current_audio.impl.HasCaptureSupport) {
         SDL_SetError("No capture support");
         return NULL;
     }
@@ -1230,7 +1230,7 @@ open_audio_device(const char *devname, int iscapture,
         return 0;
     }
 
-    if ((iscapture) && (!current_audio.impl.HasCaptureSupport)) {
+    if (iscapture && !current_audio.impl.HasCaptureSupport) {
         SDL_SetError("No capture support");
         return 0;
     }
