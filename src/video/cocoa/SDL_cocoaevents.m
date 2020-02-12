@@ -244,6 +244,7 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
             [i activateWithOptions:NSApplicationActivateIgnoringOtherApps];
             break;
         }
+        SDL_Delay(300);  /* !!! FIXME: this isn't right. */
         [NSApp activateIgnoringOtherApps:YES];
     }
 
