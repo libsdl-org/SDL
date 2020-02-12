@@ -542,6 +542,9 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                         SDL_SendMouseMotion(data->window, 0, 0, center_x, center_y);
                     }
                 }
+            } else {
+                /* We still need to update focus */
+                SDL_SetMouseFocus(data->window);
             }
         }
         /* don't break here, fall through to check the wParam like the button presses */
