@@ -156,6 +156,19 @@ int SDLTest_CommonArg(SDLTest_CommonState * state, int index);
 void SDLTest_CommonLogUsage(SDLTest_CommonState * state, const char *argv0, const char **options);
 
 /**
+ * \brief Returns common usage information
+ *
+ * You should (probably) be using SDLTest_CommonLogUsage() instead, but this
+ *  function remains for binary compatibility. Strings returned from this
+ *  function are valid until SDLTest_CommonQuit() is called, in which case
+ *  those strings' memory is freed and can no longer be used.
+ *
+ * \param state The common state describing the test window to create.
+ * \returns String with usage information
+ */
+const char *SDLTest_CommonUsage(SDLTest_CommonState * state);
+
+/**
  * \brief Open test window.
  *
  * \param state The common state describing the test window to create.

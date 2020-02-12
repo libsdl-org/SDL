@@ -521,6 +521,65 @@ SDLTest_CommonLogUsage(SDLTest_CommonState * state, const char *argv0, const cha
     }
 }
 
+static const char *
+BuildCommonUsageString(char **pstr, const char **strlist, const int numitems, const char **strlist2, const int numitems2)
+{
+    char *str = *pstr;
+    if (!str) {
+        size_t len = SDL_strlen("[--trackmem]") + 2;
+        int i;
+        for (i = 0; i < numitems; i++) {
+            len += SDL_strlen(strlist[i]) + 1;
+        }
+        if (strlist2) {
+            for (i = 0; i < numitems2; i++) {
+                len += SDL_strlen(strlist2[i]) + 1;
+            }
+        }
+        str = (char *) SDL_calloc(1, len);
+        if (!str) {
+            return "";  /* oh well. */
+        }
+        SDL_strlcat(str, "[--trackmem] ", len);
+        for (i = 0; i < numitems-1; i++) {
+            SDL_strlcat(str, strlist[i], len);
+            SDL_strlcat(str, " ", len);
+        }
+        SDL_strlcat(str, strlist[i], len);
+        if (strlist2) {
+            SDL_strlcat(str, " ", len);
+            for (i = 0; i < numitems2-1; i++) {
+                SDL_strlcat(str, strlist2[i], len);
+                SDL_strlcat(str, " ", len);
+            }
+            SDL_strlcat(str, strlist2[i], len);
+        }
+        *pstr = str;
+    }
+    return str;
+}
+
+static char *common_usage_video = NULL;
+static char *common_usage_audio = NULL;
+static char *common_usage_videoaudio = NULL;
+
+const char *
+SDLTest_CommonUsage(SDLTest_CommonState * state)
+{
+
+    switch (state->flags & (SDL_INIT_VIDEO | SDL_INIT_AUDIO)) {
+        case SDL_INIT_VIDEO:
+            return BuildCommonUsageString(&common_usage_video, video_usage, SDL_arraysize(video_usage), NULL, 0);
+        case SDL_INIT_AUDIO:
+            return BuildCommonUsageString(&common_usage_audio, audio_usage, SDL_arraysize(audio_usage), NULL, 0);
+        case (SDL_INIT_VIDEO | SDL_INIT_AUDIO):
+            return BuildCommonUsageString(&common_usage_videoaudio, video_usage, SDL_arraysize(video_usage), audio_usage, SDL_arraysize(audio_usage));
+        default:
+            return "[--trackmem]";
+    }
+}
+
+
 SDL_bool
 SDLTest_CommonDefaultArgs(SDLTest_CommonState *state, const int argc, char **argv)
 {
@@ -1851,6 +1910,13 @@ void
 SDLTest_CommonQuit(SDLTest_CommonState * state)
 {
     int i;
+
+    SDL_free(common_usage_video);
+    SDL_free(common_usage_audio);
+    SDL_free(common_usage_videoaudio);
+    common_usage_video = NULL;
+    common_usage_audio = NULL;
+    common_usage_videoaudio = NULL;
 
     SDL_free(state->windows);
     if (state->targets) {
