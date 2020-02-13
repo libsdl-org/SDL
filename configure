@@ -25371,6 +25371,27 @@ $as_echo "#define SDL_TIMER_UNIX 1" >>confdefs.h
             have_timers=yes
         fi
         ;;
+    *-*-riscos*)
+        ARCH=riscos
+        CheckVisibilityHidden
+        CheckDeclarationAfterStatement
+        CheckDummyVideo
+        CheckDiskAudio
+        CheckDummyAudio
+        CheckDLOPEN
+        CheckOSS
+        CheckPTHREAD
+        CheckClockGettime
+
+        # Set up files for the timer library
+        if test x$enable_timers = xyes; then
+
+$as_echo "#define SDL_TIMER_UNIX 1" >>confdefs.h
+
+            SOURCES="$SOURCES $srcdir/src/timer/unix/*.c"
+            have_timers=yes
+        fi
+        ;;
     *)
         as_fn_error $? "
 *** Unsupported host:  Please add to configure.ac
