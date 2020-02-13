@@ -4277,6 +4277,13 @@ case "$host" in
         SOURCES="$SOURCES $srcdir/src/misc/riscos/*.c"
         have_misc=yes
 
+        # Set up files for the video library
+        if test x$enable_video = xyes; then
+            AC_DEFINE(SDL_VIDEO_DRIVER_RISCOS, 1, [ ])
+            SOURCES="$SOURCES $srcdir/src/video/riscos/*.c"
+            have_video=yes
+            SUMMARY_video="${SUMMARY_video} riscos"
+        fi
         # Set up files for the filesystem library
         if test x$enable_filesystem = xyes; then
             AC_DEFINE(SDL_FILESYSTEM_RISCOS, 1, [ ])
