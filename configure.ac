@@ -4063,6 +4063,25 @@ AS_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
             have_timers=yes
         fi
         ;;
+    *-*-riscos*)
+        ARCH=riscos
+        CheckVisibilityHidden
+        CheckDeclarationAfterStatement
+        CheckDummyVideo
+        CheckDiskAudio
+        CheckDummyAudio
+        CheckDLOPEN
+        CheckOSS
+        CheckPTHREAD
+        CheckClockGettime
+
+        # Set up files for the timer library
+        if test x$enable_timers = xyes; then
+            AC_DEFINE(SDL_TIMER_UNIX, 1, [ ])
+            SOURCES="$SOURCES $srcdir/src/timer/unix/*.c"
+            have_timers=yes
+        fi
+        ;;
     *)
         AC_MSG_ERROR([
 *** Unsupported host:  Please add to configure.ac
