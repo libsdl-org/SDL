@@ -21,6 +21,7 @@
 #include "../../SDL_internal.h"
 #include "SDL_stdinc.h"
 #include "SDL_assert.h"
+#include "SDL_atomic.h"
 #include "SDL_hints.h"
 #include "SDL_log.h"
 #include "SDL_main.h"
@@ -155,6 +156,10 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeAddTouch)(
         JNIEnv* env, jclass cls,
         jint touchId, jstring name);
 
+JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativePermissionResult)(
+        JNIEnv* env, jclass cls,
+        jint requestCode, jboolean result);
+
 static JNINativeMethod SDLActivity_tab[] = {
     { "nativeSetupJNI",             "()I", SDL_JAVA_INTERFACE(nativeSetupJNI) },
     { "nativeRunMain",              "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;)I", SDL_JAVA_INTERFACE(nativeRunMain) },
@@ -181,7 +186,8 @@ static JNINativeMethod SDLActivity_tab[] = {
     { "nativeGetHint",              "(Ljava/lang/String;)Ljava/lang/String;", SDL_JAVA_INTERFACE(nativeGetHint) },
     { "nativeSetenv",               "(Ljava/lang/String;Ljava/lang/String;)V", SDL_JAVA_INTERFACE(nativeSetenv) },
     { "onNativeOrientationChanged", "(I)V", SDL_JAVA_INTERFACE(onNativeOrientationChanged) },
-    { "nativeAddTouch",             "(ILjava/lang/String;)V", SDL_JAVA_INTERFACE(nativeAddTouch) }
+    { "nativeAddTouch",             "(ILjava/lang/String;)V", SDL_JAVA_INTERFACE(nativeAddTouch) },
+    { "nativePermissionResult",     "(IZ)V", SDL_JAVA_INTERFACE(nativePermissionResult) }
 };
 
 /* Java class SDLInputConnection */
@@ -283,34 +289,35 @@ static JavaVM *mJavaVM = NULL;
 static jclass mActivityClass;
 
 /* method signatures */
-static jmethodID midGetNativeSurface;
-static jmethodID midSetSurfaceViewFormat;
-static jmethodID midSetActivityTitle;
-static jmethodID midSetWindowStyle;
-static jmethodID midSetOrientation;
-static jmethodID midMinimizeWindow;
-static jmethodID midShouldMinimizeOnFocusLoss;
+static jmethodID midClipboardGetText;
+static jmethodID midClipboardHasText;
+static jmethodID midClipboardSetText;
+static jmethodID midCreateCustomCursor;
 static jmethodID midGetContext;
-static jmethodID midIsTablet;
+static jmethodID midGetDisplayDPI;
+static jmethodID midGetManifestEnvironmentVariables;
+static jmethodID midGetNativeSurface;
+static jmethodID midInitTouch;
 static jmethodID midIsAndroidTV;
 static jmethodID midIsChromebook;
 static jmethodID midIsDeXMode;
-static jmethodID midManualBackButton;
-static jmethodID midInitTouch;
-static jmethodID midSendMessage;
-static jmethodID midShowTextInput;
 static jmethodID midIsScreenKeyboardShown;
-static jmethodID midClipboardSetText;
-static jmethodID midClipboardGetText;
-static jmethodID midClipboardHasText;
+static jmethodID midIsTablet;
+static jmethodID midManualBackButton;
+static jmethodID midMinimizeWindow;
 static jmethodID midOpenAPKExpansionInputStream;
-static jmethodID midGetManifestEnvironmentVariables;
-static jmethodID midGetDisplayDPI;
-static jmethodID midCreateCustomCursor;
+static jmethodID midRequestPermission;
+static jmethodID midSendMessage;
+static jmethodID midSetActivityTitle;
 static jmethodID midSetCustomCursor;
-static jmethodID midSetSystemCursor;
-static jmethodID midSupportsRelativeMouse;
+static jmethodID midSetOrientation;
 static jmethodID midSetRelativeMouseEnabled;
+static jmethodID midSetSurfaceViewFormat;
+static jmethodID midSetSystemCursor;
+static jmethodID midSetWindowStyle;
+static jmethodID midShouldMinimizeOnFocusLoss;
+static jmethodID midShowTextInput;
+static jmethodID midSupportsRelativeMouse;
 
 /* audio manager */
 static jclass mAudioManagerClass;
@@ -342,7 +349,10 @@ static SDL_DisplayOrientation displayOrientation;
 static float fLastAccelerometer[3];
 static SDL_bool bHasNewData;
 
-static SDL_bool bHasEnvironmentVariables = SDL_FALSE;
+static SDL_bool bHasEnvironmentVariables;
+
+static SDL_atomic_t bPermissionRequestPending;
+static SDL_bool bPermissionRequestResult;
 
 /*******************************************************************************
                  Functions called by JNI
@@ -552,68 +562,65 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cl
 
     mActivityClass = (jclass)((*env)->NewGlobalRef(env, cls));
 
-    midGetNativeSurface = (*env)->GetStaticMethodID(env, mActivityClass,
-                                "getNativeSurface","()Landroid/view/Surface;");
-    midSetSurfaceViewFormat = (*env)->GetStaticMethodID(env, mActivityClass,
-                                "setSurfaceViewFormat","(I)V");
-    midSetActivityTitle = (*env)->GetStaticMethodID(env, mActivityClass,
-                                "setActivityTitle","(Ljava/lang/String;)Z");
-    midSetWindowStyle = (*env)->GetStaticMethodID(env, mActivityClass,
-                                "setWindowStyle","(Z)V");
-    midSetOrientation = (*env)->GetStaticMethodID(env, mActivityClass,
-                                "setOrientation","(IIZLjava/lang/String;)V");
-    midMinimizeWindow = (*env)->GetStaticMethodID(env, mActivityClass,
-                                "minimizeWindow","()V");
-    midShouldMinimizeOnFocusLoss = (*env)->GetStaticMethodID(env, mActivityClass,
-                                "shouldMinimizeOnFocusLoss","()Z");
-    midGetContext = (*env)->GetStaticMethodID(env, mActivityClass,
-                                "getContext","()Landroid/content/Context;");
-    midIsTablet = (*env)->GetStaticMethodID(env, mActivityClass,
-                                "isTablet", "()Z");
-    midIsAndroidTV = (*env)->GetStaticMethodID(env, mActivityClass,
-                                "isAndroidTV","()Z");
-    midIsChromebook = (*env)->GetStaticMethodID(env, mActivityClass,
-                                "isChromebook", "()Z");
-    midIsDeXMode = (*env)->GetStaticMethodID(env, mActivityClass,
-                                "isDeXMode", "()Z");
-    midManualBackButton = (*env)->GetStaticMethodID(env, mActivityClass,
-                                "manualBackButton", "()V");
-    midInitTouch = (*env)->GetStaticMethodID(env, mActivityClass,
-                                "initTouch", "()V");
-    midSendMessage = (*env)->GetStaticMethodID(env, mActivityClass,
-                                "sendMessage", "(II)Z");
-    midShowTextInput =  (*env)->GetStaticMethodID(env, mActivityClass,
-                                "showTextInput", "(IIII)Z");
-    midIsScreenKeyboardShown = (*env)->GetStaticMethodID(env, mActivityClass,
-                                "isScreenKeyboardShown","()Z");
-    midClipboardSetText = (*env)->GetStaticMethodID(env, mActivityClass,
-                                "clipboardSetText", "(Ljava/lang/String;)V");
-    midClipboardGetText = (*env)->GetStaticMethodID(env, mActivityClass,
-                                "clipboardGetText", "()Ljava/lang/String;");
-    midClipboardHasText = (*env)->GetStaticMethodID(env, mActivityClass,
-                                "clipboardHasText", "()Z");
-    midOpenAPKExpansionInputStream = (*env)->GetStaticMethodID(env, mActivityClass,
-                                "openAPKExpansionInputStream", "(Ljava/lang/String;)Ljava/io/InputStream;");
-
-    midGetManifestEnvironmentVariables = (*env)->GetStaticMethodID(env, mActivityClass,
-                                "getManifestEnvironmentVariables", "()Z");
-
-    midGetDisplayDPI = (*env)->GetStaticMethodID(env, mActivityClass, "getDisplayDPI", "()Landroid/util/DisplayMetrics;");
+    midClipboardGetText = (*env)->GetStaticMethodID(env, mActivityClass, "clipboardGetText", "()Ljava/lang/String;");
+    midClipboardHasText = (*env)->GetStaticMethodID(env, mActivityClass, "clipboardHasText", "()Z");
+    midClipboardSetText = (*env)->GetStaticMethodID(env, mActivityClass, "clipboardSetText", "(Ljava/lang/String;)V");
     midCreateCustomCursor = (*env)->GetStaticMethodID(env, mActivityClass, "createCustomCursor", "([IIIII)I");
+    midGetContext = (*env)->GetStaticMethodID(env, mActivityClass, "getContext","()Landroid/content/Context;");
+    midGetDisplayDPI = (*env)->GetStaticMethodID(env, mActivityClass, "getDisplayDPI", "()Landroid/util/DisplayMetrics;");
+    midGetManifestEnvironmentVariables = (*env)->GetStaticMethodID(env, mActivityClass, "getManifestEnvironmentVariables", "()Z");
+    midGetNativeSurface = (*env)->GetStaticMethodID(env, mActivityClass, "getNativeSurface","()Landroid/view/Surface;");
+    midInitTouch = (*env)->GetStaticMethodID(env, mActivityClass, "initTouch", "()V");
+    midIsAndroidTV = (*env)->GetStaticMethodID(env, mActivityClass, "isAndroidTV","()Z");
+    midIsChromebook = (*env)->GetStaticMethodID(env, mActivityClass, "isChromebook", "()Z");
+    midIsDeXMode = (*env)->GetStaticMethodID(env, mActivityClass, "isDeXMode", "()Z");
+    midIsScreenKeyboardShown = (*env)->GetStaticMethodID(env, mActivityClass, "isScreenKeyboardShown","()Z");
+    midIsTablet = (*env)->GetStaticMethodID(env, mActivityClass, "isTablet", "()Z");
+    midManualBackButton = (*env)->GetStaticMethodID(env, mActivityClass, "manualBackButton", "()V");
+    midMinimizeWindow = (*env)->GetStaticMethodID(env, mActivityClass, "minimizeWindow","()V");
+    midOpenAPKExpansionInputStream = (*env)->GetStaticMethodID(env, mActivityClass, "openAPKExpansionInputStream", "(Ljava/lang/String;)Ljava/io/InputStream;");
+    midRequestPermission = (*env)->GetStaticMethodID(env, mActivityClass, "requestPermission", "(Ljava/lang/String;I)V");
+    midSendMessage = (*env)->GetStaticMethodID(env, mActivityClass, "sendMessage", "(II)Z");
+    midSetActivityTitle = (*env)->GetStaticMethodID(env, mActivityClass, "setActivityTitle","(Ljava/lang/String;)Z");
     midSetCustomCursor = (*env)->GetStaticMethodID(env, mActivityClass, "setCustomCursor", "(I)Z");
-    midSetSystemCursor = (*env)->GetStaticMethodID(env, mActivityClass, "setSystemCursor", "(I)Z");
-
-    midSupportsRelativeMouse = (*env)->GetStaticMethodID(env, mActivityClass, "supportsRelativeMouse", "()Z");
+    midSetOrientation = (*env)->GetStaticMethodID(env, mActivityClass, "setOrientation","(IIZLjava/lang/String;)V");
     midSetRelativeMouseEnabled = (*env)->GetStaticMethodID(env, mActivityClass, "setRelativeMouseEnabled", "(Z)Z");
+    midSetSurfaceViewFormat = (*env)->GetStaticMethodID(env, mActivityClass, "setSurfaceViewFormat","(I)V");
+    midSetSystemCursor = (*env)->GetStaticMethodID(env, mActivityClass, "setSystemCursor", "(I)Z");
+    midSetWindowStyle = (*env)->GetStaticMethodID(env, mActivityClass, "setWindowStyle","(Z)V");
+    midShouldMinimizeOnFocusLoss = (*env)->GetStaticMethodID(env, mActivityClass, "shouldMinimizeOnFocusLoss","()Z");
+    midShowTextInput =  (*env)->GetStaticMethodID(env, mActivityClass, "showTextInput", "(IIII)Z");
+    midSupportsRelativeMouse = (*env)->GetStaticMethodID(env, mActivityClass, "supportsRelativeMouse", "()Z");
 
-
-    if (!midGetNativeSurface || !midSetSurfaceViewFormat ||
-       !midSetActivityTitle || !midSetWindowStyle || !midSetOrientation || !midMinimizeWindow || !midShouldMinimizeOnFocusLoss || !midGetContext || !midIsTablet || !midIsAndroidTV || !midInitTouch ||
-       !midSendMessage || !midShowTextInput || !midIsScreenKeyboardShown ||
-       !midClipboardSetText || !midClipboardGetText || !midClipboardHasText ||
-       !midOpenAPKExpansionInputStream || !midGetManifestEnvironmentVariables || !midGetDisplayDPI ||
-       !midCreateCustomCursor || !midSetCustomCursor || !midSetSystemCursor || !midSupportsRelativeMouse || !midSetRelativeMouseEnabled ||
-       !midIsChromebook || !midIsDeXMode || !midManualBackButton) {
+    if (!midClipboardGetText ||
+        !midClipboardHasText ||
+        !midClipboardSetText ||
+        !midCreateCustomCursor ||
+        !midGetContext ||
+        !midGetDisplayDPI ||
+        !midGetManifestEnvironmentVariables ||
+        !midGetNativeSurface ||
+        !midInitTouch ||
+        !midIsAndroidTV ||
+        !midIsChromebook ||
+        !midIsDeXMode ||
+        !midIsScreenKeyboardShown ||
+        !midIsTablet ||
+        !midManualBackButton ||
+        !midMinimizeWindow ||
+        !midOpenAPKExpansionInputStream ||
+        !midRequestPermission ||
+        !midSendMessage ||
+        !midSetActivityTitle ||
+        !midSetCustomCursor ||
+        !midSetOrientation ||
+        !midSetRelativeMouseEnabled ||
+        !midSetSurfaceViewFormat ||
+        !midSetSystemCursor ||
+        !midSetWindowStyle ||
+        !midShouldMinimizeOnFocusLoss ||
+        !midShowTextInput ||
+        !midSupportsRelativeMouse) {
         __android_log_print(ANDROID_LOG_WARN, "SDL", "Missing some Java callbacks, do you have the latest version of SDLActivity.java?");
     }
 
@@ -873,6 +880,14 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeAddTouch)(
     SDL_AddTouch((SDL_TouchID) touchId, SDL_TOUCH_DEVICE_DIRECT, utfname);
 
     (*env)->ReleaseStringUTFChars(env, name, utfname);
+}
+
+JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativePermissionResult)(
+        JNIEnv* env, jclass cls,
+        jint requestCode, jboolean result)
+{
+    bPermissionRequestResult = result;
+    SDL_AtomicSet(&bPermissionRequestPending, SDL_FALSE);
 }
 
 /* Paddown */
@@ -2759,6 +2774,27 @@ SDL_bool Android_JNI_SetRelativeMouseEnabled(SDL_bool enabled)
     return (*env)->CallStaticBooleanMethod(env, mActivityClass, midSetRelativeMouseEnabled, (enabled == 1));
 }
 
+SDL_bool Android_JNI_RequestPermission(const char *permission)
+{
+    JNIEnv *env = Android_JNI_GetEnv();
+	const int requestCode = 1;
+
+	/* Wait for any pending request on another thread */
+	while (SDL_AtomicGet(&bPermissionRequestPending) == SDL_TRUE) {
+		SDL_Delay(10);
+	}
+	SDL_AtomicSet(&bPermissionRequestPending, SDL_TRUE);
+
+    jstring jpermission = (*env)->NewStringUTF(env, permission);
+    (*env)->CallStaticVoidMethod(env, mActivityClass, midRequestPermission, jpermission, requestCode);
+    (*env)->DeleteLocalRef(env, jpermission);
+
+	/* Wait for the request to complete */
+	while (SDL_AtomicGet(&bPermissionRequestPending) == SDL_TRUE) {
+		SDL_Delay(10);
+	}
+	return bPermissionRequestResult;
+}
 
 #endif /* __ANDROID__ */
 
