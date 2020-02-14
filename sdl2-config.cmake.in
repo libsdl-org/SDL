@@ -3,6 +3,8 @@
 set(prefix "@prefix@") 
 set(exec_prefix "@exec_prefix@")
 set(libdir "@libdir@")
+set(PACKAGE_VERSION "@SDL_VERSION@")
+set(SDL2_VERSION "@SDL_VERSION@")
 set(SDL2_PREFIX "@prefix@")
 set(SDL2_EXEC_PREFIX "@prefix@")
 set(SDL2_LIBDIR "@libdir@")
