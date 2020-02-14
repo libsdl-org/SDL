@@ -118,7 +118,9 @@ handle_configure_zxdg_shell_surface(void *data, struct zxdg_surface_v6 *zxdg, ui
         window->h = wind->resize.height;
 
         wl_surface_set_buffer_scale(wind->surface, get_window_scale_factor(window));
-        WAYLAND_wl_egl_window_resize(wind->egl_window, window->w * get_window_scale_factor(window), window->h * get_window_scale_factor(window), 0, 0);
+        if (wind->egl_window) {
+            WAYLAND_wl_egl_window_resize(wind->egl_window, window->w * get_window_scale_factor(window), window->h * get_window_scale_factor(window), 0, 0);
+        }
 
         zxdg_surface_v6_ack_configure(zxdg, serial);
 
@@ -223,7 +225,9 @@ handle_configure_xdg_shell_surface(void *data, struct xdg_surface *xdg, uint32_t
         window->h = wind->resize.height;
 
         wl_surface_set_buffer_scale(wind->surface, get_window_scale_factor(window));
-        WAYLAND_wl_egl_window_resize(wind->egl_window, window->w * get_window_scale_factor(window), window->h * get_window_scale_factor(window), 0, 0);
+        if (wind->egl_window) {
+            WAYLAND_wl_egl_window_resize(wind->egl_window, window->w * get_window_scale_factor(window), window->h * get_window_scale_factor(window), 0, 0);
+        }
 
         xdg_surface_ack_configure(xdg, serial);
 
@@ -624,9 +628,11 @@ int Wayland_CreateWindow(_THIS, SDL_Window *window)
     c = _this->driverdata;
     window->driverdata = data;
 
-    if (!(window->flags & SDL_WINDOW_OPENGL)) {
-        SDL_GL_LoadLibrary(NULL);
-        window->flags |= SDL_WINDOW_OPENGL;
+    if (!(window->flags & SDL_WINDOW_VULKAN)) {
+        if (!(window->flags & SDL_WINDOW_OPENGL)) {
+            SDL_GL_LoadLibrary(NULL);
+            window->flags |= SDL_WINDOW_OPENGL;
+        }
     }
 
     if (window->x == SDL_WINDOWPOS_UNDEFINED) {
@@ -690,14 +696,16 @@ int Wayland_CreateWindow(_THIS, SDL_Window *window)
     }
 #endif /* SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH */
 
-    data->egl_window = WAYLAND_wl_egl_window_create(data->surface,
+    if (window->flags & SDL_WINDOW_OPENGL) {
+        data->egl_window = WAYLAND_wl_egl_window_create(data->surface,
                                             window->w * data->scale_factor, window->h * data->scale_factor);
 
-    /* Create the GLES window surface */
-    data->egl_surface = SDL_EGL_CreateSurface(_this, (NativeWindowType) data->egl_window);
+        /* Create the GLES window surface */
+        data->egl_surface = SDL_EGL_CreateSurface(_this, (NativeWindowType) data->egl_window);
     
-    if (data->egl_surface == EGL_NO_SURFACE) {
-        return SDL_SetError("failed to create a window surface");
+        if (data->egl_surface == EGL_NO_SURFACE) {
+            return SDL_SetError("failed to create an EGL window surface");
+        }
     }
 
     if (c->shell.xdg) {
@@ -781,7 +789,10 @@ void Wayland_SetWindowSize(_THIS, SDL_Window * window)
     struct wl_region *region;
 
     wl_surface_set_buffer_scale(wind->surface, get_window_scale_factor(window));
-    WAYLAND_wl_egl_window_resize(wind->egl_window, window->w * get_window_scale_factor(window), window->h * get_window_scale_factor(window), 0, 0);
+
+    if (wind->egl_window) {
+        WAYLAND_wl_egl_window_resize(wind->egl_window, window->w * get_window_scale_factor(window), window->h * get_window_scale_factor(window), 0, 0);
+    }
 
     region = wl_compositor_create_region(data->compositor);
     wl_region_add(region, 0, 0, window->w, window->h);
@@ -813,8 +824,12 @@ void Wayland_DestroyWindow(_THIS, SDL_Window *window)
     SDL_WindowData *wind = window->driverdata;
 
     if (data) {
-        SDL_EGL_DestroySurface(_this, wind->egl_surface);
-        WAYLAND_wl_egl_window_destroy(wind->egl_window);
+        if (wind->egl_surface) {
+            SDL_EGL_DestroySurface(_this, wind->egl_surface);
+        }
+        if (wind->egl_window) {
+            WAYLAND_wl_egl_window_destroy(wind->egl_window);
+        }
 
         if (wind->server_decoration) {
            zxdg_toplevel_decoration_v1_destroy(wind->server_decoration);
