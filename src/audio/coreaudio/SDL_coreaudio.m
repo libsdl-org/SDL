@@ -566,6 +566,12 @@ COREAUDIO_CloseDevice(_THIS)
     AudioObjectRemovePropertyListener(this->hidden->deviceID, &alive_address, device_unplugged, this);
 #endif
 
+    if (iscapture) {
+        open_capture_devices--;
+    } else {
+        open_playback_devices--;
+    }
+
 #if !MACOSX_COREAUDIO
     update_audio_session(this, SDL_FALSE);
 #endif
@@ -591,12 +597,6 @@ COREAUDIO_CloseDevice(_THIS)
     SDL_free(this->hidden->thread_error);
     SDL_free(this->hidden->buffer);
     SDL_free(this->hidden);
-
-    if (iscapture) {
-        open_capture_devices--;
-    } else {
-        open_playback_devices--;
-    }
 }
 
 #if MACOSX_COREAUDIO
