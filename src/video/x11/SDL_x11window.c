@@ -809,20 +809,36 @@ X11_SetWindowPosition(_THIS, SDL_Window * window)
     Window childReturn, root, parent;
     Window* children;
     XWindowAttributes attrs;
+    int orig_x, orig_y;
+    Uint32 timeout;
+
+    X11_XSync(display, False);
+    X11_XQueryTree(display, data->xwindow, &root, &parent, &children, &childCount);
+    X11_XGetWindowAttributes(display, data->xwindow, &attrs);
+    X11_XTranslateCoordinates(display, parent, DefaultRootWindow(display),
+                              attrs.x, attrs.y, &orig_x, &orig_y, &childReturn);
 
     /*Attempt to move the window*/
     X11_XMoveWindow(display, data->xwindow, window->x - data->border_left, window->y - data->border_top);
-    X11_XSync(display, False);
 
-    /*If the window is not moved, then the coordinates on the window structure are out of sync, so we
-      update them here. */
-    X11_XQueryTree(display, data->xwindow, &root, &parent, &children, &childCount);
-    X11_XGetWindowAttributes(display, data->xwindow, &attrs);
-    X11_XTranslateCoordinates(display,
-                              parent, DefaultRootWindow(display),
-                              attrs.x, attrs.y,
-                              &window->x, &window->y,
-                              &childReturn);
+    /* Wait a brief time to see if the window manager decided to let this move happen.
+       If the window changes at all, even to an unexpected value, we break out. */
+    timeout = SDL_GetTicks() + 100;
+    do {
+        int x, y;
+        X11_XSync(display, False);
+        X11_XGetWindowAttributes(display, data->xwindow, &attrs);
+        X11_XTranslateCoordinates(display, parent, DefaultRootWindow(display),
+                                  attrs.x, attrs.y, &x, &y, &childReturn);
+
+        if ((x != orig_x) || (y != orig_y)) {
+            window->x = x;
+            window->y = y;
+            break;  /* window moved, time to go. */
+        }
+
+        SDL_Delay(10);
+    } while (!SDL_TICKS_PASSED(SDL_GetTicks(), timeout));
 }
 
 void
