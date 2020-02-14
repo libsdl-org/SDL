@@ -234,6 +234,7 @@ openslES_CreatePCMRecorder(_THIS)
     int i;
 
     if (!Android_JNI_RequestPermission("android.permission.RECORD_AUDIO")) {
+        LOGE("This app doesn't have RECORD_AUDIO permission");
         return SDL_SetError("This app doesn't have RECORD_AUDIO permission");
     }
 

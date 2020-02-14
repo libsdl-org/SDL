@@ -1606,24 +1606,14 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
      * This method is called by SDL using JNI.
      */
     public static void requestPermission(String permission, int requestCode) {
-        if (mSingleton != null) {
-            mSingleton.checkPermission(permission, requestCode);
-        } else {
-            nativePermissionResult(requestCode, false);
-        }
-    }
-
-    /**
-     * This can be overridden
-     */
-    public void checkPermission(String permission, int requestCode) {
         if (Build.VERSION.SDK_INT < 23) {
             nativePermissionResult(requestCode, true);
             return;
         }
 
-        if (this.checkSelfPermission(permission) != PackageManager.PERMISSION_GRANTED) {
-            this.requestPermissions(new String[]{permission}, requestCode);
+        Activity activity = (Activity)getContext();
+        if (activity.checkSelfPermission(permission) != PackageManager.PERMISSION_GRANTED) {
+            activity.requestPermissions(new String[]{permission}, requestCode);
         } else {
             nativePermissionResult(requestCode, true);
         }
