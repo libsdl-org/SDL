@@ -616,9 +616,13 @@ HIDAPI_JoystickDisconnected(SDL_HIDAPI_Device *device, SDL_JoystickID joystickID
                 HIDAPI_JoystickClose(joystick);
             }
 
-            SDL_memcpy(&device->joysticks[i], &device->joysticks[i+1], device->num_joysticks - i - 1);
+            SDL_memmove(&device->joysticks[i], &device->joysticks[i+1], device->num_joysticks - i - 1);
             --device->num_joysticks;
             --SDL_HIDAPI_numjoysticks;
+            if (device->num_joysticks == 0) {
+                SDL_free(device->joysticks);
+                device->joysticks = NULL;
+            }
 
             if (!shutting_down) {
                 SDL_PrivateJoystickRemoved(joystickID);
