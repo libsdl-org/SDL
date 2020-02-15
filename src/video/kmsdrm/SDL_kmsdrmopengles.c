@@ -62,7 +62,7 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window) {
     SDL_DisplayData *dispdata = (SDL_DisplayData *) SDL_GetDisplayForWindow(window)->driverdata;
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
     KMSDRM_FBInfo *fb_info;
-    int ret;
+    int ret, timeout;
 
     /* Recreate the GBM / EGL surfaces if the display mode has changed */
     if (windata->egl_surface_dirty) {
@@ -71,7 +71,7 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window) {
 
     /* Wait for confirmation that the next front buffer has been flipped, at which
        point the previous front buffer can be released */
-    int timeout = 0;
+    timeout = 0;
     if (_this->egl_data->egl_swapinterval == 1) {
         timeout = -1;
     }

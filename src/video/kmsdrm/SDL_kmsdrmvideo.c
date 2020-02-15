@@ -258,6 +258,9 @@ KMSDRM_FBInfo *
 KMSDRM_FBFromBO(_THIS, struct gbm_bo *bo)
 {
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
+    unsigned w,h;
+    int ret;
+    Uint32 stride, handle;
 
     /* Check for an existing framebuffer */
     KMSDRM_FBInfo *fb_info = (KMSDRM_FBInfo *)KMSDRM_gbm_bo_get_user_data(bo);
@@ -278,11 +281,11 @@ KMSDRM_FBFromBO(_THIS, struct gbm_bo *bo)
     fb_info->drm_fd = viddata->drm_fd;
 
     /* Create framebuffer object for the buffer */
-    unsigned w = KMSDRM_gbm_bo_get_width(bo);
-    unsigned h = KMSDRM_gbm_bo_get_height(bo);
-    Uint32 stride = KMSDRM_gbm_bo_get_stride(bo);
-    Uint32 handle = KMSDRM_gbm_bo_get_handle(bo).u32;
-    int ret = KMSDRM_drmModeAddFB(viddata->drm_fd, w, h, 24, 32, stride, handle,
+    w = KMSDRM_gbm_bo_get_width(bo);
+    h = KMSDRM_gbm_bo_get_height(bo);
+    stride = KMSDRM_gbm_bo_get_stride(bo);
+    handle = KMSDRM_gbm_bo_get_handle(bo).u32;
+    ret = KMSDRM_drmModeAddFB(viddata->drm_fd, w, h, 24, 32, stride, handle,
                                   &fb_info->fb_id);
     if (ret) {
       SDL_free(fb_info);
@@ -307,12 +310,12 @@ KMSDRM_FlipHandler(int fd, unsigned int frame, unsigned int sec, unsigned int us
 SDL_bool
 KMSDRM_WaitPageFlip(_THIS, SDL_WindowData *windata, int timeout) {
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
-
     drmEventContext ev = {0};
+    struct pollfd pfd = {0};
+
     ev.version = DRM_EVENT_CONTEXT_VERSION;
     ev.page_flip_handler = KMSDRM_FlipHandler;
 
-    struct pollfd pfd = {0};
     pfd.fd = viddata->drm_fd;
     pfd.events = POLLIN;
 
@@ -389,6 +392,7 @@ KMSDRM_CreateSurfaces(_THIS, SDL_Window * window)
     Uint32 height = dispdata->mode.vdisplay;
     Uint32 surface_fmt = GBM_FORMAT_XRGB8888;
     Uint32 surface_flags = GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING;
+    EGLContext egl_context;
 
     if (!KMSDRM_gbm_device_is_format_supported(viddata->gbm, surface_fmt, surface_flags)) {
         SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO, "GBM surface format not supported. Trying anyway.");
@@ -396,8 +400,7 @@ KMSDRM_CreateSurfaces(_THIS, SDL_Window * window)
 
 #if SDL_VIDEO_OPENGL_EGL
     SDL_EGL_SetRequiredVisualId(_this, surface_fmt);
-
-    EGLContext egl_context = (EGLContext)SDL_GL_GetCurrentContext();
+    egl_context = (EGLContext)SDL_GL_GetCurrentContext();
 #endif
 
     KMSDRM_DestroySurfaces(_this, window);
@@ -431,6 +434,8 @@ KMSDRM_VideoInit(_THIS)
     SDL_DisplayData *dispdata = NULL;
     drmModeRes *resources = NULL;
     drmModeEncoder *encoder = NULL;
+    char devname[32];
+    SDL_VideoDisplay display = {0};
 
     dispdata = (SDL_DisplayData *) SDL_calloc(1, sizeof(SDL_DisplayData));
 
@@ -441,7 +446,6 @@ KMSDRM_VideoInit(_THIS)
     SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "KMSDRM_VideoInit()");
 
     /* Open /dev/dri/cardNN */
-    char devname[32];
     SDL_snprintf(devname, sizeof(devname), "/dev/dri/card%d", viddata->devindex);
 
     SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Opening device %s", devname);
@@ -575,7 +579,7 @@ KMSDRM_VideoInit(_THIS)
     }
 
     /* Setup the single display that's available */
-    SDL_VideoDisplay display = {0};
+
     display.desktop_mode.w = dispdata->mode.hdisplay;
     display.desktop_mode.h = dispdata->mode.vdisplay;
     display.desktop_mode.refresh_rate = dispdata->mode.vrefresh;
@@ -685,6 +689,7 @@ KMSDRM_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
 {
     SDL_DisplayData *dispdata = display->driverdata;
     drmModeConnector *conn = dispdata->conn;
+    SDL_DisplayMode mode;
 
     for (int i = 0; i < conn->count_modes; i++) {
         SDL_DisplayModeData *modedata = SDL_calloc(1, sizeof(SDL_DisplayModeData));
@@ -693,7 +698,6 @@ KMSDRM_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
           modedata->mode_index = i;
         }
 
-        SDL_DisplayMode mode;
         mode.w = conn->modes[i].hdisplay;
         mode.h = conn->modes[i].vdisplay;
         mode.refresh_rate = conn->modes[i].vrefresh;
@@ -712,12 +716,12 @@ KMSDRM_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
     SDL_VideoData *viddata = (SDL_VideoData *)_this->driverdata;
     SDL_DisplayData *dispdata = (SDL_DisplayData *)display->driverdata;
     SDL_DisplayModeData *modedata = (SDL_DisplayModeData *)mode->driverdata;
+    drmModeConnector *conn = dispdata->conn;
 
     if (!modedata) {
         return SDL_SetError("Mode doesn't have an associated index");
     }
 
-    drmModeConnector *conn = dispdata->conn;
     dispdata->mode = conn->modes[modedata->mode_index];
 
     for (int i = 0; i < viddata->num_windows; i++) {
@@ -745,6 +749,8 @@ int
 KMSDRM_CreateWindow(_THIS, SDL_Window * window)
 {
     SDL_VideoData *viddata = (SDL_VideoData *)_this->driverdata;
+    SDL_WindowData *windata;
+    SDL_VideoDisplay *display;
 
 #if SDL_VIDEO_OPENGL_EGL
     if (!_this->egl_data) {
@@ -755,7 +761,7 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
 #endif
 
     /* Allocate window internal data */
-    SDL_WindowData *windata = (SDL_WindowData *)SDL_calloc(1, sizeof(SDL_WindowData));
+    windata = (SDL_WindowData *)SDL_calloc(1, sizeof(SDL_WindowData));
 
     if (!windata) {
         SDL_OutOfMemory();
@@ -763,7 +769,7 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
     }
 
     /* Windows have one size for now */
-    SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
+    display = SDL_GetDisplayForWindow(window);
     window->w = display->desktop_mode.w;
     window->h = display->desktop_mode.h;
 
@@ -815,13 +821,13 @@ void
 KMSDRM_DestroyWindow(_THIS, SDL_Window * window)
 {
     SDL_WindowData *windata = (SDL_WindowData *) window->driverdata;
-
+    SDL_VideoData *viddata;
     if (!windata) {
         return;
     }
 
     /* Remove from the internal window list */
-    SDL_VideoData *viddata = windata->viddata;
+    viddata = windata->viddata;
 
     for (int i = 0; i < viddata->num_windows; i++) {
         if (viddata->windows[i] == window) {
