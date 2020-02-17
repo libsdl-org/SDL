@@ -42,7 +42,9 @@
 /* Many controllers turn the center button into an instantaneous button press */
 #define SDL_MINIMUM_GUIDE_BUTTON_DELAY_MS   250
 
-#define SDL_CONTROLLER_PLATFORM_FIELD "platform:"
+#define SDL_CONTROLLER_PLATFORM_FIELD   "platform:"
+#define SDL_CONTROLLER_SDKGE_FIELD      "sdk>=:"
+#define SDL_CONTROLLER_SDKLE_FIELD      "sdk<=:"
 
 /* a list of currently opened game controllers */
 static SDL_GameController *SDL_gamecontrollers = NULL;
@@ -1136,7 +1138,7 @@ SDL_GameControllerAddMappingsFromRW(SDL_RWops * rw, int freerw)
                 }
             }
         }
-        
+
         line = line_end + 1;
     }
 
@@ -1161,6 +1163,27 @@ SDL_PrivateGameControllerAddMapping(const char *mappingString, SDL_ControllerMap
     if (!mappingString) {
         return SDL_InvalidParamError("mappingString");
     }
+
+#ifdef ANDROID
+    { /* Extract and verify the SDK version */
+        const char *tmp;
+
+        tmp = SDL_strstr(mappingString, SDL_CONTROLLER_SDKGE_FIELD);
+        if (tmp != NULL) {
+            tmp += SDL_strlen(SDL_CONTROLLER_SDKGE_FIELD);
+            if (!(SDL_GetAndroidSDKVersion() >= SDL_atoi(tmp))) {
+                return SDL_SetError("SDK version %d < minimum version %d", SDL_GetAndroidSDKVersion(), SDL_atoi(tmp));
+            }
+        }
+        tmp = SDL_strstr(mappingString, SDL_CONTROLLER_SDKLE_FIELD);
+        if (tmp != NULL) {
+            tmp += SDL_strlen(SDL_CONTROLLER_SDKLE_FIELD);
+            if (!(SDL_GetAndroidSDKVersion() <= SDL_atoi(tmp))) {
+                return SDL_SetError("SDK version %d > maximum version %d", SDL_GetAndroidSDKVersion(), SDL_atoi(tmp));
+            }
+        }
+    }
+#endif
 
     pchGUID = SDL_PrivateGetControllerGUIDFromMappingString(mappingString);
     if (!pchGUID) {
