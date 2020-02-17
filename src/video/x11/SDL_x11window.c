@@ -835,6 +835,8 @@ X11_SetWindowPosition(_THIS, SDL_Window * window)
             window->x = x;
             window->y = y;
             break;  /* window moved, time to go. */
+        } else if ((x == window->x) && (y == window->y)) {
+            break;  /* we're at the place we wanted to be anyhow, drop out. */
         }
 
         SDL_Delay(10);
