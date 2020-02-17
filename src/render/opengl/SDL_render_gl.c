@@ -866,60 +866,6 @@ GL_QueueDrawPoints(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FP
 }
 
 static int
-GL_QueueDrawLines(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FPoint * points, int count)
-{
-    GLfloat *verts;
-    int i;
-
-    SDL_assert(count >= 2);  /* should have been checked at the higher level. */
-
-    verts = (GLfloat *) SDL_AllocateRenderVertices(renderer, (count-1) * 4 * sizeof (GLfloat), 0, &cmd->data.draw.first);
-    if (!verts) {
-        return -1;
-    }
-
-    cmd->data.draw.count = count;
-
-    /* GL_LINE_STRIP seems to be unreliable on various drivers, so try
-       to build out our own GL_LINES.  :(
-       If the line segment is completely horizontal or vertical,
-       make it one pixel longer, to satisfy the diamond-exit rule.
-       We should probably do this for diagonal lines too, but we'd have to
-       do some trigonometry to figure out the correct pixel and generally
-       when we have problems with pixel perfection, it's for straight lines
-       that are missing a pixel that frames something and not arbitrary
-       angles. Maybe !!! FIXME for later, though. */
-
-    for (i = 0; i < count-1; i++, points++) {
-        GLfloat xstart = 0.5f + points[0].x;   /* 0.5f to get to the center of the pixel. */
-        GLfloat ystart = 0.5f + points[0].y;
-        GLfloat xend = 0.5f + points[1].x;
-        GLfloat yend = 0.5f + points[1].y;
-
-        if (xstart == xend) {  /* vertical line */
-            if (yend > ystart) {
-                yend += 1.0f;
-            } else {
-                ystart += 1.0f;
-            }
-        } else if (ystart == yend) {  /* horizontal line */
-            if (xend > xstart) {
-                xend += 1.0f;
-            } else {
-                xstart += 1.0f;
-            }
-        }
-
-        *(verts++) = xstart;
-        *(verts++) = ystart;
-        *(verts++) = xend;
-        *(verts++) = yend;
-    }
-
-    return 0;
-}
-
-static int
 GL_QueueFillRects(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FRect * rects, int count)
 {
     GLfloat *verts = (GLfloat *) SDL_AllocateRenderVertices(renderer, count * 4 * sizeof (GLfloat), 0, &cmd->data.draw.first);
@@ -1282,14 +1228,59 @@ GL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
             case SDL_RENDERCMD_DRAW_LINES: {
                 const GLfloat *verts = (GLfloat *) (((Uint8 *) vertices) + cmd->data.draw.first);
                 const size_t count = cmd->data.draw.count;
-                SDL_assert(count >= 2);
                 SetDrawState(data, cmd, SHADER_SOLID);
-                data->glBegin(GL_LINES);
-                for (i = 0; i < count-1; ++i, verts += 4) {
-                    data->glVertex2f(verts[0], verts[1]);
-                    data->glVertex2f(verts[2], verts[3]);
+                if (count > 2 && (verts[0] == verts[(count-1)*2]) && (verts[1] == verts[(count*2)-1])) {
+                    data->glBegin(GL_LINE_LOOP);
+                    /* GL_LINE_LOOP takes care of the final segment */
+                    for (i = 1; i < count; ++i, verts += 2) {
+                        data->glVertex2f(verts[0], verts[1]);
+                    }
+                    data->glEnd();
+                } else {
+                    #if defined(__MACOSX__) || defined(__WIN32__)
+                    #else
+                    int x1, y1, x2, y2;
+                    #endif
+
+                    data->glBegin(GL_LINE_STRIP);
+                    for (i = 0; i < count; ++i, verts += 2) {
+                        data->glVertex2f(verts[0], verts[1]);
+                    }
+                    data->glEnd();
+                    verts -= 2 * count;
+
+                    /* The line is half open, so we need one more point to complete it.
+                     * http://www.opengl.org/documentation/specs/version1.1/glspec1.1/node47.html
+                     * If we have to, we can use vertical line and horizontal line textures
+                     * for vertical and horizontal lines, and then create custom textures
+                     * for diagonal lines and software render those.  It's terrible, but at
+                     * least it would be pixel perfect.
+                     */
+
+                    data->glBegin(GL_POINTS);
+                    #if defined(__MACOSX__) || defined(__WIN32__)
+                    /* Mac OS X and Windows seem to always leave the last point open */
+                    data->glVertex2f(verts[(count-1)*2], verts[(count*2)-1]);
+                    #else
+                    /* Linux seems to leave the right-most or bottom-most point open */
+                    x1 = verts[0];
+                    y1 = verts[1];
+                    x2 = verts[(count-1)*2];
+                    y2 = verts[(count*2)-1];
+
+                    if (x1 > x2) {
+                        data->glVertex2f(x1, y1);
+                    } else if (x2 > x1) {
+                        data->glVertex2f(x2, y2);
+                    }
+                    if (y1 > y2) {
+                        data->glVertex2f(x1, y1);
+                    } else if (y2 > y1) {
+                        data->glVertex2f(x2, y2);
+                    }
+                    #endif
+                    data->glEnd();
                 }
-                data->glEnd();
                 break;
             }
 
@@ -1628,7 +1619,7 @@ GL_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->QueueSetViewport = GL_QueueSetViewport;
     renderer->QueueSetDrawColor = GL_QueueSetViewport;  /* SetViewport and SetDrawColor are (currently) no-ops. */
     renderer->QueueDrawPoints = GL_QueueDrawPoints;
-    renderer->QueueDrawLines = GL_QueueDrawLines;
+    renderer->QueueDrawLines = GL_QueueDrawPoints;  /* lines and points queue vertices the same way. */
     renderer->QueueFillRects = GL_QueueFillRects;
     renderer->QueueCopy = GL_QueueCopy;
     renderer->QueueCopyEx = GL_QueueCopyEx;
