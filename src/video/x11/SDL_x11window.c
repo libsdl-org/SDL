@@ -824,7 +824,7 @@ X11_SetWindowPosition(_THIS, SDL_Window * window)
     /* Wait a brief time to see if the window manager decided to let this move happen.
        If the window changes at all, even to an unexpected value, we break out. */
     timeout = SDL_GetTicks() + 100;
-    do {
+    while (SDL_TRUE) {
         int x, y;
         X11_XSync(display, False);
         X11_XGetWindowAttributes(display, data->xwindow, &attrs);
@@ -839,8 +839,12 @@ X11_SetWindowPosition(_THIS, SDL_Window * window)
             break;  /* we're at the place we wanted to be anyhow, drop out. */
         }
 
+        if (SDL_TICKS_PASSED(SDL_GetTicks(), timeout)) {
+            break;
+        }
+
         SDL_Delay(10);
-    } while (!SDL_TICKS_PASSED(SDL_GetTicks(), timeout));
+    }
 }
 
 void
