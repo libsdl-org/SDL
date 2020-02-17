@@ -804,3 +804,4 @@ SDL_DYNAPI_PROC(void,SDL_OnApplicationDidBecomeActive,(void),(),)
 #ifdef __IPHONEOS__
 SDL_DYNAPI_PROC(void,SDL_OnApplicationDidChangeStatusBarOrientation,(void),(),)
 #endif
+SDL_DYNAPI_PROC(int,SDL_GetAndroidSDKVersion,(void),(),return)
