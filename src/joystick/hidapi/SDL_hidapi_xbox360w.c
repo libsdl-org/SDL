@@ -47,7 +47,7 @@ HIDAPI_DriverXbox360W_IsSupportedDevice(const char *name, SDL_GameControllerType
 {
     const int XB360W_IFACE_PROTOCOL = 129; /* Wireless */
 
-    if ((vendor_id == USB_VENDOR_MICROSOFT && (product_id == 0x0291 || product_id == 0x0719)) ||
+    if ((vendor_id == USB_VENDOR_MICROSOFT && (product_id == 0x0291 || product_id == 0x02a9 || product_id == 0x0719)) ||
         (type == SDL_CONTROLLER_TYPE_XBOX360 && interface_protocol == XB360W_IFACE_PROTOCOL)) {
         return SDL_TRUE;
     }
