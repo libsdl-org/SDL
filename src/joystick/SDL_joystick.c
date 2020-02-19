@@ -1398,114 +1398,114 @@ SDL_GetJoystickGameControllerTypeFromGUID(SDL_JoystickGUID guid, const char *nam
 SDL_GameControllerType
 SDL_GetJoystickGameControllerType(const char *name, Uint16 vendor, Uint16 product, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
+    static const int LIBUSB_CLASS_VENDOR_SPEC = 0xFF;
+    static const int XB360_IFACE_SUBCLASS = 93;
+    static const int XB360_IFACE_PROTOCOL = 1; /* Wired */
+    static const int XB360W_IFACE_PROTOCOL = 129; /* Wireless */
+    static const int XBONE_IFACE_SUBCLASS = 71;
+    static const int XBONE_IFACE_PROTOCOL = 208;
+
     SDL_GameControllerType type = SDL_CONTROLLER_TYPE_UNKNOWN;
 
-    if (vendor == 0x0000 && product == 0x0000) {
-        /* Some devices are only identifiable by their name */
-        if (SDL_strcmp(name, "Lic Pro Controller") == 0 ||
-            SDL_strcmp(name, "Nintendo Wireless Gamepad") == 0 ||
-            SDL_strcmp(name, "Wireless Gamepad") == 0) {
-            /* HORI or PowerA Switch Pro Controller clone */
-            type = SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO;
-        } else {
-            type = SDL_CONTROLLER_TYPE_UNKNOWN;
+    /* This code should match the checks in libusb/hid.c and HIDDeviceManager.java */
+    if (interface_class == LIBUSB_CLASS_VENDOR_SPEC &&
+        interface_subclass == XB360_IFACE_SUBCLASS &&
+        (interface_protocol == XB360_IFACE_PROTOCOL ||
+         interface_protocol == XB360W_IFACE_PROTOCOL)) {
+
+        static const int SUPPORTED_VENDORS[] = {
+            0x0079, /* GPD Win 2 */
+            0x044f, /* Thrustmaster */
+            0x045e, /* Microsoft */
+            0x046d, /* Logitech */
+            0x056e, /* Elecom */
+            0x06a3, /* Saitek */
+            0x0738, /* Mad Catz */
+            0x07ff, /* Mad Catz */
+            0x0e6f, /* PDP */
+            0x0f0d, /* Hori */
+            0x1038, /* SteelSeries */
+            0x11c9, /* Nacon */
+            0x12ab, /* Unknown */
+            0x1430, /* RedOctane */
+            0x146b, /* BigBen */
+            0x1532, /* Razer Sabertooth */
+            0x15e4, /* Numark */
+            0x162e, /* Joytech */
+            0x1689, /* Razer Onza */
+            0x1bad, /* Harmonix */
+            0x24c6, /* PowerA */
+        };
+
+        int i;
+        for (i = 0; i < SDL_arraysize(SUPPORTED_VENDORS); ++i) {
+            if (vendor == SUPPORTED_VENDORS[i]) {
+                type = SDL_CONTROLLER_TYPE_XBOX360;
+                break;
+            }
         }
+    }
 
-    } else if (vendor == 0x0001 && product == 0x0001) {
-        type = SDL_CONTROLLER_TYPE_UNKNOWN;
+    if (interface_number == 0 &&
+        interface_class == LIBUSB_CLASS_VENDOR_SPEC &&
+        interface_subclass == XBONE_IFACE_SUBCLASS &&
+        interface_protocol == XBONE_IFACE_PROTOCOL) {
 
-    } else {
-        switch (GuessControllerType(vendor, product)) {
-        case k_eControllerType_XBox360Controller:
-            type = SDL_CONTROLLER_TYPE_XBOX360;
-            break;
-        case k_eControllerType_XBoxOneController:
-            type = SDL_CONTROLLER_TYPE_XBOXONE;
-            break;
-        case k_eControllerType_PS3Controller:
-            type = SDL_CONTROLLER_TYPE_PS3;
-            break;
-        case k_eControllerType_PS4Controller:
-            type = SDL_CONTROLLER_TYPE_PS4;
-            break;
-        case k_eControllerType_SwitchProController:
-        case k_eControllerType_SwitchInputOnlyController:
-            type = SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO;
-            break;
-        default:
-            type = SDL_CONTROLLER_TYPE_UNKNOWN;
-            break;
+        static const int SUPPORTED_VENDORS[] = {
+            0x045e, /* Microsoft */
+            0x0738, /* Mad Catz */
+            0x0e6f, /* PDP */
+            0x0f0d, /* Hori */
+            0x1532, /* Razer Wildcat */
+            0x24c6, /* PowerA */
+            0x2e24, /* Hyperkin */
+        };
+
+        int i;
+        for (i = 0; i < SDL_arraysize(SUPPORTED_VENDORS); ++i) {
+            if (vendor == SUPPORTED_VENDORS[i]) {
+                type = SDL_CONTROLLER_TYPE_XBOXONE;
+                break;
+            }
         }
     }
 
     if (type == SDL_CONTROLLER_TYPE_UNKNOWN) {
-        /* This code should match the checks in libusb/hid.c and HIDDeviceManager.java */
-        static const int LIBUSB_CLASS_VENDOR_SPEC = 0xFF;
-        static const int XB360_IFACE_SUBCLASS = 93;
-        static const int XB360_IFACE_PROTOCOL = 1; /* Wired */
-        static const int XB360W_IFACE_PROTOCOL = 129; /* Wireless */
-        static const int XBONE_IFACE_SUBCLASS = 71;
-        static const int XBONE_IFACE_PROTOCOL = 208;
-
-        if (interface_class == LIBUSB_CLASS_VENDOR_SPEC &&
-            interface_subclass == XB360_IFACE_SUBCLASS &&
-            (interface_protocol == XB360_IFACE_PROTOCOL ||
-             interface_protocol == XB360W_IFACE_PROTOCOL)) {
-
-            static const int SUPPORTED_VENDORS[] = {
-                0x0079, /* GPD Win 2 */
-                0x044f, /* Thrustmaster */
-                0x045e, /* Microsoft */
-                0x046d, /* Logitech */
-                0x056e, /* Elecom */
-                0x06a3, /* Saitek */
-                0x0738, /* Mad Catz */
-                0x07ff, /* Mad Catz */
-                0x0e6f, /* PDP */
-                0x0f0d, /* Hori */
-                0x1038, /* SteelSeries */
-                0x11c9, /* Nacon */
-                0x12ab, /* Unknown */
-                0x1430, /* RedOctane */
-                0x146b, /* BigBen */
-                0x1532, /* Razer Sabertooth */
-                0x15e4, /* Numark */
-                0x162e, /* Joytech */
-                0x1689, /* Razer Onza */
-                0x1bad, /* Harmonix */
-                0x24c6, /* PowerA */
-            };
-
-            int i;
-            for (i = 0; i < SDL_arraysize(SUPPORTED_VENDORS); ++i) {
-                if (vendor == SUPPORTED_VENDORS[i]) {
-                    type = SDL_CONTROLLER_TYPE_XBOX360;
-                    break;
-                }
+        if (vendor == 0x0000 && product == 0x0000) {
+            /* Some devices are only identifiable by their name */
+            if (SDL_strcmp(name, "Lic Pro Controller") == 0 ||
+                SDL_strcmp(name, "Nintendo Wireless Gamepad") == 0 ||
+                SDL_strcmp(name, "Wireless Gamepad") == 0) {
+                /* HORI or PowerA Switch Pro Controller clone */
+                type = SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO;
+            } else {
+                type = SDL_CONTROLLER_TYPE_UNKNOWN;
             }
-        }
 
-        if (interface_number == 0 &&
-            interface_class == LIBUSB_CLASS_VENDOR_SPEC &&
-            interface_subclass == XBONE_IFACE_SUBCLASS &&
-            interface_protocol == XBONE_IFACE_PROTOCOL) {
+        } else if (vendor == 0x0001 && product == 0x0001) {
+            type = SDL_CONTROLLER_TYPE_UNKNOWN;
 
-            static const int SUPPORTED_VENDORS[] = {
-                0x045e, /* Microsoft */
-                0x0738, /* Mad Catz */
-                0x0e6f, /* PDP */
-                0x0f0d, /* Hori */
-                0x1532, /* Razer Wildcat */
-                0x24c6, /* PowerA */
-                0x2e24, /* Hyperkin */
-            };
-
-            int i;
-            for (i = 0; i < SDL_arraysize(SUPPORTED_VENDORS); ++i) {
-                if (vendor == SUPPORTED_VENDORS[i]) {
-                    type = SDL_CONTROLLER_TYPE_XBOXONE;
-                    break;
-                }
+        } else {
+            switch (GuessControllerType(vendor, product)) {
+            case k_eControllerType_XBox360Controller:
+                type = SDL_CONTROLLER_TYPE_XBOX360;
+                break;
+            case k_eControllerType_XBoxOneController:
+                type = SDL_CONTROLLER_TYPE_XBOXONE;
+                break;
+            case k_eControllerType_PS3Controller:
+                type = SDL_CONTROLLER_TYPE_PS3;
+                break;
+            case k_eControllerType_PS4Controller:
+                type = SDL_CONTROLLER_TYPE_PS4;
+                break;
+            case k_eControllerType_SwitchProController:
+            case k_eControllerType_SwitchInputOnlyController:
+                type = SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO;
+                break;
+            default:
+                type = SDL_CONTROLLER_TYPE_UNKNOWN;
+                break;
             }
         }
     }
