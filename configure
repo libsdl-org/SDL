@@ -25627,7 +25627,7 @@ $SDLTEST_DEPENDS
 $WAYLAND_PROTOCOLS_DEPENDS
 __EOF__
 
-ac_config_files="$ac_config_files Makefile:Makefile.in:Makefile.rules sdl2-config sdl2-config.cmake SDL2.spec sdl2.pc"
+ac_config_files="$ac_config_files Makefile:Makefile.in:Makefile.rules sdl2-config sdl2-config.cmake sdl2-config-version.cmake SDL2.spec sdl2.pc"
 
 ac_config_commands="$ac_config_commands sdl2_config"
 
@@ -26779,6 +26779,7 @@ do
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile:Makefile.in:Makefile.rules" ;;
     "sdl2-config") CONFIG_FILES="$CONFIG_FILES sdl2-config" ;;
     "sdl2-config.cmake") CONFIG_FILES="$CONFIG_FILES sdl2-config.cmake" ;;
+    "sdl2-config-version.cmake") CONFIG_FILES="$CONFIG_FILES sdl2-config-version.cmake" ;;
     "SDL2.spec") CONFIG_FILES="$CONFIG_FILES SDL2.spec" ;;
     "sdl2.pc") CONFIG_FILES="$CONFIG_FILES sdl2.pc" ;;
     "sdl2_config") CONFIG_COMMANDS="$CONFIG_COMMANDS sdl2_config" ;;
