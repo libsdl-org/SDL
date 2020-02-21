@@ -9,3 +9,31 @@ set(SDL2_LIBDIR "@libdir@")
 set(SDL2_INCLUDE_DIRS "@includedir@/SDL2")
 set(SDL2_LIBRARIES "-L${SDL2_LIBDIR} @SDL_RLD_FLAGS@ @SDL_LIBS@")
 string(STRIP "${SDL2_LIBRARIES}" SDL2_LIBRARIES)
+
+if(NOT TARGET SDL2::SDL2)
+  # Remove -lSDL2 as that is handled by CMake, note the space at the end so it does not replace e.g. -lSDL2main
+  # This may require "libdir" beeing set (from above)
+  string(REPLACE "-lSDL2 " "" SDL2_EXTRA_LINK_FLAGS "@SDL_RLD_FLAGS@ @SDL_LIBS@ ")
+  string(STRIP "${SDL2_EXTRA_LINK_FLAGS}" SDL2_EXTRA_LINK_FLAGS)
+  string(REPLACE "-lSDL2 " "" SDL2_EXTRA_LINK_FLAGS_STATIC "@SDL_RLD_FLAGS@ @SDL_STATIC_LIBS@ ")
+  string(STRIP "${SDL2_EXTRA_LINK_FLAGS_STATIC}" SDL2_EXTRA_LINK_FLAGS_STATIC)
+
+  add_library(SDL2::SDL2 SHARED IMPORTED)
+  set_target_properties(SDL2::SDL2 PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES "@includedir@/SDL2"
+    IMPORTED_LINK_INTERFACE_LANGUAGES "C"
+    IMPORTED_LOCATION "@libdir@/libSDL2.so"
+    INTERFACE_LINK_LIBRARIES "${SDL2_EXTRA_LINK_FLAGS}")
+
+  add_library(SDL2::SDL2-static STATIC IMPORTED)
+  set_target_properties(SDL2::SDL2-static PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES "@includedir@/SDL2"
+    IMPORTED_LINK_INTERFACE_LANGUAGES "C"
+    IMPORTED_LOCATION "@libdir@/libSDL2.a"
+    INTERFACE_LINK_LIBRARIES "${SDL2_EXTRA_LINK_FLAGS_STATIC}")
+
+  add_library(SDL2::SDL2main STATIC IMPORTED)
+  set_target_properties(SDL2::SDL2main PROPERTIES
+    IMPORTED_LINK_INTERFACE_LANGUAGES "C"
+    IMPORTED_LOCATION "@libdir@/libSDL2main.a")
+endif()

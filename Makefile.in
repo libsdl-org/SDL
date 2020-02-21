@@ -46,7 +46,7 @@ WAYLAND_SCANNER = @WAYLAND_SCANNER@
 
 INSTALL_SDL2_CONFIG = @INSTALL_SDL2_CONFIG@
 
-SRC_DIST = *.txt acinclude Android.mk autogen.sh android-project build-scripts cmake cmake_uninstall.cmake.in configure configure.ac debian docs include Makefile.* sdl2-config.cmake.in sdl2-config.in sdl2.m4 sdl2.pc.in SDL2.spec.in SDL2Config.cmake src test VisualC.html VisualC VisualC-WinRT Xcode Xcode-iOS wayland-protocols
+SRC_DIST = *.txt acinclude Android.mk autogen.sh android-project build-scripts cmake cmake_uninstall.cmake.in configure configure.ac debian docs include Makefile.* sdl2-config.cmake.in sdl2-config-version.cmake.in sdl2-config.in sdl2.m4 sdl2.pc.in SDL2.spec.in SDL2Config.cmake src test VisualC.html VisualC VisualC-WinRT Xcode Xcode-iOS wayland-protocols
 GEN_DIST = SDL2.spec
 
 ifneq ($V,1)
@@ -188,6 +188,7 @@ install-data:
 ifeq ($(INSTALL_SDL2_CONFIG),TRUE)
 	$(SHELL) $(auxdir)/mkinstalldirs $(DESTDIR)$(libdir)/cmake/SDL2
 	$(INSTALL) -m 644 sdl2-config.cmake $(DESTDIR)$(libdir)/cmake/SDL2
+	$(INSTALL) -m 644 sdl2-config-version.cmake $(DESTDIR)$(libdir)/cmake/SDL2
 endif
 
 uninstall: uninstall-bin uninstall-hdrs uninstall-lib uninstall-data
@@ -208,6 +209,7 @@ uninstall-data:
 	rm -f $(DESTDIR)$(datadir)/aclocal/sdl2.m4
 	rm -f $(DESTDIR)$(libdir)/pkgconfig/sdl2.pc
 	rm -f $(DESTDIR)$(libdir)/cmake/SDL2/sdl2-config.cmake
+	rm -f $(DESTDIR)$(libdir)/cmake/SDL2/sdl2-config-version.cmake
 
 clean:
 	rm -rf $(objects)
