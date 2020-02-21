@@ -794,6 +794,7 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
 {
     SDL_Window *window = _data->window;
     NSWindow *nswindow = _data->nswindow;
+    NSButton *button = nil;
 
     inFullscreenTransition = NO;
 
@@ -863,6 +864,22 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
         /* FIXME: Why does the window get hidden? */
         if (window->flags & SDL_WINDOW_SHOWN) {
             Cocoa_ShowWindow(SDL_GetVideoDevice(), window);
+        }
+    }
+
+    /* There's some state that isn't quite back to normal when
+        windowDidExitFullScreen triggers. For example, the minimize button on
+        the titlebar doesn't actually enable for another 200 milliseconds or
+        so on this MacBook. Camp here and wait for that to happen before
+        going on, in case we're exiting fullscreen to minimize, which need
+        that window state to be normal before it will work. */
+    button = [nswindow standardWindowButton:NSWindowMiniaturizeButton];
+    if (button) {
+        int iterations = 0;
+        while (![button isEnabled]) {
+            SDL_Delay(10);
+            SDL_PumpEvents();
+            iterations++;
         }
     }
 }
@@ -1724,6 +1741,7 @@ Cocoa_MinimizeWindow(_THIS, SDL_Window * window)
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
     NSWindow *nswindow = data->nswindow;
 
+printf("Cocoa_MinimizeWindow begin %u\n", (unsigned int) SDL_GetTicks());
     if ([data->listener isInFullscreenSpaceTransition]) {
         [data->listener addPendingWindowOperation:PENDING_OPERATION_MINIMIZE];
     } else {
