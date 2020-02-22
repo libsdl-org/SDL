@@ -664,8 +664,8 @@ if test x$enable_assembly = xyes; then
 
 dnl Check for various instruction support
     AC_ARG_ENABLE(mmx,
-[AS_HELP_STRING([--enable-mmx], [use MMX assembly routines [default=yes]])],
-                  , enable_mmx=yes)
+[AS_HELP_STRING([--enable-mmx], [use MMX assembly routines [[default=maybe]]])],
+                  , enable_mmx=$default_ssemath)
     if test x$enable_mmx = xyes; then
         save_CFLAGS="$CFLAGS"
         have_gcc_mmx=no
@@ -698,8 +698,8 @@ dnl Check for various instruction support
     fi
 
     AC_ARG_ENABLE(3dnow,
-[AS_HELP_STRING([--enable-3dnow], [use 3DNow! assembly routines [default=no]])],
-                  , enable_3dnow=no)
+[AS_HELP_STRING([--enable-3dnow], [use 3DNow! assembly routines [[default=maybe]]])],
+                  , enable_3dnow=$default_ssemath)
     if test x$enable_3dnow = xyes; then
         save_CFLAGS="$CFLAGS"
         have_gcc_3dnow=no
@@ -727,8 +727,8 @@ dnl Check for various instruction support
     fi
 
     AC_ARG_ENABLE(sse,
-[AS_HELP_STRING([--enable-sse], [use SSE assembly routines [default=yes]])],
-                  , enable_sse=yes)
+[AS_HELP_STRING([--enable-sse], [use SSE assembly routines [[default=maybe]]])],
+                  , enable_sse=$default_ssemath)
     if test x$enable_sse = xyes; then
         save_CFLAGS="$CFLAGS"
         have_gcc_sse=no

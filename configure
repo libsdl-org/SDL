@@ -1671,9 +1671,9 @@ Optional Features:
   --enable-assembly       Enable assembly routines [default=yes]
   --enable-ssemath        Allow GCC to use SSE floating point math
                           [default=maybe]
-  --enable-mmx            use MMX assembly routines [default=yes]
-  --enable-3dnow          use 3DNow! assembly routines [default=no]
-  --enable-sse            use SSE assembly routines [default=yes]
+  --enable-mmx            use MMX assembly routines [default=maybe]
+  --enable-3dnow          use 3DNow! assembly routines [default=maybe]
+  --enable-sse            use SSE assembly routines [default=maybe]
   --enable-sse2           use SSE2 assembly routines [default=maybe]
   --enable-sse3           use SSE3 assembly routines [default=maybe]
   --enable-altivec        use Altivec assembly routines [default=yes]
@@ -20647,7 +20647,7 @@ if test ${enable_mmx+y}
 then :
   enableval=$enable_mmx;
 else $as_nop
-  enable_mmx=yes
+  enable_mmx=$default_ssemath
 fi
 
     if test x$enable_mmx = xyes; then
@@ -20703,7 +20703,7 @@ if test ${enable_3dnow+y}
 then :
   enableval=$enable_3dnow;
 else $as_nop
-  enable_3dnow=no
+  enable_3dnow=$default_ssemath
 fi
 
     if test x$enable_3dnow = xyes; then
@@ -20754,7 +20754,7 @@ if test ${enable_sse+y}
 then :
   enableval=$enable_sse;
 else $as_nop
-  enable_sse=yes
+  enable_sse=$default_ssemath
 fi
 
     if test x$enable_sse = xyes; then
