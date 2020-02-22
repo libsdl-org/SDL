@@ -82,6 +82,11 @@ case "$host" in
         MATHLIB=""
         SYS_GL_LIBS=""
         ;;
+    *-*-msdosdjgpp*)
+        EXE=".exe"
+        MATHLIB="-lm"
+        SYS_GL_LIBS=""
+        ;;
     *)
         dnl Oh well, call it Unix...
         ISUNIX="true"

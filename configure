@@ -29762,6 +29762,15 @@ printf "%s\n" "#define SDL_JOYSTICK_OS2 1" >>confdefs.h
             have_joystick=yes
         fi
         ;;
+    *-*-msdosdjgpp*)
+        ARCH=dos
+        CheckVisibilityHidden
+        CheckDeclarationAfterStatement
+        CheckDummyVideo
+        CheckDiskAudio
+        CheckDummyAudio
+        CheckDLOPEN
+        ;;
     *)
         as_fn_error $? "
 *** Unsupported host:  Please add to configure.ac

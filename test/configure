@@ -3664,6 +3664,11 @@ fi
         MATHLIB=""
         SYS_GL_LIBS=""
         ;;
+    *-*-msdosdjgpp*)
+        EXE=".exe"
+        MATHLIB="-lm"
+        SYS_GL_LIBS=""
+        ;;
     *)
                 ISUNIX="true"
         EXE=""
