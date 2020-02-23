@@ -1167,7 +1167,7 @@ SDL_CreateTextureFromSurface(SDL_Renderer * renderer, SDL_Surface * surface)
     if (fmt->palette) {
         for (i = 0; i < fmt->palette->ncolors; i++) {
             Uint8 alpha_value = fmt->palette->colors[i].a;
-            if (alpha_value != 0 || alpha_value != SDL_ALPHA_OPAQUE) {
+            if (alpha_value != 0 && alpha_value != SDL_ALPHA_OPAQUE) {
                 needAlpha = SDL_TRUE;
                 break;
             }
