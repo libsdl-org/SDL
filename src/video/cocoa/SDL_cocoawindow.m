@@ -1740,8 +1740,6 @@ Cocoa_MinimizeWindow(_THIS, SDL_Window * window)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
     NSWindow *nswindow = data->nswindow;
-
-printf("Cocoa_MinimizeWindow begin %u\n", (unsigned int) SDL_GetTicks());
     if ([data->listener isInFullscreenSpaceTransition]) {
         [data->listener addPendingWindowOperation:PENDING_OPERATION_MINIMIZE];
     } else {
