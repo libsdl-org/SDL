@@ -402,6 +402,64 @@ SDL_ConvertColorkeyToAlpha(SDL_Surface * surface, SDL_bool ignore_alpha)
     SDL_SetSurfaceBlendMode(surface, SDL_BLENDMODE_BLEND);
 }
 
+
+static void
+SDL_ConvertSetOpaque(SDL_Surface * surface)
+{
+    int x, y;
+
+    if (!surface) {
+        return;
+    }
+
+    if (!surface->format->Amask) {
+        return;
+    }
+
+    SDL_LockSurface(surface);
+
+    switch (surface->format->BytesPerPixel) {
+    case 2:
+        {
+            Uint16 *row, *spot;
+            Uint16 mask = (Uint16) (surface->format->Amask);
+
+            row = (Uint16 *) surface->pixels;
+            for (y = surface->h; y--;) {
+                spot = row;
+                for (x = surface->w; x--;) {
+                    *spot |= mask;
+                    ++spot;
+                }
+                row += surface->pitch / 2;
+            }
+        }
+        break;
+    case 3:
+        /* FIXME */
+        break;
+    case 4:
+        {
+            Uint32 *row, *spot;
+            Uint32 mask = surface->format->Amask;
+
+            row = (Uint32 *) surface->pixels;
+            for (y = surface->h; y--;) {
+                spot = row;
+                for (x = surface->w; x--;) {
+                    *spot |= mask;
+                    ++spot;
+                }
+                row += surface->pitch / 4;
+            }
+        }
+        break;
+    }
+
+    SDL_UnlockSurface(surface);
+}
+
+
 int
 SDL_SetSurfaceColorMod(SDL_Surface * surface, Uint8 r, Uint8 g, Uint8 b)
 {
@@ -962,9 +1020,9 @@ SDL_ConvertSurface(SDL_Surface * surface, const SDL_PixelFormat * format,
     SDL_Color copy_color;
     SDL_Rect bounds;
     int ret;
-    int palette_ck_transform = 0;
+    SDL_bool palette_ck_transform = SDL_FALSE;
     int palette_ck_value = 0;
-    int palette_has_alpha = SDL_FALSE;
+    SDL_bool palette_has_alpha = SDL_FALSE;
 
     if (!surface) {
         SDL_InvalidParamError("surface");
@@ -1029,7 +1087,7 @@ SDL_ConvertSurface(SDL_Surface * surface, const SDL_PixelFormat * format,
     /* Transform colorkey to alpha. for cases where source palette has duplicate values, and colorkey is one of them */
     if (copy_flags & SDL_COPY_COLORKEY) {
         if (surface->format->palette && !format->palette) {
-            palette_ck_transform = 1;
+            palette_ck_transform = SDL_TRUE;
             palette_has_alpha = SDL_TRUE;
             palette_ck_value = surface->format->palette->colors[surface->map->info.colorkey].a;
             surface->format->palette->colors[surface->map->info.colorkey].a = SDL_ALPHA_TRANSPARENT;
@@ -1134,6 +1192,26 @@ SDL_ConvertSurface(SDL_Surface * surface, const SDL_PixelFormat * format,
             }
         }
     }
+
+    /* Source surface has a palette with no alpha nor colorkey.
+     * Destination format has alpha.
+     * We may need to set the alpha channel to opaque. */
+    if (surface->format->palette && format->Amask && palette_has_alpha == SDL_FALSE) {
+        SDL_bool need_opaque = SDL_FALSE;
+        int i;
+        for (i = 0; i < surface->format->palette->ncolors; i++) {
+            Uint8 alpha_value = surface->format->palette->colors[i].a;
+            if (alpha_value == 0) {
+                need_opaque = SDL_TRUE;
+                break;
+            }
+        }
+
+        if (need_opaque) {
+            SDL_ConvertSetOpaque(convert);
+        }
+    }
+
 
     /* Enable alpha blending by default if the new surface has an
      * alpha channel or alpha modulation */
