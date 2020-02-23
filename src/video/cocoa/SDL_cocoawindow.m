@@ -876,7 +876,7 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
     button = [nswindow standardWindowButton:NSWindowMiniaturizeButton];
     if (button) {
         int iterations = 0;
-        while (![button isEnabled]) {
+        while (![button isEnabled] && (iterations < 100)) {
             SDL_Delay(10);
             SDL_PumpEvents();
             iterations++;
