@@ -964,6 +964,7 @@ SDL_ConvertSurface(SDL_Surface * surface, const SDL_PixelFormat * format,
     int ret;
     int palette_ck_transform = 0;
     int palette_ck_value = 0;
+    int palette_has_alpha = SDL_FALSE;
 
     if (!surface) {
         SDL_InvalidParamError("surface");
@@ -1029,6 +1030,7 @@ SDL_ConvertSurface(SDL_Surface * surface, const SDL_PixelFormat * format,
     if (copy_flags & SDL_COPY_COLORKEY) {
         if (surface->format->palette && !format->palette) {
             palette_ck_transform = 1;
+            palette_has_alpha = SDL_TRUE;
             palette_ck_value = surface->format->palette->colors[surface->map->info.colorkey].a;
             surface->format->palette->colors[surface->map->info.colorkey].a = SDL_ALPHA_TRANSPARENT;
         }
@@ -1066,7 +1068,6 @@ SDL_ConvertSurface(SDL_Surface * surface, const SDL_PixelFormat * format,
 
     if (copy_flags & SDL_COPY_COLORKEY) {
         SDL_bool set_colorkey_by_color = SDL_FALSE;
-        SDL_bool ignore_alpha          = SDL_TRUE;  /* Ignore, or not, alpha in colorkey comparison */
 
         if (surface->format->palette) {
             if (format->palette &&
@@ -1077,9 +1078,6 @@ SDL_ConvertSurface(SDL_Surface * surface, const SDL_PixelFormat * format,
                 SDL_SetColorKey(convert, 1, surface->map->info.colorkey);
             } else if (!format->palette) {
                 /* Was done by 'palette_ck_transform' */
-            }else if (format->Amask) {
-                set_colorkey_by_color = SDL_TRUE;
-                ignore_alpha = SDL_FALSE;
             } else {
                 set_colorkey_by_color = SDL_TRUE;
             }
@@ -1120,14 +1118,27 @@ SDL_ConvertSurface(SDL_Surface * surface, const SDL_PixelFormat * format,
             SDL_SetColorKey(convert, 1, converted_colorkey);
 
             /* This is needed when converting for 3D texture upload */
-            SDL_ConvertColorkeyToAlpha(convert, ignore_alpha);
+            SDL_ConvertColorkeyToAlpha(convert, SDL_TRUE);
         }
     }
     SDL_SetClipRect(convert, &surface->clip_rect);
 
+    /* Source surface has a palette with alpha. Will need blend mode */
+    if (palette_has_alpha == SDL_FALSE && surface->format->palette) {
+        int i;
+        for (i = 0; i < surface->format->palette->ncolors; i++) {
+            Uint8 alpha_value = surface->format->palette->colors[i].a;
+            if (alpha_value != 0 && alpha_value != SDL_ALPHA_OPAQUE) {
+                palette_has_alpha = SDL_TRUE;
+                break;
+            }
+        }
+    }
+
     /* Enable alpha blending by default if the new surface has an
      * alpha channel or alpha modulation */
     if ((surface->format->Amask && format->Amask) ||
+        (palette_has_alpha && format->Amask) ||
         (copy_flags & SDL_COPY_MODULATE_ALPHA)) {
         SDL_SetSurfaceBlendMode(convert, SDL_BLENDMODE_BLEND);
     }
