@@ -19358,6 +19358,25 @@ printf "%s\n" "#define HAVE_MPROTECT 1" >>confdefs.h
 
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+    case "$host" in
+    *-*-msdosdjgpp*)
+        { $as_echo "$as_me:${as_lineno-$LINENO}: skipping unfinished fseeko64 in DJGPP" >&5
+$as_echo "$as_me: skipping unfinished fseeko64 in DJGPP" >&6;}
+        ;;
+    *)
+        for ac_func in fseeko64
+do :
+  ac_fn_c_check_func "$LINENO" "fseeko64" "ac_cv_func_fseeko64"
+if test "x$ac_cv_func_fseeko64" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_FSEEKO64 1
+_ACEOF
+
+fi
+done
+
+        ;;
+    esac
 fi
 
     ac_fn_c_check_func "$LINENO" "malloc" "ac_cv_func_malloc"
@@ -19742,12 +19761,6 @@ ac_fn_c_check_func "$LINENO" "fseeko" "ac_cv_func_fseeko"
 if test "x$ac_cv_func_fseeko" = xyes
 then :
   printf "%s\n" "#define HAVE_FSEEKO 1" >>confdefs.h
-
-fi
-ac_fn_c_check_func "$LINENO" "fseeko64" "ac_cv_func_fseeko64"
-if test "x$ac_cv_func_fseeko64" = xyes
-then :
-  printf "%s\n" "#define HAVE_FSEEKO64 1" >>confdefs.h
 
 fi
 ac_fn_c_check_func "$LINENO" "sigaction" "ac_cv_func_sigaction"
