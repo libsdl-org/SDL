@@ -3704,6 +3704,17 @@ CheckClockGettime()
     fi
 }
 
+dnl Check for uclock()
+CheckUCLOCK()
+{
+    AC_ARG_ENABLE(uclock,
+AS_HELP_STRING([--enable-uclock], [use uclock() for performance counter on DOS [[default=yes]]]),
+                  , enable_uclock=yes)
+    if test x$enable_uclock = xyes; then
+        AC_CHECK_FUNCS(uclock)
+    fi
+}
+
 dnl Check for a valid linux/version.h
 CheckLinuxVersion()
 {
@@ -4691,6 +4702,14 @@ dnl BeOS support removed after SDL 2.0.1. Haiku still works.  --ryan.
         CheckDiskAudio
         CheckDummyAudio
         CheckDLOPEN
+        CheckUCLOCK
+
+        # Set up files for the timer library
+        if test x$enable_timers = xyes; then
+            AC_DEFINE(SDL_TIMER_DOS, 1, [ ])
+            SOURCES="$SOURCES $srcdir/src/timer/dos/*.c"
+            have_timers=yes
+        fi
         ;;
     *)
         AC_MSG_ERROR([

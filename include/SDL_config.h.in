@@ -202,6 +202,7 @@
 #undef HAVE_SYSCONF
 #undef HAVE_SYSCTLBYNAME
 #undef HAVE_CLOCK_GETTIME
+#undef HAVE_UCLOCK
 #undef HAVE_GETPAGESIZE
 #undef HAVE_MPROTECT
 #undef HAVE_ICONV
@@ -370,6 +371,7 @@
 #undef SDL_TIMER_UNIX
 #undef SDL_TIMER_WINDOWS
 #undef SDL_TIMER_OS2
+#undef SDL_TIMER_DOS
 
 /* Enable various video drivers */
 #undef SDL_VIDEO_DRIVER_HAIKU
