@@ -710,6 +710,41 @@ prepare_audioqueue(_THIS)
     /* Calculate the final parameters for this audio specification */
     SDL_CalculateAudioSpec(&this->spec);
 
+    /* Set the channel layout for the audio queue */
+    AudioChannelLayout layout;
+    SDL_zero(layout);
+    switch (this->spec.channels) {
+    case 1:
+        layout.mChannelLayoutTag = kAudioChannelLayoutTag_Mono;
+        break;
+    case 2:
+        layout.mChannelLayoutTag = kAudioChannelLayoutTag_Stereo;
+        break;
+    case 3:
+        layout.mChannelLayoutTag = kAudioChannelLayoutTag_DVD_4;
+        break;
+    case 4:
+        layout.mChannelLayoutTag = kAudioChannelLayoutTag_Quadraphonic;
+        break;
+    case 5:
+        layout.mChannelLayoutTag = kAudioChannelLayoutTag_MPEG_5_0_A;
+        break;
+    case 6:
+        layout.mChannelLayoutTag = kAudioChannelLayoutTag_MPEG_5_1_A;
+        break;
+    case 7:
+        /* FIXME: Need to move channel[4] (BC) to channel[6] */
+        layout.mChannelLayoutTag = kAudioChannelLayoutTag_MPEG_6_1_A;
+        break;
+    case 8:
+        layout.mChannelLayoutTag = kAudioChannelLayoutTag_MPEG_7_1_A;
+        break;
+    }
+    if (layout.mChannelLayoutTag != 0) {
+        result = AudioQueueSetProperty(this->hidden->audioQueue, kAudioQueueProperty_ChannelLayout, &layout, sizeof(layout));
+        CHECK_RESULT("AudioQueueSetProperty(kAudioQueueProperty_ChannelLayout)");
+    }
+
     /* Allocate a sample buffer */
     this->hidden->bufferSize = this->spec.size;
     this->hidden->bufferOffset = iscapture ? 0 : this->hidden->bufferSize;
@@ -820,6 +855,13 @@ COREAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
         AVAudioSession* session = [AVAudioSession sharedInstance];
         [session setPreferredSampleRate:this->spec.freq error:nil];
         this->spec.freq = (int)session.sampleRate;
+        if (iscapture) {
+            [session setPreferredInputNumberOfChannels:this->spec.channels error:nil];
+            this->spec.channels = session.preferredInputNumberOfChannels;
+        } else {
+            [session setPreferredOutputNumberOfChannels:this->spec.channels error:nil];
+            this->spec.channels = session.preferredOutputNumberOfChannels;
+        }
     }
 #endif
 
@@ -864,7 +906,7 @@ COREAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
         return SDL_SetError("Unsupported audio format");
     }
 
-    strdesc->mBytesPerFrame = strdesc->mBitsPerChannel * strdesc->mChannelsPerFrame / 8;
+    strdesc->mBytesPerFrame = strdesc->mChannelsPerFrame * strdesc->mBitsPerChannel / 8;
     strdesc->mBytesPerPacket = strdesc->mBytesPerFrame * strdesc->mFramesPerPacket;
 
 #if MACOSX_COREAUDIO
