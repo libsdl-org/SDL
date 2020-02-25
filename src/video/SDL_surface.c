@@ -1052,8 +1052,8 @@ SDL_ConvertSurface(SDL_Surface * surface, const SDL_PixelFormat * format,
 
         /* Set opaque and backup palette alpha values */
         if (set_opaque) {
-            palette_saved_alpha = SDL_stack_alloc(Uint8, surface->format->palette->ncolors);
             int i;
+            palette_saved_alpha = SDL_stack_alloc(Uint8, surface->format->palette->ncolors);
             for (i = 0; i < surface->format->palette->ncolors; i++) {
                 palette_saved_alpha[i] = surface->format->palette->colors[i].a;
                 surface->format->palette->colors[i].a = SDL_ALPHA_OPAQUE;
