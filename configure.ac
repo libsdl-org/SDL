@@ -1344,8 +1344,8 @@ dnl Check for ARM NEON instruction support using gas syntax
 CheckNEON()
 {
     AC_ARG_ENABLE(arm-neon,
-AC_HELP_STRING([--enable-arm-neon], [use NEON assembly blitters on ARM [[default=yes]]]),
-                  enable_arm_neon=$enableval, enable_arm_neon=yes)
+AC_HELP_STRING([--enable-arm-neon], [use NEON assembly blitters on ARM [[default=no]]]),
+                  enable_arm_neon=$enableval, enable_arm_neon=no)
     if test x$enable_video = xyes -a x$enable_assembly = xyes -a x$enable_arm_neon = xyes; then
         save_CFLAGS="$CFLAGS"
         have_arm_neon=no
