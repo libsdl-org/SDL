@@ -37,7 +37,8 @@
 
 int
 KMSDRM_GLES_LoadLibrary(_THIS, const char *path) {
-    return SDL_EGL_LoadLibrary(_this, path, ((SDL_VideoData *)_this->driverdata)->gbm, EGL_PLATFORM_GBM_MESA);
+    NativeDisplayType display = (NativeDisplayType)((SDL_VideoData *)_this->driverdata)->gbm;
+    return SDL_EGL_LoadLibrary(_this, path, display, EGL_PLATFORM_GBM_MESA);
 }
 
 SDL_EGL_CreateContext_impl(KMSDRM)

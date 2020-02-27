@@ -349,10 +349,9 @@ KMSDRM_WaitPageFlip(_THIS, SDL_WindowData *windata, int timeout) {
 /* SDL Video and Display initialization/handling functions                   */
 /* _this is a SDL_VideoDevice *                                              */
 /*****************************************************************************/
-static int
+static void
 KMSDRM_DestroySurfaces(_THIS, SDL_Window * window)
 {
-    SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
     SDL_WindowData *windata = (SDL_WindowData *)window->driverdata;
 
     KMSDRM_WaitPageFlip(_this, windata, -1);
