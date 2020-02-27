@@ -245,6 +245,15 @@ static SDL_bool IsGameCubeFormFactor(int vendor_id, int product_id)
 static SDL_bool
 HIDAPI_DriverSwitch_IsSupportedDevice(const char *name, SDL_GameControllerType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
+    /* The HORI Wireless Switch Pad enumerates as a HID device when connected via USB
+       with the same VID/PID as when connected over Bluetooth but doesn't actually
+       support communication over USB. The most reliable way to block this without allowing the
+       controller to continually attempt to reconnect is to filter it out by manufactuer/product string.
+       Note that the controller does have a different product string when connected over Bluetooth.
+     */
+    if (SDL_strcmp( name, "HORI Wireless Switch Pad" ) == 0) {
+        return SDL_FALSE;
+    }
     return (type == SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO);
 }
 
