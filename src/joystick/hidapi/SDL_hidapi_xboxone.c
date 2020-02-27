@@ -74,11 +74,6 @@ static const Uint8 xboxone_init6[] = {
     0x00, 0x00, 0xFF, 0x00, 0xEB
 };
 
-static const Uint8 xboxone_rumble_reset[] = {
-    0x09, 0x00, 0x00, 0x09, 0x00, 0x0F, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00
-};
-
 /*
  * This specifies the selection of init packets that a gamepad
  * will be sent on init *and* the order in which they will be
@@ -117,8 +112,6 @@ typedef struct {
     SDL_bool initialized;
     Uint8 sequence;
     Uint8 last_state[USB_PACKET_LENGTH];
-    SDL_bool rumble_synchronized;
-    SDL_bool rumble_synchronization_complete;
     SDL_bool has_paddles;
 } SDL_DriverXboxOne_Context;
 
@@ -166,47 +159,6 @@ ControllerHasPaddles(Uint16 vendor_id, Uint16 product_id)
         }
     }
     return SDL_FALSE;
-}
-
-static SDL_bool
-ControllerNeedsRumbleSequenceSynchronized(Uint16 vendor_id, Uint16 product_id)
-{
-    if (vendor_id == USB_VENDOR_MICROSOFT) {
-        /* All Xbox One controllers, from model 1537 through Elite Series 2, appear to need this */
-        return SDL_TRUE;
-    }
-    return SDL_FALSE;
-}
-
-static SDL_bool
-SynchronizeRumbleSequence(SDL_HIDAPI_Device *device, SDL_DriverXboxOne_Context *ctx)
-{
-    Uint16 vendor_id = ctx->vendor_id;
-    Uint16 product_id = ctx->product_id;
-
-    if (ctx->rumble_synchronized) {
-        return SDL_TRUE;
-    }
-
-    if (ControllerNeedsRumbleSequenceSynchronized(vendor_id, product_id)) {
-        int i;
-        Uint8 init_packet[USB_PACKET_LENGTH];
-
-        SDL_memcpy(init_packet, xboxone_rumble_reset, sizeof(xboxone_rumble_reset));
-        for (i = 0; i < 255; ++i) {
-            init_packet[2] = ((ctx->sequence + i) % 255);
-            if (SDL_HIDAPI_LockRumble() < 0) {
-                return SDL_FALSE;
-            }
-            if (SDL_HIDAPI_SendRumbleAndUnlock(device, init_packet, sizeof(xboxone_rumble_reset)) != sizeof(xboxone_rumble_reset)) {
-                SDL_SetError("Couldn't write Xbox One initialization packet");
-                return SDL_FALSE;
-            }
-        }
-    }
-    ctx->rumble_synchronized = SDL_TRUE;
-
-    return SDL_TRUE;
 }
 
 /* Return true if this controller sends the 0x02 "waiting for init" packet */
@@ -293,8 +245,6 @@ SendControllerInit(SDL_HIDAPI_Device *device, SDL_DriverXboxOne_Context *ctx)
         }
     }
 
-    SynchronizeRumbleSequence(device, ctx);
-
     return SDL_TRUE;
 }
 
@@ -373,41 +323,14 @@ HIDAPI_DriverXboxOne_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joyst
 static int
 HIDAPI_DriverXboxOne_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
-    SDL_DriverXboxOne_Context *ctx = (SDL_DriverXboxOne_Context *)device->context;
     Uint8 rumble_packet[] = { 0x09, 0x00, 0x00, 0x09, 0x00, 0x0F, 0x00, 0x00, 0x00, 0x00, 0xFF, 0x00, 0xFF };
-    Uint8 *pending_rumble;
-    int *pending_size;
-    int maximum_size;
 
-    SynchronizeRumbleSequence(device, ctx);
+    /* Magnitude is 1..100 so scale the 16-bit input here */
+    rumble_packet[8] = low_frequency_rumble / 655;
+    rumble_packet[9] = high_frequency_rumble / 655;
 
-    if (SDL_HIDAPI_LockRumble() < 0) {
-        return -1;
-    }
-
-    if (!ctx->rumble_synchronization_complete) {
-        if (!SDL_HIDAPI_GetPendingRumbleLocked(device, &pending_rumble, &pending_size, &maximum_size)) {
-            /* Rumble synchronization has drained */
-            ctx->rumble_synchronization_complete = SDL_TRUE;
-        }
-    }
-
-    /* Try to overwrite any pending rumble with the new value */
-    if (ctx->rumble_synchronization_complete && 
-        SDL_HIDAPI_GetPendingRumbleLocked(device, &pending_rumble, &pending_size, &maximum_size)) {
-        /* Magnitude is 1..100 so scale the 16-bit input here */
-        pending_rumble[8] = low_frequency_rumble / 655;
-        pending_rumble[9] = high_frequency_rumble / 655;
-        SDL_HIDAPI_UnlockRumble();
-    } else {
-        /* Magnitude is 1..100 so scale the 16-bit input here */
-        rumble_packet[2] = ctx->sequence++;
-        rumble_packet[8] = low_frequency_rumble / 655;
-        rumble_packet[9] = high_frequency_rumble / 655;
-
-        if (SDL_HIDAPI_SendRumbleAndUnlock(device, rumble_packet, sizeof(rumble_packet)) != sizeof(rumble_packet)) {
-            return SDL_SetError("Couldn't send rumble packet");
-        }
+    if (SDL_HIDAPI_SendRumble(device, rumble_packet, sizeof(rumble_packet)) != sizeof(rumble_packet)) {
+        return SDL_SetError("Couldn't send rumble packet");
     }
     return 0;
 }
