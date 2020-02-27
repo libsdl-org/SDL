@@ -1625,7 +1625,7 @@ Optional Features:
   --enable-libsamplerate-shared
                           dynamically load libsamplerate [[default=yes]]
   --enable-arm-simd       use SIMD assembly blitters on ARM [[default=yes]]
-  --enable-arm-neon       use NEON assembly blitters on ARM [[default=yes]]
+  --enable-arm-neon       use NEON assembly blitters on ARM [[default=no]]
   --enable-video-wayland  use Wayland video driver [[default=yes]]
   --enable-video-wayland-qt-touch
                           QtWayland server support for Wayland video driver
@@ -19417,7 +19417,7 @@ CheckNEON()
 if test "${enable_arm_neon+set}" = set; then :
   enableval=$enable_arm_neon; enable_arm_neon=$enableval
 else
-  enable_arm_neon=yes
+  enable_arm_neon=no
 fi
 
     if test x$enable_video = xyes -a x$enable_assembly = xyes -a x$enable_arm_neon = xyes; then
