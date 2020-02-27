@@ -26000,6 +26000,18 @@ printf "%s\n" "#define SDL_AUDIO_DRIVER_QSA 1" >>confdefs.h
     fi
 }
 
+CheckSVGAVideo()
+{
+    if test x$enable_video = xyes; then
+
+$as_echo "#define SDL_VIDEO_DRIVER_SVGA 1" >>confdefs.h
+
+        SOURCES="$SOURCES $srcdir/src/video/svga/*.c"
+        have_video=yes
+        SUMMARY_video="${SUMMARY_video} svga"
+    fi
+}
+
 # Check whether --enable-video-opengl was given.
 if test ${enable_video_opengl+y}
 then :
@@ -29809,6 +29821,7 @@ printf "%s\n" "#define SDL_JOYSTICK_OS2 1" >>confdefs.h
         CheckDummyVideo
         CheckDiskAudio
         CheckDummyAudio
+        CheckSVGAVideo
         CheckDLOPEN
         CheckUCLOCK
 

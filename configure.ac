@@ -2518,6 +2518,17 @@ CheckQNXAudio()
     fi
 }
 
+dnl Set up the SVGA video driver if enabled
+CheckSVGAVideo()
+{
+    if test x$enable_video = xyes; then
+        AC_DEFINE(SDL_VIDEO_DRIVER_SVGA, 1, [ ])
+        SOURCES="$SOURCES $srcdir/src/video/svga/*.c"
+        have_video=yes
+        SUMMARY_video="${SUMMARY_video} svga"
+    fi
+}
+
 dnl Check to see if OpenGL support is desired
 AC_ARG_ENABLE(video-opengl,
 [AS_HELP_STRING([--enable-video-opengl], [include OpenGL support [default=yes]])],
@@ -4701,6 +4712,7 @@ dnl BeOS support removed after SDL 2.0.1. Haiku still works.  --ryan.
         CheckDummyVideo
         CheckDiskAudio
         CheckDummyAudio
+        CheckSVGAVideo
         CheckDLOPEN
         CheckUCLOCK
 
