@@ -19,15 +19,15 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef SDL_svgaevents_c_h_
-#define SDL_svgaevents_c_h_
+#ifndef SDL_svga_framebuffer_h_
+#define SDL_svga_framebuffer_h_
 
 #include "../../SDL_internal.h"
 
-#include "SDL_svgavideo.h"
+extern int SDL_SVGA_CreateWindowFramebuffer(_THIS, SDL_Window * window, Uint32 * format, void ** pixels, int *pitch);
+extern int SDL_SVGA_UpdateWindowFramebuffer(_THIS, SDL_Window * window, const SDL_Rect * rects, int numrects);
+extern void SDL_SVGA_DestroyWindowFramebuffer(_THIS, SDL_Window * window);
 
-extern void SVGA_PumpEvents(_THIS);
-
-#endif /* SDL_svgaevents_c_h_ */
+#endif /* SDL_svga_framebuffer_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

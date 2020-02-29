@@ -18,21 +18,16 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+
+#ifndef SDL_svga_events_h_
+#define SDL_svga_events_h_
+
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_SVGA
+#include "SDL_svga_video.h"
 
-#include "../../events/SDL_events_c.h"
+extern void SVGA_PumpEvents(_THIS);
 
-#include "SDL_svgavideo.h"
-#include "SDL_svgaevents_c.h"
-
-void
-SVGA_PumpEvents(_THIS)
-{
-    /* do nothing. */
-}
-
-#endif /* SDL_VIDEO_DRIVER_SVGA */
+#endif /* SDL_svga_events_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

@@ -20,11 +20,19 @@
 */
 #include "../../SDL_internal.h"
 
-#ifndef SDL_svgavideo_h_
-#define SDL_svgavideo_h_
+#if SDL_VIDEO_DRIVER_SVGA
 
-#include "../SDL_sysvideo.h"
+#include "../../events/SDL_events_c.h"
 
-#endif /* SDL_svgavideo_h_ */
+#include "SDL_svga_video.h"
+#include "SDL_svga_events.h"
+
+void
+SVGA_PumpEvents(_THIS)
+{
+    /* do nothing. */
+}
+
+#endif /* SDL_VIDEO_DRIVER_SVGA */
 
 /* vi: set ts=4 sw=4 expandtab: */

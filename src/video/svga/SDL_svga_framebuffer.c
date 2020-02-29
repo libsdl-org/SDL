@@ -23,7 +23,7 @@
 #if SDL_VIDEO_DRIVER_SVGA
 
 #include "../SDL_sysvideo.h"
-#include "SDL_svgaframebuffer_c.h"
+#include "SDL_svga_framebuffer.h"
 
 
 #define SVGA_SURFACE   "_SDL_SVGASurface"

@@ -28,9 +28,9 @@
 #include "../SDL_pixels_c.h"
 #include "../../events/SDL_events_c.h"
 
-#include "SDL_svgavideo.h"
-#include "SDL_svgaevents_c.h"
-#include "SDL_svgaframebuffer_c.h"
+#include "SDL_svga_video.h"
+#include "SDL_svga_events.h"
+#include "SDL_svga_framebuffer.h"
 
 #define SVGAVID_DRIVER_NAME "svga"
 
