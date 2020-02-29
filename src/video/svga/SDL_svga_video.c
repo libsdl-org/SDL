@@ -31,6 +31,7 @@
 #include "SDL_svga_video.h"
 #include "SDL_svga_events.h"
 #include "SDL_svga_framebuffer.h"
+#include "SDL_svga_vbe.h"
 
 #define SVGAVID_DRIVER_NAME "svga"
 
@@ -44,7 +45,9 @@ static void SVGA_VideoQuit(_THIS);
 static int
 SVGA_Available(void)
 {
-    return 1;
+    VBEInfo info;
+
+    return SDL_SVGA_GetVBEInfo(&info) == 0 && info.vbe_version >= 0x0200;
 }
 
 static void
@@ -57,6 +60,11 @@ static SDL_VideoDevice *
 SVGA_CreateDevice(int devindex)
 {
     SDL_VideoDevice *device;
+    VBEInfo info;
+
+    if (SDL_SVGA_GetVBEInfo(&info) || info.vbe_version < 0x0200) {
+        return 0;
+    }
 
     /* Initialize all variables that we clean on shutdown */
     device = (SDL_VideoDevice *) SDL_calloc(1, sizeof(SDL_VideoDevice));

@@ -25,11 +25,10 @@
 
 #include "../SDL_sysvideo.h"
 
-#define VBE_SIGNATURE "VESA"
-
 typedef Uint32 VBEFarPtr;
 
-typedef struct VBEInfo {
+typedef struct VBEInfo
+{
     char vbe_signature[4];          /* 'VESA' 4 byte signature */
     Uint16 vbe_version;             /* VBE version number */
     VBEFarPtr oem_string_ptr;       /* Pointer to OEM string */
@@ -46,7 +45,8 @@ typedef struct VBEInfo {
     char oem_data[256];             /* Data for OEM strings */
 } __attribute__ ((packed)) VBEInfo;
 
-typedef struct VBEModeInfo {
+typedef struct VBEModeInfo
+{
     Uint16 mode_attributes;       /* Mode attributes */
     Uint8 win_a_attributes;       /* Window A attributes */
     Uint8 win_b_attributes;       /* Window B attributes */
@@ -102,6 +102,9 @@ typedef struct VBEModeInfo {
 
     char reserved_end[189];
 } __attribute__ ((packed)) VBEModeInfo;
+
+extern int SDL_SVGA_GetVBEInfo(VBEInfo *info);
+extern int SDL_SVGA_GetVBEModeInfo(Uint16 mode, VBEModeInfo *info);
 
 #endif /* SDL_svga_vbe_h_ */
 
