@@ -245,6 +245,20 @@ HIDAPI_DriverXbox360_QuitWindowsGamingInput(SDL_DriverXbox360_Context *ctx)
 #endif /* SDL_JOYSTICK_HIDAPI_WINDOWS_GAMING_INPUT */
 
 static SDL_bool
+IsBluetoothXboxOneController(Uint16 vendor_id, Uint16 product_id)
+{
+    /* Check to see if it's the Xbox One S or Xbox One Elite Series 2 in Bluetooth mode */
+    if (vendor_id == USB_VENDOR_MICROSOFT) {
+        if (product_id == USB_PRODUCT_XBOX_ONE_S_REV1_BLUETOOTH ||
+            product_id == USB_PRODUCT_XBOX_ONE_S_REV2_BLUETOOTH ||
+            product_id == USB_PRODUCT_XBOX_ONE_ELITE_SERIES_2_BLUETOOTH) {
+            return SDL_TRUE;
+        }
+    }
+    return SDL_FALSE;
+}
+
+static SDL_bool
 HIDAPI_DriverXbox360_IsSupportedDevice(const char *name, SDL_GameControllerType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
     const int XB360W_IFACE_PROTOCOL = 129; /* Wireless */
@@ -403,23 +417,38 @@ HIDAPI_DriverXbox360_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joy
 #else /* !__WIN32__ */
 
 #ifdef __MACOSX__
-    /* On Mac OS X the 360Controller driver uses this short report,
-       and we need to prefix it with a magic token so hidapi passes it through untouched
-     */
-    Uint8 rumble_packet[] = { 'M', 'A', 'G', 'I', 'C', '0', 0x00, 0x04, 0x00, 0x00 };
+    if (IsBluetoothXboxOneController(device->vendor_id, device->product_id)) {
+        Uint8 rumble_packet[] = { 0x03, 0x0F, 0x00, 0x00, 0x00, 0x00, 0xff, 0x00, 0x00 };
 
-    rumble_packet[6+2] = (low_frequency_rumble >> 8);
-    rumble_packet[6+3] = (high_frequency_rumble >> 8);
+        rumble_packet[4] = (low_frequency_rumble >> 8);
+        rumble_packet[5] = (high_frequency_rumble >> 8);
+
+        if (SDL_HIDAPI_SendRumble(device, rumble_packet, sizeof(rumble_packet)) != sizeof(rumble_packet)) {
+            return SDL_SetError("Couldn't send rumble packet");
+        }
+    } else {
+        /* On Mac OS X the 360Controller driver uses this short report,
+           and we need to prefix it with a magic token so hidapi passes it through untouched
+         */
+        Uint8 rumble_packet[] = { 'M', 'A', 'G', 'I', 'C', '0', 0x00, 0x04, 0x00, 0x00 };
+
+        rumble_packet[6+2] = (low_frequency_rumble >> 8);
+        rumble_packet[6+3] = (high_frequency_rumble >> 8);
+
+        if (SDL_HIDAPI_SendRumble(device, rumble_packet, sizeof(rumble_packet)) != sizeof(rumble_packet)) {
+            return SDL_SetError("Couldn't send rumble packet");
+        }
+    }
 #else
     Uint8 rumble_packet[] = { 0x00, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 
     rumble_packet[3] = (low_frequency_rumble >> 8);
     rumble_packet[4] = (high_frequency_rumble >> 8);
-#endif
 
     if (SDL_HIDAPI_SendRumble(device, rumble_packet, sizeof(rumble_packet)) != sizeof(rumble_packet)) {
         return SDL_SetError("Couldn't send rumble packet");
     }
+#endif
 #endif /* __WIN32__ */
 
     return 0;
