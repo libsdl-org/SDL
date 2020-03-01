@@ -43,6 +43,7 @@
 #include <CoreFoundation/CoreFoundation.h>
 #include <mach/mach.h>
 #include <IOKit/IOKitLib.h>
+#include <IOKit/hid/IOHIDDevice.h>
 #include <IOKit/usb/USBSpec.h>
 #endif
 
@@ -218,12 +219,15 @@ HIDAPI_InitializeDiscovery()
     SDL_HIDAPI_discovery.m_notificationPort = IONotificationPortCreate(kIOMasterPortDefault);
     if (SDL_HIDAPI_discovery.m_notificationPort) {
         {
-            CFMutableDictionaryRef matchingDict = IOServiceMatching("IOUSBDevice");
-
-            /* Note: IOServiceAddMatchingNotification consumes the reference to matchingDict */
             io_iterator_t portIterator = 0;
             io_object_t entry;
-            if (IOServiceAddMatchingNotification(SDL_HIDAPI_discovery.m_notificationPort, kIOMatchedNotification, matchingDict, CallbackIOServiceFunc, &SDL_HIDAPI_discovery.m_bHaveDevicesChanged, &portIterator) == 0) {
+            IOReturn result = IOServiceAddMatchingNotification(
+                SDL_HIDAPI_discovery.m_notificationPort,
+                kIOFirstMatchNotification,
+                IOServiceMatching(kIOHIDDeviceKey),
+                CallbackIOServiceFunc, &SDL_HIDAPI_discovery.m_bHaveDevicesChanged, &portIterator);
+
+            if (result == 0) {
                 /* Must drain the existing iterator, or we won't receive new notifications */
                 while ((entry = IOIteratorNext(portIterator)) != 0) {
                     IOObjectRelease(entry);
@@ -234,12 +238,15 @@ HIDAPI_InitializeDiscovery()
             }
         }
         {
-            CFMutableDictionaryRef matchingDict = IOServiceMatching("IOBluetoothDevice");
-
-            /* Note: IOServiceAddMatchingNotification consumes the reference to matchingDict */
             io_iterator_t portIterator = 0;
             io_object_t entry;
-            if (IOServiceAddMatchingNotification(SDL_HIDAPI_discovery.m_notificationPort, kIOMatchedNotification, matchingDict, CallbackIOServiceFunc, &SDL_HIDAPI_discovery.m_bHaveDevicesChanged, &portIterator) == 0) {
+            IOReturn result = IOServiceAddMatchingNotification(
+                SDL_HIDAPI_discovery.m_notificationPort,
+                kIOTerminatedNotification,
+                IOServiceMatching(kIOHIDDeviceKey),
+                CallbackIOServiceFunc, &SDL_HIDAPI_discovery.m_bHaveDevicesChanged, &portIterator);
+
+            if (result == 0) {
                 /* Must drain the existing iterator, or we won't receive new notifications */
                 while ((entry = IOIteratorNext(portIterator)) != 0) {
                     IOObjectRelease(entry);
