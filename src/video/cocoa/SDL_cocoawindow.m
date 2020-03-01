@@ -2030,6 +2030,11 @@ Cocoa_SetWindowFullscreenSpace(SDL_Window * window, SDL_bool state)
     SDL_bool succeeded = SDL_FALSE;
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
 
+	if (data->inWindowFullscreenTransition) {
+		return SDL_FALSE;
+	}
+
+	data->inWindowFullscreenTransition = SDL_TRUE;
     if ([data->listener setFullscreenSpace:(state ? YES : NO)]) {
         const int maxattempts = 3;
         int attempt = 0;
@@ -2056,6 +2061,7 @@ Cocoa_SetWindowFullscreenSpace(SDL_Window * window, SDL_bool state)
         /* Return TRUE to prevent non-space fullscreen logic from running */
         succeeded = SDL_TRUE;
     }
+	data->inWindowFullscreenTransition = SDL_FALSE;
 
     return succeeded;
 }}
