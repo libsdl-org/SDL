@@ -807,3 +807,5 @@ SDL_DYNAPI_PROC(void,SDL_OnApplicationDidChangeStatusBarOrientation,(void),(),)
 #ifdef __ANDROID__
 SDL_DYNAPI_PROC(int,SDL_GetAndroidSDKVersion,(void),(),return)
 #endif
+SDL_DYNAPI_PROC(int,SDL_isupper,(int a),(a),return)
+SDL_DYNAPI_PROC(int,SDL_islower,(int a),(a),return)
