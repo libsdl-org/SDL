@@ -30,14 +30,18 @@ typedef struct VBEFarPtr {
     Uint16 segment;
 } __attribute__ ((packed)) VBEFarPtr;
 
+SDL_COMPILE_TIME_ASSERT(VBEFarPtr, sizeof(VBEFarPtr) == 4);
+
 typedef struct VBEVersion {
     Uint8 minor;
     Uint8 major;
 } __attribute__ ((packed)) VBEVersion;
 
+SDL_COMPILE_TIME_ASSERT(VBEVersion, sizeof(VBEVersion) == 2);
+
 typedef struct VBEInfo
 {
-    char vbe_signature[4];          /* 'VESA' 4 byte signature */
+    char vbe_signature[4];          /* "VESA" 4 byte signature */
     VBEVersion vbe_version;         /* VBE version number */
     VBEFarPtr oem_string_ptr;       /* Pointer to OEM string */
     Uint32 capabilities;            /* Capabilities of video card */
@@ -49,9 +53,11 @@ typedef struct VBEInfo
     VBEFarPtr oem_vendor_name_ptr;  /* Pointer to vendor name string */
     VBEFarPtr oem_product_name_ptr; /* Pointer to product name string */
     VBEFarPtr oem_product_rev_ptr;  /* Pointer to product revision string */
-    char reserved[222];             /* VBE implementatino scratch data */
+    Uint8 reserved[222];            /* VBE implementation scratch data */
     char oem_data[256];             /* Data for OEM strings */
 } __attribute__ ((packed)) VBEInfo;
+
+SDL_COMPILE_TIME_ASSERT(VBEInfo, sizeof(VBEInfo) == 512);
 
 typedef struct VBEModeInfo
 {
@@ -108,8 +114,10 @@ typedef struct VBEModeInfo
     Uint8 lin_rsvd_field_position;   /* Bit position of lsb of reserved mask (linear modes) */
     Uint32 max_pixel_clock;          /* Maximum pixel clock (in Hz) for graphics mode */
 
-    char reserved_end[189];
+    Uint8 reserved_end[190];
 } __attribute__ ((packed)) VBEModeInfo;
+
+SDL_COMPILE_TIME_ASSERT(VBEModeInfo, sizeof(VBEModeInfo) == 256);
 
 extern int SDL_SVGA_GetVBEInfo(VBEInfo *info);
 extern int SDL_SVGA_GetVBEModeInfo(Uint16 mode, VBEModeInfo *info);
