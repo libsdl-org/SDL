@@ -469,6 +469,24 @@ extern "C" {
 #define SDL_HINT_XINPUT_USE_OLD_JOYSTICK_MAPPING "SDL_XINPUT_USE_OLD_JOYSTICK_MAPPING"
 
 /**
+ *  \brief  A variable that overrides the automatic controller type detection
+ *
+ *  The variable should be comma separated entries, in the form: VID/PID=type
+ *
+ *  The VID and PID should be hexadecimal with exactly 4 digits, e.g. 0x00fd
+ *
+ *  The type should be one of:
+ *      Xbox360
+ *      XboxOne
+ *      PS3
+ *      PS4
+ *      SwitchPro
+ *
+ *  This hint affects what driver is used, and must be set before calling SDL_Init(SDL_INIT_GAMECONTROLLER)
+ */
+#define SDL_HINT_GAMECONTROLLERTYPE "SDL_GAMECONTROLLERTYPE"
+
+/**
  *  \brief  A variable that lets you manually hint extra gamecontroller db entries.
  *
  *  The variable should be newline delimited rows of gamecontroller config data, see SDL_gamecontroller.h
