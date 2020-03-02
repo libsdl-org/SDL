@@ -2035,6 +2035,9 @@ AS_HELP_STRING([--enable-video-x11-vm], [use X11 VM extension for fullscreen [[d
                 SUMMARY_video_x11="${SUMMARY_video_x11} xvidmode"
             fi
         fi
+    else
+        # Prevent Mesa from including X11 headers
+        EXTRA_CFLAGS="$EXTRA_CFLAGS -DMESA_EGL_NO_X11_HEADERS -DEGL_NO_X11"
     fi
 }
 
