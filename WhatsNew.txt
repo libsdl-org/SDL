@@ -2,11 +2,67 @@
 This is a list of major changes in SDL's version history.
 
 ---------------------------------------------------------------------------
-2.0.11/12:
+2.0.12:
 ---------------------------------------------------------------------------
 
 General:
+* Added SDL_GetTextureScaleMode() and SDL_SetTextureScaleMode() to get and set the scaling mode used for a texture
 * Added SDL_LockTextureToSurface(), similar to SDL_LockTexture() but the locked area is exposed as a SDL surface.
+* Added new blend mode, SDL_BLENDMODE_MUL, which does a modulate and blend operation
+* Added the hint SDL_HINT_DISPLAY_USABLE_BOUNDS to override the results of SDL_GetDisplayUsableBounds() for display index 0.
+* Added the window underneath the finger to the SDL_TouchFingerEvent
+* Added SDL_GameControllerTypeForIndex(), SDL_GameControllerGetType() to return the type of a game controller (Xbox 360, Xbox One, PS3, PS4, or Nintendo Switch Pro)
+* Added the hint SDL_HINT_GAMECONTROLLERTYPE to override the automatic game controller type detection
+* Added SDL_JoystickFromPlayerIndex() and SDL_GameControllerFromPlayerIndex() to get the device associated with a player index
+* Added SDL_JoystickSetPlayerIndex() and SDL_GameControllerSetPlayerIndex() to set the player index associated with a device
+* Added the hint SDL_HINT_GAMECONTROLLER_USE_BUTTON_LABELS to specify whether Nintendo Switch Pro controllers should use the buttons as labeled or swapped to match positional layout. The default is to use the buttons as labeled.
+* Added support for Nintendo GameCube controllers to the HIDAPI driver, and a hint SDL_HINT_JOYSTICK_HIDAPI_GAMECUBE to control whether this is used.
+* Improved support for Xbox 360 and Xbox One controllers when using the HIDAPI driver
+* Added support for many game controllers, including:
+	* 8BitDo FC30 Pro
+	* 8BitDo M30 GamePad
+	* BDA PS4 Fightpad
+	* HORI Fighting Commander
+	* Hyperkin Duke
+	* Hyperkin X91
+	* MOGA XP5-A Plus
+	* NACON GC-400ES
+	* NVIDIA Controller v01.04
+	* PDP Versus Fighting Pad
+	* Razer Raion Fightpad for PS4
+	* Razer Serval
+	* Stadia Controller
+	* SteelSeries Stratus Duo
+	* Victrix Pro Fight Stick for PS4
+	* Xbox One Elite Series 2
+* Fixed blocking game controller rumble calls when using the HIDAPI driver
+* Added SDL_zeroa() macro to zero an array of elements
+* Added SDL_HasARMSIMD() which returns true if the CPU has ARM SIMD (ARMv6+) features
+
+Windows:
+* Fixed crash when using the release SDL DLL with applications built with gcc
+* Fixed performance regression in event handling introduced in 2.0.10
+* Added support for SDL_SetThreadPriority() for UWP applications
+
+Linux:
+* Added the hint SDL_HINT_VIDEO_X11_WINDOW_VISUALID to specify the visual chosen for new X11 windows
+* Added the hint SDL_HINT_VIDEO_X11_FORCE_EGL to specify whether X11 should use GLX or EGL by default
+
+iOS / tvOS / macOS:
+* Added SDL_Metal_CreateView() and SDL_Metal_DestroyView() to create CAMetalLayer-backed NSView/UIView and attach it to the specified window.
+
+iOS/ tvOS:
+* Added support for Bluetooth Steam Controllers as game controllers
+
+tvOS:
+* Fixed support for surround sound on Apple TV
+
+Android:
+* Added SDL_GetAndroidSDKVersion() to return the API level of the current device
+* Added support for audio capture using OpenSL-ES
+* Added support for Bluetooth Steam Controllers as game controllers
+* Fixed rare crashes when the app goes into the background or terminates
+
 
 ---------------------------------------------------------------------------
 2.0.10:
