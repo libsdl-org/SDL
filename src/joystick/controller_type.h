@@ -540,6 +540,30 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x28de, 0x1202 ), k_eControllerType_SteamControllerV2, NULL },	// Valve Bluetooth Steam Controller (HEADCRAB)
 };
 
+static SDL_INLINE const char *GetControllerTypeOverride( int nVID, int nPID )
+{
+	const char *hint = SDL_GetHint(SDL_HINT_GAMECONTROLLERTYPE);
+	if (hint) {
+		char key[32];
+		const char *spot = NULL;
+
+		SDL_snprintf(key, sizeof(key), "0x%.4x/0x%.4x=", nVID, nPID);
+		spot = SDL_strstr(hint, key);
+		if (!spot) {
+			SDL_snprintf(key, sizeof(key), "0x%.4X/0x%.4X=", nVID, nPID);
+			spot = SDL_strstr(hint, key);
+		}
+		if (spot) {
+			spot += SDL_strlen(key);
+			if (SDL_strncmp(spot, "k_eControllerType_", 18) == 0) {
+				spot += 18;
+			}
+			return spot;
+		}
+	}
+	return NULL;
+}
+
 static SDL_INLINE EControllerType GuessControllerType( int nVID, int nPID )
 {
 #if 0//def _DEBUG
@@ -565,6 +589,37 @@ static SDL_INLINE EControllerType GuessControllerType( int nVID, int nPID )
 
 	unsigned int unDeviceID = MAKE_CONTROLLER_ID( nVID, nPID );
 	int iIndex;
+
+	const char *pszOverride = GetControllerTypeOverride( nVID, nPID );
+	if ( pszOverride )
+	{
+		if ( SDL_strncasecmp( pszOverride, "Xbox360", 7 ) == 0 )
+		{
+			return k_eControllerType_XBox360Controller;
+		}
+		if ( SDL_strncasecmp( pszOverride, "XboxOne", 7 ) == 0 )
+		{
+			return k_eControllerType_XBoxOneController;
+		}
+		if ( SDL_strncasecmp( pszOverride, "PS3", 3 ) == 0 )
+		{
+			return k_eControllerType_PS3Controller;
+		}
+		if ( SDL_strncasecmp( pszOverride, "PS4", 3 ) == 0 )
+		{
+			return k_eControllerType_PS4Controller;
+		}
+		if ( SDL_strncasecmp( pszOverride, "SwitchPro", 9 ) == 0 )
+		{
+			return k_eControllerType_SwitchProController;
+		}
+		if ( SDL_strncasecmp( pszOverride, "Steam", 5 ) == 0 )
+		{
+			return k_eControllerType_SteamController;
+		}
+		return k_eControllerType_UnknownNonSteamController;
+	}
+
 	for ( iIndex = 0; iIndex < sizeof( arrControllers ) / sizeof( arrControllers[0] ); ++iIndex )
 	{
 		if ( unDeviceID == arrControllers[ iIndex ].m_unDeviceID )
