@@ -757,8 +757,10 @@ macro(CheckOpenGLX11)
 endmacro()
 
 # Requires:
-# - nada
+# - PkgCheckModules
 macro(CheckOpenGLESX11)
+  pkg_check_modules(EGL egl)
+  set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} ${EGL_CFLAGS}")
   if(VIDEO_OPENGLES)
     check_c_source_compiles("
         #define EGL_API_FB
