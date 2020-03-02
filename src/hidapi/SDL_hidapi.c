@@ -129,12 +129,6 @@ static const SDL_UDEV_Symbols *udev_ctx = NULL;
 #undef make_path
 #undef read_thread
 
-#ifndef SDL_LIBUSB_DYNAMIC
-#if __WINDOWS__
-#define SDL_LIBUSB_DYNAMIC "libusb-1.0.dll"
-#endif /* __WINDOWS__ */
-#endif /* SDL_LIBUSB_DYNAMIC */
-
 #ifdef SDL_LIBUSB_DYNAMIC
 /* libusb HIDAPI Implementation */
 
