@@ -25,6 +25,10 @@
 
 #include "../SDL_sysvideo.h"
 
+typedef Uint16 VBEMode;
+
+#define VBE_MODE_LIST_END 0xFFFF
+
 typedef struct VBEFarPtr {
     Uint16 offset;
     Uint16 segment;
@@ -120,7 +124,8 @@ typedef struct VBEModeInfo
 SDL_COMPILE_TIME_ASSERT(VBEModeInfo, sizeof(VBEModeInfo) == 256);
 
 extern int SDL_SVGA_GetVBEInfo(VBEInfo *info);
-extern int SDL_SVGA_GetVBEModeInfo(Uint16 mode, VBEModeInfo *info);
+extern VBEMode SDL_SVGA_GetVBEModeAtIndex(const VBEInfo *info, int index);
+extern int SDL_SVGA_GetVBEModeInfo(VBEMode mode, VBEModeInfo *info);
 
 #endif /* SDL_svga_vbe_h_ */
 

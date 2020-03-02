@@ -29,6 +29,12 @@
 #include <libc/dosio.h>
 #include <string.h>
 
+/* Check the DPMI registers for an error after a VBE function call. */
+/* Returns -1 if VBE is not installed or the non-zero VBE error code. */
+#define RETURN_IF_VBE_CALL_FAILED(regs) \
+    if ((regs).h.al != 0x4F) return -1; \
+    if ((regs).h.ah != 0) return (regs).h.ah;
+
 int
 SDL_SVGA_GetVBEInfo(VBEInfo *info)
 {
@@ -42,15 +48,7 @@ SDL_SVGA_GetVBEInfo(VBEInfo *info)
 
     __dpmi_int(0x10, &r);
 
-    /* VBE not installed */
-    if (r.h.al != 0x4F) {
-        return -1;
-    }
-
-    /* VBE call failed */
-    if (r.h.ah != 0) {
-        return r.h.ah;
-    }
+    RETURN_IF_VBE_CALL_FAILED(r);
 
     dosmemget(__tb, sizeof(*info), info);
 
@@ -62,9 +60,33 @@ SDL_SVGA_GetVBEInfo(VBEInfo *info)
     return 0;
 }
 
-int
-SDL_SVGA_GetVBEModeInfo(Uint16 mode, VBEModeInfo *info)
+VBEMode
+SDL_SVGA_GetVBEModeAtIndex(const VBEInfo *info, int index)
 {
+    VBEMode mode;
+    VBEFarPtr ptr = info->video_mode_ptr;
+
+    dosmemget(ptr.segment * 16 + ptr.offset + index * sizeof(mode), sizeof(mode), &mode);
+
+    return mode;
+}
+
+int
+SDL_SVGA_GetVBEModeInfo(VBEMode mode, VBEModeInfo *info)
+{
+    __dpmi_regs r;
+
+    r.x.ax = 0x4F01;
+    r.x.cx = mode;
+    r.x.di = __tb_offset;
+    r.x.es = __tb_segment;
+
+    __dpmi_int(0x10, &r);
+
+    RETURN_IF_VBE_CALL_FAILED(r);
+
+    dosmemget(__tb, sizeof(*info), info);
+
     return 0;
 }
 
