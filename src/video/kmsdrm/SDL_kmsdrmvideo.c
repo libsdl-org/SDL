@@ -650,7 +650,7 @@ KMSDRM_VideoQuit(_THIS)
     viddata->num_windows = 0;
 
     /* Restore saved CRTC settings */
-    if (viddata->drm_fd >= 0 && dispdata->conn && dispdata->saved_crtc) {
+    if (viddata->drm_fd >= 0 && dispdata && dispdata->conn && dispdata->saved_crtc) {
         drmModeConnector *conn = dispdata->conn;
         drmModeCrtc *crtc = dispdata->saved_crtc;
 
@@ -661,11 +661,11 @@ KMSDRM_VideoQuit(_THIS)
             SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO, "Could not restore original CRTC mode");
         }
     }
-    if (dispdata->conn) {
+    if (dispdata && dispdata->conn) {
         KMSDRM_drmModeFreeConnector(dispdata->conn);
         dispdata->conn = NULL;
     }
-    if (dispdata->saved_crtc) {
+    if (dispdata && dispdata->saved_crtc) {
         KMSDRM_drmModeFreeCrtc(dispdata->saved_crtc);
         dispdata->saved_crtc = NULL;
     }
