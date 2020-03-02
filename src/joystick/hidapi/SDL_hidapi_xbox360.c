@@ -283,10 +283,6 @@ HIDAPI_DriverXbox360_IsSupportedDevice(const char *name, SDL_GameControllerType 
         /* This is the Steam Virtual Gamepad, which isn't supported by this driver */
         return SDL_FALSE;
     }
-    if (vendor_id == USB_VENDOR_MICROSOFT && product_id == 0x02e0) {
-        /* This is the old Bluetooth Xbox One S firmware, which isn't supported by this driver */
-        return SDL_FALSE;
-    }
 #if defined(__MACOSX__)
     /* Wired Xbox One controllers are handled by this driver, interfacing with
        the 360Controller driver available from:
