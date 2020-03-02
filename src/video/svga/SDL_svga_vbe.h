@@ -25,12 +25,20 @@
 
 #include "../SDL_sysvideo.h"
 
-typedef Uint32 VBEFarPtr;
+typedef struct VBEFarPtr {
+    Uint16 offset;
+    Uint16 segment;
+} __attribute__ ((packed)) VBEFarPtr;
+
+typedef struct VBEVersion {
+    Uint8 minor;
+    Uint8 major;
+} __attribute__ ((packed)) VBEVersion;
 
 typedef struct VBEInfo
 {
     char vbe_signature[4];          /* 'VESA' 4 byte signature */
-    Uint16 vbe_version;             /* VBE version number */
+    VBEVersion vbe_version;         /* VBE version number */
     VBEFarPtr oem_string_ptr;       /* Pointer to OEM string */
     Uint32 capabilities;            /* Capabilities of video card */
     VBEFarPtr video_mode_ptr;       /* Pointer to supported modes */

@@ -47,7 +47,7 @@ SVGA_Available(void)
 {
     VBEInfo info;
 
-    return SDL_SVGA_GetVBEInfo(&info) == 0 && info.vbe_version >= 0x0200;
+    return SDL_SVGA_GetVBEInfo(&info) == 0 && info.vbe_version.major >= 2;
 }
 
 static void
@@ -62,7 +62,7 @@ SVGA_CreateDevice(int devindex)
     SDL_VideoDevice *device;
     VBEInfo info;
 
-    if (SDL_SVGA_GetVBEInfo(&info) || info.vbe_version < 0x0200) {
+    if (SDL_SVGA_GetVBEInfo(&info) || info.vbe_version.major < 2) {
         return 0;
     }
 
