@@ -3916,6 +3916,13 @@
 			remoteGlobalIDString = BECDF5FE0761BA81005FE872;
 			remoteInfo = "Framework (Upgraded)";
 		};
+		F3190016240CA3BA00ED104F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A75FDB8023E4C74400529352;
+			remoteInfo = hidapi;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -8081,6 +8088,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				F3190017240CA3BA00ED104F /* PBXTargetDependency */,
 				BECDF6C60761BA81005FE872 /* PBXTargetDependency */,
 			);
 			name = "Standard DMG";
@@ -10056,6 +10064,11 @@
 			isa = PBXTargetDependency;
 			target = BECDF5FE0761BA81005FE872 /* Framework */;
 			targetProxy = BECDF6C50761BA81005FE872 /* PBXContainerItemProxy */;
+		};
+		F3190017240CA3BA00ED104F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A75FDB8023E4C74400529352 /* hidapi */;
+			targetProxy = F3190016240CA3BA00ED104F /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
