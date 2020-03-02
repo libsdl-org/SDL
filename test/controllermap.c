@@ -367,7 +367,6 @@ WatchJoystick(SDL_Joystick * joystick)
     Uint8 alpha=200, alpha_step = -1;
     Uint32 alpha_ticks = 0;
     SDL_JoystickID nJoystickID;
-    int iIndex;
 
     /* Create a window to display joystick axis position */
     window = SDL_CreateWindow("Game Controller Map", SDL_WINDOWPOS_CENTERED,
