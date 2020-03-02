@@ -635,15 +635,15 @@ static void RotatePad( int *pX, int *pY, float flAngleInRad )
 {
     short int origX = *pX, origY = *pY;
 
-    *pX = (int)( cosf( flAngleInRad ) * origX - sinf( flAngleInRad ) * origY );
-    *pY = (int)( sinf( flAngleInRad ) * origX + cosf( flAngleInRad ) * origY );
+    *pX = (int)( SDL_cosf( flAngleInRad ) * origX - SDL_sinf( flAngleInRad ) * origY );
+    *pY = (int)( SDL_sinf( flAngleInRad ) * origX + SDL_cosf( flAngleInRad ) * origY );
 }
 static void RotatePadShort( short *pX, short *pY, float flAngleInRad )
 {
     short int origX = *pX, origY = *pY;
 
-    *pX = (short)( cosf( flAngleInRad ) * origX - sinf( flAngleInRad ) * origY );
-    *pY = (short)( sinf( flAngleInRad ) * origX + cosf( flAngleInRad ) * origY );
+    *pX = (short)( SDL_cosf( flAngleInRad ) * origX - SDL_sinf( flAngleInRad ) * origY );
+    *pY = (short)( SDL_sinf( flAngleInRad ) * origX + SDL_cosf( flAngleInRad ) * origY );
 }
 
 
@@ -1117,8 +1117,8 @@ HIDAPI_DriverSteam_UpdateDevice(SDL_HIDAPI_Device *device)
                     (ctx->m_state.sLeftPadX > kPadDeadZone) ? SDL_PRESSED : SDL_RELEASED);
             }
 
-            SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_TRIGGERLEFT, ctx->m_state.sTriggerL * 2 - 32768);
-            SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_TRIGGERRIGHT, ctx->m_state.sTriggerR * 2 - 32768);
+            SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_TRIGGERLEFT, (int)ctx->m_state.sTriggerL * 2 - 32768);
+            SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_TRIGGERRIGHT, (int)ctx->m_state.sTriggerR * 2 - 32768);
 
             SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_LEFTX, ctx->m_state.sLeftStickX);
             SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_LEFTY, ~ctx->m_state.sLeftStickY);
