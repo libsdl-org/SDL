@@ -244,6 +244,7 @@ HIDAPI_DriverXbox360_QuitWindowsGamingInput(SDL_DriverXbox360_Context *ctx)
 
 #endif /* SDL_JOYSTICK_HIDAPI_WINDOWS_GAMING_INPUT */
 
+#if defined(__MACOSX__)
 static SDL_bool
 IsBluetoothXboxOneController(Uint16 vendor_id, Uint16 product_id)
 {
@@ -257,6 +258,7 @@ IsBluetoothXboxOneController(Uint16 vendor_id, Uint16 product_id)
     }
     return SDL_FALSE;
 }
+#endif
 
 static SDL_bool
 HIDAPI_DriverXbox360_IsSupportedDevice(const char *name, SDL_GameControllerType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
