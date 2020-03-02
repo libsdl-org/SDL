@@ -747,3 +747,5 @@
 #define SDL_OnApplicationDidBecomeActive SDL_OnApplicationDidBecomeActive_REAL
 #define SDL_OnApplicationDidChangeStatusBarOrientation SDL_OnApplicationDidChangeStatusBarOrientation_REAL
 #define SDL_GetAndroidSDKVersion SDL_GetAndroidSDKVersion_REAL
+#define SDL_isupper SDL_isupper_REAL
+#define SDL_islower SDL_islower_REAL
