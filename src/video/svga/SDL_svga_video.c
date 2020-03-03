@@ -47,7 +47,7 @@ SVGA_Available(void)
 {
     VBEInfo info;
 
-    return SDL_SVGA_GetVBEInfo(&info) == 0 && info.vbe_version.major >= 2;
+    return SVGA_GetVBEInfo(&info) == 0 && info.vbe_version.major >= 2;
 }
 
 static void
@@ -68,7 +68,7 @@ SVGA_CreateDevice(int devindex)
         return NULL;
     }
 
-    if (SDL_SVGA_GetVBEInfo(&devdata->vbe_info) || devdata->vbe_info.vbe_version.major < 2) {
+    if (SVGA_GetVBEInfo(&devdata->vbe_info) || devdata->vbe_info.vbe_version.major < 2) {
         SDL_free(devdata);
         return NULL;
     }
@@ -103,7 +103,7 @@ VideoBootStrap SVGA_bootstrap = {
     SVGA_Available, SVGA_CreateDevice
 };
 
-int
+static int
 SVGA_VideoInit(_THIS)
 {
     /* TODO: Query for current mode. */
@@ -124,14 +124,14 @@ SVGA_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
     VBEMode vbe_mode;
     int index = 0;
 
-    vbe_mode = SDL_SVGA_GetVBEModeAtIndex(&devdata->vbe_info, index++);
+    vbe_mode = SVGA_GetVBEModeAtIndex(&devdata->vbe_info, index++);
 
     while (vbe_mode != VBE_MODE_LIST_END) {
         SDL_DisplayMode mode;
         SDL_DisplayModeData *modedata;
         VBEModeInfo info;
 
-        if (SDL_SVGA_GetVBEModeInfo(vbe_mode, &info)) {
+        if (SVGA_GetVBEModeInfo(vbe_mode, &info)) {
             return;
         }
 
@@ -155,7 +155,7 @@ SVGA_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
             SDL_free(modedata);
         }
 
-        vbe_mode = SDL_SVGA_GetVBEModeAtIndex(&devdata->vbe_info, index++);
+        vbe_mode = SVGA_GetVBEModeAtIndex(&devdata->vbe_info, index++);
     }
 }
 
@@ -165,7 +165,7 @@ SVGA_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
     return 0;
 }
 
-void
+static void
 SVGA_VideoQuit(_THIS)
 {
     /* TODO: Restore original video state. */

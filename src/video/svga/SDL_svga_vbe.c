@@ -36,7 +36,7 @@
     if ((regs).h.ah != 0) return (regs).h.ah;
 
 int
-SDL_SVGA_GetVBEInfo(VBEInfo *info)
+SVGA_GetVBEInfo(VBEInfo * info)
 {
     __dpmi_regs r;
 
@@ -61,7 +61,7 @@ SDL_SVGA_GetVBEInfo(VBEInfo *info)
 }
 
 VBEMode
-SDL_SVGA_GetVBEModeAtIndex(const VBEInfo *info, int index)
+SVGA_GetVBEModeAtIndex(const VBEInfo * info, int index)
 {
     VBEMode mode;
     VBEFarPtr ptr = info->video_mode_ptr;
@@ -72,7 +72,7 @@ SDL_SVGA_GetVBEModeAtIndex(const VBEInfo *info, int index)
 }
 
 int
-SDL_SVGA_GetVBEModeInfo(VBEMode mode, VBEModeInfo *info)
+SVGA_GetVBEModeInfo(VBEMode mode, VBEModeInfo * info)
 {
     __dpmi_regs r;
 
@@ -91,7 +91,7 @@ SDL_SVGA_GetVBEModeInfo(VBEMode mode, VBEModeInfo *info)
 }
 
 int
-SDL_SVGA_GetCurrentVBEMode(VBEMode *mode, VBEModeInfo *info)
+SVGA_GetCurrentVBEMode(VBEMode * mode, VBEModeInfo * info)
 {
     __dpmi_regs r;
 
@@ -107,7 +107,7 @@ SDL_SVGA_GetCurrentVBEMode(VBEMode *mode, VBEModeInfo *info)
         return 0;
     }
 
-    return SDL_SVGA_GetVBEModeInfo(*mode, info);
+    return SVGA_GetVBEModeInfo(*mode, info);
 }
 
 #endif /* SDL_VIDEO_DRIVER_SVGA */
