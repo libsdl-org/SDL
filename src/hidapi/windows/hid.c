@@ -310,6 +310,12 @@ int hid_blacklist(unsigned short vendor_id, unsigned short product_id)
 		return 1;
 	}
 
+	// Sound BlasterX G1 - Causes 10 second stalls when asking for manufacturer's string
+	if ( vendor_id == 0x041E && product_id == 0x3249 )
+	{
+		return 1;
+	}
+
 	return 0;
 }
 

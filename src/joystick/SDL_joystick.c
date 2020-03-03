@@ -1687,13 +1687,10 @@ static SDL_bool SDL_IsPS4RemapperRunning(void)
 
 SDL_bool SDL_ShouldIgnoreJoystick(const char *name, SDL_JoystickGUID guid)
 {
-    /* This list (except for marked entries at the top) is taken from:
+    /* This list is taken from:
        https://raw.githubusercontent.com/denilsonsa/udev-joystick-blacklist/master/generate_rules.py
      */
     static Uint32 joystick_blacklist[] = {
-        /* Sound BlasterX G1 */
-        MAKE_VIDPID(0x041E, 0x3249),
-
         /* Microsoft Microsoft Wireless Optical Desktop® 2.10 */
         /* Microsoft Wireless Desktop - Comfort Edition */
         MAKE_VIDPID(0x045e, 0x009d),
