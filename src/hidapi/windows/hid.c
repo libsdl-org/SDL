@@ -63,6 +63,11 @@ typedef LONG NTSTATUS;
 
 /*#define HIDAPI_USE_DDK*/
 
+/* The timeout in milliseconds for waiting on WriteFile to 
+   complete in hid_write. The longest observed time to do a output
+   report that we've seen is ~200-250ms so let's double that */
+#define HID_WRITE_TIMEOUT_MILLISECONDS 500
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -163,6 +168,7 @@ struct hid_device_ {
 		BOOL read_pending;
 		char *read_buf;
 		OVERLAPPED ol;
+		OVERLAPPED write_ol;
 };
 
 static hid_device *new_hid_device()
@@ -178,6 +184,8 @@ static hid_device *new_hid_device()
 	dev->read_buf = NULL;
 	memset(&dev->ol, 0, sizeof(dev->ol));
 	dev->ol.hEvent = CreateEvent(NULL, FALSE, FALSE /*initial state f=nonsignaled*/, NULL);
+	memset(&dev->write_ol, 0, sizeof(dev->write_ol));
+	dev->write_ol.hEvent = CreateEvent(NULL, FALSE, FALSE /*initial state f=nonsignaled*/, NULL);
 
 	return dev;
 }
@@ -185,6 +193,7 @@ static hid_device *new_hid_device()
 static void free_hid_device(hid_device *dev)
 {
 	CloseHandle(dev->ol.hEvent);
+	CloseHandle(dev->write_ol.hEvent);
 	CloseHandle(dev->device_handle);
 	LocalFree(dev->last_error_str);
 	free(dev->read_buf);
@@ -678,14 +687,12 @@ int HID_API_EXPORT HID_API_CALL hid_write_output_report(hid_device *dev, const u
 		return -1;
 }
 
-int HID_API_EXPORT HID_API_CALL hid_write(hid_device *dev, const unsigned char *data, size_t length)
+static int hid_write_timeout(hid_device *dev, const unsigned char *data, size_t length, int milliseconds)
 {
 	DWORD bytes_written;
 	BOOL res;
 	size_t stashed_length = length;
-	OVERLAPPED ol;
 	unsigned char *buf;
-	memset(&ol, 0, sizeof(ol));
 
 	/* Make sure the right number of bytes are passed to WriteFile. Windows
 	   expects the number of bytes which are in the _longest_ report (plus
@@ -710,7 +717,7 @@ int HID_API_EXPORT HID_API_CALL hid_write(hid_device *dev, const unsigned char *
 	}
 	else
 	{
-		res = WriteFile( dev->device_handle, buf, ( DWORD ) length, NULL, &ol );
+		res = WriteFile( dev->device_handle, buf, ( DWORD ) length, NULL, &dev->write_ol );
 		if (!res) {
 			if (GetLastError() != ERROR_IO_PENDING) {
 				/* WriteFile() failed. Return error. */
@@ -722,7 +729,16 @@ int HID_API_EXPORT HID_API_CALL hid_write(hid_device *dev, const unsigned char *
 
 		/* Wait here until the write is done. This makes
 		hid_write() synchronous. */
-		res = GetOverlappedResult(dev->device_handle, &ol, &bytes_written, TRUE/*wait*/);
+		res = WaitForSingleObject(dev->write_ol.hEvent, milliseconds);
+		if (res != WAIT_OBJECT_0)
+		{
+			// There was a Timeout.
+			bytes_written = (DWORD) -1;
+			register_error(dev, "WriteFile/WaitForSingleObject Timeout");
+			goto end_of_function;
+		}
+
+		res = GetOverlappedResult(dev->device_handle, &dev->write_ol, &bytes_written, FALSE/*F=don't_wait*/);
 		if (!res) {
 			/* The Write operation failed. */
 			register_error(dev, "WriteFile");
@@ -737,6 +753,10 @@ end_of_function:
 	return bytes_written;
 }
 
+int HID_API_EXPORT HID_API_CALL hid_write(hid_device *dev, const unsigned char *data, size_t length)
+{
+	return hid_write_timeout(dev, data, length, HID_WRITE_TIMEOUT_MILLISECONDS);
+}
 
 int HID_API_EXPORT HID_API_CALL hid_read_timeout(hid_device *dev, unsigned char *data, size_t length, int milliseconds)
 {
