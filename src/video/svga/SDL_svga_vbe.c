@@ -90,6 +90,26 @@ SDL_SVGA_GetVBEModeInfo(VBEMode mode, VBEModeInfo *info)
     return 0;
 }
 
+int
+SDL_SVGA_GetCurrentVBEMode(VBEMode *mode, VBEModeInfo *info)
+{
+    __dpmi_regs r;
+
+    r.x.ax = 0x4F03;
+
+    __dpmi_int(0x10, &r);
+
+    RETURN_IF_VBE_CALL_FAILED(r);
+
+    *mode = r.x.bx & 0x3FFF; /* High bits are flags */
+
+    if (!info) {
+        return 0;
+    }
+
+    return SDL_SVGA_GetVBEModeInfo(*mode, info);
+}
+
 #endif /* SDL_VIDEO_DRIVER_SVGA */
 
 /* vi: set ts=4 sw=4 expandtab: */

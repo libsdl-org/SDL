@@ -126,6 +126,7 @@ SDL_COMPILE_TIME_ASSERT(VBEModeInfo, sizeof(VBEModeInfo) == 256);
 extern int SDL_SVGA_GetVBEInfo(VBEInfo *info);
 extern VBEMode SDL_SVGA_GetVBEModeAtIndex(const VBEInfo *info, int index);
 extern int SDL_SVGA_GetVBEModeInfo(VBEMode mode, VBEModeInfo *info);
+extern int SDL_SVGA_GetCurrentVBEMode(VBEMode *mode, VBEModeInfo *info);
 
 #endif /* SDL_svga_vbe_h_ */
 
