@@ -31,12 +31,12 @@
 #include "SDL_svga_video.h"
 #include "SDL_svga_events.h"
 #include "SDL_svga_framebuffer.h"
-#include "SDL_svga_vbe.h"
 
 #define SVGAVID_DRIVER_NAME "svga"
 
 /* Initialization/Query functions */
 static int SVGA_VideoInit(_THIS);
+static void SVGA_GetDisplayModes(_THIS, SDL_VideoDisplay * display);
 static int SVGA_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode);
 static void SVGA_VideoQuit(_THIS);
 
@@ -60,22 +60,33 @@ static SDL_VideoDevice *
 SVGA_CreateDevice(int devindex)
 {
     SDL_VideoDevice *device;
-    VBEInfo info;
+    SDL_DeviceData *devdata;
 
-    if (SDL_SVGA_GetVBEInfo(&info) || info.vbe_version.major < 2) {
-        return 0;
+    devdata = (SDL_DeviceData *) SDL_calloc(1, sizeof(*devdata));
+    if (!devdata) {
+        SDL_OutOfMemory();
+        return NULL;
+    }
+
+    if (SDL_SVGA_GetVBEInfo(&devdata->vbe_info) || devdata->vbe_info.vbe_version.major < 2) {
+        SDL_free(devdata);
+        return NULL;
     }
 
     /* Initialize all variables that we clean on shutdown */
-    device = (SDL_VideoDevice *) SDL_calloc(1, sizeof(SDL_VideoDevice));
+    device = (SDL_VideoDevice *) SDL_calloc(1, sizeof(*device));
     if (!device) {
+        SDL_free(devdata);
         SDL_OutOfMemory();
-        return 0;
+        return NULL;
     }
+
+    device->driverdata = devdata;
 
     /* Set the function pointers */
     device->VideoInit = SVGA_VideoInit;
     device->VideoQuit = SVGA_VideoQuit;
+    device->GetDisplayModes = SVGA_GetDisplayModes;
     device->SetDisplayMode = SVGA_SetDisplayMode;
     device->PumpEvents = SVGA_PumpEvents;
     device->CreateWindowFramebuffer = SDL_SVGA_CreateWindowFramebuffer;
@@ -92,26 +103,60 @@ VideoBootStrap SVGA_bootstrap = {
     SVGA_Available, SVGA_CreateDevice
 };
 
-
 int
 SVGA_VideoInit(_THIS)
 {
-    SDL_DisplayMode mode;
+    /* TODO: Query for current mode. */
 
-    mode.format = SDL_PIXELFORMAT_INDEX8;
-    mode.w = 320;
-    mode.h = 200;
-    mode.refresh_rate = 0;
-    mode.driverdata = NULL;
-    if (SDL_AddBasicVideoDisplay(&mode) < 0) {
+    if (SDL_AddBasicVideoDisplay(NULL) < 0) {
         return -1;
     }
 
-    SDL_zero(mode);
-    SDL_AddDisplayMode(&_this->displays[0], &mode);
+    /* TODO: Save original video state. */
 
-    /* We're done! */
     return 0;
+}
+
+static void
+SVGA_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
+{
+    SDL_DeviceData *devdata = _this->driverdata;
+    VBEMode vbe_mode;
+    int index = 0;
+
+    vbe_mode = SDL_SVGA_GetVBEModeAtIndex(&devdata->vbe_info, index++);
+
+    while (vbe_mode != VBE_MODE_LIST_END) {
+        SDL_DisplayMode mode;
+        SDL_DisplayModeData *modedata;
+        VBEModeInfo info;
+
+        if (SDL_SVGA_GetVBEModeInfo(vbe_mode, &info)) {
+            return;
+        }
+
+        /* TODO: Filter out banked memory and weird color formats. */
+
+        modedata = (SDL_DisplayModeData *) SDL_calloc(1, sizeof(*modedata));
+        if (!modedata) {
+            return;
+        }
+
+        mode.w = info.x_resolution;
+        mode.h = info.y_resolution;
+        mode.format = SDL_PIXELFORMAT_INDEX8; /* FIXME: Select correct color format. */
+        mode.refresh_rate = 0;
+        mode.driverdata = modedata;
+        modedata->vbe_mode = vbe_mode;
+        modedata->framebuffer_phys_addr = (void *)(info.phys_base_ptr.segment * 16 + info.phys_base_ptr.offset);
+        modedata->framebuffer_size = 0x1000; /* FIXME: Set correct framebuffer memory size. */
+
+        if (!SDL_AddDisplayMode(display, &mode)) {
+            SDL_free(modedata);
+        }
+
+        vbe_mode = SDL_SVGA_GetVBEModeAtIndex(&devdata->vbe_info, index++);
+    }
 }
 
 static int
@@ -123,6 +168,7 @@ SVGA_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
 void
 SVGA_VideoQuit(_THIS)
 {
+    /* TODO: Restore original video state. */
 }
 
 #endif /* SDL_VIDEO_DRIVER_SVGA */

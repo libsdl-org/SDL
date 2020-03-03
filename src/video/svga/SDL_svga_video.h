@@ -25,6 +25,20 @@
 
 #include "../SDL_sysvideo.h"
 
+#include "SDL_svga_vbe.h"
+
+typedef struct
+{
+    VBEInfo vbe_info;
+} SDL_DeviceData;
+
+typedef struct
+{
+    VBEMode vbe_mode;
+    void *framebuffer_phys_addr;
+    size_t framebuffer_size;
+} SDL_DisplayModeData;
+
 #endif /* SDL_svga_video_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */
