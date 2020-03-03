@@ -63,8 +63,10 @@ public:
     void OnDeviceAdded(DeviceWatcher^ sender, DeviceInformation^ args);
     void OnDeviceRemoved(DeviceWatcher^ sender, DeviceInformationUpdate^ args);
     void OnDeviceUpdated(DeviceWatcher^ sender, DeviceInformationUpdate^ args);
+    void OnEnumerationCompleted(DeviceWatcher^ sender, Platform::Object^ args);
     void OnDefaultRenderDeviceChanged(Platform::Object^ sender, DefaultAudioRenderDeviceChangedEventArgs^ args);
     void OnDefaultCaptureDeviceChanged(Platform::Object^ sender, DefaultAudioCaptureDeviceChangedEventArgs^ args);
+    SDL_semaphore* completed;
 
 private:
     const SDL_bool iscapture;
@@ -72,20 +74,23 @@ private:
     Windows::Foundation::EventRegistrationToken added_handler;
     Windows::Foundation::EventRegistrationToken removed_handler;
     Windows::Foundation::EventRegistrationToken updated_handler;
+    Windows::Foundation::EventRegistrationToken completed_handler;
     Windows::Foundation::EventRegistrationToken default_changed_handler;
 };
 
 SDL_WasapiDeviceEventHandler::SDL_WasapiDeviceEventHandler(const SDL_bool _iscapture)
     : iscapture(_iscapture)
+    , completed(SDL_CreateSemaphore(0))
     , watcher(DeviceInformation::CreateWatcher(_iscapture ? DeviceClass::AudioCapture : DeviceClass::AudioRender))
 {
-    if (!watcher)
+    if (!watcher || !completed)
         return;  // uhoh.
 
     // !!! FIXME: this doesn't need a lambda here, I think, if I make SDL_WasapiDeviceEventHandler a proper C++/CX class. --ryan.
     added_handler = watcher->Added += ref new TypedEventHandler<DeviceWatcher^, DeviceInformation^>([this](DeviceWatcher^ sender, DeviceInformation^ args) { OnDeviceAdded(sender, args); } );
     removed_handler = watcher->Removed += ref new TypedEventHandler<DeviceWatcher^, DeviceInformationUpdate^>([this](DeviceWatcher^ sender, DeviceInformationUpdate^ args) { OnDeviceRemoved(sender, args); } );
     updated_handler = watcher->Updated += ref new TypedEventHandler<DeviceWatcher^, DeviceInformationUpdate^>([this](DeviceWatcher^ sender, DeviceInformationUpdate^ args) { OnDeviceUpdated(sender, args); } );
+    completed_handler = watcher->EnumerationCompleted += ref new TypedEventHandler<DeviceWatcher^, Platform::Object^>([this](DeviceWatcher^ sender, Platform::Object^ args) { OnEnumerationCompleted(sender, args); } );
     if (iscapture) {
         default_changed_handler = MediaDevice::DefaultAudioCaptureDeviceChanged += ref new TypedEventHandler<Platform::Object^, DefaultAudioCaptureDeviceChangedEventArgs^>([this](Platform::Object^ sender, DefaultAudioCaptureDeviceChangedEventArgs^ args) { OnDefaultCaptureDeviceChanged(sender, args); } );
     } else {
@@ -100,8 +105,13 @@ SDL_WasapiDeviceEventHandler::~SDL_WasapiDeviceEventHandler()
         watcher->Added -= added_handler;
         watcher->Removed -= removed_handler;
         watcher->Updated -= updated_handler;
+        watcher->EnumerationCompleted -= completed_handler;
         watcher->Stop();
         watcher = nullptr;
+    }
+    if (completed) {
+        SDL_DestroySemaphore(completed);
+        completed = nullptr;
     }
 
     if (iscapture) {
@@ -133,6 +143,13 @@ void
 SDL_WasapiDeviceEventHandler::OnDeviceUpdated(DeviceWatcher^ sender, DeviceInformationUpdate^ args)
 {
     SDL_assert(sender == this->watcher);
+}
+
+void
+SDL_WasapiDeviceEventHandler::OnEnumerationCompleted(DeviceWatcher^ sender, Platform::Object^ args)
+{
+    SDL_assert(sender == this->watcher);
+    SDL_SemPost(this->completed);
 }
 
 void
@@ -173,6 +190,8 @@ void WASAPI_EnumerateEndpoints(void)
     //  listening for updates.
     playback_device_event_handler = new SDL_WasapiDeviceEventHandler(SDL_FALSE);
     capture_device_event_handler = new SDL_WasapiDeviceEventHandler(SDL_TRUE);
+    SDL_SemWait(playback_device_event_handler->completed);
+    SDL_SemWait(capture_device_event_handler->completed);
 }
 
 struct SDL_WasapiActivationHandler : public RuntimeClass< RuntimeClassFlags< ClassicCom >, FtmBase, IActivateAudioInterfaceCompletionHandler >
