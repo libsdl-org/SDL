@@ -76,7 +76,9 @@ static int SDL_HIDAPI_RumbleThread(void *data)
 
         if (request) {
             SDL_LockMutex(request->device->dev_lock);
-            hid_write(request->device->dev, request->data, request->size);
+            if (request->device->dev) {
+                hid_write( request->device->dev, request->data, request->size );
+            }
             SDL_UnlockMutex(request->device->dev_lock);
             (void)SDL_AtomicDecRef(&request->device->rumble_pending);
             SDL_free(request);
