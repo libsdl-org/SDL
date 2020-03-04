@@ -35,11 +35,7 @@
 #define SVGAVID_DRIVER_NAME "svga"
 
 /* Mandatory mode attributes */
-#define VBE_MODE_ATTRS ( \ 
-    VBE_MODE_ATTR_COLOR_MODE | \
-    VBE_MODE_ATTR_GRAPHICS_MODE | \
-    VBE_MODE_ATTR_LINEAR_MEM_AVAIL \
-)
+#define VBE_MODE_ATTRS (VBE_MODE_ATTR_GRAPHICS_MODE | VBE_MODE_ATTR_LINEAR_MEM_AVAIL)
 
 /* Initialization/Query functions */
 static int SVGA_VideoInit(_THIS);
@@ -144,8 +140,14 @@ SVGA_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
             return;
         }
 
-        /* Mode must support color graphics with a linear framebuffer. */
+        /* Mode must support graphics with a linear framebuffer. */
         if ((info.mode_attributes & VBE_MODE_ATTRS) != VBE_MODE_ATTRS) {
+            continue;
+        }
+
+        /* Mode must be a known pixel format. */
+        mode.format = SVGA_ConvertPixelFormat(&info);
+        if (mode.format == SDL_PIXELFORMAT_UNKNOWN) {
             continue;
         }
 
@@ -156,7 +158,6 @@ SVGA_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
 
         mode.w = info.x_resolution;
         mode.h = info.y_resolution;
-        mode.format = SDL_PIXELFORMAT_INDEX8; /* FIXME: Select correct color format. */
         mode.refresh_rate = 0;
         mode.driverdata = modedata;
         modedata->vbe_mode = vbe_mode;

@@ -132,10 +132,21 @@ SDL_COMPILE_TIME_ASSERT(VBEModeInfo, sizeof(VBEModeInfo) == 256);
 #define VBE_MODE_ATTR_NO_WINDOWED_MEM  0x0040
 #define VBE_MODE_ATTR_LINEAR_MEM_AVAIL 0x0080
 
+/* Memory model values */
+#define VBE_MEM_MODEL_TEXT      0
+#define VBE_MEM_MODEL_CGA       1
+#define VBE_MEM_MODEL_HERCULES  2
+#define VBE_MEM_MODEL_PLANAR    3
+#define VBE_MEM_MODEL_PACKED    4
+#define VBE_MEM_MODEL_UNCHAINED 5
+#define VBE_MEM_MODEL_DIRECT    6
+#define VBE_MEM_MODEL_YUV       7
+
 extern int SVGA_GetVBEInfo(VBEInfo * info);
 extern VBEMode SVGA_GetVBEModeAtIndex(const VBEInfo * info, int index);
 extern int SVGA_GetVBEModeInfo(VBEMode mode, VBEModeInfo * info);
 extern int SVGA_GetCurrentVBEMode(VBEMode * mode, VBEModeInfo * info);
+extern SDL_PixelFormatEnum SVGA_ConvertPixelFormat(const VBEModeInfo * info);
 
 #endif /* SDL_svga_vbe_h_ */
 

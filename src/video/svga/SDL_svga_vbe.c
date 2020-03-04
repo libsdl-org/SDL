@@ -110,6 +110,28 @@ SVGA_GetCurrentVBEMode(VBEMode * mode, VBEModeInfo * info)
     return SVGA_GetVBEModeInfo(*mode, info);
 }
 
+SDL_PixelFormatEnum
+SVGA_ConvertPixelFormat(const VBEModeInfo * info)
+{
+    if (info->memory_model == VBE_MEM_MODEL_PACKED) {
+        switch (info->bits_per_pixel) {
+            /* FIXME: Is it MSB or LSB? */
+            case 1: return SDL_PIXELFORMAT_INDEX1MSB;
+            case 4: return SDL_PIXELFORMAT_INDEX4MSB;
+            case 8: return SDL_PIXELFORMAT_INDEX8;
+        }
+    } else if (info->memory_model == VBE_MEM_MODEL_DIRECT) {
+        switch (info->bits_per_pixel) {
+            /* FIXME: Check the color component field positions and size. */
+            case 8: return SDL_PIXELFORMAT_RGB332;
+            case 15: return SDL_PIXELFORMAT_RGB555;
+            case 16: return SDL_PIXELFORMAT_RGB565;
+            case 32: return SDL_PIXELFORMAT_RGB888;
+        }
+    }
+    return SDL_PIXELFORMAT_UNKNOWN;
+}
+
 #endif /* SDL_VIDEO_DRIVER_SVGA */
 
 /* vi: set ts=4 sw=4 expandtab: */
