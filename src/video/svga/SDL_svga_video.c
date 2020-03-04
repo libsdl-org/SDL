@@ -34,6 +34,13 @@
 
 #define SVGAVID_DRIVER_NAME "svga"
 
+/* Mandatory mode attributes */
+#define VBE_MODE_ATTRS ( \ 
+    VBE_MODE_ATTR_COLOR_MODE | \
+    VBE_MODE_ATTR_GRAPHICS_MODE | \
+    VBE_MODE_ATTR_LINEAR_MEM_AVAIL \
+)
+
 /* Initialization/Query functions */
 static int SVGA_VideoInit(_THIS);
 static void SVGA_GetDisplayModes(_THIS, SDL_VideoDisplay * display);
@@ -124,9 +131,11 @@ SVGA_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
     VBEMode vbe_mode;
     int index = 0;
 
-    vbe_mode = SVGA_GetVBEModeAtIndex(&devdata->vbe_info, index++);
-
-    while (vbe_mode != VBE_MODE_LIST_END) {
+    for (
+        vbe_mode = SVGA_GetVBEModeAtIndex(&devdata->vbe_info, index++);
+        vbe_mode != VBE_MODE_LIST_END;
+        vbe_mode = SVGA_GetVBEModeAtIndex(&devdata->vbe_info, index++)
+    ) {
         SDL_DisplayMode mode;
         SDL_DisplayModeData *modedata;
         VBEModeInfo info;
@@ -135,7 +144,10 @@ SVGA_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
             return;
         }
 
-        /* TODO: Filter out banked memory and weird color formats. */
+        /* Mode must support color graphics with a linear framebuffer. */
+        if ((info.mode_attributes & VBE_MODE_ATTRS) != VBE_MODE_ATTRS) {
+            continue;
+        }
 
         modedata = (SDL_DisplayModeData *) SDL_calloc(1, sizeof(*modedata));
         if (!modedata) {
@@ -154,8 +166,6 @@ SVGA_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
         if (!SDL_AddDisplayMode(display, &mode)) {
             SDL_free(modedata);
         }
-
-        vbe_mode = SVGA_GetVBEModeAtIndex(&devdata->vbe_info, index++);
     }
 }
 

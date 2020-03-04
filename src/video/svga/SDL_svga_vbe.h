@@ -123,6 +123,15 @@ typedef struct VBEModeInfo
 
 SDL_COMPILE_TIME_ASSERT(VBEModeInfo, sizeof(VBEModeInfo) == 256);
 
+/* Mode attribute bit flags */
+#define VBE_MODE_ATTR_HARDWARE_SUPPORT 0x0001
+#define VBE_MODE_ATTR_TTY_BIOS_SUPPORT 0x0004
+#define VBE_MODE_ATTR_COLOR_MODE       0x0008
+#define VBE_MODE_ATTR_GRAPHICS_MODE    0x0010
+#define VBE_MODE_ATTR_NO_VGA_COMPAT    0x0020
+#define VBE_MODE_ATTR_NO_WINDOWED_MEM  0x0040
+#define VBE_MODE_ATTR_LINEAR_MEM_AVAIL 0x0080
+
 extern int SVGA_GetVBEInfo(VBEInfo * info);
 extern VBEMode SVGA_GetVBEModeAtIndex(const VBEInfo * info, int index);
 extern int SVGA_GetVBEModeInfo(VBEMode mode, VBEModeInfo * info);
