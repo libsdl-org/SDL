@@ -101,13 +101,33 @@ SVGA_GetCurrentVBEMode(VBEMode * mode, VBEModeInfo * info)
 
     RETURN_IF_VBE_CALL_FAILED(r);
 
-    *mode = r.x.bx & 0x3FFF; /* High bits are flags */
+    *mode = r.x.bx & 0x3FFF; /* High bits are status flags. */
 
     if (!info) {
         return 0;
     }
 
     return SVGA_GetVBEModeInfo(*mode, info);
+}
+
+int
+SVGA_SetVBEMode(VBEMode mode)
+{
+    __dpmi_regs r;
+
+    mode &= 0x01FF; /* Mode number bit mask. */
+    mode |= 0x4000; /* Linear frame buffer flag. */
+
+    r.x.ax = 0x4F02;
+    r.x.bx = mode;
+    r.x.es = 0;
+    r.x.di = 0;
+
+    __dpmi_int(0x10, &r);
+
+    RETURN_IF_VBE_CALL_FAILED(r);
+
+    return 0;
 }
 
 SDL_PixelFormatEnum

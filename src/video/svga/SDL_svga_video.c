@@ -173,7 +173,10 @@ SVGA_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
 static int
 SVGA_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
 {
-    return 0;
+    SDL_DisplayModeData *modedata = mode->driverdata;
+
+    /* TODO: Use SDL_SetError. */
+    return SVGA_SetVBEMode(modedata->vbe_mode) == 0 ? 0 : -1;
 }
 
 static void
