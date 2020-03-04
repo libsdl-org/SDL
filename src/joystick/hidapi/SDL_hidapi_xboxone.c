@@ -105,10 +105,17 @@ static const SDL_DriverXboxOne_InitPacket xboxone_init_packets[] = {
     { 0x0000, 0x0000, 0x045e, 0x0000, xboxone_init6, sizeof(xboxone_init6), { 0x00, 0x00 } },
 };
 
+typedef enum {
+    XBOX_ONE_WIRELESS_PROTOCOL_UNKNOWN,
+    XBOX_ONE_WIRELESS_PROTOCOL_V1,
+    XBOX_ONE_WIRELESS_PROTOCOL_V2,
+} SDL_XboxOneWirelessProtocol;
+
 typedef struct {
     Uint16 vendor_id;
     Uint16 product_id;
     SDL_bool bluetooth;
+    SDL_XboxOneWirelessProtocol wireless_protocol;
     SDL_bool initialized;
     Uint32 start_time;
     Uint8 sequence;
@@ -489,6 +496,16 @@ HIDAPI_DriverXboxOneBluetooth_HandleStatePacket(SDL_Joystick *joystick, hid_devi
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_START, (data[15] & 0x08) ? SDL_PRESSED : SDL_RELEASED);
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_LEFTSTICK, (data[15] & 0x20) ? SDL_PRESSED : SDL_RELEASED);
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_RIGHTSTICK, (data[15] & 0x40) ? SDL_PRESSED : SDL_RELEASED);
+        if (ctx->wireless_protocol == XBOX_ONE_WIRELESS_PROTOCOL_UNKNOWN)
+        {
+            if (data[15] & 0x10) {
+                ctx->wireless_protocol = XBOX_ONE_WIRELESS_PROTOCOL_V2;
+            }
+        }
+        if (ctx->wireless_protocol == XBOX_ONE_WIRELESS_PROTOCOL_V2)
+        {
+            SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_GUIDE, (data[15] & 0x10) ? SDL_PRESSED : SDL_RELEASED);
+        }
     }
 
     if (ctx->last_state[16] != data[16]) {
@@ -566,6 +583,7 @@ HIDAPI_DriverXboxOneBluetooth_HandleStatePacket(SDL_Joystick *joystick, hid_devi
 static void
 HIDAPI_DriverXboxOneBluetooth_HandleGuidePacket(SDL_Joystick *joystick, hid_device *dev, SDL_DriverXboxOne_Context *ctx, Uint8 *data, int size)
 {
+    ctx->wireless_protocol = XBOX_ONE_WIRELESS_PROTOCOL_V1;
     SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_GUIDE, (data[1] & 0x01) ? SDL_PRESSED : SDL_RELEASED);
 }
 
