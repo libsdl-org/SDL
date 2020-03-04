@@ -536,73 +536,52 @@ int HID_API_EXPORT HID_API_CALL hid_exit(void)
 
 struct hid_device_info HID_API_EXPORT * HID_API_CALL hid_enumerate(unsigned short vendor_id, unsigned short product_id)
 {
+#ifdef SDL_LIBUSB_DYNAMIC
+    struct LIBUSB_hid_device_info *usb_devs = NULL;
+    struct LIBUSB_hid_device_info *usb_dev;
+#endif
 #if HAVE_PLATFORM_BACKEND
     struct PLATFORM_hid_device_info *raw_devs = NULL;
     struct PLATFORM_hid_device_info *raw_dev;
-#endif /* HAVE_PLATFORM_BACKEND */
+#endif
     struct hid_device_info *devs = NULL, *last = NULL, *new_dev;
-    SDL_bool bFound;
 
     if (SDL_hidapi_wasinit == SDL_FALSE) {
         hid_init();
     }
 
-#if HAVE_PLATFORM_BACKEND
-    if (udev_ctx) {
-        raw_devs = PLATFORM_hid_enumerate(vendor_id, product_id);
-    }
-#endif /* HAVE_PLATFORM_BACKEND */
-
 #ifdef SDL_LIBUSB_DYNAMIC
     if (libusb_ctx.libhandle) {
-        struct LIBUSB_hid_device_info *usb_devs = LIBUSB_hid_enumerate(vendor_id, product_id);
-        struct LIBUSB_hid_device_info *usb_dev;
+        usb_devs = LIBUSB_hid_enumerate(vendor_id, product_id);
         for (usb_dev = usb_devs; usb_dev; usb_dev = usb_dev->next) {
-            bFound = SDL_FALSE;
-#if HAVE_PLATFORM_BACKEND
-            for (raw_dev = raw_devs; raw_dev; raw_dev = raw_dev->next) {
-                if (raw_dev->vendor_id == 0x057e && raw_dev->product_id == 0x0337) {
-                    /* The GameCube adapter is handled by the USB HIDAPI driver */
-                    continue;
-                }
-                if (usb_dev->vendor_id == raw_dev->vendor_id &&
-                    usb_dev->product_id == raw_dev->product_id &&
-                    (raw_dev->interface_number < 0 || usb_dev->interface_number == raw_dev->interface_number)) {
-                    bFound = SDL_TRUE;
-                    break;
-                }
-            }
-#endif
+            new_dev = (struct hid_device_info*) SDL_malloc(sizeof(struct hid_device_info));
+            LIBUSB_CopyHIDDeviceInfo(usb_dev, new_dev);
 
-            if (!bFound) {
-                new_dev = (struct hid_device_info*) SDL_malloc(sizeof(struct hid_device_info));
-                LIBUSB_CopyHIDDeviceInfo(usb_dev, new_dev);
-
-                if (last != NULL) {
-                    last->next = new_dev;
-                } else {
-                    devs = new_dev;
-                }
-                last = new_dev;
+            if (last != NULL) {
+                last->next = new_dev;
+            } else {
+                devs = new_dev;
             }
+            last = new_dev;
         }
-        LIBUSB_hid_free_enumeration(usb_devs);
     }
 #endif /* SDL_LIBUSB_DYNAMIC */
 
 #if HAVE_PLATFORM_BACKEND
     if (udev_ctx) {
+        raw_devs = PLATFORM_hid_enumerate(vendor_id, product_id);
         for (raw_dev = raw_devs; raw_dev; raw_dev = raw_dev->next) {
-            bFound = SDL_FALSE;
-            for (new_dev = devs; new_dev; new_dev = new_dev->next) {
-                if (raw_dev->vendor_id == new_dev->vendor_id &&
-                    raw_dev->product_id == new_dev->product_id &&
-                    raw_dev->interface_number == new_dev->interface_number) {
+            SDL_bool bFound = SDL_FALSE;
+#ifdef SDL_LIBUSB_DYNAMIC
+            for (usb_dev = usb_devs; usb_dev; usb_dev = usb_dev->next) {
+                if (raw_dev->vendor_id == usb_dev->vendor_id &&
+                    raw_dev->product_id == usb_dev->product_id &&
+                    (raw_dev->interface_number < 0 || raw_dev->interface_number == usb_dev->interface_number)) {
                     bFound = SDL_TRUE;
                     break;
                 }
             }
-
+#endif
             if (!bFound) {
                 new_dev = (struct hid_device_info*) SDL_malloc(sizeof(struct hid_device_info));
                 PLATFORM_CopyHIDDeviceInfo(raw_dev, new_dev);
@@ -620,6 +599,11 @@ struct hid_device_info HID_API_EXPORT * HID_API_CALL hid_enumerate(unsigned shor
     }
 #endif /* HAVE_PLATFORM_BACKEND */
 
+#ifdef SDL_LIBUSB_DYNAMIC
+    if (libusb_ctx.libhandle) {
+        LIBUSB_hid_free_enumeration(usb_devs);
+    }
+#endif
     return devs;
 }
 
@@ -764,3 +748,5 @@ HID_API_EXPORT const wchar_t* HID_API_CALL hid_error(hid_device *device)
 }
 
 #endif /* SDL_JOYSTICK_HIDAPI */
+
+/* vi: set sts=4 ts=4 sw=4 expandtab: */
