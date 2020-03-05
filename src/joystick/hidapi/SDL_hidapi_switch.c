@@ -455,7 +455,7 @@ static SDL_bool WriteRumble(SDL_DriverSwitch_Context *ctx)
 
     /* Refresh the rumble state periodically */
     if (ctx->m_bRumbleActive) {
-        ctx->m_unRumbleRefresh = SDL_GetTicks() + 1000;
+        ctx->m_unRumbleRefresh = SDL_GetTicks() + 30;
         if (!ctx->m_unRumbleRefresh) {
             ctx->m_unRumbleRefresh = 1;
         }
