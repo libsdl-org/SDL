@@ -1012,6 +1012,9 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     public static boolean isTablet() {
         DisplayMetrics metrics = new DisplayMetrics();
         Activity activity = (Activity)getContext();
+        if (activity == null) {
+            return false;
+        }
         activity.getWindowManager().getDefaultDisplay().getMetrics(metrics);
 
         double dWidthInches = metrics.widthPixels / (double)metrics.xdpi;
