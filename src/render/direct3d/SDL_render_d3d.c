@@ -1238,7 +1238,7 @@ D3D_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *verti
 
     /* upload the new VBO data for this set of commands. */
     vbo = data->vertexBuffers[vboidx];
-    if (!vbo || (data->vertexBufferSize[vboidx] < vertsize)) {
+    if (data->vertexBufferSize[vboidx] < vertsize) {
         const DWORD usage = D3DUSAGE_DYNAMIC | D3DUSAGE_WRITEONLY;
         const DWORD fvf = D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1;
         if (vbo) {
@@ -1632,6 +1632,7 @@ D3D_Reset(SDL_Renderer * renderer)
             IDirect3DVertexBuffer9_Release(data->vertexBuffers[i]);
         }
         data->vertexBuffers[i] = NULL;
+        data->vertexBufferSize[i] = 0;
     }
 
     result = IDirect3DDevice9_Reset(data->device, &data->pparams);
