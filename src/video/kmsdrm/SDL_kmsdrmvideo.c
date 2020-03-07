@@ -808,6 +808,10 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
 
     viddata->windows[viddata->num_windows++] = window;
 
+    /* Focus on the newly created window */
+    SDL_SetMouseFocus(window);
+    SDL_SetKeyboardFocus(window);
+
     return 0;
 
 error:
