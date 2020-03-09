@@ -618,8 +618,8 @@ extern DECLSPEC void SDLCALL SDL_RenderGetViewport(SDL_Renderer * renderer,
  *  \brief Set the clip rectangle for the current target.
  *
  *  \param renderer The renderer for which clip rectangle should be set.
- *  \param rect   A pointer to the rectangle to set as the clip rectangle, or
- *                NULL to disable clipping.
+ *  \param rect   A pointer to the rectangle to set as the clip rectangle,
+ *                relative to the viewport, or NULL to disable clipping.
  *
  *  \return 0 on success, or -1 on error
  *
