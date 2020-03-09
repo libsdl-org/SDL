@@ -712,6 +712,7 @@ D3D_UnlockTexture(SDL_Renderer * renderer, SDL_Texture * texture)
         texturedata->texture.dirty = SDL_TRUE;
         if (data->drawstate.texture == texture) {
             data->drawstate.texture = NULL;
+            data->drawstate.shader = NULL;
             IDirect3DDevice9_SetPixelShader(data->device, NULL);
             IDirect3DDevice9_SetTexture(data->device, 0, NULL);
             if (texturedata->yuv) {
@@ -1531,6 +1532,7 @@ D3D_DestroyTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 
     if (renderdata->drawstate.texture == texture) {
         renderdata->drawstate.texture = NULL;
+        renderdata->drawstate.shader = NULL;
         IDirect3DDevice9_SetPixelShader(renderdata->device, NULL);
         IDirect3DDevice9_SetTexture(renderdata->device, 0, NULL);
         if (data->yuv) {
