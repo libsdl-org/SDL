@@ -898,6 +898,7 @@ SDL_iconv_string(const char *tocode, const char *fromcode, const char *inbuf,
     SDL_memset(outbuf, 0, 4);
 
     while (inbytesleft > 0) {
+        const size_t oldinbytesleft = inbytesleft;
         retCode = SDL_iconv(cd, &inbuf, &inbytesleft, &outbuf, &outbytesleft);
         switch (retCode) {
         case SDL_ICONV_E2BIG:
@@ -923,6 +924,11 @@ SDL_iconv_string(const char *tocode, const char *fromcode, const char *inbuf,
         case SDL_ICONV_ERROR:
             /* We can't continue... */
             inbytesleft = 0;
+            break;
+        }
+        /* Avoid infinite loops when nothing gets converted */
+        if (oldinbytesleft == inbytesleft)
+        {
             break;
         }
     }
