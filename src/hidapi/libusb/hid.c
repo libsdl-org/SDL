@@ -783,7 +783,7 @@ hid_device * hid_open(unsigned short vendor_id, unsigned short product_id, const
 	return handle;
 }
 
-static void read_callback(struct libusb_transfer *transfer)
+static void LIBUSB_CALL read_callback(struct libusb_transfer *transfer)
 {
 	hid_device *dev = (hid_device *)transfer->user_data;
 	int res;
