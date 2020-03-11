@@ -105,7 +105,8 @@ static void SDLCALL SDL_GameControllerButtonReportingHintChanged(void *userdata,
 
 static Uint8 RemapButton(SDL_DriverGameCube_Context *ctx, Uint8 button)
 {
-    if (ctx->m_bUseButtonLabels) {
+    if (!ctx->m_bUseButtonLabels) {
+        /* Use button positions */
         switch (button) {
         case SDL_CONTROLLER_BUTTON_B:
             return SDL_CONTROLLER_BUTTON_X;
@@ -274,8 +275,8 @@ HIDAPI_DriverGameCube_UpdateDevice(SDL_HIDAPI_Device *device)
                     (curSlot[off] & flag) ? SDL_PRESSED : SDL_RELEASED \
                 );
             READ_BUTTON(1, 0x01, 0) /* A */
-            READ_BUTTON(1, 0x02, 1) /* B */
-            READ_BUTTON(1, 0x04, 2) /* X */
+            READ_BUTTON(1, 0x04, 1) /* B */
+            READ_BUTTON(1, 0x02, 2) /* X */
             READ_BUTTON(1, 0x08, 3) /* Y */
             READ_BUTTON(1, 0x10, 4) /* DPAD_LEFT */
             READ_BUTTON(1, 0x20, 5) /* DPAD_RIGHT */

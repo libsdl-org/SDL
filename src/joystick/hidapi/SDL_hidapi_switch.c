@@ -197,6 +197,7 @@ typedef struct {
     SDL_bool m_bInputOnly;
     SDL_bool m_bHasHomeLED;
     SDL_bool m_bUsingBluetooth;
+    SDL_bool m_bIsGameCube;
     SDL_bool m_bUseButtonLabels;
     Uint8 m_nCommandNumber;
     SwitchCommonOutputPacket_t m_RumblePacket;
@@ -638,18 +639,30 @@ static void SDLCALL SDL_GameControllerButtonReportingHintChanged(void *userdata,
 
 static Uint8 RemapButton(SDL_DriverSwitch_Context *ctx, Uint8 button)
 {
-    if (ctx->m_bUseButtonLabels) {
-        switch (button) {
-        case SDL_CONTROLLER_BUTTON_A:
-            return SDL_CONTROLLER_BUTTON_B;
-        case SDL_CONTROLLER_BUTTON_B:
-            return SDL_CONTROLLER_BUTTON_A;
-        case SDL_CONTROLLER_BUTTON_X:
-            return SDL_CONTROLLER_BUTTON_Y;
-        case SDL_CONTROLLER_BUTTON_Y:
-            return SDL_CONTROLLER_BUTTON_X;
-        default:
-            break;
+    if (!ctx->m_bUseButtonLabels) {
+        /* Use button positions */
+        if (ctx->m_bIsGameCube) {
+            switch (button) {
+            case SDL_CONTROLLER_BUTTON_B:
+                return SDL_CONTROLLER_BUTTON_X;
+            case SDL_CONTROLLER_BUTTON_X:
+                return SDL_CONTROLLER_BUTTON_B;
+            default:
+                break;
+            }
+        } else {
+            switch (button) {
+            case SDL_CONTROLLER_BUTTON_A:
+                return SDL_CONTROLLER_BUTTON_B;
+            case SDL_CONTROLLER_BUTTON_B:
+                return SDL_CONTROLLER_BUTTON_A;
+            case SDL_CONTROLLER_BUTTON_X:
+                return SDL_CONTROLLER_BUTTON_Y;
+            case SDL_CONTROLLER_BUTTON_Y:
+                return SDL_CONTROLLER_BUTTON_X;
+            default:
+                break;
+            }
         }
     }
     return button;
@@ -746,11 +759,11 @@ HIDAPI_DriverSwitch_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joysti
 
     if (IsGameCubeFormFactor(device->vendor_id, device->product_id)) {
         /* This is a controller shaped like a GameCube controller, with a large central A button */
-        ctx->m_bUseButtonLabels = SDL_TRUE;
-    } else {
-        SDL_AddHintCallback(SDL_HINT_GAMECONTROLLER_USE_BUTTON_LABELS,
-                            SDL_GameControllerButtonReportingHintChanged, ctx);
+        ctx->m_bIsGameCube = SDL_TRUE;
     }
+
+    SDL_AddHintCallback(SDL_HINT_GAMECONTROLLER_USE_BUTTON_LABELS,
+                        SDL_GameControllerButtonReportingHintChanged, ctx);
 
     /* Initialize the joystick capabilities */
     joystick->nbuttons = SDL_CONTROLLER_BUTTON_MAX;
@@ -814,10 +827,10 @@ static void HandleInputOnlyControllerState(SDL_Joystick *joystick, SDL_DriverSwi
 
     if (packet->rgucButtons[0] != ctx->m_lastInputOnlyState.rgucButtons[0]) {
         Uint8 data = packet->rgucButtons[0];
-        SDL_PrivateJoystickButton(joystick, RemapButton(ctx, SDL_CONTROLLER_BUTTON_X), (data & 0x01) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_PrivateJoystickButton(joystick, RemapButton(ctx, SDL_CONTROLLER_BUTTON_A), (data & 0x02) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_PrivateJoystickButton(joystick, RemapButton(ctx, SDL_CONTROLLER_BUTTON_B), (data & 0x04) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_PrivateJoystickButton(joystick, RemapButton(ctx, SDL_CONTROLLER_BUTTON_Y), (data & 0x08) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(joystick, RemapButton(ctx, SDL_CONTROLLER_BUTTON_A), (data & 0x04) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(joystick, RemapButton(ctx, SDL_CONTROLLER_BUTTON_B), (data & 0x02) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(joystick, RemapButton(ctx, SDL_CONTROLLER_BUTTON_X), (data & 0x08) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(joystick, RemapButton(ctx, SDL_CONTROLLER_BUTTON_Y), (data & 0x01) ? SDL_PRESSED : SDL_RELEASED);
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_LEFTSHOULDER, (data & 0x10) ? SDL_PRESSED : SDL_RELEASED);
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_RIGHTSHOULDER, (data & 0x20) ? SDL_PRESSED : SDL_RELEASED);
 
