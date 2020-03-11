@@ -42,9 +42,9 @@ include(${SDL2_SOURCE_DIR}/cmake/sdlchecks.cmake)
 # set SDL_BINARY_AGE and SDL_INTERFACE_AGE to 0.
 set(SDL_MAJOR_VERSION 2)
 set(SDL_MINOR_VERSION 0)
-set(SDL_MICRO_VERSION 12)
-set(SDL_INTERFACE_AGE 0)
-set(SDL_BINARY_AGE 12)
+set(SDL_MICRO_VERSION 13)
+set(SDL_INTERFACE_AGE 1)
+set(SDL_BINARY_AGE 13)
 set(SDL_VERSION "${SDL_MAJOR_VERSION}.${SDL_MINOR_VERSION}.${SDL_MICRO_VERSION}")
 # the following should match the versions in Xcode project file:
 set(DYLIB_CURRENT_VERSION 12.0.0)
