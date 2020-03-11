@@ -124,7 +124,6 @@ typedef struct {
 } SDL_DriverXboxOne_Context;
 
 
-#define DEBUG_XBOX_PROTOCOL
 #ifdef DEBUG_XBOX_PROTOCOL
 static void
 DumpPacket(const char *prefix, Uint8 *data, int size)
