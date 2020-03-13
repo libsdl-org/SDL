@@ -1356,7 +1356,7 @@ PrefixMatch(const char *a, const char *b)
 {
     int matchlen = 0;
     while (*a && *b) {
-        if (*a++ == *b++) {
+        if (SDL_tolower(*a++) == SDL_tolower(*b++)) {
             ++matchlen;
         } else {
             break;
@@ -1435,12 +1435,16 @@ SDL_CreateJoystickName(Uint16 vendor, Uint16 product, const char *vendor_name, c
         }
     }
 
-    /* Remove duplicate manufacturer in the name */
-    for (i = 0; i < (len - 1); ++i) {
+    /* Remove duplicate manufacturer or product in the name */
+    for (i = 1; i < (len - 1); ++i) {
         int matchlen = PrefixMatch(name, &name[i]);
-        if (matchlen > 0 && name[matchlen - 1] == ' ') {
+        if (matchlen > 0 && name[matchlen-1] == ' ') {
             SDL_memmove(name, name+matchlen, len-matchlen+1);
             len -= matchlen;
+            break;
+        } else if (matchlen > 0 && name[matchlen] == ' ') {
+            SDL_memmove(name, name+matchlen+1, len-matchlen);
+            len -= (matchlen + 1);
             break;
         }
     }
@@ -1772,29 +1776,29 @@ SDL_bool SDL_ShouldIgnoreJoystick(const char *name, SDL_JoystickGUID guid)
        https://raw.githubusercontent.com/denilsonsa/udev-joystick-blacklist/master/generate_rules.py
      */
     static Uint32 joystick_blacklist[] = {
-        /* Microsoft Microsoft Wireless Optical Desktop?? 2.10 */
+        /* Microsoft Microsoft Wireless Optical Desktop 2.10 */
         /* Microsoft Wireless Desktop - Comfort Edition */
         MAKE_VIDPID(0x045e, 0x009d),
 
-        /* Microsoft Microsoft?? Digital Media Pro Keyboard */
+        /* Microsoft Microsoft Digital Media Pro Keyboard */
         /* Microsoft Corp. Digital Media Pro Keyboard */
         MAKE_VIDPID(0x045e, 0x00b0),
 
-        /* Microsoft Microsoft?? Digital Media Keyboard */
+        /* Microsoft Microsoft Digital Media Keyboard */
         /* Microsoft Corp. Digital Media Keyboard 1.0A */
         MAKE_VIDPID(0x045e, 0x00b4),
 
-        /* Microsoft Microsoft?? Digital Media Keyboard 3000 */
+        /* Microsoft Microsoft Digital Media Keyboard 3000 */
         MAKE_VIDPID(0x045e, 0x0730),
 
-        /* Microsoft Microsoft?? 2.4GHz Transceiver v6.0 */
-        /* Microsoft Microsoft?? 2.4GHz Transceiver v8.0 */
+        /* Microsoft Microsoft 2.4GHz Transceiver v6.0 */
+        /* Microsoft Microsoft 2.4GHz Transceiver v8.0 */
         /* Microsoft Corp. Nano Transceiver v1.0 for Bluetooth */
         /* Microsoft Wireless Mobile Mouse 1000 */
         /* Microsoft Wireless Desktop 3000 */
         MAKE_VIDPID(0x045e, 0x0745),
 
-        /* Microsoft?? SideWinder(TM) 2.4GHz Transceiver */
+        /* Microsoft SideWinder(TM) 2.4GHz Transceiver */
         MAKE_VIDPID(0x045e, 0x0748),
 
         /* Microsoft Corp. Wired Keyboard 600 */
@@ -1806,16 +1810,16 @@ SDL_bool SDL_ShouldIgnoreJoystick(const char *name, SDL_JoystickGUID guid)
         /* Microsoft Corp. Arc Touch Mouse Transceiver */
         MAKE_VIDPID(0x045e, 0x0773),
 
-        /* Microsoft?? 2.4GHz Transceiver v9.0 */
-        /* Microsoft?? Nano Transceiver v2.1 */
+        /* Microsoft 2.4GHz Transceiver v9.0 */
+        /* Microsoft Nano Transceiver v2.1 */
         /* Microsoft Sculpt Ergonomic Keyboard (5KV-00001) */
         MAKE_VIDPID(0x045e, 0x07a5),
 
-        /* Microsoft?? Nano Transceiver v1.0 */
+        /* Microsoft Nano Transceiver v1.0 */
         /* Microsoft Wireless Keyboard 800 */
         MAKE_VIDPID(0x045e, 0x07b2),
 
-        /* Microsoft?? Nano Transceiver v2.0 */
+        /* Microsoft Nano Transceiver v2.0 */
         MAKE_VIDPID(0x045e, 0x0800),
 
         MAKE_VIDPID(0x046d, 0xc30a),  /* Logitech, Inc. iTouch Composite keboard */
