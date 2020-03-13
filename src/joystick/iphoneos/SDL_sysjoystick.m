@@ -125,7 +125,7 @@ IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controlle
         name = "MFi Gamepad";
     }
 
-    device->name = SDL_strdup(name);
+    device->name = SDL_CreateJoystickName(0, 0, NULL, name);
 
     if (controller.extendedGamepad) {
         GCExtendedGamepad *gamepad = controller.extendedGamepad;

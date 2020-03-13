@@ -698,14 +698,7 @@ HIDAPI_AddDevice(struct hid_device_info *info)
     device->dev_lock = SDL_CreateMutex();
 
     /* Need the device name before getting the driver to know whether to ignore this device */
-    if (!device->name) {
-        const char *name = SDL_GetCustomJoystickName(device->vendor_id, device->product_id);
-        if (name) {
-            device->name = SDL_strdup(name);
-        }
-    }
-    if (!device->name && info->manufacturer_string && info->product_string) {
-        const char *manufacturer_remapped;
+    {
         char *manufacturer_string = SDL_iconv_string("UTF-8", "WCHAR_T", (char*)info->manufacturer_string, (SDL_wcslen(info->manufacturer_string)+1)*sizeof(wchar_t));
         char *product_string = SDL_iconv_string("UTF-8", "WCHAR_T", (char*)info->product_string, (SDL_wcslen(info->product_string)+1)*sizeof(wchar_t));
         if (!manufacturer_string && !product_string) {
@@ -718,39 +711,20 @@ HIDAPI_AddDevice(struct hid_device_info *info)
             }
         }
 
-        manufacturer_remapped = SDL_GetCustomJoystickManufacturer(manufacturer_string);
-        if (manufacturer_remapped != manufacturer_string) {
-            SDL_free(manufacturer_string);
-            manufacturer_string = SDL_strdup(manufacturer_remapped);
-        }
+        device->name = SDL_CreateJoystickName(device->vendor_id, device->product_id, manufacturer_string, product_string);
 
-        if (manufacturer_string && product_string) {
-            size_t name_size = (SDL_strlen(manufacturer_string) + 1 + SDL_strlen(product_string) + 1);
-            device->name = (char *)SDL_malloc(name_size);
-            if (device->name) {
-                if (SDL_strncasecmp(manufacturer_string, product_string, SDL_strlen(manufacturer_string)) == 0) {
-                    SDL_strlcpy(device->name, product_string, name_size);
-                } else {
-                    SDL_snprintf(device->name, name_size, "%s %s", manufacturer_string, product_string);
-                }
-            }
-        }
         if (manufacturer_string) {
             SDL_free(manufacturer_string);
         }
         if (product_string) {
             SDL_free(product_string);
         }
-    }
-    if (!device->name) {
-        size_t name_size = (6 + 1 + 6 + 1);
-        device->name = (char *)SDL_malloc(name_size);
+
         if (!device->name) {
             SDL_free(device->path);
             SDL_free(device);
             return;
         }
-        SDL_snprintf(device->name, name_size, "0x%.4x/0x%.4x", info->vendor_id, info->product_id);
     }
 
     /* Add it to the list */

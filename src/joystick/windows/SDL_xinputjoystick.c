@@ -71,10 +71,10 @@ SDL_XINPUT_JoystickInit(void)
     return 0;
 }
 
-static char *
+static const char *
 GetXInputName(const Uint8 userid, BYTE SubType)
 {
-    char name[32];
+    static char name[32];
 
     if (SDL_XInputUseOldJoystickMapping()) {
         SDL_snprintf(name, sizeof(name), "X360 Controller #%u", 1 + userid);
@@ -111,7 +111,7 @@ GetXInputName(const Uint8 userid, BYTE SubType)
             break;
         }
     }
-    return SDL_strdup(name);
+    return name;
 }
 
 /* We can't really tell what device is being used for XInput, but we can guess
@@ -274,13 +274,7 @@ AddXInputDevice(Uint8 userid, BYTE SubType, JoyStick_DeviceData **pContext)
     }
     pNewJoystick->SubType = SubType;
     pNewJoystick->XInputUserId = userid;
-
-    name = SDL_GetCustomJoystickName(vendor, product);
-    if (name) {
-        pNewJoystick->joystickname = SDL_strdup(name);
-    } else {
-        pNewJoystick->joystickname = GetXInputName(userid, SubType);
-    }
+    pNewJoystick->joystickname = SDL_CreateJoystickName(vendor, product, NULL, GetXInputName(userid, SubType));
     if (!pNewJoystick->joystickname) {
         SDL_free(pNewJoystick);
         return; /* better luck next time? */

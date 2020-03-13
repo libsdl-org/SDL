@@ -279,23 +279,6 @@ SDL_GetDriverAndJoystickIndex(int device_index, SDL_JoystickDriver **driver, int
 }
 
 /*
- * Perform any needed fixups for joystick names
- */
-static const char *
-SDL_FixupJoystickName(const char *name)
-{
-    if (name) {
-        const char *skip_prefix = "NVIDIA Corporation ";
-
-        if (SDL_strncmp(name, skip_prefix, SDL_strlen(skip_prefix)) == 0) {
-            name += SDL_strlen(skip_prefix);
-        }
-    }
-    return name;
-}
-
-
-/*
  * Get the implementation dependent name of a joystick
  */
 const char *
@@ -306,7 +289,7 @@ SDL_JoystickNameForIndex(int device_index)
 
     SDL_LockJoysticks();
     if (SDL_GetDriverAndJoystickIndex(device_index, &driver, &device_index)) {
-        name = SDL_FixupJoystickName(driver->GetDeviceName(device_index));
+        name = driver->GetDeviceName(device_index);
     }
     SDL_UnlockJoysticks();
 
@@ -721,7 +704,7 @@ SDL_JoystickName(SDL_Joystick * joystick)
         return NULL;
     }
 
-    return SDL_FixupJoystickName(joystick->name);
+    return joystick->name;
 }
 
 /**
@@ -1369,23 +1352,112 @@ void SDL_GetJoystickGUIDInfo(SDL_JoystickGUID guid, Uint16 *vendor, Uint16 *prod
     }
 }
 
-const char *
-SDL_GetCustomJoystickManufacturer(const char *manufacturer)
+static int
+PrefixMatch(const char *a, const char *b)
 {
-    if (manufacturer) {
-        if (SDL_strcmp(manufacturer, "Performance Designed Products") == 0) {
-            return "PDP";
-        } else if (SDL_strcmp(manufacturer, "HORI CO.,LTD") == 0) {
-            return "HORI";
+    int matchlen = 0;
+    while (*a && *b) {
+        if (*a++ == *b++) {
+            ++matchlen;
+        } else {
+            break;
         }
     }
-    return manufacturer;
+    return matchlen;
 }
 
-const char *
-SDL_GetCustomJoystickName(Uint16 vendor, Uint16 product)
+char *
+SDL_CreateJoystickName(Uint16 vendor, Uint16 product, const char *vendor_name, const char *product_name)
 {
-    return GuessControllerName(vendor, product);
+    static struct {
+        const char *prefix;
+        const char *replacement;
+    } replacements[] = {
+        { "NVIDIA Corporation ", "" },
+        { "Performance Designed Products", "PDP" },
+        { "HORI CO.,LTD", "HORI" },
+    };
+    const char *custom_name;
+    char *name;
+    size_t i, len;
+
+    custom_name = GuessControllerName(vendor, product);
+    if (custom_name) {
+        return SDL_strdup(custom_name);
+    }
+
+    if (!vendor_name) {
+        vendor_name = "";
+    }
+    if (!product_name) {
+        product_name = "";
+    }
+
+    while (*vendor_name == ' ') {
+        ++vendor_name;
+    }
+    while (*product_name == ' ') {
+        ++product_name;
+    }
+
+    if (*vendor_name && *product_name) {
+        len = (SDL_strlen(vendor_name) + 1 + SDL_strlen(product_name) + 1);
+        name = (char *)SDL_malloc(len);
+        if (!name) {
+            return NULL;
+        }
+        SDL_snprintf(name, len, "%s %s", vendor_name, product_name);
+    } else if (*product_name) {
+        name = SDL_strdup(product_name);
+    } else if (vendor || product) {
+        len = (6 + 1 + 6 + 1);
+        name = (char *)SDL_malloc(len);
+        if (!name) {
+            return NULL;
+        }
+        SDL_snprintf(name, len, "0x%.4x/0x%.4x", vendor, product);
+    } else {
+        name = SDL_strdup("Controller");
+    }
+
+    /* Trim trailing whitespace */
+    for (len = SDL_strlen(name); (len > 0 && name[len - 1] == ' '); --len) {
+        /* continue */
+    }
+    name[len] = '\0';
+
+    /* Compress duplicate spaces */
+    for (i = 0; i < (len - 1); ) {
+        if (name[i] == ' ' && name[i+1] == ' ') {
+            SDL_memmove(&name[i], &name[i+1], (len - i));
+            --len;
+        } else {
+            ++i;
+        }
+    }
+
+    /* Remove duplicate manufacturer in the name */
+    for (i = 0; i < (len - 1); ++i) {
+        int matchlen = PrefixMatch(name, &name[i]);
+        if (matchlen > 0 && name[matchlen - 1] == ' ') {
+            SDL_memmove(name, name+matchlen, len-matchlen+1);
+            len -= matchlen;
+            break;
+        }
+    }
+
+    /* Perform any manufacturer replacements */
+    for (i = 0; i < SDL_arraysize(replacements); ++i) {
+        size_t prefixlen = SDL_strlen(replacements[i].prefix);
+        if (SDL_strncasecmp(name, replacements[i].prefix, prefixlen) == 0) {
+            size_t replacementlen = SDL_strlen(replacements[i].replacement);
+            SDL_memcpy(name, replacements[i].replacement, replacementlen);
+            SDL_memmove(name+replacementlen, name+prefixlen, (len-prefixlen+1));
+            break;
+        }
+    }
+
+    return name;
 }
 
 SDL_GameControllerType

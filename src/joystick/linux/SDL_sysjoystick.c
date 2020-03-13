@@ -88,20 +88,6 @@ static time_t last_input_dir_mtime;
     (((1UL << ((nr) % (sizeof(long) * 8))) & ((addr)[(nr) / (sizeof(long) * 8)])) != 0)
 #define NBITS(x) ((((x)-1)/(sizeof(long) * 8))+1)
 
-static int
-PrefixMatch(const char *a, const char *b)
-{
-    int matchlen = 0;
-    while (*a && *b) {
-        if (*a++ == *b++) {
-            ++matchlen;
-        } else {
-            break;
-        }
-    }
-    return matchlen;
-}
-
 static void
 FixupDeviceInfoForMapping(int fd, struct input_id *inpid)
 {
@@ -120,12 +106,12 @@ FixupDeviceInfoForMapping(int fd, struct input_id *inpid)
 
 
 static int
-IsJoystick(int fd, char *namebuf, const size_t namebuflen, SDL_JoystickGUID *guid)
+IsJoystick(int fd, char **name_return, SDL_JoystickGUID *guid)
 {
     struct input_id inpid;
     Uint16 *guid16 = (Uint16 *)guid->data;
-    const char *name;
-    const char *spot;
+    char *name;
+    char product_string[128];
 
 #if !SDL_USE_LIBUDEV
     /* When udev is enabled we only get joystick devices here, so there's no need to test them */
@@ -149,27 +135,19 @@ IsJoystick(int fd, char *namebuf, const size_t namebuflen, SDL_JoystickGUID *gui
         return 0;
     }
 
-    name = SDL_GetCustomJoystickName(inpid.vendor, inpid.product);
-    if (name) {
-        SDL_strlcpy(namebuf, name, namebuflen);
-    } else {
-        if (ioctl(fd, EVIOCGNAME(namebuflen), namebuf) < 0) {
-            return 0;
-        }
+    if (ioctl(fd, EVIOCGNAME(sizeof(product_string)), product_string) < 0) {
+        return 0;
+    }
 
-        /* Remove duplicate manufacturer in the name */
-        for (spot = namebuf + 1; *spot; ++spot) {
-            int matchlen = PrefixMatch(namebuf, spot);
-            if (matchlen > 0 && spot[matchlen - 1] == ' ') {
-                SDL_memmove(namebuf, spot, SDL_strlen(spot)+1);
-                break;
-            }
-        }
+    name = SDL_CreateJoystickName(inpid.vendor, inpid.product, NULL, product_string);
+    if (!name) {
+        return 0;
     }
 
 #ifdef SDL_JOYSTICK_HIDAPI
-    if (HIDAPI_IsDevicePresent(inpid.vendor, inpid.product, inpid.version, namebuf)) {
+    if (HIDAPI_IsDevicePresent(inpid.vendor, inpid.product, inpid.version, name)) {
         /* The HIDAPI driver is taking care of this device */
+        SDL_free(name);
         return 0;
     }
 #endif
@@ -177,7 +155,7 @@ IsJoystick(int fd, char *namebuf, const size_t namebuflen, SDL_JoystickGUID *gui
     FixupDeviceInfoForMapping(fd, &inpid);
 
 #ifdef DEBUG_JOYSTICK
-    printf("Joystick: %s, bustype = %d, vendor = 0x%.4x, product = 0x%.4x, version = %d\n", namebuf, inpid.bustype, inpid.vendor, inpid.product, inpid.version);
+    printf("Joystick: %s, bustype = %d, vendor = 0x%.4x, product = 0x%.4x, version = %d\n", name, inpid.bustype, inpid.vendor, inpid.product, inpid.version);
 #endif
 
     SDL_memset(guid->data, 0, sizeof(guid->data));
@@ -195,12 +173,14 @@ IsJoystick(int fd, char *namebuf, const size_t namebuflen, SDL_JoystickGUID *gui
         *guid16++ = SDL_SwapLE16(inpid.version);
         *guid16++ = 0;
     } else {
-        SDL_strlcpy((char*)guid16, namebuf, sizeof(guid->data) - 4);
+        SDL_strlcpy((char*)guid16, name, sizeof(guid->data) - 4);
     }
 
-    if (SDL_ShouldIgnoreJoystick(namebuf, *guid)) {
+    if (SDL_ShouldIgnoreJoystick(name, *guid)) {
+        SDL_free(name);
         return 0;
     }
+    *name_return = name;
     return 1;
 }
 
@@ -236,7 +216,7 @@ MaybeAddDevice(const char *path)
     struct stat sb;
     int fd = -1;
     int isstick = 0;
-    char namebuf[128];
+    char *name = NULL;
     SDL_JoystickGUID guid;
     SDL_joylist_item *item;
 
@@ -264,7 +244,7 @@ MaybeAddDevice(const char *path)
     printf("Checking %s\n", path);
 #endif
 
-    isstick = IsJoystick(fd, namebuf, sizeof (namebuf), &guid);
+    isstick = IsJoystick(fd, &name, &guid);
     close(fd);
     if (!isstick) {
         return -1;
@@ -278,7 +258,7 @@ MaybeAddDevice(const char *path)
     SDL_zerop(item);
     item->devnum = sb.st_rdev;
     item->path = SDL_strdup(path);
-    item->name = SDL_strdup(namebuf);
+    item->name = name;
     item->guid = guid;
 
     if ((item->path == NULL) || (item->name == NULL)) {

@@ -404,7 +404,7 @@ GetDeviceInfo(IOHIDDeviceRef hidDevice, recDevice *pDevice)
     Sint32 vendor = 0;
     Sint32 product = 0;
     Sint32 version = 0;
-    const char *name;
+    char *name;
     const char *manufacturer_remapped;
     char manufacturer_string[256];
     char product_string[256];
@@ -460,36 +460,18 @@ GetDeviceInfo(IOHIDDeviceRef hidDevice, recDevice *pDevice)
     }
 
     /* get device name */
-    name = SDL_GetCustomJoystickName(vendor, product);
+    refCF = IOHIDDeviceGetProperty(hidDevice, CFSTR(kIOHIDManufacturerKey));
+    if ((!refCF) || (!CFStringGetCString(refCF, manufacturer_string, sizeof(manufacturer_string), kCFStringEncodingUTF8))) {
+        manufacturer_string[0] = '\0';
+    }
+    refCF = IOHIDDeviceGetProperty(hidDevice, CFSTR(kIOHIDProductKey));
+    if ((!refCF) || (!CFStringGetCString(refCF, product_string, sizeof(product_string), kCFStringEncodingUTF8))) {
+        product_string[0] = '\0';
+    }
+    name = SDL_CreateJoystickName(vendor, product, manufacturer_string, product_string);
     if (name) {
         SDL_strlcpy(pDevice->product, name, sizeof(pDevice->product));
-    } else {
-        refCF = IOHIDDeviceGetProperty(hidDevice, CFSTR(kIOHIDManufacturerKey));
-        if ((!refCF) || (!CFStringGetCString(refCF, manufacturer_string, sizeof(manufacturer_string), kCFStringEncodingUTF8))) {
-            manufacturer_string[0] = '\0';
-        }
-        refCF = IOHIDDeviceGetProperty(hidDevice, CFSTR(kIOHIDProductKey));
-        if ((!refCF) || (!CFStringGetCString(refCF, product_string, sizeof(product_string), kCFStringEncodingUTF8))) {
-            SDL_strlcpy(product_string, "Unidentified joystick", sizeof(product_string));
-        }
-        for (i = (int)SDL_strlen(manufacturer_string) - 1; i > 0; --i) {
-            if (SDL_isspace(manufacturer_string[i])) {
-                manufacturer_string[i] = '\0';
-            } else {
-                break;
-            }
-        }
-
-        manufacturer_remapped = SDL_GetCustomJoystickManufacturer(manufacturer_string);
-        if (manufacturer_remapped != manufacturer_string) {
-            SDL_strlcpy(manufacturer_string, manufacturer_remapped, sizeof(manufacturer_string));
-        }
-
-        if (SDL_strncasecmp(manufacturer_string, product_string, SDL_strlen(manufacturer_string)) == 0) {
-            SDL_strlcpy(pDevice->product, product_string, sizeof(pDevice->product));
-        } else {
-            SDL_snprintf(pDevice->product, sizeof(pDevice->product), "%s %s", manufacturer_string, product_string);
-        }
+        SDL_free(name);
     }
 
 #ifdef SDL_JOYSTICK_HIDAPI
