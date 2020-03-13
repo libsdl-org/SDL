@@ -1015,16 +1015,15 @@ SDL_PrivateJoystickAxis(SDL_Joystick * joystick, Uint8 axis, Sint16 value)
 
     info = &joystick->axes[axis];
     if (!info->has_initial_value ||
-        (!info->has_second_value && (info->initial_value == -32768 || info->initial_value == 32767) && SDL_abs(value) < (SDL_JOYSTICK_AXIS_MAX / 4))) {
+        (!info->has_second_value && (info->initial_value <= -32767 || info->initial_value == 32767) && SDL_abs(value) < (SDL_JOYSTICK_AXIS_MAX / 4))) {
         info->initial_value = value;
         info->value = value;
         info->zero = value;
         info->has_initial_value = SDL_TRUE;
+    } else if (value == info->value) {
+        return 0;
     } else {
         info->has_second_value = SDL_TRUE;
-    }
-    if (value == info->value) {
-        return 0;
     }
     if (!info->sent_initial_value) {
         /* Make sure we don't send motion until there's real activity on this axis */
@@ -1033,7 +1032,7 @@ SDL_PrivateJoystickAxis(SDL_Joystick * joystick, Uint8 axis, Sint16 value)
             return 0;
         }
         info->sent_initial_value = SDL_TRUE;
-        info->value = value; /* Just so we pass the check above */
+        info->value = ~value; /* Just so we pass the check above */
         SDL_PrivateJoystickAxis(joystick, axis, info->initial_value);
     }
 
@@ -1773,29 +1772,29 @@ SDL_bool SDL_ShouldIgnoreJoystick(const char *name, SDL_JoystickGUID guid)
        https://raw.githubusercontent.com/denilsonsa/udev-joystick-blacklist/master/generate_rules.py
      */
     static Uint32 joystick_blacklist[] = {
-        /* Microsoft Microsoft Wireless Optical Desktop® 2.10 */
+        /* Microsoft Microsoft Wireless Optical Desktop?? 2.10 */
         /* Microsoft Wireless Desktop - Comfort Edition */
         MAKE_VIDPID(0x045e, 0x009d),
 
-        /* Microsoft Microsoft® Digital Media Pro Keyboard */
+        /* Microsoft Microsoft?? Digital Media Pro Keyboard */
         /* Microsoft Corp. Digital Media Pro Keyboard */
         MAKE_VIDPID(0x045e, 0x00b0),
 
-        /* Microsoft Microsoft® Digital Media Keyboard */
+        /* Microsoft Microsoft?? Digital Media Keyboard */
         /* Microsoft Corp. Digital Media Keyboard 1.0A */
         MAKE_VIDPID(0x045e, 0x00b4),
 
-        /* Microsoft Microsoft® Digital Media Keyboard 3000 */
+        /* Microsoft Microsoft?? Digital Media Keyboard 3000 */
         MAKE_VIDPID(0x045e, 0x0730),
 
-        /* Microsoft Microsoft® 2.4GHz Transceiver v6.0 */
-        /* Microsoft Microsoft® 2.4GHz Transceiver v8.0 */
+        /* Microsoft Microsoft?? 2.4GHz Transceiver v6.0 */
+        /* Microsoft Microsoft?? 2.4GHz Transceiver v8.0 */
         /* Microsoft Corp. Nano Transceiver v1.0 for Bluetooth */
         /* Microsoft Wireless Mobile Mouse 1000 */
         /* Microsoft Wireless Desktop 3000 */
         MAKE_VIDPID(0x045e, 0x0745),
 
-        /* Microsoft® SideWinder(TM) 2.4GHz Transceiver */
+        /* Microsoft?? SideWinder(TM) 2.4GHz Transceiver */
         MAKE_VIDPID(0x045e, 0x0748),
 
         /* Microsoft Corp. Wired Keyboard 600 */
@@ -1807,16 +1806,16 @@ SDL_bool SDL_ShouldIgnoreJoystick(const char *name, SDL_JoystickGUID guid)
         /* Microsoft Corp. Arc Touch Mouse Transceiver */
         MAKE_VIDPID(0x045e, 0x0773),
 
-        /* Microsoft® 2.4GHz Transceiver v9.0 */
-        /* Microsoft® Nano Transceiver v2.1 */
+        /* Microsoft?? 2.4GHz Transceiver v9.0 */
+        /* Microsoft?? Nano Transceiver v2.1 */
         /* Microsoft Sculpt Ergonomic Keyboard (5KV-00001) */
         MAKE_VIDPID(0x045e, 0x07a5),
 
-        /* Microsoft® Nano Transceiver v1.0 */
+        /* Microsoft?? Nano Transceiver v1.0 */
         /* Microsoft Wireless Keyboard 800 */
         MAKE_VIDPID(0x045e, 0x07b2),
 
-        /* Microsoft® Nano Transceiver v2.0 */
+        /* Microsoft?? Nano Transceiver v2.0 */
         MAKE_VIDPID(0x045e, 0x0800),
 
         MAKE_VIDPID(0x046d, 0xc30a),  /* Logitech, Inc. iTouch Composite keboard */
