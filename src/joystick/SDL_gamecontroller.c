@@ -43,6 +43,7 @@
 #define SDL_MINIMUM_GUIDE_BUTTON_DELAY_MS   250
 
 #define SDL_CONTROLLER_PLATFORM_FIELD   "platform:"
+#define SDL_CONTROLLER_HINT_FIELD       "hint:"
 #define SDL_CONTROLLER_SDKGE_FIELD      "sdk>=:"
 #define SDL_CONTROLLER_SDKLE_FIELD      "sdk<=:"
 
@@ -1162,6 +1163,47 @@ SDL_PrivateGameControllerAddMapping(const char *mappingString, SDL_ControllerMap
 
     if (!mappingString) {
         return SDL_InvalidParamError("mappingString");
+    }
+
+    { /* Extract and verify the hint field */
+        const char *tmp;
+
+        tmp = SDL_strstr(mappingString, SDL_CONTROLLER_HINT_FIELD);
+        if (tmp != NULL) {
+            SDL_bool default_value, value, negate;
+            int len;
+            char hint[128];
+
+            tmp += SDL_strlen(SDL_CONTROLLER_HINT_FIELD);
+
+            if (*tmp == '!') {
+                negate = SDL_TRUE;
+                ++tmp;
+            } else {
+                negate = SDL_FALSE;
+            }
+
+            len = 0;
+            while (*tmp && *tmp != ',' && *tmp != ':' && len < (sizeof(hint) - 1)) {
+                hint[len++] = *tmp++;
+            }
+            hint[len] = '\0';
+
+            if (tmp[0] == ':' && tmp[1] == '=') {
+                tmp += 2;
+                default_value = SDL_atoi(tmp);
+            } else {
+                default_value = SDL_FALSE;
+            }
+
+            value = SDL_GetHintBoolean(hint, default_value);
+            if (negate) {
+                value = !value;
+            }
+            if (!value) {
+                return 0;
+            }
+        }
     }
 
 #ifdef ANDROID
