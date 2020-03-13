@@ -60,7 +60,7 @@ Emscripten_JoyStickConnected(int eventType, const EmscriptenGamepadEvent *gamepa
     SDL_zerop(item);
     item->index = gamepadEvent->index;
 
-    item->name = SDL_strdup(gamepadEvent->id);
+    item->name = SDL_CreateJoystickName(0, 0, NULL, gamepadEvent->id);
     if ( item->name == NULL ) {
         SDL_free(item);
         return 1;

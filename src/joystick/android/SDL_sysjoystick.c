@@ -410,7 +410,7 @@ Android_AddJoystick(int device_id, const char *name, const char *desc, int vendo
     SDL_zerop(item);
     item->guid = guid;
     item->device_id = device_id;
-    item->name = SDL_strdup(name);
+    item->name = SDL_CreateJoystickName(vendor_id, product_id, NULL, name);
     if (item->name == NULL) {
          SDL_free(item);
          return -1;
@@ -443,7 +443,7 @@ Android_AddJoystick(int device_id, const char *name, const char *desc, int vendo
     SDL_PrivateJoystickAdded(item->device_instance);
 
 #ifdef DEBUG_JOYSTICK
-    SDL_Log("Added joystick %s with device_id %d", name, device_id);
+    SDL_Log("Added joystick %s with device_id %d", item->name, device_id);
 #endif
 
     return numjoysticks;

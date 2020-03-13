@@ -244,7 +244,7 @@ static const IID CLSID_WbemLocator = { 0x4590f811, 0x1d3a, 0x11d0,{ 0x89, 0x1f, 
 static const IID IID_IWbemLocator = { 0xdc12a687, 0x737f, 0x11cf,{ 0x88, 0x4d, 0x00, 0xaa, 0x00, 0x4b, 0x2e, 0x24 } };
 
 static SDL_bool
-WIN_IsXInputDevice(const GUID* pGuidProductFromDirectInput)
+WIN_IsXInputDevice(LPTSTR *name, const GUID* pGuidProductFromDirectInput)
 {
     IWbemLocator*           pIWbemLocator = NULL;
     IEnumWbemClassObject*   pEnumDevices = NULL;
@@ -258,6 +258,17 @@ WIN_IsXInputDevice(const GUID* pGuidProductFromDirectInput)
     UINT                    iDevice = 0;
     VARIANT                 var;
     HRESULT                 hr;
+
+    if (!SDL_XINPUT_Enabled()) {
+        return SDL_FALSE;
+    }
+
+    if (SDL_wcsstr(name, " XINPUT ") != NULL) {
+        /* This is a duplicate interface for a controller that will show up with XInput,
+           e.g. Xbox One Elite Series 2 in Bluetooth mode.
+         */
+        return SDL_TRUE;
+    }
 
     SDL_zeroa(pDevices);
 
@@ -363,12 +374,19 @@ LCleanup:
 #endif /* 0 */
 
 static SDL_bool
-SDL_IsXInputDevice(const GUID* pGuidProductFromDirectInput)
+SDL_IsXInputDevice(LPTSTR *name, const GUID* pGuidProductFromDirectInput)
 {
     UINT i;
 
     if (!SDL_XINPUT_Enabled()) {
         return SDL_FALSE;
+    }
+
+    if (SDL_wcsstr(name, " XINPUT ") != NULL) {
+        /* This is a duplicate interface for a controller that will show up with XInput,
+           e.g. Xbox One Elite Series 2 in Bluetooth mode.
+         */
+        return SDL_TRUE;
     }
 
     if (SDL_memcmp(&pGuidProductFromDirectInput->Data4[2], "PIDVID", 6) == 0) {
@@ -521,7 +539,7 @@ EnumJoysticksCallback(const DIDEVICEINSTANCE * pdidInstance, VOID * pContext)
     Uint16 product = 0;
     Uint16 version = 0;
     WCHAR hidPath[MAX_PATH];
-    const char *name;
+    char *name;
 
     if (devtype == DI8DEVTYPE_SUPPLEMENTAL) {
         /* Add any supplemental devices that should be ignored here */
@@ -539,7 +557,7 @@ EnumJoysticksCallback(const DIDEVICEINSTANCE * pdidInstance, VOID * pContext)
         }
     }
 
-    if (SDL_IsXInputDevice(&pdidInstance->guidProduct)) {
+    if (SDL_IsXInputDevice(pdidInstance->tszProductName, &pdidInstance->guidProduct)) {
         return DIENUM_CONTINUE;  /* ignore XInput devices here, keep going. */
     }
 
@@ -609,12 +627,22 @@ EnumJoysticksCallback(const DIDEVICEINSTANCE * pdidInstance, VOID * pContext)
     SDL_memcpy(&pNewJoystick->dxdevice, pdidInstance, sizeof(DIDEVICEINSTANCE));
     SDL_memset(pNewJoystick->guid.data, 0, sizeof(pNewJoystick->guid.data));
 
-    guid16 = (Uint16 *)pNewJoystick->guid.data;
     if (SDL_memcmp(&pdidInstance->guidProduct.Data4[2], "PIDVID", 6) == 0) {
         vendor = (Uint16)LOWORD(pdidInstance->guidProduct.Data1);
         product = (Uint16)HIWORD(pdidInstance->guidProduct.Data1);
-        version = 0;
+    }
 
+    name = WIN_StringToUTF8(pdidInstance->tszProductName);
+    pNewJoystick->joystickname = SDL_CreateJoystickName(vendor, product, NULL, name);
+    SDL_free(name);
+
+    if (!pNewJoystick->joystickname) {
+        SDL_free(pNewJoystick);
+        return DIENUM_CONTINUE; /* better luck next time? */
+    }
+
+    guid16 = (Uint16 *)pNewJoystick->guid.data;
+    if (SDL_memcmp(&pdidInstance->guidProduct.Data4[2], "PIDVID", 6) == 0) {
         *guid16++ = SDL_SwapLE16(SDL_HARDWARE_BUS_USB);
         *guid16++ = 0;
         *guid16++ = SDL_SwapLE16(vendor);
@@ -627,26 +655,6 @@ EnumJoysticksCallback(const DIDEVICEINSTANCE * pdidInstance, VOID * pContext)
         *guid16++ = SDL_SwapLE16(SDL_HARDWARE_BUS_BLUETOOTH);
         *guid16++ = 0;
         SDL_strlcpy((char*)guid16, pNewJoystick->joystickname, sizeof(pNewJoystick->guid.data) - 4);
-    }
-
-    name = SDL_GetCustomJoystickName(vendor, product);
-    if (name) {
-        pNewJoystick->joystickname = SDL_strdup(name);
-    } else {
-        pNewJoystick->joystickname = WIN_StringToUTF8(pdidInstance->tszProductName);
-    }
-    if (!pNewJoystick->joystickname) {
-        SDL_free(pNewJoystick);
-        return DIENUM_CONTINUE; /* better luck next time? */
-    }
-
-    if (SDL_strstr(pNewJoystick->joystickname, " XINPUT ") != NULL) {
-        /* This is a duplicate interface for a controller that will show up with XInput,
-           e.g. Xbox One Elite Series 2 in Bluetooth mode.
-         */
-        SDL_free(pNewJoystick->joystickname);
-        SDL_free(pNewJoystick);
-        return DIENUM_CONTINUE;
     }
 
     if (SDL_ShouldIgnoreJoystick(pNewJoystick->joystickname, pNewJoystick->guid)) {
