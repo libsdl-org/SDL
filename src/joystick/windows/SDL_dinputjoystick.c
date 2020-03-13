@@ -244,7 +244,7 @@ static const IID CLSID_WbemLocator = { 0x4590f811, 0x1d3a, 0x11d0,{ 0x89, 0x1f, 
 static const IID IID_IWbemLocator = { 0xdc12a687, 0x737f, 0x11cf,{ 0x88, 0x4d, 0x00, 0xaa, 0x00, 0x4b, 0x2e, 0x24 } };
 
 static SDL_bool
-WIN_IsXInputDevice(LPTSTR *name, const GUID* pGuidProductFromDirectInput)
+WIN_IsXInputDevice(const WCHAR *name, const GUID* pGuidProductFromDirectInput)
 {
     IWbemLocator*           pIWbemLocator = NULL;
     IEnumWbemClassObject*   pEnumDevices = NULL;
@@ -263,7 +263,7 @@ WIN_IsXInputDevice(LPTSTR *name, const GUID* pGuidProductFromDirectInput)
         return SDL_FALSE;
     }
 
-    if (SDL_wcsstr(name, " XINPUT ") != NULL) {
+    if (SDL_wcsstr(name, L" XINPUT ") != NULL) {
         /* This is a duplicate interface for a controller that will show up with XInput,
            e.g. Xbox One Elite Series 2 in Bluetooth mode.
          */
@@ -374,7 +374,7 @@ LCleanup:
 #endif /* 0 */
 
 static SDL_bool
-SDL_IsXInputDevice(LPTSTR *name, const GUID* pGuidProductFromDirectInput)
+SDL_IsXInputDevice(const WCHAR *name, const GUID* pGuidProductFromDirectInput)
 {
     UINT i;
 
@@ -382,7 +382,7 @@ SDL_IsXInputDevice(LPTSTR *name, const GUID* pGuidProductFromDirectInput)
         return SDL_FALSE;
     }
 
-    if (SDL_wcsstr(name, " XINPUT ") != NULL) {
+    if (SDL_wcsstr(name, L" XINPUT ") != NULL) {
         /* This is a duplicate interface for a controller that will show up with XInput,
            e.g. Xbox One Elite Series 2 in Bluetooth mode.
          */

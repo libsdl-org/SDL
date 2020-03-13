@@ -220,7 +220,6 @@ AddXInputDevice(Uint8 userid, BYTE SubType, JoyStick_DeviceData **pContext)
     Uint16 vendor = 0;
     Uint16 product = 0;
     Uint16 version = 0;
-    const char *name;
     JoyStick_DeviceData *pPrevJoystick = NULL;
     JoyStick_DeviceData *pNewJoystick = *pContext;
 
