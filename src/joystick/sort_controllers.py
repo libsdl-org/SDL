@@ -11,9 +11,18 @@ output = open(filename + ".new", "w")
 parsing_controllers = False
 controllers = []
 controller_guids = {}
-sdk_conditionals = []
+conditionals = []
 split_pattern = re.compile(r'([^"]*")([^,]*,)([^,]*,)([^"]*)(".*)')
 
+def find_element(prefix, bindings):
+    i=0
+    for element in bindings:
+        if element.startswith(prefix):
+            return i
+        i=(i + 1)
+
+    return -1
+       
 def save_controller(line):
     global controllers
     match = split_pattern.match(line)
@@ -21,19 +30,28 @@ def save_controller(line):
     bindings = sorted(match.group(4).split(","))
     if (bindings[0] == ""):
         bindings.pop(0)
+
+    pos=find_element("sdk", bindings)
+    if pos >= 0:
+        bindings.append(bindings.pop(pos))
+
+    pos=find_element("hint:", bindings)
+    if pos >= 0:
+        bindings.append(bindings.pop(pos))
+
     entry.extend(",".join(bindings) + ",")
     entry.append(match.group(5))
     controllers.append(entry)
 
-    if ',sdk' in line:
-        sdk_conditionals.append(entry[1])
+    if ',sdk' in line or ',hint:' in line:
+        conditionals.append(entry[1])
 
 def write_controllers():
     global controllers
     global controller_guids
     # Check for duplicates
     for entry in controllers:
-        if (entry[1] in controller_guids and entry[1] not in sdk_conditionals):
+        if (entry[1] in controller_guids and entry[1] not in conditionals):
             current_name = entry[2]
             existing_name = controller_guids[entry[1]][2]
             print("Warning: entry '%s' is duplicate of entry '%s'" % (current_name, existing_name))
