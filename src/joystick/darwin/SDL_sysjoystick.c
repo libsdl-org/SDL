@@ -405,13 +405,11 @@ GetDeviceInfo(IOHIDDeviceRef hidDevice, recDevice *pDevice)
     Sint32 product = 0;
     Sint32 version = 0;
     char *name;
-    const char *manufacturer_remapped;
     char manufacturer_string[256];
     char product_string[256];
     CFTypeRef refCF = NULL;
     CFArrayRef array = NULL;
     Uint16 *guid16 = (Uint16 *)pDevice->guid.data;
-    int i;
 
     /* get usage page and usage */
     refCF = IOHIDDeviceGetProperty(hidDevice, CFSTR(kIOHIDPrimaryUsagePageKey));
