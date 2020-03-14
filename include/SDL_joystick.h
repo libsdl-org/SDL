@@ -105,6 +105,7 @@ typedef enum
     SDL_JOYSTICK_POWER_MAX
 } SDL_JoystickPowerLevel;
 
+
 /* Function prototypes */
 
 /**
@@ -198,6 +199,36 @@ extern DECLSPEC SDL_Joystick *SDLCALL SDL_JoystickFromInstanceID(SDL_JoystickID 
  * Return the SDL_Joystick associated with a player index.
  */
 extern DECLSPEC SDL_Joystick *SDLCALL SDL_JoystickFromPlayerIndex(int player_index);
+
+/**
+ * Attaches a new virtual joystick.
+ * Returns the joystick's device index, or -1 if an error occurred.
+ */
+extern DECLSPEC int SDLCALL SDL_JoystickAttachVirtual(SDL_JoystickType type,
+                                                      int naxes,
+                                                      int nballs,
+                                                      int nbuttons,
+                                                      int nhats);
+
+/**
+ * Detaches a virtual joystick
+ * Returns 0 on success, or -1 if an error occurred.
+ */
+extern DECLSPEC int SDLCALL SDL_JoystickDetachVirtual(int device_index);
+
+/**
+ * Indicates whether or not a virtual-joystick is at a given device index.
+ */
+extern DECLSPEC SDL_bool SDLCALL SDL_JoystickIsVirtual(int device_index);
+
+/**
+ * Set values on an opened, virtual-joystick's controls.
+ * Returns 0 on success, -1 on error.
+ */
+extern DECLSPEC int SDLCALL SDL_JoystickSetVirtualAxis(SDL_Joystick * joystick, int axis, Sint16 value);
+extern DECLSPEC int SDLCALL SDL_JoystickSetVirtualBall(SDL_Joystick * joystick, int ball, Sint16 xrel, Sint16 yrel);
+extern DECLSPEC int SDLCALL SDL_JoystickSetVirtualButton(SDL_Joystick * joystick, int button, Uint8 value);
+extern DECLSPEC int SDLCALL SDL_JoystickSetVirtualHat(SDL_Joystick * joystick, int hat, Uint8 value);
 
 /**
  *  Return the name for this currently opened joystick.

@@ -387,6 +387,7 @@ set_option(VIDEO_OFFSCREEN     "Use offscreen video driver" OFF)
 option_string(BACKGROUNDING_SIGNAL "number to use for magic backgrounding signal or 'OFF'" "OFF")
 option_string(FOREGROUNDING_SIGNAL "number to use for magic foregrounding signal or 'OFF'" "OFF")
 set_option(HIDAPI              "Use HIDAPI for low level joystick drivers" ${OPT_DEF_HIDAPI})
+set_option(JOYSTICK_VIRTUAL    "Enable the virtual-joystick driver" ON)
 
 set(SDL_SHARED ${SDL_SHARED_ENABLED_BY_DEFAULT} CACHE BOOL "Build a shared version of the library")
 set(SDL_STATIC ${SDL_STATIC_ENABLED_BY_DEFAULT} CACHE BOOL "Build a static version of the library")
@@ -902,6 +903,14 @@ if(SDL_DLOPEN)
   # Relevant for Unix/Darwin only
   if(UNIX OR APPLE)
     CheckDLOPEN()
+  endif()
+endif()
+
+if(SDL_JOYSTICK)
+  if(JOYSTICK_VIRTUAL)
+    set(SDL_JOYSTICK_VIRTUAL 1)
+    file(GLOB JOYSTICK_VIRTUAL_SOURCES ${SDL2_SOURCE_DIR}/src/joystick/virtual/*.c)
+    set(SOURCE_FILES ${SOURCE_FILES} ${JOYSTICK_VIRTUAL_SOURCES})
   endif()
 endif()
 

@@ -73,6 +73,9 @@ extern SDL_bool SDL_IsJoystickXInput(SDL_JoystickGUID guid);
 /* Function to return whether a joystick guid comes from the HIDAPI driver */
 extern SDL_bool SDL_IsJoystickHIDAPI(SDL_JoystickGUID guid);
 
+/* Function to return whether a joystick guid comes from the Virtual driver */
+extern SDL_bool SDL_IsJoystickVirtual(SDL_JoystickGUID guid);
+
 /* Function to return whether a joystick should be ignored */
 extern SDL_bool SDL_ShouldIgnoreJoystick(const char *name, SDL_JoystickGUID guid);
 
