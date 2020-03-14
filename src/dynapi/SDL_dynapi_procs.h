@@ -816,3 +816,4 @@ SDL_DYNAPI_PROC(int,SDL_JoystickSetVirtualAxis,(SDL_Joystick *a, int b, Sint16 c
 SDL_DYNAPI_PROC(int,SDL_JoystickSetVirtualBall,(SDL_Joystick *a, int b, Sint16 c, Sint16 d),(a,b,c,d),return)
 SDL_DYNAPI_PROC(int,SDL_JoystickSetVirtualButton,(SDL_Joystick *a, int b, Uint8 c),(a,b,c),return)
 SDL_DYNAPI_PROC(int,SDL_JoystickSetVirtualHat,(SDL_Joystick *a, int b, Uint8 c),(a,b,c),return)
+SDL_DYNAPI_PROC(char*,SDL_GetErrorMsg,(char *a, int b),(a,b),return)

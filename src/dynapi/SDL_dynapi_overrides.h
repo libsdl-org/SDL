@@ -756,3 +756,4 @@
 #define SDL_JoystickSetVirtualBall SDL_JoystickSetVirtualBall_REAL
 #define SDL_JoystickSetVirtualButton SDL_JoystickSetVirtualButton_REAL
 #define SDL_JoystickSetVirtualHat SDL_JoystickSetVirtualHat_REAL
+#define SDL_GetErrorMsg SDL_GetErrorMsg_REAL
