@@ -310,6 +310,9 @@ main(int argc, char *argv[])
             case SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO:
                 description = "Nintendo Switch Pro Controller";
                 break;
+            case SDL_CONTROLLER_TYPE_VIRTUAL:
+                description = "Virtual Game Controller";
+                break;
             default:
                 description = "Game Controller";
                 break;

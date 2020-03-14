@@ -46,6 +46,10 @@
 #include <tlhelp32.h>
 #endif
 
+#if SDL_JOYSTICK_VIRTUAL
+#include "./virtual/SDL_sysjoystick_c.h"
+#endif
+
 static SDL_JoystickDriver *SDL_joystick_drivers[] = {
 #if defined(SDL_JOYSTICK_DINPUT) || defined(SDL_JOYSTICK_XINPUT)
     &SDL_WINDOWS_JoystickDriver,
@@ -73,6 +77,9 @@ static SDL_JoystickDriver *SDL_joystick_drivers[] = {
 #endif
 #ifdef SDL_JOYSTICK_HIDAPI
     &SDL_HIDAPI_JoystickDriver,
+#endif
+#ifdef SDL_JOYSTICK_VIRTUAL
+    &SDL_VIRTUAL_JoystickDriver,
 #endif
 #if defined(SDL_JOYSTICK_DUMMY) || defined(SDL_JOYSTICK_DISABLED)
     &SDL_DUMMY_JoystickDriver
@@ -453,6 +460,115 @@ SDL_JoystickOpen(int device_index)
     driver->Update(joystick);
 
     return joystick;
+}
+
+
+int
+SDL_JoystickAttachVirtual(SDL_JoystickType type,
+                          int naxes,
+                          int nballs,
+                          int nbuttons,
+                          int nhats)
+{
+#if SDL_JOYSTICK_VIRTUAL
+    return SDL_JoystickAttachVirtualInner(type,
+                                          naxes,
+                                          nballs,
+                                          nbuttons,
+                                          nhats);
+#else
+    return SDL_SetError("SDL not built with virtual-joystick support");
+#endif
+}
+
+
+int
+SDL_JoystickDetachVirtual(int device_index)
+{
+#if SDL_JOYSTICK_VIRTUAL
+    SDL_JoystickDriver *driver;
+
+    SDL_LockJoysticks();
+    if (SDL_GetDriverAndJoystickIndex(device_index, &driver, &device_index)) {
+        if (driver == &SDL_VIRTUAL_JoystickDriver) {
+            const int result = SDL_JoystickDetachVirtualInner(device_index);
+            SDL_UnlockJoysticks();
+            return result;
+        }
+    }
+    SDL_UnlockJoysticks();
+
+    return SDL_SetError("Virtual joystick not found at provided index");
+#else
+    return SDL_SetError("SDL not built with virtual-joystick support");
+#endif
+}
+
+
+SDL_bool
+SDL_JoystickIsVirtual(int device_index)
+{
+#if SDL_JOYSTICK_VIRTUAL
+    SDL_JoystickDriver *driver;
+    int driver_device_index;
+    SDL_bool is_virtual = SDL_FALSE;
+
+    SDL_LockJoysticks();
+    if (SDL_GetDriverAndJoystickIndex(device_index, &driver, &driver_device_index)) {
+        if (driver == &SDL_VIRTUAL_JoystickDriver) {
+            is_virtual = SDL_TRUE;
+        }
+    }
+    SDL_UnlockJoysticks();
+
+    return is_virtual;
+#else
+    return SDL_FALSE;
+#endif
+}
+
+
+int
+SDL_JoystickSetVirtualAxis(SDL_Joystick * joystick, int axis, Sint16 value)
+{
+#if SDL_JOYSTICK_VIRTUAL
+    return SDL_JoystickSetVirtualAxisInner(joystick, axis, value);
+#else
+    return SDL_SetError("SDL not built with virtual-joystick support");
+#endif
+}
+
+
+int
+SDL_JoystickSetVirtualBall(SDL_Joystick * joystick, int axis, Sint16 xrel, Sint16 yrel)
+{
+#if SDL_JOYSTICK_VIRTUAL
+    return SDL_JoystickSetVirtualBallInner(joystick, axis, xrel, yrel);
+#else
+    return SDL_SetError("SDL not built with virtual-joystick support");
+#endif
+}
+
+
+int
+SDL_JoystickSetVirtualButton(SDL_Joystick * joystick, int button, Uint8 value)
+{
+#if SDL_JOYSTICK_VIRTUAL
+    return SDL_JoystickSetVirtualButtonInner(joystick, button, value);
+#else
+    return SDL_SetError("SDL not built with virtual-joystick support");
+#endif
+}
+
+
+int
+SDL_JoystickSetVirtualHat(SDL_Joystick * joystick, int hat, Uint8 value)
+{
+#if SDL_JOYSTICK_VIRTUAL
+    return SDL_JoystickSetVirtualHatInner(joystick, hat, value);
+#else
+    return SDL_SetError("SDL not built with virtual-joystick support");
+#endif
 }
 
 
@@ -1563,6 +1679,8 @@ SDL_GetJoystickGameControllerType(const char *name, Uint16 vendor, Uint16 produc
                 SDL_strcmp(name, "Wireless Gamepad") == 0) {
                 /* HORI or PowerA Switch Pro Controller clone */
                 type = SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO;
+            } else if (SDL_strcmp(name, "Virtual Joystick") == 0) {
+                type = SDL_CONTROLLER_TYPE_VIRTUAL;
             } else {
                 type = SDL_CONTROLLER_TYPE_UNKNOWN;
             }
@@ -1622,6 +1740,12 @@ SDL_bool
 SDL_IsJoystickHIDAPI(SDL_JoystickGUID guid)
 {
     return (guid.data[14] == 'h') ? SDL_TRUE : SDL_FALSE;
+}
+
+SDL_bool
+SDL_IsJoystickVirtual(SDL_JoystickGUID guid)
+{
+    return (guid.data[14] == 'v') ? SDL_TRUE : SDL_FALSE;
 }
 
 static SDL_bool SDL_IsJoystickProductWheel(Uint32 vidpid)
@@ -1713,6 +1837,10 @@ static SDL_JoystickType SDL_GetJoystickGUIDType(SDL_JoystickGUID guid)
         default:
             return SDL_JOYSTICK_TYPE_UNKNOWN;
         }
+    }
+
+    if (SDL_IsJoystickVirtual(guid)) {
+        return (SDL_JoystickType)guid.data[15];
     }
 
     SDL_GetJoystickGUIDInfo(guid, &vendor, &product, NULL);
