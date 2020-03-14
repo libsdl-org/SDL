@@ -325,6 +325,12 @@ int hid_blacklist(unsigned short vendor_id, unsigned short product_id)
 		return 1;
 	}
 
+	// Apple Cinema HD display 30" - takes a long time to return the product string
+	if ( vendor_id == 0x05AC && product_id == 0x9220 )
+	{
+		return 1;
+	}
+
 	return 0;
 }
 
