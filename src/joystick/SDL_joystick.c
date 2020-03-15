@@ -47,7 +47,7 @@
 #endif
 
 #if SDL_JOYSTICK_VIRTUAL
-#include "./virtual/SDL_sysjoystick_c.h"
+#include "./virtual/SDL_virtualjoystick_c.h"
 #endif
 
 static SDL_JoystickDriver *SDL_joystick_drivers[] = {

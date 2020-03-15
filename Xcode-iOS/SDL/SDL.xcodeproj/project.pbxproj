@@ -359,13 +359,13 @@
 		63CC93C823849391002A5C54 /* SDL_strtokr.c in Sources */ = {isa = PBXBuildFile; fileRef = 63CC93C623849391002A5C54 /* SDL_strtokr.c */; };
 		63CC93C923849391002A5C54 /* SDL_strtokr.c in Sources */ = {isa = PBXBuildFile; fileRef = 63CC93C623849391002A5C54 /* SDL_strtokr.c */; };
 		63CC93CA23849391002A5C54 /* SDL_strtokr.c in Sources */ = {isa = PBXBuildFile; fileRef = 63CC93C623849391002A5C54 /* SDL_strtokr.c */; };
-		75BB5C66241EA8C300D75403 /* SDL_sysjoystick.c in Sources */ = {isa = PBXBuildFile; fileRef = 75BB5C64241EA8C300D75403 /* SDL_sysjoystick.c */; };
-		75BB5C67241EA8C300D75403 /* SDL_sysjoystick.c in Sources */ = {isa = PBXBuildFile; fileRef = 75BB5C64241EA8C300D75403 /* SDL_sysjoystick.c */; };
-		75BB5C68241EA8C300D75403 /* SDL_sysjoystick.c in Sources */ = {isa = PBXBuildFile; fileRef = 75BB5C64241EA8C300D75403 /* SDL_sysjoystick.c */; };
-		75BB5C69241EA8C300D75403 /* SDL_sysjoystick.c in Sources */ = {isa = PBXBuildFile; fileRef = 75BB5C64241EA8C300D75403 /* SDL_sysjoystick.c */; };
-		75BB5C6A241EA8C300D75403 /* SDL_sysjoystick_c.h in Headers */ = {isa = PBXBuildFile; fileRef = 75BB5C65241EA8C300D75403 /* SDL_sysjoystick_c.h */; };
-		75BB5C6B241EA8C300D75403 /* SDL_sysjoystick_c.h in Headers */ = {isa = PBXBuildFile; fileRef = 75BB5C65241EA8C300D75403 /* SDL_sysjoystick_c.h */; };
-		75BB5C6C241EA8C300D75403 /* SDL_sysjoystick_c.h in Headers */ = {isa = PBXBuildFile; fileRef = 75BB5C65241EA8C300D75403 /* SDL_sysjoystick_c.h */; };
+		75BB5C66241EA8C300D75403 /* SDL_virtualjoystick.c in Sources */ = {isa = PBXBuildFile; fileRef = 75BB5C64241EA8C300D75403 /* SDL_virtualjoystick.c */; };
+		75BB5C67241EA8C300D75403 /* SDL_virtualjoystick.c in Sources */ = {isa = PBXBuildFile; fileRef = 75BB5C64241EA8C300D75403 /* SDL_virtualjoystick.c */; };
+		75BB5C68241EA8C300D75403 /* SDL_virtualjoystick.c in Sources */ = {isa = PBXBuildFile; fileRef = 75BB5C64241EA8C300D75403 /* SDL_virtualjoystick.c */; };
+		75BB5C69241EA8C300D75403 /* SDL_virtualjoystick.c in Sources */ = {isa = PBXBuildFile; fileRef = 75BB5C64241EA8C300D75403 /* SDL_virtualjoystick.c */; };
+		75BB5C6A241EA8C300D75403 /* SDL_virtualjoystick_c.h in Headers */ = {isa = PBXBuildFile; fileRef = 75BB5C65241EA8C300D75403 /* SDL_virtualjoystick_c.h */; };
+		75BB5C6B241EA8C300D75403 /* SDL_virtualjoystick_c.h in Headers */ = {isa = PBXBuildFile; fileRef = 75BB5C65241EA8C300D75403 /* SDL_virtualjoystick_c.h */; };
+		75BB5C6C241EA8C300D75403 /* SDL_virtualjoystick_c.h in Headers */ = {isa = PBXBuildFile; fileRef = 75BB5C65241EA8C300D75403 /* SDL_virtualjoystick_c.h */; };
 		93CB792313FC5E5200BD3E05 /* SDL_uikitviewcontroller.h in Headers */ = {isa = PBXBuildFile; fileRef = 93CB792213FC5E5200BD3E05 /* SDL_uikitviewcontroller.h */; };
 		93CB792613FC5F5300BD3E05 /* SDL_uikitviewcontroller.m in Sources */ = {isa = PBXBuildFile; fileRef = 93CB792513FC5F5300BD3E05 /* SDL_uikitviewcontroller.m */; };
 		A704172E20F7E74800A82227 /* controller_type.h in Headers */ = {isa = PBXBuildFile; fileRef = A704172D20F7E74800A82227 /* controller_type.h */; };
@@ -994,8 +994,8 @@
 		56ED04E0118A8EE200A56AA6 /* SDL_power.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_power.c; sourceTree = "<group>"; };
 		56ED04E2118A8EFD00A56AA6 /* SDL_syspower.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDL_syspower.m; sourceTree = "<group>"; };
 		63CC93C623849391002A5C54 /* SDL_strtokr.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_strtokr.c; sourceTree = "<group>"; };
-		75BB5C64241EA8C300D75403 /* SDL_sysjoystick.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_sysjoystick.c; sourceTree = "<group>"; };
-		75BB5C65241EA8C300D75403 /* SDL_sysjoystick_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_sysjoystick_c.h; sourceTree = "<group>"; };
+		75BB5C64241EA8C300D75403 /* SDL_virtualjoystick.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_virtualjoystick.c; sourceTree = "<group>"; };
+		75BB5C65241EA8C300D75403 /* SDL_virtualjoystick_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_virtualjoystick_c.h; sourceTree = "<group>"; };
 		93CB792213FC5E5200BD3E05 /* SDL_uikitviewcontroller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_uikitviewcontroller.h; sourceTree = "<group>"; };
 		93CB792513FC5F5300BD3E05 /* SDL_uikitviewcontroller.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDL_uikitviewcontroller.m; sourceTree = "<group>"; };
 		A704172D20F7E74800A82227 /* controller_type.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = controller_type.h; sourceTree = "<group>"; };
@@ -1433,8 +1433,8 @@
 		75BB5C63241EA8C300D75403 /* virtual */ = {
 			isa = PBXGroup;
 			children = (
-				75BB5C64241EA8C300D75403 /* SDL_sysjoystick.c */,
-				75BB5C65241EA8C300D75403 /* SDL_sysjoystick_c.h */,
+				75BB5C64241EA8C300D75403 /* SDL_virtualjoystick.c */,
+				75BB5C65241EA8C300D75403 /* SDL_virtualjoystick_c.h */,
 			);
 			path = virtual;
 			sourceTree = "<group>";
@@ -2004,7 +2004,7 @@
 				52ED1DC6222889500061FCE0 /* SDL_pixels.h in Headers */,
 				52ED1DC7222889500061FCE0 /* SDL_platform.h in Headers */,
 				52ED1DC8222889500061FCE0 /* SDL_power.h in Headers */,
-				75BB5C6B241EA8C300D75403 /* SDL_sysjoystick_c.h in Headers */,
+				75BB5C6B241EA8C300D75403 /* SDL_virtualjoystick_c.h in Headers */,
 				52ED1DC9222889500061FCE0 /* SDL_quit.h in Headers */,
 				52ED1DCA222889500061FCE0 /* SDL_rect.h in Headers */,
 				52ED1DCB222889500061FCE0 /* SDL_render.h in Headers */,
@@ -2142,7 +2142,7 @@
 				F3E3C6B42241389A007D243C /* SDL_pixels.h in Headers */,
 				F3E3C6B52241389A007D243C /* SDL_platform.h in Headers */,
 				F3E3C6B62241389A007D243C /* SDL_power.h in Headers */,
-				75BB5C6C241EA8C300D75403 /* SDL_sysjoystick_c.h in Headers */,
+				75BB5C6C241EA8C300D75403 /* SDL_virtualjoystick_c.h in Headers */,
 				F3E3C6B72241389A007D243C /* SDL_quit.h in Headers */,
 				F3E3C6B82241389A007D243C /* SDL_rect.h in Headers */,
 				F3E3C6B92241389A007D243C /* SDL_render.h in Headers */,
@@ -2220,7 +2220,7 @@
 				04BA9D6511EF474A00B60E01 /* SDL_touch_c.h in Headers */,
 				041B2CF212FA0F680087D585 /* SDL_sysrender.h in Headers */,
 				04409BA812FA989600FB9AA8 /* SDL_yuv_sw_c.h in Headers */,
-				75BB5C6A241EA8C300D75403 /* SDL_sysjoystick_c.h in Headers */,
+				75BB5C6A241EA8C300D75403 /* SDL_virtualjoystick_c.h in Headers */,
 				AA13B3591FB8B46400D9FEE6 /* yuv_rgb.h in Headers */,
 				04F7807712FB751400FC43C0 /* SDL_blendfillrect.h in Headers */,
 				04F7807912FB751400FC43C0 /* SDL_blendline.h in Headers */,
@@ -2533,7 +2533,7 @@
 				52ED1DF7222889500061FCE0 /* SDL_dynapi.c in Sources */,
 				52ED1DF8222889500061FCE0 /* SDL_mouse.c in Sources */,
 				52ED1DF9222889500061FCE0 /* SDL_quit.c in Sources */,
-				75BB5C67241EA8C300D75403 /* SDL_sysjoystick.c in Sources */,
+				75BB5C67241EA8C300D75403 /* SDL_virtualjoystick.c in Sources */,
 				52ED1DFA222889500061FCE0 /* SDL_windowevents.c in Sources */,
 				52ED1DFB222889500061FCE0 /* SDL_uikitmetalview.m in Sources */,
 				52ED1DFC222889500061FCE0 /* SDL_rwops.c in Sources */,
@@ -2667,7 +2667,7 @@
 				F3E3C6E52241389A007D243C /* SDL_dynapi.c in Sources */,
 				F3E3C6E62241389A007D243C /* SDL_mouse.c in Sources */,
 				F3E3C6E72241389A007D243C /* SDL_quit.c in Sources */,
-				75BB5C69241EA8C300D75403 /* SDL_sysjoystick.c in Sources */,
+				75BB5C69241EA8C300D75403 /* SDL_virtualjoystick.c in Sources */,
 				F3E3C6E82241389A007D243C /* SDL_windowevents.c in Sources */,
 				F3E3C6E92241389A007D243C /* SDL_uikitmetalview.m in Sources */,
 				F3E3C6EA2241389A007D243C /* SDL_rwops.c in Sources */,
@@ -2843,7 +2843,7 @@
 				FAB5986D1BB5C31600BE72C5 /* SDL_render.c in Sources */,
 				FAB598711BB5C31600BE72C5 /* SDL_yuv_sw.c in Sources */,
 				FAB598721BB5C31600BE72C5 /* SDL_getenv.c in Sources */,
-				75BB5C68241EA8C300D75403 /* SDL_sysjoystick.c in Sources */,
+				75BB5C68241EA8C300D75403 /* SDL_virtualjoystick.c in Sources */,
 				FAB598731BB5C31600BE72C5 /* SDL_iconv.c in Sources */,
 				FAB598741BB5C31600BE72C5 /* SDL_malloc.c in Sources */,
 				FAB598751BB5C31600BE72C5 /* SDL_qsort.c in Sources */,
@@ -2925,7 +2925,7 @@
 				56A6703718565E760007D20F /* SDL_dynapi.c in Sources */,
 				FD6526730DE8FCDD002AD96B /* SDL_mouse.c in Sources */,
 				FD6526740DE8FCDD002AD96B /* SDL_quit.c in Sources */,
-				75BB5C66241EA8C300D75403 /* SDL_sysjoystick.c in Sources */,
+				75BB5C66241EA8C300D75403 /* SDL_virtualjoystick.c in Sources */,
 				FD6526750DE8FCDD002AD96B /* SDL_windowevents.c in Sources */,
 				4D7516FB1EE1C28A00820EEA /* SDL_uikitmetalview.m in Sources */,
 				FD6526760DE8FCDD002AD96B /* SDL_rwops.c in Sources */,

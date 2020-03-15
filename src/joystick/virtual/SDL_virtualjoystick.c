@@ -24,7 +24,7 @@
 
 /* This is the virtual implementation of the SDL joystick API */
 
-#include "SDL_sysjoystick_c.h"
+#include "SDL_virtualjoystick_c.h"
 #include "../SDL_sysjoystick.h"
 #include "../SDL_joystick_c.h"
 
