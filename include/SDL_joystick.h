@@ -206,7 +206,6 @@ extern DECLSPEC SDL_Joystick *SDLCALL SDL_JoystickFromPlayerIndex(int player_ind
  */
 extern DECLSPEC int SDLCALL SDL_JoystickAttachVirtual(SDL_JoystickType type,
                                                       int naxes,
-                                                      int nballs,
                                                       int nbuttons,
                                                       int nhats);
 
@@ -226,7 +225,6 @@ extern DECLSPEC SDL_bool SDLCALL SDL_JoystickIsVirtual(int device_index);
  * Returns 0 on success, -1 on error.
  */
 extern DECLSPEC int SDLCALL SDL_JoystickSetVirtualAxis(SDL_Joystick * joystick, int axis, Sint16 value);
-extern DECLSPEC int SDLCALL SDL_JoystickSetVirtualBall(SDL_Joystick * joystick, int ball, Sint16 xrel, Sint16 yrel);
 extern DECLSPEC int SDLCALL SDL_JoystickSetVirtualButton(SDL_Joystick * joystick, int button, Uint8 value);
 extern DECLSPEC int SDLCALL SDL_JoystickSetVirtualHat(SDL_Joystick * joystick, int hat, Uint8 value);
 

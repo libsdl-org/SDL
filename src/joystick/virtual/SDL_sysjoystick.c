@@ -60,10 +60,6 @@ VIRTUAL_FreeHWData(joystick_hwdata *hwdata)
         SDL_free((void *)hwdata->axes);
         hwdata->axes = NULL;
     }
-    if (hwdata->balls) {
-        SDL_free((void *)hwdata->balls);
-        hwdata->balls = NULL;
-    }
     if (hwdata->buttons) {
         SDL_free((void *)hwdata->buttons);
         hwdata->buttons = NULL;
@@ -94,7 +90,6 @@ VIRTUAL_FreeHWData(joystick_hwdata *hwdata)
 int
 SDL_JoystickAttachVirtualInner(SDL_JoystickType type,
                                int naxes,
-                               int nballs,
                                int nbuttons,
                                int nhats)
 {
@@ -108,7 +103,6 @@ SDL_JoystickAttachVirtualInner(SDL_JoystickType type,
     }
 
     hwdata->naxes = naxes;
-    hwdata->nballs = nballs;
     hwdata->nbuttons = nbuttons;
     hwdata->nhats = nhats;
     hwdata->name = "Virtual Joystick";
@@ -121,13 +115,6 @@ SDL_JoystickAttachVirtualInner(SDL_JoystickType type,
     if (naxes > 0) {
         hwdata->axes = SDL_calloc(naxes, sizeof(Sint16));
         if (!hwdata->axes) {
-            VIRTUAL_FreeHWData(hwdata);
-            return SDL_OutOfMemory();
-        }
-    }
-    if (nballs > 0) {
-        hwdata->balls = SDL_calloc(nballs, sizeof(hwdata->balls[0]));
-        if (!hwdata->balls) {
             VIRTUAL_FreeHWData(hwdata);
             return SDL_OutOfMemory();
         }
@@ -195,32 +182,6 @@ SDL_JoystickSetVirtualAxisInner(SDL_Joystick * joystick, int axis, Sint16 value)
     }
 
     hwdata->axes[axis] = value;
-
-    SDL_UnlockJoysticks();
-    return 0;
-}
-
-
-int
-SDL_JoystickSetVirtualBallInner(SDL_Joystick * joystick, int ball, Sint16 xrel, Sint16 yrel)
-{
-    joystick_hwdata *hwdata;
-
-    SDL_LockJoysticks();
-
-    if (!joystick || !joystick->hwdata) {
-        SDL_UnlockJoysticks();
-        return SDL_SetError("Invalid joystick");
-    }
-
-    hwdata = (joystick_hwdata *)joystick->hwdata;
-    if (ball < 0 || ball >= hwdata->nbuttons) {
-        SDL_UnlockJoysticks();
-        return SDL_SetError("Invalid ball index");
-    }
-
-    hwdata->balls[ball].xrel = xrel;
-    hwdata->balls[ball].yrel = yrel;
 
     SDL_UnlockJoysticks();
     return 0;
@@ -364,7 +325,6 @@ VIRTUAL_JoystickOpen(SDL_Joystick * joystick, int device_index)
     joystick->instance_id = hwdata->instance_id;
     joystick->hwdata = hwdata;
     joystick->naxes = hwdata->naxes;
-    joystick->nballs = hwdata->nballs;
     joystick->nbuttons = hwdata->nbuttons;
     joystick->nhats = hwdata->nhats;
     hwdata->opened = SDL_TRUE;
@@ -395,9 +355,6 @@ VIRTUAL_JoystickUpdate(SDL_Joystick * joystick)
 
     for (int i = 0; i < hwdata->naxes; ++i) {
         SDL_PrivateJoystickAxis(joystick, i, hwdata->axes[i]);
-    }
-    for (int i = 0; i < hwdata->nballs; ++i) {
-        SDL_PrivateJoystickBall(joystick, i, hwdata->balls[i].xrel, hwdata->balls[i].yrel);
     }
     for (int i = 0; i < hwdata->nbuttons; ++i) {
         SDL_PrivateJoystickButton(joystick, i, hwdata->buttons[i]);
