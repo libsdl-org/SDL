@@ -50,6 +50,9 @@ VIRTUAL_HWDataForIndex(int device_index)
 static void
 VIRTUAL_FreeHWData(joystick_hwdata *hwdata)
 {
+    joystick_hwdata * cur = g_VJoys;
+    joystick_hwdata * prev = NULL;
+ 
     if (!hwdata) {
         return;
     }
@@ -71,8 +74,6 @@ VIRTUAL_FreeHWData(joystick_hwdata *hwdata)
     }
 
     /* Remove hwdata from SDL-global list */
-    joystick_hwdata * cur = g_VJoys;
-    joystick_hwdata * prev = NULL;
     while (cur) {
         if (hwdata == cur) {
             if (prev) {
