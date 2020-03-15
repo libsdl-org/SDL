@@ -466,14 +466,12 @@ SDL_JoystickOpen(int device_index)
 int
 SDL_JoystickAttachVirtual(SDL_JoystickType type,
                           int naxes,
-                          int nballs,
                           int nbuttons,
                           int nhats)
 {
 #if SDL_JOYSTICK_VIRTUAL
     return SDL_JoystickAttachVirtualInner(type,
                                           naxes,
-                                          nballs,
                                           nbuttons,
                                           nhats);
 #else
@@ -533,17 +531,6 @@ SDL_JoystickSetVirtualAxis(SDL_Joystick * joystick, int axis, Sint16 value)
 {
 #if SDL_JOYSTICK_VIRTUAL
     return SDL_JoystickSetVirtualAxisInner(joystick, axis, value);
-#else
-    return SDL_SetError("SDL not built with virtual-joystick support");
-#endif
-}
-
-
-int
-SDL_JoystickSetVirtualBall(SDL_Joystick * joystick, int axis, Sint16 xrel, Sint16 yrel)
-{
-#if SDL_JOYSTICK_VIRTUAL
-    return SDL_JoystickSetVirtualBallInner(joystick, axis, xrel, yrel);
 #else
     return SDL_SetError("SDL not built with virtual-joystick support");
 #endif

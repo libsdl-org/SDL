@@ -38,11 +38,6 @@ typedef struct joystick_hwdata
     SDL_JoystickGUID guid;
     int naxes;
     Sint16 *axes;
-    int nballs;
-    struct {
-        Sint16 xrel;
-        Sint16 yrel;
-    } *balls;
     int nbuttons;
     Uint8 *buttons;
     int nhats;
@@ -54,14 +49,12 @@ typedef struct joystick_hwdata
 
 int SDL_JoystickAttachVirtualInner(SDL_JoystickType type,
                                    int naxes,
-                                   int nballs,
                                    int nbuttons,
                                    int nhats);
 
 int SDL_JoystickDetachVirtualInner(int device_index);
 
 int SDL_JoystickSetVirtualAxisInner(SDL_Joystick * joystick, int axis, Sint16 value);
-int SDL_JoystickSetVirtualBallInner(SDL_Joystick * joystick, int ball, Sint16 xrel, Sint16 yrel);
 int SDL_JoystickSetVirtualButtonInner(SDL_Joystick * joystick, int button, Uint8 value);
 int SDL_JoystickSetVirtualHatInner(SDL_Joystick * joystick, int hat, Uint8 value);
 
