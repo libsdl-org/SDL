@@ -252,6 +252,9 @@
     <ClInclude Include="..\..\src\joystick\SDL_sysjoystick.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\joystick\virtual\SDL_virtualjoystick_c.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\joystick\windows\SDL_dinputjoystick_c.h">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -531,6 +534,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\joystick\SDL_joystick.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\joystick\virtual\SDL_virtualjoystick.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\joystick\windows\SDL_dinputjoystick.c">
