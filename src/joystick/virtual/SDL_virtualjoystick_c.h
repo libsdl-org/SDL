@@ -20,8 +20,8 @@
 */
 #include "../../SDL_internal.h"
 
-#ifndef SDL_JOYSTICK_VIRTUAL_H
-#define SDL_JOYSTICK_VIRTUAL_H
+#ifndef SDL_VIRTUALJOYSTICK_C_H
+#define SDL_VIRTUALJOYSTICK_C_H
 
 #if SDL_JOYSTICK_VIRTUAL
 
@@ -59,4 +59,4 @@ int SDL_JoystickSetVirtualButtonInner(SDL_Joystick * joystick, int button, Uint8
 int SDL_JoystickSetVirtualHatInner(SDL_Joystick * joystick, int hat, Uint8 value);
 
 #endif  /* SDL_JOYSTICK_VIRTUAL */
-#endif  /* SDL_JOYSTICK_VIRTUAL_H */
+#endif  /* SDL_VIRTUALJOYSTICK_C_H */
