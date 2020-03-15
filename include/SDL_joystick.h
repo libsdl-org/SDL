@@ -222,6 +222,12 @@ extern DECLSPEC SDL_bool SDLCALL SDL_JoystickIsVirtual(int device_index);
 
 /**
  * Set values on an opened, virtual-joystick's controls.
+ * Please note that values set here will not be applied until the next
+ * call to SDL_JoystickUpdate, which can either be called directly,
+ * or can be called indirectly through various other SDL APIS,
+ * including, but not limited to the following: SDL_PollEvent,
+ * SDL_PumpEvents, SDL_WaitEventTimeout, SDL_WaitEvent.
+ * 
  * Returns 0 on success, -1 on error.
  */
 extern DECLSPEC int SDLCALL SDL_JoystickSetVirtualAxis(SDL_Joystick * joystick, int axis, Sint16 value);
