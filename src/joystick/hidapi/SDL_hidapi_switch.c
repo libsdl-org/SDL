@@ -671,7 +671,7 @@ static Uint8 RemapButton(SDL_DriverSwitch_Context *ctx, Uint8 button)
 static SDL_bool
 HIDAPI_DriverSwitch_InitDevice(SDL_HIDAPI_Device *device)
 {
-    return HIDAPI_JoystickConnected(device, NULL);
+    return HIDAPI_JoystickConnected(device, NULL, SDL_FALSE);
 }
 
 static int
@@ -1121,7 +1121,7 @@ HIDAPI_DriverSwitch_UpdateDevice(SDL_HIDAPI_Device *device)
 
     if (size < 0) {
         /* Read error, device is disconnected */
-        HIDAPI_JoystickDisconnected(device, joystick->instance_id);
+        HIDAPI_JoystickDisconnected(device, joystick->instance_id, SDL_FALSE);
     }
     return (size >= 0);
 }

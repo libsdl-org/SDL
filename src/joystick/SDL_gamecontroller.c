@@ -439,6 +439,12 @@ static ControllerMapping_t *SDL_PrivateGetControllerMappingForGUID(SDL_JoystickG
             /* This is a HIDAPI device */
             return s_pHIDAPIMapping;
         }
+#if SDL_JOYSTICK_RAWINPUT
+        if (SDL_IsJoystickRAWINPUT(*guid)) {
+            /* This is a RAWINPUT device - same data as HIDAPI */
+            return s_pHIDAPIMapping;
+        }
+#endif
 #if SDL_JOYSTICK_XINPUT
         if (SDL_IsJoystickXInput(*guid)) {
             /* This is an XInput device */

@@ -231,10 +231,10 @@ HIDAPI_DriverXbox360W_UpdateDevice(SDL_HIDAPI_Device *device)
                 if (connected) {
                     SDL_JoystickID joystickID;
 
-                    HIDAPI_JoystickConnected(device, &joystickID);
+                    HIDAPI_JoystickConnected(device, &joystickID, SDL_FALSE);
 
                 } else if (device->num_joysticks > 0) {
-                    HIDAPI_JoystickDisconnected(device, device->joysticks[0]);
+                    HIDAPI_JoystickDisconnected(device, device->joysticks[0], SDL_FALSE);
                 }
             }
         } else if (size == 29 && data[0] == 0x00 && data[1] == 0x0f && data[2] == 0x00 && data[3] == 0xf0) {
@@ -262,7 +262,7 @@ HIDAPI_DriverXbox360W_UpdateDevice(SDL_HIDAPI_Device *device)
     if (joystick) {
         if (size < 0) {
             /* Read error, device is disconnected */
-            HIDAPI_JoystickDisconnected(device, joystick->instance_id);
+            HIDAPI_JoystickDisconnected(device, joystick->instance_id, SDL_FALSE);
         }
     }
     return (size >= 0);

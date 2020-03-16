@@ -213,7 +213,7 @@ SetLedsForPlayerIndex(DS4EffectsState_t *effects, int player_index)
 static SDL_bool
 HIDAPI_DriverPS4_InitDevice(SDL_HIDAPI_Device *device)
 {
-    return HIDAPI_JoystickConnected(device, NULL);
+    return HIDAPI_JoystickConnected(device, NULL, SDL_FALSE);
 }
 
 static int
@@ -496,7 +496,7 @@ HIDAPI_DriverPS4_UpdateDevice(SDL_HIDAPI_Device *device)
 
     if (size < 0) {
         /* Read error, device is disconnected */
-        HIDAPI_JoystickDisconnected(device, joystick->instance_id);
+        HIDAPI_JoystickDisconnected(device, joystick->instance_id, SDL_FALSE);
     }
     return (size >= 0);
 }

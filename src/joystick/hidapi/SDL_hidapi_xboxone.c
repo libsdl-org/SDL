@@ -279,7 +279,7 @@ HIDAPI_DriverXboxOne_GetDeviceName(Uint16 vendor_id, Uint16 product_id)
 static SDL_bool
 HIDAPI_DriverXboxOne_InitDevice(SDL_HIDAPI_Device *device)
 {
-    return HIDAPI_JoystickConnected(device, NULL);
+    return HIDAPI_JoystickConnected(device, NULL, SDL_FALSE);
 }
 
 static int
@@ -694,7 +694,7 @@ HIDAPI_DriverXboxOne_UpdateDevice(SDL_HIDAPI_Device *device)
         !ControllerSendsWaitingForInit(device->vendor_id, device->product_id)) {
         if (SDL_TICKS_PASSED(SDL_GetTicks(), ctx->start_time + CONTROLLER_INIT_DELAY_MS)) {
             if (!SendControllerInit(device, ctx)) {
-                HIDAPI_JoystickDisconnected(device, joystick->instance_id);
+                HIDAPI_JoystickDisconnected(device, joystick->instance_id, SDL_FALSE);
                 return SDL_FALSE;
             }
             ctx->initialized = SDL_TRUE;
@@ -737,7 +737,7 @@ HIDAPI_DriverXboxOne_UpdateDevice(SDL_HIDAPI_Device *device)
                     SDL_Log("Delay after init: %ums\n", SDL_GetTicks() - ctx->start_time);
 #endif
                     if (!SendControllerInit(device, ctx)) {
-                        HIDAPI_JoystickDisconnected(device, joystick->instance_id);
+                        HIDAPI_JoystickDisconnected(device, joystick->instance_id, SDL_FALSE);
                         return SDL_FALSE;
                     }
                     ctx->initialized = SDL_TRUE;
