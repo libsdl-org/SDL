@@ -343,6 +343,7 @@ static void
 VIRTUAL_JoystickUpdate(SDL_Joystick * joystick)
 {
     joystick_hwdata *hwdata;
+    int i;
 
     if (!joystick) {
         return;
@@ -353,13 +354,13 @@ VIRTUAL_JoystickUpdate(SDL_Joystick * joystick)
 
     hwdata = (joystick_hwdata *)joystick->hwdata;
 
-    for (int i = 0; i < hwdata->naxes; ++i) {
+    for (i = 0; i < hwdata->naxes; ++i) {
         SDL_PrivateJoystickAxis(joystick, i, hwdata->axes[i]);
     }
-    for (int i = 0; i < hwdata->nbuttons; ++i) {
+    for (i = 0; i < hwdata->nbuttons; ++i) {
         SDL_PrivateJoystickButton(joystick, i, hwdata->buttons[i]);
     }
-    for (int i = 0; i < hwdata->nhats; ++i) {
+    for (i = 0; i < hwdata->nhats; ++i) {
         SDL_PrivateJoystickHat(joystick, i, hwdata->hats[i]);
     }
 }
