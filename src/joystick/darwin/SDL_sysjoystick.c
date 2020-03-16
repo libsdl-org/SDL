@@ -125,6 +125,7 @@ static recDevice *
 FreeDevice(recDevice *removeDevice)
 {
     recDevice *pDeviceNext = NULL;
+    SDL_Joystick *joystick = NULL;
     if (removeDevice) {
         if (removeDevice->deviceRef) {
             IOHIDDeviceUnscheduleFromRunLoop(removeDevice->deviceRef, CFRunLoopGetCurrent(), SDL_JOYSTICK_RUNLOOP_MODE);
@@ -145,6 +146,14 @@ FreeDevice(recDevice *removeDevice)
             device->pNext = pDeviceNext;
         }
         removeDevice->pNext = NULL;
+
+        /* clear out any reference to this recDevice that are being
+         * held by a live instance of SDL_Joystick
+         */
+        joystick = SDL_JoystickFromInstanceID(removeDevice->instance_id);
+        if (joystick) {
+            joystick->hwdata = NULL;
+        }
 
         /* free element lists */
         FreeElementList(removeDevice->firstAxis);
@@ -870,6 +879,10 @@ DARWIN_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint
 
     /* Scale and average the two rumble strengths */
     Sint16 magnitude = (Sint16)(((low_frequency_rumble / 2) + (high_frequency_rumble / 2)) / 2);
+
+    if (!device) {
+        return SDL_SetError("Rumble failed, device disconnected");
+    }
 
     if (!device->ffservice) {
         return SDL_Unsupported();
