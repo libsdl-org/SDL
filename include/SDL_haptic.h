@@ -336,6 +336,13 @@ typedef struct _SDL_Haptic SDL_Haptic;
  */
 #define SDL_HAPTIC_SPHERICAL  2
 
+/**
+ *  \brief Uses first axis only.
+ *
+ *  \sa SDL_HapticDirection
+ */
+#define SDL_HAPTIC_FIRST_AXIS 3
+
 /* @} *//* Direction encodings */
 
 /* @} *//* Haptic features */
