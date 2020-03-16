@@ -1164,7 +1164,8 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSwitch =
     HIDAPI_DriverSwitch_OpenJoystick,
     HIDAPI_DriverSwitch_RumbleJoystick,
     HIDAPI_DriverSwitch_CloseJoystick,
-    HIDAPI_DriverSwitch_FreeDevice
+    HIDAPI_DriverSwitch_FreeDevice,
+    NULL
 };
 
 #endif /* SDL_JOYSTICK_HIDAPI_SWITCH */

@@ -763,7 +763,7 @@ HIDAPI_DriverXboxOne_UpdateDevice(SDL_HIDAPI_Device *device)
 
     if (size < 0) {
         /* Read error, device is disconnected */
-        HIDAPI_JoystickDisconnected(device, joystick->instance_id);
+        HIDAPI_JoystickDisconnected(device, joystick->instance_id, SDL_FALSE);
     }
     return (size >= 0);
 }
@@ -796,7 +796,8 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXboxOne =
     HIDAPI_DriverXboxOne_OpenJoystick,
     HIDAPI_DriverXboxOne_RumbleJoystick,
     HIDAPI_DriverXboxOne_CloseJoystick,
-    HIDAPI_DriverXboxOne_FreeDevice
+    HIDAPI_DriverXboxOne_FreeDevice,
+    NULL
 };
 
 #endif /* SDL_JOYSTICK_HIDAPI_XBOXONE */
