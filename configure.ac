@@ -3410,6 +3410,19 @@ AS_HELP_STRING([--enable-foregrounding-signal], [number to use for magic foregro
     fi
 }
 
+dnl Set up the Virtual joystick driver.
+CheckVirtualJoystick()
+{
+    AC_ARG_ENABLE(joystick-virtual,
+AS_HELP_STRING([--enable-joystick-virtual], [enable virtual joystick APIs [[default=no]]]),
+                  , enable_joystick_virtual=no)
+    if test x$enable_joystick = xyes -a x$enable_joystick_virtual = xyes; then
+        AC_DEFINE(SDL_JOYSTICK_VIRTUAL, 1, [ ])
+        SOURCES="$SOURCES $srcdir/src/joystick/virtual/*.c"
+        have_joystick_virtual=yes
+    fi
+}
+
 
 
 dnl Do this on all platforms, before everything else (other things might want to override it).
@@ -4092,6 +4105,9 @@ AS_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
         ;;
 esac
 
+dnl Permit use of virtual joystick APIs on any platform (subject to configure options)
+CheckVirtualJoystick
+
 # Check whether to install sdl2-config
 AC_MSG_CHECKING(whether to install sdl2-config)
 AC_ARG_ENABLE([sdl2-config],
@@ -4315,6 +4331,11 @@ if test x$have_x = xyes; then
     SUMMARY="${SUMMARY}X11 libraries   :${SUMMARY_video_x11}\n"
 fi
 SUMMARY="${SUMMARY}Input drivers   :${SUMMARY_input}\n"
+if test x$have_joystick_virtual = xyes; then
+    SUMMARY="${SUMMARY}Enable virtual joystick APIs : YES\n"
+else
+    SUMMARY="${SUMMARY}Enable virtual joystick APIs : NO\n"
+fi
 if test x$have_samplerate_h_hdr = xyes; then
     SUMMARY="${SUMMARY}Using libsamplerate : YES\n"
 else
