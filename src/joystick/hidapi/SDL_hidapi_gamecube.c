@@ -404,7 +404,8 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverGameCube =
     HIDAPI_DriverGameCube_OpenJoystick,
     HIDAPI_DriverGameCube_RumbleJoystick,
     HIDAPI_DriverGameCube_CloseJoystick,
-    HIDAPI_DriverGameCube_FreeDevice
+    HIDAPI_DriverGameCube_FreeDevice,
+    NULL,
 };
 
 #endif /* SDL_JOYSTICK_HIDAPI_GAMECUBE */

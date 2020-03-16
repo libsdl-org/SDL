@@ -529,7 +529,8 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverPS4 =
     HIDAPI_DriverPS4_OpenJoystick,
     HIDAPI_DriverPS4_RumbleJoystick,
     HIDAPI_DriverPS4_CloseJoystick,
-    HIDAPI_DriverPS4_FreeDevice
+    HIDAPI_DriverPS4_FreeDevice,
+    NULL
 };
 
 #endif /* SDL_JOYSTICK_HIDAPI_PS4 */

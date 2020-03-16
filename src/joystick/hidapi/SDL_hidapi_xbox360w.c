@@ -296,7 +296,8 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXbox360W =
     HIDAPI_DriverXbox360W_OpenJoystick,
     HIDAPI_DriverXbox360W_RumbleJoystick,
     HIDAPI_DriverXbox360W_CloseJoystick,
-    HIDAPI_DriverXbox360W_FreeDevice
+    HIDAPI_DriverXbox360W_FreeDevice,
+    NULL
 };
 
 #endif /* SDL_JOYSTICK_HIDAPI_XBOX360 */
