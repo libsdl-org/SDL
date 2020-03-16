@@ -899,6 +899,7 @@ enable_clock_gettime
 enable_rpath
 enable_backgrounding_signal
 enable_foregrounding_signal
+enable_joystick_virtual
 enable_render_d3d
 enable_sdl2_config
 '
@@ -1691,6 +1692,8 @@ Optional Features:
   --enable-foregrounding-signal
                           number to use for magic foregrounding signal or 'no'
                           [[default=no]]
+  --enable-joystick-virtual
+                          enable virtual joystick APIs [[default=no]]
   --enable-render-d3d     enable the Direct3D render driver [[default=yes]]
   --enable-sdl2-config    Install sdl2-config [default=yes]
 
@@ -24531,6 +24534,24 @@ fi
     fi
 }
 
+CheckVirtualJoystick()
+{
+    # Check whether --enable-joystick-virtual was given.
+if test "${enable_joystick_virtual+set}" = set; then :
+  enableval=$enable_joystick_virtual;
+else
+  enable_joystick_virtual=no
+fi
+
+    if test x$enable_joystick = xyes -a x$enable_joystick_virtual = xyes; then
+
+$as_echo "#define SDL_JOYSTICK_VIRTUAL 1" >>confdefs.h
+
+        SOURCES="$SOURCES $srcdir/src/joystick/virtual/*.c"
+        have_joystick_virtual=yes
+    fi
+}
+
 
 
 CheckWarnAll
@@ -25390,6 +25411,8 @@ $as_echo "#define SDL_TIMER_UNIX 1" >>confdefs.h
         ;;
 esac
 
+CheckVirtualJoystick
+
 # Check whether to install sdl2-config
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to install sdl2-config" >&5
 $as_echo_n "checking whether to install sdl2-config... " >&6; }
@@ -25650,6 +25673,11 @@ if test x$have_x = xyes; then
     SUMMARY="${SUMMARY}X11 libraries   :${SUMMARY_video_x11}\n"
 fi
 SUMMARY="${SUMMARY}Input drivers   :${SUMMARY_input}\n"
+if test x$have_joystick_virtual = xyes; then
+    SUMMARY="${SUMMARY}Enable virtual joystick APIs : YES\n"
+else
+    SUMMARY="${SUMMARY}Enable virtual joystick APIs : NO\n"
+fi
 if test x$have_samplerate_h_hdr = xyes; then
     SUMMARY="${SUMMARY}Using libsamplerate : YES\n"
 else
