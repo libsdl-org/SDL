@@ -30,6 +30,7 @@
 #include "../../events/SDL_keyboard_c.h"
 #include "../../events/SDL_mouse_c.h"
 
+#include "../../joystick/windows/SDL_rawinputjoystick_c.h"
 #include "SDL_windowsvideo.h"
 #include "SDL_windowswindow.h"
 #include "SDL_hints.h"
@@ -808,9 +809,18 @@ WIN_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info)
     }
 }
 
+static LRESULT CALLBACK SDL_HelperWindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+#if SDL_JOYSTICK_RAWINPUT
+    if (RAWINPUT_WindowProc(hWnd, msg, wParam, lParam) == 0) {
+        return 0;
+    }
+#endif
+    return DefWindowProc(hWnd, msg, wParam, lParam);
+}
 
 /*
- * Creates a HelperWindow used for DirectInput events.
+ * Creates a HelperWindow used for DirectInput and RawInput events.
  */
 int
 SDL_HelperWindowCreate(void)
@@ -825,7 +835,7 @@ SDL_HelperWindowCreate(void)
 
     /* Create the class. */
     SDL_zero(wce);
-    wce.lpfnWndProc = DefWindowProc;
+    wce.lpfnWndProc = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_RAWINPUT, SDL_TRUE) ? SDL_HelperWindowProc : DefWindowProc;
     wce.lpszClassName = (LPCWSTR) SDL_HelperWindowClassName;
     wce.hInstance = hInstance;
 

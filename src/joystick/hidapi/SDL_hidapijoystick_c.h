@@ -40,8 +40,6 @@
 #ifdef __WINDOWS__
 /* On Windows, Xbox One controllers are handled by the Xbox 360 driver */
 #undef SDL_JOYSTICK_HIDAPI_XBOXONE
-/* It turns out HIDAPI for Xbox controllers doesn't allow background input */
-#undef SDL_JOYSTICK_HIDAPI_XBOX360
 #endif
 
 #ifdef __MACOSX__
@@ -103,6 +101,10 @@ typedef struct _SDL_HIDAPI_DeviceDriver
     int (*RumbleJoystick)(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble);
     void (*CloseJoystick)(SDL_HIDAPI_Device *device, SDL_Joystick *joystick);
     void (*FreeDevice)(SDL_HIDAPI_Device *device);
+    void (*PostUpdate)(void);
+#ifdef SDL_JOYSTICK_RAWINPUT
+    void (*HandleStatePacketFromRAWINPUT)(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 *data, int size);
+#endif
 
 } SDL_HIDAPI_DeviceDriver;
 
@@ -120,8 +122,8 @@ extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverGameCube;
 extern SDL_bool HIDAPI_IsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name);
 
 extern void HIDAPI_UpdateDevices(void);
-extern SDL_bool HIDAPI_JoystickConnected(SDL_HIDAPI_Device *device, SDL_JoystickID *pJoystickID);
-extern void HIDAPI_JoystickDisconnected(SDL_HIDAPI_Device *device, SDL_JoystickID joystickID);
+extern SDL_bool HIDAPI_JoystickConnected(SDL_HIDAPI_Device *device, SDL_JoystickID *pJoystickID, SDL_bool is_external);
+extern void HIDAPI_JoystickDisconnected(SDL_HIDAPI_Device *device, SDL_JoystickID joystickID, SDL_bool is_external);
 
 #endif /* SDL_JOYSTICK_HIDAPI_H */
 

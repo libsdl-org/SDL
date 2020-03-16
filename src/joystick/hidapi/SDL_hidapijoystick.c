@@ -37,6 +37,7 @@
 
 #if defined(__WIN32__)
 #include "../../core/windows/SDL_windows.h"
+#include "../windows/SDL_rawinputjoystick_c.h"
 #endif
 
 #if defined(__MACOSX__)
@@ -419,6 +420,13 @@ HIDAPI_GetDeviceDriver(SDL_HIDAPI_Device *device)
         return NULL;
     }
 
+#ifdef SDL_JOYSTICK_RAWINPUT
+    if (RAWINPUT_IsDevicePresent(device->vendor_id, device->product_id, device->version)) {
+        /* The RAWINPUT driver is taking care of this device */
+        return NULL;
+    }
+#endif
+
     if (device->usage_page && device->usage_page != USAGE_PAGE_GENERIC_DESKTOP) {
         return NULL;
     }
@@ -502,7 +510,7 @@ HIDAPI_CleanupDeviceDriver(SDL_HIDAPI_Device *device)
 
     /* Disconnect any joysticks */
     while (device->num_joysticks) {
-        HIDAPI_JoystickDisconnected(device, device->joysticks[0]);
+        HIDAPI_JoystickDisconnected(device, device->joysticks[0], SDL_FALSE);
     }
 
     device->driver->FreeDevice(device);
@@ -575,6 +583,11 @@ HIDAPI_JoystickInit(void)
         return -1;
     }
 
+#ifdef __WINDOWS__
+    /* On Windows, turns out HIDAPI for Xbox controllers doesn't allow background input, so off by default */
+    SDL_SetHintWithPriority(SDL_HINT_JOYSTICK_HIDAPI_XBOX, "0", SDL_HINT_DEFAULT);
+#endif
+
     for (i = 0; i < SDL_arraysize(SDL_HIDAPI_drivers); ++i) {
         SDL_HIDAPI_DeviceDriver *driver = SDL_HIDAPI_drivers[i];
         SDL_AddHintCallback(driver->hint, SDL_HIDAPIDriverHintChanged, NULL);
@@ -591,7 +604,7 @@ HIDAPI_JoystickInit(void)
 }
 
 SDL_bool
-HIDAPI_JoystickConnected(SDL_HIDAPI_Device *device, SDL_JoystickID *pJoystickID)
+HIDAPI_JoystickConnected(SDL_HIDAPI_Device *device, SDL_JoystickID *pJoystickID, SDL_bool is_external)
 {
     SDL_JoystickID joystickID;
     SDL_JoystickID *joysticks = (SDL_JoystickID *)SDL_realloc(device->joysticks, (device->num_joysticks + 1)*sizeof(*device->joysticks));
@@ -602,7 +615,9 @@ HIDAPI_JoystickConnected(SDL_HIDAPI_Device *device, SDL_JoystickID *pJoystickID)
     joystickID = SDL_GetNextJoystickInstanceID();
     device->joysticks = joysticks;
     device->joysticks[device->num_joysticks++] = joystickID;
-    ++SDL_HIDAPI_numjoysticks;
+    if (!is_external) {
+        ++SDL_HIDAPI_numjoysticks;
+    }
 
     SDL_PrivateJoystickAdded(joystickID);
 
@@ -613,20 +628,22 @@ HIDAPI_JoystickConnected(SDL_HIDAPI_Device *device, SDL_JoystickID *pJoystickID)
 }
 
 void
-HIDAPI_JoystickDisconnected(SDL_HIDAPI_Device *device, SDL_JoystickID joystickID)
+HIDAPI_JoystickDisconnected(SDL_HIDAPI_Device *device, SDL_JoystickID joystickID, SDL_bool is_external)
 {
     int i;
 
     for (i = 0; i < device->num_joysticks; ++i) {
         if (device->joysticks[i] == joystickID) {
             SDL_Joystick *joystick = SDL_JoystickFromInstanceID(joystickID);
-            if (joystick) {
+            if (joystick && !is_external) {
                 HIDAPI_JoystickClose(joystick);
             }
 
             SDL_memmove(&device->joysticks[i], &device->joysticks[i+1], device->num_joysticks - i - 1);
             --device->num_joysticks;
-            --SDL_HIDAPI_numjoysticks;
+            if (!is_external) {
+                --SDL_HIDAPI_numjoysticks;
+            }
             if (device->num_joysticks == 0) {
                 SDL_free(device->joysticks);
                 device->joysticks = NULL;
@@ -882,6 +899,7 @@ HIDAPI_IsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, cons
 static void
 HIDAPI_JoystickDetect(void)
 {
+    int i;
     if (SDL_AtomicTryLock(&SDL_HIDAPI_spinlock)) {
         HIDAPI_UpdateDiscovery();
         if (SDL_HIDAPI_discovery.m_bHaveDevicesChanged) {
@@ -890,6 +908,12 @@ HIDAPI_JoystickDetect(void)
             SDL_HIDAPI_discovery.m_bHaveDevicesChanged = SDL_FALSE;
         }
         SDL_AtomicUnlock(&SDL_HIDAPI_spinlock);
+    }
+    for (i = 0; i < SDL_arraysize(SDL_HIDAPI_drivers); ++i) {
+        SDL_HIDAPI_DeviceDriver *driver = SDL_HIDAPI_drivers[i];
+        if (driver->enabled && driver->PostUpdate) {
+            driver->PostUpdate();
+        }
     }
 }
 

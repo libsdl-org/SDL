@@ -26,6 +26,7 @@
 
 #include "SDL_windowsjoystick_c.h"
 #include "SDL_dinputjoystick_c.h"
+#include "SDL_rawinputjoystick_c.h"
 #include "SDL_xinputjoystick_c.h"
 #include "../hidapi/SDL_hidapijoystick_c.h"
 
@@ -667,6 +668,14 @@ EnumJoysticksCallback(const DIDEVICEINSTANCE * pdidInstance, VOID * pContext)
     if (HIDAPI_IsDevicePresent(vendor, product, 0, pNewJoystick->joystickname)) {
         /* The HIDAPI driver is taking care of this device */
         SDL_free(pNewJoystick->joystickname);
+        SDL_free(pNewJoystick);
+        return DIENUM_CONTINUE;
+    }
+#endif
+
+#ifdef SDL_JOYSTICK_RAWINPUT
+    if (RAWINPUT_IsDevicePresent(vendor, product, 0)) {
+        /* The RAWINPUT driver is taking care of this device */
         SDL_free(pNewJoystick);
         return DIENUM_CONTINUE;
     }

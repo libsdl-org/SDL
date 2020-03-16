@@ -323,6 +323,9 @@
     <ClInclude Include="..\..\src\video\windows\SDL_windowswindow.h" />
     <ClInclude Include="..\..\src\video\windows\wmmsg.h" />
     <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb.h" />
+    <ClInclude Include="..\..\src\joystick\windows\SDL_rawinputjoystick_c.h" />
+    <ClInclude Include="..\..\src\hidapi\hidapi\hidapi.h" />
+    <ClInclude Include="..\..\src\joystick\SDL_gamecontrollerdb.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\atomic\SDL_atomic.c" />
@@ -478,6 +481,7 @@
     <ClCompile Include="..\..\src\video\windows\SDL_windowsvulkan.c" />
     <ClCompile Include="..\..\src\video\windows\SDL_windowswindow.c" />
     <ClCompile Include="..\..\src\video\yuv2rgb\yuv_rgb.c" />
+    <ClCompile Include="..\..\src\joystick\windows\SDL_rawinputjoystick.c" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\src\main\windows\version.rc" />
