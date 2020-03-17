@@ -718,7 +718,9 @@ SDL_SYS_ToDirection(Uint16 *dest, SDL_HapticDirection * src)
             *dest = (Uint16) tmp;
         }
         break;
-
+    case SDL_HAPTIC_FIRST_AXIS:
+        *dest = 0x4000;
+        break;
     default:
         return SDL_SetError("Haptic: Unsupported direction type.");
     }
