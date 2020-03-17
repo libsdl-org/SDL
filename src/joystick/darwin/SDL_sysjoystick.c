@@ -127,10 +127,27 @@ FreeDevice(recDevice *removeDevice)
     recDevice *pDeviceNext = NULL;
     if (removeDevice) {
         if (removeDevice->deviceRef) {
-            IOHIDDeviceUnscheduleFromRunLoop(removeDevice->deviceRef, CFRunLoopGetCurrent(), SDL_JOYSTICK_RUNLOOP_MODE);
+            if (removeDevice->runLoopAttached) {
+                /* Calling IOHIDDeviceUnscheduleFromRunLoop without a prior,
+                 * paired call to IOHIDDeviceScheduleWithRunLoop can lead
+                 * to crashes in MacOS 10.14.x and earlier.  This doesn't
+                 * appear to be a problem in MacOS 10.15.x, but we'll
+                 * do it anyways.  (Part-of fix for Bug 5034)
+                 */
+                IOHIDDeviceUnscheduleFromRunLoop(removeDevice->deviceRef, CFRunLoopGetCurrent(), SDL_JOYSTICK_RUNLOOP_MODE);
+            }
             CFRelease(removeDevice->deviceRef);
             removeDevice->deviceRef = NULL;
         }
+
+        /* clear out any reference to removeDevice from an associated,
+         * live instance of SDL_Joystick  (Part-of fix for Bug 5034)
+         */
+        SDL_LockJoysticks();
+        if (removeDevice->joystick) {
+            removeDevice->joystick->hwdata = NULL;
+        }
+        SDL_UnlockJoysticks();
 
         /* save next device prior to disposing of this device */
         pDeviceNext = removeDevice->pNext;
@@ -398,6 +415,7 @@ AddHIDElement(const void *value, void *parameter)
     }
 }
 
+
 static SDL_bool
 GetDeviceInfo(IOHIDDeviceRef hidDevice, recDevice *pDevice)
 {
@@ -552,6 +570,7 @@ JoystickDeviceWasAddedCallback(void *ctx, IOReturn res, void *sender, IOHIDDevic
     /* Get notified when this device is disconnected. */
     IOHIDDeviceRegisterRemovalCallback(ioHIDDeviceObject, JoystickDeviceWasRemovedCallback, device);
     IOHIDDeviceScheduleWithRunLoop(ioHIDDeviceObject, CFRunLoopGetCurrent(), SDL_JOYSTICK_RUNLOOP_MODE);
+    device->runLoopAttached = SDL_TRUE;
 
     /* Allocate an instance ID for this device */
     device->instance_id = SDL_GetNextJoystickInstanceID();
@@ -760,6 +779,7 @@ DARWIN_JoystickOpen(SDL_Joystick * joystick, int device_index)
 
     joystick->instance_id = device->instance_id;
     joystick->hwdata = device;
+    device->joystick = joystick;
     joystick->name = device->product;
 
     joystick->naxes = device->axes;
@@ -870,6 +890,10 @@ DARWIN_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint
 
     /* Scale and average the two rumble strengths */
     Sint16 magnitude = (Sint16)(((low_frequency_rumble / 2) + (high_frequency_rumble / 2)) / 2);
+    
+    if (!device) {
+        return SDL_SetError("Rumble failed, device disconnected");
+    }
 
     if (!device->ffservice) {
         return SDL_Unsupported();
@@ -1007,6 +1031,10 @@ DARWIN_JoystickUpdate(SDL_Joystick * joystick)
 static void
 DARWIN_JoystickClose(SDL_Joystick * joystick)
 {
+    recDevice *device = joystick->hwdata;
+    if (device) {
+        device->joystick = NULL;
+    }
 }
 
 static void
