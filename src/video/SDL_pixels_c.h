@@ -40,6 +40,7 @@ extern void SDL_FreeBlitMap(SDL_BlitMap * map);
 /* Miscellaneous functions */
 extern void SDL_DitherColors(SDL_Color * colors, int bpp);
 extern Uint8 SDL_FindColor(SDL_Palette * pal, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
+extern void SDL_DetectPalette(SDL_Palette *pal, SDL_bool *is_opaque, SDL_bool *has_alpha_channel);
 
 #endif /* SDL_pixels_c_h_ */
 

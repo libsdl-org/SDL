@@ -1032,22 +1032,16 @@ SDL_ConvertSurface(SDL_Surface * surface, const SDL_PixelFormat * format,
      * -> set alpha channel to be opaque */
     if (surface->format->palette && format->Amask) {
         SDL_bool set_opaque = SDL_FALSE;
-        {
-            int i;
-            for (i = 0; i < surface->format->palette->ncolors; i++) {
-                Uint8 alpha_value = surface->format->palette->colors[i].a;
 
-                if (alpha_value != 0 && alpha_value != SDL_ALPHA_OPAQUE) {
-                    /* Palette has at least one alpha value. Don't do anything */
-                    set_opaque = SDL_FALSE;
-                    palette_has_alpha = SDL_TRUE;
-                    break;
-                }
+        SDL_bool is_opaque, has_alpha_channel;
+        SDL_DetectPalette(surface->format->palette, &is_opaque, &has_alpha_channel);
 
-                if (alpha_value == 0) {
-                    set_opaque = SDL_TRUE;
-                }
+        if (is_opaque) {
+            if (!has_alpha_channel) {
+                set_opaque = SDL_TRUE;
             }
+        } else {
+            palette_has_alpha = SDL_TRUE;
         }
 
         /* Set opaque and backup palette alpha values */
