@@ -151,7 +151,6 @@ UIKit_ShowMessageBoxAlertView(const SDL_MessageBoxData *messageboxdata, int *but
 #if __IPHONE_OS_VERSION_MIN_REQUIRED < 80000
     int i;
     int clickedindex = messageboxdata->numbuttons;
-    const SDL_MessageBoxButtonData *buttons = messageboxdata->buttons;
     UIAlertView *alert = [[UIAlertView alloc] init];
     SDLAlertViewDelegate *delegate = [[SDLAlertViewDelegate alloc] init];
 
