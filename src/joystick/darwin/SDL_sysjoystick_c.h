@@ -66,6 +66,8 @@ struct joystick_hwdata
     recElement *firstHat;
 
     SDL_bool removed;
+    SDL_Joystick *joystick;
+    SDL_bool runLoopAttached;   /* is 'deviceRef' attached to a CFRunLoop? */
 
     int instance_id;
     SDL_JoystickGUID guid;
