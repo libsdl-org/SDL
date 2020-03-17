@@ -1166,7 +1166,8 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSteam =
     HIDAPI_DriverSteam_OpenJoystick,
     HIDAPI_DriverSteam_RumbleJoystick,
     HIDAPI_DriverSteam_CloseJoystick,
-    HIDAPI_DriverSteam_FreeDevice
+    HIDAPI_DriverSteam_FreeDevice,
+	NULL
 };
 
 #endif /* SDL_JOYSTICK_HIDAPI_STEAM */
