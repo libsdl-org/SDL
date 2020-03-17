@@ -28,6 +28,7 @@
 #include "SDL_render.h"
 #include "SDL_sysrender.h"
 #include "software/SDL_render_sw_c.h"
+#include "../video/SDL_pixels_c.h"
 
 #if defined(__ANDROID__)
 #  include "../core/android/SDL_android.h"
