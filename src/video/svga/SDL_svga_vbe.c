@@ -131,7 +131,7 @@ SVGA_SetVBEMode(VBEMode mode)
 }
 
 SDL_PixelFormatEnum
-SVGA_ConvertPixelFormat(const VBEModeInfo * info)
+SVGA_GetPixelFormat(const VBEModeInfo * info)
 {
     if (info->memory_model == VBE_MEM_MODEL_PACKED) {
         switch (info->bits_per_pixel) {
@@ -142,7 +142,7 @@ SVGA_ConvertPixelFormat(const VBEModeInfo * info)
         }
     } else if (info->memory_model == VBE_MEM_MODEL_DIRECT) {
         switch (info->bits_per_pixel) {
-            /* FIXME: Check the color component field positions and size. */
+            /* FIXME: Use SDL_MasksToPixelFormatEnum. */
             case 8: return SDL_PIXELFORMAT_RGB332;
             case 15: return SDL_PIXELFORMAT_RGB555;
             case 16: return SDL_PIXELFORMAT_RGB565;

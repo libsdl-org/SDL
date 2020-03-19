@@ -92,9 +92,9 @@ SVGA_CreateDevice(int devindex)
     device->GetDisplayModes = SVGA_GetDisplayModes;
     device->SetDisplayMode = SVGA_SetDisplayMode;
     device->PumpEvents = SVGA_PumpEvents;
-    device->CreateWindowFramebuffer = SDL_SVGA_CreateWindowFramebuffer;
-    device->UpdateWindowFramebuffer = SDL_SVGA_UpdateWindowFramebuffer;
-    device->DestroyWindowFramebuffer = SDL_SVGA_DestroyWindowFramebuffer;
+    device->CreateWindowFramebuffer = SDL_SVGA_CreateFramebuffer;
+    device->UpdateWindowFramebuffer = SDL_SVGA_UpdateFramebuffer;
+    device->DestroyWindowFramebuffer = SDL_SVGA_DestroyFramebuffer;
 
     device->free = SVGA_DeleteDevice;
 
@@ -146,7 +146,7 @@ SVGA_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
         }
 
         /* Mode must be a known pixel format. */
-        mode.format = SVGA_ConvertPixelFormat(&info);
+        mode.format = SVGA_GetPixelFormat(&info);
         if (mode.format == SDL_PIXELFORMAT_UNKNOWN) {
             continue;
         }
@@ -161,8 +161,8 @@ SVGA_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
         mode.refresh_rate = 0;
         mode.driverdata = modedata;
         modedata->vbe_mode = vbe_mode;
-        modedata->framebuffer_phys_addr = (void *)(info.phys_base_ptr.segment * 16 + info.phys_base_ptr.offset);
-        modedata->framebuffer_size = 0x1000; /* FIXME: Set correct framebuffer memory size. */
+        modedata->framebuffer_phys_addr = (void *)(info.phys_base_ptr.segment << 16 + info.phys_base_ptr.offset);
+        modedata->framebuffer_size = devdata->vbe_info.total_memory << 16;
 
         if (!SDL_AddDisplayMode(display, &mode)) {
             SDL_free(modedata);
@@ -176,7 +176,11 @@ SVGA_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
     SDL_DisplayModeData *modedata = mode->driverdata;
 
     /* TODO: Use SDL_SetError. */
-    return SVGA_SetVBEMode(modedata->vbe_mode) == 0 ? 0 : -1;
+    if (SVGA_SetVBEMode(modedata->vbe_mode)) {
+        return -1;
+    }
+
+    return 0;
 }
 
 static void

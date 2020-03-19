@@ -24,9 +24,9 @@
 
 #include "../../SDL_internal.h"
 
-extern int SDL_SVGA_CreateWindowFramebuffer(_THIS, SDL_Window * window, Uint32 * format, void ** pixels, int *pitch);
-extern int SDL_SVGA_UpdateWindowFramebuffer(_THIS, SDL_Window * window, const SDL_Rect * rects, int numrects);
-extern void SDL_SVGA_DestroyWindowFramebuffer(_THIS, SDL_Window * window);
+extern int SDL_SVGA_CreateFramebuffer(_THIS, SDL_Window * window, Uint32 * format, void ** pixels, int *pitch);
+extern int SDL_SVGA_UpdateFramebuffer(_THIS, SDL_Window * window, const SDL_Rect * rects, int numrects);
+extern void SDL_SVGA_DestroyFramebuffer(_THIS, SDL_Window * window);
 
 #endif /* SDL_svga_framebuffer_h_ */
 

@@ -30,6 +30,7 @@
 typedef struct
 {
     VBEInfo vbe_info;
+    SDL_Surface *surface;
 } SDL_DeviceData;
 
 typedef struct
