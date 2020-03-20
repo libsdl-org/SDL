@@ -161,8 +161,7 @@ SVGA_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
         mode.refresh_rate = 0;
         mode.driverdata = modedata;
         modedata->vbe_mode = vbe_mode;
-        modedata->framebuffer_phys_addr = (void *)(info.phys_base_ptr.segment << 16 + info.phys_base_ptr.offset);
-        modedata->framebuffer_size = devdata->vbe_info.total_memory << 16;
+        modedata->framebuffer_phys_addr = info.phys_base_ptr;
 
         if (!SDL_AddDisplayMode(display, &mode)) {
             SDL_free(modedata);
@@ -173,12 +172,15 @@ SVGA_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
 static int
 SVGA_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
 {
+    SDL_DeviceData *devdata = _this->driverdata;
     SDL_DisplayModeData *modedata = mode->driverdata;
 
     /* TODO: Use SDL_SetError. */
     if (SVGA_SetVBEMode(modedata->vbe_mode)) {
         return -1;
     }
+
+    devdata->framebuffer_phys_addr = modedata->framebuffer_phys_addr;
 
     return 0;
 }

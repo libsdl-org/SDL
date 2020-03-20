@@ -30,14 +30,14 @@
 typedef struct
 {
     VBEInfo vbe_info;
+    VBEFarPtr framebuffer_phys_addr;
     SDL_Surface *surface;
 } SDL_DeviceData;
 
 typedef struct
 {
     VBEMode vbe_mode;
-    void *framebuffer_phys_addr;
-    size_t framebuffer_size;
+    VBEFarPtr framebuffer_phys_addr;
 } SDL_DisplayModeData;
 
 #endif /* SDL_svga_video_h_ */

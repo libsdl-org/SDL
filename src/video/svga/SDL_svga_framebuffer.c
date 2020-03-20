@@ -58,8 +58,6 @@ int
 SDL_SVGA_UpdateFramebuffer(_THIS, SDL_Window * window, const SDL_Rect * rects, int numrects)
 {
     SDL_DeviceData *devdata = _this->driverdata;
-    SDL_DisplayMode mode;
-    SDL_DisplayModeData *modedata;
     SDL_Surface *surface = devdata->surface;
     size_t surface_size;
 
@@ -73,16 +71,9 @@ SDL_SVGA_UpdateFramebuffer(_THIS, SDL_Window * window, const SDL_Rect * rects, i
     /* TODO: Support case when pitch includes off-screen padding. */
     surface_size = surface->pitch * surface->h;
 
-    /* TODO: Copy to back buffer and swap to screen */
+    mapping.address = *(Uint32 *)&devdata->framebuffer_phys_addr;
+    mapping.size = devdata->vbe_info.total_memory << 16;
 
-    if (SDL_GetWindowDisplayMode(window, &mode)) {
-        return -1;
-    }
-
-    modedata = mode.driverdata;
-    mapping.address = (uintptr_t)modedata->framebuffer_phys_addr;
-    mapping.size = modedata->framebuffer_size;
-    
     if (__dpmi_physical_address_mapping(&mapping)) {
         return -1;
     }
@@ -93,7 +84,7 @@ SDL_SVGA_UpdateFramebuffer(_THIS, SDL_Window * window, const SDL_Rect * rects, i
 
     buf = (Uint8 *)(mapping.address + __djgpp_conventional_base);
 
-    /* TODO: Use a blit function? */
+    /* TODO: Copy to back buffer and swap to screen. */
     SDL_memcpy(buf, surface->pixels, surface_size);
 
     return 0;
