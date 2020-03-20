@@ -140,14 +140,12 @@ SVGA_GetPixelFormat(const VBEModeInfo * info)
             case 4: return SDL_PIXELFORMAT_INDEX4MSB;
             case 8: return SDL_PIXELFORMAT_INDEX8;
         }
-    } else if (info->memory_model == VBE_MEM_MODEL_DIRECT) {
-        switch (info->bits_per_pixel) {
-            /* FIXME: Use SDL_MasksToPixelFormatEnum. */
-            case 8: return SDL_PIXELFORMAT_RGB332;
-            case 15: return SDL_PIXELFORMAT_RGB555;
-            case 16: return SDL_PIXELFORMAT_RGB565;
-            case 32: return SDL_PIXELFORMAT_RGB888;
-        }
+    }
+    if (info->memory_model == VBE_MEM_MODEL_DIRECT) {
+        Uint32 r = ~(~(Uint32)0 << info->red_mask_size) << info->red_field_position;
+        Uint32 g = ~(~(Uint32)0 << info->green_mask_size) << info->green_field_position;
+        Uint32 b = ~(~(Uint32)0 << info->blue_mask_size) << info->blue_field_position;
+        return SDL_MasksToPixelFormatEnum(info->bits_per_pixel, r, g, b, 0);
     }
     return SDL_PIXELFORMAT_UNKNOWN;
 }
