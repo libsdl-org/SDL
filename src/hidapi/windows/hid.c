@@ -68,6 +68,12 @@ typedef LONG NTSTATUS;
    report that we've seen is ~200-250ms so let's double that */
 #define HID_WRITE_TIMEOUT_MILLISECONDS 500
 
+/* We will only enumerate devices that match these usages */
+#define USAGE_PAGE_GENERIC_DESKTOP 0x0001
+#define USAGE_JOYSTICK 0x0004
+#define USAGE_GAMEPAD 0x0005
+#define USAGE_MULTIAXISCONTROLLER 0x0008
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -450,7 +456,7 @@ struct hid_device_info HID_API_EXPORT * HID_API_CALL hid_enumerate(unsigned shor
 		if (write_handle == INVALID_HANDLE_VALUE) {
 			/* Unable to open the device. */
 			//register_error(dev, "CreateFile");
-			goto cont_close;
+			goto cont;
 		}		
 
 
@@ -475,6 +481,28 @@ struct hid_device_info HID_API_EXPORT * HID_API_CALL hid_enumerate(unsigned shor
 			wchar_t wstr[WSTR_LEN]; /* TODO: Determine Size */
 			size_t len;
 
+			/* Get the Usage Page and Usage for this device. */
+			hidp_res = HidD_GetPreparsedData(write_handle, &pp_data);
+			if (hidp_res) {
+				nt_res = HidP_GetCaps(pp_data, &caps);
+				HidD_FreePreparsedData(pp_data);
+				if (nt_res != HIDP_STATUS_SUCCESS) {
+					goto cont_close;
+				}
+			}
+			else {
+				goto cont_close;
+			}
+
+			/* SDL Modification: Ignore the device if it's not a gamepad. This limits compatibility
+			   risk from devices that may respond poorly to our string queries below. */
+			if (caps.UsagePage != USAGE_PAGE_GENERIC_DESKTOP) {
+				goto cont_close;
+			}
+			if (caps.Usage != USAGE_JOYSTICK && caps.Usage != USAGE_GAMEPAD && caps.Usage != USAGE_MULTIAXISCONTROLLER) {
+				goto cont_close;
+			}
+
 			/* VID/PID match. Create the record. */
 			tmp = (struct hid_device_info*) calloc(1, sizeof(struct hid_device_info));
 			if (cur_dev) {
@@ -484,20 +512,10 @@ struct hid_device_info HID_API_EXPORT * HID_API_CALL hid_enumerate(unsigned shor
 				root = tmp;
 			}
 			cur_dev = tmp;
-
-			/* Get the Usage Page and Usage for this device. */
-			hidp_res = HidD_GetPreparsedData(write_handle, &pp_data);
-			if (hidp_res) {
-				nt_res = HidP_GetCaps(pp_data, &caps);
-				if (nt_res == HIDP_STATUS_SUCCESS) {
-					cur_dev->usage_page = caps.UsagePage;
-					cur_dev->usage = caps.Usage;
-				}
-
-				HidD_FreePreparsedData(pp_data);
-			}
 			
 			/* Fill out the record */
+			cur_dev->usage_page = caps.UsagePage;
+			cur_dev->usage = caps.Usage;
 			cur_dev->next = NULL;
 			str = device_interface_detail_data->DevicePath;
 			if (str) {
