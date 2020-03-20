@@ -1019,7 +1019,8 @@ extern "C" {
 /**
  *  \brief Tell SDL not to catch the SIGINT or SIGTERM signals.
  *
- * This hint only applies to Unix-like platforms.
+ * This hint only applies to Unix-like platforms, and should set before
+ * any calls to SDL_Init()
  *
  * The variable can be set to the following values:
  *   "0"       - SDL will install a SIGINT and SIGTERM handler, and when it
