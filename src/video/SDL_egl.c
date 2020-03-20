@@ -231,6 +231,7 @@ SDL_EGL_GetProcAddress(_THIS, const char *proc)
         retval = _this->egl_data->eglGetProcAddress(proc);
     }
 
+    #ifndef __EMSCRIPTEN__  /* LoadFunction isn't needed on Emscripten and will call dlsym(), causing other problems. */
     /* Try SDL_LoadFunction() first for EGL <= 1.4, or as a fallback for >= 1.5. */
     if (!retval) {
         static char procname[64];
@@ -242,8 +243,9 @@ SDL_EGL_GetProcAddress(_THIS, const char *proc)
             retval = SDL_LoadFunction(_this->egl_data->egl_dll_handle, procname);
         }
     }
+    #endif
 
-    /* Try eglGetProcAddress if we on <= 1.4 and still searching... */
+    /* Try eglGetProcAddress if we're on <= 1.4 and still searching... */
     if (!retval && !is_egl_15_or_later && _this->egl_data->eglGetProcAddress) {
         retval = _this->egl_data->eglGetProcAddress(proc);
         if (retval) {
