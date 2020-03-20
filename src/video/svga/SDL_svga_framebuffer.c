@@ -61,6 +61,7 @@ SDL_SVGA_UpdateFramebuffer(_THIS, SDL_Window * window, const SDL_Rect * rects, i
     SDL_DisplayMode mode;
     SDL_DisplayModeData *modedata;
     SDL_Surface *surface = devdata->surface;
+    size_t surface_size;
 
     Uint8 *buf;
     __dpmi_meminfo mapping;
@@ -68,6 +69,9 @@ SDL_SVGA_UpdateFramebuffer(_THIS, SDL_Window * window, const SDL_Rect * rects, i
     if (!surface) {
         return SDL_SetError("Missing SVGA surface");
     }
+
+    /* TODO: Support case when pitch includes off-screen padding. */
+    surface_size = surface->pitch * surface->h;
 
     /* TODO: Copy to back buffer and swap to screen */
 
@@ -90,7 +94,7 @@ SDL_SVGA_UpdateFramebuffer(_THIS, SDL_Window * window, const SDL_Rect * rects, i
     buf = (Uint8 *)(mapping.address + __djgpp_conventional_base);
 
     /* TODO: Use a blit function? */
-    SDL_memcpy(buf, surface->pixels, surface->w * surface->h * surface->format->BytesPerPixel);
+    SDL_memcpy(buf, surface->pixels, surface_size);
 
     return 0;
 }
