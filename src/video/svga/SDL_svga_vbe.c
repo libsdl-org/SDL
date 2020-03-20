@@ -64,9 +64,8 @@ VBEMode
 SVGA_GetVBEModeAtIndex(const VBEInfo * info, int index)
 {
     VBEMode mode;
-    VBEFarPtr ptr = info->video_mode_ptr;
 
-    dosmemget(ptr.segment * 16 + ptr.offset + index * sizeof(mode), sizeof(mode), &mode);
+    dosmemget(VBE_FLAT_PTR(info->video_mode_ptr) + index * sizeof(mode), sizeof(mode), &mode);
 
     return mode;
 }

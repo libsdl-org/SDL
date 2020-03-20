@@ -36,6 +36,9 @@ typedef struct VBEFarPtr {
 
 SDL_COMPILE_TIME_ASSERT(VBEFarPtr, sizeof(VBEFarPtr) == 4);
 
+/* Convert a VBE far pointer to a flat pointer. */
+#define VBE_FLAT_PTR(far) ((far).segment * 16 + (far).offset)
+
 typedef struct VBEVersion {
     Uint8 minor;
     Uint8 major;
