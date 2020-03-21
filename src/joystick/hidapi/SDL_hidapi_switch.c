@@ -226,7 +226,24 @@ typedef struct {
 } SDL_DriverSwitch_Context;
 
 
-static SDL_bool IsGameCubeFormFactor(int vendor_id, int product_id)
+static SDL_bool
+HasHomeLED(int vendor_id, int product_id)
+{
+	/* The Power A Nintendo Switch Pro controllers don't have a Home LED */
+	if (vendor_id == 0 && product_id == 0) {
+		return SDL_FALSE;
+	}
+
+	/* HORI Wireless Switch Pad */
+	if (vendor_id == 0x0f0d && product_id == 0x00f6) {
+		return SDL_FALSE;
+	}
+
+	return SDL_TRUE;
+}
+
+static SDL_bool
+IsGameCubeFormFactor(int vendor_id, int product_id)
 {
     static Uint32 gamecube_formfactor[] = {
         MAKE_VIDPID(0x0e6f, 0x0185),    /* PDP Wired Fight Pad Pro for Nintendo Switch */
@@ -708,8 +725,7 @@ HIDAPI_DriverSwitch_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joysti
     /* Find out whether or not we can send output reports */
     ctx->m_bInputOnly = SDL_IsJoystickNintendoSwitchProInputOnly(device->vendor_id, device->product_id);
     if (!ctx->m_bInputOnly) {
-        /* The Power A Nintendo Switch Pro controllers don't have a Home LED */
-        ctx->m_bHasHomeLED = (device->vendor_id != 0 && device->product_id != 0) ? SDL_TRUE : SDL_FALSE;
+        ctx->m_bHasHomeLED = HasHomeLED(device->vendor_id, device->product_id);
 
         /* Initialize rumble data */
         SetNeutralRumble(&ctx->m_RumblePacket.rumbleData[0]);
