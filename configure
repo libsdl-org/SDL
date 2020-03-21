@@ -24232,6 +24232,10 @@ CheckHIDAPI()
         *-*-*bsd* )
             onlylibusb=yes
             ;;
+        # RAWINPUT is only available on Win32, but can be enabled if HIDAPI is
+        *-*-cygwin* | *-*-mingw32*)
+            userawinput=yes
+            ;;
     esac
 
     # Check whether --enable-hidapi was given.
@@ -24336,8 +24340,11 @@ fi
 
 $as_echo "#define SDL_JOYSTICK_HIDAPI 1" >>confdefs.h
 
+            if test x$userawinput = xyes; then
+
 $as_echo "#define SDL_JOYSTICK_RAWINPUT 1" >>confdefs.h
 
+            fi
             EXTRA_CFLAGS="$EXTRA_CFLAGS -I$srcdir/src/hidapi/hidapi"
             SOURCES="$SOURCES $srcdir/src/joystick/hidapi/*.c"
             SOURCES="$SOURCES $srcdir/src/hidapi/SDL_hidapi.c"
