@@ -42,6 +42,8 @@ static int SVGA_VideoInit(_THIS);
 static void SVGA_GetDisplayModes(_THIS, SDL_VideoDisplay * display);
 static int SVGA_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode);
 static void SVGA_VideoQuit(_THIS);
+static int SVGA_CreateWindow(_THIS, SDL_Window * window);
+static void SVGA_DestroyWindow(_THIS, SDL_Window * window);
 
 /* SVGA driver bootstrap functions */
 
@@ -92,6 +94,8 @@ SVGA_CreateDevice(int devindex)
     device->GetDisplayModes = SVGA_GetDisplayModes;
     device->SetDisplayMode = SVGA_SetDisplayMode;
     device->PumpEvents = SVGA_PumpEvents;
+    device->CreateSDLWindow = SVGA_CreateWindow;
+    device->DestroyWindow = SVGA_DestroyWindow;
     device->CreateWindowFramebuffer = SDL_SVGA_CreateFramebuffer;
     device->UpdateWindowFramebuffer = SDL_SVGA_UpdateFramebuffer;
     device->DestroyWindowFramebuffer = SDL_SVGA_DestroyFramebuffer;
@@ -161,6 +165,7 @@ SVGA_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
         mode.refresh_rate = 0;
         mode.driverdata = modedata;
         modedata->vbe_mode = vbe_mode;
+        modedata->bytes_per_scan_line = info.bytes_per_scan_line;
         modedata->framebuffer_phys_addr = info.phys_base_ptr;
 
         if (!SDL_AddDisplayMode(display, &mode)) {
@@ -172,15 +177,12 @@ SVGA_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
 static int
 SVGA_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
 {
-    SDL_DeviceData *devdata = _this->driverdata;
     SDL_DisplayModeData *modedata = mode->driverdata;
 
     /* TODO: Use SDL_SetError. */
     if (SVGA_SetVBEMode(modedata->vbe_mode)) {
         return -1;
     }
-
-    devdata->framebuffer_phys_addr = modedata->framebuffer_phys_addr;
 
     return 0;
 }
@@ -189,6 +191,35 @@ static void
 SVGA_VideoQuit(_THIS)
 {
     /* TODO: Restore original video state. */
+}
+
+static int
+SVGA_CreateWindow(_THIS, SDL_Window * window)
+{
+    SDL_WindowData *windata;
+
+    /* TODO: Allow only one window. */
+
+    /* Allocate window internal data. */
+    windata = (SDL_WindowData *) SDL_calloc(1, sizeof(SDL_WindowData));
+    if (!windata) {
+        return SDL_OutOfMemory();
+    }
+
+    window->driverdata = windata;
+
+    /* Window is always fullscreen. */
+    /* QUESTION: Is this appropriate, or should an error be returned instead? */
+    window->flags |= SDL_WINDOW_FULLSCREEN;
+
+    return 0;
+}
+
+static void
+SVGA_DestroyWindow(_THIS, SDL_Window * window)
+{
+    SDL_free(window->driverdata);
+    window->driverdata = NULL;
 }
 
 #endif /* SDL_VIDEO_DRIVER_SVGA */

@@ -31,7 +31,7 @@
 int
 SDL_SVGA_CreateFramebuffer(_THIS, SDL_Window * window, Uint32 * format, void ** pixels, int *pitch)
 {
-    SDL_DeviceData *devdata = _this->driverdata;
+    SDL_WindowData *windata = window->driverdata;
     SDL_Surface *surface;
     Uint32 surface_format = SDL_GetWindowPixelFormat(window);
     int w, h;
@@ -47,7 +47,7 @@ SDL_SVGA_CreateFramebuffer(_THIS, SDL_Window * window, Uint32 * format, void ** 
     }
 
     /* Save the info and return! */
-    devdata->surface = surface;
+    windata->surface = surface;
     *format = surface_format;
     *pixels = surface->pixels;
     *pitch = surface->pitch;
@@ -58,7 +58,10 @@ int
 SDL_SVGA_UpdateFramebuffer(_THIS, SDL_Window * window, const SDL_Rect * rects, int numrects)
 {
     SDL_DeviceData *devdata = _this->driverdata;
-    SDL_Surface *surface = devdata->surface;
+    SDL_DisplayMode mode;
+    SDL_DisplayModeData *modedata;
+    SDL_WindowData *windata = window->driverdata;
+    SDL_Surface *surface = windata->surface;
     size_t surface_size;
 
     Uint8 *buf;
@@ -68,10 +71,16 @@ SDL_SVGA_UpdateFramebuffer(_THIS, SDL_Window * window, const SDL_Rect * rects, i
         return SDL_SetError("Missing SVGA surface");
     }
 
+    if (SDL_GetWindowDisplayMode(window, &mode)) {
+        return -1;
+    }
+
+    modedata = mode.driverdata;
+
     /* TODO: Support case when pitch includes off-screen padding. */
     surface_size = surface->pitch * surface->h;
 
-    mapping.address = *(Uint32 *)&devdata->framebuffer_phys_addr;
+    mapping.address = *(Uint32 *)&modedata->framebuffer_phys_addr;
     mapping.size = devdata->vbe_info.total_memory << 16;
 
     if (__dpmi_physical_address_mapping(&mapping)) {
@@ -93,9 +102,9 @@ SDL_SVGA_UpdateFramebuffer(_THIS, SDL_Window * window, const SDL_Rect * rects, i
 void
 SDL_SVGA_DestroyFramebuffer(_THIS, SDL_Window * window)
 {
-    SDL_DeviceData *devdata = _this->driverdata;
-    SDL_FreeSurface(devdata->surface);
-    devdata->surface = NULL;
+    SDL_WindowData *windata = window->driverdata;
+    SDL_FreeSurface(windata->surface);
+    windata->surface = NULL;
 }
 
 #endif /* SDL_VIDEO_DRIVER_SVGA */
