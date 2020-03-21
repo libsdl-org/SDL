@@ -24336,6 +24336,8 @@ fi
 
 $as_echo "#define SDL_JOYSTICK_HIDAPI 1" >>confdefs.h
 
+$as_echo "#define SDL_JOYSTICK_RAWINPUT 1" >>confdefs.h
+
             EXTRA_CFLAGS="$EXTRA_CFLAGS -I$srcdir/src/hidapi/hidapi"
             SOURCES="$SOURCES $srcdir/src/joystick/hidapi/*.c"
             SOURCES="$SOURCES $srcdir/src/hidapi/SDL_hidapi.c"
@@ -24887,9 +24889,6 @@ $as_echo "#define SDL_JOYSTICK_DINPUT 1" >>confdefs.h
 
                     EXTRA_LDFLAGS="$EXTRA_LDFLAGS -ldinput8 -ldxguid -ldxerr8"
                 fi
-
-$as_echo "#define SDL_JOYSTICK_RAWINPUT 1" >>confdefs.h
-
             else
 
 $as_echo "#define SDL_JOYSTICK_WINMM 1" >>confdefs.h
