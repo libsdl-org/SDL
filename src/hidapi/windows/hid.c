@@ -73,6 +73,7 @@ typedef LONG NTSTATUS;
 #define USAGE_JOYSTICK 0x0004
 #define USAGE_GAMEPAD 0x0005
 #define USAGE_MULTIAXISCONTROLLER 0x0008
+#define USB_VENDOR_VALVE 0x28de
 
 #ifdef __cplusplus
 extern "C" {
@@ -325,18 +326,6 @@ int hid_blacklist(unsigned short vendor_id, unsigned short product_id)
 		return 1;
 	}
 
-	// Sound BlasterX G1 - Causes 10 second stalls when asking for manufacturer's string
-	if ( vendor_id == 0x041E && product_id == 0x3249 )
-	{
-		return 1;
-	}
-
-	// Apple Cinema HD display 30" - takes a long time to return the product string
-	if ( vendor_id == 0x05AC && product_id == 0x9220 )
-	{
-		return 1;
-	}
-
 	return 0;
 }
 
@@ -496,11 +485,13 @@ struct hid_device_info HID_API_EXPORT * HID_API_CALL hid_enumerate(unsigned shor
 
 			/* SDL Modification: Ignore the device if it's not a gamepad. This limits compatibility
 			   risk from devices that may respond poorly to our string queries below. */
-			if (caps.UsagePage != USAGE_PAGE_GENERIC_DESKTOP) {
-				goto cont_close;
-			}
-			if (caps.Usage != USAGE_JOYSTICK && caps.Usage != USAGE_GAMEPAD && caps.Usage != USAGE_MULTIAXISCONTROLLER) {
-				goto cont_close;
+			if (attrib.VendorID != USB_VENDOR_VALVE) {
+				if (caps.UsagePage != USAGE_PAGE_GENERIC_DESKTOP) {
+					goto cont_close;
+				}
+				if (caps.Usage != USAGE_JOYSTICK && caps.Usage != USAGE_GAMEPAD && caps.Usage != USAGE_MULTIAXISCONTROLLER) {
+					goto cont_close;
+				}
 			}
 
 			/* VID/PID match. Create the record. */
