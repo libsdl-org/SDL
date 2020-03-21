@@ -3316,7 +3316,6 @@ AS_HELP_STRING([--enable-hidapi], [use HIDAPI for low level joystick drivers [[d
 
         if test x$hidapi_support = xyes; then
             AC_DEFINE(SDL_JOYSTICK_HIDAPI, 1, [ ])
-            AC_DEFINE(SDL_JOYSTICK_RAWINPUT, 1, [ ])
             EXTRA_CFLAGS="$EXTRA_CFLAGS -I$srcdir/src/hidapi/hidapi"
             SOURCES="$SOURCES $srcdir/src/joystick/hidapi/*.c"
             SOURCES="$SOURCES $srcdir/src/hidapi/SDL_hidapi.c"
@@ -3714,6 +3713,7 @@ AS_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
                     AC_DEFINE(SDL_JOYSTICK_DINPUT, 1, [ ])
                     EXTRA_LDFLAGS="$EXTRA_LDFLAGS -ldinput8 -ldxguid -ldxerr8"
                 fi
+                AC_DEFINE(SDL_JOYSTICK_RAWINPUT, 1, [ ])
             else
                 AC_DEFINE(SDL_JOYSTICK_WINMM, 1, [ ])
             fi
