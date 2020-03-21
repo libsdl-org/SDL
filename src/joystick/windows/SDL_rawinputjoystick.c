@@ -240,6 +240,7 @@ RAWINPUT_DeviceFromHandle(HANDLE hDevice)
 static SDL_HIDAPI_DeviceDriver *
 RAWINPUT_GetDeviceDriver(SDL_RAWINPUT_Device *device)
 {
+    SDL_GameControllerType type;
     int i;
 
     if (SDL_ShouldIgnoreJoystick(device->name, device->guid)) {
@@ -253,7 +254,7 @@ RAWINPUT_GetDeviceDriver(SDL_RAWINPUT_Device *device)
         return NULL;
     }
 
-    SDL_GameControllerType type = SDL_GetJoystickGameControllerType("", device->vendor_id, device->product_id, -1, 0, 0, 0);
+    type = SDL_GetJoystickGameControllerType("", device->vendor_id, device->product_id, -1, 0, 0, 0);
 
     for (i = 0; i < SDL_arraysize(SDL_RAWINPUT_drivers); ++i) {
         SDL_HIDAPI_DeviceDriver *driver = SDL_RAWINPUT_drivers[i];
@@ -363,6 +364,8 @@ static void
 RAWINPUT_DelDevice(SDL_RAWINPUT_Device *device, SDL_bool send_event)
 {
     SDL_RAWINPUT_Device *curr, *last;
+    SDL_Joystick *joystick;
+
     for (curr = SDL_RAWINPUT_devices, last = NULL; curr; last = curr, curr = curr->next) {
         if (curr == device) {
             if (last) {
@@ -372,7 +375,7 @@ RAWINPUT_DelDevice(SDL_RAWINPUT_Device *device, SDL_bool send_event)
             }
             --SDL_RAWINPUT_numjoysticks;
 
-            SDL_Joystick *joystick = device->joystick;
+            joystick = device->joystick;
             if (joystick) {
                 /* Detach from joystick */
                 RAWINPUT_JoystickClose(joystick);
