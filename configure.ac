@@ -34,6 +34,7 @@ AC_SUBST(SDL_VERSION)
 
 # libtool versioning
 LT_INIT([win32-dll])
+LT_LANG([Windows Resource])
 
 LT_RELEASE=$SDL_MAJOR_VERSION.$SDL_MINOR_VERSION
 LT_CURRENT=`expr $SDL_MICRO_VERSION - $SDL_INTERFACE_AGE`
@@ -55,7 +56,7 @@ AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
-AC_CHECK_TOOL(WINDRES, [windres], [:])
+AC_LIBTOOL_RC
 PKG_PROG_PKG_CONFIG
 
 dnl Make sure that srcdir is a full pathname
@@ -4217,10 +4218,10 @@ GEN_OBJECTS=`echo "$GEN_SOURCES" | sed 's,[[^ ]]*/\([[^ ]]*\)\.c,$(objects)/\1.l
 
 VERSION_OBJECTS=`echo $VERSION_SOURCES`
 VERSION_DEPENDS=`echo $VERSION_SOURCES`
-VERSION_OBJECTS=`echo "$VERSION_OBJECTS" | sed 's,[[^ ]]*/\([[^ ]]*\)\.rc,$(objects)/\1.o,g'`
+VERSION_OBJECTS=`echo "$VERSION_OBJECTS" | sed 's,[[^ ]]*/\([[^ ]]*\)\.rc,$(objects)/\1.lo,g'`
 VERSION_DEPENDS=`echo "$VERSION_DEPENDS" | sed "s,\\([[^ ]]*\\)/\\([[^ ]]*\\)\\.rc,\\\\
-\\$(objects)/\\2.o: \\1/\\2.rc \\$(objects)/.created\\\\
-	\\$(WINDRES) \\$< \\$@,g"`
+\\$(objects)/\\2.lo: \\1/\\2.rc \\$(objects)/.created\\\\
+	\\$(RUN_CMD_RC)\\$(LIBTOOL) --mode=compile --tag=RC \\$(RC) -i \\$< -o \\$@,g"`
 
 SDLMAIN_OBJECTS=`echo $SDLMAIN_SOURCES`
 SDLMAIN_DEPENDS=`echo $SDLMAIN_SOURCES`
@@ -4301,7 +4302,6 @@ AC_SUBST(BUILD_CFLAGS)
 AC_SUBST(EXTRA_CFLAGS)
 AC_SUBST(BUILD_LDFLAGS)
 AC_SUBST(EXTRA_LDFLAGS)
-AC_SUBST(WINDRES)
 AC_SUBST(WAYLAND_SCANNER)
 
 cat >Makefile.rules <<__EOF__

@@ -691,7 +691,6 @@ ALLOCA
 PKG_CONFIG_LIBDIR
 PKG_CONFIG_PATH
 PKG_CONFIG
-WINDRES
 SET_MAKE
 INSTALL_DATA
 INSTALL_SCRIPT
@@ -704,6 +703,7 @@ LT_AGE
 LT_REVISION
 LT_CURRENT
 LT_RELEASE
+RC
 CPP
 OTOOL64
 OTOOL
@@ -11552,6 +11552,183 @@ CC="$lt_save_CC"
 # Only expand once:
 
 
+if test -n "$ac_tool_prefix"; then
+  # Extract the first word of "${ac_tool_prefix}windres", so it can be a program name with args.
+set dummy ${ac_tool_prefix}windres; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_RC+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$RC"; then
+  ac_cv_prog_RC="$RC" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_RC="${ac_tool_prefix}windres"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+RC=$ac_cv_prog_RC
+if test -n "$RC"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $RC" >&5
+$as_echo "$RC" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+fi
+if test -z "$ac_cv_prog_RC"; then
+  ac_ct_RC=$RC
+  # Extract the first word of "windres", so it can be a program name with args.
+set dummy windres; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_ac_ct_RC+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$ac_ct_RC"; then
+  ac_cv_prog_ac_ct_RC="$ac_ct_RC" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_ac_ct_RC="windres"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+ac_ct_RC=$ac_cv_prog_ac_ct_RC
+if test -n "$ac_ct_RC"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_ct_RC" >&5
+$as_echo "$ac_ct_RC" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+  if test "x$ac_ct_RC" = x; then
+    RC=""
+  else
+    case $cross_compiling:$ac_tool_warned in
+yes:)
+{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
+$as_echo "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
+ac_tool_warned=yes ;;
+esac
+    RC=$ac_ct_RC
+  fi
+else
+  RC="$ac_cv_prog_RC"
+fi
+
+
+
+
+# Source file extension for RC test sources.
+ac_ext=rc
+
+# Object file extension for compiled RC test sources.
+objext=o
+objext_RC=$objext
+
+# Code to be used in simple compile tests
+lt_simple_compile_test_code='sample MENU { MENUITEM "&Soup", 100, CHECKED }'
+
+# Code to be used in simple link tests
+lt_simple_link_test_code="$lt_simple_compile_test_code"
+
+# ltmain only uses $CC for tagged configurations so make sure $CC is set.
+
+
+
+
+
+
+# If no C compiler was specified, use CC.
+LTCC=${LTCC-"$CC"}
+
+# If no C compiler flags were specified, use CFLAGS.
+LTCFLAGS=${LTCFLAGS-"$CFLAGS"}
+
+# Allow CC to be a program name with arguments.
+compiler=$CC
+
+
+# save warnings/boilerplate of simple test code
+ac_outfile=conftest.$ac_objext
+echo "$lt_simple_compile_test_code" >conftest.$ac_ext
+eval "$ac_compile" 2>&1 >/dev/null | $SED '/^$/d; /^ *+/d' >conftest.err
+_lt_compiler_boilerplate=`cat conftest.err`
+$RM conftest*
+
+ac_outfile=conftest.$ac_objext
+echo "$lt_simple_link_test_code" >conftest.$ac_ext
+eval "$ac_link" 2>&1 >/dev/null | $SED '/^$/d; /^ *+/d' >conftest.err
+_lt_linker_boilerplate=`cat conftest.err`
+$RM -r conftest*
+
+
+# Allow CC to be a program name with arguments.
+lt_save_CC="$CC"
+lt_save_CFLAGS=$CFLAGS
+lt_save_GCC=$GCC
+GCC=
+CC=${RC-"windres"}
+CFLAGS=
+compiler=$CC
+compiler_RC=$CC
+for cc_temp in $compiler""; do
+  case $cc_temp in
+    compile | *[\\/]compile | ccache | *[\\/]ccache ) ;;
+    distcc | *[\\/]distcc | purify | *[\\/]purify ) ;;
+    \-*) ;;
+    *) break;;
+  esac
+done
+cc_basename=`$ECHO "$cc_temp" | $SED "s%.*/%%; s%^$host_alias-%%"`
+
+lt_cv_prog_compiler_c_o_RC=yes
+
+if test -n "$compiler"; then
+  :
+
+
+
+fi
+
+GCC=$lt_save_GCC
+ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+CC=$lt_save_CC
+CFLAGS=$lt_save_CFLAGS
+
 
 LT_RELEASE=$SDL_MAJOR_VERSION.$SDL_MINOR_VERSION
 LT_CURRENT=`expr $SDL_MICRO_VERSION - $SDL_INTERFACE_AGE`
@@ -15687,97 +15864,6 @@ $as_echo "no" >&6; }
   SET_MAKE="MAKE=${MAKE-make}"
 fi
 
-if test -n "$ac_tool_prefix"; then
-  # Extract the first word of "${ac_tool_prefix}windres", so it can be a program name with args.
-set dummy ${ac_tool_prefix}windres; ac_word=$2
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-$as_echo_n "checking for $ac_word... " >&6; }
-if ${ac_cv_prog_WINDRES+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  if test -n "$WINDRES"; then
-  ac_cv_prog_WINDRES="$WINDRES" # Let the user override the test.
-else
-as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_prog_WINDRES="${ac_tool_prefix}windres"
-    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-fi
-fi
-WINDRES=$ac_cv_prog_WINDRES
-if test -n "$WINDRES"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $WINDRES" >&5
-$as_echo "$WINDRES" >&6; }
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-fi
-
-
-fi
-if test -z "$ac_cv_prog_WINDRES"; then
-  ac_ct_WINDRES=$WINDRES
-  # Extract the first word of "windres", so it can be a program name with args.
-set dummy windres; ac_word=$2
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-$as_echo_n "checking for $ac_word... " >&6; }
-if ${ac_cv_prog_ac_ct_WINDRES+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  if test -n "$ac_ct_WINDRES"; then
-  ac_cv_prog_ac_ct_WINDRES="$ac_ct_WINDRES" # Let the user override the test.
-else
-as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_prog_ac_ct_WINDRES="windres"
-    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-fi
-fi
-ac_ct_WINDRES=$ac_cv_prog_ac_ct_WINDRES
-if test -n "$ac_ct_WINDRES"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_ct_WINDRES" >&5
-$as_echo "$ac_ct_WINDRES" >&6; }
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-fi
-
-  if test "x$ac_ct_WINDRES" = x; then
-    WINDRES=":"
-  else
-    case $cross_compiling:$ac_tool_warned in
-yes:)
-{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
-$as_echo "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
-ac_tool_warned=yes ;;
-esac
-    WINDRES=$ac_ct_WINDRES
-  fi
-else
-  WINDRES="$ac_cv_prog_WINDRES"
-fi
 
 
 
@@ -25546,10 +25632,10 @@ GEN_OBJECTS=`echo "$GEN_SOURCES" | sed 's,[^ ]*/\([^ ]*\)\.c,$(objects)/\1.lo,g'
 
 VERSION_OBJECTS=`echo $VERSION_SOURCES`
 VERSION_DEPENDS=`echo $VERSION_SOURCES`
-VERSION_OBJECTS=`echo "$VERSION_OBJECTS" | sed 's,[^ ]*/\([^ ]*\)\.rc,$(objects)/\1.o,g'`
+VERSION_OBJECTS=`echo "$VERSION_OBJECTS" | sed 's,[^ ]*/\([^ ]*\)\.rc,$(objects)/\1.lo,g'`
 VERSION_DEPENDS=`echo "$VERSION_DEPENDS" | sed "s,\\([^ ]*\\)/\\([^ ]*\\)\\.rc,\\\\
-\\$(objects)/\\2.o: \\1/\\2.rc \\$(objects)/.created\\\\
-	\\$(WINDRES) \\$< \\$@,g"`
+\\$(objects)/\\2.lo: \\1/\\2.rc \\$(objects)/.created\\\\
+	\\$(RUN_CMD_RC)\\$(LIBTOOL) --mode=compile --tag=RC \\$(RC) -i \\$< -o \\$@,g"`
 
 SDLMAIN_OBJECTS=`echo $SDLMAIN_SOURCES`
 SDLMAIN_DEPENDS=`echo $SDLMAIN_SOURCES`
@@ -25628,7 +25714,6 @@ else
     ENABLE_STATIC_TRUE="#"
     ENABLE_STATIC_FALSE=
 fi
-
 
 
 
@@ -26573,53 +26658,101 @@ postdep_objects='`$ECHO "$postdep_objects" | $SED "$delay_single_quote_subst"`'
 predeps='`$ECHO "$predeps" | $SED "$delay_single_quote_subst"`'
 postdeps='`$ECHO "$postdeps" | $SED "$delay_single_quote_subst"`'
 compiler_lib_search_path='`$ECHO "$compiler_lib_search_path" | $SED "$delay_single_quote_subst"`'
+LD_RC='`$ECHO "$LD_RC" | $SED "$delay_single_quote_subst"`'
 LD_CXX='`$ECHO "$LD_CXX" | $SED "$delay_single_quote_subst"`'
+reload_flag_RC='`$ECHO "$reload_flag_RC" | $SED "$delay_single_quote_subst"`'
 reload_flag_CXX='`$ECHO "$reload_flag_CXX" | $SED "$delay_single_quote_subst"`'
+reload_cmds_RC='`$ECHO "$reload_cmds_RC" | $SED "$delay_single_quote_subst"`'
 reload_cmds_CXX='`$ECHO "$reload_cmds_CXX" | $SED "$delay_single_quote_subst"`'
+old_archive_cmds_RC='`$ECHO "$old_archive_cmds_RC" | $SED "$delay_single_quote_subst"`'
 old_archive_cmds_CXX='`$ECHO "$old_archive_cmds_CXX" | $SED "$delay_single_quote_subst"`'
+compiler_RC='`$ECHO "$compiler_RC" | $SED "$delay_single_quote_subst"`'
 compiler_CXX='`$ECHO "$compiler_CXX" | $SED "$delay_single_quote_subst"`'
+GCC_RC='`$ECHO "$GCC_RC" | $SED "$delay_single_quote_subst"`'
 GCC_CXX='`$ECHO "$GCC_CXX" | $SED "$delay_single_quote_subst"`'
+lt_prog_compiler_no_builtin_flag_RC='`$ECHO "$lt_prog_compiler_no_builtin_flag_RC" | $SED "$delay_single_quote_subst"`'
 lt_prog_compiler_no_builtin_flag_CXX='`$ECHO "$lt_prog_compiler_no_builtin_flag_CXX" | $SED "$delay_single_quote_subst"`'
+lt_prog_compiler_pic_RC='`$ECHO "$lt_prog_compiler_pic_RC" | $SED "$delay_single_quote_subst"`'
 lt_prog_compiler_pic_CXX='`$ECHO "$lt_prog_compiler_pic_CXX" | $SED "$delay_single_quote_subst"`'
+lt_prog_compiler_wl_RC='`$ECHO "$lt_prog_compiler_wl_RC" | $SED "$delay_single_quote_subst"`'
 lt_prog_compiler_wl_CXX='`$ECHO "$lt_prog_compiler_wl_CXX" | $SED "$delay_single_quote_subst"`'
+lt_prog_compiler_static_RC='`$ECHO "$lt_prog_compiler_static_RC" | $SED "$delay_single_quote_subst"`'
 lt_prog_compiler_static_CXX='`$ECHO "$lt_prog_compiler_static_CXX" | $SED "$delay_single_quote_subst"`'
+lt_cv_prog_compiler_c_o_RC='`$ECHO "$lt_cv_prog_compiler_c_o_RC" | $SED "$delay_single_quote_subst"`'
 lt_cv_prog_compiler_c_o_CXX='`$ECHO "$lt_cv_prog_compiler_c_o_CXX" | $SED "$delay_single_quote_subst"`'
+archive_cmds_need_lc_RC='`$ECHO "$archive_cmds_need_lc_RC" | $SED "$delay_single_quote_subst"`'
 archive_cmds_need_lc_CXX='`$ECHO "$archive_cmds_need_lc_CXX" | $SED "$delay_single_quote_subst"`'
+enable_shared_with_static_runtimes_RC='`$ECHO "$enable_shared_with_static_runtimes_RC" | $SED "$delay_single_quote_subst"`'
 enable_shared_with_static_runtimes_CXX='`$ECHO "$enable_shared_with_static_runtimes_CXX" | $SED "$delay_single_quote_subst"`'
+export_dynamic_flag_spec_RC='`$ECHO "$export_dynamic_flag_spec_RC" | $SED "$delay_single_quote_subst"`'
 export_dynamic_flag_spec_CXX='`$ECHO "$export_dynamic_flag_spec_CXX" | $SED "$delay_single_quote_subst"`'
+whole_archive_flag_spec_RC='`$ECHO "$whole_archive_flag_spec_RC" | $SED "$delay_single_quote_subst"`'
 whole_archive_flag_spec_CXX='`$ECHO "$whole_archive_flag_spec_CXX" | $SED "$delay_single_quote_subst"`'
+compiler_needs_object_RC='`$ECHO "$compiler_needs_object_RC" | $SED "$delay_single_quote_subst"`'
 compiler_needs_object_CXX='`$ECHO "$compiler_needs_object_CXX" | $SED "$delay_single_quote_subst"`'
+old_archive_from_new_cmds_RC='`$ECHO "$old_archive_from_new_cmds_RC" | $SED "$delay_single_quote_subst"`'
 old_archive_from_new_cmds_CXX='`$ECHO "$old_archive_from_new_cmds_CXX" | $SED "$delay_single_quote_subst"`'
+old_archive_from_expsyms_cmds_RC='`$ECHO "$old_archive_from_expsyms_cmds_RC" | $SED "$delay_single_quote_subst"`'
 old_archive_from_expsyms_cmds_CXX='`$ECHO "$old_archive_from_expsyms_cmds_CXX" | $SED "$delay_single_quote_subst"`'
+archive_cmds_RC='`$ECHO "$archive_cmds_RC" | $SED "$delay_single_quote_subst"`'
 archive_cmds_CXX='`$ECHO "$archive_cmds_CXX" | $SED "$delay_single_quote_subst"`'
+archive_expsym_cmds_RC='`$ECHO "$archive_expsym_cmds_RC" | $SED "$delay_single_quote_subst"`'
 archive_expsym_cmds_CXX='`$ECHO "$archive_expsym_cmds_CXX" | $SED "$delay_single_quote_subst"`'
+module_cmds_RC='`$ECHO "$module_cmds_RC" | $SED "$delay_single_quote_subst"`'
 module_cmds_CXX='`$ECHO "$module_cmds_CXX" | $SED "$delay_single_quote_subst"`'
+module_expsym_cmds_RC='`$ECHO "$module_expsym_cmds_RC" | $SED "$delay_single_quote_subst"`'
 module_expsym_cmds_CXX='`$ECHO "$module_expsym_cmds_CXX" | $SED "$delay_single_quote_subst"`'
+with_gnu_ld_RC='`$ECHO "$with_gnu_ld_RC" | $SED "$delay_single_quote_subst"`'
 with_gnu_ld_CXX='`$ECHO "$with_gnu_ld_CXX" | $SED "$delay_single_quote_subst"`'
+allow_undefined_flag_RC='`$ECHO "$allow_undefined_flag_RC" | $SED "$delay_single_quote_subst"`'
 allow_undefined_flag_CXX='`$ECHO "$allow_undefined_flag_CXX" | $SED "$delay_single_quote_subst"`'
+no_undefined_flag_RC='`$ECHO "$no_undefined_flag_RC" | $SED "$delay_single_quote_subst"`'
 no_undefined_flag_CXX='`$ECHO "$no_undefined_flag_CXX" | $SED "$delay_single_quote_subst"`'
+hardcode_libdir_flag_spec_RC='`$ECHO "$hardcode_libdir_flag_spec_RC" | $SED "$delay_single_quote_subst"`'
 hardcode_libdir_flag_spec_CXX='`$ECHO "$hardcode_libdir_flag_spec_CXX" | $SED "$delay_single_quote_subst"`'
+hardcode_libdir_separator_RC='`$ECHO "$hardcode_libdir_separator_RC" | $SED "$delay_single_quote_subst"`'
 hardcode_libdir_separator_CXX='`$ECHO "$hardcode_libdir_separator_CXX" | $SED "$delay_single_quote_subst"`'
+hardcode_direct_RC='`$ECHO "$hardcode_direct_RC" | $SED "$delay_single_quote_subst"`'
 hardcode_direct_CXX='`$ECHO "$hardcode_direct_CXX" | $SED "$delay_single_quote_subst"`'
+hardcode_direct_absolute_RC='`$ECHO "$hardcode_direct_absolute_RC" | $SED "$delay_single_quote_subst"`'
 hardcode_direct_absolute_CXX='`$ECHO "$hardcode_direct_absolute_CXX" | $SED "$delay_single_quote_subst"`'
+hardcode_minus_L_RC='`$ECHO "$hardcode_minus_L_RC" | $SED "$delay_single_quote_subst"`'
 hardcode_minus_L_CXX='`$ECHO "$hardcode_minus_L_CXX" | $SED "$delay_single_quote_subst"`'
+hardcode_shlibpath_var_RC='`$ECHO "$hardcode_shlibpath_var_RC" | $SED "$delay_single_quote_subst"`'
 hardcode_shlibpath_var_CXX='`$ECHO "$hardcode_shlibpath_var_CXX" | $SED "$delay_single_quote_subst"`'
+hardcode_automatic_RC='`$ECHO "$hardcode_automatic_RC" | $SED "$delay_single_quote_subst"`'
 hardcode_automatic_CXX='`$ECHO "$hardcode_automatic_CXX" | $SED "$delay_single_quote_subst"`'
+inherit_rpath_RC='`$ECHO "$inherit_rpath_RC" | $SED "$delay_single_quote_subst"`'
 inherit_rpath_CXX='`$ECHO "$inherit_rpath_CXX" | $SED "$delay_single_quote_subst"`'
+link_all_deplibs_RC='`$ECHO "$link_all_deplibs_RC" | $SED "$delay_single_quote_subst"`'
 link_all_deplibs_CXX='`$ECHO "$link_all_deplibs_CXX" | $SED "$delay_single_quote_subst"`'
+always_export_symbols_RC='`$ECHO "$always_export_symbols_RC" | $SED "$delay_single_quote_subst"`'
 always_export_symbols_CXX='`$ECHO "$always_export_symbols_CXX" | $SED "$delay_single_quote_subst"`'
+export_symbols_cmds_RC='`$ECHO "$export_symbols_cmds_RC" | $SED "$delay_single_quote_subst"`'
 export_symbols_cmds_CXX='`$ECHO "$export_symbols_cmds_CXX" | $SED "$delay_single_quote_subst"`'
+exclude_expsyms_RC='`$ECHO "$exclude_expsyms_RC" | $SED "$delay_single_quote_subst"`'
 exclude_expsyms_CXX='`$ECHO "$exclude_expsyms_CXX" | $SED "$delay_single_quote_subst"`'
+include_expsyms_RC='`$ECHO "$include_expsyms_RC" | $SED "$delay_single_quote_subst"`'
 include_expsyms_CXX='`$ECHO "$include_expsyms_CXX" | $SED "$delay_single_quote_subst"`'
+prelink_cmds_RC='`$ECHO "$prelink_cmds_RC" | $SED "$delay_single_quote_subst"`'
 prelink_cmds_CXX='`$ECHO "$prelink_cmds_CXX" | $SED "$delay_single_quote_subst"`'
+postlink_cmds_RC='`$ECHO "$postlink_cmds_RC" | $SED "$delay_single_quote_subst"`'
 postlink_cmds_CXX='`$ECHO "$postlink_cmds_CXX" | $SED "$delay_single_quote_subst"`'
+file_list_spec_RC='`$ECHO "$file_list_spec_RC" | $SED "$delay_single_quote_subst"`'
 file_list_spec_CXX='`$ECHO "$file_list_spec_CXX" | $SED "$delay_single_quote_subst"`'
+hardcode_action_RC='`$ECHO "$hardcode_action_RC" | $SED "$delay_single_quote_subst"`'
 hardcode_action_CXX='`$ECHO "$hardcode_action_CXX" | $SED "$delay_single_quote_subst"`'
+compiler_lib_search_dirs_RC='`$ECHO "$compiler_lib_search_dirs_RC" | $SED "$delay_single_quote_subst"`'
 compiler_lib_search_dirs_CXX='`$ECHO "$compiler_lib_search_dirs_CXX" | $SED "$delay_single_quote_subst"`'
+predep_objects_RC='`$ECHO "$predep_objects_RC" | $SED "$delay_single_quote_subst"`'
 predep_objects_CXX='`$ECHO "$predep_objects_CXX" | $SED "$delay_single_quote_subst"`'
+postdep_objects_RC='`$ECHO "$postdep_objects_RC" | $SED "$delay_single_quote_subst"`'
 postdep_objects_CXX='`$ECHO "$postdep_objects_CXX" | $SED "$delay_single_quote_subst"`'
+predeps_RC='`$ECHO "$predeps_RC" | $SED "$delay_single_quote_subst"`'
 predeps_CXX='`$ECHO "$predeps_CXX" | $SED "$delay_single_quote_subst"`'
+postdeps_RC='`$ECHO "$postdeps_RC" | $SED "$delay_single_quote_subst"`'
 postdeps_CXX='`$ECHO "$postdeps_CXX" | $SED "$delay_single_quote_subst"`'
+compiler_lib_search_path_RC='`$ECHO "$compiler_lib_search_path_RC" | $SED "$delay_single_quote_subst"`'
 compiler_lib_search_path_CXX='`$ECHO "$compiler_lib_search_path_CXX" | $SED "$delay_single_quote_subst"`'
 
 LTCC='$LTCC'
@@ -26707,30 +26840,55 @@ postdep_objects \
 predeps \
 postdeps \
 compiler_lib_search_path \
+LD_RC \
 LD_CXX \
+reload_flag_RC \
 reload_flag_CXX \
+compiler_RC \
 compiler_CXX \
+lt_prog_compiler_no_builtin_flag_RC \
 lt_prog_compiler_no_builtin_flag_CXX \
+lt_prog_compiler_pic_RC \
 lt_prog_compiler_pic_CXX \
+lt_prog_compiler_wl_RC \
 lt_prog_compiler_wl_CXX \
+lt_prog_compiler_static_RC \
 lt_prog_compiler_static_CXX \
+lt_cv_prog_compiler_c_o_RC \
 lt_cv_prog_compiler_c_o_CXX \
+export_dynamic_flag_spec_RC \
 export_dynamic_flag_spec_CXX \
+whole_archive_flag_spec_RC \
 whole_archive_flag_spec_CXX \
+compiler_needs_object_RC \
 compiler_needs_object_CXX \
+with_gnu_ld_RC \
 with_gnu_ld_CXX \
+allow_undefined_flag_RC \
 allow_undefined_flag_CXX \
+no_undefined_flag_RC \
 no_undefined_flag_CXX \
+hardcode_libdir_flag_spec_RC \
 hardcode_libdir_flag_spec_CXX \
+hardcode_libdir_separator_RC \
 hardcode_libdir_separator_CXX \
+exclude_expsyms_RC \
 exclude_expsyms_CXX \
+include_expsyms_RC \
 include_expsyms_CXX \
+file_list_spec_RC \
 file_list_spec_CXX \
+compiler_lib_search_dirs_RC \
 compiler_lib_search_dirs_CXX \
+predep_objects_RC \
 predep_objects_CXX \
+postdep_objects_RC \
 postdep_objects_CXX \
+predeps_RC \
 predeps_CXX \
+postdeps_RC \
 postdeps_CXX \
+compiler_lib_search_path_RC \
 compiler_lib_search_path_CXX; do
     case \`eval \\\\\$ECHO \\\\""\\\\\$\$var"\\\\"\` in
     *[\\\\\\\`\\"\\\$]*)
@@ -26762,16 +26920,27 @@ postuninstall_cmds \
 finish_cmds \
 sys_lib_search_path_spec \
 sys_lib_dlsearch_path_spec \
+reload_cmds_RC \
 reload_cmds_CXX \
+old_archive_cmds_RC \
 old_archive_cmds_CXX \
+old_archive_from_new_cmds_RC \
 old_archive_from_new_cmds_CXX \
+old_archive_from_expsyms_cmds_RC \
 old_archive_from_expsyms_cmds_CXX \
+archive_cmds_RC \
 archive_cmds_CXX \
+archive_expsym_cmds_RC \
 archive_expsym_cmds_CXX \
+module_cmds_RC \
 module_cmds_CXX \
+module_expsym_cmds_RC \
 module_expsym_cmds_CXX \
+export_symbols_cmds_RC \
 export_symbols_cmds_CXX \
+prelink_cmds_RC \
 prelink_cmds_CXX \
+postlink_cmds_RC \
 postlink_cmds_CXX; do
     case \`eval \\\\\$ECHO \\\\""\\\\\$\$var"\\\\"\` in
     *[\\\\\\\`\\"\\\$]*)
@@ -26799,6 +26968,8 @@ fi
     TIMESTAMP='$TIMESTAMP'
     RM='$RM'
     ofile='$ofile'
+
+
 
 
 
@@ -27429,7 +27600,7 @@ $as_echo "$as_me: executing $ac_file commands" >&6;}
 
 
 # The names of the tagged configurations supported by this script.
-available_tags="CXX "
+available_tags="RC CXX "
 
 # ### BEGIN LIBTOOL CONFIG
 
@@ -28024,6 +28195,159 @@ fi
    mv -f "$cfgfile" "$ofile" ||
     (rm -f "$ofile" && cp "$cfgfile" "$ofile" && rm -f "$cfgfile")
   chmod +x "$ofile"
+
+
+    cat <<_LT_EOF >> "$ofile"
+
+# ### BEGIN LIBTOOL TAG CONFIG: RC
+
+# The linker used to build libraries.
+LD=$lt_LD_RC
+
+# How to create reloadable object files.
+reload_flag=$lt_reload_flag_RC
+reload_cmds=$lt_reload_cmds_RC
+
+# Commands used to build an old-style archive.
+old_archive_cmds=$lt_old_archive_cmds_RC
+
+# A language specific compiler.
+CC=$lt_compiler_RC
+
+# Is the compiler the GNU compiler?
+with_gcc=$GCC_RC
+
+# Compiler flag to turn off builtin functions.
+no_builtin_flag=$lt_lt_prog_compiler_no_builtin_flag_RC
+
+# Additional compiler flags for building library objects.
+pic_flag=$lt_lt_prog_compiler_pic_RC
+
+# How to pass a linker flag through the compiler.
+wl=$lt_lt_prog_compiler_wl_RC
+
+# Compiler flag to prevent dynamic linking.
+link_static_flag=$lt_lt_prog_compiler_static_RC
+
+# Does compiler simultaneously support -c and -o options?
+compiler_c_o=$lt_lt_cv_prog_compiler_c_o_RC
+
+# Whether or not to add -lc for building shared libraries.
+build_libtool_need_lc=$archive_cmds_need_lc_RC
+
+# Whether or not to disallow shared libs when runtime libs are static.
+allow_libtool_libs_with_static_runtimes=$enable_shared_with_static_runtimes_RC
+
+# Compiler flag to allow reflexive dlopens.
+export_dynamic_flag_spec=$lt_export_dynamic_flag_spec_RC
+
+# Compiler flag to generate shared objects directly from archives.
+whole_archive_flag_spec=$lt_whole_archive_flag_spec_RC
+
+# Whether the compiler copes with passing no objects directly.
+compiler_needs_object=$lt_compiler_needs_object_RC
+
+# Create an old-style archive from a shared archive.
+old_archive_from_new_cmds=$lt_old_archive_from_new_cmds_RC
+
+# Create a temporary old-style archive to link instead of a shared archive.
+old_archive_from_expsyms_cmds=$lt_old_archive_from_expsyms_cmds_RC
+
+# Commands used to build a shared archive.
+archive_cmds=$lt_archive_cmds_RC
+archive_expsym_cmds=$lt_archive_expsym_cmds_RC
+
+# Commands used to build a loadable module if different from building
+# a shared archive.
+module_cmds=$lt_module_cmds_RC
+module_expsym_cmds=$lt_module_expsym_cmds_RC
+
+# Whether we are building with GNU ld or not.
+with_gnu_ld=$lt_with_gnu_ld_RC
+
+# Flag that allows shared libraries with undefined symbols to be built.
+allow_undefined_flag=$lt_allow_undefined_flag_RC
+
+# Flag that enforces no undefined symbols.
+no_undefined_flag=$lt_no_undefined_flag_RC
+
+# Flag to hardcode \$libdir into a binary during linking.
+# This must work even if \$libdir does not exist
+hardcode_libdir_flag_spec=$lt_hardcode_libdir_flag_spec_RC
+
+# Whether we need a single "-rpath" flag with a separated argument.
+hardcode_libdir_separator=$lt_hardcode_libdir_separator_RC
+
+# Set to "yes" if using DIR/libNAME\${shared_ext} during linking hardcodes
+# DIR into the resulting binary.
+hardcode_direct=$hardcode_direct_RC
+
+# Set to "yes" if using DIR/libNAME\${shared_ext} during linking hardcodes
+# DIR into the resulting binary and the resulting library dependency is
+# "absolute",i.e impossible to change by setting \${shlibpath_var} if the
+# library is relocated.
+hardcode_direct_absolute=$hardcode_direct_absolute_RC
+
+# Set to "yes" if using the -LDIR flag during linking hardcodes DIR
+# into the resulting binary.
+hardcode_minus_L=$hardcode_minus_L_RC
+
+# Set to "yes" if using SHLIBPATH_VAR=DIR during linking hardcodes DIR
+# into the resulting binary.
+hardcode_shlibpath_var=$hardcode_shlibpath_var_RC
+
+# Set to "yes" if building a shared library automatically hardcodes DIR
+# into the library and all subsequent libraries and executables linked
+# against it.
+hardcode_automatic=$hardcode_automatic_RC
+
+# Set to yes if linker adds runtime paths of dependent libraries
+# to runtime path list.
+inherit_rpath=$inherit_rpath_RC
+
+# Whether libtool must link a program against all its dependency libraries.
+link_all_deplibs=$link_all_deplibs_RC
+
+# Set to "yes" if exported symbols are required.
+always_export_symbols=$always_export_symbols_RC
+
+# The commands to list exported symbols.
+export_symbols_cmds=$lt_export_symbols_cmds_RC
+
+# Symbols that should not be listed in the preloaded symbols.
+exclude_expsyms=$lt_exclude_expsyms_RC
+
+# Symbols that must always be exported.
+include_expsyms=$lt_include_expsyms_RC
+
+# Commands necessary for linking programs (against libraries) with templates.
+prelink_cmds=$lt_prelink_cmds_RC
+
+# Commands necessary for finishing linking programs.
+postlink_cmds=$lt_postlink_cmds_RC
+
+# Specify filename containing input files.
+file_list_spec=$lt_file_list_spec_RC
+
+# How to hardcode a shared library path into an executable.
+hardcode_action=$hardcode_action_RC
+
+# The directories searched by this compiler when creating a shared library.
+compiler_lib_search_dirs=$lt_compiler_lib_search_dirs_RC
+
+# Dependencies to place before and after the objects being linked to
+# create a shared library.
+predep_objects=$lt_predep_objects_RC
+postdep_objects=$lt_postdep_objects_RC
+predeps=$lt_predeps_RC
+postdeps=$lt_postdeps_RC
+
+# The library search path used internally by the compiler when linking
+# a shared library.
+compiler_lib_search_path=$lt_compiler_lib_search_path_RC
+
+# ### END LIBTOOL TAG CONFIG: RC
+_LT_EOF
 
 
     cat <<_LT_EOF >> "$ofile"
