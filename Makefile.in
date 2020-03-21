@@ -28,7 +28,7 @@ LIBTOOL = @LIBTOOL@
 INSTALL = @INSTALL@
 AR	= @AR@
 RANLIB	= @RANLIB@
-WINDRES	= @WINDRES@
+RC	= @RC@
 
 TARGET  = libSDL2.la
 OBJECTS = @OBJECTS@
@@ -55,6 +55,7 @@ RUN_CMD_CC     = @echo "  CC    " $@;
 RUN_CMD_CXX    = @echo "  CXX   " $@;
 RUN_CMD_LTLINK = @echo "  LTLINK" $@;
 RUN_CMD_RANLIB = @echo "  RANLIB" $@;
+RUN_CMD_RC     = @echo "  RC    " $@;
 RUN_CMD_GEN    = @echo "  GEN   " $@;
 LIBTOOL += --quiet
 endif
