@@ -151,6 +151,7 @@ extern int SVGA_GetVBEModeInfo(VBEMode mode, VBEModeInfo * info);
 extern int SVGA_GetCurrentVBEMode(VBEMode * mode, VBEModeInfo * info);
 extern int SVGA_SetVBEMode(VBEMode mode);
 extern SDL_PixelFormatEnum SVGA_GetPixelFormat(const VBEModeInfo * info);
+extern int SVGA_SetDisplayStart(int x, int y);
 
 #endif /* SDL_svga_vbe_h_ */
 

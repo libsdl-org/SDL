@@ -129,6 +129,23 @@ SVGA_SetVBEMode(VBEMode mode)
     return 0;
 }
 
+int
+SVGA_SetDisplayStart(int x, int y)
+{
+    __dpmi_regs r;
+
+    r.x.ax = 0x4F07;
+    r.x.bx = 0x80; /* Set start and wait for vertical retrace. */
+    r.x.cx = x;
+    r.x.dx = y;
+
+    __dpmi_int(0x10, &r);
+
+    RETURN_IF_VBE_CALL_FAILED(r);
+
+    return 0;
+}
+
 SDL_PixelFormatEnum
 SVGA_GetPixelFormat(const VBEModeInfo * info)
 {

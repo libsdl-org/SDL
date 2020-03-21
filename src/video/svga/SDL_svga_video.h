@@ -41,6 +41,7 @@ typedef struct
 typedef struct
 {
     SDL_Surface *surface;
+    SDL_bool framebuffer_page;
     int framebuffer_selector;
     Uint32 framebuffer_linear_addr;
 } SDL_WindowData;

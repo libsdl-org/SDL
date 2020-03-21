@@ -95,13 +95,23 @@ SDL_SVGA_UpdateFramebuffer(_THIS, SDL_Window * window, const SDL_Rect * rects, i
 {
     SDL_WindowData *windata = window->driverdata;
     SDL_Surface *surface = windata->surface;
+    size_t surface_size;
 
     if (!surface) {
         return SDL_SetError("Missing SVGA surface");
     }
 
-    /* TODO: Copy to back buffer and swap to screen. */
-    movedata(_my_ds(), (Uint32)surface->pixels, windata->framebuffer_selector, 0, surface->pitch * surface->h);
+    surface_size = surface->pitch * surface->h;
+
+    /* Flip the active page flag. */
+    windata->framebuffer_page = !windata->framebuffer_page;
+
+    /* Copy pixels to hidden framebuffer page. */
+    movedata(_my_ds(), (Uint32)surface->pixels, windata->framebuffer_selector,
+        windata->framebuffer_page ? surface_size : 0, surface_size);
+
+    /* Display fresh page to screen. */
+    SVGA_SetDisplayStart(0, windata->framebuffer_page ? surface->h : 0); 
 
     return 0;
 }

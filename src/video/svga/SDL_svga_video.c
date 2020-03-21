@@ -157,6 +157,11 @@ SVGA_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
             continue;
         }
 
+        /* Mode must be capable of double buffering. */
+        if (!info.number_of_image_pages) {
+            continue;
+        }
+
         /* Scan lines must be 4-byte aligned to match SDL surface pitch. */
         if (info.bytes_per_scan_line % 4 != 0) {
             continue;
