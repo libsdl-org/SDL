@@ -62,7 +62,6 @@ SDL_SVGA_UpdateFramebuffer(_THIS, SDL_Window * window, const SDL_Rect * rects, i
     SDL_DisplayModeData *modedata;
     SDL_WindowData *windata = window->driverdata;
     SDL_Surface *surface = windata->surface;
-    size_t surface_size;
 
     Uint8 *buf;
     __dpmi_meminfo mapping;
@@ -76,9 +75,6 @@ SDL_SVGA_UpdateFramebuffer(_THIS, SDL_Window * window, const SDL_Rect * rects, i
     }
 
     modedata = mode.driverdata;
-
-    /* TODO: Support case when pitch includes off-screen padding. */
-    surface_size = surface->pitch * surface->h;
 
     mapping.address = *(Uint32 *)&modedata->framebuffer_phys_addr;
     mapping.size = devdata->vbe_info.total_memory << 16;
@@ -94,7 +90,7 @@ SDL_SVGA_UpdateFramebuffer(_THIS, SDL_Window * window, const SDL_Rect * rects, i
     buf = (Uint8 *)(mapping.address + __djgpp_conventional_base);
 
     /* TODO: Copy to back buffer and swap to screen. */
-    SDL_memcpy(buf, surface->pixels, surface_size);
+    SDL_memcpy(buf, surface->pixels, surface->pitch * surface->h);
 
     return 0;
 }

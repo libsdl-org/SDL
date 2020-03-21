@@ -128,15 +128,17 @@ static void
 SVGA_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
 {
     SDL_DeviceData *devdata = _this->driverdata;
+    SDL_DisplayMode mode;
     VBEMode vbe_mode;
     int index = 0;
+
+    SDL_zero(mode);
 
     for (
         vbe_mode = SVGA_GetVBEModeAtIndex(&devdata->vbe_info, index++);
         vbe_mode != VBE_MODE_LIST_END;
         vbe_mode = SVGA_GetVBEModeAtIndex(&devdata->vbe_info, index++)
     ) {
-        SDL_DisplayMode mode;
         SDL_DisplayModeData *modedata;
         VBEModeInfo info;
 
@@ -155,6 +157,12 @@ SVGA_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
             continue;
         }
 
+        /* Scan lines must be 4-byte aligned to match SDL surface pitch. */
+        if (info.bytes_per_scan_line % 4 != 0) {
+            continue;
+        }
+
+        /* Allocate display mode internal data. */
         modedata = (SDL_DisplayModeData *) SDL_calloc(1, sizeof(*modedata));
         if (!modedata) {
             return;
@@ -162,10 +170,8 @@ SVGA_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
 
         mode.w = info.x_resolution;
         mode.h = info.y_resolution;
-        mode.refresh_rate = 0;
         mode.driverdata = modedata;
         modedata->vbe_mode = vbe_mode;
-        modedata->bytes_per_scan_line = info.bytes_per_scan_line;
         modedata->framebuffer_phys_addr = info.phys_base_ptr;
 
         if (!SDL_AddDisplayMode(display, &mode)) {

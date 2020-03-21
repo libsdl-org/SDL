@@ -35,7 +35,6 @@ typedef struct
 typedef struct
 {
     VBEMode vbe_mode;
-    size_t bytes_per_scan_line;
     VBEFarPtr framebuffer_phys_addr;
 } SDL_DisplayModeData;
 
