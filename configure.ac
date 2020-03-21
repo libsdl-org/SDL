@@ -3291,6 +3291,10 @@ CheckHIDAPI()
         *-*-*bsd* )
             onlylibusb=yes
             ;;
+        # RAWINPUT is only available on Win32, but can be enabled if HIDAPI is
+        *-*-cygwin* | *-*-mingw32*)
+            userawinput=yes
+            ;;
     esac
 
     AC_ARG_ENABLE(hidapi,
@@ -3316,7 +3320,9 @@ AS_HELP_STRING([--enable-hidapi], [use HIDAPI for low level joystick drivers [[d
 
         if test x$hidapi_support = xyes; then
             AC_DEFINE(SDL_JOYSTICK_HIDAPI, 1, [ ])
-            AC_DEFINE(SDL_JOYSTICK_RAWINPUT, 1, [ ])
+            if test x$userawinput = xyes; then
+                AC_DEFINE(SDL_JOYSTICK_RAWINPUT, 1, [ ])
+            fi
             EXTRA_CFLAGS="$EXTRA_CFLAGS -I$srcdir/src/hidapi/hidapi"
             SOURCES="$SOURCES $srcdir/src/joystick/hidapi/*.c"
             SOURCES="$SOURCES $srcdir/src/hidapi/SDL_hidapi.c"
