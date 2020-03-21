@@ -41,6 +41,8 @@ typedef struct
 typedef struct
 {
     SDL_Surface *surface;
+    int framebuffer_selector;
+    Uint32 framebuffer_linear_addr;
 } SDL_WindowData;
 
 #endif /* SDL_svga_video_h_ */

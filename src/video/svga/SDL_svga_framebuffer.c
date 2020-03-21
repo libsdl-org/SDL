@@ -23,7 +23,8 @@
 #if SDL_VIDEO_DRIVER_SVGA
 
 #include <dpmi.h>
-#include <sys/nearptr.h>
+#include <sys/movedata.h>
+#include <sys/segments.h>
 
 #include "SDL_svga_video.h"
 #include "SDL_svga_framebuffer.h"
@@ -31,66 +32,76 @@
 int
 SDL_SVGA_CreateFramebuffer(_THIS, SDL_Window * window, Uint32 * format, void ** pixels, int *pitch)
 {
-    SDL_WindowData *windata = window->driverdata;
+    SDL_DeviceData *devdata = _this->driverdata;
+    SDL_DisplayMode mode;
+    SDL_DisplayModeData *modedata;
     SDL_Surface *surface;
-    Uint32 surface_format = SDL_GetWindowPixelFormat(window);
+    SDL_WindowData *windata = window->driverdata;
+    __dpmi_meminfo meminfo;
     int w, h;
 
-    /* Free the old framebuffer surface */
+    /* Free the old framebuffer surface. */
     SDL_SVGA_DestroyFramebuffer(_this, window);
 
-    /* Create a new surface */
-    SDL_GetWindowSize(window, &w, &h);
-    surface = SDL_CreateRGBSurfaceWithFormat(0, w, h, 0, surface_format);
-    if (!surface) {
+    /* Get data for current mode. */
+    if (SDL_GetWindowDisplayMode(window, &mode)) {
+        return -1;
+    }
+    modedata = mode.driverdata;
+
+    /* Map framebuffer's physical address to linear address. */
+    meminfo.address = modedata->framebuffer_phys_addr.segment << 16;
+    meminfo.address += modedata->framebuffer_phys_addr.offset;
+    meminfo.size = devdata->vbe_info.total_memory << 16;
+    if (__dpmi_physical_address_mapping(&meminfo)) {
+        SDL_SVGA_DestroyFramebuffer(_this, window);
+        return -1;
+    }
+    windata->framebuffer_linear_addr = meminfo.address;
+
+    /* Allocate local descriptor to access memory-mapped framebuffer. */
+    windata->framebuffer_selector = __dpmi_allocate_ldt_descriptors(1);
+    if (windata->framebuffer_selector == -1) {
+        SDL_SVGA_DestroyFramebuffer(_this, window);
         return -1;
     }
 
-    /* Save the info and return! */
+    /* Setup framebuffer descriptor. */
+    if (__dpmi_set_segment_base_address(windata->framebuffer_selector, meminfo.address) ||
+        __dpmi_set_segment_limit(windata->framebuffer_selector, meminfo.size - 1)) {
+        SDL_SVGA_DestroyFramebuffer(_this, window);
+        return -1;
+    }
+
+    /* Create a new surface. */
+    SDL_GetWindowSize(window, &w, &h);
+    surface = SDL_CreateRGBSurfaceWithFormat(0, w, h, 0, mode.format);
+    if (!surface) {
+        SDL_SVGA_DestroyFramebuffer(_this, window);
+        return -1;
+    }
     windata->surface = surface;
-    *format = surface_format;
+    
+    /* Set output parameters. */
+    *format = mode.format;
     *pixels = surface->pixels;
     *pitch = surface->pitch;
+
     return 0;
 }
 
 int
 SDL_SVGA_UpdateFramebuffer(_THIS, SDL_Window * window, const SDL_Rect * rects, int numrects)
 {
-    SDL_DeviceData *devdata = _this->driverdata;
-    SDL_DisplayMode mode;
-    SDL_DisplayModeData *modedata;
     SDL_WindowData *windata = window->driverdata;
     SDL_Surface *surface = windata->surface;
-
-    Uint8 *buf;
-    __dpmi_meminfo mapping;
 
     if (!surface) {
         return SDL_SetError("Missing SVGA surface");
     }
 
-    if (SDL_GetWindowDisplayMode(window, &mode)) {
-        return -1;
-    }
-
-    modedata = mode.driverdata;
-
-    mapping.address = *(Uint32 *)&modedata->framebuffer_phys_addr;
-    mapping.size = devdata->vbe_info.total_memory << 16;
-
-    if (__dpmi_physical_address_mapping(&mapping)) {
-        return -1;
-    }
-
-    if (!__djgpp_nearptr_enable()) {
-        return -1;
-    }
-
-    buf = (Uint8 *)(mapping.address + __djgpp_conventional_base);
-
     /* TODO: Copy to back buffer and swap to screen. */
-    SDL_memcpy(buf, surface->pixels, surface->pitch * surface->h);
+    movedata(_my_ds(), (Uint32)surface->pixels, windata->framebuffer_selector, 0, surface->pitch * surface->h);
 
     return 0;
 }
@@ -99,8 +110,25 @@ void
 SDL_SVGA_DestroyFramebuffer(_THIS, SDL_Window * window)
 {
     SDL_WindowData *windata = window->driverdata;
+
+    /* Destroy surface. */
     SDL_FreeSurface(windata->surface);
     windata->surface = NULL;
+
+    /* Deallocate local descriptor for framebuffer. */
+    if (windata->framebuffer_selector != -1) {
+        __dpmi_free_ldt_descriptor(windata->framebuffer_selector);
+        windata->framebuffer_selector = -1;
+    }
+
+    /* Unmap framebuffer physical address. */
+    if (windata->framebuffer_linear_addr) {
+        __dpmi_meminfo meminfo;
+
+        meminfo.address = windata->framebuffer_linear_addr;
+        __dpmi_free_physical_address_mapping(&meminfo);
+        windata->framebuffer_linear_addr = 0;
+    }
 }
 
 #endif /* SDL_VIDEO_DRIVER_SVGA */

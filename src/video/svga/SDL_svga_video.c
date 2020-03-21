@@ -211,8 +211,10 @@ SVGA_CreateWindow(_THIS, SDL_Window * window)
     if (!windata) {
         return SDL_OutOfMemory();
     }
-
     window->driverdata = windata;
+
+    /* Set framebuffer selector to sentinel value. */
+    windata->framebuffer_selector = -1;
 
     /* Window is always fullscreen. */
     /* QUESTION: Is this appropriate, or should an error be returned instead? */
