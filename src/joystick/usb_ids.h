@@ -35,6 +35,7 @@
 #define USB_VENDOR_VALVE        0x28de
 
 #define USB_PRODUCT_NINTENDO_GAMECUBE_ADAPTER           0x0337
+#define USB_PRODUCT_NINTENDO_SWITCH_PRO                 0x2009
 #define USB_PRODUCT_RAZER_PANTHERA                      0x0401
 #define USB_PRODUCT_RAZER_PANTHERA_EVO                  0x1008
 #define USB_PRODUCT_SONY_DS4                            0x05c4
