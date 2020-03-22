@@ -43,8 +43,8 @@ SVGA_GetVBEInfo(VBEInfo * info)
     dosmemput("VBE2", 4, __tb);
 
     r.x.ax = 0x4F00;
-    r.x.di = __tb_offset;
     r.x.es = __tb_segment;
+    r.x.di = __tb_offset;
 
     __dpmi_int(0x10, &r);
 
@@ -77,8 +77,8 @@ SVGA_GetVBEModeInfo(VBEMode mode, VBEModeInfo * info)
 
     r.x.ax = 0x4F01;
     r.x.cx = mode;
-    r.x.di = __tb_offset;
     r.x.es = __tb_segment;
+    r.x.di = __tb_offset;
 
     __dpmi_int(0x10, &r);
 
@@ -142,6 +142,52 @@ SVGA_SetDisplayStart(int x, int y)
     __dpmi_int(0x10, &r);
 
     RETURN_IF_VBE_CALL_FAILED(r);
+
+    return 0;
+}
+
+int
+SVGA_SetDACPaletteFormat(int bits)
+{
+    __dpmi_regs r;
+
+    r.x.ax = 0x4F08;
+    r.h.bl = 0; /* Flag to set format */
+    r.h.bh = bits;
+
+    __dpmi_int(0x10, &r);
+
+    RETURN_IF_VBE_CALL_FAILED(r);
+
+    return r.h.bh;
+}
+
+int
+SVGA_GetPaletteData(SDL_Color * colors, int num_colors)
+{
+    int i;
+    __dpmi_regs r;
+
+    r.x.ax = 0x4F09;
+    r.h.bl = 1; /* Flag to get colors */
+    r.x.cx = num_colors;
+    r.x.dx = 0; /* First color */
+    r.x.es = __tb_segment;
+    r.x.di = __tb_offset;
+
+    __dpmi_int(0x10, &r);
+
+    RETURN_IF_VBE_CALL_FAILED(r);
+
+    dosmemget(__tb, num_colors * sizeof(*colors), colors);
+
+    /* Palette color components are stored in BGR order. */
+    for (i = 0; i < num_colors; i++) {
+        Uint8 temp = colors[i].r;
+        colors[i].r = colors[i].b;
+        colors[i].b = temp;
+        colors[i].a = SDL_ALPHA_OPAQUE;
+    }
 
     return 0;
 }

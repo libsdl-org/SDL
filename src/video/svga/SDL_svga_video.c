@@ -188,12 +188,16 @@ SVGA_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
 static int
 SVGA_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
 {
+    SDL_DeviceData *devdata = _this->driverdata;
     SDL_DisplayModeData *modedata = mode->driverdata;
 
     /* TODO: Use SDL_SetError. */
     if (SVGA_SetVBEMode(modedata->vbe_mode)) {
         return -1;
     }
+
+    /* TODO: Switch to 8 bit palette format, if possible and relevant. */
+    devdata->palette_format = 6;
 
     return 0;
 }

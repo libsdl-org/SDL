@@ -80,9 +80,18 @@ SDL_SVGA_CreateFramebuffer(_THIS, SDL_Window * window, Uint32 * format, void ** 
         SDL_SVGA_DestroyFramebuffer(_this, window);
         return -1;
     }
-    windata->surface = surface;
-    
-    /* Set output parameters. */
+
+    /* Populate color palette for indexed pixel formats. */
+    if (surface->format->palette) {
+        SDL_Palette *palette = surface->format->palette;
+        if (SVGA_GetPaletteData(palette->colors, palette->ncolors)) {
+            SDL_SVGA_DestroyFramebuffer(_this, window);
+            return -1;
+        }
+    }
+
+    /* Save data and set output parameters. */
+    window->surface = surface;
     *format = mode.format;
     *pixels = surface->pixels;
     *pitch = surface->pitch;
@@ -94,7 +103,7 @@ int
 SDL_SVGA_UpdateFramebuffer(_THIS, SDL_Window * window, const SDL_Rect * rects, int numrects)
 {
     SDL_WindowData *windata = window->driverdata;
-    SDL_Surface *surface = windata->surface;
+    SDL_Surface *surface = window->surface;
     size_t surface_size;
 
     if (!surface) {
@@ -122,8 +131,8 @@ SDL_SVGA_DestroyFramebuffer(_THIS, SDL_Window * window)
     SDL_WindowData *windata = window->driverdata;
 
     /* Destroy surface. */
-    SDL_FreeSurface(windata->surface);
-    windata->surface = NULL;
+    SDL_FreeSurface(window->surface);
+    window->surface = NULL;
 
     /* Deallocate local descriptor for framebuffer. */
     if (windata->framebuffer_selector != -1) {

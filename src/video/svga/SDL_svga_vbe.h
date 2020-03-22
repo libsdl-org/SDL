@@ -66,6 +66,12 @@ typedef struct VBEInfo
 
 SDL_COMPILE_TIME_ASSERT(VBEInfo, sizeof(VBEInfo) == 512);
 
+#define VBE_CAP_DAC_WIDTH_SWITCH 0x01
+#define VBE_CAP_NO_VGA_COMPAT    0x02
+#define VBE_CAP_RAMDAC_BLANK_BIT 0x04
+#define VBE_CAP_HW_STEREO_SIGNAL 0x08
+#define VBE_CAP_STEREO_VIA_EVC   0x10
+
 typedef struct VBEModeInfo
 {
     Uint16 mode_attributes;       /* Mode attributes */
@@ -152,6 +158,8 @@ extern int SVGA_GetCurrentVBEMode(VBEMode * mode, VBEModeInfo * info);
 extern int SVGA_SetVBEMode(VBEMode mode);
 extern SDL_PixelFormatEnum SVGA_GetPixelFormat(const VBEModeInfo * info);
 extern int SVGA_SetDisplayStart(int x, int y);
+extern int SVGA_SetDACPaletteFormat(int bits);
+extern int SVGA_GetPaletteData(SDL_Color * colors, int num_colors);
 
 #endif /* SDL_svga_vbe_h_ */
 
