@@ -585,7 +585,6 @@ GL_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 
         renderdata->glGenTextures(1, &data->utexture);
         renderdata->glGenTextures(1, &data->vtexture);
-        renderdata->glEnable(textype);
 
         renderdata->glBindTexture(textype, data->utexture);
         renderdata->glTexParameteri(textype, GL_TEXTURE_MIN_FILTER,
@@ -610,8 +609,6 @@ GL_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
                                     GL_CLAMP_TO_EDGE);
         renderdata->glTexImage2D(textype, 0, internalFormat, (texture_w+1)/2,
                                  (texture_h+1)/2, 0, format, type, NULL);
-
-        renderdata->glDisable(textype);
     }
 
     if (texture->format == SDL_PIXELFORMAT_NV12 ||
@@ -619,8 +616,6 @@ GL_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
         data->nv12 = SDL_TRUE;
 
         renderdata->glGenTextures(1, &data->utexture);
-        renderdata->glEnable(textype);
-
         renderdata->glBindTexture(textype, data->utexture);
         renderdata->glTexParameteri(textype, GL_TEXTURE_MIN_FILTER,
                                     scaleMode);
@@ -632,7 +627,6 @@ GL_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
                                     GL_CLAMP_TO_EDGE);
         renderdata->glTexImage2D(textype, 0, GL_LUMINANCE_ALPHA, (texture_w+1)/2,
                                  (texture_h+1)/2, 0, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, NULL);
-        renderdata->glDisable(textype);
     }
 
     return GL_CheckError("", renderer);
@@ -653,7 +647,6 @@ GL_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
 
     renderdata->drawstate.texture = NULL;  /* we trash this state. */
 
-    renderdata->glEnable(textype);
     renderdata->glBindTexture(textype, data->texture);
     renderdata->glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     renderdata->glPixelStorei(GL_UNPACK_ROW_LENGTH, (pitch / texturebpp));
@@ -696,7 +689,6 @@ GL_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
                                     (rect->w + 1)/2, (rect->h + 1)/2,
                                     GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, pixels);
     }
-    renderdata->glDisable(textype);
 
     return GL_CheckError("glTexSubImage2D()", renderer);
 }
@@ -716,7 +708,6 @@ GL_UpdateTextureYUV(SDL_Renderer * renderer, SDL_Texture * texture,
 
     renderdata->drawstate.texture = NULL;  /* we trash this state. */
 
-    renderdata->glEnable(textype);
     renderdata->glBindTexture(textype, data->texture);
     renderdata->glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     renderdata->glPixelStorei(GL_UNPACK_ROW_LENGTH, Ypitch);
@@ -735,7 +726,6 @@ GL_UpdateTextureYUV(SDL_Renderer * renderer, SDL_Texture * texture,
     renderdata->glTexSubImage2D(textype, 0, rect->x/2, rect->y/2,
                                 (rect->w + 1)/2, (rect->h + 1)/2,
                                 data->format, data->formattype, Vplane);
-    renderdata->glDisable(textype);
 
     return GL_CheckError("glTexSubImage2D()", renderer);
 }
@@ -776,15 +766,12 @@ GL_SetTextureScaleMode(SDL_Renderer * renderer, SDL_Texture * texture, SDL_Scale
     GL_TextureData *data = (GL_TextureData *) texture->driverdata;
     GLenum glScaleMode = (scaleMode == SDL_ScaleModeNearest) ? GL_NEAREST : GL_LINEAR;
 
-    renderdata->glEnable(textype);
     renderdata->glBindTexture(textype, data->texture);
     renderdata->glTexParameteri(textype, GL_TEXTURE_MIN_FILTER, glScaleMode);
     renderdata->glTexParameteri(textype, GL_TEXTURE_MAG_FILTER, glScaleMode);
-    renderdata->glDisable(textype);
 
     if (texture->format == SDL_PIXELFORMAT_YV12 ||
         texture->format == SDL_PIXELFORMAT_IYUV) {
-        renderdata->glEnable(textype);
         renderdata->glBindTexture(textype, data->utexture);
         renderdata->glTexParameteri(textype, GL_TEXTURE_MIN_FILTER, glScaleMode);
         renderdata->glTexParameteri(textype, GL_TEXTURE_MAG_FILTER, glScaleMode);
@@ -792,16 +779,13 @@ GL_SetTextureScaleMode(SDL_Renderer * renderer, SDL_Texture * texture, SDL_Scale
         renderdata->glBindTexture(textype, data->vtexture);
         renderdata->glTexParameteri(textype, GL_TEXTURE_MIN_FILTER, glScaleMode);
         renderdata->glTexParameteri(textype, GL_TEXTURE_MAG_FILTER, glScaleMode);
-        renderdata->glDisable(textype);
     }
 
     if (texture->format == SDL_PIXELFORMAT_NV12 ||
         texture->format == SDL_PIXELFORMAT_NV21) {
-        renderdata->glEnable(textype);
         renderdata->glBindTexture(textype, data->utexture);
         renderdata->glTexParameteri(textype, GL_TEXTURE_MIN_FILTER, glScaleMode);
         renderdata->glTexParameteri(textype, GL_TEXTURE_MAG_FILTER, glScaleMode);
-        renderdata->glDisable(textype);
     }
 }
 
