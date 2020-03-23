@@ -104,6 +104,18 @@ FixupDeviceInfoForMapping(int fd, struct input_id *inpid)
     }
 }
 
+#ifdef SDL_JOYSTICK_HIDAPI
+static SDL_bool
+IsVirtualJoystick(Uint16 vendor, Uint16 product, Uint16 version, const char *name)
+{
+    if (vendor == USB_VENDOR_MICROSOFT && product == USB_PRODUCT_XBOX_ONE_S && version == 0 &&
+        SDL_strcmp(name, "Xbox One S Controller") == 0) {
+        /* This is the virtual device created by the xow driver */
+        return SDL_TRUE;
+    }
+    return SDL_FALSE;
+}
+#endif /* SDL_JOYSTICK_HIDAPI */
 
 static int
 IsJoystick(int fd, char **name_return, SDL_JoystickGUID *guid)
@@ -145,7 +157,8 @@ IsJoystick(int fd, char **name_return, SDL_JoystickGUID *guid)
     }
 
 #ifdef SDL_JOYSTICK_HIDAPI
-    if (HIDAPI_IsDevicePresent(inpid.vendor, inpid.product, inpid.version, name)) {
+    if (!IsVirtualJoystick(inpid.vendor, inpid.product, inpid.version, name) &&
+        HIDAPI_IsDevicePresent(inpid.vendor, inpid.product, inpid.version, name)) {
         /* The HIDAPI driver is taking care of this device */
         SDL_free(name);
         return 0;
