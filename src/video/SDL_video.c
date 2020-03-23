@@ -2319,6 +2319,10 @@ SDL_CreateWindowFramebuffer(SDL_Window * window)
         return NULL;
     }
 
+    if (window->surface) {
+        return window->surface;
+    }
+
     if (!SDL_PixelFormatEnumToMasks(format, &bpp, &Rmask, &Gmask, &Bmask, &Amask)) {
         return NULL;
     }
