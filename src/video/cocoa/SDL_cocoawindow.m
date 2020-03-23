@@ -1813,6 +1813,13 @@ Cocoa_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display
            This is no longer needed as of Mac OS X 10.15, according to bug 4822.
          */
         NSProcessInfo *processInfo = [NSProcessInfo processInfo];
+#if MAC_OS_X_VERSION_MAX_ALLOWED < 101000 /* NSOperatingSystemVersion added in the 10.10 SDK */
+        typedef struct {
+            NSInteger majorVersion;
+            NSInteger minorVersion;
+            NSInteger patchVersion;
+        } NSOperatingSystemVersion;
+#endif
         NSOperatingSystemVersion version = { 10, 15, 0 };
         if (![processInfo respondsToSelector:@selector(isOperatingSystemAtLeastVersion:)] ||
             ![processInfo isOperatingSystemAtLeastVersion:version]) {
