@@ -88,10 +88,10 @@ Cocoa_SetWindowShape(SDL_WindowShaper *shaper, SDL_Surface *shape, SDL_WindowSha
     [NSGraphicsContext setCurrentContext:data->context];
 
     [[NSColor clearColor] set];
-    NSRectFill([[windata->nswindow contentView] frame]);
+    NSRectFill([windata->sdlContentView frame]);
     data->shape = SDL_CalculateShapeTree(*shape_mode,shape);
 
-    closure.view = [windata->nswindow contentView];
+    closure.view = windata->sdlContentView;
     closure.path = [NSBezierPath bezierPath];
     closure.window = shaper->window;
     SDL_TraverseShapeTree(data->shape,&ConvertRects,&closure);
