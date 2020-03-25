@@ -297,15 +297,15 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
     NSWindow *nswindow = data->nswindow;
 
     /* The view responder chain gets messed with during setStyleMask */
-    if ([[nswindow contentView] nextResponder] == data->listener) {
-        [[nswindow contentView] setNextResponder:nil];
+    if ([data->sdlContentView nextResponder] == data->listener) {
+        [data->sdlContentView setNextResponder:nil];
     }
 
     [nswindow setStyleMask:style];
 
     /* The view responder chain gets messed with during setStyleMask */
-    if ([[nswindow contentView] nextResponder] != data->listener) {
-        [[nswindow contentView] setNextResponder:data->listener];
+    if ([data->sdlContentView nextResponder] != data->listener) {
+        [data->sdlContentView setNextResponder:data->listener];
     }
 
     return SDL_TRUE;
@@ -318,7 +318,7 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
 {
     NSNotificationCenter *center;
     NSWindow *window = data->nswindow;
-    NSView *view = [window contentView];
+    NSView *view = data->nsview;
 
     _data = data;
     observingVisible = YES;
@@ -1360,7 +1360,7 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
 @end
 
 static int
-SetupWindowData(_THIS, SDL_Window * window, NSWindow *nswindow, SDL_bool created)
+SetupWindowData(_THIS, SDL_Window * window, NSWindow *nswindow, NSView *nsview, SDL_bool created)
 { @autoreleasepool
 {
     SDL_VideoData *videodata = (SDL_VideoData *) _this->driverdata;
@@ -1376,11 +1376,7 @@ SetupWindowData(_THIS, SDL_Window * window, NSWindow *nswindow, SDL_bool created
     data->created = created;
     data->videodata = videodata;
     data->nscontexts = [[NSMutableArray alloc] init];
-
-    /* Only store this for windows created by us since the content view might
-     * get replaced from under us otherwise, and we only need it when the
-     * window is guaranteed to be created by us (OpenGL contexts). */
-    data->sdlContentView = created ? [nswindow contentView] : nil;
+    data->sdlContentView = nsview;
 
     /* Create an event listener for the window */
     data->listener = [[Cocoa_WindowListener alloc] init];
@@ -1541,7 +1537,7 @@ Cocoa_CreateWindow(_THIS, SDL_Window * window)
     [nswindow setContentView:contentView];
     [contentView release];
 
-    if (SetupWindowData(_this, window, nswindow, SDL_TRUE) < 0) {
+    if (SetupWindowData(_this, window, nswindow, contentView, SDL_TRUE) < 0) {
         [nswindow release];
         return -1;
     }
@@ -1571,7 +1567,19 @@ int
 Cocoa_CreateWindowFrom(_THIS, SDL_Window * window, const void *data)
 { @autoreleasepool
 {
-    NSWindow *nswindow = (NSWindow *) data;
+    NSView* nsview;
+    NSWindow *nswindow;
+
+    if ([(id)data isKindOfClass:[NSWindow class]]) {
+      nswindow = (NSWindow*)data;
+      nsview = [nswindow contentView];
+    } else if ([(id)data isKindOfClass:[NSView class]]) {
+      nsview = (NSView*)data;
+      nswindow = [nsview window];
+    } else {
+      SDL_assert(false);
+    }
+
     NSString *title;
 
     /* Query the title from the existing window */
@@ -1580,7 +1588,7 @@ Cocoa_CreateWindowFrom(_THIS, SDL_Window * window, const void *data)
         window->title = SDL_strdup([title UTF8String]);
     }
 
-    return SetupWindowData(_this, window, nswindow, SDL_FALSE);
+    return SetupWindowData(_this, window, nswindow, nsview, SDL_FALSE);
 }}
 
 void
@@ -1795,8 +1803,8 @@ Cocoa_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display
     NSRect rect;
 
     /* The view responder chain gets messed with during setStyleMask */
-    if ([[nswindow contentView] nextResponder] == data->listener) {
-        [[nswindow contentView] setNextResponder:nil];
+    if ([data->sdlContentView nextResponder] == data->listener) {
+        [data->sdlContentView setNextResponder:nil];
     }
 
     if (fullscreen) {
@@ -1852,8 +1860,8 @@ Cocoa_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display
     }
 
     /* The view responder chain gets messed with during setStyleMask */
-    if ([[nswindow contentView] nextResponder] != data->listener) {
-        [[nswindow contentView] setNextResponder:data->listener];
+    if ([data->sdlContentView nextResponder] != data->listener) {
+        [data->sdlContentView setNextResponder:data->listener];
     }
 
     s_moveHack = 0;
