@@ -394,13 +394,13 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
 	SDL_bool forceTestRun = SDL_FALSE;
     int testResult = 0;
     int runResult = 0;
-    Uint32 totalTestFailedCount = 0;
-    Uint32 totalTestPassedCount = 0;
-    Uint32 totalTestSkippedCount = 0;
-    Uint32 testFailedCount = 0;
-    Uint32 testPassedCount = 0;
-    Uint32 testSkippedCount = 0;
-    Uint32 countSum = 0;
+    int totalTestFailedCount = 0;
+    int totalTestPassedCount = 0;
+    int totalTestSkippedCount = 0;
+    int testFailedCount = 0;
+    int testPassedCount = 0;
+    int testSkippedCount = 0;
+    int countSum = 0;
     const SDLTest_TestCaseReference **failedTests;
 
     /* Sanitize test iterations */
