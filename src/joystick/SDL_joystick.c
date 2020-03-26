@@ -1074,14 +1074,46 @@ static void UpdateEventsForDeviceRemoval()
     SDL_small_free(events, isstack);
 }
 
+static void
+SDL_PrivateJoystickForceRecentering(SDL_Joystick *joystick)
+{
+    int i;
+
+    /* Tell the app that everything is centered/unpressed... */
+    for (i = 0; i < joystick->naxes; i++) {
+        if (joystick->axes[i].has_initial_value) {
+            SDL_PrivateJoystickAxis(joystick, i, joystick->axes[i].zero);
+        }
+    }
+
+    for (i = 0; i < joystick->nbuttons; i++) {
+        SDL_PrivateJoystickButton(joystick, i, 0);
+    }
+
+    for (i = 0; i < joystick->nhats; i++) {
+        SDL_PrivateJoystickHat(joystick, i, SDL_HAT_CENTERED);
+    }
+}
+
 void SDL_PrivateJoystickRemoved(SDL_JoystickID device_instance)
 {
-    SDL_Joystick *joystick;
+    SDL_Joystick *joystick = NULL;
     int player_index;
-
 #if !SDL_EVENTS_DISABLED
     SDL_Event event;
+#endif
 
+    /* Find this joystick... */
+    for (joystick = SDL_joysticks; joystick; joystick = joystick->next) {
+        if (joystick->instance_id == device_instance) {
+            SDL_PrivateJoystickForceRecentering(joystick);
+            joystick->attached = SDL_FALSE;
+            break;
+        }
+    }
+
+#if !SDL_EVENTS_DISABLED
+    SDL_zero(event);
     event.type = SDL_JOYDEVICEREMOVED;
 
     if (SDL_GetEventState(event.type) == SDL_ENABLE) {
@@ -1091,15 +1123,6 @@ void SDL_PrivateJoystickRemoved(SDL_JoystickID device_instance)
 
     UpdateEventsForDeviceRemoval();
 #endif /* !SDL_EVENTS_DISABLED */
-
-    /* Mark this joystick as no longer attached */
-    for (joystick = SDL_joysticks; joystick; joystick = joystick->next) {
-        if (joystick->instance_id == device_instance) {
-            joystick->attached = SDL_FALSE;
-            joystick->force_recentering = SDL_TRUE;
-            break;
-        }
-    }
 
     SDL_LockJoysticks();
     player_index = SDL_GetPlayerIndexForJoystickID(device_instance);
@@ -1349,22 +1372,9 @@ SDL_JoystickUpdate(void)
             SDL_UnlockJoysticks();
         }
 
+        /* !!! FIXME: only one thing sets force_recentering now (the Darwin code), see if that can be removed. */
         if (joystick->force_recentering) {
-            /* Tell the app that everything is centered/unpressed... */
-            for (i = 0; i < joystick->naxes; i++) {
-                if (joystick->axes[i].has_initial_value) {
-                    SDL_PrivateJoystickAxis(joystick, i, joystick->axes[i].zero);
-                }
-            }
-
-            for (i = 0; i < joystick->nbuttons; i++) {
-                SDL_PrivateJoystickButton(joystick, i, 0);
-            }
-
-            for (i = 0; i < joystick->nhats; i++) {
-                SDL_PrivateJoystickHat(joystick, i, SDL_HAT_CENTERED);
-            }
-
+            SDL_PrivateJoystickForceRecentering(joystick);
             joystick->force_recentering = SDL_FALSE;
         }
     }
