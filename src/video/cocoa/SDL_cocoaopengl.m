@@ -66,7 +66,11 @@
     int value = SDL_AtomicSet(&self->dirty, 0);
     if (value > 0) {
         /* We call the real underlying update here, since -[SDLOpenGLContext update] just calls us. */
-        [super performSelectorOnMainThread:@selector(update) withObject:nil waitUntilDone:NO];
+        if ([NSThread isMainThread]) {
+            [super update];
+        } else {
+            [super performSelectorOnMainThread:@selector(update) withObject:nil waitUntilDone:NO];
+        }
     }
 }
 
