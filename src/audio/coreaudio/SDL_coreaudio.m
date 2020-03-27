@@ -327,44 +327,54 @@ static BOOL update_audio_session(_THIS, SDL_bool open)
         AVAudioSession *session = [AVAudioSession sharedInstance];
         NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
 
-        /* Set category to ambient by default so that other music continues playing. */
-        NSString *category = AVAudioSessionCategoryAmbient;
+        NSString *category = AVAudioSessionCategoryPlayback;
         NSString *mode = AVAudioSessionModeDefault;
-        NSUInteger options = 0;
+        NSUInteger options = AVAudioSessionCategoryOptionMixWithOthers;
         NSError *err = nil;
+        const char *hint;
 
-        if (open_playback_devices && open_capture_devices) {
+        hint = SDL_GetHint(SDL_HINT_AUDIO_CATEGORY);
+        if (hint) {
+            if (SDL_strcasecmp(hint, "AVAudioSessionCategoryAmbient") == 0) {
+                category = AVAudioSessionCategoryAmbient;
+            } else if (SDL_strcasecmp(hint, "AVAudioSessionCategorySoloAmbient") == 0) {
+                category = AVAudioSessionCategorySoloAmbient;
+                options &= ~AVAudioSessionCategoryOptionMixWithOthers;
+            } else if (SDL_strcasecmp(hint, "AVAudioSessionCategoryPlayback") == 0 ||
+                       SDL_strcasecmp(hint, "playback") == 0) {
+                category = AVAudioSessionCategoryPlayback;
+                options &= ~AVAudioSessionCategoryOptionMixWithOthers;
+            } else if (SDL_strcasecmp(hint, "AVAudioSessionCategoryPlayAndRecord") == 0 ||
+                       SDL_strcasecmp(hint, "playandrecord") == 0) {
+                category = AVAudioSessionCategoryPlayAndRecord;
+            }
+        } else if (open_playback_devices && open_capture_devices) {
             category = AVAudioSessionCategoryPlayAndRecord;
-#if !TARGET_OS_TV
-            options = AVAudioSessionCategoryOptionDefaultToSpeaker;
-#endif
         } else if (open_capture_devices) {
             category = AVAudioSessionCategoryRecord;
-        } else {
-            const char *hint = SDL_GetHint(SDL_HINT_AUDIO_CATEGORY);
-            if (hint) {
-                if (SDL_strcasecmp(hint, "AVAudioSessionCategoryAmbient") == 0) {
-                    category = AVAudioSessionCategoryAmbient;
-                } else if (SDL_strcasecmp(hint, "AVAudioSessionCategorySoloAmbient") == 0) {
-                    category = AVAudioSessionCategorySoloAmbient;
-                } else if (SDL_strcasecmp(hint, "AVAudioSessionCategoryPlayback") == 0 ||
-                           SDL_strcasecmp(hint, "playback") == 0) {
-                    category = AVAudioSessionCategoryPlayback;
-                }
-            }
         }
 
+#if !TARGET_OS_TV
+        if (category == AVAudioSessionCategoryPlayAndRecord) {
+            options |= AVAudioSessionCategoryOptionDefaultToSpeaker;
+        }
+#endif
+
         if ([session respondsToSelector:@selector(setCategory:mode:options:error:)]) {
-            if (![session setCategory:category mode:mode options:options error:&err]) {
-                NSString *desc = err.description;
-                SDL_SetError("Could not set Audio Session category: %s", desc.UTF8String);
-                return NO;
+            if (![session.category isEqualToString:category] || session.categoryOptions != options) {
+                if (![session setCategory:category mode:mode options:options error:&err]) {
+                    NSString *desc = err.description;
+                    SDL_SetError("Could not set Audio Session category: %s", desc.UTF8String);
+                    return NO;
+                }
             }
         } else {
-            if (![session setCategory:category error:&err]) {
-                NSString *desc = err.description;
-                SDL_SetError("Could not set Audio Session category: %s", desc.UTF8String);
-                return NO;
+            if (![session.category isEqualToString:category]) {
+                if (![session setCategory:category error:&err]) {
+                    NSString *desc = err.description;
+                    SDL_SetError("Could not set Audio Session category: %s", desc.UTF8String);
+                    return NO;
+                }
             }
         }
 
@@ -864,7 +874,7 @@ COREAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
             this->spec.channels = session.preferredOutputNumberOfChannels;
         }
 #else
-		/* Calling setPreferredOutputNumberOfChannels seems to break audio output on iOS */
+        /* Calling setPreferredOutputNumberOfChannels seems to break audio output on iOS */
 #endif /* TARGET_OS_TV */
     }
 #endif
