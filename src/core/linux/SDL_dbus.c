@@ -125,18 +125,24 @@ SDL_DBus_Init(void)
         }
 
         dbus.error_init(&err);
+        /* session bus is required */
+
         dbus.session_conn = dbus.bus_get_private(DBUS_BUS_SESSION, &err);
-        if (!dbus.error_is_set(&err)) {
-            dbus.system_conn = dbus.bus_get_private(DBUS_BUS_SYSTEM, &err);
-        }
         if (dbus.error_is_set(&err)) {
             dbus.error_free(&err);
             SDL_DBus_Quit();
             is_dbus_available = SDL_FALSE;
             return;  /* oh well */
         }
-        dbus.connection_set_exit_on_disconnect(dbus.system_conn, 0);
         dbus.connection_set_exit_on_disconnect(dbus.session_conn, 0);
+
+        /* system bus is optional */
+        dbus.system_conn = dbus.bus_get_private(DBUS_BUS_SYSTEM, &err);
+        if (!dbus.error_is_set(&err)) {
+            dbus.connection_set_exit_on_disconnect(dbus.system_conn, 0);
+        }
+
+        dbus.error_free(&err);
     }
 }
 
