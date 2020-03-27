@@ -40,16 +40,16 @@ extern "C" {
 static void
 RunThread(void *args)
 {
-    SDL_RunThread(args);
+    SDL_RunThread((SDL_Thread *) args);
 }
 
 extern "C"
 int
-SDL_SYS_CreateThread(SDL_Thread * thread, void *args)
+SDL_SYS_CreateThread(SDL_Thread * thread)
 {
     try {
         // !!! FIXME: no way to set a thread stack size here.
-        std::thread cpp_thread(RunThread, args);
+        std::thread cpp_thread(RunThread, thread);
         thread->handle = (void *) new std::thread(std::move(cpp_thread));
         return 0;
     } catch (std::system_error & ex) {
