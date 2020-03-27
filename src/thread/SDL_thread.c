@@ -258,22 +258,12 @@ SDL_GetErrBuf(void)
 }
 
 
-/* Arguments and callback to setup and run the user thread function */
-typedef struct
-{
-    int (SDLCALL * func) (void *);
-    void *data;
-    SDL_Thread *info;
-    SDL_sem *wait;
-} thread_args;
-
 void
-SDL_RunThread(void *data)
+SDL_RunThread(SDL_Thread *thread)
 {
-    thread_args *args = (thread_args *) data;
-    int (SDLCALL * userfunc) (void *) = args->func;
-    void *userdata = args->data;
-    SDL_Thread *thread = args->info;
+    void *userdata = thread->userdata;
+    int (SDLCALL * userfunc) (void *) = thread->userfunc;
+
     int *statusloc = &thread->status;
 
     /* Perform any system-dependent setup - this function may not fail */
@@ -281,9 +271,6 @@ SDL_RunThread(void *data)
 
     /* Get the thread id */
     thread->threadid = SDL_ThreadID();
-
-    /* Wake up the parent thread */
-    SDL_SemPost(args->wait);
 
     /* Run the function */
     *statusloc = userfunc(userdata);
@@ -325,16 +312,14 @@ SDL_CreateThreadWithStackSize(int (SDLCALL * fn) (void *),
 #endif
 {
     SDL_Thread *thread;
-    thread_args *args;
     int ret;
 
     /* Allocate memory for the thread info structure */
-    thread = (SDL_Thread *) SDL_malloc(sizeof(*thread));
+    thread = (SDL_Thread *) SDL_calloc(1, sizeof(*thread));
     if (thread == NULL) {
         SDL_OutOfMemory();
-        return (NULL);
+        return NULL;
     }
-    SDL_zerop(thread);
     thread->status = -1;
     SDL_AtomicSet(&thread->state, SDL_THREAD_STATE_ALIVE);
 
@@ -344,57 +329,29 @@ SDL_CreateThreadWithStackSize(int (SDLCALL * fn) (void *),
         if (thread->name == NULL) {
             SDL_OutOfMemory();
             SDL_free(thread);
-            return (NULL);
+            return NULL;
         }
     }
 
-    /* Set up the arguments for the thread */
-    args = (thread_args *) SDL_malloc(sizeof(*args));
-    if (args == NULL) {
-        SDL_OutOfMemory();
-        if (thread->name) {
-            SDL_free(thread->name);
-        }
-        SDL_free(thread);
-        return (NULL);
-    }
-    args->func = fn;
-    args->data = data;
-    args->info = thread;
-    args->wait = SDL_CreateSemaphore(0);
-    if (args->wait == NULL) {
-        if (thread->name) {
-            SDL_free(thread->name);
-        }
-        SDL_free(thread);
-        SDL_free(args);
-        return (NULL);
-    }
-
+    thread->userfunc = fn;
+    thread->userdata = data;
     thread->stacksize = stacksize;
 
     /* Create the thread and go! */
 #ifdef SDL_PASSED_BEGINTHREAD_ENDTHREAD
-    ret = SDL_SYS_CreateThread(thread, args, pfnBeginThread, pfnEndThread);
+    ret = SDL_SYS_CreateThread(thread, pfnBeginThread, pfnEndThread);
 #else
-    ret = SDL_SYS_CreateThread(thread, args);
+    ret = SDL_SYS_CreateThread(thread);
 #endif
-    if (ret >= 0) {
-        /* Wait for the thread function to use arguments */
-        SDL_SemWait(args->wait);
-    } else {
+    if (ret < 0) {
         /* Oops, failed.  Gotta free everything */
-        if (thread->name) {
-            SDL_free(thread->name);
-        }
+        SDL_free(thread->name);
         SDL_free(thread);
         thread = NULL;
     }
-    SDL_DestroySemaphore(args->wait);
-    SDL_free(args);
 
     /* Everything is running now */
-    return (thread);
+    return thread;
 }
 
 #ifdef SDL_PASSED_BEGINTHREAD_ENDTHREAD

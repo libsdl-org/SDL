@@ -76,7 +76,7 @@ RunThread(void *data)
 #ifdef __ANDROID__
     Android_JNI_SetupThread();
 #endif
-    SDL_RunThread(data);
+    SDL_RunThread((SDL_Thread *) data);
     return NULL;
 }
 
@@ -88,7 +88,7 @@ static SDL_bool checked_setname = SDL_FALSE;
 static int (*ppthread_setname_np)(pthread_t, const char*) = NULL;
 #endif
 int
-SDL_SYS_CreateThread(SDL_Thread * thread, void *args)
+SDL_SYS_CreateThread(SDL_Thread * thread)
 {
     pthread_attr_t type;
 
@@ -117,7 +117,7 @@ SDL_SYS_CreateThread(SDL_Thread * thread, void *args)
     }
 
     /* Create the thread and go! */
-    if (pthread_create(&thread->handle, &type, RunThread, args) != 0) {
+    if (pthread_create(&thread->handle, &type, RunThread, thread) != 0) {
         return SDL_SetError("Not enough resources to create thread");
     }
 

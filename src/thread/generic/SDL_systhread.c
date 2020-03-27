@@ -27,12 +27,12 @@
 
 #ifdef SDL_PASSED_BEGINTHREAD_ENDTHREAD
 int
-SDL_SYS_CreateThread(SDL_Thread * thread, void *args,
+SDL_SYS_CreateThread(SDL_Thread * thread,
                      pfnSDL_CurrentBeginThread pfnBeginThread,
                      pfnSDL_CurrentEndThread pfnEndThread)
 #else
 int
-SDL_SYS_CreateThread(SDL_Thread * thread, void *args)
+SDL_SYS_CreateThread(SDL_Thread * thread)
 #endif /* SDL_PASSED_BEGINTHREAD_ENDTHREAD */
 {
     return SDL_SetError("Threads are not supported on this platform");
