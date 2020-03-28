@@ -113,13 +113,24 @@ VideoBootStrap SVGA_bootstrap = {
 static int
 SVGA_VideoInit(_THIS)
 {
-    /* TODO: Query for current mode. */
+    SDL_DeviceData *devdata = _this->driverdata;
+
+    /* Save original video mode. */
+    if (SVGA_GetCurrentVBEMode(&devdata->original_mode, NULL)) {
+        return SDL_SetError("Couldn't query current video mode");
+    }
+
+    /* TODO: Use mode info if it exists. */
 
     if (SDL_AddBasicVideoDisplay(NULL) < 0) {
         return -1;
     }
 
-    /* TODO: Save original video state. */
+    /* Save original video state. */
+    devdata->state_size = SVGA_GetState(&devdata->original_state);
+    if (devdata->state_size < 0) {
+        return -1;
+    }
 
     return 0;
 }
@@ -188,16 +199,18 @@ SVGA_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
 static int
 SVGA_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
 {
-    SDL_DeviceData *devdata = _this->driverdata;
     SDL_DisplayModeData *modedata = mode->driverdata;
 
-    /* TODO: Use SDL_SetError. */
+    if (!modedata) {
+        return SDL_SetError("Missing display mode data");
+    }
+
     if (SVGA_SetVBEMode(modedata->vbe_mode)) {
-        return -1;
+        /* TODO: Include VBE error message. */
+        return SDL_SetError("Couldn't set VBE display mode");
     }
 
     /* TODO: Switch to 8 bit palette format, if possible and relevant. */
-    devdata->palette_format = 6;
 
     return 0;
 }
@@ -205,7 +218,18 @@ SVGA_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
 static void
 SVGA_VideoQuit(_THIS)
 {
-    /* TODO: Restore original video state. */
+    SDL_DeviceData *devdata = _this->driverdata;
+
+    /* Restore original video state. */
+    if (devdata->original_state) {
+        SVGA_SetState(devdata->original_state, devdata->state_size);
+        SDL_free(devdata->original_state);
+    }
+
+    /* Restore original video mode. */
+    if (devdata->original_mode) {
+        SVGA_SetVBEMode(devdata->original_mode);
+    }
 }
 
 static int

@@ -30,7 +30,9 @@
 typedef struct
 {
     VBEInfo vbe_info;
-    Uint8 palette_format;
+    VBEMode original_mode;
+    void *original_state;
+    size_t state_size;
 } SDL_DeviceData;
 
 typedef struct

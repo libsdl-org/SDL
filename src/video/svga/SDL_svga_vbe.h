@@ -156,10 +156,12 @@ extern VBEMode SVGA_GetVBEModeAtIndex(const VBEInfo * info, int index);
 extern int SVGA_GetVBEModeInfo(VBEMode mode, VBEModeInfo * info);
 extern int SVGA_GetCurrentVBEMode(VBEMode * mode, VBEModeInfo * info);
 extern int SVGA_SetVBEMode(VBEMode mode);
-extern SDL_PixelFormatEnum SVGA_GetPixelFormat(const VBEModeInfo * info);
+extern int SVGA_GetState(void **state);
+extern int SVGA_SetState(const void *state, size_t size);
 extern int SVGA_SetDisplayStart(int x, int y);
 extern int SVGA_SetDACPaletteFormat(int bits);
 extern int SVGA_GetPaletteData(SDL_Color * colors, int num_colors);
+extern SDL_PixelFormatEnum SVGA_GetPixelFormat(const VBEModeInfo * info);
 
 #endif /* SDL_svga_vbe_h_ */
 

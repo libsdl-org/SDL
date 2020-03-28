@@ -30,10 +30,11 @@
 #include <string.h>
 
 /* Check the DPMI registers for an error after a VBE function call. */
-/* Returns -1 if VBE is not installed or the non-zero VBE error code. */
+/* Returns -128 if the function is not supported or the negated VBE error code. */
+/* TODO: Create named macro definitions for possible error values. */
 #define RETURN_IF_VBE_CALL_FAILED(regs) \
-    if ((regs).h.al != 0x4F) return -1; \
-    if ((regs).h.ah != 0) return (regs).h.ah;
+    if ((regs).h.al != 0x4F) return SDL_MIN_SINT8; \
+    if ((regs).h.ah != 0) return -(regs).h.ah;
 
 int
 SVGA_GetVBEInfo(VBEInfo * info)
@@ -121,6 +122,74 @@ SVGA_SetVBEMode(VBEMode mode)
     r.x.bx = mode;
     r.x.es = 0;
     r.x.di = 0;
+
+    __dpmi_int(0x10, &r);
+
+    RETURN_IF_VBE_CALL_FAILED(r);
+
+    return 0;
+}
+
+int
+SVGA_GetState(void **state)
+{
+    size_t state_size;
+    __dpmi_regs r;
+
+    r.x.ax = 0x4F04;
+    r.h.dl = 0;   /* Get state buffer size. */
+    r.x.cx = 0xF; /* All states. */
+
+    __dpmi_int(0x10, &r);
+
+    RETURN_IF_VBE_CALL_FAILED(r);
+
+    /* Calculate state buffer size. */
+    state_size = r.x.bx * 64;
+
+    /* Check that transfer buffer is big enough. */
+    if (state_size > __tb_size) {
+        return SDL_OutOfMemory();
+    }
+
+    r.h.dl = 1; /* Save state. */
+    r.x.es = __tb_segment;
+    r.x.bx = __tb_offset;
+
+    __dpmi_int(0x10, &r);
+
+    RETURN_IF_VBE_CALL_FAILED(r);
+
+    /* Allocate state buffer. */
+    *state = SDL_calloc(1, state_size);
+    if (!*state) {
+        return SDL_OutOfMemory();
+    }
+
+    /* Copy state data from DOS transfer buffer. */
+    dosmemget(__tb, state_size, *state);
+
+    return state_size;
+}
+
+int
+SVGA_SetState(const void *state, size_t size)
+{
+    __dpmi_regs r;
+
+    /* Check that transfer buffer is big enough. */
+    if (size > __tb_size) {
+        return SDL_OutOfMemory();
+    }
+
+    /* Copy state data into DOS transfer buffer. */
+    dosmemput(state, size, __tb);
+
+    r.x.ax = 0x4F04;
+    r.h.dl = 2;   /* Restore state. */
+    r.x.cx = 0xF; /* All states. */
+    r.x.es = __tb_segment;
+    r.x.bx = __tb_offset;
 
     __dpmi_int(0x10, &r);
 
