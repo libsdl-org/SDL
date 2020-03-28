@@ -102,6 +102,7 @@ UIKit_CreateDevice(int devindex)
         device->DestroyWindow = UIKit_DestroyWindow;
         device->GetWindowWMInfo = UIKit_GetWindowWMInfo;
         device->GetDisplayUsableBounds = UIKit_GetDisplayUsableBounds;
+        device->GetDisplayDPI = UIKit_GetDisplayDPI;
 
 #if SDL_IPHONE_KEYBOARD
         device->HasScreenKeyboardSupport = UIKit_HasScreenKeyboardSupport;
