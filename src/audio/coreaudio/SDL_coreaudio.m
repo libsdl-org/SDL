@@ -34,11 +34,21 @@
 
 #define DEBUG_COREAUDIO 0
 
-#define CHECK_RESULT(msg) \
-    if (result != noErr) { \
-        SDL_SetError("CoreAudio error (%s): %d", msg, (int) result); \
-        return 0; \
-    }
+#if DEBUG_COREAUDIO
+    #define CHECK_RESULT(msg) \
+        if (result != noErr) { \
+            printf("COREAUDIO: Got error %d from '%s'!\n", (int) result, msg); \
+            SDL_SetError("CoreAudio error (%s): %d", msg, (int) result); \
+            return 0; \
+        }
+#else
+    #define CHECK_RESULT(msg) \
+        if (result != noErr) { \
+            SDL_SetError("CoreAudio error (%s): %d", msg, (int) result); \
+            return 0; \
+        }
+#endif
+
 
 #if MACOSX_COREAUDIO
 static const AudioObjectPropertyAddress devlist_address = {
@@ -441,7 +451,7 @@ outputCallback(void *inUserData, AudioQueueRef inAQ, AudioQueueBufferRef inBuffe
     if (!SDL_AtomicGet(&this->enabled) || SDL_AtomicGet(&this->paused)) {
         /* Supply silence if audio is not enabled or paused */
         SDL_memset(inBuffer->mAudioData, this->spec.silence, inBuffer->mAudioDataBytesCapacity);
-    } else if (this->stream ) {
+    } else if (this->stream) {
         UInt32 remaining = inBuffer->mAudioDataBytesCapacity;
         Uint8 *ptr = (Uint8 *) inBuffer->mAudioData;
 
@@ -576,6 +586,18 @@ device_unplugged(AudioObjectID devid, UInt32 num_addr, const AudioObjectProperty
 
     return 0;
 }
+
+/* macOS calls this when the default device changed (if we have a default device open). */
+static OSStatus
+default_device_changed(AudioObjectID inObjectID, UInt32 inNumberAddresses, const AudioObjectPropertyAddress *inAddresses, void *inUserData)
+{
+    SDL_AudioDevice *this = (SDL_AudioDevice *) inUserData;
+    #if DEBUG_COREAUDIO
+    printf("COREAUDIO: default device changed for SDL audio device %p!\n", this);
+    #endif
+    SDL_AtomicSet(&this->hidden->device_change_flag, 1);  /* let the audioqueue thread pick up on this when safe to do so. */
+    return noErr;
+}
 #endif
 
 static void
@@ -586,8 +608,9 @@ COREAUDIO_CloseDevice(_THIS)
 /* !!! FIXME: what does iOS do when a bluetooth audio device vanishes? Headphones unplugged? */
 /* !!! FIXME: (we only do a "default" device on iOS right now...can we do more?) */
 #if MACOSX_COREAUDIO
-    /* Fire a callback if the device stops being "alive" (disconnected, etc). */
-    AudioObjectRemovePropertyListener(this->hidden->deviceID, &alive_address, device_unplugged, this);
+    if (this->handle != NULL) {  /* we don't register this listener for default devices. */
+        AudioObjectRemovePropertyListener(this->hidden->deviceID, &alive_address, device_unplugged, this);
+    }
 #endif
 
     if (iscapture) {
@@ -676,6 +699,26 @@ prepare_device(_THIS, void *handle, int iscapture)
     this->hidden->deviceID = devid;
     return 1;
 }
+
+static int
+assign_device_to_audioqueue(_THIS)
+{
+    const AudioObjectPropertyAddress prop = {
+        kAudioDevicePropertyDeviceUID,
+        this->iscapture ? kAudioDevicePropertyScopeInput : kAudioDevicePropertyScopeOutput,
+        kAudioObjectPropertyElementMaster
+    };
+
+    OSStatus result;
+    CFStringRef devuid;
+    UInt32 devuidsize = sizeof (devuid);
+    result = AudioObjectGetPropertyData(this->hidden->deviceID, &prop, 0, NULL, &devuidsize, &devuid);
+    CHECK_RESULT("AudioObjectGetPropertyData (kAudioDevicePropertyDeviceUID)");
+    result = AudioQueueSetProperty(this->hidden->audioQueue, kAudioQueueProperty_CurrentDevice, &devuid, devuidsize);
+    CHECK_RESULT("AudioQueueSetProperty (kAudioQueueProperty_CurrentDevice)");
+
+    return 1;
+}
 #endif
 
 static int
@@ -696,26 +739,21 @@ prepare_audioqueue(_THIS)
         CHECK_RESULT("AudioQueueNewOutput");
     }
 
-#if MACOSX_COREAUDIO
-{
-    const AudioObjectPropertyAddress prop = {
-        kAudioDevicePropertyDeviceUID,
-        iscapture ? kAudioDevicePropertyScopeInput : kAudioDevicePropertyScopeOutput,
-        kAudioObjectPropertyElementMaster
-    };
-    CFStringRef devuid;
-    UInt32 devuidsize = sizeof (devuid);
-    result = AudioObjectGetPropertyData(this->hidden->deviceID, &prop, 0, NULL, &devuidsize, &devuid);
-    CHECK_RESULT("AudioObjectGetPropertyData (kAudioDevicePropertyDeviceUID)");
-    result = AudioQueueSetProperty(this->hidden->audioQueue, kAudioQueueProperty_CurrentDevice, &devuid, devuidsize);
-    CHECK_RESULT("AudioQueueSetProperty (kAudioQueueProperty_CurrentDevice)");
+    #if MACOSX_COREAUDIO
+    if (!assign_device_to_audioqueue(this)) {
+        return 0;
+    }
 
-    /* !!! FIXME: what does iOS do when a bluetooth audio device vanishes? Headphones unplugged? */
-    /* !!! FIXME: (we only do a "default" device on iOS right now...can we do more?) */
-    /* Fire a callback if the device stops being "alive" (disconnected, etc). */
-    AudioObjectAddPropertyListener(this->hidden->deviceID, &alive_address, device_unplugged, this);
-}
-#endif
+    /* only listen for unplugging on specific devices, not the default device, as that should
+       switch to a different device (or hang out silently if there _is_ no other device). */
+    if (this->handle != NULL) {
+        /* !!! FIXME: what does iOS do when a bluetooth audio device vanishes? Headphones unplugged? */
+        /* !!! FIXME: (we only do a "default" device on iOS right now...can we do more?) */
+        /* Fire a callback if the device stops being "alive" (disconnected, etc). */
+        /* If this fails, oh well, we won't notice a device had an extraordinary event take place. */
+        AudioObjectAddPropertyListener(this->hidden->deviceID, &alive_address, device_unplugged, this);
+    }
+    #endif
 
     /* Calculate the final parameters for this audio specification */
     SDL_CalculateAudioSpec(&this->spec);
@@ -779,6 +817,7 @@ prepare_audioqueue(_THIS)
         numAudioBuffers = ((int)SDL_ceil(MINIMUM_AUDIO_BUFFER_TIME_MS / msecs) * 2);
     }
 
+    this->hidden->numAudioBuffers = numAudioBuffers;
     this->hidden->audioBuffer = SDL_calloc(1, sizeof (AudioQueueBufferRef) * numAudioBuffers);
     if (this->hidden->audioBuffer == NULL) {
         SDL_OutOfMemory();
@@ -794,6 +833,7 @@ prepare_audioqueue(_THIS)
         CHECK_RESULT("AudioQueueAllocateBuffer");
         SDL_memset(this->hidden->audioBuffer[i]->mAudioData, this->spec.silence, this->hidden->audioBuffer[i]->mAudioDataBytesCapacity);
         this->hidden->audioBuffer[i]->mAudioDataByteSize = this->hidden->audioBuffer[i]->mAudioDataBytesCapacity;
+        /* !!! FIXME: should we use AudioQueueEnqueueBufferWithParameters and specify all frames be "trimmed" so these are immediately ready to refill with SDL callback data? */
         result = AudioQueueEnqueueBuffer(this->hidden->audioQueue, this->hidden->audioBuffer[i], 0, NULL);
         CHECK_RESULT("AudioQueueEnqueueBuffer");
     }
@@ -809,6 +849,20 @@ static int
 audioqueue_thread(void *arg)
 {
     SDL_AudioDevice *this = (SDL_AudioDevice *) arg;
+
+    #if MACOSX_COREAUDIO
+    const AudioObjectPropertyAddress default_device_address = {
+        this->iscapture ? kAudioHardwarePropertyDefaultInputDevice : kAudioHardwarePropertyDefaultOutputDevice,
+        kAudioObjectPropertyScopeGlobal,
+        kAudioObjectPropertyElementMaster
+    };
+
+    if (this->handle == NULL) {  /* opened the default device? Register to know if the user picks a new default. */
+        /* we don't care if this fails; we just won't change to new default devices, but we still otherwise function in this case. */
+        AudioObjectAddPropertyListener(kAudioObjectSystemObject, &default_device_address, default_device_changed, this);
+    }
+    #endif
+
     const int rc = prepare_audioqueue(this);
     if (!rc) {
         this->hidden->thread_error = SDL_strdup(SDL_GetError());
@@ -820,14 +874,49 @@ audioqueue_thread(void *arg)
 
     /* init was successful, alert parent thread and start running... */
     SDL_SemPost(this->hidden->ready_semaphore);
+
     while (!SDL_AtomicGet(&this->hidden->shutdown)) {
         CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.10, 1);
+
+        #if MACOSX_COREAUDIO
+        if ((this->handle == NULL) && SDL_AtomicGet(&this->hidden->device_change_flag)) {
+            SDL_AtomicSet(&this->hidden->device_change_flag, 0);
+
+            #if DEBUG_COREAUDIO
+            printf("COREAUDIO: audioqueue_thread is trying to switch to new default device!\n");
+            #endif
+
+            /* if any of this fails, there's not much to do but wait to see if the user gives up
+               and quits (flagging the audioqueue for shutdown), or toggles to some other system
+               output device (in which case we'll try again). */
+            const AudioDeviceID prev_devid = this->hidden->deviceID;
+            if (prepare_device(this, this->handle, this->iscapture) && (prev_devid != this->hidden->deviceID)) {
+                AudioQueueStop(this->hidden->audioQueue, 1);
+                if (assign_device_to_audioqueue(this)) {
+                    int i;
+                    for (i = 0; i < this->hidden->numAudioBuffers; i++) {
+                        SDL_memset(this->hidden->audioBuffer[i]->mAudioData, this->spec.silence, this->hidden->audioBuffer[i]->mAudioDataBytesCapacity);
+                        /* !!! FIXME: should we use AudioQueueEnqueueBufferWithParameters and specify all frames be "trimmed" so these are immediately ready to refill with SDL callback data? */
+                        AudioQueueEnqueueBuffer(this->hidden->audioQueue, this->hidden->audioBuffer[i], 0, NULL);
+                    }
+                    AudioQueueStart(this->hidden->audioQueue, NULL);
+                }
+            }
+        }
+        #endif
     }
 
     if (!this->iscapture) {  /* Drain off any pending playback. */
         const CFTimeInterval secs = (((this->spec.size / (SDL_AUDIO_BITSIZE(this->spec.format) / 8)) / this->spec.channels) / ((CFTimeInterval) this->spec.freq)) * 2.0;
         CFRunLoopRunInMode(kCFRunLoopDefaultMode, secs, 0);
     }
+
+    #if MACOSX_COREAUDIO
+    if (this->handle == NULL) {
+        /* we don't care if this fails; we just won't change to new default devices, but we still otherwise function in this case. */
+        AudioObjectRemovePropertyListener(kAudioObjectSystemObject, &default_device_address, default_device_changed, this);
+    }
+    #endif
 
     return 0;
 }
