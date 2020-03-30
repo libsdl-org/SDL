@@ -423,6 +423,15 @@ HIDAPI_DriverPS4_HandleStatePacket(SDL_Joystick *joystick, hid_device *dev, SDL_
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_RIGHTSTICK, (data & 0x80) ? SDL_PRESSED : SDL_RELEASED);
     }
 
+	/* Some fightsticks, ex: Victrix FS Pro will only this these digital trigger bits and not the analog values so this needs to run whenever the
+	   trigger is evaluated
+	*/
+	if ((packet->rgucButtonsHatAndCounter[1] & 0x0C) != 0) {
+		Uint8 data = packet->rgucButtonsHatAndCounter[1];
+		packet->ucTriggerLeft = (data & 0x04) ? 255 : packet->ucTriggerLeft;
+		packet->ucTriggerRight = (data & 0x08) ? 255 : packet->ucTriggerRight;
+	}
+
     if (ctx->last_state.rgucButtonsHatAndCounter[2] != packet->rgucButtonsHatAndCounter[2]) {
         Uint8 data = (packet->rgucButtonsHatAndCounter[2] & 0x03);
 
