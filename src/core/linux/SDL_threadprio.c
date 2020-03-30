@@ -68,8 +68,7 @@ rtkit_setpriority(pid_t thread, int nice_level)
 
     if (!dbus || !SDL_DBus_CallMethodOnConnection(dbus->system_conn,
             RTKIT_DBUS_NODE, RTKIT_DBUS_PATH, RTKIT_DBUS_INTERFACE, "MakeThreadHighPriority",
-            DBUS_TYPE_UINT64, &ui64, DBUS_TYPE_INT32, &si32, DBUS_TYPE_INVALID,
-            DBUS_TYPE_INVALID)) {
+            DBUS_TYPE_UINT64, &ui64, DBUS_TYPE_INT32, &si32, DBUS_TYPE_INVALID)) {
         return SDL_FALSE;
     }
     return SDL_TRUE;
