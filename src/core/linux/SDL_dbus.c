@@ -65,6 +65,7 @@ LoadDBUSSyms(void)
     SDL_DBUS_SYM(message_iter_get_arg_type);
     SDL_DBUS_SYM(message_iter_recurse);
     SDL_DBUS_SYM(message_unref);
+    SDL_DBUS_SYM(threads_init_default);
     SDL_DBUS_SYM(error_init);
     SDL_DBUS_SYM(error_is_set);
     SDL_DBUS_SYM(error_free);
@@ -122,6 +123,11 @@ SDL_DBus_Init(void)
         if (LoadDBUSLibrary() == -1) {
             is_dbus_available = SDL_FALSE;  /* can't load at all? Don't keep trying. */
             return;  /* oh well */
+        }
+
+        if (!dbus.threads_init_default()) {
+            is_dbus_available = SDL_FALSE;
+            return;
         }
 
         dbus.error_init(&err);
