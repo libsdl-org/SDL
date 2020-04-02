@@ -331,7 +331,7 @@ static void interruption_end(_THIS)
 
 @end
 
-static BOOL update_audio_session(_THIS, SDL_bool open)
+static BOOL update_audio_session(_THIS, SDL_bool open, SDL_bool allow_playandrecord)
 {
     @autoreleasepool {
         AVAudioSession *session = [AVAudioSession sharedInstance];
@@ -356,7 +356,9 @@ static BOOL update_audio_session(_THIS, SDL_bool open)
                 options &= ~AVAudioSessionCategoryOptionMixWithOthers;
             } else if (SDL_strcasecmp(hint, "AVAudioSessionCategoryPlayAndRecord") == 0 ||
                        SDL_strcasecmp(hint, "playandrecord") == 0) {
-                category = AVAudioSessionCategoryPlayAndRecord;
+                if (allow_playandrecord) {
+                    category = AVAudioSessionCategoryPlayAndRecord;
+                }
             }
         } else if (open_playback_devices && open_capture_devices) {
             category = AVAudioSessionCategoryPlayAndRecord;
@@ -390,6 +392,11 @@ static BOOL update_audio_session(_THIS, SDL_bool open)
 
         if (open && (open_playback_devices + open_capture_devices) == 1) {
             if (![session setActive:YES error:&err]) {
+                if ([err code] == AVAudioSessionErrorCodeResourceNotAvailable &&
+                    category == AVAudioSessionCategoryPlayAndRecord) {
+                    return update_audio_session(this, open, SDL_FALSE);
+                }
+
                 NSString *desc = err.description;
                 SDL_SetError("Could not activate Audio Session: %s", desc.UTF8String);
                 return NO;
@@ -620,7 +627,7 @@ COREAUDIO_CloseDevice(_THIS)
     }
 
 #if !MACOSX_COREAUDIO
-    update_audio_session(this, SDL_FALSE);
+    update_audio_session(this, SDL_FALSE, SDL_TRUE);
 #endif
 
     /* if callback fires again, feed silence; don't call into the app. */
@@ -945,7 +952,7 @@ COREAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     }
 
 #if !MACOSX_COREAUDIO
-    if (!update_audio_session(this, SDL_TRUE)) {
+    if (!update_audio_session(this, SDL_TRUE, SDL_TRUE)) {
         return -1;
     }
 
