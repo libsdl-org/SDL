@@ -248,10 +248,24 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
         [NSApp activateIgnoringOtherApps:YES];
     }
 
+    [[NSAppleEventManager sharedAppleEventManager]
+    setEventHandler:self
+        andSelector:@selector(handleURLEvent:withReplyEvent:)
+      forEventClass:kInternetEventClass
+         andEventID:kAEGetURL];
+
     /* If we call this before NSApp activation, macOS might print a complaint
      * about ApplePersistenceIgnoreState. */
     [SDLApplication registerUserDefaults];
 }
+
+- (void)handleURLEvent:(NSAppleEventDescriptor *)event withReplyEvent:(NSAppleEventDescriptor *)replyEvent
+{
+    NSString* path = [[event paramDescriptorForKeyword:keyDirectObject] stringValue];
+    SDL_SendDropFile(NULL, [path UTF8String]);
+    SDL_SendDropComplete(NULL);
+}
+
 @end
 
 static SDLAppDelegate *appDelegate = nil;
