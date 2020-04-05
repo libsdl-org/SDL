@@ -2325,6 +2325,7 @@ D3D11_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
                        Uint32 format, void * pixels, int pitch)
 {
     D3D11_RenderData * data = (D3D11_RenderData *) renderer->driverdata;
+    ID3D11RenderTargetView *renderTargetView = NULL;
     ID3D11Texture2D *backBuffer = NULL;
     ID3D11Texture2D *stagingTexture = NULL;
     HRESULT result;
@@ -2334,14 +2335,15 @@ D3D11_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
     D3D11_BOX srcBox;
     D3D11_MAPPED_SUBRESOURCE textureMemory;
 
-    /* Retrieve a pointer to the back buffer: */
-    result = IDXGISwapChain_GetBuffer(data->swapChain,
-        0,
-        &SDL_IID_ID3D11Texture2D,
-        (void **)&backBuffer
-        );
-    if (FAILED(result)) {
-        WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("IDXGISwapChain1::GetBuffer [get back buffer]"), result);
+    ID3D11DeviceContext_OMGetRenderTargets(data->d3dContext, 1, &renderTargetView, NULL);
+    if (renderTargetView == NULL) {
+        SDL_SetError("%s, ID3D11DeviceContext::OMGetRenderTargets failed", __FUNCTION__);
+        goto done;
+    }
+
+    ID3D11View_GetResource(renderTargetView, (ID3D11Resource**)&backBuffer);
+    if (backBuffer == NULL) {
+        SDL_SetError("%s, ID3D11View::GetResource failed", __FUNCTION__);
         goto done;
     }
 
