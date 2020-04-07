@@ -485,6 +485,16 @@ Emscripten_HandleKey(int eventType, const EmscriptenKeyboardEvent *keyEvent, voi
     if (keyEvent->keyCode < SDL_arraysize(emscripten_scancode_table)) {
         scancode = emscripten_scancode_table[keyEvent->keyCode];
 
+        if (keyEvent->keyCode == 0) {
+            /* KaiOS Left Soft Key and Right Soft Key, they act as OK/Next/Menu and Cancel/Back/Clear */
+            if (SDL_strncmp(keyEvent->key, "SoftLeft", 9) == 0) {
+                scancode = SDL_SCANCODE_AC_FORWARD;
+            }
+            if (SDL_strncmp(keyEvent->key, "SoftRight", 10) == 0) {
+                scancode = SDL_SCANCODE_AC_BACK;
+            }
+        }
+
         if (scancode != SDL_SCANCODE_UNKNOWN) {
 
             if (keyEvent->location == DOM_KEY_LOCATION_RIGHT) {
