@@ -1333,7 +1333,7 @@ AC_HELP_STRING([--enable-arm-simd], [use SIMD assembly blitters on ARM [[default
         CFLAGS="$save_CFLAGS"
         
         if test x$have_arm_simd = xyes; then
-            AC_DEFINE(SDL_ARM_SIMD_BLITTERS)
+            AC_DEFINE(SDL_ARM_SIMD_BLITTERS, 1, [ ])
 dnl            SOURCES="$SOURCES $srcdir/src/video/arm/pixman-arm-simd*.c"
             SOURCES="$SOURCES $srcdir/src/video/arm/pixman-arm-simd*.S"
             WARN_ABOUT_ARM_SIMD_ASM_MIT="yes"
@@ -1372,7 +1372,7 @@ AC_HELP_STRING([--enable-arm-neon], [use NEON assembly blitters on ARM [[default
         CFLAGS="$save_CFLAGS"
         
         if test x$have_arm_neon = xyes; then
-            AC_DEFINE(SDL_ARM_NEON_BLITTERS)
+            AC_DEFINE(SDL_ARM_NEON_BLITTERS, 1, [ ])
 dnl            SOURCES="$SOURCES $srcdir/src/video/arm/pixman-arm-neon*.c"
             SOURCES="$SOURCES $srcdir/src/video/arm/pixman-arm-neon*.S"
             WARN_ABOUT_ARM_NEON_ASM_MIT="yes"
@@ -1928,7 +1928,7 @@ int event_type = XI_TouchBegin;
 XITouchClassInfo *t;
                     ],[
                     have_xinput2_multitouch=yes
-                    AC_DEFINE([SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH], 1, [])
+                    AC_DEFINE([SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH], 1, [ ])
                     SUMMARY_video_x11="${SUMMARY_video_x11} xinput2_multitouch"
                     ])
                 AC_MSG_RESULT($have_xinput2_multitouch)
@@ -3095,11 +3095,11 @@ XINPUT_STATE_EX s1;
 
     AC_CHECK_HEADER(mmdeviceapi.h, have_wasapi=yes)
     if test x$have_wasapi = xyes; then
-        AC_DEFINE(HAVE_MMDEVICEAPI_H,1,[])
+        AC_DEFINE(HAVE_MMDEVICEAPI_H, 1, [ ])
     fi
     AC_CHECK_HEADER(audioclient.h,,have_wasapi=no)
     if test x$have_wasapi = xyes; then
-        AC_DEFINE(HAVE_AUDIOCLIENT_H,1,[])
+        AC_DEFINE(HAVE_AUDIOCLIENT_H, 1, [ ])
     fi
 
     AC_ARG_ENABLE(wasapi,
