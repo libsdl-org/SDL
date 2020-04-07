@@ -607,9 +607,11 @@ WASAPI_PrepDevice(_THIS, const SDL_bool updatestream)
 
     /* Match the callback size to the period size to cut down on the number of
        interrupts waited for in each call to WaitDevice */
-    float period_millis = default_period / 10000.0f;
-    float period_frames = period_millis * this->spec.freq / 1000.0f;
-    this->spec.samples = (Uint16)ceil(period_frames);
+    {
+        const float period_millis = default_period / 10000.0f;
+        const float period_frames = period_millis * this->spec.freq / 1000.0f;
+        this->spec.samples = (Uint16)SDL_ceilf(period_frames);
+    }
 
     /* Update the fragment size as size in bytes */
     SDL_CalculateAudioSpec(&this->spec);
