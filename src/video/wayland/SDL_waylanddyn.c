@@ -26,9 +26,6 @@
 
 #include "SDL_waylanddyn.h"
 
-#if DEBUG_DYNAMIC_WAYLAND
-#include "SDL_log.h"
-#endif
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC
 

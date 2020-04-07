@@ -40,7 +40,6 @@
 
 #include "SDL_timer.h"
 #include "SDL_syswm.h"
-#include "SDL_log.h"
 
 #define _NET_WM_STATE_REMOVE    0l
 #define _NET_WM_STATE_ADD       1l

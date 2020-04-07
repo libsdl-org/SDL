@@ -47,7 +47,6 @@
 #endif
 #endif
 
-#include "SDL_log.h"
 #include "SDL_platform.h"
 #include "SDL_thread.h"
 #include "../SDL_thread_c.h"

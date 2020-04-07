@@ -23,7 +23,6 @@
 #if SDL_VIDEO_RENDER_METAL && !SDL_RENDER_DISABLED
 
 #include "SDL_hints.h"
-#include "SDL_log.h"
 #include "SDL_assert.h"
 #include "SDL_syswm.h"
 #include "SDL_metal.h"

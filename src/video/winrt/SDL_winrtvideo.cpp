@@ -67,7 +67,6 @@ extern "C" {
 #include "SDL_winrtmouse_c.h"
 #include "SDL_main.h"
 #include "SDL_system.h"
-//#include "SDL_log.h"
 
 
 /* Initialization/Query functions */

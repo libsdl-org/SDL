@@ -26,7 +26,6 @@
 
 #include "SDL_assert.h"
 #include "SDL_hints.h"
-#include "SDL_log.h"
 #include "SDL_timer.h"
 #include "SDL_windowsjoystick_c.h"
 #include "SDL_xinputjoystick_c.h"

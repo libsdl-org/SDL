@@ -25,7 +25,6 @@
 
 #include "SDL_stdinc.h"
 #include "SDL_assert.h"
-#include "SDL_log.h"
 
 #include "../../core/unix/SDL_poll.h"
 #include "../../events/SDL_sysevents.h"

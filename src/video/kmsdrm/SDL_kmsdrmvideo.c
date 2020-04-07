@@ -26,7 +26,6 @@
 /* SDL internals */
 #include "../SDL_sysvideo.h"
 #include "SDL_syswm.h"
-#include "SDL_log.h"
 #include "SDL_hints.h"
 #include "../../events/SDL_events_c.h"
 #include "../../events/SDL_mouse_c.h"

@@ -30,7 +30,6 @@
 #include "SDL_joystick.h"
 #include "SDL_assert.h"
 #include "SDL_timer.h"
-#include "SDL_log.h"
 #include "SDL_sysjoystick_c.h"
 #include "../SDL_joystick_c.h"
 

@@ -31,7 +31,6 @@
 #endif
 
 #include "SDL_sysvideo.h"
-#include "SDL_log.h"
 #include "SDL_egl_c.h"
 #include "SDL_loadso.h"
 #include "SDL_hints.h"

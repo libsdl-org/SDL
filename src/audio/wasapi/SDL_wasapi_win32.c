@@ -35,7 +35,6 @@
 #include "../SDL_audio_c.h"
 #include "../SDL_sysaudio.h"
 #include "SDL_assert.h"
-#include "SDL_log.h"
 
 #define COBJMACROS
 #include <mmdeviceapi.h>
