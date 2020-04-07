@@ -270,8 +270,8 @@ RAWINPUT_AddDevice(HANDLE hDevice)
     RID_DEVICE_INFO rdi;
     UINT rdi_size = sizeof(rdi);
     char dev_name[128];
-    const char *name;
     UINT name_size = SDL_arraysize(dev_name);
+    const char *name;
     SDL_RAWINPUT_Device *curr, *last;
 
     SDL_assert(!RAWINPUT_DeviceFromHandle(hDevice));
@@ -313,18 +313,46 @@ RAWINPUT_AddDevice(HANDLE hDevice)
         device->guid.data[15] = 0;
     }
 
-    if (!device->name) {
-        size_t name_size = (6 + 1 + 6 + 1);
-        CHECK(device->name = SDL_callocStructs(char, name_size));
-        SDL_snprintf(device->name, name_size, "0x%.4x/0x%.4x", device->vendor_id, device->product_id);
-    }
-
     CHECK(device->driver = RAWINPUT_GetDeviceDriver(device));
 
     name = device->driver->GetDeviceName(device->vendor_id, device->product_id);
     if (name) {
-        SDL_free(device->name);
         device->name = SDL_strdup(name);
+    } else {
+        char *manufacturer_string = NULL;
+        char *product_string = NULL;
+        HMODULE hHID;
+
+        hHID = LoadLibrary( TEXT( "hid.dll" ) );
+        if (hHID) {
+            typedef BOOLEAN (WINAPI * HidD_GetStringFunc)(HANDLE HidDeviceObject, PVOID Buffer, ULONG BufferLength);
+            HidD_GetStringFunc GetManufacturerString = (HidD_GetStringFunc)GetProcAddress(hHID, "HidD_GetManufacturerString");
+            HidD_GetStringFunc GetProductString = (HidD_GetStringFunc)GetProcAddress(hHID, "HidD_GetProductString");
+            if (GetManufacturerString && GetProductString) {
+                HANDLE hFile = CreateFileA(dev_name, GENERIC_READ|GENERIC_WRITE, FILE_SHARE_READ|FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
+                if (hFile != INVALID_HANDLE_VALUE) {
+                    WCHAR string[128];
+
+                    if (GetManufacturerString(hFile, string, sizeof(string))) {
+                        manufacturer_string = WIN_StringToUTF8(string);
+                    }
+                    if (GetProductString(hFile, string, sizeof(string))) {
+                        product_string = WIN_StringToUTF8(string);
+                    }
+                    CloseHandle(hFile);
+                }
+            }
+            FreeLibrary(hHID);
+        }
+
+        device->name = SDL_CreateJoystickName(device->vendor_id, device->product_id, manufacturer_string, product_string);
+
+        if (manufacturer_string) {
+            SDL_free(manufacturer_string);
+        }
+        if (product_string) {
+            SDL_free(product_string);
+        }
     }
 
 #ifdef DEBUG_RAWINPUT
