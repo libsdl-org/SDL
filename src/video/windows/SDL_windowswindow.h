@@ -39,6 +39,7 @@ typedef struct
     WNDPROC wndproc;
     SDL_bool created;
     WPARAM mouse_button_flags;
+    LPARAM last_pointer_update;
     SDL_bool initializing;
     SDL_bool expected_resize;
     SDL_bool in_border_change;
