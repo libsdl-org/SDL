@@ -26,7 +26,6 @@
 #include "SDL_atomic.h"
 #include "SDL_endian.h"
 #include "SDL_hints.h"
-#include "SDL_log.h"
 #include "SDL_thread.h"
 #include "SDL_timer.h"
 #include "SDL_joystick.h"

@@ -32,7 +32,6 @@
 #include "SDL_error.h"
 #include "SDL_stdinc.h"
 #include "SDL_filesystem.h"
-#include "SDL_log.h"
 
 char *
 SDL_GetBasePath(void)

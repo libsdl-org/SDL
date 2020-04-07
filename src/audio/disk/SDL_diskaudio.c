@@ -33,7 +33,6 @@
 #include "SDL_audio.h"
 #include "../SDL_audio_c.h"
 #include "SDL_diskaudio.h"
-#include "SDL_log.h"
 
 /* !!! FIXME: these should be SDL hints, not environment variables. */
 /* environment variables and defaults. */

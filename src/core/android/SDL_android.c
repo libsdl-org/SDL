@@ -19,11 +19,11 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 #include "../../SDL_internal.h"
+
 #include "SDL_stdinc.h"
 #include "SDL_assert.h"
 #include "SDL_atomic.h"
 #include "SDL_hints.h"
-#include "SDL_log.h"
 #include "SDL_main.h"
 #include "SDL_timer.h"
 

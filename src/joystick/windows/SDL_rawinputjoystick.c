@@ -36,7 +36,6 @@
 #include "SDL_assert.h"
 #include "SDL_endian.h"
 #include "SDL_hints.h"
-#include "SDL_log.h"
 #include "SDL_mutex.h"
 #include "../SDL_sysjoystick.h"
 #include "../../core/windows/SDL_windows.h"

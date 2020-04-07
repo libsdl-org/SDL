@@ -25,7 +25,6 @@
 #include "SDL_windowsvideo.h"
 #include "SDL_windowsopengles.h"
 #include "SDL_windowsopengl.h"
-#include "SDL_log.h"
 
 /* EGL implementation of SDL OpenGL support */
 

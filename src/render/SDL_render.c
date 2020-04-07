@@ -24,7 +24,6 @@
 
 #include "SDL_assert.h"
 #include "SDL_hints.h"
-#include "SDL_log.h"
 #include "SDL_render.h"
 #include "SDL_sysrender.h"
 #include "software/SDL_render_sw_c.h"

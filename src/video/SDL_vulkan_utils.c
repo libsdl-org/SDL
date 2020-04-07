@@ -22,7 +22,6 @@
 
 #include "SDL_vulkan_internal.h"
 #include "SDL_error.h"
-#include "SDL_log.h"
 
 /* !!! FIXME: this file doesn't match coding standards for SDL (brace position, etc). */
 

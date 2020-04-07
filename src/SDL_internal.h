@@ -116,6 +116,8 @@
 #define SDL_HAVE_YUV                    !SDL_LEAN_AND_MEAN
 #endif
 
+#include "SDL_log.h"
+
 #endif /* SDL_internal_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

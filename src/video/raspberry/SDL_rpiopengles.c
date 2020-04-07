@@ -19,8 +19,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 #include "../../SDL_internal.h"
+
 #include "SDL_hints.h"
-#include "SDL_log.h"
 
 #if SDL_VIDEO_DRIVER_RPI && SDL_VIDEO_OPENGL_EGL
 
