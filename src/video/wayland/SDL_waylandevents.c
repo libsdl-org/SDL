@@ -42,7 +42,15 @@
 #include "xdg-shell-client-protocol.h"
 #include "xdg-shell-unstable-v6-client-protocol.h"
 
+#ifdef SDL_INPUT_LINUXEV
 #include <linux/input.h>
+#else
+#define BTN_LEFT    (0x110)
+#define BTN_RIGHT   (0x111)
+#define BTN_MIDDLE  (0x112)
+#define BTN_SIDE    (0x113)
+#define BTN_EXTRA   (0x114)
+#endif
 #include <sys/select.h>
 #include <sys/mman.h>
 #include <poll.h>
@@ -436,7 +444,7 @@ pointer_handle_axis(void *data, struct wl_pointer *pointer,
 {
     struct SDL_WaylandInput *input = data;
 
-    if(wl_seat_interface.version >= 5)
+    if(wl_seat_get_version(input->seat) >= 5)
         pointer_handle_axis_common(input, SDL_FALSE, axis, value);
     else
         pointer_handle_axis_common_v1(input, time, axis, value);
@@ -997,7 +1005,7 @@ static const struct wl_data_device_listener data_device_listener = {
 };
 
 void
-Wayland_display_add_input(SDL_VideoData *d, uint32_t id)
+Wayland_display_add_input(SDL_VideoData *d, uint32_t id, uint32_t version)
 {
     struct SDL_WaylandInput *input;
     SDL_WaylandDataDevice *data_device = NULL;
@@ -1007,10 +1015,7 @@ Wayland_display_add_input(SDL_VideoData *d, uint32_t id)
         return;
 
     input->display = d;
-    if (wl_seat_interface.version >= 5)
-        input->seat = wl_registry_bind(d->registry, id, &wl_seat_interface, 5);
-    else
-        input->seat = wl_registry_bind(d->registry, id, &wl_seat_interface, 1);
+    input->seat = wl_registry_bind(d->registry, id, &wl_seat_interface, SDL_min(5, version));
     input->sx_w = wl_fixed_from_int(0);
     input->sy_w = wl_fixed_from_int(0);
     d->input = input;
