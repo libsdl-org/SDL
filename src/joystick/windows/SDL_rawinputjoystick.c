@@ -572,7 +572,6 @@ RAWINPUT_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Ui
 {
     struct joystick_hwdata *hwdata = joystick->hwdata;
     SDL_RAWINPUT_Device *device = hwdata->device;
-    int result;
 
     return device->driver->RumbleJoystick(&device->hiddevice, joystick, low_frequency_rumble, high_frequency_rumble);
 }
