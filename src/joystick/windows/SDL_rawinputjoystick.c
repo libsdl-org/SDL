@@ -36,7 +36,6 @@
 #include "SDL_assert.h"
 #include "SDL_endian.h"
 #include "SDL_hints.h"
-#include "SDL_mutex.h"
 #include "../SDL_sysjoystick.h"
 #include "../../core/windows/SDL_windows.h"
 #include "../hidapi/SDL_hidapijoystick_c.h"
@@ -117,7 +116,6 @@ struct joystick_hwdata
 {
     void *reserved; /* reserving a value here to ensure the new SDL_hidapijoystick.c code never dereferences this */
     SDL_RAWINPUT_Device *device;
-    SDL_mutex *mutex;
 };
 
 SDL_RAWINPUT_Device *SDL_RAWINPUT_devices;
@@ -564,7 +562,6 @@ RAWINPUT_JoystickOpen(SDL_Joystick * joystick, int device_index)
     hwdata->device = device;
     device->joystick = joystick;
 
-    hwdata->mutex = SDL_CreateMutex();
     joystick->hwdata = hwdata;
 
     return 0;
@@ -577,10 +574,7 @@ RAWINPUT_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Ui
     SDL_RAWINPUT_Device *device = hwdata->device;
     int result;
 
-    SDL_LockMutex(hwdata->mutex);
-    result = device->driver->RumbleJoystick(&device->hiddevice, joystick, low_frequency_rumble, high_frequency_rumble);
-    SDL_UnlockMutex(hwdata->mutex);
-    return result;
+    return device->driver->RumbleJoystick(&device->hiddevice, joystick, low_frequency_rumble, high_frequency_rumble);
 }
 
 static void
@@ -593,9 +587,7 @@ RAWINPUT_JoystickUpdate(SDL_Joystick * joystick)
     hwdata = joystick->hwdata;
     device = hwdata->device;
 
-    SDL_LockMutex(hwdata->mutex);
     device->driver->UpdateDevice(&device->hiddevice);
-    SDL_UnlockMutex(hwdata->mutex);
 }
 
 static void
@@ -613,7 +605,6 @@ RAWINPUT_JoystickClose(SDL_Joystick * joystick)
             device->joystick = NULL;
         }
 
-        SDL_DestroyMutex(hwdata->mutex);
         SDL_free(hwdata);
         joystick->hwdata = NULL;
     }
