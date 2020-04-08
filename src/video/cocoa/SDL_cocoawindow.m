@@ -318,7 +318,7 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
 {
     NSNotificationCenter *center;
     NSWindow *window = data->nswindow;
-    NSView *view = data->nsview;
+    NSView *view = data->sdlContentView;
 
     _data = data;
     observingVisible = YES;
