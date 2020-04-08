@@ -1371,12 +1371,6 @@ SDL_JoystickUpdate(void)
             }
             SDL_UnlockJoysticks();
         }
-
-        /* !!! FIXME: only one thing sets force_recentering now (the Darwin code), see if that can be removed. */
-        if (joystick->force_recentering) {
-            SDL_PrivateJoystickForceRecentering(joystick);
-            joystick->force_recentering = SDL_FALSE;
-        }
     }
 
     SDL_LockJoysticks();
