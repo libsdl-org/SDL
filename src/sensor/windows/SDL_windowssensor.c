@@ -281,6 +281,9 @@ static int ConnectSensor(ISensor *sensor)
 	} else {
 		name = SDL_strdup("Unknown Sensor");
 	}
+    if (bstr_name != NULL) {
+        SysFreeString(bstr_name);
+    }
 	if (!name) {
 		return SDL_OutOfMemory();
 	}
@@ -338,8 +341,6 @@ SDL_WINDOWS_SensorInit(void)
 {
 	HRESULT hr;
 	ISensorCollection *sensor_collection = NULL;
-
-	while (!IsDebuggerPresent()) Sleep(100);
 
 	if (WIN_CoInitialize() == S_OK) {
 		SDL_windowscoinit = SDL_TRUE;
