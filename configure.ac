@@ -3739,11 +3739,19 @@ AS_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
                 have_haptic=yes
             fi
         fi
+        # Set up files for the sensor library
+        if test x$enable_sensor = xyes; then
+            AC_DEFINE(SDL_SENSOR_WINDOWS, 1, [ ])
+            SOURCES="$SOURCES $srcdir/src/sensor/windows/*.c"
+            have_sensor=yes
+        fi
+        # Set up files for the power library
         if test x$enable_power = xyes; then
             AC_DEFINE(SDL_POWER_WINDOWS, 1, [ ])
             SOURCES="$SOURCES $srcdir/src/power/windows/SDL_syspower.c"
             have_power=yes
         fi
+        # Set up files for the filesystem library
         if test x$enable_filesystem = xyes; then
             AC_DEFINE(SDL_FILESYSTEM_WINDOWS, 1, [ ])
             SOURCES="$SOURCES $srcdir/src/filesystem/windows/SDL_sysfilesystem.c"

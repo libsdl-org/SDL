@@ -1417,6 +1417,13 @@ elseif(WINDOWS)
     set(HAVE_SDL_THREADS TRUE)
   endif()
 
+  if(SDL_SENSOR)
+    set(SDL_SENSOR_WINDOWS 1)
+    set(HAVE_SDL_SENSORS TRUE)
+    file(GLOB WINDOWS_SENSOR_SOURCES ${SDL2_SOURCE_DIR}/src/sensor/windows/*.c)
+    set(SOURCE_FILES ${SOURCE_FILES} ${WINDOWS_SENSOR_SOURCES})
+  endif()
+
   if(SDL_POWER)
     set(SDL_POWER_WINDOWS 1)
     set(SOURCE_FILES ${SOURCE_FILES} ${SDL2_SOURCE_DIR}/src/power/windows/SDL_syspower.c)
