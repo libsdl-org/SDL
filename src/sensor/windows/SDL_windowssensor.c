@@ -47,12 +47,12 @@ DEFINE_PROPERTYKEY(SENSOR_DATA_TYPE_ANGULAR_VELOCITY_Z_DEGREES_PER_SECOND, 0X3F8
 
 typedef struct
 {
-	SDL_SensorID id;
-	ISensor *sensor;
-	SENSOR_ID sensor_id;
-	char *name;
-	SDL_SensorType type;
-	SDL_Sensor *sensor_opened;
+    SDL_SensorID id;
+    ISensor *sensor;
+    SENSOR_ID sensor_id;
+    char *name;
+    SDL_SensorType type;
+    SDL_Sensor *sensor_opened;
 
 } SDL_Windows_Sensor;
 
@@ -66,320 +66,322 @@ static int DisconnectSensor(ISensor *sensor);
 
 static HRESULT STDMETHODCALLTYPE ISensorManagerEventsVtbl_QueryInterface(ISensorManagerEvents * This, REFIID riid, void **ppvObject)
 {
-	if (!ppvObject) {
-		return E_INVALIDARG;
-	}
+    if (!ppvObject) {
+        return E_INVALIDARG;
+    }
 
-	*ppvObject = NULL;
-	if (WIN_IsEqualIID(riid, &IID_IUnknown) || WIN_IsEqualIID(riid, &IID_SensorManagerEvents)) {
-		*ppvObject = This;
-		return S_OK;
-	}
-	return E_NOINTERFACE;
+    *ppvObject = NULL;
+    if (WIN_IsEqualIID(riid, &IID_IUnknown) || WIN_IsEqualIID(riid, &IID_SensorManagerEvents)) {
+        *ppvObject = This;
+        return S_OK;
+    }
+    return E_NOINTERFACE;
 }
 
 static ULONG STDMETHODCALLTYPE ISensorManagerEventsVtbl_AddRef(ISensorManagerEvents * This)
 {
-	return 1;
+    return 1;
 }
 
 static ULONG STDMETHODCALLTYPE ISensorManagerEventsVtbl_Release(ISensorManagerEvents * This)
 {
-	return 1;
+    return 1;
 }
 
 static HRESULT STDMETHODCALLTYPE ISensorManagerEventsVtbl_OnSensorEnter(ISensorManagerEvents * This, ISensor *pSensor, SensorState state)
 {
-	ConnectSensor(pSensor);
-	return S_OK;
+    ConnectSensor(pSensor);
+    return S_OK;
 }
 
 static ISensorManagerEventsVtbl sensor_manager_events_vtbl = {
-	ISensorManagerEventsVtbl_QueryInterface,
-	ISensorManagerEventsVtbl_AddRef,
-	ISensorManagerEventsVtbl_Release,
-	ISensorManagerEventsVtbl_OnSensorEnter
+    ISensorManagerEventsVtbl_QueryInterface,
+    ISensorManagerEventsVtbl_AddRef,
+    ISensorManagerEventsVtbl_Release,
+    ISensorManagerEventsVtbl_OnSensorEnter
 };
 static ISensorManagerEvents sensor_manager_events = {
-	&sensor_manager_events_vtbl
+    &sensor_manager_events_vtbl
 };
 
 static HRESULT STDMETHODCALLTYPE ISensorEventsVtbl_QueryInterface(ISensorEvents * This, REFIID riid, void **ppvObject)
 {
-	if (!ppvObject) {
-		return E_INVALIDARG;
-	}
+    if (!ppvObject) {
+        return E_INVALIDARG;
+    }
 
-	*ppvObject = NULL;
-	if (WIN_IsEqualIID(riid, &IID_IUnknown) || WIN_IsEqualIID(riid, &IID_SensorEvents)) {
-		*ppvObject = This;
-		return S_OK;
-	}
-	return E_NOINTERFACE;
+    *ppvObject = NULL;
+    if (WIN_IsEqualIID(riid, &IID_IUnknown) || WIN_IsEqualIID(riid, &IID_SensorEvents)) {
+        *ppvObject = This;
+        return S_OK;
+    }
+    return E_NOINTERFACE;
 }
 
 static ULONG STDMETHODCALLTYPE ISensorEventsVtbl_AddRef(ISensorEvents * This)
 {
-	return 1;
+    return 1;
 }
 
 static ULONG STDMETHODCALLTYPE ISensorEventsVtbl_Release(ISensorEvents * This)
 {
-	return 1;
+    return 1;
 }
 
 static HRESULT STDMETHODCALLTYPE ISensorEventsVtbl_OnStateChanged(ISensorEvents * This, ISensor *pSensor, SensorState state)
 {
 #ifdef DEBUG_SENSORS
-	int i;
+    int i;
 
-	SDL_LockSensors();
-	for (i = 0; i < SDL_num_sensors; ++i) {
-		if (pSensor == SDL_sensors[i].sensor) {
-			SDL_Log("Sensor %s state changed to %d\n", SDL_sensors[i].name, state);
-		}
-	}
-	SDL_UnlockSensors();
+    SDL_LockSensors();
+    for (i = 0; i < SDL_num_sensors; ++i) {
+        if (pSensor == SDL_sensors[i].sensor) {
+            SDL_Log("Sensor %s state changed to %d\n", SDL_sensors[i].name, state);
+        }
+    }
+    SDL_UnlockSensors();
 #endif
-	return S_OK;
+    return S_OK;
 }
 
 static HRESULT STDMETHODCALLTYPE ISensorEventsVtbl_OnDataUpdated(ISensorEvents * This, ISensor *pSensor, ISensorDataReport *pNewData)
 {
-	int i;
+    int i;
 
-	SDL_LockSensors();
-	for (i = 0; i < SDL_num_sensors; ++i) {
-		if (pSensor == SDL_sensors[i].sensor) {
-			if (SDL_sensors[i].sensor_opened) {
-				HRESULT hrX, hrY, hrZ;
-				PROPVARIANT valueX, valueY, valueZ;
+    SDL_LockSensors();
+    for (i = 0; i < SDL_num_sensors; ++i) {
+        if (pSensor == SDL_sensors[i].sensor) {
+            if (SDL_sensors[i].sensor_opened) {
+                HRESULT hrX, hrY, hrZ;
+                PROPVARIANT valueX, valueY, valueZ;
 
 #ifdef DEBUG_SENSORS
-				SDL_Log("Sensor %s data updated\n", SDL_sensors[i].name);
+                SDL_Log("Sensor %s data updated\n", SDL_sensors[i].name);
 #endif
-				switch (SDL_sensors[i].type) {
-				case SDL_SENSOR_ACCEL:
-					hrX = ISensorDataReport_GetSensorValue(pNewData, &SENSOR_DATA_TYPE_ACCELERATION_X_G, &valueX);
-					hrY = ISensorDataReport_GetSensorValue(pNewData, &SENSOR_DATA_TYPE_ACCELERATION_Y_G, &valueY);
-					hrZ = ISensorDataReport_GetSensorValue(pNewData, &SENSOR_DATA_TYPE_ACCELERATION_Z_G, &valueZ);
-					if (SUCCEEDED(hrX) && SUCCEEDED(hrY) && SUCCEEDED(hrZ) &&
-						valueX.vt == VT_R8 && valueY.vt == VT_R8 && valueZ.vt == VT_R8) {
-						float values[3];
+                switch (SDL_sensors[i].type) {
+                case SDL_SENSOR_ACCEL:
+                    hrX = ISensorDataReport_GetSensorValue(pNewData, &SENSOR_DATA_TYPE_ACCELERATION_X_G, &valueX);
+                    hrY = ISensorDataReport_GetSensorValue(pNewData, &SENSOR_DATA_TYPE_ACCELERATION_Y_G, &valueY);
+                    hrZ = ISensorDataReport_GetSensorValue(pNewData, &SENSOR_DATA_TYPE_ACCELERATION_Z_G, &valueZ);
+                    if (SUCCEEDED(hrX) && SUCCEEDED(hrY) && SUCCEEDED(hrZ) &&
+                        valueX.vt == VT_R8 && valueY.vt == VT_R8 && valueZ.vt == VT_R8) {
+                        float values[3];
 
-						values[0] = (float)valueX.dblVal;
-						values[1] = (float)valueY.dblVal;
-						values[2] = (float)valueZ.dblVal;
-						SDL_PrivateSensorUpdate(SDL_sensors[i].sensor_opened, values, 3);
-					}
-					break;
-				case SDL_SENSOR_GYRO:
-					hrX = ISensorDataReport_GetSensorValue(pNewData, &SENSOR_DATA_TYPE_ANGULAR_VELOCITY_X_DEGREES_PER_SECOND, &valueX);
-					hrY = ISensorDataReport_GetSensorValue(pNewData, &SENSOR_DATA_TYPE_ANGULAR_VELOCITY_Y_DEGREES_PER_SECOND, &valueY);
-					hrZ = ISensorDataReport_GetSensorValue(pNewData, &SENSOR_DATA_TYPE_ANGULAR_VELOCITY_Z_DEGREES_PER_SECOND, &valueZ);
-					if (SUCCEEDED(hrX) && SUCCEEDED(hrY) && SUCCEEDED(hrZ) &&
-						valueX.vt == VT_R8 && valueY.vt == VT_R8 && valueZ.vt == VT_R8) {
-						float values[3];
+                        values[0] = (float)valueX.dblVal * SDL_STANDARD_GRAVITY;
+                        values[1] = (float)valueY.dblVal * SDL_STANDARD_GRAVITY;
+                        values[2] = (float)valueZ.dblVal * SDL_STANDARD_GRAVITY;
+                        SDL_PrivateSensorUpdate(SDL_sensors[i].sensor_opened, values, 3);
+                    }
+                    break;
+                case SDL_SENSOR_GYRO:
+                    hrX = ISensorDataReport_GetSensorValue(pNewData, &SENSOR_DATA_TYPE_ANGULAR_VELOCITY_X_DEGREES_PER_SECOND, &valueX);
+                    hrY = ISensorDataReport_GetSensorValue(pNewData, &SENSOR_DATA_TYPE_ANGULAR_VELOCITY_Y_DEGREES_PER_SECOND, &valueY);
+                    hrZ = ISensorDataReport_GetSensorValue(pNewData, &SENSOR_DATA_TYPE_ANGULAR_VELOCITY_Z_DEGREES_PER_SECOND, &valueZ);
+                    if (SUCCEEDED(hrX) && SUCCEEDED(hrY) && SUCCEEDED(hrZ) &&
+                        valueX.vt == VT_R8 && valueY.vt == VT_R8 && valueZ.vt == VT_R8) {
+                        const float DEGREES_TO_RADIANS = (float)(M_PI / 180.0f);
+                        float values[3];
 
-						values[0] = (float)(valueX.dblVal * (M_PI / 180.0));
-						values[1] = (float)(valueY.dblVal * (M_PI / 180.0));
-						values[2] = (float)(valueZ.dblVal * (M_PI / 180.0));
-						SDL_PrivateSensorUpdate(SDL_sensors[i].sensor_opened, values, 3);
-					}
-					break;
-				default:
-					/* FIXME: Need to know how to interpret the data for this sensor */
-					break;
-				}
-			}
-			break;
-		}
-	}
-	SDL_UnlockSensors();
+                        values[0] = (float)valueX.dblVal * DEGREES_TO_RADIANS;
+                        values[1] = (float)valueY.dblVal * DEGREES_TO_RADIANS;
+                        values[2] = (float)valueZ.dblVal * DEGREES_TO_RADIANS;
+                        SDL_PrivateSensorUpdate(SDL_sensors[i].sensor_opened, values, 3);
+                    }
+                    break;
+                default:
+                    /* FIXME: Need to know how to interpret the data for this sensor */
+                    break;
+                }
+            }
+            break;
+        }
+    }
+    SDL_UnlockSensors();
 
-	return S_OK;
+    return S_OK;
 }
 
 static HRESULT STDMETHODCALLTYPE ISensorEventsVtbl_OnEvent(ISensorEvents * This, ISensor *pSensor, REFGUID eventID, IPortableDeviceValues *pEventData)
 {
 #ifdef DEBUG_SENSORS
-	int i;
+    int i;
 
-	SDL_LockSensors();
-	for (i = 0; i < SDL_num_sensors; ++i) {
-		if (pSensor == SDL_sensors[i].sensor) {
-			SDL_Log("Sensor %s event occurred\n", SDL_sensors[i].name);
-		}
-	}
-	SDL_UnlockSensors();
+    SDL_LockSensors();
+    for (i = 0; i < SDL_num_sensors; ++i) {
+        if (pSensor == SDL_sensors[i].sensor) {
+            SDL_Log("Sensor %s event occurred\n", SDL_sensors[i].name);
+        }
+    }
+    SDL_UnlockSensors();
 #endif
-	return S_OK;
+    return S_OK;
 }
 
 static HRESULT STDMETHODCALLTYPE ISensorEventsVtbl_OnLeave(ISensorEvents * This, REFSENSOR_ID ID)
 {
-	int i;
+    int i;
 
-	SDL_LockSensors();
-	for (i = 0; i < SDL_num_sensors; ++i) {
-		if (WIN_IsEqualIID(ID, &SDL_sensors[i].sensor_id)) {
+    SDL_LockSensors();
+    for (i = 0; i < SDL_num_sensors; ++i) {
+        if (WIN_IsEqualIID(ID, &SDL_sensors[i].sensor_id)) {
 #ifdef DEBUG_SENSORS
-			SDL_Log("Sensor %s disconnected\n", SDL_sensors[i].name);
+            SDL_Log("Sensor %s disconnected\n", SDL_sensors[i].name);
 #endif
-			DisconnectSensor(SDL_sensors[i].sensor);
-		}
-	}
-	SDL_UnlockSensors();
+            DisconnectSensor(SDL_sensors[i].sensor);
+        }
+    }
+    SDL_UnlockSensors();
 
-	return S_OK;
+    return S_OK;
 }
 
 static ISensorEventsVtbl sensor_events_vtbl = {
-	ISensorEventsVtbl_QueryInterface,
-	ISensorEventsVtbl_AddRef,
-	ISensorEventsVtbl_Release,
-	ISensorEventsVtbl_OnStateChanged,
-	ISensorEventsVtbl_OnDataUpdated,
-	ISensorEventsVtbl_OnEvent,
-	ISensorEventsVtbl_OnLeave
+    ISensorEventsVtbl_QueryInterface,
+    ISensorEventsVtbl_AddRef,
+    ISensorEventsVtbl_Release,
+    ISensorEventsVtbl_OnStateChanged,
+    ISensorEventsVtbl_OnDataUpdated,
+    ISensorEventsVtbl_OnEvent,
+    ISensorEventsVtbl_OnLeave
 };
 static ISensorEvents sensor_events = {
-	&sensor_events_vtbl
+    &sensor_events_vtbl
 };
 
 static int ConnectSensor(ISensor *sensor)
 {
-	SDL_Windows_Sensor *new_sensor, *new_sensors;
-	HRESULT hr;
-	SENSOR_ID sensor_id;
-	SENSOR_TYPE_ID type_id;
-	SDL_SensorType type;
-	BSTR bstr_name = NULL;
-	char *name;
+    SDL_Windows_Sensor *new_sensor, *new_sensors;
+    HRESULT hr;
+    SENSOR_ID sensor_id;
+    SENSOR_TYPE_ID type_id;
+    SDL_SensorType type;
+    BSTR bstr_name = NULL;
+    char *name;
 
-	hr = ISensor_GetID(sensor, &sensor_id);
-	if (FAILED(hr)) {
-		return SDL_SetError("Couldn't get sensor ID: 0x%.4x", hr);
-	}
+    hr = ISensor_GetID(sensor, &sensor_id);
+    if (FAILED(hr)) {
+        return SDL_SetError("Couldn't get sensor ID: 0x%.4x", hr);
+    }
 
-	hr = ISensor_GetType(sensor, &type_id);
-	if (FAILED(hr)) {
-		return SDL_SetError("Couldn't get sensor type: 0x%.4x", hr);
-	}
+    hr = ISensor_GetType(sensor, &type_id);
+    if (FAILED(hr)) {
+        return SDL_SetError("Couldn't get sensor type: 0x%.4x", hr);
+    }
 
-	if (WIN_IsEqualIID(&type_id, &SENSOR_TYPE_ACCELEROMETER_3D)) {
-		type = SDL_SENSOR_ACCEL;
-	} else if (WIN_IsEqualIID(&type_id, &SENSOR_TYPE_GYROMETER_3D)) {
-		type = SDL_SENSOR_GYRO;
-	} else {
-		return SDL_SetError("Unknown sensor type");
-	}
+    if (WIN_IsEqualIID(&type_id, &SENSOR_TYPE_ACCELEROMETER_3D)) {
+        type = SDL_SENSOR_ACCEL;
+    } else if (WIN_IsEqualIID(&type_id, &SENSOR_TYPE_GYROMETER_3D)) {
+        type = SDL_SENSOR_GYRO;
+    } else {
+        return SDL_SetError("Unknown sensor type");
+    }
 
-	hr = ISensor_GetFriendlyName(sensor, &bstr_name);
-	if (SUCCEEDED(hr) && bstr_name) {
-		name = WIN_StringToUTF8(bstr_name);
-	} else {
-		name = SDL_strdup("Unknown Sensor");
-	}
+    hr = ISensor_GetFriendlyName(sensor, &bstr_name);
+    if (SUCCEEDED(hr) && bstr_name) {
+        name = WIN_StringToUTF8(bstr_name);
+    } else {
+        name = SDL_strdup("Unknown Sensor");
+    }
     if (bstr_name != NULL) {
         SysFreeString(bstr_name);
     }
-	if (!name) {
-		return SDL_OutOfMemory();
-	}
+    if (!name) {
+        return SDL_OutOfMemory();
+    }
 
-	SDL_LockSensors();
-	new_sensors = (SDL_Windows_Sensor *)SDL_realloc(SDL_sensors, (SDL_num_sensors + 1) * sizeof(SDL_Windows_Sensor));
-	if (new_sensors == NULL) {
-		SDL_UnlockSensors();
-		return SDL_OutOfMemory();
-	}
+    SDL_LockSensors();
+    new_sensors = (SDL_Windows_Sensor *)SDL_realloc(SDL_sensors, (SDL_num_sensors + 1) * sizeof(SDL_Windows_Sensor));
+    if (new_sensors == NULL) {
+        SDL_UnlockSensors();
+        return SDL_OutOfMemory();
+    }
 
-	ISensor_AddRef(sensor);
-	ISensor_SetEventSink(sensor, &sensor_events);
+    ISensor_AddRef(sensor);
+    ISensor_SetEventSink(sensor, &sensor_events);
 
-	SDL_sensors = new_sensors;
-	new_sensor = &SDL_sensors[SDL_num_sensors];
-	++SDL_num_sensors;
+    SDL_sensors = new_sensors;
+    new_sensor = &SDL_sensors[SDL_num_sensors];
+    ++SDL_num_sensors;
 
-	new_sensor->id = SDL_GetNextSensorInstanceID();
-	new_sensor->sensor = sensor;
-	new_sensor->type = type;
-	new_sensor->name = name;
+    SDL_zerop(new_sensor);
+    new_sensor->id = SDL_GetNextSensorInstanceID();
+    new_sensor->sensor = sensor;
+    new_sensor->type = type;
+    new_sensor->name = name;
 
-	SDL_UnlockSensors();
+    SDL_UnlockSensors();
 
-	return 0;
+    return 0;
 }
 
 static int DisconnectSensor(ISensor *sensor)
 {
-	SDL_Windows_Sensor *old_sensor;
-	int i;
+    SDL_Windows_Sensor *old_sensor;
+    int i;
 
-	SDL_LockSensors();
-	for (i = 0; i < SDL_num_sensors; ++i) {
-		old_sensor = &SDL_sensors[i];
-		if (sensor == old_sensor->sensor) {
-			ISensor_SetEventSink(sensor, NULL);
-			ISensor_Release(sensor);
-			SDL_free(old_sensor->name);
-			--SDL_num_sensors;
-			if (i < SDL_num_sensors) {
-				SDL_memmove(&SDL_sensors[i], &SDL_sensors[i + 1], (SDL_num_sensors - i) * sizeof(SDL_sensors[i]));
-			}
-			break;
-		}
-	}
-	SDL_UnlockSensors();
+    SDL_LockSensors();
+    for (i = 0; i < SDL_num_sensors; ++i) {
+        old_sensor = &SDL_sensors[i];
+        if (sensor == old_sensor->sensor) {
+            ISensor_SetEventSink(sensor, NULL);
+            ISensor_Release(sensor);
+            SDL_free(old_sensor->name);
+            --SDL_num_sensors;
+            if (i < SDL_num_sensors) {
+                SDL_memmove(&SDL_sensors[i], &SDL_sensors[i + 1], (SDL_num_sensors - i) * sizeof(SDL_sensors[i]));
+            }
+            break;
+        }
+    }
+    SDL_UnlockSensors();
 
-	return 0;
+    return 0;
 }
 
 static int
 SDL_WINDOWS_SensorInit(void)
 {
-	HRESULT hr;
-	ISensorCollection *sensor_collection = NULL;
+    HRESULT hr;
+    ISensorCollection *sensor_collection = NULL;
 
-	if (WIN_CoInitialize() == S_OK) {
-		SDL_windowscoinit = SDL_TRUE;
-	}
+    if (WIN_CoInitialize() == S_OK) {
+        SDL_windowscoinit = SDL_TRUE;
+    }
 
-	hr = CoCreateInstance(&CLSID_SensorManager, NULL, CLSCTX_INPROC_SERVER, &IID_SensorManager, &SDL_sensor_manager);
-	if (FAILED(hr)) {
-		return SDL_SetError("Couldn't create the sensor manager: 0x%.4x", hr);
-	}
+    hr = CoCreateInstance(&CLSID_SensorManager, NULL, CLSCTX_INPROC_SERVER, &IID_SensorManager, &SDL_sensor_manager);
+    if (FAILED(hr)) {
+        return SDL_SetError("Couldn't create the sensor manager: 0x%.4x", hr);
+    }
 
-	hr = ISensorManager_SetEventSink(SDL_sensor_manager, &sensor_manager_events);
-	if (FAILED(hr)) {
-		ISensorManager_Release(SDL_sensor_manager);
-		return SDL_SetError("Couldn't set the sensor manager event sink: 0x%.4x", hr);
-	}
+    hr = ISensorManager_SetEventSink(SDL_sensor_manager, &sensor_manager_events);
+    if (FAILED(hr)) {
+        ISensorManager_Release(SDL_sensor_manager);
+        return SDL_SetError("Couldn't set the sensor manager event sink: 0x%.4x", hr);
+    }
 
-	hr = ISensorManager_GetSensorsByCategory(SDL_sensor_manager, &SENSOR_CATEGORY_ALL, &sensor_collection);
-	if (SUCCEEDED(hr)) {
-		ULONG i, count;
+    hr = ISensorManager_GetSensorsByCategory(SDL_sensor_manager, &SENSOR_CATEGORY_ALL, &sensor_collection);
+    if (SUCCEEDED(hr)) {
+        ULONG i, count;
 
-		hr = ISensorCollection_GetCount(sensor_collection, &count);
-		if (SUCCEEDED(hr)) {
-			for (i = 0; i < count; ++i) {
-				ISensor *sensor;
+        hr = ISensorCollection_GetCount(sensor_collection, &count);
+        if (SUCCEEDED(hr)) {
+            for (i = 0; i < count; ++i) {
+                ISensor *sensor;
 
-				hr = ISensorCollection_GetAt(sensor_collection, i, &sensor);
-				if (SUCCEEDED(hr)) {
-					SensorState state;
+                hr = ISensorCollection_GetAt(sensor_collection, i, &sensor);
+                if (SUCCEEDED(hr)) {
+                    SensorState state;
 
-					hr = ISensor_GetState(sensor, &state);
-					if (SUCCEEDED(hr)) {
-						ISensorManagerEventsVtbl_OnSensorEnter(&sensor_manager_events, sensor, state);
-					}
-					ISensorManager_Release(sensor);
-				}
-			}
-		}
-		ISensorCollection_Release(sensor_collection);
-	}
+                    hr = ISensor_GetState(sensor, &state);
+                    if (SUCCEEDED(hr)) {
+                        ISensorManagerEventsVtbl_OnSensorEnter(&sensor_manager_events, sensor, state);
+                    }
+                    ISensorManager_Release(sensor);
+                }
+            }
+        }
+        ISensorCollection_Release(sensor_collection);
+    }
     return 0;
 }
 
@@ -403,7 +405,7 @@ SDL_WINDOWS_SensorGetDeviceName(int device_index)
 static SDL_SensorType
 SDL_WINDOWS_SensorGetDeviceType(int device_index)
 {
-	return SDL_sensors[device_index].type;
+    return SDL_sensors[device_index].type;
 }
 
 static int
@@ -421,7 +423,7 @@ SDL_WINDOWS_SensorGetDeviceInstanceID(int device_index)
 static int
 SDL_WINDOWS_SensorOpen(SDL_Sensor *sensor, int device_index)
 {
-	SDL_sensors[device_index].sensor_opened = sensor;
+    SDL_sensors[device_index].sensor_opened = sensor;
     return 0;
 }
 
@@ -433,32 +435,32 @@ SDL_WINDOWS_SensorUpdate(SDL_Sensor *sensor)
 static void
 SDL_WINDOWS_SensorClose(SDL_Sensor *sensor)
 {
-	int i;
+    int i;
 
-	for (i = 0; i < SDL_num_sensors; ++i) {
-		if (sensor == SDL_sensors[i].sensor_opened) {
-			SDL_sensors[i].sensor_opened = NULL;
-			break;
-		}
-	}
+    for (i = 0; i < SDL_num_sensors; ++i) {
+        if (sensor == SDL_sensors[i].sensor_opened) {
+            SDL_sensors[i].sensor_opened = NULL;
+            break;
+        }
+    }
 }
 
 static void
 SDL_WINDOWS_SensorQuit(void)
 {
-	while (SDL_num_sensors > 0) {
-		DisconnectSensor(SDL_sensors[0].sensor);
-	}
+    while (SDL_num_sensors > 0) {
+        DisconnectSensor(SDL_sensors[0].sensor);
+    }
 
-	if (SDL_sensor_manager) {
-		ISensorManager_SetEventSink(SDL_sensor_manager, NULL);
-		ISensorManager_Release(SDL_sensor_manager);
-		SDL_sensor_manager = NULL;
-	}
+    if (SDL_sensor_manager) {
+        ISensorManager_SetEventSink(SDL_sensor_manager, NULL);
+        ISensorManager_Release(SDL_sensor_manager);
+        SDL_sensor_manager = NULL;
+    }
 
-	if (SDL_windowscoinit) {
-		WIN_CoUninitialize();
-	}
+    if (SDL_windowscoinit) {
+        WIN_CoUninitialize();
+    }
 }
 
 SDL_SensorDriver SDL_WINDOWS_SensorDriver =
