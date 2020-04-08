@@ -757,3 +757,5 @@
 #define SDL_JoystickSetVirtualButton SDL_JoystickSetVirtualButton_REAL
 #define SDL_JoystickSetVirtualHat SDL_JoystickSetVirtualHat_REAL
 #define SDL_GetErrorMsg SDL_GetErrorMsg_REAL
+#define SDL_LockSensors SDL_LockSensors_REAL
+#define SDL_UnlockSensors SDL_UnlockSensors_REAL
