@@ -427,8 +427,8 @@ HIDAPI_DriverPS4_HandleStatePacket(SDL_Joystick *joystick, hid_device *dev, SDL_
 	*/
 	if ((packet->rgucButtonsHatAndCounter[1] & 0x0C) != 0) {
 		Uint8 data = packet->rgucButtonsHatAndCounter[1];
-		packet->ucTriggerLeft = (data & 0x04) ? 255 : packet->ucTriggerLeft;
-		packet->ucTriggerRight = (data & 0x08) ? 255 : packet->ucTriggerRight;
+		packet->ucTriggerLeft = (data & 0x04) && packet->ucTriggerLeft == 0 ? 255 : packet->ucTriggerLeft;
+		packet->ucTriggerRight = (data & 0x08) && packet->ucTriggerRight == 0 ? 255 : packet->ucTriggerRight;
 	}
 
     if (ctx->last_state.rgucButtonsHatAndCounter[2] != packet->rgucButtonsHatAndCounter[2]) {
