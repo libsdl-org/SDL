@@ -936,7 +936,6 @@ DARWIN_JoystickUpdate(SDL_Joystick * joystick)
 
     if (device->removed) {      /* device was unplugged; ignore it. */
         if (joystick->hwdata) {
-            joystick->force_recentering = SDL_TRUE;
             joystick->hwdata = NULL;
         }
         return;
