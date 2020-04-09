@@ -55,7 +55,7 @@ static const SDL_Scancode emscripten_scancode_table[] = {
     /*  9 */    SDL_SCANCODE_TAB,
     /*  10 */   SDL_SCANCODE_UNKNOWN,
     /*  11 */   SDL_SCANCODE_UNKNOWN,
-    /*  12 */   SDL_SCANCODE_UNKNOWN,
+    /*  12 */   SDL_SCANCODE_KP_5,
     /*  13 */   SDL_SCANCODE_RETURN,
     /*  14 */   SDL_SCANCODE_UNKNOWN,
     /*  15 */   SDL_SCANCODE_UNKNOWN,
@@ -510,6 +510,55 @@ Emscripten_HandleKey(int eventType, const EmscriptenKeyboardEvent *keyEvent, voi
                         break;
                     case SDL_SCANCODE_LGUI:
                         scancode = SDL_SCANCODE_RGUI;
+                        break;
+                }
+            }
+            else if (keyEvent->location == DOM_KEY_LOCATION_NUMPAD) {
+                switch (scancode) {
+                    case SDL_SCANCODE_0:
+                    case SDL_SCANCODE_INSERT:
+                        scancode = SDL_SCANCODE_KP_0;
+                        break;
+                    case SDL_SCANCODE_1:
+                    case SDL_SCANCODE_END:
+                        scancode = SDL_SCANCODE_KP_1;
+                        break;
+                    case SDL_SCANCODE_2:
+                    case SDL_SCANCODE_DOWN:
+                        scancode = SDL_SCANCODE_KP_2;
+                        break;
+                    case SDL_SCANCODE_3:
+                    case SDL_SCANCODE_PAGEDOWN:
+                        scancode = SDL_SCANCODE_KP_3;
+                        break;
+                    case SDL_SCANCODE_4:
+                    case SDL_SCANCODE_LEFT:
+                        scancode = SDL_SCANCODE_KP_4;
+                        break;
+                    case SDL_SCANCODE_5:
+                        scancode = SDL_SCANCODE_KP_5;
+                        break;
+                    case SDL_SCANCODE_6:
+                    case SDL_SCANCODE_RIGHT:
+                        scancode = SDL_SCANCODE_KP_6;
+                        break;
+                    case SDL_SCANCODE_7:
+                    case SDL_SCANCODE_HOME:
+                        scancode = SDL_SCANCODE_KP_7;
+                        break;
+                    case SDL_SCANCODE_8:
+                    case SDL_SCANCODE_UP:
+                        scancode = SDL_SCANCODE_KP_8;
+                        break;
+                    case SDL_SCANCODE_9:
+                    case SDL_SCANCODE_PAGEUP:
+                        scancode = SDL_SCANCODE_KP_9;
+                        break;
+                    case SDL_SCANCODE_RETURN:
+                        scancode = SDL_SCANCODE_KP_ENTER;
+                        break;
+                    case SDL_SCANCODE_DELETE:
+                        scancode = SDL_SCANCODE_KP_PERIOD;
                         break;
                 }
             }
