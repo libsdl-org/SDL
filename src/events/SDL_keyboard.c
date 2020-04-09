@@ -33,6 +33,9 @@
 
 /* Global keyboard information */
 
+#define KEYBOARD_HARDWARE       0x01
+#define KEYBOARD_AUTORELEASE    0x02
+
 typedef struct SDL_Keyboard SDL_Keyboard;
 
 struct SDL_Keyboard
@@ -40,8 +43,10 @@ struct SDL_Keyboard
     /* Data common to all keyboards */
     SDL_Window *focus;
     Uint16 modstate;
+    Uint8 keysource[SDL_NUM_SCANCODES];
     Uint8 keystate[SDL_NUM_SCANCODES];
     SDL_Keycode keymap[SDL_NUM_SCANCODES];
+    SDL_bool autorelease_pending;
 };
 
 static SDL_Keyboard SDL_keyboard;
@@ -675,19 +680,20 @@ SDL_SetKeyboardFocus(SDL_Window * window)
     }
 }
 
-int
-SDL_SendKeyboardKey(Uint8 state, SDL_Scancode scancode)
+static int
+SDL_SendKeyboardKeyInternal(Uint8 source, Uint8 state, SDL_Scancode scancode)
 {
     SDL_Keyboard *keyboard = &SDL_keyboard;
     int posted;
     SDL_Keymod modifier;
     SDL_Keycode keycode;
     Uint32 type;
-    Uint8 repeat;
+    Uint8 repeat = SDL_FALSE;
 
-    if (!scancode) {
+    if (scancode == SDL_SCANCODE_UNKNOWN) {
         return 0;
     }
+
 #ifdef DEBUG_KEYBOARD
     printf("The '%s' key has been %s\n", SDL_GetScancodeName(scancode),
            state == SDL_PRESSED ? "pressed" : "released");
@@ -707,18 +713,30 @@ SDL_SendKeyboardKey(Uint8 state, SDL_Scancode scancode)
     }
 
     /* Drop events that don't change state */
-    repeat = (state && keyboard->keystate[scancode]);
-    if (keyboard->keystate[scancode] == state && !repeat) {
-#if 0
-        printf("Keyboard event didn't change state - dropped!\n");
-#endif
-        return 0;
+    if (state) {
+        if (keyboard->keystate[scancode]) {
+            if (!(keyboard->keysource[scancode] & source)) {
+                keyboard->keysource[scancode] |= source;
+                return 0;
+            }
+            repeat = SDL_TRUE;
+        }
+        keyboard->keysource[scancode] |= source;
+    } else {
+        if (!keyboard->keystate[scancode]) {
+            return 0;
+        }
+        keyboard->keysource[scancode] = 0;
     }
 
     /* Update internal keyboard state */
     keyboard->keystate[scancode] = state;
 
     keycode = keyboard->keymap[scancode];
+
+    if (source == KEYBOARD_AUTORELEASE) {
+        keyboard->autorelease_pending = SDL_TRUE;
+    }
 
     /* Update modifiers state if applicable */
     switch (keycode) {
@@ -783,6 +801,48 @@ SDL_SendKeyboardKey(Uint8 state, SDL_Scancode scancode)
         posted = (SDL_PushEvent(&event) > 0);
     }
     return (posted);
+}
+
+int
+SDL_SendKeyboardKey(Uint8 state, SDL_Scancode scancode)
+{
+    return SDL_SendKeyboardKeyInternal(KEYBOARD_HARDWARE, state, scancode);
+}
+
+int
+SDL_SendKeyboardKeyAutoRelease(SDL_Scancode scancode)
+{
+    return SDL_SendKeyboardKeyInternal(KEYBOARD_AUTORELEASE, SDL_PRESSED, scancode);
+}
+
+void
+SDL_ReleaseAutoReleaseKeys(void)
+{
+    SDL_Keyboard *keyboard = &SDL_keyboard;
+    SDL_Scancode scancode;
+
+    if (keyboard->autorelease_pending) {
+        for (scancode = SDL_SCANCODE_UNKNOWN; scancode < SDL_NUM_SCANCODES; ++scancode) {
+            if (keyboard->keysource[scancode] == KEYBOARD_AUTORELEASE) {
+                SDL_SendKeyboardKeyInternal(KEYBOARD_AUTORELEASE, SDL_RELEASED, scancode);
+            }
+        }
+        keyboard->autorelease_pending = SDL_FALSE;
+    }
+}
+
+SDL_bool
+SDL_HardwareKeyboardKeyPressed(void)
+{
+    SDL_Keyboard *keyboard = &SDL_keyboard;
+    SDL_Scancode scancode;
+
+    for (scancode = SDL_SCANCODE_UNKNOWN; scancode < SDL_NUM_SCANCODES; ++scancode) {
+        if ((keyboard->keysource[scancode] & KEYBOARD_HARDWARE) != 0) {
+            return SDL_TRUE;
+        }
+    }
+    return SDL_FALSE;
 }
 
 int
