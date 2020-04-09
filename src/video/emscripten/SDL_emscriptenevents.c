@@ -645,6 +645,16 @@ Emscripten_HandleVisibilityChange(int eventType, const EmscriptenVisibilityChang
     return 0;
 }
 
+static const char*
+Emscripten_HandleBeforeUnload(int eventType, const void *reserved, void *userData)
+{
+    /* This event will need to be handled synchronously, e.g. using
+       SDL_AddEventWatch, as the page is being closed *now*. */
+    /* No need to send a SDL_QUIT, the app won't get control again. */
+    SDL_SendAppEvent(SDL_APP_TERMINATING);
+    return ""; /* don't trigger confirmation dialog */
+}
+
 void
 Emscripten_RegisterEventHandlers(SDL_WindowData *data)
 {
@@ -684,6 +694,8 @@ Emscripten_RegisterEventHandlers(SDL_WindowData *data)
     emscripten_set_resize_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, data, 0, Emscripten_HandleResize);
 
     emscripten_set_visibilitychange_callback(data, 0, Emscripten_HandleVisibilityChange);
+
+    emscripten_set_beforeunload_callback(data, Emscripten_HandleBeforeUnload);
 }
 
 void
@@ -726,6 +738,8 @@ Emscripten_UnregisterEventHandlers(SDL_WindowData *data)
     emscripten_set_resize_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, NULL, 0, NULL);
 
     emscripten_set_visibilitychange_callback(NULL, 0, NULL);
+
+    emscripten_set_beforeunload_callback(NULL, NULL);
 }
 
 #endif /* SDL_VIDEO_DRIVER_EMSCRIPTEN */
