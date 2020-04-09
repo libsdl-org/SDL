@@ -245,61 +245,64 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 }
 
 #if TARGET_OS_TV || defined(__IPHONE_9_1)
-- (SDL_Scancode)scancodeFromPressType:(UIPressType)presstype
+- (SDL_Scancode)scancodeFromPress:(UIPress*)press
 {
-    switch (presstype) {
-    case UIPressTypeUpArrow:
-        return SDL_SCANCODE_UP;
-    case UIPressTypeDownArrow:
-        return SDL_SCANCODE_DOWN;
-    case UIPressTypeLeftArrow:
-        return SDL_SCANCODE_LEFT;
-    case UIPressTypeRightArrow:
-        return SDL_SCANCODE_RIGHT;
-    case UIPressTypeSelect:
-        /* HIG says: "primary button behavior" */
-        return SDL_SCANCODE_RETURN;
-    case UIPressTypeMenu:
-        /* HIG says: "returns to previous screen" */
-        return SDL_SCANCODE_ESCAPE;
-    case UIPressTypePlayPause:
-        /* HIG says: "secondary button behavior" */
-        return SDL_SCANCODE_PAUSE;
-    default:
-        return SDL_SCANCODE_UNKNOWN;
+    if (press.key != nil) {
+        return (SDL_Scancode)press.key.keyCode;
     }
+
+	/* Presses from Apple TV remote */
+	if (!SDL_AppleTVRemoteOpenedAsJoystick) {
+		switch (press.type) {
+		case UIPressTypeUpArrow:
+			return SDL_SCANCODE_UP;
+		case UIPressTypeDownArrow:
+			return SDL_SCANCODE_DOWN;
+		case UIPressTypeLeftArrow:
+			return SDL_SCANCODE_LEFT;
+		case UIPressTypeRightArrow:
+			return SDL_SCANCODE_RIGHT;
+		case UIPressTypeSelect:
+			/* HIG says: "primary button behavior" */
+			return SDL_SCANCODE_RETURN;
+		case UIPressTypeMenu:
+			/* HIG says: "returns to previous screen" */
+			return SDL_SCANCODE_ESCAPE;
+		case UIPressTypePlayPause:
+			/* HIG says: "secondary button behavior" */
+			return SDL_SCANCODE_PAUSE;
+		default:
+			break;
+		}
+	}
+
+	return SDL_SCANCODE_UNKNOWN;
 }
 
 - (void)pressesBegan:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event
 {
-    if (!SDL_AppleTVRemoteOpenedAsJoystick) {
-        for (UIPress *press in presses) {
-            SDL_Scancode scancode = [self scancodeFromPressType:press.type];
-            SDL_SendKeyboardKey(SDL_PRESSED, scancode);
-        }
-    }
+	for (UIPress *press in presses) {
+		SDL_Scancode scancode = [self scancodeFromPress:press];
+		SDL_SendKeyboardKey(SDL_PRESSED, scancode);
+	}
     [super pressesBegan:presses withEvent:event];
 }
 
 - (void)pressesEnded:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event
 {
-    if (!SDL_AppleTVRemoteOpenedAsJoystick) {
-        for (UIPress *press in presses) {
-            SDL_Scancode scancode = [self scancodeFromPressType:press.type];
-            SDL_SendKeyboardKey(SDL_RELEASED, scancode);
-        }
-    }
+	for (UIPress *press in presses) {
+		SDL_Scancode scancode = [self scancodeFromPress:press];
+		SDL_SendKeyboardKey(SDL_RELEASED, scancode);
+	}
     [super pressesEnded:presses withEvent:event];
 }
 
 - (void)pressesCancelled:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event
 {
-    if (!SDL_AppleTVRemoteOpenedAsJoystick) {
-        for (UIPress *press in presses) {
-            SDL_Scancode scancode = [self scancodeFromPressType:press.type];
-            SDL_SendKeyboardKey(SDL_RELEASED, scancode);
-        }
-    }
+	for (UIPress *press in presses) {
+		SDL_Scancode scancode = [self scancodeFromPress:press];
+		SDL_SendKeyboardKey(SDL_RELEASED, scancode);
+	}
     [super pressesCancelled:presses withEvent:event];
 }
 
@@ -320,20 +323,16 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
              * which better maps to swipe gestures. */
             switch (gesture.direction) {
             case UISwipeGestureRecognizerDirectionUp:
-                SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_UP);
-                SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_UP);
+                SDL_SendKeyboardKeyAutoRelease(SDL_SCANCODE_UP);
                 break;
             case UISwipeGestureRecognizerDirectionDown:
-                SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_DOWN);
-                SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_DOWN);
+                SDL_SendKeyboardKeyAutoRelease(SDL_SCANCODE_DOWN);
                 break;
             case UISwipeGestureRecognizerDirectionLeft:
-                SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_LEFT);
-                SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_LEFT);
+                SDL_SendKeyboardKeyAutoRelease(SDL_SCANCODE_LEFT);
                 break;
             case UISwipeGestureRecognizerDirectionRight:
-                SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_RIGHT);
-                SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_RIGHT);
+                SDL_SendKeyboardKeyAutoRelease(SDL_SCANCODE_RIGHT);
                 break;
             }
         }

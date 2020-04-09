@@ -317,8 +317,7 @@ SDL_HideHomeIndicatorHintChanged(void *userdata, const char *name, const char *o
     }
 
     if (scancode != SDL_SCANCODE_UNKNOWN) {
-        SDL_SendKeyboardKey(SDL_PRESSED, scancode);
-        SDL_SendKeyboardKey(SDL_RELEASED, scancode);
+        SDL_SendKeyboardKeyAutoRelease(scancode);
     }
 }
 
@@ -342,7 +341,7 @@ SDL_HideHomeIndicatorHintChanged(void *userdata, const char *name, const char *o
     [coordinator animateAlongsideTransition:^(id<UIViewControllerTransitionCoordinatorContext> context) {}
                                  completion:^(id<UIViewControllerTransitionCoordinatorContext> context) {
         self->rotatingOrientation = NO;
-	}];
+    }];
 }
 #else
 - (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration {
@@ -411,36 +410,38 @@ SDL_HideHomeIndicatorHintChanged(void *userdata, const char *name, const char *o
     {
         NSUInteger len = changeText.length;
         if (len > 0) {
-            /* Go through all the characters in the string we've been sent and
-             * convert them to key presses */
-            int i;
-            for (i = 0; i < len; i++) {
-                unichar c = [changeText characterAtIndex:i];
-                SDL_Scancode code;
-                Uint16 mod;
+            if (!SDL_HardwareKeyboardKeyPressed()) {
+                /* Go through all the characters in the string we've been sent and
+                 * convert them to key presses */
+                int i;
+                for (i = 0; i < len; i++) {
+                    unichar c = [changeText characterAtIndex:i];
+                    SDL_Scancode code;
+                    Uint16 mod;
 
-                if (c < 127) {
-                    /* Figure out the SDL_Scancode and SDL_keymod for this unichar */
-                    code = unicharToUIKeyInfoTable[c].code;
-                    mod  = unicharToUIKeyInfoTable[c].mod;
-                } else {
-                    /* We only deal with ASCII right now */
-                    code = SDL_SCANCODE_UNKNOWN;
-                    mod = 0;
-                }
+                    if (c < 127) {
+                        /* Figure out the SDL_Scancode and SDL_keymod for this unichar */
+                        code = unicharToUIKeyInfoTable[c].code;
+                        mod  = unicharToUIKeyInfoTable[c].mod;
+                    } else {
+                        /* We only deal with ASCII right now */
+                        code = SDL_SCANCODE_UNKNOWN;
+                        mod = 0;
+                    }
 
-                if (mod & KMOD_SHIFT) {
-                    /* If character uses shift, press shift down */
-                    SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_LSHIFT);
-                }
+                    if (mod & KMOD_SHIFT) {
+                        /* If character uses shift, press shift down */
+                        SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_LSHIFT);
+                    }
 
-                /* send a keydown and keyup even for the character */
-                SDL_SendKeyboardKey(SDL_PRESSED, code);
-                SDL_SendKeyboardKey(SDL_RELEASED, code);
+                    /* send a keydown and keyup even for the character */
+                    SDL_SendKeyboardKey(SDL_PRESSED, code);
+                    SDL_SendKeyboardKey(SDL_RELEASED, code);
 
-                if (mod & KMOD_SHIFT) {
-                    /* If character uses shift, press shift back up */
-                    SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_LSHIFT);
+                    if (mod & KMOD_SHIFT) {
+                        /* If character uses shift, press shift back up */
+                        SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_LSHIFT);
+                    }
                 }
             }
             SDL_SendKeyboardText([changeText UTF8String]);
@@ -491,8 +492,7 @@ SDL_HideHomeIndicatorHintChanged(void *userdata, const char *name, const char *o
         changeText = nil;
         if (textField.markedTextRange == nil) {
             /* it wants to replace text with nothing, ie a delete */
-            SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_BACKSPACE);
-            SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_BACKSPACE);
+            SDL_SendKeyboardKeyAutoRelease(SDL_SCANCODE_BACKSPACE);
         }
         if (textField.text.length < 16) {
             textField.text = obligateForBackspace;
@@ -506,8 +506,7 @@ SDL_HideHomeIndicatorHintChanged(void *userdata, const char *name, const char *o
 /* Terminates the editing session */
 - (BOOL)textFieldShouldReturn:(UITextField*)_textField
 {
-    SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_RETURN);
-    SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_RETURN);
+    SDL_SendKeyboardKeyAutoRelease(SDL_SCANCODE_RETURN);
     if (keyboardVisible &&
         SDL_GetHintBoolean(SDL_HINT_RETURN_KEY_HIDES_IME, SDL_FALSE)) {
          SDL_StopTextInput();
