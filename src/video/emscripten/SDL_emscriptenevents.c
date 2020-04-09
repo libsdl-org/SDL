@@ -363,7 +363,7 @@ Emscripten_HandleMouseButton(int eventType, const EmscriptenMouseEvent *mouseEve
 
     if (eventType == EMSCRIPTEN_EVENT_MOUSEDOWN) {
         if (SDL_GetMouse()->relative_mode && !window_data->has_pointer_lock) {
-            emscripten_request_pointerlock(NULL, 0);  /* try to regrab lost pointer lock. */
+            emscripten_request_pointerlock(window_data->canvas_id, 0);  /* try to regrab lost pointer lock. */
         }
         sdl_button_state = SDL_PRESSED;
         sdl_event_type = SDL_MOUSEBUTTONDOWN;
