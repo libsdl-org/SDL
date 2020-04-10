@@ -189,6 +189,10 @@ struct SDL_Renderer
     /* The pixel to point coordinate scale */
     SDL_FPoint dpi_scale;
 
+    /* Remainder from scaled relative motion */
+    float xrel;
+    float yrel;
+
     /* The list of textures */
     SDL_Texture *textures;
     SDL_Texture *target;
