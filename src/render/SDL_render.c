@@ -660,15 +660,17 @@ SDL_RendererEventWatch(void *userdata, SDL_Event *event)
                 event->motion.y -= (int)(viewport.y * renderer->dpi_scale.y);
                 event->motion.x = (int)(event->motion.x / (scale.x * renderer->dpi_scale.x));
                 event->motion.y = (int)(event->motion.y / (scale.y * renderer->dpi_scale.y));
-                if (event->motion.xrel > 0) {
-                    event->motion.xrel = SDL_max(1, (int)(event->motion.xrel / (scale.x * renderer->dpi_scale.x)));
-                } else if (event->motion.xrel < 0) {
-                    event->motion.xrel = SDL_min(-1, (int)(event->motion.xrel / (scale.x * renderer->dpi_scale.x)));
+                if (event->motion.xrel != 0) {
+                    float rel = renderer->xrel + event->motion.xrel / (scale.x * renderer->dpi_scale.x);
+                    float trunc = SDL_truncf(rel);
+                    renderer->xrel = rel - trunc;
+                    event->motion.xrel = trunc;
                 }
-                if (event->motion.yrel > 0) {
-                    event->motion.yrel = SDL_max(1, (int)(event->motion.yrel / (scale.y * renderer->dpi_scale.y)));
-                } else if (event->motion.yrel < 0) {
-                    event->motion.yrel = SDL_min(-1, (int)(event->motion.yrel / (scale.y * renderer->dpi_scale.y)));
+                if (event->motion.yrel != 0) {
+                    float rel = renderer->yrel + event->motion.yrel / (scale.y * renderer->dpi_scale.y);
+                    float trunc = SDL_truncf(rel);
+                    renderer->yrel = rel - trunc;
+                    event->motion.yrel = trunc;
                 }
             }
         }
