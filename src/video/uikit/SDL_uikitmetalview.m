@@ -110,8 +110,15 @@ UIKit_Metal_DestroyView(_THIS, SDL_MetalView view)
     }
 }}
 
+void *
+UIKit_Metal_GetLayer(_THIS, SDL_MetalView view)
+{ @autoreleasepool {
+    SDL_uikitview *uiview = (__bridge SDL_uikitview *)view;
+    return (__bridge void *)uiview.layer;
+}}
+
 void
-UIKit_Metal_GetDrawableSize(SDL_Window * window, int * w, int * h)
+UIKit_Metal_GetDrawableSize(_THIS, SDL_Window * window, int * w, int * h)
 {
     @autoreleasepool {
         SDL_WindowData *data = (__bridge SDL_WindowData *)window->driverdata;

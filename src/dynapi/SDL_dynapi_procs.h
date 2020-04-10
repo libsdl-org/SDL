@@ -818,3 +818,5 @@ SDL_DYNAPI_PROC(int,SDL_JoystickSetVirtualHat,(SDL_Joystick *a, int b, Uint8 c),
 SDL_DYNAPI_PROC(char*,SDL_GetErrorMsg,(char *a, int b),(a,b),return)
 SDL_DYNAPI_PROC(void,SDL_LockSensors,(void),(),)
 SDL_DYNAPI_PROC(void,SDL_UnlockSensors,(void),(),)
+SDL_DYNAPI_PROC(void*,SDL_Metal_GetLayer,(SDL_MetalView a),(a),return)
+SDL_DYNAPI_PROC(void,SDL_Metal_GetDrawableSize,(SDL_Window *a, int *b, int *c),(a,b,c),)

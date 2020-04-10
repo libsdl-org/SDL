@@ -146,6 +146,8 @@ Cocoa_CreateDevice(int devindex)
 #if SDL_VIDEO_METAL
     device->Metal_CreateView = Cocoa_Metal_CreateView;
     device->Metal_DestroyView = Cocoa_Metal_DestroyView;
+    device->Metal_GetLayer = Cocoa_Metal_GetLayer;
+    device->Metal_GetDrawableSize = Cocoa_Metal_GetDrawableSize;
 #endif
 
     device->StartTextInput = Cocoa_StartTextInput;

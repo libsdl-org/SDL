@@ -140,6 +140,8 @@ UIKit_CreateDevice(int devindex)
 #if SDL_VIDEO_METAL
         device->Metal_CreateView = UIKit_Metal_CreateView;
         device->Metal_DestroyView = UIKit_Metal_DestroyView;
+        device->Metal_GetLayer = UIKit_Metal_GetLayer;
+        device->Metal_GetDrawableSize = UIKit_Metal_GetDrawableSize;
 #endif
 
         device->gl_config.accelerated = 1;
