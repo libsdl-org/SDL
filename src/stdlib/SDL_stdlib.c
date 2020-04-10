@@ -261,6 +261,27 @@ SDL_floorf(float x)
 }
 
 double
+SDL_trunc(double x)
+{
+#if defined(HAVE_TRUNC)
+    return trunc(x);
+#else
+    /* !!! FIXME: there are more formal (correct!) ways to do this. */
+    return (double) ((Sint64) x);
+#endif
+}
+
+float
+SDL_truncf(float x)
+{
+#if defined(HAVE_TRUNCF)
+    return truncf(x);
+#else
+    return (float)SDL_trunc((double)x);
+#endif
+}
+
+double
 SDL_fmod(double x, double y)
 {
 #if defined(HAVE_FMOD)

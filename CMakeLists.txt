@@ -767,7 +767,8 @@ if(LIBC)
             _stricmp _strnicmp strtok_s sscanf
             acos acosf asin asinf atan atanf atan2 atan2f ceil ceilf
             copysign copysignf cos cosf exp expf fabs fabsf floor floorf fmod fmodf
-            log logf log10 log10f pow powf scalbn scalbnf sin sinf sqrt sqrtf tan tanf)
+            log logf log10 log10f pow powf scalbn scalbnf sin sinf sqrt sqrtf tan tanf
+            trunc truncf)
       string(TOUPPER ${_FN} _UPPER)
       set(HAVE_${_UPPER} 1)
     endforeach()
@@ -817,7 +818,7 @@ if(LIBC)
               atan atan2 atanf atan2f ceil ceilf copysign copysignf cos cosf
               exp expf fabs fabsf floor floorf fmod fmodf log logf log10 log10f
               pow powf scalbn scalbnf sin sinf sqrt sqrtf tan tanf acos acosf
-              asin asinf)
+              asin asinf trunc truncf)
         string(TOUPPER ${_FN} _UPPER)
         set(_HAVEVAR "HAVE_${_UPPER}")
         check_function_exists("${_FN}" ${_HAVEVAR})
