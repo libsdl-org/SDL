@@ -761,3 +761,5 @@
 #define SDL_UnlockSensors SDL_UnlockSensors_REAL
 #define SDL_Metal_GetLayer SDL_Metal_GetLayer_REAL
 #define SDL_Metal_GetDrawableSize SDL_Metal_GetDrawableSize_REAL
+#define SDL_trunc SDL_trunc_REAL
+#define SDL_truncf SDL_truncf_REAL
