@@ -647,6 +647,7 @@ ENABLE_STATIC_FALSE
 ENABLE_STATIC_TRUE
 ENABLE_SHARED_FALSE
 ENABLE_SHARED_TRUE
+PKG_CONFIG_LIBS_PRIV
 SDL_RLD_FLAGS
 SDL_STATIC_LIBS
 SDL_LIBS
@@ -25675,7 +25676,7 @@ SDLTEST_DEPENDS=`echo "$SDLTEST_DEPENDS" | sed "s,\\([^ ]*\\)/\\([^ ]*\\)\\.c,\\
 
 # Set runtime shared library paths as needed
 
-if test "x$enable_rpath" = "xyes"; then
+if test "x$enable_rpath" = "xyes" -a "x$enable_shared" = "xyes"; then
   if test $ARCH = bsdi -o $ARCH = freebsd -o $ARCH = linux -o $ARCH = netbsd; then
     SDL_RLD_FLAGS="-Wl,-rpath,\${libdir}"
 
@@ -25723,9 +25724,12 @@ SDL_STATIC_LIBS="$SDL_LIBS $EXTRA_LDFLAGS"
 
 
 if test x$enable_shared = xyes; then
+    PKG_CONFIG_LIBS_PRIV="
+Libs.private:"
     ENABLE_SHARED_TRUE=
     ENABLE_SHARED_FALSE="#"
 else
+    PKG_CONFIG_LIBS_PRIV=
     ENABLE_SHARED_TRUE="#"
     ENABLE_SHARED_FALSE=
 fi
