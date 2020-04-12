@@ -1962,7 +1962,7 @@ Libs.private:")
 
   # Clean up the different lists
   listtostr(EXTRA_LIBS _EXTRA_LIBS "-l")
-  set(SDL_STATIC_LIBS ${SDL_LIBS} ${EXTRA_LDFLAGS} ${_EXTRA_LIBS})
+  set(SDL_STATIC_LIBS ${EXTRA_LDFLAGS} ${_EXTRA_LIBS})
   list(REMOVE_DUPLICATES SDL_STATIC_LIBS)
   listtostr(SDL_STATIC_LIBS _SDL_STATIC_LIBS)
   set(SDL_STATIC_LIBS ${_SDL_STATIC_LIBS})

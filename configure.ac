@@ -4271,7 +4271,7 @@ else
   SDL_RLD_FLAGS=""
 fi
 
-SDL_STATIC_LIBS="$SDL_LIBS $EXTRA_LDFLAGS"
+SDL_STATIC_LIBS="$EXTRA_LDFLAGS"
 
 dnl Expand the cflags and libraries needed by apps using SDL
 AC_SUBST(SDL_CFLAGS)
