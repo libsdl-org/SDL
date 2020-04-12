@@ -555,7 +555,7 @@ static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority 
         SDL_NSLog(SDL_priority_prefixes[priority], message);
         return;
     }
-#elif defined(__PSP__) || defined(__PS2__)
+#elif defined(__PSP__) || defined(__PS2__) || defined(__MSDOS__)
     {
         FILE *pFile;
         pFile = fopen("SDL_Log.txt", "a");
