@@ -133,6 +133,7 @@ SDL_SVGA_DestroyFramebuffer(_THIS, SDL_Window * window)
     /* Destroy surface. */
     SDL_FreeSurface(window->surface);
     window->surface = NULL;
+    window->surface_valid = SDL_FALSE;
 
     /* Deallocate local descriptor for framebuffer. */
     if (windata->framebuffer_selector != -1) {
