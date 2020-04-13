@@ -683,6 +683,7 @@ SDL_EGL_ChooseConfig(_THIS)
     EGLint found_configs = 0, value;
     /* 128 seems even nicer here */
     EGLConfig configs[128];
+    SDL_bool has_matching_format = SDL_FALSE;
     int i, j, best_bitdiff = -1, bitdiff;
    
     if (!_this->egl_data) {
@@ -766,11 +767,24 @@ SDL_EGL_ChooseConfig(_THIS)
         return SDL_EGL_SetError("Couldn't find matching EGL config", "eglChooseConfig");
     }
 
+    /* first ensure that a found config has a matching format, or the function will fall through. */
+    for (i = 0; i < found_configs; i++ ) {
+        if (_this->egl_data->egl_required_visual_id)
+        {
+            EGLint format;
+            _this->egl_data->eglGetConfigAttrib(_this->egl_data->egl_display,
+                                            configs[i],
+                                            EGL_NATIVE_VISUAL_ID, &format);
+            if (_this->egl_data->egl_required_visual_id == format)
+                has_matching_format = SDL_TRUE;
+        }
+    }
+
     /* eglChooseConfig returns a number of configurations that match or exceed the requested attribs. */
     /* From those, we select the one that matches our requirements more closely via a makeshift algorithm */
 
     for (i = 0; i < found_configs; i++ ) {
-        if (_this->egl_data->egl_required_visual_id)
+        if (has_matching_format && _this->egl_data->egl_required_visual_id)
         {
             EGLint format;
             _this->egl_data->eglGetConfigAttrib(_this->egl_data->egl_display,
