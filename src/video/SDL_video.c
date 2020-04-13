@@ -3585,12 +3585,14 @@ SDL_GL_MakeCurrent(SDL_Window * window, SDL_GLContext ctx)
 
     if (!ctx) {
         window = NULL;
-    } else {
+    } else if (window) {
         CHECK_WINDOW_MAGIC(window, -1);
 
         if (!(window->flags & SDL_WINDOW_OPENGL)) {
             return SDL_SetError("The specified window isn't an OpenGL window");
         }
+    } else if (!_this->gl_allow_no_surface) {
+        return SDL_SetError("Use of OpenGL without a window is not supported on this platform");
     }
 
     retval = _this->GL_MakeCurrent(_this, window, ctx);
