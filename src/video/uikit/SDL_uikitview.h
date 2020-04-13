@@ -25,7 +25,7 @@
 
 #include "SDL_touch.h"
 
-#ifdef __IPHONE_13_4
+#if !TARGET_OS_TV && defined(__IPHONE_13_4)
 @interface SDL_uikitview : UIView <UIPointerInteractionDelegate>
 #else
 @interface SDL_uikitview : UIView
@@ -35,7 +35,7 @@
 
 - (void)setSDLWindow:(SDL_Window *)window;
 
-#ifdef __IPHONE_13_4
+#if !TARGET_OS_TV && defined(__IPHONE_13_4)
 - (UIPointerRegion *)pointerInteraction:(UIPointerInteraction *)interaction regionForRequest:(UIPointerRegionRequest *)request defaultRegion:(UIPointerRegion *)defaultRegion API_AVAILABLE(ios(13.4));
 #endif
 
