@@ -95,6 +95,7 @@ static void RAWINPUT_JoystickClose(SDL_Joystick * joystick);
 
 typedef struct _SDL_RAWINPUT_Device
 {
+    SDL_atomic_t refcount;
     char *name;
     Uint16 vendor_id;
     Uint16 product_id;
