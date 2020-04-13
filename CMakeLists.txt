@@ -15,7 +15,6 @@ project(SDL2 C CXX)
 # !!! FIXME:  properly resolved.
 #cmake_policy(SET CMP0042 OLD)
 
-include(CheckFunctionExists)
 include(CheckLibraryExists)
 include(CheckIncludeFiles)
 include(CheckIncludeFile)
@@ -789,7 +788,8 @@ if(LIBC)
       check_include_file("${_HEADER}" ${_HAVE_H})
     endforeach()
 
-    check_include_files("dlfcn.h;stdint.h;stddef.h;inttypes.h;stdlib.h;strings.h;string.h;float.h" STDC_HEADERS)
+    set(STDC_HEADER_NAMES "dlfcn.h;stdint.h;stddef.h;inttypes.h;stdlib.h;stdio.h;strings.h;wchar.h;string.h;float.h")
+    check_include_files("${STDC_HEADER_NAMES}" STDC_HEADERS)
     check_type_size("size_t" SIZEOF_SIZE_T)
     check_symbol_exists(M_PI math.h HAVE_M_PI)
     # TODO: refine the mprotect check
@@ -803,13 +803,20 @@ if(LIBC)
             _uitoa _ultoa strtol strtoul _i64toa _ui64toa strtoll strtoull
             atoi atof strcmp strncmp _stricmp strcasecmp _strnicmp strncasecmp
             wcscmp wcsdup wcslcat wcslcpy wcslen wcsncmp wcsstr
-            sscanf vsscanf vsnprintf fopen64 fseeko fseeko64 sigaction setjmp
-            nanosleep sysconf sysctlbyname getauxval poll _Exit
+            sscanf vsscanf vsnprintf fopen64 fseeko fseeko64 _Exit
             )
       string(TOUPPER ${_FN} _UPPER)
       set(_HAVEVAR "HAVE_${_UPPER}")
-      check_function_exists("${_FN}" ${_HAVEVAR})
+      check_symbol_exists("${_FN}" "${STDC_HEADER_NAMES}" ${_HAVEVAR})
     endforeach()
+
+    check_symbol_exists(sigaction "signal.h" HAVE_SIGACTION)
+    check_symbol_exists(setjmp "setjmp.h" HAVE_SETJMP)
+    check_symbol_exists(nanosleep "time.h" HAVE_NANOSLEEP)
+    check_symbol_exists(sysconf "unistd.h" HAVE_SYSCONF)
+    check_symbol_exists(sysctlbyname "sys/types.h;sys/sysctl.h" HAVE_SYSCTLBYNAME)
+    check_symbol_exists(getauxval "sys/auxv.h" HAVE_GETAUXVAL)
+    check_symbol_exists(poll "poll.h" HAVE_POLL)
 
     check_library_exists(m pow "" HAVE_LIBM)
     if(HAVE_LIBM)
@@ -821,7 +828,7 @@ if(LIBC)
               asin asinf trunc truncf)
         string(TOUPPER ${_FN} _UPPER)
         set(_HAVEVAR "HAVE_${_UPPER}")
-        check_function_exists("${_FN}" ${_HAVEVAR})
+        check_symbol_exists("${_FN}" "math.h" ${_HAVEVAR})
       endforeach()
       set(CMAKE_REQUIRED_LIBRARIES)
       list(APPEND EXTRA_LIBS m)
@@ -835,7 +842,7 @@ if(LIBC)
 
     if(NOT APPLE)
       check_include_file(alloca.h HAVE_ALLOCA_H)
-      check_function_exists(alloca HAVE_ALLOCA)
+      check_symbol_exists(alloca "alloca.h" HAVE_ALLOCA)
     else()
       set(HAVE_ALLOCA_H 1)
       set(HAVE_ALLOCA 1)
