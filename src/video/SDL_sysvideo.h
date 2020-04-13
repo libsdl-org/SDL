@@ -375,6 +375,11 @@ struct SDL_VideoDevice
     SDL_TLSID current_glwin_tls;
     SDL_TLSID current_glctx_tls;
 
+    /* Flag that stores whether it's allowed to call SDL_GL_MakeCurrent()
+     * with a NULL window, but a non-NULL context. (Not allowed in most cases,
+     * except on EGL under some circumstances.) */
+    int gl_allow_no_surface;
+
     /* * * */
     /* Data used by the Vulkan drivers */
     struct
