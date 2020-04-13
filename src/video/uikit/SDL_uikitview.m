@@ -75,6 +75,12 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
         self.multipleTouchEnabled = YES;
         SDL_AddTouch(directTouchId, SDL_TOUCH_DEVICE_DIRECT, "");
 #endif
+
+#ifdef __IPHONE_13_4
+        if (@available(iOS 13.4, *)) {
+            [self addInteraction:[[UIPointerInteraction alloc] initWithDelegate:self]];
+        }
+#endif
     }
 
     return self;
@@ -136,6 +142,21 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
     sdlwindow = window;
 }
 
+#ifdef __IPHONE_13_4
+- (UIPointerRegion *)pointerInteraction:(UIPointerInteraction *)interaction regionForRequest:(UIPointerRegionRequest *)request defaultRegion:(UIPointerRegion *)defaultRegion API_AVAILABLE(ios(13.4)){
+    if (request != nil) {
+        CGPoint origin = self.bounds.origin;
+        CGPoint point = request.location;
+
+        point.x -= origin.x;
+        point.y -= origin.y;
+
+        SDL_SendMouseMotion(sdlwindow, 0, 0, (int)point.x, (int)point.y);
+    }
+    return defaultRegion;
+}
+#endif /* __IPHONE_13_4 */
+
 - (SDL_TouchDeviceType)touchTypeForTouch:(UITouch *)touch
 {
 #ifdef __IPHONE_9_0
@@ -187,38 +208,64 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
 {
     for (UITouch *touch in touches) {
-        SDL_TouchDeviceType touchType = [self touchTypeForTouch:touch];
-        SDL_TouchID touchId = [self touchIdForType:touchType];
-        float pressure = [self pressureForTouch:touch];
+        BOOL handled = NO;
 
-        if (SDL_AddTouch(touchId, touchType, "") < 0) {
-            continue;
+#ifdef __IPHONE_13_4
+        if (@available(iOS 13.4, *)) {
+            if (touch.type == UITouchTypeIndirectPointer) {
+                /* FIXME: How can we tell the difference between left and right button clicks? */
+                SDL_SendMouseButton(sdlwindow, 0, SDL_PRESSED, SDL_BUTTON_LEFT);
+                handled = YES;
+            }
         }
+#endif
+        if (!handled) {
+            SDL_TouchDeviceType touchType = [self touchTypeForTouch:touch];
+            SDL_TouchID touchId = [self touchIdForType:touchType];
+            float pressure = [self pressureForTouch:touch];
 
-        /* FIXME, need to send: int clicks = (int) touch.tapCount; ? */
+            if (SDL_AddTouch(touchId, touchType, "") < 0) {
+                continue;
+            }
 
-        CGPoint locationInView = [self touchLocation:touch shouldNormalize:YES];
-        SDL_SendTouch(touchId, (SDL_FingerID)((size_t)touch), sdlwindow,
-                      SDL_TRUE, locationInView.x, locationInView.y, pressure);
+            /* FIXME, need to send: int clicks = (int) touch.tapCount; ? */
+
+            CGPoint locationInView = [self touchLocation:touch shouldNormalize:YES];
+            SDL_SendTouch(touchId, (SDL_FingerID)((size_t)touch), sdlwindow,
+                          SDL_TRUE, locationInView.x, locationInView.y, pressure);
+        }
     }
 }
 
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
 {
     for (UITouch *touch in touches) {
-        SDL_TouchDeviceType touchType = [self touchTypeForTouch:touch];
-        SDL_TouchID touchId = [self touchIdForType:touchType];
-        float pressure = [self pressureForTouch:touch];
+        BOOL handled = NO;
 
-        if (SDL_AddTouch(touchId, touchType, "") < 0) {
-            continue;
+#ifdef __IPHONE_13_4
+        if (@available(iOS 13.4, *)) {
+            if (touch.type == UITouchTypeIndirectPointer) {
+                /* FIXME: How can we tell the difference between left and right button clicks? */
+                SDL_SendMouseButton(sdlwindow, 0, SDL_RELEASED, SDL_BUTTON_LEFT);
+                handled = YES;
+            }
         }
+#endif
+        if (!handled) {
+            SDL_TouchDeviceType touchType = [self touchTypeForTouch:touch];
+            SDL_TouchID touchId = [self touchIdForType:touchType];
+            float pressure = [self pressureForTouch:touch];
 
-        /* FIXME, need to send: int clicks = (int) touch.tapCount; ? */
+            if (SDL_AddTouch(touchId, touchType, "") < 0) {
+                continue;
+            }
 
-        CGPoint locationInView = [self touchLocation:touch shouldNormalize:YES];
-        SDL_SendTouch(touchId, (SDL_FingerID)((size_t)touch), sdlwindow,
-                      SDL_FALSE, locationInView.x, locationInView.y, pressure);
+            /* FIXME, need to send: int clicks = (int) touch.tapCount; ? */
+
+            CGPoint locationInView = [self touchLocation:touch shouldNormalize:YES];
+            SDL_SendTouch(touchId, (SDL_FingerID)((size_t)touch), sdlwindow,
+                          SDL_FALSE, locationInView.x, locationInView.y, pressure);
+        }
     }
 }
 
@@ -230,79 +277,93 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
 {
     for (UITouch *touch in touches) {
-        SDL_TouchDeviceType touchType = [self touchTypeForTouch:touch];
-        SDL_TouchID touchId = [self touchIdForType:touchType];
-        float pressure = [self pressureForTouch:touch];
+        BOOL handled = NO;
 
-        if (SDL_AddTouch(touchId, touchType, "") < 0) {
-            continue;
+#ifdef __IPHONE_13_4
+        if (@available(iOS 13.4, *)) {
+            if (touch.type == UITouchTypeIndirectPointer) {
+                /* Already handled in pointerInteraction callback */
+                handled = YES;
+            }
         }
+#endif
+        if (!handled) {
+            SDL_TouchDeviceType touchType = [self touchTypeForTouch:touch];
+            SDL_TouchID touchId = [self touchIdForType:touchType];
+            float pressure = [self pressureForTouch:touch];
 
-        CGPoint locationInView = [self touchLocation:touch shouldNormalize:YES];
-        SDL_SendTouchMotion(touchId, (SDL_FingerID)((size_t)touch), sdlwindow,
-                            locationInView.x, locationInView.y, pressure);
+            if (SDL_AddTouch(touchId, touchType, "") < 0) {
+                continue;
+            }
+
+            CGPoint locationInView = [self touchLocation:touch shouldNormalize:YES];
+            SDL_SendTouchMotion(touchId, (SDL_FingerID)((size_t)touch), sdlwindow,
+                                locationInView.x, locationInView.y, pressure);
+        }
     }
 }
 
 #if TARGET_OS_TV || defined(__IPHONE_9_1)
 - (SDL_Scancode)scancodeFromPress:(UIPress*)press
 {
+#ifdef __IPHONE_13_4
     if (press.key != nil) {
         return (SDL_Scancode)press.key.keyCode;
     }
+#endif
 
-	/* Presses from Apple TV remote */
-	if (!SDL_AppleTVRemoteOpenedAsJoystick) {
-		switch (press.type) {
-		case UIPressTypeUpArrow:
-			return SDL_SCANCODE_UP;
-		case UIPressTypeDownArrow:
-			return SDL_SCANCODE_DOWN;
-		case UIPressTypeLeftArrow:
-			return SDL_SCANCODE_LEFT;
-		case UIPressTypeRightArrow:
-			return SDL_SCANCODE_RIGHT;
-		case UIPressTypeSelect:
-			/* HIG says: "primary button behavior" */
-			return SDL_SCANCODE_RETURN;
-		case UIPressTypeMenu:
-			/* HIG says: "returns to previous screen" */
-			return SDL_SCANCODE_ESCAPE;
-		case UIPressTypePlayPause:
-			/* HIG says: "secondary button behavior" */
-			return SDL_SCANCODE_PAUSE;
-		default:
-			break;
-		}
-	}
+    /* Presses from Apple TV remote */
+    if (!SDL_AppleTVRemoteOpenedAsJoystick) {
+        switch (press.type) {
+        case UIPressTypeUpArrow:
+            return SDL_SCANCODE_UP;
+        case UIPressTypeDownArrow:
+            return SDL_SCANCODE_DOWN;
+        case UIPressTypeLeftArrow:
+            return SDL_SCANCODE_LEFT;
+        case UIPressTypeRightArrow:
+            return SDL_SCANCODE_RIGHT;
+        case UIPressTypeSelect:
+            /* HIG says: "primary button behavior" */
+            return SDL_SCANCODE_RETURN;
+        case UIPressTypeMenu:
+            /* HIG says: "returns to previous screen" */
+            return SDL_SCANCODE_ESCAPE;
+        case UIPressTypePlayPause:
+            /* HIG says: "secondary button behavior" */
+            return SDL_SCANCODE_PAUSE;
+        default:
+            break;
+        }
+    }
 
-	return SDL_SCANCODE_UNKNOWN;
+    return SDL_SCANCODE_UNKNOWN;
 }
 
 - (void)pressesBegan:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event
 {
-	for (UIPress *press in presses) {
-		SDL_Scancode scancode = [self scancodeFromPress:press];
-		SDL_SendKeyboardKey(SDL_PRESSED, scancode);
-	}
+    for (UIPress *press in presses) {
+        SDL_Scancode scancode = [self scancodeFromPress:press];
+        SDL_SendKeyboardKey(SDL_PRESSED, scancode);
+    }
     [super pressesBegan:presses withEvent:event];
 }
 
 - (void)pressesEnded:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event
 {
-	for (UIPress *press in presses) {
-		SDL_Scancode scancode = [self scancodeFromPress:press];
-		SDL_SendKeyboardKey(SDL_RELEASED, scancode);
-	}
+    for (UIPress *press in presses) {
+        SDL_Scancode scancode = [self scancodeFromPress:press];
+        SDL_SendKeyboardKey(SDL_RELEASED, scancode);
+    }
     [super pressesEnded:presses withEvent:event];
 }
 
 - (void)pressesCancelled:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event
 {
-	for (UIPress *press in presses) {
-		SDL_Scancode scancode = [self scancodeFromPress:press];
-		SDL_SendKeyboardKey(SDL_RELEASED, scancode);
-	}
+    for (UIPress *press in presses) {
+        SDL_Scancode scancode = [self scancodeFromPress:press];
+        SDL_SendKeyboardKey(SDL_RELEASED, scancode);
+    }
     [super pressesCancelled:presses withEvent:event];
 }
 
