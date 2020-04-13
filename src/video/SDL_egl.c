@@ -959,7 +959,7 @@ SDL_EGL_CreateContext(_THIS, EGLSurface egl_surface)
             /* On OpenGL ES, the GL_OES_surfaceless_context extension must be
              * present. */
             if (SDL_GL_ExtensionSupported("GL_OES_surfaceless_context")) {
-                _this->gl_allow_no_surface = 1;
+                _this->gl_allow_no_surface = SDL_TRUE;
             }
         } else {
             /* Desktop OpenGL supports it by default from version 3.0 on. */
@@ -969,7 +969,7 @@ SDL_EGL_CreateContext(_THIS, EGLSurface egl_surface)
                 GLint v = 0;
                 glGetIntegervFunc(GL_MAJOR_VERSION, &v);
                 if (v >= 3) {
-                    _this->gl_allow_no_surface = 1;
+                    _this->gl_allow_no_surface = SDL_TRUE;
                 }
             }
         }
