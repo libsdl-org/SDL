@@ -76,7 +76,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
         SDL_AddTouch(directTouchId, SDL_TOUCH_DEVICE_DIRECT, "");
 #endif
 
-#ifdef __IPHONE_13_4
+#if !TARGET_OS_TV && defined(__IPHONE_13_4)
         if (@available(iOS 13.4, *)) {
             [self addInteraction:[[UIPointerInteraction alloc] initWithDelegate:self]];
         }
@@ -142,7 +142,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
     sdlwindow = window;
 }
 
-#ifdef __IPHONE_13_4
+#if !TARGET_OS_TV && defined(__IPHONE_13_4)
 - (UIPointerRegion *)pointerInteraction:(UIPointerInteraction *)interaction regionForRequest:(UIPointerRegionRequest *)request defaultRegion:(UIPointerRegion *)defaultRegion API_AVAILABLE(ios(13.4)){
     if (request != nil) {
         CGPoint origin = self.bounds.origin;
@@ -155,7 +155,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
     }
     return defaultRegion;
 }
-#endif /* __IPHONE_13_4 */
+#endif /* !TARGET_OS_TV && __IPHONE_13_4 */
 
 - (SDL_TouchDeviceType)touchTypeForTouch:(UITouch *)touch
 {
@@ -210,7 +210,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
     for (UITouch *touch in touches) {
         BOOL handled = NO;
 
-#ifdef __IPHONE_13_4
+#if !TARGET_OS_TV && defined(__IPHONE_13_4)
         if (@available(iOS 13.4, *)) {
             if (touch.type == UITouchTypeIndirectPointer) {
                 /* FIXME: How can we tell the difference between left and right button clicks? */
@@ -242,7 +242,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
     for (UITouch *touch in touches) {
         BOOL handled = NO;
 
-#ifdef __IPHONE_13_4
+#if !TARGET_OS_TV && defined(__IPHONE_13_4)
         if (@available(iOS 13.4, *)) {
             if (touch.type == UITouchTypeIndirectPointer) {
                 /* FIXME: How can we tell the difference between left and right button clicks? */
@@ -279,7 +279,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
     for (UITouch *touch in touches) {
         BOOL handled = NO;
 
-#ifdef __IPHONE_13_4
+#if !TARGET_OS_TV && defined(__IPHONE_13_4)
         if (@available(iOS 13.4, *)) {
             if (touch.type == UITouchTypeIndirectPointer) {
                 /* Already handled in pointerInteraction callback */
