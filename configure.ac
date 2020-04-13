@@ -3422,15 +3422,14 @@ dnl Set up the Virtual joystick driver.
 CheckVirtualJoystick()
 {
     AC_ARG_ENABLE(joystick-virtual,
-AS_HELP_STRING([--enable-joystick-virtual], [enable virtual joystick APIs [[default=no]]]),
-                  , enable_joystick_virtual=no)
+AS_HELP_STRING([--enable-joystick-virtual], [enable virtual joystick APIs [[default=yes]]]),
+                  , enable_joystick_virtual=yes)
     if test x$enable_joystick = xyes -a x$enable_joystick_virtual = xyes; then
         AC_DEFINE(SDL_JOYSTICK_VIRTUAL, 1, [ ])
         SOURCES="$SOURCES $srcdir/src/joystick/virtual/*.c"
         have_joystick_virtual=yes
     fi
 }
-
 
 
 dnl Do this on all platforms, before everything else (other things might want to override it).
