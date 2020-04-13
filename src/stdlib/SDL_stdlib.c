@@ -266,8 +266,11 @@ SDL_trunc(double x)
 #if defined(HAVE_TRUNC)
     return trunc(x);
 #else
-    /* !!! FIXME: there are more formal (correct!) ways to do this. */
-    return (double) ((Sint64) x);
+    if (x >= 0.0f) {
+        return SDL_floor(x);
+    } else {
+        return SDL_ceil(x);
+    }
 #endif
 }
 
