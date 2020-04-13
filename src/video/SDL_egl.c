@@ -977,7 +977,7 @@ SDL_EGL_CreateContext(_THIS, EGLSurface egl_surface)
             }
         } else {
             /* Desktop OpenGL supports it by default from version 3.0 on. */
-            void (APIENTRY * glGetIntegervFunc) (GLenum pname, GLint * params);
+            void (GL_APIENTRY * glGetIntegervFunc) (GLenum pname, GLint * params);
             glGetIntegervFunc = SDL_GL_GetProcAddress("glGetIntegerv");
             if (glGetIntegervFunc) {
                 GLint v = 0;
