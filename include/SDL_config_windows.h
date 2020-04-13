@@ -195,9 +195,10 @@ typedef unsigned int uintptr_t;
 
 /* Enable various input drivers */
 #define SDL_JOYSTICK_DINPUT 1
-#define SDL_JOYSTICK_XINPUT 1
 #define SDL_JOYSTICK_HIDAPI 1
-#define SDL_JOYSTICK_RAWINPUT 1
+#define SDL_JOYSTICK_RAWINPUT   1
+#define SDL_JOYSTICK_VIRTUAL    1
+#define SDL_JOYSTICK_XINPUT 1
 #define SDL_HAPTIC_DINPUT   1
 #define SDL_HAPTIC_XINPUT   1
 
