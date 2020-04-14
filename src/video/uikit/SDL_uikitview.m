@@ -153,7 +153,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 
         SDL_SendMouseMotion(sdlwindow, 0, 0, (int)point.x, (int)point.y);
     }
-    return defaultRegion;
+    return [UIPointerRegion regionWithRect:self.bounds identifier:nil];
 }
 #endif /* !TARGET_OS_TV && __IPHONE_13_4 */
 
