@@ -34,7 +34,7 @@
 #import "SDL_uikitwindow.h"
 
 /* The maximum number of mouse buttons we support */
-#define MAX_MOUSE_BUTTONS	5
+#define MAX_MOUSE_BUTTONS    5
 
 /* This is defined in SDL_sysjoystick.m */
 extern int SDL_AppleTVRemoteOpenedAsJoystick;
@@ -228,12 +228,23 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 
                 for (i = 1; i <= MAX_MOUSE_BUTTONS; ++i) {
                     if (event.buttonMask & SDL_BUTTON(i)) {
-                        if (i == 2) {
-                            i = SDL_BUTTON_RIGHT;
-                        } else if (i == 3) {
-                            i = SDL_BUTTON_MIDDLE;
+                        Uint8 button;
+
+                        switch (i) {
+                        case 1:
+                            button = SDL_BUTTON_LEFT;
+                            break;
+                        case 2:
+                            button = SDL_BUTTON_RIGHT;
+                            break;
+                        case 3:
+                            button = SDL_BUTTON_MIDDLE;
+                            break;
+                        default:
+                            button = (Uint8)i;
+                            break;
                         }
-                        SDL_SendMouseButton(sdlwindow, 0, SDL_PRESSED, i);
+                        SDL_SendMouseButton(sdlwindow, 0, SDL_PRESSED, button);
                     }
                 }
                 handled = YES;
@@ -270,12 +281,23 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 
                 for (i = 1; i <= MAX_MOUSE_BUTTONS; ++i) {
                     if (!(event.buttonMask & SDL_BUTTON(i))) {
-                        if (i == 2) {
-                            i = SDL_BUTTON_RIGHT;
-                        } else if (i == 3) {
-                            i = SDL_BUTTON_MIDDLE;
+                        Uint8 button;
+
+                        switch (i) {
+                        case 1:
+                            button = SDL_BUTTON_LEFT;
+                            break;
+                        case 2:
+                            button = SDL_BUTTON_RIGHT;
+                            break;
+                        case 3:
+                            button = SDL_BUTTON_MIDDLE;
+                            break;
+                        default:
+                            button = (Uint8)i;
+                            break;
                         }
-                        SDL_SendMouseButton(sdlwindow, 0, SDL_RELEASED, i);
+                        SDL_SendMouseButton(sdlwindow, 0, SDL_RELEASED, button);
                     }
                 }
                 handled = YES;
