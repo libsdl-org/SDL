@@ -975,9 +975,10 @@ SDL_EGL_CreateContext(_THIS, EGLSurface egl_surface)
             if (SDL_GL_ExtensionSupported("GL_OES_surfaceless_context")) {
                 _this->gl_allow_no_surface = SDL_TRUE;
             }
+#if SDL_VIDEO_OPENGL
         } else {
             /* Desktop OpenGL supports it by default from version 3.0 on. */
-            void (GL_APIENTRY * glGetIntegervFunc) (GLenum pname, GLint * params);
+            void (APIENTRY * glGetIntegervFunc) (GLenum pname, GLint * params);
             glGetIntegervFunc = SDL_GL_GetProcAddress("glGetIntegerv");
             if (glGetIntegervFunc) {
                 GLint v = 0;
@@ -986,6 +987,7 @@ SDL_EGL_CreateContext(_THIS, EGLSurface egl_surface)
                     _this->gl_allow_no_surface = SDL_TRUE;
                 }
             }
+#endif
         }
     }
 
