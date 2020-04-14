@@ -664,13 +664,13 @@ SDL_RendererEventWatch(void *userdata, SDL_Event *event)
                     float rel = renderer->xrel + event->motion.xrel / (scale.x * renderer->dpi_scale.x);
                     float trunc = SDL_truncf(rel);
                     renderer->xrel = rel - trunc;
-                    event->motion.xrel = trunc;
+                    event->motion.xrel = (Sint32) trunc;
                 }
                 if (event->motion.yrel != 0 && renderer->relative_scaling) {
                     float rel = renderer->yrel + event->motion.yrel / (scale.y * renderer->dpi_scale.y);
                     float trunc = SDL_truncf(rel);
                     renderer->yrel = rel - trunc;
-                    event->motion.yrel = trunc;
+                    event->motion.yrel = (Sint32) trunc;
                 }
             }
         }
