@@ -633,6 +633,7 @@ macro(CheckWayland)
       endforeach()
 
       if(VIDEO_WAYLAND_QT_TOUCH)
+          set(HAVE_VIDEO_WAYLAND_QT_TOUCH TRUE)
           set(SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH 1)
       endif()
 
