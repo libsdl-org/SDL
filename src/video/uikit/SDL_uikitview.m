@@ -155,6 +155,14 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
     }
     return [UIPointerRegion regionWithRect:self.bounds identifier:nil];
 }
+
+- (UIPointerStyle *)pointerInteraction:(UIPointerInteraction *)interaction styleForRegion:(UIPointerRegion *)region  API_AVAILABLE(ios(13.4)){
+    if (SDL_ShowCursor(-1)) {
+        return nil;
+    } else {
+        return [UIPointerStyle hiddenPointerStyle];
+    }
+}
 #endif /* !TARGET_OS_TV && __IPHONE_13_4 */
 
 - (SDL_TouchDeviceType)touchTypeForTouch:(UITouch *)touch
