@@ -370,7 +370,15 @@ static BOOL update_audio_session(_THIS, SDL_bool open, SDL_bool allow_playandrec
         if (category == AVAudioSessionCategoryPlayAndRecord) {
             options |= AVAudioSessionCategoryOptionDefaultToSpeaker;
         }
+        if (category == AVAudioSessionCategoryRecord ||
+            category == AVAudioSessionCategoryPlayAndRecord) {
+            options |= AVAudioSessionCategoryOptionAllowBluetooth;
+        }
 #endif
+        if (category == AVAudioSessionCategoryPlayAndRecord) {
+            options |= AVAudioSessionCategoryOptionAllowBluetoothA2DP |
+                       AVAudioSessionCategoryOptionAllowAirPlay;
+        }
 
         if ([session respondsToSelector:@selector(setCategory:mode:options:error:)]) {
             if (![session.category isEqualToString:category] || session.categoryOptions != options) {
