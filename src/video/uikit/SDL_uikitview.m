@@ -33,6 +33,9 @@
 #import "SDL_uikitmodes.h"
 #import "SDL_uikitwindow.h"
 
+/* The maximum number of mouse buttons we support */
+#define MAX_MOUSE_BUTTONS	5
+
 /* This is defined in SDL_sysjoystick.m */
 extern int SDL_AppleTVRemoteOpenedAsJoystick;
 
@@ -223,8 +226,13 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
             if (touch.type == UITouchTypeIndirectPointer) {
                 int i;
 
-                for (i = SDL_BUTTON_LEFT; i <= SDL_BUTTON_X2; ++i) {
+                for (i = 1; i <= MAX_MOUSE_BUTTONS; ++i) {
                     if (event.buttonMask & SDL_BUTTON(i)) {
+                        if (i == 2) {
+                            i = SDL_BUTTON_RIGHT;
+                        } else if (i == 3) {
+                            i = SDL_BUTTON_MIDDLE;
+                        }
                         SDL_SendMouseButton(sdlwindow, 0, SDL_PRESSED, i);
                     }
                 }
@@ -260,8 +268,13 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
             if (touch.type == UITouchTypeIndirectPointer) {
                 int i;
 
-                for (i = SDL_BUTTON_LEFT; i <= SDL_BUTTON_X2; ++i) {
+                for (i = 1; i <= MAX_MOUSE_BUTTONS; ++i) {
                     if (!(event.buttonMask & SDL_BUTTON(i))) {
+                        if (i == 2) {
+                            i = SDL_BUTTON_RIGHT;
+                        } else if (i == 3) {
+                            i = SDL_BUTTON_MIDDLE;
+                        }
                         SDL_SendMouseButton(sdlwindow, 0, SDL_RELEASED, i);
                     }
                 }
