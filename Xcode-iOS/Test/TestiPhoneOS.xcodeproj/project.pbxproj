@@ -2375,7 +2375,6 @@
 		046CEF8413254F23007AD51D /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_NAME = testgesture;
 			};
@@ -2384,7 +2383,6 @@
 		046CEF8513254F23007AD51D /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_NAME = testgesture;
 			};
@@ -2393,7 +2391,6 @@
 		047A63EB13285C3200CD7973 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_NAME = checkkeys;
 			};
@@ -2402,7 +2399,6 @@
 		047A63EC13285C3200CD7973 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_NAME = checkkeys;
 			};
@@ -2411,7 +2407,6 @@
 		1D6058940D05DD3E006BFB54 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_NAME = testwm2;
 			};
@@ -2420,7 +2415,6 @@
 		1D6058950D05DD3E006BFB54 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_NAME = testwm2;
 			};
@@ -2429,7 +2423,6 @@
 		56ED050B118A8FE400A56AA6 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_NAME = testpower;
 			};
@@ -2438,7 +2431,6 @@
 		56ED050C118A8FE400A56AA6 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_NAME = testpower;
 			};
@@ -2447,7 +2439,6 @@
 		AA13B3241FB8AEBC00D9FEE6 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -2456,7 +2447,6 @@
 		AA13B3251FB8AEBC00D9FEE6 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -2465,7 +2455,6 @@
 		AAE7DEEA14CBB1E100DF1A0E /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_NAME = testscale;
 			};
@@ -2474,7 +2463,6 @@
 		AAE7DEEB14CBB1E100DF1A0E /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_NAME = testscale;
 			};
@@ -2483,7 +2471,6 @@
 		AAE7DFAF14CBB54E00DF1A0E /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_NAME = testrendertarget;
 			};
@@ -2492,7 +2479,6 @@
 		AAE7DFB014CBB54E00DF1A0E /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_NAME = testrendertarget;
 			};
@@ -2549,7 +2535,6 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = "";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -2594,7 +2579,6 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = "";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -2619,7 +2603,6 @@
 		FABA348F1D8B575200915323 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -2628,7 +2611,6 @@
 		FABA34901D8B575200915323 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -2637,7 +2619,6 @@
 		FABA34A81D8B582100915323 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = appletvos;
@@ -2649,7 +2630,6 @@
 		FABA34A91D8B582100915323 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = appletvos;
@@ -2661,7 +2641,6 @@
 		FAE0E9911BAF9B230098DFA4 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -2670,7 +2649,6 @@
 		FAE0E9921BAF9B230098DFA4 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -2679,7 +2657,6 @@
 		FDA8AAB90E2D330F00EA573E /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_NAME = loopwav;
 			};
@@ -2688,7 +2665,6 @@
 		FDA8AABA0E2D330F00EA573E /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_NAME = loopwav;
 			};
@@ -2697,7 +2673,6 @@
 		FDAAC3CB0E2D47E6001DB1D8 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_NAME = testaudioinfo;
 			};
@@ -2706,7 +2681,6 @@
 		FDAAC3CC0E2D47E6001DB1D8 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_NAME = testaudioinfo;
 			};
@@ -2715,7 +2689,6 @@
 		FDAAC5990E2D5429001DB1D8 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_NAME = testerror;
 			};
@@ -2724,7 +2697,6 @@
 		FDAAC59A0E2D5429001DB1D8 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_NAME = testerror;
 			};
@@ -2733,7 +2705,6 @@
 		FDAAC5C70E2D55B5001DB1D8 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_NAME = testfile;
 			};
@@ -2742,7 +2713,6 @@
 		FDAAC5C80E2D55B5001DB1D8 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_NAME = testfile;
 			};
@@ -2751,7 +2721,6 @@
 		FDAAC6240E2D5914001DB1D8 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_NAME = testgles;
 			};
@@ -2760,7 +2729,6 @@
 		FDAAC6250E2D5914001DB1D8 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_NAME = testgles;
 			};
@@ -2769,7 +2737,6 @@
 		FDC42FFE0F0D866D009C87E1 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_NAME = torturethread;
 			};
@@ -2778,7 +2745,6 @@
 		FDC42FFF0F0D866D009C87E1 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_NAME = torturethread;
 			};
@@ -2787,7 +2753,6 @@
 		FDD2C1080E2E4F4B00B7A85F /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_NAME = testthread;
 			};
@@ -2796,7 +2761,6 @@
 		FDD2C1090E2E4F4B00B7A85F /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_NAME = testthread;
 			};
@@ -2805,7 +2769,6 @@
 		FDD2C17F0E2E52C000B7A85F /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_NAME = testiconv;
 			};
@@ -2814,7 +2777,6 @@
 		FDD2C1800E2E52C000B7A85F /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_NAME = testiconv;
 			};
@@ -2823,7 +2785,6 @@
 		FDD2C1A30E2E534F00B7A85F /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_NAME = testjoystick;
 			};
@@ -2832,7 +2793,6 @@
 		FDD2C1A40E2E534F00B7A85F /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_NAME = testjoystick;
 			};
@@ -2841,7 +2801,6 @@
 		FDD2C45C0E2E773800B7A85F /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_NAME = testkeys;
 			};
@@ -2850,7 +2809,6 @@
 		FDD2C45D0E2E773800B7A85F /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_NAME = testkeys;
 			};
@@ -2859,7 +2817,6 @@
 		FDD2C47A0E2E77D700B7A85F /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_NAME = testlock;
 			};
@@ -2868,7 +2825,6 @@
 		FDD2C47B0E2E77D700B7A85F /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_NAME = testlock;
 			};
@@ -2877,7 +2833,6 @@
 		FDD2C5090E2E7F4800B7A85F /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_NAME = testplatform;
 			};
@@ -2886,7 +2841,6 @@
 		FDD2C50A0E2E7F4800B7A85F /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_NAME = testplatform;
 			};
@@ -2895,7 +2849,6 @@
 		FDD2C5270E2E807600B7A85F /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_NAME = testsem;
 			};
@@ -2904,7 +2857,6 @@
 		FDD2C5280E2E807600B7A85F /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_NAME = testsem;
 			};
@@ -2913,7 +2865,6 @@
 		FDD2C54C0E2E80E400B7A85F /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_NAME = testsprite2;
 			};
@@ -2922,7 +2873,6 @@
 		FDD2C54D0E2E80E400B7A85F /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_NAME = testsprite2;
 			};
@@ -2931,7 +2881,6 @@
 		FDD2C5850E2E8C7400B7A85F /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_NAME = testtimer;
 			};
@@ -2940,7 +2889,6 @@
 		FDD2C5860E2E8C7400B7A85F /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_NAME = testtimer;
 			};
@@ -2949,7 +2897,6 @@
 		FDD2C5C30E2E8CFC00B7A85F /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_NAME = testver;
 			};
@@ -2958,7 +2905,6 @@
 		FDD2C5C40E2E8CFC00B7A85F /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_NAME = testver;
 			};
@@ -2967,7 +2913,6 @@
 		FDD2C6F20E2E959E00B7A85F /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_NAME = torturethread;
 			};
@@ -2976,7 +2921,6 @@
 		FDD2C6F30E2E959E00B7A85F /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_NAME = torturethread;
 			};
