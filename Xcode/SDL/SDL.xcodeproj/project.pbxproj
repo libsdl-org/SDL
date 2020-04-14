@@ -882,8 +882,6 @@
 		A75FDAB023E2795C00529352 /* SDL_hidapi_steam.c in Sources */ = {isa = PBXBuildFile; fileRef = A75FDAAC23E2795C00529352 /* SDL_hidapi_steam.c */; };
 		A75FDAB123E2795C00529352 /* SDL_hidapi_steam.c in Sources */ = {isa = PBXBuildFile; fileRef = A75FDAAC23E2795C00529352 /* SDL_hidapi_steam.c */; };
 		A75FDAB223E2795C00529352 /* SDL_hidapi_steam.c in Sources */ = {isa = PBXBuildFile; fileRef = A75FDAAC23E2795C00529352 /* SDL_hidapi_steam.c */; };
-		A75FDAB423E2797600529352 /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A75FDAB323E2797600529352 /* CoreBluetooth.framework */; };
-		A75FDAB623E2799700529352 /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A75FDAB523E2799700529352 /* CoreBluetooth.framework */; };
 		A75FDABA23E28A7A00529352 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A75FDAB923E28A7A00529352 /* AVFoundation.framework */; };
 		A75FDABB23E28B1D00529352 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A7D88BBB23E24A2F00DCD162 /* UIKit.framework */; };
 		A75FDABC23E28B4000529352 /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A7D88BBF23E24A7700DCD162 /* OpenGLES.framework */; };
@@ -941,9 +939,7 @@
 		A75FDB9A23E4CAEF00529352 /* hidapi.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A75FDB8C23E4C74400529352 /* hidapi.framework */; };
 		A75FDB9B23E4CAEF00529352 /* hidapi.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = A75FDB8C23E4C74400529352 /* hidapi.framework */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		A75FDB9D23E4CAFA00529352 /* hidapi.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A75FDB4923E399AC00529352 /* hidapi.framework */; };
-		A75FDB9E23E4CAFA00529352 /* hidapi.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = A75FDB4923E399AC00529352 /* hidapi.framework */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		A75FDBA023E4CAFF00529352 /* hidapi.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A75FDB6E23E3A2C900529352 /* hidapi.framework */; };
-		A75FDBA123E4CAFF00529352 /* hidapi.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = A75FDB6E23E3A2C900529352 /* hidapi.framework */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		A75FDBA823E4CB7000529352 /* LICENSE-bsd.txt in Resources */ = {isa = PBXBuildFile; fileRef = A75FDBA323E4CB6F00529352 /* LICENSE-bsd.txt */; };
 		A75FDBA923E4CB7000529352 /* LICENSE-bsd.txt in Resources */ = {isa = PBXBuildFile; fileRef = A75FDBA323E4CB6F00529352 /* LICENSE-bsd.txt */; };
 		A75FDBAA23E4CB7000529352 /* LICENSE-bsd.txt in Resources */ = {isa = PBXBuildFile; fileRef = A75FDBA323E4CB6F00529352 /* LICENSE-bsd.txt */; };
@@ -3961,7 +3957,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				A75FDB9E23E4CAFA00529352 /* hidapi.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3972,7 +3967,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				A75FDBA123E4CAFF00529352 /* hidapi.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -4554,7 +4548,6 @@
 				A7D88BC423E24A9F00DCD162 /* AudioToolbox.framework in Frameworks */,
 				A7D88BC623E24ABA00DCD162 /* AVFoundation.framework in Frameworks */,
 				A7D88B4C23E2437C00DCD162 /* CoreAudio.framework in Frameworks */,
-				A75FDAB423E2797600529352 /* CoreBluetooth.framework in Frameworks */,
 				A7D88B4D23E2437C00DCD162 /* CoreFoundation.framework in Frameworks */,
 				A75FDB9D23E4CAFA00529352 /* hidapi.framework in Frameworks */,
 				A7D88BC823E24B0300DCD162 /* CoreGraphics.framework in Frameworks */,
@@ -4576,7 +4569,6 @@
 				A7D88D0523E24BED00DCD162 /* AudioToolbox.framework in Frameworks */,
 				A7D88D0623E24BED00DCD162 /* AVFoundation.framework in Frameworks */,
 				A7D88D0723E24BED00DCD162 /* CoreAudio.framework in Frameworks */,
-				A75FDAB623E2799700529352 /* CoreBluetooth.framework in Frameworks */,
 				A7D88D0823E24BED00DCD162 /* CoreFoundation.framework in Frameworks */,
 				A7D88D0923E24BED00DCD162 /* CoreGraphics.framework in Frameworks */,
 				A7D88D0B23E24BED00DCD162 /* CoreVideo.framework in Frameworks */,
