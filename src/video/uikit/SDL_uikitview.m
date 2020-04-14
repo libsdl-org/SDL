@@ -221,8 +221,13 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 #if !TARGET_OS_TV && defined(__IPHONE_13_4)
         if (@available(iOS 13.4, *)) {
             if (touch.type == UITouchTypeIndirectPointer) {
-                /* FIXME: How can we tell the difference between left and right button clicks? */
-                SDL_SendMouseButton(sdlwindow, 0, SDL_PRESSED, SDL_BUTTON_LEFT);
+                int i;
+
+                for (i = SDL_BUTTON_LEFT; i <= SDL_BUTTON_X2; ++i) {
+                    if (event.buttonMask & SDL_BUTTON(i)) {
+                        SDL_SendMouseButton(sdlwindow, 0, SDL_PRESSED, i);
+                    }
+                }
                 handled = YES;
             }
         }
@@ -253,8 +258,13 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 #if !TARGET_OS_TV && defined(__IPHONE_13_4)
         if (@available(iOS 13.4, *)) {
             if (touch.type == UITouchTypeIndirectPointer) {
-                /* FIXME: How can we tell the difference between left and right button clicks? */
-                SDL_SendMouseButton(sdlwindow, 0, SDL_RELEASED, SDL_BUTTON_LEFT);
+                int i;
+
+                for (i = SDL_BUTTON_LEFT; i <= SDL_BUTTON_X2; ++i) {
+                    if (!(event.buttonMask & SDL_BUTTON(i))) {
+                        SDL_SendMouseButton(sdlwindow, 0, SDL_RELEASED, i);
+                    }
+                }
                 handled = YES;
             }
         }
@@ -380,6 +390,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
     /* This is only called when the force of a press changes. */
     [super pressesChanged:presses withEvent:event];
 }
+
 #endif /* TARGET_OS_TV || defined(__IPHONE_9_1) */
 
 #if TARGET_OS_TV
