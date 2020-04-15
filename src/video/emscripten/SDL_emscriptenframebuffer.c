@@ -156,14 +156,6 @@ int Emscripten_UpdateWindowFramebuffer(_THIS, SDL_Window * window, const SDL_Rec
         return 0;
     }, surface->w, surface->h, surface->pixels);
 
-    /*if (SDL_getenv("SDL_VIDEO_Emscripten_SAVE_FRAMES")) {
-        static int frame_number = 0;
-        char file[128];
-        SDL_snprintf(file, sizeof(file), "SDL_window%d-%8.8d.bmp",
-                     SDL_GetWindowID(window), ++frame_number);
-        SDL_SaveBMP(surface, file);
-    }*/
-
     if (emscripten_has_asyncify() && SDL_GetHintBoolean(SDL_HINT_EMSCRIPTEN_ASYNCIFY, SDL_TRUE)) {
         /* give back control to browser for screen refresh */
         emscripten_sleep(0);
