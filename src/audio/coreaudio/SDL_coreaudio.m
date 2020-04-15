@@ -280,10 +280,46 @@ device_list_changed(AudioObjectID systemObj, UInt32 num_addr, const AudioObjectP
 #endif
 
 
-static int open_playback_devices = 0;
-static int open_capture_devices = 0;
+static int open_playback_devices;
+static int open_capture_devices;
+static int num_open_devices;
+static SDL_AudioDevice **open_devices;
 
 #if !MACOSX_COREAUDIO
+
+static BOOL session_active = NO;
+
+static void pause_audio_devices()
+{
+	int i;
+
+	if (!open_devices) {
+		return;
+	}
+
+	for (i = 0; i < num_open_devices; ++i) {
+		SDL_AudioDevice *device = open_devices[i];
+		if (device->hidden->audioQueue && !device->hidden->interrupted) {
+			AudioQueuePause(device->hidden->audioQueue);
+		}
+	}
+}
+
+static void resume_audio_devices()
+{
+	int i;
+
+	if (!open_devices) {
+		return;
+	}
+
+	for (i = 0; i < num_open_devices; ++i) {
+		SDL_AudioDevice *device = open_devices[i];
+		if (device->hidden->audioQueue && !device->hidden->interrupted) {
+			AudioQueueStart(device->hidden->audioQueue, NULL);
+		}
+	}
+}
 
 static void interruption_begin(_THIS)
 {
@@ -379,9 +415,18 @@ static BOOL update_audio_session(_THIS, SDL_bool open, SDL_bool allow_playandrec
             options |= AVAudioSessionCategoryOptionAllowBluetoothA2DP |
                        AVAudioSessionCategoryOptionAllowAirPlay;
         }
+		if (category == AVAudioSessionCategoryPlayback ||
+			category == AVAudioSessionCategoryPlayAndRecord) {
+			options |= AVAudioSessionCategoryOptionDuckOthers;
+		}
 
         if ([session respondsToSelector:@selector(setCategory:mode:options:error:)]) {
             if (![session.category isEqualToString:category] || session.categoryOptions != options) {
+				/* Stop the current session so we don't interrupt other application audio */
+				pause_audio_devices();
+				[session setActive:NO error:nil];
+				session_active = NO;
+
                 if (![session setCategory:category mode:mode options:options error:&err]) {
                     NSString *desc = err.description;
                     SDL_SetError("Could not set Audio Session category: %s", desc.UTF8String);
@@ -390,6 +435,11 @@ static BOOL update_audio_session(_THIS, SDL_bool open, SDL_bool allow_playandrec
             }
         } else {
             if (![session.category isEqualToString:category]) {
+				/* Stop the current session so we don't interrupt other application audio */
+				pause_audio_devices();
+				[session setActive:NO error:nil];
+				session_active = NO;
+
                 if (![session setCategory:category error:&err]) {
                     NSString *desc = err.description;
                     SDL_SetError("Could not set Audio Session category: %s", desc.UTF8String);
@@ -398,7 +448,7 @@ static BOOL update_audio_session(_THIS, SDL_bool open, SDL_bool allow_playandrec
             }
         }
 
-        if (open && (open_playback_devices + open_capture_devices) == 1) {
+        if ((open_playback_devices || open_capture_devices) && !session_active) {
             if (![session setActive:YES error:&err]) {
                 if ([err code] == AVAudioSessionErrorCodeResourceNotAvailable &&
                     category == AVAudioSessionCategoryPlayAndRecord) {
@@ -409,8 +459,12 @@ static BOOL update_audio_session(_THIS, SDL_bool open, SDL_bool allow_playandrec
                 SDL_SetError("Could not activate Audio Session: %s", desc.UTF8String);
                 return NO;
             }
-        } else if (!open_playback_devices && !open_capture_devices) {
+			session_active = YES;
+			resume_audio_devices();
+        } else if (!open_playback_devices && !open_capture_devices && session_active) {
+			pause_audio_devices();
             [session setActive:NO error:nil];
+			session_active = NO;
         }
 
         if (open) {
@@ -438,14 +492,12 @@ static BOOL update_audio_session(_THIS, SDL_bool open, SDL_bool allow_playandrec
 
             this->hidden->interruption_listener = CFBridgingRetain(listener);
         } else {
-            if (this->hidden->interruption_listener != NULL) {
-                SDLInterruptionListener *listener = nil;
-                listener = (SDLInterruptionListener *) CFBridgingRelease(this->hidden->interruption_listener);
-                [center removeObserver:listener];
-                @synchronized (listener) {
-                    listener.device = NULL;
-                }
-            }
+			SDLInterruptionListener *listener = nil;
+			listener = (SDLInterruptionListener *) CFBridgingRelease(this->hidden->interruption_listener);
+			[center removeObserver:listener];
+			@synchronized (listener) {
+				listener.device = NULL;
+			}
         }
     }
 
@@ -471,7 +523,7 @@ outputCallback(void *inUserData, AudioQueueRef inAQ, AudioQueueBufferRef inBuffe
         Uint8 *ptr = (Uint8 *) inBuffer->mAudioData;
 
         while (remaining > 0) {
-            if ( SDL_AudioStreamAvailable(this->stream) == 0 ) {
+            if (SDL_AudioStreamAvailable(this->stream) == 0) {
                 /* Generate the data */
                 SDL_LockMutex(this->mixer_lock);
                 (*this->callbackspec.callback)(this->callbackspec.userdata,
@@ -480,10 +532,10 @@ outputCallback(void *inUserData, AudioQueueRef inAQ, AudioQueueBufferRef inBuffe
                 this->hidden->bufferOffset = 0;
                 SDL_AudioStreamPut(this->stream, this->hidden->buffer, this->hidden->bufferSize);
             }
-            if ( SDL_AudioStreamAvailable(this->stream) > 0 ) {
+            if (SDL_AudioStreamAvailable(this->stream) > 0) {
                 int got;
                 UInt32 len = SDL_AudioStreamAvailable(this->stream);
-                if ( len > remaining )
+                if (len > remaining)
                     len = remaining;
                 got = SDL_AudioStreamGet(this->stream, ptr, len);
                 SDL_assert((got < 0) || (got == len));
@@ -529,7 +581,7 @@ outputCallback(void *inUserData, AudioQueueRef inAQ, AudioQueueBufferRef inBuffe
 static void
 inputCallback(void *inUserData, AudioQueueRef inAQ, AudioQueueBufferRef inBuffer,
               const AudioTimeStamp *inStartTime, UInt32 inNumberPacketDescriptions,
-              const AudioStreamPacketDescription *inPacketDescs )
+              const AudioStreamPacketDescription *inPacketDescs)
 {
     SDL_AudioDevice *this = (SDL_AudioDevice *) inUserData;
 
@@ -619,6 +671,7 @@ static void
 COREAUDIO_CloseDevice(_THIS)
 {
     const SDL_bool iscapture = this->iscapture;
+	int i;
 
 /* !!! FIXME: what does iOS do when a bluetooth audio device vanishes? Headphones unplugged? */
 /* !!! FIXME: (we only do a "default" device on iOS right now...can we do more?) */
@@ -637,6 +690,20 @@ COREAUDIO_CloseDevice(_THIS)
 #if !MACOSX_COREAUDIO
     update_audio_session(this, SDL_FALSE, SDL_TRUE);
 #endif
+
+	for (i = 0; i < num_open_devices; ++i) {
+		if (open_devices[i] == this) {
+			--num_open_devices;
+			if (i < num_open_devices) {
+				SDL_memmove(&open_devices[i], &open_devices[i+1], sizeof(open_devices[i])*(num_open_devices - i));
+			}
+			break;
+		}
+	}
+	if (num_open_devices == 0) {
+		SDL_free(open_devices);
+		open_devices = NULL;
+	}
 
     /* if callback fires again, feed silence; don't call into the app. */
     SDL_AtomicSet(&this->paused, 1);
@@ -942,6 +1009,7 @@ COREAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     AudioStreamBasicDescription *strdesc;
     SDL_AudioFormat test_format = SDL_FirstAudioFormat(this->spec.format);
     int valid_datatype = 0;
+	SDL_AudioDevice **new_open_devices;
 
     /* Initialize all variables that we clean on shutdown */
     this->hidden = (struct SDL_PrivateAudioData *)
@@ -958,6 +1026,12 @@ COREAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     } else {
         open_playback_devices++;
     }
+
+	new_open_devices = (SDL_AudioDevice **)SDL_realloc(open_devices, sizeof(open_devices[0]) * (num_open_devices + 1));
+	if (new_open_devices) {
+		open_devices = new_open_devices;
+		open_devices[num_open_devices++] = this;
+	}
 
 #if !MACOSX_COREAUDIO
     if (!update_audio_session(this, SDL_TRUE, SDL_TRUE)) {
