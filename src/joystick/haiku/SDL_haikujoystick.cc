@@ -104,7 +104,7 @@ extern "C"
         return -1;
     }
 
-    static void HAIKU_JoystickGetDevicePlayerIndex(int device_index, int player_index)
+    static void HAIKU_JoystickSetDevicePlayerIndex(int device_index, int player_index)
     {
     }
 
