@@ -109,6 +109,7 @@ int Emscripten_UpdateWindowFramebuffer(_THIS, SDL_Window * window, const SDL_Rec
             if (SDL2.data32Data !== data) {
                 SDL2.data32 = new Int32Array(data.buffer);
                 SDL2.data8 = new Uint8Array(data.buffer);
+                SDL2.data32Data = data;
             }
             var data32 = SDL2.data32;
             num = data32.length;
