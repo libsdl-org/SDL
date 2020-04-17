@@ -88,6 +88,7 @@ extern void Wayland_SetWindowFullscreen(_THIS, SDL_Window * window,
                                         SDL_VideoDisplay * _display,
                                         SDL_bool fullscreen);
 extern void Wayland_MaximizeWindow(_THIS, SDL_Window * window);
+extern void Wayland_SetWindowGrab(_THIS, SDL_Window * window, SDL_bool grabbed);
 extern void Wayland_RestoreWindow(_THIS, SDL_Window * window);
 extern void Wayland_SetWindowBordered(_THIS, SDL_Window * window, SDL_bool bordered);
 extern int Wayland_CreateWindow(_THIS, SDL_Window *window);

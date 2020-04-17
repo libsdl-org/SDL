@@ -43,6 +43,9 @@ extern void Wayland_display_destroy_pointer_constraints(SDL_VideoData *d);
 extern int Wayland_input_lock_pointer(struct SDL_WaylandInput *input);
 extern int Wayland_input_unlock_pointer(struct SDL_WaylandInput *input);
 
+extern int Wayland_input_confine_pointer(SDL_Window *window, struct SDL_WaylandInput *input);
+extern int Wayland_input_unconfine_pointer(struct SDL_WaylandInput *input);
+
 extern void Wayland_display_add_relative_pointer_manager(SDL_VideoData *d, uint32_t id);
 extern void Wayland_display_destroy_relative_pointer_manager(SDL_VideoData *d);
 

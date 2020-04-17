@@ -184,6 +184,7 @@ Wayland_CreateDevice(int devindex)
     device->ShowWindow = Wayland_ShowWindow;
     device->SetWindowFullscreen = Wayland_SetWindowFullscreen;
     device->MaximizeWindow = Wayland_MaximizeWindow;
+    device->SetWindowGrab = Wayland_SetWindowGrab;
     device->RestoreWindow = Wayland_RestoreWindow;
     device->SetWindowBordered = Wayland_SetWindowBordered;
     device->SetWindowSize = Wayland_SetWindowSize;
