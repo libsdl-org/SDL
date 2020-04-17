@@ -38,6 +38,17 @@
 
 #ifdef SDL_JOYSTICK_HIDAPI_SWITCH
 
+/* Define this to get log output for rumble logic */
+/*#define DEBUG_RUMBLE*/
+
+/* How often you can write rumble commands to the controller in Bluetooth mode
+   If you send commands more frequently than this, you can turn off the controller.
+ */
+#define RUMBLE_WRITE_FREQUENCY_MS   25
+
+/* How often you have to refresh a long duration rumble to keep the motors running */
+#define RUMBLE_REFRESH_FREQUENCY_MS 40
+
 typedef enum {
     k_eSwitchInputReportIDs_SubcommandReply       = 0x21,
     k_eSwitchInputReportIDs_FullControllerState   = 0x30,
@@ -202,7 +213,10 @@ typedef struct {
     SwitchCommonOutputPacket_t m_RumblePacket;
     Uint8 m_rgucReadBuffer[k_unSwitchMaxOutputPacketLength];
     SDL_bool m_bRumbleActive;
-    Uint32 m_unRumbleRefresh;
+    Uint32 m_unRumbleSent;
+    SDL_bool m_bRumblePending;
+    SDL_bool m_bRumbleZeroPending;
+    Uint32 m_unRumblePending;
 
     SwitchInputOnlyControllerStatePacket_t m_lastInputOnlyState;
     SwitchSimpleStatePacket_t m_lastSimpleState;
@@ -471,14 +485,7 @@ static SDL_bool WriteRumble(SDL_DriverSwitch_Context *ctx)
     ctx->m_nCommandNumber = (ctx->m_nCommandNumber + 1) & 0xF;
 
     /* Refresh the rumble state periodically */
-    if (ctx->m_bRumbleActive) {
-        ctx->m_unRumbleRefresh = SDL_GetTicks() + 30;
-        if (!ctx->m_unRumbleRefresh) {
-            ctx->m_unRumbleRefresh = 1;
-        }
-    } else {
-        ctx->m_unRumbleRefresh = 0;
-    }
+    ctx->m_unRumbleSent = SDL_GetTicks();
 
     return WritePacket(ctx, (Uint8 *)&ctx->m_RumblePacket, sizeof(ctx->m_RumblePacket));
 }
@@ -812,10 +819,8 @@ error:
 }
 
 static int
-HIDAPI_DriverSwitch_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+HIDAPI_DriverSwitch_ActuallyRumbleJoystick(SDL_DriverSwitch_Context *ctx, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
-    SDL_DriverSwitch_Context *ctx = (SDL_DriverSwitch_Context *)device->context;
-
     /* Experimentally determined rumble values. These will only matter on some controllers as tested ones
      * seem to disregard these and just use any non-zero rumble values as a binary flag for constant rumble
      *
@@ -846,6 +851,73 @@ HIDAPI_DriverSwitch_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joys
         return -1;
     }
     return 0;
+}
+
+static int
+HIDAPI_DriverSwitch_SendPendingRumble(SDL_DriverSwitch_Context *ctx)
+{
+    if ((SDL_GetTicks() - ctx->m_unRumbleSent) < RUMBLE_WRITE_FREQUENCY_MS) {
+        return 0;
+    }
+
+    if (ctx->m_bRumblePending) {
+        Uint16 low_frequency_rumble = (Uint16)(ctx->m_unRumblePending >> 16);
+        Uint16 high_frequency_rumble = (Uint16)ctx->m_unRumblePending;
+
+#ifdef DEBUG_RUMBLE
+        SDL_Log("Sent pending rumble %d/%d\n", low_frequency_rumble, high_frequency_rumble);
+#endif
+        ctx->m_bRumblePending = SDL_FALSE;
+        ctx->m_unRumblePending = 0;
+
+        return HIDAPI_DriverSwitch_ActuallyRumbleJoystick(ctx, low_frequency_rumble, high_frequency_rumble);
+    }
+
+    if (ctx->m_bRumbleZeroPending) {
+        ctx->m_bRumbleZeroPending = SDL_FALSE;
+
+#ifdef DEBUG_RUMBLE
+        SDL_Log("Sent pending zero rumble\n");
+#endif
+        return HIDAPI_DriverSwitch_ActuallyRumbleJoystick(ctx, 0, 0);
+    }
+
+    return 0;
+}
+
+static int
+HIDAPI_DriverSwitch_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+{
+    SDL_DriverSwitch_Context *ctx = (SDL_DriverSwitch_Context *)device->context;
+
+    if (ctx->m_bRumblePending) {
+        if (HIDAPI_DriverSwitch_SendPendingRumble(ctx) < 0) {
+            return -1;
+        }
+    }
+
+    if (ctx->m_bUsingBluetooth && (SDL_GetTicks() - ctx->m_unRumbleSent) < RUMBLE_WRITE_FREQUENCY_MS) {
+        if (low_frequency_rumble || high_frequency_rumble) {
+            Uint32 unRumblePending = ((Uint32)low_frequency_rumble << 16) | high_frequency_rumble;
+
+            /* Keep the highest rumble intensity in the given interval */
+            if (unRumblePending > ctx->m_unRumblePending) {
+                ctx->m_unRumblePending = unRumblePending;
+            }
+            ctx->m_bRumblePending = SDL_TRUE;
+            ctx->m_bRumbleZeroPending = SDL_FALSE;
+        } else {
+            /* When rumble is complete, turn it off */
+            ctx->m_bRumbleZeroPending = SDL_TRUE;
+        }
+        return 0;
+    }
+
+#ifdef DEBUG_RUMBLE
+    SDL_Log("Sent rumble %d/%d\n", low_frequency_rumble, high_frequency_rumble);
+#endif
+
+    return HIDAPI_DriverSwitch_ActuallyRumbleJoystick(ctx, low_frequency_rumble, high_frequency_rumble);
 }
 
 static void HandleInputOnlyControllerState(SDL_Joystick *joystick, SDL_DriverSwitch_Context *ctx, SwitchInputOnlyControllerStatePacket_t *packet)
@@ -1141,8 +1213,13 @@ HIDAPI_DriverSwitch_UpdateDevice(SDL_HIDAPI_Device *device)
         }
     }
 
-    if (ctx->m_bRumbleActive &&
-        SDL_TICKS_PASSED(SDL_GetTicks(), ctx->m_unRumbleRefresh)) {
+    if (ctx->m_bRumblePending || ctx->m_bRumbleZeroPending) {
+        HIDAPI_DriverSwitch_SendPendingRumble(ctx);
+    } else if (ctx->m_bRumbleActive &&
+               SDL_TICKS_PASSED(SDL_GetTicks(), ctx->m_unRumbleSent + RUMBLE_REFRESH_FREQUENCY_MS)) {
+#ifdef DEBUG_RUMBLE
+        SDL_Log("Sent continuing rumble\n");
+#endif
         WriteRumble(ctx);
     }
 
