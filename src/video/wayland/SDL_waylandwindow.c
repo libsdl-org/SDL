@@ -628,6 +628,17 @@ Wayland_MaximizeWindow(_THIS, SDL_Window * window)
     WAYLAND_wl_display_flush( viddata->display );
 }
 
+void
+Wayland_SetWindowGrab(_THIS, SDL_Window *window, SDL_bool grabbed)
+{
+    SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
+
+    if (grabbed)
+        Wayland_input_confine_pointer(window, data->input);
+    else
+        Wayland_input_unconfine_pointer(data->input);
+}
+
 int Wayland_CreateWindow(_THIS, SDL_Window *window)
 {
     SDL_WindowData *data;
