@@ -38,6 +38,7 @@
 #define USB_PRODUCT_NINTENDO_SWITCH_PRO                 0x2009
 #define USB_PRODUCT_RAZER_PANTHERA                      0x0401
 #define USB_PRODUCT_RAZER_PANTHERA_EVO                  0x1008
+#define USB_PRODUCT_RAZER_ATROX                         0x0a00
 #define USB_PRODUCT_SONY_DS4                            0x05c4
 #define USB_PRODUCT_SONY_DS4_DONGLE                     0x0ba0
 #define USB_PRODUCT_SONY_DS4_SLIM                       0x09cc
