@@ -128,17 +128,20 @@ static void
 DumpPacket(const char *prefix, Uint8 *data, int size)
 {
     int i;
-    char buffer[5*USB_PACKET_LENGTH];
+    char *buffer;
+    size_t length = SDL_strlen(prefix) + 11*(USB_PACKET_LENGTH/8) + (5*USB_PACKET_LENGTH) + 1 + 1;
 
-    SDL_snprintf(buffer, sizeof(buffer), prefix, size);
+    buffer = (char *)SDL_malloc(length);
+    SDL_snprintf(buffer, length, prefix, size);
     for (i = 0; i < size; ++i) {
         if ((i % 8) == 0) {
-            SDL_snprintf(&buffer[SDL_strlen(buffer)], sizeof(buffer) - SDL_strlen(buffer), "\n%.2d:      ", i);
+            SDL_snprintf(&buffer[SDL_strlen(buffer)], length - SDL_strlen(buffer), "\n%.2d:      ", i);
         }
-        SDL_snprintf(&buffer[SDL_strlen(buffer)], sizeof(buffer) - SDL_strlen(buffer), " 0x%.2x", data[i]);
+        SDL_snprintf(&buffer[SDL_strlen(buffer)], length - SDL_strlen(buffer), " 0x%.2x", data[i]);
     }
-    SDL_strlcat(buffer, "\n", sizeof(buffer));
+    SDL_strlcat(buffer, "\n", length);
     SDL_Log("%s", buffer);
+    SDL_free(buffer);
 }
 #endif /* DEBUG_XBOX_PROTOCOL */
 
@@ -226,7 +229,7 @@ SendControllerInit(SDL_HIDAPI_Device *device, SDL_DriverXboxOne_Context *ctx)
         }
 
         if (packet->response[0]) {
-            const Uint32 RESPONSE_TIMEOUT_MS = 50;
+            const Uint32 RESPONSE_TIMEOUT_MS = 100;
             Uint32 start = SDL_GetTicks();
             SDL_bool got_response = SDL_FALSE;
 
@@ -244,7 +247,7 @@ SendControllerInit(SDL_HIDAPI_Device *device, SDL_DriverXboxOne_Context *ctx)
                 }
             }
 #ifdef DEBUG_XBOX_PROTOCOL
-            SDL_Log("Init sequence %d got response: %s\n", i, got_response ? "TRUE" : "FALSE");
+            SDL_Log("Init sequence %d got response after %u ms: %s\n", i, (SDL_GetTicks() - start), got_response ? "TRUE" : "FALSE");
 #endif
         }
     }
