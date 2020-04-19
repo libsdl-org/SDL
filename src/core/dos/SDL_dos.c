@@ -24,9 +24,13 @@
 
 #ifdef __MSDOS__
 
-#include <bios.h>
+#include <dpmi.h>
+#include <go32.h>
+#include <pc.h>
 
 #include "../../events/SDL_events_c.h"
+
+#define KEYBOARD_INTERRUPT 0x09
 
 static const SDL_Scancode bios_to_sdl_scancode[128] = {
     0,
@@ -120,16 +124,168 @@ static const SDL_Scancode bios_to_sdl_scancode[128] = {
     SDL_SCANCODE_F12,
 };
 
+static volatile Uint8 scancode_buf[100];
+static volatile int scancode_count; 
+
+static void
+DOS_KeyboardISR(void)
+{
+    /* Read scancode into buffer. */
+    if (scancode_count < SDL_arraysize(scancode_buf)) {
+        scancode_buf[scancode_count] = inportb(0x60);
+    }
+
+    scancode_count++;
+
+    /* Acknowledge interrupt. */
+    outportb(0x20, 0x20);
+}
+
+static int
+DOS_LockKeyboardISR(void)
+{
+    size_t len = (void *)DOS_LockKeyboardISR - (void *)DOS_KeyboardISR;
+
+    SDL_LogDebug(SDL_LOG_CATEGORY_INPUT, "DOS: Keyboard ISR code size is %zd bytes", len);
+
+    /* Lock interrupt service routine. */
+    if (_go32_dpmi_lock_code(DOS_KeyboardISR, len)) {
+        return SDL_SetError("DOS: Failed to lock keyboard ISR code (%zd bytes)", len);
+    }
+
+    /* Lock scancode buffer. */
+    if (_go32_dpmi_lock_data((void *)scancode_buf, sizeof(scancode_buf))) {
+        return SDL_SetError("DOS: Failed to lock scancode buffer (%zu bytes)", sizeof(scancode_buf));
+    }
+
+    /* Lock scancode counter. */
+    if (_go32_dpmi_lock_data((void *)&scancode_count, sizeof(scancode_count))) {
+        return SDL_SetError("DOS: Failed to lock scancode counter (%zu bytes)", sizeof(scancode_count));
+    }
+
+    return 0;
+}
+
+static SDL_bool kbd_is_init;
+static _go32_dpmi_seginfo kbd_isr, old_kbd_isr;
+
+static int
+DOS_InitKeyboard(void)
+{
+    if (kbd_is_init) {
+        return 0;
+    }
+
+    /* Save the original keyboard interrupt service routine. */
+    if (_go32_dpmi_get_protected_mode_interrupt_vector(KEYBOARD_INTERRUPT, &old_kbd_isr)) {
+        return SDL_SetError("DOS: Failed to get original keyboard ISR");
+    }
+
+    /* Lock memory that is touched during an interrupt. */
+    if (DOS_LockKeyboardISR()) {
+        return -1;
+    }
+
+    /* Setup struct for input parameters. */
+    kbd_isr.pm_selector = _my_cs();
+    kbd_isr.pm_offset = (unsigned long)DOS_KeyboardISR;
+
+    /* Wrap the keyboard ISR so it can be used. */
+    if (_go32_dpmi_allocate_iret_wrapper(&kbd_isr)) {
+        return SDL_SetError("DOS: Failed to wrap keyboard ISR");
+    }
+
+    /* Use the new keyboard ISR. */
+    if (_go32_dpmi_set_protected_mode_interrupt_vector(KEYBOARD_INTERRUPT, &kbd_isr)) {
+        _go32_dpmi_free_iret_wrapper(&kbd_isr);
+        return SDL_SetError("DOS: Failed to set new keyboard ISR");
+    }
+
+    kbd_is_init = SDL_TRUE;
+
+    return 0;
+}
+
+static void
+DOS_HandleKeyboard(void)
+{
+    static SDL_bool extended_key = SDL_FALSE;
+    int i;
+
+    /* Do nothing if no scancodes are buffered. */
+    if (!scancode_count) {
+        return;
+    }
+
+    /* Convert buffered scancodes to SDL key events. */
+    for (i = 0; i < scancode_count && i < SDL_arraysize(scancode_buf); i++) {
+        Uint8 scan = scancode_buf[i];
+        Uint8 state = scan & 0x80 ? SDL_RELEASED : SDL_PRESSED;
+
+        /* Check if the code is an extended key prefix. */
+        if (scan == 0xE0) {
+            extended_key = SDL_TRUE;
+            continue;
+        }
+
+        /* Mask off state bit. */
+        scan &= 0x7F;
+
+        /* Generate SDL key event. */
+        if (extended_key) {
+            /* TODO: Handle extended keyboard scancodes. */
+        } else {
+            SDL_SendKeyboardKey(state, bios_to_sdl_scancode[scan]);
+        }
+
+        /* Reset extended key flag. */
+        extended_key = SDL_FALSE;
+    }
+
+    /* Check for scancode buffer overflow. */
+    if (scancode_count > SDL_arraysize(scancode_buf)) {
+        int diff = scancode_count - SDL_arraysize(scancode_buf);
+        SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, "DOS: Scancode buffer overflowed by %d", diff);
+
+        /* Reset extended key flag. */
+        extended_key = SDL_FALSE;
+    }
+
+    scancode_count = 0;
+}
+
+static void
+DOS_QuitKeyboard(void)
+{
+    if (kbd_is_init) {
+        return;
+    }
+
+    /* Restore original keyboard interrupt service routine. */
+    _go32_dpmi_set_protected_mode_interrupt_vector(KEYBOARD_INTERRUPT, &old_kbd_isr);
+
+    /* Cleanup keyboard ISR wrapper. */
+    _go32_dpmi_free_iret_wrapper(&kbd_isr);
+
+    kbd_is_init = SDL_FALSE;
+}
+
+int
+SDL_DOS_Init(void)
+{
+    return DOS_InitKeyboard();
+}
+
 void
 SDL_DOS_PumpEvents(void)
 {
-    /* TODO: Handle enhanced keyboard scancodes. */
-    /* TODO: Detect key released events. */
-    /* TODO: Send ASCII part to SDL_SendKeyboardText? */
-    while (_bios_keybrd(_KEYBRD_READY)) {
-        Uint8 scan = _bios_keybrd(_KEYBRD_READ) >> 8;
-        SDL_SendKeyboardKey(SDL_PRESSED, bios_to_sdl_scancode[scan]);
-    }
+    DOS_HandleKeyboard();
+}
+
+void
+SDL_DOS_Quit(void)
+{
+    DOS_QuitKeyboard();
 }
 
 #endif /* __MSDOS__ */

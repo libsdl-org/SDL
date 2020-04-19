@@ -1,6 +1,7 @@
 /*
   Simple DirectMedia Layer
   Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 2020 Jay Petacat <jay@jayschwa.net>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -27,6 +28,8 @@
 #include "../SDL_sysvideo.h"
 #include "../SDL_pixels_c.h"
 #include "../../events/SDL_events_c.h"
+
+#include "../../core/dos/SDL_dos.h"
 
 #include "SDL_svga_video.h"
 #include "SDL_svga_events.h"
@@ -132,7 +135,7 @@ SVGA_VideoInit(_THIS)
         return -1;
     }
 
-    return 0;
+    return SDL_DOS_Init();
 }
 
 static void
@@ -230,6 +233,8 @@ SVGA_VideoQuit(_THIS)
     if (devdata->original_mode) {
         SVGA_SetVBEMode(devdata->original_mode);
     }
+
+    SDL_DOS_Quit();
 }
 
 static int

@@ -23,7 +23,9 @@
 #ifndef SDL_dos_h_
 #define SDL_dos_h_
 
+extern int SDL_DOS_Init(void);
 extern void SDL_DOS_PumpEvents(void);
+extern void SDL_DOS_Quit(void);
 
 #endif /* SDL_dos_h_ */
 
