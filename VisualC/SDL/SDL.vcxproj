@@ -418,11 +418,13 @@
     <ClCompile Include="..\..\src\events\SDL_windowevents.c" />
     <ClCompile Include="..\..\src\file\SDL_rwops.c" />
     <ClCompile Include="..\..\src\filesystem\windows\SDL_sysfilesystem.c" />
+    <ClCompile Include="..\..\src\haptic\dummy\SDL_syshaptic.c" />
     <ClCompile Include="..\..\src\haptic\SDL_haptic.c" />
     <ClCompile Include="..\..\src\haptic\windows\SDL_dinputhaptic.c" />
     <ClCompile Include="..\..\src\haptic\windows\SDL_windowshaptic.c" />
     <ClCompile Include="..\..\src\haptic\windows\SDL_xinputhaptic.c" />
     <ClCompile Include="..\..\src\hidapi\windows\hid.c" />
+    <ClCompile Include="..\..\src\joystick\dummy\SDL_sysjoystick.c" />
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapijoystick.c" />
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_gamecube.c" />
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_ps4.c" />
@@ -438,6 +440,7 @@
     <ClCompile Include="..\..\src\joystick\windows\SDL_mmjoystick.c" />
     <ClCompile Include="..\..\src\joystick\windows\SDL_rawinputjoystick.c" />
     <ClCompile Include="..\..\src\joystick\windows\SDL_windowsjoystick.c" />
+    <ClCompile Include="..\..\src\joystick\windows\SDL_windows_gaming_input.c" />
     <ClCompile Include="..\..\src\joystick\windows\SDL_xinputjoystick.c" />
     <ClCompile Include="..\..\src\libm\e_atan2.c" />
     <ClCompile Include="..\..\src\libm\e_exp.c" />
