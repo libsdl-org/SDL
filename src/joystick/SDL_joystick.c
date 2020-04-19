@@ -58,6 +58,9 @@ static SDL_JoystickDriver *SDL_joystick_drivers[] = {
 #ifdef SDL_JOYSTICK_HIDAPI /* Before WINDOWS_ driver, as WINDOWS wants to check if this driver is handling things */
     &SDL_HIDAPI_JoystickDriver,
 #endif
+#if defined(SDL_JOYSTICK_WGI)
+    &SDL_WGI_JoystickDriver,
+#endif
 #if defined(SDL_JOYSTICK_DINPUT) || defined(SDL_JOYSTICK_XINPUT)
     &SDL_WINDOWS_JoystickDriver,
 #endif
@@ -1732,6 +1735,12 @@ SDL_IsJoystickXInput(SDL_JoystickGUID guid)
 }
 
 SDL_bool
+SDL_IsJoystickWGI(SDL_JoystickGUID guid)
+{
+    return (guid.data[14] == 'w') ? SDL_TRUE : SDL_FALSE;
+}
+
+SDL_bool
 SDL_IsJoystickHIDAPI(SDL_JoystickGUID guid)
 {
     return (guid.data[14] == 'h') ? SDL_TRUE : SDL_FALSE;
@@ -1838,6 +1847,10 @@ static SDL_JoystickType SDL_GetJoystickGUIDType(SDL_JoystickGUID guid)
         default:
             return SDL_JOYSTICK_TYPE_UNKNOWN;
         }
+    }
+
+    if (SDL_IsJoystickWGI(guid)) {
+        return (SDL_JoystickType)guid.data[15];
     }
 
     if (SDL_IsJoystickVirtual(guid)) {

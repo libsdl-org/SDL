@@ -70,6 +70,9 @@ extern SDL_bool SDL_IsJoystickSteamController(Uint16 vendor_id, Uint16 product_i
 /* Function to return whether a joystick guid comes from the XInput driver */
 extern SDL_bool SDL_IsJoystickXInput(SDL_JoystickGUID guid);
 
+/* Function to return whether a joystick guid comes from the WGI driver */
+extern SDL_bool SDL_IsJoystickWGI(SDL_JoystickGUID guid);
+
 /* Function to return whether a joystick guid comes from the HIDAPI driver */
 extern SDL_bool SDL_IsJoystickHIDAPI(SDL_JoystickGUID guid);
 
