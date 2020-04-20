@@ -357,11 +357,15 @@ static void RecenterGameController(SDL_GameController *gamecontroller)
     SDL_GameControllerAxis axis;
 
     for (button = (SDL_GameControllerButton) 0; button < SDL_CONTROLLER_BUTTON_MAX; button++) {
-        SDL_PrivateGameControllerButton(gamecontroller, button, SDL_RELEASED);
+        if (SDL_GameControllerGetButton(gamecontroller, button)) {
+            SDL_PrivateGameControllerButton(gamecontroller, button, SDL_RELEASED);
+        }
     }
 
     for (axis = (SDL_GameControllerAxis) 0; axis < SDL_CONTROLLER_AXIS_MAX; axis++) {
-        SDL_PrivateGameControllerAxis(gamecontroller, axis, 0);
+        if (SDL_GameControllerGetAxis(gamecontroller, axis) != 0) {
+            SDL_PrivateGameControllerAxis(gamecontroller, axis, 0);
+        }
     }
 }
 
