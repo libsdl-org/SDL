@@ -32,6 +32,9 @@
 
 #define KEYBOARD_INTERRUPT 0x09
 
+#define PS2_DATA   0x60
+#define PS2_STATUS 0x64
+
 static const SDL_Scancode bios_to_sdl_scancode[128] = {
     0,
     SDL_SCANCODE_ESCAPE,
@@ -130,12 +133,10 @@ static volatile int scancode_count;
 static void
 DOS_KeyboardISR(void)
 {
-    /* Read scancode into buffer. */
-    if (scancode_count < SDL_arraysize(scancode_buf)) {
-        scancode_buf[scancode_count] = inportb(0x60);
+    /* Read scancodes from keyboard into buffer. */
+    while (inportb(PS2_STATUS) & 1 && scancode_count < SDL_arraysize(scancode_buf)) {
+        scancode_buf[scancode_count++] = inportb(PS2_DATA);
     }
-
-    scancode_count++;
 
     /* Acknowledge interrupt. */
     outportb(0x20, 0x20);
@@ -207,51 +208,54 @@ DOS_InitKeyboard(void)
 }
 
 static void
-DOS_HandleKeyboard(void)
+DOS_ProcessScancode(Uint8 scancode)
 {
     static SDL_bool extended_key = SDL_FALSE;
-    int i;
+    Uint8 state = scancode & 0x80 ? SDL_RELEASED : SDL_PRESSED;
 
-    /* Do nothing if no scancodes are buffered. */
-    if (!scancode_count) {
+    /* Check if the code is an extended key prefix. */
+    if (scancode == 0xE0) {
+        extended_key = SDL_TRUE;
         return;
     }
 
+    /* Mask off state bit. */
+    scancode &= 0x7F;
+
+    /* Generate SDL key event. */
+    if (extended_key) {
+        /* TODO: Handle extended keyboard scancodes. */
+    } else {
+        SDL_SendKeyboardKey(state, bios_to_sdl_scancode[scancode]);
+    }
+
+    /* Reset extended key flag. */
+    extended_key = SDL_FALSE;
+}
+
+static void
+DOS_PollKeyboard(void)
+{
+    int i;
+
     /* Convert buffered scancodes to SDL key events. */
-    for (i = 0; i < scancode_count && i < SDL_arraysize(scancode_buf); i++) {
-        Uint8 scan = scancode_buf[i];
-        Uint8 state = scan & 0x80 ? SDL_RELEASED : SDL_PRESSED;
-
-        /* Check if the code is an extended key prefix. */
-        if (scan == 0xE0) {
-            extended_key = SDL_TRUE;
-            continue;
-        }
-
-        /* Mask off state bit. */
-        scan &= 0x7F;
-
-        /* Generate SDL key event. */
-        if (extended_key) {
-            /* TODO: Handle extended keyboard scancodes. */
-        } else {
-            SDL_SendKeyboardKey(state, bios_to_sdl_scancode[scan]);
-        }
-
-        /* Reset extended key flag. */
-        extended_key = SDL_FALSE;
+    for (i = 0; i < scancode_count; i++) {
+        DOS_ProcessScancode(scancode_buf[i]);
     }
 
-    /* Check for scancode buffer overflow. */
-    if (scancode_count > SDL_arraysize(scancode_buf)) {
-        int diff = scancode_count - SDL_arraysize(scancode_buf);
-        SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, "DOS: Scancode buffer overflowed by %d", diff);
-
-        /* Reset extended key flag. */
-        extended_key = SDL_FALSE;
-    }
-
+    /* Reset scancode buffer count. */
+    /* TODO: Do not write to scancode buffer while it's being drained here. */
     scancode_count = 0;
+
+    /* Read any remaining scancodes from keyboard and convert to SDL key events. */
+    for (i = 0; inportb(PS2_STATUS) & 1; i++) {
+        DOS_ProcessScancode(inportb(PS2_DATA));
+    }
+
+    /* Warn if scancode buffer reached maximum capacity. */
+    if (i) {
+        SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, "DOS: %d keyboard scancode(s) not buffered", i);
+    }
 }
 
 static void
@@ -279,7 +283,7 @@ SDL_DOS_Init(void)
 void
 SDL_DOS_PumpEvents(void)
 {
-    DOS_HandleKeyboard();
+    DOS_PollKeyboard();
 }
 
 void
