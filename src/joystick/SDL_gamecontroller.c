@@ -344,6 +344,28 @@ static void HandleJoystickHat(SDL_GameController *gamecontroller, int hat, Uint8
     gamecontroller->last_hat_mask[hat] = value;
 }
 
+
+/* The joystick layer will _also_ send events to recenter before disconnect,
+    but it has to make (sometimes incorrect) guesses at what being "centered"
+    is. The game controller layer, however, can set a definite logical idle
+    position, so set them all here. If we happened to already be at the
+    center thanks to the joystick layer or idle hands, this won't generate
+    duplicate events. */
+static void RecenterGameController(SDL_GameController *gamecontroller)
+{
+    SDL_GameControllerButton button;
+    SDL_GameControllerAxis axis;
+
+    for (button = (SDL_GameControllerButton) 0; button < SDL_CONTROLLER_BUTTON_MAX; button++) {
+        SDL_PrivateGameControllerButton(gamecontroller, button, SDL_RELEASED);
+    }
+
+    for (axis = (SDL_GameControllerAxis) 0; axis < SDL_CONTROLLER_AXIS_MAX; axis++) {
+        SDL_PrivateGameControllerAxis(gamecontroller, axis, 0);
+    }
+}
+
+
 /*
  * Event filter to fire controller events from joystick ones
  */
@@ -403,6 +425,8 @@ static int SDLCALL SDL_GameControllerEventWatcher(void *userdata, SDL_Event * ev
             while (controllerlist) {
                 if (controllerlist->joystick->instance_id == event->jdevice.which) {
                     SDL_Event deviceevent;
+
+                    RecenterGameController(controllerlist);
 
                     deviceevent.type = SDL_CONTROLLERDEVICEREMOVED;
                     deviceevent.cdevice.which = event->jdevice.which;
