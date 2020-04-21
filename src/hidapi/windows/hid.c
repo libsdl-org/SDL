@@ -326,6 +326,12 @@ int hid_blacklist(unsigned short vendor_id, unsigned short product_id)
 		return 1;
 	}
 
+	// Razer Arctosa Gaming keyboard - Causes deadlock when asking for device details
+	if ( vendor_id == 0x1532 && product_id == 0x010B )
+	{
+		return 1;
+	}
+
 	// SPEEDLINK COMPETITION PRO - turns into an Android controller when enumerated
 	if ( vendor_id == 0x0738 && product_id == 0x2217 )
 	{
