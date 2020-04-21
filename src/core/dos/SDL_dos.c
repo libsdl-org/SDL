@@ -25,7 +25,6 @@
 #ifdef __MSDOS__
 
 #include <dpmi.h>
-#include <go32.h>
 #include <pc.h>
 
 #include "../../events/SDL_events_c.h"
@@ -188,7 +187,6 @@ DOS_InitKeyboard(void)
     }
 
     /* Setup struct for input parameters. */
-    kbd_isr.pm_selector = _my_cs();
     kbd_isr.pm_offset = (unsigned long)DOS_KeyboardISR;
 
     /* Wrap the keyboard ISR so it can be used. */
