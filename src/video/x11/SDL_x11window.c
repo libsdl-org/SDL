@@ -1661,7 +1661,15 @@ SDL_bool
 X11_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
-    Display *display = data->videodata->display;
+    Display *display;
+
+    if (!data) {
+        /* This sometimes happens in SDL_IBus_UpdateTextRect() while creating the window */
+        SDL_SetError("Window not initialized");
+        return SDL_FALSE;
+    }
+
+    display = data->videodata->display;
 
     if (info->version.major == SDL_MAJOR_VERSION &&
         info->version.minor == SDL_MINOR_VERSION) {
