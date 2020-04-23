@@ -206,7 +206,8 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
             __x_ABI_CWindows_CGaming_CInput_CIRawGameController2_Release(controller2);
         }
 
-        if (SUCCEEDED(__x_ABI_CWindows_CGaming_CInput_CIRawGameController_QueryInterface(controller, &IID_IGameController, (void **)&gamecontroller))) {
+        hr = __x_ABI_CWindows_CGaming_CInput_CIRawGameController_QueryInterface(controller, &IID_IGameController, (void **)&gamecontroller);
+        if (SUCCEEDED(hr)) {
             __x_ABI_CWindows_CGaming_CInput_CIArcadeStick *arcade_stick = NULL;
             __x_ABI_CWindows_CGaming_CInput_CIFlightStick *flight_stick = NULL;
             __x_ABI_CWindows_CGaming_CInput_CIGamepad *gamepad = NULL;
@@ -501,7 +502,7 @@ WGI_JoystickOpen(SDL_Joystick * joystick, int device_index)
         __x_ABI_CWindows_CDevices_CPower_CIBatteryReport *report;
 
         hr = __x_ABI_CWindows_CGaming_CInput_CIGameControllerBatteryInfo_TryGetBatteryReport(hwdata->battery, &report);
-        if (SUCCEEDED(hr)) {
+        if (SUCCEEDED(hr) && report) {
             int full_capacity = 0, curr_capacity = 0;
             __FIReference_1_int *full_capacityP, *curr_capacityP;
 
