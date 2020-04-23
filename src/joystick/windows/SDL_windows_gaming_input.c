@@ -86,6 +86,7 @@ static const IID IID_IRacingWheelStatics2 = { 0xE666BCAA, 0xEDFD, 0x4323, { 0xA9
 static const IID IID_IRacingWheel = { 0xF546656F, 0xE106, 0x4C82, { 0xA9, 0x0F, 0x55, 0x40, 0x12, 0x90, 0x4B, 0x85 } };
 
 extern SDL_bool SDL_XINPUT_Enabled(void);
+extern SDL_bool SDL_DINPUT_JoystickPresent(Uint16 vendor, Uint16 product, Uint16 version);
 
 static SDL_bool
 SDL_IsXInputDevice(Uint16 vendor, Uint16 product)
