@@ -54,8 +54,18 @@ static int
 SVGA_Available(void)
 {
     VBEInfo info;
+    int status = SVGA_GetVBEInfo(&info);
 
-    return SVGA_GetVBEInfo(&info) == 0 && info.vbe_version.major >= 2;
+    if (status) {
+        /* TODO: Differentiate between failure and missing. */
+        SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "SVGA_GetVBEInfo failed: %d", status);
+        return 0;
+    }
+
+    SDL_LogInfo(SDL_LOG_CATEGORY_VIDEO, "SVGA: Detected VESA BIOS Extensions v%u.%u",
+        info.vbe_version.major, info.vbe_version.minor);
+
+    return info.vbe_version.major >= 2;
 }
 
 static void
@@ -155,29 +165,35 @@ SVGA_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
     ) {
         SDL_DisplayModeData *modedata;
         VBEModeInfo info;
+        int status = SVGA_GetVBEModeInfo(vbe_mode, &info);
 
-        if (SVGA_GetVBEModeInfo(vbe_mode, &info)) {
+        if (status) {
+            SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "SVGA_GetVBEModeInfo failed: %d", status);
             return;
         }
 
         /* Mode must support graphics with a linear framebuffer. */
         if ((info.mode_attributes & VBE_MODE_ATTRS) != VBE_MODE_ATTRS) {
+            SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "SVGA: Ignoring mode 0x%X: Bad attributes", vbe_mode);
             continue;
         }
 
         /* Mode must be a known pixel format. */
         mode.format = SVGA_GetPixelFormat(&info);
         if (mode.format == SDL_PIXELFORMAT_UNKNOWN) {
+            SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "SVGA: Ignoring mode 0x%X: Bad pixel format", vbe_mode);
             continue;
         }
 
         /* Mode must be capable of double buffering. */
         if (!info.number_of_image_pages) {
+            SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "SVGA: Ignoring mode 0x%X: No double-buffering", vbe_mode);
             continue;
         }
 
         /* Scan lines must be 4-byte aligned to match SDL surface pitch. */
         if (info.bytes_per_scan_line % 4 != 0) {
+            SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "SVGA: Ignoring mode 0x%X: Bad pitch", vbe_mode);
             continue;
         }
 
@@ -197,6 +213,8 @@ SVGA_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
             SDL_free(modedata);
         }
     }
+
+    SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "SVGA: VBE lists %d modes", index - 1);
 }
 
 static int
