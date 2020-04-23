@@ -25,6 +25,7 @@
 #include "SDL_endian.h"
 #include "SDL_events.h"
 #include "../SDL_sysjoystick.h"
+#include "../hidapi/SDL_hidapijoystick_c.h"
 
 #include "../../core/windows/SDL_windows.h"
 #define COBJMACROS
@@ -173,15 +174,10 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
         Uint16 *guid16 = (Uint16 *)guid.data;
         __x_ABI_CWindows_CGaming_CInput_CIRawGameController2 *controller2 = NULL;
         __x_ABI_CWindows_CGaming_CInput_CIGameController *gamecontroller = NULL;
+        SDL_bool ignore_joystick = SDL_FALSE;
 
         __x_ABI_CWindows_CGaming_CInput_CIRawGameController_get_HardwareVendorId(controller, &vendor);
         __x_ABI_CWindows_CGaming_CInput_CIRawGameController_get_HardwareProductId(controller, &product);
-
-        if (SDL_IsXInputDevice(vendor, product)) {
-            /* This will be handled by the XInput driver */
-            __x_ABI_CWindows_CGaming_CInput_CIRawGameController_Release(controller);
-            return S_OK;
-        }
 
         hr = __x_ABI_CWindows_CGaming_CInput_CIRawGameController_QueryInterface(controller, &IID_IRawGameController2, (void **)&controller2);
         if (SUCCEEDED(hr)) {
@@ -243,7 +239,25 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
         guid.data[14] = 'w';
         guid.data[15] = (Uint8)type;
 
-        if (SDL_ShouldIgnoreJoystick(name, guid)) {
+#ifdef SDL_JOYSTICK_HIDAPI
+        if (!ignore_joystick && HIDAPI_IsDevicePresent(vendor, product, version, name)) {
+            ignore_joystick = SDL_TRUE;
+        }
+#endif
+
+        if (!ignore_joystick && SDL_DINPUT_JoystickPresent(vendor, product, version)) {
+            ignore_joystick = SDL_TRUE;
+        }
+
+        if (!ignore_joystick && SDL_IsXInputDevice(vendor, product)) {
+            ignore_joystick = SDL_TRUE;
+        }
+
+        if (!ignore_joystick && SDL_ShouldIgnoreJoystick(name, guid)) {
+            ignore_joystick = SDL_TRUE;
+        }
+
+        if (ignore_joystick) {
             SDL_free(name);
         } else {
             /* New device, add it */
