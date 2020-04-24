@@ -1815,18 +1815,6 @@ elseif(HAIKU)
     set(SOURCE_FILES ${SOURCE_FILES} ${HAIKUVIDEO_SOURCES})
     set(HAVE_SDL_VIDEO TRUE)
 
-    set(SDL_FILESYSTEM_HAIKU 1)
-    file(GLOB FILESYSTEM_SOURCES ${SDL2_SOURCE_DIR}/src/filesystem/haiku/*.cc)
-    set(SOURCE_FILES ${SOURCE_FILES} ${FILESYSTEM_SOURCES})
-    set(HAVE_SDL_FILESYSTEM TRUE)
-
-    if(SDL_TIMERS)
-      set(SDL_TIMER_HAIKU 1)
-      file(GLOB TIMER_SOURCES ${SDL2_SOURCE_DIR}/src/timer/haiku/*.c)
-      set(SOURCE_FILES ${SOURCE_FILES} ${TIMER_SOURCES})
-      set(HAVE_SDL_TIMERS TRUE)
-    endif(SDL_TIMERS)
-
     if(VIDEO_OPENGL)
       # TODO: Use FIND_PACKAGE(OpenGL) instead
       set(SDL_VIDEO_OPENGL 1)
@@ -1835,6 +1823,18 @@ elseif(HAIKU)
       list(APPEND EXTRA_LIBS GL)
       set(HAVE_VIDEO_OPENGL TRUE)
     endif()
+  endif()
+
+  set(SDL_FILESYSTEM_HAIKU 1)
+  file(GLOB FILESYSTEM_SOURCES ${SDL2_SOURCE_DIR}/src/filesystem/haiku/*.cc)
+  set(SOURCE_FILES ${SOURCE_FILES} ${FILESYSTEM_SOURCES})
+  set(HAVE_SDL_FILESYSTEM TRUE)
+
+  if(SDL_TIMERS)
+    set(SDL_TIMER_HAIKU 1)
+    file(GLOB TIMER_SOURCES ${SDL2_SOURCE_DIR}/src/timer/haiku/*.c)
+    set(SOURCE_FILES ${SOURCE_FILES} ${TIMER_SOURCES})
+    set(HAVE_SDL_TIMERS TRUE)
   endif()
 
   CheckPTHREAD()
