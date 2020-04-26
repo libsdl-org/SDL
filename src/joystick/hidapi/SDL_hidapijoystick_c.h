@@ -42,11 +42,6 @@
 #undef SDL_JOYSTICK_HIDAPI_XBOXONE
 #endif
 
-#ifdef __MACOSX__
-/* On Mac OS X, Xbox One controllers are handled by the Xbox 360 driver */
-#undef SDL_JOYSTICK_HIDAPI_XBOXONE
-#endif
-
 #if defined(__IPHONEOS__) || defined(__TVOS__) || defined(__ANDROID__)
 /* Very basic Steam Controller support on mobile devices */
 #define SDL_JOYSTICK_HIDAPI_STEAM
