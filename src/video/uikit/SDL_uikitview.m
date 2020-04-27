@@ -367,9 +367,11 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 - (SDL_Scancode)scancodeFromPress:(UIPress*)press
 {
 #ifdef __IPHONE_13_4
-    if (press.key != nil) {
-        return (SDL_Scancode)press.key.keyCode;
-    }
+    if ([press respondsToSelector:@selector((key))]) {
+		if (press.key != nil) {
+			return (SDL_Scancode)press.key.keyCode;
+		}
+	}
 #endif
 
     /* Presses from Apple TV remote */
