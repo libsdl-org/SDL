@@ -796,6 +796,12 @@ HIDAPI_DriverXbox360_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joy
     return 0;
 }
 
+static int
+HIDAPI_DriverXbox360_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
+{
+    return SDL_Unsupported();
+}
+
 #ifdef __WIN32__
  /* This is the packet format for Xbox 360 and Xbox One controllers on Windows,
     however with this interface there is no rumble support, no guide button,
@@ -1302,6 +1308,7 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXbox360 =
     HIDAPI_DriverXbox360_UpdateDevice,
     HIDAPI_DriverXbox360_OpenJoystick,
     HIDAPI_DriverXbox360_RumbleJoystick,
+    HIDAPI_DriverXbox360_SetJoystickLED,
     HIDAPI_DriverXbox360_CloseJoystick,
     HIDAPI_DriverXbox360_FreeDevice,
     HIDAPI_DriverXbox360_PostUpdate,

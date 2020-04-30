@@ -64,6 +64,10 @@ struct _SDL_Joystick
     Uint16 high_frequency_rumble;
     Uint32 rumble_expiration;
 
+    Uint8 led_red;
+    Uint8 led_green;
+    Uint8 led_blue;
+
     SDL_bool attached;
     SDL_bool is_game_controller;
     SDL_bool delayed_guide_button; /* SDL_TRUE if this device has the guide button event delayed */
@@ -122,6 +126,9 @@ typedef struct _SDL_JoystickDriver
 
     /* Rumble functionality */
     int (*Rumble)(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble);
+
+    /* LED functionality */
+    int (*SetLED)(SDL_Joystick * joystick, Uint8 red, Uint8 green, Uint8 blue);
 
     /* Function to update the state of a joystick - called as a device poll.
      * This function shouldn't update the joystick structure directly,

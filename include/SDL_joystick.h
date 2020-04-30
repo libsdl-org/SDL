@@ -433,6 +433,18 @@ extern DECLSPEC Uint8 SDLCALL SDL_JoystickGetButton(SDL_Joystick * joystick,
 extern DECLSPEC int SDLCALL SDL_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms);
 
 /**
+ *  Update a joystick's LED color.
+ *
+ *  \param joystick The joystick to update
+ *  \param red The intensity of the red LED
+ *  \param green The intensity of the green LED
+ *  \param blue The intensity of the blue LED
+ *
+ *  \return 0, or -1 if this joystick does not have a modifiable LED
+ */
+extern DECLSPEC int SDLCALL SDL_JoystickSetLED(SDL_Joystick * joystick, Uint8 red, Uint8 green, Uint8 blue);
+
+/**
  *  Close a joystick previously opened with SDL_JoystickOpen().
  */
 extern DECLSPEC void SDLCALL SDL_JoystickClose(SDL_Joystick * joystick);

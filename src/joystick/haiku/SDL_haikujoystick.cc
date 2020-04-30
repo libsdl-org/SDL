@@ -265,6 +265,11 @@ extern "C"
         return SDL_FALSE;
     }
 
+    static int HAIKU_JoystickSetLED(SDL_Joystick * joystick, Uint8 red, Uint8 green, Uint8 blue)
+    {
+        return SDL_Unsupported();
+    }
+
     SDL_JoystickDriver SDL_HAIKU_JoystickDriver =
     {
         HAIKU_JoystickInit,
@@ -277,6 +282,7 @@ extern "C"
         HAIKU_JoystickGetDeviceInstanceID,
         HAIKU_JoystickOpen,
         HAIKU_JoystickRumble,
+        HAIKU_JoystickSetLED,
         HAIKU_JoystickUpdate,
         HAIKU_JoystickClose,
         HAIKU_JoystickQuit,

@@ -500,6 +500,12 @@ WINDOWS_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uin
     }
 }
 
+static int
+WINDOWS_JoystickSetLED(SDL_Joystick * joystick, Uint8 red, Uint8 green, Uint8 blue)
+{
+    return SDL_Unsupported();
+}
+
 static void
 WINDOWS_JoystickUpdate(SDL_Joystick * joystick)
 {
@@ -583,6 +589,7 @@ SDL_JoystickDriver SDL_WINDOWS_JoystickDriver =
     WINDOWS_JoystickGetDeviceInstanceID,
     WINDOWS_JoystickOpen,
     WINDOWS_JoystickRumble,
+    WINDOWS_JoystickSetLED,
     WINDOWS_JoystickUpdate,
     WINDOWS_JoystickClose,
     WINDOWS_JoystickQuit,

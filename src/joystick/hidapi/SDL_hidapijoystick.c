@@ -1048,6 +1048,23 @@ HIDAPI_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint
     return result;
 }
 
+static int
+HIDAPI_JoystickSetLED(SDL_Joystick * joystick, Uint8 red, Uint8 green, Uint8 blue)
+{
+    int result;
+
+    if (joystick->hwdata) {
+        SDL_HIDAPI_Device *device = joystick->hwdata->device;
+
+        result = device->driver->SetJoystickLED(device, joystick, red, green, blue);
+    } else {
+        SDL_SetError("SetLED failed, device disconnected");
+        result = -1;
+    }
+
+    return result;
+}
+
 static void
 HIDAPI_JoystickUpdate(SDL_Joystick * joystick)
 {
@@ -1121,6 +1138,7 @@ SDL_JoystickDriver SDL_HIDAPI_JoystickDriver =
     HIDAPI_JoystickGetDeviceInstanceID,
     HIDAPI_JoystickOpen,
     HIDAPI_JoystickRumble,
+    HIDAPI_JoystickSetLED,
     HIDAPI_JoystickUpdate,
     HIDAPI_JoystickClose,
     HIDAPI_JoystickQuit,

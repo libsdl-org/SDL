@@ -633,6 +633,12 @@ ANDROID_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uin
     return SDL_Unsupported();
 }
 
+static int
+ANDROID_JoystickSetLED(SDL_Joystick * joystick, Uint8 red, Uint8 green, Uint8 blue)
+{
+    return SDL_Unsupported();
+}
+
 static void
 ANDROID_JoystickUpdate(SDL_Joystick * joystick)
 {
@@ -711,6 +717,7 @@ SDL_JoystickDriver SDL_ANDROID_JoystickDriver =
     ANDROID_JoystickGetDeviceInstanceID,
     ANDROID_JoystickOpen,
     ANDROID_JoystickRumble,
+    ANDROID_JoystickSetLED,
     ANDROID_JoystickUpdate,
     ANDROID_JoystickClose,
     ANDROID_JoystickQuit,
