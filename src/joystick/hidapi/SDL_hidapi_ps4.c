@@ -100,6 +100,12 @@ typedef struct {
     SDL_bool audio_supported;
     SDL_bool rumble_supported;
     int player_index;
+    Uint16 rumble_left;
+    Uint16 rumble_right;
+    Uint8 color_set;
+    Uint8 led_red;
+    Uint8 led_green;
+    Uint8 led_blue;
     Uint8 volume;
     Uint32 last_volume_check;
     PS4StatePacket_t last_state;
@@ -330,11 +336,19 @@ HIDAPI_DriverPS4_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystic
     }
     effects = (DS4EffectsState_t *)&data[offset];
 
+    ctx->rumble_left = low_frequency_rumble;
+    ctx->rumble_right = high_frequency_rumble;
     effects->ucRumbleLeft = (low_frequency_rumble >> 8);
     effects->ucRumbleRight = (high_frequency_rumble >> 8);
 
     /* Populate the LED state with the appropriate color from our lookup table */
-    SetLedsForPlayerIndex(effects, ctx->player_index);
+    if (ctx->color_set) {
+        effects->ucLedRed = ctx->led_red;
+        effects->ucLedGreen = ctx->led_green;
+        effects->ucLedBlue = ctx->led_blue;
+    } else {
+        SetLedsForPlayerIndex(effects, ctx->player_index);
+    }
 
     if (ctx->is_bluetooth) {
         /* Bluetooth reports need a CRC at the end of the packet (at least on Linux) */
@@ -349,6 +363,20 @@ HIDAPI_DriverPS4_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystic
         return SDL_SetError("Couldn't send rumble packet");
     }
     return 0;
+}
+
+static int
+HIDAPI_DriverPS4_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
+{
+    SDL_DriverPS4_Context *ctx = (SDL_DriverPS4_Context *)device->context;
+
+    ctx->color_set = 1;
+    ctx->led_red = red;
+    ctx->led_green = green;
+    ctx->led_blue = blue;
+
+    /* FIXME: Is there a better way to send this without sending another rumble packet? */
+    return HIDAPI_DriverPS4_RumbleJoystick(device, joystick, ctx->rumble_left, ctx->rumble_right);
 }
 
 static void
@@ -536,6 +564,7 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverPS4 =
     HIDAPI_DriverPS4_UpdateDevice,
     HIDAPI_DriverPS4_OpenJoystick,
     HIDAPI_DriverPS4_RumbleJoystick,
+    HIDAPI_DriverPS4_SetJoystickLED,
     HIDAPI_DriverPS4_CloseJoystick,
     HIDAPI_DriverPS4_FreeDevice,
     NULL

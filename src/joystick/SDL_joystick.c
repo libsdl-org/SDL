@@ -901,6 +901,36 @@ SDL_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 
     return result;
 }
 
+int
+SDL_JoystickSetLED(SDL_Joystick * joystick, Uint8 red, Uint8 green, Uint8 blue)
+{
+    int result;
+
+    if (!SDL_PrivateJoystickValid(joystick)) {
+        return -1;
+    }
+
+    SDL_LockJoysticks();
+
+    if (red == joystick->led_red &&
+        green == joystick->led_green &&
+        blue == joystick->led_blue) {
+        /* Avoid spamming the driver */
+        result = 0;
+    } else {
+        result = joystick->driver->SetLED(joystick, red, green, blue);
+    }
+
+    /* Save the LED value regardless of success, so we don't spam the driver */
+    joystick->led_red = red;
+    joystick->led_green = green;
+    joystick->led_blue = blue;
+
+    SDL_UnlockJoysticks();
+
+    return result;
+}
+
 /*
  * Close a joystick previously opened with SDL_JoystickOpen()
  */

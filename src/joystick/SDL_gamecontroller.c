@@ -2107,6 +2107,12 @@ SDL_GameControllerRumble(SDL_GameController *gamecontroller, Uint16 low_frequenc
     return SDL_JoystickRumble(SDL_GameControllerGetJoystick(gamecontroller), low_frequency_rumble, high_frequency_rumble, duration_ms);
 }
 
+int
+SDL_GameControllerSetLED(SDL_GameController *gamecontroller, Uint8 red, Uint8 green, Uint8 blue)
+{
+    return SDL_JoystickSetLED(SDL_GameControllerGetJoystick(gamecontroller), red, green, blue);
+}
+
 void
 SDL_GameControllerClose(SDL_GameController * gamecontroller)
 {

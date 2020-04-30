@@ -1008,6 +1008,12 @@ IOS_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 
 #endif
 }
 
+static int
+IOS_JoystickSetLED(SDL_Joystick * joystick, Uint8 red, Uint8 green, Uint8 blue)
+{
+    return SDL_Unsupported();
+}
+
 static void
 IOS_JoystickUpdate(SDL_Joystick * joystick)
 {
@@ -1116,6 +1122,7 @@ SDL_JoystickDriver SDL_IOS_JoystickDriver =
     IOS_JoystickGetDeviceInstanceID,
     IOS_JoystickOpen,
     IOS_JoystickRumble,
+    IOS_JoystickSetLED,
     IOS_JoystickUpdate,
     IOS_JoystickClose,
     IOS_JoystickQuit,

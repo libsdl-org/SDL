@@ -891,6 +891,12 @@ LINUX_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint1
     return 0;
 }
 
+static int
+LINUX_JoystickSetLED(SDL_Joystick * joystick, Uint8 red, Uint8 green, Uint8 blue)
+{
+    return SDL_Unsupported();
+}
+
 static SDL_INLINE void
 HandleHat(SDL_Joystick * stick, Uint8 hat, int axis, int value)
 {
@@ -1366,6 +1372,7 @@ SDL_JoystickDriver SDL_LINUX_JoystickDriver =
     LINUX_JoystickGetDeviceInstanceID,
     LINUX_JoystickOpen,
     LINUX_JoystickRumble,
+    LINUX_JoystickSetLED,
     LINUX_JoystickUpdate,
     LINUX_JoystickClose,
     LINUX_JoystickQuit,

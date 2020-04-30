@@ -405,6 +405,18 @@ extern DECLSPEC Uint8 SDLCALL SDL_GameControllerGetButton(SDL_GameController *ga
 extern DECLSPEC int SDLCALL SDL_GameControllerRumble(SDL_GameController *gamecontroller, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms);
 
 /**
+ *  Update a controller's LED color.
+ *
+ *  \param controller The joystick to update
+ *  \param red The intensity of the red LED
+ *  \param green The intensity of the green LED
+ *  \param blue The intensity of the blue LED
+ *
+ *  \return 0, or -1 if this controller does not have a modifiable LED
+ */
+extern DECLSPEC int SDLCALL SDL_GameControllerSetLED(SDL_GameController *gamecontroller, Uint8 red, Uint8 green, Uint8 blue);
+
+/**
  *  Close a controller previously opened with SDL_GameControllerOpen().
  */
 extern DECLSPEC void SDLCALL SDL_GameControllerClose(SDL_GameController *gamecontroller);

@@ -409,6 +409,12 @@ EMSCRIPTEN_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
     return SDL_FALSE;
 }
 
+static int
+EMSCRIPTEN_JoystickSetLED(SDL_Joystick * joystick, Uint8 red, Uint8 green, Uint8 blue)
+{
+    return SDL_Unsupported();
+}
+
 SDL_JoystickDriver SDL_EMSCRIPTEN_JoystickDriver =
 {
     EMSCRIPTEN_JoystickInit,
@@ -421,6 +427,7 @@ SDL_JoystickDriver SDL_EMSCRIPTEN_JoystickDriver =
     EMSCRIPTEN_JoystickGetDeviceInstanceID,
     EMSCRIPTEN_JoystickOpen,
     EMSCRIPTEN_JoystickRumble,
+    EMSCRIPTEN_JoystickSetLED,
     EMSCRIPTEN_JoystickUpdate,
     EMSCRIPTEN_JoystickClose,
     EMSCRIPTEN_JoystickQuit,

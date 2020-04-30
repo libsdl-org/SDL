@@ -364,6 +364,12 @@ HIDAPI_DriverXboxOne_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joy
     return 0;
 }
 
+static int
+HIDAPI_DriverXboxOne_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
+{
+    return SDL_Unsupported();
+}
+
 static void
 HIDAPI_DriverXboxOne_HandleStatePacket(SDL_Joystick *joystick, hid_device *dev, SDL_DriverXboxOne_Context *ctx, Uint8 *data, int size)
 {
@@ -830,6 +836,7 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXboxOne =
     HIDAPI_DriverXboxOne_UpdateDevice,
     HIDAPI_DriverXboxOne_OpenJoystick,
     HIDAPI_DriverXboxOne_RumbleJoystick,
+    HIDAPI_DriverXboxOne_SetJoystickLED,
     HIDAPI_DriverXboxOne_CloseJoystick,
     HIDAPI_DriverXboxOne_FreeDevice,
     NULL
