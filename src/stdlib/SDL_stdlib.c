@@ -486,42 +486,22 @@ int SDL_tolower(int x) { return ((x) >= 'A') && ((x) <= 'Z') ? ('a'+((x)-'A')) :
 __declspec(selectany) int _fltused = 1;
 #endif
 
-/* The optimizer on Visual Studio 2005 and later generates memcpy() calls */
-#if (_MSC_VER >= 1400) && defined(_WIN64) && !defined(_DEBUG) && !(_MSC_VER >= 1900 && defined(_MT))
-#include <intrin.h>
-
+/* The optimizer on Visual Studio 2005 and later generates memcpy() and memset() calls */
+#if _MSC_VER >= 1400
 #pragma function(memcpy)
-void * memcpy ( void * destination, const void * source, size_t num )
+void *
+memcpy(void *dst, const void *src, size_t len)
 {
-    const Uint8 *src = (const Uint8 *)source;
-    Uint8 *dst = (Uint8 *)destination;
-    size_t i;
-    
-    /* All WIN64 architectures have SSE, right? */
-    if (!((uintptr_t) src & 15) && !((uintptr_t) dst & 15)) {
-        __m128 values[4];
-        for (i = num / 64; i--;) {
-            _mm_prefetch(src, _MM_HINT_NTA);
-            values[0] = *(__m128 *) (src + 0);
-            values[1] = *(__m128 *) (src + 16);
-            values[2] = *(__m128 *) (src + 32);
-            values[3] = *(__m128 *) (src + 48);
-            _mm_stream_ps((float *) (dst + 0), values[0]);
-            _mm_stream_ps((float *) (dst + 16), values[1]);
-            _mm_stream_ps((float *) (dst + 32), values[2]);
-            _mm_stream_ps((float *) (dst + 48), values[3]);
-            src += 64;
-            dst += 64;
-        }
-        num &= 63;
-    }
-
-    while (num--) {
-        *dst++ = *src++;
-    }
-    return destination;
+    return SDL_memcpy(dst, src, len);
 }
-#endif /* _MSC_VER == 1600 && defined(_WIN64) && !defined(_DEBUG) */
+
+#pragma function(memset)
+void *
+memset(void *dst, int c, size_t len)
+{
+    return SDL_memset(dst, c, len);
+}
+#endif
 
 #ifdef _M_IX86
 
