@@ -23,17 +23,13 @@
 
 #if SDL_VIDEO_DRIVER_SVGA
 
-#include "SDL_video.h"
-#include "SDL_mouse.h"
-#include "../SDL_sysvideo.h"
-#include "../SDL_pixels_c.h"
-#include "../../events/SDL_events_c.h"
+#include "SDL_svga_video.h"
 
 #include "../../core/dos/SDL_dos.h"
 
-#include "SDL_svga_video.h"
 #include "SDL_svga_events.h"
 #include "SDL_svga_framebuffer.h"
+#include "SDL_svga_mouse.h"
 
 #define SVGAVID_DRIVER_NAME "svga"
 
@@ -129,7 +125,15 @@ SVGA_VideoInit(_THIS)
         return -1;
     }
 
-    return SDL_DOS_Init();
+    /* Initialize keyboard. */
+    /* TODO: Just move keyboard stuff under this module and rename to DOS! */
+    if (SDL_DOS_Init()) {
+        return -1;
+    }
+
+    DOS_InitMouse();
+
+    return 0;
 }
 
 static void
@@ -217,6 +221,8 @@ SVGA_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
 
     /* TODO: Switch to 8 bit palette format, if possible and relevant. */
 
+    DOS_InitMouse(); /* TODO: Is this necessary when video mode changes? */
+
     return 0;
 }
 
@@ -237,6 +243,7 @@ SVGA_VideoQuit(_THIS)
     }
 
     SDL_DOS_Quit();
+    DOS_QuitMouse();
 }
 
 static int

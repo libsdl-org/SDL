@@ -99,12 +99,38 @@ SDL_SVGA_CreateFramebuffer(_THIS, SDL_Window * window, Uint32 * format, void ** 
     return 0;
 }
 
+/* TODO: Draw a real pointer. */
+static void
+CopyCursorPixels(SDL_Window * window)
+{
+    SDL_Surface *surface = window->surface;
+    SDL_WindowData *windata = window->driverdata;
+    size_t surface_size = surface->pitch * surface->h;
+    size_t framebuffer_offset = windata->framebuffer_page ? surface_size : 0;
+    Uint32 color = SDL_MapRGB(surface->format, 0xFF, 0, 0);
+    int i, k, x, y;
+
+    SDL_GetMouseState(&x, &y);
+    x = SDL_max(x, 0);
+    y = SDL_max(y, 0);
+    x = SDL_min(x, surface->w - 4);
+    y = SDL_min(y, surface->h - 4);
+
+    for (i = 0; i < 4; i++) {
+        for (k = 0; k < 4; k++) {
+            movedata(_my_ds(), (uintptr_t)&color, windata->framebuffer_selector,
+                framebuffer_offset + surface->pitch * (y + i) + (x + k) * surface->format->BytesPerPixel,
+                surface->format->BytesPerPixel);
+        }
+    }
+}
+
 int
 SDL_SVGA_UpdateFramebuffer(_THIS, SDL_Window * window, const SDL_Rect * rects, int numrects)
 {
     SDL_WindowData *windata = window->driverdata;
     SDL_Surface *surface = window->surface;
-    size_t surface_size;
+    size_t framebuffer_offset, surface_size;
 
     if (!surface) {
         return SDL_SetError("Missing SVGA surface");
@@ -114,10 +140,14 @@ SDL_SVGA_UpdateFramebuffer(_THIS, SDL_Window * window, const SDL_Rect * rects, i
 
     /* Flip the active page flag. */
     windata->framebuffer_page = !windata->framebuffer_page;
+    framebuffer_offset = windata->framebuffer_page ? surface_size : 0;
 
-    /* Copy pixels to hidden framebuffer page. */
-    movedata(_my_ds(), (Uint32)surface->pixels, windata->framebuffer_selector,
-        windata->framebuffer_page ? surface_size : 0, surface_size);
+    /* Copy surface pixels to hidden framebuffer. */
+    movedata(_my_ds(), (uintptr_t)surface->pixels, windata->framebuffer_selector,
+        framebuffer_offset, surface_size);
+
+    /* Copy cursor pixels to hidden framebuffer. */
+    CopyCursorPixels(window);
 
     /* Display fresh page to screen. */
     SVGA_SetDisplayStart(0, windata->framebuffer_page ? surface->h : 0); 

@@ -21,20 +21,13 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_SVGA
+#ifndef SDL_svga_mouse_h_
+#define SDL_svga_mouse_h_
 
-#include "../../core/dos/SDL_dos.h"
+extern void DOS_InitMouse(void);
+extern void DOS_PollMouse(void);
+extern void DOS_QuitMouse(void);
 
-#include "SDL_svga_events.h"
-#include "SDL_svga_mouse.h"
-
-void
-SVGA_PumpEvents(_THIS)
-{
-    SDL_DOS_PumpEvents();
-    DOS_PollMouse();
-}
-
-#endif /* SDL_VIDEO_DRIVER_SVGA */
+#endif /* SDL_svga_mouse_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */
