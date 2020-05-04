@@ -27,6 +27,7 @@
 */
 #include "../../SDL_internal.h"
 #include "SDL_assert.h"
+#include "SDL_hints.h"
 
 #if SDL_AUDIO_DRIVER_PULSEAUDIO
 
@@ -237,16 +238,20 @@ squashVersion(const int major, const int minor, const int patch)
 static const char *
 getAppName(void)
 {
-    const char *verstr = PULSEAUDIO_pa_get_library_version();
-    if (verstr != NULL) {
-        int maj, min, patch;
-        if (SDL_sscanf(verstr, "%d.%d.%d", &maj, &min, &patch) == 3) {
-            if (squashVersion(maj, min, patch) >= squashVersion(0, 9, 15)) {
-                return NULL;  /* 0.9.15+ handles NULL correctly. */
+    const char *retval = SDL_GetHint(SDL_HINT_AUDIO_DEVICE_APP_NAME);
+    if (!retval || !*retval) {
+        const char *verstr = PULSEAUDIO_pa_get_library_version();
+        retval = "SDL Application";  /* the "oh well" default. */
+        if (verstr != NULL) {
+            int maj, min, patch;
+            if (SDL_sscanf(verstr, "%d.%d.%d", &maj, &min, &patch) == 3) {
+                if (squashVersion(maj, min, patch) >= squashVersion(0, 9, 15)) {
+                    retval = NULL;  /* 0.9.15+ handles NULL correctly. */
+                }
             }
         }
     }
-    return "SDL Application";  /* oh well. */
+    return retval;
 }
 
 static void
@@ -513,6 +518,7 @@ PULSEAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     pa_buffer_attr paattr;
     pa_channel_map pacmap;
     pa_stream_flags_t flags = 0;
+    const char *name = NULL;
     int state = 0;
     int rc = 0;
 
@@ -615,9 +621,11 @@ PULSEAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     PULSEAUDIO_pa_channel_map_init_auto(&pacmap, this->spec.channels,
                                         PA_CHANNEL_MAP_WAVEEX);
 
+    name = SDL_GetHint(SDL_HINT_AUDIO_DEVICE_STREAM_NAME);
+
     h->stream = PULSEAUDIO_pa_stream_new(
         h->context,
-        "Simple DirectMedia Layer", /* stream description */
+        (name && *name) ? name : "Audio Stream", /* stream description */
         &paspec,    /* sample format spec */
         &pacmap     /* channel map */
         );
