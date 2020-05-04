@@ -1292,7 +1292,7 @@ extern "C" {
  */
 #define SDL_HINT_WAVE_FACT_CHUNK   "SDL_WAVE_FACT_CHUNK"
 
-/*
+/**
  *  \brief Override for SDL_GetDisplayUsableBounds()
  *
  *  If set, this hint will override the expected results for
