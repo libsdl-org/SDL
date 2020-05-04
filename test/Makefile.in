@@ -37,6 +37,7 @@ TARGETS = \
 	testjoystick$(EXE) \
 	testkeys$(EXE) \
 	testloadso$(EXE) \
+	testlocale$(EXE) \
 	testlock$(EXE) \
 	testmessage$(EXE) \
 	testmultiaudio$(EXE) \
@@ -302,6 +303,10 @@ controllermap$(EXE): $(srcdir)/controllermap.c
 
 testvulkan$(EXE): $(srcdir)/testvulkan.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+testlocale$(EXE): $(srcdir)/testlocale.c
+	$(CC) -o $@ $? $(CFLAGS) $(LIBS)
+
 
 
 clean:

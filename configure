@@ -770,6 +770,7 @@ infodir
 docdir
 oldincludedir
 includedir
+runstatedir
 localstatedir
 sharedstatedir
 sysconfdir
@@ -981,6 +982,7 @@ datadir='${datarootdir}'
 sysconfdir='${prefix}/etc'
 sharedstatedir='${prefix}/com'
 localstatedir='${prefix}/var'
+runstatedir='${localstatedir}/run'
 includedir='${prefix}/include'
 oldincludedir='/usr/include'
 docdir='${datarootdir}/doc/${PACKAGE}'
@@ -1233,6 +1235,15 @@ do
   | -silent | --silent | --silen | --sile | --sil)
     silent=yes ;;
 
+  -runstatedir | --runstatedir | --runstatedi | --runstated \
+  | --runstate | --runstat | --runsta | --runst | --runs \
+  | --run | --ru | --r)
+    ac_prev=runstatedir ;;
+  -runstatedir=* | --runstatedir=* | --runstatedi=* | --runstated=* \
+  | --runstate=* | --runstat=* | --runsta=* | --runst=* | --runs=* \
+  | --run=* | --ru=* | --r=*)
+    runstatedir=$ac_optarg ;;
+
   -sbindir | --sbindir | --sbindi | --sbind | --sbin | --sbi | --sb)
     ac_prev=sbindir ;;
   -sbindir=* | --sbindir=* | --sbindi=* | --sbind=* | --sbin=* \
@@ -1370,7 +1381,7 @@ fi
 for ac_var in	exec_prefix prefix bindir sbindir libexecdir datarootdir \
 		datadir sysconfdir sharedstatedir localstatedir includedir \
 		oldincludedir docdir infodir htmldir dvidir pdfdir psdir \
-		libdir localedir mandir
+		libdir localedir mandir runstatedir
 do
   eval ac_val=\$$ac_var
   # Remove trailing slashes.
@@ -1523,6 +1534,7 @@ Fine tuning of the installation directories:
   --sysconfdir=DIR        read-only single-machine data [PREFIX/etc]
   --sharedstatedir=DIR    modifiable architecture-independent data [PREFIX/com]
   --localstatedir=DIR     modifiable single-machine data [PREFIX/var]
+  --runstatedir=DIR       modifiable per-process data [LOCALSTATEDIR/run]
   --libdir=DIR            object code libraries [EPREFIX/lib]
   --includedir=DIR        C header files [PREFIX/include]
   --oldincludedir=DIR     C header files for non-gcc [/usr/include]
@@ -17309,6 +17321,7 @@ SOURCES="$SOURCES $srcdir/src/thread/*.c"
 SOURCES="$SOURCES $srcdir/src/timer/*.c"
 SOURCES="$SOURCES $srcdir/src/video/*.c"
 SOURCES="$SOURCES $srcdir/src/video/yuv2rgb/*.c"
+SOURCES="$SOURCES $srcdir/src/locale/*.c"
 
 
 # Check whether --enable-atomic was given.
@@ -24659,6 +24672,8 @@ CheckNoStrictAliasing
 
 CheckEventSignals
 
+have_locale=no
+
 case "$host" in
     *-*-linux*|*-*-uclinux*|*-*-gnu*|*-*-k*bsd*-gnu|*-*-bsdi*|*-*-freebsd*|*-*-dragonfly*|*-*-netbsd*|*-*-openbsd*|*-*-sysv5*|*-*-solaris*|*-*-hpux*|*-*-aix*|*-*-minix*|*-*-nto*)
         case "$host" in
@@ -24745,6 +24760,9 @@ case "$host" in
         CheckLinuxVersion
         CheckRPATH
         CheckVivanteVideo
+
+        SOURCES="$SOURCES $srcdir/src/locale/unix/*.c"
+        have_locale=yes
 
         # Set up files for the audio library
         if test x$enable_audio = xyes; then
@@ -24922,6 +24940,10 @@ $as_echo "#define SDL_TIMER_UNIX 1" >>confdefs.h
 
         # Set up the core platform files
         SOURCES="$SOURCES $srcdir/src/core/windows/*.c"
+
+        # Use the Windows locale APIs.
+        SOURCES="$SOURCES $srcdir/src/locale/windows/*.c"
+        have_locale=yes
 
         # Set up files for the video library
         if test x$enable_video = xyes; then
@@ -25174,6 +25196,11 @@ $as_echo "#define SDL_FILESYSTEM_HAIKU 1" >>confdefs.h
             SOURCES="$SOURCES $srcdir/src/filesystem/haiku/*.cc"
             have_filesystem=yes
         fi
+
+        # Set up files for the locale library
+        SOURCES="$SOURCES $srcdir/src/locale/haiku/*.cc"
+        have_locale=yes
+
         # The Haiku platform requires special setup.
         SOURCES="$srcdir/src/main/haiku/*.cc $SOURCES"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lroot -lbe -lmedia -lgame -ldevice -ltextencoding"
@@ -25215,6 +25242,10 @@ fi
         CheckMETAL
         CheckVulkan
         CheckPTHREAD
+
+        # Set up files for the locale library
+        SOURCES="$SOURCES $srcdir/src/locale/macosx/*.m"
+        have_locale=yes
 
         # Set up files for the audio library
         if test x$enable_audio = xyes; then
@@ -25336,6 +25367,10 @@ $as_echo "#define SDL_VIDEO_RENDER_OGL_ES2 1" >>confdefs.h
         CheckVulkan
         CheckPTHREAD
         CheckHIDAPI
+
+        # Set up files for the locale library
+        SOURCES="$SOURCES $srcdir/src/locale/macosx/*.m"
+        have_locale=yes
 
         # Set up files for the audio library
         if test x$enable_audio = xyes; then
@@ -25492,6 +25527,9 @@ $as_echo "#define SDL_TIMER_UNIX 1" >>confdefs.h
             SOURCES="$SOURCES $srcdir/src/timer/unix/*.c"
             have_timers=yes
         fi
+        # Set up files for the locale library
+        SOURCES="$SOURCES $srcdir/src/locale/emscripten/*.c"
+        have_locale=yes
         ;;
     *-*-riscos*)
         ARCH=riscos
@@ -25549,6 +25587,9 @@ INSTALL_SDL2_CONFIG=$enable_sdl2_config
 
 # Verify that we have all the platform specific files we need
 
+if test x$have_locale != xyes; then
+    SOURCES="$SOURCES $srcdir/src/locale/dummy/*.c"
+fi
 if test x$have_joystick != xyes; then
     if test x$enable_joystick = xyes; then
 

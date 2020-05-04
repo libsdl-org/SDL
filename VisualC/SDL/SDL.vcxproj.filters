@@ -84,6 +84,9 @@
     <ClInclude Include="..\..\include\SDL_loadso.h">
       <Filter>API Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\SDL_locale.h">
+      <Filter>API Headers</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\include\SDL_log.h">
       <Filter>API Headers</Filter>
     </ClInclude>
@@ -269,6 +272,7 @@
     <ClInclude Include="..\..\src\joystick\windows\SDL_xinputjoystick_c.h" />
     <ClInclude Include="..\..\src\libm\math_libm.h" />
     <ClInclude Include="..\..\src\libm\math_private.h" />
+    <ClInclude Include="..\..\src\locale\SDL_syslocale.h" />
     <ClInclude Include="..\..\src\render\direct3d\SDL_shaders_d3d.h" />
     <ClInclude Include="..\..\src\render\direct3d11\SDL_shaders_d3d11.h" />
     <ClInclude Include="..\..\src\render\opengl\SDL_glfuncs.h" />
@@ -401,6 +405,8 @@
     <ClCompile Include="..\..\src\libm\s_sin.c" />
     <ClCompile Include="..\..\src\libm\s_tan.c" />
     <ClCompile Include="..\..\src\loadso\windows\SDL_sysloadso.c" />
+    <ClCompile Include="..\..\src\locale\SDL_locale.c" />
+    <ClCompile Include="..\..\src\locale\windows\SDL_syslocale.c" />
     <ClCompile Include="..\..\src\power\SDL_power.c" />
     <ClCompile Include="..\..\src\power\windows\SDL_syspower.c" />
     <ClCompile Include="..\..\src\render\direct3d\SDL_render_d3d.c" />

@@ -52,6 +52,7 @@
     <ClInclude Include="..\..\include\SDL_keyboard.h" />
     <ClInclude Include="..\..\include\SDL_keycode.h" />
     <ClInclude Include="..\..\include\SDL_loadso.h" />
+    <ClInclude Include="..\..\include\SDL_locale.h" />
     <ClInclude Include="..\..\include\SDL_log.h" />
     <ClInclude Include="..\..\include\SDL_main.h" />
     <ClInclude Include="..\..\include\SDL_mouse.h" />
@@ -118,6 +119,7 @@
     <ClInclude Include="..\..\src\joystick\windows\SDL_dinputjoystick_c.h" />
     <ClInclude Include="..\..\src\joystick\windows\SDL_windowsjoystick_c.h" />
     <ClInclude Include="..\..\src\joystick\windows\SDL_xinputjoystick_c.h" />
+    <ClInclude Include="..\..\src\locale\SDL_syslocale.h" />
     <ClInclude Include="..\..\src\render\direct3d11\SDL_render_winrt.h" />
     <ClInclude Include="..\..\src\render\direct3d11\SDL_shaders_d3d11.h" />
     <ClInclude Include="..\..\src\render\opengles2\SDL_gles2funcs.h" />
@@ -249,6 +251,8 @@
     <ClCompile Include="..\..\src\joystick\windows\SDL_windowsjoystick.c" />
     <ClCompile Include="..\..\src\joystick\windows\SDL_xinputjoystick.c" />
     <ClCompile Include="..\..\src\loadso\windows\SDL_sysloadso.c" />
+    <ClCompile Include="..\..\src\locale\SDL_locale.c" />
+    <ClCompile Include="..\..\src\locale\winrt\SDL_syslocale.c" />
     <ClCompile Include="..\..\src\power\SDL_power.c" />
     <ClCompile Include="..\..\src\power\winrt\SDL_syspower.cpp" />
     <ClCompile Include="..\..\src\render\direct3d11\SDL_render_d3d11.c" />

@@ -35,6 +35,8 @@ LOCAL_SRC_FILES := \
 	$(wildcard $(LOCAL_PATH)/src/joystick/hidapi/*.c) \
 	$(wildcard $(LOCAL_PATH)/src/joystick/virtual/*.c) \
 	$(wildcard $(LOCAL_PATH)/src/loadso/dlopen/*.c) \
+	$(wildcard $(LOCAL_PATH)/src/locale/*.c) \
+	$(wildcard $(LOCAL_PATH)/src/locale/android/*.c) \
 	$(wildcard $(LOCAL_PATH)/src/power/*.c) \
 	$(wildcard $(LOCAL_PATH)/src/power/android/*.c) \
 	$(wildcard $(LOCAL_PATH)/src/filesystem/android/*.c) \
