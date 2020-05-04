@@ -60,6 +60,8 @@ SRCS+= SDL_dummysensor.c
 
 SRCS+= SDL_dynapi.c
 
+SRCS+= SDL_locale.c SDL_syslocale.c
+
 OBJS = $(SRCS:.c=.obj)
 MOBJS= $(MSRCS:.c=.obj)
 
@@ -68,7 +70,7 @@ MOBJS= $(MSRCS:.c=.obj)
 
 .c: ./src;./src/dynapi;./src/audio;./src/cpuinfo;./src/events;./src/file;./src/haptic;./src/joystick;./src/power;./src/render;./src/render/software;./src/sensor;./src/stdlib;./src/thread;./src/timer;./src/video;./src/video/yuv2rgb;./src/atomic;./src/audio/disk;
 .c: ./src/haptic/dummy;./src/joystick/dummy;./src/audio/dummy;./src/video/dummy;./src/sensor/dummy;
-.c: ./src/loadso/dummy;./src/filesystem/dummy;./src/timer/dummy;./src/thread/generic;
+.c: ./src/loadso/dummy;./src/filesystem/dummy;./src/timer/dummy;./src/thread/generic;./src/locale/unix
 
 all: $(DLLFILE) $(LIBFILE) .symbolic
 

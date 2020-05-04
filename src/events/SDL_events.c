@@ -1010,6 +1010,12 @@ SDL_SendKeymapChangedEvent(void)
 }
 
 int
+SDL_SendLocaleChangedEvent(void)
+{
+    return SDL_SendAppEvent(SDL_LOCALECHANGED);
+}
+
+int
 SDL_EventsInit(void)
 {
     SDL_AddHintCallback(SDL_HINT_EVENT_LOGGING, SDL_EventLoggingChanged, NULL);

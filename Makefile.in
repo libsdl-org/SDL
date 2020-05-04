@@ -82,6 +82,7 @@ HDRS = \
 	SDL_keyboard.h \
 	SDL_keycode.h \
 	SDL_loadso.h \
+	SDL_locale.h \
 	SDL_log.h \
 	SDL_main.h \
 	SDL_messagebox.h \

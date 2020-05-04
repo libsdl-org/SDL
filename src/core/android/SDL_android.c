@@ -44,6 +44,8 @@
 #include "../../haptic/android/SDL_syshaptic_c.h"
 
 #include <android/log.h>
+#include <android/configuration.h>
+#include <android/asset_manager_jni.h>
 #include <sys/system_properties.h>
 #include <pthread.h>
 #include <sys/types.h>
@@ -2794,6 +2796,82 @@ SDL_bool Android_JNI_RequestPermission(const char *permission)
 		SDL_Delay(10);
 	}
 	return bPermissionRequestResult;
+}
+
+int Android_JNI_GetLocale(char *buf, size_t buflen)
+{
+    struct LocalReferenceHolder refs = LocalReferenceHolder_Setup(__FUNCTION__);
+    JNIEnv* env = Android_JNI_GetEnv();
+    int retval = -1;
+
+    JNIEnv *mEnv = Android_JNI_GetEnv();
+    if (!LocalReferenceHolder_Init(&refs, env)) {
+        LocalReferenceHolder_Cleanup(&refs);
+        return -1;
+    }
+
+    SDL_assert(buflen > 6);
+
+    jmethodID mid;
+    jobject context;
+    jobject assetManager;
+
+    /* context = SDLActivity.getContext(); */
+    mid = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass,
+            "getContext","()Landroid/content/Context;");
+    context = (*mEnv)->CallStaticObjectMethod(mEnv, mActivityClass, mid);
+
+    /* assetManager = context.getAssets(); */
+    mid = (*mEnv)->GetMethodID(mEnv, (*mEnv)->GetObjectClass(mEnv, context),
+            "getAssets", "()Landroid/content/res/AssetManager;");
+    assetManager = (*mEnv)->CallObjectMethod(mEnv, context, mid);
+
+
+    /* API from NDK: android/configuration.h */
+    /* API from NDK: android/asset_manager_jni.h */
+    AAssetManager* asset_mgr = AAssetManager_fromJava(env, assetManager);
+    AConfiguration *cfg = AConfiguration_new();
+
+    if (asset_mgr && cfg)
+    {
+        char language[2] = {};
+        char country[2] = {};
+        size_t id = 0;
+
+        AConfiguration_fromAssetManager(cfg, asset_mgr);
+        AConfiguration_getLanguage(cfg, language);
+        AConfiguration_getCountry(cfg, country);
+
+        retval = 0;
+
+        /* copy language (not null terminated) */
+        if (language[0]) {
+            buf[id++] = language[0];
+            if (language[1]) {
+                buf[id++] = language[1];
+            }
+        }
+
+        buf[id++] = '_';
+
+        /* copy country (not null terminated) */
+        if (country[0]) {
+            buf[id++] = country[0];
+            if (country[1]) {
+                buf[id++] = country[1];
+            }
+        }
+        
+        buf[id++] = '\0';
+        SDL_assert(id <= buflen);
+    }
+
+    if (cfg) {
+        AConfiguration_delete(cfg);
+    }
+
+    LocalReferenceHolder_Cleanup(&refs);
+    return retval;
 }
 
 #endif /* __ANDROID__ */

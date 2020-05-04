@@ -117,6 +117,7 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
 }
 
 - (id)init;
+- (void)localeDidChange:(NSNotification *)notification;
 @end
 
 @implementation SDLAppDelegate : NSObject
@@ -137,6 +138,11 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
                    selector:@selector(focusSomeWindow:)
                        name:NSApplicationDidBecomeActiveNotification
                      object:nil];
+
+        [center addObserver:self
+                   selector:@selector(localeDidChange:)
+                       name:NSCurrentLocaleDidChangeNotification
+                     object:nil];
     }
 
     return self;
@@ -148,6 +154,7 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
 
     [center removeObserver:self name:NSWindowWillCloseNotification object:nil];
     [center removeObserver:self name:NSApplicationDidBecomeActiveNotification object:nil];
+    [center removeObserver:self name:NSCurrentLocaleDidChangeNotification object:nil];
 
     [super dealloc];
 }
@@ -224,6 +231,11 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
             SDL_RaiseWindow(window);
         }
     }
+}
+
+- (void)localeDidChange:(NSNotification *)notification;
+{
+    SDL_SendLocaleChangedEvent();
 }
 
 - (BOOL)application:(NSApplication *)theApplication openFile:(NSString *)filename

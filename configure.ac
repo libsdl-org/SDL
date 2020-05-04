@@ -413,6 +413,7 @@ SOURCES="$SOURCES $srcdir/src/thread/*.c"
 SOURCES="$SOURCES $srcdir/src/timer/*.c"
 SOURCES="$SOURCES $srcdir/src/video/*.c"
 SOURCES="$SOURCES $srcdir/src/video/yuv2rgb/*.c"
+SOURCES="$SOURCES $srcdir/src/locale/*.c"
 
 dnl Enable/disable various subsystems of the SDL library
 
@@ -3439,6 +3440,8 @@ CheckNoStrictAliasing
 dnl Do this for every platform, but for some it doesn't mean anything, but better to catch it here anyhow.
 CheckEventSignals
 
+have_locale=no
+
 dnl Set up the configuration based on the host platform!
 case "$host" in
     *-*-linux*|*-*-uclinux*|*-*-gnu*|*-*-k*bsd*-gnu|*-*-bsdi*|*-*-freebsd*|*-*-dragonfly*|*-*-netbsd*|*-*-openbsd*|*-*-sysv5*|*-*-solaris*|*-*-hpux*|*-*-aix*|*-*-minix*|*-*-nto*)
@@ -3526,6 +3529,9 @@ case "$host" in
         CheckLinuxVersion
         CheckRPATH
         CheckVivanteVideo
+
+        SOURCES="$SOURCES $srcdir/src/locale/unix/*.c"
+        have_locale=yes
 
         # Set up files for the audio library
         if test x$enable_audio = xyes; then
@@ -3675,6 +3681,10 @@ case "$host" in
 
         # Set up the core platform files
         SOURCES="$SOURCES $srcdir/src/core/windows/*.c"
+
+        # Use the Windows locale APIs.
+        SOURCES="$SOURCES $srcdir/src/locale/windows/*.c"
+        have_locale=yes
 
         # Set up files for the video library
         if test x$enable_video = xyes; then
@@ -3847,6 +3857,11 @@ AS_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
             SOURCES="$SOURCES $srcdir/src/filesystem/haiku/*.cc"
             have_filesystem=yes
         fi
+
+        # Set up files for the locale library
+        SOURCES="$SOURCES $srcdir/src/locale/haiku/*.cc"
+        have_locale=yes
+
         # The Haiku platform requires special setup.
         SOURCES="$srcdir/src/main/haiku/*.cc $SOURCES"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lroot -lbe -lmedia -lgame -ldevice -ltextencoding"
@@ -3866,6 +3881,10 @@ AS_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
         CheckMETAL
         CheckVulkan
         CheckPTHREAD
+
+        # Set up files for the locale library
+        SOURCES="$SOURCES $srcdir/src/locale/macosx/*.m"
+        have_locale=yes
 
         # Set up files for the audio library
         if test x$enable_audio = xyes; then
@@ -3965,6 +3984,10 @@ AS_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
         CheckVulkan
         CheckPTHREAD
         CheckHIDAPI
+
+        # Set up files for the locale library
+        SOURCES="$SOURCES $srcdir/src/locale/macosx/*.m"
+        have_locale=yes
 
         # Set up files for the audio library
         if test x$enable_audio = xyes; then
@@ -4093,6 +4116,9 @@ AS_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
             SOURCES="$SOURCES $srcdir/src/timer/unix/*.c"
             have_timers=yes
         fi
+        # Set up files for the locale library
+        SOURCES="$SOURCES $srcdir/src/locale/emscripten/*.c"
+        have_locale=yes
         ;;
     *-*-riscos*)
         ARCH=riscos
@@ -4141,6 +4167,9 @@ AC_SUBST([INSTALL_SDL2_CONFIG], [$enable_sdl2_config])
 
 # Verify that we have all the platform specific files we need
 
+if test x$have_locale != xyes; then
+    SOURCES="$SOURCES $srcdir/src/locale/dummy/*.c"
+fi
 if test x$have_joystick != xyes; then
     if test x$enable_joystick = xyes; then
         AC_DEFINE(SDL_JOYSTICK_DUMMY, 1, [ ])
