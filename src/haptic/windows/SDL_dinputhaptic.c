@@ -589,7 +589,7 @@ SDL_SYS_SetDirection(DIEFFECT * effect, SDL_HapticDirection * dir, int naxes)
         if (naxes > 2)
             rglDir[2] = dir->dir[2];
         return 0;
-    case SDL_HAPTIC_FIRST_AXIS:
+    case SDL_HAPTIC_STEERING_AXIS:
         effect->dwFlags |= DIEFF_CARTESIAN;
         rglDir[0] = 0;
         return 0;
@@ -641,7 +641,7 @@ SDL_SYS_ToDIEFFECT(SDL_Haptic * haptic, DIEFFECT * dest,
     envelope->dwSize = sizeof(DIENVELOPE);      /* Always should be this. */
 
     /* Axes. */
-    if (src->constant.direction.type == SDL_HAPTIC_FIRST_AXIS) {
+    if (src->constant.direction.type == SDL_HAPTIC_STEERING_AXIS) {
         dest->cAxes = 1;
     } else {
         dest->cAxes = haptic->naxes;
