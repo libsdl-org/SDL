@@ -634,7 +634,7 @@ int Wayland_CreateWindow(_THIS, SDL_Window *window)
     SDL_VideoData *c;
     struct wl_region *region;
 
-    data = calloc(1, sizeof *data);
+    data = SDL_calloc(1, sizeof *data);
     if (data == NULL)
         return SDL_OutOfMemory();
 
