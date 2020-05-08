@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Hashtable;
+import java.util.Locale;
 import java.lang.reflect.Method;
 import java.lang.Math;
 
@@ -62,6 +63,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     protected static final int SDL_ORIENTATION_PORTRAIT_FLIPPED = 4;
 
     protected static int mCurrentOrientation;
+    protected static Locale mCurrentLocale;
 
     // Handle the state of the native layer
     public enum NativeState {
@@ -258,6 +260,15 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         // Only record current orientation
         SDLActivity.onNativeOrientationChanged(mCurrentOrientation);
 
+        try {
+            if (Build.VERSION.SDK_INT < 24) {
+                mCurrentLocale = getContext().getResources().getConfiguration().locale;
+            } else {
+                mCurrentLocale = getContext().getResources().getConfiguration().getLocales().get(0);
+            }
+        } catch(Exception ignored) {
+        }
+
         setContentView(mLayout);
 
         setWindowStyle(false);
@@ -405,6 +416,17 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         }
 
         SDLActivity.nativeLowMemory();
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        Log.v(TAG, "onConfigurationChanged()");
+        super.onConfigurationChanged(newConfig);
+
+        if (!mCurrentLocale.equals(newConfig.locale)) {
+            mCurrentLocale = newConfig.locale;
+            SDLActivity.onNativeLocaleChanged();
+        }
     }
 
     @Override
@@ -784,6 +806,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     public static native void onNativeOrientationChanged(int orientation);
     public static native void nativeAddTouch(int touchId, String name);
     public static native void nativePermissionResult(int requestCode, boolean result);
+    public static native void onNativeLocaleChanged();
 
     /**
      * This method is called by SDL using JNI.

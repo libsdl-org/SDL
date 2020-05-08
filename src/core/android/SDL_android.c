@@ -127,6 +127,9 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeClipboardChanged)(
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeLowMemory)(
         JNIEnv *env, jclass cls);
 
+JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeLocaleChanged)(
+        JNIEnv *env, jclass cls);
+
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSendQuit)(
         JNIEnv *env, jclass cls);
 
@@ -180,6 +183,7 @@ static JNINativeMethod SDLActivity_tab[] = {
     { "onNativeAccel",              "(FFF)V", SDL_JAVA_INTERFACE(onNativeAccel) },
     { "onNativeClipboardChanged",   "()V", SDL_JAVA_INTERFACE(onNativeClipboardChanged) },
     { "nativeLowMemory",            "()V", SDL_JAVA_INTERFACE(nativeLowMemory) },
+    { "onNativeLocaleChanged",      "()V", SDL_JAVA_INTERFACE(onNativeLocaleChanged) },
     { "nativeSendQuit",             "()V", SDL_JAVA_INTERFACE(nativeSendQuit) },
     { "nativeQuit",                 "()V", SDL_JAVA_INTERFACE(nativeQuit) },
     { "nativePause",                "()V", SDL_JAVA_INTERFACE(nativePause) },
@@ -1141,6 +1145,15 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeLowMemory)(
 {
     SDL_SendAppEvent(SDL_APP_LOWMEMORY);
 }
+
+/* Locale
+ * requires android:configChanges="layoutDirection|locale" in AndroidManifest.xml */
+JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeLocaleChanged)(
+                                    JNIEnv *env, jclass cls)
+{
+    SDL_SendAppEvent(SDL_LOCALECHANGED);
+}
+
 
 /* Send Quit event to "SDLThread" thread */
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSendQuit)(
@@ -2858,6 +2871,9 @@ int Android_JNI_GetLocale(char *buf, size_t buflen)
     AConfiguration *cfg;
 
     SDL_assert(buflen > 6);
+
+    /* Need to re-create the asset manager if locale has changed (SDL_LOCALECHANGED) */
+    Internal_Android_Destroy_AssetManager();
 
     if (asset_manager == NULL) {
         Internal_Android_Create_AssetManager();
