@@ -21,6 +21,7 @@
 
 #include "../../SDL_internal.h"
 #include "../SDL_syslocale.h"
+#include "../../core/android/SDL_android.h"
 
 void
 SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
