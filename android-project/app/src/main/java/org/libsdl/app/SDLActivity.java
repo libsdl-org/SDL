@@ -423,7 +423,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         Log.v(TAG, "onConfigurationChanged()");
         super.onConfigurationChanged(newConfig);
 
-        if (!mCurrentLocale.equals(newConfig.locale)) {
+        if (mCurrentLocale == null || !mCurrentLocale.equals(newConfig.locale)) {
             mCurrentLocale = newConfig.locale;
             SDLActivity.onNativeLocaleChanged();
         }
