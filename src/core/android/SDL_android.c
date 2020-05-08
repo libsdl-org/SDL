@@ -356,6 +356,12 @@ static SDL_bool bHasEnvironmentVariables;
 static SDL_atomic_t bPermissionRequestPending;
 static SDL_bool bPermissionRequestResult;
 
+/* Android AssetManager */
+static void Internal_Android_Create_AssetManager(void);
+static void Internal_Android_Destroy_AssetManager(void);
+static AAssetManager *asset_manager = NULL;
+static jobject javaAssetManagerRef = 0;
+
 /*******************************************************************************
                  Functions called by JNI
 *******************************************************************************/
@@ -1177,6 +1183,8 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeQuit)(
         Android_ResumeSem = NULL;
     }
 
+    Internal_Android_Destroy_AssetManager();
+
     str = SDL_GetError();
     if (str && str[0]) {
         __android_log_print(ANDROID_LOG_ERROR, "SDL", "SDLActivity thread ends (error=%s)", str);
@@ -1797,6 +1805,53 @@ static SDL_bool Android_JNI_ExceptionOccurred(SDL_bool silent)
     }
 
     return SDL_FALSE;
+}
+
+static void Internal_Android_Create_AssetManager() {
+
+    struct LocalReferenceHolder refs = LocalReferenceHolder_Setup(__FUNCTION__);
+    JNIEnv *env = Android_JNI_GetEnv();
+    jmethodID mid;
+    jobject context;
+    jobject javaAssetManager;
+
+    if (!LocalReferenceHolder_Init(&refs, env)) {
+        LocalReferenceHolder_Cleanup(&refs);
+        return;
+    }
+
+    /* context = SDLActivity.getContext(); */
+    context = (*env)->CallStaticObjectMethod(env, mActivityClass, midGetContext);
+
+    /* javaAssetManager = context.getAssets(); */
+    mid = (*env)->GetMethodID(env, (*env)->GetObjectClass(env, context),
+            "getAssets", "()Landroid/content/res/AssetManager;");
+    javaAssetManager = (*env)->CallObjectMethod(env, context, mid);
+
+    /**
+     * Given a Dalvik AssetManager object, obtain the corresponding native AAssetManager
+     * object.  Note that the caller is responsible for obtaining and holding a VM reference
+     * to the jobject to prevent its being garbage collected while the native object is
+     * in use.
+     */
+    javaAssetManagerRef = (*env)->NewGlobalRef(env, javaAssetManager);
+    asset_manager = AAssetManager_fromJava(env, javaAssetManagerRef);
+
+    if (asset_manager == NULL) {
+        (*env)->DeleteGlobalRef(env, javaAssetManagerRef);
+        Android_JNI_ExceptionOccurred(SDL_TRUE);
+    }
+
+    LocalReferenceHolder_Cleanup(&refs);
+}
+
+static void Internal_Android_Destroy_AssetManager() {
+    JNIEnv *env = Android_JNI_GetEnv();
+
+    if (asset_manager) {
+        (*env)->DeleteGlobalRef(env, javaAssetManagerRef);
+        asset_manager = NULL;
+    }
 }
 
 static int Internal_Android_JNI_FileOpen(SDL_RWops *ctx)
@@ -2800,49 +2855,31 @@ SDL_bool Android_JNI_RequestPermission(const char *permission)
 
 int Android_JNI_GetLocale(char *buf, size_t buflen)
 {
-    struct LocalReferenceHolder refs = LocalReferenceHolder_Setup(__FUNCTION__);
-    JNIEnv* env = Android_JNI_GetEnv();
-    int retval = -1;
-
-    JNIEnv *mEnv = Android_JNI_GetEnv();
-    if (!LocalReferenceHolder_Init(&refs, env)) {
-        LocalReferenceHolder_Cleanup(&refs);
-        return -1;
-    }
+    AConfiguration *cfg;
 
     SDL_assert(buflen > 6);
 
-    jmethodID mid;
-    jobject context;
-    jobject assetManager;
+    if (asset_manager == NULL) {
+        Internal_Android_Create_AssetManager();
+    }
 
-    /* context = SDLActivity.getContext(); */
-    mid = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass,
-            "getContext","()Landroid/content/Context;");
-    context = (*mEnv)->CallStaticObjectMethod(mEnv, mActivityClass, mid);
+    if (asset_manager == NULL) {
+        return -1;
+    }
 
-    /* assetManager = context.getAssets(); */
-    mid = (*mEnv)->GetMethodID(mEnv, (*mEnv)->GetObjectClass(mEnv, context),
-            "getAssets", "()Landroid/content/res/AssetManager;");
-    assetManager = (*mEnv)->CallObjectMethod(mEnv, context, mid);
+    cfg = AConfiguration_new();
+    if (cfg == NULL) {
+        return -1;
+    }
 
-
-    /* API from NDK: android/configuration.h */
-    /* API from NDK: android/asset_manager_jni.h */
-    AAssetManager* asset_mgr = AAssetManager_fromJava(env, assetManager);
-    AConfiguration *cfg = AConfiguration_new();
-
-    if (asset_mgr && cfg)
     {
         char language[2] = {};
         char country[2] = {};
         size_t id = 0;
 
-        AConfiguration_fromAssetManager(cfg, asset_mgr);
+        AConfiguration_fromAssetManager(cfg, asset_manager);
         AConfiguration_getLanguage(cfg, language);
         AConfiguration_getCountry(cfg, country);
-
-        retval = 0;
 
         /* copy language (not null terminated) */
         if (language[0]) {
@@ -2866,12 +2903,9 @@ int Android_JNI_GetLocale(char *buf, size_t buflen)
         SDL_assert(id <= buflen);
     }
 
-    if (cfg) {
-        AConfiguration_delete(cfg);
-    }
+    AConfiguration_delete(cfg);
 
-    LocalReferenceHolder_Cleanup(&refs);
-    return retval;
+    return 0;
 }
 
 #endif /* __ANDROID__ */
