@@ -1213,6 +1213,8 @@ elseif(UNIX AND NOT APPLE AND NOT ANDROID AND NOT RISCOS)
         set(HAVE_DBUS_DBUS_H TRUE)
         include_directories(${DBUS_INCLUDE_DIRS})
         list(APPEND EXTRA_LIBS ${DBUS_LIBRARIES})
+        # Fcitx need only dbus.
+        set(HAVE_FCITX TRUE)
       endif()
 
       pkg_search_module(IBUS ibus-1.0 ibus)
@@ -1220,6 +1222,9 @@ elseif(UNIX AND NOT APPLE AND NOT ANDROID AND NOT RISCOS)
         set(HAVE_IBUS_IBUS_H TRUE)
         include_directories(${IBUS_INCLUDE_DIRS})
         list(APPEND EXTRA_LIBS ${IBUS_LIBRARIES})
+      endif()
+
+      if (HAVE_IBUS_IBUS_H OR HAVE_FCITX)
         add_definitions(-DSDL_USE_IME)
       endif()
       if(HAVE_LIBUNWIND_H)
@@ -1229,8 +1234,6 @@ elseif(UNIX AND NOT APPLE AND NOT ANDROID AND NOT RISCOS)
         list(APPEND EXTRA_LIBS ${UNWIND_LIBRARIES} ${UNWIND_GENERIC_LIBRARIES})
       endif()
     endif()
-
-    check_include_file("fcitx/frontend.h" HAVE_FCITX_FRONTEND_H)
   endif()
 
   if(INPUT_TSLIB)

@@ -683,7 +683,7 @@ X11_DispatchEvent(_THIS)
         /* But only if we're using one of the DBus IMEs, otherwise
            some XIM IMEs will generate duplicate events */
         if (orig_keycode) {
-#if defined(HAVE_IBUS_IBUS_H) || defined(HAVE_FCITX_FRONTEND_H)
+#if defined(HAVE_IBUS_IBUS_H) || defined(HAVE_FCITX)
             SDL_Scancode scancode = videodata->key_layout[orig_keycode];
             videodata->filter_code = orig_keycode;
             videodata->filter_time = xevent.xkey.time;

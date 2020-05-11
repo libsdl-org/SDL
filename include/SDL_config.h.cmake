@@ -203,7 +203,7 @@
 
 #cmakedefine HAVE_ALTIVEC_H 1
 #cmakedefine HAVE_DBUS_DBUS_H 1
-#cmakedefine HAVE_FCITX_FRONTEND_H 1
+#cmakedefine HAVE_FCITX 1
 #cmakedefine HAVE_IBUS_IBUS_H 1
 #cmakedefine HAVE_IMMINTRIN_H 1
 #cmakedefine HAVE_LIBSAMPLERATE_H 1

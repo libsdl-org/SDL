@@ -2731,24 +2731,13 @@ CheckFcitx()
 AS_HELP_STRING([--enable-fcitx], [enable fcitx support [[default=yes]]]),
                   , enable_fcitx=yes)
     if test x$enable_fcitx = xyes; then
-        PKG_CHECK_MODULES([FCITX], [fcitx], have_fcitx=yes, have_fcitx=no)
-        CFLAGS="$CFLAGS $FCITX_CFLAGS"
-        AC_CHECK_HEADER(fcitx/frontend.h,
-                        have_fcitx_frontend_h_hdr=yes,
-                        have_fcitx_frontend_h_hdr=no)
-        CFLAGS="$save_CFLAGS"
-        if test x$have_fcitx_frontend_h_hdr = xyes; then
-            if test x$enable_ime != xyes; then
-                AC_MSG_WARN([IME support is required for fcitx.])
-                have_fcitx_frontend_h_hdr=no
-            elif test x$enable_dbus != xyes; then
-                AC_MSG_WARN([DBus support is required for fcitx.])
-                have_fcitx_frontend_h_hdr=no
-            else
-                AC_DEFINE(HAVE_FCITX_FRONTEND_H, 1, [ ])
-                EXTRA_CFLAGS="$EXTRA_CFLAGS $FCITX_CFLAGS"
-                SOURCES="$SOURCES $srcdir/src/core/linux/SDL_fcitx.c"
-            fi
+        if test x$enable_ime != xyes; then
+            AC_MSG_WARN([IME support is required for fcitx.])
+        elif test x$enable_dbus != xyes; then
+            AC_MSG_WARN([DBus support is required for fcitx.])
+        else
+            AC_DEFINE(HAVE_FCITX, 1, [ ])
+            SOURCES="$SOURCES $srcdir/src/core/linux/SDL_fcitx.c"
         fi
     fi
 }
@@ -4408,7 +4397,7 @@ if test x$have_ibus_ibus_h_hdr = xyes; then
 else
     SUMMARY="${SUMMARY}Using ibus          : NO\n"
 fi
-if test x$have_fcitx_frontend_h_hdr = xyes; then
+if test x$enable_fcitx = xyes; then
     SUMMARY="${SUMMARY}Using fcitx         : YES\n"
 else
     SUMMARY="${SUMMARY}Using fcitx         : NO\n"
