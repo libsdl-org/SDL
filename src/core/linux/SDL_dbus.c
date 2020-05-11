@@ -57,6 +57,10 @@ LoadDBUSSyms(void)
     SDL_DBUS_SYM(message_new_method_call);
     SDL_DBUS_SYM(message_append_args);
     SDL_DBUS_SYM(message_append_args_valist);
+    SDL_DBUS_SYM(message_iter_init_append);
+    SDL_DBUS_SYM(message_iter_open_container);
+    SDL_DBUS_SYM(message_iter_append_basic);
+    SDL_DBUS_SYM(message_iter_close_container);
     SDL_DBUS_SYM(message_get_args);
     SDL_DBUS_SYM(message_get_args_valist);
     SDL_DBUS_SYM(message_iter_init);

@@ -54,6 +54,10 @@ typedef struct SDL_DBusContext {
     DBusMessage *(*message_new_method_call)(const char *, const char *, const char *, const char *);
     dbus_bool_t (*message_append_args)(DBusMessage *, int, ...);
     dbus_bool_t (*message_append_args_valist)(DBusMessage *, int, va_list);
+    void (*message_iter_init_append)(DBusMessage *, DBusMessageIter *);
+    dbus_bool_t (*message_iter_open_container)(DBusMessageIter *, int, const char *, DBusMessageIter *);
+    dbus_bool_t (*message_iter_append_basic)(DBusMessageIter *, int, const void *);
+    dbus_bool_t (*message_iter_close_container)(DBusMessageIter *, DBusMessageIter *);
     dbus_bool_t (*message_get_args)(DBusMessage *, DBusError *, int, ...);
     dbus_bool_t (*message_get_args_valist)(DBusMessage *, DBusError *, int, va_list);
     dbus_bool_t (*message_iter_init)(DBusMessage *, DBusMessageIter *);
