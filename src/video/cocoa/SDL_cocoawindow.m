@@ -1588,6 +1588,21 @@ Cocoa_CreateWindowFrom(_THIS, SDL_Window * window, const void *data)
         window->title = SDL_strdup([title UTF8String]);
     }
 
+    /* We still support OpenGL as long as Apple offers it, deprecated or not, so disable deprecation warnings about it. */
+    #ifdef __clang__
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    #endif
+    /* Note: as of the macOS 10.15 SDK, this defaults to YES instead of NO when
+     * the NSHighResolutionCapable boolean is set in Info.plist. */
+    if ([nsview respondsToSelector:@selector(setWantsBestResolutionOpenGLSurface:)]) {
+        BOOL highdpi = (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) != 0;
+        [nsview setWantsBestResolutionOpenGLSurface:highdpi];
+    }
+    #ifdef __clang__
+    #pragma clang diagnostic pop
+    #endif
+
     return SetupWindowData(_this, window, nswindow, nsview, SDL_FALSE);
 }}
 
