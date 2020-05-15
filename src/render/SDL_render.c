@@ -1745,7 +1745,8 @@ SDL_LockTextureToSurface(SDL_Texture *texture, const SDL_Rect *rect,
 {
     SDL_Rect real_rect;
     void *pixels = NULL;
-    int pitch, ret;
+    int pitch = 0; /* fix static analysis */
+    int ret;
 
     if (texture == NULL || surface == NULL) {
         return -1;
