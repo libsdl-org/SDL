@@ -13,21 +13,18 @@ default configuration parameters.
 Build Dependencies
 ================================================================================
     
-Ubuntu 13.04, all available features enabled:
+Ubuntu 20.04, all available features enabled:
 
 sudo apt-get install build-essential mercurial make cmake autoconf automake \
 libtool libasound2-dev libpulse-dev libaudio-dev libx11-dev libxext-dev \
 libxrandr-dev libxcursor-dev libxi-dev libxinerama-dev libxxf86vm-dev \
-libxss-dev libgl1-mesa-dev libesd0-dev libdbus-1-dev libudev-dev \
-libgles1-mesa-dev libgles2-mesa-dev libegl1-mesa-dev libibus-1.0-dev \
-fcitx-libs-dev libsamplerate0-dev libsndio-dev
-
-Ubuntu 16.04+ can also add "libwayland-dev libxkbcommon-dev" to that command
-line for Wayland support.
+libxss-dev libgl1-mesa-dev libdbus-1-dev libudev-dev libgles2-mesa-dev \
+libegl1-mesa-dev libibus-1.0-dev fcitx-libs-dev libsamplerate0-dev \
+libsndio-dev libwayland-dev libxkbcommon-dev
 
 NOTES:
-- This includes all the audio targets except arts, because Ubuntu pulled the 
-  artsc0-dev package, but in theory SDL still supports it.
+- This includes all the audio targets except arts and esd, because Ubuntu
+  (and/or Debian) pulled their packages, but in theory SDL still supports them.
 - libsamplerate0-dev lets SDL optionally link to libresamplerate at runtime
   for higher-quality audio resampling. SDL will work without it if the library
   is missing, so it's safe to build in support even if the end user doesn't
