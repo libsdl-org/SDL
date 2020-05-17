@@ -1116,9 +1116,13 @@ SDL_ConvertSurface(SDL_Surface * surface, const SDL_PixelFormat * format,
                 /* The palette is identical, just set the same colorkey */
                 SDL_SetColorKey(convert, 1, surface->map->info.colorkey);
             } else if (!format->palette) {
-                set_colorkey_by_color = SDL_TRUE;
-                /* Was done by 'palette_ck_transform' */
-                convert_colorkey = SDL_FALSE;
+                if (format->Amask) {
+                    /* No need to add the colorkey, transparency is in the alpha channel*/
+                } else {
+                    /* Only set the colorkey information */
+                    set_colorkey_by_color = SDL_TRUE;
+                    convert_colorkey = SDL_FALSE;
+                }
             } else {
                 set_colorkey_by_color = SDL_TRUE;
             }
