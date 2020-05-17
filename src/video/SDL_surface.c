@@ -1106,6 +1106,7 @@ SDL_ConvertSurface(SDL_Surface * surface, const SDL_PixelFormat * format,
 
     if (copy_flags & SDL_COPY_COLORKEY) {
         SDL_bool set_colorkey_by_color = SDL_FALSE;
+        SDL_bool convert_colorkey = SDL_TRUE;
 
         if (surface->format->palette) {
             if (format->palette &&
@@ -1115,7 +1116,9 @@ SDL_ConvertSurface(SDL_Surface * surface, const SDL_PixelFormat * format,
                 /* The palette is identical, just set the same colorkey */
                 SDL_SetColorKey(convert, 1, surface->map->info.colorkey);
             } else if (!format->palette) {
+                set_colorkey_by_color = SDL_TRUE;
                 /* Was done by 'palette_ck_transform' */
+                convert_colorkey = SDL_FALSE;
             } else {
                 set_colorkey_by_color = SDL_TRUE;
             }
@@ -1156,7 +1159,9 @@ SDL_ConvertSurface(SDL_Surface * surface, const SDL_PixelFormat * format,
             SDL_SetColorKey(convert, 1, converted_colorkey);
 
             /* This is needed when converting for 3D texture upload */
-            SDL_ConvertColorkeyToAlpha(convert, SDL_TRUE);
+            if (convert_colorkey) {
+                SDL_ConvertColorkeyToAlpha(convert, SDL_TRUE);
+            }
         }
     }
     SDL_SetClipRect(convert, &surface->clip_rect);
