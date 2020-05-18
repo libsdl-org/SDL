@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [ -z "$SDKDIR" ]; then
-    SDKDIR="/emsdk_portable"
+    SDKDIR="/emsdk"
 fi
 
 ENVSCRIPT="$SDKDIR/emsdk_env.sh"
