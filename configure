@@ -655,8 +655,6 @@ SDL_CFLAGS
 INSTALL_SDL2_CONFIG
 LIBUSB_LIBS
 LIBUSB_CFLAGS
-FCITX_LIBS
-FCITX_CFLAGS
 IBUS_LIBS
 IBUS_CFLAGS
 DBUS_LIBS
@@ -940,8 +938,6 @@ DBUS_CFLAGS
 DBUS_LIBS
 IBUS_CFLAGS
 IBUS_LIBS
-FCITX_CFLAGS
-FCITX_LIBS
 LIBUSB_CFLAGS
 LIBUSB_LIBS'
 
@@ -1768,9 +1764,6 @@ Some influential environment variables:
   DBUS_LIBS   linker flags for DBUS, overriding pkg-config
   IBUS_CFLAGS C compiler flags for IBUS, overriding pkg-config
   IBUS_LIBS   linker flags for IBUS, overriding pkg-config
-  FCITX_CFLAGS
-              C compiler flags for FCITX, overriding pkg-config
-  FCITX_LIBS  linker flags for FCITX, overriding pkg-config
   LIBUSB_CFLAGS
               C compiler flags for LIBUSB, overriding pkg-config
   LIBUSB_LIBS linker flags for LIBUSB, overriding pkg-config
@@ -16007,7 +16000,7 @@ case "$host" in
         ;;
 esac
 
-INCLUDE="-I$srcdir/include -idirafter $srcdir/src/video/khronos"
+INCLUDE="-I$srcdir/include -I$srcdir/src/video/khronos"
 if test x$srcdir != x.; then
     INCLUDE="-Iinclude $INCLUDE"
 elif test -d .hg; then
@@ -23081,101 +23074,17 @@ else
 fi
 
     if test x$enable_fcitx = xyes; then
-
-pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for FCITX" >&5
-$as_echo_n "checking for FCITX... " >&6; }
-
-if test -n "$FCITX_CFLAGS"; then
-    pkg_cv_FCITX_CFLAGS="$FCITX_CFLAGS"
- elif test -n "$PKG_CONFIG"; then
-    if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"fcitx\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "fcitx") 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; then
-  pkg_cv_FCITX_CFLAGS=`$PKG_CONFIG --cflags "fcitx" 2>/dev/null`
-else
-  pkg_failed=yes
-fi
- else
-    pkg_failed=untried
-fi
-if test -n "$FCITX_LIBS"; then
-    pkg_cv_FCITX_LIBS="$FCITX_LIBS"
- elif test -n "$PKG_CONFIG"; then
-    if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"fcitx\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "fcitx") 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; then
-  pkg_cv_FCITX_LIBS=`$PKG_CONFIG --libs "fcitx" 2>/dev/null`
-else
-  pkg_failed=yes
-fi
- else
-    pkg_failed=untried
-fi
-
-
-
-if test $pkg_failed = yes; then
-   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-
-if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
-        _pkg_short_errors_supported=yes
-else
-        _pkg_short_errors_supported=no
-fi
-        if test $_pkg_short_errors_supported = yes; then
-	        FCITX_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "fcitx" 2>&1`
-        else
-	        FCITX_PKG_ERRORS=`$PKG_CONFIG --print-errors "fcitx" 2>&1`
-        fi
-	# Put the nasty error message in config.log where it belongs
-	echo "$FCITX_PKG_ERRORS" >&5
-
-	have_fcitx=no
-elif test $pkg_failed = untried; then
-     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-	have_fcitx=no
-else
-	FCITX_CFLAGS=$pkg_cv_FCITX_CFLAGS
-	FCITX_LIBS=$pkg_cv_FCITX_LIBS
-        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
-	have_fcitx=yes
-fi
-        CFLAGS="$CFLAGS $FCITX_CFLAGS"
-        ac_fn_c_check_header_mongrel "$LINENO" "fcitx/frontend.h" "ac_cv_header_fcitx_frontend_h" "$ac_includes_default"
-if test "x$ac_cv_header_fcitx_frontend_h" = xyes; then :
-  have_fcitx_frontend_h_hdr=yes
-else
-  have_fcitx_frontend_h_hdr=no
-fi
-
-
-        CFLAGS="$save_CFLAGS"
-        if test x$have_fcitx_frontend_h_hdr = xyes; then
-            if test x$enable_ime != xyes; then
-                { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: IME support is required for fcitx." >&5
+        if test x$enable_ime != xyes; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: IME support is required for fcitx." >&5
 $as_echo "$as_me: WARNING: IME support is required for fcitx." >&2;}
-                have_fcitx_frontend_h_hdr=no
-            elif test x$enable_dbus != xyes; then
-                { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: DBus support is required for fcitx." >&5
+        elif test x$enable_dbus != xyes; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: DBus support is required for fcitx." >&5
 $as_echo "$as_me: WARNING: DBus support is required for fcitx." >&2;}
-                have_fcitx_frontend_h_hdr=no
-            else
+        else
 
-$as_echo "#define HAVE_FCITX_FRONTEND_H 1" >>confdefs.h
+$as_echo "#define HAVE_FCITX 1" >>confdefs.h
 
-                EXTRA_CFLAGS="$EXTRA_CFLAGS $FCITX_CFLAGS"
-                SOURCES="$SOURCES $srcdir/src/core/linux/SDL_fcitx.c"
-            fi
+            SOURCES="$SOURCES $srcdir/src/core/linux/SDL_fcitx.c"
         fi
     fi
 }
@@ -25857,7 +25766,7 @@ if test x$have_ibus_ibus_h_hdr = xyes; then
 else
     SUMMARY="${SUMMARY}Using ibus          : NO\n"
 fi
-if test x$have_fcitx_frontend_h_hdr = xyes; then
+if test x$enable_fcitx = xyes; then
     SUMMARY="${SUMMARY}Using fcitx         : YES\n"
 else
     SUMMARY="${SUMMARY}Using fcitx         : NO\n"
