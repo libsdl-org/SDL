@@ -28,7 +28,7 @@ if [ "x$MAKE" == "x" ]; then
     MAKE="make -j$NCPU"
 fi
 
-BUILDBOTDIR="raspberrypi-buildbot"
+BUILDBOTDIR="buildbot"
 PARENTDIR="$PWD"
 
 set -e
