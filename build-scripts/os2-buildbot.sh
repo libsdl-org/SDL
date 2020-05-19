@@ -19,7 +19,7 @@ ZIPFILE="$1"
 if [ -z $1 ]; then
     ZIPFILE=sdl-os2.zip
 fi
-ZIPDIR=buildbot
+ZIPDIR=buildbot/SDL
 
 set -e
 set -x
@@ -30,11 +30,11 @@ cd ..
 rm -f $ZIPFILE
 wmake -f Makefile.os2
 rm -rf $ZIPDIR
-mkdir $ZIPDIR
+mkdir -p $ZIPDIR
 chmod a+r SDL2.lib SDL2.dll
 mv SDL2.lib SDL2.dll $ZIPDIR/
 cp -R include $ZIPDIR/
-zip -9r "$ZIPFILE" $ZIPDIR
+zip -9r "buildbot/$ZIPFILE" $ZIPDIR
 
 wmake -f Makefile.os2 distclean
 
