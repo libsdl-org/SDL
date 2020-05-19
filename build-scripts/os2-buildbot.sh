@@ -19,7 +19,7 @@ ZIPFILE="$1"
 if [ -z $1 ]; then
     ZIPFILE=sdl-os2.zip
 fi
-ZIPDIR=SDL2-os2
+ZIPDIR=buildbot
 
 set -e
 set -x
