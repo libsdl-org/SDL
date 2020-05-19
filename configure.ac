@@ -79,13 +79,13 @@ AC_TRY_COMPILE([
 ],[
 ],[
 have_idirafter="yes"
-idirafter="-idirafter"
+idirafter="-idirafter "
 ])
 AC_MSG_RESULT($have_idirafter)
 CFLAGS="$save_CFLAGS"
 
 dnl Set up the compiler and linker flags
-INCLUDE="-I$srcdir/include $idirafter $srcdir/src/video/khronos"
+INCLUDE="-I$srcdir/include $idirafter$srcdir/src/video/khronos"
 if test x$srcdir != x.; then
     INCLUDE="-Iinclude $INCLUDE"
 elif test -d .hg; then
