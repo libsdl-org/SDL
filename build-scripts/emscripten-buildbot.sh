@@ -67,9 +67,8 @@ emmake $MAKE install || exit $?
 perl -w -pi -e "s#$PWD/emscripten-sdl2-installed#/usr/local#g;" ./emscripten-sdl2-installed/lib/libSDL2.la ./emscripten-sdl2-installed/lib/pkgconfig/sdl2.pc ./emscripten-sdl2-installed/bin/sdl2-config
 mkdir -p ./usr
 mv ./emscripten-sdl2-installed ./usr/local
+tar -cJvvf $TARBALL usr
 popd
-tar -cJvvf $TARBALL -C buildbot usr
-rm -rf buildbot
 
 exit 0
 
