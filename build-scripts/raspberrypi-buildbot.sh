@@ -49,10 +49,8 @@ $MAKE install
 perl -w -pi -e "s#$PWD/rpi-sdl2-installed#/usr/local#g;" ./rpi-sdl2-installed/lib/libSDL2.la ./rpi-sdl2-installed/lib/pkgconfig/sdl2.pc ./rpi-sdl2-installed/bin/sdl2-config
 mkdir -p ./usr
 mv ./rpi-sdl2-installed ./usr/local
-
+tar -cJvvf $TARBALL usr
 popd
-tar -cJvvf $TARBALL -C $BUILDBOTDIR usr
-rm -rf $BUILDBOTDIR
 
 set +x
 echo "All done. Final installable is in $TARBALL ...";
