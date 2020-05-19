@@ -24,6 +24,14 @@
 
 #include "SDL_locale.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern void SDL_SYS_GetPreferredLocales(char *buf, size_t buflen);
+
+#ifdef __cplusplus
+}
+#endif
 
 /* vi: set ts=4 sw=4 expandtab: */
