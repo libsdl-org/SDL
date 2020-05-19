@@ -69,23 +69,18 @@ case "$host" in
         ;;
 esac
 
-dnl see if -idirafter is available.
-save_CFLAGS="$CFLAGS"
-have_idirafter="no"
-idirafter="-I"
-AC_MSG_CHECKING(for -idirafter option)
-CFLAGS="$save_CFLAGS -idirafter src"
-AC_TRY_COMPILE([
-],[
-],[
-have_idirafter="yes"
-idirafter="-idirafter "
-])
-AC_MSG_RESULT($have_idirafter)
-CFLAGS="$save_CFLAGS"
-
 dnl Set up the compiler and linker flags
-INCLUDE="-I$srcdir/include $idirafter$srcdir/src/video/khronos"
+INCLUDE="-I$srcdir/include"
+
+dnl Don't use our khronos headers on QNX.
+case "$host" in
+    *-*-nto-qnx*)
+        ;;
+    *)
+        INCLUDE="$INCLUDE -idirafter $srcdir/src/video/khronos"
+        ;;
+esac
+
 if test x$srcdir != x.; then
     INCLUDE="-Iinclude $INCLUDE"
 elif test -d .hg; then
