@@ -271,6 +271,8 @@ HIDAPI_DriverXbox360_GuessXInputSlot(const WindowsMatchState *state, Uint8 *corr
     int user_index;
     int match_count;
 
+    *slot_idx = 0;
+
     match_count = 0;
     for (user_index = 0; user_index < XUSER_MAX_COUNT; ++user_index) {
         if (!xinput_state[user_index].used && HIDAPI_DriverXbox360_XInputSlotMatches(state, user_index)) {
@@ -1155,8 +1157,8 @@ HIDAPI_DriverXbox360_UpdateOtherAPIs(SDL_HIDAPI_Device *device, SDL_Joystick *jo
         if (!ctx->xinput_correlated) {
             SDL_bool new_correlation_count = 0;
             if (HIDAPI_DriverXbox360_MissingXInputSlot()) {
-                Uint8 correlation_id;
-                Uint8 slot_idx;
+                Uint8 correlation_id = 0;
+                Uint8 slot_idx = 0;
                 if (HIDAPI_DriverXbox360_GuessXInputSlot(&match_state_xinput, &correlation_id, &slot_idx)) {
                     /* we match exactly one XInput device */
                     /* Probably can do without xinput_correlation_count, just check and clear xinput_slot to ANY, unless
