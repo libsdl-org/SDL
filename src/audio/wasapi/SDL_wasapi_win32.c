@@ -247,7 +247,7 @@ WASAPI_PlatformInit(void)
         return SDL_SetError("WASAPI: CoInitialize() failed");
     }
 
-    ret = CoCreateInstance(&SDL_CLSID_MMDeviceEnumerator, NULL, CLSCTX_INPROC_SERVER, &SDL_IID_IMMDeviceEnumerator, (LPVOID) &enumerator);
+    ret = CoCreateInstance(&SDL_CLSID_MMDeviceEnumerator, NULL, CLSCTX_INPROC_SERVER, &SDL_IID_IMMDeviceEnumerator, (LPVOID *) &enumerator);
     if (FAILED(ret)) {
         WIN_CoUninitialize();
         return WIN_SetErrorFromHRESULT("WASAPI CoCreateInstance(MMDeviceEnumerator)", ret);

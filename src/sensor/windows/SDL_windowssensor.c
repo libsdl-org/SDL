@@ -351,7 +351,7 @@ SDL_WINDOWS_SensorInit(void)
         SDL_windowscoinit = SDL_TRUE;
     }
 
-    hr = CoCreateInstance(&CLSID_SensorManager, NULL, CLSCTX_INPROC_SERVER, &IID_SensorManager, &SDL_sensor_manager);
+    hr = CoCreateInstance(&CLSID_SensorManager, NULL, CLSCTX_INPROC_SERVER, &IID_SensorManager, (LPVOID *) &SDL_sensor_manager);
     if (FAILED(hr)) {
         return SDL_SetError("Couldn't create the sensor manager: 0x%.4x", hr);
     }
