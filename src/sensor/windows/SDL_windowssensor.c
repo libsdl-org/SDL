@@ -36,20 +36,15 @@
 #include <SensorsApi.h>
 #include <Sensors.h>
 
-#ifndef CLSID_SensorManager
-DEFINE_GUID(CLSID_SensorManager, 0x77A1C827, 0xFCD2, 0x4689, 0x89, 0x15, 0x9D, 0x61, 0x3C, 0xC5, 0xFA, 0x3E);
-#endif
-
-DEFINE_GUID(IID_SensorManager, 0xBD77DB67, 0x45A8, 0x42DC, 0x8D, 0x00, 0x6D, 0xCF, 0x15, 0xF8, 0x37, 0x7A);
-DEFINE_GUID(IID_SensorManagerEvents, 0x9B3B0B86, 0x266A, 0x4AAD, 0xB2, 0x1F, 0xFD, 0xE5, 0x50, 0x10, 0x01, 0xB7);
-DEFINE_GUID(IID_SensorEvents, 0x5D8DCC91, 0x4641, 0x47E7, 0xB7, 0xC3, 0xB7, 0x4F, 0x48, 0xA6, 0xC3, 0x91);
+DEFINE_GUID(SDL_CLSID_SensorManager, 0x77A1C827, 0xFCD2, 0x4689, 0x89, 0x15, 0x9D, 0x61, 0x3C, 0xC5, 0xFA, 0x3E);
+DEFINE_GUID(SDL_IID_SensorManager, 0xBD77DB67, 0x45A8, 0x42DC, 0x8D, 0x00, 0x6D, 0xCF, 0x15, 0xF8, 0x37, 0x7A);
+DEFINE_GUID(SDL_IID_SensorManagerEvents, 0x9B3B0B86, 0x266A, 0x4AAD, 0xB2, 0x1F, 0xFD, 0xE5, 0x50, 0x10, 0x01, 0xB7);
+DEFINE_GUID(SDL_IID_SensorEvents, 0x5D8DCC91, 0x4641, 0x47E7, 0xB7, 0xC3, 0xB7, 0x4F, 0x48, 0xA6, 0xC3, 0x91);
 
 /* These constants aren't available in Visual Studio 2015 or earlier Windows SDK  */
-#ifndef SENSOR_DATA_TYPE_ANGULAR_VELOCITY_X_DEGREES_PER_SECOND
-DEFINE_PROPERTYKEY(SENSOR_DATA_TYPE_ANGULAR_VELOCITY_X_DEGREES_PER_SECOND, 0X3F8A69A2, 0X7C5, 0X4E48, 0XA9, 0X65, 0XCD, 0X79, 0X7A, 0XAB, 0X56, 0XD5, 10); //[VT_R8]
-DEFINE_PROPERTYKEY(SENSOR_DATA_TYPE_ANGULAR_VELOCITY_Y_DEGREES_PER_SECOND, 0X3F8A69A2, 0X7C5, 0X4E48, 0XA9, 0X65, 0XCD, 0X79, 0X7A, 0XAB, 0X56, 0XD5, 11); //[VT_R8]
-DEFINE_PROPERTYKEY(SENSOR_DATA_TYPE_ANGULAR_VELOCITY_Z_DEGREES_PER_SECOND, 0X3F8A69A2, 0X7C5, 0X4E48, 0XA9, 0X65, 0XCD, 0X79, 0X7A, 0XAB, 0X56, 0XD5, 12); //[VT_R8]
-#endif
+DEFINE_PROPERTYKEY(SDL_SENSOR_DATA_TYPE_ANGULAR_VELOCITY_X_DEGREES_PER_SECOND, 0X3F8A69A2, 0X7C5, 0X4E48, 0XA9, 0X65, 0XCD, 0X79, 0X7A, 0XAB, 0X56, 0XD5, 10); //[VT_R8]
+DEFINE_PROPERTYKEY(SDL_SENSOR_DATA_TYPE_ANGULAR_VELOCITY_Y_DEGREES_PER_SECOND, 0X3F8A69A2, 0X7C5, 0X4E48, 0XA9, 0X65, 0XCD, 0X79, 0X7A, 0XAB, 0X56, 0XD5, 11); //[VT_R8]
+DEFINE_PROPERTYKEY(SDL_SENSOR_DATA_TYPE_ANGULAR_VELOCITY_Z_DEGREES_PER_SECOND, 0X3F8A69A2, 0X7C5, 0X4E48, 0XA9, 0X65, 0XCD, 0X79, 0X7A, 0XAB, 0X56, 0XD5, 12); //[VT_R8]
 
 typedef struct
 {
@@ -77,7 +72,7 @@ static HRESULT STDMETHODCALLTYPE ISensorManagerEventsVtbl_QueryInterface(ISensor
     }
 
     *ppvObject = NULL;
-    if (WIN_IsEqualIID(riid, &IID_IUnknown) || WIN_IsEqualIID(riid, &IID_SensorManagerEvents)) {
+    if (WIN_IsEqualIID(riid, &IID_IUnknown) || WIN_IsEqualIID(riid, &SDL_IID_SensorManagerEvents)) {
         *ppvObject = This;
         return S_OK;
     }
@@ -117,7 +112,7 @@ static HRESULT STDMETHODCALLTYPE ISensorEventsVtbl_QueryInterface(ISensorEvents 
     }
 
     *ppvObject = NULL;
-    if (WIN_IsEqualIID(riid, &IID_IUnknown) || WIN_IsEqualIID(riid, &IID_SensorEvents)) {
+    if (WIN_IsEqualIID(riid, &IID_IUnknown) || WIN_IsEqualIID(riid, &SDL_IID_SensorEvents)) {
         *ppvObject = This;
         return S_OK;
     }
@@ -166,9 +161,9 @@ static HRESULT STDMETHODCALLTYPE ISensorEventsVtbl_OnDataUpdated(ISensorEvents *
 #endif
                 switch (SDL_sensors[i].type) {
                 case SDL_SENSOR_ACCEL:
-                    hrX = ISensorDataReport_GetSensorValue(pNewData, &SENSOR_DATA_TYPE_ACCELERATION_X_G, &valueX);
-                    hrY = ISensorDataReport_GetSensorValue(pNewData, &SENSOR_DATA_TYPE_ACCELERATION_Y_G, &valueY);
-                    hrZ = ISensorDataReport_GetSensorValue(pNewData, &SENSOR_DATA_TYPE_ACCELERATION_Z_G, &valueZ);
+                    hrX = ISensorDataReport_GetSensorValue(pNewData, &SDL_SENSOR_DATA_TYPE_ACCELERATION_X_G, &valueX);
+                    hrY = ISensorDataReport_GetSensorValue(pNewData, &SDL_SENSOR_DATA_TYPE_ACCELERATION_Y_G, &valueY);
+                    hrZ = ISensorDataReport_GetSensorValue(pNewData, &SDL_SENSOR_DATA_TYPE_ACCELERATION_Z_G, &valueZ);
                     if (SUCCEEDED(hrX) && SUCCEEDED(hrY) && SUCCEEDED(hrZ) &&
                         valueX.vt == VT_R8 && valueY.vt == VT_R8 && valueZ.vt == VT_R8) {
                         float values[3];
@@ -180,9 +175,9 @@ static HRESULT STDMETHODCALLTYPE ISensorEventsVtbl_OnDataUpdated(ISensorEvents *
                     }
                     break;
                 case SDL_SENSOR_GYRO:
-                    hrX = ISensorDataReport_GetSensorValue(pNewData, &SENSOR_DATA_TYPE_ANGULAR_VELOCITY_X_DEGREES_PER_SECOND, &valueX);
-                    hrY = ISensorDataReport_GetSensorValue(pNewData, &SENSOR_DATA_TYPE_ANGULAR_VELOCITY_Y_DEGREES_PER_SECOND, &valueY);
-                    hrZ = ISensorDataReport_GetSensorValue(pNewData, &SENSOR_DATA_TYPE_ANGULAR_VELOCITY_Z_DEGREES_PER_SECOND, &valueZ);
+                    hrX = ISensorDataReport_GetSensorValue(pNewData, &SDL_SENSOR_DATA_TYPE_ANGULAR_VELOCITY_X_DEGREES_PER_SECOND, &valueX);
+                    hrY = ISensorDataReport_GetSensorValue(pNewData, &SDL_SENSOR_DATA_TYPE_ANGULAR_VELOCITY_Y_DEGREES_PER_SECOND, &valueY);
+                    hrZ = ISensorDataReport_GetSensorValue(pNewData, &SDL_SENSOR_DATA_TYPE_ANGULAR_VELOCITY_Z_DEGREES_PER_SECOND, &valueZ);
                     if (SUCCEEDED(hrX) && SUCCEEDED(hrY) && SUCCEEDED(hrZ) &&
                         valueX.vt == VT_R8 && valueY.vt == VT_R8 && valueZ.vt == VT_R8) {
                         const float DEGREES_TO_RADIANS = (float)(M_PI / 180.0f);
@@ -354,7 +349,7 @@ SDL_WINDOWS_SensorInit(void)
         SDL_windowscoinit = SDL_TRUE;
     }
 
-    hr = CoCreateInstance(&CLSID_SensorManager, NULL, CLSCTX_INPROC_SERVER, &IID_SensorManager, (LPVOID *) &SDL_sensor_manager);
+    hr = CoCreateInstance(&SDL_CLSID_SensorManager, NULL, CLSCTX_INPROC_SERVER, &SDL_IID_SensorManager, (LPVOID *) &SDL_sensor_manager);
     if (FAILED(hr)) {
         return SDL_SetError("Couldn't create the sensor manager: 0x%.4x", hr);
     }
