@@ -23083,18 +23083,24 @@ else
 fi
 
     if test x$enable_fcitx = xyes; then
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for fcitx support" >&5
+$as_echo_n "checking for fcitx support... " >&6; }
+        have_fcitx=no
         if test x$enable_ime != xyes; then
             { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: IME support is required for fcitx." >&5
 $as_echo "$as_me: WARNING: IME support is required for fcitx." >&2;}
-        elif test x$enable_dbus != xyes; then
+        elif test x$have_dbus_dbus_h_hdr != xyes; then
             { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: DBus support is required for fcitx." >&5
 $as_echo "$as_me: WARNING: DBus support is required for fcitx." >&2;}
         else
+            have_fcitx=yes
 
 $as_echo "#define HAVE_FCITX 1" >>confdefs.h
 
             SOURCES="$SOURCES $srcdir/src/core/linux/SDL_fcitx.c"
         fi
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_fcitx" >&5
+$as_echo "$have_fcitx" >&6; }
     fi
 }
 
@@ -25775,7 +25781,7 @@ if test x$have_ibus_ibus_h_hdr = xyes; then
 else
     SUMMARY="${SUMMARY}Using ibus          : NO\n"
 fi
-if test x$enable_fcitx = xyes; then
+if test x$have_fcitx = xyes; then
     SUMMARY="${SUMMARY}Using fcitx         : YES\n"
 else
     SUMMARY="${SUMMARY}Using fcitx         : NO\n"
