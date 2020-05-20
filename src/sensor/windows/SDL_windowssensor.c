@@ -161,9 +161,9 @@ static HRESULT STDMETHODCALLTYPE ISensorEventsVtbl_OnDataUpdated(ISensorEvents *
 #endif
                 switch (SDL_sensors[i].type) {
                 case SDL_SENSOR_ACCEL:
-                    hrX = ISensorDataReport_GetSensorValue(pNewData, &SDL_SENSOR_DATA_TYPE_ACCELERATION_X_G, &valueX);
-                    hrY = ISensorDataReport_GetSensorValue(pNewData, &SDL_SENSOR_DATA_TYPE_ACCELERATION_Y_G, &valueY);
-                    hrZ = ISensorDataReport_GetSensorValue(pNewData, &SDL_SENSOR_DATA_TYPE_ACCELERATION_Z_G, &valueZ);
+                    hrX = ISensorDataReport_GetSensorValue(pNewData, &SENSOR_DATA_TYPE_ACCELERATION_X_G, &valueX);
+                    hrY = ISensorDataReport_GetSensorValue(pNewData, &SENSOR_DATA_TYPE_ACCELERATION_Y_G, &valueY);
+                    hrZ = ISensorDataReport_GetSensorValue(pNewData, &SENSOR_DATA_TYPE_ACCELERATION_Z_G, &valueZ);
                     if (SUCCEEDED(hrX) && SUCCEEDED(hrY) && SUCCEEDED(hrZ) &&
                         valueX.vt == VT_R8 && valueY.vt == VT_R8 && valueZ.vt == VT_R8) {
                         float values[3];
