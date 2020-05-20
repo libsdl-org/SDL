@@ -87,7 +87,7 @@ SDL_DINPUT_HapticInit(void)
     coinitialized = SDL_TRUE;
 
     ret = CoCreateInstance(&CLSID_DirectInput8, NULL, CLSCTX_INPROC_SERVER,
-        &IID_IDirectInput8, (LPVOID)& dinput);
+        &IID_IDirectInput8, (LPVOID *) &dinput);
     if (FAILED(ret)) {
         SDL_SYS_HapticQuit();
         return DI_SetError("CoCreateInstance", ret);
