@@ -2741,14 +2741,18 @@ CheckFcitx()
 AS_HELP_STRING([--enable-fcitx], [enable fcitx support [[default=yes]]]),
                   , enable_fcitx=yes)
     if test x$enable_fcitx = xyes; then
+        AC_MSG_CHECKING(for fcitx support)
+        have_fcitx=no
         if test x$enable_ime != xyes; then
             AC_MSG_WARN([IME support is required for fcitx.])
-        elif test x$enable_dbus != xyes; then
+        elif test x$have_dbus_dbus_h_hdr != xyes; then
             AC_MSG_WARN([DBus support is required for fcitx.])
         else
+            have_fcitx=yes
             AC_DEFINE(HAVE_FCITX, 1, [ ])
             SOURCES="$SOURCES $srcdir/src/core/linux/SDL_fcitx.c"
         fi
+        AC_MSG_RESULT($have_fcitx)
     fi
 }
 
@@ -4407,7 +4411,7 @@ if test x$have_ibus_ibus_h_hdr = xyes; then
 else
     SUMMARY="${SUMMARY}Using ibus          : NO\n"
 fi
-if test x$enable_fcitx = xyes; then
+if test x$have_fcitx = xyes; then
     SUMMARY="${SUMMARY}Using fcitx         : YES\n"
 else
     SUMMARY="${SUMMARY}Using fcitx         : NO\n"
