@@ -261,12 +261,12 @@ static int ConnectSensor(ISensor *sensor)
 
     hr = ISensor_GetID(sensor, &sensor_id);
     if (FAILED(hr)) {
-        return SDL_SetError("Couldn't get sensor ID: 0x%.4x", hr);
+        return WIN_SetErrorFromHRESULT("Couldn't get sensor ID", hr);
     }
 
     hr = ISensor_GetType(sensor, &type_id);
     if (FAILED(hr)) {
-        return SDL_SetError("Couldn't get sensor type: 0x%.4x", hr);
+        return WIN_SetErrorFromHRESULT("Couldn't get sensor type", hr);
     }
 
     if (WIN_IsEqualIID(&type_id, &SENSOR_TYPE_ACCELEROMETER_3D)) {
@@ -351,13 +351,13 @@ SDL_WINDOWS_SensorInit(void)
 
     hr = CoCreateInstance(&SDL_CLSID_SensorManager, NULL, CLSCTX_INPROC_SERVER, &SDL_IID_SensorManager, (LPVOID *) &SDL_sensor_manager);
     if (FAILED(hr)) {
-        return SDL_SetError("Couldn't create the sensor manager: 0x%.4x", hr);
+        return WIN_SetErrorFromHRESULT("Couldn't create the sensor manager", hr);
     }
 
     hr = ISensorManager_SetEventSink(SDL_sensor_manager, &sensor_manager_events);
     if (FAILED(hr)) {
         ISensorManager_Release(SDL_sensor_manager);
-        return SDL_SetError("Couldn't set the sensor manager event sink: 0x%.4x", hr);
+        return WIN_SetErrorFromHRESULT("Couldn't set the sensor manager event sink", hr);
     }
 
     hr = ISensorManager_GetSensorsByCategory(SDL_sensor_manager, &SENSOR_CATEGORY_ALL, &sensor_collection);
