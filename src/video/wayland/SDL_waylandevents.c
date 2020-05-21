@@ -220,6 +220,21 @@ Wayland_PumpEvents(_THIS)
 }
 
 static void
+pointer_handle_motion(void *data, struct wl_pointer *pointer,
+                      uint32_t time, wl_fixed_t sx_w, wl_fixed_t sy_w)
+{
+    struct SDL_WaylandInput *input = data;
+    SDL_WindowData *window = input->pointer_focus;
+    input->sx_w = sx_w;
+    input->sy_w = sy_w;
+    if (input->pointer_focus) {
+        const int sx = wl_fixed_to_int(sx_w);
+        const int sy = wl_fixed_to_int(sy_w);
+        SDL_SendMouseMotion(window->sdlwindow, 0, 0, sx, sy);
+    }
+}
+
+static void
 pointer_handle_enter(void *data, struct wl_pointer *pointer,
                      uint32_t serial, struct wl_surface *surface,
                      wl_fixed_t sx_w, wl_fixed_t sy_w)
@@ -243,6 +258,10 @@ pointer_handle_enter(void *data, struct wl_pointer *pointer,
     if (window) {
         input->pointer_focus = window;
         SDL_SetMouseFocus(window->sdlwindow);
+        /* In the case of e.g. a pointer confine warp, we may receive an enter
+         * event with no following motion event, but with the new coordinates
+         * as part of the enter event. */
+        pointer_handle_motion(data, pointer, serial, sx_w, sy_w);
     }
 }
 
@@ -255,21 +274,6 @@ pointer_handle_leave(void *data, struct wl_pointer *pointer,
     if (input->pointer_focus) {
         SDL_SetMouseFocus(NULL);
         input->pointer_focus = NULL;
-    }
-}
-
-static void
-pointer_handle_motion(void *data, struct wl_pointer *pointer,
-                      uint32_t time, wl_fixed_t sx_w, wl_fixed_t sy_w)
-{
-    struct SDL_WaylandInput *input = data;
-    SDL_WindowData *window = input->pointer_focus;
-    input->sx_w = sx_w;
-    input->sy_w = sy_w;
-    if (input->pointer_focus) {
-        const int sx = wl_fixed_to_int(sx_w);
-        const int sy = wl_fixed_to_int(sy_w);
-        SDL_SendMouseMotion(window->sdlwindow, 0, 0, sx, sy);
     }
 }
 
