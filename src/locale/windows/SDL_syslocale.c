@@ -37,7 +37,6 @@ static HMODULE kernel32 = 0;
 static void
 SDL_SYS_GetPreferredLocales_winxp(char *buf, size_t buflen)
 {
-    const char **retval = NULL;
     char lang[16];
     char country[16];
 
