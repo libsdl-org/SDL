@@ -82,6 +82,10 @@ WIN_LoadXInputDLL(void)
         return 0;  /* already loaded */
     }
 
+    /* NOTE: Don't load XinputUap.dll
+     * This is XInput emulation over Windows.Gaming.Input, and has all the
+     * limitations of that API (no devices at startup, no background input, etc.)
+     */
     version = (1 << 16) | 4;
     s_pXInputDLL = LoadLibrary(L"XInput1_4.dll");  /* 1.4 Ships with Windows 8. */
     if (!s_pXInputDLL) {
