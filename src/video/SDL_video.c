@@ -1706,10 +1706,12 @@ SDL_RecreateWindow(SDL_Window * window, Uint32 flags)
         return -1;
     }
 
+    /*
     if ((window->flags & SDL_WINDOW_METAL) != (flags & SDL_WINDOW_METAL)) {
         SDL_SetError("Can't change SDL_WINDOW_METAL window flag");
         return -1;
     }
+    */
 
     if ((window->flags & SDL_WINDOW_VULKAN) && (flags & SDL_WINDOW_OPENGL)) {
         SDL_SetError("Vulkan and OpenGL not supported on same window");
