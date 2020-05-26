@@ -223,53 +223,53 @@ SDL_LinuxSetThreadPriorityAndPolicy(Sint64 threadID, int sdlPriority, int schedP
 #if SDL_THREADS_DISABLED
     return SDL_Unsupported();
 #else
-    if (schedPolicy != SCHED_RR && schedPolicy != SCHED_FIFO && setpriority(PRIO_PROCESS, (id_t)threadID, priority) == 0) {
-        return 0;
+    int osPriority;
+
+    if (schedPolicy == SCHED_RR || schedPolicy == SCHED_FIFO) {
+        if (sdlPriority == SDL_THREAD_PRIORITY_LOW) {
+            osPriority = 1;
+        } else if (sdlPriority == SDL_THREAD_PRIORITY_HIGH) {
+            osPriority = rtkit_max_realtime_priority * 3 / 4;
+        } else if (sdlPriority == SDL_THREAD_PRIORITY_TIME_CRITICAL) {
+            osPriority = rtkit_max_realtime_priority;
+        } else {
+            osPriority = rtkit_max_realtime_priority / 2;
+        }
+    } else {
+        if (sdlPriority == SDL_THREAD_PRIORITY_LOW) {
+            osPriority = 19;
+        } else if (sdlPriority == SDL_THREAD_PRIORITY_HIGH) {
+            osPriority = -10;
+        } else if (sdlPriority == SDL_THREAD_PRIORITY_TIME_CRITICAL) {
+            osPriority = -20;
+        } else {
+            osPriority = 0;
+        }
+
+        if (setpriority(PRIO_PROCESS, (id_t)threadID, osPriority) == 0) {
+            return 0;
+        }
     }
 
 #if SDL_USE_LIBDBUS
     /* Note that this fails you most likely:
-         * Have your process's scheduler incorrectly configured.
-           See the requirements at:
-           http://git.0pointer.net/rtkit.git/tree/README#n16
-         * Encountered dbus/polkit security restrictions. Note
-           that the RealtimeKit1 dbus endpoint is inaccessible
-           over ssh connections for most common distro configs.
-           You might want to check your local config for details:
-           /usr/share/polkit-1/actions/org.freedesktop.RealtimeKit1.policy
+     * Have your process's scheduler incorrectly configured.
+       See the requirements at:
+       http://git.0pointer.net/rtkit.git/tree/README#n16
+     * Encountered dbus/polkit security restrictions. Note
+       that the RealtimeKit1 dbus endpoint is inaccessible
+       over ssh connections for most common distro configs.
+       You might want to check your local config for details:
+       /usr/share/polkit-1/actions/org.freedesktop.RealtimeKit1.policy
 
        README and sample code at: http://git.0pointer.net/rtkit.git
     */
     if (schedPolicy == SCHED_RR || schedPolicy == SCHED_FIFO) {
-        int rtPriority;
-
-        if (sdlPriority == SDL_THREAD_PRIORITY_LOW) {
-            rtPriority = 1;
-        } else if (sdlPriority == SDL_THREAD_PRIORITY_HIGH) {
-            rtPriority = rtkit_max_realtime_priority * 3 / 4;
-        } else if (sdlPriority == SDL_THREAD_PRIORITY_TIME_CRITICAL) {
-            rtPriority = rtkit_max_realtime_priority;
-        } else {
-            rtPriority = rtkit_max_realtime_priority / 2;
-        }
-
-        if (rtkit_setpriority_realtime((pid_t)threadID, rtPriority)) {
+        if (rtkit_setpriority_realtime((pid_t)threadID, osPriority)) {
             return 0;
         }
     } else {
-        int niceLevel;
-
-        if (sdlPriority == SDL_THREAD_PRIORITY_LOW) {
-            niceLevel = 19;
-        } else if (sdlPriority == SDL_THREAD_PRIORITY_HIGH) {
-            niceLevel = -10;
-        } else if (sdlPriority == SDL_THREAD_PRIORITY_TIME_CRITICAL) {
-            niceLevel = -20;
-        } else {
-            niceLevel = 0;
-        }
-
-        if (rtkit_setpriority_nice((pid_t)threadID, niceLevel)) {
+        if (rtkit_setpriority_nice((pid_t)threadID, osPriority)) {
             return 0;
         }
     }
