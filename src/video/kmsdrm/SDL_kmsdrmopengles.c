@@ -61,82 +61,169 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window) {
     SDL_DisplayData *dispdata = (SDL_DisplayData *) SDL_GetDisplayForWindow(window)->driverdata;
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
     KMSDRM_FBInfo *fb_info;
-    int ret, timeout;
+    SDL_bool crtc_setup_pending = SDL_FALSE;
+
+    /* ALWAYS wait for each pageflip to complete before issuing another, vsync or not,
+       or drmModePageFlip() will start returning EBUSY if there are pending pageflips.
+
+       To disable vsync in games, it would be needed to issue async pageflips,
+       and then wait for each pageflip to complete. Since async pageflips complete ASAP 
+       instead of VBLANK, thats how non-vsync screen updates should wok.
+
+       BUT Async pageflips do not work right now because calling drmModePageFlip() with the
+       DRM_MODE_PAGE_FLIP_ASYNC flag returns error on every driver I have tried.
+
+       So, for now, only do vsynced updates: _this->egl_data->egl_swapinterval is
+       ignored for now, it makes no sense to use it until async pageflips work on drm drivers. */
 
     /* Recreate the GBM / EGL surfaces if the display mode has changed */
     if (windata->egl_surface_dirty) {
         KMSDRM_CreateSurfaces(_this, window);
+        /* Do this later, when a fb_id is obtained. */
+        crtc_setup_pending = SDL_TRUE;
     }
 
-    /* Wait for confirmation that the next front buffer has been flipped, at which
-       point the previous front buffer can be released */
-    timeout = 0;
-    if (_this->egl_data->egl_swapinterval == 1) {
-        timeout = -1;
-    }
-    if (!KMSDRM_WaitPageFlip(_this, windata, timeout)) {
-        return 0;
-    }
+    if (windata->double_buffer) {
+        /* Use a double buffering scheme, independently of the number of buffers that the GBM surface has,
+           (number of buffers on the GBM surface depends on the implementation).
+           Double buffering (instead of triple) is achieved by waiting for synchronous pageflip to complete
+           inmediately after the pageflip is issued. That way, in the end of this function only two buffers
+           are needed: a buffer that is available to be picked again by EGL as a backbuffer to draw on it,
+           and the new front buffer that has just been set up.
 
-    /* Release the previous front buffer */
-    if (windata->curr_bo) {
-        KMSDRM_gbm_surface_release_buffer(windata->gs, windata->curr_bo);
-        /* SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Released GBM surface %p", (void *)windata->curr_bo); */
-        windata->curr_bo = NULL;
-    }
+           Since programmer has no control over the number of buffers of the GBM surface, wait for pageflip
+           is done inmediately after issuing pageflip, and so a double-buffer scheme is achieved. */
 
-    windata->curr_bo = windata->next_bo;
-
-    /* Make the current back buffer the next front buffer */
-    if (!(_this->egl_data->eglSwapBuffers(_this->egl_data->egl_display, windata->egl_surface))) {
-        SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "eglSwapBuffers failed.");
-        return 0;
-    }
-
-    /* Lock the next front buffer so it can't be allocated as a back buffer */
-    windata->next_bo = KMSDRM_gbm_surface_lock_front_buffer(windata->gs);
-    if (!windata->next_bo) {
-        SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Could not lock GBM surface front buffer");
-        return 0;
-    /* } else {
-        SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Locked GBM surface %p", (void *)windata->next_bo); */
-    }
-
-    fb_info = KMSDRM_FBFromBO(_this, windata->next_bo);
-    if (!fb_info) {
-        return 0;
-    }
-
-    if (!windata->curr_bo) {
-        /* On the first swap, immediately present the new front buffer. Before
-           drmModePageFlip can be used the CRTC has to be configured to use
-           the current connector and mode with drmModeSetCrtc */
-        ret = KMSDRM_drmModeSetCrtc(viddata->drm_fd, dispdata->crtc_id, fb_info->fb_id, 0,
-                                    0, &dispdata->conn->connector_id, 1, &dispdata->mode);
-
-        if (ret) {
-          SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Could not configure CRTC");
+        /* Ask EGL to mark the current back buffer to become the next front buffer. 
+           That will happen when a pageflip is issued, and the next vsync arrives (sync flip)
+           or ASAP (async flip). */
+        if (!(_this->egl_data->eglSwapBuffers(_this->egl_data->egl_display, windata->egl_surface))) {
+            SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "eglSwapBuffers failed.");
+            return 0;
         }
+
+        /* Get a handler to the buffer that is marked to become the next front buffer, and lock it
+           so it can not be chosen by EGL as a back buffer. */
+        windata->next_bo = KMSDRM_gbm_surface_lock_front_buffer(windata->gs);
+        if (!windata->next_bo) {
+            SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Could not lock GBM surface front buffer");
+            return 0;
+        /* } else {
+            SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Locked GBM surface %p", (void *)windata->next_bo); */
+        }
+
+        /* Issue synchronous pageflip: drmModePageFlip() NEVER blocks, synchronous here means that it
+           will be done on next VBLANK, not ASAP. And return to program loop inmediately. */
+
+        fb_info = KMSDRM_FBFromBO(_this, windata->next_bo);
+        if (!fb_info) {
+            return 0;
+        }
+
+        /* When needed, this is done once we have the needed fb_id, not before. */
+        if (crtc_setup_pending) {
+	    if (KMSDRM_drmModeSetCrtc(viddata->drm_fd, dispdata->crtc_id, fb_info->fb_id, 0,
+					0, &dispdata->conn->connector_id, 1, &dispdata->mode)) {
+		SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Could not configure CRTC on video mode setting.");
+	    }
+            crtc_setup_pending = SDL_FALSE;
+        }
+
+        if (!KMSDRM_drmModePageFlip(viddata->drm_fd, dispdata->crtc_id, fb_info->fb_id,
+                                    DRM_MODE_PAGE_FLIP_EVENT, &windata->waiting_for_flip)) {
+            windata->waiting_for_flip = SDL_TRUE;
+        } else {
+            SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Could not issue pageflip");
+        }
+
+        /* Since issued pageflips are always synchronous (ASYNC dont currently work), these pageflips
+           will happen at next vsync, so in practice waiting for vsync is being done here. */ 
+        if (!KMSDRM_WaitPageFlip(_this, windata, -1)) {
+            SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Error waiting for pageflip event");
+            return 0;
+        }
+
+        /* Return the previous front buffer to the available buffer pool of the GBM surface,
+           so it can be chosen again by EGL as the back buffer for drawing into it. */
+        if (windata->curr_bo) {
+            KMSDRM_gbm_surface_release_buffer(windata->gs, windata->curr_bo);
+            /* SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Released GBM surface buffer %p", (void *)windata->curr_bo); */
+            windata->curr_bo = NULL;
+        }
+
+        /* Take note of the current front buffer, so it can be freed next time this function is called. */
+        windata->curr_bo = windata->next_bo;
     } else {
-        /* On subsequent swaps, queue the new front buffer to be flipped during
-           the next vertical blank */
-        ret = KMSDRM_drmModePageFlip(viddata->drm_fd, dispdata->crtc_id, fb_info->fb_id,
-                                     DRM_MODE_PAGE_FLIP_EVENT, &windata->waiting_for_flip);
-        /* SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "drmModePageFlip(%d, %u, %u, DRM_MODE_PAGE_FLIP_EVENT, &windata->waiting_for_flip)",
-            viddata->drm_fd, displaydata->crtc_id, fb_info->fb_id); */
-
-        if (_this->egl_data->egl_swapinterval == 1) {
-            if (ret == 0) {
-                windata->waiting_for_flip = SDL_TRUE;
-            } else {
-                SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Could not queue pageflip: %d", ret);
-            }
+        /* Triple buffering requires waiting for last pageflip upon entering instead of waiting at the end,
+           and issuing the next pageflip at the end, thus allowing the program loop to run 
+           while the issued pageflip arrives (at next VBLANK, since ONLY synchronous pageflips are possible).
+           In a game context, this means that the player can be doing inputs before seeing the last
+           completed frame, causing "input lag" that is known to plage other APIs and backends.
+           Triple buffering requires the use of three different buffers at the end of this function:
+           1- the front buffer which is on screen,
+           2- the back buffer wich is ready to be flipped (a pageflip has been issued on it, which has yet to complete)
+           3- a third buffer that can be used by EGL to draw while the previously issued pageflip arrives
+              (should not put back the previous front buffer into the free buffers pool of the
+              GBM surface until that happens).
+           If the implementation only has two buffers for the GBM surface, this would behave like a double buffer.
+        */
+        
+        /* Wait for previously issued pageflip to complete. */
+        if (!KMSDRM_WaitPageFlip(_this, windata, -1)) {
+            SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Error waiting for pageflip event");
+            return 0;
         }
 
-        /* Wait immediately for vsync (as if we only had two buffers), for low input-lag scenarios.
-           Run your SDL2 program with "SDL_KMSDRM_DOUBLE_BUFFER=1 <program_name>" to enable this. */
-        if (_this->egl_data->egl_swapinterval == 1 && windata->double_buffer) {
-            KMSDRM_WaitPageFlip(_this, windata, -1);
+        /* Free the previous front buffer so EGL can pick it again as back buffer.*/
+        if (windata->curr_bo) {
+            KMSDRM_gbm_surface_release_buffer(windata->gs, windata->curr_bo);
+            /* SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Released GBM surface buffer %p", (void *)windata->curr_bo); */
+            windata->curr_bo = NULL;
+        }
+
+        /* Ask EGL to mark the current back buffer to become the next front buffer. 
+           That will happen when a pageflip is issued, and the next vsync arrives (sync flip)
+           or ASAP (async flip). */
+        if (!(_this->egl_data->eglSwapBuffers(_this->egl_data->egl_display, windata->egl_surface))) {
+            SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "eglSwapBuffers failed.");
+            return 0;
+        }
+
+        /* Take note of the current front buffer, so it can be freed next time this function is called. */
+        windata->curr_bo = windata->next_bo;
+
+        /* Get a handler to the buffer that is marked to become the next front buffer, and lock it
+           so it can not be chosen by EGL as a back buffer. */
+        windata->next_bo = KMSDRM_gbm_surface_lock_front_buffer(windata->gs);
+        if (!windata->next_bo) {
+             SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Could not lock GBM surface front buffer");
+             return 0;
+	/* } else {
+             SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Locked GBM surface %p", (void *)windata->next_bo); */
+        }
+
+        /* Issue synchronous pageflip: drmModePageFlip() NEVER blocks, synchronous here means that it
+           will be done on next VBLANK, not ASAP. And return to program loop inmediately. */
+        fb_info = KMSDRM_FBFromBO(_this, windata->next_bo);
+        if (!fb_info) {
+            return 0;
+        }
+
+        /* When needed, this is done once we have the needed fb_id, not before. */
+        if (crtc_setup_pending) {
+	    if (KMSDRM_drmModeSetCrtc(viddata->drm_fd, dispdata->crtc_id, fb_info->fb_id, 0,
+					0, &dispdata->conn->connector_id, 1, &dispdata->mode)) {
+		SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Could not configure CRTC on video mode setting.");
+	    }
+            crtc_setup_pending = SDL_FALSE;
+        }
+
+
+        if (!KMSDRM_drmModePageFlip(viddata->drm_fd, dispdata->crtc_id, fb_info->fb_id,
+                                    DRM_MODE_PAGE_FLIP_EVENT, &windata->waiting_for_flip)) {
+            windata->waiting_for_flip = SDL_TRUE;
+        } else {
+            SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Could not issue pageflip");
         }
     }
 
