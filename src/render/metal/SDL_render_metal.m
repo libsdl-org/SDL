@@ -1597,14 +1597,17 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
     if (!(window_flags & SDL_WINDOW_METAL)) {
         changed_window = SDL_TRUE;
         if (SDL_RecreateWindow(window, (window_flags & ~SDL_WINDOW_OPENGL) | SDL_WINDOW_METAL) < 0) {
-            goto error;
+            return NULL;
         }
     }
 
     renderer = (SDL_Renderer *) SDL_calloc(1, sizeof(*renderer));
     if (!renderer) {
         SDL_OutOfMemory();
-        goto error;
+        if (changed_window) {
+            SDL_RecreateWindow(window, window_flags);
+        }
+        return NULL;
     }
 
     // !!! FIXME: MTLCopyAllDevices() can find other GPUs on macOS...
@@ -1613,7 +1616,10 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
     if (mtldevice == nil) {
         SDL_free(renderer);
         SDL_SetError("Failed to obtain Metal device");
-        goto error;
+        if (changed_window) {
+            SDL_RecreateWindow(window, window_flags);
+        }
+        return NULL;
     }
 
     view = SDL_Metal_CreateView(window);
@@ -1623,7 +1629,10 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
         [mtldevice release];
 #endif
         SDL_free(renderer);
-        goto error;
+        if (changed_window) {
+            SDL_RecreateWindow(window, window_flags);
+        }
+        return NULL;
     }
 
     // !!! FIXME: error checking on all of this.
@@ -1635,7 +1644,10 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
 #endif
         SDL_Metal_DestroyView(view);
         SDL_free(renderer);
-        goto error;
+        if (changed_window) {
+            SDL_RecreateWindow(window, window_flags);
+        }
+        return NULL;
     }
 
     renderer->driverdata = (void*)CFBridgingRetain(data);
@@ -1874,13 +1886,6 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
 #endif
 
     return renderer;
-
-error:
-    if (changed_window) {
-        /* Uh oh, better try to put it back... */
-        SDL_RecreateWindow(window, window_flags);
-    }
-    return NULL;
 }}
 
 SDL_RenderDriver METAL_RenderDriver = {
