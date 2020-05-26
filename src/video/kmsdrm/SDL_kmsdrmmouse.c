@@ -466,6 +466,8 @@ KMSDRM_InitMouse(_THIS)
     mouse->FreeCursor = KMSDRM_FreeCursor;
     mouse->WarpMouse = KMSDRM_WarpMouse;
     mouse->WarpMouseGlobal = KMSDRM_WarpMouseGlobal;
+    /* No desktop on KMSDRM, so just return the normal mouse state. */
+    mouse->GetGlobalMouseState = SDL_GetMouseState;
 
     SDL_SetDefaultCursor(KMSDRM_CreateDefaultCursor());
 }
