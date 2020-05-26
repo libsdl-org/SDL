@@ -24,6 +24,7 @@
 
 #include "SDL_error.h"
 #include "SDL_stdinc.h"
+#include "SDL_thread.h"
 
 #if !SDL_THREADS_DISABLED
 #include <sys/time.h>
