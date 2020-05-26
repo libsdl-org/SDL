@@ -764,6 +764,19 @@ extern "C" {
 #define SDL_HINT_THREAD_STACK_SIZE              "SDL_THREAD_STACK_SIZE"
 
 /**
+*  \brief  A string specifying additional information to use with SDL_SetThreadPriority.
+*
+*  By default SDL_SetThreadPriority will make appropriate system changes in order to
+*  apply a thread priority.  For example on systems using pthreads the scheduler policy
+*  is changed automatically to a policy that works well with a given priority.
+*  Code which has specific requirements can override SDL's default behavior with this hint.
+*
+*  pthread hint values are "current", "other", "fifo" and "rr".
+*  Currently no other platform hint values are defined but may be in the future.
+*/
+#define SDL_HINT_THREAD_PRIORITY_POLICY         "SDL_THREAD_PRIORITY_POLICY"
+
+/**
  *  \brief If set to 1, then do not allow high-DPI windows. ("Retina" on Mac and iOS)
  */
 #define SDL_HINT_VIDEO_HIGHDPI_DISABLED "SDL_VIDEO_HIGHDPI_DISABLED"

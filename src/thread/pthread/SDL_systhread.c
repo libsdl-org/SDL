@@ -184,34 +184,71 @@ SDL_ThreadID(void)
     return ((SDL_threadID) pthread_self());
 }
 
+#if __LINUX__
+/**
+   \brief Sets the SDL priority (not nice level) for a thread, using setpriority() if appropriate, and RealtimeKit if available.
+   Differs from SDL_LinuxSetThreadPriority in also taking the desired scheduler policy,
+   such as SCHED_OTHER or SCHED_RR.
+
+   \return 0 on success, or -1 on error.
+ */
+extern DECLSPEC int SDLCALL SDL_LinuxSetThreadPriorityAndPolicy(Sint64 threadID, int sdlPriority, int schedPolicy);
+#endif
+
 int
 SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
 {
 #if __NACL__ || __RISCOS__
     /* FIXME: Setting thread priority does not seem to be supported in NACL */
     return 0;
-#elif __LINUX__
-    int value;
-    pid_t thread = syscall(SYS_gettid);
-
-    if (priority == SDL_THREAD_PRIORITY_LOW) {
-        value = 19;
-    } else if (priority == SDL_THREAD_PRIORITY_HIGH) {
-        value = -10;
-    } else if (priority == SDL_THREAD_PRIORITY_TIME_CRITICAL) {
-        value = -20;
-    } else {
-        value = 0;
-    }
-    return SDL_LinuxSetThreadPriority(thread, value);
 #else
     struct sched_param sched;
     int policy;
+    int pri_policy;
     pthread_t thread = pthread_self();
+    const char *policyhint = SDL_GetHint(SDL_HINT_THREAD_PRIORITY_POLICY);
 
     if (pthread_getschedparam(thread, &policy, &sched) != 0) {
         return SDL_SetError("pthread_getschedparam() failed");
     }
+
+    /* Higher priority levels may require changing the pthread scheduler policy
+     * for the thread.  SDL will make such changes by default but there is
+     * also a hint allowing that behavior to be overridden. */
+    switch (priority) {
+    case SDL_THREAD_PRIORITY_LOW:
+    case SDL_THREAD_PRIORITY_NORMAL:
+        pri_policy = SCHED_OTHER;
+        break;
+    case SDL_THREAD_PRIORITY_HIGH:
+    case SDL_THREAD_PRIORITY_TIME_CRITICAL:
+        pri_policy = SCHED_RR;
+        break;
+    default:
+        pri_policy = policy;
+        break;
+    }
+
+    if (policyhint) {
+        if (SDL_strcmp(policyhint, "current") == 0) {
+            /* Leave current thread scheduler policy unchanged */
+        } else if (SDL_strcmp(policyhint, "other") == 0) {
+            policy = SCHED_OTHER;
+        } else if (SDL_strcmp(policyhint, "rr") == 0) {
+            policy = SCHED_RR;
+        } else if (SDL_strcmp(policyhint, "fifo") == 0) {
+            policy = SCHED_FIFO;
+        } else {
+            policy = pri_policy;
+        }
+    } else {
+        policy = pri_policy;
+    }
+
+#if __LINUX__
+    pid_t thread = syscall(SYS_gettid);
+    return SDL_LinuxSetThreadPriorityAndPolicy(thread, priority, policy);
+#else
     if (priority == SDL_THREAD_PRIORITY_LOW) {
         sched.sched_priority = sched_get_priority_min(policy);
     } else if (priority == SDL_THREAD_PRIORITY_TIME_CRITICAL) {
@@ -242,6 +279,7 @@ SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
     }
     return 0;
 #endif /* linux */
+#endif /* #if __NACL__ || __RISCOS__ */
 }
 
 void
