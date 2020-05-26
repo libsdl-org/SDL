@@ -21,6 +21,7 @@
 
 #include "../../SDL_internal.h"
 #include "SDL_system.h"
+#include "SDL_hint.h"
 
 #include <pthread.h>
 
