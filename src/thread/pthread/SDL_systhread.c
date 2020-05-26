@@ -247,8 +247,8 @@ SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
     }
 
 #if __LINUX__
-    pid_t thread = syscall(SYS_gettid);
-    return SDL_LinuxSetThreadPriorityAndPolicy(thread, priority, policy);
+    pid_t linuxTid = syscall(SYS_gettid);
+    return SDL_LinuxSetThreadPriorityAndPolicy(linuxTid, priority, policy);
 #else
     if (priority == SDL_THREAD_PRIORITY_LOW) {
         sched.sched_priority = sched_get_priority_min(policy);
