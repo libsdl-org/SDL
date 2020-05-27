@@ -1567,8 +1567,8 @@ int
 Cocoa_CreateWindowFrom(_THIS, SDL_Window * window, const void *data)
 { @autoreleasepool
 {
-    NSView* nsview = NULL;
-    NSWindow *nswindow = NULL;
+    NSView* nsview = nil;
+    NSWindow *nswindow = nil;
 
     if ([(id)data isKindOfClass:[NSWindow class]]) {
       nswindow = (NSWindow*)data;
