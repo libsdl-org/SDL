@@ -37,7 +37,9 @@
 #define MAX_MOUSE_BUTTONS    5
 
 /* This is defined in SDL_sysjoystick.m */
+#if !SDL_JOYSTICK_DISABLED
 extern int SDL_AppleTVRemoteOpenedAsJoystick;
+#endif
 
 @implementation SDL_uikitview {
     SDL_Window *sdlwindow;
@@ -374,6 +376,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 	}
 #endif
 
+#if !SDL_JOYSTICK_DISABLED
     /* Presses from Apple TV remote */
     if (!SDL_AppleTVRemoteOpenedAsJoystick) {
         switch (press.type) {
@@ -398,6 +401,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
             break;
         }
     }
+#endif /* !SDL_JOYSTICK_DISABLED */
 
     return SDL_SCANCODE_UNKNOWN;
 }
@@ -465,6 +469,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 {
     /* Swipe gestures don't trigger begin states. */
     if (gesture.state == UIGestureRecognizerStateEnded) {
+#if !SDL_JOYSTICK_DISABLED
         if (!SDL_AppleTVRemoteOpenedAsJoystick) {
             /* Send arrow key presses for now, as we don't have an external API
              * which better maps to swipe gestures. */
@@ -483,6 +488,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
                 break;
             }
         }
+#endif /* !SDL_JOYSTICK_DISABLED */
     }
 }
 #endif /* TARGET_OS_TV */
