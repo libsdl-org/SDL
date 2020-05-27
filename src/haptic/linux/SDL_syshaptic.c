@@ -512,10 +512,15 @@ SDL_SYS_HapticMouse(void)
 int
 SDL_SYS_JoystickIsHaptic(SDL_Joystick * joystick)
 {
+#ifdef SDL_JOYSTICK_LINUX
     if (joystick->driver != &SDL_LINUX_JoystickDriver) {
-        return 0;
+        return SDL_FALSE;
     }
-    return EV_IsHaptic(joystick->hwdata->fd);
+    if (EV_IsHaptic(joystick->hwdata->fd)) {
+        return SDL_TRUE;
+    }
+#endif
+    return SDL_FALSE;
 }
 
 
@@ -525,6 +530,7 @@ SDL_SYS_JoystickIsHaptic(SDL_Joystick * joystick)
 int
 SDL_SYS_JoystickSameHaptic(SDL_Haptic * haptic, SDL_Joystick * joystick)
 {
+#ifdef SDL_JOYSTICK_LINUX
     if (joystick->driver != &SDL_LINUX_JoystickDriver) {
         return 0;
     }
@@ -533,6 +539,7 @@ SDL_SYS_JoystickSameHaptic(SDL_Haptic * haptic, SDL_Joystick * joystick)
     if (SDL_strcmp(joystick->hwdata->fname, haptic->hwdata->fname) == 0) {
         return 1;
     }
+#endif
     return 0;
 }
 
@@ -543,6 +550,7 @@ SDL_SYS_JoystickSameHaptic(SDL_Haptic * haptic, SDL_Joystick * joystick)
 int
 SDL_SYS_HapticOpenFromJoystick(SDL_Haptic * haptic, SDL_Joystick * joystick)
 {
+#ifdef SDL_JOYSTICK_LINUX
     int device_index = 0;
     int fd;
     int ret;
@@ -577,6 +585,9 @@ SDL_SYS_HapticOpenFromJoystick(SDL_Haptic * haptic, SDL_Joystick * joystick)
     haptic->hwdata->fname = SDL_strdup( joystick->hwdata->fname );
 
     return 0;
+#else
+    return -1;
+#endif
 }
 
 
