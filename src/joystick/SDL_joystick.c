@@ -70,7 +70,7 @@ static SDL_JoystickDriver *SDL_joystick_drivers[] = {
 #ifdef SDL_JOYSTICK_IOKIT
     &SDL_DARWIN_JoystickDriver,
 #endif
-#if defined(__IPHONEOS__) || defined(__TVOS__)
+#if (defined(__IPHONEOS__) || defined(__TVOS__)) && !defined(SDL_JOYSTICK_DISABLED)
     &SDL_IOS_JoystickDriver,
 #endif
 #ifdef SDL_JOYSTICK_ANDROID
