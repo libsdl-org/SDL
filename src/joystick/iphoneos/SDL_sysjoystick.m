@@ -393,8 +393,6 @@ static int
 IOS_JoystickInit(void)
 {
     @autoreleasepool {
-        NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
-
 #if !TARGET_OS_TV
         if (SDL_GetHintBoolean(SDL_HINT_ACCELEROMETER_AS_JOYSTICK, SDL_TRUE)) {
             /* Default behavior, accelerometer as joystick */
@@ -416,6 +414,8 @@ IOS_JoystickInit(void)
         SDL_AddHintCallback(SDL_HINT_APPLE_TV_REMOTE_ALLOW_ROTATION,
                             SDL_AppleTVRemoteRotationHintChanged, NULL);
 #endif /* TARGET_OS_TV */
+
+        NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
 
         connectObserver = [center addObserverForName:GCControllerDidConnectNotification
                                               object:nil
@@ -466,17 +466,24 @@ IOS_JoystickGetDeviceName(int device_index)
 static int
 IOS_JoystickGetDevicePlayerIndex(int device_index)
 {
+#ifdef SDL_JOYSTICK_MFI
     SDL_JoystickDeviceItem *device = GetDeviceForIndex(device_index);
-    return device ? (int)device->controller.playerIndex : -1;
+    if (device && device->controller) {
+        return (int)device->controller.playerIndex;
+    }
+#endif
+    return -1;
 }
 
 static void
 IOS_JoystickSetDevicePlayerIndex(int device_index, int player_index)
 {
+#ifdef SDL_JOYSTICK_MFI
     SDL_JoystickDeviceItem *device = GetDeviceForIndex(device_index);
-    if (device) {
+    if (device && device->controller) {
         device->controller.playerIndex = player_index;
     }
+#endif
 }
 
 static SDL_JoystickGUID
