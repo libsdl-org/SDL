@@ -599,12 +599,14 @@ SDL_SYS_HapticMouse(void)
 int
 SDL_SYS_JoystickIsHaptic(SDL_Joystick * joystick)
 {
+#ifdef SDL_JOYSTICK_IOKIT
     if (joystick->driver != &SDL_DARWIN_JoystickDriver) {
         return SDL_FALSE;
     }
     if (joystick->hwdata->ffservice != 0) {
         return SDL_TRUE;
     }
+#endif
     return SDL_FALSE;
 }
 
@@ -615,6 +617,7 @@ SDL_SYS_JoystickIsHaptic(SDL_Joystick * joystick)
 int
 SDL_SYS_JoystickSameHaptic(SDL_Haptic * haptic, SDL_Joystick * joystick)
 {
+#ifdef SDL_JOYSTICK_IOKIT
     if (joystick->driver != &SDL_DARWIN_JoystickDriver) {
         return 0;
     }
@@ -622,6 +625,7 @@ SDL_SYS_JoystickSameHaptic(SDL_Haptic * haptic, SDL_Joystick * joystick)
                           joystick->hwdata->ffservice)) {
         return 1;
     }
+#endif
     return 0;
 }
 
@@ -632,6 +636,7 @@ SDL_SYS_JoystickSameHaptic(SDL_Haptic * haptic, SDL_Joystick * joystick)
 int
 SDL_SYS_HapticOpenFromJoystick(SDL_Haptic * haptic, SDL_Joystick * joystick)
 {
+#ifdef SDL_JOYSTICK_IOKIT
     int device_index = 0;
     SDL_hapticlist_item *item;
     
@@ -648,6 +653,9 @@ SDL_SYS_HapticOpenFromJoystick(SDL_Haptic * haptic, SDL_Joystick * joystick)
     }
 
     return SDL_SYS_HapticOpenFromService(haptic, joystick->hwdata->ffservice);
+#else
+	return -1;
+#endif
 }
 
 
