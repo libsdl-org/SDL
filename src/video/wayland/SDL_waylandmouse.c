@@ -125,6 +125,8 @@ create_buffer_from_shm(Wayland_CursorData *d,
         return SDL_SetError("mmap() failed.");
     }
 
+    SDL_assert(d->shm_data != NULL);
+
     shm_pool = wl_shm_create_pool(data->shm, shm_fd, size);
     d->buffer = wl_shm_pool_create_buffer(shm_pool,
                                           0,
