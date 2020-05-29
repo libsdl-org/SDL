@@ -626,7 +626,7 @@ DirectFB_QueueFillRects(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const S
     }
 
     cmd->data.draw.count = count;
-    SDL_memcpy(verts, rects, count);
+    SDL_memcpy(verts, rects, len);
     return 0;
 }
 
