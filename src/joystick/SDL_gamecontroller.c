@@ -1193,6 +1193,8 @@ static ControllerMapping_t *SDL_PrivateGetControllerMapping(int device_index)
     mapping = SDL_PrivateGetControllerMappingForNameAndGUID(name, guid);
     if (!mapping) {
         SDL_GamepadMapping raw_map;
+
+        SDL_zero(raw_map);
         if (SDL_PrivateJoystickGetAutoGamepadMapping(device_index, &raw_map)) {
             mapping = SDL_PrivateGenerateAutomaticControllerMapping(name, guid, &raw_map);
         }
