@@ -699,6 +699,12 @@ WGI_JoystickQuit(void)
     WIN_CoUninitialize();
 }
 
+static SDL_bool
+WGI_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
+{
+    return SDL_FALSE;
+}
+
 SDL_JoystickDriver SDL_WGI_JoystickDriver =
 {
     WGI_JoystickInit,
@@ -714,6 +720,7 @@ SDL_JoystickDriver SDL_WGI_JoystickDriver =
     WGI_JoystickUpdate,
     WGI_JoystickClose,
     WGI_JoystickQuit,
+    WGI_JoystickGetGamepadMapping
 };
 
 #endif /* SDL_JOYSTICK_WGI */

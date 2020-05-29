@@ -693,6 +693,12 @@ ANDROID_JoystickQuit(void)
 #endif /* 0 */
 }
 
+static SDL_bool
+ANDROID_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
+{
+    return SDL_FALSE;
+}
+
 SDL_JoystickDriver SDL_ANDROID_JoystickDriver =
 {
     ANDROID_JoystickInit,
@@ -708,6 +714,7 @@ SDL_JoystickDriver SDL_ANDROID_JoystickDriver =
     ANDROID_JoystickUpdate,
     ANDROID_JoystickClose,
     ANDROID_JoystickQuit,
+    ANDROID_JoystickGetGamepadMapping
 };
 
 #endif /* SDL_JOYSTICK_ANDROID */

@@ -555,6 +555,12 @@ WINDOWS_JoystickQuit(void)
     s_bDeviceRemoved = SDL_FALSE;
 }
 
+static SDL_bool
+WINDOWS_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
+{
+    return SDL_FALSE;
+}
+
 SDL_JoystickDriver SDL_WINDOWS_JoystickDriver =
 {
     WINDOWS_JoystickInit,
@@ -570,6 +576,7 @@ SDL_JoystickDriver SDL_WINDOWS_JoystickDriver =
     WINDOWS_JoystickUpdate,
     WINDOWS_JoystickClose,
     WINDOWS_JoystickQuit,
+    WINDOWS_JoystickGetGamepadMapping
 };
 
 #endif /* SDL_JOYSTICK_DINPUT || SDL_JOYSTICK_XINPUT */

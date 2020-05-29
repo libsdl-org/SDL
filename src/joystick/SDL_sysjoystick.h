@@ -136,6 +136,9 @@ typedef struct _SDL_JoystickDriver
     /* Function to perform any system-specific joystick related cleanup */
     void (*Quit)(void);
 
+    /* Function to get the autodetected controller mapping; returns false if there isn't any. */
+    SDL_bool (*GetGamepadMapping)(int device_index, SDL_GamepadMapping * out);
+
 } SDL_JoystickDriver;
 
 /* Windows and Mac OSX has a limit of MAX_DWORD / 1000, Linux kernel has a limit of 0xFFFF */

@@ -259,6 +259,12 @@ extern "C"
         return SDL_Unsupported();
     }
 
+    static SDL_bool
+    HAIKU_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
+    {
+        return SDL_FALSE;
+    }
+
     SDL_JoystickDriver SDL_HAIKU_JoystickDriver =
     {
         HAIKU_JoystickInit,
@@ -274,6 +280,7 @@ extern "C"
         HAIKU_JoystickUpdate,
         HAIKU_JoystickClose,
         HAIKU_JoystickQuit,
+        HAIKU_JoystickGetGamepadMapping
     };
 
 }                              // extern "C"

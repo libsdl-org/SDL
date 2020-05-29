@@ -762,6 +762,12 @@ BSD_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 
     return SDL_Unsupported();
 }
 
+static SDL_bool
+BSD_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
+{
+    return SDL_FALSE;
+}
+
 SDL_JoystickDriver SDL_BSD_JoystickDriver =
 {
     BSD_JoystickInit,
@@ -777,6 +783,7 @@ SDL_JoystickDriver SDL_BSD_JoystickDriver =
     BSD_JoystickUpdate,
     BSD_JoystickClose,
     BSD_JoystickQuit,
+    BSD_JoystickGetGamepadMapping
 };
 
 #endif /* SDL_JOYSTICK_USBHID */
