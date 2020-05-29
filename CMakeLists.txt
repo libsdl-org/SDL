@@ -354,6 +354,7 @@ dep_option(ARTS_SHARED         "Dynamically load aRts audio support" ON "ARTS" O
 set_option(NAS                 "Support the NAS audio API" ${UNIX_SYS})
 set_option(NAS_SHARED          "Dynamically load NAS audio API" ${UNIX_SYS})
 set_option(SNDIO               "Support the sndio audio API" ${UNIX_SYS})
+dep_option(SNDIO_SHARED        "Dynamically load the sndio audio API" ${UNIX_SYS} ON "SNDIO" OFF)
 set_option(FUSIONSOUND         "Use FusionSound audio driver" OFF)
 dep_option(FUSIONSOUND_SHARED  "Dynamically load fusionsound audio support" ON "FUSIONSOUND" OFF)
 set_option(LIBSAMPLERATE       "Use libsamplerate for audio rate conversion" ${UNIX_SYS})
