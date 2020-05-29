@@ -2183,7 +2183,7 @@ Blit4to4MaskAlpha(SDL_BlitInfo * info)
 
     if (dstfmt->Amask) {
         /* RGB->RGBA, SET_ALPHA */
-        Uint32 mask = (info->a >> dstfmt->Aloss) << dstfmt->Ashift;
+        Uint32 mask = ((Uint32)info->a >> dstfmt->Aloss) << dstfmt->Ashift;
 
         while (height--) {
             /* *INDENT-OFF* */
@@ -2632,7 +2632,7 @@ BlitNtoNKey(SDL_BlitInfo * info)
 
         if (dstfmt->Amask) {
             /* RGB->RGBA, SET_ALPHA */
-            Uint32 mask = info->a << dstfmt->Ashift;
+            Uint32 mask = ((Uint32)info->a) << dstfmt->Ashift;
             while (height--) {
                 /* *INDENT-OFF* */
                 DUFFS_LOOP(
@@ -3059,7 +3059,7 @@ Blit_3or4_to_3or4__same_rgb(SDL_BlitInfo * info)
 
     if (dstfmt->Amask) {
         /* SET_ALPHA */
-        Uint32 mask = info->a << dstfmt->Ashift;
+        Uint32 mask = ((Uint32)info->a) << dstfmt->Ashift;
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
         int i0 = 0, i1 = 1, i2 = 2;
 #else
@@ -3148,7 +3148,7 @@ Blit_3or4_to_3or4__inversed_rgb(SDL_BlitInfo * info)
                     Uint8 s0 = src[i0];
                     Uint8 s1 = src[i1];
                     Uint8 s2 = src[i2];
-                    Uint32 alphashift = src[i3] << dstfmt->Ashift;
+                    Uint32 alphashift = ((Uint32)src[i3]) << dstfmt->Ashift;
                     /* inversed, compared to Blit_3or4_to_3or4__same_rgb */
                     *dst32 = (s0 << 16) | (s1 << 8) | (s2) | alphashift;
                     dst += 4;
@@ -3160,7 +3160,7 @@ Blit_3or4_to_3or4__inversed_rgb(SDL_BlitInfo * info)
             }
         } else {
             /* SET_ALPHA */
-            Uint32 mask = info->a << dstfmt->Ashift;
+            Uint32 mask = ((Uint32)info->a) << dstfmt->Ashift;
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
             int i0 = 0, i1 = 1, i2 = 2;
 #else
