@@ -656,6 +656,7 @@ ConfigJoystick(SDL_Joystick * joystick, int fd)
                 printf("Joystick has button: 0x%x\n", i);
 #endif
                 joystick->hwdata->key_map[i] = joystick->nbuttons;
+                joystick->hwdata->has_key[i] = SDL_TRUE;
                 ++joystick->nbuttons;
             }
         }
@@ -665,6 +666,7 @@ ConfigJoystick(SDL_Joystick * joystick, int fd)
                 printf("Joystick has button: 0x%x\n", i);
 #endif
                 joystick->hwdata->key_map[i] = joystick->nbuttons;
+                joystick->hwdata->has_key[i] = SDL_TRUE;
                 ++joystick->nbuttons;
             }
         }
@@ -687,6 +689,7 @@ ConfigJoystick(SDL_Joystick * joystick, int fd)
                        absinfo.fuzz, absinfo.flat);
 #endif /* DEBUG_INPUT_EVENTS */
                 joystick->hwdata->abs_map[i] = joystick->naxes;
+                joystick->hwdata->has_abs[i] = SDL_TRUE;
                 if (absinfo.minimum == absinfo.maximum) {
                     joystick->hwdata->abs_correct[i].used = 0;
                 } else {
@@ -721,6 +724,7 @@ ConfigJoystick(SDL_Joystick * joystick, int fd)
                        absinfo.fuzz, absinfo.flat);
 #endif /* DEBUG_INPUT_EVENTS */
                 joystick->hwdata->hats_indices[hat_index] = joystick->nhats++;
+                joystick->hwdata->has_hat[hat_index] = SDL_TRUE;
             }
         }
         if (test_bit(REL_X, relbit) || test_bit(REL_Y, relbit)) {
@@ -1100,6 +1104,181 @@ LINUX_JoystickQuit(void)
     SDL_QuitSteamControllers();
 }
 
+/*
+   This is based on the Linux Gamepad Specification
+   available at: https://www.kernel.org/doc/html/v4.15/input/gamepad.html
+ */
+static SDL_bool
+LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
+{
+    SDL_Joystick * joystick;
+
+    joystick = (SDL_Joystick *) SDL_calloc(sizeof(*joystick), 1);
+    if (joystick == NULL) {
+        SDL_OutOfMemory();
+        return SDL_FALSE;
+    }
+
+    /* We temporarily open the device to check how it's configured. */
+    if (LINUX_JoystickOpen(joystick, device_index) < 0) {
+        SDL_free(joystick);
+        return SDL_FALSE;
+    }
+
+    if (!joystick->hwdata->has_key[BTN_GAMEPAD]) {
+        /* Not a gamepad according to the specs. */
+        LINUX_JoystickClose(joystick);
+        SDL_free(joystick);
+        return SDL_FALSE;
+    }
+
+    /* We have a gamepad; start filling out the mappings. */
+    memset(out, 0, sizeof(SDL_GamepadMapping));
+
+    if (joystick->hwdata->has_key[BTN_SOUTH]) {
+        out->a.kind = EMappingKind_Button;
+        out->a.target = joystick->hwdata->key_map[BTN_SOUTH];
+    }
+
+    if (joystick->hwdata->has_key[BTN_EAST]) {
+        out->b.kind = EMappingKind_Button;
+        out->b.target = joystick->hwdata->key_map[BTN_EAST];
+    }
+
+    if (joystick->hwdata->has_key[BTN_NORTH]) {
+        out->y.kind = EMappingKind_Button;
+        out->y.target = joystick->hwdata->key_map[BTN_NORTH];
+    }
+
+    if (joystick->hwdata->has_key[BTN_WEST]) {
+        out->x.kind = EMappingKind_Button;
+        out->x.target = joystick->hwdata->key_map[BTN_WEST];
+    }
+
+    if (joystick->hwdata->has_key[BTN_SELECT]) {
+        out->back.kind = EMappingKind_Button;
+        out->back.target = joystick->hwdata->key_map[BTN_SELECT];
+    }
+
+    if (joystick->hwdata->has_key[BTN_START]) {
+        out->start.kind = EMappingKind_Button;
+        out->start.target = joystick->hwdata->key_map[BTN_START];
+    }
+
+    if (joystick->hwdata->has_key[BTN_THUMBL]) {
+        out->leftstick.kind = EMappingKind_Button;
+        out->leftstick.target = joystick->hwdata->key_map[BTN_THUMBL];
+    }
+
+    if (joystick->hwdata->has_key[BTN_THUMBR]) {
+        out->rightstick.kind = EMappingKind_Button;
+        out->rightstick.target = joystick->hwdata->key_map[BTN_THUMBR];
+    }
+
+    if (joystick->hwdata->has_key[BTN_MODE]) {
+        out->guide.kind = EMappingKind_Button;
+        out->guide.target = joystick->hwdata->key_map[BTN_MODE];
+    }
+
+    /*
+       According to the specs the D-Pad, the shoulder buttons and the triggers
+       can be digital, or analog, or both at the same time.
+     */
+
+    /* Prefer digital shoulder buttons, but settle for analog if missing. */
+    if (joystick->hwdata->has_key[BTN_TL]) {
+        out->leftshoulder.kind = EMappingKind_Button;
+        out->leftshoulder.target = joystick->hwdata->key_map[BTN_TL];
+    }
+
+    if (joystick->hwdata->has_key[BTN_TR]) {
+        out->rightshoulder.kind = EMappingKind_Button;
+        out->rightshoulder.target = joystick->hwdata->key_map[BTN_TR];
+    }
+
+    if (joystick->hwdata->has_hat[1] && /* Check if ABS_HAT1{X, Y} is available. */
+       (!joystick->hwdata->has_key[BTN_TL] || !joystick->hwdata->has_key[BTN_TR])) {
+        int hat = joystick->hwdata->hats_indices[1] << 4;
+        out->leftshoulder.kind = EMappingKind_Hat;
+        out->rightshoulder.kind = EMappingKind_Hat;
+        out->leftshoulder.target = hat | 0x4;
+        out->rightshoulder.target = hat | 0x2;
+    }
+
+    /* Prefer analog triggers, but settle for digital if missing. */
+    if (joystick->hwdata->has_hat[2]) { /* Check if ABS_HAT2{X,Y} is available. */
+        int hat = joystick->hwdata->hats_indices[2] << 4;
+        out->lefttrigger.kind = EMappingKind_Hat;
+        out->righttrigger.kind = EMappingKind_Hat;
+        out->lefttrigger.target = hat | 0x4;
+        out->righttrigger.target = hat | 0x2;
+    } else {
+        if (joystick->hwdata->has_key[BTN_TL2]) {
+            out->lefttrigger.kind = EMappingKind_Button;
+            out->lefttrigger.target = joystick->hwdata->key_map[BTN_TL2];
+        }
+
+        if (joystick->hwdata->has_key[BTN_TR2]) {
+            out->righttrigger.kind = EMappingKind_Button;
+            out->righttrigger.target = joystick->hwdata->key_map[BTN_TR2];
+        }
+    }
+
+    /* Prefer digital D-Pad, but settle for analog if missing. */
+    if (joystick->hwdata->has_key[BTN_DPAD_UP]) {
+        out->dpup.kind = EMappingKind_Button;
+        out->dpup.target = joystick->hwdata->key_map[BTN_DPAD_UP];
+    }
+
+    if (joystick->hwdata->has_key[BTN_DPAD_DOWN]) {
+        out->dpdown.kind = EMappingKind_Button;
+        out->dpdown.target = joystick->hwdata->key_map[BTN_DPAD_DOWN];
+    }
+
+    if (joystick->hwdata->has_key[BTN_DPAD_LEFT]) {
+        out->dpleft.kind = EMappingKind_Button;
+        out->dpleft.target = joystick->hwdata->key_map[BTN_DPAD_LEFT];
+    }
+
+    if (joystick->hwdata->has_key[BTN_DPAD_RIGHT]) {
+        out->dpright.kind = EMappingKind_Button;
+        out->dpright.target = joystick->hwdata->key_map[BTN_DPAD_RIGHT];
+    }
+
+    if (joystick->hwdata->has_hat[0] && /* Check if ABS_HAT0{X,Y} is available. */
+       (!joystick->hwdata->has_key[BTN_DPAD_LEFT] || !joystick->hwdata->has_key[BTN_DPAD_RIGHT] ||
+        !joystick->hwdata->has_key[BTN_DPAD_UP] || !joystick->hwdata->has_key[BTN_DPAD_DOWN])) {
+       int hat = joystick->hwdata->hats_indices[0] << 4;
+       out->dpleft.kind = EMappingKind_Hat;
+       out->dpright.kind = EMappingKind_Hat;
+       out->dpup.kind = EMappingKind_Hat;
+       out->dpdown.kind = EMappingKind_Hat;
+       out->dpleft.target = hat | 0x8;
+       out->dpright.target = hat | 0x2;
+       out->dpup.target = hat | 0x1;
+       out->dpdown.target = hat | 0x4;
+    }
+
+    if (joystick->hwdata->has_abs[ABS_X] && joystick->hwdata->has_abs[ABS_Y]) {
+        out->leftx.kind = EMappingKind_Axis;
+        out->lefty.kind = EMappingKind_Axis;
+        out->leftx.target = joystick->hwdata->abs_map[ABS_X];
+        out->lefty.target = joystick->hwdata->abs_map[ABS_Y];
+    }
+
+    if (joystick->hwdata->has_abs[ABS_RX] && joystick->hwdata->has_abs[ABS_RY]) {
+        out->rightx.kind = EMappingKind_Axis;
+        out->righty.kind = EMappingKind_Axis;
+        out->rightx.target = joystick->hwdata->abs_map[ABS_RX];
+        out->righty.target = joystick->hwdata->abs_map[ABS_RY];
+    }
+
+    LINUX_JoystickClose(joystick);
+    SDL_free(joystick);
+
+    return SDL_TRUE;
+}
+
 SDL_JoystickDriver SDL_LINUX_JoystickDriver =
 {
     LINUX_JoystickInit,
@@ -1115,6 +1294,7 @@ SDL_JoystickDriver SDL_LINUX_JoystickDriver =
     LINUX_JoystickUpdate,
     LINUX_JoystickClose,
     LINUX_JoystickQuit,
+    LINUX_JoystickGetGamepadMapping
 };
 
 #endif /* SDL_JOYSTICK_LINUX */

@@ -391,6 +391,11 @@ VIRTUAL_JoystickQuit(void)
     }
 }
 
+static SDL_bool
+VIRTUAL_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
+{
+    return SDL_FALSE;
+}
 
 SDL_JoystickDriver SDL_VIRTUAL_JoystickDriver =
 {
@@ -407,6 +412,7 @@ SDL_JoystickDriver SDL_VIRTUAL_JoystickDriver =
     VIRTUAL_JoystickUpdate,
     VIRTUAL_JoystickClose,
     VIRTUAL_JoystickQuit,
+    VIRTUAL_JoystickGetGamepadMapping
 };
 
 #endif /* SDL_JOYSTICK_VIRTUAL || SDL_JOYSTICK_DISABLED */

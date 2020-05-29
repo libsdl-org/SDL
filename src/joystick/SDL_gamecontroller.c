@@ -1089,6 +1089,91 @@ static ControllerMapping_t *SDL_PrivateGetControllerMappingForNameAndGUID(const 
     return mapping;
 }
 
+static void SDL_PrivateAppendToMappingString(char *mapping_string,
+                                             size_t mapping_string_len,
+                                             const char *input_name,
+                                             SDL_InputMapping *mapping)
+{
+    char buffer[16];
+    if (mapping->kind == EMappingKind_None) {
+        return;
+    }
+
+    SDL_strlcat(mapping_string, input_name, mapping_string_len);
+    SDL_strlcat(mapping_string, ":", mapping_string_len);
+    switch (mapping->kind) {
+        case EMappingKind_Button:
+            SDL_snprintf(buffer, sizeof(buffer), "b%i", mapping->target);
+            break;
+        case EMappingKind_Axis:
+            SDL_snprintf(buffer, sizeof(buffer), "a%i", mapping->target);
+            break;
+        case EMappingKind_Hat:
+            SDL_snprintf(buffer, sizeof(buffer), "h%i.%i", mapping->target >> 4, mapping->target & 0x0F);
+            break;
+        default:
+            SDL_assert(SDL_FALSE);
+    }
+
+    SDL_strlcat(mapping_string, buffer, mapping_string_len);
+    SDL_strlcat(mapping_string, ",", mapping_string_len);
+}
+
+static ControllerMapping_t *SDL_PrivateGenerateAutomaticControllerMapping(const char *name,
+                                                                          SDL_JoystickGUID guid,
+                                                                          SDL_GamepadMapping *raw_map)
+{
+    SDL_bool existing;
+    char name_string[128];
+    char mapping[1024];
+
+    /* Remove any commas in the name */
+    SDL_strlcpy(name_string, name, sizeof(name_string));
+    {
+        char *spot;
+        for (spot = name_string; *spot; ++spot) {
+            if (*spot == ',') {
+                *spot = ' ';
+            }
+        }
+    }
+    SDL_snprintf(mapping, sizeof(mapping), "none,%s,", name_string);
+    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "a", &raw_map->a);
+    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "b", &raw_map->b);
+    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "x", &raw_map->x);
+    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "y", &raw_map->y);
+    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "back", &raw_map->back);
+    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "guide", &raw_map->guide);
+    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "start", &raw_map->start);
+    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "leftstick", &raw_map->leftstick);
+    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "rightstick", &raw_map->rightstick);
+    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "leftshoulder", &raw_map->leftshoulder);
+    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "rightshoulder", &raw_map->rightshoulder);
+    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "dpup", &raw_map->dpup);
+    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "dpdown", &raw_map->dpdown);
+    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "dpleft", &raw_map->dpleft);
+    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "dpright", &raw_map->dpright);
+    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "leftx", &raw_map->leftx);
+    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "lefty", &raw_map->lefty);
+    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "rightx", &raw_map->rightx);
+    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "righty", &raw_map->righty);
+    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "lefttrigger", &raw_map->lefttrigger);
+    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "righttrigger", &raw_map->righttrigger);
+
+    /* Remove trailing comma */
+    {
+        int pos = (int)SDL_strlen(mapping) - 1;
+        if (pos >= 0) {
+            if (mapping[pos] == ',') {
+                mapping[pos] = '\0';
+            }
+        }
+    }
+
+    return SDL_PrivateAddMappingForGUID(guid, mapping,
+                      &existing, SDL_CONTROLLER_MAPPING_PRIORITY_DEFAULT);
+}
+
 static ControllerMapping_t *SDL_PrivateGetControllerMapping(int device_index)
 {
     const char *name;
@@ -1106,6 +1191,13 @@ static ControllerMapping_t *SDL_PrivateGetControllerMapping(int device_index)
     name = SDL_JoystickNameForIndex(device_index);
     guid = SDL_JoystickGetDeviceGUID(device_index);
     mapping = SDL_PrivateGetControllerMappingForNameAndGUID(name, guid);
+    if (!mapping) {
+        SDL_GamepadMapping raw_map;
+        if (SDL_PrivateJoystickGetAutoGamepadMapping(device_index, &raw_map)) {
+            mapping = SDL_PrivateGenerateAutomaticControllerMapping(name, guid, &raw_map);
+        }
+    }
+
     SDL_UnlockJoysticks();
     return mapping;
 }

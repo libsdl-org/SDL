@@ -725,6 +725,11 @@ RAWINPUT_JoystickQuit(void)
     SDL_RAWINPUT_inited = SDL_FALSE;
 }
 
+static SDL_bool
+RAWINPUT_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
+{
+    return SDL_FALSE;
+}
 
 SDL_JoystickDriver SDL_RAWINPUT_JoystickDriver =
 {
@@ -741,6 +746,7 @@ SDL_JoystickDriver SDL_RAWINPUT_JoystickDriver =
     RAWINPUT_JoystickUpdate,
     RAWINPUT_JoystickClose,
     RAWINPUT_JoystickQuit,
+    RAWINPUT_JoystickGetGamepadMapping
 };
 
 #endif /* SDL_JOYSTICK_RAWINPUT */

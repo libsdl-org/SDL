@@ -850,6 +850,12 @@ IOS_JoystickQuit(void)
     numjoysticks = 0;
 }
 
+static SDL_bool
+IOS_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
+{
+    return SDL_FALSE;
+}
+
 SDL_JoystickDriver SDL_IOS_JoystickDriver =
 {
     IOS_JoystickInit,
@@ -865,6 +871,7 @@ SDL_JoystickDriver SDL_IOS_JoystickDriver =
     IOS_JoystickUpdate,
     IOS_JoystickClose,
     IOS_JoystickQuit,
+    IOS_JoystickGetGamepadMapping
 };
 
 /* vi: set ts=4 sw=4 expandtab: */

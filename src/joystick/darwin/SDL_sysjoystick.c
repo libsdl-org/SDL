@@ -1051,6 +1051,12 @@ DARWIN_JoystickQuit(void)
     }
 }
 
+static SDL_bool
+DARWIN_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
+{
+    return SDL_FALSE;
+}
+
 SDL_JoystickDriver SDL_DARWIN_JoystickDriver =
 {
     DARWIN_JoystickInit,
@@ -1066,6 +1072,7 @@ SDL_JoystickDriver SDL_DARWIN_JoystickDriver =
     DARWIN_JoystickUpdate,
     DARWIN_JoystickClose,
     DARWIN_JoystickQuit,
+    DARWIN_JoystickGetGamepadMapping
 };
 
 #endif /* SDL_JOYSTICK_IOKIT */

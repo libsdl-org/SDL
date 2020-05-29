@@ -1101,6 +1101,12 @@ HIDAPI_JoystickQuit(void)
     initialized = SDL_FALSE;
 }
 
+static SDL_bool
+HIDAPI_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
+{
+    return SDL_FALSE;
+}
+
 SDL_JoystickDriver SDL_HIDAPI_JoystickDriver =
 {
     HIDAPI_JoystickInit,
@@ -1116,6 +1122,7 @@ SDL_JoystickDriver SDL_HIDAPI_JoystickDriver =
     HIDAPI_JoystickUpdate,
     HIDAPI_JoystickClose,
     HIDAPI_JoystickQuit,
+    HIDAPI_JoystickGetGamepadMapping
 };
 
 #endif /* SDL_JOYSTICK_HIDAPI */

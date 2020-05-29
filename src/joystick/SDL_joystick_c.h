@@ -111,6 +111,49 @@ extern void SDL_PrivateJoystickBatteryLevel(SDL_Joystick * joystick,
 /* Internal sanity checking functions */
 extern SDL_bool SDL_PrivateJoystickValid(SDL_Joystick * joystick);
 
+typedef enum
+{
+    EMappingKind_None = 0,
+    EMappingKind_Button = 1,
+    EMappingKind_Axis = 2,
+    EMappingKind_Hat = 3
+} EMappingKind;
+
+typedef struct _SDL_InputMapping
+{
+    EMappingKind kind;
+    Uint8 target;
+} SDL_InputMapping;
+
+typedef struct _SDL_GamepadMapping
+{
+    SDL_InputMapping a;
+    SDL_InputMapping b;
+    SDL_InputMapping x;
+    SDL_InputMapping y;
+    SDL_InputMapping back;
+    SDL_InputMapping guide;
+    SDL_InputMapping start;
+    SDL_InputMapping leftstick;
+    SDL_InputMapping rightstick;
+    SDL_InputMapping leftshoulder;
+    SDL_InputMapping rightshoulder;
+    SDL_InputMapping dpup;
+    SDL_InputMapping dpdown;
+    SDL_InputMapping dpleft;
+    SDL_InputMapping dpright;
+    SDL_InputMapping leftx;
+    SDL_InputMapping lefty;
+    SDL_InputMapping rightx;
+    SDL_InputMapping righty;
+    SDL_InputMapping lefttrigger;
+    SDL_InputMapping righttrigger;
+} SDL_GamepadMapping;
+
+/* Function to get autodetected gamepad controller mapping from the driver */
+extern SDL_bool SDL_PrivateJoystickGetAutoGamepadMapping(int device_index,
+                                                         SDL_GamepadMapping *out);
+
 #endif /* SDL_joystick_c_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

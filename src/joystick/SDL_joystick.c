@@ -584,6 +584,21 @@ SDL_PrivateJoystickValid(SDL_Joystick * joystick)
     return valid;
 }
 
+SDL_bool
+SDL_PrivateJoystickGetAutoGamepadMapping(int device_index, SDL_GamepadMapping * out)
+{
+    SDL_JoystickDriver *driver;
+    SDL_bool is_ok = SDL_FALSE;
+
+    SDL_LockJoysticks();
+    if (SDL_GetDriverAndJoystickIndex(device_index, &driver, &device_index)) {
+        is_ok = driver->GetGamepadMapping(device_index, out);
+    }
+    SDL_UnlockJoysticks();
+
+    return is_ok;
+}
+
 /*
  * Get the number of multi-dimensional axis controls on a joystick
  */
