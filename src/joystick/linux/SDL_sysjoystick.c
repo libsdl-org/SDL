@@ -1132,8 +1132,7 @@ LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
         return SDL_FALSE;
     }
 
-    /* We have a gamepad; start filling out the mappings. */
-    memset(out, 0, sizeof(SDL_GamepadMapping));
+    /* We have a gamepad, start filling out the mappings */
 
     if (joystick->hwdata->has_key[BTN_SOUTH]) {
         out->a.kind = EMappingKind_Button;
