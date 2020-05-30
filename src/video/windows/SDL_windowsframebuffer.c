@@ -99,8 +99,12 @@ int WIN_CreateWindowFramebuffer(_THIS, SDL_Window * window, Uint32 * format, voi
 int WIN_UpdateWindowFramebuffer(_THIS, SDL_Window * window, const SDL_Rect * rects, int numrects)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+	int i;
 
-    BitBlt(data->hdc, 0, 0, window->w, window->h, data->mdc, 0, 0, SRCCOPY);
+    for (i = 0; i < numrects; ++i) {
+        BitBlt(data->hdc, rects[i].x, rects[i].y, rects[i].w, rects[i].h,
+               data->mdc, rects[i].x, rects[i].y, SRCCOPY);
+    }
     return 0;
 }
 
