@@ -601,6 +601,19 @@ KMSDRM_VideoInit(_THIS)
     display.desktop_mode.format = drmToSDLPixelFormat(fb->bpp, fb->depth);
     drmModeFreeFB(fb);
 #endif
+
+    /* DRM mode index for the desktop mode is needed to complete desktop mode init NOW,
+       so look for it in the DRM modes array. */
+    for (int i = 0; i < dispdata->conn->count_modes; i++) {
+        if (!SDL_memcmp(dispdata->conn->modes + i, &dispdata->saved_crtc->mode, sizeof(drmModeModeInfo))) {
+            SDL_DisplayModeData *modedata = SDL_calloc(1, sizeof(SDL_DisplayModeData));
+            if (modedata) {
+                modedata->mode_index = i;
+                display.desktop_mode.driverdata = modedata;
+            }   
+        }   
+    }   
+
     display.current_mode = display.desktop_mode;
     display.driverdata = dispdata;
     SDL_AddVideoDisplay(&display);
@@ -760,7 +773,6 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
 {
     SDL_VideoData *viddata = (SDL_VideoData *)_this->driverdata;
     SDL_WindowData *windata;
-    SDL_VideoDisplay *display;
 
 #if SDL_VIDEO_OPENGL_EGL
     if (!_this->egl_data) {
@@ -777,14 +789,6 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
         SDL_OutOfMemory();
         goto error;
     }
-
-    /* Windows have one size for now */
-    display = SDL_GetDisplayForWindow(window);
-    window->w = display->desktop_mode.w;
-    window->h = display->desktop_mode.h;
-
-    /* Maybe you didn't ask for a fullscreen OpenGL window, but that's what you get */
-    window->flags |= (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL);
 
     /* In case low-latency is wanted, double-buffered video will be used. We take note here */
     windata->double_buffer = SDL_FALSE;
