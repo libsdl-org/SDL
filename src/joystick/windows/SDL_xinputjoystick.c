@@ -155,6 +155,7 @@ GuessXInputDevice(Uint8 userid, Uint16 *pVID, Uint16 *pPID, Uint16 *pVersion)
                     *pVID = (Uint16)rdi.hid.dwVendorId;
                     *pPID = (Uint16)rdi.hid.dwProductId;
                     *pVersion = (Uint16)rdi.hid.dwVersionNumber;
+                    SDL_free(devices);
                     return;
                 }
             }
@@ -201,6 +202,7 @@ GuessXInputDevice(Uint8 userid, Uint16 *pVID, Uint16 *pPID, Uint16 *pVersion)
                     SDL_free(s_arrXInputDevicePath[userid]);
                 }
                 s_arrXInputDevicePath[userid] = SDL_strdup(devName);
+                SDL_free(devices);
                 return;
             }
         }
