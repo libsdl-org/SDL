@@ -2374,6 +2374,7 @@ SDL_GetWindowSurface(SDL_Window * window)
         if (window->surface) {
             window->surface->flags &= ~SDL_DONTFREE;
             SDL_FreeSurface(window->surface);
+            window->surface = NULL;
         }
         window->surface = SDL_CreateWindowFramebuffer(window);
         if (window->surface) {
