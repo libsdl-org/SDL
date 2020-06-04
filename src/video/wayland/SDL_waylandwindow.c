@@ -406,7 +406,6 @@ static void
 handle_surface_leave(void *data, struct wl_surface *surface,
         struct wl_output *output) {
     SDL_WindowData *window = data;
-    int num_outputs = 0;
     int i;
 
     for (i = 0; i < window->num_outputs; i++) {
