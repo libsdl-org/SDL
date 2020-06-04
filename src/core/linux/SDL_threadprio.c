@@ -181,6 +181,10 @@ rtkit_setpriority_realtime(pid_t thread, int rt_priority)
     }
     return SDL_TRUE;
 }
+#else
+
+#define rtkit_max_realtime_priority 99
+
 #endif /* dbus */
 #endif /* threads */
 
