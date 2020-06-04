@@ -25188,6 +25188,9 @@ $as_echo "#define SDL_JOYSTICK_MFI 1" >>confdefs.h
             SOURCES="$SOURCES $srcdir/src/joystick/iphoneos/*.m"
             SOURCES="$SOURCES $srcdir/src/joystick/steam/*.c"
             have_joystick=yes
+        else
+            # Need this code for accelerometer as joystick support
+            SOURCES="$SOURCES $srcdir/src/joystick/iphoneos/*.m"
         fi
         # Set up files for the haptic library
         #if test x$enable_haptic = xyes; then
