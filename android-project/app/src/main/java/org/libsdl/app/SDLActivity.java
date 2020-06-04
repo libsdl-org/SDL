@@ -1088,6 +1088,10 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
      */
     public static boolean getManifestEnvironmentVariables() {
         try {
+            if (getContext() == null) {
+                return false;
+            }
+
             ApplicationInfo applicationInfo = getContext().getPackageManager().getApplicationInfo(getContext().getPackageName(), PackageManager.GET_META_DATA);
             Bundle bundle = applicationInfo.metaData;
             if (bundle == null) {
