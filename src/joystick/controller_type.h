@@ -660,5 +660,31 @@ static SDL_INLINE const char *GuessControllerName( int nVID, int nPID )
 
 #undef MAKE_CONTROLLER_ID
 
+static inline int GetDefaultDeadzoneSizeForControllerType( EControllerType eControllerType )
+{
+	switch ( eControllerType )
+	{
+	case k_eControllerType_UnknownNonSteamController:
+	case k_eControllerType_XBoxOneController:
+	case k_eControllerType_XBox360Controller:
+	case k_eControllerType_AppleController:
+	case k_eControllerType_AndroidController:
+	case k_eControllerType_PS3Controller:
+		return 10000;
+	case k_eControllerType_SteamControllerV2:
+		return 8192;
+	case k_eControllerType_PS4Controller:
+		return 4096;
+	case k_eControllerType_SwitchJoyConLeft:
+	case k_eControllerType_SwitchJoyConRight:
+    case k_eControllerType_SwitchJoyConPair:
+		return 8192; // Actual dead-zone should be 15% of full-scale, but we use this to account for variances in 3rd-party controllers
+	case k_eControllerType_SwitchProController:
+		return 8192; // Actual dead-zone should be closer to 10% of full-scale, but we use this to account for variances in 3rd-party controllers
+	default:
+		return 8192;
+	}
+}
+
 #endif // CONSTANTS_H
 
