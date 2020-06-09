@@ -170,6 +170,10 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x146b, 0x0d09 ), k_eControllerType_PS4Controller, NULL },	// NACON Daija Fight Stick - touchpad but no gyro/rumble
 	{ MAKE_CONTROLLER_ID( 0x146b, 0x0d10 ), k_eControllerType_PS4Controller, NULL },	// NACON Revolution Unlimited
 	{ MAKE_CONTROLLER_ID( 0x146b, 0x0d08 ), k_eControllerType_PS4Controller, NULL },	// NACON Revolution Unlimited Wireless Dongle 
+	{ MAKE_CONTROLLER_ID( 0x146b, 0x0d06 ), k_eControllerType_PS4Controller, NULL },	// NACON Asymetrical Controller Wireless Dongle -- show up as ps4 until you connect controller to it then it reboots into Xbox controller with different vvid/pid
+	{ MAKE_CONTROLLER_ID( 0x146b, 0x1103 ), k_eControllerType_PS4Controller, NULL },	// NACON Asymetrical Controller -- on windows this doesn't enumerate
+	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0123 ), k_eControllerType_PS4Controller, NULL },	// HORI Wireless Controller Light (Japan only) - only over bt- over usb is xbox and pid 0x0124
+	{ MAKE_CONTROLLER_ID( 0x146b, 0x0d13 ), k_eControllerType_PS4Controller, NULL },	// NACON Revolution 3
 
 	{ MAKE_CONTROLLER_ID( 0x0079, 0x0006 ), k_eControllerType_UnknownNonSteamController, NULL },	// DragonRise Generic USB PCB, sometimes configured as a PC Twin Shock Controller - looks like a DS3 but the face buttons are 1-4 instead of symbols
 
@@ -400,6 +404,7 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x2e24, 0x0652 ), k_eControllerType_XBoxOneController, NULL },	// Hyperkin Duke
 	{ MAKE_CONTROLLER_ID( 0x2e24, 0x1618 ), k_eControllerType_XBoxOneController, NULL },	// Hyperkin Duke
 	{ MAKE_CONTROLLER_ID( 0x2e24, 0x1688 ), k_eControllerType_XBoxOneController, NULL },	// Hyperkin X91
+	{ MAKE_CONTROLLER_ID( 0x146b, 0x0611 ), k_eControllerType_XBoxOneController, NULL },	// Xbox Controller Mode for NACON Revolution 3
 
 	// These have been added via Minidump for unrecognized Xinput controller assert
 	{ MAKE_CONTROLLER_ID( 0x0000, 0x0000 ), k_eControllerType_XBox360Controller, NULL },	// Unknown Controller
@@ -538,8 +543,9 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0186 ), k_eControllerType_SwitchInputOnlyController, NULL },  // PDP Afterglow Wireless Switch Controller - working gyro. USB doesn't work
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0184 ), k_eControllerType_SwitchInputOnlyController, NULL },  // PDP Faceoff Wired Deluxe+ Audio Controller
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x00aa ), k_eControllerType_SwitchInputOnlyController, NULL },  // HORI Real Arcade Pro V Hayabusa in Switch Mode
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0188 ), k_eControllerType_SwitchInputOnlyController, NULL },  // PDP Afterglow Wired Deluxe+ Audio Controller
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0187 ), k_eControllerType_SwitchInputOnlyController, NULL },  // PDP Rockcandy Wirec Controller
 
-		 
 	// Valve products - don't add to public list
 	{ MAKE_CONTROLLER_ID( 0x0000, 0x11fb ), k_eControllerType_MobileTouch, NULL },	// Streaming mobile touch virtual controls
 	{ MAKE_CONTROLLER_ID( 0x28de, 0x1101 ), k_eControllerType_SteamController, NULL },	// Valve Legacy Steam Controller (CHELL)
