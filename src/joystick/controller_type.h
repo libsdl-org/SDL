@@ -667,7 +667,7 @@ static SDL_INLINE const char *GuessControllerName( int nVID, int nPID )
 
 #undef MAKE_CONTROLLER_ID
 
-static inline int GetDefaultDeadzoneSizeForControllerType( EControllerType eControllerType )
+static SDL_INLINE int GetDefaultDeadzoneSizeForControllerType( EControllerType eControllerType )
 {
 	switch ( eControllerType )
 	{
