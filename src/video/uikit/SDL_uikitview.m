@@ -73,6 +73,9 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
             UIPanGestureRecognizer *mouseWheelRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(mouseWheelGesture:)];
             mouseWheelRecognizer.allowedScrollTypesMask = UIScrollTypeMaskDiscrete;
             mouseWheelRecognizer.allowedTouchTypes = @[ @(UITouchTypeIndirectPointer) ];
+            mouseWheelRecognizer.cancelsTouchesInView = NO;
+            mouseWheelRecognizer.delaysTouchesBegan = NO;
+            mouseWheelRecognizer.delaysTouchesEnded = NO;
             [self addGestureRecognizer:mouseWheelRecognizer];
         }
 #endif
@@ -370,10 +373,10 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 {
 #ifdef __IPHONE_13_4
     if ([press respondsToSelector:@selector((key))]) {
-		if (press.key != nil) {
-			return (SDL_Scancode)press.key.keyCode;
-		}
-	}
+        if (press.key != nil) {
+            return (SDL_Scancode)press.key.keyCode;
+        }
+    }
 #endif
 
 #if !SDL_JOYSTICK_DISABLED
