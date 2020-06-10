@@ -25,7 +25,7 @@
 /* Windows includes */
 #include <roapi.h>
 #include <windows.foundation.h>
-#include <EventToken.h>
+#include <windows.system.h>
 
 
 /* SDL includes */
