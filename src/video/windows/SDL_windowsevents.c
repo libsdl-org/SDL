@@ -497,6 +497,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 SDL_SendMouseMotion(data->window, 0, 0, cursorPos.x, cursorPos.y);
 
                 WIN_CheckAsyncMouseRelease(data);
+                WIN_UpdateClipCursor(data->window);
 
                 /*
                  * FIXME: Update keyboard state
@@ -1117,11 +1118,19 @@ static void WIN_UpdateClipCursorForWindows()
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
     SDL_Window *window;
+    Uint32 now = SDL_GetTicks();
+    const Uint32 CLIPCURSOR_UPDATE_INTERVAL_MS = 3000;
 
     if (_this) {
         for (window = _this->windows; window; window = window->next) {
-            if (window->driverdata) {
-                WIN_UpdateClipCursor(window);
+            SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
+            if (data) {
+                if (data->skip_update_clipcursor) {
+                    data->skip_update_clipcursor = SDL_FALSE;
+                    WIN_UpdateClipCursor(window);
+                } else if ((now - data->last_updated_clipcursor) >= CLIPCURSOR_UPDATE_INTERVAL_MS) {
+                    WIN_UpdateClipCursor(window);
+                }
             }
         }
     }

@@ -34,6 +34,7 @@
 #include "SDL_windowsvideo.h"
 #include "SDL_windowswindow.h"
 #include "SDL_hints.h"
+#include "SDL_timer.h"
 
 /* Dropfile support */
 #include <shellapi.h>
@@ -926,7 +927,6 @@ WIN_UpdateClipCursor(SDL_Window *window)
         return;
     }
     if (data->skip_update_clipcursor) {
-        data->skip_update_clipcursor = SDL_FALSE;
         return;
     }
     if (!GetClipCursor(&clipped_rect)) {
@@ -969,6 +969,7 @@ WIN_UpdateClipCursor(SDL_Window *window)
         ClipCursor(NULL);
         SDL_zero(data->cursor_clipped_rect);
     }
+    data->last_updated_clipcursor = SDL_GetTicks();
 }
 
 int
