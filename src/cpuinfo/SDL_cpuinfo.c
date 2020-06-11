@@ -956,6 +956,58 @@ SDL_SIMDAlloc(const size_t len)
     return retval;
 }
 
+void *
+SDL_SIMDRealloc(void *mem, const size_t len)
+{
+    const size_t alignment = SDL_SIMDGetAlignment();
+    const size_t padding = alignment - (len % alignment);
+    const size_t padded = (padding != alignment) ? (len + padding) : len;
+    Uint8 *retval = (Uint8*) mem;
+    void *oldmem = mem;
+    size_t memdiff, ptrdiff;
+    Uint8 *ptr;
+
+    if (mem) {
+        void **realptr = (void **) mem;
+        realptr--;
+        mem = *(((void **) mem) - 1);
+
+        /* Check the delta between the real pointer and user pointer */
+        memdiff = ((size_t) oldmem) - ((size_t) mem);
+    }
+
+    ptr = (Uint8 *) SDL_realloc(mem, padded + alignment + sizeof (void *));
+
+    if (ptr == mem) {
+        return retval; /* Pointer didn't change, nothing to do */
+    }
+    if (ptr == NULL) {
+        return NULL; /* Out of memory, bail! */
+    }
+
+    /* Store the actual malloc pointer right before our aligned pointer. */
+    retval = ptr + sizeof (void *);
+    retval += alignment - (((size_t) retval) % alignment);
+
+    /* Make sure the delta is the same! */
+    if (mem) {
+        ptrdiff = ((size_t) retval) - ((size_t) ptr);
+        if (memdiff != ptrdiff) { /* Delta has changed, copy to new offset! */
+            oldmem = (void*) (((size_t) ptr) + memdiff);
+
+            /* Even though the data past the old `len` is undefined, this is the
+             * only length value we have, and it guarantees that we copy all the
+             * previous memory anyhow.
+             */
+            SDL_memmove(retval, oldmem, len);
+        }
+    }
+
+    /* Actually store the malloc pointer, finally. */
+    *(((void **) retval) - 1) = ptr;
+    return retval;
+}
+
 void
 SDL_SIMDFree(void *ptr)
 {

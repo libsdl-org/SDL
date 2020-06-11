@@ -772,6 +772,7 @@ SDL_DYNAPI_PROC(int,SDL_UIKitRunApp,(int a, char *b, SDL_main_func c),(a,b,c),re
 #endif
 SDL_DYNAPI_PROC(size_t,SDL_SIMDGetAlignment,(void),(),return)
 SDL_DYNAPI_PROC(void*,SDL_SIMDAlloc,(const size_t a),(a),return)
+SDL_DYNAPI_PROC(void*,SDL_SIMDRealloc,(void *a, const size_t b),(a, b),return)
 SDL_DYNAPI_PROC(void,SDL_SIMDFree,(void *a),(a),)
 SDL_DYNAPI_PROC(Sint64,SDL_RWsize,(SDL_RWops *a),(a),return)
 SDL_DYNAPI_PROC(Sint64,SDL_RWseek,(SDL_RWops *a, Sint64 b, int c),(a,b,c),return)
