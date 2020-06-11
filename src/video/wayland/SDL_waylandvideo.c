@@ -53,6 +53,10 @@
 #include "idle-inhibit-unstable-v1-client-protocol.h"
 #include "xdg-activation-v1-client-protocol.h"
 
+#ifdef HAVE_LIBDECOR_H
+#include <libdecor.h>
+#endif
+
 #define WAYLANDVID_DRIVER_NAME "wayland"
 
 /* Initialization/Query functions */
@@ -433,6 +437,21 @@ static const struct xdg_wm_base_listener shell_listener_xdg = {
 };
 
 
+#ifdef HAVE_LIBDECOR_H
+static void
+libdecor_error(struct libdecor *context,
+               enum libdecor_error error,
+               const char *message)
+{
+    SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "libdecor error (%d): %s\n", error, message);
+}
+
+static struct libdecor_interface libdecor_interface = {
+    libdecor_error,
+};
+#endif
+
+
 static void
 display_handle_global(void *data, struct wl_registry *registry, uint32_t id,
                       const char *interface, uint32_t version)
@@ -447,13 +466,25 @@ display_handle_global(void *data, struct wl_registry *registry, uint32_t id,
         Wayland_add_display(d, id);
     } else if (SDL_strcmp(interface, "wl_seat") == 0) {
         Wayland_display_add_input(d, id, version);
-    } else if (SDL_strcmp(interface, "xdg_wm_base") == 0) {
+    } else if (
+#ifdef HAVE_LIBDECOR_H
+               !d->shell.libdecor &&
+#endif
+               SDL_strcmp(interface, "xdg_wm_base") == 0) {
         d->shell.xdg = wl_registry_bind(d->registry, id, &xdg_wm_base_interface, 1);
         xdg_wm_base_add_listener(d->shell.xdg, &shell_listener_xdg, NULL);
-    } else if (SDL_strcmp(interface, "zxdg_shell_v6") == 0) {
+    } else if (
+#ifdef HAVE_LIBDECOR_H
+               !d->shell.libdecor &&
+#endif
+               SDL_strcmp(interface, "zxdg_shell_v6") == 0) {
         d->shell.zxdg = wl_registry_bind(d->registry, id, &zxdg_shell_v6_interface, 1);
         zxdg_shell_v6_add_listener(d->shell.zxdg, &shell_listener_zxdg, NULL);
-    } else if (SDL_strcmp(interface, "wl_shell") == 0) {
+    } else if (
+#ifdef HAVE_LIBDECOR_H
+               !d->shell.libdecor &&
+#endif
+               SDL_strcmp(interface, "wl_shell") == 0) {
         d->shell.wl = wl_registry_bind(d->registry, id, &wl_shell_interface, 1);
     } else if (SDL_strcmp(interface, "wl_shm") == 0) {
         d->shm = wl_registry_bind(registry, id, &wl_shm_interface, 1);
@@ -509,6 +540,12 @@ Wayland_VideoInit(_THIS)
     if (data->registry == NULL) {
         return SDL_SetError("Failed to get the Wayland registry");
     }
+
+#ifdef HAVE_LIBDECOR_H
+    if (SDL_WAYLAND_HAVE_WAYLAND_LIBDECOR) {
+        data->shell.libdecor = libdecor_new(data->display, &libdecor_interface);
+    }
+#endif
 
     wl_registry_add_listener(data->registry, &registry_listener, data);
 
@@ -631,6 +668,13 @@ Wayland_VideoQuit(_THIS)
 
     if (data->decoration_manager)
         zxdg_decoration_manager_v1_destroy(data->decoration_manager);
+
+#ifdef HAVE_LIBDECOR_H
+    if (data->shell.libdecor) {
+        libdecor_unref(data->shell.libdecor);
+        data->shell.libdecor = NULL;
+    }
+#endif
 
     if (data->compositor)
         wl_compositor_destroy(data->compositor);
