@@ -62,6 +62,9 @@ typedef struct {
         struct xdg_wm_base *xdg;
         struct zxdg_shell_v6 *zxdg;
         struct wl_shell *wl;
+#ifdef HAVE_LIBDECOR_H
+        struct libdecor *libdecor;
+#endif
     } shell;
     struct zwp_relative_pointer_manager_v1 *relative_pointer_manager;
     struct zwp_pointer_constraints_v1 *pointer_constraints;

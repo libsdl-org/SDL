@@ -697,6 +697,15 @@ macro(CheckWayland)
         set(EXTRA_LIBS ${WAYLAND_LIBRARIES} ${EXTRA_LIBS})
       endif()
 
+      if(WAYLAND_LIBDECOR)
+        pkg_check_modules(libdecor REQUIRED libdecor-0)
+
+        FindLibraryAndSONAME(decor-0)
+        set(SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_LIBDECOR "\"${DECOR_0_LIB_SONAME}\"")
+
+        add_definitions(-DHAVE_LIBDECOR_H)
+      endif()
+
       set(SDL_VIDEO_DRIVER_WAYLAND 1)
     endif()
   endif()
