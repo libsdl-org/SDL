@@ -1027,10 +1027,12 @@ SDLTest_CommonInit(SDLTest_CommonState * state)
         }
         for (i = 0; i < state->num_windows; ++i) {
             char title[1024];
-            SDL_Rect r = {
-                state->window_x, state->window_y,
-                state->window_w, state->window_h
-            };
+            SDL_Rect r;
+
+            r.x = state->window_x;
+            r.y = state->window_y;
+            r.w = state->window_w;
+            r.h = state->window_h;
 
             /* !!! FIXME: hack to make --usable-bounds work for now. */
             if ((r.x == -1) && (r.y == -1) && (r.w == -1) && (r.h == -1)) {
