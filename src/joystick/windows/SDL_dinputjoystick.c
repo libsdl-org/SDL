@@ -229,10 +229,6 @@ const DIDATAFORMAT SDL_c_dfDIJoystick2 = {
 static int
 SetDIerror(const char *function, HRESULT code)
 {
-    /*
-    return SDL_SetError("%s() [%s]: %s", function,
-    DXGetErrorString9A(code), DXGetErrorDescription9A(code));
-    */
     return SDL_SetError("%s() DirectX error 0x%8.8lx", function, code);
 }
 
