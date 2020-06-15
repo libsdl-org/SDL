@@ -51,10 +51,6 @@ static LPDIRECTINPUT8 dinput = NULL;
 static int
 DI_SetError(const char *str, HRESULT err)
 {
-    /*
-       SDL_SetError("Haptic: %s - %s: %s", str,
-       DXGetErrorString8A(err), DXGetErrorDescription8A(err));
-     */
     return SDL_SetError("Haptic error %s", str);
 }
 
