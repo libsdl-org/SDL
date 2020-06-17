@@ -28,24 +28,23 @@
 #include "SDL_yuv_c.h"
 
 
-/* Check to make sure we can safely check multiplication of surface w and pitch and it won't overflow size_t */
-SDL_COMPILE_TIME_ASSERT(surface_size_assumptions,
-    sizeof(int) == sizeof(Sint32) && sizeof(size_t) >= sizeof(Sint32));
+/* Check to make sure we can safely check multiplication of surface w and pitch and it won't overflow Sint64 */
+SDL_COMPILE_TIME_ASSERT(surface_size_assumptions, sizeof(int) == sizeof(Sint32));
 
 /* Public routines */
 
 /*
  * Calculate the pad-aligned scanline width of a surface
  */
-static int
+static Sint64
 SDL_CalculatePitch(Uint32 format, int width)
 {
-    int pitch;
+    Sint64 pitch;
 
     if (SDL_ISPIXELFORMAT_FOURCC(format) || SDL_BITSPERPIXEL(format) >= 8) {
-        pitch = (width * SDL_BYTESPERPIXEL(format));
+        pitch = ((Sint64)width * SDL_BYTESPERPIXEL(format));
     } else {
-        pitch = ((width * SDL_BITSPERPIXEL(format)) + 7) / 8;
+        pitch = (((Sint64)width * SDL_BITSPERPIXEL(format)) + 7) / 8;
     }
     pitch = (pitch + 3) & ~3;   /* 4-byte aligning for speed */
     return pitch;
@@ -59,10 +58,18 @@ SDL_Surface *
 SDL_CreateRGBSurfaceWithFormat(Uint32 flags, int width, int height, int depth,
                                Uint32 format)
 {
+    Sint64 pitch;
     SDL_Surface *surface;
 
     /* The flags are no longer used, make the compiler happy */
     (void)flags;
+
+    pitch = SDL_CalculatePitch(format, width);
+    if (pitch < 0 || pitch > SDL_MAX_SINT32) {
+        /* Overflow... */
+        SDL_OutOfMemory();
+        return NULL;
+    }
 
     /* Allocate the surface */
     surface = (SDL_Surface *) SDL_calloc(1, sizeof(*surface));
@@ -78,7 +85,7 @@ SDL_CreateRGBSurfaceWithFormat(Uint32 flags, int width, int height, int depth,
     }
     surface->w = width;
     surface->h = height;
-    surface->pitch = SDL_CalculatePitch(format, width);
+    surface->pitch = (int)pitch;
     SDL_SetClipRect(surface, NULL);
 
     if (SDL_ISPIXELFORMAT_INDEXED(surface->format->format)) {
