@@ -32,9 +32,9 @@
 #include "../../core/windows/SDL_windows.h"
 
 #define COBJMACROS
-#include <InitGuid.h>
-#include <SensorsApi.h>
-#include <Sensors.h>
+#include <initguid.h>
+#include <sensorsapi.h>
+#include <sensors.h>
 
 DEFINE_GUID(SDL_CLSID_SensorManager, 0x77A1C827, 0xFCD2, 0x4689, 0x89, 0x15, 0x9D, 0x61, 0x3C, 0xC5, 0xFA, 0x3E);
 DEFINE_GUID(SDL_IID_SensorManager, 0xBD77DB67, 0x45A8, 0x42DC, 0x8D, 0x00, 0x6D, 0xCF, 0x15, 0xF8, 0x37, 0x7A);
