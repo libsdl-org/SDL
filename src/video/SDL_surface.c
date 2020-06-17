@@ -28,8 +28,9 @@
 #include "SDL_yuv_c.h"
 
 
-/* Check to make sure we can safely check multiplication of surface w and pitch and it won't overflow Sint64 */
-SDL_COMPILE_TIME_ASSERT(surface_size_assumptions, sizeof(int) == sizeof(Sint32));
+/* Check to make sure we can safely check multiplication of surface w and pitch and it won't overflow size_t */
+SDL_COMPILE_TIME_ASSERT(surface_size_assumptions,
+    sizeof(int) == sizeof(Sint32) && sizeof(size_t) >= sizeof(Sint32));
 
 /* Public routines */
 
