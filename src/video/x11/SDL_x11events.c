@@ -818,9 +818,9 @@ X11_DispatchEvent(_THIS)
                 break;
             }
 
-            if (xevent.xfocus.detail == NotifyInferior) {
+            if (xevent.xfocus.detail == NotifyInferior || xevent.xfocus.detail == NotifyPointer) {
 #ifdef DEBUG_XEVENTS
-                printf("window %p: FocusIn (NotifierInferior, ignoring)\n", data);
+                printf("window %p: FocusIn (NotifyInferior/NotifyPointer, ignoring)\n", data);
 #endif
                 break;
             }
@@ -851,10 +851,12 @@ X11_DispatchEvent(_THIS)
 #endif
                 break;
             }
-            if (xevent.xfocus.detail == NotifyInferior) {
-                /* We still have focus if a child gets focus */
+            if (xevent.xfocus.detail == NotifyInferior || xevent.xfocus.detail == NotifyPointer) {
+                /* We still have focus if a child gets focus. We also don't
+                   care about the position of the pointer when the keyboard
+                   focus changed. */
 #ifdef DEBUG_XEVENTS
-                printf("window %p: FocusOut (NotifierInferior, ignoring)\n", data);
+                printf("window %p: FocusOut (NotifyInferior/NotifyPointer, ignoring)\n", data);
 #endif
                 break;
             }
