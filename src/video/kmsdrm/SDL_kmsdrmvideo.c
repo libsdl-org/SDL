@@ -798,6 +798,7 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
     }
 
     /* Setup driver data for this window */
+    windata->viddata = viddata;
     window->driverdata = windata;
 
     if (KMSDRM_CreateSurfaces(_this, window)) {
@@ -807,8 +808,6 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
     /* Add window to the internal list of tracked windows. Note, while it may
        seem odd to support multiple fullscreen windows, some apps create an
        extra window as a dummy surface when working with multiple contexts */
-    windata->viddata = viddata;
-
     if (viddata->num_windows >= viddata->max_windows) {
         int new_max_windows = viddata->max_windows + 1;
         viddata->windows = (SDL_Window **)SDL_realloc(viddata->windows,
