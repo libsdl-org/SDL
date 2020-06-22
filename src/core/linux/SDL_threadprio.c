@@ -32,6 +32,11 @@
 #include <pthread.h>
 #include "SDL_system.h"
 
+/* RLIMIT_RTTIME requires kernel >= 2.6.25 and is in glibc >= 2.14 */
+#ifndef RLIMIT_RTTIME
+#define RLIMIT_RTTIME 15
+#endif
+
 #include "SDL_dbus.h"
 
 #if SDL_USE_LIBDBUS
