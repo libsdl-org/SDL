@@ -457,6 +457,8 @@ CPU_haveNEON(void)
     return 1;  /* all Apple ARMv7 chips and later have NEON. */
 #elif defined(__APPLE__)
     return 0;  /* assume anything else from Apple doesn't have NEON. */
+#elif defined(__OpenBSD__)
+    return 1;  /* OpenBSD only supports ARMv7 CPUs that have NEON. */
 #elif !defined(__arm__)
     return 0;  /* not an ARM CPU at all. */
 #elif defined(__QNXNTO__)
