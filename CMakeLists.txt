@@ -409,6 +409,7 @@ file(GLOB SOURCE_FILES
   ${SDL2_SOURCE_DIR}/src/power/*.c
   ${SDL2_SOURCE_DIR}/src/render/*.c
   ${SDL2_SOURCE_DIR}/src/render/*/*.c
+  ${SDL2_SOURCE_DIR}/src/sensor/*.c
   ${SDL2_SOURCE_DIR}/src/stdlib/*.c
   ${SDL2_SOURCE_DIR}/src/thread/*.c
   ${SDL2_SOURCE_DIR}/src/timer/*.c
@@ -879,10 +880,6 @@ if(SDL_HAPTIC)
   endif()
   file(GLOB HAPTIC_SOURCES ${SDL2_SOURCE_DIR}/src/haptic/*.c)
   set(SOURCE_FILES ${SOURCE_FILES} ${HAPTIC_SOURCES})
-endif()
-if(SDL_SENSOR)
-  file(GLOB SENSOR_SOURCES ${SDL2_SOURCE_DIR}/src/sensor/*.c)
-  set(SOURCE_FILES ${SOURCE_FILES} ${SENSOR_SOURCES})
 endif()
 
 
