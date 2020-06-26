@@ -1185,9 +1185,6 @@ elseif(UNIX AND NOT APPLE AND NOT ANDROID AND NOT RISCOS)
             ioctl(0, KDGKBENT, &kbe);
         }" HAVE_INPUT_KD)
 
-    file(GLOB CORE_LINUX_SOURCES ${SDL2_SOURCE_DIR}/src/core/linux/*.c)
-    set(SOURCE_FILES ${SOURCE_FILES} ${CORE_LINUX_SOURCES})
-
     if(HAVE_INPUT_EVENTS)
       set(SDL_INPUT_LINUXEV 1)
     endif()
@@ -1223,7 +1220,8 @@ elseif(UNIX AND NOT APPLE AND NOT ANDROID AND NOT RISCOS)
       endif()
 
       if (HAVE_IBUS_IBUS_H OR HAVE_FCITX)
-        add_definitions(-DSDL_USE_IME)
+        set(SDL_USE_IME TRUE)
+        add_definitions(-DSDL_USE_IME)   # !!! FIXME: why isn't this a definition and not in SDL_config.h.cmake?
       endif()
       if(HAVE_LIBUNWIND_H)
         # We've already found the header, so REQUIRE the lib to be present
@@ -1232,6 +1230,36 @@ elseif(UNIX AND NOT APPLE AND NOT ANDROID AND NOT RISCOS)
         list(APPEND EXTRA_LIBS ${UNWIND_LIBRARIES} ${UNWIND_GENERIC_LIBRARIES})
       endif()
     endif()
+
+    if(HAVE_DBUS_DBUS_H)
+      set(SOURCE_FILES ${SOURCE_FILES} "${SDL2_SOURCE_DIR}/src/core/linux/SDL_dbus.c")
+    endif()
+
+    if(SDL_USE_IME)
+      set(SOURCE_FILES ${SOURCE_FILES} "${SDL2_SOURCE_DIR}/src/core/linux/SDL_ime.c")
+    endif()
+
+    if(HAVE_IBUS_IBUS_H)
+      set(SOURCE_FILES ${SOURCE_FILES} "${SDL2_SOURCE_DIR}/src/core/linux/SDL_ibus.c")
+    endif()
+
+    if(HAVE_FCITX)
+      set(SOURCE_FILES ${SOURCE_FILES} "${SDL2_SOURCE_DIR}/src/core/linux/SDL_fcitx.c")
+    endif()
+
+    if(HAVE_LIBUDEV_H)
+      set(SOURCE_FILES ${SOURCE_FILES} "${SDL2_SOURCE_DIR}/src/core/linux/SDL_udev.c")
+    endif()
+
+    if(HAVE_INPUT_EVENTS)
+      set(SOURCE_FILES ${SOURCE_FILES} "${SDL2_SOURCE_DIR}/src/core/linux/SDL_evdev.c")
+      set(SOURCE_FILES ${SOURCE_FILES} "${SDL2_SOURCE_DIR}/src/core/linux/SDL_evdev_kbd.c")
+    endif()
+
+    # Always compiled for Linux, unconditionally:
+    set(SOURCE_FILES ${SOURCE_FILES} "${SDL2_SOURCE_DIR}/src/core/linux/SDL_threadprio.c")
+
+    # src/core/unix/*.c is included in a generic if(UNIX) section, elsewhere.
   endif()
 
   if(INPUT_TSLIB)
