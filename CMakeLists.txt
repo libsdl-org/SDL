@@ -406,6 +406,7 @@ file(GLOB SOURCE_FILES
   ${SDL2_SOURCE_DIR}/src/file/*.c
   ${SDL2_SOURCE_DIR}/src/libm/*.c
   ${SDL2_SOURCE_DIR}/src/locale/*.c
+  ${SDL2_SOURCE_DIR}/src/power/*.c
   ${SDL2_SOURCE_DIR}/src/render/*.c
   ${SDL2_SOURCE_DIR}/src/render/*/*.c
   ${SDL2_SOURCE_DIR}/src/stdlib/*.c
@@ -882,10 +883,6 @@ endif()
 if(SDL_SENSOR)
   file(GLOB SENSOR_SOURCES ${SDL2_SOURCE_DIR}/src/sensor/*.c)
   set(SOURCE_FILES ${SOURCE_FILES} ${SENSOR_SOURCES})
-endif()
-if(SDL_POWER)
-  file(GLOB POWER_SOURCES ${SDL2_SOURCE_DIR}/src/power/*.c)
-  set(SOURCE_FILES ${SOURCE_FILES} ${POWER_SOURCES})
 endif()
 
 
