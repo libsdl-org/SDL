@@ -162,6 +162,12 @@ int Emscripten_UpdateWindowFramebuffer(_THIS, SDL_Window * window, const SDL_Rec
                      SDL_GetWindowID(window), ++frame_number);
         SDL_SaveBMP(surface, file);
     }*/
+
+    if (emscripten_has_asyncify()) {
+        /* give back control to browser for screen refresh */
+        emscripten_sleep(0);
+    }
+
     return 0;
 }
 
