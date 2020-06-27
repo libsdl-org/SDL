@@ -38,6 +38,7 @@ int done;
 static void
 quit(int rc)
 {
+    SDL_Quit();
     exit(rc);
 }
 
