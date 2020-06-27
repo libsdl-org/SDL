@@ -29,6 +29,7 @@
 
 #include "SDL_timer.h"
 #include "SDL_assert.h"
+#include "SDL_hints.h"
 #include "../SDL_timer_c.h"
 
 #ifdef __EMSCRIPTEN__
@@ -191,8 +192,8 @@ void
 SDL_Delay(Uint32 ms)
 {
 #ifdef __EMSCRIPTEN__
-    if (emscripten_has_asyncify()) {
-        /* pseudo-synchronous pause */
+    if (emscripten_has_asyncify() && SDL_GetHintBoolean(SDL_HINT_EMSCRIPTEN_ASYNCIFY, SDL_TRUE)) {
+        /* pseudo-synchronous pause, used directly or through e.g. SDL_WaitEvent */
         emscripten_sleep(ms);
         return;
     }
