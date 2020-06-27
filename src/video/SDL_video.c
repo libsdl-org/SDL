@@ -1429,7 +1429,7 @@ SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
 
     if (!_this) {
         /* Initialize the video system if needed */
-        if (SDL_VideoInit(NULL) < 0) {
+        if (SDL_Init(SDL_INIT_VIDEO) < 0) {
             return NULL;
         }
     }
