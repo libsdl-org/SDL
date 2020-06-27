@@ -1742,7 +1742,7 @@ elseif(APPLE)
 
     if(VIDEO_VULKAN OR VIDEO_METAL OR RENDER_METAL)
       set(ORIG_CMAKE_REQUIRED_FLAGS ${CMAKE_REQUIRED_FLAGS})
-      set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -x objective-c")
+      set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -ObjC")
       check_c_source_compiles("
         #include <AvailabilityMacros.h>
         #import <Metal/Metal.h>
