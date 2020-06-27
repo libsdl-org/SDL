@@ -1320,7 +1320,7 @@ CheckARM()
 {
     AC_ARG_ENABLE(arm-simd,
 AC_HELP_STRING([--enable-arm-simd], [use SIMD assembly blitters on ARM [[default=yes]]]),
-                  enable_arm_simd=$enableval, enable_arm_simd=yes)
+                  enable_arm_simd=$enableval, enable_arm_simd=no
     if test x$enable_video = xyes -a x$enable_assembly = xyes -a x$enable_arm_simd = xyes; then
         save_CFLAGS="$CFLAGS"
         have_arm_simd=no

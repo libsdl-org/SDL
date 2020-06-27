@@ -852,8 +852,8 @@ enable_diskaudio
 enable_dummyaudio
 enable_libsamplerate
 enable_libsamplerate_shared
-enable_arm_simd
 enable_arm_neon
+enable_arm_simd
 enable_video_wayland
 enable_video_wayland_qt_touch
 enable_wayland_shared
@@ -1635,7 +1635,6 @@ Optional Features:
   --enable-libsamplerate-shared
                           dynamically load libsamplerate [[default=yes]]
   --enable-arm-simd       use SIMD assembly blitters on ARM [[default=yes]]
-  --enable-arm-neon       use NEON assembly blitters on ARM [[default=no]]
   --enable-video-wayland  use Wayland video driver [[default=yes]]
   --enable-video-wayland-qt-touch
                           QtWayland server support for Wayland video driver
@@ -19473,9 +19472,7 @@ CheckARM()
 if test "${enable_arm_simd+set}" = set; then :
   enableval=$enable_arm_simd; enable_arm_simd=$enableval
 else
-  enable_arm_simd=yes
-fi
-
+  enable_arm_simd=no
     if test x$enable_video = xyes -a x$enable_assembly = xyes -a x$enable_arm_simd = xyes; then
         save_CFLAGS="$CFLAGS"
         have_arm_simd=no
@@ -19494,7 +19491,7 @@ $as_echo_n "checking for ARM SIMD... " >&6; }
         #ifndef __ARM_EABI__
         #error EABI is required (to be sure that calling conventions are compatible)
         #endif
-        pld [r0]
+        pld r0
         uqadd8 r0, r0, r0
 
 _ACEOF
@@ -19519,7 +19516,8 @@ $as_echo "#define SDL_ARM_SIMD_BLITTERS 1" >>confdefs.h
 
 CheckNEON()
 {
-    # Check whether --enable-arm-neon was given.
+      --enable-arm-neon       use NEON assembly blitters on ARM [[default=no]]
+# Check whether --enable-arm-neon was given.
 if test "${enable_arm_neon+set}" = set; then :
   enableval=$enable_arm_neon; enable_arm_neon=$enableval
 else
@@ -19546,7 +19544,7 @@ $as_echo_n "checking for ARM NEON... " >&6; }
         #ifndef __ARM_EABI__
         #error EABI is required (to be sure that calling conventions are compatible)
         #endif
-        pld [r0]
+        pld r0
         vmovn.u16 d0, q0
 
 _ACEOF
@@ -19759,7 +19757,9 @@ $as_echo "$have_gcc_Wall" >&6; }
 $as_echo_n "checking for necessary GCC -Wno-multichar option... " >&6; }
         need_gcc_Wno_multichar=no
         case "$host" in
-            *-*-haiku*)
+            *-*-haiku*
+fi
+
                 need_gcc_Wno_multichar=yes
                 ;;
         esac
