@@ -369,7 +369,9 @@ extern "C" {
 #define SDL_HINT_MOUSE_TOUCH_EVENTS    "SDL_MOUSE_TOUCH_EVENTS"
 
 /**
- *  \brief Minimize your SDL_Window if it loses key focus when in fullscreen mode. Defaults to true.
+ *  \brief Minimize your SDL_Window if it loses key focus when in fullscreen mode. Defaults to false.
+ *  \warning  Before SDL 2.0.14, this defaulted to true! In 2.0.14, we're
+ *            seeing if "true" causes more problems than it solves in modern times.
  *
  */
 #define SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS   "SDL_VIDEO_MINIMIZE_ON_FOCUS_LOSS"
