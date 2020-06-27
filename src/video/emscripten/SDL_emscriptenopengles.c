@@ -27,6 +27,7 @@
 
 #include "SDL_emscriptenvideo.h"
 #include "SDL_emscriptenopengles.h"
+#include "SDL_hints.h"
 
 #define LOAD_FUNC(NAME) _this->egl_data->NAME = NAME;
 
@@ -88,7 +89,7 @@ int
 Emscripten_GLES_SwapWindow(_THIS, SDL_Window * window)
 {
     EGLBoolean ret = SDL_EGL_SwapBuffers(_this, ((SDL_WindowData *) window->driverdata)->egl_surface);
-    if (emscripten_has_asyncify()) {
+    if (emscripten_has_asyncify() && SDL_GetHintBoolean(SDL_HINT_EMSCRIPTEN_ASYNCIFY, SDL_TRUE)) {
         /* give back control to browser for screen refresh */
         emscripten_sleep(0);
     }

@@ -24,6 +24,7 @@
 
 #include "SDL_emscriptenvideo.h"
 #include "SDL_emscriptenframebuffer.h"
+#include "SDL_hints.h"
 
 
 int Emscripten_CreateWindowFramebuffer(_THIS, SDL_Window * window, Uint32 * format, void ** pixels, int *pitch)
@@ -163,7 +164,7 @@ int Emscripten_UpdateWindowFramebuffer(_THIS, SDL_Window * window, const SDL_Rec
         SDL_SaveBMP(surface, file);
     }*/
 
-    if (emscripten_has_asyncify()) {
+    if (emscripten_has_asyncify() && SDL_GetHintBoolean(SDL_HINT_EMSCRIPTEN_ASYNCIFY, SDL_TRUE)) {
         /* give back control to browser for screen refresh */
         emscripten_sleep(0);
     }
