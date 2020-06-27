@@ -31,6 +31,10 @@
 #include "SDL_assert.h"
 #include "../SDL_timer_c.h"
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
+
 /* The clock_gettime provides monotonous time, so we should use it if
    it's available. The clock_gettime function is behind ifdef
    for __USE_POSIX199309
@@ -186,6 +190,13 @@ SDL_GetPerformanceFrequency(void)
 void
 SDL_Delay(Uint32 ms)
 {
+#ifdef __EMSCRIPTEN__
+    if (emscripten_has_asyncify()) {
+        /* pseudo-synchronous pause */
+        emscripten_sleep(ms);
+        return;
+    }
+#endif
     int was_error;
 
 #if HAVE_NANOSLEEP
