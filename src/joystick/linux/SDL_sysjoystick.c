@@ -79,6 +79,10 @@
 
 #include "../../core/linux/SDL_udev.h"
 
+#if 0
+#define DEBUG_INPUT_EVENTS 1
+#endif
+
 static int MaybeAddDevice(const char *path);
 #if SDL_USE_LIBUDEV
 static int MaybeRemoveDevice(const char *path);
@@ -838,7 +842,7 @@ LINUX_JoystickOpen(SDL_Joystick * joystick, int device_index)
     item->hwdata = joystick->hwdata;
 
     /* mark joystick as fresh and ready */
-    joystick->hwdata->fresh = 1;
+    joystick->hwdata->fresh = SDL_TRUE;
 
     return (0);
 }
@@ -950,11 +954,12 @@ static SDL_INLINE void
 PollAllValues(SDL_Joystick * joystick)
 {
     struct input_absinfo absinfo;
+    unsigned long keyinfo[NBITS(KEY_MAX)];
     int i;
 
     /* Poll all axis */
     for (i = ABS_X; i < ABS_MAX; i++) {
-        if (i == ABS_HAT0X) {
+        if (i == ABS_HAT0X) {  /* we handle hats in the next loop, skip them for now. */
             i = ABS_HAT3Y;
             continue;
         }
@@ -972,6 +977,37 @@ PollAllValues(SDL_Joystick * joystick)
             }
         }
     }
+
+    /* Poll all hats */
+    for (i = ABS_HAT0X; i <= ABS_HAT3Y; i++) {
+        const int baseaxis = i - ABS_HAT0X;
+        const int hatidx = baseaxis / 2;
+        SDL_assert(hatidx < SDL_arraysize(joystick->hwdata->has_hat));
+        if (joystick->hwdata->has_hat[hatidx]) {
+            if (ioctl(joystick->hwdata->fd, EVIOCGABS(i), &absinfo) >= 0) {
+                const int hataxis = baseaxis % 2;
+                HandleHat(joystick, joystick->hwdata->hats_indices[hatidx], hataxis, absinfo.value);
+            }
+        }
+    }
+
+    /* Poll all buttons */
+    SDL_zeroa(keyinfo);
+    if (ioctl(joystick->hwdata->fd, EVIOCGKEY(sizeof (keyinfo)), keyinfo) >= 0) {
+        for (i = 0; i < KEY_MAX; i++) {
+            if (joystick->hwdata->has_key[i]) {
+                const Uint8 value = test_bit(i, keyinfo) ? SDL_PRESSED : SDL_RELEASED;
+#ifdef DEBUG_INPUT_EVENTS
+                printf("Joystick : Re-read Button %d (%d) val= %d\n",
+                    joystick->hwdata->key_map[i], i, value);
+#endif
+                SDL_PrivateJoystickButton(joystick,
+                        joystick->hwdata->key_map[i], value);
+            }
+        }
+    }
+
+    /* Joyballs are relative input, so there's no poll state. Events only! */
 }
 
 static SDL_INLINE void
@@ -983,13 +1019,21 @@ HandleInputEvents(SDL_Joystick * joystick)
 
     if (joystick->hwdata->fresh) {
         PollAllValues(joystick);
-        joystick->hwdata->fresh = 0;
+        joystick->hwdata->fresh = SDL_FALSE;
     }
 
     while ((len = read(joystick->hwdata->fd, events, (sizeof events))) > 0) {
         len /= sizeof(events[0]);
         for (i = 0; i < len; ++i) {
             code = events[i].code;
+
+            /* If the kernel sent a SYN_DROPPED, we are supposed to ignore the
+               rest of the packet (the end of it signified by a SYN_REPORT) */
+            if ( joystick->hwdata->recovering_from_dropped &&
+                 ((events[i].type != EV_SYN) || (code != SYN_REPORT)) ) {
+                continue;
+            }
+
             switch (events[i].type) {
             case EV_KEY:
                 SDL_PrivateJoystickButton(joystick,
@@ -1037,7 +1081,13 @@ HandleInputEvents(SDL_Joystick * joystick)
 #ifdef DEBUG_INPUT_EVENTS
                     printf("Event SYN_DROPPED detected\n");
 #endif
-                    PollAllValues(joystick);
+                    joystick->hwdata->recovering_from_dropped = SDL_TRUE;
+                    break;
+                case SYN_REPORT :
+                    if (joystick->hwdata->recovering_from_dropped) {
+                        joystick->hwdata->recovering_from_dropped = SDL_FALSE;
+                        PollAllValues(joystick);  /* try to sync up to current state now */
+                    }
                     break;
                 default:
                     break;

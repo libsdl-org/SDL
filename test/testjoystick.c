@@ -167,6 +167,14 @@ loop(void *arg)
                    event.jbutton.which, event.jbutton.button);
             break;
         case SDL_KEYDOWN:
+            /* Press the L key to lag for 3 seconds, to see what happens
+                when SDL doesn't service the event loop quickly. */
+            if (event.key.keysym.sym == SDLK_l) {
+                SDL_Log("Lagging for 3 seconds...\n");
+                SDL_Delay(3000);
+                break;
+            }
+
             if ((event.key.keysym.sym != SDLK_ESCAPE) &&
                 (event.key.keysym.sym != SDLK_AC_BACK)) {
                 break;
