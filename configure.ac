@@ -1319,7 +1319,7 @@ dnl Check for ARM instruction support using gas syntax
 CheckARM()
 {
     AC_ARG_ENABLE(arm-simd,
-AC_HELP_STRING([--enable-arm-simd], [use SIMD assembly blitters on ARM [[default=yes]]]),
+AC_HELP_STRING([--enable-arm-simd], [use SIMD assembly blitters on ARM [[default=no]]]),
                   enable_arm_simd=$enableval, enable_arm_simd=no)
     if test x$enable_video = xyes -a x$enable_assembly = xyes -a x$enable_arm_simd = xyes; then
         save_CFLAGS="$CFLAGS"
