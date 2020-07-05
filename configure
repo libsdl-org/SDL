@@ -1634,7 +1634,7 @@ Optional Features:
                           [[default=yes]]
   --enable-libsamplerate-shared
                           dynamically load libsamplerate [[default=yes]]
-  --enable-arm-simd       use SIMD assembly blitters on ARM [[default=yes]]
+  --enable-arm-simd       use SIMD assembly blitters on ARM [[default=no]]
   --enable-arm-neon       use NEON assembly blitters on ARM [[default=no]]
   --enable-video-wayland  use Wayland video driver [[default=yes]]
   --enable-video-wayland-qt-touch
