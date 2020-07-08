@@ -359,9 +359,13 @@ WINDOWS_JoystickDetect(void)
         JoyStick_DeviceData *pListNext = NULL;
 
         if (pCurList->bXInputDevice) {
+#if SDL_HAPTIC_XINPUT
             SDL_XINPUT_MaybeRemoveDevice(pCurList->XInputUserId);
+#endif
         } else {
+#if SDL_HAPTIC_DINPUT
             SDL_DINPUT_MaybeRemoveDevice(&pCurList->dxdevice);
+#endif
         }
 
         SDL_PrivateJoystickRemoved(pCurList->nInstanceID);
@@ -380,9 +384,13 @@ WINDOWS_JoystickDetect(void)
         while (pNewJoystick) {
             if (pNewJoystick->send_add_event) {
                 if (pNewJoystick->bXInputDevice) {
+#if SDL_HAPTIC_XINPUT
                     SDL_XINPUT_MaybeAddDevice(pNewJoystick->XInputUserId);
+#endif
                 } else {
+#if SDL_HAPTIC_DINPUT
                     SDL_DINPUT_MaybeAddDevice(&pNewJoystick->dxdevice);
+#endif
                 }
 
                 SDL_PrivateJoystickAdded(pNewJoystick->nInstanceID);

@@ -404,6 +404,7 @@ file(GLOB SOURCE_FILES
   ${SDL2_SOURCE_DIR}/src/dynapi/*.c
   ${SDL2_SOURCE_DIR}/src/events/*.c
   ${SDL2_SOURCE_DIR}/src/file/*.c
+  ${SDL2_SOURCE_DIR}/src/haptic/*.c
   ${SDL2_SOURCE_DIR}/src/libm/*.c
   ${SDL2_SOURCE_DIR}/src/locale/*.c
   ${SDL2_SOURCE_DIR}/src/power/*.c
@@ -878,8 +879,6 @@ if(SDL_HAPTIC)
     # Haptic requires some private functions from the joystick subsystem.
     message_error("SDL_HAPTIC requires SDL_JOYSTICK, which is not enabled")
   endif()
-  file(GLOB HAPTIC_SOURCES ${SDL2_SOURCE_DIR}/src/haptic/*.c)
-  set(SOURCE_FILES ${SOURCE_FILES} ${HAPTIC_SOURCES})
 endif()
 
 
