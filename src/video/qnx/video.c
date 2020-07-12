@@ -352,13 +352,7 @@ createDevice(int devindex)
     return device;
 }
 
-static int
-available()
-{
-    return 1;
-}
-
 VideoBootStrap QNX_bootstrap = {
     "qnx", "QNX Screen",
-    available, createDevice
+    createDevice
 };

@@ -159,6 +159,10 @@ KMSDRM_CreateDevice(int devindex)
     SDL_VideoDevice *device;
     SDL_VideoData *viddata;
 
+    if (!KMSDRM_Available()) {
+        return NULL;
+    }
+
     if (!devindex || (devindex > 99)) {
         devindex = get_driindex();
     }
@@ -235,7 +239,6 @@ cleanup:
 VideoBootStrap KMSDRM_bootstrap = {
     "KMSDRM",
     "KMS/DRM Video Driver",
-    KMSDRM_Available,
     KMSDRM_CreateDevice
 };
 

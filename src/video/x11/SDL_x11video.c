@@ -160,6 +160,10 @@ X11_CreateDevice(int devindex)
     SDL_VideoData *data;
     const char *display = NULL; /* Use the DISPLAY environment variable */
 
+    if (!X11_Available()) {
+        return NULL;
+    }
+
     if (!SDL_X11_LoadSymbols()) {
         return NULL;
     }
@@ -317,7 +321,7 @@ X11_CreateDevice(int devindex)
 
 VideoBootStrap X11_bootstrap = {
     "x11", "SDL X11 video driver",
-    X11_Available, X11_CreateDevice
+    X11_CreateDevice
 };
 
 static int (*handler) (Display *, XErrorEvent *) = NULL;

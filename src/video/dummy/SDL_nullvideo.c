@@ -78,6 +78,10 @@ DUMMY_CreateDevice(int devindex)
 {
     SDL_VideoDevice *device;
 
+    if (!DUMMY_Available()) {
+        return (0);
+    }
+
     /* Initialize all variables that we clean on shutdown */
     device = (SDL_VideoDevice *) SDL_calloc(1, sizeof(SDL_VideoDevice));
     if (!device) {
@@ -102,7 +106,7 @@ DUMMY_CreateDevice(int devindex)
 
 VideoBootStrap DUMMY_bootstrap = {
     DUMMYVID_DRIVER_NAME, "SDL dummy video driver",
-    DUMMY_Available, DUMMY_CreateDevice
+    DUMMY_CreateDevice
 };
 
 

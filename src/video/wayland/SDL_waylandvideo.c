@@ -148,6 +148,10 @@ Wayland_CreateDevice(int devindex)
 {
     SDL_VideoDevice *device;
 
+    if (!Wayland_Available()) {
+        return NULL;
+    }
+
     if (!SDL_WAYLAND_LoadSymbols()) {
         return NULL;
     }
@@ -211,7 +215,7 @@ Wayland_CreateDevice(int devindex)
 
 VideoBootStrap Wayland_bootstrap = {
     WAYLANDVID_DRIVER_NAME, "SDL Wayland video driver",
-    Wayland_Available, Wayland_CreateDevice
+    Wayland_CreateDevice
 };
 
 static void

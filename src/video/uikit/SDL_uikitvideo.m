@@ -52,12 +52,6 @@ static void UIKit_VideoQuit(_THIS);
 
 /* DUMMY driver bootstrap functions */
 
-static int
-UIKit_Available(void)
-{
-    return 1;
-}
-
 static void UIKit_DeleteDevice(SDL_VideoDevice * device)
 {
     @autoreleasepool {
@@ -152,7 +146,7 @@ UIKit_CreateDevice(int devindex)
 
 VideoBootStrap UIKIT_bootstrap = {
     UIKITVID_DRIVER_NAME, "SDL UIKit video driver",
-    UIKit_Available, UIKit_CreateDevice
+    UIKit_CreateDevice
 };
 
 

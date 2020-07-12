@@ -75,12 +75,6 @@ static void WIN_SuspendScreenSaver(_THIS)
 
 /* Windows driver bootstrap functions */
 
-static int
-WIN_Available(void)
-{
-    return (1);
-}
-
 static void
 WIN_DeleteDevice(SDL_VideoDevice * device)
 {
@@ -224,7 +218,7 @@ WIN_CreateDevice(int devindex)
 
 
 VideoBootStrap WINDOWS_bootstrap = {
-    "windows", "SDL Windows video driver", WIN_Available, WIN_CreateDevice
+    "windows", "SDL Windows video driver", WIN_CreateDevice
 };
 
 int

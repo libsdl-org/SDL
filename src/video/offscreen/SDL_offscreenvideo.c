@@ -51,13 +51,6 @@ static void OFFSCREEN_VideoQuit(_THIS);
 
 /* OFFSCREEN driver bootstrap functions */
 
-static int
-OFFSCREEN_Available(void)
-{
-    /* Consider it always available */
-    return (1);
-}
-
 static void
 OFFSCREEN_DeleteDevice(SDL_VideoDevice * device)
 {
@@ -106,7 +99,7 @@ OFFSCREEN_CreateDevice(int devindex)
 
 VideoBootStrap OFFSCREEN_bootstrap = {
     OFFSCREENVID_DRIVER_NAME, "SDL offscreen video driver",
-    OFFSCREEN_Available, OFFSCREEN_CreateDevice
+    OFFSCREEN_CreateDevice
 };
 
 int
