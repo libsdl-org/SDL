@@ -42,11 +42,6 @@
 /* unused
 static SDL_bool PSP_initialized = SDL_FALSE;
 */
-static int
-PSP_Available(void)
-{
-    return 1;
-}
 
 static void
 PSP_Destroy(SDL_VideoDevice * device)
@@ -64,14 +59,6 @@ PSP_Create()
     SDL_VideoDevice *device;
     SDL_VideoData *phdata;
     SDL_GLDriverData *gldata;
-    int status;
-
-    /* Check if PSP could be initialized */
-    status = PSP_Available();
-    if (status == 0) {
-        /* PSP could not be used */
-        return NULL;
-    }
 
     /* Initialize SDL_VideoDevice structure */
     device = (SDL_VideoDevice *) SDL_calloc(1, sizeof(SDL_VideoDevice));
@@ -152,7 +139,6 @@ PSP_Create()
 VideoBootStrap PSP_bootstrap = {
     "PSP",
     "PSP Video Driver",
-    PSP_Available,
     PSP_Create
 };
 

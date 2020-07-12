@@ -413,7 +413,6 @@ typedef struct VideoBootStrap
 {
     const char *name;
     const char *desc;
-    int (*available) (void);
     SDL_VideoDevice *(*create) (int devindex);
 } VideoBootStrap;
 

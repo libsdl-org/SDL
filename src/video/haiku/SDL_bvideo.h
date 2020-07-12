@@ -33,7 +33,6 @@ extern "C" {
 extern void HAIKU_VideoQuit(_THIS);
 extern int HAIKU_VideoInit(_THIS);
 extern void HAIKU_DeleteDevice(_THIS);
-extern int HAIKU_Available(void);
 
 #ifdef __cplusplus
 }
