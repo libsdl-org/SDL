@@ -21775,10 +21775,6 @@ $as_echo_n "checking for Metal framework... " >&6; }
           #import <Metal/Metal.h>
           #import <QuartzCore/CAMetalLayer.h>
 
-          #if !TARGET_CPU_X86_64
-          #error Metal doesn't work on this configuration
-          #endif
-
 int
 main ()
 {
@@ -24254,7 +24250,7 @@ CheckHIDAPI()
     # so we'll just use libusb when it's available.
     case "$host" in
         # libusb does not support iOS
-        arm*-apple-darwin* | *-ios-* )
+        *-ios-* )
             skiplibusb=yes
             ;;
         # On the other hand, *BSD specifically uses libusb only
@@ -25154,7 +25150,7 @@ else
 fi
 
         ;;
-    arm*-apple-darwin*|*-ios-*)
+    *-ios-*)
         ARCH=ios
 
         CheckVisibilityHidden
