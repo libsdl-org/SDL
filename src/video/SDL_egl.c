@@ -438,8 +438,6 @@ SDL_EGL_LoadLibraryOnly(_THIS, const char *egl_path)
     LOAD_FUNC_EGLEXT(eglQueryDevicesEXT);
     LOAD_FUNC_EGLEXT(eglGetPlatformDisplayEXT);
 
-    _this->gl_config.driver_loaded = 1;
-
     if (path) {
         SDL_strlcpy(_this->gl_config.driver_path, path, sizeof(_this->gl_config.driver_path) - 1);
     } else {
