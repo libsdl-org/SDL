@@ -25,6 +25,7 @@
 #include "SDL_cocoavideo.h"
 #include "SDL_cocoaopengles.h"
 #include "SDL_cocoaopengl.h"
+#include "SDL_assert.h"
 
 /* EGL implementation of SDL OpenGL support */
 
