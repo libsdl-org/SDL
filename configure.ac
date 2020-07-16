@@ -2568,7 +2568,7 @@ CheckVulkan()
                   #include <Metal/Metal.h>
                   #include <QuartzCore/CAMetalLayer.h>
 
-                  #if !TARGET_CPU_X86_64
+                  #if TARGET_CPU_X86
                   #error Vulkan doesn't work on this configuration
                   #endif
                 ],[
