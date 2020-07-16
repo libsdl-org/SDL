@@ -107,12 +107,13 @@ WIN_GLES_SetupWindow(_THIS, SDL_Window * window)
     SDL_Window *current_win = SDL_GL_GetCurrentWindow();
     SDL_GLContext current_ctx = SDL_GL_GetCurrentContext();
 
-
     if (_this->egl_data == NULL) {
+        SDL_assert(!_this->gl_config.driver_loaded);
         if (SDL_EGL_LoadLibrary(_this, NULL, EGL_DEFAULT_DISPLAY, 0) < 0) {
             SDL_EGL_UnloadLibrary(_this);
             return -1;
         }
+        _this->gl_config.driver_loaded = 1;
     }
   
     /* Create the GLES window surface */
