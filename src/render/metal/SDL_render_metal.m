@@ -1518,6 +1518,8 @@ METAL_RenderPresent(SDL_Renderer * renderer)
 { @autoreleasepool {
     METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
 
+    METAL_ActivateRenderCommandEncoder(renderer, MTLLoadActionLoad, NULL, nil);
+
     if (data.mtlcmdencoder != nil) {
         [data.mtlcmdencoder endEncoding];
     }
