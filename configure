@@ -21775,6 +21775,10 @@ $as_echo_n "checking for Metal framework... " >&6; }
           #import <Metal/Metal.h>
           #import <QuartzCore/CAMetalLayer.h>
 
+          #if TARGET_CPU_X86
+          #error Metal doesn't work on this configuration
+          #endif
+
 int
 main ()
 {

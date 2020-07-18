@@ -2156,6 +2156,10 @@ AS_HELP_STRING([--enable-render-metal], [enable the Metal render driver [[defaul
           #import <Cocoa/Cocoa.h>
           #import <Metal/Metal.h>
           #import <QuartzCore/CAMetalLayer.h>
+
+          #if TARGET_CPU_X86
+          #error Metal doesn't work on this configuration
+          #endif
         ],[
         ],[
         have_metal=yes
