@@ -26,6 +26,7 @@
 #include "SDL_kmsdrmvideo.h"
 #include "SDL_kmsdrmmouse.h"
 #include "SDL_kmsdrmdyn.h"
+#include "SDL_assert.h"
 
 #include "../../events/SDL_mouse_c.h"
 #include "../../events/default_cursor.h"
@@ -38,133 +39,59 @@ static void KMSDRM_FreeCursor(SDL_Cursor * cursor);
 static void KMSDRM_WarpMouse(SDL_Window * window, int x, int y);
 static int KMSDRM_WarpMouseGlobal(int x, int y);
 
+/* Converts a pixel from straight-alpha [AA, RR, GG, BB], which the SDL cursor surface has,
+   to premultiplied-alpha [AA. AA*RR, AA*GG, AA*BB].
+   These multiplications have to be done with floats instead of uint32_t's, and the resulting values have 
+   to be converted to be relative to the 0-255 interval, where 255 is 1.00 and anything between 0 and 255 is 0.xx. */
+void alpha_premultiply_ARGB8888 (uint32_t *pixel) {
+
+    uint32_t A, R, G, B;
+
+    /* Component bytes extraction. */
+    A = (*pixel >> (3 << 3)) & 0xFF;
+    R = (*pixel >> (2 << 3)) & 0xFF;
+    G = (*pixel >> (1 << 3)) & 0xFF;
+    B = (*pixel >> (0 << 3)) & 0xFF;
+
+    /* Alpha pre-multiplication of each component. */
+    R = (float)A * ((float)R /255);
+    G = (float)A * ((float)G /255);
+    B = (float)A * ((float)B /255);
+
+    /* ARGB8888 pixel recomposition. */
+    (*pixel) = (((uint32_t)A << 24) | ((uint32_t)R << 16) | ((uint32_t)G << 8)) | ((uint32_t)B << 0);
+}
+
+
 static SDL_Cursor *
 KMSDRM_CreateDefaultCursor(void)
 {
     return SDL_CreateCursor(default_cdata, default_cmask, DEFAULT_CWIDTH, DEFAULT_CHEIGHT, DEFAULT_CHOTX, DEFAULT_CHOTY);
 }
 
-/* Evaluate if a given cursor size is supported or not. Notably, current Intel gfx only support 64x64 and up. */
-static SDL_bool
-KMSDRM_IsCursorSizeSupported (int w, int h, uint32_t bo_format) {
-
-    SDL_VideoDevice *dev = SDL_GetVideoDevice();
-    SDL_VideoData *viddata = ((SDL_VideoData *)dev->driverdata);
-    SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
-
-    int ret;
-    uint32_t bo_handle;
-    struct gbm_bo *bo = KMSDRM_gbm_bo_create(viddata->gbm, w, h, bo_format,
-                                       GBM_BO_USE_CURSOR | GBM_BO_USE_WRITE);
-
-    if (!bo) {
-        SDL_SetError("Could not create GBM cursor BO width size %dx%d for size testing", w, h);
-        goto cleanup;
-    }
-
-    bo_handle = KMSDRM_gbm_bo_get_handle(bo).u32;
-    ret = KMSDRM_drmModeSetCursor(viddata->drm_fd, dispdata->crtc_id, bo_handle, w, h);
-
-    if (ret) {
-        goto cleanup;
-    }
-    else {
-        KMSDRM_gbm_bo_destroy(bo);
-        return SDL_TRUE;
-    }
-
-cleanup:
-    if (bo) {
-        KMSDRM_gbm_bo_destroy(bo);
-    }
-    return SDL_FALSE;
-}
-
-/* Create a cursor from a surface */
+/* Create a GBM cursor from a surface, which means creating a hardware cursor.
+   Most programs use software cursors, but protracker-clone for example uses
+   an optional hardware cursor. */
 static SDL_Cursor *
 KMSDRM_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y)
 {
     SDL_VideoDevice *dev = SDL_GetVideoDevice();
     SDL_VideoData *viddata = ((SDL_VideoData *)dev->driverdata);
-    SDL_PixelFormat *pixlfmt = surface->format;
     KMSDRM_CursorData *curdata;
     SDL_Cursor *cursor;
-    SDL_bool cursor_supported = SDL_FALSE;
-    int i, ret, usable_cursor_w, usable_cursor_h;
-    uint32_t bo_format, bo_stride;
-    char *buffer = NULL;
+    uint64_t usable_cursor_w, usable_cursor_h;
+    uint32_t bo_stride, pixel;
+    uint32_t *buffer = NULL;
     size_t bufsize;
 
-    switch(pixlfmt->format) {
-    case SDL_PIXELFORMAT_RGB332:
-        bo_format = GBM_FORMAT_RGB332;
-        break;
-    case SDL_PIXELFORMAT_ARGB4444:
-        bo_format = GBM_FORMAT_ARGB4444;
-        break;
-    case SDL_PIXELFORMAT_RGBA4444:
-        bo_format = GBM_FORMAT_RGBA4444;
-        break;
-    case SDL_PIXELFORMAT_ABGR4444:
-        bo_format = GBM_FORMAT_ABGR4444;
-        break;
-    case SDL_PIXELFORMAT_BGRA4444:
-        bo_format = GBM_FORMAT_BGRA4444;
-        break;
-    case SDL_PIXELFORMAT_ARGB1555:
-        bo_format = GBM_FORMAT_ARGB1555;
-        break;
-    case SDL_PIXELFORMAT_RGBA5551:
-        bo_format = GBM_FORMAT_RGBA5551;
-        break;
-    case SDL_PIXELFORMAT_ABGR1555:
-        bo_format = GBM_FORMAT_ABGR1555;
-        break;
-    case SDL_PIXELFORMAT_BGRA5551:
-        bo_format = GBM_FORMAT_BGRA5551;
-        break;
-    case SDL_PIXELFORMAT_RGB565:
-        bo_format = GBM_FORMAT_RGB565;
-        break;
-    case SDL_PIXELFORMAT_BGR565:
-        bo_format = GBM_FORMAT_BGR565;
-        break;
-    case SDL_PIXELFORMAT_RGB888:
-    case SDL_PIXELFORMAT_RGB24:
-        bo_format = GBM_FORMAT_RGB888;
-        break;
-    case SDL_PIXELFORMAT_BGR888:
-    case SDL_PIXELFORMAT_BGR24:
-        bo_format = GBM_FORMAT_BGR888;
-        break;
-    case SDL_PIXELFORMAT_RGBX8888:
-        bo_format = GBM_FORMAT_RGBX8888;
-        break;
-    case SDL_PIXELFORMAT_BGRX8888:
-        bo_format = GBM_FORMAT_BGRX8888;
-        break;
-    case SDL_PIXELFORMAT_ARGB8888:
-        bo_format = GBM_FORMAT_ARGB8888;
-        break;
-    case SDL_PIXELFORMAT_RGBA8888:
-        bo_format = GBM_FORMAT_RGBA8888;
-        break;
-    case SDL_PIXELFORMAT_ABGR8888:
-        bo_format = GBM_FORMAT_ABGR8888;
-        break;
-    case SDL_PIXELFORMAT_BGRA8888:
-        bo_format = GBM_FORMAT_BGRA8888;
-        break;
-    case SDL_PIXELFORMAT_ARGB2101010:
-        bo_format = GBM_FORMAT_ARGB2101010;
-        break;
-    default:
-        SDL_SetError("Unsupported pixel format for cursor");
-        return NULL;
-    }
+    /* All code below assumes ARGB8888 format for the cursor surface, like other backends do.
+       Also, the GBM BO pixels have to be alpha-premultiplied, but the SDL surface we receive has
+       straight-alpha pixels, so we always have to convert. */ 
+    SDL_assert(surface->format->format == SDL_PIXELFORMAT_ARGB8888);
+    SDL_assert(surface->pitch == surface->w * 4);
 
-    if (!KMSDRM_gbm_device_is_format_supported(viddata->gbm, bo_format, GBM_BO_USE_CURSOR | GBM_BO_USE_WRITE)) {
-        SDL_SetError("Unsupported pixel format for cursor");
+    if (!KMSDRM_gbm_device_is_format_supported(viddata->gbm, GBM_FORMAT_ARGB8888, GBM_BO_USE_CURSOR | GBM_BO_USE_WRITE)) {
+        printf("Unsupported pixel format for cursor\n");
         return NULL;
     }
 
@@ -180,26 +107,16 @@ KMSDRM_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y)
         return NULL;
     }
 
-    /* We have to know beforehand if a cursor with the same size as the surface is supported.
-     * If it's not, we have to find an usable cursor size and use an intermediate and clean buffer.
-     * If we can't find a cursor size supported by the hardware, we won't go on trying to 
-     * call SDL_SetCursor() later. */
-
-    usable_cursor_w = surface->w;
-    usable_cursor_h = surface->h;
-
-    while (usable_cursor_w <= MAX_CURSOR_W && usable_cursor_h <= MAX_CURSOR_H) { 
-        if (KMSDRM_IsCursorSizeSupported(usable_cursor_w, usable_cursor_h, bo_format)) {
-            cursor_supported = SDL_TRUE;
-            break;
-        }
-        usable_cursor_w += usable_cursor_w;
-        usable_cursor_h += usable_cursor_h;
+    /* Find out what GBM cursor size is recommended by the driver. */
+    if (KMSDRM_drmGetCap(viddata->drm_fd, DRM_CAP_CURSOR_WIDTH,  &usable_cursor_w) ||
+        KMSDRM_drmGetCap(viddata->drm_fd, DRM_CAP_CURSOR_HEIGHT, &usable_cursor_h)) {
+            SDL_SetError("Could not get the recommended GBM cursor size");
+            goto cleanup;
     }
 
-    if (!cursor_supported) {
-        SDL_SetError("Could not find a cursor size supported by the kernel driver");
-        goto cleanup;
+    if (usable_cursor_w == 0 || usable_cursor_w == 0) {
+            SDL_SetError("Could not get an usable GBM cursor size");
+            goto cleanup;
     }
 
     curdata->hot_x = hot_x;
@@ -207,7 +124,7 @@ KMSDRM_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y)
     curdata->w = usable_cursor_w;
     curdata->h = usable_cursor_h;
 
-    curdata->bo = KMSDRM_gbm_bo_create(viddata->gbm, usable_cursor_w, usable_cursor_h, bo_format,
+    curdata->bo = KMSDRM_gbm_bo_create(viddata->gbm, usable_cursor_w, usable_cursor_h, GBM_FORMAT_ARGB8888,
                                        GBM_BO_USE_CURSOR | GBM_BO_USE_WRITE);
 
     if (!curdata->bo) {
@@ -218,63 +135,46 @@ KMSDRM_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y)
     bo_stride = KMSDRM_gbm_bo_get_stride(curdata->bo);
     bufsize = bo_stride * curdata->h;
 
-    if (surface->pitch != bo_stride) {
-        /* pitch doesn't match stride, must be copied to temp buffer  */
-        buffer = SDL_malloc(bufsize);
-        if (!buffer) {
-            SDL_OutOfMemory();
-            goto cleanup;
-        }
+    /* Always use a temp buffer: it serves the purpose of storing the alpha-premultiplied pixels (so
+       we can copy them to the gbm BO with a single gb_bo_write() call), and also copying from the
+       SDL surface, line by line, to a gbm BO with different pitch. */
+    buffer = (uint32_t*)SDL_malloc(bufsize);
+    if (!buffer) {
+	SDL_OutOfMemory();
+	goto cleanup;
+    }
 
-        if (SDL_MUSTLOCK(surface)) {
-            if (SDL_LockSurface(surface) < 0) {
-                /* Could not lock surface */
-                goto cleanup;
-            }
-        }
+    if (SDL_MUSTLOCK(surface)) {
+	if (SDL_LockSurface(surface) < 0) {
+	    /* Could not lock surface */
+	    goto cleanup;
+	}
+    }
 
-        /* Clean the whole temporary buffer */
-        SDL_memset(buffer, 0x00, bo_stride * curdata->h);
+    /* Clean the whole temporary buffer. */
+    SDL_memset(buffer, 0x00, bo_stride * curdata->h);
 
-        /* Copy to temporary buffer */
-        for (i = 0; i < surface->h; i++) {
-            SDL_memcpy(buffer + (i * bo_stride),
-                       ((char *)surface->pixels) + (i * surface->pitch),
-                       surface->w * pixlfmt->BytesPerPixel);
-        }
-
-        if (SDL_MUSTLOCK(surface)) {
-            SDL_UnlockSurface(surface);
-        }
-
-        if (KMSDRM_gbm_bo_write(curdata->bo, buffer, bufsize)) {
-            SDL_SetError("Could not write to GBM cursor BO");
-            goto cleanup;
-        }
-
-        /* Free temporary buffer */
-        SDL_free(buffer);
-        buffer = NULL;
-    } else {
-        /* surface matches BO format */
-        if (SDL_MUSTLOCK(surface)) {
-            if (SDL_LockSurface(surface) < 0) {
-                /* Could not lock surface */
-                goto cleanup;
-            }
-        }
-
-        ret = KMSDRM_gbm_bo_write(curdata->bo, surface->pixels, bufsize);
-
-        if (SDL_MUSTLOCK(surface)) {
-            SDL_UnlockSurface(surface);
-        }
-
-        if (ret) {
-            SDL_SetError("Could not write to GBM cursor BO");
-            goto cleanup;
+    /* Copy from SDL surface to buffer, pre-multiplying by alpha each pixel as we go. */
+    for (int i = 0; i < surface->h; i++) {
+        for (int j = 0; j < surface->w; j++) {
+            pixel = ((uint32_t*)surface->pixels)[i * surface->w + j];
+            alpha_premultiply_ARGB8888 (&pixel);
+	    SDL_memcpy(buffer + (i * curdata->w)  + j, &pixel, 4);
         }
     }
+
+    if (SDL_MUSTLOCK(surface)) {
+	SDL_UnlockSurface(surface);
+    }
+
+    if (KMSDRM_gbm_bo_write(curdata->bo, buffer, bufsize)) {
+	SDL_SetError("Could not write to GBM cursor BO");
+	goto cleanup;
+    }
+
+    /* Free temporary buffer */
+    SDL_free(buffer);
+    buffer = NULL;
 
     cursor->driverdata = curdata;
 
