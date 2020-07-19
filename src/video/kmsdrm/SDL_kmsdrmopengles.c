@@ -61,7 +61,6 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window) {
     SDL_DisplayData *dispdata = (SDL_DisplayData *) SDL_GetDisplayForWindow(window)->driverdata;
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
     KMSDRM_FBInfo *fb_info;
-    SDL_bool crtc_setup_pending = SDL_FALSE;
 
     /* ALWAYS wait for each pageflip to complete before issuing another, vsync or not,
        or drmModePageFlip() will start returning EBUSY if there are pending pageflips.
@@ -79,8 +78,6 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window) {
     /* Recreate the GBM / EGL surfaces if the display mode has changed */
     if (windata->egl_surface_dirty) {
         KMSDRM_CreateSurfaces(_this, window);
-        /* Do this later, when a fb_id is obtained. */
-        crtc_setup_pending = SDL_TRUE;
     }
 
     if (windata->double_buffer) {
@@ -121,12 +118,12 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window) {
         }
 
         /* When needed, this is done once we have the needed fb_id, not before. */
-        if (crtc_setup_pending) {
+        if (windata->crtc_setup_pending) {
 	    if (KMSDRM_drmModeSetCrtc(viddata->drm_fd, dispdata->crtc_id, fb_info->fb_id, 0,
 					0, &dispdata->conn->connector_id, 1, &dispdata->mode)) {
 		SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Could not configure CRTC on video mode setting.");
 	    }
-            crtc_setup_pending = SDL_FALSE;
+            windata->crtc_setup_pending = SDL_FALSE;
         }
 
         if (!KMSDRM_drmModePageFlip(viddata->drm_fd, dispdata->crtc_id, fb_info->fb_id,
@@ -210,12 +207,12 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window) {
         }
 
         /* When needed, this is done once we have the needed fb_id, not before. */
-        if (crtc_setup_pending) {
+        if (windata->crtc_setup_pending) {
 	    if (KMSDRM_drmModeSetCrtc(viddata->drm_fd, dispdata->crtc_id, fb_info->fb_id, 0,
 					0, &dispdata->conn->connector_id, 1, &dispdata->mode)) {
 		SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Could not configure CRTC on video mode setting.");
 	    }
-            crtc_setup_pending = SDL_FALSE;
+            windata->crtc_setup_pending = SDL_FALSE;
         }
 
 

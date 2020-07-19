@@ -433,8 +433,12 @@ KMSDRM_CreateSurfaces(_THIS, SDL_Window * window)
 
     SDL_EGL_MakeCurrent(_this, windata->egl_surface, egl_context);
 
-    windata->egl_surface_dirty = 0;
+    windata->egl_surface_dirty = SDL_FALSE;
 #endif
+
+    /* We can't call KMSDRM_SetCRTC() until we have a fb_id, in KMSDRM_GLES_SwapWindow().
+       So we take note here to do it there. */
+    windata->crtc_setup_pending = SDL_TRUE;
 
     return 0;
 }
@@ -757,7 +761,7 @@ KMSDRM_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
 #if SDL_VIDEO_OPENGL_EGL
         /* Can't recreate EGL surfaces right now, need to wait until SwapWindow
            so the correct thread-local surface and context state are available */
-        windata->egl_surface_dirty = 1;
+        windata->egl_surface_dirty = SDL_TRUE;
 #else
         if (KMSDRM_CreateSurfaces(_this, window)) {
             return -1;
@@ -793,9 +797,13 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
         goto error;
     }
 
-    /* In case low-latency is wanted, double-buffered video will be used. We take note here */
-    windata->double_buffer = SDL_FALSE;
+    /* Init windata fields. */
+    windata->waiting_for_flip   = SDL_FALSE;
+    windata->double_buffer      = SDL_FALSE;
+    windata->crtc_setup_pending = SDL_FALSE;
+    windata->egl_surface_dirty  = SDL_FALSE;
 
+    /* In case low-latency is wanted, double-buffered video will be used. We take note here */
     if (SDL_GetHintBoolean(SDL_HINT_VIDEO_DOUBLE_BUFFER, SDL_FALSE)) {
         windata->double_buffer = SDL_TRUE;
     }
