@@ -758,15 +758,10 @@ KMSDRM_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
         SDL_Window *window = viddata->windows[i];
         SDL_WindowData *windata = (SDL_WindowData *)window->driverdata;
 
-#if SDL_VIDEO_OPENGL_EGL
-        /* Can't recreate EGL surfaces right now, need to wait until SwapWindow
-           so the correct thread-local surface and context state are available */
-        windata->egl_surface_dirty = SDL_TRUE;
-#else
+        /* Re-create GBM and EGL surfaces everytime we change the display mode. */
         if (KMSDRM_CreateSurfaces(_this, window)) {
             return -1;
         }
-#endif
 
         /* Tell app about the resize */
         SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, mode->w, mode->h);
