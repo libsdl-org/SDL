@@ -756,7 +756,6 @@ KMSDRM_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
 
     for (int i = 0; i < viddata->num_windows; i++) {
         SDL_Window *window = viddata->windows[i];
-        SDL_WindowData *windata = (SDL_WindowData *)window->driverdata;
 
         /* Re-create GBM and EGL surfaces everytime we change the display mode. */
         if (KMSDRM_CreateSurfaces(_this, window)) {
