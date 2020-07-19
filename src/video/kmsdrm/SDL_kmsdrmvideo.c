@@ -797,6 +797,35 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
     windata->crtc_setup_pending = SDL_FALSE;
     windata->egl_surface_dirty  = SDL_FALSE;
 
+
+    /* First remember that certain functions in SDL_Video.c will call *_SetDisplayMode when the
+       SDL_WINDOW_FULLSCREEN is set and SDL_WINDOW_FULLSCREEN_DESKTOP is not set.
+       So I am determining here that the behavior when creating an SDL_Window() in KMSDRM, is:
+
+       -Creating a normal non-fullscreen window won't change the display mode.
+        They won't cover the full screen area, either, because that breaks the image aspect ratio.
+       -Creating a SDL_WINDOW_FULLSCREEN window will change the display mode,
+        because SDL_WINDOW_FULLSCREEN flag is set.
+       -Creating a SDL_WINDOW_FULLSCREEN_DESKTOP window will not change the display mode,
+        because even if the SDL_WINDOW_FULLSCREEN flag is set, SDL_WINDOW_FULLSCREEN_DESKTOP prevents it.
+
+      If we ever decide that we want to have normal windows (non-SDL_WINDOW_FULLSCREEN) should cause a display
+      mode change, we could force the SDL_WINDOW_FULLSCREEN flag again on every window.
+      But remember that it will break games that check if a window is FULLSCREEN or not before setting
+      a fullscreen mode with SDL_SetWindowFullscreen(), like sm64ex (sm64 pc port).
+      If we ever decide that we want normal windows to cover the whole screen area, we can force window->w
+      and window->h to the original display mode dimensions.
+
+    Commented reference code for all this:
+       
+    window->flags |= (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL);
+
+    SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
+
+    window->w = display->desktop_mode.w;
+    window->h = display->desktop_mode.h; */
+
+
     /* In case low-latency is wanted, double-buffered video will be used. We take note here */
     if (SDL_GetHintBoolean(SDL_HINT_VIDEO_DOUBLE_BUFFER, SDL_FALSE)) {
         windata->double_buffer = SDL_TRUE;
