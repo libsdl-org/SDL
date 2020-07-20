@@ -90,7 +90,7 @@ KMSDRM_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y)
     SDL_assert(surface->format->format == SDL_PIXELFORMAT_ARGB8888);
     SDL_assert(surface->pitch == surface->w * 4);
 
-    if (!KMSDRM_gbm_device_is_format_supported(viddata->gbm, GBM_FORMAT_ARGB8888, GBM_BO_USE_CURSOR | GBM_BO_USE_WRITE)) {
+    if (!KMSDRM_gbm_device_is_format_supported(viddata->gbm_dev, GBM_FORMAT_ARGB8888, GBM_BO_USE_CURSOR | GBM_BO_USE_WRITE)) {
         printf("Unsupported pixel format for cursor\n");
         return NULL;
     }
@@ -124,7 +124,7 @@ KMSDRM_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y)
     curdata->w = usable_cursor_w;
     curdata->h = usable_cursor_h;
 
-    curdata->bo = KMSDRM_gbm_bo_create(viddata->gbm, usable_cursor_w, usable_cursor_h, GBM_FORMAT_ARGB8888,
+    curdata->bo = KMSDRM_gbm_bo_create(viddata->gbm_dev, usable_cursor_w, usable_cursor_h, GBM_FORMAT_ARGB8888,
                                        GBM_BO_USE_CURSOR | GBM_BO_USE_WRITE);
 
     if (!curdata->bo) {
