@@ -77,10 +77,12 @@ check_modesetting(int devindex)
 
                         if (conn->connection == DRM_MODE_CONNECTED && conn->count_modes) {
                             available = SDL_TRUE;
-                            break;
                         }
 
                         KMSDRM_drmModeFreeConnector(conn);
+                        if (available) {
+                            break;
+                        }
                     }
                 }
                 KMSDRM_drmModeFreeResources(resources);
