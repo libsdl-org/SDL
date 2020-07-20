@@ -49,7 +49,7 @@
 #define KMSDRM_DRI_PATH "/dev/dri/"
 
 static int
-check_modestting(int devindex)
+check_modesetting(int devindex)
 {
     SDL_bool available = SDL_FALSE;
     char device[512];
@@ -120,7 +120,7 @@ get_driindex(void)
     int i;
 
     for (i = 0; i < devcount; i++) {
-        if (check_modestting(i)) {
+        if (check_modesetting(i)) {
             return i;
         }
     }
