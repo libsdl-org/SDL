@@ -39,7 +39,7 @@ typedef struct SDL_VideoData
 {
     int devindex;               /* device index that was passed on creation */
     int drm_fd;                 /* DRM file desc */
-    struct gbm_device *gbm;
+    struct gbm_device *gbm_dev;
 
     SDL_Window **windows;
     int max_windows;

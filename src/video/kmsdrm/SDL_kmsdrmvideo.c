@@ -421,7 +421,7 @@ KMSDRM_CreateSurfaces(_THIS, SDL_Window * window)
     EGLContext egl_context;
 #endif
 
-    if (!KMSDRM_gbm_device_is_format_supported(viddata->gbm, surface_fmt, surface_flags)) {
+    if (!KMSDRM_gbm_device_is_format_supported(viddata->gbm_dev, surface_fmt, surface_flags)) {
         SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO, "GBM surface format not supported. Trying anyway.");
     }
 
@@ -432,7 +432,7 @@ KMSDRM_CreateSurfaces(_THIS, SDL_Window * window)
 
     KMSDRM_DestroySurfaces(_this, window);
 
-    windata->gs = KMSDRM_gbm_surface_create(viddata->gbm, width, height, surface_fmt, surface_flags);
+    windata->gs = KMSDRM_gbm_surface_create(viddata->gbm_dev, width, height, surface_fmt, surface_flags);
 
     if (!windata->gs) {
         return SDL_SetError("Could not create GBM surface");
@@ -489,8 +489,8 @@ KMSDRM_VideoInit(_THIS)
 
     SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Opened DRM FD (%d)", viddata->drm_fd);
 
-    viddata->gbm = KMSDRM_gbm_create_device(viddata->drm_fd);
-    if (!viddata->gbm) {
+    viddata->gbm_dev = KMSDRM_gbm_create_device(viddata->drm_fd);
+    if (!viddata->gbm_dev) {
         ret = SDL_SetError("Couldn't create gbm device.");
         goto cleanup;
     }
@@ -663,9 +663,9 @@ cleanup:
             KMSDRM_drmModeFreeCrtc(dispdata->saved_crtc);
             dispdata->saved_crtc = NULL;
         }
-        if (viddata->gbm) {
-            KMSDRM_gbm_device_destroy(viddata->gbm);
-            viddata->gbm = NULL;
+        if (viddata->gbm_dev) {
+            KMSDRM_gbm_device_destroy(viddata->gbm_dev);
+            viddata->gbm_dev = NULL;
         }
         if (viddata->drm_fd >= 0) {
             close(viddata->drm_fd);
@@ -714,9 +714,9 @@ KMSDRM_VideoQuit(_THIS)
         KMSDRM_drmModeFreeCrtc(dispdata->saved_crtc);
         dispdata->saved_crtc = NULL;
     }
-    if (viddata->gbm) {
-        KMSDRM_gbm_device_destroy(viddata->gbm);
-        viddata->gbm = NULL;
+    if (viddata->gbm_dev) {
+        KMSDRM_gbm_device_destroy(viddata->gbm_dev);
+        viddata->gbm_dev = NULL;
     }
     if (viddata->drm_fd >= 0) {
         close(viddata->drm_fd);
