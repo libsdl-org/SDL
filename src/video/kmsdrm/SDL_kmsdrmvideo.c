@@ -56,6 +56,7 @@ check_modesetting(int devindex)
     int drm_fd;
 
     SDL_snprintf(device, sizeof (device), "%scard%d", KMSDRM_DRI_PATH, devindex);
+    SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "check_modesetting: probing \"%s\"", device);
 
     drm_fd = open(device, O_RDWR | O_CLOEXEC);
     if (drm_fd >= 0) {
@@ -67,7 +68,20 @@ check_modesetting(int devindex)
                              resources->count_connectors, resources->count_encoders, resources->count_crtcs);
 
                 if (resources->count_connectors > 0 && resources->count_encoders > 0 && resources->count_crtcs > 0) {
-                    available = SDL_TRUE;
+                    for (int i = 0; i < resources->count_connectors; i++) {
+                        drmModeConnector *conn = KMSDRM_drmModeGetConnector(drm_fd, resources->connectors[i]);
+
+                        if (!conn) {
+                            continue;
+                        }
+
+                        if (conn->connection == DRM_MODE_CONNECTED && conn->count_modes) {
+                            available = SDL_TRUE;
+                            break;
+                        }
+
+                        KMSDRM_drmModeFreeConnector(conn);
+                    }
                 }
                 KMSDRM_drmModeFreeResources(resources);
             }
