@@ -38,6 +38,7 @@
 #include <linux/joystick.h>
 
 #include "SDL_assert.h"
+#include "SDL_hints.h"
 #include "SDL_joystick.h"
 #include "SDL_endian.h"
 #include "SDL_timer.h"
@@ -706,6 +707,7 @@ ConfigJoystick(SDL_Joystick * joystick, int fd)
             }
             if (test_bit(i, absbit)) {
                 struct input_absinfo absinfo;
+                SDL_bool hint_used = SDL_GetHintBoolean(SDL_HINT_LINUX_JOYSTICK_DEADZONES, SDL_TRUE);
 
                 if (ioctl(fd, EVIOCGABS(i), &absinfo) < 0) {
                     continue;
@@ -721,7 +723,7 @@ ConfigJoystick(SDL_Joystick * joystick, int fd)
                 if (absinfo.minimum == absinfo.maximum) {
                     joystick->hwdata->abs_correct[i].used = 0;
                 } else {
-                    joystick->hwdata->abs_correct[i].used = 1;
+                    joystick->hwdata->abs_correct[i].used = hint_used;
                     joystick->hwdata->abs_correct[i].coef[0] =
                         (absinfo.maximum + absinfo.minimum) - 2 * absinfo.flat;
                     joystick->hwdata->abs_correct[i].coef[1] =

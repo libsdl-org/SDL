@@ -696,6 +696,18 @@ extern "C" {
   */
 #define SDL_HINT_JOYSTICK_RAWINPUT "SDL_JOYSTICK_RAWINPUT"
 
+ /**
+  *  \brief  A variable controlling whether Linux joysticks adhere their HID-defined deadzones or return unfiltered values.
+  *      This is useful for Wine which implements its own deadzone handler if requested by games, also it enables xinput
+  *      games to receive unfiltered values as required from the API.
+  *
+  *  This variable can be set to the following values:
+  *    "0"       - Linux deadzones are not used by SDL
+  *    "1"       - Linux deadzones are used by SDL (the default)
+  *
+  */
+#define SDL_HINT_LINUX_JOYSTICK_DEADZONES "SDL_LINUX_JOYSTICK_DEADZONES"
+
 /**
  *  \brief If set to "0" then never set the top most bit on a SDL Window, even if the video mode expects it.
  *      This is a debugging aid for developers and not expected to be used by end users. The default is "1"
