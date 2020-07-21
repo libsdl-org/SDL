@@ -66,6 +66,7 @@ struct SDL_WaylandInput {
     SDL_WaylandDataDevice *data_device;
     struct zwp_relative_pointer_v1 *relative_pointer;
     struct zwp_confined_pointer_v1 *confined_pointer;
+    SDL_Window *confined_pointer_window;
     SDL_WindowData *pointer_focus;
     SDL_WindowData *keyboard_focus;
 
@@ -1211,6 +1212,14 @@ lock_pointer_to_window(SDL_Window *window,
     w->locked_pointer = locked_pointer;
 }
 
+static void pointer_confine_destroy(struct SDL_WaylandInput *input)
+{
+    if (input->confined_pointer) {
+        zwp_confined_pointer_v1_destroy(input->confined_pointer);
+        input->confined_pointer = NULL;
+    }
+}
+
 int Wayland_input_lock_pointer(struct SDL_WaylandInput *input)
 {
     SDL_VideoDevice *vd = SDL_GetVideoDevice();
@@ -1226,6 +1235,10 @@ int Wayland_input_lock_pointer(struct SDL_WaylandInput *input)
 
     if (!input->pointer)
         return -1;
+
+    /* If we have a pointer confine active, we must destroy it here because
+     * creating a locked pointer otherwise would be a protocol error. */
+    pointer_confine_destroy(input);
 
     if (!input->relative_pointer) {
         relative_pointer =
@@ -1265,6 +1278,9 @@ int Wayland_input_unlock_pointer(struct SDL_WaylandInput *input)
 
     d->relative_mouse_mode = 0;
 
+    if (input->confined_pointer_window)
+        Wayland_input_confine_pointer(input->confined_pointer_window, input);
+
     return 0;
 }
 
@@ -1302,6 +1318,13 @@ int Wayland_input_confine_pointer(SDL_Window *window, struct SDL_WaylandInput *i
     if (input->confined_pointer)
         Wayland_input_unconfine_pointer(input);
 
+    input->confined_pointer_window = window;
+
+    /* We cannot create a confine if the pointer is already locked. Defer until
+     * the pointer is unlocked. */
+    if (d->relative_mouse_mode)
+        return 0;
+
     confined_pointer =
         zwp_pointer_constraints_v1_confine_pointer(d->pointer_constraints,
                                                    w->surface,
@@ -1318,11 +1341,8 @@ int Wayland_input_confine_pointer(SDL_Window *window, struct SDL_WaylandInput *i
 
 int Wayland_input_unconfine_pointer(struct SDL_WaylandInput *input)
 {
-    if (input->confined_pointer) {
-        zwp_confined_pointer_v1_destroy(input->confined_pointer);
-        input->confined_pointer = NULL;
-    }
-
+    pointer_confine_destroy(input);
+    input->confined_pointer_window = NULL;
     return 0;
 }
 
