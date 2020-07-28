@@ -144,6 +144,320 @@ get_driindex(void)
     return -ENOENT;
 }
 
+/*********************************/
+/* Atomic helper functions block */
+/*********************************/
+
+#define VOID2U64(x) ((uint64_t)(unsigned long)(x))
+
+static int add_connector_property(drmModeAtomicReq *req, uint32_t obj_id,
+					const char *name, uint64_t value)
+{
+        SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
+	unsigned int i;
+	int prop_id = 0;
+
+	for (i = 0 ; i < dispdata->connector_props->count_props ; i++) {
+		if (strcmp(dispdata->connector_props_info[i]->name, name) == 0) {
+			prop_id = dispdata->connector_props_info[i]->prop_id;
+			break;
+		}
+	}
+
+	if (prop_id < 0) {
+		printf("no connector property: %s\n", name);
+		return -EINVAL;
+	}
+
+	return KMSDRM_drmModeAtomicAddProperty(req, obj_id, prop_id, value);
+}
+
+static int add_crtc_property(drmModeAtomicReq *req, uint32_t obj_id,
+				const char *name, uint64_t value)
+{
+        SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
+	unsigned int i;
+	int prop_id = -1;
+
+	for (i = 0 ; i < dispdata->crtc_props->count_props ; i++) {
+		if (strcmp(dispdata->crtc_props_info[i]->name, name) == 0) {
+			prop_id = dispdata->crtc_props_info[i]->prop_id;
+			break;
+		}
+	}
+
+	if (prop_id < 0) {
+		printf("no crtc property: %s\n", name);
+		return -EINVAL;
+	}
+
+	return KMSDRM_drmModeAtomicAddProperty(req, obj_id, prop_id, value);
+}
+
+static int add_plane_property(drmModeAtomicReq *req, uint32_t obj_id,
+				const char *name, uint64_t value)
+{
+        SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
+	unsigned int i;
+	int prop_id = -1;
+
+	for (i = 0 ; i < dispdata->plane_props->count_props ; i++) {
+		if (strcmp(dispdata->plane_props_info[i]->name, name) == 0) {
+			prop_id = dispdata->plane_props_info[i]->prop_id;
+			break;
+		}
+	}
+
+	if (prop_id < 0) {
+		printf("no plane property: %s\n", name);
+		return -EINVAL;
+	}
+
+	return KMSDRM_drmModeAtomicAddProperty(req, obj_id, prop_id, value);
+}
+
+/*static void get_plane_properties() {
+    uint32_t i;
+    dispdata->plane_ = drmModeObjectGetProperties(viddata->drm_fd,
+        plane->plane_id, DRM_MODE_OBJECT_PLANE);
+
+    if (!dispdata->type.props) {
+	    printf("could not get %s %u properties: %s\n",
+			    #type, id, strerror(errno));
+	    return NULL;
+    }
+
+    dispdata->type->props_info = calloc(dispdata->type.props->count_props,
+		    sizeof(*dispdata->type->props_info));
+    for (i = 0; i < dispdata->type->props->count_props; i++) {
+	    dispdata->type.props_info[i] = drmModeGetProperty(viddata->drm_fd,
+			    dispdata->type->props->props[i]);
+    }
+    return props;
+}*/
+
+
+
+
+void print_plane_info(_THIS, drmModePlanePtr plane)
+{
+    char *plane_type;
+    drmModeRes *resources;
+    uint32_t type = 0;
+    SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
+
+    drmModeObjectPropertiesPtr props = KMSDRM_drmModeObjectGetProperties(viddata->drm_fd,
+        plane->plane_id, DRM_MODE_OBJECT_PLANE);
+
+    /* Search the plane props for the plane type. */
+    for (int j = 0; j < props->count_props; j++) {
+
+	drmModePropertyPtr p = KMSDRM_drmModeGetProperty(viddata->drm_fd, props->props[j]);
+
+	if ((strcmp(p->name, "type") == 0)) {
+	    type = props->prop_values[j];
+	}
+
+	KMSDRM_drmModeFreeProperty(p);
+    }
+
+    switch (type) {
+        case DRM_PLANE_TYPE_OVERLAY:
+	plane_type = "overlay";
+	break;
+
+        case DRM_PLANE_TYPE_PRIMARY:
+	plane_type = "primary";
+	break;
+
+        case DRM_PLANE_TYPE_CURSOR:
+	plane_type = "cursor";
+	break;
+    }
+
+
+    /* Remember that, to present a plane on screen, it has to be connected to a CRTC so the CRTC scans it,
+       scales it, etc... and presents it on screen. */
+
+    /* Now we look for the CRTCs supported by the plane. */ 
+    resources = KMSDRM_drmModeGetResources(viddata->drm_fd);
+    if (!resources)
+        return;
+
+    printf("--PLANE ID: %d\nPLANE TYPE: %s\nCRTC READING THIS PLANE: %d\nCRTCS SUPPORTED BY THIS PLANE: ",  plane->plane_id, plane_type, plane->crtc_id);
+    for (int i = 0; i < resources->count_crtcs; i++) {
+	if (plane->possible_crtcs & (1 << i)) {
+	    uint32_t crtc_id = resources->crtcs[i];
+            printf ("%d", crtc_id);
+	    break;
+	}
+    }
+
+    printf ("\n\n");
+}
+
+void get_planes_info(_THIS)
+{
+    drmModePlaneResPtr plane_resources;
+    uint32_t i;
+
+    SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
+    SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
+
+    plane_resources = KMSDRM_drmModeGetPlaneResources(viddata->drm_fd);
+    if (!plane_resources) {
+	printf("drmModeGetPlaneResources failed: %s\n", strerror(errno));
+	return;
+    }
+
+    printf("--Number of planes found: %d-- \n", plane_resources->count_planes);
+    printf("--Usable CRTC that we have chosen: %d-- \n", dispdata->crtc->crtc_id);
+
+    /* Iterate on all the available planes. */
+    for (i = 0; (i < plane_resources->count_planes); i++) {
+
+        uint32_t plane_id = plane_resources->planes[i];
+
+	drmModePlanePtr plane = KMSDRM_drmModeGetPlane(viddata->drm_fd, plane_id);
+	if (!plane) {
+	    printf("drmModeGetPlane(%u) failed: %s\n", plane_id, strerror(errno));
+	    continue;
+	}
+
+        /* Print plane info. */
+        print_plane_info(_this, plane);    
+        KMSDRM_drmModeFreePlane(plane);
+    }
+
+    KMSDRM_drmModeFreePlaneResources(plane_resources);
+}
+
+
+/* Get a plane that is PRIMARY (there's no guarantee that we have overlays in all hardware!)
+   and can use the CRTC we have chosen. That's all. */ 
+int get_plane_id(_THIS)
+{
+    drmModePlaneResPtr plane_resources;
+    uint32_t i, j;
+    int ret = -EINVAL;
+    int found_primary = 0;
+
+    SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
+    SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
+
+    plane_resources = KMSDRM_drmModeGetPlaneResources(viddata->drm_fd);
+    if (!plane_resources) {
+	printf("drmModeGetPlaneResources failed: %s\n", strerror(errno));
+	return -1;
+    }
+
+    /* Iterate on all the available planes. */
+    for (i = 0; (i < plane_resources->count_planes) && !found_primary; i++) {
+
+	uint32_t plane_id = plane_resources->planes[i];
+
+	drmModePlanePtr plane = KMSDRM_drmModeGetPlane(viddata->drm_fd, plane_id);
+	if (!plane) {
+	    printf("drmModeGetPlane(%u) failed: %s\n", plane_id, strerror(errno));
+	    continue;
+	}
+
+        /* See if the current CRTC is available for this plane. */
+	if (plane->possible_crtcs & (1 << dispdata->crtc_index)) {
+
+	    drmModeObjectPropertiesPtr props = KMSDRM_drmModeObjectGetProperties(viddata->drm_fd, plane_id, DRM_MODE_OBJECT_PLANE);
+	    ret = plane_id;
+
+            /* Search the plane props, to see if it's a primary plane. */
+	    for (j = 0; j < props->count_props; j++) {
+
+		drmModePropertyPtr p = KMSDRM_drmModeGetProperty(viddata->drm_fd, props->props[j]);
+
+		if ((strcmp(p->name, "type") == 0) &&
+		    (props->prop_values[j] == DRM_PLANE_TYPE_PRIMARY)) {
+		    /* found our primary plane, lets use that: */
+		    found_primary = 1;
+		}
+
+		KMSDRM_drmModeFreeProperty(p);
+	    }
+
+	    KMSDRM_drmModeFreeObjectProperties(props);
+	}
+
+	KMSDRM_drmModeFreePlane(plane);
+    }
+
+    KMSDRM_drmModeFreePlaneResources(plane_resources);
+
+    return ret;
+}
+
+int drm_atomic_commit(_THIS, uint32_t fb_id, uint32_t flags)
+{
+    SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
+    SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
+    uint32_t plane_id = dispdata->plane->plane_id;
+    uint32_t blob_id;
+    drmModeAtomicReq *req;
+    int ret;
+
+    req = KMSDRM_drmModeAtomicAlloc();
+
+    if (flags & DRM_MODE_ATOMIC_ALLOW_MODESET) {
+	if (add_connector_property(req, dispdata->connector->connector_id, "CRTC_ID",
+				   dispdata->crtc_id) < 0)
+	    return -1;
+
+	if (KMSDRM_drmModeCreatePropertyBlob(viddata->drm_fd, &dispdata->mode, sizeof(dispdata->mode),
+					     &blob_id) != 0)
+	    return -1;
+
+	if (add_crtc_property(req, dispdata->crtc_id, "MODE_ID", blob_id) < 0)
+	    return -1;
+
+	if (add_crtc_property(req, dispdata->crtc_id, "ACTIVE", 1) < 0)
+	    return -1;
+    }
+
+    add_plane_property(req, plane_id, "FB_ID", fb_id);
+    add_plane_property(req, plane_id, "CRTC_ID", dispdata->crtc_id);
+    add_plane_property(req, plane_id, "SRC_X", 0);
+    add_plane_property(req, plane_id, "SRC_Y", 0);
+    add_plane_property(req, plane_id, "SRC_W", dispdata->mode.hdisplay << 16);
+    add_plane_property(req, plane_id, "SRC_H", dispdata->mode.vdisplay << 16);
+    add_plane_property(req, plane_id, "CRTC_X", 0);
+    add_plane_property(req, plane_id, "CRTC_Y", 0);
+    add_plane_property(req, plane_id, "CRTC_W", dispdata->mode.hdisplay);
+    add_plane_property(req, plane_id, "CRTC_H", dispdata->mode.vdisplay);
+
+    if (dispdata->kms_in_fence_fd != -1) {
+	add_crtc_property(req, dispdata->crtc_id, "OUT_FENCE_PTR",
+			  VOID2U64(&dispdata->kms_out_fence_fd));
+	add_plane_property(req, plane_id, "IN_FENCE_FD", dispdata->kms_in_fence_fd);
+    }
+
+    ret = KMSDRM_drmModeAtomicCommit(viddata->drm_fd, req, flags, NULL);
+    if (ret)
+	goto out;
+
+    if (dispdata->kms_in_fence_fd != -1) {
+	close(dispdata->kms_in_fence_fd);
+	dispdata->kms_in_fence_fd = -1;
+    }
+
+out:
+    KMSDRM_drmModeAtomicFree(req);
+
+    return ret;
+}
+
+/***************************************/
+/* End of Atomic helper functions block*/
+/***************************************/
+
+
+
 static int
 KMSDRM_Available(void)
 {
@@ -319,60 +633,6 @@ KMSDRM_FBFromBO(_THIS, struct gbm_bo *bo)
     return fb_info;
 }
 
-static void
-KMSDRM_FlipHandler(int fd, unsigned int frame, unsigned int sec, unsigned int usec, void *data)
-{
-    /* If the data pointer received here is the same passed as the user_data in drmModePageFlip()
-       then this is the event handler for the pageflip that was issued on drmPageFlip(): got here 
-       because of that precise page flip, the while loop gets broken here because of the right event.
-       This knowledge will allow handling different issued pageflips if sometime in the future 
-       managing different CRTCs in SDL2 is needed, for example (synchronous pageflips happen on vblank 
-       and vblank is a CRTC thing). */
-    *((SDL_bool *) data) = SDL_FALSE;
-}
-
-SDL_bool
-KMSDRM_WaitPageFlip(_THIS, SDL_WindowData *windata, int timeout) {
-    SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
-    drmEventContext ev = {0};
-    struct pollfd pfd = {0};
-
-    ev.version = DRM_EVENT_CONTEXT_VERSION;
-    ev.page_flip_handler = KMSDRM_FlipHandler;
-
-    pfd.fd = viddata->drm_fd;
-    pfd.events = POLLIN;
-
-    while (windata->waiting_for_flip) {
-        pfd.revents = 0;
-
-        if (poll(&pfd, 1, timeout) < 0) {
-            SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "DRM poll error");
-            return SDL_FALSE;
-        }
-
-        if (pfd.revents & (POLLHUP | POLLERR)) {
-            SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "DRM poll hup or error");
-            return SDL_FALSE;
-        }
-
-        /* Is the fd readable? Thats enough to call drmHandleEvent() on it. */
-        if (pfd.revents & POLLIN) {
-            /* Page flip? ONLY if the event that made the fd readable (=POLLIN state)
-               is a page flip, will drmHandleEvent call page_flip_handler, which will break the loop.
-               The drmHandleEvent() and subsequent page_flip_handler calls are both synchronous (blocking),
-               nothing runs on a different thread, so no need to protect waiting_for_flip access with mutexes. */
-            KMSDRM_drmHandleEvent(viddata->drm_fd, &ev);
-        } else {
-            /* Timed out and page flip didn't happen */
-            SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Dropping frame while waiting_for_flip");
-            return SDL_FALSE;
-        }
-    }
-
-    return SDL_TRUE;
-}
-
 /*****************************************************************************/
 /* SDL Video and Display initialization/handling functions                   */
 /* _this is a SDL_VideoDevice *                                              */
@@ -381,8 +641,6 @@ static void
 KMSDRM_DestroySurfaces(_THIS, SDL_Window * window)
 {
     SDL_WindowData *windata = (SDL_WindowData *)window->driverdata;
-
-    KMSDRM_WaitPageFlip(_this, windata, -1);
 
     if (windata->curr_bo) {
         KMSDRM_gbm_surface_release_buffer(windata->gs, windata->curr_bo);
@@ -504,6 +762,7 @@ KMSDRM_VideoInit(_THIS)
         goto cleanup;
     }
 
+    /* Iterate on the available connectors to find a connected connector. */
     for (int i = 0; i < resources->count_connectors; i++) {
         drmModeConnector *conn = KMSDRM_drmModeGetConnector(viddata->drm_fd, resources->connectors[i]);
 
@@ -514,14 +773,15 @@ KMSDRM_VideoInit(_THIS)
         if (conn->connection == DRM_MODE_CONNECTED && conn->count_modes) {
             SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Found connector %d with %d modes.",
                          conn->connector_id, conn->count_modes);
-            dispdata->conn = conn;
+            dispdata->connector = conn;
+            dispdata->connector_id = conn->connector_id;
             break;
         }
 
         KMSDRM_drmModeFreeConnector(conn);
     }
 
-    if (!dispdata->conn) {
+    if (!dispdata->connector) {
         ret = SDL_SetError("No currently active connector found.");
         goto cleanup;
     }
@@ -534,7 +794,7 @@ KMSDRM_VideoInit(_THIS)
           continue;
         }
 
-        if (encoder->encoder_id == dispdata->conn->encoder_id) {
+        if (encoder->encoder_id == dispdata->connector->encoder_id) {
             SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Found encoder %d.", encoder->encoder_id);
             break;
         }
@@ -552,13 +812,13 @@ KMSDRM_VideoInit(_THIS)
               continue;
             }
 
-            for (j = 0; j < dispdata->conn->count_encoders; j++) {
-                if (dispdata->conn->encoders[j] == encoder->encoder_id) {
+            for (j = 0; j < dispdata->connector->count_encoders; j++) {
+                if (dispdata->connector->encoders[j] == encoder->encoder_id) {
                     break;
                 }
             }
 
-            if (j != dispdata->conn->count_encoders) {
+            if (j != dispdata->connector->count_encoders) {
               break;
             }
 
@@ -575,40 +835,62 @@ KMSDRM_VideoInit(_THIS)
     SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Found encoder %d.", encoder->encoder_id);
 
     /* Try to find a CRTC connected to this encoder */
-    dispdata->saved_crtc = KMSDRM_drmModeGetCrtc(viddata->drm_fd, encoder->crtc_id);
+    dispdata->crtc = KMSDRM_drmModeGetCrtc(viddata->drm_fd, encoder->crtc_id);
 
-    if (!dispdata->saved_crtc) {
-        /* No CRTC was connected, find the first CRTC that can be connected */
+    /* If no CRTC was connected to the encoder, find the first CRTC that is supported by the encoder, and use that. */
+    if (!dispdata->crtc) {
         for (int i = 0; i < resources->count_crtcs; i++) {
             if (encoder->possible_crtcs & (1 << i)) {
                 encoder->crtc_id = resources->crtcs[i];
-                dispdata->saved_crtc = KMSDRM_drmModeGetCrtc(viddata->drm_fd, encoder->crtc_id);
+                dispdata->crtc = KMSDRM_drmModeGetCrtc(viddata->drm_fd, encoder->crtc_id);
                 break;
             }
         }
     }
 
-    if (!dispdata->saved_crtc) {
+    if (!dispdata->crtc) {
         ret = SDL_SetError("No CRTC found.");
         goto cleanup;
     }
 
-    SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Saved crtc_id %u, fb_id %u, (%u,%u), %ux%u",
-                 dispdata->saved_crtc->crtc_id, dispdata->saved_crtc->buffer_id, dispdata->saved_crtc->x,
-                 dispdata->saved_crtc->y, dispdata->saved_crtc->width, dispdata->saved_crtc->height);
+    /* SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Saved crtc_id %u, fb_id %u, (%u,%u), %ux%u",
+                 dispdata->crtc->crtc_id, dispdata->crtc->buffer_id, dispdata->crtc->x,
+                 dispdata->crtc->y, dispdata->crtc->width, dispdata->crtc->height);
+    */
 
-    dispdata->crtc_id = encoder->crtc_id;
+    dispdata->crtc_id = dispdata->crtc->crtc_id;
+    dispdata->crtc = KMSDRM_drmModeGetCrtc(viddata->drm_fd, dispdata->crtc_id);
+
+    /****************/
+    /* Atomic block */
+    /****************/
+
+    /* Find crtc_index. It's used to find out if a plane supports a CRTC. */
+    /* TODO: include this in the get_plane_id() function somehow. */
+    for (int i = 0; i < resources->count_crtcs; i++) {
+	if (resources->crtcs[i] == dispdata->crtc_id) {
+	    dispdata->crtc_index = i;
+	    break;
+	}
+    }
+
+    /* Initialize the fence fd: */
+    dispdata->kms_out_fence_fd = -1,
+
+    /*********************/
+    /* Atomic block ends */
+    /*********************/
 
     /* Figure out the default mode to be set. If the current CRTC's mode isn't
        valid, select the first mode supported by the connector
 
        FIXME find first mode that specifies DRM_MODE_TYPE_PREFERRED */
-    dispdata->mode = dispdata->saved_crtc->mode;
+    dispdata->mode = dispdata->crtc->mode;
 
-    if (dispdata->saved_crtc->mode_valid == 0) {
+    if (dispdata->crtc->mode_valid == 0) {
         SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO,
             "Current mode is invalid, selecting connector's mode #0.");
-        dispdata->mode = dispdata->conn->modes[0];
+        dispdata->mode = dispdata->connector->modes[0];
     }
 
     /* Setup the single display that's available */
@@ -620,15 +902,15 @@ KMSDRM_VideoInit(_THIS)
     display.desktop_mode.format = SDL_PIXELFORMAT_ARGB8888;
 #else
     /* FIXME */
-    drmModeFB *fb = drmModeGetFB(viddata->drm_fd, dispdata->saved_crtc->buffer_id);
+    drmModeFB *fb = drmModeGetFB(viddata->drm_fd, dispdata->crtc->buffer_id);
     display.desktop_mode.format = drmToSDLPixelFormat(fb->bpp, fb->depth);
     drmModeFreeFB(fb);
 #endif
 
     /* DRM mode index for the desktop mode is needed to complete desktop mode init NOW,
        so look for it in the DRM modes array. */
-    for (int i = 0; i < dispdata->conn->count_modes; i++) {
-        if (!SDL_memcmp(dispdata->conn->modes + i, &dispdata->saved_crtc->mode, sizeof(drmModeModeInfo))) {
+    for (int i = 0; i < dispdata->connector->count_modes; i++) {
+        if (!SDL_memcmp(dispdata->connector->modes + i, &dispdata->crtc->mode, sizeof(drmModeModeInfo))) {
             SDL_DisplayModeData *modedata = SDL_calloc(1, sizeof(SDL_DisplayModeData));
             if (modedata) {
                 modedata->mode_index = i;
@@ -640,6 +922,79 @@ KMSDRM_VideoInit(_THIS)
     display.current_mode = display.desktop_mode;
     display.driverdata = dispdata;
     SDL_AddVideoDisplay(&display);
+
+    /****************/
+    /* Atomic block */
+    /****************/
+
+    ret = KMSDRM_drmSetClientCap(viddata->drm_fd, DRM_CLIENT_CAP_ATOMIC, 1);
+    if (ret) {
+        ret = SDL_SetError("no atomic modesetting support.");
+        goto cleanup;
+    }
+
+    ret = KMSDRM_drmSetClientCap(viddata->drm_fd, DRM_CLIENT_CAP_UNIVERSAL_PLANES, 1);
+    if (ret) {
+        ret = SDL_SetError("no universal planes support.");
+        goto cleanup;
+    }
+
+
+
+    dispdata->plane_id = get_plane_id(_this);
+    if (!dispdata->plane_id) {
+        ret = SDL_SetError("could not find a suitable plane.");
+        goto cleanup;
+    }
+
+    dispdata->plane = KMSDRM_drmModeGetPlane(viddata->drm_fd, dispdata->plane_id);
+
+    //get_planes_info(_this);
+
+    /* We only do single plane to single crtc to single connector, no
+     * fancy multi-monitor or multi-plane stuff.  So just grab the
+     * plane/crtc/connector property info for one of each:
+     */
+
+    /* Get PLANE properties */
+    dispdata->plane_props = KMSDRM_drmModeObjectGetProperties(viddata->drm_fd,
+        dispdata->plane_id, DRM_MODE_OBJECT_PLANE);	
+
+    dispdata->plane_props_info = calloc(dispdata->plane_props->count_props,
+        sizeof(dispdata->plane_props_info));	
+
+    for (int i = 0; i < dispdata->plane_props->count_props; i++) {
+	dispdata->plane_props_info[i] = KMSDRM_drmModeGetProperty(viddata->drm_fd,
+        dispdata->plane_props->props[i]);
+    }
+
+    /* Get CRTC properties */
+    dispdata->crtc_props = KMSDRM_drmModeObjectGetProperties(viddata->drm_fd,
+        dispdata->crtc_id, DRM_MODE_OBJECT_CRTC);	
+
+    dispdata->crtc_props_info = calloc(dispdata->crtc_props->count_props,
+        sizeof(dispdata->crtc_props_info));	
+
+    for (int i = 0; i < dispdata->crtc_props->count_props; i++) {
+	dispdata->crtc_props_info[i] = KMSDRM_drmModeGetProperty(viddata->drm_fd,
+        dispdata->crtc_props->props[i]);
+    }
+
+    /* Get connector properties */
+    dispdata->connector_props = KMSDRM_drmModeObjectGetProperties(viddata->drm_fd,
+        dispdata->connector_id, DRM_MODE_OBJECT_CONNECTOR);	
+
+    dispdata->connector_props_info = calloc(dispdata->connector_props->count_props,
+        sizeof(dispdata->connector_props_info));	
+
+    for (int i = 0; i < dispdata->connector_props->count_props; i++) {
+	dispdata->connector_props_info[i] = KMSDRM_drmModeGetProperty(viddata->drm_fd,
+        dispdata->connector_props->props[i]);
+    }
+
+    /*********************/
+    /* Atomic block ends */
+    /*********************/
 
 #ifdef SDL_INPUT_LINUXEV
     SDL_EVDEV_Init();
@@ -657,13 +1012,13 @@ cleanup:
 
     if (ret != 0) {
         /* Error (complete) cleanup */
-        if (dispdata->conn) {
-            KMSDRM_drmModeFreeConnector(dispdata->conn);
-            dispdata->conn = NULL;
+        if (dispdata->connector) {
+            KMSDRM_drmModeFreeConnector(dispdata->connector);
+            dispdata->connector = NULL;
         }
-        if (dispdata->saved_crtc) {
-            KMSDRM_drmModeFreeCrtc(dispdata->saved_crtc);
-            dispdata->saved_crtc = NULL;
+        if (dispdata->crtc) {
+            KMSDRM_drmModeFreeCrtc(dispdata->crtc);
+            dispdata->crtc = NULL;
         }
         if (viddata->gbm_dev) {
             KMSDRM_gbm_device_destroy(viddata->gbm_dev);
@@ -697,9 +1052,9 @@ KMSDRM_VideoQuit(_THIS)
     viddata->num_windows = 0;
 
     /* Restore saved CRTC settings */
-    if (viddata->drm_fd >= 0 && dispdata && dispdata->conn && dispdata->saved_crtc) {
-        drmModeConnector *conn = dispdata->conn;
-        drmModeCrtc *crtc = dispdata->saved_crtc;
+    if (viddata->drm_fd >= 0 && dispdata && dispdata->connector && dispdata->crtc) {
+        drmModeConnector *conn = dispdata->connector;
+        drmModeCrtc *crtc = dispdata->crtc;
 
         int ret = KMSDRM_drmModeSetCrtc(viddata->drm_fd, crtc->crtc_id, crtc->buffer_id,
                                         crtc->x, crtc->y, &conn->connector_id, 1, &crtc->mode);
@@ -708,13 +1063,13 @@ KMSDRM_VideoQuit(_THIS)
             SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO, "Could not restore original CRTC mode");
         }
     }
-    if (dispdata && dispdata->conn) {
-        KMSDRM_drmModeFreeConnector(dispdata->conn);
-        dispdata->conn = NULL;
+    if (dispdata && dispdata->connector) {
+        KMSDRM_drmModeFreeConnector(dispdata->connector);
+        dispdata->connector = NULL;
     }
-    if (dispdata && dispdata->saved_crtc) {
-        KMSDRM_drmModeFreeCrtc(dispdata->saved_crtc);
-        dispdata->saved_crtc = NULL;
+    if (dispdata && dispdata->crtc) {
+        KMSDRM_drmModeFreeCrtc(dispdata->crtc);
+        dispdata->crtc = NULL;
     }
     if (viddata->gbm_dev) {
         KMSDRM_gbm_device_destroy(viddata->gbm_dev);
@@ -734,7 +1089,7 @@ void
 KMSDRM_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
 {
     SDL_DisplayData *dispdata = display->driverdata;
-    drmModeConnector *conn = dispdata->conn;
+    drmModeConnector *conn = dispdata->connector;
     SDL_DisplayMode mode;
 
     for (int i = 0; i < conn->count_modes; i++) {
@@ -762,7 +1117,7 @@ KMSDRM_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
     SDL_VideoData *viddata = (SDL_VideoData *)_this->driverdata;
     SDL_DisplayData *dispdata = (SDL_DisplayData *)display->driverdata;
     SDL_DisplayModeData *modedata = (SDL_DisplayModeData *)mode->driverdata;
-    drmModeConnector *conn = dispdata->conn;
+    drmModeConnector *conn = dispdata->connector;
 
     if (!modedata) {
         return SDL_SetError("Mode doesn't have an associated index");
@@ -808,7 +1163,6 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
     }
 
     /* Init windata fields. */
-    windata->waiting_for_flip   = SDL_FALSE;
     windata->double_buffer      = SDL_FALSE;
     windata->crtc_setup_pending = SDL_FALSE;
     windata->egl_surface_dirty  = SDL_FALSE;

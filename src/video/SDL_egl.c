@@ -437,6 +437,13 @@ SDL_EGL_LoadLibraryOnly(_THIS, const char *egl_path)
     LOAD_FUNC(eglGetError);
     LOAD_FUNC_EGLEXT(eglQueryDevicesEXT);
     LOAD_FUNC_EGLEXT(eglGetPlatformDisplayEXT);
+    /* Atomic functions */
+    LOAD_FUNC_EGLEXT(eglCreateSyncKHR);
+    LOAD_FUNC_EGLEXT(eglDestroySyncKHR);
+    LOAD_FUNC_EGLEXT(eglDupNativeFenceFDANDROID);
+    LOAD_FUNC_EGLEXT(eglWaitSyncKHR);
+    LOAD_FUNC_EGLEXT(eglClientWaitSyncKHR);
+    /* Atomic functions end */
 
     if (path) {
         SDL_strlcpy(_this->gl_config.driver_path, path, sizeof(_this->gl_config.driver_path) - 1);
