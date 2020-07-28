@@ -31,6 +31,7 @@
 #include <xf86drm.h>
 #include <xf86drmMode.h>
 #include <gbm.h>
+#include <assert.h>
 #if SDL_VIDEO_OPENGL_EGL
 #include <EGL/egl.h>
 #endif
@@ -55,10 +56,28 @@ typedef struct SDL_DisplayModeData
 
 typedef struct SDL_DisplayData
 {
-    uint32_t crtc_id;
-    drmModeConnector *conn;
+
     drmModeModeInfo mode;
-    drmModeCrtc *saved_crtc;    /* CRTC to restore on quit */
+    uint32_t plane_id;
+    uint32_t crtc_id;
+    uint32_t connector_id;
+
+    drmModePlane *plane;
+    drmModeObjectProperties *plane_props;
+    drmModePropertyRes **plane_props_info;
+
+    drmModeCrtc *crtc;
+    drmModeObjectProperties *crtc_props;
+    drmModePropertyRes **crtc_props_info;
+
+    drmModeConnector *connector;
+    drmModeObjectProperties *connector_props;
+    drmModePropertyRes **connector_props_info;
+
+    int crtc_index;
+    int kms_in_fence_fd;
+    int kms_out_fence_fd;
+
 } SDL_DisplayData;
 
 
@@ -69,7 +88,6 @@ typedef struct SDL_WindowData
     struct gbm_bo *curr_bo;
     struct gbm_bo *next_bo;
     struct gbm_bo *crtc_bo;
-    SDL_bool waiting_for_flip;
     SDL_bool double_buffer;
     SDL_bool crtc_setup_pending;
 #if SDL_VIDEO_OPENGL_EGL
@@ -88,6 +106,9 @@ typedef struct KMSDRM_FBInfo
 int KMSDRM_CreateSurfaces(_THIS, SDL_Window * window);
 KMSDRM_FBInfo *KMSDRM_FBFromBO(_THIS, struct gbm_bo *bo);
 SDL_bool KMSDRM_WaitPageFlip(_THIS, SDL_WindowData *windata, int timeout);
+
+/* Atomic functions that are used from SDL_kmsdrmopengles.c */
+int drm_atomic_commit(_THIS, uint32_t fb_id, uint32_t flags);
 
 /****************************************************************************/
 /* SDL_VideoDevice functions declaration                                    */

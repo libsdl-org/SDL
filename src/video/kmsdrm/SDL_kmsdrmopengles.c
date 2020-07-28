@@ -55,177 +55,125 @@ int KMSDRM_GLES_SetSwapInterval(_THIS, int interval) {
     return 0;
 }
 
+/*********************************/
+/* Atomic functions block        */
+/*********************************/
+
+#define VOID2U64(x) ((uint64_t)(unsigned long)(x))
+
+static EGLSyncKHR create_fence(int fd, _THIS)
+{
+	EGLint attrib_list[] = {
+		EGL_SYNC_NATIVE_FENCE_FD_ANDROID, fd,
+		EGL_NONE,
+	};
+	EGLSyncKHR fence = _this->egl_data->eglCreateSyncKHR(_this->egl_data->egl_display,
+			EGL_SYNC_NATIVE_FENCE_ANDROID, attrib_list);
+	assert(fence);
+	return fence;
+}
+
 int
 KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window) {
+
     SDL_WindowData *windata = ((SDL_WindowData *) window->driverdata);
     SDL_DisplayData *dispdata = (SDL_DisplayData *) SDL_GetDisplayForWindow(window)->driverdata;
-    SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
-    KMSDRM_FBInfo *fb_info;
+    KMSDRM_FBInfo *fb;
+    int ret;
 
-    /* ALWAYS wait for each pageflip to complete before issuing another, vsync or not,
-       or drmModePageFlip() will start returning EBUSY if there are pending pageflips.
+    uint32_t flags = DRM_MODE_ATOMIC_NONBLOCK;
 
-       To disable vsync in games, it would be needed to issue async pageflips,
-       and then wait for each pageflip to complete. Since async pageflips complete ASAP 
-       instead of VBLANK, thats how non-vsync screen updates should wok.
+    EGLSyncKHR gpu_fence = NULL;   /* out-fence from gpu, in-fence to kms */
+    EGLSyncKHR kms_fence = NULL;   /* in-fence to gpu, out-fence from kms */
 
-       BUT Async pageflips do not work right now because calling drmModePageFlip() with the
-       DRM_MODE_PAGE_FLIP_ASYNC flag returns error on every driver I have tried.
+    /* Allow modeset (which is done inside atomic_commit). */
+    flags |= DRM_MODE_ATOMIC_ALLOW_MODESET;
 
-       So, for now, only do vsynced updates: _this->egl_data->egl_swapinterval is
-       ignored for now, it makes no sense to use it until async pageflips work on drm drivers. */
+    if (dispdata->kms_out_fence_fd != -1) {
+	kms_fence = create_fence(dispdata->kms_out_fence_fd, _this);
+	assert(kms_fence);
 
-    /* Recreate the GBM / EGL surfaces if the display mode has changed */
-    if (windata->egl_surface_dirty) {
-        KMSDRM_CreateSurfaces(_this, window);
+	/* driver now has ownership of the fence fd: */
+	dispdata->kms_out_fence_fd = -1;
+
+	/* wait "on the gpu" (ie. this won't necessarily block, but
+	 * will block the rendering until fence is signaled), until
+	 * the previous pageflip completes so we don't render into
+	 * the buffer that is still on screen.
+	 */
+	_this->egl_data->eglWaitSyncKHR(_this->egl_data->egl_display, kms_fence, 0);
     }
 
-    if (windata->double_buffer) {
-        /* Use a double buffering scheme, independently of the number of buffers that the GBM surface has,
-           (number of buffers on the GBM surface depends on the implementation).
-           Double buffering (instead of triple) is achieved by waiting for synchronous pageflip to complete
-           inmediately after the pageflip is issued. That way, in the end of this function only two buffers
-           are needed: a buffer that is available to be picked again by EGL as a backbuffer to draw on it,
-           and the new front buffer that has just been set up.
+    /* insert fence to be singled in cmdstream.. this fence will be
+     * signaled when gpu rendering done
+     */
+    gpu_fence = create_fence(EGL_NO_NATIVE_FENCE_FD_ANDROID, _this);
+    assert(gpu_fence);
 
-           Since programmer has no control over the number of buffers of the GBM surface, wait for pageflip
-           is done inmediately after issuing pageflip, and so a double-buffer scheme is achieved. */
+    _this->egl_data->eglSwapBuffers(_this->egl_data->egl_display, windata->egl_surface);
 
-        /* Ask EGL to mark the current back buffer to become the next front buffer. 
-           That will happen when a pageflip is issued, and the next vsync arrives (sync flip)
-           or ASAP (async flip). */
-        if (!(_this->egl_data->eglSwapBuffers(_this->egl_data->egl_display, windata->egl_surface))) {
-            SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "eglSwapBuffers failed.");
-            return 0;
-        }
+    /* after swapbuffers, gpu_fence should be flushed, so safe to get the fd: */
+    dispdata->kms_in_fence_fd = _this->egl_data->eglDupNativeFenceFDANDROID(_this->egl_data->egl_display, gpu_fence);
+    _this->egl_data->eglDestroySyncKHR(_this->egl_data->egl_display, gpu_fence);
+    assert(dispdata->kms_in_fence_fd != -1);
 
-        /* Get a handler to the buffer that is marked to become the next front buffer, and lock it
-           so it can not be chosen by EGL as a back buffer. */
-        windata->next_bo = KMSDRM_gbm_surface_lock_front_buffer(windata->gs);
-        if (!windata->next_bo) {
-            SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Could not lock GBM surface front buffer");
-            return 0;
-        /* } else {
-            SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Locked GBM surface %p", (void *)windata->next_bo); */
-        }
-
-        /* Issue synchronous pageflip: drmModePageFlip() NEVER blocks, synchronous here means that it
-           will be done on next VBLANK, not ASAP. And return to program loop inmediately. */
-
-        fb_info = KMSDRM_FBFromBO(_this, windata->next_bo);
-        if (!fb_info) {
-            return 0;
-        }
-
-        /* When needed, this is done once we have the needed fb_id, not before. */
-        if (windata->crtc_setup_pending) {
-	    if (KMSDRM_drmModeSetCrtc(viddata->drm_fd, dispdata->crtc_id, fb_info->fb_id, 0,
-					0, &dispdata->conn->connector_id, 1, &dispdata->mode)) {
-		SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Could not configure CRTC on video mode setting.");
-	    }
-            windata->crtc_setup_pending = SDL_FALSE;
-        }
-
-        if (!KMSDRM_drmModePageFlip(viddata->drm_fd, dispdata->crtc_id, fb_info->fb_id,
-                                    DRM_MODE_PAGE_FLIP_EVENT, &windata->waiting_for_flip)) {
-            windata->waiting_for_flip = SDL_TRUE;
-        } else {
-            SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Could not issue pageflip");
-        }
-
-        /* Since issued pageflips are always synchronous (ASYNC dont currently work), these pageflips
-           will happen at next vsync, so in practice waiting for vsync is being done here. */ 
-        if (!KMSDRM_WaitPageFlip(_this, windata, -1)) {
-            SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Error waiting for pageflip event");
-            return 0;
-        }
-
-        /* Return the previous front buffer to the available buffer pool of the GBM surface,
-           so it can be chosen again by EGL as the back buffer for drawing into it. */
-        if (windata->curr_bo) {
-            KMSDRM_gbm_surface_release_buffer(windata->gs, windata->curr_bo);
-            /* SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Released GBM surface buffer %p", (void *)windata->curr_bo); */
-            windata->curr_bo = NULL;
-        }
-
-        /* Take note of the current front buffer, so it can be freed next time this function is called. */
-        windata->curr_bo = windata->next_bo;
-    } else {
-        /* Triple buffering requires waiting for last pageflip upon entering instead of waiting at the end,
-           and issuing the next pageflip at the end, thus allowing the program loop to run 
-           while the issued pageflip arrives (at next VBLANK, since ONLY synchronous pageflips are possible).
-           In a game context, this means that the player can be doing inputs before seeing the last
-           completed frame, causing "input lag" that is known to plage other APIs and backends.
-           Triple buffering requires the use of three different buffers at the end of this function:
-           1- the front buffer which is on screen,
-           2- the back buffer wich is ready to be flipped (a pageflip has been issued on it, which has yet to complete)
-           3- a third buffer that can be used by EGL to draw while the previously issued pageflip arrives
-              (should not put back the previous front buffer into the free buffers pool of the
-              GBM surface until that happens).
-           If the implementation only has two buffers for the GBM surface, this would behave like a double buffer.
-        */
-        
-        /* Wait for previously issued pageflip to complete. */
-        if (!KMSDRM_WaitPageFlip(_this, windata, -1)) {
-            SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Error waiting for pageflip event");
-            return 0;
-        }
-
-        /* Free the previous front buffer so EGL can pick it again as back buffer.*/
-        if (windata->curr_bo) {
-            KMSDRM_gbm_surface_release_buffer(windata->gs, windata->curr_bo);
-            /* SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Released GBM surface buffer %p", (void *)windata->curr_bo); */
-            windata->curr_bo = NULL;
-        }
-
-        /* Ask EGL to mark the current back buffer to become the next front buffer. 
-           That will happen when a pageflip is issued, and the next vsync arrives (sync flip)
-           or ASAP (async flip). */
-        if (!(_this->egl_data->eglSwapBuffers(_this->egl_data->egl_display, windata->egl_surface))) {
-            SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "eglSwapBuffers failed.");
-            return 0;
-        }
-
-        /* Take note of the current front buffer, so it can be freed next time this function is called. */
-        windata->curr_bo = windata->next_bo;
-
-        /* Get a handler to the buffer that is marked to become the next front buffer, and lock it
-           so it can not be chosen by EGL as a back buffer. */
-        windata->next_bo = KMSDRM_gbm_surface_lock_front_buffer(windata->gs);
-        if (!windata->next_bo) {
-             SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Could not lock GBM surface front buffer");
-             return 0;
-	/* } else {
-             SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Locked GBM surface %p", (void *)windata->next_bo); */
-        }
-
-        /* Issue synchronous pageflip: drmModePageFlip() NEVER blocks, synchronous here means that it
-           will be done on next VBLANK, not ASAP. And return to program loop inmediately. */
-        fb_info = KMSDRM_FBFromBO(_this, windata->next_bo);
-        if (!fb_info) {
-            return 0;
-        }
-
-        /* When needed, this is done once we have the needed fb_id, not before. */
-        if (windata->crtc_setup_pending) {
-	    if (KMSDRM_drmModeSetCrtc(viddata->drm_fd, dispdata->crtc_id, fb_info->fb_id, 0,
-					0, &dispdata->conn->connector_id, 1, &dispdata->mode)) {
-		SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Could not configure CRTC on video mode setting.");
-	    }
-            windata->crtc_setup_pending = SDL_FALSE;
-        }
-
-
-        if (!KMSDRM_drmModePageFlip(viddata->drm_fd, dispdata->crtc_id, fb_info->fb_id,
-                                    DRM_MODE_PAGE_FLIP_EVENT, &windata->waiting_for_flip)) {
-            windata->waiting_for_flip = SDL_TRUE;
-        } else {
-            SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Could not issue pageflip");
-        }
+    windata->next_bo = KMSDRM_gbm_surface_lock_front_buffer(windata->gs);
+    if (!windata->next_bo) {
+	printf("Failed to lock frontbuffer\n");
+	return -1;
+    }
+    fb = KMSDRM_FBFromBO(_this, windata->next_bo);
+    if (!fb) {
+	 printf("Failed to get a new framebuffer BO\n");
+	 return -1;
     }
 
-    return 0;
+    if (kms_fence) {
+	EGLint status;
+
+	/* Wait on the CPU side for the _previous_ commit to
+	 * complete before we post the flip through KMS, as
+	 * atomic will reject the commit if we post a new one
+	 * whilst the previous one is still pending.
+	 */
+	do {
+	    status = _this->egl_data->eglClientWaitSyncKHR(_this->egl_data->egl_display,
+							     kms_fence,
+							     0,
+							     EGL_FOREVER_KHR);
+	} while (status != EGL_CONDITION_SATISFIED_KHR);
+
+	_this->egl_data->eglDestroySyncKHR(_this->egl_data->egl_display, kms_fence);
+    }
+
+    /*
+     * Here you could also update drm plane layers if you want
+     * hw composition
+     */
+    ret = drm_atomic_commit(_this, fb->fb_id, flags);
+    if (ret) {
+	printf("failed to do atomic commit\n");
+	return -1;
+    }
+
+    /* release last buffer to render on again: */
+    if (windata->curr_bo) {
+	KMSDRM_gbm_surface_release_buffer(windata->gs, windata->curr_bo);
+	windata->curr_bo = NULL;
+    }
+
+    /* Take note of the current front buffer, so it can be freed next time this function is called. */
+    windata->curr_bo = windata->next_bo;
+
+    /* Allow a modeset change for the first commit only. */
+    flags &= ~(DRM_MODE_ATOMIC_ALLOW_MODESET);
+
+    return ret;
 }
+
+/***************************************/
+/* End of Atomic functions block       */
+/***************************************/
 
 SDL_EGL_MakeCurrent_impl(KMSDRM)
 
