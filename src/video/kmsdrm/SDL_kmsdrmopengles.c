@@ -79,44 +79,29 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window) {
     SDL_WindowData *windata = ((SDL_WindowData *) window->driverdata);
     SDL_DisplayData *dispdata = (SDL_DisplayData *) SDL_GetDisplayForWindow(window)->driverdata;
     KMSDRM_FBInfo *fb;
-    int ret;
 
+    EGLint status;
+    int ret;
+    
     uint32_t flags = DRM_MODE_ATOMIC_NONBLOCK;
 
-    EGLSyncKHR gpu_fence = NULL;   /* out-fence from gpu, in-fence to kms */
-    EGLSyncKHR kms_fence = NULL;   /* in-fence to gpu, out-fence from kms */
+    EGLSyncKHR display_in_fence  = NULL;
+    EGLSyncKHR display_out_fence = NULL;
 
-    /* Allow modeset (which is done inside atomic_commit). */
-    flags |= DRM_MODE_ATOMIC_ALLOW_MODESET;
-
-    if (dispdata->kms_out_fence_fd != -1) {
-	kms_fence = create_fence(dispdata->kms_out_fence_fd, _this);
-	assert(kms_fence);
-
-	/* driver now has ownership of the fence fd: */
-	dispdata->kms_out_fence_fd = -1;
-
-	/* wait "on the gpu" (ie. this won't necessarily block, but
-	 * will block the rendering until fence is signaled), until
-	 * the previous pageflip completes so we don't render into
-	 * the buffer that is still on screen.
-	 */
-	_this->egl_data->eglWaitSyncKHR(_this->egl_data->egl_display, kms_fence, 0);
-    }
-
-    /* insert fence to be singled in cmdstream.. this fence will be
-     * signaled when gpu rendering done
-     */
-    gpu_fence = create_fence(EGL_NO_NATIVE_FENCE_FD_ANDROID, _this);
-    assert(gpu_fence);
-
+    /* Create the display in-fence, and export it as a fence fd to pass into the kernel. */
+    display_in_fence = create_fence(EGL_NO_NATIVE_FENCE_FD_ANDROID, _this);
+    assert(display_in_fence);
+    dispdata->kms_in_fence_fd = _this->egl_data->eglDupNativeFenceFDANDROID(_this->egl_data->egl_display, display_in_fence);
+    
+    /* Mark the back buffer as the next front buffer, and the current front buffer as elegible
+       by EGL as back buffer to draw into.
+       This will not really happen until we post the pageflip though KMS with the atomic ioctl
+       and it completes on next vsync. */
     _this->egl_data->eglSwapBuffers(_this->egl_data->egl_display, windata->egl_surface);
 
-    /* after swapbuffers, gpu_fence should be flushed, so safe to get the fd: */
-    dispdata->kms_in_fence_fd = _this->egl_data->eglDupNativeFenceFDANDROID(_this->egl_data->egl_display, gpu_fence);
-    _this->egl_data->eglDestroySyncKHR(_this->egl_data->egl_display, gpu_fence);
-    assert(dispdata->kms_in_fence_fd != -1);
-
+   /* Lock the buffer that is marked by eglSwapBuffers() to become the next front buffer (so it can not
+      be chosen by EGL as back buffer to draw on), and get a handle to it, so we can use that handle 
+      to request the KMS pageflip that will set it as front buffer. */
     windata->next_bo = KMSDRM_gbm_surface_lock_front_buffer(windata->gs);
     if (!windata->next_bo) {
 	printf("Failed to lock frontbuffer\n");
@@ -128,27 +113,9 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window) {
 	 return -1;
     }
 
-    if (kms_fence) {
-	EGLint status;
-
-	/* Wait on the CPU side for the _previous_ commit to
-	 * complete before we post the flip through KMS, as
-	 * atomic will reject the commit if we post a new one
-	 * whilst the previous one is still pending.
-	 */
-	do {
-	    status = _this->egl_data->eglClientWaitSyncKHR(_this->egl_data->egl_display,
-							     kms_fence,
-							     0,
-							     EGL_FOREVER_KHR);
-	} while (status != EGL_CONDITION_SATISFIED_KHR);
-
-	_this->egl_data->eglDestroySyncKHR(_this->egl_data->egl_display, kms_fence);
-    }
-
-    /*
-     * Here you could also update drm plane layers if you want
-     * hw composition
+    /* 
+     * Issue atomic pageflip to post the pageflip thru KMS. Returns immediately.
+     * Never issue an atomic ioctl while the previuos one is pending: it will be rejected. 
      */
     ret = drm_atomic_commit(_this, fb->fb_id, flags);
     if (ret) {
@@ -156,7 +123,22 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window) {
 	return -1;
     }
 
-    /* release last buffer to render on again: */
+    /* Get the display out fence, returned by the atomic ioctl. */
+    display_out_fence = create_fence(dispdata->kms_out_fence_fd, _this);
+    assert(display_out_fence);
+
+    /* Wait on the CPU side for the _previous_ commit to complete before we post the flip through KMS,
+     * because atomic will reject the commit if we post a new one while the previous one is still pending. */
+    do {
+	status = _this->egl_data->eglClientWaitSyncKHR(_this->egl_data->egl_display, display_out_fence, 0, EGL_FOREVER_KHR);
+    } while (status != EGL_CONDITION_SATISFIED_KHR);
+
+    /* Destroy both in and out display fences. */
+    _this->egl_data->eglDestroySyncKHR(_this->egl_data->egl_display, display_out_fence);
+    _this->egl_data->eglDestroySyncKHR(_this->egl_data->egl_display, display_in_fence);
+
+    /* Now that the pageflip is complete, release last front buffer so EGL can chose it
+     * as back buffer and render on it again: */
     if (windata->curr_bo) {
 	KMSDRM_gbm_surface_release_buffer(windata->gs, windata->curr_bo);
 	windata->curr_bo = NULL;
@@ -164,9 +146,6 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window) {
 
     /* Take note of the current front buffer, so it can be freed next time this function is called. */
     windata->curr_bo = windata->next_bo;
-
-    /* Allow a modeset change for the first commit only. */
-    flags &= ~(DRM_MODE_ATOMIC_ALLOW_MODESET);
 
     return ret;
 }
