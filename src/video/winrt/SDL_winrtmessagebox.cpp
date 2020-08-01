@@ -82,7 +82,7 @@ WINRT_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
             sdlButton = &messageboxdata->buttons[i];
         }
         UICommand ^ button = ref new UICommand(WINRT_UTF8ToPlatformString(sdlButton->text));
-        button->Id = (IntPtr)((size_t)(sdlButton - messageboxdata->buttons));
+        button->Id = IntPtr((int)((size_t)(sdlButton - messageboxdata->buttons)));
         dialog->Commands->Append(button);
         if (sdlButton->flags & SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT) {
             dialog->CancelCommandIndex = i;
@@ -104,7 +104,7 @@ WINRT_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
         return SDL_SetError("An unknown error occurred in displaying the WinRT MessageDialog");
     }
     if (buttonid) {
-        IntPtr results = (IntPtr)((size_t)(operation->GetResults()->Id));
+        IntPtr results = safe_cast<IntPtr>(operation->GetResults()->Id);
         int clicked_index = results.ToInt32();
         *buttonid = messageboxdata->buttons[clicked_index].buttonid;
     }
