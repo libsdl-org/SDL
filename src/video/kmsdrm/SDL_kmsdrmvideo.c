@@ -874,8 +874,11 @@ KMSDRM_VideoInit(_THIS)
 	}
     }
 
-    /* Initialize the fence fd: */
+    /* Initialize the fences and their fds: */
+    dispdata->kms_fence = NULL;
+    dispdata->gpu_fence = NULL;
     dispdata->kms_out_fence_fd = -1,
+    dispdata->kms_in_fence_fd  = -1,
 
     /*********************/
     /* Atomic block ends */
