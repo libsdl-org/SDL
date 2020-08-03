@@ -34,6 +34,7 @@
 #include <assert.h>
 #if SDL_VIDEO_OPENGL_EGL
 #include <EGL/egl.h>
+#include <EGL/eglext.h>
 #endif
 
 typedef struct SDL_VideoData
@@ -75,8 +76,12 @@ typedef struct SDL_DisplayData
     drmModePropertyRes **connector_props_info;
 
     int crtc_index;
+
     int kms_in_fence_fd;
     int kms_out_fence_fd;
+
+    EGLSyncKHR kms_fence; /* Signaled when kms completes changes requested in atomic iotcl (pageflip, etc). */
+    EGLSyncKHR gpu_fence; /* Signaled when GPU rendering is done. */
 
 } SDL_DisplayData;
 
