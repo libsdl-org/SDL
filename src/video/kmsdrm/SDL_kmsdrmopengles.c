@@ -101,7 +101,7 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window)
     dispdata->gpu_fence = create_fence(EGL_NO_NATIVE_FENCE_FD_ANDROID, _this);
     assert(dispdata->gpu_fence);
 
-    /* Mark in the EGL level the buffer that we want to become the new front buffer.
+    /* Mark, at EGL level, the buffer that we want to become the new front buffer.
        However, it won't really happen until we request a pageflip at the KMS level and it completes. */
     _this->egl_data->eglSwapBuffers(_this->egl_data->egl_display, windata->egl_surface);
 
@@ -187,33 +187,18 @@ KMSDRM_GLES_SwapWindowDB(_THIS, SDL_Window * window)
     int ret;
     uint32_t flags = 0;
 
+    /* In double-buffer mode, atomic commit will always be synchronous/blocking (ie: won't return until
+       the requested changes are done).
+       Also, there's no need to fence KMS or the GPU, because we won't be entering game loop again
+       (hence not building or executing a new cmdstring) until pageflip is done. */
+
     /* Do we need to set video mode this time? If yes, pass the right flag and issue a blocking atomic ioctl. */
     if (dispdata->modeset_pending) {
         flags |= DRM_MODE_ATOMIC_ALLOW_MODESET;
         dispdata->modeset_pending = SDL_FALSE;
     }
-    else {
-        flags |= DRM_MODE_ATOMIC_NONBLOCK;
-    }
 
-    /* Create the fence that will be inserted in the cmdstream exactly at the end
-       of the gl commands that form a frame. KMS will have to wait on it before doing a pageflip.
-       (NOTE this fence is not really neeeded in double-buffer mode because the program will be
-       blocked in eglClientWaitSyncKMHR() until pageflip completes, but we need an in-fence FD anyway
-       to issue the atomic ioctl).
-      */
-    dispdata->gpu_fence = create_fence(EGL_NO_NATIVE_FENCE_FD_ANDROID, _this);
-    assert(dispdata->gpu_fence);
-
-    /* It's safe to get the gpu_fence FD now, because eglSwapBuffers flushes it down the cmdstream, 
-       so it's now in place in the cmdstream.
-       Atomic ioctl will pass the in-fence fd into the kernel, telling KMS that it has to wait for GPU to
-       finish rendering the frame before doing the changes requested in the atomic ioct (pageflip in this case). */
-    dispdata->kms_in_fence_fd = _this->egl_data->eglDupNativeFenceFDANDROID(_this->egl_data->egl_display, dispdata->gpu_fence);
-    _this->egl_data->eglDestroySyncKHR(_this->egl_data->egl_display, dispdata->gpu_fence);
-    assert(dispdata->kms_in_fence_fd != -1);
-
-    /* Mark in the EGL level the buffer that we want to become the new front buffer.
+    /* Mark, at EGL level, the buffer that we want to become the new front buffer.
        However, it won't really happen until we request a pageflip at the KMS level and it completes. */
     _this->egl_data->eglSwapBuffers(_this->egl_data->egl_display, windata->egl_surface);
 
@@ -244,24 +229,6 @@ KMSDRM_GLES_SwapWindowDB(_THIS, SDL_Window * window)
 
     /* Take note of current front buffer, so we can free it next time we come here. */
     windata->bo = windata->next_bo;
-
-    /* Import the kms fence from the out fence fd. We need it to tell GPU to wait for pageflip to complete. */
-    dispdata->kms_fence = create_fence(dispdata->kms_out_fence_fd, _this);
-    assert(dispdata->kms_fence);
-
-    /* Reset out fence FD value because the fence is now away from us, on the driver side. */
-    dispdata->kms_out_fence_fd = -1;
-
-    /* Wait for pageflip to complete, and destroy kms_fence. */
-    if (dispdata->kms_fence) {
-	EGLint status;
-
-	do {
-	    status = _this->egl_data->eglClientWaitSyncKHR(_this->egl_data->egl_display, dispdata->kms_fence, 0, EGL_FOREVER_KHR);
-	} while (status != EGL_CONDITION_SATISFIED_KHR);
-
-	_this->egl_data->eglDestroySyncKHR(_this->egl_data->egl_display, dispdata->kms_fence);
-    }
 
     return ret;
 }
