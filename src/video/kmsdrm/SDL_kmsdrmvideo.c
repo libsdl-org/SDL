@@ -550,7 +550,12 @@ KMSDRM_CreateDevice(int devindex)
     device->GL_MakeCurrent = KMSDRM_GLES_MakeCurrent;
     device->GL_SetSwapInterval = KMSDRM_GLES_SetSwapInterval;
     device->GL_GetSwapInterval = KMSDRM_GLES_GetSwapInterval;
-    device->GL_SwapWindow = KMSDRM_GLES_SwapWindow;
+
+    if (SDL_GetHintBoolean(SDL_HINT_VIDEO_DOUBLE_BUFFER, SDL_FALSE))
+        device->GL_SwapWindow = KMSDRM_GLES_SwapWindowDB;
+    else
+        device->GL_SwapWindow = KMSDRM_GLES_SwapWindow;
+
     device->GL_DeleteContext = KMSDRM_GLES_DeleteContext;
 #endif
     device->PumpEvents = KMSDRM_PumpEvents;
@@ -642,9 +647,9 @@ KMSDRM_DestroySurfaces(_THIS, SDL_Window * window)
 {
     SDL_WindowData *windata = (SDL_WindowData *)window->driverdata;
 
-    if (windata->curr_bo) {
-        KMSDRM_gbm_surface_release_buffer(windata->gs, windata->curr_bo);
-        windata->curr_bo = NULL;
+    if (windata->bo) {
+        KMSDRM_gbm_surface_release_buffer(windata->gs, windata->bo);
+        windata->bo = NULL;
     }
 
     if (windata->next_bo) {
@@ -710,8 +715,8 @@ KMSDRM_CreateSurfaces(_THIS, SDL_Window * window)
     windata->egl_surface_dirty = SDL_FALSE;
 #endif
 
-    /* We can't call KMSDRM_SetCRTC() until we have a fb_id, in KMSDRM_GLES_SwapWindow().
-       So we take note here to do it there. */
+    /* We take note here about the need to do a modeset in the atomic_commit(),
+       called in KMSDRM_GLES_SwapWindow(). */
     windata->crtc_setup_pending = SDL_TRUE;
 
     return 0;
@@ -1166,7 +1171,6 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
     }
 
     /* Init windata fields. */
-    windata->double_buffer      = SDL_FALSE;
     windata->crtc_setup_pending = SDL_FALSE;
     windata->egl_surface_dirty  = SDL_FALSE;
 
@@ -1197,12 +1201,6 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
 
     window->w = display->desktop_mode.w;
     window->h = display->desktop_mode.h; */
-
-
-    /* In case low-latency is wanted, double-buffered video will be used. We take note here */
-    if (SDL_GetHintBoolean(SDL_HINT_VIDEO_DOUBLE_BUFFER, SDL_FALSE)) {
-        windata->double_buffer = SDL_TRUE;
-    }
 
     /* Setup driver data for this window */
     windata->viddata = viddata;
