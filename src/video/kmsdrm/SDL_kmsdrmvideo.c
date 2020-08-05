@@ -216,7 +216,9 @@ static int add_plane_property(drmModeAtomicReq *req, uint32_t obj_id,
 	return KMSDRM_drmModeAtomicAddProperty(req, obj_id, prop_id, value);
 }
 
-/*static void get_plane_properties() {
+#if 0
+
+static void get_plane_properties() {
     uint32_t i;
     dispdata->plane_ = drmModeObjectGetProperties(viddata->drm_fd,
         plane->plane_id, DRM_MODE_OBJECT_PLANE);
@@ -234,10 +236,7 @@ static int add_plane_property(drmModeAtomicReq *req, uint32_t obj_id,
 			    dispdata->type->props->props[i]);
     }
     return props;
-}*/
-
-
-
+}
 
 void print_plane_info(_THIS, drmModePlanePtr plane)
 {
@@ -332,10 +331,11 @@ void get_planes_info(_THIS)
     KMSDRM_drmModeFreePlaneResources(plane_resources);
 }
 
+#endif
 
 /* Get a plane that is PRIMARY (there's no guarantee that we have overlays in all hardware!)
    and can use the CRTC we have chosen. That's all. */ 
-int get_plane_id(_THIS)
+uint32_t get_plane_id(_THIS)
 {
     drmModePlaneResPtr plane_resources;
     uint32_t i, j;
@@ -916,16 +916,18 @@ KMSDRM_VideoInit(_THIS)
 #endif
 
     /* DRM mode index for the desktop mode is needed to complete desktop mode init NOW,
-       so look for it in the DRM modes array. */
+       so look for it in the DRM modes array. 
+       This is needed because SetDisplayMode() uses the mode index, and some programs
+       change to fullscreen desktop video mode as they start. */
     for (int i = 0; i < dispdata->connector->count_modes; i++) {
         if (!SDL_memcmp(dispdata->connector->modes + i, &dispdata->crtc->mode, sizeof(drmModeModeInfo))) {
             SDL_DisplayModeData *modedata = SDL_calloc(1, sizeof(SDL_DisplayModeData));
             if (modedata) {
                 modedata->mode_index = i;
                 display.desktop_mode.driverdata = modedata;
-            }   
-        }   
-    }   
+            }
+        }
+    }
 
     display.current_mode = display.desktop_mode;
     display.driverdata = dispdata;
@@ -947,8 +949,6 @@ KMSDRM_VideoInit(_THIS)
         goto cleanup;
     }
 
-
-
     dispdata->plane_id = get_plane_id(_this);
     if (!dispdata->plane_id) {
         ret = SDL_SetError("could not find a suitable plane.");
@@ -957,7 +957,10 @@ KMSDRM_VideoInit(_THIS)
 
     dispdata->plane = KMSDRM_drmModeGetPlane(viddata->drm_fd, dispdata->plane_id);
 
-    //get_planes_info(_this);
+    /* Use this if you ever need to see info on all available planes. */
+#if 0
+    get_planes_info(_this);
+#endif
 
     /* We only do single plane to single crtc to single connector, no
      * fancy multi-monitor or multi-plane stuff.  So just grab the
@@ -968,19 +971,19 @@ KMSDRM_VideoInit(_THIS)
     dispdata->plane_props = KMSDRM_drmModeObjectGetProperties(viddata->drm_fd,
         dispdata->plane_id, DRM_MODE_OBJECT_PLANE);	
 
-    dispdata->plane_props_info = calloc(dispdata->plane_props->count_props,
+    dispdata->plane_props_info = SDL_calloc(dispdata->plane_props->count_props,
         sizeof(dispdata->plane_props_info));	
 
     for (int i = 0; i < dispdata->plane_props->count_props; i++) {
 	dispdata->plane_props_info[i] = KMSDRM_drmModeGetProperty(viddata->drm_fd,
-        dispdata->plane_props->props[i]);
+                                            dispdata->plane_props->props[i]);
     }
 
     /* Get CRTC properties */
     dispdata->crtc_props = KMSDRM_drmModeObjectGetProperties(viddata->drm_fd,
         dispdata->crtc_id, DRM_MODE_OBJECT_CRTC);	
 
-    dispdata->crtc_props_info = calloc(dispdata->crtc_props->count_props,
+    dispdata->crtc_props_info = SDL_calloc(dispdata->crtc_props->count_props,
         sizeof(dispdata->crtc_props_info));	
 
     for (int i = 0; i < dispdata->crtc_props->count_props; i++) {
@@ -992,7 +995,7 @@ KMSDRM_VideoInit(_THIS)
     dispdata->connector_props = KMSDRM_drmModeObjectGetProperties(viddata->drm_fd,
         dispdata->connector_id, DRM_MODE_OBJECT_CONNECTOR);	
 
-    dispdata->connector_props_info = calloc(dispdata->connector_props->count_props,
+    dispdata->connector_props_info = SDL_calloc(dispdata->connector_props->count_props,
         sizeof(dispdata->connector_props_info));	
 
     for (int i = 0; i < dispdata->connector_props->count_props; i++) {
@@ -1071,6 +1074,24 @@ KMSDRM_VideoQuit(_THIS)
             SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO, "Could not restore original CRTC mode");
         }
     }
+    /****************/
+    /* Atomic block */
+    /****************/
+    if (dispdata && dispdata->connector_props_info) {
+        SDL_free(dispdata->connector_props_info); 
+        dispdata->connector_props_info = NULL;
+    }
+    if (dispdata && dispdata->crtc_props_info) {
+        SDL_free(dispdata->crtc_props_info); 
+        dispdata->crtc_props_info = NULL;
+    }
+    if (dispdata && dispdata->plane_props_info) {
+        SDL_free(dispdata->plane_props_info); 
+        dispdata->plane_props_info = NULL;
+    }
+    /*********************/
+    /* Atomic block ends */
+    /*********************/
     if (dispdata && dispdata->connector) {
         KMSDRM_drmModeFreeConnector(dispdata->connector);
         dispdata->connector = NULL;
