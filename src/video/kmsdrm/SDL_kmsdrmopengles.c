@@ -80,15 +80,16 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window)
     SDL_DisplayData *dispdata = (SDL_DisplayData *) SDL_GetDisplayForWindow(window)->driverdata;
     KMSDRM_FBInfo *fb;
     int ret;
+    uint32_t flags = 0;
 
-    uint32_t flags = DRM_MODE_ATOMIC_NONBLOCK;
-
-    /* Do we need to set video mode this time? */
-    if (windata->crtc_setup_pending) {
+    /* Do we need to set video mode this time? If yes, pass the right flag and issue a blocking atomic ioctl. */
+    if (dispdata->modeset_pending) {
         flags |= DRM_MODE_ATOMIC_ALLOW_MODESET;
-        windata->crtc_setup_pending = SDL_FALSE;
+        dispdata->modeset_pending = SDL_FALSE;
     }
-
+    else {
+        flags |= DRM_MODE_ATOMIC_NONBLOCK;
+    }
 
     /*************************************************************************/
     /* Block for telling KMS to wait for GPU rendering of the current frame  */
@@ -184,12 +185,15 @@ KMSDRM_GLES_SwapWindowDB(_THIS, SDL_Window * window)
     SDL_DisplayData *dispdata = (SDL_DisplayData *) SDL_GetDisplayForWindow(window)->driverdata;
     KMSDRM_FBInfo *fb;
     int ret;
+    uint32_t flags = 0;
 
-    /* Do we need to set video mode this time? */
-    uint32_t flags = DRM_MODE_ATOMIC_NONBLOCK;
-    if (windata->crtc_setup_pending) {
+    /* Do we need to set video mode this time? If yes, pass the right flag and issue a blocking atomic ioctl. */
+    if (dispdata->modeset_pending) {
         flags |= DRM_MODE_ATOMIC_ALLOW_MODESET;
-        windata->crtc_setup_pending = SDL_FALSE;
+        dispdata->modeset_pending = SDL_FALSE;
+    }
+    else {
+        flags |= DRM_MODE_ATOMIC_NONBLOCK;
     }
 
     /* Create the fence that will be inserted in the cmdstream exactly at the end
