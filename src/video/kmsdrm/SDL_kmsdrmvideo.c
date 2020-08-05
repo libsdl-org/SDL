@@ -333,17 +333,26 @@ void get_planes_info(_THIS)
 
 #endif
 
-/* Get a plane that is PRIMARY (there's no guarantee that we have overlays in all hardware!)
-   and can use the CRTC we have chosen. That's all. */ 
-uint32_t get_plane_id(_THIS)
+/* Get a plane that is PRIMARY (there's no guarantee that we have overlays in all hardware,
+   so we can really only count on having one primary plane) and can use the CRTC we have chosen. */ 
+uint32_t get_plane_id(_THIS, drmModeRes *resources)
 {
     drmModePlaneResPtr plane_resources;
     uint32_t i, j;
+    uint32_t crtc_index = 0;
     int ret = -EINVAL;
     int found_primary = 0;
 
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
     SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
+
+    /* Get the crtc_index for the current CRTC. Needed to find out if a plane supports the CRTC. */
+    for (i = 0; i < resources->count_crtcs; i++) {
+	if (resources->crtcs[i] == dispdata->crtc_id) {
+	    crtc_index = i;
+	    break;
+	}
+    }
 
     plane_resources = KMSDRM_drmModeGetPlaneResources(viddata->drm_fd);
     if (!plane_resources) {
@@ -363,9 +372,10 @@ uint32_t get_plane_id(_THIS)
 	}
 
         /* See if the current CRTC is available for this plane. */
-	if (plane->possible_crtcs & (1 << dispdata->crtc_index)) {
+	if (plane->possible_crtcs & (1 << crtc_index)) {
 
-	    drmModeObjectPropertiesPtr props = KMSDRM_drmModeObjectGetProperties(viddata->drm_fd, plane_id, DRM_MODE_OBJECT_PLANE);
+	    drmModeObjectPropertiesPtr props = KMSDRM_drmModeObjectGetProperties(viddata->drm_fd,
+                                                   plane_id, DRM_MODE_OBJECT_PLANE);
 	    ret = plane_id;
 
             /* Search the plane props, to see if it's a primary plane. */
@@ -379,7 +389,7 @@ uint32_t get_plane_id(_THIS)
 		    found_primary = 1;
 		}
 
-		KMSDRM_drmModeFreeProperty(p);
+                KMSDRM_drmModeFreeProperty(p);
 	    }
 
 	    KMSDRM_drmModeFreeObjectProperties(props);
@@ -717,7 +727,7 @@ KMSDRM_CreateSurfaces(_THIS, SDL_Window * window)
 
     /* We take note here about the need to do a modeset in the atomic_commit(),
        called in KMSDRM_GLES_SwapWindow(). */
-    windata->crtc_setup_pending = SDL_TRUE;
+    dispdata->modeset_pending = SDL_TRUE;
 
     return 0;
 }
@@ -870,20 +880,12 @@ KMSDRM_VideoInit(_THIS)
     /* Atomic block */
     /****************/
 
-    /* Find crtc_index. It's used to find out if a plane supports a CRTC. */
-    /* TODO: include this in the get_plane_id() function somehow. */
-    for (int i = 0; i < resources->count_crtcs; i++) {
-	if (resources->crtcs[i] == dispdata->crtc_id) {
-	    dispdata->crtc_index = i;
-	    break;
-	}
-    }
-
     /* Initialize the fences and their fds: */
     dispdata->kms_fence = NULL;
     dispdata->gpu_fence = NULL;
     dispdata->kms_out_fence_fd = -1,
     dispdata->kms_in_fence_fd  = -1,
+    dispdata->modeset_pending  = SDL_FALSE;
 
     /*********************/
     /* Atomic block ends */
@@ -949,7 +951,7 @@ KMSDRM_VideoInit(_THIS)
         goto cleanup;
     }
 
-    dispdata->plane_id = get_plane_id(_this);
+    dispdata->plane_id = get_plane_id(_this, resources);
     if (!dispdata->plane_id) {
         ret = SDL_SetError("could not find a suitable plane.");
         goto cleanup;
@@ -1011,6 +1013,11 @@ KMSDRM_VideoInit(_THIS)
     SDL_EVDEV_Init();
 #endif
 
+    if (encoder)
+        KMSDRM_drmModeFreeEncoder(encoder);
+    if (resources)
+        KMSDRM_drmModeFreeResources(resources);
+
     KMSDRM_InitMouse(_this);
 
     return ret;
@@ -1044,12 +1051,21 @@ cleanup:
     return ret;
 }
 
+/* Fn to restore original video mode and crtc buffer on quit, using the atomic interface. */
+/*int
+restore_video (_THIS)
+{
+    SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
+
+    ret = drm_atomic_commit(_this, fb->fb_id, flags);
+
+}*/
+
 void
 KMSDRM_VideoQuit(_THIS)
 {
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
     SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
-
     SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "KMSDRM_VideoQuit()");
 
     if (_this->gl_config.driver_loaded) {
@@ -1062,16 +1078,14 @@ KMSDRM_VideoQuit(_THIS)
     viddata->max_windows = 0;
     viddata->num_windows = 0;
 
-    /* Restore saved CRTC settings */
+    /* Restore original videomode. */
     if (viddata->drm_fd >= 0 && dispdata && dispdata->connector && dispdata->crtc) {
-        drmModeConnector *conn = dispdata->connector;
-        drmModeCrtc *crtc = dispdata->crtc;
+        uint32_t flags = DRM_MODE_ATOMIC_ALLOW_MODESET;
 
-        int ret = KMSDRM_drmModeSetCrtc(viddata->drm_fd, crtc->crtc_id, crtc->buffer_id,
-                                        crtc->x, crtc->y, &conn->connector_id, 1, &crtc->mode);
+        int ret = drm_atomic_commit(_this, dispdata->crtc->buffer_id, flags);
 
         if (ret != 0) {
-            SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO, "Could not restore original CRTC mode");
+            SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO, "Could not restore original videomode");
         }
     }
     /****************/
@@ -1191,10 +1205,8 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
         goto error;
     }
 
-    /* Init windata fields. */
-    windata->crtc_setup_pending = SDL_FALSE;
+    /* Init fields. */
     windata->egl_surface_dirty  = SDL_FALSE;
-
 
     /* First remember that certain functions in SDL_Video.c will call *_SetDisplayMode when the
        SDL_WINDOW_FULLSCREEN is set and SDL_WINDOW_FULLSCREEN_DESKTOP is not set.

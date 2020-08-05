@@ -75,14 +75,13 @@ typedef struct SDL_DisplayData
     drmModeObjectProperties *connector_props;
     drmModePropertyRes **connector_props_info;
 
-    int crtc_index;
-
     int kms_in_fence_fd;
     int kms_out_fence_fd;
 
     EGLSyncKHR kms_fence; /* Signaled when kms completes changes requested in atomic iotcl (pageflip, etc). */
     EGLSyncKHR gpu_fence; /* Signaled when GPU rendering is done. */
 
+    SDL_bool modeset_pending;
 } SDL_DisplayData;
 
 
@@ -93,7 +92,6 @@ typedef struct SDL_WindowData
     struct gbm_bo *bo;
     struct gbm_bo *next_bo;
     struct gbm_bo *crtc_bo;
-    SDL_bool crtc_setup_pending;
 #if SDL_VIDEO_OPENGL_EGL
     SDL_bool egl_surface_dirty;
     EGLSurface egl_surface;
