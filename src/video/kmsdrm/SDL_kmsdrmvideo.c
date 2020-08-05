@@ -1051,26 +1051,13 @@ cleanup:
     return ret;
 }
 
-/* Fn to restore original video mode and crtc buffer on quit, using the atomic interface. */
-/*int
-restore_video (_THIS)
-{
-    SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
-
-    ret = drm_atomic_commit(_this, fb->fb_id, flags);
-
-}*/
-
 void
 KMSDRM_VideoQuit(_THIS)
 {
+    int ret;
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
     SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
     SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "KMSDRM_VideoQuit()");
-
-    if (_this->gl_config.driver_loaded) {
-        SDL_GL_UnloadLibrary();
-    }
 
     /* Clear out the window list */
     SDL_free(viddata->windows);
@@ -1082,15 +1069,41 @@ KMSDRM_VideoQuit(_THIS)
     if (viddata->drm_fd >= 0 && dispdata && dispdata->connector && dispdata->crtc) {
         uint32_t flags = DRM_MODE_ATOMIC_ALLOW_MODESET;
 
-        int ret = drm_atomic_commit(_this, dispdata->crtc->buffer_id, flags);
+        /***********************************************************/
+        /* Atomic block for video mode and crt->buffer restoration */
+        /***********************************************************/
+
+	/* It could happen that we will get here after an async atomic commit (as it's in triple buffer
+           SwapWindow()) and we don't want to issue another atomic commit before previous one is completed. */
+	if (dispdata->kms_fence) {
+	    EGLint status;
+
+	    do {
+		status = _this->egl_data->eglClientWaitSyncKHR(_this->egl_data->egl_display,
+                                              dispdata->kms_fence, 0, EGL_FOREVER_KHR);
+	    } while (status != EGL_CONDITION_SATISFIED_KHR);
+
+	    _this->egl_data->eglDestroySyncKHR(_this->egl_data->egl_display, dispdata->kms_fence);
+	}
+
+        /* Issue sync/blocking atomic commit that restores original video mode and points crtc to original buffer. */
+        ret = drm_atomic_commit(_this, dispdata->crtc->buffer_id, flags);
+        /*********************/
+        /* Atomic block ends */
+        /*********************/
 
         if (ret != 0) {
             SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO, "Could not restore original videomode");
         }
     }
-    /****************/
-    /* Atomic block */
-    /****************/
+
+    if (_this->gl_config.driver_loaded) {
+        SDL_GL_UnloadLibrary();
+    }
+
+    /**************************************************/
+    /* Atomic block for freeing up property pointers. */
+    /**************************************************/
     if (dispdata && dispdata->connector_props_info) {
         SDL_free(dispdata->connector_props_info); 
         dispdata->connector_props_info = NULL;
@@ -1106,6 +1119,7 @@ KMSDRM_VideoQuit(_THIS)
     /*********************/
     /* Atomic block ends */
     /*********************/
+
     if (dispdata && dispdata->connector) {
         KMSDRM_drmModeFreeConnector(dispdata->connector);
         dispdata->connector = NULL;
