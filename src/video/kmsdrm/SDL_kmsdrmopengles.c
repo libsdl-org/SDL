@@ -121,13 +121,11 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window)
        be chosen by EGL as back buffer to draw on), and get a handle to it to request the pageflip on it. */
     windata->next_bo = KMSDRM_gbm_surface_lock_front_buffer(windata->gs);
     if (!windata->next_bo) {
-	printf("Failed to lock frontbuffer\n");
-	return -1;
+	return SDL_SetError("Failed to lock frontbuffer");
     }
     fb = KMSDRM_FBFromBO(_this, windata->next_bo);
     if (!fb) {
-	 printf("Failed to get a new framebuffer BO\n");
-	 return -1;
+	 return SDL_SetError("Failed to get a new framebuffer BO");
     }
 
     /* Don't issue another atomic ioctl until previous one has completed: it will cause errors. */
@@ -139,13 +137,13 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window)
 	} while (status != EGL_CONDITION_SATISFIED_KHR);
 
 	_this->egl_data->eglDestroySyncKHR(_this->egl_data->egl_display, dispdata->kms_fence);
+        dispdata->kms_fence = NULL;
     }
 
     /* Issue atomic commit, where we request the pageflip. */
     ret = drm_atomic_commit(_this, fb->fb_id, flags);
     if (ret) {
-	printf("failed to do atomic commit\n");
-	return -1;
+        return SDL_SetError("failed to issue atomic commit");
     }
 
     /* Release the last front buffer so EGL can chose it as back buffer and render on it again. */
@@ -206,20 +204,17 @@ KMSDRM_GLES_SwapWindowDB(_THIS, SDL_Window * window)
        be chosen by EGL as back buffer to draw on), and get a handle to it to request the pageflip on it. */
     windata->next_bo = KMSDRM_gbm_surface_lock_front_buffer(windata->gs);
     if (!windata->next_bo) {
-	printf("Failed to lock frontbuffer\n");
-	return -1;
+        return SDL_SetError("Failed to lock frontbuffer");
     }
     fb = KMSDRM_FBFromBO(_this, windata->next_bo);
     if (!fb) {
-	 printf("Failed to get a new framebuffer BO\n");
-	 return -1;
+         return SDL_SetError("Failed to get a new framebuffer BO");
     }
 
     /* Issue atomic commit, where we request the pageflip. */
     ret = drm_atomic_commit(_this, fb->fb_id, flags);
     if (ret) {
-	printf("failed to do atomic commit\n");
-	return -1;
+	return SDL_SetError("failed to do atomic commit");
     }
 
     /* Release last front buffer so EGL can chose it as back buffer and render on it again. */
