@@ -462,11 +462,29 @@ out:
     return ret;
 }
 
+void
+wait_pending_atomic(_THIS)
+{
+    SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
+
+    /* Will return immediately if we have already destroyed the fence, because we NULL-ify it just after.
+       Also, will return immediately in double-buffer mode, because kms_fence will alsawys be NULL. */
+    if (dispdata->kms_fence) {
+	EGLint status;
+
+	do {
+	    status = _this->egl_data->eglClientWaitSyncKHR(_this->egl_data->egl_display,
+					  dispdata->kms_fence, 0, EGL_FOREVER_KHR);
+	} while (status != EGL_CONDITION_SATISFIED_KHR);
+
+	_this->egl_data->eglDestroySyncKHR(_this->egl_data->egl_display, dispdata->kms_fence);
+        dispdata->kms_fence = NULL;
+    }
+}
+
 /***************************************/
 /* End of Atomic helper functions block*/
 /***************************************/
-
-
 
 static int
 KMSDRM_Available(void)
@@ -656,6 +674,9 @@ static void
 KMSDRM_DestroySurfaces(_THIS, SDL_Window * window)
 {
     SDL_WindowData *windata = (SDL_WindowData *)window->driverdata;
+
+    /* Wait for pending atomic commit (like pageflips requested in SwapWindow) to complete. */ 
+    wait_pending_atomic(_this);
 
     if (windata->bo) {
         KMSDRM_gbm_surface_release_buffer(windata->gs, windata->bo);
@@ -1073,21 +1094,13 @@ KMSDRM_VideoQuit(_THIS)
         /* Atomic block for video mode and crt->buffer restoration */
         /***********************************************************/
 
-	/* It could happen that we will get here after an async atomic commit (as it's in triple buffer
-           SwapWindow()) and we don't want to issue another atomic commit before previous one is completed. */
-	if (dispdata->kms_fence) {
-	    EGLint status;
-
-	    do {
-		status = _this->egl_data->eglClientWaitSyncKHR(_this->egl_data->egl_display,
-                                              dispdata->kms_fence, 0, EGL_FOREVER_KHR);
-	    } while (status != EGL_CONDITION_SATISFIED_KHR);
-
-	    _this->egl_data->eglDestroySyncKHR(_this->egl_data->egl_display, dispdata->kms_fence);
-	}
+	/* We could get here after an async atomic commit (as it's in triple buffer SwapWindow())
+           and we don't want to issue another atomic commit before previous one is completed. */
+        wait_pending_atomic(_this);
 
         /* Issue sync/blocking atomic commit that restores original video mode and points crtc to original buffer. */
         ret = drm_atomic_commit(_this, dispdata->crtc->buffer_id, flags);
+
         /*********************/
         /* Atomic block ends */
         /*********************/
