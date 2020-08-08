@@ -80,16 +80,6 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window)
     SDL_DisplayData *dispdata = (SDL_DisplayData *) SDL_GetDisplayForWindow(window)->driverdata;
     KMSDRM_FBInfo *fb;
     int ret;
-    uint32_t flags = 0;
-
-    /* Do we need to set video mode this time? If yes, pass the right flag and issue a blocking atomic ioctl. */
-    if (dispdata->modeset_pending) {
-        flags |= DRM_MODE_ATOMIC_ALLOW_MODESET;
-        dispdata->modeset_pending = SDL_FALSE;
-    }
-    else {
-        flags |= DRM_MODE_ATOMIC_NONBLOCK;
-    }
 
     /*************************************************************************/
     /* Block for telling KMS to wait for GPU rendering of the current frame  */
@@ -128,20 +118,14 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window)
 	 return SDL_SetError("Failed to get a new framebuffer BO");
     }
 
-    /* Don't issue another atomic ioctl until previous one has completed: it will cause errors. */
-    if (dispdata->kms_fence) {
-	EGLint status;
+    /* Add the pageflip to te request list. */
+    drm_atomic_request_pageflip(_this, fb->fb_id);
 
-	do {
-	    status = _this->egl_data->eglClientWaitSyncKHR(_this->egl_data->egl_display, dispdata->kms_fence, 0, EGL_FOREVER_KHR);
-	} while (status != EGL_CONDITION_SATISFIED_KHR);
+    /* Issue the one and only atomic commit where all changes will be requested!.
+       We need e a non-blocking atomic commit for triple buffering, because we 
+       must not block on this atomic commit so we can re-enter program loop once more. */
+    ret = drm_atomic_commit(_this, SDL_FALSE);
 
-	_this->egl_data->eglDestroySyncKHR(_this->egl_data->egl_display, dispdata->kms_fence);
-        dispdata->kms_fence = NULL;
-    }
-
-    /* Issue atomic commit, where we request the pageflip. */
-    ret = drm_atomic_commit(_this, fb->fb_id, flags);
     if (ret) {
         return SDL_SetError("failed to issue atomic commit");
     }
@@ -180,21 +164,13 @@ int
 KMSDRM_GLES_SwapWindowDB(_THIS, SDL_Window * window)
 {
     SDL_WindowData *windata = ((SDL_WindowData *) window->driverdata);
-    SDL_DisplayData *dispdata = (SDL_DisplayData *) SDL_GetDisplayForWindow(window)->driverdata;
     KMSDRM_FBInfo *fb;
     int ret;
-    uint32_t flags = 0;
 
     /* In double-buffer mode, atomic commit will always be synchronous/blocking (ie: won't return until
        the requested changes are done).
        Also, there's no need to fence KMS or the GPU, because we won't be entering game loop again
        (hence not building or executing a new cmdstring) until pageflip is done. */
-
-    /* Do we need to set video mode this time? If yes, pass the right flag and issue a blocking atomic ioctl. */
-    if (dispdata->modeset_pending) {
-        flags |= DRM_MODE_ATOMIC_ALLOW_MODESET;
-        dispdata->modeset_pending = SDL_FALSE;
-    }
 
     /* Mark, at EGL level, the buffer that we want to become the new front buffer.
        However, it won't really happen until we request a pageflip at the KMS level and it completes. */
@@ -211,10 +187,15 @@ KMSDRM_GLES_SwapWindowDB(_THIS, SDL_Window * window)
          return SDL_SetError("Failed to get a new framebuffer BO");
     }
 
-    /* Issue atomic commit, where we request the pageflip. */
-    ret = drm_atomic_commit(_this, fb->fb_id, flags);
+    /* Add the pageflip to te request list. */
+    drm_atomic_request_pageflip(_this, fb->fb_id);
+
+    /* Issue the one and only atomic commit where all changes will be requested!. 
+       Blocking for double buffering: won't return until completed. */
+    ret = drm_atomic_commit(_this, SDL_TRUE);
+
     if (ret) {
-	return SDL_SetError("failed to do atomic commit");
+        return SDL_SetError("failed to issue atomic commit");
     }
 
     /* Release last front buffer so EGL can chose it as back buffer and render on it again. */

@@ -197,23 +197,23 @@ static int add_crtc_property(drmModeAtomicReq *req, uint32_t obj_id,
 static int add_plane_property(drmModeAtomicReq *req, uint32_t obj_id,
 				const char *name, uint64_t value)
 {
-        SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
-	unsigned int i;
-	int prop_id = -1;
+    SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
+    unsigned int i;
+    int prop_id = -1;
 
-	for (i = 0 ; i < dispdata->plane_props->count_props ; i++) {
-		if (strcmp(dispdata->plane_props_info[i]->name, name) == 0) {
-			prop_id = dispdata->plane_props_info[i]->prop_id;
-			break;
-		}
+    for (i = 0 ; i < dispdata->plane_props->count_props ; i++) {
+	if (strcmp(dispdata->plane_props_info[i]->name, name) == 0) {
+	    prop_id = dispdata->plane_props_info[i]->prop_id;
+	    break;
 	}
+    }
 
-	if (prop_id < 0) {
-		printf("no plane property: %s\n", name);
-		return -EINVAL;
-	}
+    if (prop_id < 0) {
+	printf("no plane property: %s\n", name);
+	return -EINVAL;
+    }
 
-	return KMSDRM_drmModeAtomicAddProperty(req, obj_id, prop_id, value);
+    return KMSDRM_drmModeAtomicAddProperty(req, obj_id, prop_id, value);
 }
 
 #if 0
@@ -403,51 +403,70 @@ uint32_t get_plane_id(_THIS, drmModeRes *resources)
     return ret;
 }
 
-int drm_atomic_commit(_THIS, uint32_t fb_id, uint32_t flags)
+void
+drm_atomic_request_pageflip(_THIS, uint32_t fb_id)
+{
+
+    SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
+    uint32_t plane_id = dispdata->plane->plane_id;
+
+    /* Do we have a set of changes already in the making? If not, allocate a new one. */
+    if (!dispdata->atomic_req)
+        dispdata->atomic_req = KMSDRM_drmModeAtomicAlloc();
+
+    add_plane_property(dispdata->atomic_req, plane_id, "FB_ID", fb_id);
+    add_plane_property(dispdata->atomic_req, plane_id, "CRTC_ID", dispdata->crtc_id);
+    add_plane_property(dispdata->atomic_req, plane_id, "SRC_X", 0);
+    add_plane_property(dispdata->atomic_req, plane_id, "SRC_Y", 0);
+    add_plane_property(dispdata->atomic_req, plane_id, "SRC_W", dispdata->mode.hdisplay << 16);
+    add_plane_property(dispdata->atomic_req, plane_id, "SRC_H", dispdata->mode.vdisplay << 16);
+    add_plane_property(dispdata->atomic_req, plane_id, "CRTC_X", 0);
+    add_plane_property(dispdata->atomic_req, plane_id, "CRTC_Y", 0);
+    add_plane_property(dispdata->atomic_req, plane_id, "CRTC_W", dispdata->mode.hdisplay);
+    add_plane_property(dispdata->atomic_req, plane_id, "CRTC_H", dispdata->mode.vdisplay);
+
+    if (dispdata->kms_in_fence_fd != -1) {
+	add_crtc_property(dispdata->atomic_req, dispdata->crtc_id, "OUT_FENCE_PTR",
+			  VOID2U64(&dispdata->kms_out_fence_fd));
+	add_plane_property(dispdata->atomic_req, plane_id, "IN_FENCE_FD", dispdata->kms_in_fence_fd);
+    }
+
+}
+
+void
+drm_atomic_request_modeset(_THIS)
 {
     SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
-    uint32_t plane_id = dispdata->plane->plane_id;
+
     uint32_t blob_id;
-    drmModeAtomicReq *req;
+
+    /* Do we have a set of changes already in the making? If not, allocate a new one. */
+    if (!dispdata->atomic_req)
+        dispdata->atomic_req = KMSDRM_drmModeAtomicAlloc();
+
+    dispdata->atomic_flags |= DRM_MODE_ATOMIC_ALLOW_MODESET;
+
+    add_connector_property(dispdata->atomic_req, dispdata->connector->connector_id, "CRTC_ID", dispdata->crtc_id);
+    KMSDRM_drmModeCreatePropertyBlob(viddata->drm_fd, &dispdata->mode, sizeof(dispdata->mode), &blob_id);
+    add_crtc_property(dispdata->atomic_req, dispdata->crtc_id, "MODE_ID", blob_id);
+    add_crtc_property(dispdata->atomic_req, dispdata->crtc_id, "ACTIVE", 1);
+}
+
+
+int drm_atomic_commit(_THIS, SDL_bool blocking)
+{
+    SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
+    SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
     int ret;
 
-    req = KMSDRM_drmModeAtomicAlloc();
+    if (!blocking)
+        dispdata->atomic_flags |= DRM_MODE_ATOMIC_NONBLOCK;
 
-    if (flags & DRM_MODE_ATOMIC_ALLOW_MODESET) {
-	if (add_connector_property(req, dispdata->connector->connector_id, "CRTC_ID",
-				   dispdata->crtc_id) < 0)
-	    return -1;
+    /* Never issue a new atomic commit if previous has not yet completed, or it will error. */
+    drm_atomic_wait_pending(_this);
 
-	if (KMSDRM_drmModeCreatePropertyBlob(viddata->drm_fd, &dispdata->mode, sizeof(dispdata->mode),
-					     &blob_id) != 0)
-	    return -1;
-
-	if (add_crtc_property(req, dispdata->crtc_id, "MODE_ID", blob_id) < 0)
-	    return -1;
-
-	if (add_crtc_property(req, dispdata->crtc_id, "ACTIVE", 1) < 0)
-	    return -1;
-    }
-
-    add_plane_property(req, plane_id, "FB_ID", fb_id);
-    add_plane_property(req, plane_id, "CRTC_ID", dispdata->crtc_id);
-    add_plane_property(req, plane_id, "SRC_X", 0);
-    add_plane_property(req, plane_id, "SRC_Y", 0);
-    add_plane_property(req, plane_id, "SRC_W", dispdata->mode.hdisplay << 16);
-    add_plane_property(req, plane_id, "SRC_H", dispdata->mode.vdisplay << 16);
-    add_plane_property(req, plane_id, "CRTC_X", 0);
-    add_plane_property(req, plane_id, "CRTC_Y", 0);
-    add_plane_property(req, plane_id, "CRTC_W", dispdata->mode.hdisplay);
-    add_plane_property(req, plane_id, "CRTC_H", dispdata->mode.vdisplay);
-
-    if (dispdata->kms_in_fence_fd != -1) {
-	add_crtc_property(req, dispdata->crtc_id, "OUT_FENCE_PTR",
-			  VOID2U64(&dispdata->kms_out_fence_fd));
-	add_plane_property(req, plane_id, "IN_FENCE_FD", dispdata->kms_in_fence_fd);
-    }
-
-    ret = KMSDRM_drmModeAtomicCommit(viddata->drm_fd, req, flags, NULL);
+    ret = KMSDRM_drmModeAtomicCommit(viddata->drm_fd, dispdata->atomic_req, dispdata->atomic_flags, NULL);
     if (ret)
 	goto out;
 
@@ -457,13 +476,15 @@ int drm_atomic_commit(_THIS, uint32_t fb_id, uint32_t flags)
     }
 
 out:
-    KMSDRM_drmModeAtomicFree(req);
+    KMSDRM_drmModeAtomicFree(dispdata->atomic_req);
+    dispdata->atomic_req = NULL;
+    dispdata->atomic_flags = 0;
 
     return ret;
 }
 
 void
-wait_pending_atomic(_THIS)
+drm_atomic_wait_pending(_THIS)
 {
     SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
 
@@ -676,7 +697,7 @@ KMSDRM_DestroySurfaces(_THIS, SDL_Window * window)
     SDL_WindowData *windata = (SDL_WindowData *)window->driverdata;
 
     /* Wait for pending atomic commit (like pageflips requested in SwapWindow) to complete. */ 
-    wait_pending_atomic(_this);
+    drm_atomic_wait_pending(_this);
 
     if (windata->bo) {
         KMSDRM_gbm_surface_release_buffer(windata->gs, windata->bo);
@@ -746,9 +767,8 @@ KMSDRM_CreateSurfaces(_THIS, SDL_Window * window)
     windata->egl_surface_dirty = SDL_FALSE;
 #endif
 
-    /* We take note here about the need to do a modeset in the atomic_commit(),
-       called in KMSDRM_GLES_SwapWindow(). */
-    dispdata->modeset_pending = SDL_TRUE;
+    /* Add modeset request to the current change request list. */
+    drm_atomic_request_modeset(_this);
 
     return 0;
 }
@@ -901,12 +921,13 @@ KMSDRM_VideoInit(_THIS)
     /* Atomic block */
     /****************/
 
-    /* Initialize the fences and their fds: */
+    /* Initialize the atomic dispdata members. */
+    dispdata->atomic_flags = 0;
+    dispdata->atomic_req = NULL;
     dispdata->kms_fence = NULL;
     dispdata->gpu_fence = NULL;
     dispdata->kms_out_fence_fd = -1,
     dispdata->kms_in_fence_fd  = -1,
-    dispdata->modeset_pending  = SDL_FALSE;
 
     /*********************/
     /* Atomic block ends */
@@ -1086,20 +1107,18 @@ KMSDRM_VideoQuit(_THIS)
     viddata->max_windows = 0;
     viddata->num_windows = 0;
 
-    /* Restore original videomode. */
+    /* Restore original buffer. */
     if (viddata->drm_fd >= 0 && dispdata && dispdata->connector && dispdata->crtc) {
-        uint32_t flags = DRM_MODE_ATOMIC_ALLOW_MODESET;
-
         /***********************************************************/
-        /* Atomic block for video mode and crt->buffer restoration */
+        /* Atomic block for original crt->buffer restoration */
         /***********************************************************/
 
-	/* We could get here after an async atomic commit (as it's in triple buffer SwapWindow())
-           and we don't want to issue another atomic commit before previous one is completed. */
-        wait_pending_atomic(_this);
-
-        /* Issue sync/blocking atomic commit that restores original video mode and points crtc to original buffer. */
-        ret = drm_atomic_commit(_this, dispdata->crtc->buffer_id, flags);
+        /* Issue sync/blocking atomic commit that points crtc to original buffer.
+           SDL_video has already called SetDisplayMode() to set the original display mode at this point. 
+           We are not doing pageflips anymore, so we can't rely on the SwapWindow() atomic commit
+           so we are explicitly calling it here. */
+        drm_atomic_request_pageflip(_this, dispdata->crtc->buffer_id);
+        ret = drm_atomic_commit(_this, SDL_TRUE);
 
         /*********************/
         /* Atomic block ends */
@@ -1194,6 +1213,7 @@ KMSDRM_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
     }
 
     dispdata->mode = conn->modes[modedata->mode_index];
+    drm_atomic_request_modeset(_this);
 
     for (int i = 0; i < viddata->num_windows; i++) {
         SDL_Window *window = viddata->windows[i];

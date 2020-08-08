@@ -60,12 +60,23 @@ typedef struct SDL_DisplayData
 
     drmModeModeInfo mode;
     uint32_t plane_id;
+    uint32_t cusor_plane_id;
     uint32_t crtc_id;
     uint32_t connector_id;
+    uint32_t atomic_flags;
+
+    /* All changes will be requested via this one and only atomic request,
+       that will be sent to the kernel in the one and only atomic_commit() call
+       that takes place in SwapWindow(). */
+    drmModeAtomicReq *atomic_req;
 
     drmModePlane *plane;
     drmModeObjectProperties *plane_props;
     drmModePropertyRes **plane_props_info;
+
+    drmModePlane *cursor_plane;
+    drmModeObjectProperties *cursor_plane_props;
+    drmModePropertyRes **cursor_plane_props_info;
 
     drmModeCrtc *crtc;
     drmModeObjectProperties *crtc_props;
@@ -81,7 +92,6 @@ typedef struct SDL_DisplayData
     EGLSyncKHR kms_fence; /* Signaled when kms completes changes requested in atomic iotcl (pageflip, etc). */
     EGLSyncKHR gpu_fence; /* Signaled when GPU rendering is done. */
 
-    SDL_bool modeset_pending;
 } SDL_DisplayData;
 
 
@@ -107,10 +117,12 @@ typedef struct KMSDRM_FBInfo
 /* Helper functions */
 int KMSDRM_CreateSurfaces(_THIS, SDL_Window * window);
 KMSDRM_FBInfo *KMSDRM_FBFromBO(_THIS, struct gbm_bo *bo);
-SDL_bool KMSDRM_WaitPageFlip(_THIS, SDL_WindowData *windata, int timeout);
 
 /* Atomic functions that are used from SDL_kmsdrmopengles.c */
-int drm_atomic_commit(_THIS, uint32_t fb_id, uint32_t flags);
+void drm_atomic_request_modeset(_THIS);
+void drm_atomic_request_pageflip(_THIS, uint32_t fb_id);
+int drm_atomic_commit(_THIS, SDL_bool blocking);
+void drm_atomic_wait_pending(_THIS);
 
 /****************************************************************************/
 /* SDL_VideoDevice functions declaration                                    */
