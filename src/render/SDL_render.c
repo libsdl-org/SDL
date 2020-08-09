@@ -688,40 +688,60 @@ SDL_RendererEventWatch(void *userdata, SDL_Event *event)
                 event->button.x = (int)(event->button.x / (scale.x * renderer->dpi_scale.x));
                 event->button.y = (int)(event->button.y / (scale.y * renderer->dpi_scale.y));
             }
-        }
+        }                               
     } else if (event->type == SDL_FINGERDOWN ||
                event->type == SDL_FINGERUP ||
                event->type == SDL_FINGERMOTION) {
         int logical_w, logical_h;
+        float physical_w, physical_h;
         SDL_Rect viewport;
         SDL_FPoint scale;
         GetWindowViewportValues(renderer, &logical_w, &logical_h, &viewport, &scale);
-        if (logical_w) {
+
+        /* !!! FIXME: we probably should drop events that are outside of the
+           !!! FIXME: viewport, but we can't do that from an event watcher,
+           !!! FIXME: and we would have to track if a touch happened outside
+           !!! FIXME: the viewport and then slid into it to insert extra
+           !!! FIXME: events, which is a mess, so for now we just clamp these
+           !!! FIXME: events to the edge. */
+
+        if (renderer->GetOutputSize) {
             int w, h;
+            renderer->GetOutputSize(renderer, &w, &h);
+            physical_w = (float) w;
+            physical_h = (float) h;
+        } else {
+            int w, h;
+            SDL_GetWindowSize(renderer->window, &w, &h);
+            physical_w = ((float) w) * renderer->dpi_scale.x;
+            physical_h = ((float) h) * renderer->dpi_scale.y;
+        }
 
-            if (renderer->GetOutputSize) {
-                renderer->GetOutputSize(renderer, &w, &h);
+        if (physical_w == 0.0f) {  /* nowhere for the touch to go, avoid division by zero and put it dead center. */
+            event->tfinger.x = 0.5f;
+        } else {
+            const float normalized_viewport_x = ((float) viewport.x) / physical_w;
+            const float normalized_viewport_w = ((float) viewport.w) / physical_w;
+            if (event->tfinger.x <= normalized_viewport_x) {
+                event->tfinger.x = 0.0f;  /* to the left of the viewport, clamp to the edge. */
+            } else if (event->tfinger.x >= (normalized_viewport_x + normalized_viewport_w)) {
+                event->tfinger.x = 1.0f;  /* to the right of the viewport, clamp to the edge. */
             } else {
-                SDL_GetWindowSize(renderer->window, &w, &h);
+                event->tfinger.x = (event->tfinger.x - normalized_viewport_x) / normalized_viewport_w;
             }
+        }
 
-            event->tfinger.x *= (w - 1);
-            event->tfinger.y *= (h - 1);
-
-            event->tfinger.x -= (viewport.x * renderer->dpi_scale.x);
-            event->tfinger.y -= (viewport.y * renderer->dpi_scale.y);
-            event->tfinger.x = (event->tfinger.x / (scale.x * renderer->dpi_scale.x));
-            event->tfinger.y = (event->tfinger.y / (scale.y * renderer->dpi_scale.y));
-
-            if (logical_w > 1) {
-                event->tfinger.x = event->tfinger.x / (logical_w - 1);
+        if (physical_h == 0.0f) {  /* nowhere for the touch to go, avoid division by zero and put it dead center. */
+            event->tfinger.y = 0.5f;
+        } else {
+            const float normalized_viewport_y = ((float) viewport.y) / physical_h;
+            const float normalized_viewport_h = ((float) viewport.h) / physical_h;
+            if (event->tfinger.y <= normalized_viewport_y) {
+                event->tfinger.y = 0.0f;  /* to the left of the viewport, clamp to the edge. */
+            } else if (event->tfinger.y >= (normalized_viewport_y + normalized_viewport_h)) {
+                event->tfinger.y = 1.0f;  /* to the right of the viewport, clamp to the edge. */
             } else {
-                event->tfinger.x = 0.5f;
-            }
-            if (logical_h > 1) {
-                event->tfinger.y = event->tfinger.y / (logical_h - 1);
-            } else {
-                event->tfinger.y = 0.5f;
+                event->tfinger.y = (event->tfinger.y - normalized_viewport_y) / normalized_viewport_h;
             }
         }
     }
