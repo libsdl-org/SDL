@@ -295,31 +295,38 @@ ConnectToPulseServer_Internal(pa_mainloop **_mainloop, pa_context **_context)
         return SDL_SetError("pa_mainloop_new() failed");
     }
 
-    *_mainloop = mainloop;
-
     mainloop_api = PULSEAUDIO_pa_mainloop_get_api(mainloop);
     SDL_assert(mainloop_api);  /* this never fails, right? */
 
     context = PULSEAUDIO_pa_context_new(mainloop_api, getAppName());
     if (!context) {
+        PULSEAUDIO_pa_mainloop_free(mainloop);
         return SDL_SetError("pa_context_new() failed");
     }
-    *_context = context;
 
     /* Connect to the PulseAudio server */
     if (PULSEAUDIO_pa_context_connect(context, NULL, 0, NULL) < 0) {
+        PULSEAUDIO_pa_context_unref(context);
+        PULSEAUDIO_pa_mainloop_free(mainloop);
         return SDL_SetError("Could not setup connection to PulseAudio");
     }
 
     do {
         if (PULSEAUDIO_pa_mainloop_iterate(mainloop, 1, NULL) < 0) {
+            PULSEAUDIO_pa_context_unref(context);
+            PULSEAUDIO_pa_mainloop_free(mainloop);
             return SDL_SetError("pa_mainloop_iterate() failed");
         }
         state = PULSEAUDIO_pa_context_get_state(context);
         if (!PA_CONTEXT_IS_GOOD(state)) {
+            PULSEAUDIO_pa_context_unref(context);
+            PULSEAUDIO_pa_mainloop_free(mainloop);
             return SDL_SetError("Could not connect to PulseAudio");
         }
     } while (state != PA_CONTEXT_READY);
+
+    *_context = context;
+    *_mainloop = mainloop;
 
     return 0;  /* connected and ready! */
 }
