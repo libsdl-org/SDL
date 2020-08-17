@@ -1,8 +1,5 @@
 package org.libsdl.app;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.Locale;
 import java.lang.reflect.Method;
