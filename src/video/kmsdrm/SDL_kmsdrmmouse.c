@@ -345,8 +345,8 @@ KMSDRM_WarpMouseGlobal(int x, int y)
         if (curdata->bo) {
 	    int ret;
 
-            drm_atomic_movecursor(curdata, x, y);
-            ret = drm_atomic_commit(curdata->video, SDL_TRUE);
+            ret = drm_atomic_movecursor(curdata, x, y);
+            //ret = drm_atomic_commit(curdata->video, SDL_TRUE);
 
 	    if (ret) {
 		SDL_SetError("drm_atomic_movecursor() failed.");
@@ -401,8 +401,8 @@ KMSDRM_MoveCursor(SDL_Cursor * cursor)
 	/* In SDLPoP "QUIT?" menu, no more pageflips are generated, so no more atomic_commit() calls
 	   from SwapWindow(), causing the cursor movement requested here not to be seen on screen.
 	   Thus we have to do an atomic_commit() here, so requested movements are commited and seen. */
-        drm_atomic_movecursor(curdata, mouse->x, mouse->y);
-        ret = drm_atomic_commit(curdata->video, SDL_TRUE);
+        ret = drm_atomic_movecursor(curdata, mouse->x, mouse->y);
+        //ret = drm_atomic_commit(curdata->video, SDL_TRUE);
 
 	if (ret) {
 	    SDL_SetError("drm_atomic_movecursor() failed.");

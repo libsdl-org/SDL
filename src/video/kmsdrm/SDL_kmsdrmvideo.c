@@ -1169,6 +1169,8 @@ cleanup:
     return ret;
 }
 
+/* The driverdata pointers, like dispdata, viddata, etc...
+   are freed by SDL internals, so not our job. */
 void
 KMSDRM_VideoQuit(_THIS)
 {
@@ -1183,12 +1185,12 @@ KMSDRM_VideoQuit(_THIS)
     viddata->max_windows = 0;
     viddata->num_windows = 0;
 
-    /* Restore original buffer. */
-    if (viddata->drm_fd >= 0 && dispdata && dispdata->connector->connector && dispdata->crtc->crtc) {
-        /***********************************************************/
-        /* Atomic block for original crt->buffer restoration */
-        /***********************************************************/
-
+    /* Restore original buffer. Probably not needed
+       b/c DestroySurfaces also points the display plane
+       to the original buffer before destrying the GBM surface. */
+    if (viddata->drm_fd >= 0 && dispdata && dispdata->connector->connector &&
+            dispdata->crtc->crtc)
+    {
         /* Issue sync/blocking atomic commit that points crtc to original buffer.
            SDL_video has already called SetDisplayMode() to set the original
            display mode at this point. 
@@ -1196,49 +1198,70 @@ KMSDRM_VideoQuit(_THIS)
            atomic_commit() call, hence we are explicitly calling atomic_commit() here. 
         */
 
-        drm_atomic_setbuffer(_this, dispdata->display_plane, dispdata->crtc->crtc->buffer_id);
-        ret = drm_atomic_commit(_this, SDL_TRUE);
+         drm_atomic_setbuffer(_this,  dispdata->display_plane,
+                                  dispdata->crtc->crtc->buffer_id);
 
-        /*********************/
-        /* Atomic block ends */
-        /*********************/
+         ret = drm_atomic_commit(_this, SDL_TRUE);
 
-        if (ret != 0) {
-            SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO, "Could not restore original videomode");
-        }
+         if (ret != 0)
+         {
+             SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO, "Could not restore original buffer and videomode");
+         }
     }
 
     if (_this->gl_config.driver_loaded) {
         SDL_GL_UnloadLibrary();
     }
 
-    /**********************************************/
-    /* Atomic block for freeing up property sets. */
-    /**********************************************/
-    if (dispdata && dispdata->connector->props_info) {
-        SDL_free(dispdata->connector->props_info); 
-        dispdata->connector->props_info = NULL;
-    }
-    if (dispdata && dispdata->crtc->props_info) {
-        SDL_free(dispdata->crtc->props_info); 
-        dispdata->crtc->props_info = NULL;
-    }
-    if (dispdata && dispdata->display_plane->props_info) {
-        SDL_free(dispdata->display_plane->props_info); 
-        dispdata->display_plane->props_info = NULL;
-    }
-    /*********************/
-    /* Atomic block ends */
-    /*********************/
-
-    if (dispdata && dispdata->connector->connector != NULL) {
-        KMSDRM_drmModeFreeConnector(dispdata->connector->connector);
+    /* Free connector */
+    if (dispdata && dispdata->connector) {
+        if (dispdata->connector->connector) {
+            KMSDRM_drmModeFreeConnector(dispdata->connector->connector);
+            dispdata->connector->connector = NULL;
+        }
+        if (dispdata->connector->props_info) {
+            SDL_free(dispdata->connector->props_info); 
+            dispdata->connector->props_info = NULL;
+        }
+        SDL_free(dispdata->connector); 
         dispdata->connector = NULL;
     }
-    if (dispdata && dispdata->crtc->crtc != NULL) {
-        KMSDRM_drmModeFreeCrtc(dispdata->crtc->crtc);
-        dispdata->crtc->crtc = NULL;
+
+    /* Free CRTC */
+    if (dispdata && dispdata->crtc) {
+        if (dispdata->crtc->crtc) {
+            KMSDRM_drmModeFreeCrtc(dispdata->crtc->crtc);
+            dispdata->crtc->crtc = NULL;
+        }
+        if (dispdata->crtc->props_info) {
+            SDL_free(dispdata->crtc->props_info); 
+            dispdata->crtc->props_info = NULL;
+        }
+        SDL_free(dispdata->crtc); 
+        dispdata->crtc = NULL;
     }
+
+    /* Free main display plane */
+    if (dispdata && dispdata->display_plane) {
+        if (dispdata->display_plane->props_info) {
+            SDL_free(dispdata->display_plane->props_info); 
+            dispdata->display_plane->props_info = NULL;
+        }
+        SDL_free(dispdata->display_plane); 
+        dispdata->display_plane = NULL;
+    }
+
+    /* Free main cursor plane */
+    if (dispdata && dispdata->cursor_plane) {
+        if (dispdata->cursor_plane->props_info) {
+            SDL_free(dispdata->cursor_plane->props_info); 
+            dispdata->cursor_plane->props_info = NULL;
+        }
+        SDL_free(dispdata->cursor_plane); 
+        dispdata->cursor_plane = NULL;
+    }
+
+    /* Destroy GBM device. GBM surface is destroyed by DestroySurfaces(). */
     if (viddata->gbm_dev) {
         KMSDRM_gbm_device_destroy(viddata->gbm_dev);
         viddata->gbm_dev = NULL;
