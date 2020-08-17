@@ -119,7 +119,7 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window)
     }
 
     /* Add the pageflip to te request list. */
-    drm_atomic_request_pageflip(_this, fb->fb_id);
+    drm_atomic_setbuffer(_this, dispdata->display_plane, fb->fb_id);
 
     /* Issue the one and only atomic commit where all changes will be requested!.
        We need e a non-blocking atomic commit for triple buffering, because we 
@@ -164,6 +164,7 @@ int
 KMSDRM_GLES_SwapWindowDB(_THIS, SDL_Window * window)
 {
     SDL_WindowData *windata = ((SDL_WindowData *) window->driverdata);
+    SDL_DisplayData *dispdata = (SDL_DisplayData *) SDL_GetDisplayForWindow(window)->driverdata;
     KMSDRM_FBInfo *fb;
     int ret;
 
@@ -188,7 +189,7 @@ KMSDRM_GLES_SwapWindowDB(_THIS, SDL_Window * window)
     }
 
     /* Add the pageflip to te request list. */
-    drm_atomic_request_pageflip(_this, fb->fb_id);
+    drm_atomic_setbuffer(_this, dispdata->display_plane, fb->fb_id);
 
     /* Issue the one and only atomic commit where all changes will be requested!. 
        Blocking for double buffering: won't return until completed. */

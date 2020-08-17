@@ -54,37 +54,37 @@ typedef struct SDL_DisplayModeData
     int mode_index;
 } SDL_DisplayModeData;
 
+struct plane {
+	drmModePlane *plane;
+	drmModeObjectProperties *props;
+	drmModePropertyRes **props_info;
+};
+
+struct crtc {
+	drmModeCrtc *crtc;
+	drmModeObjectProperties *props;
+	drmModePropertyRes **props_info;
+};
+
+struct connector {
+	drmModeConnector *connector;
+	drmModeObjectProperties *props;
+	drmModePropertyRes **props_info;
+};
 
 typedef struct SDL_DisplayData
 {
-
     drmModeModeInfo mode;
-    uint32_t plane_id;
-    uint32_t cusor_plane_id;
-    uint32_t crtc_id;
-    uint32_t connector_id;
     uint32_t atomic_flags;
 
     /* All changes will be requested via this one and only atomic request,
        that will be sent to the kernel in the one and only atomic_commit() call
        that takes place in SwapWindow(). */
     drmModeAtomicReq *atomic_req;
-
-    drmModePlane *plane;
-    drmModeObjectProperties *plane_props;
-    drmModePropertyRes **plane_props_info;
-
-    drmModePlane *cursor_plane;
-    drmModeObjectProperties *cursor_plane_props;
-    drmModePropertyRes **cursor_plane_props_info;
-
-    drmModeCrtc *crtc;
-    drmModeObjectProperties *crtc_props;
-    drmModePropertyRes **crtc_props_info;
-
-    drmModeConnector *connector;
-    drmModeObjectProperties *connector_props;
-    drmModePropertyRes **connector_props_info;
+    struct plane *display_plane;
+    struct plane *cursor_plane;
+    struct crtc *crtc;
+    struct connector *connector;
 
     int kms_in_fence_fd;
     int kms_out_fence_fd;
@@ -114,15 +114,31 @@ typedef struct KMSDRM_FBInfo
     uint32_t fb_id;     /* DRM framebuffer ID */
 } KMSDRM_FBInfo;
 
+/* Driver-side info about the cursor. It's here so we know about it in SDL_kmsdrmvideo.c
+   because drm_atomic_setcursor() receives a KMSDRM_CursorData parameter as a cursor. */
+typedef struct _KMSDRM_CursorData
+{
+    struct gbm_bo *bo;
+    uint32_t       crtc_id;
+    int            hot_x, hot_y;
+    int            w, h;
+    /* The video devide implemented on SDL_kmsdrmvideo.c 
+     * to be used as _THIS pointer in SDL_kmsdrmvideo.c 
+     * functions that need it. */
+    SDL_VideoDevice *video;
+} KMSDRM_CursorData;
+
 /* Helper functions */
 int KMSDRM_CreateSurfaces(_THIS, SDL_Window * window);
 KMSDRM_FBInfo *KMSDRM_FBFromBO(_THIS, struct gbm_bo *bo);
 
-/* Atomic functions that are used from SDL_kmsdrmopengles.c */
-void drm_atomic_request_modeset(_THIS);
-void drm_atomic_request_pageflip(_THIS, uint32_t fb_id);
+/* Atomic functions that are used from SDL_kmsdrmopengles.c and SDL_kmsdrmmouse.c */
+void drm_atomic_modeset(_THIS, int mode_index);
+void drm_atomic_setbuffer(_THIS, struct plane *plane, uint32_t fb_id);
+void drm_atomic_waitpending(_THIS);
 int drm_atomic_commit(_THIS, SDL_bool blocking);
-void drm_atomic_wait_pending(_THIS);
+int drm_atomic_setcursor(KMSDRM_CursorData *curdata, int x, int y);
+int drm_atomic_movecursor(KMSDRM_CursorData *curdata, int x, int y);
 
 /****************************************************************************/
 /* SDL_VideoDevice functions declaration                                    */
