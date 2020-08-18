@@ -37,6 +37,11 @@
 #include <EGL/eglext.h>
 #endif
 
+/* Driverdata pointers are void struct* used to store backend-specific variables
+   and info that supports the SDL-side structs like SDL Display Devices, SDL_Windows...
+   which need to be "supported" with backend-side info and mechanisms to work. */ 
+
+
 typedef struct SDL_VideoData
 {
     int devindex;               /* device index that was passed on creation */
@@ -47,7 +52,6 @@ typedef struct SDL_VideoData
     int max_windows;
     int num_windows;
 } SDL_VideoData;
-
 
 typedef struct SDL_DisplayModeData
 {
@@ -72,6 +76,7 @@ struct connector {
 	drmModePropertyRes **props_info;
 };
 
+/* More general driverdata info that gives support and substance to the SDL_Display. */
 typedef struct SDL_DisplayData
 {
     drmModeModeInfo mode;
@@ -89,12 +94,14 @@ typedef struct SDL_DisplayData
     int kms_in_fence_fd;
     int kms_out_fence_fd;
 
-    EGLSyncKHR kms_fence; /* Signaled when kms completes changes requested in atomic iotcl (pageflip, etc). */
+    EGLSyncKHR kms_fence; /* Signaled when kms completes changes        *
+                           * requested in atomic iotcl (pageflip, etc). */
+
     EGLSyncKHR gpu_fence; /* Signaled when GPU rendering is done. */
 
 } SDL_DisplayData;
 
-
+/* Driverdata info that gives KMSDRM-side support and substance to the SDL_Window. */
 typedef struct SDL_WindowData
 {
     SDL_VideoData *viddata;
@@ -114,8 +121,7 @@ typedef struct KMSDRM_FBInfo
     uint32_t fb_id;     /* DRM framebuffer ID */
 } KMSDRM_FBInfo;
 
-/* Driver-side info about the cursor. It's here so we know about it in SDL_kmsdrmvideo.c
-   because drm_atomic_setcursor() receives a KMSDRM_CursorData parameter as a cursor. */
+/* Driverdata with driver-side info about the cursor. */
 typedef struct _KMSDRM_CursorData
 {
     struct gbm_bo *bo;
@@ -134,7 +140,7 @@ KMSDRM_FBInfo *KMSDRM_FBFromBO(_THIS, struct gbm_bo *bo);
 
 /* Atomic functions that are used from SDL_kmsdrmopengles.c and SDL_kmsdrmmouse.c */
 void drm_atomic_modeset(_THIS, int mode_index);
-void drm_atomic_setbuffer(_THIS, struct plane *plane, uint32_t fb_id);
+void drm_atomic_setbuffer(_THIS, struct plane *plane, uint32_t plane_id);
 void drm_atomic_waitpending(_THIS);
 int drm_atomic_commit(_THIS, SDL_bool blocking);
 int drm_atomic_setcursor(KMSDRM_CursorData *curdata, int x, int y);

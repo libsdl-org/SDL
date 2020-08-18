@@ -115,7 +115,7 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window)
     }
     fb = KMSDRM_FBFromBO(_this, windata->next_bo);
     if (!fb) {
-	 return SDL_SetError("Failed to get a new framebuffer BO");
+	 return SDL_SetError("Failed to get a new framebuffer");
     }
 
     /* Add the pageflip to te request list. */

@@ -39,17 +39,6 @@ static void KMSDRM_FreeCursor(SDL_Cursor * cursor);
 static void KMSDRM_WarpMouse(SDL_Window * window, int x, int y);
 static int KMSDRM_WarpMouseGlobal(int x, int y);
 
-/*********************************/
-/* Atomic helper functions block.*/
-/*********************************/
-
-
-
-/**************************************/
-/* Atomic helper functions block ends.*/
-/**************************************/
-
-
 /* Converts a pixel from straight-alpha [AA, RR, GG, BB], which the SDL cursor surface has,
    to premultiplied-alpha [AA. AA*RR, AA*GG, AA*BB].
    These multiplications have to be done with floats instead of uint32_t's, and the resulting values have 
@@ -398,9 +387,11 @@ KMSDRM_MoveCursor(SDL_Cursor * cursor)
        That's why we move the cursor graphic ONLY. */
     if (mouse && mouse->cur_cursor && mouse->cur_cursor->driverdata) {
         curdata = (KMSDRM_CursorData *) mouse->cur_cursor->driverdata;
-	/* In SDLPoP "QUIT?" menu, no more pageflips are generated, so no more atomic_commit() calls
-	   from SwapWindow(), causing the cursor movement requested here not to be seen on screen.
-	   Thus we have to do an atomic_commit() here, so requested movements are commited and seen. */
+        /* Some programs expect cursor movement even while they don't do SwapWindow() calls,
+           and since we ride on the atomic_commit() in SwapWindow() for cursor movement,
+           cursor won't move in these situations. We could do an atomic_commit() for each
+           cursor movement request, but it cripples the movement to 30FPS, so a future solution
+           is needed. SDLPoP "QUIT?" menu is an example of this situation. */
         ret = drm_atomic_movecursor(curdata, mouse->x, mouse->y);
         //ret = drm_atomic_commit(curdata->video, SDL_TRUE);
 

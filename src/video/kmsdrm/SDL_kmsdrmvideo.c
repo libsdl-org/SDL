@@ -770,9 +770,14 @@ KMSDRM_DestroySurfaces(_THIS, SDL_Window * window)
 
     /* CAUTION: Before destroying the GBM ane EGL surfaces, we must disconnect the display plane
        from the GBM surface buffer it's reading, and make it read the original buffer stored
-       on the CRTC while we recreate the GBM surface.
-       The plane will be pointed to one of the buffers of the new GBM surface on the next pageflip
-       (if there is another pageflip: we could arrive here because we are exiting the program...). */ 
+       on the CRTC while we recreate the GBM surface, OR simply set it's CRTC_ID and FB_ID props to 0.
+       Since setting CRTC_ID and FB_ID to 0 does not work on amdgpu, we point to the original
+       buffer containig the TTY instead, but it may stop working when we use KMSCON instead of
+       FBCON because there won't be an original TTY FB to go back to.
+       In the future, when KMSCON is used, just zero the props instead.
+       But ALWAYS do manual freeing here because some programs call DestroyWindow() when
+       they want to resize video, and end up here mid-game when the user changes the window size.
+    */
     drm_atomic_setbuffer(_this, dispdata->display_plane, dispdata->crtc->crtc->buffer_id);
     drm_atomic_commit(_this, SDL_TRUE);
 
@@ -824,8 +829,6 @@ KMSDRM_CreateSurfaces(_THIS, SDL_Window * window)
     egl_context = (EGLContext)SDL_GL_GetCurrentContext();
 #endif
 
-    KMSDRM_DestroySurfaces(_this, window);
-
     windata->gs = KMSDRM_gbm_surface_create(viddata->gbm_dev, width, height, surface_fmt, surface_flags);
 
     if (!windata->gs) {
@@ -843,6 +846,112 @@ KMSDRM_CreateSurfaces(_THIS, SDL_Window * window)
 
     windata->egl_surface_dirty = SDL_FALSE;
 #endif
+
+    return 0;
+}
+
+/* Used for videomode change, where we need to have the display plane pointing  */
+/* to a buffer of a new GBM surface BEFORE destroying the old GBM surface.      */
+int
+KMSDRM_RecreateSurfaces(_THIS, SDL_Window * window)
+{
+    SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
+    SDL_WindowData *windata = (SDL_WindowData *)window->driverdata;
+    SDL_DisplayData *dispdata = (SDL_DisplayData *) SDL_GetDisplayForWindow(window)->driverdata;
+    Uint32 width = dispdata->mode.hdisplay;
+    Uint32 height = dispdata->mode.vdisplay;
+    Uint32 surface_fmt = GBM_FORMAT_ARGB8888;
+    Uint32 surface_flags = GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING;
+
+    struct gbm_surface *new_gs;
+    struct gbm_bo *bo;
+    KMSDRM_FBInfo *fb;
+    int ret;
+
+#if SDL_VIDEO_OPENGL_EGL
+    EGLContext egl_context;
+#endif
+
+    /*********************************************************************/
+    /* FIRST CREATE THE NEW GBM SURFACE AND MAKE THE PLANE READ          */
+    /* A BUFFER FROM THAT NEW GBM SURFACE...                             */
+    /*********************************************************************/
+
+    if (!KMSDRM_gbm_device_is_format_supported(viddata->gbm_dev, surface_fmt, surface_flags)) {
+        SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO, "GBM surface format not supported. Trying anyway.");
+    }
+
+#if SDL_VIDEO_OPENGL_EGL
+    SDL_EGL_SetRequiredVisualId(_this, surface_fmt);
+    egl_context = (EGLContext)SDL_GL_GetCurrentContext();
+#endif
+
+    new_gs = KMSDRM_gbm_surface_create(viddata->gbm_dev, width, height, surface_fmt, surface_flags);
+
+    if (!new_gs) {
+        return SDL_SetError("Could not create new GBM surface");
+    }
+
+
+    /********************************************************/
+    /* ...THEN DESTROY THE OLD GBM SURFACE AND IT'S BUFFERS */
+    /********************************************************/
+
+    if (windata->bo) {
+        KMSDRM_gbm_surface_release_buffer(windata->gs, windata->bo);
+        windata->bo = NULL;
+    }
+
+    if (windata->next_bo) {
+        KMSDRM_gbm_surface_release_buffer(windata->gs, windata->next_bo);
+        windata->next_bo = NULL;
+    }
+
+#if SDL_VIDEO_OPENGL_EGL
+    SDL_EGL_MakeCurrent(_this, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+
+    if (windata->egl_surface != EGL_NO_SURFACE) {
+        SDL_EGL_DestroySurface(_this, windata->egl_surface);
+        windata->egl_surface = EGL_NO_SURFACE;
+    }
+#endif
+
+    if (windata->gs) {
+        KMSDRM_gbm_surface_destroy(windata->gs);
+        windata->gs = NULL;
+    }
+
+
+    /* From now on, we'll be operating our shiny, new GBM surface! */
+    windata->gs = new_gs;
+
+#if SDL_VIDEO_OPENGL_EGL
+    windata->egl_surface = SDL_EGL_CreateSurface(_this, (NativeWindowType)new_gs);
+
+    if (windata->egl_surface == EGL_NO_SURFACE) {
+        return SDL_SetError("Could not create EGL window surface");
+    }
+
+    SDL_EGL_MakeCurrent(_this, windata->egl_surface, egl_context);
+
+    windata->egl_surface_dirty = SDL_FALSE;
+#endif
+
+    bo = KMSDRM_gbm_surface_lock_front_buffer(windata->gs);
+    if (!bo) {
+	return SDL_SetError("Failed to lock frontbuffer on GBM surface recreation");
+    }
+    fb = KMSDRM_FBFromBO(_this, windata->next_bo);
+    if (!fb) {
+	 return SDL_SetError("Failed to get a new framebuffer on GBM surface recreation");
+    }
+
+    /* Issue sync pageflip to one of the buffers of the new GBM surface. */
+    drm_atomic_setbuffer(_this, dispdata->display_plane, fb->fb_id);
+    ret = drm_atomic_commit(_this, SDL_TRUE);
+    if (ret) {
+        return SDL_SetError("failed to issue atomic commit on GBM surface recreation");
+    }
 
     return 0;
 }
@@ -1198,8 +1307,7 @@ KMSDRM_VideoQuit(_THIS)
            atomic_commit() call, hence we are explicitly calling atomic_commit() here. 
         */
 
-         drm_atomic_setbuffer(_this,  dispdata->display_plane,
-                                  dispdata->crtc->crtc->buffer_id);
+         drm_atomic_setbuffer(_this, dispdata->display_plane, dispdata->crtc->crtc->buffer_id);
 
          ret = drm_atomic_commit(_this, SDL_TRUE);
 
@@ -1307,7 +1415,6 @@ KMSDRM_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
 {
     SDL_VideoData *viddata = (SDL_VideoData *)_this->driverdata;
     SDL_DisplayModeData *modedata = (SDL_DisplayModeData *)mode->driverdata;
-
     if (!modedata) {
         return SDL_SetError("Mode doesn't have an associated index");
     }
@@ -1319,8 +1426,7 @@ KMSDRM_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
         SDL_Window *window = viddata->windows[i];
 
         /* Re-create GBM and EGL surfaces everytime we change the display mode. */
-        KMSDRM_DestroySurfaces(_this, window);
-        KMSDRM_CreateSurfaces(_this, window);
+        KMSDRM_RecreateSurfaces(_this, window);
 
         /* Tell app about the resize */
         SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, mode->w, mode->h);
@@ -1442,6 +1548,10 @@ KMSDRM_DestroyWindow(_THIS, SDL_Window * window)
         }
     }
 
+    /* This is the only place where we simply destroy surfaces. On SetDisplayMode(),
+       we re-create them instead, and we don't destroy the window, just resize it.
+       DestroyWindow() is ONLY called on program quit, or if a program calls it
+       explicitly, but not on videomode change. */
     KMSDRM_DestroySurfaces(_this, window);
 
     window->driverdata = NULL;
