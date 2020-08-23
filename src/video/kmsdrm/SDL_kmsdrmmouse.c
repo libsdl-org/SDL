@@ -39,6 +39,84 @@ static void KMSDRM_FreeCursor(SDL_Cursor * cursor);
 static void KMSDRM_WarpMouse(SDL_Window * window, int x, int y);
 static int KMSDRM_WarpMouseGlobal(int x, int y);
 
+/**********************************/
+/* Atomic helper functions block. */
+/**********************************/
+
+int
+drm_atomic_setcursor(KMSDRM_CursorData *curdata, int x, int y)
+{
+    KMSDRM_FBInfo *fb;
+    SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
+
+    /* Do we have a set of changes already in the making? If not, allocate a new one. */
+    if (!dispdata->atomic_req)
+        dispdata->atomic_req = KMSDRM_drmModeAtomicAlloc();
+    
+    if (curdata)
+    {
+	if (!dispdata->cursor_plane) {
+	    setup_plane(curdata->video, &(dispdata->cursor_plane), DRM_PLANE_TYPE_CURSOR);
+            /* "curdata->video" is the _THIS pointer, which points to an SDL_Display, as passed from kmsdrmmouse.c */
+	}
+
+        fb = KMSDRM_FBFromBO(curdata->video, curdata->bo);
+        add_plane_property(dispdata->atomic_req, dispdata->cursor_plane, "FB_ID", fb->fb_id);
+        add_plane_property(dispdata->atomic_req, dispdata->cursor_plane, "CRTC_ID", dispdata->crtc->crtc->crtc_id);
+       
+        add_plane_property(dispdata->atomic_req, dispdata->cursor_plane, "SRC_X", 0);
+	add_plane_property(dispdata->atomic_req, dispdata->cursor_plane, "SRC_Y", 0);
+	add_plane_property(dispdata->atomic_req, dispdata->cursor_plane, "SRC_W", curdata->w << 16);
+	add_plane_property(dispdata->atomic_req, dispdata->cursor_plane, "SRC_H", curdata->h << 16);
+        add_plane_property(dispdata->atomic_req, dispdata->cursor_plane, "CRTC_X", x);
+        add_plane_property(dispdata->atomic_req, dispdata->cursor_plane, "CRTC_Y", y);
+	add_plane_property(dispdata->atomic_req, dispdata->cursor_plane, "CRTC_W", curdata->w);
+	add_plane_property(dispdata->atomic_req, dispdata->cursor_plane, "CRTC_H", curdata->h);
+    }
+    else if (dispdata->cursor_plane) /* Don't go further if plane has already been freed. */
+    { 
+	add_plane_property(dispdata->atomic_req, dispdata->cursor_plane, "FB_ID", 0);
+	add_plane_property(dispdata->atomic_req, dispdata->cursor_plane, "CRTC_ID", 0);
+
+	add_plane_property(dispdata->atomic_req, dispdata->cursor_plane, "SRC_X", 0);
+	add_plane_property(dispdata->atomic_req, dispdata->cursor_plane, "SRC_Y", 0);
+	add_plane_property(dispdata->atomic_req, dispdata->cursor_plane, "SRC_W", 0);
+	add_plane_property(dispdata->atomic_req, dispdata->cursor_plane, "SRC_H", 0);
+	add_plane_property(dispdata->atomic_req, dispdata->cursor_plane, "CRTC_W", 0);
+	add_plane_property(dispdata->atomic_req, dispdata->cursor_plane, "CRTC_H", 0);
+
+	free_plane(&dispdata->cursor_plane);
+    }
+
+     /* GPU <-> DISPLAY synchronization is done ON the display_plane,
+    so no need to set any fence props here, we do that only on the main
+    display plane.  */
+
+    return 0;
+}
+
+int
+drm_atomic_movecursor(KMSDRM_CursorData *curdata, int x, int y)
+{
+    SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
+
+    if (!dispdata->cursor_plane) /* We can't move a non-existing cursor, but that's ok. */
+        return 0;
+
+    /* Do we have a set of changes already in the making? If not, allocate a new one. */
+    if (!dispdata->atomic_req)
+        dispdata->atomic_req = KMSDRM_drmModeAtomicAlloc();
+    
+    add_plane_property(dispdata->atomic_req, dispdata->cursor_plane, "CRTC_X", x - curdata->hot_x);
+    add_plane_property(dispdata->atomic_req, dispdata->cursor_plane, "CRTC_Y", y - curdata->hot_y);
+
+    return 0;
+}
+
+/***************************************/
+/* Atomic helper functions block ends. */
+/***************************************/
+
 /* Converts a pixel from straight-alpha [AA, RR, GG, BB], which the SDL cursor surface has,
    to premultiplied-alpha [AA. AA*RR, AA*GG, AA*BB].
    These multiplications have to be done with floats instead of uint32_t's, and the resulting values have 

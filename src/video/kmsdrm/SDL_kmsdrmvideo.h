@@ -119,30 +119,18 @@ typedef struct KMSDRM_FBInfo
     uint32_t fb_id;     /* DRM framebuffer ID */
 } KMSDRM_FBInfo;
 
-/* Driverdata with driver-side info about the cursor. */
-typedef struct _KMSDRM_CursorData
-{
-    struct gbm_bo *bo;
-    uint32_t       crtc_id;
-    int            hot_x, hot_y;
-    int            w, h;
-    /* The video devide implemented on SDL_kmsdrmvideo.c 
-     * to be used as _THIS pointer in SDL_kmsdrmvideo.c 
-     * functions that need it. */
-    SDL_VideoDevice *video;
-} KMSDRM_CursorData;
-
 /* Helper functions */
 int KMSDRM_CreateSurfaces(_THIS, SDL_Window * window);
 KMSDRM_FBInfo *KMSDRM_FBFromBO(_THIS, struct gbm_bo *bo);
 
 /* Atomic functions that are used from SDL_kmsdrmopengles.c and SDL_kmsdrmmouse.c */
-void drm_atomic_modeset(_THIS, int mode_index);
 void drm_atomic_setbuffer(_THIS, struct plane *plane, uint32_t fb_id, uint32_t crtc_id);
 void drm_atomic_waitpending(_THIS);
 int drm_atomic_commit(_THIS, SDL_bool blocking);
-int drm_atomic_setcursor(KMSDRM_CursorData *curdata, int x, int y);
-int drm_atomic_movecursor(KMSDRM_CursorData *curdata, int x, int y);
+int add_plane_property(drmModeAtomicReq *req, struct plane *plane,
+                             const char *name, uint64_t value);
+int setup_plane(_THIS, struct plane **plane, uint32_t plane_type);
+void free_plane(struct plane **plane);
 
 /****************************************************************************/
 /* SDL_VideoDevice functions declaration                                    */
