@@ -144,8 +144,7 @@ KMSDRM_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y)
             goto cleanup;
     }
 
-    /* Here simply set the hox_x and hot_y, that will be used in drm_atomic_movecursor().
-       These are the coordinates of the "tip of the cursor" from it's base. */
+    /* hox_x and hot_y are the coordinates of the "tip of the cursor" from it's base. */
     curdata->hot_x = hot_x;
     curdata->hot_y = hot_y;
     curdata->w = usable_cursor_w;
@@ -264,9 +263,6 @@ KMSDRM_ShowCursor(SDL_Cursor * cursor)
             if (dispdata && dispdata->cursor_plane) {
                 info.plane = dispdata->cursor_plane; /* The rest of the members are zeroed. */
                 ret = drm_atomic_set_plane_props(&info); 
-                /* Free the plane on which the cursor was being shown. */
-	        free_plane(&dispdata->cursor_plane);
-
                 if (ret) {
                     SDL_SetError("Could not hide current cursor.");
                     return ret;
@@ -290,6 +286,9 @@ KMSDRM_ShowCursor(SDL_Cursor * cursor)
     if (!dispdata) {
         return SDL_SetError("Could not get display driverdata.");
     }
+    if (!dispdata->cursor_plane) {
+        return SDL_SetError("Hardware cursor plane not initialized.");
+    }
     
     curdata = (KMSDRM_CursorData *) cursor->driverdata;
 
@@ -300,11 +299,6 @@ KMSDRM_ShowCursor(SDL_Cursor * cursor)
     curdata->crtc_id  = dispdata->crtc->crtc->crtc_id;
     curdata->plane    = dispdata->cursor_plane;
     curdata->video    = video_device;
-
-    /* Init cursor plane, if we haven't yet. */
-    if (!dispdata->cursor_plane) {
-	setup_plane(curdata->video, &(dispdata->cursor_plane), DRM_PLANE_TYPE_CURSOR);
-    }
 
     fb = KMSDRM_FBFromBO(curdata->video, curdata->bo);
 
@@ -321,7 +315,7 @@ KMSDRM_ShowCursor(SDL_Cursor * cursor)
     ret = drm_atomic_set_plane_props(&info);
 
     if (ret) {
-        SDL_SetError("KMSDRM_SetCursor failed.");
+        SDL_SetError("KMSDRM_ShowCursor failed.");
         return ret;
     }
 
@@ -410,6 +404,8 @@ KMSDRM_InitMouse(_THIS)
     /* FIXME: Using UDEV it should be possible to scan all mice
      * but there's no point in doing so as there's no multimice support...yet!
      */
+
+    SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
     SDL_Mouse *mouse = SDL_GetMouse();
 
     mouse->CreateCursor = KMSDRM_CreateCursor;
@@ -419,13 +415,20 @@ KMSDRM_InitMouse(_THIS)
     mouse->WarpMouse = KMSDRM_WarpMouse;
     mouse->WarpMouseGlobal = KMSDRM_WarpMouseGlobal;
 
+    /* Init cursor plane, if we haven't yet. */
+    if (!dispdata->cursor_plane) {
+	setup_plane(_this, &(dispdata->cursor_plane), DRM_PLANE_TYPE_CURSOR);
+    }
+
     SDL_SetDefaultCursor(KMSDRM_CreateDefaultCursor());
 }
 
 void
 KMSDRM_QuitMouse(_THIS)
 {
-    /* TODO: ? */
+    /* Free the plane on which the cursor was being shown. */
+    SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
+    free_plane(&dispdata->cursor_plane);
 }
 
 /* This is called when a mouse motion event occurs */
