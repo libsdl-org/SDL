@@ -138,7 +138,7 @@ KMSDRM_FBInfo *KMSDRM_FBFromBO(_THIS, struct gbm_bo *bo);
 
 /* Atomic functions that are used from SDL_kmsdrmopengles.c and SDL_kmsdrmmouse.c */
 void drm_atomic_modeset(_THIS, int mode_index);
-void drm_atomic_setbuffer(_THIS, struct plane *plane, uint32_t fb_id);
+void drm_atomic_setbuffer(_THIS, struct plane *plane, uint32_t fb_id, uint32_t crtc_id);
 void drm_atomic_waitpending(_THIS);
 int drm_atomic_commit(_THIS, SDL_bool blocking);
 int drm_atomic_setcursor(KMSDRM_CursorData *curdata, int x, int y);
