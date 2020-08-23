@@ -29,6 +29,19 @@
 #define MAX_CURSOR_W 512
 #define MAX_CURSOR_H 512
 
+/* Driverdata with driver-side info about the cursor. */
+typedef struct _KMSDRM_CursorData
+{
+    struct gbm_bo *bo;
+    uint32_t       crtc_id;
+    int            hot_x, hot_y;
+    int            w, h;
+    /* The video devide implemented on SDL_kmsdrmvideo.c 
+     * to be used as _THIS pointer in SDL_kmsdrmvideo.c 
+     * functions that need it. */
+    SDL_VideoDevice *video;
+} KMSDRM_CursorData;
+
 extern void KMSDRM_InitMouse(_THIS);
 extern void KMSDRM_QuitMouse(_THIS);
 
