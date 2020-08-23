@@ -33,6 +33,7 @@
 typedef struct _KMSDRM_CursorData
 {
     struct gbm_bo *bo;
+    struct plane *plane;
     uint32_t       crtc_id;
     int            hot_x, hot_y;
     int            w, h;

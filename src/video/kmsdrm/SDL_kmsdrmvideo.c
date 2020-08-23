@@ -102,16 +102,15 @@ static int get_dricount(void)
     struct stat sb;
     DIR *folder;
 
-    if (!(stat(KMSDRM_DRI_PATH, &sb) == 0
-                && S_ISDIR(sb.st_mode))) {
-        printf("The path %s cannot be opened or is not available\n",
-               KMSDRM_DRI_PATH);
+    if (!(stat(KMSDRM_DRI_PATH, &sb) == 0 && S_ISDIR(sb.st_mode))) {
+        SDL_SetError("The path %s cannot be opened or is not available",
+        KMSDRM_DRI_PATH);
         return 0;
     }
 
     if (access(KMSDRM_DRI_PATH, F_OK) == -1) {
-        printf("The path %s cannot be opened\n",
-               KMSDRM_DRI_PATH);
+        SDL_SetError("The path %s cannot be opened",
+            KMSDRM_DRI_PATH);
         return 0;
     }
 
@@ -154,44 +153,44 @@ get_driindex(void)
 static int add_connector_property(drmModeAtomicReq *req, struct connector *connector,
 					const char *name, uint64_t value)
 {
-	unsigned int i;
-	int prop_id = 0;
+    unsigned int i;
+    int prop_id = 0;
 
-	for (i = 0 ; i < connector->props->count_props ; i++) {
-		if (strcmp(connector->props_info[i]->name, name) == 0) {
-			prop_id = connector->props_info[i]->prop_id;
-			break;
-		}
+    for (i = 0 ; i < connector->props->count_props ; i++) {
+	if (strcmp(connector->props_info[i]->name, name) == 0) {
+	    prop_id = connector->props_info[i]->prop_id;
+	    break;
 	}
+    }
 
-	if (prop_id < 0) {
-		printf("no connector property: %s\n", name);
-		return -EINVAL;
-	}
+    if (prop_id < 0) {
+	SDL_SetError("no connector property: %s", name);
+	return -EINVAL;
+    }
 
-	return KMSDRM_drmModeAtomicAddProperty(req, connector->connector->connector_id, prop_id, value);
+    return KMSDRM_drmModeAtomicAddProperty(req, connector->connector->connector_id, prop_id, value);
 }
 #endif
 
 static int add_crtc_property(drmModeAtomicReq *req, struct crtc *crtc,
 				const char *name, uint64_t value)
 {
-	unsigned int i;
-	int prop_id = -1;
+    unsigned int i;
+    int prop_id = -1;
 
-	for (i = 0 ; i < crtc->props->count_props ; i++) {
-		if (strcmp(crtc->props_info[i]->name, name) == 0) {
-			prop_id = crtc->props_info[i]->prop_id;
-			break;
-		}
+    for (i = 0 ; i < crtc->props->count_props ; i++) {
+	if (strcmp(crtc->props_info[i]->name, name) == 0) {
+	    prop_id = crtc->props_info[i]->prop_id;
+	    break;
 	}
+    }
 
-	if (prop_id < 0) {
-		printf("no crtc property: %s\n", name);
-		return -EINVAL;
-	}
+    if (prop_id < 0) {
+	SDL_SetError("no crtc property: %s", name);
+	return -EINVAL;
+    }
 
-	return KMSDRM_drmModeAtomicAddProperty(req, crtc->crtc->crtc_id, prop_id, value);
+    return KMSDRM_drmModeAtomicAddProperty(req, crtc->crtc->crtc_id, prop_id, value);
 }
 
 int add_plane_property(drmModeAtomicReq *req, struct plane *plane,
@@ -201,15 +200,15 @@ int add_plane_property(drmModeAtomicReq *req, struct plane *plane,
     int prop_id = -1;
 
     for (i = 0 ; i < plane->props->count_props ; i++) {
-	if (strcmp(plane->props_info[i]->name, name) == 0) {
-	    prop_id = plane->props_info[i]->prop_id;
-	    break;
-	}
+        if (strcmp(plane->props_info[i]->name, name) == 0) {
+        prop_id = plane->props_info[i]->prop_id;
+        break;
+        }
     }
 
     if (prop_id < 0) {
-	printf("no plane property: %s\n", name);
-	return -EINVAL;
+        SDL_SetError("no plane property: %s", name);
+        return -EINVAL;
     }
 
     return KMSDRM_drmModeAtomicAddProperty(req, plane->plane->plane_id, prop_id, value);
@@ -466,8 +465,8 @@ free_plane(struct plane **plane)
 /*   first, move the plane away from those buffers and ONLY THEN destroy the      */
 /*   buffers and/or the GBM surface containig them.                               */
 /**********************************************************************************/
-void
-drm_atomic_setbuffer(_THIS, struct plane *plane, uint32_t fb_id, uint32_t crtc_id)
+int
+drm_atomic_set_plane_props(struct KMSDRM_PlaneInfo *info)
 {
     SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
 
@@ -475,22 +474,40 @@ drm_atomic_setbuffer(_THIS, struct plane *plane, uint32_t fb_id, uint32_t crtc_i
     if (!dispdata->atomic_req)
         dispdata->atomic_req = KMSDRM_drmModeAtomicAlloc();
    
-    add_plane_property(dispdata->atomic_req, plane, "FB_ID", fb_id);
-    add_plane_property(dispdata->atomic_req, plane, "CRTC_ID", crtc_id);
-    add_plane_property(dispdata->atomic_req, plane, "SRC_W", dispdata->mode.hdisplay << 16);
-    add_plane_property(dispdata->atomic_req, plane, "SRC_H", dispdata->mode.vdisplay << 16);
-    add_plane_property(dispdata->atomic_req, plane, "SRC_X", 0);
-    add_plane_property(dispdata->atomic_req, plane, "SRC_Y", 0);
-    add_plane_property(dispdata->atomic_req, plane, "CRTC_W", dispdata->mode.hdisplay);
-    add_plane_property(dispdata->atomic_req, plane, "CRTC_H", dispdata->mode.vdisplay);
-    add_plane_property(dispdata->atomic_req, plane, "CRTC_X", 0);
-    add_plane_property(dispdata->atomic_req, plane, "CRTC_Y", 0);
+    if (add_plane_property(dispdata->atomic_req, info->plane, "FB_ID", info->fb_id) < 0)
+        return SDL_SetError("Failed to set plane FB_ID prop");
+    if (add_plane_property(dispdata->atomic_req, info->plane, "CRTC_ID", info->crtc_id) < 0)
+        return SDL_SetError("Failed to set plane CRTC_ID prop");
+    if (add_plane_property(dispdata->atomic_req, info->plane, "SRC_W", info->src_w << 16) < 0)
+        return SDL_SetError("Failed to set plane SRC_W prop");
+    if (add_plane_property(dispdata->atomic_req, info->plane, "SRC_H", info->src_h << 16) < 0)
+        return SDL_SetError("Failed to set plane SRC_H prop");
+    if (add_plane_property(dispdata->atomic_req, info->plane, "SRC_X", info->src_x) < 0)
+        return SDL_SetError("Failed to set plane SRC_X prop");
+    if (add_plane_property(dispdata->atomic_req, info->plane, "SRC_Y", info->src_y) < 0)
+        return SDL_SetError("Failed to set plane SRC_Y prop");
+    if (add_plane_property(dispdata->atomic_req, info->plane, "CRTC_W", info->crtc_w) < 0)
+        return SDL_SetError("Failed to set plane CRTC_W prop");
+    if (add_plane_property(dispdata->atomic_req, info->plane, "CRTC_H", info->crtc_h) < 0)
+        return SDL_SetError("Failed to set plane CRTC_H prop");
+    if (add_plane_property(dispdata->atomic_req, info->plane, "CRTC_X", info->crtc_x) < 0)
+        return SDL_SetError("Failed to set plane CRTC_X prop");
+    if (add_plane_property(dispdata->atomic_req, info->plane, "CRTC_Y", info->crtc_y) < 0)
+        return SDL_SetError("Failed to set plane CRTC_Y prop");
 
-    if (dispdata->kms_in_fence_fd != -1) {
-	add_crtc_property(dispdata->atomic_req, dispdata->crtc, "OUT_FENCE_PTR",
-			  VOID2U64(&dispdata->kms_out_fence_fd));
-	add_plane_property(dispdata->atomic_req, plane, "IN_FENCE_FD", dispdata->kms_in_fence_fd);
+    /* Only set the IN_FENCE aqnd OUT_FENCE props if we're operationg on the display plane,
+       since that's the only plane for which we manage who and when should access the buffers
+       it uses. */
+    if ((info->plane == dispdata->display_plane) && (dispdata->kms_in_fence_fd != -1))
+    {
+	if (add_crtc_property(dispdata->atomic_req, dispdata->crtc, "OUT_FENCE_PTR",
+			          VOID2U64(&dispdata->kms_out_fence_fd)) < 0)
+            return SDL_SetError("Failed to set CRTC OUT_FENCE_PTR prop");
+	if (add_plane_property(dispdata->atomic_req, info->plane, "IN_FENCE_FD", dispdata->kms_in_fence_fd) < 0)
+            return SDL_SetError("Failed to set plane IN_FENCE_FD prop");
     }
+
+    return 0;
 }
 
 int drm_atomic_commit(_THIS, SDL_bool blocking)
@@ -507,8 +524,9 @@ int drm_atomic_commit(_THIS, SDL_bool blocking)
 
     ret = KMSDRM_drmModeAtomicCommit(viddata->drm_fd, dispdata->atomic_req, dispdata->atomic_flags, NULL);
     if (ret) {
-        //SDL_SetError("Atomic commit failed, returned %d.", ret);
-        printf("ATOMIC COMMIT FAILED: %d.\n", ret);
+        SDL_SetError("Atomic commit failed, returned %d.", ret);
+        /* Uncomment this for fast-debugging */
+        //printf("ATOMIC COMMIT FAILED: %d.\n", ret);
 	goto out;
     }
 
@@ -753,7 +771,10 @@ KMSDRM_DestroySurfaces(_THIS, SDL_Window * window)
        the display plane from the GBM surface buffer it's reading by setting 
        it's CRTC_ID and FB_ID props to 0.
     */
-    drm_atomic_setbuffer(_this, dispdata->display_plane, 0, 0);
+    KMSDRM_PlaneInfo info = {0};
+    info.plane = dispdata->display_plane;
+
+    drm_atomic_set_plane_props(&info);
     drm_atomic_commit(_this, SDL_TRUE);
 
     if (windata->bo) {

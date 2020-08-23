@@ -119,12 +119,29 @@ typedef struct KMSDRM_FBInfo
     uint32_t fb_id;     /* DRM framebuffer ID */
 } KMSDRM_FBInfo;
 
+/* Info passed to set_plane_props calls. */
+typedef struct KMSDRM_PlaneInfo
+{
+    struct plane *plane;
+    uint32_t fb_id;
+    uint32_t crtc_id;
+    int src_x;
+    int src_y;
+    int src_w;
+    int src_h;
+    int crtc_x;
+    int crtc_y;
+    int crtc_w;
+    int crtc_h;
+} KMSDRM_PlaneInfo;
+
 /* Helper functions */
 int KMSDRM_CreateSurfaces(_THIS, SDL_Window * window);
 KMSDRM_FBInfo *KMSDRM_FBFromBO(_THIS, struct gbm_bo *bo);
 
 /* Atomic functions that are used from SDL_kmsdrmopengles.c and SDL_kmsdrmmouse.c */
-void drm_atomic_setbuffer(_THIS, struct plane *plane, uint32_t fb_id, uint32_t crtc_id);
+int drm_atomic_set_plane_props(struct KMSDRM_PlaneInfo *info); 
+
 void drm_atomic_waitpending(_THIS);
 int drm_atomic_commit(_THIS, SDL_bool blocking);
 int add_plane_property(drmModeAtomicReq *req, struct plane *plane,
