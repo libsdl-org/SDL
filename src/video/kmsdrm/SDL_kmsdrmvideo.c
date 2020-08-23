@@ -150,6 +150,7 @@ get_driindex(void)
 
 #define VOID2U64(x) ((uint64_t)(unsigned long)(x))
 
+#if 0
 static int add_connector_property(drmModeAtomicReq *req, struct connector *connector,
 					const char *name, uint64_t value)
 {
@@ -170,6 +171,7 @@ static int add_connector_property(drmModeAtomicReq *req, struct connector *conne
 
 	return KMSDRM_drmModeAtomicAddProperty(req, connector->connector->connector_id, prop_id, value);
 }
+#endif
 
 static int add_crtc_property(drmModeAtomicReq *req, struct crtc *crtc,
 				const char *name, uint64_t value)
@@ -313,9 +315,10 @@ void get_planes_info(_THIS)
 
 /* Get the plane_id of a plane that is of the specified plane type (primary,
    overlay, cursor...) and can use the CRTC we have chosen previously. */ 
-static uint32_t get_plane_id(_THIS, drmModeRes *resources, uint32_t plane_type)
+static uint32_t get_plane_id(_THIS, uint32_t plane_type)
 {
-    drmModePlaneResPtr plane_resources;
+    drmModeRes *resources = NULL;
+    drmModePlaneResPtr plane_resources = NULL;
     uint32_t i, j;
     uint32_t crtc_index = 0;
     uint32_t ret = -EINVAL;
@@ -323,6 +326,8 @@ static uint32_t get_plane_id(_THIS, drmModeRes *resources, uint32_t plane_type)
 
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
     SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
+
+    resources = KMSDRM_drmModeGetResources(viddata->drm_fd);
 
     /* Get the crtc_index for the current CRTC.
        It's needed to find out if a plane supports the CRTC. */
@@ -335,8 +340,7 @@ static uint32_t get_plane_id(_THIS, drmModeRes *resources, uint32_t plane_type)
 
     plane_resources = KMSDRM_drmModeGetPlaneResources(viddata->drm_fd);
     if (!plane_resources) {
-	printf("drmModeGetPlaneResources failed: %s\n", strerror(errno));
-	return -1;
+	return SDL_SetError("drmModeGetPlaneResources failed.");
     }
 
     /* Iterate on all the available planes. */
@@ -346,7 +350,6 @@ static uint32_t get_plane_id(_THIS, drmModeRes *resources, uint32_t plane_type)
 
 	drmModePlanePtr plane = KMSDRM_drmModeGetPlane(viddata->drm_fd, plane_id);
 	if (!plane) {
-	    printf("drmModeGetPlane(%u) failed: %s\n", plane_id, strerror(errno));
 	    continue;
 	}
 
@@ -380,8 +383,69 @@ static uint32_t get_plane_id(_THIS, drmModeRes *resources, uint32_t plane_type)
     }
 
     KMSDRM_drmModeFreePlaneResources(plane_resources);
+    KMSDRM_drmModeFreeResources(resources);
 
     return ret;
+}
+
+/* Setup cursor plane and it's props. */
+static int
+setup_plane(_THIS, struct plane **plane, uint32_t plane_type ) {
+    
+    uint32_t plane_id;
+    SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
+
+    *plane = SDL_calloc(1, sizeof(*plane));
+
+    /* Get plane ID. */
+    plane_id = get_plane_id(_this, plane_type);
+
+    if (!plane_id) {
+        goto cleanup;
+    }
+
+    /* Get the DRM plane itself. */
+    (*plane)->plane = KMSDRM_drmModeGetPlane(viddata->drm_fd, plane_id);
+
+    /* Get the DRM plane properties. */
+    if ((*plane)->plane) {
+        (*plane)->props = KMSDRM_drmModeObjectGetProperties(viddata->drm_fd,
+	    (*plane)->plane->plane_id, DRM_MODE_OBJECT_PLANE);	
+
+        (*plane)->props_info = SDL_calloc((*plane)->props->count_props,
+            sizeof((*plane)->props_info));	
+
+        for (int i = 0; i < (*plane)->props->count_props; i++) {
+            (*plane)->props_info[i] = KMSDRM_drmModeGetProperty(viddata->drm_fd,
+                (*plane)->props->props[i]);
+        }
+    }   
+
+    return 0;
+
+cleanup:
+    SDL_free(*plane);
+    *plane = NULL;
+    return -1;
+}
+
+/* Free a plane and it's props. */
+static void
+free_plane(struct plane **plane) {
+    SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
+
+    if (dispdata && (*plane)) {
+        if ((*plane)->plane) {
+            KMSDRM_drmModeFreePlane((*plane)->plane);
+            (*plane)->plane = NULL;
+        }
+        if ((*plane)->props_info) {
+            SDL_free((*plane)->props_info); 
+            (*plane)->props_info = NULL;
+        }
+        SDL_free(*plane); 
+        *plane = NULL;
+    }
 }
 
 /**********************************************************************************/
@@ -429,33 +493,36 @@ drm_atomic_setbuffer(_THIS, struct plane *plane, uint32_t fb_id)
 }
 
 void
-drm_atomic_modeset(_THIS, int mode_index)
+drm_atomic_unsetbuffer(_THIS, struct plane *plane)
 {
     SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
-    SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
-    drmModeModeInfo mode;
-    uint32_t blob_id;
-
-    mode = dispdata->connector->connector->modes[mode_index];
 
     /* Do we have a set of changes already in the making? If not, allocate a new one. */
     if (!dispdata->atomic_req)
         dispdata->atomic_req = KMSDRM_drmModeAtomicAlloc();
 
-    dispdata->atomic_flags |= DRM_MODE_ATOMIC_ALLOW_MODESET;
+    add_plane_property(dispdata->atomic_req, plane, "FB_ID", 0);
+    add_plane_property(dispdata->atomic_req, plane, "CRTC_ID", 0);
+    add_plane_property(dispdata->atomic_req, plane, "SRC_W", 0);
+    add_plane_property(dispdata->atomic_req, plane, "SRC_H", 0);
+    add_plane_property(dispdata->atomic_req, plane, "SRC_X", 0);
+    add_plane_property(dispdata->atomic_req, plane, "SRC_Y", 0);
+    add_plane_property(dispdata->atomic_req, plane, "CRTC_W", 0);
+    add_plane_property(dispdata->atomic_req, plane, "CRTC_H", 0);
+    add_plane_property(dispdata->atomic_req, plane, "CRTC_X", 0);
+    add_plane_property(dispdata->atomic_req, plane, "CRTC_Y", 0);
 
-    add_connector_property(dispdata->atomic_req, dispdata->connector, "CRTC_ID", dispdata->crtc->crtc->crtc_id);
-    add_crtc_property(dispdata->atomic_req, dispdata->crtc, "ACTIVE", 1);
-    KMSDRM_drmModeCreatePropertyBlob(viddata->drm_fd, &mode, sizeof(mode), &blob_id);
-    add_crtc_property(dispdata->atomic_req, dispdata->crtc, "MODE_ID", blob_id);
-
-    /* Update video mode in use. */
-    dispdata->mode = mode;
+    if (dispdata->kms_in_fence_fd != -1) {
+	add_crtc_property(dispdata->atomic_req, dispdata->crtc, "OUT_FENCE_PTR",
+			  VOID2U64(&dispdata->kms_out_fence_fd));
+	add_plane_property(dispdata->atomic_req, plane, "IN_FENCE_FD", dispdata->kms_in_fence_fd);
+    }
 }
 
 int
 drm_atomic_setcursor(KMSDRM_CursorData *curdata, int x, int y)
 {
+    KMSDRM_FBInfo *fb;
     SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
 
     /* Do we have a set of changes already in the making? If not, allocate a new one. */
@@ -464,7 +531,12 @@ drm_atomic_setcursor(KMSDRM_CursorData *curdata, int x, int y)
     
     if (curdata)
     {
-        KMSDRM_FBInfo *fb = KMSDRM_FBFromBO(curdata->video, curdata->bo);
+	if (!dispdata->cursor_plane) {
+	    setup_plane(curdata->video, &(dispdata->cursor_plane), DRM_PLANE_TYPE_CURSOR);
+            /* "curdata->video" is the _THIS pointer, which points to an SDL_Display, as passed from kmsdrmmouse.c */
+	}
+
+        fb = KMSDRM_FBFromBO(curdata->video, curdata->bo);
         add_plane_property(dispdata->atomic_req, dispdata->cursor_plane, "FB_ID", fb->fb_id);
         add_plane_property(dispdata->atomic_req, dispdata->cursor_plane, "CRTC_ID", dispdata->crtc->crtc->crtc_id);
        
@@ -477,7 +549,7 @@ drm_atomic_setcursor(KMSDRM_CursorData *curdata, int x, int y)
 	add_plane_property(dispdata->atomic_req, dispdata->cursor_plane, "CRTC_W", curdata->w);
 	add_plane_property(dispdata->atomic_req, dispdata->cursor_plane, "CRTC_H", curdata->h);
     }
-    else 
+    else if (dispdata->cursor_plane) /* Don't go further if plane has already been freed. */
     { 
 	add_plane_property(dispdata->atomic_req, dispdata->cursor_plane, "FB_ID", 0);
 	add_plane_property(dispdata->atomic_req, dispdata->cursor_plane, "CRTC_ID", 0);
@@ -488,6 +560,8 @@ drm_atomic_setcursor(KMSDRM_CursorData *curdata, int x, int y)
 	add_plane_property(dispdata->atomic_req, dispdata->cursor_plane, "SRC_H", 0);
 	add_plane_property(dispdata->atomic_req, dispdata->cursor_plane, "CRTC_W", 0);
 	add_plane_property(dispdata->atomic_req, dispdata->cursor_plane, "CRTC_H", 0);
+
+	free_plane(&dispdata->cursor_plane);
     }
 
      /* GPU <-> DISPLAY synchronization is done ON the display_plane,
@@ -501,6 +575,9 @@ int
 drm_atomic_movecursor(KMSDRM_CursorData *curdata, int x, int y)
 {
     SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
+
+    if (!dispdata->cursor_plane) /* We can't move a non-existing cursor, but that's ok. */
+        return 0;
 
     /* Do we have a set of changes already in the making? If not, allocate a new one. */
     if (!dispdata->atomic_req)
@@ -768,21 +845,15 @@ KMSDRM_DestroySurfaces(_THIS, SDL_Window * window)
     SDL_WindowData *windata = (SDL_WindowData *)window->driverdata;
     SDL_DisplayData *dispdata = (SDL_DisplayData *) SDL_GetDisplayForWindow(window)->driverdata;
 
-    /* CAUTION: Before destroying the GBM ane EGL surfaces, we must disconnect the display plane
-       from the GBM surface buffer it's reading, and make it read the original buffer stored
-       on the CRTC while we recreate the GBM surface, OR simply set it's CRTC_ID and FB_ID props to 0.
-       Since setting CRTC_ID and FB_ID to 0 does not work on amdgpu, we point to the original
-       buffer containig the TTY instead, but it may stop working when we use KMSCON instead of
-       FBCON because there won't be an original TTY FB to go back to.
-       In the future, when KMSCON is used, just zero the props instead.
-       But ALWAYS do manual freeing here because some programs call DestroyWindow() when
-       they want to resize video, and end up here mid-game when the user changes the window size.
+    /* CAUTION: Before destroying the GBM ane EGL surfaces, we must disconnect
+       the display plane from the GBM surface buffer it's reading by setting 
+       it's CRTC_ID and FB_ID props to 0.
     */
-    drm_atomic_setbuffer(_this, dispdata->display_plane, dispdata->crtc->crtc->buffer_id);
+    drm_atomic_unsetbuffer(_this, dispdata->display_plane);
     drm_atomic_commit(_this, SDL_TRUE);
 
     if (windata->bo) {
-        KMSDRM_gbm_surface_release_buffer(windata->gs, windata->bo);
+       KMSDRM_gbm_surface_release_buffer(windata->gs, windata->bo);
         windata->bo = NULL;
     }
 
@@ -820,6 +891,9 @@ KMSDRM_CreateSurfaces(_THIS, SDL_Window * window)
     EGLContext egl_context;
 #endif
 
+    /* Always try to destroy previous surfaces before creating new ones. */
+    KMSDRM_DestroySurfaces(_this, window);
+
     if (!KMSDRM_gbm_device_is_format_supported(viddata->gbm_dev, surface_fmt, surface_flags)) {
         SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO, "GBM surface format not supported. Trying anyway.");
     }
@@ -844,114 +918,7 @@ KMSDRM_CreateSurfaces(_THIS, SDL_Window * window)
 
     SDL_EGL_MakeCurrent(_this, windata->egl_surface, egl_context);
 
-    windata->egl_surface_dirty = SDL_FALSE;
 #endif
-
-    return 0;
-}
-
-/* Used for videomode change, where we need to have the display plane pointing  */
-/* to a buffer of a new GBM surface BEFORE destroying the old GBM surface.      */
-int
-KMSDRM_RecreateSurfaces(_THIS, SDL_Window * window)
-{
-    SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
-    SDL_WindowData *windata = (SDL_WindowData *)window->driverdata;
-    SDL_DisplayData *dispdata = (SDL_DisplayData *) SDL_GetDisplayForWindow(window)->driverdata;
-    Uint32 width = dispdata->mode.hdisplay;
-    Uint32 height = dispdata->mode.vdisplay;
-    Uint32 surface_fmt = GBM_FORMAT_ARGB8888;
-    Uint32 surface_flags = GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING;
-
-    struct gbm_surface *new_gs;
-    struct gbm_bo *bo;
-    KMSDRM_FBInfo *fb;
-    int ret;
-
-#if SDL_VIDEO_OPENGL_EGL
-    EGLContext egl_context;
-#endif
-
-    /*********************************************************************/
-    /* FIRST CREATE THE NEW GBM SURFACE AND MAKE THE PLANE READ          */
-    /* A BUFFER FROM THAT NEW GBM SURFACE...                             */
-    /*********************************************************************/
-
-    if (!KMSDRM_gbm_device_is_format_supported(viddata->gbm_dev, surface_fmt, surface_flags)) {
-        SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO, "GBM surface format not supported. Trying anyway.");
-    }
-
-#if SDL_VIDEO_OPENGL_EGL
-    SDL_EGL_SetRequiredVisualId(_this, surface_fmt);
-    egl_context = (EGLContext)SDL_GL_GetCurrentContext();
-#endif
-
-    new_gs = KMSDRM_gbm_surface_create(viddata->gbm_dev, width, height, surface_fmt, surface_flags);
-
-    if (!new_gs) {
-        return SDL_SetError("Could not create new GBM surface");
-    }
-
-
-    /********************************************************/
-    /* ...THEN DESTROY THE OLD GBM SURFACE AND IT'S BUFFERS */
-    /********************************************************/
-
-    if (windata->bo) {
-        KMSDRM_gbm_surface_release_buffer(windata->gs, windata->bo);
-        windata->bo = NULL;
-    }
-
-    if (windata->next_bo) {
-        KMSDRM_gbm_surface_release_buffer(windata->gs, windata->next_bo);
-        windata->next_bo = NULL;
-    }
-
-#if SDL_VIDEO_OPENGL_EGL
-    SDL_EGL_MakeCurrent(_this, EGL_NO_SURFACE, EGL_NO_CONTEXT);
-
-    if (windata->egl_surface != EGL_NO_SURFACE) {
-        SDL_EGL_DestroySurface(_this, windata->egl_surface);
-        windata->egl_surface = EGL_NO_SURFACE;
-    }
-#endif
-
-    if (windata->gs) {
-        KMSDRM_gbm_surface_destroy(windata->gs);
-        windata->gs = NULL;
-    }
-
-
-    /* From now on, we'll be operating our shiny, new GBM surface! */
-    windata->gs = new_gs;
-
-#if SDL_VIDEO_OPENGL_EGL
-    windata->egl_surface = SDL_EGL_CreateSurface(_this, (NativeWindowType)new_gs);
-
-    if (windata->egl_surface == EGL_NO_SURFACE) {
-        return SDL_SetError("Could not create EGL window surface");
-    }
-
-    SDL_EGL_MakeCurrent(_this, windata->egl_surface, egl_context);
-
-    windata->egl_surface_dirty = SDL_FALSE;
-#endif
-
-    bo = KMSDRM_gbm_surface_lock_front_buffer(windata->gs);
-    if (!bo) {
-	return SDL_SetError("Failed to lock frontbuffer on GBM surface recreation");
-    }
-    fb = KMSDRM_FBFromBO(_this, windata->next_bo);
-    if (!fb) {
-	 return SDL_SetError("Failed to get a new framebuffer on GBM surface recreation");
-    }
-
-    /* Issue sync pageflip to one of the buffers of the new GBM surface. */
-    drm_atomic_setbuffer(_this, dispdata->display_plane, fb->fb_id);
-    ret = drm_atomic_commit(_this, SDL_TRUE);
-    if (ret) {
-        return SDL_SetError("failed to issue atomic commit on GBM surface recreation");
-    }
 
     return 0;
 }
@@ -966,11 +933,9 @@ KMSDRM_VideoInit(_THIS)
     drmModeEncoder *encoder = NULL;
     char devname[32];
     SDL_VideoDisplay display = {0};
-    uint32_t display_plane_id, cursor_plane_id;
 
     dispdata = (SDL_DisplayData *) SDL_calloc(1, sizeof(SDL_DisplayData));
     dispdata->display_plane = calloc(1, sizeof(*dispdata->display_plane));
-    dispdata->cursor_plane = calloc(1, sizeof(*dispdata->cursor_plane));
     dispdata->crtc = calloc(1, sizeof(*dispdata->crtc));
     dispdata->connector = calloc(1, sizeof(*dispdata->connector));
 
@@ -1129,20 +1094,6 @@ KMSDRM_VideoInit(_THIS)
     drmModeFreeFB(fb);
 #endif
 
-    /* DRM mode index for the desktop mode is needed to complete desktop mode init NOW,
-       so look for it in the DRM modes array. 
-       This is needed because SetDisplayMode() uses the mode index, and some programs
-       change to fullscreen desktop video mode as they start. */
-    for (int i = 0; i < dispdata->connector->connector->count_modes; i++) {
-        if (!SDL_memcmp(dispdata->connector->connector->modes + i, &dispdata->crtc->crtc->mode, sizeof(drmModeModeInfo))) {
-            SDL_DisplayModeData *modedata = SDL_calloc(1, sizeof(SDL_DisplayModeData));
-            if (modedata) {
-                modedata->mode_index = i;
-                display.desktop_mode.driverdata = modedata;
-            }
-        }
-    }
-
     display.current_mode = display.desktop_mode;
     display.driverdata = dispdata;
     SDL_AddVideoDisplay(&display);
@@ -1168,50 +1119,12 @@ KMSDRM_VideoInit(_THIS)
     get_planes_info(_this);
 #endif
 
-    /* Get DISPLAY PLANE (simply a primary plane that can use our CRTC).
-       It has to be a PRIMARY plane because there's no guarantee that
-       we have overlays in every hardware: we can really only count
-       on having one primary plane). */
-    display_plane_id = get_plane_id(_this, resources, DRM_PLANE_TYPE_PRIMARY);
-    if (!display_plane_id) {
-        ret = SDL_SetError("could not find a suitable display plane.");
+    /* Setup display plane */
+    ret = setup_plane(_this, &(dispdata->display_plane), DRM_PLANE_TYPE_PRIMARY);
+    if (ret) {
+        ret = SDL_SetError("can't find suitable display plane.");
         goto cleanup;
-    }
-    dispdata->display_plane->plane = KMSDRM_drmModeGetPlane(viddata->drm_fd, display_plane_id);
 
-    /* Get DISPLAY PLANE properties */
-    dispdata->display_plane->props = KMSDRM_drmModeObjectGetProperties(viddata->drm_fd,
-        dispdata->display_plane->plane->plane_id, DRM_MODE_OBJECT_PLANE);	
-
-    dispdata->display_plane->props_info = SDL_calloc(dispdata->display_plane->props->count_props,
-        sizeof(dispdata->display_plane->props_info));	
-
-    for (int i = 0; i < dispdata->display_plane->props->count_props; i++) {
-	dispdata->display_plane->props_info[i] = KMSDRM_drmModeGetProperty(viddata->drm_fd,
-                                            dispdata->display_plane->props->props[i]);
-    }
-
-    /* Get CURSOR PLANE (simply a cursor plane that can use our CRTC).
-       Not having a cursor plane available should not be fatal, just throw an error.
-       All functions using this plane should first test if it exists. */
-    cursor_plane_id = get_plane_id(_this, resources, DRM_PLANE_TYPE_CURSOR);
-    if (!cursor_plane_id) {
-        SDL_SetError("could not find a suitable cursor plane.");
-    }
-    dispdata->cursor_plane->plane = KMSDRM_drmModeGetPlane(viddata->drm_fd, cursor_plane_id);
-
-    /* Get CURSOR PLANE properties */
-    if (dispdata->cursor_plane->plane) {
-	dispdata->cursor_plane->props = KMSDRM_drmModeObjectGetProperties(viddata->drm_fd,
-	    dispdata->cursor_plane->plane->plane_id, DRM_MODE_OBJECT_PLANE);	
-
-	dispdata->cursor_plane->props_info = SDL_calloc(dispdata->cursor_plane->props->count_props,
-	    sizeof(dispdata->cursor_plane->props_info));	
-
-	for (int i = 0; i < dispdata->cursor_plane->props->count_props; i++) {
-	    dispdata->cursor_plane->props_info[i] = KMSDRM_drmModeGetProperty(viddata->drm_fd,
-						dispdata->cursor_plane->props->props[i]);
-        }
     }
 
     /* Get CRTC properties */
@@ -1283,7 +1196,6 @@ cleanup:
 void
 KMSDRM_VideoQuit(_THIS)
 {
-    int ret;
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
     SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
     SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "KMSDRM_VideoQuit()");
@@ -1293,29 +1205,6 @@ KMSDRM_VideoQuit(_THIS)
     viddata->windows = NULL;
     viddata->max_windows = 0;
     viddata->num_windows = 0;
-
-    /* Restore original buffer. Probably not needed
-       b/c DestroySurfaces also points the display plane
-       to the original buffer before destrying the GBM surface. */
-    if (viddata->drm_fd >= 0 && dispdata && dispdata->connector->connector &&
-            dispdata->crtc->crtc)
-    {
-        /* Issue sync/blocking atomic commit that points crtc to original buffer.
-           SDL_video has already called SetDisplayMode() to set the original
-           display mode at this point. 
-           We are not doing pageflips anymore, so we can't rely on the SwapWindow()
-           atomic_commit() call, hence we are explicitly calling atomic_commit() here. 
-        */
-
-         drm_atomic_setbuffer(_this, dispdata->display_plane, dispdata->crtc->crtc->buffer_id);
-
-         ret = drm_atomic_commit(_this, SDL_TRUE);
-
-         if (ret != 0)
-         {
-             SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO, "Could not restore original buffer and videomode");
-         }
-    }
 
     if (_this->gl_config.driver_loaded) {
         SDL_GL_UnloadLibrary();
@@ -1349,25 +1238,11 @@ KMSDRM_VideoQuit(_THIS)
         dispdata->crtc = NULL;
     }
 
-    /* Free main display plane */
-    if (dispdata && dispdata->display_plane) {
-        if (dispdata->display_plane->props_info) {
-            SDL_free(dispdata->display_plane->props_info); 
-            dispdata->display_plane->props_info = NULL;
-        }
-        SDL_free(dispdata->display_plane); 
-        dispdata->display_plane = NULL;
-    }
+    /* Free display plane */
+    free_plane(&dispdata->display_plane);
 
-    /* Free main cursor plane */
-    if (dispdata && dispdata->cursor_plane) {
-        if (dispdata->cursor_plane->props_info) {
-            SDL_free(dispdata->cursor_plane->props_info); 
-            dispdata->cursor_plane->props_info = NULL;
-        }
-        SDL_free(dispdata->cursor_plane); 
-        dispdata->cursor_plane = NULL;
-    }
+    /* Free cursor plane (if still not freed) */
+    free_plane(&dispdata->cursor_plane);
 
     /* Destroy GBM device. GBM surface is destroyed by DestroySurfaces(). */
     if (viddata->gbm_dev) {
@@ -1387,51 +1262,13 @@ KMSDRM_VideoQuit(_THIS)
 void
 KMSDRM_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
 {
-    SDL_DisplayData *dispdata = display->driverdata;
-    drmModeConnector *conn = dispdata->connector->connector;
-    SDL_DisplayMode mode;
-
-    for (int i = 0; i < conn->count_modes; i++) {
-        SDL_DisplayModeData *modedata = SDL_calloc(1, sizeof(SDL_DisplayModeData));
-
-        if (modedata) {
-          modedata->mode_index = i;
-        }
-
-        mode.w = conn->modes[i].hdisplay;
-        mode.h = conn->modes[i].vdisplay;
-        mode.refresh_rate = conn->modes[i].vrefresh;
-        mode.format = SDL_PIXELFORMAT_ARGB8888;
-        mode.driverdata = modedata;
-
-        if (!SDL_AddDisplayMode(display, &mode)) {
-            SDL_free(modedata);
-        }
-    }
+    /* Only one display mode available: the current one */
+    SDL_AddDisplayMode(display, &display->current_mode);
 }
 
 int
 KMSDRM_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
 {
-    SDL_VideoData *viddata = (SDL_VideoData *)_this->driverdata;
-    SDL_DisplayModeData *modedata = (SDL_DisplayModeData *)mode->driverdata;
-    if (!modedata) {
-        return SDL_SetError("Mode doesn't have an associated index");
-    }
-
-    /* Set new videomode for the connector in use. */
-    drm_atomic_modeset(_this, modedata->mode_index);
-
-    for (int i = 0; i < viddata->num_windows; i++) {
-        SDL_Window *window = viddata->windows[i];
-
-        /* Re-create GBM and EGL surfaces everytime we change the display mode. */
-        KMSDRM_RecreateSurfaces(_this, window);
-
-        /* Tell app about the resize */
-        SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, mode->w, mode->h);
-    }
-
     return 0;
 }
 
@@ -1439,7 +1276,8 @@ int
 KMSDRM_CreateWindow(_THIS, SDL_Window * window)
 {
     SDL_VideoData *viddata = (SDL_VideoData *)_this->driverdata;
-    SDL_WindowData *windata;
+    SDL_VideoDisplay *display = NULL;
+    SDL_WindowData *windata = NULL;
 
 #if SDL_VIDEO_OPENGL_EGL
     if (!_this->egl_data) {
@@ -1452,40 +1290,15 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
     /* Allocate window internal data */
     windata = (SDL_WindowData *)SDL_calloc(1, sizeof(SDL_WindowData));
 
-    if (!windata) {
-        SDL_OutOfMemory();
-        goto error;
-    }
+    display = SDL_GetDisplayForWindow(window);
 
-    /* Init fields. */
-    windata->egl_surface_dirty  = SDL_FALSE;
-
-    /* First remember that certain functions in SDL_Video.c will call *_SetDisplayMode when the
-       SDL_WINDOW_FULLSCREEN is set and SDL_WINDOW_FULLSCREEN_DESKTOP is not set.
-       So I am determining here that the behavior when creating an SDL_Window() in KMSDRM, is:
-
-       -Creating a normal non-fullscreen window won't change the display mode.
-        They won't cover the full screen area, either, because that breaks the image aspect ratio.
-       -Creating a SDL_WINDOW_FULLSCREEN window will change the display mode,
-        because SDL_WINDOW_FULLSCREEN flag is set.
-       -Creating a SDL_WINDOW_FULLSCREEN_DESKTOP window will not change the display mode,
-        because even if the SDL_WINDOW_FULLSCREEN flag is set, SDL_WINDOW_FULLSCREEN_DESKTOP prevents it.
-
-      If we ever decide that we want to have normal windows (non-SDL_WINDOW_FULLSCREEN) should cause a display
-      mode change, we could force the SDL_WINDOW_FULLSCREEN flag again on every window.
-      But remember that it will break games that check if a window is FULLSCREEN or not before setting
-      a fullscreen mode with SDL_SetWindowFullscreen(), like sm64ex (sm64 pc port).
-      If we ever decide that we want normal windows to cover the whole screen area, we can force window->w
-      and window->h to the original display mode dimensions.
-
-    Commented reference code for all this:
-       
-    window->flags |= (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL);
-
-    SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
-
+    /* Windows have one size for now */
     window->w = display->desktop_mode.w;
-    window->h = display->desktop_mode.h; */
+    window->h = display->desktop_mode.h;
+
+    /* Don't force fullscreen on all windows: it confuses programs that try
+       to set a window fullscreen after creating it as non-fullscreen (sm64ex) */
+    // window->flags |= SDL_WINDOW_FULLSCREEN;
 
     /* Setup driver data for this window */
     windata->viddata = viddata;
@@ -1548,10 +1361,6 @@ KMSDRM_DestroyWindow(_THIS, SDL_Window * window)
         }
     }
 
-    /* This is the only place where we simply destroy surfaces. On SetDisplayMode(),
-       we re-create them instead, and we don't destroy the window, just resize it.
-       DestroyWindow() is ONLY called on program quit, or if a program calls it
-       explicitly, but not on videomode change. */
     KMSDRM_DestroySurfaces(_this, window);
 
     window->driverdata = NULL;

@@ -111,11 +111,11 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window)
        be chosen by EGL as back buffer to draw on), and get a handle to it to request the pageflip on it. */
     windata->next_bo = KMSDRM_gbm_surface_lock_front_buffer(windata->gs);
     if (!windata->next_bo) {
-	return SDL_SetError("Failed to lock frontbuffer");
+	return SDL_SetError("Failed to lock frontbuffer on GBM surface destruction");
     }
     fb = KMSDRM_FBFromBO(_this, windata->next_bo);
     if (!fb) {
-	 return SDL_SetError("Failed to get a new framebuffer");
+	 return SDL_SetError("Failed to get a new framebuffer on GBM surface destruction");
     }
 
     /* Add the pageflip to te request list. */
@@ -125,9 +125,8 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window)
        We need e a non-blocking atomic commit for triple buffering, because we 
        must not block on this atomic commit so we can re-enter program loop once more. */
     ret = drm_atomic_commit(_this, SDL_FALSE);
-
     if (ret) {
-        return SDL_SetError("failed to issue atomic commit");
+        return SDL_SetError("failed to issue atomic commit on GBM surface destruction");
     }
 
     /* Release the last front buffer so EGL can chose it as back buffer and render on it again. */

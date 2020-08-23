@@ -53,11 +53,6 @@ typedef struct SDL_VideoData
     int num_windows;
 } SDL_VideoData;
 
-typedef struct SDL_DisplayModeData
-{
-    int mode_index;
-} SDL_DisplayModeData;
-
 struct plane {
 	drmModePlane *plane;
 	drmModeObjectProperties *props;
@@ -105,12 +100,15 @@ typedef struct SDL_DisplayData
 typedef struct SDL_WindowData
 {
     SDL_VideoData *viddata;
+    /* SDL internals expect EGL surface to be here, and in KMSDRM the GBM surface is
+       what supports the EGL surface on the driver side, so all these surfaces and buffers
+       are expected to be here, in the struct pointed by SDL_Window driverdata pointer: this one.
+       So don't try to move these to dispdata!  */
     struct gbm_surface *gs;
     struct gbm_bo *bo;
     struct gbm_bo *next_bo;
-    struct gbm_bo *crtc_bo;
+
 #if SDL_VIDEO_OPENGL_EGL
-    SDL_bool egl_surface_dirty;
     EGLSurface egl_surface;
 #endif
 } SDL_WindowData;
