@@ -61,21 +61,8 @@ SDL_KMSDRM_SYM(int,drmModeAddFB2WithModifiers,(int fd, uint32_t width, uint32_t 
 SDL_KMSDRM_SYM(int,drmModeRmFB,(int fd, uint32_t bufferId))
 SDL_KMSDRM_SYM(drmModeFBPtr,drmModeGetFB,(int fd, uint32_t buf))
 SDL_KMSDRM_SYM(drmModeCrtcPtr,drmModeGetCrtc,(int fd, uint32_t crtcId))
-SDL_KMSDRM_SYM(int,drmModeSetCrtc,(int fd, uint32_t crtcId, uint32_t bufferId,
-                                   uint32_t x, uint32_t y, uint32_t *connectors, int count,
-                                   drmModeModeInfoPtr mode))
-SDL_KMSDRM_SYM(int,drmModeSetCursor,(int fd, uint32_t crtcId, uint32_t bo_handle,
-                                     uint32_t width, uint32_t height))
-SDL_KMSDRM_SYM(int,drmModeSetCursor2,(int fd, uint32_t crtcId, uint32_t bo_handle,
-                                      uint32_t width, uint32_t height,
-                                      int32_t hot_x, int32_t hot_y))
-SDL_KMSDRM_SYM(int,drmModeMoveCursor,(int fd, uint32_t crtcId, int x, int y))
 SDL_KMSDRM_SYM(drmModeEncoderPtr,drmModeGetEncoder,(int fd, uint32_t encoder_id))
 SDL_KMSDRM_SYM(drmModeConnectorPtr,drmModeGetConnector,(int fd, uint32_t connector_id))
-SDL_KMSDRM_SYM(int,drmHandleEvent,(int fd,drmEventContextPtr evctx))
-SDL_KMSDRM_SYM(int,drmModePageFlip,(int fd, uint32_t crtc_id, uint32_t fb_id,
-                                    uint32_t flags, void *user_data))
-
 
 /* Atomic functions */
 
