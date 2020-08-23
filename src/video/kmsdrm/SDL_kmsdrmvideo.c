@@ -466,7 +466,7 @@ free_plane(struct plane **plane) {
 /*   buffers and/or the GBM surface containig them.                               */
 /**********************************************************************************/
 void
-drm_atomic_setbuffer(_THIS, struct plane *plane, uint32_t fb_id)
+drm_atomic_setbuffer(_THIS, struct plane *plane, uint32_t fb_id, uint32_t crtc_id)
 {
     SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
 
@@ -475,40 +475,13 @@ drm_atomic_setbuffer(_THIS, struct plane *plane, uint32_t fb_id)
         dispdata->atomic_req = KMSDRM_drmModeAtomicAlloc();
    
     add_plane_property(dispdata->atomic_req, plane, "FB_ID", fb_id);
-    add_plane_property(dispdata->atomic_req, plane, "CRTC_ID", dispdata->crtc->crtc->crtc_id);
+    add_plane_property(dispdata->atomic_req, plane, "CRTC_ID", crtc_id);
     add_plane_property(dispdata->atomic_req, plane, "SRC_W", dispdata->mode.hdisplay << 16);
     add_plane_property(dispdata->atomic_req, plane, "SRC_H", dispdata->mode.vdisplay << 16);
     add_plane_property(dispdata->atomic_req, plane, "SRC_X", 0);
     add_plane_property(dispdata->atomic_req, plane, "SRC_Y", 0);
     add_plane_property(dispdata->atomic_req, plane, "CRTC_W", dispdata->mode.hdisplay);
     add_plane_property(dispdata->atomic_req, plane, "CRTC_H", dispdata->mode.vdisplay);
-    add_plane_property(dispdata->atomic_req, plane, "CRTC_X", 0);
-    add_plane_property(dispdata->atomic_req, plane, "CRTC_Y", 0);
-
-    if (dispdata->kms_in_fence_fd != -1) {
-	add_crtc_property(dispdata->atomic_req, dispdata->crtc, "OUT_FENCE_PTR",
-			  VOID2U64(&dispdata->kms_out_fence_fd));
-	add_plane_property(dispdata->atomic_req, plane, "IN_FENCE_FD", dispdata->kms_in_fence_fd);
-    }
-}
-
-void
-drm_atomic_unsetbuffer(_THIS, struct plane *plane)
-{
-    SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
-
-    /* Do we have a set of changes already in the making? If not, allocate a new one. */
-    if (!dispdata->atomic_req)
-        dispdata->atomic_req = KMSDRM_drmModeAtomicAlloc();
-
-    add_plane_property(dispdata->atomic_req, plane, "FB_ID", 0);
-    add_plane_property(dispdata->atomic_req, plane, "CRTC_ID", 0);
-    add_plane_property(dispdata->atomic_req, plane, "SRC_W", 0);
-    add_plane_property(dispdata->atomic_req, plane, "SRC_H", 0);
-    add_plane_property(dispdata->atomic_req, plane, "SRC_X", 0);
-    add_plane_property(dispdata->atomic_req, plane, "SRC_Y", 0);
-    add_plane_property(dispdata->atomic_req, plane, "CRTC_W", 0);
-    add_plane_property(dispdata->atomic_req, plane, "CRTC_H", 0);
     add_plane_property(dispdata->atomic_req, plane, "CRTC_X", 0);
     add_plane_property(dispdata->atomic_req, plane, "CRTC_Y", 0);
 
@@ -849,7 +822,7 @@ KMSDRM_DestroySurfaces(_THIS, SDL_Window * window)
        the display plane from the GBM surface buffer it's reading by setting 
        it's CRTC_ID and FB_ID props to 0.
     */
-    drm_atomic_unsetbuffer(_this, dispdata->display_plane);
+    drm_atomic_setbuffer(_this, dispdata->display_plane, 0, 0);
     drm_atomic_commit(_this, SDL_TRUE);
 
     if (windata->bo) {
