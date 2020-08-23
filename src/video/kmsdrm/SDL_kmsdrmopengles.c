@@ -79,6 +79,7 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window)
     SDL_WindowData *windata = ((SDL_WindowData *) window->driverdata);
     SDL_DisplayData *dispdata = (SDL_DisplayData *) SDL_GetDisplayForWindow(window)->driverdata;
     KMSDRM_FBInfo *fb;
+    KMSDRM_PlaneInfo info = {0};
     int ret;
 
     /*************************************************************************/
@@ -108,25 +109,37 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window)
     /***************/
 
     /* Lock the buffer that is marked by eglSwapBuffers() to become the next front buffer (so it can not
-       be chosen by EGL as back buffer to draw on), and get a handle to it to request the pageflip on it. */
+       be chosen by EGL as back buffer to draw on), and get a handle to it to request the pageflip on it.
+       REMEMBER that gbm_surface_lock_front_buffer() ALWAYS has to be called after eglSwapBuffers(). */
     windata->next_bo = KMSDRM_gbm_surface_lock_front_buffer(windata->gs);
     if (!windata->next_bo) {
-	return SDL_SetError("Failed to lock frontbuffer on GBM surface destruction");
+	return SDL_SetError("Failed to lock frontbuffer");
     }
     fb = KMSDRM_FBFromBO(_this, windata->next_bo);
     if (!fb) {
-	 return SDL_SetError("Failed to get a new framebuffer on GBM surface destruction");
+	 return SDL_SetError("Failed to get a new framebuffer from BO");
     }
 
-    /* Add the pageflip to te request list. */
-    drm_atomic_setbuffer(_this, dispdata->display_plane, fb->fb_id, dispdata->crtc->crtc->crtc_id);
+    /* Add the pageflip to the request list. */
+    info.plane = dispdata->display_plane;
+    info.crtc_id = dispdata->crtc->crtc->crtc_id;
+    info.fb_id = fb->fb_id;
+    info.src_w = dispdata->mode.hdisplay;
+    info.src_h = dispdata->mode.vdisplay;
+    info.crtc_w = dispdata->mode.hdisplay;
+    info.crtc_h = dispdata->mode.vdisplay;
+
+    ret = drm_atomic_set_plane_props(&info);
+     if (ret) {
+        return SDL_SetError("Failed to request prop changes for setting plane buffer and CRTC");
+    }
 
     /* Issue the one and only atomic commit where all changes will be requested!.
        We need e a non-blocking atomic commit for triple buffering, because we 
        must not block on this atomic commit so we can re-enter program loop once more. */
     ret = drm_atomic_commit(_this, SDL_FALSE);
     if (ret) {
-        return SDL_SetError("failed to issue atomic commit on GBM surface destruction");
+        return SDL_SetError("Failed to issue atomic commit on pageflip");
     }
 
     /* Release the last front buffer so EGL can chose it as back buffer and render on it again. */
@@ -165,6 +178,7 @@ KMSDRM_GLES_SwapWindowDB(_THIS, SDL_Window * window)
     SDL_WindowData *windata = ((SDL_WindowData *) window->driverdata);
     SDL_DisplayData *dispdata = (SDL_DisplayData *) SDL_GetDisplayForWindow(window)->driverdata;
     KMSDRM_FBInfo *fb;
+    KMSDRM_PlaneInfo info = {0};
     int ret;
 
     /* In double-buffer mode, atomic commit will always be synchronous/blocking (ie: won't return until
@@ -187,15 +201,26 @@ KMSDRM_GLES_SwapWindowDB(_THIS, SDL_Window * window)
          return SDL_SetError("Failed to get a new framebuffer BO");
     }
 
-    /* Add the pageflip to te request list. */
-    drm_atomic_setbuffer(_this, dispdata->display_plane, fb->fb_id, dispdata->crtc->crtc->crtc_id);
+    /* Add the pageflip to the request list. */
+    info.plane = dispdata->display_plane;
+    info.crtc_id = dispdata->crtc->crtc->crtc_id;
+    info.fb_id = fb->fb_id;
+    info.src_w = dispdata->mode.hdisplay;
+    info.src_h = dispdata->mode.vdisplay;
+    info.crtc_w = dispdata->mode.hdisplay;
+    info.crtc_h = dispdata->mode.vdisplay;
+
+    ret = drm_atomic_set_plane_props(&info);
+     if (ret) {
+        return SDL_SetError("Failed to request prop changes for setting plane buffer and CRTC");
+    }
 
     /* Issue the one and only atomic commit where all changes will be requested!. 
        Blocking for double buffering: won't return until completed. */
     ret = drm_atomic_commit(_this, SDL_TRUE);
 
     if (ret) {
-        return SDL_SetError("failed to issue atomic commit");
+        return SDL_SetError("Failed to issue atomic commit");
     }
 
     /* Release last front buffer so EGL can chose it as back buffer and render on it again. */
