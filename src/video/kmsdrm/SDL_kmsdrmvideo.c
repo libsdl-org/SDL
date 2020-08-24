@@ -68,7 +68,7 @@ check_modesetting(int devindex)
                              resources->count_connectors, resources->count_encoders, resources->count_crtcs);
 
                 if (resources->count_connectors > 0 && resources->count_encoders > 0 && resources->count_crtcs > 0) {
-                    for (int i = 0; i < resources->count_connectors; i++) {
+                    for (unsigned int i = 0; i < resources->count_connectors; i++) {
                         drmModeConnector *conn = KMSDRM_drmModeGetConnector(drm_fd, resources->connectors[i]);
 
                         if (!conn) {
@@ -95,9 +95,9 @@ check_modesetting(int devindex)
     return available;
 }
 
-static int get_dricount(void)
+static unsigned int get_dricount(void)
 {
-    int devcount = 0;
+    unsigned int devcount = 0;
     struct dirent *res;
     struct stat sb;
     DIR *folder;
@@ -117,7 +117,7 @@ static int get_dricount(void)
     folder = opendir(KMSDRM_DRI_PATH);
     if (folder) {
         while ((res = readdir(folder))) {
-            int len = SDL_strlen(res->d_name);
+            size_t len = SDL_strlen(res->d_name);
             if (len > 4 && SDL_strncmp(res->d_name, "card", 4) == 0) {
                 devcount++;
             }
@@ -131,8 +131,8 @@ static int get_dricount(void)
 static int
 get_driindex(void)
 {
-    const int devcount = get_dricount();
-    int i;
+    const unsigned int devcount = get_dricount();
+    unsigned int i;
 
     for (i = 0; i < devcount; i++) {
         if (check_modesetting(i)) {
@@ -314,13 +314,13 @@ void get_planes_info(_THIS)
 
 /* Get the plane_id of a plane that is of the specified plane type (primary,
    overlay, cursor...) and can use the CRTC we have chosen previously. */ 
-static uint32_t get_plane_id(_THIS, uint32_t plane_type)
+static int get_plane_id(_THIS, uint32_t plane_type)
 {
     drmModeRes *resources = NULL;
     drmModePlaneResPtr plane_resources = NULL;
     uint32_t i, j;
-    uint32_t crtc_index = 0;
-    uint32_t ret = -EINVAL;
+    unsigned int crtc_index = 0;
+    int ret = -EINVAL;
     int found = 0;
 
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
@@ -414,7 +414,7 @@ setup_plane(_THIS, struct plane **plane, uint32_t plane_type)
         (*plane)->props_info = SDL_calloc((*plane)->props->count_props,
             sizeof((*plane)->props_info));	
 
-        for (int i = 0; i < (*plane)->props->count_props; i++) {
+        for (unsigned int i = 0; i < (*plane)->props->count_props; i++) {
             (*plane)->props_info[i] = KMSDRM_drmModeGetProperty(viddata->drm_fd,
                 (*plane)->props->props[i]);
         }
@@ -495,10 +495,10 @@ drm_atomic_set_plane_props(struct KMSDRM_PlaneInfo *info)
     if (add_plane_property(dispdata->atomic_req, info->plane, "CRTC_Y", info->crtc_y) < 0)
         return SDL_SetError("Failed to set plane CRTC_Y prop");
 
-    /* Only set the IN_FENCE aqnd OUT_FENCE props if we're operationg on the display plane,
+    /* Set the IN_FENCE and OUT_FENCE props only if we're operating on the display plane,
        since that's the only plane for which we manage who and when should access the buffers
        it uses. */
-    if ((info->plane == dispdata->display_plane) && (dispdata->kms_in_fence_fd != -1))
+    if (info->plane == dispdata->display_plane && dispdata->kms_in_fence_fd != -1)
     {
 	if (add_crtc_property(dispdata->atomic_req, dispdata->crtc, "OUT_FENCE_PTR",
 			          VOID2U64(&dispdata->kms_out_fence_fd)) < 0)
@@ -904,7 +904,7 @@ KMSDRM_VideoInit(_THIS)
     }
 
     /* Iterate on the available connectors to find a connected connector. */
-    for (int i = 0; i < resources->count_connectors; i++) {
+    for (unsigned int i = 0; i < resources->count_connectors; i++) {
         drmModeConnector *conn = KMSDRM_drmModeGetConnector(viddata->drm_fd, resources->connectors[i]);
 
         if (!conn) {
@@ -927,7 +927,7 @@ KMSDRM_VideoInit(_THIS)
     }
 
     /* Try to find the connector's current encoder */
-    for (int i = 0; i < resources->count_encoders; i++) {
+    for (unsigned int i = 0; i < resources->count_encoders; i++) {
         encoder = KMSDRM_drmModeGetEncoder(viddata->drm_fd, resources->encoders[i]);
 
         if (!encoder) {
@@ -945,7 +945,7 @@ KMSDRM_VideoInit(_THIS)
 
     if (!encoder) {
         /* No encoder was connected, find the first supported one */
-        for (int i = 0, j; i < resources->count_encoders; i++) {
+        for (unsigned int i = 0, j; i < resources->count_encoders; i++) {
             encoder = KMSDRM_drmModeGetEncoder(viddata->drm_fd, resources->encoders[i]);
 
             if (!encoder) {
@@ -979,7 +979,7 @@ KMSDRM_VideoInit(_THIS)
 
     /* If no CRTC was connected to the encoder, find the first CRTC that is supported by the encoder, and use that. */
     if (!dispdata->crtc->crtc) {
-        for (int i = 0; i < resources->count_crtcs; i++) {
+        for (unsigned int i = 0; i < resources->count_crtcs; i++) {
             if (encoder->possible_crtcs & (1 << i)) {
                 encoder->crtc_id = resources->crtcs[i];
                 dispdata->crtc->crtc = KMSDRM_drmModeGetCrtc(viddata->drm_fd, encoder->crtc_id);
@@ -1059,7 +1059,7 @@ KMSDRM_VideoInit(_THIS)
     dispdata->crtc->props_info = SDL_calloc(dispdata->crtc->props->count_props,
         sizeof(dispdata->crtc->props_info));	
 
-    for (int i = 0; i < dispdata->crtc->props->count_props; i++) {
+    for (unsigned int i = 0; i < dispdata->crtc->props->count_props; i++) {
 	dispdata->crtc->props_info[i] = KMSDRM_drmModeGetProperty(viddata->drm_fd,
         dispdata->crtc->props->props[i]);
     }
@@ -1071,7 +1071,7 @@ KMSDRM_VideoInit(_THIS)
     dispdata->connector->props_info = SDL_calloc(dispdata->connector->props->count_props,
         sizeof(dispdata->connector->props_info));	
 
-    for (int i = 0; i < dispdata->connector->props->count_props; i++) {
+    for (unsigned int i = 0; i < dispdata->connector->props->count_props; i++) {
 	dispdata->connector->props_info[i] = KMSDRM_drmModeGetProperty(viddata->drm_fd,
         dispdata->connector->props->props[i]);
     }
@@ -1194,6 +1194,13 @@ KMSDRM_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
 int
 KMSDRM_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
 {
+    /************************************************************************/
+    /* DO NOT add dynamic videomode changes unless you can REALLY test      */
+    /* on all available KMS drivers and fix them in-kernel, and also test   */
+    /* all SDL2 software: things will fail one way or another, and it       */
+    /* greatly increases backend complexiity thus compromising it's         */
+    /* maintenance. It's NOT as easy as reconstructing GBM and EGL surfaces.*/
+    /************************************************************************/
     return 0;
 }
 
@@ -1237,7 +1244,7 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
        seem odd to support multiple fullscreen windows, some apps create an
        extra window as a dummy surface when working with multiple contexts */
     if (viddata->num_windows >= viddata->max_windows) {
-        int new_max_windows = viddata->max_windows + 1;
+        unsigned int new_max_windows = viddata->max_windows + 1;
         viddata->windows = (SDL_Window **)SDL_realloc(viddata->windows,
               new_max_windows * sizeof(SDL_Window *));
         viddata->max_windows = new_max_windows;
@@ -1274,11 +1281,11 @@ KMSDRM_DestroyWindow(_THIS, SDL_Window * window)
     /* Remove from the internal window list */
     viddata = windata->viddata;
 
-    for (int i = 0; i < viddata->num_windows; i++) {
+    for (unsigned int i = 0; i < viddata->num_windows; i++) {
         if (viddata->windows[i] == window) {
             viddata->num_windows--;
 
-            for (int j = i; j < viddata->num_windows; j++) {
+            for (unsigned int j = i; j < viddata->num_windows; j++) {
                 viddata->windows[j] = viddata->windows[j + 1];
             }
 

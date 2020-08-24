@@ -49,8 +49,8 @@ typedef struct SDL_VideoData
     struct gbm_device *gbm_dev;
 
     SDL_Window **windows;
-    int max_windows;
-    int num_windows;
+    unsigned int max_windows;
+    unsigned int num_windows;
 } SDL_VideoData;
 
 struct plane {
@@ -119,20 +119,21 @@ typedef struct KMSDRM_FBInfo
     uint32_t fb_id;     /* DRM framebuffer ID */
 } KMSDRM_FBInfo;
 
-/* Info passed to set_plane_props calls. */
+/* Info passed to set_plane_props calls. hdisplay and vdisplay in a drm mode are uint16_t,
+   so that's what we use for sizes and positions here. IDs are uint32_t as always. */
 typedef struct KMSDRM_PlaneInfo
 {
     struct plane *plane;
     uint32_t fb_id;
     uint32_t crtc_id;
-    int src_x;
-    int src_y;
-    int src_w;
-    int src_h;
-    int crtc_x;
-    int crtc_y;
-    int crtc_w;
-    int crtc_h;
+    uint16_t src_x;
+    uint16_t src_y;
+    uint16_t src_w;
+    uint16_t src_h;
+    uint16_t crtc_x;
+    uint16_t crtc_y;
+    uint16_t crtc_w;
+    uint16_t crtc_h;
 } KMSDRM_PlaneInfo;
 
 /* Helper functions */

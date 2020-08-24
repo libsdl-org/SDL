@@ -44,7 +44,7 @@ static int KMSDRM_WarpMouseGlobal(int x, int y);
 /**********************************/
 
 int
-drm_atomic_movecursor(KMSDRM_CursorData *curdata, int x, int y)
+drm_atomic_movecursor(KMSDRM_CursorData *curdata, uint16_t x, uint16_t y)
 {
     SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
 
