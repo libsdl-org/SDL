@@ -78,8 +78,8 @@ typedef struct SDL_DisplayData
     uint32_t atomic_flags;
 
     /* All changes will be requested via this one and only atomic request,
-       that will be sent to the kernel in the one and only atomic_commit() call
-       that takes place in SwapWindow(). */
+       that will be sent to the kernel in the one and only atomic_commit()
+       call that takes place in SwapWindow(). */
     drmModeAtomicReq *atomic_req;
     struct plane *display_plane;
     struct plane *cursor_plane;
@@ -94,6 +94,19 @@ typedef struct SDL_DisplayData
 
     EGLSyncKHR gpu_fence; /* Signaled when GPU rendering is done. */
 
+    /* Backup pointers of the GBM surfaces and buffers to be deleted after
+       SDL_Window destruction, since SDL_Window destruction causes it's 
+       driverdata pointer (windata) to be destroyed, so we have to 
+       keep them here instead. */
+    struct gbm_surface *old_gs;
+    struct gbm_bo *old_bo;
+    struct gbm_bo *old_next_bo;
+#if SDL_VIDEO_OPENGL_EGL
+    EGLSurface old_egl_surface;
+#endif
+
+    SDL_bool destroy_surfaces_pending;
+
 } SDL_DisplayData;
 
 /* Driverdata info that gives KMSDRM-side support and substance to the SDL_Window. */
@@ -102,8 +115,8 @@ typedef struct SDL_WindowData
     SDL_VideoData *viddata;
     /* SDL internals expect EGL surface to be here, and in KMSDRM the GBM surface is
        what supports the EGL surface on the driver side, so all these surfaces and buffers
-       are expected to be here, in the struct pointed by SDL_Window driverdata pointer: this one.
-       So don't try to move these to dispdata!  */
+       are expected to be here, in the struct pointed by SDL_Window driverdata pointer:
+       this one. So don't try to move these to dispdata!  */
     struct gbm_surface *gs;
     struct gbm_bo *bo;
     struct gbm_bo *next_bo;
@@ -138,6 +151,7 @@ typedef struct KMSDRM_PlaneInfo
 
 /* Helper functions */
 int KMSDRM_CreateSurfaces(_THIS, SDL_Window * window);
+void KMSDRM_DestroyOldSurfaces(_THIS);
 KMSDRM_FBInfo *KMSDRM_FBFromBO(_THIS, struct gbm_bo *bo);
 
 /* Atomic functions that are used from SDL_kmsdrmopengles.c and SDL_kmsdrmmouse.c */

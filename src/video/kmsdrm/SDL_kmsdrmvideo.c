@@ -149,7 +149,6 @@ get_driindex(void)
 
 #define VOID2U64(x) ((uint64_t)(unsigned long)(x))
 
-#if 0
 static int add_connector_property(drmModeAtomicReq *req, struct connector *connector,
 					const char *name, uint64_t value)
 {
@@ -170,7 +169,6 @@ static int add_connector_property(drmModeAtomicReq *req, struct connector *conne
 
     return KMSDRM_drmModeAtomicAddProperty(req, connector->connector->connector_id, prop_id, value);
 }
-#endif
 
 static int add_crtc_property(drmModeAtomicReq *req, struct crtc *crtc,
 				const char *name, uint64_t value)
@@ -526,7 +524,7 @@ int drm_atomic_commit(_THIS, SDL_bool blocking)
     if (ret) {
         SDL_SetError("Atomic commit failed, returned %d.", ret);
         /* Uncomment this for fast-debugging */
-        //printf("ATOMIC COMMIT FAILED: %d.\n", ret);
+        printf("ATOMIC COMMIT FAILED: %d.\n", ret);
 	goto out;
     }
 
@@ -761,44 +759,64 @@ KMSDRM_FBFromBO(_THIS, struct gbm_bo *bo)
 /* _this is a SDL_VideoDevice *                                              */
 /*****************************************************************************/
 
+/* Just backup the GBM/EGL surfaces pinters, and buffers pointers,
+   because we are not destroying them until we get a buffer of the new GBM
+   surface so we can set the FB_ID of the PRIMARY plane to it.
+   That will happen in SwapWindow(), when we call lock_front_buffer()
+   on the new GBM surface, so that's where we can destroy the old buffers.
+   THE IDEA IS THAT THE PRIMARY PLANE IS NEVER LEFT WITHOUT A VALID BUFFER
+   TO READ, AND ONLY SET IT'S FB_ID/CRTC_ID PROPS TO 0 WHEN PROGRAM IS QUITTING.*/
 static void
-KMSDRM_DestroySurfaces(_THIS, SDL_Window * window)
+KMSDRM_SetPendingSurfacesDestruction(_THIS, SDL_Window * window)
 {
     SDL_WindowData *windata = (SDL_WindowData *)window->driverdata;
     SDL_DisplayData *dispdata = (SDL_DisplayData *) SDL_GetDisplayForWindow(window)->driverdata;
 
-    /* CAUTION: Before destroying the GBM ane EGL surfaces, we must disconnect
-       the display plane from the GBM surface buffer it's reading by setting 
-       it's CRTC_ID and FB_ID props to 0.
-    */
-    KMSDRM_PlaneInfo info = {0};
-    info.plane = dispdata->display_plane;
+    /*******************************************************************************/
+    /* Backup the pointers to the GBM/EGL surfaces and buffers we want to destroy, */
+    /* so we can destroy them later, even after destroying the SDL_Window.         */
+    /* DO NOT store the old ponters in windata, because it's freed when the window */
+    /* is destroyed.                                                               */
+    /*******************************************************************************/
 
-    drm_atomic_set_plane_props(&info);
-    drm_atomic_commit(_this, SDL_TRUE);
+    dispdata->old_gs = windata->gs;
+    dispdata->old_bo = windata->bo;
+    dispdata->old_next_bo = windata->next_bo;
+    dispdata->old_egl_surface = windata->egl_surface;
 
-    if (windata->bo) {
-       KMSDRM_gbm_surface_release_buffer(windata->gs, windata->bo);
-        windata->bo = NULL;
-    }
+    /* Take note that we have yet to destroy the old surfaces.
+       We will do so in SwapWindow(), once we have the new
+       surfaces and buffers available for the PRIMARY plane. */
+    dispdata->destroy_surfaces_pending = SDL_TRUE;
+}
 
-    if (windata->next_bo) {
-        KMSDRM_gbm_surface_release_buffer(windata->gs, windata->next_bo);
-        windata->next_bo = NULL;
-    }
+void
+KMSDRM_DestroyOldSurfaces(_THIS)
+{
+    SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
 
 #if SDL_VIDEO_OPENGL_EGL
-    SDL_EGL_MakeCurrent(_this, EGL_NO_SURFACE, EGL_NO_CONTEXT);
-
-    if (windata->egl_surface != EGL_NO_SURFACE) {
-        SDL_EGL_DestroySurface(_this, windata->egl_surface);
-        windata->egl_surface = EGL_NO_SURFACE;
+    /* Destroy the old EGL surface. */
+    if (dispdata->old_egl_surface != EGL_NO_SURFACE) {
+        SDL_EGL_DestroySurface(_this, dispdata->old_egl_surface);
+        dispdata->old_egl_surface = EGL_NO_SURFACE;
     }
 #endif
 
-    if (windata->gs) {
-        KMSDRM_gbm_surface_destroy(windata->gs);
-        windata->gs = NULL;
+    /* Destroy the old GBM surface and buffers. */
+    if (dispdata->old_bo) {
+       KMSDRM_gbm_surface_release_buffer(dispdata->old_gs, dispdata->old_bo);
+	dispdata->old_bo = NULL;
+    }
+
+    if (dispdata->old_next_bo) {
+	KMSDRM_gbm_surface_release_buffer(dispdata->old_gs, dispdata->old_next_bo);
+	dispdata->old_next_bo = NULL;
+    }
+
+    if (dispdata->old_gs) {
+	KMSDRM_gbm_surface_destroy(dispdata->old_gs);
+	dispdata->old_gs = NULL;
     }
 }
 
@@ -814,19 +832,12 @@ KMSDRM_CreateSurfaces(_THIS, SDL_Window * window)
     Uint32 surface_flags = GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING;
 #if SDL_VIDEO_OPENGL_EGL
     EGLContext egl_context;
-#endif
-
-    /* Always try to destroy previous surfaces before creating new ones. */
-    KMSDRM_DestroySurfaces(_this, window);
-
-    if (!KMSDRM_gbm_device_is_format_supported(viddata->gbm_dev, surface_fmt, surface_flags)) {
-        SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO, "GBM surface format not supported. Trying anyway.");
-    }
-
-#if SDL_VIDEO_OPENGL_EGL
     SDL_EGL_SetRequiredVisualId(_this, surface_fmt);
     egl_context = (EGLContext)SDL_GL_GetCurrentContext();
 #endif
+    if (!KMSDRM_gbm_device_is_format_supported(viddata->gbm_dev, surface_fmt, surface_flags)) {
+        SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO, "GBM surface format not supported. Trying anyway.");
+    }
 
     windata->gs = KMSDRM_gbm_surface_create(viddata->gbm_dev, width, height, surface_fmt, surface_flags);
 
@@ -1123,7 +1134,72 @@ KMSDRM_VideoQuit(_THIS)
 {
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
     SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
-    SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "KMSDRM_VideoQuit()");
+    KMSDRM_PlaneInfo plane_info = {0};
+
+    /*******************************************************************************/
+    /* BLOCK 1                                                                     */
+    /* Clear Old GBM surface and KMS buffers.                                      */
+    /* We have to set the FB_ID and CRTC_ID props of the PRIMARY PLANE to ZERO     */
+    /* before destroying the GBM buffers it's reading (SDL internals have already  */
+    /* run the DestroyWindow()->SetPendingSurfacesDestruction()() sequence,        */
+    /* so we have pending the destruction of the GBM/EGL surfaces and GBM buffers).*/
+    /* But there can not be an ACTIVE CRTC without a PLANE, so we also have to     */
+    /* DEACTIVATE the CRTC, and dettach the CONNECTORs from the CRTC, all in the   */
+    /* same atomic commit in which we zero the primary plane FB_ID and CRTC_ID.    */
+    /*******************************************************************************/
+
+    /* Do we have a set of changes already in the making? If not, allocate a new one. */
+    if (!dispdata->atomic_req)
+        dispdata->atomic_req = KMSDRM_drmModeAtomicAlloc();
+#define AMDGPU  /* Use this for now, for greater compatibility! */
+#ifdef AMDGPU
+
+    /* AMDGPU won't let FBCON takeover without this. The problem is
+       that crtc->buffer_id is not guaranteed to be there... */
+    plane_info.plane = dispdata->display_plane;
+    plane_info.crtc_id = dispdata->crtc->crtc->crtc_id;
+    plane_info.fb_id = dispdata->crtc->crtc->buffer_id;
+    plane_info.src_w = dispdata->mode.hdisplay;
+    plane_info.src_h = dispdata->mode.vdisplay;
+    plane_info.crtc_w = dispdata->mode.hdisplay;
+    plane_info.crtc_h = dispdata->mode.vdisplay;
+
+#else /* This is the correct way, but wait until more chips support FB_ID/CRTC_ID to 0. */
+
+    /* This is the *right* thing to do: dettach the CONNECTOR from the CRTC,
+       deactivate the CRTC, and set the FB_ID and CRTC_ID props of the PRIMARY PLANE
+       to 0. All this is needed because there can be no active CRTC with no plane.
+       All this is done in a single blocking atomic commit before destroying the buffers
+       that the PRIMARY PLANE is reading. */
+    if (add_connector_property(dispdata->atomic_req, dispdata->connector , "CRTC_ID", 0) < 0)
+        SDL_SetError("Failed to set CONNECTOR prop CRTC_ID to zero before buffer destruction");
+
+    if (add_crtc_property(dispdata->atomic_req, dispdata->crtc , "ACTIVE", 0) < 0)
+        SDL_SetError("Failed to set CRTC prop ACTIVE to zero before buffer destruction");
+
+    /* Since we initialize plane_info to all zeros,  ALL PRIMARY PLANE props are set to 0 with this,
+       including FB_ID and CRTC_ID. Not all drivers like FB_ID and CRTC_ID to 0, but they *should*. */
+    plane_info.plane = dispdata->display_plane;
+
+#endif
+
+    drm_atomic_set_plane_props(&plane_info);
+
+    /* ... And finally issue blocking ATOMIC commit before destroying the old buffers.
+       We get here with this destruction still pending if the program calls SDL_DestroyWindow(),
+       which in turn calls KMSDRM_SetPendingSurfacesDestruction(), and then quits instead of
+       creating a new SDL_Window, thus ending here. */
+
+    drm_atomic_commit(_this, SDL_TRUE);
+
+    if (dispdata->destroy_surfaces_pending) {
+        KMSDRM_DestroyOldSurfaces(_this);
+        dispdata->destroy_surfaces_pending = SDL_FALSE;
+    }
+
+    /************************/
+    /* BLOCK 1 ENDS.        */
+    /************************/
 
     /* Clear out the window list */
     SDL_free(viddata->windows);
@@ -1169,7 +1245,7 @@ KMSDRM_VideoQuit(_THIS)
     /* Free cursor plane (if still not freed) */
     free_plane(&dispdata->cursor_plane);
 
-    /* Destroy GBM device. GBM surface is destroyed by DestroySurfaces(). */
+    /* Destroy GBM device. GBM surface is destroyed by DestroyOldSurfaces(). */
     if (viddata->gbm_dev) {
         KMSDRM_gbm_device_destroy(viddata->gbm_dev);
         viddata->gbm_dev = NULL;
@@ -1293,7 +1369,7 @@ KMSDRM_DestroyWindow(_THIS, SDL_Window * window)
         }
     }
 
-    KMSDRM_DestroySurfaces(_this, window);
+    KMSDRM_SetPendingSurfacesDestruction(_this, window);
 
     window->driverdata = NULL;
 

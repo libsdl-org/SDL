@@ -263,6 +263,7 @@ KMSDRM_ShowCursor(SDL_Cursor * cursor)
             if (dispdata && dispdata->cursor_plane) {
                 info.plane = dispdata->cursor_plane; /* The rest of the members are zeroed. */
                 ret = drm_atomic_set_plane_props(&info); 
+                //drm_atomic_commit(display->device, SDL_TRUE);
                 if (ret) {
                     SDL_SetError("Could not hide current cursor.");
                     return ret;
@@ -313,6 +314,7 @@ KMSDRM_ShowCursor(SDL_Cursor * cursor)
     info.crtc_h = curdata->h; 
 
     ret = drm_atomic_set_plane_props(&info);
+    //drm_atomic_commit(display->device, SDL_TRUE);
 
     if (ret) {
         SDL_SetError("KMSDRM_ShowCursor failed.");
@@ -341,7 +343,6 @@ KMSDRM_FreeCursor(SDL_Cursor * cursor)
 
     if (cursor) {
         curdata = (KMSDRM_CursorData *) cursor->driverdata;
-        video = curdata->video;
         if (video && curdata->bo && curdata->plane) {
             info.plane = curdata->plane; /* The other members are zeroed. */
 	    drm_atomic_set_plane_props(&info);
@@ -381,7 +382,6 @@ KMSDRM_WarpMouseGlobal(int x, int y)
 	    int ret;
 
             ret = drm_atomic_movecursor(curdata, x, y);
-            //ret = drm_atomic_commit(curdata->video, SDL_TRUE);
 
 	    if (ret) {
 		SDL_SetError("drm_atomic_movecursor() failed.");
@@ -449,7 +449,6 @@ KMSDRM_MoveCursor(SDL_Cursor * cursor)
            cursor movement request, but it cripples the movement to 30FPS, so a future solution
            is needed. SDLPoP "QUIT?" menu is an example of this situation. */
         ret = drm_atomic_movecursor(curdata, mouse->x, mouse->y);
-        //ret = drm_atomic_commit(curdata->video, SDL_TRUE);
 
 	if (ret) {
 	    SDL_SetError("drm_atomic_movecursor() failed.");
