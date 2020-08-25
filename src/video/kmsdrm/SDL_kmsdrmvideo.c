@@ -652,7 +652,7 @@ KMSDRM_CreateDevice(int devindex)
 #if SDL_VIDEO_OPENGL_EGL
     device->GL_LoadLibrary = KMSDRM_GLES_LoadLibrary;
     device->GL_GetProcAddress = KMSDRM_GLES_GetProcAddress;
-    device->GL_UnloadLibrary = KMSDRM_GLES_UnloadLibrary;
+    //device->GL_UnloadLibrary = KMSDRM_GLES_UnloadLibrary;
     device->GL_CreateContext = KMSDRM_GLES_CreateContext;
     device->GL_MakeCurrent = KMSDRM_GLES_MakeCurrent;
     device->GL_SetSwapInterval = KMSDRM_GLES_SetSwapInterval;
@@ -1210,6 +1210,18 @@ KMSDRM_VideoQuit(_THIS)
     if (_this->gl_config.driver_loaded) {
         SDL_GL_UnloadLibrary();
     }
+
+    /* Since drm_atomic_commit() uses EGL functions internally, we need "_this->egl_data"
+       NOT to be freed by SDL internals before. 
+       SDL internals call device->GL_UnloadLibrary automatically earlier, so we DON'T assign
+       device->GL_UnloadLibrary to SDL_EGL_UnloadLibrary(), and that way WE DECIDE WHERE
+       we want to free "_this->egl_data" by manually calling SDL_EGL_UnloadLibrary(),
+       which happens to be here.
+    */
+
+#if SDL_VIDEO_OPENGL_EGL
+    SDL_EGL_UnloadLibrary(_this);
+#endif
 
     /* Free connector */
     if (dispdata && dispdata->connector) {
