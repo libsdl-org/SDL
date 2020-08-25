@@ -82,6 +82,23 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window)
     KMSDRM_PlaneInfo info = {0};
     int ret;
 
+    /* Do we have a pending old surfaces destruction? */
+    if (dispdata->destroy_surfaces_pending == SDL_TRUE) {
+
+        /* Take note that we have not pending old surfaces destruction.
+           Do it ASAP, DON'T GO into SwapWindowDB() with it enabled or
+           we will enter recursivity! */
+        dispdata->destroy_surfaces_pending = SDL_FALSE;
+
+        /* Do blocking pageflip, to be sure it's atomic commit is completed
+           before destroying the old surfaces and buffers. */
+        KMSDRM_GLES_SwapWindowDB(_this, window);
+
+        KMSDRM_DestroyOldSurfaces(_this);
+
+        return 0;
+    }
+
     /*************************************************************************/
     /* Block for telling KMS to wait for GPU rendering of the current frame  */
     /* before applying the KMS changes requested in the atomic ioctl.        */
@@ -181,10 +198,12 @@ KMSDRM_GLES_SwapWindowDB(_THIS, SDL_Window * window)
     KMSDRM_PlaneInfo info = {0};
     int ret;
 
-    /* In double-buffer mode, atomic commit will always be synchronous/blocking (ie: won't return until
-       the requested changes are done).
-       Also, there's no need to fence KMS or the GPU, because we won't be entering game loop again
-       (hence not building or executing a new cmdstring) until pageflip is done. */
+    /****************************************************************************************************/
+    /* In double-buffer mode, atomic commit will always be synchronous/blocking (ie: won't return until */
+    /* the requested changes are really done).                                                          */
+    /* Also, there's no need to fence KMS or the GPU, because we won't be entering game loop again      */
+    /* (hence not building or executing a new cmdstring) until pageflip is done.                        */
+    /****************************************************************************************************/ 
 
     /* Mark, at EGL level, the buffer that we want to become the new front buffer.
        However, it won't really happen until we request a pageflip at the KMS level and it completes. */
@@ -230,6 +249,14 @@ KMSDRM_GLES_SwapWindowDB(_THIS, SDL_Window * window)
 
     /* Take note of current front buffer, so we can free it next time we come here. */
     windata->bo = windata->next_bo;
+
+    /* Do we have a pending old surfaces destruction? */
+    if (dispdata->destroy_surfaces_pending == SDL_TRUE) {
+        /* We have just done a blocking pageflip to the new buffers already,
+           so just do what you are here for... */
+        KMSDRM_DestroyOldSurfaces(_this);
+        dispdata->destroy_surfaces_pending = SDL_FALSE;
+    }
 
     return ret;
 }
