@@ -150,7 +150,7 @@ get_driindex(void)
 #define VOID2U64(x) ((uint64_t)(unsigned long)(x))
 
 static int add_connector_property(drmModeAtomicReq *req, struct connector *connector,
-					const char *name, uint64_t value)
+                                     const char *name, uint64_t value)
 {
     unsigned int i;
     int prop_id = 0;
@@ -170,8 +170,8 @@ static int add_connector_property(drmModeAtomicReq *req, struct connector *conne
     return KMSDRM_drmModeAtomicAddProperty(req, connector->connector->connector_id, prop_id, value);
 }
 
-static int add_crtc_property(drmModeAtomicReq *req, struct crtc *crtc,
-				const char *name, uint64_t value)
+int add_crtc_property(drmModeAtomicReq *req, struct crtc *crtc,
+                         const char *name, uint64_t value)
 {
     unsigned int i;
     int prop_id = -1;
@@ -192,7 +192,7 @@ static int add_crtc_property(drmModeAtomicReq *req, struct crtc *crtc,
 }
 
 int add_plane_property(drmModeAtomicReq *req, struct plane *plane,
-                              const char *name, uint64_t value)
+                          const char *name, uint64_t value)
 {
     unsigned int i;
     int prop_id = -1;
@@ -492,18 +492,6 @@ drm_atomic_set_plane_props(struct KMSDRM_PlaneInfo *info)
         return SDL_SetError("Failed to set plane CRTC_X prop");
     if (add_plane_property(dispdata->atomic_req, info->plane, "CRTC_Y", info->crtc_y) < 0)
         return SDL_SetError("Failed to set plane CRTC_Y prop");
-
-    /* Set the IN_FENCE and OUT_FENCE props only if we're operating on the display plane,
-       since that's the only plane for which we manage who and when should access the buffers
-       it uses. */
-    if (info->plane == dispdata->display_plane && dispdata->kms_in_fence_fd != -1)
-    {
-	if (add_crtc_property(dispdata->atomic_req, dispdata->crtc, "OUT_FENCE_PTR",
-			          VOID2U64(&dispdata->kms_out_fence_fd)) < 0)
-            return SDL_SetError("Failed to set CRTC OUT_FENCE_PTR prop");
-	if (add_plane_property(dispdata->atomic_req, info->plane, "IN_FENCE_FD", dispdata->kms_in_fence_fd) < 0)
-            return SDL_SetError("Failed to set plane IN_FENCE_FD prop");
-    }
 
     return 0;
 }

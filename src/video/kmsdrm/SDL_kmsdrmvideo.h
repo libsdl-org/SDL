@@ -161,6 +161,8 @@ void drm_atomic_waitpending(_THIS);
 int drm_atomic_commit(_THIS, SDL_bool blocking);
 int add_plane_property(drmModeAtomicReq *req, struct plane *plane,
                              const char *name, uint64_t value);
+int add_crtc_property(drmModeAtomicReq *req, struct crtc *crtc,
+                             const char *name, uint64_t value);
 int setup_plane(_THIS, struct plane **plane, uint32_t plane_type);
 void free_plane(struct plane **plane);
 
