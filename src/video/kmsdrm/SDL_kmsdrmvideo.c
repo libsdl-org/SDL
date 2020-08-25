@@ -794,8 +794,8 @@ KMSDRM_DestroyOldSurfaces(_THIS)
 
     /* Destroy the old GBM surface and buffers. */
     if (dispdata->old_bo) {
-       KMSDRM_gbm_surface_release_buffer(dispdata->old_gs, dispdata->old_bo);
-	dispdata->old_bo = NULL;
+        KMSDRM_gbm_surface_release_buffer(dispdata->old_gs, dispdata->old_bo);
+        dispdata->old_bo = NULL;
     }
 
     if (dispdata->old_next_bo) {
@@ -1196,6 +1196,7 @@ KMSDRM_VideoQuit(_THIS)
     viddata->max_windows = 0;
     viddata->num_windows = 0;
 
+#if SDL_VIDEO_OPENGL_EGL
     if (_this->gl_config.driver_loaded) {
         SDL_GL_UnloadLibrary();
     }
@@ -1208,7 +1209,7 @@ KMSDRM_VideoQuit(_THIS)
        which happens to be here.
     */
 
-#if SDL_VIDEO_OPENGL_EGL
+
     SDL_EGL_UnloadLibrary(_this);
 #endif
 
