@@ -151,6 +151,18 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window)
         return SDL_SetError("Failed to request prop changes for setting plane buffer and CRTC");
     }
 
+    /* Set the IN_FENCE and OUT_FENCE props only here, since this is the only place
+       on which we're interested in managing who and when should access the buffers
+       that the display plane uses, and that's what these props are for. */
+    if (dispdata->kms_in_fence_fd != -1)
+    {
+	if (add_crtc_property(dispdata->atomic_req, dispdata->crtc, "OUT_FENCE_PTR",
+			          VOID2U64(&dispdata->kms_out_fence_fd)) < 0)
+            return SDL_SetError("Failed to set CRTC OUT_FENCE_PTR prop");
+	if (add_plane_property(dispdata->atomic_req, dispdata->display_plane, "IN_FENCE_FD", dispdata->kms_in_fence_fd) < 0)
+            return SDL_SetError("Failed to set plane IN_FENCE_FD prop");
+    }
+
     /* Issue the one and only atomic commit where all changes will be requested!.
        We need e a non-blocking atomic commit for triple buffering, because we 
        must not block on this atomic commit so we can re-enter program loop once more. */
