@@ -83,17 +83,22 @@
 #endif
 
 static SDL_Scancode
-VKeytoScancode(WPARAM vkey)
+VKeytoScancodeFallback(WPARAM vkey)
 {
     switch (vkey) {
-/* Windows generates this virtual keycode for Keypad 5 when NumLock is off.
-    case VK_CLEAR: return SDL_SCANCODE_CLEAR;
-*/
     case VK_LEFT: return SDL_SCANCODE_LEFT;
     case VK_UP: return SDL_SCANCODE_UP;
     case VK_RIGHT: return SDL_SCANCODE_RIGHT;
     case VK_DOWN: return SDL_SCANCODE_DOWN;
 
+    default: return SDL_SCANCODE_UNKNOWN;
+    }
+}
+
+static SDL_Scancode
+VKeytoScancode(WPARAM vkey)
+{
+    switch (vkey) {
     case VK_MODECHANGE: return SDL_SCANCODE_MODE;
     case VK_SELECT: return SDL_SCANCODE_SELECT;
     case VK_EXECUTE: return SDL_SCANCODE_EXECUTE;
@@ -219,6 +224,16 @@ WindowsScanCodeToSDLScanCode(LPARAM lParam, WPARAM wParam)
             }
         }
     }
+
+    /* The on-screen keyboard can generate VK_LEFT and VK_RIGHT events without a scancode
+     * value set, however we cannot simply map these in VKeytoScancode() or we will be
+     * incorrectly handling the arrow keys on the number pad when NumLock is disabled
+     * (which also generate VK_LEFT, VK_RIGHT, etc in that scenario). Instead, we'll only
+     * map them if none of the above special number pad mappings applied. */
+    if (code == SDL_SCANCODE_UNKNOWN) {
+        code = VKeytoScancodeFallback(wParam);
+    }
+
     return code;
 }
 
