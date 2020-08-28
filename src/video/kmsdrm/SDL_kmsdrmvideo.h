@@ -125,6 +125,12 @@ typedef struct SDL_WindowData
 #if SDL_VIDEO_OPENGL_EGL
     EGLSurface egl_surface;
 #endif
+
+    /* For scaling and AR correction. */
+    int32_t output_w;
+    int32_t output_h;
+    int32_t output_x;
+
 } SDL_WindowData;
 
 typedef struct KMSDRM_FBInfo
@@ -133,21 +139,19 @@ typedef struct KMSDRM_FBInfo
     uint32_t fb_id;     /* DRM framebuffer ID */
 } KMSDRM_FBInfo;
 
-/* Info passed to set_plane_props calls. hdisplay and vdisplay in a drm mode are uint16_t,
-   so that's what we use for sizes and positions here. IDs are uint32_t as always. */
 typedef struct KMSDRM_PlaneInfo
 {
     struct plane *plane;
     uint32_t fb_id;
     uint32_t crtc_id;
-    uint16_t src_x;
-    uint16_t src_y;
-    uint16_t src_w;
-    uint16_t src_h;
-    uint16_t crtc_x;
-    uint16_t crtc_y;
-    uint16_t crtc_w;
-    uint16_t crtc_h;
+    int32_t src_x;
+    int32_t src_y;
+    int32_t src_w;
+    int32_t src_h;
+    int32_t crtc_x;
+    int32_t crtc_y;
+    int32_t crtc_w;
+    int32_t crtc_h;
 } KMSDRM_PlaneInfo;
 
 /* Helper functions */
@@ -182,6 +186,7 @@ void KMSDRM_SetWindowTitle(_THIS, SDL_Window * window);
 void KMSDRM_SetWindowIcon(_THIS, SDL_Window * window, SDL_Surface * icon);
 void KMSDRM_SetWindowPosition(_THIS, SDL_Window * window);
 void KMSDRM_SetWindowSize(_THIS, SDL_Window * window);
+void KMSDRM_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * _display, SDL_bool fullscreen);
 void KMSDRM_ShowWindow(_THIS, SDL_Window * window);
 void KMSDRM_HideWindow(_THIS, SDL_Window * window);
 void KMSDRM_RaiseWindow(_THIS, SDL_Window * window);

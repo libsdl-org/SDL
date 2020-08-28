@@ -629,6 +629,7 @@ KMSDRM_CreateDevice(int devindex)
     device->SetWindowIcon = KMSDRM_SetWindowIcon;
     device->SetWindowPosition = KMSDRM_SetWindowPosition;
     device->SetWindowSize = KMSDRM_SetWindowSize;
+    device->SetWindowFullscreen = KMSDRM_SetWindowFullscreen;
     device->ShowWindow = KMSDRM_ShowWindow;
     device->HideWindow = KMSDRM_HideWindow;
     device->RaiseWindow = KMSDRM_RaiseWindow;
@@ -814,9 +815,8 @@ KMSDRM_CreateSurfaces(_THIS, SDL_Window * window)
 {
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
     SDL_WindowData *windata = (SDL_WindowData *)window->driverdata;
-    SDL_DisplayData *dispdata = (SDL_DisplayData *) SDL_GetDisplayForWindow(window)->driverdata;
-    Uint32 width = dispdata->mode.hdisplay;
-    Uint32 height = dispdata->mode.vdisplay;
+    Uint32 width = window->w;
+    Uint32 height = window->h;
     Uint32 surface_fmt = GBM_FORMAT_ARGB8888;
     Uint32 surface_flags = GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING;
 #if SDL_VIDEO_OPENGL_EGL
@@ -1273,12 +1273,12 @@ int
 KMSDRM_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
 {
     /************************************************************************/
-    /* DO NOT add dynamic videomode changes unless you can REALLY test      */
-    /* on all available KMS drivers and fix them in-kernel, and also test   */
-    /* all SDL2 software: things will fail one way or another, and it       */
-    /* greatly increases backend complexiity thus compromising it's         */
-    /* maintenance. It's NOT as easy as reconstructing GBM and EGL surfaces.*/
-    /************************************************************************/
+    /* DO NOT add dynamic videomode changes. It makes NO SENSE since the    */
+    /* PRIMARY PLANE and the CRTC reading it can be used to scale image,    */
+    /* so any window will appear fullscren with AR correction with NO extra */
+    /* video memory bandwidth usage.                                        */
+    /************************************************************************/    
+
     return 0;
 }
 
@@ -1287,7 +1287,9 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
 {
     SDL_VideoData *viddata = (SDL_VideoData *)_this->driverdata;
     SDL_VideoDisplay *display = NULL;
+    SDL_DisplayData *dispdata = NULL;
     SDL_WindowData *windata = NULL;
+    float ratio;
 
 #if SDL_VIDEO_OPENGL_EGL
     if (!_this->egl_data) {
@@ -1301,10 +1303,22 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
     windata = (SDL_WindowData *)SDL_calloc(1, sizeof(SDL_WindowData));
 
     display = SDL_GetDisplayForWindow(window);
+    dispdata = display->driverdata;
 
-    /* Windows have one size for now */
-    window->w = display->desktop_mode.w;
-    window->h = display->desktop_mode.h;
+    if (window->flags & SDL_WINDOW_FULLSCREEN) {
+        /* Windows only have one possible size in fullscreen mode. */
+        window->w = dispdata->mode.hdisplay;
+        window->h = dispdata->mode.vdisplay;
+        windata->output_w = dispdata->mode.hdisplay;
+        windata->output_h = dispdata->mode.vdisplay;
+        windata->output_x = 0;
+    } else {
+        /* Get output (CRTC) size and position, for AR correction. */
+        ratio = (float)window->w / (float)window->h;
+        windata->output_w = dispdata->mode.vdisplay * ratio;
+        windata->output_h = dispdata->mode.vdisplay;
+        windata->output_x = (dispdata->mode.hdisplay - windata->output_w) / 2;
+    }
 
     /* Don't force fullscreen on all windows: it confuses programs that try
        to set a window fullscreen after creating it as non-fullscreen (sm64ex) */
@@ -1399,6 +1413,36 @@ KMSDRM_SetWindowPosition(_THIS, SDL_Window * window)
 void
 KMSDRM_SetWindowSize(_THIS, SDL_Window * window)
 {
+}
+void
+KMSDRM_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display, SDL_bool fullscreen)
+{
+
+    SDL_WindowData *windata = window->driverdata;
+    SDL_DisplayData *dispdata = display->driverdata;
+    float ratio;  
+
+    KMSDRM_SetPendingSurfacesDestruction(_this, window);
+
+    if (fullscreen) {
+        /* Windows only have one possible size in fullscreen mode. */
+        window->w = dispdata->mode.hdisplay;
+        window->h = dispdata->mode.vdisplay;
+        windata->output_w = dispdata->mode.hdisplay;
+        windata->output_h = dispdata->mode.vdisplay;
+        windata->output_x = 0;
+
+    } else {
+        /* Get output (CRTC) size and position, for AR correction. */
+        ratio = (float)window->w / (float)window->h;
+        windata->output_w = dispdata->mode.vdisplay * ratio;
+        windata->output_h = dispdata->mode.vdisplay;
+        windata->output_x = (dispdata->mode.hdisplay - windata->output_w) / 2;
+    }
+
+    if (KMSDRM_CreateSurfaces(_this, window)) {
+        SDL_SetError("Can't recreate window surfaces on SetWindowFullscreen.");
+    }
 }
 void
 KMSDRM_ShowWindow(_THIS, SDL_Window * window)
