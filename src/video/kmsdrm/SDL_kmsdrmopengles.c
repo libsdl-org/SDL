@@ -142,10 +142,12 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window)
     info.plane = dispdata->display_plane;
     info.crtc_id = dispdata->crtc->crtc->crtc_id;
     info.fb_id = fb->fb_id;
-    info.src_w = dispdata->mode.hdisplay;
-    info.src_h = dispdata->mode.vdisplay;
-    info.crtc_w = dispdata->mode.hdisplay;
-    info.crtc_h = dispdata->mode.vdisplay;
+
+    info.src_w = window->w;
+    info.src_h = window->h;
+    info.crtc_w = windata->output_w;
+    info.crtc_h = windata->output_h;
+    info.crtc_x = windata->output_x;
 
     ret = drm_atomic_set_plane_props(&info);
      if (ret) {
@@ -237,10 +239,12 @@ KMSDRM_GLES_SwapWindowDB(_THIS, SDL_Window * window)
     info.plane = dispdata->display_plane;
     info.crtc_id = dispdata->crtc->crtc->crtc_id;
     info.fb_id = fb->fb_id;
-    info.src_w = dispdata->mode.hdisplay;
-    info.src_h = dispdata->mode.vdisplay;
-    info.crtc_w = dispdata->mode.hdisplay;
-    info.crtc_h = dispdata->mode.vdisplay;
+
+    info.src_w = window->w;
+    info.src_h = window->h;
+    info.crtc_w = windata->output_w;
+    info.crtc_h = windata->output_h;
+    info.crtc_x = windata->output_x;
 
     ret = drm_atomic_set_plane_props(&info);
      if (ret) {
