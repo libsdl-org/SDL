@@ -848,6 +848,39 @@ KMSDRM_CreateSurfaces(_THIS, SDL_Window * window)
     return 0;
 }
 
+/*****************************************************************************/
+/* Reconfigure the window scaling parameters and re-construct it's surfaces, */
+/* without destroying the window itself.                                     */
+/* To be used by SetWindowSize() and SetWindowFullscreen().                  */
+/*****************************************************************************/
+static void
+KMSDRM_ReconfigureWindow( _THIS, SDL_Window * window) {
+    SDL_WindowData *windata = window->driverdata;
+    SDL_DisplayData *dispdata = (SDL_DisplayData *) SDL_GetDisplayForWindow(window)->driverdata;
+    float ratio;  
+
+    KMSDRM_SetPendingSurfacesDestruction(_this, window);
+
+    if (window->flags & SDL_WINDOW_FULLSCREEN ) {
+        /* Windows only have one possible size in fullscreen mode. */
+        window->w = dispdata->mode.hdisplay;
+        window->h = dispdata->mode.vdisplay;
+        windata->output_w = dispdata->mode.hdisplay;
+        windata->output_h = dispdata->mode.vdisplay;
+        windata->output_x = 0;
+    } else {
+        /* Get output (CRTC) size and position, for AR correction. */
+        ratio = (float)window->w / (float)window->h;
+        windata->output_w = dispdata->mode.vdisplay * ratio;
+        windata->output_h = dispdata->mode.vdisplay;
+        windata->output_x = (dispdata->mode.hdisplay - windata->output_w) / 2;
+    }
+
+    if (KMSDRM_CreateSurfaces(_this, window)) {
+        SDL_SetError("Can't recreate surfaces on window reconfiguration.");
+    }
+}
+
 int
 KMSDRM_VideoInit(_THIS)
 {
@@ -1274,9 +1307,9 @@ KMSDRM_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
 {
     /************************************************************************/
     /* DO NOT add dynamic videomode changes. It makes NO SENSE since the    */
-    /* PRIMARY PLANE and the CRTC reading it can be used to scale image,    */
-    /* so any window will appear fullscren with AR correction with NO extra */
-    /* video memory bandwidth usage.                                        */
+    /* PRIMARY PLANE and the CRTC can be used to scale image, so any window */
+    /* will appear fullscren with AR correction with NO extra video memory  */
+    /* bandwidth usage.                                                     */
     /************************************************************************/    
 
     return 0;
@@ -1410,39 +1443,17 @@ void
 KMSDRM_SetWindowPosition(_THIS, SDL_Window * window)
 {
 }
+
 void
 KMSDRM_SetWindowSize(_THIS, SDL_Window * window)
 {
+    KMSDRM_ReconfigureWindow(_this, window);  
 }
+
 void
 KMSDRM_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display, SDL_bool fullscreen)
 {
-
-    SDL_WindowData *windata = window->driverdata;
-    SDL_DisplayData *dispdata = display->driverdata;
-    float ratio;  
-
-    KMSDRM_SetPendingSurfacesDestruction(_this, window);
-
-    if (fullscreen) {
-        /* Windows only have one possible size in fullscreen mode. */
-        window->w = dispdata->mode.hdisplay;
-        window->h = dispdata->mode.vdisplay;
-        windata->output_w = dispdata->mode.hdisplay;
-        windata->output_h = dispdata->mode.vdisplay;
-        windata->output_x = 0;
-
-    } else {
-        /* Get output (CRTC) size and position, for AR correction. */
-        ratio = (float)window->w / (float)window->h;
-        windata->output_w = dispdata->mode.vdisplay * ratio;
-        windata->output_h = dispdata->mode.vdisplay;
-        windata->output_x = (dispdata->mode.hdisplay - windata->output_w) / 2;
-    }
-
-    if (KMSDRM_CreateSurfaces(_this, window)) {
-        SDL_SetError("Can't recreate window surfaces on SetWindowFullscreen.");
-    }
+    KMSDRM_ReconfigureWindow(_this, window);  
 }
 void
 KMSDRM_ShowWindow(_THIS, SDL_Window * window)
