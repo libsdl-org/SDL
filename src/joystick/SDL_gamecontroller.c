@@ -202,7 +202,7 @@ static int SDL_PrivateGameControllerButton(SDL_GameController *gamecontroller, S
  * to have the right value for which, because the number of controllers in
  * the system is now one less.
  */
-static void UpdateEventsForDeviceRemoval()
+static void UpdateEventsForDeviceRemoval(int device_index)
 {
     int i, num_events;
     SDL_Event *events;
@@ -220,7 +220,19 @@ static void UpdateEventsForDeviceRemoval()
 
     num_events = SDL_PeepEvents(events, num_events, SDL_GETEVENT, SDL_CONTROLLERDEVICEADDED, SDL_CONTROLLERDEVICEADDED);
     for (i = 0; i < num_events; ++i) {
-        --events[i].cdevice.which;
+        if (events[i].cdevice.which < device_index) {
+            /* No change for index values lower than the removed device */
+        }
+        else if (events[i].cdevice.which == device_index) {
+            /* Drop this event entirely */
+            SDL_memmove(&events[i], &events[i + 1], sizeof(*events) * (num_events - (i + 1)));
+            --i;
+            --num_events;
+        }
+        else {
+            /* Fix up the device index if greater than the removed device */
+            --events[i].cdevice.which;
+        }
     }
     SDL_PeepEvents(events, num_events, SDL_ADDEVENT, 0, 0);
 
@@ -427,6 +439,7 @@ static int SDLCALL SDL_GameControllerEventWatcher(void *userdata, SDL_Event * ev
     case SDL_JOYDEVICEREMOVED:
         {
             SDL_GameController *controllerlist = SDL_gamecontrollers;
+            int device_index = 0;
             while (controllerlist) {
                 if (controllerlist->joystick->instance_id == event->jdevice.which) {
                     SDL_Event deviceevent;
@@ -437,10 +450,11 @@ static int SDLCALL SDL_GameControllerEventWatcher(void *userdata, SDL_Event * ev
                     deviceevent.cdevice.which = event->jdevice.which;
                     SDL_PushEvent(&deviceevent);
 
-                    UpdateEventsForDeviceRemoval();
+                    UpdateEventsForDeviceRemoval(device_index);
                     break;
                 }
                 controllerlist = controllerlist->next;
+                ++device_index;
             }
         }
         break;

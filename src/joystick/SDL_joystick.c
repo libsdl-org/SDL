@@ -1184,7 +1184,7 @@ void SDL_PrivateJoystickAdded(SDL_JoystickID device_instance)
  * to have the right value for which, because the number of controllers in
  * the system is now one less.
  */
-static void UpdateEventsForDeviceRemoval()
+static void UpdateEventsForDeviceRemoval(int device_index)
 {
     int i, num_events;
     SDL_Event *events;
@@ -1202,7 +1202,19 @@ static void UpdateEventsForDeviceRemoval()
 
     num_events = SDL_PeepEvents(events, num_events, SDL_GETEVENT, SDL_JOYDEVICEADDED, SDL_JOYDEVICEADDED);
     for (i = 0; i < num_events; ++i) {
-        --events[i].jdevice.which;
+        if (events[i].cdevice.which < device_index) {
+            /* No change for index values lower than the removed device */
+        }
+        else if (events[i].cdevice.which == device_index) {
+            /* Drop this event entirely */
+            SDL_memmove(&events[i], &events[i + 1], sizeof(*events) * (num_events - (i + 1)));
+            --num_events;
+            --i;
+        }
+        else {
+            /* Fix up the device index if greater than the removed device */
+            --events[i].cdevice.which;
+        }
     }
     SDL_PeepEvents(events, num_events, SDL_ADDEVENT, 0, 0);
 
@@ -1243,17 +1255,21 @@ void SDL_PrivateJoystickRemoved(SDL_JoystickID device_instance)
 {
     SDL_Joystick *joystick = NULL;
     int player_index;
+    int device_index;
 #if !SDL_EVENTS_DISABLED
     SDL_Event event;
 #endif
 
     /* Find this joystick... */
+    device_index = 0;
     for (joystick = SDL_joysticks; joystick; joystick = joystick->next) {
         if (joystick->instance_id == device_instance) {
             SDL_PrivateJoystickForceRecentering(joystick);
             joystick->attached = SDL_FALSE;
             break;
         }
+
+        ++device_index;
     }
 
 #if !SDL_EVENTS_DISABLED
@@ -1265,7 +1281,7 @@ void SDL_PrivateJoystickRemoved(SDL_JoystickID device_instance)
         SDL_PushEvent(&event);
     }
 
-    UpdateEventsForDeviceRemoval();
+    UpdateEventsForDeviceRemoval(device_index);
 #endif /* !SDL_EVENTS_DISABLED */
 
     SDL_LockJoysticks();
