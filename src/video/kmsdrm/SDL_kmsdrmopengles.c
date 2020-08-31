@@ -143,8 +143,8 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window)
     info.crtc_id = dispdata->crtc->crtc->crtc_id;
     info.fb_id = fb->fb_id;
 
-    info.src_w = window->w;
-    info.src_h = window->h;
+    info.src_w = windata->src_w;
+    info.src_h = windata->src_h;
     info.crtc_w = windata->output_w;
     info.crtc_h = windata->output_h;
     info.crtc_x = windata->output_x;
@@ -240,8 +240,8 @@ KMSDRM_GLES_SwapWindowDB(_THIS, SDL_Window * window)
     info.crtc_id = dispdata->crtc->crtc->crtc_id;
     info.fb_id = fb->fb_id;
 
-    info.src_w = window->w;
-    info.src_h = window->h;
+    info.src_w = windata->src_w;
+    info.src_h = windata->src_h;
     info.crtc_w = windata->output_w;
     info.crtc_h = windata->output_h;
     info.crtc_x = windata->output_x;

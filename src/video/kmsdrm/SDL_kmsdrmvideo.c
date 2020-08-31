@@ -652,7 +652,7 @@ KMSDRM_CreateDevice(int devindex)
         device->GL_SwapWindow = KMSDRM_GLES_SwapWindowDB;
     else
         device->GL_SwapWindow = KMSDRM_GLES_SwapWindow;
-
+    
     device->GL_DeleteContext = KMSDRM_GLES_DeleteContext;
 #endif
     device->PumpEvents = KMSDRM_PumpEvents;
@@ -815,15 +815,26 @@ KMSDRM_CreateSurfaces(_THIS, SDL_Window * window)
 {
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
     SDL_WindowData *windata = (SDL_WindowData *)window->driverdata;
-    Uint32 width = window->w;
-    Uint32 height = window->h;
-    Uint32 surface_fmt = GBM_FORMAT_ARGB8888;
-    Uint32 surface_flags = GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING;
+    SDL_DisplayData *dispdata = (SDL_DisplayData *) SDL_GetDisplayForWindow(window)->driverdata;
+    uint32_t surface_fmt = GBM_FORMAT_ARGB8888;
+    uint32_t surface_flags = GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING;
+    uint32_t width, height;
+
 #if SDL_VIDEO_OPENGL_EGL
     EGLContext egl_context;
     SDL_EGL_SetRequiredVisualId(_this, surface_fmt);
     egl_context = (EGLContext)SDL_GL_GetCurrentContext();
 #endif
+
+    if (window->flags & SDL_WINDOW_FULLSCREEN) {
+        width = dispdata->mode.hdisplay;
+        height = dispdata->mode.vdisplay;
+    }
+    else {
+        width = window->w;
+        height = window->h;
+    }
+
     if (!KMSDRM_gbm_device_is_format_supported(viddata->gbm_dev, surface_fmt, surface_flags)) {
         SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO, "GBM surface format not supported. Trying anyway.");
     }
@@ -861,16 +872,17 @@ KMSDRM_ReconfigureWindow( _THIS, SDL_Window * window) {
 
     KMSDRM_SetPendingSurfacesDestruction(_this, window);
 
-    if (window->flags & SDL_WINDOW_FULLSCREEN ) {
-        /* Windows only have one possible size in fullscreen mode. */
-        window->w = dispdata->mode.hdisplay;
-        window->h = dispdata->mode.vdisplay;
+    if (window->flags & SDL_WINDOW_FULLSCREEN) {
+        windata->src_w = dispdata->mode.hdisplay;
+        windata->src_h = dispdata->mode.vdisplay;
         windata->output_w = dispdata->mode.hdisplay;
         windata->output_h = dispdata->mode.vdisplay;
         windata->output_x = 0;
     } else {
         /* Get output (CRTC) size and position, for AR correction. */
         ratio = (float)window->w / (float)window->h;
+        windata->src_w = window->w;
+        windata->src_h = window->h;
         windata->output_w = dispdata->mode.vdisplay * ratio;
         windata->output_h = dispdata->mode.vdisplay;
         windata->output_x = (dispdata->mode.hdisplay - windata->output_w) / 2;
@@ -1339,15 +1351,16 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
     dispdata = display->driverdata;
 
     if (window->flags & SDL_WINDOW_FULLSCREEN) {
-        /* Windows only have one possible size in fullscreen mode. */
-        window->w = dispdata->mode.hdisplay;
-        window->h = dispdata->mode.vdisplay;
+        windata->src_w = dispdata->mode.hdisplay;
+        windata->src_h = dispdata->mode.vdisplay;
         windata->output_w = dispdata->mode.hdisplay;
         windata->output_h = dispdata->mode.vdisplay;
         windata->output_x = 0;
     } else {
         /* Get output (CRTC) size and position, for AR correction. */
         ratio = (float)window->w / (float)window->h;
+        windata->src_w = window->w;
+        windata->src_h = window->h;
         windata->output_w = dispdata->mode.vdisplay * ratio;
         windata->output_h = dispdata->mode.vdisplay;
         windata->output_x = (dispdata->mode.hdisplay - windata->output_w) / 2;
@@ -1455,6 +1468,7 @@ KMSDRM_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * displa
 {
     KMSDRM_ReconfigureWindow(_this, window);  
 }
+
 void
 KMSDRM_ShowWindow(_THIS, SDL_Window * window)
 {
