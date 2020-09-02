@@ -2461,6 +2461,11 @@ const char * SDL_AndroidGetExternalStoragePath(void)
     return s_AndroidExternalFilesPath;
 }
 
+SDL_bool SDL_AndroidRequestPermission(const char *permission)
+{
+    return Android_JNI_RequestPermission(permission);
+}
+
 void Android_JNI_GetManifestEnvironmentVariables(void)
 {
     if (!mActivityClass || !midGetManifestEnvironmentVariables) {
