@@ -123,6 +123,10 @@ SDL_MetalViewEventWatch(void *userdata, SDL_Event *event)
     metalLayer.drawableSize = NSSizeToCGSize(backingSize);
 }
 
+- (NSView *)hitTest:(NSPoint)point {
+    return nil;
+}
+
 @end
 
 SDL_MetalView
