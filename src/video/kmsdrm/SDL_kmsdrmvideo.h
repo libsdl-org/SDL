@@ -126,7 +126,9 @@ typedef struct SDL_WindowData
     int32_t output_h;
     int32_t output_x;
 
-    SDL_bool egl_surface_dirty;
+    /* This is for deferred eglMakeCurrent() call: we can't call it until
+       the EGL context is available, but we need the EGL surface sooner. */
+    SDL_bool egl_context_pending;
 
 } SDL_WindowData;
 
@@ -152,7 +154,7 @@ typedef struct KMSDRM_PlaneInfo
 } KMSDRM_PlaneInfo;
 
 /* Helper functions */
-int KMSDRM_CreateSurfaces(_THIS, SDL_Window * window);
+int KMSDRM_CreateEGLSurface(_THIS, SDL_Window * window);
 KMSDRM_FBInfo *KMSDRM_FBFromBO(_THIS, struct gbm_bo *bo);
 
 /* Atomic functions that are used from SDL_kmsdrmopengles.c and SDL_kmsdrmmouse.c */

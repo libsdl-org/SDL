@@ -760,98 +760,18 @@ void
 KMSDRM_DestroySurfaces(_THIS, SDL_Window *window)
 {
     SDL_WindowData *windata = (SDL_WindowData *) window->driverdata;
-
-    /* Destroy the GBM surface and buffers. */
-    if (windata->bo) {
-        KMSDRM_gbm_surface_release_buffer(windata->gs, windata->bo);
-        windata->bo = NULL;
-    }
-
-    if (windata->next_bo) {
-	KMSDRM_gbm_surface_release_buffer(windata->gs, windata->next_bo);
-	windata->next_bo = NULL;
-    }
-
-    /* Destroy the EGL surface. */
-#if SDL_VIDEO_OPENGL_EGL
-    SDL_EGL_MakeCurrent(_this, EGL_NO_SURFACE, EGL_NO_CONTEXT);
-
-    if (windata->egl_surface != EGL_NO_SURFACE) {
-        SDL_EGL_DestroySurface(_this, windata->egl_surface);
-        windata->egl_surface = EGL_NO_SURFACE;
-    }   
-#endif
-
-    if (windata->gs) {
-	KMSDRM_gbm_surface_destroy(windata->gs);
-	windata->gs = NULL;
-    }
-}
-
-int
-KMSDRM_CreateSurfaces(_THIS, SDL_Window * window)
-{
-    SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
-    SDL_WindowData *windata = (SDL_WindowData *)window->driverdata;
-    SDL_DisplayData *dispdata = (SDL_DisplayData *) SDL_GetDisplayForWindow(window)->driverdata;
-    uint32_t surface_fmt = GBM_FORMAT_ARGB8888;
-    uint32_t surface_flags = GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING;
-    uint32_t width, height;
-
-#if SDL_VIDEO_OPENGL_EGL
-    EGLContext egl_context;
-    SDL_EGL_SetRequiredVisualId(_this, surface_fmt);
-    egl_context = (EGLContext)SDL_GL_GetCurrentContext();
-#endif
-
-    /* Destroy the surfaces and buffers before creating the new ones. */
-    KMSDRM_DestroySurfaces(_this, window);
-
-    if (window->flags & SDL_WINDOW_FULLSCREEN) {
-        width = dispdata->mode.hdisplay;
-        height = dispdata->mode.vdisplay;
-    }
-    else {
-        width = window->w;
-        height = window->h;
-    }
-
-    if (!KMSDRM_gbm_device_is_format_supported(viddata->gbm_dev, surface_fmt, surface_flags)) {
-        SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO, "GBM surface format not supported. Trying anyway.");
-    }
-
-    windata->gs = KMSDRM_gbm_surface_create(viddata->gbm_dev, width, height, surface_fmt, surface_flags);
-
-    if (!windata->gs) {
-        return SDL_SetError("Could not create GBM surface");
-    }
-
-#if SDL_VIDEO_OPENGL_EGL
-    windata->egl_surface = SDL_EGL_CreateSurface(_this, (NativeWindowType)windata->gs);
-
-    if (windata->egl_surface == EGL_NO_SURFACE) {
-        return SDL_SetError("Could not create EGL window surface");
-    }
-
-    SDL_EGL_MakeCurrent(_this, windata->egl_surface, egl_context);
-
-    windata->egl_surface_dirty = 0;
-#endif
-
-    return 0;
-}
-
-void
-KMSDRM_DestroyWindow(_THIS, SDL_Window *window)
-{
-    SDL_WindowData *windata = (SDL_WindowData *) window->driverdata;
     SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
     KMSDRM_PlaneInfo plane_info = {0};
 
-    SDL_VideoData *viddata;
-    if (!windata) {
-        return;
-    }
+#if SDL_VIDEO_OPENGL_EGL
+    EGLContext egl_context;
+#endif
+
+    /********************************************************************/
+    /* BLOCK 1: protect the PRIMARY PLANE before destroying the buffers */
+    /* it's using.                                                      */
+    /********************************************************************/
+
 #if AMDGPU_COMPAT
     /************************************************************************/
     /*  We can't do the usual CRTC_ID+FB_ID to 0 with AMDGPU, because       */
@@ -901,9 +821,110 @@ KMSDRM_DestroyWindow(_THIS, SDL_Window *window)
 #endif
 
     /****************************************************************************/
-    /* We can finally destroy the window GBM and EGL surfaces, and GBM buffers, */
-    /* now that the buffers are not being used by the PRIMARY PLANE anymore.    */
+    /* BLOCK 2: We can finally destroy the window GBM and EGL surfaces, and     */
+    /* GBM buffers now that the buffers are not being used by the PRIMARY PLANE */
+    /* anymore.                                                                 */
     /****************************************************************************/
+
+    /* Destroy the GBM surface and buffers. */
+    if (windata->bo) {
+        KMSDRM_gbm_surface_release_buffer(windata->gs, windata->bo);
+        windata->bo = NULL;
+    }
+
+    if (windata->next_bo) {
+	KMSDRM_gbm_surface_release_buffer(windata->gs, windata->next_bo);
+	windata->next_bo = NULL;
+    }
+
+    /* Destroy the EGL surface. */
+#if SDL_VIDEO_OPENGL_EGL
+    /***************************************************************************/
+    /* In this eglMakeCurrent() call, we disable the current EGL surface       */
+    /* because we're going to destroy it, but DON'T disable the EGL context,   */
+    /* because it won't be enabled again until the programs ask for a pageflip */
+    /* so we get to SwapWindow().                                              */
+    /* If we disable the context until then and a program tries to retrieve    */
+    /* the context version info before calling for a pageflip, the program     */
+    /* will get wrong info and we will be in trouble.                          */
+    /***************************************************************************/
+    egl_context = (EGLContext)SDL_GL_GetCurrentContext();
+    SDL_EGL_MakeCurrent(_this, EGL_NO_SURFACE, egl_context);
+
+    if (windata->egl_surface != EGL_NO_SURFACE) {
+        SDL_EGL_DestroySurface(_this, windata->egl_surface);
+        windata->egl_surface = EGL_NO_SURFACE;
+    }   
+#endif
+
+    if (windata->gs) {
+	KMSDRM_gbm_surface_destroy(windata->gs);
+	windata->gs = NULL;
+    }
+}
+
+int
+KMSDRM_CreateSurfaces(_THIS, SDL_Window * window)
+{
+    SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
+    SDL_WindowData *windata = (SDL_WindowData *)window->driverdata;
+    SDL_DisplayData *dispdata = (SDL_DisplayData *) SDL_GetDisplayForWindow(window)->driverdata;
+    uint32_t surface_fmt = GBM_FORMAT_ARGB8888;
+    uint32_t surface_flags = GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING;
+    uint32_t width, height;
+
+    /* Destroy the surfaces and buffers before creating the new ones. */
+    KMSDRM_DestroySurfaces(_this, window);
+
+    if (window->flags & SDL_WINDOW_FULLSCREEN) {
+        width = dispdata->mode.hdisplay;
+        height = dispdata->mode.vdisplay;
+    }
+    else {
+        width = window->w;
+        height = window->h;
+    }
+
+    if (!KMSDRM_gbm_device_is_format_supported(viddata->gbm_dev, surface_fmt, surface_flags)) {
+        SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO, "GBM surface format not supported. Trying anyway.");
+    }
+
+    windata->gs = KMSDRM_gbm_surface_create(viddata->gbm_dev, width, height, surface_fmt, surface_flags);
+
+    if (!windata->gs) {
+        return SDL_SetError("Could not create GBM surface");
+    }
+
+#if SDL_VIDEO_OPENGL_EGL
+    /* We can't get the EGL context yet because SDL_CreateRenderer has not been called,
+       but we need an EGL surface NOW, or GL won't be able to render into any surface
+       and we won't see the first frame. */ 
+    SDL_EGL_SetRequiredVisualId(_this, surface_fmt);
+    windata->egl_surface = SDL_EGL_CreateSurface(_this, (NativeWindowType)windata->gs);
+
+    if (windata->egl_surface == EGL_NO_SURFACE) {
+        return SDL_SetError("Could not create EGL window surface");
+    }
+
+    /* Take note that we're still missing the EGL contex,
+       so we can get it in SwapWindow, when SDL_CreateRenderer()
+       has already been called. */
+    windata->egl_context_pending = SDL_TRUE;
+#endif
+
+    return 0;
+}
+
+void
+KMSDRM_DestroyWindow(_THIS, SDL_Window *window)
+{
+    SDL_WindowData *windata = (SDL_WindowData *) window->driverdata;
+    SDL_VideoData *viddata;
+
+    if (!windata) {
+        return;
+    }
+
     KMSDRM_DestroySurfaces(_this, window);
 
     /********************************************/
@@ -957,19 +978,9 @@ KMSDRM_ReconfigureWindow( _THIS, SDL_Window * window) {
         windata->output_x = (dispdata->mode.hdisplay - windata->output_w) / 2;
     }
 
-#if SDL_VIDEO_OPENGL_EGL
-    /* Can't recreate EGL surfaces right now, need to wait until SwapWindow
-       so the EGL context is available. That's because SDL_CreateRenderer(),
-       where the EGL context is created, is always called after SDL_CreateWindow()
-       since SDL_CreateRenderer() takes a window as parameter.
-       On window destruction, SDL_DestroyRenderer() is called before SDL_DestroWindow(),
-       so on SDL_DestroyWindow() the EGL context isn't available anymore. */
-    windata->egl_surface_dirty = SDL_TRUE;
-#else
     if (KMSDRM_CreateSurfaces(_this, window)) {
 	return -1; 
     }   
-#endif
 
     return 0;
 }

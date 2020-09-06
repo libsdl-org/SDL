@@ -82,12 +82,16 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window)
     KMSDRM_FBInfo *fb;
     KMSDRM_PlaneInfo info = {0};
 
-    /* Recreate the GBM / EGL surfaces if the window has been reconfigured. */
-    if (windata->egl_surface_dirty) {
-        if (KMSDRM_CreateSurfaces(_this, window)) {
-	    return SDL_SetError("Failed to do pending surfaces creation");
-        }
+    /* Get the EGL context, now that SDL_CreateRenderer() has already been called,
+       and call eglMakeCurrent() on it and the EGL surface. */
+#if SDL_VIDEO_OPENGL_EGL
+    if (windata->egl_context_pending) {
+        EGLContext egl_context;
+        egl_context = (EGLContext)SDL_GL_GetCurrentContext();
+        SDL_EGL_MakeCurrent(_this, windata->egl_surface, egl_context);
+        windata->egl_context_pending = SDL_FALSE;
     }   
+#endif
 
     /*************************************************************************/
     /* Block for telling KMS to wait for GPU rendering of the current frame  */
@@ -210,12 +214,16 @@ KMSDRM_GLES_SwapWindowDB(_THIS, SDL_Window * window)
     KMSDRM_FBInfo *fb;
     KMSDRM_PlaneInfo info = {0};
 
-    /* Recreate the GBM / EGL surfaces if the window has been reconfigured. */
-    if (windata->egl_surface_dirty) {
-        if (KMSDRM_CreateSurfaces(_this, window)) {
-	    return SDL_SetError("Failed to do pending surfaces creation");
-        }
+    /* Get the EGL context, now that SDL_CreateRenderer() has already been called,
+       and call eglMakeCurrent() on it and the EGL surface. */
+#if SDL_VIDEO_OPENGL_EGL
+    if (windata->egl_context_pending) {
+        EGLContext egl_context;
+        egl_context = (EGLContext)SDL_GL_GetCurrentContext();
+        SDL_EGL_MakeCurrent(_this, windata->egl_surface, egl_context);
+        windata->egl_context_pending = SDL_FALSE;
     }   
+#endif
 
     /****************************************************************************************************/
     /* In double-buffer mode, atomic commit will always be synchronous/blocking (ie: won't return until */
