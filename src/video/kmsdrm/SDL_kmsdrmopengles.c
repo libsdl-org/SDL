@@ -83,22 +83,10 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window)
     KMSDRM_PlaneInfo info = {0};
     int ret;
 
-    /* Do we have a pending old surfaces destruction? */
-    if (dispdata->destroy_surfaces_pending == SDL_TRUE) {
-
-        /* Take note that we have not pending old surfaces destruction.
-           Do it ASAP, DON'T GO into SwapWindowDB() with it enabled or
-           we will enter recursivity! */
-        dispdata->destroy_surfaces_pending = SDL_FALSE;
-
-        /* Do blocking pageflip, to be sure it's atomic commit is completed
-           before destroying the old surfaces and buffers. */
-        KMSDRM_GLES_SwapWindowDB(_this, window);
-
-        KMSDRM_DestroyOldSurfaces(_this);
-
-        return 0;
-    }
+    /* Recreate the GBM / EGL surfaces if the window has been reconfigured. */
+    if (windata->egl_surface_dirty) {
+        KMSDRM_CreateSurfaces(_this, window);
+    }   
 
     /*************************************************************************/
     /* Block for telling KMS to wait for GPU rendering of the current frame  */
@@ -112,7 +100,9 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window)
 
     /* Mark, at EGL level, the buffer that we want to become the new front buffer.
        However, it won't really happen until we request a pageflip at the KMS level and it completes. */
-    _this->egl_data->eglSwapBuffers(_this->egl_data->egl_display, windata->egl_surface);
+    if (! _this->egl_data->eglSwapBuffers(_this->egl_data->egl_display, windata->egl_surface)) {
+        return SDL_SetError("Failed to swap EGL buffers");
+    }
 
     /* It's safe to get the gpu_fence FD now, because eglSwapBuffers flushes it down the cmdstream, 
        so it's now in place in the cmdstream.
@@ -153,6 +143,15 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window)
      if (ret) {
         return SDL_SetError("Failed to request prop changes for setting plane buffer and CRTC");
     }
+
+    /* Re-connect the connector to the CRTC, and activate the CRTC again.
+       Just in case we come here after a DestroySurfaces() call. */
+    if (add_connector_property(dispdata->atomic_req, dispdata->connector , "CRTC_ID",
+            dispdata->crtc->crtc->crtc_id) < 0)
+        SDL_SetError("Failed to set CONNECTOR prop CRTC_ID to zero before buffer destruction");
+
+    if (add_crtc_property(dispdata->atomic_req, dispdata->crtc , "ACTIVE", 1) < 0)
+        SDL_SetError("Failed to set CRTC prop ACTIVE to zero before buffer destruction");
 
     /* Set the IN_FENCE and OUT_FENCE props only here, since this is the only place
        on which we're interested in managing who and when should access the buffers
@@ -213,6 +212,11 @@ KMSDRM_GLES_SwapWindowDB(_THIS, SDL_Window * window)
     KMSDRM_PlaneInfo info = {0};
     int ret;
 
+    /* Recreate the GBM / EGL surfaces if the window has been reconfigured. */
+    if (windata->egl_surface_dirty) {
+        KMSDRM_CreateSurfaces(_this, window);
+    }
+
     /****************************************************************************************************/
     /* In double-buffer mode, atomic commit will always be synchronous/blocking (ie: won't return until */
     /* the requested changes are really done).                                                          */
@@ -222,7 +226,10 @@ KMSDRM_GLES_SwapWindowDB(_THIS, SDL_Window * window)
 
     /* Mark, at EGL level, the buffer that we want to become the new front buffer.
        However, it won't really happen until we request a pageflip at the KMS level and it completes. */
-    _this->egl_data->eglSwapBuffers(_this->egl_data->egl_display, windata->egl_surface);
+    if (! _this->egl_data->eglSwapBuffers(_this->egl_data->egl_display, windata->egl_surface)) {
+        SDL_EGL_SetError("Failed to swap EGL buffers", "eglSwapBuffers");
+        printf("SwapWindow() failed: %s\n", SDL_GetError());
+    }
 
     /* Lock the buffer that is marked by eglSwapBuffers() to become the next front buffer (so it can not
        be chosen by EGL as back buffer to draw on), and get a handle to it to request the pageflip on it. */
@@ -247,9 +254,18 @@ KMSDRM_GLES_SwapWindowDB(_THIS, SDL_Window * window)
     info.crtc_x = windata->output_x;
 
     ret = drm_atomic_set_plane_props(&info);
-     if (ret) {
+    if (ret) {
         return SDL_SetError("Failed to request prop changes for setting plane buffer and CRTC");
     }
+
+    /* Re-connect the connector to the CRTC, and activate the CRTC again.
+       Just in case we come here after a DestroySurfaces() call. */
+    if (add_connector_property(dispdata->atomic_req, dispdata->connector , "CRTC_ID",
+            dispdata->crtc->crtc->crtc_id) < 0)
+        SDL_SetError("Failed to set CONNECTOR prop CRTC_ID to zero before buffer destruction");
+
+    if (add_crtc_property(dispdata->atomic_req, dispdata->crtc , "ACTIVE", 1) < 0)
+        SDL_SetError("Failed to set CRTC prop ACTIVE to zero before buffer destruction");
 
     /* Issue the one and only atomic commit where all changes will be requested!. 
        Blocking for double buffering: won't return until completed. */
@@ -266,14 +282,6 @@ KMSDRM_GLES_SwapWindowDB(_THIS, SDL_Window * window)
 
     /* Take note of current front buffer, so we can free it next time we come here. */
     windata->bo = windata->next_bo;
-
-    /* Do we have a pending old surfaces destruction? */
-    if (dispdata->destroy_surfaces_pending == SDL_TRUE) {
-        /* We have just done a blocking pageflip to the new buffers already,
-           so just do what you are here for... */
-        KMSDRM_DestroyOldSurfaces(_this);
-        dispdata->destroy_surfaces_pending = SDL_FALSE;
-    }
 
     return ret;
 }

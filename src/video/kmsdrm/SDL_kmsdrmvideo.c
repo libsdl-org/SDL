@@ -49,6 +49,8 @@
 
 #define KMSDRM_DRI_PATH "/dev/dri/"
 
+#define AMDGPU_COMPAT 1
+
 static int
 check_modesetting(int devindex)
 {
@@ -150,7 +152,7 @@ get_driindex(void)
 
 #define VOID2U64(x) ((uint64_t)(unsigned long)(x))
 
-static int add_connector_property(drmModeAtomicReq *req, struct connector *connector,
+int add_connector_property(drmModeAtomicReq *req, struct connector *connector,
                                      const char *name, uint64_t value)
 {
     unsigned int i;
@@ -450,7 +452,8 @@ free_plane(struct plane **plane)
 /**********************************************************************************/
 /* The most important ATOMIC fn of the backend.                                   */
 /* A PLANE reads a BUFFER, and a CRTC reads a PLANE and sends it's contents       */
-/*   over to a CONNECTOR->ENCODER system.                                         */
+/*   over to a CONNECTOR->ENCODER system (several CONNECTORS can be connected     */
+/*   to the same PLANE).                                                          */
 /*   Think of a plane as a "frame" sorrounding a picture, where the "picture"     */
 /*   is the buffer, and we move the "frame" from  a picture to another,           */ 
 /*   and the one that has the "frame" is the one sent over to the screen          */
@@ -642,7 +645,7 @@ KMSDRM_CreateDevice(int devindex)
 #if SDL_VIDEO_OPENGL_EGL
     device->GL_LoadLibrary = KMSDRM_GLES_LoadLibrary;
     device->GL_GetProcAddress = KMSDRM_GLES_GetProcAddress;
-    //device->GL_UnloadLibrary = KMSDRM_GLES_UnloadLibrary;
+    device->GL_UnloadLibrary = KMSDRM_GLES_UnloadLibrary;
     device->GL_CreateContext = KMSDRM_GLES_CreateContext;
     device->GL_MakeCurrent = KMSDRM_GLES_MakeCurrent;
     device->GL_SetSwapInterval = KMSDRM_GLES_SetSwapInterval;
@@ -749,64 +752,39 @@ KMSDRM_FBFromBO(_THIS, struct gbm_bo *bo)
 /* _this is a SDL_VideoDevice *                                              */
 /*****************************************************************************/
 
-/* Just backup the GBM/EGL surfaces pinters, and buffers pointers,
-   because we are not destroying them until we get a buffer of the new GBM
-   surface so we can set the FB_ID of the PRIMARY plane to it.
-   That will happen in SwapWindow(), when we call lock_front_buffer()
-   on the new GBM surface, so that's where we can destroy the old buffers.
-   THE IDEA IS THAT THE PRIMARY PLANE IS NEVER LEFT WITHOUT A VALID BUFFER
-   TO READ, AND ONLY SET IT'S FB_ID/CRTC_ID PROPS TO 0 WHEN PROGRAM IS QUITTING.*/
-static void
-KMSDRM_SetPendingSurfacesDestruction(_THIS, SDL_Window * window)
-{
-    SDL_WindowData *windata = (SDL_WindowData *)window->driverdata;
-    SDL_DisplayData *dispdata = (SDL_DisplayData *) SDL_GetDisplayForWindow(window)->driverdata;
-
-    /*******************************************************************************/
-    /* Backup the pointers to the GBM/EGL surfaces and buffers we want to destroy, */
-    /* so we can destroy them later, even after destroying the SDL_Window.         */
-    /* DO NOT store the old ponters in windata, because it's freed when the window */
-    /* is destroyed.                                                               */
-    /*******************************************************************************/
-
-    dispdata->old_gs = windata->gs;
-    dispdata->old_bo = windata->bo;
-    dispdata->old_next_bo = windata->next_bo;
-    dispdata->old_egl_surface = windata->egl_surface;
-
-    /* Take note that we have yet to destroy the old surfaces.
-       We will do so in SwapWindow(), once we have the new
-       surfaces and buffers available for the PRIMARY plane. */
-    dispdata->destroy_surfaces_pending = SDL_TRUE;
-}
-
+/* Destroy the window surfaces and buffers. Have the PRIMARY PLANE
+   disconnected from these buffers before doing so, or have the PRIMARY PLANE
+   reading the original FB where the TTY lives, before doing this, or CRTC will
+   be disconnected by the kernel. */
 void
-KMSDRM_DestroyOldSurfaces(_THIS)
+KMSDRM_DestroySurfaces(_THIS, SDL_Window *window)
 {
-    SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
+    SDL_WindowData *windata = (SDL_WindowData *) window->driverdata;
 
-#if SDL_VIDEO_OPENGL_EGL
-    /* Destroy the old EGL surface. */
-    if (dispdata->old_egl_surface != EGL_NO_SURFACE) {
-        SDL_EGL_DestroySurface(_this, dispdata->old_egl_surface);
-        dispdata->old_egl_surface = EGL_NO_SURFACE;
+    /* Destroy the GBM surface and buffers. */
+    if (windata->bo) {
+        KMSDRM_gbm_surface_release_buffer(windata->gs, windata->bo);
+        windata->bo = NULL;
     }
+
+    if (windata->next_bo) {
+	KMSDRM_gbm_surface_release_buffer(windata->gs, windata->next_bo);
+	windata->next_bo = NULL;
+    }
+
+    /* Destroy the EGL surface. */
+#if SDL_VIDEO_OPENGL_EGL
+    SDL_EGL_MakeCurrent(_this, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+
+    if (windata->egl_surface != EGL_NO_SURFACE) {
+        SDL_EGL_DestroySurface(_this, windata->egl_surface);
+        windata->egl_surface = EGL_NO_SURFACE;
+    }   
 #endif
 
-    /* Destroy the old GBM surface and buffers. */
-    if (dispdata->old_bo) {
-        KMSDRM_gbm_surface_release_buffer(dispdata->old_gs, dispdata->old_bo);
-        dispdata->old_bo = NULL;
-    }
-
-    if (dispdata->old_next_bo) {
-	KMSDRM_gbm_surface_release_buffer(dispdata->old_gs, dispdata->old_next_bo);
-	dispdata->old_next_bo = NULL;
-    }
-
-    if (dispdata->old_gs) {
-	KMSDRM_gbm_surface_destroy(dispdata->old_gs);
-	dispdata->old_gs = NULL;
+    if (windata->gs) {
+	KMSDRM_gbm_surface_destroy(windata->gs);
+	windata->gs = NULL;
     }
 }
 
@@ -825,6 +803,9 @@ KMSDRM_CreateSurfaces(_THIS, SDL_Window * window)
     SDL_EGL_SetRequiredVisualId(_this, surface_fmt);
     egl_context = (EGLContext)SDL_GL_GetCurrentContext();
 #endif
+
+    /* Destroy the surfaces and buffers before creating the new ones. */
+    KMSDRM_DestroySurfaces(_this, window);
 
     if (window->flags & SDL_WINDOW_FULLSCREEN) {
         width = dispdata->mode.hdisplay;
@@ -854,9 +835,99 @@ KMSDRM_CreateSurfaces(_THIS, SDL_Window * window)
 
     SDL_EGL_MakeCurrent(_this, windata->egl_surface, egl_context);
 
+    windata->egl_surface_dirty = 0;
 #endif
 
     return 0;
+}
+
+void
+KMSDRM_DestroyWindow(_THIS, SDL_Window *window)
+{
+    SDL_WindowData *windata = (SDL_WindowData *) window->driverdata;
+    SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
+    KMSDRM_PlaneInfo plane_info = {0};
+
+    SDL_VideoData *viddata;
+    if (!windata) {
+        return;
+    }
+#if AMDGPU_COMPAT
+    /************************************************************************/
+    /*  We can't do the usual CRTC_ID+FB_ID to 0 with AMDGPU, because       */
+    /*  the driver never recovers from the CONNECTOR and CRTC disconnection.*/
+    /*  The with this solution is that crtc->buffer_id is not guaranteed    */
+    /*  to be there...                                                      */
+    /************************************************************************/
+    plane_info.plane = dispdata->display_plane;
+    plane_info.crtc_id = dispdata->crtc->crtc->crtc_id;
+    plane_info.fb_id = dispdata->crtc->crtc->buffer_id;
+    plane_info.src_w = dispdata->mode.hdisplay;
+    plane_info.src_h = dispdata->mode.vdisplay;
+    plane_info.crtc_w = dispdata->mode.hdisplay;
+    plane_info.crtc_h = dispdata->mode.vdisplay;
+
+    drm_atomic_set_plane_props(&plane_info);
+
+    /* Issue blocking atomic commit. */    
+    if (drm_atomic_commit(_this, SDL_TRUE)) {
+        SDL_SetError("Failed to issue atomic commit on DestroyWindow().");
+    }
+#else
+    /*********************************************************************************/
+    /* Disconnect the CONNECTOR from the CRTC (several connectors can read a CRTC),  */
+    /* deactivate the CRTC, and set the PRIMARY PLANE props CRTC_ID and FB_ID to 0.  */
+    /* We have to do this before setting the PLANE CRTC_ID and FB_ID to 0 because    */
+    /* there can be no active CRTC without an active PLANE.                          */
+    /* We can leave all like this if we are exiting the program after the window     */
+    /* destruction, or things will be re-connected again on SwapWindow(), if needed. */
+    /*********************************************************************************/
+    if (add_connector_property(dispdata->atomic_req, dispdata->connector , "CRTC_ID", 0) < 0)
+        SDL_SetError("Failed to set CONNECTOR prop CRTC_ID to zero before buffer destruction");
+
+    if (add_crtc_property(dispdata->atomic_req, dispdata->crtc , "ACTIVE", 0) < 0)
+        SDL_SetError("Failed to set CRTC prop ACTIVE to zero before buffer destruction");
+
+    /* Since we initialize plane_info to all zeros,  ALL PRIMARY PLANE props are set to 0 with this,
+       including FB_ID and CRTC_ID. Not all drivers like FB_ID and CRTC_ID to 0 yet. */
+    plane_info.plane = dispdata->display_plane;
+
+    drm_atomic_set_plane_props(&plane_info);
+
+    /* Issue blocking atomic commit. */    
+    if (drm_atomic_commit(_this, SDL_TRUE)) {
+        SDL_SetError("Failed to issue atomic commit on window surfaces and buffers destruction.");
+    }
+#endif
+
+    /****************************************************************************/
+    /* We can finally destroy the window GBM and EGL surfaces, and GBM buffers, */
+    /* now that the buffers are not being used by the PRIMARY PLANE anymore.    */
+    /****************************************************************************/
+    KMSDRM_DestroySurfaces(_this, window);
+
+    /********************************************/
+    /* Remove from the internal SDL window list */
+    /********************************************/
+    viddata = windata->viddata;
+
+    for (unsigned int i = 0; i < viddata->num_windows; i++) {
+        if (viddata->windows[i] == window) {
+            viddata->num_windows--;
+
+            for (unsigned int j = i; j < viddata->num_windows; j++) {
+                viddata->windows[j] = viddata->windows[j + 1];
+            }
+
+            break;
+        }
+    }
+
+    /*********************************************************************/
+    /* Free the window driverdata. Bye bye, surface and buffer pointers! */
+    /*********************************************************************/
+    window->driverdata = NULL;
+    SDL_free(windata);
 }
 
 /*****************************************************************************/
@@ -864,13 +935,11 @@ KMSDRM_CreateSurfaces(_THIS, SDL_Window * window)
 /* without destroying the window itself.                                     */
 /* To be used by SetWindowSize() and SetWindowFullscreen().                  */
 /*****************************************************************************/
-static void
+static int
 KMSDRM_ReconfigureWindow( _THIS, SDL_Window * window) {
     SDL_WindowData *windata = window->driverdata;
     SDL_DisplayData *dispdata = (SDL_DisplayData *) SDL_GetDisplayForWindow(window)->driverdata;
     float ratio;  
-
-    KMSDRM_SetPendingSurfacesDestruction(_this, window);
 
     if (window->flags & SDL_WINDOW_FULLSCREEN) {
         windata->src_w = dispdata->mode.hdisplay;
@@ -888,9 +957,21 @@ KMSDRM_ReconfigureWindow( _THIS, SDL_Window * window) {
         windata->output_x = (dispdata->mode.hdisplay - windata->output_w) / 2;
     }
 
+#if SDL_VIDEO_OPENGL_EGL
+    /* Can't recreate EGL surfaces right now, need to wait until SwapWindow
+       so the EGL context is available. That's because SDL_CreateRenderer(),
+       where the EGL context is created, is always called after SDL_CreateWindow()
+       since SDL_CreateRenderer() takes a window as parameter.
+       On window destruction, SDL_DestroyRenderer() is called before SDL_DestroWindow(),
+       so on SDL_DestroyWindow() the EGL context isn't available anymore. */
+    windata->egl_surface_dirty = SDL_TRUE;
+#else
     if (KMSDRM_CreateSurfaces(_this, window)) {
-        SDL_SetError("Can't recreate surfaces on window reconfiguration.");
-    }
+	return -1; 
+    }   
+#endif
+
+    return 0;
 }
 
 int
@@ -914,7 +995,6 @@ KMSDRM_VideoInit(_THIS)
     dispdata->kms_fence = NULL;
     dispdata->gpu_fence = NULL;
     dispdata->kms_out_fence_fd = -1;
-    dispdata->kms_in_fence_fd  = -1;
 
     if (!dispdata) {
         return SDL_OutOfMemory();
@@ -1168,72 +1248,13 @@ KMSDRM_VideoQuit(_THIS)
 {
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
     SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
-    KMSDRM_PlaneInfo plane_info = {0};
 
-    /*******************************************************************************/
-    /* BLOCK 1                                                                     */
-    /* Clear Old GBM surface and KMS buffers.                                      */
-    /* We have to set the FB_ID and CRTC_ID props of the PRIMARY PLANE to ZERO     */
-    /* before destroying the GBM buffers it's reading (SDL internals have already  */
-    /* run the DestroyWindow()->SetPendingSurfacesDestruction()() sequence,        */
-    /* so we have pending the destruction of the GBM/EGL surfaces and GBM buffers).*/
-    /* But there can not be an ACTIVE CRTC without a PLANE, so we also have to     */
-    /* DEACTIVATE the CRTC, and dettach the CONNECTORs from the CRTC, all in the   */
-    /* same atomic commit in which we zero the primary plane FB_ID and CRTC_ID.    */
-    /*******************************************************************************/
-
-    /* Do we have a set of changes already in the making? If not, allocate a new one. */
-    if (!dispdata->atomic_req)
-        dispdata->atomic_req = KMSDRM_drmModeAtomicAlloc();
-#define AMDGPU  /* Use this for now, for greater compatibility! */
-#ifdef AMDGPU
-
-    /* AMDGPU won't let FBCON takeover without this. The problem is
-       that crtc->buffer_id is not guaranteed to be there... */
-    plane_info.plane = dispdata->display_plane;
-    plane_info.crtc_id = dispdata->crtc->crtc->crtc_id;
-    plane_info.fb_id = dispdata->crtc->crtc->buffer_id;
-    plane_info.src_w = dispdata->mode.hdisplay;
-    plane_info.src_h = dispdata->mode.vdisplay;
-    plane_info.crtc_w = dispdata->mode.hdisplay;
-    plane_info.crtc_h = dispdata->mode.vdisplay;
-
-#else /* This is the correct way, but wait until more chips support FB_ID/CRTC_ID to 0. */
-
-    /* This is the *right* thing to do: dettach the CONNECTOR from the CRTC,
-       deactivate the CRTC, and set the FB_ID and CRTC_ID props of the PRIMARY PLANE
-       to 0. All this is needed because there can be no active CRTC with no plane.
-       All this is done in a single blocking atomic commit before destroying the buffers
-       that the PRIMARY PLANE is reading. */
-    if (add_connector_property(dispdata->atomic_req, dispdata->connector , "CRTC_ID", 0) < 0)
-        SDL_SetError("Failed to set CONNECTOR prop CRTC_ID to zero before buffer destruction");
-
-    if (add_crtc_property(dispdata->atomic_req, dispdata->crtc , "ACTIVE", 0) < 0)
-        SDL_SetError("Failed to set CRTC prop ACTIVE to zero before buffer destruction");
-
-    /* Since we initialize plane_info to all zeros,  ALL PRIMARY PLANE props are set to 0 with this,
-       including FB_ID and CRTC_ID. Not all drivers like FB_ID and CRTC_ID to 0, but they *should*. */
-    plane_info.plane = dispdata->display_plane;
-
-#endif
-
-    drm_atomic_set_plane_props(&plane_info);
-
-    /* ... And finally issue blocking ATOMIC commit before destroying the old buffers.
-       We get here with this destruction still pending if the program calls SDL_DestroyWindow(),
-       which in turn calls KMSDRM_SetPendingSurfacesDestruction(), and then quits instead of
-       creating a new SDL_Window, thus ending here. */
-
-    drm_atomic_commit(_this, SDL_TRUE);
-
-    if (dispdata->destroy_surfaces_pending) {
-        KMSDRM_DestroyOldSurfaces(_this);
-        dispdata->destroy_surfaces_pending = SDL_FALSE;
-    }
-
-    /************************/
-    /* BLOCK 1 ENDS.        */
-    /************************/
+    /****************************************************************/
+    /* Since the program should already have called DestroyWindow() */
+    /* on all the windows by now, there's no need to destroy the    */
+    /* GBM/EGL surfaces and buffers of the windows here: they have  */
+    /* already been destroyed.                                      */
+    /****************************************************************/
 
     /* Clear out the window list */
     SDL_free(viddata->windows);
@@ -1245,17 +1266,6 @@ KMSDRM_VideoQuit(_THIS)
     if (_this->gl_config.driver_loaded) {
         SDL_GL_UnloadLibrary();
     }
-
-    /* Since drm_atomic_commit() uses EGL functions internally, we need "_this->egl_data"
-       NOT to be freed by SDL internals before. 
-       SDL internals call device->GL_UnloadLibrary automatically earlier, so we DON'T assign
-       device->GL_UnloadLibrary to SDL_EGL_UnloadLibrary(), and that way WE DECIDE WHERE
-       we want to free "_this->egl_data" by manually calling SDL_EGL_UnloadLibrary(),
-       which happens to be here.
-    */
-
-
-    SDL_EGL_UnloadLibrary(_this);
 #endif
 
     /* Free connector */
@@ -1292,7 +1302,8 @@ KMSDRM_VideoQuit(_THIS)
     /* Free cursor plane (if still not freed) */
     free_plane(&dispdata->cursor_plane);
 
-    /* Destroy GBM device. GBM surface is destroyed by DestroyOldSurfaces(). */
+    /* Destroy GBM device. GBM surface is destroyed by DestroySurfaces(),
+       already called by DestroyWindow() when we get here. */
     if (viddata->gbm_dev) {
         KMSDRM_gbm_device_destroy(viddata->gbm_dev);
         viddata->gbm_dev = NULL;
@@ -1318,7 +1329,7 @@ int
 KMSDRM_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
 {
     /************************************************************************/
-    /* DO NOT add dynamic videomode changes. It makes NO SENSE since the    */
+    /* DO NOT add dynamic videomode changes. It makes NO SENSE, since the   */
     /* PRIMARY PLANE and the CRTC can be used to scale image, so any window */
     /* will appear fullscren with AR correction with NO extra video memory  */
     /* bandwidth usage.                                                     */
@@ -1407,37 +1418,6 @@ error:
     return -1;
 }
 
-void
-KMSDRM_DestroyWindow(_THIS, SDL_Window * window)
-{
-    SDL_WindowData *windata = (SDL_WindowData *) window->driverdata;
-    SDL_VideoData *viddata;
-    if (!windata) {
-        return;
-    }
-
-    /* Remove from the internal window list */
-    viddata = windata->viddata;
-
-    for (unsigned int i = 0; i < viddata->num_windows; i++) {
-        if (viddata->windows[i] == window) {
-            viddata->num_windows--;
-
-            for (unsigned int j = i; j < viddata->num_windows; j++) {
-                viddata->windows[j] = viddata->windows[j + 1];
-            }
-
-            break;
-        }
-    }
-
-    KMSDRM_SetPendingSurfacesDestruction(_this, window);
-
-    window->driverdata = NULL;
-
-    SDL_free(windata);
-}
-
 int
 KMSDRM_CreateWindowFrom(_THIS, SDL_Window * window, const void *data)
 {
@@ -1460,13 +1440,17 @@ KMSDRM_SetWindowPosition(_THIS, SDL_Window * window)
 void
 KMSDRM_SetWindowSize(_THIS, SDL_Window * window)
 {
-    KMSDRM_ReconfigureWindow(_this, window);  
+    if (KMSDRM_ReconfigureWindow(_this, window)) {
+        SDL_SetError("Can't reconfigure window on SetWindowSize.");
+    }
 }
 
 void
 KMSDRM_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display, SDL_bool fullscreen)
 {
-    KMSDRM_ReconfigureWindow(_this, window);  
+    if (KMSDRM_ReconfigureWindow(_this, window)) {
+        SDL_SetError("Can't reconfigure window on SetWindowFullscreen.");
+    }
 }
 
 void
