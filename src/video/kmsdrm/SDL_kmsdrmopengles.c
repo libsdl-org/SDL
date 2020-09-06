@@ -101,7 +101,7 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window)
     /* Mark, at EGL level, the buffer that we want to become the new front buffer.
        However, it won't really happen until we request a pageflip at the KMS level and it completes. */
     if (! _this->egl_data->eglSwapBuffers(_this->egl_data->egl_display, windata->egl_surface)) {
-        return SDL_SetError("Failed to swap EGL buffers");
+        SDL_EGL_SetError("Failed to swap EGL buffers", "eglSwapBuffers");
     }
 
     /* It's safe to get the gpu_fence FD now, because eglSwapBuffers flushes it down the cmdstream, 
@@ -228,7 +228,6 @@ KMSDRM_GLES_SwapWindowDB(_THIS, SDL_Window * window)
        However, it won't really happen until we request a pageflip at the KMS level and it completes. */
     if (! _this->egl_data->eglSwapBuffers(_this->egl_data->egl_display, windata->egl_surface)) {
         SDL_EGL_SetError("Failed to swap EGL buffers", "eglSwapBuffers");
-        printf("SwapWindow() failed: %s\n", SDL_GetError());
     }
 
     /* Lock the buffer that is marked by eglSwapBuffers() to become the next front buffer (so it can not
