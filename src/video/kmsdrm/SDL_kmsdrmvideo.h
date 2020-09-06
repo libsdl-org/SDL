@@ -95,13 +95,6 @@ typedef struct SDL_DisplayData
 
     EGLSyncKHR gpu_fence; /* Signaled when GPU rendering is done. */
 
-    /* Backup pointers of the GBM surfaces and buffers to be deleted after
-       SDL_Window destruction, since SDL_Window destruction causes it's 
-       driverdata pointer (windata) to be destroyed, so we have to 
-       keep them here instead. */
-    struct gbm_surface *old_gs;
-    struct gbm_bo *old_bo;
-    struct gbm_bo *old_next_bo;
 #if SDL_VIDEO_OPENGL_EGL
     EGLSurface old_egl_surface;
 #endif
@@ -133,6 +126,8 @@ typedef struct SDL_WindowData
     int32_t output_h;
     int32_t output_x;
 
+    SDL_bool egl_surface_dirty;
+
 } SDL_WindowData;
 
 typedef struct KMSDRM_FBInfo
@@ -158,7 +153,6 @@ typedef struct KMSDRM_PlaneInfo
 
 /* Helper functions */
 int KMSDRM_CreateSurfaces(_THIS, SDL_Window * window);
-void KMSDRM_DestroyOldSurfaces(_THIS);
 KMSDRM_FBInfo *KMSDRM_FBFromBO(_THIS, struct gbm_bo *bo);
 
 /* Atomic functions that are used from SDL_kmsdrmopengles.c and SDL_kmsdrmmouse.c */
@@ -169,6 +163,8 @@ int drm_atomic_commit(_THIS, SDL_bool blocking);
 int add_plane_property(drmModeAtomicReq *req, struct plane *plane,
                              const char *name, uint64_t value);
 int add_crtc_property(drmModeAtomicReq *req, struct crtc *crtc,
+                             const char *name, uint64_t value);
+int add_connector_property(drmModeAtomicReq *req, struct connector *connector,
                              const char *name, uint64_t value);
 int setup_plane(_THIS, struct plane **plane, uint32_t plane_type);
 void free_plane(struct plane **plane);

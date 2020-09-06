@@ -240,7 +240,6 @@ KMSDRM_ShowCursor(SDL_Cursor * cursor)
     SDL_DisplayData *dispdata = NULL;
     KMSDRM_FBInfo *fb;
     KMSDRM_PlaneInfo info = {0};
-    int ret;
 
     mouse = SDL_GetMouse();
     if (!mouse) {
@@ -263,11 +262,11 @@ KMSDRM_ShowCursor(SDL_Cursor * cursor)
         if (mouse->cur_cursor && mouse->cur_cursor->driverdata) {
             if (dispdata && dispdata->cursor_plane) {
                 info.plane = dispdata->cursor_plane; /* The rest of the members are zeroed. */
-                ret = drm_atomic_set_plane_props(&info); 
-                //drm_atomic_commit(display->device, SDL_TRUE);
-                if (ret) {
-                    SDL_SetError("Could not hide current cursor.");
-                    return ret;
+                if (drm_atomic_set_plane_props(&info)) {
+                    return SDL_SetError("Failed to set CURSOR PLANE props in KMSDRM_ShowCursor.");
+                }
+                if (drm_atomic_commit(display->device, SDL_TRUE)) {
+                    return SDL_SetError("Failed atomic commit in KMSDRM_ShowCursor.");
                 }
 
                 return 0;
@@ -314,12 +313,12 @@ KMSDRM_ShowCursor(SDL_Cursor * cursor)
     info.crtc_w = curdata->w;
     info.crtc_h = curdata->h; 
 
-    ret = drm_atomic_set_plane_props(&info);
-    //drm_atomic_commit(display->device, SDL_TRUE);
+    if (drm_atomic_set_plane_props(&info)) {
+        return SDL_SetError("Failed to set CURSOR PLANE props in KMSDRM_ShowCursor.");
+    }
 
-    if (ret) {
-        SDL_SetError("KMSDRM_ShowCursor failed.");
-        return ret;
+    if (drm_atomic_commit(display->device, SDL_TRUE)) {
+        return SDL_SetError("Failed atomic commit in KMSDRM_ShowCursor.");
     }
 
     return 0;
@@ -380,15 +379,10 @@ KMSDRM_WarpMouseGlobal(int x, int y)
         /* And now update the cursor graphic position on screen. */
         curdata = (KMSDRM_CursorData *) mouse->cur_cursor->driverdata;
         if (curdata->bo) {
-	    int ret;
 
-            ret = drm_atomic_movecursor(curdata, x, y);
-
-	    if (ret) {
-		SDL_SetError("drm_atomic_movecursor() failed.");
+	    if (drm_atomic_movecursor(curdata, x, y)) {
+		return SDL_SetError("drm_atomic_movecursor() failed.");
 	    }
-
-	    return ret;
 
         } else {
             return SDL_SetError("Cursor not initialized properly.");
@@ -438,7 +432,6 @@ KMSDRM_MoveCursor(SDL_Cursor * cursor)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
     KMSDRM_CursorData *curdata;
-    int ret;
 
     /* We must NOT call SDL_SendMouseMotion() here or we will enter recursivity!
        That's why we move the cursor graphic ONLY. */
@@ -449,9 +442,8 @@ KMSDRM_MoveCursor(SDL_Cursor * cursor)
            cursor won't move in these situations. We could do an atomic_commit() for each
            cursor movement request, but it cripples the movement to 30FPS, so a future solution
            is needed. SDLPoP "QUIT?" menu is an example of this situation. */
-        ret = drm_atomic_movecursor(curdata, mouse->x, mouse->y);
 
-	if (ret) {
+	if (drm_atomic_movecursor(curdata, mouse->x, mouse->y)) {
 	    SDL_SetError("drm_atomic_movecursor() failed.");
 	}
     }
