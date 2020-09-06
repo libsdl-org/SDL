@@ -1338,12 +1338,13 @@ KMSDRM_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
 }
 #endif
 
+#if 1
 /* We are NOT really changing the physical display mode, but using
 the PRIMARY PLANE and CRTC to scale as we please. But we need that SDL
 has knowledge of the video modes we are going to use for fullscreen
 window sizes, even if we are faking their use. If not, SDL only considers
 the in-use video mode as available, and sets every window to that size
-before we get to CreateWindow or ReconfigureWindow. */   
+before we get to CreateWindow or ReconfigureWindow. */
 void
 KMSDRM_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
 {
@@ -1352,14 +1353,24 @@ KMSDRM_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
     SDL_DisplayMode mode;
 
     for (int i = 0; i < conn->count_modes; i++) {
+        SDL_DisplayModeData *modedata = SDL_calloc(1, sizeof(SDL_DisplayModeData));
+
+        if (modedata) {
+          modedata->mode_index = i;
+        }   
+
         mode.w = conn->modes[i].hdisplay;
         mode.h = conn->modes[i].vdisplay;
         mode.refresh_rate = conn->modes[i].vrefresh;
         mode.format = SDL_PIXELFORMAT_ARGB8888;
+        mode.driverdata = modedata;
 
-        SDL_AddDisplayMode(display, &mode);
-    }   
+        if (!SDL_AddDisplayMode(display, &mode)) {
+            SDL_free(modedata);
+        }
+    }
 }
+#endif
 
 int
 KMSDRM_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
