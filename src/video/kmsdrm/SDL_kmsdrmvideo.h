@@ -132,6 +132,11 @@ typedef struct SDL_WindowData
 
 } SDL_WindowData;
 
+typedef struct SDL_DisplayModeData
+{
+    int mode_index;
+} SDL_DisplayModeData;
+
 typedef struct KMSDRM_FBInfo
 {
     int drm_fd;         /* DRM file desc */
