@@ -1386,7 +1386,7 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
     window->driverdata = windata;
 
     if (KMSDRM_CreateSurfaces(_this, window)) {
-      goto error;
+        goto error;
     }
 
     /* Add window to the internal list of tracked windows. Note, while it may
