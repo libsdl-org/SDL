@@ -876,7 +876,7 @@ KMSDRM_CreateSurfaces(_THIS, SDL_Window * window)
     /* Destroy the surfaces and buffers before creating the new ones. */
     KMSDRM_DestroySurfaces(_this, window);
 
-    if (window->flags & SDL_WINDOW_FULLSCREEN) {
+    if ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN_DESKTOP) {
         width = dispdata->mode.hdisplay;
         height = dispdata->mode.vdisplay;
     }
@@ -962,7 +962,7 @@ KMSDRM_ReconfigureWindow( _THIS, SDL_Window * window) {
     SDL_DisplayData *dispdata = (SDL_DisplayData *) SDL_GetDisplayForWindow(window)->driverdata;
     float ratio;  
 
-    if (window->flags & SDL_WINDOW_FULLSCREEN) {
+    if ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN_DESKTOP) {
         windata->src_w = dispdata->mode.hdisplay;
         windata->src_h = dispdata->mode.vdisplay;
         windata->output_w = dispdata->mode.hdisplay;
@@ -1329,11 +1329,36 @@ KMSDRM_VideoQuit(_THIS)
 #endif
 }
 
+#if 0
 void
 KMSDRM_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
 {
     /* Only one display mode available: the current one */
     SDL_AddDisplayMode(display, &display->current_mode);
+}
+#endif
+
+/* We are NOT really changing the physical display mode, but using
+the PRIMARY PLANE and CRTC to scale as we please. But we need that SDL
+has knowledge of the video modes we are going to use for fullscreen
+window sizes, even if we are faking their use. If not, SDL only considers
+the in-use video mode as available, and sets every window to that size
+before we get to CreateWindow or ReconfigureWindow. */   
+void
+KMSDRM_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
+{
+    SDL_DisplayData *dispdata = display->driverdata;
+    drmModeConnector *conn = dispdata->connector->connector;
+    SDL_DisplayMode mode;
+
+    for (int i = 0; i < conn->count_modes; i++) {
+        mode.w = conn->modes[i].hdisplay;
+        mode.h = conn->modes[i].vdisplay;
+        mode.refresh_rate = conn->modes[i].vrefresh;
+        mode.format = SDL_PIXELFORMAT_ARGB8888;
+
+        SDL_AddDisplayMode(display, &mode);
+    }   
 }
 
 int
@@ -1372,7 +1397,7 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
     display = SDL_GetDisplayForWindow(window);
     dispdata = display->driverdata;
 
-    if (window->flags & SDL_WINDOW_FULLSCREEN) {
+    if ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN_DESKTOP) {
         windata->src_w = dispdata->mode.hdisplay;
         windata->src_h = dispdata->mode.vdisplay;
         windata->output_w = dispdata->mode.hdisplay;
