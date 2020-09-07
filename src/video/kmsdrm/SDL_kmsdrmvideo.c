@@ -50,6 +50,7 @@
 #define KMSDRM_DRI_PATH "/dev/dri/"
 
 #define AMDGPU_COMPAT 1
+#define RPI4_COMPAT 0
 
 static int
 check_modesetting(int devindex)
@@ -793,10 +794,14 @@ KMSDRM_CreateDevice(int devindex)
     device->GL_SetSwapInterval = KMSDRM_GLES_SetSwapInterval;
     device->GL_GetSwapInterval = KMSDRM_GLES_GetSwapInterval;
 
+#if RPI4_COMPAT
+    device->GL_SwapWindow = KMSDRM_GLES_SwapWindowDB;
+#else
     if (SDL_GetHintBoolean(SDL_HINT_VIDEO_DOUBLE_BUFFER, SDL_FALSE))
         device->GL_SwapWindow = KMSDRM_GLES_SwapWindowDB;
     else
         device->GL_SwapWindow = KMSDRM_GLES_SwapWindow;
+#endif
     
     device->GL_DeleteContext = KMSDRM_GLES_DeleteContext;
 #endif
@@ -1425,8 +1430,6 @@ KMSDRM_VideoQuit(_THIS)
 
 #else
 
-    /*********************************************************************************/
-   /*********************************************************************************/
     if (add_connector_property(dispdata->atomic_req, dispdata->connector , "CRTC_ID", 0) < 0)
         SDL_SetError("Failed to set CONNECTOR prop CRTC_ID to zero before buffer destruction");
 
