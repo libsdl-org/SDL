@@ -31,6 +31,7 @@
 #include <unistd.h>
 #include <xf86drm.h>
 #include <xf86drmMode.h>
+
 #include <gbm.h>
 #include <assert.h>
 #if SDL_VIDEO_OPENGL_EGL
@@ -38,10 +39,47 @@
 #include <EGL/eglext.h>
 #endif
 
-/* Driverdata pointers are void struct* used to store backend-specific variables
-   and info that supports the SDL-side structs like SDL Display Devices, SDL_Windows...
-   which need to be "supported" with backend-side info and mechanisms to work. */ 
+/* Headers related to dumb buffer creation. */
+#include <drm_fourcc.h>
+#include <sys/mman.h>
 
+/**********************/
+/* DUMB BUFFER Block. */
+/**********************/
+
+typedef struct dumb_buffer {
+      
+    /* The GEM handle for this buffer, returned by the creation ioctl. */
+    uint32_t gem_handles[4];
+
+    /* The framebuffer ID which is passed to KMS to display. */
+    uint32_t fb_id;
+
+    uint32_t format;
+    uint64_t modifier;
+
+    /* Parameters for our memory-mapped image. */
+    struct {
+	uint32_t *mem;
+	unsigned int size;
+    } dumb;
+
+    unsigned int width;
+    unsigned int height;
+    unsigned int pitches[4]; /* in bytes */
+    unsigned int offsets[4]; /* in bytes */
+
+} dumb_buffer;
+
+/***************************/
+/* DUMB BUFFER Block ends. */
+/***************************/
+
+/****************************************************************************************/
+/* Driverdata pointers are void struct* used to store backend-specific variables        */
+/* and info that supports the SDL-side structs like SDL Display Devices, SDL_Windows... */
+/* which need to be "supported" with backend-side info and mechanisms to work.          */ 
+/****************************************************************************************/
 
 typedef struct SDL_VideoData
 {
@@ -54,23 +92,23 @@ typedef struct SDL_VideoData
     unsigned int num_windows;
 } SDL_VideoData;
 
-struct plane {
-	drmModePlane *plane;
-	drmModeObjectProperties *props;
-	drmModePropertyRes **props_info;
-};
+typedef struct plane {
+    drmModePlane *plane;
+    drmModeObjectProperties *props;
+    drmModePropertyRes **props_info;
+} plane;
 
-struct crtc {
-	drmModeCrtc *crtc;
-	drmModeObjectProperties *props;
-	drmModePropertyRes **props_info;
-};
+typedef struct crtc {
+    drmModeCrtc *crtc;
+    drmModeObjectProperties *props;
+    drmModePropertyRes **props_info;
+} crtc;
 
-struct connector {
-	drmModeConnector *connector;
-	drmModeObjectProperties *props;
-	drmModePropertyRes **props_info;
-};
+typedef struct connector {
+    drmModeConnector *connector;
+    drmModeObjectProperties *props;
+    drmModePropertyRes **props_info;
+} connector;
 
 /* More general driverdata info that gives support and substance to the SDL_Display. */
 typedef struct SDL_DisplayData
@@ -82,10 +120,10 @@ typedef struct SDL_DisplayData
        that will be sent to the kernel in the one and only atomic_commit()
        call that takes place in SwapWindow(). */
     drmModeAtomicReq *atomic_req;
-    struct plane *display_plane;
-    struct plane *cursor_plane;
-    struct crtc *crtc;
-    struct connector *connector;
+    plane *display_plane;
+    plane *cursor_plane;
+    crtc *crtc;
+    connector *connector;
 
     int kms_in_fence_fd;
     int kms_out_fence_fd;
@@ -100,6 +138,9 @@ typedef struct SDL_DisplayData
 #endif
 
     SDL_bool destroy_surfaces_pending;
+
+    dumb_buffer *dumb_buffer; /* Aux dumb buffer to keep the PRIMARY PLANE
+                                 entertained with when we destroy GBM surface. */
 
 } SDL_DisplayData;
 
