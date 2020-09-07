@@ -80,7 +80,9 @@ typedef struct SDL_Surface
 
     /** information needed for surfaces requiring locks */
     int locked;                 /**< Read-only */
-    void *lock_data;            /**< Read-only */
+
+    /** list of BlitMap that hold a reference to this surface */
+    void *list_blitmap;         /**< Private */
 
     /** clipping information */
     SDL_Rect clip_rect;         /**< Read-only */

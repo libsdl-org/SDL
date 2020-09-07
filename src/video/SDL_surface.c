@@ -1328,6 +1328,8 @@ SDL_FreeSurface(SDL_Surface * surface)
     }
     SDL_InvalidateMap(surface->map);
 
+    SDL_InvalidateAllBlitMap(surface);
+
     if (--surface->refcount > 0) {
         return;
     }

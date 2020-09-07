@@ -1023,6 +1023,62 @@ SDL_AllocBlitMap(void)
     return (map);
 }
 
+
+typedef struct SDL_ListNode
+{
+    void *entry;
+    struct SDL_ListNode *next;
+} SDL_ListNode;
+
+void
+SDL_InvalidateAllBlitMap(SDL_Surface *surface)
+{
+    SDL_ListNode *l = surface->list_blitmap;
+
+    surface->list_blitmap = NULL;
+
+    while (l) {
+        SDL_ListNode *tmp = l;
+        SDL_InvalidateMap((SDL_BlitMap *)l->entry);
+        l = l->next;
+        SDL_free(tmp);
+    }
+}
+
+static void SDL_ListAdd(SDL_ListNode **head, void *ent);
+static void SDL_ListRemove(SDL_ListNode **head, void *ent);
+
+void
+SDL_ListAdd(SDL_ListNode **head, void *ent)
+{
+    SDL_ListNode *node = SDL_malloc(sizeof (*node));
+
+    if (node == NULL) {
+        SDL_OutOfMemory();
+        return;
+    }
+
+    node->entry = ent;
+    node->next = *head;
+    *head = node;
+}
+
+void
+SDL_ListRemove(SDL_ListNode **head, void *ent)
+{
+    SDL_ListNode **ptr = head;
+
+    while (*ptr) {
+        if ((*ptr)->entry == ent) {
+            SDL_ListNode *tmp = *ptr;
+            *ptr = (*ptr)->next;
+            SDL_free(tmp);
+            return;
+        }
+        ptr = &(*ptr)->next;
+    }
+}
+
 void
 SDL_InvalidateMap(SDL_BlitMap * map)
 {
@@ -1030,10 +1086,8 @@ SDL_InvalidateMap(SDL_BlitMap * map)
         return;
     }
     if (map->dst) {
-        /* Release our reference to the surface - see the note below */
-        if (--map->dst->refcount <= 0) {
-            SDL_FreeSurface(map->dst);
-        }
+        /* Un-register from the destination surface */
+        SDL_ListRemove((SDL_ListNode **)&(map->dst->list_blitmap), map);
     }
     map->dst = NULL;
     map->src_palette_version = 0;
@@ -1104,14 +1158,8 @@ SDL_MapSurface(SDL_Surface * src, SDL_Surface * dst)
     map->dst = dst;
 
     if (map->dst) {
-        /* Keep a reference to this surface so it doesn't get deleted
-           while we're still pointing at it.
-
-           A better method would be for the destination surface to keep
-           track of surfaces that are mapped to it and automatically
-           invalidate them when it is freed, but this will do for now.
-        */
-        ++map->dst->refcount;
+        /* Register BlitMap to the destination surface, to be invalidated when needed */
+        SDL_ListAdd((SDL_ListNode **)&(map->dst->list_blitmap), map);
     }
 
     if (dstfmt->palette) {
