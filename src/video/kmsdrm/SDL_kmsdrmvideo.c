@@ -146,6 +146,148 @@ get_driindex(void)
     return -ENOENT;
 }
 
+/**********************/
+/* DUMB BUFFER Block. */
+/**********************/
+
+/* Create a dumb buffer, mmap the dumb buffer and fill it with pixels, */
+/* then create a KMS framebuffer wrapping the dumb buffer.             */
+static dumb_buffer *KMSDRM_CreateDumbBuffer(_THIS)
+{
+    SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
+    SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
+
+    dumb_buffer *ret = calloc(1, sizeof(*ret));
+    struct drm_mode_create_dumb create;
+    struct drm_mode_map_dumb map;
+    struct drm_mode_destroy_dumb destroy;
+
+    /*
+     * The create ioctl uses the combination of depth and bpp to infer
+     * a format; 24/32 refers to DRM_FORMAT_XRGB8888 as defined in
+     * the drm_fourcc.h header. These arguments are the same as given
+     * to drmModeAddFB, which has since been superseded by
+     * drmModeAddFB2 as the latter takes an explicit format token.
+     *
+     * We only specify these arguments; the driver calculates the
+     * pitch (also known as stride or row length) and total buffer size
+     * for us, also returning us the GEM handle.
+     */
+    create = (struct drm_mode_create_dumb) {
+	.width = dispdata->mode.hdisplay,
+	.height = dispdata->mode.vdisplay,
+	.bpp = 32,
+    };
+
+    if (KMSDRM_drmIoctl(viddata->drm_fd, DRM_IOCTL_MODE_CREATE_DUMB, &create)) {
+	SDL_SetError("failed to create dumb buffer\n");
+	goto err;
+    }
+
+    ret->gem_handles[0] = create.handle;
+    ret->format = DRM_FORMAT_XRGB8888;
+    ret->modifier = DRM_FORMAT_MOD_LINEAR;
+    ret->width = create.width;
+    ret->height = create.height;
+    ret->pitches[0] = create.pitch;
+
+    /*
+     * In order to map the buffer, we call an ioctl specific to the buffer
+     * type, which returns us a fake offset to use with the mmap syscall.
+     * mmap itself then works as you expect.
+     *
+     * Note this means it is not possible to map arbitrary offsets of
+     * buffers without specifically requesting it from the kernel.
+     */
+    map = (struct drm_mode_map_dumb) {
+        .handle = ret->gem_handles[0],
+    };
+    if (KMSDRM_drmIoctl(viddata->drm_fd, DRM_IOCTL_MODE_MAP_DUMB, &map)) {
+        SDL_SetError("failed to get mmap offset for the dumb buffer.");
+        goto err_dumb;
+    }
+
+    ret->dumb.mem = mmap(NULL, create.size, PROT_WRITE, MAP_SHARED,
+                            viddata->drm_fd, map.offset);
+    if (ret->dumb.mem == MAP_FAILED) {
+        SDL_SetError("failed to get mmap offset for the dumb buffer.");
+        goto err_dumb;
+    }
+    ret->dumb.size = create.size;
+
+    return ret;
+
+err_dumb:
+    destroy = (struct drm_mode_destroy_dumb) { .handle = create.handle };
+    KMSDRM_drmIoctl(viddata->drm_fd, DRM_IOCTL_MODE_DESTROY_DUMB, &destroy);
+err:
+    SDL_free(ret);
+    return NULL;
+}
+
+static void
+KMSDRM_DestroyDumbBuffer(_THIS, dumb_buffer *buffer)
+{
+    SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
+
+    struct drm_mode_destroy_dumb destroy = {
+        .handle = buffer->gem_handles[0],
+    };
+
+    KMSDRM_drmModeRmFB(viddata->drm_fd, buffer->fb_id);
+
+    munmap(buffer->dumb.mem, buffer->dumb.size);
+    KMSDRM_drmIoctl(viddata->drm_fd, DRM_IOCTL_MODE_DESTROY_DUMB, &destroy);
+    free(buffer);
+}
+
+/* Using the CPU mapping, fill the dumb buffer with black pixels. */
+static void
+KMSDRM_FillDumbBuffer(dumb_buffer *buffer)
+{
+    for (unsigned int y = 0; y < buffer->height; y++) {
+	uint32_t *pix = (uint32_t *) ((uint8_t *) buffer->dumb.mem + (y * buffer->pitches[0]));
+	for (unsigned int x = 0; x < buffer->width; x++) {
+	    *pix++ = (0x00000000);
+	}
+    }
+}
+
+static dumb_buffer *KMSDRM_CreateBuffer(_THIS)
+{
+    dumb_buffer *ret;
+    int err;
+
+    SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
+
+    ret = KMSDRM_CreateDumbBuffer(_this);
+
+    if (!ret)
+        return NULL;
+
+    /*
+     * Wrap our GEM buffer in a KMS framebuffer, so we can then attach it
+     * to a plane. Here's where we get out fb_id!
+     */
+    err = KMSDRM_drmModeAddFB2(viddata->drm_fd, ret->width, ret->height,
+        ret->format, ret->gem_handles, ret->pitches,
+        ret->offsets, &ret->fb_id, 0);
+
+    if (err != 0 || ret->fb_id == 0) {
+        SDL_SetError("Failed AddFB2 on dumb buffer\n");
+        goto err;
+    }
+    return ret;
+
+err:
+    KMSDRM_DestroyDumbBuffer(_this, ret);
+    return NULL;
+}
+
+/***************************/
+/* DUMB BUFFER Block ends. */
+/***************************/
+
 /*********************************/
 /* Atomic helper functions block */
 /*********************************/
@@ -388,7 +530,7 @@ static int get_plane_id(_THIS, uint32_t plane_type)
     return ret;
 }
 
-/* Setup cursor plane and it's props. */
+/* Setup a plane and it's props. */
 int
 setup_plane(_THIS, struct plane **plane, uint32_t plane_type)
 {
@@ -516,7 +658,7 @@ int drm_atomic_commit(_THIS, SDL_bool blocking)
     if (ret) {
         SDL_SetError("Atomic commit failed, returned %d.", ret);
         /* Uncomment this for fast-debugging */
-        // printf("ATOMIC COMMIT FAILED: %d.\n", ret);
+        //printf("ATOMIC COMMIT FAILED: %d.\n", ret);
 	goto out;
     }
 
@@ -772,16 +914,9 @@ KMSDRM_DestroySurfaces(_THIS, SDL_Window *window)
     /* it's using.                                                      */
     /********************************************************************/
 
-#if AMDGPU_COMPAT
-    /************************************************************************/
-    /*  We can't do the usual CRTC_ID+FB_ID to 0 with AMDGPU, because       */
-    /*  the driver never recovers from the CONNECTOR and CRTC disconnection.*/
-    /*  The with this solution is that crtc->buffer_id is not guaranteed    */
-    /*  to be there...                                                      */
-    /************************************************************************/
     plane_info.plane = dispdata->display_plane;
     plane_info.crtc_id = dispdata->crtc->crtc->crtc_id;
-    plane_info.fb_id = dispdata->crtc->crtc->buffer_id;
+    plane_info.fb_id = dispdata->dumb_buffer->fb_id;
     plane_info.src_w = dispdata->mode.hdisplay;
     plane_info.src_h = dispdata->mode.vdisplay;
     plane_info.crtc_w = dispdata->mode.hdisplay;
@@ -793,32 +928,6 @@ KMSDRM_DestroySurfaces(_THIS, SDL_Window *window)
     if (drm_atomic_commit(_this, SDL_TRUE)) {
         SDL_SetError("Failed to issue atomic commit on DestroyWindow().");
     }
-#else
-    /*********************************************************************************/
-    /* Disconnect the CONNECTOR from the CRTC (several connectors can read a CRTC),  */
-    /* deactivate the CRTC, and set the PRIMARY PLANE props CRTC_ID and FB_ID to 0.  */
-    /* We have to do this before setting the PLANE CRTC_ID and FB_ID to 0 because    */
-    /* there can be no active CRTC without an active PLANE.                          */
-    /* We can leave all like this if we are exiting the program after the window     */
-    /* destruction, or things will be re-connected again on SwapWindow(), if needed. */
-    /*********************************************************************************/
-    if (add_connector_property(dispdata->atomic_req, dispdata->connector , "CRTC_ID", 0) < 0)
-        SDL_SetError("Failed to set CONNECTOR prop CRTC_ID to zero before buffer destruction");
-
-    if (add_crtc_property(dispdata->atomic_req, dispdata->crtc , "ACTIVE", 0) < 0)
-        SDL_SetError("Failed to set CRTC prop ACTIVE to zero before buffer destruction");
-
-    /* Since we initialize plane_info to all zeros,  ALL PRIMARY PLANE props are set to 0 with this,
-       including FB_ID and CRTC_ID. Not all drivers like FB_ID and CRTC_ID to 0 yet. */
-    plane_info.plane = dispdata->display_plane;
-
-    drm_atomic_set_plane_props(&plane_info);
-
-    /* Issue blocking atomic commit. */    
-    if (drm_atomic_commit(_this, SDL_TRUE)) {
-        SDL_SetError("Failed to issue atomic commit on window surfaces and buffers destruction.");
-    }
-#endif
 
     /****************************************************************************/
     /* BLOCK 2: We can finally destroy the window GBM and EGL surfaces, and     */
@@ -1006,6 +1115,7 @@ KMSDRM_VideoInit(_THIS)
     dispdata->kms_fence = NULL;
     dispdata->gpu_fence = NULL;
     dispdata->kms_out_fence_fd = -1;
+    dispdata->dumb_buffer = NULL;
 
     if (!dispdata) {
         return SDL_OutOfMemory();
@@ -1185,7 +1295,6 @@ KMSDRM_VideoInit(_THIS)
     if (ret) {
         ret = SDL_SetError("can't find suitable display plane.");
         goto cleanup;
-
     }
 
     /* Get CRTC properties */
@@ -1210,6 +1319,17 @@ KMSDRM_VideoInit(_THIS)
     for (unsigned int i = 0; i < dispdata->connector->props->count_props; i++) {
 	dispdata->connector->props_info[i] = KMSDRM_drmModeGetProperty(viddata->drm_fd,
         dispdata->connector->props->props[i]);
+    }
+
+    /* Create aux dumb buffer. It's only useful to keep the PRIMARY PLANE occupied
+       when we destroy the GBM surface and it's KMS buffers, so not being able to
+       create it is not fatal. */
+    dispdata->dumb_buffer = KMSDRM_CreateBuffer(_this);
+    if (!dispdata->dumb_buffer) {
+        ret = SDL_SetError("can't find suitable display plane.");
+    } else {
+        /* Fill the dumb buffer with black pixels. */
+        KMSDRM_FillDumbBuffer(dispdata->dumb_buffer);
     }
 
     /*********************/
@@ -1259,13 +1379,80 @@ KMSDRM_VideoQuit(_THIS)
 {
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
     SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
+    KMSDRM_PlaneInfo plane_info = {0};
 
-    /****************************************************************/
-    /* Since the program should already have called DestroyWindow() */
-    /* on all the windows by now, there's no need to destroy the    */
-    /* GBM/EGL surfaces and buffers of the windows here: they have  */
-    /* already been destroyed.                                      */
-    /****************************************************************/
+    /*****************************************************************/
+    /*                                                               */
+    /* BLOCK to safely destroy the DUMB BUFFER.                      */
+    /*                                                               */
+    /* Since the program should already have called DestroyWindow()  */
+    /* on all the windows by now, there's no need to destroy the     */
+    /* GBM/EGL surfaces and buffers of the windows here: they have   */
+    /* already been destroyed, and the PRIMARY PLANE is using the    */
+    /* DUMB BUFFER. BUT the DUMB BUFFER we use to keep the PRIMARY   */
+    /* PLANE occupied when we do DestroySurfaces calls is going to   */
+    /* be destroyed one way or another when the program quits, so    */
+    /* to avoid the kernel disabling the CRTC when it detects the    */
+    /* deletion of a buffer that IS IN USE BY THE PRIMARY PLANE,     */
+    /* we do one of these:                                           */
+    /*                                                               */
+    /* -In AMDGPU, where manually disabling the CRTC and             */
+    /*  disconnecting the CONNECTOR from the CRTC is an              */
+    /*  unrecoverable situation, so we point the PRIMARY PLANE to    */ 
+    /*  the original TTY buffer (not guaranteed to be there for us!) */
+    /*  and then destroy the DUMB BUFFER).                           */
+    /*                                                               */
+    /* -In other drivers, we disconnect the CONNECTOR from the CRTC  */
+    /*  (remember: several connectors can read a CRTC), deactivate   */
+    /*  the CRTC, and set the PRIMARY PLANE props CRTC_ID and FB_ID  */
+    /*  to 0. Then we destroy the DUMB BUFFER.                       */
+    /*  We can leave all like this if we are exiting the program:    */
+    /*  FBCON or whatever will reconfigure things as it needs.       */
+    /*                                                               */
+    /*****************************************************************/
+
+#if AMDGPU_COMPAT
+
+    plane_info.plane = dispdata->display_plane;
+    plane_info.crtc_id = dispdata->crtc->crtc->crtc_id;
+    plane_info.fb_id = dispdata->crtc->crtc->buffer_id;
+    plane_info.src_w = dispdata->mode.hdisplay;
+    plane_info.src_h = dispdata->mode.vdisplay;
+    plane_info.crtc_w = dispdata->mode.hdisplay;
+    plane_info.crtc_h = dispdata->mode.vdisplay;
+
+    drm_atomic_set_plane_props(&plane_info);
+
+#else
+
+    /*********************************************************************************/
+   /*********************************************************************************/
+    if (add_connector_property(dispdata->atomic_req, dispdata->connector , "CRTC_ID", 0) < 0)
+        SDL_SetError("Failed to set CONNECTOR prop CRTC_ID to zero before buffer destruction");
+
+    if (add_crtc_property(dispdata->atomic_req, dispdata->crtc , "ACTIVE", 0) < 0)
+        SDL_SetError("Failed to set CRTC prop ACTIVE to zero before buffer destruction");
+
+    /* Since we initialize plane_info to all zeros,  ALL PRIMARY PLANE props are set to 0 with this,
+       including FB_ID and CRTC_ID. Not all drivers like FB_ID and CRTC_ID to 0 yet. */
+    plane_info.plane = dispdata->display_plane;
+
+    drm_atomic_set_plane_props(&plane_info);
+
+#endif
+
+    /* Issue blocking atomic commit. */    
+    if (drm_atomic_commit(_this, SDL_TRUE)) {
+        SDL_SetError("Failed to issue atomic commit on DestroyWindow().");
+    }
+
+    /* Destroy the DUMB buffer, now that it's not being
+       used anymore by the PRIMARY PLANE. */
+    KMSDRM_DestroyDumbBuffer(_this, dispdata->dumb_buffer);
+
+    /***************/
+    /* BLOCK ENDS. */
+    /***************/
 
     /* Clear out the window list */
     SDL_free(viddata->windows);
@@ -1338,7 +1525,6 @@ KMSDRM_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
 }
 #endif
 
-#if 1
 /* We are NOT really changing the physical display mode, but using
 the PRIMARY PLANE and CRTC to scale as we please. But we need that SDL
 has knowledge of the video modes we are going to use for fullscreen
@@ -1370,7 +1556,6 @@ KMSDRM_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
         }
     }
 }
-#endif
 
 int
 KMSDRM_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)

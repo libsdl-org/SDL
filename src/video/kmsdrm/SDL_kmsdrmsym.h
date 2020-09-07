@@ -41,6 +41,7 @@ SDL_KMSDRM_SYM(void,drmModeFreeCrtc,(drmModeCrtcPtr ptr))
 SDL_KMSDRM_SYM(void,drmModeFreeConnector,(drmModeConnectorPtr ptr))
 SDL_KMSDRM_SYM(void,drmModeFreeEncoder,(drmModeEncoderPtr ptr))
 SDL_KMSDRM_SYM(int,drmGetCap,(int fd, uint64_t capability, uint64_t *value))
+SDL_KMSDRM_SYM(int,drmIoctl,(int fd, unsigned long request, void *arg))
 SDL_KMSDRM_SYM(drmModeResPtr,drmModeGetResources,(int fd))
 
 SDL_KMSDRM_SYM(int,drmModeAddFB,(int fd, uint32_t width, uint32_t height, uint8_t depth,
