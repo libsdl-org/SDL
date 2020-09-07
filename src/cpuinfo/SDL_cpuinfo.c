@@ -968,7 +968,7 @@ SDL_SIMDRealloc(void *mem, const size_t len)
     const size_t padded = (padding != alignment) ? (len + padding) : len;
     Uint8 *retval = (Uint8*) mem;
     void *oldmem = mem;
-    size_t memdiff, ptrdiff;
+    size_t memdiff = 0, ptrdiff;
     Uint8 *ptr;
 
     if (mem) {
