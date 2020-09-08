@@ -36,6 +36,12 @@
 #include "SDL_waylandvulkan.h"
 #include "SDL_syswm.h"
 
+#if defined(__OpenBSD__)
+#define DEFAULT_VULKAN  "libvulkan.so"
+#else
+#define DEFAULT_VULKAN  "libvulkan.so.1"
+#endif
+
 int Wayland_Vulkan_LoadLibrary(_THIS, const char *path)
 {
     VkExtensionProperties *extensions = NULL;
@@ -50,7 +56,7 @@ int Wayland_Vulkan_LoadLibrary(_THIS, const char *path)
     if(!path)
         path = SDL_getenv("SDL_VULKAN_LIBRARY");
     if(!path)
-        path = "libvulkan.so.1";
+        path = DEFAULT_VULKAN;
     _this->vulkan_config.loader_handle = SDL_LoadObject(path);
     if(!_this->vulkan_config.loader_handle)
         return -1;

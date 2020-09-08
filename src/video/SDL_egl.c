@@ -72,6 +72,13 @@
 #define DEFAULT_OGL_ES_PVR "libGLES_CM.dylib"   //???
 #define DEFAULT_OGL_ES "libGLESv1_CM.dylib"     //???
 
+#elif defined(__OpenBSD__)
+#define DEFAULT_OGL "libGL.so"
+#define DEFAULT_EGL "libEGL.so"
+#define DEFAULT_OGL_ES2 "libGLESv2.so"
+#define DEFAULT_OGL_ES_PVR "libGLES_CM.so"
+#define DEFAULT_OGL_ES "libGLESv1_CM.so"
+
 #else
 /* Desktop Linux */
 #define DEFAULT_OGL "libGL.so.1"
