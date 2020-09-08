@@ -92,6 +92,8 @@ get_classname()
 
 /* X11 driver bootstrap functions */
 
+static int (*orig_x11_errhandler) (Display *, XErrorEvent *) = NULL;
+
 static void
 X11_DeleteDevice(SDL_VideoDevice * device)
 {
@@ -100,6 +102,7 @@ X11_DeleteDevice(SDL_VideoDevice * device)
         device->Vulkan_UnloadLibrary(device);
     }
     if (data->display) {
+        X11_XSetErrorHandler(orig_x11_errhandler);
         X11_XCloseDisplay(data->display);
     }
     SDL_free(data->windowlist);
@@ -111,7 +114,6 @@ X11_DeleteDevice(SDL_VideoDevice * device)
 
 /* An error handler to reset the vidmode and then call the default handler. */
 static SDL_bool safety_net_triggered = SDL_FALSE;
-static int (*orig_x11_errhandler) (Display *, XErrorEvent *) = NULL;
 static int
 X11_SafetyNetErrHandler(Display * d, XErrorEvent * e)
 {
