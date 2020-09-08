@@ -576,9 +576,7 @@ cleanup:
 void
 free_plane(struct plane **plane)
 {
-    SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
-
-    if (dispdata && (*plane)) {
+    if (*plane) {
         if ((*plane)->plane) {
             KMSDRM_drmModeFreePlane((*plane)->plane);
             (*plane)->plane = NULL;
