@@ -1447,9 +1447,11 @@ KMSDRM_VideoQuit(_THIS)
         SDL_SetError("Failed to issue atomic commit on DestroyWindow().");
     }
 
-    /* Destroy the DUMB buffer, now that it's not being
+    /* Destroy the DUMB buffer if it exists, now that it's not being
        used anymore by the PRIMARY PLANE. */
-    KMSDRM_DestroyDumbBuffer(_this, dispdata->dumb_buffer);
+    if (dispdata->dumb_buffer) {
+        KMSDRM_DestroyDumbBuffer(_this, dispdata->dumb_buffer);
+    }
 
     /***************/
     /* BLOCK ENDS. */
