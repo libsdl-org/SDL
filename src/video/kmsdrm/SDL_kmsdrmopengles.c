@@ -34,6 +34,19 @@
 
 /* EGL implementation of SDL OpenGL support */
 
+void
+KMSDRM_GLES_DefaultProfileConfig(_THIS, int *mask, int *major, int *minor)
+{
+    /* if SDL was _also_ built with the Raspberry Pi driver (so we're
+       definitely a Pi device), default to GLES2. */
+#if SDL_VIDEO_DRIVER_RPI
+    *mask = SDL_GL_CONTEXT_PROFILE_ES;
+    *major = 2;
+    *minor = 0;
+#endif
+}
+
+
 int
 KMSDRM_GLES_LoadLibrary(_THIS, const char *path) {
     NativeDisplayType display = (NativeDisplayType)((SDL_VideoData *)_this->driverdata)->gbm_dev;

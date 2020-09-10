@@ -784,6 +784,7 @@ KMSDRM_CreateDevice(int devindex)
     device->DestroyWindow = KMSDRM_DestroyWindow;
     device->GetWindowWMInfo = KMSDRM_GetWindowWMInfo;
 #if SDL_VIDEO_OPENGL_EGL
+    device->GL_DefaultProfileConfig = KMSDRM_GLES_DefaultProfileConfig;
     device->GL_LoadLibrary = KMSDRM_GLES_LoadLibrary;
     device->GL_GetProcAddress = KMSDRM_GLES_GetProcAddress;
     device->GL_UnloadLibrary = KMSDRM_GLES_UnloadLibrary;
