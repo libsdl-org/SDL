@@ -152,12 +152,8 @@ int SDL_EGL_SetErrorEx(const char * message, const char * eglFunctionName, EGLin
 }
 
 /* EGL implementation of SDL OpenGL ES support */
-typedef enum {
-    SDL_EGL_DISPLAY_EXTENSION,
-    SDL_EGL_CLIENT_EXTENSION
-} SDL_EGL_ExtensionType;
 
-static SDL_bool SDL_EGL_HasExtension(_THIS, SDL_EGL_ExtensionType type, const char *ext)
+SDL_bool SDL_EGL_HasExtension(_THIS, SDL_EGL_ExtensionType type, const char *ext)
 {
     size_t ext_len;
     const char *ext_override;

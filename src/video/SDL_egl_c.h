@@ -122,6 +122,13 @@ typedef struct SDL_EGL_VideoData
 } SDL_EGL_VideoData;
 
 /* OpenGLES functions */
+typedef enum SDL_EGL_ExtensionType {
+    SDL_EGL_DISPLAY_EXTENSION,
+    SDL_EGL_CLIENT_EXTENSION
+} SDL_EGL_ExtensionType;
+
+extern SDL_bool SDL_EGL_HasExtension(_THIS, SDL_EGL_ExtensionType type, const char *ext);
+
 extern int SDL_EGL_GetAttribute(_THIS, SDL_GLattr attrib, int *value);
 /* SDL_EGL_LoadLibrary can get a display for a specific platform (EGL_PLATFORM_*)
  * or, if 0 is passed, let the implementation decide.
