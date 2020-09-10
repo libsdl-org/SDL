@@ -27,6 +27,7 @@
 #include "SDL_kmsdrmvideo.h"
 #include "SDL_kmsdrmopengles.h"
 #include "SDL_kmsdrmdyn.h"
+#include "SDL_hints.h"
 
 #ifndef EGL_PLATFORM_GBM_MESA
 #define EGL_PLATFORM_GBM_MESA 0x31D7
@@ -99,30 +100,18 @@ static EGLSyncKHR create_fence(int fd, _THIS)
 	return fence;
 }
 
-int
-KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window)
+static int
+KMSDRM_GLES_SwapWindowFenced(_THIS, SDL_Window * window)
 {
     SDL_WindowData *windata = ((SDL_WindowData *) window->driverdata);
     SDL_DisplayData *dispdata = (SDL_DisplayData *) SDL_GetDisplayForWindow(window)->driverdata;
     KMSDRM_FBInfo *fb;
     KMSDRM_PlaneInfo info = {0};
 
-    /* Get the EGL context, now that SDL_CreateRenderer() has already been called,
-       and call eglMakeCurrent() on it and the EGL surface. */
-#if SDL_VIDEO_OPENGL_EGL
-    if (windata->egl_context_pending) {
-        EGLContext egl_context;
-        egl_context = (EGLContext)SDL_GL_GetCurrentContext();
-        SDL_EGL_MakeCurrent(_this, windata->egl_surface, egl_context);
-        windata->egl_context_pending = SDL_FALSE;
-    }   
-#endif
-
     /*************************************************************************/
     /* Block for telling KMS to wait for GPU rendering of the current frame  */
     /* before applying the KMS changes requested in the atomic ioctl.        */
     /*************************************************************************/
-
     /* Create the fence that will be inserted in the cmdstream exactly at the end
        of the gl commands that form a frame. KMS will have to wait on it before doing a pageflip. */
     dispdata->gpu_fence = create_fence(EGL_NO_NATIVE_FENCE_FD_ANDROID, _this);
@@ -222,24 +211,13 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window)
     return 0;
 }
 
-int
-KMSDRM_GLES_SwapWindowDB(_THIS, SDL_Window * window)
+static int
+KMSDRM_GLES_SwapWindowDoubleBuffered(_THIS, SDL_Window * window)
 {
     SDL_WindowData *windata = ((SDL_WindowData *) window->driverdata);
     SDL_DisplayData *dispdata = (SDL_DisplayData *) SDL_GetDisplayForWindow(window)->driverdata;
     KMSDRM_FBInfo *fb;
     KMSDRM_PlaneInfo info = {0};
-
-    /* Get the EGL context, now that SDL_CreateRenderer() has already been called,
-       and call eglMakeCurrent() on it and the EGL surface. */
-#if SDL_VIDEO_OPENGL_EGL
-    if (windata->egl_context_pending) {
-        EGLContext egl_context;
-        egl_context = (EGLContext)SDL_GL_GetCurrentContext();
-        SDL_EGL_MakeCurrent(_this, windata->egl_surface, egl_context);
-        windata->egl_context_pending = SDL_FALSE;
-    }   
-#endif
 
     /****************************************************************************************************/
     /* In double-buffer mode, atomic commit will always be synchronous/blocking (ie: won't return until */
@@ -304,6 +282,34 @@ KMSDRM_GLES_SwapWindowDB(_THIS, SDL_Window * window)
     windata->bo = windata->next_bo;
 
     return 0;
+}
+
+int
+KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window)
+{
+    SDL_WindowData *windata = ((SDL_WindowData *) window->driverdata);
+
+     /* Get the EGL context, now that SDL_CreateRenderer() has already been called,
+       and call eglMakeCurrent() on it and the EGL surface. */
+#if SDL_VIDEO_OPENGL_EGL
+    if (windata->egl_context_pending) {
+        EGLContext egl_context = (EGLContext)SDL_GL_GetCurrentContext();
+        SDL_EGL_MakeCurrent(_this, windata->egl_surface, egl_context);
+        windata->egl_context_pending = SDL_FALSE;
+    }
+#endif
+
+    if (windata->swap_window == NULL) {
+        /* We want the fenced version by default, but it needs extensions. */
+        if ( (SDL_GetHintBoolean(SDL_HINT_VIDEO_DOUBLE_BUFFER, SDL_FALSE)) ||
+             (!SDL_EGL_HasExtension(_this, SDL_EGL_DISPLAY_EXTENSION, "EGL_ANDROID_native_fence_sync")) ) {
+            windata->swap_window = KMSDRM_GLES_SwapWindowDoubleBuffered;
+        } else {
+            windata->swap_window = KMSDRM_GLES_SwapWindowFenced;
+        }
+    }
+
+    return windata->swap_window(_this, window);
 }
 
 
