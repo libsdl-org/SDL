@@ -32,6 +32,18 @@
 #define EGL_PLATFORM_GBM_MESA 0x31D7
 #endif
 
+#ifndef EGL_SYNC_NATIVE_FENCE_ANDROID
+#define EGL_SYNC_NATIVE_FENCE_ANDROID     0x3144
+#endif
+
+#ifndef EGL_SYNC_NATIVE_FENCE_FD_ANDROID
+#define EGL_SYNC_NATIVE_FENCE_FD_ANDROID  0x3145
+#endif
+
+#ifndef EGL_NO_NATIVE_FENCE_FD_ANDROID
+#define EGL_NO_NATIVE_FENCE_FD_ANDROID    -1
+#endif
+
 /* EGL implementation of SDL OpenGL support */
 
 void
