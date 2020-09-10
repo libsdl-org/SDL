@@ -171,6 +171,8 @@ typedef struct SDL_WindowData
        the EGL context is available, but we need the EGL surface sooner. */
     SDL_bool egl_context_pending;
 
+    /* This dictates what approach we'll use for SwapBuffers. */
+    int (*swap_window)(_THIS, SDL_Window * window);
 } SDL_WindowData;
 
 typedef struct SDL_DisplayModeData

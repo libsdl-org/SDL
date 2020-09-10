@@ -27,7 +27,6 @@
 /* SDL internals */
 #include "../SDL_sysvideo.h"
 #include "SDL_syswm.h"
-#include "SDL_hints.h"
 #include "../../events/SDL_events_c.h"
 #include "../../events/SDL_mouse_c.h"
 #include "../../events/SDL_keyboard_c.h"
@@ -50,7 +49,6 @@
 #define KMSDRM_DRI_PATH "/dev/dri/"
 
 #define AMDGPU_COMPAT 1
-#define RPI4_COMPAT 0
 
 static int
 check_modesetting(int devindex)
@@ -792,16 +790,7 @@ KMSDRM_CreateDevice(int devindex)
     device->GL_MakeCurrent = KMSDRM_GLES_MakeCurrent;
     device->GL_SetSwapInterval = KMSDRM_GLES_SetSwapInterval;
     device->GL_GetSwapInterval = KMSDRM_GLES_GetSwapInterval;
-
-#if RPI4_COMPAT
-    device->GL_SwapWindow = KMSDRM_GLES_SwapWindowDB;
-#else
-    if (SDL_GetHintBoolean(SDL_HINT_VIDEO_DOUBLE_BUFFER, SDL_FALSE))
-        device->GL_SwapWindow = KMSDRM_GLES_SwapWindowDB;
-    else
-        device->GL_SwapWindow = KMSDRM_GLES_SwapWindow;
-#endif
-    
+    device->GL_SwapWindow = KMSDRM_GLES_SwapWindow;
     device->GL_DeleteContext = KMSDRM_GLES_DeleteContext;
 #endif
     device->PumpEvents = KMSDRM_PumpEvents;
