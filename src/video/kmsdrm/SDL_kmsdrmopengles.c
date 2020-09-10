@@ -148,15 +148,6 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window)
         return SDL_SetError("Failed to request prop changes for setting plane buffer and CRTC");
     }
 
-    /* Re-connect the connector to the CRTC, and activate the CRTC again.
-       Just in case we come here after a DestroySurfaces() call. */
-    if (add_connector_property(dispdata->atomic_req, dispdata->connector , "CRTC_ID",
-            dispdata->crtc->crtc->crtc_id) < 0)
-        return SDL_SetError("Failed to set CONNECTOR prop CRTC_ID to zero before buffer destruction");
-
-    if (add_crtc_property(dispdata->atomic_req, dispdata->crtc , "ACTIVE", 1) < 0)
-        return SDL_SetError("Failed to set CRTC prop ACTIVE to zero before buffer destruction");
-
     /* Set the IN_FENCE and OUT_FENCE props only here, since this is the only place
        on which we're interested in managing who and when should access the buffers
        that the display plane uses, and that's what these props are for. */
