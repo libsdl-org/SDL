@@ -297,15 +297,6 @@ KMSDRM_GLES_SwapWindowDoubleBuffered(_THIS, SDL_Window * window)
         return SDL_SetError("Failed to request prop changes for setting plane buffer and CRTC");
     }
 
-    /* Re-connect the connector to the CRTC, and activate the CRTC again.
-       Just in case we come here after a DestroySurfaces() call. */
-    if (add_connector_property(dispdata->atomic_req, dispdata->connector , "CRTC_ID",
-            dispdata->crtc->crtc->crtc_id) < 0)
-        return SDL_SetError("Failed to set CONNECTOR prop CRTC_ID to zero before buffer destruction");
-
-    if (add_crtc_property(dispdata->atomic_req, dispdata->crtc , "ACTIVE", 1) < 0)
-        return SDL_SetError("Failed to set CRTC prop ACTIVE to zero before buffer destruction");
-
     /* Issue the one and only atomic commit where all changes will be requested!. 
        Blocking for double buffering: won't return until completed. */
     if (drm_atomic_commit(_this, SDL_TRUE)) {
