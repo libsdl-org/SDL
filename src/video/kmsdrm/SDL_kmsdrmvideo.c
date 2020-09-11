@@ -764,7 +764,6 @@ KMSDRM_CreateDevice(int devindex)
     device->VideoInit = KMSDRM_VideoInit;
     device->VideoQuit = KMSDRM_VideoQuit;
     device->GetDisplayModes = KMSDRM_GetDisplayModes;
-    device->SetDisplayMode = KMSDRM_SetDisplayMode;
     device->CreateSDLWindow = KMSDRM_CreateWindow;
     device->CreateSDLWindowFrom = KMSDRM_CreateWindowFrom;
     device->SetWindowTitle = KMSDRM_SetWindowTitle;
@@ -1548,19 +1547,6 @@ KMSDRM_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
             SDL_free(modedata);
         }
     }
-}
-
-int
-KMSDRM_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
-{
-    /************************************************************************/
-    /* DO NOT add dynamic videomode changes. It makes NO SENSE, since the   */
-    /* PRIMARY PLANE and the CRTC can be used to scale image, so any window */
-    /* will appear fullscren with AR correction with NO extra video memory  */
-    /* bandwidth usage.                                                     */
-    /************************************************************************/    
-
-    return 0;
 }
 
 int
