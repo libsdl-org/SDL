@@ -175,9 +175,7 @@ KMSDRM_GLES_SwapWindowFenced(_THIS, SDL_Window * window)
     info.crtc_h = windata->output_h;
     info.crtc_x = windata->output_x;
 
-    if (drm_atomic_set_plane_props(&info)) {
-        return SDL_SetError("Failed to request prop changes for setting plane buffer and CRTC");
-    }
+    drm_atomic_set_plane_props(&info);
 
     /*****************************************************************/
     /* Tell the display (KMS) that it will have to wait on the fence */
@@ -198,12 +196,10 @@ KMSDRM_GLES_SwapWindowFenced(_THIS, SDL_Window * window)
     /*****************************************************************/
     if (dispdata->kms_in_fence_fd != -1)
     {
-	if (add_plane_property(dispdata->atomic_req, dispdata->display_plane,
-               "IN_FENCE_FD", dispdata->kms_in_fence_fd) < 0)
-            return SDL_SetError("Failed to set plane IN_FENCE_FD prop");
-	if (add_crtc_property(dispdata->atomic_req, dispdata->crtc,
-               "OUT_FENCE_PTR", VOID2U64(&dispdata->kms_out_fence_fd)) < 0)
-            return SDL_SetError("Failed to set CRTC OUT_FENCE_PTR prop");
+	add_plane_property(dispdata->atomic_req, dispdata->display_plane,
+            "IN_FENCE_FD", dispdata->kms_in_fence_fd);
+	add_crtc_property(dispdata->atomic_req, dispdata->crtc,
+            "OUT_FENCE_PTR", VOID2U64(&dispdata->kms_out_fence_fd));
     }
 
     /* Do we have a pending modesetting? If so, set the necessary 
@@ -212,14 +208,10 @@ KMSDRM_GLES_SwapWindowFenced(_THIS, SDL_Window * window)
         SDL_VideoData *viddata = (SDL_VideoData *)_this->driverdata;
 	uint32_t blob_id;
         dispdata->atomic_flags |= DRM_MODE_ATOMIC_ALLOW_MODESET;
- 	if (add_connector_property(dispdata->atomic_req, dispdata->connector, "CRTC_ID", dispdata->crtc->crtc->crtc_id) < 0)
-            return -1;
-        if (KMSDRM_drmModeCreatePropertyBlob(viddata->drm_fd, &dispdata->mode, sizeof(dispdata->mode), &blob_id) != 0)
-            return -1;
-        if (add_crtc_property(dispdata->atomic_req, dispdata->crtc, "MODE_ID", blob_id) < 0)
-            return -1;
-        if (add_crtc_property(dispdata->atomic_req, dispdata->crtc, "ACTIVE", 1) < 0)
-            return -1;
+ 	add_connector_property(dispdata->atomic_req, dispdata->connector, "CRTC_ID", dispdata->crtc->crtc->crtc_id);
+        KMSDRM_drmModeCreatePropertyBlob(viddata->drm_fd, &dispdata->mode, sizeof(dispdata->mode), &blob_id);
+        add_crtc_property(dispdata->atomic_req, dispdata->crtc, "MODE_ID", blob_id);
+        add_crtc_property(dispdata->atomic_req, dispdata->crtc, "ACTIVE", 1);
         dispdata->modeset_pending = SDL_FALSE;
     }
 
@@ -310,9 +302,7 @@ KMSDRM_GLES_SwapWindowDoubleBuffered(_THIS, SDL_Window * window)
     info.crtc_h = windata->output_h;
     info.crtc_x = windata->output_x;
 
-    if (drm_atomic_set_plane_props(&info)) {
-        return SDL_SetError("Failed to request prop changes for setting plane buffer and CRTC");
-    }
+    drm_atomic_set_plane_props(&info);
 
     /* Do we have a pending modesetting? If so, set the necessary 
        props so it's included in the incoming atomic commit. */
@@ -320,14 +310,10 @@ KMSDRM_GLES_SwapWindowDoubleBuffered(_THIS, SDL_Window * window)
         SDL_VideoData *viddata = (SDL_VideoData *)_this->driverdata;
 	uint32_t blob_id;
         dispdata->atomic_flags |= DRM_MODE_ATOMIC_ALLOW_MODESET;
- 	if (add_connector_property(dispdata->atomic_req, dispdata->connector, "CRTC_ID", dispdata->crtc->crtc->crtc_id) < 0)
-            return -1;
-        if (KMSDRM_drmModeCreatePropertyBlob(viddata->drm_fd, &dispdata->mode, sizeof(dispdata->mode), &blob_id) != 0)
-            return -1;
-        if (add_crtc_property(dispdata->atomic_req, dispdata->crtc, "MODE_ID", blob_id) < 0)
-            return -1;
-        if (add_crtc_property(dispdata->atomic_req, dispdata->crtc, "ACTIVE", 1) < 0)
-            return -1;
+ 	add_connector_property(dispdata->atomic_req, dispdata->connector, "CRTC_ID", dispdata->crtc->crtc->crtc_id);
+        KMSDRM_drmModeCreatePropertyBlob(viddata->drm_fd, &dispdata->mode, sizeof(dispdata->mode), &blob_id);
+        add_crtc_property(dispdata->atomic_req, dispdata->crtc, "MODE_ID", blob_id);
+        add_crtc_property(dispdata->atomic_req, dispdata->crtc, "ACTIVE", 1);
         dispdata->modeset_pending = SDL_FALSE;
     }
 
