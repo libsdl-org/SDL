@@ -978,11 +978,12 @@ KMSDRM_CreateSurfaces(_THIS, SDL_Window * window)
     /* Destroy the surfaces and buffers before creating the new ones. */
     KMSDRM_DestroySurfaces(_this, window);
 
-    if ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN_DESKTOP) {
+    if (((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN_DESKTOP) ||
+       ((window->flags & SDL_WINDOW_FULLSCREEN) == SDL_WINDOW_FULLSCREEN)) {
+
         width = dispdata->mode.hdisplay;
         height = dispdata->mode.vdisplay;
-    }
-    else {
+    } else {
         width = window->w;
         height = window->h;
     }
@@ -1064,25 +1065,31 @@ KMSDRM_ReconfigureWindow( _THIS, SDL_Window * window) {
     SDL_DisplayData *dispdata = (SDL_DisplayData *) SDL_GetDisplayForWindow(window)->driverdata;
     float ratio;  
 
-    if ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN_DESKTOP) {
+    if (((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN_DESKTOP) ||
+       ((window->flags & SDL_WINDOW_FULLSCREEN) == SDL_WINDOW_FULLSCREEN)) {
+
         windata->src_w = dispdata->mode.hdisplay;
         windata->src_h = dispdata->mode.vdisplay;
         windata->output_w = dispdata->mode.hdisplay;
         windata->output_h = dispdata->mode.vdisplay;
         windata->output_x = 0;
+    
     } else {
-        /* Get output (CRTC) size and position, for AR correction. */
+
+        /* Normal non-fullscreen windows are scaled using the CRTC,
+           so get output (CRTC) size and position, for AR correction. */
         ratio = (float)window->w / (float)window->h;
         windata->src_w = window->w;
         windata->src_h = window->h;
         windata->output_w = dispdata->mode.vdisplay * ratio;
         windata->output_h = dispdata->mode.vdisplay;
         windata->output_x = (dispdata->mode.hdisplay - windata->output_w) / 2;
+
     }
 
     if (KMSDRM_CreateSurfaces(_this, window)) {
 	return -1; 
-    }   
+    }  
 
     return 0;
 }
@@ -1109,6 +1116,7 @@ KMSDRM_VideoInit(_THIS)
     dispdata->gpu_fence = NULL;
     dispdata->kms_out_fence_fd = -1;
     dispdata->dumb_buffer = NULL;
+    dispdata->modeset_pending = SDL_FALSE;
 
     if (!dispdata) {
         return SDL_OutOfMemory();
@@ -1373,6 +1381,8 @@ KMSDRM_VideoQuit(_THIS)
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
     SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
     KMSDRM_PlaneInfo plane_info = {0};
+    drmModeModeInfo mode = dispdata->crtc->crtc->mode;
+    uint32_t blob_id;
 
     /*****************************************************************/
     /*                                                               */
@@ -1409,10 +1419,10 @@ KMSDRM_VideoQuit(_THIS)
     plane_info.plane = dispdata->display_plane;
     plane_info.crtc_id = dispdata->crtc->crtc->crtc_id;
     plane_info.fb_id = dispdata->crtc->crtc->buffer_id;
-    plane_info.src_w = dispdata->mode.hdisplay;
-    plane_info.src_h = dispdata->mode.vdisplay;
-    plane_info.crtc_w = dispdata->mode.hdisplay;
-    plane_info.crtc_h = dispdata->mode.vdisplay;
+    plane_info.src_w = mode.hdisplay;
+    plane_info.src_h = mode.vdisplay;
+    plane_info.crtc_w = mode.hdisplay;
+    plane_info.crtc_h = mode.vdisplay;
 
     drm_atomic_set_plane_props(&plane_info);
 
@@ -1431,6 +1441,13 @@ KMSDRM_VideoQuit(_THIS)
     drm_atomic_set_plane_props(&plane_info);
 
 #endif
+
+    /* Set props that restore the original video mode. */
+    dispdata->atomic_flags |= DRM_MODE_ATOMIC_ALLOW_MODESET;
+    add_connector_property(dispdata->atomic_req, dispdata->connector, "CRTC_ID", dispdata->crtc->crtc->crtc_id);
+    KMSDRM_drmModeCreatePropertyBlob(viddata->drm_fd, &mode, sizeof(mode), &blob_id);
+    add_crtc_property(dispdata->atomic_req, dispdata->crtc, "MODE_ID", blob_id);
+    add_crtc_property(dispdata->atomic_req, dispdata->crtc, "ACTIVE", 1);
 
     /* Issue blocking atomic commit. */    
     if (drm_atomic_commit(_this, SDL_TRUE)) {
@@ -1518,12 +1535,9 @@ KMSDRM_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
 }
 #endif
 
-/* We are NOT really changing the physical display mode, but using
-the PRIMARY PLANE and CRTC to scale as we please. But we need that SDL
-has knowledge of the video modes we are going to use for fullscreen
-window sizes, even if we are faking their use. If not, SDL only considers
-the in-use video mode as available, and sets every window to that size
-before we get to CreateWindow or ReconfigureWindow. */
+/* We only change the video mode for FULLSCREEN windows
+   that are not FULLSCREEN_DESKTOP.
+   Normal non-fullscreen windows are scaled using the CRTC. */
 void
 KMSDRM_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
 {
@@ -1553,12 +1567,35 @@ KMSDRM_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
 int
 KMSDRM_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
 {
-    /************************************************************************/
-    /* DO NOT add dynamic videomode changes. It makes NO SENSE, since the   */
-    /* PRIMARY PLANE and the CRTC can be used to scale image, so any window */
-    /* will appear fullscren with AR correction with NO extra video memory  */
-    /* bandwidth usage.                                                     */
-    /************************************************************************/    
+    /* Set the dispdata->mode to the new mode and leave actual modesetting
+       pending to be done on SwapWindow(), to be included on next atomic
+       commit changeset. */
+
+    SDL_VideoData *viddata = (SDL_VideoData *)_this->driverdata;
+    SDL_DisplayData *dispdata = (SDL_DisplayData *)display->driverdata;
+    SDL_DisplayModeData *modedata = (SDL_DisplayModeData *)mode->driverdata;
+    drmModeConnector *conn = dispdata->connector->connector;
+
+    if (!modedata) {
+        return SDL_SetError("Mode doesn't have an associated index");
+    }
+
+    /* Take note of the new mode. It will be used in SwapWindow to
+       set the props needed for mode setting. */
+    dispdata->mode = conn->modes[modedata->mode_index];
+
+    dispdata->modeset_pending = SDL_TRUE;
+
+    for (int i = 0; i < viddata->num_windows; i++) {
+        SDL_Window *window = viddata->windows[i];
+
+	if (KMSDRM_CreateSurfaces(_this, window)) {
+	    return -1; 
+	}   
+
+        /* Tell app about the window resize */
+        SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, mode->w, mode->h);
+    }
 
     return 0;
 }
@@ -1586,20 +1623,26 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
     display = SDL_GetDisplayForWindow(window);
     dispdata = display->driverdata;
 
-    if ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN_DESKTOP) {
+    if (((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN_DESKTOP) ||
+       ((window->flags & SDL_WINDOW_FULLSCREEN) == SDL_WINDOW_FULLSCREEN)) {
+
         windata->src_w = dispdata->mode.hdisplay;
         windata->src_h = dispdata->mode.vdisplay;
         windata->output_w = dispdata->mode.hdisplay;
         windata->output_h = dispdata->mode.vdisplay;
         windata->output_x = 0;
+
     } else {
-        /* Get output (CRTC) size and position, for AR correction. */
+
+        /* Normal non-fullscreen windows are scaled using the CRTC,
+           so get output (CRTC) size and position, for AR correction. */
         ratio = (float)window->w / (float)window->h;
         windata->src_w = window->w;
         windata->src_h = window->h;
         windata->output_w = dispdata->mode.vdisplay * ratio;
         windata->output_h = dispdata->mode.vdisplay;
         windata->output_x = (dispdata->mode.hdisplay - windata->output_w) / 2;
+
     }
 
     /* Don't force fullscreen on all windows: it confuses programs that try

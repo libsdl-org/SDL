@@ -116,29 +116,28 @@ typedef struct SDL_DisplayData
     drmModeModeInfo mode;
     uint32_t atomic_flags;
 
-    /* All changes will be requested via this one and only atomic request,
-       that will be sent to the kernel in the one and only atomic_commit()
-       call that takes place in SwapWindow(). */
-    drmModeAtomicReq *atomic_req;
     plane *display_plane;
     plane *cursor_plane;
     crtc *crtc;
     connector *connector;
 
+    /* Central atomic request list, used for the prop
+       changeset related to pageflip in SwapWindow. */ 
+    drmModeAtomicReq *atomic_req;
+
     int kms_in_fence_fd;
     int kms_out_fence_fd;
 
-    EGLSyncKHR kms_fence; /* Signaled when kms completes changes        *
-                           * requested in atomic iotcl (pageflip, etc). */
-
-    EGLSyncKHR gpu_fence; /* Signaled when GPU rendering is done. */
+    EGLSyncKHR kms_fence;
+    EGLSyncKHR gpu_fence;
 
 #if SDL_VIDEO_OPENGL_EGL
     EGLSurface old_egl_surface;
 #endif
 
-    dumb_buffer *dumb_buffer; /* Aux dumb buffer to keep the PRIMARY PLANE
-                                 entertained with when we destroy GBM surface. */
+    dumb_buffer *dumb_buffer;
+
+    SDL_bool modeset_pending;
 
 } SDL_DisplayData;
 
