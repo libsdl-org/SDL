@@ -606,7 +606,7 @@ free_plane(struct plane **plane)
 /*   first, move the plane away from those buffers and ONLY THEN destroy the      */
 /*   buffers and/or the GBM surface containig them.                               */
 /**********************************************************************************/
-int
+void
 drm_atomic_set_plane_props(struct KMSDRM_PlaneInfo *info)
 {
     SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
@@ -615,28 +615,16 @@ drm_atomic_set_plane_props(struct KMSDRM_PlaneInfo *info)
     if (!dispdata->atomic_req)
         dispdata->atomic_req = KMSDRM_drmModeAtomicAlloc();
    
-    if (add_plane_property(dispdata->atomic_req, info->plane, "FB_ID", info->fb_id) < 0)
-        return SDL_SetError("Failed to set plane FB_ID prop");
-    if (add_plane_property(dispdata->atomic_req, info->plane, "CRTC_ID", info->crtc_id) < 0)
-        return SDL_SetError("Failed to set plane CRTC_ID prop");
-    if (add_plane_property(dispdata->atomic_req, info->plane, "SRC_W", info->src_w << 16) < 0)
-        return SDL_SetError("Failed to set plane SRC_W prop");
-    if (add_plane_property(dispdata->atomic_req, info->plane, "SRC_H", info->src_h << 16) < 0)
-        return SDL_SetError("Failed to set plane SRC_H prop");
-    if (add_plane_property(dispdata->atomic_req, info->plane, "SRC_X", info->src_x) < 0)
-        return SDL_SetError("Failed to set plane SRC_X prop");
-    if (add_plane_property(dispdata->atomic_req, info->plane, "SRC_Y", info->src_y) < 0)
-        return SDL_SetError("Failed to set plane SRC_Y prop");
-    if (add_plane_property(dispdata->atomic_req, info->plane, "CRTC_W", info->crtc_w) < 0)
-        return SDL_SetError("Failed to set plane CRTC_W prop");
-    if (add_plane_property(dispdata->atomic_req, info->plane, "CRTC_H", info->crtc_h) < 0)
-        return SDL_SetError("Failed to set plane CRTC_H prop");
-    if (add_plane_property(dispdata->atomic_req, info->plane, "CRTC_X", info->crtc_x) < 0)
-        return SDL_SetError("Failed to set plane CRTC_X prop");
-    if (add_plane_property(dispdata->atomic_req, info->plane, "CRTC_Y", info->crtc_y) < 0)
-        return SDL_SetError("Failed to set plane CRTC_Y prop");
-
-    return 0;
+    add_plane_property(dispdata->atomic_req, info->plane, "FB_ID", info->fb_id);
+    add_plane_property(dispdata->atomic_req, info->plane, "CRTC_ID", info->crtc_id);
+    add_plane_property(dispdata->atomic_req, info->plane, "SRC_W", info->src_w << 16);
+    add_plane_property(dispdata->atomic_req, info->plane, "SRC_H", info->src_h << 16);
+    add_plane_property(dispdata->atomic_req, info->plane, "SRC_X", info->src_x);
+    add_plane_property(dispdata->atomic_req, info->plane, "SRC_Y", info->src_y);
+    add_plane_property(dispdata->atomic_req, info->plane, "CRTC_W", info->crtc_w);
+    add_plane_property(dispdata->atomic_req, info->plane, "CRTC_H", info->crtc_h);
+    add_plane_property(dispdata->atomic_req, info->plane, "CRTC_X", info->crtc_x);
+    add_plane_property(dispdata->atomic_req, info->plane, "CRTC_Y", info->crtc_y);
 }
 
 int drm_atomic_commit(_THIS, SDL_bool blocking)
@@ -655,7 +643,7 @@ int drm_atomic_commit(_THIS, SDL_bool blocking)
     if (ret) {
         SDL_SetError("Atomic commit failed, returned %d.", ret);
         /* Uncomment this for fast-debugging */
-        //printf("ATOMIC COMMIT FAILED: %d.\n", ret);
+        // printf("ATOMIC COMMIT FAILED: %d.\n", ret);
 	goto out;
     }
 
@@ -919,7 +907,7 @@ KMSDRM_DestroySurfaces(_THIS, SDL_Window *window)
 
     /* Issue blocking atomic commit. */    
     if (drm_atomic_commit(_this, SDL_TRUE)) {
-        SDL_SetError("Failed to issue atomic commit on DestroyWindow().");
+        SDL_SetError("Failed to issue atomic commit on window destruction.");
     }
 
     /****************************************************************************/
@@ -1428,11 +1416,8 @@ KMSDRM_VideoQuit(_THIS)
 
 #else
 
-    if (add_connector_property(dispdata->atomic_req, dispdata->connector , "CRTC_ID", 0) < 0)
-        SDL_SetError("Failed to set CONNECTOR prop CRTC_ID to zero before buffer destruction");
-
-    if (add_crtc_property(dispdata->atomic_req, dispdata->crtc , "ACTIVE", 0) < 0)
-        SDL_SetError("Failed to set CRTC prop ACTIVE to zero before buffer destruction");
+    add_connector_property(dispdata->atomic_req, dispdata->connector , "CRTC_ID", 0);
+    add_crtc_property(dispdata->atomic_req, dispdata->crtc , "ACTIVE", 0);
 
     /* Since we initialize plane_info to all zeros,  ALL PRIMARY PLANE props are set to 0 with this,
        including FB_ID and CRTC_ID. Not all drivers like FB_ID and CRTC_ID to 0 yet. */
@@ -1451,7 +1436,7 @@ KMSDRM_VideoQuit(_THIS)
 
     /* Issue blocking atomic commit. */    
     if (drm_atomic_commit(_this, SDL_TRUE)) {
-        SDL_SetError("Failed to issue atomic commit on DestroyWindow().");
+        SDL_SetError("Failed to issue atomic commit on video quitting.");
     }
 
     /* Destroy the DUMB buffer if it exists, now that it's not being

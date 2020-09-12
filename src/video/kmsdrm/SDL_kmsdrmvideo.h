@@ -203,7 +203,7 @@ int KMSDRM_CreateEGLSurface(_THIS, SDL_Window * window);
 KMSDRM_FBInfo *KMSDRM_FBFromBO(_THIS, struct gbm_bo *bo);
 
 /* Atomic functions that are used from SDL_kmsdrmopengles.c and SDL_kmsdrmmouse.c */
-int drm_atomic_set_plane_props(struct KMSDRM_PlaneInfo *info); 
+void drm_atomic_set_plane_props(struct KMSDRM_PlaneInfo *info); 
 
 void drm_atomic_waitpending(_THIS);
 int drm_atomic_commit(_THIS, SDL_bool blocking);
