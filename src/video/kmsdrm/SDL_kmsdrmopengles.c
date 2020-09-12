@@ -179,23 +179,6 @@ KMSDRM_GLES_SwapWindowFenced(_THIS, SDL_Window * window)
         return SDL_SetError("Failed to request prop changes for setting plane buffer and CRTC");
     }
 
-    /* Do we have a pending modesetting? If so, set the necessary 
-       props so it's included in the incoming atomic commit. */
-    if (dispdata->modeset_pending) {
-        SDL_VideoData *viddata = (SDL_VideoData *)_this->driverdata;
-	uint32_t blob_id;
-        dispdata->atomic_flags |= DRM_MODE_ATOMIC_ALLOW_MODESET;
- 	if (add_connector_property(dispdata->atomic_req, dispdata->connector, "CRTC_ID", dispdata->crtc->crtc->crtc_id) < 0)
-            return -1;
-        if (KMSDRM_drmModeCreatePropertyBlob(viddata->drm_fd, &dispdata->mode, sizeof(dispdata->mode), &blob_id) != 0)
-            return -1;
-        if (add_crtc_property(dispdata->atomic_req, dispdata->crtc, "MODE_ID", blob_id) < 0)
-            return -1;
-        if (add_crtc_property(dispdata->atomic_req, dispdata->crtc, "ACTIVE", 1) < 0)
-            return -1;
-        dispdata->modeset_pending = SDL_FALSE;
-    }
-
     /*****************************************************************/
     /* Tell the display (KMS) that it will have to wait on the fence */
     /* for the GPU-side FENCE.                                       */
@@ -221,6 +204,23 @@ KMSDRM_GLES_SwapWindowFenced(_THIS, SDL_Window * window)
 	if (add_crtc_property(dispdata->atomic_req, dispdata->crtc,
                "OUT_FENCE_PTR", VOID2U64(&dispdata->kms_out_fence_fd)) < 0)
             return SDL_SetError("Failed to set CRTC OUT_FENCE_PTR prop");
+    }
+
+    /* Do we have a pending modesetting? If so, set the necessary 
+       props so it's included in the incoming atomic commit. */
+    if (dispdata->modeset_pending) {
+        SDL_VideoData *viddata = (SDL_VideoData *)_this->driverdata;
+	uint32_t blob_id;
+        dispdata->atomic_flags |= DRM_MODE_ATOMIC_ALLOW_MODESET;
+ 	if (add_connector_property(dispdata->atomic_req, dispdata->connector, "CRTC_ID", dispdata->crtc->crtc->crtc_id) < 0)
+            return -1;
+        if (KMSDRM_drmModeCreatePropertyBlob(viddata->drm_fd, &dispdata->mode, sizeof(dispdata->mode), &blob_id) != 0)
+            return -1;
+        if (add_crtc_property(dispdata->atomic_req, dispdata->crtc, "MODE_ID", blob_id) < 0)
+            return -1;
+        if (add_crtc_property(dispdata->atomic_req, dispdata->crtc, "ACTIVE", 1) < 0)
+            return -1;
+        dispdata->modeset_pending = SDL_FALSE;
     }
 
     /*****************************************************************/   
@@ -312,6 +312,23 @@ KMSDRM_GLES_SwapWindowDoubleBuffered(_THIS, SDL_Window * window)
 
     if (drm_atomic_set_plane_props(&info)) {
         return SDL_SetError("Failed to request prop changes for setting plane buffer and CRTC");
+    }
+
+    /* Do we have a pending modesetting? If so, set the necessary 
+       props so it's included in the incoming atomic commit. */
+    if (dispdata->modeset_pending) {
+        SDL_VideoData *viddata = (SDL_VideoData *)_this->driverdata;
+	uint32_t blob_id;
+        dispdata->atomic_flags |= DRM_MODE_ATOMIC_ALLOW_MODESET;
+ 	if (add_connector_property(dispdata->atomic_req, dispdata->connector, "CRTC_ID", dispdata->crtc->crtc->crtc_id) < 0)
+            return -1;
+        if (KMSDRM_drmModeCreatePropertyBlob(viddata->drm_fd, &dispdata->mode, sizeof(dispdata->mode), &blob_id) != 0)
+            return -1;
+        if (add_crtc_property(dispdata->atomic_req, dispdata->crtc, "MODE_ID", blob_id) < 0)
+            return -1;
+        if (add_crtc_property(dispdata->atomic_req, dispdata->crtc, "ACTIVE", 1) < 0)
+            return -1;
+        dispdata->modeset_pending = SDL_FALSE;
     }
 
     /* Issue the one and only atomic commit where all changes will be requested!. 
