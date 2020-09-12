@@ -137,8 +137,6 @@ typedef struct SDL_DisplayData
     EGLSurface old_egl_surface;
 #endif
 
-    SDL_bool destroy_surfaces_pending;
-
     dumb_buffer *dumb_buffer; /* Aux dumb buffer to keep the PRIMARY PLANE
                                  entertained with when we destroy GBM surface. */
 
