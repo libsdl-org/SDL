@@ -140,7 +140,7 @@ KMSDRM_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y)
             goto cleanup;
     }
 
-    if (usable_cursor_w == 0 || usable_cursor_w == 0) {
+    if (usable_cursor_w == 0 || usable_cursor_h == 0) {
             SDL_SetError("Could not get an usable GBM cursor size");
             goto cleanup;
     }

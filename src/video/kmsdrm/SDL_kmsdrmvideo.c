@@ -536,7 +536,7 @@ setup_plane(_THIS, struct plane **plane, uint32_t plane_type)
     uint32_t plane_id;
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
 
-    *plane = SDL_calloc(1, sizeof(*plane));
+    *plane = SDL_calloc(1, sizeof(**plane));
 
     /* Get plane ID. */
     plane_id = get_plane_id(_this, plane_type);
@@ -554,7 +554,7 @@ setup_plane(_THIS, struct plane **plane, uint32_t plane_type)
 	    (*plane)->plane->plane_id, DRM_MODE_OBJECT_PLANE);	
 
         (*plane)->props_info = SDL_calloc((*plane)->props->count_props,
-            sizeof((*plane)->props_info));	
+            sizeof(*(*plane)->props_info));
 
         for (unsigned int i = 0; i < (*plane)->props->count_props; i++) {
             (*plane)->props_info[i] = KMSDRM_drmModeGetProperty(viddata->drm_fd,
@@ -1291,7 +1291,7 @@ KMSDRM_VideoInit(_THIS)
         dispdata->crtc->crtc->crtc_id, DRM_MODE_OBJECT_CRTC);	
 
     dispdata->crtc->props_info = SDL_calloc(dispdata->crtc->props->count_props,
-        sizeof(dispdata->crtc->props_info));	
+        sizeof(*dispdata->crtc->props_info));
 
     for (unsigned int i = 0; i < dispdata->crtc->props->count_props; i++) {
 	dispdata->crtc->props_info[i] = KMSDRM_drmModeGetProperty(viddata->drm_fd,
@@ -1303,7 +1303,7 @@ KMSDRM_VideoInit(_THIS)
         dispdata->connector->connector->connector_id, DRM_MODE_OBJECT_CONNECTOR);	
 
     dispdata->connector->props_info = SDL_calloc(dispdata->connector->props->count_props,
-        sizeof(dispdata->connector->props_info));	
+        sizeof(*dispdata->connector->props_info));
 
     for (unsigned int i = 0; i < dispdata->connector->props->count_props; i++) {
 	dispdata->connector->props_info[i] = KMSDRM_drmModeGetProperty(viddata->drm_fd,
