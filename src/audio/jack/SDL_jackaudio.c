@@ -278,6 +278,7 @@ JACK_CloseDevice(_THIS)
     }
 
     SDL_free(this->hidden->iobuffer);
+    SDL_free(this->hidden);
 }
 
 static int
