@@ -71,7 +71,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     public static NativeState mCurrentNativeState;
 
     /** If shared libraries (e.g. SDL or the native application) could not be loaded. */
-    public static boolean mBrokenLibraries;
+    public static boolean mBrokenLibraries = true;
 
     // Main components
     protected static SDLActivity mSingleton;
@@ -174,7 +174,6 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         mCursors = new Hashtable<Integer, PointerIcon>();
         mLastCursorID = 0;
         mSDLThread = null;
-        mBrokenLibraries = false;
         mIsResumedCalled = false;
         mHasFocus = true;
         mNextNativeState = NativeState.INIT;
@@ -199,6 +198,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         String errorMsgBrokenLib = "";
         try {
             loadLibraries();
+            mBrokenLibraries = false; /* success */
         } catch(UnsatisfiedLinkError e) {
             System.err.println(e.getMessage());
             mBrokenLibraries = true;
@@ -419,6 +419,10 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     public void onConfigurationChanged(Configuration newConfig) {
         Log.v(TAG, "onConfigurationChanged()");
         super.onConfigurationChanged(newConfig);
+
+        if (SDLActivity.mBrokenLibraries) {
+           return;
+        }
 
         if (mCurrentLocale == null || !mCurrentLocale.equals(newConfig.locale)) {
             mCurrentLocale = newConfig.locale;
