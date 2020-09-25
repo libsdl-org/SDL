@@ -38,6 +38,7 @@ typedef struct SDL_VideoData
     SDL_Rect textRect;
     int      isPaused;
     int      isPausing;
+    int      pauseAudio;
 } SDL_VideoData;
 
 extern int Android_SurfaceWidth;

@@ -181,6 +181,7 @@ Android_VideoInit(_THIS)
 
     videodata->isPaused  = SDL_FALSE;
     videodata->isPausing = SDL_FALSE;
+    videodata->pauseAudio = SDL_GetHintBoolean(SDL_HINT_ANDROID_BLOCK_ON_PAUSE_PAUSEAUDIO, SDL_TRUE);
 
     mode.format          = Android_ScreenFormat;
     mode.w               = Android_DeviceWidth;
