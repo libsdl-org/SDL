@@ -577,7 +577,7 @@ SDL_BufferQueueDrainCallback(void *userdata, Uint8 *stream, int len)
 
     if (len > 0) {  /* fill any remaining space in the stream with silence. */
         SDL_assert(SDL_CountDataQueue(device->buffer_queue) == 0);
-        SDL_memset(stream, device->spec.silence, len);
+        SDL_memset(stream, device->callbackspec.silence, len);
     }
 }
 
@@ -733,7 +733,7 @@ SDL_RunAudio(void *devicep)
         /* !!! FIXME: this should be LockDevice. */
         SDL_LockMutex(device->mixer_lock);
         if (SDL_AtomicGet(&device->paused)) {
-            SDL_memset(data, device->spec.silence, data_len);
+            SDL_memset(data, device->callbackspec.silence, data_len);
         } else {
             callback(udata, data, data_len);
         }
