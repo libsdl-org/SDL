@@ -21986,12 +21986,12 @@ if test -n "$LIBDRM_CFLAGS"; then
     pkg_cv_LIBDRM_CFLAGS="$LIBDRM_CFLAGS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libdrm >= 2.4.46\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "libdrm >= 2.4.46") 2>&5
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libdrm >= 2.4.82\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libdrm >= 2.4.82") 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_LIBDRM_CFLAGS=`$PKG_CONFIG --cflags "libdrm >= 2.4.46" 2>/dev/null`
+  pkg_cv_LIBDRM_CFLAGS=`$PKG_CONFIG --cflags "libdrm >= 2.4.82" 2>/dev/null`
 else
   pkg_failed=yes
 fi
@@ -22002,12 +22002,12 @@ if test -n "$LIBDRM_LIBS"; then
     pkg_cv_LIBDRM_LIBS="$LIBDRM_LIBS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libdrm >= 2.4.46\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "libdrm >= 2.4.46") 2>&5
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libdrm >= 2.4.82\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libdrm >= 2.4.82") 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_LIBDRM_LIBS=`$PKG_CONFIG --libs "libdrm >= 2.4.46" 2>/dev/null`
+  pkg_cv_LIBDRM_LIBS=`$PKG_CONFIG --libs "libdrm >= 2.4.82" 2>/dev/null`
 else
   pkg_failed=yes
 fi
@@ -22027,9 +22027,9 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        LIBDRM_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "libdrm >= 2.4.46" 2>&1`
+	        LIBDRM_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "libdrm >= 2.4.82" 2>&1`
         else
-	        LIBDRM_PKG_ERRORS=`$PKG_CONFIG --print-errors "libdrm >= 2.4.46" 2>&1`
+	        LIBDRM_PKG_ERRORS=`$PKG_CONFIG --print-errors "libdrm >= 2.4.82" 2>&1`
         fi
 	# Put the nasty error message in config.log where it belongs
 	echo "$LIBDRM_PKG_ERRORS" >&5
@@ -22055,12 +22055,12 @@ if test -n "$LIBGBM_CFLAGS"; then
     pkg_cv_LIBGBM_CFLAGS="$LIBGBM_CFLAGS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"gbm >= 9.0.0\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "gbm >= 9.0.0") 2>&5
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"gbm >= 17.1.0\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "gbm >= 17.1.0") 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_LIBGBM_CFLAGS=`$PKG_CONFIG --cflags "gbm >= 9.0.0" 2>/dev/null`
+  pkg_cv_LIBGBM_CFLAGS=`$PKG_CONFIG --cflags "gbm >= 17.1.0" 2>/dev/null`
 else
   pkg_failed=yes
 fi
@@ -22071,12 +22071,12 @@ if test -n "$LIBGBM_LIBS"; then
     pkg_cv_LIBGBM_LIBS="$LIBGBM_LIBS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"gbm >= 9.0.0\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "gbm >= 9.0.0") 2>&5
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"gbm >= 17.1.0\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "gbm >= 17.1.0") 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_LIBGBM_LIBS=`$PKG_CONFIG --libs "gbm >= 9.0.0" 2>/dev/null`
+  pkg_cv_LIBGBM_LIBS=`$PKG_CONFIG --libs "gbm >= 17.1.0" 2>/dev/null`
 else
   pkg_failed=yes
 fi
@@ -22096,9 +22096,9 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        LIBGBM_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "gbm >= 9.0.0" 2>&1`
+	        LIBGBM_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "gbm >= 17.1.0" 2>&1`
         else
-	        LIBGBM_PKG_ERRORS=`$PKG_CONFIG --print-errors "gbm >= 9.0.0" 2>&1`
+	        LIBGBM_PKG_ERRORS=`$PKG_CONFIG --print-errors "gbm >= 17.1.0" 2>&1`
         fi
 	# Put the nasty error message in config.log where it belongs
 	echo "$LIBGBM_PKG_ERRORS" >&5

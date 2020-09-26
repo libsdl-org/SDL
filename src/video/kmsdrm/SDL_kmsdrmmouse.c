@@ -109,6 +109,7 @@ KMSDRM_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y)
     uint32_t bo_stride, pixel;
     uint32_t *buffer = NULL;
     size_t bufsize;
+    unsigned int i, j;
 
     /* All code below assumes ARGB8888 format for the cursor surface, like other backends do.
        Also, the GBM BO pixels have to be alpha-premultiplied, but the SDL surface we receive has
@@ -183,8 +184,8 @@ KMSDRM_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y)
     SDL_memset(buffer, 0x00, bo_stride * curdata->h);
 
     /* Copy from SDL surface to buffer, pre-multiplying by alpha each pixel as we go. */
-    for (int i = 0; i < surface->h; i++) {
-        for (int j = 0; j < surface->w; j++) {
+    for (i = 0; i < surface->h; i++) {
+        for (j = 0; j < surface->w; j++) {
             pixel = ((uint32_t*)surface->pixels)[i * surface->w + j];
             alpha_premultiply_ARGB8888 (&pixel);
 	    SDL_memcpy(buffer + (i * curdata->w)  + j, &pixel, 4);
