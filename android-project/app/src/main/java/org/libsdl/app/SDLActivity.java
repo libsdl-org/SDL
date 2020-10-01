@@ -1588,6 +1588,30 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
             nativePermissionResult(requestCode, false);
         }
     }
+
+    /**
+     * This method is called by SDL using JNI.
+     */
+    public static int openURL(String url)
+    {
+        try {
+            Intent i = new Intent(Intent.ACTION_VIEW);
+            i.setData(Uri.parse(url));
+
+            int flags = Intent.FLAG_ACTIVITY_NO_HISTORY | Intent.FLAG_ACTIVITY_MULTIPLE_TASK;
+            if (Build.VERSION.SDK_INT >= 21) {
+                flags |= Intent.FLAG_ACTIVITY_NEW_DOCUMENT;
+            } else {
+                flags |= Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET;
+            }
+            i.addFlags(flags);
+
+            mSingleton.startActivity(i);
+        } catch (Exception ex) {
+            return -1;
+        }
+        return 0;
+    }
 }
 
 /**
