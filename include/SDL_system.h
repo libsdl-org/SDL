@@ -206,6 +206,13 @@ extern DECLSPEC const char * SDLCALL SDL_AndroidGetExternalStoragePath(void);
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_AndroidRequestPermission(const char *permission);
 
+/**
+   \brief Open an URL / URI in the browser or other
+
+   \return 0 on success, or -1 on error.
+ */
+extern DECLSPEC int SDLCALL SDL_AndroidOpenURL(const char *url);
+
 #endif /* __ANDROID__ */
 
 /* Platform specific functions for WinRT */
