@@ -824,3 +824,7 @@ SDL_DYNAPI_PROC(void,SDL_Metal_GetDrawableSize,(SDL_Window *a, int *b, int *c),(
 SDL_DYNAPI_PROC(double,SDL_trunc,(double a),(a),return)
 SDL_DYNAPI_PROC(float,SDL_truncf,(float a),(a),return)
 SDL_DYNAPI_PROC(SDL_Locale *,SDL_GetPreferredLocales,(void),(),return)
+#ifdef __ANDROID__
+SDL_DYNAPI_PROC(SDL_bool,SDL_AndroidRequestPermission,(const char *a),(a),return)
+SDL_DYNAPI_PROC(int,SDL_AndroidOpenURL,(const char *a),(a),return)
+#endif

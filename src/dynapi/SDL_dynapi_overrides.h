@@ -765,3 +765,5 @@
 #define SDL_trunc SDL_trunc_REAL
 #define SDL_truncf SDL_truncf_REAL
 #define SDL_GetPreferredLocales SDL_GetPreferredLocales_REAL
+#define SDL_AndroidRequestPermission SDL_AndroidRequestPermission_REAL
+#define SDL_AndroidOpenURL SDL_AndroidOpenURL_REAL
