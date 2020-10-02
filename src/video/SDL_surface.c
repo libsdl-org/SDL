@@ -1259,6 +1259,7 @@ int SDL_ConvertPixels(int width, int height,
     SDL_BlitMap src_blitmap, dst_blitmap;
     SDL_Rect rect;
     void *nonconst_src = (void *) src;
+    int ret;
 
     /* Check to make sure we are blitting somewhere, so we don't crash */
     if (!dst) {
@@ -1311,7 +1312,12 @@ int SDL_ConvertPixels(int width, int height,
     rect.y = 0;
     rect.w = width;
     rect.h = height;
-    return SDL_LowerBlit(&src_surface, &rect, &dst_surface, &rect);
+    ret = SDL_LowerBlit(&src_surface, &rect, &dst_surface, &rect);
+
+    /* Free blitmap reference, after blitting between stack'ed surfaces */
+    SDL_InvalidateMap(src_surface.map);
+
+    return ret;
 }
 
 /*
