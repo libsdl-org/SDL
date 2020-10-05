@@ -23,20 +23,30 @@
 #include "../../core/windows/SDL_windows.h"
 #include "SDL_error.h"
 
+#include <shellapi.h>
+
 /* https://msdn.microsoft.com/en-us/library/windows/desktop/bb762153%28v=vs.85%29.aspx */
 int
 SDL_SYS_OpenURL(const char *url)
 {
+    /* MSDN says for safety's sake, make sure COM is initialized. */
+    const HRESULT hr = WIN_CoInitialize();
+    if (FAILED(hr)) {
+        return WIN_SetErrorFromHRESULT("CoInitialize failed", hr);
+    }
+
     WCHAR* wurl = WIN_UTF8ToString(url);
     int rc;
 
     if (wurl == NULL) {
+        WIN_CoUninitialize();
         return SDL_OutOfMemory();
     }
 
     /* Success returns value greater than 32. Less is an error. */
     rc = (int) ShellExecuteW(NULL, L"open", wurl, NULL, NULL, SW_SHOWNORMAL);
     SDL_free(wurl);
+    WIN_CoUninitialize();
     return (rc > 32) ? 0 : WIN_SetError("Couldn't open given URL.");
 }
 
