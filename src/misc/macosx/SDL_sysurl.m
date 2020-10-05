@@ -21,6 +21,8 @@
 
 #include "../../SDL_internal.h"
 
+#import <Cocoa/Cocoa.h>
+
 int
 SDL_SYS_OpenURL(const char *url)
 { @autoreleasepool
