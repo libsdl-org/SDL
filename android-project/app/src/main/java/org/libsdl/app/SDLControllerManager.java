@@ -180,9 +180,9 @@ class SDLJoystickHandler_API16 extends SDLJoystickHandler {
         for(int i=0; i < deviceIds.length; ++i) {
             SDLJoystick joystick = getJoystick(deviceIds[i]);
             if (joystick == null) {
-                joystick = new SDLJoystick();
                 InputDevice joystickDevice = InputDevice.getDevice(deviceIds[i]);
                 if (SDLControllerManager.isDeviceSDLJoystick(deviceIds[i])) {
+                    joystick = new SDLJoystick();
                     joystick.device_id = deviceIds[i];
                     joystick.name = joystickDevice.getName();
                     joystick.desc = getJoystickDescriptor(joystickDevice);
