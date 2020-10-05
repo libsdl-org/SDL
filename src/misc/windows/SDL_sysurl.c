@@ -21,6 +21,7 @@
 
 #include "../../SDL_internal.h"
 #include "../../core/windows/SDL_windows.h"
+#include "SDL_error.h"
 
 /* https://msdn.microsoft.com/en-us/library/windows/desktop/bb762153%28v=vs.85%29.aspx */
 int
