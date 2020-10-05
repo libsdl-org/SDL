@@ -29,15 +29,16 @@
 int
 SDL_SYS_OpenURL(const char *url)
 {
+    WCHAR* wurl;
+    int rc;
+
     /* MSDN says for safety's sake, make sure COM is initialized. */
     const HRESULT hr = WIN_CoInitialize();
     if (FAILED(hr)) {
         return WIN_SetErrorFromHRESULT("CoInitialize failed", hr);
     }
 
-    WCHAR* wurl = WIN_UTF8ToString(url);
-    int rc;
-
+    wurl = WIN_UTF8ToString(url);
     if (wurl == NULL) {
         WIN_CoUninitialize();
         return SDL_OutOfMemory();
