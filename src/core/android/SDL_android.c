@@ -2469,19 +2469,6 @@ SDL_bool SDL_AndroidRequestPermission(const char *permission)
     return Android_JNI_RequestPermission(permission);
 }
 
-int SDL_AndroidOpenURL(const char *url)
-{
-    JNIEnv *env = Android_JNI_GetEnv();
-    int ret = -1;
-
-    if (url) {
-        jstring jurl = (*env)->NewStringUTF(env, url);
-        ret = (*env)->CallStaticIntMethod(env, mActivityClass, midOpenURL, jurl);
-        (*env)->DeleteLocalRef(env, jurl);
-    }
-    return ret;
-}
-
 void Android_JNI_GetManifestEnvironmentVariables(void)
 {
     if (!mActivityClass || !midGetManifestEnvironmentVariables) {

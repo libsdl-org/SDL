@@ -60,6 +60,7 @@ TARGETS = \
 	teststreaming$(EXE) \
 	testthread$(EXE) \
 	testtimer$(EXE) \
+	testurl$(EXE) \
 	testver$(EXE) \
 	testviewport$(EXE) \
 	testvulkan$(EXE) \
@@ -263,6 +264,9 @@ teststreaming$(EXE): $(srcdir)/teststreaming.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) @MATHLIB@
 
 testtimer$(EXE): $(srcdir)/testtimer.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+testurl$(EXE): $(srcdir)/testurl.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
 testver$(EXE): $(srcdir)/testver.c
