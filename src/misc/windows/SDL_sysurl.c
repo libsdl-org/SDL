@@ -19,9 +19,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "../../SDL_internal.h"
+#include "../SDL_sysurl.h"
 #include "../../core/windows/SDL_windows.h"
-#include "SDL_error.h"
 
 #include <shellapi.h>
 

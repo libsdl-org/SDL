@@ -19,11 +19,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "../../SDL_internal.h"
-#include "SDL_error.h"
+#include "../SDL_sysurl.h"
 #include <Url.h>
-
-extern "C" { int SDL_SYS_OpenURL(const char *url); }
 
 int
 SDL_SYS_OpenURL(const char *url)
