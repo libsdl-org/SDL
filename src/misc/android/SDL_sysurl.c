@@ -25,11 +25,7 @@
 int
 SDL_SYS_OpenURL(const char *url)
 {
-    JNIEnv *env = Android_JNI_GetEnv();
-    jstring jurl = (*env)->NewStringUTF(env, url);
-    const int ret = (*env)->CallStaticIntMethod(env, mActivityClass, midOpenURL, jurl);
-    (*env)->DeleteLocalRef(env, jurl);
-    return ret;
+    return Android_JNI_OpenURL(url);
 }
 
 /* vi: set ts=4 sw=4 expandtab: */
