@@ -29,7 +29,7 @@ int
 SDL_SYS_OpenURL(const char *url)
 {
     WCHAR* wurl;
-    int rc;
+    HINSTANCE rc;
 
     /* MSDN says for safety's sake, make sure COM is initialized. */
     const HRESULT hr = WIN_CoInitialize();
@@ -44,10 +44,10 @@ SDL_SYS_OpenURL(const char *url)
     }
 
     /* Success returns value greater than 32. Less is an error. */
-    rc = (int) ShellExecuteW(NULL, L"open", wurl, NULL, NULL, SW_SHOWNORMAL);
+    rc = ShellExecuteW(NULL, L"open", wurl, NULL, NULL, SW_SHOWNORMAL);
     SDL_free(wurl);
     WIN_CoUninitialize();
-    return (rc > 32) ? 0 : WIN_SetError("Couldn't open given URL.");
+    return (rc > ((HINSTANCE) 32)) ? 0 : WIN_SetError("Couldn't open given URL.");
 }
 
 /* vi: set ts=4 sw=4 expandtab: */
