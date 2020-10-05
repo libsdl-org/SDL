@@ -243,6 +243,7 @@
     <ClInclude Include="..\..\include\SDL_log.h" />
     <ClInclude Include="..\..\include\SDL_main.h" />
     <ClInclude Include="..\..\include\SDL_messagebox.h" />
+    <ClInclude Include="..\..\include\SDL_misc.h" />
     <ClInclude Include="..\..\include\SDL_mouse.h" />
     <ClInclude Include="..\..\include\SDL_mutex.h" />
     <ClInclude Include="..\..\include\SDL_name.h" />
@@ -467,6 +468,8 @@
     <ClCompile Include="..\..\src\loadso\windows\SDL_sysloadso.c" />
     <ClCompile Include="..\..\src\locale\SDL_locale.c" />
     <ClCompile Include="..\..\src\locale\windows\SDL_syslocale.c" />
+    <ClCompile Include="..\..\src\misc\SDL_url.c" />
+    <ClCompile Include="..\..\src\misc\windows\SDL_sysurl.c" />
     <ClCompile Include="..\..\src\power\SDL_power.c" />
     <ClCompile Include="..\..\src\power\windows\SDL_syspower.c" />
     <ClCompile Include="..\..\src\render\direct3d11\SDL_shaders_d3d11.c" />
