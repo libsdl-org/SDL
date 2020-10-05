@@ -21,19 +21,15 @@
 
 #include <Windows.h>
 
-#include "../../core/windows/SDL_windows.h"
 #include "../SDL_sysurl.h"
 
 int
 SDL_SYS_OpenURL(const char *url)
 {
-    WCHAR *wurl = WIN_UTF8ToString(url);
-    if (wurl == NULL) {
-        return SDL_OutOfMemory();
-    }
-
-    auto uri = ref new Windows::Foundation::Uri(wurl);
+    Platform::String^ strurl = url;
     SDL_free(wurl);
+
+    auto uri = ref new Windows::Foundation::Uri(strurl);
     launchUriOperation(Windows::System::Launcher::LaunchUriAsync(uri));
     return 0;
 }
