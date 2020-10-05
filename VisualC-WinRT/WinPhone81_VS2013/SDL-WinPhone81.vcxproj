@@ -47,6 +47,7 @@
     <ClInclude Include="..\..\include\SDL_locale.h" />
     <ClInclude Include="..\..\include\SDL_log.h" />
     <ClInclude Include="..\..\include\SDL_main.h" />
+    <ClInclude Include="..\..\include\SDL_misc.h" />
     <ClInclude Include="..\..\include\SDL_mouse.h" />
     <ClInclude Include="..\..\include\SDL_mutex.h" />
     <ClInclude Include="..\..\include\SDL_name.h" />
@@ -249,6 +250,8 @@
     <ClCompile Include="..\..\src\SDL_log.c" />
     <ClCompile Include="..\..\src\locale\SDL_locale.c" />
     <ClCompile Include="..\..\src\locale\winrt\SDL_syslocale.c" />
+    <ClCompile Include="..\..\src\misc\SDL_url.c" />
+    <ClCompile Include="..\..\src\misc\windows\SDL_sysurl.c" />
     <ClCompile Include="..\..\src\sensor\dummy\SDL_dummysensor.c" />
     <ClCompile Include="..\..\src\sensor\SDL_sensor.c" />
     <ClCompile Include="..\..\src\stdlib\SDL_getenv.c" />
