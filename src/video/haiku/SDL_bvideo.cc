@@ -37,6 +37,8 @@ extern "C" {
 #include "SDL_bframebuffer.h"
 #include "SDL_bevents.h"
 
+#include <Url.h>
+
 /* FIXME: Undefined functions */
 //    #define HAIKU_PumpEvents NULL
     #define HAIKU_StartTextInput NULL
@@ -191,6 +193,15 @@ void HAIKU_VideoQuit(_THIS)
     HAIKU_QuitModes(_this);
 
     SDL_QuitBeApp();
+}
+
+// just sticking this function in here so it's in a C++ source file.
+extern "C" { int HAIKU_OpenURL(const char *url); }
+int HAIKU_OpenURL(const char *url)
+{
+    BUrl burl(url);
+    const status_t rc = burl.OpenWithPreferredApplication(false);
+    return (rc == B_NO_ERROR) ? 0 : SDL_SetError("URL open failed (err=%d)", (int) rc);
 }
 
 #ifdef __cplusplus

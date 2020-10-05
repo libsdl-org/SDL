@@ -87,6 +87,7 @@ HDRS = \
 	SDL_main.h \
 	SDL_messagebox.h \
 	SDL_metal.h \
+	SDL_misc.h \
 	SDL_mouse.h \
 	SDL_mutex.h \
 	SDL_name.h \

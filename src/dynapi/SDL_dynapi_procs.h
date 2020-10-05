@@ -826,5 +826,5 @@ SDL_DYNAPI_PROC(float,SDL_truncf,(float a),(a),return)
 SDL_DYNAPI_PROC(SDL_Locale *,SDL_GetPreferredLocales,(void),(),return)
 #ifdef __ANDROID__
 SDL_DYNAPI_PROC(SDL_bool,SDL_AndroidRequestPermission,(const char *a),(a),return)
-SDL_DYNAPI_PROC(int,SDL_AndroidOpenURL,(const char *a),(a),return)
 #endif
+SDL_DYNAPI_PROC(int,SDL_OpenURL,(const char *a),(a),return)
