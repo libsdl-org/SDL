@@ -21,22 +21,21 @@
 
 #include <Windows.h>
 
+#include "../../core/windows/SDL_windows.h"
 #include "../SDL_sysurl.h"
 
 int
 SDL_SYS_OpenURL(const char *url)
 {
-    auto uri = ref new Windows::Foundation::Uri(url);
-    concurrency::task<bool> launchUriOperation(Windows::System::Launcher::LaunchUriAsync(uri));
-    int retval = -1;
-    launchUriOperation.then([](bool success) {
-        if (success) {
-            retval = 0;
-        } else {
-            retval = SDL_SetError("URL failed to launch");
-        }
-    });
-    return retval;
+    WCHAR *wurl = WIN_UTF8ToString(url);
+    if (wurl == NULL) {
+        return SDL_OutOfMemory();
+    }
+
+    auto uri = ref new Windows::Foundation::Uri(wurl);
+    SDL_free(wurl);
+    launchUriOperation(Windows::System::Launcher::LaunchUriAsync(uri));
+    return 0;
 }
 
 /* vi: set ts=4 sw=4 expandtab: */
