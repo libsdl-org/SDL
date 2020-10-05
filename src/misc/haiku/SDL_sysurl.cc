@@ -23,6 +23,8 @@
 #include "SDL_error.h"
 #include <Url.h>
 
+extern "C" { int SDL_SYS_OpenURL(const char *url); }
+
 int
 SDL_SYS_OpenURL(const char *url)
 {
