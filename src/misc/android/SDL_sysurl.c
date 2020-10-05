@@ -25,7 +25,6 @@
 int
 SDL_SYS_OpenURL(const char *url)
 {
-    jclass mActivityClass = Android_GetActivityClass();
     JNIEnv *env = Android_JNI_GetEnv();
     jstring jurl = (*env)->NewStringUTF(env, url);
     const int ret = (*env)->CallStaticIntMethod(env, mActivityClass, midOpenURL, jurl);

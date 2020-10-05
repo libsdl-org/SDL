@@ -2284,11 +2284,6 @@ void *SDL_AndroidGetActivity(void)
     return (*env)->CallStaticObjectMethod(env, mActivityClass, midGetContext);
 }
 
-jclass Android_GetActivityClass(void)
-{
-    return mActivityClass;
-}
-
 int SDL_GetAndroidSDKVersion(void)
 {
     static int sdk_version;
