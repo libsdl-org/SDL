@@ -21,6 +21,8 @@
 
 #include "../SDL_sysurl.h"
 
+#import <UIKit/UIKit.h>
+
 int
 SDL_SYS_OpenURL(const char *url)
 { @autoreleasepool {
