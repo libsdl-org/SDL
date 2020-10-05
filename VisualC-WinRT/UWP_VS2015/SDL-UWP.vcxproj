@@ -255,7 +255,7 @@
     <ClCompile Include="..\..\src\locale\SDL_locale.c" />
     <ClCompile Include="..\..\src\locale\winrt\SDL_syslocale.c" />
     <ClCompile Include="..\..\src\misc\SDL_url.c" />
-    <ClCompile Include="..\..\src\misc\windows\SDL_sysurl.c" />
+    <ClCompile Include="..\..\src\misc\winrt\SDL_sysurl.cpp" />
     <ClCompile Include="..\..\src\power\SDL_power.c" />
     <ClCompile Include="..\..\src\power\winrt\SDL_syspower.cpp" />
     <ClCompile Include="..\..\src\render\direct3d11\SDL_render_d3d11.c" />
