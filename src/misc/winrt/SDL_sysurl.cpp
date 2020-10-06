@@ -21,17 +21,22 @@
 
 #include <Windows.h>
 
+#include "../../core/windows/SDL_windows.h"
 #include "../SDL_sysurl.h"
 
 int
 SDL_SYS_OpenURL(const char *url)
 {
-    Platform::String^ strurl = url;
+    WCHAR *wurl = WIN_UTF8ToString(url);
+    if (!wurl) {
+        return SDL_OutOfMemory();
+    }
+    auto strurl = ref new Platform::String(wurl);
     SDL_free(wurl);
 
     auto uri = ref new Windows::Foundation::Uri(strurl);
-    launchUriOperation(Windows::System::Launcher::LaunchUriAsync(uri));
-    return 0;
+    Windows::System::Launcher::LaunchUriAsync(uri);
+    return 0;  // oh well, we're not waiting on an async task here.
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

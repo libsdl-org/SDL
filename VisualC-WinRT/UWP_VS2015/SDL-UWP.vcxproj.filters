@@ -438,6 +438,9 @@
     <ClInclude Include="..\..\src\events\SDL_displayevents_c.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\SDL_misc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\atomic\SDL_atomic.c">
@@ -789,6 +792,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\events\SDL_displayevents.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\misc\winrt\SDL_sysurl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\misc\SDL_url.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
