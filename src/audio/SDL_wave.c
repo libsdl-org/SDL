@@ -1334,7 +1334,8 @@ PCM_Init(WaveFile *file, size_t datalength)
     /* It wouldn't be that hard to support more exotic block sizes, but
      * the most common formats should do for now.
      */
-    if (format->blockalign * 8 != format->channels * format->bitspersample) {
+    /* Make sure we're a multiple of the blockalign, at least. */
+    if ((format->channels * format->bitspersample) % (format->blockalign * 8)) {
         return SDL_SetError("Unsupported block alignment");
     }
 
