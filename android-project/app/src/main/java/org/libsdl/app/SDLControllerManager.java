@@ -177,13 +177,14 @@ class SDLJoystickHandler_API16 extends SDLJoystickHandler {
     @Override
     public void pollInputDevices() {
         int[] deviceIds = InputDevice.getDeviceIds();
-        for(int i=0; i < deviceIds.length; ++i) {
-            SDLJoystick joystick = getJoystick(deviceIds[i]);
-            if (joystick == null) {
-                InputDevice joystickDevice = InputDevice.getDevice(deviceIds[i]);
-                if (SDLControllerManager.isDeviceSDLJoystick(deviceIds[i])) {
+
+        for (int device_id : deviceIds) {
+            if (SDLControllerManager.isDeviceSDLJoystick(device_id)) {
+                SDLJoystick joystick = getJoystick(device_id);
+                if (joystick == null) {
+                    InputDevice joystickDevice = InputDevice.getDevice(device_id);
                     joystick = new SDLJoystick();
-                    joystick.device_id = deviceIds[i];
+                    joystick.device_id = device_id;
                     joystick.name = joystickDevice.getName();
                     joystick.desc = getJoystickDescriptor(joystickDevice);
                     joystick.axes = new ArrayList<InputDevice.MotionRange>();
@@ -191,53 +192,57 @@ class SDLJoystickHandler_API16 extends SDLJoystickHandler {
 
                     List<InputDevice.MotionRange> ranges = joystickDevice.getMotionRanges();
                     Collections.sort(ranges, new RangeComparator());
-                    for (InputDevice.MotionRange range : ranges ) {
+                    for (InputDevice.MotionRange range : ranges) {
                         if ((range.getSource() & InputDevice.SOURCE_CLASS_JOYSTICK) != 0) {
-                            if (range.getAxis() == MotionEvent.AXIS_HAT_X ||
-                                range.getAxis() == MotionEvent.AXIS_HAT_Y) {
+                            if (range.getAxis() == MotionEvent.AXIS_HAT_X || range.getAxis() == MotionEvent.AXIS_HAT_Y) {
                                 joystick.hats.add(range);
-                            }
-                            else {
+                            } else {
                                 joystick.axes.add(range);
                             }
                         }
                     }
 
                     mJoysticks.add(joystick);
-                    SDLControllerManager.nativeAddJoystick(joystick.device_id, joystick.name, joystick.desc, getVendorId(joystickDevice), getProductId(joystickDevice), false, getButtonMask(joystickDevice), joystick.axes.size(), joystick.hats.size()/2, 0);
+                    SDLControllerManager.nativeAddJoystick(joystick.device_id, joystick.name, joystick.desc, 
+                            getVendorId(joystickDevice), getProductId(joystickDevice), false, 
+                            getButtonMask(joystickDevice), joystick.axes.size(), joystick.hats.size()/2, 0);
                 }
             }
         }
 
         /* Check removed devices */
-        ArrayList<Integer> removedDevices = new ArrayList<Integer>();
-        for(int i=0; i < mJoysticks.size(); i++) {
-            int device_id = mJoysticks.get(i).device_id;
-            int j;
-            for (j=0; j < deviceIds.length; j++) {
-                if (device_id == deviceIds[j]) break;
+        ArrayList<Integer> removedDevices = null;
+        for (SDLJoystick joystick : mJoysticks) {
+            int device_id = joystick.device_id;
+            int i;
+            for (i = 0; i < deviceIds.length; i++) {
+                if (device_id == deviceIds[i]) break;
             }
-            if (j == deviceIds.length) {
-                removedDevices.add(Integer.valueOf(device_id));
+            if (i == deviceIds.length) {
+                if (removedDevices == null) {
+                    removedDevices = new ArrayList<Integer>();
+                }
+                removedDevices.add(device_id);
             }
         }
 
-        for(int i=0; i < removedDevices.size(); i++) {
-            int device_id = removedDevices.get(i).intValue();
-            SDLControllerManager.nativeRemoveJoystick(device_id);
-            for (int j=0; j < mJoysticks.size(); j++) {
-                if (mJoysticks.get(j).device_id == device_id) {
-                    mJoysticks.remove(j);
-                    break;
+        if (removedDevices != null) {
+            for (int device_id : removedDevices) {
+                SDLControllerManager.nativeRemoveJoystick(device_id);
+                for (int i = 0; i < mJoysticks.size(); i++) {
+                    if (mJoysticks.get(i).device_id == device_id) {
+                        mJoysticks.remove(i);
+                        break;
+                    }
                 }
             }
         }
     }
 
     protected SDLJoystick getJoystick(int device_id) {
-        for(int i=0; i < mJoysticks.size(); i++) {
-            if (mJoysticks.get(i).device_id == device_id) {
-                return mJoysticks.get(i);
+        for (SDLJoystick joystick : mJoysticks) {
+            if (joystick.device_id == device_id) {
+                return joystick;
             }
         }
         return null;
