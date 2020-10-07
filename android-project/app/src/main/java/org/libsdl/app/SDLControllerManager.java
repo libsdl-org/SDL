@@ -263,10 +263,10 @@ class SDLJoystickHandler_API16 extends SDLJoystickHandler {
                             float value = ( event.getAxisValue( range.getAxis(), actionPointerIndex) - range.getMin() ) / range.getRange() * 2.0f - 1.0f;
                             SDLControllerManager.onNativeJoy(joystick.device_id, i, value );
                         }
-                        for (int i = 0; i < joystick.hats.size(); i+=2) {
-                            int hatX = Math.round(event.getAxisValue( joystick.hats.get(i).getAxis(), actionPointerIndex ) );
-                            int hatY = Math.round(event.getAxisValue( joystick.hats.get(i+1).getAxis(), actionPointerIndex ) );
-                            SDLControllerManager.onNativeHat(joystick.device_id, i/2, hatX, hatY );
+                        for (int i = 0; i < joystick.hats.size()/2; i++) {
+                            int hatX = Math.round(event.getAxisValue( joystick.hats.get(2 * i).getAxis(), actionPointerIndex ));
+                            int hatY = Math.round(event.getAxisValue( joystick.hats.get(2 * i + 1).getAxis(), actionPointerIndex ));
+                            SDLControllerManager.onNativeHat(joystick.device_id, i, hatX, hatY);
                         }
                     }
                     break;
