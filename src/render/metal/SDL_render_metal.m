@@ -1518,17 +1518,21 @@ METAL_RenderPresent(SDL_Renderer * renderer)
 { @autoreleasepool {
     METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
 
-    METAL_ActivateRenderCommandEncoder(renderer, MTLLoadActionLoad, NULL, nil);
+    // If we don't have a command buffer, we can't present, so activate to get one.
+    if (data.mtlcmdencoder == nil) {
+        // We haven't even gotten a backbuffer yet? Clear it to black. Otherwise, load the existing data.
+        if (data.mtlbackbuffer == nil) {
+            MTLClearColor color = MTLClearColorMake(0.0f, 0.0f, 0.0f, 1.0f);
+            METAL_ActivateRenderCommandEncoder(renderer, MTLLoadActionClear, &color, nil);
+        } else {
+            METAL_ActivateRenderCommandEncoder(renderer, MTLLoadActionLoad, NULL, nil);
+        }
+    }
 
-    if (data.mtlcmdencoder != nil) {
-        [data.mtlcmdencoder endEncoding];
-    }
-    if (data.mtlbackbuffer != nil) {
-        [data.mtlcmdbuffer presentDrawable:data.mtlbackbuffer];
-    }
-    if (data.mtlcmdbuffer != nil) {
-        [data.mtlcmdbuffer commit];
-    }
+    [data.mtlcmdencoder endEncoding];
+    [data.mtlcmdbuffer presentDrawable:data.mtlbackbuffer];
+    [data.mtlcmdbuffer commit];
+
     data.mtlcmdencoder = nil;
     data.mtlcmdbuffer = nil;
     data.mtlbackbuffer = nil;
