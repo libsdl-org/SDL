@@ -509,37 +509,41 @@ class SDLHapticHandler {
         }
 
         /* Check removed devices */
-        ArrayList<Integer> removedDevices = new ArrayList<Integer>();
-        for(int i=0; i < mHaptics.size(); i++) {
-            int device_id = mHaptics.get(i).device_id;
-            int j;
-            for (j=0; j < deviceIds.length; j++) {
-                if (device_id == deviceIds[j]) break;
+        ArrayList<Integer> removedDevices = null;
+        for (SDLHaptic haptic : mHaptics) {
+            int device_id = haptic.device_id;
+            int i;
+            for (i = 0; i < deviceIds.length; i++) {
+                if (device_id == deviceIds[i]) break;
             }
 
             if (device_id == deviceId_VIBRATOR_SERVICE && hasVibratorService) {
                 // don't remove the vibrator if it is still present
-            } else if (j == deviceIds.length) {
+            } else if (i == deviceIds.length) {
+                if (removedDevices == null) {
+                    removedDevices = new ArrayList<Integer>();
+                }
                 removedDevices.add(device_id);
             }
         }
 
-        for(int i=0; i < removedDevices.size(); i++) {
-            int device_id = removedDevices.get(i);
-            SDLControllerManager.nativeRemoveHaptic(device_id);
-            for (int j=0; j < mHaptics.size(); j++) {
-                if (mHaptics.get(j).device_id == device_id) {
-                    mHaptics.remove(j);
-                    break;
+        if (removedDevices != null) {
+            for (int device_id : removedDevices) {
+                SDLControllerManager.nativeRemoveHaptic(device_id);
+                for (int i = 0; i < mHaptics.size(); i++) {
+                    if (mHaptics.get(i).device_id == device_id) {
+                        mHaptics.remove(i);
+                        break;
+                    }
                 }
             }
         }
     }
 
     protected SDLHaptic getHaptic(int device_id) {
-        for(int i=0; i < mHaptics.size(); i++) {
-            if (mHaptics.get(i).device_id == device_id) {
-                return mHaptics.get(i);
+        for (SDLHaptic haptic : mHaptics) {
+            if (haptic.device_id == device_id) {
+                return haptic;
             }
         }
         return null;
