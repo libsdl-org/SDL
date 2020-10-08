@@ -269,7 +269,6 @@ int
 UIKit_AddDisplay(UIScreen *uiscreen, SDL_bool send_event)
 {
     UIScreenMode *uiscreenmode = uiscreen.currentMode;
-    CGPoint origin = uiscreen.bounds.origin;
     CGSize size = uiscreen.bounds.size;
     SDL_VideoDisplay display;
     SDL_DisplayMode mode;
