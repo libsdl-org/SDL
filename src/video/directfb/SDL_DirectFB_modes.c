@@ -258,7 +258,7 @@ DirectFB_InitModes(_THIS)
 
         SDL_DFB_CHECKERR(layer->SetCooperativeLevel(layer, DLSCL_SHARED));
 
-        SDL_AddVideoDisplay(&display);
+        SDL_AddVideoDisplay(&display, SDL_FALSE);
     }
     SDL_DFB_FREE(screencbdata);
     return;

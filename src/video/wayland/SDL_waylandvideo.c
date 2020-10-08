@@ -274,7 +274,7 @@ display_handle_done(void *data,
 {
     /* !!! FIXME: this will fail on any further property changes! */
     SDL_VideoDisplay *display = data;
-    SDL_AddVideoDisplay(display);
+    SDL_AddVideoDisplay(display, SDL_FALSE);
     wl_output_set_user_data(output, display->driverdata);
     SDL_free(display->name);
     SDL_free(display);

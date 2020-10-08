@@ -47,7 +47,7 @@ static int exit_status;
 /* SDL is being built as a static library, include main() */
 int main(int argc, char *argv[])
 {
-	return SDL_UIKitRunApp(argc, argv, SDL_main);
+    return SDL_UIKitRunApp(argc, argv, SDL_main);
 }
 #endif /* SDL_MAIN_NEEDED && !IOS_DYLIB */
 
@@ -56,7 +56,7 @@ int SDL_UIKitRunApp(int argc, char *argv[], SDL_main_func mainFunction)
     int i;
 
     /* store arguments */
-	forward_main = mainFunction;
+    forward_main = mainFunction;
     forward_argc = argc;
     forward_argv = (char **)malloc((argc+1) * sizeof(char *));
     for (i = 0; i < argc; i++) {
@@ -349,6 +349,14 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
 
 - (void)postFinishLaunch
 {
+    NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
+ 
+    [center addObserver:self selector:@selector(handleScreenDidConnectNotification:)
+            name:UIScreenDidConnectNotification object:nil];
+    [center addObserver:self selector:@selector(handleScreenDidDisconnectNotification:)
+            name:UIScreenDidDisconnectNotification object:nil];
+ 
+
     /* Hide the launch screen the next time the run loop is run. SDL apps will
      * have a chance to load resources while the launch screen is still up. */
     [self performSelector:@selector(hideLaunchScreen) withObject:nil afterDelay:0.0];
@@ -519,6 +527,18 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
 }
 
 #endif
+
+- (void)handleScreenDidConnectNotification:(NSNotification*)aNotification
+{
+    UIScreen *uiscreen = [aNotification object];
+    UIKit_AddDisplay(uiscreen, SDL_TRUE);
+}
+ 
+- (void)handleScreenDidDisconnectNotification:(NSNotification*)aNotification
+{
+    UIScreen *uiscreen = [aNotification object];
+    UIKit_DelDisplay(uiscreen);
+}
 
 @end
 

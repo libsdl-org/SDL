@@ -196,7 +196,7 @@ AddDispManXDisplay(const int display_id)
 
     display.driverdata = data;
 
-    SDL_AddVideoDisplay(&display);
+    SDL_AddVideoDisplay(&display, SDL_FALSE);
 }
 
 int

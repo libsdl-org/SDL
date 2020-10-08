@@ -228,7 +228,7 @@ static void _AddDisplay(BScreen *screen) {
     display.desktop_mode = *mode;
     display.current_mode = *mode;
     
-    SDL_AddVideoDisplay(&display);
+    SDL_AddVideoDisplay(&display, SDL_FALSE);
 }
 
 /*

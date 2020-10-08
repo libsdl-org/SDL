@@ -171,7 +171,7 @@ WIN_AddDisplay(_THIS, HMONITOR hMonitor, const MONITORINFOEX *info)
     display.desktop_mode = mode;
     display.current_mode = mode;
     display.driverdata = displaydata;
-    SDL_AddVideoDisplay(&display);
+    SDL_AddVideoDisplay(&display, SDL_FALSE);
     SDL_free(display.name);
     return SDL_TRUE;
 }

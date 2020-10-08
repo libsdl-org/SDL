@@ -389,7 +389,7 @@ Cocoa_InitModes(_THIS)
             display.desktop_mode = mode;
             display.current_mode = mode;
             display.driverdata = displaydata;
-            SDL_AddVideoDisplay(&display);
+            SDL_AddVideoDisplay(&display, SDL_FALSE);
             SDL_free(display.name);
         }
     }

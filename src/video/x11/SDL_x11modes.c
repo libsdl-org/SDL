@@ -487,7 +487,7 @@ X11_InitModes_XRandR(_THIS)
                 display.desktop_mode = mode;
                 display.current_mode = mode;
                 display.driverdata = displaydata;
-                SDL_AddVideoDisplay(&display);
+                SDL_AddVideoDisplay(&display, SDL_FALSE);
             }
 
             X11_XRRFreeScreenResources(res);
@@ -807,7 +807,7 @@ X11_InitModes(_THIS)
         display.desktop_mode = mode;
         display.current_mode = mode;
         display.driverdata = displaydata;
-        SDL_AddVideoDisplay(&display);
+        SDL_AddVideoDisplay(&display, SDL_FALSE);
     }
 
 #if SDL_VIDEO_DRIVER_X11_XINERAMA

@@ -265,10 +265,11 @@ UIKit_AddDisplayMode(SDL_VideoDisplay * display, int w, int h, UIScreen * uiscre
     return 0;
 }
 
-static int
-UIKit_AddDisplay(UIScreen *uiscreen)
+int
+UIKit_AddDisplay(UIScreen *uiscreen, SDL_bool send_event)
 {
     UIScreenMode *uiscreenmode = uiscreen.currentMode;
+    CGPoint origin = uiscreen.bounds.origin;
     CGSize size = uiscreen.bounds.size;
     SDL_VideoDisplay display;
     SDL_DisplayMode mode;
@@ -302,9 +303,25 @@ UIKit_AddDisplay(UIScreen *uiscreen)
     }
 
     display.driverdata = (void *) CFBridgingRetain(data);
-    SDL_AddVideoDisplay(&display);
+    SDL_AddVideoDisplay(&display, send_event);
 
     return 0;
+}
+
+void
+UIKit_DelDisplay(UIScreen *uiscreen)
+{
+    int i;
+
+    for (i = 0; i < SDL_GetNumVideoDisplays(); ++i) {
+        SDL_DisplayData *data = (__bridge SDL_DisplayData *)SDL_GetDisplayDriverData(i);
+
+        if (data && data.uiscreen == uiscreen) {
+            CFRelease(SDL_GetDisplayDriverData(i));
+            SDL_DelVideoDisplay(i);
+            return;
+        }
+    }
 }
 
 SDL_bool
@@ -326,7 +343,7 @@ UIKit_InitModes(_THIS)
 {
     @autoreleasepool {
         for (UIScreen *uiscreen in [UIScreen screens]) {
-            if (UIKit_AddDisplay(uiscreen) < 0) {
+            if (UIKit_AddDisplay(uiscreen, SDL_FALSE) < 0) {
                 return -1;
             }
         }

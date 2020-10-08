@@ -47,7 +47,7 @@ videoInit(_THIS)
 
     SDL_zero(display);
 
-    if (SDL_AddVideoDisplay(&display) < 0) {
+    if (SDL_AddVideoDisplay(&display, SDL_FALSE) < 0) {
         return -1;
     }
 

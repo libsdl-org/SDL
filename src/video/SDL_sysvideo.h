@@ -439,7 +439,8 @@ extern VideoBootStrap OFFSCREEN_bootstrap;
 
 extern SDL_VideoDevice *SDL_GetVideoDevice(void);
 extern int SDL_AddBasicVideoDisplay(const SDL_DisplayMode * desktop_mode);
-extern int SDL_AddVideoDisplay(const SDL_VideoDisplay * display);
+extern int SDL_AddVideoDisplay(const SDL_VideoDisplay * display, SDL_bool send_event);
+extern void SDL_DelVideoDisplay(int index);
 extern SDL_bool SDL_AddDisplayMode(SDL_VideoDisplay *display, const SDL_DisplayMode * mode);
 extern int SDL_GetIndexOfDisplay(SDL_VideoDisplay *display);
 extern SDL_VideoDisplay *SDL_GetDisplay(int displayIndex);
