@@ -170,7 +170,7 @@ VIVANTE_AddVideoDisplays(_THIS)
     display.desktop_mode = current_mode;
     display.current_mode = current_mode;
     display.driverdata = data;
-    SDL_AddVideoDisplay(&display);
+    SDL_AddVideoDisplay(&display, SDL_FALSE);
     return 0;
 }
 

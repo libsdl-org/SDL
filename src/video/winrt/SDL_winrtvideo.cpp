@@ -293,7 +293,7 @@ WINRT_AddDisplaysForOutput (_THIS, IDXGIAdapter1 * dxgiAdapter1, int outputIndex
         }
     }
 
-    if (SDL_AddVideoDisplay(&display) < 0) {
+    if (SDL_AddVideoDisplay(&display, SDL_FALSE) < 0) {
         goto done;
     }
 
@@ -376,7 +376,7 @@ WINRT_AddDisplaysForAdapter (_THIS, IDXGIFactory2 * dxgiFactory2, int adapterInd
                 display.desktop_mode = mode;
                 display.current_mode = mode;
                 if ((SDL_AddDisplayMode(&display, &mode) < 0) ||
-                    (SDL_AddVideoDisplay(&display) < 0))
+                    (SDL_AddVideoDisplay(&display, SDL_FALSE) < 0))
                 {
                     return SDL_SetError("Failed to apply DXGI Display-detection workaround");
                 }

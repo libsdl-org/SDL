@@ -1795,6 +1795,9 @@
 					FABA34961D8B582100915323 = {
 						ProvisioningStyle = Automatic;
 					};
+					FDD2C53D0E2E80E400B7A85F = {
+						DevelopmentTeam = MXGJJ98X76;
+					};
 				};
 			};
 			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "TestiPhoneOS" */;
@@ -2865,6 +2868,7 @@
 		FDD2C54C0E2E80E400B7A85F /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				DEVELOPMENT_TEAM = MXGJJ98X76;
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_NAME = testsprite2;
 			};
@@ -2873,6 +2877,7 @@
 		FDD2C54D0E2E80E400B7A85F /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				DEVELOPMENT_TEAM = MXGJJ98X76;
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_NAME = testsprite2;
 			};

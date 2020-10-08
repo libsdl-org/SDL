@@ -1262,7 +1262,7 @@ KMSDRM_VideoInit(_THIS)
 
     display.current_mode = display.desktop_mode;
     display.driverdata = dispdata;
-    SDL_AddVideoDisplay(&display);
+    SDL_AddVideoDisplay(&display, SDL_FALSE);
 
     /****************/
     /* Atomic block */
