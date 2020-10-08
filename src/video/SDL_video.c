@@ -622,9 +622,9 @@ SDL_AddVideoDisplay(const SDL_VideoDisplay * display, SDL_bool send_event)
             displays[index].name = SDL_strdup(name);
         }
 
-		if (send_event) {
-			SDL_SendDisplayEvent(&_this->displays[index], SDL_DISPLAYEVENT_CONNECTED, 0);
-		}
+        if (send_event) {
+            SDL_SendDisplayEvent(&_this->displays[index], SDL_DISPLAYEVENT_CONNECTED, 0);
+        }
     } else {
         SDL_OutOfMemory();
     }
@@ -634,16 +634,16 @@ SDL_AddVideoDisplay(const SDL_VideoDisplay * display, SDL_bool send_event)
 void
 SDL_DelVideoDisplay(int index)
 {
-	if (index < 0 || index >= _this->num_displays) {
-		return;
-	}
+    if (index < 0 || index >= _this->num_displays) {
+        return;
+    }
 
-	SDL_SendDisplayEvent(&_this->displays[index], SDL_DISPLAYEVENT_DISCONNECTED, 0);
+    SDL_SendDisplayEvent(&_this->displays[index], SDL_DISPLAYEVENT_DISCONNECTED, 0);
 
-	if (index < (_this->num_displays - 1)) {
-		SDL_memmove(&_this->displays[index], &_this->displays[index+1], (_this->num_displays - index - 1)*sizeof(_this->displays[index]));
-	}
-	--_this->num_displays;
+    if (index < (_this->num_displays - 1)) {
+        SDL_memmove(&_this->displays[index], &_this->displays[index+1], (_this->num_displays - index - 1)*sizeof(_this->displays[index]));
+    }
+    --_this->num_displays;
 }
 
 int
