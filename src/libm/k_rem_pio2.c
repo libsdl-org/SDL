@@ -173,8 +173,8 @@ int32_t attribute_hidden __kernel_rem_pio2(const double *x, double *y, int e0, i
 	j = jv-jx; m = jx+jk;
 	for(i=0;i<=m;i++,j++) f[i] = (j<0)? zero : (double) ipio2[j];
 	if ((m+1) < SDL_arraysize(f)) {
-        SDL_memset(&f[m+1], 0, sizeof (f) - ((m+1) * sizeof (f[0])));
-    }
+	    SDL_memset(&f[m+1], 0, sizeof (f) - ((m+1) * sizeof (f[0])));
+	}
 
     /* compute q[0],q[1],...q[jk] */
 	for (i=0;i<=jk;i++) {
@@ -191,8 +191,8 @@ recompute:
 	    z     =  q[j-1]+fw;
 	}
 	if (jz < SDL_arraysize(iq)) {
-        SDL_memset(&iq[jz], 0, sizeof (q) - (jz * sizeof (iq[0])));
-    }
+	    SDL_memset(&iq[jz], 0, sizeof (iq) - (jz * sizeof (iq[0])));
+	}
 
     /* compute n */
 	z  = scalbn(z,q0);		/* actual value of z */
@@ -276,8 +276,8 @@ recompute:
 	    fq[jz-i] = fw;
 	}
 	if ((jz+1) < SDL_arraysize(f)) {
-        SDL_memset(&fq[jz+1], 0, sizeof (fq) - ((jz+1) * sizeof (fq[0])));
-    }
+	    SDL_memset(&fq[jz+1], 0, sizeof (fq) - ((jz+1) * sizeof (fq[0])));
+	}
 
     /* compress fq[] into y[] */
 	switch(prec) {
