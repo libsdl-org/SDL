@@ -42,28 +42,22 @@
 		5616CA50252BB2BE005D5928 /* SDL_misc.h in Headers */ = {isa = PBXBuildFile; fileRef = 5616CA4F252BB2BE005D5928 /* SDL_misc.h */; };
 		5616CA51252BB35A005D5928 /* SDL_sysurl.h in Headers */ = {isa = PBXBuildFile; fileRef = 5616CA4A252BB2A6005D5928 /* SDL_sysurl.h */; };
 		5616CA52252BB35A005D5928 /* SDL_url.c in Sources */ = {isa = PBXBuildFile; fileRef = 5616CA49252BB2A5005D5928 /* SDL_url.c */; };
-		5616CA53252BB35A005D5928 /* SDL_sysurl.m in Sources */ = {isa = PBXBuildFile; fileRef = 5616CA4B252BB2A6005D5928 /* SDL_sysurl.m */; };
 		5616CA54252BB35B005D5928 /* SDL_sysurl.h in Headers */ = {isa = PBXBuildFile; fileRef = 5616CA4A252BB2A6005D5928 /* SDL_sysurl.h */; };
 		5616CA55252BB35B005D5928 /* SDL_url.c in Sources */ = {isa = PBXBuildFile; fileRef = 5616CA49252BB2A5005D5928 /* SDL_url.c */; };
-		5616CA56252BB35B005D5928 /* SDL_sysurl.m in Sources */ = {isa = PBXBuildFile; fileRef = 5616CA4B252BB2A6005D5928 /* SDL_sysurl.m */; };
 		5616CA57252BB35C005D5928 /* SDL_sysurl.h in Headers */ = {isa = PBXBuildFile; fileRef = 5616CA4A252BB2A6005D5928 /* SDL_sysurl.h */; };
 		5616CA58252BB35C005D5928 /* SDL_url.c in Sources */ = {isa = PBXBuildFile; fileRef = 5616CA49252BB2A5005D5928 /* SDL_url.c */; };
 		5616CA59252BB35C005D5928 /* SDL_sysurl.m in Sources */ = {isa = PBXBuildFile; fileRef = 5616CA4B252BB2A6005D5928 /* SDL_sysurl.m */; };
 		5616CA5A252BB35D005D5928 /* SDL_sysurl.h in Headers */ = {isa = PBXBuildFile; fileRef = 5616CA4A252BB2A6005D5928 /* SDL_sysurl.h */; };
 		5616CA5B252BB35D005D5928 /* SDL_url.c in Sources */ = {isa = PBXBuildFile; fileRef = 5616CA49252BB2A5005D5928 /* SDL_url.c */; };
-		5616CA5C252BB35D005D5928 /* SDL_sysurl.m in Sources */ = {isa = PBXBuildFile; fileRef = 5616CA4B252BB2A6005D5928 /* SDL_sysurl.m */; };
 		5616CA5D252BB35E005D5928 /* SDL_sysurl.h in Headers */ = {isa = PBXBuildFile; fileRef = 5616CA4A252BB2A6005D5928 /* SDL_sysurl.h */; };
 		5616CA5E252BB35E005D5928 /* SDL_url.c in Sources */ = {isa = PBXBuildFile; fileRef = 5616CA49252BB2A5005D5928 /* SDL_url.c */; };
-		5616CA5F252BB35E005D5928 /* SDL_sysurl.m in Sources */ = {isa = PBXBuildFile; fileRef = 5616CA4B252BB2A6005D5928 /* SDL_sysurl.m */; };
 		5616CA60252BB35E005D5928 /* SDL_sysurl.h in Headers */ = {isa = PBXBuildFile; fileRef = 5616CA4A252BB2A6005D5928 /* SDL_sysurl.h */; };
 		5616CA61252BB35E005D5928 /* SDL_url.c in Sources */ = {isa = PBXBuildFile; fileRef = 5616CA49252BB2A5005D5928 /* SDL_url.c */; };
 		5616CA62252BB35E005D5928 /* SDL_sysurl.m in Sources */ = {isa = PBXBuildFile; fileRef = 5616CA4B252BB2A6005D5928 /* SDL_sysurl.m */; };
 		5616CA63252BB35F005D5928 /* SDL_sysurl.h in Headers */ = {isa = PBXBuildFile; fileRef = 5616CA4A252BB2A6005D5928 /* SDL_sysurl.h */; };
 		5616CA64252BB35F005D5928 /* SDL_url.c in Sources */ = {isa = PBXBuildFile; fileRef = 5616CA49252BB2A5005D5928 /* SDL_url.c */; };
-		5616CA65252BB35F005D5928 /* SDL_sysurl.m in Sources */ = {isa = PBXBuildFile; fileRef = 5616CA4B252BB2A6005D5928 /* SDL_sysurl.m */; };
 		5616CA66252BB361005D5928 /* SDL_sysurl.h in Headers */ = {isa = PBXBuildFile; fileRef = 5616CA4A252BB2A6005D5928 /* SDL_sysurl.h */; };
 		5616CA67252BB361005D5928 /* SDL_url.c in Sources */ = {isa = PBXBuildFile; fileRef = 5616CA49252BB2A5005D5928 /* SDL_url.c */; };
-		5616CA68252BB361005D5928 /* SDL_sysurl.m in Sources */ = {isa = PBXBuildFile; fileRef = 5616CA4B252BB2A6005D5928 /* SDL_sysurl.m */; };
 		562C4AEA1D8F496300AF9EBE /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A7381E931D8B69C300B177DD /* AudioToolbox.framework */; };
 		564624361FF821C20074AC87 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 564624351FF821B80074AC87 /* QuartzCore.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		564624381FF821DA0074AC87 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 564624371FF821CB0074AC87 /* Metal.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
@@ -3972,6 +3966,12 @@
 		DB31408D17554D3C006C0E22 /* ForceFeedback.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00CFA89C106B4BA100758660 /* ForceFeedback.framework */; };
 		F3631C6424884ACF004F28EA /* SDL_locale.h in Headers */ = {isa = PBXBuildFile; fileRef = 566E26792462701100718109 /* SDL_locale.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F3631C652488534E004F28EA /* SDL_locale.h in Headers */ = {isa = PBXBuildFile; fileRef = 566E26792462701100718109 /* SDL_locale.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F37DC5BD252FDE620002E6F7 /* SDL_sysurl.c in Sources */ = {isa = PBXBuildFile; fileRef = F37DC5BC252FDE620002E6F7 /* SDL_sysurl.c */; };
+		F37DC5BE252FDE620002E6F7 /* SDL_sysurl.c in Sources */ = {isa = PBXBuildFile; fileRef = F37DC5BC252FDE620002E6F7 /* SDL_sysurl.c */; };
+		F37DC5BF252FDE620002E6F7 /* SDL_sysurl.c in Sources */ = {isa = PBXBuildFile; fileRef = F37DC5BC252FDE620002E6F7 /* SDL_sysurl.c */; };
+		F37DC5C0252FDE620002E6F7 /* SDL_sysurl.c in Sources */ = {isa = PBXBuildFile; fileRef = F37DC5BC252FDE620002E6F7 /* SDL_sysurl.c */; };
+		F37DC5C1252FDE620002E6F7 /* SDL_sysurl.c in Sources */ = {isa = PBXBuildFile; fileRef = F37DC5BC252FDE620002E6F7 /* SDL_sysurl.c */; };
+		F37DC5C2252FDE620002E6F7 /* SDL_sysurl.c in Sources */ = {isa = PBXBuildFile; fileRef = F37DC5BC252FDE620002E6F7 /* SDL_sysurl.c */; };
 		F3950CD8212BC88D00F51292 /* SDL_sensor.h in Headers */ = {isa = PBXBuildFile; fileRef = F3950CD7212BC88D00F51292 /* SDL_sensor.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F3950CD9212BC88D00F51292 /* SDL_sensor.h in Headers */ = {isa = PBXBuildFile; fileRef = F3950CD7212BC88D00F51292 /* SDL_sensor.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F3950CDA212BC88D00F51292 /* SDL_sensor.h in Headers */ = {isa = PBXBuildFile; fileRef = F3950CD7212BC88D00F51292 /* SDL_sensor.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -4039,9 +4039,9 @@
 		00CFA89C106B4BA100758660 /* ForceFeedback.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ForceFeedback.framework; path = System/Library/Frameworks/ForceFeedback.framework; sourceTree = SDKROOT; };
 		00D0D08310675DD9004B05EF /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
 		4D4820431F0F10B400EDC31C /* SDL_vulkan.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SDL_vulkan.h; sourceTree = "<group>"; };
-		5616CA49252BB2A5005D5928 /* SDL_url.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SDL_url.c; path = misc/SDL_url.c; sourceTree = "<group>"; };
-		5616CA4A252BB2A6005D5928 /* SDL_sysurl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_sysurl.h; path = misc/SDL_sysurl.h; sourceTree = "<group>"; };
-		5616CA4B252BB2A6005D5928 /* SDL_sysurl.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SDL_sysurl.m; path = misc/macosx/SDL_sysurl.m; sourceTree = "<group>"; };
+		5616CA49252BB2A5005D5928 /* SDL_url.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_url.c; sourceTree = "<group>"; };
+		5616CA4A252BB2A6005D5928 /* SDL_sysurl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_sysurl.h; sourceTree = "<group>"; };
+		5616CA4B252BB2A6005D5928 /* SDL_sysurl.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDL_sysurl.m; sourceTree = "<group>"; };
 		5616CA4F252BB2BE005D5928 /* SDL_misc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_misc.h; sourceTree = "<group>"; };
 		564624351FF821B80074AC87 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		564624371FF821CB0074AC87 /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
@@ -4083,7 +4083,6 @@
 		A75FDB5723E39E6100529352 /* hidapi.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = hidapi.h; path = hidapi/hidapi.h; sourceTree = "<group>"; };
 		A75FDB6E23E3A2C900529352 /* hidapi.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = hidapi.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		A75FDB8C23E4C74400529352 /* hidapi.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = hidapi.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		A75FDB8D23E4C74400529352 /* hidapi-iOS copy-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "hidapi-iOS copy-Info.plist"; path = "/Users/saml/projects/SDL/Xcode/SDL/hidapi-iOS copy-Info.plist"; sourceTree = "<absolute>"; };
 		A75FDB9223E4C8DB00529352 /* hid.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = hid.c; sourceTree = "<group>"; };
 		A75FDBA323E4CB6F00529352 /* LICENSE-bsd.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "LICENSE-bsd.txt"; sourceTree = "<group>"; };
 		A75FDBA423E4CB6F00529352 /* AUTHORS.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = AUTHORS.txt; sourceTree = "<group>"; };
@@ -4524,6 +4523,7 @@
 		BECDF6B30761BA81005FE872 /* libSDL2.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libSDL2.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		BECDF6BE0761BA81005FE872 /* SDL2 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = SDL2; sourceTree = BUILT_PRODUCTS_DIR; };
 		DB31407717554B71006C0E22 /* libSDL2.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libSDL2.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		F37DC5BC252FDE620002E6F7 /* SDL_sysurl.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_sysurl.c; sourceTree = "<group>"; };
 		F3950CD7212BC88D00F51292 /* SDL_sensor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_sensor.h; sourceTree = "<group>"; };
 		F59C710300D5CB5801000001 /* ReadMe.txt */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = ReadMe.txt; sourceTree = "<group>"; };
 		F59C710600D5CB5801000001 /* SDL.info */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = SDL.info; sourceTree = "<group>"; };
@@ -4804,7 +4804,6 @@
 				034768DDFF38A45A11DB9C8B /* Products */,
 				BECDF66B0761BA81005FE872 /* Info-Framework.plist */,
 				564624341FF821B70074AC87 /* Frameworks */,
-				A75FDB8D23E4C74400529352 /* hidapi-iOS copy-Info.plist */,
 			);
 			comments = "To build Universal Binaries, we have experimented with a variety of different options.\nThe complication is that we must retain compatibility with at least 10.2. \nThe Universal Binary defaults only work for > 10.3.9\n\nSo far, we have found:\ngcc 4.0.0 with Xcode 2.1 always links against libgcc_s. gcc 4.0.1 from Xcode 2.2 fixes this problem.\n\nBut gcc 4.0 will not work with < 10.3.9 because we continue to get an undefined symbol to _fprintf$LDBL128.\nSo we must use gcc 3.3 on PPC to accomplish 10.2 support. (But 4.0 is required for i386.)\n\nSetting the deployment target to 10.4 will disable prebinding, so for PPC, we set it less than 10.4 to preserve prebinding for legacy support.\n\nSetting the PPC SDKROOT to /Developers/SDKs/MacOSX10.2.8.sdk will link to 63.0.0 libSystem.B.dylib. Leaving it at current or 10.4u links to 88.1.2. However, as long as we are using gcc 3.3, it doesn't seem to matter as testing has demonstrated both will run. We have decided not to invoke the 10.2.8 SDK because it is not a default installed component with Xcode which will probably cause most people problems. However, rather than deleting the SDKROOT_ppc entry entirely, we have mapped it to 10.4u in case we decide we need to change this setting.\n\nTo use Altivec or SSE, we needed architecture specific flags:\nOTHER_CFLAGS_ppc\nOTHER_CFLAGS_i386\nOTHER_CFLAGS=$(OTHER_CFLAGS_($CURRENT_ARCH))\n\nThe general OTHER_CFLAGS needed to be manually mapped to architecture specific options because Xcode didn't do this automatically for us.\n\n\n";
 			indentWidth = 4;
@@ -4857,11 +4856,12 @@
 		5616CA47252BB278005D5928 /* misc */ = {
 			isa = PBXGroup;
 			children = (
+				F37DC5CD252FDE6A0002E6F7 /* dummy */,
+				5616CA48252BB285005D5928 /* macosx */,
 				5616CA4A252BB2A6005D5928 /* SDL_sysurl.h */,
 				5616CA49252BB2A5005D5928 /* SDL_url.c */,
-				5616CA48252BB285005D5928 /* macosx */,
 			);
-			name = misc;
+			path = misc;
 			sourceTree = "<group>";
 		};
 		5616CA48252BB285005D5928 /* macosx */ = {
@@ -4869,7 +4869,7 @@
 			children = (
 				5616CA4B252BB2A6005D5928 /* SDL_sysurl.m */,
 			);
-			name = macosx;
+			path = macosx;
 			sourceTree = "<group>";
 		};
 		564624341FF821B70074AC87 /* Frameworks */ = {
@@ -5774,6 +5774,14 @@
 				A7D8A92F23E2514000DCD162 /* SDL_windowevents.c */,
 			);
 			path = events;
+			sourceTree = "<group>";
+		};
+		F37DC5CD252FDE6A0002E6F7 /* dummy */ = {
+			isa = PBXGroup;
+			children = (
+				F37DC5BC252FDE620002E6F7 /* SDL_sysurl.c */,
+			);
+			path = dummy;
 			sourceTree = "<group>";
 		};
 		F59C70FC00D5CB5801000001 /* pkg-support */ = {
@@ -8507,6 +8515,7 @@
 				A75FCE1F23E25AB700529352 /* s_copysign.c in Sources */,
 				A75FCE2023E25AB700529352 /* SDL_haptic.c in Sources */,
 				A75FCE2123E25AB700529352 /* SDL_uikitvulkan.m in Sources */,
+				F37DC5C1252FDE620002E6F7 /* SDL_sysurl.c in Sources */,
 				A75FCE2223E25AB700529352 /* SDL_x11modes.c in Sources */,
 				75E09161241EA924004729E1 /* SDL_virtualjoystick.c in Sources */,
 				A75FCE2323E25AB700529352 /* SDL_cocoametalview.m in Sources */,
@@ -8561,7 +8570,6 @@
 				A75FCE5323E25AB700529352 /* SDL_mixer.c in Sources */,
 				5616CA64252BB35F005D5928 /* SDL_url.c in Sources */,
 				A75FCE5423E25AB700529352 /* SDL_events.c in Sources */,
-				5616CA65252BB35F005D5928 /* SDL_sysurl.m in Sources */,
 				A75FCE5523E25AB700529352 /* SDL_blit_0.c in Sources */,
 				A75FCE5623E25AB700529352 /* k_tan.c in Sources */,
 				A75FCE5723E25AB700529352 /* SDL_x11vulkan.c in Sources */,
@@ -8707,6 +8715,7 @@
 				A75FCFD823E25AC700529352 /* s_copysign.c in Sources */,
 				A75FCFD923E25AC700529352 /* SDL_haptic.c in Sources */,
 				A75FCFDA23E25AC700529352 /* SDL_uikitvulkan.m in Sources */,
+				F37DC5C2252FDE620002E6F7 /* SDL_sysurl.c in Sources */,
 				A75FCFDB23E25AC700529352 /* SDL_x11modes.c in Sources */,
 				75E09162241EA924004729E1 /* SDL_virtualjoystick.c in Sources */,
 				A75FCFDC23E25AC700529352 /* SDL_cocoametalview.m in Sources */,
@@ -8761,7 +8770,6 @@
 				A75FD00C23E25AC700529352 /* SDL_mixer.c in Sources */,
 				5616CA67252BB361005D5928 /* SDL_url.c in Sources */,
 				A75FD00D23E25AC700529352 /* SDL_events.c in Sources */,
-				5616CA68252BB361005D5928 /* SDL_sysurl.m in Sources */,
 				A75FD00E23E25AC700529352 /* SDL_blit_0.c in Sources */,
 				A75FD00F23E25AC700529352 /* k_tan.c in Sources */,
 				A75FD01023E25AC700529352 /* SDL_x11vulkan.c in Sources */,
@@ -8965,6 +8973,7 @@
 				A769B1CB23E259AE00872273 /* SDL_sysloadso.c in Sources */,
 				A769B1CC23E259AE00872273 /* SDL_x11xinput2.c in Sources */,
 				A769B1CD23E259AE00872273 /* SDL_syspower.c in Sources */,
+				F37DC5C0252FDE620002E6F7 /* SDL_sysurl.c in Sources */,
 				A769B1CE23E259AE00872273 /* SDL_x11touch.c in Sources */,
 				A769B1CF23E259AE00872273 /* SDL_iconv.c in Sources */,
 				A769B1D023E259AE00872273 /* s_fabs.c in Sources */,
@@ -9001,7 +9010,6 @@
 				A769B1EE23E259AE00872273 /* SDL_dummysensor.c in Sources */,
 				A769B1EF23E259AE00872273 /* SDL_string.c in Sources */,
 				A769B1F023E259AE00872273 /* SDL_render_gl.c in Sources */,
-				5616CA5F252BB35E005D5928 /* SDL_sysurl.m in Sources */,
 				A769B1F123E259AE00872273 /* SDL_uikitopengles.m in Sources */,
 				A769B1F223E259AE00872273 /* SDL_x11opengles.c in Sources */,
 				A769B1F323E259AE00872273 /* SDL_cocoamodes.m in Sources */,
@@ -9090,6 +9098,7 @@
 				A7D8B86723E2514400DCD162 /* SDL_audiocvt.c in Sources */,
 				A7D8B3AB23E2514200DCD162 /* SDL_shape.c in Sources */,
 				A7D8B9F623E2514400DCD162 /* SDL_rotate.c in Sources */,
+				F37DC5BD252FDE620002E6F7 /* SDL_sysurl.c in Sources */,
 				A7D8A97623E2514000DCD162 /* SDL_coremotionsensor.m in Sources */,
 				A7D8BB8E23E2514500DCD162 /* SDL_touch.c in Sources */,
 				A7D8B19B23E2514200DCD162 /* SDL_x11events.c in Sources */,
@@ -9164,7 +9173,6 @@
 				A7D8B54023E2514300DCD162 /* SDL_hidapi_ps4.c in Sources */,
 				A7D8AD6F23E2514100DCD162 /* SDL_pixels.c in Sources */,
 				5616CA52252BB35A005D5928 /* SDL_url.c in Sources */,
-				5616CA53252BB35A005D5928 /* SDL_sysurl.m in Sources */,
 				A7D8B1A123E2514200DCD162 /* SDL_x11clipboard.c in Sources */,
 				A7D8B75F23E2514300DCD162 /* SDL_sysloadso.c in Sources */,
 				A7D8B16B23E2514200DCD162 /* SDL_x11xinput2.c in Sources */,
@@ -9289,6 +9297,7 @@
 				A7D8B86823E2514400DCD162 /* SDL_audiocvt.c in Sources */,
 				A7D8B3AC23E2514200DCD162 /* SDL_shape.c in Sources */,
 				A7D8B9F723E2514400DCD162 /* SDL_rotate.c in Sources */,
+				F37DC5BE252FDE620002E6F7 /* SDL_sysurl.c in Sources */,
 				A7D8A97723E2514000DCD162 /* SDL_coremotionsensor.m in Sources */,
 				A7D8BB8F23E2514500DCD162 /* SDL_touch.c in Sources */,
 				A7D8B19C23E2514200DCD162 /* SDL_x11events.c in Sources */,
@@ -9363,7 +9372,6 @@
 				A7D8AD7023E2514100DCD162 /* SDL_pixels.c in Sources */,
 				A7D8B1A223E2514200DCD162 /* SDL_x11clipboard.c in Sources */,
 				5616CA55252BB35B005D5928 /* SDL_url.c in Sources */,
-				5616CA56252BB35B005D5928 /* SDL_sysurl.m in Sources */,
 				A7D8B76023E2514300DCD162 /* SDL_sysloadso.c in Sources */,
 				A7D8B16C23E2514200DCD162 /* SDL_x11xinput2.c in Sources */,
 				A7D8B5F523E2514300DCD162 /* SDL_syspower.c in Sources */,
@@ -9564,6 +9572,7 @@
 				A7D8B76223E2514300DCD162 /* SDL_sysloadso.c in Sources */,
 				A7D8B16E23E2514200DCD162 /* SDL_x11xinput2.c in Sources */,
 				A7D8B5F723E2514300DCD162 /* SDL_syspower.c in Sources */,
+				F37DC5BF252FDE620002E6F7 /* SDL_sysurl.c in Sources */,
 				A7D8B1C823E2514200DCD162 /* SDL_x11touch.c in Sources */,
 				A7D8B95423E2514400DCD162 /* SDL_iconv.c in Sources */,
 				A7D8BAA123E2514400DCD162 /* s_fabs.c in Sources */,
@@ -9600,7 +9609,6 @@
 				A7D8A96D23E2514000DCD162 /* SDL_dummysensor.c in Sources */,
 				A7D8B96023E2514400DCD162 /* SDL_string.c in Sources */,
 				A7D8BA8323E2514400DCD162 /* SDL_render_gl.c in Sources */,
-				5616CA5C252BB35D005D5928 /* SDL_sysurl.m in Sources */,
 				A7D8AC8523E2514100DCD162 /* SDL_uikitopengles.m in Sources */,
 				A7D8B20423E2514200DCD162 /* SDL_x11opengles.c in Sources */,
 				A7D8AE9823E2514100DCD162 /* SDL_cocoamodes.m in Sources */,
