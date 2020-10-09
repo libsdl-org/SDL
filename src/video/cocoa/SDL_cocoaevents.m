@@ -33,6 +33,9 @@
 #ifndef kIOPMAssertPreventUserIdleDisplaySleep
 #define kIOPMAssertPreventUserIdleDisplaySleep kIOPMAssertionTypePreventUserIdleDisplaySleep
 #endif
+#ifndef NSAppKitVersionNumber10_8
+#define NSAppKitVersionNumber10_8 1187
+#endif
 
 @interface SDLApplication : NSApplication
 
@@ -306,7 +309,10 @@ LoadMainMenuNibIfAvailable(void)
     NSDictionary *infoDict;
     NSString *mainNibFileName;
     bool success = false;
-    
+
+    if (floor(NSAppKitVersionNumber) &lt; NSAppKitVersionNumber10_8) {
+        return false;
+    }
     infoDict = [[NSBundle mainBundle] infoDictionary];
     if (infoDict) {
         mainNibFileName = [infoDict valueForKey:@"NSMainNibFile"];
