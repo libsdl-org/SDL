@@ -310,7 +310,7 @@ LoadMainMenuNibIfAvailable(void)
     NSString *mainNibFileName;
     bool success = false;
 
-    if (floor(NSAppKitVersionNumber) &lt; NSAppKitVersionNumber10_8) {
+    if (floor(NSAppKitVersionNumber) < NSAppKitVersionNumber10_8) {
         return false;
     }
     infoDict = [[NSBundle mainBundle] infoDictionary];
