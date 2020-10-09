@@ -181,6 +181,44 @@
 
 @end
 
+@interface SDL_DisplayWatch : NSObject
+@end
+
+@implementation SDL_DisplayWatch
+
++ (void)start
+{
+    NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
+
+    [center addObserver:self selector:@selector(screenConnected:)
+            name:UIScreenDidConnectNotification object:nil];
+    [center addObserver:self selector:@selector(screenDisconnected:)
+            name:UIScreenDidDisconnectNotification object:nil];
+}
+
++ (void)stop
+{
+    NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
+
+    [center removeObserver:self
+            name:UIScreenDidConnectNotification object:nil];
+    [center removeObserver:self
+            name:UIScreenDidDisconnectNotification object:nil];
+}
+
++ (void)screenConnected:(NSNotification*)notification
+{
+    UIScreen *uiscreen = [notification object];
+    UIKit_AddDisplay(uiscreen, SDL_TRUE);
+}
+
++ (void)screenDisconnected:(NSNotification*)notification
+{
+    UIScreen *uiscreen = [notification object];
+    UIKit_DelDisplay(uiscreen);
+}
+
+@end
 
 static int
 UIKit_AllocateDisplayModeData(SDL_DisplayMode * mode,
@@ -349,6 +387,8 @@ UIKit_InitModes(_THIS)
 #if !TARGET_OS_TV
         SDL_OnApplicationDidChangeStatusBarOrientation();
 #endif
+
+        [SDL_DisplayWatch start];
     }
 
     return 0;
@@ -482,6 +522,8 @@ UIKit_GetDisplayUsableBounds(_THIS, SDL_VideoDisplay * display, SDL_Rect * rect)
 void
 UIKit_QuitModes(_THIS)
 {
+    [SDL_DisplayWatch stop];
+
     /* Release Objective-C objects, so higher level doesn't free() them. */
     int i, j;
     @autoreleasepool {
