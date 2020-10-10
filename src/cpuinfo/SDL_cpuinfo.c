@@ -28,6 +28,7 @@
 #include "../core/windows/SDL_windows.h"
 #endif
 #if defined(__OS2__)
+#undef HAVE_SYSCTLBYNAME
 #define INCL_DOS
 #include <os2.h>
 #ifndef QSV_NUMPROCESSORS
