@@ -57,11 +57,10 @@ SRCS+= SDL_syshaptic.c SDL_sysjoystick.c
 SRCS+= SDL_dummyaudio.c SDL_diskaudio.c
 SRCS+= SDL_nullvideo.c SDL_nullframebuffer.c SDL_nullevents.c
 SRCS+= SDL_dummysensor.c
-
-SRCS+= SDL_dynapi.c
-
 SRCS+= SDL_locale.c SDL_syslocale.c
 SRCS+= SDL_url.c SDL_sysurl.c
+
+SRCS+= SDL_dynapi.c
 
 OBJS = $(SRCS:.c=.obj)
 MOBJS= $(MSRCS:.c=.obj)
