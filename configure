@@ -25486,6 +25486,9 @@ $as_echo "#define SDL_TIMER_UNIX 1" >>confdefs.h
         CheckPTHREAD
         CheckClockGettime
 
+        SOURCES="$SOURCES $srcdir/src/misc/riscos/*.c"
+        have_misc=yes
+
         # Set up files for the timer library
         if test x$enable_timers = xyes; then
 
