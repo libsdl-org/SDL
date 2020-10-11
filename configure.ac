@@ -4154,6 +4154,9 @@ AS_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
         CheckPTHREAD
         CheckClockGettime
 
+        SOURCES="$SOURCES $srcdir/src/misc/riscos/*.c"
+        have_misc=yes
+
         # Set up files for the timer library
         if test x$enable_timers = xyes; then
             AC_DEFINE(SDL_TIMER_UNIX, 1, [ ])
