@@ -215,8 +215,11 @@
 #undef HAVE_DSOUND_H
 #undef HAVE_DXGI_H
 #undef HAVE_XINPUT_H
+
 #undef HAVE_MMDEVICEAPI_H
 #undef HAVE_AUDIOCLIENT_H
+#undef HAVE_SENSORSAPI_H
+
 #undef HAVE_XINPUT_GAMEPAD_EX
 #undef HAVE_XINPUT_STATE_EX
 
@@ -301,6 +304,8 @@
 
 /* Enable various sensor drivers */
 #undef SDL_SENSOR_ANDROID
+#undef SDL_SENSOR_COREMOTION
+#undef SDL_SENSOR_WINDOWS
 #undef SDL_SENSOR_DUMMY
 
 /* Enable various shared object loading systems */

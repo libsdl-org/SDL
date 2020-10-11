@@ -3759,7 +3759,11 @@ AS_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
             fi
         fi
         # Set up files for the sensor library
-        if test x$enable_sensor = xyes; then
+        AC_CHECK_HEADER(sensorsapi.h,have_winsensors=yes,have_winsensors=no)
+        if test x$have_winsensors = xyes; then
+            AC_DEFINE(HAVE_SENSORSAPI_H, 1, [ ])
+        fi
+        if test x$enable_sensor = xyes -a x$have_winsensors = xyes; then
             AC_DEFINE(SDL_SENSOR_WINDOWS, 1, [ ])
             SOURCES="$SOURCES $srcdir/src/sensor/windows/*.c"
             have_sensor=yes
