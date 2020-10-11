@@ -794,7 +794,7 @@ if(LIBC)
       check_include_file("${_HEADER}" ${_HAVE_H})
     endforeach()
 
-    set(STDC_HEADER_NAMES "dlfcn.h;stdint.h;stddef.h;inttypes.h;stdlib.h;stdio.h;strings.h;wchar.h;string.h;float.h")
+    set(STDC_HEADER_NAMES "stddef.h;stdarg.h;stdlib.h;string.h;stdio.h;wchar.h;float.h")
     check_include_files("${STDC_HEADER_NAMES}" STDC_HEADERS)
     check_type_size("size_t" SIZEOF_SIZE_T)
     check_symbol_exists(M_PI math.h HAVE_M_PI)
