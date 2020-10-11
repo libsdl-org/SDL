@@ -24965,7 +24965,20 @@ $as_echo "#define SDL_HAPTIC_DINPUT 1" >>confdefs.h
             fi
         fi
         # Set up files for the sensor library
-        if test x$enable_sensor = xyes; then
+        ac_fn_c_check_header_mongrel "$LINENO" "sensorsapi.h" "ac_cv_header_sensorsapi_h" "$ac_includes_default"
+if test "x$ac_cv_header_sensorsapi_h" = xyes; then :
+  have_winsensors=yes
+else
+  have_winsensors=no
+fi
+
+
+        if test x$have_winsensors = xyes; then
+
+$as_echo "#define HAVE_SENSORSAPI_H 1" >>confdefs.h
+
+        fi
+        if test x$enable_sensor = xyes -a x$have_winsensors = xyes; then
 
 $as_echo "#define SDL_SENSOR_WINDOWS 1" >>confdefs.h
 

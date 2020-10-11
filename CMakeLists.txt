@@ -1431,6 +1431,7 @@ elseif(WINDOWS)
   # headers needed elsewhere
   check_include_file(mmdeviceapi.h HAVE_MMDEVICEAPI_H)
   check_include_file(audioclient.h HAVE_AUDIOCLIENT_H)
+  check_include_file(sensorsapi.h HAVE_SENSORSAPI_H)
 
   if(SDL_AUDIO)
     set(SDL_AUDIO_DRIVER_WINMM 1)
@@ -1482,7 +1483,7 @@ elseif(WINDOWS)
     set(HAVE_SDL_THREADS TRUE)
   endif()
 
-  if(SDL_SENSOR)
+  if(SDL_SENSOR AND HAVE_SENSORSAPI_H)
     set(SDL_SENSOR_WINDOWS 1)
     set(HAVE_SDL_SENSORS TRUE)
     file(GLOB WINDOWS_SENSOR_SOURCES ${SDL2_SOURCE_DIR}/src/sensor/windows/*.c)
