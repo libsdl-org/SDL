@@ -6,13 +6,11 @@ VERSION = 2.0.13
 DESCRIPTION = Simple DirectMedia Layer 2
 
 LIBHOME = .
-LIBPATH = $(LIBHOME)/lib
 DLLFILE = $(LIBHOME)/$(LIBNAME).dll
 LIBFILE = $(LIBHOME)/$(LIBNAME).lib
 LNKFILE = $(LIBNAME).lnk
 
 INCPATH = -I"$(%WATCOM)/h/os2" -I"$(%WATCOM)/h"
-INCPATH+= -I"$(LIBHOME)/h"
 INCPATH+= -Iinclude
 
 LIBM = libm.lib
@@ -117,7 +115,6 @@ $(LNKFILE):
     @%append $@ SYSTEM os2v2_dll INITINSTANCE TERMINSTANCE
     @%append $@ NAME $(DLLFILE)
     @for %i in ($(OBJS)) do @%append $@ FILE %i
-    @%append $@ LIBPATH $(%LIB);$(LIBPATH)
     @for %i in ($(LIBS)) do @%append $@ LIB %i
     @%append $@ OPTION QUIET
     @%append $@ OPTION IMPF=$(LIBHOME)/$^&.exp
