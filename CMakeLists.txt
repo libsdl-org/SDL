@@ -1962,7 +1962,6 @@ endif()
 if(NOT HAVE_SDL_JOYSTICK)
   set(SDL_JOYSTICK_DUMMY 1)
   if(SDL_JOYSTICK AND NOT APPLE) # results in unresolved symbols on OSX
-
     file(GLOB JOYSTICK_SOURCES ${SDL2_SOURCE_DIR}/src/joystick/dummy/*.c)
     set(SOURCE_FILES ${SOURCE_FILES} ${JOYSTICK_SOURCES})
   endif()
@@ -2038,10 +2037,11 @@ listtostr(EXTRA_CFLAGS _EXTRA_CFLAGS)
 set(EXTRA_CFLAGS ${_EXTRA_CFLAGS})
 
 # Compat helpers for the configuration files
-if(NOT WINDOWS OR CYGWIN)
+if(NOT CMAKE_HOST_WIN32)
   # TODO: we need a Windows script, too
   execute_process(COMMAND sh ${SDL2_SOURCE_DIR}/build-scripts/updaterev.sh)
-
+endif()
+if(NOT WINDOWS OR CYGWIN)
   set(prefix ${CMAKE_INSTALL_PREFIX})
   set(exec_prefix "\${prefix}")
   set(libdir "\${exec_prefix}/lib${LIB_SUFFIX}")
