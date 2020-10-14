@@ -1599,7 +1599,7 @@ static int OS2_VideoInit(_THIS)
       stSDLDisplayMode.driverdata = pDisplayData;
     }
 
-    SDL_AddVideoDisplay( &stSDLDisplay );
+    SDL_AddVideoDisplay( &stSDLDisplay, SDL_FALSE );
   }
 
   OS2_InitMouse( _this, pVData->hab );
@@ -1705,7 +1705,7 @@ static SDL_VideoDevice *OS2_CreateDevice(int devindex)
   if (!device)
   {
     SDL_OutOfMemory();
-    return (0);
+    return NULL;
   }
 
   /* Set the function pointers */
@@ -1753,21 +1753,22 @@ static SDL_VideoDevice *OS2_CreateDevice(int devindex)
   return device;
 }
 
-
-// Output video system availability checking.
-
-static int OS2DIVE_Available(void)
+static SDL_VideoDevice *OS2DIVE_CreateDevice(int devindex)
 {
   VIDEOOUTPUTINFO      stVOInfo;
-
-  return voDive.QueryInfo( &stVOInfo );
+  if (!voDive.QueryInfo(&stVOInfo)) {
+      return NULL;
+  }
+  return OS2_CreateDevice(devindex);
 }
 
-static int OS2VMAN_Available(void)
+static SDL_VideoDevice *OS2VMAN_CreateDevice(int devindex)
 {
   VIDEOOUTPUTINFO      stVOInfo;
-
-  return voVMan.QueryInfo( &stVOInfo );
+  if (!voVMan.QueryInfo(&stVOInfo)) {
+      return NULL;
+  }
+  return OS2_CreateDevice(devindex);
 }
 
 
@@ -1777,13 +1778,13 @@ static int OS2VMAN_Available(void)
 VideoBootStrap OS2DIVE_bootstrap =
 {
   OS2DRIVER_NAME_DIVE, "OS/2 video driver",
-  OS2DIVE_Available, OS2_CreateDevice
+  OS2DIVE_CreateDevice
 };
 
 VideoBootStrap OS2VMAN_bootstrap =
 {
   OS2DRIVER_NAME_VMAN, "OS/2 video driver",
-  OS2VMAN_Available, OS2_CreateDevice
+  OS2VMAN_CreateDevice
 };
 
 #endif /* SDL_VIDEO_DRIVER_OS2 */

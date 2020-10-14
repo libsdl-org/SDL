@@ -40,57 +40,39 @@
 #include <process.h>
 
 
-typedef struct ThreadStartParms {
-  void *args;
-  pfnSDL_CurrentEndThread pfnCurrentEndThread;
-} tThreadStartParms, *pThreadStartParms;
-
 static void RunThread(void *data)
 {
-  pThreadStartParms           pThreadParms = (pThreadStartParms) data;
-  pfnSDL_CurrentEndThread     pfnEndThread = pThreadParms->pfnCurrentEndThread;
-  void                        *args = pThreadParms->args;
-
-  SDL_free( pThreadParms );
+  SDL_Thread                  *thread = (SDL_Thread *) data;
+  pfnSDL_CurrentEndThread     pfnEndThread = (pfnSDL_CurrentEndThread) thread->endfunc;
 
   if ( ppSDLTLSData != NULL )
     *ppSDLTLSData = NULL;
 
-  SDL_RunThread( args );
+  SDL_RunThread( thread );
 
   if ( pfnEndThread != NULL )
     pfnEndThread();
 }
 
-
-
 int
-SDL_SYS_CreateThread(SDL_Thread * thread, void *args,
+SDL_SYS_CreateThread(SDL_Thread * thread,
                      pfnSDL_CurrentBeginThread pfnBeginThread,
                      pfnSDL_CurrentEndThread pfnEndThread)
 {
-  pThreadStartParms    pThreadParms = SDL_malloc( sizeof(tThreadStartParms) );
-
-  if ( pThreadParms == NULL )
-    return SDL_OutOfMemory();
-
   if (thread->stacksize == 0)
     thread->stacksize = 65536;
 
-  // Also save the real parameters we have to pass to thread function
-  pThreadParms->args = args;
-
   if (pfnBeginThread) {
     // Save the function which we will have to call to clear the RTL of calling app!
-    pThreadParms->pfnCurrentEndThread = pfnEndThread;
+    thread->endfunc = pfnEndThread;
     // Start the thread using the runtime library of calling app!
     thread->handle = (SYS_ThreadHandle)
-      pfnBeginThread( RunThread, NULL, thread->stacksize, pThreadParms );
+      pfnBeginThread( RunThread, NULL, thread->stacksize, thread );
   }
   else {
-    pThreadParms->pfnCurrentEndThread = _endthread;
+    thread->endfunc = _endthread;
     thread->handle = (SYS_ThreadHandle)
-      _beginthread( RunThread, NULL, thread->stacksize, pThreadParms );
+      _beginthread( RunThread, NULL, thread->stacksize, thread );
   }
 
   if ( thread->handle == -1 )
