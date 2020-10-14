@@ -42,7 +42,6 @@
 #if !TARGET_OS_TV
 #import <CoreMotion/CoreMotion.h>
 #endif
-#import <CoreHaptics/CoreHaptics.h>
 
 #ifdef SDL_JOYSTICK_MFI
 #import <GameController/GameController.h>
@@ -78,6 +77,10 @@ static id disconnectObserver = nil;
 #if (__IPHONE_OS_VERSION_MAX_ALLOWED >= 140000) || (__APPLETV_OS_VERSION_MAX_ALLOWED >= 140000) || (__MAC_OS_VERSION_MAX_ALLOWED > 1500000)
 #define ENABLE_MFI_BATTERY
 #define ENABLE_MFI_RUMBLE
+#endif
+
+#ifdef ENABLE_MFI_RUMBLE
+#import <CoreHaptics/CoreHaptics.h>
 #endif
 
 #endif /* SDL_JOYSTICK_MFI */
