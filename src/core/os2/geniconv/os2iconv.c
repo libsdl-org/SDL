@@ -5,10 +5,10 @@
 */
 
 #define ICONV_THREAD_SAFE 1
-//#undef ICONV_THREAD_SAFE
 
-#include "iconv.h"
+#include "geniconv.h"
 #include <uconv.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #ifdef ICONV_THREAD_SAFE

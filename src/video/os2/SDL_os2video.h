@@ -24,7 +24,7 @@
 #define _SDL_os2video_h
 
 #include "../SDL_sysvideo.h"
-#include ".\core\os2\SDL_os2.h"
+#include "../../core/os2/SDL_os2.h"
 
 #define INCL_DOS
 #define INCL_DOSERRORS
@@ -34,8 +34,6 @@
 #define INCL_OS2MM
 #define INCL_DOSMEMMGR
 #include <os2.h>
-//#include <gradd.h>               // Defines FOURCC_xxxx
-
 
 #include "SDL_os2mouse.h"
 #include "SDL_os2output.h"

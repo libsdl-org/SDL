@@ -1,8 +1,9 @@
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <geniconv.h>
+#include "geniconv.h"
 
-void main()
+int main(void)
 {
   char       acBuf[128];
   char       *inbuf = "Тест - проверка"; // KOI8-R string.
@@ -17,7 +18,7 @@ void main()
   if ( ic == (iconv_t)(-1) )
   {
     puts( "iconv_open() fail" );
-    return;
+    return 1;
   }
 
   iconv( ic, &inbuf, &inbytesleft, &outbuf, &outbytesleft );
@@ -42,4 +43,5 @@ void main()
   iconv_clean();
 
   puts( "Done." );
+  return 0;
 }

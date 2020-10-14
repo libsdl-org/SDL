@@ -37,16 +37,16 @@ int libiconv_close(iconv_t cd);
 // System codepage <-> UTF-8.
 
 // StrUTF8()
-// Coverts string from system cp. to UTF-8 (fToUTF8 is not 0) or from UTF-8 to
-// the system cp. (fToUTF8 is 0). Converted ASCIIZ string will be placed at the
+// Coverts string from system cp to UTF-8 (fToUTF8 is not 0) or from UTF-8 to
+// the system cp (fToUTF8 is 0). Converted ASCIIZ string will be placed at the
 // buffer pcDst, up to cbDst - 1 (for sys->utf8) or 2 (for utf8->sys) bytes.
 // Returns the number of bytes written into pcDst, not counting the terminating
 // 0 byte(s) or -1 on error.
 int StrUTF8(int fToUTF8, char *pcDst, int cbDst, char *pcSrc, int cbSrc);
 
 // StrUTF8New()
-// Coverts string from system cp. to UTF-8 (fToUTF8 is not 0) or from UTF-8 to
-// the system cp. (fToUTF8 is 0). Memory for the new string is obtained by
+// Coverts string from system cp to UTF-8 (fToUTF8 is not 0) or from UTF-8 to
+// the system cp (fToUTF8 is 0). Memory for the new string is obtained by
 // using libc malloc().
 // Returns converted string, terminating two bytes 0 is appended to the result.
 // Returns null on error.

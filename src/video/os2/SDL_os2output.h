@@ -21,7 +21,7 @@
 #ifndef _SDL_os2output_
 #define _SDL_os2output_
 
-#include ".\core\os2\SDL_os2.h"
+#include "../../core/os2/SDL_os2.h"
 
 typedef struct _VODATA *PVODATA;
 
@@ -51,4 +51,4 @@ typedef struct _OS2VIDEOOUTPUT {
 extern OS2VIDEOOUTPUT voDive;
 extern OS2VIDEOOUTPUT voVMan;
 
-#endif // _SDL_os2output_
+#endif /* _SDL_os2output_ */
