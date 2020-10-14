@@ -30,8 +30,6 @@
 #define INCL_GPI
 #include <os2.h>
 
-/*#define debug(s,...) SDL_LogDebug( SDL_LOG_CATEGORY_VIDEO, __func__"(): "##s, ##__VA_ARGS__ )*/
-
 HPOINTER utilCreatePointer(SDL_Surface *surface, ULONG ulHotX, ULONG ulHotY);
 
 #endif /* _SDL_os2util_h */

@@ -1677,7 +1677,8 @@ static int OS2_GetDisplayDPI(_THIS, SDL_VideoDisplay *display, float *ddpi,
 
 static void OS2_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
 {
-  debug( "Enter" );
+//  debug( "Enter" );
+  SDL_AddDisplayMode( display, &display->current_mode );
 }
 
 static int OS2_SetDisplayMode(_THIS, SDL_VideoDisplay *display,

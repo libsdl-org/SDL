@@ -49,9 +49,9 @@ HPOINTER utilCreatePointer(SDL_Surface *surface, ULONG ulHotX, ULONG ulHotY)
     return NULLHANDLE;
   }
 
-  // pulDst - last line of surface (image) part of the result bitmap's
+  // pulDst - last line of surface (image) part of the result bitmap
   pulDst = &pulBitmap[ (surface->h - 1) * surface->w ];
-  // pulDstMask - last line of mask part of the result bitmap's
+  // pulDstMask - last line of mask part of the result bitmap
   pulDstMask = &pulBitmap[ (2 * surface->h - 1) * surface->w ];
   // pulSrc - first line of source image
   pulSrc = (PULONG)surface->pixels;
