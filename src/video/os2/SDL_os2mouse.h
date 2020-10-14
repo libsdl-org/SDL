@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2016 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -20,14 +20,14 @@
 */
 #include "../../SDL_internal.h"
 
-#ifndef _SDL_os2mouse_h
-#define _SDL_os2mouse_h
+#ifndef SDL_os2mouse_h_
+#define SDL_os2mouse_h_
 
 extern HPOINTER        hptrCursor;
 
 extern void OS2_InitMouse(_THIS, ULONG hab);
 extern void OS2_QuitMouse(_THIS);
 
-#endif /* _SDL_os2mouse_h */
+#endif /* SDL_os2mouse_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

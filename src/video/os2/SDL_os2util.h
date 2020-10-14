@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2016 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -19,8 +19,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef _SDL_os2util_h
-#define _SDL_os2util_h
+#ifndef SDL_os2util_h_
+#define SDL_os2util_h_
 
 #include "SDL_log.h"
 #include "../SDL_sysvideo.h"
@@ -32,4 +32,4 @@
 
 HPOINTER utilCreatePointer(SDL_Surface *surface, ULONG ulHotX, ULONG ulHotY);
 
-#endif /* _SDL_os2util_h */
+#endif /* SDL_os2util_h_ */

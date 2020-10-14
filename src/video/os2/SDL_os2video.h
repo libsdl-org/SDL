@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2016 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -20,8 +20,8 @@
 */
 #include "../../SDL_internal.h"
 
-#ifndef _SDL_os2video_h
-#define _SDL_os2video_h
+#ifndef SDL_os2video_h_
+#define SDL_os2video_h_
 
 #include "../SDL_sysvideo.h"
 #include "../../core/os2/SDL_os2.h"
@@ -78,4 +78,4 @@ typedef struct _MODEDATA {
 } MODEDATA, *PMODEDATA;
 
 
-#endif /* _SDL_os2video_h */
+#endif /* SDL_os2video_h_ */

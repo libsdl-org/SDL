@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2016 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -18,8 +18,8 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#ifndef _SDL_os2output_
-#define _SDL_os2output_
+#ifndef SDL_os2output_
+#define SDL_os2output_
 
 #include "../../core/os2/SDL_os2.h"
 
@@ -51,4 +51,4 @@ typedef struct _OS2VIDEOOUTPUT {
 extern OS2VIDEOOUTPUT voDive;
 extern OS2VIDEOOUTPUT voVMan;
 
-#endif /* _SDL_os2output_ */
+#endif /* SDL_os2output_ */
