@@ -20,7 +20,7 @@ static void *CreateWindowNative(int w, int h);
 static void DestroyWindowNative(void *window);
 
 NativeWindowFactory OS2WindowFactory = {
-  "OS/2",
+  "DIVE",
   CreateWindowNative,
   DestroyWindowNative
 };
