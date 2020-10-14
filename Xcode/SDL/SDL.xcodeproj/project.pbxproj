@@ -3972,8 +3972,10 @@
 		F37DC5C0252FDE620002E6F7 /* SDL_sysurl.c in Sources */ = {isa = PBXBuildFile; fileRef = F37DC5BC252FDE620002E6F7 /* SDL_sysurl.c */; };
 		F37DC5C1252FDE620002E6F7 /* SDL_sysurl.c in Sources */ = {isa = PBXBuildFile; fileRef = F37DC5BC252FDE620002E6F7 /* SDL_sysurl.c */; };
 		F37DC5C2252FDE620002E6F7 /* SDL_sysurl.c in Sources */ = {isa = PBXBuildFile; fileRef = F37DC5BC252FDE620002E6F7 /* SDL_sysurl.c */; };
-		F37DC5F325350EBC0002E6F7 /* CoreHaptics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F37DC5F225350EBC0002E6F7 /* CoreHaptics.framework */; };
-		F37DC5F525350ECC0002E6F7 /* CoreHaptics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F37DC5F425350ECC0002E6F7 /* CoreHaptics.framework */; };
+		F37DC5F325350EBC0002E6F7 /* CoreHaptics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F37DC5F225350EBC0002E6F7 /* CoreHaptics.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		F37DC5F525350ECC0002E6F7 /* CoreHaptics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F37DC5F425350ECC0002E6F7 /* CoreHaptics.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		F3942659253579B400B03694 /* CoreHaptics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F37DC5F225350EBC0002E6F7 /* CoreHaptics.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		F394265A253579D200B03694 /* CoreHaptics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F37DC5F425350ECC0002E6F7 /* CoreHaptics.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		F3950CD8212BC88D00F51292 /* SDL_sensor.h in Headers */ = {isa = PBXBuildFile; fileRef = F3950CD7212BC88D00F51292 /* SDL_sensor.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F3950CD9212BC88D00F51292 /* SDL_sensor.h in Headers */ = {isa = PBXBuildFile; fileRef = F3950CD7212BC88D00F51292 /* SDL_sensor.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F3950CDA212BC88D00F51292 /* SDL_sensor.h in Headers */ = {isa = PBXBuildFile; fileRef = F3950CD7212BC88D00F51292 /* SDL_sensor.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -4547,6 +4549,7 @@
 				A75FDAC423E28BA700529352 /* CoreBluetooth.framework in Frameworks */,
 				A75FCEAB23E25AB700529352 /* CoreFoundation.framework in Frameworks */,
 				A75FDAC223E28B9600529352 /* CoreGraphics.framework in Frameworks */,
+				F3942659253579B400B03694 /* CoreHaptics.framework in Frameworks */,
 				A75FDAC023E28B8000529352 /* CoreMotion.framework in Frameworks */,
 				A75FCEA823E25AB700529352 /* CoreVideo.framework in Frameworks */,
 				A75FDABE23E28B6200529352 /* GameController.framework in Frameworks */,
@@ -4568,6 +4571,7 @@
 				A75FDAD923E28D3F00529352 /* CoreBluetooth.framework in Frameworks */,
 				A75FDAD823E28D3B00529352 /* CoreFoundation.framework in Frameworks */,
 				A75FDAD623E28D3300529352 /* CoreGraphics.framework in Frameworks */,
+				F394265A253579D200B03694 /* CoreHaptics.framework in Frameworks */,
 				A75FDAD423E28D2E00529352 /* CoreVideo.framework in Frameworks */,
 				A75FDAD223E28D2000529352 /* GameController.framework in Frameworks */,
 				A75FDAD023E28D1300529352 /* Metal.framework in Frameworks */,
