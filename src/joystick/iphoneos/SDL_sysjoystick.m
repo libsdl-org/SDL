@@ -768,6 +768,40 @@ IOS_MFIJoystickUpdate(SDL_Joystick * joystick)
             }
             joystick->hwdata->num_pause_presses = 0;
         }
+
+        if (@available(iOS 14.0, tvOS 14.0, *)) {
+            GCDeviceBattery *battery = controller.battery;
+            if (battery) {
+                SDL_JoystickPowerLevel ePowerLevel = SDL_JOYSTICK_POWER_UNKNOWN;
+
+                switch (battery.batteryState) {
+                case GCDeviceBatteryStateDischarging:
+                    {
+                        float power_level = battery.batteryLevel;
+                        if (power_level <= 0.05f) {
+                            ePowerLevel = SDL_JOYSTICK_POWER_EMPTY;
+                        } else if (power_level <= 0.20f) {
+                            ePowerLevel = SDL_JOYSTICK_POWER_LOW;
+                        } else if (power_level <= 0.70f) {
+                            ePowerLevel = SDL_JOYSTICK_POWER_MEDIUM;
+                        } else {
+                            ePowerLevel = SDL_JOYSTICK_POWER_FULL;
+                        }
+                    }
+                    break;
+                case GCDeviceBatteryStateCharging:
+                    ePowerLevel = SDL_JOYSTICK_POWER_WIRED;
+                    break;
+                case GCDeviceBatteryStateFull:
+                    ePowerLevel = SDL_JOYSTICK_POWER_FULL;
+                    break;
+                default:
+                    break;
+                }
+
+                SDL_PrivateJoystickBatteryLevel(joystick, ePowerLevel);
+            }
+        }
     }
 #endif /* SDL_JOYSTICK_MFI */
 }
