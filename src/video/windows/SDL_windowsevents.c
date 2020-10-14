@@ -1057,6 +1057,13 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         }
         break;
 
+    case WM_DISPLAYCHANGE:
+        {
+            // Reacquire displays if any were added or removed
+            WIN_RefreshDisplays(SDL_GetVideoDevice());
+        }
+        break;
+
     case WM_NCCALCSIZE:
         {
             Uint32 window_flags = SDL_GetWindowFlags(data->window);

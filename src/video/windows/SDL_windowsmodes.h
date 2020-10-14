@@ -25,8 +25,9 @@
 
 typedef struct
 {
-    TCHAR DeviceName[32];
+    WCHAR DeviceName[32];
     HMONITOR MonitorHandle;
+    SDL_bool IsValid;
 } SDL_DisplayData;
 
 typedef struct
@@ -40,6 +41,7 @@ extern int WIN_GetDisplayUsableBounds(_THIS, SDL_VideoDisplay * display, SDL_Rec
 extern int WIN_GetDisplayDPI(_THIS, SDL_VideoDisplay * display, float * ddpi, float * hdpi, float * vdpi);
 extern void WIN_GetDisplayModes(_THIS, SDL_VideoDisplay * display);
 extern int WIN_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode);
+extern void WIN_RefreshDisplays(_THIS);
 extern void WIN_QuitModes(_THIS);
 
 #endif /* SDL_windowsmodes_h_ */
