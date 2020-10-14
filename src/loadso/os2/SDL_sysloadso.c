@@ -44,7 +44,7 @@ SDL_LoadObject(const char *sofile)
   SDL_free( pszModName );
   if ( ulRC != NO_ERROR )
   {
-    SDL_SetError( "Failed loading, module: %s", pszModName );
+    SDL_SetError( "Failed loading %s (E%u)", acError, ulRC );
     return NULL;
   }
 
@@ -58,9 +58,9 @@ SDL_LoadFunction(void *handle, const char *name)
   PFN        pFN;
 
   ulRC = DosQueryProcAddr( (HMODULE)handle, 0, name, &pFN );
-  if ( ulRC )
+  if ( ulRC != NO_ERROR )
   {
-    SDL_SetError( "Failed loading, procedure: %s", name );
+    SDL_SetError( "Failed loading procedure %s (E%u)", name, ulRC );
     return NULL;
   }
 
