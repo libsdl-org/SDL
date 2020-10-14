@@ -26,7 +26,7 @@
 /* System dependent library loading routines                           */
 
 #include "SDL_loadso.h"
-#include ".\core\os2\SDL_os2.h"
+#include "../../core/os2/SDL_os2.h"
 
 #define INCL_DOSMODULEMGR
 #define INCL_DOSERRORS

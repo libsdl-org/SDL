@@ -1,4 +1,4 @@
-#include <iconv.h>
+#include "geniconv.h"
 #include <stdlib.h>
 
 int StrUTF8(int fToUTF8, char *pcDst, int cbDst, char *pcSrc, int cbSrc)
@@ -47,8 +47,7 @@ int StrUTF8(int fToUTF8, char *pcDst, int cbDst, char *pcSrc, int cbSrc)
 
   iconv_close( cd );
 
-  // Write trailing ZERO (1 byte for UTF-8, 2 bytes for the system cp.).
-
+  // Write trailing ZERO (1 byte for UTF-8, 2 bytes for the system cp).
   if ( fToUTF8 )
   {
     if ( cbDst < 1 )

@@ -1,9 +1,10 @@
-#include "os2cp.h"
 #define INCL_DOSNLS
 #define INCL_DOSERRORS
 #include <os2.h>
 #include <string.h>
 #include <ctype.h>
+
+#include "os2cp.h"
 
 typedef struct _CP2NAME {
   ULONG		ulCode;

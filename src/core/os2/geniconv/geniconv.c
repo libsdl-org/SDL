@@ -7,7 +7,8 @@
 #define INCL_DOSMODULEMGR     /* Module Manager values */
 #define INCL_DOSERRORS        /* Error values */
 #include <os2.h>
-#include <iconv.h>
+
+#include "geniconv.h"
 
 //#define DEBUG
 
@@ -105,7 +106,6 @@ static void _init()
     fn_iconv_close = os2_iconv_close;
   }
 }
-
 
 
 //           Public routines.

@@ -22,7 +22,7 @@
 
 #if defined(__OS2__)
 
-#include "core/os2/geniconv/geniconv.h"
+#include "geniconv/geniconv.h"
 
 // SDL_OS2Quit() will be called from SDL_QuitSubSystem().
 
