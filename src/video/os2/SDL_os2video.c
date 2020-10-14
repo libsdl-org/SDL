@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2016 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2017 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -428,7 +428,7 @@ static MRESULT _wmDrop(PWINDATA pWinData, PDRAGINFO pDragInfo)
 
       // Send to SDL full file name converted to UTF-8.
       pcFName = OS2_SysToUTF8( acFName );
-      SDL_SendDropFile( pcFName );
+      SDL_SendDropFile( pWinData->window, pcFName );
       SDL_free( pcFName );
 
       // Notify a source that a drag operation is complete. 
@@ -441,6 +441,8 @@ static MRESULT _wmDrop(PWINDATA pWinData, PDRAGINFO pDragInfo)
 
   DrgDeleteDraginfoStrHandles( pDragInfo );
   DrgFreeDraginfo( pDragInfo );
+
+  SDL_SendDropComplete( pWinData->window );
 
   return (MRESULT)FALSE;
 }

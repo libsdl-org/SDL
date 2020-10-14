@@ -74,14 +74,24 @@ SDL_SYS_CreateThread(SDL_Thread * thread, void *args,
   if ( pThreadParms == NULL )
     return SDL_OutOfMemory();
 
-  // Save the function which we will have to call to clear the RTL of calling app!
-  pThreadParms->pfnCurrentEndThread = pfnEndThread;
+  if (thread->stacksize == 0)
+    thread->stacksize = 65536;
+
   // Also save the real parameters we have to pass to thread function
   pThreadParms->args = args;
 
-  // Start the thread using the runtime library of calling app!
-  thread->handle = (SYS_ThreadHandle)
-    ( (size_t) pfnBeginThread( RunThread, NULL, 65535, pThreadParms ) );
+  if (pfnBeginThread) {
+    // Save the function which we will have to call to clear the RTL of calling app!
+    pThreadParms->pfnCurrentEndThread = pfnEndThread;
+    // Start the thread using the runtime library of calling app!
+    thread->handle = (SYS_ThreadHandle)
+      pfnBeginThread( RunThread, NULL, thread->stacksize, pThreadParms );
+  }
+  else {
+    pThreadParms->pfnCurrentEndThread = _endthread;
+    thread->handle = (SYS_ThreadHandle)
+      _beginthread( RunThread, NULL, thread->stacksize, pThreadParms );
+  }
 
   if ( thread->handle == -1 )
       return SDL_SetError( "Not enough resources to create thread" );
