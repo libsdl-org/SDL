@@ -27,6 +27,7 @@
 
 #define SDL_AUDIO_DRIVER_DUMMY 1
 #define SDL_AUDIO_DRIVER_DISK 1
+#define SDL_AUDIO_DRIVER_OS2 1
 
 #define SDL_POWER_DISABLED  1
 #define SDL_JOYSTICK_DISABLED 1
@@ -34,6 +35,7 @@
 
 #define SDL_SENSOR_DUMMY 1
 #define SDL_VIDEO_DRIVER_DUMMY 1
+#define SDL_VIDEO_DRIVER_OS2 1
 
 /* Enable OpenGL support */
 /* #undef SDL_VIDEO_OPENGL */
@@ -41,10 +43,10 @@
 /* Enable Vulkan support */
 /* #undef SDL_VIDEO_VULKAN */
 
-#define SDL_LOADSO_DISABLED 1
-#define SDL_THREADS_DISABLED 1
-#define SDL_TIMERS_DISABLED 1
-#define SDL_FILESYSTEM_DUMMY 1
+#define SDL_THREAD_OS2 1
+#define SDL_LOADSO_OS2 1
+#define SDL_TIMER_OS2 1
+#define SDL_FILESYSTEM_OS2 1
 
 /* Enable assembly routines */
 #define SDL_ASSEMBLY_ROUTINES 1
