@@ -30,49 +30,14 @@
 #include "../SDL_systhread.h"
 #include "SDL_systls_c.h"
 #include "../../core/os2/SDL_os2.h"
+#ifndef SDL_PASSED_BEGINTHREAD_ENDTHREAD
+#error This source only adjusted for SDL_PASSED_BEGINTHREAD_ENDTHREAD
+#endif
 
 #define INCL_DOSPROCESS
 #define INCL_DOSERRORS
 #include <os2.h>
-
-#ifndef SDL_PASSED_BEGINTHREAD_ENDTHREAD
-/* We'll use the C library from this DLL */
 #include <process.h>
-
-/* Cygwin gcc-3 ... MingW64 (even with a i386 host) does this like MSVC. */
-#if (defined(__MINGW32__) && (__GNUC__ < 4))
-typedef unsigned long (__cdecl *pfnSDL_CurrentBeginThread) (void *, unsigned,
-        unsigned (__stdcall *func)(void *), void *arg,
-        unsigned, unsigned *threadID);
-typedef void (__cdecl *pfnSDL_CurrentEndThread)(unsigned code);
-
-#elif defined(__WATCOMC__)
-/* This is for Watcom targets except OS2 */
-#if __WATCOMC__ < 1240
-#define __watcall
-#endif
-typedef unsigned long (__watcall * pfnSDL_CurrentBeginThread) (void *,
-                                                               unsigned,
-                                                               unsigned
-                                                               (__stdcall *
-                                                                func) (void
-                                                                       *),
-                                                               void *arg,
-                                                               unsigned,
-                                                               unsigned
-                                                               *threadID);
-typedef void (__watcall * pfnSDL_CurrentEndThread) (unsigned code);
-
-#else
-typedef uintptr_t(__cdecl * pfnSDL_CurrentBeginThread) (void *, unsigned,
-                                                        unsigned (__stdcall *
-                                                                  func) (void
-                                                                         *),
-                                                        void *arg, unsigned,
-                                                        unsigned *threadID);
-typedef void (__cdecl * pfnSDL_CurrentEndThread) (unsigned code);
-#endif
-#endif /* !SDL_PASSED_BEGINTHREAD_ENDTHREAD */
 
 
 typedef struct ThreadStartParms {
@@ -99,15 +64,10 @@ static void RunThread(void *data)
 
 
 
-#ifdef SDL_PASSED_BEGINTHREAD_ENDTHREAD
 int
 SDL_SYS_CreateThread(SDL_Thread * thread, void *args,
                      pfnSDL_CurrentBeginThread pfnBeginThread,
                      pfnSDL_CurrentEndThread pfnEndThread)
-#else
-int
-SDL_SYS_CreateThread(SDL_Thread * thread, void *args)
-#endif /* SDL_PASSED_BEGINTHREAD_ENDTHREAD */
 {
   pThreadStartParms    pThreadParms = SDL_malloc( sizeof(tThreadStartParms) );
 
@@ -121,11 +81,7 @@ SDL_SYS_CreateThread(SDL_Thread * thread, void *args)
 
   // Start the thread using the runtime library of calling app!
   thread->handle = (SYS_ThreadHandle)
-  #ifdef SDL_PASSED_BEGINTHREAD_ENDTHREAD
     ( (size_t) pfnBeginThread( RunThread, NULL, 65535, pThreadParms ) );
-  #else
-    _beginthread( RunThread, NULL, 65535, pThreadParms );
-  #endif
 
   if ( thread->handle == -1 )
       return SDL_SetError( "Not enough resources to create thread" );
@@ -155,11 +111,9 @@ SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
   ULONG      ulRC;
 
   ulRC = DosSetPriority( PRTYS_THREAD,
-                         priority == SDL_THREAD_PRIORITY_LOW
-                           ? PRTYC_IDLETIME
-                           : priority == SDL_THREAD_PRIORITY_HIGH
-                               ? PRTYC_TIMECRITICAL 
-                               : PRTYC_REGULAR ,
+                         (priority < SDL_THREAD_PRIORITY_NORMAL)? PRTYC_IDLETIME :
+                           (priority > SDL_THREAD_PRIORITY_NORMAL)? PRTYC_TIMECRITICAL :
+                             PRTYC_REGULAR,
                          0, 0 );
   if ( ulRC != NO_ERROR )
     return SDL_SetError( "DosSetPriority() failed, rc = %u", ulRC );
@@ -179,7 +133,7 @@ SDL_SYS_WaitThread(SDL_Thread * thread)
 void
 SDL_SYS_DetachThread(SDL_Thread * thread)
 {
-  return;
+  /* nothing. */
 }
 
 #endif /* SDL_THREAD_OS2 */
