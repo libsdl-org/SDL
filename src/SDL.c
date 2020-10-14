@@ -27,6 +27,12 @@
 #elif !defined(__WINRT__)
 #include <unistd.h> /* For _exit(), etc. */
 #endif
+#if defined(__OS2__)
+#include "core/os2/SDL_os2.h"
+#endif
+#if SDL_THREAD_OS2
+#include "thread/os2/SDL_systls_c.h"
+#endif
 
 #if defined(__EMSCRIPTEN__)
 #include <emscripten.h>
@@ -158,6 +164,10 @@ SDL_InitSubSystem(Uint32 flags)
         /* video or joystick implies events */
         flags |= SDL_INIT_EVENTS;
     }
+
+#if SDL_THREAD_OS2
+    SDL_OS2TLSAlloc(); /* thread/os2/SDL_systls.c */
+#endif
 
 #if SDL_VIDEO_DRIVER_WINDOWS
     if ((flags & (SDL_INIT_HAPTIC|SDL_INIT_JOYSTICK))) {
@@ -294,6 +304,13 @@ SDL_Init(Uint32 flags)
 void
 SDL_QuitSubSystem(Uint32 flags)
 {
+#if SDL_THREAD_OS2
+    SDL_OS2TLSFree(); /* thread/os2/SDL_systls.c */
+#endif
+#if defined(__OS2__)
+    SDL_OS2Quit();
+#endif
+
     /* Shut down requested initialized subsystems */
 #if !SDL_SENSOR_DISABLED
     if ((flags & SDL_INIT_SENSOR)) {

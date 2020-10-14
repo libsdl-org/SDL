@@ -13,7 +13,7 @@ TARGETS = testatomic.exe testdisplayinfo.exe testbounds.exe testdraw2.exe &
           testviewport.exe testwm2.exe torturethread.exe checkkeys.exe &
           controllermap.exe testhaptic.exe testqsort.exe testresample.exe &
           testaudioinfo.exe testaudiocapture.exe loopwave.exe loopwavequeue.exe &
-          testyuv.exe testgl2.exe testvulkan.exe testautomation.exe
+          testyuv.exe testgl2.exe testvulkan.exe testnative.exe testautomation.exe
 
 # SDL2test.lib sources (../src/test)
 
@@ -66,6 +66,10 @@ $(TESTLIB): $(COBJS)
 
 # specials
 testautomation.exe: $(TAOBJS)
+  @%make $(TESTLIB)
+  wlink SYS os2v2 libpath $(LIBPATH) lib {$(LIBS)} op q op el file {$<} name $@
+
+testnative.exe: testnative.obj testnativeos2.obj
   @%make $(TESTLIB)
   wlink SYS os2v2 libpath $(LIBPATH) lib {$(LIBS)} op q op el file {$<} name $@
 

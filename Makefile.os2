@@ -12,6 +12,7 @@ LNKFILE = $(LIBNAME).lnk
 
 INCPATH = -I"$(%WATCOM)/h/os2" -I"$(%WATCOM)/h"
 INCPATH+= -Iinclude
+INCPATH+= -I"src/core/os2" -I"src/core/os2/geniconv"
 
 LIBM = libm.lib
 LIBS = mmpm2.lib libuls.lib libconv.lib $(LIBM)
@@ -25,6 +26,12 @@ CFLAGS+= -bd
 CFLAGS+= $(INCPATH)
 # building SDL itself (for DECLSPEC):
 CFLAGS+= -DBUILD_SDL
+
+# Debug options:
+# - debug messages from OS/2 related code to stdout:
+#CFLAGS+= -DOS2DEBUG
+# - debug messages from OS/2 code via SDL_LogDebug():
+#CFLAGS+= -DOS2DEBUG=2
 
 MSRCS= e_atan2.c e_exp.c e_fmod.c e_log10.c e_log.c e_pow.c e_rem_pio2.c e_sqrt.c &
        k_cos.c k_rem_pio2.c k_sin.c k_tan.c &
@@ -58,6 +65,11 @@ SRCS+= SDL_dummysensor.c
 SRCS+= SDL_locale.c SDL_syslocale.c
 SRCS+= SDL_url.c SDL_sysurl.c
 
+SRCS+= SDL_os2.c geniconv.c os2cp.c os2iconv.c sys2utf8.c
+SRCS+= SDL_os2audio.c
+SRCS+= SDL_os2video.c SDL_os2util.c SDL_os2dive.c SDL_os2vman.c &
+       SDL_os2mouse.c SDL_os2messagebox.c
+
 SRCS+= SDL_dynapi.c
 
 OBJS = $(SRCS:.c=.obj)
@@ -68,7 +80,7 @@ MOBJS= $(MSRCS:.c=.obj)
 
 .c: ./src;./src/dynapi;./src/audio;./src/cpuinfo;./src/events;./src/file;./src/haptic;./src/joystick;./src/power;./src/render;./src/render/software;./src/sensor;./src/stdlib;./src/thread;./src/timer;./src/video;./src/video/yuv2rgb;./src/atomic;./src/audio/disk;
 .c: ./src/haptic/dummy;./src/joystick/dummy;./src/audio/dummy;./src/video/dummy;./src/sensor/dummy;
-.c: ./src/loadso/dummy;./src/filesystem/dummy;./src/timer/dummy;./src/thread/generic;
+.c: ./src/core/os2;./src/core/os2/geniconv;./src/audio/os2;./src/loadso/os2;./src/filesystem/os2;./src/thread/os2;./src/timer/os2;./src/video/os2;
 .c: ./src/locale/;./src/locale/unix;./src/misc;./src/misc/dummy;
 
 all: $(DLLFILE) $(LIBFILE) .symbolic
@@ -82,6 +94,9 @@ $(LIBFILE): $(DLLFILE)
     wlib -q -b -n -c -pa -s -t -zld -ii -io $* $(DLLFILE)
 
 .c.obj:
+    wcc386 $(CFLAGS) -fo=$^@ $<
+
+SDL_syscond.obj: "src/thread/generic/SDL_syscond.c"
     wcc386 $(CFLAGS) -fo=$^@ $<
 
 SDL_cpuinfo.obj: SDL_cpuinfo.c
