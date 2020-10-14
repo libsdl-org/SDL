@@ -29,8 +29,7 @@
 #include "SDL_filesystem.h"
 #include "../../core/os2/SDL_os2.h"
 
-#include <sys/types.h>
-#include <direct.h>
+#define INCL_DOSFILEMGR
 #define INCL_DOSPROCESS
 #define INCL_DOSERRORS
 #include <os2.h>
@@ -75,7 +74,7 @@ SDL_GetPrefPath(const char *org, const char *app)
 {
   PSZ        pszPath = SDL_getenv( "HOME" );
   CHAR       acBuf[_MAX_PATH];
-  LONG       lPosApp, lPosOrg;
+  int        lPosApp, lPosOrg;
   PSZ        pszApp, pszOrg = OS2_UTF8ToSys( org );
 
   if ( pszOrg == NULL )
@@ -93,10 +92,10 @@ SDL_GetPrefPath(const char *org, const char *app)
 
   lPosApp = SDL_snprintf( acBuf, sizeof(acBuf) - 1, "%s\\%s", pszPath, pszOrg );
   SDL_free( pszOrg );
-  if ( lPosApp == -1 )
+  if ( lPosApp < 0 )
     return NULL;
 
-  mkdir( acBuf );
+  DosCreateDir( acBuf, NULL );
 
   pszApp = OS2_UTF8ToSys( app );
   if ( pszApp == NULL )
@@ -108,10 +107,10 @@ SDL_GetPrefPath(const char *org, const char *app)
   lPosOrg = SDL_snprintf( &acBuf[lPosApp], sizeof(acBuf) - lPosApp - 1, "\\%s",
                           pszApp );
   SDL_free( pszApp );
-  if ( lPosOrg == -1 )
+  if ( lPosOrg < 0 )
     return NULL;
 
-  mkdir( acBuf );
+  DosCreateDir( acBuf, NULL );
   *((PUSHORT)&acBuf[lPosApp + lPosOrg]) = (USHORT)'\0\\';
 
   return OS2_SysToUTF8( acBuf );
