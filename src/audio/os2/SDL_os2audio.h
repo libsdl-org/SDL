@@ -40,6 +40,7 @@
 typedef struct SDL_PrivateAudioData
 {
   USHORT               usDeviceId;
+  BYTE                 _pad[2];
   MCI_MIXSETUP_PARMS   stMCIMixSetup;
   HEV                  hevBuf;
   ULONG                ulNextBuf;
