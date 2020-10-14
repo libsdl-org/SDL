@@ -5,11 +5,13 @@
 #include "SDL_stdinc.h"
 #include "geniconv/geniconv.h"
 
-#if OS2DEBUG==SDLOUTPUT
+#ifdef OS2DEBUG
+#if (OS2DEBUG-0 >= 2)
 # define debug(s,...) SDL_LogDebug( SDL_LOG_CATEGORY_APPLICATION, \
                                     __func__"(): "##s, ##__VA_ARGS__ )
-#elif defined(OS2DEBUG)
+#else
 # define debug(s,...) printf( __func__"(): "##s"\n", ##__VA_ARGS__ )
+#endif
 
 #else
 
