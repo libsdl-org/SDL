@@ -47,7 +47,7 @@ static BOOL _loadDLL(PSZ pszName, PSZ pszIconvOpen, PSZ pszIconv,
   ULONG      ulRC;
   CHAR       acError[256];
 
-  ulRC = DosLoadModule( &acError, sizeof(acError), pszName, &hmIconv );
+  ulRC = DosLoadModule( acError, sizeof(acError), pszName, &hmIconv );
   if ( ulRC != NO_ERROR )
   {
     debug( "DLL not loaded: %s", &acError );

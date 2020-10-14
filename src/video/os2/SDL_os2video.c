@@ -330,9 +330,9 @@ static VOID _wmChar(PWINDATA pWinData, MPARAM mp1, MPARAM mp2)
   if ( (ulFlags & KC_CHAR) != 0 )
   {
     CHAR     acUTF8[4];
-    LONG     lRC = StrUTF8( 1, &acUTF8, sizeof(acUTF8), (PSZ)&ulCharCode, 1 );
+    LONG     lRC = StrUTF8( 1, acUTF8, sizeof(acUTF8), (PSZ)&ulCharCode, 1 );
 
-    SDL_SendKeyboardText( lRC > 0 ? &acUTF8 : (PSZ)&ulCharCode );
+    SDL_SendKeyboardText( lRC > 0 ? acUTF8 : (PSZ)&ulCharCode );
   }
 }
 
@@ -421,13 +421,13 @@ static MRESULT _wmDrop(PWINDATA pWinData, PDRAGINFO pDragInfo)
     {
       // Get file name from the item.
       DrgQueryStrName( pDragItem->hstrContainerName,
-                       sizeof(acFName), &acFName );
-      pcFName = strchr( &acFName, '\0' );
+                       sizeof(acFName), acFName );
+      pcFName = strchr( acFName, '\0' );
       DrgQueryStrName( pDragItem->hstrSourceName,
-                       sizeof(acFName) - (pcFName - &acFName), pcFName );
+                       sizeof(acFName) - (pcFName - acFName), pcFName );
 
       // Send to SDL full file name converted to UTF-8.
-      pcFName = OS2_SysToUTF8( &acFName );
+      pcFName = OS2_SysToUTF8( acFName );
       SDL_SendDropFile( pcFName );
       SDL_free( pcFName );
 
@@ -852,7 +852,7 @@ static int OS2_CreateWindowFrom(_THIS, SDL_Window *window, const void *data)
   // Get client and frame window handles.
 
   WinQueryClassName( hwndUser, sizeof(acBuf), acBuf );
-  if ( !WinQueryClassInfo( pVData->hab, &acBuf, &stCI ) )
+  if ( !WinQueryClassInfo( pVData->hab, acBuf, &stCI ) )
     return SDL_SetError( "Cannot get user window class information" );
 
   if ( (stCI.flClassStyle & CS_FRAME) == 0 )
@@ -879,7 +879,7 @@ static int OS2_CreateWindowFrom(_THIS, SDL_Window *window, const void *data)
     hwndFrame = hwndUser;
 
     WinQueryClassName( hwnd, sizeof(acBuf), acBuf );
-    if ( !WinQueryClassInfo( pVData->hab, &acBuf, &stCI ) )
+    if ( !WinQueryClassInfo( pVData->hab, acBuf, &stCI ) )
       return SDL_SetError( "Cannot get client window class information" );
   }
 

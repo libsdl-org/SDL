@@ -103,7 +103,7 @@ static BOOL _vmanInit()
     return TRUE;
 
   // Load vman.dll
-  ulRC = DosLoadModule( &acBuf, sizeof(acBuf), "VMAN", &hmodVMan );
+  ulRC = DosLoadModule( acBuf, sizeof(acBuf), "VMAN", &hmodVMan );
   if ( ulRC != NO_ERROR )
   {
     debug( "Could not load VMAN.DLL, rc = %u : %s", ulRC, &acBuf );

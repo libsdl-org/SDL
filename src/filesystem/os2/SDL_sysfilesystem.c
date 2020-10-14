@@ -64,7 +64,7 @@ SDL_GetBasePath(void)
   }
 
   cbResult = pcEnd - pib->pib_pchcmd;
-  SDL_memcpy( &acBuf, pib->pib_pchcmd, cbResult );
+  SDL_memcpy( acBuf, pib->pib_pchcmd, cbResult );
   acBuf[cbResult] = '\0';
 
   return OS2_SysToUTF8( acBuf );
@@ -91,12 +91,12 @@ SDL_GetPrefPath(const char *org, const char *app)
       return NULL;
   }
 
-  lPosApp = SDL_snprintf( &acBuf, sizeof(acBuf) - 1, "%s\\%s", pszPath, pszOrg );
+  lPosApp = SDL_snprintf( acBuf, sizeof(acBuf) - 1, "%s\\%s", pszPath, pszOrg );
   SDL_free( pszOrg );
   if ( lPosApp == -1 )
     return NULL;
 
-  mkdir( &acBuf );
+  mkdir( acBuf );
 
   pszApp = OS2_UTF8ToSys( app );
   if ( pszApp == NULL )
@@ -110,11 +110,11 @@ SDL_GetPrefPath(const char *org, const char *app)
   SDL_free( pszApp );
   if ( lPosOrg == -1 )
     return NULL;
-  
-  mkdir( &acBuf );
+
+  mkdir( acBuf );
   *((PUSHORT)&acBuf[lPosApp + lPosOrg]) = (USHORT)'\0\\';
 
-  return OS2_SysToUTF8( &acBuf );
+  return OS2_SysToUTF8( acBuf );
 }
 
 #endif /* SDL_FILESYSTEM_OS2 */

@@ -288,7 +288,7 @@ char * os2cpToName(unsigned long cp)
     ULONG	aulCP[3];
     ULONG	cCP;
 
-    if ( DosQueryCp( sizeof(aulCP), &aulCP, &cCP ) != NO_ERROR )
+    if ( DosQueryCp( sizeof(aulCP), aulCP, &cCP ) != NO_ERROR )
       return NULL;
 
     cp = aulCP[0];
@@ -336,7 +336,7 @@ unsigned long os2cpFromName(char *cp)
     ULONG	aulCP[3];
     ULONG	cCP;
 
-    return DosQueryCp( sizeof(aulCP), &aulCP, &cCP ) != NO_ERROR ? 0 : aulCP[0];
+    return DosQueryCp( sizeof(aulCP), aulCP, &cCP ) != NO_ERROR ? 0 : aulCP[0];
   }
 
   while( isspace( *cp ) ) cp++;
@@ -348,17 +348,17 @@ unsigned long os2cpFromName(char *cp)
   if ( ulNext >= sizeof(acBuf) )
     return 0;
   
-  memcpy( &acBuf, cp, ulNext );
+  memcpy( acBuf, cp, ulNext );
   acBuf[ulNext] = '\0';
-  strupr( &acBuf ); 
+  strupr( acBuf ); 
 
-  lCmp = strcmp( aName2CP[0].pszName, &acBuf );
+  lCmp = strcmp( aName2CP[0].pszName, acBuf );
   if ( lCmp > 0 )
     return 0;
   else if ( lCmp == 0 )
     return aName2CP[0].ulCode;
 
-  lCmp = strcmp( aName2CP[ulHi].pszName, &acBuf );
+  lCmp = strcmp( aName2CP[ulHi].pszName, acBuf );
   if ( lCmp < 0 )
     return 0;
   else if ( lCmp == 0 )
@@ -368,7 +368,7 @@ unsigned long os2cpFromName(char *cp)
   {
     ulNext = ( ulLo + ulHi ) / 2;
 
-    lCmp = strcmp( aName2CP[ulNext].pszName, &acBuf );
+    lCmp = strcmp( aName2CP[ulNext].pszName, acBuf );
     if ( lCmp < 0 )
       ulLo = ulNext;
     else if ( lCmp > 0 )

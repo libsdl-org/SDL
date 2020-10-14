@@ -72,7 +72,7 @@ static BOOL voQueryInfo(PVIDEOOUTPUTINFO pInfo)
 
   // Query information about display hardware from DIVE.
 
-  sDiveCaps.pFormatData    = &fccFormats;
+  sDiveCaps.pFormatData    = fccFormats;
   sDiveCaps.ulFormatLength = 100;
   sDiveCaps.ulStructLen    = sizeof(DIVE_CAPS);
 
