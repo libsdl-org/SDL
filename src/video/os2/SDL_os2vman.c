@@ -20,6 +20,7 @@
 */
 #include "../../SDL_internal.h"
 #include "../SDL_sysvideo.h"
+
 #define INCL_DOSERRORS
 #define INCL_DOSPROCESS
 #define INCL_DOSMODULEMGR
@@ -27,14 +28,10 @@
 #define INCL_GPI
 #define INCL_GPIBITMAPS /* GPI bit map functions */
 #include <os2.h>
-#include <gradd.h>
-#if 0 /* not used */
-#define INCL_GRE_DEVICE
-#define INCL_GRE_DEVMISC
-#include <pmddi.h>
-#endif
 #include "SDL_os2output.h"
 #include "SDL_os2video.h"
+
+#include "my_gradd.h"
 
 typedef struct _VODATA {
   PVOID      pBuffer;
