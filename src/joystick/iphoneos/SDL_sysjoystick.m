@@ -160,6 +160,10 @@ IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controlle
             device->button_mask |= (1 << SDL_CONTROLLER_BUTTON_BACK);
             ++nbuttons;
         }
+        if ([gamepad respondsToSelector:@selector(buttonHome)] && gamepad.buttonHome) {
+            device->button_mask |= (1 << SDL_CONTROLLER_BUTTON_GUIDE);
+            ++nbuttons;
+        }
         BOOL has_direct_menu = [gamepad respondsToSelector:@selector(buttonMenu)] && gamepad.buttonMenu;
 #if TARGET_OS_TV
         /* On tvOS MFi controller menu button brings you to the home screen */
@@ -671,6 +675,9 @@ IOS_MFIJoystickUpdate(SDL_Joystick * joystick)
             }
             if (joystick->hwdata->button_mask & (1 << SDL_CONTROLLER_BUTTON_BACK)) {
                 buttons[button_count++] = gamepad.buttonOptions.isPressed;
+            }
+            if (joystick->hwdata->button_mask & (1 << SDL_CONTROLLER_BUTTON_GUIDE)) {
+                buttons[button_count++] = gamepad.buttonHome.isPressed;
             }
             /* This must be the last button, so we can optionally handle it with pause_button_index below */
             if (joystick->hwdata->button_mask & (1 << SDL_CONTROLLER_BUTTON_START)) {
