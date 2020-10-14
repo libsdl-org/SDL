@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2016 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2017 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -209,13 +209,6 @@ static void OS2_PlayDevice(_THIS)
     pAData->ulNextBuf = (pAData->ulNextBuf + 1) % pAData->cMixBuffers;
 }
 
-static void OS2_WaitDone(_THIS)
-{
-  PSDL_PrivateAudioData pAData = (PSDL_PrivateAudioData)this->hidden;
-
-  DosWaitEventSem( pAData->hevBuf, 3000 );
-}
-
 static void OS2_CloseDevice(_THIS)
 {
   PSDL_PrivateAudioData pAData = (PSDL_PrivateAudioData)this->hidden;
@@ -264,7 +257,6 @@ static void OS2_CloseDevice(_THIS)
     DosCloseEventSem( pAData->hevBuf );
 
   SDL_free( pAData );
-  this->hidden = NULL;
 }
 
 static int OS2_OpenDevice(_THIS, void *handle, const char *devname,
@@ -314,7 +306,6 @@ static int OS2_OpenDevice(_THIS, void *handle, const char *devname,
   if ( ulRC != MCIERR_SUCCESS )
   {
     stMCIAmpOpen.usDeviceID = (USHORT)~0;
-    OS2_CloseDevice( this );
     return _MCIError( "MCI_OPEN", ulRC );
   }
   pAData->usDeviceId = stMCIAmpOpen.usDeviceID;
@@ -337,7 +328,6 @@ static int OS2_OpenDevice(_THIS, void *handle, const char *devname,
     mciSendCommand( stMCIAmpOpen.usDeviceID, MCI_SET,
                     MCI_WAIT | MCI_SET_OFF | MCI_SET_ITEM,
                     &stMCIAmpSet, 0 );
-
 
     // Set record volume.
     stMCIAmpSet.ulLevel = _getEnvULong( "SDL_AUDIO_RECVOL", 100, 90 );
@@ -394,7 +384,6 @@ static int OS2_OpenDevice(_THIS, void *handle, const char *devname,
   if ( ulRC != MCIERR_SUCCESS )
   {
     pAData->stMCIMixSetup.ulBitsPerSample = 0;
-    OS2_CloseDevice( this );
     return _MCIError( "MCI_MIXSETUP", ulRC );
   }
 
@@ -412,7 +401,6 @@ static int OS2_OpenDevice(_THIS, void *handle, const char *devname,
                          MCI_WAIT | MCI_ALLOCATE_MEMORY, &stMCIBuffer, 0 );
   if ( ulRC != MCIERR_SUCCESS )
   {
-    OS2_CloseDevice( this );
     return _MCIError( "MCI_BUFFER", ulRC );
   }
   pAData->cMixBuffers = stMCIBuffer.ulNumBuffers;
@@ -452,11 +440,12 @@ static int OS2_Init(SDL_AudioDriverImpl * impl)
   impl->OpenDevice    = OS2_OpenDevice;
   impl->PlayDevice    = OS2_PlayDevice;
   impl->WaitDevice    = OS2_WaitDevice;
-  impl->WaitDone      = OS2_WaitDone;
   impl->GetDeviceBuf  = OS2_GetDeviceBuf;
   impl->CloseDevice   = OS2_CloseDevice;
 
-// [Digi]: SDL 2.0 does not support recording yet (2016-02-24).
+// TODO: IMPLEMENT CAPTURE SUPPORT:
+//  impl->CaptureFromDevice = ;
+//  impl->FlushCapture = ;
 //  impl->HasCaptureSupport = SDL_TRUE;
 
   return 1;   /* this audio target is available. */
