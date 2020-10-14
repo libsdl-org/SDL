@@ -280,7 +280,6 @@ static int OS2_OpenDevice(_THIS, void *handle, const char *devname,
   {
     debug( "Unsupported audio format, AUDIO_S16 used" );
     SDLAudioFmt = AUDIO_S16;
-    this->spec.freq = AUDIO_S16;
   }
 
   pAData = SDL_calloc( 1, sizeof(SDL_PrivateAudioData) );
@@ -374,7 +373,7 @@ static int OS2_OpenDevice(_THIS, void *handle, const char *devname,
     ulRC = mciSendCommand( pAData->usDeviceId, MCI_MIXSETUP,
                      MCI_WAIT | MCI_MIXSETUP_INIT, &pAData->stMCIMixSetup, 0 );
   }
-  
+
   debug( "Setup mixer [BPS: %u, Freq.: %u, Channels: %u]: %s",
          pAData->stMCIMixSetup.ulBitsPerSample,
          pAData->stMCIMixSetup.ulSamplesPerSec,
