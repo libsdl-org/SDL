@@ -57,20 +57,28 @@ static id disconnectObserver = nil;
  * they are only ever used indirectly through objc_msgSend
  */
 @interface GCExtendedGamepad (SDL)
-#if (__IPHONE_OS_VERSION_MAX_ALLOWED < 121000) || (__APPLETV_OS_VERSION_MAX_ALLOWED < 121000) || (__MAC_OS_VERSION_MAX_ALLOWED < 1401000)
+#if !((__IPHONE_OS_VERSION_MAX_ALLOWED >= 121000) || (__APPLETV_OS_VERSION_MAX_ALLOWED >= 121000) || (__MAC_OS_VERSION_MAX_ALLOWED >= 1401000))
 @property (nonatomic, readonly, nullable) GCControllerButtonInput *leftThumbstickButton;
 @property (nonatomic, readonly, nullable) GCControllerButtonInput *rightThumbstickButton;
 #endif
-#if (__IPHONE_OS_VERSION_MAX_ALLOWED < 130000) || (__APPLETV_OS_VERSION_MAX_ALLOWED < 130000) || (__MAC_OS_VERSION_MAX_ALLOWED < 1500000)
+#if !((__IPHONE_OS_VERSION_MAX_ALLOWED >= 130000) || (__APPLETV_OS_VERSION_MAX_ALLOWED >= 130000) || (__MAC_OS_VERSION_MAX_ALLOWED >= 1500000))
 @property (nonatomic, readonly) GCControllerButtonInput *buttonMenu;
 @property (nonatomic, readonly, nullable) GCControllerButtonInput *buttonOptions;
 #endif
+#if !((__IPHONE_OS_VERSION_MAX_ALLOWED >= 140000) || (__APPLETV_OS_VERSION_MAX_ALLOWED >= 140000) || (__MAC_OS_VERSION_MAX_ALLOWED > 1500000))
+@property (nonatomic, readonly, nullable) GCControllerButtonInput *buttonHome;
+#endif
 @end
 @interface GCMicroGamepad (SDL)
-#if (__IPHONE_OS_VERSION_MAX_ALLOWED < 130000) || (__APPLETV_OS_VERSION_MAX_ALLOWED < 130000) || (__MAC_OS_VERSION_MAX_ALLOWED < 1500000)
+#if !((__IPHONE_OS_VERSION_MAX_ALLOWED >= 130000) || (__APPLETV_OS_VERSION_MAX_ALLOWED >= 130000) || (__MAC_OS_VERSION_MAX_ALLOWED >= 1500000))
 @property (nonatomic, readonly) GCControllerButtonInput *buttonMenu;
 #endif
 @end
+
+#if (__IPHONE_OS_VERSION_MAX_ALLOWED >= 140000) || (__APPLETV_OS_VERSION_MAX_ALLOWED >= 140000) || (__MAC_OS_VERSION_MAX_ALLOWED > 1500000)
+#define ENABLE_MFI_BATTERY
+#define ENABLE_MFI_RUMBLE
+#endif
 
 #endif /* SDL_JOYSTICK_MFI */
 
@@ -769,6 +777,7 @@ IOS_MFIJoystickUpdate(SDL_Joystick * joystick)
             joystick->hwdata->num_pause_presses = 0;
         }
 
+#ifdef ENABLE_MFI_BATTERY
         if (@available(iOS 14.0, tvOS 14.0, *)) {
             GCDeviceBattery *battery = controller.battery;
             if (battery) {
@@ -802,9 +811,12 @@ IOS_MFIJoystickUpdate(SDL_Joystick * joystick)
                 SDL_PrivateJoystickBatteryLevel(joystick, ePowerLevel);
             }
         }
+#endif /* ENABLE_MFI_BATTERY */
     }
 #endif /* SDL_JOYSTICK_MFI */
 }
+
+#ifdef ENABLE_MFI_RUMBLE
 
 @interface SDL_RumbleMotor : NSObject
 @end
@@ -944,10 +956,14 @@ static SDL_RumbleContext *IOS_JoystickInitRumble(GCController *controller)
     return nil;
 }
 
+#endif /* ENABLE_MFI_RUMBLE */
+
 static int
 IOS_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
+#ifdef ENABLE_MFI_RUMBLE
     SDL_JoystickDeviceItem *device = joystick->hwdata;
+
     if (@available(iOS 14.0, tvOS 14.0, *)) {
         if (!device->rumble && device->controller && device->controller.haptics) {
             SDL_RumbleContext *rumble = IOS_JoystickInitRumble(device->controller);
@@ -963,6 +979,9 @@ IOS_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 
     } else {
         return SDL_Unsupported();
     }
+#else
+    return SDL_Unsupported();
+#endif
 }
 
 static void
