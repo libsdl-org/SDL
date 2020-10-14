@@ -1612,36 +1612,13 @@ static int OS2_VideoInit(_THIS)
 static void OS2_VideoQuit(_THIS)
 {
   PSDL_VideoData       pVData = (PSDL_VideoData)_this->driverdata;
-  ULONG                ulDisplayIdx, ulModeIdx;
-  SDL_VideoDisplay     *pSDLDisplay;
 
   OS2_QuitMouse( _this );
 
   WinDestroyMsgQueue( pVData->hmq );
   WinTerminate( pVData->hab );
 
-  // We support only one display. Free all listed displays data for the future.
-  for( ulDisplayIdx = 0; ulDisplayIdx < _this->num_displays; ulDisplayIdx++ )
-  {
-    pSDLDisplay = &_this->displays[ulDisplayIdx];
-
-    // Free video mode data (PMODEDATA).
-    if ( pSDLDisplay->desktop_mode.driverdata != NULL )
-      SDL_free( pSDLDisplay->desktop_mode.driverdata );
-
-    // We support only one mode - desktop_mode. Free all modes for the future.
-    for( ulModeIdx = 0; ulModeIdx < pSDLDisplay->num_display_modes;
-         ulModeIdx++ )
-      if ( pSDLDisplay->display_modes[ulModeIdx].driverdata != NULL )
-        SDL_free( pSDLDisplay->display_modes[ulModeIdx].driverdata );
-
-    // Free display data (PDISPLAYDATA).
-    if ( pSDLDisplay->driverdata != NULL )
-    {
-      SDL_free( pSDLDisplay->driverdata );
-      pSDLDisplay->driverdata = NULL;
-    }
-  }
+  /* our caller SDL_VideoQuit() already frees display_modes, driverdata, etc. */
 }
 
 static int OS2_GetDisplayBounds(_THIS, SDL_VideoDisplay *display,
