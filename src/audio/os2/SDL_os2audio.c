@@ -61,8 +61,8 @@ static int _MCIError(PSZ pszFunc, ULONG ulResult)
 {
   CHAR			acBuf[128];
 
-  mciGetErrorString( ulResult, (PCHAR)&acBuf, sizeof(acBuf) );
-  return SDL_SetError( "[%s] %s", pszFunc, &acBuf );
+  mciGetErrorString( ulResult, acBuf, sizeof(acBuf) );
+  return SDL_SetError( "[%s] %s", pszFunc, acBuf );
 }
 
 static void _mixIOError(PSZ pszFunction, ULONG ulRC)
@@ -128,7 +128,7 @@ static void OS2_DetectDevices(void)
   ULONG                  ulHandle = 0;
 
   acBuf[0] = '\0';
-  stMCISysInfo.pszReturn    = &acBuf;
+  stMCISysInfo.pszReturn    = acBuf;
   stMCISysInfo.ulRetSize    = sizeof(acBuf);
   stMCISysInfo.usDeviceType = MCI_DEVTYPE_AUDIO_AMPMIX;
   ulRC = mciSendCommand( 0, MCI_SYSINFO, MCI_WAIT | MCI_SYSINFO_QUANTITY,
@@ -145,7 +145,7 @@ static void OS2_DetectDevices(void)
        stSysInfoParams.ulNumber++ )
   {
     // Get device install name.
-    stSysInfoParams.pszReturn    = &acBuf;
+    stSysInfoParams.pszReturn    = acBuf;
     stSysInfoParams.ulRetSize    = sizeof( acBuf );
     stSysInfoParams.usDeviceType = MCI_DEVTYPE_AUDIO_AMPMIX;
     ulRC = mciSendCommand( 0, MCI_SYSINFO, MCI_WAIT | MCI_SYSINFO_INSTALLNAME,
@@ -159,7 +159,7 @@ static void OS2_DetectDevices(void)
     // Get textual product description.
     stSysInfoParams.ulItem = MCI_SYSINFO_QUERY_DRIVER;
     stSysInfoParams.pSysInfoParm = &stLogDevice;
-    strcpy( &stLogDevice.szInstallName, stSysInfoParams.pszReturn );
+    strcpy( stLogDevice.szInstallName, stSysInfoParams.pszReturn );
     ulRC = mciSendCommand( 0, MCI_SYSINFO, MCI_WAIT | MCI_SYSINFO_ITEM,
                            &stSysInfoParams, 0 );
     if ( ulRC != NO_ERROR )
@@ -169,9 +169,9 @@ static void OS2_DetectDevices(void)
     }
 
     ulHandle++;
-    SDL_AddAudioDevice( 0, &stLogDevice.szProductInfo, (void *)(ulHandle) );
+    SDL_AddAudioDevice( 0, stLogDevice.szProductInfo, (void *)(ulHandle) );
     ulHandle++;
-    SDL_AddAudioDevice( 1, &stLogDevice.szProductInfo, (void *)(ulHandle) );
+    SDL_AddAudioDevice( 1, stLogDevice.szProductInfo, (void *)(ulHandle) );
   }
 }
 
@@ -226,11 +226,9 @@ static void OS2_CloseDevice(_THIS)
     return;
 
   /* Close up audio */
-
   if ( pAData->usDeviceId != (USHORT)~0 )
   {
     // Device is open.
-
     if ( pAData->stMCIMixSetup.ulBitsPerSample != 0 )
     {
       // Mixer was initialized.

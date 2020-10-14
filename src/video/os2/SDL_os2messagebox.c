@@ -68,10 +68,10 @@ static VOID _wmInitDlg(HWND hwnd, PMSGBOXDLGDATA pDlgData)
 
   while( ( hWndNext = WinGetNextWindow( hEnum ) ) != NULLHANDLE )
   {
-    if ( WinQueryClassName( hWndNext, sizeof(acBuf), &acBuf ) == 0 )
+    if ( WinQueryClassName( hWndNext, sizeof(acBuf), acBuf ) == 0 )
       continue;
 
-    if ( strcmp( &acBuf, "#3" ) == 0 ) // Class name of button.
+    if ( strcmp( acBuf, "#3" ) == 0 ) // Class name of button.
     {
       if ( cButtons < sizeof(aButtons) / sizeof(struct _BUTTON) )
       {
@@ -91,8 +91,8 @@ static VOID _wmInitDlg(HWND hwnd, PMSGBOXDLGDATA pDlgData)
   for( ulIdx = 0; ulIdx < cButtons; ulIdx++ )
   {
     // Query size of text in window coordinates.
-    cbBuf = WinQueryWindowText( aButtons[ulIdx].hwnd, sizeof(acBuf), &acBuf );
-    GpiQueryTextBox( hps, cbBuf, acBuf, TXTBOX_COUNT, &aptText );
+    cbBuf = WinQueryWindowText( aButtons[ulIdx].hwnd, sizeof(acBuf), acBuf );
+    GpiQueryTextBox( hps, cbBuf, acBuf, TXTBOX_COUNT, aptText );
     aptText[TXTBOX_TOPRIGHT].x -= aptText[TXTBOX_BOTTOMLEFT].x;
     aptText[TXTBOX_TOPRIGHT].y -= aptText[TXTBOX_BOTTOMLEFT].y;
     // Convert text size to dialog coordinates.
@@ -154,7 +154,7 @@ static VOID _wmInitDlg(HWND hwnd, PMSGBOXDLGDATA pDlgData)
     aptText[1].x = aButtons[ulIdx].ulCX;
     aptText[1].y = ulButtonsCY;
     // Convert to window coordinates.
-    WinMapDlgPoints( hwnd, &aptText, 2, TRUE );
+    WinMapDlgPoints( hwnd, aptText, 2, TRUE );
 
     WinSetWindowPos( aButtons[ulIdx].hwnd, HWND_TOP,
                      aptText[0].x, aptText[0].y, aptText[1].x, aptText[1].y,
@@ -229,10 +229,8 @@ static HWND _makeDlg(const SDL_MessageBoxData *messageboxdata)
   PSZ                  pszBtnText;
   ULONG                cbBtnText;
   HWND                 hwnd;
-  SDL_MessageBoxColor  *pSDLColors = messageboxdata->colorScheme == NULL
-                 ? NULL
-                 : (SDL_MessageBoxColor *)&messageboxdata->colorScheme->colors;
-  SDL_MessageBoxColor  *pSDLColor;
+  const SDL_MessageBoxColor  *pSDLColors = (messageboxdata->colorScheme == NULL)? NULL : messageboxdata->colorScheme->colors;
+  const SDL_MessageBoxColor  *pSDLColor;
   MSGBOXDLGDATA        stDlgData;
 
   /* Build a dialog tamplate in memory */
@@ -256,7 +254,7 @@ static HWND _makeDlg(const SDL_MessageBoxData *messageboxdata)
                   ( 48 * cSDLBtnData ); /* PP for buttons. */
 
   // Allocate memory for the dialog template.
-  pTemplate = SDL_malloc( cbTemplate );
+  pTemplate = (PDLGTEMPLATE) SDL_malloc( cbTemplate );
   // Pointer on data for dialog items in allocated memory.
   pcDlgData = &((PCHAR)pTemplate)[ sizeof(DLGTEMPLATE) +
                                    ( (2 + cSDLBtnData) * sizeof(DLGTITEM) ) ];
@@ -276,7 +274,7 @@ static HWND _makeDlg(const SDL_MessageBoxData *messageboxdata)
 
   /* First item info - frame */
 
-  pDlgItem = &pTemplate->adlgti;
+  pDlgItem = pTemplate->adlgti;
   pDlgItem->fsItemStatus = 0;  /* Reserved? */
   /* Number of dialog item child windows owned by this item. */
   pDlgItem->cChildren = 2 + cSDLBtnData; // Ststic text + buttons.

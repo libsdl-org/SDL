@@ -49,7 +49,7 @@ static int _createUconvObj(const char *code, UconvObject *uobj)
     }
   }
 
-  return UniCreateUconvObject( &uc_code, uobj );
+  return UniCreateUconvObject( uc_code, uobj );
 }
 
 static int uconv_open(const char *code, UconvObject *uobj)
@@ -68,8 +68,8 @@ static int uconv_open(const char *code, UconvObject *uobj)
     unsigned long	cp = os2cpFromName( (char *)code );
     char		cp_name[16];
 
-    if ( cp != 0 && _snprintf( &cp_name, sizeof(cp_name), "IBM-%u", cp ) > 0 )
-      rc = _createUconvObj( &cp_name, uobj );
+    if ( cp != 0 && _snprintf( cp_name, sizeof(cp_name), "IBM-%u", cp ) > 0 )
+      rc = _createUconvObj( cp_name, uobj );
   }
 
   return rc;
