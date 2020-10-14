@@ -1717,8 +1717,8 @@ static SDL_VideoDevice *OS2_CreateDevice(int devindex)
   device->GetDisplayModes = OS2_GetDisplayModes;
   device->SetDisplayMode = OS2_SetDisplayMode;
   device->PumpEvents = OS2_PumpEvents;
-  device->CreateWindow = OS2_CreateWindow;
-  device->CreateWindowFrom = OS2_CreateWindowFrom;
+  device->CreateSDLWindow = OS2_CreateWindow;
+  device->CreateSDLWindowFrom = OS2_CreateWindowFrom;
   device->DestroyWindow = OS2_DestroyWindow;
   device->SetWindowTitle = OS2_SetWindowTitle;
   device->SetWindowIcon = OS2_SetWindowIcon;
