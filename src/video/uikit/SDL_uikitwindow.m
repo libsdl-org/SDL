@@ -162,14 +162,14 @@ UIKit_CreateWindow(_THIS, SDL_Window *window)
     @autoreleasepool {
         SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
         SDL_DisplayData *data = (__bridge SDL_DisplayData *) display->driverdata;
-
-        /* SDL currently puts this window at the start of display's linked list. We rely on this. */
-        SDL_assert(_this->windows == window);
+		SDL_Window *other;
 
         /* We currently only handle a single window per display on iOS */
-        if (window->next != NULL) {
-            return SDL_SetError("Only one window allowed per display.");
-        }
+		for (other = _this->windows; other; other = other->next) {
+			if (other != window && SDL_GetDisplayForWindow(other) == display) {
+				return SDL_SetError("Only one window allowed per display.");
+			}
+		}
 
         /* If monitor has a resolution of 0x0 (hasn't been explicitly set by the
          * user, so it's in standby), try to force the display to a resolution
