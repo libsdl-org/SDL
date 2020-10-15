@@ -8304,6 +8304,12 @@
 			attributes = {
 				LastUpgradeCheck = 1130;
 				TargetAttributes = {
+					A75FCCFB23E25AB700529352 = {
+						DevelopmentTeam = MXGJJ98X76;
+					};
+					A75FCEB423E25AC700529352 = {
+						DevelopmentTeam = MXGJJ98X76;
+					};
 					A75FDB4823E399AC00529352 = {
 						CreatedOnToolsVersion = 11.3.1;
 					};
@@ -10461,6 +10467,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_OBJC_ARC = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				DEVELOPMENT_TEAM = MXGJJ98X76;
 				EXECUTABLE_PREFIX = lib;
 				GCC_PREPROCESSOR_DEFINITIONS = "IOS_DYLIB=1";
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
@@ -10473,6 +10481,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_OBJC_ARC = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				DEVELOPMENT_TEAM = MXGJJ98X76;
 				EXECUTABLE_PREFIX = lib;
 				GCC_PREPROCESSOR_DEFINITIONS = "IOS_DYLIB=1";
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
@@ -10485,6 +10495,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_OBJC_ARC = YES;
+				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "iPhone Developer";
+				DEVELOPMENT_TEAM = MXGJJ98X76;
 				EXECUTABLE_PREFIX = lib;
 				GCC_PREPROCESSOR_DEFINITIONS = "IOS_DYLIB=1";
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
@@ -10497,6 +10509,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_OBJC_ARC = YES;
+				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "iPhone Developer";
+				DEVELOPMENT_TEAM = MXGJJ98X76;
 				EXECUTABLE_PREFIX = lib;
 				GCC_PREPROCESSOR_DEFINITIONS = "IOS_DYLIB=1";
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
