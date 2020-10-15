@@ -90,6 +90,10 @@ static void OnGCKeyboardConnected(GCKeyboard *keyboard) API_AVAILABLE(macos(11.0
     {
         SDL_SendKeyboardKey(pressed ? SDL_PRESSED : SDL_RELEASED, (SDL_Scancode)keyCode);
     };
+
+	dispatch_queue_t queue = dispatch_queue_create( "org.libsdl.input.keyboard", DISPATCH_QUEUE_SERIAL );
+	dispatch_set_target_queue( queue, dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_HIGH, 0 ) );
+	keyboard.handlerQueue = queue;
 }
 
 static void OnGCKeyboardDisconnected(GCKeyboard *keyboard) API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0))
@@ -221,6 +225,10 @@ static void OnGCMouseConnected(GCMouse *mouse) API_AVAILABLE(macos(11.0), ios(14
 		SDL_SendMouseMotion(SDL_GetMouseFocus(), mouseID, SDL_TRUE, (int)deltaX, -(int)deltaY);
     };
 
+	dispatch_queue_t queue = dispatch_queue_create( "org.libsdl.input.mouse", DISPATCH_QUEUE_SERIAL );
+	dispatch_set_target_queue( queue, dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_HIGH, 0 ) );
+	mouse.handlerQueue = queue;
+
     ++mice_connected;
 }
 
@@ -279,7 +287,7 @@ SDL_bool SDL_HasGCMouse(void)
 void SDL_QuitGCMouse(void)
 {
     @autoreleasepool {
-        if (@available(iOS 14.0, tvOS 14.0, *)) {
+        if (@available(iOS 14.1, tvOS 14.1, *)) {
             NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
 
             if (mouse_connect_observer) {
