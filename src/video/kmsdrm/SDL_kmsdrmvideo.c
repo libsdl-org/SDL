@@ -712,6 +712,38 @@ KMSDRM_DeleteDevice(SDL_VideoDevice * device)
     SDL_KMSDRM_UnloadSymbols();
 }
 
+static int
+KMSDRM_GetDisplayDPI(_THIS, SDL_VideoDisplay * display, float * ddpi, float * hdpi, float * vdpi)
+{
+    int w, h;
+
+    uint32_t display_mm_width;
+    uint32_t display_mm_height;
+
+    SDL_DisplayData *dispdata;
+
+    dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0); //viddata->devindex);
+
+
+    if (!dispdata) {
+        return SDL_SetError("No available displays");
+    }
+
+    display_mm_width = dispdata->connector->connector->mmWidth;
+    display_mm_height = dispdata->connector->connector->mmHeight;
+
+    w = dispdata->mode.hdisplay;
+    h = dispdata->mode.vdisplay;
+
+    *hdpi = display_mm_width ? (((float) w) * 25.4f / display_mm_width) : 0.0f;
+    *vdpi = display_mm_height ? (((float) h) * 25.4f / display_mm_height) : 0.0f;
+    *ddpi = SDL_ComputeDiagonalDPI(w, h, ((float) display_mm_width) / 25.4f,((float) display_mm_height) / 25.4f);
+
+    return 0;
+}
+
+
+
 static SDL_VideoDevice *
 KMSDRM_CreateDevice(int devindex)
 {
@@ -756,6 +788,7 @@ KMSDRM_CreateDevice(int devindex)
     device->VideoQuit = KMSDRM_VideoQuit;
     device->GetDisplayModes = KMSDRM_GetDisplayModes;
     device->SetDisplayMode = KMSDRM_SetDisplayMode;
+    device->GetDisplayDPI = KMSDRM_GetDisplayDPI;
     device->CreateSDLWindow = KMSDRM_CreateWindow;
     device->CreateSDLWindowFrom = KMSDRM_CreateWindowFrom;
     device->SetWindowTitle = KMSDRM_SetWindowTitle;
