@@ -430,7 +430,7 @@ SDL_HideHomeIndicatorHintChanged(void *userdata, const char *name, const char *o
                     }
 
                     if (mod & KMOD_SHIFT) {
-                        /* If character uses shift, press shift down */
+                        /* If character uses shift, press shift */
                         SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_LSHIFT);
                     }
 
@@ -439,7 +439,7 @@ SDL_HideHomeIndicatorHintChanged(void *userdata, const char *name, const char *o
                     SDL_SendKeyboardKey(SDL_RELEASED, code);
 
                     if (mod & KMOD_SHIFT) {
-                        /* If character uses shift, press shift back up */
+                        /* If character uses shift, release shift */
                         SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_LSHIFT);
                     }
                 }

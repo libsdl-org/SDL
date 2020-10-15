@@ -158,12 +158,19 @@ UIKit_VideoInit(_THIS)
     if (UIKit_InitModes(_this) < 0) {
         return -1;
     }
+
+	SDL_InitGCKeyboard();
+	SDL_InitGCMouse();
+
     return 0;
 }
 
 void
 UIKit_VideoQuit(_THIS)
 {
+	SDL_QuitGCKeyboard();
+	SDL_QuitGCMouse();
+
     UIKit_QuitModes(_this);
 }
 
