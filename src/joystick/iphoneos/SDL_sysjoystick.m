@@ -827,6 +827,7 @@ IOS_MFIJoystickUpdate(SDL_Joystick * joystick)
 @implementation SDL_RumbleMotor {
     CHHapticEngine *engine API_AVAILABLE(ios(13.0), tvos(14.0));
     id<CHHapticPatternPlayer> player API_AVAILABLE(ios(13.0), tvos(14.0));
+	bool active;
 }
 
 -(void)cleanup
@@ -843,78 +844,92 @@ IOS_MFIJoystickUpdate(SDL_Joystick * joystick)
 
 -(int)setIntensity:(float)intensity
 {
-    if (@available(iOS 14.0, tvOS 14.0, *)) {
-        NSError *error;
-        
-        if (self->player != nil) {
-            [self->player stopAtTime:0 error:&error];
-            self->player = nil;
-        }
+    @autoreleasepool {
+		if (@available(iOS 14.0, tvOS 14.0, *)) {
+			NSError *error;
+			
+			if (self->engine == nil) {
+				return SDL_SetError("Haptics engine was stopped");
+			}
 
-        if (self->engine == nil) {
-            return SDL_SetError("Haptics engine not available");
-        }
-        
-        if (intensity <= 0.01f) {
-            return 0;
-        }
+			if (intensity == 0.0f) {
+				if (self->player && self->active) {
+					[self->player stopAtTime:0 error:&error];
+				}
+				self->active = false;
+				return 0;
+			}
 
-        CHHapticEventParameter *param = [[CHHapticEventParameter alloc] initWithParameterID:CHHapticEventParameterIDHapticIntensity value:intensity];
-        CHHapticEvent *event = [[CHHapticEvent alloc] initWithEventType:CHHapticEventTypeHapticContinuous parameters:[NSArray arrayWithObjects:param, nil] relativeTime:0 duration:GCHapticDurationInfinite];
-        CHHapticPattern *pattern = [[CHHapticPattern alloc] initWithEvents:[NSArray arrayWithObject:event] parameters:[[NSArray alloc] init] error:&error];
-        if (error != nil) {
-            return SDL_SetError("Couldn't create haptic pattern: %s", [error.localizedDescription UTF8String]);
-        }
+			if (self->player == nil) {
+				CHHapticEventParameter *param = [[CHHapticEventParameter alloc] initWithParameterID:CHHapticEventParameterIDHapticIntensity value:1.0f];
+				CHHapticEvent *event = [[CHHapticEvent alloc] initWithEventType:CHHapticEventTypeHapticContinuous parameters:[NSArray arrayWithObjects:param, nil] relativeTime:0 duration:GCHapticDurationInfinite];
+				CHHapticPattern *pattern = [[CHHapticPattern alloc] initWithEvents:[NSArray arrayWithObject:event] parameters:[[NSArray alloc] init] error:&error];
+				if (error != nil) {
+					return SDL_SetError("Couldn't create haptic pattern: %s", [error.localizedDescription UTF8String]);
+				}
 
-        self->player = [self->engine createPlayerWithPattern:pattern error:&error];
-        if (error != nil) {
-            return SDL_SetError("Couldn't create haptic player: %s", [error.localizedDescription UTF8String]);
-        }
+				self->player = [self->engine createPlayerWithPattern:pattern error:&error];
+				if (error != nil) {
+					return SDL_SetError("Couldn't create haptic player: %s", [error.localizedDescription UTF8String]);
+				}
+				self->active = false;
+			}
 
-        [self->player startAtTime:0 error:&error];
-        if (error != nil) {
-            self->player = nil;
-            return SDL_SetError("Couldn't start playback: %s", [error.localizedDescription UTF8String]);
-        }
-    }
-    return 0;
+			CHHapticDynamicParameter *param = [[CHHapticDynamicParameter alloc] initWithParameterID:CHHapticDynamicParameterIDHapticIntensityControl value:intensity relativeTime:0];
+			[self->player sendParameters:[NSArray arrayWithObject:param] atTime:0 error:&error];
+			if (error != nil) {
+				return SDL_SetError("Couldn't update haptic player: %s", [error.localizedDescription UTF8String]);
+			}
+
+			if (!self->active) {
+				[self->player startAtTime:0 error:&error];
+				self->active = true;
+			}
+		}
+
+		return 0;
+	}
 }
 
 -(id) initWithController:(GCController*)controller locality:(GCHapticsLocality)locality API_AVAILABLE(ios(14.0), tvos(14.0))
 {
-    NSError *error;
+    @autoreleasepool {
+		NSError *error;
 
-    self->engine = [controller.haptics createEngineWithLocality:locality];
-    if (self->engine == nil) {
-        return nil;
-    }
-    
-    [self->engine startAndReturnError:&error];
-    if (error != nil) {
-        return nil;
-    }
+		self->engine = [controller.haptics createEngineWithLocality:locality];
+		if (self->engine == nil) {
+			SDL_SetError("Couldn't create haptics engine");
+			return nil;
+		}
 
-    __weak typeof(self) weakSelf = self;
-    self->engine.stoppedHandler = ^(CHHapticEngineStoppedReason stoppedReason) {
-        SDL_RumbleMotor *_this = weakSelf;
-        if (_this == nil) {
-            return;
-        }
+		[self->engine startAndReturnError:&error];
+		if (error != nil) {
+			SDL_SetError("Couldn't start haptics engine");
+			return nil;
+		}
 
-        _this->player = nil;
-        _this->engine = nil;
-    };
-    self->engine.resetHandler = ^{
-        SDL_RumbleMotor *_this = weakSelf;
-        if (_this == nil) {
-            return;
-        }
+		__weak typeof(self) weakSelf = self;
+		self->engine.stoppedHandler = ^(CHHapticEngineStoppedReason stoppedReason) {
+			SDL_RumbleMotor *_this = weakSelf;
+			if (_this == nil) {
+				return;
+			}
 
-        _this->player = nil;
-        [_this->engine startAndReturnError:nil];
-    };
-    
-    return self;
+			_this->player = nil;
+			_this->engine = nil;
+		};
+		self->engine.resetHandler = ^{
+			SDL_RumbleMotor *_this = weakSelf;
+			if (_this == nil) {
+				return;
+			}
+
+			_this->player = nil;
+			[_this->engine startAndReturnError:nil];
+		};
+
+		return self;
+	}
 }
 
 @end
@@ -941,6 +956,12 @@ IOS_MFIJoystickUpdate(SDL_Joystick * joystick)
     result += [self->low_frequency_motor setIntensity:((float)low_frequency_rumble / 65535.0f)];
     result += [self->high_frequency_motor setIntensity:((float)high_frequency_rumble / 65535.0f)];
     return ((result < 0) ? -1 : 0);
+}
+
+-(void)cleanup
+{
+	[self->low_frequency_motor cleanup];
+	[self->high_frequency_motor cleanup];
 }
 
 @end
@@ -1015,10 +1036,15 @@ IOS_JoystickClose(SDL_Joystick * joystick)
     device->joystick = NULL;
 
     @autoreleasepool {
+#ifdef ENABLE_MFI_RUMBLE
         if (device->rumble) {
+			SDL_RumbleContext *rumble = (__bridge SDL_RumbleContext *)device->rumble;
+
+			[rumble cleanup];
             CFRelease(device->rumble);
             device->rumble = NULL;
         }
+#endif /* ENABLE_MFI_RUMBLE */
 
         if (device->accelerometer) {
 #if !TARGET_OS_TV
