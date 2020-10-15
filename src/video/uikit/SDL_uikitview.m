@@ -29,9 +29,10 @@
 #include "../../events/SDL_touch_c.h"
 #include "../../events/SDL_events_c.h"
 
-#import "SDL_uikitappdelegate.h"
-#import "SDL_uikitmodes.h"
-#import "SDL_uikitwindow.h"
+#include "SDL_uikitappdelegate.h"
+#include "SDL_uikitevents.h"
+#include "SDL_uikitmodes.h"
+#include "SDL_uikitwindow.h"
 
 /* The maximum number of mouse buttons we support */
 #define MAX_MOUSE_BUTTONS    5
@@ -159,7 +160,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 
 #if !TARGET_OS_TV && defined(__IPHONE_13_4)
 - (UIPointerRegion *)pointerInteraction:(UIPointerInteraction *)interaction regionForRequest:(UIPointerRegionRequest *)request defaultRegion:(UIPointerRegion *)defaultRegion API_AVAILABLE(ios(13.4)){
-    if (request != nil) {
+    if (request != nil && !SDL_HasGCMouse()) {
         CGPoint origin = self.bounds.origin;
         CGPoint point = request.location;
 
@@ -236,27 +237,29 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 #if !TARGET_OS_TV && defined(__IPHONE_13_4)
         if (@available(iOS 13.4, *)) {
             if (touch.type == UITouchTypeIndirectPointer) {
-                int i;
+                if (!SDL_HasGCMouse()) {
+                    int i;
 
-                for (i = 1; i <= MAX_MOUSE_BUTTONS; ++i) {
-                    if (event.buttonMask & SDL_BUTTON(i)) {
-                        Uint8 button;
+                    for (i = 1; i <= MAX_MOUSE_BUTTONS; ++i) {
+                        if ((event.buttonMask & SDL_BUTTON(i)) != 0) {
+                            Uint8 button;
 
-                        switch (i) {
-                        case 1:
-                            button = SDL_BUTTON_LEFT;
-                            break;
-                        case 2:
-                            button = SDL_BUTTON_RIGHT;
-                            break;
-                        case 3:
-                            button = SDL_BUTTON_MIDDLE;
-                            break;
-                        default:
-                            button = (Uint8)i;
-                            break;
+                            switch (i) {
+                            case 1:
+                                button = SDL_BUTTON_LEFT;
+                                break;
+                            case 2:
+                                button = SDL_BUTTON_RIGHT;
+                                break;
+                            case 3:
+                                button = SDL_BUTTON_MIDDLE;
+                                break;
+                            default:
+                                button = (Uint8)i;
+                                break;
+                            }
+                            SDL_SendMouseButton(sdlwindow, 0, SDL_PRESSED, button);
                         }
-                        SDL_SendMouseButton(sdlwindow, 0, SDL_PRESSED, button);
                     }
                 }
                 handled = YES;
@@ -289,27 +292,29 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 #if !TARGET_OS_TV && defined(__IPHONE_13_4)
         if (@available(iOS 13.4, *)) {
             if (touch.type == UITouchTypeIndirectPointer) {
-                int i;
+                if (!SDL_HasGCMouse()) {
+                    int i;
 
-                for (i = 1; i <= MAX_MOUSE_BUTTONS; ++i) {
-                    if (!(event.buttonMask & SDL_BUTTON(i))) {
-                        Uint8 button;
+                    for (i = 1; i <= MAX_MOUSE_BUTTONS; ++i) {
+                        if ((event.buttonMask & SDL_BUTTON(i)) != 0) {
+                            Uint8 button;
 
-                        switch (i) {
-                        case 1:
-                            button = SDL_BUTTON_LEFT;
-                            break;
-                        case 2:
-                            button = SDL_BUTTON_RIGHT;
-                            break;
-                        case 3:
-                            button = SDL_BUTTON_MIDDLE;
-                            break;
-                        default:
-                            button = (Uint8)i;
-                            break;
+                            switch (i) {
+                            case 1:
+                                button = SDL_BUTTON_LEFT;
+                                break;
+                            case 2:
+                                button = SDL_BUTTON_RIGHT;
+                                break;
+                            case 3:
+                                button = SDL_BUTTON_MIDDLE;
+                                break;
+                            default:
+                                button = (Uint8)i;
+                                break;
+                            }
+                            SDL_SendMouseButton(sdlwindow, 0, SDL_RELEASED, button);
                         }
-                        SDL_SendMouseButton(sdlwindow, 0, SDL_RELEASED, button);
                     }
                 }
                 handled = YES;
@@ -411,27 +416,33 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 
 - (void)pressesBegan:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event
 {
-    for (UIPress *press in presses) {
-        SDL_Scancode scancode = [self scancodeFromPress:press];
-        SDL_SendKeyboardKey(SDL_PRESSED, scancode);
+    if (!SDL_HasGCKeyboard()) {
+        for (UIPress *press in presses) {
+            SDL_Scancode scancode = [self scancodeFromPress:press];
+            SDL_SendKeyboardKey(SDL_PRESSED, scancode);
+        }
     }
     [super pressesBegan:presses withEvent:event];
 }
 
 - (void)pressesEnded:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event
 {
-    for (UIPress *press in presses) {
-        SDL_Scancode scancode = [self scancodeFromPress:press];
-        SDL_SendKeyboardKey(SDL_RELEASED, scancode);
+    if (!SDL_HasGCKeyboard()) {
+        for (UIPress *press in presses) {
+            SDL_Scancode scancode = [self scancodeFromPress:press];
+            SDL_SendKeyboardKey(SDL_RELEASED, scancode);
+        }
     }
     [super pressesEnded:presses withEvent:event];
 }
 
 - (void)pressesCancelled:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event
 {
-    for (UIPress *press in presses) {
-        SDL_Scancode scancode = [self scancodeFromPress:press];
-        SDL_SendKeyboardKey(SDL_RELEASED, scancode);
+    if (!SDL_HasGCKeyboard()) {
+        for (UIPress *press in presses) {
+            SDL_Scancode scancode = [self scancodeFromPress:press];
+            SDL_SendKeyboardKey(SDL_RELEASED, scancode);
+        }
     }
     [super pressesCancelled:presses withEvent:event];
 }

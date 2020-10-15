@@ -25,6 +25,14 @@
 
 extern void UIKit_PumpEvents(_THIS);
 
+extern void SDL_InitGCKeyboard(void);
+extern SDL_bool SDL_HasGCKeyboard(void);
+extern void SDL_QuitGCKeyboard(void);
+
+extern void SDL_InitGCMouse(void);
+extern SDL_bool SDL_HasGCMouse(void);
+extern void SDL_QuitGCMouse(void);
+
 #endif /* SDL_uikitevents_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */
