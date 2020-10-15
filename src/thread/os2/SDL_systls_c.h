@@ -25,13 +25,13 @@
 
 #include "../SDL_thread_c.h"
 
-extern SDL_TLSData     **ppSDLTLSData;
+extern SDL_TLSData **ppSDLTLSData;
 
-// SDL_OS2TLSAlloc() called from SDL_InitSubSystem()
-void SDL_OS2TLSAlloc();
+/* SDL_OS2TLSAlloc() called from SDL_InitSubSystem() */
+void SDL_OS2TLSAlloc(void);
 
-// SDL_OS2TLSFree() called from SDL_QuitSubSystem()
-void SDL_OS2TLSFree();
+/* SDL_OS2TLSFree() called from SDL_QuitSubSystem() */
+void SDL_OS2TLSFree(void);
 
 #endif /* SDL_THREAD_OS2 */
 

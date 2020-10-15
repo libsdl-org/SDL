@@ -35,19 +35,19 @@
 /* Hidden "this" pointer for the audio functions */
 #define _THIS   SDL_AudioDevice *this
 
-#define NUM_BUFFERS    3
+#define NUM_BUFFERS     3
 
 typedef struct SDL_PrivateAudioData
 {
-  USHORT               usDeviceId;
-  BYTE                 _pad[2];
-  MCI_MIXSETUP_PARMS   stMCIMixSetup;
-  HEV                  hevBuf;
-  ULONG                ulNextBuf;
-  ULONG                cMixBuffers;
-  MCI_MIX_BUFFER       aMixBuffers[NUM_BUFFERS];
-//  ULONG                ulQueuedBuf;
-} SDL_PrivateAudioData, *PSDL_PrivateAudioData;
+    USHORT              usDeviceId;
+    BYTE                _pad[2];
+    MCI_MIXSETUP_PARMS  stMCIMixSetup;
+    HEV                 hevBuf;
+    ULONG               ulNextBuf;
+    ULONG               cMixBuffers;
+    MCI_MIX_BUFFER      aMixBuffers[NUM_BUFFERS];
+/*  ULONG               ulQueuedBuf;*/
+} SDL_PrivateAudioData;
 
 #endif /* SDL_os2mm_h_ */
 

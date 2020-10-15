@@ -35,41 +35,42 @@
 void *
 SDL_LoadObject(const char *sofile)
 {
-  ULONG      ulRC;
-  HMODULE    hModule;
-  PSZ        pszModName = OS2_UTF8ToSys( sofile );
-  CHAR       acError[256];
+    ULONG   ulRC;
+    HMODULE hModule;
+    PSZ     pszModName = OS2_UTF8ToSys(sofile);
+    CHAR    acError[256];
 
-  ulRC = DosLoadModule(acError, sizeof(acError), pszModName, &hModule);
-  SDL_free(pszModName);
-  if (ulRC != NO_ERROR) {
-    SDL_SetError( "Failed loading %s (E%u)", acError, ulRC );
-    return NULL;
-  }
+    ulRC = DosLoadModule(acError, sizeof(acError), pszModName, &hModule);
+    SDL_free(pszModName);
+    if (ulRC != NO_ERROR) {
+        SDL_SetError("Failed loading %s (E%u)", acError, ulRC);
+        return NULL;
+    }
 
-  return (void *)hModule;
+    return (void *)hModule;
 }
 
 void *
 SDL_LoadFunction(void *handle, const char *name)
 {
-  ULONG      ulRC;
-  PFN        pFN;
+    ULONG   ulRC;
+    PFN     pFN;
 
-  ulRC = DosQueryProcAddr((HMODULE)handle, 0, name, &pFN);
-  if (ulRC != NO_ERROR) {
-    SDL_SetError( "Failed loading procedure %s (E%u)", name, ulRC );
-    return NULL;
-  }
+    ulRC = DosQueryProcAddr((HMODULE)handle, 0, name, &pFN);
+    if (ulRC != NO_ERROR) {
+        SDL_SetError("Failed loading procedure %s (E%u)", name, ulRC);
+        return NULL;
+    }
 
-  return (void *)pFN;
+    return (void *)pFN;
 }
 
 void
 SDL_UnloadObject(void *handle)
 {
-  if (handle != NULL)
-    DosFreeModule( (HMODULE)handle );
+    if (handle != NULL) {
+        DosFreeModule((HMODULE)handle);
+    }
 }
 
 #endif /* SDL_LOADSO_OS2 */

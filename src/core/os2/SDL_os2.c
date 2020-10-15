@@ -18,19 +18,21 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+
 #include "../../SDL_internal.h"
 
 #if defined(__OS2__)
 
 #include "geniconv/geniconv.h"
 
-// SDL_OS2Quit() will be called from SDL_QuitSubSystem().
-
-void SDL_OS2Quit()
+/* SDL_OS2Quit() will be called from SDL_QuitSubSystem() */
+void SDL_OS2Quit(void)
 {
-  // Unload DLL used for iconv. We can do it at any time and use iconv again -
-  // dynamic library will be loaded on first call iconv_open() (see geniconv).
-  libiconv_clean();
+    /* Unload DLL used for iconv. We can do it at any time and use iconv again -
+     * dynamic library will be loaded on first call iconv_open() (see geniconv). */
+    libiconv_clean();
 }
 
 #endif
+
+/* vi: set ts=4 sw=4 expandtab: */

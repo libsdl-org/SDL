@@ -39,43 +39,44 @@
 #include "SDL_os2output.h"
 
 typedef struct SDL_VideoData {
-  HAB                  hab;
-  HMQ                  hmq;
-  POS2VIDEOOUTPUT      pOutput;            // Video output routines.
-} SDL_VideoData, *PSDL_VideoData;
+    HAB             hab;
+    HMQ             hmq;
+    OS2VIDEOOUTPUT *pOutput; /* Video output routines */
+} SDL_VideoData;
 
 typedef struct _WINDATA {
-  SDL_Window           *window;
-  POS2VIDEOOUTPUT      pOutput;            // Video output routines.
-  HWND                 hwndFrame;
-  HWND                 hwnd;
-  PFNWP                fnUserWndProc;
-  PFNWP                fnWndFrameProc;
+    SDL_Window     *window;
+    OS2VIDEOOUTPUT *pOutput; /* Video output routines */
+    HWND            hwndFrame;
+    HWND            hwnd;
+    PFNWP           fnUserWndProc;
+    PFNWP           fnWndFrameProc;
 
-  PVODATA              pVOData;            // Video output data.
+    PVODATA         pVOData; /* Video output data */
 
-  HRGN                 hrgnShape;
-  HPOINTER             hptrIcon;
-  RECTL                rectlBeforeFS;
+    HRGN            hrgnShape;
+    HPOINTER        hptrIcon;
+    RECTL           rectlBeforeFS;
 
-  LONG                 lSkipWMSize;
-  LONG                 lSkipWMMove;
-  LONG                 lSkipWMMouseMove;
-  LONG                 lSkipWMVRNEnabled;
-  LONG                 lSkipWMAdjustFramePos;
-} WINDATA, *PWINDATA;
+    LONG            lSkipWMSize;
+    LONG            lSkipWMMove;
+    LONG            lSkipWMMouseMove;
+    LONG            lSkipWMVRNEnabled;
+    LONG            lSkipWMAdjustFramePos;
+} WINDATA;
 
 typedef struct _DISPLAYDATA {
-  ULONG                ulDPIHor;
-  ULONG                ulDPIVer;
-  ULONG                ulDPIDiag;
-} DISPLAYDATA, *PDISPLAYDATA;
+    ULONG           ulDPIHor;
+    ULONG           ulDPIVer;
+    ULONG           ulDPIDiag;
+} DISPLAYDATA;
 
 typedef struct _MODEDATA {
-  ULONG                ulDepth;
-  ULONG                fccColorEncoding;
-  ULONG                ulScanLineBytes;
-} MODEDATA, *PMODEDATA;
-
+    ULONG           ulDepth;
+    ULONG           fccColorEncoding;
+    ULONG           ulScanLineBytes;
+} MODEDATA;
 
 #endif /* SDL_os2video_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

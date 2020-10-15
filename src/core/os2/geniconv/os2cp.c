@@ -28,17 +28,16 @@
 #include "os2cp.h"
 
 typedef struct _CP2NAME {
-  ULONG		ulCode;
-  PSZ		pszName;
+  ULONG ulCode;
+  PSZ  pszName;
 } CP2NAME;
 
 typedef struct _NAME2CP {
-  PSZ		pszName;
-  ULONG		ulCode;
+  PSZ  pszName;
+  ULONG ulCode;
 } NAME2CP;
 
-static CP2NAME		aCP2Name[] =
-{
+static CP2NAME aCP2Name[] = {
   {367, "ANSI_X3.4-1968"},
   {813, "ECMA-118"},
   {819, "CP819"},
@@ -85,8 +84,7 @@ static CP2NAME		aCP2Name[] =
   {62210, "HEBREW"}
 };
 
-static NAME2CP		aName2CP[] =
-{
+static NAME2CP aName2CP[] = {
   {"850", 850},
   {"862", 862},
   {"866", 866},
@@ -297,109 +295,107 @@ static NAME2CP		aName2CP[] =
   {"X0201", 896}
 };
 
-char * os2cpToName(unsigned long cp)
+char *os2cpToName(unsigned long cp)
 {
-  ULONG		ulLo = 0;
-  ULONG		ulHi = ( sizeof(aCP2Name) / sizeof(struct _CP2NAME) ) - 1;
-  ULONG		ulNext;
-  LONG		lFound = -1;
+    ULONG ulLo = 0;
+    ULONG ulHi = (sizeof(aCP2Name) / sizeof(struct _CP2NAME)) - 1;
+    ULONG ulNext;
+    LONG  lFound = -1;
 
-  if ( cp == SYSTEM_CP )
-  {
-    ULONG	aulCP[3];
-    ULONG	cCP;
+    if (cp == SYSTEM_CP) {
+        ULONG aulCP[3];
+        ULONG cCP;
 
-    if ( DosQueryCp( sizeof(aulCP), aulCP, &cCP ) != NO_ERROR )
-      return NULL;
+        if (DosQueryCp(sizeof(aulCP), aulCP, &cCP) != NO_ERROR)
+            return NULL;
 
-    cp = aulCP[0];
-  }
-
-  if ( ( aCP2Name[0].ulCode > cp ) || ( aCP2Name[ulHi].ulCode < cp ) )
-    return NULL;
-
-  if ( aCP2Name[0].ulCode == cp )
-    return aCP2Name[0].pszName;
-
-  if ( aCP2Name[ulHi].ulCode == cp )
-    return aCP2Name[ulHi].pszName;
-
-  while( ( ulHi - ulLo ) > 1 )
-  {
-    ulNext = ( ulLo + ulHi ) / 2;
-
-    if ( aCP2Name[ulNext].ulCode < cp )
-      ulLo = ulNext;
-    else if ( aCP2Name[ulNext].ulCode > cp )
-      ulHi = ulNext;
-    else
-    {
-      lFound = ulNext;
-      break;
+        cp = aulCP[0];
     }
-  }
 
-  return lFound == -1 ? NULL : aCP2Name[lFound].pszName;
+    if (aCP2Name[0].ulCode > cp || aCP2Name[ulHi].ulCode < cp)
+        return NULL;
+
+    if (aCP2Name[0].ulCode == cp)
+        return aCP2Name[0].pszName;
+
+    if (aCP2Name[ulHi].ulCode == cp)
+        return aCP2Name[ulHi].pszName;
+
+    while ((ulHi - ulLo) > 1) {
+        ulNext = (ulLo + ulHi) / 2;
+
+        if (aCP2Name[ulNext].ulCode < cp)
+            ulLo = ulNext;
+        else if (aCP2Name[ulNext].ulCode > cp)
+            ulHi = ulNext;
+        else {
+            lFound = ulNext;
+            break;
+        }
+    }
+
+    return (lFound == -1)? NULL : aCP2Name[lFound].pszName;
 }
 
 unsigned long os2cpFromName(char *cp)
 {
-  ULONG		ulLo = 0;
-  ULONG		ulHi = ( sizeof(aName2CP) / sizeof(struct _NAME2CP) ) - 1;
-  ULONG		ulNext;
-  LONG		lFound = -1;
-  LONG		lCmp;
-  PCHAR		pcEnd;
-  CHAR		acBuf[64];
+    ULONG ulLo = 0;
+    ULONG ulHi = (sizeof(aName2CP) / sizeof(struct _NAME2CP)) - 1;
+    ULONG ulNext;
+    LONG  lFound = -1;
+    LONG  lCmp;
+    PCHAR pcEnd;
+    CHAR  acBuf[64];
 
-  if ( cp == NULL )
-  {
-    ULONG	aulCP[3];
-    ULONG	cCP;
+    if (cp == NULL) {
+        ULONG aulCP[3];
+        ULONG cCP;
 
-    return DosQueryCp( sizeof(aulCP), aulCP, &cCP ) != NO_ERROR ? 0 : aulCP[0];
-  }
-
-  while( isspace( *cp ) ) cp++;
-  pcEnd = strchr( cp, ' ' );
-  if ( pcEnd == NULL )
-    pcEnd = strchr( cp, '\0' );
-
-  ulNext = pcEnd - cp;
-  if ( ulNext >= sizeof(acBuf) )
-    return 0;
-  
-  memcpy( acBuf, cp, ulNext );
-  acBuf[ulNext] = '\0';
-  strupr( acBuf ); 
-
-  lCmp = strcmp( aName2CP[0].pszName, acBuf );
-  if ( lCmp > 0 )
-    return 0;
-  else if ( lCmp == 0 )
-    return aName2CP[0].ulCode;
-
-  lCmp = strcmp( aName2CP[ulHi].pszName, acBuf );
-  if ( lCmp < 0 )
-    return 0;
-  else if ( lCmp == 0 )
-    return aName2CP[ulHi].ulCode;
-
-  while( ( ulHi - ulLo ) > 1 )
-  {
-    ulNext = ( ulLo + ulHi ) / 2;
-
-    lCmp = strcmp( aName2CP[ulNext].pszName, acBuf );
-    if ( lCmp < 0 )
-      ulLo = ulNext;
-    else if ( lCmp > 0 )
-      ulHi = ulNext;
-    else
-    {
-      lFound = ulNext;
-      break;
+        return (DosQueryCp(sizeof(aulCP), aulCP, &cCP) != NO_ERROR)? 0 : aulCP[0];
     }
-  }
 
-  return lFound == -1 ? 0 : aName2CP[lFound].ulCode;
+    while (isspace(*cp))
+        cp++;
+
+    pcEnd = strchr(cp, ' ');
+    if (pcEnd == NULL)
+        pcEnd = strchr(cp, '\0');
+
+    ulNext = pcEnd - cp;
+    if (ulNext >= sizeof(acBuf))
+        return 0;
+
+    memcpy(acBuf, cp, ulNext);
+    acBuf[ulNext] = '\0';
+    strupr(acBuf);
+
+    lCmp = strcmp(aName2CP[0].pszName, acBuf);
+    if (lCmp > 0)
+        return 0;
+    else if (lCmp == 0)
+        return aName2CP[0].ulCode;
+
+    lCmp = strcmp(aName2CP[ulHi].pszName, acBuf);
+    if (lCmp < 0)
+        return 0;
+    else if (lCmp == 0)
+        return aName2CP[ulHi].ulCode;
+
+    while ((ulHi - ulLo) > 1) {
+        ulNext = (ulLo + ulHi) / 2;
+
+        lCmp = strcmp(aName2CP[ulNext].pszName, acBuf);
+        if (lCmp < 0)
+            ulLo = ulNext;
+        else if (lCmp > 0)
+            ulHi = ulNext;
+        else {
+            lFound = ulNext;
+            break;
+        }
+    }
+
+    return (lFound == -1)? 0 : aName2CP[lFound].ulCode;
 }
+
+/* vi: set ts=4 sw=4 expandtab: */
