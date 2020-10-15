@@ -26,29 +26,34 @@
 typedef struct _VODATA *PVODATA;
 
 typedef struct _VIDEOOUTPUTINFO {
-  ULONG      ulBPP;
-  ULONG      fccColorEncoding;
-  ULONG      ulScanLineSize;
-  ULONG      ulHorizResolution;
-  ULONG      ulVertResolution;
-} VIDEOOUTPUTINFO, *PVIDEOOUTPUTINFO;
+    ULONG     ulBPP;
+    ULONG     fccColorEncoding;
+    ULONG     ulScanLineSize;
+    ULONG     ulHorizResolution;
+    ULONG     ulVertResolution;
+} VIDEOOUTPUTINFO;
 
 typedef struct _OS2VIDEOOUTPUT {
-  BOOL (*QueryInfo)(PVIDEOOUTPUTINFO pInfo);
-  PVODATA (*Open)();
-  VOID (*Close)(PVODATA pVOData);
-  BOOL (*SetVisibleRegion)(PVODATA pVOData, HWND hwnd,
-                           SDL_DisplayMode *pSDLDisplayMode, HRGN hrgnShape,
-                           BOOL fVisible);
-  PVOID (*VideoBufAlloc)(PVODATA pVOData, ULONG ulWidth, ULONG ulHeight,
-                        ULONG ulBPP, ULONG fccColorEncoding,
-                        PULONG pulScanLineSize);
-  VOID (*VideoBufFree)(PVODATA pVOData);
-  BOOL (*Update)(PVODATA pVOData, HWND hwnd, SDL_Rect *pSDLRects,
-                 ULONG cSDLRects);
-} OS2VIDEOOUTPUT, *POS2VIDEOOUTPUT;
+    BOOL (*QueryInfo)(VIDEOOUTPUTINFO *pInfo);
+    PVODATA (*Open)();
+    VOID (*Close)(PVODATA pVOData);
+
+    BOOL (*SetVisibleRegion)(PVODATA pVOData, HWND hwnd,
+                             SDL_DisplayMode *pSDLDisplayMode, HRGN hrgnShape,
+                             BOOL fVisible);
+
+    PVOID (*VideoBufAlloc)(PVODATA pVOData, ULONG ulWidth, ULONG ulHeight,
+                           ULONG ulBPP, ULONG fccColorEncoding,
+                           PULONG pulScanLineSize);
+
+    VOID (*VideoBufFree)(PVODATA pVOData);
+    BOOL (*Update)(PVODATA pVOData, HWND hwnd, SDL_Rect *pSDLRects,
+                   ULONG cSDLRects);
+} OS2VIDEOOUTPUT;
 
 extern OS2VIDEOOUTPUT voDive;
 extern OS2VIDEOOUTPUT voVMan;
 
 #endif /* SDL_os2output_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

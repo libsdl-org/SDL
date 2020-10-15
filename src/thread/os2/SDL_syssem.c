@@ -33,162 +33,156 @@
 #include <os2.h>
 
 struct SDL_semaphore {
-  HEV        hEv;
-  HMTX       hMtx;
-  ULONG      cPost;
+    HEV     hEv;
+    HMTX    hMtx;
+    ULONG   cPost;
 };
 
 
 SDL_sem *
 SDL_CreateSemaphore(Uint32 initial_value)
 {
-  ULONG      ulRC;
-  SDL_sem    *pSDLSem = SDL_malloc( sizeof(SDL_sem) );
+    ULONG ulRC;
+    SDL_sem *pSDLSem = SDL_malloc(sizeof(SDL_sem));
 
-  if ( pSDLSem == NULL )
-  {
-    SDL_OutOfMemory();
-    return NULL;
-  }
+    if (pSDLSem == NULL) {
+        SDL_OutOfMemory();
+        return NULL;
+    }
 
-  ulRC = DosCreateEventSem( NULL, &pSDLSem->hEv, DCE_AUTORESET, FALSE );
-  if ( ulRC != NO_ERROR )
-  {
-    debug( "DosCreateEventSem(), rc = %u", ulRC );
-    SDL_free( pSDLSem );
-    return NULL;
-  }
+    ulRC = DosCreateEventSem(NULL, &pSDLSem->hEv, DCE_AUTORESET, FALSE);
+    if (ulRC != NO_ERROR) {
+        debug_os2("DosCreateEventSem(), rc = %u", ulRC);
+        SDL_free(pSDLSem);
+        return NULL;
+    }
 
-  ulRC = DosCreateMutexSem( NULL, &pSDLSem->hMtx, 0, FALSE );
-  if ( ulRC != NO_ERROR )
-  {
-    debug( "DosCreateMutexSem(), rc = %u", ulRC );
-    DosCloseEventSem( pSDLSem->hEv );
-    SDL_free( pSDLSem );
-    return NULL;
-  }
+    ulRC = DosCreateMutexSem(NULL, &pSDLSem->hMtx, 0, FALSE);
+    if (ulRC != NO_ERROR) {
+        debug_os2("DosCreateMutexSem(), rc = %u", ulRC);
+        DosCloseEventSem(pSDLSem->hEv);
+        SDL_free(pSDLSem);
+        return NULL;
+    }
 
-  pSDLSem->cPost = initial_value;
+    pSDLSem->cPost = initial_value;
 
-  return pSDLSem;
+    return pSDLSem;
 }
 
 void
 SDL_DestroySemaphore(SDL_sem * sem)
 {
-  if ( sem == NULL )
-    return;
+    if (!sem) return;
 
-  DosCloseMutexSem( sem->hMtx );
-  DosCloseEventSem( sem->hEv );
-  SDL_free( sem );
+    DosCloseMutexSem(sem->hMtx);
+    DosCloseEventSem(sem->hEv);
+    SDL_free(sem);
 }
 
 int
 SDL_SemWaitTimeout(SDL_sem * sem, Uint32 timeout)
 {
-  ULONG      ulRC;
-  ULONG      ulStartTime, ulCurTime;
-  ULONG      ulTimeout;
-  ULONG      cPost;
+    ULONG ulRC;
+    ULONG ulStartTime, ulCurTime;
+    ULONG ulTimeout;
+    ULONG cPost;
 
-  if ( sem == NULL )
-    return SDL_SetError( "Passed a NULL sem" );
+    if (sem == NULL)
+        return SDL_SetError("Passed a NULL sem");
 
-  if ( timeout != SEM_INDEFINITE_WAIT )
-    DosQuerySysInfo( QSV_MS_COUNT, QSV_MS_COUNT, &ulStartTime, sizeof(ULONG) );
+    if (timeout != SEM_INDEFINITE_WAIT)
+        DosQuerySysInfo(QSV_MS_COUNT, QSV_MS_COUNT, &ulStartTime, sizeof(ULONG));
 
-  while( TRUE )
-  {
-    ulRC = DosRequestMutexSem( sem->hMtx, SEM_INDEFINITE_WAIT );
-    if ( ulRC != NO_ERROR )
-      return SDL_SetError( "DosRequestMutexSem() failed, rc = %u", ulRC );
-  
-    cPost = sem->cPost;
-    if ( sem->cPost != 0 )
-      sem->cPost--;
+    while (TRUE) {
+        ulRC = DosRequestMutexSem(sem->hMtx, SEM_INDEFINITE_WAIT);
+        if (ulRC != NO_ERROR)
+            return SDL_SetError("DosRequestMutexSem() failed, rc = %u", ulRC);
 
-    DosReleaseMutexSem( sem->hMtx );
+        cPost = sem->cPost;
+        if (sem->cPost != 0)
+            sem->cPost--;
 
-    if ( cPost != 0 )
-      break;
+        DosReleaseMutexSem(sem->hMtx);
 
-    if ( timeout == SEM_INDEFINITE_WAIT )
-      ulTimeout = SEM_INDEFINITE_WAIT;
-    else
-    {
-      DosQuerySysInfo( QSV_MS_COUNT, QSV_MS_COUNT, &ulCurTime, sizeof(ULONG) );
-      ulTimeout = ulCurTime - ulStartTime;
-      if ( timeout < ulTimeout )
-        return SDL_MUTEX_TIMEDOUT;
-      ulTimeout = timeout - ulTimeout;
+        if (cPost != 0)
+            break;
+
+        if (timeout == SEM_INDEFINITE_WAIT)
+            ulTimeout = SEM_INDEFINITE_WAIT;
+        else {
+            DosQuerySysInfo(QSV_MS_COUNT, QSV_MS_COUNT, &ulCurTime, sizeof(ULONG));
+            ulTimeout = ulCurTime - ulStartTime;
+            if (timeout < ulTimeout)
+                return SDL_MUTEX_TIMEDOUT;
+            ulTimeout = timeout - ulTimeout;
+        }
+
+        ulRC = DosWaitEventSem(sem->hEv, ulTimeout);
+        if (ulRC == ERROR_TIMEOUT)
+            return SDL_MUTEX_TIMEDOUT;
+
+        if (ulRC != NO_ERROR)
+            return SDL_SetError("DosWaitEventSem() failed, rc = %u", ulRC);
     }
 
-    ulRC = DosWaitEventSem( sem->hEv, ulTimeout );
-    if ( ulRC == ERROR_TIMEOUT )
-      return SDL_MUTEX_TIMEDOUT;
-
-    if ( ulRC != NO_ERROR )
-      return SDL_SetError( "DosWaitEventSem() failed, rc = %u", ulRC );
-  }
-
-  return 0;
+    return 0;
 }
 
 int
 SDL_SemTryWait(SDL_sem * sem)
 {
-  return SDL_SemWaitTimeout( sem, 0 );
+    return SDL_SemWaitTimeout(sem, 0);
 }
 
 int
 SDL_SemWait(SDL_sem * sem)
 {
-  return SDL_SemWaitTimeout( sem, SDL_MUTEX_MAXWAIT );
+    return SDL_SemWaitTimeout(sem, SDL_MUTEX_MAXWAIT);
 }
 
 Uint32
 SDL_SemValue(SDL_sem * sem)
 {
-  ULONG      ulRC;
+    ULONG ulRC;
 
-  if ( sem == NULL )
-  {
-    SDL_SetError( "Passed a NULL sem" );
-    return 0;
-  }
+    if (sem == NULL) {
+        SDL_SetError("Passed a NULL sem");
+        return 0;
+    }
 
-  ulRC = DosRequestMutexSem( sem->hMtx, SEM_INDEFINITE_WAIT );
-  if ( ulRC != NO_ERROR )
-    return SDL_SetError( "DosRequestMutexSem() failed, rc = %u", ulRC );
+    ulRC = DosRequestMutexSem(sem->hMtx, SEM_INDEFINITE_WAIT);
+    if (ulRC != NO_ERROR)
+        return SDL_SetError("DosRequestMutexSem() failed, rc = %u", ulRC);
 
-  ulRC = sem->cPost;
-  DosReleaseMutexSem( sem->hMtx );
+    ulRC = sem->cPost;
+    DosReleaseMutexSem(sem->hMtx);
 
-  return ulRC;
+    return ulRC;
 }
 
 int
 SDL_SemPost(SDL_sem * sem)
 {
-  ULONG      ulRC;
+    ULONG ulRC;
 
-  if ( sem == NULL )
-    return SDL_SetError( "Passed a NULL sem" );
+    if (sem == NULL)
+        return SDL_SetError("Passed a NULL sem");
 
-  ulRC = DosRequestMutexSem( sem->hMtx, SEM_INDEFINITE_WAIT );
-  if ( ulRC != NO_ERROR )
-    return SDL_SetError( "DosRequestMutexSem() failed, rc = %u", ulRC );
+    ulRC = DosRequestMutexSem(sem->hMtx, SEM_INDEFINITE_WAIT);
+    if (ulRC != NO_ERROR)
+        return SDL_SetError("DosRequestMutexSem() failed, rc = %u", ulRC);
 
-  sem->cPost++;
+    sem->cPost++;
 
-  ulRC = DosPostEventSem( sem->hEv );
-  if ( ( ulRC != NO_ERROR ) && ( ulRC != ERROR_ALREADY_POSTED ) )
-    debug( "DosPostEventSem() failed, rc = %u", ulRC );
+    ulRC = DosPostEventSem(sem->hEv);
+    if (ulRC != NO_ERROR && ulRC != ERROR_ALREADY_POSTED) {
+        debug_os2("DosPostEventSem() failed, rc = %u", ulRC);
+    }
 
-  DosReleaseMutexSem( sem->hMtx );
+    DosReleaseMutexSem(sem->hMtx);
 
-  return 0;
+    return 0;
 }
 
 #endif /* SDL_THREAD_OS2 */

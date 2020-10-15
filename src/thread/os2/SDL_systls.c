@@ -32,56 +32,56 @@
 #define INCL_DOSERRORS
 #include <os2.h>
 
-SDL_TLSData     **ppSDLTLSData = NULL;
+SDL_TLSData **ppSDLTLSData = NULL;
 
-static ULONG           cTLSAlloc = 0;
+static ULONG  cTLSAlloc = 0;
 
-// SDL_OS2TLSAlloc() called from SDL_InitSubSystem()
-void SDL_OS2TLSAlloc()
+/* SDL_OS2TLSAlloc() called from SDL_InitSubSystem() */
+void SDL_OS2TLSAlloc(void)
 {
-  ULONG      ulRC;
+    ULONG ulRC;
 
-  if ( ( cTLSAlloc == 0 ) || ( ppSDLTLSData == NULL ) )
-  {
-    // First call - allocate the thread local memory (1 DWORD).
-    ulRC = DosAllocThreadLocalMemory( 1, (PULONG *)&ppSDLTLSData );
-    if ( ulRC != NO_ERROR )
-      debug( "DosAllocThreadLocalMemory() failed, rc = %u", ulRC );
-  }
-  cTLSAlloc++;
+    if (cTLSAlloc == 0 || ppSDLTLSData == NULL) {
+        /* First call - allocate the thread local memory (1 DWORD) */
+        ulRC = DosAllocThreadLocalMemory(1, (PULONG *)&ppSDLTLSData);
+        if (ulRC != NO_ERROR) {
+            debug_os2("DosAllocThreadLocalMemory() failed, rc = %u", ulRC);
+        }
+    }
+    cTLSAlloc++;
 }
 
-// SDL_OS2TLSFree() called from SDL_QuitSubSystem()
-void SDL_OS2TLSFree()
+/* SDL_OS2TLSFree() called from SDL_QuitSubSystem() */
+void SDL_OS2TLSFree(void)
 {
-  ULONG      ulRC;
+    ULONG ulRC;
 
-  if ( cTLSAlloc != 0 )
-    cTLSAlloc--;
+    if (cTLSAlloc != 0)
+        cTLSAlloc--;
 
-  if ( ( cTLSAlloc == 0 ) && ( ppSDLTLSData != NULL ) )
-  {
-    // Last call - free the thread local memory.
-    ulRC = DosFreeThreadLocalMemory( (PULONG)ppSDLTLSData );
-    if ( ulRC != NO_ERROR )
-      debug( "DosFreeThreadLocalMemory() failed, rc = %u", ulRC );
-    else
-      ppSDLTLSData = NULL;
-  }
+    if (cTLSAlloc == 0 && ppSDLTLSData != NULL) {
+        /* Last call - free the thread local memory */
+        ulRC = DosFreeThreadLocalMemory((PULONG)ppSDLTLSData);
+        if (ulRC != NO_ERROR) {
+            debug_os2("DosFreeThreadLocalMemory() failed, rc = %u", ulRC);
+        } else {
+            ppSDLTLSData = NULL;
+        }
+    }
 }
 
-SDL_TLSData *SDL_SYS_GetTLSData()
+SDL_TLSData *SDL_SYS_GetTLSData(void)
 {
-  return ppSDLTLSData == NULL ? NULL : *ppSDLTLSData;
+    return (ppSDLTLSData == NULL)? NULL : *ppSDLTLSData;
 }
 
 int SDL_SYS_SetTLSData(SDL_TLSData *data)
 {
-  if ( ppSDLTLSData == NULL )
-    return -1;
+    if (!ppSDLTLSData)
+        return -1;
 
-  *ppSDLTLSData = data;
-  return 0;
+    *ppSDLTLSData = data;
+    return 0;
 }
 
 #endif /* SDL_THREAD_OS2 */

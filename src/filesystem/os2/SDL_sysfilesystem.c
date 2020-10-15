@@ -38,90 +38,90 @@
 char *
 SDL_GetBasePath(void)
 {
-  PTIB       tib;
-  PPIB       pib;
-  ULONG      ulRC = DosGetInfoBlocks(&tib, &pib);
-  PCHAR      pcEnd;
-  ULONG      cbResult;
-  CHAR       acBuf[_MAX_PATH];
+    PTIB    tib;
+    PPIB    pib;
+    ULONG   ulRC = DosGetInfoBlocks(&tib, &pib);
+    PCHAR   pcEnd;
+    ULONG   cbResult;
+    CHAR    acBuf[_MAX_PATH];
 
-  if (ulRC != NO_ERROR) {
-    debug("DosGetInfoBlocks() failed, rc = %u", ulRC);
-    return NULL;
-  }
-
-  pcEnd = SDL_strrchr(pib->pib_pchcmd, '\\');
-  if (pcEnd != NULL)
-    pcEnd++;
-  else {
-    if (pib->pib_pchcmd[1] == ':')
-      pcEnd = &pib->pib_pchcmd[2];
-    else {
-      SDL_SetError("No path in pib->pib_pchcmd");
-      return NULL;
+    if (ulRC != NO_ERROR) {
+        debug_os2("DosGetInfoBlocks() failed, rc = %u", ulRC);
+        return NULL;
     }
-  }
 
-  cbResult = pcEnd - pib->pib_pchcmd;
-  SDL_memcpy(acBuf, pib->pib_pchcmd, cbResult);
-  acBuf[cbResult] = '\0';
+    pcEnd = SDL_strrchr(pib->pib_pchcmd, '\\');
+    if (pcEnd != NULL)
+        pcEnd++;
+    else {
+        if (pib->pib_pchcmd[1] == ':')
+            pcEnd = &pib->pib_pchcmd[2];
+        else {
+            SDL_SetError("No path in pib->pib_pchcmd");
+            return NULL;
+        }
+    }
 
-  return OS2_SysToUTF8(acBuf);
+    cbResult = pcEnd - pib->pib_pchcmd;
+    SDL_memcpy(acBuf, pib->pib_pchcmd, cbResult);
+    acBuf[cbResult] = '\0';
+
+    return OS2_SysToUTF8(acBuf);
 }
 
 char *
 SDL_GetPrefPath(const char *org, const char *app)
 {
-  PSZ        pszPath;
-  CHAR       acBuf[_MAX_PATH];
-  int        lPosApp, lPosOrg;
-  PSZ        pszApp, pszOrg;
+    PSZ     pszPath;
+    CHAR    acBuf[_MAX_PATH];
+    int     lPosApp, lPosOrg;
+    PSZ     pszApp, pszOrg;
 
-  if (!app) {
-      SDL_InvalidParamError("app");
-      return NULL;
-  }
+    if (!app) {
+        SDL_InvalidParamError("app");
+        return NULL;
+    }
 
-  pszPath = SDL_getenv( "HOME" );
-  if (!pszPath) {
-    pszPath = SDL_getenv( "ETC" );
+    pszPath = SDL_getenv("HOME");
     if (!pszPath) {
-      SDL_SetError("HOME or ETC environment not set");
-      return NULL;
+        pszPath = SDL_getenv("ETC");
+        if (!pszPath) {
+            SDL_SetError("HOME or ETC environment not set");
+            return NULL;
+        }
     }
-  }
 
-  if (!org) {
-    lPosApp = SDL_snprintf(acBuf, sizeof(acBuf) - 1, "%s", pszPath);
-  } else {
-    pszOrg = OS2_UTF8ToSys(org);
-    if (!pszOrg) {
-      SDL_OutOfMemory();
-      return NULL;
+    if (!org) {
+        lPosApp = SDL_snprintf(acBuf, sizeof(acBuf) - 1, "%s", pszPath);
+    } else {
+        pszOrg = OS2_UTF8ToSys(org);
+        if (!pszOrg) {
+            SDL_OutOfMemory();
+            return NULL;
+        }
+        lPosApp = SDL_snprintf(acBuf, sizeof(acBuf) - 1, "%s\\%s", pszPath, pszOrg);
+        SDL_free(pszOrg);
     }
-    lPosApp = SDL_snprintf(acBuf, sizeof(acBuf) - 1, "%s\\%s", pszPath, pszOrg);
-    SDL_free(pszOrg);
-  }
-  if (lPosApp < 0)
-    return NULL;
+    if (lPosApp < 0)
+        return NULL;
 
-  DosCreateDir(acBuf, NULL);
+    DosCreateDir(acBuf, NULL);
 
-  pszApp = OS2_UTF8ToSys(app);
-  if (!pszApp) {
-    SDL_OutOfMemory();
-    return NULL;
-  }
+    pszApp = OS2_UTF8ToSys(app);
+    if (!pszApp) {
+        SDL_OutOfMemory();
+        return NULL;
+    }
 
-  lPosOrg = SDL_snprintf(&acBuf[lPosApp], sizeof(acBuf) - lPosApp - 1, "\\%s", pszApp);
-  SDL_free(pszApp);
-  if (lPosOrg < 0)
-    return NULL;
+    lPosOrg = SDL_snprintf(&acBuf[lPosApp], sizeof(acBuf) - lPosApp - 1, "\\%s", pszApp);
+    SDL_free(pszApp);
+    if (lPosOrg < 0)
+        return NULL;
 
-  DosCreateDir(acBuf, NULL);
-  *((PUSHORT)&acBuf[lPosApp + lPosOrg]) = (USHORT)'\0\\';
+    DosCreateDir(acBuf, NULL);
+    *((PUSHORT)&acBuf[lPosApp + lPosOrg]) = (USHORT)'\0\\';
 
-  return OS2_SysToUTF8(acBuf);
+    return OS2_SysToUTF8(acBuf);
 }
 
 #endif /* SDL_FILESYSTEM_OS2 */

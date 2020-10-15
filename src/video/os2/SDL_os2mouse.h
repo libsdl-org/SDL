@@ -23,7 +23,7 @@
 #ifndef SDL_os2mouse_h_
 #define SDL_os2mouse_h_
 
-extern HPOINTER        hptrCursor;
+extern HPOINTER hptrCursor;
 
 extern void OS2_InitMouse(_THIS, ULONG hab);
 extern void OS2_QuitMouse(_THIS);

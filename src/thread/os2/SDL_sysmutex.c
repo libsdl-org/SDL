@@ -32,99 +32,96 @@
 #define INCL_DOSERRORS
 #include <os2.h>
 
-struct SDL_mutex
-{
-  ULONG      ulHandle;
+struct SDL_mutex {
+    HMTX  _handle;
 };
 
 /* Create a mutex */
 SDL_mutex *
 SDL_CreateMutex(void)
 {
-  ULONG      ulRC;
-  HMTX       hMtx;
+    ULONG ulRC;
+    HMTX  hMtx;
 
-  ulRC = DosCreateMutexSem( NULL, &hMtx, 0, FALSE );
-  if ( ulRC != NO_ERROR )
-  {
-    debug( "DosCreateMutexSem(), rc = %u", ulRC );
-    return NULL;
-  }
+    ulRC = DosCreateMutexSem(NULL, &hMtx, 0, FALSE);
+    if (ulRC != NO_ERROR) {
+        debug_os2("DosCreateMutexSem(), rc = %u", ulRC);
+        return NULL;
+    }
 
-  return (SDL_mutex *)hMtx;
+    return (SDL_mutex *)hMtx;
 }
 
 /* Free the mutex */
 void
 SDL_DestroyMutex(SDL_mutex * mutex)
 {
-  ULONG      ulRC;
-  HMTX       hMtx = (HMTX)mutex;
+    ULONG ulRC;
+    HMTX  hMtx = (HMTX)mutex;
 
-  ulRC = DosCloseMutexSem( hMtx );
-  if ( ulRC != NO_ERROR )
-    debug( "DosCloseMutexSem(), rc = %u", ulRC );
+    ulRC = DosCloseMutexSem(hMtx);
+    if (ulRC != NO_ERROR) {
+        debug_os2("DosCloseMutexSem(), rc = %u", ulRC);
+    }
 }
 
 /* Lock the mutex */
 int
 SDL_LockMutex(SDL_mutex * mutex)
 {
-  ULONG      ulRC;
-  HMTX       hMtx = (HMTX)mutex;
+    ULONG ulRC;
+    HMTX  hMtx = (HMTX)mutex;
 
-  if ( hMtx == NULLHANDLE )
-    return SDL_SetError( "Passed a NULL mutex" );
+    if (hMtx == NULLHANDLE)
+        return SDL_SetError("Passed a NULL mutex");
 
-  ulRC = DosRequestMutexSem( hMtx, SEM_INDEFINITE_WAIT );
-  if ( ulRC != NO_ERROR )
-  {
-    debug( "DosRequestMutexSem(), rc = %u", ulRC );
-    return -1;
-  }
+    ulRC = DosRequestMutexSem(hMtx, SEM_INDEFINITE_WAIT);
+    if (ulRC != NO_ERROR) {
+      debug_os2("DosRequestMutexSem(), rc = %u", ulRC);
+      return -1;
+    }
 
-  return 0;
+    return 0;
 }
 
 /* try Lock the mutex */
 int
 SDL_TryLockMutex(SDL_mutex * mutex)
 {
-  ULONG      ulRC;
-  HMTX       hMtx = (HMTX)mutex;
+    ULONG ulRC;
+    HMTX  hMtx = (HMTX)mutex;
 
-  if ( hMtx == NULLHANDLE )
-    return SDL_SetError( "Passed a NULL mutex" );
+    if (hMtx == NULLHANDLE)
+        return SDL_SetError("Passed a NULL mutex");
 
-  ulRC = DosRequestMutexSem( hMtx, SEM_IMMEDIATE_RETURN );
+    ulRC = DosRequestMutexSem(hMtx, SEM_IMMEDIATE_RETURN);
 
-  if ( ulRC == ERROR_TIMEOUT )
-    return SDL_MUTEX_TIMEDOUT;
+    if (ulRC == ERROR_TIMEOUT)
+        return SDL_MUTEX_TIMEDOUT;
 
-  if ( ulRC != NO_ERROR )
-  {
-    debug( "DosRequestMutexSem(), rc = %u", ulRC );
-    return -1;
-  }
+    if (ulRC != NO_ERROR) {
+        debug_os2("DosRequestMutexSem(), rc = %u", ulRC);
+        return -1;
+    }
 
-  return 0;
+    return 0;
 }
 
 /* Unlock the mutex */
 int
 SDL_UnlockMutex(SDL_mutex * mutex)
 {
-  ULONG      ulRC;
-  HMTX       hMtx = (HMTX)mutex;
+    ULONG ulRC;
+    HMTX  hMtx = (HMTX)mutex;
 
-  if ( hMtx == NULLHANDLE )
-    return SDL_SetError( "Passed a NULL mutex" );
+    if (hMtx == NULLHANDLE)
+        return SDL_SetError("Passed a NULL mutex");
 
-  ulRC = DosReleaseMutexSem( hMtx );
-  if ( ulRC != NO_ERROR )
-    return SDL_SetError( "DosReleaseMutexSem(), rc = %u", ulRC );
+    ulRC = DosReleaseMutexSem(hMtx);
+    if (ulRC != NO_ERROR)
+        return SDL_SetError("DosReleaseMutexSem(), rc = %u", ulRC);
 
-  return 0;
+    return 0;
 }
 
 #endif /* SDL_THREAD_OS2 */
