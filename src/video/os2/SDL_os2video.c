@@ -18,6 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+
 #include "../../SDL_internal.h"
 
 #if SDL_VIDEO_DRIVER_OS2
@@ -30,9 +31,14 @@
 #include "SDL_os2video.h"
 #include "SDL_syswm.h"
 #include "SDL_os2util.h"
+
+#define __MEERROR_H__
 #define  _MEERROR_H_
 #include <mmioos2.h>
 #include <fourcc.h>
+#ifndef FOURCC_R666
+#define FOURCC_R666 mmioFOURCC('R','6','6','6')
+#endif
 
 #define WIN_CLIENT_CLASS        "SDL2"
 #define OS2DRIVER_NAME_DIVE     "DIVE"
@@ -104,13 +110,13 @@ static BOOL _getSDLPixelFormatData(SDL_PixelFormat *pSDLPixelFormat,
         ulRmask = 0xFC00; ulGmask = 0x03F0; ulBmask = 0x000F;
         ulRloss = 2; ulGloss = 4; ulBloss = 3;
         break;
-    /*
+
     case FOURCC_R666:
         ulRshift = 12; ulGshift = 6; ulBshift = 0;
         ulRmask = 0x03F000; ulGmask = 0x000FC0; ulBmask = 0x00003F;
         ulRloss = 2; ulGloss = 2; ulBloss = 2;
         break;
-    */
+
     case FOURCC_RGB3:
     case FOURCC_RGB4:
         ulRshift = 0; ulGshift = 8; ulBshift = 16;
