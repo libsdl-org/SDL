@@ -978,19 +978,12 @@ static ControllerMapping_t *SDL_CreateMappingForAndroidController(const char *na
     if (button_mask & (1 << SDL_CONTROLLER_BUTTON_BACK)) {
         SDL_strlcat(mapping_string, "back:b4,", sizeof(mapping_string));
     }
-#if 0 /* The guide button generally isn't functional (or acts as a home button) on most Android controllers */
     if (button_mask & (1 << SDL_CONTROLLER_BUTTON_GUIDE)) {
-        SDL_strlcat(mapping_string, "guide:b5,", sizeof(mapping_string));
-#if 0 /* Actually this will be done in Steam */
-    } else if (button_mask & (1 << SDL_CONTROLLER_BUTTON_START)) {
-        /* The guide button doesn't exist, use the start button instead,
-           so you can do Steam guide button chords and open the Steam overlay.
-         */
-        SDL_strlcat(mapping_string, "guide:b6,", sizeof(mapping_string));
-        button_mask &= ~(1 << SDL_CONTROLLER_BUTTON_START);
-#endif
+        /* The guide button generally isn't functional (or acts as a home button) on most Android controllers before Android 11 */
+        if (SDL_GetAndroidSDKVersion() >= 30 /* Android 11 */) {
+            SDL_strlcat(mapping_string, "guide:b5,", sizeof(mapping_string));
+        }
     }
-#endif
     if (button_mask & (1 << SDL_CONTROLLER_BUTTON_START)) {
         SDL_strlcat(mapping_string, "start:b6,", sizeof(mapping_string));
     }
