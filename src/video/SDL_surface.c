@@ -1026,7 +1026,7 @@ SDL_ConvertSurface(SDL_Surface * surface, const SDL_PixelFormat * format,
     surface->map->info.g = 0xFF;
     surface->map->info.b = 0xFF;
     surface->map->info.a = 0xFF;
-    surface->map->info.flags = 0;
+    surface->map->info.flags = (copy_flags & (SDL_COPY_RLE_COLORKEY | SDL_COPY_RLE_ALPHAKEY));
     SDL_InvalidateMap(surface->map);
 
     /* Copy over the image data */
