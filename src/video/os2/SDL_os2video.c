@@ -1593,7 +1593,6 @@ static SDL_VideoDevice *OS2_CreateDevice(int devindex)
     /* Set the function pointers */
     device->VideoInit = OS2_VideoInit;
     device->VideoQuit = OS2_VideoQuit;
-    device->SetDisplayMode = OS2_SetDisplayMode;
     device->GetDisplayBounds = OS2_GetDisplayBounds;
     device->GetDisplayDPI = OS2_GetDisplayDPI;
     device->GetDisplayModes = OS2_GetDisplayModes;
