@@ -767,3 +767,4 @@
 #define SDL_SIMDRealloc SDL_SIMDRealloc_REAL
 #define SDL_AndroidRequestPermission SDL_AndroidRequestPermission_REAL
 #define SDL_OpenURL SDL_OpenURL_REAL
+#define SDL_HasSurfaceRLE SDL_HasSurfaceRLE_REAL

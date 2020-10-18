@@ -238,6 +238,13 @@ extern DECLSPEC int SDLCALL SDL_SetSurfaceRLE(SDL_Surface * surface,
                                               int flag);
 
 /**
+ *  \brief Returns whether the surface is RLE enabled
+ *
+ *  \return SDL_TRUE if the surface is RLE enabled, or SDL_FALSE if the surface is NULL or not RLE enabled
+ */
+extern DECLSPEC SDL_bool SDLCALL SDL_HasSurfaceRLE(SDL_Surface * surface);
+
+/**
  *  \brief Sets the color key (transparent pixel) in a blittable surface.
  *
  *  \param surface The surface to update

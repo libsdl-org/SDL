@@ -249,6 +249,20 @@ SDL_SetSurfaceRLE(SDL_Surface * surface, int flag)
     return 0;
 }
 
+SDL_bool
+SDL_HasSurfaceRLE(SDL_Surface * surface)
+{
+    if (!surface) {
+        return SDL_FALSE;
+    }
+
+    if (!(surface->map->info.flags & SDL_COPY_RLE_DESIRED)) {
+        return SDL_FALSE;
+    }
+
+    return SDL_TRUE;
+}
+
 int
 SDL_SetColorKey(SDL_Surface * surface, int flag, Uint32 key)
 {
