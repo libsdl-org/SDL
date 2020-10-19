@@ -82,7 +82,7 @@ MOBJS= $(MSRCS:.c=.obj)
 .c: ./src;./src/dynapi;./src/audio;./src/cpuinfo;./src/events;./src/file;./src/haptic;./src/joystick;./src/power;./src/render;./src/render/software;./src/sensor;./src/stdlib;./src/thread;./src/timer;./src/video;./src/video/yuv2rgb;./src/atomic;./src/audio/disk;
 .c: ./src/haptic/dummy;./src/joystick/dummy;./src/joystick/virtual;./src/audio/dummy;./src/video/dummy;./src/sensor/dummy;
 .c: ./src/core/os2;./src/core/os2/geniconv;./src/audio/os2;./src/loadso/os2;./src/filesystem/os2;./src/thread/os2;./src/timer/os2;./src/video/os2;
-.c: ./src/locale/;./src/locale/unix;./src/misc;./src/misc/dummy;
+.c: ./src/locale/;./src/locale/unix;./src/misc;./src/misc/dummy
 
 all: $(DLLFILE) $(LIBFILE) .symbolic
 
@@ -136,7 +136,6 @@ $(LNKFILE):
     @%append $@ OPTION IMPF=$(LIBHOME)/$^&.exp
     @%append $@ OPTION MAP=$(LIBHOME)/$^&.map
     @%append $@ OPTION DESCRIPTION '@$#libsdl org:$(VERSION)$#@$(DESCRIPTION)'
-    @%append $@ OPTION QUIET
     @%append $@ OPTION ELIMINATE
     @%append $@ OPTION MANYAUTODATA
     @%append $@ OPTION OSNAME='OS/2 and eComStation'
