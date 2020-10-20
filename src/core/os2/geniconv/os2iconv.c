@@ -28,6 +28,8 @@
 #define ICONV_THREAD_SAFE 1
 
 #include "geniconv.h"
+#define _ULS_CALLCONV_
+#define CALLCONV _System
 #include <uconv.h>
 #include <stdio.h>
 #include <stdlib.h>
