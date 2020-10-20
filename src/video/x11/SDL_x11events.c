@@ -642,6 +642,29 @@ X11_HandleClipboardEvent(_THIS, const XEvent *xevent)
     }
 }
 
+static Bool
+isMapNotify(Display *display, XEvent *ev, XPointer arg)
+{
+    XUnmapEvent *unmap;
+
+    unmap = (XUnmapEvent*) arg;
+
+    return ev->type == MapNotify &&
+        ev->xmap.window == unmap->window &&
+        ev->xmap.serial == unmap->serial;
+}
+
+static Bool
+isReparentNotify(Display *display, XEvent *ev, XPointer arg)
+{
+    XUnmapEvent *unmap;
+
+    unmap = (XUnmapEvent*) arg;
+
+    return ev->type == ReparentNotify &&
+        ev->xreparent.window == unmap->window &&
+        ev->xreparent.serial == unmap->serial;
+}
 
 static void
 X11_DispatchEvent(_THIS)
@@ -948,10 +971,17 @@ X11_DispatchEvent(_THIS)
 
         /* Have we been iconified? */
     case UnmapNotify:{
+            XEvent ev;
+
 #ifdef DEBUG_XEVENTS
             printf("window %p: UnmapNotify!\n", data);
 #endif
-            X11_DispatchUnmapNotify(data);
+
+            if (X11_XCheckIfEvent(display, &ev, &isReparentNotify, (XPointer)&xevent.xunmap)) {
+                X11_XCheckIfEvent(display, &ev, &isMapNotify, (XPointer)&xevent.xunmap);
+            } else {
+                X11_DispatchUnmapNotify(data);
+            }
         }
         break;
 
