@@ -755,7 +755,6 @@ keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
         SDL_bool has_text = keyboard_input_get_text(text, input, key);
         if (has_text) {
             Wayland_data_device_set_serial(input->data_device, serial);
-            SDL_Log("handle_key: posting: %s", text);
             SDL_SendKeyboardText(text);
         }
         keyboard_repeat_set(&input->keyboard_repeat, scancode, has_text, text);
