@@ -1179,6 +1179,22 @@ KMSDRM_VideoInit(_THIS)
 
     SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Opened DRM FD (%d)", viddata->drm_fd);
 
+    /* Try ATOMIC compatibility */
+
+    ret = KMSDRM_drmSetClientCap(viddata->drm_fd, DRM_CLIENT_CAP_ATOMIC, 1);
+    if (ret) {
+        ret = SDL_SetError("no atomic modesetting support.");
+        goto cleanup;
+    }
+
+    ret = KMSDRM_drmSetClientCap(viddata->drm_fd, DRM_CLIENT_CAP_UNIVERSAL_PLANES, 1);
+    if (ret) {
+        ret = SDL_SetError("no universal planes support.");
+        goto cleanup;
+    }
+
+    /* Create the GBM device */
+
     viddata->gbm_dev = KMSDRM_gbm_create_device(viddata->drm_fd);
     if (!viddata->gbm_dev) {
         ret = SDL_SetError("Couldn't create gbm device.");
@@ -1312,21 +1328,7 @@ KMSDRM_VideoInit(_THIS)
     display.driverdata = dispdata;
     SDL_AddVideoDisplay(&display, SDL_FALSE);
 
-    /****************/
-    /* Atomic block */
-    /****************/
 
-    ret = KMSDRM_drmSetClientCap(viddata->drm_fd, DRM_CLIENT_CAP_ATOMIC, 1);
-    if (ret) {
-        ret = SDL_SetError("no atomic modesetting support.");
-        goto cleanup;
-    }
-
-    ret = KMSDRM_drmSetClientCap(viddata->drm_fd, DRM_CLIENT_CAP_UNIVERSAL_PLANES, 1);
-    if (ret) {
-        ret = SDL_SetError("no universal planes support.");
-        goto cleanup;
-    }
 
     /* Use this if you ever need to see info on all available planes. */
 #if 0
