@@ -545,6 +545,9 @@ setup_plane(_THIS, struct plane **plane, uint32_t plane_type)
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
 
     *plane = SDL_calloc(1, sizeof(**plane));
+    if (!(*plane)) {
+        return SDL_OutOfMemory();
+    }
 
     /* Get plane ID. */
     plane_id = get_plane_id(_this, plane_type);
@@ -561,9 +564,13 @@ setup_plane(_THIS, struct plane **plane, uint32_t plane_type)
         unsigned int i;
         (*plane)->props = KMSDRM_drmModeObjectGetProperties(viddata->drm_fd,
         (*plane)->plane->plane_id, DRM_MODE_OBJECT_PLANE);	
-
         (*plane)->props_info = SDL_calloc((*plane)->props->count_props,
             sizeof(*(*plane)->props_info));
+
+        if ( !((*plane)->props_info) ) {
+            SDL_OutOfMemory();
+            goto cleanup;
+        }
 
         for (i = 0; i < (*plane)->props->count_props; i++) {
             (*plane)->props_info[i] = KMSDRM_drmModeGetProperty(viddata->drm_fd,
@@ -876,7 +883,6 @@ KMSDRM_FBFromBO(_THIS, struct gbm_bo *bo)
     /* Create a structure that contains the info about framebuffer
        that we need to use it. */
     fb_info = (KMSDRM_FBInfo *)SDL_calloc(1, sizeof(KMSDRM_FBInfo));
-
     if (!fb_info) {
         SDL_OutOfMemory();
         return NULL;
@@ -1139,9 +1145,16 @@ KMSDRM_VideoInit(_THIS)
     SDL_VideoDisplay display = {0};
 
     dispdata = (SDL_DisplayData *) SDL_calloc(1, sizeof(SDL_DisplayData));
+    if (!dispdata) {
+        return SDL_OutOfMemory();
+    }
+
     dispdata->display_plane = SDL_calloc(1, sizeof(*dispdata->display_plane));
     dispdata->crtc = SDL_calloc(1, sizeof(*dispdata->crtc));
     dispdata->connector = SDL_calloc(1, sizeof(*dispdata->connector));
+    if (!(dispdata->display_plane) || !(dispdata->crtc) || !(dispdata->connector)) {
+        return SDL_OutOfMemory();
+    }
 
     dispdata->atomic_flags = 0;
     dispdata->atomic_req = NULL;
@@ -1150,10 +1163,6 @@ KMSDRM_VideoInit(_THIS)
     dispdata->kms_out_fence_fd = -1;
     dispdata->dumb_buffer = NULL;
     dispdata->modeset_pending = SDL_FALSE;
-
-    if (!dispdata) {
-        return SDL_OutOfMemory();
-    }
 
     SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "KMSDRM_VideoInit()");
 
@@ -1337,6 +1346,11 @@ KMSDRM_VideoInit(_THIS)
 
     dispdata->crtc->props_info = SDL_calloc(dispdata->crtc->props->count_props,
         sizeof(*dispdata->crtc->props_info));
+    
+    if (!dispdata->crtc->props_info) {
+        ret = SDL_OutOfMemory();
+        goto cleanup;
+    }
 
     for (i = 0; i < dispdata->crtc->props->count_props; i++) {
         dispdata->crtc->props_info[i] = KMSDRM_drmModeGetProperty(viddata->drm_fd,
@@ -1349,6 +1363,11 @@ KMSDRM_VideoInit(_THIS)
 
     dispdata->connector->props_info = SDL_calloc(dispdata->connector->props->count_props,
         sizeof(*dispdata->connector->props_info));
+
+    if (!dispdata->connector->props_info) {
+        ret = SDL_OutOfMemory();
+        goto cleanup;
+    }
 
     for (i = 0; i < dispdata->connector->props->count_props; i++) {
         dispdata->connector->props_info[i] = KMSDRM_drmModeGetProperty(viddata->drm_fd,
@@ -1579,9 +1598,12 @@ KMSDRM_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
     for (i = 0; i < conn->count_modes; i++) {
         SDL_DisplayModeData *modedata = SDL_calloc(1, sizeof(SDL_DisplayModeData));
 
-        if (modedata) {
-          modedata->mode_index = i;
+        if (!modedata) {
+            SDL_OutOfMemory();
+            return;
         }   
+ 
+        modedata->mode_index = i;
 
         mode.w = conn->modes[i].hdisplay;
         mode.h = conn->modes[i].vdisplay;
@@ -1651,13 +1673,17 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
 
     /* Allocate window internal data */
     windata = (SDL_WindowData *)SDL_calloc(1, sizeof(SDL_WindowData));
+    if (!windata) {
+        SDL_OutOfMemory();
+        goto error;
+    }
 
     display = SDL_GetDisplayForWindow(window);
     dispdata = display->driverdata;
 
     if (((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN_DESKTOP) ||
-       ((window->flags & SDL_WINDOW_FULLSCREEN) == SDL_WINDOW_FULLSCREEN)) {
-
+       ((window->flags & SDL_WINDOW_FULLSCREEN) == SDL_WINDOW_FULLSCREEN))
+    {
         windata->src_w = dispdata->mode.hdisplay;
         windata->src_h = dispdata->mode.vdisplay;
         windata->output_w = dispdata->mode.hdisplay;
