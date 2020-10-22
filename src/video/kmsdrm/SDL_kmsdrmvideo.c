@@ -1448,6 +1448,10 @@ KMSDRM_VideoQuit(_THIS)
         return;
     }
 
+    /* Don't call any SDL_GetDisplay* function until we get sure that
+       VideoInit() succeeded, because the SDL_GetDisplay* call would
+       throw it's own SDL_SetError(), overwritting the error set in
+       the failed VideoInit() call. */
     dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
 
     /*****************************************************************/
