@@ -1144,6 +1144,8 @@ KMSDRM_VideoInit(_THIS)
     char devname[32];
     SDL_VideoDisplay display = {0};
 
+    viddata->video_init = SDL_FALSE;
+
     dispdata = (SDL_DisplayData *) SDL_calloc(1, sizeof(SDL_DisplayData));
     if (!dispdata) {
         return SDL_OutOfMemory();
@@ -1328,8 +1330,6 @@ KMSDRM_VideoInit(_THIS)
     display.driverdata = dispdata;
     SDL_AddVideoDisplay(&display, SDL_FALSE);
 
-
-
     /* Use this if you ever need to see info on all available planes. */
 #if 0
     get_planes_info(_this);
@@ -1381,7 +1381,7 @@ KMSDRM_VideoInit(_THIS)
        create it is not fatal. */
     dispdata->dumb_buffer = KMSDRM_CreateBuffer(_this);
     if (!dispdata->dumb_buffer) {
-        ret = SDL_SetError("can't find suitable display plane.");
+        ret = SDL_SetError("can't create dumb buffer.");
     } else {
         /* Fill the dumb buffer with black pixels. */
         KMSDRM_FillDumbBuffer(dispdata->dumb_buffer);
@@ -1396,6 +1396,8 @@ KMSDRM_VideoInit(_THIS)
 #endif
 
     KMSDRM_InitMouse(_this);
+
+    viddata->video_init = SDL_TRUE;
 
 cleanup:
 
@@ -1433,10 +1435,20 @@ void
 KMSDRM_VideoQuit(_THIS)
 {
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
-    SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
+    SDL_DisplayData *dispdata;
+
     KMSDRM_PlaneInfo plane_info = {0};
-    drmModeModeInfo mode = dispdata->crtc->crtc->mode;
+    drmModeModeInfo mode;
+
     uint32_t blob_id;
+
+    /* Video was not initialized properly, hence SDL internals
+       called VideoQuit(). We will segault somewhere if we go further. */
+    if (!viddata->video_init) {
+        return;
+    }
+
+    dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
 
     /*****************************************************************/
     /*                                                               */
@@ -1468,8 +1480,9 @@ KMSDRM_VideoQuit(_THIS)
     /*                                                               */
     /*****************************************************************/
 
-#if AMDGPU_COMPAT
+    mode = dispdata->crtc->crtc->mode;
 
+#if AMDGPU_COMPAT
     plane_info.plane = dispdata->display_plane;
     plane_info.crtc_id = dispdata->crtc->crtc->crtc_id;
     plane_info.fb_id = dispdata->crtc->crtc->buffer_id;
@@ -1575,6 +1588,7 @@ KMSDRM_VideoQuit(_THIS)
 #ifdef SDL_INPUT_LINUXEV
     SDL_EVDEV_Quit();
 #endif
+    viddata->video_init = SDL_FALSE;
 }
 
 #if 0
