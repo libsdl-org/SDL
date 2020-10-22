@@ -162,7 +162,7 @@ static dumb_buffer *KMSDRM_CreateDumbBuffer(_THIS)
     struct drm_mode_destroy_dumb destroy;
 
     dumb_buffer *ret = SDL_calloc(1, sizeof(*ret));
-    if (!ret)
+    if (!ret) {
         SDL_OutOfMemory();
         return NULL;
     }
@@ -207,13 +207,15 @@ static dumb_buffer *KMSDRM_CreateDumbBuffer(_THIS)
     map = (struct drm_mode_map_dumb) {
         .handle = ret->gem_handles[0],
     };
+
     if (KMSDRM_drmIoctl(viddata->drm_fd, DRM_IOCTL_MODE_MAP_DUMB, &map)) {
         SDL_SetError("failed to get mmap offset for the dumb buffer.");
         goto err_dumb;
     }
 
     ret->dumb.mem = mmap(NULL, create.size, PROT_WRITE, MAP_SHARED,
-                            viddata->drm_fd, map.offset);
+                         viddata->drm_fd, map.offset);
+
     if (ret->dumb.mem == MAP_FAILED) {
         SDL_SetError("failed to get mmap offset for the dumb buffer.");
         goto err_dumb;
