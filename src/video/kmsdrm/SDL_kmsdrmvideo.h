@@ -60,8 +60,8 @@ typedef struct dumb_buffer {
 
     /* Parameters for our memory-mapped image. */
     struct {
-	uint32_t *mem;
-	unsigned int size;
+        uint32_t *mem;
+        unsigned int size;
     } dumb;
 
     unsigned int width;
