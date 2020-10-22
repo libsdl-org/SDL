@@ -90,14 +90,15 @@ int KMSDRM_GLES_SetSwapInterval(_THIS, int interval) {
 
 static EGLSyncKHR create_fence(int fd, _THIS)
 {
-	EGLint attrib_list[] = {
-		EGL_SYNC_NATIVE_FENCE_FD_ANDROID, fd,
-		EGL_NONE,
-	};
-	EGLSyncKHR fence = _this->egl_data->eglCreateSyncKHR(_this->egl_data->egl_display,
-			EGL_SYNC_NATIVE_FENCE_ANDROID, attrib_list);
-	assert(fence);
-	return fence;
+    EGLint attrib_list[] = {
+        EGL_SYNC_NATIVE_FENCE_FD_ANDROID, fd,
+        EGL_NONE,
+    };
+    EGLSyncKHR fence = _this->egl_data->eglCreateSyncKHR
+        (_this->egl_data->egl_display, EGL_SYNC_NATIVE_FENCE_ANDROID, attrib_list);
+
+    assert(fence);
+    return fence;
 }
 
 /***********************************************************************************/
@@ -132,6 +133,7 @@ KMSDRM_GLES_SwapWindowFenced(_THIS, SDL_Window * window)
     if (! _this->egl_data->eglSwapBuffers(_this->egl_data->egl_display, windata->egl_surface)) {
         return SDL_EGL_SetError("Failed to swap EGL buffers", "eglSwapBuffers");
     }
+
     /******************************************************************/
     /* EXPORT the GPU-side FENCE OBJECT to the fence INPUT FD, so we  */
     /* can pass it into the kernel. Atomic ioctl will pass the        */
@@ -144,8 +146,8 @@ KMSDRM_GLES_SwapWindowFenced(_THIS, SDL_Window * window)
     /* in the CMDSTREAM to be lifted when the CMDSTREAM to this point */
     /* is completed).                                                 */
     /******************************************************************/
-    dispdata->kms_in_fence_fd = _this->egl_data->eglDupNativeFenceFDANDROID
-    (_this->egl_data->egl_display, dispdata->gpu_fence);
+    dispdata->kms_in_fence_fd = _this->egl_data->eglDupNativeFenceFDANDROID (_this->egl_data->egl_display,
+        dispdata->gpu_fence);
     
     _this->egl_data->eglDestroySyncKHR(_this->egl_data->egl_display, dispdata->gpu_fence);
     assert(dispdata->kms_in_fence_fd != -1);
@@ -157,11 +159,11 @@ KMSDRM_GLES_SwapWindowFenced(_THIS, SDL_Window * window)
        called after eglSwapBuffers(). */
     windata->next_bo = KMSDRM_gbm_surface_lock_front_buffer(windata->gs);
     if (!windata->next_bo) {
-	return SDL_SetError("Failed to lock frontbuffer");
+        return SDL_SetError("Failed to lock frontbuffer");
     }
     fb = KMSDRM_FBFromBO(_this, windata->next_bo);
     if (!fb) {
-	 return SDL_SetError("Failed to get a new framebuffer from BO");
+        return SDL_SetError("Failed to get a new framebuffer from BO");
     }
 
     /* Add the pageflip to the request list. */
@@ -196,19 +198,20 @@ KMSDRM_GLES_SwapWindowFenced(_THIS, SDL_Window * window)
     /*****************************************************************/
     if (dispdata->kms_in_fence_fd != -1)
     {
-	add_plane_property(dispdata->atomic_req, dispdata->display_plane,
+        add_plane_property(dispdata->atomic_req, dispdata->display_plane,
             "IN_FENCE_FD", dispdata->kms_in_fence_fd);
-	add_crtc_property(dispdata->atomic_req, dispdata->crtc,
+        add_crtc_property(dispdata->atomic_req, dispdata->crtc,
             "OUT_FENCE_PTR", VOID2U64(&dispdata->kms_out_fence_fd));
     }
 
     /* Do we have a pending modesetting? If so, set the necessary 
        props so it's included in the incoming atomic commit. */
     if (dispdata->modeset_pending) {
+        uint32_t blob_id;
         SDL_VideoData *viddata = (SDL_VideoData *)_this->driverdata;
-	uint32_t blob_id;
+
         dispdata->atomic_flags |= DRM_MODE_ATOMIC_ALLOW_MODESET;
- 	add_connector_property(dispdata->atomic_req, dispdata->connector, "CRTC_ID", dispdata->crtc->crtc->crtc_id);
+        add_connector_property(dispdata->atomic_req, dispdata->connector, "CRTC_ID", dispdata->crtc->crtc->crtc_id);
         KMSDRM_drmModeCreatePropertyBlob(viddata->drm_fd, &dispdata->mode, sizeof(dispdata->mode), &blob_id);
         add_crtc_property(dispdata->atomic_req, dispdata->crtc, "MODE_ID", blob_id);
         add_crtc_property(dispdata->atomic_req, dispdata->crtc, "ACTIVE", 1);
@@ -227,7 +230,7 @@ KMSDRM_GLES_SwapWindowFenced(_THIS, SDL_Window * window)
     /* Release the previous front buffer so EGL can chose it as back buffer
        and render on it again. */
     if (windata->bo) {
-	KMSDRM_gbm_surface_release_buffer(windata->gs, windata->bo);
+        KMSDRM_gbm_surface_release_buffer(windata->gs, windata->bo);
     }
 
     /* Take note of the buffer about to become front buffer, so next
@@ -308,9 +311,9 @@ KMSDRM_GLES_SwapWindowDoubleBuffered(_THIS, SDL_Window * window)
        props so it's included in the incoming atomic commit. */
     if (dispdata->modeset_pending) {
         SDL_VideoData *viddata = (SDL_VideoData *)_this->driverdata;
-	uint32_t blob_id;
+        uint32_t blob_id;
         dispdata->atomic_flags |= DRM_MODE_ATOMIC_ALLOW_MODESET;
- 	add_connector_property(dispdata->atomic_req, dispdata->connector, "CRTC_ID", dispdata->crtc->crtc->crtc_id);
+        add_connector_property(dispdata->atomic_req, dispdata->connector, "CRTC_ID", dispdata->crtc->crtc->crtc_id);
         KMSDRM_drmModeCreatePropertyBlob(viddata->drm_fd, &dispdata->mode, sizeof(dispdata->mode), &blob_id);
         add_crtc_property(dispdata->atomic_req, dispdata->crtc, "MODE_ID", blob_id);
         add_crtc_property(dispdata->atomic_req, dispdata->crtc, "ACTIVE", 1);
@@ -325,7 +328,7 @@ KMSDRM_GLES_SwapWindowDoubleBuffered(_THIS, SDL_Window * window)
 
     /* Release last front buffer so EGL can chose it as back buffer and render on it again. */
     if (windata->bo) {
-	KMSDRM_gbm_surface_release_buffer(windata->gs, windata->bo);
+        KMSDRM_gbm_surface_release_buffer(windata->gs, windata->bo);
     }
 
     /* Take note of current front buffer, so we can free it next time we come here. */
@@ -352,7 +355,8 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window)
     if (windata->swap_window == NULL) {
         /* We want the fenced version by default, but it needs extensions. */
         if ( (SDL_GetHintBoolean(SDL_HINT_VIDEO_DOUBLE_BUFFER, SDL_FALSE)) ||
-             (!SDL_EGL_HasExtension(_this, SDL_EGL_DISPLAY_EXTENSION, "EGL_ANDROID_native_fence_sync")) ) {
+             (!SDL_EGL_HasExtension(_this, SDL_EGL_DISPLAY_EXTENSION, "EGL_ANDROID_native_fence_sync")) )
+        {
             windata->swap_window = KMSDRM_GLES_SwapWindowDoubleBuffered;
         } else {
             windata->swap_window = KMSDRM_GLES_SwapWindowFenced;
