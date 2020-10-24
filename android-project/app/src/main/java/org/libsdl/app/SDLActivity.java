@@ -2278,12 +2278,11 @@ class SDLInputConnection extends BaseInputConnection {
 
 interface SDLClipboardHandler {
 
-    public boolean clipboardHasText();
-    public String clipboardGetText();
-    public void clipboardSetText(String string);
+    boolean clipboardHasText();
+    String clipboardGetText();
+    void clipboardSetText(String string);
 
 }
-
 
 class SDLClipboardHandler_API11 implements
     SDLClipboardHandler,
@@ -2298,15 +2297,20 @@ class SDLClipboardHandler_API11 implements
 
     @Override
     public boolean clipboardHasText() {
-       return mClipMgr.hasText();
+       return mClipMgr.hasPrimaryClip();
     }
 
     @Override
     public String clipboardGetText() {
-        CharSequence text;
-        text = mClipMgr.getText();
-        if (text != null) {
-           return text.toString();
+        ClipData clip = mClipMgr.getPrimaryClip();
+        if (clip != null) {
+            ClipData.Item item = clip.getItemAt(0);
+            if (item != null) {
+                CharSequence text = item.getText();
+                if (text != null) {
+                    return text.toString();
+                }
+            }
         }
         return null;
     }
@@ -2314,7 +2318,8 @@ class SDLClipboardHandler_API11 implements
     @Override
     public void clipboardSetText(String string) {
        mClipMgr.removePrimaryClipChangedListener(this);
-       mClipMgr.setText(string);
+       ClipData clip = ClipData.newPlainText(null, string);
+       mClipMgr.setPrimaryClip(clip);
        mClipMgr.addPrimaryClipChangedListener(this);
     }
 
@@ -2322,6 +2327,5 @@ class SDLClipboardHandler_API11 implements
     public void onPrimaryClipChanged() {
         SDLActivity.onNativeClipboardChanged();
     }
-
 }
 
