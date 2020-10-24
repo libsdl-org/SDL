@@ -82,7 +82,9 @@ typedef VkResult(VKAPI_PTR *PFN_PhysDevExt)(VkPhysicalDevice phys_device);
  */
 typedef enum VkLayerFunction_ {
     VK_LAYER_LINK_INFO = 0,
-    VK_LOADER_DATA_CALLBACK = 1
+    VK_LOADER_DATA_CALLBACK = 1,
+    VK_LOADER_LAYER_CREATE_DEVICE_CALLBACK = 2,
+    VK_LOADER_FEATURES = 3,
 } VkLayerFunction;
 
 typedef struct VkLayerInstanceLink_ {
@@ -107,6 +109,14 @@ typedef VkResult (VKAPI_PTR *PFN_vkSetInstanceLoaderData)(VkInstance instance,
         void *object);
 typedef VkResult (VKAPI_PTR *PFN_vkSetDeviceLoaderData)(VkDevice device,
         void *object);
+typedef VkResult (VKAPI_PTR *PFN_vkLayerCreateDevice)(VkInstance instance, VkPhysicalDevice physicalDevice, const VkDeviceCreateInfo *pCreateInfo,
+						      const VkAllocationCallbacks *pAllocator, VkDevice *pDevice, PFN_vkGetInstanceProcAddr layerGIPA, PFN_vkGetDeviceProcAddr *nextGDPA);
+typedef void (VKAPI_PTR *PFN_vkLayerDestroyDevice)(VkDevice physicalDevice, const VkAllocationCallbacks *pAllocator, PFN_vkDestroyDevice destroyFunction);
+
+typedef enum VkLoaderFeastureFlagBits {
+    VK_LOADER_FEATURE_PHYSICAL_DEVICE_SORTING = 0x00000001,
+} VkLoaderFlagBits;
+typedef VkFlags VkLoaderFeatureFlags;
 
 typedef struct {
     VkStructureType sType; // VK_STRUCTURE_TYPE_LOADER_INSTANCE_CREATE_INFO
@@ -115,6 +125,11 @@ typedef struct {
     union {
         VkLayerInstanceLink *pLayerInfo;
         PFN_vkSetInstanceLoaderData pfnSetInstanceLoaderData;
+        struct {
+	        PFN_vkLayerCreateDevice pfnLayerCreateDevice;
+	        PFN_vkLayerDestroyDevice pfnLayerDestroyDevice;
+	    } layerDevice;
+        VkLoaderFeatureFlags loaderFeatures;
     } u;
 } VkLayerInstanceCreateInfo;
 
