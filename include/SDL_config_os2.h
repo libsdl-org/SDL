@@ -53,10 +53,11 @@
 /* Enable assembly routines */
 #define SDL_ASSEMBLY_ROUTINES 1
 
-/* #undef HAVE_LIBSAMPLERATE_H */
+/* use libsamplerate for audio rate conversion. */
+/*#define HAVE_LIBSAMPLERATE_H 1 */
 
 /* Enable dynamic libsamplerate support */
-/* #undef SDL_LIBSAMPLERATE_DYNAMIC */
+#define SDL_LIBSAMPLERATE_DYNAMIC "SAMPRATE.DLL"
 
 #define HAVE_LIBC 1
 
