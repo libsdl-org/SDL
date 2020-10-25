@@ -227,9 +227,9 @@ static HWND _makeDlg(const SDL_MessageBoxData *messageboxdata)
 
     /* Size of template (cbTemplate). */
     cbTemplate = sizeof(DLGTEMPLATE) + ((2 + cSDLBtnData) * sizeof(DLGTITEM)) +
-                 sizeof(ULONG) +  // First item data - frame control data. */
-                 cbTitle + 1 +    // First item data - frame title + ZERO. */
-                 cbText + 1 +     // Second item data - ststic text + ZERO.*/
+                 sizeof(ULONG) +  /* First item data - frame control data. */
+                 cbTitle + 1 +    /* First item data - frame title + ZERO. */
+                 cbText + 1 +     /* Second item data - ststic text + ZERO.*/
                  3;               /* Third item data - system icon Id.     */
     /* Button items datas - text for buttons. */
     for (ulIdx = 0; ulIdx < cSDLBtnData; ulIdx++) {
@@ -263,7 +263,7 @@ static HWND _makeDlg(const SDL_MessageBoxData *messageboxdata)
     pDlgItem = pTemplate->adlgti;
     pDlgItem->fsItemStatus = 0;  /* Reserved? */
     /* Number of dialog item child windows owned by this item. */
-    pDlgItem->cChildren = 2 + cSDLBtnData; // Ststic text + buttons.
+    pDlgItem->cChildren = 2 + cSDLBtnData; /* Ststic text + buttons. */
     /* Length of class name, if 0 then offClassname contains a WC_ value. */
     pDlgItem->cchClassName = 0;
     pDlgItem->offClassName = (USHORT)WC_FRAME;
@@ -284,7 +284,7 @@ static HWND _makeDlg(const SDL_MessageBoxData *messageboxdata)
     pDlgItem->y  = 100;
     pDlgItem->cx = 175;
     pDlgItem->cy = 65;
-    pDlgItem->id = DID_OK;     /* An ID value? */
+    pDlgItem->id = DID_OK; /* An ID value? */
     if (pSDLColors == NULL)
         pDlgItem->offPresParams = 0;
     else {
@@ -428,7 +428,7 @@ static HWND _makeDlg(const SDL_MessageBoxData *messageboxdata)
         pDlgItem->cx = 70;
         pDlgItem->cy = 15;
 
-        pDlgItem->id = IDD_PB_FIRST + ulIdx;	  /* an ID value */
+        pDlgItem->id = IDD_PB_FIRST + ulIdx;  /* an ID value */
         if (pSDLColors == NULL)
           pDlgItem->offPresParams = 0;
         else {
