@@ -33,9 +33,9 @@
 #include <os2me.h>
 
 /* Hidden "this" pointer for the audio functions */
-#define _THIS   SDL_AudioDevice *this
+#define _THIS   SDL_AudioDevice *_this
 
-#define NUM_BUFFERS     3
+#define NUM_BUFFERS 3
 
 typedef struct SDL_PrivateAudioData
 {
