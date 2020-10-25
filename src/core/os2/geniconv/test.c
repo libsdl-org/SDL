@@ -51,10 +51,10 @@ int main(void)
     inbuf = StrUTF8New(1, acBuf, strlen(acBuf));
 
     /* UTF-8 -> system cp. by StrUTF8() */
-    if (StrUTF8(0, &acBuf, sizeof(acBuf), inbuf, strlen(inbuf)) == -1) {
+    if (StrUTF8(0, acBuf, sizeof(acBuf), inbuf, strlen(inbuf)) == -1) {
         puts("StrUTF8() failed");
     } else {
-        printf("system cp. -> UTF-8 -> system cp.: %s\n", &acBuf);
+        printf("system cp. -> UTF-8 -> system cp.: %s\n", acBuf);
     }
 
     free(inbuf);

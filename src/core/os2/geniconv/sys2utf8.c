@@ -83,15 +83,15 @@ int StrUTF8(int fToUTF8, char *pcDst, int cbDst, char *pcSrc, int cbSrc)
 char *StrUTF8New(int fToUTF8, char *pcStr, int cbStr)
 {
     int   cbNewStr = (((cbStr > 4)? cbStr : 4) + 1) * 2;
-    char *pszNewStr = malloc(cbNewStr);
+    char *pszNewStr = (char *) malloc(cbNewStr);
 
     if (pszNewStr == NULL)
         return NULL;
 
     cbNewStr = StrUTF8(fToUTF8, pszNewStr, cbNewStr, pcStr, cbStr);
     if (cbNewStr != -1) {
-        pcStr = realloc(pszNewStr, cbNewStr + ((fToUTF8)? 1 : sizeof(short)));
-        if (pcStr != NULL)
+        pcStr = (char *) realloc(pszNewStr, cbNewStr + ((fToUTF8)? 1 : sizeof(short)));
+        if (pcStr)
             return pcStr;
     }
 

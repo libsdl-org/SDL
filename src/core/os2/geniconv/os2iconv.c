@@ -41,6 +41,10 @@
 #endif
 #include "os2cp.h"
 
+#if !defined(min)
+#define min(a, b) (((a) < (b)) ? (a) : (b))
+#endif
+
 #define MAX_CP_NAME_LEN 64
 
 typedef struct iuconv_obj {
@@ -127,7 +131,7 @@ extern iconv_t _System os2_iconv_open(const char* tocode, const char* fromcode)
         uo_fromcode = NULL;
     }
 
-    iuobj = malloc(sizeof(iuconv_obj));
+    iuobj = (iuconv_obj *) malloc(sizeof(iuconv_obj));
     iuobj->uo_tocode = uo_tocode;
     iuobj->uo_fromcode = uo_fromcode;
     iuobj->buf_len = 0;

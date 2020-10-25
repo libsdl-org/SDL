@@ -26,7 +26,6 @@
 
 #include "../../core/os2/SDL_os2.h"
 
-#include "SDL_timer.h"
 #include "SDL_audio.h"
 #include "../SDL_audio_c.h"
 #include "SDL_os2audio.h"
@@ -34,12 +33,12 @@
 /*
 void lockIncr(volatile int *piVal);
 #pragma aux lockIncr = \
-  " lock add [eax], 1 "\
+  "lock add [eax], 1 "\
   parm [eax];
 
 void lockDecr(volatile int *piVal);
 #pragma aux lockDecr = \
-  " lock sub [eax], 1 "\
+  "lock sub [eax], 1 "\
   parm [eax];
 */
 
@@ -169,7 +168,7 @@ static void OS2_DetectDevices(void)
 
 static void OS2_WaitDevice(_THIS)
 {
-    SDL_PrivateAudioData *pAData = (SDL_PrivateAudioData *)this->hidden;
+    SDL_PrivateAudioData *pAData = (SDL_PrivateAudioData *)_this->hidden;
     ULONG   ulRC;
 
     /* Wait for an audio chunk to finish */
@@ -181,13 +180,13 @@ static void OS2_WaitDevice(_THIS)
 
 static Uint8 *OS2_GetDeviceBuf(_THIS)
 {
-    SDL_PrivateAudioData *pAData = (SDL_PrivateAudioData *)this->hidden;
-    return pAData->aMixBuffers[pAData->ulNextBuf].pBuffer;
+    SDL_PrivateAudioData *pAData = (SDL_PrivateAudioData *)_this->hidden;
+    return (Uint8 *) pAData->aMixBuffers[pAData->ulNextBuf].pBuffer;
 }
 
 static void OS2_PlayDevice(_THIS)
 {
-    SDL_PrivateAudioData *pAData = (SDL_PrivateAudioData *)this->hidden;
+    SDL_PrivateAudioData *pAData = (SDL_PrivateAudioData *)_this->hidden;
     ULONG                 ulRC;
     PMCI_MIX_BUFFER       pMixBuffer = &pAData->aMixBuffers[pAData->ulNextBuf];
 
@@ -204,7 +203,7 @@ static void OS2_PlayDevice(_THIS)
 
 static void OS2_CloseDevice(_THIS)
 {
-    SDL_PrivateAudioData *pAData = (SDL_PrivateAudioData *)this->hidden;
+    SDL_PrivateAudioData *pAData = (SDL_PrivateAudioData *)_this->hidden;
     MCI_GENERIC_PARMS     sMCIGenericParms;
     ULONG                 ulRC;
 
@@ -230,7 +229,7 @@ static void OS2_CloseDevice(_THIS)
 
             stMCIBuffer.ulBufferSize = pAData->aMixBuffers[0].ulBufferLength;
             stMCIBuffer.ulNumBuffers = pAData->cMixBuffers;
-            stMCIBuffer.pBufList = &pAData->aMixBuffers;
+            stMCIBuffer.pBufList = pAData->aMixBuffers;
 
             ulRC = mciSendCommand(pAData->usDeviceId, MCI_BUFFER,
                                   MCI_WAIT | MCI_DEALLOCATE_MEMORY, &stMCIBuffer, 0);
@@ -267,7 +266,7 @@ static int OS2_OpenDevice(_THIS, void *handle, const char *devname,
     SDL_zero(stMCIAmpOpen);
     SDL_zero(stMCIBuffer);
 
-    for (SDLAudioFmt = SDL_FirstAudioFormat(this->spec.format);
+    for (SDLAudioFmt = SDL_FirstAudioFormat(_this->spec.format);
          SDLAudioFmt != 0; SDLAudioFmt = SDL_NextAudioFormat()) {
         if (SDLAudioFmt == AUDIO_U8 || SDLAudioFmt == AUDIO_S16)
             break;
@@ -277,10 +276,10 @@ static int OS2_OpenDevice(_THIS, void *handle, const char *devname,
         SDLAudioFmt = AUDIO_S16;
     }
 
-    pAData = SDL_calloc(1, sizeof(SDL_PrivateAudioData));
+    pAData = (SDL_PrivateAudioData *) SDL_calloc(1, sizeof(struct SDL_PrivateAudioData));
     if (pAData == NULL)
         return SDL_OutOfMemory();
-    this->hidden = pAData;
+    _this->hidden = pAData;
 
     ulRC = DosCreateEventSem(NULL, &pAData->hevBuf, DCE_AUTORESET, TRUE);
     if (ulRC != NO_ERROR) {
@@ -334,21 +333,21 @@ static int OS2_OpenDevice(_THIS, void *handle, const char *devname,
                        &stMCIAmpSet, 0);
     }
 
-    this->spec.format = SDLAudioFmt;
-    this->spec.channels = this->spec.channels > 1 ? 2 : 1;
-    if (this->spec.freq < 8000) {
-        this->spec.freq = 8000;
+    _this->spec.format = SDLAudioFmt;
+    _this->spec.channels = _this->spec.channels > 1 ? 2 : 1;
+    if (_this->spec.freq < 8000) {
+        _this->spec.freq = 8000;
         new_freq = TRUE;
-    } else if (this->spec.freq > 48000) {
-        this->spec.freq = 48000;
+    } else if (_this->spec.freq > 48000) {
+        _this->spec.freq = 48000;
         new_freq = TRUE;
     }
 
     /* Setup mixer. */
     pAData->stMCIMixSetup.ulFormatTag     = MCI_WAVE_FORMAT_PCM;
     pAData->stMCIMixSetup.ulBitsPerSample = SDL_AUDIO_BITSIZE(SDLAudioFmt);
-    pAData->stMCIMixSetup.ulSamplesPerSec = this->spec.freq;
-    pAData->stMCIMixSetup.ulChannels      = this->spec.channels;
+    pAData->stMCIMixSetup.ulSamplesPerSec = _this->spec.freq;
+    pAData->stMCIMixSetup.ulChannels      = _this->spec.channels;
     pAData->stMCIMixSetup.ulDeviceType    = MCI_DEVTYPE_WAVEFORM_AUDIO;
     if (iscapture == 0) {
         pAData->stMCIMixSetup.ulFormatMode= MCI_PLAY;
@@ -360,10 +359,10 @@ static int OS2_OpenDevice(_THIS, void *handle, const char *devname,
 
     ulRC = mciSendCommand(pAData->usDeviceId, MCI_MIXSETUP,
                           MCI_WAIT | MCI_MIXSETUP_INIT, &pAData->stMCIMixSetup, 0);
-    if (ulRC != MCIERR_SUCCESS && this->spec.freq > 44100) {
+    if (ulRC != MCIERR_SUCCESS && _this->spec.freq > 44100) {
         new_freq = TRUE;
         pAData->stMCIMixSetup.ulSamplesPerSec = 44100;
-        this->spec.freq = 44100;
+        _this->spec.freq = 44100;
         ulRC = mciSendCommand(pAData->usDeviceId, MCI_MIXSETUP,
                               MCI_WAIT | MCI_MIXSETUP_INIT, &pAData->stMCIMixSetup, 0);
     }
@@ -379,23 +378,23 @@ static int OS2_OpenDevice(_THIS, void *handle, const char *devname,
         return _MCIError("MCI_MIXSETUP", ulRC);
     }
 
-    if (this->spec.samples == 0 || new_freq == TRUE) {
+    if (_this->spec.samples == 0 || new_freq == TRUE) {
     /* also see SDL_audio.c:prepare_audiospec() */
     /* Pick a default of ~46 ms at desired frequency */
-        Uint32 samples = (this->spec.freq / 1000) * 46;
+        Uint32 samples = (_this->spec.freq / 1000) * 46;
         Uint32 power2 = 1;
         while (power2 < samples) {
             power2 <<= 1;
         }
-        this->spec.samples = power2;
+        _this->spec.samples = power2;
     }
     /* Update the fragment size as size in bytes */
-    SDL_CalculateAudioSpec(&this->spec);
+    SDL_CalculateAudioSpec(&_this->spec);
 
     /* Allocate memory buffers */
-    stMCIBuffer.ulBufferSize = this->spec.size;/* (this->spec.freq / 1000) * 100 */
+    stMCIBuffer.ulBufferSize = _this->spec.size;/* (_this->spec.freq / 1000) * 100 */
     stMCIBuffer.ulNumBuffers = NUM_BUFFERS;
-    stMCIBuffer.pBufList     = &pAData->aMixBuffers;
+    stMCIBuffer.pBufList     = pAData->aMixBuffers;
 
     ulRC = mciSendCommand(pAData->usDeviceId, MCI_BUFFER,
                           MCI_WAIT | MCI_ALLOCATE_MEMORY, &stMCIBuffer, 0);
@@ -403,7 +402,7 @@ static int OS2_OpenDevice(_THIS, void *handle, const char *devname,
         return _MCIError("MCI_BUFFER", ulRC);
     }
     pAData->cMixBuffers = stMCIBuffer.ulNumBuffers;
-    this->spec.size = stMCIBuffer.ulBufferSize;
+    _this->spec.size = stMCIBuffer.ulBufferSize;
 
     /* Fill all device buffers with data */
     for (ulIdx = 0; ulIdx < stMCIBuffer.ulNumBuffers; ulIdx++) {
@@ -412,13 +411,13 @@ static int OS2_OpenDevice(_THIS, void *handle, const char *devname,
         pAData->aMixBuffers[ulIdx].ulUserParm     = (ULONG)pAData;
 
         memset(((PMCI_MIX_BUFFER)stMCIBuffer.pBufList)[ulIdx].pBuffer,
-                this->spec.silence, stMCIBuffer.ulBufferSize);
+                _this->spec.silence, stMCIBuffer.ulBufferSize);
     }
 
     /* Write buffers to kick off the amp mixer */
     /*pAData->ulQueuedBuf = 1;//stMCIBuffer.ulNumBuffers */
     ulRC = pAData->stMCIMixSetup.pmixWrite(pAData->stMCIMixSetup.ulMixHandle,
-                                           &pAData->aMixBuffers,
+                                           pAData->aMixBuffers,
                                            1 /*stMCIBuffer.ulNumBuffers*/);
     if (ulRC != MCIERR_SUCCESS) {
         _mixIOError("pmixWrite", ulRC);
