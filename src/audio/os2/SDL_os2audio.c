@@ -88,7 +88,7 @@ LONG APIENTRY cbAudioWriteEvent(ULONG ulStatus, PMCI_MIX_BUFFER pBuffer,
         debug_os2("DosPostEventSem(), rc = %u", ulRC);
     }
 
-    return 1; // It seems, return value is not matter.
+    return 1; /* It seems, return value is not matter. */
 }
 
 LONG APIENTRY cbAudioReadEvent(ULONG ulStatus, PMCI_MIX_BUFFER pBuffer,
@@ -416,7 +416,7 @@ static int OS2_OpenDevice(_THIS, void *handle, const char *devname,
     }
 
     /* Write buffers to kick off the amp mixer */
-    /*pAData->ulQueuedBuf = 1;//stMCIBuffer.ulNumBuffers;*/
+    /*pAData->ulQueuedBuf = 1;//stMCIBuffer.ulNumBuffers */
     ulRC = pAData->stMCIMixSetup.pmixWrite(pAData->stMCIMixSetup.ulMixHandle,
                                            &pAData->aMixBuffers,
                                            1 /*stMCIBuffer.ulNumBuffers*/);
