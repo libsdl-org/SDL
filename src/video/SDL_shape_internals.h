@@ -35,6 +35,8 @@ extern "C" {
 /* *INDENT-ON* */
 #endif
 
+struct SDL_ShapeTree;
+
 typedef struct {
     struct SDL_ShapeTree *upleft,*upright,*downleft,*downright;
 } SDL_QuadTreeChildren;
@@ -46,7 +48,7 @@ typedef union {
 
 typedef enum { QuadShape,TransparentShape,OpaqueShape } SDL_ShapeKind;
 
-typedef struct {
+typedef struct SDL_ShapeTree {
     SDL_ShapeKind kind;
     SDL_ShapeUnion data;
 } SDL_ShapeTree;
