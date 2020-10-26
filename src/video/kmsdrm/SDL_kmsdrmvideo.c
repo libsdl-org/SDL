@@ -46,6 +46,14 @@
 #include <errno.h>
 #include <poll.h>
 
+/* for older KMSDRM headers... */
+#ifndef DRM_FORMAT_MOD_VENDOR_NONE
+#define DRM_FORMAT_MOD_VENDOR_NONE 0
+#endif
+#ifndef DRM_FORMAT_MOD_LINEAR
+#define DRM_FORMAT_MOD_LINEAR fourcc_mod_code(NONE, 0)
+#endif
+
 #define KMSDRM_DRI_PATH "/dev/dri/"
 
 #define AMDGPU_COMPAT 1
