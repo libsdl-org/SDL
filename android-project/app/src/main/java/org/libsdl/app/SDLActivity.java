@@ -198,7 +198,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         mTextEdit = null;
         mLayout = null;
         mClipboardHandler = null;
-        mCursors = new Hashtable<>();
+        mCursors = new Hashtable<Integer, PointerIcon>();
         mLastCursorID = 0;
         mSDLThread = null;
         mIsResumedCalled = false;
@@ -1369,7 +1369,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         int[] buttonIds = args.getIntArray("buttonIds");
         String[] buttonTexts = args.getStringArray("buttonTexts");
 
-        final SparseArray<Button> mapping = new SparseArray<>();
+        final SparseArray<Button> mapping = new SparseArray<Button>();
 
         LinearLayout buttons = new LinearLayout(this);
         buttons.setOrientation(LinearLayout.HORIZONTAL);
