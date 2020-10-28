@@ -176,7 +176,7 @@ class SDLJoystickHandler_API16 extends SDLJoystickHandler {
 
     public SDLJoystickHandler_API16() {
 
-        mJoysticks = new ArrayList<>();
+        mJoysticks = new ArrayList<SDLJoystick>();
     }
 
     @Override
@@ -192,8 +192,8 @@ class SDLJoystickHandler_API16 extends SDLJoystickHandler {
                     joystick.device_id = device_id;
                     joystick.name = joystickDevice.getName();
                     joystick.desc = getJoystickDescriptor(joystickDevice);
-                    joystick.axes = new ArrayList<>();
-                    joystick.hats = new ArrayList<>();
+                    joystick.axes = new ArrayList<InputDevice.MotionRange>();
+                    joystick.hats = new ArrayList<InputDevice.MotionRange>();
 
                     List<InputDevice.MotionRange> ranges = joystickDevice.getMotionRanges();
                     Collections.sort(ranges, new RangeComparator());
@@ -225,7 +225,7 @@ class SDLJoystickHandler_API16 extends SDLJoystickHandler {
             }
             if (i == deviceIds.length) {
                 if (removedDevices == null) {
-                    removedDevices = new ArrayList<>();
+                    removedDevices = new ArrayList<Integer>();
                 }
                 removedDevices.add(device_id);
             }
@@ -447,7 +447,7 @@ class SDLHapticHandler {
     private final ArrayList<SDLHaptic> mHaptics;
 
     public SDLHapticHandler() {
-        mHaptics = new ArrayList<>();
+        mHaptics = new ArrayList<SDLHaptic>();
     }
 
     public void run(int device_id, float intensity, int length) {
@@ -521,7 +521,7 @@ class SDLHapticHandler {
             if (device_id != deviceId_VIBRATOR_SERVICE || !hasVibratorService) {
                 if (i == deviceIds.length) {
                     if (removedDevices == null) {
-                        removedDevices = new ArrayList<>();
+                        removedDevices = new ArrayList<Integer>();
                     }
                     removedDevices.add(device_id);
                 }
