@@ -31,7 +31,6 @@
 
 #if MACOSX_COREAUDIO
 #include <CoreAudio/CoreAudio.h>
-#include <CoreServices/CoreServices.h>
 #else
 #import <AVFoundation/AVFoundation.h>
 #import <UIKit/UIApplication.h>
