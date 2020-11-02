@@ -23,6 +23,7 @@
 #if SDL_VIDEO_RENDER_OGL_ES2 && !SDL_RENDER_DISABLED
 
 #include "SDL_hints.h"
+#include "SDL_log.h"
 #include "SDL_opengles2.h"
 #include "../SDL_sysrender.h"
 #include "../../video/SDL_blit.h"
@@ -978,6 +979,7 @@ SetDrawState(GLES2_RenderData *data, const SDL_RenderCommand *cmd, const GLES2_I
     }
 
     if (program->uniform_locations[GLES2_UNIFORM_COLOR] != -1) {
+        SDL_LogInfo(SDL_LOG_CATEGORY_RENDER, "has color uniform location");
         if (data->drawstate.color != program->color) {
             const Uint8 r = (data->drawstate.color >> 16) & 0xFF;
             const Uint8 g = (data->drawstate.color >> 8) & 0xFF;
@@ -986,6 +988,8 @@ SetDrawState(GLES2_RenderData *data, const SDL_RenderCommand *cmd, const GLES2_I
             data->glUniform4f(program->uniform_locations[GLES2_UNIFORM_COLOR], r * inv255f, g * inv255f, b * inv255f, a * inv255f);
             program->color = data->drawstate.color;
         }
+    } else {
+        SDL_LogInfo(SDL_LOG_CATEGORY_RENDER, "oops, no color uniform location");
     }
 
     if (blend != data->drawstate.blend) {
