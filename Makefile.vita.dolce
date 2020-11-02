@@ -18,7 +18,7 @@ SOURCES = \
 	src/loadso/dummy/*.c \
 	src/power/*.c \
 	src/power/vita/*.c \
-	src/filesystem/dummy/*.c \
+	src/filesystem/vita/*.c \
 	src/render/*.c \
 	src/render/software/*.c \
 	src/render/opengles2/SDL_render_gles2.c \
