@@ -136,14 +136,12 @@
 #define SDL_TIMERS_VITA 1
 #define SDL_POWER_VITA 1
 #define SDL_VIDEO_DRIVER_VITA  1
+#define SDL_FILESYSTEM_VITA   1
 
 
 #define SDL_VIDEO_RENDER_OGL_ES2 1
 #define SDL_VIDEO_OPENGL_ES2 1
 
-
-/* !!! FIXME: what does VITA do for filesystem stuff? */
-#define SDL_FILESYSTEM_DUMMY   1
 
 /* VITA doesn't have haptic device (src/haptic/dummy/\*.c) */
 #define SDL_HAPTIC_DISABLED    1
