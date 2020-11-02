@@ -75,7 +75,7 @@ static const Uint8 GLES2_FragmentSrc_SolidSrc_[] = " \
 ";
 
 static const Uint8 GLES2_FragmentSrc_TextureABGRSrc_[] = " \
-    float4 main(sampler2D u_texture, uniform float4 u_color : COLOR, float2 v_texCoord : TEXCOORD0 ) : COLOR \
+    float4 main(uniform sampler2D u_texture, uniform float4 u_color : COLOR, float2 v_texCoord : TEXCOORD0 ) : COLOR \
     { \
         float4 color = tex2D(u_texture, v_texCoord); \
         return color * u_color; \
@@ -84,7 +84,7 @@ static const Uint8 GLES2_FragmentSrc_TextureABGRSrc_[] = " \
 
 /* ARGB to ABGR conversion */
 static const Uint8 GLES2_FragmentSrc_TextureARGBSrc_[] = " \
-    float4 main(sampler2D u_texture, uniform float4 u_color : COLOR, float2 v_texCoord : TEXCOORD0 ) : COLOR \
+    float4 main(uniform sampler2D u_texture, uniform float4 u_color : COLOR, float2 v_texCoord : TEXCOORD0 ) : COLOR \
     { \
         float4 abgr = tex2D(u_texture, v_texCoord); \
         float4 color = abgr; \
@@ -96,7 +96,7 @@ static const Uint8 GLES2_FragmentSrc_TextureARGBSrc_[] = " \
 
 /* RGB to ABGR conversion */
 static const Uint8 GLES2_FragmentSrc_TextureRGBSrc_[] = " \
-    float4 main(sampler2D u_texture, uniform float4 u_color : COLOR, float2 v_texCoord : TEXCOORD0 ) : COLOR \
+    float4 main(uniform sampler2D u_texture, uniform float4 u_color : COLOR, float2 v_texCoord : TEXCOORD0 ) : COLOR \
     { \
         float4 abgr = tex2D(u_texture, v_texCoord); \
         float4 color = abgr; \
@@ -109,7 +109,7 @@ static const Uint8 GLES2_FragmentSrc_TextureRGBSrc_[] = " \
 
 /* BGR to ABGR conversion */
 static const Uint8 GLES2_FragmentSrc_TextureBGRSrc_[] = " \
-    float4 main(sampler2D u_texture, uniform float4 u_color : COLOR, float2 v_texCoord : TEXCOORD0 ) : COLOR \
+    float4 main(uniform sampler2D u_texture, uniform float4 u_color : COLOR, float2 v_texCoord : TEXCOORD0 ) : COLOR \
     { \
         float4 abgr = tex2D(u_texture, v_texCoord); \
         float4 color = abgr; \
