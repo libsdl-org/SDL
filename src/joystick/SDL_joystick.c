@@ -1763,6 +1763,9 @@ SDL_GetJoystickGameControllerType(const char *name, Uint16 vendor, Uint16 produc
             case k_eControllerType_PS4Controller:
                 type = SDL_CONTROLLER_TYPE_PS4;
                 break;
+            case k_eControllerType_PS5Controller:
+                type = SDL_CONTROLLER_TYPE_PS5;
+                break;
             case k_eControllerType_SwitchProController:
             case k_eControllerType_SwitchInputOnlyController:
                 type = SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO;
@@ -1777,16 +1780,23 @@ SDL_GetJoystickGameControllerType(const char *name, Uint16 vendor, Uint16 produc
 }
 
 SDL_bool
-SDL_IsJoystickNintendoSwitchProInputOnly(Uint16 vendor, Uint16 product)
+SDL_IsJoystickPS5(Uint16 vendor_id, Uint16 product_id)
 {
-    EControllerType eType = GuessControllerType(vendor, product);
+    EControllerType eType = GuessControllerType(vendor_id, product_id);
+    return (eType == k_eControllerType_PS5Controller);
+}
+
+SDL_bool
+SDL_IsJoystickNintendoSwitchProInputOnly(Uint16 vendor_id, Uint16 product_id)
+{
+    EControllerType eType = GuessControllerType(vendor_id, product_id);
     return (eType == k_eControllerType_SwitchInputOnlyController);
 }
 
 SDL_bool
-SDL_IsJoystickSteamController(Uint16 vendor, Uint16 product)
+SDL_IsJoystickSteamController(Uint16 vendor_id, Uint16 product_id)
 {
-    EControllerType eType = GuessControllerType(vendor, product);
+    EControllerType eType = GuessControllerType(vendor_id, product_id);
     return (eType == k_eControllerType_SteamController ||
             eType == k_eControllerType_SteamControllerV2);
 }
