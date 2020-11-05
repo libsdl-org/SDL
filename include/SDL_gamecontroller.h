@@ -405,6 +405,15 @@ extern DECLSPEC Uint8 SDLCALL SDL_GameControllerGetButton(SDL_GameController *ga
 extern DECLSPEC int SDLCALL SDL_GameControllerRumble(SDL_GameController *gamecontroller, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms);
 
 /**
+ *  Return whether a controller has an LED
+ *
+ *  \param gamecontroller The controller to query
+ *
+ *  \return SDL_TRUE, or SDL_FALSE if this controller does not have a modifiable LED
+ */
+extern DECLSPEC SDL_bool SDLCALL SDL_GameControllerHasLED(SDL_GameController *gamecontroller);
+
+/**
  *  Update a controller's LED color.
  *
  *  \param controller The joystick to update

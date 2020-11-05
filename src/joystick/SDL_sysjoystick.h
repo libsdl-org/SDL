@@ -128,6 +128,7 @@ typedef struct _SDL_JoystickDriver
     int (*Rumble)(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble);
 
     /* LED functionality */
+    SDL_bool (*HasLED)(SDL_Joystick * joystick);
     int (*SetLED)(SDL_Joystick * joystick, Uint8 red, Uint8 green, Uint8 blue);
 
     /* Function to update the state of a joystick - called as a device poll.

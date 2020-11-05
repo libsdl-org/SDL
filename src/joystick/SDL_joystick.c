@@ -901,6 +901,24 @@ SDL_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 
     return result;
 }
 
+SDL_bool
+SDL_JoystickHasLED(SDL_Joystick * joystick)
+{
+    SDL_bool result;
+
+    if (!SDL_PrivateJoystickValid(joystick)) {
+        return SDL_FALSE;
+    }
+
+    SDL_LockJoysticks();
+
+    result = joystick->driver->HasLED(joystick);
+
+    SDL_UnlockJoysticks();
+
+    return result;
+}
+
 int
 SDL_JoystickSetLED(SDL_Joystick * joystick, Uint8 red, Uint8 green, Uint8 blue)
 {

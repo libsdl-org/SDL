@@ -768,3 +768,7 @@
 #define SDL_AndroidRequestPermission SDL_AndroidRequestPermission_REAL
 #define SDL_OpenURL SDL_OpenURL_REAL
 #define SDL_HasSurfaceRLE SDL_HasSurfaceRLE_REAL
+#define SDL_GameControllerHasLED SDL_GameControllerHasLED_REAL
+#define SDL_GameControllerSetLED SDL_GameControllerSetLED_REAL
+#define SDL_JoystickHasLED SDL_JoystickHasLED_REAL
+#define SDL_JoystickSetLED SDL_JoystickSetLED_REAL
