@@ -193,6 +193,18 @@ loop(void *arg)
             }
         }
 
+        /* Update LED based on left thumbstick position */
+        {
+            Uint8 r, g, b;
+            Sint16 x = SDL_GameControllerGetAxis(gamecontroller, SDL_CONTROLLER_AXIS_LEFTX);
+            Sint16 y = SDL_GameControllerGetAxis(gamecontroller, SDL_CONTROLLER_AXIS_LEFTY);
+
+            r = (Uint8)((float)(((int)x + 32767) * 255) / 65535);
+            b = (Uint8)((float)(((int)y + 32767) * 255) / 65535);
+            g = (Uint8)((int)(r + b) / 2);
+            SDL_GameControllerSetLED(gamecontroller, r, g, b);
+        }
+
         /* Update rumble based on trigger state */
         {
             Uint16 low_frequency_rumble = SDL_GameControllerGetAxis(gamecontroller, SDL_CONTROLLER_AXIS_TRIGGERLEFT) * 2;

@@ -433,6 +433,15 @@ extern DECLSPEC Uint8 SDLCALL SDL_JoystickGetButton(SDL_Joystick * joystick,
 extern DECLSPEC int SDLCALL SDL_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms);
 
 /**
+ *  Return whether a joystick has an LED
+ *
+ *  \param joystick The joystick to query
+ *
+ *  \return SDL_TRUE, or SDL_FALSE if this joystick does not have a modifiable LED
+ */
+extern DECLSPEC SDL_bool SDLCALL SDL_JoystickHasLED(SDL_Joystick * joystick);
+
+/**
  *  Update a joystick's LED color.
  *
  *  \param joystick The joystick to update

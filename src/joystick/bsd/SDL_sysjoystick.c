@@ -768,6 +768,12 @@ BSD_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
     return SDL_FALSE;
 }
 
+static SDL_bool
+BSD_JoystickHasLED(SDL_Joystick * joystick)
+{
+    return SDL_FALSE;
+}
+
 static int
 BSD_JoystickSetLED(SDL_Joystick * joystick, Uint8 red, Uint8 green, Uint8 blue)
 {
@@ -786,6 +792,7 @@ SDL_JoystickDriver SDL_BSD_JoystickDriver =
     BSD_JoystickGetDeviceInstanceID,
     BSD_JoystickOpen,
     BSD_JoystickRumble,
+    BSD_JoystickHasLED,
     BSD_JoystickSetLED,
     BSD_JoystickUpdate,
     BSD_JoystickClose,

@@ -1048,6 +1048,20 @@ HIDAPI_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint
     return result;
 }
 
+static SDL_bool
+HIDAPI_JoystickHasLED(SDL_Joystick * joystick)
+{
+    SDL_bool result = SDL_FALSE;
+
+    if (joystick->hwdata) {
+        SDL_HIDAPI_Device *device = joystick->hwdata->device;
+
+        result = device->driver->HasJoystickLED(device, joystick);
+    }
+
+    return result;
+}
+
 static int
 HIDAPI_JoystickSetLED(SDL_Joystick * joystick, Uint8 red, Uint8 green, Uint8 blue)
 {
@@ -1138,6 +1152,7 @@ SDL_JoystickDriver SDL_HIDAPI_JoystickDriver =
     HIDAPI_JoystickGetDeviceInstanceID,
     HIDAPI_JoystickOpen,
     HIDAPI_JoystickRumble,
+    HIDAPI_JoystickHasLED,
     HIDAPI_JoystickSetLED,
     HIDAPI_JoystickUpdate,
     HIDAPI_JoystickClose,

@@ -829,3 +829,7 @@ SDL_DYNAPI_PROC(SDL_bool,SDL_AndroidRequestPermission,(const char *a),(a),return
 #endif
 SDL_DYNAPI_PROC(int,SDL_OpenURL,(const char *a),(a),return)
 SDL_DYNAPI_PROC(SDL_bool,SDL_HasSurfaceRLE,(SDL_Surface *a),(a),return)
+SDL_DYNAPI_PROC(SDL_bool,SDL_GameControllerHasLED,(SDL_GameController *a),(a),return)
+SDL_DYNAPI_PROC(int,SDL_GameControllerSetLED,(SDL_GameController *a, Uint8 b, Uint8 c, Uint8 d),(a,b,c,d),return)
+SDL_DYNAPI_PROC(SDL_bool,SDL_JoystickHasLED,(SDL_Joystick *a),(a),return)
+SDL_DYNAPI_PROC(int,SDL_JoystickSetLED,(SDL_Joystick *a, Uint8 b, Uint8 c, Uint8 d),(a,b,c,d),return)
