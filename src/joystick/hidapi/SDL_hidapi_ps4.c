@@ -80,19 +80,6 @@ typedef struct
 
 typedef struct
 {
-    Uint8 ucLeftJoystickX;
-    Uint8 ucLeftJoystickY;
-    Uint8 ucRightJoystickX;
-    Uint8 ucRightJoystickY;
-    Uint8 ucTriggerLeft;
-    Uint8 ucTriggerRight;
-    Uint8 ucCounter;
-    Uint8 rgucButtonsAndHat[ 3 ];
-    Uint8 rgucUnknown[ 53 ];
-} PS5StatePacket_t;
-
-typedef struct
-{
     Uint8 ucRumbleRight;
     Uint8 ucRumbleLeft;
     Uint8 ucLedRed;
@@ -108,7 +95,6 @@ typedef struct
 } DS4EffectsState_t;
 
 typedef struct {
-    SDL_bool is_PS5;
     SDL_bool is_dongle;
     SDL_bool is_bluetooth;
     SDL_bool audio_supported;
@@ -122,39 +108,9 @@ typedef struct {
     Uint8 led_blue;
     Uint8 volume;
     Uint32 last_volume_check;
-    union
-    {
-        PS4StatePacket_t PS4;
-        PS5StatePacket_t PS5;
-    } last_state;
+    PS4StatePacket_t last_state;
 } SDL_DriverPS4_Context;
 
-
-/* Define this if you want to log all packets from the controller */
-/*#define DEBUG_PS4_PROTOCOL*/
-#define DEBUG_PS4_PROTOCOL
-
-#ifdef DEBUG_PS4_PROTOCOL
-static void
-DumpPacket(const char *prefix, Uint8 *data, int size)
-{
-    int i;
-    char *buffer;
-    size_t length = SDL_strlen(prefix) + 11*(USB_PACKET_LENGTH/8) + (5*USB_PACKET_LENGTH) + 1 + 1;
-
-    buffer = (char *)SDL_malloc(length);
-    SDL_snprintf(buffer, length, prefix, size);
-    for (i = 0; i < size; ++i) {
-        if ((i % 8) == 0) {
-            SDL_snprintf(&buffer[SDL_strlen(buffer)], length - SDL_strlen(buffer), "\n%.2d:      ", i);
-        }
-        SDL_snprintf(&buffer[SDL_strlen(buffer)], length - SDL_strlen(buffer), " 0x%.2x", data[i]);
-    }
-    SDL_strlcat(buffer, "\n", length);
-    SDL_Log("%s", buffer);
-    SDL_free(buffer);
-}
-#endif /* DEBUG_PS4_PROTOCOL */
 
 /* Public domain CRC implementation adapted from:
    http://home.thep.lu.se/~bjorn/crc/crc32_simple.c
@@ -180,18 +136,14 @@ static Uint32 crc32(Uint32 crc, const void *data, int count)
 static SDL_bool
 HIDAPI_DriverPS4_IsSupportedDevice(const char *name, SDL_GameControllerType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
-    return (type == SDL_CONTROLLER_TYPE_PS4 || type == SDL_CONTROLLER_TYPE_PS5);
+    return (type == SDL_CONTROLLER_TYPE_PS4);
 }
 
 static const char *
 HIDAPI_DriverPS4_GetDeviceName(Uint16 vendor_id, Uint16 product_id)
 {
     if (vendor_id == USB_VENDOR_SONY) {
-        if (SDL_IsJoystickPS5(vendor_id, product_id)) {
-            return "PS5 Controller";
-        } else {
-            return "PS4 Controller";
-        }
+        return "PS4 Controller";
     }
     return NULL;
 }
@@ -339,14 +291,6 @@ HIDAPI_DriverPS4_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
         }
     }
 
-    /* Special handling for PS5 controller */
-    ctx->is_PS5 = SDL_IsJoystickPS5(device->vendor_id, device->product_id);
-    if (ctx->is_PS5) {
-        /* Don't know how these work yet... */
-        ctx->audio_supported = SDL_FALSE;
-        ctx->rumble_supported = SDL_FALSE;
-    }
-
     /* Initialize player index (needed for setting LEDs) */
     ctx->player_index = SDL_JoystickGetPlayerIndex(joystick);
 
@@ -424,9 +368,7 @@ HIDAPI_DriverPS4_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystic
 static SDL_bool
 HIDAPI_DriverPS4_HasJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
-    SDL_DriverPS4_Context *ctx = (SDL_DriverPS4_Context *)device->context;
-
-    return ctx->rumble_supported;
+    return SDL_TRUE;
 }
 
 static int
@@ -439,15 +381,16 @@ HIDAPI_DriverPS4_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystic
     ctx->led_green = green;
     ctx->led_blue = blue;
 
+    /* FIXME: Is there a better way to send this without sending another rumble packet? */
     return HIDAPI_DriverPS4_RumbleJoystick(device, joystick, ctx->rumble_left, ctx->rumble_right);
 }
 
 static void
-HIDAPI_DriverPS4_HandleStatePacket(SDL_Joystick *joystick, hid_device *dev, SDL_DriverPS4_Context *ctx, PS4StatePacket_t *packet, int size)
+HIDAPI_DriverPS4_HandleStatePacket(SDL_Joystick *joystick, hid_device *dev, SDL_DriverPS4_Context *ctx, PS4StatePacket_t *packet)
 {
     Sint16 axis;
 
-    if (ctx->last_state.PS4.rgucButtonsHatAndCounter[0] != packet->rgucButtonsHatAndCounter[0]) {
+    if (ctx->last_state.rgucButtonsHatAndCounter[0] != packet->rgucButtonsHatAndCounter[0]) {
         {
             Uint8 data = (packet->rgucButtonsHatAndCounter[0] >> 4);
 
@@ -502,7 +445,7 @@ HIDAPI_DriverPS4_HandleStatePacket(SDL_Joystick *joystick, hid_device *dev, SDL_
         }
     }
 
-    if (ctx->last_state.PS4.rgucButtonsHatAndCounter[1] != packet->rgucButtonsHatAndCounter[1]) {
+    if (ctx->last_state.rgucButtonsHatAndCounter[1] != packet->rgucButtonsHatAndCounter[1]) {
         Uint8 data = packet->rgucButtonsHatAndCounter[1];
 
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_LEFTSHOULDER, (data & 0x01) ? SDL_PRESSED : SDL_RELEASED);
@@ -522,7 +465,7 @@ HIDAPI_DriverPS4_HandleStatePacket(SDL_Joystick *joystick, hid_device *dev, SDL_
 		packet->ucTriggerRight = (data & 0x08) && packet->ucTriggerRight == 0 ? 255 : packet->ucTriggerRight;
 	}
 
-    if (ctx->last_state.PS4.rgucButtonsHatAndCounter[2] != packet->rgucButtonsHatAndCounter[2]) {
+    if (ctx->last_state.rgucButtonsHatAndCounter[2] != packet->rgucButtonsHatAndCounter[2]) {
         Uint8 data = (packet->rgucButtonsHatAndCounter[2] & 0x03);
 
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_GUIDE, (data & 0x01) ? SDL_PRESSED : SDL_RELEASED);
@@ -542,119 +485,23 @@ HIDAPI_DriverPS4_HandleStatePacket(SDL_Joystick *joystick, hid_device *dev, SDL_
     axis = ((int)packet->ucRightJoystickY * 257) - 32768;
     SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_RIGHTY, axis);
 
-    if (size >= 30) {
-        if (packet->ucBatteryLevel & 0x10) {
-            joystick->epowerlevel = SDL_JOYSTICK_POWER_WIRED;
+    if (packet->ucBatteryLevel & 0x10) {
+        joystick->epowerlevel = SDL_JOYSTICK_POWER_WIRED;
+    } else {
+        /* Battery level ranges from 0 to 10 */
+        int level = (packet->ucBatteryLevel & 0xF);
+        if (level == 0) {
+            joystick->epowerlevel = SDL_JOYSTICK_POWER_EMPTY;
+        } else if (level <= 2) {
+            joystick->epowerlevel = SDL_JOYSTICK_POWER_LOW;
+        } else if (level <= 7) {
+            joystick->epowerlevel = SDL_JOYSTICK_POWER_MEDIUM;
         } else {
-            /* Battery level ranges from 0 to 10 */
-            int level = (packet->ucBatteryLevel & 0xF);
-            if (level == 0) {
-                joystick->epowerlevel = SDL_JOYSTICK_POWER_EMPTY;
-            } else if (level <= 2) {
-                joystick->epowerlevel = SDL_JOYSTICK_POWER_LOW;
-            } else if (level <= 7) {
-                joystick->epowerlevel = SDL_JOYSTICK_POWER_MEDIUM;
-            } else {
-                joystick->epowerlevel = SDL_JOYSTICK_POWER_FULL;
-            }
+            joystick->epowerlevel = SDL_JOYSTICK_POWER_FULL;
         }
     }
 
-    SDL_memcpy(&ctx->last_state.PS4, packet, SDL_min(size, sizeof(ctx->last_state.PS4)));
-}
-
-static void
-HIDAPI_DriverPS5_HandleStatePacket(SDL_Joystick *joystick, hid_device *dev, SDL_DriverPS4_Context *ctx, PS5StatePacket_t *packet)
-{
-    Sint16 axis;
-
-    if (ctx->last_state.PS5.rgucButtonsAndHat[0] != packet->rgucButtonsAndHat[0]) {
-        {
-            Uint8 data = (packet->rgucButtonsAndHat[0] >> 4);
-
-            SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_X, (data & 0x01) ? SDL_PRESSED : SDL_RELEASED);
-            SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_A, (data & 0x02) ? SDL_PRESSED : SDL_RELEASED);
-            SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_B, (data & 0x04) ? SDL_PRESSED : SDL_RELEASED);
-            SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_Y, (data & 0x08) ? SDL_PRESSED : SDL_RELEASED);
-        }
-        {
-            Uint8 data = (packet->rgucButtonsAndHat[0] & 0x0F);
-            SDL_bool dpad_up = SDL_FALSE;
-            SDL_bool dpad_down = SDL_FALSE;
-            SDL_bool dpad_left = SDL_FALSE;
-            SDL_bool dpad_right = SDL_FALSE;
-
-            switch (data) {
-            case 0:
-                dpad_up = SDL_TRUE;
-                break;
-            case 1:
-                dpad_up = SDL_TRUE;
-                dpad_right = SDL_TRUE;
-                break;
-            case 2:
-                dpad_right = SDL_TRUE;
-                break;
-            case 3:
-                dpad_right = SDL_TRUE;
-                dpad_down = SDL_TRUE;
-                break;
-            case 4:
-                dpad_down = SDL_TRUE;
-                break;
-            case 5:
-                dpad_left = SDL_TRUE;
-                dpad_down = SDL_TRUE;
-                break;
-            case 6:
-                dpad_left = SDL_TRUE;
-                break;
-            case 7:
-                dpad_up = SDL_TRUE;
-                dpad_left = SDL_TRUE;
-                break;
-            default:
-                break;
-            }
-            SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_DPAD_DOWN, dpad_down);
-            SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_DPAD_UP, dpad_up);
-            SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_DPAD_RIGHT, dpad_right);
-            SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_DPAD_LEFT, dpad_left);
-        }
-    }
-
-    if (ctx->last_state.PS5.rgucButtonsAndHat[1] != packet->rgucButtonsAndHat[1]) {
-        Uint8 data = packet->rgucButtonsAndHat[1];
-
-        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_LEFTSHOULDER, (data & 0x01) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_RIGHTSHOULDER, (data & 0x02) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_BACK, (data & 0x10) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_START, (data & 0x20) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_LEFTSTICK, (data & 0x40) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_RIGHTSTICK, (data & 0x80) ? SDL_PRESSED : SDL_RELEASED);
-    }
-
-    if (ctx->last_state.PS5.rgucButtonsAndHat[2] != packet->rgucButtonsAndHat[2]) {
-        Uint8 data = (packet->rgucButtonsAndHat[2] & 0x03);
-
-        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_GUIDE, (data & 0x01) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_PrivateJoystickButton(joystick, 15, (data & 0x02) ? SDL_PRESSED : SDL_RELEASED);
-    }
-
-    axis = ((int)packet->ucTriggerLeft * 257) - 32768;
-    SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_TRIGGERLEFT, axis);
-    axis = ((int)packet->ucTriggerRight * 257) - 32768;
-    SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_TRIGGERRIGHT, axis);
-    axis = ((int)packet->ucLeftJoystickX * 257) - 32768;
-    SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_LEFTX, axis);
-    axis = ((int)packet->ucLeftJoystickY * 257) - 32768;
-    SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_LEFTY, axis);
-    axis = ((int)packet->ucRightJoystickX * 257) - 32768;
-    SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_RIGHTX, axis);
-    axis = ((int)packet->ucRightJoystickY * 257) - 32768;
-    SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_RIGHTY, axis);
-
-    SDL_memcpy(&ctx->last_state.PS5, packet, sizeof(ctx->last_state.PS5));
+    SDL_memcpy(&ctx->last_state, packet, sizeof(ctx->last_state));
 }
 
 static SDL_bool
@@ -673,20 +520,13 @@ HIDAPI_DriverPS4_UpdateDevice(SDL_HIDAPI_Device *device)
     }
 
     while ((size = hid_read_timeout(device->dev, data, sizeof(data), 0)) > 0) {
-#ifdef DEBUG_PS4_PROTOCOL
-        DumpPacket("PS4 packet: size = %d", data, size);
-#endif
         switch (data[0]) {
         case k_EPS4ReportIdUsbState:
-            if (ctx->is_PS5 && size > 10) {
-                HIDAPI_DriverPS5_HandleStatePacket(joystick, device->dev, ctx, (PS5StatePacket_t *)&data[1]);
-            } else {
-                HIDAPI_DriverPS4_HandleStatePacket(joystick, device->dev, ctx, (PS4StatePacket_t *)&data[1], size - 1);
-            }
+            HIDAPI_DriverPS4_HandleStatePacket(joystick, device->dev, ctx, (PS4StatePacket_t *)&data[1]);
             break;
         case k_EPS4ReportIdBluetoothState:
             /* Bluetooth state packets have two additional bytes at the beginning */
-            HIDAPI_DriverPS4_HandleStatePacket(joystick, device->dev, ctx, (PS4StatePacket_t *)&data[3], size - 3);
+            HIDAPI_DriverPS4_HandleStatePacket(joystick, device->dev, ctx, (PS4StatePacket_t *)&data[3]);
             break;
         default:
 #ifdef DEBUG_JOYSTICK
