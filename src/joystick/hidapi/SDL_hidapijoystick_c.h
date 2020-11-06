@@ -124,6 +124,8 @@ extern void HIDAPI_UpdateDevices(void);
 extern SDL_bool HIDAPI_JoystickConnected(SDL_HIDAPI_Device *device, SDL_JoystickID *pJoystickID, SDL_bool is_external);
 extern void HIDAPI_JoystickDisconnected(SDL_HIDAPI_Device *device, SDL_JoystickID joystickID, SDL_bool is_external);
 
+extern void HIDAPI_DumpPacket(const char *prefix, Uint8 *data, int size);
+
 #endif /* SDL_JOYSTICK_HIDAPI_H */
 
 /* vi: set ts=4 sw=4 expandtab: */

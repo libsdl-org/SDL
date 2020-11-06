@@ -136,7 +136,7 @@ HIDAPI_DriverXbox360W_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joys
     SDL_zeroa(ctx->last_state);
 
     /* Initialize the joystick capabilities */
-    joystick->nbuttons = SDL_CONTROLLER_BUTTON_MAX;
+    joystick->nbuttons = 15;
     joystick->naxes = SDL_CONTROLLER_AXIS_MAX;
     joystick->epowerlevel = SDL_JOYSTICK_POWER_UNKNOWN;
 

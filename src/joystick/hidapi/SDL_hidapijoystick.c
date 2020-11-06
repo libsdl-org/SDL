@@ -390,6 +390,26 @@ HIDAPI_ShutdownDiscovery()
 #endif
 }
 
+void
+HIDAPI_DumpPacket(const char *prefix, Uint8 *data, int size)
+{
+    int i;
+    char *buffer;
+    size_t length = SDL_strlen(prefix) + 11*(USB_PACKET_LENGTH/8) + (5*USB_PACKET_LENGTH) + 1 + 1;
+
+    buffer = (char *)SDL_malloc(length);
+    SDL_snprintf(buffer, length, prefix, size);
+    for (i = 0; i < size; ++i) {
+        if ((i % 8) == 0) {
+            SDL_snprintf(&buffer[SDL_strlen(buffer)], length - SDL_strlen(buffer), "\n%.2d:      ", i);
+        }
+        SDL_snprintf(&buffer[SDL_strlen(buffer)], length - SDL_strlen(buffer), " 0x%.2x", data[i]);
+    }
+    SDL_strlcat(buffer, "\n", length);
+    SDL_Log("%s", buffer);
+    SDL_free(buffer);
+}
+
 static void HIDAPI_JoystickDetect(void);
 static void HIDAPI_JoystickClose(SDL_Joystick * joystick);
 

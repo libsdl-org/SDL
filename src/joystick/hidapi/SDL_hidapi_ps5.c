@@ -68,28 +68,6 @@ typedef struct {
 /* Define this if you want to log all packets from the controller */
 /*#define DEBUG_PS5_PROTOCOL*/
 
-#ifdef DEBUG_PS5_PROTOCOL
-static void
-DumpPacket(const char *prefix, Uint8 *data, int size)
-{
-    int i;
-    char *buffer;
-    size_t length = SDL_strlen(prefix) + 11*(USB_PACKET_LENGTH/8) + (5*USB_PACKET_LENGTH) + 1 + 1;
-
-    buffer = (char *)SDL_malloc(length);
-    SDL_snprintf(buffer, length, prefix, size);
-    for (i = 0; i < size; ++i) {
-        if ((i % 8) == 0) {
-            SDL_snprintf(&buffer[SDL_strlen(buffer)], length - SDL_strlen(buffer), "\n%.2d:      ", i);
-        }
-        SDL_snprintf(&buffer[SDL_strlen(buffer)], length - SDL_strlen(buffer), " 0x%.2x", data[i]);
-    }
-    SDL_strlcat(buffer, "\n", length);
-    SDL_Log("%s", buffer);
-    SDL_free(buffer);
-}
-#endif /* DEBUG_PS5_PROTOCOL */
-
 static SDL_bool
 HIDAPI_DriverPS5_IsSupportedDevice(const char *name, SDL_GameControllerType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
@@ -371,7 +349,7 @@ HIDAPI_DriverPS5_UpdateDevice(SDL_HIDAPI_Device *device)
 
     while ((size = hid_read_timeout(device->dev, data, sizeof(data), 0)) > 0) {
 #ifdef DEBUG_PS5_PROTOCOL
-        DumpPacket("PS5 packet: size = %d", data, size);
+        HIDAPI_DumpPacket("PS5 packet: size = %d", data, size);
 #endif
         switch (data[0]) {
         case 0x01:

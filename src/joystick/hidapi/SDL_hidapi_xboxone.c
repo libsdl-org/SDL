@@ -128,28 +128,6 @@ typedef struct {
 } SDL_DriverXboxOne_Context;
 
 
-#ifdef DEBUG_XBOX_PROTOCOL
-static void
-DumpPacket(const char *prefix, Uint8 *data, int size)
-{
-    int i;
-    char *buffer;
-    size_t length = SDL_strlen(prefix) + 11*(USB_PACKET_LENGTH/8) + (5*USB_PACKET_LENGTH) + 1 + 1;
-
-    buffer = (char *)SDL_malloc(length);
-    SDL_snprintf(buffer, length, prefix, size);
-    for (i = 0; i < size; ++i) {
-        if ((i % 8) == 0) {
-            SDL_snprintf(&buffer[SDL_strlen(buffer)], length - SDL_strlen(buffer), "\n%.2d:      ", i);
-        }
-        SDL_snprintf(&buffer[SDL_strlen(buffer)], length - SDL_strlen(buffer), " 0x%.2x", data[i]);
-    }
-    SDL_strlcat(buffer, "\n", length);
-    SDL_Log("%s", buffer);
-    SDL_free(buffer);
-}
-#endif /* DEBUG_XBOX_PROTOCOL */
-
 static SDL_bool
 IsBluetoothXboxOneController(Uint16 vendor_id, Uint16 product_id)
 {
@@ -167,13 +145,7 @@ IsBluetoothXboxOneController(Uint16 vendor_id, Uint16 product_id)
 static SDL_bool
 ControllerHasPaddles(Uint16 vendor_id, Uint16 product_id)
 {
-    if (vendor_id == USB_VENDOR_MICROSOFT) {
-        if (product_id == USB_PRODUCT_XBOX_ONE_ELITE_SERIES_1 ||
-            product_id == USB_PRODUCT_XBOX_ONE_ELITE_SERIES_2) {
-            return SDL_TRUE;
-        }
-    }
-    return SDL_FALSE;
+    return SDL_IsJoystickXboxOneElite(vendor_id, product_id);
 }
 
 /* Return true if this controller sends the 0x02 "waiting for init" packet */
@@ -244,7 +216,7 @@ SendControllerInit(SDL_HIDAPI_Device *device, SDL_DriverXboxOne_Context *ctx)
 
                 while ((size = hid_read_timeout(device->dev, data, sizeof(data), 0)) > 0) {
 #ifdef DEBUG_XBOX_PROTOCOL
-                    DumpPacket("Xbox One INIT packet: size = %d", data, size);
+                    HIDAPI_DumpPacket("Xbox One INIT packet: size = %d", data, size);
 #endif
                     if (size >= 2 && data[0] == packet->response[0] && data[1] == packet->response[1]) {
                         got_response = SDL_TRUE;
@@ -329,7 +301,7 @@ HIDAPI_DriverXboxOne_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joyst
     ctx->has_paddles = ControllerHasPaddles(ctx->vendor_id, ctx->product_id);
 
     /* Initialize the joystick capabilities */
-    joystick->nbuttons = ctx->has_paddles ? SDL_CONTROLLER_BUTTON_MAX : (SDL_CONTROLLER_BUTTON_MAX + 4);
+    joystick->nbuttons = ctx->has_paddles ? 19 : 15;
     joystick->naxes = SDL_CONTROLLER_AXIS_MAX;
     joystick->epowerlevel = SDL_JOYSTICK_POWER_WIRED;
 
@@ -462,10 +434,10 @@ HIDAPI_DriverXboxOne_HandleStatePacket(SDL_Joystick *joystick, hid_device *dev, 
         }
 
         if (ctx->last_state[paddle_index] != data[paddle_index]) {
-            SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_MAX+0, (data[paddle_index] & button1_bit) ? SDL_PRESSED : SDL_RELEASED);
-            SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_MAX+1, (data[paddle_index] & button2_bit) ? SDL_PRESSED : SDL_RELEASED);
-            SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_MAX+2, (data[paddle_index] & button3_bit) ? SDL_PRESSED : SDL_RELEASED);
-            SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_MAX+3, (data[paddle_index] & button4_bit) ? SDL_PRESSED : SDL_RELEASED);
+            SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_AUX1, (data[paddle_index] & button1_bit) ? SDL_PRESSED : SDL_RELEASED);
+            SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_AUX2, (data[paddle_index] & button2_bit) ? SDL_PRESSED : SDL_RELEASED);
+            SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_AUX3, (data[paddle_index] & button3_bit) ? SDL_PRESSED : SDL_RELEASED);
+            SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_AUX4, (data[paddle_index] & button4_bit) ? SDL_PRESSED : SDL_RELEASED);
         }
     }
 
@@ -740,7 +712,7 @@ HIDAPI_DriverXboxOne_UpdateDevice(SDL_HIDAPI_Device *device)
 
     while ((size = hid_read_timeout(device->dev, data, sizeof(data), 0)) > 0) {
 #ifdef DEBUG_XBOX_PROTOCOL
-        DumpPacket("Xbox One packet: size = %d", data, size);
+        HIDAPI_DumpPacket("Xbox One packet: size = %d", data, size);
 #endif
         if (ctx->bluetooth) {
             switch (data[0]) {

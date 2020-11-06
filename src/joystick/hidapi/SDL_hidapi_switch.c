@@ -38,6 +38,10 @@
 
 #ifdef SDL_JOYSTICK_HIDAPI_SWITCH
 
+/* Define this if you want to log all packets from the controller */
+/*#define DEBUG_SWITCH_PROTOCOL*/
+#define DEBUG_SWITCH_PROTOCOL
+
 /* Define this to get log output for rumble logic */
 /*#define DEBUG_RUMBLE*/
 
@@ -800,7 +804,7 @@ HIDAPI_DriverSwitch_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joysti
                         SDL_GameControllerButtonReportingHintChanged, ctx);
 
     /* Initialize the joystick capabilities */
-    joystick->nbuttons = SDL_CONTROLLER_BUTTON_MAX;
+    joystick->nbuttons = 16;
     joystick->naxes = SDL_CONTROLLER_AXIS_MAX;
     joystick->epowerlevel = SDL_JOYSTICK_POWER_WIRED;
 
@@ -960,6 +964,7 @@ static void HandleInputOnlyControllerState(SDL_Joystick *joystick, SDL_DriverSwi
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_LEFTSTICK, (data & 0x04) ? SDL_PRESSED : SDL_RELEASED);
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_RIGHTSTICK, (data & 0x08) ? SDL_PRESSED : SDL_RELEASED);
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_GUIDE, (data & 0x10) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_AUX1, (data & 0x20) ? SDL_PRESSED : SDL_RELEASED);
     }
 
     if (packet->ucStickHat != ctx->m_lastInputOnlyState.ucStickHat) {
@@ -1058,6 +1063,7 @@ static void HandleSimpleControllerState(SDL_Joystick *joystick, SDL_DriverSwitch
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_LEFTSTICK, (data & 0x04) ? SDL_PRESSED : SDL_RELEASED);
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_RIGHTSTICK, (data & 0x08) ? SDL_PRESSED : SDL_RELEASED);
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_GUIDE, (data & 0x10) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_AUX1, (data & 0x20) ? SDL_PRESSED : SDL_RELEASED);
     }
 
     if (packet->ucStickHat != ctx->m_lastSimpleState.ucStickHat) {
@@ -1142,6 +1148,7 @@ static void HandleFullControllerState(SDL_Joystick *joystick, SDL_DriverSwitch_C
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_LEFTSTICK, (data & 0x08) ? SDL_PRESSED : SDL_RELEASED);
 
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_GUIDE, (data & 0x10) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_AUX1, (data & 0x20) ? SDL_PRESSED : SDL_RELEASED);
     }
 
     if (packet->controllerState.rgucButtons[2] != ctx->m_lastFullState.controllerState.rgucButtons[2]) {
@@ -1210,6 +1217,9 @@ HIDAPI_DriverSwitch_UpdateDevice(SDL_HIDAPI_Device *device)
     }
 
     while ((size = ReadInput(ctx)) > 0) {
+#ifdef DEBUG_SWITCH_PROTOCOL
+        HIDAPI_DumpPacket("Nintendo Switch packet: size = %d", ctx->m_rgucReadBuffer, size);
+#endif
         if (ctx->m_bInputOnly) {
             HandleInputOnlyControllerState(joystick, ctx, (SwitchInputOnlyControllerStatePacket_t *)&ctx->m_rgucReadBuffer[0]);
         } else {
