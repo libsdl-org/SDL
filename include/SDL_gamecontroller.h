@@ -363,7 +363,7 @@ typedef enum
     SDL_CONTROLLER_BUTTON_DPAD_DOWN,
     SDL_CONTROLLER_BUTTON_DPAD_LEFT,
     SDL_CONTROLLER_BUTTON_DPAD_RIGHT,
-    SDL_CONTROLLER_BUTTON_AUX1,	// Xbox Elite paddle, Nintendo Switch Pro capture button
+    SDL_CONTROLLER_BUTTON_AUX1,	// Xbox Elite paddle, PS4/PS5 touchpad button, Nintendo Switch Pro capture button
     SDL_CONTROLLER_BUTTON_AUX2,	// Xbox Elite paddle
     SDL_CONTROLLER_BUTTON_AUX3,	// Xbox Elite paddle
     SDL_CONTROLLER_BUTTON_AUX4,	// Xbox Elite paddle
