@@ -493,6 +493,7 @@ extern "C" {
  *      XboxOne
  *      PS3
  *      PS4
+ *      PS5
  *      SwitchPro
  *
  *  This hint affects what driver is used, and must be set before calling SDL_Init(SDL_INIT_GAMECONTROLLER)
@@ -602,6 +603,17 @@ extern "C" {
  *  The default is the value of SDL_HINT_JOYSTICK_HIDAPI
  */
 #define SDL_HINT_JOYSTICK_HIDAPI_PS4 "SDL_JOYSTICK_HIDAPI_PS4"
+
+/**
+ *  \brief  A variable controlling whether the HIDAPI driver for PS5 controllers should be used.
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - HIDAPI driver is not used
+ *    "1"       - HIDAPI driver is used
+ *
+ *  The default is the value of SDL_HINT_JOYSTICK_HIDAPI
+ */
+#define SDL_HINT_JOYSTICK_HIDAPI_PS5 "SDL_JOYSTICK_HIDAPI_PS5"
 
 /**
  *  \brief  A variable controlling whether extended input reports should be used for PS4 controllers when using the HIDAPI driver.

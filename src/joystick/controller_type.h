@@ -629,6 +629,10 @@ static SDL_INLINE EControllerType GuessControllerType( int nVID, int nPID )
 		{
 			return k_eControllerType_PS4Controller;
 		}
+		if ( SDL_strncasecmp( pszOverride, "PS5", 3 ) == 0 )
+		{
+			return k_eControllerType_PS5Controller;
+		}
 		if ( SDL_strncasecmp( pszOverride, "SwitchPro", 9 ) == 0 )
 		{
 			return k_eControllerType_SwitchProController;
