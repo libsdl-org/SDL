@@ -128,8 +128,6 @@
 		F3A494F72555E80E00E92A8B /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A492E52555E1F100E92A8B /* libSDL2.a */; };
 		F3A494F92555E83D00E92A8B /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A494F82555E83D00E92A8B /* CoreBluetooth.framework */; };
 		F3A494FA2555E85600E92A8B /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A494F82555E83D00E92A8B /* CoreBluetooth.framework */; };
-		F3A494FB2555E86200E92A8B /* hidapi.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A492F32555E1F100E92A8B /* hidapi.framework */; };
-		F3A494FC2555E87500E92A8B /* hidapi.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A492F52555E1F100E92A8B /* hidapi.framework */; };
 		F3A494FD2555E89700E92A8B /* CoreHaptics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A493AB2555E30000E92A8B /* CoreHaptics.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		F3A494FE2555E8AA00E92A8B /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A492E52555E1F100E92A8B /* libSDL2.a */; };
 		F3A494FF2555E8B300E92A8B /* CoreHaptics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A493AB2555E30000E92A8B /* CoreHaptics.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
@@ -167,6 +165,10 @@
 		F3A4951F2555EB2D00E92A8B /* CoreHaptics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A493AB2555E30000E92A8B /* CoreHaptics.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		F3A4953D2555EB8100E92A8B /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A4953C2555EB8100E92A8B /* AVFoundation.framework */; };
 		F3A4955A2555EB9500E92A8B /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A494682555E42B00E92A8B /* Metal.framework */; };
+		F3A498732556005300E92A8B /* hidapi.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A492F32555E1F100E92A8B /* hidapi.framework */; };
+		F3A498742556005300E92A8B /* hidapi.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F3A492F32555E1F100E92A8B /* hidapi.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		F3A498762556005D00E92A8B /* hidapi.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A492F52555E1F100E92A8B /* hidapi.framework */; };
+		F3A498772556005D00E92A8B /* hidapi.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F3A492F52555E1F100E92A8B /* hidapi.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F3F758D322AC561A001D97F2 /* libSDL2test.a in Frameworks */ = {isa = PBXBuildFile; fileRef = AA1EE452176059230029C7A5 /* libSDL2test.a */; };
 		F3F758D422AC575F001D97F2 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AA2F57A91FDB544800832AD7 /* Metal.framework */; };
 		F3F758D522AC57D8001D97F2 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AA2F57A91FDB544800832AD7 /* Metal.framework */; };
@@ -570,6 +572,31 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		F3A498752556005300E92A8B /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				F3A498742556005300E92A8B /* hidapi.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F3A498782556005D00E92A8B /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				F3A498772556005D00E92A8B /* hidapi.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		046CEF8613254F23007AD51D /* testgesture.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = testgesture.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		046CEF8913254F63007AD51D /* testgesture.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testgesture.c; sourceTree = "<group>"; };
@@ -579,7 +606,6 @@
 		56ED050D118A8FE400A56AA6 /* testpower.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = testpower.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		56ED0510118A904200A56AA6 /* testpower.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testpower.c; sourceTree = "<group>"; };
 		75E09187241EACB9004729E1 /* CoreBluetooth.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreBluetooth.framework; path = System/Library/Frameworks/CoreBluetooth.framework; sourceTree = SDKROOT; };
-		75E09195241EACC9004729E1 /* CoreBluetooth.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreBluetooth.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS13.2.sdk/System/Library/Frameworks/CoreBluetooth.framework; sourceTree = DEVELOPER_DIR; };
 		AA13B3261FB8AEBC00D9FEE6 /* testyuv.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = testyuv.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA13B32E1FB8AF0C00D9FEE6 /* testyuv.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; path = testyuv.bmp; sourceTree = "<group>"; };
 		AA13B35B1FB8B4D600D9FEE6 /* testyuv.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testyuv.c; sourceTree = "<group>"; };
@@ -596,7 +622,6 @@
 		F3A494682555E42B00E92A8B /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS14.0.sdk/System/Library/Frameworks/Metal.framework; sourceTree = DEVELOPER_DIR; };
 		F3A494F82555E83D00E92A8B /* CoreBluetooth.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreBluetooth.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS14.0.sdk/System/Library/Frameworks/CoreBluetooth.framework; sourceTree = DEVELOPER_DIR; };
 		F3A4953C2555EB8100E92A8B /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS14.0.sdk/System/Library/Frameworks/AVFoundation.framework; sourceTree = DEVELOPER_DIR; };
-		F3F758D722AC58A1001D97F2 /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS12.2.sdk/System/Library/Frameworks/Metal.framework; sourceTree = DEVELOPER_DIR; };
 		FA0EF2221BAF43DE000E07A6 /* testgamecontroller.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testgamecontroller.c; sourceTree = "<group>"; };
 		FA0EF2281BAF4487000E07A6 /* axis.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; path = axis.bmp; sourceTree = "<group>"; };
 		FA0EF2291BAF4487000E07A6 /* button.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; path = button.bmp; sourceTree = "<group>"; };
@@ -819,7 +844,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F3A494F52555E7F800E92A8B /* libSDL2.a in Frameworks */,
-				F3A494FC2555E87500E92A8B /* hidapi.framework in Frameworks */,
+				F3A498762556005D00E92A8B /* hidapi.framework in Frameworks */,
 				FA3D994A1BC4E6AD002C96C8 /* AudioToolbox.framework in Frameworks */,
 				F3A4953D2555EB8100E92A8B /* AVFoundation.framework in Frameworks */,
 				FA3D99501BC4E6AD002C96C8 /* CoreAudio.framework in Frameworks */,
@@ -881,11 +906,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				F3A4938E2555E2D500E92A8B /* libSDL2.a in Frameworks */,
-				F3A494FB2555E86200E92A8B /* hidapi.framework in Frameworks */,
 				FAE0E9891BAF9B230098DFA4 /* AudioToolbox.framework in Frameworks */,
 				FABA34AE1D8B58B200915323 /* AVFoundation.framework in Frameworks */,
 				FAE0E98F1BAF9B230098DFA4 /* CoreAudio.framework in Frameworks */,
 				75E0919B241EACEA004729E1 /* CoreBluetooth.framework in Frameworks */,
+				F3A498732556005300E92A8B /* hidapi.framework in Frameworks */,
 				FAE0E98C1BAF9B230098DFA4 /* CoreGraphics.framework in Frameworks */,
 				F3A493AC2555E30000E92A8B /* CoreHaptics.framework in Frameworks */,
 				FAE0E9881BAF9B230098DFA4 /* CoreMotion.framework in Frameworks */,
@@ -1393,8 +1418,6 @@
 				F3A493AB2555E30000E92A8B /* CoreHaptics.framework */,
 				F3A494242555E3D100E92A8B /* CoreHaptics.framework */,
 				75E09187241EACB9004729E1 /* CoreBluetooth.framework */,
-				75E09195241EACC9004729E1 /* CoreBluetooth.framework */,
-				F3F758D722AC58A1001D97F2 /* Metal.framework */,
 				FA684F7A1BAF1A4400DCFD1A /* GameController.framework */,
 				FA8B4BAC1967076F00F8EB7C /* CoreMotion.framework */,
 				FDA8A8980E2D111A00EA573E /* AudioToolbox.framework */,
@@ -1555,6 +1578,7 @@
 				FA3D99301BC4E644002C96C8 /* Sources */,
 				FA3D99311BC4E644002C96C8 /* Frameworks */,
 				FA3D99321BC4E644002C96C8 /* Resources */,
+				F3A498782556005D00E92A8B /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -1606,6 +1630,7 @@
 				FAE0E9811BAF9B230098DFA4 /* Resources */,
 				FAE0E9831BAF9B230098DFA4 /* Sources */,
 				FAE0E9851BAF9B230098DFA4 /* Frameworks */,
+				F3A498752556005300E92A8B /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -2887,6 +2912,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				INFOPLIST_FILE = Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -2895,6 +2921,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				INFOPLIST_FILE = Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
