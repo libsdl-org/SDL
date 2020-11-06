@@ -26,5 +26,9 @@
 	<string>1.0</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>Steam Link would like to use Bluetooth controllers for input.</string>
+	<key>NSBluetoothPeripheralUsageDescription</key>
+	<string>Steam Link would like to use Bluetooth controllers for input.</string>
 </dict>
 </plist>

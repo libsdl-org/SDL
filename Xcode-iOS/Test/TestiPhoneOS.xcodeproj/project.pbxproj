@@ -33,32 +33,6 @@
 		56ED0508118A8FE400A56AA6 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FDA8A89D0E2D111A00EA573E /* Foundation.framework */; };
 		56ED0509118A8FE400A56AA6 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FDA8A89E0E2D111A00EA573E /* CoreAudio.framework */; };
 		56ED0511118A904200A56AA6 /* testpower.c in Sources */ = {isa = PBXBuildFile; fileRef = 56ED0510118A904200A56AA6 /* testpower.c */; };
-		75E09192241EACB9004729E1 /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75E09187241EACB9004729E1 /* CoreBluetooth.framework */; };
-		75E09193241EACBE004729E1 /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75E09187241EACB9004729E1 /* CoreBluetooth.framework */; };
-		75E09194241EACC3004729E1 /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75E09187241EACB9004729E1 /* CoreBluetooth.framework */; };
-		75E09197241EACD3004729E1 /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75E09187241EACB9004729E1 /* CoreBluetooth.framework */; };
-		75E09198241EACD9004729E1 /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75E09187241EACB9004729E1 /* CoreBluetooth.framework */; };
-		75E09199241EACDF004729E1 /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75E09187241EACB9004729E1 /* CoreBluetooth.framework */; };
-		75E0919A241EACE5004729E1 /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75E09187241EACB9004729E1 /* CoreBluetooth.framework */; };
-		75E0919B241EACEA004729E1 /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75E09187241EACB9004729E1 /* CoreBluetooth.framework */; };
-		75E0919D241EACF7004729E1 /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75E09187241EACB9004729E1 /* CoreBluetooth.framework */; };
-		75E0919E241EAD14004729E1 /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75E09187241EACB9004729E1 /* CoreBluetooth.framework */; };
-		75E0919F241EAD19004729E1 /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75E09187241EACB9004729E1 /* CoreBluetooth.framework */; };
-		75E091A0241EAD21004729E1 /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75E09187241EACB9004729E1 /* CoreBluetooth.framework */; };
-		75E091A1241EAD26004729E1 /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75E09187241EACB9004729E1 /* CoreBluetooth.framework */; };
-		75E091A2241EAD2B004729E1 /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75E09187241EACB9004729E1 /* CoreBluetooth.framework */; };
-		75E091A3241EAD31004729E1 /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75E09187241EACB9004729E1 /* CoreBluetooth.framework */; };
-		75E091A4241EAD35004729E1 /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75E09187241EACB9004729E1 /* CoreBluetooth.framework */; };
-		75E091A5241EAD3B004729E1 /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75E09187241EACB9004729E1 /* CoreBluetooth.framework */; };
-		75E091A6241EAD3F004729E1 /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75E09187241EACB9004729E1 /* CoreBluetooth.framework */; };
-		75E091A7241EAD45004729E1 /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75E09187241EACB9004729E1 /* CoreBluetooth.framework */; };
-		75E091A8241EAD4A004729E1 /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75E09187241EACB9004729E1 /* CoreBluetooth.framework */; };
-		75E091A9241EAD4F004729E1 /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75E09187241EACB9004729E1 /* CoreBluetooth.framework */; };
-		75E091AA241EAD55004729E1 /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75E09187241EACB9004729E1 /* CoreBluetooth.framework */; };
-		75E091AB241EAD5B004729E1 /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75E09187241EACB9004729E1 /* CoreBluetooth.framework */; };
-		75E091AC241EAD61004729E1 /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75E09187241EACB9004729E1 /* CoreBluetooth.framework */; };
-		75E091AD241EAD65004729E1 /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75E09187241EACB9004729E1 /* CoreBluetooth.framework */; };
-		75E091AE241EAD6B004729E1 /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75E09187241EACB9004729E1 /* CoreBluetooth.framework */; };
 		AA13B3171FB8AEBC00D9FEE6 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FABA34761D8B4EAD00915323 /* AVFoundation.framework */; };
 		AA13B3181FB8AEBC00D9FEE6 /* libSDL2test.a in Frameworks */ = {isa = PBXBuildFile; fileRef = AA1EE452176059230029C7A5 /* libSDL2test.a */; };
 		AA13B31A1FB8AEBC00D9FEE6 /* GameController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA684F7A1BAF1A4400DCFD1A /* GameController.framework */; };
@@ -126,8 +100,6 @@
 		F3A494F52555E7F800E92A8B /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A492E72555E1F100E92A8B /* libSDL2.a */; };
 		F3A494F62555E7FE00E92A8B /* CoreHaptics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A494242555E3D100E92A8B /* CoreHaptics.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		F3A494F72555E80E00E92A8B /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A492E52555E1F100E92A8B /* libSDL2.a */; };
-		F3A494F92555E83D00E92A8B /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A494F82555E83D00E92A8B /* CoreBluetooth.framework */; };
-		F3A494FA2555E85600E92A8B /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A494F82555E83D00E92A8B /* CoreBluetooth.framework */; };
 		F3A494FD2555E89700E92A8B /* CoreHaptics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A493AB2555E30000E92A8B /* CoreHaptics.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		F3A494FE2555E8AA00E92A8B /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A492E52555E1F100E92A8B /* libSDL2.a */; };
 		F3A494FF2555E8B300E92A8B /* CoreHaptics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A493AB2555E30000E92A8B /* CoreHaptics.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
@@ -165,9 +137,9 @@
 		F3A4951F2555EB2D00E92A8B /* CoreHaptics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A493AB2555E30000E92A8B /* CoreHaptics.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		F3A4953D2555EB8100E92A8B /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A4953C2555EB8100E92A8B /* AVFoundation.framework */; };
 		F3A4955A2555EB9500E92A8B /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A494682555E42B00E92A8B /* Metal.framework */; };
-		F3A498732556005300E92A8B /* hidapi.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A492F32555E1F100E92A8B /* hidapi.framework */; };
+		F3A498732556005300E92A8B /* hidapi.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A492F32555E1F100E92A8B /* hidapi.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		F3A498742556005300E92A8B /* hidapi.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F3A492F32555E1F100E92A8B /* hidapi.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		F3A498762556005D00E92A8B /* hidapi.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A492F52555E1F100E92A8B /* hidapi.framework */; };
+		F3A498762556005D00E92A8B /* hidapi.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A492F52555E1F100E92A8B /* hidapi.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		F3A498772556005D00E92A8B /* hidapi.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F3A492F52555E1F100E92A8B /* hidapi.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F3F758D322AC561A001D97F2 /* libSDL2test.a in Frameworks */ = {isa = PBXBuildFile; fileRef = AA1EE452176059230029C7A5 /* libSDL2test.a */; };
 		F3F758D422AC575F001D97F2 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AA2F57A91FDB544800832AD7 /* Metal.framework */; };
@@ -695,7 +667,6 @@
 				046CEF7C13254F23007AD51D /* AudioToolbox.framework in Frameworks */,
 				FABA34B51D8B5B8400915323 /* AVFoundation.framework in Frameworks */,
 				046CEF8213254F23007AD51D /* CoreAudio.framework in Frameworks */,
-				75E0919D241EACF7004729E1 /* CoreBluetooth.framework in Frameworks */,
 				046CEF7F13254F23007AD51D /* CoreGraphics.framework in Frameworks */,
 				F3A494FD2555E89700E92A8B /* CoreHaptics.framework in Frameworks */,
 				FA8B4BD1196766C900F8EB7C /* CoreMotion.framework in Frameworks */,
@@ -717,7 +688,6 @@
 				047A63E313285C3200CD7973 /* AudioToolbox.framework in Frameworks */,
 				FABA34B01D8B5B6400915323 /* AVFoundation.framework in Frameworks */,
 				047A63E913285C3200CD7973 /* CoreAudio.framework in Frameworks */,
-				75E09192241EACB9004729E1 /* CoreBluetooth.framework in Frameworks */,
 				047A63E613285C3200CD7973 /* CoreGraphics.framework in Frameworks */,
 				F3A494022555E37A00E92A8B /* CoreHaptics.framework in Frameworks */,
 				FA8B4BAD1967076F00F8EB7C /* CoreMotion.framework in Frameworks */,
@@ -739,7 +709,6 @@
 				FDA8A89F0E2D111A00EA573E /* AudioToolbox.framework in Frameworks */,
 				FABA34C41D8B5BCB00915323 /* AVFoundation.framework in Frameworks */,
 				FDA8A8A50E2D111A00EA573E /* CoreAudio.framework in Frameworks */,
-				75E091AC241EAD61004729E1 /* CoreBluetooth.framework in Frameworks */,
 				FDA8A8A20E2D111A00EA573E /* CoreGraphics.framework in Frameworks */,
 				F3A4951B2555EAE200E92A8B /* CoreHaptics.framework in Frameworks */,
 				FA8B4BE0196766F400F8EB7C /* CoreMotion.framework in Frameworks */,
@@ -760,7 +729,6 @@
 				56ED0503118A8FE400A56AA6 /* AudioToolbox.framework in Frameworks */,
 				FABA34BC1D8B5BA600915323 /* AVFoundation.framework in Frameworks */,
 				56ED0509118A8FE400A56AA6 /* CoreAudio.framework in Frameworks */,
-				75E091A4241EAD35004729E1 /* CoreBluetooth.framework in Frameworks */,
 				56ED0506118A8FE400A56AA6 /* CoreGraphics.framework in Frameworks */,
 				F3A4950B2555EA2300E92A8B /* CoreHaptics.framework in Frameworks */,
 				FA8B4BD8196766DD00F8EB7C /* CoreMotion.framework in Frameworks */,
@@ -782,7 +750,6 @@
 				AA13B31C1FB8AEBC00D9FEE6 /* AudioToolbox.framework in Frameworks */,
 				AA13B3171FB8AEBC00D9FEE6 /* AVFoundation.framework in Frameworks */,
 				AA13B3221FB8AEBC00D9FEE6 /* CoreAudio.framework in Frameworks */,
-				75E091AD241EAD65004729E1 /* CoreBluetooth.framework in Frameworks */,
 				AA13B31F1FB8AEBC00D9FEE6 /* CoreGraphics.framework in Frameworks */,
 				F3A4951D2555EB1300E92A8B /* CoreHaptics.framework in Frameworks */,
 				AA13B31B1FB8AEBC00D9FEE6 /* CoreMotion.framework in Frameworks */,
@@ -804,7 +771,6 @@
 				AAE7DEE214CBB1E100DF1A0E /* AudioToolbox.framework in Frameworks */,
 				FABA34BE1D8B5BB000915323 /* AVFoundation.framework in Frameworks */,
 				AAE7DEE814CBB1E100DF1A0E /* CoreAudio.framework in Frameworks */,
-				75E091A6241EAD3F004729E1 /* CoreBluetooth.framework in Frameworks */,
 				AAE7DEE514CBB1E100DF1A0E /* CoreGraphics.framework in Frameworks */,
 				F3A4950F2555EA6400E92A8B /* CoreHaptics.framework in Frameworks */,
 				FA8B4BDA196766E200F8EB7C /* CoreMotion.framework in Frameworks */,
@@ -826,7 +792,6 @@
 				AAE7DFA714CBB54E00DF1A0E /* AudioToolbox.framework in Frameworks */,
 				FABA34BD1D8B5BAB00915323 /* AVFoundation.framework in Frameworks */,
 				AAE7DFAD14CBB54E00DF1A0E /* CoreAudio.framework in Frameworks */,
-				75E091A5241EAD3B004729E1 /* CoreBluetooth.framework in Frameworks */,
 				AAE7DFAA14CBB54E00DF1A0E /* CoreGraphics.framework in Frameworks */,
 				F3A4950D2555EA3D00E92A8B /* CoreHaptics.framework in Frameworks */,
 				FA8B4BD9196766E000F8EB7C /* CoreMotion.framework in Frameworks */,
@@ -848,7 +813,6 @@
 				FA3D994A1BC4E6AD002C96C8 /* AudioToolbox.framework in Frameworks */,
 				F3A4953D2555EB8100E92A8B /* AVFoundation.framework in Frameworks */,
 				FA3D99501BC4E6AD002C96C8 /* CoreAudio.framework in Frameworks */,
-				F3A494FA2555E85600E92A8B /* CoreBluetooth.framework in Frameworks */,
 				FA3D994D1BC4E6AD002C96C8 /* CoreGraphics.framework in Frameworks */,
 				F3A494F62555E7FE00E92A8B /* CoreHaptics.framework in Frameworks */,
 				FA3D994F1BC4E6AD002C96C8 /* Foundation.framework in Frameworks */,
@@ -868,7 +832,6 @@
 				FABA34871D8B575200915323 /* AudioToolbox.framework in Frameworks */,
 				FABA34831D8B575200915323 /* AVFoundation.framework in Frameworks */,
 				FABA348D1D8B575200915323 /* CoreAudio.framework in Frameworks */,
-				75E09193241EACBE004729E1 /* CoreBluetooth.framework in Frameworks */,
 				FABA348A1D8B575200915323 /* CoreGraphics.framework in Frameworks */,
 				F3A494202555E39E00E92A8B /* CoreHaptics.framework in Frameworks */,
 				FABA34861D8B575200915323 /* CoreMotion.framework in Frameworks */,
@@ -889,7 +852,6 @@
 				FABA34A01D8B582100915323 /* AudioToolbox.framework in Frameworks */,
 				FABA349C1D8B582100915323 /* AVFoundation.framework in Frameworks */,
 				FABA34A61D8B582100915323 /* CoreAudio.framework in Frameworks */,
-				F3A494F92555E83D00E92A8B /* CoreBluetooth.framework in Frameworks */,
 				FABA34A31D8B582100915323 /* CoreGraphics.framework in Frameworks */,
 				F3A494252555E3D100E92A8B /* CoreHaptics.framework in Frameworks */,
 				FABA34A51D8B582100915323 /* Foundation.framework in Frameworks */,
@@ -906,11 +868,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				F3A4938E2555E2D500E92A8B /* libSDL2.a in Frameworks */,
+				F3A498732556005300E92A8B /* hidapi.framework in Frameworks */,
 				FAE0E9891BAF9B230098DFA4 /* AudioToolbox.framework in Frameworks */,
 				FABA34AE1D8B58B200915323 /* AVFoundation.framework in Frameworks */,
 				FAE0E98F1BAF9B230098DFA4 /* CoreAudio.framework in Frameworks */,
-				75E0919B241EACEA004729E1 /* CoreBluetooth.framework in Frameworks */,
-				F3A498732556005300E92A8B /* hidapi.framework in Frameworks */,
 				FAE0E98C1BAF9B230098DFA4 /* CoreGraphics.framework in Frameworks */,
 				F3A493AC2555E30000E92A8B /* CoreHaptics.framework in Frameworks */,
 				FAE0E9881BAF9B230098DFA4 /* CoreMotion.framework in Frameworks */,
@@ -931,7 +892,6 @@
 				FDA8AAB10E2D330F00EA573E /* AudioToolbox.framework in Frameworks */,
 				FABA34771D8B4EAD00915323 /* AVFoundation.framework in Frameworks */,
 				FDA8AAB70E2D330F00EA573E /* CoreAudio.framework in Frameworks */,
-				75E09194241EACC3004729E1 /* CoreBluetooth.framework in Frameworks */,
 				FDA8AAB40E2D330F00EA573E /* CoreGraphics.framework in Frameworks */,
 				F3A494222555E3B700E92A8B /* CoreHaptics.framework in Frameworks */,
 				FA8B4BC9196766BC00F8EB7C /* CoreMotion.framework in Frameworks */,
@@ -952,7 +912,6 @@
 				FDAAC3C30E2D47E6001DB1D8 /* AudioToolbox.framework in Frameworks */,
 				FABA34B11D8B5B6C00915323 /* AVFoundation.framework in Frameworks */,
 				FDAAC3C90E2D47E6001DB1D8 /* CoreAudio.framework in Frameworks */,
-				75E09197241EACD3004729E1 /* CoreBluetooth.framework in Frameworks */,
 				FDAAC3C60E2D47E6001DB1D8 /* CoreGraphics.framework in Frameworks */,
 				F3A494D22555E75B00E92A8B /* CoreHaptics.framework in Frameworks */,
 				FA8B4BCD196766BF00F8EB7C /* CoreMotion.framework in Frameworks */,
@@ -973,7 +932,6 @@
 				FDAAC5910E2D5429001DB1D8 /* AudioToolbox.framework in Frameworks */,
 				FABA34B31D8B5B7800915323 /* AVFoundation.framework in Frameworks */,
 				FDAAC5970E2D5429001DB1D8 /* CoreAudio.framework in Frameworks */,
-				75E09199241EACDF004729E1 /* CoreBluetooth.framework in Frameworks */,
 				FDAAC5940E2D5429001DB1D8 /* CoreGraphics.framework in Frameworks */,
 				F3A494F22555E7B900E92A8B /* CoreHaptics.framework in Frameworks */,
 				FA8B4BCF196766C400F8EB7C /* CoreMotion.framework in Frameworks */,
@@ -994,7 +952,6 @@
 				FDAAC5BF0E2D55B5001DB1D8 /* AudioToolbox.framework in Frameworks */,
 				FABA34B41D8B5B7C00915323 /* AVFoundation.framework in Frameworks */,
 				FDAAC5C50E2D55B5001DB1D8 /* CoreAudio.framework in Frameworks */,
-				75E0919A241EACE5004729E1 /* CoreBluetooth.framework in Frameworks */,
 				FDAAC5C20E2D55B5001DB1D8 /* CoreGraphics.framework in Frameworks */,
 				F3A494F42555E7D800E92A8B /* CoreHaptics.framework in Frameworks */,
 				FA8B4BD0196766C600F8EB7C /* CoreMotion.framework in Frameworks */,
@@ -1016,7 +973,6 @@
 				FDAAC61C0E2D5914001DB1D8 /* AudioToolbox.framework in Frameworks */,
 				FABA34B61D8B5B8900915323 /* AVFoundation.framework in Frameworks */,
 				FDAAC6220E2D5914001DB1D8 /* CoreAudio.framework in Frameworks */,
-				75E0919E241EAD14004729E1 /* CoreBluetooth.framework in Frameworks */,
 				F3A494FF2555E8B300E92A8B /* CoreHaptics.framework in Frameworks */,
 				FDAAC61F0E2D5914001DB1D8 /* CoreGraphics.framework in Frameworks */,
 				FA8B4BD2196766CB00F8EB7C /* CoreMotion.framework in Frameworks */,
@@ -1038,7 +994,6 @@
 				FDC42FF60F0D866D009C87E1 /* AudioToolbox.framework in Frameworks */,
 				FABA34B21D8B5B7300915323 /* AVFoundation.framework in Frameworks */,
 				FDC42FFC0F0D866D009C87E1 /* CoreAudio.framework in Frameworks */,
-				75E09198241EACD9004729E1 /* CoreBluetooth.framework in Frameworks */,
 				FDC42FF90F0D866D009C87E1 /* CoreGraphics.framework in Frameworks */,
 				F3A494D42555E77400E92A8B /* CoreHaptics.framework in Frameworks */,
 				FA8B4BCE196766C100F8EB7C /* CoreMotion.framework in Frameworks */,
@@ -1059,7 +1014,6 @@
 				FDD2C1000E2E4F4B00B7A85F /* AudioToolbox.framework in Frameworks */,
 				FABA34C11D8B5BBE00915323 /* AVFoundation.framework in Frameworks */,
 				FDD2C1060E2E4F4B00B7A85F /* CoreAudio.framework in Frameworks */,
-				75E091A9241EAD4F004729E1 /* CoreBluetooth.framework in Frameworks */,
 				FDD2C1030E2E4F4B00B7A85F /* CoreGraphics.framework in Frameworks */,
 				F3A495152555EAA100E92A8B /* CoreHaptics.framework in Frameworks */,
 				FA8B4BDD196766EB00F8EB7C /* CoreMotion.framework in Frameworks */,
@@ -1080,7 +1034,6 @@
 				FDD2C1770E2E52C000B7A85F /* AudioToolbox.framework in Frameworks */,
 				FABA34B71D8B5B8D00915323 /* AVFoundation.framework in Frameworks */,
 				FDD2C17D0E2E52C000B7A85F /* CoreAudio.framework in Frameworks */,
-				75E0919F241EAD19004729E1 /* CoreBluetooth.framework in Frameworks */,
 				FDD2C17A0E2E52C000B7A85F /* CoreGraphics.framework in Frameworks */,
 				F3A495012555E8D200E92A8B /* CoreHaptics.framework in Frameworks */,
 				FA8B4BD3196766CE00F8EB7C /* CoreMotion.framework in Frameworks */,
@@ -1101,7 +1054,6 @@
 				FDD2C19B0E2E534F00B7A85F /* AudioToolbox.framework in Frameworks */,
 				FABA34B81D8B5B9200915323 /* AVFoundation.framework in Frameworks */,
 				FDD2C1A10E2E534F00B7A85F /* CoreAudio.framework in Frameworks */,
-				75E091A0241EAD21004729E1 /* CoreBluetooth.framework in Frameworks */,
 				FDD2C19E0E2E534F00B7A85F /* CoreGraphics.framework in Frameworks */,
 				F3A495032555E9C600E92A8B /* CoreHaptics.framework in Frameworks */,
 				FA8B4BD4196766D100F8EB7C /* CoreMotion.framework in Frameworks */,
@@ -1122,7 +1074,6 @@
 				FDD2C4540E2E773800B7A85F /* AudioToolbox.framework in Frameworks */,
 				FABA34B91D8B5B9600915323 /* AVFoundation.framework in Frameworks */,
 				FDD2C45A0E2E773800B7A85F /* CoreAudio.framework in Frameworks */,
-				75E091A1241EAD26004729E1 /* CoreBluetooth.framework in Frameworks */,
 				FDD2C4570E2E773800B7A85F /* CoreGraphics.framework in Frameworks */,
 				F3A495052555E9E000E92A8B /* CoreHaptics.framework in Frameworks */,
 				FA8B4BD5196766D400F8EB7C /* CoreMotion.framework in Frameworks */,
@@ -1143,7 +1094,6 @@
 				FDD2C4720E2E77D700B7A85F /* AudioToolbox.framework in Frameworks */,
 				FABA34BA1D8B5B9B00915323 /* AVFoundation.framework in Frameworks */,
 				FDD2C4780E2E77D700B7A85F /* CoreAudio.framework in Frameworks */,
-				75E091A2241EAD2B004729E1 /* CoreBluetooth.framework in Frameworks */,
 				FDD2C4750E2E77D700B7A85F /* CoreGraphics.framework in Frameworks */,
 				F3A495072555E9F700E92A8B /* CoreHaptics.framework in Frameworks */,
 				FA8B4BD6196766D700F8EB7C /* CoreMotion.framework in Frameworks */,
@@ -1164,7 +1114,6 @@
 				FDD2C5010E2E7F4800B7A85F /* AudioToolbox.framework in Frameworks */,
 				FABA34BB1D8B5BA100915323 /* AVFoundation.framework in Frameworks */,
 				FDD2C5070E2E7F4800B7A85F /* CoreAudio.framework in Frameworks */,
-				75E091A3241EAD31004729E1 /* CoreBluetooth.framework in Frameworks */,
 				FDD2C5040E2E7F4800B7A85F /* CoreGraphics.framework in Frameworks */,
 				F3A495092555EA1200E92A8B /* CoreHaptics.framework in Frameworks */,
 				FA8B4BD7196766DA00F8EB7C /* CoreMotion.framework in Frameworks */,
@@ -1185,7 +1134,6 @@
 				FDD2C51F0E2E807600B7A85F /* AudioToolbox.framework in Frameworks */,
 				FABA34BF1D8B5BB500915323 /* AVFoundation.framework in Frameworks */,
 				FDD2C5250E2E807600B7A85F /* CoreAudio.framework in Frameworks */,
-				75E091A7241EAD45004729E1 /* CoreBluetooth.framework in Frameworks */,
 				FDD2C5220E2E807600B7A85F /* CoreGraphics.framework in Frameworks */,
 				F3A495112555EA7B00E92A8B /* CoreHaptics.framework in Frameworks */,
 				FA8B4BDB196766E500F8EB7C /* CoreMotion.framework in Frameworks */,
@@ -1207,7 +1155,6 @@
 				FDD2C5440E2E80E400B7A85F /* AudioToolbox.framework in Frameworks */,
 				FABA34C01D8B5BBA00915323 /* AVFoundation.framework in Frameworks */,
 				FDD2C54A0E2E80E400B7A85F /* CoreAudio.framework in Frameworks */,
-				75E091A8241EAD4A004729E1 /* CoreBluetooth.framework in Frameworks */,
 				FDD2C5470E2E80E400B7A85F /* CoreGraphics.framework in Frameworks */,
 				F3A495132555EA8C00E92A8B /* CoreHaptics.framework in Frameworks */,
 				FA8B4BDC196766E800F8EB7C /* CoreMotion.framework in Frameworks */,
@@ -1228,7 +1175,6 @@
 				FDD2C57D0E2E8C7400B7A85F /* AudioToolbox.framework in Frameworks */,
 				FABA34C21D8B5BC200915323 /* AVFoundation.framework in Frameworks */,
 				FDD2C5830E2E8C7400B7A85F /* CoreAudio.framework in Frameworks */,
-				75E091AA241EAD55004729E1 /* CoreBluetooth.framework in Frameworks */,
 				FDD2C5800E2E8C7400B7A85F /* CoreGraphics.framework in Frameworks */,
 				F3A495172555EABB00E92A8B /* CoreHaptics.framework in Frameworks */,
 				FA8B4BDE196766EE00F8EB7C /* CoreMotion.framework in Frameworks */,
@@ -1249,7 +1195,6 @@
 				FDD2C5BB0E2E8CFC00B7A85F /* AudioToolbox.framework in Frameworks */,
 				FABA34C31D8B5BC600915323 /* AVFoundation.framework in Frameworks */,
 				FDD2C5C10E2E8CFC00B7A85F /* CoreAudio.framework in Frameworks */,
-				75E091AB241EAD5B004729E1 /* CoreBluetooth.framework in Frameworks */,
 				FDD2C5BE0E2E8CFC00B7A85F /* CoreGraphics.framework in Frameworks */,
 				F3A495192555EACB00E92A8B /* CoreHaptics.framework in Frameworks */,
 				FA8B4BDF196766F100F8EB7C /* CoreMotion.framework in Frameworks */,
@@ -1270,7 +1215,6 @@
 				FDD2C6EA0E2E959E00B7A85F /* AudioToolbox.framework in Frameworks */,
 				FABA34C51D8B5BD000915323 /* AVFoundation.framework in Frameworks */,
 				FDD2C6F00E2E959E00B7A85F /* CoreAudio.framework in Frameworks */,
-				75E091AE241EAD6B004729E1 /* CoreBluetooth.framework in Frameworks */,
 				FDD2C6ED0E2E959E00B7A85F /* CoreGraphics.framework in Frameworks */,
 				F3A4951F2555EB2D00E92A8B /* CoreHaptics.framework in Frameworks */,
 				FA8B4BE1196766F600F8EB7C /* CoreMotion.framework in Frameworks */,
