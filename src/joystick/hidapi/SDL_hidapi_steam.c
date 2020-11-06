@@ -1010,7 +1010,7 @@ HIDAPI_DriverSteam_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystic
     InitializeSteamControllerPacketAssembler(&ctx->m_assembler);
 
     /* Initialize the joystick capabilities */
-    joystick->nbuttons = SDL_CONTROLLER_BUTTON_MAX;
+    joystick->nbuttons = 17;
     joystick->naxes = SDL_CONTROLLER_AXIS_MAX;
 
     return SDL_TRUE;
@@ -1111,6 +1111,10 @@ HIDAPI_DriverSteam_UpdateDevice(SDL_HIDAPI_Device *device)
 
                 SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_LEFTSTICK,
                     (ctx->m_state.ulButtons & STEAM_JOYSTICK_BUTTON_MASK) ? SDL_PRESSED : SDL_RELEASED);
+                SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_AUX1,
+                    (ctx->m_state.ulButtons & STEAM_BUTTON_BACK_LEFT_MASK) ? SDL_PRESSED : SDL_RELEASED);
+                SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_AUX2,
+                    (ctx->m_state.ulButtons & STEAM_BUTTON_BACK_RIGHT_MASK) ? SDL_PRESSED : SDL_RELEASED);
             }
             {
                 /* Minimum distance from center of pad to register a direction */

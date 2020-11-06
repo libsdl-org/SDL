@@ -1735,12 +1735,13 @@ SDL_GetJoystickGameControllerType(const char *name, Uint16 vendor, Uint16 produc
     if (type == SDL_CONTROLLER_TYPE_UNKNOWN) {
         if (vendor == 0x0000 && product == 0x0000) {
             /* Some devices are only identifiable by their name */
-            if (SDL_strcmp(name, "Lic Pro Controller") == 0 ||
-                SDL_strcmp(name, "Nintendo Wireless Gamepad") == 0 ||
-                SDL_strcmp(name, "Wireless Gamepad") == 0) {
+            if (name &&
+                (SDL_strcmp(name, "Lic Pro Controller") == 0 ||
+                 SDL_strcmp(name, "Nintendo Wireless Gamepad") == 0 ||
+                 SDL_strcmp(name, "Wireless Gamepad") == 0)) {
                 /* HORI or PowerA Switch Pro Controller clone */
                 type = SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO;
-            } else if (SDL_strcmp(name, "Virtual Joystick") == 0) {
+            } else if (name && SDL_strcmp(name, "Virtual Joystick") == 0) {
                 type = SDL_CONTROLLER_TYPE_VIRTUAL;
             } else {
                 type = SDL_CONTROLLER_TYPE_UNKNOWN;
@@ -1780,10 +1781,37 @@ SDL_GetJoystickGameControllerType(const char *name, Uint16 vendor, Uint16 produc
 }
 
 SDL_bool
+SDL_IsJoystickXboxOneElite(Uint16 vendor_id, Uint16 product_id)
+{
+    if (vendor_id == USB_VENDOR_MICROSOFT) {
+        if (product_id == USB_PRODUCT_XBOX_ONE_ELITE_SERIES_1 ||
+            product_id == USB_PRODUCT_XBOX_ONE_ELITE_SERIES_2) {
+            return SDL_TRUE;
+        }
+    }
+    return SDL_FALSE;
+}
+
+SDL_bool
+SDL_IsJoystickPS4(Uint16 vendor_id, Uint16 product_id)
+{
+    EControllerType eType = GuessControllerType(vendor_id, product_id);
+    return (eType == k_eControllerType_PS4Controller);
+}
+
+SDL_bool
 SDL_IsJoystickPS5(Uint16 vendor_id, Uint16 product_id)
 {
     EControllerType eType = GuessControllerType(vendor_id, product_id);
     return (eType == k_eControllerType_PS5Controller);
+}
+
+SDL_bool
+SDL_IsJoystickNintendoSwitchPro(Uint16 vendor_id, Uint16 product_id)
+{
+    EControllerType eType = GuessControllerType(vendor_id, product_id);
+    return (eType == k_eControllerType_SwitchProController ||
+            eType == k_eControllerType_SwitchInputOnlyController);
 }
 
 SDL_bool

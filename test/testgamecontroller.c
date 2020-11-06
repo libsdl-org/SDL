@@ -49,6 +49,10 @@ static const struct { int x; int y; } button_positions[] = {
     {154, 249},  /* DPAD_DOWN */
     {116, 217},  /* DPAD_LEFT */
     {186, 217},  /* DPAD_RIGHT */
+    {158, 0},    /* AUX1 */
+    {208, 0},    /* AUX2 */
+    {258, 0},    /* AUX3 */
+    {308, 0},    /* AUX4 */
 };
 
 /* This is indexed by SDL_GameControllerAxis. */

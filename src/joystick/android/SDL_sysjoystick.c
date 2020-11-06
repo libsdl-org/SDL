@@ -138,16 +138,16 @@ keycode_to_SDL(int keycode)
             button = SDL_CONTROLLER_BUTTON_GUIDE;
             break;
         case AKEYCODE_BUTTON_L2:
-            button = SDL_CONTROLLER_BUTTON_MAX; /* Not supported by GameController */
+            button = SDL_CONTROLLER_BUTTON_AUX1;
             break;
         case AKEYCODE_BUTTON_R2:
-            button = SDL_CONTROLLER_BUTTON_MAX+1; /* Not supported by GameController */
+            button = SDL_CONTROLLER_BUTTON_AUX2;
             break;
         case AKEYCODE_BUTTON_C:
-            button = SDL_CONTROLLER_BUTTON_MAX+2; /* Not supported by GameController */
+            button = SDL_CONTROLLER_BUTTON_AUX3;
             break;
         case AKEYCODE_BUTTON_Z:
-            button = SDL_CONTROLLER_BUTTON_MAX+3; /* Not supported by GameController */
+            button = SDL_CONTROLLER_BUTTON_AUX4;
             break;
                         
         /* D-Pad key codes (API 1) */
@@ -165,7 +165,7 @@ keycode_to_SDL(int keycode)
             break;
         case AKEYCODE_DPAD_CENTER:
             /* This is handled better by applications as the A button */
-            /*button = SDL_CONTROLLER_BUTTON_MAX+4;*/ /* Not supported by GameController */
+            /*button = 19;*/ /* Not supported by GameController */
             button = SDL_CONTROLLER_BUTTON_A;
             break;
 
@@ -186,7 +186,7 @@ keycode_to_SDL(int keycode)
         case AKEYCODE_BUTTON_14:
         case AKEYCODE_BUTTON_15:
         case AKEYCODE_BUTTON_16:
-            button = keycode - AKEYCODE_BUTTON_1 + SDL_CONTROLLER_BUTTON_MAX + 5;
+            button = 20 + (keycode - AKEYCODE_BUTTON_1);
             break;
             
         default:
