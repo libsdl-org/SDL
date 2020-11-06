@@ -24,13 +24,8 @@
 /* Define this for verbose output while mapping controllers */
 #define DEBUG_CONTROLLERMAP
 
-#ifdef __IPHONEOS__
-#define SCREEN_WIDTH    320
-#define SCREEN_HEIGHT   480
-#else
 #define SCREEN_WIDTH    512
 #define SCREEN_HEIGHT   320
-#endif
 
 #define MARKER_BUTTON 1
 #define MARKER_AXIS 2
