@@ -24,6 +24,7 @@
 
 /* Definitions of useful USB VID/PID values */
 
+#define USB_VENDOR_APPLE        0x05ac
 #define USB_VENDOR_HYPERKIN     0x2e24
 #define USB_VENDOR_MICROSOFT    0x045e
 #define USB_VENDOR_NINTENDO     0x057e
