@@ -33,6 +33,7 @@
 #include "SDL_stdinc.h"
 #include "../SDL_sysjoystick.h"
 #include "../SDL_joystick_c.h"
+#include "../usb_ids.h"
 
 
 #if !SDL_EVENTS_DISABLED
@@ -77,6 +78,7 @@ static id disconnectObserver = nil;
 #if (__IPHONE_OS_VERSION_MAX_ALLOWED >= 140000) || (__APPLETV_OS_VERSION_MAX_ALLOWED >= 140000) || (__MAC_OS_VERSION_MAX_ALLOWED > 1500000)
 #define ENABLE_MFI_BATTERY
 #define ENABLE_MFI_RUMBLE
+#define ENABLE_PHYSICAL_INPUT_PROFILE
 #endif
 
 #ifdef ENABLE_MFI_RUMBLE
@@ -116,9 +118,6 @@ static void
 IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controller)
 {
 #ifdef SDL_JOYSTICK_MFI
-    const Uint16 VENDOR_APPLE = 0x05AC;
-    const Uint16 VENDOR_MICROSOFT = 0x045e;
-    const Uint16 VENDOR_SONY = 0x054C;
     Uint16 *guid16 = (Uint16 *)device->guid.data;
     Uint16 vendor = 0;
     Uint16 product = 0;
@@ -188,16 +187,60 @@ IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controlle
         if (!has_direct_menu) {
             device->uses_pause_handler = SDL_TRUE;
         }
+
+#ifdef ENABLE_PHYSICAL_INPUT_PROFILE
+        if ([controller respondsToSelector:@selector(physicalInputProfile)]) {
+            if (controller.physicalInputProfile.buttons[GCInputDualShockTouchpadButton] != nil) {
+                device->has_dualshock_touchpad = SDL_TRUE;
+                device->button_mask |= (1 << SDL_CONTROLLER_BUTTON_AUX1);
+                ++nbuttons;
+            }
+            if (controller.physicalInputProfile.buttons[GCInputXboxPaddleOne] != nil) {
+                device->has_xbox_paddles = SDL_TRUE;
+                device->button_mask |= (1 << SDL_CONTROLLER_BUTTON_AUX1);
+                ++nbuttons;
+            }
+            if (controller.physicalInputProfile.buttons[GCInputXboxPaddleTwo] != nil) {
+                device->has_xbox_paddles = SDL_TRUE;
+                device->button_mask |= (1 << SDL_CONTROLLER_BUTTON_AUX2);
+                ++nbuttons;
+            }
+            if (controller.physicalInputProfile.buttons[GCInputXboxPaddleThree] != nil) {
+                device->has_xbox_paddles = SDL_TRUE;
+                device->button_mask |= (1 << SDL_CONTROLLER_BUTTON_AUX3);
+                ++nbuttons;
+            }
+            if (controller.physicalInputProfile.buttons[GCInputXboxPaddleFour] != nil) {
+                device->has_xbox_paddles = SDL_TRUE;
+                device->button_mask |= (1 << SDL_CONTROLLER_BUTTON_AUX4);
+                ++nbuttons;
+            }
+        }
+#endif
 #pragma clang diagnostic pop
 
         if (is_xbox) {
-            vendor = VENDOR_MICROSOFT;
-            product = 0x02E0; /* Assume Xbox One S BLE Controller unless/until GCController flows VID/PID */
+            vendor = USB_VENDOR_MICROSOFT;
+            if (device->has_xbox_paddles) {
+                /* Assume Xbox One Elite Series 2 Controller unless/until GCController flows VID/PID */
+                product = USB_PRODUCT_XBOX_ONE_ELITE_SERIES_2_BLUETOOTH;
+                subtype = 1;
+            } else {
+                /* Assume Xbox One S BLE Controller unless/until GCController flows VID/PID */
+                product = USB_PRODUCT_XBOX_ONE_S_REV1_BLUETOOTH;
+                subtype = 0;
+            }
         } else if (is_ps4) {
-            vendor = VENDOR_SONY;
-            product = 0x09CC; /* Assume DS4 Slim unless/until GCController flows VID/PID */
+            /* Assume DS4 Slim unless/until GCController flows VID/PID */
+            vendor = USB_VENDOR_SONY;
+            product = USB_PRODUCT_SONY_DS4_SLIM;
+            if ( device->has_dualshock_touchpad ) {
+                subtype = 1;
+            } else {
+                subtype = 0;
+            }
         } else {
-            vendor = VENDOR_APPLE;
+            vendor = USB_VENDOR_APPLE;
             product = 1;
             subtype = 1;
         }
@@ -220,7 +263,7 @@ IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controlle
         nbuttons += 7;
         device->uses_pause_handler = SDL_TRUE;
 
-        vendor = VENDOR_APPLE;
+        vendor = USB_VENDOR_APPLE;
         product = 2;
         subtype = 2;
         device->naxes = 0; /* no traditional analog inputs */
@@ -239,7 +282,7 @@ IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controlle
         ++nbuttons;
         device->uses_pause_handler = SDL_TRUE;
 
-        vendor = VENDOR_APPLE;
+        vendor = USB_VENDOR_APPLE;
         product = 3;
         subtype = 3;
         device->naxes = 2; /* treat the touch surface as two axes */
@@ -700,6 +743,37 @@ IOS_MFIJoystickUpdate(SDL_Joystick * joystick)
                     buttons[button_count++] = gamepad.buttonMenu.isPressed;
                 }
             }
+
+#ifdef ENABLE_PHYSICAL_INPUT_PROFILE
+            if (joystick->hwdata->has_dualshock_touchpad) {
+                if (joystick->hwdata->button_mask & (1 << SDL_CONTROLLER_BUTTON_AUX1)) {
+                    buttons[button_count++] = controller.physicalInputProfile.buttons[GCInputDualShockTouchpadButton].isPressed;
+                }
+            }
+
+            if (joystick->hwdata->has_xbox_paddles) {
+                if (joystick->hwdata->button_mask & (1 << SDL_CONTROLLER_BUTTON_AUX1)) {
+                    buttons[button_count++] = controller.physicalInputProfile.buttons[GCInputXboxPaddleOne].isPressed;
+                }
+                if (joystick->hwdata->button_mask & (1 << SDL_CONTROLLER_BUTTON_AUX2)) {
+                    buttons[button_count++] = controller.physicalInputProfile.buttons[GCInputXboxPaddleTwo].isPressed;
+                }
+                if (joystick->hwdata->button_mask & (1 << SDL_CONTROLLER_BUTTON_AUX3)) {
+                    buttons[button_count++] = controller.physicalInputProfile.buttons[GCInputXboxPaddleThree].isPressed;
+                }
+                if (joystick->hwdata->button_mask & (1 << SDL_CONTROLLER_BUTTON_AUX4)) {
+                    buttons[button_count++] = controller.physicalInputProfile.buttons[GCInputXboxPaddleFour].isPressed;
+                }
+
+                /*
+                SDL_Log("Paddles: [%d,%d,%d,%d]",
+                    controller.physicalInputProfile.buttons[GCInputXboxPaddleOne].isPressed,
+                    controller.physicalInputProfile.buttons[GCInputXboxPaddleTwo].isPressed,
+                    controller.physicalInputProfile.buttons[GCInputXboxPaddleThree].isPressed,
+                    controller.physicalInputProfile.buttons[GCInputXboxPaddleFour].isPressed);
+                */
+            }
+#endif
 #pragma clang diagnostic pop
 
             hatstate = IOS_MFIJoystickHatStateForDPad(gamepad.dpad);
