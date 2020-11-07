@@ -29,42 +29,43 @@
 
 /* This is indexed by SDL_GameControllerButton. */
 static const struct { int x; int y; } button_positions[] = {
-    {387, 167},  /* A */
-    {431, 132},  /* B */
-    {342, 132},  /* X */
-    {389, 101},  /* Y */
-    {174, 132},  /* BACK */
-    {233, 132},  /* GUIDE */
-    {289, 132},  /* START */
-    {75,  154},  /* LEFTSTICK */
-    {305, 230},  /* RIGHTSTICK */
-    {77,  40},   /* LEFTSHOULDER */
-    {396, 36},   /* RIGHTSHOULDER */
-    {154, 188},  /* DPAD_UP */
-    {154, 249},  /* DPAD_DOWN */
-    {116, 217},  /* DPAD_LEFT */
-    {186, 217},  /* DPAD_RIGHT */
-    {158, 0},    /* AUX1 */
-    {208, 0},    /* AUX2 */
-    {258, 0},    /* AUX3 */
-    {308, 0},    /* AUX4 */
+    {387, 167},  /* SDL_CONTROLLER_BUTTON_A */
+    {431, 132},  /* SDL_CONTROLLER_BUTTON_B */
+    {342, 132},  /* SDL_CONTROLLER_BUTTON_X */
+    {389, 101},  /* SDL_CONTROLLER_BUTTON_Y */
+    {174, 132},  /* SDL_CONTROLLER_BUTTON_BACK */
+    {232, 128},  /* SDL_CONTROLLER_BUTTON_GUIDE */
+    {289, 132},  /* SDL_CONTROLLER_BUTTON_START */
+    {75,  154},  /* SDL_CONTROLLER_BUTTON_LEFTSTICK */
+    {305, 230},  /* SDL_CONTROLLER_BUTTON_RIGHTSTICK */
+    {77,  40},   /* SDL_CONTROLLER_BUTTON_LEFTSHOULDER */
+    {396, 36},   /* SDL_CONTROLLER_BUTTON_RIGHTSHOULDER */
+    {154, 188},  /* SDL_CONTROLLER_BUTTON_DPAD_UP */
+    {154, 249},  /* SDL_CONTROLLER_BUTTON_DPAD_DOWN */
+    {116, 217},  /* SDL_CONTROLLER_BUTTON_DPAD_LEFT */
+    {186, 217},  /* SDL_CONTROLLER_BUTTON_DPAD_RIGHT */
+    {232, 174},  /* SDL_CONTROLLER_BUTTON_MISC1 */
+    {132, 135},  /* SDL_CONTROLLER_BUTTON_PADDLE1 */
+    {330, 135},  /* SDL_CONTROLLER_BUTTON_PADDLE2 */
+    {132, 175},  /* SDL_CONTROLLER_BUTTON_PADDLE3 */
+    {330, 175},  /* SDL_CONTROLLER_BUTTON_PADDLE4 */
 };
 
 /* This is indexed by SDL_GameControllerAxis. */
 static const struct { int x; int y; double angle; } axis_positions[] = {
     {74,  153, 270.0},  /* LEFTX */
-    {74,  153, 0.0},  /* LEFTY */
+    {74,  153,   0.0},  /* LEFTY */
     {306, 231, 270.0},  /* RIGHTX */
-    {306, 231, 0.0},  /* RIGHTY */
-    {91, -20, 0.0},     /* TRIGGERLEFT */
-    {375, -20, 0.0},    /* TRIGGERRIGHT */
+    {306, 231,   0.0},  /* RIGHTY */
+    {91,  -20,   0.0},  /* TRIGGERLEFT */
+    {375, -20,   0.0},  /* TRIGGERRIGHT */
 };
 
 SDL_Window *window = NULL;
 SDL_Renderer *screen = NULL;
 SDL_bool retval = SDL_FALSE;
 SDL_bool done = SDL_FALSE;
-SDL_Texture *background, *button, *axis;
+SDL_Texture *background_front, *background_back, *button, *axis;
 SDL_GameController *gamecontroller;
 
 static SDL_Texture *
@@ -118,11 +119,7 @@ loop(void *arg)
 {
     SDL_Event event;
     int i;
-
-    /* blank screen, set up for drawing this frame. */
-    SDL_SetRenderDrawColor(screen, 0xFF, 0xFF, 0xFF, SDL_ALPHA_OPAQUE);
-    SDL_RenderClear(screen);
-    SDL_RenderCopy(screen, background, NULL, NULL);
+    SDL_bool showing_front = SDL_TRUE;
 
     while (SDL_PollEvent(&event)) {
         switch (event.type) {
@@ -170,25 +167,45 @@ loop(void *arg)
     }
 
     if (gamecontroller) {
+        /* Show the back of the controller if the paddles are being held */
+        for (i = SDL_CONTROLLER_BUTTON_PADDLE1; i <= SDL_CONTROLLER_BUTTON_PADDLE4; ++i) {
+            if (SDL_GameControllerGetButton(gamecontroller, (SDL_GameControllerButton)i) == SDL_PRESSED) {
+                showing_front = SDL_FALSE;
+                break;
+            }
+        }
+    }
+
+    /* blank screen, set up for drawing this frame. */
+    SDL_SetRenderDrawColor(screen, 0xFF, 0xFF, 0xFF, SDL_ALPHA_OPAQUE);
+    SDL_RenderClear(screen);
+    SDL_RenderCopy(screen, showing_front ? background_front : background_back, NULL, NULL);
+
+    if (gamecontroller) {
         /* Update visual controller state */
         for (i = 0; i < SDL_CONTROLLER_BUTTON_MAX; ++i) {
             if (SDL_GameControllerGetButton(gamecontroller, (SDL_GameControllerButton)i) == SDL_PRESSED) {
-                const SDL_Rect dst = { button_positions[i].x, button_positions[i].y, 50, 50 };
-                SDL_RenderCopyEx(screen, button, NULL, &dst, 0, NULL, SDL_FLIP_NONE);
+                SDL_bool on_front = (i < SDL_CONTROLLER_BUTTON_PADDLE1 || i > SDL_CONTROLLER_BUTTON_PADDLE4);
+                if (on_front == showing_front) {
+                    const SDL_Rect dst = { button_positions[i].x, button_positions[i].y, 50, 50 };
+                    SDL_RenderCopyEx(screen, button, NULL, &dst, 0, NULL, SDL_FLIP_NONE);
+                }
             }
         }
 
-        for (i = 0; i < SDL_CONTROLLER_AXIS_MAX; ++i) {
-            const Sint16 deadzone = 8000;  /* !!! FIXME: real deadzone */
-            const Sint16 value = SDL_GameControllerGetAxis(gamecontroller, (SDL_GameControllerAxis)(i));
-            if (value < -deadzone) {
-                const SDL_Rect dst = { axis_positions[i].x, axis_positions[i].y, 50, 50 };
-                const double angle = axis_positions[i].angle;
-                SDL_RenderCopyEx(screen, axis, NULL, &dst, angle, NULL, SDL_FLIP_NONE);
-            } else if (value > deadzone) {
-                const SDL_Rect dst = { axis_positions[i].x, axis_positions[i].y, 50, 50 };
-                const double angle = axis_positions[i].angle + 180.0;
-                SDL_RenderCopyEx(screen, axis, NULL, &dst, angle, NULL, SDL_FLIP_NONE);
+        if (showing_front) {
+            for (i = 0; i < SDL_CONTROLLER_AXIS_MAX; ++i) {
+                const Sint16 deadzone = 8000;  /* !!! FIXME: real deadzone */
+                const Sint16 value = SDL_GameControllerGetAxis(gamecontroller, (SDL_GameControllerAxis)(i));
+                if (value < -deadzone) {
+                    const SDL_Rect dst = { axis_positions[i].x, axis_positions[i].y, 50, 50 };
+                    const double angle = axis_positions[i].angle;
+                    SDL_RenderCopyEx(screen, axis, NULL, &dst, angle, NULL, SDL_FLIP_NONE);
+                } else if (value > deadzone) {
+                    const SDL_Rect dst = { axis_positions[i].x, axis_positions[i].y, 50, 50 };
+                    const double angle = axis_positions[i].angle + 180.0;
+                    SDL_RenderCopyEx(screen, axis, NULL, &dst, angle, NULL, SDL_FLIP_NONE);
+                }
             }
         }
 
@@ -321,11 +338,12 @@ main(int argc, char *argv[])
     /* scale for platforms that don't give you the window size you asked for. */
     SDL_RenderSetLogicalSize(screen, SCREEN_WIDTH, SCREEN_HEIGHT);
 
-    background = LoadTexture(screen, "controllermap.bmp", SDL_FALSE);
+    background_front = LoadTexture(screen, "controllermap.bmp", SDL_FALSE);
+    background_back = LoadTexture(screen, "controllermap_back.bmp", SDL_FALSE);
     button = LoadTexture(screen, "button.bmp", SDL_TRUE);
     axis = LoadTexture(screen, "axis.bmp", SDL_TRUE);
 
-    if (!background || !button || !axis) {
+    if (!background_front || !background_back || !button || !axis) {
         SDL_DestroyRenderer(screen);
         SDL_DestroyWindow(window);
         return 2;
@@ -346,10 +364,6 @@ main(int argc, char *argv[])
 #endif
 
     SDL_DestroyRenderer(screen);
-    screen = NULL;
-    background = NULL;
-    button = NULL;
-    axis = NULL;
     SDL_DestroyWindow(window);
     SDL_QuitSubSystem(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER);
 

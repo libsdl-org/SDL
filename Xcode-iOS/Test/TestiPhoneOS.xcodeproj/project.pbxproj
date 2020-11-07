@@ -161,6 +161,9 @@
 		F3A499CD255618AF00E92A8B /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FDA8A89C0E2D111A00EA573E /* UIKit.framework */; };
 		F3A499CF255618AF00E92A8B /* hidapi.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F3A492F32555E1F100E92A8B /* hidapi.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F3A49A822556190000E92A8B /* controllermap.c in Sources */ = {isa = PBXBuildFile; fileRef = F3A49A4C255618DD00E92A8B /* controllermap.c */; };
+		F3A49AFE2556A47500E92A8B /* controllermap_back.bmp in Resources */ = {isa = PBXBuildFile; fileRef = F3A49AFD2556A47500E92A8B /* controllermap_back.bmp */; };
+		F3A49AFF2556A47500E92A8B /* controllermap_back.bmp in Resources */ = {isa = PBXBuildFile; fileRef = F3A49AFD2556A47500E92A8B /* controllermap_back.bmp */; };
+		F3A49B002556A47500E92A8B /* controllermap_back.bmp in Resources */ = {isa = PBXBuildFile; fileRef = F3A49AFD2556A47500E92A8B /* controllermap_back.bmp */; };
 		F3F758D322AC561A001D97F2 /* libSDL2test.a in Frameworks */ = {isa = PBXBuildFile; fileRef = AA1EE452176059230029C7A5 /* libSDL2test.a */; };
 		F3F758D422AC575F001D97F2 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AA2F57A91FDB544800832AD7 /* Metal.framework */; };
 		F3F758D522AC57D8001D97F2 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AA2F57A91FDB544800832AD7 /* Metal.framework */; };
@@ -628,6 +631,7 @@
 		F3A499D3255618AF00E92A8B /* controllermap.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = controllermap.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F3A499D4255618AF00E92A8B /* testgamecontroller copy-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "testgamecontroller copy-Info.plist"; path = "/Users/valve/projects/SDL/Xcode-iOS/Test/testgamecontroller copy-Info.plist"; sourceTree = "<absolute>"; };
 		F3A49A4C255618DD00E92A8B /* controllermap.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = controllermap.c; sourceTree = "<group>"; };
+		F3A49AFD2556A47500E92A8B /* controllermap_back.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; path = controllermap_back.bmp; sourceTree = "<group>"; };
 		FA0EF2221BAF43DE000E07A6 /* testgamecontroller.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testgamecontroller.c; sourceTree = "<group>"; };
 		FA0EF2281BAF4487000E07A6 /* axis.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; path = axis.bmp; sourceTree = "<group>"; };
 		FA0EF2291BAF4487000E07A6 /* button.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; path = button.bmp; sourceTree = "<group>"; };
@@ -1439,6 +1443,7 @@
 				FA0EF2281BAF4487000E07A6 /* axis.bmp */,
 				FA0EF2291BAF4487000E07A6 /* button.bmp */,
 				FA0EF22A1BAF4487000E07A6 /* controllermap.bmp */,
+				F3A49AFD2556A47500E92A8B /* controllermap_back.bmp */,
 				FDA8AAD90E2D33B000EA573E /* icon.bmp */,
 				FDA8AADA0E2D33BA00EA573E /* moose.dat */,
 				FDA8AADB0E2D33BA00EA573E /* picture.xbm */,
@@ -2278,6 +2283,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F3A499B9255618AF00E92A8B /* controllermap.bmp in Resources */,
+				F3A49AFE2556A47500E92A8B /* controllermap_back.bmp in Resources */,
 				F3A499BA255618AF00E92A8B /* icon.bmp in Resources */,
 				F3A499BB255618AF00E92A8B /* axis.bmp in Resources */,
 				F3A499BC255618AF00E92A8B /* button.bmp in Resources */,
@@ -2289,6 +2295,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FA3D99521BC4E70C002C96C8 /* controllermap.bmp in Resources */,
+				F3A49B002556A47500E92A8B /* controllermap_back.bmp in Resources */,
 				FA3D99541BC4E70F002C96C8 /* button.bmp in Resources */,
 				FA3D99531BC4E70E002C96C8 /* axis.bmp in Resources */,
 				FA3D99551BC4E712002C96C8 /* icon.bmp in Resources */,
@@ -2315,6 +2322,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FAE0E9961BAF9B650098DFA4 /* controllermap.bmp in Resources */,
+				F3A49AFF2556A47500E92A8B /* controllermap_back.bmp in Resources */,
 				FAE0E9821BAF9B230098DFA4 /* icon.bmp in Resources */,
 				FAE0E9981BAF9B6E0098DFA4 /* axis.bmp in Resources */,
 				FAE0E9971BAF9B6A0098DFA4 /* button.bmp in Resources */,

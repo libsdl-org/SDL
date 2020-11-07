@@ -193,27 +193,27 @@ IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controlle
         if ([controller respondsToSelector:@selector(physicalInputProfile)]) {
             if (controller.physicalInputProfile.buttons[GCInputDualShockTouchpadButton] != nil) {
                 device->has_dualshock_touchpad = SDL_TRUE;
-                device->button_mask |= (1 << SDL_CONTROLLER_BUTTON_AUX1);
+                device->button_mask |= (1 << SDL_CONTROLLER_BUTTON_MISC1);
                 ++nbuttons;
             }
             if (controller.physicalInputProfile.buttons[GCInputXboxPaddleOne] != nil) {
                 device->has_xbox_paddles = SDL_TRUE;
-                device->button_mask |= (1 << SDL_CONTROLLER_BUTTON_AUX1);
+                device->button_mask |= (1 << SDL_CONTROLLER_BUTTON_PADDLE1);
                 ++nbuttons;
             }
             if (controller.physicalInputProfile.buttons[GCInputXboxPaddleTwo] != nil) {
                 device->has_xbox_paddles = SDL_TRUE;
-                device->button_mask |= (1 << SDL_CONTROLLER_BUTTON_AUX2);
+                device->button_mask |= (1 << SDL_CONTROLLER_BUTTON_PADDLE2);
                 ++nbuttons;
             }
             if (controller.physicalInputProfile.buttons[GCInputXboxPaddleThree] != nil) {
                 device->has_xbox_paddles = SDL_TRUE;
-                device->button_mask |= (1 << SDL_CONTROLLER_BUTTON_AUX3);
+                device->button_mask |= (1 << SDL_CONTROLLER_BUTTON_PADDLE3);
                 ++nbuttons;
             }
             if (controller.physicalInputProfile.buttons[GCInputXboxPaddleFour] != nil) {
                 device->has_xbox_paddles = SDL_TRUE;
-                device->button_mask |= (1 << SDL_CONTROLLER_BUTTON_AUX4);
+                device->button_mask |= (1 << SDL_CONTROLLER_BUTTON_PADDLE4);
                 ++nbuttons;
             }
         }
@@ -747,22 +747,20 @@ IOS_MFIJoystickUpdate(SDL_Joystick * joystick)
 
 #ifdef ENABLE_PHYSICAL_INPUT_PROFILE
             if (joystick->hwdata->has_dualshock_touchpad) {
-                if (joystick->hwdata->button_mask & (1 << SDL_CONTROLLER_BUTTON_AUX1)) {
-                    buttons[button_count++] = controller.physicalInputProfile.buttons[GCInputDualShockTouchpadButton].isPressed;
-                }
+                buttons[button_count++] = controller.physicalInputProfile.buttons[GCInputDualShockTouchpadButton].isPressed;
             }
 
             if (joystick->hwdata->has_xbox_paddles) {
-                if (joystick->hwdata->button_mask & (1 << SDL_CONTROLLER_BUTTON_AUX1)) {
+                if (joystick->hwdata->button_mask & (1 << SDL_CONTROLLER_BUTTON_PADDLE1)) {
                     buttons[button_count++] = controller.physicalInputProfile.buttons[GCInputXboxPaddleOne].isPressed;
                 }
-                if (joystick->hwdata->button_mask & (1 << SDL_CONTROLLER_BUTTON_AUX2)) {
+                if (joystick->hwdata->button_mask & (1 << SDL_CONTROLLER_BUTTON_PADDLE2)) {
                     buttons[button_count++] = controller.physicalInputProfile.buttons[GCInputXboxPaddleTwo].isPressed;
                 }
-                if (joystick->hwdata->button_mask & (1 << SDL_CONTROLLER_BUTTON_AUX3)) {
+                if (joystick->hwdata->button_mask & (1 << SDL_CONTROLLER_BUTTON_PADDLE3)) {
                     buttons[button_count++] = controller.physicalInputProfile.buttons[GCInputXboxPaddleThree].isPressed;
                 }
-                if (joystick->hwdata->button_mask & (1 << SDL_CONTROLLER_BUTTON_AUX4)) {
+                if (joystick->hwdata->button_mask & (1 << SDL_CONTROLLER_BUTTON_PADDLE4)) {
                     buttons[button_count++] = controller.physicalInputProfile.buttons[GCInputXboxPaddleFour].isPressed;
                 }
 

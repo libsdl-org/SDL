@@ -383,12 +383,12 @@ HIDAPI_DriverXboxOne_HandleStatePacket(SDL_Joystick *joystick, hid_device *dev, 
     /* Xbox One S report is 18 bytes
        Xbox One Elite Series 1 report is 33 bytes, paddles in data[32], mode in data[32] & 0x10, both modes have mapped paddles by default
         Paddle bits:
-            UL: 0x01 (A)    UR: 0x02 (B)
-            LL: 0x04 (X)    LR: 0x08 (Y)
+            P3: 0x01 (A)    P1: 0x02 (B)
+            P4: 0x04 (X)    P2: 0x08 (Y)
        Xbox One Elite Series 2 report is 38 bytes, paddles in data[18], mode in data[19], mode 0 has no mapped paddles by default
         Paddle bits:
-            UL: 0x04 (A)    UR: 0x01 (B)
-            LL: 0x08 (X)    LR: 0x02 (Y)
+            P3: 0x04 (A)    P1: 0x01 (B)
+            P4: 0x08 (X)    P2: 0x02 (Y)
     */
     if (ctx->has_paddles && (size == 33 || size == 38)) {
         int paddle_index;
@@ -401,10 +401,10 @@ HIDAPI_DriverXboxOne_HandleStatePacket(SDL_Joystick *joystick, hid_device *dev, 
         if (size == 33) {
             /* XBox One Elite Series 1 */
             paddle_index = 32;
-            button1_bit = 0x01;
-            button2_bit = 0x02;
-            button3_bit = 0x04;
-            button4_bit = 0x08;
+            button1_bit = 0x02;
+            button2_bit = 0x08;
+            button3_bit = 0x01;
+            button4_bit = 0x04;
 
             /* The mapped controller state is at offset 4, the raw state is at offset 18, compare them to see if the paddles are mapped */
             paddles_mapped = (SDL_memcmp(&data[4], &data[18], 14) != 0);
@@ -412,10 +412,10 @@ HIDAPI_DriverXboxOne_HandleStatePacket(SDL_Joystick *joystick, hid_device *dev, 
         } else /* if (size == 38) */ {
             /* XBox One Elite Series 2 */
             paddle_index = 18;
-            button1_bit = 0x04;
-            button2_bit = 0x01;
-            button3_bit = 0x08;
-            button4_bit = 0x02;
+            button1_bit = 0x01;
+            button2_bit = 0x02;
+            button3_bit = 0x04;
+            button4_bit = 0x08;
             paddles_mapped = (data[19] != 0);
         }
 #ifdef DEBUG_XBOX_PROTOCOL
@@ -434,10 +434,10 @@ HIDAPI_DriverXboxOne_HandleStatePacket(SDL_Joystick *joystick, hid_device *dev, 
         }
 
         if (ctx->last_state[paddle_index] != data[paddle_index]) {
-            SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_AUX1, (data[paddle_index] & button1_bit) ? SDL_PRESSED : SDL_RELEASED);
-            SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_AUX2, (data[paddle_index] & button2_bit) ? SDL_PRESSED : SDL_RELEASED);
-            SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_AUX3, (data[paddle_index] & button3_bit) ? SDL_PRESSED : SDL_RELEASED);
-            SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_AUX4, (data[paddle_index] & button4_bit) ? SDL_PRESSED : SDL_RELEASED);
+            SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_MISC1 + 0, (data[paddle_index] & button1_bit) ? SDL_PRESSED : SDL_RELEASED);
+            SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_MISC1 + 1, (data[paddle_index] & button2_bit) ? SDL_PRESSED : SDL_RELEASED);
+            SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_MISC1 + 2, (data[paddle_index] & button3_bit) ? SDL_PRESSED : SDL_RELEASED);
+            SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_MISC1 + 3, (data[paddle_index] & button4_bit) ? SDL_PRESSED : SDL_RELEASED);
         }
     }
 
