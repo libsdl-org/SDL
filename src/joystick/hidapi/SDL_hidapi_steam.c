@@ -137,8 +137,8 @@ typedef struct SteamControllerStateInternal_t
 #define STEAM_BUTTON_RIGHTPAD_CLICKED_MASK  0x00040000
 #define STEAM_LEFTPAD_FINGERDOWN_MASK       0x00080000
 #define STEAM_RIGHTPAD_FINGERDOWN_MASK      0x00100000
-#define STEAM_JOYSTICK_BUTTON_MASK            0x00400000
-#define STEAM_LEFTPAD_AND_JOYSTICK_MASK        0x00800000
+#define STEAM_JOYSTICK_BUTTON_MASK          0x00400000
+#define STEAM_LEFTPAD_AND_JOYSTICK_MASK     0x00800000
 
 
 // Look for report version 0x0001, type WIRELESS (3), length >= 1 byte
@@ -1111,9 +1111,9 @@ HIDAPI_DriverSteam_UpdateDevice(SDL_HIDAPI_Device *device)
 
                 SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_LEFTSTICK,
                     (ctx->m_state.ulButtons & STEAM_JOYSTICK_BUTTON_MASK) ? SDL_PRESSED : SDL_RELEASED);
-                SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_AUX1,
+                SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_MISC1 + 0,
                     (ctx->m_state.ulButtons & STEAM_BUTTON_BACK_LEFT_MASK) ? SDL_PRESSED : SDL_RELEASED);
-                SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_AUX2,
+                SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_MISC1 + 1,
                     (ctx->m_state.ulButtons & STEAM_BUTTON_BACK_RIGHT_MASK) ? SDL_PRESSED : SDL_RELEASED);
             }
             {
@@ -1186,7 +1186,7 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSteam =
     HIDAPI_DriverSteam_SetJoystickLED,
     HIDAPI_DriverSteam_CloseJoystick,
     HIDAPI_DriverSteam_FreeDevice,
-	NULL
+    NULL
 };
 
 #endif /* SDL_JOYSTICK_HIDAPI_STEAM */

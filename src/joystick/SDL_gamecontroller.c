@@ -570,20 +570,20 @@ static ControllerMapping_t *SDL_CreateMappingForHIDAPIController(SDL_JoystickGUI
 
         if (SDL_IsJoystickXboxOneElite(vendor, product)) {
             /* XBox One Elite Controllers have 4 back paddle buttons */
-            SDL_strlcat(mapping_string, "aux1:b15,aux2:b16,aux3:b17,aux4:b18,", sizeof(mapping_string));
+            SDL_strlcat(mapping_string, "paddle1:b15,paddle2:b17,paddle3:b16,paddle4:b18,", sizeof(mapping_string));
         } else if (SDL_IsJoystickSteamController(vendor, product)) {
             /* Steam controllers have 2 back paddle buttons */
-            SDL_strlcat(mapping_string, "aux1:b15,aux2:b16,", sizeof(mapping_string));
+            SDL_strlcat(mapping_string, "paddle1:b16,paddle2:b15,", sizeof(mapping_string));
         } else {
             switch (SDL_GetJoystickGameControllerTypeFromGUID(guid, NULL)) {
             case SDL_CONTROLLER_TYPE_PS4:
             case SDL_CONTROLLER_TYPE_PS5:
                 /* PS4/PS5 controllers have an additional touchpad button */
-                SDL_strlcat(mapping_string, "aux1:b15,", sizeof(mapping_string));
+                SDL_strlcat(mapping_string, "misc1:b15,", sizeof(mapping_string));
                 break;
             case SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO:
                 /* Nintendo Switch Pro controllers have a screenshot button */
-                SDL_strlcat(mapping_string, "aux1:b15,", sizeof(mapping_string));
+                SDL_strlcat(mapping_string, "misc1:b15,", sizeof(mapping_string));
                 break;
             default:
                 break;
@@ -705,10 +705,11 @@ static const char* map_StringForControllerButton[] = {
     "dpdown",
     "dpleft",
     "dpright",
-    "aux1",
-    "aux2",
-    "aux3",
-    "aux4",
+    "misc1",
+    "paddle1",
+    "paddle2",
+    "paddle3",
+    "paddle4",
     NULL
 };
 
