@@ -141,6 +141,26 @@
 		F3A498742556005300E92A8B /* hidapi.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F3A492F32555E1F100E92A8B /* hidapi.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F3A498762556005D00E92A8B /* hidapi.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A492F52555E1F100E92A8B /* hidapi.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		F3A498772556005D00E92A8B /* hidapi.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F3A492F52555E1F100E92A8B /* hidapi.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		F3A499B9255618AF00E92A8B /* controllermap.bmp in Resources */ = {isa = PBXBuildFile; fileRef = FA0EF22A1BAF4487000E07A6 /* controllermap.bmp */; };
+		F3A499BA255618AF00E92A8B /* icon.bmp in Resources */ = {isa = PBXBuildFile; fileRef = FDA8AAD90E2D33B000EA573E /* icon.bmp */; };
+		F3A499BB255618AF00E92A8B /* axis.bmp in Resources */ = {isa = PBXBuildFile; fileRef = FA0EF2281BAF4487000E07A6 /* axis.bmp */; };
+		F3A499BC255618AF00E92A8B /* button.bmp in Resources */ = {isa = PBXBuildFile; fileRef = FA0EF2291BAF4487000E07A6 /* button.bmp */; };
+		F3A499C0255618AF00E92A8B /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A492E52555E1F100E92A8B /* libSDL2.a */; };
+		F3A499C1255618AF00E92A8B /* hidapi.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A492F32555E1F100E92A8B /* hidapi.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		F3A499C2255618AF00E92A8B /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FDA8A8980E2D111A00EA573E /* AudioToolbox.framework */; };
+		F3A499C3255618AF00E92A8B /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FABA34761D8B4EAD00915323 /* AVFoundation.framework */; };
+		F3A499C4255618AF00E92A8B /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FDA8A89E0E2D111A00EA573E /* CoreAudio.framework */; };
+		F3A499C5255618AF00E92A8B /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FDA8A89B0E2D111A00EA573E /* CoreGraphics.framework */; };
+		F3A499C6255618AF00E92A8B /* CoreHaptics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A493AB2555E30000E92A8B /* CoreHaptics.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		F3A499C7255618AF00E92A8B /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA8B4BAC1967076F00F8EB7C /* CoreMotion.framework */; };
+		F3A499C8255618AF00E92A8B /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FDA8A89D0E2D111A00EA573E /* Foundation.framework */; };
+		F3A499C9255618AF00E92A8B /* GameController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA684F7A1BAF1A4400DCFD1A /* GameController.framework */; };
+		F3A499CA255618AF00E92A8B /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AA2F57A91FDB544800832AD7 /* Metal.framework */; };
+		F3A499CB255618AF00E92A8B /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FDA8A89A0E2D111A00EA573E /* OpenGLES.framework */; };
+		F3A499CC255618AF00E92A8B /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FDA8A8990E2D111A00EA573E /* QuartzCore.framework */; };
+		F3A499CD255618AF00E92A8B /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FDA8A89C0E2D111A00EA573E /* UIKit.framework */; };
+		F3A499CF255618AF00E92A8B /* hidapi.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F3A492F32555E1F100E92A8B /* hidapi.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		F3A49A822556190000E92A8B /* controllermap.c in Sources */ = {isa = PBXBuildFile; fileRef = F3A49A4C255618DD00E92A8B /* controllermap.c */; };
 		F3F758D322AC561A001D97F2 /* libSDL2test.a in Frameworks */ = {isa = PBXBuildFile; fileRef = AA1EE452176059230029C7A5 /* libSDL2test.a */; };
 		F3F758D422AC575F001D97F2 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AA2F57A91FDB544800832AD7 /* Metal.framework */; };
 		F3F758D522AC57D8001D97F2 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AA2F57A91FDB544800832AD7 /* Metal.framework */; };
@@ -567,6 +587,17 @@
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		F3A499CE255618AF00E92A8B /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				F3A499CF255618AF00E92A8B /* hidapi.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
@@ -594,6 +625,9 @@
 		F3A494682555E42B00E92A8B /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS14.0.sdk/System/Library/Frameworks/Metal.framework; sourceTree = DEVELOPER_DIR; };
 		F3A494F82555E83D00E92A8B /* CoreBluetooth.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreBluetooth.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS14.0.sdk/System/Library/Frameworks/CoreBluetooth.framework; sourceTree = DEVELOPER_DIR; };
 		F3A4953C2555EB8100E92A8B /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS14.0.sdk/System/Library/Frameworks/AVFoundation.framework; sourceTree = DEVELOPER_DIR; };
+		F3A499D3255618AF00E92A8B /* controllermap.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = controllermap.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F3A499D4255618AF00E92A8B /* testgamecontroller copy-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "testgamecontroller copy-Info.plist"; path = "/Users/valve/projects/SDL/Xcode-iOS/Test/testgamecontroller copy-Info.plist"; sourceTree = "<absolute>"; };
+		F3A49A4C255618DD00E92A8B /* controllermap.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = controllermap.c; sourceTree = "<group>"; };
 		FA0EF2221BAF43DE000E07A6 /* testgamecontroller.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testgamecontroller.c; sourceTree = "<group>"; };
 		FA0EF2281BAF4487000E07A6 /* axis.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; path = axis.bmp; sourceTree = "<group>"; };
 		FA0EF2291BAF4487000E07A6 /* button.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; path = button.bmp; sourceTree = "<group>"; };
@@ -801,6 +835,27 @@
 				AAE7DFA914CBB54E00DF1A0E /* OpenGLES.framework in Frameworks */,
 				AAE7DFA814CBB54E00DF1A0E /* QuartzCore.framework in Frameworks */,
 				AAE7DFAB14CBB54E00DF1A0E /* UIKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F3A499BF255618AF00E92A8B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F3A499C0255618AF00E92A8B /* libSDL2.a in Frameworks */,
+				F3A499C1255618AF00E92A8B /* hidapi.framework in Frameworks */,
+				F3A499C2255618AF00E92A8B /* AudioToolbox.framework in Frameworks */,
+				F3A499C3255618AF00E92A8B /* AVFoundation.framework in Frameworks */,
+				F3A499C4255618AF00E92A8B /* CoreAudio.framework in Frameworks */,
+				F3A499C5255618AF00E92A8B /* CoreGraphics.framework in Frameworks */,
+				F3A499C6255618AF00E92A8B /* CoreHaptics.framework in Frameworks */,
+				F3A499C7255618AF00E92A8B /* CoreMotion.framework in Frameworks */,
+				F3A499C8255618AF00E92A8B /* Foundation.framework in Frameworks */,
+				F3A499C9255618AF00E92A8B /* GameController.framework in Frameworks */,
+				F3A499CA255618AF00E92A8B /* Metal.framework in Frameworks */,
+				F3A499CB255618AF00E92A8B /* OpenGLES.framework in Frameworks */,
+				F3A499CC255618AF00E92A8B /* QuartzCore.framework in Frameworks */,
+				F3A499CD255618AF00E92A8B /* UIKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1261,6 +1316,7 @@
 				FABA34911D8B575200915323 /* testaudiocapture.app */,
 				FABA34AA1D8B582100915323 /* loopwav-TV.app */,
 				AA13B3261FB8AEBC00D9FEE6 /* testyuv.app */,
+				F3A499D3255618AF00E92A8B /* controllermap.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1275,6 +1331,7 @@
 				FDA8A73B0E2D0F0400EA573E /* src */,
 				19C28FACFE9D520D11CA2CBB /* Products */,
 				FABA34751D8B4EAC00915323 /* Frameworks */,
+				F3A499D4255618AF00E92A8B /* testgamecontroller copy-Info.plist */,
 			);
 			name = CustomTemplate;
 			sourceTree = "<group>";
@@ -1321,6 +1378,7 @@
 			isa = PBXGroup;
 			children = (
 				047A63F013285CD100CD7973 /* checkkeys.c */,
+				F3A49A4C255618DD00E92A8B /* controllermap.c */,
 				FDA8A78B0E2D0F3D00EA573E /* loopwave.c */,
 				FABA34931D8B578200915323 /* testaudiocapture.c */,
 				FDA8A7410E2D0F1600EA573E /* testaudioinfo.c */,
@@ -1513,6 +1571,24 @@
 			name = testrendertarget;
 			productName = Test;
 			productReference = AAE7DFB114CBB54E00DF1A0E /* testrendertarget.app */;
+			productType = "com.apple.product-type.application";
+		};
+		F3A499B7255618AF00E92A8B /* controllermap */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F3A499D0255618AF00E92A8B /* Build configuration list for PBXNativeTarget "controllermap" */;
+			buildPhases = (
+				F3A499B8255618AF00E92A8B /* Resources */,
+				F3A499BD255618AF00E92A8B /* Sources */,
+				F3A499BF255618AF00E92A8B /* Frameworks */,
+				F3A499CE255618AF00E92A8B /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = controllermap;
+			productName = Test;
+			productReference = F3A499D3255618AF00E92A8B /* controllermap.app */;
 			productType = "com.apple.product-type.application";
 		};
 		FA3D99331BC4E644002C96C8 /* testgamecontroller-TV */ = {
@@ -1903,6 +1979,9 @@
 					AAE7DF9E14CBB54E00DF1A0E = {
 						DevelopmentTeam = MXGJJ98X76;
 					};
+					F3A499B7255618AF00E92A8B = {
+						DevelopmentTeam = MXGJJ98X76;
+					};
 					FA3D99331BC4E644002C96C8 = {
 						CreatedOnToolsVersion = 7.1;
 						DevelopmentTeam = MXGJJ98X76;
@@ -1996,6 +2075,7 @@
 			projectRoot = "";
 			targets = (
 				047A63DD13285C3200CD7973 /* checkkeys */,
+				F3A499B7255618AF00E92A8B /* controllermap */,
 				FDA8AAAA0E2D330F00EA573E /* loopwav */,
 				FABA34961D8B582100915323 /* loopwav-TV */,
 				FABA347D1D8B575200915323 /* testaudiocapture */,
@@ -2190,6 +2270,17 @@
 			files = (
 				AAE7DFA014CBB54E00DF1A0E /* icon.bmp in Resources */,
 				AAE7DFA114CBB54E00DF1A0E /* sample.bmp in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F3A499B8255618AF00E92A8B /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F3A499B9255618AF00E92A8B /* controllermap.bmp in Resources */,
+				F3A499BA255618AF00E92A8B /* icon.bmp in Resources */,
+				F3A499BB255618AF00E92A8B /* axis.bmp in Resources */,
+				F3A499BC255618AF00E92A8B /* button.bmp in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2412,6 +2503,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				AAE7DFB514CBB5F700DF1A0E /* testrendertarget.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F3A499BD255618AF00E92A8B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F3A49A822556190000E92A8B /* controllermap.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2727,6 +2826,26 @@
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		F3A499D1255618AF00E92A8B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DEVELOPMENT_TEAM = MXGJJ98X76;
+				INFOPLIST_FILE = "testgamecontroller copy-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		F3A499D2255618AF00E92A8B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DEVELOPMENT_TEAM = MXGJJ98X76;
+				INFOPLIST_FILE = "testgamecontroller copy-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
 		};
@@ -3213,6 +3332,15 @@
 			buildConfigurations = (
 				C01FCF4F08A954540054247B /* Debug */,
 				C01FCF5008A954540054247B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F3A499D0255618AF00E92A8B /* Build configuration list for PBXNativeTarget "controllermap" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F3A499D1255618AF00E92A8B /* Debug */,
+				F3A499D2255618AF00E92A8B /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
