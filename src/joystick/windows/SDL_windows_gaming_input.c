@@ -575,6 +575,18 @@ WGI_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 
     }
 }
 
+static SDL_bool
+WGI_JoystickHasLED(SDL_Joystick * joystick)
+{
+    return SDL_FALSE;
+}
+
+static int
+WGI_JoystickSetLED(SDL_Joystick * joystick, Uint8 red, Uint8 green, Uint8 blue)
+{
+    return SDL_Unsupported();
+}
+
 static Uint8
 ConvertHatValue(__x_ABI_CWindows_CGaming_CInput_CGameControllerSwitchPosition value)
 {
@@ -717,6 +729,8 @@ SDL_JoystickDriver SDL_WGI_JoystickDriver =
     WGI_JoystickGetDeviceInstanceID,
     WGI_JoystickOpen,
     WGI_JoystickRumble,
+    WGI_JoystickHasLED,
+    WGI_JoystickSetLED,
     WGI_JoystickUpdate,
     WGI_JoystickClose,
     WGI_JoystickQuit,
