@@ -78,6 +78,7 @@ static id disconnectObserver = nil;
 #if (__IPHONE_OS_VERSION_MAX_ALLOWED >= 140000) || (__APPLETV_OS_VERSION_MAX_ALLOWED >= 140000) || (__MAC_OS_VERSION_MAX_ALLOWED > 1500000)
 #define ENABLE_MFI_BATTERY
 #define ENABLE_MFI_RUMBLE
+#define ENABLE_MFI_LIGHT
 #define ENABLE_PHYSICAL_INPUT_PROFILE
 #endif
 
@@ -1085,12 +1086,39 @@ IOS_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 
 static SDL_bool
 IOS_JoystickHasLED(SDL_Joystick * joystick)
 {
+#ifdef ENABLE_MFI_LIGHT
+    @autoreleasepool {
+        if (@available(iOS 14.0, tvOS 14.0, *)) {
+            GCController *controller = joystick->hwdata->controller;
+            GCDeviceLight *light = controller.light;
+            if (light) {
+                return SDL_TRUE;
+            }
+        }
+    }
+#endif /* ENABLE_MFI_LIGHT */
+
     return SDL_FALSE;
 }
 
 static int
 IOS_JoystickSetLED(SDL_Joystick * joystick, Uint8 red, Uint8 green, Uint8 blue)
 {
+#ifdef ENABLE_MFI_LIGHT
+    @autoreleasepool {
+        if (@available(iOS 14.0, tvOS 14.0, *)) {
+            GCController *controller = joystick->hwdata->controller;
+            GCDeviceLight *light = controller.light;
+            if (light) {
+                light.color = [[GCColor alloc] initWithRed:(float)red / 255.0f
+                                                     green:(float)green / 255.0f
+                                                      blue:(float)blue / 255.0f];
+                return 0;
+            }
+        }
+    }
+#endif /* ENABLE_MFI_LIGHT */
+
     return SDL_Unsupported();
 }
 
