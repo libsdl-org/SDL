@@ -851,21 +851,21 @@ GL_QueueDrawPoints(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FP
 static int
 GL_QueueDrawLines(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FPoint * points, int count)
 {
-    GLfloat *verts;
     int i;
-
-    SDL_assert(count >= 2);  /* should have been checked at the higher level. */
-
-    verts = (GLfloat *) SDL_AllocateRenderVertices(renderer, (count-1) * 4 * sizeof (GLfloat), 0, &cmd->data.draw.first);
+    const size_t vertlen = (sizeof (GLfloat) * 2) * count;
+    GLfloat *verts = (GLfloat *) SDL_AllocateRenderVertices(renderer, vertlen, 0, &cmd->data.draw.first);
     if (!verts) {
         return -1;
     }
-
     cmd->data.draw.count = count;
 
-    /* GL_LINE_STRIP seems to be unreliable on various drivers, so try
-       to build out our own GL_LINES.  :(
-       If the line segment is completely horizontal or vertical,
+    /* Offset to hit the center of the pixel. */
+    for (i = 0; i < count; i++) {
+        *(verts++) = 0.5f + points[i].x;
+        *(verts++) = 0.5f + points[i].y;
+    }
+
+    /* If the line segment is completely horizontal or vertical,
        make it one pixel longer, to satisfy the diamond-exit rule.
        We should probably do this for diagonal lines too, but we'd have to
        do some trigonometry to figure out the correct pixel and generally
@@ -873,30 +873,19 @@ GL_QueueDrawLines(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FPo
        that are missing a pixel that frames something and not arbitrary
        angles. Maybe !!! FIXME for later, though. */
 
-    for (i = 0; i < count-1; i++, points++) {
-        GLfloat xstart = 0.5f + points[0].x;   /* 0.5f to get to the center of the pixel. */
-        GLfloat ystart = 0.5f + points[0].y;
-        GLfloat xend = 0.5f + points[1].x;
-        GLfloat yend = 0.5f + points[1].y;
+    /* update the last line. */
+    verts -= 4;
+    {
+        const GLfloat xstart = verts[0];
+        const GLfloat ystart = verts[1];
+        const GLfloat xend = verts[2];
+        const GLfloat yend = verts[3];
 
-        if (xstart == xend) {  /* vertical line */
-            if (yend > ystart) {
-                yend += 1.0f;
-            } else {
-                ystart += 1.0f;
-            }
-        } else if (ystart == yend) {  /* horizontal line */
-            if (xend > xstart) {
-                xend += 1.0f;
-            } else {
-                xstart += 1.0f;
-            }
+        if (ystart == yend) {  /* horizontal line */
+            verts[2] += (xend > xstart) ? 1.0f : -1.0f;
+        } else if (xstart == xend) {  /* vertical line */
+            verts[3] += (yend > ystart) ? 1.0f : -1.0f;
         }
-
-        *(verts++) = xstart;
-        *(verts++) = ystart;
-        *(verts++) = xend;
-        *(verts++) = yend;
     }
 
     return 0;
@@ -1267,10 +1256,9 @@ GL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
                 const size_t count = cmd->data.draw.count;
                 SDL_assert(count >= 2);
                 SetDrawState(data, cmd, SHADER_SOLID);
-                data->glBegin(GL_LINES);
-                for (i = 0; i < count-1; ++i, verts += 4) {
+                data->glBegin(GL_LINE_STRIP);
+                for (i = 0; i < count; ++i, verts += 2) {
                     data->glVertex2f(verts[0], verts[1]);
-                    data->glVertex2f(verts[2], verts[3]);
                 }
                 data->glEnd();
                 break;
