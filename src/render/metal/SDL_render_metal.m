@@ -1066,31 +1066,18 @@ METAL_QueueDrawLines(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_
        angles. Maybe !!! FIXME for later, though. */
 
     points += count - 2;  /* update the last line. */
-    verts += count - 2;
+    verts += (count * 2) - 2;
 
-    float xstart = /*0.5f +*/ points[0].x;   /* 0.5f to get to the center of the pixel. */
-    float ystart = /*0.5f +*/ points[0].y;
-    float xend = /*0.5f +*/ points[1].x;
-    float yend = /*0.5f +*/ points[1].y;
+    const float xstart = points[0].x;
+    const float ystart = points[0].y;
+    const float xend = points[1].x;
+    const float yend = points[1].y;
 
-    if (xstart == xend) {  /* vertical line */
-        if (yend > ystart) {
-            yend += 1.0f;
-        } else {
-            ystart += 1.0f;
-        }
-    } else if (ystart == yend) {  /* horizontal line */
-        if (xend > xstart) {
-            xend += 1.0f;
-        } else {
-            xstart += 1.0f;
-        }
+    if (ystart == yend) {  /* horizontal line */
+        verts[0] += (xend > xstart) ? 1.0f : -1.0f;
+    } else if (xstart == xend) {  /* vertical line */
+        verts[1] += (yend > ystart) ? 1.0f : -1.0f;
     }
-
-    *(verts++) = xstart;
-    *(verts++) = ystart;
-    *(verts++) = xend;
-    *(verts++) = yend;
 
     return 0;
 }
