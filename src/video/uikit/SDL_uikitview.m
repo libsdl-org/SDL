@@ -69,7 +69,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
         UISwipeGestureRecognizer *swipeRight = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipeGesture:)];
         swipeRight.direction = UISwipeGestureRecognizerDirectionRight;
         [self addGestureRecognizer:swipeRight];
-#else
+#elif defined(__IPHONE_13_4)
         if (@available(iOS 13.4, *)) {
             UIPanGestureRecognizer *mouseWheelRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(mouseWheelGesture:)];
             mouseWheelRecognizer.allowedScrollTypesMask = UIScrollTypeMaskDiscrete;
