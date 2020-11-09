@@ -162,13 +162,13 @@ static SDL_bool
 rtkit_setpriority_realtime(pid_t thread, int rt_priority)
 {
     Uint64 ui64 = (Uint64)thread;
-    Sint32 si32 = (Sint32)rt_priority;
+    Uint32 ui32 = (Uint32)rt_priority;
     SDL_DBusContext *dbus = SDL_DBus_GetContext();
 
     pthread_once(&rtkit_initialize_once, rtkit_initialize);
 
-    if (si32 > rtkit_max_realtime_priority)
-        si32 = rtkit_max_realtime_priority;
+    if (ui32 > rtkit_max_realtime_priority)
+        ui32 = rtkit_max_realtime_priority;
 
     // We always perform the thread state changes necessary for rtkit.
     // This wastes some system calls if the state is already set but
@@ -180,7 +180,7 @@ rtkit_setpriority_realtime(pid_t thread, int rt_priority)
 
     if (!dbus || !SDL_DBus_CallMethodOnConnection(dbus->system_conn,
             RTKIT_DBUS_NODE, RTKIT_DBUS_PATH, RTKIT_DBUS_INTERFACE, "MakeThreadRealtime",
-            DBUS_TYPE_UINT64, &ui64, DBUS_TYPE_INT32, &si32, DBUS_TYPE_INVALID,
+            DBUS_TYPE_UINT64, &ui64, DBUS_TYPE_UINT32, &ui32, DBUS_TYPE_INVALID,
             DBUS_TYPE_INVALID)) {
         return SDL_FALSE;
     }
