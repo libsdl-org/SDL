@@ -27,7 +27,7 @@
  *
  * Original version by Sam Lantinga
  *
- * Mattias Engdegård (Yorick): Rewrite. New encoding format, encoder and
+ * Mattias EngdegÃ¥rd (Yorick): Rewrite. New encoding format, encoder and
  * decoder. Added per-surface alpha blitter. Added per-pixel alpha
  * format, encoder and blitter.
  *
