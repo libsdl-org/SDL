@@ -865,15 +865,8 @@ GL_QueueDrawLines(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FPo
         *(verts++) = 0.5f + points[i].y;
     }
 
-    /* If the line segment is completely horizontal or vertical,
-       make it one pixel longer, to satisfy the diamond-exit rule.
-       We should probably do this for diagonal lines too, but we'd have to
-       do some trigonometry to figure out the correct pixel and generally
-       when we have problems with pixel perfection, it's for straight lines
-       that are missing a pixel that frames something and not arbitrary
-       angles. Maybe !!! FIXME for later, though. */
-
-    /* update the last line. */
+    /* Make the last line segment one pixel longer, to satisfy the
+       diamond-exit rule. */
     verts -= 4;
     {
         const GLfloat xstart = verts[0];
@@ -885,6 +878,12 @@ GL_QueueDrawLines(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FPo
             verts[2] += (xend > xstart) ? 1.0f : -1.0f;
         } else if (xstart == xend) {  /* vertical line */
             verts[3] += (yend > ystart) ? 1.0f : -1.0f;
+        } else {  /* bump a pixel in the direction we are moving in. */
+            const GLfloat deltax = xend - xstart;
+            const GLfloat deltay = yend - ystart;
+            const GLfloat angle = SDL_atan2f(deltay, deltax);
+            verts[2] += SDL_cosf(angle);
+            verts[3] += SDL_sinf(angle);
         }
     }
 
