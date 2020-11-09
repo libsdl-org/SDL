@@ -1378,19 +1378,22 @@ X11_DispatchEvent(_THIS)
                 X11_ReadProperty(&p, display, data->xwindow, videodata->PRIMARY);
 
                 if (p.format == 8) {
-                    char* saveptr = NULL;
-                    char* name = X11_XGetAtomName(display, target);
-                    char *token = SDL_strtokr((char *) p.data, "\r\n", &saveptr);
-                    while (token != NULL) {
-                        if (SDL_strcmp("text/plain", name)==0) {
-                            SDL_SendDropText(data->window, token);
-                        } else if (SDL_strcmp("text/uri-list", name)==0) {
-                            char *fn = X11_URIToLocal(token);
-                            if (fn) {
-                                SDL_SendDropFile(data->window, fn);
+                    char *saveptr = NULL;
+                    char *name = X11_XGetAtomName(display, target);
+                    if (name) {
+                        char *token = SDL_strtokr((char *) p.data, "\r\n", &saveptr);
+                        while (token != NULL) {
+                            if (SDL_strcmp("text/plain", name) == 0) {
+                                SDL_SendDropText(data->window, token);
+                            } else if (SDL_strcmp("text/uri-list", name) == 0) {
+                                char *fn = X11_URIToLocal(token);
+                                if (fn) {
+                                    SDL_SendDropFile(data->window, fn);
+                                }
                             }
+                            token = SDL_strtokr(NULL, "\r\n", &saveptr);
                         }
-                        token = SDL_strtokr(NULL, "\r\n", &saveptr);
+                        X11_XFree(name);
                     }
                     SDL_SendDropComplete(data->window);
                 }
