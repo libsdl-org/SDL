@@ -947,7 +947,7 @@ GLES_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vert
                 SDL_assert(count >= 2);
                 SetDrawState(data, cmd);
                 data->glVertexPointer(2, GL_FLOAT, 0, verts);
-                data->glDrawArrays(GL_LINE_STRIP, 0, (GLsizei) ((count-1) * 2));
+                data->glDrawArrays(GL_LINE_STRIP, 0, (GLsizei) count);
                 break;
             }
 
