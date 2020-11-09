@@ -48,7 +48,12 @@ SDL_WinRTGetFSPathUNICODE(SDL_WinRT_Path pathType)
         {
             static wstring path;
             if (path.empty()) {
-                path = Windows::ApplicationModel::Package::Current->InstalledLocation->Path->Data();
+                /* Windows 1903 supports mods, via the EffectiveLocation API */
+                if (Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent("Windows.Foundation.UniversalApiContract", 8, 0)) {
+                    path = Windows::ApplicationModel::Package::Current->EffectiveLocation->Path->Data();
+                } else {
+                    path = Windows::ApplicationModel::Package::Current->InstalledLocation->Path->Data();
+                }
             }
             return path.c_str();
         }
