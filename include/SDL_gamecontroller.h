@@ -422,7 +422,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_GameControllerHasLED(SDL_GameController *ga
 /**
  *  Update a controller's LED color.
  *
- *  \param gamecontroller The joystick to update
+ *  \param gamecontroller The controller to update
  *  \param red The intensity of the red LED
  *  \param green The intensity of the green LED
  *  \param blue The intensity of the blue LED
