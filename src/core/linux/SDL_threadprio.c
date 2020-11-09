@@ -106,7 +106,8 @@ rtkit_initialize_thread()
         return SDL_FALSE;
     }
 
-    rlimit.rlim_cur = rlimit.rlim_max;
+    // Current rtkit allows a max of 200ms right now
+    rlimit.rlim_cur = rlimit.rlim_max = 100000;
     err = setrlimit(nLimit, &rlimit);
     if (err)
     {
