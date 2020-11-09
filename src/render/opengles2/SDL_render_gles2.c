@@ -1340,7 +1340,7 @@ GLES2_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
                 const size_t count = cmd->data.draw.count;
                 SDL_assert(count >= 2);
                 if (SetDrawState(data, cmd, GLES2_IMAGESOURCE_SOLID) == 0) {
-                    data->glDrawArrays(GL_LINE_STRIP, 0, (GLsizei) ((count-1) * 2));
+                    data->glDrawArrays(GL_LINE_STRIP, 0, (GLsizei) count);
                 }
                 break;
             }
