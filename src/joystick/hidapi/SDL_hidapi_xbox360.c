@@ -845,44 +845,12 @@ HIDAPI_DriverXbox360_HandleStatePacket(SDL_Joystick *joystick, hid_device *dev, 
         SDL_bool dpad_down = SDL_FALSE;
         SDL_bool dpad_left = SDL_FALSE;
         SDL_bool dpad_right = SDL_FALSE;
+        Uint8 dpad_state = (((data[11] >> 2) & 0x0F) | (data[12] & 0x0F));
 
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_LEFTSTICK, (data[11] & 0x01) ? SDL_PRESSED : SDL_RELEASED);
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_RIGHTSTICK, (data[11] & 0x02) ? SDL_PRESSED : SDL_RELEASED);
 
-        switch (data[11] & 0x3C) {
-        case 4:
-            dpad_up = SDL_TRUE;
-            break;
-        case 8:
-            dpad_up = SDL_TRUE;
-            dpad_right = SDL_TRUE;
-            break;
-        case 12:
-            dpad_right = SDL_TRUE;
-            break;
-        case 16:
-            dpad_right = SDL_TRUE;
-            dpad_down = SDL_TRUE;
-            break;
-        case 20:
-            dpad_down = SDL_TRUE;
-            break;
-        case 24:
-            dpad_left = SDL_TRUE;
-            dpad_down = SDL_TRUE;
-            break;
-        case 28:
-            dpad_left = SDL_TRUE;
-            break;
-        case 32:
-            dpad_up = SDL_TRUE;
-            dpad_left = SDL_TRUE;
-            break;
-        default:
-            break;
-        }
-
-        switch (data[12] & 0x0F) {
+        switch (dpad_state) {
         case 1:
             dpad_up = SDL_TRUE;
             break;
