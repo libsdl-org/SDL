@@ -43,14 +43,6 @@ static int forward_argc;
 static char **forward_argv;
 static int exit_status;
 
-#if defined(SDL_MAIN_NEEDED) && !defined(IOS_DYLIB)
-/* SDL is being built as a static library, include main() */
-int main(int argc, char *argv[])
-{
-    return SDL_UIKitRunApp(argc, argv, SDL_main);
-}
-#endif /* SDL_MAIN_NEEDED && !IOS_DYLIB */
-
 int SDL_UIKitRunApp(int argc, char *argv[], SDL_main_func mainFunction)
 {
     int i;
