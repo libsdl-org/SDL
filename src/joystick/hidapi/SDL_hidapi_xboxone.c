@@ -651,6 +651,60 @@ HIDAPI_DriverXboxOneBluetooth_HandleStatePacketV2(SDL_Joystick *joystick, hid_de
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_DPAD_LEFT, dpad_left);
     }
 
+    /*
+        Paddle bits:
+            P3: 0x04 (A)    P1: 0x01 (B)
+            P4: 0x08 (X)    P2: 0x02 (Y)
+    */
+    if (ctx->has_paddles && (size == 39 || size == 55)) {
+        int paddle_index;
+        int button1_bit;
+        int button2_bit;
+        int button3_bit;
+        int button4_bit;
+        SDL_bool paddles_mapped;
+
+        if (size == 55) {
+            /* Initial firmware for the Xbox Elite Series 2 controller */
+            paddle_index = 33;
+            button1_bit = 0x01;
+            button2_bit = 0x02;
+            button3_bit = 0x04;
+            button4_bit = 0x08;
+            paddles_mapped = (data[35] != 0);
+        } else if (size == 39) {
+            /* Updated firmware for the Xbox Elite Series 2 controller */
+            paddle_index = 17;
+            button1_bit = 0x01;
+            button2_bit = 0x02;
+            button3_bit = 0x04;
+            button4_bit = 0x08;
+            paddles_mapped = (data[19] != 0);
+        }
+
+#ifdef DEBUG_XBOX_PROTOCOL
+        SDL_Log(">>> Paddles: %d,%d,%d,%d mapped = %s\n",
+            (data[paddle_index] & button1_bit) ? 1 : 0,
+            (data[paddle_index] & button2_bit) ? 1 : 0,
+            (data[paddle_index] & button3_bit) ? 1 : 0,
+            (data[paddle_index] & button4_bit) ? 1 : 0,
+            paddles_mapped ? "TRUE" : "FALSE"
+        );
+#endif
+
+        if (paddles_mapped) {
+            /* Respect that the paddles are being used for other controls and don't pass them on to the app */
+            data[paddle_index] = 0;
+        }
+
+        if (ctx->last_state[paddle_index] != data[paddle_index]) {
+            SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_MISC1 + 0, (data[paddle_index] & button1_bit) ? SDL_PRESSED : SDL_RELEASED);
+            SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_MISC1 + 1, (data[paddle_index] & button2_bit) ? SDL_PRESSED : SDL_RELEASED);
+            SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_MISC1 + 2, (data[paddle_index] & button3_bit) ? SDL_PRESSED : SDL_RELEASED);
+            SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_MISC1 + 3, (data[paddle_index] & button4_bit) ? SDL_PRESSED : SDL_RELEASED);
+        }
+    }
+
     axis = (int)*(Uint16*)(&data[1]) - 0x8000;
     SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_LEFTX, axis);
     axis = (int)*(Uint16*)(&data[3]) - 0x8000;
@@ -717,15 +771,14 @@ HIDAPI_DriverXboxOne_UpdateDevice(SDL_HIDAPI_Device *device)
         if (ctx->bluetooth) {
             switch (data[0]) {
             case 0x01:
-                switch (size) {
-                case 16:
+                if (size == 16) {
                     HIDAPI_DriverXboxOneBluetooth_HandleStatePacketV1(joystick, device->dev, ctx, data, size);
-                    break;
-                case 17:
+                } else if (size > 16) {
                     HIDAPI_DriverXboxOneBluetooth_HandleStatePacketV2(joystick, device->dev, ctx, data, size);
-                    break;
-                default:
-                    break;
+                } else {
+#ifdef DEBUG_JOYSTICK
+                    SDL_Log("Unknown Xbox One Bluetooth packet size: %d\n", size);
+#endif
                 }
                 break;
             case 0x02:
