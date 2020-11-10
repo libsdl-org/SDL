@@ -235,7 +235,7 @@ IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controlle
             /* Assume DS4 Slim unless/until GCController flows VID/PID */
             vendor = USB_VENDOR_SONY;
             product = USB_PRODUCT_SONY_DS4_SLIM;
-            if ( device->has_dualshock_touchpad ) {
+            if (device->has_dualshock_touchpad) {
                 subtype = 1;
             } else {
                 subtype = 0;
@@ -305,9 +305,11 @@ IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controlle
 
     *guid16++ = SDL_SwapLE16(device->button_mask);
 
-    if (subtype != 0) {
+    if (vendor == USB_VENDOR_APPLE) {
         /* Note that this is an MFI controller and what subtype it is */
         device->guid.data[14] = 'm';
+        device->guid.data[15] = subtype;
+    } else {
         device->guid.data[15] = subtype;
     }
 
