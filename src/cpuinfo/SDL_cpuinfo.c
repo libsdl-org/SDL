@@ -705,7 +705,7 @@ SDL_GetCPUCacheLineSize(void)
     const char *cpuType = SDL_GetCPUType();
     int a, b, c, d;
     (void) a; (void) b; (void) c; (void) d;
-    if (SDL_strcmp(cpuType, "GenuineIntel") == 0) {
+   if (SDL_strcmp(cpuType, "GenuineIntel") == 0 || SDL_strcmp(cpuType, "CentaurHauls") == 0 || SDL_strcmp(cpuType, "  Shanghai  ") == 0) {
         cpuid(0x00000001, a, b, c, d);
         return (((b >> 8) & 0xff) * 8);
     } else if (SDL_strcmp(cpuType, "AuthenticAMD") == 0 || SDL_strcmp(cpuType, "HygonGenuine") == 0) {
