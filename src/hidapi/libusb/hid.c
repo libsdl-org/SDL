@@ -982,9 +982,9 @@ hid_device * HID_API_EXPORT hid_open_path(const char *path, int bExclusive)
 			libusb_get_config_descriptor(usb_dev, 0, &conf_desc);
 		if (!conf_desc)
 			continue;
-		for (j = 0; j < conf_desc->bNumInterfaces; j++) {
+		for (j = 0; j < conf_desc->bNumInterfaces && !good_open; j++) {
 			const struct libusb_interface *intf = &conf_desc->interface[j];
-			for (k = 0; k < intf->num_altsetting; k++) {
+			for (k = 0; k < intf->num_altsetting && !good_open; k++) {
 				const struct libusb_interface_descriptor *intf_desc;
 				intf_desc = &intf->altsetting[k];
 				if (should_enumerate_interface(desc.idVendor, intf_desc)) {

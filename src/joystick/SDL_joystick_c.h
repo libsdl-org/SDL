@@ -64,6 +64,9 @@ extern SDL_GameControllerType SDL_GetJoystickGameControllerType(const char *name
 /* Function to return whether a joystick is an Xbox One Elite controller */
 extern SDL_bool SDL_IsJoystickXboxOneElite(Uint16 vendor_id, Uint16 product_id);
 
+/* Function to return whether a joystick is an Xbox One Series X controller */
+extern SDL_bool SDL_IsJoystickXboxOneSeriesX(Uint16 vendor_id, Uint16 product_id);
+
 /* Function to return whether a joystick is a PS4 controller */
 extern SDL_bool SDL_IsJoystickPS4(Uint16 vendor_id, Uint16 product_id);
 

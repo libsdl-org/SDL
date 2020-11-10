@@ -125,6 +125,7 @@ typedef struct {
     Uint8 sequence;
     Uint8 last_state[USB_PACKET_LENGTH];
     SDL_bool has_paddles;
+    SDL_bool has_share_button;
 } SDL_DriverXboxOne_Context;
 
 
@@ -146,6 +147,12 @@ static SDL_bool
 ControllerHasPaddles(Uint16 vendor_id, Uint16 product_id)
 {
     return SDL_IsJoystickXboxOneElite(vendor_id, product_id);
+}
+
+static SDL_bool
+ControllerHasShareButton(Uint16 vendor_id, Uint16 product_id)
+{
+    return SDL_IsJoystickXboxOneSeriesX(vendor_id, product_id);
 }
 
 /* Return true if this controller sends the 0x02 "waiting for init" packet */
@@ -299,9 +306,16 @@ HIDAPI_DriverXboxOne_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joyst
     ctx->input_ready = SDL_TRUE;
     ctx->sequence = 1;
     ctx->has_paddles = ControllerHasPaddles(ctx->vendor_id, ctx->product_id);
+    ctx->has_share_button = ControllerHasShareButton(ctx->vendor_id, ctx->product_id);
 
     /* Initialize the joystick capabilities */
-    joystick->nbuttons = ctx->has_paddles ? 19 : 15;
+    joystick->nbuttons = 15;
+    if (ctx->has_share_button) {
+        joystick->nbuttons += 1;
+    }
+    if (ctx->has_paddles) {
+        joystick->nbuttons += 4;
+    }
     joystick->naxes = SDL_CONTROLLER_AXIS_MAX;
     joystick->epowerlevel = SDL_JOYSTICK_POWER_WIRED;
 
@@ -380,6 +394,10 @@ HIDAPI_DriverXboxOne_HandleStatePacket(SDL_Joystick *joystick, hid_device *dev, 
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_RIGHTSTICK, (data[5] & 0x80) ? SDL_PRESSED : SDL_RELEASED);
     }
 
+    if (ctx->has_share_button && ctx->last_state[18] != data[18]) {
+        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_MISC1, (data[18] & 0x01) ? SDL_PRESSED : SDL_RELEASED);
+    }
+
     /* Xbox One S report is 18 bytes
        Xbox One Elite Series 1 report is 33 bytes, paddles in data[32], mode in data[32] & 0x10, both modes have mapped paddles by default
         Paddle bits:
@@ -434,10 +452,11 @@ HIDAPI_DriverXboxOne_HandleStatePacket(SDL_Joystick *joystick, hid_device *dev, 
         }
 
         if (ctx->last_state[paddle_index] != data[paddle_index]) {
-            SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_MISC1 + 0, (data[paddle_index] & button1_bit) ? SDL_PRESSED : SDL_RELEASED);
-            SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_MISC1 + 1, (data[paddle_index] & button2_bit) ? SDL_PRESSED : SDL_RELEASED);
-            SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_MISC1 + 2, (data[paddle_index] & button3_bit) ? SDL_PRESSED : SDL_RELEASED);
-            SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_MISC1 + 3, (data[paddle_index] & button4_bit) ? SDL_PRESSED : SDL_RELEASED);
+            int nButton = SDL_CONTROLLER_BUTTON_MISC1 + ctx->has_share_button;
+            SDL_PrivateJoystickButton(joystick, nButton++, (data[paddle_index] & button1_bit) ? SDL_PRESSED : SDL_RELEASED);
+            SDL_PrivateJoystickButton(joystick, nButton++, (data[paddle_index] & button2_bit) ? SDL_PRESSED : SDL_RELEASED);
+            SDL_PrivateJoystickButton(joystick, nButton++, (data[paddle_index] & button3_bit) ? SDL_PRESSED : SDL_RELEASED);
+            SDL_PrivateJoystickButton(joystick, nButton++, (data[paddle_index] & button4_bit) ? SDL_PRESSED : SDL_RELEASED);
         }
     }
 

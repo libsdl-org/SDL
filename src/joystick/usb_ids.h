@@ -50,6 +50,8 @@
 #define USB_PRODUCT_XBOX_ONE_S                          0x02ea
 #define USB_PRODUCT_XBOX_ONE_S_REV1_BLUETOOTH           0x02e0
 #define USB_PRODUCT_XBOX_ONE_S_REV2_BLUETOOTH           0x02fd
+#define USB_PRODUCT_XBOX_ONE_SERIES_X                   0x0b12
+#define USB_PRODUCT_XBOX_ONE_SERIES_X_BLUETOOTH         0x0b13
 
 #endif /* usb_ids_h_ */
 
