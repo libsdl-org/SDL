@@ -41,7 +41,15 @@ typedef enum
 {
     k_EPS4ReportIdUsbState = 1,
     k_EPS4ReportIdUsbEffects = 5,
-    k_EPS4ReportIdBluetoothState = 17,
+    k_EPS4ReportIdBluetoothState1 = 17,
+    k_EPS4ReportIdBluetoothState2 = 18,
+    k_EPS4ReportIdBluetoothState3 = 19,
+    k_EPS4ReportIdBluetoothState4 = 20,
+    k_EPS4ReportIdBluetoothState5 = 21,
+    k_EPS4ReportIdBluetoothState6 = 22,
+    k_EPS4ReportIdBluetoothState7 = 23,
+    k_EPS4ReportIdBluetoothState8 = 24,
+    k_EPS4ReportIdBluetoothState9 = 25,
     k_EPS4ReportIdBluetoothEffects = 17,
     k_EPS4ReportIdDisconnectMessage = 226,
 } EPS4ReportId;
@@ -524,9 +532,19 @@ HIDAPI_DriverPS4_UpdateDevice(SDL_HIDAPI_Device *device)
         case k_EPS4ReportIdUsbState:
             HIDAPI_DriverPS4_HandleStatePacket(joystick, device->dev, ctx, (PS4StatePacket_t *)&data[1]);
             break;
-        case k_EPS4ReportIdBluetoothState:
-            /* Bluetooth state packets have two additional bytes at the beginning */
-            HIDAPI_DriverPS4_HandleStatePacket(joystick, device->dev, ctx, (PS4StatePacket_t *)&data[3]);
+        case k_EPS4ReportIdBluetoothState1:
+        case k_EPS4ReportIdBluetoothState2:
+        case k_EPS4ReportIdBluetoothState3:
+        case k_EPS4ReportIdBluetoothState4:
+        case k_EPS4ReportIdBluetoothState5:
+        case k_EPS4ReportIdBluetoothState6:
+        case k_EPS4ReportIdBluetoothState7:
+        case k_EPS4ReportIdBluetoothState8:
+        case k_EPS4ReportIdBluetoothState9:
+            /* Bluetooth state packets have two additional bytes at the beginning, the first notes if HID is present */
+            if (data[1] & 0x80) {
+                HIDAPI_DriverPS4_HandleStatePacket(joystick, device->dev, ctx, (PS4StatePacket_t*)&data[3]);
+            }
             break;
         default:
 #ifdef DEBUG_JOYSTICK
