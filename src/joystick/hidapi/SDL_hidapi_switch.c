@@ -40,7 +40,6 @@
 
 /* Define this if you want to log all packets from the controller */
 /*#define DEBUG_SWITCH_PROTOCOL*/
-#define DEBUG_SWITCH_PROTOCOL
 
 /* Define this to get log output for rumble logic */
 /*#define DEBUG_RUMBLE*/
