@@ -177,7 +177,7 @@ SDL_SensorGetDeviceType(int device_index)
     return type;
 }
 
-SDL_SensorType
+int
 SDL_SensorGetDeviceNonPortableType(int device_index)
 {
     SDL_SensorDriver *driver;
