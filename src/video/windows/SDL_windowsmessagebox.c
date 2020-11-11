@@ -24,10 +24,9 @@
 
 #ifdef HAVE_LIMITS_H
 #include <limits.h>
-#else
+#endif
 #ifndef SIZE_MAX
 #define SIZE_MAX ((size_t)-1)
-#endif
 #endif
 
 #include "../../core/windows/SDL_windows.h"
