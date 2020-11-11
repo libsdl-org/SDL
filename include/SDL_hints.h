@@ -799,8 +799,31 @@ extern "C" {
 *
 *  pthread hint values are "current", "other", "fifo" and "rr".
 *  Currently no other platform hint values are defined but may be in the future.
+*
+*  \note On Linux, the kernel may send SIGKILL to realtime tasks which exceed the distro
+*  configured execution budget for rtkit. This budget is queriably through RLIMIT_RTTIME
+*  after calling SDL_SetThreadPriority().
 */
 #define SDL_HINT_THREAD_PRIORITY_POLICY         "SDL_THREAD_PRIORITY_POLICY"
+
+/**
+ *  \brief Specifies whether SDL_THREAD_PRIORITY_TIME_CRITICAL should be treated as realtime.
+ *
+ *  On some platforms, like Linux, a realtime priority thread may be subject to restrictions
+ *  that require special handling by the application. This hint exists to let SDL know that
+ *  the app is prepared to handle said restrictions.
+ * 
+ *  On Linux, SDL will apply the following configuration to any thread that becomes realtime:
+ *   * The SCHED_RESET_ON_FORK bit will be set on the scheduling policy,
+ *   * An RLIMIT_RTTIME budget will be configured to the rtkit specified limit.
+ *     * Exceeding this limit will result in the kernel sending SIGKILL to the app,
+ *     * Refer to the man pages for more information.
+ * 
+ *  This variable can be set to the following values:
+ *    "0"       - default platform specific behaviour
+ *    "1"       - Force SDL_THREAD_PRIORITY_TIME_CRITICAL to a realtime scheduling policy
+ */
+#define SDL_HINT_THREAD_FORCE_REALTIME_TIME_CRITICAL "SDL_THREAD_FORCE_REALTIME_TIME_CRITICAL"
 
 /**
  *  \brief If set to 1, then do not allow high-DPI windows. ("Retina" on Mac and iOS)

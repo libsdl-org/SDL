@@ -50,6 +50,7 @@
 static pthread_once_t rtkit_initialize_once = PTHREAD_ONCE_INIT;
 static Sint32 rtkit_min_nice_level = -20;
 static Sint32 rtkit_max_realtime_priority = 99;
+static Sint64 rtkit_max_rttime_usec = 200000;
 
 static void
 rtkit_initialize()
@@ -67,10 +68,16 @@ rtkit_initialize()
                                             DBUS_TYPE_INT32, &rtkit_max_realtime_priority)) {
         rtkit_max_realtime_priority = 99;
     }
+
+    /* Try getting maximum rttime allowed by rtkit: exceeding this value will result in SIGKILL */
+    if (!dbus || !SDL_DBus_QueryPropertyOnConnection(dbus->system_conn, RTKIT_DBUS_NODE, RTKIT_DBUS_PATH, RTKIT_DBUS_INTERFACE, "RTTimeUSecMax",
+                                            DBUS_TYPE_INT64, &rtkit_max_rttime_usec)) {
+        rtkit_max_rttime_usec = 200000;
+    }
 }
 
 static SDL_bool
-rtkit_initialize_thread()
+rtkit_initialize_realtime_thread()
 {
     // Following is an excerpt from rtkit README that outlines the requirements
     // a thread must meet before making rtkit requests:
@@ -107,7 +114,8 @@ rtkit_initialize_thread()
     }
 
     // Current rtkit allows a max of 200ms right now
-    rlimit.rlim_cur = rlimit.rlim_max = 100000;
+    rlimit.rlim_max = rtkit_max_rttime_usec;
+    rlimit.rlim_cur = rlimit.rlim_max / 2;
     err = setrlimit(nLimit, &rlimit);
     if (err)
     {
@@ -142,14 +150,6 @@ rtkit_setpriority_nice(pid_t thread, int nice_level)
     if (si32 < rtkit_min_nice_level)
         si32 = rtkit_min_nice_level;
 
-    // We always perform the thread state changes necessary for rtkit.
-    // This wastes some system calls if the state is already set but
-    // typically code sets a thread priority and leaves it so it's
-    // not expected that this wasted effort will be an issue.
-    // We also do not quit if this fails, we let the rtkit request
-    // go through to determine whether it really needs to fail or not.
-    rtkit_initialize_thread();
-
     if (!dbus || !SDL_DBus_CallMethodOnConnection(dbus->system_conn,
             RTKIT_DBUS_NODE, RTKIT_DBUS_PATH, RTKIT_DBUS_INTERFACE, "MakeThreadHighPriority",
             DBUS_TYPE_UINT64, &ui64, DBUS_TYPE_INT32, &si32, DBUS_TYPE_INVALID,
@@ -177,7 +177,7 @@ rtkit_setpriority_realtime(pid_t thread, int rt_priority)
     // not expected that this wasted effort will be an issue.
     // We also do not quit if this fails, we let the rtkit request
     // go through to determine whether it really needs to fail or not.
-    rtkit_initialize_thread();
+    rtkit_initialize_realtime_thread();
 
     if (!dbus || !SDL_DBus_CallMethodOnConnection(dbus->system_conn,
             RTKIT_DBUS_NODE, RTKIT_DBUS_PATH, RTKIT_DBUS_INTERFACE, "MakeThreadRealtime",
