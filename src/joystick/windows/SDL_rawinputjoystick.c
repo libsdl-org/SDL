@@ -40,7 +40,7 @@
 #include "../../core/windows/SDL_windows.h"
 #include "../hidapi/SDL_hidapijoystick_c.h"
 
-#ifndef SDL_JOYSTICK_HIDAPI_XBOX360
+#if !defined(SDL_JOYSTICK_HIDAPI) || !defined(SDL_JOYSTICK_HIDAPI_XBOX360)
 #error RAWINPUT requires the XBOX360 HIDAPI driver
 #endif
 
