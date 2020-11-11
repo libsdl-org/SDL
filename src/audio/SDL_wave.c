@@ -22,14 +22,13 @@
 
 #ifdef HAVE_LIMITS_H
 #include <limits.h>
-#else
-#ifndef SIZE_MAX
-#define SIZE_MAX ((size_t)-1)
 #endif
 #ifndef INT_MAX
 /* Make a lucky guess. */
 #define INT_MAX SDL_MAX_SINT32
 #endif
+#ifndef SIZE_MAX
+#define SIZE_MAX ((size_t)-1)
 #endif
 
 /* Microsoft WAVE file loading routines */
@@ -928,7 +927,7 @@ IMA_ADPCM_DecodeBlockHeader(ADPCM_DecoderState *state)
 {
     Sint16 step;
     Uint32 c;
-    Uint8 *cstate = state->cstate;
+    Uint8 *cstate = (Uint8 *) state->cstate;
 
     for (c = 0; c < state->channels; c++) {
         size_t o = state->block.pos + c * 4;
@@ -1561,7 +1560,7 @@ WaveReadPartialChunkData(SDL_RWops *src, WaveChunk *chunk, size_t length)
     }
 
     if (length > 0) {
-        chunk->data = SDL_malloc(length);
+        chunk->data = (Uint8 *) SDL_malloc(length);
         if (chunk->data == NULL) {
             return SDL_OutOfMemory();
         }
