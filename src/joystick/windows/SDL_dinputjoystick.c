@@ -728,12 +728,11 @@ EnumJoystickPresentCallback(const DIDEVICEINSTANCE * pdidInstance, VOID * pConte
 SDL_bool
 SDL_DINPUT_JoystickPresent(Uint16 vendor, Uint16 product, Uint16 version)
 {
-    if (dinput == NULL)
-    {
-            return SDL_FALSE;
-    }
-
     EnumJoystickPresentData data;
+
+    if (dinput == NULL) {
+        return SDL_FALSE;
+    }
 
     data.vendor = vendor;
     data.product = product;
