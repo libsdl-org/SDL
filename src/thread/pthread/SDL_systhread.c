@@ -208,7 +208,7 @@ SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
     int pri_policy;
     pthread_t thread = pthread_self();
     const char *policyhint = SDL_GetHint(SDL_HINT_THREAD_PRIORITY_POLICY);
-    const SDL_bool allow_realtime_hint = SDL_GetHintBoolean(SDL_HINT_THREAD_FORCE_REALTIME_TIME_CRITICAL, SDL_FALSE);
+    const SDL_bool timecritical_realtime_hint = SDL_GetHintBoolean(SDL_HINT_THREAD_FORCE_REALTIME_TIME_CRITICAL, SDL_FALSE);
 
     if (pthread_getschedparam(thread, &policy, &sched) != 0) {
         return SDL_SetError("pthread_getschedparam() failed");
@@ -229,12 +229,16 @@ SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
         pri_policy = SCHED_RR;
         break;
 #else
-        pri_policy = allow_realtime_hint ? SCHED_RR : SCHED_OTHER;
+        pri_policy = SCHED_OTHER;
         break;
 #endif
     default:
         pri_policy = policy;
         break;
+    }
+
+    if (timecritical_realtime_hint && priority == SDL_THREAD_PRIORITY_TIME_CRITICAL) {
+        pri_policy = SCHED_RR;
     }
 
     if (policyhint) {
