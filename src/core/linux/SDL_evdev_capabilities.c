@@ -33,6 +33,24 @@ SDL_EVDEV_GuessDeviceClass(unsigned long bitmask_ev[NBITS(EV_MAX)],
     int devclass = 0;
     unsigned long keyboard_mask;
 
+    /* X, Y, Z axes but no buttons probably means an accelerometer */
+    if (test_bit(EV_ABS, bitmask_ev) &&
+        test_bit(ABS_X, bitmask_abs) &&
+        test_bit(ABS_Y, bitmask_abs) &&
+        test_bit(ABS_Z, bitmask_abs) &&
+        !test_bit(EV_KEY, bitmask_ev)) {
+        return SDL_UDEV_DEVICE_ACCELEROMETER;
+    }
+
+    /* RX, RY, RZ axes but no buttons also probably means an accelerometer */
+    if (test_bit(EV_ABS, bitmask_ev) &&
+        test_bit(ABS_RX, bitmask_abs) &&
+        test_bit(ABS_RY, bitmask_abs) &&
+        test_bit(ABS_RZ, bitmask_abs) &&
+        !test_bit(EV_KEY, bitmask_ev)) {
+        return SDL_UDEV_DEVICE_ACCELEROMETER;
+    }
+
     if (test_bit(EV_ABS, bitmask_ev) &&
         test_bit(ABS_X, bitmask_abs) && test_bit(ABS_Y, bitmask_abs)) {
         if (test_bit(BTN_STYLUS, bitmask_key) || test_bit(BTN_TOOL_PEN, bitmask_key)) {
