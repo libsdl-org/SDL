@@ -24735,7 +24735,7 @@ $as_echo "#define SDL_AUDIO_DRIVER_ANDROID 1" >>confdefs.h
         # Set up files for the joystick library
         if test x$enable_joystick = xyes; then
           case $ARCH in
-            linux)
+            linux|freebsd)
 
 $as_echo "#define SDL_JOYSTICK_LINUX 1" >>confdefs.h
 
@@ -24756,7 +24756,7 @@ $as_echo "#define SDL_JOYSTICK_ANDROID 1" >>confdefs.h
         # Set up files for the haptic library
         if test x$enable_haptic = xyes; then
           case $ARCH in
-            linux)
+            linux|freebsd)
                 if test x$use_input_events = xyes; then
 
 $as_echo "#define SDL_HAPTIC_LINUX 1" >>confdefs.h

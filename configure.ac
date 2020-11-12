@@ -3575,7 +3575,7 @@ case "$host" in
         # Set up files for the joystick library
         if test x$enable_joystick = xyes; then
           case $ARCH in
-            linux)
+            linux|freebsd)
                 AC_DEFINE(SDL_JOYSTICK_LINUX, 1, [ ])
                 SOURCES="$SOURCES $srcdir/src/joystick/linux/*.c"
                 SOURCES="$SOURCES $srcdir/src/joystick/steam/*.c"
@@ -3592,7 +3592,7 @@ case "$host" in
         # Set up files for the haptic library
         if test x$enable_haptic = xyes; then
           case $ARCH in
-            linux)
+            linux|freebsd)
                 if test x$use_input_events = xyes; then
                     AC_DEFINE(SDL_HAPTIC_LINUX, 1, [ ])
                     SOURCES="$SOURCES $srcdir/src/haptic/linux/*.c"
