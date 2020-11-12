@@ -160,7 +160,7 @@ static ULONG STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_Release(__FI
     return 1;
 }
 
-static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdded(__FIEventHandler_1_Windows__CGaming__CInput__CRawGameController * This, IInspectable *sender, __x_ABI_CWindows_CGaming_CInput_CIRawGameController * *e)
+static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdded(__FIEventHandler_1_Windows__CGaming__CInput__CRawGameController * This, IInspectable *sender, __x_ABI_CWindows_CGaming_CInput_CIRawGameController *e)
 {
     HRESULT hr;
     __x_ABI_CWindows_CGaming_CInput_CIRawGameController *controller = NULL;
@@ -293,7 +293,7 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
     return S_OK;
 }
 
-static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeRemoved(__FIEventHandler_1_Windows__CGaming__CInput__CRawGameController * This, IInspectable *sender, __x_ABI_CWindows_CGaming_CInput_CIRawGameController * *e)
+static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeRemoved(__FIEventHandler_1_Windows__CGaming__CInput__CRawGameController * This, IInspectable *sender, __x_ABI_CWindows_CGaming_CInput_CIRawGameController *e)
 {
     HRESULT hr;
     __x_ABI_CWindows_CGaming_CInput_CIRawGameController *controller = NULL;
@@ -368,7 +368,7 @@ WGI_JoystickInit(void)
             HSTRING hNamespaceString;
 
             pNamespace = L"Windows.Gaming.Input.RawGameController";
-            hr = WindowsCreateStringFunc(pNamespace, SDL_wcslen(pNamespace), &hNamespaceString);
+            hr = WindowsCreateStringFunc(pNamespace, (UINT32)SDL_wcslen(pNamespace), &hNamespaceString);
             if (SUCCEEDED(hr)) {
                 hr = RoGetActivationFactoryFunc(hNamespaceString, &IID_IRawGameControllerStatics, &wgi.statics);
                 if (!SUCCEEDED(hr)) {
@@ -378,7 +378,7 @@ WGI_JoystickInit(void)
             }
 
             pNamespace = L"Windows.Gaming.Input.ArcadeStick";
-            hr = WindowsCreateStringFunc(pNamespace, SDL_wcslen(pNamespace), &hNamespaceString);
+            hr = WindowsCreateStringFunc(pNamespace, (UINT32)SDL_wcslen(pNamespace), &hNamespaceString);
             if (SUCCEEDED(hr)) {
                 hr = RoGetActivationFactoryFunc(hNamespaceString, &IID_IArcadeStickStatics, &wgi.arcade_stick_statics);
                 if (SUCCEEDED(hr)) {
@@ -390,7 +390,7 @@ WGI_JoystickInit(void)
             }
 
             pNamespace = L"Windows.Gaming.Input.FlightStick";
-            hr = WindowsCreateStringFunc(pNamespace, SDL_wcslen(pNamespace), &hNamespaceString);
+            hr = WindowsCreateStringFunc(pNamespace, (UINT32)SDL_wcslen(pNamespace), &hNamespaceString);
             if (SUCCEEDED(hr)) {
                 hr = RoGetActivationFactoryFunc(hNamespaceString, &IID_IFlightStickStatics, &wgi.flight_stick_statics);
                 if (!SUCCEEDED(hr)) {
@@ -400,7 +400,7 @@ WGI_JoystickInit(void)
             }
 
             pNamespace = L"Windows.Gaming.Input.Gamepad";
-            hr = WindowsCreateStringFunc(pNamespace, SDL_wcslen(pNamespace), &hNamespaceString);
+            hr = WindowsCreateStringFunc(pNamespace, (UINT32)SDL_wcslen(pNamespace), &hNamespaceString);
             if (SUCCEEDED(hr)) {
                 hr = RoGetActivationFactoryFunc(hNamespaceString, &IID_IGamepadStatics, &wgi.gamepad_statics);
                 if (SUCCEEDED(hr)) {
@@ -412,7 +412,7 @@ WGI_JoystickInit(void)
             }
 
             pNamespace = L"Windows.Gaming.Input.RacingWheel";
-            hr = WindowsCreateStringFunc(pNamespace, SDL_wcslen(pNamespace), &hNamespaceString);
+            hr = WindowsCreateStringFunc(pNamespace, (UINT32)SDL_wcslen(pNamespace), &hNamespaceString);
             if (SUCCEEDED(hr)) {
                 hr = RoGetActivationFactoryFunc(hNamespaceString, &IID_IRacingWheelStatics, &wgi.racing_wheel_statics);
                 if (SUCCEEDED(hr)) {
@@ -694,7 +694,7 @@ WGI_JoystickQuit(void)
 {
     if (wgi.statics) {
         while (wgi.controller_count > 0) {
-            IEventHandler_CRawGameControllerVtbl_InvokeRemoved(&controller_removed, NULL, (__x_ABI_CWindows_CGaming_CInput_CIRawGameController **)wgi.controllers[wgi.controller_count - 1].controller);
+            IEventHandler_CRawGameControllerVtbl_InvokeRemoved(&controller_removed, NULL, (__x_ABI_CWindows_CGaming_CInput_CIRawGameController *)wgi.controllers[wgi.controller_count - 1].controller);
         }
         if (wgi.controllers) {
             SDL_free(wgi.controllers);
