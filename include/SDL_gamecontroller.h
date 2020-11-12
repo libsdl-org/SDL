@@ -398,7 +398,7 @@ extern DECLSPEC Uint8 SDLCALL SDL_GameControllerGetButton(SDL_GameController *ga
                                                           SDL_GameControllerButton button);
 
 /**
- *  Trigger a rumble effect
+ *  Start a rumble effect
  *  Each call to this function cancels any previous rumble effect, and calling it with 0 intensity stops any rumbling.
  *
  *  \param gamecontroller The controller to vibrate
@@ -406,9 +406,22 @@ extern DECLSPEC Uint8 SDLCALL SDL_GameControllerGetButton(SDL_GameController *ga
  *  \param high_frequency_rumble The intensity of the high frequency (right) rumble motor, from 0 to 0xFFFF
  *  \param duration_ms The duration of the rumble effect, in milliseconds
  *
- *  \return 0, or -1 if rumble isn't supported on this joystick
+ *  \return 0, or -1 if rumble isn't supported on this controller
  */
 extern DECLSPEC int SDLCALL SDL_GameControllerRumble(SDL_GameController *gamecontroller, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms);
+
+/**
+ *  Start a rumble effect in the game controller's triggers
+ *  Each call to this function cancels any previous trigger rumble effect, and calling it with 0 intensity stops any rumbling.
+ *
+ *  \param gamecontroller The controller to vibrate
+ *  \param left_rumble The intensity of the left trigger rumble motor, from 0 to 0xFFFF
+ *  \param right_rumble The intensity of the right trigger rumble motor, from 0 to 0xFFFF
+ *  \param duration_ms The duration of the rumble effect, in milliseconds
+ *
+ *  \return 0, or -1 if rumble isn't supported on this controller
+ */
+extern DECLSPEC int SDLCALL SDL_GameControllerRumbleTriggers(SDL_GameController *gamecontroller, Uint16 left_rumble, Uint16 right_rumble, Uint32 duration_ms);
 
 /**
  *  Return whether a controller has an LED

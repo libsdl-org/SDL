@@ -772,3 +772,5 @@
 #define SDL_GameControllerSetLED SDL_GameControllerSetLED_REAL
 #define SDL_JoystickHasLED SDL_JoystickHasLED_REAL
 #define SDL_JoystickSetLED SDL_JoystickSetLED_REAL
+#define SDL_GameControllerRumbleTriggers SDL_GameControllerRumbleTriggers_REAL
+#define SDL_JoystickRumbleTriggers SDL_JoystickRumbleTriggers_REAL

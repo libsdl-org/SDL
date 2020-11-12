@@ -38,6 +38,7 @@ struct joystick_hwdata
     __x_ABI_CWindows_CGaming_CInput_CIGameController *gamecontroller;
     __x_ABI_CWindows_CGaming_CInput_CIGameControllerBatteryInfo *battery;
     __x_ABI_CWindows_CGaming_CInput_CIGamepad *gamepad;
+    __x_ABI_CWindows_CGaming_CInput_CGamepadVibration vibration;
     UINT64 timestamp;
 };
 
@@ -559,12 +560,31 @@ WGI_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 
 
     if (hwdata->gamepad) {
         HRESULT hr;
-        struct __x_ABI_CWindows_CGaming_CInput_CGamepadVibration vibration;
 
-        SDL_zero(vibration);
-        vibration.LeftMotor = (DOUBLE)low_frequency_rumble / SDL_MAX_UINT16;
-        vibration.RightMotor = (DOUBLE)high_frequency_rumble / SDL_MAX_UINT16;
-        hr = __x_ABI_CWindows_CGaming_CInput_CIGamepad_put_Vibration(hwdata->gamepad, vibration);
+        hwdata->vibration.LeftMotor = (DOUBLE)low_frequency_rumble / SDL_MAX_UINT16;
+        hwdata->vibration.RightMotor = (DOUBLE)high_frequency_rumble / SDL_MAX_UINT16;
+        hr = __x_ABI_CWindows_CGaming_CInput_CIGamepad_put_Vibration(hwdata->gamepad, hwdata->vibration);
+        if (SUCCEEDED(hr)) {
+            return 0;
+        } else {
+            return SDL_SetError("Setting vibration failed: 0x%x\n", hr);
+        }
+    } else {
+        return SDL_Unsupported();
+    }
+}
+
+static int
+WGI_JoystickRumbleTriggers(SDL_Joystick * joystick, Uint16 left_rumble, Uint16 right_rumble)
+{
+    struct joystick_hwdata *hwdata = joystick->hwdata;
+
+    if (hwdata->gamepad) {
+        HRESULT hr;
+
+        hwdata->vibration.LeftTrigger = (DOUBLE)left_rumble / SDL_MAX_UINT16;
+        hwdata->vibration.RightTrigger = (DOUBLE)right_rumble / SDL_MAX_UINT16;
+        hr = __x_ABI_CWindows_CGaming_CInput_CIGamepad_put_Vibration(hwdata->gamepad, hwdata->vibration);
         if (SUCCEEDED(hr)) {
             return 0;
         } else {
@@ -729,6 +749,7 @@ SDL_JoystickDriver SDL_WGI_JoystickDriver =
     WGI_JoystickGetDeviceInstanceID,
     WGI_JoystickOpen,
     WGI_JoystickRumble,
+    WGI_JoystickRumbleTriggers,
     WGI_JoystickHasLED,
     WGI_JoystickSetLED,
     WGI_JoystickUpdate,
