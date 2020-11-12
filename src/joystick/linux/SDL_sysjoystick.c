@@ -84,6 +84,19 @@
 #define DEBUG_INPUT_EVENTS 1
 #endif
 
+typedef enum
+{
+    ENUMERATION_UNSET,
+    ENUMERATION_LIBUDEV,
+    ENUMERATION_FALLBACK
+} EnumerationMethod;
+
+#if SDL_USE_LIBUDEV
+static EnumerationMethod enumeration_method = ENUMERATION_UNSET;
+#else
+const EnumerationMethod enumeration_method = ENUMERATION_FALLBACK;
+#endif
+
 static int MaybeAddDevice(const char *path);
 #if SDL_USE_LIBUDEV
 static int MaybeRemoveDevice(const char *path);
@@ -108,10 +121,8 @@ static SDL_joylist_item *SDL_joylist = NULL;
 static SDL_joylist_item *SDL_joylist_tail = NULL;
 static int numjoysticks = 0;
 
-#if !SDL_USE_LIBUDEV
 static Uint32 last_joy_detect_time;
 static time_t last_input_dir_mtime;
-#endif
 
 #define test_bit(nr, addr) \
     (((1UL << ((nr) % (sizeof(long) * 8))) & ((addr)[(nr) / (sizeof(long) * 8)])) != 0)
@@ -147,15 +158,8 @@ IsVirtualJoystick(Uint16 vendor, Uint16 product, Uint16 version, const char *nam
 #endif /* SDL_JOYSTICK_HIDAPI */
 
 static int
-IsJoystick(int fd, char **name_return, SDL_JoystickGUID *guid)
+GuessIsJoystick(int fd)
 {
-    struct input_id inpid;
-    Uint16 *guid16 = (Uint16 *)guid->data;
-    char *name;
-    char product_string[128];
-
-#if !SDL_USE_LIBUDEV
-    /* When udev is enabled we only get joystick devices here, so there's no need to test them */
     unsigned long evbit[NBITS(EV_MAX)] = { 0 };
     unsigned long keybit[NBITS(KEY_MAX)] = { 0 };
     unsigned long absbit[NBITS(ABS_MAX)] = { 0 };
@@ -170,7 +174,22 @@ IsJoystick(int fd, char **name_return, SDL_JoystickGUID *guid)
           test_bit(ABS_X, absbit) && test_bit(ABS_Y, absbit))) {
         return 0;
     }
-#endif
+
+    return 1;
+}
+
+static int
+IsJoystick(int fd, char **name_return, SDL_JoystickGUID *guid)
+{
+    struct input_id inpid;
+    Uint16 *guid16 = (Uint16 *)guid->data;
+    char *name;
+    char product_string[128];
+
+    /* When udev is enabled we only get joystick devices here, so there's no need to test them */
+    if (enumeration_method == ENUMERATION_FALLBACK && !GuessIsJoystick(fd)) {
+        return 0;
+    }
 
     if (ioctl(fd, EVIOCGID, &inpid) < 0) {
         return 0;
@@ -484,11 +503,8 @@ static void SteamControllerDisconnectedCallback(int device_instance)
 }
 
 static void
-LINUX_JoystickDetect(void)
+LINUX_FallbackJoystickDetect(void)
 {
-#if SDL_USE_LIBUDEV
-    SDL_UDEV_Poll();
-#else
     const Uint32 SDL_JOY_DETECT_INTERVAL_MS = 3000;  /* Update every 3 seconds */
     Uint32 now = SDL_GetTicks();
 
@@ -519,7 +535,20 @@ LINUX_JoystickDetect(void)
 
         last_joy_detect_time = now;
     }
+}
+
+static void
+LINUX_JoystickDetect(void)
+{
+#if SDL_USE_LIBUDEV
+    if (enumeration_method == ENUMERATION_LIBUDEV) {
+        SDL_UDEV_Poll();
+    }
+    else
 #endif
+    {
+        LINUX_FallbackJoystickDetect();
+    }
 
     HandlePendingRemovals();
 
@@ -529,6 +558,17 @@ LINUX_JoystickDetect(void)
 static int
 LINUX_JoystickInit(void)
 {
+#if SDL_USE_LIBUDEV
+    if (enumeration_method == ENUMERATION_UNSET) {
+        if (SDL_getenv("SDL_JOYSTICK_DISABLE_UDEV") != NULL) {
+            enumeration_method = ENUMERATION_FALLBACK;
+        }
+        else {
+            enumeration_method = ENUMERATION_LIBUDEV;
+        }
+    }
+#endif
+
     /* First see if the user specified one or more joysticks to use */
     if (SDL_getenv("SDL_JOYSTICK_DEVICE") != NULL) {
         char *envcopy, *envpath, *delim;
@@ -549,26 +589,30 @@ LINUX_JoystickInit(void)
                              SteamControllerDisconnectedCallback);
 
 #if SDL_USE_LIBUDEV
-    if (SDL_UDEV_Init() < 0) {
-        return SDL_SetError("Could not initialize UDEV");
+    if (enumeration_method == ENUMERATION_LIBUDEV) {
+        if (SDL_UDEV_Init() < 0) {
+            return SDL_SetError("Could not initialize UDEV");
+        }
+
+        /* Set up the udev callback */
+        if (SDL_UDEV_AddCallback(joystick_udev_callback) < 0) {
+            SDL_UDEV_Quit();
+            return SDL_SetError("Could not set up joystick <-> udev callback");
+        }
+
+        /* Force a scan to build the initial device list */
+        SDL_UDEV_Scan();
     }
-
-    /* Set up the udev callback */
-    if (SDL_UDEV_AddCallback(joystick_udev_callback) < 0) {
-        SDL_UDEV_Quit();
-        return SDL_SetError("Could not set up joystick <-> udev callback");
-    }
-
-    /* Force a scan to build the initial device list */
-    SDL_UDEV_Scan();
-#else
-    /* Force immediate joystick detection */
-    last_joy_detect_time = 0;
-    last_input_dir_mtime = 0;
-
-    /* Report all devices currently present */
-    LINUX_JoystickDetect();
+    else
 #endif
+    {
+        /* Force immediate joystick detection */
+        last_joy_detect_time = 0;
+        last_input_dir_mtime = 0;
+
+        /* Report all devices currently present */
+        LINUX_JoystickDetect();
+    }
 
     return 0;
 }
@@ -1191,8 +1235,10 @@ LINUX_JoystickQuit(void)
     numjoysticks = 0;
 
 #if SDL_USE_LIBUDEV
-    SDL_UDEV_DelCallback(joystick_udev_callback);
-    SDL_UDEV_Quit();
+    if (enumeration_method == ENUMERATION_LIBUDEV) {
+        SDL_UDEV_DelCallback(joystick_udev_callback);
+        SDL_UDEV_Quit();
+    }
 #endif
 
     SDL_QuitSteamControllers();
