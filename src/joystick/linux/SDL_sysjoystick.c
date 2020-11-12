@@ -32,6 +32,7 @@
 #include <errno.h>              /* errno, strerror */
 #include <fcntl.h>
 #include <limits.h>             /* For the definition of PATH_MAX */
+#include <sys/inotify.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
 #include <dirent.h>
@@ -40,6 +41,7 @@
 #include "SDL_assert.h"
 #include "SDL_hints.h"
 #include "SDL_joystick.h"
+#include "SDL_log.h"
 #include "SDL_endian.h"
 #include "SDL_timer.h"
 #include "../../events/SDL_events_c.h"
@@ -92,16 +94,10 @@ typedef enum
     ENUMERATION_FALLBACK
 } EnumerationMethod;
 
-#if SDL_USE_LIBUDEV
 static EnumerationMethod enumeration_method = ENUMERATION_UNSET;
-#else
-const EnumerationMethod enumeration_method = ENUMERATION_FALLBACK;
-#endif
 
 static int MaybeAddDevice(const char *path);
-#if SDL_USE_LIBUDEV
 static int MaybeRemoveDevice(const char *path);
-#endif /* SDL_USE_LIBUDEV */
 
 /* A linked list of available joysticks */
 typedef struct SDL_joylist_item
@@ -121,6 +117,7 @@ typedef struct SDL_joylist_item
 static SDL_joylist_item *SDL_joylist = NULL;
 static SDL_joylist_item *SDL_joylist_tail = NULL;
 static int numjoysticks = 0;
+static int inotify_fd = -1;
 
 static Uint32 last_joy_detect_time;
 static time_t last_input_dir_mtime;
@@ -188,7 +185,7 @@ IsJoystick(int fd, char **name_return, SDL_JoystickGUID *guid)
     char product_string[128];
 
     /* When udev is enabled we only get joystick devices here, so there's no need to test them */
-    if (enumeration_method == ENUMERATION_FALLBACK && !GuessIsJoystick(fd)) {
+    if (enumeration_method != ENUMERATION_LIBUDEV && !GuessIsJoystick(fd)) {
         return 0;
     }
 
@@ -503,6 +500,75 @@ static void SteamControllerDisconnectedCallback(int device_instance)
     }
 }
 
+static int
+StrHasPrefix(const char *string, const char *prefix)
+{
+    return (SDL_strncmp(string, prefix, SDL_strlen(prefix)) == 0);
+}
+
+static int
+StrIsInteger(const char *string)
+{
+    const char *p;
+
+    if (*string == '\0') {
+        return 0;
+    }
+
+    for (p = string; *p != '\0'; p++) {
+        if (*p < '0' || *p > '9') {
+            return 0;
+        }
+    }
+
+    return 1;
+}
+
+static void
+LINUX_InotifyJoystickDetect(void)
+{
+    union
+    {
+        struct inotify_event event;
+        char storage[4096];
+        char enough_for_inotify[sizeof (struct inotify_event) + NAME_MAX + 1];
+    } buf;
+    ssize_t bytes;
+    size_t remain = 0;
+    size_t len;
+
+    bytes = read(inotify_fd, &buf, sizeof (buf));
+
+    if (bytes > 0) {
+        remain = (size_t) bytes;
+    }
+
+    while (remain > 0) {
+        if (buf.event.len > 0) {
+            if (StrHasPrefix(buf.event.name, "event") &&
+                StrIsInteger(buf.event.name + strlen ("event"))) {
+                char path[PATH_MAX];
+
+                SDL_snprintf(path, SDL_arraysize(path), "/dev/input/%s", buf.event.name);
+
+                if (buf.event.mask & (IN_CREATE | IN_MOVED_TO | IN_ATTRIB)) {
+                    MaybeAddDevice(path);
+                }
+                else if (buf.event.mask & (IN_DELETE | IN_MOVED_FROM)) {
+                    MaybeRemoveDevice(path);
+                }
+            }
+        }
+
+        len = sizeof (struct inotify_event) + buf.event.len;
+        remain -= len;
+
+        if (remain != 0) {
+            memmove (&buf.storage[0], &buf.storage[len], remain);
+        }
+    }
+}
+
 static void
 LINUX_FallbackJoystickDetect(void)
 {
@@ -547,7 +613,10 @@ LINUX_JoystickDetect(void)
     }
     else
 #endif
-    {
+    if (inotify_fd >= 0) {
+        LINUX_InotifyJoystickDetect();
+    }
+    else {
         LINUX_FallbackJoystickDetect();
     }
 
@@ -589,6 +658,10 @@ LINUX_JoystickInit(void)
     SDL_InitSteamControllers(SteamControllerConnectedCallback,
                              SteamControllerDisconnectedCallback);
 
+    /* Force immediate joystick detection if using fallback */
+    last_joy_detect_time = 0;
+    last_input_dir_mtime = 0;
+
 #if SDL_USE_LIBUDEV
     if (enumeration_method == ENUMERATION_LIBUDEV) {
         if (SDL_UDEV_Init() < 0) {
@@ -607,9 +680,28 @@ LINUX_JoystickInit(void)
     else
 #endif
     {
-        /* Force immediate joystick detection */
-        last_joy_detect_time = 0;
-        last_input_dir_mtime = 0;
+        inotify_fd = inotify_init1(IN_NONBLOCK | IN_CLOEXEC);
+
+        if (inotify_fd < 0) {
+            SDL_LogWarn(SDL_LOG_CATEGORY_INPUT,
+                        "Unable to initialize inotify, falling back to polling: %s",
+                        strerror (errno));
+        }
+        else {
+            /* We need to watch for attribute changes in addition to
+             * creation, because when a device is first created, it has
+             * permissions that we can't read. When udev chmods it to
+             * something that we maybe *can* read, we'll get an
+             * IN_ATTRIB event to tell us. */
+            if (inotify_add_watch(inotify_fd, "/dev/input",
+                                  IN_CREATE | IN_DELETE | IN_MOVE | IN_ATTRIB) < 0) {
+                close(inotify_fd);
+                inotify_fd = -1;
+                SDL_LogWarn(SDL_LOG_CATEGORY_INPUT,
+                            "Unable to add inotify watch, falling back to polling: %s",
+                            strerror (errno));
+            }
+        }
 
         /* Report all devices currently present */
         LINUX_JoystickDetect();
@@ -1223,6 +1315,9 @@ LINUX_JoystickQuit(void)
 {
     SDL_joylist_item *item = NULL;
     SDL_joylist_item *next = NULL;
+
+    close(inotify_fd);
+    inotify_fd = -1;
 
     for (item = SDL_joylist; item; item = next) {
         next = item->next;
