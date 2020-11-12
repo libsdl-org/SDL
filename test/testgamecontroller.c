@@ -114,6 +114,17 @@ UpdateWindowTitle()
     }
 }
 
+static Uint16 ConvertAxisToRumble(Sint16 axis)
+{
+    /* Only start rumbling if the axis is past the halfway point */
+    const int half_axis = (SDL_JOYSTICK_AXIS_MAX / 2);
+    if (axis > half_axis) {
+        return (Uint16)(axis - half_axis) * 4;
+    } else {
+        return 0;
+    }
+}
+
 void
 loop(void *arg)
 {
@@ -226,6 +237,16 @@ loop(void *arg)
             Uint16 low_frequency_rumble = SDL_GameControllerGetAxis(gamecontroller, SDL_CONTROLLER_AXIS_TRIGGERLEFT) * 2;
             Uint16 high_frequency_rumble = SDL_GameControllerGetAxis(gamecontroller, SDL_CONTROLLER_AXIS_TRIGGERRIGHT) * 2;
             SDL_GameControllerRumble(gamecontroller, low_frequency_rumble, high_frequency_rumble, 250);
+        }
+
+        /* Update trigger rumble based on thumbstick state */
+        {
+            Sint16 left_y = SDL_GameControllerGetAxis(gamecontroller, SDL_CONTROLLER_AXIS_LEFTY);
+            Sint16 right_y = SDL_GameControllerGetAxis(gamecontroller, SDL_CONTROLLER_AXIS_RIGHTY);
+            Uint16 left_rumble = ConvertAxisToRumble(~left_y);
+            Uint16 right_rumble = ConvertAxisToRumble(~right_y);
+
+            SDL_GameControllerRumbleTriggers(gamecontroller, left_rumble, right_rumble, 250);
         }
     }
 

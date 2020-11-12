@@ -922,6 +922,12 @@ DARWIN_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint
     return 0;
 }
 
+static int
+DARWIN_JoystickRumbleTriggers(SDL_Joystick * joystick, Uint16 left_rumble, Uint16 right_rumble)
+{
+    return SDL_Unsupported();
+}
+
 static SDL_bool
 DARWIN_JoystickHasLED(SDL_Joystick * joystick)
 {
@@ -1081,6 +1087,7 @@ SDL_JoystickDriver SDL_DARWIN_JoystickDriver =
     DARWIN_JoystickGetDeviceInstanceID,
     DARWIN_JoystickOpen,
     DARWIN_JoystickRumble,
+    DARWIN_JoystickRumbleTriggers,
     DARWIN_JoystickHasLED,
     DARWIN_JoystickSetLED,
     DARWIN_JoystickUpdate,

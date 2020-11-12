@@ -403,6 +403,12 @@ EMSCRIPTEN_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, 
     return SDL_Unsupported();
 }
 
+static int
+EMSCRIPTEN_JoystickRumbleTriggers(SDL_Joystick * joystick, Uint16 left_rumble, Uint16 right_rumble)
+{
+    return SDL_Unsupported();
+}
+
 static SDL_bool
 EMSCRIPTEN_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
 {
@@ -433,6 +439,7 @@ SDL_JoystickDriver SDL_EMSCRIPTEN_JoystickDriver =
     EMSCRIPTEN_JoystickGetDeviceInstanceID,
     EMSCRIPTEN_JoystickOpen,
     EMSCRIPTEN_JoystickRumble,
+    EMSCRIPTEN_JoystickRumbleTriggers,
     EMSCRIPTEN_JoystickHasLED,
     EMSCRIPTEN_JoystickSetLED,
     EMSCRIPTEN_JoystickUpdate,

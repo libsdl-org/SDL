@@ -64,6 +64,10 @@ struct _SDL_Joystick
     Uint16 high_frequency_rumble;
     Uint32 rumble_expiration;
 
+    Uint16 left_trigger_rumble;
+    Uint16 right_trigger_rumble;
+    Uint32 trigger_rumble_expiration;
+
     Uint8 led_red;
     Uint8 led_green;
     Uint8 led_blue;
@@ -126,6 +130,7 @@ typedef struct _SDL_JoystickDriver
 
     /* Rumble functionality */
     int (*Rumble)(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble);
+    int (*RumbleTriggers)(SDL_Joystick * joystick, Uint16 left_rumble, Uint16 right_rumble);
 
     /* LED functionality */
     SDL_bool (*HasLED)(SDL_Joystick * joystick);
