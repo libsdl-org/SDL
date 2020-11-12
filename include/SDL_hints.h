@@ -801,7 +801,7 @@ extern "C" {
 *  Currently no other platform hint values are defined but may be in the future.
 *
 *  \note On Linux, the kernel may send SIGKILL to realtime tasks which exceed the distro
-*  configured execution budget for rtkit. This budget is queriably through RLIMIT_RTTIME
+*  configured execution budget for rtkit. This budget can be queried through RLIMIT_RTTIME
 *  after calling SDL_SetThreadPriority().
 */
 #define SDL_HINT_THREAD_PRIORITY_POLICY         "SDL_THREAD_PRIORITY_POLICY"
