@@ -117,7 +117,7 @@ UpdateWindowTitle()
 static Uint16 ConvertAxisToRumble(Sint16 axis)
 {
     /* Only start rumbling if the axis is past the halfway point */
-    const int half_axis = (SDL_JOYSTICK_AXIS_MAX / 2);
+    const Sint16 half_axis = (Sint16)SDL_ceil(SDL_JOYSTICK_AXIS_MAX / 2.0f);
     if (axis > half_axis) {
         return (Uint16)(axis - half_axis) * 4;
     } else {
