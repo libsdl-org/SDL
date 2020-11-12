@@ -78,6 +78,7 @@
 #define BTN_DPAD_RIGHT  0x223
 #endif
 
+#include "../../core/linux/SDL_evdev_capabilities.h"
 #include "../../core/linux/SDL_udev.h"
 
 #if 0
@@ -123,10 +124,6 @@ static int numjoysticks = 0;
 
 static Uint32 last_joy_detect_time;
 static time_t last_input_dir_mtime;
-
-#define test_bit(nr, addr) \
-    (((1UL << ((nr) % (sizeof(long) * 8))) & ((addr)[(nr) / (sizeof(long) * 8)])) != 0)
-#define NBITS(x) ((((x)-1)/(sizeof(long) * 8))+1)
 
 static void
 FixupDeviceInfoForMapping(int fd, struct input_id *inpid)

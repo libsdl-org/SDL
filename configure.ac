@@ -3658,9 +3658,11 @@ case "$host" in
         fi
         # Set up files for evdev input
         if test x$use_input_events = xyes; then
-            SOURCES="$SOURCES $srcdir/src/core/linux/SDL_evdev*.c"
+            SOURCES="$SOURCES $srcdir/src/core/linux/SDL_evdev.c"
+            SOURCES="$SOURCES $srcdir/src/core/linux/SDL_evdev_kbd.c"
         fi       
         # Set up other core UNIX files
+        SOURCES="$SOURCES $srcdir/src/core/linux/SDL_evdev_capabilities.c"
         SOURCES="$SOURCES $srcdir/src/core/linux/SDL_threadprio.c"
         SOURCES="$SOURCES $srcdir/src/core/unix/*.c"
         ;;

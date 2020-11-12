@@ -44,6 +44,7 @@
 #include "SDL_scancode.h"
 #include "../../events/SDL_events_c.h"
 #include "../../events/scancodes_linux.h" /* adds linux_scancode_table */
+#include "../../core/linux/SDL_evdev_capabilities.h"
 #include "../../core/linux/SDL_udev.h"
 
 /* These are not defined in older Linux kernel headers */
