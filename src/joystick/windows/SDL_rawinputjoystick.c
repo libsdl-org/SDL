@@ -620,7 +620,7 @@ RAWINPUT_JoystickRumbleTriggers(SDL_Joystick * joystick, Uint16 left_rumble, Uin
     struct joystick_hwdata *hwdata = joystick->hwdata;
     SDL_RAWINPUT_Device *device = hwdata->device;
 
-    return device->driver->RumbleJoystickTriggers(&device->hiddevice, joystick, low_frequency_rumble, high_frequency_rumble);
+    return device->driver->RumbleJoystickTriggers(&device->hiddevice, joystick, left_rumble, right_rumble);
 }
 
 static SDL_bool
