@@ -24,6 +24,7 @@ TARGETS = \
 	testdrawchessboard$(EXE) \
 	testdropfile$(EXE) \
 	testerror$(EXE) \
+	testevdev$(EXE) \
 	testfile$(EXE) \
 	testfilesystem$(EXE) \
 	testgamecontroller$(EXE) \
@@ -146,6 +147,9 @@ testdropfile$(EXE): $(srcdir)/testdropfile.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
 testerror$(EXE): $(srcdir)/testerror.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+testevdev$(EXE): $(srcdir)/testevdev.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
 testfile$(EXE): $(srcdir)/testfile.c
