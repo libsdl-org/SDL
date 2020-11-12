@@ -125,7 +125,12 @@ typedef struct {
     Uint8 sequence;
     Uint8 last_state[USB_PACKET_LENGTH];
     SDL_bool has_paddles;
+    SDL_bool has_trigger_rumble;
     SDL_bool has_share_button;
+    Uint8 low_frequency_rumble;
+    Uint8 high_frequency_rumble;
+    Uint8 left_trigger_rumble;
+    Uint8 right_trigger_rumble;
 } SDL_DriverXboxOne_Context;
 
 
@@ -145,6 +150,12 @@ IsBluetoothXboxOneController(Uint16 vendor_id, Uint16 product_id)
 
 static SDL_bool
 ControllerHasPaddles(Uint16 vendor_id, Uint16 product_id)
+{
+    return SDL_IsJoystickXboxOneElite(vendor_id, product_id);
+}
+
+static SDL_bool
+ControllerHasTriggerRumble(Uint16 vendor_id, Uint16 product_id)
 {
     return SDL_IsJoystickXboxOneElite(vendor_id, product_id);
 }
@@ -306,6 +317,7 @@ HIDAPI_DriverXboxOne_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joyst
     ctx->input_ready = SDL_TRUE;
     ctx->sequence = 1;
     ctx->has_paddles = ControllerHasPaddles(ctx->vendor_id, ctx->product_id);
+    ctx->has_trigger_rumble = ControllerHasTriggerRumble(ctx->vendor_id, ctx->product_id);
     ctx->has_share_button = ControllerHasShareButton(ctx->vendor_id, ctx->product_id);
 
     /* Initialize the joystick capabilities */
@@ -323,15 +335,17 @@ HIDAPI_DriverXboxOne_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joyst
 }
 
 static int
-HIDAPI_DriverXboxOne_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+HIDAPI_DriverXboxOne_UpdateRumble(SDL_HIDAPI_Device *device)
 {
     SDL_DriverXboxOne_Context *ctx = (SDL_DriverXboxOne_Context *)device->context;
 
     if (ctx->bluetooth) {
         Uint8 rumble_packet[] = { 0x03, 0x0F, 0x00, 0x00, 0x00, 0x00, 0xff, 0x00, 0x00 };
 
-        rumble_packet[4] = (low_frequency_rumble >> 8);
-        rumble_packet[5] = (high_frequency_rumble >> 8);
+        rumble_packet[2] = ctx->left_trigger_rumble;
+        rumble_packet[3] = ctx->right_trigger_rumble;
+        rumble_packet[4] = ctx->low_frequency_rumble;
+        rumble_packet[5] = ctx->high_frequency_rumble;
 
         if (SDL_HIDAPI_SendRumble(device, rumble_packet, sizeof(rumble_packet)) != sizeof(rumble_packet)) {
             return SDL_SetError("Couldn't send rumble packet");
@@ -339,9 +353,10 @@ HIDAPI_DriverXboxOne_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joy
     } else {
         Uint8 rumble_packet[] = { 0x09, 0x00, 0x00, 0x09, 0x00, 0x0F, 0x00, 0x00, 0x00, 0x00, 0xFF, 0x00, 0xFF };
 
-        /* Magnitude is 1..100 so scale the 16-bit input here */
-        rumble_packet[8] = low_frequency_rumble / 655;
-        rumble_packet[9] = high_frequency_rumble / 655;
+        rumble_packet[6] = ctx->left_trigger_rumble;
+        rumble_packet[7] = ctx->right_trigger_rumble;
+        rumble_packet[8] = ctx->low_frequency_rumble;
+        rumble_packet[9] = ctx->high_frequency_rumble;
 
         if (SDL_HIDAPI_SendRumble(device, rumble_packet, sizeof(rumble_packet)) != sizeof(rumble_packet)) {
             return SDL_SetError("Couldn't send rumble packet");
@@ -351,9 +366,31 @@ HIDAPI_DriverXboxOne_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joy
 }
 
 static int
+HIDAPI_DriverXboxOne_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+{
+    SDL_DriverXboxOne_Context *ctx = (SDL_DriverXboxOne_Context *)device->context;
+
+    /* Magnitude is 1..100 so scale the 16-bit input here */
+    ctx->low_frequency_rumble = low_frequency_rumble / 655;
+    ctx->high_frequency_rumble = high_frequency_rumble / 655;
+
+    return HIDAPI_DriverXboxOne_UpdateRumble(device);
+}
+
+static int
 HIDAPI_DriverXboxOne_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
 {
-    return SDL_Unsupported();
+    SDL_DriverXboxOne_Context *ctx = (SDL_DriverXboxOne_Context *)device->context;
+
+    if (!ctx->has_trigger_rumble) {
+        return SDL_Unsupported();
+    }
+
+    /* Magnitude is 1..100 so scale the 16-bit input here */
+    ctx->left_trigger_rumble = left_rumble / 655;
+    ctx->right_trigger_rumble = right_rumble / 655;
+
+    return HIDAPI_DriverXboxOne_UpdateRumble(device);
 }
 
 static SDL_bool
