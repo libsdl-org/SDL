@@ -25,7 +25,7 @@
 #ifndef SDL_evdev_capabilities_h_
 #define SDL_evdev_capabilities_h_
 
-#if HAVE_LIBUDEV_H
+#if HAVE_LIBUDEV_H || defined(SDL_JOYSTICK_LINUX)
 
 #include <linux/input.h>
 
@@ -51,7 +51,7 @@ extern int SDL_EVDEV_GuessDeviceClass(unsigned long bitmask_ev[NBITS(EV_MAX)],
                                       unsigned long bitmask_key[NBITS(KEY_MAX)],
                                       unsigned long bitmask_rel[NBITS(REL_MAX)]);
 
-#endif /* HAVE_LIBUDEV_H */
+#endif /* HAVE_LIBUDEV_H || defined(SDL_JOYSTICK_LINUX) */
 
 #endif /* SDL_evdev_capabilities_h_ */
 

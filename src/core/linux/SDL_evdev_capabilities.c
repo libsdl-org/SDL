@@ -22,7 +22,7 @@
 
 #include "SDL_evdev_capabilities.h"
 
-#if HAVE_LIBUDEV_H
+#if HAVE_LIBUDEV_H || defined(SDL_JOYSTICK_LINUX)
 
 extern int
 SDL_EVDEV_GuessDeviceClass(unsigned long bitmask_ev[NBITS(EV_MAX)],
