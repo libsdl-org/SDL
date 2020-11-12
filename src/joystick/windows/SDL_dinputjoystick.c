@@ -514,11 +514,15 @@ SDL_DINPUT_JoystickInit(void)
     /* Because we used CoCreateInstance, we need to Initialize it, first. */
     instance = GetModuleHandle(NULL);
     if (instance == NULL) {
+        IDirectInput8_Release(dinput);
+        dinput = NULL;
         return SDL_SetError("GetModuleHandle() failed with error code %lu.", GetLastError());
     }
     result = IDirectInput8_Initialize(dinput, instance, DIRECTINPUT_VERSION);
 
     if (FAILED(result)) {
+        IDirectInput8_Release(dinput);
+        dinput = NULL;
         return SetDIerror("IDirectInput::Initialize", result);
     }
     return 0;
@@ -724,6 +728,11 @@ EnumJoystickPresentCallback(const DIDEVICEINSTANCE * pdidInstance, VOID * pConte
 SDL_bool
 SDL_DINPUT_JoystickPresent(Uint16 vendor, Uint16 product, Uint16 version)
 {
+    if (dinput == NULL)
+    {
+            return SDL_FALSE;
+    }
+
     EnumJoystickPresentData data;
 
     data.vendor = vendor;
