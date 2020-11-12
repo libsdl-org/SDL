@@ -697,7 +697,7 @@ HIDAPI_DriverXboxOneBluetooth_HandleStatePacketV2(SDL_Joystick *joystick, hid_de
             button3_bit = 0x04;
             button4_bit = 0x08;
             paddles_mapped = (data[35] != 0);
-        } else if (size == 39) {
+        } else /* if (size == 39) */ {
             /* Updated firmware for the Xbox Elite Series 2 controller */
             paddle_index = 17;
             button1_bit = 0x01;

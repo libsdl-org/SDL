@@ -132,6 +132,12 @@ HIDAPI_DriverPS5_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystic
     return SDL_Unsupported();
 }
 
+static int
+HIDAPI_DriverPS5_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
+{
+    return SDL_Unsupported();
+}
+
 static SDL_bool
 HIDAPI_DriverPS5_HasJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
@@ -401,6 +407,7 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverPS5 =
     HIDAPI_DriverPS5_UpdateDevice,
     HIDAPI_DriverPS5_OpenJoystick,
     HIDAPI_DriverPS5_RumbleJoystick,
+    HIDAPI_DriverPS5_RumbleJoystickTriggers,
     HIDAPI_DriverPS5_HasJoystickLED,
     HIDAPI_DriverPS5_SetJoystickLED,
     HIDAPI_DriverPS5_CloseJoystick,
