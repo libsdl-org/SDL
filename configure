@@ -22799,6 +22799,45 @@ $as_echo "#define SDL_INPUT_LINUXKD 1" >>confdefs.h
     fi
 }
 
+
+CheckInputKBIO()
+{
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for FreeBSD kbio.h" >&5
+$as_echo_n "checking for FreeBSD kbio.h... " >&6; }
+    use_input_kbio=no
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+      #include <sys/kbio.h>
+      #include <sys/ioctl.h>
+
+int
+main ()
+{
+
+    	accentmap_t accTable;
+        ioctl(0, KDENABIO, 1);
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+
+    use_input_kbio=yes
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $use_input_kbio" >&5
+$as_echo "$use_input_kbio" >&6; }
+    if test x$use_input_kbio = xyes; then
+
+$as_echo "#define SDL_INPUT_FBSDKBIO 1" >>confdefs.h
+
+        SUMMARY_input="${SUMMARY_input} fbsdkbio"
+    fi
+}
+
 CheckLibUDev()
 {
     # Check whether --enable-libudev was given.
@@ -24676,6 +24715,9 @@ case "$host" in
           linux)
               CheckInputKD
           ;;
+          freebsd)
+              CheckInputKBIO
+          ;;
         esac
         CheckTslib
         CheckUSBHID
@@ -24840,6 +24882,7 @@ $as_echo "#define SDL_TIMER_UNIX 1" >>confdefs.h
         if test x$use_input_events = xyes; then
             SOURCES="$SOURCES $srcdir/src/core/linux/SDL_evdev.c"
             SOURCES="$SOURCES $srcdir/src/core/linux/SDL_evdev_kbd.c"
+            SOURCES="$SOURCES $srcdir/src/core/freebsd/SDL_evdev_kbd_freebsd.c"
         fi
         # Set up other core UNIX files
         SOURCES="$SOURCES $srcdir/src/core/linux/SDL_evdev_capabilities.c"
