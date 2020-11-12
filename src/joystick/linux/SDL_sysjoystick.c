@@ -343,7 +343,6 @@ MaybeAddDevice(const char *path)
     return numjoysticks;
 }
 
-#if SDL_USE_LIBUDEV
 static int
 MaybeRemoveDevice(const char *path)
 {
@@ -386,7 +385,6 @@ MaybeRemoveDevice(const char *path)
 
     return -1;
 }
-#endif
 
 static void
 HandlePendingRemovals(void)
