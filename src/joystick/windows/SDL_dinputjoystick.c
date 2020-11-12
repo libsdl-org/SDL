@@ -419,7 +419,7 @@ SDL_IsXInputDevice(const WCHAR *name, const GUID* pGuidProductFromDirectInput)
 
     for (i = 0; i < SDL_RawDevListCount; i++) {
         RID_DEVICE_INFO rdi;
-        char devName[128];
+        char devName[MAX_PATH];
         UINT rdiSize = sizeof(rdi);
         UINT nameSize = SDL_arraysize(devName);
 
