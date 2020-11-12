@@ -160,19 +160,23 @@ GuessIsJoystick(int fd)
     unsigned long evbit[NBITS(EV_MAX)] = { 0 };
     unsigned long keybit[NBITS(KEY_MAX)] = { 0 };
     unsigned long absbit[NBITS(ABS_MAX)] = { 0 };
+    unsigned long relbit[NBITS(REL_MAX)] = { 0 };
+    int devclass;
 
     if ((ioctl(fd, EVIOCGBIT(0, sizeof(evbit)), evbit) < 0) ||
         (ioctl(fd, EVIOCGBIT(EV_KEY, sizeof(keybit)), keybit) < 0) ||
+        (ioctl(fd, EVIOCGBIT(EV_REL, sizeof(relbit)), relbit) < 0) ||
         (ioctl(fd, EVIOCGBIT(EV_ABS, sizeof(absbit)), absbit) < 0)) {
         return (0);
     }
 
-    if (!(test_bit(EV_KEY, evbit) && test_bit(EV_ABS, evbit) &&
-          test_bit(ABS_X, absbit) && test_bit(ABS_Y, absbit))) {
-        return 0;
+    devclass = SDL_EVDEV_GuessDeviceClass(evbit, absbit, keybit, relbit);
+
+    if (devclass & SDL_UDEV_DEVICE_JOYSTICK) {
+        return 1;
     }
 
-    return 1;
+    return 0;
 }
 
 static int
