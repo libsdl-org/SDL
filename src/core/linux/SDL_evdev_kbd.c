@@ -819,7 +819,7 @@ SDL_EVDEV_kbd_keycode(SDL_EVDEV_keyboard_state *kbd, unsigned int keycode, int d
     }
 }
 
-#else /* !SDL_INPUT_LINUXKD */
+#elif !defined(SDL_INPUT_FBSDKBIO) /* !SDL_INPUT_LINUXKD */
 
 SDL_EVDEV_keyboard_state *
 SDL_EVDEV_kbd_init(void)
