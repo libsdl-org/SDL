@@ -86,7 +86,7 @@ struct hid_device_ {
 	int device_handle;
 	int blocking;
 	int uses_numbered_reports;
-	int is_bluetooth;
+	int needs_ble_hack;
 };
 
 
@@ -119,7 +119,7 @@ static hid_device *new_hid_device(void)
 	dev->device_handle = -1;
 	dev->blocking = 1;
 	dev->uses_numbered_reports = 0;
-	dev->is_bluetooth = 0;
+	dev->needs_ble_hack = 0;
 
 	return dev;
 }
@@ -269,12 +269,12 @@ next_line:
 	return (found_id && found_name && found_serial);
 }
 
-static int is_bluetooth(hid_device *dev)
+static int is_BLE(hid_device *dev)
 {
 	struct udev *udev;
 	struct udev_device *udev_dev, *hid_dev;
 	struct stat s;
-	int ret = -1;
+	int ret;
 
 	/* Create the udev object */
 	udev = udev_new();
@@ -284,13 +284,13 @@ static int is_bluetooth(hid_device *dev)
 	}
 
 	/* Get the dev_t (major/minor numbers) from the file handle. */
-	ret = fstat(dev->device_handle, &s);
-	if (-1 == ret) {
+	if (fstat(dev->device_handle, &s) < 0) {
 		udev_unref(udev);
-		return ret;
+		return -1;
 	}
 
 	/* Open a udev device from the dev_t. 'c' means character device. */
+	ret = 0;
 	udev_dev = udev_device_new_from_devnum(udev, 'c', s.st_rdev);
 	if (udev_dev) {
 		hid_dev = udev_device_get_parent_with_subsystem_devtype(
@@ -314,7 +314,12 @@ static int is_bluetooth(hid_device *dev)
 			free(serial_number_utf8);
 			free(product_name_utf8);
 
-			ret = (bus_type == BUS_BLUETOOTH);
+			if (bus_type == BUS_BLUETOOTH) {
+				/* Right now the Steam Controller is the only BLE device that we send feature reports to */
+				if (dev_vid == 0x28de /* Valve */) {
+					ret = 1;
+				}
+			}
 
 			/* hid_dev doesn't need to be (and can't be) unref'd.
 			   I'm not sure why, but it'll throw double-free() errors. */
@@ -326,7 +331,6 @@ static int is_bluetooth(hid_device *dev)
 
 	return ret;
 }
-
 
 static int get_device_string(hid_device *dev, enum device_string_id key, wchar_t *string, size_t maxlen)
 {
@@ -741,7 +745,7 @@ hid_device * HID_API_EXPORT hid_open_path(const char *path, int bExclusive)
 				                      rpt_desc.size);
 		}
 
-		dev->is_bluetooth = (is_bluetooth(dev) == 1);
+		dev->needs_ble_hack = (is_BLE(dev) == 1);
 
 		return dev;
 	}
@@ -840,8 +844,8 @@ int HID_API_EXPORT hid_get_feature_report(hid_device *dev, unsigned char *data, 
 {
 	int res;
 
-	/* It looks like HIDIOCGFEATURE() on Bluetooth devices doesn't return the report number */
-	if (dev->is_bluetooth) {
+	/* It looks like HIDIOCGFEATURE() on Bluetooth LE devices doesn't return the report number */
+	if (dev->needs_ble_hack) {
 		data[1] = data[0];
 		++data;
 		--length;
@@ -849,7 +853,7 @@ int HID_API_EXPORT hid_get_feature_report(hid_device *dev, unsigned char *data, 
 	res = ioctl(dev->device_handle, HIDIOCGFEATURE(length), data);
 	if (res < 0)
 		perror("ioctl (GFEATURE)");
-	else if (dev->is_bluetooth)
+	else if (dev->needs_ble_hack)
 		++res;
 
 	return res;
