@@ -32,6 +32,20 @@
 
 #ifdef SDL_JOYSTICK_HIDAPI_PS5
 
+/* Define this if you want to log all packets from the controller */
+/*#define DEBUG_PS5_PROTOCOL*/
+
+typedef enum
+{
+    k_EPS5ReportIdState = 0x01,
+    k_EPS5ReportIdBluetoothState = 0x31,
+} EPS5ReportId;
+
+typedef enum
+{
+    k_EPS5FeatureReportIdSerialNumber = 0x09,
+} EPS5FeatureReportId;
+
 typedef struct
 {
     Uint8 ucLeftJoystickX;
@@ -45,16 +59,48 @@ typedef struct
 
 typedef struct
 {
-    Uint8 ucLeftJoystickX;
-    Uint8 ucLeftJoystickY;
-    Uint8 ucRightJoystickX;
-    Uint8 ucRightJoystickY;
-    Uint8 ucTriggerLeft;
-    Uint8 ucTriggerRight;
-    Uint8 ucCounter;
-    Uint8 rgucButtonsAndHat[ 3 ];
-    Uint8 rgucUnknown[ 53 ];
+    Uint8 ucLeftJoystickX;              /* 0 */
+    Uint8 ucLeftJoystickY;              /* 1 */
+    Uint8 ucRightJoystickX;             /* 2 */
+    Uint8 ucRightJoystickY;             /* 3 */
+    Uint8 ucTriggerLeft;                /* 4 */
+    Uint8 ucTriggerRight;               /* 5 */
+    Uint8 ucCounter;                    /* 6 */
+    Uint8 rgucButtonsAndHat[ 3 ];       /* 7 */
+    Uint8 ucZero;                       /* 10 */
+    Uint8 rgucPacketSequence[4];        /* 11 - 32 bit little endian */
+    Uint8 rgucAccel[ 6 ];               /* 15 */
+    Uint8 rgucGyro[ 6 ];                /* 21 */
+    Uint8 rgucTimer1[4];                /* 27 - 32 bit little endian */
+    Uint8 ucBatteryTemp;                /* 31 */
+    Uint8 ucTrackpadCounter1;           /* 32 - high bit clear + counter */
+    Uint8 rgucTouchpadData1[3];         /* 33 - X/Y, 12 bits per axis */
+    Uint8 ucTrackpadCounter2;           /* 36 - high bit clear + counter */
+    Uint8 rgucTouchpadData2[3];         /* 37 - X/Y, 12 bits per axis */
+    Uint8 rgucUnknown1[ 8 ];            /* 40 */
+    Uint8 rgucTimer2[4];                /* 48 - 32 bit little endian */
+    Uint8 ucBatteryState;               /* 52 - 0x13 on USB, 0x05 - 0x06 on Bluetooth ? */
+    Uint8 ucConnectState;               /* 53 - 0x08 = USB, 0x03 = headphone */
+
+    /* There's more unknown data at the end, and a 32-bit CRC on Bluetooth */
 } PS5StatePacket_t;
+
+
+static void ReadFeatureReport(hid_device *dev, Uint8 report_id)
+{
+    Uint8 report[USB_PACKET_LENGTH + 1];
+    int size;
+
+    SDL_memset(report, 0, sizeof(report));
+    report[0] = report_id;
+    size = hid_get_feature_report(dev, report, sizeof(report));
+    if (size > 0) {
+#ifdef DEBUG_PS5_PROTOCOL
+        SDL_Log("Report %d\n", report_id);
+        HIDAPI_DumpPacket("Report: size = %d", report, size);
+#endif
+    }
+}
 
 typedef struct {
     union
@@ -64,9 +110,6 @@ typedef struct {
     } last_state;
 } SDL_DriverPS5_Context;
 
-
-/* Define this if you want to log all packets from the controller */
-/*#define DEBUG_PS5_PROTOCOL*/
 
 static SDL_bool
 HIDAPI_DriverPS5_IsSupportedDevice(const char *name, SDL_GameControllerType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
@@ -118,6 +161,11 @@ HIDAPI_DriverPS5_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
         return SDL_FALSE;
     }
     device->context = ctx;
+
+    /* Read the serial number (Bluetooth address in reverse byte order)
+       This will also enable enhanced reports over Bluetooth
+    */
+    ReadFeatureReport(device->dev, k_EPS5FeatureReportIdSerialNumber);
 
     /* Initialize the joystick capabilities */
     joystick->nbuttons = 16;
@@ -343,7 +391,7 @@ HIDAPI_DriverPS5_UpdateDevice(SDL_HIDAPI_Device *device)
 {
     SDL_DriverPS5_Context *ctx = (SDL_DriverPS5_Context *)device->context;
     SDL_Joystick *joystick = NULL;
-    Uint8 data[USB_PACKET_LENGTH];
+    Uint8 data[USB_PACKET_LENGTH*2];
     int size;
 
     if (device->num_joysticks > 0) {
@@ -358,12 +406,15 @@ HIDAPI_DriverPS5_UpdateDevice(SDL_HIDAPI_Device *device)
         HIDAPI_DumpPacket("PS5 packet: size = %d", data, size);
 #endif
         switch (data[0]) {
-        case 0x01:
+        case k_EPS5ReportIdState:
             if (size == 10) {
                 HIDAPI_DriverPS5_HandleSimpleStatePacket(joystick, device->dev, ctx, (PS5SimpleStatePacket_t *)&data[1]);
             } else {
                 HIDAPI_DriverPS5_HandleStatePacket(joystick, device->dev, ctx, (PS5StatePacket_t *)&data[1]);
             }
+            break;
+        case k_EPS5ReportIdBluetoothState:
+            HIDAPI_DriverPS5_HandleStatePacket(joystick, device->dev, ctx, (PS5StatePacket_t *)&data[2]);
             break;
         default:
 #ifdef DEBUG_JOYSTICK
