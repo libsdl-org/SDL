@@ -584,6 +584,10 @@ IOS_JoystickOpen(SDL_Joystick * joystick, int device_index)
     joystick->nbuttons = device->nbuttons;
     joystick->nballs = 0;
 
+    if (device->has_dualshock_touchpad) {
+        SDL_PrivateJoystickAddTouchpad(joystick, 2);
+    }
+
     device->joystick = joystick;
 
     @autoreleasepool {
@@ -750,6 +754,22 @@ IOS_MFIJoystickUpdate(SDL_Joystick * joystick)
 #ifdef ENABLE_PHYSICAL_INPUT_PROFILE
             if (joystick->hwdata->has_dualshock_touchpad) {
                 buttons[button_count++] = controller.physicalInputProfile.buttons[GCInputDualShockTouchpadButton].isPressed;
+
+                GCControllerDirectionPad *dpad;
+
+                dpad = controller.physicalInputProfile.dpads[GCInputDualShockTouchpadOne];
+                if (dpad.xAxis.value || dpad.yAxis.value) {
+                    SDL_PrivateJoystickTouchpad(joystick, 0, 0, SDL_PRESSED, (1.0f + dpad.xAxis.value) * 0.5f, 1.0f - (1.0f + dpad.yAxis.value) * 0.5f, 1.0f);
+                } else {
+                    SDL_PrivateJoystickTouchpad(joystick, 0, 0, SDL_RELEASED, 0.0f, 0.0f, 1.0f);
+                }
+
+                dpad = controller.physicalInputProfile.dpads[GCInputDualShockTouchpadTwo];
+                if (dpad.xAxis.value || dpad.yAxis.value) {
+                    SDL_PrivateJoystickTouchpad(joystick, 0, 1, SDL_PRESSED, (1.0f + dpad.xAxis.value) * 0.5f, 1.0f - (1.0f + dpad.yAxis.value) * 0.5f, 1.0f);
+                } else {
+                    SDL_PrivateJoystickTouchpad(joystick, 0, 1, SDL_RELEASED, 0.0f, 0.0f, 1.0f);
+                }
             }
 
             if (joystick->hwdata->has_xbox_paddles) {

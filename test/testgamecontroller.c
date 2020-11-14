@@ -157,13 +157,29 @@ loop(void *arg)
             }
             break;
 
+        case SDL_CONTROLLERTOUCHPADDOWN:
+        case SDL_CONTROLLERTOUCHPADMOTION:
+        case SDL_CONTROLLERTOUCHPADUP:
+            SDL_Log("Controller touchpad %d finger %d %s %.2f, %.2f, %.2f\n",
+                event.ctouchpad.touchpad,
+                event.ctouchpad.finger,
+                (event.type == SDL_CONTROLLERTOUCHPADDOWN ? "pressed at" :
+                (event.type == SDL_CONTROLLERTOUCHPADUP ? "released at" :
+                "moved to")),
+                event.ctouchpad.x,
+                event.ctouchpad.y,
+                event.ctouchpad.pressure);
+            break;
+
         case SDL_CONTROLLERAXISMOTION:
             SDL_Log("Controller axis %s changed to %d\n", SDL_GameControllerGetStringForAxis((SDL_GameControllerAxis)event.caxis.axis), event.caxis.value);
             break;
+
         case SDL_CONTROLLERBUTTONDOWN:
         case SDL_CONTROLLERBUTTONUP:
             SDL_Log("Controller button %s %s\n", SDL_GameControllerGetStringForButton((SDL_GameControllerButton)event.cbutton.button), event.cbutton.state ? "pressed" : "released");
             break;
+
         case SDL_KEYDOWN:
             if (event.key.keysym.sym != SDLK_ESCAPE) {
                 break;
@@ -194,7 +210,7 @@ loop(void *arg)
 
     if (gamecontroller) {
         /* Update visual controller state */
-        for (i = 0; i < SDL_CONTROLLER_BUTTON_MAX; ++i) {
+        for (i = 0; i < SDL_CONTROLLER_BUTTON_TOUCHPAD; ++i) {
             if (SDL_GameControllerGetButton(gamecontroller, (SDL_GameControllerButton)i) == SDL_PRESSED) {
                 SDL_bool on_front = (i < SDL_CONTROLLER_BUTTON_PADDLE1 || i > SDL_CONTROLLER_BUTTON_PADDLE4);
                 if (on_front == showing_front) {

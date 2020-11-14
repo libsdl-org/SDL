@@ -991,6 +991,7 @@ SDL_JoystickClose(SDL_Joystick * joystick)
 {
     SDL_Joystick *joysticklist;
     SDL_Joystick *joysticklistprev;
+    int i;
 
     if (!SDL_PrivateJoystickValid(joystick)) {
         return;
@@ -1042,6 +1043,11 @@ SDL_JoystickClose(SDL_Joystick * joystick)
     SDL_free(joystick->hats);
     SDL_free(joystick->balls);
     SDL_free(joystick->buttons);
+    for (i = 0; i < joystick->ntouchpads; i++) {
+        SDL_JoystickTouchpadInfo *touchpad = &joystick->touchpads[i];
+        SDL_free(touchpad->fingers);
+    }
+    SDL_free(joystick->touchpads);
     SDL_free(joystick);
 
     SDL_UnlockJoysticks();
@@ -1110,6 +1116,28 @@ SDL_PrivateJoystickShouldIgnoreEvent()
 }
 
 /* These are global for SDL_sysjoystick.c and SDL_events.c */
+
+void SDL_PrivateJoystickAddTouchpad(SDL_Joystick *joystick, int nfingers)
+{
+    int ntouchpads = joystick->ntouchpads + 1;
+    SDL_JoystickTouchpadInfo *touchpads = (SDL_JoystickTouchpadInfo *)SDL_realloc(joystick->touchpads, sizeof(SDL_JoystickTouchpadInfo));
+    if (touchpads) {
+        SDL_JoystickTouchpadInfo *touchpad = &touchpads[ntouchpads - 1];
+        SDL_JoystickTouchpadFingerInfo *fingers = (SDL_JoystickTouchpadFingerInfo *)SDL_calloc(nfingers, sizeof(SDL_JoystickTouchpadFingerInfo));
+
+        if (fingers) {
+            touchpad->nfingers = nfingers;
+            touchpad->fingers = fingers;
+        } else {
+            /* Out of memory, this touchpad won't be active */
+            touchpad->nfingers = 0;
+            touchpad->fingers = NULL;
+        }
+
+        joystick->ntouchpads = ntouchpads;
+        joystick->touchpads = touchpads;
+    }
+}
 
 void SDL_PrivateJoystickAdded(SDL_JoystickID device_instance)
 {
@@ -1180,7 +1208,7 @@ static void UpdateEventsForDeviceRemoval()
 static void
 SDL_PrivateJoystickForceRecentering(SDL_Joystick *joystick)
 {
-    int i;
+    int i, j;
 
     /* Tell the app that everything is centered/unpressed... */
     for (i = 0; i < joystick->naxes; i++) {
@@ -1190,12 +1218,21 @@ SDL_PrivateJoystickForceRecentering(SDL_Joystick *joystick)
     }
 
     for (i = 0; i < joystick->nbuttons; i++) {
-        SDL_PrivateJoystickButton(joystick, i, 0);
+        SDL_PrivateJoystickButton(joystick, i, SDL_RELEASED);
     }
 
     for (i = 0; i < joystick->nhats; i++) {
         SDL_PrivateJoystickHat(joystick, i, SDL_HAT_CENTERED);
     }
+
+    for (i = 0; i < joystick->ntouchpads; i++) {
+        SDL_JoystickTouchpadInfo *touchpad = &joystick->touchpads[j];
+
+        for (j = 0; j < touchpad->nfingers; ++j) {
+            SDL_PrivateJoystickTouchpad(joystick, i, j, SDL_RELEASED, 0.0f, 0.0f, 0.0f);
+        }
+    }
+
 }
 
 void SDL_PrivateJoystickRemoved(SDL_JoystickID device_instance)
@@ -2423,6 +2460,91 @@ SDL_JoystickPowerLevel SDL_JoystickCurrentPowerLevel(SDL_Joystick * joystick)
         return SDL_JOYSTICK_POWER_UNKNOWN;
     }
     return joystick->epowerlevel;
+}
+
+int SDL_PrivateJoystickTouchpad(SDL_Joystick *joystick, int touchpad, int finger, Uint8 state, float x, float y, float pressure)
+{
+    SDL_JoystickTouchpadInfo *touchpad_info;
+    SDL_JoystickTouchpadFingerInfo *finger_info;
+#if !SDL_EVENTS_DISABLED
+    int posted;
+    Uint32 event_type;
+#endif
+
+    if (touchpad < 0 || touchpad >= joystick->ntouchpads) {
+        return 0;
+    }
+
+    touchpad_info = &joystick->touchpads[touchpad];
+    if (finger < 0 || finger >= touchpad_info->nfingers) {
+        return 0;
+    }
+
+    finger_info = &touchpad_info->fingers[finger];
+
+    if (!state) {
+        if (!x && !y) {
+            x = finger_info->x;
+            y = finger_info->y;
+        }
+        pressure = 0.0f;
+    }
+
+    if (x < 0.0f) {
+        x = 0.0f;
+    } else if (x > 1.0f) {
+        x = 1.0f;
+    }
+    if (y < 0.0f) {
+        y = 0.0f;
+    } else if (y > 1.0f) {
+        y = 1.0f;
+    }
+    if (pressure < 0.0f) {
+        pressure = 0.0f;
+    } else if (pressure > 1.0f) {
+        pressure = 1.0f;
+    }
+
+    if (state == finger_info->state) {
+        if (!state ||
+            (x == finger_info->x && y == finger_info->y && pressure == finger_info->pressure)) {
+            return 0;
+        }
+    }
+
+#if !SDL_EVENTS_DISABLED
+    if (state == finger_info->state) {
+        event_type = SDL_CONTROLLERTOUCHPADMOTION;
+    } else if (state) {
+        event_type = SDL_CONTROLLERTOUCHPADDOWN;
+    } else {
+        event_type = SDL_CONTROLLERTOUCHPADUP;
+    }
+#endif
+
+    /* Update internal joystick state */
+    finger_info->state = state;
+    finger_info->x = x;
+    finger_info->y = y;
+    finger_info->pressure = pressure;
+
+    /* Post the event, if desired */
+    posted = 0;
+#if !SDL_EVENTS_DISABLED
+    if (SDL_GetEventState(event_type) == SDL_ENABLE) {
+        SDL_Event event;
+        event.type = event_type;
+        event.ctouchpad.which = joystick->instance_id;
+        event.ctouchpad.touchpad = touchpad;
+        event.ctouchpad.finger = finger;
+        event.ctouchpad.x = x;
+        event.ctouchpad.y = y;
+        event.ctouchpad.pressure = pressure;
+        posted = SDL_PushEvent(&event) == 1;
+    }
+#endif /* !SDL_EVENTS_DISABLED */
+    return posted;
 }
 
 /* vi: set ts=4 sw=4 expandtab: */
