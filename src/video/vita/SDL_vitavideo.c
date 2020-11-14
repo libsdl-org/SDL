@@ -41,9 +41,6 @@
 
 SDL_Window *Vita_Window;
 
-/* unused
-static SDL_bool VITA_initialized = SDL_FALSE;
-*/
 static int
 VITA_Available(void)
 {
@@ -66,15 +63,6 @@ VITA_Create()
     SDL_VideoDevice *device;
     SDL_VideoData *phdata;
     SDL_GLDriverData *gldata;
-
-    int status;
-
-    /* Check if VITA could be initialized */
-    status = VITA_Available();
-    if (status == 0) {
-        /* VITA could not be used */
-        return NULL;
-    }
 
     /* Initialize SDL_VideoDevice structure */
     device = (SDL_VideoDevice *) SDL_calloc(1, sizeof(SDL_VideoDevice));
@@ -225,8 +213,8 @@ VITA_CreateWindow(_THIS, SDL_Window * window)
     // Vita can only have one window
     if (Vita_Window != NULL)
     {
-        // Replace this with something else
-        return SDL_OutOfMemory();
+        SDL_SetError("Only one window supported");
+        return -1;
     }
 
     Vita_Window = window;
@@ -292,6 +280,17 @@ VITA_SetWindowGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
 void
 VITA_DestroyWindow(_THIS, SDL_Window * window)
 {
+    SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
+    SDL_WindowData *data;
+
+    data = window->driverdata;
+    if (data) {
+        // TODO: should we destroy egl context? No one sane should recreate ogl window as non-ogl
+        SDL_free(data);
+    }
+
+    window->driverdata = NULL;
+    Vita_Window = NULL;
 }
 
 /*****************************************************************************/

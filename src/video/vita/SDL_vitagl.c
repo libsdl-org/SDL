@@ -26,6 +26,7 @@
 #include <string.h>
 
 #include "SDL_error.h"
+#include "SDL_log.h"
 #include "SDL_vitavideo.h"
 #include "SDL_vitagl_c.h"
 
@@ -47,20 +48,20 @@
 int
 VITA_GL_LoadLibrary(_THIS, const char *path)
 {
-  pibInit(PIB_SHACCCG);
+  pibInit(PIB_SHACCCG | PIB_GET_PROC_ADDR_CORE);
   return 0;
 }
 
 void *
 VITA_GL_GetProcAddress(_THIS, const char *proc)
 {
-        return eglGetProcAddress(proc);
+    return eglGetProcAddress(proc);
 }
 
 void
 VITA_GL_UnloadLibrary(_THIS)
 {
-        eglTerminate(_this->gl_data->display);
+    eglTerminate(_this->gl_data->display);
 }
 
 static EGLint width = 960;
@@ -72,80 +73,72 @@ VITA_GL_CreateContext(_THIS, SDL_Window * window)
 
     SDL_WindowData *wdata = (SDL_WindowData *) window->driverdata;
 
-        EGLint attribs[32];
-        EGLDisplay display;
-        EGLContext context;
-        EGLSurface surface;
-        EGLConfig config;
-        EGLint num_configs;
-        int i;
+    EGLint attribs[32];
+    EGLDisplay display;
+    EGLContext context;
+    EGLSurface surface;
+    EGLConfig config;
+    EGLint num_configs;
+    int i;
 
+    EGLCHK(display = eglGetDisplay(0));
 
-    /* EGL init taken from glutCreateWindow() in VITAGL's glut.c. */
-        EGLCHK(display = eglGetDisplay(0));
+    EGLCHK(eglInitialize(display, NULL, NULL));
+    wdata->uses_gles = SDL_TRUE;
+    window->flags |= SDL_WINDOW_FULLSCREEN;
 
-        EGLCHK(eglInitialize(display, NULL, NULL));
-        wdata->uses_gles = SDL_TRUE;
-        window->flags |= SDL_WINDOW_FULLSCREEN;
+    EGLCHK(eglBindAPI(EGL_OPENGL_ES_API));
 
-        EGLCHK(eglBindAPI(EGL_OPENGL_ES_API));
+    i = 0;
+    attribs[i++] = EGL_RED_SIZE;
+    attribs[i++] = 8;
+    attribs[i++] = EGL_GREEN_SIZE;
+    attribs[i++] = 8;
+    attribs[i++] = EGL_BLUE_SIZE;
+    attribs[i++] = 8;
+    attribs[i++] = EGL_DEPTH_SIZE;
+    attribs[i++] = 0;
+    attribs[i++] = EGL_ALPHA_SIZE;
+    attribs[i++] = 8;
+    attribs[i++] = EGL_STENCIL_SIZE;
+    attribs[i++] = 0;;
 
-        /* Setup the config based on SDL's current values. */
-        i = 0;
-        attribs[i++] = EGL_RED_SIZE;
-        attribs[i++] = 8;//_this->gl_config.red_size;
-        attribs[i++] = EGL_GREEN_SIZE;
-        attribs[i++] = 8;//_this->gl_config.green_size;
-        attribs[i++] = EGL_BLUE_SIZE;
-        attribs[i++] = 8;//_this->gl_config.blue_size;
-        attribs[i++] = EGL_DEPTH_SIZE;
-        attribs[i++] = 32;//_this->gl_config.depth_size;
+    attribs[i++] = EGL_SURFACE_TYPE;
+    attribs[i++] = 5;
 
-//        if (_this->gl_config.alpha_size)
-        {
-            attribs[i++] = EGL_ALPHA_SIZE;
-            attribs[i++] = 8;//_this->gl_config.alpha_size;
-        }
-        if (_this->gl_config.stencil_size)
-        {
-            attribs[i++] = EGL_STENCIL_SIZE;
-            attribs[i++] = _this->gl_config.stencil_size;
-        }
+    attribs[i++] = EGL_RENDERABLE_TYPE;
+    attribs[i++] = EGL_OPENGL_ES2_BIT;
 
-        attribs[i++] = EGL_SURFACE_TYPE;
-        attribs[i++] = 5;
+    attribs[i++] = EGL_CONFORMANT;
+    attribs[i++] = EGL_OPENGL_ES2_BIT;
 
-        attribs[i++] = EGL_RENDERABLE_TYPE;
-        attribs[i++] = EGL_OPENGL_ES2_BIT;
+    attribs[i++] = EGL_NONE;
 
-        attribs[i++] = EGL_NONE;
+    EGLCHK(eglChooseConfig(display, attribs, &config, 1, &num_configs));
 
-        EGLCHK(eglChooseConfig(display, attribs, &config, 1, &num_configs));
+    if (num_configs == 0)
+    {
+        SDL_SetError("No valid EGL configs for requested mode");
+        return 0;
+    }
 
-        if (num_configs == 0)
-        {
-            SDL_SetError("No valid EGL configs for requested mode");
-            return 0;
-        }
+    const EGLint contextAttribs[] = {
+        EGL_CONTEXT_CLIENT_VERSION, 2,
+        EGL_NONE
+    };
 
-        const EGLint contextAttribs[] = {
-            EGL_CONTEXT_CLIENT_VERSION, 2,
-            EGL_NONE
-        };
+    EGLCHK(surface = eglCreateWindowSurface(display, config, VITA_WINDOW_960X544, NULL));
 
-        EGLCHK(surface = eglCreateWindowSurface(display, config, VITA_WINDOW_960X544, NULL));
+    EGLCHK(context = eglCreateContext(display, config, EGL_NO_CONTEXT, contextAttribs));
 
-        EGLCHK(context = eglCreateContext(display, config, EGL_NO_CONTEXT, contextAttribs));
+    EGLCHK(eglMakeCurrent(display, surface, surface, context));
 
-        EGLCHK(eglMakeCurrent(display, surface, surface, context));
+    EGLCHK(eglQuerySurface(display, surface, EGL_WIDTH, &width));
+    EGLCHK(eglQuerySurface(display, surface, EGL_HEIGHT, &height));
 
-        EGLCHK(eglQuerySurface(display, surface, EGL_WIDTH, &width));
-        EGLCHK(eglQuerySurface(display, surface, EGL_HEIGHT, &height));
-
-        _this->gl_data->display = display;
-        _this->gl_data->context = context;
-        _this->gl_data->surface = surface;
-
+    _this->gl_data->display = display;
+    _this->gl_data->context = context;
+    _this->gl_data->surface = surface;
 
     return context;
 }

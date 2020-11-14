@@ -20,11 +20,11 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_RENDER_OGL_ES2 && !SDL_RENDER_DISABLED
+#if SDL_VIDEO_RENDER_VITA_GLES2 && !SDL_RENDER_DISABLED
 
 #include "SDL_video.h"
 #include "SDL_opengles2.h"
-#include "../opengles2/SDL_shaders_gles2.h"
+#include "SDL_shaders_gles2vita.h"
 #include "SDL_stdinc.h"
 
 /* While Vita is gles2-compliant, shaders should be in Cg format, not glsl */
@@ -38,7 +38,7 @@
      value is decremented by 1.0 to get proper output with 0.0 which is
      default value
 */
-static const Uint8 GLES2_VertexSrc_Default_[] = " \
+static const Uint8 VITA_GLES2_VertexSrc_Default_[] = " \
     struct _Output { \
       float2 v_texCoord : TEXCOORD0; \
       float4 position : POSITION; \
@@ -67,14 +67,14 @@ static const Uint8 GLES2_VertexSrc_Default_[] = " \
     } \
 ";
 
-static const Uint8 GLES2_FragmentSrc_SolidSrc_[] = " \
+static const Uint8 VITA_GLES2_FragmentSrc_SolidSrc_[] = " \
     float4 main(uniform float4 u_color : COLOR) : COLOR \
     { \
         return u_color; \
     } \
 ";
 
-static const Uint8 GLES2_FragmentSrc_TextureABGRSrc_[] = " \
+static const Uint8 VITA_GLES2_FragmentSrc_TextureABGRSrc_[] = " \
     float4 main(uniform sampler2D u_texture, uniform float4 u_color : COLOR, float2 v_texCoord : TEXCOORD0 ) : COLOR \
     { \
         float4 color = tex2D(u_texture, v_texCoord); \
@@ -83,7 +83,7 @@ static const Uint8 GLES2_FragmentSrc_TextureABGRSrc_[] = " \
 ";
 
 /* ARGB to ABGR conversion */
-static const Uint8 GLES2_FragmentSrc_TextureARGBSrc_[] = " \
+static const Uint8 VITA_GLES2_FragmentSrc_TextureARGBSrc_[] = " \
     float4 main(uniform sampler2D u_texture, uniform float4 u_color : COLOR, float2 v_texCoord : TEXCOORD0 ) : COLOR \
     { \
         float4 abgr = tex2D(u_texture, v_texCoord); \
@@ -95,7 +95,7 @@ static const Uint8 GLES2_FragmentSrc_TextureARGBSrc_[] = " \
 ";
 
 /* RGB to ABGR conversion */
-static const Uint8 GLES2_FragmentSrc_TextureRGBSrc_[] = " \
+static const Uint8 VITA_GLES2_FragmentSrc_TextureRGBSrc_[] = " \
     float4 main(uniform sampler2D u_texture, uniform float4 u_color : COLOR, float2 v_texCoord : TEXCOORD0 ) : COLOR \
     { \
         float4 abgr = tex2D(u_texture, v_texCoord); \
@@ -108,7 +108,7 @@ static const Uint8 GLES2_FragmentSrc_TextureRGBSrc_[] = " \
 ";
 
 /* BGR to ABGR conversion */
-static const Uint8 GLES2_FragmentSrc_TextureBGRSrc_[] = " \
+static const Uint8 VITA_GLES2_FragmentSrc_TextureBGRSrc_[] = " \
     float4 main(uniform sampler2D u_texture, uniform float4 u_color : COLOR, float2 v_texCoord : TEXCOORD0 ) : COLOR \
     { \
         float4 abgr = tex2D(u_texture, v_texCoord); \
@@ -219,58 +219,58 @@ static const Uint8 GLES2_FragmentSrc_TextureBGRSrc_[] = " \
 "}"                                                             \
 
 /* YUV to ABGR conversion */
-static const Uint8 GLES2_FragmentSrc_TextureYUVJPEGSrc_[] = \
+static const Uint8 VITA_GLES2_FragmentSrc_TextureYUVJPEGSrc_[] = \
         YUV_SHADER_PROLOGUE \
         JPEG_SHADER_CONSTANTS \
         YUV_SHADER_BODY \
 ;
-static const Uint8 GLES2_FragmentSrc_TextureYUVBT601Src_[] = \
+static const Uint8 VITA_GLES2_FragmentSrc_TextureYUVBT601Src_[] = \
         YUV_SHADER_PROLOGUE \
         BT601_SHADER_CONSTANTS \
         YUV_SHADER_BODY \
 ;
-static const Uint8 GLES2_FragmentSrc_TextureYUVBT709Src_[] = \
+static const Uint8 VITA_GLES2_FragmentSrc_TextureYUVBT709Src_[] = \
         YUV_SHADER_PROLOGUE \
         BT709_SHADER_CONSTANTS \
         YUV_SHADER_BODY \
 ;
 
 /* NV12 to ABGR conversion */
-static const Uint8 GLES2_FragmentSrc_TextureNV12JPEGSrc_[] = \
+static const Uint8 VITA_GLES2_FragmentSrc_TextureNV12JPEGSrc_[] = \
         YUV_SHADER_PROLOGUE \
         JPEG_SHADER_CONSTANTS \
         NV12_SHADER_BODY \
 ;
-static const Uint8 GLES2_FragmentSrc_TextureNV12BT601Src_[] = \
+static const Uint8 VITA_GLES2_FragmentSrc_TextureNV12BT601Src_[] = \
         YUV_SHADER_PROLOGUE \
         BT601_SHADER_CONSTANTS \
         NV12_SHADER_BODY \
 ;
-static const Uint8 GLES2_FragmentSrc_TextureNV12BT709Src_[] = \
+static const Uint8 VITA_GLES2_FragmentSrc_TextureNV12BT709Src_[] = \
         YUV_SHADER_PROLOGUE \
         BT709_SHADER_CONSTANTS \
         NV12_SHADER_BODY \
 ;
 
 /* NV21 to ABGR conversion */
-static const Uint8 GLES2_FragmentSrc_TextureNV21JPEGSrc_[] = \
+static const Uint8 VITA_GLES2_FragmentSrc_TextureNV21JPEGSrc_[] = \
         YUV_SHADER_PROLOGUE \
         JPEG_SHADER_CONSTANTS \
         NV21_SHADER_BODY \
 ;
-static const Uint8 GLES2_FragmentSrc_TextureNV21BT601Src_[] = \
+static const Uint8 VITA_GLES2_FragmentSrc_TextureNV21BT601Src_[] = \
         YUV_SHADER_PROLOGUE \
         BT601_SHADER_CONSTANTS \
         NV21_SHADER_BODY \
 ;
-static const Uint8 GLES2_FragmentSrc_TextureNV21BT709Src_[] = \
+static const Uint8 VITA_GLES2_FragmentSrc_TextureNV21BT709Src_[] = \
         YUV_SHADER_PROLOGUE \
         BT709_SHADER_CONSTANTS \
         NV21_SHADER_BODY \
 ;
 
 /* Custom Android video format texture */
-static const Uint8 GLES2_FragmentSrc_TextureExternalOESSrc_[] = " \
+static const Uint8 VITA_GLES2_FragmentSrc_TextureExternalOESSrc_[] = " \
     #extension GL_OES_EGL_image_external : require\n\
     precision mediump float; \
     uniform samplerExternalOES u_texture; \
@@ -284,116 +284,116 @@ static const Uint8 GLES2_FragmentSrc_TextureExternalOESSrc_[] = " \
     } \
 ";
 
-static const GLES2_ShaderInstance GLES2_VertexSrc_Default = {
+static const VITA_GLES2_ShaderInstance VITA_GLES2_VertexSrc_Default = {
     GL_VERTEX_SHADER,
-    GLES2_SOURCE_SHADER,
-    sizeof(GLES2_VertexSrc_Default_),
-    GLES2_VertexSrc_Default_
+    VITA_GLES2_SOURCE_SHADER,
+    sizeof(VITA_GLES2_VertexSrc_Default_),
+    VITA_GLES2_VertexSrc_Default_
 };
 
-static const GLES2_ShaderInstance GLES2_FragmentSrc_SolidSrc = {
+static const VITA_GLES2_ShaderInstance VITA_GLES2_FragmentSrc_SolidSrc = {
     GL_FRAGMENT_SHADER,
-    GLES2_SOURCE_SHADER,
-    sizeof(GLES2_FragmentSrc_SolidSrc_),
-    GLES2_FragmentSrc_SolidSrc_
+    VITA_GLES2_SOURCE_SHADER,
+    sizeof(VITA_GLES2_FragmentSrc_SolidSrc_),
+    VITA_GLES2_FragmentSrc_SolidSrc_
 };
 
-static const GLES2_ShaderInstance GLES2_FragmentSrc_TextureABGRSrc = {
+static const VITA_GLES2_ShaderInstance VITA_GLES2_FragmentSrc_TextureABGRSrc = {
     GL_FRAGMENT_SHADER,
-    GLES2_SOURCE_SHADER,
-    sizeof(GLES2_FragmentSrc_TextureABGRSrc_),
-    GLES2_FragmentSrc_TextureABGRSrc_
+    VITA_GLES2_SOURCE_SHADER,
+    sizeof(VITA_GLES2_FragmentSrc_TextureABGRSrc_),
+    VITA_GLES2_FragmentSrc_TextureABGRSrc_
 };
 
-static const GLES2_ShaderInstance GLES2_FragmentSrc_TextureARGBSrc = {
+static const VITA_GLES2_ShaderInstance VITA_GLES2_FragmentSrc_TextureARGBSrc = {
     GL_FRAGMENT_SHADER,
-    GLES2_SOURCE_SHADER,
-    sizeof(GLES2_FragmentSrc_TextureARGBSrc_),
-    GLES2_FragmentSrc_TextureARGBSrc_
+    VITA_GLES2_SOURCE_SHADER,
+    sizeof(VITA_GLES2_FragmentSrc_TextureARGBSrc_),
+    VITA_GLES2_FragmentSrc_TextureARGBSrc_
 };
 
-static const GLES2_ShaderInstance GLES2_FragmentSrc_TextureRGBSrc = {
+static const VITA_GLES2_ShaderInstance VITA_GLES2_FragmentSrc_TextureRGBSrc = {
     GL_FRAGMENT_SHADER,
-    GLES2_SOURCE_SHADER,
-    sizeof(GLES2_FragmentSrc_TextureRGBSrc_),
-    GLES2_FragmentSrc_TextureRGBSrc_
+    VITA_GLES2_SOURCE_SHADER,
+    sizeof(VITA_GLES2_FragmentSrc_TextureRGBSrc_),
+    VITA_GLES2_FragmentSrc_TextureRGBSrc_
 };
 
-static const GLES2_ShaderInstance GLES2_FragmentSrc_TextureBGRSrc = {
+static const VITA_GLES2_ShaderInstance VITA_GLES2_FragmentSrc_TextureBGRSrc = {
     GL_FRAGMENT_SHADER,
-    GLES2_SOURCE_SHADER,
-    sizeof(GLES2_FragmentSrc_TextureBGRSrc_),
-    GLES2_FragmentSrc_TextureBGRSrc_
+    VITA_GLES2_SOURCE_SHADER,
+    sizeof(VITA_GLES2_FragmentSrc_TextureBGRSrc_),
+    VITA_GLES2_FragmentSrc_TextureBGRSrc_
 };
 
-static const GLES2_ShaderInstance GLES2_FragmentSrc_TextureYUVJPEGSrc = {
+static const VITA_GLES2_ShaderInstance VITA_GLES2_FragmentSrc_TextureYUVJPEGSrc = {
     GL_FRAGMENT_SHADER,
-    GLES2_SOURCE_SHADER,
-    sizeof(GLES2_FragmentSrc_TextureYUVJPEGSrc_),
-    GLES2_FragmentSrc_TextureYUVJPEGSrc_
+    VITA_GLES2_SOURCE_SHADER,
+    sizeof(VITA_GLES2_FragmentSrc_TextureYUVJPEGSrc_),
+    VITA_GLES2_FragmentSrc_TextureYUVJPEGSrc_
 };
 
-static const GLES2_ShaderInstance GLES2_FragmentSrc_TextureYUVBT601Src = {
+static const VITA_GLES2_ShaderInstance VITA_GLES2_FragmentSrc_TextureYUVBT601Src = {
     GL_FRAGMENT_SHADER,
-    GLES2_SOURCE_SHADER,
-    sizeof(GLES2_FragmentSrc_TextureYUVBT601Src_),
-    GLES2_FragmentSrc_TextureYUVBT601Src_
+    VITA_GLES2_SOURCE_SHADER,
+    sizeof(VITA_GLES2_FragmentSrc_TextureYUVBT601Src_),
+    VITA_GLES2_FragmentSrc_TextureYUVBT601Src_
 };
 
-static const GLES2_ShaderInstance GLES2_FragmentSrc_TextureYUVBT709Src = {
+static const VITA_GLES2_ShaderInstance VITA_GLES2_FragmentSrc_TextureYUVBT709Src = {
     GL_FRAGMENT_SHADER,
-    GLES2_SOURCE_SHADER,
-    sizeof(GLES2_FragmentSrc_TextureYUVBT709Src_),
-    GLES2_FragmentSrc_TextureYUVBT709Src_
+    VITA_GLES2_SOURCE_SHADER,
+    sizeof(VITA_GLES2_FragmentSrc_TextureYUVBT709Src_),
+    VITA_GLES2_FragmentSrc_TextureYUVBT709Src_
 };
 
-static const GLES2_ShaderInstance GLES2_FragmentSrc_TextureNV12JPEGSrc = {
+static const VITA_GLES2_ShaderInstance VITA_GLES2_FragmentSrc_TextureNV12JPEGSrc = {
     GL_FRAGMENT_SHADER,
-    GLES2_SOURCE_SHADER,
-    sizeof(GLES2_FragmentSrc_TextureNV12JPEGSrc_),
-    GLES2_FragmentSrc_TextureNV12JPEGSrc_
+    VITA_GLES2_SOURCE_SHADER,
+    sizeof(VITA_GLES2_FragmentSrc_TextureNV12JPEGSrc_),
+    VITA_GLES2_FragmentSrc_TextureNV12JPEGSrc_
 };
 
-static const GLES2_ShaderInstance GLES2_FragmentSrc_TextureNV12BT601Src = {
+static const VITA_GLES2_ShaderInstance VITA_GLES2_FragmentSrc_TextureNV12BT601Src = {
     GL_FRAGMENT_SHADER,
-    GLES2_SOURCE_SHADER,
-    sizeof(GLES2_FragmentSrc_TextureNV12BT601Src_),
-    GLES2_FragmentSrc_TextureNV12BT601Src_
+    VITA_GLES2_SOURCE_SHADER,
+    sizeof(VITA_GLES2_FragmentSrc_TextureNV12BT601Src_),
+    VITA_GLES2_FragmentSrc_TextureNV12BT601Src_
 };
 
-static const GLES2_ShaderInstance GLES2_FragmentSrc_TextureNV21BT709Src = {
+static const VITA_GLES2_ShaderInstance VITA_GLES2_FragmentSrc_TextureNV21BT709Src = {
     GL_FRAGMENT_SHADER,
-    GLES2_SOURCE_SHADER,
-    sizeof(GLES2_FragmentSrc_TextureNV21BT709Src_),
-    GLES2_FragmentSrc_TextureNV21BT709Src_
+    VITA_GLES2_SOURCE_SHADER,
+    sizeof(VITA_GLES2_FragmentSrc_TextureNV21BT709Src_),
+    VITA_GLES2_FragmentSrc_TextureNV21BT709Src_
 };
 
-static const GLES2_ShaderInstance GLES2_FragmentSrc_TextureNV21JPEGSrc = {
+static const VITA_GLES2_ShaderInstance VITA_GLES2_FragmentSrc_TextureNV21JPEGSrc = {
     GL_FRAGMENT_SHADER,
-    GLES2_SOURCE_SHADER,
-    sizeof(GLES2_FragmentSrc_TextureNV21JPEGSrc_),
-    GLES2_FragmentSrc_TextureNV21JPEGSrc_
+    VITA_GLES2_SOURCE_SHADER,
+    sizeof(VITA_GLES2_FragmentSrc_TextureNV21JPEGSrc_),
+    VITA_GLES2_FragmentSrc_TextureNV21JPEGSrc_
 };
 
-static const GLES2_ShaderInstance GLES2_FragmentSrc_TextureNV21BT601Src = {
+static const VITA_GLES2_ShaderInstance VITA_GLES2_FragmentSrc_TextureNV21BT601Src = {
     GL_FRAGMENT_SHADER,
-    GLES2_SOURCE_SHADER,
-    sizeof(GLES2_FragmentSrc_TextureNV21BT601Src_),
-    GLES2_FragmentSrc_TextureNV21BT601Src_
+    VITA_GLES2_SOURCE_SHADER,
+    sizeof(VITA_GLES2_FragmentSrc_TextureNV21BT601Src_),
+    VITA_GLES2_FragmentSrc_TextureNV21BT601Src_
 };
 
-static const GLES2_ShaderInstance GLES2_FragmentSrc_TextureNV12BT709Src = {
+static const VITA_GLES2_ShaderInstance VITA_GLES2_FragmentSrc_TextureNV12BT709Src = {
     GL_FRAGMENT_SHADER,
-    GLES2_SOURCE_SHADER,
-    sizeof(GLES2_FragmentSrc_TextureNV12BT709Src_),
-    GLES2_FragmentSrc_TextureNV12BT709Src_
+    VITA_GLES2_SOURCE_SHADER,
+    sizeof(VITA_GLES2_FragmentSrc_TextureNV12BT709Src_),
+    VITA_GLES2_FragmentSrc_TextureNV12BT709Src_
 };
 
-static const GLES2_ShaderInstance GLES2_FragmentSrc_TextureExternalOESSrc = {
+static const VITA_GLES2_ShaderInstance VITA_GLES2_FragmentSrc_TextureExternalOESSrc = {
     GL_FRAGMENT_SHADER,
-    GLES2_SOURCE_SHADER,
-    sizeof(GLES2_FragmentSrc_TextureExternalOESSrc_),
-    GLES2_FragmentSrc_TextureExternalOESSrc_
+    VITA_GLES2_SOURCE_SHADER,
+    sizeof(VITA_GLES2_FragmentSrc_TextureExternalOESSrc_),
+    VITA_GLES2_FragmentSrc_TextureExternalOESSrc_
 };
 
 
@@ -401,115 +401,115 @@ static const GLES2_ShaderInstance GLES2_FragmentSrc_TextureExternalOESSrc = {
  * Vertex/fragment shader definitions                                                            *
  *************************************************************************************************/
 
-static GLES2_Shader GLES2_VertexShader_Default = {
+static VITA_GLES2_Shader VITA_GLES2_VertexShader_Default = {
     1,
     {
-        &GLES2_VertexSrc_Default
+        &VITA_GLES2_VertexSrc_Default
     }
 };
 
-static GLES2_Shader GLES2_FragmentShader_SolidSrc = {
+static VITA_GLES2_Shader VITA_GLES2_FragmentShader_SolidSrc = {
     1,
     {
-        &GLES2_FragmentSrc_SolidSrc
+        &VITA_GLES2_FragmentSrc_SolidSrc
     }
 };
 
-static GLES2_Shader GLES2_FragmentShader_TextureABGRSrc = {
+static VITA_GLES2_Shader VITA_GLES2_FragmentShader_TextureABGRSrc = {
     1,
     {
-        &GLES2_FragmentSrc_TextureABGRSrc
+        &VITA_GLES2_FragmentSrc_TextureABGRSrc
     }
 };
 
-static GLES2_Shader GLES2_FragmentShader_TextureARGBSrc = {
+static VITA_GLES2_Shader VITA_GLES2_FragmentShader_TextureARGBSrc = {
     1,
     {
-        &GLES2_FragmentSrc_TextureARGBSrc
+        &VITA_GLES2_FragmentSrc_TextureARGBSrc
     }
 };
 
-static GLES2_Shader GLES2_FragmentShader_TextureRGBSrc = {
+static VITA_GLES2_Shader VITA_GLES2_FragmentShader_TextureRGBSrc = {
     1,
     {
-        &GLES2_FragmentSrc_TextureRGBSrc
+        &VITA_GLES2_FragmentSrc_TextureRGBSrc
     }
 };
 
-static GLES2_Shader GLES2_FragmentShader_TextureBGRSrc = {
+static VITA_GLES2_Shader VITA_GLES2_FragmentShader_TextureBGRSrc = {
     1,
     {
-        &GLES2_FragmentSrc_TextureBGRSrc
+        &VITA_GLES2_FragmentSrc_TextureBGRSrc
     }
 };
 
-static GLES2_Shader GLES2_FragmentShader_TextureYUVJPEGSrc = {
+static VITA_GLES2_Shader VITA_GLES2_FragmentShader_TextureYUVJPEGSrc = {
     1,
     {
-        &GLES2_FragmentSrc_TextureYUVJPEGSrc
+        &VITA_GLES2_FragmentSrc_TextureYUVJPEGSrc
     }
 };
 
-static GLES2_Shader GLES2_FragmentShader_TextureYUVBT601Src = {
+static VITA_GLES2_Shader VITA_GLES2_FragmentShader_TextureYUVBT601Src = {
     1,
     {
-        &GLES2_FragmentSrc_TextureYUVBT601Src
+        &VITA_GLES2_FragmentSrc_TextureYUVBT601Src
     }
 };
 
-static GLES2_Shader GLES2_FragmentShader_TextureYUVBT709Src = {
+static VITA_GLES2_Shader VITA_GLES2_FragmentShader_TextureYUVBT709Src = {
     1,
     {
-        &GLES2_FragmentSrc_TextureYUVBT709Src
+        &VITA_GLES2_FragmentSrc_TextureYUVBT709Src
     }
 };
 
-static GLES2_Shader GLES2_FragmentShader_TextureNV12JPEGSrc = {
+static VITA_GLES2_Shader VITA_GLES2_FragmentShader_TextureNV12JPEGSrc = {
     1,
     {
-        &GLES2_FragmentSrc_TextureNV12JPEGSrc
+        &VITA_GLES2_FragmentSrc_TextureNV12JPEGSrc
     }
 };
 
-static GLES2_Shader GLES2_FragmentShader_TextureNV12BT601Src = {
+static VITA_GLES2_Shader VITA_GLES2_FragmentShader_TextureNV12BT601Src = {
     1,
     {
-        &GLES2_FragmentSrc_TextureNV12BT601Src
+        &VITA_GLES2_FragmentSrc_TextureNV12BT601Src
     }
 };
 
-static GLES2_Shader GLES2_FragmentShader_TextureNV12BT709Src = {
+static VITA_GLES2_Shader VITA_GLES2_FragmentShader_TextureNV12BT709Src = {
     1,
     {
-        &GLES2_FragmentSrc_TextureNV12BT709Src
+        &VITA_GLES2_FragmentSrc_TextureNV12BT709Src
     }
 };
 
-static GLES2_Shader GLES2_FragmentShader_TextureNV21JPEGSrc = {
+static VITA_GLES2_Shader VITA_GLES2_FragmentShader_TextureNV21JPEGSrc = {
     1,
     {
-        &GLES2_FragmentSrc_TextureNV21JPEGSrc
+        &VITA_GLES2_FragmentSrc_TextureNV21JPEGSrc
     }
 };
 
-static GLES2_Shader GLES2_FragmentShader_TextureNV21BT601Src = {
+static VITA_GLES2_Shader VITA_GLES2_FragmentShader_TextureNV21BT601Src = {
     1,
     {
-        &GLES2_FragmentSrc_TextureNV21BT601Src
+        &VITA_GLES2_FragmentSrc_TextureNV21BT601Src
     }
 };
 
-static GLES2_Shader GLES2_FragmentShader_TextureNV21BT709Src = {
+static VITA_GLES2_Shader VITA_GLES2_FragmentShader_TextureNV21BT709Src = {
     1,
     {
-        &GLES2_FragmentSrc_TextureNV21BT709Src
+        &VITA_GLES2_FragmentSrc_TextureNV21BT709Src
     }
 };
 
-static GLES2_Shader GLES2_FragmentShader_TextureExternalOESSrc = {
+static VITA_GLES2_Shader VITA_GLES2_FragmentShader_TextureExternalOESSrc = {
     1,
     {
-        &GLES2_FragmentSrc_TextureExternalOESSrc
+        &VITA_GLES2_FragmentSrc_TextureExternalOESSrc
     }
 };
 
@@ -518,46 +518,46 @@ static GLES2_Shader GLES2_FragmentShader_TextureExternalOESSrc = {
  * Shader selector                                                                               *
  *************************************************************************************************/
 
-const GLES2_Shader *GLES2_GetShader(GLES2_ShaderType type)
+const VITA_GLES2_Shader *VITA_GLES2_GetShader(VITA_GLES2_ShaderType type)
 {
     switch (type) {
-    case GLES2_SHADER_VERTEX_DEFAULT:
-        return &GLES2_VertexShader_Default;
-    case GLES2_SHADER_FRAGMENT_SOLID_SRC:
-        return &GLES2_FragmentShader_SolidSrc;
-    case GLES2_SHADER_FRAGMENT_TEXTURE_ABGR_SRC:
-        return &GLES2_FragmentShader_TextureABGRSrc;
-    case GLES2_SHADER_FRAGMENT_TEXTURE_ARGB_SRC:
-        return &GLES2_FragmentShader_TextureARGBSrc;
-    case GLES2_SHADER_FRAGMENT_TEXTURE_RGB_SRC:
-        return &GLES2_FragmentShader_TextureRGBSrc;
-    case GLES2_SHADER_FRAGMENT_TEXTURE_BGR_SRC:
-        return &GLES2_FragmentShader_TextureBGRSrc;
-    case GLES2_SHADER_FRAGMENT_TEXTURE_YUV_JPEG_SRC:
-        return &GLES2_FragmentShader_TextureYUVJPEGSrc;
-    case GLES2_SHADER_FRAGMENT_TEXTURE_YUV_BT601_SRC:
-        return &GLES2_FragmentShader_TextureYUVBT601Src;
-    case GLES2_SHADER_FRAGMENT_TEXTURE_YUV_BT709_SRC:
-        return &GLES2_FragmentShader_TextureYUVBT709Src;
-    case GLES2_SHADER_FRAGMENT_TEXTURE_NV12_JPEG_SRC:
-        return &GLES2_FragmentShader_TextureNV12JPEGSrc;
-    case GLES2_SHADER_FRAGMENT_TEXTURE_NV12_BT601_SRC:
-        return &GLES2_FragmentShader_TextureNV12BT601Src;
-    case GLES2_SHADER_FRAGMENT_TEXTURE_NV12_BT709_SRC:
-        return &GLES2_FragmentShader_TextureNV12BT709Src;
-    case GLES2_SHADER_FRAGMENT_TEXTURE_NV21_JPEG_SRC:
-        return &GLES2_FragmentShader_TextureNV21JPEGSrc;
-    case GLES2_SHADER_FRAGMENT_TEXTURE_NV21_BT601_SRC:
-        return &GLES2_FragmentShader_TextureNV21BT601Src;
-    case GLES2_SHADER_FRAGMENT_TEXTURE_NV21_BT709_SRC:
-        return &GLES2_FragmentShader_TextureNV21BT709Src;
-    case GLES2_SHADER_FRAGMENT_TEXTURE_EXTERNAL_OES_SRC:
-        return &GLES2_FragmentShader_TextureExternalOESSrc;
+    case VITA_GLES2_SHADER_VERTEX_DEFAULT:
+        return &VITA_GLES2_VertexShader_Default;
+    case VITA_GLES2_SHADER_FRAGMENT_SOLID_SRC:
+        return &VITA_GLES2_FragmentShader_SolidSrc;
+    case VITA_GLES2_SHADER_FRAGMENT_TEXTURE_ABGR_SRC:
+        return &VITA_GLES2_FragmentShader_TextureABGRSrc;
+    case VITA_GLES2_SHADER_FRAGMENT_TEXTURE_ARGB_SRC:
+        return &VITA_GLES2_FragmentShader_TextureARGBSrc;
+    case VITA_GLES2_SHADER_FRAGMENT_TEXTURE_RGB_SRC:
+        return &VITA_GLES2_FragmentShader_TextureRGBSrc;
+    case VITA_GLES2_SHADER_FRAGMENT_TEXTURE_BGR_SRC:
+        return &VITA_GLES2_FragmentShader_TextureBGRSrc;
+    case VITA_GLES2_SHADER_FRAGMENT_TEXTURE_YUV_JPEG_SRC:
+        return &VITA_GLES2_FragmentShader_TextureYUVJPEGSrc;
+    case VITA_GLES2_SHADER_FRAGMENT_TEXTURE_YUV_BT601_SRC:
+        return &VITA_GLES2_FragmentShader_TextureYUVBT601Src;
+    case VITA_GLES2_SHADER_FRAGMENT_TEXTURE_YUV_BT709_SRC:
+        return &VITA_GLES2_FragmentShader_TextureYUVBT709Src;
+    case VITA_GLES2_SHADER_FRAGMENT_TEXTURE_NV12_JPEG_SRC:
+        return &VITA_GLES2_FragmentShader_TextureNV12JPEGSrc;
+    case VITA_GLES2_SHADER_FRAGMENT_TEXTURE_NV12_BT601_SRC:
+        return &VITA_GLES2_FragmentShader_TextureNV12BT601Src;
+    case VITA_GLES2_SHADER_FRAGMENT_TEXTURE_NV12_BT709_SRC:
+        return &VITA_GLES2_FragmentShader_TextureNV12BT709Src;
+    case VITA_GLES2_SHADER_FRAGMENT_TEXTURE_NV21_JPEG_SRC:
+        return &VITA_GLES2_FragmentShader_TextureNV21JPEGSrc;
+    case VITA_GLES2_SHADER_FRAGMENT_TEXTURE_NV21_BT601_SRC:
+        return &VITA_GLES2_FragmentShader_TextureNV21BT601Src;
+    case VITA_GLES2_SHADER_FRAGMENT_TEXTURE_NV21_BT709_SRC:
+        return &VITA_GLES2_FragmentShader_TextureNV21BT709Src;
+    case VITA_GLES2_SHADER_FRAGMENT_TEXTURE_EXTERNAL_OES_SRC:
+        return &VITA_GLES2_FragmentShader_TextureExternalOESSrc;
     default:
         return NULL;
     }
 }
 
-#endif /* SDL_VIDEO_RENDER_OGL_ES2 && !SDL_RENDER_DISABLED */
+#endif /* SDL_VIDEO_RENDER_VITA_GLES2 && !SDL_RENDER_DISABLED */
 
 /* vi: set ts=4 sw=4 expandtab: */
