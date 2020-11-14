@@ -95,6 +95,12 @@ static const SDL_RenderDriver *render_drivers[] = {
 #if SDL_VIDEO_RENDER_OGL_ES2
     &GLES2_RenderDriver,
 #endif
+#if SDL_VIDEO_RENDER_VITA_GLES2
+    &VITA_GLES2_RenderDriver,
+#endif
+#if SDL_VIDEO_RENDER_VITA_GXM
+    &VITA_GXM__RenderDriver,
+#endif
 #if SDL_VIDEO_RENDER_OGL_ES
     &GLES_RenderDriver,
 #endif
@@ -274,7 +280,9 @@ SDL_AllocateRenderVertices(SDL_Renderer *renderer, const size_t numbytes, const 
         while (newsize < needed) {
             newsize *= 2;
         }
+
         ptr = SDL_realloc(renderer->vertex_data, newsize);
+
         if (ptr == NULL) {
             SDL_OutOfMemory();
             return NULL;

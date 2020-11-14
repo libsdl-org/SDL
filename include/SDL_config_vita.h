@@ -139,8 +139,12 @@
 #define SDL_FILESYSTEM_VITA   1
 
 
-#define SDL_VIDEO_RENDER_OGL_ES2 1
+#define SDL_VIDEO_RENDER_VITA_GLES2 1
+//#define SDL_VIDEO_RENDER_VITA_GXM 1
+
+#if defined(SDL_VIDEO_RENDER_VITA_GLES2)
 #define SDL_VIDEO_OPENGL_ES2 1
+#endif
 
 
 /* VITA doesn't have haptic device (src/haptic/dummy/\*.c) */
