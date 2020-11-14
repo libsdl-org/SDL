@@ -172,6 +172,8 @@
 #cmakedefine HAVE_SQRTF 1
 #cmakedefine HAVE_TAN 1
 #cmakedefine HAVE_TANF 1
+#cmakedefine HAVE_TRUNC 1
+#cmakedefine HAVE_TRUNCF 1
 #cmakedefine HAVE_FOPEN64 1
 #cmakedefine HAVE_FSEEKO 1
 #cmakedefine HAVE_FSEEKO64 1
