@@ -331,6 +331,12 @@ SDL_GameControllerGetBindForAxis(SDL_GameController *gamecontroller,
                                  SDL_GameControllerAxis axis);
 
 /**
+ *  Return whether a game controller has a given axis
+ */
+extern DECLSPEC SDL_bool SDLCALL
+SDL_GameControllerHasAxis(SDL_GameController *gamecontroller, SDL_GameControllerAxis axis);
+
+/**
  *  Get the current state of an axis control on a game controller.
  *
  *  The state is a value ranging from -32768 to 32767 (except for the triggers,
@@ -339,8 +345,7 @@ SDL_GameControllerGetBindForAxis(SDL_GameController *gamecontroller,
  *  The axis indices start at index 0.
  */
 extern DECLSPEC Sint16 SDLCALL
-SDL_GameControllerGetAxis(SDL_GameController *gamecontroller,
-                          SDL_GameControllerAxis axis);
+SDL_GameControllerGetAxis(SDL_GameController *gamecontroller, SDL_GameControllerAxis axis);
 
 /**
  *  The list of buttons available from a controller
@@ -363,11 +368,12 @@ typedef enum
     SDL_CONTROLLER_BUTTON_DPAD_DOWN,
     SDL_CONTROLLER_BUTTON_DPAD_LEFT,
     SDL_CONTROLLER_BUTTON_DPAD_RIGHT,
-    SDL_CONTROLLER_BUTTON_MISC1,    // Xbox Series X share button, PS4/PS5 touchpad button, Nintendo Switch Pro capture button
-    SDL_CONTROLLER_BUTTON_PADDLE1,  // Xbox Elite paddle P1
-    SDL_CONTROLLER_BUTTON_PADDLE2,  // Xbox Elite paddle P3
-    SDL_CONTROLLER_BUTTON_PADDLE3,  // Xbox Elite paddle P2
-    SDL_CONTROLLER_BUTTON_PADDLE4,  // Xbox Elite paddle P4
+    SDL_CONTROLLER_BUTTON_MISC1,    /* Xbox Series X share button, PS5 microphone button, Nintendo Switch Pro capture button */
+    SDL_CONTROLLER_BUTTON_PADDLE1,  /* Xbox Elite paddle P1 */
+    SDL_CONTROLLER_BUTTON_PADDLE2,  /* Xbox Elite paddle P3 */
+    SDL_CONTROLLER_BUTTON_PADDLE3,  /* Xbox Elite paddle P2 */
+    SDL_CONTROLLER_BUTTON_PADDLE4,  /* Xbox Elite paddle P4 */
+    SDL_CONTROLLER_BUTTON_TOUCHPAD, /* PS4/PS5 touchpad button */
     SDL_CONTROLLER_BUTTON_MAX
 } SDL_GameControllerButton;
 
@@ -388,6 +394,11 @@ extern DECLSPEC SDL_GameControllerButtonBind SDLCALL
 SDL_GameControllerGetBindForButton(SDL_GameController *gamecontroller,
                                    SDL_GameControllerButton button);
 
+/**
+ *  Return whether a game controller has a given button
+ */
+extern DECLSPEC SDL_bool SDLCALL SDL_GameControllerHasButton(SDL_GameController *gamecontroller,
+                                                             SDL_GameControllerButton button);
 
 /**
  *  Get the current state of a button on a game controller.
@@ -396,6 +407,21 @@ SDL_GameControllerGetBindForButton(SDL_GameController *gamecontroller,
  */
 extern DECLSPEC Uint8 SDLCALL SDL_GameControllerGetButton(SDL_GameController *gamecontroller,
                                                           SDL_GameControllerButton button);
+
+/**
+ *  Get the number of touchpads on a game controller.
+ */
+extern DECLSPEC int SDLCALL SDL_GameControllerGetNumTouchpads(SDL_GameController *gamecontroller);
+
+/**
+ *  Get the number of supported simultaneous fingers on a touchpad on a game controller.
+ */
+extern DECLSPEC int SDLCALL SDL_GameControllerGetNumTouchpadFingers(SDL_GameController *gamecontroller, int touchpad);
+
+/**
+ *  Get the current state of a finger on a touchpad on a game controller.
+ */
+extern DECLSPEC int SDLCALL SDL_GameControllerGetTouchpadFinger(SDL_GameController *gamecontroller, int touchpad, int finger, Uint8 *state, float *x, float *y, float *pressure);
 
 /**
  *  Start a rumble effect

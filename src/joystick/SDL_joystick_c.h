@@ -108,21 +108,24 @@ extern SDL_bool SDL_ShouldIgnoreGameController(const char *name, SDL_JoystickGUI
 extern void SDL_GameControllerHandleDelayedGuideButton(SDL_Joystick *joystick);
 
 /* Internal event queueing functions */
+extern void SDL_PrivateJoystickAddTouchpad(SDL_Joystick *joystick, int nfingers);
 extern void SDL_PrivateJoystickAdded(SDL_JoystickID device_instance);
 extern void SDL_PrivateJoystickRemoved(SDL_JoystickID device_instance);
-extern int SDL_PrivateJoystickAxis(SDL_Joystick * joystick,
+extern int SDL_PrivateJoystickAxis(SDL_Joystick *joystick,
                                    Uint8 axis, Sint16 value);
-extern int SDL_PrivateJoystickBall(SDL_Joystick * joystick,
+extern int SDL_PrivateJoystickBall(SDL_Joystick *joystick,
                                    Uint8 ball, Sint16 xrel, Sint16 yrel);
-extern int SDL_PrivateJoystickHat(SDL_Joystick * joystick,
+extern int SDL_PrivateJoystickHat(SDL_Joystick *joystick,
                                   Uint8 hat, Uint8 value);
-extern int SDL_PrivateJoystickButton(SDL_Joystick * joystick,
+extern int SDL_PrivateJoystickButton(SDL_Joystick *joystick,
                                      Uint8 button, Uint8 state);
-extern void SDL_PrivateJoystickBatteryLevel(SDL_Joystick * joystick,
+extern int SDL_PrivateJoystickTouchpad(SDL_Joystick *joystick,
+                                       int touchpad, int finger, Uint8 state, float x, float y, float pressure);
+extern void SDL_PrivateJoystickBatteryLevel(SDL_Joystick *joystick,
                                             SDL_JoystickPowerLevel ePowerLevel);
 
 /* Internal sanity checking functions */
-extern SDL_bool SDL_PrivateJoystickValid(SDL_Joystick * joystick);
+extern SDL_bool SDL_PrivateJoystickValid(SDL_Joystick *joystick);
 
 typedef enum
 {

@@ -80,10 +80,10 @@ typedef struct
     Uint8 _rgucPad1[ 5 ];
     Uint8 ucBatteryLevel;
     Uint8 _rgucPad2[ 4 ];
-    Uint8 ucTrackpadCounter1;
-    Uint8 rgucTrackpadData1[ 3 ];
-    Uint8 ucTrackpadCounter2;
-    Uint8 rgucTrackpadData2[ 3 ];
+    Uint8 ucTouchpadCounter1;
+    Uint8 rgucTouchpadData1[ 3 ];
+    Uint8 ucTouchpadCounter2;
+    Uint8 rgucTouchpadData2[ 3 ];
 } PS4StatePacket_t;
 
 typedef struct
@@ -310,6 +310,8 @@ HIDAPI_DriverPS4_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
     joystick->naxes = SDL_CONTROLLER_AXIS_MAX;
     joystick->epowerlevel = SDL_JOYSTICK_POWER_WIRED;
 
+    SDL_PrivateJoystickAddTouchpad(joystick, 2);
+
     return SDL_TRUE;
 }
 
@@ -402,7 +404,11 @@ HIDAPI_DriverPS4_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystic
 static void
 HIDAPI_DriverPS4_HandleStatePacket(SDL_Joystick *joystick, hid_device *dev, SDL_DriverPS4_Context *ctx, PS4StatePacket_t *packet)
 {
+    static const float TOUCHPAD_SCALEX = 1.0f / 1920;
+    static const float TOUCHPAD_SCALEY = 1.0f / 920;    /* This is noted as being 944 resolution, but 920 feels better */
     Sint16 axis;
+    Uint8 touchpad_state;
+    int touchpad_x, touchpad_y;
 
     if (ctx->last_state.rgucButtonsHatAndCounter[0] != packet->rgucButtonsHatAndCounter[0]) {
         {
@@ -514,6 +520,16 @@ HIDAPI_DriverPS4_HandleStatePacket(SDL_Joystick *joystick, hid_device *dev, SDL_
             joystick->epowerlevel = SDL_JOYSTICK_POWER_FULL;
         }
     }
+
+    touchpad_state = ((packet->ucTouchpadCounter1 & 0x80) == 0) ? SDL_PRESSED : SDL_RELEASED;
+    touchpad_x = packet->rgucTouchpadData1[0] | (((int)packet->rgucTouchpadData1[1] & 0x0F) << 8);
+    touchpad_y = (packet->rgucTouchpadData1[1] >> 4) | ((int)packet->rgucTouchpadData1[2] << 4);
+    SDL_PrivateJoystickTouchpad(joystick, 0, 0, touchpad_state, touchpad_x * TOUCHPAD_SCALEX, touchpad_y * TOUCHPAD_SCALEY, touchpad_state ? 1.0f : 0.0f);
+
+    touchpad_state = ((packet->ucTouchpadCounter2 & 0x80) == 0) ? SDL_PRESSED : SDL_RELEASED;
+    touchpad_x = packet->rgucTouchpadData2[0] | (((int)packet->rgucTouchpadData2[1] & 0x0F) << 8);
+    touchpad_y = (packet->rgucTouchpadData2[1] >> 4) | ((int)packet->rgucTouchpadData2[2] << 4);
+    SDL_PrivateJoystickTouchpad(joystick, 0, 1, touchpad_state, touchpad_x * TOUCHPAD_SCALEX, touchpad_y * TOUCHPAD_SCALEY, touchpad_state ? 1.0f : 0.0f);
 
     SDL_memcpy(&ctx->last_state, packet, sizeof(ctx->last_state));
 }

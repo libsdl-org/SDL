@@ -580,9 +580,12 @@ static ControllerMapping_t *SDL_CreateMappingForHIDAPIController(SDL_JoystickGUI
         } else {
             switch (SDL_GetJoystickGameControllerTypeFromGUID(guid, NULL)) {
             case SDL_CONTROLLER_TYPE_PS4:
+                /* PS4 controllers have an additional touchpad button */
+                SDL_strlcat(mapping_string, "touchpad:b15,", sizeof(mapping_string));
+                break;
             case SDL_CONTROLLER_TYPE_PS5:
-                /* PS4/PS5 controllers have an additional touchpad button */
-                SDL_strlcat(mapping_string, "misc1:b15,", sizeof(mapping_string));
+                /* PS5 controllers have a microphone button and an additional touchpad button */
+                SDL_strlcat(mapping_string, "misc1:b15,touchpad:b16", sizeof(mapping_string));
                 break;
             case SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO:
                 /* Nintendo Switch Pro controllers have a screenshot button */
@@ -713,6 +716,7 @@ static const char* map_StringForControllerButton[] = {
     "paddle2",
     "paddle3",
     "paddle4",
+    "touchpad",
     NULL
 };
 
@@ -1870,6 +1874,16 @@ SDL_GameControllerUpdate(void)
     SDL_JoystickUpdate();
 }
 
+/**
+ *  Return whether a game controller has a given axis
+ */
+SDL_bool
+SDL_GameControllerHasAxis(SDL_GameController *gamecontroller, SDL_GameControllerAxis axis)
+{
+    SDL_GameControllerButtonBind bind = SDL_GameControllerGetBindForAxis(gamecontroller, axis);
+    return (bind.bindType != SDL_CONTROLLER_BINDTYPE_NONE) ? SDL_TRUE : SDL_FALSE;
+}
+
 /*
  * Get the current state of an axis control on a controller
  */
@@ -1929,6 +1943,16 @@ SDL_GameControllerGetAxis(SDL_GameController * gamecontroller, SDL_GameControlle
     return 0;
 }
 
+/**
+ *  Return whether a game controller has a given button
+ */
+SDL_bool
+SDL_GameControllerHasButton(SDL_GameController *gamecontroller, SDL_GameControllerButton button)
+{
+    SDL_GameControllerButtonBind bind = SDL_GameControllerGetBindForButton(gamecontroller, button);
+    return (bind.bindType != SDL_CONTROLLER_BINDTYPE_NONE) ? SDL_TRUE : SDL_FALSE;
+}
+
 /*
  * Get the current state of a button on a controller
  */
@@ -1968,6 +1992,71 @@ SDL_GameControllerGetButton(SDL_GameController * gamecontroller, SDL_GameControl
         }
     }
     return SDL_RELEASED;
+}
+
+/**
+ *  Get the number of touchpads on a game controller.
+ */
+int
+SDL_GameControllerGetNumTouchpads(SDL_GameController *gamecontroller)
+{
+    SDL_Joystick *joystick = SDL_GameControllerGetJoystick(gamecontroller);
+
+    if (joystick) {
+        return joystick->ntouchpads;
+    }
+    return 0;
+}
+
+/**
+ *  Get the number of supported simultaneous fingers on a touchpad on a game controller.
+ */
+int SDL_GameControllerGetNumTouchpadFingers(SDL_GameController *gamecontroller, int touchpad)
+{
+    SDL_Joystick *joystick = SDL_GameControllerGetJoystick(gamecontroller);
+
+    if (joystick && touchpad >= 0 && touchpad < joystick->ntouchpads) {
+        return joystick->touchpads[touchpad].nfingers;
+    }
+    return 0;
+}
+
+/**
+ *  Get the current state of a finger on a touchpad on a game controller.
+ */
+int
+SDL_GameControllerGetTouchpadFinger(SDL_GameController *gamecontroller, int touchpad, int finger, Uint8 *state, float *x, float *y, float *pressure)
+{
+    SDL_Joystick *joystick = SDL_GameControllerGetJoystick(gamecontroller);
+
+    if (joystick ) {
+        if (touchpad >= 0 && touchpad < joystick->ntouchpads) {
+            SDL_JoystickTouchpadInfo *touchpad_info = &joystick->touchpads[touchpad];
+            if (finger >= 0 && finger < touchpad_info->nfingers) {
+                SDL_JoystickTouchpadFingerInfo *info = &touchpad_info->fingers[finger];
+
+                if (state) {
+                    *state = info->state;
+                }
+                if (x) {
+                    *x = info->x;
+                }
+                if (y) {
+                    *y = info->y;
+                }
+                if (pressure) {
+                    *pressure = info->pressure;
+                }
+                return 0;
+            } else {
+                return SDL_InvalidParamError("finger");
+            }
+        } else {
+            return SDL_InvalidParamError("touchpad");
+        }
+    } else {
+        return SDL_InvalidParamError("gamecontroller");
+    }
 }
 
 const char *

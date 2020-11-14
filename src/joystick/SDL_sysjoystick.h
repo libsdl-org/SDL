@@ -39,6 +39,20 @@ typedef struct _SDL_JoystickAxisInfo
     SDL_bool sent_initial_value; /* Whether we've sent the initial axis value */
 } SDL_JoystickAxisInfo;
 
+typedef struct _SDL_JoystickTouchpadFingerInfo
+{
+    Uint8 state;
+    float x;
+    float y;
+    float pressure;
+} SDL_JoystickTouchpadFingerInfo;
+
+typedef struct _SDL_JoystickTouchpadInfo
+{
+    int nfingers;
+    SDL_JoystickTouchpadFingerInfo *fingers;
+} SDL_JoystickTouchpadInfo;
+
 struct _SDL_Joystick
 {
     SDL_JoystickID instance_id; /* Device instance, monotonically increasing from 0 */
@@ -59,6 +73,9 @@ struct _SDL_Joystick
 
     int nbuttons;               /* Number of buttons on the joystick */
     Uint8 *buttons;             /* Current button states */
+
+    int ntouchpads;             /* Number of touchpads on the joystick */
+    SDL_JoystickTouchpadInfo *touchpads;    /* Current touchpad states */
 
     Uint16 low_frequency_rumble;
     Uint16 high_frequency_rumble;
