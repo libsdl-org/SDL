@@ -180,7 +180,7 @@
 /* #undef HAVE_SQRTF */
 #define HAVE_TAN 1
 /* #undef HAVE_TANF */
-#define HAVE_TRUNC 1
+/* #undef HAVE_TRUNC */
 /* #undef HAVE_TRUNCF */
 
 #endif /* SDL_config_os2_h_ */
