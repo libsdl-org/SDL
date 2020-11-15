@@ -2374,6 +2374,7 @@ CheckOpenGLESX11()
           #define LINUX
           #define EGL_API_FB
           #define MESA_EGL_NO_X11_HEADERS
+          #define EGL_NO_X11
           #include <EGL/egl.h>
           #include <EGL/eglext.h>
         ],[
