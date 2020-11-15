@@ -469,23 +469,16 @@ SDL_JoystickOpen(int device_index)
     return joystick;
 }
 
-
 int
 SDL_JoystickAttachVirtual(SDL_JoystickType type,
-                          int naxes,
-                          int nbuttons,
-                          int nhats)
+                          int naxes, int nbuttons, int nhats)
 {
 #if SDL_JOYSTICK_VIRTUAL
-    return SDL_JoystickAttachVirtualInner(type,
-                                          naxes,
-                                          nbuttons,
-                                          nhats);
+    return SDL_JoystickAttachVirtualInner(type, naxes, nbuttons, nhats);
 #else
     return SDL_SetError("SDL not built with virtual-joystick support");
 #endif
 }
-
 
 int
 SDL_JoystickDetachVirtual(int device_index)
@@ -509,7 +502,6 @@ SDL_JoystickDetachVirtual(int device_index)
 #endif
 }
 
-
 SDL_bool
 SDL_JoystickIsVirtual(int device_index)
 {
@@ -532,7 +524,6 @@ SDL_JoystickIsVirtual(int device_index)
 #endif
 }
 
-
 int
 SDL_JoystickSetVirtualAxis(SDL_Joystick * joystick, int axis, Sint16 value)
 {
@@ -542,7 +533,6 @@ SDL_JoystickSetVirtualAxis(SDL_Joystick * joystick, int axis, Sint16 value)
     return SDL_SetError("SDL not built with virtual-joystick support");
 #endif
 }
-
 
 int
 SDL_JoystickSetVirtualButton(SDL_Joystick * joystick, int button, Uint8 value)
@@ -554,7 +544,6 @@ SDL_JoystickSetVirtualButton(SDL_Joystick * joystick, int button, Uint8 value)
 #endif
 }
 
-
 int
 SDL_JoystickSetVirtualHat(SDL_Joystick * joystick, int hat, Uint8 value)
 {
@@ -564,7 +553,6 @@ SDL_JoystickSetVirtualHat(SDL_Joystick * joystick, int hat, Uint8 value)
     return SDL_SetError("SDL not built with virtual-joystick support");
 #endif
 }
-
 
 /*
  * Checks to make sure the joystick is valid.
@@ -1226,7 +1214,7 @@ SDL_PrivateJoystickForceRecentering(SDL_Joystick *joystick)
     }
 
     for (i = 0; i < joystick->ntouchpads; i++) {
-        SDL_JoystickTouchpadInfo *touchpad = &joystick->touchpads[j];
+        SDL_JoystickTouchpadInfo *touchpad = &joystick->touchpads[i];
 
         for (j = 0; j < touchpad->nfingers; ++j) {
             SDL_PrivateJoystickTouchpad(joystick, i, j, SDL_RELEASED, 0.0f, 0.0f, 0.0f);
