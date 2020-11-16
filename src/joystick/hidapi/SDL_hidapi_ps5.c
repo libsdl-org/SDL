@@ -38,6 +38,7 @@
 typedef enum
 {
     k_EPS5ReportIdState = 0x01,
+	k_EPS5ReportIDOutput = 0x02,
     k_EPS5ReportIdBluetoothState = 0x31,
 } EPS5ReportId;
 
@@ -85,6 +86,22 @@ typedef struct
     /* There's more unknown data at the end, and a 32-bit CRC on Bluetooth */
 } PS5StatePacket_t;
 
+typedef struct
+{
+	Uint8 ucReportID;
+	Uint8 ucHeader;
+	Uint8 ucEnableBits;
+	Uint8 ucRumbleRight;
+	Uint8 ucRumbleLeft;
+	Uint8 rgucUnknown[3];
+	Uint8 ucUnknown;
+	Uint8 ucMuteLED;
+	Uint8 ucBits;
+	Uint8 rgucForceFeedbackRight[11];
+	Uint8 rgucForceFeedbackLeft[11];
+	Uint8 rgucUnknown2[3];
+	Uint8 rgucUnknown3[13];
+} PS5OutputReportPacket_t;
 
 static void ReadFeatureReport(hid_device *dev, Uint8 report_id)
 {
@@ -180,7 +197,17 @@ HIDAPI_DriverPS5_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 static int
 HIDAPI_DriverPS5_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
-    return SDL_Unsupported();
+	PS5OutputReportPacket_t OutputReport;
+	SDL_memset( &OutputReport, 0, sizeof( OutputReport ) );
+	OutputReport.ucReportID = k_EPS5ReportIDOutput;
+	OutputReport.ucHeader = 0x7;
+	OutputReport.ucRumbleLeft = high_frequency_rumble >> 8;
+	OutputReport.ucRumbleRight = low_frequency_rumble >> 8;
+
+	if (SDL_HIDAPI_SendRumble(device, &OutputReport, sizeof(OutputReport)) != sizeof(OutputReport)) {
+        return SDL_SetError("Couldn't send rumble packet");
+    }
+    return 0;
 }
 
 static int
