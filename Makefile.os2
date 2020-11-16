@@ -38,7 +38,7 @@ MSRCS= e_atan2.c e_exp.c e_fmod.c e_log10.c e_log.c e_pow.c e_rem_pio2.c e_sqrt.
        s_atan.c s_copysign.c s_cos.c s_fabs.c s_floor.c s_scalbn.c s_sin.c s_tan.c
 
 SRCS = SDL.c SDL_assert.c SDL_error.c SDL_log.c SDL_dataqueue.c SDL_hints.c
-SRCS+= SDL_getenv.c SDL_iconv.c SDL_malloc.c SDL_qsort.c SDL_stdlib.c SDL_string.c SDL_strtokr.c
+SRCS+= SDL_getenv.c SDL_iconv.c SDL_malloc.c SDL_qsort.c SDL_stdlib.c SDL_string.c SDL_strtokr.c SDL_crc32.c
 SRCS+= SDL_cpuinfo.c SDL_atomic.c SDL_spinlock.c SDL_thread.c SDL_timer.c
 SRCS+= SDL_rwops.c SDL_power.c
 SRCS+= SDL_audio.c SDL_audiocvt.c SDL_audiodev.c SDL_audiotypecvt.c SDL_mixer.c SDL_wave.c
