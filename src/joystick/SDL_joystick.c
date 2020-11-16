@@ -2471,7 +2471,7 @@ int SDL_PrivateJoystickTouchpad(SDL_Joystick *joystick, int touchpad, int finger
     finger_info = &touchpad_info->fingers[finger];
 
     if (!state) {
-        if (!x && !y) {
+        if (x == 0.0f && y == 0.0f) {
             x = finger_info->x;
             y = finger_info->y;
         }
