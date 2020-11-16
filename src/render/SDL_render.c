@@ -95,12 +95,6 @@ static const SDL_RenderDriver *render_drivers[] = {
 #if SDL_VIDEO_RENDER_OGL_ES2
     &GLES2_RenderDriver,
 #endif
-#if SDL_VIDEO_RENDER_VITA_GLES2
-    &VITA_GLES2_RenderDriver,
-#endif
-#if SDL_VIDEO_RENDER_VITA_GXM
-    &VITA_GXM__RenderDriver,
-#endif
 #if SDL_VIDEO_RENDER_OGL_ES
     &GLES_RenderDriver,
 #endif
@@ -109,6 +103,15 @@ static const SDL_RenderDriver *render_drivers[] = {
 #endif
 #if SDL_VIDEO_RENDER_PSP
     &PSP_RenderDriver,
+#endif
+#if SDL_VIDEO_RENDER_VITA_GLES2
+    &VITA_GLES2_RenderDriver,
+#endif
+#if SDL_VIDEO_RENDER_VITA_GXM
+    &VITA_GXM_RenderDriver,
+#endif
+#if SDL_VIDEO_RENDER_VITA_VITA2D
+    &VITA_VITA2D_RenderDriver,
 #endif
 #if SDL_VIDEO_RENDER_SW
     &SW_RenderDriver
