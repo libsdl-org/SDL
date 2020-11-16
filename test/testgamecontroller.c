@@ -65,6 +65,7 @@ SDL_Window *window = NULL;
 SDL_Renderer *screen = NULL;
 SDL_bool retval = SDL_FALSE;
 SDL_bool done = SDL_FALSE;
+SDL_bool set_LED = SDL_FALSE;
 SDL_Texture *background_front, *background_back, *button, *axis;
 SDL_GameController *gamecontroller;
 
@@ -238,14 +239,30 @@ loop(void *arg)
 
         /* Update LED based on left thumbstick position */
         {
-            Uint8 r, g, b;
             Sint16 x = SDL_GameControllerGetAxis(gamecontroller, SDL_CONTROLLER_AXIS_LEFTX);
             Sint16 y = SDL_GameControllerGetAxis(gamecontroller, SDL_CONTROLLER_AXIS_LEFTY);
 
-            r = (Uint8)((float)(((int)x + 32767) * 255) / 65535);
-            b = (Uint8)((float)(((int)y + 32767) * 255) / 65535);
-            g = (Uint8)((int)(r + b) / 2);
-            SDL_GameControllerSetLED(gamecontroller, r, g, b);
+            if (!set_LED) {
+                set_LED = (x < -8000 || x > 8000 || y > 8000);
+            }
+            if (set_LED) {
+                Uint8 r, g, b;
+
+                if (x < 0) {
+                    r = (Uint8)(((int)(~x) * 255) / 32767);
+                    b = 0;
+                } else {
+                    r = 0;
+                    b = (Uint8)(((int)(x) * 255) / 32767);
+                }
+                if (y > 0) {
+                    g = (Uint8)(((int)(y) * 255) / 32767);
+                } else {
+                    g = 0;
+                }
+
+                SDL_GameControllerSetLED(gamecontroller, r, g, b);
+            }
         }
 
         /* Update rumble based on trigger state */
