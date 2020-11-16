@@ -102,7 +102,7 @@ typedef struct
     Uint8 rgucUnknown3[2];
     Uint8 ucLedAnim;
     Uint8 ucLedBrightness;
-    Uint8 ucLedToggles;
+    Uint8 ucPadLights;
     Uint8 ucLedRed;
     Uint8 ucLedGreen;
     Uint8 ucLedBlue;
@@ -215,8 +215,9 @@ HIDAPI_DriverPS5_UpdateEffects(SDL_HIDAPI_Device *device)
     }
     effects = (DS5EffectsState_t *)&data[offset];
 
-    effects->ucEnableBits1 = 0x03;   /* Enable left/right rumble */
-    effects->ucEnableBits2 = 0x04;   /* Enable LED color */
+    effects->ucEnableBits1 |= 0x03; /* Enable left/right rumble */
+    effects->ucEnableBits2 |= 0x04; /* Enable LED color */
+    effects->ucEnableBits2 |= 0x10; /* Enable touchpad lights */
 
     effects->ucRumbleLeft = ctx->rumble_left;
     effects->ucRumbleRight = ctx->rumble_right;
@@ -229,6 +230,7 @@ HIDAPI_DriverPS5_UpdateEffects(SDL_HIDAPI_Device *device)
     } else {
         SetLedsForPlayerIndex(effects, ctx->player_index);
     }
+    effects->ucPadLights = 0x00;    /* Bitmask, 0x1F enables all lights, 0x20 changes instantly instead of fade */
 
     if (ctx->is_bluetooth) {
         /* Bluetooth reports need a CRC at the end of the packet (at least on Linux) */
