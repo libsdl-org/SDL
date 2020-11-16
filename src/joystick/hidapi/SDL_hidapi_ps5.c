@@ -40,7 +40,7 @@ typedef enum
 {
     k_EPS5ReportIdState = 0x01,
     k_EPS5ReportIdUsbEffects = 0x02,
-    k_EPS5ReportIdBluetoothEffects = 0x02,
+    k_EPS5ReportIdBluetoothEffects = 0x31,
     k_EPS5ReportIdBluetoothState = 0x31,
 } EPS5ReportId;
 
@@ -203,12 +203,12 @@ HIDAPI_DriverPS5_UpdateEffects(SDL_HIDAPI_Device *device)
     SDL_zero(data);
 
     if (ctx->is_bluetooth) {
-        /* FIXME: This doesn't work yet */
         data[0] = k_EPS5ReportIdBluetoothEffects;
-        data[1] = 0x07;  /* Magic value */
+        data[1] = 0x02;  /* Magic value */
+        data[2] = 0x03;  /* Magic value */
 
-        report_size = 75;
-        offset = 2;
+        report_size = 78;
+        offset = 3;
     } else {
         data[0] = k_EPS5ReportIdUsbEffects;
         data[1] = 0x07;  /* Magic value */
@@ -554,9 +554,6 @@ HIDAPI_DriverPS5_HandleStatePacket(SDL_Joystick *joystick, hid_device *dev, SDL_
     touchpad_y = (packet->rgucTouchpadData2[1] >> 4) | ((int)packet->rgucTouchpadData2[2] << 4);
     SDL_PrivateJoystickTouchpad(joystick, 0, 1, touchpad_state, touchpad_x * TOUCHPAD_SCALEX, touchpad_y * TOUCHPAD_SCALEY, touchpad_state ? 1.0f : 0.0f);
 
-    /* Update whether the controller is in USB or Bluetooth data state */
-    ctx->is_bluetooth = (packet->ucConnectState & 0x80) ? SDL_FALSE : SDL_TRUE;
-
     SDL_memcpy(&ctx->last_state.state, packet, sizeof(ctx->last_state.state));
 }
 
@@ -581,6 +578,7 @@ HIDAPI_DriverPS5_UpdateDevice(SDL_HIDAPI_Device *device)
 #endif
         switch (data[0]) {
         case k_EPS5ReportIdState:
+            ctx->is_bluetooth = SDL_TRUE;
             if (size == 10) {
                 HIDAPI_DriverPS5_HandleSimpleStatePacket(joystick, device->dev, ctx, (PS5SimpleStatePacket_t *)&data[1]);
             } else {
@@ -588,6 +586,7 @@ HIDAPI_DriverPS5_UpdateDevice(SDL_HIDAPI_Device *device)
             }
             break;
         case k_EPS5ReportIdBluetoothState:
+            ctx->is_bluetooth = SDL_TRUE;
             HIDAPI_DriverPS5_HandleStatePacket(joystick, device->dev, ctx, (PS5StatePacket_t *)&data[2]);
             break;
         default:
