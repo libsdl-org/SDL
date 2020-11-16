@@ -39,7 +39,8 @@
 typedef enum
 {
     k_EPS5ReportIdState = 0x01,
-    k_EPS5ReportIDOutput = 0x02,
+    k_EPS5ReportIdUsbEffects = 0x02,
+    k_EPS5ReportIdBluetoothEffects = 0x02,
     k_EPS5ReportIdBluetoothState = 0x31,
 } EPS5ReportId;
 
@@ -82,29 +83,41 @@ typedef struct
     Uint8 rgucUnknown1[8];              /* 40 */
     Uint8 rgucTimer2[4];                /* 48 - 32 bit little endian */
     Uint8 ucBatteryLevel;               /* 52 */
-    Uint8 ucConnectState;               /* 53 - 0x08 = USB, 0x03 = headphone */
+    Uint8 ucConnectState;               /* 53 - 0x08 = USB, 0x01 = headphone */
 
     /* There's more unknown data at the end, and a 32-bit CRC on Bluetooth */
 } PS5StatePacket_t;
 
-
-static void ReadFeatureReport(hid_device *dev, Uint8 report_id)
+typedef struct
 {
-    Uint8 report[USB_PACKET_LENGTH + 1];
-    int size;
+    Uint8 ucEnableBits;
+    Uint8 ucRumbleRight;
+    Uint8 ucRumbleLeft;
+    Uint8 rgucUnknown1[6];
+    Uint8 rgucRightTriggerEffect[11];
+    Uint8 rgucLeftTriggerEffect[11];
+    Uint8 rgucUnknown2[6];
+    Uint8 ucLedFlags;
+    Uint8 rgucUnknown3[2];
+    Uint8 ucLedAnim;
+    Uint8 ucLedBrightness;
+    Uint8 ucLedToggles;
+    Uint8 ucLedRed;
+    Uint8 ucLedGreen;
+    Uint8 ucLedBlue;
+} DS5EffectsState_t;
 
-    SDL_memset(report, 0, sizeof(report));
-    report[0] = report_id;
-    size = hid_get_feature_report(dev, report, sizeof(report));
-    if (size > 0) {
-#ifdef DEBUG_PS5_PROTOCOL
-        SDL_Log("Report %d\n", report_id);
-        HIDAPI_DumpPacket("Report: size = %d", report, size);
-#endif
-    }
-}
+SDL_COMPILE_TIME_ASSERT(X, sizeof(DS5EffectsState_t) == 46);
 
 typedef struct {
+    SDL_bool is_bluetooth;
+    int player_index;
+    Uint16 rumble_left;
+    Uint16 rumble_right;
+    SDL_bool color_set;
+    Uint8 led_red;
+    Uint8 led_green;
+    Uint8 led_blue;
     union
     {
         PS5SimpleStatePacket_t simple;
@@ -128,6 +141,45 @@ HIDAPI_DriverPS5_GetDeviceName(Uint16 vendor_id, Uint16 product_id)
     return NULL;
 }
 
+static SDL_bool ReadFeatureReport(hid_device *dev, Uint8 report_id)
+{
+    Uint8 report[USB_PACKET_LENGTH + 1];
+
+    SDL_memset(report, 0, sizeof(report));
+    report[0] = report_id;
+    if (hid_get_feature_report(dev, report, sizeof(report)) < 0) {
+        return SDL_FALSE;
+    }
+    return SDL_TRUE;
+}
+
+static void
+SetLedsForPlayerIndex(DS5EffectsState_t *effects, int player_index)
+{
+    /* This list is the same as what hid-sony.c uses in the Linux kernel.
+       The first 4 values correspond to what the PS4 assigns.
+    */
+    static const Uint8 colors[7][3] = {
+        { 0x00, 0x00, 0x40 }, /* Blue */
+        { 0x40, 0x00, 0x00 }, /* Red */
+        { 0x00, 0x40, 0x00 }, /* Green */
+        { 0x20, 0x00, 0x20 }, /* Pink */
+        { 0x02, 0x01, 0x00 }, /* Orange */
+        { 0x00, 0x01, 0x01 }, /* Teal */
+        { 0x01, 0x01, 0x01 }  /* White */
+    };
+
+    if (player_index >= 0) {
+        player_index %= SDL_arraysize(colors);
+    } else {
+        player_index = 0;
+    }
+
+    effects->ucLedRed = colors[player_index][0];
+    effects->ucLedGreen = colors[player_index][1];
+    effects->ucLedBlue = colors[player_index][2];
+}
+
 static SDL_bool
 HIDAPI_DriverPS5_InitDevice(SDL_HIDAPI_Device *device)
 {
@@ -140,9 +192,74 @@ HIDAPI_DriverPS5_GetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID 
     return -1;
 }
 
+static int
+HIDAPI_DriverPS5_UpdateEffects(SDL_HIDAPI_Device *device)
+{
+    SDL_DriverPS5_Context *ctx = (SDL_DriverPS5_Context *)device->context;
+    DS5EffectsState_t *effects;
+    Uint8 data[78];
+    int report_size, offset;
+
+    SDL_zero(data);
+
+    if (ctx->is_bluetooth) {
+        /* FIXME: This doesn't work yet */
+        data[0] = k_EPS5ReportIdBluetoothEffects;
+        data[1] = 0x07;  /* Magic value */
+
+        report_size = 75;
+        offset = 2;
+    } else {
+        data[0] = k_EPS5ReportIdUsbEffects;
+        data[1] = 0x07;  /* Magic value */
+
+        report_size = 48;
+        offset = 2;
+    }
+    effects = (DS5EffectsState_t *)&data[offset];
+
+    effects->ucEnableBits = 0x04;   /* Enable LED color */
+
+    effects->ucRumbleLeft = ctx->rumble_left;
+    effects->ucRumbleRight = ctx->rumble_right;
+
+    /* Populate the LED state with the appropriate color from our lookup table */
+    if (ctx->color_set) {
+        effects->ucLedRed = ctx->led_red;
+        effects->ucLedGreen = ctx->led_green;
+        effects->ucLedBlue = ctx->led_blue;
+    } else {
+        SetLedsForPlayerIndex(effects, ctx->player_index);
+    }
+
+    if (ctx->is_bluetooth) {
+        /* Bluetooth reports need a CRC at the end of the packet (at least on Linux) */
+        Uint8 ubHdr = 0xA2; /* hidp header is part of the CRC calculation */
+        Uint32 unCRC;
+        unCRC = crc32(0, &ubHdr, 1);
+        unCRC = crc32(unCRC, data, (Uint32)(report_size - sizeof(unCRC)));
+        SDL_memcpy(&data[report_size - sizeof(unCRC)], &unCRC, sizeof(unCRC));
+    }
+
+    if (SDL_HIDAPI_SendRumble(device, data, report_size) != report_size) {
+        return SDL_SetError("Couldn't send rumble packet");
+    }
+    return 0;
+}
+
 static void
 HIDAPI_DriverPS5_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id, int player_index)
 {
+    SDL_DriverPS5_Context *ctx = (SDL_DriverPS5_Context *)device->context;
+
+    if (!ctx) {
+        return;
+    }
+
+    ctx->player_index = player_index;
+
+    /* This will set the new LED state based on the new player index */
+    HIDAPI_DriverPS5_UpdateEffects(device);
 }
 
 static SDL_bool
@@ -169,6 +286,12 @@ HIDAPI_DriverPS5_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
     */
     ReadFeatureReport(device->dev, k_EPS5FeatureReportIdSerialNumber);
 
+    /* Initialize player index (needed for setting LEDs) */
+    ctx->player_index = SDL_JoystickGetPlayerIndex(joystick);
+
+    /* Initialize LED and effect state */
+    HIDAPI_DriverPS5_UpdateEffects(device);
+
     /* Initialize the joystick capabilities */
     joystick->nbuttons = 17;
     joystick->naxes = SDL_CONTROLLER_AXIS_MAX;
@@ -182,19 +305,12 @@ HIDAPI_DriverPS5_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 static int
 HIDAPI_DriverPS5_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
-    Uint8 data[5];
+    SDL_DriverPS5_Context *ctx = (SDL_DriverPS5_Context *)device->context;
 
-    /* This works over USB, not over Bluetooth */
-    SDL_zero(data);
-    data[0] = k_EPS5ReportIDOutput;
-    data[1] = 0x7;  /* Magic value */
-    data[3] = (high_frequency_rumble >> 8);
-    data[4] = (low_frequency_rumble >> 8);
+    ctx->rumble_left = (low_frequency_rumble >> 8);
+    ctx->rumble_right = (high_frequency_rumble >> 8);
 
-    if (SDL_HIDAPI_SendRumble(device, data, sizeof(data)) != sizeof(data)) {
-        return SDL_SetError("Couldn't send rumble packet");
-    }
-    return 0;
+    return HIDAPI_DriverPS5_UpdateEffects(device);
 }
 
 static int
@@ -212,7 +328,14 @@ HIDAPI_DriverPS5_HasJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystic
 static int
 HIDAPI_DriverPS5_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
 {
-    return SDL_Unsupported();
+    SDL_DriverPS5_Context *ctx = (SDL_DriverPS5_Context *)device->context;
+
+    ctx->color_set = SDL_TRUE;
+    ctx->led_red = red;
+    ctx->led_green = green;
+    ctx->led_blue = blue;
+
+    return HIDAPI_DriverPS5_UpdateEffects(device);
 }
 
 static void
@@ -430,6 +553,9 @@ HIDAPI_DriverPS5_HandleStatePacket(SDL_Joystick *joystick, hid_device *dev, SDL_
     touchpad_x = packet->rgucTouchpadData2[0] | (((int)packet->rgucTouchpadData2[1] & 0x0F) << 8);
     touchpad_y = (packet->rgucTouchpadData2[1] >> 4) | ((int)packet->rgucTouchpadData2[2] << 4);
     SDL_PrivateJoystickTouchpad(joystick, 0, 1, touchpad_state, touchpad_x * TOUCHPAD_SCALEX, touchpad_y * TOUCHPAD_SCALEY, touchpad_state ? 1.0f : 0.0f);
+
+    /* Update whether the controller is in USB or Bluetooth data state */
+    ctx->is_bluetooth = (packet->ucConnectState & 0x80) ? SDL_FALSE : SDL_TRUE;
 
     SDL_memcpy(&ctx->last_state.state, packet, sizeof(ctx->last_state.state));
 }
