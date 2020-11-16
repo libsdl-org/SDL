@@ -106,10 +106,10 @@ typedef struct {
     SDL_bool is_dongle;
     SDL_bool is_bluetooth;
     SDL_bool audio_supported;
-    SDL_bool rumble_supported;
+    SDL_bool effects_supported;
     int player_index;
-    Uint16 rumble_left;
-    Uint16 rumble_right;
+    Uint8 rumble_left;
+    Uint8 rumble_right;
     SDL_bool color_set;
     Uint8 led_red;
     Uint8 led_green;
@@ -119,27 +119,6 @@ typedef struct {
     PS4StatePacket_t last_state;
 } SDL_DriverPS4_Context;
 
-
-/* Public domain CRC implementation adapted from:
-   http://home.thep.lu.se/~bjorn/crc/crc32_simple.c
-*/
-static Uint32 crc32_for_byte(Uint32 r)
-{
-    int i;
-    for(i = 0; i < 8; ++i) {
-        r = (r & 1? 0: (Uint32)0xEDB88320L) ^ r >> 1;
-    }
-    return r ^ (Uint32)0xFF000000L;
-}
-
-static Uint32 crc32(Uint32 crc, const void *data, int count)
-{
-    int i;
-    for(i = 0; i < count; ++i) {
-        crc = crc32_for_byte((Uint8)crc ^ ((const Uint8*)data)[i]) ^ crc >> 8;
-    }
-    return crc;
-}
 
 static SDL_bool
 HIDAPI_DriverPS4_IsSupportedDevice(const char *name, SDL_GameControllerType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
@@ -235,7 +214,62 @@ HIDAPI_DriverPS4_GetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID 
     return -1;
 }
 
-static int HIDAPI_DriverPS4_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble);
+static int
+HIDAPI_DriverPS4_UpdateEffects(SDL_HIDAPI_Device *device)
+{
+    SDL_DriverPS4_Context *ctx = (SDL_DriverPS4_Context *)device->context;
+    DS4EffectsState_t *effects;
+    Uint8 data[78];
+    int report_size, offset;
+
+    if (!ctx->effects_supported) {
+        return SDL_Unsupported();
+    }
+
+    SDL_zero(data);
+
+    if (ctx->is_bluetooth) {
+        data[0] = k_EPS4ReportIdBluetoothEffects;
+        data[1] = 0xC0 | 0x04;  /* Magic value HID + CRC, also sets interval to 4ms for samples */
+        data[3] = 0x03;  /* 0x1 is rumble, 0x2 is lightbar, 0x4 is the blink interval */
+
+        report_size = 78;
+        offset = 6;
+    } else {
+        data[0] = k_EPS4ReportIdUsbEffects;
+        data[1] = 0x07;  /* Magic value */
+
+        report_size = 32;
+        offset = 4;
+    }
+    effects = (DS4EffectsState_t *)&data[offset];
+
+    effects->ucRumbleLeft = ctx->rumble_left;
+    effects->ucRumbleRight = ctx->rumble_right;
+
+    /* Populate the LED state with the appropriate color from our lookup table */
+    if (ctx->color_set) {
+        effects->ucLedRed = ctx->led_red;
+        effects->ucLedGreen = ctx->led_green;
+        effects->ucLedBlue = ctx->led_blue;
+    } else {
+        SetLedsForPlayerIndex(effects, ctx->player_index);
+    }
+
+    if (ctx->is_bluetooth) {
+        /* Bluetooth reports need a CRC at the end of the packet (at least on Linux) */
+        Uint8 ubHdr = 0xA2; /* hidp header is part of the CRC calculation */
+        Uint32 unCRC;
+        unCRC = crc32(0, &ubHdr, 1);
+        unCRC = crc32(unCRC, data, (Uint32)(report_size - sizeof(unCRC)));
+        SDL_memcpy(&data[report_size - sizeof(unCRC)], &unCRC, sizeof(unCRC));
+    }
+
+    if (SDL_HIDAPI_SendRumble(device, data, report_size) != report_size) {
+        return SDL_SetError("Couldn't send rumble packet");
+    }
+    return 0;
+}
 
 static void
 HIDAPI_DriverPS4_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id, int player_index)
@@ -249,7 +283,7 @@ HIDAPI_DriverPS4_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID 
     ctx->player_index = player_index;
 
     /* This will set the new LED state based on the new player index */
-    HIDAPI_DriverPS4_RumbleJoystick(device, SDL_JoystickFromInstanceID(instance_id), 0, 0);
+    HIDAPI_DriverPS4_UpdateEffects(device);
 }
 
 static SDL_bool
@@ -293,9 +327,9 @@ HIDAPI_DriverPS4_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 
     if (HIDAPI_DriverPS4_CanRumble(device->vendor_id, device->product_id)) {
         if (ctx->is_bluetooth) {
-            ctx->rumble_supported = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_PS4_RUMBLE, SDL_FALSE);
+            ctx->effects_supported = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_PS4_RUMBLE, SDL_FALSE);
         } else {
-            ctx->rumble_supported = SDL_TRUE;
+            ctx->effects_supported = SDL_TRUE;
         }
     }
 
@@ -303,7 +337,7 @@ HIDAPI_DriverPS4_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
     ctx->player_index = SDL_JoystickGetPlayerIndex(joystick);
 
     /* Initialize LED and effect state */
-    HIDAPI_DriverPS4_RumbleJoystick(device, joystick, 0, 0);
+    HIDAPI_DriverPS4_UpdateEffects(device);
 
     /* Initialize the joystick capabilities */
     joystick->nbuttons = 16;
@@ -319,60 +353,11 @@ static int
 HIDAPI_DriverPS4_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     SDL_DriverPS4_Context *ctx = (SDL_DriverPS4_Context *)device->context;
-    DS4EffectsState_t *effects;
-    Uint8 data[78];
-    int report_size, offset;
 
-    if (!ctx->rumble_supported) {
-        return SDL_Unsupported();
-    }
+    ctx->rumble_left = (low_frequency_rumble >> 8);
+    ctx->rumble_right = (high_frequency_rumble >> 8);
 
-    /* In order to send rumble, we have to send a complete effect packet */
-    SDL_zero(data);
-
-    if (ctx->is_bluetooth) {
-        data[0] = k_EPS4ReportIdBluetoothEffects;
-        data[1] = 0xC0 | 0x04;  /* Magic value HID + CRC, also sets interval to 4ms for samples */
-        data[3] = 0x03;  /* 0x1 is rumble, 0x2 is lightbar, 0x4 is the blink interval */
-
-        report_size = 78;
-        offset = 6;
-    } else {
-        data[0] = k_EPS4ReportIdUsbEffects;
-        data[1] = 0x07;  /* Magic value */
-
-        report_size = 32;
-        offset = 4;
-    }
-    effects = (DS4EffectsState_t *)&data[offset];
-
-    ctx->rumble_left = low_frequency_rumble;
-    ctx->rumble_right = high_frequency_rumble;
-    effects->ucRumbleLeft = (low_frequency_rumble >> 8);
-    effects->ucRumbleRight = (high_frequency_rumble >> 8);
-
-    /* Populate the LED state with the appropriate color from our lookup table */
-    if (ctx->color_set) {
-        effects->ucLedRed = ctx->led_red;
-        effects->ucLedGreen = ctx->led_green;
-        effects->ucLedBlue = ctx->led_blue;
-    } else {
-        SetLedsForPlayerIndex(effects, ctx->player_index);
-    }
-
-    if (ctx->is_bluetooth) {
-        /* Bluetooth reports need a CRC at the end of the packet (at least on Linux) */
-        Uint8 ubHdr = 0xA2; /* hidp header is part of the CRC calculation */
-        Uint32 unCRC;
-        unCRC = crc32(0, &ubHdr, 1);
-        unCRC = crc32(unCRC, data, (Uint32)(report_size - sizeof(unCRC)));
-        SDL_memcpy(&data[report_size - sizeof(unCRC)], &unCRC, sizeof(unCRC));
-    }
-
-    if (SDL_HIDAPI_SendRumble(device, data, report_size) != report_size) {
-        return SDL_SetError("Couldn't send rumble packet");
-    }
-    return 0;
+    return HIDAPI_DriverPS4_UpdateEffects(device);
 }
 
 static int
@@ -397,8 +382,7 @@ HIDAPI_DriverPS4_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystic
     ctx->led_green = green;
     ctx->led_blue = blue;
 
-    /* FIXME: Is there a better way to send this without sending another rumble packet? */
-    return HIDAPI_DriverPS4_RumbleJoystick(device, joystick, ctx->rumble_left, ctx->rumble_right);
+    return HIDAPI_DriverPS4_UpdateEffects(device);
 }
 
 static void

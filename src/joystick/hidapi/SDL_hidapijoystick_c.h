@@ -127,6 +127,8 @@ extern void HIDAPI_JoystickDisconnected(SDL_HIDAPI_Device *device, SDL_JoystickI
 
 extern void HIDAPI_DumpPacket(const char *prefix, Uint8 *data, int size);
 
+Uint32 crc32(Uint32 crc, const void *data, int count);
+
 #endif /* SDL_JOYSTICK_HIDAPI_H */
 
 /* vi: set ts=4 sw=4 expandtab: */

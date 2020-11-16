@@ -390,6 +390,27 @@ HIDAPI_ShutdownDiscovery()
 #endif
 }
 
+/* Public domain CRC implementation adapted from:
+   http://home.thep.lu.se/~bjorn/crc/crc32_simple.c
+*/
+static Uint32 crc32_for_byte(Uint32 r)
+{
+    int i;
+    for(i = 0; i < 8; ++i) {
+        r = (r & 1? 0: (Uint32)0xEDB88320L) ^ r >> 1;
+    }
+    return r ^ (Uint32)0xFF000000L;
+}
+
+Uint32 crc32(Uint32 crc, const void *data, int count)
+{
+    int i;
+    for(i = 0; i < count; ++i) {
+        crc = crc32_for_byte((Uint8)crc ^ ((const Uint8*)data)[i]) ^ crc >> 8;
+    }
+    return crc;
+}
+
 void
 HIDAPI_DumpPacket(const char *prefix, Uint8 *data, int size)
 {
