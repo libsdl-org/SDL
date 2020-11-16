@@ -90,7 +90,8 @@ typedef struct
 
 typedef struct
 {
-    Uint8 ucEnableBits;
+    Uint8 ucEnableBits1;
+    Uint8 ucEnableBits2;
     Uint8 ucRumbleRight;
     Uint8 ucRumbleLeft;
     Uint8 rgucUnknown1[6];
@@ -106,8 +107,6 @@ typedef struct
     Uint8 ucLedGreen;
     Uint8 ucLedBlue;
 } DS5EffectsState_t;
-
-SDL_COMPILE_TIME_ASSERT(X, sizeof(DS5EffectsState_t) == 46);
 
 typedef struct {
     SDL_bool is_bluetooth;
@@ -205,20 +204,19 @@ HIDAPI_DriverPS5_UpdateEffects(SDL_HIDAPI_Device *device)
     if (ctx->is_bluetooth) {
         data[0] = k_EPS5ReportIdBluetoothEffects;
         data[1] = 0x02;  /* Magic value */
-        data[2] = 0x03;  /* Magic value */
 
         report_size = 78;
-        offset = 3;
+        offset = 2;
     } else {
         data[0] = k_EPS5ReportIdUsbEffects;
-        data[1] = 0x07;  /* Magic value */
 
         report_size = 48;
-        offset = 2;
+        offset = 1;
     }
     effects = (DS5EffectsState_t *)&data[offset];
 
-    effects->ucEnableBits = 0x04;   /* Enable LED color */
+    effects->ucEnableBits1 = 0x03;   /* Enable left/right rumble */
+    effects->ucEnableBits2 = 0x04;   /* Enable LED color */
 
     effects->ucRumbleLeft = ctx->rumble_left;
     effects->ucRumbleRight = ctx->rumble_right;
@@ -245,6 +243,17 @@ HIDAPI_DriverPS5_UpdateEffects(SDL_HIDAPI_Device *device)
         return SDL_SetError("Couldn't send rumble packet");
     }
     return 0;
+}
+
+static void
+HIDAPI_DriverPS5_SetBluetooth(SDL_HIDAPI_Device *device, SDL_bool is_bluetooth)
+{
+    SDL_DriverPS5_Context *ctx = (SDL_DriverPS5_Context *)device->context;
+
+    if (ctx->is_bluetooth != is_bluetooth) {
+        ctx->is_bluetooth = is_bluetooth;
+        HIDAPI_DriverPS5_UpdateEffects(device);
+    }
 }
 
 static void
@@ -529,6 +538,7 @@ HIDAPI_DriverPS5_HandleStatePacket(SDL_Joystick *joystick, hid_device *dev, SDL_
     SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_RIGHTY, axis);
 
     if (packet->ucBatteryLevel & 0x10) {
+        /* 0x20 set means fully charged */
         joystick->epowerlevel = SDL_JOYSTICK_POWER_WIRED;
     } else {
         /* Battery level ranges from 0 to 10 */
@@ -578,15 +588,16 @@ HIDAPI_DriverPS5_UpdateDevice(SDL_HIDAPI_Device *device)
 #endif
         switch (data[0]) {
         case k_EPS5ReportIdState:
-            ctx->is_bluetooth = SDL_TRUE;
             if (size == 10) {
+                HIDAPI_DriverPS5_SetBluetooth(device, SDL_TRUE);    /* Simple state packet over Bluetooth */
                 HIDAPI_DriverPS5_HandleSimpleStatePacket(joystick, device->dev, ctx, (PS5SimpleStatePacket_t *)&data[1]);
             } else {
+                HIDAPI_DriverPS5_SetBluetooth(device, SDL_FALSE);
                 HIDAPI_DriverPS5_HandleStatePacket(joystick, device->dev, ctx, (PS5StatePacket_t *)&data[1]);
             }
             break;
         case k_EPS5ReportIdBluetoothState:
-            ctx->is_bluetooth = SDL_TRUE;
+            HIDAPI_DriverPS5_SetBluetooth(device, SDL_TRUE);
             HIDAPI_DriverPS5_HandleStatePacket(joystick, device->dev, ctx, (PS5StatePacket_t *)&data[2]);
             break;
         default:
