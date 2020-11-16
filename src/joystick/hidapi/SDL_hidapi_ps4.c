@@ -328,7 +328,7 @@ HIDAPI_DriverPS4_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystic
     }
 
     /* In order to send rumble, we have to send a complete effect packet */
-    SDL_memset(data, 0, sizeof(data));
+    SDL_zero(data);
 
     if (ctx->is_bluetooth) {
         data[0] = k_EPS4ReportIdBluetoothEffects;
