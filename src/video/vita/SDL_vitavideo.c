@@ -332,7 +332,7 @@ void VITA_PumpEvents(_THIS)
 {
     VITA_PollTouch();
     VITA_PollKeyboard();
-	VITA_PollMouse();
+    VITA_PollMouse();
 }
 
 #endif /* SDL_VIDEO_DRIVER_VITA */
