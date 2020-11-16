@@ -70,28 +70,6 @@ static SDL_joylist_item *SDL_joylist_tail = NULL;
 static int numjoysticks = 0;
 
 
-/* Public domain CRC implementation adapted from:
-   http://home.thep.lu.se/~bjorn/crc/crc32_simple.c
-*/
-static Uint32 crc32_for_byte(Uint32 r)
-{
-    int i;
-    for(i = 0; i < 8; ++i) {
-        r = (r & 1? 0: (Uint32)0xEDB88320L) ^ r >> 1;
-    }
-    return r ^ (Uint32)0xFF000000L;
-}
-
-static Uint32 crc32(const void *data, size_t count)
-{
-    Uint32 crc = 0;
-    int i;
-    for(i = 0; i < count; ++i) {
-        crc = crc32_for_byte((Uint8)crc ^ ((const Uint8*)data)[i]) ^ crc >> 8;
-    }
-    return crc;
-}
-
 /* Function to convert Android keyCodes into SDL ones.
  * This code manipulation is done to get a sequential list of codes.
  * FIXME: This is only suited for the case where we use a fixed number of buttons determined by ANDROID_MAX_NBUTTONS
@@ -391,7 +369,8 @@ Android_AddJoystick(int device_id, const char *name, const char *desc, int vendo
         *guid16++ = SDL_SwapLE16(product_id);
         *guid16++ = 0;
     } else {
-        Uint32 crc = crc32(desc, SDL_strlen(desc));
+        Uint32 crc = 0;
+        SDL_crc32(crc, desc, SDL_strlen(desc));
         SDL_memcpy(guid16, desc, SDL_min(2*sizeof(*guid16), SDL_strlen(desc)));
         guid16 += 2;
         *(Uint32 *)guid16 = SDL_SwapLE32(crc);

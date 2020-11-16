@@ -840,3 +840,4 @@ SDL_DYNAPI_PROC(SDL_bool,SDL_GameControllerHasButton,(SDL_GameController *a, SDL
 SDL_DYNAPI_PROC(int,SDL_GameControllerGetNumTouchpads,(SDL_GameController *a),(a),return)
 SDL_DYNAPI_PROC(int,SDL_GameControllerGetNumTouchpadFingers,(SDL_GameController *a, int b),(a,b),return)
 SDL_DYNAPI_PROC(int,SDL_GameControllerGetTouchpadFinger,(SDL_GameController *a, int b, int c, Uint8 *d, float *e, float *f, float *g),(a,b,c,d,e,f,g),return)
+SDL_DYNAPI_PROC(Uint32,SDL_crc32,(Uint32 a, const void *b, size_t c),(a,b,c),return)

@@ -260,8 +260,8 @@ HIDAPI_DriverPS4_UpdateEffects(SDL_HIDAPI_Device *device)
         /* Bluetooth reports need a CRC at the end of the packet (at least on Linux) */
         Uint8 ubHdr = 0xA2; /* hidp header is part of the CRC calculation */
         Uint32 unCRC;
-        unCRC = crc32(0, &ubHdr, 1);
-        unCRC = crc32(unCRC, data, (Uint32)(report_size - sizeof(unCRC)));
+        unCRC = SDL_crc32(0, &ubHdr, 1);
+        unCRC = SDL_crc32(unCRC, data, (size_t)(report_size - sizeof(unCRC)));
         SDL_memcpy(&data[report_size - sizeof(unCRC)], &unCRC, sizeof(unCRC));
     }
 
