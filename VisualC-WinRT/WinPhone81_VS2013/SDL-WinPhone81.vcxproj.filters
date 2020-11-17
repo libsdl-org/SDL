@@ -590,6 +590,9 @@
     <ClCompile Include="..\..\src\locale\winrt\SDL_syslocale.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\stdlib\SDL_crc32.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\stdlib\SDL_getenv.c">
       <Filter>Source Files</Filter>
     </ClCompile>

@@ -608,6 +608,9 @@
     <ClCompile Include="..\..\src\SDL_log.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\stdlib\SDL_crc32.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\stdlib\SDL_getenv.c">
       <Filter>Source Files</Filter>
     </ClCompile>
