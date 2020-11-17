@@ -36,6 +36,14 @@
 /* Define this if you want to log all packets from the controller */
 /*#define DEBUG_PS5_PROTOCOL*/
 
+/* Define this if you want to log calibration data */
+/*#define DEBUG_PS5_CALIBRATION*/
+
+#define GYRO_RES_PER_DEGREE 1024.0f
+#define ACCEL_RES_PER_G     8192.0f
+
+#define LOAD16(A, B)  (Sint16)((Uint16)(A) | (((Uint16)(B)) << 8))
+
 typedef enum
 {
     k_EPS5ReportIdState = 0x01,
@@ -46,6 +54,7 @@ typedef enum
 
 typedef enum
 {
+    k_EPS5FeatureReportIdCalibration = 0x05,
     k_EPS5FeatureReportIdSerialNumber = 0x09,
 } EPS5FeatureReportId;
 
@@ -113,7 +122,15 @@ typedef struct
 } DS5EffectsState_t;
 
 typedef struct {
+    Sint16 bias;
+    float sensitivity;
+} IMUCalibrationData;
+
+typedef struct {
     SDL_bool is_bluetooth;
+    SDL_bool report_sensors;
+    SDL_bool hardware_calibration;
+    IMUCalibrationData calibration[6];
     int player_index;
     Uint16 rumble_left;
     Uint16 rumble_right;
@@ -188,6 +205,121 @@ static int
 HIDAPI_DriverPS5_GetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id)
 {
     return -1;
+}
+
+static void
+HIDAPI_DriverPS5_LoadCalibrationData(SDL_HIDAPI_Device *device)
+{
+    SDL_DriverPS5_Context *ctx = (SDL_DriverPS5_Context *)device->context;
+    int i, size;
+    Uint8 data[USB_PACKET_LENGTH];
+
+    size = ReadFeatureReport(device->dev, k_EPS5FeatureReportIdCalibration, data, sizeof(data));
+    if (size < 35) {
+#ifdef DEBUG_PS5_CALIBRATION
+        SDL_Log("Short read of calibration data: %d, ignoring calibration\n", size);
+#endif
+        return;
+    }
+
+    {
+        Sint16 sGyroPitchBias, sGyroYawBias, sGyroRollBias;
+        Sint16 sGyroPitchPlus, sGyroPitchMinus;
+        Sint16 sGyroYawPlus, sGyroYawMinus;
+        Sint16 sGyroRollPlus, sGyroRollMinus;
+        Sint16 sGyroSpeedPlus, sGyroSpeedMinus;
+
+        Sint16 sAccXPlus, sAccXMinus;
+        Sint16 sAccYPlus, sAccYMinus;
+        Sint16 sAccZPlus, sAccZMinus;
+
+        float flNumerator;
+        Sint16 sRange2g;
+
+#ifdef DEBUG_PS5_CALIBRATION
+        HIDAPI_DumpPacket("PS5 calibration packet: size = %d", data, size);
+#endif
+
+        sGyroPitchBias = LOAD16(data[1], data[2]);
+        sGyroYawBias = LOAD16(data[3], data[4]);
+        sGyroRollBias = LOAD16(data[5], data[6]);
+
+        sGyroPitchPlus = LOAD16(data[7], data[8]);
+        sGyroPitchMinus = LOAD16(data[9], data[10]);
+        sGyroYawPlus = LOAD16(data[11], data[12]);
+        sGyroYawMinus = LOAD16(data[13], data[14]);
+        sGyroRollPlus = LOAD16(data[15], data[16]);
+        sGyroRollMinus = LOAD16(data[17], data[18]);
+
+        sGyroSpeedPlus = LOAD16(data[19], data[20]);
+        sGyroSpeedMinus = LOAD16(data[21], data[22]);
+
+        sAccXPlus = LOAD16(data[23], data[24]);
+        sAccXMinus = LOAD16(data[25], data[26]);
+        sAccYPlus = LOAD16(data[27], data[28]);
+        sAccYMinus = LOAD16(data[29], data[30]);
+        sAccZPlus = LOAD16(data[31], data[32]);
+        sAccZMinus = LOAD16(data[33], data[34]);
+
+        flNumerator = (sGyroSpeedPlus + sGyroSpeedMinus) * GYRO_RES_PER_DEGREE;
+        ctx->calibration[0].bias = sGyroPitchBias;
+        ctx->calibration[0].sensitivity = flNumerator / (sGyroPitchPlus - sGyroPitchMinus);
+
+        ctx->calibration[1].bias = sGyroYawBias;
+        ctx->calibration[1].sensitivity = flNumerator / (sGyroYawPlus - sGyroYawMinus);
+
+        ctx->calibration[2].bias = sGyroRollBias;
+        ctx->calibration[2].sensitivity = flNumerator / (sGyroRollPlus - sGyroRollMinus);
+
+        sRange2g = sAccXPlus - sAccXMinus;
+        ctx->calibration[3].bias = sAccXPlus - sRange2g / 2;
+        ctx->calibration[3].sensitivity = 2.0f * ACCEL_RES_PER_G / (float)sRange2g;
+
+        sRange2g = sAccYPlus - sAccYMinus;
+        ctx->calibration[4].bias = sAccYPlus - sRange2g / 2;
+        ctx->calibration[4].sensitivity = 2.0f * ACCEL_RES_PER_G / (float)sRange2g;
+
+        sRange2g = sAccZPlus - sAccZMinus;
+        ctx->calibration[5].bias = sAccZPlus - sRange2g / 2;
+        ctx->calibration[5].sensitivity = 2.0f * ACCEL_RES_PER_G / (float)sRange2g;
+
+        ctx->hardware_calibration = SDL_TRUE;
+        for (i = 0; i < 6; ++i) {
+            float divisor = (i < 3 ? 64.0f : 1.0f);
+#ifdef DEBUG_PS5_CALIBRATION
+            SDL_Log("calibration[%d] bias = %d, sensitivity = %f\n", i, ctx->calibration[i].bias, ctx->calibration[i].sensitivity);
+#endif
+            /* Some controllers have a bad calibration */
+            if ((SDL_abs(ctx->calibration[i].bias) > 1024) || (SDL_fabs(1.0f - ctx->calibration[i].sensitivity / divisor) > 0.5f)) {
+#ifdef DEBUG_PS5_CALIBRATION
+                SDL_Log("invalid calibration, ignoring\n");
+#endif
+                ctx->hardware_calibration = SDL_FALSE;
+            }
+        }
+    }
+}
+
+static float
+HIDAPI_DriverPS5_ApplyCalibrationData(SDL_DriverPS5_Context *ctx, int index, Sint16 value)
+{
+    float result;
+
+    if (ctx->hardware_calibration) {
+        IMUCalibrationData *calibration = &ctx->calibration[index];
+
+        result = (value - calibration->bias) * calibration->sensitivity;
+    } else {
+        result = value;
+    }
+
+    /* Convert the raw data to the units expected by SDL */
+    if (index < 3) {
+        result = (result / GYRO_RES_PER_DEGREE) * M_PI / 180.0f;
+    } else {
+        result = (result / ACCEL_RES_PER_G) * SDL_STANDARD_GRAVITY;
+    }
+    return result;
 }
 
 static int
@@ -315,6 +447,8 @@ HIDAPI_DriverPS5_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
     joystick->epowerlevel = SDL_JOYSTICK_POWER_WIRED;
 
     SDL_PrivateJoystickAddTouchpad(joystick, 2);
+    SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO);
+    SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL);
 
     return SDL_TRUE;
 }
@@ -358,6 +492,13 @@ HIDAPI_DriverPS5_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystic
 static int
 HIDAPI_DriverPS5_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, SDL_bool enabled)
 {
+    SDL_DriverPS5_Context *ctx = (SDL_DriverPS5_Context *)device->context;
+
+    if (enabled) {
+        HIDAPI_DriverPS5_LoadCalibrationData(device);
+    }
+    ctx->report_sensors = enabled;
+
     return 0;
 }
 
@@ -577,6 +718,20 @@ HIDAPI_DriverPS5_HandleStatePacket(SDL_Joystick *joystick, hid_device *dev, SDL_
     touchpad_x = packet->rgucTouchpadData2[0] | (((int)packet->rgucTouchpadData2[1] & 0x0F) << 8);
     touchpad_y = (packet->rgucTouchpadData2[1] >> 4) | ((int)packet->rgucTouchpadData2[2] << 4);
     SDL_PrivateJoystickTouchpad(joystick, 0, 1, touchpad_state, touchpad_x * TOUCHPAD_SCALEX, touchpad_y * TOUCHPAD_SCALEY, touchpad_state ? 1.0f : 0.0f);
+
+    if (ctx->report_sensors) {
+        float data[3];
+
+        data[0] = HIDAPI_DriverPS5_ApplyCalibrationData(ctx, 0, LOAD16(packet->rgucGyroX[0], packet->rgucGyroX[1]));
+        data[1] = HIDAPI_DriverPS5_ApplyCalibrationData(ctx, 1, LOAD16(packet->rgucGyroY[0], packet->rgucGyroY[1]));
+        data[2] = HIDAPI_DriverPS5_ApplyCalibrationData(ctx, 2, LOAD16(packet->rgucGyroZ[0], packet->rgucGyroZ[1]));
+        SDL_PrivateJoystickSensor(joystick, SDL_SENSOR_GYRO, data, 3);
+
+        data[0] = HIDAPI_DriverPS5_ApplyCalibrationData(ctx, 3, LOAD16(packet->rgucAccelX[0], packet->rgucAccelX[1]));
+        data[1] = HIDAPI_DriverPS5_ApplyCalibrationData(ctx, 4, LOAD16(packet->rgucAccelY[0], packet->rgucAccelY[1]));
+        data[2] = HIDAPI_DriverPS5_ApplyCalibrationData(ctx, 5, LOAD16(packet->rgucAccelZ[0], packet->rgucAccelZ[1]));
+        SDL_PrivateJoystickSensor(joystick, SDL_SENSOR_ACCEL, data, 3);
+    }
 
     SDL_memcpy(&ctx->last_state.state, packet, sizeof(ctx->last_state.state));
 }
