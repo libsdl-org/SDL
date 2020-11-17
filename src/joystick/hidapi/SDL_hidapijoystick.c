@@ -690,6 +690,24 @@ HIDAPI_JoystickGetCount(void)
     return SDL_HIDAPI_numjoysticks;
 }
 
+static char *
+HIDAPI_ConvertString(const wchar_t *wide_string)
+{
+    char *string = NULL;
+
+    if (wide_string) {
+        string = SDL_iconv_string("UTF-8", "WCHAR_T", (char*)wide_string, (SDL_wcslen(wide_string)+1)*sizeof(wchar_t));
+        if (!string) {
+            if (sizeof(wchar_t) == sizeof(Uint16)) {
+                string = SDL_iconv_string("UTF-8", "UCS-2-INTERNAL", (char*)wide_string, (SDL_wcslen(wide_string)+1)*sizeof(wchar_t));
+            } else if (sizeof(wchar_t) == sizeof(Uint32)) {
+                string = SDL_iconv_string("UTF-8", "UCS-4-INTERNAL", (char*)wide_string, (SDL_wcslen(wide_string)+1)*sizeof(wchar_t));
+            }
+        }
+    }
+    return string;
+}
+
 static void
 HIDAPI_AddDevice(struct hid_device_info *info)
 {
@@ -743,29 +761,9 @@ HIDAPI_AddDevice(struct hid_device_info *info)
 
     /* Need the device name before getting the driver to know whether to ignore this device */
     {
-        char *manufacturer_string = NULL;
-        char *product_string = NULL;
-
-        if (info->manufacturer_string) {
-            manufacturer_string = SDL_iconv_string("UTF-8", "WCHAR_T", (char*)info->manufacturer_string, (SDL_wcslen(info->manufacturer_string)+1)*sizeof(wchar_t));
-            if (!manufacturer_string) {
-                if (sizeof(wchar_t) == sizeof(Uint16)) {
-                    manufacturer_string = SDL_iconv_string("UTF-8", "UCS-2-INTERNAL", (char*)info->manufacturer_string, (SDL_wcslen(info->manufacturer_string)+1)*sizeof(wchar_t));
-                } else if (sizeof(wchar_t) == sizeof(Uint32)) {
-                    manufacturer_string = SDL_iconv_string("UTF-8", "UCS-4-INTERNAL", (char*)info->manufacturer_string, (SDL_wcslen(info->manufacturer_string)+1)*sizeof(wchar_t));
-                }
-            }
-        }
-        if (info->product_string) {
-            product_string = SDL_iconv_string("UTF-8", "WCHAR_T", (char*)info->product_string, (SDL_wcslen(info->product_string)+1)*sizeof(wchar_t));
-            if (!product_string) {
-                if (sizeof(wchar_t) == sizeof(Uint16)) {
-                    product_string = SDL_iconv_string("UTF-8", "UCS-2-INTERNAL", (char*)info->product_string, (SDL_wcslen(info->product_string)+1)*sizeof(wchar_t));
-                } else if (sizeof(wchar_t) == sizeof(Uint32)) {
-                    product_string = SDL_iconv_string("UTF-8", "UCS-4-INTERNAL", (char*)info->product_string, (SDL_wcslen(info->product_string)+1)*sizeof(wchar_t));
-                }
-            }
-        }
+        char *manufacturer_string = HIDAPI_ConvertString(info->manufacturer_string);
+        char *product_string = HIDAPI_ConvertString(info->product_string);
+        char *serial_number = HIDAPI_ConvertString(info->serial_number);
 
         device->name = SDL_CreateJoystickName(device->vendor_id, device->product_id, manufacturer_string, product_string);
 
@@ -776,7 +774,14 @@ HIDAPI_AddDevice(struct hid_device_info *info)
             SDL_free(product_string);
         }
 
+        if (serial_number && *serial_number) {
+            device->serial = serial_number;
+        } else {
+            SDL_free(serial_number);
+        }
+
         if (!device->name) {
+            SDL_free(device->serial);
             SDL_free(device->path);
             SDL_free(device);
             return;
@@ -793,7 +798,7 @@ HIDAPI_AddDevice(struct hid_device_info *info)
     HIDAPI_SetupDeviceDriver(device);
 
 #ifdef DEBUG_HIDAPI
-    SDL_Log("Added HIDAPI device '%s' VID 0x%.4x, PID 0x%.4x, version %d, interface %d, interface_class %d, interface_subclass %d, interface_protocol %d, usage page 0x%.4x, usage 0x%.4x, path = %s, driver = %s (%s)\n", device->name, device->vendor_id, device->product_id, device->version, device->interface_number, device->interface_class, device->interface_subclass, device->interface_protocol, device->usage_page, device->usage, device->path, device->driver ? device->driver->hint : "NONE", device->driver && device->driver->enabled ? "ENABLED" : "DISABLED");
+    SDL_Log("Added HIDAPI device '%s' VID 0x%.4x, PID 0x%.4x, version %d, serial %s, interface %d, interface_class %d, interface_subclass %d, interface_protocol %d, usage page 0x%.4x, usage 0x%.4x, path = %s, driver = %s (%s)\n", device->name, device->vendor_id, device->product_id, device->version, device->serial ? device->serial : "NONE", device->interface_number, device->interface_class, device->interface_subclass, device->interface_protocol, device->usage_page, device->usage, device->path, device->driver ? device->driver->hint : "NONE", device->driver && device->driver->enabled ? "ENABLED" : "DISABLED");
 #endif
 }
 
@@ -813,6 +818,7 @@ HIDAPI_DelDevice(SDL_HIDAPI_Device *device)
             HIDAPI_CleanupDeviceDriver(device);
 
             SDL_DestroyMutex(device->dev_lock);
+            SDL_free(device->serial);
             SDL_free(device->name);
             SDL_free(device->path);
             SDL_free(device);
@@ -1049,6 +1055,10 @@ HIDAPI_JoystickOpen(SDL_Joystick * joystick, int device_index)
     if (!device->driver->OpenJoystick(device, joystick)) {
         SDL_free(hwdata);
         return -1;
+    }
+
+    if (!joystick->serial && device->serial) {
+        joystick->serial = SDL_strdup(device->serial);
     }
 
     joystick->hwdata = hwdata;

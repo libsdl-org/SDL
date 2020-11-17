@@ -135,34 +135,11 @@ HIDAPI_DriverPS4_GetDeviceName(Uint16 vendor_id, Uint16 product_id)
     return NULL;
 }
 
-static SDL_bool ReadFeatureReport(hid_device *dev, Uint8 report_id, Uint8 *data, size_t size)
+static int ReadFeatureReport(hid_device *dev, Uint8 report_id, Uint8 *report, size_t length)
 {
-    Uint8 report[USB_PACKET_LENGTH + 1];
-
-    SDL_memset(report, 0, sizeof(report));
+    SDL_memset(report, 0, length);
     report[0] = report_id;
-    if (hid_get_feature_report(dev, report, sizeof(report)) < 0) {
-        return SDL_FALSE;
-    }
-    SDL_memcpy(data, report, SDL_min(size, sizeof(report)));
-    return SDL_TRUE;
-}
-
-static SDL_bool CheckUSBConnected(hid_device *dev)
-{
-    int i;
-    Uint8 data[16];
-
-    /* This will fail if we're on Bluetooth */
-    if (ReadFeatureReport(dev, k_ePS4FeatureReportIdSerialNumber, data, sizeof(data))) {
-        for (i = 0; i < sizeof(data); ++i) {
-            if (data[i] != 0x00) {
-                return SDL_TRUE;
-            }
-        }
-        /* Maybe the dongle without a connected controller? */
-    }
-    return SDL_FALSE;
+    return hid_get_feature_report(dev, report, length);
 }
 
 static SDL_bool HIDAPI_DriverPS4_CanRumble(Uint16 vendor_id, Uint16 product_id)
@@ -310,7 +287,36 @@ HIDAPI_DriverPS4_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
     if (ctx->is_dongle) {
         ctx->is_bluetooth = SDL_FALSE;
     } else if (device->vendor_id == USB_VENDOR_SONY) {
-        ctx->is_bluetooth = !CheckUSBConnected(device->dev);
+        int i;
+        Uint8 data[USB_PACKET_LENGTH];
+        int length;
+
+        /* This will fail if we're on Bluetooth */
+        length = ReadFeatureReport(device->dev, k_ePS4FeatureReportIdSerialNumber, data, sizeof(data));
+        if (length >= 7) {
+            SDL_bool had_data = SDL_FALSE;
+
+            for (i = 0; i < length; ++i) {
+                if (data[i] != 0x00) {
+                    had_data = SDL_TRUE;
+                    break;
+                }
+            }
+
+            if (had_data) {
+                char serial[18];
+
+                SDL_snprintf(serial, sizeof(serial), "%.2x-%.2x-%.2x-%.2x-%.2x-%.2x",
+                    data[6], data[5], data[4], data[3], data[2], data[1]);
+                joystick->serial = SDL_strdup(serial);
+            } else {
+                /* Maybe the dongle without a connected controller? */
+            }
+
+            ctx->is_bluetooth = SDL_FALSE;
+        } else {
+            ctx->is_bluetooth = SDL_TRUE;
+        }
     } else {
         /* Third party controllers appear to all be wired */
         ctx->is_bluetooth = SDL_FALSE;

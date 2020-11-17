@@ -194,8 +194,8 @@ SDL_GameControllerIgnoreDevicesExceptChanged(void *userdata, const char *name, c
 }
 
 static ControllerMapping_t *SDL_PrivateAddMappingForGUID(SDL_JoystickGUID jGUID, const char *mappingString, SDL_bool *existing, SDL_ControllerMappingPriority priority);
-static int SDL_PrivateGameControllerAxis(SDL_GameController * gamecontroller, SDL_GameControllerAxis axis, Sint16 value);
-static int SDL_PrivateGameControllerButton(SDL_GameController * gamecontroller, SDL_GameControllerButton button, Uint8 state);
+static int SDL_PrivateGameControllerAxis(SDL_GameController *gamecontroller, SDL_GameControllerAxis axis, Sint16 value);
+static int SDL_PrivateGameControllerButton(SDL_GameController *gamecontroller, SDL_GameControllerButton button, Uint8 state);
 
 /*
  * If there is an existing add event in the queue, it needs to be modified
@@ -1517,7 +1517,7 @@ SDL_GameControllerMappingForGUID(SDL_JoystickGUID guid)
  * Get the mapping string for this device
  */
 char *
-SDL_GameControllerMapping(SDL_GameController * gamecontroller)
+SDL_GameControllerMapping(SDL_GameController *gamecontroller)
 {
     if (!gamecontroller) {
         return NULL;
@@ -1888,7 +1888,7 @@ SDL_GameControllerHasAxis(SDL_GameController *gamecontroller, SDL_GameController
  * Get the current state of an axis control on a controller
  */
 Sint16
-SDL_GameControllerGetAxis(SDL_GameController * gamecontroller, SDL_GameControllerAxis axis)
+SDL_GameControllerGetAxis(SDL_GameController *gamecontroller, SDL_GameControllerAxis axis)
 {
     int i;
 
@@ -1957,7 +1957,7 @@ SDL_GameControllerHasButton(SDL_GameController *gamecontroller, SDL_GameControll
  * Get the current state of a button on a controller
  */
 Uint8
-SDL_GameControllerGetButton(SDL_GameController * gamecontroller, SDL_GameControllerButton button)
+SDL_GameControllerGetButton(SDL_GameController *gamecontroller, SDL_GameControllerButton button)
 {
     int i;
 
@@ -2060,7 +2060,7 @@ SDL_GameControllerGetTouchpadFinger(SDL_GameController *gamecontroller, int touc
 }
 
 const char *
-SDL_GameControllerName(SDL_GameController * gamecontroller)
+SDL_GameControllerName(SDL_GameController *gamecontroller)
 {
     if (!gamecontroller)
         return NULL;
@@ -2094,21 +2094,27 @@ SDL_GameControllerSetPlayerIndex(SDL_GameController *gamecontroller, int player_
 }
 
 Uint16
-SDL_GameControllerGetVendor(SDL_GameController * gamecontroller)
+SDL_GameControllerGetVendor(SDL_GameController *gamecontroller)
 {
     return SDL_JoystickGetVendor(SDL_GameControllerGetJoystick(gamecontroller));
 }
 
 Uint16
-SDL_GameControllerGetProduct(SDL_GameController * gamecontroller)
+SDL_GameControllerGetProduct(SDL_GameController *gamecontroller)
 {
     return SDL_JoystickGetProduct(SDL_GameControllerGetJoystick(gamecontroller));
 }
 
 Uint16
-SDL_GameControllerGetProductVersion(SDL_GameController * gamecontroller)
+SDL_GameControllerGetProductVersion(SDL_GameController *gamecontroller)
 {
     return SDL_JoystickGetProductVersion(SDL_GameControllerGetJoystick(gamecontroller));
+}
+
+const char *
+SDL_GameControllerGetSerial(SDL_GameController *gamecontroller)
+{
+    return SDL_JoystickGetSerial(SDL_GameControllerGetJoystick(gamecontroller));
 }
 
 /*
@@ -2116,7 +2122,7 @@ SDL_GameControllerGetProductVersion(SDL_GameController * gamecontroller)
  *  \return 0 if not plugged in, 1 if still present.
  */
 SDL_bool
-SDL_GameControllerGetAttached(SDL_GameController * gamecontroller)
+SDL_GameControllerGetAttached(SDL_GameController *gamecontroller)
 {
     if (!gamecontroller)
         return SDL_FALSE;
@@ -2127,7 +2133,8 @@ SDL_GameControllerGetAttached(SDL_GameController * gamecontroller)
 /*
  * Get the joystick for this controller
  */
-SDL_Joystick *SDL_GameControllerGetJoystick(SDL_GameController * gamecontroller)
+SDL_Joystick *
+SDL_GameControllerGetJoystick(SDL_GameController *gamecontroller)
 {
     if (!gamecontroller)
         return NULL;
@@ -2174,7 +2181,7 @@ SDL_GameController *SDL_GameControllerFromPlayerIndex(int player_index)
 /*
  * Get the SDL joystick layer binding for this controller axis mapping
  */
-SDL_GameControllerButtonBind SDL_GameControllerGetBindForAxis(SDL_GameController * gamecontroller, SDL_GameControllerAxis axis)
+SDL_GameControllerButtonBind SDL_GameControllerGetBindForAxis(SDL_GameController *gamecontroller, SDL_GameControllerAxis axis)
 {
     int i;
     SDL_GameControllerButtonBind bind;
@@ -2206,7 +2213,7 @@ SDL_GameControllerButtonBind SDL_GameControllerGetBindForAxis(SDL_GameController
 /*
  * Get the SDL joystick layer binding for this controller button mapping
  */
-SDL_GameControllerButtonBind SDL_GameControllerGetBindForButton(SDL_GameController * gamecontroller, SDL_GameControllerButton button)
+SDL_GameControllerButtonBind SDL_GameControllerGetBindForButton(SDL_GameController *gamecontroller, SDL_GameControllerButton button)
 {
     int i;
     SDL_GameControllerButtonBind bind;
@@ -2259,7 +2266,7 @@ SDL_GameControllerSetLED(SDL_GameController *gamecontroller, Uint8 red, Uint8 gr
 }
 
 void
-SDL_GameControllerClose(SDL_GameController * gamecontroller)
+SDL_GameControllerClose(SDL_GameController *gamecontroller)
 {
     SDL_GameController *gamecontrollerlist, *gamecontrollerlistprev;
 
@@ -2349,7 +2356,7 @@ SDL_GameControllerQuitMappings(void)
  * Event filter to transform joystick events into appropriate game controller ones
  */
 static int
-SDL_PrivateGameControllerAxis(SDL_GameController * gamecontroller, SDL_GameControllerAxis axis, Sint16 value)
+SDL_PrivateGameControllerAxis(SDL_GameController *gamecontroller, SDL_GameControllerAxis axis, Sint16 value)
 {
     int posted;
 
@@ -2373,7 +2380,7 @@ SDL_PrivateGameControllerAxis(SDL_GameController * gamecontroller, SDL_GameContr
  * Event filter to transform joystick events into appropriate game controller ones
  */
 static int
-SDL_PrivateGameControllerButton(SDL_GameController * gamecontroller, SDL_GameControllerButton button, Uint8 state)
+SDL_PrivateGameControllerButton(SDL_GameController *gamecontroller, SDL_GameControllerButton button, Uint8 state)
 {
     int posted;
 #if !SDL_EVENTS_DISABLED

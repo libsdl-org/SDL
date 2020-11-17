@@ -780,3 +780,5 @@
 #define SDL_GameControllerGetNumTouchpadFingers SDL_GameControllerGetNumTouchpadFingers_REAL
 #define SDL_GameControllerGetTouchpadFinger SDL_GameControllerGetTouchpadFinger_REAL
 #define SDL_crc32 SDL_crc32_REAL
+#define SDL_GameControllerGetSerial SDL_GameControllerGetSerial_REAL
+#define SDL_JoystickGetSerial SDL_JoystickGetSerial_REAL

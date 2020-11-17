@@ -61,6 +61,7 @@ typedef struct _SDL_HIDAPI_Device
     Uint16 vendor_id;
     Uint16 product_id;
     Uint16 version;
+    char *serial;
     SDL_JoystickGUID guid;
     int interface_number;   /* Available on Windows and Linux */
     int interface_class;
