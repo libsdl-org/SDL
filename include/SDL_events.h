@@ -128,6 +128,7 @@ typedef enum
     SDL_CONTROLLERTOUCHPADDOWN,        /**< Game controller touchpad was touched */
     SDL_CONTROLLERTOUCHPADMOTION,      /**< Game controller touchpad finger was moved */
     SDL_CONTROLLERTOUCHPADUP,          /**< Game controller touchpad finger was lifted */
+    SDL_CONTROLLERSENSORUPDATE,        /**< Game controller sensor was updated */
 
     /* Touch events */
     SDL_FINGERDOWN      = 0x700,
@@ -426,13 +427,24 @@ typedef struct SDL_ControllerTouchpadEvent
     Uint32 type;        /**< ::SDL_CONTROLLERTOUCHPADDOWN or ::SDL_CONTROLLERTOUCHPADMOTION or ::SDL_CONTROLLERTOUCHPADUP */
     Uint32 timestamp;   /**< In milliseconds, populated using SDL_GetTicks() */
     SDL_JoystickID which; /**< The joystick instance id */
-    int touchpad;       /**< The index of the touchpad */
-    int finger;         /**< The index of the finger on the touchpad */
+    Sint32 touchpad;    /**< The index of the touchpad */
+    Sint32 finger;      /**< The index of the finger on the touchpad */
     float x;            /**< Normalized in the range 0...1 with 0 being on the left */
     float y;            /**< Normalized in the range 0...1 with 0 being at the top */
     float pressure;     /**< Normalized in the range 0...1 */
 } SDL_ControllerTouchpadEvent;
 
+/**
+ *  \brief Game controller sensor event structure (event.csensor.*)
+ */
+typedef struct SDL_ControllerSensorEvent
+{
+    Uint32 type;        /**< ::SDL_CONTROLLERSENSORUPDATE */
+    Uint32 timestamp;   /**< In milliseconds, populated using SDL_GetTicks() */
+    SDL_JoystickID which; /**< The joystick instance id */
+    Sint32 sensor;      /**< The type of the sensor, one of the values of ::SDL_SensorType */
+    float data[3];      /**< Up to 3 values from the sensor, as defined in SDL_sensor.h */
+} SDL_ControllerSensorEvent;
 
 /**
  *  \brief Audio device event structure (event.adevice.*)
@@ -597,6 +609,7 @@ typedef union SDL_Event
     SDL_ControllerButtonEvent cbutton;      /**< Game Controller button event data */
     SDL_ControllerDeviceEvent cdevice;      /**< Game Controller device event data */
     SDL_ControllerTouchpadEvent ctouchpad;  /**< Game Controller touchpad event data */
+    SDL_ControllerSensorEvent csensor;      /**< Game Controller sensor event data */
     SDL_AudioDeviceEvent adevice;           /**< Audio device event data */
     SDL_SensorEvent sensor;                 /**< Sensor event data */
     SDL_QuitEvent quit;                     /**< Quit request event data */

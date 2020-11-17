@@ -158,9 +158,9 @@ SDL_COREMOTION_SensorUpdate(SDL_Sensor *sensor)
             if (accelerometerData) {
                 CMAcceleration acceleration = accelerometerData.acceleration;
                 float data[3];
-                data[0] = acceleration.x * SDL_STANDARD_GRAVITY;
-                data[1] = acceleration.y * SDL_STANDARD_GRAVITY;
-                data[2] = acceleration.z * SDL_STANDARD_GRAVITY;
+                data[0] = -acceleration.x * SDL_STANDARD_GRAVITY;
+                data[1] = -acceleration.y * SDL_STANDARD_GRAVITY;
+                data[2] = -acceleration.z * SDL_STANDARD_GRAVITY;
                 if (SDL_memcmp(data, sensor->hwdata->data, sizeof(data)) != 0) {
                     SDL_PrivateSensorUpdate(sensor, data, SDL_arraysize(data));
                     SDL_memcpy(sensor->hwdata->data, data, sizeof(data));

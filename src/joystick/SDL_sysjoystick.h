@@ -53,6 +53,13 @@ typedef struct _SDL_JoystickTouchpadInfo
     SDL_JoystickTouchpadFingerInfo *fingers;
 } SDL_JoystickTouchpadInfo;
 
+typedef struct _SDL_JoystickSensorInfo
+{
+    SDL_SensorType type;
+    SDL_bool enabled;
+    float data[3];      /* If this needs to expand, update SDL_ControllerSensorEvent */
+} SDL_JoystickSensorInfo;
+
 struct _SDL_Joystick
 {
     SDL_JoystickID instance_id; /* Device instance, monotonically increasing from 0 */
@@ -78,6 +85,10 @@ struct _SDL_Joystick
     int ntouchpads;             /* Number of touchpads on the joystick */
     SDL_JoystickTouchpadInfo *touchpads;    /* Current touchpad states */
 
+    int nsensors;               /* Number of sensors on the joystick */
+    int nsensors_enabled;
+    SDL_JoystickSensorInfo *sensors;
+
     Uint16 low_frequency_rumble;
     Uint16 high_frequency_rumble;
     Uint32 rumble_expiration;
@@ -94,6 +105,7 @@ struct _SDL_Joystick
     SDL_bool is_game_controller;
     SDL_bool delayed_guide_button; /* SDL_TRUE if this device has the guide button event delayed */
     SDL_JoystickPowerLevel epowerlevel; /* power level of this joystick, SDL_JOYSTICK_POWER_UNKNOWN if not supported */
+
     struct _SDL_JoystickDriver *driver;
 
     struct joystick_hwdata *hwdata;     /* Driver dependent information */
@@ -153,6 +165,9 @@ typedef struct _SDL_JoystickDriver
     /* LED functionality */
     SDL_bool (*HasLED)(SDL_Joystick *joystick);
     int (*SetLED)(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue);
+
+    /* Sensor functionality */
+    int (*SetSensorsEnabled)(SDL_Joystick *joystick, SDL_bool enabled);
 
     /* Function to update the state of a joystick - called as a device poll.
      * This function shouldn't update the joystick structure directly,

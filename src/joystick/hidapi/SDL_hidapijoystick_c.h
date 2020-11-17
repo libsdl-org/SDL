@@ -99,6 +99,7 @@ typedef struct _SDL_HIDAPI_DeviceDriver
     int (*RumbleJoystickTriggers)(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble);
     SDL_bool (*HasJoystickLED)(SDL_HIDAPI_Device *device, SDL_Joystick *joystick);
     int (*SetJoystickLED)(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue);
+    int (*SetJoystickSensorsEnabled)(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, SDL_bool enabled);
     void (*CloseJoystick)(SDL_HIDAPI_Device *device, SDL_Joystick *joystick);
     void (*FreeDevice)(SDL_HIDAPI_Device *device);
     void (*PostUpdate)(void);

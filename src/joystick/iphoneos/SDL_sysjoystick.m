@@ -79,6 +79,7 @@ static id disconnectObserver = nil;
 #define ENABLE_MFI_BATTERY
 #define ENABLE_MFI_RUMBLE
 #define ENABLE_MFI_LIGHT
+#define ENABLE_MFI_SENSORS
 #define ENABLE_PHYSICAL_INPUT_PROFILE
 #endif
 
@@ -569,7 +570,7 @@ IOS_JoystickGetDeviceInstanceID(int device_index)
 }
 
 static int
-IOS_JoystickOpen(SDL_Joystick * joystick, int device_index)
+IOS_JoystickOpen(SDL_Joystick *joystick, int device_index)
 {
     SDL_JoystickDeviceItem *device = GetDeviceForIndex(device_index);
     if (device == NULL) {
@@ -611,6 +612,20 @@ IOS_JoystickOpen(SDL_Joystick * joystick, int device_index)
                     }
                 };
             }
+
+#ifdef ENABLE_MFI_SENSORS
+            if (@available(iOS 14.0, tvOS 14.0, *)) {
+                GCController *controller = joystick->hwdata->controller;
+                GCMotion *motion = controller.motion;
+                if (motion && motion.hasRotationRate) {
+                    SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO);
+                }
+                if (motion && motion.hasGravityAndUserAcceleration) {
+                    SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL);
+                }
+            }
+#endif /* ENABLE_MFI_SENSORS */
+
 #endif /* SDL_JOYSTICK_MFI */
         }
     }
@@ -622,7 +637,7 @@ IOS_JoystickOpen(SDL_Joystick * joystick, int device_index)
 }
 
 static void
-IOS_AccelerometerUpdate(SDL_Joystick * joystick)
+IOS_AccelerometerUpdate(SDL_Joystick *joystick)
 {
 #if !TARGET_OS_TV
     const float maxgforce = SDL_IPHONE_MAX_GFORCE;
@@ -692,7 +707,7 @@ IOS_MFIJoystickHatStateForDPad(GCControllerDirectionPad *dpad)
 #endif
 
 static void
-IOS_MFIJoystickUpdate(SDL_Joystick * joystick)
+IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
 {
 #if SDL_JOYSTICK_MFI
     @autoreleasepool {
@@ -806,6 +821,31 @@ IOS_MFIJoystickUpdate(SDL_Joystick * joystick)
             for (i = 0; i < button_count; i++) {
                 SDL_PrivateJoystickButton(joystick, i, buttons[i]);
             }
+
+#ifdef ENABLE_MFI_SENSORS
+            if (@available(iOS 14.0, tvOS 14.0, *)) {
+                GCMotion *motion = controller.motion;
+                if (motion && motion.sensorsActive) {
+                    float data[3];
+
+                    if (motion.hasRotationRate) {
+                        GCRotationRate rate = motion.rotationRate;
+                        data[0] = rate.x;
+                        data[1] = rate.z;
+                        data[2] = -rate.y;
+                        SDL_PrivateJoystickSensor(joystick, SDL_SENSOR_GYRO, data, 3);
+                    }
+                    if (motion.hasGravityAndUserAcceleration) {
+                        GCAcceleration accel = motion.acceleration;
+                        data[0] = -accel.x * SDL_STANDARD_GRAVITY;
+                        data[1] = -accel.y * SDL_STANDARD_GRAVITY;
+                        data[2] = -accel.z * SDL_STANDARD_GRAVITY;
+                        SDL_PrivateJoystickSensor(joystick, SDL_SENSOR_ACCEL, data, 3);
+                    }
+                }
+            }
+#endif /* ENABLE_MFI_SENSORS */
+
         } else if (controller.gamepad) {
             GCGamepad *gamepad = controller.gamepad;
 
@@ -1103,7 +1143,7 @@ static SDL_RumbleContext *IOS_JoystickInitRumble(GCController *controller)
 #endif /* ENABLE_MFI_RUMBLE */
 
 static int
-IOS_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+IOS_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
 #ifdef ENABLE_MFI_RUMBLE
     SDL_JoystickDeviceItem *device = joystick->hwdata;
@@ -1129,7 +1169,7 @@ IOS_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 
 }
 
 static int
-IOS_JoystickRumbleTriggers(SDL_Joystick * joystick, Uint16 left_rumble, Uint16 right_rumble)
+IOS_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
 {
 #ifdef ENABLE_MFI_RUMBLE
     SDL_JoystickDeviceItem *device = joystick->hwdata;
@@ -1155,7 +1195,7 @@ IOS_JoystickRumbleTriggers(SDL_Joystick * joystick, Uint16 left_rumble, Uint16 r
 }
 
 static SDL_bool
-IOS_JoystickHasLED(SDL_Joystick * joystick)
+IOS_JoystickHasLED(SDL_Joystick *joystick)
 {
 #ifdef ENABLE_MFI_LIGHT
     @autoreleasepool {
@@ -1173,7 +1213,7 @@ IOS_JoystickHasLED(SDL_Joystick * joystick)
 }
 
 static int
-IOS_JoystickSetLED(SDL_Joystick * joystick, Uint8 red, Uint8 green, Uint8 blue)
+IOS_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
 {
 #ifdef ENABLE_MFI_LIGHT
     @autoreleasepool {
@@ -1193,8 +1233,27 @@ IOS_JoystickSetLED(SDL_Joystick * joystick, Uint8 red, Uint8 green, Uint8 blue)
     return SDL_Unsupported();
 }
 
+static int
+IOS_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
+{
+#ifdef ENABLE_MFI_SENSORS
+    @autoreleasepool {
+        if (@available(iOS 14.0, tvOS 14.0, *)) {
+            GCController *controller = joystick->hwdata->controller;
+            GCMotion *motion = controller.motion;
+            if (motion) {
+                motion.sensorsActive = enabled ? YES : NO;
+                return 0;
+            }
+        }
+    }
+#endif /* ENABLE_MFI_SENSORS */
+
+    return SDL_Unsupported();
+}
+
 static void
-IOS_JoystickUpdate(SDL_Joystick * joystick)
+IOS_JoystickUpdate(SDL_Joystick *joystick)
 {
     SDL_JoystickDeviceItem *device = joystick->hwdata;
 
@@ -1210,7 +1269,7 @@ IOS_JoystickUpdate(SDL_Joystick * joystick)
 }
 
 static void
-IOS_JoystickClose(SDL_Joystick * joystick)
+IOS_JoystickClose(SDL_Joystick *joystick)
 {
     SDL_JoystickDeviceItem *device = joystick->hwdata;
 
@@ -1304,6 +1363,7 @@ SDL_JoystickDriver SDL_IOS_JoystickDriver =
     IOS_JoystickRumbleTriggers,
     IOS_JoystickHasLED,
     IOS_JoystickSetLED,
+    IOS_JoystickSetSensorsEnabled,
     IOS_JoystickUpdate,
     IOS_JoystickClose,
     IOS_JoystickQuit,

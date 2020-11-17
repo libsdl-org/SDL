@@ -358,6 +358,12 @@ VIRTUAL_JoystickSetLED(SDL_Joystick * joystick, Uint8 red, Uint8 green, Uint8 bl
     return SDL_Unsupported();
 }
 
+static int
+VIRTUAL_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
+{
+    return SDL_Unsupported();
+}
+
 
 static void
 VIRTUAL_JoystickUpdate(SDL_Joystick * joystick)
@@ -432,6 +438,7 @@ SDL_JoystickDriver SDL_VIRTUAL_JoystickDriver =
     VIRTUAL_JoystickRumbleTriggers,
     VIRTUAL_JoystickHasLED,
     VIRTUAL_JoystickSetLED,
+    VIRTUAL_JoystickSetSensorsEnabled,
     VIRTUAL_JoystickUpdate,
     VIRTUAL_JoystickClose,
     VIRTUAL_JoystickQuit,

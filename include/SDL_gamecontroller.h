@@ -31,6 +31,7 @@
 #include "SDL_stdinc.h"
 #include "SDL_error.h"
 #include "SDL_rwops.h"
+#include "SDL_sensor.h"
 #include "SDL_joystick.h"
 
 #include "begin_code.h"
@@ -429,6 +430,52 @@ extern DECLSPEC int SDLCALL SDL_GameControllerGetNumTouchpadFingers(SDL_GameCont
  *  Get the current state of a finger on a touchpad on a game controller.
  */
 extern DECLSPEC int SDLCALL SDL_GameControllerGetTouchpadFinger(SDL_GameController *gamecontroller, int touchpad, int finger, Uint8 *state, float *x, float *y, float *pressure);
+
+/**
+ *  Return whether a game controller has a particular sensor.
+ *
+ *  \param gamecontroller The controller to query
+ *  \param type The type of sensor to query
+ *
+ *  \return SDL_TRUE if the sensor exists, SDL_FALSE otherwise.
+ */
+extern DECLSPEC SDL_bool SDLCALL SDL_GameControllerHasSensor(SDL_GameController *gamecontroller, SDL_SensorType type);
+
+/**
+ *  Set whether data reporting for a game controller sensor is enabled
+ *
+ *  \param gamecontroller The controller to update
+ *  \param type The type of sensor to enable/disable
+ *  \param enabled Whether data reporting should be enabled
+ *
+ *  \return 0 or -1 if an error occurred.
+ */
+extern DECLSPEC int SDLCALL SDL_GameControllerSetSensorEnabled(SDL_GameController *gamecontroller, SDL_SensorType type, SDL_bool enabled);
+
+/**
+ *  Query whether sensor data reporting is enabled for a game controller
+ *
+ *  \param gamecontroller The controller to query
+ *  \param type The type of sensor to query
+ *
+ *  \return SDL_TRUE if the sensor is enabled, SDL_FALSE otherwise.
+ */
+extern DECLSPEC SDL_bool SDLCALL SDL_GameControllerIsSensorEnabled(SDL_GameController *gamecontroller, SDL_SensorType type);
+
+/**
+ *  Get the current state of a game controller sensor.
+ *
+ *  The number of values and interpretation of the data is sensor dependent.
+ *  See SDL_sensor.h for the details for each type of sensor.
+ *
+ *  \param gamecontroller The controller to query
+ *  \param type The type of sensor to query
+ *  \param data A pointer filled with the current sensor state
+ *  \param num_values The number of values to write to data
+ *
+ *  \return 0 or -1 if an error occurred.
+ */
+extern DECLSPEC int SDLCALL SDL_GameControllerGetSensorData(SDL_GameController *gamecontroller, SDL_SensorType type, float *data, int num_values);
 
 /**
  *  Start a rumble effect
