@@ -78,9 +78,51 @@
 		AAE7DFAC14CBB54E00DF1A0E /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FDA8A89D0E2D111A00EA573E /* Foundation.framework */; };
 		AAE7DFAD14CBB54E00DF1A0E /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FDA8A89E0E2D111A00EA573E /* CoreAudio.framework */; };
 		AAE7DFB514CBB5F700DF1A0E /* testrendertarget.c in Sources */ = {isa = PBXBuildFile; fileRef = AAE7DFB414CBB5F700DF1A0E /* testrendertarget.c */; };
+		F395BF862564186400942BFF /* icon.bmp in Resources */ = {isa = PBXBuildFile; fileRef = FDA8AAD90E2D33B000EA573E /* icon.bmp */; };
+		F395BF8A2564186400942BFF /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A492E52555E1F100E92A8B /* libSDL2.a */; };
+		F395BF8B2564186400942BFF /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FDA8A8980E2D111A00EA573E /* AudioToolbox.framework */; };
+		F395BF8C2564186400942BFF /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FABA34761D8B4EAD00915323 /* AVFoundation.framework */; };
+		F395BF8D2564186400942BFF /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FDA8A89E0E2D111A00EA573E /* CoreAudio.framework */; };
+		F395BF8E2564186400942BFF /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FDA8A89B0E2D111A00EA573E /* CoreGraphics.framework */; };
+		F395BF8F2564186400942BFF /* CoreHaptics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A493AB2555E30000E92A8B /* CoreHaptics.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		F395BF902564186400942BFF /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA8B4BAC1967076F00F8EB7C /* CoreMotion.framework */; };
+		F395BF912564186400942BFF /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FDA8A89D0E2D111A00EA573E /* Foundation.framework */; };
+		F395BF922564186400942BFF /* GameController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA684F7A1BAF1A4400DCFD1A /* GameController.framework */; };
+		F395BF932564186400942BFF /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AA2F57A91FDB544800832AD7 /* Metal.framework */; };
+		F395BF942564186400942BFF /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FDA8A89A0E2D111A00EA573E /* OpenGLES.framework */; };
+		F395BF952564186400942BFF /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FDA8A8990E2D111A00EA573E /* QuartzCore.framework */; };
+		F395BF962564186400942BFF /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FDA8A89C0E2D111A00EA573E /* UIKit.framework */; };
+		F395BFE2256418A700942BFF /* testsensor.c in Sources */ = {isa = PBXBuildFile; fileRef = F395BFE1256418A600942BFF /* testsensor.c */; };
+		F395C04F256419A500942BFF /* hidapi.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A492F32555E1F100E92A8B /* hidapi.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		F395C0C825644AFE00942BFF /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A492E52555E1F100E92A8B /* libSDL2.a */; };
+		F395C0C925644B0400942BFF /* hidapi.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A492F32555E1F100E92A8B /* hidapi.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		F395C0E525644B3900942BFF /* hidapi.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A492F32555E1F100E92A8B /* hidapi.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		F395C0E625644B5200942BFF /* hidapi.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A492F52555E1F100E92A8B /* hidapi.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		F395C0E725644B6200942BFF /* hidapi.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A492F32555E1F100E92A8B /* hidapi.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		F395C0E825644B6D00942BFF /* hidapi.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A492F32555E1F100E92A8B /* hidapi.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		F395C0E925644B7700942BFF /* hidapi.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A492F32555E1F100E92A8B /* hidapi.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		F395C0EA25644B8100942BFF /* hidapi.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A492F32555E1F100E92A8B /* hidapi.framework */; };
+		F395C10625644BDC00942BFF /* hidapi.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A492F32555E1F100E92A8B /* hidapi.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		F395C10725644BE900942BFF /* hidapi.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A492F32555E1F100E92A8B /* hidapi.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		F395C10825644BF600942BFF /* hidapi.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A492F32555E1F100E92A8B /* hidapi.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		F395C10925644BFF00942BFF /* hidapi.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A492F32555E1F100E92A8B /* hidapi.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		F395C10A25644C0A00942BFF /* hidapi.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A492F32555E1F100E92A8B /* hidapi.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		F395C10B25644C1700942BFF /* hidapi.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A492F32555E1F100E92A8B /* hidapi.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		F395C10C25644C2100942BFF /* hidapi.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A492F32555E1F100E92A8B /* hidapi.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		F395C10D25644C2900942BFF /* hidapi.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A492F32555E1F100E92A8B /* hidapi.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		F395C10E25644C3200942BFF /* hidapi.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A492F32555E1F100E92A8B /* hidapi.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		F395C10F25644C3C00942BFF /* hidapi.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A492F32555E1F100E92A8B /* hidapi.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		F395C11025644C4500942BFF /* hidapi.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A492F32555E1F100E92A8B /* hidapi.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		F395C11125644C4E00942BFF /* hidapi.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A492F32555E1F100E92A8B /* hidapi.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		F395C11225644C5900942BFF /* hidapi.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A492F32555E1F100E92A8B /* hidapi.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		F395C11325644C6300942BFF /* hidapi.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A492F32555E1F100E92A8B /* hidapi.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		F395C11425644C6D00942BFF /* hidapi.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A492F32555E1F100E92A8B /* hidapi.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		F395C11525644C7600942BFF /* hidapi.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A492F32555E1F100E92A8B /* hidapi.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		F395C11625644C7E00942BFF /* hidapi.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A492F32555E1F100E92A8B /* hidapi.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		F395C11725644C8800942BFF /* hidapi.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A492F32555E1F100E92A8B /* hidapi.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		F395C11825644C9100942BFF /* hidapi.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A492F32555E1F100E92A8B /* hidapi.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		F3A4938E2555E2D500E92A8B /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A492E52555E1F100E92A8B /* libSDL2.a */; };
 		F3A493AC2555E30000E92A8B /* CoreHaptics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A493AB2555E30000E92A8B /* CoreHaptics.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
-		F3A493C92555E32200E92A8B /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A492E52555E1F100E92A8B /* libSDL2.a */; };
 		F3A494022555E37A00E92A8B /* CoreHaptics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A493AB2555E30000E92A8B /* CoreHaptics.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		F3A4941F2555E39600E92A8B /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A492E52555E1F100E92A8B /* libSDL2.a */; };
 		F3A494202555E39E00E92A8B /* CoreHaptics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A493AB2555E30000E92A8B /* CoreHaptics.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
@@ -622,6 +664,9 @@
 		AAE7DF4514CBB43900DF1A0E /* testscale.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testscale.c; sourceTree = "<group>"; };
 		AAE7DFB114CBB54E00DF1A0E /* testrendertarget.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = testrendertarget.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AAE7DFB414CBB5F700DF1A0E /* testrendertarget.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testrendertarget.c; sourceTree = "<group>"; };
+		F395BF9A2564186400942BFF /* testsensor.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = testsensor.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F395BF9B2564186400942BFF /* testpower copy-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "testpower copy-Info.plist"; path = "/Users/valve/projects/SDL/Xcode-iOS/Test/testpower copy-Info.plist"; sourceTree = "<absolute>"; };
+		F395BFE1256418A600942BFF /* testsensor.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testsensor.c; sourceTree = "<group>"; };
 		F3A492CC2555E1F100E92A8B /* SDL.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SDL.xcodeproj; path = ../../Xcode/SDL/SDL.xcodeproj; sourceTree = "<group>"; };
 		F3A493AB2555E30000E92A8B /* CoreHaptics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreHaptics.framework; path = System/Library/Frameworks/CoreHaptics.framework; sourceTree = SDKROOT; };
 		F3A494242555E3D100E92A8B /* CoreHaptics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreHaptics.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS14.0.sdk/System/Library/Frameworks/CoreHaptics.framework; sourceTree = DEVELOPER_DIR; };
@@ -702,6 +747,7 @@
 			files = (
 				F3A494F72555E80E00E92A8B /* libSDL2.a in Frameworks */,
 				F3F758D322AC561A001D97F2 /* libSDL2test.a in Frameworks */,
+				F395C10725644BE900942BFF /* hidapi.framework in Frameworks */,
 				046CEF7C13254F23007AD51D /* AudioToolbox.framework in Frameworks */,
 				FABA34B51D8B5B8400915323 /* AVFoundation.framework in Frameworks */,
 				046CEF8213254F23007AD51D /* CoreAudio.framework in Frameworks */,
@@ -721,8 +767,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F3A493C92555E32200E92A8B /* libSDL2.a in Frameworks */,
+				F395C0C825644AFE00942BFF /* libSDL2.a in Frameworks */,
 				AA1EE470176059D00029C7A5 /* libSDL2test.a in Frameworks */,
+				F395C0C925644B0400942BFF /* hidapi.framework in Frameworks */,
 				047A63E313285C3200CD7973 /* AudioToolbox.framework in Frameworks */,
 				FABA34B01D8B5B6400915323 /* AVFoundation.framework in Frameworks */,
 				047A63E913285C3200CD7973 /* CoreAudio.framework in Frameworks */,
@@ -744,6 +791,7 @@
 			files = (
 				F3A4951A2555EADC00E92A8B /* libSDL2.a in Frameworks */,
 				AA1EE47817605BF60029C7A5 /* libSDL2test.a in Frameworks */,
+				F395C11625644C7E00942BFF /* hidapi.framework in Frameworks */,
 				FDA8A89F0E2D111A00EA573E /* AudioToolbox.framework in Frameworks */,
 				FABA34C41D8B5BCB00915323 /* AVFoundation.framework in Frameworks */,
 				FDA8A8A50E2D111A00EA573E /* CoreAudio.framework in Frameworks */,
@@ -764,6 +812,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F3A4950A2555EA1D00E92A8B /* libSDL2.a in Frameworks */,
+				F395C10E25644C3200942BFF /* hidapi.framework in Frameworks */,
 				56ED0503118A8FE400A56AA6 /* AudioToolbox.framework in Frameworks */,
 				FABA34BC1D8B5BA600915323 /* AVFoundation.framework in Frameworks */,
 				56ED0509118A8FE400A56AA6 /* CoreAudio.framework in Frameworks */,
@@ -785,6 +834,7 @@
 			files = (
 				F3A4951C2555EB0E00E92A8B /* libSDL2.a in Frameworks */,
 				AA13B3181FB8AEBC00D9FEE6 /* libSDL2test.a in Frameworks */,
+				F395C11725644C8800942BFF /* hidapi.framework in Frameworks */,
 				AA13B31C1FB8AEBC00D9FEE6 /* AudioToolbox.framework in Frameworks */,
 				AA13B3171FB8AEBC00D9FEE6 /* AVFoundation.framework in Frameworks */,
 				AA13B3221FB8AEBC00D9FEE6 /* CoreAudio.framework in Frameworks */,
@@ -806,6 +856,7 @@
 			files = (
 				F3A4950E2555EA5E00E92A8B /* libSDL2.a in Frameworks */,
 				AA1EE47617605B9E0029C7A5 /* libSDL2test.a in Frameworks */,
+				F395C11025644C4500942BFF /* hidapi.framework in Frameworks */,
 				AAE7DEE214CBB1E100DF1A0E /* AudioToolbox.framework in Frameworks */,
 				FABA34BE1D8B5BB000915323 /* AVFoundation.framework in Frameworks */,
 				AAE7DEE814CBB1E100DF1A0E /* CoreAudio.framework in Frameworks */,
@@ -827,6 +878,7 @@
 			files = (
 				F3A4950C2555EA3700E92A8B /* libSDL2.a in Frameworks */,
 				AA1EE47517605B930029C7A5 /* libSDL2test.a in Frameworks */,
+				F395C10F25644C3C00942BFF /* hidapi.framework in Frameworks */,
 				AAE7DFA714CBB54E00DF1A0E /* AudioToolbox.framework in Frameworks */,
 				FABA34BD1D8B5BAB00915323 /* AVFoundation.framework in Frameworks */,
 				AAE7DFAD14CBB54E00DF1A0E /* CoreAudio.framework in Frameworks */,
@@ -839,6 +891,27 @@
 				AAE7DFA914CBB54E00DF1A0E /* OpenGLES.framework in Frameworks */,
 				AAE7DFA814CBB54E00DF1A0E /* QuartzCore.framework in Frameworks */,
 				AAE7DFAB14CBB54E00DF1A0E /* UIKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F395BF892564186400942BFF /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F395BF8A2564186400942BFF /* libSDL2.a in Frameworks */,
+				F395C04F256419A500942BFF /* hidapi.framework in Frameworks */,
+				F395BF8B2564186400942BFF /* AudioToolbox.framework in Frameworks */,
+				F395BF8C2564186400942BFF /* AVFoundation.framework in Frameworks */,
+				F395BF8D2564186400942BFF /* CoreAudio.framework in Frameworks */,
+				F395BF8E2564186400942BFF /* CoreGraphics.framework in Frameworks */,
+				F395BF8F2564186400942BFF /* CoreHaptics.framework in Frameworks */,
+				F395BF902564186400942BFF /* CoreMotion.framework in Frameworks */,
+				F395BF912564186400942BFF /* Foundation.framework in Frameworks */,
+				F395BF922564186400942BFF /* GameController.framework in Frameworks */,
+				F395BF932564186400942BFF /* Metal.framework in Frameworks */,
+				F395BF942564186400942BFF /* OpenGLES.framework in Frameworks */,
+				F395BF952564186400942BFF /* QuartzCore.framework in Frameworks */,
+				F395BF962564186400942BFF /* UIKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -888,6 +961,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F3A4941F2555E39600E92A8B /* libSDL2.a in Frameworks */,
+				F395C0E725644B6200942BFF /* hidapi.framework in Frameworks */,
 				FABA34871D8B575200915323 /* AudioToolbox.framework in Frameworks */,
 				FABA34831D8B575200915323 /* AVFoundation.framework in Frameworks */,
 				FABA348D1D8B575200915323 /* CoreAudio.framework in Frameworks */,
@@ -908,6 +982,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F3A494232555E3C900E92A8B /* libSDL2.a in Frameworks */,
+				F395C0E625644B5200942BFF /* hidapi.framework in Frameworks */,
 				FABA34A01D8B582100915323 /* AudioToolbox.framework in Frameworks */,
 				FABA349C1D8B582100915323 /* AVFoundation.framework in Frameworks */,
 				FABA34A61D8B582100915323 /* CoreAudio.framework in Frameworks */,
@@ -948,6 +1023,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F3A494212555E3AE00E92A8B /* libSDL2.a in Frameworks */,
+				F395C0E525644B3900942BFF /* hidapi.framework in Frameworks */,
 				FDA8AAB10E2D330F00EA573E /* AudioToolbox.framework in Frameworks */,
 				FABA34771D8B4EAD00915323 /* AVFoundation.framework in Frameworks */,
 				FDA8AAB70E2D330F00EA573E /* CoreAudio.framework in Frameworks */,
@@ -968,6 +1044,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F3A494D12555E75200E92A8B /* libSDL2.a in Frameworks */,
+				F395C0E825644B6D00942BFF /* hidapi.framework in Frameworks */,
 				FDAAC3C30E2D47E6001DB1D8 /* AudioToolbox.framework in Frameworks */,
 				FABA34B11D8B5B6C00915323 /* AVFoundation.framework in Frameworks */,
 				FDAAC3C90E2D47E6001DB1D8 /* CoreAudio.framework in Frameworks */,
@@ -988,6 +1065,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F3A494F12555E7B300E92A8B /* libSDL2.a in Frameworks */,
+				F395C0EA25644B8100942BFF /* hidapi.framework in Frameworks */,
 				FDAAC5910E2D5429001DB1D8 /* AudioToolbox.framework in Frameworks */,
 				FABA34B31D8B5B7800915323 /* AVFoundation.framework in Frameworks */,
 				FDAAC5970E2D5429001DB1D8 /* CoreAudio.framework in Frameworks */,
@@ -1008,6 +1086,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F3A494F32555E7D000E92A8B /* libSDL2.a in Frameworks */,
+				F395C10625644BDC00942BFF /* hidapi.framework in Frameworks */,
 				FDAAC5BF0E2D55B5001DB1D8 /* AudioToolbox.framework in Frameworks */,
 				FABA34B41D8B5B7C00915323 /* AVFoundation.framework in Frameworks */,
 				FDAAC5C50E2D55B5001DB1D8 /* CoreAudio.framework in Frameworks */,
@@ -1029,6 +1108,7 @@
 			files = (
 				F3A494FE2555E8AA00E92A8B /* libSDL2.a in Frameworks */,
 				AA1EE47417605B5C0029C7A5 /* libSDL2test.a in Frameworks */,
+				F395C10825644BF600942BFF /* hidapi.framework in Frameworks */,
 				FDAAC61C0E2D5914001DB1D8 /* AudioToolbox.framework in Frameworks */,
 				FABA34B61D8B5B8900915323 /* AVFoundation.framework in Frameworks */,
 				FDAAC6220E2D5914001DB1D8 /* CoreAudio.framework in Frameworks */,
@@ -1050,6 +1130,7 @@
 			files = (
 				F3A494D32555E76E00E92A8B /* libSDL2.a in Frameworks */,
 				AA1EE47117605A7F0029C7A5 /* libSDL2test.a in Frameworks */,
+				F395C0E925644B7700942BFF /* hidapi.framework in Frameworks */,
 				FDC42FF60F0D866D009C87E1 /* AudioToolbox.framework in Frameworks */,
 				FABA34B21D8B5B7300915323 /* AVFoundation.framework in Frameworks */,
 				FDC42FFC0F0D866D009C87E1 /* CoreAudio.framework in Frameworks */,
@@ -1070,6 +1151,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F3A495142555EA9B00E92A8B /* libSDL2.a in Frameworks */,
+				F395C11325644C6300942BFF /* hidapi.framework in Frameworks */,
 				FDD2C1000E2E4F4B00B7A85F /* AudioToolbox.framework in Frameworks */,
 				FABA34C11D8B5BBE00915323 /* AVFoundation.framework in Frameworks */,
 				FDD2C1060E2E4F4B00B7A85F /* CoreAudio.framework in Frameworks */,
@@ -1090,6 +1172,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F3A495002555E8C000E92A8B /* libSDL2.a in Frameworks */,
+				F395C10925644BFF00942BFF /* hidapi.framework in Frameworks */,
 				FDD2C1770E2E52C000B7A85F /* AudioToolbox.framework in Frameworks */,
 				FABA34B71D8B5B8D00915323 /* AVFoundation.framework in Frameworks */,
 				FDD2C17D0E2E52C000B7A85F /* CoreAudio.framework in Frameworks */,
@@ -1110,6 +1193,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F3A495022555E9BF00E92A8B /* libSDL2.a in Frameworks */,
+				F395C10A25644C0A00942BFF /* hidapi.framework in Frameworks */,
 				FDD2C19B0E2E534F00B7A85F /* AudioToolbox.framework in Frameworks */,
 				FABA34B81D8B5B9200915323 /* AVFoundation.framework in Frameworks */,
 				FDD2C1A10E2E534F00B7A85F /* CoreAudio.framework in Frameworks */,
@@ -1130,6 +1214,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F3A495042555E9D900E92A8B /* libSDL2.a in Frameworks */,
+				F395C10B25644C1700942BFF /* hidapi.framework in Frameworks */,
 				FDD2C4540E2E773800B7A85F /* AudioToolbox.framework in Frameworks */,
 				FABA34B91D8B5B9600915323 /* AVFoundation.framework in Frameworks */,
 				FDD2C45A0E2E773800B7A85F /* CoreAudio.framework in Frameworks */,
@@ -1150,6 +1235,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F3A495062555E9F100E92A8B /* libSDL2.a in Frameworks */,
+				F395C10C25644C2100942BFF /* hidapi.framework in Frameworks */,
 				FDD2C4720E2E77D700B7A85F /* AudioToolbox.framework in Frameworks */,
 				FABA34BA1D8B5B9B00915323 /* AVFoundation.framework in Frameworks */,
 				FDD2C4780E2E77D700B7A85F /* CoreAudio.framework in Frameworks */,
@@ -1170,6 +1256,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F3A495082555EA0300E92A8B /* libSDL2.a in Frameworks */,
+				F395C10D25644C2900942BFF /* hidapi.framework in Frameworks */,
 				FDD2C5010E2E7F4800B7A85F /* AudioToolbox.framework in Frameworks */,
 				FABA34BB1D8B5BA100915323 /* AVFoundation.framework in Frameworks */,
 				FDD2C5070E2E7F4800B7A85F /* CoreAudio.framework in Frameworks */,
@@ -1190,6 +1277,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F3A495102555EA7600E92A8B /* libSDL2.a in Frameworks */,
+				F395C11125644C4E00942BFF /* hidapi.framework in Frameworks */,
 				FDD2C51F0E2E807600B7A85F /* AudioToolbox.framework in Frameworks */,
 				FABA34BF1D8B5BB500915323 /* AVFoundation.framework in Frameworks */,
 				FDD2C5250E2E807600B7A85F /* CoreAudio.framework in Frameworks */,
@@ -1211,6 +1299,7 @@
 			files = (
 				F3A495122555EA8700E92A8B /* libSDL2.a in Frameworks */,
 				AA1EE47717605BAB0029C7A5 /* libSDL2test.a in Frameworks */,
+				F395C11225644C5900942BFF /* hidapi.framework in Frameworks */,
 				FDD2C5440E2E80E400B7A85F /* AudioToolbox.framework in Frameworks */,
 				FABA34C01D8B5BBA00915323 /* AVFoundation.framework in Frameworks */,
 				FDD2C54A0E2E80E400B7A85F /* CoreAudio.framework in Frameworks */,
@@ -1231,6 +1320,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F3A495162555EAB000E92A8B /* libSDL2.a in Frameworks */,
+				F395C11425644C6D00942BFF /* hidapi.framework in Frameworks */,
 				FDD2C57D0E2E8C7400B7A85F /* AudioToolbox.framework in Frameworks */,
 				FABA34C21D8B5BC200915323 /* AVFoundation.framework in Frameworks */,
 				FDD2C5830E2E8C7400B7A85F /* CoreAudio.framework in Frameworks */,
@@ -1251,6 +1341,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F3A495182555EAC500E92A8B /* libSDL2.a in Frameworks */,
+				F395C11525644C7600942BFF /* hidapi.framework in Frameworks */,
 				FDD2C5BB0E2E8CFC00B7A85F /* AudioToolbox.framework in Frameworks */,
 				FABA34C31D8B5BC600915323 /* AVFoundation.framework in Frameworks */,
 				FDD2C5C10E2E8CFC00B7A85F /* CoreAudio.framework in Frameworks */,
@@ -1271,6 +1362,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F3A4951E2555EB2600E92A8B /* libSDL2.a in Frameworks */,
+				F395C11825644C9100942BFF /* hidapi.framework in Frameworks */,
 				FDD2C6EA0E2E959E00B7A85F /* AudioToolbox.framework in Frameworks */,
 				FABA34C51D8B5BD000915323 /* AVFoundation.framework in Frameworks */,
 				FDD2C6F00E2E959E00B7A85F /* CoreAudio.framework in Frameworks */,
@@ -1321,6 +1413,7 @@
 				FABA34AA1D8B582100915323 /* loopwav-TV.app */,
 				AA13B3261FB8AEBC00D9FEE6 /* testyuv.app */,
 				F3A499D3255618AF00E92A8B /* controllermap.app */,
+				F395BF9A2564186400942BFF /* testsensor.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1336,6 +1429,7 @@
 				19C28FACFE9D520D11CA2CBB /* Products */,
 				FABA34751D8B4EAC00915323 /* Frameworks */,
 				F3A499D4255618AF00E92A8B /* testgamecontroller copy-Info.plist */,
+				F395BF9B2564186400942BFF /* testpower copy-Info.plist */,
 			);
 			name = CustomTemplate;
 			sourceTree = "<group>";
@@ -1402,6 +1496,7 @@
 				AAE7DFB414CBB5F700DF1A0E /* testrendertarget.c */,
 				AAE7DF4514CBB43900DF1A0E /* testscale.c */,
 				FDA8A7570E2D0F1600EA573E /* testsem.c */,
+				F395BFE1256418A600942BFF /* testsensor.c */,
 				FDA8A7590E2D0F1600EA573E /* testsprite2.c */,
 				FDA8A74C0E2D0F1600EA573E /* testthread.c */,
 				FDA8A75A0E2D0F1600EA573E /* testtimer.c */,
@@ -1576,6 +1671,23 @@
 			name = testrendertarget;
 			productName = Test;
 			productReference = AAE7DFB114CBB54E00DF1A0E /* testrendertarget.app */;
+			productType = "com.apple.product-type.application";
+		};
+		F395BF842564186400942BFF /* testsensor */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F395BF972564186400942BFF /* Build configuration list for PBXNativeTarget "testsensor" */;
+			buildPhases = (
+				F395BF852564186400942BFF /* Resources */,
+				F395BF872564186400942BFF /* Sources */,
+				F395BF892564186400942BFF /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = testsensor;
+			productName = Test;
+			productReference = F395BF9A2564186400942BFF /* testsensor.app */;
 			productType = "com.apple.product-type.application";
 		};
 		F3A499B7255618AF00E92A8B /* controllermap */ = {
@@ -1984,6 +2096,9 @@
 					AAE7DF9E14CBB54E00DF1A0E = {
 						DevelopmentTeam = MXGJJ98X76;
 					};
+					F395BF842564186400942BFF = {
+						DevelopmentTeam = MXGJJ98X76;
+					};
 					F3A499B7255618AF00E92A8B = {
 						DevelopmentTeam = MXGJJ98X76;
 					};
@@ -2101,6 +2216,7 @@
 				AAE7DF9E14CBB54E00DF1A0E /* testrendertarget */,
 				AAE7DEDA14CBB1E100DF1A0E /* testscale */,
 				FDD2C5170E2E807600B7A85F /* testsem */,
+				F395BF842564186400942BFF /* testsensor */,
 				FDD2C53D0E2E80E400B7A85F /* testsprite2 */,
 				FDD2C0F90E2E4F4B00B7A85F /* testthread */,
 				FDD2C5740E2E8C7400B7A85F /* testtimer */,
@@ -2275,6 +2391,14 @@
 			files = (
 				AAE7DFA014CBB54E00DF1A0E /* icon.bmp in Resources */,
 				AAE7DFA114CBB54E00DF1A0E /* sample.bmp in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F395BF852564186400942BFF /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F395BF862564186400942BFF /* icon.bmp in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2511,6 +2635,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				AAE7DFB514CBB5F700DF1A0E /* testrendertarget.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F395BF872564186400942BFF /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F395BFE2256418A700942BFF /* testsensor.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2837,10 +2969,25 @@
 			};
 			name = Release;
 		};
+		F395BF982564186400942BFF /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INFOPLIST_FILE = "testpower copy-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		F395BF992564186400942BFF /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INFOPLIST_FILE = "testpower copy-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
 		F3A499D1255618AF00E92A8B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DEVELOPMENT_TEAM = MXGJJ98X76;
 				INFOPLIST_FILE = "testgamecontroller copy-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -2850,7 +2997,6 @@
 		F3A499D2255618AF00E92A8B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DEVELOPMENT_TEAM = MXGJJ98X76;
 				INFOPLIST_FILE = "testgamecontroller copy-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -3340,6 +3486,15 @@
 			buildConfigurations = (
 				C01FCF4F08A954540054247B /* Debug */,
 				C01FCF5008A954540054247B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F395BF972564186400942BFF /* Build configuration list for PBXNativeTarget "testsensor" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F395BF982564186400942BFF /* Debug */,
+				F395BF992564186400942BFF /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
