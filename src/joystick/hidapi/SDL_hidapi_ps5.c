@@ -140,16 +140,11 @@ HIDAPI_DriverPS5_GetDeviceName(Uint16 vendor_id, Uint16 product_id)
     return NULL;
 }
 
-static SDL_bool ReadFeatureReport(hid_device *dev, Uint8 report_id)
+static int ReadFeatureReport(hid_device *dev, Uint8 report_id, Uint8 *report, size_t length)
 {
-    Uint8 report[USB_PACKET_LENGTH + 1];
-
-    SDL_memset(report, 0, sizeof(report));
+    SDL_memset(report, 0, length);
     report[0] = report_id;
-    if (hid_get_feature_report(dev, report, sizeof(report)) < 0) {
-        return SDL_FALSE;
-    }
-    return SDL_TRUE;
+    return hid_get_feature_report(dev, report, length);
 }
 
 static void
@@ -277,6 +272,7 @@ static SDL_bool
 HIDAPI_DriverPS5_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     SDL_DriverPS5_Context *ctx;
+    Uint8 data[USB_PACKET_LENGTH];
 
     ctx = (SDL_DriverPS5_Context *)SDL_calloc(1, sizeof(*ctx));
     if (!ctx) {
@@ -295,7 +291,13 @@ HIDAPI_DriverPS5_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
     /* Read the serial number (Bluetooth address in reverse byte order)
        This will also enable enhanced reports over Bluetooth
     */
-    ReadFeatureReport(device->dev, k_EPS5FeatureReportIdSerialNumber);
+    if (ReadFeatureReport(device->dev, k_EPS5FeatureReportIdSerialNumber, data, sizeof(data)) >= 7) {
+        char serial[18];
+
+        SDL_snprintf(serial, sizeof(serial), "%.2x-%.2x-%.2x-%.2x-%.2x-%.2x",
+            data[6], data[5], data[4], data[3], data[2], data[1]);
+        joystick->serial = SDL_strdup(serial);
+    }
 
     /* Initialize player index (needed for setting LEDs) */
     ctx->player_index = SDL_JoystickGetPlayerIndex(joystick);

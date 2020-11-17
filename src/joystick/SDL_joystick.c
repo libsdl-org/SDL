@@ -525,7 +525,7 @@ SDL_JoystickIsVirtual(int device_index)
 }
 
 int
-SDL_JoystickSetVirtualAxis(SDL_Joystick * joystick, int axis, Sint16 value)
+SDL_JoystickSetVirtualAxis(SDL_Joystick *joystick, int axis, Sint16 value)
 {
 #if SDL_JOYSTICK_VIRTUAL
     return SDL_JoystickSetVirtualAxisInner(joystick, axis, value);
@@ -535,7 +535,7 @@ SDL_JoystickSetVirtualAxis(SDL_Joystick * joystick, int axis, Sint16 value)
 }
 
 int
-SDL_JoystickSetVirtualButton(SDL_Joystick * joystick, int button, Uint8 value)
+SDL_JoystickSetVirtualButton(SDL_Joystick *joystick, int button, Uint8 value)
 {
 #if SDL_JOYSTICK_VIRTUAL
     return SDL_JoystickSetVirtualButtonInner(joystick, button, value);
@@ -545,7 +545,7 @@ SDL_JoystickSetVirtualButton(SDL_Joystick * joystick, int button, Uint8 value)
 }
 
 int
-SDL_JoystickSetVirtualHat(SDL_Joystick * joystick, int hat, Uint8 value)
+SDL_JoystickSetVirtualHat(SDL_Joystick *joystick, int hat, Uint8 value)
 {
 #if SDL_JOYSTICK_VIRTUAL
     return SDL_JoystickSetVirtualHatInner(joystick, hat, value);
@@ -558,7 +558,7 @@ SDL_JoystickSetVirtualHat(SDL_Joystick * joystick, int hat, Uint8 value)
  * Checks to make sure the joystick is valid.
  */
 SDL_bool
-SDL_PrivateJoystickValid(SDL_Joystick * joystick)
+SDL_PrivateJoystickValid(SDL_Joystick *joystick)
 {
     SDL_bool valid;
 
@@ -591,7 +591,7 @@ SDL_PrivateJoystickGetAutoGamepadMapping(int device_index, SDL_GamepadMapping * 
  * Get the number of multi-dimensional axis controls on a joystick
  */
 int
-SDL_JoystickNumAxes(SDL_Joystick * joystick)
+SDL_JoystickNumAxes(SDL_Joystick *joystick)
 {
     if (!SDL_PrivateJoystickValid(joystick)) {
         return -1;
@@ -603,7 +603,7 @@ SDL_JoystickNumAxes(SDL_Joystick * joystick)
  * Get the number of hats on a joystick
  */
 int
-SDL_JoystickNumHats(SDL_Joystick * joystick)
+SDL_JoystickNumHats(SDL_Joystick *joystick)
 {
     if (!SDL_PrivateJoystickValid(joystick)) {
         return -1;
@@ -615,7 +615,7 @@ SDL_JoystickNumHats(SDL_Joystick * joystick)
  * Get the number of trackballs on a joystick
  */
 int
-SDL_JoystickNumBalls(SDL_Joystick * joystick)
+SDL_JoystickNumBalls(SDL_Joystick *joystick)
 {
     if (!SDL_PrivateJoystickValid(joystick)) {
         return -1;
@@ -627,7 +627,7 @@ SDL_JoystickNumBalls(SDL_Joystick * joystick)
  * Get the number of buttons on a joystick
  */
 int
-SDL_JoystickNumButtons(SDL_Joystick * joystick)
+SDL_JoystickNumButtons(SDL_Joystick *joystick)
 {
     if (!SDL_PrivateJoystickValid(joystick)) {
         return -1;
@@ -639,7 +639,7 @@ SDL_JoystickNumButtons(SDL_Joystick * joystick)
  * Get the current state of an axis control on a joystick
  */
 Sint16
-SDL_JoystickGetAxis(SDL_Joystick * joystick, int axis)
+SDL_JoystickGetAxis(SDL_Joystick *joystick, int axis)
 {
     Sint16 state;
 
@@ -659,7 +659,7 @@ SDL_JoystickGetAxis(SDL_Joystick * joystick, int axis)
  * Get the initial state of an axis control on a joystick
  */
 SDL_bool
-SDL_JoystickGetAxisInitialState(SDL_Joystick * joystick, int axis, Sint16 *state)
+SDL_JoystickGetAxisInitialState(SDL_Joystick *joystick, int axis, Sint16 *state)
 {
     if (!SDL_PrivateJoystickValid(joystick)) {
         return SDL_FALSE;
@@ -678,7 +678,7 @@ SDL_JoystickGetAxisInitialState(SDL_Joystick * joystick, int axis, Sint16 *state
  * Get the current state of a hat on a joystick
  */
 Uint8
-SDL_JoystickGetHat(SDL_Joystick * joystick, int hat)
+SDL_JoystickGetHat(SDL_Joystick *joystick, int hat)
 {
     Uint8 state;
 
@@ -698,7 +698,7 @@ SDL_JoystickGetHat(SDL_Joystick * joystick, int hat)
  * Get the ball axis change since the last poll
  */
 int
-SDL_JoystickGetBall(SDL_Joystick * joystick, int ball, int *dx, int *dy)
+SDL_JoystickGetBall(SDL_Joystick *joystick, int ball, int *dx, int *dy)
 {
     int retval;
 
@@ -726,7 +726,7 @@ SDL_JoystickGetBall(SDL_Joystick * joystick, int ball, int *dx, int *dy)
  * Get the current state of a button on a joystick
  */
 Uint8
-SDL_JoystickGetButton(SDL_Joystick * joystick, int button)
+SDL_JoystickGetButton(SDL_Joystick *joystick, int button)
 {
     Uint8 state;
 
@@ -747,7 +747,7 @@ SDL_JoystickGetButton(SDL_Joystick * joystick, int button)
  *  \return SDL_FALSE if not plugged in, SDL_TRUE if still present.
  */
 SDL_bool
-SDL_JoystickGetAttached(SDL_Joystick * joystick)
+SDL_JoystickGetAttached(SDL_Joystick *joystick)
 {
     if (!SDL_PrivateJoystickValid(joystick)) {
         return SDL_FALSE;
@@ -760,7 +760,7 @@ SDL_JoystickGetAttached(SDL_Joystick * joystick)
  * Get the instance id for this opened joystick
  */
 SDL_JoystickID
-SDL_JoystickInstanceID(SDL_Joystick * joystick)
+SDL_JoystickInstanceID(SDL_Joystick *joystick)
 {
     if (!SDL_PrivateJoystickValid(joystick)) {
         return -1;
@@ -811,7 +811,7 @@ SDL_JoystickFromPlayerIndex(int player_index)
  * Get the friendly name of this joystick
  */
 const char *
-SDL_JoystickName(SDL_Joystick * joystick)
+SDL_JoystickName(SDL_Joystick *joystick)
 {
     if (!SDL_PrivateJoystickValid(joystick)) {
         return NULL;
@@ -824,7 +824,7 @@ SDL_JoystickName(SDL_Joystick * joystick)
  *  Get the player index of an opened joystick, or -1 if it's not available
  */
 int
-SDL_JoystickGetPlayerIndex(SDL_Joystick * joystick)
+SDL_JoystickGetPlayerIndex(SDL_Joystick *joystick)
 {
     int player_index;
 
@@ -843,7 +843,7 @@ SDL_JoystickGetPlayerIndex(SDL_Joystick * joystick)
  *  Set the player index of an opened joystick
  */
 void
-SDL_JoystickSetPlayerIndex(SDL_Joystick * joystick, int player_index)
+SDL_JoystickSetPlayerIndex(SDL_Joystick *joystick, int player_index)
 {
     if (!SDL_PrivateJoystickValid(joystick)) {
         return;
@@ -855,7 +855,7 @@ SDL_JoystickSetPlayerIndex(SDL_Joystick * joystick, int player_index)
 }
 
 int
-SDL_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms)
+SDL_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms)
 {
     int result;
 
@@ -890,7 +890,7 @@ SDL_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 
 }
 
 int
-SDL_JoystickRumbleTriggers(SDL_Joystick * joystick, Uint16 left_rumble, Uint16 right_rumble, Uint32 duration_ms)
+SDL_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble, Uint32 duration_ms)
 {
     int result;
 
@@ -924,7 +924,7 @@ SDL_JoystickRumbleTriggers(SDL_Joystick * joystick, Uint16 left_rumble, Uint16 r
 }
 
 SDL_bool
-SDL_JoystickHasLED(SDL_Joystick * joystick)
+SDL_JoystickHasLED(SDL_Joystick *joystick)
 {
     SDL_bool result;
 
@@ -942,7 +942,7 @@ SDL_JoystickHasLED(SDL_Joystick * joystick)
 }
 
 int
-SDL_JoystickSetLED(SDL_Joystick * joystick, Uint8 red, Uint8 green, Uint8 blue)
+SDL_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
 {
     int result;
 
@@ -975,7 +975,7 @@ SDL_JoystickSetLED(SDL_Joystick * joystick, Uint8 red, Uint8 green, Uint8 blue)
  * Close a joystick previously opened with SDL_JoystickOpen()
  */
 void
-SDL_JoystickClose(SDL_Joystick * joystick)
+SDL_JoystickClose(SDL_Joystick *joystick)
 {
     SDL_Joystick *joysticklist;
     SDL_Joystick *joysticklistprev;
@@ -1025,6 +1025,7 @@ SDL_JoystickClose(SDL_Joystick * joystick)
     }
 
     SDL_free(joystick->name);
+    SDL_free(joystick->serial);
 
     /* Free the data associated with this joystick */
     SDL_free(joystick->axes);
@@ -1261,7 +1262,7 @@ void SDL_PrivateJoystickRemoved(SDL_JoystickID device_instance)
 }
 
 int
-SDL_PrivateJoystickAxis(SDL_Joystick * joystick, Uint8 axis, Sint16 value)
+SDL_PrivateJoystickAxis(SDL_Joystick *joystick, Uint8 axis, Sint16 value)
 {
     int posted;
     SDL_JoystickAxisInfo *info;
@@ -1323,7 +1324,7 @@ SDL_PrivateJoystickAxis(SDL_Joystick * joystick, Uint8 axis, Sint16 value)
 }
 
 int
-SDL_PrivateJoystickHat(SDL_Joystick * joystick, Uint8 hat, Uint8 value)
+SDL_PrivateJoystickHat(SDL_Joystick *joystick, Uint8 hat, Uint8 value)
 {
     int posted;
 
@@ -1363,7 +1364,7 @@ SDL_PrivateJoystickHat(SDL_Joystick * joystick, Uint8 hat, Uint8 value)
 }
 
 int
-SDL_PrivateJoystickBall(SDL_Joystick * joystick, Uint8 ball,
+SDL_PrivateJoystickBall(SDL_Joystick *joystick, Uint8 ball,
                         Sint16 xrel, Sint16 yrel)
 {
     int posted;
@@ -1399,7 +1400,7 @@ SDL_PrivateJoystickBall(SDL_Joystick * joystick, Uint8 ball,
 }
 
 int
-SDL_PrivateJoystickButton(SDL_Joystick * joystick, Uint8 button, Uint8 state)
+SDL_PrivateJoystickButton(SDL_Joystick *joystick, Uint8 button, Uint8 state)
 {
     int posted;
 #if !SDL_EVENTS_DISABLED
@@ -2317,7 +2318,7 @@ int SDL_JoystickGetDeviceIndexFromInstanceID(SDL_JoystickID instance_id)
     return device_index;
 }
 
-SDL_JoystickGUID SDL_JoystickGetGUID(SDL_Joystick * joystick)
+SDL_JoystickGUID SDL_JoystickGetGUID(SDL_Joystick *joystick)
 {
     if (!SDL_PrivateJoystickValid(joystick)) {
         SDL_JoystickGUID emptyGUID;
@@ -2327,7 +2328,7 @@ SDL_JoystickGUID SDL_JoystickGetGUID(SDL_Joystick * joystick)
     return joystick->guid;
 }
 
-Uint16 SDL_JoystickGetVendor(SDL_Joystick * joystick)
+Uint16 SDL_JoystickGetVendor(SDL_Joystick *joystick)
 {
     Uint16 vendor;
     SDL_JoystickGUID guid = SDL_JoystickGetGUID(joystick);
@@ -2336,7 +2337,7 @@ Uint16 SDL_JoystickGetVendor(SDL_Joystick * joystick)
     return vendor;
 }
 
-Uint16 SDL_JoystickGetProduct(SDL_Joystick * joystick)
+Uint16 SDL_JoystickGetProduct(SDL_Joystick *joystick)
 {
     Uint16 product;
     SDL_JoystickGUID guid = SDL_JoystickGetGUID(joystick);
@@ -2345,7 +2346,7 @@ Uint16 SDL_JoystickGetProduct(SDL_Joystick * joystick)
     return product;
 }
 
-Uint16 SDL_JoystickGetProductVersion(SDL_Joystick * joystick)
+Uint16 SDL_JoystickGetProductVersion(SDL_Joystick *joystick)
 {
     Uint16 version;
     SDL_JoystickGUID guid = SDL_JoystickGetGUID(joystick);
@@ -2354,7 +2355,15 @@ Uint16 SDL_JoystickGetProductVersion(SDL_Joystick * joystick)
     return version;
 }
 
-SDL_JoystickType SDL_JoystickGetType(SDL_Joystick * joystick)
+const char *SDL_JoystickGetSerial(SDL_Joystick *joystick)
+{
+    if (!SDL_PrivateJoystickValid(joystick)) {
+        return NULL;
+    }
+    return joystick->serial;
+}
+
+SDL_JoystickType SDL_JoystickGetType(SDL_Joystick *joystick)
 {
     SDL_JoystickType type;
     SDL_JoystickGUID guid = SDL_JoystickGetGUID(joystick);
@@ -2436,13 +2445,13 @@ SDL_JoystickGUID SDL_JoystickGetGUIDFromString(const char *pchGUID)
 }
 
 /* update the power level for this joystick */
-void SDL_PrivateJoystickBatteryLevel(SDL_Joystick * joystick, SDL_JoystickPowerLevel ePowerLevel)
+void SDL_PrivateJoystickBatteryLevel(SDL_Joystick *joystick, SDL_JoystickPowerLevel ePowerLevel)
 {
     joystick->epowerlevel = ePowerLevel;
 }
 
 /* return its power level */
-SDL_JoystickPowerLevel SDL_JoystickCurrentPowerLevel(SDL_Joystick * joystick)
+SDL_JoystickPowerLevel SDL_JoystickCurrentPowerLevel(SDL_Joystick *joystick)
 {
     if (!SDL_PrivateJoystickValid(joystick)) {
         return SDL_JOYSTICK_POWER_UNKNOWN;
