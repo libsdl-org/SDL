@@ -607,6 +607,12 @@ WGI_JoystickSetLED(SDL_Joystick * joystick, Uint8 red, Uint8 green, Uint8 blue)
     return SDL_Unsupported();
 }
 
+static int
+WGI_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
+{
+    return SDL_Unsupported();
+}
+
 static Uint8
 ConvertHatValue(__x_ABI_CWindows_CGaming_CInput_CGameControllerSwitchPosition value)
 {
@@ -752,6 +758,7 @@ SDL_JoystickDriver SDL_WGI_JoystickDriver =
     WGI_JoystickRumbleTriggers,
     WGI_JoystickHasLED,
     WGI_JoystickSetLED,
+    WGI_JoystickSetSensorsEnabled,
     WGI_JoystickUpdate,
     WGI_JoystickClose,
     WGI_JoystickQuit,

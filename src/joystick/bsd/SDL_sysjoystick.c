@@ -206,8 +206,8 @@ static void report_free(struct report *);
 
 static int numjoysticks = 0;
 
-static int BSD_JoystickOpen(SDL_Joystick * joy, int device_index);
-static void BSD_JoystickClose(SDL_Joystick * joy);
+static int BSD_JoystickOpen(SDL_Joystick *joy, int device_index);
+static void BSD_JoystickClose(SDL_Joystick *joy);
 
 static int
 BSD_JoystickInit(void)
@@ -340,7 +340,7 @@ hatval_to_sdl(Sint32 hatval)
 
 
 static int
-BSD_JoystickOpen(SDL_Joystick * joy, int device_index)
+BSD_JoystickOpen(SDL_Joystick *joy, int device_index)
 {
     char *path = joynames[device_index];
     struct joystick_hwdata *hw;
@@ -532,7 +532,7 @@ desc_failed:
 }
 
 static void
-BSD_JoystickUpdate(SDL_Joystick * joy)
+BSD_JoystickUpdate(SDL_Joystick *joy)
 {
     struct hid_item hitem;
     struct hid_data *hdata;
@@ -666,7 +666,7 @@ BSD_JoystickUpdate(SDL_Joystick * joy)
 
 /* Function to close a joystick after use */
 static void
-BSD_JoystickClose(SDL_Joystick * joy)
+BSD_JoystickClose(SDL_Joystick *joy)
 {
     if (SDL_strncmp(joy->hwdata->path, "/dev/joy", 8)) {
         report_free(&joy->hwdata->inreport);
@@ -757,13 +757,13 @@ report_free(struct report *r)
 }
 
 static int
-BSD_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+BSD_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     return SDL_Unsupported();
 }
 
 static int
-BSD_JoystickRumbleTriggers(SDL_Joystick * joystick, Uint16 left_rumble, Uint16 right_rumble)
+BSD_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
 {
     return SDL_Unsupported();
 }
@@ -775,13 +775,19 @@ BSD_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
 }
 
 static SDL_bool
-BSD_JoystickHasLED(SDL_Joystick * joystick)
+BSD_JoystickHasLED(SDL_Joystick *joystick)
 {
     return SDL_FALSE;
 }
 
 static int
-BSD_JoystickSetLED(SDL_Joystick * joystick, Uint8 red, Uint8 green, Uint8 blue)
+BSD_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
+{
+    return SDL_Unsupported();
+}
+
+static int
+BSD_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
 {
     return SDL_Unsupported();
 }
@@ -801,6 +807,7 @@ SDL_JoystickDriver SDL_BSD_JoystickDriver =
     BSD_JoystickRumbleTriggers,
     BSD_JoystickHasLED,
     BSD_JoystickSetLED,
+    BSD_JoystickSetSensorsEnabled,
     BSD_JoystickUpdate,
     BSD_JoystickClose,
     BSD_JoystickQuit,

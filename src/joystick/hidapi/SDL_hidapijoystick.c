@@ -1130,6 +1130,23 @@ HIDAPI_JoystickSetLED(SDL_Joystick * joystick, Uint8 red, Uint8 green, Uint8 blu
     return result;
 }
 
+static int
+HIDAPI_JoystickSetSensorsEnabled(SDL_Joystick * joystick, SDL_bool enabled)
+{
+    int result;
+
+    if (joystick->hwdata) {
+        SDL_HIDAPI_Device *device = joystick->hwdata->device;
+
+        result = device->driver->SetJoystickSensorsEnabled(device, joystick, enabled);
+    } else {
+        SDL_SetError("SetSensorsEnabled failed, device disconnected");
+        result = -1;
+    }
+
+    return result;
+}
+
 static void
 HIDAPI_JoystickUpdate(SDL_Joystick * joystick)
 {
@@ -1206,6 +1223,7 @@ SDL_JoystickDriver SDL_HIDAPI_JoystickDriver =
     HIDAPI_JoystickRumbleTriggers,
     HIDAPI_JoystickHasLED,
     HIDAPI_JoystickSetLED,
+    HIDAPI_JoystickSetSensorsEnabled,
     HIDAPI_JoystickUpdate,
     HIDAPI_JoystickClose,
     HIDAPI_JoystickQuit,

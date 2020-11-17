@@ -635,6 +635,12 @@ RAWINPUT_JoystickSetLED(SDL_Joystick * joystick, Uint8 red, Uint8 green, Uint8 b
     return SDL_Unsupported();
 }
 
+static int
+RAWINPUT_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
+{
+    return SDL_Unsupported();
+}
+
 
 static void
 RAWINPUT_JoystickUpdate(SDL_Joystick * joystick)
@@ -768,6 +774,7 @@ SDL_JoystickDriver SDL_RAWINPUT_JoystickDriver =
     RAWINPUT_JoystickRumbleTriggers,
     RAWINPUT_JoystickHasLED,
     RAWINPUT_JoystickSetLED,
+    RAWINPUT_JoystickSetSensorsEnabled,
     RAWINPUT_JoystickUpdate,
     RAWINPUT_JoystickClose,
     RAWINPUT_JoystickQuit,

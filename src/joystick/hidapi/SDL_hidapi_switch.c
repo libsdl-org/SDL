@@ -942,6 +942,12 @@ HIDAPI_DriverSwitch_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joys
     return SDL_Unsupported();
 }
 
+static int
+HIDAPI_DriverSwitch_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, SDL_bool enabled)
+{
+    return SDL_Unsupported();
+}
+
 static void HandleInputOnlyControllerState(SDL_Joystick *joystick, SDL_DriverSwitch_Context *ctx, SwitchInputOnlyControllerStatePacket_t *packet)
 {
     Sint16 axis;
@@ -1298,6 +1304,7 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSwitch =
     HIDAPI_DriverSwitch_RumbleJoystickTriggers,
     HIDAPI_DriverSwitch_HasJoystickLED,
     HIDAPI_DriverSwitch_SetJoystickLED,
+    HIDAPI_DriverSwitch_SetJoystickSensorsEnabled,
     HIDAPI_DriverSwitch_CloseJoystick,
     HIDAPI_DriverSwitch_FreeDevice,
     NULL

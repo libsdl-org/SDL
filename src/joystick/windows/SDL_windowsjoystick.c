@@ -518,6 +518,12 @@ WINDOWS_JoystickSetLED(SDL_Joystick * joystick, Uint8 red, Uint8 green, Uint8 bl
     return SDL_Unsupported();
 }
 
+static int
+WINDOWS_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
+{
+    return SDL_Unsupported();
+}
+
 static void
 WINDOWS_JoystickUpdate(SDL_Joystick * joystick)
 {
@@ -604,6 +610,7 @@ SDL_JoystickDriver SDL_WINDOWS_JoystickDriver =
     WINDOWS_JoystickRumbleTriggers,
     WINDOWS_JoystickHasLED,
     WINDOWS_JoystickSetLED,
+    WINDOWS_JoystickSetSensorsEnabled,
     WINDOWS_JoystickUpdate,
     WINDOWS_JoystickClose,
     WINDOWS_JoystickQuit,

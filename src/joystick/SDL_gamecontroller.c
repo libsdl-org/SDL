@@ -2059,6 +2059,111 @@ SDL_GameControllerGetTouchpadFinger(SDL_GameController *gamecontroller, int touc
     }
 }
 
+/**
+ *  Return whether a game controller has a particular sensor.
+ */
+SDL_bool
+SDL_GameControllerHasSensor(SDL_GameController *gamecontroller, SDL_SensorType type)
+{
+    SDL_Joystick *joystick = SDL_GameControllerGetJoystick(gamecontroller);
+    int i;
+
+    if (joystick) {
+        for (i = 0; i < joystick->nsensors; ++i) {
+            if (joystick->sensors[i].type == type) {
+                return SDL_TRUE;
+            }
+        }
+    }
+    return SDL_FALSE;
+}
+
+/*
+ *  Set whether data reporting for a game controller sensor is enabled
+ */
+int SDL_GameControllerSetSensorEnabled(SDL_GameController *gamecontroller, SDL_SensorType type, SDL_bool enabled)
+{
+    SDL_Joystick *joystick = SDL_GameControllerGetJoystick(gamecontroller);
+    int i;
+
+    if (!joystick) {
+        return SDL_InvalidParamError("gamecontroller");
+    }
+
+    for (i = 0; i < joystick->nsensors; ++i) {
+        SDL_JoystickSensorInfo *sensor = &joystick->sensors[i];
+
+        if (sensor->type == type) {
+            if (sensor->enabled == enabled) {
+                return 0;
+            }
+
+            if (enabled) {
+                if (joystick->nsensors_enabled == 0) {
+                    if (joystick->driver->SetSensorsEnabled(joystick, SDL_TRUE) < 0) {
+                        return -1;
+                    }
+                }
+                ++joystick->nsensors_enabled;
+            } else {
+                if (joystick->nsensors_enabled == 1) {
+                    if (joystick->driver->SetSensorsEnabled(joystick, SDL_FALSE) < 0) {
+                        return -1;
+                    }
+                }
+                --joystick->nsensors_enabled;
+            }
+
+            sensor->enabled = enabled;
+            return 0;
+        }
+    }
+    return SDL_Unsupported();
+}
+
+/*
+ *  Query whether sensor data reporting is enabled for a game controller
+ */
+SDL_bool SDL_GameControllerIsSensorEnabled(SDL_GameController *gamecontroller, SDL_SensorType type)
+{
+    SDL_Joystick *joystick = SDL_GameControllerGetJoystick(gamecontroller);
+    int i;
+
+    if (joystick) {
+        for (i = 0; i < joystick->nsensors; ++i) {
+            if (joystick->sensors[i].type == type) {
+                return joystick->sensors[i].enabled;
+            }
+        }
+    }
+    return SDL_FALSE;
+}
+
+/*
+ *  Get the current state of a game controller sensor.
+ */
+int
+SDL_GameControllerGetSensorData(SDL_GameController *gamecontroller, SDL_SensorType type, float *data, int num_values)
+{
+    SDL_Joystick *joystick = SDL_GameControllerGetJoystick(gamecontroller);
+    int i;
+
+    if (!joystick) {
+        return SDL_InvalidParamError("gamecontroller");
+    }
+
+    for (i = 0; i < joystick->nsensors; ++i) {
+        SDL_JoystickSensorInfo *sensor = &joystick->sensors[i];
+
+        if (sensor->type == type) {
+            num_values = SDL_min(num_values, SDL_arraysize(sensor->data));
+            SDL_memcpy(data, sensor->data, num_values*sizeof(*data));
+            return 0;
+        }
+    }
+    return SDL_Unsupported();
+}
+
 const char *
 SDL_GameControllerName(SDL_GameController *gamecontroller)
 {

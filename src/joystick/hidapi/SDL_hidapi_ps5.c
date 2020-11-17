@@ -72,8 +72,12 @@ typedef struct
     Uint8 rgucButtonsAndHat[3];         /* 7 */
     Uint8 ucZero;                       /* 10 */
     Uint8 rgucPacketSequence[4];        /* 11 - 32 bit little endian */
-    Uint8 rgucAccel[6];                 /* 15 */
-    Uint8 rgucGyro[6];                  /* 21 */
+    Uint8 rgucGyroX[2];                 /* 15 */
+    Uint8 rgucGyroY[2];                 /* 17 */
+    Uint8 rgucGyroZ[2];                 /* 19 */
+    Uint8 rgucAccelX[2];                /* 21 */
+    Uint8 rgucAccelY[2];                /* 23 */
+    Uint8 rgucAccelZ[2];                /* 25 */
     Uint8 rgucTimer1[4];                /* 27 - 32 bit little endian */
     Uint8 ucBatteryTemp;                /* 31 */
     Uint8 ucTouchpadCounter1;           /* 32 - high bit clear + counter */
@@ -349,6 +353,12 @@ HIDAPI_DriverPS5_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystic
     ctx->led_blue = blue;
 
     return HIDAPI_DriverPS5_UpdateEffects(device);
+}
+
+static int
+HIDAPI_DriverPS5_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, SDL_bool enabled)
+{
+    return 0;
 }
 
 static void
@@ -649,6 +659,7 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverPS5 =
     HIDAPI_DriverPS5_RumbleJoystickTriggers,
     HIDAPI_DriverPS5_HasJoystickLED,
     HIDAPI_DriverPS5_SetJoystickLED,
+    HIDAPI_DriverPS5_SetJoystickSensorsEnabled,
     HIDAPI_DriverPS5_CloseJoystick,
     HIDAPI_DriverPS5_FreeDevice,
     NULL

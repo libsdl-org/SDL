@@ -109,6 +109,7 @@ extern void SDL_GameControllerHandleDelayedGuideButton(SDL_Joystick *joystick);
 
 /* Internal event queueing functions */
 extern void SDL_PrivateJoystickAddTouchpad(SDL_Joystick *joystick, int nfingers);
+extern void SDL_PrivateJoystickAddSensor(SDL_Joystick *joystick, SDL_SensorType type);
 extern void SDL_PrivateJoystickAdded(SDL_JoystickID device_instance);
 extern void SDL_PrivateJoystickRemoved(SDL_JoystickID device_instance);
 extern int SDL_PrivateJoystickAxis(SDL_Joystick *joystick,
@@ -121,6 +122,8 @@ extern int SDL_PrivateJoystickButton(SDL_Joystick *joystick,
                                      Uint8 button, Uint8 state);
 extern int SDL_PrivateJoystickTouchpad(SDL_Joystick *joystick,
                                        int touchpad, int finger, Uint8 state, float x, float y, float pressure);
+extern int SDL_PrivateJoystickSensor(SDL_Joystick *joystick,
+                                     SDL_SensorType type, const float *data, int num_values);
 extern void SDL_PrivateJoystickBatteryLevel(SDL_Joystick *joystick,
                                             SDL_JoystickPowerLevel ePowerLevel);
 

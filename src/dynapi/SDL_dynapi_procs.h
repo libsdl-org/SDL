@@ -843,3 +843,7 @@ SDL_DYNAPI_PROC(int,SDL_GameControllerGetTouchpadFinger,(SDL_GameController *a, 
 SDL_DYNAPI_PROC(Uint32,SDL_crc32,(Uint32 a, const void *b, size_t c),(a,b,c),return)
 SDL_DYNAPI_PROC(const char*,SDL_GameControllerGetSerial,(SDL_GameController *a),(a),return)
 SDL_DYNAPI_PROC(const char*,SDL_JoystickGetSerial,(SDL_Joystick *a),(a),return)
+SDL_DYNAPI_PROC(SDL_bool,SDL_GameControllerHasSensor,(SDL_GameController *a, SDL_SensorType b),(a,b),return)
+SDL_DYNAPI_PROC(int,SDL_GameControllerSetSensorEnabled,(SDL_GameController *a, SDL_SensorType b, SDL_bool c),(a,b,c),return)
+SDL_DYNAPI_PROC(SDL_bool,SDL_GameControllerIsSensorEnabled,(SDL_GameController *a, SDL_SensorType b),(a,b),return)
+SDL_DYNAPI_PROC(int,SDL_GameControllerGetSensorData,(SDL_GameController *a, SDL_SensorType b, float *c, int d),(a,b,c,d),return)

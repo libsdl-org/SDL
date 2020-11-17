@@ -940,6 +940,12 @@ DARWIN_JoystickSetLED(SDL_Joystick * joystick, Uint8 red, Uint8 green, Uint8 blu
     return SDL_Unsupported();
 }
 
+static int
+DARWIN_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
+{
+    return SDL_Unsupported();
+}
+
 static void
 DARWIN_JoystickUpdate(SDL_Joystick * joystick)
 {
@@ -1090,6 +1096,7 @@ SDL_JoystickDriver SDL_DARWIN_JoystickDriver =
     DARWIN_JoystickRumbleTriggers,
     DARWIN_JoystickHasLED,
     DARWIN_JoystickSetLED,
+    DARWIN_JoystickSetSensorsEnabled,
     DARWIN_JoystickUpdate,
     DARWIN_JoystickClose,
     DARWIN_JoystickQuit,

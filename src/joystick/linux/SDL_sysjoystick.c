@@ -764,7 +764,7 @@ LINUX_JoystickGetDeviceInstanceID(int device_index)
 }
 
 static int
-allocate_hatdata(SDL_Joystick * joystick)
+allocate_hatdata(SDL_Joystick *joystick)
 {
     int i;
 
@@ -782,7 +782,7 @@ allocate_hatdata(SDL_Joystick * joystick)
 }
 
 static int
-allocate_balldata(SDL_Joystick * joystick)
+allocate_balldata(SDL_Joystick *joystick)
 {
     int i;
 
@@ -800,7 +800,7 @@ allocate_balldata(SDL_Joystick * joystick)
 }
 
 static void
-ConfigJoystick(SDL_Joystick * joystick, int fd)
+ConfigJoystick(SDL_Joystick *joystick, int fd)
 {
     int i, t;
     unsigned long keybit[NBITS(KEY_MAX)] = { 0 };
@@ -926,7 +926,7 @@ ConfigJoystick(SDL_Joystick * joystick, int fd)
    It returns 0, or -1 if there is an error.
  */
 static int
-LINUX_JoystickOpen(SDL_Joystick * joystick, int device_index)
+LINUX_JoystickOpen(SDL_Joystick *joystick, int device_index)
 {
     SDL_joylist_item *item = JoystickByDevIndex(device_index);
 
@@ -985,7 +985,7 @@ LINUX_JoystickOpen(SDL_Joystick * joystick, int device_index)
 }
 
 static int
-LINUX_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+LINUX_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     struct input_event event;
 
@@ -1027,25 +1027,31 @@ LINUX_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint1
 }
 
 static int
-LINUX_JoystickRumbleTriggers(SDL_Joystick * joystick, Uint16 left_rumble, Uint16 right_rumble)
+LINUX_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
 {
     return SDL_Unsupported();
 }
 
 static SDL_bool
-LINUX_JoystickHasLED(SDL_Joystick * joystick)
+LINUX_JoystickHasLED(SDL_Joystick *joystick)
 {
     return SDL_FALSE;
 }
 
 static int
-LINUX_JoystickSetLED(SDL_Joystick * joystick, Uint8 red, Uint8 green, Uint8 blue)
+LINUX_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
+{
+    return SDL_Unsupported();
+}
+
+static int
+LINUX_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
 {
     return SDL_Unsupported();
 }
 
 static SDL_INLINE void
-HandleHat(SDL_Joystick * stick, Uint8 hat, int axis, int value)
+HandleHat(SDL_Joystick *stick, Uint8 hat, int axis, int value)
 {
     struct hwdata_hat *the_hat;
     const Uint8 position_map[3][3] = {
@@ -1070,14 +1076,14 @@ HandleHat(SDL_Joystick * stick, Uint8 hat, int axis, int value)
 }
 
 static SDL_INLINE void
-HandleBall(SDL_Joystick * stick, Uint8 ball, int axis, int value)
+HandleBall(SDL_Joystick *stick, Uint8 ball, int axis, int value)
 {
     stick->hwdata->balls[ball].axis[axis] += value;
 }
 
 
 static SDL_INLINE int
-AxisCorrect(SDL_Joystick * joystick, int which, int value)
+AxisCorrect(SDL_Joystick *joystick, int which, int value)
 {
     struct axis_correct *correct;
 
@@ -1106,7 +1112,7 @@ AxisCorrect(SDL_Joystick * joystick, int which, int value)
 }
 
 static SDL_INLINE void
-PollAllValues(SDL_Joystick * joystick)
+PollAllValues(SDL_Joystick *joystick)
 {
     struct input_absinfo absinfo;
     unsigned long keyinfo[NBITS(KEY_MAX)];
@@ -1166,7 +1172,7 @@ PollAllValues(SDL_Joystick * joystick)
 }
 
 static SDL_INLINE void
-HandleInputEvents(SDL_Joystick * joystick)
+HandleInputEvents(SDL_Joystick *joystick)
 {
     struct input_event events[32];
     int i, len;
@@ -1260,7 +1266,7 @@ HandleInputEvents(SDL_Joystick * joystick)
 }
 
 static void
-LINUX_JoystickUpdate(SDL_Joystick * joystick)
+LINUX_JoystickUpdate(SDL_Joystick *joystick)
 {
     int i;
 
@@ -1287,7 +1293,7 @@ LINUX_JoystickUpdate(SDL_Joystick * joystick)
 
 /* Function to close a joystick after use */
 static void
-LINUX_JoystickClose(SDL_Joystick * joystick)
+LINUX_JoystickClose(SDL_Joystick *joystick)
 {
     if (joystick->hwdata) {
         if (joystick->hwdata->effect.id >= 0) {
@@ -1345,7 +1351,7 @@ LINUX_JoystickQuit(void)
 static SDL_bool
 LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
 {
-    SDL_Joystick * joystick;
+    SDL_Joystick *joystick;
 
     joystick = (SDL_Joystick *) SDL_calloc(sizeof(*joystick), 1);
     if (joystick == NULL) {
@@ -1527,6 +1533,7 @@ SDL_JoystickDriver SDL_LINUX_JoystickDriver =
     LINUX_JoystickRumbleTriggers,
     LINUX_JoystickHasLED,
     LINUX_JoystickSetLED,
+    LINUX_JoystickSetSensorsEnabled,
     LINUX_JoystickUpdate,
     LINUX_JoystickClose,
     LINUX_JoystickQuit,

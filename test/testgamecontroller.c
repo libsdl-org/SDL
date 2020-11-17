@@ -98,26 +98,48 @@ LoadTexture(SDL_Renderer *renderer, const char *file, SDL_bool transparent)
 }
 
 static void
-UpdateWindowTitle()
+InitGameController()
 {
     const char *name = SDL_GameControllerName(gamecontroller);
-    const char *serial = SDL_GameControllerGetSerial(gamecontroller);
-    const char *basetitle = "Game Controller Test: ";
-    const size_t titlelen = SDL_strlen(basetitle) + SDL_strlen(name) + (serial ? 3 + SDL_strlen(serial) : 0) + 1;
-    char *title = (char *)SDL_malloc(titlelen);
 
-    retval = SDL_FALSE;
-    done = SDL_FALSE;
+    SDL_Log("Opened game controller %s\n", name);
 
-    if (title) {
-        SDL_snprintf(title, titlelen, "%s%s", basetitle, name);
-        if (serial) {
-            SDL_strlcat(title, " (", titlelen);
-            SDL_strlcat(title, serial, titlelen);
-            SDL_strlcat(title, ")", titlelen);
+    if (SDL_GameControllerHasSensor(gamecontroller, SDL_SENSOR_ACCEL)) {
+        SDL_Log("Enabling accelerometer\n");
+        SDL_GameControllerSetSensorEnabled(gamecontroller, SDL_SENSOR_ACCEL, SDL_TRUE);
+    }
+
+    if (SDL_GameControllerHasSensor(gamecontroller, SDL_SENSOR_GYRO)) {
+        SDL_Log("Enabling gyro\n");
+        SDL_GameControllerSetSensorEnabled(gamecontroller, SDL_SENSOR_GYRO, SDL_TRUE);
+    }
+}
+
+static void
+UpdateWindowTitle()
+{
+    if (gamecontroller) {
+        const char *name = SDL_GameControllerName(gamecontroller);
+        const char *serial = SDL_GameControllerGetSerial(gamecontroller);
+        const char *basetitle = "Game Controller Test: ";
+        const size_t titlelen = SDL_strlen(basetitle) + SDL_strlen(name) + (serial ? 3 + SDL_strlen(serial) : 0) + 1;
+        char *title = (char *)SDL_malloc(titlelen);
+
+        retval = SDL_FALSE;
+        done = SDL_FALSE;
+
+        if (title) {
+            SDL_snprintf(title, titlelen, "%s%s", basetitle, name);
+            if (serial) {
+                SDL_strlcat(title, " (", titlelen);
+                SDL_strlcat(title, serial, titlelen);
+                SDL_strlcat(title, ")", titlelen);
+            }
+            SDL_SetWindowTitle(window, title);
+            SDL_free(title);
         }
-        SDL_SetWindowTitle(window, title);
-        SDL_free(title);
+    } else {
+        SDL_SetWindowTitle(window, "Waiting for controller...");
     }
 }
 
@@ -146,10 +168,11 @@ loop(void *arg)
             if (!gamecontroller) {
                 gamecontroller = SDL_GameControllerOpen(event.cdevice.which);
                 if (gamecontroller) {
-                    UpdateWindowTitle();
+                    InitGameController();
                 } else {
                     SDL_Log("Couldn't open controller: %s\n", SDL_GetError());
                 }
+                UpdateWindowTitle();
             }
             break;
 
@@ -159,8 +182,9 @@ loop(void *arg)
                 SDL_GameControllerClose(gamecontroller);
                 gamecontroller = SDL_GameControllerOpen(0);
                 if (gamecontroller) {
-                    UpdateWindowTitle();
+                    InitGameController();
                 }
+                UpdateWindowTitle();
             }
             break;
 
@@ -176,6 +200,15 @@ loop(void *arg)
                 event.ctouchpad.x,
                 event.ctouchpad.y,
                 event.ctouchpad.pressure);
+            break;
+
+        case SDL_CONTROLLERSENSORUPDATE:
+            SDL_Log("Controller sensor %s: %.2f, %.2f, %.2f\n",
+                event.csensor.sensor == SDL_SENSOR_ACCEL ? "accelerometer" :
+                event.csensor.sensor == SDL_SENSOR_GYRO ? "gyro" : "unknown",
+                event.csensor.data[0],
+                event.csensor.data[1],
+                event.csensor.data[2]);
             break;
 
         case SDL_CONTROLLERAXISMOTION:
@@ -413,6 +446,8 @@ main(int argc, char *argv[])
 
     /* !!! FIXME: */
     /*SDL_RenderSetLogicalSize(screen, background->w, background->h);*/
+
+    UpdateWindowTitle();
 
     /* Loop, getting controller events! */
 #ifdef __EMSCRIPTEN__
