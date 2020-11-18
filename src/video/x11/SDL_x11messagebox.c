@@ -409,6 +409,7 @@ X11_MessageBoxCreateWindow( SDL_MessageBoxDataX11 *data )
     Display *display = data->display;
     SDL_WindowData *windowdata = NULL;
     const SDL_MessageBoxData *messageboxdata = data->messageboxdata;
+    const char *title = messageboxdata->title ? messageboxdata->title : "";
     char *title_locale = NULL;
 
     if ( messageboxdata->window ) {
@@ -453,10 +454,10 @@ X11_MessageBoxCreateWindow( SDL_MessageBoxDataX11 *data )
         X11_XSetTransientForHint( display, data->window, windowdata->xwindow );
     }
 
-    X11_XStoreName( display, data->window, messageboxdata->title );
+    X11_XStoreName( display, data->window, title);
     _NET_WM_NAME = X11_XInternAtom(display, "_NET_WM_NAME", False);
 
-    title_locale = SDL_iconv_utf8_locale(messageboxdata->title);
+    title_locale = SDL_iconv_utf8_locale(title);
     if (title_locale) {
         XTextProperty titleprop;
         Status status = X11_XStringListToTextProperty(&title_locale, 1, &titleprop);
@@ -470,7 +471,7 @@ X11_MessageBoxCreateWindow( SDL_MessageBoxDataX11 *data )
 #ifdef X_HAVE_UTF8_STRING
     if (SDL_X11_HAVE_UTF8) {
         XTextProperty titleprop;
-        Status status = X11_Xutf8TextListToTextProperty(display, (char **) &messageboxdata->title, 1,
+        Status status = X11_Xutf8TextListToTextProperty(display, (char **) &title, 1,
                                             XUTF8StringStyle, &titleprop);
         if (status == Success) {
             X11_XSetTextProperty(display, data->window, &titleprop,
