@@ -2569,26 +2569,26 @@ int SDL_PrivateJoystickSensor(SDL_Joystick *joystick, SDL_SensorType type, const
 
         if (sensor->type == type) {
             if (sensor->enabled) {
-                /* Allow duplicate events, for things like gyro updates */
-
-                /* Update internal sensor state */
                 num_values = SDL_min(num_values, SDL_arraysize(sensor->data));
-                SDL_memcpy(sensor->data, data, num_values*sizeof(*data));
+                if (SDL_memcmp(data, sensor->data, num_values*sizeof(*data)) != 0) {
 
-                /* Post the event, if desired */
-                posted = 0;
+                    /* Update internal sensor state */
+                    SDL_memcpy(sensor->data, data, num_values*sizeof(*data));
+
+                    /* Post the event, if desired */
 #if !SDL_EVENTS_DISABLED
-                if (SDL_GetEventState(SDL_CONTROLLERSENSORUPDATE) == SDL_ENABLE) {
-                    SDL_Event event;
-                    event.type = SDL_CONTROLLERSENSORUPDATE;
-                    event.csensor.which = joystick->instance_id;
-                    event.csensor.sensor = type;
-                    num_values = SDL_min(num_values, SDL_arraysize(event.csensor.data));
-                    SDL_memset(event.csensor.data, 0, sizeof(event.csensor.data));
-                    SDL_memcpy(event.csensor.data, data, num_values*sizeof(*data));
-                    posted = SDL_PushEvent(&event) == 1;
-                }
+                    if (SDL_GetEventState(SDL_CONTROLLERSENSORUPDATE) == SDL_ENABLE) {
+                        SDL_Event event;
+                        event.type = SDL_CONTROLLERSENSORUPDATE;
+                        event.csensor.which = joystick->instance_id;
+                        event.csensor.sensor = type;
+                        num_values = SDL_min(num_values, SDL_arraysize(event.csensor.data));
+                        SDL_memset(event.csensor.data, 0, sizeof(event.csensor.data));
+                        SDL_memcpy(event.csensor.data, data, num_values*sizeof(*data));
+                        posted = SDL_PushEvent(&event) == 1;
+                    }
 #endif /* !SDL_EVENTS_DISABLED */
+                }
             }
             break;
         }
