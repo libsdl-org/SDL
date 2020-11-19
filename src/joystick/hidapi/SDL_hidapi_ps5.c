@@ -107,12 +107,17 @@ typedef struct
     Uint8 ucEnableBits2;                /* 1 */
     Uint8 ucRumbleRight;                /* 2 */
     Uint8 ucRumbleLeft;                 /* 3 */
-    Uint8 rgucUnknown1[6];              /* 4 */
+    Uint8 ucHeadphoneVolume;            /* 4 */
+    Uint8 ucSpeakerVolume;              /* 5 */
+    Uint8 ucMicrophoneVolume;           /* 6 */
+    Uint8 ucAudioEnableBits;            /* 7 */
+    Uint8 ucMicLightMode;               /* 8 */
+    Uint8 ucAudioMuteBits;              /* 9 */
     Uint8 rgucRightTriggerEffect[11];   /* 10 */
     Uint8 rgucLeftTriggerEffect[11];    /* 21 */
-    Uint8 rgucUnknown2[6];              /* 32 */
+    Uint8 rgucUnknown1[6];              /* 32 */
     Uint8 ucLedFlags;                   /* 38 */
-    Uint8 rgucUnknown3[2];              /* 39 */
+    Uint8 rgucUnknown2[2];              /* 39 */
     Uint8 ucLedAnim;                    /* 41 */
     Uint8 ucLedBrightness;              /* 42 */
     Uint8 ucPadLights;                  /* 43 */
@@ -120,6 +125,14 @@ typedef struct
     Uint8 ucLedGreen;                   /* 45 */
     Uint8 ucLedBlue;                    /* 46 */
 } DS5EffectsState_t;
+
+typedef enum {
+    k_EDS5EffectNone,
+    k_EDS5EffectRumble,
+    k_EDS5EffectLED,
+    k_EDS5EffectPadLights,
+    k_EDS5EffectMicLight,
+} EDS5Effect;
 
 typedef struct {
     Sint16 bias;
@@ -323,7 +336,7 @@ HIDAPI_DriverPS5_ApplyCalibrationData(SDL_DriverPS5_Context *ctx, int index, Sin
 }
 
 static int
-HIDAPI_DriverPS5_UpdateEffects(SDL_HIDAPI_Device *device)
+HIDAPI_DriverPS5_UpdateEffects(SDL_HIDAPI_Device *device, EDS5Effect effect)
 {
     SDL_DriverPS5_Context *ctx = (SDL_DriverPS5_Context *)device->context;
     DS5EffectsState_t *effects;
@@ -346,22 +359,45 @@ HIDAPI_DriverPS5_UpdateEffects(SDL_HIDAPI_Device *device)
     }
     effects = (DS5EffectsState_t *)&data[offset];
 
-    effects->ucEnableBits1 |= 0x03; /* Enable left/right rumble */
-    effects->ucEnableBits2 |= 0x04; /* Enable LED color */
-    effects->ucEnableBits2 |= 0x10; /* Enable touchpad lights */
+    if (ctx->rumble_left || ctx->rumble_right) {
+        effects->ucEnableBits1 |= 0x03; /* Enable left/right rumble */
 
-    effects->ucRumbleLeft = ctx->rumble_left;
-    effects->ucRumbleRight = ctx->rumble_right;
-
-    /* Populate the LED state with the appropriate color from our lookup table */
-    if (ctx->color_set) {
-        effects->ucLedRed = ctx->led_red;
-        effects->ucLedGreen = ctx->led_green;
-        effects->ucLedBlue = ctx->led_blue;
+        /* Shift to reduce effective rumble strength to match Xbox controllers */
+        effects->ucRumbleLeft = ctx->rumble_left >> 2;
+        effects->ucRumbleRight = ctx->rumble_right >> 2;
     } else {
-        SetLedsForPlayerIndex(effects, ctx->player_index);
+        /* Leaving emulated rumble bits off will restore audio haptics */
     }
-    effects->ucPadLights = 0x00;    /* Bitmask, 0x1F enables all lights, 0x20 changes instantly instead of fade */
+
+    switch (effect) {
+    case k_EDS5EffectRumble:
+        /* Already handled above */
+        break;
+    case k_EDS5EffectLED:
+        effects->ucEnableBits2 |= 0x04; /* Enable LED color */
+
+        /* Populate the LED state with the appropriate color from our lookup table */
+        if (ctx->color_set) {
+            effects->ucLedRed = ctx->led_red;
+            effects->ucLedGreen = ctx->led_green;
+            effects->ucLedBlue = ctx->led_blue;
+        } else {
+            SetLedsForPlayerIndex(effects, ctx->player_index);
+        }
+        break;
+    case k_EDS5EffectPadLights:
+        effects->ucEnableBits2 |= 0x10; /* Enable touchpad lights */
+
+        effects->ucPadLights = 0x00;    /* Bitmask, 0x1F enables all lights, 0x20 changes instantly instead of fade */
+        break;
+    case k_EDS5EffectMicLight:
+        effects->ucEnableBits2 |= 0x01; /* Enable microphone light */
+
+        effects->ucMicLightMode = 0;    /* Bitmask, 0x00 = off, 0x01 = solid, 0x02 = pulse */
+        break;
+    default:
+        break;
+    }
 
     if (ctx->is_bluetooth) {
         /* Bluetooth reports need a CRC at the end of the packet (at least on Linux) */
@@ -385,7 +421,7 @@ HIDAPI_DriverPS5_SetBluetooth(SDL_HIDAPI_Device *device, SDL_bool is_bluetooth)
 
     if (ctx->is_bluetooth != is_bluetooth) {
         ctx->is_bluetooth = is_bluetooth;
-        HIDAPI_DriverPS5_UpdateEffects(device);
+        HIDAPI_DriverPS5_UpdateEffects(device, k_EDS5EffectLED);
     }
 }
 
@@ -401,7 +437,7 @@ HIDAPI_DriverPS5_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID 
     ctx->player_index = player_index;
 
     /* This will set the new LED state based on the new player index */
-    HIDAPI_DriverPS5_UpdateEffects(device);
+    HIDAPI_DriverPS5_UpdateEffects(device, k_EDS5EffectLED);
 }
 
 static SDL_bool
@@ -439,7 +475,7 @@ HIDAPI_DriverPS5_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
     ctx->player_index = SDL_JoystickGetPlayerIndex(joystick);
 
     /* Initialize LED and effect state */
-    HIDAPI_DriverPS5_UpdateEffects(device);
+    HIDAPI_DriverPS5_UpdateEffects(device, k_EDS5EffectLED);
 
     /* Initialize the joystick capabilities */
     joystick->nbuttons = 17;
@@ -461,7 +497,7 @@ HIDAPI_DriverPS5_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystic
     ctx->rumble_left = (low_frequency_rumble >> 8);
     ctx->rumble_right = (high_frequency_rumble >> 8);
 
-    return HIDAPI_DriverPS5_UpdateEffects(device);
+    return HIDAPI_DriverPS5_UpdateEffects(device, k_EDS5EffectRumble);
 }
 
 static int
@@ -486,7 +522,7 @@ HIDAPI_DriverPS5_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystic
     ctx->led_green = green;
     ctx->led_blue = blue;
 
-    return HIDAPI_DriverPS5_UpdateEffects(device);
+    return HIDAPI_DriverPS5_UpdateEffects(device, k_EDS5EffectLED);
 }
 
 static int
