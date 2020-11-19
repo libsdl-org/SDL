@@ -103,22 +103,22 @@ typedef struct
 
 typedef struct
 {
-    Uint8 ucEnableBits1;
-    Uint8 ucEnableBits2;
-    Uint8 ucRumbleRight;
-    Uint8 ucRumbleLeft;
-    Uint8 rgucUnknown1[6];
-    Uint8 rgucRightTriggerEffect[11];
-    Uint8 rgucLeftTriggerEffect[11];
-    Uint8 rgucUnknown2[6];
-    Uint8 ucLedFlags;
-    Uint8 rgucUnknown3[2];
-    Uint8 ucLedAnim;
-    Uint8 ucLedBrightness;
-    Uint8 ucPadLights;
-    Uint8 ucLedRed;
-    Uint8 ucLedGreen;
-    Uint8 ucLedBlue;
+    Uint8 ucEnableBits1;                /* 0 */
+    Uint8 ucEnableBits2;                /* 1 */
+    Uint8 ucRumbleRight;                /* 2 */
+    Uint8 ucRumbleLeft;                 /* 3 */
+    Uint8 rgucUnknown1[6];              /* 4 */
+    Uint8 rgucRightTriggerEffect[11];   /* 10 */
+    Uint8 rgucLeftTriggerEffect[11];    /* 21 */
+    Uint8 rgucUnknown2[6];              /* 32 */
+    Uint8 ucLedFlags;                   /* 38 */
+    Uint8 rgucUnknown3[2];              /* 39 */
+    Uint8 ucLedAnim;                    /* 41 */
+    Uint8 ucLedBrightness;              /* 42 */
+    Uint8 ucPadLights;                  /* 43 */
+    Uint8 ucLedRed;                     /* 44 */
+    Uint8 ucLedGreen;                   /* 45 */
+    Uint8 ucLedBlue;                    /* 46 */
 } DS5EffectsState_t;
 
 typedef struct {
@@ -132,8 +132,8 @@ typedef struct {
     SDL_bool hardware_calibration;
     IMUCalibrationData calibration[6];
     int player_index;
-    Uint16 rumble_left;
-    Uint16 rumble_right;
+    Uint8 rumble_left;
+    Uint8 rumble_right;
     SDL_bool color_set;
     Uint8 led_red;
     Uint8 led_green;
@@ -315,7 +315,7 @@ HIDAPI_DriverPS5_ApplyCalibrationData(SDL_DriverPS5_Context *ctx, int index, Sin
 
     /* Convert the raw data to the units expected by SDL */
     if (index < 3) {
-        result = (result / GYRO_RES_PER_DEGREE) * M_PI / 180.0f;
+        result = (result / GYRO_RES_PER_DEGREE) * (float)M_PI / 180.0f;
     } else {
         result = (result / ACCEL_RES_PER_G) * SDL_STANDARD_GRAVITY;
     }
