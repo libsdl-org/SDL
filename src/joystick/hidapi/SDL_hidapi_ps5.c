@@ -360,7 +360,8 @@ HIDAPI_DriverPS5_UpdateEffects(SDL_HIDAPI_Device *device, EDS5Effect effect)
     effects = (DS5EffectsState_t *)&data[offset];
 
     if (ctx->rumble_left || ctx->rumble_right) {
-        effects->ucEnableBits1 |= 0x03; /* Enable left/right rumble */
+        effects->ucEnableBits1 |= 0x01; /* Enable rumble emulation */
+        effects->ucEnableBits1 |= 0x02; /* Disable audio haptics */
 
         /* Shift to reduce effective rumble strength to match Xbox controllers */
         effects->ucRumbleLeft = ctx->rumble_left >> 2;
