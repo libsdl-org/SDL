@@ -715,13 +715,20 @@ static int hid_write_timeout(hid_device *dev, const unsigned char *data, size_t 
 	size_t stashed_length = length;
 	unsigned char *buf;
 
+	/* If the application is writing to the device, it knows how much data to write.
+	 * This matches the behavior on other platforms. It's also important when writing
+	 * to Sony game controllers over Bluetooth, where there's a CRC at the end which
+	 * must not be tampered with.
+	 */
+	const BOOL write_exact_size = TRUE;
+
 	/* Make sure the right number of bytes are passed to WriteFile. Windows
 	   expects the number of bytes which are in the _longest_ report (plus
 	   one for the report number) bytes even if the data is a report
 	   which is shorter than that. Windows gives us this value in
 	   caps.OutputReportByteLength. If a user passes in fewer bytes than this,
 	   create a temporary buffer which is the proper size. */
-	if (length >= dev->output_report_length) {
+	if (write_exact_size || length >= dev->output_report_length) {
 		/* The user passed the right number of bytes. Use the buffer as-is. */
 		buf = (unsigned char *) data;
 	} else {
