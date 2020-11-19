@@ -72,6 +72,13 @@ static const Uint8 xboxone_init5[] = {
     0x00, 0x00, 0xFF, 0x00, 0xEB
 };
 
+#ifdef REQUEST_SERIAL_NUMBER
+/* Request serial number */
+static const Uint8 xboxone_init_serial[] = {
+    0x1E, 0x30, 0x07, 0x01, 0x04
+};
+#endif
+
 /*
  * This specifies the selection of init packets that a gamepad
  * will be sent on init *and* the order in which they will be
@@ -100,6 +107,10 @@ static const SDL_DriverXboxOne_InitPacket xboxone_init_packets[] = {
      */
     { 0x0000, 0x0000, 0x045e, 0x0000, xboxone_init4, sizeof(xboxone_init4), { 0x00, 0x00 } },
     { 0x0000, 0x0000, 0x045e, 0x0000, xboxone_init5, sizeof(xboxone_init5), { 0x00, 0x00 } },
+
+#ifdef REQUEST_SERIAL_NUMBER
+    { 0x0000, 0x0000, 0x0000, 0x0000, xboxone_init_serial, sizeof(xboxone_init_serial), { 0x00, 0x00 } },
+#endif
 };
 
 typedef enum {
