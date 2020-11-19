@@ -36,6 +36,7 @@
 
 /* Define this if you want to log all packets from the controller */
 /*#define DEBUG_XBOX_PROTOCOL*/
+#define DEBUG_XBOX_PROTOCOL
 
 /* The amount of time to wait after hotplug to send controller init sequence */
 #define CONTROLLER_INIT_DELAY_MS    1500 /* 475 for Xbox One S, 1275 for the PDP Battlefield 1 */
@@ -186,6 +187,12 @@ SendAckIfNeeded(SDL_HIDAPI_Device *device, Uint8 *data, int size)
 {
     if ((data[1] & 0x30) == 0x30) {
         Uint8 ack_packet[] = { 0x01, 0x20, data[2], 0x09, 0x00, data[0], 0x20, data[3], 0x00, 0x00, 0x00, 0x00, 0x00 };
+
+        /* The initial ack needs 0x80 added to the response, for some reason */
+        if (data[0] == 0x04 && data[1] == 0xF0) {
+            ack_packet[11] = 0x80;
+        }
+
 #ifdef DEBUG_XBOX_PROTOCOL
         HIDAPI_DumpPacket("Xbox One sending ACK packet: size = %d", ack_packet, sizeof(ack_packet));
 #endif
