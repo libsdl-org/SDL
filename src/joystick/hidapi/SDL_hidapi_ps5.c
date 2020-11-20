@@ -128,6 +128,7 @@ typedef struct
 
 typedef enum {
     k_EDS5EffectNone,
+    k_EDS5EffectRumbleStart,
     k_EDS5EffectRumble,
     k_EDS5EffectLED,
     k_EDS5EffectPadLights,
@@ -342,6 +343,10 @@ HIDAPI_DriverPS5_UpdateEffects(SDL_HIDAPI_Device *device, EDS5Effect effect)
     DS5EffectsState_t *effects;
     Uint8 data[78];
     int report_size, offset;
+    Uint8 *pending_data;
+    int *pending_size;
+    int maximum_size;
+
 
     SDL_zero(data);
 
@@ -364,13 +369,16 @@ HIDAPI_DriverPS5_UpdateEffects(SDL_HIDAPI_Device *device, EDS5Effect effect)
         effects->ucEnableBits1 |= 0x02; /* Disable audio haptics */
 
         /* Shift to reduce effective rumble strength to match Xbox controllers */
-        effects->ucRumbleLeft = ctx->rumble_left >> 2;
-        effects->ucRumbleRight = ctx->rumble_right >> 2;
+        effects->ucRumbleLeft = ctx->rumble_left >> 1;
+        effects->ucRumbleRight = ctx->rumble_right >> 1;
     } else {
         /* Leaving emulated rumble bits off will restore audio haptics */
     }
 
     switch (effect) {
+    case k_EDS5EffectRumbleStart:
+        effects->ucEnableBits1 |= 0x02; /* Disable audio haptics */
+        break;
     case k_EDS5EffectRumble:
         /* Already handled above */
         break;
@@ -409,10 +417,24 @@ HIDAPI_DriverPS5_UpdateEffects(SDL_HIDAPI_Device *device, EDS5Effect effect)
         SDL_memcpy(&data[report_size - sizeof(unCRC)], &unCRC, sizeof(unCRC));
     }
 
-    if (SDL_HIDAPI_SendRumble(device, data, report_size) != report_size) {
-        return SDL_SetError("Couldn't send rumble packet");
+    if (SDL_HIDAPI_LockRumble() < 0) {
+        return -1;
     }
-    return 0;
+
+    /* See if we can update an existing pending request */
+    if (SDL_HIDAPI_GetPendingRumbleLocked(device, &pending_data, &pending_size, &maximum_size)) {
+        DS5EffectsState_t *pending_effects = (DS5EffectsState_t *)&pending_data[offset];
+        if (report_size == *pending_size &&
+            effects->ucEnableBits1 == pending_effects->ucEnableBits1 &&
+            effects->ucEnableBits2 == pending_effects->ucEnableBits2) {
+            /* We're simply updating the data for this request */
+            SDL_memcpy(pending_data, data, report_size);
+            SDL_HIDAPI_UnlockRumble();
+            return 0;
+        }
+    }
+
+    return SDL_HIDAPI_SendRumbleAndUnlock(device, data, report_size);
 }
 
 static void
@@ -494,6 +516,10 @@ static int
 HIDAPI_DriverPS5_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     SDL_DriverPS5_Context *ctx = (SDL_DriverPS5_Context *)device->context;
+
+    if (!ctx->rumble_left && !ctx->rumble_right) {
+        HIDAPI_DriverPS5_UpdateEffects(device, k_EDS5EffectRumbleStart);
+    }
 
     ctx->rumble_left = (low_frequency_rumble >> 8);
     ctx->rumble_right = (high_frequency_rumble >> 8);
