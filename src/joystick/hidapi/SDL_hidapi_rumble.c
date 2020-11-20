@@ -157,15 +157,19 @@ int SDL_HIDAPI_LockRumble(void)
 SDL_bool SDL_HIDAPI_GetPendingRumbleLocked(SDL_HIDAPI_Device *device, Uint8 **data, int **size, int *maximum_size)
 {
     SDL_HIDAPI_RumbleContext *ctx = &rumble_context;
-    SDL_HIDAPI_RumbleRequest *request;
+    SDL_HIDAPI_RumbleRequest *request, *found;
 
+    found = NULL;
     for (request = ctx->requests_tail; request; request = request->prev) {
         if (request->device == device) {
-            *data = request->data;
-            *size = &request->size;
-            *maximum_size = sizeof(request->data);
-            return SDL_TRUE;
+            found = request;
         }
+    }
+    if (found) {
+        *data = found->data;
+        *size = &found->size;
+        *maximum_size = sizeof(found->data);
+        return SDL_TRUE;
     }
     return SDL_FALSE;
 }
