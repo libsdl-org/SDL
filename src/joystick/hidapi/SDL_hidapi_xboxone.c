@@ -36,7 +36,6 @@
 
 /* Define this if you want to log all packets from the controller */
 /*#define DEBUG_XBOX_PROTOCOL*/
-#define DEBUG_XBOX_PROTOCOL
 
 /* The amount of time to wait after hotplug to send controller init sequence */
 #define CONTROLLER_INIT_DELAY_MS    1500 /* 475 for Xbox One S, 1275 for the PDP Battlefield 1 */
