@@ -3327,8 +3327,8 @@ CheckHIDAPI()
     esac
 
     AC_ARG_ENABLE(hidapi,
-AS_HELP_STRING([--enable-hidapi], [use HIDAPI for low level joystick drivers [[default=no]]]),
-                  , enable_hidapi=no)
+AS_HELP_STRING([--enable-hidapi], [use HIDAPI for low level joystick drivers [[default=yes]]]),
+                  , enable_hidapi=yes)
     if test x$enable_joystick = xyes -a x$enable_hidapi = xyes; then
         if test x$skiplibusb = xyes; then
             hidapi_support=yes
