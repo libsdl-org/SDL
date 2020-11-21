@@ -298,13 +298,13 @@ static int is_BLE(hid_device *dev)
 			"hid",
 			NULL);
 		if (hid_dev) {
-			unsigned short dev_vid;
-			unsigned short dev_pid;
-			int bus_type;
+			unsigned short dev_vid = 0;
+			unsigned short dev_pid = 0;
+			int bus_type = 0;
 			char *serial_number_utf8 = NULL;
 			char *product_name_utf8 = NULL;
 
-			ret = parse_uevent_info(
+			parse_uevent_info(
 			           udev_device_get_sysattr_value(hid_dev, "uevent"),
 			           &bus_type,
 			           &dev_vid,
@@ -845,6 +845,7 @@ int HID_API_EXPORT hid_get_feature_report(hid_device *dev, unsigned char *data, 
 	int res;
 
 	/* It looks like HIDIOCGFEATURE() on Bluetooth LE devices doesn't return the report number */
+	printf("HIDIOCGFEATURE\n");
 	if (dev->needs_ble_hack) {
 		data[1] = data[0];
 		++data;
