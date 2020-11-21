@@ -895,6 +895,7 @@ enable_directx
 enable_wasapi
 enable_sdl_dlopen
 enable_hidapi
+enable_hidapi_libusb
 enable_clock_gettime
 enable_rpath
 enable_backgrounding_signal
@@ -1691,7 +1692,9 @@ Optional Features:
   --enable-wasapi         use the Windows WASAPI audio driver [[default=yes]]
   --enable-sdl-dlopen     use dlopen for shared object loading [[default=yes]]
   --enable-hidapi         use HIDAPI for low level joystick drivers
-                          [[default=no]]
+                          [[default=yes]]
+  --enable-hidapi-libusb  use libusb for low level joystick drivers
+                          [[default=maybe]]
   --enable-clock_gettime  use clock_gettime() instead of gettimeofday() on
                           UNIX [[default=yes]]
   --enable-rpath          use an rpath when linking SDL [[default=yes]]
@@ -24291,23 +24294,6 @@ $as_echo "#define SDL_JOYSTICK_USBHID 1" >>confdefs.h
 
 CheckHIDAPI()
 {
-    # The hidraw support doesn't catch Xbox, PS4 and Nintendo controllers,
-    # so we'll just use libusb when it's available.
-    case "$host" in
-        # libusb does not support iOS
-        *-ios-* )
-            skiplibusb=yes
-            ;;
-        # On the other hand, *BSD specifically uses libusb only
-        *-*-*bsd* )
-            onlylibusb=yes
-            ;;
-        # RAWINPUT is only available on Win32, but can be enabled if HIDAPI is
-        *-*-cygwin* | *-*-mingw32*)
-            userawinput=yes
-            ;;
-    esac
-
     # Check whether --enable-hidapi was given.
 if test "${enable_hidapi+set}" = set; then :
   enableval=$enable_hidapi;
@@ -24315,10 +24301,33 @@ else
   enable_hidapi=yes
 fi
 
+    # Check whether --enable-hidapi-libusb was given.
+if test "${enable_hidapi_libusb+set}" = set; then :
+  enableval=$enable_hidapi_libusb;
+else
+  enable_hidapi_libusb=maybe
+fi
+
+
     if test x$enable_joystick = xyes -a x$enable_hidapi = xyes; then
-        if test x$skiplibusb = xyes; then
-            hidapi_support=yes
-        else
+        case "$host" in
+            # libusb does not support iOS
+            *-ios-* )
+                enable_hidapi_libusb=no
+                ;;
+            # On the other hand, *BSD specifically uses libusb only
+            *-*-*bsd* )
+                enable_hidapi_libusb=yes
+                require_hidapi_libusb=yes
+                ;;
+            # RAWINPUT is only available on Win32, but can be enabled if HIDAPI is
+            *-*-cygwin* | *-*-mingw32*)
+                enable_joystick_rawinput=yes
+                ;;
+        esac
+
+		hidapi_support=yes
+        if test x$enable_hidapi_libusb = xyes; then
 
 pkg_failed=no
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for LIBUSB" >&5
@@ -24397,12 +24406,8 @@ fi
 
 
             CFLAGS="$save_CFLAGS"
-            if test x$have_libusb_h = xyes; then
-                hidapi_support=yes
-            elif test x$onlylibusb = xyes; then
+            if test x$have_libusb_h = xno && test x$require_hidapi_libusb = xyes; then
                 hidapi_support=no
-            else
-                hidapi_support=yes
             fi
         fi
 
@@ -24410,7 +24415,7 @@ fi
 
 $as_echo "#define SDL_JOYSTICK_HIDAPI 1" >>confdefs.h
 
-            if test x$userawinput = xyes; then
+            if test x$enable_joystick_rawinput = xyes; then
 
 $as_echo "#define SDL_JOYSTICK_RAWINPUT 1" >>confdefs.h
 
@@ -24421,7 +24426,7 @@ $as_echo "#define SDL_JOYSTICK_RAWINPUT 1" >>confdefs.h
 
             if test x$have_libusb_h = xyes; then
                 EXTRA_CFLAGS="$EXTRA_CFLAGS $LIBUSB_CFLAGS"
-                if test x$onlylibusb = xyes; then
+                if test x$require_hidapi_libusb = xyes; then
                     SOURCES="$SOURCES $srcdir/src/hidapi/libusb/hid.c"
                     EXTRA_LDFLAGS="$EXTRA_LDFLAGS $LIBUSB_LIBS"
                 else
