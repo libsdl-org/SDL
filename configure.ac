@@ -3309,47 +3309,45 @@ CheckUSBHID()
 dnl Check for HIDAPI joystick drivers
 CheckHIDAPI()
 {
-    # The hidraw support doesn't catch Xbox, PS4 and Nintendo controllers,
-    # so we'll just use libusb when it's available.
-    case "$host" in
-        # libusb does not support iOS
-        *-ios-* )
-            skiplibusb=yes
-            ;;
-        # On the other hand, *BSD specifically uses libusb only
-        *-*-*bsd* )
-            onlylibusb=yes
-            ;;
-        # RAWINPUT is only available on Win32, but can be enabled if HIDAPI is
-        *-*-cygwin* | *-*-mingw32*)
-            userawinput=yes
-            ;;
-    esac
-
     AC_ARG_ENABLE(hidapi,
 AS_HELP_STRING([--enable-hidapi], [use HIDAPI for low level joystick drivers [[default=yes]]]),
                   , enable_hidapi=yes)
+    AC_ARG_ENABLE(hidapi-libusb,
+AS_HELP_STRING([--enable-hidapi-libusb], [use libusb for low level joystick drivers [[default=maybe]]]),
+                  , enable_hidapi_libusb=maybe)
+
     if test x$enable_joystick = xyes -a x$enable_hidapi = xyes; then
-        if test x$skiplibusb = xyes; then
-            hidapi_support=yes
-        else
+        case "$host" in
+            # libusb does not support iOS
+            *-ios-* )
+                enable_hidapi_libusb=no
+                ;;
+            # On the other hand, *BSD specifically uses libusb only
+            *-*-*bsd* )
+                enable_hidapi_libusb=yes
+                require_hidapi_libusb=yes
+                ;;
+            # RAWINPUT is only available on Win32, but can be enabled if HIDAPI is
+            *-*-cygwin* | *-*-mingw32*)
+                enable_joystick_rawinput=yes
+                ;;
+        esac
+
+		hidapi_support=yes
+        if test x$enable_hidapi_libusb = xyes; then
             PKG_CHECK_MODULES([LIBUSB], [libusb-1.0], have_libusb=yes, have_libusb=no)
             save_CFLAGS="$CFLAGS"
             CFLAGS="$save_CFLAGS $LIBUSB_CFLAGS"
             AC_CHECK_HEADER(libusb.h, have_libusb_h=yes)
             CFLAGS="$save_CFLAGS"
-            if test x$have_libusb_h = xyes; then
-                hidapi_support=yes
-            elif test x$onlylibusb = xyes; then
+            if test x$have_libusb_h = xno && test x$require_hidapi_libusb = xyes; then
                 hidapi_support=no
-            else
-                hidapi_support=yes
             fi
         fi
 
         if test x$hidapi_support = xyes; then
             AC_DEFINE(SDL_JOYSTICK_HIDAPI, 1, [ ])
-            if test x$userawinput = xyes; then
+            if test x$enable_joystick_rawinput = xyes; then
                 AC_DEFINE(SDL_JOYSTICK_RAWINPUT, 1, [ ])
             fi
             EXTRA_CFLAGS="$EXTRA_CFLAGS -I$srcdir/src/hidapi/hidapi"
@@ -3358,7 +3356,7 @@ AS_HELP_STRING([--enable-hidapi], [use HIDAPI for low level joystick drivers [[d
 
             if test x$have_libusb_h = xyes; then
                 EXTRA_CFLAGS="$EXTRA_CFLAGS $LIBUSB_CFLAGS"
-                if test x$onlylibusb = xyes; then
+                if test x$require_hidapi_libusb = xyes; then
                     SOURCES="$SOURCES $srcdir/src/hidapi/libusb/hid.c"
                     EXTRA_LDFLAGS="$EXTRA_LDFLAGS $LIBUSB_LIBS"
                 else
