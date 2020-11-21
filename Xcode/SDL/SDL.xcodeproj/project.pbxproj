@@ -12,6 +12,16 @@
 		00CFA89D106B4BA100758660 /* ForceFeedback.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00CFA89C106B4BA100758660 /* ForceFeedback.framework */; };
 		00D0D08410675DD9004B05EF /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00D0D08310675DD9004B05EF /* CoreFoundation.framework */; };
 		00D0D0D810675E46004B05EF /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 007317C10858E15000B2BC32 /* Carbon.framework */; };
+		552673EB2546054600085751 /* GameController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A75FDABD23E28B6200529352 /* GameController.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		552673EC2546055000085751 /* CoreHaptics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F37DC5F225350EBC0002E6F7 /* CoreHaptics.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		5563A8722559F25300722F7F /* SDL_sysjoystick_c.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A7AC23E2513E00DCD162 /* SDL_sysjoystick_c.h */; };
+		5563A87D2559F25400722F7F /* SDL_sysjoystick_c.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A7AC23E2513E00DCD162 /* SDL_sysjoystick_c.h */; };
+		5563A8882559F25500722F7F /* SDL_sysjoystick_c.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A7AC23E2513E00DCD162 /* SDL_sysjoystick_c.h */; };
+		557D0CBB2545829E003913E3 /* SDL_sysjoystick.m in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A7AB23E2513E00DCD162 /* SDL_sysjoystick.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		557D0CC6254582A9003913E3 /* SDL_sysjoystick.m in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A7AB23E2513E00DCD162 /* SDL_sysjoystick.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		557D0CD1254582AA003913E3 /* SDL_sysjoystick.m in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A7AB23E2513E00DCD162 /* SDL_sysjoystick.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		557D0CFA254586CA003913E3 /* CoreHaptics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F37DC5F225350EBC0002E6F7 /* CoreHaptics.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		557D0CFB254586D7003913E3 /* GameController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A75FDABD23E28B6200529352 /* GameController.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		560572062473687700B46B66 /* SDL_syslocale.m in Sources */ = {isa = PBXBuildFile; fileRef = 566E26CC246274CB00718109 /* SDL_syslocale.m */; };
 		560572072473687800B46B66 /* SDL_syslocale.m in Sources */ = {isa = PBXBuildFile; fileRef = 566E26CC246274CB00718109 /* SDL_syslocale.m */; };
 		560572092473687900B46B66 /* SDL_syslocale.m in Sources */ = {isa = PBXBuildFile; fileRef = 566E26CC246274CB00718109 /* SDL_syslocale.m */; };
@@ -4681,6 +4691,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				557D0CFB254586D7003913E3 /* GameController.framework in Frameworks */,
+				557D0CFA254586CA003913E3 /* CoreHaptics.framework in Frameworks */,
 				564624381FF821DA0074AC87 /* Metal.framework in Frameworks */,
 				564624361FF821C20074AC87 /* QuartzCore.framework in Frameworks */,
 				A7381E971D8B6A0300B177DD /* AudioToolbox.framework in Frameworks */,
@@ -4706,6 +4718,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				552673EC2546055000085751 /* CoreHaptics.framework in Frameworks */,
+				552673EB2546054600085751 /* GameController.framework in Frameworks */,
 				5646243C1FF822170074AC87 /* Metal.framework in Frameworks */,
 				5646243B1FF822100074AC87 /* QuartzCore.framework in Frameworks */,
 				56C5237F1D8F4985001F2F30 /* CoreAudio.framework in Frameworks */,
@@ -7521,6 +7535,7 @@
 				AA7557FC1595D4D800BBD41B /* close_code.h in Headers */,
 				A7D8B5B723E2514300DCD162 /* controller_type.h in Headers */,
 				A7D8BB4B23E2514500DCD162 /* default_cursor.h in Headers */,
+				5563A8722559F25300722F7F /* SDL_sysjoystick_c.h in Headers */,
 				A7D8B1D623E2514200DCD162 /* edid.h in Headers */,
 				A7D8B23C23E2514200DCD162 /* egl.h in Headers */,
 				A7D8B24223E2514200DCD162 /* eglext.h in Headers */,
@@ -7679,6 +7694,7 @@
 				AA75582B1595D4D800BBD41B /* SDL_mouse.h in Headers */,
 				560572192473688C00B46B66 /* SDL_syslocale.h in Headers */,
 				AA75582D1595D4D800BBD41B /* SDL_mutex.h in Headers */,
+				5563A87D2559F25400722F7F /* SDL_sysjoystick_c.h in Headers */,
 				A7D8B3B323E2514200DCD162 /* SDL_yuv_c.h in Headers */,
 				A7D8BBA223E2514500DCD162 /* scancodes_xfree86.h in Headers */,
 				A7D8B5D823E2514300DCD162 /* SDL_syspower.h in Headers */,
@@ -7921,6 +7937,7 @@
 				A7D8B21D23E2514200DCD162 /* imKStoUCS.h in Headers */,
 				5605721B2473688D00B46B66 /* SDL_syslocale.h in Headers */,
 				A7D8AB6023E2514100DCD162 /* SDL_offscreenevents_c.h in Headers */,
+				5563A8882559F25500722F7F /* SDL_sysjoystick_c.h in Headers */,
 				A7D8B1B123E2514200DCD162 /* SDL_x11sym.h in Headers */,
 				A7D8B8D123E2514400DCD162 /* SDL_coreaudio.h in Headers */,
 				A7D8BA1E23E2514400DCD162 /* SDL_draw.h in Headers */,
@@ -9769,6 +9786,7 @@
 				A7D8AF0C23E2514100DCD162 /* SDL_cocoaclipboard.m in Sources */,
 				A7D8BBE523E2574800DCD162 /* SDL_uikitview.m in Sources */,
 				A7D8BBE923E2574800DCD162 /* SDL_uikitvulkan.m in Sources */,
+				557D0CBB2545829E003913E3 /* SDL_sysjoystick.m in Sources */,
 				A7D8ABCD23E2514100DCD162 /* SDL_blit_slow.c in Sources */,
 				A7D8BA9723E2514400DCD162 /* s_copysign.c in Sources */,
 				A7D8AAB623E2514100DCD162 /* SDL_haptic.c in Sources */,
@@ -10100,6 +10118,7 @@
 				A7D8A94E23E2514000DCD162 /* SDL.c in Sources */,
 				A7D8B15B23E2514200DCD162 /* SDL_x11opengl.c in Sources */,
 				A7D8BBF823E2574800DCD162 /* SDL_uikitmodes.m in Sources */,
+				557D0CC6254582A9003913E3 /* SDL_sysjoystick.m in Sources */,
 				A7D8AEA323E2514100DCD162 /* SDL_cocoavulkan.m in Sources */,
 				A7D8AB6423E2514100DCD162 /* SDL_offscreenwindow.c in Sources */,
 			);
@@ -10300,6 +10319,7 @@
 				A7D8A95023E2514000DCD162 /* SDL.c in Sources */,
 				A7D8B15D23E2514200DCD162 /* SDL_x11opengl.c in Sources */,
 				A7D8AEA523E2514100DCD162 /* SDL_cocoavulkan.m in Sources */,
+				557D0CD1254582AA003913E3 /* SDL_sysjoystick.m in Sources */,
 				A7D8AC6823E2514100DCD162 /* SDL_uikitappdelegate.m in Sources */,
 				A7D8AB6623E2514100DCD162 /* SDL_offscreenwindow.c in Sources */,
 			);
@@ -10371,7 +10391,7 @@
 				INFOPLIST_FILE = "Info-Framework.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
 				PRODUCT_BUNDLE_IDENTIFIER = org.libsdl.SDL2;
 				PRODUCT_NAME = SDL2;
 				STRIP_STYLE = "non-global";
@@ -10450,7 +10470,7 @@
 				INFOPLIST_FILE = "Info-Framework.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = org.libsdl.SDL2;
 				PRODUCT_NAME = SDL2;
