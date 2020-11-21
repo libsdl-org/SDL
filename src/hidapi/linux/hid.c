@@ -719,7 +719,7 @@ hid_device * HID_API_EXPORT hid_open_path(const char *path, int bExclusive)
 	dev->device_handle = open(path, O_RDWR);
 
 	/* If we have a good handle, return it. */
-	if (dev->device_handle > 0) {
+	if (dev->device_handle >= 0) {
 
 		/* Get the report descriptor */
 		int res, desc_size = 0;
