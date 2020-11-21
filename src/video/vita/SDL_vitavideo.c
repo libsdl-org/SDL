@@ -280,7 +280,7 @@ VITA_SetWindowGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
 void
 VITA_DestroyWindow(_THIS, SDL_Window * window)
 {
-    SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
+//    SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
     SDL_WindowData *data;
 
     data = window->driverdata;

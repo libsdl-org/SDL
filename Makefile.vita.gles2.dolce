@@ -41,7 +41,7 @@ CC      = $(PREFIX)-gcc
 AR      = $(PREFIX)-ar
 CFLAGS  = -g -Wl,-q -Wall -O3 -Iinclude \
                         -D__VITA__ -D__ARM_ARCH=7 -D__ARM_ARCH_7A__ \
-                        -mfpu=neon -mcpu=cortex-a9 -mfloat-abi=hard
+                        -mfpu=neon -mcpu=cortex-a9 -mfloat-abi=hard -D_VITA_GLES2_
 ASFLAGS = $(CFLAGS)
 
 $(TARGET_LIB): $(OBJS)
