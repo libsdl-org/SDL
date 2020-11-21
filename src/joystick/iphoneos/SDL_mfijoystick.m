@@ -21,7 +21,7 @@
 #include "../../SDL_internal.h"
 
 /* This is the iOS implementation of the SDL joystick API */
-#include "SDL_sysjoystick_c.h"
+#include "SDL_mfijoystick_c.h"
 
 #if !TARGET_OS_OSX
 /* needed for SDL_IPHONE_MAX_GFORCE macro */
@@ -46,6 +46,10 @@
 #import <CoreMotion/CoreMotion.h>
 #endif
 
+#if TARGET_OS_OSX
+#include <IOKit/hid/IOHIDManager.h>
+#endif
+
 #ifdef SDL_JOYSTICK_MFI
 #import <GameController/GameController.h>
 
@@ -58,6 +62,11 @@ static id disconnectObserver = nil;
 /* remove compilation warnings for strict builds by defining these selectors, even though
  * they are only ever used indirectly through objc_msgSend
  */
+@interface GCController (SDL)
+#if TARGET_OS_OSX && (__MAC_OS_X_VERSION_MAX_ALLOWED <= 101600)
++ (BOOL)supportsHIDDevice:(IOHIDDeviceRef)device;
+#endif
+@end
 @interface GCExtendedGamepad (SDL)
 #if !((__IPHONE_OS_VERSION_MAX_ALLOWED >= 121000) || (__APPLETV_OS_VERSION_MAX_ALLOWED >= 121000) || (__MAC_OS_VERSION_MAX_ALLOWED >= 1401000))
 @property (nonatomic, readonly, nullable) GCControllerButtonInput *leftThumbstickButton;
@@ -1359,7 +1368,7 @@ extern SDL_bool IOS_SupportedHIDDevice(IOHIDDeviceRef device);
 SDL_bool IOS_SupportedHIDDevice(IOHIDDeviceRef device)
 {
     if (@available(macOS 11.0, *)) {
-        return [GCController supportsHIDDevice:device] ? SDL_TRUE: SDL_FALSE;
+        return [GCController supportsHIDDevice:device] ? SDL_TRUE : SDL_FALSE;
     } else {
         return SDL_FALSE;
     }

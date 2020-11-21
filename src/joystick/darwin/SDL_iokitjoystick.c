@@ -26,7 +26,7 @@
 #include "SDL_joystick.h"
 #include "../SDL_sysjoystick.h"
 #include "../SDL_joystick_c.h"
-#include "SDL_sysjoystick_c.h"
+#include "SDL_iokitjoystick_c.h"
 #include "../hidapi/SDL_hidapijoystick_c.h"
 #include "../../haptic/darwin/SDL_syshaptic_c.h"    /* For haptic hot plugging */
 
