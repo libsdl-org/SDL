@@ -130,10 +130,17 @@ typedef enum {
     k_EDS5EffectNone,
     k_EDS5EffectRumbleStart,
     k_EDS5EffectRumble,
+    k_EDS5EffectLEDReset,
     k_EDS5EffectLED,
     k_EDS5EffectPadLights,
     k_EDS5EffectMicLight,
 } EDS5Effect;
+
+typedef enum {
+    k_EDS5LEDResetStateNone,
+    k_EDS5LEDResetStatePending,
+    k_EDS5LEDResetStateComplete,
+} EDS5LEDResetState;
 
 typedef struct {
     Sint16 bias;
@@ -152,6 +159,7 @@ typedef struct {
     Uint8 led_red;
     Uint8 led_green;
     Uint8 led_blue;
+    EDS5LEDResetState led_reset_state;
     union
     {
         PS5SimpleStatePacket_t simple;
@@ -364,6 +372,14 @@ HIDAPI_DriverPS5_UpdateEffects(SDL_HIDAPI_Device *device, EDS5Effect effect)
     }
     effects = (DS5EffectsState_t *)&data[offset];
 
+    /* Make sure the Bluetooth connection sequence has completed before sending LED color change */
+    if (effect == k_EDS5EffectLED && ctx->is_bluetooth) {
+        if (ctx->led_reset_state != k_EDS5LEDResetStateComplete) {
+            ctx->led_reset_state = k_EDS5LEDResetStatePending;
+            return 0;
+        }
+    }
+
     if (ctx->rumble_left || ctx->rumble_right) {
         effects->ucEnableBits1 |= 0x01; /* Enable rumble emulation */
         effects->ucEnableBits1 |= 0x02; /* Disable audio haptics */
@@ -381,6 +397,9 @@ HIDAPI_DriverPS5_UpdateEffects(SDL_HIDAPI_Device *device, EDS5Effect effect)
         break;
     case k_EDS5EffectRumble:
         /* Already handled above */
+        break;
+    case k_EDS5EffectLEDReset:
+        effects->ucEnableBits2 |= 0x08; /* Reset LED state */
         break;
     case k_EDS5EffectLED:
         effects->ucEnableBits2 |= 0x04; /* Enable LED color */
@@ -444,6 +463,27 @@ HIDAPI_DriverPS5_SetBluetooth(SDL_HIDAPI_Device *device, SDL_bool is_bluetooth)
 
     if (ctx->is_bluetooth != is_bluetooth) {
         ctx->is_bluetooth = is_bluetooth;
+        HIDAPI_DriverPS5_UpdateEffects(device, k_EDS5EffectLED);
+    }
+}
+
+static void
+HIDAPI_DriverPS5_CheckPendingLEDReset(SDL_HIDAPI_Device *device)
+{
+    SDL_DriverPS5_Context *ctx = (SDL_DriverPS5_Context *)device->context;
+    const PS5StatePacket_t *packet = &ctx->last_state.state;
+
+    /* Check the timer to make sure the Bluetooth connection LED animation is complete */
+    const Uint32 connection_complete = 10000000;
+    Uint32 timer = ((Uint32)packet->rgucTimer1[0] <<  0) |
+                   ((Uint32)packet->rgucTimer1[1] <<  8) |
+                   ((Uint32)packet->rgucTimer1[2] << 16) |
+                   ((Uint32)packet->rgucTimer1[3] << 24);
+    if (timer >= connection_complete) {
+        HIDAPI_DriverPS5_UpdateEffects(device, k_EDS5EffectLEDReset);
+
+        ctx->led_reset_state = k_EDS5LEDResetStateComplete;
+
         HIDAPI_DriverPS5_UpdateEffects(device, k_EDS5EffectLED);
     }
 }
@@ -831,6 +871,9 @@ HIDAPI_DriverPS5_UpdateDevice(SDL_HIDAPI_Device *device)
         case k_EPS5ReportIdBluetoothState:
             HIDAPI_DriverPS5_SetBluetooth(device, SDL_TRUE);
             HIDAPI_DriverPS5_HandleStatePacket(joystick, device->dev, ctx, (PS5StatePacket_t *)&data[2]);
+            if (ctx->led_reset_state == k_EDS5LEDResetStatePending) {
+                HIDAPI_DriverPS5_CheckPendingLEDReset(device);
+            }
             break;
         default:
 #ifdef DEBUG_JOYSTICK
