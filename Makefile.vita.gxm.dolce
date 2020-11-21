@@ -23,7 +23,7 @@ SOURCES = \
 	src/render/software/*.c \
 	src/render/vitagxm/*.c \
 	src/sensor/*.c \
-	src/sensor/dummy/*.c \
+	src/sensor/vita/*.c \
 	src/stdlib/*.c \
 	src/thread/*.c \
 	src/thread/generic/SDL_systls.c \
