@@ -4053,7 +4053,10 @@ AS_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
         # Set up files for the joystick library
         if test x$enable_joystick = xyes; then
             AC_DEFINE(SDL_JOYSTICK_IOKIT, 1, [ ])
+            AC_DEFINE(SDL_JOYSTICK_MFI, 1, [ ])
             SOURCES="$SOURCES $srcdir/src/joystick/darwin/*.c"
+            SOURCES="$SOURCES $srcdir/src/joystick/iphoneos/*.m"
+            EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-weak_framework,CoreHaptics -Wl,-weak_framework,GameController"
             have_joystick=yes
         fi
         # Set up files for the haptic library
