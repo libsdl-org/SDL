@@ -2084,7 +2084,7 @@ error:
 SDL_RenderDriver VITA_GLES2_RenderDriver = {
     VITA_GLES2_CreateRenderer,
     {
-        "opengles2vita",
+        "VITA gles2",
         (SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE),
         4,
         {
