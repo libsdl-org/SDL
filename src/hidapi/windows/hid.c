@@ -720,15 +720,16 @@ static int hid_write_timeout(hid_device *dev, const unsigned char *data, size_t 
 	 * to Sony game controllers over Bluetooth, where there's a CRC at the end which
 	 * must not be tampered with.
 	 */
-	const BOOL write_exact_size = TRUE;
-
+#if 1
+	buf = (unsigned char *) data;
+#else
 	/* Make sure the right number of bytes are passed to WriteFile. Windows
 	   expects the number of bytes which are in the _longest_ report (plus
 	   one for the report number) bytes even if the data is a report
 	   which is shorter than that. Windows gives us this value in
 	   caps.OutputReportByteLength. If a user passes in fewer bytes than this,
 	   create a temporary buffer which is the proper size. */
-	if (write_exact_size || length >= dev->output_report_length) {
+	if (length >= dev->output_report_length) {
 		/* The user passed the right number of bytes. Use the buffer as-is. */
 		buf = (unsigned char *) data;
 	} else {
@@ -739,6 +740,7 @@ static int hid_write_timeout(hid_device *dev, const unsigned char *data, size_t 
 		memset(buf + length, 0, dev->output_report_length - length);
 		length = dev->output_report_length;
 	}
+#endif
 	if (length > 512)
 	{
 		return hid_write_output_report( dev, data, stashed_length );
