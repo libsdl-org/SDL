@@ -715,12 +715,12 @@ static int hid_write_timeout(hid_device *dev, const unsigned char *data, size_t 
 	size_t stashed_length = length;
 	unsigned char *buf;
 
+#if 1
 	/* If the application is writing to the device, it knows how much data to write.
 	 * This matches the behavior on other platforms. It's also important when writing
 	 * to Sony game controllers over Bluetooth, where there's a CRC at the end which
 	 * must not be tampered with.
 	 */
-#if 1
 	buf = (unsigned char *) data;
 #else
 	/* Make sure the right number of bytes are passed to WriteFile. Windows
