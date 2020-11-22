@@ -326,7 +326,7 @@ int hid_blacklist(unsigned short vendor_id, unsigned short product_id)
         { 0x0738, 0x2217 }   /* SPEEDLINK COMPETITION PRO */
     };
 
-    for (i = 0; i < SDL_arraysize(known_bad); i++) {
+    for (i = 0; i < (sizeof(known_bad)/sizeof(known_bad[0])); i++) {
         if ((vendor_id == known_bad[i].vid) && (product_id == known_bad[i].pid)) {
             return 1;
         }
