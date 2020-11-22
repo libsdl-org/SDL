@@ -845,7 +845,6 @@ int HID_API_EXPORT hid_get_feature_report(hid_device *dev, unsigned char *data, 
 	int res;
 
 	/* It looks like HIDIOCGFEATURE() on Bluetooth LE devices doesn't return the report number */
-	printf("HIDIOCGFEATURE\n");
 	if (dev->needs_ble_hack) {
 		data[1] = data[0];
 		++data;
