@@ -139,11 +139,11 @@
 #define SDL_FILESYSTEM_VITA   1
 #define SDL_SENSOR_VITA 1
 
-#if defined(_VITA_GLES2_)
+//#if defined(_VITA_GLES2_)
  #define SDL_VIDEO_RENDER_VITA_GLES2 1
-#else
+//#else
  #define SDL_VIDEO_RENDER_VITA_GXM 1
-#endif
+//#endif
 
 #if defined(SDL_VIDEO_RENDER_VITA_GLES2) || defined(SDL_VIDEO_RENDER_VITA_GXM)
  #define SDL_VIDEO_OPENGL_ES2 1
