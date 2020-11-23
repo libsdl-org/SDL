@@ -888,7 +888,6 @@ enable_dbus
 enable_ime
 enable_ibus
 enable_fcitx
-enable_input_tslib
 enable_pthreads
 enable_pthread_sem
 enable_directx
@@ -1683,8 +1682,6 @@ Optional Features:
   --enable-ime            enable IME support [[default=yes]]
   --enable-ibus           enable IBus support [[default=yes]]
   --enable-fcitx          enable fcitx support [[default=yes]]
-  --enable-input-tslib    use the Touchscreen library for input
-                          [[default=yes]]
   --enable-pthreads       use POSIX threads for multi-threading
                           [[default=yes]]
   --enable-pthread-sem    use pthread semaphores [[default=yes]]
@@ -23148,51 +23145,6 @@ $as_echo "$have_fcitx" >&6; }
     fi
 }
 
-CheckTslib()
-{
-    # Check whether --enable-input-tslib was given.
-if test "${enable_input_tslib+set}" = set; then :
-  enableval=$enable_input_tslib;
-else
-  enable_input_tslib=yes
-fi
-
-    if test x$enable_input_tslib = xyes; then
-        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for Touchscreen library support" >&5
-$as_echo_n "checking for Touchscreen library support... " >&6; }
-        enable_input_tslib=no
-        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-          #include "tslib.h"
-
-int
-main ()
-{
-
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
-
-        enable_input_tslib=yes
-
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-        { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_input_tslib" >&5
-$as_echo "$enable_input_tslib" >&6; }
-        if test x$enable_input_tslib = xyes; then
-
-$as_echo "#define SDL_INPUT_TSLIB 1" >>confdefs.h
-
-            EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lts"
-            SUMMARY_input="${SUMMARY_input} ts"
-        fi
-    fi
-}
-
 CheckPTHREAD()
 {
         # Check whether --enable-pthreads was given.
@@ -24725,7 +24677,6 @@ case "$host" in
               CheckInputKBIO
           ;;
         esac
-        CheckTslib
         CheckUSBHID
         CheckHIDAPI
         CheckPTHREAD

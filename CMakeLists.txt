@@ -361,7 +361,6 @@ set_option(LIBSAMPLERATE       "Use libsamplerate for audio rate conversion" ${U
 dep_option(LIBSAMPLERATE_SHARED "Dynamically load libsamplerate" ON "LIBSAMPLERATE" OFF)
 set_option(RPATH               "Use an rpath when linking SDL" ${UNIX_SYS})
 set_option(CLOCK_GETTIME       "Use clock_gettime() instead of gettimeofday()" OFF)
-set_option(INPUT_TSLIB         "Use the Touchscreen library for input" ${UNIX_SYS})
 set_option(VIDEO_X11           "Use X11 video driver" ${UNIX_SYS})
 set_option(VIDEO_WAYLAND       "Use Wayland video driver" ${UNIX_SYS})
 dep_option(WAYLAND_SHARED      "Dynamically load Wayland support" ON "VIDEO_WAYLAND" OFF)
@@ -1270,16 +1269,6 @@ elseif(UNIX AND NOT APPLE AND NOT ANDROID AND NOT RISCOS)
     set(SOURCE_FILES ${SOURCE_FILES} "${SDL2_SOURCE_DIR}/src/core/linux/SDL_threadprio.c")
 
     # src/core/unix/*.c is included in a generic if(UNIX) section, elsewhere.
-  endif()
-
-  if(INPUT_TSLIB)
-    check_c_source_compiles("
-        #include \"tslib.h\"
-        int main(int argc, char** argv) { }" HAVE_INPUT_TSLIB)
-    if(HAVE_INPUT_TSLIB)
-      set(SDL_INPUT_TSLIB 1)
-      list(APPEND EXTRA_LIBS ts)
-    endif()
   endif()
 
   if(SDL_JOYSTICK)
