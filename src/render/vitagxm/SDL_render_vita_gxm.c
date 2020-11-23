@@ -121,27 +121,45 @@ StartDrawing(SDL_Renderer *renderer)
 {
     VITA_GXM_RenderData *data = (VITA_GXM_RenderData *) renderer->driverdata;
     if(data->drawing)
+    {
+        SDL_LogError(SDL_LOG_CATEGORY_RENDER, "uh-oh, already drawing\n");
         return;
+    }
 
     // reset blend mode
-    data->currentBlendMode = SDL_BLENDMODE_BLEND;
-    fragment_programs *in = &data->blendFragmentPrograms.blend_mode_blend;
-    data->colorFragmentProgram = in->color;
-    data->textureFragmentProgram = in->texture;
-    data->textureTintFragmentProgram = in->textureTint;
+//    data->currentBlendMode = SDL_BLENDMODE_BLEND;
+//    fragment_programs *in = &data->blendFragmentPrograms.blend_mode_blend;
+//    data->colorFragmentProgram = in->color;
+//    data->textureFragmentProgram = in->texture;
+//    data->textureTintFragmentProgram = in->textureTint;
 
-    sceGxmBeginScene(
-        data->gxm_context,
-        0,
-        data->renderTarget,
-        NULL,
-        NULL,
-        data->displayBufferSync[data->backBufferIndex],
-        &data->displaySurface[data->backBufferIndex],
-        &data->depthSurface
-    );
+    if (renderer->target == NULL) {
+        sceGxmBeginScene(
+            data->gxm_context,
+            0,
+            data->renderTarget,
+            NULL,
+            NULL,
+            data->displayBufferSync[data->backBufferIndex],
+            &data->displaySurface[data->backBufferIndex],
+            &data->depthSurface
+        );
+    } else {
+        VITA_GXM_TextureData *vita_texture = (VITA_GXM_TextureData *) renderer->target->driverdata;
 
-    unset_clip_rectangle(data);
+        sceGxmBeginScene(
+            data->gxm_context,
+            0,
+            vita_texture->tex->gxm_rendertarget,
+            NULL,
+            NULL,
+            NULL,
+            &vita_texture->tex->gxm_colorsurface,
+            &vita_texture->tex->gxm_depthstencil
+        );
+    }
+
+//    unset_clip_rectangle(data);
 
     data->drawing = SDL_TRUE;
 }
@@ -232,7 +250,7 @@ VITA_GXM_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
         return SDL_OutOfMemory();
     }
 
-    vita_texture->tex = create_gxm_texture(data, texture->w, texture->h, SCE_GXM_TEXTURE_FORMAT_A8B8G8R8, 0); // TODO: rendertarget support, other formats
+    vita_texture->tex = create_gxm_texture(data, texture->w, texture->h, SCE_GXM_TEXTURE_FORMAT_A8B8G8R8, (texture->access == SDL_TEXTUREACCESS_TARGET));
 
     if (!vita_texture->tex) {
         SDL_free(vita_texture);
@@ -329,7 +347,7 @@ VITA_GXM_SetTextureScaleMode(SDL_Renderer * renderer, SDL_Texture * texture, SDL
 static int
 VITA_GXM_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
 {
-    return 0; // TODO
+    return 0; // nothing to do here
 }
 
 static void
@@ -751,11 +769,7 @@ VITA_GXM_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *
             }
 
             case SDL_RENDERCMD_SETVIEWPORT: {
-/*                SDL_Rect *viewport = &data->drawstate.viewport;
-                if (SDL_memcmp(viewport, &cmd->data.viewport.rect, sizeof (SDL_Rect)) != 0) {
-                    SDL_memcpy(viewport, &cmd->data.viewport.rect, sizeof (SDL_Rect));
-                    data->drawstate.viewport_dirty = SDL_TRUE;
-                }*/
+                // TODO
                 break;
             }
 
@@ -855,6 +869,9 @@ VITA_GXM_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *
         cmd = cmd->next;
     }
 
+    sceGxmEndScene(data->gxm_context, NULL, NULL);
+    data->drawing = SDL_FALSE;
+
     return 0;
 }
 
@@ -879,10 +896,6 @@ VITA_GXM_RenderPresent(SDL_Renderer *renderer)
 {
     VITA_GXM_RenderData *data = (VITA_GXM_RenderData *) renderer->driverdata;
 
-    if(!data->drawing)
-        return;
-
-    sceGxmEndScene(data->gxm_context, NULL, NULL);
     sceGxmFinish(data->gxm_context);
 
     data->displayData.address = data->displayBufferData[data->backBufferIndex];
