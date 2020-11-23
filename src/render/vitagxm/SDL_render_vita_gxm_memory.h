@@ -28,12 +28,12 @@
 
 #define ALIGN(x, a) (((x) + ((a) - 1)) & ~((a) - 1))
 
-void *gpu_alloc(SceKernelMemBlockType type, unsigned int size, unsigned int alignment, unsigned int attribs, SceUID *uid);
-void gpu_free(SceUID uid);
-void *vertex_usse_alloc(unsigned int size, SceUID *uid, unsigned int *usse_offset);
-void vertex_usse_free(SceUID uid);
-void *fragment_usse_alloc(unsigned int size, SceUID *uid, unsigned int *usse_offset);
-void fragment_usse_free(SceUID uid);
+void *mem_gpu_alloc(SceKernelMemBlockType type, unsigned int size, unsigned int alignment, unsigned int attribs, SceUID *uid);
+void mem_gpu_free(SceUID uid);
+void *mem_vertex_usse_alloc(unsigned int size, SceUID *uid, unsigned int *usse_offset);
+void mem_vertex_usse_free(SceUID uid);
+void *mem_fragment_usse_alloc(unsigned int size, SceUID *uid, unsigned int *usse_offset);
+void mem_fragment_usse_free(SceUID uid);
 
 #endif /* SDL_RENDER_VITA_GXM_MEMORY_H */
 
