@@ -126,6 +126,12 @@ StartDrawing(SDL_Renderer *renderer)
         return;
     }
 
+    data->drawstate.texture = NULL;
+    data->drawstate.vertex_program = NULL;
+    data->drawstate.fragment_program = NULL;
+    data->drawstate.last_command = -1;
+    data->drawstate.texture_color = 0xFFFFFFFF;
+
     // reset blend mode
 //    data->currentBlendMode = SDL_BLENDMODE_BLEND;
 //    fragment_programs *in = &data->blendFragmentPrograms.blend_mode_blend;
@@ -676,6 +682,8 @@ VITA_GXM_RenderClear(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
     clear_color[3] = (cmd->data.color.a)/255.0f;
 
     // set clear shaders
+    data->drawstate.fragment_program = data->clearFragmentProgram;
+    data->drawstate.vertex_program = data->clearVertexProgram;
     sceGxmSetVertexProgram(data->gxm_context, data->clearVertexProgram);
     sceGxmSetFragmentProgram(data->gxm_context, data->clearFragmentProgram);
 
@@ -697,12 +705,19 @@ VITA_GXM_RenderDrawPoints(SDL_Renderer *renderer, const SDL_RenderCommand *cmd)
 {
     VITA_GXM_RenderData *data = (VITA_GXM_RenderData *) renderer->driverdata;
 
-    sceGxmSetVertexProgram(data->gxm_context, data->colorVertexProgram);
-    sceGxmSetFragmentProgram(data->gxm_context, data->colorFragmentProgram);
+    if (data->drawstate.fragment_program != data->colorFragmentProgram || data->drawstate.vertex_program != data->colorVertexProgram) {
+        data->drawstate.fragment_program = data->colorFragmentProgram;
+        data->drawstate.vertex_program = data->colorVertexProgram;
 
-    void *vertexDefaultBuffer;
-    sceGxmReserveVertexDefaultUniformBuffer(data->gxm_context, &vertexDefaultBuffer);
-    sceGxmSetUniformDataF(vertexDefaultBuffer, data->colorWvpParam, 0, 16, data->ortho_matrix);
+        sceGxmSetVertexProgram(data->gxm_context, data->colorVertexProgram);
+        sceGxmSetFragmentProgram(data->gxm_context, data->colorFragmentProgram);
+
+
+        void *vertexDefaultBuffer;
+        sceGxmReserveVertexDefaultUniformBuffer(data->gxm_context, &vertexDefaultBuffer);
+        sceGxmSetUniformDataF(vertexDefaultBuffer, data->colorWvpParam, 0, 16, data->ortho_matrix);
+    }
+
 
     sceGxmSetVertexStream(data->gxm_context, 0, (const void*)cmd->data.draw.first);
 
@@ -718,16 +733,18 @@ VITA_GXM_RenderDrawLines(SDL_Renderer *renderer, const SDL_RenderCommand *cmd)
 {
     VITA_GXM_RenderData *data = (VITA_GXM_RenderData *) renderer->driverdata;
 
-    sceGxmSetVertexProgram(data->gxm_context, data->colorVertexProgram);
-    sceGxmSetFragmentProgram(data->gxm_context, data->colorFragmentProgram);
+    if (data->drawstate.fragment_program != data->colorFragmentProgram || data->drawstate.vertex_program != data->colorVertexProgram) {
+        data->drawstate.fragment_program = data->colorFragmentProgram;
+        data->drawstate.vertex_program = data->colorVertexProgram;
 
-    void *vertexDefaultBuffer;
+        sceGxmSetVertexProgram(data->gxm_context, data->colorVertexProgram);
+        sceGxmSetFragmentProgram(data->gxm_context, data->colorFragmentProgram);
 
-    sceGxmReserveVertexDefaultUniformBuffer(data->gxm_context, &vertexDefaultBuffer);
 
-    sceGxmSetUniformDataF(vertexDefaultBuffer, data->colorWvpParam, 0, 16, data->ortho_matrix);
-
-    sceGxmSetVertexStream(data->gxm_context, 0, (const void*)cmd->data.draw.first);
+        void *vertexDefaultBuffer;
+        sceGxmReserveVertexDefaultUniformBuffer(data->gxm_context, &vertexDefaultBuffer);
+        sceGxmSetUniformDataF(vertexDefaultBuffer, data->colorWvpParam, 0, 16, data->ortho_matrix);
+    }
 
     sceGxmSetFrontPolygonMode(data->gxm_context, SCE_GXM_POLYGON_MODE_LINE);
     sceGxmDraw(data->gxm_context, SCE_GXM_PRIMITIVE_LINES, SCE_GXM_INDEX_FORMAT_U16, data->linearIndices, cmd->data.draw.count);
@@ -741,12 +758,18 @@ VITA_GXM_RenderFillRects(SDL_Renderer *renderer, const SDL_RenderCommand *cmd)
 {
     VITA_GXM_RenderData *data = (VITA_GXM_RenderData *) renderer->driverdata;
 
-    sceGxmSetVertexProgram(data->gxm_context, data->colorVertexProgram);
-    sceGxmSetFragmentProgram(data->gxm_context, data->colorFragmentProgram);
+    if (data->drawstate.fragment_program != data->colorFragmentProgram || data->drawstate.vertex_program != data->colorVertexProgram) {
+        data->drawstate.fragment_program = data->colorFragmentProgram;
+        data->drawstate.vertex_program = data->colorVertexProgram;
 
-    void *vertexDefaultBuffer;
-    sceGxmReserveVertexDefaultUniformBuffer(data->gxm_context, &vertexDefaultBuffer);
-    sceGxmSetUniformDataF(vertexDefaultBuffer, data->colorWvpParam, 0, 16, data->ortho_matrix);
+        sceGxmSetVertexProgram(data->gxm_context, data->colorVertexProgram);
+        sceGxmSetFragmentProgram(data->gxm_context, data->colorFragmentProgram);
+
+
+        void *vertexDefaultBuffer;
+        sceGxmReserveVertexDefaultUniformBuffer(data->gxm_context, &vertexDefaultBuffer);
+        sceGxmSetUniformDataF(vertexDefaultBuffer, data->colorWvpParam, 0, 16, data->ortho_matrix);
+    }
 
     sceGxmSetVertexStream(data->gxm_context, 0, (const void*)cmd->data.draw.first);
     sceGxmDraw(data->gxm_context, SCE_GXM_PRIMITIVE_TRIANGLE_STRIP, SCE_GXM_INDEX_FORMAT_U16, data->linearIndices, 4 * cmd->data.draw.count);
@@ -821,40 +844,65 @@ VITA_GXM_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *
                 b = cmd->data.draw.b;
                 a = cmd->data.draw.a;
 
-                sceGxmSetVertexProgram(data->gxm_context, data->textureVertexProgram);
+                if (data->drawstate.vertex_program != data->textureVertexProgram) {
+                    data->drawstate.vertex_program = data->textureVertexProgram;
+                    sceGxmSetVertexProgram(data->gxm_context, data->textureVertexProgram);
+                }
 
                 if(r == 255 && g == 255 && b == 255 && a == 255)
                 {
-                    sceGxmSetFragmentProgram(data->gxm_context, data->textureFragmentProgram);
+                    if (data->drawstate.fragment_program != data->textureFragmentProgram) {
+                        data->drawstate.fragment_program = data->textureFragmentProgram;
+                        sceGxmSetFragmentProgram(data->gxm_context, data->textureFragmentProgram);
+                    }
                 }
                 else
                 {
-                    sceGxmSetFragmentProgram(data->gxm_context, data->textureTintFragmentProgram);
-                    void *texture_tint_color_buffer;
-                    sceGxmReserveFragmentDefaultUniformBuffer(data->gxm_context, &texture_tint_color_buffer);
+                    if (data->drawstate.fragment_program != data->textureTintFragmentProgram) {
+                        data->drawstate.fragment_program = data->textureTintFragmentProgram;
+                        sceGxmSetFragmentProgram(data->gxm_context, data->textureTintFragmentProgram);
+                    }
 
-                    float *tint_color = pool_memalign(
-                        data,
-                        4 * sizeof(float), // RGBA
-                        sizeof(float)
-                    );
+                    Uint32 texture_color = ((a << 24) | (b << 16) | (g << 8) | r);
 
-                    tint_color[0] = r / 255.0f;
-                    tint_color[1] = g / 255.0f;
-                    tint_color[2] = b / 255.0f;
-                    tint_color[3] = a / 255.0f;
+                    if (
+                        (data->drawstate.last_command != SDL_RENDERCMD_COPY && data->drawstate.last_command != SDL_RENDERCMD_COPY_EX)
+                        || data->drawstate.texture_color != texture_color
+                    ) {
+                        data->drawstate.texture_color = texture_color;
+                        void *texture_tint_color_buffer;
+                        sceGxmReserveFragmentDefaultUniformBuffer(data->gxm_context, &texture_tint_color_buffer);
 
-                    sceGxmSetUniformDataF(texture_tint_color_buffer, data->textureTintColorParam, 0, 4, tint_color);
+                        float *tint_color = pool_memalign(
+                            data,
+                            4 * sizeof(float), // RGBA
+                            sizeof(float)
+                        );
+
+                        tint_color[0] = r / 255.0f;
+                        tint_color[1] = g / 255.0f;
+                        tint_color[2] = b / 255.0f;
+                        tint_color[3] = a / 255.0f;
+
+                        sceGxmSetUniformDataF(texture_tint_color_buffer, data->textureTintColorParam, 0, 4, tint_color);
+                    }
 
                 }
 
-                void *vertex_wvp_buffer;
-                sceGxmReserveVertexDefaultUniformBuffer(data->gxm_context, &vertex_wvp_buffer);
-                sceGxmSetUniformDataF(vertex_wvp_buffer, data->textureWvpParam, 0, 16, data->ortho_matrix);
+                if (data->drawstate.last_command != SDL_RENDERCMD_COPY && data->drawstate.last_command != SDL_RENDERCMD_COPY_EX) {
+                    void *vertex_wvp_buffer;
+                    sceGxmReserveVertexDefaultUniformBuffer(data->gxm_context, &vertex_wvp_buffer);
+                    sceGxmSetUniformDataF(vertex_wvp_buffer, data->textureWvpParam, 0, 16, data->ortho_matrix);
+                }
 
-                VITA_GXM_TextureData *vita_texture = (VITA_GXM_TextureData *) cmd->data.draw.texture->driverdata;
+                if (data->drawstate.texture != cmd->data.draw.texture) {
+                    data->drawstate.texture = cmd->data.draw.texture;
+                    // TODO: check if texture changed
+                    VITA_GXM_TextureData *vita_texture = (VITA_GXM_TextureData *) cmd->data.draw.texture->driverdata;
 
-                sceGxmSetFragmentTexture(data->gxm_context, 0, &vita_texture->tex->gxm_tex);
+                    sceGxmSetFragmentTexture(data->gxm_context, 0, &vita_texture->tex->gxm_tex);
+                }
+
 
                 sceGxmSetVertexStream(data->gxm_context, 0, (const void*)cmd->data.draw.first);
                 sceGxmDraw(data->gxm_context, SCE_GXM_PRIMITIVE_TRIANGLE_STRIP, SCE_GXM_INDEX_FORMAT_U16, data->linearIndices, 4 * cmd->data.draw.count);
@@ -865,7 +913,7 @@ VITA_GXM_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *
             case SDL_RENDERCMD_NO_OP:
                 break;
         }
-
+        data->drawstate.last_command = cmd->command;
         cmd = cmd->next;
     }
 

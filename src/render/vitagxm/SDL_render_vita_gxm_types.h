@@ -104,6 +104,10 @@ typedef struct
     SDL_Texture *texture;
     SDL_Texture *target;
     Uint32 color;
+    Uint32 texture_color;
+    SceGxmFragmentProgram *fragment_program;
+    SceGxmVertexProgram *vertex_program;
+    int last_command;
 } gxm_drawstate_cache;
 
 typedef struct

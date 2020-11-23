@@ -249,6 +249,8 @@ set_stencil_mask(VITA_GXM_RenderData *data, float x, float y, float w, float h)
     vertices[3].z = +0.5f;
     vertices[3].color = 0;
 
+    data->drawstate.fragment_program = data->colorFragmentProgram;
+    data->drawstate.vertex_program = data->colorVertexProgram;
     sceGxmSetVertexProgram(data->gxm_context, data->colorVertexProgram);
     sceGxmSetFragmentProgram(data->gxm_context, data->colorFragmentProgram);
 
