@@ -2780,30 +2780,6 @@ AS_HELP_STRING([--enable-fcitx], [enable fcitx support [[default=yes]]]),
     fi
 }
 
-dnl See if we can use the Touchscreen input library
-CheckTslib()
-{
-    AC_ARG_ENABLE(input-tslib,
-AS_HELP_STRING([--enable-input-tslib], [use the Touchscreen library for input [[default=yes]]]),
-                  , enable_input_tslib=yes)
-    if test x$enable_input_tslib = xyes; then
-        AC_MSG_CHECKING(for Touchscreen library support)
-        enable_input_tslib=no
-        AC_TRY_COMPILE([
-          #include "tslib.h"
-        ],[
-        ],[
-        enable_input_tslib=yes
-        ])
-        AC_MSG_RESULT($enable_input_tslib)
-        if test x$enable_input_tslib = xyes; then
-            AC_DEFINE(SDL_INPUT_TSLIB, 1, [ ])
-            EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lts"
-            SUMMARY_input="${SUMMARY_input} ts"
-        fi
-    fi
-}
-
 dnl See what type of thread model to use on Linux and Solaris
 CheckPTHREAD()
 {
@@ -3549,7 +3525,6 @@ case "$host" in
               CheckInputKBIO
           ;;
         esac
-        CheckTslib
         CheckUSBHID
         CheckHIDAPI
         CheckPTHREAD
