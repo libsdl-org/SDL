@@ -26,7 +26,7 @@
 #include "SDL_render_vita_gxm_memory.h"
 
 void *
-gpu_alloc(SceKernelMemBlockType type, unsigned int size, unsigned int alignment, unsigned int attribs, SceUID *uid)
+mem_gpu_alloc(SceKernelMemBlockType type, unsigned int size, unsigned int alignment, unsigned int attribs, SceUID *uid)
 {
     void *mem;
 
@@ -51,7 +51,7 @@ gpu_alloc(SceKernelMemBlockType type, unsigned int size, unsigned int alignment,
 }
 
 void
-gpu_free(SceUID uid)
+mem_gpu_free(SceUID uid)
 {
     void *mem = NULL;
     if (sceKernelGetMemBlockBase(uid, &mem) < 0)
@@ -61,7 +61,7 @@ gpu_free(SceUID uid)
 }
 
 void *
-vertex_usse_alloc(unsigned int size, SceUID *uid, unsigned int *usse_offset)
+mem_vertex_usse_alloc(unsigned int size, SceUID *uid, unsigned int *usse_offset)
 {
     void *mem = NULL;
 
@@ -77,7 +77,7 @@ vertex_usse_alloc(unsigned int size, SceUID *uid, unsigned int *usse_offset)
 }
 
 void
-vertex_usse_free(SceUID uid)
+mem_vertex_usse_free(SceUID uid)
 {
     void *mem = NULL;
     if (sceKernelGetMemBlockBase(uid, &mem) < 0)
@@ -87,7 +87,7 @@ vertex_usse_free(SceUID uid)
 }
 
 void *
-fragment_usse_alloc(unsigned int size, SceUID *uid, unsigned int *usse_offset)
+mem_fragment_usse_alloc(unsigned int size, SceUID *uid, unsigned int *usse_offset)
 {
     void *mem = NULL;
 
@@ -103,7 +103,7 @@ fragment_usse_alloc(unsigned int size, SceUID *uid, unsigned int *usse_offset)
 }
 
 void
-fragment_usse_free(SceUID uid)
+mem_fragment_usse_free(SceUID uid)
 {
     void *mem = NULL;
     if (sceKernelGetMemBlockBase(uid, &mem) < 0)

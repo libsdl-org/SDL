@@ -935,14 +935,14 @@ VITA_GXM_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     }
 
     if (vita_texture->tex->depth_UID) {
-        gpu_free(vita_texture->tex->depth_UID);
+        mem_gpu_free(vita_texture->tex->depth_UID);
     }
 
     if (vita_texture->tex->palette_UID) {
-        gpu_free(vita_texture->tex->palette_UID);
+        mem_gpu_free(vita_texture->tex->palette_UID);
     }
 
-    gpu_free(vita_texture->tex->data_UID);
+    mem_gpu_free(vita_texture->tex->data_UID);
     SDL_free(vita_texture->tex);
     SDL_free(vita_texture);
 
