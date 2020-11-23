@@ -448,6 +448,10 @@ main(int argc, char *argv[])
     /* !!! FIXME: */
     /*SDL_RenderSetLogicalSize(screen, background->w, background->h);*/
 
+    if (argv[1] && *argv[1] != '-') {
+        gamecontroller = SDL_GameControllerOpen(SDL_atoi(argv[1]));
+    }
+
     UpdateWindowTitle();
 
     /* Loop, getting controller events! */
