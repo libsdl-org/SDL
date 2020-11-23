@@ -875,6 +875,7 @@ gxm_init(SDL_Renderer *renderer)
     data->backBufferIndex = 0;
     data->frontBufferIndex = 0;
     data->pool_index = 0;
+    data->currentBlendMode = SDL_BLENDMODE_BLEND;
 
     return 0;
 }
