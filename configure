@@ -23159,7 +23159,7 @@ fi
 
     if test x$enable_joystick_mfi = xyes; then
         save_CFLAGS="$CFLAGS"
-                CFLAGS="$CFLAGS -x objective-c"
+                CFLAGS="$CFLAGS -x objective-c -fobjc-weak"
         { $as_echo "$as_me:${as_lineno-$LINENO}: checking for GameController framework" >&5
 $as_echo_n "checking for GameController framework... " >&6; }
         enable_joystick_mfi=no
@@ -23199,6 +23199,7 @@ $as_echo "$enable_joystick_mfi" >&6; }
 
 $as_echo "#define SDL_JOYSTICK_MFI 1" >>confdefs.h
 
+            EXTRA_CFLAGS="$EXTRA_CFLAGS -fobjc-weak"
             EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-weak_framework,CoreHaptics -Wl,-weak_framework,GameController"
         fi
     fi
