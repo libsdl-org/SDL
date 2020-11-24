@@ -147,6 +147,15 @@
 #define SDL_JOYSTICK_MFI 1
 #define SDL_HAPTIC_IOKIT    1
 
+/* The MFI controller support requires ARC Objective C runtime */
+#if TARGET_OS_OSX
+#  if __MAC_OS_X_VERSION_MIN_REQUIRED < __MAC_10_8
+#  undef SDL_JOYSTICK_MFI
+#  elif defined(__i386__) && __MAC_OS_X_VERSION_MIN_REQUIRED < __MAC_10_12
+#  undef SDL_JOYSTICK_MFI
+#  endif
+#endif
+
 /* Enable the dummy sensor driver */
 #define SDL_SENSOR_DUMMY  1
 
