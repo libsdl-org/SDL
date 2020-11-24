@@ -571,6 +571,10 @@ LINUX_InotifyJoystickDetect(void)
 }
 #endif /* HAVE_INOTIFY_H */
 
+/* Detect devices by reading /dev/input. In the inotify code path we
+ * have to do this the first time, to detect devices that already existed
+ * before we started; in the non-inotify code path we do this repeatedly
+ * (polling). */
 static void
 LINUX_FallbackJoystickDetect(void)
 {
@@ -615,12 +619,13 @@ LINUX_JoystickDetect(void)
     }
     else
 #endif
-    if (inotify_fd >= 0) {
 #ifdef HAVE_INOTIFY_H
+    if (inotify_fd >= 0 && last_joy_detect_time != 0) {
         LINUX_InotifyJoystickDetect();
-#endif
     }
-    else {
+    else
+#endif
+	{
         LINUX_FallbackJoystickDetect();
     }
 
