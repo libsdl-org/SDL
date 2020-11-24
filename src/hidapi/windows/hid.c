@@ -409,6 +409,11 @@ struct hid_device_info HID_API_EXPORT * HID_API_CALL hid_enumerate(unsigned shor
 			goto cont;
 		}
 
+		/* XInput devices don't get real HID reports and are better handled by the raw input driver */
+		if (strstr(device_interface_detail_data->DevicePath, "&ig_") != NULL) {
+			goto cont;
+		}
+
 		/* Make sure this device is of Setup Class "HIDClass" and has a
 		   driver bound to it. */
 		/* In the main HIDAPI tree this is a loop which will erroneously open 

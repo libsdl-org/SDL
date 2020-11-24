@@ -175,11 +175,11 @@ HIDAPI_DriverGameCube_InitDevice(SDL_HIDAPI_Device *device)
             if (curSlot[0] & 0x30) { /* 0x10 - Wired, 0x20 - Wireless */
                 if (ctx->joysticks[i] == -1) {
                     ResetAxisRange(ctx, i);
-                    HIDAPI_JoystickConnected(device, &ctx->joysticks[i], SDL_FALSE);
+                    HIDAPI_JoystickConnected(device, &ctx->joysticks[i]);
                 }
             } else {
                 if (ctx->joysticks[i] != -1) {
-                    HIDAPI_JoystickDisconnected(device, ctx->joysticks[i], SDL_FALSE);
+                    HIDAPI_JoystickDisconnected(device, ctx->joysticks[i]);
                     ctx->joysticks[i] = -1;
                 }
                 continue;
@@ -251,7 +251,7 @@ HIDAPI_DriverGameCube_UpdateDevice(SDL_HIDAPI_Device *device)
             if (curSlot[0] & 0x30) { /* 0x10 - Wired, 0x20 - Wireless */
                 if (ctx->joysticks[i] == -1) {
                     ResetAxisRange(ctx, i);
-                    HIDAPI_JoystickConnected(device, &ctx->joysticks[i], SDL_FALSE);
+                    HIDAPI_JoystickConnected(device, &ctx->joysticks[i]);
                 }
                 joystick = SDL_JoystickFromInstanceID(ctx->joysticks[i]);
 
@@ -261,7 +261,7 @@ HIDAPI_DriverGameCube_UpdateDevice(SDL_HIDAPI_Device *device)
                 }
             } else {
                 if (ctx->joysticks[i] != -1) {
-                    HIDAPI_JoystickDisconnected(device, ctx->joysticks[i], SDL_FALSE);
+                    HIDAPI_JoystickDisconnected(device, ctx->joysticks[i]);
                     ctx->joysticks[i] = -1;
                 }
                 continue;
@@ -432,7 +432,6 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverGameCube =
     HIDAPI_DriverGameCube_SetJoystickSensorsEnabled,
     HIDAPI_DriverGameCube_CloseJoystick,
     HIDAPI_DriverGameCube_FreeDevice,
-    NULL,
 };
 
 #endif /* SDL_JOYSTICK_HIDAPI_GAMECUBE */
