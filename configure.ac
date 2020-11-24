@@ -2603,22 +2603,8 @@ dnl See if we can use the new unified event interface in Linux 2.4
 CheckInputEvents()
 {
     dnl Check for Linux 2.4 unified input event interface support
-    AC_MSG_CHECKING(for Linux 2.4 unified input interface)
-    use_input_events=no
-
-    dnl FreeBSD puts this in /usr/include/dev/evdev/input.h ...
-    AC_TRY_COMPILE([
-      #include <dev/evdev/input.h>
-    ],[
-      #ifndef EVIOCGNAME
-      #error EVIOCGNAME() ioctl not available
-      #endif
-    ],[
-      use_input_events=yes
-    ])
-
-    dnl And Linux of course puts it in linux/input.h ...
-    if test x$use_input_events = xno; then
+        AC_MSG_CHECKING(for Linux 2.4 unified input interface)
+        use_input_events=no
         AC_TRY_COMPILE([
           #include <linux/input.h>
         ],[
@@ -2628,13 +2614,11 @@ CheckInputEvents()
         ],[
         use_input_events=yes
         ])
-    fi
-
-    AC_MSG_RESULT($use_input_events)
-    if test x$use_input_events = xyes; then
-      AC_DEFINE(SDL_INPUT_LINUXEV, 1, [ ])
-      SUMMARY_input="${SUMMARY_input} linuxev"
-    fi
+        AC_MSG_RESULT($use_input_events)
+        if test x$use_input_events = xyes; then
+            AC_DEFINE(SDL_INPUT_LINUXEV, 1, [ ])
+            SUMMARY_input="${SUMMARY_input} linuxev"
+        fi
 }
 
 dnl See if we can use the kernel kd.h header

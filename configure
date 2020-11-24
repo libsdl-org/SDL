@@ -22712,35 +22712,9 @@ $as_echo "#define SDL_VIDEO_VULKAN 1" >>confdefs.h
 
 CheckInputEvents()
 {
-        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for Linux 2.4 unified input interface" >&5
+            { $as_echo "$as_me:${as_lineno-$LINENO}: checking for Linux 2.4 unified input interface" >&5
 $as_echo_n "checking for Linux 2.4 unified input interface... " >&6; }
-    use_input_events=no
-
-        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-      #include <dev/evdev/input.h>
-
-int
-main ()
-{
-
-      #ifndef EVIOCGNAME
-      #error EVIOCGNAME() ioctl not available
-      #endif
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
-
-      use_input_events=yes
-
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-
-        if test x$use_input_events = xno; then
+        use_input_events=no
         cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -22764,16 +22738,14 @@ if ac_fn_c_try_compile "$LINENO"; then :
 
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-    fi
-
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $use_input_events" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: $use_input_events" >&5
 $as_echo "$use_input_events" >&6; }
-    if test x$use_input_events = xyes; then
+        if test x$use_input_events = xyes; then
 
 $as_echo "#define SDL_INPUT_LINUXEV 1" >>confdefs.h
 
-      SUMMARY_input="${SUMMARY_input} linuxev"
-    fi
+            SUMMARY_input="${SUMMARY_input} linuxev"
+        fi
 }
 
 CheckInputKD()
