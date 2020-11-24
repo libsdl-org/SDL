@@ -2791,6 +2791,43 @@ AS_HELP_STRING([--enable-fcitx], [enable fcitx support [[default=yes]]]),
     fi
 }
 
+dnl Check to see if GameController framework support is desired
+CheckJoystickMFI()
+{
+    AC_ARG_ENABLE(joystick-mfi,
+AS_HELP_STRING([--enable-joystick-mfi], [include macOS MFI joystick support [[default=yes]]]),
+              , enable_joystick_mfi=yes)
+
+    if test x$enable_joystick_mfi = xyes; then
+        save_CFLAGS="$CFLAGS"
+        dnl Work around that we don't have Objective-C support in autoconf
+        CFLAGS="$CFLAGS -x objective-c"
+        AC_MSG_CHECKING(for GameController framework)
+        enable_joystick_mfi=no
+        AC_TRY_COMPILE([
+          #include <AvailabilityMacros.h>
+          #include <TargetConditionals.h>
+          #import <GameController/GameController.h>
+
+          #if MAC_OS_X_VERSION_MIN_REQUIRED < 1090
+          #error GameController framework doesn't work on this configuration
+          #endif
+          #if TARGET_CPU_X86
+          #error GameController framework doesn't work on this configuration
+          #endif
+        ],[
+        ],[
+        enable_joystick_mfi=yes
+        ])
+        CFLAGS="$save_CFLAGS"
+        AC_MSG_RESULT($enable_joystick_mfi)
+        if test x$enable_joystick_mfi = xyes; then
+            AC_DEFINE(SDL_JOYSTICK_MFI, 1, [ ])
+            EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-weak_framework,CoreHaptics -Wl,-weak_framework,GameController"
+        fi
+    fi
+}
+
 dnl See what type of thread model to use on Linux and Solaris
 CheckPTHREAD()
 {
@@ -4047,10 +4084,9 @@ AS_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
         # Set up files for the joystick library
         if test x$enable_joystick = xyes; then
             AC_DEFINE(SDL_JOYSTICK_IOKIT, 1, [ ])
-            AC_DEFINE(SDL_JOYSTICK_MFI, 1, [ ])
             SOURCES="$SOURCES $srcdir/src/joystick/darwin/*.c"
             SOURCES="$SOURCES $srcdir/src/joystick/iphoneos/*.m"
-            EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-weak_framework,CoreHaptics -Wl,-weak_framework,GameController"
+            CheckJoystickMFI
             have_joystick=yes
         fi
         # Set up files for the haptic library
