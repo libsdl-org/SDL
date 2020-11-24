@@ -108,6 +108,15 @@ typedef struct
     SceGxmFragmentProgram *fragment_program;
     SceGxmVertexProgram *vertex_program;
     int last_command;
+
+    SDL_bool cliprect_enabled_dirty;
+    SDL_bool cliprect_enabled;
+    SDL_bool cliprect_dirty;
+    SDL_Rect cliprect;
+    SDL_bool texturing;
+    Uint32 clear_color;
+    int drawablew;
+    int drawableh;
 } gxm_drawstate_cache;
 
 typedef struct
