@@ -208,7 +208,7 @@
 #endif
 
 /* Metal only supported on 64-bit architectures with 10.11+ */
-#if TARGET_CPU_X86_64 && (MAC_OS_X_VERSION_MAX_ALLOWED >= 101100)
+#if TARGET_RT_64_BIT && (MAC_OS_X_VERSION_MAX_ALLOWED >= 101100)
 #define SDL_PLATFORM_SUPPORTS_METAL    1
 #else
 #define SDL_PLATFORM_SUPPORTS_METAL    0
