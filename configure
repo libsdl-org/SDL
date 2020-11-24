@@ -23008,6 +23008,26 @@ $as_echo "#define SDL_USE_IME 1" >>confdefs.h
     fi
 }
 
+CheckInotify()
+{
+    ac_fn_c_check_header_mongrel "$LINENO" "sys/inotify.h" "ac_cv_header_sys_inotify_h" "$ac_includes_default"
+if test "x$ac_cv_header_sys_inotify_h" = xyes; then :
+  have_inotify_inotify_h_hdr=yes
+fi
+
+
+    if test x$have_inotify_inotify_h_hdr = xyes; then
+
+$as_echo "#define HAVE_INOTIFY_H 1" >>confdefs.h
+
+        case "$host" in
+            *-*-freebsd*)
+                EXTRA_LDFLAGS="$EXTRA_LDFLAGS -linotify"
+                ;;
+        esac
+    fi
+}
+
 CheckIBus()
 {
     # Check whether --enable-ibus was given.
@@ -23094,14 +23114,6 @@ if test "x$ac_cv_header_ibus_1_0_ibus_h" = xyes; then :
   have_ibus_ibus_h_hdr=yes
 else
   have_ibus_ibus_h_hdr=no
-fi
-
-
-        ac_fn_c_check_header_mongrel "$LINENO" "sys/inotify.h" "ac_cv_header_sys_inotify_h" "$ac_includes_default"
-if test "x$ac_cv_header_sys_inotify_h" = xyes; then :
-  have_inotify_inotify_h_hdr=yes
-else
-  have_inotify_inotify_h_hdr=no
 fi
 
 
@@ -24604,7 +24616,6 @@ $as_echo "#define SDL_JOYSTICK_VIRTUAL 1" >>confdefs.h
     fi
 }
 
-
 CheckWarnAll
 CheckNoStrictAliasing
 
@@ -24683,6 +24694,7 @@ case "$host" in
         CheckLibUDev
         CheckDBus
         CheckIME
+        CheckInotify
         CheckIBus
         CheckFcitx
         case $ARCH in
@@ -24750,13 +24762,23 @@ $as_echo "#define SDL_AUDIO_DRIVER_ANDROID 1" >>confdefs.h
         # Set up files for the joystick library
         if test x$enable_joystick = xyes; then
           case $ARCH in
-            linux|freebsd)
+            linux)
 
 $as_echo "#define SDL_JOYSTICK_LINUX 1" >>confdefs.h
 
                 SOURCES="$SOURCES $srcdir/src/joystick/linux/*.c"
                 SOURCES="$SOURCES $srcdir/src/joystick/steam/*.c"
                 have_joystick=yes
+            ;;
+            freebsd)
+                if test x$use_input_events = xyes; then
+
+$as_echo "#define SDL_JOYSTICK_LINUX 1" >>confdefs.h
+
+                    SOURCES="$SOURCES $srcdir/src/joystick/linux/*.c"
+                    SOURCES="$SOURCES $srcdir/src/joystick/steam/*.c"
+                    have_joystick=yes
+                fi
             ;;
             android)
 
