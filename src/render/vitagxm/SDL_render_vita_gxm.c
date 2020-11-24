@@ -732,22 +732,29 @@ SetDrawState(VITA_GXM_RenderData *data, const SDL_RenderCommand *cmd, SDL_bool s
     a = cmd->data.draw.a;
 
     if (data->drawstate.viewport_dirty) {
-        // TODO: this isn't right
-        /*
         const SDL_Rect *viewport = &data->drawstate.viewport;
 
-        float x_scale = (int)(viewport->w) >> 1;
-        float x_off = viewport->x + x_scale;
-        float y_scale = -((int)(viewport->h) >> 1);
-        float y_off = -1.0 * (viewport->y + y_scale);
 
-        sceGxmSetViewport(data->gxm_context, x_off, x_scale, y_off, y_scale, 0.f, 1.f);
+        float sw = viewport->w  / 2.;
+        float sh = viewport->h / 2.;
+
+        float x_scale = sw;
+        float x_off = viewport->x + sw;
+        float y_scale = -(sh);
+        float y_off = viewport->y + sh;
+
+        sceGxmSetViewport(data->gxm_context, x_off, x_scale, y_off, y_scale, -0.5f, 0.5f);
 
         if (viewport->w && viewport->h) {
-            init_orthographic_matrix(data->ortho_matrix, viewport->x, viewport->x + viewport->w, viewport->y + viewport->h, viewport->y, 0.0f, 1.0f);
+            init_orthographic_matrix(data->ortho_matrix,
+                (float) 0,
+                (float) viewport->w,
+                (float) viewport->h,
+                (float) 0,
+                0.0f, 1.0f);
             matrix_updated = SDL_TRUE;
         }
-        */
+
         data->drawstate.viewport_dirty = SDL_FALSE;
     }
 
