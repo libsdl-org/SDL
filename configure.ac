@@ -2801,7 +2801,7 @@ AS_HELP_STRING([--enable-joystick-mfi], [include macOS MFI joystick support [[de
     if test x$enable_joystick_mfi = xyes; then
         save_CFLAGS="$CFLAGS"
         dnl Work around that we don't have Objective-C support in autoconf
-        CFLAGS="$CFLAGS -x objective-c"
+        CFLAGS="$CFLAGS -x objective-c -fobjc-weak"
         AC_MSG_CHECKING(for GameController framework)
         enable_joystick_mfi=no
         AC_TRY_COMPILE([
@@ -2823,6 +2823,7 @@ AS_HELP_STRING([--enable-joystick-mfi], [include macOS MFI joystick support [[de
         AC_MSG_RESULT($enable_joystick_mfi)
         if test x$enable_joystick_mfi = xyes; then
             AC_DEFINE(SDL_JOYSTICK_MFI, 1, [ ])
+            EXTRA_CFLAGS="$EXTRA_CFLAGS -fobjc-weak"
             EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-weak_framework,CoreHaptics -Wl,-weak_framework,GameController"
         fi
     fi
