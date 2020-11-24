@@ -2220,6 +2220,7 @@ SDL_bool SDL_ShouldIgnoreJoystick(const char *name, SDL_JoystickGUID guid)
     Uint32 id;
     Uint16 vendor;
     Uint16 product;
+    SDL_GameControllerType type;
 
     SDL_GetJoystickGUIDInfo(guid, &vendor, &product, NULL);
 
@@ -2231,7 +2232,8 @@ SDL_bool SDL_ShouldIgnoreJoystick(const char *name, SDL_JoystickGUID guid)
         }
     }
 
-    if (SDL_GetJoystickGameControllerType(name, vendor, product, -1, 0, 0, 0) == SDL_CONTROLLER_TYPE_PS4 && SDL_IsPS4RemapperRunning()) {
+    type = SDL_GetJoystickGameControllerType(name, vendor, product, -1, 0, 0, 0);
+    if ((type == SDL_CONTROLLER_TYPE_PS4 || type == SDL_CONTROLLER_TYPE_PS5) && SDL_IsPS4RemapperRunning()) {
         return SDL_TRUE;
     }
 
