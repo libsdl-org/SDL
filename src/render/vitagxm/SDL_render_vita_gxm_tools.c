@@ -44,7 +44,7 @@
 #include "SDL_render_vita_gxm_memory.h"
 #include "SDL_render_vita_gxm_shaders.h"
 
-static void
+void
 init_orthographic_matrix(float *m, float left, float right, float bottom, float top, float near, float far)
 {
     m[0x0] = 2.0f/(right-left);
@@ -67,7 +67,6 @@ init_orthographic_matrix(float *m, float left, float right, float bottom, float 
     m[0xB] = 0.0f;
     m[0xF] = 1.0f;
 }
-
 
 static void *
 patcher_host_alloc(void *user_data, unsigned int size)
