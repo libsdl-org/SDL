@@ -88,7 +88,7 @@ pool_malloc(VITA_GXM_RenderData *data, unsigned int size)
 {
 
     if ((data->pool_index + size) < VITA_GXM_POOL_SIZE) {
-        void *addr = (void *)((unsigned int)data->pool_addr + data->pool_index);
+        void *addr = (void *)((unsigned int)data->pool_addr[data->current_pool] + data->pool_index);
         data->pool_index += size;
         return addr;
     }
@@ -101,7 +101,7 @@ pool_memalign(VITA_GXM_RenderData *data, unsigned int size, unsigned int alignme
 {
     unsigned int new_index = (data->pool_index + alignment - 1) & ~(alignment - 1);
     if ((new_index + size) < VITA_GXM_POOL_SIZE) {
-        void *addr = (void *)((unsigned int)data->pool_addr + new_index);
+        void *addr = (void *)((unsigned int)data->pool_addr[data->current_pool] + new_index);
         data->pool_index = new_index + size;
         return addr;
     }
@@ -863,12 +863,20 @@ gxm_init(SDL_Renderer *renderer)
     data->textureTintColorParam = (SceGxmProgramParameter *)sceGxmProgramFindParameterByName(textureTintFragmentProgramGxp, "uTintColor");
 
     // Allocate memory for the memory pool
-    data->pool_addr = mem_gpu_alloc(
+    data->pool_addr[0] = mem_gpu_alloc(
         SCE_KERNEL_MEMBLOCK_TYPE_USER_RW,
         VITA_GXM_POOL_SIZE,
         sizeof(void *),
         SCE_GXM_MEMORY_ATTRIB_READ,
-        &data->poolUid
+        &data->poolUid[0]
+    );
+
+    data->pool_addr[1] = mem_gpu_alloc(
+        SCE_KERNEL_MEMBLOCK_TYPE_USER_RW,
+        VITA_GXM_POOL_SIZE,
+        sizeof(void *),
+        SCE_GXM_MEMORY_ATTRIB_READ,
+        &data->poolUid[1]
     );
 
     init_orthographic_matrix(data->ortho_matrix, 0.0f, VITA_GXM_SCREEN_WIDTH, VITA_GXM_SCREEN_HEIGHT, 0.0f, 0.0f, 1.0f);
@@ -876,6 +884,7 @@ gxm_init(SDL_Renderer *renderer)
     data->backBufferIndex = 0;
     data->frontBufferIndex = 0;
     data->pool_index = 0;
+    data->current_pool = 0;
     data->currentBlendMode = SDL_BLENDMODE_BLEND;
 
     return 0;
@@ -949,7 +958,8 @@ void gxm_finish(SDL_Renderer *renderer)
     mem_gpu_free(data->vdmRingBufferUid);
     SDL_free(data->contextParams.hostMem);
 
-    mem_gpu_free(data->poolUid);
+    mem_gpu_free(data->poolUid[0]);
+    mem_gpu_free(data->poolUid[1]);
 
     // terminate libgxm
     sceGxmTerminate();

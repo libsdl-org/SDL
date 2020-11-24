@@ -152,9 +152,10 @@ typedef struct
     unsigned int backBufferIndex;
     unsigned int frontBufferIndex;
 
-    void* pool_addr;
-    SceUID poolUid;
+    void* pool_addr[2];
+    SceUID poolUid[2];
     unsigned int pool_index;
+    unsigned int current_pool;
 
     float ortho_matrix[4*4];
 

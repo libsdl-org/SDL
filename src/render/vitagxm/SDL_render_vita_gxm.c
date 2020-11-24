@@ -980,7 +980,7 @@ VITA_GXM_RenderPresent(SDL_Renderer *renderer)
 {
     VITA_GXM_RenderData *data = (VITA_GXM_RenderData *) renderer->driverdata;
 
-    sceGxmFinish(data->gxm_context);
+//    sceGxmFinish(data->gxm_context);
 
     data->displayData.address = data->displayBufferData[data->backBufferIndex];
 
@@ -994,6 +994,9 @@ VITA_GXM_RenderPresent(SDL_Renderer *renderer)
     data->frontBufferIndex = data->backBufferIndex;
     data->backBufferIndex = (data->backBufferIndex + 1) % VITA_GXM_BUFFERS;
     data->pool_index = 0;
+
+    data->current_pool = (data->current_pool + 1) % 2;
+
     data->drawing = SDL_FALSE;
 }
 
