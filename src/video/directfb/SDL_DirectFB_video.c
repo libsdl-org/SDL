@@ -27,6 +27,7 @@
  */
 #include "SDL_DirectFB_modes.h"
 #include "SDL_DirectFB_opengl.h"
+#include "SDL_DirectFB_vulkan.h"
 #include "SDL_DirectFB_window.h"
 #include "SDL_DirectFB_WM.h"
 
@@ -135,6 +136,13 @@ DirectFB_CreateDevice(int devindex)
     device->shape_driver.CreateShaper = DirectFB_CreateShaper;
     device->shape_driver.SetWindowShape = DirectFB_SetWindowShape;
     device->shape_driver.ResizeWindowShape = DirectFB_ResizeWindowShape;
+
+#if SDL_VIDEO_VULKAN
+    device->Vulkan_LoadLibrary = DirectFB_Vulkan_LoadLibrary;
+    device->Vulkan_UnloadLibrary = DirectFB_Vulkan_UnloadLibrary;
+    device->Vulkan_GetInstanceExtensions = DirectFB_Vulkan_GetInstanceExtensions;
+    device->Vulkan_CreateSurface = DirectFB_Vulkan_CreateSurface;
+#endif
 
     device->free = DirectFB_DeleteDevice;
 
