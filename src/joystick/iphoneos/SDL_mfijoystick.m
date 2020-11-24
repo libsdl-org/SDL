@@ -42,7 +42,7 @@
 #include "../../events/SDL_events_c.h"
 #endif
 
-#if !TARGET_OS_TV && !TARGET_OS_OSX
+#if TARGET_OS_IOS
 #define SDL_JOYSTICK_iOS_ACCELEROMETER
 #import <CoreMotion/CoreMotion.h>
 #endif
