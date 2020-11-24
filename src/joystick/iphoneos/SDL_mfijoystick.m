@@ -21,13 +21,6 @@
 #include "../../SDL_internal.h"
 
 /* This is the iOS implementation of the SDL joystick API */
-#include "SDL_mfijoystick_c.h"
-
-#if !TARGET_OS_OSX
-/* needed for SDL_IPHONE_MAX_GFORCE macro */
-#include "../../../include/SDL_config_iphoneos.h"
-#endif
-
 #include "SDL_assert.h"
 #include "SDL_events.h"
 #include "SDL_joystick.h"
@@ -37,6 +30,7 @@
 #include "../SDL_joystick_c.h"
 #include "../usb_ids.h"
 
+#include "SDL_mfijoystick_c.h"
 
 #if !SDL_EVENTS_DISABLED
 #include "../../events/SDL_events_c.h"
