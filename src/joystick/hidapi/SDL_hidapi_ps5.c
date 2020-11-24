@@ -331,6 +331,8 @@ HIDAPI_DriverPS5_ApplyCalibrationData(SDL_DriverPS5_Context *ctx, int index, Sin
         IMUCalibrationData *calibration = &ctx->calibration[index];
 
         result = (value - calibration->bias) * calibration->sensitivity;
+    } else if (index < 3) {
+        result = value * 64.f;
     } else {
         result = value;
     }
