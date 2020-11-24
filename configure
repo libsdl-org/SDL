@@ -887,6 +887,7 @@ enable_dbus
 enable_ime
 enable_ibus
 enable_fcitx
+enable_joystick_mfi
 enable_pthreads
 enable_pthread_sem
 enable_directx
@@ -1670,6 +1671,7 @@ Optional Features:
   --enable-ime            enable IME support [[default=yes]]
   --enable-ibus           enable IBus support [[default=yes]]
   --enable-fcitx          enable fcitx support [[default=yes]]
+  --enable-joystick-mfi   include macOS MFI joystick support [[default=yes]]
   --enable-pthreads       use POSIX threads for multi-threading
                           [[default=yes]]
   --enable-pthread-sem    use pthread semaphores [[default=yes]]
@@ -23145,6 +23147,63 @@ $as_echo "$have_fcitx" >&6; }
     fi
 }
 
+CheckJoystickMFI()
+{
+    # Check whether --enable-joystick-mfi was given.
+if test "${enable_joystick_mfi+set}" = set; then :
+  enableval=$enable_joystick_mfi;
+else
+  enable_joystick_mfi=yes
+fi
+
+
+    if test x$enable_joystick_mfi = xyes; then
+        save_CFLAGS="$CFLAGS"
+                CFLAGS="$CFLAGS -x objective-c"
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for GameController framework" >&5
+$as_echo_n "checking for GameController framework... " >&6; }
+        enable_joystick_mfi=no
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+          #include <AvailabilityMacros.h>
+          #include <TargetConditionals.h>
+          #import <GameController/GameController.h>
+
+          #if MAC_OS_X_VERSION_MIN_REQUIRED < 1090
+          #error GameController framework doesn't work on this configuration
+          #endif
+          #if TARGET_CPU_X86
+          #error GameController framework doesn't work on this configuration
+          #endif
+
+int
+main ()
+{
+
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+
+        enable_joystick_mfi=yes
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+        CFLAGS="$save_CFLAGS"
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_joystick_mfi" >&5
+$as_echo "$enable_joystick_mfi" >&6; }
+        if test x$enable_joystick_mfi = xyes; then
+
+$as_echo "#define SDL_JOYSTICK_MFI 1" >>confdefs.h
+
+            EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-weak_framework,CoreHaptics -Wl,-weak_framework,GameController"
+        fi
+    fi
+}
+
 CheckPTHREAD()
 {
         # Check whether --enable-pthreads was given.
@@ -25355,12 +25414,9 @@ $as_echo "#define SDL_AUDIO_DRIVER_COREAUDIO 1" >>confdefs.h
 
 $as_echo "#define SDL_JOYSTICK_IOKIT 1" >>confdefs.h
 
-
-$as_echo "#define SDL_JOYSTICK_MFI 1" >>confdefs.h
-
             SOURCES="$SOURCES $srcdir/src/joystick/darwin/*.c"
             SOURCES="$SOURCES $srcdir/src/joystick/iphoneos/*.m"
-            EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-weak_framework,CoreHaptics -Wl,-weak_framework,GameController"
+            CheckJoystickMFI
             have_joystick=yes
         fi
         # Set up files for the haptic library
