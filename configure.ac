@@ -2809,7 +2809,7 @@ AS_HELP_STRING([--enable-joystick-mfi], [include macOS MFI joystick support [[de
           #include <TargetConditionals.h>
           #import <GameController/GameController.h>
 
-          #if MAC_OS_X_VERSION_MIN_REQUIRED < 1090
+          #if MAC_OS_X_VERSION_MIN_REQUIRED < 1080
           #error GameController framework doesn't work on this configuration
           #endif
           #if TARGET_CPU_X86
