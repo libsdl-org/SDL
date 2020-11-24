@@ -22,7 +22,11 @@
 #ifndef SDL_sysjoystick_c_h_
 #define SDL_sysjoystick_c_h_
 
+#ifdef __linux__
 #include <linux/input.h>
+#else  /* FreeBSD (and maybe others) */
+#include <dev/evdev/input.h>
+#endif
 
 struct SDL_joylist_item;
 
