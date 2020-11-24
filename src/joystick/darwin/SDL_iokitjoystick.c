@@ -528,7 +528,7 @@ JoystickAlreadyKnown(IOHIDDeviceRef ioHIDDeviceObject)
 {
     recDevice *i;
 
-#if TARGET_OS_OSX
+#if defined(SDL_JOYSTICK_MFI) && !TARGET_OS_IOS
     extern SDL_bool IOS_SupportedHIDDevice(IOHIDDeviceRef device);
     if (IOS_SupportedHIDDevice(ioHIDDeviceObject)) {
         return SDL_TRUE;
