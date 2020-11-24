@@ -786,3 +786,5 @@
 #define SDL_GameControllerSetSensorEnabled SDL_GameControllerSetSensorEnabled_REAL
 #define SDL_GameControllerIsSensorEnabled SDL_GameControllerIsSensorEnabled_REAL
 #define SDL_GameControllerGetSensorData SDL_GameControllerGetSensorData_REAL
+#define SDL_wcscasecmp SDL_wcscasecmp_REAL
+#define SDL_wcsncasecmp SDL_wcsncasecmp_REAL
