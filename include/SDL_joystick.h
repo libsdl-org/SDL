@@ -105,6 +105,11 @@ typedef enum
     SDL_JOYSTICK_POWER_MAX
 } SDL_JoystickPowerLevel;
 
+/* Set max recognized G-force from accelerometer
+   See src/joystick/uikit/SDL_sysjoystick.m for notes on why this is needed
+ */
+#define SDL_IPHONE_MAX_GFORCE 5.0
+
 
 /* Function prototypes */
 
