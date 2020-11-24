@@ -1365,7 +1365,6 @@ IOS_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
 }
 
 #if TARGET_OS_OSX
-extern SDL_bool IOS_SupportedHIDDevice(IOHIDDeviceRef device);
 SDL_bool IOS_SupportedHIDDevice(IOHIDDeviceRef device)
 {
 #ifdef SDL_JOYSTICK_MFI

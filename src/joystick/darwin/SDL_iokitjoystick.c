@@ -526,11 +526,15 @@ GetDeviceInfo(IOHIDDeviceRef hidDevice, recDevice *pDevice)
 static SDL_bool
 JoystickAlreadyKnown(IOHIDDeviceRef ioHIDDeviceObject)
 {
+    recDevice *i;
+
+#if TARGET_OS_OSX
     extern SDL_bool IOS_SupportedHIDDevice(IOHIDDeviceRef device);
     if (IOS_SupportedHIDDevice(ioHIDDeviceObject)) {
         return SDL_TRUE;
     }
-    recDevice *i;
+#endif
+
     for (i = gpDeviceList; i != NULL; i = i->pNext) {
         if (i->deviceRef == ioHIDDeviceObject) {
             return SDL_TRUE;
