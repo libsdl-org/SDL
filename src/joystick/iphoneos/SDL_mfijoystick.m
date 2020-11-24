@@ -1088,10 +1088,10 @@ IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
 @end
 
 @implementation SDL_RumbleContext {
-    SDL_RumbleMotor *low_frequency_motor;
-    SDL_RumbleMotor *high_frequency_motor;
-    SDL_RumbleMotor *left_trigger_motor;
-    SDL_RumbleMotor *right_trigger_motor;
+    SDL_RumbleMotor *m_low_frequency_motor;
+    SDL_RumbleMotor *m_high_frequency_motor;
+    SDL_RumbleMotor *m_left_trigger_motor;
+    SDL_RumbleMotor *m_right_trigger_motor;
 }
 
 -(id) initWithLowFrequencyMotor:(SDL_RumbleMotor*)low_frequency_motor
@@ -1100,10 +1100,10 @@ IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
               RightTriggerMotor:(SDL_RumbleMotor*)right_trigger_motor
 {
     self = [super init];
-    self->low_frequency_motor = low_frequency_motor;
-    self->high_frequency_motor = high_frequency_motor;
-    self->left_trigger_motor = left_trigger_motor;
-    self->right_trigger_motor = right_trigger_motor;
+    self->m_low_frequency_motor = low_frequency_motor;
+    self->m_high_frequency_motor = high_frequency_motor;
+    self->m_left_trigger_motor = left_trigger_motor;
+    self->m_right_trigger_motor = right_trigger_motor;
     return self;
 }
 
@@ -1111,8 +1111,8 @@ IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
 {
     int result = 0;
 
-    result += [self->low_frequency_motor setIntensity:((float)low_frequency_rumble / 65535.0f)];
-    result += [self->high_frequency_motor setIntensity:((float)high_frequency_rumble / 65535.0f)];
+    result += [self->m_low_frequency_motor setIntensity:((float)low_frequency_rumble / 65535.0f)];
+    result += [self->m_high_frequency_motor setIntensity:((float)high_frequency_rumble / 65535.0f)];
     return ((result < 0) ? -1 : 0);
 }
 
@@ -1120,9 +1120,9 @@ IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
 {
     int result = 0;
 
-    if (self->left_trigger_motor && self->right_trigger_motor) {
-        result += [self->left_trigger_motor setIntensity:((float)left_rumble / 65535.0f)];
-        result += [self->right_trigger_motor setIntensity:((float)right_rumble / 65535.0f)];
+    if (self->m_left_trigger_motor && self->m_right_trigger_motor) {
+        result += [self->m_left_trigger_motor setIntensity:((float)left_rumble / 65535.0f)];
+        result += [self->m_right_trigger_motor setIntensity:((float)right_rumble / 65535.0f)];
     } else {
         result = SDL_Unsupported();
     }
@@ -1131,8 +1131,8 @@ IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
 
 -(void)cleanup
 {
-    [self->low_frequency_motor cleanup];
-    [self->high_frequency_motor cleanup];
+    [self->m_low_frequency_motor cleanup];
+    [self->m_high_frequency_motor cleanup];
 }
 
 @end
