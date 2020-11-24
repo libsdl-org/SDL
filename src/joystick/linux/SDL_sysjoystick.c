@@ -1320,8 +1320,10 @@ LINUX_JoystickQuit(void)
     SDL_joylist_item *item = NULL;
     SDL_joylist_item *next = NULL;
 
-    close(inotify_fd);
-    inotify_fd = -1;
+    if (inotify_fd >= 0) {
+        close(inotify_fd);
+        inotify_fd = -1;
+    }
 
     for (item = SDL_joylist; item; item = next) {
         next = item->next;
