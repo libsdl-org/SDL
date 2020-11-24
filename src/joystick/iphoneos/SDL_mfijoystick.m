@@ -60,7 +60,7 @@ static id disconnectObserver = nil;
  * they are only ever used indirectly through objc_msgSend
  */
 @interface GCController (SDL)
-#if TARGET_OS_OSX && (__MAC_OS_X_VERSION_MAX_ALLOWED <= 101600)
+#if !TARGET_OS_IOS && (__MAC_OS_X_VERSION_MAX_ALLOWED <= 101600)
 + (BOOL)supportsHIDDevice:(IOHIDDeviceRef)device;
 #endif
 @end
@@ -1378,14 +1378,12 @@ IOS_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
     return SDL_FALSE;
 }
 
-#if TARGET_OS_OSX
+#if defined(SDL_JOYSTICK_MFI) && !TARGET_OS_IOS
 SDL_bool IOS_SupportedHIDDevice(IOHIDDeviceRef device)
 {
-#ifdef SDL_JOYSTICK_MFI
     if (is_macos11()) {
         return [GCController supportsHIDDevice:device] ? SDL_TRUE : SDL_FALSE;
     }
-#endif
     return SDL_FALSE;
 }
 #endif
