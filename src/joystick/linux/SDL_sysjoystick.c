@@ -32,7 +32,9 @@
 #include <errno.h>              /* errno, strerror */
 #include <fcntl.h>
 #include <limits.h>             /* For the definition of PATH_MAX */
+#ifdef HAVE_INOTIFY_H
 #include <sys/inotify.h>
+#endif
 #include <sys/ioctl.h>
 #include <unistd.h>
 #include <dirent.h>
@@ -498,6 +500,7 @@ static void SteamControllerDisconnectedCallback(int device_instance)
     }
 }
 
+#ifdef HAVE_INOTIFY_H
 static int
 StrHasPrefix(const char *string, const char *prefix)
 {
@@ -566,6 +569,7 @@ LINUX_InotifyJoystickDetect(void)
         }
     }
 }
+#endif /* HAVE_INOTIFY_H */
 
 static void
 LINUX_FallbackJoystickDetect(void)
@@ -612,7 +616,9 @@ LINUX_JoystickDetect(void)
     else
 #endif
     if (inotify_fd >= 0) {
+#ifdef HAVE_INOTIFY_H
         LINUX_InotifyJoystickDetect();
+#endif
     }
     else {
         LINUX_FallbackJoystickDetect();
@@ -678,6 +684,7 @@ LINUX_JoystickInit(void)
     else
 #endif
     {
+#ifdef HAVE_INOTIFY_H
         inotify_fd = inotify_init1(IN_NONBLOCK | IN_CLOEXEC);
 
         if (inotify_fd < 0) {
@@ -700,6 +707,7 @@ LINUX_JoystickInit(void)
                             strerror (errno));
             }
         }
+#endif /* HAVE_INOTIFY_H */
 
         /* Report all devices currently present */
         LINUX_JoystickDetect();
