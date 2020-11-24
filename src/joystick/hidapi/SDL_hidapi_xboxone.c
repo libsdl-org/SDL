@@ -291,7 +291,7 @@ HIDAPI_DriverXboxOne_IsSupportedDevice(const char *name, SDL_GameControllerType 
         return SDL_FALSE;
     }
 #endif
-    return (type == SDL_CONTROLLER_TYPE_XBOXONE);
+    return (type == SDL_CONTROLLER_TYPE_XBOXONE) ? SDL_TRUE : SDL_FALSE;
 }
 
 static const char *
@@ -303,7 +303,7 @@ HIDAPI_DriverXboxOne_GetDeviceName(Uint16 vendor_id, Uint16 product_id)
 static SDL_bool
 HIDAPI_DriverXboxOne_InitDevice(SDL_HIDAPI_Device *device)
 {
-    return HIDAPI_JoystickConnected(device, NULL, SDL_FALSE);
+    return HIDAPI_JoystickConnected(device, NULL);
 }
 
 static int
@@ -852,7 +852,7 @@ HIDAPI_DriverXboxOne_UpdateDevice(SDL_HIDAPI_Device *device)
         !ControllerSendsWaitingForInit(device->vendor_id, device->product_id)) {
         if (SDL_TICKS_PASSED(SDL_GetTicks(), ctx->start_time + CONTROLLER_INIT_DELAY_MS)) {
             if (!SendControllerInit(device, ctx)) {
-                HIDAPI_JoystickDisconnected(device, joystick->instance_id, SDL_FALSE);
+                HIDAPI_JoystickDisconnected(device, joystick->instance_id);
                 return SDL_FALSE;
             }
             ctx->initialized = SDL_TRUE;
@@ -918,7 +918,7 @@ HIDAPI_DriverXboxOne_UpdateDevice(SDL_HIDAPI_Device *device)
                     SDL_Log("Delay after init: %ums\n", SDL_GetTicks() - ctx->start_time);
 #endif
                     if (!SendControllerInit(device, ctx)) {
-                        HIDAPI_JoystickDisconnected(device, joystick->instance_id, SDL_FALSE);
+                        HIDAPI_JoystickDisconnected(device, joystick->instance_id);
                         return SDL_FALSE;
                     }
                     ctx->initialized = SDL_TRUE;
@@ -973,7 +973,7 @@ HIDAPI_DriverXboxOne_UpdateDevice(SDL_HIDAPI_Device *device)
 
     if (size < 0) {
         /* Read error, device is disconnected */
-        HIDAPI_JoystickDisconnected(device, joystick->instance_id, SDL_FALSE);
+        HIDAPI_JoystickDisconnected(device, joystick->instance_id);
     }
     return (size >= 0);
 }
@@ -1011,7 +1011,6 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXboxOne =
     HIDAPI_DriverXboxOne_SetJoystickSensorsEnabled,
     HIDAPI_DriverXboxOne_CloseJoystick,
     HIDAPI_DriverXboxOne_FreeDevice,
-    NULL
 };
 
 #endif /* SDL_JOYSTICK_HIDAPI_XBOXONE */

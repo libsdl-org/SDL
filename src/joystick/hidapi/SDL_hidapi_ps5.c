@@ -171,7 +171,7 @@ typedef struct {
 static SDL_bool
 HIDAPI_DriverPS5_IsSupportedDevice(const char *name, SDL_GameControllerType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
-    return (type == SDL_CONTROLLER_TYPE_PS5);
+    return (type == SDL_CONTROLLER_TYPE_PS5) ? SDL_TRUE : SDL_FALSE;
 }
 
 static const char *
@@ -220,7 +220,7 @@ SetLedsForPlayerIndex(DS5EffectsState_t *effects, int player_index)
 static SDL_bool
 HIDAPI_DriverPS5_InitDevice(SDL_HIDAPI_Device *device)
 {
-    return HIDAPI_JoystickConnected(device, NULL, SDL_FALSE);
+    return HIDAPI_JoystickConnected(device, NULL);
 }
 
 static int
@@ -885,7 +885,7 @@ HIDAPI_DriverPS5_UpdateDevice(SDL_HIDAPI_Device *device)
 
     if (size < 0) {
         /* Read error, device is disconnected */
-        HIDAPI_JoystickDisconnected(device, joystick->instance_id, SDL_FALSE);
+        HIDAPI_JoystickDisconnected(device, joystick->instance_id);
     }
     return (size >= 0);
 }
@@ -923,7 +923,6 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverPS5 =
     HIDAPI_DriverPS5_SetJoystickSensorsEnabled,
     HIDAPI_DriverPS5_CloseJoystick,
     HIDAPI_DriverPS5_FreeDevice,
-    NULL
 };
 
 #endif /* SDL_JOYSTICK_HIDAPI_PS5 */

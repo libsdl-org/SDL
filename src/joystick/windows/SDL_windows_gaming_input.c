@@ -26,6 +26,7 @@
 #include "SDL_events.h"
 #include "../SDL_sysjoystick.h"
 #include "../hidapi/SDL_hidapijoystick_c.h"
+#include "SDL_rawinputjoystick_c.h"
 
 #include "../../core/windows/SDL_windows.h"
 #define COBJMACROS
@@ -243,6 +244,12 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
 
 #ifdef SDL_JOYSTICK_HIDAPI
         if (!ignore_joystick && HIDAPI_IsDevicePresent(vendor, product, version, name)) {
+            ignore_joystick = SDL_TRUE;
+        }
+#endif
+
+#ifdef SDL_JOYSTICK_RAWINPUT
+        if (!ignore_joystick && RAWINPUT_IsDevicePresent(vendor, product, version)) {
             ignore_joystick = SDL_TRUE;
         }
 #endif

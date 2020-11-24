@@ -129,6 +129,67 @@ static const SDL_UDEV_Symbols *udev_ctx = NULL;
 #undef make_path
 #undef read_thread
 
+#ifdef HAVE_HIDAPI_NVAGIPMAN
+#define HAVE_DRIVER_BACKEND
+#endif
+
+#ifdef HAVE_DRIVER_BACKEND
+
+/* DRIVER HIDAPI Implementation */
+
+#define hid_device_                     DRIVER_hid_device_
+#define hid_device                      DRIVER_hid_device
+#define hid_device_info                 DRIVER_hid_device_info
+#define hid_init                        DRIVER_hid_init
+#define hid_exit                        DRIVER_hid_exit
+#define hid_enumerate                   DRIVER_hid_enumerate
+#define hid_free_enumeration            DRIVER_hid_free_enumeration
+#define hid_open                        DRIVER_hid_open
+#define hid_open_path                   DRIVER_hid_open_path
+#define hid_write                       DRIVER_hid_write
+#define hid_read_timeout                DRIVER_hid_read_timeout
+#define hid_read                        DRIVER_hid_read
+#define hid_set_nonblocking             DRIVER_hid_set_nonblocking
+#define hid_send_feature_report         DRIVER_hid_send_feature_report
+#define hid_get_feature_report          DRIVER_hid_get_feature_report
+#define hid_close                       DRIVER_hid_close
+#define hid_get_manufacturer_string     DRIVER_hid_get_manufacturer_string
+#define hid_get_product_string          DRIVER_hid_get_product_string
+#define hid_get_serial_number_string    DRIVER_hid_get_serial_number_string
+#define hid_get_indexed_string          DRIVER_hid_get_indexed_string
+#define hid_error                       DRIVER_hid_error
+
+#ifdef HAVE_HIDAPI_NVAGIPMAN
+#include "nvagipman/hid.c"
+#else
+#error Need a driver hid.c for this platform!
+#endif
+
+#undef hid_device_
+#undef hid_device
+#undef hid_device_info
+#undef hid_init
+#undef hid_exit
+#undef hid_enumerate
+#undef hid_free_enumeration
+#undef hid_open
+#undef hid_open_path
+#undef hid_write
+#undef hid_read_timeout
+#undef hid_read
+#undef hid_set_nonblocking
+#undef hid_send_feature_report
+#undef hid_get_feature_report
+#undef hid_close
+#undef hid_get_manufacturer_string
+#undef hid_get_product_string
+#undef hid_get_serial_number_string
+#undef hid_get_indexed_string
+#undef hid_error
+
+#endif /* HAVE_DRIVER_BACKEND */
+
+
 #ifdef SDL_LIBUSB_DYNAMIC
 /* libusb HIDAPI Implementation */
 
@@ -298,23 +359,21 @@ SDL_libusb_get_string_descriptor(libusb_device_handle *dev,
 /* Shared HIDAPI Implementation */
 
 #undef HIDAPI_H__
-#include "hidapi.h"
+#include "hidapi/hidapi.h"
 
 struct hidapi_backend {
-#define F(x) typeof(x) *x
-    F(hid_write);
-    F(hid_read_timeout);
-    F(hid_read);
-    F(hid_set_nonblocking);
-    F(hid_send_feature_report);
-    F(hid_get_feature_report);
-    F(hid_close);
-    F(hid_get_manufacturer_string);
-    F(hid_get_product_string);
-    F(hid_get_serial_number_string);
-    F(hid_get_indexed_string);
-    F(hid_error);
-#undef F
+    int  (*hid_write)(hid_device* device, const unsigned char* data, size_t length);
+    int  (*hid_read_timeout)(hid_device* device, unsigned char* data, size_t length, int milliseconds);
+    int  (*hid_read)(hid_device* device, unsigned char* data, size_t length);
+    int  (*hid_set_nonblocking)(hid_device* device, int nonblock);
+    int  (*hid_send_feature_report)(hid_device* device, const unsigned char* data, size_t length);
+    int  (*hid_get_feature_report)(hid_device* device, unsigned char* data, size_t length);
+    void (*hid_close)(hid_device* device);
+    int  (*hid_get_manufacturer_string)(hid_device* device, wchar_t* string, size_t maxlen);
+    int  (*hid_get_product_string)(hid_device* device, wchar_t* string, size_t maxlen);
+    int  (*hid_get_serial_number_string)(hid_device* device, wchar_t* string, size_t maxlen);
+    int  (*hid_get_indexed_string)(hid_device* device, int string_index, wchar_t* string, size_t maxlen);
+    const wchar_t* (*hid_error)(hid_device* device);
 };
 
 #if HAVE_PLATFORM_BACKEND
@@ -333,6 +392,23 @@ static const struct hidapi_backend PLATFORM_Backend = {
     (void*)PLATFORM_hid_error
 };
 #endif /* HAVE_PLATFORM_BACKEND */
+
+#if HAVE_DRIVER_BACKEND
+static const struct hidapi_backend DRIVER_Backend = {
+    (void*)DRIVER_hid_write,
+    (void*)DRIVER_hid_read_timeout,
+    (void*)DRIVER_hid_read,
+    (void*)DRIVER_hid_set_nonblocking,
+    (void*)DRIVER_hid_send_feature_report,
+    (void*)DRIVER_hid_get_feature_report,
+    (void*)DRIVER_hid_close,
+    (void*)DRIVER_hid_get_manufacturer_string,
+    (void*)DRIVER_hid_get_product_string,
+    (void*)DRIVER_hid_get_serial_number_string,
+    (void*)DRIVER_hid_get_indexed_string,
+    (void*)DRIVER_hid_error
+};
+#endif /* HAVE_DRIVER_BACKEND */
 
 #ifdef SDL_LIBUSB_DYNAMIC
 static const struct hidapi_backend LIBUSB_Backend = {
@@ -361,7 +437,7 @@ struct _HIDDeviceWrapper
 static HIDDeviceWrapper *
 CreateHIDDeviceWrapper(hid_device *device, const struct hidapi_backend *backend)
 {
-    HIDDeviceWrapper *ret = SDL_malloc(sizeof(*ret));
+    HIDDeviceWrapper *ret = (HIDDeviceWrapper *)SDL_malloc(sizeof(*ret));
     ret->device = device;
     ret->backend = backend;
     return ret;
@@ -540,6 +616,10 @@ struct hid_device_info HID_API_EXPORT * HID_API_CALL hid_enumerate(unsigned shor
     struct LIBUSB_hid_device_info *usb_devs = NULL;
     struct LIBUSB_hid_device_info *usb_dev;
 #endif
+#if HAVE_DRIVER_BACKEND
+    struct DRIVER_hid_device_info* driver_devs = NULL;
+    struct DRIVER_hid_device_info* driver_dev;
+#endif
 #if HAVE_PLATFORM_BACKEND
     struct PLATFORM_hid_device_info *raw_devs = NULL;
     struct PLATFORM_hid_device_info *raw_dev;
@@ -636,6 +716,15 @@ HID_API_EXPORT hid_device * HID_API_CALL hid_open(unsigned short vendor_id, unsi
         return WrapHIDDevice(wrapper);
     }
 #endif /* HAVE_PLATFORM_BACKEND */
+
+#if HAVE_DRIVER_BACKEND
+    if ((pDevice = (hid_device*) DRIVER_hid_open(vendor_id, product_id, serial_number)) != NULL) {
+
+        HIDDeviceWrapper *wrapper = CreateHIDDeviceWrapper(pDevice, &DRIVER_Backend);
+        return WrapHIDDevice(wrapper);
+    }
+#endif /* HAVE_DRIVER_BACKEND */
+
 #ifdef SDL_LIBUSB_DYNAMIC
     if (libusb_ctx.libhandle &&
         (pDevice = (hid_device*) LIBUSB_hid_open(vendor_id, product_id, serial_number)) != NULL) {
@@ -644,6 +733,7 @@ HID_API_EXPORT hid_device * HID_API_CALL hid_open(unsigned short vendor_id, unsi
         return WrapHIDDevice(wrapper);
     }
 #endif /* SDL_LIBUSB_DYNAMIC */
+
     return NULL;
 }
 
@@ -663,6 +753,16 @@ HID_API_EXPORT hid_device * HID_API_CALL hid_open_path(const char *path, int bEx
         return WrapHIDDevice(wrapper);
     }
 #endif /* HAVE_PLATFORM_BACKEND */
+
+#if HAVE_DRIVER_BACKEND
+    if (udev_ctx &&
+        (pDevice = (hid_device*) DRIVER_hid_open_path(path, bExclusive)) != NULL) {
+
+        HIDDeviceWrapper *wrapper = CreateHIDDeviceWrapper(pDevice, &DRIVER_Backend);
+        return WrapHIDDevice(wrapper);
+    }
+#endif /* HAVE_DRIVER_BACKEND */
+
 #ifdef SDL_LIBUSB_DYNAMIC
     if (libusb_ctx.libhandle &&
         (pDevice = (hid_device*) LIBUSB_hid_open_path(path, bExclusive)) != NULL) {
@@ -671,6 +771,7 @@ HID_API_EXPORT hid_device * HID_API_CALL hid_open_path(const char *path, int bEx
         return WrapHIDDevice(wrapper);
     }
 #endif /* SDL_LIBUSB_DYNAMIC */
+
     return NULL;
 }
 

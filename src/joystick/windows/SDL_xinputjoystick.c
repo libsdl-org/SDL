@@ -65,6 +65,11 @@ SDL_XINPUT_JoystickInit(void)
 {
     s_bXInputEnabled = SDL_GetHintBoolean(SDL_HINT_XINPUT_ENABLED, SDL_TRUE);
 
+    if (RAWINPUT_IsEnabled()) {
+        /* The raw input driver handles more than 4 controllers, so prefer that when available */
+        s_bXInputEnabled = SDL_FALSE;
+    }
+
     if (s_bXInputEnabled && WIN_LoadXInputDLL() < 0) {
         s_bXInputEnabled = SDL_FALSE;  /* oh well. */
     }
@@ -208,7 +213,7 @@ GuessXInputDevice(Uint8 userid, Uint16 *pVID, Uint16 *pPID, Uint16 *pVersion)
         }
     }
     SDL_free(devices);
-#endif  /* ifndef __WINRT__ */
+#endif  /* !__WINRT__ */
 
     /* The device wasn't in the raw HID device list, it's probably Bluetooth */
     *pVID = 0x045e; /* Microsoft */

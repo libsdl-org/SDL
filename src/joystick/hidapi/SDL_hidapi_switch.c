@@ -288,7 +288,7 @@ HIDAPI_DriverSwitch_IsSupportedDevice(const char *name, SDL_GameControllerType t
     if (SDL_strcmp( name, "HORI Wireless Switch Pad" ) == 0) {
         return SDL_FALSE;
     }
-    return (type == SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO);
+    return (type == SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO) ? SDL_TRUE : SDL_FALSE;
 }
 
 static const char *
@@ -697,7 +697,7 @@ static Uint8 RemapButton(SDL_DriverSwitch_Context *ctx, Uint8 button)
 static SDL_bool
 HIDAPI_DriverSwitch_InitDevice(SDL_HIDAPI_Device *device)
 {
-    return HIDAPI_JoystickConnected(device, NULL, SDL_FALSE);
+    return HIDAPI_JoystickConnected(device, NULL);
 }
 
 static int
@@ -1259,7 +1259,7 @@ HIDAPI_DriverSwitch_UpdateDevice(SDL_HIDAPI_Device *device)
 
     if (size < 0) {
         /* Read error, device is disconnected */
-        HIDAPI_JoystickDisconnected(device, joystick->instance_id, SDL_FALSE);
+        HIDAPI_JoystickDisconnected(device, joystick->instance_id);
     }
     return (size >= 0);
 }
@@ -1307,7 +1307,6 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSwitch =
     HIDAPI_DriverSwitch_SetJoystickSensorsEnabled,
     HIDAPI_DriverSwitch_CloseJoystick,
     HIDAPI_DriverSwitch_FreeDevice,
-    NULL
 };
 
 #endif /* SDL_JOYSTICK_HIDAPI_SWITCH */
