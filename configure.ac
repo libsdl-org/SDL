@@ -2738,6 +2738,20 @@ AS_HELP_STRING([--enable-ime], [enable IME support [[default=yes]]]),
     fi
 }
 
+dnl Check inotify presense
+CheckInotify()
+{
+    AC_CHECK_HEADER(sys/inotify.h, have_inotify_inotify_h_hdr=yes)
+    if test x$have_inotify_inotify_h_hdr = xyes; then
+        AC_DEFINE(HAVE_INOTIFY_H, 1, [ ])
+        case "$host" in
+            *-*-freebsd*)
+                EXTRA_LDFLAGS="$EXTRA_LDFLAGS -linotify"
+                ;;
+        esac
+    fi
+}
+
 dnl See if the platform has libibus IME support.
 CheckIBus()
 {
@@ -2751,9 +2765,6 @@ AS_HELP_STRING([--enable-ibus], [enable IBus support [[default=yes]]]),
         AC_CHECK_HEADER(ibus-1.0/ibus.h,
                         have_ibus_ibus_h_hdr=yes,
                         have_ibus_ibus_h_hdr=no)
-        AC_CHECK_HEADER(sys/inotify.h,
-                        have_inotify_inotify_h_hdr=yes,
-                        have_inotify_inotify_h_hdr=no)
         CFLAGS="$save_CFLAGS"
         if test x$have_ibus_ibus_h_hdr = xyes; then
             if test x$enable_ime != xyes; then
@@ -3449,7 +3460,6 @@ AS_HELP_STRING([--enable-joystick-virtual], [enable virtual joystick APIs [[defa
     fi
 }
 
-
 dnl Do this on all platforms, before everything else (other things might want to override it).
 CheckWarnAll
 CheckNoStrictAliasing
@@ -3531,6 +3541,7 @@ case "$host" in
         CheckLibUDev
         CheckDBus
         CheckIME
+        CheckInotify
         CheckIBus
         CheckFcitx
         case $ARCH in
@@ -3590,11 +3601,19 @@ case "$host" in
         # Set up files for the joystick library
         if test x$enable_joystick = xyes; then
           case $ARCH in
-            linux|freebsd)
+            linux)
                 AC_DEFINE(SDL_JOYSTICK_LINUX, 1, [ ])
                 SOURCES="$SOURCES $srcdir/src/joystick/linux/*.c"
                 SOURCES="$SOURCES $srcdir/src/joystick/steam/*.c"
                 have_joystick=yes
+            ;;
+            freebsd)
+                if test x$use_input_events = xyes; then
+                    AC_DEFINE(SDL_JOYSTICK_LINUX, 1, [ ])
+                    SOURCES="$SOURCES $srcdir/src/joystick/linux/*.c"
+                    SOURCES="$SOURCES $srcdir/src/joystick/steam/*.c"
+                    have_joystick=yes
+                fi
             ;;
             android)
                 AC_DEFINE(SDL_JOYSTICK_ANDROID, 1, [ ])
