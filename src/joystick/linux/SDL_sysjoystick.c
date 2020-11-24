@@ -635,9 +635,19 @@ LINUX_JoystickInit(void)
 #if SDL_USE_LIBUDEV
     if (enumeration_method == ENUMERATION_UNSET) {
         if (SDL_getenv("SDL_JOYSTICK_DISABLE_UDEV") != NULL) {
+            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                         "udev disabled by SDL_JOYSTICK_DISABLE_UDEV");
+            enumeration_method = ENUMERATION_FALLBACK;
+        }
+        else if (access("/.flatpak-info", F_OK) == 0
+                 || access("/run/pressure-vessel", F_OK) == 0) {
+            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                         "Container detected, disabling udev integration");
             enumeration_method = ENUMERATION_FALLBACK;
         }
         else {
+            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                         "Using udev for joystick device discovery");
             enumeration_method = ENUMERATION_LIBUDEV;
         }
     }
