@@ -23199,7 +23199,7 @@ $as_echo "$enable_joystick_mfi" >&6; }
 
 $as_echo "#define SDL_JOYSTICK_MFI 1" >>confdefs.h
 
-            EXTRA_CFLAGS="$EXTRA_CFLAGS -fobjc-weak"
+            EXTRA_CFLAGS="$EXTRA_CFLAGS -fobjc-weak -Wno-unused-command-line-argument"
             EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-weak_framework,CoreHaptics -Wl,-weak_framework,GameController"
         fi
     fi
