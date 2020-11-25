@@ -165,15 +165,17 @@ loop(void *arg)
         switch (event.type) {
         case SDL_CONTROLLERDEVICEADDED:
             SDL_Log("Game controller device %d added.\n", (int) event.cdevice.which);
-            if (!gamecontroller) {
-                gamecontroller = SDL_GameControllerOpen(event.cdevice.which);
-                if (gamecontroller) {
-                    InitGameController();
-                } else {
-                    SDL_Log("Couldn't open controller: %s\n", SDL_GetError());
-                }
-                UpdateWindowTitle();
+            if (gamecontroller) {
+                SDL_GameControllerClose(gamecontroller);
             }
+
+            gamecontroller = SDL_GameControllerOpen(event.cdevice.which);
+            if (gamecontroller) {
+                InitGameController();
+            } else {
+                SDL_Log("Couldn't open controller: %s\n", SDL_GetError());
+            }
+            UpdateWindowTitle();
             break;
 
         case SDL_CONTROLLERDEVICEREMOVED:
