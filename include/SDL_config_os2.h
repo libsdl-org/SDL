@@ -103,6 +103,8 @@
 #define HAVE_WCSLCPY 1
 #define HAVE_WCSLCAT 1
 #define HAVE_WCSCMP 1
+#define HAVE__WCSICMP 1
+#define HAVE__WCSNICMP 1
 #define HAVE_STRLEN 1
 #define HAVE_STRLCPY 1
 #define HAVE_STRLCAT 1
