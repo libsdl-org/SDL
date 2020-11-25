@@ -2,6 +2,15 @@
 
 srcdir  = @srcdir@
 
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+bindir = @bindir@
+libdir = @libdir@
+libexecdir = @libexecdir@
+includedir = @includedir@
+datarootdir = @datarootdir@
+datadir = @datadir@
+
 CC      = @CC@
 EXE	= @EXE@
 CFLAGS  = @CFLAGS@ -g
@@ -80,6 +89,12 @@ TARGETS = \
 
 
 all: Makefile $(TARGETS) copydatafiles
+
+installedtestsdir = $(libexecdir)/installed-tests/SDL2
+
+install: all
+	install -D -t $(DESTDIR)$(installedtestsdir) $(TARGETS)
+	install -m644 -D -t $(DESTDIR)$(installedtestsdir) $(DATA)
 
 Makefile: $(srcdir)/Makefile.in
 	$(SHELL) config.status $@

@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 3.0.0)
 project(SDL2 C)
 include(CTest)
 
+if(SDL_INSTALL_TESTS)
+    include(GNUInstallDirs)
+endif()
+
 # Global settings for all of the test targets
 # FIXME: is this wrong?
 remove_definitions(-DUSING_GENERATED_CONFIG_H)
@@ -136,6 +140,77 @@ add_executable(controllermap controllermap.c testutils.c)
 add_executable(testvulkan testvulkan.c)
 add_executable(testoffscreen testoffscreen.c)
 
+SET(ALL_TESTS
+    checkkeys
+    checkkeysthreads
+    controllermap
+    loopwave
+    loopwavequeue
+    testatomic
+    testaudiocapture
+    testaudiohotplug
+    testaudioinfo
+    testautomation
+    testbounds
+    testcustomcursor
+    testdisplayinfo
+    testdraw2
+    testdrawchessboard
+    testdropfile
+    testerror
+    testfile
+    testfilesystem
+    testgamecontroller
+    testgeometry
+    testgesture
+    testgl2
+    testgles
+    testgles2
+    testhaptic
+    testhittesting
+    testhotplug
+    testiconv
+    testime
+    testintersections
+    testjoystick
+    testkeys
+    testloadso
+    testlocale
+    testlock
+    testmessage
+    testmouse
+    testmultiaudio
+    testnative
+    testoffscreen
+    testoverlay2
+    testplatform
+    testpower
+    testqsort
+    testrelative
+    testrendercopyex
+    testrendertarget
+    testresample
+    testrumble
+    testscale
+    testsem
+    testsensor
+    testshader
+    testshape
+    testsprite2
+    testspriteminimal
+    teststreaming
+    testsurround
+    testthread
+    testtimer
+    testurl
+    testver
+    testviewport
+    testvulkan
+    testwm2
+    testyuv
+    torturethread
+)
+
 set(NONINTERACTIVE
     testatomic
     testerror
@@ -151,6 +226,7 @@ set(NONINTERACTIVE
 )
 
 if(LINUX)
+    list(APPEND ALL_TESTS testevdev)
     list(APPEND NONINTERACTIVE testevdev)
 endif()
 
@@ -354,3 +430,14 @@ foreach(TESTCASE ${NONINTERACTIVE} ${NEEDS_AUDIO} ${NEEDS_DISPLAY})
         PROPERTIES ENVIRONMENT "${TESTS_ENVIRONMENT}"
     )
 endforeach()
+
+if(SDL_INSTALL_TESTS)
+    install(
+        TARGETS ${ALL_TESTS}
+        DESTINATION ${CMAKE_INSTALL_LIBEXECDIR}/installed-tests/SDL2
+    )
+    install(
+        FILES ${RESOURCE_FILES}
+        DESTINATION ${CMAKE_INSTALL_LIBEXECDIR}/installed-tests/SDL2
+    )
+endif()
