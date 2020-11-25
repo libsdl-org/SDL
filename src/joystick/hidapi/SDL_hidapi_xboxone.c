@@ -853,6 +853,7 @@ HIDAPI_DriverXboxOneBluetooth_HandleGuidePacket(SDL_Joystick *joystick, hid_devi
     SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_GUIDE, (data[1] & 0x01) ? SDL_PRESSED : SDL_RELEASED);
 }
 
+#ifdef SET_SERIAL_AFTER_OPEN
 static void
 HIDAPI_DriverXboxOne_HandleSerialIDPacket(SDL_Joystick *joystick, SDL_DriverXboxOne_Context *ctx, Uint8 *data, int size)
 {
@@ -871,6 +872,7 @@ HIDAPI_DriverXboxOne_HandleSerialIDPacket(SDL_Joystick *joystick, SDL_DriverXbox
         joystick->serial = SDL_strdup(serial);
     }
 }
+#endif /* SET_SERIAL_AFTER_OPEN */
 
 static SDL_bool
 HIDAPI_DriverXboxOne_UpdateInitState(SDL_HIDAPI_Device *device, SDL_DriverXboxOne_Context *ctx)
@@ -1011,9 +1013,11 @@ HIDAPI_DriverXboxOne_UpdateJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joy
                    The controller sends that in response to this request:
                     0x1E 0x30 0x07 0x01 0x04
                 */
+#ifdef SET_SERIAL_AFTER_OPEN
                 if (size == 20 && data[3] == 0x10) {
                     HIDAPI_DriverXboxOne_HandleSerialIDPacket(joystick, ctx, data, size);
                 }
+#endif
                 break;
             case 0x20:
                 if (ctx->init_state < XBOX_ONE_INIT_STATE_COMPLETE) {
