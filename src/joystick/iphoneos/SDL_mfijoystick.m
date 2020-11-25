@@ -39,13 +39,15 @@
 #if TARGET_OS_IOS
 #define SDL_JOYSTICK_iOS_ACCELEROMETER
 #import <CoreMotion/CoreMotion.h>
-#else /* TARGET_OS_OSX */
+#endif
+
+#if defined(__MACOSX__)
 #include <IOKit/hid/IOHIDManager.h>
 #include <AppKit/NSApplication.h>
 #ifndef NSAppKitVersionNumber10_15
 #define NSAppKitVersionNumber10_15 1894
 #endif
-#endif
+#endif /* __MACOSX__ */
 
 #ifdef SDL_JOYSTICK_MFI
 #import <GameController/GameController.h>
@@ -60,7 +62,7 @@ static id disconnectObserver = nil;
  * they are only ever used indirectly through objc_msgSend
  */
 @interface GCController (SDL)
-#if !TARGET_OS_IOS && (__MAC_OS_X_VERSION_MAX_ALLOWED <= 101600)
+#if defined(__MACOSX__) && (__MAC_OS_X_VERSION_MAX_ALLOWED <= 101600)
 + (BOOL)supportsHIDDevice:(IOHIDDeviceRef)device;
 #endif
 @end
@@ -466,13 +468,8 @@ SDL_AppleTVRemoteRotationHintChanged(void *udata, const char *name, const char *
 }
 #endif /* TARGET_OS_TV */
 
-#if TARGET_OS_IOS
-static inline int is_macos11 (void)
-{
-    return (@available(macos 11.0, *));
-}
-#else /* TARGET_OS_OSX */
-static inline int is_macos11 (void)
+#if defined(__MACOSX__)
+static int is_macos11(void)
 {
     return (floor(NSAppKitVersionNumber) > NSAppKitVersionNumber10_15);
 }
@@ -481,7 +478,13 @@ static inline int is_macos11 (void)
 static int
 IOS_JoystickInit(void)
 {
-    if (is_macos11()) @autoreleasepool {
+#if defined(__MACOSX__)
+	if (!is_macos11()) {
+		return 0;
+	}
+#endif
+
+    @autoreleasepool {
 #ifdef SDL_JOYSTICK_iOS_ACCELEROMETER
         if (SDL_GetHintBoolean(SDL_HINT_ACCELEROMETER_AS_JOYSTICK, SDL_TRUE)) {
             /* Default behavior, accelerometer as joystick */
@@ -1378,7 +1381,7 @@ IOS_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
     return SDL_FALSE;
 }
 
-#if defined(SDL_JOYSTICK_MFI) && !TARGET_OS_IOS
+#if defined(SDL_JOYSTICK_MFI) && defined(__MACOSX__)
 SDL_bool IOS_SupportedHIDDevice(IOHIDDeviceRef device)
 {
     if (is_macos11()) {
