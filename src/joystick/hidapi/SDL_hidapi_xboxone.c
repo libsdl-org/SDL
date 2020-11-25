@@ -40,9 +40,8 @@
 /* Define this if you want to log all packets from the controller */
 /*#define DEBUG_XBOX_PROTOCOL*/
 
-#define CONTROLLER_ANNOUNCE_TIMEOUT_MS      100
-#define CONTROLLER_NEGOTIATION_TIMEOUT_MS   30
-#define CONTROLLER_SERIAL_TIMEOUT_MS        100
+#define CONTROLLER_NEGOTIATION_TIMEOUT_MS   300
+#define CONTROLLER_PREPARE_INPUT_TIMEOUT_MS 50
 
 
 /* Connect controller */
@@ -110,14 +109,10 @@ typedef enum {
 } SDL_XboxOneWirelessProtocol;
 
 typedef enum {
-    XBOX_ONE_INIT_STATE_WAITING_FOR_ANNOUNCE = 0,
-    XBOX_ONE_INIT_STATE_RECEIVED_ANNOUNCE = 1,
-    XBOX_ONE_INIT_STATE_START_NEGOTIATING = 2,
-    XBOX_ONE_INIT_STATE_NEGOTIATING = 3,
-    XBOX_ONE_INIT_STATE_READY = 4,
-    XBOX_ONE_INIT_STATE_WAITING_FOR_SERIAL = 5,
-    XBOX_ONE_INIT_STATE_RECEIVED_SERIAL = 6,
-    XBOX_ONE_INIT_STATE_COMPLETE = 7
+    XBOX_ONE_INIT_STATE_START_NEGOTIATING = 0,
+    XBOX_ONE_INIT_STATE_NEGOTIATING = 1,
+    XBOX_ONE_INIT_STATE_PREPARE_INPUT = 2,
+    XBOX_ONE_INIT_STATE_COMPLETE = 3
 } SDL_XboxOneInitState;
 
 typedef struct {
@@ -127,7 +122,6 @@ typedef struct {
     SDL_XboxOneWirelessProtocol wireless_protocol;
     SDL_XboxOneInitState init_state;
     int init_packet;
-    SDL_bool input_ready;
     Uint32 start_time;
     Uint8 sequence;
     Uint32 send_time;
@@ -149,7 +143,8 @@ IsBluetoothXboxOneController(Uint16 vendor_id, Uint16 product_id)
     if (vendor_id == USB_VENDOR_MICROSOFT) {
         if (product_id == USB_PRODUCT_XBOX_ONE_S_REV1_BLUETOOTH ||
             product_id == USB_PRODUCT_XBOX_ONE_S_REV2_BLUETOOTH ||
-            product_id == USB_PRODUCT_XBOX_ONE_ELITE_SERIES_2_BLUETOOTH) {
+            product_id == USB_PRODUCT_XBOX_ONE_ELITE_SERIES_2_BLUETOOTH ||
+            product_id == USB_PRODUCT_XBOX_ONE_SERIES_X_BLUETOOTH) {
             return SDL_TRUE;
         }
     }
@@ -205,6 +200,7 @@ SendAckIfNeeded(SDL_HIDAPI_Device *device, Uint8 *data, int size)
 #endif /* __WIN32__ */
 }
 
+#if 0
 static SDL_bool
 SendSerialRequest(SDL_HIDAPI_Device *device, SDL_DriverXboxOne_Context *ctx)
 {
@@ -212,13 +208,28 @@ SendSerialRequest(SDL_HIDAPI_Device *device, SDL_DriverXboxOne_Context *ctx)
 
     ctx->send_time = SDL_GetTicks();
 
-    /* Request the serial number */
+    /* Request the serial number
+     * Sending this should be done only after the negotiation is complete.
+     * It will cancel the announce packet if sent before that, and will be
+     * ignored if sent during the negotiation.
+     */
     if (SDL_HIDAPI_LockRumble() < 0 ||
         SDL_HIDAPI_SendRumbleAndUnlock(device, serial_packet, sizeof(serial_packet)) != sizeof(serial_packet)) {
         SDL_SetError("Couldn't send serial packet");
         return SDL_FALSE;
     }
     return SDL_TRUE;
+}
+#endif
+
+static SDL_bool
+ControllerNeedsNegotiation(SDL_DriverXboxOne_Context *ctx)
+{
+    if (ctx->vendor_id == USB_VENDOR_PDP && ctx->product_id == 0x0246) {
+        /* The PDP Rock Candy (PID 0x0246) doesn't send the announce packet on Linux for some reason */
+        return SDL_TRUE;
+    }
+    return SDL_FALSE;
 }
 
 static SDL_bool
@@ -267,8 +278,8 @@ SendControllerInit(SDL_HIDAPI_Device *device, SDL_DriverXboxOne_Context *ctx)
         }
     }
 
-    /* All done with the negotiation! */
-    SetInitState(ctx, XBOX_ONE_INIT_STATE_READY);
+    /* All done with the negotiation, prepare for input! */
+    SetInitState(ctx, XBOX_ONE_INIT_STATE_PREPARE_INPUT);
 
     return SDL_TRUE;
 }
@@ -344,6 +355,14 @@ HIDAPI_DriverXboxOne_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joyst
     ctx->has_paddles = ControllerHasPaddles(ctx->vendor_id, ctx->product_id);
     ctx->has_trigger_rumble = ControllerHasTriggerRumble(ctx->vendor_id, ctx->product_id);
     ctx->has_share_button = ControllerHasShareButton(ctx->vendor_id, ctx->product_id);
+
+    /* Assume that the controller is correctly initialized when we start */
+    if (ControllerNeedsNegotiation(ctx)) {
+        ctx->init_state = XBOX_ONE_INIT_STATE_START_NEGOTIATING;
+    } else {
+        ctx->init_state = XBOX_ONE_INIT_STATE_COMPLETE;
+    }
+
 #ifdef DEBUG_JOYSTICK
     SDL_Log("Controller version: %d (0x%.4x)\n", device->version, device->version);
 #endif
@@ -359,32 +378,6 @@ HIDAPI_DriverXboxOne_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joyst
     joystick->naxes = SDL_CONTROLLER_AXIS_MAX;
     joystick->epowerlevel = SDL_JOYSTICK_POWER_WIRED;
 
-#ifdef __WIN32__
-    ctx->init_state = XBOX_ONE_INIT_STATE_READY;
-#endif
-
-    if (ctx->bluetooth) {
-        ctx->init_state = XBOX_ONE_INIT_STATE_COMPLETE;
-    }
-
-#ifdef DEBUG_JOYSTICK
-    SDL_Log("Controller init state: %d\n", ctx->init_state);
-#endif
-
-    /* Wait for initialization to complete */
-    while (ctx->init_state != XBOX_ONE_INIT_STATE_COMPLETE) {
-        SDL_Delay(1);
-
-        if (!HIDAPI_DriverXboxOne_UpdateJoystick(device, joystick)) {
-            HIDAPI_DriverXboxOne_CloseJoystick(device, joystick);
-            return SDL_FALSE;
-        }
-    }
-    ctx->input_ready = SDL_TRUE;
-
-#ifdef DEBUG_JOYSTICK
-    SDL_Log("Controller initialization took %u ms\n", (SDL_GetTicks() - ctx->start_time));
-#endif
     return SDL_TRUE;
 }
 
@@ -888,26 +881,20 @@ HIDAPI_DriverXboxOne_UpdateInitState(SDL_HIDAPI_Device *device, SDL_DriverXboxOn
         prev_state = ctx->init_state;
 
         switch (ctx->init_state) {
-        case XBOX_ONE_INIT_STATE_WAITING_FOR_ANNOUNCE:
-            if (SDL_TICKS_PASSED(SDL_GetTicks(), ctx->start_time + CONTROLLER_ANNOUNCE_TIMEOUT_MS)) {
-                /* We haven't heard anything, let's move on */
-#ifdef DEBUG_JOYSTICK
-                SDL_Log("Waiting for announce timed out after %u ms\n", (SDL_GetTicks() - ctx->start_time));
-#endif
-                SetInitState(ctx, XBOX_ONE_INIT_STATE_START_NEGOTIATING);
-            }
-            break;
-        case XBOX_ONE_INIT_STATE_RECEIVED_ANNOUNCE:
-            SetInitState(ctx, XBOX_ONE_INIT_STATE_START_NEGOTIATING);
-            break;
         case XBOX_ONE_INIT_STATE_START_NEGOTIATING:
+#ifdef __WIN32__
+            /* The Windows driver is taking care of negotiation */
+            SetInitState(ctx, XBOX_ONE_INIT_STATE_COMPLETE);
+#else
+            SetInitState(ctx, XBOX_ONE_INIT_STATE_NEGOTIATING);
             ctx->init_packet = 0;
             if (!SendControllerInit(device, ctx)) {
                 return SDL_FALSE;
             }
+#endif
             break;
         case XBOX_ONE_INIT_STATE_NEGOTIATING:
-            if (SDL_TICKS_PASSED(SDL_GetTicks(), ctx->send_time + CONTROLLER_ANNOUNCE_TIMEOUT_MS)) {
+            if (SDL_TICKS_PASSED(SDL_GetTicks(), ctx->send_time + CONTROLLER_NEGOTIATION_TIMEOUT_MS)) {
                 /* We haven't heard anything, let's move on */
 #ifdef DEBUG_JOYSTICK
                 SDL_Log("Init sequence %d timed out after %u ms\n", ctx->init_packet, (SDL_GetTicks() - ctx->send_time));
@@ -918,27 +905,13 @@ HIDAPI_DriverXboxOne_UpdateInitState(SDL_HIDAPI_Device *device, SDL_DriverXboxOn
                 }
             }
             break;
-        case XBOX_ONE_INIT_STATE_READY:
-            if (device->version >= 0x200) {
-                if (!SendSerialRequest(device, ctx)) {
-                    return SDL_FALSE;
-                }
-                SetInitState(ctx, XBOX_ONE_INIT_STATE_WAITING_FOR_SERIAL);
-            } else {
-                SetInitState(ctx, XBOX_ONE_INIT_STATE_COMPLETE);
-            }
-            break;
-        case XBOX_ONE_INIT_STATE_WAITING_FOR_SERIAL:
-            if (SDL_TICKS_PASSED(SDL_GetTicks(), ctx->send_time + CONTROLLER_SERIAL_TIMEOUT_MS)) {
-                /* We haven't heard anything, let's move on */
+        case XBOX_ONE_INIT_STATE_PREPARE_INPUT:
+            if (SDL_TICKS_PASSED(SDL_GetTicks(), ctx->send_time + CONTROLLER_PREPARE_INPUT_TIMEOUT_MS)) {
 #ifdef DEBUG_JOYSTICK
-                SDL_Log("Waiting for serial timed out after %u ms\n", (SDL_GetTicks() - ctx->send_time));
+                SDL_Log("Prepare input complete after %u ms\n", (SDL_GetTicks() - ctx->send_time));
 #endif
                 SetInitState(ctx, XBOX_ONE_INIT_STATE_COMPLETE);
             }
-            break;
-        case XBOX_ONE_INIT_STATE_RECEIVED_SERIAL:
-            SetInitState(ctx, XBOX_ONE_INIT_STATE_COMPLETE);
             break;
         case XBOX_ONE_INIT_STATE_COMPLETE:
             break;
@@ -1008,12 +981,15 @@ HIDAPI_DriverXboxOne_UpdateJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joy
                              is firmware version 5.5.2641.0, and product version 0x0505 = 1285
                    then 8 bytes of unknown data
                 */
-                SetInitState(ctx, XBOX_ONE_INIT_STATE_RECEIVED_ANNOUNCE);
+#ifdef DEBUG_JOYSTICK
+                SDL_Log("Controller announce after %u ms\n", (SDL_GetTicks() - ctx->start_time));
+#endif
+                SetInitState(ctx, XBOX_ONE_INIT_STATE_START_NEGOTIATING);
                 break;
             case 0x03:
                 /* Controller heartbeat */
-                if (ctx->init_state < XBOX_ONE_INIT_STATE_READY) {
-                    SetInitState(ctx, XBOX_ONE_INIT_STATE_READY);
+                if (ctx->init_state < XBOX_ONE_INIT_STATE_COMPLETE) {
+                    SetInitState(ctx, XBOX_ONE_INIT_STATE_COMPLETE);
                 }
                 break;
             case 0x04:
@@ -1037,19 +1013,19 @@ HIDAPI_DriverXboxOne_UpdateJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joy
                 */
                 if (size == 20 && data[3] == 0x10) {
                     HIDAPI_DriverXboxOne_HandleSerialIDPacket(joystick, ctx, data, size);
-
-                    if (ctx->init_state < XBOX_ONE_INIT_STATE_RECEIVED_SERIAL) {
-                        SetInitState(ctx, XBOX_ONE_INIT_STATE_RECEIVED_SERIAL);
-                    }
                 }
                 break;
             case 0x20:
-                if (ctx->init_state < XBOX_ONE_INIT_STATE_READY) {
-                    SetInitState(ctx, XBOX_ONE_INIT_STATE_READY);
+                if (ctx->init_state < XBOX_ONE_INIT_STATE_COMPLETE) {
+                    SetInitState(ctx, XBOX_ONE_INIT_STATE_COMPLETE);
+
+                    /* Ignore the first input, it may be spurious */
+#ifdef DEBUG_JOYSTICK
+                    SDL_Log("Controller ignoring spurious input\n");
+#endif
+                    break;
                 }
-                if (ctx->input_ready) {
-                    HIDAPI_DriverXboxOne_HandleStatePacket(joystick, device->dev, ctx, data, size);
-                }
+                HIDAPI_DriverXboxOne_HandleStatePacket(joystick, device->dev, ctx, data, size);
                 break;
             default:
 #ifdef DEBUG_JOYSTICK
