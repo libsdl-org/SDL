@@ -63,6 +63,7 @@
 #define make_path                       PLATFORM_make_path
 #define read_thread                     PLATFORM_read_thread
 
+#undef HIDAPI_H__
 #if __LINUX__
 
 #include "../../core/linux/SDL_udev.h"
@@ -130,7 +131,7 @@ static const SDL_UDEV_Symbols *udev_ctx = NULL;
 #undef read_thread
 
 #ifdef HAVE_HIDAPI_NVAGIPMAN
-#define HAVE_DRIVER_BACKEND
+#define HAVE_DRIVER_BACKEND 1
 #endif
 
 #ifdef HAVE_DRIVER_BACKEND
@@ -160,6 +161,7 @@ static const SDL_UDEV_Symbols *udev_ctx = NULL;
 #define hid_error                       DRIVER_hid_error
 
 #ifdef HAVE_HIDAPI_NVAGIPMAN
+#undef HIDAPI_H__
 #include "nvagipman/hid.c"
 #else
 #error Need a driver hid.c for this platform!
@@ -496,6 +498,28 @@ LIBUSB_CopyHIDDeviceInfo(struct LIBUSB_hid_device_info *pSrc,
 }
 #endif /* SDL_LIBUSB_DYNAMIC */
 
+#if HAVE_DRIVER_BACKEND
+static void
+DRIVER_CopyHIDDeviceInfo(struct DRIVER_hid_device_info *pSrc,
+                           struct hid_device_info *pDst)
+{
+    COPY_IF_EXISTS(path)
+    pDst->vendor_id = pSrc->vendor_id;
+    pDst->product_id = pSrc->product_id;
+    WCOPY_IF_EXISTS(serial_number)
+    pDst->release_number = pSrc->release_number;
+    WCOPY_IF_EXISTS(manufacturer_string)
+    WCOPY_IF_EXISTS(product_string)
+    pDst->usage_page = pSrc->usage_page;
+    pDst->usage = pSrc->usage;
+    pDst->interface_number = pSrc->interface_number;
+    pDst->interface_class = pSrc->interface_class;
+    pDst->interface_subclass = pSrc->interface_subclass;
+    pDst->interface_protocol = pSrc->interface_protocol;
+    pDst->next = NULL;
+}
+#endif /* HAVE_DRIVER_BACKEND */
+
 #if HAVE_PLATFORM_BACKEND
 static void
 PLATFORM_CopyHIDDeviceInfo(struct PLATFORM_hid_device_info *pSrc,
@@ -647,6 +671,21 @@ struct hid_device_info HID_API_EXPORT * HID_API_CALL hid_enumerate(unsigned shor
     }
 #endif /* SDL_LIBUSB_DYNAMIC */
 
+#ifdef HAVE_DRIVER_BACKEND
+    driver_devs = DRIVER_hid_enumerate(vendor_id, product_id);
+    for (driver_dev = driver_devs; driver_dev; driver_dev = driver_dev->next) {
+        new_dev = (struct hid_device_info*) SDL_malloc(sizeof(struct hid_device_info));
+        DRIVER_CopyHIDDeviceInfo(driver_dev, new_dev);
+
+        if (last != NULL) {
+            last->next = new_dev;
+        } else {
+            devs = new_dev;
+        }
+        last = new_dev;
+    }
+#endif /* HAVE_DRIVER_BACKEND */
+
 #if HAVE_PLATFORM_BACKEND
     if (udev_ctx) {
         raw_devs = PLATFORM_hid_enumerate(vendor_id, product_id);
@@ -657,6 +696,16 @@ struct hid_device_info HID_API_EXPORT * HID_API_CALL hid_enumerate(unsigned shor
                 if (raw_dev->vendor_id == usb_dev->vendor_id &&
                     raw_dev->product_id == usb_dev->product_id &&
                     (raw_dev->interface_number < 0 || raw_dev->interface_number == usb_dev->interface_number)) {
+                    bFound = SDL_TRUE;
+                    break;
+                }
+            }
+#endif
+#ifdef HAVE_DRIVER_BACKEND
+            for (driver_dev = driver_devs; driver_dev; driver_dev = driver_dev->next) {
+                if (raw_dev->vendor_id == driver_dev->vendor_id &&
+                    raw_dev->product_id == driver_dev->product_id &&
+                    (raw_dev->interface_number < 0 || raw_dev->interface_number == driver_dev->interface_number)) {
                     bFound = SDL_TRUE;
                     break;
                 }
@@ -755,8 +804,7 @@ HID_API_EXPORT hid_device * HID_API_CALL hid_open_path(const char *path, int bEx
 #endif /* HAVE_PLATFORM_BACKEND */
 
 #if HAVE_DRIVER_BACKEND
-    if (udev_ctx &&
-        (pDevice = (hid_device*) DRIVER_hid_open_path(path, bExclusive)) != NULL) {
+    if ((pDevice = (hid_device*) DRIVER_hid_open_path(path, bExclusive)) != NULL) {
 
         HIDDeviceWrapper *wrapper = CreateHIDDeviceWrapper(pDevice, &DRIVER_Backend);
         return WrapHIDDevice(wrapper);

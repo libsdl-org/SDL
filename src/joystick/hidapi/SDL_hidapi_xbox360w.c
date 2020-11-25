@@ -34,6 +34,9 @@
 
 #ifdef SDL_JOYSTICK_HIDAPI_XBOX360
 
+/* Define this if you want to log all packets from the controller */
+/*#define DEBUG_XBOX_PROTOCOL*/
+
 
 typedef struct {
     SDL_bool connected;
@@ -125,6 +128,9 @@ HIDAPI_DriverXbox360W_GetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_Joysti
 static void
 HIDAPI_DriverXbox360W_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id, int player_index)
 {
+    if (!device->dev) {
+        return;
+    }
     SetSlotLED(device->dev, (player_index % 4));
 }
 
@@ -244,6 +250,9 @@ HIDAPI_DriverXbox360W_UpdateDevice(SDL_HIDAPI_Device *device)
     }
 
     while ((size = hid_read_timeout(device->dev, data, sizeof(data), 0)) > 0) {
+#ifdef DEBUG_XBOX_PROTOCOL
+        HIDAPI_DumpPacket("Xbox 360 wireless packet: size = %d", data, size);
+#endif
         if (size == 2 && data[0] == 0x08) {
             SDL_bool connected = (data[1] & 0x80) ? SDL_TRUE : SDL_FALSE;
 #ifdef DEBUG_JOYSTICK

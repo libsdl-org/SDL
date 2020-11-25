@@ -774,7 +774,6 @@ RAWINPUT_AddDevice(HANDLE hDevice)
 
     device->joystick_id = SDL_GetNextJoystickInstanceID();
 
-#define DEBUG_RAWINPUT
 #ifdef DEBUG_RAWINPUT
     SDL_Log("Adding RAWINPUT device '%s' VID 0x%.4x, PID 0x%.4x, version %d, handle 0x%.8x\n", device->name, device->vendor_id, device->product_id, device->version, device->hDevice);
 #endif

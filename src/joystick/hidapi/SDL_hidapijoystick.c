@@ -750,6 +750,38 @@ HIDAPI_AddDevice(struct hid_device_info *info)
         char *serial_number = HIDAPI_ConvertString(info->serial_number);
 
         device->name = SDL_CreateJoystickName(device->vendor_id, device->product_id, manufacturer_string, product_string);
+        if (SDL_strncmp(device->name, "0x", 2) == 0) {
+            /* Couldn't find a controller name, try to give it one based on device type */
+            const char *name = NULL;
+
+            switch (SDL_GetJoystickGameControllerType(NULL, device->vendor_id, device->product_id, device->interface_number, device->interface_class, device->interface_subclass, device->interface_protocol)) {
+            case SDL_CONTROLLER_TYPE_XBOX360:
+                name = "Xbox 360 Controller";
+                break;
+            case SDL_CONTROLLER_TYPE_XBOXONE:
+                name = "Xbox One Controller";
+                break;
+            case SDL_CONTROLLER_TYPE_PS3:
+                name = "PS3 Controller";
+                break;
+            case SDL_CONTROLLER_TYPE_PS4:
+                name = "PS4 Controller";
+                break;
+            case SDL_CONTROLLER_TYPE_PS5:
+                name = "PS5 Controller";
+                break;
+            case SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO:
+                name = "Nintendo Switch Pro Controller";
+                break;
+            default:
+                break;
+            }
+
+            if (name) {
+                SDL_free(device->name);
+                device->name = SDL_strdup(name);
+            }
+        }
 
         if (manufacturer_string) {
             SDL_free(manufacturer_string);
@@ -856,6 +888,28 @@ HIDAPI_UpdateDeviceList(void)
     SDL_UnlockJoysticks();
 }
 
+static SDL_bool
+HIDAPI_IsEquivalentToDevice(Uint16 vendor_id, Uint16 product_id, SDL_HIDAPI_Device *device)
+{
+    if (vendor_id == device->vendor_id && product_id == device->product_id) {
+        return SDL_TRUE;
+    }
+
+    if (vendor_id == USB_VENDOR_MICROSOFT) {
+        /* If we're looking for the wireless XBox 360 controller, also look for the dongle */
+       if (product_id == 0x02a1 && device->product_id == 0x0719) {
+           return SDL_TRUE;
+       }
+
+       /* If we're looking for the raw input Xbox One controller, match it against any other Xbox One controller */
+       if (product_id == 0x02ff &&
+           SDL_GetJoystickGameControllerType(device->name, device->vendor_id, device->product_id, device->interface_number, device->interface_class, device->interface_subclass, device->interface_protocol) == SDL_CONTROLLER_TYPE_XBOXONE) {
+           return SDL_TRUE;
+       }
+    }
+    return SDL_FALSE;
+}
+
 SDL_bool
 HIDAPI_IsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
 {
@@ -895,17 +949,13 @@ HIDAPI_IsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, cons
     SDL_LockJoysticks();
     device = SDL_HIDAPI_devices;
     while (device) {
-        if (device->vendor_id == vendor_id && device->product_id == product_id && device->driver) {
+        if (device->driver &&
+            HIDAPI_IsEquivalentToDevice(vendor_id, product_id, device)) {
             result = SDL_TRUE;
         }
         device = device->next;
     }
     SDL_UnlockJoysticks();
-
-    /* If we're looking for the wireless XBox 360 controller, also look for the dongle */
-    if (!result && vendor_id == USB_VENDOR_MICROSOFT && product_id == 0x02a1) {
-        return HIDAPI_IsDevicePresent(USB_VENDOR_MICROSOFT, 0x0719, version, name);
-    }
 
 #ifdef DEBUG_HIDAPI
     SDL_Log("HIDAPI_IsDevicePresent() returning %s for 0x%.4x / 0x%.4x\n", result ? "true" : "false", vendor_id, product_id);
