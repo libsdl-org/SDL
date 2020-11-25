@@ -1729,6 +1729,12 @@ SDL_CreateJoystickName(Uint16 vendor, Uint16 product, const char *vendor_name, c
 }
 
 SDL_GameControllerType
+SDL_GetJoystickGameControllerTypeFromVIDPID(Uint16 vendor, Uint16 product)
+{
+    return SDL_GetJoystickGameControllerType(NULL, vendor, product, -1, 0, 0, 0);
+}
+
+SDL_GameControllerType
 SDL_GetJoystickGameControllerTypeFromGUID(SDL_JoystickGUID guid, const char *name)
 {
     SDL_GameControllerType type;

@@ -34,6 +34,10 @@
 
 #ifdef SDL_JOYSTICK_HIDAPI_XBOX360
 
+/* Define this if you want to log all packets from the controller */
+/*#define DEBUG_XBOX_PROTOCOL*/
+
+
 typedef struct {
     Uint8 last_state[USB_PACKET_LENGTH];
 } SDL_DriverXbox360_Context;
@@ -77,6 +81,7 @@ HIDAPI_DriverXbox360_IsSupportedDevice(const char *name, SDL_GameControllerType 
         /* This is the Steam Virtual Gamepad, which isn't supported by this driver */
         return SDL_FALSE;
     }
+#endif
 #if defined(__MACOSX__)
     /* Wired Xbox One controllers are handled by this driver, interfacing with
        the 360Controller driver available from:
@@ -87,7 +92,6 @@ HIDAPI_DriverXbox360_IsSupportedDevice(const char *name, SDL_GameControllerType 
     if (IsBluetoothXboxOneController(vendor_id, product_id)) {
         return SDL_FALSE;
     }
-#endif
     return (type == SDL_CONTROLLER_TYPE_XBOX360 || type == SDL_CONTROLLER_TYPE_XBOXONE) ? SDL_TRUE : SDL_FALSE;
 #else
     return (type == SDL_CONTROLLER_TYPE_XBOX360) ? SDL_TRUE : SDL_FALSE;
@@ -126,6 +130,9 @@ HIDAPI_DriverXbox360_GetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_Joystic
 static void
 HIDAPI_DriverXbox360_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id, int player_index)
 {
+    if (!device->dev) {
+        return;
+    }
     SetSlotLED(device->dev, (player_index % 4));
 }
 
@@ -296,7 +303,12 @@ HIDAPI_DriverXbox360_UpdateDevice(SDL_HIDAPI_Device *device)
     }
 
     while ((size = hid_read_timeout(device->dev, data, sizeof(data), 0)) > 0) {
-        HIDAPI_DriverXbox360_HandleStatePacket(joystick, ctx, data, size);
+#ifdef DEBUG_XBOX_PROTOCOL
+        HIDAPI_DumpPacket("Xbox 360 packet: size = %d", data, size);
+#endif
+        if (data[0] == 0x00) {
+            HIDAPI_DriverXbox360_HandleStatePacket(joystick, ctx, data, size);
+        }
     }
 
     if (size < 0) {
