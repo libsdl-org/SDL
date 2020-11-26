@@ -44,10 +44,9 @@
 #include "../../core/windows/SDL_hid.h"
 #include "../hidapi/SDL_hidapijoystick_c.h"
 
-#ifdef __WIN32__
 #define SDL_JOYSTICK_RAWINPUT_XINPUT
-/* This requires the Windows 10 SDK to build */
-/*#define SDL_JOYSTICK_RAWINPUT_GAMING_INPUT*/
+#ifdef SDL_WINDOWS10_SDK
+#define SDL_JOYSTICK_RAWINPUT_GAMING_INPUT
 #endif
 
 #ifdef SDL_JOYSTICK_RAWINPUT_XINPUT
@@ -1232,7 +1231,23 @@ RAWINPUT_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uin
 static int
 RAWINPUT_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
 {
+#if defined(SDL_JOYSTICK_RAWINPUT_GAMING_INPUT)
+    RAWINPUT_DeviceContext *ctx = joystick->hwdata;
+    
+    if (ctx->wgi_correlated) {
+        WindowsGamingInputGamepadState *gamepad_state = ctx->wgi_slot;
+        HRESULT hr;
+        gamepad_state->vibration.LeftTrigger = (DOUBLE)left_rumble / SDL_MAX_UINT16;
+        gamepad_state->vibration.RightTrigger = (DOUBLE)right_rumble / SDL_MAX_UINT16;
+        hr = __x_ABI_CWindows_CGaming_CInput_CIGamepad_put_Vibration(gamepad_state->gamepad, gamepad_state->vibration);
+        if (!SUCCEEDED(hr)) {
+            return SDL_SetError("Setting vibration failed: 0x%x\n", hr);
+        }
+    }
+    return 0;
+#else
     return SDL_Unsupported();
+#endif
 }
 
 static SDL_bool
