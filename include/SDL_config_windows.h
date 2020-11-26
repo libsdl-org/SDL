@@ -191,6 +191,20 @@ typedef unsigned int uintptr_t;
 #define HAVE_STDDEF_H   1
 #endif
 
+/* Check to see if we have Windows 10 build environment */
+#if _MSC_VER >= 1911        /* Visual Studio 15.3 */
+#include <sdkddkver.h>
+#if _WIN32_WINNT >= 0x0601  /* Windows 7 */
+#define SDL_WINDOWS7_SDK
+#endif
+#if _WIN32_WINNT >= 0x0602  /* Windows 8 */
+#define SDL_WINDOWS8_SDK
+#endif
+#if _WIN32_WINNT >= 0x0A00  /* Windows 10 */
+#define SDL_WINDOWS10_SDK
+#endif
+#endif /* _MSC_VER >= 1911 */
+
 /* Enable various audio drivers */
 #define SDL_AUDIO_DRIVER_WASAPI 1
 #define SDL_AUDIO_DRIVER_DSOUND 1
@@ -203,8 +217,8 @@ typedef unsigned int uintptr_t;
 #define SDL_JOYSTICK_HIDAPI 1
 #define SDL_JOYSTICK_RAWINPUT   1
 #define SDL_JOYSTICK_VIRTUAL    1
-#if _MSC_VER >= 1911
-#define SDL_JOYSTICK_WGI    1   /* This requires Windows SDK 10.0.16299.0 or newer */
+#ifdef SDL_WINDOWS10_SDK
+#define SDL_JOYSTICK_WGI    1
 #endif
 #define SDL_JOYSTICK_XINPUT 1
 #define SDL_HAPTIC_DINPUT   1
@@ -229,7 +243,7 @@ typedef unsigned int uintptr_t;
 #ifndef SDL_VIDEO_RENDER_D3D
 #define SDL_VIDEO_RENDER_D3D    1
 #endif
-#if _MSC_VER >= 1911
+#ifdef SDL_WINDOWS7_SDK
 #define SDL_VIDEO_RENDER_D3D11  1
 #endif
 
