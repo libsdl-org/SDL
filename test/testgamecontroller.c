@@ -308,17 +308,19 @@ loop(void *arg)
 
         /* Update rumble based on trigger state */
         {
-            Uint16 low_frequency_rumble = SDL_GameControllerGetAxis(gamecontroller, SDL_CONTROLLER_AXIS_TRIGGERLEFT) * 2;
-            Uint16 high_frequency_rumble = SDL_GameControllerGetAxis(gamecontroller, SDL_CONTROLLER_AXIS_TRIGGERRIGHT) * 2;
+            Sint16 left = SDL_GameControllerGetAxis(gamecontroller, SDL_CONTROLLER_AXIS_TRIGGERLEFT);
+            Sint16 right = SDL_GameControllerGetAxis(gamecontroller, SDL_CONTROLLER_AXIS_TRIGGERRIGHT);
+            Uint16 low_frequency_rumble = ConvertAxisToRumble(left);
+            Uint16 high_frequency_rumble = ConvertAxisToRumble(right);
             SDL_GameControllerRumble(gamecontroller, low_frequency_rumble, high_frequency_rumble, 250);
         }
 
         /* Update trigger rumble based on thumbstick state */
         {
-            Sint16 left_y = SDL_GameControllerGetAxis(gamecontroller, SDL_CONTROLLER_AXIS_LEFTY);
-            Sint16 right_y = SDL_GameControllerGetAxis(gamecontroller, SDL_CONTROLLER_AXIS_RIGHTY);
-            Uint16 left_rumble = ConvertAxisToRumble(~left_y);
-            Uint16 right_rumble = ConvertAxisToRumble(~right_y);
+            Sint16 left = SDL_GameControllerGetAxis(gamecontroller, SDL_CONTROLLER_AXIS_LEFTY);
+            Sint16 right = SDL_GameControllerGetAxis(gamecontroller, SDL_CONTROLLER_AXIS_RIGHTY);
+            Uint16 left_rumble = ConvertAxisToRumble(~left);
+            Uint16 right_rumble = ConvertAxisToRumble(~right);
 
             SDL_GameControllerRumbleTriggers(gamecontroller, left_rumble, right_rumble, 250);
         }
