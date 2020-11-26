@@ -376,7 +376,10 @@ HIDAPI_DriverXboxOne_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joyst
         joystick->nbuttons += 4;
     }
     joystick->naxes = SDL_CONTROLLER_AXIS_MAX;
-    joystick->epowerlevel = SDL_JOYSTICK_POWER_WIRED;
+
+    if (!ctx->bluetooth) {
+        joystick->epowerlevel = SDL_JOYSTICK_POWER_WIRED;
+    }
 
     return SDL_TRUE;
 }
@@ -387,7 +390,7 @@ HIDAPI_DriverXboxOne_UpdateRumble(SDL_HIDAPI_Device *device)
     SDL_DriverXboxOne_Context *ctx = (SDL_DriverXboxOne_Context *)device->context;
 
     if (ctx->bluetooth) {
-        Uint8 rumble_packet[] = { 0x03, 0x0F, 0x00, 0x00, 0x00, 0x00, 0xff, 0x00, 0x00 };
+        Uint8 rumble_packet[] = { 0x03, 0x0F, 0x00, 0x00, 0x00, 0x00, 0xFF, 0x00, 0xEB };
 
         rumble_packet[2] = ctx->left_trigger_rumble;
         rumble_packet[3] = ctx->right_trigger_rumble;
@@ -398,7 +401,7 @@ HIDAPI_DriverXboxOne_UpdateRumble(SDL_HIDAPI_Device *device)
             return SDL_SetError("Couldn't send rumble packet");
         }
     } else {
-        Uint8 rumble_packet[] = { 0x09, 0x00, 0x00, 0x09, 0x00, 0x0F, 0x00, 0x00, 0x00, 0x00, 0xFF, 0x00, 0xFF };
+        Uint8 rumble_packet[] = { 0x09, 0x00, 0x00, 0x09, 0x00, 0x0F, 0x00, 0x00, 0x00, 0x00, 0xFF, 0x00, 0xEB };
 
         rumble_packet[6] = ctx->left_trigger_rumble;
         rumble_packet[7] = ctx->right_trigger_rumble;
@@ -853,6 +856,30 @@ HIDAPI_DriverXboxOneBluetooth_HandleGuidePacket(SDL_Joystick *joystick, hid_devi
     SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_GUIDE, (data[1] & 0x01) ? SDL_PRESSED : SDL_RELEASED);
 }
 
+static void
+HIDAPI_DriverXboxOneBluetooth_HandleBatteryPacket(SDL_Joystick *joystick, hid_device *dev, SDL_DriverXboxOne_Context *ctx, Uint8 *data, int size)
+{
+    Uint8 flags = data[1];
+    SDL_bool on_usb = (((flags & 0x0C) >> 2) == 0);
+
+    if (on_usb) {
+        /* Does this ever happen? */
+        SDL_PrivateJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_WIRED);
+    } else {
+        switch ((flags & 0x03)) {
+        case 0:
+            SDL_PrivateJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_LOW);
+            break;
+        case 1:
+            SDL_PrivateJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_MEDIUM);
+            break;
+        default: /* 2, 3 */
+            SDL_PrivateJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_FULL);
+            break;
+        }
+    }
+}
+
 #ifdef SET_SERIAL_AFTER_OPEN
 static void
 HIDAPI_DriverXboxOne_HandleSerialIDPacket(SDL_Joystick *joystick, SDL_DriverXboxOne_Context *ctx, Uint8 *data, int size)
@@ -950,6 +977,9 @@ HIDAPI_DriverXboxOne_UpdateJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joy
                 break;
             case 0x02:
                 HIDAPI_DriverXboxOneBluetooth_HandleGuidePacket(joystick, device->dev, ctx, data, size);
+                break;
+            case 0x04:
+                HIDAPI_DriverXboxOneBluetooth_HandleBatteryPacket(joystick, device->dev, ctx, data, size);
                 break;
             default:
 #ifdef DEBUG_JOYSTICK
