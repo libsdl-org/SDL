@@ -1318,7 +1318,7 @@ RAWINPUT_HandleStatePacket(SDL_Joystick *joystick, Uint8 *data, int size)
     };
     Uint32 match_state = ctx->match_state;
     /* Update match_state with button bit, then fall through */
-#define SDL_PrivateJoystickButton(joystick, button, state) if (button < SDL_arraysize(button_map)) if (state) match_state |= 1 << button_map[button]; else match_state &= ~(1 << button_map[button]); SDL_PrivateJoystickButton(joystick, button, state)
+#define SDL_PrivateJoystickButton(joystick, button, state) if (button < SDL_arraysize(button_map)) { if (state) match_state |= 1 << button_map[button]; else match_state &= ~(1 << button_map[button]); } SDL_PrivateJoystickButton(joystick, button, state)
     /* Grab high 4 bits of value, then fall through */
 #define SDL_PrivateJoystickAxis(joystick, axis, value) if (axis < SDL_arraysize(axis_map)) match_state = (match_state & ~(0xF << (4 * axis_map[axis] + 16))) | ((value) & 0xF000) << (4 * axis_map[axis] + 4); SDL_PrivateJoystickAxis(joystick, axis, value)
 #endif
