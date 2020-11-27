@@ -631,7 +631,7 @@ static void
 RAWINPUT_GetPendingDeviceChanges(void)
 {
     MSG msg;
-    while (PeekMessage(&msg, SDL_HelperWindow, WM_INPUT_DEVICE_CHANGE, WM_INPUT_DEVICE_CHANGE, PM_REMOVE)) {
+    while (PeekMessage(&msg, SDL_HelperWindow, WM_INPUT_DEVICE_CHANGE, WM_INPUT_DEVICE_CHANGE + 1, PM_REMOVE)) {
         TranslateMessage(&msg);
         DispatchMessage(&msg);
     }
