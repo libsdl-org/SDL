@@ -302,7 +302,7 @@ AddXInputDevice(Uint8 userid, BYTE SubType, JoyStick_DeviceData **pContext)
 #endif
 
 #ifdef SDL_JOYSTICK_RAWINPUT
-    if (RAWINPUT_IsDevicePresent(vendor, product, version)) {
+    if (RAWINPUT_IsDevicePresent(vendor, product, version, pNewJoystick->joystickname)) {
         /* The RAWINPUT driver is taking care of this device */
         SDL_free(pNewJoystick);
         return;

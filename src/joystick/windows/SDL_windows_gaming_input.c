@@ -249,7 +249,7 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
 #endif
 
 #ifdef SDL_JOYSTICK_RAWINPUT
-        if (!ignore_joystick && RAWINPUT_IsDevicePresent(vendor, product, version)) {
+        if (!ignore_joystick && RAWINPUT_IsDevicePresent(vendor, product, version, name)) {
             ignore_joystick = SDL_TRUE;
         }
 #endif
