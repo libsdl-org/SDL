@@ -27,8 +27,12 @@ extern SDL_bool RAWINPUT_IsEnabled();
 /* Return true if a RawInput device is present and supported as a joystick */
 extern SDL_bool RAWINPUT_IsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name);
 
+/* Registers for input events */
+extern SDL_bool RAWINPUT_RegisterNotifications(HWND hWnd);
+extern void RAWINPUT_UnregisterNotifications();
+
 /* Returns 0 if message was handled */
-extern LRESULT RAWINPUT_WindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+extern LRESULT CALLBACK RAWINPUT_WindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 
 /* vi: set ts=4 sw=4 expandtab: */

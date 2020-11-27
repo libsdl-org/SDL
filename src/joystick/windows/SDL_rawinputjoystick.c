@@ -37,6 +37,7 @@
 #include "SDL_endian.h"
 #include "SDL_events.h"
 #include "SDL_hints.h"
+#include "SDL_mutex.h"
 #include "SDL_timer.h"
 #include "../usb_ids.h"
 #include "../SDL_sysjoystick.h"
@@ -84,12 +85,10 @@ typedef struct WindowsGamingInputGamepadState WindowsGamingInputGamepadState;
 #define GIDC_REMOVAL             2
 #endif
 
-/* external variables referenced. */
-extern HWND SDL_HelperWindow;
-
 
 static SDL_bool SDL_RAWINPUT_inited = SDL_FALSE;
 static int SDL_RAWINPUT_numjoysticks = 0;
+static SDL_mutex *SDL_RAWINPUT_mutex = NULL;
 
 static void RAWINPUT_JoystickClose(SDL_Joystick *joystick);
 
@@ -625,40 +624,10 @@ RAWINPUT_QuitWindowsGamingInput(RAWINPUT_DeviceContext *ctx)
 #endif /* SDL_JOYSTICK_RAWINPUT_WGI */
 
 
-/* Most of the time the raw input messages will get dispatched in the main event loop,
- * but sometimes we want to get any pending device change messages immediately.
- */
-static void
-RAWINPUT_GetPendingDeviceChanges(void)
-{
-    MSG msg;
-    while (PeekMessage(&msg, SDL_HelperWindow, WM_INPUT_DEVICE_CHANGE, WM_INPUT_DEVICE_CHANGE + 1, PM_REMOVE)) {
-        TranslateMessage(&msg);
-        DispatchMessage(&msg);
-    }
-}
-
-static SDL_bool pump_device_events;
-static void
-RAWINPUT_GetPendingDeviceInput(void)
-{
-    if (pump_device_events) {
-        MSG msg;
-        while (PeekMessage(&msg, SDL_HelperWindow, WM_INPUT, WM_INPUT + 1, PM_REMOVE)) {
-            TranslateMessage(&msg);
-            DispatchMessage(&msg);
-        }
-        pump_device_events = SDL_FALSE;
-    }
-}
-
 static int
 RAWINPUT_JoystickInit(void)
 {
-    int ii;
-    RAWINPUTDEVICE rid[SDL_arraysize(subscribed_devices)];
     SDL_assert(!SDL_RAWINPUT_inited);
-    SDL_assert(SDL_HelperWindow);
 
     if (!SDL_GetHintBoolean(SDL_HINT_JOYSTICK_RAWINPUT, SDL_TRUE)) {
         return -1;
@@ -668,24 +637,8 @@ RAWINPUT_JoystickInit(void)
         return -1;
     }
 
-    for (ii = 0; ii < SDL_arraysize(subscribed_devices); ii++) {
-        rid[ii].usUsagePage = USB_USAGEPAGE_GENERIC_DESKTOP;
-        rid[ii].usUsage = subscribed_devices[ii];
-        rid[ii].dwFlags = RIDEV_DEVNOTIFY | RIDEV_INPUTSINK; /* Receive messages when in background, including device add/remove */
-        rid[ii].hwndTarget = SDL_HelperWindow;
-    }
-
-    if (!RegisterRawInputDevices(rid, SDL_arraysize(rid), sizeof(RAWINPUTDEVICE))) {
-        SDL_SetError("Couldn't initialize RAWINPUT");
-        WIN_UnloadHIDDLL();
-        return -1;
-    }
-
+    SDL_RAWINPUT_mutex = SDL_CreateMutex();
     SDL_RAWINPUT_inited = SDL_TRUE;
-
-    /* Get initial controller connect messages */
-    RAWINPUT_GetPendingDeviceChanges();
-    pump_device_events = SDL_TRUE;
 
     return 0;
 }
@@ -930,8 +883,6 @@ RAWINPUT_PostUpdate(void)
     guide_button_candidate.joystick = NULL;
 
 #endif /* SDL_JOYSTICK_RAWINPUT_MATCHING */
-
-    pump_device_events = SDL_TRUE;
 }
 
 SDL_bool
@@ -944,9 +895,6 @@ SDL_bool
 RAWINPUT_IsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
 {
     SDL_RAWINPUT_Device *device;
-
-    /* Make sure the device list is completely up to date when we check for device presence */
-    RAWINPUT_GetPendingDeviceChanges();
 
     /* If we're being asked about a device, that means another API just detected one, so rescan */
 #ifdef SDL_JOYSTICK_RAWINPUT_XINPUT
@@ -983,8 +931,6 @@ RAWINPUT_IsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, co
 static void
 RAWINPUT_JoystickDetect(void)
 {
-    RAWINPUT_GetPendingDeviceChanges();
-
     RAWINPUT_PostUpdate();
 }
 
@@ -1727,8 +1673,6 @@ RAWINPUT_UpdateOtherAPIs(SDL_Joystick *joystick)
 static void
 RAWINPUT_JoystickUpdate(SDL_Joystick *joystick)
 {
-    RAWINPUT_GetPendingDeviceInput();
-
     RAWINPUT_UpdateOtherAPIs(joystick);
 }
 
@@ -1776,74 +1720,115 @@ RAWINPUT_JoystickClose(SDL_Joystick *joystick)
     }
 }
 
-LRESULT RAWINPUT_WindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+SDL_bool
+RAWINPUT_RegisterNotifications(HWND hWnd)
 {
-    if (!SDL_RAWINPUT_inited)
-        return -1;
+    RAWINPUTDEVICE rid[SDL_arraysize(subscribed_devices)];
+    int i;
 
-    switch (msg)
-    {
-        case WM_INPUT_DEVICE_CHANGE:
-        {
-            HANDLE hDevice = (HANDLE)lParam;
-            switch (wParam) {
-            case GIDC_ARRIVAL:
-                RAWINPUT_AddDevice(hDevice);
-                break;
-            case GIDC_REMOVAL: {
-                SDL_RAWINPUT_Device *device;
-                device = RAWINPUT_DeviceFromHandle(hDevice);
-                if (device) {
-                    RAWINPUT_DelDevice(device, SDL_TRUE);
+    for (i = 0; i < SDL_arraysize(subscribed_devices); i++) {
+        rid[i].usUsagePage = USB_USAGEPAGE_GENERIC_DESKTOP;
+        rid[i].usUsage = subscribed_devices[i];
+        rid[i].dwFlags = RIDEV_DEVNOTIFY | RIDEV_INPUTSINK; /* Receive messages when in background, including device add/remove */
+        rid[i].hwndTarget = hWnd;
+    }
+
+    if (!RegisterRawInputDevices(rid, SDL_arraysize(rid), sizeof(RAWINPUTDEVICE))) {
+        SDL_SetError("Couldn't register for raw input events");
+        return SDL_FALSE;
+    }
+    return SDL_TRUE;
+}
+
+void
+RAWINPUT_UnregisterNotifications()
+{
+    int i;
+    RAWINPUTDEVICE rid[SDL_arraysize(subscribed_devices)];
+
+    for (i = 0; i < SDL_arraysize(subscribed_devices); i++) {
+        rid[i].usUsagePage = USB_USAGEPAGE_GENERIC_DESKTOP;
+        rid[i].usUsage = subscribed_devices[i];
+        rid[i].dwFlags = RIDEV_REMOVE;
+        rid[i].hwndTarget = NULL;
+    }
+
+    if (!RegisterRawInputDevices(rid, SDL_arraysize(rid), sizeof(RAWINPUTDEVICE))) {
+        SDL_SetError("Couldn't unregister for raw input events");
+        return;
+    }
+}
+    
+LRESULT CALLBACK
+RAWINPUT_WindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+    LRESULT result = -1;
+
+    SDL_LockMutex(SDL_RAWINPUT_mutex);
+
+    if (SDL_RAWINPUT_inited) {
+        switch (msg) {
+            case WM_INPUT_DEVICE_CHANGE:
+            {
+                HANDLE hDevice = (HANDLE)lParam;
+                switch (wParam) {
+                case GIDC_ARRIVAL:
+                    RAWINPUT_AddDevice(hDevice);
+                    break;
+                case GIDC_REMOVAL:
+                {
+                    SDL_RAWINPUT_Device *device;
+                    device = RAWINPUT_DeviceFromHandle(hDevice);
+                    if (device) {
+                        RAWINPUT_DelDevice(device, SDL_TRUE);
+                    }
+                    break;
                 }
-            } break;
-            default:
-                return 0;
+                default:
+                    break;
+                }
             }
-        }
-        return 0;
+            result = 0;
+            break;
 
-        case WM_INPUT:
-        {
-            Uint8 data[sizeof(RAWINPUTHEADER) + sizeof(RAWHID) + USB_PACKET_LENGTH];
-            UINT buffer_size = SDL_arraysize(data);
+            case WM_INPUT:
+            {
+                Uint8 data[sizeof(RAWINPUTHEADER) + sizeof(RAWHID) + USB_PACKET_LENGTH];
+                UINT buffer_size = SDL_arraysize(data);
 
-            if ((int)GetRawInputData((HRAWINPUT)lParam, RID_INPUT, data, &buffer_size, sizeof(RAWINPUTHEADER)) > 0) {
-                PRAWINPUT raw_input = (PRAWINPUT)data;
-                SDL_RAWINPUT_Device *device = RAWINPUT_DeviceFromHandle(raw_input->header.hDevice);
-                if (device) {
-                    SDL_Joystick *joystick = device->joystick;
-                    if (joystick) {
-                        RAWINPUT_HandleStatePacket(joystick, raw_input->data.hid.bRawData, raw_input->data.hid.dwSizeHid);
+                if ((int)GetRawInputData((HRAWINPUT)lParam, RID_INPUT, data, &buffer_size, sizeof(RAWINPUTHEADER)) > 0) {
+                    PRAWINPUT raw_input = (PRAWINPUT)data;
+                    SDL_RAWINPUT_Device *device = RAWINPUT_DeviceFromHandle(raw_input->header.hDevice);
+                    if (device) {
+                        SDL_Joystick *joystick = device->joystick;
+                        if (joystick) {
+                            RAWINPUT_HandleStatePacket(joystick, raw_input->data.hid.bRawData, raw_input->data.hid.dwSizeHid);
+                        }
                     }
                 }
             }
+            result = 0;
+            break;
         }
-        return 0;
     }
-    return -1;
+
+    SDL_UnlockMutex(SDL_RAWINPUT_mutex);
+
+    if (result >= 0) {
+        return result;
+    }
+    return CallWindowProc(DefWindowProc, hWnd, msg, wParam, lParam);
 }
 
 static void
 RAWINPUT_JoystickQuit(void)
 {
-    int ii;
-    RAWINPUTDEVICE rid[SDL_arraysize(subscribed_devices)];
-    
-    if (!SDL_RAWINPUT_inited)
+    if (!SDL_RAWINPUT_inited) {
         return;
-
-    for (ii = 0; ii < SDL_arraysize(subscribed_devices); ii++) {
-        rid[ii].usUsagePage = USB_USAGEPAGE_GENERIC_DESKTOP;
-        rid[ii].usUsage = subscribed_devices[ii];
-        rid[ii].dwFlags = RIDEV_REMOVE;
-        rid[ii].hwndTarget = NULL;
     }
 
-    if (!RegisterRawInputDevices(rid, SDL_arraysize(rid), sizeof(RAWINPUTDEVICE))) {
-        SDL_Log("Couldn't un-register RAWINPUT");
-    }
-    
+    SDL_LockMutex(SDL_RAWINPUT_mutex);
+
     while (SDL_RAWINPUT_devices) {
         RAWINPUT_DelDevice(SDL_RAWINPUT_devices, SDL_FALSE);
     }
@@ -1853,6 +1838,11 @@ RAWINPUT_JoystickQuit(void)
     SDL_RAWINPUT_numjoysticks = 0;
 
     SDL_RAWINPUT_inited = SDL_FALSE;
+
+    SDL_UnlockMutex(SDL_RAWINPUT_mutex);
+    SDL_DestroyMutex(SDL_RAWINPUT_mutex);
+    SDL_RAWINPUT_mutex = NULL;
+
 }
 
 static SDL_bool
