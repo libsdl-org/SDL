@@ -642,7 +642,7 @@ RAWINPUT_GetPendingDeviceChanges(void)
 
 static SDL_bool pump_device_events;
 static void
-RAWINPUT_GetPendingDeviceEvents(void)
+RAWINPUT_GetPendingDeviceInput(void)
 {
     if (pump_device_events) {
         MSG msg;
@@ -985,6 +985,8 @@ RAWINPUT_IsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, co
 static void
 RAWINPUT_JoystickDetect(void)
 {
+    RAWINPUT_GetPendingDeviceChanges();
+
     RAWINPUT_PostUpdate();
 }
 
@@ -1722,7 +1724,7 @@ RAWINPUT_UpdateOtherAPIs(SDL_Joystick *joystick)
 static void
 RAWINPUT_JoystickUpdate(SDL_Joystick *joystick)
 {
-    RAWINPUT_GetPendingDeviceEvents();
+    RAWINPUT_GetPendingDeviceInput();
 
     RAWINPUT_UpdateOtherAPIs(joystick);
 }
