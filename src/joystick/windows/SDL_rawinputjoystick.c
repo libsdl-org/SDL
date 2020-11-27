@@ -46,14 +46,14 @@
 
 #define SDL_JOYSTICK_RAWINPUT_XINPUT
 #ifdef SDL_WINDOWS10_SDK
-#define SDL_JOYSTICK_RAWINPUT_GAMING_INPUT
+#define SDL_JOYSTICK_RAWINPUT_WGI
 #endif
 
 #ifdef SDL_JOYSTICK_RAWINPUT_XINPUT
 #include "../../core/windows/SDL_xinput.h"
 #endif
 
-#ifdef SDL_JOYSTICK_RAWINPUT_GAMING_INPUT
+#ifdef SDL_JOYSTICK_RAWINPUT_WGI
 #include "../../core/windows/SDL_windows.h"
 typedef struct WindowsGamingInputGamepadState WindowsGamingInputGamepadState;
 #define GamepadButtons_GUIDE 0x40000000
@@ -61,11 +61,11 @@ typedef struct WindowsGamingInputGamepadState WindowsGamingInputGamepadState;
 #include "windows.gaming.input.h"
 #endif
 
-#if defined(SDL_JOYSTICK_RAWINPUT_XINPUT) || defined(SDL_JOYSTICK_RAWINPUT_GAMING_INPUT)
+#if defined(SDL_JOYSTICK_RAWINPUT_XINPUT) || defined(SDL_JOYSTICK_RAWINPUT_WGI)
 #define SDL_JOYSTICK_RAWINPUT_MATCHING
 #endif
 
-/* #define DEBUG_RAWINPUT */
+/*#define DEBUG_RAWINPUT*/
 
 #ifndef RIDEV_EXINPUTSINK
 #define RIDEV_EXINPUTSINK       0x00001000
@@ -140,7 +140,7 @@ struct joystick_hwdata
     Uint8 xinput_slot;
 #endif
 
-#ifdef SDL_JOYSTICK_RAWINPUT_GAMING_INPUT
+#ifdef SDL_JOYSTICK_RAWINPUT_WGI
     SDL_bool wgi_correlated;
     Uint8 wgi_correlation_id;
     Uint8 wgi_correlation_count;
@@ -175,7 +175,7 @@ typedef struct WindowsMatchState {
 #ifdef SDL_JOYSTICK_RAWINPUT_XINPUT
     WORD xinput_buttons;
 #endif
-#ifdef SDL_JOYSTICK_RAWINPUT_GAMING_INPUT
+#ifdef SDL_JOYSTICK_RAWINPUT_WGI
     Uint32 wgi_buttons;
 #endif
     SDL_bool any_data;
@@ -236,7 +236,7 @@ static void RAWINPUT_FillMatchState(WindowsMatchState *state, Uint32 match_state
         state->any_data = SDL_TRUE;
 #endif
 
-#ifdef SDL_JOYSTICK_RAWINPUT_GAMING_INPUT
+#ifdef SDL_JOYSTICK_RAWINPUT_WGI
     /* Match axes by checking if the distance between the high 4 bits of axis and the 4 bits from match_state is 1 or less */
 #define WindowsGamingInputAxesMatch(gamepad) (\
     (Uint16)(((Sint16)(gamepad.LeftThumbstickX * SDL_MAX_SINT16) & 0xF000) - state->match_axes[0] + 0x1000) <= 0x2fff && \
@@ -376,7 +376,7 @@ RAWINPUT_GuessXInputSlot(const WindowsMatchState *state, Uint8 *correlation_id, 
 
 #endif /* SDL_JOYSTICK_RAWINPUT_XINPUT */
 
-#ifdef SDL_JOYSTICK_RAWINPUT_GAMING_INPUT
+#ifdef SDL_JOYSTICK_RAWINPUT_WGI
 
 typedef struct WindowsGamingInputGamepadState {
     __x_ABI_CWindows_CGaming_CInput_CIGamepad *gamepad;
@@ -609,7 +609,7 @@ RAWINPUT_QuitWindowsGamingInput(RAWINPUT_DeviceContext *ctx)
     }
 }
 
-#endif /* SDL_JOYSTICK_RAWINPUT_GAMING_INPUT */
+#endif /* SDL_JOYSTICK_RAWINPUT_WGI */
 
 static int
 RAWINPUT_JoystickInit(void)
@@ -861,7 +861,7 @@ RAWINPUT_PostUpdate(void)
 #ifdef SDL_JOYSTICK_RAWINPUT_MATCHING
     SDL_bool unmapped_guide_pressed = SDL_FALSE;
 
-#ifdef SDL_JOYSTICK_RAWINPUT_GAMING_INPUT
+#ifdef SDL_JOYSTICK_RAWINPUT_WGI
     if (!wgi_state.dirty) {
         int ii;
         for (ii = 0; ii < wgi_state.per_gamepad_count; ii++) {
@@ -874,7 +874,6 @@ RAWINPUT_PostUpdate(void)
     }
     wgi_state.dirty = SDL_TRUE;
 #endif
-
 
 #ifdef SDL_JOYSTICK_RAWINPUT_XINPUT
     if (!xinput_state_dirty) {
@@ -1023,7 +1022,7 @@ RAWINPUT_JoystickOpen(SDL_Joystick *joystick, int device_index)
         }
         ctx->xinput_slot = XUSER_INDEX_ANY;
 #endif
-#ifdef SDL_JOYSTICK_RAWINPUT_GAMING_INPUT
+#ifdef SDL_JOYSTICK_RAWINPUT_WGI
         RAWINPUT_InitWindowsGamingInput(ctx);
 #endif
     }
@@ -1188,13 +1187,13 @@ RAWINPUT_JoystickOpen(SDL_Joystick *joystick, int device_index)
 static int
 RAWINPUT_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
-#if defined(SDL_JOYSTICK_RAWINPUT_GAMING_INPUT) || defined(SDL_JOYSTICK_RAWINPUT_XINPUT)
+#if defined(SDL_JOYSTICK_RAWINPUT_WGI) || defined(SDL_JOYSTICK_RAWINPUT_XINPUT)
     RAWINPUT_DeviceContext *ctx = joystick->hwdata;
 #endif
 
     SDL_bool rumbled = SDL_FALSE;
 
-#ifdef SDL_JOYSTICK_RAWINPUT_GAMING_INPUT
+#ifdef SDL_JOYSTICK_RAWINPUT_WGI
     if (!rumbled && ctx->wgi_correlated) {
         WindowsGamingInputGamepadState *gamepad_state = ctx->wgi_slot;
         HRESULT hr;
@@ -1231,7 +1230,7 @@ RAWINPUT_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uin
 static int
 RAWINPUT_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
 {
-#if defined(SDL_JOYSTICK_RAWINPUT_GAMING_INPUT)
+#if defined(SDL_JOYSTICK_RAWINPUT_WGI)
     RAWINPUT_DeviceContext *ctx = joystick->hwdata;
     
     if (ctx->wgi_correlated) {
@@ -1401,11 +1400,11 @@ RAWINPUT_HandleStatePacket(SDL_Joystick *joystick, Uint8 *data, int size)
         }
 #endif /* SDL_JOYSTICK_RAWINPUT_XINPUT */
 
-#ifdef SDL_JOYSTICK_RAWINPUT_GAMING_INPUT
+#ifdef SDL_JOYSTICK_RAWINPUT_WGI
         if (!has_trigger_data && ctx->wgi_correlated) {
             has_trigger_data = SDL_TRUE;
         }
-#endif /* SDL_JOYSTICK_RAWINPUT_GAMING_INPUT */
+#endif /* SDL_JOYSTICK_RAWINPUT_WGI */
 
         if (!has_trigger_data) {
             HIDP_DATA *item = GetData(ctx->trigger_hack_index, ctx->data, data_length);
@@ -1451,7 +1450,7 @@ RAWINPUT_UpdateOtherAPIs(SDL_Joystick *joystick)
 
     RAWINPUT_FillMatchState(&match_state_xinput, ctx->match_state);
 
-#ifdef SDL_JOYSTICK_RAWINPUT_GAMING_INPUT
+#ifdef SDL_JOYSTICK_RAWINPUT_WGI
     /* Parallel logic to WINDOWS_XINPUT below */
     RAWINPUT_UpdateWindowsGamingInput();
     if (ctx->wgi_correlated) {
@@ -1526,7 +1525,7 @@ RAWINPUT_UpdateOtherAPIs(SDL_Joystick *joystick)
     } else {
         correlated = SDL_TRUE;
     }
-#endif /* SDL_JOYSTICK_RAWINPUT_GAMING_INPUT */
+#endif /* SDL_JOYSTICK_RAWINPUT_WGI */
 
 #ifdef SDL_JOYSTICK_RAWINPUT_XINPUT
     /* Parallel logic to WINDOWS_GAMING_INPUT above */
@@ -1640,7 +1639,7 @@ RAWINPUT_UpdateOtherAPIs(SDL_Joystick *joystick)
     }
 #endif /* SDL_JOYSTICK_RAWINPUT_XINPUT */
 
-#ifdef SDL_JOYSTICK_RAWINPUT_GAMING_INPUT
+#ifdef SDL_JOYSTICK_RAWINPUT_WGI
     if (!has_trigger_data && ctx->wgi_correlated) {
         RAWINPUT_UpdateWindowsGamingInput(); /* May detect disconnect / cause uncorrelation */
         if (ctx->wgi_correlated) { /* Still connected */
@@ -1656,7 +1655,7 @@ RAWINPUT_UpdateOtherAPIs(SDL_Joystick *joystick)
             has_trigger_data = SDL_TRUE;
         }
     }
-#endif /* SDL_JOYSTICK_RAWINPUT_GAMING_INPUT */
+#endif /* SDL_JOYSTICK_RAWINPUT_WGI */
 
     if (!correlated) {
         if (!guide_button_candidate.joystick ||
@@ -1704,7 +1703,7 @@ RAWINPUT_JoystickClose(SDL_Joystick *joystick)
             WIN_UnloadXInputDLL();
         }
 #endif
-#ifdef SDL_JOYSTICK_RAWINPUT_GAMING_INPUT
+#ifdef SDL_JOYSTICK_RAWINPUT_WGI
         RAWINPUT_QuitWindowsGamingInput(ctx);
 #endif
 
