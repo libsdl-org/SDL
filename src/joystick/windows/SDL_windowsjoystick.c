@@ -49,6 +49,7 @@
 #include "SDL_windowsjoystick_c.h"
 #include "SDL_dinputjoystick_c.h"
 #include "SDL_xinputjoystick_c.h"
+#include "SDL_rawinputjoystick_c.h"
 
 #include "../../haptic/windows/SDL_dinputhaptic_c.h"    /* For haptic hot plugging */
 #include "../../haptic/windows/SDL_xinputhaptic_c.h"    /* For haptic hot plugging */
@@ -109,9 +110,9 @@ typedef struct
 
 /* windowproc for our joystick detect thread message only window, to detect any USB device addition/removal */
 static LRESULT CALLBACK
-SDL_PrivateJoystickDetectProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
+SDL_PrivateJoystickDetectProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-    switch (message) {
+    switch (msg) {
     case WM_DEVICECHANGE:
         switch (wParam) {
         case DBT_DEVICEARRIVAL:
@@ -130,12 +131,20 @@ SDL_PrivateJoystickDetectProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lPa
         return 0;
     }
 
-    return DefWindowProc (hwnd, message, wParam, lParam);
+#if SDL_JOYSTICK_RAWINPUT
+    return CallWindowProc(RAWINPUT_WindowProc, hwnd, msg, wParam, lParam);
+#else
+    return CallWindowProc(DefWindowProc, hwnd, msg, wParam, lParam);
+#endif
 }
 
 static void
 SDL_CleanupDeviceNotification(SDL_DeviceNotificationData *data)
 {
+#if SDL_JOYSTICK_RAWINPUT
+    RAWINPUT_UnregisterNotifications();
+#endif
+
     if (data->hNotify)
         UnregisterDeviceNotification(data->hNotify);
 
@@ -188,6 +197,10 @@ SDL_CreateDeviceNotification(SDL_DeviceNotificationData *data)
         SDL_CleanupDeviceNotification(data);
         return -1;
     }
+
+#if SDL_JOYSTICK_RAWINPUT
+    RAWINPUT_RegisterNotifications(data->messageWindow);
+#endif
     return 0;
 }
 

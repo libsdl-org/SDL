@@ -192,7 +192,7 @@ HIDAPI_InitializeDiscovery()
 #if defined(__WIN32__)
     SDL_HIDAPI_discovery.m_nThreadID = SDL_ThreadID();
 
-    SDL_memset(&SDL_HIDAPI_discovery.m_wndClass, 0x0, sizeof(SDL_HIDAPI_discovery.m_wndClass));
+    SDL_zero(SDL_HIDAPI_discovery.m_wndClass);
     SDL_HIDAPI_discovery.m_wndClass.hInstance = GetModuleHandle(NULL);
     SDL_HIDAPI_discovery.m_wndClass.lpszClassName = "SDL_HIDAPI_DEVICE_DETECTION";
     SDL_HIDAPI_discovery.m_wndClass.lpfnWndProc = ControllerWndProc;      /* This function is called by windows */
@@ -203,8 +203,8 @@ HIDAPI_InitializeDiscovery()
 
     {
         DEV_BROADCAST_DEVICEINTERFACE_A devBroadcast;
-        SDL_memset( &devBroadcast, 0x0, sizeof( devBroadcast ) );
 
+        SDL_zero(devBroadcast);
         devBroadcast.dbcc_size = sizeof( devBroadcast );
         devBroadcast.dbcc_devicetype = DBT_DEVTYP_DEVICEINTERFACE;
         devBroadcast.dbcc_classguid = GUID_DEVINTERFACE_USB_DEVICE;
