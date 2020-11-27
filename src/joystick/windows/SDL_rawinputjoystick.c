@@ -640,6 +640,20 @@ RAWINPUT_GetPendingDeviceChanges(void)
     }
 }
 
+static SDL_bool pump_device_events;
+static void
+RAWINPUT_GetPendingDeviceEvents(void)
+{
+    if (pump_device_events) {
+        MSG msg;
+        while (PeekMessage(&msg, SDL_HelperWindow, WM_INPUT, WM_INPUT + 1, PM_REMOVE)) {
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+        }
+        pump_device_events = SDL_FALSE;
+    }
+}
+
 static int
 RAWINPUT_JoystickInit(void)
 {
@@ -673,6 +687,7 @@ RAWINPUT_JoystickInit(void)
 
     /* Get initial controller connect messages */
     RAWINPUT_GetPendingDeviceChanges();
+    pump_device_events = SDL_TRUE;
 
     return 0;
 }
@@ -917,6 +932,8 @@ RAWINPUT_PostUpdate(void)
     guide_button_candidate.joystick = NULL;
 
 #endif /* SDL_JOYSTICK_RAWINPUT_MATCHING */
+
+    pump_device_events = SDL_TRUE;
 }
 
 SDL_bool
@@ -1705,7 +1722,7 @@ RAWINPUT_UpdateOtherAPIs(SDL_Joystick *joystick)
 static void
 RAWINPUT_JoystickUpdate(SDL_Joystick *joystick)
 {
-    /* The input events have been handled in the main loop message pumping */
+    RAWINPUT_GetPendingDeviceEvents();
 
     RAWINPUT_UpdateOtherAPIs(joystick);
 }
