@@ -89,10 +89,7 @@ extern HWND SDL_HelperWindow;
 
 static SDL_bool SDL_RAWINPUT_inited = SDL_FALSE;
 static int SDL_RAWINPUT_numjoysticks = 0;
-static SDL_bool SDL_RAWINPUT_need_pump = SDL_TRUE;
 
-static void RAWINPUT_JoystickDetect(void);
-static void RAWINPUT_PumpMessages(void);
 static void RAWINPUT_JoystickClose(SDL_Joystick *joystick);
 
 typedef struct _SDL_RAWINPUT_Device
@@ -611,6 +608,20 @@ RAWINPUT_QuitWindowsGamingInput(RAWINPUT_DeviceContext *ctx)
 
 #endif /* SDL_JOYSTICK_RAWINPUT_WGI */
 
+
+/* Most of the time the raw input messages will get dispatched in the main event loop,
+ * but sometimes we want to get any pending device change messages immediately.
+ */
+static void
+RAWINPUT_GetPendingDeviceChanges(void)
+{
+    MSG msg;
+    while (PeekMessage(&msg, SDL_HelperWindow, WM_INPUT_DEVICE_CHANGE, WM_INPUT_DEVICE_CHANGE, PM_REMOVE)) {
+        TranslateMessage(&msg);
+        DispatchMessage(&msg);
+    }
+}
+
 static int
 RAWINPUT_JoystickInit(void)
 {
@@ -642,8 +653,9 @@ RAWINPUT_JoystickInit(void)
 
     SDL_RAWINPUT_inited = SDL_TRUE;
 
-    RAWINPUT_JoystickDetect();
-    RAWINPUT_PumpMessages();
+    /* Get initial controller connect messages */
+    RAWINPUT_GetPendingDeviceChanges();
+
     return 0;
 }
 
@@ -831,31 +843,6 @@ RAWINPUT_DelDevice(SDL_RAWINPUT_Device *device, SDL_bool send_event)
 }
 
 static void
-RAWINPUT_PumpMessages(void)
-{
-    if (SDL_RAWINPUT_need_pump) {
-        MSG msg;
-        while (PeekMessage(&msg, SDL_HelperWindow, WM_INPUT, WM_INPUT, PM_REMOVE)) {
-            TranslateMessage(&msg);
-            DispatchMessage(&msg);
-        }
-        SDL_RAWINPUT_need_pump = SDL_FALSE;
-    }
-}
-
-static void
-RAWINPUT_UpdateDeviceList(void)
-{
-    MSG msg;
-    /* In theory, want only WM_INPUT_DEVICE_CHANGE messages here, but PeekMessage returns nothing unless you also ask
-       for WM_INPUT */
-    while (PeekMessage(&msg, SDL_HelperWindow, WM_INPUT_DEVICE_CHANGE, WM_INPUT, PM_REMOVE)) {
-        TranslateMessage(&msg);
-        DispatchMessage(&msg);
-    }
-}
-
-static void
 RAWINPUT_PostUpdate(void)
 {
 #ifdef SDL_JOYSTICK_RAWINPUT_MATCHING
@@ -926,7 +913,7 @@ RAWINPUT_IsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version)
     SDL_RAWINPUT_Device *device;
 
     /* Make sure the device list is completely up to date when we check for device presence */
-    RAWINPUT_UpdateDeviceList();
+    RAWINPUT_GetPendingDeviceChanges();
 
     device = SDL_RAWINPUT_devices;
     while (device) {
@@ -941,12 +928,7 @@ RAWINPUT_IsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version)
 static void
 RAWINPUT_JoystickDetect(void)
 {
-    /* Just ensure the window's add/remove messages have been pumped */
-    RAWINPUT_UpdateDeviceList();
-
     RAWINPUT_PostUpdate();
-
-    SDL_RAWINPUT_need_pump = SDL_TRUE;
 }
 
 static SDL_RAWINPUT_Device *
@@ -1674,8 +1656,8 @@ RAWINPUT_UpdateOtherAPIs(SDL_Joystick *joystick)
 static void
 RAWINPUT_JoystickUpdate(SDL_Joystick *joystick)
 {
-    /* Ensure data messages have been pumped */
-    RAWINPUT_PumpMessages();
+    /* The input events have been handled in the main loop message pumping */
+
     RAWINPUT_UpdateOtherAPIs(joystick);
 }
 
