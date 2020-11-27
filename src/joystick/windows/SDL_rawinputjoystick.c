@@ -365,10 +365,6 @@ RAWINPUT_GuessXInputSlot(const WindowsMatchState *state, Uint8 *correlation_id, 
 
     *slot_idx = 0;
 
-    if (!state->any_data) {
-        return SDL_FALSE;
-    }
-
     match_count = 0;
     for (user_index = 0; user_index < XUSER_MAX_COUNT; ++user_index) {
         if (!xinput_state[user_index].used && RAWINPUT_XInputSlotMatches(state, user_index)) {
@@ -381,7 +377,10 @@ RAWINPUT_GuessXInputSlot(const WindowsMatchState *state, Uint8 *correlation_id, 
     /* Only return a match if we match exactly one, and we have some non-zero data (buttons or axes) that matched.
        Note that we're still invalidating *other* potential correlations if we have more than one match or we have no
        data. */
-    return (match_count == 1) ? SDL_TRUE : SDL_FALSE;
+    if (match_count == 1 && state->any_data) {
+        return SDL_TRUE;
+    }
+    return SDL_FALSE;
 }
 
 #endif /* SDL_JOYSTICK_RAWINPUT_XINPUT */
@@ -581,10 +580,6 @@ RAWINPUT_GuessWindowsGamingInputSlot(const WindowsMatchState *state, Uint8 *corr
 {
     int match_count;
 
-    if (!state->any_data) {
-        return SDL_FALSE;
-    }
-
     match_count = 0;
     for (int user_index = 0; user_index < wgi_state.per_gamepad_count; ++user_index) {
         WindowsGamingInputGamepadState *gamepad_state = wgi_state.per_gamepad[user_index];
@@ -598,7 +593,10 @@ RAWINPUT_GuessWindowsGamingInputSlot(const WindowsMatchState *state, Uint8 *corr
     /* Only return a match if we match exactly one, and we have some non-zero data (buttons or axes) that matched.
        Note that we're still invalidating *other* potential correlations if we have more than one match or we have no
        data. */
-    return (match_count == 1) ? SDL_TRUE : SDL_FALSE;
+    if (match_count == 1 && state->any_data) {
+        return SDL_TRUE;
+    }
+    return SDL_FALSE;
 }
 
 static void
