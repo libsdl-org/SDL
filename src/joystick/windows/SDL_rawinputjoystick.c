@@ -1354,6 +1354,18 @@ RAWINPUT_HandleStatePacket(SDL_Joystick *joystick, Uint8 *data, int size)
     for (i = 0; i < nhats; ++i) {
         HIDP_DATA *item = GetData(ctx->hat_indices[i], ctx->data, data_length);
         if (item) {
+#define HAT_MASK ((1 << SDL_CONTROLLER_BUTTON_DPAD_UP) | (1 << SDL_CONTROLLER_BUTTON_DPAD_DOWN) | (1 << SDL_CONTROLLER_BUTTON_DPAD_LEFT) | (1 << SDL_CONTROLLER_BUTTON_DPAD_RIGHT))
+            const int hat_map[] = {
+                0,
+                (1 << SDL_CONTROLLER_BUTTON_DPAD_UP),
+                (1 << SDL_CONTROLLER_BUTTON_DPAD_UP) | (1 << SDL_CONTROLLER_BUTTON_DPAD_RIGHT),
+                (1 << SDL_CONTROLLER_BUTTON_DPAD_RIGHT),
+                (1 << SDL_CONTROLLER_BUTTON_DPAD_DOWN) | (1 << SDL_CONTROLLER_BUTTON_DPAD_RIGHT),
+                (1 << SDL_CONTROLLER_BUTTON_DPAD_DOWN),
+                (1 << SDL_CONTROLLER_BUTTON_DPAD_DOWN) | (1 << SDL_CONTROLLER_BUTTON_DPAD_LEFT),
+                (1 << SDL_CONTROLLER_BUTTON_DPAD_LEFT),
+                (1 << SDL_CONTROLLER_BUTTON_DPAD_UP) | (1 << SDL_CONTROLLER_BUTTON_DPAD_LEFT),
+            };
             const Uint8 hat_states[] = {
                 SDL_HAT_CENTERED,
                 SDL_HAT_UP,
@@ -1368,6 +1380,7 @@ RAWINPUT_HandleStatePacket(SDL_Joystick *joystick, Uint8 *data, int size)
             ULONG state = item->RawValue;
 
             if (state < SDL_arraysize(hat_states)) {
+                match_state = (match_state & ~HAT_MASK) | hat_map[state];
                 SDL_PrivateJoystickHat(joystick, i, hat_states[state]);
             }
         }
