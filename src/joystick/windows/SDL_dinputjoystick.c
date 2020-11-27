@@ -674,7 +674,7 @@ EnumJoysticksCallback(const DIDEVICEINSTANCE * pdidInstance, VOID * pContext)
 #endif
 
 #ifdef SDL_JOYSTICK_RAWINPUT
-    if (RAWINPUT_IsDevicePresent(vendor, product, 0)) {
+    if (RAWINPUT_IsDevicePresent(vendor, product, 0, pNewJoystick->joystickname)) {
         /* The RAWINPUT driver is taking care of this device */
         SDL_free(pNewJoystick);
         return DIENUM_CONTINUE;

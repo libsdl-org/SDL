@@ -923,7 +923,7 @@ RAWINPUT_IsEnabled()
 }
 
 SDL_bool
-RAWINPUT_IsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version)
+RAWINPUT_IsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
 {
     SDL_RAWINPUT_Device *device;
 
@@ -932,9 +932,16 @@ RAWINPUT_IsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version)
 
     device = SDL_RAWINPUT_devices;
     while (device) {
-        if (device->vendor_id == vendor_id && device->product_id == product_id) {
+        if (vendor_id == device->vendor_id && product_id == device->product_id ) {
             return SDL_TRUE;
         }
+
+        /* The Xbox 360 wireless controller shows up as product 0 in WGI */
+        if (vendor_id == device->vendor_id && product_id == 0 &&
+            name && SDL_strstr(device->name, name) != NULL) {
+            return SDL_TRUE;
+        }
+
         device = device->next;
     }
     return SDL_FALSE;
