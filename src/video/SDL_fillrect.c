@@ -314,6 +314,11 @@ SDL_FillRects(SDL_Surface * dst, const SDL_Rect * rects, int count,
         return SDL_SetError("SDL_FillRect(): Unsupported surface format");
     }
 
+    /* Nothing to do */
+    if (dst->w == 0 || dst->h == 0) {
+        return 0;
+    }
+
     /* Perform software fill */
     if (!dst->pixels) {
         return SDL_SetError("SDL_FillRect(): You must lock the surface");
