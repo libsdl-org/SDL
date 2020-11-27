@@ -1033,6 +1033,16 @@ RAWINPUT_JoystickGetDeviceInstanceID(int device_index)
 }
 
 static int
+RAWINPUT_SortValueCaps(const void *A, const void *B)
+{
+    HIDP_VALUE_CAPS *capsA = (HIDP_VALUE_CAPS *)A;
+    HIDP_VALUE_CAPS *capsB = (HIDP_VALUE_CAPS *)B;
+
+    /* Sort by Usage for single values, or UsageMax for range of values */
+    return (int)capsA->NotRange.Usage - capsB->NotRange.Usage;
+}
+
+static int
 RAWINPUT_JoystickOpen(SDL_Joystick *joystick, int device_index)
 {
     SDL_RAWINPUT_Device *device = RAWINPUT_GetDeviceByIndex(device_index);
@@ -1091,6 +1101,9 @@ RAWINPUT_JoystickOpen(SDL_Joystick *joystick, int device_index)
         RAWINPUT_JoystickClose(joystick);
         return SDL_SetError("Couldn't get device value capabilities");
     }
+
+    /* Sort the axes by usage, so X comes before Y, etc. */
+    SDL_qsort(value_caps, caps.NumberInputValueCaps, sizeof(*value_caps), RAWINPUT_SortValueCaps);
 
     for (i = 0; i < caps.NumberInputButtonCaps; ++i) {
         HIDP_BUTTON_CAPS *cap = &button_caps[i];
@@ -1360,20 +1373,12 @@ RAWINPUT_HandleStatePacket(SDL_Joystick *joystick, Uint8 *data, int size)
         (1 << SDL_CONTROLLER_BUTTON_DPAD_LEFT),
         (1 << SDL_CONTROLLER_BUTTON_DPAD_UP) | (1 << SDL_CONTROLLER_BUTTON_DPAD_LEFT),
     };
-#ifdef SDL_JOYSTICK_RAWINPUT_MATCH_AXES
-    static const int axis_map[] = {
-        SDL_CONTROLLER_AXIS_LEFTY,
-        SDL_CONTROLLER_AXIS_LEFTX,
-        SDL_CONTROLLER_AXIS_RIGHTY,
-        SDL_CONTROLLER_AXIS_RIGHTX
-    };
-#endif
     Uint32 match_state = ctx->match_state;
     /* Update match_state with button bit, then fall through */
 #define SDL_PrivateJoystickButton(joystick, button, state) if (button < SDL_arraysize(button_map)) { if (state) match_state |= 1 << button_map[button]; else match_state &= ~(1 << button_map[button]); } SDL_PrivateJoystickButton(joystick, button, state)
 #ifdef SDL_JOYSTICK_RAWINPUT_MATCH_AXES
     /* Grab high 4 bits of value, then fall through */
-#define SDL_PrivateJoystickAxis(joystick, axis, value) if (axis < SDL_arraysize(axis_map)) match_state = (match_state & ~(0xF << (4 * axis_map[axis] + 16))) | ((value) & 0xF000) << (4 * axis_map[axis] + 4); SDL_PrivateJoystickAxis(joystick, axis, value)
+#define SDL_PrivateJoystickAxis(joystick, axis, value) if (axis < 4) match_state = (match_state & ~(0xF << (4 * axis + 16))) | ((value) & 0xF000) << (4 * axis + 4); SDL_PrivateJoystickAxis(joystick, axis, value)
 #endif
 #endif /* SDL_JOYSTICK_RAWINPUT_MATCHING */
 
