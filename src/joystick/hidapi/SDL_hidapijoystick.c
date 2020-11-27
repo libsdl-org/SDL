@@ -902,7 +902,8 @@ HIDAPI_IsEquivalentToDevice(Uint16 vendor_id, Uint16 product_id, SDL_HIDAPI_Devi
        }
 
        /* If we're looking for the raw input Xbox One controller, match it against any other Xbox One controller */
-       if (product_id == 0x02ff &&
+       if (vendor_id == USB_VENDOR_MICROSOFT &&
+           product_id == USB_PRODUCT_XBOX_ONE_RAW_INPUT_CONTROLLER &&
            SDL_GetJoystickGameControllerType(device->name, device->vendor_id, device->product_id, device->interface_number, device->interface_class, device->interface_subclass, device->interface_protocol) == SDL_CONTROLLER_TYPE_XBOXONE) {
            return SDL_TRUE;
        }
