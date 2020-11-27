@@ -171,7 +171,7 @@ GuessXInputDevice(Uint8 userid, Uint16 *pVID, Uint16 *pPID, Uint16 *pVersion)
 
     for (i = 0; i < device_count; i++) {
         RID_DEVICE_INFO rdi;
-        char devName[128];
+        char devName[MAX_PATH];
         UINT rdiSize = sizeof(rdi);
         UINT nameSize = SDL_arraysize(devName);
 
