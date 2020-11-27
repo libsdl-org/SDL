@@ -168,7 +168,9 @@ static struct {
 } guide_button_candidate;
 
 typedef struct WindowsMatchState {
+#ifdef SDL_JOYSTICK_RAWINPUT_MATCH_AXES
     SHORT match_axes[4];
+#endif
 #ifdef SDL_JOYSTICK_RAWINPUT_XINPUT
     WORD xinput_buttons;
 #endif
@@ -180,8 +182,12 @@ typedef struct WindowsMatchState {
 
 static void RAWINPUT_FillMatchState(WindowsMatchState *state, Uint32 match_state)
 {
+#ifdef SDL_JOYSTICK_RAWINPUT_MATCH_AXES
     int ii;
+#endif
+
     state->any_data = SDL_FALSE;
+#ifdef SDL_JOYSTICK_RAWINPUT_MATCH_AXES
     /*  SHORT state->match_axes[4] = {
             (match_state & 0x000F0000) >> 4,
             (match_state & 0x00F00000) >> 8,
@@ -194,6 +200,7 @@ static void RAWINPUT_FillMatchState(WindowsMatchState *state, Uint32 match_state
             state->any_data = SDL_TRUE;
         }
     }
+#endif /* SDL_JOYSTICK_RAWINPUT_MATCH_AXES */
 
 #ifdef SDL_JOYSTICK_RAWINPUT_XINPUT
     /* Match axes by checking if the distance between the high 4 bits of axis and the 4 bits from match_state is 1 or less */
@@ -337,7 +344,11 @@ RAWINPUT_XInputSlotMatches(const WindowsMatchState *state, Uint8 slot_idx)
 {
     if (xinput_state[slot_idx].connected) {
         WORD xinput_buttons = xinput_state[slot_idx].state.Gamepad.wButtons;
-        if ((xinput_buttons & ~XINPUT_GAMEPAD_GUIDE) == state->xinput_buttons && XInputAxesMatch(xinput_state[slot_idx].state.Gamepad)) {
+        if ((xinput_buttons & ~XINPUT_GAMEPAD_GUIDE) == state->xinput_buttons
+#ifdef SDL_JOYSTICK_RAWINPUT_MATCH_AXES
+            && XInputAxesMatch(xinput_state[slot_idx].state.Gamepad)
+#endif
+            ) {
             return SDL_TRUE;
         }
     }
@@ -553,7 +564,11 @@ static SDL_bool
 RAWINPUT_WindowsGamingInputSlotMatches(const WindowsMatchState *state, WindowsGamingInputGamepadState *slot)
 {
     Uint32 wgi_buttons = slot->state.Buttons;
-    if ((wgi_buttons & 0x3FFF) == state->wgi_buttons && WindowsGamingInputAxesMatch(slot->state)) {
+    if ((wgi_buttons & 0x3FFF) == state->wgi_buttons
+#ifdef SDL_JOYSTICK_RAWINPUT_MATCH_AXES
+            && WindowsGamingInputAxesMatch(slot->state)
+#endif
+       ) {
         return SDL_TRUE;
     }
     return SDL_FALSE;
@@ -1279,13 +1294,7 @@ RAWINPUT_HandleStatePacket(SDL_Joystick *joystick, Uint8 *data, int size)
     RAWINPUT_DeviceContext *ctx = joystick->hwdata;
 #ifdef SDL_JOYSTICK_RAWINPUT_MATCHING
     /* Map new buttons and axes into game controller controls */
-    static int axis_map[] = {
-        SDL_CONTROLLER_AXIS_LEFTY,
-        SDL_CONTROLLER_AXIS_LEFTX,
-        SDL_CONTROLLER_AXIS_RIGHTY,
-        SDL_CONTROLLER_AXIS_RIGHTX
-    };
-    static int button_map[] = {
+    static const int button_map[] = {
         SDL_CONTROLLER_BUTTON_A,
         SDL_CONTROLLER_BUTTON_B,
         SDL_CONTROLLER_BUTTON_X,
@@ -1297,12 +1306,35 @@ RAWINPUT_HandleStatePacket(SDL_Joystick *joystick, Uint8 *data, int size)
         SDL_CONTROLLER_BUTTON_LEFTSTICK,
         SDL_CONTROLLER_BUTTON_RIGHTSTICK
     };
+#define HAT_MASK ((1 << SDL_CONTROLLER_BUTTON_DPAD_UP) | (1 << SDL_CONTROLLER_BUTTON_DPAD_DOWN) | (1 << SDL_CONTROLLER_BUTTON_DPAD_LEFT) | (1 << SDL_CONTROLLER_BUTTON_DPAD_RIGHT))
+    static const int hat_map[] = {
+        0,
+        (1 << SDL_CONTROLLER_BUTTON_DPAD_UP),
+        (1 << SDL_CONTROLLER_BUTTON_DPAD_UP) | (1 << SDL_CONTROLLER_BUTTON_DPAD_RIGHT),
+        (1 << SDL_CONTROLLER_BUTTON_DPAD_RIGHT),
+        (1 << SDL_CONTROLLER_BUTTON_DPAD_DOWN) | (1 << SDL_CONTROLLER_BUTTON_DPAD_RIGHT),
+        (1 << SDL_CONTROLLER_BUTTON_DPAD_DOWN),
+        (1 << SDL_CONTROLLER_BUTTON_DPAD_DOWN) | (1 << SDL_CONTROLLER_BUTTON_DPAD_LEFT),
+        (1 << SDL_CONTROLLER_BUTTON_DPAD_LEFT),
+        (1 << SDL_CONTROLLER_BUTTON_DPAD_UP) | (1 << SDL_CONTROLLER_BUTTON_DPAD_LEFT),
+    };
+#ifdef SDL_JOYSTICK_RAWINPUT_MATCH_AXES
+    static const int axis_map[] = {
+        SDL_CONTROLLER_AXIS_LEFTY,
+        SDL_CONTROLLER_AXIS_LEFTX,
+        SDL_CONTROLLER_AXIS_RIGHTY,
+        SDL_CONTROLLER_AXIS_RIGHTX
+    };
+#endif
     Uint32 match_state = ctx->match_state;
     /* Update match_state with button bit, then fall through */
 #define SDL_PrivateJoystickButton(joystick, button, state) if (button < SDL_arraysize(button_map)) { if (state) match_state |= 1 << button_map[button]; else match_state &= ~(1 << button_map[button]); } SDL_PrivateJoystickButton(joystick, button, state)
+#ifdef SDL_JOYSTICK_RAWINPUT_MATCH_AXES
     /* Grab high 4 bits of value, then fall through */
 #define SDL_PrivateJoystickAxis(joystick, axis, value) if (axis < SDL_arraysize(axis_map)) match_state = (match_state & ~(0xF << (4 * axis_map[axis] + 16))) | ((value) & 0xF000) << (4 * axis_map[axis] + 4); SDL_PrivateJoystickAxis(joystick, axis, value)
 #endif
+#endif /* SDL_JOYSTICK_RAWINPUT_MATCHING */
+
     ULONG data_length = ctx->max_data_length;
     int i;
     int nbuttons = joystick->nbuttons - (ctx->guide_hack * 1);
@@ -1335,18 +1367,6 @@ RAWINPUT_HandleStatePacket(SDL_Joystick *joystick, Uint8 *data, int size)
     for (i = 0; i < nhats; ++i) {
         HIDP_DATA *item = GetData(ctx->hat_indices[i], ctx->data, data_length);
         if (item) {
-#define HAT_MASK ((1 << SDL_CONTROLLER_BUTTON_DPAD_UP) | (1 << SDL_CONTROLLER_BUTTON_DPAD_DOWN) | (1 << SDL_CONTROLLER_BUTTON_DPAD_LEFT) | (1 << SDL_CONTROLLER_BUTTON_DPAD_RIGHT))
-            const int hat_map[] = {
-                0,
-                (1 << SDL_CONTROLLER_BUTTON_DPAD_UP),
-                (1 << SDL_CONTROLLER_BUTTON_DPAD_UP) | (1 << SDL_CONTROLLER_BUTTON_DPAD_RIGHT),
-                (1 << SDL_CONTROLLER_BUTTON_DPAD_RIGHT),
-                (1 << SDL_CONTROLLER_BUTTON_DPAD_DOWN) | (1 << SDL_CONTROLLER_BUTTON_DPAD_RIGHT),
-                (1 << SDL_CONTROLLER_BUTTON_DPAD_DOWN),
-                (1 << SDL_CONTROLLER_BUTTON_DPAD_DOWN) | (1 << SDL_CONTROLLER_BUTTON_DPAD_LEFT),
-                (1 << SDL_CONTROLLER_BUTTON_DPAD_LEFT),
-                (1 << SDL_CONTROLLER_BUTTON_DPAD_UP) | (1 << SDL_CONTROLLER_BUTTON_DPAD_LEFT),
-            };
             const Uint8 hat_states[] = {
                 SDL_HAT_CENTERED,
                 SDL_HAT_UP,
@@ -1361,14 +1381,18 @@ RAWINPUT_HandleStatePacket(SDL_Joystick *joystick, Uint8 *data, int size)
             ULONG state = item->RawValue;
 
             if (state < SDL_arraysize(hat_states)) {
+#ifdef SDL_JOYSTICK_RAWINPUT_MATCHING
                 match_state = (match_state & ~HAT_MASK) | hat_map[state];
+#endif
                 SDL_PrivateJoystickHat(joystick, i, hat_states[state]);
             }
         }
     }
 
-#ifdef SDL_JOYSTICK_RAWINPUT_MATCHING
+#ifdef SDL_PrivateJoystickButton
 #undef SDL_PrivateJoystickButton
+#endif
+#ifdef SDL_PrivateJoystickAxis
 #undef SDL_PrivateJoystickAxis
 #endif
 
@@ -1446,7 +1470,7 @@ RAWINPUT_UpdateOtherAPIs(SDL_Joystick *joystick)
               let's set it to 3 to be safe.  An incorrect un-correlation will simply result in lower precision
               triggers for a frame. */
             if (ctx->wgi_uncorrelate_count >= 3) {
-#ifdef DEBUG_JOYSTICK
+#ifdef DEBUG_RAWINPUT
                 SDL_Log("UN-Correlated joystick %d to WindowsGamingInput device #%d\n", joystick->instance_id, ctx->wgi_slot);
 #endif
                 RAWINPUT_MarkWindowsGamingInputSlotFree(ctx->wgi_slot);
@@ -1478,7 +1502,7 @@ RAWINPUT_UpdateOtherAPIs(SDL_Joystick *joystick)
                         if (new_correlation_count == 2) {
                             /* correlation stayed steady and uncontested across multiple frames, guaranteed match */
                             ctx->wgi_correlated = SDL_TRUE;
-#ifdef DEBUG_JOYSTICK
+#ifdef DEBUG_RAWINPUT
                             SDL_Log("Correlated joystick %d to WindowsGamingInput device #%d\n", joystick->instance_id, slot_idx);
 #endif
                             correlated = SDL_TRUE;
@@ -1539,7 +1563,7 @@ RAWINPUT_UpdateOtherAPIs(SDL_Joystick *joystick)
                   let's set it to 3 to be safe.  An incorrect un-correlation will simply result in lower precision
                   triggers for a frame. */
                 if (ctx->xinput_uncorrelate_count >= 3) {
-#ifdef DEBUG_JOYSTICK
+#ifdef DEBUG_RAWINPUT
                     SDL_Log("UN-Correlated joystick %d to XInput device #%d\n", joystick->instance_id, ctx->xinput_slot);
 #endif
                     RAWINPUT_MarkXInputSlotFree(ctx->xinput_slot);
@@ -1571,7 +1595,7 @@ RAWINPUT_UpdateOtherAPIs(SDL_Joystick *joystick)
                             if (new_correlation_count == 2) {
                                 /* correlation stayed steady and uncontested across multiple frames, guaranteed match */
                                 ctx->xinput_correlated = SDL_TRUE;
-#ifdef DEBUG_JOYSTICK
+#ifdef DEBUG_RAWINPUT
                                 SDL_Log("Correlated joystick %d to XInput device #%d\n", joystick->instance_id, slot_idx);
 #endif
                                 correlated = SDL_TRUE;
