@@ -933,6 +933,14 @@ RAWINPUT_IsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, co
     /* Make sure the device list is completely up to date when we check for device presence */
     RAWINPUT_GetPendingDeviceChanges();
 
+    /* If we're being asked about a device, that means another API just detected one, so rescan */
+#ifdef SDL_JOYSTICK_RAWINPUT_XINPUT
+    xinput_device_change = SDL_TRUE;
+#endif
+#ifdef SDL_JOYSTICK_RAWINPUT_WGI
+    wgi_state.need_device_list_update = SDL_TRUE;
+#endif
+
     device = SDL_RAWINPUT_devices;
     while (device) {
         if (vendor_id == device->vendor_id && product_id == device->product_id ) {
