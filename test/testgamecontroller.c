@@ -68,6 +68,141 @@ SDL_bool done = SDL_FALSE;
 SDL_bool set_LED = SDL_FALSE;
 SDL_Texture *background_front, *background_back, *button, *axis;
 SDL_GameController *gamecontroller;
+SDL_GameController **gamecontrollers;
+int num_controllers = 0;
+
+static void UpdateWindowTitle()
+{
+    if (!window) {
+        return;
+    }
+
+    if (gamecontroller) {
+        const char *name = SDL_GameControllerName(gamecontroller);
+        const char *serial = SDL_GameControllerGetSerial(gamecontroller);
+        const char *basetitle = "Game Controller Test: ";
+        const size_t titlelen = SDL_strlen(basetitle) + SDL_strlen(name) + (serial ? 3 + SDL_strlen(serial) : 0) + 1;
+        char *title = (char *)SDL_malloc(titlelen);
+
+        retval = SDL_FALSE;
+        done = SDL_FALSE;
+
+        if (title) {
+            SDL_snprintf(title, titlelen, "%s%s", basetitle, name);
+            if (serial) {
+                SDL_strlcat(title, " (", titlelen);
+                SDL_strlcat(title, serial, titlelen);
+                SDL_strlcat(title, ")", titlelen);
+            }
+            SDL_SetWindowTitle(window, title);
+            SDL_free(title);
+        }
+    } else {
+        SDL_SetWindowTitle(window, "Waiting for controller...");
+    }
+}
+
+static int FindController(SDL_JoystickID controller_id)
+{
+    int i;
+
+    for (i = 0; i < num_controllers; ++i) {
+        if (controller_id == SDL_JoystickInstanceID(SDL_GameControllerGetJoystick(gamecontrollers[i]))) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+static void AddController(int device_index, SDL_bool verbose)
+{
+    SDL_JoystickID controller_id = SDL_JoystickGetDeviceInstanceID(device_index);
+    SDL_GameController *controller;
+    SDL_GameController **controllers;
+
+    controller_id = SDL_JoystickGetDeviceInstanceID(device_index);
+    if (controller_id < 0) {
+        SDL_Log("Couldn't get controller ID: %s\n", SDL_GetError());
+        return;
+    }
+
+    if (FindController(controller_id) >= 0) {
+        /* We already have this controller */
+        return;
+    }
+
+    controller = SDL_GameControllerOpen(device_index);
+    if (!controller) {
+        SDL_Log("Couldn't open controller: %s\n", SDL_GetError());
+        return;
+    }
+
+    controllers = (SDL_GameController **)SDL_realloc(gamecontrollers, (num_controllers + 1) * sizeof(*controllers));
+    if (!controllers) {
+        SDL_GameControllerClose(controller);
+        return;
+    }
+
+    controllers[num_controllers++] = controller;
+    gamecontrollers = controllers;
+    gamecontroller = controller;
+
+    if (verbose) {
+        const char *name = SDL_GameControllerName(gamecontroller);
+        SDL_Log("Opened game controller %s\n", name);
+    }
+
+    if (SDL_GameControllerHasSensor(gamecontroller, SDL_SENSOR_ACCEL)) {
+        if (verbose) {
+            SDL_Log("Enabling accelerometer\n");
+        }
+        SDL_GameControllerSetSensorEnabled(gamecontroller, SDL_SENSOR_ACCEL, SDL_TRUE);
+    }
+
+    if (SDL_GameControllerHasSensor(gamecontroller, SDL_SENSOR_GYRO)) {
+        if (verbose) {
+            SDL_Log("Enabling gyro\n");
+        }
+        SDL_GameControllerSetSensorEnabled(gamecontroller, SDL_SENSOR_GYRO, SDL_TRUE);
+    }
+
+    UpdateWindowTitle();
+}
+
+static void SetController(SDL_JoystickID controller)
+{
+    int i = FindController(controller);
+
+    if (i < 0) {
+        return;
+    }
+
+    if (gamecontroller != gamecontrollers[i]) {
+        gamecontroller = gamecontrollers[i];
+        UpdateWindowTitle();
+    }
+}
+
+static void DelController(SDL_JoystickID controller)
+{
+    int i = FindController(controller);
+
+    if (i < 0) {
+        return;
+    }
+
+    --num_controllers;
+    if (i < num_controllers) {
+        SDL_memcpy(&gamecontrollers[i], &gamecontrollers[i+1], (num_controllers - i) * sizeof(*gamecontrollers));
+    }
+
+    if (num_controllers > 0) {
+        gamecontroller = gamecontrollers[0];
+    } else {
+        gamecontroller = NULL;
+    }
+    UpdateWindowTitle();
+}
 
 static SDL_Texture *
 LoadTexture(SDL_Renderer *renderer, const char *file, SDL_bool transparent)
@@ -97,52 +232,6 @@ LoadTexture(SDL_Renderer *renderer, const char *file, SDL_bool transparent)
     return texture;
 }
 
-static void
-InitGameController()
-{
-    const char *name = SDL_GameControllerName(gamecontroller);
-
-    SDL_Log("Opened game controller %s\n", name);
-
-    if (SDL_GameControllerHasSensor(gamecontroller, SDL_SENSOR_ACCEL)) {
-        SDL_Log("Enabling accelerometer\n");
-        SDL_GameControllerSetSensorEnabled(gamecontroller, SDL_SENSOR_ACCEL, SDL_TRUE);
-    }
-
-    if (SDL_GameControllerHasSensor(gamecontroller, SDL_SENSOR_GYRO)) {
-        SDL_Log("Enabling gyro\n");
-        SDL_GameControllerSetSensorEnabled(gamecontroller, SDL_SENSOR_GYRO, SDL_TRUE);
-    }
-}
-
-static void
-UpdateWindowTitle()
-{
-    if (gamecontroller) {
-        const char *name = SDL_GameControllerName(gamecontroller);
-        const char *serial = SDL_GameControllerGetSerial(gamecontroller);
-        const char *basetitle = "Game Controller Test: ";
-        const size_t titlelen = SDL_strlen(basetitle) + SDL_strlen(name) + (serial ? 3 + SDL_strlen(serial) : 0) + 1;
-        char *title = (char *)SDL_malloc(titlelen);
-
-        retval = SDL_FALSE;
-        done = SDL_FALSE;
-
-        if (title) {
-            SDL_snprintf(title, titlelen, "%s%s", basetitle, name);
-            if (serial) {
-                SDL_strlcat(title, " (", titlelen);
-                SDL_strlcat(title, serial, titlelen);
-                SDL_strlcat(title, ")", titlelen);
-            }
-            SDL_SetWindowTitle(window, title);
-            SDL_free(title);
-        }
-    } else {
-        SDL_SetWindowTitle(window, "Waiting for controller...");
-    }
-}
-
 static Uint16 ConvertAxisToRumble(Sint16 axis)
 {
     /* Only start rumbling if the axis is past the halfway point */
@@ -164,30 +253,13 @@ loop(void *arg)
     while (SDL_PollEvent(&event)) {
         switch (event.type) {
         case SDL_CONTROLLERDEVICEADDED:
-            SDL_Log("Game controller device %d added.\n", (int) event.cdevice.which);
-            if (gamecontroller) {
-                SDL_GameControllerClose(gamecontroller);
-            }
-
-            gamecontroller = SDL_GameControllerOpen(event.cdevice.which);
-            if (gamecontroller) {
-                InitGameController();
-            } else {
-                SDL_Log("Couldn't open controller: %s\n", SDL_GetError());
-            }
-            UpdateWindowTitle();
+            SDL_Log("Game controller device %d added.\n", (int) SDL_JoystickGetDeviceInstanceID(event.cdevice.which));
+            AddController(event.cdevice.which, SDL_TRUE);
             break;
 
         case SDL_CONTROLLERDEVICEREMOVED:
             SDL_Log("Game controller device %d removed.\n", (int) event.cdevice.which);
-            if (gamecontroller && event.cdevice.which == SDL_JoystickInstanceID(SDL_GameControllerGetJoystick(gamecontroller))) {
-                SDL_GameControllerClose(gamecontroller);
-                gamecontroller = SDL_GameControllerOpen(0);
-                if (gamecontroller) {
-                    InitGameController();
-                }
-                UpdateWindowTitle();
-            }
+            DelController(event.cdevice.which);
             break;
 
         case SDL_CONTROLLERTOUCHPADDOWN:
@@ -214,11 +286,17 @@ loop(void *arg)
             break;
 
         case SDL_CONTROLLERAXISMOTION:
+            if (event.caxis.value <= (-SDL_JOYSTICK_AXIS_MAX / 2) || event.caxis.value >= (SDL_JOYSTICK_AXIS_MAX / 2)) {
+                SetController(event.caxis.which);
+            }
             SDL_Log("Controller axis %s changed to %d\n", SDL_GameControllerGetStringForAxis((SDL_GameControllerAxis)event.caxis.axis), event.caxis.value);
             break;
 
         case SDL_CONTROLLERBUTTONDOWN:
         case SDL_CONTROLLERBUTTONUP:
+            if (event.type == SDL_CONTROLLERBUTTONDOWN) {
+                SetController(event.cbutton.which);
+            }
             SDL_Log("Controller button %s %s\n", SDL_GameControllerGetStringForButton((SDL_GameControllerButton)event.cbutton.button), event.cbutton.state ? "pressed" : "released");
             break;
 
@@ -339,7 +417,8 @@ int
 main(int argc, char *argv[])
 {
     int i;
-    int nController = 0;
+    int controller_count = 0;
+    int controller_index = 0;
     char guid[64];
 
     SDL_SetHint(SDL_HINT_ACCELEROMETER_AS_JOYSTICK, "0");
@@ -377,8 +456,8 @@ main(int argc, char *argv[])
         SDL_JoystickGetGUIDString(SDL_JoystickGetDeviceGUID(i),
                                   guid, sizeof (guid));
 
-        if ( SDL_IsGameController(i) ) {
-            nController++;
+        if (SDL_IsGameController(i)) {
+            controller_count++;
             name = SDL_GameControllerNameForIndex(i);
             switch (SDL_GameControllerTypeForIndex(i)) {
             case SDL_CONTROLLER_TYPE_XBOX360:
@@ -403,6 +482,7 @@ main(int argc, char *argv[])
                 description = "Game Controller";
                 break;
             }
+            AddController(i, SDL_FALSE);
         } else {
             name = SDL_JoystickNameForIndex(i);
             description = "Joystick";
@@ -411,7 +491,7 @@ main(int argc, char *argv[])
             description, i, name ? name : "Unknown", guid,
             SDL_JoystickGetDeviceVendor(i), SDL_JoystickGetDeviceProduct(i), SDL_JoystickGetDevicePlayerIndex(i));
     }
-    SDL_Log("There are %d game controller(s) attached (%d joystick(s))\n", nController, SDL_NumJoysticks());
+    SDL_Log("There are %d game controller(s) attached (%d joystick(s))\n", controller_count, SDL_NumJoysticks());
 
     /* Create a window to display controller state */
     window = SDL_CreateWindow("Game Controller Test", SDL_WINDOWPOS_CENTERED,
@@ -453,9 +533,13 @@ main(int argc, char *argv[])
     /*SDL_RenderSetLogicalSize(screen, background->w, background->h);*/
 
     if (argv[1] && *argv[1] != '-') {
-        gamecontroller = SDL_GameControllerOpen(SDL_atoi(argv[1]));
+        controller_index = SDL_atoi(argv[1]);
     }
-
+    if (controller_index < num_controllers) {
+        gamecontroller = gamecontrollers[controller_index];
+    } else {
+        gamecontroller = NULL;
+    }
     UpdateWindowTitle();
 
     /* Loop, getting controller events! */
