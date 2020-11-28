@@ -635,6 +635,17 @@ RAWINPUT_AcquireDevice(SDL_RAWINPUT_Device *device)
 static void
 RAWINPUT_ReleaseDevice(SDL_RAWINPUT_Device *device)
 {
+#ifdef SDL_JOYSTICK_RAWINPUT_XINPUT
+    if (device->joystick) {
+        RAWINPUT_DeviceContext *ctx = device->joystick->hwdata;
+
+        if (ctx->xinput_enabled && ctx->xinput_correlated) {
+            RAWINPUT_MarkXInputSlotFree(ctx->xinput_slot);
+            ctx->xinput_correlated = SDL_FALSE;
+        }
+    }
+#endif /* SDL_JOYSTICK_RAWINPUT_XINPUT */
+
     if (SDL_AtomicDecRef(&device->refcount)) {
         if (device->preparsed_data) {
             SDL_HidD_FreePreparsedData(device->preparsed_data);
