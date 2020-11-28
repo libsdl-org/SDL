@@ -68,6 +68,7 @@ typedef struct WindowsGamingInputGamepadState WindowsGamingInputGamepadState;
 #endif
 
 /*#define DEBUG_RAWINPUT*/
+#define DEBUG_RAWINPUT
 
 #ifndef RIDEV_EXINPUTSINK
 #define RIDEV_EXINPUTSINK       0x00001000
@@ -624,31 +625,6 @@ RAWINPUT_QuitWindowsGamingInput(RAWINPUT_DeviceContext *ctx)
 #endif /* SDL_JOYSTICK_RAWINPUT_WGI */
 
 
-static int
-RAWINPUT_JoystickInit(void)
-{
-    SDL_assert(!SDL_RAWINPUT_inited);
-
-    if (!SDL_GetHintBoolean(SDL_HINT_JOYSTICK_RAWINPUT, SDL_TRUE)) {
-        return -1;
-    }
-
-    if (WIN_LoadHIDDLL() < 0) {
-        return -1;
-    }
-
-    SDL_RAWINPUT_mutex = SDL_CreateMutex();
-    SDL_RAWINPUT_inited = SDL_TRUE;
-
-    return 0;
-}
-
-static int
-RAWINPUT_JoystickGetCount(void)
-{
-    return SDL_RAWINPUT_numjoysticks;
-}
-
 static SDL_RAWINPUT_Device *
 RAWINPUT_AcquireDevice(SDL_RAWINPUT_Device *device)
 {
@@ -826,6 +802,91 @@ RAWINPUT_DelDevice(SDL_RAWINPUT_Device *device, SDL_bool send_event)
     }
 }
 
+static int
+RAWINPUT_JoystickInit(void)
+{
+    UINT device_count = 0;
+
+    SDL_assert(!SDL_RAWINPUT_inited);
+
+    if (!SDL_GetHintBoolean(SDL_HINT_JOYSTICK_RAWINPUT, SDL_TRUE)) {
+        return -1;
+    }
+
+    if (WIN_LoadHIDDLL() < 0) {
+        return -1;
+    }
+
+    SDL_RAWINPUT_mutex = SDL_CreateMutex();
+    SDL_RAWINPUT_inited = SDL_TRUE;
+
+    if ((GetRawInputDeviceList(NULL, &device_count, sizeof(RAWINPUTDEVICELIST)) != -1) && device_count > 0) {
+        PRAWINPUTDEVICELIST devices = NULL;
+        UINT i;
+
+        devices = (PRAWINPUTDEVICELIST)SDL_malloc(sizeof(RAWINPUTDEVICELIST) * device_count);
+        if (devices) {
+            if (GetRawInputDeviceList(devices, &device_count, sizeof(RAWINPUTDEVICELIST)) != -1) {
+                for (i = 0; i < device_count; ++i) {
+                    RAWINPUT_AddDevice(devices[i].hDevice);
+                }
+            }
+            SDL_free(devices);
+        }
+    }
+
+    return 0;
+}
+
+static int
+RAWINPUT_JoystickGetCount(void)
+{
+    return SDL_RAWINPUT_numjoysticks;
+}
+
+SDL_bool
+RAWINPUT_IsEnabled()
+{
+    return SDL_RAWINPUT_inited;
+}
+
+SDL_bool
+RAWINPUT_IsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
+{
+    SDL_RAWINPUT_Device *device;
+
+    /* If we're being asked about a device, that means another API just detected one, so rescan */
+#ifdef SDL_JOYSTICK_RAWINPUT_XINPUT
+    xinput_device_change = SDL_TRUE;
+#endif
+#ifdef SDL_JOYSTICK_RAWINPUT_WGI
+    wgi_state.need_device_list_update = SDL_TRUE;
+#endif
+
+    device = SDL_RAWINPUT_devices;
+    while (device) {
+        if (vendor_id == device->vendor_id && product_id == device->product_id ) {
+            return SDL_TRUE;
+        }
+
+        /* The Xbox 360 wireless controller shows up as product 0 in WGI */
+        if (vendor_id == device->vendor_id && product_id == 0 &&
+            name && SDL_strstr(device->name, name) != NULL) {
+            return SDL_TRUE;
+        }
+
+        /* The Xbox One controller shows up as a hardcoded raw input VID/PID */
+        if (name && SDL_strcmp(name, "Xbox One Game Controller") == 0 &&
+            device->vendor_id == USB_VENDOR_MICROSOFT &&
+            device->product_id == USB_PRODUCT_XBOX_ONE_RAW_INPUT_CONTROLLER) {
+            return SDL_TRUE;
+        }
+
+        device = device->next;
+    }
+    return SDL_FALSE;
+}
+
 static void
 RAWINPUT_PostUpdate(void)
 {
@@ -883,49 +944,6 @@ RAWINPUT_PostUpdate(void)
     guide_button_candidate.joystick = NULL;
 
 #endif /* SDL_JOYSTICK_RAWINPUT_MATCHING */
-}
-
-SDL_bool
-RAWINPUT_IsEnabled()
-{
-    return SDL_RAWINPUT_inited;
-}
-
-SDL_bool
-RAWINPUT_IsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
-{
-    SDL_RAWINPUT_Device *device;
-
-    /* If we're being asked about a device, that means another API just detected one, so rescan */
-#ifdef SDL_JOYSTICK_RAWINPUT_XINPUT
-    xinput_device_change = SDL_TRUE;
-#endif
-#ifdef SDL_JOYSTICK_RAWINPUT_WGI
-    wgi_state.need_device_list_update = SDL_TRUE;
-#endif
-
-    device = SDL_RAWINPUT_devices;
-    while (device) {
-        if (vendor_id == device->vendor_id && product_id == device->product_id ) {
-            return SDL_TRUE;
-        }
-
-        /* The Xbox 360 wireless controller shows up as product 0 in WGI */
-        if (vendor_id == device->vendor_id && product_id == 0 &&
-            name && SDL_strstr(device->name, name) != NULL) {
-            return SDL_TRUE;
-        }
-
-        /* The Xbox One controller shows up as a hardcoded raw input VID/PID */
-        if (name && SDL_strcmp(name, "Xbox One Game Controller") == 0 &&
-            device->vendor_id == USB_VENDOR_MICROSOFT &&
-            device->product_id == USB_PRODUCT_XBOX_ONE_RAW_INPUT_CONTROLLER) {
-            return SDL_TRUE;
-        }
-
-        device = device->next;
-    }
-    return SDL_FALSE;
 }
 
 static void
@@ -1842,7 +1860,6 @@ RAWINPUT_JoystickQuit(void)
     SDL_UnlockMutex(SDL_RAWINPUT_mutex);
     SDL_DestroyMutex(SDL_RAWINPUT_mutex);
     SDL_RAWINPUT_mutex = NULL;
-
 }
 
 static SDL_bool
