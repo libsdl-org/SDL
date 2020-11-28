@@ -191,6 +191,8 @@ static void DelController(SDL_JoystickID controller)
         return;
     }
 
+    SDL_GameControllerClose(gamecontrollers[i]);
+
     --num_controllers;
     if (i < num_controllers) {
         SDL_memcpy(&gamecontrollers[i], &gamecontrollers[i+1], (num_controllers - i) * sizeof(*gamecontrollers));
