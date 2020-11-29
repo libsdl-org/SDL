@@ -985,7 +985,7 @@ VITA_GXM_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect,
     Uint32 pixel_format, void *pixels, int pitch)
 {
     // TODO: read from texture rendertarget. Although no-one sane should do it.
-    if (render->target) {
+    if (renderer->target) {
         return SDL_Unsupported();
     }
 
