@@ -545,7 +545,6 @@ HIDAPI_DriverPS5_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
     /* Initialize the joystick capabilities */
     joystick->nbuttons = 17;
     joystick->naxes = SDL_CONTROLLER_AXIS_MAX;
-    joystick->epowerlevel = SDL_JOYSTICK_POWER_WIRED;
 
     SDL_PrivateJoystickAddTouchpad(joystick, 2);
     SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO);
