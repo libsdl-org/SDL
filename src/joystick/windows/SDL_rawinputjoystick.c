@@ -553,7 +553,7 @@ RAWINPUT_InitWindowsGamingInput(RAWINPUT_DeviceContext *ctx)
                 LPTSTR pNamespace = L"Windows.Gaming.Input.Gamepad";
                 HSTRING hNamespaceString;
 
-                hr = WindowsCreateStringFunc(pNamespace, SDL_wcslen(pNamespace), &hNamespaceString);
+                hr = WindowsCreateStringFunc(pNamespace, (UINT32)SDL_wcslen(pNamespace), &hNamespaceString);
                 if (SUCCEEDED(hr)) {
                     RoGetActivationFactoryFunc(hNamespaceString, &SDL_IID_IGamepadStatics, &wgi_state.gamepad_statics);
                     WindowsDeleteStringFunc(hNamespaceString);
