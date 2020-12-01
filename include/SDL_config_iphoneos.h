@@ -138,8 +138,9 @@
 /* Enable the stub haptic driver (src/haptic/dummy/\*.c) */
 #define SDL_HAPTIC_DUMMY 1
 
-/* Enable MFi joystick support */
-#define SDL_JOYSTICK_HIDAPI 1
+/* Enable joystick support */
+/* Only enable HIDAPI support if you want to support Steam Controllers on iOS and tvOS */
+/*#define SDL_JOYSTICK_HIDAPI 1*/
 #define SDL_JOYSTICK_MFI 1
 #define SDL_JOYSTICK_VIRTUAL    1
 
