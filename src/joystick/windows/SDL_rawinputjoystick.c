@@ -282,6 +282,7 @@ static void RAWINPUT_FillMatchState(WindowsMatchState *state, Uint32 match_state
 
 static struct {
     XINPUT_STATE_EX state;
+    XINPUT_BATTERY_INFORMATION_EX battery;
     SDL_bool connected; /* Currently has an active XInput device */
     SDL_bool used; /* Is currently mapped to an SDL device */
     Uint8 correlation_id;
@@ -308,6 +309,8 @@ RAWINPUT_UpdateXInput()
                 if (XINPUTGETSTATE(user_index, &xinput_state[user_index].state) != ERROR_SUCCESS) {
                     xinput_state[user_index].connected = SDL_FALSE;
                 }
+                xinput_state[user_index].battery.BatteryType = BATTERY_TYPE_UNKNOWN;
+                XINPUTGETBATTERYINFORMATION(user_index, BATTERY_DEVTYPE_GAMEPAD, &xinput_state[user_index].battery);
             }
         }
     }
@@ -1206,7 +1209,7 @@ RAWINPUT_JoystickOpen(SDL_Joystick *joystick, int device_index)
         }
     }
 
-    joystick->epowerlevel = SDL_JOYSTICK_POWER_WIRED;
+    SDL_PrivateJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_UNKNOWN);
 
     return 0;
 }
@@ -1655,6 +1658,8 @@ RAWINPUT_UpdateOtherAPIs(SDL_Joystick *joystick)
     if (!has_trigger_data && ctx->xinput_enabled && ctx->xinput_correlated) {
         RAWINPUT_UpdateXInput();
         if (xinput_state[ctx->xinput_slot].connected) {
+            XINPUT_BATTERY_INFORMATION_EX *battery_info = &xinput_state[ctx->xinput_slot].battery;
+
             if (ctx->guide_hack) {
                 SDL_PrivateJoystickButton(joystick, guide_button, (xinput_state[ctx->xinput_slot].state.Gamepad.wButtons & XINPUT_GAMEPAD_GUIDE) ? SDL_PRESSED : SDL_RELEASED);
             }
@@ -1663,6 +1668,30 @@ RAWINPUT_UpdateOtherAPIs(SDL_Joystick *joystick)
                 SDL_PrivateJoystickAxis(joystick, right_trigger, ((int)xinput_state[ctx->xinput_slot].state.Gamepad.bRightTrigger * 257) - 32768);
             }
             has_trigger_data = SDL_TRUE;
+
+            if (battery_info->BatteryType != BATTERY_TYPE_UNKNOWN) {
+                SDL_JoystickPowerLevel ePowerLevel = SDL_JOYSTICK_POWER_UNKNOWN;
+                if (battery_info->BatteryType == BATTERY_TYPE_WIRED) {
+                    ePowerLevel = SDL_JOYSTICK_POWER_WIRED;
+                } else {
+                    switch (battery_info->BatteryLevel) {
+                    case BATTERY_LEVEL_EMPTY:
+                        ePowerLevel = SDL_JOYSTICK_POWER_EMPTY;
+                        break;
+                    case BATTERY_LEVEL_LOW:
+                        ePowerLevel = SDL_JOYSTICK_POWER_LOW;
+                        break;
+                    case BATTERY_LEVEL_MEDIUM:
+                        ePowerLevel = SDL_JOYSTICK_POWER_MEDIUM;
+                        break;
+                    default:
+                    case BATTERY_LEVEL_FULL:
+                        ePowerLevel = SDL_JOYSTICK_POWER_FULL;
+                        break;
+                    }
+                }
+                SDL_PrivateJoystickBatteryLevel(joystick, ePowerLevel);
+            }
         }
     }
 #endif /* SDL_JOYSTICK_RAWINPUT_XINPUT */
