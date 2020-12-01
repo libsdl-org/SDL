@@ -20,6 +20,7 @@ include(CheckIncludeFiles)
 include(CheckIncludeFile)
 include(CheckSymbolExists)
 include(CheckCSourceCompiles)
+include(CheckOBJCSourceCompiles)
 include(CheckCSourceRuns)
 include(CheckCCompilerFlag)
 include(CheckTypeSize)
@@ -1759,9 +1760,7 @@ elseif(APPLE)
     endif()
 
     if(VIDEO_VULKAN OR VIDEO_METAL OR RENDER_METAL)
-      set(ORIG_CMAKE_REQUIRED_FLAGS ${CMAKE_REQUIRED_FLAGS})
-      set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -ObjC")
-      check_c_source_compiles("
+      check_objc_source_compiles("
         #include <AvailabilityMacros.h>
         #import <Metal/Metal.h>
         #import <QuartzCore/CAMetalLayer.h>
@@ -1771,10 +1770,8 @@ elseif(APPLE)
         #endif
         int main()
         {
-            return 0;
         }
         " HAVE_FRAMEWORK_METAL)
-      set(CMAKE_REQUIRED_FLAGS ${ORIG_CMAKE_REQUIRED_FLAGS})
       if(HAVE_FRAMEWORK_METAL)
         set(SDL_FRAMEWORK_METAL 1)
         set(SDL_FRAMEWORK_QUARTZCORE 1)
