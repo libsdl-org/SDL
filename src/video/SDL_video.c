@@ -1672,6 +1672,8 @@ int
 SDL_RecreateWindow(SDL_Window * window, Uint32 flags)
 {
     SDL_bool loaded_opengl = SDL_FALSE;
+    SDL_bool need_gl_unload = SDL_FALSE;
+    SDL_bool need_gl_load = SDL_FALSE;
 
     if ((flags & SDL_WINDOW_OPENGL) && !_this->GL_CreateContext) {
         return SDL_SetError("OpenGL support is either not configured in SDL "
@@ -1705,19 +1707,24 @@ SDL_RecreateWindow(SDL_Window * window, Uint32 flags)
 
     if ((window->flags & SDL_WINDOW_OPENGL) != (flags & SDL_WINDOW_OPENGL)) {
         if (flags & SDL_WINDOW_OPENGL) {
-            if (SDL_GL_LoadLibrary(NULL) < 0) {
-                return -1;
-            }
-            loaded_opengl = SDL_TRUE;
+            need_gl_load = SDL_TRUE;
         } else {
-            SDL_GL_UnloadLibrary();
+            need_gl_unload = SDL_TRUE;
         }
     } else if (window->flags & SDL_WINDOW_OPENGL) {
-        SDL_GL_UnloadLibrary();
-        if (SDL_GL_LoadLibrary(NULL) < 0) {
-            return -1;
+        need_gl_unload = SDL_TRUE;
+        need_gl_load  = SDL_TRUE;
+    }
+
+    if ((window->flags & SDL_WINDOW_METAL) != (flags & SDL_WINDOW_METAL)) {
+        if (flags & SDL_WINDOW_METAL) {
+            need_gl_load = SDL_TRUE;
+        } else {
+            need_gl_unload = SDL_TRUE;
         }
-        loaded_opengl = SDL_TRUE;
+    } else if (window->flags & SDL_WINDOW_METAL) {
+        need_gl_unload = SDL_TRUE;
+        need_gl_load  = SDL_TRUE;
     }
 
     if ((window->flags & SDL_WINDOW_VULKAN) != (flags & SDL_WINDOW_VULKAN)) {
@@ -1725,26 +1732,30 @@ SDL_RecreateWindow(SDL_Window * window, Uint32 flags)
         return -1;
     }
 
-    /*
-    if ((window->flags & SDL_WINDOW_METAL) != (flags & SDL_WINDOW_METAL)) {
-        SDL_SetError("Can't change SDL_WINDOW_METAL window flag");
-        return -1;
-    }
-    */
-
-    if ((window->flags & SDL_WINDOW_VULKAN) && (flags & SDL_WINDOW_OPENGL)) {
+    if ((flags & SDL_WINDOW_VULKAN) && (flags & SDL_WINDOW_OPENGL)) {
         SDL_SetError("Vulkan and OpenGL not supported on same window");
         return -1;
     }
 
-    if ((window->flags & SDL_WINDOW_METAL) && (flags & SDL_WINDOW_OPENGL)) {
+    if ((flags & SDL_WINDOW_METAL) && (flags & SDL_WINDOW_OPENGL)) {
         SDL_SetError("Metal and OpenGL not supported on same window");
         return -1;
     }
 
-    if ((window->flags & SDL_WINDOW_METAL) && (flags & SDL_WINDOW_VULKAN)) {
+    if ((flags & SDL_WINDOW_METAL) && (flags & SDL_WINDOW_VULKAN)) {
         SDL_SetError("Metal and Vulkan not supported on same window");
         return -1;
+    }
+
+    if (need_gl_unload) {
+        SDL_GL_UnloadLibrary();
+    }
+
+    if (need_gl_load) {
+        if (SDL_GL_LoadLibrary(NULL) < 0) {
+            return -1;
+        }
+        loaded_opengl = SDL_TRUE;
     }
 
     window->flags = ((flags & CREATE_FLAGS) | SDL_WINDOW_HIDDEN);
