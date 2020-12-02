@@ -1545,7 +1545,7 @@ GL_UnbindTexture (SDL_Renderer * renderer, SDL_Texture *texture)
 }
 
 
-SDL_Renderer *
+static SDL_Renderer *
 GL_CreateRenderer(SDL_Window * window, Uint32 flags)
 {
     SDL_Renderer *renderer;
@@ -1568,7 +1568,7 @@ GL_CreateRenderer(SDL_Window * window, Uint32 flags)
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, RENDERER_CONTEXT_MAJOR);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, RENDERER_CONTEXT_MINOR);
 
-        if (SDL_RecreateWindow(window, window_flags | SDL_WINDOW_OPENGL) < 0) {
+        if (SDL_RecreateWindow(window, (window_flags & ~(SDL_WINDOW_VULKAN | SDL_WINDOW_METAL)) | SDL_WINDOW_OPENGL) < 0) {
             goto error;
         }
     }
