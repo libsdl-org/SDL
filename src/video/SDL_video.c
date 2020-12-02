@@ -1674,6 +1674,9 @@ SDL_RecreateWindow(SDL_Window * window, Uint32 flags)
     SDL_bool loaded_opengl = SDL_FALSE;
     SDL_bool need_gl_unload = SDL_FALSE;
     SDL_bool need_gl_load = SDL_FALSE;
+    SDL_bool loaded_vulkan = SDL_FALSE;
+    SDL_bool need_vulkan_unload = SDL_FALSE;
+    SDL_bool need_vulkan_load = SDL_FALSE;
 
     if ((flags & SDL_WINDOW_OPENGL) && !_this->GL_CreateContext) {
         return SDL_SetError("OpenGL support is either not configured in SDL "
@@ -1728,8 +1731,14 @@ SDL_RecreateWindow(SDL_Window * window, Uint32 flags)
     }
 
     if ((window->flags & SDL_WINDOW_VULKAN) != (flags & SDL_WINDOW_VULKAN)) {
-        SDL_SetError("Can't change SDL_WINDOW_VULKAN window flag");
-        return -1;
+        if (flags & SDL_WINDOW_VULKAN) {
+            need_vulkan_load = SDL_TRUE;
+        } else {
+            need_vulkan_unload = SDL_TRUE;
+        }
+    } else if (window->flags & SDL_WINDOW_VULKAN) {
+        need_vulkan_unload = SDL_TRUE;
+        need_vulkan_load  = SDL_TRUE;
     }
 
     if ((flags & SDL_WINDOW_VULKAN) && (flags & SDL_WINDOW_OPENGL)) {
@@ -1751,11 +1760,22 @@ SDL_RecreateWindow(SDL_Window * window, Uint32 flags)
         SDL_GL_UnloadLibrary();
     }
 
+    if (need_vulkan_unload) {
+        SDL_Vulkan_UnloadLibrary();
+    }
+
     if (need_gl_load) {
         if (SDL_GL_LoadLibrary(NULL) < 0) {
             return -1;
         }
         loaded_opengl = SDL_TRUE;
+    }
+
+    if (need_vulkan_unload) {
+        if (SDL_Vulkan_LoadLibrary(NULL) < 0) {
+            return -1;
+        }
+        loaded_vulkan = SDL_TRUE;
     }
 
     window->flags = ((flags & CREATE_FLAGS) | SDL_WINDOW_HIDDEN);
@@ -1767,6 +1787,10 @@ SDL_RecreateWindow(SDL_Window * window, Uint32 flags)
             if (loaded_opengl) {
                 SDL_GL_UnloadLibrary();
                 window->flags &= ~SDL_WINDOW_OPENGL;
+            }
+            if (loaded_vulkan) {
+                SDL_Vulkan_UnloadLibrary();
+                window->flags &= ~SDL_WINDOW_VULKAN;
             }
             return -1;
         }
