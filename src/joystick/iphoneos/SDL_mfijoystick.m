@@ -479,9 +479,9 @@ static int
 IOS_JoystickInit(void)
 {
 #if defined(__MACOSX__)
-	if (!is_macos11()) {
-		return 0;
-	}
+    if (!is_macos11()) {
+        return 0;
+    }
 #endif
 
     @autoreleasepool {
