@@ -596,6 +596,9 @@ HIDAPI_DriverXboxOne_HandleModePacket(SDL_Joystick *joystick, SDL_DriverXboxOne_
     SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_GUIDE, (data[4] & 0x01) ? SDL_PRESSED : SDL_RELEASED);
 }
 
+/*
+ * Xbox One S with firmware 3.1.1221 uses a 16 byte packet and the GUIDE button in a separate packet
+ */
 static void
 HIDAPI_DriverXboxOneBluetooth_HandleButtons16(SDL_Joystick *joystick, SDL_DriverXboxOne_Context *ctx, Uint8 *data, int size)
 {
@@ -617,8 +620,14 @@ HIDAPI_DriverXboxOneBluetooth_HandleButtons16(SDL_Joystick *joystick, SDL_Driver
 
 }
 
+/*
+ * Xbox One S with firmware 4.8.1923 uses a 17 byte packet with BACK button in byte 16 and the GUIDE button in a separate packet
+ * Xbox One Elite Series 2 with firmware 4.7.1872 uses a 55 byte packet with BACK button in byte 16, paddles starting at byte 33, and the GUIDE button in a separate packet
+ * Xbox One Elite Series 2 with firmware 4.8.1908 uses a 33 byte packet with BACK button in byte 16, paddles starting at byte 17, and the GUIDE button in a separate packet
+ * Xbox One Series X with firmware 5.5.2641 uses a 17 byte packet with BACK and GUIDE buttons in byte 15, and SHARE button in byte 17
+ */
 static void
-HIDAPI_DriverXboxOneBluetooth_HandleButtons17(SDL_Joystick *joystick, SDL_DriverXboxOne_Context *ctx, Uint8 *data, int size)
+HIDAPI_DriverXboxOneBluetooth_HandleButtons(SDL_Joystick *joystick, SDL_DriverXboxOne_Context *ctx, Uint8 *data, int size)
 {
     if (ctx->last_state[14] != data[14]) {
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_A, (data[14] & 0x01) ? SDL_PRESSED : SDL_RELEASED);
@@ -630,39 +639,21 @@ HIDAPI_DriverXboxOneBluetooth_HandleButtons17(SDL_Joystick *joystick, SDL_Driver
     }
 
     if (ctx->last_state[15] != data[15]) {
-        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_BACK, (data[15] & 0x04) ? SDL_PRESSED : SDL_RELEASED);
+        if (ctx->has_share_button) {
+            SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_BACK, (data[15] & 0x04) ? SDL_PRESSED : SDL_RELEASED);
+            SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_GUIDE, (data[15] & 0x10) ? SDL_PRESSED : SDL_RELEASED);
+        }
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_START, (data[15] & 0x08) ? SDL_PRESSED : SDL_RELEASED);
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_LEFTSTICK, (data[15] & 0x20) ? SDL_PRESSED : SDL_RELEASED);
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_RIGHTSTICK, (data[15] & 0x40) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_GUIDE, (data[15] & 0x10) ? SDL_PRESSED : SDL_RELEASED);
     }
 
     if (ctx->last_state[16] != data[16]) {
-        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_MISC1, (data[16] & 0x01) ? SDL_PRESSED : SDL_RELEASED);
-    }
-}
-
-static void
-HIDAPI_DriverXboxOneBluetooth_HandleButtonsElite(SDL_Joystick *joystick, SDL_DriverXboxOne_Context *ctx, Uint8 *data, int size)
-{
-    if (ctx->last_state[14] != data[14]) {
-        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_A, (data[14] & 0x01) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_B, (data[14] & 0x02) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_X, (data[14] & 0x08) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_Y, (data[14] & 0x10) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_LEFTSHOULDER, (data[14] & 0x40) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_RIGHTSHOULDER, (data[14] & 0x80) ? SDL_PRESSED : SDL_RELEASED);
-    }
-
-    if (ctx->last_state[15] != data[15]) {
-        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_START, (data[15] & 0x08) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_LEFTSTICK, (data[15] & 0x20) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_RIGHTSTICK, (data[15] & 0x40) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_GUIDE, (data[15] & 0x10) ? SDL_PRESSED : SDL_RELEASED);
-    }
-
-    if (ctx->last_state[16] != data[16]) {
-        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_BACK, (data[16] & 0x01) ? SDL_PRESSED : SDL_RELEASED);
+        if (ctx->has_share_button) {
+            SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_MISC1, (data[16] & 0x01) ? SDL_PRESSED : SDL_RELEASED);
+        } else {
+            SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_BACK, (data[16] & 0x01) ? SDL_PRESSED : SDL_RELEASED);
+        }
     }
 
     /*
@@ -727,14 +718,10 @@ HIDAPI_DriverXboxOneBluetooth_HandleStatePacket(SDL_Joystick *joystick, SDL_Driv
     Sint16 axis;
 
     if (size == 16) {
-        /* Xbox One S, with separate report for guide button */
+        /* Original Xbox One S, with separate report for guide button */
         HIDAPI_DriverXboxOneBluetooth_HandleButtons16(joystick, ctx, data, size);
-    } else if (size == 17) {
-        /* Xbox One Series X, with guide button in the last byte of the report */
-        HIDAPI_DriverXboxOneBluetooth_HandleButtons17(joystick, ctx, data, size);
-    } else if (size > 17) {
-        /* Xbox One Elite Series 2, with paddles */
-        HIDAPI_DriverXboxOneBluetooth_HandleButtonsElite(joystick, ctx, data, size);
+    } else {
+        HIDAPI_DriverXboxOneBluetooth_HandleButtons(joystick, ctx, data, size);
     }
 
     if (ctx->last_state[13] != data[13]) {
