@@ -625,7 +625,7 @@ LINUX_JoystickDetect(void)
     }
     else
 #endif
-	{
+    {
         LINUX_FallbackJoystickDetect();
     }
 

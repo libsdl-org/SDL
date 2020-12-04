@@ -130,7 +130,7 @@ static const SDL_UDEV_Symbols *udev_ctx = NULL;
 #undef make_path
 #undef read_thread
 
-#ifdef HAVE_HIDAPI_NVAGIPMAN
+#ifdef SDL_JOYSTICK_HIDAPI_STEAMXBOX
 #define HAVE_DRIVER_BACKEND 1
 #endif
 
@@ -160,9 +160,9 @@ static const SDL_UDEV_Symbols *udev_ctx = NULL;
 #define hid_get_indexed_string          DRIVER_hid_get_indexed_string
 #define hid_error                       DRIVER_hid_error
 
-#ifdef HAVE_HIDAPI_NVAGIPMAN
+#ifdef SDL_JOYSTICK_HIDAPI_STEAMXBOX
 #undef HIDAPI_H__
-#include "nvagipman/hid.c"
+#include "steamxbox/hid.c"
 #else
 #error Need a driver hid.c for this platform!
 #endif
