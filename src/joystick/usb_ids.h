@@ -53,6 +53,7 @@
 #define USB_PRODUCT_XBOX_ONE_SERIES_X                   0x0b12
 #define USB_PRODUCT_XBOX_ONE_SERIES_X_BLUETOOTH         0x0b13
 #define USB_PRODUCT_XBOX_ONE_RAW_INPUT_CONTROLLER       0x02ff
+#define USB_PRODUCT_XBOX_ONE_XINPUT_CONTROLLER          0x02fe    /* Made up product ID for XInput */
 
 /* USB usage pages */
 #define USB_USAGEPAGE_GENERIC_DESKTOP   0x0001
