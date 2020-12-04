@@ -1899,10 +1899,15 @@ SDL_vsnprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, const char *fmt, 
                     {
                         /* In practice this is used on Windows for WCHAR strings */
                         wchar_t *wide_arg = va_arg(ap, wchar_t *);
-                        char *arg = SDL_iconv_string("UTF-8", "UTF-16LE", (char *)(wide_arg), (SDL_wcslen(wide_arg)+1)*sizeof(*wide_arg));
-                        info.pad_zeroes = SDL_FALSE;
-                        len = SDL_PrintString(text, left, &info, arg);
-                        SDL_free(arg);
+                        if (wide_arg) {
+                            char *arg = SDL_iconv_string("UTF-8", "UTF-16LE", (char *)(wide_arg), (SDL_wcslen(wide_arg)+1)*sizeof(*wide_arg));
+                            info.pad_zeroes = SDL_FALSE;
+                            len = SDL_PrintString(text, left, &info, arg);
+                            SDL_free(arg);
+                        } else {
+                            info.pad_zeroes = SDL_FALSE;
+                            len = SDL_PrintString(text, left, &info, NULL);
+                        }
                         done = SDL_TRUE;
                     }
                     break;
