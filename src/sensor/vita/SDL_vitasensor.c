@@ -45,8 +45,8 @@ SDL_VITA_SensorInit(void)
     sceMotionReset();
     sceMotionStartSampling();
 //    sceMotionMagnetometerOn();
-    sceMotionSetAngleThreshold(40);
-    sceMotionSetGyroBiasCorrection(SCE_TRUE);
+    sceMotionSetAngleThreshold(0);
+    sceMotionSetGyroBiasCorrection(SCE_FALSE);
 
     SDL_sensors_count = 2;
 
@@ -122,39 +122,65 @@ SDL_VITA_SensorGetDeviceInstanceID(int device_index)
 static int
 SDL_VITA_SensorOpen(SDL_Sensor *sensor, int device_index)
 {
+    struct sensor_hwdata *hwdata;
+
+    hwdata = (struct sensor_hwdata *)SDL_calloc(1, sizeof(*hwdata));
+    if (hwdata == NULL) {
+        return SDL_OutOfMemory();
+    }
+    sensor->hwdata = hwdata;
+
     return 0;
 }
 
 static void
 SDL_VITA_SensorUpdate(SDL_Sensor *sensor)
 {
-    SceMotionState motionState;
-    int err = SCE_OK;
-    err = sceMotionGetState(&motionState);
-    if (err != SCE_OK) return;
+    SceMotionSensorState motionState[SCE_MOTION_MAX_NUM_STATES];
+    SDL_memset(motionState, 0, sizeof(motionState));
 
-    switch (sensor->type)
+    int err = SCE_OK;
+    err = sceMotionGetSensorState(motionState, SCE_MOTION_MAX_NUM_STATES);
+    if (err != SCE_OK)
     {
-        case SDL_SENSOR_ACCEL:
+        return;
+    }
+
+    for (int i = 0; i < SCE_MOTION_MAX_NUM_STATES; i++)
+    {
+        if (sensor->hwdata->counter < motionState[i].counter)
         {
-            float data[3];
-            data[0] = motionState.acceleration.x * SDL_STANDARD_GRAVITY;
-            data[1] = motionState.acceleration.y * SDL_STANDARD_GRAVITY;
-            data[2] = motionState.acceleration.z * SDL_STANDARD_GRAVITY;
-            SDL_PrivateSensorUpdate(sensor, data, SDL_arraysize(data));
+            sensor->hwdata->counter = motionState[i].counter;
+            switch (sensor->type)
+            {
+                case SDL_SENSOR_ACCEL:
+                {
+                    float data[3];
+                    data[0] = motionState[i].accelerometer.x * SDL_STANDARD_GRAVITY;
+                    data[1] = motionState[i].accelerometer.y * SDL_STANDARD_GRAVITY;
+                    data[2] = motionState[i].accelerometer.z * SDL_STANDARD_GRAVITY;
+                    if (SDL_memcmp(data, sensor->hwdata->data, sizeof(data)) != 0) {
+                       SDL_PrivateSensorUpdate(sensor, data, SDL_arraysize(data));
+                       SDL_memcpy(sensor->hwdata->data, data, sizeof(data));
+                    }
+                }
+                break;
+                case SDL_SENSOR_GYRO:
+                {
+                    float data[3];
+                    data[0] = motionState[i].gyro.x;
+                    data[1] = motionState[i].gyro.y;
+                    data[2] = motionState[i].gyro.z;
+                    if (SDL_memcmp(data, sensor->hwdata->data, sizeof(data)) != 0) {
+                       SDL_PrivateSensorUpdate(sensor, data, SDL_arraysize(data));
+                       SDL_memcpy(sensor->hwdata->data, data, sizeof(data));
+                    }
+                }
+                break;
+                default:
+                break;
+            }
         }
-        break;
-        case SDL_SENSOR_GYRO:
-        {
-            float data[3];
-            data[0] = motionState.angularVelocity.x;
-            data[1] = motionState.angularVelocity.y;
-            data[2] = motionState.angularVelocity.z;
-            SDL_PrivateSensorUpdate(sensor, data, SDL_arraysize(data));
-        }
-        break;
-        default:
-        break;
     }
 }
 

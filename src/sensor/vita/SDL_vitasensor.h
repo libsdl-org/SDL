@@ -20,4 +20,11 @@
 */
 #include "SDL_config.h"
 
+/* The private structure used to keep track of a sensor */
+struct sensor_hwdata
+{
+    float data[3];
+    int counter;
+};
+
 /* vi: set ts=4 sw=4 expandtab: */
