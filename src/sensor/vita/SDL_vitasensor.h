@@ -24,7 +24,7 @@
 struct sensor_hwdata
 {
     float data[3];
-    int counter;
+    Uint32 counter;
 };
 
 /* vi: set ts=4 sw=4 expandtab: */

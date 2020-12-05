@@ -44,9 +44,10 @@ SDL_VITA_SensorInit(void)
 {
     sceMotionReset();
     sceMotionStartSampling();
-//    sceMotionMagnetometerOn();
+    // not sure if these are needed, we are reading unfiltered state
     sceMotionSetAngleThreshold(0);
-    sceMotionSetGyroBiasCorrection(SCE_FALSE);
+    sceMotionSetDeadband(SCE_FALSE);
+    sceMotionSetTiltCorrection(SCE_FALSE);
 
     SDL_sensors_count = 2;
 
