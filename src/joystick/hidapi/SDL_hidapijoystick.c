@@ -833,6 +833,11 @@ HIDAPI_DelDevice(SDL_HIDAPI_Device *device)
 
             HIDAPI_CleanupDeviceDriver(device);
 
+            /* Make sure the rumble thread is done with this device */
+            while (SDL_AtomicGet(&device->rumble_pending) > 0) {
+                SDL_Delay(10);
+            }
+
             SDL_DestroyMutex(device->dev_lock);
             SDL_free(device->serial);
             SDL_free(device->name);
@@ -1193,10 +1198,13 @@ HIDAPI_JoystickClose(SDL_Joystick * joystick)
 {
     if (joystick->hwdata) {
         SDL_HIDAPI_Device *device = joystick->hwdata->device;
+        int i;
 
-        /* Wait for pending rumble to complete */
-        while (SDL_AtomicGet(&device->rumble_pending) > 0) {
-            SDL_Delay(10);
+        /* Wait up to 30 ms for pending rumble to complete */
+        for (i = 0; i < 3; ++i) {
+            while (SDL_AtomicGet(&device->rumble_pending) > 0) {
+                SDL_Delay(10);
+            }
         }
 
         device->driver->CloseJoystick(device, joystick);
@@ -1215,11 +1223,14 @@ HIDAPI_JoystickQuit(void)
 
     HIDAPI_ShutdownDiscovery();
 
+    SDL_HIDAPI_QuitRumble();
+
     while (SDL_HIDAPI_devices) {
         HIDAPI_DelDevice(SDL_HIDAPI_devices);
     }
 
-    SDL_HIDAPI_QuitRumble();
+    /* Make sure the drivers cleaned up properly */
+    SDL_assert(SDL_HIDAPI_numjoysticks == 0);
 
     for (i = 0; i < SDL_arraysize(SDL_HIDAPI_drivers); ++i) {
         SDL_HIDAPI_DeviceDriver *driver = SDL_HIDAPI_drivers[i];
@@ -1229,9 +1240,6 @@ HIDAPI_JoystickQuit(void)
                         SDL_HIDAPIDriverHintChanged, NULL);
 
     hid_exit();
-
-    /* Make sure the drivers cleaned up properly */
-    SDL_assert(SDL_HIDAPI_numjoysticks == 0);
 
     shutting_down = SDL_FALSE;
     initialized = SDL_FALSE;

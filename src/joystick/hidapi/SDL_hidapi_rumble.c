@@ -90,6 +90,8 @@ static int SDL_HIDAPI_RumbleThread(void *data)
 static void
 SDL_HIDAPI_StopRumbleThread(SDL_HIDAPI_RumbleContext *ctx)
 {
+    SDL_HIDAPI_RumbleRequest *request;
+
     SDL_AtomicSet(&ctx->running, SDL_FALSE);
 
     if (ctx->thread) {
@@ -100,9 +102,18 @@ SDL_HIDAPI_StopRumbleThread(SDL_HIDAPI_RumbleContext *ctx)
         ctx->thread = NULL;
     }
 
-    /* This should always be called with an empty queue */
-    SDL_assert(!ctx->requests_head);
-    SDL_assert(!ctx->requests_tail);
+    SDL_LockMutex(ctx->lock);
+    while (ctx->requests_tail) {
+        request = ctx->requests_tail;
+        if (request == ctx->requests_head) {
+            ctx->requests_head = NULL;
+        }
+        ctx->requests_tail = request->prev;
+
+        (void)SDL_AtomicDecRef(&request->device->rumble_pending);
+        SDL_free(request);
+    }
+    SDL_UnlockMutex(ctx->lock);
 
     if (ctx->request_sem) {
         SDL_DestroySemaphore(ctx->request_sem);
