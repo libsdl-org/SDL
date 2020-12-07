@@ -20,6 +20,8 @@ LIBS = mmpm2.lib libuls.lib libconv.lib $(LIBM)
 CFLAGS = -bt=os2 -d0 -q -bm -5s -fp5 -fpi87 -sg -oteanbmier -ei
 # max warnings:
 CFLAGS+= -wx
+# newer OpenWatcom versions enable W303 by default
+CFLAGS+= -wcd=303
 # building dll:
 CFLAGS+= -bd
 # the include paths :
