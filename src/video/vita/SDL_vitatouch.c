@@ -36,7 +36,6 @@ SceTouchData touch_old[SCE_TOUCH_PORT_MAX_NUM];
 SceTouchData touch[SCE_TOUCH_PORT_MAX_NUM];
 
 SDL_FRect area_info[SCE_TOUCH_PORT_MAX_NUM];
-SDL_FRect display_info[SCE_TOUCH_PORT_MAX_NUM];
 
 struct{
     float min;
@@ -59,11 +58,6 @@ VITA_InitTouch(void)
 		area_info[port].y  = (float)panelinfo.minAaY;
 		area_info[port].w  = (float)(panelinfo.maxAaX - panelinfo.minAaX);
 		area_info[port].h  = (float)(panelinfo.maxAaY - panelinfo.minAaY);
-
-		display_info[port].x = (float)panelinfo.minDispX;
-		display_info[port].y = (float)panelinfo.minDispY;
-		display_info[port].w = (float)(panelinfo.maxDispX - panelinfo.minDispX);
-		display_info[port].h = (float)(panelinfo.maxDispY - panelinfo.minDispY);
 
 		force_info[port].min = (float)panelinfo.minForce;
 		force_info[port].range = (float)(panelinfo.maxForce - panelinfo.minForce);
@@ -158,18 +152,8 @@ VITA_PollTouch(void)
 }
 
 void VITA_ConvertTouchXYToSDLXY(float *sdl_x, float *sdl_y, int vita_x, int vita_y, int port) {
-	float x = 0.f;
-	float y = 0.f;
-	SDL_FRect rect;
-
-	if (port == SCE_TOUCH_PORT_FRONT) {
-		rect = display_info[port];
-	} else {
-		rect = area_info[port];
-	}
-
-	x = (vita_x - rect.x) / rect.w;
-	y = (vita_y - rect.y) / rect.h;
+	float x = (vita_x - area_info[port].x) / area_info[port].w;
+	float y = (vita_y - area_info[port].y) / area_info[port].h;
 
 	x = SDL_max(x, 0.0);
 	x = SDL_min(x, 1.0);
