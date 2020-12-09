@@ -1202,12 +1202,16 @@ VITA_GLES2_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void
     }
 
     /* upload the new VBO data for this set of commands. */
-    data->glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    if (data->vertex_buffer_size[vboidx] < vertsize) {
-        data->glBufferData(GL_ARRAY_BUFFER, vertsize, vertices, GL_DYNAMIC_DRAW);
-        data->vertex_buffer_size[vboidx] = vertsize;
-    } else {
-        data->glBufferSubData(GL_ARRAY_BUFFER, 0, vertsize, vertices);
+    /* NULL/zero vertices could happen SetRenderTarget is the first render command */
+    if (vertsize > 0 && vertices != NULL)
+    {
+        data->glBindBuffer(GL_ARRAY_BUFFER, vbo);
+        if (data->vertex_buffer_size[vboidx] < vertsize) {
+            data->glBufferData(GL_ARRAY_BUFFER, vertsize, vertices, GL_DYNAMIC_DRAW);
+            data->vertex_buffer_size[vboidx] = vertsize;
+        } else {
+            data->glBufferSubData(GL_ARRAY_BUFFER, 0, vertsize, vertices);
+        }
     }
 
     /* cycle through a few VBOs so the GL has some time with the data before we replace it. */
