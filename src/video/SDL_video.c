@@ -1771,7 +1771,7 @@ SDL_RecreateWindow(SDL_Window * window, Uint32 flags)
         loaded_opengl = SDL_TRUE;
     }
 
-    if (need_vulkan_unload) {
+    if (need_vulkan_load) {
         if (SDL_Vulkan_LoadLibrary(NULL) < 0) {
             return -1;
         }
