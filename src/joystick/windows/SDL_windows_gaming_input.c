@@ -363,29 +363,28 @@ WGI_JoystickInit(void)
     HRESULT hr;
     HMODULE hModule = LoadLibraryA("combase.dll");
     if (hModule != NULL) {
-        typedef HRESULT (WINAPI *WindowsCreateString_t)(PCNZWCH sourceString, UINT32 length, HSTRING* string);
+        typedef HRESULT (WINAPI *WindowsCreateStringReference_t)(PCWSTR sourceString, UINT32 length, HSTRING_HEADER *hstringHeader, HSTRING* string);
         typedef HRESULT (WINAPI *WindowsDeleteString_t)(HSTRING string);
         typedef HRESULT (WINAPI *RoGetActivationFactory_t)(HSTRING activatableClassId, REFIID iid, void** factory);
 
-        WindowsCreateString_t WindowsCreateStringFunc = (WindowsCreateString_t)GetProcAddress(hModule, "WindowsCreateString");
-        WindowsDeleteString_t WindowsDeleteStringFunc = (WindowsDeleteString_t)GetProcAddress(hModule, "WindowsDeleteString");
+        WindowsCreateStringReference_t WindowsCreateStringReferenceFunc = (WindowsCreateStringReference_t)GetProcAddress(hModule, "WindowsCreateStringReference");
         RoGetActivationFactory_t RoGetActivationFactoryFunc = (RoGetActivationFactory_t)GetProcAddress(hModule, "RoGetActivationFactory");
-        if (WindowsCreateStringFunc && WindowsDeleteStringFunc && RoGetActivationFactoryFunc) {
+        if (WindowsCreateStringReferenceFunc && RoGetActivationFactoryFunc) {
             LPTSTR pNamespace;
+            HSTRING_HEADER hNamespaceStringHeader;
             HSTRING hNamespaceString;
 
             pNamespace = L"Windows.Gaming.Input.RawGameController";
-            hr = WindowsCreateStringFunc(pNamespace, (UINT32)SDL_wcslen(pNamespace), &hNamespaceString);
+            hr = WindowsCreateStringReferenceFunc(pNamespace, (UINT32)SDL_wcslen(pNamespace), &hNamespaceStringHeader, &hNamespaceString);
             if (SUCCEEDED(hr)) {
                 hr = RoGetActivationFactoryFunc(hNamespaceString, &IID_IRawGameControllerStatics, &wgi.statics);
                 if (!SUCCEEDED(hr)) {
                     SDL_SetError("Couldn't find IRawGameControllerStatics: 0x%x", hr);
                 }
-                WindowsDeleteStringFunc(hNamespaceString);
             }
 
             pNamespace = L"Windows.Gaming.Input.ArcadeStick";
-            hr = WindowsCreateStringFunc(pNamespace, (UINT32)SDL_wcslen(pNamespace), &hNamespaceString);
+            hr = WindowsCreateStringReferenceFunc(pNamespace, (UINT32)SDL_wcslen(pNamespace), &hNamespaceStringHeader, &hNamespaceString);
             if (SUCCEEDED(hr)) {
                 hr = RoGetActivationFactoryFunc(hNamespaceString, &IID_IArcadeStickStatics, &wgi.arcade_stick_statics);
                 if (SUCCEEDED(hr)) {
@@ -393,21 +392,19 @@ WGI_JoystickInit(void)
                 } else {
                     SDL_SetError("Couldn't find IID_IArcadeStickStatics: 0x%x", hr);
                 }
-                WindowsDeleteStringFunc(hNamespaceString);
             }
 
             pNamespace = L"Windows.Gaming.Input.FlightStick";
-            hr = WindowsCreateStringFunc(pNamespace, (UINT32)SDL_wcslen(pNamespace), &hNamespaceString);
+            hr = WindowsCreateStringReferenceFunc(pNamespace, (UINT32)SDL_wcslen(pNamespace), &hNamespaceStringHeader, &hNamespaceString);
             if (SUCCEEDED(hr)) {
                 hr = RoGetActivationFactoryFunc(hNamespaceString, &IID_IFlightStickStatics, &wgi.flight_stick_statics);
                 if (!SUCCEEDED(hr)) {
                     SDL_SetError("Couldn't find IID_IFlightStickStatics: 0x%x", hr);
                 }
-                WindowsDeleteStringFunc(hNamespaceString);
             }
 
             pNamespace = L"Windows.Gaming.Input.Gamepad";
-            hr = WindowsCreateStringFunc(pNamespace, (UINT32)SDL_wcslen(pNamespace), &hNamespaceString);
+            hr = WindowsCreateStringReferenceFunc(pNamespace, (UINT32)SDL_wcslen(pNamespace), &hNamespaceStringHeader, &hNamespaceString);
             if (SUCCEEDED(hr)) {
                 hr = RoGetActivationFactoryFunc(hNamespaceString, &IID_IGamepadStatics, &wgi.gamepad_statics);
                 if (SUCCEEDED(hr)) {
@@ -415,11 +412,10 @@ WGI_JoystickInit(void)
                 } else {
                     SDL_SetError("Couldn't find IGamepadStatics: 0x%x", hr);
                 }
-                WindowsDeleteStringFunc(hNamespaceString);
             }
 
             pNamespace = L"Windows.Gaming.Input.RacingWheel";
-            hr = WindowsCreateStringFunc(pNamespace, (UINT32)SDL_wcslen(pNamespace), &hNamespaceString);
+            hr = WindowsCreateStringReferenceFunc(pNamespace, (UINT32)SDL_wcslen(pNamespace), &hNamespaceStringHeader, &hNamespaceString);
             if (SUCCEEDED(hr)) {
                 hr = RoGetActivationFactoryFunc(hNamespaceString, &IID_IRacingWheelStatics, &wgi.racing_wheel_statics);
                 if (SUCCEEDED(hr)) {
@@ -427,7 +423,6 @@ WGI_JoystickInit(void)
                 } else {
                     SDL_SetError("Couldn't find IRacingWheelStatics: 0x%x", hr);
                 }
-                WindowsDeleteStringFunc(hNamespaceString);
             }
         }
         FreeLibrary(hModule);
