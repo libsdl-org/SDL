@@ -67,7 +67,6 @@ typedef struct WindowsGamingInputGamepadState WindowsGamingInputGamepadState;
 #endif
 
 /*#define DEBUG_RAWINPUT*/
-#define DEBUG_RAWINPUT
 
 #ifndef RIDEV_EXINPUTSINK
 #define RIDEV_EXINPUTSINK       0x00001000
@@ -805,7 +804,7 @@ RAWINPUT_DelDevice(SDL_RAWINPUT_Device *device, SDL_bool send_event)
             SDL_PrivateJoystickRemoved(device->joystick_id);
 
 #ifdef DEBUG_RAWINPUT
-            SDL_Log("Removing RAWINPUT device '%s' VID 0x%.4x, PID 0x%.4x, version %d, handle 0x%.8x\n", device->name, device->vendor_id, device->product_id, device->version, device->hDevice);
+            SDL_Log("Removing RAWINPUT device '%s' VID 0x%.4x, PID 0x%.4x, version %d, handle %p\n", device->name, device->vendor_id, device->product_id, device->version, device->hDevice);
 #endif
             RAWINPUT_ReleaseDevice(device);
             return;
