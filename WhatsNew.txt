@@ -21,7 +21,7 @@ General:
 	* SDL_GameControllerRumbleTriggers()
 	* SDL_GameControllerHasLED()
 	* SDL_GameControllerSetLED()
-* Added the hint SDL_JOYSTICK_HIDAPI_PS5 to control whether the HIDAPI driver for PS5 controllers should be used.
+* Added the hint SDL_HINT_JOYSTICK_HIDAPI_PS5 to control whether the HIDAPI driver for PS5 controllers should be used.
 * Added joystick functions to get additional information:
 	* SDL_JoystickGetSerial()
 	* SDL_JoystickRumbleTriggers()
