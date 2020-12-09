@@ -2077,7 +2077,8 @@ set(EXTRA_CFLAGS ${_EXTRA_CFLAGS})
 # Compat helpers for the configuration files
 if(NOT CMAKE_HOST_WIN32)
   # TODO: we need a Windows script, too
-  execute_process(COMMAND sh ${SDL2_SOURCE_DIR}/build-scripts/updaterev.sh)
+  execute_process(COMMAND sh ${SDL2_SOURCE_DIR}/build-scripts/updaterev.sh
+    WORKING_DIRECTORY ${SDL2_BINARY_DIR})
 endif()
 if(NOT WINDOWS OR CYGWIN)
   set(prefix ${CMAKE_INSTALL_PREFIX})
