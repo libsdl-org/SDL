@@ -6,7 +6,7 @@ cd `dirname "$0"`
 
 generate_shaders()
 {
-	fileplatform=$1
+    fileplatform=$1
     compileplatform=$2
     sdkplatform=$3
     minversion=$4
@@ -19,4 +19,6 @@ generate_shaders()
 
 generate_shaders osx osx macosx 10.11
 generate_shaders ios ios iphoneos 8.0
+generate_shaders iphonesimulator ios iphonesimulator 8.0
 generate_shaders tvos ios appletvos 9.0
+generate_shaders tvsimulator ios appletvsimulator 9.0

@@ -39,9 +39,17 @@
 #ifdef __MACOSX__
 #include "SDL_shaders_metal_osx.h"
 #elif defined(__TVOS__)
+#if TARGET_OS_SIMULATOR
+#include "SDL_shaders_metal_tvsimulator.h"
+#else
 #include "SDL_shaders_metal_tvos.h"
+#endif
+#else
+#if TARGET_OS_SIMULATOR
+#include "SDL_shaders_metal_iphonesimulator.h"
 #else
 #include "SDL_shaders_metal_ios.h"
+#endif
 #endif
 
 /* Apple Metal renderer implementation */
@@ -51,7 +59,7 @@ extern int SDL_RecreateWindow(SDL_Window * window, Uint32 flags);
 
 /* macOS requires constants in a buffer to have a 256 byte alignment. */
 /* Use native type alignments from https://developer.apple.com/metal/Metal-Shading-Language-Specification.pdf */
-#ifdef __MACOSX__
+#if defined(__MACOSX__) || TARGET_OS_SIMULATOR
 #define CONSTANT_ALIGN(x) (256)
 #else
 #define CONSTANT_ALIGN(x) (x < 4 ? 4 : x)

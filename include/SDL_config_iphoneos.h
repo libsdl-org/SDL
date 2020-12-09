@@ -171,8 +171,10 @@
 #define SDL_VIDEO_RENDER_OGL_ES 1
 #define SDL_VIDEO_RENDER_OGL_ES2    1
 
-/* Metal supported on 64-bit devices running iOS 8.0 and tvOS 9.0 and newer */
-#if !TARGET_OS_SIMULATOR && !TARGET_CPU_ARM && ((__IPHONE_OS_VERSION_MIN_REQUIRED >= 80000) || (__TV_OS_VERSION_MIN_REQUIRED >= 90000))
+/* Metal supported on 64-bit devices running iOS 8.0 and tvOS 9.0 and newer
+   Also supported in simulator from iOS 13.0 and tvOS 13.0
+ */
+#if (TARGET_OS_SIMULATOR && ((__IPHONE_OS_VERSION_MIN_REQUIRED >= 130000) || (__TV_OS_VERSION_MIN_REQUIRED >= 130000))) || (!TARGET_CPU_ARM && ((__IPHONE_OS_VERSION_MIN_REQUIRED >= 80000) || (__TV_OS_VERSION_MIN_REQUIRED >= 90000)))
 #define SDL_PLATFORM_SUPPORTS_METAL	1
 #else
 #define SDL_PLATFORM_SUPPORTS_METAL	0
