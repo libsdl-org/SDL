@@ -59,7 +59,7 @@ set(SDL_INTERFACE_AGE 0)
 set(SDL_BINARY_AGE 14)
 set(SDL_VERSION "${SDL_MAJOR_VERSION}.${SDL_MINOR_VERSION}.${SDL_MICRO_VERSION}")
 # the following should match the versions in Xcode project file:
-set(DYLIB_CURRENT_VERSION 12.0.0)
+set(DYLIB_CURRENT_VERSION 15.0.0)
 set(DYLIB_COMPATIBILITY_VERSION 1.0.0)
 
 # Set defaults preventing destination file conflicts
