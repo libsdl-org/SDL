@@ -2212,6 +2212,10 @@ if(SDL_SHARED)
       SOVERSION ${LT_REVISION}
       OUTPUT_NAME "SDL2-${LT_RELEASE}")
   else()
+    if(WINDOWS OR CYGWIN)
+      set_target_properties(SDL2 PROPERTIES
+        DEFINE_SYMBOL DLL_EXPORT)
+    endif()
     set_target_properties(SDL2 PROPERTIES
       VERSION ${SDL_VERSION}
       SOVERSION ${LT_REVISION}
