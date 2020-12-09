@@ -68,13 +68,13 @@ Uint32 SDL_GetTicks(void)
 Uint64
 SDL_GetPerformanceCounter(void)
 {
-    return SDL_GetTicks();
+    return sceKernelGetProcessTimeWide();
 }
 
 Uint64
 SDL_GetPerformanceFrequency(void)
 {
-    return 1000;
+    return 1000000;
 }
 
 void SDL_Delay(Uint32 ms)
