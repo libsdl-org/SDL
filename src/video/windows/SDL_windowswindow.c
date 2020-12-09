@@ -954,9 +954,18 @@ WIN_UpdateClipCursor(SDL_Window *window)
                 }
             }
         }
-    } else if (SDL_memcmp(&clipped_rect, &data->cursor_clipped_rect, sizeof(clipped_rect)) == 0) {
-        ClipCursor(NULL);
-        SDL_zero(data->cursor_clipped_rect);
+    } else {
+        POINT first, second;
+
+        first.x = clipped_rect.left;
+        first.y = clipped_rect.top;
+        second.x = clipped_rect.right - 1;
+        second.y = clipped_rect.bottom - 1;
+        if (PtInRect(&data->cursor_clipped_rect, first) &&
+            PtInRect(&data->cursor_clipped_rect, second)) {
+            ClipCursor(NULL);
+            SDL_zero(data->cursor_clipped_rect);
+        }
     }
     data->last_updated_clipcursor = SDL_GetTicks();
 }
