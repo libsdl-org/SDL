@@ -558,8 +558,9 @@ int HID_API_EXPORT HID_API_CALL hid_init(void)
 #ifdef SDL_LIBUSB_DYNAMIC
     libusb_ctx.libhandle = SDL_LoadObject(SDL_LIBUSB_DYNAMIC);
     if (libusb_ctx.libhandle != NULL) {
+        SDL_bool loaded = SDL_TRUE;
         #define LOAD_LIBUSB_SYMBOL(func) \
-            libusb_ctx.func = SDL_LoadFunction(libusb_ctx.libhandle, "libusb_" #func);
+            if (!(libusb_ctx.func = SDL_LoadFunction(libusb_ctx.libhandle, "libusb_" #func))) {loaded = SDL_FALSE;}
         LOAD_LIBUSB_SYMBOL(init)
         LOAD_LIBUSB_SYMBOL(exit)
         LOAD_LIBUSB_SYMBOL(get_device_list)
@@ -588,9 +589,17 @@ int HID_API_EXPORT HID_API_CALL hid_init(void)
         LOAD_LIBUSB_SYMBOL(handle_events_completed)
         #undef LOAD_LIBUSB_SYMBOL
 
-        if ((err = LIBUSB_hid_init()) < 0) {
+        if (loaded == SDL_TRUE) {
+            if ((err = LIBUSB_hid_init()) < 0) {
+                SDL_UnloadObject(libusb_ctx.libhandle);
+                libusb_ctx.libhandle = NULL;
+                return err;
+            }
+        } else {
             SDL_UnloadObject(libusb_ctx.libhandle);
-            return err;
+            libusb_ctx.libhandle = NULL;
+            /* SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, SDL_LIBUSB_DYNAMIC " found but could not load function."); */
+            /* ignore error: continue without libusb */
         }
     }
 #endif /* SDL_LIBUSB_DYNAMIC */
@@ -602,13 +611,16 @@ int HID_API_EXPORT HID_API_CALL hid_init(void)
     if (udev_ctx && (err = PLATFORM_hid_init()) < 0) {
 #ifdef SDL_LIBUSB_DYNAMIC
         if (libusb_ctx.libhandle) {
+            LIBUSB_hid_exit();
             SDL_UnloadObject(libusb_ctx.libhandle);
+            libusb_ctx.libhandle = NULL;
         }
 #endif /* SDL_LIBUSB_DYNAMIC */
         return err;
     }
 #endif /* HAVE_PLATFORM_BACKEND */
 
+    SDL_hidapi_wasinit = SDL_TRUE;
     return 0;
 }
 
@@ -619,6 +631,7 @@ int HID_API_EXPORT HID_API_CALL hid_exit(void)
     if (SDL_hidapi_wasinit == SDL_FALSE) {
         return 0;
     }
+    SDL_hidapi_wasinit = SDL_FALSE;
 
 #if HAVE_PLATFORM_BACKEND
     if (udev_ctx) {
@@ -629,6 +642,7 @@ int HID_API_EXPORT HID_API_CALL hid_exit(void)
     if (libusb_ctx.libhandle) {
         err |= LIBUSB_hid_exit(); /* Ehhhhh */
         SDL_UnloadObject(libusb_ctx.libhandle);
+        libusb_ctx.libhandle = NULL;
     }
 #endif /* SDL_LIBUSB_DYNAMIC */
     return err;
@@ -650,16 +664,30 @@ struct hid_device_info HID_API_EXPORT * HID_API_CALL hid_enumerate(unsigned shor
 #endif
     struct hid_device_info *devs = NULL, *last = NULL, *new_dev;
 
-    if (SDL_hidapi_wasinit == SDL_FALSE) {
-        hid_init();
+    if (hid_init() != 0) {
+        return NULL;
     }
 
 #ifdef SDL_LIBUSB_DYNAMIC
     if (libusb_ctx.libhandle) {
         usb_devs = LIBUSB_hid_enumerate(vendor_id, product_id);
+  #ifdef DEBUG_HIDAPI
+        SDL_Log("libusb devices found:");
+  #endif
         for (usb_dev = usb_devs; usb_dev; usb_dev = usb_dev->next) {
             new_dev = (struct hid_device_info*) SDL_malloc(sizeof(struct hid_device_info));
+            if (!new_dev) {
+                LIBUSB_hid_free_enumeration(usb_devs);
+                hid_free_enumeration(devs);
+                SDL_OutOfMemory();
+                return NULL;
+            }
             LIBUSB_CopyHIDDeviceInfo(usb_dev, new_dev);
+  #ifdef DEBUG_HIDAPI
+            SDL_Log(" - %ls %ls 0x%.4hx 0x%.4hx",
+                    usb_dev->manufacturer_string, usb_dev->product_string,
+                    usb_dev->vendor_id, usb_dev->product_id);
+  #endif
 
             if (last != NULL) {
                 last->next = new_dev;
@@ -689,8 +717,16 @@ struct hid_device_info HID_API_EXPORT * HID_API_CALL hid_enumerate(unsigned shor
 #if HAVE_PLATFORM_BACKEND
     if (udev_ctx) {
         raw_devs = PLATFORM_hid_enumerate(vendor_id, product_id);
+#ifdef DEBUG_HIDAPI
+        SDL_Log("hidraw devices found:");
+#endif
         for (raw_dev = raw_devs; raw_dev; raw_dev = raw_dev->next) {
             SDL_bool bFound = SDL_FALSE;
+#ifdef DEBUG_HIDAPI
+            SDL_Log(" - %ls %ls 0x%.4hx 0x%.4hx",
+                    raw_dev->manufacturer_string, raw_dev->product_string,
+                    raw_dev->vendor_id, raw_dev->product_id);
+#endif
 #ifdef SDL_LIBUSB_DYNAMIC
             for (usb_dev = usb_devs; usb_dev; usb_dev = usb_dev->next) {
                 if (raw_dev->vendor_id == usb_dev->vendor_id &&
@@ -713,6 +749,17 @@ struct hid_device_info HID_API_EXPORT * HID_API_CALL hid_enumerate(unsigned shor
 #endif
             if (!bFound) {
                 new_dev = (struct hid_device_info*) SDL_malloc(sizeof(struct hid_device_info));
+                if (!new_dev) {
+#ifdef SDL_LIBUSB_DYNAMIC
+                    if (libusb_ctx.libhandle) {
+                        LIBUSB_hid_free_enumeration(usb_devs);
+                    }
+#endif
+                    PLATFORM_hid_free_enumeration(raw_devs);
+                    hid_free_enumeration(devs);
+                    SDL_OutOfMemory();
+                    return NULL;
+                }
                 PLATFORM_CopyHIDDeviceInfo(raw_dev, new_dev);
                 new_dev->next = NULL;
 
@@ -753,8 +800,8 @@ HID_API_EXPORT hid_device * HID_API_CALL hid_open(unsigned short vendor_id, unsi
 {
     hid_device *pDevice = NULL;
 
-    if (SDL_hidapi_wasinit == SDL_FALSE) {
-        hid_init();
+    if (hid_init() != 0) {
+        return NULL;
     }
 
 #if HAVE_PLATFORM_BACKEND
@@ -790,8 +837,8 @@ HID_API_EXPORT hid_device * HID_API_CALL hid_open_path(const char *path, int bEx
 {
     hid_device *pDevice = NULL;
 
-    if (SDL_hidapi_wasinit == SDL_FALSE) {
-        hid_init();
+    if (hid_init() != 0) {
+        return NULL;
     }
 
 #if HAVE_PLATFORM_BACKEND
