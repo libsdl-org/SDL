@@ -29,7 +29,6 @@
 #include <signal.h>
 
 #include "SDL_stdinc.h"
-#include "SDL_assert.h"
 #include "../../core/unix/SDL_poll.h"
 
 #include "SDL_waylandvideo.h"

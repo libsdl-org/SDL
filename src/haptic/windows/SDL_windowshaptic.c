@@ -22,7 +22,6 @@
 
 #if SDL_HAPTIC_DINPUT || SDL_HAPTIC_XINPUT
 
-#include "SDL_assert.h"
 #include "SDL_thread.h"
 #include "SDL_mutex.h"
 #include "SDL_timer.h"

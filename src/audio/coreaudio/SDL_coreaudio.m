@@ -29,7 +29,6 @@
 #include "../SDL_audio_c.h"
 #include "../SDL_sysaudio.h"
 #include "SDL_coreaudio.h"
-#include "SDL_assert.h"
 #include "../../thread/SDL_systhread.h"
 
 #define DEBUG_COREAUDIO 0

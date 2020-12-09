@@ -30,7 +30,6 @@
 #include "SDL_audio_c.h"
 
 #include "SDL_loadso.h"
-#include "SDL_assert.h"
 #include "../SDL_dataqueue.h"
 #include "SDL_cpuinfo.h"
 

@@ -30,7 +30,6 @@
 #if SDL_VIDEO_VULKAN && SDL_VIDEO_DRIVER_VIVANTE
 
 #include "SDL_vivantevideo.h"
-#include "SDL_assert.h"
 
 #include "SDL_loadso.h"
 #include "SDL_vivantevulkan.h"

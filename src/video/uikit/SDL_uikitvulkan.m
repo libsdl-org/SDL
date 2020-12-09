@@ -30,7 +30,6 @@
 
 #include "SDL_uikitvideo.h"
 #include "SDL_uikitwindow.h"
-#include "SDL_assert.h"
 
 #include "SDL_loadso.h"
 #include "SDL_uikitvulkan.h"

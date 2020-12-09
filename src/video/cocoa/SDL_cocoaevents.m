@@ -26,7 +26,6 @@
 
 #include "SDL_cocoavideo.h"
 #include "../../events/SDL_events_c.h"
-#include "SDL_assert.h"
 #include "SDL_hints.h"
 
 /* This define was added in the 10.9 SDK. */

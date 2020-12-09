@@ -22,7 +22,6 @@
 
 #if SDL_VIDEO_DRIVER_COCOA
 
-#include "SDL_assert.h"
 #include "SDL_events.h"
 #include "SDL_cocoamouse.h"
 #include "SDL_cocoamousetap.h"

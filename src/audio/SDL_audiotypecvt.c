@@ -18,12 +18,11 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-
 #include "../SDL_internal.h"
+
 #include "SDL_audio.h"
 #include "SDL_audio_c.h"
 #include "SDL_cpuinfo.h"
-#include "SDL_assert.h"
 
 #ifdef __ARM_NEON
 #define HAVE_NEON_INTRINSICS 1

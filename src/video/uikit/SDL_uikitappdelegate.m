@@ -23,7 +23,6 @@
 #if SDL_VIDEO_DRIVER_UIKIT
 
 #include "../SDL_sysvideo.h"
-#include "SDL_assert.h"
 #include "SDL_hints.h"
 #include "SDL_system.h"
 #include "SDL_main.h"

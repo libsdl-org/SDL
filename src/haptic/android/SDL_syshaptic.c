@@ -22,7 +22,6 @@
 
 #ifdef SDL_HAPTIC_ANDROID
 
-#include "SDL_assert.h"
 #include "SDL_timer.h"
 #include "SDL_syshaptic_c.h"
 #include "../SDL_syshaptic.h"

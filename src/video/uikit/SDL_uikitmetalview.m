@@ -34,7 +34,6 @@
 #import "SDL_uikitwindow.h"
 #import "SDL_uikitmetalview.h"
 
-#include "SDL_assert.h"
 
 @implementation SDL_uikitmetalview
 

@@ -30,7 +30,6 @@
 
 #include "SDL_androidvideo.h"
 #include "SDL_androidwindow.h"
-#include "SDL_assert.h"
 
 #include "SDL_loadso.h"
 #include "SDL_androidvulkan.h"

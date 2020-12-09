@@ -18,7 +18,6 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-
 #include "../../SDL_internal.h"
 
 #if SDL_VIDEO_DRIVER_COCOA
@@ -27,7 +26,6 @@
 #include "SDL_shape.h"
 #include "SDL_cocoashape.h"
 #include "../SDL_sysvideo.h"
-#include "SDL_assert.h"
 
 SDL_WindowShaper*
 Cocoa_CreateShaper(SDL_Window* window)

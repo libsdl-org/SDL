@@ -18,8 +18,6 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-
-
 #include "../../SDL_internal.h"
 
 #if SDL_VIDEO_DRIVER_EMSCRIPTEN
@@ -31,7 +29,6 @@
 #include "SDL_emscriptenvideo.h"
 
 #include "../../events/SDL_mouse_c.h"
-#include "SDL_assert.h"
 
 static SDL_Cursor*
 Emscripten_CreateCursorFromString(const char* cursor_str, SDL_bool is_custom)

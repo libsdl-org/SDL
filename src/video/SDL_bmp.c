@@ -34,7 +34,6 @@
 
 #include "SDL_hints.h"
 #include "SDL_video.h"
-#include "SDL_assert.h"
 #include "SDL_endian.h"
 #include "SDL_pixels_c.h"
 

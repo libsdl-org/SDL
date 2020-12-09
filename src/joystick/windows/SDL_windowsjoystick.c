@@ -33,7 +33,6 @@
  * let it return 0 events. */
 
 #include "SDL_error.h"
-#include "SDL_assert.h"
 #include "SDL_events.h"
 #include "SDL_timer.h"
 #include "SDL_mutex.h"

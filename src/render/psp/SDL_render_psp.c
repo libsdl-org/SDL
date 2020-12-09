@@ -23,7 +23,6 @@
 #if SDL_VIDEO_RENDER_PSP
 
 #include "SDL_hints.h"
-#include "SDL_assert.h"
 #include "../SDL_sysrender.h"
 
 #include <pspkernel.h>

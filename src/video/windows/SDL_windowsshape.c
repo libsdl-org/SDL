@@ -22,7 +22,6 @@
 
 #if SDL_VIDEO_DRIVER_WINDOWS
 
-#include "SDL_assert.h"
 #include "SDL_windowsshape.h"
 #include "SDL_windowsvideo.h"
 

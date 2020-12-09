@@ -39,7 +39,6 @@
 #include "SDL_hints.h"
 #include "SDL_timer.h"
 #include "SDL_syswm.h"
-#include "SDL_assert.h"
 
 #include <stdio.h>
 

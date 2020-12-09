@@ -21,7 +21,6 @@
 
 #include "../../SDL_internal.h"
 
-#include "SDL_assert.h"
 #include "SDL_poll.h"
 
 #ifdef HAVE_POLL

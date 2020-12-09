@@ -19,8 +19,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 #include "../SDL_internal.h"
+
 #include "SDL_hints.h"
-#include "SDL_assert.h"
 
 /* General quit handling code for SDL */
 
