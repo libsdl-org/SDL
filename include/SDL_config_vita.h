@@ -129,6 +129,9 @@
 /* VITA isn't that sophisticated */
 #define LACKS_SYS_MMAN_H 1
 
+/* enable optimized blitters */
+#define SDL_ARM_SIMD_BLITTERS 1
+#define SDL_ARM_NEON_BLITTERS 1
 
 #define SDL_AUDIO_DRIVER_VITA  1
 #define SDL_THREAD_VITA    1

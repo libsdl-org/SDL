@@ -34,8 +34,9 @@ SOURCES = \
 	src/video/*.c \
 	src/video/vita/*.c \
 	src/video/yuv2rgb/*.c \
+	src/video/arm/*.S \
 
-OBJS = $(shell echo $(SOURCES) | sed -e 's,\.c,\.o,g')
+OBJS = $(shell echo $(SOURCES) | sed -e 's,\.c,\.o,g' | sed -e 's,\.S,\.o,g')
 
 PREFIX  = arm-dolce-eabi
 CC      = $(PREFIX)-gcc
