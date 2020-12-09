@@ -41,7 +41,6 @@
 #include "SDL_cocoamousetap.h"
 #include "SDL_cocoaopengl.h"
 #include "SDL_cocoaopengles.h"
-#include "SDL_assert.h"
 
 /* #define DEBUG_COCOAWINDOW */
 

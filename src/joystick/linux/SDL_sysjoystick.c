@@ -40,7 +40,6 @@
 #include <dirent.h>
 #include <linux/joystick.h>
 
-#include "SDL_assert.h"
 #include "SDL_hints.h"
 #include "SDL_joystick.h"
 #include "SDL_log.h"

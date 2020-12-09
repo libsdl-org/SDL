@@ -23,7 +23,6 @@
 #if SDL_VIDEO_VULKAN && SDL_VIDEO_DRIVER_X11
 
 #include "SDL_x11video.h"
-#include "SDL_assert.h"
 
 #include "SDL_loadso.h"
 #include "SDL_x11vulkan.h"

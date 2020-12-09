@@ -116,6 +116,7 @@
 #define SDL_HAVE_YUV                    !SDL_LEAN_AND_MEAN
 #endif
 
+#include "SDL_assert.h"
 #include "SDL_log.h"
 
 #endif /* SDL_internal_h_ */

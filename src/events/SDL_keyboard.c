@@ -25,7 +25,6 @@
 #include "SDL_timer.h"
 #include "SDL_events.h"
 #include "SDL_events_c.h"
-#include "SDL_assert.h"
 #include "../video/SDL_sysvideo.h"
 
 

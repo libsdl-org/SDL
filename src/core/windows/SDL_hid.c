@@ -22,7 +22,6 @@
 
 #ifndef __WINRT__
 
-#include "SDL_assert.h"
 #include "SDL_hid.h"
 
 

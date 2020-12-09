@@ -22,7 +22,6 @@
 
 #ifdef SDL_HAPTIC_IOKIT
 
-#include "SDL_assert.h"
 #include "SDL_stdinc.h"
 #include "SDL_haptic.h"
 #include "../SDL_syshaptic.h"

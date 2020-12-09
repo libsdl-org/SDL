@@ -34,7 +34,6 @@ using Windows::UI::Core::CoreCursor;
  * SDL includes:
  */
 extern "C" {
-#include "SDL_assert.h"
 #include "../../events/SDL_mouse_c.h"
 #include "../../events/SDL_touch_c.h"
 #include "../SDL_sysvideo.h"

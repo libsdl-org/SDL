@@ -22,7 +22,6 @@
 
 #if SDL_VIDEO_DRIVER_RPI
 
-#include "SDL_assert.h"
 #include "SDL_surface.h"
 #include "SDL_hints.h"
 

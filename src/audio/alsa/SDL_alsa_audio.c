@@ -32,7 +32,6 @@
 #include <signal.h>             /* For kill() */
 #include <string.h>
 
-#include "SDL_assert.h"
 #include "SDL_timer.h"
 #include "SDL_audio.h"
 #include "../SDL_audio_c.h"

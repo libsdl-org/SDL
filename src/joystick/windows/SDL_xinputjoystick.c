@@ -24,7 +24,6 @@
 
 #if SDL_JOYSTICK_XINPUT
 
-#include "SDL_assert.h"
 #include "SDL_hints.h"
 #include "SDL_timer.h"
 #include "SDL_windowsjoystick_c.h"

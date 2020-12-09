@@ -18,7 +18,6 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-
 #include "../../SDL_internal.h"
 
 #ifdef SDL_JOYSTICK_ANDROID
@@ -29,7 +28,6 @@
 
 #include "SDL_joystick.h"
 #include "SDL_hints.h"
-#include "SDL_assert.h"
 #include "SDL_timer.h"
 #include "SDL_sysjoystick_c.h"
 #include "../SDL_joystick_c.h"

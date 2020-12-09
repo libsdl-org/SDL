@@ -26,7 +26,6 @@
    Stéphan Kochen: stephan .a.t. kochen.nl
 */
 #include "../../SDL_internal.h"
-#include "SDL_assert.h"
 #include "SDL_hints.h"
 
 #if SDL_AUDIO_DRIVER_PULSEAUDIO

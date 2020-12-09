@@ -33,7 +33,6 @@
 
 #if SDL_JOYSTICK_RAWINPUT
 
-#include "SDL_assert.h"
 #include "SDL_endian.h"
 #include "SDL_events.h"
 #include "SDL_hints.h"

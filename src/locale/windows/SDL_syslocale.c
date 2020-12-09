@@ -22,7 +22,6 @@
 #include "../../SDL_internal.h"
 #include "../../core/windows/SDL_windows.h"
 #include "../SDL_syslocale.h"
-#include "SDL_assert.h"
 
 typedef BOOL (WINAPI *pfnGetUserPreferredUILanguages)(DWORD,PULONG,/*PZZWSTR*/WCHAR*,PULONG);
 #ifndef MUI_LANGUAGE_NAME

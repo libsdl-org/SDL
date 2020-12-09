@@ -26,7 +26,6 @@
    https://googlesamples.github.io/android-audio-high-performance/guides/opensl_es.html
 */
 
-#include "SDL_assert.h"
 #include "SDL_audio.h"
 #include "../SDL_audio_c.h"
 #include "../../core/android/SDL_android.h"

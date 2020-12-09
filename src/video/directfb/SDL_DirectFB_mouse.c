@@ -22,7 +22,6 @@
 
 #if SDL_VIDEO_DRIVER_DIRECTFB
 
-#include "SDL_assert.h"
 
 #include "SDL_DirectFB_video.h"
 #include "SDL_DirectFB_mouse.h"

@@ -24,7 +24,6 @@
 
 #if SDL_HAVE_YUV
 
-#include "SDL_assert.h"
 
 #include "SDL_yuv_sw_c.h"
 

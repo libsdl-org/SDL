@@ -28,7 +28,6 @@
 #include <errno.h>
 
 #include "SDL_timer.h"
-#include "SDL_assert.h"
 #include "SDL_hints.h"
 #include "../SDL_timer_c.h"
 

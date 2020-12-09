@@ -24,7 +24,6 @@
 
 /* Handle rumble on a separate thread so it doesn't block the application */
 
-#include "SDL_assert.h"
 #include "SDL_thread.h"
 #include "SDL_hidapijoystick_c.h"
 #include "SDL_hidapi_rumble.h"

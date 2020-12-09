@@ -29,7 +29,6 @@
 
 #include "SDL_cocoavideo.h"
 #include "SDL_cocoawindow.h"
-#include "SDL_assert.h"
 
 #include "SDL_loadso.h"
 #include "SDL_cocoametalview.h"

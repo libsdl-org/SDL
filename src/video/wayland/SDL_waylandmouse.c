@@ -40,7 +40,6 @@
 #include "SDL_waylanddyn.h"
 #include "wayland-cursor.h"
 
-#include "SDL_assert.h"
 
 
 typedef struct {

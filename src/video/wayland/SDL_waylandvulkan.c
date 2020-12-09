@@ -30,7 +30,6 @@
 
 #include "SDL_waylandvideo.h"
 #include "SDL_waylandwindow.h"
-#include "SDL_assert.h"
 
 #include "SDL_loadso.h"
 #include "SDL_waylandvulkan.h"

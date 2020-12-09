@@ -22,7 +22,6 @@
 
 /* General mouse handling code for SDL */
 
-#include "SDL_assert.h"
 #include "SDL_hints.h"
 #include "SDL_timer.h"
 #include "SDL_events.h"

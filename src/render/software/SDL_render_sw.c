@@ -25,7 +25,6 @@
 #include "../SDL_sysrender.h"
 #include "SDL_render_sw_c.h"
 #include "SDL_hints.h"
-#include "SDL_assert.h"
 
 #include "SDL_draw.h"
 #include "SDL_blendfillrect.h"

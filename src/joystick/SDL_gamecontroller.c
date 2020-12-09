@@ -23,7 +23,6 @@
 /* This is the game controller API for Simple DirectMedia Layer */
 
 #include "SDL_events.h"
-#include "SDL_assert.h"
 #include "SDL_hints.h"
 #include "SDL_timer.h"
 #include "SDL_sysjoystick.h"

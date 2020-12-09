@@ -36,7 +36,6 @@ using Windows::UI::Core::CoreCursor;
 #include "../../core/winrt/SDL_winrtapp_common.h"
 #include "../../core/winrt/SDL_winrtapp_direct3d.h"
 #include "../../core/winrt/SDL_winrtapp_xaml.h"
-#include "SDL_assert.h"
 #include "SDL_system.h"
 
 extern "C" {
