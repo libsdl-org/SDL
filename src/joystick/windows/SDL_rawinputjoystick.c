@@ -542,21 +542,19 @@ RAWINPUT_InitWindowsGamingInput(RAWINPUT_DeviceContext *ctx)
         HRESULT hr;
         HMODULE hModule = LoadLibraryA("combase.dll");
         if (hModule != NULL) {
-            typedef HRESULT (WINAPI *WindowsCreateString_t)(PCNZWCH sourceString, UINT32 length, HSTRING* string);
-            typedef HRESULT (WINAPI *WindowsDeleteString_t)(HSTRING string);
+            typedef HRESULT (WINAPI *WindowsCreateStringReference_t)(PCWSTR sourceString, UINT32 length, HSTRING_HEADER *hstringHeader, HSTRING* string);
             typedef HRESULT (WINAPI *RoGetActivationFactory_t)(HSTRING activatableClassId, REFIID iid, void** factory);
 
-            WindowsCreateString_t WindowsCreateStringFunc = (WindowsCreateString_t)GetProcAddress(hModule, "WindowsCreateString");
-            WindowsDeleteString_t WindowsDeleteStringFunc = (WindowsDeleteString_t)GetProcAddress(hModule, "WindowsDeleteString");
+            WindowsCreateStringReference_t WindowsCreateStringReferenceFunc = (WindowsCreateStringReference_t)GetProcAddress(hModule, "WindowsCreateStringReference");
             RoGetActivationFactory_t RoGetActivationFactoryFunc = (RoGetActivationFactory_t)GetProcAddress(hModule, "RoGetActivationFactory");
-            if (WindowsCreateStringFunc && WindowsDeleteStringFunc && RoGetActivationFactoryFunc) {
+            if (WindowsCreateStringReferenceFunc && RoGetActivationFactoryFunc) {
                 LPTSTR pNamespace = L"Windows.Gaming.Input.Gamepad";
+                HSTRING_HEADER hNamespaceStringHeader;
                 HSTRING hNamespaceString;
 
-                hr = WindowsCreateStringFunc(pNamespace, (UINT32)SDL_wcslen(pNamespace), &hNamespaceString);
+                hr = WindowsCreateStringReferenceFunc(pNamespace, (UINT32)SDL_wcslen(pNamespace), &hNamespaceStringHeader, &hNamespaceString);
                 if (SUCCEEDED(hr)) {
                     RoGetActivationFactoryFunc(hNamespaceString, &SDL_IID_IGamepadStatics, &wgi_state.gamepad_statics);
-                    WindowsDeleteStringFunc(hNamespaceString);
                 }
             }
             FreeLibrary(hModule);
