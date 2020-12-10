@@ -205,12 +205,9 @@ static HWND _makeDlg(const SDL_MessageBoxData *messageboxdata)
         pSDLBtnData =  (SDL_MessageBoxButtonData *)messageboxdata->buttons;
     ULONG               cSDLBtnData = messageboxdata->numbuttons;
 
-    PSZ                 pszTitle = (messageboxdata->title == NULL)? NULL :
-                                    OS2_UTF8ToSys((PSZ) messageboxdata->title);
+    PSZ                 pszTitle = OS2_UTF8ToSys((PSZ) messageboxdata->title);
     ULONG               cbTitle = (pszTitle == NULL)? 0 : strlen(pszTitle);
-
-    PSZ                 pszText = (messageboxdata->message == NULL)? NULL :
-                                   OS2_UTF8ToSys((PSZ) messageboxdata->message);
+    PSZ                 pszText = OS2_UTF8ToSys((PSZ) messageboxdata->message);
     ULONG               cbText = (pszText == NULL)? 0 : strlen(pszText);
 
     PDLGTEMPLATE        pTemplate;

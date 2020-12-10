@@ -256,10 +256,6 @@ static SDL_bool AddDialogString(WIN_DialogData *dialog, const char *string)
     size_t count;
     SDL_bool status;
 
-    if (!string) {
-        string = "";
-    }
-
     wstring = WIN_UTF8ToString(string);
     if (!wstring) {
         return SDL_FALSE;
@@ -318,7 +314,7 @@ static SDL_bool AddDialogControl(WIN_DialogData *dialog, WORD type, DWORD style,
     if (!AddDialogData(dialog, &type, sizeof(type))) {
         return SDL_FALSE;
     }
-    if (type == DLGITEMTYPEBUTTON || (type == DLGITEMTYPESTATIC && caption != NULL)) {
+    if (type == DLGITEMTYPEBUTTON || (type == DLGITEMTYPESTATIC && caption != NULL && caption[0])) {
         if (!AddDialogString(dialog, caption)) {
             return SDL_FALSE;
         }
