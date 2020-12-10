@@ -184,23 +184,25 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
 
         hr = __x_ABI_CWindows_CGaming_CInput_CIRawGameController_QueryInterface(controller, &IID_IRawGameController2, (void **)&controller2);
         if (SUCCEEDED(hr)) {
-            HSTRING hString;
+            HMODULE hModule = LoadLibraryA("combase.dll");
+            if (hModule != NULL) {
+                typedef PCWSTR (WINAPI *WindowsGetStringRawBuffer_t)(HSTRING string, UINT32 *length);
+                typedef HRESULT (WINAPI *WindowsDeleteString_t)(HSTRING string);
 
-            hr = __x_ABI_CWindows_CGaming_CInput_CIRawGameController2_get_DisplayName(controller2, &hString);
-            if (SUCCEEDED(hr)) {
-                HMODULE hModule = LoadLibraryA("combase.dll");
-                if (hModule != NULL) {
-                    typedef PCWSTR (WINAPI *WindowsGetStringRawBuffer_t)(HSTRING string, UINT32 *length);
-
-                    WindowsGetStringRawBuffer_t WindowsGetStringRawBufferFunc = (WindowsGetStringRawBuffer_t)GetProcAddress(hModule, "WindowsGetStringRawBuffer");
-                    if (WindowsGetStringRawBufferFunc) {
+                WindowsGetStringRawBuffer_t WindowsGetStringRawBufferFunc = (WindowsGetStringRawBuffer_t)GetProcAddress(hModule, "WindowsGetStringRawBuffer");
+                WindowsDeleteString_t WindowsDeleteStringFunc = (WindowsDeleteString_t)GetProcAddress(hModule, "WindowsDeleteString");
+                if (WindowsGetStringRawBufferFunc && WindowsDeleteStringFunc) {
+                    HSTRING hString;
+                    hr = __x_ABI_CWindows_CGaming_CInput_CIRawGameController2_get_DisplayName(controller2, &hString);
+                    if (SUCCEEDED(hr)) {
                         PCWSTR string = WindowsGetStringRawBufferFunc(hString, NULL);
                         if (string) {
                             name = WIN_StringToUTF8(string);
                         }
+                        WindowsDeleteStringFunc(hString);
                     }
-                    FreeLibrary(hModule);
                 }
+                FreeLibrary(hModule);
             }
             __x_ABI_CWindows_CGaming_CInput_CIRawGameController2_Release(controller2);
         }
