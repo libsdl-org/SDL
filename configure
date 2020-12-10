@@ -23159,7 +23159,9 @@ fi
 
     if test x$enable_joystick_mfi = xyes; then
         save_CFLAGS="$CFLAGS"
+        save_LDFLAGS="$LDFLAGS"
                 CFLAGS="$CFLAGS -x objective-c -fobjc-weak"
+        LDFLAGS="$LDFLAGS -Wl,-weak_framework,CoreHaptics -Wl,-weak_framework,GameController"
         { $as_echo "$as_me:${as_lineno-$LINENO}: checking for GameController framework" >&5
 $as_echo_n "checking for GameController framework... " >&6; }
         enable_joystick_mfi=no
@@ -23170,6 +23172,10 @@ $as_echo_n "checking for GameController framework... " >&6; }
           #include <TargetConditionals.h>
           #import <GameController/GameController.h>
 
+int
+main ()
+{
+
           #if MAC_OS_X_VERSION_MIN_REQUIRED < 1080
           #error GameController framework doesn't work on this configuration
           #endif
@@ -23177,22 +23183,20 @@ $as_echo_n "checking for GameController framework... " >&6; }
           #error GameController framework doesn't work on this configuration
           #endif
 
-int
-main ()
-{
-
-
   ;
   return 0;
 }
 _ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
+if ac_fn_c_try_link "$LINENO"; then :
 
         enable_joystick_mfi=yes
 
 fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
         CFLAGS="$save_CFLAGS"
+        LDFLAGS="$save_LDFLAGS"
+
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_joystick_mfi" >&5
 $as_echo "$enable_joystick_mfi" >&6; }
         if test x$enable_joystick_mfi = xyes; then
