@@ -314,7 +314,7 @@ static SDL_bool AddDialogControl(WIN_DialogData *dialog, WORD type, DWORD style,
     if (!AddDialogData(dialog, &type, sizeof(type))) {
         return SDL_FALSE;
     }
-    if (type == DLGITEMTYPEBUTTON || (type == DLGITEMTYPESTATIC && caption != NULL && caption[0])) {
+    if (type == DLGITEMTYPEBUTTON || (type == DLGITEMTYPESTATIC && caption[0])) {
         if (!AddDialogString(dialog, caption)) {
             return SDL_FALSE;
         }

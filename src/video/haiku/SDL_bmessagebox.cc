@@ -154,9 +154,9 @@ class HAIKU_SDL_MessageBox : public BAlert
 			ApplyAndParseColorScheme(aMessageBoxData->colorScheme);
 		}
 
-		(aMessageBoxData->title && aMessageBoxData->title[0]) ?
+		(aMessageBoxData->title[0]) ?
 			SetTitle(aMessageBoxData->title) : SetTitle(HAIKU_SDL_DefTitle);
-		(aMessageBoxData->message && aMessageBoxData->message[0]) ?
+		(aMessageBoxData->message[0]) ?
 			SetMessageText(aMessageBoxData->message) : SetMessageText(HAIKU_SDL_DefMessage);
 
 		SetType(ConvertMessageBoxType(static_cast<SDL_MessageBoxFlags>(aMessageBoxData->flags)));

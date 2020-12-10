@@ -113,7 +113,7 @@ Cocoa_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
     int i;
     for (i = 0; i < messageboxdata->numbuttons; ++i) {
         const SDL_MessageBoxButtonData *sdlButton;
-		NSButton *button;
+        NSButton *button;
 
         if (messageboxdata->flags & SDL_MESSAGEBOX_BUTTONS_RIGHT_TO_LEFT) {
             sdlButton = &messageboxdata->buttons[messageboxdata->numbuttons - 1 - i];
@@ -142,8 +142,8 @@ Cocoa_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
     if (clicked >= NSAlertFirstButtonReturn) {
         clicked -= NSAlertFirstButtonReturn;
         if (messageboxdata->flags & SDL_MESSAGEBOX_BUTTONS_RIGHT_TO_LEFT) {
-			clicked = messageboxdata->numbuttons - 1 - clicked;
-		}
+            clicked = messageboxdata->numbuttons - 1 - clicked;
+        }
         *buttonid = buttons[clicked].buttonid;
     } else {
         returnValue = SDL_SetError("Did not get a valid `clicked button' id: %ld", (long)clicked);
