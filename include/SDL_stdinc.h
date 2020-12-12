@@ -31,7 +31,9 @@
 #include "SDL_config.h"
 
 #ifdef __APPLE__
-#define _DARWIN_C_SOURCE /* for memset_pattern4() */
+#ifndef _DARWIN_C_SOURCE
+#define _DARWIN_C_SOURCE 1 /* for memset_pattern4() */
+#endif
 #endif
 
 #ifdef HAVE_SYS_TYPES_H
