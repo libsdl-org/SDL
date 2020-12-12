@@ -36,6 +36,8 @@
 #include "SDL_render_vita_gxm_tools.h"
 #include "SDL_render_vita_gxm_memory.h"
 
+#include <psp2/common_dialog.h>
+
 static SDL_Renderer *VITA_GXM_CreateRenderer(SDL_Window *window, Uint32 flags);
 
 static void VITA_GXM_WindowEvent(SDL_Renderer *renderer, const SDL_WindowEvent *event);
@@ -1049,6 +1051,25 @@ VITA_GXM_RenderPresent(SDL_Renderer *renderer)
 //    sceGxmFinish(data->gxm_context);
 
     data->displayData.address = data->displayBufferData[data->backBufferIndex];
+
+
+    SceCommonDialogUpdateParam updateParam;
+
+    SDL_memset(&updateParam, 0, sizeof(updateParam));
+
+    updateParam.renderTarget.colorFormat    = VITA_GXM_COLOR_FORMAT;
+    updateParam.renderTarget.surfaceType    = SCE_GXM_COLOR_SURFACE_LINEAR;
+    updateParam.renderTarget.width          = VITA_GXM_SCREEN_WIDTH;
+    updateParam.renderTarget.height         = VITA_GXM_SCREEN_HEIGHT;
+    updateParam.renderTarget.strideInPixels = VITA_GXM_SCREEN_STRIDE;
+
+    updateParam.renderTarget.colorSurfaceData = data->displayBufferData[data->backBufferIndex];
+    updateParam.renderTarget.depthSurfaceData = data->depthBufferData;
+
+    updateParam.displaySyncObject = (SceGxmSyncObject *)data->displayBufferSync[data->backBufferIndex];
+
+    sceCommonDialogUpdate(&updateParam);
+
 
     sceGxmDisplayQueueAddEntry(
         data->displayBufferSync[data->frontBufferIndex],    // OLD fb
