@@ -39,6 +39,8 @@
 #include "SDL_vitamouse_c.h"
 #include "SDL_vitagl_c.h"
 
+#include <psp2/ime_dialog.h>
+
 SDL_Window *Vita_Window;
 
 static int
@@ -52,9 +54,11 @@ VITA_Destroy(SDL_VideoDevice * device)
 {
 /*    SDL_VideoData *phdata = (SDL_VideoData *) device->driverdata; */
 
-    if (device->driverdata != NULL) {
-        device->driverdata = NULL;
-    }
+    SDL_free(device->driverdata);
+    SDL_free(device);
+//    if (device->driverdata != NULL) {
+//        device->driverdata = NULL;
+//    }
 }
 
 static SDL_VideoDevice *
@@ -88,6 +92,7 @@ VITA_Create()
     }
     device->gl_data = gldata;
     phdata->egl_initialized = SDL_TRUE;
+    phdata->ime_active = SDL_FALSE;
 
     device->driverdata = phdata;
 
@@ -311,28 +316,120 @@ VITA_GetWindowWMInfo(_THIS, SDL_Window * window, struct SDL_SysWMinfo *info)
     return SDL_FALSE;
 }
 
-
-/* TO Write Me */
 SDL_bool VITA_HasScreenKeyboardSupport(_THIS)
 {
-    return SDL_FALSE;
+    return SDL_TRUE;
 }
+
 void VITA_ShowScreenKeyboard(_THIS, SDL_Window *window)
 {
+    SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
+
+    wchar_t *title = L"";
+    wchar_t *text = L"";
+
+    SceImeDialogParam param;
+    sceImeDialogParamInit(&param);
+
+    param.supportedLanguages = SCE_IME_LANGUAGE_ENGLISH_US;
+    param.languagesForced = SCE_FALSE;
+    param.type = SCE_IME_TYPE_DEFAULT;
+    param.option = 0;
+    param.textBoxMode = SCE_IME_DIALOG_TEXTBOX_MODE_WITH_CLEAR;
+    param.maxTextLength = SCE_IME_DIALOG_MAX_TEXT_LENGTH;
+
+    param.title = title;
+    param.initialText = text;
+    param.inputTextBuffer = videodata->ime_buffer;
+
+    SceInt32 res = sceImeDialogInit(&param);
+    if (res < 0) {
+        SDL_SetError("Failed to init IME dialog");
+        return;
+    }
+
+    videodata->ime_active = SDL_TRUE;
 }
+
 void VITA_HideScreenKeyboard(_THIS, SDL_Window *window)
 {
+    SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
+
+    SceCommonDialogStatus dialogStatus = sceImeDialogGetStatus();
+
+    switch (dialogStatus) {
+        default:
+        case SCE_COMMON_DIALOG_STATUS_NONE:
+        case SCE_COMMON_DIALOG_STATUS_RUNNING:
+                break;
+        case SCE_COMMON_DIALOG_STATUS_FINISHED:
+                sceImeDialogTerm();
+                break;
+    }
+
+    videodata->ime_active = SDL_FALSE;
 }
+
 SDL_bool VITA_IsScreenKeyboardShown(_THIS, SDL_Window *window)
 {
-    return SDL_FALSE;
+    SceCommonDialogStatus dialogStatus = sceImeDialogGetStatus();
+    return (dialogStatus == SCE_COMMON_DIALOG_STATUS_RUNNING);
+}
+
+
+static void utf16_to_utf8(const uint16_t *src, uint8_t *dst) {
+  int i;
+  for (i = 0; src[i]; i++) {
+    if ((src[i] & 0xFF80) == 0) {
+      *(dst++) = src[i] & 0xFF;
+    } else if((src[i] & 0xF800) == 0) {
+      *(dst++) = ((src[i] >> 6) & 0xFF) | 0xC0;
+      *(dst++) = (src[i] & 0x3F) | 0x80;
+    } else if((src[i] & 0xFC00) == 0xD800 && (src[i + 1] & 0xFC00) == 0xDC00) {
+      *(dst++) = (((src[i] + 64) >> 8) & 0x3) | 0xF0;
+      *(dst++) = (((src[i] >> 2) + 16) & 0x3F) | 0x80;
+      *(dst++) = ((src[i] >> 4) & 0x30) | 0x80 | ((src[i + 1] << 2) & 0xF);
+      *(dst++) = (src[i + 1] & 0x3F) | 0x80;
+      i += 1;
+    } else {
+      *(dst++) = ((src[i] >> 12) & 0xF) | 0xE0;
+      *(dst++) = ((src[i] >> 6) & 0x3F) | 0x80;
+      *(dst++) = (src[i] & 0x3F) | 0x80;
+    }
+  }
+
+  *dst = '\0';
 }
 
 void VITA_PumpEvents(_THIS)
 {
+    SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
+
     VITA_PollTouch();
     VITA_PollKeyboard();
     VITA_PollMouse();
+
+    if (videodata->ime_active == SDL_TRUE) {
+        // update IME status. Terminate, if finished
+        SceCommonDialogStatus dialogStatus = sceImeDialogGetStatus();
+         if (dialogStatus == SCE_COMMON_DIALOG_STATUS_FINISHED) {
+
+            SceImeDialogResult result;
+            SDL_memset(&result, 0, sizeof(SceImeDialogResult));
+            sceImeDialogGetResult(&result);
+
+            // Convert UTF16 to UTF8
+            uint8_t utf8_buffer[SCE_IME_DIALOG_MAX_TEXT_LENGTH];
+            utf16_to_utf8(videodata->ime_buffer, utf8_buffer);
+            // send sdl event
+            SDL_SendKeyboardText((const char*)utf8_buffer);
+
+            sceImeDialogTerm();
+
+            videodata->ime_active = SDL_FALSE;
+        }
+
+    }
 }
 
 #endif /* SDL_VIDEO_DRIVER_VITA */
