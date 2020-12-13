@@ -32,7 +32,7 @@
 #include <errno.h>              /* errno, strerror */
 #include <fcntl.h>
 #include <limits.h>             /* For the definition of PATH_MAX */
-#ifdef HAVE_INOTIFY_H
+#ifdef HAVE_INOTIFY
 #include <sys/inotify.h>
 #endif
 #include <sys/ioctl.h>
@@ -499,7 +499,21 @@ static void SteamControllerDisconnectedCallback(int device_instance)
     }
 }
 
-#ifdef HAVE_INOTIFY_H
+#ifdef HAVE_INOTIFY
+#ifdef HAVE_INOTIFY_INIT1
+static int SDL_inotify_init1(void) {
+    return inotify_init1(IN_NONBLOCK | IN_CLOEXEC);
+}
+#else
+static int SDL_inotify_init1(void) {
+    int fd = inotify_init();
+    if (fd  < 0) return -1;
+    fcntl(fd, F_SETFL, O_NONBLOCK);
+    fcntl(fd, F_SETFD, FD_CLOEXEC);
+    return fd;
+}
+#endif
+
 static int
 StrHasPrefix(const char *string, const char *prefix)
 {
@@ -568,7 +582,7 @@ LINUX_InotifyJoystickDetect(void)
         }
     }
 }
-#endif /* HAVE_INOTIFY_H */
+#endif /* HAVE_INOTIFY */
 
 /* Detect devices by reading /dev/input. In the inotify code path we
  * have to do this the first time, to detect devices that already existed
@@ -618,7 +632,7 @@ LINUX_JoystickDetect(void)
     }
     else
 #endif
-#ifdef HAVE_INOTIFY_H
+#ifdef HAVE_INOTIFY
     if (inotify_fd >= 0 && last_joy_detect_time != 0) {
         LINUX_InotifyJoystickDetect();
     }
@@ -698,8 +712,8 @@ LINUX_JoystickInit(void)
     else
 #endif
     {
-#ifdef HAVE_INOTIFY_H
-        inotify_fd = inotify_init1(IN_NONBLOCK | IN_CLOEXEC);
+#if defined(HAVE_INOTIFY)
+        inotify_fd = SDL_inotify_init1();
 
         if (inotify_fd < 0) {
             SDL_LogWarn(SDL_LOG_CATEGORY_INPUT,
@@ -720,7 +734,7 @@ LINUX_JoystickInit(void)
                             strerror (errno));
             }
         }
-#endif /* HAVE_INOTIFY_H */
+#endif /* HAVE_INOTIFY */
 
         /* Report all devices currently present */
         LINUX_JoystickDetect();

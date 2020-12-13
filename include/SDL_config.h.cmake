@@ -211,9 +211,13 @@
 #cmakedefine HAVE_DBUS_DBUS_H 1
 #cmakedefine HAVE_FCITX 1
 #cmakedefine HAVE_IBUS_IBUS_H 1
+#cmakedefine HAVE_SYS_INOTIFY_H 1
+#cmakedefine HAVE_INOTIFY_INIT 1
+#cmakedefine HAVE_INOTIFY_INIT1 1
+#cmakedefine HAVE_INOTIFY 1
 #cmakedefine HAVE_IMMINTRIN_H 1
-#cmakedefine HAVE_LIBSAMPLERATE_H 1
 #cmakedefine HAVE_LIBUDEV_H 1
+#cmakedefine HAVE_LIBSAMPLERATE_H 1
 
 #cmakedefine HAVE_D3D_H @HAVE_D3D_H@
 #cmakedefine HAVE_D3D11_H @HAVE_D3D11_H@

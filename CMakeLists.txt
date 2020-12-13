@@ -1222,6 +1222,12 @@ elseif(UNIX AND NOT APPLE AND NOT ANDROID AND NOT RISCOS)
     endif()
 
     check_include_file("libudev.h" HAVE_LIBUDEV_H)
+    check_include_file("sys/inotify.h" HAVE_SYS_INOTIFY_H)
+    check_symbol_exists(inotify_init "sys/inotify.h" HAVE_INOTIFY_INIT)
+    check_symbol_exists(inotify_init1 "sys/inotify.h" HAVE_INOTIFY_INIT1)
+    if(HAVE_SYS_INOTIFY_H AND HAVE_INOTIFY_INIT)
+      set(HAVE_INOTIFY 1)
+    endif()
 
     if(PKG_CONFIG_FOUND)
       pkg_search_module(DBUS dbus-1 dbus)

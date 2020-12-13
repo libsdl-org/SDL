@@ -2725,15 +2725,23 @@ AS_HELP_STRING([--enable-ime], [enable IME support [[default=yes]]]),
 dnl Check inotify presense
 CheckInotify()
 {
-    AC_CHECK_HEADER(sys/inotify.h, have_inotify_inotify_h_hdr=yes)
-    if test x$have_inotify_inotify_h_hdr = xyes; then
-        AC_DEFINE(HAVE_INOTIFY_H, 1, [ ])
+    save_LIBS="$LIBS"
+    case "$host" in
+     *-*-freebsd*) LIBS="$LIBS -linotify"
+      ;;
+    esac
+    AC_CHECK_HEADERS(sys/inotify.h, [have_inotify_inotify_h_hdr=yes])
+    AC_CHECK_FUNCS(inotify_init, [have_inotify=yes])
+    AC_CHECK_FUNCS(inotify_init1)
+    if test x$have_inotify_inotify_h_hdr = xyes -a x$have_inotify = xyes; then
+        AC_DEFINE(HAVE_INOTIFY, 1, [ ])
         case "$host" in
             *-*-freebsd*)
                 EXTRA_LDFLAGS="$EXTRA_LDFLAGS -linotify"
                 ;;
         esac
     fi
+    LIBS="save_$LIBS"
 }
 
 dnl See if the platform has libibus IME support.
