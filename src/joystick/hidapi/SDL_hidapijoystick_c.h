@@ -76,6 +76,9 @@ typedef struct _SDL_HIDAPI_Device
     /* Used during scanning for device changes */
     SDL_bool seen;
 
+    /* Used to flag that the device is being updated */
+    SDL_bool updating;
+
     struct _SDL_HIDAPI_Device *next;
 } SDL_HIDAPI_Device;
 
