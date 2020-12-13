@@ -37,9 +37,15 @@ SDL_LoadObject(const char *sofile)
 {
     ULONG   ulRC;
     HMODULE hModule;
-    PSZ     pszModName = OS2_UTF8ToSys(sofile);
     CHAR    acError[256];
+    PSZ     pszModName;
 
+    if (!sofile) {
+        SDL_SetError("NULL sofile");
+        return NULL;
+    }
+
+    pszModName = OS2_UTF8ToSys(sofile);
     ulRC = DosLoadModule(acError, sizeof(acError), pszModName, &hModule);
     SDL_free(pszModName);
     if (ulRC != NO_ERROR) {
