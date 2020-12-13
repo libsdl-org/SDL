@@ -1145,7 +1145,7 @@ PollAllValues(SDL_Joystick *joystick)
             i = ABS_HAT3Y;
             continue;
         }
-        if (joystick->hwdata->abs_correct[i].used) {
+        if (joystick->hwdata->has_abs[i]) {
             if (ioctl(joystick->hwdata->fd, EVIOCGABS(i), &absinfo) >= 0) {
                 absinfo.value = AxisCorrect(joystick, i, absinfo.value);
 
