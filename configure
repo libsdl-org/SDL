@@ -22984,15 +22984,48 @@ $as_echo "#define SDL_USE_IME 1" >>confdefs.h
 
 CheckInotify()
 {
-    ac_fn_c_check_header_mongrel "$LINENO" "sys/inotify.h" "ac_cv_header_sys_inotify_h" "$ac_includes_default"
+    save_LIBS="$LIBS"
+    case "$host" in
+     *-*-freebsd*) LIBS="$LIBS -linotify"
+      ;;
+    esac
+    for ac_header in sys/inotify.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "sys/inotify.h" "ac_cv_header_sys_inotify_h" "$ac_includes_default"
 if test "x$ac_cv_header_sys_inotify_h" = xyes; then :
-  have_inotify_inotify_h_hdr=yes
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_SYS_INOTIFY_H 1
+_ACEOF
+ have_inotify_inotify_h_hdr=yes
 fi
 
+done
 
-    if test x$have_inotify_inotify_h_hdr = xyes; then
+    for ac_func in inotify_init
+do :
+  ac_fn_c_check_func "$LINENO" "inotify_init" "ac_cv_func_inotify_init"
+if test "x$ac_cv_func_inotify_init" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_INOTIFY_INIT 1
+_ACEOF
+ have_inotify=yes
+fi
+done
 
-$as_echo "#define HAVE_INOTIFY_H 1" >>confdefs.h
+    for ac_func in inotify_init1
+do :
+  ac_fn_c_check_func "$LINENO" "inotify_init1" "ac_cv_func_inotify_init1"
+if test "x$ac_cv_func_inotify_init1" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_INOTIFY_INIT1 1
+_ACEOF
+
+fi
+done
+
+    if test x$have_inotify_inotify_h_hdr = xyes -a x$have_inotify = xyes; then
+
+$as_echo "#define HAVE_INOTIFY 1" >>confdefs.h
 
         case "$host" in
             *-*-freebsd*)
@@ -23000,6 +23033,7 @@ $as_echo "#define HAVE_INOTIFY_H 1" >>confdefs.h
                 ;;
         esac
     fi
+    LIBS="save_$LIBS"
 }
 
 CheckIBus()
