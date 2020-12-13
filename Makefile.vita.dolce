@@ -53,8 +53,8 @@ clean:
 	@rm -f $(TARGET_LIB) $(OBJS)
 
 install: $(TARGET_LIB)
-	@mkdir -p "$(DOLCESDK)/arm-dolce-eabi/lib"
-	@cp  $(TARGET_LIB) $(DOLCESDK)/arm-dolce-eabi/lib
-	@mkdir -p "$(DOLCESDK)/arm-dolce-eabi/include/SDL2"
-	@cp include/*.h "$(DOLCESDK)/arm-dolce-eabi/include/SDL2"
+	@mkdir -p "$(DESTDIR)$(DOLCESDK)/arm-dolce-eabi/lib"
+	@cp  $(TARGET_LIB) $(DESTDIR)$(DOLCESDK)/arm-dolce-eabi/lib
+	@mkdir -p "$(DESTDIR)$(DOLCESDK)/arm-dolce-eabi/include/SDL2"
+	@cp include/*.h "$(DESTDIR)$(DOLCESDK)/arm-dolce-eabi/include/SDL2"
 	@echo "Installed!"
