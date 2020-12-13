@@ -23033,7 +23033,7 @@ $as_echo "#define HAVE_INOTIFY 1" >>confdefs.h
                 ;;
         esac
     fi
-    LIBS="save_$LIBS"
+    LIBS="$save_LIBS"
 }
 
 CheckIBus()
