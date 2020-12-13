@@ -36,6 +36,10 @@
 #ifndef RLIMIT_RTTIME
 #define RLIMIT_RTTIME 15
 #endif
+/* SCHED_RESET_ON_FORK is in kernel >= 2.6.32. */
+#ifndef SCHED_RESET_ON_FORK
+#define SCHED_RESET_ON_FORK 0x40000000
+#endif
 
 #include "SDL_dbus.h"
 
