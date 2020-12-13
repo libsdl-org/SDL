@@ -822,6 +822,11 @@ static void
 HIDAPI_DelDevice(SDL_HIDAPI_Device *device)
 {
     SDL_HIDAPI_Device *curr, *last;
+
+#ifdef DEBUG_HIDAPI
+    SDL_Log("Removing HIDAPI device '%s' VID 0x%.4x, PID 0x%.4x, version %d, serial %s, interface %d, interface_class %d, interface_subclass %d, interface_protocol %d, usage page 0x%.4x, usage 0x%.4x, path = %s, driver = %s (%s)\n", device->name, device->vendor_id, device->product_id, device->version, device->serial ? device->serial : "NONE", device->interface_number, device->interface_class, device->interface_subclass, device->interface_protocol, device->usage_page, device->usage, device->path, device->driver ? device->driver->hint : "NONE", device->driver && device->driver->enabled ? "ENABLED" : "DISABLED");
+#endif
+
     for (curr = SDL_HIDAPI_devices, last = NULL; curr; last = curr, curr = curr->next) {
         if (curr == device) {
             if (last) {
@@ -1002,7 +1007,9 @@ HIDAPI_UpdateDevices(void)
         while (device) {
             if (device->driver) {
                 if (SDL_TryLockMutex(device->dev_lock) == 0) {
+                    device->updating = SDL_TRUE;
                     device->driver->UpdateDevice(device);
+                    device->updating = SDL_FALSE;
                     SDL_UnlockMutex(device->dev_lock);
                 }
             }
@@ -1200,10 +1207,18 @@ HIDAPI_JoystickClose(SDL_Joystick * joystick)
         int i;
 
         /* Wait up to 30 ms for pending rumble to complete */
+        if (device->updating) {
+            /* Unlock the device so rumble can complete */
+            SDL_UnlockMutex(device->dev_lock);
+        }
         for (i = 0; i < 3; ++i) {
-            while (SDL_AtomicGet(&device->rumble_pending) > 0) {
+            if (SDL_AtomicGet(&device->rumble_pending) > 0) {
                 SDL_Delay(10);
             }
+        }
+        if (device->updating) {
+            /* Relock the device */
+            SDL_LockMutex(device->dev_lock);
         }
 
         device->driver->CloseJoystick(device, joystick);

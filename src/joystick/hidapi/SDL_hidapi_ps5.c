@@ -24,6 +24,7 @@
 
 #include "SDL_hints.h"
 #include "SDL_events.h"
+#include "SDL_timer.h"
 #include "SDL_joystick.h"
 #include "SDL_gamecontroller.h"
 #include "../SDL_sysjoystick.h"
@@ -41,6 +42,7 @@
 
 #define GYRO_RES_PER_DEGREE 1024.0f
 #define ACCEL_RES_PER_G     8192.0f
+#define BLUETOOTH_DISCONNECT_TIMEOUT_MS 500
 
 #define LOAD16(A, B)  (Sint16)((Uint16)(A) | (((Uint16)(B)) << 8))
 
@@ -152,6 +154,7 @@ typedef struct {
     SDL_bool report_sensors;
     SDL_bool hardware_calibration;
     IMUCalibrationData calibration[6];
+    Uint32 last_packet;
     int player_index;
     Uint8 rumble_left;
     Uint8 rumble_right;
@@ -516,6 +519,7 @@ HIDAPI_DriverPS5_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
         SDL_OutOfMemory();
         return SDL_FALSE;
     }
+    ctx->last_packet = SDL_GetTicks();
 
     device->dev = hid_open_path(device->path, 0);
     if (!device->dev) {
@@ -847,6 +851,7 @@ HIDAPI_DriverPS5_UpdateDevice(SDL_HIDAPI_Device *device)
     SDL_Joystick *joystick = NULL;
     Uint8 data[USB_PACKET_LENGTH*2];
     int size;
+    int packet_count = 0;
 
     if (device->num_joysticks > 0) {
         joystick = SDL_JoystickFromInstanceID(device->joysticks[0]);
@@ -859,6 +864,9 @@ HIDAPI_DriverPS5_UpdateDevice(SDL_HIDAPI_Device *device)
 #ifdef DEBUG_PS5_PROTOCOL
         HIDAPI_DumpPacket("PS5 packet: size = %d", data, size);
 #endif
+        ++packet_count;
+        ctx->last_packet = SDL_GetTicks();
+
         switch (data[0]) {
         case k_EPS5ReportIdState:
             if (size == 10) {
@@ -881,6 +889,14 @@ HIDAPI_DriverPS5_UpdateDevice(SDL_HIDAPI_Device *device)
             SDL_Log("Unknown PS5 packet: 0x%.2x\n", data[0]);
 #endif
             break;
+        }
+    }
+
+    if (ctx->is_bluetooth && packet_count == 0) {
+        /* Check to see if it looks like the device disconnected */
+        if (SDL_TICKS_PASSED(SDL_GetTicks(), ctx->last_packet + BLUETOOTH_DISCONNECT_TIMEOUT_MS)) {
+            /* Send an empty output report to tickle the Bluetooth stack */
+            HIDAPI_DriverPS5_UpdateEffects(device, k_EDS5EffectNone);
         }
     }
 
