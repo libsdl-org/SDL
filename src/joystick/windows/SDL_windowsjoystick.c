@@ -365,7 +365,7 @@ WINDOWS_JoystickInit(void)
 
     WINDOWS_JoystickDetect();
 
-    s_bJoystickThread = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_THREAD, SDL_TRUE);
+    s_bJoystickThread = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_THREAD, SDL_FALSE);
     if (s_bJoystickThread) {
         if (SDL_StartJoystickThread() < 0) {
             return -1;
