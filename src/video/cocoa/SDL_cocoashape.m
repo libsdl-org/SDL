@@ -35,14 +35,14 @@ Cocoa_CreateShaper(SDL_Window* window)
 
     [windata->nswindow setStyleMask:NSWindowStyleMaskBorderless];
 
-    SDL_WindowShaper* result = result = malloc(sizeof(SDL_WindowShaper));
+    SDL_WindowShaper* result = (SDL_WindowShaper *)SDL_malloc(sizeof(SDL_WindowShaper));
     result->window = window;
     result->mode.mode = ShapeModeDefault;
     result->mode.parameters.binarizationCutoff = 1;
     result->userx = result->usery = 0;
     window->shaper = result;
 
-    SDL_ShapeData* data = malloc(sizeof(SDL_ShapeData));
+    SDL_ShapeData* data = (SDL_ShapeData *)SDL_malloc(sizeof(SDL_ShapeData));
     result->driverdata = data;
     data->context = [windata->nswindow graphicsContext];
     data->saved = SDL_FALSE;
