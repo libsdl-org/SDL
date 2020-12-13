@@ -34,6 +34,7 @@
 
 #include "SDL_error.h"
 #include "SDL_events.h"
+#include "SDL_hints.h"
 #include "SDL_timer.h"
 #include "SDL_mutex.h"
 #include "SDL_joystick.h"
@@ -59,11 +60,12 @@
 #endif
 
 /* local variables */
+static SDL_bool s_bJoystickThread = SDL_FALSE;
 static SDL_bool s_bDeviceAdded = SDL_FALSE;
 static SDL_bool s_bDeviceRemoved = SDL_FALSE;
 static SDL_cond *s_condJoystickThread = NULL;
 static SDL_mutex *s_mutexJoyStickEnum = NULL;
-static SDL_Thread *s_threadJoystick = NULL;
+static SDL_Thread *s_joystickThread = NULL;
 static SDL_bool s_bJoystickThreadQuit = SDL_FALSE;
 
 JoyStick_DeviceData *SYS_Joystick;    /* array to hold joystick ID values */
@@ -227,18 +229,18 @@ SDL_WaitForDeviceNotification(SDL_DeviceNotificationData *data, SDL_mutex *mutex
 
 #endif /* __WINRT__ */
 
+static SDL_DeviceNotificationData s_notification_data;
+
 /* Function/thread to scan the system for joysticks. */
 static int
 SDL_JoystickThread(void *_data)
 {
-    SDL_DeviceNotificationData notification_data;
-
 #if SDL_JOYSTICK_XINPUT
     SDL_bool bOpenedXInputDevices[XUSER_MAX_COUNT];
     SDL_zeroa(bOpenedXInputDevices);
 #endif
 
-    if (SDL_CreateDeviceNotification(&notification_data) < 0) {
+    if (SDL_CreateDeviceNotification(&s_notification_data) < 0) {
         return -1;
     }
 
@@ -246,7 +248,7 @@ SDL_JoystickThread(void *_data)
     while (s_bJoystickThreadQuit == SDL_FALSE) {
         SDL_bool bXInputChanged = SDL_FALSE;
 
-        if (SDL_WaitForDeviceNotification(&notification_data, s_mutexJoyStickEnum) == SDL_FALSE) {
+        if (SDL_WaitForDeviceNotification(&s_notification_data, s_mutexJoyStickEnum) == SDL_FALSE) {
 #if SDL_JOYSTICK_XINPUT
             /* WM_DEVICECHANGE not working, poll for new XINPUT controllers */
             SDL_CondWaitTimeout(s_condJoystickThread, s_mutexJoyStickEnum, 1000);
@@ -277,9 +279,56 @@ SDL_JoystickThread(void *_data)
     }
     SDL_UnlockMutex(s_mutexJoyStickEnum);
 
-    SDL_CleanupDeviceNotification(&notification_data);
+    SDL_CleanupDeviceNotification(&s_notification_data);
 
     return 1;
+}
+
+/* spin up the thread to detect hotplug of devices */
+static int
+SDL_StartJoystickThread(void)
+{
+    s_mutexJoyStickEnum = SDL_CreateMutex();
+    if (!s_mutexJoyStickEnum) {
+        return -1;
+    }
+
+    s_condJoystickThread = SDL_CreateCond();
+    if (!s_condJoystickThread) {
+        return -1;
+    }
+
+    s_bJoystickThreadQuit = SDL_FALSE;
+    s_joystickThread = SDL_CreateThreadInternal(SDL_JoystickThread, "SDL_joystick", 64 * 1024, NULL);
+    if (!s_joystickThread) {
+        return -1;
+    }
+    return 0;
+}
+
+static void
+SDL_StopJoystickThread(void)
+{
+    if (!s_joystickThread) {
+        return;
+    }
+
+    SDL_LockMutex(s_mutexJoyStickEnum);
+    s_bJoystickThreadQuit = SDL_TRUE;
+    SDL_CondBroadcast(s_condJoystickThread); /* signal the joystick thread to quit */
+    SDL_UnlockMutex(s_mutexJoyStickEnum);
+#ifndef __WINRT__
+    PostThreadMessage(SDL_GetThreadID(s_joystickThread), WM_QUIT, 0, 0);
+#endif
+    SDL_WaitThread(s_joystickThread, NULL); /* wait for it to bugger off */
+
+    SDL_DestroyCond(s_condJoystickThread);
+    s_condJoystickThread = NULL;
+
+    SDL_DestroyMutex(s_mutexJoyStickEnum);
+    s_mutexJoyStickEnum = NULL;
+
+    s_joystickThread = NULL;
 }
 
 void WINDOWS_AddJoystickDevice(JoyStick_DeviceData *device)
@@ -312,16 +361,19 @@ WINDOWS_JoystickInit(void)
         return -1;
     }
 
-    s_mutexJoyStickEnum = SDL_CreateMutex();
-    s_condJoystickThread = SDL_CreateCond();
     s_bDeviceAdded = SDL_TRUE; /* force a scan of the system for joysticks this first time */
 
     WINDOWS_JoystickDetect();
 
-    if (!s_threadJoystick) {
-        /* spin up the thread to detect hotplug of devices */
-        s_bJoystickThreadQuit = SDL_FALSE;
-        s_threadJoystick = SDL_CreateThreadInternal(SDL_JoystickThread, "SDL_joystick", 64 * 1024, NULL);
+    s_bJoystickThread = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_THREAD, SDL_TRUE);
+    if (s_bJoystickThread) {
+        if (SDL_StartJoystickThread() < 0) {
+            return -1;
+        }
+    } else {
+        if (SDL_CreateDeviceNotification(&s_notification_data) < 0) {
+            return -1;
+        }
     }
     return 0;
 }
@@ -351,7 +403,9 @@ WINDOWS_JoystickDetect(void)
         return;  /* thread hasn't signaled, nothing to do right now. */
     }
 
-    SDL_LockMutex(s_mutexJoyStickEnum);
+    if (s_mutexJoyStickEnum) {
+        SDL_LockMutex(s_mutexJoyStickEnum);
+    }
 
     s_bDeviceAdded = SDL_FALSE;
     s_bDeviceRemoved = SDL_FALSE;
@@ -365,7 +419,9 @@ WINDOWS_JoystickDetect(void)
     /* Look for XInput devices. Do this last, so they're first in the final list. */
     SDL_XINPUT_JoystickDetect(&pCurList);
 
-    SDL_UnlockMutex(s_mutexJoyStickEnum);
+    if (s_mutexJoyStickEnum) {
+        SDL_UnlockMutex(s_mutexJoyStickEnum);
+    }
 
     while (pCurList) {
         JoyStick_DeviceData *pListNext = NULL;
@@ -577,21 +633,10 @@ WINDOWS_JoystickQuit(void)
     }
     SYS_Joystick = NULL;
 
-    if (s_threadJoystick) {
-        SDL_LockMutex(s_mutexJoyStickEnum);
-        s_bJoystickThreadQuit = SDL_TRUE;
-        SDL_CondBroadcast(s_condJoystickThread); /* signal the joystick thread to quit */
-        SDL_UnlockMutex(s_mutexJoyStickEnum);
-#ifndef __WINRT__
-        PostThreadMessage(SDL_GetThreadID(s_threadJoystick), WM_QUIT, 0, 0);
-#endif
-        SDL_WaitThread(s_threadJoystick, NULL); /* wait for it to bugger off */
-
-        SDL_DestroyMutex(s_mutexJoyStickEnum);
-        SDL_DestroyCond(s_condJoystickThread);
-        s_condJoystickThread= NULL;
-        s_mutexJoyStickEnum = NULL;
-        s_threadJoystick = NULL;
+    if (s_bJoystickThread) {
+        SDL_StopJoystickThread();
+    } else {
+        SDL_CleanupDeviceNotification(&s_notification_data);
     }
 
     SDL_DINPUT_JoystickQuit();

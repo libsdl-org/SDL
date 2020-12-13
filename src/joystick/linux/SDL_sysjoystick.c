@@ -705,8 +705,7 @@ LINUX_JoystickInit(void)
             SDL_LogWarn(SDL_LOG_CATEGORY_INPUT,
                         "Unable to initialize inotify, falling back to polling: %s",
                         strerror (errno));
-        }
-        else {
+        } else {
             /* We need to watch for attribute changes in addition to
              * creation, because when a device is first created, it has
              * permissions that we can't read. When udev chmods it to

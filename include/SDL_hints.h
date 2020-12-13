@@ -709,6 +709,17 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_RAWINPUT "SDL_JOYSTICK_RAWINPUT"
 
  /**
+  *  \brief  A variable controlling whether a separate thread should be used
+  *          for handling joystick detection and raw input messages on Windows
+  *
+  *  This variable can be set to the following values:
+  *    "0"       - A separate thread is not used (the default)
+  *    "1"       - A separate thread is used for handling raw input messages
+  *
+  */
+#define SDL_HINT_JOYSTICK_THREAD "SDL_JOYSTICK_THREAD"
+
+ /**
   *  \brief  A variable controlling whether Linux joysticks adhere their HID-defined deadzones or return unfiltered values.
   *      This is useful for Wine which implements its own deadzone handler if requested by games, also it enables xinput
   *      games to receive unfiltered values as required from the API.
