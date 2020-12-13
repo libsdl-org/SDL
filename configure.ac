@@ -2741,7 +2741,7 @@ CheckInotify()
                 ;;
         esac
     fi
-    LIBS="save_$LIBS"
+    LIBS="$save_LIBS"
 }
 
 dnl See if the platform has libibus IME support.
