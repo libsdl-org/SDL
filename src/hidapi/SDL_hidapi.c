@@ -98,8 +98,6 @@ static const SDL_UDEV_Symbols *udev_ctx = NULL;
 #include "windows/hid.c"
 #define HAVE_PLATFORM_BACKEND 1
 #define udev_ctx 1
-#else
-#error Need a hid.c for this platform!
 #endif
 
 #undef hid_device_
