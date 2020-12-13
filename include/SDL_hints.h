@@ -720,14 +720,11 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_THREAD "SDL_JOYSTICK_THREAD"
 
  /**
-  *  \brief  A variable controlling whether Linux joysticks adhere their HID-defined deadzones or return unfiltered values.
-  *      This is useful for Wine which implements its own deadzone handler if requested by games, also it enables xinput
-  *      games to receive unfiltered values as required from the API.
+  *  \brief  A variable controlling whether joysticks on Linux adhere to their HID-defined deadzones or return unfiltered values.
   *
   *  This variable can be set to the following values:
-  *    "0"       - Linux deadzones are not used by SDL
-  *    "1"       - Linux deadzones are used by SDL (the default)
-  *
+  *    "0"       - Return unfiltered joystick axis values (the default)
+  *    "1"       - Return axis values with deadzones taken into account
   */
 #define SDL_HINT_LINUX_JOYSTICK_DEADZONES "SDL_LINUX_JOYSTICK_DEADZONES"
 
