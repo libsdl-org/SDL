@@ -3385,7 +3385,6 @@ AS_HELP_STRING([--enable-hidapi-libusb], [use libusb for low level joystick driv
             if test x$have_libusb_h = xyes; then
                 EXTRA_CFLAGS="$EXTRA_CFLAGS $LIBUSB_CFLAGS"
                 if test x$require_hidapi_libusb = xyes; then
-                    SOURCES="$SOURCES $srcdir/src/hidapi/libusb/hid.c"
                     EXTRA_LDFLAGS="$EXTRA_LDFLAGS $LIBUSB_LIBS"
                 else
                     if test x$have_loadso != xyes; then
