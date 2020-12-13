@@ -58,8 +58,15 @@ struct joystick_hwdata
 
     struct axis_correct
     {
-        int used;
+        SDL_bool use_deadzones;
+
+        /* Deadzone coefficients */
         int coef[3];
+
+        /* Raw coordinate scale */
+        int minimum;
+        int maximum;
+        float scale;
     } abs_correct[ABS_MAX];
 
     SDL_bool fresh;
