@@ -32,23 +32,22 @@
 void *
 SDL_LoadObject(const char *sofile)
 {
+    void *handle;
     LPTSTR tstr;
 
     if (!sofile) {
         SDL_SetError("NULL sofile");
         return NULL;
     }
-
     tstr = WIN_UTF8ToString(sofile);
-
 #ifdef __WINRT__
     /* WinRT only publically supports LoadPackagedLibrary() for loading .dll
        files.  LoadLibrary() is a private API, and not available for apps
        (that can be published to MS' Windows Store.)
     */
-    void *handle = (void *) LoadPackagedLibrary(tstr, 0);
+    handle = (void *) LoadPackagedLibrary(tstr, 0);
 #else
-    void *handle = (void *) LoadLibrary(tstr);
+    handle = (void *) LoadLibrary(tstr);
 #endif
     SDL_free(tstr);
 
