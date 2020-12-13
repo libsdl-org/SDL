@@ -43,7 +43,7 @@
 		5616CA4C252BB2A6005D5928 /* SDL_url.c in Sources */ = {isa = PBXBuildFile; fileRef = 5616CA49252BB2A5005D5928 /* SDL_url.c */; };
 		5616CA4D252BB2A6005D5928 /* SDL_sysurl.h in Headers */ = {isa = PBXBuildFile; fileRef = 5616CA4A252BB2A6005D5928 /* SDL_sysurl.h */; };
 		5616CA4E252BB2A6005D5928 /* SDL_sysurl.m in Sources */ = {isa = PBXBuildFile; fileRef = 5616CA4B252BB2A6005D5928 /* SDL_sysurl.m */; };
-		5616CA50252BB2BE005D5928 /* SDL_misc.h in Headers */ = {isa = PBXBuildFile; fileRef = 5616CA4F252BB2BE005D5928 /* SDL_misc.h */; };
+		5616CA50252BB2BE005D5928 /* SDL_misc.h in Headers */ = {isa = PBXBuildFile; fileRef = 5616CA4F252BB2BE005D5928 /* SDL_misc.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		5616CA51252BB35A005D5928 /* SDL_sysurl.h in Headers */ = {isa = PBXBuildFile; fileRef = 5616CA4A252BB2A6005D5928 /* SDL_sysurl.h */; };
 		5616CA52252BB35A005D5928 /* SDL_url.c in Sources */ = {isa = PBXBuildFile; fileRef = 5616CA49252BB2A5005D5928 /* SDL_url.c */; };
 		5616CA54252BB35B005D5928 /* SDL_sysurl.h in Headers */ = {isa = PBXBuildFile; fileRef = 5616CA4A252BB2A6005D5928 /* SDL_sysurl.h */; };
@@ -3763,6 +3763,8 @@
 		F376F7332559B79B00CFC0BC /* GameController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F376F6DE2559B5BA00CFC0BC /* GameController.framework */; };
 		F37DC5F325350EBC0002E6F7 /* CoreHaptics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F37DC5F225350EBC0002E6F7 /* CoreHaptics.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		F37DC5F525350ECC0002E6F7 /* CoreHaptics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F37DC5F425350ECC0002E6F7 /* CoreHaptics.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		F3928194258603F1003191A7 /* SDL_misc.h in Headers */ = {isa = PBXBuildFile; fileRef = 5616CA4F252BB2BE005D5928 /* SDL_misc.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F392819F25860422003191A7 /* SDL_misc.h in Headers */ = {isa = PBXBuildFile; fileRef = 5616CA4F252BB2BE005D5928 /* SDL_misc.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F3942659253579B400B03694 /* CoreHaptics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F37DC5F225350EBC0002E6F7 /* CoreHaptics.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		F394265A253579D200B03694 /* CoreHaptics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F37DC5F425350ECC0002E6F7 /* CoreHaptics.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		F3950CD8212BC88D00F51292 /* SDL_sensor.h in Headers */ = {isa = PBXBuildFile; fileRef = F3950CD7212BC88D00F51292 /* SDL_sensor.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -6414,7 +6416,6 @@
 				A7D8AB1D23E2514100DCD162 /* SDL_dynapi_procs.h in Headers */,
 				A7D88A2023E2437C00DCD162 /* SDL_egl.h in Headers */,
 				A7D8ABDA23E2514100DCD162 /* SDL_egl_c.h in Headers */,
-				5616CA51252BB35A005D5928 /* SDL_sysurl.h in Headers */,
 				A7D88A2723E2437C00DCD162 /* SDL_endian.h in Headers */,
 				A7D88A2823E2437C00DCD162 /* SDL_error.h in Headers */,
 				A7D8A95E23E2514000DCD162 /* SDL_error_c.h in Headers */,
@@ -6423,7 +6424,6 @@
 				A7D88A2A23E2437C00DCD162 /* SDL_filesystem.h in Headers */,
 				A7D88A2B23E2437C00DCD162 /* SDL_gamecontroller.h in Headers */,
 				A7D8B4AD23E2514300DCD162 /* SDL_gamecontrollerdb.h in Headers */,
-				F395C1942569C68F00942BFF /* SDL_iokitjoystick_c.h in Headers */,
 				A7D88A2C23E2437C00DCD162 /* SDL_gesture.h in Headers */,
 				A7D8BB3A23E2514500DCD162 /* SDL_gesture_c.h in Headers */,
 				A7D8BA5623E2514400DCD162 /* SDL_gles2funcs.h in Headers */,
@@ -6433,10 +6433,10 @@
 				A7D8AABD23E2514100DCD162 /* SDL_haptic_c.h in Headers */,
 				A75FDBC623EA380300529352 /* SDL_hidapi_rumble.h in Headers */,
 				A7D8B55823E2514300DCD162 /* SDL_hidapijoystick_c.h in Headers */,
-				F395C1BB2569C6A000942BFF /* SDL_mfijoystick_c.h in Headers */,
 				A7D88A2E23E2437C00DCD162 /* SDL_hints.h in Headers */,
 				A7D8B94B23E2514400DCD162 /* SDL_hints_c.h in Headers */,
 				A7D8A99A23E2514000DCD162 /* SDL_internal.h in Headers */,
+				F395C1942569C68F00942BFF /* SDL_iokitjoystick_c.h in Headers */,
 				A7D88A2F23E2437C00DCD162 /* SDL_joystick.h in Headers */,
 				A7D8B58823E2514300DCD162 /* SDL_joystick_c.h in Headers */,
 				A7D88A3023E2437C00DCD162 /* SDL_keyboard.h in Headers */,
@@ -6448,6 +6448,8 @@
 				A7D88A3823E2437C00DCD162 /* SDL_main.h in Headers */,
 				A7D88A3923E2437C00DCD162 /* SDL_messagebox.h in Headers */,
 				A7D88A3223E2437C00DCD162 /* SDL_metal.h in Headers */,
+				F395C1BB2569C6A000942BFF /* SDL_mfijoystick_c.h in Headers */,
+				F3928194258603F1003191A7 /* SDL_misc.h in Headers */,
 				A7D88A3A23E2437C00DCD162 /* SDL_mouse.h in Headers */,
 				A7D8BB1C23E2514500DCD162 /* SDL_mouse_c.h in Headers */,
 				A7D88A3B23E2437C00DCD162 /* SDL_mutex.h in Headers */,
@@ -6508,6 +6510,7 @@
 				A7D88A5323E2437C00DCD162 /* SDL_system.h in Headers */,
 				A7D8B3E723E2514300DCD162 /* SDL_systhread.h in Headers */,
 				A7D8B42923E2514300DCD162 /* SDL_systhread_c.h in Headers */,
+				5616CA51252BB35A005D5928 /* SDL_sysurl.h in Headers */,
 				A7D8AC4023E2514100DCD162 /* SDL_sysvideo.h in Headers */,
 				A7D88A5423E2437C00DCD162 /* SDL_syswm.h in Headers */,
 				A7D88A5523E2437C00DCD162 /* SDL_thread.h in Headers */,
@@ -6661,7 +6664,6 @@
 				A7D8AB1E23E2514100DCD162 /* SDL_dynapi_procs.h in Headers */,
 				A7D88BD723E24BED00DCD162 /* SDL_egl.h in Headers */,
 				A7D8ABDB23E2514100DCD162 /* SDL_egl_c.h in Headers */,
-				5616CA54252BB35B005D5928 /* SDL_sysurl.h in Headers */,
 				A7D88BDE23E24BED00DCD162 /* SDL_endian.h in Headers */,
 				A7D88BDF23E24BED00DCD162 /* SDL_error.h in Headers */,
 				A7D8A95F23E2514000DCD162 /* SDL_error_c.h in Headers */,
@@ -6670,7 +6672,6 @@
 				A7D88BE123E24BED00DCD162 /* SDL_filesystem.h in Headers */,
 				A7D88BE223E24BED00DCD162 /* SDL_gamecontroller.h in Headers */,
 				A7D8B4AE23E2514300DCD162 /* SDL_gamecontrollerdb.h in Headers */,
-				F395C1952569C68F00942BFF /* SDL_iokitjoystick_c.h in Headers */,
 				A7D88BE323E24BED00DCD162 /* SDL_gesture.h in Headers */,
 				A7D8BB3B23E2514500DCD162 /* SDL_gesture_c.h in Headers */,
 				A7D8BA5723E2514400DCD162 /* SDL_gles2funcs.h in Headers */,
@@ -6680,10 +6681,10 @@
 				A7D8AABE23E2514100DCD162 /* SDL_haptic_c.h in Headers */,
 				A75FDBC723EA380300529352 /* SDL_hidapi_rumble.h in Headers */,
 				A7D8B55923E2514300DCD162 /* SDL_hidapijoystick_c.h in Headers */,
-				F395C1BC2569C6A000942BFF /* SDL_mfijoystick_c.h in Headers */,
 				A7D88BE523E24BED00DCD162 /* SDL_hints.h in Headers */,
 				A7D8B94C23E2514400DCD162 /* SDL_hints_c.h in Headers */,
 				A7D8A99B23E2514000DCD162 /* SDL_internal.h in Headers */,
+				F395C1952569C68F00942BFF /* SDL_iokitjoystick_c.h in Headers */,
 				A7D88BE623E24BED00DCD162 /* SDL_joystick.h in Headers */,
 				A7D8B58923E2514300DCD162 /* SDL_joystick_c.h in Headers */,
 				A7D88BE723E24BED00DCD162 /* SDL_keyboard.h in Headers */,
@@ -6695,6 +6696,8 @@
 				A7D88BF123E24BED00DCD162 /* SDL_main.h in Headers */,
 				A7D88BF223E24BED00DCD162 /* SDL_messagebox.h in Headers */,
 				A7D88BEA23E24BED00DCD162 /* SDL_metal.h in Headers */,
+				F395C1BC2569C6A000942BFF /* SDL_mfijoystick_c.h in Headers */,
+				F392819F25860422003191A7 /* SDL_misc.h in Headers */,
 				A7D88BF323E24BED00DCD162 /* SDL_mouse.h in Headers */,
 				A7D8BB1D23E2514500DCD162 /* SDL_mouse_c.h in Headers */,
 				A7D88BF423E24BED00DCD162 /* SDL_mutex.h in Headers */,
@@ -6755,6 +6758,7 @@
 				A7D88C0E23E24BED00DCD162 /* SDL_system.h in Headers */,
 				A7D8B3E823E2514300DCD162 /* SDL_systhread.h in Headers */,
 				A7D8B42A23E2514300DCD162 /* SDL_systhread_c.h in Headers */,
+				5616CA54252BB35B005D5928 /* SDL_sysurl.h in Headers */,
 				A7D8AC4123E2514100DCD162 /* SDL_sysvideo.h in Headers */,
 				A7D88C0F23E24BED00DCD162 /* SDL_syswm.h in Headers */,
 				A7D88C1123E24BED00DCD162 /* SDL_thread.h in Headers */,
@@ -7047,7 +7051,6 @@
 				A7D8B7A023E2514400DCD162 /* SDL_audio_c.h in Headers */,
 				A7D8B7B223E2514400DCD162 /* SDL_audiodev_c.h in Headers */,
 				AADA5B8716CCAB3000107CF7 /* SDL_bits.h in Headers */,
-				5616CA4D252BB2A6005D5928 /* SDL_sysurl.h in Headers */,
 				A7D8BA0123E2514400DCD162 /* SDL_blendfillrect.h in Headers */,
 				A7D8B9E923E2514400DCD162 /* SDL_blendline.h in Headers */,
 				AA7558041595D4D800BBD41B /* SDL_blendmode.h in Headers */,
@@ -7113,6 +7116,7 @@
 				AA75581A1595D4D800BBD41B /* SDL_hints.h in Headers */,
 				A7D8B94A23E2514400DCD162 /* SDL_hints_c.h in Headers */,
 				A7D8A99923E2514000DCD162 /* SDL_internal.h in Headers */,
+				F395C1932569C68F00942BFF /* SDL_iokitjoystick_c.h in Headers */,
 				AA75581E1595D4D800BBD41B /* SDL_joystick.h in Headers */,
 				A7D8B58723E2514300DCD162 /* SDL_joystick_c.h in Headers */,
 				AA7558201595D4D800BBD41B /* SDL_keyboard.h in Headers */,
@@ -7124,6 +7128,8 @@
 				AA7558281595D4D800BBD41B /* SDL_main.h in Headers */,
 				AA9FF95A1637CBF9000DF050 /* SDL_messagebox.h in Headers */,
 				FA24348B21D41FFB00B8918A /* SDL_metal.h in Headers */,
+				F395C1BA2569C6A000942BFF /* SDL_mfijoystick_c.h in Headers */,
+				5616CA50252BB2BE005D5928 /* SDL_misc.h in Headers */,
 				AA75582A1595D4D800BBD41B /* SDL_mouse.h in Headers */,
 				A7D8BB1B23E2514500DCD162 /* SDL_mouse_c.h in Headers */,
 				AA75582C1595D4D800BBD41B /* SDL_mutex.h in Headers */,
@@ -7132,7 +7138,6 @@
 				A7D8ABE523E2514100DCD162 /* SDL_nullframebuffer_c.h in Headers */,
 				A7D8ABF723E2514100DCD162 /* SDL_nullvideo.h in Headers */,
 				A7D8AB5B23E2514100DCD162 /* SDL_offscreenevents_c.h in Headers */,
-				5616CA50252BB2BE005D5928 /* SDL_misc.h in Headers */,
 				A7D8AB7F23E2514100DCD162 /* SDL_offscreenframebuffer_c.h in Headers */,
 				A7D8AB7923E2514100DCD162 /* SDL_offscreenopengl.h in Headers */,
 				A7D8AB6D23E2514100DCD162 /* SDL_offscreenvideo.h in Headers */,
@@ -7176,7 +7181,6 @@
 				A7D8AAD423E2514100DCD162 /* SDL_syshaptic.h in Headers */,
 				A7D8AAE023E2514100DCD162 /* SDL_syshaptic_c.h in Headers */,
 				A7D8B58123E2514300DCD162 /* SDL_sysjoystick.h in Headers */,
-				F395C1932569C68F00942BFF /* SDL_iokitjoystick_c.h in Headers */,
 				566E26E1246274CC00718109 /* SDL_syslocale.h in Headers */,
 				A7D8B44023E2514300DCD162 /* SDL_sysmutex_c.h in Headers */,
 				A7D8B5D523E2514300DCD162 /* SDL_syspower.h in Headers */,
@@ -7186,6 +7190,7 @@
 				AA75584E1595D4D800BBD41B /* SDL_system.h in Headers */,
 				A7D8B3E623E2514300DCD162 /* SDL_systhread.h in Headers */,
 				A7D8B42823E2514300DCD162 /* SDL_systhread_c.h in Headers */,
+				5616CA4D252BB2A6005D5928 /* SDL_sysurl.h in Headers */,
 				A7D8AC3F23E2514100DCD162 /* SDL_sysvideo.h in Headers */,
 				AA7558501595D4D800BBD41B /* SDL_syswm.h in Headers */,
 				AA7558521595D4D800BBD41B /* SDL_thread.h in Headers */,
@@ -7259,7 +7264,6 @@
 				A7D8B56F23E2514300DCD162 /* usb_ids.h in Headers */,
 				A7D8B25423E2514200DCD162 /* vk_icd.h in Headers */,
 				A7D8B24E23E2514200DCD162 /* vk_layer.h in Headers */,
-				F395C1BA2569C6A000942BFF /* SDL_mfijoystick_c.h in Headers */,
 				A7D8B26623E2514200DCD162 /* vk_platform.h in Headers */,
 				A7D8B2AE23E2514200DCD162 /* vk_sdk_platform.h in Headers */,
 				A7D8B26023E2514200DCD162 /* vulkan.h in Headers */,
