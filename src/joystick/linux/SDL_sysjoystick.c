@@ -828,6 +828,7 @@ ConfigJoystick(SDL_Joystick *joystick, int fd)
     unsigned long absbit[NBITS(ABS_MAX)] = { 0 };
     unsigned long relbit[NBITS(REL_MAX)] = { 0 };
     unsigned long ffbit[NBITS(FF_MAX)] = { 0 };
+    SDL_bool use_deadzones = SDL_GetHintBoolean(SDL_HINT_LINUX_JOYSTICK_DEADZONES, SDL_FALSE);
 
     /* See if this device uses the new unified event API */
     if ((ioctl(fd, EVIOCGBIT(EV_KEY, sizeof(keybit)), keybit) >= 0) &&
@@ -863,7 +864,7 @@ ConfigJoystick(SDL_Joystick *joystick, int fd)
             }
             if (test_bit(i, absbit)) {
                 struct input_absinfo absinfo;
-                SDL_bool hint_used = SDL_GetHintBoolean(SDL_HINT_LINUX_JOYSTICK_DEADZONES, SDL_TRUE);
+                struct axis_correct *correct = &joystick->hwdata->abs_correct[i];
 
                 if (ioctl(fd, EVIOCGABS(i), &absinfo) < 0) {
                     continue;
@@ -876,20 +877,25 @@ ConfigJoystick(SDL_Joystick *joystick, int fd)
 #endif /* DEBUG_INPUT_EVENTS */
                 joystick->hwdata->abs_map[i] = joystick->naxes;
                 joystick->hwdata->has_abs[i] = SDL_TRUE;
-                if (absinfo.minimum == absinfo.maximum) {
-                    joystick->hwdata->abs_correct[i].used = 0;
-                } else {
-                    joystick->hwdata->abs_correct[i].used = hint_used;
-                    joystick->hwdata->abs_correct[i].coef[0] =
-                        (absinfo.maximum + absinfo.minimum) - 2 * absinfo.flat;
-                    joystick->hwdata->abs_correct[i].coef[1] =
-                        (absinfo.maximum + absinfo.minimum) + 2 * absinfo.flat;
-                    t = ((absinfo.maximum - absinfo.minimum) - 4 * absinfo.flat);
-                    if (t != 0) {
-                        joystick->hwdata->abs_correct[i].coef[2] =
-                            (1 << 28) / t;
+
+                correct->minimum = absinfo.minimum;
+                correct->maximum = absinfo.maximum;
+                if (correct->minimum != correct->maximum) {
+                    if (use_deadzones) {
+                        correct->use_deadzones = SDL_TRUE;
+                        correct->coef[0] = (absinfo.maximum + absinfo.minimum) - 2 * absinfo.flat;
+                        correct->coef[1] = (absinfo.maximum + absinfo.minimum) + 2 * absinfo.flat;
+                        t = ((absinfo.maximum - absinfo.minimum) - 4 * absinfo.flat);
+                        if (t != 0) {
+                            correct->coef[2] = (1 << 28) / t;
+                        } else {
+                            correct->coef[2] = 0;
+                        }
                     } else {
-                        joystick->hwdata->abs_correct[i].coef[2] = 0;
+                        float value_range = (correct->maximum - correct->minimum);
+                        float output_range = (SDL_JOYSTICK_AXIS_MAX - SDL_JOYSTICK_AXIS_MIN);
+
+                        correct->scale = (output_range / value_range);
                     }
                 }
                 ++joystick->naxes;
@@ -1109,26 +1115,53 @@ AxisCorrect(SDL_Joystick *joystick, int which, int value)
     struct axis_correct *correct;
 
     correct = &joystick->hwdata->abs_correct[which];
-    if (correct->used) {
-        value *= 2;
-        if (value > correct->coef[0]) {
-            if (value < correct->coef[1]) {
-                return 0;
+    if (correct->minimum != correct->maximum) {
+        if (correct->use_deadzones) {
+            value *= 2;
+            if (value > correct->coef[0]) {
+                if (value < correct->coef[1]) {
+                    return 0;
+                }
+                value -= correct->coef[1];
+            } else {
+                value -= correct->coef[0];
             }
-            value -= correct->coef[1];
+            value *= correct->coef[2];
+            value >>= 13;
         } else {
-            value -= correct->coef[0];
+            int new_value = (int)SDL_floorf((value - correct->minimum) * correct->scale + SDL_JOYSTICK_AXIS_MIN + 0.5f);
+
+            /* At least one gamepad has a minimum of 0 and a maximum is 255,
+             * which makes it's center point a non-integer, 127.5.  Thus it
+             * must report either 127 or 128, neither of which is center.
+      
+             * At least one analog controller with the same range returns 128
+             * easily when at center, but seems completely incapable of
+             * returning 127 no matter how carefully the stick is moved.
+      
+             * So here we detect if the axis' range does not have a center
+             * point, and if so, and if the reported position is on either
+             * side of center, we report that it is actually at the center.
+             */
+            if ((correct->maximum - correct->minimum) & 1) {
+                int lower_center = (correct->maximum - correct->minimum - 1) / 2;
+                int higher_center = (correct->maximum - correct->minimum + 1) / 2;
+                if (value == lower_center || value == higher_center) {
+                    new_value = 0;
+                }
+            }
+      
+            value = new_value;
         }
-        value *= correct->coef[2];
-        value >>= 13;
     }
 
     /* Clamp and return */
-    if (value < -32768)
-        return -32768;
-    if (value > 32767)
-        return 32767;
-
+    if (value < SDL_JOYSTICK_AXIS_MIN) {
+        return SDL_JOYSTICK_AXIS_MIN;
+    }
+    if (value > SDL_JOYSTICK_AXIS_MAX) {
+        return SDL_JOYSTICK_AXIS_MAX;
+    }
     return value;
 }
 
