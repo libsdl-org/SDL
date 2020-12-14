@@ -2769,6 +2769,7 @@ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
+
 ac_config_headers="$ac_config_headers include/SDL_config.h"
 
 ac_aux_dir=
@@ -11738,7 +11739,6 @@ LT_AGE=`expr $SDL_BINARY_AGE - $SDL_INTERFACE_AGE`
 
 
 
-
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
@@ -15859,7 +15859,6 @@ else
 $as_echo "no" >&6; }
   SET_MAKE="MAKE=${MAKE-make}"
 fi
-
 
 
 

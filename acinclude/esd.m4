@@ -1,7 +1,3 @@
-##############################################################################
-#
-# --- esd.m4 ---
-#
 # Configure paths for ESD
 # Manish Singh    98-9-30
 # stolen back from Frank Belew
