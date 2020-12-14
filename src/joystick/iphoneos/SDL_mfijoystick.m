@@ -1012,7 +1012,7 @@ IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
     @autoreleasepool {
         if (@available(macos 11.0, iOS 14.0, tvOS 14.0, *)) {
             NSError *error;
-            
+
             if (self->engine == nil) {
                 return SDL_SetError("Haptics engine was stopped");
             }
@@ -1292,7 +1292,7 @@ IOS_JoystickUpdate(SDL_Joystick *joystick)
     if (device == NULL) {
         return;
     }
-    
+
     if (device->accelerometer) {
         IOS_AccelerometerUpdate(joystick);
     } else if (device->controller) {
