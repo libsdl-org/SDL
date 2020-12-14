@@ -48,7 +48,7 @@ SDL_WinRTGetFSPathUNICODE(SDL_WinRT_Path pathType)
         {
             static wstring path;
             if (path.empty()) {
-#if (NTDDI_VERSION >= NTDDI_WIN10_19H1) && (WINAPI_FAMILY == WINAPI_FAMILY_PC_APP) /* Only PC supports mods */
+#if defined(NTDDI_WIN10_19H1) && (NTDDI_VERSION >= NTDDI_WIN10_19H1) && (WINAPI_FAMILY == WINAPI_FAMILY_PC_APP) /* Only PC supports mods */
                 /* Windows 1903 supports mods, via the EffectiveLocation API */
                 if (Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent("Windows.Foundation.UniversalApiContract", 8, 0)) {
                     path = Windows::ApplicationModel::Package::Current->EffectiveLocation->Path->Data();
