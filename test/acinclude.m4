@@ -7,7 +7,7 @@
 
 # serial 1
 
-dnl AM_PATH_SDL([MINIMUM-VERSION, [ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND]]])
+dnl AM_PATH_SDL2([MINIMUM-VERSION, [ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND]]])
 dnl Test for SDL, and define SDL_CFLAGS and SDL_LIBS
 dnl
 AC_DEFUN([AM_PATH_SDL2],
@@ -21,7 +21,7 @@ AC_ARG_WITH(sdl-exec-prefix,[  --with-sdl-exec-prefix=PFX Exec prefix where SDL 
 AC_ARG_ENABLE(sdltest, [  --disable-sdltest       Do not try to compile and run a test SDL program],
 		    , enable_sdltest=yes)
 
-  min_sdl_version=ifelse([$1], ,0.9.0,$1)
+  min_sdl_version=ifelse([$1], ,2.0.0,$1)
 
   if test "x$sdl_prefix$sdl_exec_prefix" = x ; then
     PKG_CHECK_MODULES([SDL], [sdl2 >= $min_sdl_version],
@@ -31,42 +31,42 @@ AC_ARG_ENABLE(sdltest, [  --disable-sdltest       Do not try to compile and run 
     sdl_pc=no
     if test x$sdl_exec_prefix != x ; then
       sdl_config_args="$sdl_config_args --exec-prefix=$sdl_exec_prefix"
-      if test x${SDL_CONFIG+set} != xset ; then
-        SDL_CONFIG=$sdl_exec_prefix/bin/sdl2-config
+      if test x${SDL2_CONFIG+set} != xset ; then
+        SDL2_CONFIG=$sdl_exec_prefix/bin/sdl2-config
       fi
     fi
     if test x$sdl_prefix != x ; then
       sdl_config_args="$sdl_config_args --prefix=$sdl_prefix"
-      if test x${SDL_CONFIG+set} != xset ; then
-        SDL_CONFIG=$sdl_prefix/bin/sdl2-config
+      if test x${SDL2_CONFIG+set} != xset ; then
+        SDL2_CONFIG=$sdl_prefix/bin/sdl2-config
       fi
     fi
   fi
 
   if test "x$sdl_pc" = xyes ; then
     no_sdl=""
-    SDL_CONFIG="pkg-config sdl2"
+    SDL2_CONFIG="pkg-config sdl2"
   else
     as_save_PATH="$PATH"
     if test "x$prefix" != xNONE && test "$cross_compiling" != yes; then
       PATH="$prefix/bin:$prefix/usr/bin:$PATH"
     fi
-    AC_PATH_PROG(SDL_CONFIG, sdl2-config, no, [$PATH])
+    AC_PATH_PROG(SDL2_CONFIG, sdl2-config, no, [$PATH])
     PATH="$as_save_PATH"
     AC_MSG_CHECKING(for SDL - version >= $min_sdl_version)
     no_sdl=""
 
-    if test "$SDL_CONFIG" = "no" ; then
+    if test "$SDL2_CONFIG" = "no" ; then
       no_sdl=yes
     else
-      SDL_CFLAGS=`$SDL_CONFIG $sdl_config_args --cflags`
-      SDL_LIBS=`$SDL_CONFIG $sdl_config_args --libs`
+      SDL_CFLAGS=`$SDL2_CONFIG $sdl_config_args --cflags`
+      SDL_LIBS=`$SDL2_CONFIG $sdl_config_args --libs`
 
-      sdl_major_version=`$SDL_CONFIG $sdl_config_args --version | \
+      sdl_major_version=`$SDL2_CONFIG $sdl_config_args --version | \
              sed 's/\([[0-9]]*\).\([[0-9]]*\).\([[0-9]]*\)/\1/'`
-      sdl_minor_version=`$SDL_CONFIG $sdl_config_args --version | \
+      sdl_minor_version=`$SDL2_CONFIG $sdl_config_args --version | \
              sed 's/\([[0-9]]*\).\([[0-9]]*\).\([[0-9]]*\)/\2/'`
-      sdl_micro_version=`$SDL_CONFIG $sdl_config_args --version | \
+      sdl_micro_version=`$SDL2_CONFIG $sdl_config_args --version | \
              sed 's/\([[0-9]]*\).\([[0-9]]*\).\([[0-9]]*\)/\3/'`
       if test "x$enable_sdltest" = "xyes" ; then
         ac_save_CFLAGS="$CFLAGS"
@@ -130,7 +130,7 @@ int main (int argc, char *argv[])
       printf("\n*** 'sdl2-config --version' returned %d.%d.%d, but the minimum version\n", $sdl_major_version, $sdl_minor_version, $sdl_micro_version);
       printf("*** of SDL required is %d.%d.%d. If sdl2-config is correct, then it is\n", major, minor, micro);
       printf("*** best to upgrade to the required version.\n");
-      printf("*** If sdl2-config was wrong, set the environment variable SDL_CONFIG\n");
+      printf("*** If sdl2-config was wrong, set the environment variable SDL2_CONFIG\n");
       printf("*** to point to the correct copy of sdl2-config, and remove the file\n");
       printf("*** config.cache before re-running configure\n");
       return 1;
@@ -152,10 +152,10 @@ int main (int argc, char *argv[])
   if test "x$no_sdl" = x ; then
      ifelse([$2], , :, [$2])
   else
-     if test "$SDL_CONFIG" = "no" ; then
+     if test "$SDL2_CONFIG" = "no" ; then
        echo "*** The sdl2-config script installed by SDL could not be found"
        echo "*** If SDL was installed in PREFIX, make sure PREFIX/bin is in"
-       echo "*** your path, or set the SDL_CONFIG environment variable to the"
+       echo "*** your path, or set the SDL2_CONFIG environment variable to the"
        echo "*** full path to sdl2-config."
      else
        if test -f conf.sdltest ; then
@@ -186,7 +186,7 @@ int main(int argc, char *argv[])
         [ echo "*** The test program failed to compile or link. See the file config.log for the"
           echo "*** exact error that occured. This usually means SDL was incorrectly installed"
           echo "*** or that you have moved SDL since it was installed. In the latter case, you"
-          echo "*** may want to edit the sdl2-config script: $SDL_CONFIG" ])
+          echo "*** may want to edit the sdl2-config script: $SDL2_CONFIG" ])
           CFLAGS="$ac_save_CFLAGS"
           CXXFLAGS="$ac_save_CXXFLAGS"
           LIBS="$ac_save_LIBS"

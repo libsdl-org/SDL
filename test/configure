@@ -594,7 +594,7 @@ OPENGLES2_TARGETS
 OPENGLES1_TARGETS
 CPP
 XMKMF
-SDL_CONFIG
+SDL2_CONFIG
 SDL_LIBS
 SDL_CFLAGS
 PKG_CONFIG_LIBDIR
@@ -3225,21 +3225,21 @@ fi
     sdl_pc=no
     if test x$sdl_exec_prefix != x ; then
       sdl_config_args="$sdl_config_args --exec-prefix=$sdl_exec_prefix"
-      if test x${SDL_CONFIG+set} != xset ; then
-        SDL_CONFIG=$sdl_exec_prefix/bin/sdl2-config
+      if test x${SDL2_CONFIG+set} != xset ; then
+        SDL2_CONFIG=$sdl_exec_prefix/bin/sdl2-config
       fi
     fi
     if test x$sdl_prefix != x ; then
       sdl_config_args="$sdl_config_args --prefix=$sdl_prefix"
-      if test x${SDL_CONFIG+set} != xset ; then
-        SDL_CONFIG=$sdl_prefix/bin/sdl2-config
+      if test x${SDL2_CONFIG+set} != xset ; then
+        SDL2_CONFIG=$sdl_prefix/bin/sdl2-config
       fi
     fi
   fi
 
   if test "x$sdl_pc" = xyes ; then
     no_sdl=""
-    SDL_CONFIG="pkg-config sdl2"
+    SDL2_CONFIG="pkg-config sdl2"
   else
     as_save_PATH="$PATH"
     if test "x$prefix" != xNONE && test "$cross_compiling" != yes; then
@@ -3249,12 +3249,12 @@ fi
 set dummy sdl2-config; ac_word=$2
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
 $as_echo_n "checking for $ac_word... " >&6; }
-if ${ac_cv_path_SDL_CONFIG+:} false; then :
+if ${ac_cv_path_SDL2_CONFIG+:} false; then :
   $as_echo_n "(cached) " >&6
 else
-  case $SDL_CONFIG in
+  case $SDL2_CONFIG in
   [\\/]* | ?:[\\/]*)
-  ac_cv_path_SDL_CONFIG="$SDL_CONFIG" # Let the user override the test with a path.
+  ac_cv_path_SDL2_CONFIG="$SDL2_CONFIG" # Let the user override the test with a path.
   ;;
   *)
   as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
@@ -3264,7 +3264,7 @@ do
   test -z "$as_dir" && as_dir=.
     for ac_exec_ext in '' $ac_executable_extensions; do
   if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_path_SDL_CONFIG="$as_dir/$ac_word$ac_exec_ext"
+    ac_cv_path_SDL2_CONFIG="$as_dir/$ac_word$ac_exec_ext"
     $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
     break 2
   fi
@@ -3272,14 +3272,14 @@ done
   done
 IFS=$as_save_IFS
 
-  test -z "$ac_cv_path_SDL_CONFIG" && ac_cv_path_SDL_CONFIG="no"
+  test -z "$ac_cv_path_SDL2_CONFIG" && ac_cv_path_SDL2_CONFIG="no"
   ;;
 esac
 fi
-SDL_CONFIG=$ac_cv_path_SDL_CONFIG
-if test -n "$SDL_CONFIG"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $SDL_CONFIG" >&5
-$as_echo "$SDL_CONFIG" >&6; }
+SDL2_CONFIG=$ac_cv_path_SDL2_CONFIG
+if test -n "$SDL2_CONFIG"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $SDL2_CONFIG" >&5
+$as_echo "$SDL2_CONFIG" >&6; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
@@ -3291,17 +3291,17 @@ fi
 $as_echo_n "checking for SDL - version >= $min_sdl_version... " >&6; }
     no_sdl=""
 
-    if test "$SDL_CONFIG" = "no" ; then
+    if test "$SDL2_CONFIG" = "no" ; then
       no_sdl=yes
     else
-      SDL_CFLAGS=`$SDL_CONFIG $sdl_config_args --cflags`
-      SDL_LIBS=`$SDL_CONFIG $sdl_config_args --libs`
+      SDL_CFLAGS=`$SDL2_CONFIG $sdl_config_args --cflags`
+      SDL_LIBS=`$SDL2_CONFIG $sdl_config_args --libs`
 
-      sdl_major_version=`$SDL_CONFIG $sdl_config_args --version | \
+      sdl_major_version=`$SDL2_CONFIG $sdl_config_args --version | \
              sed 's/\([0-9]*\).\([0-9]*\).\([0-9]*\)/\1/'`
-      sdl_minor_version=`$SDL_CONFIG $sdl_config_args --version | \
+      sdl_minor_version=`$SDL2_CONFIG $sdl_config_args --version | \
              sed 's/\([0-9]*\).\([0-9]*\).\([0-9]*\)/\2/'`
-      sdl_micro_version=`$SDL_CONFIG $sdl_config_args --version | \
+      sdl_micro_version=`$SDL2_CONFIG $sdl_config_args --version | \
              sed 's/\([0-9]*\).\([0-9]*\).\([0-9]*\)/\3/'`
       if test "x$enable_sdltest" = "xyes" ; then
         ac_save_CFLAGS="$CFLAGS"
@@ -3366,7 +3366,7 @@ int main (int argc, char *argv[])
       printf("\n*** 'sdl2-config --version' returned %d.%d.%d, but the minimum version\n", $sdl_major_version, $sdl_minor_version, $sdl_micro_version);
       printf("*** of SDL required is %d.%d.%d. If sdl2-config is correct, then it is\n", major, minor, micro);
       printf("*** best to upgrade to the required version.\n");
-      printf("*** If sdl2-config was wrong, set the environment variable SDL_CONFIG\n");
+      printf("*** If sdl2-config was wrong, set the environment variable SDL2_CONFIG\n");
       printf("*** to point to the correct copy of sdl2-config, and remove the file\n");
       printf("*** config.cache before re-running configure\n");
       return 1;
@@ -3400,10 +3400,10 @@ $as_echo "no" >&6; }
   if test "x$no_sdl" = x ; then
      :
   else
-     if test "$SDL_CONFIG" = "no" ; then
+     if test "$SDL2_CONFIG" = "no" ; then
        echo "*** The sdl2-config script installed by SDL could not be found"
        echo "*** If SDL was installed in PREFIX, make sure PREFIX/bin is in"
-       echo "*** your path, or set the SDL_CONFIG environment variable to the"
+       echo "*** your path, or set the SDL2_CONFIG environment variable to the"
        echo "*** full path to sdl2-config."
      else
        if test -f conf.sdltest ; then
@@ -3446,7 +3446,7 @@ else
    echo "*** The test program failed to compile or link. See the file config.log for the"
           echo "*** exact error that occured. This usually means SDL was incorrectly installed"
           echo "*** or that you have moved SDL since it was installed. In the latter case, you"
-          echo "*** may want to edit the sdl2-config script: $SDL_CONFIG"
+          echo "*** may want to edit the sdl2-config script: $SDL2_CONFIG"
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
