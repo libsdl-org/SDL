@@ -24704,11 +24704,11 @@ case "$host" in
                 EXTRA_CFLAGS="$EXTRA_CFLAGS $ANDROID_CFLAGS"
                 EXTRA_LDFLAGS="$EXTRA_LDFLAGS -ldl -lGLESv1_CM -lGLESv2 -llog -landroid"
                 SDLMAIN_SOURCES="$srcdir/src/main/android/*.c"
-
                 if test x$enable_video = xyes; then
                     SOURCES="$SOURCES $srcdir/src/core/android/*.c $srcdir/src/video/android/*.c"
-                    # FIXME: confdefs? Not AC_DEFINE?
-                    $as_echo "#define SDL_VIDEO_DRIVER_ANDROID 1" >>confdefs.h
+
+$as_echo "#define SDL_VIDEO_DRIVER_ANDROID 1" >>confdefs.h
+
                     SUMMARY_video="${SUMMARY_video} android"
                 fi
                 ;;
