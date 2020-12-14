@@ -1,6 +1,7 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_INIT(README.txt)
-AC_CONFIG_HEADER(include/SDL_config.h)
+AC_INIT
+AC_CONFIG_SRCDIR(README.txt)
+AC_CONFIG_HEADERS(include/SDL_config.h)
 AC_CONFIG_AUX_DIR(build-scripts)
 AC_CONFIG_MACRO_DIR([acinclude])
 
@@ -51,12 +52,10 @@ dnl Detect the canonical build and host environments
 dnl AC_CANONICAL_HOST
 
 dnl Check for tools
-AC_PROG_LIBTOOL
 AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
-AC_LIBTOOL_RC
 PKG_PROG_PKG_CONFIG
 
 dnl Make sure that srcdir is a full pathname
@@ -1320,7 +1319,7 @@ dnl Check for ARM instruction support using gas syntax
 CheckARM()
 {
     AC_ARG_ENABLE(arm-simd,
-AC_HELP_STRING([--enable-arm-simd], [use SIMD assembly blitters on ARM [[default=no]]]),
+AS_HELP_STRING([--enable-arm-simd], [use SIMD assembly blitters on ARM [[default=no]]]),
                   enable_arm_simd=$enableval, enable_arm_simd=no)
     if test x$enable_video = xyes -a x$enable_assembly = xyes -a x$enable_arm_simd = xyes; then
         save_CFLAGS="$CFLAGS"
@@ -1357,7 +1356,7 @@ dnl Check for ARM NEON instruction support using gas syntax
 CheckNEON()
 {
     AC_ARG_ENABLE(arm-neon,
-AC_HELP_STRING([--enable-arm-neon], [use NEON assembly blitters on ARM [[default=no]]]),
+AS_HELP_STRING([--enable-arm-neon], [use NEON assembly blitters on ARM [[default=no]]]),
                   enable_arm_neon=$enableval, enable_arm_neon=no)
     if test x$enable_video = xyes -a x$enable_assembly = xyes -a x$enable_arm_neon = xyes; then
         save_CFLAGS="$CFLAGS"
@@ -2142,7 +2141,7 @@ AS_HELP_STRING([--enable-video-cocoa], [use Cocoa video driver [[default=yes]]])
 CheckMETAL()
 {
     AC_ARG_ENABLE(video-metal,
-AC_HELP_STRING([--enable-video-metal], [include Metal support [[default=yes]]]),
+AS_HELP_STRING([--enable-video-metal], [include Metal support [[default=yes]]]),
               , enable_video_metal=yes)
     AC_ARG_ENABLE(render-metal,
 AS_HELP_STRING([--enable-render-metal], [enable the Metal render driver [[default=yes]]]),

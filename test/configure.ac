@@ -1,16 +1,15 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_INIT(README)
+AC_INIT
+AC_CONFIG_SRCDIR([README])
 
 dnl Detect the canonical build and host environments
 AC_CONFIG_AUX_DIRS($srcdir/../build-scripts)
 AC_CANONICAL_HOST
 
 dnl Check for tools
-
 AC_PROG_CC
 
 dnl Check for compiler environment
-
 AC_C_CONST
 
 dnl We only care about this for building testnative at the moment, so these
@@ -42,7 +41,7 @@ case "$host" in
     *-*-aix*)
         ISUNIX="true"
         EXE=""
-        if test x$ac_cv_prog_gcc = xyes; then
+        if test x$ac_cv_c_compiler_gnu = xyes; then
             CFLAGS="-mthreads"
         fi
         SYS_GL_LIBS=""
@@ -201,4 +200,5 @@ fi
 AC_SUBST(SDL_TTF_LIB)
 
 dnl Finally create all the generated files
-AC_OUTPUT([Makefile])
+AC_CONFIG_FILES([Makefile])
+AC_OUTPUT

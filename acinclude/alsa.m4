@@ -1,4 +1,3 @@
-##############################################################################
 dnl Configure Paths for Alsa
 dnl Some modifications by Richard Boulton <richard-alsa@tartarus.org>
 dnl Christopher Lansdown <lansdoct@cs.alfred.edu>
@@ -7,12 +6,13 @@ dnl Last modification: alsa.m4,v 1.23 2004/01/16 18:14:22 tiwai Exp
 dnl AM_PATH_ALSA([MINIMUM-VERSION [, ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND]]])
 dnl Test for libasound, and define ALSA_CFLAGS and ALSA_LIBS as appropriate.
 dnl enables arguments --with-alsa-prefix=
-dnl                   --with-alsa-enc-prefix=
+dnl                   --with-alsa-inc-prefix=
 dnl                   --disable-alsatest
 dnl
 dnl For backwards compatibility, if ACTION_IF_NOT_FOUND is not specified,
 dnl and the alsa libraries are not found, a fatal AC_MSG_ERROR() will result.
 dnl
+
 AC_DEFUN([AM_PATH_ALSA],
 [dnl Save the original CFLAGS, LDFLAGS, and LIBS
 alsa_save_CFLAGS="$CFLAGS"
@@ -62,7 +62,7 @@ LIBS="$ALSA_LIBS $LIBS"
 AC_MSG_RESULT($ALSA_LIBS)
 
 dnl Check for a working version of libasound that is of the right version.
-min_alsa_version=ifelse([$1], ,0.1.1,$1)
+min_alsa_version=ifelse([$1], ,0.1.1, $1)
 AC_MSG_CHECKING(for libasound headers version >= $min_alsa_version)
 no_alsa=""
     alsa_min_major_version=`echo $min_alsa_version | \
