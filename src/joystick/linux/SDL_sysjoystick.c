@@ -1143,29 +1143,7 @@ AxisCorrect(SDL_Joystick *joystick, int which, int value)
             value *= correct->coef[2];
             value >>= 13;
         } else {
-            int new_value = (int)SDL_floorf((value - correct->minimum) * correct->scale + SDL_JOYSTICK_AXIS_MIN + 0.5f);
-
-            /* At least one gamepad has a minimum of 0 and a maximum is 255,
-             * which makes it's center point a non-integer, 127.5.  Thus it
-             * must report either 127 or 128, neither of which is center.
-      
-             * At least one analog controller with the same range returns 128
-             * easily when at center, but seems completely incapable of
-             * returning 127 no matter how carefully the stick is moved.
-      
-             * So here we detect if the axis' range does not have a center
-             * point, and if so, and if the reported position is on either
-             * side of center, we report that it is actually at the center.
-             */
-            if ((correct->maximum - correct->minimum) & 1) {
-                int lower_center = (correct->maximum - correct->minimum - 1) / 2;
-                int higher_center = (correct->maximum - correct->minimum + 1) / 2;
-                if (value == lower_center || value == higher_center) {
-                    new_value = 0;
-                }
-            }
-      
-            value = new_value;
+            value = (int)SDL_floorf((value - correct->minimum) * correct->scale + SDL_JOYSTICK_AXIS_MIN + 0.5f);
         }
     }
 
