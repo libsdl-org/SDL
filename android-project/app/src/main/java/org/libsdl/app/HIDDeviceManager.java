@@ -353,9 +353,18 @@ public class HIDDeviceManager {
 
     private void connectHIDDeviceUSB(UsbDevice usbDevice) {
         synchronized (this) {
+            int interface_mask = 0;
             for (int interface_index = 0; interface_index < usbDevice.getInterfaceCount(); interface_index++) {
                 UsbInterface usbInterface = usbDevice.getInterface(interface_index);
                 if (isHIDDeviceInterface(usbDevice, usbInterface)) {
+                    // Check to see if we've already added this interface
+                    // This happens with the Xbox Series X controller which has a duplicate interface 0, which is inactive
+                    int interface_id = usbInterface.getId();
+                    if ((interface_mask & (1 << interface_id)) != 0) {
+                        continue;
+                    }
+                    interface_mask |= (1 << interface_id);
+
                     HIDDeviceUSB device = new HIDDeviceUSB(this, usbDevice, interface_index);
                     int id = device.getId();
                     mDevicesById.put(id, device);
