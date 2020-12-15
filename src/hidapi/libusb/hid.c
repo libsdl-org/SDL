@@ -524,17 +524,17 @@ static int is_xbox360(unsigned short vendor_id, const struct libusb_interface_de
 
 static int is_xboxone(unsigned short vendor_id, const struct libusb_interface_descriptor *intf_desc)
 {
-        static const int XB1_IFACE_SUBCLASS = 71;
-        static const int XB1_IFACE_PROTOCOL = 208;
-        static const int SUPPORTED_VENDORS[] = {
-            0x045e, /* Microsoft */
-            0x0738, /* Mad Catz */
-            0x0e6f, /* PDP */
-            0x0f0d, /* Hori */
-            0x1532, /* Razer Wildcat */
-            0x24c6, /* PowerA */
-            0x2e24, /* Hyperkin */
-        };
+    static const int XB1_IFACE_SUBCLASS = 71;
+    static const int XB1_IFACE_PROTOCOL = 208;
+    static const int SUPPORTED_VENDORS[] = {
+        0x045e, /* Microsoft */
+        0x0738, /* Mad Catz */
+        0x0e6f, /* PDP */
+        0x0f0d, /* Hori */
+        0x1532, /* Razer Wildcat */
+        0x24c6, /* PowerA */
+        0x2e24, /* Hyperkin */
+    };
 
 	if (intf_desc->bInterfaceNumber == 0 &&
 	    intf_desc->bInterfaceClass == LIBUSB_CLASS_VENDOR_SPEC &&
