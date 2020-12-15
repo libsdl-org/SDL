@@ -19546,7 +19546,6 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_arm_neon" >&5
 $as_echo "$have_arm_neon" >&6; }
-
         CFLAGS="$save_CFLAGS"
 
         if test x$have_arm_neon = xyes; then
@@ -19878,7 +19877,6 @@ _ACEOF
     fi
 }
 
-
 CheckNativeClient()
 {
         cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -19929,7 +19927,6 @@ $as_echo "#define SDL_VIDEO_RENDER_OGL_ES2 1" >>confdefs.h
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 }
-
 
 CheckRPI()
 {
@@ -21805,7 +21802,6 @@ $as_echo "#define SDL_VIDEO_RENDER_METAL 1" >>confdefs.h
     fi
 }
 
-
 CheckDirectFB()
 {
     # Check whether --enable-video-directfb was given.
@@ -22788,7 +22784,6 @@ $as_echo "#define SDL_INPUT_LINUXKD 1" >>confdefs.h
         SUMMARY_input="${SUMMARY_input} linuxkd"
     fi
 }
-
 
 CheckInputKBIO()
 {
@@ -24375,7 +24370,7 @@ fi
                 ;;
         esac
 
-		hidapi_support=yes
+        hidapi_support=yes
         if test x$enable_hidapi_libusb = xyes; then
 
 pkg_failed=no

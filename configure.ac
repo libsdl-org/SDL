@@ -1229,7 +1229,7 @@ AS_HELP_STRING([--enable-fusionsound], [use FusionSound audio driver [[default=n
             AC_DEFINE(SDL_AUDIO_DRIVER_FUSIONSOUND, 1, [ ])
             SOURCES="$SOURCES $srcdir/src/audio/fusionsound/*.c"
             EXTRA_CFLAGS="$EXTRA_CFLAGS $FUSIONSOUND_CFLAGS"
-            
+
             AC_ARG_ENABLE(fusionsound-shared,
 AS_HELP_STRING([--enable-fusionsound-shared], [dynamically load fusionsound audio support [[default=yes]]]),
                           , enable_fusionsound_shared=yes)
@@ -1249,7 +1249,7 @@ AS_HELP_STRING([--enable-fusionsound-shared], [dynamically load fusionsound audi
                 SUMMARY_audio="${SUMMARY_audio} fusionsound"
             fi
             AC_MSG_RESULT($fusionsound_shared)
-            
+
             have_audio=yes
         fi
     fi
@@ -1325,7 +1325,7 @@ AS_HELP_STRING([--enable-arm-simd], [use SIMD assembly blitters on ARM [[default
         save_CFLAGS="$CFLAGS"
         have_arm_simd=no
         CFLAGS="-x assembler-with-cpp $CFLAGS"
-        
+
         AC_MSG_CHECKING(for ARM SIMD)
         AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
         .text
@@ -1340,12 +1340,11 @@ AS_HELP_STRING([--enable-arm-simd], [use SIMD assembly blitters on ARM [[default
         uqadd8 r0, r0, r0
         ]])], have_arm_simd=yes)
         AC_MSG_RESULT($have_arm_simd)
-        
+
         CFLAGS="$save_CFLAGS"
-        
+
         if test x$have_arm_simd = xyes; then
             AC_DEFINE(SDL_ARM_SIMD_BLITTERS, 1, [ ])
-dnl            SOURCES="$SOURCES $srcdir/src/video/arm/pixman-arm-simd*.c"
             SOURCES="$SOURCES $srcdir/src/video/arm/pixman-arm-simd*.S"
             WARN_ABOUT_ARM_SIMD_ASM_MIT="yes"
         fi
@@ -1362,7 +1361,7 @@ AS_HELP_STRING([--enable-arm-neon], [use NEON assembly blitters on ARM [[default
         save_CFLAGS="$CFLAGS"
         have_arm_neon=no
         CFLAGS="-x assembler-with-cpp $CFLAGS"
-        
+
         AC_MSG_CHECKING(for ARM NEON)
         AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
         .text
@@ -1379,12 +1378,10 @@ AS_HELP_STRING([--enable-arm-neon], [use NEON assembly blitters on ARM [[default
         vmovn.u16 d0, q0
         ]])], have_arm_neon=yes)
         AC_MSG_RESULT($have_arm_neon)
-        
         CFLAGS="$save_CFLAGS"
-        
+
         if test x$have_arm_neon = xyes; then
             AC_DEFINE(SDL_ARM_NEON_BLITTERS, 1, [ ])
-dnl            SOURCES="$SOURCES $srcdir/src/video/arm/pixman-arm-neon*.c"
             SOURCES="$SOURCES $srcdir/src/video/arm/pixman-arm-neon*.S"
             WARN_ABOUT_ARM_NEON_ASM_MIT="yes"
         fi
@@ -1607,7 +1604,6 @@ AS_HELP_STRING([--enable-wayland-shared], [dynamically load Wayland support [[de
     fi
 }
 
-
 dnl Check for Native Client stuff
 CheckNativeClient()
 {
@@ -1633,7 +1629,6 @@ CheckNativeClient()
         SUMMARY_video="${SUMMARY_video} nacl opengles2"
         ])
 }
-
 
 CheckRPI()
 {
@@ -1673,7 +1668,7 @@ AS_HELP_STRING([--enable-video-rpi], [use Raspberry Pi video driver [[default=ye
 
         # Restore the compiler flags and libraries
         CFLAGS="$ac_save_cflags"; LIBS="$ac_save_libs"
-        
+
         if test x$have_video_rpi = xyes; then
             CFLAGS="$CFLAGS $RPI_CFLAGS"
             SDL_CFLAGS="$SDL_CFLAGS $RPI_CFLAGS"
@@ -2180,7 +2175,6 @@ AS_HELP_STRING([--enable-render-metal], [enable the Metal render driver [[defaul
     fi
 }
 
-
 dnl Find DirectFB
 CheckDirectFB()
 {
@@ -2384,7 +2378,7 @@ CheckOpenGLESX11()
         if test x$video_opengl_egl = xyes; then
             AC_DEFINE(SDL_VIDEO_OPENGL_EGL, 1, [ ])
         fi
-        
+
         if test x$enable_video_opengles1 = xyes; then
             AC_MSG_CHECKING(for OpenGL ES v1 headers)
             video_opengles_v1=no
@@ -2402,7 +2396,7 @@ CheckOpenGLESX11()
                 SUMMARY_video="${SUMMARY_video} opengl_es1"
             fi
         fi
-        
+
         if test x$enable_video_opengles2 = xyes; then
             AC_MSG_CHECKING(for OpenGL ES v2 headers)
             video_opengles_v2=no
@@ -2453,7 +2447,7 @@ CheckWINDOWSGLES()
             AC_DEFINE(SDL_VIDEO_OPENGL_EGL, 1, [ ])
             SUMMARY_video="${SUMMARY_video} opengl_es1"
         fi
-       
+
         AC_MSG_CHECKING(for OpenGL ES v2 headers)
         video_opengles_v2=no
         AC_TRY_COMPILE([
@@ -2642,7 +2636,6 @@ CheckInputKD()
         SUMMARY_input="${SUMMARY_input} linuxkd"
     fi
 }
-
 
 dnl See if we can use the FreeBSD kernel kbio.h header
 CheckInputKBIO()
@@ -3216,7 +3209,7 @@ CheckUSBHID()
                     AC_CHECK_HEADER(libusb.h, [USB_CFLAGS="-DHAVE_LIBUSB_H"])
                     AC_CHECK_LIB(usb, hid_init, [USB_LIBS="$USB_LIBS -lusb"])
                 fi
-                
+
                 save_CFLAGS="$CFLAGS"
                 CFLAGS="$CFLAGS $USB_CFLAGS"
 
@@ -3282,7 +3275,7 @@ CheckUSBHID()
                         USB_CFLAGS="$USB_CFLAGS -DUSBHID_UCR_DATA"
                     fi
                     AC_MSG_RESULT($have_usbhid_ucr_data)
-                    
+
                     AC_MSG_CHECKING(for new usbhid API)
                     have_usbhid_new=no
                     AC_TRY_COMPILE([
@@ -3368,7 +3361,7 @@ AS_HELP_STRING([--enable-hidapi-libusb], [use libusb for low level joystick driv
                 ;;
         esac
 
-		hidapi_support=yes
+        hidapi_support=yes
         if test x$enable_hidapi_libusb = xyes; then
             PKG_CHECK_MODULES([LIBUSB], [libusb-1.0], have_libusb=yes, have_libusb=no)
             save_CFLAGS="$CFLAGS"
@@ -3724,7 +3717,7 @@ case "$host" in
             SOURCES="$SOURCES $srcdir/src/core/linux/SDL_evdev.c"
             SOURCES="$SOURCES $srcdir/src/core/linux/SDL_evdev_kbd.c"
             SOURCES="$SOURCES $srcdir/src/core/freebsd/SDL_evdev_kbd_freebsd.c"
-        fi       
+        fi
         # Set up other core UNIX files
         SOURCES="$SOURCES $srcdir/src/core/linux/SDL_evdev_capabilities.c"
         SOURCES="$SOURCES $srcdir/src/core/linux/SDL_threadprio.c"
@@ -4153,7 +4146,7 @@ AS_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
             SOURCES="$SOURCES $srcdir/src/timer/unix/*.c"
             have_timers=yes
         fi
-        
+
         if test x$enable_filesystem = xyes; then
             AC_DEFINE(SDL_FILESYSTEM_NACL, 1, [ ])
             SOURCES="$SOURCES $srcdir/src/filesystem/nacl/*.c"
@@ -4190,7 +4183,7 @@ AS_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
             SOURCES="$SOURCES $srcdir/src/power/emscripten/*.c"
             have_power=yes
         fi
-        
+
         # Set up files for the power library
         if test x$enable_joystick = xyes; then
             AC_DEFINE(SDL_JOYSTICK_EMSCRIPTEN, 1, [ ])
