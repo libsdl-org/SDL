@@ -391,7 +391,9 @@ KMSDRM_LEGACY_CreateSurfaces(_THIS, SDL_Window * window)
     Uint32 height = dispdata->mode.vdisplay;
     Uint32 surface_fmt = GBM_FORMAT_XRGB8888;
     Uint32 surface_flags = GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING;
+#if SDL_VIDEO_OPENGL_EGL
     EGLContext egl_context;
+#endif
 
     if (!KMSDRM_LEGACY_gbm_device_is_format_supported(viddata->gbm, surface_fmt, surface_flags)) {
         SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO, "GBM surface format not supported. Trying anyway.");
@@ -783,6 +785,7 @@ KMSDRM_LEGACY_CreateWindow(_THIS, SDL_Window * window)
     }
 
     /* Setup driver data for this window */
+    windata->viddata = viddata;
     window->driverdata = windata;
 
     if (KMSDRM_LEGACY_CreateSurfaces(_this, window)) {
@@ -792,8 +795,6 @@ KMSDRM_LEGACY_CreateWindow(_THIS, SDL_Window * window)
     /* Add window to the internal list of tracked windows. Note, while it may
        seem odd to support multiple fullscreen windows, some apps create an
        extra window as a dummy surface when working with multiple contexts */
-    windata->viddata = viddata;
-
     if (viddata->num_windows >= viddata->max_windows) {
         int new_max_windows = viddata->max_windows + 1;
         viddata->windows = (SDL_Window **)SDL_realloc(viddata->windows,
