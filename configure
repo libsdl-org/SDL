@@ -22119,6 +22119,7 @@ fi
 $as_echo "#define SDL_VIDEO_DRIVER_KMSDRM 1" >>confdefs.h
 
             SOURCES="$SOURCES $srcdir/src/video/kmsdrm/*.c"
+            SOURCES="$SOURCES $srcdir/src/video/kmsdrm_legacy/*.c"
             EXTRA_CFLAGS="$EXTRA_CFLAGS $LIBDRM_CFLAGS $LIBGBM_CFLAGS"
 
             { $as_echo "$as_me:${as_lineno-$LINENO}: checking for kmsdrm dynamic loading support" >&5
