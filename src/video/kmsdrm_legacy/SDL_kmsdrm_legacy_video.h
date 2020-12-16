@@ -85,7 +85,7 @@ typedef struct KMSDRM_LEGACY_FBInfo
 
 /* Helper functions */
 int KMSDRM_LEGACY_CreateSurfaces(_THIS, SDL_Window * window);
-KMSDRM_LEGACY_FBInfo *KMSDRM_FBFromBO(_THIS, struct gbm_bo *bo);
+KMSDRM_LEGACY_FBInfo *KMSDRM_LEGACY_FBFromBO(_THIS, struct gbm_bo *bo);
 SDL_bool KMSDRM_LEGACY_WaitPageFlip(_THIS, SDL_WindowData *windata, int timeout);
 
 /****************************************************************************/

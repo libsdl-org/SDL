@@ -38,10 +38,10 @@ void SDL_KMSDRM_LEGACY_UnloadSymbols(void);
 /* Declare all the function pointers and wrappers... */
 #define SDL_KMSDRM_LEGACY_SYM(rc,fn,params) \
     typedef rc (*SDL_DYNKMSDRM_LEGACYFN_##fn) params; \
-    extern SDL_DYNKMSDRM_LEGACYFN_##fn KMSDRM_##fn;
+    extern SDL_DYNKMSDRM_LEGACYFN_##fn KMSDRM_LEGACY_##fn;
 #define SDL_KMSDRM_LEGACY_SYM_CONST(type, name) \
     typedef type SDL_DYNKMSDRM_LEGACYCONST_##name; \
-    extern SDL_DYNKMSDRM_LEGACYCONST_##name KMSDRM_##name;
+    extern SDL_DYNKMSDRM_LEGACYCONST_##name KMSDRM_LEGACY_##name;
 #include "SDL_kmsdrm_legacy_sym.h"
 
 #ifdef __cplusplus

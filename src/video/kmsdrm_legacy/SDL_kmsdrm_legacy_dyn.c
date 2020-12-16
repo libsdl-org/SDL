@@ -79,9 +79,9 @@ KMSDRM_LEGACY_GetSym(const char *fnname, int *pHasModule)
 #endif /* SDL_VIDEO_DRIVER_KMSDRM_DYNAMIC */
 
 /* Define all the function pointers and wrappers... */
-#define SDL_KMSDRM_LEGACY_MODULE(modname) int SDL_KMSDRM_HAVE_##modname = 0;
-#define SDL_KMSDRM_LEGACY_SYM(rc,fn,params) SDL_DYNKMSDRMFN_##fn KMSDRM_##fn = NULL;
-#define SDL_KMSDRM_LEGACY_SYM_CONST(type,name) SDL_DYNKMSDRMCONST_##name KMSDRM_##name = NULL;
+#define SDL_KMSDRM_LEGACY_MODULE(modname) int SDL_KMSDRM_LEGACY_HAVE_##modname = 0;
+#define SDL_KMSDRM_LEGACY_SYM(rc,fn,params) SDL_DYNKMSDRM_LEGACYFN_##fn KMSDRM_LEGACY_##fn = NULL;
+#define SDL_KMSDRM_LEGACY_SYM_CONST(type,name) SDL_DYNKMSDRM_LEGACYCONST_##name KMSDRM_LEGACY_##name = NULL;
 #include "SDL_kmsdrm_legacy_sym.h"
 
 static int kmsdrm_load_refcount = 0;
@@ -97,9 +97,9 @@ SDL_KMSDRM_LEGACY_UnloadSymbols(void)
 #endif
 
             /* set all the function pointers to NULL. */
-#define SDL_KMSDRM_LEGACY_MODULE(modname) SDL_KMSDRM_HAVE_##modname = 0;
-#define SDL_KMSDRM_LEGACY_SYM(rc,fn,params) KMSDRM_##fn = NULL;
-#define SDL_KMSDRM_LEGACY_SYM_CONST(type,name) KMSDRM_##name = NULL;
+#define SDL_KMSDRM_LEGACY_MODULE(modname) SDL_KMSDRM_LEGACY_HAVE_##modname = 0;
+#define SDL_KMSDRM_LEGACY_SYM(rc,fn,params) KMSDRM_LEGACY_##fn = NULL;
+#define SDL_KMSDRM_LEGACY_SYM_CONST(type,name) KMSDRM_LEGACY_##name = NULL;
 #include "SDL_kmsdrm_legacy_sym.h"
 
 
@@ -132,15 +132,15 @@ SDL_KMSDRM_LEGACY_LoadSymbols(void)
             }
         }
 
-#define SDL_KMSDRM_LEGACY_MODULE(modname) SDL_KMSDRM_HAVE_##modname = 1; /* default yes */
+#define SDL_KMSDRM_LEGACY_MODULE(modname) SDL_KMSDRM_LEGACY_HAVE_##modname = 1; /* default yes */
 #include "SDL_kmsdrm_legacy_sym.h"
 
-#define SDL_KMSDRM_LEGACY_MODULE(modname) thismod = &SDL_KMSDRM_HAVE_##modname;
-#define SDL_KMSDRM_LEGACY_SYM(rc,fn,params) KMSDRM_##fn = (SDL_DYNKMSDRMFN_##fn) KMSDRM_GetSym(#fn,thismod);
-#define SDL_KMSDRM_LEGACY_SYM_CONST(type,name) KMSDRM_##name = *(SDL_DYNKMSDRMCONST_##name*) KMSDRM_GetSym(#name,thismod);
+#define SDL_KMSDRM_LEGACY_MODULE(modname) thismod = &SDL_KMSDRM_LEGACY_HAVE_##modname;
+#define SDL_KMSDRM_LEGACY_SYM(rc,fn,params) KMSDRM_LEGACY_##fn = (SDL_DYNKMSDRM_LEGACYFN_##fn) KMSDRM_LEGACY_GetSym(#fn,thismod);
+#define SDL_KMSDRM_LEGACY_SYM_CONST(type,name) KMSDRM_LEGACY_##name = *(SDL_DYNKMSDRM_LEGACYCONST_##name*) KMSDRM_LEGACY_GetSym(#name,thismod);
 #include "SDL_kmsdrm_legacy_sym.h"
 
-        if ((SDL_KMSDRM_LEGACY_HAVE_LIBDRM) && (SDL_KMSDRM_HAVE_GBM)) {
+        if ((SDL_KMSDRM_LEGACY_HAVE_LIBDRM) && (SDL_KMSDRM_LEGACY_HAVE_GBM)) {
             /* all required symbols loaded. */
             SDL_ClearError();
         } else {
@@ -151,9 +151,9 @@ SDL_KMSDRM_LEGACY_LoadSymbols(void)
 
 #else  /* no dynamic KMSDRM_LEGACY */
 
-#define SDL_KMSDRM_LEGACY_MODULE(modname) SDL_KMSDRM_HAVE_##modname = 1; /* default yes */
-#define SDL_KMSDRM_LEGACY_SYM(rc,fn,params) KMSDRM_##fn = fn;
-#define SDL_KMSDRM_LEGACY_SYM_CONST(type,name) KMSDRM_##name = name;
+#define SDL_KMSDRM_LEGACY_MODULE(modname) SDL_KMSDRM_LEGACY_HAVE_##modname = 1; /* default yes */
+#define SDL_KMSDRM_LEGACY_SYM(rc,fn,params) KMSDRM_LEGACY_##fn = fn;
+#define SDL_KMSDRM_LEGACY_SYM_CONST(type,name) KMSDRM_LEGACY_##name = name;
 #include "SDL_kmsdrm_legacy_sym.h"
 
 #endif
