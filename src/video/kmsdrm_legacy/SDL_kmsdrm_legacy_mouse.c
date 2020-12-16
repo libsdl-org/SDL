@@ -394,7 +394,7 @@ KMSDRM_LEGACY_FreeCursor(SDL_Cursor * cursor)
         if (curdata) {
             if (curdata->bo) {
                 if (curdata->crtc_id != 0) {
-                    drm_fd = KMSDRM_LEGACY_gbm_device_get_fd(KMSDRM_gbm_bo_get_device(curdata->bo));
+                    drm_fd = KMSDRM_LEGACY_gbm_device_get_fd(KMSDRM_LEGACY_gbm_bo_get_device(curdata->bo));
                     /* Hide the cursor if previously shown on a CRTC */
                     KMSDRM_LEGACY_drmModeSetCursor(drm_fd, curdata->crtc_id, 0, 0, 0);
                     curdata->crtc_id = 0;
@@ -433,7 +433,7 @@ KMSDRM_LEGACY_WarpMouseGlobal(int x, int y)
 
             if (curdata->crtc_id != 0) {
                 int ret, drm_fd;
-                drm_fd = KMSDRM_LEGACY_gbm_device_get_fd(KMSDRM_gbm_bo_get_device(curdata->bo));
+                drm_fd = KMSDRM_LEGACY_gbm_device_get_fd(KMSDRM_LEGACY_gbm_bo_get_device(curdata->bo));
                 ret = KMSDRM_LEGACY_drmModeMoveCursor(drm_fd, curdata->crtc_id, x, y);
 
                 if (ret) {
@@ -488,7 +488,7 @@ KMSDRM_LEGACY_MoveCursor(SDL_Cursor * cursor)
        That's why we move the cursor graphic ONLY. */
     if (mouse && mouse->cur_cursor && mouse->cur_cursor->driverdata) {
         curdata = (KMSDRM_LEGACY_CursorData *) mouse->cur_cursor->driverdata;
-        drm_fd = KMSDRM_LEGACY_gbm_device_get_fd(KMSDRM_gbm_bo_get_device(curdata->bo));
+        drm_fd = KMSDRM_LEGACY_gbm_device_get_fd(KMSDRM_LEGACY_gbm_bo_get_device(curdata->bo));
         ret = KMSDRM_LEGACY_drmModeMoveCursor(drm_fd, curdata->crtc_id, mouse->x, mouse->y);
 
         if (ret) {

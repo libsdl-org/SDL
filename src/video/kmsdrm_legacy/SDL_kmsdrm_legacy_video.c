@@ -160,6 +160,10 @@ KMSDRM_LEGACY_CreateDevice(int devindex)
     SDL_VideoDevice *device;
     SDL_VideoData *viddata;
 
+    if (!KMSDRM_LEGACY_Available()) {
+        return NULL;
+    }
+
     if (!devindex || (devindex > 99)) {
         devindex = get_driindex();
     }
@@ -236,7 +240,6 @@ cleanup:
 VideoBootStrap KMSDRM_LEGACY_bootstrap = {
     "KMSDRM_LEGACY",
     "KMS/DRM Video Driver",
-    KMSDRM_LEGACY_Available,
     KMSDRM_LEGACY_CreateDevice
 };
 
@@ -244,7 +247,7 @@ VideoBootStrap KMSDRM_LEGACY_bootstrap = {
 static void
 KMSDRM_LEGACY_FBDestroyCallback(struct gbm_bo *bo, void *data)
 {
-    KMSDRM_LEGACY_FBInfo *fb_info = (KMSDRM_FBInfo *)data;
+    KMSDRM_LEGACY_FBInfo *fb_info = (KMSDRM_LEGACY_FBInfo *)data;
 
     if (fb_info && fb_info->drm_fd >= 0 && fb_info->fb_id != 0) {
         KMSDRM_LEGACY_drmModeRmFB(fb_info->drm_fd, fb_info->fb_id);
@@ -263,7 +266,7 @@ KMSDRM_LEGACY_FBFromBO(_THIS, struct gbm_bo *bo)
     Uint32 stride, handle;
 
     /* Check for an existing framebuffer */
-    KMSDRM_LEGACY_FBInfo *fb_info = (KMSDRM_FBInfo *)KMSDRM_gbm_bo_get_user_data(bo);
+    KMSDRM_LEGACY_FBInfo *fb_info = (KMSDRM_LEGACY_FBInfo *)KMSDRM_LEGACY_gbm_bo_get_user_data(bo);
 
     if (fb_info) {
         return fb_info;
@@ -271,7 +274,7 @@ KMSDRM_LEGACY_FBFromBO(_THIS, struct gbm_bo *bo)
 
     /* Create a structure that contains enough info to remove the framebuffer
        when the backing buffer is destroyed */
-    fb_info = (KMSDRM_LEGACY_FBInfo *)SDL_calloc(1, sizeof(KMSDRM_FBInfo));
+    fb_info = (KMSDRM_LEGACY_FBInfo *)SDL_calloc(1, sizeof(KMSDRM_LEGACY_FBInfo));
 
     if (!fb_info) {
         SDL_OutOfMemory();
@@ -296,7 +299,7 @@ KMSDRM_LEGACY_FBFromBO(_THIS, struct gbm_bo *bo)
                  fb_info->fb_id, w, h, stride, (void *)bo);
 
     /* Associate our DRM framebuffer with this buffer object */
-    KMSDRM_LEGACY_gbm_bo_set_user_data(bo, fb_info, KMSDRM_FBDestroyCallback);
+    KMSDRM_LEGACY_gbm_bo_set_user_data(bo, fb_info, KMSDRM_LEGACY_FBDestroyCallback);
 
     return fb_info;
 }
@@ -430,7 +433,7 @@ KMSDRM_LEGACY_CreateSurfaces(_THIS, SDL_Window * window)
 int
 KMSDRM_LEGACY_VideoInit(_THIS)
 {
-    int ret = 0;
+    int i, j, ret = 0;
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
     SDL_DisplayData *dispdata = NULL;
     drmModeRes *resources = NULL;
@@ -472,7 +475,7 @@ KMSDRM_LEGACY_VideoInit(_THIS)
         goto cleanup;
     }
 
-    for (int i = 0; i < resources->count_connectors; i++) {
+    for (i = 0; i < resources->count_connectors; i++) {
         drmModeConnector *conn = KMSDRM_LEGACY_drmModeGetConnector(viddata->drm_fd, resources->connectors[i]);
 
         if (!conn) {
@@ -495,7 +498,7 @@ KMSDRM_LEGACY_VideoInit(_THIS)
     }
 
     /* Try to find the connector's current encoder */
-    for (int i = 0; i < resources->count_encoders; i++) {
+    for (i = 0; i < resources->count_encoders; i++) {
         encoder = KMSDRM_LEGACY_drmModeGetEncoder(viddata->drm_fd, resources->encoders[i]);
 
         if (!encoder) {
@@ -513,7 +516,7 @@ KMSDRM_LEGACY_VideoInit(_THIS)
 
     if (!encoder) {
         /* No encoder was connected, find the first supported one */
-        for (int i = 0, j; i < resources->count_encoders; i++) {
+        for (i = 0; i < resources->count_encoders; i++) {
             encoder = KMSDRM_LEGACY_drmModeGetEncoder(viddata->drm_fd, resources->encoders[i]);
 
             if (!encoder) {
@@ -547,7 +550,7 @@ KMSDRM_LEGACY_VideoInit(_THIS)
 
     if (!dispdata->saved_crtc) {
         /* No CRTC was connected, find the first CRTC that can be connected */
-        for (int i = 0; i < resources->count_crtcs; i++) {
+        for (i = 0; i < resources->count_crtcs; i++) {
             if (encoder->possible_crtcs & (1 << i)) {
                 encoder->crtc_id = resources->crtcs[i];
                 dispdata->saved_crtc = KMSDRM_LEGACY_drmModeGetCrtc(viddata->drm_fd, encoder->crtc_id);
@@ -594,7 +597,7 @@ KMSDRM_LEGACY_VideoInit(_THIS)
 #endif
     display.current_mode = display.desktop_mode;
     display.driverdata = dispdata;
-    SDL_AddVideoDisplay(&display);
+    SDL_AddVideoDisplay(&display, SDL_FALSE);
 
 #ifdef SDL_INPUT_LINUXEV
     SDL_EVDEV_Init();
@@ -691,8 +694,9 @@ KMSDRM_LEGACY_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
     SDL_DisplayData *dispdata = display->driverdata;
     drmModeConnector *conn = dispdata->conn;
     SDL_DisplayMode mode;
+    int i;
 
-    for (int i = 0; i < conn->count_modes; i++) {
+    for (i = 0; i < conn->count_modes; i++) {
         SDL_DisplayModeData *modedata = SDL_calloc(1, sizeof(SDL_DisplayModeData));
 
         if (modedata) {
@@ -718,6 +722,7 @@ KMSDRM_LEGACY_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode 
     SDL_DisplayData *dispdata = (SDL_DisplayData *)display->driverdata;
     SDL_DisplayModeData *modedata = (SDL_DisplayModeData *)mode->driverdata;
     drmModeConnector *conn = dispdata->conn;
+    int i;
 
     if (!modedata) {
         return SDL_SetError("Mode doesn't have an associated index");
@@ -725,7 +730,7 @@ KMSDRM_LEGACY_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode 
 
     dispdata->mode = conn->modes[modedata->mode_index];
 
-    for (int i = 0; i < viddata->num_windows; i++) {
+    for (i = 0; i < viddata->num_windows; i++) {
         SDL_Window *window = viddata->windows[i];
         SDL_WindowData *windata = (SDL_WindowData *)window->driverdata;
 
@@ -826,6 +831,8 @@ KMSDRM_LEGACY_DestroyWindow(_THIS, SDL_Window * window)
 {
     SDL_WindowData *windata = (SDL_WindowData *) window->driverdata;
     SDL_VideoData *viddata;
+    int i, j;
+
     if (!windata) {
         return;
     }
@@ -833,11 +840,11 @@ KMSDRM_LEGACY_DestroyWindow(_THIS, SDL_Window * window)
     /* Remove from the internal window list */
     viddata = windata->viddata;
 
-    for (int i = 0; i < viddata->num_windows; i++) {
+    for (i = 0; i < viddata->num_windows; i++) {
         if (viddata->windows[i] == window) {
             viddata->num_windows--;
 
-            for (int j = i; j < viddata->num_windows; j++) {
+            for (j = i; j < viddata->num_windows; j++) {
                 viddata->windows[j] = viddata->windows[j + 1];
             }
 
