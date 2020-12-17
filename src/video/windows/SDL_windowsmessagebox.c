@@ -256,6 +256,10 @@ static SDL_bool AddDialogString(WIN_DialogData *dialog, const char *string)
     size_t count;
     SDL_bool status;
 
+    if (!string) {
+        string = "";
+    }
+
     wstring = WIN_UTF8ToString(string);
     if (!wstring) {
         return SDL_FALSE;
@@ -314,7 +318,7 @@ static SDL_bool AddDialogControl(WIN_DialogData *dialog, WORD type, DWORD style,
     if (!AddDialogData(dialog, &type, sizeof(type))) {
         return SDL_FALSE;
     }
-    if (type == DLGITEMTYPEBUTTON || (type == DLGITEMTYPESTATIC && caption != NULL && caption[0])) {
+    if (type == DLGITEMTYPEBUTTON || (type == DLGITEMTYPESTATIC && caption != NULL)) {
         if (!AddDialogString(dialog, caption)) {
             return SDL_FALSE;
         }
@@ -581,7 +585,6 @@ WIN_ShowOldMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
 
     /* Jan 25th, 2013 - dant@fleetsa.com
      *
-     *
      * I've tried to make this more reasonable, but I've run in to a lot
      * of nonsense.
      *
@@ -605,8 +608,6 @@ WIN_ShowOldMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
      * somewhat correct.
      *
      * Honestly, a long term solution is to use CreateWindow, not CreateDialog.
-     *
-
      *
      * In order to get text dimensions we need to have a DC with the desired font.
      * I'm assuming a dialog box in SDL is rare enough we can to the create.
