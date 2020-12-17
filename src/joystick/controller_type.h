@@ -600,10 +600,10 @@ static SDL_INLINE EControllerType GuessControllerType( int nVID, int nPID )
 	if ( !s_bCheckedForDuplicates )
 	{
 		s_bCheckedForDuplicates = true;
-
-		for ( int i = 0; i < sizeof( arrControllers ) / sizeof( arrControllers[ 0 ] ); ++i )
+		int i, j;
+		for ( i = 0; i < sizeof( arrControllers ) / sizeof( arrControllers[ 0 ] ); ++i )
 		{
-			for ( int j = i + 1; j < sizeof( arrControllers ) / sizeof( arrControllers[ 0 ] ); ++j )
+			for ( j = i + 1; j < sizeof( arrControllers ) / sizeof( arrControllers[ 0 ] ); ++j )
 			{
 				if ( arrControllers[ i ].m_unDeviceID == arrControllers[ j ].m_unDeviceID )
 				{
