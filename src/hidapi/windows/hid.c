@@ -1002,23 +1002,23 @@ HID_API_EXPORT const wchar_t * HID_API_CALL  hid_error(hid_device *dev)
 /*#define S11*/
 #define P32
 #ifdef S11
-  unsigned short VendorID = 0xa0a0;
+	unsigned short VendorID = 0xa0a0;
 	unsigned short ProductID = 0x0001;
 #endif
 
 #ifdef P32
-  unsigned short VendorID = 0x04d8;
+	unsigned short VendorID = 0x04d8;
 	unsigned short ProductID = 0x3f;
 #endif
 
 #ifdef PICPGM
-  unsigned short VendorID = 0x04d8;
-  unsigned short ProductID = 0x0033;
+	unsigned short VendorID = 0x04d8;
+	unsigned short ProductID = 0x0033;
 #endif
 
 int __cdecl main(int argc, char* argv[])
 {
-	int res;
+	int i, res;
 	unsigned char buf[65];
 
 	UNREFERENCED_PARAMETER(argc);
@@ -1054,7 +1054,7 @@ int __cdecl main(int argc, char* argv[])
 		printf("Unable to read()\n");
 
 	/* Print out the returned buffer. */
-	for (int i = 0; i < 4; i++)
+	for (i = 0; i < 4; i++)
 		printf("buf[%d]: %d\n", i, buf[i]);
 
 	return 0;

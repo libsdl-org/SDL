@@ -577,10 +577,10 @@ RAWINPUT_WindowsGamingInputSlotMatches(const WindowsMatchState *state, WindowsGa
 static SDL_bool
 RAWINPUT_GuessWindowsGamingInputSlot(const WindowsMatchState *state, Uint8 *correlation_id, WindowsGamingInputGamepadState **slot)
 {
-    int match_count;
+    int match_count, user_index;
 
     match_count = 0;
-    for (int user_index = 0; user_index < wgi_state.per_gamepad_count; ++user_index) {
+    for (user_index = 0; user_index < wgi_state.per_gamepad_count; ++user_index) {
         WindowsGamingInputGamepadState *gamepad_state = wgi_state.per_gamepad[user_index];
         if (RAWINPUT_WindowsGamingInputSlotMatches(state, gamepad_state)) {
             ++match_count;
@@ -604,7 +604,8 @@ RAWINPUT_QuitWindowsGamingInput(RAWINPUT_DeviceContext *ctx)
     wgi_state.need_device_list_update = SDL_TRUE;
     --wgi_state.ref_count;
     if (!wgi_state.ref_count && wgi_state.initialized) {
-        for (int ii = 0; ii < wgi_state.per_gamepad_count; ii++) {
+        int ii;
+        for (ii = 0; ii < wgi_state.per_gamepad_count; ii++) {
             __x_ABI_CWindows_CGaming_CInput_CIGamepad_Release(wgi_state.per_gamepad[ii]->gamepad);
         }
         if (wgi_state.per_gamepad) {

@@ -197,8 +197,9 @@ GetDisplayMode(_THIS, CGDisplayModeRef vidmode, CFArrayRef modelist, CVDisplayLi
         int pixelH = (int) CGDisplayModeGetPixelHeight(vidmode);
 
         CFIndex modescount = CFArrayGetCount(modelist);
+        int  i;
 
-        for (int i = 0; i < modescount; i++) {
+        for (i = 0; i < modescount; i++) {
             CGDisplayModeRef othermode = (CGDisplayModeRef) CFArrayGetValueAtIndex(modelist, i);
             uint32_t otherioflags = CGDisplayModeGetIOFlags(othermode);
 
