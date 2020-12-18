@@ -20178,6 +20178,8 @@ ac_x_header_dirs='
 /usr/local/include/X11R5
 /usr/local/include/X11R4
 
+/opt/X11/include
+
 /usr/X386/include
 /usr/x386/include
 /usr/XFree86/include/X11
