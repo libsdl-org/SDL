@@ -92,6 +92,54 @@ static struct
 } SDL_EventQ = { NULL, { 1 }, { 0 }, 0, NULL, NULL, NULL, NULL, NULL };
 
 
+#if !SDL_JOYSTICK_DISABLED
+
+static SDL_bool SDL_update_joysticks = SDL_TRUE;
+
+static void
+SDL_CalculateShouldUpdateJoysticks()
+{
+    if (SDL_GetHintBoolean(SDL_HINT_AUTO_UPDATE_JOYSTICKS, SDL_TRUE) &&
+        (!SDL_disabled_events[SDL_JOYAXISMOTION >> 8] || SDL_JoystickEventState(SDL_QUERY))) {
+        SDL_update_joysticks = SDL_TRUE;
+    } else {
+        SDL_update_joysticks = SDL_FALSE;
+    }
+}
+
+static void SDLCALL
+SDL_AutoUpdateJoysticksChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+{
+    SDL_CalculateShouldUpdateJoysticks();
+}
+
+#endif /* !SDL_JOYSTICK_DISABLED */
+
+
+#if !SDL_SENSOR_DISABLED
+
+static SDL_bool SDL_update_sensors = SDL_TRUE;
+
+static void
+SDL_CalculateShouldUpdateSensors()
+{
+    if (SDL_GetHintBoolean(SDL_HINT_AUTO_UPDATE_SENSORS, SDL_TRUE) &&
+        !SDL_disabled_events[SDL_SENSORUPDATE >> 8]) {
+        SDL_update_sensors = SDL_TRUE;
+    } else {
+        SDL_update_sensors = SDL_FALSE;
+    }
+}
+
+static void SDLCALL
+SDL_AutoUpdateSensorsChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+{
+    SDL_CalculateShouldUpdateSensors();
+}
+
+#endif /* !SDL_SENSOR_DISABLED */
+
+
 /* 0 (default) means no logging, 1 means logging, 2 means logging with mouse and finger motion */
 static int SDL_DoEventLogging = 0;
 
@@ -688,14 +736,14 @@ SDL_PumpEvents(void)
 
 #if !SDL_JOYSTICK_DISABLED
     /* Check for joystick state change */
-    if ((!SDL_disabled_events[SDL_JOYAXISMOTION >> 8] || SDL_JoystickEventState(SDL_QUERY))) {
+    if (SDL_update_joysticks) {
         SDL_JoystickUpdate();
     }
 #endif
 
 #if !SDL_SENSOR_DISABLED
     /* Check for sensor state change */
-    if (!SDL_disabled_events[SDL_SENSORUPDATE >> 8]) {
+    if (SDL_update_sensors) {
         SDL_SensorUpdate();
     }
 #endif
@@ -947,6 +995,17 @@ SDL_EventState(Uint32 type, int state)
             /* Querying state... */
             break;
         }
+
+#if !SDL_JOYSTICK_DISABLED
+        if (state == SDL_DISABLE || state == SDL_ENABLE) {
+            SDL_CalculateShouldUpdateJoysticks();
+        }
+#endif
+#if !SDL_SENSOR_DISABLED
+        if (state == SDL_DISABLE || state == SDL_ENABLE) {
+            SDL_CalculateShouldUpdateSensors();
+        }
+#endif
     }
 
     /* turn off drag'n'drop support if we've disabled the events.
@@ -1018,6 +1077,12 @@ SDL_SendLocaleChangedEvent(void)
 int
 SDL_EventsInit(void)
 {
+#if !SDL_JOYSTICK_DISABLED
+    SDL_AddHintCallback(SDL_HINT_AUTO_UPDATE_JOYSTICKS, SDL_AutoUpdateJoysticksChanged, NULL);
+#endif
+#if !SDL_SENSOR_DISABLED
+    SDL_AddHintCallback(SDL_HINT_AUTO_UPDATE_SENSORS, SDL_AutoUpdateSensorsChanged, NULL);
+#endif
     SDL_AddHintCallback(SDL_HINT_EVENT_LOGGING, SDL_EventLoggingChanged, NULL);
     if (SDL_StartEventLoop() < 0) {
         SDL_DelHintCallback(SDL_HINT_EVENT_LOGGING, SDL_EventLoggingChanged, NULL);
@@ -1035,6 +1100,12 @@ SDL_EventsQuit(void)
     SDL_QuitQuit();
     SDL_StopEventLoop();
     SDL_DelHintCallback(SDL_HINT_EVENT_LOGGING, SDL_EventLoggingChanged, NULL);
+#if !SDL_JOYSTICK_DISABLED
+    SDL_DelHintCallback(SDL_HINT_AUTO_UPDATE_JOYSTICKS, SDL_AutoUpdateJoysticksChanged, NULL);
+#endif
+#if !SDL_SENSOR_DISABLED
+    SDL_DelHintCallback(SDL_HINT_AUTO_UPDATE_SENSORS, SDL_AutoUpdateSensorsChanged, NULL);
+#endif
 }
 
 /* vi: set ts=4 sw=4 expandtab: */
