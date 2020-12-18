@@ -1,7 +1,6 @@
 /*
   Simple DirectMedia Layer
   Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
-  Atomic KMSDRM backend by Manuel Alfayate Corchete <redwindwanderer@gmail.com>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -20,27 +19,35 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
+/*
+ * @author Manuel Alfayate Corchere <redwindwanderer@gmail.com>.
+ * Based on Jacob Lifshay's SDL_x11vulkan.c.
+ */
+
 #include "../../SDL_internal.h"
 
-#ifndef SDL_KMSDRM_mouse_h_
-#define SDL_KMSDRM_mouse_h_
+#ifndef SDL_kmsdrmvulkan_h_
+#define SDL_kmsdrmvulkan_h_
 
-#include <gbm.h>
+#include "../SDL_vulkan_internal.h"
+#include "../SDL_sysvideo.h"
 
-#define MAX_CURSOR_W 512
-#define MAX_CURSOR_H 512
+#if SDL_VIDEO_VULKAN && SDL_VIDEO_DRIVER_KMSDRM
 
-/* Driverdata with driver-side info about the cursor. */
-typedef struct _KMSDRM_CursorData
-{
-    uint16_t       hot_x, hot_y;
-    uint16_t       w, h;
+int KMSDRM_Vulkan_LoadLibrary(_THIS, const char *path);
+void KMSDRM_Vulkan_UnloadLibrary(_THIS);
+SDL_bool KMSDRM_Vulkan_GetInstanceExtensions(_THIS,
+                                          SDL_Window *window,
+                                          unsigned *count,
+                                          const char **names);
+void KMSDRM_Vulkan_GetDrawableSize(_THIS, SDL_Window *window, int *w, int *h);
+SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
+                                  SDL_Window *window,
+                                  VkInstance instance,
+                                  VkSurfaceKHR *surface);
 
-} KMSDRM_CursorData;
+#endif
 
-extern void KMSDRM_InitMouse(_THIS);
-extern void KMSDRM_DeinitMouse(_THIS);
-
-#endif /* SDL_KMSDRM_mouse_h_ */
+#endif /* SDL_kmsdrmvulkan_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

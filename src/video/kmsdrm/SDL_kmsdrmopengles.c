@@ -59,11 +59,24 @@ KMSDRM_GLES_DefaultProfileConfig(_THIS, int *mask, int *major, int *minor)
 #endif
 }
 
-
 int
 KMSDRM_GLES_LoadLibrary(_THIS, const char *path) {
+    /* Just pretend you do this here, but don't do it until KMSDRM_CreateWindow(),
+       where we do the same library load we would normally do here.
+       because this gets called by SDL_CreateWindow() before KMSDR_CreateWindow(),
+       so gbm dev isn't yet created when this is called, AND we can't alter the
+       call order in SDL_CreateWindow(). */
+#if 0
     NativeDisplayType display = (NativeDisplayType)((SDL_VideoData *)_this->driverdata)->gbm_dev;
     return SDL_EGL_LoadLibrary(_this, path, display, EGL_PLATFORM_GBM_MESA);
+#endif
+    return 0;
+}
+
+void
+KMSDRM_GLES_UnloadLibrary(_THIS) {
+    /* As with KMSDRM_GLES_LoadLibrary(), we define our own unloading function so
+       we manually unload the library whenever we want. */
 }
 
 SDL_EGL_CreateContext_impl(KMSDRM)
@@ -94,6 +107,7 @@ static EGLSyncKHR create_fence(int fd, _THIS)
         EGL_SYNC_NATIVE_FENCE_FD_ANDROID, fd,
         EGL_NONE,
     };
+
     EGLSyncKHR fence = _this->egl_data->eglCreateSyncKHR
         (_this->egl_data->egl_display, EGL_SYNC_NATIVE_FENCE_ANDROID, attrib_list);
 
@@ -341,16 +355,6 @@ int
 KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window)
 {
     SDL_WindowData *windata = ((SDL_WindowData *) window->driverdata);
-
-     /* Get the EGL context, now that SDL_CreateRenderer() has already been called,
-       and call eglMakeCurrent() on it and the EGL surface. */
-#if SDL_VIDEO_OPENGL_EGL
-    if (windata->egl_context_pending) {
-        EGLContext egl_context = (EGLContext)SDL_GL_GetCurrentContext();
-        SDL_EGL_MakeCurrent(_this, windata->egl_surface, egl_context);
-        windata->egl_context_pending = SDL_FALSE;
-    }
-#endif
 
     if (windata->swap_window == NULL) {
         /* We want the fenced version by default, but it needs extensions. */
