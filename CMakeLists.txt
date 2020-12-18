@@ -204,7 +204,7 @@ if(APPLE OR ARCH_64)
     set(OPT_DEF_SSEMATH ON)
   endif()
 endif()
-if(UNIX OR MINGW OR MSYS OR USE_CLANG)
+if(UNIX OR MINGW OR MSYS OR USE_CLANG OR VITA)
   set(OPT_DEF_LIBC ON)
 endif()
 
@@ -296,6 +296,12 @@ if(EMSCRIPTEN)
   set(SDL_THREADS_ENABLED_BY_DEFAULT OFF)
   set(SDL_LOADSO_ENABLED_BY_DEFAULT OFF)
   set(SDL_CPUINFO_ENABLED_BY_DEFAULT OFF)
+  set(SDL_DLOPEN_ENABLED_BY_DEFAULT OFF)
+endif()
+
+if(VITA)
+  set(SDL_SHARED_ENABLED_BY_DEFAULT OFF)
+  set(SDL_LOADSO_ENABLED_BY_DEFAULT OFF)
   set(SDL_DLOPEN_ENABLED_BY_DEFAULT OFF)
 endif()
 
@@ -855,7 +861,9 @@ if(LIBC)
         check_symbol_exists("${_FN}" "math.h" ${_HAVEVAR})
       endforeach()
       set(CMAKE_REQUIRED_LIBRARIES)
-      list(APPEND EXTRA_LIBS m)
+      if(NOT VITA)
+        list(APPEND EXTRA_LIBS m)
+      endif()
     endif()
 
     check_library_exists(iconv iconv_open "" HAVE_LIBICONV)
@@ -2006,6 +2014,133 @@ elseif(RISCOS)
   if(SDL_AUDIO)
     CheckOSS()
   endif()
+elseif(VITA)
+  # SDL_spinlock.c Needs to be compiled in ARM mode.
+  check_c_compiler_flag(-marm HAVE_ARM_MODE)
+  if(HAVE_ARM_MODE)
+    set_source_files_properties(${SDL2_SOURCE_DIR}/src/atomic/SDL_spinlock.c PROPERTIES COMPILE_FLAGS -marm)
+  endif()
+
+  if(SDL_AUDIO)
+    set(SDL_AUDIO_DRIVER_VITA 1)
+    file(GLOB VITA_AUDIO_SOURCES ${SDL2_SOURCE_DIR}/src/audio/vita/*.c)
+    set(SOURCE_FILES ${SOURCE_FILES} ${VITA_AUDIO_SOURCES})
+    set(HAVE_SDL_AUDIO TRUE)
+  endif()
+  if(SDL_FILESYSTEM)
+    set(SDL_FILESYSTEM_VITA 1)
+    file(GLOB VITA_FILESYSTEM_SOURCES ${SDL2_SOURCE_DIR}/src/filesystem/vita/*.c)
+    set(SOURCE_FILES ${SOURCE_FILES} ${VITA_FILESYSTEM_SOURCES})
+    set(HAVE_SDL_FILESYSTEM TRUE)
+  endif()
+  if(SDL_JOYSTICK)
+    set(SDL_JOYSTICK_VITA 1)
+    file(GLOB VITA_JOYSTICK_SOURCES ${SDL2_SOURCE_DIR}/src/joystick/vita/*.c)
+    set(SOURCE_FILES ${SOURCE_FILES} ${VITA_JOYSTICK_SOURCES})
+    set(HAVE_SDL_JOYSTICK TRUE)
+  endif()
+  if(SDL_POWER)
+    set(SDL_POWER_VITA 1)
+    file(GLOB VITA_POWER_SOURCES ${SDL2_SOURCE_DIR}/src/power/vita/*.c)
+    set(SOURCE_FILES ${SOURCE_FILES} ${VITA_POWER_SOURCES})
+    set(HAVE_SDL_POWER TRUE)
+  endif()
+  if(SDL_THREADS)
+    set(SDL_THREAD_VITA 1)
+    set(SOURCE_FILES ${SOURCE_FILES}
+      ${SDL2_SOURCE_DIR}/src/thread/vita/SDL_sysmutex.c
+      ${SDL2_SOURCE_DIR}/src/thread/vita/SDL_syssem.c
+      ${SDL2_SOURCE_DIR}/src/thread/vita/SDL_systhread.c
+      ${SDL2_SOURCE_DIR}/src/thread/vita/SDL_syscond.c
+      ${SDL2_SOURCE_DIR}/src/thread/generic/SDL_systls.c)
+    set(HAVE_SDL_THREADS TRUE)
+  endif()
+  if(SDL_TIMERS)
+    set(SDL_TIMER_VITA 1)
+    file(GLOB TIMER_SOURCES ${SDL2_SOURCE_DIR}/src/timer/vita/*.c)
+    set(SOURCE_FILES ${SOURCE_FILES} ${TIMER_SOURCES})
+    set(HAVE_SDL_TIMERS TRUE)
+  endif()
+  if(SDL_SENSOR)
+    set(SDL_SENSOR_VITA 1)
+    set(HAVE_SDL_SENSORS TRUE)
+    file(GLOB VITA_SENSOR_SOURCES ${SDL2_SOURCE_DIR}/src/sensor/vita/*.c)
+    set(SOURCE_FILES ${SOURCE_FILES} ${VITA_SENSOR_SOURCES})
+  endif()
+  if(SDL_VIDEO)
+    set(SDL_VIDEO_DRIVER_VITA 1)
+    file(GLOB VITA_VIDEO_SOURCES ${SDL2_SOURCE_DIR}/src/video/vita/*.c)
+    set(SOURCE_FILES ${SOURCE_FILES} ${VITA_VIDEO_SOURCES})
+    set(HAVE_SDL_VIDEO TRUE)
+
+    if(DOLCESDK)
+      add_definitions("-DDOLCEVITA")
+      set(SDL_VIDEO_OPENGL_ES2 1)
+      set(SDL_VIDEO_RENDER_VITA_GLES2 1)
+    else()
+      add_definitions("-DSCE_OK=0")
+    endif()
+    set(SDL_VIDEO_RENDER_VITA_GXM 1)
+
+    if(DOLCESDK)
+      list(APPEND EXTRA_LIBS
+        pib
+        SceGxm_stub
+        SceGxmInternalForVsh_stub
+        SceDisplay_stub
+        SceCtrl_stub
+        SceAppMgr_stub
+        SceAppMgrUser_stub
+        SceAudio_stub
+        SceSysmodule_stub
+        SceSharedFb_stub
+        SceDisplay_stub
+        SceDisplayUser_stub
+        SceCtrl_stub
+        SceIofilemgr_stub
+        SceCommonDialog_stub
+        SceTouch_stub
+        SceHid_stub
+        SceMotion_stub
+        m
+      )
+    else()
+      list(APPEND EXTRA_LIBS
+        SceGxm_stub
+        SceDisplay_stub
+        SceCtrl_stub
+        SceAppMgr_stub
+        SceAudio_stub
+        SceSysmodule_stub
+        SceDisplay_stub
+        SceCtrl_stub
+        SceIofilemgr_stub
+        SceCommonDialog_stub
+        SceTouch_stub
+        SceHid_stub
+        SceMotion_stub
+        m
+      )
+    endif()
+  endif()
+
+  set(HAVE_ARMSIMD TRUE)
+  set(SDL_ARM_SIMD_BLITTERS 1)
+  file(GLOB ARMSIMD_SOURCES ${SDL2_SOURCE_DIR}/src/video/arm/pixman-arm-simd*.S)
+  set(SOURCE_FILES ${SOURCE_FILES} ${ARMSIMD_SOURCES})
+
+  set(HAVE_ARMNEON TRUE)
+  set(SDL_ARM_NEON_BLITTERS 1)
+  file(GLOB ARMNEON_SOURCES ${SDL2_SOURCE_DIR}/src/video/arm/pixman-arm-neon*.S)
+  set(SOURCE_FILES ${SOURCE_FILES} ${ARMNEON_SOURCES})
+
+  set_property(SOURCE ${SDL2_SOURCE_DIR}/src/video/arm/pixman-arm-simd-asm.S PROPERTY LANGUAGE C)
+  set_property(SOURCE ${SDL2_SOURCE_DIR}/src/video/arm/pixman-arm-neon-asm.S PROPERTY LANGUAGE C)
+
+  add_definitions("-D__VITA__")
+
+  CheckPTHREAD()
+
 endif()
 
 if(VIDEO_VULKAN)
@@ -2105,7 +2240,17 @@ if(NOT CMAKE_HOST_WIN32)
     WORKING_DIRECTORY ${SDL2_BINARY_DIR})
 endif()
 if(NOT WINDOWS OR CYGWIN)
-  set(prefix ${CMAKE_INSTALL_PREFIX})
+
+  if(VITA)
+    if(DOLCESDK)
+      set(prefix "\${DOLCESDK}/arm-dolce-eabi")
+    else()
+      set(prefix "\${VITASDK}/arm-vita-eabi")
+    endif()
+  else()
+    set(prefix ${CMAKE_INSTALL_PREFIX})
+  endif()
+
   set(exec_prefix "\${prefix}")
   set(libdir "\${exec_prefix}/lib${LIB_SUFFIX}")
   set(bindir "\${exec_prefix}/bin")
@@ -2129,13 +2274,23 @@ Libs.private:")
   endif()
 
   # Clean up the different lists
-  listtostr(EXTRA_LIBS _EXTRA_LIBS "-l")
-  set(SDL_STATIC_LIBS ${EXTRA_LDFLAGS} ${_EXTRA_LIBS})
-  list(REMOVE_DUPLICATES SDL_STATIC_LIBS)
-  listtostr(SDL_STATIC_LIBS _SDL_STATIC_LIBS)
-  set(SDL_STATIC_LIBS ${_SDL_STATIC_LIBS})
-  listtostr(SDL_LIBS _SDL_LIBS)
-  set(SDL_LIBS ${_SDL_LIBS})
+  if (VITA)
+    listtostrrev(EXTRA_LIBS _EXTRA_LIBS "-l")
+    set(SDL_STATIC_LIBS ${SDL_LIBS} ${EXTRA_LDFLAGS} ${_EXTRA_LIBS})
+    list(REMOVE_DUPLICATES SDL_STATIC_LIBS)
+    listtostrrev(SDL_STATIC_LIBS _SDL_STATIC_LIBS)
+    set(SDL_STATIC_LIBS ${_SDL_STATIC_LIBS})
+    listtostrrev(SDL_LIBS _SDL_LIBS)
+    set(SDL_LIBS ${_SDL_LIBS})
+  else()
+    listtostr(EXTRA_LIBS _EXTRA_LIBS "-l")
+    set(SDL_STATIC_LIBS ${SDL_LIBS} ${EXTRA_LDFLAGS} ${_EXTRA_LIBS})
+    list(REMOVE_DUPLICATES SDL_STATIC_LIBS)
+    listtostr(SDL_STATIC_LIBS _SDL_STATIC_LIBS)
+    set(SDL_STATIC_LIBS ${_SDL_STATIC_LIBS})
+    listtostr(SDL_LIBS _SDL_LIBS)
+    set(SDL_LIBS ${_SDL_LIBS})
+  endif()
 
   # MESSAGE(STATUS "SDL_LIBS: ${SDL_LIBS}")
   # MESSAGE(STATUS "SDL_STATIC_LIBS: ${SDL_STATIC_LIBS}")
