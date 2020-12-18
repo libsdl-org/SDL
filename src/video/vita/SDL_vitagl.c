@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_VITA
+#if SDL_VIDEO_DRIVER_VITA && SDL_VIDEO_OPENGL_ES2
 
 #include <stdlib.h>
 #include <string.h>

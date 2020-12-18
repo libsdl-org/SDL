@@ -142,16 +142,11 @@
 #define SDL_FILESYSTEM_VITA   1
 #define SDL_SENSOR_VITA 1
 
-//#if defined(_VITA_GLES2_)
+#if defined(DOLCEVITA)
  #define SDL_VIDEO_RENDER_VITA_GLES2 1
-//#else
- #define SDL_VIDEO_RENDER_VITA_GXM 1
-//#endif
-
-#if defined(SDL_VIDEO_RENDER_VITA_GLES2) || defined(SDL_VIDEO_RENDER_VITA_GXM)
  #define SDL_VIDEO_OPENGL_ES2 1
 #endif
-
+#define SDL_VIDEO_RENDER_VITA_GXM 1
 
 /* VITA doesn't have haptic device (src/haptic/dummy/\*.c) */
 #define SDL_HAPTIC_DISABLED    1

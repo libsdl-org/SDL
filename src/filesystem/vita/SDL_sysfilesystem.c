@@ -29,7 +29,11 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
+#if DOLCEVITA
 #include <psp2/kernel/iofilemgr.h>
+#else
+#include <psp2/io/stat.h>
+#endif
 #include <sys/types.h>
 #include <limits.h>
 #include <fcntl.h>

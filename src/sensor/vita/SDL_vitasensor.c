@@ -28,7 +28,13 @@
 #include "SDL_vitasensor.h"
 #include "../SDL_syssensor.h"
 #include <psp2/motion.h>
+#if DOLCEVITA
 #include <psp2/error.h>
+#endif
+
+#if !defined(SCE_MOTION_MAX_NUM_STATES)
+#define SCE_MOTION_MAX_NUM_STATES 64
+#endif
 
 typedef struct
 {
