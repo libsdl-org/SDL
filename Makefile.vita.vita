@@ -22,7 +22,6 @@ SOURCES = \
 	src/render/*.c \
 	src/render/software/*.c \
 	src/render/vitagxm/*.c \
-	src/render/vitagles2/*.c \
 	src/sensor/*.c \
 	src/sensor/vita/*.c \
 	src/stdlib/*.c \
@@ -38,11 +37,11 @@ SOURCES = \
 
 OBJS = $(shell echo $(SOURCES) | sed -e 's,\.c,\.o,g' | sed -e 's,\.S,\.o,g')
 
-PREFIX  = arm-dolce-eabi
+PREFIX  = arm-vita-eabi
 CC      = $(PREFIX)-gcc
 AR      = $(PREFIX)-ar
 CFLAGS  = -g -Wl,-q -Wall -O3 -Iinclude \
-                        -D__VITA__ -DDOLCEVITA -D__ARM_ARCH=7 -D__ARM_ARCH_7A__ \
+                        -D__VITA__ -DSCE_OK=0 -D__ARM_ARCH=7 -D__ARM_ARCH_7A__ \
                         -mfpu=neon -mcpu=cortex-a9 -mfloat-abi=hard
 ASFLAGS = $(CFLAGS)
 
@@ -53,8 +52,8 @@ clean:
 	@rm -f $(TARGET_LIB) $(OBJS)
 
 install: $(TARGET_LIB)
-	@mkdir -p "$(DESTDIR)$(DOLCESDK)/arm-dolce-eabi/lib"
-	@cp  $(TARGET_LIB) $(DESTDIR)$(DOLCESDK)/arm-dolce-eabi/lib
-	@mkdir -p "$(DESTDIR)$(DOLCESDK)/arm-dolce-eabi/include/SDL2"
-	@cp include/*.h "$(DESTDIR)$(DOLCESDK)/arm-dolce-eabi/include/SDL2"
+	@mkdir -p "$(DESTDIR)$(VITASDK)/arm-vita-eabi/lib"
+	@cp  $(TARGET_LIB) $(DESTDIR)$(VITASDK)/arm-vita-eabi/lib
+	@mkdir -p "$(DESTDIR)$(VITASDK)/arm-vita-eabi/include/SDL2"
+	@cp include/*.h "$(DESTDIR)$(VITASDK)/arm-vita-eabi/include/SDL2"
 	@echo "Installed!"

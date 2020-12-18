@@ -37,8 +37,9 @@
 #include "SDL_vitatouch.h"
 #include "SDL_vitakeyboard.h"
 #include "SDL_vitamouse_c.h"
+#if SDLVIDEO_OPENGL_ES2
 #include "SDL_vitagl_c.h"
-
+#endif
 #include <psp2/ime_dialog.h>
 
 SDL_Window *Vita_Window;
@@ -66,8 +67,9 @@ VITA_Create()
 {
     SDL_VideoDevice *device;
     SDL_VideoData *phdata;
+#if SDLVIDEO_OPENGL_ES2
     SDL_GLDriverData *gldata;
-
+#endif
     /* Initialize SDL_VideoDevice structure */
     device = (SDL_VideoDevice *) SDL_calloc(1, sizeof(SDL_VideoDevice));
     if (device == NULL) {
@@ -82,6 +84,7 @@ VITA_Create()
         SDL_free(device);
         return NULL;
     }
+#if SDLVIDEO_OPENGL_ES2
 
     gldata = (SDL_GLDriverData *) SDL_calloc(1, sizeof(SDL_GLDriverData));
     if (gldata == NULL) {
@@ -92,6 +95,7 @@ VITA_Create()
     }
     device->gl_data = gldata;
     phdata->egl_initialized = SDL_TRUE;
+#endif
     phdata->ime_active = SDL_FALSE;
 
     device->driverdata = phdata;
@@ -123,6 +127,7 @@ VITA_Create()
     device->DestroyWindow = VITA_DestroyWindow;
     device->GetWindowWMInfo = VITA_GetWindowWMInfo;
 
+#if SDL_VIDEO_OPENGL_ES2
     device->GL_LoadLibrary = VITA_GL_LoadLibrary;
     device->GL_GetProcAddress = VITA_GL_GetProcAddress;
     device->GL_UnloadLibrary = VITA_GL_UnloadLibrary;
@@ -132,6 +137,7 @@ VITA_Create()
     device->GL_GetSwapInterval = VITA_GL_GetSwapInterval;
     device->GL_SwapWindow = VITA_GL_SwapWindow;
     device->GL_DeleteContext = VITA_GL_DeleteContext;
+#endif
 
     device->HasScreenKeyboardSupport = VITA_HasScreenKeyboardSupport;
     device->ShowScreenKeyboard = VITA_ShowScreenKeyboard;
@@ -320,6 +326,10 @@ SDL_bool VITA_HasScreenKeyboardSupport(_THIS)
 {
     return SDL_TRUE;
 }
+
+#if !defined(SCE_IME_LANGUAGE_ENGLISH_US)
+#define SCE_IME_LANGUAGE_ENGLISH_US SCE_IME_LANGUAGE_ENGLISH
+#endif
 
 void VITA_ShowScreenKeyboard(_THIS, SDL_Window *window)
 {
