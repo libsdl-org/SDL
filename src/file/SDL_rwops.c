@@ -590,20 +590,22 @@ SDL_RWFromFile(const char *file, const char *mode)
     rwops->close = windows_file_close;
     rwops->type = SDL_RWOPS_WINFILE;
 #elif defined(__VITA__)
-    /* Try to open the file on the filesystem first */
-    FILE *fp = fopen(file, mode);
-    if (fp) {
-        return SDL_RWFromFP(fp, 1);
-    } else {
-        /* Try opening it from app0:/ container if it's a relative path */
-        char path[4096];
-        SDL_snprintf(path, 4096, "app0:/%s", file);
-        fp = fopen(path, mode);
-        if (fp) {
-            return SDL_RWFromFP(fp, 1);
-        }
+    {
+      /* Try to open the file on the filesystem first */
+      FILE *fp = fopen(file, mode);
+      if (fp) {
+          return SDL_RWFromFP(fp, 1);
+      } else {
+          /* Try opening it from app0:/ container if it's a relative path */
+          char path[4096];
+          SDL_snprintf(path, 4096, "app0:/%s", file);
+          fp = fopen(path, mode);
+          if (fp) {
+              return SDL_RWFromFP(fp, 1);
+          }
+      }
+      SDL_SetError("Couldn't open %s", file);
     }
-    SDL_SetError("Couldn't open %s", file);
 #elif HAVE_STDIO_H
     {
         #ifdef __APPLE__

@@ -137,10 +137,10 @@ SDL_VITA_SensorOpen(SDL_Sensor *sensor, int device_index)
 static void
 SDL_VITA_SensorUpdate(SDL_Sensor *sensor)
 {
+    int err = SCE_OK;
     SceMotionSensorState motionState[SCE_MOTION_MAX_NUM_STATES];
     SDL_memset(motionState, 0, sizeof(motionState));
 
-    int err = SCE_OK;
     err = sceMotionGetSensorState(motionState, SCE_MOTION_MAX_NUM_STATES);
     if (err != SCE_OK)
     {

@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#ifdef SDL_TIMERS_VITA
+#ifdef SDL_TIMER_VITA
 
 #include "SDL_thread.h"
 #include "SDL_timer.h"
@@ -53,12 +53,12 @@ SDL_TicksQuit(void)
 
 Uint32 SDL_GetTicks(void)
 {
+    uint64_t now;
+    Uint32 ticks;
+
     if (!ticks_started) {
         SDL_TicksInit();
     }
-
-    uint64_t now;
-    Uint32 ticks;
 
     now = sceKernelGetProcessTimeWide();
     ticks = (now - start)/1000;
@@ -85,7 +85,7 @@ void SDL_Delay(Uint32 ms)
     sceKernelDelayThreadCB(ms * 1000);
 }
 
-#endif /* SDL_TIMERS_VITA */
+#endif /* SDL_TIMER_VITA */
 
 /* vim: ts=4 sw=4
  */

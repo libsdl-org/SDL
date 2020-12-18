@@ -105,70 +105,72 @@ VITA_PollKeyboard(void)
 				}
 			}
 
-			Uint8 changed_modifiers = k_reports[numReports - 1].modifiers[0] ^ prev_modifiers;
+			{
+				Uint8 changed_modifiers = k_reports[numReports - 1].modifiers[0] ^ prev_modifiers;
 
-			if (changed_modifiers & 0x01) {
-				if (prev_modifiers & 0x01) {
-					SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_LCTRL);
+				if (changed_modifiers & 0x01) {
+					if (prev_modifiers & 0x01) {
+						SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_LCTRL);
+					}
+					else {
+						SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_LCTRL);
+					}
 				}
+				if (changed_modifiers & 0x02) {
+					if (prev_modifiers & 0x02) {
+						SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_LSHIFT);
+					}
 				else {
-					SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_LCTRL);
+						SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_LSHIFT);
+					}
 				}
+				if (changed_modifiers & 0x04) {
+					if (prev_modifiers & 0x04) {
+						SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_LALT);
+					}
+					else {
+						SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_LALT);
+					}
+				}
+				if (changed_modifiers & 0x08) {
+					if (prev_modifiers & 0x08) {
+						SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_LGUI);
+					}
+					else {
+						SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_LGUI);
+					}
+				}
+				if (changed_modifiers & 0x10) {
+					if (prev_modifiers & 0x10) {
+						SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_RCTRL);
+					}
+					else {
+						SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_RCTRL);
+					}
 			}
-			if (changed_modifiers & 0x02) {
-				if (prev_modifiers & 0x02) {
-					SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_LSHIFT);
+				if (changed_modifiers & 0x20) {
+					if (prev_modifiers & 0x20) {
+						SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_RSHIFT);
+					}
+					else {
+						SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_RSHIFT);
+					}
 				}
-				else {
-					SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_LSHIFT);
+				if (changed_modifiers & 0x40) {
+					if (prev_modifiers & 0x40) {
+						SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_RALT);
+					}
+					else {
+						SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_RALT);
+					}
 				}
-			}
-			if (changed_modifiers & 0x04) {
-				if (prev_modifiers & 0x04) {
-					SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_LALT);
-				}
-				else {
-					SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_LALT);
-				}
-			}
-			if (changed_modifiers & 0x08) {
-				if (prev_modifiers & 0x08) {
-					SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_LGUI);
-				}
-				else {
-					SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_LGUI);
-				}
-			}
-			if (changed_modifiers & 0x10) {
-				if (prev_modifiers & 0x10) {
-					SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_RCTRL);
-				}
-				else {
-					SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_RCTRL);
-				}
-			}
-			if (changed_modifiers & 0x20) {
-				if (prev_modifiers & 0x20) {
-					SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_RSHIFT);
-				}
-				else {
-					SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_RSHIFT);
-				}
-			}
-			if (changed_modifiers & 0x40) {
-				if (prev_modifiers & 0x40) {
-					SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_RALT);
-				}
-				else {
-					SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_RALT);
-				}
-			}
-			if (changed_modifiers & 0x80) {
-				if (prev_modifiers & 0x80) {
-					SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_RGUI);
-				}
-				else {
-					SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_RGUI);
+				if (changed_modifiers & 0x80) {
+					if (prev_modifiers & 0x80) {
+						SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_RGUI);
+					}
+					else {
+						SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_RGUI);
+					}
 				}
 			}
 
