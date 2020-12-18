@@ -195,6 +195,7 @@
 #cmakedefine HAVE_PTHREAD_SET_NAME_NP 1
 #cmakedefine HAVE_SEM_TIMEDWAIT 1
 #cmakedefine HAVE_GETAUXVAL 1
+#cmakedefine HAVE_ELF_AUX_INFO 1
 #cmakedefine HAVE_POLL 1
 #cmakedefine HAVE__EXIT 1
 

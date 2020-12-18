@@ -54,6 +54,9 @@
 #include <sys/param.h>
 #include <sys/sysctl.h> /* For AltiVec check */
 #include <machine/cpu.h>
+#if defined(HAVE_ELF_AUX_INFO)
+#include <sys/auxv.h>
+#endif
 #elif SDL_ALTIVEC_BLITTERS && HAVE_SETJMP
 #include <signal.h>
 #include <setjmp.h>
@@ -462,6 +465,11 @@ CPU_haveNEON(void)
     return 0;  /* assume anything else from Apple doesn't have NEON. */
 #elif defined(__OpenBSD__)
     return 1;  /* OpenBSD only supports ARMv7 CPUs that have NEON. */
+#elif defined(HAVE_ELF_AUX_INFO)
+    unsigned long hasneon = 0;
+    if (elf_aux_info(AT_HWCAP, (void *)&hasneon, (int)sizeof(hasneon)) != 0)
+        return 0;
+    return ((hasneon & HWCAP_NEON) == HWCAP_NEON);
 #elif !defined(__arm__)
     return 0;  /* not an ARM CPU at all. */
 #elif defined(__QNXNTO__)
