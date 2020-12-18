@@ -202,6 +202,7 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
 
     VkResult result;
     SDL_bool ret = SDL_FALSE;
+    int i;
 
     /* Get the function pointers for the functions we will use. */
     PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr =
@@ -326,14 +327,14 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
        because videomode determines how big the scanout region is and we can't
        scanout a region bigger than the window (we would be reading past the
        buffer, and Vulkan would give us a confusing VK_ERROR_SURFACE_LOST_KHR). */
-    for (int i = 0; i < mode_count; i++) {
+    for (i = 0; i < mode_count; i++) {
         if (modes_props[i].parameters.visibleRegion.width <= window->w &&
             modes_props[i].parameters.visibleRegion.height <= window->h)
         {
             display_mode_props = modes_props[i];
             break;
         }
-    } 
+    }
 
     if (display_mode_props.parameters.visibleRegion.width == 0
         || display_mode_props.parameters.visibleRegion.height == 0)
