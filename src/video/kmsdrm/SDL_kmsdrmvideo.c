@@ -1700,10 +1700,6 @@ KMSDRM_VideoInit(_THIS)
         goto cleanup;
     }
 
-    /* Setup the single display that's available.
-       There's no problem with it being still incomplete. */
-    display.driverdata = dispdata;
-
     /* Get KMSDRM resources info and store what we need. Getting and storing
        this info isn't a problem for VK compatibility.
        For VK-incompatible initializations we have KMSDRM_GBMInit(), which is
@@ -1713,6 +1709,9 @@ KMSDRM_VideoInit(_THIS)
         goto cleanup;
     }
 
+    /* Setup the single display that's available.
+       There's no problem with it being still incomplete. */
+    display.driverdata = dispdata;
     display.desktop_mode.w = dispdata->mode.hdisplay;
     display.desktop_mode.h = dispdata->mode.vdisplay;
     display.desktop_mode.refresh_rate = dispdata->mode.vrefresh;
