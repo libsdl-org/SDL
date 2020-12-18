@@ -391,17 +391,16 @@ void print_plane_info(_THIS, drmModePlanePtr plane)
     drmModeRes *resources;
     uint32_t type = 0;
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
+    int i;
 
     drmModeObjectPropertiesPtr props = KMSDRM_drmModeObjectGetProperties(viddata->drm_fd,
         plane->plane_id, DRM_MODE_OBJECT_PLANE);
 
     /* Search the plane props for the plane type. */
-    for (int j = 0; j < props->count_props; j++) {
-
-        drmModePropertyPtr p = KMSDRM_drmModeGetProperty(viddata->drm_fd, props->props[j]);
-
+    for (i = 0; i < props->count_props; i++) {
+        drmModePropertyPtr p = KMSDRM_drmModeGetProperty(viddata->drm_fd, props->props[i]);
         if ((strcmp(p->name, "type") == 0)) {
-            type = props->prop_values[j];
+            type = props->prop_values[i];
         }
 
         KMSDRM_drmModeFreeProperty(p);
@@ -432,7 +431,7 @@ void print_plane_info(_THIS, drmModePlanePtr plane)
         return;
 
     printf("--PLANE ID: %d\nPLANE TYPE: %s\nCRTC READING THIS PLANE: %d\nCRTCS SUPPORTED BY THIS PLANE: ",  plane->plane_id, plane_type, plane->crtc_id);
-    for (int i = 0; i < resources->count_crtcs; i++) {
+    for (i = 0; i < resources->count_crtcs; i++) {
         if (plane->possible_crtcs & (1 << i)) {
             uint32_t crtc_id = resources->crtcs[i];
             printf ("%d", crtc_id);
@@ -1031,7 +1030,6 @@ int KMSDRM_DisplayDataInit (_THIS, SDL_DisplayData *dispdata) {
     /* Try ATOMIC compatibility */
     ret = check_atomic_modesetting(viddata->drm_fd);
     if (ret) {
-        ret = SDL_SetError("not compatible with atomic modesetting");
         goto cleanup;
     }
 
