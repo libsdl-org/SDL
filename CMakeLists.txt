@@ -834,6 +834,7 @@ if(LIBC)
     check_symbol_exists(sysconf "unistd.h" HAVE_SYSCONF)
     check_symbol_exists(sysctlbyname "sys/types.h;sys/sysctl.h" HAVE_SYSCTLBYNAME)
     check_symbol_exists(getauxval "sys/auxv.h" HAVE_GETAUXVAL)
+    check_symbol_exists(elf_aux_info "sys/auxv.h" HAVE_ELF_AUX_INFO)
     check_symbol_exists(poll "poll.h" HAVE_POLL)
 
     check_library_exists(m pow "" HAVE_LIBM)

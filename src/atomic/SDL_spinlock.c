@@ -138,6 +138,8 @@ SDL_AtomicTryLock(SDL_SpinLock *lock)
 /* "REP NOP" is PAUSE, coded for tools that don't know it by that name. */
 #if (defined(__GNUC__) || defined(__clang__)) && (defined(__i386__) || defined(__x86_64__))
     #define PAUSE_INSTRUCTION() __asm__ __volatile__("pause\n")  /* Some assemblers can't do REP NOP, so go with PAUSE. */
+#elif (defined(__arm__) && __ARM_ARCH__ >= 7) || defined(__aarch64__)
+    #define PAUSE_INSTRUCTION() __asm__ __volatile__("yield" ::: "memory")
 #elif defined(_MSC_VER) && (defined(_M_IX86) || defined(_M_X64))
     #define PAUSE_INSTRUCTION() _mm_pause()  /* this is actually "rep nop" and not a SIMD instruction. No inline asm in MSVC x86-64! */
 #elif defined(__WATCOMC__) && defined(__386__)
