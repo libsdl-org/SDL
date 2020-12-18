@@ -58,6 +58,14 @@
 
 #define AMDGPU_COMPAT 1
 
+static int check_atomic_modesetting (int fd)
+{
+    if (KMSDRM_drmSetClientCap(fd, DRM_CLIENT_CAP_ATOMIC, 1)) {
+         return SDL_SetError("no atomic modesetting support.");
+    }
+    return 0;
+}
+
 static int
 check_modesetting(int devindex)
 {
@@ -72,7 +80,7 @@ check_modesetting(int devindex)
     drm_fd = open(device, O_RDWR | O_CLOEXEC);
     if (drm_fd >= 0) {
         if (SDL_KMSDRM_LoadSymbols()) {
-            drmModeRes *resources = KMSDRM_drmModeGetResources(drm_fd);
+            drmModeRes *resources = (check_atomic_modesetting(drm_fd) < 0) ? NULL : KMSDRM_drmModeGetResources(drm_fd);
             if (resources) {
                 SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "%scard%d connector, encoder and CRTC counts are: %d %d %d",
                              KMSDRM_DRI_PATH, devindex,
@@ -1189,9 +1197,8 @@ KMSDRM_VideoInit(_THIS)
 
     /* Try ATOMIC compatibility */
 
-    ret = KMSDRM_drmSetClientCap(viddata->drm_fd, DRM_CLIENT_CAP_ATOMIC, 1);
+    ret = check_atomic_modesetting(viddata->drm_fd);
     if (ret) {
-        ret = SDL_SetError("no atomic modesetting support.");
         goto cleanup;
     }
 
