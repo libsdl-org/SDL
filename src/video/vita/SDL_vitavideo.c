@@ -327,6 +327,7 @@ void VITA_ShowScreenKeyboard(_THIS, SDL_Window *window)
 
     wchar_t *title = L"";
     wchar_t *text = L"";
+    SceInt32 res;
 
     SceImeDialogParam param;
     sceImeDialogParamInit(&param);
@@ -342,7 +343,7 @@ void VITA_ShowScreenKeyboard(_THIS, SDL_Window *window)
     param.initialText = text;
     param.inputTextBuffer = videodata->ime_buffer;
 
-    SceInt32 res = sceImeDialogInit(&param);
+    res = sceImeDialogInit(&param);
     if (res < 0) {
         SDL_SetError("Failed to init IME dialog");
         return;
@@ -413,14 +414,15 @@ void VITA_PumpEvents(_THIS)
         // update IME status. Terminate, if finished
         SceCommonDialogStatus dialogStatus = sceImeDialogGetStatus();
          if (dialogStatus == SCE_COMMON_DIALOG_STATUS_FINISHED) {
+            uint8_t utf8_buffer[SCE_IME_DIALOG_MAX_TEXT_LENGTH];
 
             SceImeDialogResult result;
             SDL_memset(&result, 0, sizeof(SceImeDialogResult));
             sceImeDialogGetResult(&result);
 
             // Convert UTF16 to UTF8
-            uint8_t utf8_buffer[SCE_IME_DIALOG_MAX_TEXT_LENGTH];
             utf16_to_utf8(videodata->ime_buffer, utf8_buffer);
+
             // send sdl event
             SDL_SendKeyboardText((const char*)utf8_buffer);
 

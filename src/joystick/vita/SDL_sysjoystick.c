@@ -67,10 +67,10 @@ static point c = { 128, 32767 };
 static point d = { 128, 32767 };
 
 /* simple linear interpolation between two points */
-static SDL_INLINE void lerp (point *dest, point *a, point *b, float t)
+static SDL_INLINE void lerp (point *dest, point *first, point *second, float t)
 {
-    dest->x = a->x + (b->x - a->x)*t;
-    dest->y = a->y + (b->y - a->y)*t;
+    dest->x = first->x + (second->x - first->x) * t;
+    dest->y = first->y + (second->y - first->y) * t;
 }
 
 /* evaluate a point on a bezier-curve. t goes from 0 to 1.0 */
@@ -93,6 +93,7 @@ static int calc_bezier_y(float t)
 int VITA_JoystickInit(void)
 {
     int i;
+    SceCtrlPortInfo myPortInfo;
 
     /* Setup input */
     sceCtrlSetSamplingMode(SCE_CTRL_MODE_ANALOG_WIDE);
@@ -106,27 +107,26 @@ int VITA_JoystickInit(void)
         analog_map[127-i] = -1 * analog_map[i+128];
     }
 
-	SceCtrlPortInfo myPortInfo;
+    // Assume we have at least one controller, even when nothing is paired
+    // This way the user can jump in, pair a controller
+    // and control things immediately even if it is paired
+    // after the app has already started.
 
-	// Assume we have at least one controller, even when nothing is paired
-	// This way the user can jump in, pair a controller
-	// and control things immediately even if it is paired
-	// after the app has already started.
+    SDL_numjoysticks = 1;
 
-	SDL_numjoysticks = 1;
+    // How many additional paired controllers are there?
+    sceCtrlGetControllerPortInfo(&myPortInfo);
 
-	//How many additional paired controllers are there?
-	sceCtrlGetControllerPortInfo(&myPortInfo);
-	//On Vita TV, port 0 and 1 are the same controller
-	//and that is the first one, so start at port 2
-	for (i=2; i<=4; i++)
-	{
-		if (myPortInfo.port[i]!=SCE_CTRL_TYPE_UNPAIRED)
-		{
-			SDL_numjoysticks++;
-		}
-	}
-  return SDL_numjoysticks;
+    // On Vita TV, port 0 and 1 are the same controller
+    // and that is the first one, so start at port 2
+    for (i=2; i<=4; i++)
+    {
+        if (myPortInfo.port[i]!=SCE_CTRL_TYPE_UNPAIRED)
+        {
+            SDL_numjoysticks++;
+        }
+    }
+    return SDL_numjoysticks;
 }
 
 int VITA_JoystickGetCount()

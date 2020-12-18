@@ -87,8 +87,8 @@ VITAAUD_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     }
 
     if(this->spec.freq < 48000) {
-		port = SCE_AUDIO_OUT_PORT_TYPE_BGM;
-	}
+        port = SCE_AUDIO_OUT_PORT_TYPE_BGM;
+    }
 
     this->hidden->channel = sceAudioOutOpenPort(port, this->spec.samples, this->spec.freq, format);
     if (this->hidden->channel < 0) {

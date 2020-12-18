@@ -470,12 +470,14 @@ VITA_GXM_QueueDrawLines(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const S
 static int
 VITA_GXM_QueueFillRects(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FRect * rects, int count)
 {
+    int color;
+    color_vertex *vertices;
     VITA_GXM_RenderData *data = (VITA_GXM_RenderData *) renderer->driverdata;
 
     cmd->data.draw.count = count;
-    int color = data->drawstate.color;
+    color = data->drawstate.color;
 
-    color_vertex *vertices = (color_vertex *)pool_memalign(
+    vertices = (color_vertex *)pool_memalign(
             data,
             4 * count * sizeof(color_vertex), // 4 vertices * count
             sizeof(color_vertex));
@@ -532,12 +534,13 @@ static int
 VITA_GXM_QueueCopy(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * texture,
     const SDL_Rect * srcrect, const SDL_FRect * dstrect)
 {
-
+    texture_vertex *vertices;
+    float u0, v0, u1, v1;
     VITA_GXM_RenderData *data = (VITA_GXM_RenderData *) renderer->driverdata;
 
     cmd->data.draw.count = 1;
 
-    texture_vertex *vertices = (texture_vertex *)pool_memalign(
+    vertices = (texture_vertex *)pool_memalign(
             data,
             4 * sizeof(texture_vertex), // 4 vertices
             sizeof(texture_vertex));
@@ -545,10 +548,10 @@ VITA_GXM_QueueCopy(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture 
     cmd->data.draw.first = (size_t)vertices;
     cmd->data.draw.texture = texture;
 
-    const float u0 = (float)srcrect->x / (float)texture->w;
-    const float v0 = (float)srcrect->y / (float)texture->h;
-    const float u1 = (float)(srcrect->x + srcrect->w) / (float)texture->w;
-    const float v1 = (float)(srcrect->y + srcrect->h) / (float)texture->h;
+    u0 = (float)srcrect->x / (float)texture->w;
+    v0 = (float)srcrect->y / (float)texture->h;
+    u1 = (float)(srcrect->x + srcrect->w) / (float)texture->w;
+    v1 = (float)(srcrect->y + srcrect->h) / (float)texture->h;
 
     vertices[0].x = dstrect->x;
     vertices[0].y = dstrect->y;
@@ -582,11 +585,23 @@ VITA_GXM_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Textur
     const SDL_Rect * srcrect, const SDL_FRect * dstrect,
     const double angle, const SDL_FPoint *center, const SDL_RendererFlip flip)
 {
+    texture_vertex *vertices;
+    float u0, v0, u1, v1;
+    float s, c;
+    float cw, sw, ch, sh;
+
     VITA_GXM_RenderData *data = (VITA_GXM_RenderData *) renderer->driverdata;
+
+    const float centerx = center->x;
+    const float centery = center->y;
+    const float x = dstrect->x + centerx;
+    const float y = dstrect->y + centery;
+    const float width = dstrect->w - centerx;
+    const float height = dstrect->h - centery;
 
     cmd->data.draw.count = 1;
 
-    texture_vertex *vertices = (texture_vertex *)pool_memalign(
+    vertices = (texture_vertex *)pool_memalign(
             data,
             4 * sizeof(texture_vertex), // 4 vertices
             sizeof(texture_vertex));
@@ -594,10 +609,10 @@ VITA_GXM_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Textur
     cmd->data.draw.first = (size_t)vertices;
     cmd->data.draw.texture = texture;
 
-    float u0 = (float)srcrect->x / (float)texture->w;
-    float v0 = (float)srcrect->y / (float)texture->h;
-    float u1 = (float)(srcrect->x + srcrect->w) / (float)texture->w;
-    float v1 = (float)(srcrect->y + srcrect->h) / (float)texture->h;
+    u0 = (float)srcrect->x / (float)texture->w;
+    v0 = (float)srcrect->y / (float)texture->h;
+    u1 = (float)(srcrect->x + srcrect->w) / (float)texture->w;
+    v1 = (float)(srcrect->y + srcrect->h) / (float)texture->h;
 
     if (flip & SDL_FLIP_VERTICAL) {
         Swap(&v0, &v1);
@@ -607,20 +622,13 @@ VITA_GXM_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Textur
         Swap(&u0, &u1);
     }
 
-    const float centerx = center->x;
-    const float centery = center->y;
-    const float x = dstrect->x + centerx;
-    const float y = dstrect->y + centery;
-    const float width = dstrect->w - centerx;
-    const float height = dstrect->h - centery;
-    float s, c;
 
     MathSincos(degToRad(angle), &s, &c);
 
-    const float cw = c * width;
-    const float sw = s * width;
-    const float ch = c * height;
-    const float sh = s * height;
+    cw = c * width;
+    sw = s * width;
+    ch = c * height;
+    sh = s * height;
 
     vertices[0].x = x - cw + sh;
     vertices[0].y = y - sw - ch;
@@ -654,9 +662,11 @@ VITA_GXM_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Textur
 static int
 VITA_GXM_RenderClear(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
 {
+    void *color_buffer;
+    float clear_color[4];
+
     VITA_GXM_RenderData *data = (VITA_GXM_RenderData *) renderer->driverdata;
 
-    float clear_color[4];
     clear_color[0] = (cmd->data.color.r)/255.0f;
     clear_color[1] = (cmd->data.color.g)/255.0f;
     clear_color[2] = (cmd->data.color.b)/255.0f;
@@ -669,7 +679,6 @@ VITA_GXM_RenderClear(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
     sceGxmSetFragmentProgram(data->gxm_context, data->clearFragmentProgram);
 
     // set the clear color
-    void *color_buffer;
     sceGxmReserveFragmentDefaultUniformBuffer(data->gxm_context, &color_buffer);
     sceGxmSetUniformDataF(color_buffer, data->clearClearColorParam, 0, 4, clear_color);
 
@@ -726,6 +735,7 @@ SetDrawState(VITA_GXM_RenderData *data, const SDL_RenderCommand *cmd, SDL_bool s
     SceGxmVertexProgram *vertex_program;
     SDL_bool matrix_updated = SDL_FALSE;
     SDL_bool program_updated = SDL_FALSE;
+    Uint32 texture_color;
 
     Uint8 r, g, b, a;
     r = cmd->data.draw.r;
@@ -802,7 +812,7 @@ SetDrawState(VITA_GXM_RenderData *data, const SDL_RenderCommand *cmd, SDL_bool s
         program_updated = SDL_TRUE;
     }
 
-    Uint32 texture_color = ((a << 24) | (b << 16) | (g << 8) | r);
+    texture_color = ((a << 24) | (b << 16) | (g << 8) | r);
 
     if (program_updated || matrix_updated) {
         if (data->drawstate.fragment_program == data->textureFragmentProgram) {
@@ -811,13 +821,14 @@ SetDrawState(VITA_GXM_RenderData *data, const SDL_RenderCommand *cmd, SDL_bool s
             sceGxmSetUniformDataF(vertex_wvp_buffer, data->textureWvpParam, 0, 16, data->ortho_matrix);
         } else if (data->drawstate.fragment_program == data->textureTintFragmentProgram) {
             void *vertex_wvp_buffer;
+            void *texture_tint_color_buffer;
+            float *tint_color;
             sceGxmReserveVertexDefaultUniformBuffer(data->gxm_context, &vertex_wvp_buffer);
             sceGxmSetUniformDataF(vertex_wvp_buffer, data->textureWvpParam, 0, 16, data->ortho_matrix);
 
-            void *texture_tint_color_buffer;
             sceGxmReserveFragmentDefaultUniformBuffer(data->gxm_context, &texture_tint_color_buffer);
 
-            float *tint_color = pool_memalign(
+            tint_color = pool_memalign(
                 data,
                 4 * sizeof(float), // RGBA
                 sizeof(float)
@@ -837,9 +848,10 @@ SetDrawState(VITA_GXM_RenderData *data, const SDL_RenderCommand *cmd, SDL_bool s
     } else {
         if (data->drawstate.fragment_program == data->textureTintFragmentProgram && data->drawstate.texture_color != texture_color) {
             void *texture_tint_color_buffer;
+            float *tint_color;
             sceGxmReserveFragmentDefaultUniformBuffer(data->gxm_context, &texture_tint_color_buffer);
 
-            float *tint_color = pool_memalign(
+            tint_color = pool_memalign(
                 data,
                 4 * sizeof(float), // RGBA
                 sizeof(float)
@@ -879,8 +891,8 @@ SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand *cmd)
 static int
 VITA_GXM_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertices, size_t vertsize)
 {
-    StartDrawing(renderer);
     VITA_GXM_RenderData *data = (VITA_GXM_RenderData *) renderer->driverdata;
+    StartDrawing(renderer);
 
     data->drawstate.target = renderer->target;
     if (!data->drawstate.target) {
@@ -963,13 +975,16 @@ VITA_GXM_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *
 
 void read_pixels(int x, int y, size_t width, size_t height, void *data) {
     SceDisplayFrameBuf pParam;
+    int i, j;
+    Uint32 *out32;
+    Uint32 *in32;
+
     pParam.size = sizeof(SceDisplayFrameBuf);
 
     sceDisplayGetFrameBuf(&pParam, SCE_DISPLAY_SETBUF_NEXTFRAME);
 
-    int i, j;
-    Uint32 *out32 = (Uint32 *)data;
-    Uint32 *in32 = (Uint32 *)pParam.base;
+    out32 = (Uint32 *)data;
+    in32 = (Uint32 *)pParam.base;
 
     in32 += (x + y * pParam.pitch);
 
@@ -986,11 +1001,6 @@ static int
 VITA_GXM_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect,
     Uint32 pixel_format, void *pixels, int pitch)
 {
-    // TODO: read from texture rendertarget. Although no-one sane should do it.
-    if (renderer->target) {
-        return SDL_Unsupported();
-    }
-
     Uint32 temp_format = renderer->target ? renderer->target->format : SDL_PIXELFORMAT_ABGR8888;
     size_t buflen;
     void *temp_pixels;
@@ -998,6 +1008,12 @@ VITA_GXM_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect,
     Uint8 *src, *dst, *tmp;
     int w, h, length, rows;
     int status;
+
+    // TODO: read from texture rendertarget. Although no-one sane should do it.
+    if (renderer->target) {
+        return SDL_Unsupported();
+    }
+
 
     temp_pitch = rect->w * SDL_BYTESPERPIXEL(temp_format);
     buflen = rect->h * temp_pitch;
@@ -1047,13 +1063,9 @@ static void
 VITA_GXM_RenderPresent(SDL_Renderer *renderer)
 {
     VITA_GXM_RenderData *data = (VITA_GXM_RenderData *) renderer->driverdata;
-
-//    sceGxmFinish(data->gxm_context);
+    SceCommonDialogUpdateParam updateParam;
 
     data->displayData.address = data->displayBufferData[data->backBufferIndex];
-
-
-    SceCommonDialogUpdateParam updateParam;
 
     SDL_memset(&updateParam, 0, sizeof(updateParam));
 

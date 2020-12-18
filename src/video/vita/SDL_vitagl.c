@@ -81,6 +81,11 @@ VITA_GL_CreateContext(_THIS, SDL_Window * window)
     EGLint num_configs;
     int i;
 
+    const EGLint contextAttribs[] = {
+        EGL_CONTEXT_CLIENT_VERSION, 2,
+        EGL_NONE
+    };
+
     EGLCHK(display = eglGetDisplay(0));
 
     EGLCHK(eglInitialize(display, NULL, NULL));
@@ -122,10 +127,6 @@ VITA_GL_CreateContext(_THIS, SDL_Window * window)
         return 0;
     }
 
-    const EGLint contextAttribs[] = {
-        EGL_CONTEXT_CLIENT_VERSION, 2,
-        EGL_NONE
-    };
 
     EGLCHK(surface = eglCreateWindowSurface(display, config, VITA_WINDOW_960X544, NULL));
 

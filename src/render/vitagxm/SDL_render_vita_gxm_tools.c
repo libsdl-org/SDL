@@ -71,8 +71,8 @@ init_orthographic_matrix(float *m, float left, float right, float bottom, float 
 static void *
 patcher_host_alloc(void *user_data, unsigned int size)
 {
-    (void)user_data;
     void *mem = SDL_malloc(size);
+    (void)user_data;
     return mem;
 }
 
@@ -222,6 +222,7 @@ make_fragment_programs(VITA_GXM_RenderData *data, fragment_programs *out,
 static void
 set_stencil_mask(VITA_GXM_RenderData *data, float x, float y, float w, float h)
 {
+    void *vertexDefaultBuffer;
     color_vertex *vertices = (color_vertex *)pool_memalign(
         data,
         4 * sizeof(color_vertex), // 4 vertices
@@ -253,7 +254,6 @@ set_stencil_mask(VITA_GXM_RenderData *data, float x, float y, float w, float h)
     sceGxmSetVertexProgram(data->gxm_context, data->colorVertexProgram);
     sceGxmSetFragmentProgram(data->gxm_context, data->colorFragmentProgram);
 
-    void *vertexDefaultBuffer;
     sceGxmReserveVertexDefaultUniformBuffer(data->gxm_context, &vertexDefaultBuffer);
     sceGxmSetUniformDataF(vertexDefaultBuffer, data->colorWvpParam, 0, 16, data->ortho_matrix);
 
@@ -324,6 +324,84 @@ gxm_init(SDL_Renderer *renderer)
 {
     unsigned int i, x, y;
     int err;
+    void *vdmRingBuffer;
+    void *vertexRingBuffer;
+    void *fragmentRingBuffer;
+    unsigned int fragmentUsseRingBufferOffset;
+    void *fragmentUsseRingBuffer;
+    unsigned int patcherVertexUsseOffset;
+    unsigned int patcherFragmentUsseOffset;
+    void *patcherBuffer;
+    void *patcherVertexUsse;
+    void *patcherFragmentUsse;
+
+    SceGxmRenderTargetParams renderTargetParams;
+    SceGxmShaderPatcherParams patcherParams;
+
+    // compute the memory footprint of the depth buffer
+    const unsigned int alignedWidth = ALIGN(VITA_GXM_SCREEN_WIDTH, SCE_GXM_TILE_SIZEX);
+    const unsigned int alignedHeight = ALIGN(VITA_GXM_SCREEN_HEIGHT, SCE_GXM_TILE_SIZEY);
+
+    unsigned int sampleCount = alignedWidth * alignedHeight;
+    unsigned int depthStrideInSamples = alignedWidth;
+
+    // set buffer sizes for this sample
+    const unsigned int patcherBufferSize        = 64*1024;
+    const unsigned int patcherVertexUsseSize    = 64*1024;
+    const unsigned int patcherFragmentUsseSize  = 64*1024;
+
+    // Fill SceGxmBlendInfo
+    static const SceGxmBlendInfo blend_info_none = {
+        .colorFunc = SCE_GXM_BLEND_FUNC_NONE,
+        .alphaFunc = SCE_GXM_BLEND_FUNC_NONE,
+        .colorSrc  = SCE_GXM_BLEND_FACTOR_ZERO,
+        .colorDst  = SCE_GXM_BLEND_FACTOR_ZERO,
+        .alphaSrc  = SCE_GXM_BLEND_FACTOR_ZERO,
+        .alphaDst  = SCE_GXM_BLEND_FACTOR_ZERO,
+        .colorMask = SCE_GXM_COLOR_MASK_ALL
+    };
+
+    static const SceGxmBlendInfo blend_info_blend = {
+        .colorFunc = SCE_GXM_BLEND_FUNC_ADD,
+        .alphaFunc = SCE_GXM_BLEND_FUNC_ADD,
+        .colorSrc  = SCE_GXM_BLEND_FACTOR_SRC_ALPHA,
+        .colorDst  = SCE_GXM_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+        .alphaSrc  = SCE_GXM_BLEND_FACTOR_ONE,
+        .alphaDst  = SCE_GXM_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+        .colorMask = SCE_GXM_COLOR_MASK_ALL
+    };
+
+    static const SceGxmBlendInfo blend_info_add = {
+        .colorFunc = SCE_GXM_BLEND_FUNC_ADD,
+        .alphaFunc = SCE_GXM_BLEND_FUNC_ADD,
+        .colorSrc  = SCE_GXM_BLEND_FACTOR_SRC_ALPHA,
+        .colorDst  = SCE_GXM_BLEND_FACTOR_ONE,
+        .alphaSrc  = SCE_GXM_BLEND_FACTOR_ZERO,
+        .alphaDst  = SCE_GXM_BLEND_FACTOR_ONE,
+        .colorMask = SCE_GXM_COLOR_MASK_ALL
+    };
+
+    static const SceGxmBlendInfo blend_info_mod = {
+        .colorFunc = SCE_GXM_BLEND_FUNC_ADD,
+        .alphaFunc = SCE_GXM_BLEND_FUNC_ADD,
+
+        .colorSrc  = SCE_GXM_BLEND_FACTOR_ZERO,
+        .colorDst  = SCE_GXM_BLEND_FACTOR_SRC_COLOR,
+
+        .alphaSrc  = SCE_GXM_BLEND_FACTOR_ZERO,
+        .alphaDst  = SCE_GXM_BLEND_FACTOR_ONE,
+        .colorMask = SCE_GXM_COLOR_MASK_ALL
+    };
+
+    static const SceGxmBlendInfo blend_info_mul = {
+        .colorFunc = SCE_GXM_BLEND_FUNC_ADD,
+        .alphaFunc = SCE_GXM_BLEND_FUNC_ADD,
+        .colorSrc  = SCE_GXM_BLEND_FACTOR_DST_COLOR,
+        .colorDst  = SCE_GXM_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+        .alphaSrc  = SCE_GXM_BLEND_FACTOR_DST_ALPHA,
+        .alphaDst  = SCE_GXM_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+        .colorMask = SCE_GXM_COLOR_MASK_ALL
+    };
 
     VITA_GXM_RenderData *data = (VITA_GXM_RenderData *) renderer->driverdata;
 
@@ -343,29 +421,28 @@ gxm_init(SDL_Renderer *renderer)
     }
 
     // allocate ring buffer memory using default sizes
-    void *vdmRingBuffer = mem_gpu_alloc(
+    vdmRingBuffer = mem_gpu_alloc(
         SCE_KERNEL_MEMBLOCK_TYPE_USER_RW_UNCACHE,
         SCE_GXM_DEFAULT_VDM_RING_BUFFER_SIZE,
         4,
         SCE_GXM_MEMORY_ATTRIB_READ,
         &data->vdmRingBufferUid);
 
-    void *vertexRingBuffer = mem_gpu_alloc(
+    vertexRingBuffer = mem_gpu_alloc(
         SCE_KERNEL_MEMBLOCK_TYPE_USER_RW_UNCACHE,
         SCE_GXM_DEFAULT_VERTEX_RING_BUFFER_SIZE,
         4,
         SCE_GXM_MEMORY_ATTRIB_READ,
         &data->vertexRingBufferUid);
 
-    void *fragmentRingBuffer = mem_gpu_alloc(
+    fragmentRingBuffer = mem_gpu_alloc(
         SCE_KERNEL_MEMBLOCK_TYPE_USER_RW_UNCACHE,
         SCE_GXM_DEFAULT_FRAGMENT_RING_BUFFER_SIZE,
         4,
         SCE_GXM_MEMORY_ATTRIB_READ,
         &data->fragmentRingBufferUid);
 
-    unsigned int fragmentUsseRingBufferOffset;
-    void *fragmentUsseRingBuffer = mem_fragment_usse_alloc(
+    fragmentUsseRingBuffer = mem_fragment_usse_alloc(
         SCE_GXM_DEFAULT_FRAGMENT_USSE_RING_BUFFER_SIZE,
         &data->fragmentUsseRingBufferUid,
         &fragmentUsseRingBufferOffset);
@@ -390,7 +467,6 @@ gxm_init(SDL_Renderer *renderer)
     }
 
     // set up parameters
-    SceGxmRenderTargetParams renderTargetParams;
     SDL_memset(&renderTargetParams, 0, sizeof(SceGxmRenderTargetParams));
     renderTargetParams.flags                = 0;
     renderTargetParams.width                = VITA_GXM_SCREEN_WIDTH;
@@ -454,12 +530,6 @@ gxm_init(SDL_Renderer *renderer)
 
     }
 
-    // compute the memory footprint of the depth buffer
-    const unsigned int alignedWidth = ALIGN(VITA_GXM_SCREEN_WIDTH, SCE_GXM_TILE_SIZEX);
-    const unsigned int alignedHeight = ALIGN(VITA_GXM_SCREEN_HEIGHT, SCE_GXM_TILE_SIZEY);
-
-    unsigned int sampleCount = alignedWidth * alignedHeight;
-    unsigned int depthStrideInSamples = alignedWidth;
 
     // allocate the depth buffer
     data->depthBufferData = mem_gpu_alloc(
@@ -500,33 +570,26 @@ gxm_init(SDL_Renderer *renderer)
         0xFF,
         0xFF);
 
-    // set buffer sizes for this sample
-    const unsigned int patcherBufferSize        = 64*1024;
-    const unsigned int patcherVertexUsseSize    = 64*1024;
-    const unsigned int patcherFragmentUsseSize  = 64*1024;
 
     // allocate memory for buffers and USSE code
-    void *patcherBuffer = mem_gpu_alloc(
+    patcherBuffer = mem_gpu_alloc(
         SCE_KERNEL_MEMBLOCK_TYPE_USER_RW_UNCACHE,
         patcherBufferSize,
         4,
         SCE_GXM_MEMORY_ATTRIB_READ | SCE_GXM_MEMORY_ATTRIB_WRITE,
         &data->patcherBufferUid);
 
-    unsigned int patcherVertexUsseOffset;
-    void *patcherVertexUsse = mem_vertex_usse_alloc(
+    patcherVertexUsse = mem_vertex_usse_alloc(
         patcherVertexUsseSize,
         &data->patcherVertexUsseUid,
         &patcherVertexUsseOffset);
 
-    unsigned int patcherFragmentUsseOffset;
-    void *patcherFragmentUsse = mem_fragment_usse_alloc(
+    patcherFragmentUsse = mem_fragment_usse_alloc(
         patcherFragmentUsseSize,
         &data->patcherFragmentUsseUid,
         &patcherFragmentUsseOffset);
 
     // create a shader patcher
-    SceGxmShaderPatcherParams patcherParams;
     SDL_memset(&patcherParams, 0, sizeof(SceGxmShaderPatcherParams));
     patcherParams.userData                  = NULL;
     patcherParams.hostAllocCallback         = &patcher_host_alloc;
@@ -639,110 +702,60 @@ gxm_init(SDL_Renderer *renderer)
         return err;
     }
 
-    // Fill SceGxmBlendInfo
-    static const SceGxmBlendInfo blend_info_none = {
-        .colorFunc = SCE_GXM_BLEND_FUNC_NONE,
-        .alphaFunc = SCE_GXM_BLEND_FUNC_NONE,
-        .colorSrc  = SCE_GXM_BLEND_FACTOR_ZERO,
-        .colorDst  = SCE_GXM_BLEND_FACTOR_ZERO,
-        .alphaSrc  = SCE_GXM_BLEND_FACTOR_ZERO,
-        .alphaDst  = SCE_GXM_BLEND_FACTOR_ZERO,
-        .colorMask = SCE_GXM_COLOR_MASK_ALL
-    };
 
-    static const SceGxmBlendInfo blend_info_blend = {
-        .colorFunc = SCE_GXM_BLEND_FUNC_ADD,
-        .alphaFunc = SCE_GXM_BLEND_FUNC_ADD,
-        .colorSrc  = SCE_GXM_BLEND_FACTOR_SRC_ALPHA,
-        .colorDst  = SCE_GXM_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
-        .alphaSrc  = SCE_GXM_BLEND_FACTOR_ONE,
-        .alphaDst  = SCE_GXM_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
-        .colorMask = SCE_GXM_COLOR_MASK_ALL
-    };
+    {
+        // get attributes by name to create vertex format bindings
+        const SceGxmProgramParameter *paramClearPositionAttribute = sceGxmProgramFindParameterByName(clearVertexProgramGxp, "aPosition");
 
-    static const SceGxmBlendInfo blend_info_add = {
-        .colorFunc = SCE_GXM_BLEND_FUNC_ADD,
-        .alphaFunc = SCE_GXM_BLEND_FUNC_ADD,
-        .colorSrc  = SCE_GXM_BLEND_FACTOR_SRC_ALPHA,
-        .colorDst  = SCE_GXM_BLEND_FACTOR_ONE,
-        .alphaSrc  = SCE_GXM_BLEND_FACTOR_ZERO,
-        .alphaDst  = SCE_GXM_BLEND_FACTOR_ONE,
-        .colorMask = SCE_GXM_COLOR_MASK_ALL
-    };
+        // create clear vertex format
+        SceGxmVertexAttribute clearVertexAttributes[1];
+        SceGxmVertexStream clearVertexStreams[1];
+        clearVertexAttributes[0].streamIndex    = 0;
+        clearVertexAttributes[0].offset         = 0;
+        clearVertexAttributes[0].format         = SCE_GXM_ATTRIBUTE_FORMAT_F32;
+        clearVertexAttributes[0].componentCount = 2;
+        clearVertexAttributes[0].regIndex       = sceGxmProgramParameterGetResourceIndex(paramClearPositionAttribute);
+        clearVertexStreams[0].stride            = sizeof(clear_vertex);
+        clearVertexStreams[0].indexSource       = SCE_GXM_INDEX_SOURCE_INDEX_16BIT;
 
-    static const SceGxmBlendInfo blend_info_mod = {
-        .colorFunc = SCE_GXM_BLEND_FUNC_ADD,
-        .alphaFunc = SCE_GXM_BLEND_FUNC_ADD,
+        // create clear programs
+        err = sceGxmShaderPatcherCreateVertexProgram(
+            data->shaderPatcher,
+            data->clearVertexProgramId,
+            clearVertexAttributes,
+            1,
+            clearVertexStreams,
+            1,
+            &data->clearVertexProgram
+        );
+        if (err != SCE_OK) {
+            SDL_LogError(SDL_LOG_CATEGORY_RENDER, "create program (clear vertex) failed: %d\n", err);
+            return err;
+        }
 
-        .colorSrc  = SCE_GXM_BLEND_FACTOR_ZERO,
-        .colorDst  = SCE_GXM_BLEND_FACTOR_SRC_COLOR,
+        err = sceGxmShaderPatcherCreateFragmentProgram(
+            data->shaderPatcher,
+            data->clearFragmentProgramId,
+            SCE_GXM_OUTPUT_REGISTER_FORMAT_UCHAR4,
+            0,
+            NULL,
+            clearVertexProgramGxp,
+            &data->clearFragmentProgram
+        );
+        if (err != SCE_OK) {
+            SDL_LogError(SDL_LOG_CATEGORY_RENDER, "create program (clear fragment) failed: %d\n", err);
+            return err;
+        }
 
-        .alphaSrc  = SCE_GXM_BLEND_FACTOR_ZERO,
-        .alphaDst  = SCE_GXM_BLEND_FACTOR_ONE,
-        .colorMask = SCE_GXM_COLOR_MASK_ALL
-    };
-
-    static const SceGxmBlendInfo blend_info_mul = {
-        .colorFunc = SCE_GXM_BLEND_FUNC_ADD,
-        .alphaFunc = SCE_GXM_BLEND_FUNC_ADD,
-        .colorSrc  = SCE_GXM_BLEND_FACTOR_DST_COLOR,
-        .colorDst  = SCE_GXM_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
-        .alphaSrc  = SCE_GXM_BLEND_FACTOR_DST_ALPHA,
-        .alphaDst  = SCE_GXM_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
-        .colorMask = SCE_GXM_COLOR_MASK_ALL
-    };
-
-    // get attributes by name to create vertex format bindings
-    const SceGxmProgramParameter *paramClearPositionAttribute = sceGxmProgramFindParameterByName(clearVertexProgramGxp, "aPosition");
-
-    // create clear vertex format
-    SceGxmVertexAttribute clearVertexAttributes[1];
-    SceGxmVertexStream clearVertexStreams[1];
-    clearVertexAttributes[0].streamIndex    = 0;
-    clearVertexAttributes[0].offset         = 0;
-    clearVertexAttributes[0].format         = SCE_GXM_ATTRIBUTE_FORMAT_F32;
-    clearVertexAttributes[0].componentCount = 2;
-    clearVertexAttributes[0].regIndex       = sceGxmProgramParameterGetResourceIndex(paramClearPositionAttribute);
-    clearVertexStreams[0].stride            = sizeof(clear_vertex);
-    clearVertexStreams[0].indexSource       = SCE_GXM_INDEX_SOURCE_INDEX_16BIT;
-
-    // create clear programs
-    err = sceGxmShaderPatcherCreateVertexProgram(
-        data->shaderPatcher,
-        data->clearVertexProgramId,
-        clearVertexAttributes,
-        1,
-        clearVertexStreams,
-        1,
-        &data->clearVertexProgram
-    );
-    if (err != SCE_OK) {
-        SDL_LogError(SDL_LOG_CATEGORY_RENDER, "create program (clear vertex) failed: %d\n", err);
-        return err;
+        // create the clear triangle vertex/index data
+        data->clearVertices = (clear_vertex *)mem_gpu_alloc(
+            SCE_KERNEL_MEMBLOCK_TYPE_USER_RW_UNCACHE,
+            3*sizeof(clear_vertex),
+            4,
+            SCE_GXM_MEMORY_ATTRIB_READ,
+            &data->clearVerticesUid
+        );
     }
-
-    err = sceGxmShaderPatcherCreateFragmentProgram(
-        data->shaderPatcher,
-        data->clearFragmentProgramId,
-        SCE_GXM_OUTPUT_REGISTER_FORMAT_UCHAR4,
-        0,
-        NULL,
-        clearVertexProgramGxp,
-        &data->clearFragmentProgram
-    );
-    if (err != SCE_OK) {
-        SDL_LogError(SDL_LOG_CATEGORY_RENDER, "create program (clear fragment) failed: %d\n", err);
-        return err;
-    }
-
-    // create the clear triangle vertex/index data
-    data->clearVertices = (clear_vertex *)mem_gpu_alloc(
-        SCE_KERNEL_MEMBLOCK_TYPE_USER_RW_UNCACHE,
-        3*sizeof(clear_vertex),
-        4,
-        SCE_GXM_MEMORY_ATTRIB_READ,
-        &data->clearVerticesUid
-    );
 
     // Allocate a 64k * 2 bytes = 128 KiB buffer and store all possible
     // 16-bit indices in linear ascending order, so we can use this for
@@ -755,7 +768,7 @@ gxm_init(SDL_Renderer *renderer)
         &data->linearIndicesUid
     );
 
-    for (uint32_t i=0; i<=UINT16_MAX; ++i)
+    for (i = 0; i <= UINT16_MAX; ++i)
     {
         data->linearIndices[i] = i;
     }
@@ -767,79 +780,86 @@ gxm_init(SDL_Renderer *renderer)
     data->clearVertices[2].x = -1.0f;
     data->clearVertices[2].y =  3.0f;
 
-    const SceGxmProgramParameter *paramColorPositionAttribute = sceGxmProgramFindParameterByName(colorVertexProgramGxp, "aPosition");
+    {
+        const SceGxmProgramParameter *paramColorPositionAttribute = sceGxmProgramFindParameterByName(colorVertexProgramGxp, "aPosition");
 
-    const SceGxmProgramParameter *paramColorColorAttribute = sceGxmProgramFindParameterByName(colorVertexProgramGxp, "aColor");
+        const SceGxmProgramParameter *paramColorColorAttribute = sceGxmProgramFindParameterByName(colorVertexProgramGxp, "aColor");
 
-    // create color vertex format
-    SceGxmVertexAttribute colorVertexAttributes[2];
-    SceGxmVertexStream colorVertexStreams[1];
-    /* x,y,z: 3 float 32 bits */
-    colorVertexAttributes[0].streamIndex = 0;
-    colorVertexAttributes[0].offset = 0;
-    colorVertexAttributes[0].format = SCE_GXM_ATTRIBUTE_FORMAT_F32;
-    colorVertexAttributes[0].componentCount = 3; // (x, y, z)
-    colorVertexAttributes[0].regIndex = sceGxmProgramParameterGetResourceIndex(paramColorPositionAttribute);
-    /* color: 4 unsigned char  = 32 bits */
-    colorVertexAttributes[1].streamIndex = 0;
-    colorVertexAttributes[1].offset = 12; // (x, y, z) * 4 = 12 bytes
-    colorVertexAttributes[1].format = SCE_GXM_ATTRIBUTE_FORMAT_U8N;
-    colorVertexAttributes[1].componentCount = 4; // (color)
-    colorVertexAttributes[1].regIndex = sceGxmProgramParameterGetResourceIndex(paramColorColorAttribute);
-    // 16 bit (short) indices
-    colorVertexStreams[0].stride = sizeof(color_vertex);
-    colorVertexStreams[0].indexSource = SCE_GXM_INDEX_SOURCE_INDEX_16BIT;
+        // create color vertex format
+        SceGxmVertexAttribute colorVertexAttributes[2];
+        SceGxmVertexStream colorVertexStreams[1];
+        /* x,y,z: 3 float 32 bits */
+        colorVertexAttributes[0].streamIndex = 0;
+        colorVertexAttributes[0].offset = 0;
+        colorVertexAttributes[0].format = SCE_GXM_ATTRIBUTE_FORMAT_F32;
+        colorVertexAttributes[0].componentCount = 3; // (x, y, z)
+        colorVertexAttributes[0].regIndex = sceGxmProgramParameterGetResourceIndex(paramColorPositionAttribute);
+        /* color: 4 unsigned char  = 32 bits */
+        colorVertexAttributes[1].streamIndex = 0;
+        colorVertexAttributes[1].offset = 12; // (x, y, z) * 4 = 12 bytes
+        colorVertexAttributes[1].format = SCE_GXM_ATTRIBUTE_FORMAT_U8N;
+        colorVertexAttributes[1].componentCount = 4; // (color)
+        colorVertexAttributes[1].regIndex = sceGxmProgramParameterGetResourceIndex(paramColorColorAttribute);
+        // 16 bit (short) indices
+        colorVertexStreams[0].stride = sizeof(color_vertex);
+        colorVertexStreams[0].indexSource = SCE_GXM_INDEX_SOURCE_INDEX_16BIT;
 
-    // create color shaders
-    err = sceGxmShaderPatcherCreateVertexProgram(
-        data->shaderPatcher,
-        data->colorVertexProgramId,
-        colorVertexAttributes,
-        2,
-        colorVertexStreams,
-        1,
-        &data->colorVertexProgram
-    );
-    if (err != SCE_OK) {
-        SDL_LogError(SDL_LOG_CATEGORY_RENDER, "create program (color vertex) failed: %d\n", err);
-        return err;
+        // create color shaders
+        err = sceGxmShaderPatcherCreateVertexProgram(
+            data->shaderPatcher,
+            data->colorVertexProgramId,
+            colorVertexAttributes,
+            2,
+            colorVertexStreams,
+            1,
+            &data->colorVertexProgram
+        );
+        if (err != SCE_OK) {
+            SDL_LogError(SDL_LOG_CATEGORY_RENDER, "create program (color vertex) failed: %d\n", err);
+            return err;
+        }
+
     }
 
-    const SceGxmProgramParameter *paramTexturePositionAttribute = sceGxmProgramFindParameterByName(textureVertexProgramGxp, "aPosition");
-    const SceGxmProgramParameter *paramTextureTexcoordAttribute = sceGxmProgramFindParameterByName(textureVertexProgramGxp, "aTexcoord");
 
-    // create texture vertex format
-    SceGxmVertexAttribute textureVertexAttributes[2];
-    SceGxmVertexStream textureVertexStreams[1];
-    /* x,y,z: 3 float 32 bits */
-    textureVertexAttributes[0].streamIndex = 0;
-    textureVertexAttributes[0].offset = 0;
-    textureVertexAttributes[0].format = SCE_GXM_ATTRIBUTE_FORMAT_F32;
-    textureVertexAttributes[0].componentCount = 3; // (x, y, z)
-    textureVertexAttributes[0].regIndex = sceGxmProgramParameterGetResourceIndex(paramTexturePositionAttribute);
-    /* u,v: 2 floats 32 bits */
-    textureVertexAttributes[1].streamIndex = 0;
-    textureVertexAttributes[1].offset = 12; // (x, y, z) * 4 = 12 bytes
-    textureVertexAttributes[1].format = SCE_GXM_ATTRIBUTE_FORMAT_F32;
-    textureVertexAttributes[1].componentCount = 2; // (u, v)
-    textureVertexAttributes[1].regIndex = sceGxmProgramParameterGetResourceIndex(paramTextureTexcoordAttribute);
-    // 16 bit (short) indices
-    textureVertexStreams[0].stride = sizeof(texture_vertex);
-    textureVertexStreams[0].indexSource = SCE_GXM_INDEX_SOURCE_INDEX_16BIT;
+    {
+        const SceGxmProgramParameter *paramTexturePositionAttribute = sceGxmProgramFindParameterByName(textureVertexProgramGxp, "aPosition");
+        const SceGxmProgramParameter *paramTextureTexcoordAttribute = sceGxmProgramFindParameterByName(textureVertexProgramGxp, "aTexcoord");
 
-    // create texture shaders
-    err = sceGxmShaderPatcherCreateVertexProgram(
-        data->shaderPatcher,
-        data->textureVertexProgramId,
-        textureVertexAttributes,
-        2,
-        textureVertexStreams,
-        1,
-        &data->textureVertexProgram
-    );
-    if (err != SCE_OK) {
-        SDL_LogError(SDL_LOG_CATEGORY_RENDER, "create program (texture vertex) failed: %d\n", err);
-        return err;
+        // create texture vertex format
+        SceGxmVertexAttribute textureVertexAttributes[2];
+        SceGxmVertexStream textureVertexStreams[1];
+        /* x,y,z: 3 float 32 bits */
+        textureVertexAttributes[0].streamIndex = 0;
+        textureVertexAttributes[0].offset = 0;
+        textureVertexAttributes[0].format = SCE_GXM_ATTRIBUTE_FORMAT_F32;
+        textureVertexAttributes[0].componentCount = 3; // (x, y, z)
+        textureVertexAttributes[0].regIndex = sceGxmProgramParameterGetResourceIndex(paramTexturePositionAttribute);
+        /* u,v: 2 floats 32 bits */
+        textureVertexAttributes[1].streamIndex = 0;
+        textureVertexAttributes[1].offset = 12; // (x, y, z) * 4 = 12 bytes
+        textureVertexAttributes[1].format = SCE_GXM_ATTRIBUTE_FORMAT_F32;
+        textureVertexAttributes[1].componentCount = 2; // (u, v)
+        textureVertexAttributes[1].regIndex = sceGxmProgramParameterGetResourceIndex(paramTextureTexcoordAttribute);
+        // 16 bit (short) indices
+        textureVertexStreams[0].stride = sizeof(texture_vertex);
+        textureVertexStreams[0].indexSource = SCE_GXM_INDEX_SOURCE_INDEX_16BIT;
+
+        // create texture shaders
+        err = sceGxmShaderPatcherCreateVertexProgram(
+            data->shaderPatcher,
+            data->textureVertexProgramId,
+            textureVertexAttributes,
+            2,
+            textureVertexStreams,
+            1,
+            &data->textureVertexProgram
+        );
+        if (err != SCE_OK) {
+            SDL_LogError(SDL_LOG_CATEGORY_RENDER, "create program (texture vertex) failed: %d\n", err);
+            return err;
+        }
+
     }
 
     // Create variations of the fragment program based on blending mode
@@ -849,12 +869,15 @@ gxm_init(SDL_Renderer *renderer)
     make_fragment_programs(data, &data->blendFragmentPrograms.blend_mode_mod, &blend_info_mod);
     make_fragment_programs(data, &data->blendFragmentPrograms.blend_mode_mul, &blend_info_mul);
 
-    // Default to blend blending mode
-    fragment_programs *in = &data->blendFragmentPrograms.blend_mode_blend;
+    {
+        // Default to blend blending mode
+        fragment_programs *in = &data->blendFragmentPrograms.blend_mode_blend;
 
-    data->colorFragmentProgram = in->color;
-    data->textureFragmentProgram = in->texture;
-    data->textureTintFragmentProgram = in->textureTint;
+        data->colorFragmentProgram = in->color;
+        data->textureFragmentProgram = in->texture;
+        data->textureTintFragmentProgram = in->textureTint;
+
+    }
 
     // find vertex uniforms by name and cache parameter information
     data->clearClearColorParam = (SceGxmProgramParameter *)sceGxmProgramFindParameterByName(clearFragmentProgramGxp, "uClearColor");
@@ -1019,15 +1042,18 @@ gxm_texture_get_datap(const gxm_texture *texture)
 gxm_texture *
 create_gxm_texture(VITA_GXM_RenderData *data, unsigned int w, unsigned int h, SceGxmTextureFormat format, unsigned int isRenderTarget)
 {
-    format = SCE_GXM_TEXTURE_FORMAT_A8B8G8R8;
     gxm_texture *texture = SDL_malloc(sizeof(gxm_texture));
+    const int tex_size =  ((w + 7) & ~ 7) * h * tex_format_to_bytespp(format);
+    void *texture_data;
+
+    format = SCE_GXM_TEXTURE_FORMAT_A8B8G8R8;
+
     if (!texture)
         return NULL;
 
-    const int tex_size =  ((w + 7) & ~ 7) * h * tex_format_to_bytespp(format);
 
     /* Allocate a GPU buffer for the texture */
-    void *texture_data = mem_gpu_alloc(
+    texture_data = mem_gpu_alloc(
         SCE_KERNEL_MEMBLOCK_TYPE_USER_CDRAM_RW,
         tex_size,
         SCE_GXM_TEXTURE_ALIGNMENT,
@@ -1070,6 +1096,11 @@ create_gxm_texture(VITA_GXM_RenderData *data, unsigned int w, unsigned int h, Sc
     }
 
     if (isRenderTarget) {
+        void *depthBufferData;
+        const uint32_t alignedWidth = ALIGN(w, SCE_GXM_TILE_SIZEX);
+        const uint32_t alignedHeight = ALIGN(h, SCE_GXM_TILE_SIZEY);
+        uint32_t sampleCount = alignedWidth*alignedHeight;
+        uint32_t depthStrideInSamples = alignedWidth;
 
         int err = sceGxmColorSurfaceInit(
             &texture->gxm_colorsurface,
@@ -1089,14 +1120,8 @@ create_gxm_texture(VITA_GXM_RenderData *data, unsigned int w, unsigned int h, Sc
             return NULL;
         }
 
-        // create the depth/stencil surface
-        const uint32_t alignedWidth = ALIGN(w, SCE_GXM_TILE_SIZEX);
-        const uint32_t alignedHeight = ALIGN(h, SCE_GXM_TILE_SIZEY);
-        uint32_t sampleCount = alignedWidth*alignedHeight;
-        uint32_t depthStrideInSamples = alignedWidth;
-
         // allocate it
-        void *depthBufferData = mem_gpu_alloc(
+        depthBufferData = mem_gpu_alloc(
             SCE_KERNEL_MEMBLOCK_TYPE_USER_RW_UNCACHE,
             4*sampleCount,
             SCE_GXM_DEPTHSTENCIL_SURFACE_ALIGNMENT,
@@ -1118,28 +1143,30 @@ create_gxm_texture(VITA_GXM_RenderData *data, unsigned int w, unsigned int h, Sc
             return NULL;
         }
 
-        SceGxmRenderTarget *tgt = NULL;
+        {
+            SceGxmRenderTarget *tgt = NULL;
 
-        // set up parameters
-        SceGxmRenderTargetParams renderTargetParams;
-        memset(&renderTargetParams, 0, sizeof(SceGxmRenderTargetParams));
-        renderTargetParams.flags = 0;
-        renderTargetParams.width = w;
-        renderTargetParams.height = h;
-        renderTargetParams.scenesPerFrame = 1;
-        renderTargetParams.multisampleMode = SCE_GXM_MULTISAMPLE_NONE;
-        renderTargetParams.multisampleLocations = 0;
-        renderTargetParams.driverMemBlock = -1;
+            // set up parameters
+            SceGxmRenderTargetParams renderTargetParams;
+            memset(&renderTargetParams, 0, sizeof(SceGxmRenderTargetParams));
+            renderTargetParams.flags = 0;
+            renderTargetParams.width = w;
+            renderTargetParams.height = h;
+            renderTargetParams.scenesPerFrame = 1;
+            renderTargetParams.multisampleMode = SCE_GXM_MULTISAMPLE_NONE;
+            renderTargetParams.multisampleLocations = 0;
+            renderTargetParams.driverMemBlock = -1;
 
-        // create the render target
-        err = sceGxmCreateRenderTarget(&renderTargetParams, &tgt);
+            // create the render target
+            err = sceGxmCreateRenderTarget(&renderTargetParams, &tgt);
 
-        texture->gxm_rendertarget = tgt;
+            texture->gxm_rendertarget = tgt;
 
-        if (err < 0) {
-            free_gxm_texture(texture);
-            SDL_LogError(SDL_LOG_CATEGORY_RENDER, "create render target failed: %d\n", err);
-            return NULL;
+            if (err < 0) {
+                free_gxm_texture(texture);
+                SDL_LogError(SDL_LOG_CATEGORY_RENDER, "create render target failed: %d\n", err);
+                return NULL;
+            }
         }
 
     }
