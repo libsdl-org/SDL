@@ -85,6 +85,8 @@ typedef struct SDL_VideoData
 {
     int devindex;               /* device index that was passed on creation */
     int drm_fd;                 /* DRM file desc */
+    char devpath[32];           /* DRM dev path. */
+
     struct gbm_device *gbm_dev;
 
     SDL_Window **windows;
@@ -117,6 +119,7 @@ typedef struct connector {
 typedef struct SDL_DisplayData
 {
     drmModeModeInfo mode;
+    drmModeModeInfo preferred_mode;
     uint32_t atomic_flags;
 
     plane *display_plane;
@@ -141,6 +144,14 @@ typedef struct SDL_DisplayData
     dumb_buffer *dumb_buffer;
 
     SDL_bool modeset_pending;
+    SDL_bool gbm_init;
+
+    /* DRM & GBM cursor stuff lives here, not in an SDL_Cursor's driverdata struct,
+       because setting/unsetting up these is done on window creation/destruction,
+       where we may not have an SDL_Cursor at all (so no SDL_Cursor driverdata).
+       There's only one cursor GBM BO because we only support one cursor. */
+    struct gbm_bo *cursor_bo;
+    uint64_t cursor_w, cursor_h;
 
 } SDL_DisplayData;
 
@@ -167,12 +178,9 @@ typedef struct SDL_WindowData
     int32_t output_h;
     int32_t output_x;
 
-    /* This is for deferred eglMakeCurrent() call: we can't call it until
-       the EGL context is available, but we need the EGL surface sooner. */
-    SDL_bool egl_context_pending;
-
     /* This dictates what approach we'll use for SwapBuffers. */
     int (*swap_window)(_THIS, SDL_Window * window);
+
 } SDL_WindowData;
 
 typedef struct SDL_DisplayModeData
