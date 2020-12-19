@@ -57,8 +57,6 @@
 
 #define KMSDRM_DRI_PATH "/dev/dri/"
 
-#define AMDGPU_COMPAT 1
-
 static int set_client_caps (int fd)
 {
     if (KMSDRM_drmSetClientCap(fd, DRM_CLIENT_CAP_ATOMIC, 1)) {
@@ -165,6 +163,8 @@ get_driindex(void)
 
     return -ENOENT;
 }
+
+#if 0
 
 /**********************/
 /* DUMB BUFFER Block. */
@@ -316,6 +316,8 @@ err:
 /***************************/
 /* DUMB BUFFER Block ends. */
 /***************************/
+
+#endif
 
 /*********************************/
 /* Atomic helper functions block */
@@ -1010,7 +1012,6 @@ int KMSDRM_DisplayDataInit (_THIS, SDL_DisplayData *dispdata) {
     dispdata->kms_fence = NULL;
     dispdata->gpu_fence = NULL;
     dispdata->kms_out_fence_fd = -1;
-    dispdata->dumb_buffer = NULL;
     dispdata->modeset_pending = SDL_FALSE;
     dispdata->gbm_init = SDL_FALSE;
 
@@ -1263,17 +1264,6 @@ KMSDRM_GBMInit (_THIS, SDL_DisplayData *dispdata)
     viddata->drm_fd = open(viddata->devpath, O_RDWR | O_CLOEXEC);
     set_client_caps(viddata->drm_fd);
 
-    /* Create aux dumb buffer. It's only useful to keep the PRIMARY PLANE occupied
-       when we destroy the GBM surface and it's KMS buffers, so not being able to
-       create it is not fatal. */
-    dispdata->dumb_buffer = KMSDRM_CreateBuffer(_this);
-    if (!dispdata->dumb_buffer) {
-        ret = SDL_SetError("can't create dumb buffer.");
-    } else {
-        /* Fill the dumb buffer with black pixels. */
-        KMSDRM_FillDumbBuffer(dispdata->dumb_buffer);
-    }
-
     /* Create the GBM device. */
     viddata->gbm_dev = KMSDRM_gbm_create_device(viddata->drm_fd);
     if (!viddata->gbm_dev) {
@@ -1296,96 +1286,8 @@ KMSDRM_GBMInit (_THIS, SDL_DisplayData *dispdata)
 void
 KMSDRM_GBMDeinit (_THIS, SDL_DisplayData *dispdata)
 {
-    KMSDRM_PlaneInfo plane_info = {0};
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
-    drmModeModeInfo mode;
 
-    uint32_t blob_id;
-
-    /*****************************************************************/
-    /*                                                               */
-    /* BLOCK to safely destroy the DUMB BUFFER.                      */
-    /*                                                               */
-    /* We come from DestroyWindow(), where both DestroySurfaces()    */
-    /* and this GBMDeinit() are called, one after another.           */
-    /* So the GBM/EGL surfaces and buffers of the windows have       */
-    /* already been destroyed already and, because of that, the      */
-    /* PRIMARY PLANE is using the DUMB BUFFER. BUT the DUMB BUFFER   */
-    /* we use to keep the PRIMARY PLANE occupied when we do          */
-    /* DestroySurfaces calls is going to be destroyed one way or     */
-    /* another when the program quits so, to prevent the the kernel  */
-    /* from disabling the CRTC when it detects the deletion of a     */
-    /* buffer that IS IN USE BY THE PRIMARY PLANE, we do one of      */
-    /* these:                                                        */
-    /*                                                               */
-    /* -In AMDGPU, where manually disabling the CRTC and             */
-    /*  disconnecting the CONNECTOR from the CRTC is an              */
-    /*  unrecoverable situation, we point the PRIMARY PLANE to       */ 
-    /*  the original TTY buffer (not guaranteed to be there for us!) */
-    /*  and then destroy the DUMB BUFFER).                           */
-    /*                                                               */
-    /* -In other drivers, we disconnect the CONNECTOR from the CRTC  */
-    /*  (remember: several connectors can read a CRTC), deactivate   */
-    /*  the CRTC, and set the PRIMARY PLANE props CRTC_ID and FB_ID  */
-    /*  to 0. Then we destroy the DUMB BUFFER.                       */
-    /*  We can leave all like this if we are exiting the program:    */
-    /*  FBCON or whatever will reconfigure things as it needs.       */
-    /*                                                               */
-    /*****************************************************************/
-
-    /* dispdata->crtc->crtc->mode is the original video mode that was
-       configured on the connector when we lauched the program,
-       dispdata->mode is the current video mode, which could be different,
-       and dispdata->preferred_mode is the native display mode. */
-    mode = dispdata->crtc->crtc->mode;
-
-#if AMDGPU_COMPAT
-    /* This won't work if the console wasn't correctly restored when a prevous
-       program exited, because in that case the TTY buffer won't be in
-       crtc->crtc->buffer_id, so the following atomic commit will fail. */
-    plane_info.plane = dispdata->display_plane;
-    plane_info.crtc_id = dispdata->crtc->crtc->crtc_id;
-    plane_info.fb_id = dispdata->crtc->crtc->buffer_id;
-    plane_info.src_w = mode.hdisplay;
-    plane_info.src_h = mode.vdisplay;
-    plane_info.crtc_w = mode.hdisplay;
-    plane_info.crtc_h = mode.vdisplay;
-
-    drm_atomic_set_plane_props(&plane_info);
-#else
-    add_connector_property(dispdata->atomic_req, dispdata->connector , "CRTC_ID", 0);
-    add_crtc_property(dispdata->atomic_req, dispdata->crtc , "ACTIVE", 0);
-
-    /* Since we initialize plane_info to all zeros,
-       ALL PRIMARY PLANE props are set to 0 with this,
-       including FB_ID and CRTC_ID.
-       Not all drivers like FB_ID and CRTC_ID to 0 yet. */
-    plane_info.plane = dispdata->display_plane;
-    drm_atomic_set_plane_props(&plane_info);
-#endif
-
-    /* Set the props that restore the original video mode. */
-    dispdata->atomic_flags |= DRM_MODE_ATOMIC_ALLOW_MODESET;
-    add_connector_property(dispdata->atomic_req, dispdata->connector, "CRTC_ID", dispdata->crtc->crtc->crtc_id);
-    KMSDRM_drmModeCreatePropertyBlob(viddata->drm_fd, &mode, sizeof(mode), &blob_id);
-    add_crtc_property(dispdata->atomic_req, dispdata->crtc, "MODE_ID", blob_id);
-    add_crtc_property(dispdata->atomic_req, dispdata->crtc, "ACTIVE", 1);
-
-    /* Issue blocking atomic commit. */    
-    if (drm_atomic_commit(_this, SDL_TRUE)) {
-        SDL_SetError("Failed to issue atomic commit on video quitting.");
-    }
-
-    /* Destroy the DUMB buffer if it exists, now that it's not being
-       used anymore by the PRIMARY PLANE. */
-    if (dispdata->dumb_buffer) {
-        KMSDRM_DestroyDumbBuffer(_this, &dispdata->dumb_buffer);
-    }
-
-    /*************************************************/
-    /* BLOCK to safely destroy the dumb buffer ENDS. */
-    /*************************************************/
-  
     /* Free display plane */
     free_plane(&dispdata->display_plane);
 
@@ -1425,12 +1327,13 @@ KMSDRM_DestroySurfaces(_THIS, SDL_Window *window)
 
     /********************************************************************/
     /* BLOCK 1: protect the PRIMARY PLANE before destroying the buffers */
-    /* it's using, by making it point to the dumb buffer.               */
+    /* it's using, by making it point to the original CRTC buffer,      */
+    /* where the TTY console should be.                                 */
     /********************************************************************/
 
     plane_info.plane = dispdata->display_plane;
     plane_info.crtc_id = dispdata->crtc->crtc->crtc_id;
-    plane_info.fb_id = dispdata->dumb_buffer->fb_id;
+    plane_info.fb_id = dispdata->crtc->crtc->buffer_id;
     plane_info.src_w = dispdata->mode.hdisplay;
     plane_info.src_h = dispdata->mode.vdisplay;
     plane_info.crtc_w = dispdata->mode.hdisplay;
@@ -1459,7 +1362,6 @@ KMSDRM_DestroySurfaces(_THIS, SDL_Window *window)
         KMSDRM_gbm_surface_release_buffer(windata->gs, windata->next_bo);
         windata->next_bo = NULL;
     }
-
 
     /***************************************************************************/
     /* Destroy the EGL surface.                                                */
@@ -1575,25 +1477,6 @@ KMSDRM_DestroyWindow(_THIS, SDL_Window *window)
             KMSDRM_GBMDeinit(_this, dispdata);
         } 
     }
-
-#if AMDGPU_COMPAT
-    /* Since vkDestroySurfaceKHR does not destroy the native surface (only the Vulkan one),
-       runnin Vulkan programs leave the last buffer connected to the primary plane,
-       at least on AMDGPU, and the TTY buffer isn't restored.
-       That's not a big problem, but running a GLES program after that will cause the
-       atomic commit we do for restoring the TTY buffer to fail, because the TTY buffer
-       isn't there when we launch the GLES program.
-       So what we do here is "hack" Vulkan and restore the TTY buffer here, as if
-       we were running a GLES program. We get here after the program's vkDestroySurfaceKHR
-       has been called, which allows us to think as if we were in the beginig
-       of a GLES program.
-       THIS IS DONE IN A SEPARATE BLOCK FOR POSSIBLE EASY FUTURE REMOVAL. DON'T OPTIMIZE. */
-
-    if (is_vulkan) {
-         KMSDRM_GBMInit(_this, dispdata);
-         KMSDRM_GBMDeinit(_this, dispdata);
-    }
-#endif
 
     /********************************************/
     /* Remove from the internal SDL window list */
