@@ -202,7 +202,17 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
 
     VkResult result;
     SDL_bool ret = SDL_FALSE;
+
+    /* We don't receive a display index in KMSDRM_CreateDevice(), only
+       a device index, which determines the GPU to use, but not the output.
+       So we simply use the first connected output (ie, the first connected
+       video output) for now.
+       In other words, change this index to select a different input. Easy! */
+    int display_index = 0;
+
     int i;
+
+    SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
 
     /* Get the function pointers for the functions we will use. */
     PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr =
@@ -278,11 +288,11 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
     /* A GPU (or physical_device, in vkcube terms) is a GPU. A machine with more
        than one video output doen't need to have more than one GPU, like the Pi4
        which has 1 GPU and 2 video outputs.
-       For now, just grab the first GPU/physical_device.
-       TODO Manage multiple GPUs? Maybe just use the first one supporting Vulkan? */
-    gpu = physical_devices[0]; 
+       We grab the GPU/physical_device with the index we got in KMSDR_CreateDevice(). */
+    gpu = physical_devices[viddata->devindex]; 
 
     /* A display is a video output. 1 GPU can have N displays.
+       Vulkan only counts the connected displays.
        Get the display count of the GPU. */
     vkGetPhysicalDeviceDisplayPropertiesKHR(gpu, &display_count, NULL);
     if (display_count == 0) {
@@ -298,19 +308,19 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
 
     /* Get the videomode count for the first display. */
     vkGetDisplayModePropertiesKHR(gpu,
-                                 displays_props[0].display,
+                                 displays_props[display_index].display,
                                  &mode_count, NULL);
 
     if (mode_count == 0) {
         SDL_SetError("Vulkan can't find any video modes for display %i (%s)\n", 0,
-                               displays_props[0].displayName);
+                               displays_props[display_index].displayName);
         goto clean;
     }
 
     /* Get the props of the videomodes for the first display. */
     modes_props = (VkDisplayModePropertiesKHR *) malloc(mode_count * sizeof(*modes_props));
     vkGetDisplayModePropertiesKHR(gpu,
-                                 displays_props[0].display,
+                                 displays_props[display_index].display,
                                  &mode_count, modes_props);
 
     /* Get the planes count of the physical device. */
@@ -349,7 +359,7 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
     display_mode_create_info.sType = VK_STRUCTURE_TYPE_DISPLAY_MODE_CREATE_INFO_KHR;
     display_mode_create_info.parameters = display_mode_props.parameters;
     result = vkCreateDisplayModeKHR(gpu,
-			      displays_props[0].display,
+			      displays_props[display_index].display,
 			      &display_mode_create_info,
 			      NULL, &display_mode);
     if (result != VK_SUCCESS) {
@@ -364,17 +374,17 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
     
     display_plane_surface_create_info.sType = VK_STRUCTURE_TYPE_DISPLAY_SURFACE_CREATE_INFO_KHR;
     display_plane_surface_create_info.displayMode = display_mode;
-    display_plane_surface_create_info.planeIndex = 0;  /* For now, simply use the first plane. */
+    /* For now, simply use the first plane. */
+    display_plane_surface_create_info.planeIndex = 0;
     display_plane_surface_create_info.imageExtent = image_size;
-
     result = vkCreateDisplayPlaneSurfaceKHR(instance,
                                      &display_plane_surface_create_info,
                                      NULL,
                                      surface);
-
     if(result != VK_SUCCESS)
     {
-        SDL_SetError("vkCreateKMSDRMSurfaceKHR failed: %s", SDL_Vulkan_GetResultString(result));
+        SDL_SetError("vkCreateKMSDRMSurfaceKHR failed: %s",
+            SDL_Vulkan_GetResultString(result));
         goto clean;
     }
 
