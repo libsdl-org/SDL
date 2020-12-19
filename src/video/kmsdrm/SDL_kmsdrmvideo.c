@@ -682,7 +682,9 @@ int drm_atomic_commit(_THIS, SDL_bool blocking)
     if (ret) {
         SDL_SetError("Atomic commit failed, returned %d.", ret);
         /* Uncomment this for fast-debugging */
+#if 0
         printf("ATOMIC COMMIT FAILED: %s.\n", strerror(errno));
+#endif
         goto out;
     }
 

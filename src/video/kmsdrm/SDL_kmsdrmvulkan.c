@@ -275,11 +275,15 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
     physical_devices = malloc(sizeof(VkPhysicalDevice) * gpu_count);
     vkEnumeratePhysicalDevices(instance, &gpu_count, physical_devices);
 
-    /* For now, just grab the first physical device (gpu = physical_device in vkcube example).*/
-    /* TODO What happens on video systems with multiple display ports like the Rpi4 ? */
+    /* A GPU (or physical_device, in vkcube terms) is a GPU. A machine with more
+       than one video output doen't need to have more than one GPU, like the Pi4
+       which has 1 GPU and 2 video outputs.
+       For now, just grab the first GPU/physical_device.
+       TODO Manage multiple GPUs? Maybe just use the first one supporting Vulkan? */
     gpu = physical_devices[0]; 
 
-    /* Get the display count of the phsysical device. */
+    /* A display is a video output. 1 GPU can have N displays.
+       Get the display count of the GPU. */
     vkGetPhysicalDeviceDisplayPropertiesKHR(gpu, &display_count, NULL);
     if (display_count == 0) {
         SDL_SetError("Vulkan can't find any displays.");
@@ -293,7 +297,6 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
                                            displays_props);
 
     /* Get the videomode count for the first display. */
-    /* TODO What happens on video systems with multiple display ports like the Rpi4 ? */
     vkGetDisplayModePropertiesKHR(gpu,
                                  displays_props[0].display,
                                  &mode_count, NULL);
@@ -311,7 +314,6 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
                                  &mode_count, modes_props);
 
     /* Get the planes count of the physical device. */
-    /* TODO: find out if we need other planes. */
     vkGetPhysicalDeviceDisplayPlanePropertiesKHR(gpu, &plane_count, NULL);
     if (plane_count == 0) {
         SDL_SetError("Vulkan can't find any planes.");
@@ -322,8 +324,8 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
     planes_props = malloc(sizeof(VkDisplayPlanePropertiesKHR) * plane_count);
     vkGetPhysicalDeviceDisplayPlanePropertiesKHR(gpu, &plane_count, planes_props);
 
-    /* Get a video mode matching the window size.
-       REMEMBER: We have to get a small enough videomode for the window size,
+    /* Get a video mode equal or smaller than the window size. REMEMBER:
+       We have to get a small enough videomode for the window size,
        because videomode determines how big the scanout region is and we can't
        scanout a region bigger than the window (we would be reading past the
        buffer, and Vulkan would give us a confusing VK_ERROR_SURFACE_LOST_KHR). */
