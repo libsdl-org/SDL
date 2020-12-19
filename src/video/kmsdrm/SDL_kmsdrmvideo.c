@@ -59,10 +59,13 @@
 
 #define AMDGPU_COMPAT 1
 
-static int check_atomic_modesetting (int fd)
+static int set_client_caps (int fd)
 {
     if (KMSDRM_drmSetClientCap(fd, DRM_CLIENT_CAP_ATOMIC, 1)) {
          return SDL_SetError("no atomic modesetting support.");
+    }
+    if (KMSDRM_drmSetClientCap(fd, DRM_CLIENT_CAP_UNIVERSAL_PLANES, 1)) {
+         return SDL_SetError("no universal planes support.");
     }
     return 0;
 }
@@ -81,7 +84,7 @@ check_modesetting(int devindex)
     drm_fd = open(device, O_RDWR | O_CLOEXEC);
     if (drm_fd >= 0) {
         if (SDL_KMSDRM_LoadSymbols()) {
-            drmModeRes *resources = (check_atomic_modesetting(drm_fd) < 0) ? NULL : KMSDRM_drmModeGetResources(drm_fd);
+            drmModeRes *resources = (set_client_caps(drm_fd) < 0) ? NULL : KMSDRM_drmModeGetResources(drm_fd);
             if (resources) {
                 SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "%scard%d connector, encoder and CRTC counts are: %d %d %d",
                              KMSDRM_DRI_PATH, devindex,
@@ -1029,28 +1032,13 @@ int KMSDRM_DisplayDataInit (_THIS, SDL_DisplayData *dispdata) {
 
     SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Opened DRM FD (%d)", viddata->drm_fd);
 
-    /* Try ATOMIC compatibility */
-    ret = check_atomic_modesetting(viddata->drm_fd);
-    if (ret) {
-        goto cleanup;
-    }
-
     /********************************************/
     /* Block for enabling ATOMIC compatibility. */
     /********************************************/
 
-    /* Set ATOMIC compatibility */
-    /* TODO: We have just tried ATOMIC compatibility, haven't we? */
-    ret = KMSDRM_drmSetClientCap(viddata->drm_fd, DRM_CLIENT_CAP_ATOMIC, 1);
+    /* Set ATOMIC & UNIVERSAL PLANES compatibility */
+    ret = set_client_caps(viddata->drm_fd);
     if (ret) {
-        ret = SDL_SetError("no atomic modesetting support.");
-        goto cleanup;
-    }
-
-    /* Set UNIVERSAL PLANES compatibility */
-    ret = KMSDRM_drmSetClientCap(viddata->drm_fd, DRM_CLIENT_CAP_UNIVERSAL_PLANES, 1);
-    if (ret) {
-        ret = SDL_SetError("no universal planes support.");
         goto cleanup;
     }
 
@@ -1273,8 +1261,7 @@ KMSDRM_GBMInit (_THIS, SDL_DisplayData *dispdata)
 
     /* Reopen the FD! */
     viddata->drm_fd = open(viddata->devpath, O_RDWR | O_CLOEXEC);
-    KMSDRM_drmSetClientCap(viddata->drm_fd, DRM_CLIENT_CAP_ATOMIC, 1);
-    KMSDRM_drmSetClientCap(viddata->drm_fd, DRM_CLIENT_CAP_UNIVERSAL_PLANES, 1);
+    set_client_caps(viddata->drm_fd);
 
     /* Create aux dumb buffer. It's only useful to keep the PRIMARY PLANE occupied
        when we destroy the GBM surface and it's KMS buffers, so not being able to
