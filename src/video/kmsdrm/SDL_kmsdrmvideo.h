@@ -39,42 +39,6 @@
 #include <EGL/eglext.h>
 #endif
 
-/* Headers related to dumb buffer creation. */
-#include <drm_fourcc.h>
-#include <sys/mman.h>
-
-/**********************/
-/* DUMB BUFFER Block. */
-/**********************/
-
-typedef struct dumb_buffer {
-      
-    /* The GEM handle for this buffer, returned by the creation ioctl. */
-    uint32_t gem_handles[4];
-
-    /* The framebuffer ID which is passed to KMS to display. */
-    uint32_t fb_id;
-
-    uint32_t format;
-    uint64_t modifier;
-
-    /* Parameters for our memory-mapped image. */
-    struct {
-        uint32_t *mem;
-        unsigned int size;
-    } dumb;
-
-    unsigned int width;
-    unsigned int height;
-    unsigned int pitches[4]; /* in bytes */
-    unsigned int offsets[4]; /* in bytes */
-
-} dumb_buffer;
-
-/***************************/
-/* DUMB BUFFER Block ends. */
-/***************************/
-
 /****************************************************************************************/
 /* Driverdata pointers are void struct* used to store backend-specific variables        */
 /* and info that supports the SDL-side structs like SDL Display Devices, SDL_Windows... */
@@ -140,8 +104,6 @@ typedef struct SDL_DisplayData
 #if SDL_VIDEO_OPENGL_EGL
     EGLSurface old_egl_surface;
 #endif
-
-    dumb_buffer *dumb_buffer;
 
     SDL_bool modeset_pending;
     SDL_bool gbm_init;
