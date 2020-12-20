@@ -24036,7 +24036,7 @@ $as_echo "#define SDL_LOADSO_DLOPEN 1" >>confdefs.h
 CheckUSBHID()
 {
     case "$host" in
-        *-*-*bsd*)
+        *-*-*bsd*|*-*-dragonfly*)
             if test x$enable_joystick = xyes; then
                 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for hid_init in -lusbhid" >&5
 $as_echo_n "checking for hid_init in -lusbhid... " >&6; }
@@ -24161,8 +24161,8 @@ $as_echo_n "checking for usbhid... " >&6; }
                   #include <usb.h>
                   #endif
                   #ifdef __DragonFly__
-                  # include <bus/usb/usb.h>
-                  # include <bus/usb/usbhid.h>
+                  # include <bus/u4b/usb.h>
+                  # include <bus/u4b/usbhid.h>
                   #else
                   # include <dev/usb/usb.h>
                   # include <dev/usb/usbhid.h>
@@ -24208,8 +24208,8 @@ $as_echo_n "checking for ucr_data member of usb_ctl_report... " >&6; }
                       #include <usb.h>
                       #endif
                       #ifdef __DragonFly__
-                      # include <bus/usb/usb.h>
-                      # include <bus/usb/usbhid.h>
+                      # include <bus/u4b/usb.h>
+                      # include <bus/u4b/usbhid.h>
                       #else
                       # include <dev/usb/usb.h>
                       # include <dev/usb/usbhid.h>
@@ -24256,8 +24256,8 @@ $as_echo_n "checking for new usbhid API... " >&6; }
                       #include <usb.h>
                       #endif
                       #ifdef __DragonFly__
-                      #include <bus/usb/usb.h>
-                      #include <bus/usb/usbhid.h>
+                      #include <bus/u4b/usb.h>
+                      #include <bus/u4b/usbhid.h>
                       #else
                       #include <dev/usb/usb.h>
                       #include <dev/usb/usbhid.h>

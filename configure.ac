@@ -3198,7 +3198,7 @@ dnl Check for the usbhid(3) library on *BSD
 CheckUSBHID()
 {
     case "$host" in
-        *-*-*bsd*)
+        *-*-*bsd*|*-*-dragonfly*)
             if test x$enable_joystick = xyes; then
                 AC_CHECK_LIB(usbhid, hid_init, have_libusbhid=yes)
                 if test x$have_libusbhid = xyes; then
@@ -3222,8 +3222,8 @@ CheckUSBHID()
                   #include <usb.h>
                   #endif
                   #ifdef __DragonFly__
-                  # include <bus/usb/usb.h>
-                  # include <bus/usb/usbhid.h>
+                  # include <bus/u4b/usb.h>
+                  # include <bus/u4b/usbhid.h>
                   #else
                   # include <dev/usb/usb.h>
                   # include <dev/usb/usbhid.h>
@@ -3253,8 +3253,8 @@ CheckUSBHID()
                       #include <usb.h>
                       #endif
                       #ifdef __DragonFly__
-                      # include <bus/usb/usb.h>
-                      # include <bus/usb/usbhid.h>
+                      # include <bus/u4b/usb.h>
+                      # include <bus/u4b/usbhid.h>
                       #else
                       # include <dev/usb/usb.h>
                       # include <dev/usb/usbhid.h>
@@ -3285,8 +3285,8 @@ CheckUSBHID()
                       #include <usb.h>
                       #endif
                       #ifdef __DragonFly__
-                      #include <bus/usb/usb.h>
-                      #include <bus/usb/usbhid.h>
+                      #include <bus/u4b/usb.h>
+                      #include <bus/u4b/usbhid.h>
                       #else
                       #include <dev/usb/usb.h>
                       #include <dev/usb/usbhid.h>
