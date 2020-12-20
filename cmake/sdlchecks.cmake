@@ -973,8 +973,8 @@ macro(CheckUSBHID)
         #include <usb.h>
         #endif
         #ifdef __DragonFly__
-        # include <bus/usb/usb.h>
-        # include <bus/usb/usbhid.h>
+        # include <bus/u4b/usb.h>
+        # include <bus/u4b/usbhid.h>
         #else
         # include <dev/usb/usb.h>
         # include <dev/usb/usbhid.h>
@@ -999,8 +999,8 @@ macro(CheckUSBHID)
           #include <usb.h>
           #endif
           #ifdef __DragonFly__
-          # include <bus/usb/usb.h>
-          # include <bus/usb/usbhid.h>
+          # include <bus/u4b/usb.h>
+          # include <bus/u4b/usbhid.h>
           #else
           # include <dev/usb/usb.h>
           # include <dev/usb/usbhid.h>
@@ -1027,8 +1027,8 @@ macro(CheckUSBHID)
           #include <usb.h>
           #endif
           #ifdef __DragonFly__
-          #include <bus/usb/usb.h>
-          #include <bus/usb/usbhid.h>
+          #include <bus/u4b/usb.h>
+          #include <bus/u4b/usbhid.h>
           #else
           #include <dev/usb/usb.h>
           #include <dev/usb/usbhid.h>
