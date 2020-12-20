@@ -325,7 +325,7 @@ distclean: clean
 	rm -f config.status config.cache config.log
 	rm -rf $(srcdir)/autom4te*
 
-
+ifneq ($(srcdir), .)
 %.bmp: $(srcdir)/%.bmp
 	cp $< $@
 
@@ -334,6 +334,7 @@ distclean: clean
 
 %.dat: $(srcdir)/%.dat
 	cp $< $@
+endif
 
 copydatafiles: copybmpfiles copywavfiles copydatfiles
 .PHONY : copydatafiles
