@@ -106,6 +106,9 @@ KMSDRM_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y)
     KMSDRM_CursorData *curdata;
     SDL_Cursor *cursor, *ret;
 
+    curdata = NULL;
+    ret = NULL;
+
     /* All code below assumes ARGB8888 format for the cursor surface,
        like other backends do. Also, the GBM BO pixels have to be
        alpha-premultiplied, but the SDL surface we receive has
@@ -116,13 +119,11 @@ KMSDRM_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y)
     cursor = (SDL_Cursor *) SDL_calloc(1, sizeof(*cursor));
     if (!cursor) {
         SDL_OutOfMemory();
-        ret = NULL;
         goto cleanup;
     }
     curdata = (KMSDRM_CursorData *) SDL_calloc(1, sizeof(*curdata));
     if (!curdata) {
         SDL_OutOfMemory();
-        ret = NULL;
         goto cleanup;
     }
 
@@ -164,14 +165,14 @@ KMSDRM_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y)
 
 cleanup:
     if (ret == NULL) {
-	if (curdata->buffer) {
-	    SDL_free(curdata->buffer);
+	if (curdata) {
+	    if (curdata->buffer) {
+		SDL_free(curdata->buffer);
+	    }
+	    SDL_free(curdata);
 	}
 	if (cursor) {
 	    SDL_free(cursor);
-	}
-	if (curdata) {
-	    SDL_free(curdata);
 	}
     }
 
