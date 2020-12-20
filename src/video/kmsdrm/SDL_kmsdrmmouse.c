@@ -98,20 +98,13 @@ KMSDRM_CreateDefaultCursor(void)
     return SDL_CreateCursor(default_cdata, default_cmask, DEFAULT_CWIDTH, DEFAULT_CHEIGHT, DEFAULT_CHOTX, DEFAULT_CHOTY);
 }
 
-/* This simply copies over the cursor bitmap from the SDLSurface we receive to the
-   cursor GBM BO. Setting up the cursor plane, creating the cursor FB BO, etc.. is
-   done in KMSDRM_InitMouse(): when we get here. everything must be ready. */
+/* This simply gets the cursor soft-buffer ready. We don't copy it to a GBO BO until ShowCursor()
+   because the cusor GBM BO (living in dispata) is destroyed and recreated when we recreate windows, etc. */
 static SDL_Cursor *
 KMSDRM_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y)
 {
-    SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
     KMSDRM_CursorData *curdata;
-    SDL_Cursor *cursor;
-
-    uint32_t bo_stride, pixel;
-    uint32_t *buffer = NULL;
-    size_t bufsize;
-    unsigned int i, j;
+    SDL_Cursor *cursor, *ret;
 
     /* All code below assumes ARGB8888 format for the cursor surface,
        like other backends do. Also, the GBM BO pixels have to be
@@ -123,30 +116,30 @@ KMSDRM_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y)
     cursor = (SDL_Cursor *) SDL_calloc(1, sizeof(*cursor));
     if (!cursor) {
         SDL_OutOfMemory();
-        return NULL;
+        ret = NULL;
+        goto cleanup;
     }
     curdata = (KMSDRM_CursorData *) SDL_calloc(1, sizeof(*curdata));
     if (!curdata) {
         SDL_OutOfMemory();
-        SDL_free(cursor);
-        return NULL;
+        ret = NULL;
+        goto cleanup;
     }
 
     /* hox_x and hot_y are the coordinates of the "tip of the cursor" from it's base. */
     curdata->hot_x = hot_x;
     curdata->hot_y = hot_y;
-    curdata->w = dispdata->cursor_w;
-    curdata->h = dispdata->cursor_h;
+    curdata->w = surface->w;
+    curdata->h = surface->h;
+    curdata->buffer = NULL;
 
-    bo_stride = KMSDRM_gbm_bo_get_stride(dispdata->cursor_bo);
-    bufsize = bo_stride * curdata->h;
+    /* Configure the cursor buffer info.
+       This buffer has the original size of the cursor surface we are given. */
+    curdata->buffer_pitch = surface->pitch;
+    curdata->buffer_size = surface->pitch * surface->h;
+    curdata->buffer = (uint32_t*)SDL_malloc(curdata->buffer_size);
 
-    /* Always use a temp buffer: it serves the purpose of storing the
-       alpha-premultiplied pixels (so we can copy them to the gbm BO
-       with a single gb_bo_write() call), and also copying from the
-       SDL surface, line by line, to a gbm BO with different pitch. */
-    buffer = (uint32_t*)SDL_malloc(bufsize);
-    if (!buffer) {
+    if (!curdata->buffer) {
         SDL_OutOfMemory();
         goto cleanup;
     }
@@ -158,47 +151,31 @@ KMSDRM_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y)
         }
     }
 
-    /* Clean the whole temporary buffer. */
-    SDL_memset(buffer, 0x00, bo_stride * curdata->h);
-
-    /* Copy from SDL surface to buffer, pre-multiplying by alpha each pixel as we go. */
-    for (i = 0; i < surface->h; i++) {
-        for (j = 0; j < surface->w; j++) {
-            pixel = ((uint32_t*)surface->pixels)[i * surface->w + j];
-            alpha_premultiply_ARGB8888 (&pixel);
-            SDL_memcpy(buffer + (i * curdata->w)  + j, &pixel, 4);
-        }
-    }
+    /* Copy the surface pixels to the cursor buffer, for future use in ShowCursor() */
+    SDL_memcpy(curdata->buffer, surface->pixels, curdata->buffer_size);
 
     if (SDL_MUSTLOCK(surface)) {
         SDL_UnlockSurface(surface);
     }
 
-    if (KMSDRM_gbm_bo_write(dispdata->cursor_bo, buffer, bufsize)) {
-        SDL_SetError("Could not write to GBM cursor BO");
-        goto cleanup;
-    }
-
-    /* Free temporary buffer */
-    SDL_free(buffer);
-    buffer = NULL;
-
     cursor->driverdata = curdata;
 
-    return cursor;
+    ret = cursor;
 
 cleanup:
-    if (buffer) {
-        SDL_free(buffer);
-    }
-    if (cursor) {
-        SDL_free(cursor);
-    }
-    if (curdata) {
-        SDL_free(curdata);
+    if (ret == NULL) {
+	if (curdata->buffer) {
+	    SDL_free(curdata->buffer);
+	}
+	if (cursor) {
+	    SDL_free(cursor);
+	}
+	if (curdata) {
+	    SDL_free(curdata);
+	}
     }
 
-    return NULL;
+    return ret;
 }
 
 /* Show the specified cursor, or hide if cursor is NULL.
@@ -217,6 +194,14 @@ KMSDRM_ShowCursor(SDL_Cursor * cursor)
     SDL_DisplayData *dispdata = NULL;
     KMSDRM_FBInfo *fb;
     KMSDRM_PlaneInfo info = {0};
+
+    size_t bo_stride;
+    size_t bufsize;
+    uint32_t *ready_buffer = NULL;
+    uint32_t pixel;
+
+    int i,j;
+    int ret;
 
     mouse = SDL_GetMouse();
     if (!mouse) {
@@ -268,8 +253,39 @@ KMSDRM_ShowCursor(SDL_Cursor * cursor)
         return SDL_SetError("Cursor not initialized properly.");
     }
 
+    /* Prepare a buffer we can dump to our GBM BO (different size, alpha premultiplication...) */
+    bo_stride = KMSDRM_gbm_bo_get_stride(dispdata->cursor_bo);
+    bufsize = bo_stride * curdata->h;
+
+    ready_buffer = (uint32_t*)SDL_malloc(bufsize);
+    if (!ready_buffer) {
+        ret = SDL_OutOfMemory();
+        goto cleanup;
+    }
+
+    /* Clean the whole buffer we are preparing. */
+    SDL_memset(ready_buffer, 0x00, bo_stride * curdata->h);
+
+    /* Copy from the cursor buffer to a buffer that we can dump to the GBM BO,
+       pre-multiplying by alpha each pixel as we go. */
+    for (i = 0; i < curdata->h; i++) {
+        for (j = 0; j < curdata->w; j++) {
+            pixel = ((uint32_t*)curdata->buffer)[i * curdata->w + j];
+            alpha_premultiply_ARGB8888 (&pixel);
+            SDL_memcpy(ready_buffer + (i * dispdata->cursor_w) + j, &pixel, 4);
+        }
+    }
+
+    /* Dump the cursor buffer to our GBM BO. */
+    if (KMSDRM_gbm_bo_write(dispdata->cursor_bo, ready_buffer, bufsize)) {
+        ret = SDL_SetError("Could not write to GBM cursor BO");
+        goto cleanup;
+    }
+
+    /* Get the fb_id for the GBM BO so we can show it on the cursor plane. */
     fb = KMSDRM_FBFromBO(video_device, dispdata->cursor_bo);
 
+    /* Show the GBM BO buffer on the cursor plane. */
     info.plane = dispdata->cursor_plane;
     info.crtc_id = dispdata->crtc->crtc->crtc_id;
     info.fb_id = fb->fb_id; 
@@ -283,10 +299,18 @@ KMSDRM_ShowCursor(SDL_Cursor * cursor)
     drm_atomic_set_plane_props(&info);
 
     if (drm_atomic_commit(display->device, SDL_TRUE)) {
-        return SDL_SetError("Failed atomic commit in KMSDRM_ShowCursor.");
+        ret = SDL_SetError("Failed atomic commit in KMSDRM_ShowCursor.");
+        goto cleanup;
     }
 
-    return 0;
+    ret = 0;
+
+cleanup:
+
+    if (ready_buffer) {
+        SDL_free(ready_buffer);
+    }
+    return ret;
 }
 
 /* We have destroyed the cursor by now, in KMSDRM_DestroyCursor.
@@ -294,9 +318,20 @@ KMSDRM_ShowCursor(SDL_Cursor * cursor)
 static void
 KMSDRM_FreeCursor(SDL_Cursor * cursor)
 {
+    KMSDRM_CursorData *curdata;
+
     /* Even if the cursor is not ours, free it. */
     if (cursor) {
-        SDL_free(cursor->driverdata);
+        curdata = (KMSDRM_CursorData *) cursor->driverdata;
+        /* Free cursor buffer */
+        if (curdata->buffer) {
+            SDL_free(curdata->buffer);
+            curdata->buffer = NULL;
+        }
+        /* Free cursor itself */
+        if (cursor->driverdata) {
+            SDL_free(cursor->driverdata);
+        }
         SDL_free(cursor);
     }
 }

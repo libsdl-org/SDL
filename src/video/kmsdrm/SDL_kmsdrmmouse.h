@@ -36,6 +36,12 @@ typedef struct _KMSDRM_CursorData
     uint16_t       hot_x, hot_y;
     uint16_t       w, h;
 
+    /* The buffer where we store the mouse bitmap ready to be used.
+       We get it ready and filled in CreateCursor(), and copy it to a GBM BO in ShowCursor().*/     
+    uint32_t *buffer;
+    size_t buffer_size;
+    size_t buffer_pitch;
+
 } KMSDRM_CursorData;
 
 extern void KMSDRM_InitMouse(_THIS);
