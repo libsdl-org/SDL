@@ -54,9 +54,6 @@
 #include <sys/param.h>
 #include <sys/sysctl.h> /* For AltiVec check */
 #include <machine/cpu.h>
-#if defined(HAVE_ELF_AUX_INFO)
-#include <sys/auxv.h>
-#endif
 #elif SDL_ALTIVEC_BLITTERS && HAVE_SETJMP
 #include <signal.h>
 #include <setjmp.h>
@@ -92,6 +89,10 @@
 #if __ARM_ARCH < 8
 #include <cpu-features.h>
 #endif
+#endif
+
+#if defined(HAVE_ELF_AUX_INFO)
+#include <sys/auxv.h>
 #endif
 
 #ifdef __RISCOS__
@@ -465,7 +466,7 @@ CPU_haveNEON(void)
     return 0;  /* assume anything else from Apple doesn't have NEON. */
 #elif defined(__OpenBSD__)
     return 1;  /* OpenBSD only supports ARMv7 CPUs that have NEON. */
-#elif defined(HAVE_ELF_AUX_INFO)
+#elif defined(HAVE_ELF_AUX_INFO) && defined(HWCAP_NEON)
     unsigned long hasneon = 0;
     if (elf_aux_info(AT_HWCAP, (void *)&hasneon, (int)sizeof(hasneon)) != 0)
         return 0;
@@ -494,7 +495,7 @@ CPU_haveNEON(void)
     /* Use the VFPSupport_Features SWI to access the MVFR registers */
     {
         _kernel_swi_regs regs;
-	regs.r[0] = 0;
+        regs.r[0] = 0;
         if (_kernel_swi(VFPSupport_Features, &regs, &regs) == NULL) {
             if ((regs.r[2] & 0xFFF000) == 0x111000) {
                 return 1;
