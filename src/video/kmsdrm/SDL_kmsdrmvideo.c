@@ -1467,13 +1467,12 @@ KMSDRM_DestroyWindow(_THIS, SDL_Window *window)
 
         KMSDRM_DestroySurfaces(_this, window);
 
-        KMSDRM_DeinitMouse(_this);
- 
         if (_this->egl_data) {
 	    SDL_EGL_UnloadLibrary(_this);
         }
 
         if (dispdata->gbm_init) {
+            KMSDRM_DeinitMouse(_this);
             KMSDRM_GBMDeinit(_this, dispdata);
         } 
     }
@@ -1749,8 +1748,8 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
              SDL_EGL_LoadLibrary(_this, NULL, egl_display, EGL_PLATFORM_GBM_MESA);
          }
 
-         /* Can't init mouse sooner because planes are not ready. */
-         // TODO Add a mouse_init bool and use it to avoid double intializations.
+         /* Can't init mouse sooner because planes are not ready.
+            We do it along with the KMSDRM_GBMInit() call, so do this only when GBM is not init. */
          KMSDRM_InitMouse(_this);
     }
 
