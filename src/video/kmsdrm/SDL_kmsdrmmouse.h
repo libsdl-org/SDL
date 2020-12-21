@@ -47,6 +47,8 @@ typedef struct _KMSDRM_CursorData
 extern void KMSDRM_InitMouse(_THIS);
 extern void KMSDRM_DeinitMouse(_THIS);
 
+extern void KMSDRM_InitCursor();
+
 #endif /* SDL_KMSDRM_mouse_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */
