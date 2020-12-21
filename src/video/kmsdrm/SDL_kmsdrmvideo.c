@@ -605,7 +605,7 @@ setup_plane(_THIS, struct plane **plane, uint32_t plane_type)
 
 cleanup:
 
-    if (ret != 0) {
+    if (ret) {
         if (*plane) {
             SDL_free(*plane);
             *plane = NULL;
@@ -1221,16 +1221,23 @@ int KMSDRM_DisplayDataInit (_THIS, SDL_DisplayData *dispdata) {
     viddata->drm_fd = -1;
 
 cleanup:
-    // TODO Use it as a list to see if everything we use here is freed.
     if (encoder)
         KMSDRM_drmModeFreeEncoder(encoder);
     if (resources)
         KMSDRM_drmModeFreeResources(resources);
-    if (ret != 0) {
+    if (ret) {
         /* Error (complete) cleanup */
         if (dispdata->connector->connector) {
             KMSDRM_drmModeFreeConnector(dispdata->connector->connector);
             dispdata->connector->connector = NULL;
+        }
+        if (dispdata->crtc->props_info) {
+            SDL_free(dispdata->crtc->props_info); 
+            dispdata->crtc->props_info = NULL;
+        }
+        if (dispdata->connector->props_info) {
+            SDL_free(dispdata->connector->props_info); 
+            dispdata->connector->props_info = NULL;
         }
         if (dispdata->crtc->crtc) {
             KMSDRM_drmModeFreeCrtc(dispdata->crtc->crtc);
@@ -1240,7 +1247,6 @@ cleanup:
             close(viddata->drm_fd);
             viddata->drm_fd = -1;
         }
-        SDL_free(dispdata);
     }
 
     return ret;
@@ -1403,10 +1409,7 @@ KMSDRM_CreateSurfaces(_THIS, SDL_Window * window)
 
     EGLContext egl_context; 
 
-    /* Destroy the surfaces and buffers before creating the new ones. */
-    // TODO REENABLE THIS IF CGENIUS FAILS BECAUSE IT CREATES A NEW WINDOW
-    // W/O DESTRYING THE PREVIOUS ONE.
-    //KMSDRM_DestroySurfaces(_this, window);
+    int ret = 0;
 
     if (((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN_DESKTOP) ||
        ((window->flags & SDL_WINDOW_FULLSCREEN) == SDL_WINDOW_FULLSCREEN)) {
@@ -1428,7 +1431,7 @@ KMSDRM_CreateSurfaces(_THIS, SDL_Window * window)
         return SDL_SetError("Could not create GBM surface");
     }
 
-#if SDL_VIDEO_OPENGL_EGL //TODO Restore this lo LibraryLoad and Unload calls.
+#if SDL_VIDEO_OPENGL_EGL
     /* We can't get the EGL context yet because SDL_CreateRenderer has not been called,
        but we need an EGL surface NOW, or GL won't be able to render into any surface
        and we won't see the first frame. */ 
@@ -1436,18 +1439,28 @@ KMSDRM_CreateSurfaces(_THIS, SDL_Window * window)
     windata->egl_surface = SDL_EGL_CreateSurface(_this, (NativeWindowType)windata->gs);
 
     if (windata->egl_surface == EGL_NO_SURFACE) {
-        return SDL_SetError("Could not create EGL window surface");
+        ret = SDL_SetError("Could not create EGL window surface");
+        goto cleanup;    
     }
 
     /* Current context passing to EGL is now done here. If something fails,
        go back to delayed SDL_EGL_MakeCurrent() call in SwapWindow. */
-    /* TODO Errorcheck on this (may lead to delayed call again...) */
     egl_context = (EGLContext)SDL_GL_GetCurrentContext();
-    SDL_EGL_MakeCurrent(_this, windata->egl_surface, egl_context);
+    ret = SDL_EGL_MakeCurrent(_this, windata->egl_surface, egl_context);
 
 #endif
 
-    return 0;
+cleanup:
+
+    if (ret) {
+        /* Error (complete) cleanup. */
+        if (windata->gs) {
+	    KMSDRM_gbm_surface_destroy(windata->gs);
+	    windata->gs = NULL;
+        }
+    }
+
+    return ret;
 }
 
 void
@@ -1464,13 +1477,12 @@ KMSDRM_DestroyWindow(_THIS, SDL_Window *window)
     }
 
     if (!is_vulkan) {
-
         KMSDRM_DestroySurfaces(_this, window);
-
+#if SDL_VIDEO_OPENGL_EGL
         if (_this->egl_data) {
 	    SDL_EGL_UnloadLibrary(_this);
         }
-
+#endif
         if (dispdata->gbm_init) {
             KMSDRM_DeinitMouse(_this);
             KMSDRM_GBMDeinit(_this, dispdata);
@@ -1604,6 +1616,7 @@ KMSDRM_VideoInit(_THIS)
 cleanup:
 
     if (ret) {
+        /* Error (complete) cleanup */
 	if (dispdata->display_plane) {
 	    SDL_free(dispdata->display_plane);
 	}
@@ -1613,6 +1626,8 @@ cleanup:
 	if (dispdata->connector) {
 	    SDL_free(dispdata->connector);
 	}
+        
+        SDL_free(dispdata);
     }
 
     return ret;
@@ -1728,27 +1743,32 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
     SDL_DisplayData *dispdata = display->driverdata;
     SDL_bool is_vulkan = window->flags & SDL_WINDOW_VULKAN; /* Is this a VK window? */
     NativeDisplayType egl_display;
-
     float ratio;
+    int ret = 0;
 
     if ( !(dispdata->gbm_init) && (!is_vulkan)) {
          /* Reopen FD, create gbm dev, setup display plane, etc,.
             but only when we come here for the first time,
             and only if it's not a VK window. */
-         KMSDRM_GBMInit(_this, dispdata);
+         if ((ret = KMSDRM_GBMInit(_this, dispdata))) {
+                 goto cleanup;
+         }
 
+#if SDL_VIDEO_OPENGL_EGL
          /* Manually load the EGL library. KMSDRM_EGL_LoadLibrary() has already
             been called by SDL_CreateWindow() but we don't do anything there,
             precisely to be able to load it here.
             If we let SDL_CreateWindow() load the lib, it will be loaded
             before we call KMSDRM_GBMInit(), causing GLES programs to fail. */
-         // TODO errorcheck the return value of this.
          if (!_this->egl_data) {
              egl_display = (NativeDisplayType)((SDL_VideoData *)_this->driverdata)->gbm_dev;
-             SDL_EGL_LoadLibrary(_this, NULL, egl_display, EGL_PLATFORM_GBM_MESA);
+             if ((ret = SDL_EGL_LoadLibrary(_this, NULL, egl_display, EGL_PLATFORM_GBM_MESA))) {
+                 goto cleanup;
+             }
          }
+#endif
 
-         /* Can't init mouse stuff sooner cursor plane is not ready. */
+         /* Can't init mouse stuff sooner because cursor plane is not ready. */
          KMSDRM_InitMouse(_this);
 
          /* Since we take cursor buffer way from the cursor plane and
@@ -1761,8 +1781,8 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
     /* Allocate window internal data */
     windata = (SDL_WindowData *)SDL_calloc(1, sizeof(SDL_WindowData));
     if (!windata) {
-        SDL_OutOfMemory();
-        goto error;
+        ret = SDL_OutOfMemory();
+        goto cleanup;
     }
 
     if (((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN_DESKTOP) ||
@@ -1773,9 +1793,7 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
         windata->output_w = dispdata->mode.hdisplay;
         windata->output_h = dispdata->mode.vdisplay;
         windata->output_x = 0;
-
     } else {
-
         /* Normal non-fullscreen windows are scaled using the CRTC,
            so get output (CRTC) size and position, for AR correction. */
         ratio = (float)window->w / (float)window->h;
@@ -1784,7 +1802,6 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
         windata->output_w = dispdata->mode.vdisplay * ratio;
         windata->output_h = dispdata->mode.vdisplay;
         windata->output_x = (dispdata->mode.hdisplay - windata->output_w) / 2;
-
     }
 
     /* Don't force fullscreen on all windows: it confuses programs that try
@@ -1796,8 +1813,8 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
     window->driverdata = windata;
 
     if (!is_vulkan) {
-        if (KMSDRM_CreateSurfaces(_this, window)) {
-            goto error;
+        if ((ret = KMSDRM_CreateSurfaces(_this, window))) {
+            goto cleanup;
         }
     }
 
@@ -1811,8 +1828,8 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
         viddata->max_windows = new_max_windows;
 
         if (!viddata->windows) {
-            SDL_OutOfMemory();
-            goto error;
+            ret = SDL_OutOfMemory();
+            goto cleanup;
         }
     }
 
@@ -1831,12 +1848,13 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
     /***********************************************************/
     SDL_SendWindowEvent(window, SDL_WINDOWEVENT_ENTER, 0, 0);
 
-    return 0;
+cleanup:
 
-error:
-    KMSDRM_DestroyWindow(_this, window);
-
-    return -1;
+    if (ret) {
+        /* Allocated windata will be freed in KMSDRM_DestroyWindow */
+        KMSDRM_DestroyWindow(_this, window);
+    }
+    return ret;
 }
 
 int
