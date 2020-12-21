@@ -179,6 +179,31 @@ cleanup:
     return ret;
 }
 
+/* When we create a window, we have to test if we have to show the cursor,
+   and explicily do so if necessary.
+   This is because when we destroy a window, we take the cursor away from the
+   cursor plane, and destroy the cusror GBM BO. So we have to re-show it,
+   so to say. */
+void
+KMSDRM_InitCursor()
+{
+    SDL_Mouse *mouse = NULL;
+    mouse = SDL_GetMouse();
+
+    if (!mouse) {
+        return;
+    }
+    if  (!(mouse->cur_cursor)) {
+        return;
+    }
+
+    if  (!(mouse->cursor_shown)) {
+        return;
+    }
+
+    KMSDRM_ShowCursor(mouse->cur_cursor);
+}
+
 /* Show the specified cursor, or hide if cursor is NULL.
    cur_cursor is the current cursor, and cursor is the new cursor.
    A cursor is displayed on a display, so we have to add a pointer to dispdata

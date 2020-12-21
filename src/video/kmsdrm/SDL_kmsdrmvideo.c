@@ -1748,9 +1748,14 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
              SDL_EGL_LoadLibrary(_this, NULL, egl_display, EGL_PLATFORM_GBM_MESA);
          }
 
-         /* Can't init mouse sooner because planes are not ready.
-            We do it along with the KMSDRM_GBMInit() call, so do this only when GBM is not init. */
+         /* Can't init mouse stuff sooner cursor plane is not ready. */
          KMSDRM_InitMouse(_this);
+
+         /* Since we take cursor buffer way from the cursor plane and
+            destroy the cursor GBM BO when we destroy a window, we must
+            also manually re-show the cursor on screen, if necessary,
+            when we create a window. */ 
+         KMSDRM_InitCursor();
     }
 
     /* Allocate window internal data */
