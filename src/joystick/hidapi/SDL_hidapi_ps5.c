@@ -205,9 +205,9 @@ SetLedsForPlayerIndex(DS5EffectsState_t *effects, int player_index)
         { 0x40, 0x00, 0x00 }, /* Red */
         { 0x00, 0x40, 0x00 }, /* Green */
         { 0x20, 0x00, 0x20 }, /* Pink */
-        { 0x02, 0x01, 0x00 }, /* Orange */
-        { 0x00, 0x01, 0x01 }, /* Teal */
-        { 0x01, 0x01, 0x01 }  /* White */
+        { 0x20, 0x10, 0x00 }, /* Orange */
+        { 0x00, 0x10, 0x10 }, /* Teal */
+        { 0x10, 0x10, 0x10 }  /* White */
     };
 
     if (player_index >= 0) {
@@ -219,6 +219,24 @@ SetLedsForPlayerIndex(DS5EffectsState_t *effects, int player_index)
     effects->ucLedRed = colors[player_index][0];
     effects->ucLedGreen = colors[player_index][1];
     effects->ucLedBlue = colors[player_index][2];
+}
+
+static void
+SetLightsForPlayerIndex(DS5EffectsState_t *effects, int player_index)
+{
+    static const Uint8 lights[] = {
+        0x04,
+        0x0A,
+        0x15,
+        0x1B
+    };
+
+    if (player_index >= 0 && player_index < SDL_arraysize(lights)) {
+        /* Bitmask, 0x1F enables all lights, 0x20 changes instantly instead of fade */
+        effects->ucPadLights = lights[player_index];
+    } else {
+        effects->ucPadLights = 0x00;
+    }
 }
 
 static SDL_bool
@@ -425,7 +443,7 @@ HIDAPI_DriverPS5_UpdateEffects(SDL_HIDAPI_Device *device, EDS5Effect effect)
     case k_EDS5EffectPadLights:
         effects->ucEnableBits2 |= 0x10; /* Enable touchpad lights */
 
-        effects->ucPadLights = 0x00;    /* Bitmask, 0x1F enables all lights, 0x20 changes instantly instead of fade */
+        SetLightsForPlayerIndex(effects, ctx->player_index);
         break;
     case k_EDS5EffectMicLight:
         effects->ucEnableBits2 |= 0x01; /* Enable microphone light */
@@ -498,6 +516,7 @@ HIDAPI_DriverPS5_SetEffectsSupported(SDL_HIDAPI_Device *device, SDL_Joystick *jo
     SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL);
 
     HIDAPI_DriverPS5_UpdateEffects(device, k_EDS5EffectLED);
+    HIDAPI_DriverPS5_UpdateEffects(device, k_EDS5EffectPadLights);
 }
 
 static void
@@ -513,6 +532,7 @@ HIDAPI_DriverPS5_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID 
 
     /* This will set the new LED state based on the new player index */
     HIDAPI_DriverPS5_UpdateEffects(device, k_EDS5EffectLED);
+    HIDAPI_DriverPS5_UpdateEffects(device, k_EDS5EffectPadLights);
 }
 
 static SDL_bool
