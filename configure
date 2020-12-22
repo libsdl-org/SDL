@@ -15866,6 +15866,7 @@ fi
 
 
 
+
 if test "x$ac_cv_env_PKG_CONFIG_set" != "xset"; then
 	if test -n "$ac_tool_prefix"; then
   # Extract the first word of "${ac_tool_prefix}pkg-config", so it can be a program name with args.
@@ -18181,7 +18182,6 @@ no_alsa=""
     alsa_min_micro_version=`echo $min_alsa_version | \
            sed 's/\([0-9]*\).\([0-9]*\).\([0-9]*\)/\3/'`
 
-
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
@@ -18375,8 +18375,8 @@ fi
     if test x$enable_audio = xyes -a x$enable_jack = xyes; then
 
 pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for JACK" >&5
-$as_echo_n "checking for JACK... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for jack >= 0.125" >&5
+$as_echo_n "checking for jack >= 0.125... " >&6; }
 
 if test -n "$JACK_CFLAGS"; then
     pkg_cv_JACK_CFLAGS="$JACK_CFLAGS"
@@ -18388,6 +18388,7 @@ if test -n "$JACK_CFLAGS"; then
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
   pkg_cv_JACK_CFLAGS=`$PKG_CONFIG --cflags "jack >= 0.125" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
 fi
@@ -18404,6 +18405,7 @@ if test -n "$JACK_LIBS"; then
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
   pkg_cv_JACK_LIBS=`$PKG_CONFIG --libs "jack >= 0.125" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
 fi
@@ -18414,7 +18416,7 @@ fi
 
 
 if test $pkg_failed = yes; then
-   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
 if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
@@ -18423,16 +18425,16 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        JACK_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "jack >= 0.125" 2>&1`
+	        JACK_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "jack >= 0.125" 2>&1`
         else
-	        JACK_PKG_ERRORS=`$PKG_CONFIG --print-errors "jack >= 0.125" 2>&1`
+	        JACK_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "jack >= 0.125" 2>&1`
         fi
 	# Put the nasty error message in config.log where it belongs
 	echo "$JACK_PKG_ERRORS" >&5
 
 	audio_jack=no
 elif test $pkg_failed = untried; then
-     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 	audio_jack=no
 else
@@ -18594,6 +18596,12 @@ $as_echo_n "checking for ESD - version >= $min_esd_version... " >&6; }
     esd_micro_version=`$ESD_CONFIG $esd_config_args --version | \
            sed 's/\([0-9]*\).\([0-9]*\).\([0-9]*\)/\3/'`
     if test "x$enable_esdtest" = "xyes" ; then
+      ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
       ac_save_CFLAGS="$CFLAGS"
       ac_save_LIBS="$LIBS"
       CFLAGS="$CFLAGS $ESD_CFLAGS"
@@ -18607,35 +18615,16 @@ else
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <esd.h>
 
-char*
-my_strdup (char *str)
-{
-  char *new_str;
-
-  if (str)
-    {
-      new_str = malloc ((strlen (str) + 1) * sizeof(char));
-      strcpy (new_str, str);
-    }
-  else
-    new_str = NULL;
-
-  return new_str;
-}
-
-int main ()
+int main (void)
 {
   int major, minor, micro;
-  char *tmp_version;
+  FILE *fp = fopen("conf.esdtest", "w");
 
-  system ("touch conf.esdtest");
+  if (fp) fclose(fp);
 
-  /* HP/UX 9 (%@#!) writes to sscanf strings */
-  tmp_version = my_strdup("$min_esd_version");
-  if (sscanf(tmp_version, "%d.%d.%d", &major, &minor, &micro) != 3) {
+  if (sscanf("$min_esd_version", "%d.%d.%d", &major, &minor, &micro) != 3) {
      printf("%s, bad version string\n", "$min_esd_version");
      exit(1);
    }
@@ -18658,7 +18647,6 @@ int main ()
     }
 }
 
-
 _ACEOF
 if ac_fn_c_try_run "$LINENO"; then :
 
@@ -18671,6 +18659,12 @@ fi
 
        CFLAGS="$ac_save_CFLAGS"
        LIBS="$ac_save_LIBS"
+       ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
      fi
   fi
   if test "x$no_esd" = x ; then
@@ -18692,6 +18686,12 @@ $as_echo "no" >&6; }
           echo "*** Could not run ESD test program, checking why..."
           CFLAGS="$CFLAGS $ESD_CFLAGS"
           LIBS="$LIBS $ESD_LIBS"
+          ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
           cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -18726,6 +18726,12 @@ rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
           CFLAGS="$ac_save_CFLAGS"
           LIBS="$ac_save_LIBS"
+          ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
        fi
      fi
      ESD_CFLAGS=""
@@ -18786,8 +18792,8 @@ fi
     if test x$enable_audio = xyes -a x$enable_pulseaudio = xyes; then
 
 pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for PULSEAUDIO" >&5
-$as_echo_n "checking for PULSEAUDIO... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for libpulse-simple >= 0.9" >&5
+$as_echo_n "checking for libpulse-simple >= 0.9... " >&6; }
 
 if test -n "$PULSEAUDIO_CFLAGS"; then
     pkg_cv_PULSEAUDIO_CFLAGS="$PULSEAUDIO_CFLAGS"
@@ -18799,6 +18805,7 @@ if test -n "$PULSEAUDIO_CFLAGS"; then
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
   pkg_cv_PULSEAUDIO_CFLAGS=`$PKG_CONFIG --cflags "libpulse-simple >= 0.9" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
 fi
@@ -18815,6 +18822,7 @@ if test -n "$PULSEAUDIO_LIBS"; then
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
   pkg_cv_PULSEAUDIO_LIBS=`$PKG_CONFIG --libs "libpulse-simple >= 0.9" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
 fi
@@ -18825,7 +18833,7 @@ fi
 
 
 if test $pkg_failed = yes; then
-   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
 if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
@@ -18834,16 +18842,16 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        PULSEAUDIO_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "libpulse-simple >= 0.9" 2>&1`
+	        PULSEAUDIO_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libpulse-simple >= 0.9" 2>&1`
         else
-	        PULSEAUDIO_PKG_ERRORS=`$PKG_CONFIG --print-errors "libpulse-simple >= 0.9" 2>&1`
+	        PULSEAUDIO_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libpulse-simple >= 0.9" 2>&1`
         fi
 	# Put the nasty error message in config.log where it belongs
 	echo "$PULSEAUDIO_PKG_ERRORS" >&5
 
 	audio_pulseaudio=no
 elif test $pkg_failed = untried; then
-     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 	audio_pulseaudio=no
 else
@@ -19257,8 +19265,8 @@ fi
     if test x$enable_audio = xyes -a x$enable_fusionsound = xyes; then
 
 pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for FUSIONSOUND" >&5
-$as_echo_n "checking for FUSIONSOUND... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for fusionsound >= 1.1.1" >&5
+$as_echo_n "checking for fusionsound >= 1.1.1... " >&6; }
 
 if test -n "$FUSIONSOUND_CFLAGS"; then
     pkg_cv_FUSIONSOUND_CFLAGS="$FUSIONSOUND_CFLAGS"
@@ -19270,6 +19278,7 @@ if test -n "$FUSIONSOUND_CFLAGS"; then
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
   pkg_cv_FUSIONSOUND_CFLAGS=`$PKG_CONFIG --cflags "fusionsound >= 1.1.1" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
 fi
@@ -19286,6 +19295,7 @@ if test -n "$FUSIONSOUND_LIBS"; then
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
   pkg_cv_FUSIONSOUND_LIBS=`$PKG_CONFIG --libs "fusionsound >= 1.1.1" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
 fi
@@ -19296,7 +19306,7 @@ fi
 
 
 if test $pkg_failed = yes; then
-   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
 if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
@@ -19305,16 +19315,16 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        FUSIONSOUND_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "fusionsound >= 1.1.1" 2>&1`
+	        FUSIONSOUND_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "fusionsound >= 1.1.1" 2>&1`
         else
-	        FUSIONSOUND_PKG_ERRORS=`$PKG_CONFIG --print-errors "fusionsound >= 1.1.1" 2>&1`
+	        FUSIONSOUND_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "fusionsound >= 1.1.1" 2>&1`
         fi
 	# Put the nasty error message in config.log where it belongs
 	echo "$FUSIONSOUND_PKG_ERRORS" >&5
 
 	fusionsound=no
 elif test $pkg_failed = untried; then
-     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 	fusionsound=no
 else
@@ -19940,8 +19950,8 @@ fi
     if test x$enable_video = xyes -a x$enable_video_rpi = xyes; then
 
 pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for RPI" >&5
-$as_echo_n "checking for RPI... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for bcm_host brcmegl" >&5
+$as_echo_n "checking for bcm_host brcmegl... " >&6; }
 
 if test -n "$RPI_CFLAGS"; then
     pkg_cv_RPI_CFLAGS="$RPI_CFLAGS"
@@ -19953,6 +19963,7 @@ if test -n "$RPI_CFLAGS"; then
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
   pkg_cv_RPI_CFLAGS=`$PKG_CONFIG --cflags "bcm_host brcmegl" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
 fi
@@ -19969,6 +19980,7 @@ if test -n "$RPI_LIBS"; then
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
   pkg_cv_RPI_LIBS=`$PKG_CONFIG --libs "bcm_host brcmegl" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
 fi
@@ -19979,7 +19991,7 @@ fi
 
 
 if test $pkg_failed = yes; then
-   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
 if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
@@ -19988,16 +20000,16 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        RPI_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "bcm_host brcmegl" 2>&1`
+	        RPI_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "bcm_host brcmegl" 2>&1`
         else
-	        RPI_PKG_ERRORS=`$PKG_CONFIG --print-errors "bcm_host brcmegl" 2>&1`
+	        RPI_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "bcm_host brcmegl" 2>&1`
         fi
 	# Put the nasty error message in config.log where it belongs
 	echo "$RPI_PKG_ERRORS" >&5
 
 	video_rpi=no
 elif test $pkg_failed = untried; then
-     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 	video_rpi=no
 else
@@ -21844,8 +21856,8 @@ fi
     if test x$enable_video = xyes -a x$enable_video_directfb = xyes; then
 
 pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for DIRECTFB" >&5
-$as_echo_n "checking for DIRECTFB... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for directfb >= 1.0.0" >&5
+$as_echo_n "checking for directfb >= 1.0.0... " >&6; }
 
 if test -n "$DIRECTFB_CFLAGS"; then
     pkg_cv_DIRECTFB_CFLAGS="$DIRECTFB_CFLAGS"
@@ -21857,6 +21869,7 @@ if test -n "$DIRECTFB_CFLAGS"; then
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
   pkg_cv_DIRECTFB_CFLAGS=`$PKG_CONFIG --cflags "directfb >= 1.0.0" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
 fi
@@ -21873,6 +21886,7 @@ if test -n "$DIRECTFB_LIBS"; then
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
   pkg_cv_DIRECTFB_LIBS=`$PKG_CONFIG --libs "directfb >= 1.0.0" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
 fi
@@ -21883,7 +21897,7 @@ fi
 
 
 if test $pkg_failed = yes; then
-   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
 if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
@@ -21892,16 +21906,16 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        DIRECTFB_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "directfb >= 1.0.0" 2>&1`
+	        DIRECTFB_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "directfb >= 1.0.0" 2>&1`
         else
-	        DIRECTFB_PKG_ERRORS=`$PKG_CONFIG --print-errors "directfb >= 1.0.0" 2>&1`
+	        DIRECTFB_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "directfb >= 1.0.0" 2>&1`
         fi
 	# Put the nasty error message in config.log where it belongs
 	echo "$DIRECTFB_PKG_ERRORS" >&5
 
 	video_directfb=no
 elif test $pkg_failed = untried; then
-     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 	video_directfb=no
 else
@@ -21998,8 +22012,8 @@ fi
 
 
 pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for LIBDRM" >&5
-$as_echo_n "checking for LIBDRM... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for libdrm >= 1.4.82" >&5
+$as_echo_n "checking for libdrm >= 1.4.82... " >&6; }
 
 if test -n "$LIBDRM_CFLAGS"; then
     pkg_cv_LIBDRM_CFLAGS="$LIBDRM_CFLAGS"
@@ -22011,6 +22025,7 @@ if test -n "$LIBDRM_CFLAGS"; then
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
   pkg_cv_LIBDRM_CFLAGS=`$PKG_CONFIG --cflags "libdrm >= 1.4.82" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
 fi
@@ -22027,6 +22042,7 @@ if test -n "$LIBDRM_LIBS"; then
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
   pkg_cv_LIBDRM_LIBS=`$PKG_CONFIG --libs "libdrm >= 1.4.82" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
 fi
@@ -22037,7 +22053,7 @@ fi
 
 
 if test $pkg_failed = yes; then
-   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
 if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
@@ -22046,16 +22062,16 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        LIBDRM_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "libdrm >= 1.4.82" 2>&1`
+	        LIBDRM_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libdrm >= 1.4.82" 2>&1`
         else
-	        LIBDRM_PKG_ERRORS=`$PKG_CONFIG --print-errors "libdrm >= 1.4.82" 2>&1`
+	        LIBDRM_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libdrm >= 1.4.82" 2>&1`
         fi
 	# Put the nasty error message in config.log where it belongs
 	echo "$LIBDRM_PKG_ERRORS" >&5
 
 	libdrm_avail=no
 elif test $pkg_failed = untried; then
-     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 	libdrm_avail=no
 else
@@ -22067,8 +22083,8 @@ $as_echo "yes" >&6; }
 fi
 
 pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for LIBGBM" >&5
-$as_echo_n "checking for LIBGBM... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for gbm >= 11.1.0" >&5
+$as_echo_n "checking for gbm >= 11.1.0... " >&6; }
 
 if test -n "$LIBGBM_CFLAGS"; then
     pkg_cv_LIBGBM_CFLAGS="$LIBGBM_CFLAGS"
@@ -22080,6 +22096,7 @@ if test -n "$LIBGBM_CFLAGS"; then
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
   pkg_cv_LIBGBM_CFLAGS=`$PKG_CONFIG --cflags "gbm >= 11.1.0" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
 fi
@@ -22096,6 +22113,7 @@ if test -n "$LIBGBM_LIBS"; then
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
   pkg_cv_LIBGBM_LIBS=`$PKG_CONFIG --libs "gbm >= 11.1.0" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
 fi
@@ -22106,7 +22124,7 @@ fi
 
 
 if test $pkg_failed = yes; then
-   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
 if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
@@ -22115,16 +22133,16 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        LIBGBM_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "gbm >= 11.1.0" 2>&1`
+	        LIBGBM_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "gbm >= 11.1.0" 2>&1`
         else
-	        LIBGBM_PKG_ERRORS=`$PKG_CONFIG --print-errors "gbm >= 11.1.0" 2>&1`
+	        LIBGBM_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "gbm >= 11.1.0" 2>&1`
         fi
 	# Put the nasty error message in config.log where it belongs
 	echo "$LIBGBM_PKG_ERRORS" >&5
 
 	libgbm_avail=no
 elif test $pkg_failed = untried; then
-     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 	libgbm_avail=no
 else
@@ -22944,8 +22962,8 @@ fi
     if test x$enable_dbus = xyes; then
 
 pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for DBUS" >&5
-$as_echo_n "checking for DBUS... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for dbus-1" >&5
+$as_echo_n "checking for dbus-1... " >&6; }
 
 if test -n "$DBUS_CFLAGS"; then
     pkg_cv_DBUS_CFLAGS="$DBUS_CFLAGS"
@@ -22957,6 +22975,7 @@ if test -n "$DBUS_CFLAGS"; then
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
   pkg_cv_DBUS_CFLAGS=`$PKG_CONFIG --cflags "dbus-1" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
 fi
@@ -22973,6 +22992,7 @@ if test -n "$DBUS_LIBS"; then
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
   pkg_cv_DBUS_LIBS=`$PKG_CONFIG --libs "dbus-1" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
 fi
@@ -22983,7 +23003,7 @@ fi
 
 
 if test $pkg_failed = yes; then
-   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
 if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
@@ -22992,16 +23012,16 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        DBUS_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "dbus-1" 2>&1`
+	        DBUS_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "dbus-1" 2>&1`
         else
-	        DBUS_PKG_ERRORS=`$PKG_CONFIG --print-errors "dbus-1" 2>&1`
+	        DBUS_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "dbus-1" 2>&1`
         fi
 	# Put the nasty error message in config.log where it belongs
 	echo "$DBUS_PKG_ERRORS" >&5
 
 	have_dbus=no
 elif test $pkg_failed = untried; then
-     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 	have_dbus=no
 else
@@ -23115,8 +23135,8 @@ fi
     if test x$enable_ibus = xyes; then
 
 pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for IBUS" >&5
-$as_echo_n "checking for IBUS... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for ibus-1.0" >&5
+$as_echo_n "checking for ibus-1.0... " >&6; }
 
 if test -n "$IBUS_CFLAGS"; then
     pkg_cv_IBUS_CFLAGS="$IBUS_CFLAGS"
@@ -23128,6 +23148,7 @@ if test -n "$IBUS_CFLAGS"; then
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
   pkg_cv_IBUS_CFLAGS=`$PKG_CONFIG --cflags "ibus-1.0" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
 fi
@@ -23144,6 +23165,7 @@ if test -n "$IBUS_LIBS"; then
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
   pkg_cv_IBUS_LIBS=`$PKG_CONFIG --libs "ibus-1.0" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
 fi
@@ -23154,7 +23176,7 @@ fi
 
 
 if test $pkg_failed = yes; then
-   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
 if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
@@ -23163,16 +23185,16 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        IBUS_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "ibus-1.0" 2>&1`
+	        IBUS_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "ibus-1.0" 2>&1`
         else
-	        IBUS_PKG_ERRORS=`$PKG_CONFIG --print-errors "ibus-1.0" 2>&1`
+	        IBUS_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "ibus-1.0" 2>&1`
         fi
 	# Put the nasty error message in config.log where it belongs
 	echo "$IBUS_PKG_ERRORS" >&5
 
 	have_ibus=no
 elif test $pkg_failed = untried; then
-     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 	have_ibus=no
 else
@@ -24447,8 +24469,8 @@ fi
         if test x$enable_hidapi_libusb = xyes; then
 
 pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for LIBUSB" >&5
-$as_echo_n "checking for LIBUSB... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for libusb-1.0" >&5
+$as_echo_n "checking for libusb-1.0... " >&6; }
 
 if test -n "$LIBUSB_CFLAGS"; then
     pkg_cv_LIBUSB_CFLAGS="$LIBUSB_CFLAGS"
@@ -24460,6 +24482,7 @@ if test -n "$LIBUSB_CFLAGS"; then
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
   pkg_cv_LIBUSB_CFLAGS=`$PKG_CONFIG --cflags "libusb-1.0" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
 fi
@@ -24476,6 +24499,7 @@ if test -n "$LIBUSB_LIBS"; then
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
   pkg_cv_LIBUSB_LIBS=`$PKG_CONFIG --libs "libusb-1.0" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
 fi
@@ -24486,7 +24510,7 @@ fi
 
 
 if test $pkg_failed = yes; then
-   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
 if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
@@ -24495,16 +24519,16 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        LIBUSB_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "libusb-1.0" 2>&1`
+	        LIBUSB_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libusb-1.0" 2>&1`
         else
-	        LIBUSB_PKG_ERRORS=`$PKG_CONFIG --print-errors "libusb-1.0" 2>&1`
+	        LIBUSB_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libusb-1.0" 2>&1`
         fi
 	# Put the nasty error message in config.log where it belongs
 	echo "$LIBUSB_PKG_ERRORS" >&5
 
 	have_libusb=no
 elif test $pkg_failed = untried; then
-     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 	have_libusb=no
 else
