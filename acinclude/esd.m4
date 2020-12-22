@@ -58,7 +58,7 @@ dnl Now check if the installed ESD is sufficiently new. (Also sanity
 dnl checks the results of esd-config to some extent
 dnl
       rm -f conf.esdtest
-      AC_TRY_RUN([
+      AC_RUN_IFELSE([AC_LANG_SOURCE([[
 #include <stdio.h>
 #include <stdlib.h>
 #include <esd.h>
@@ -92,7 +92,7 @@ int main (void)
       return 1;
     }
 }
-], [], [no_esd=yes], [echo $ac_n "cross compiling; assumed OK... $ac_c"])
+]])], [], [no_esd=yes], [echo $ac_n "cross compiling; assumed OK... $ac_c"])
        CFLAGS="$ac_save_CFLAGS"
        LIBS="$ac_save_LIBS"
        AC_LANG_POP([C])
@@ -116,10 +116,10 @@ int main (void)
           CFLAGS="$CFLAGS $ESD_CFLAGS"
           LIBS="$LIBS $ESD_LIBS"
           AC_LANG_PUSH([C])
-          AC_TRY_LINK([
+          AC_LINK_IFELSE([AC_LANG_PROGRAM([[
 #include <stdio.h>
 #include <esd.h>
-],      [ return 0; ],
+]], [[ return 0; ]])],
         [ echo "*** The test program compiled, but did not run. This usually means"
           echo "*** that the run-time linker is not finding ESD or finding the wrong"
           echo "*** version of ESD. If it is not finding ESD, you'll need to set your"
