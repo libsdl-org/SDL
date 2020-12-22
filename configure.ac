@@ -2236,7 +2236,10 @@ CheckKMSDRM()
 AS_HELP_STRING([--enable-video-kmsdrm], [use KMSDRM video driver [[default=no]]]),
                   , enable_video_kmsdrm=no)
 
-    if test x$enable_video = xyes -a x$enable_video_kmsdrm = xyes; then
+    if  test x$enable_video = xyes && \
+        test x$enable_video_kmsdrm = xyes && \
+        test x$video_opengl_egl = xyes; then
+
         video_kmsdrm=no
 
         PKG_CHECK_MODULES([LIBDRM], [libdrm >= 1.4.82], libdrm_avail=yes, libdrm_avail=no)
@@ -2415,6 +2418,28 @@ CheckOpenGLESX11()
                 SUMMARY_video="${SUMMARY_video} opengl_es2"
             fi
         fi
+    fi
+}
+
+dnl Find EGL
+CheckEGLKMSDRM()
+{
+    AC_MSG_CHECKING(for EGL support)
+    video_opengl_egl=no
+    AC_TRY_COMPILE([
+      #define LINUX
+      #define EGL_API_FB
+      #define MESA_EGL_NO_X11_HEADERS
+      #define EGL_NO_X11
+      #include <EGL/egl.h>
+      #include <EGL/eglext.h>
+    ],[
+    ],[
+    video_opengl_egl=yes
+    ])
+    AC_MSG_RESULT($video_opengl_egl)
+    if test x$video_opengl_egl = xyes; then
+	AC_DEFINE(SDL_VIDEO_OPENGL_EGL, 1, [ ])
     fi
 }
 
@@ -3555,6 +3580,8 @@ case "$host" in
         CheckRPI
         CheckX11
         CheckDirectFB
+        # Need to check for EGL first because KMSDRM depends on it.
+        CheckEGLKMSDRM
         CheckKMSDRM
         CheckOpenGLX11
         CheckOpenGLESX11

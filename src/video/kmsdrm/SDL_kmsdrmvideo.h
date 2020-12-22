@@ -34,10 +34,8 @@
 
 #include <gbm.h>
 #include <assert.h>
-#if SDL_VIDEO_OPENGL_EGL
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
-#endif
 
 /****************************************************************************************/
 /* Driverdata pointers are void struct* used to store backend-specific variables        */
@@ -101,10 +99,6 @@ typedef struct SDL_DisplayData
     EGLSyncKHR kms_fence;
     EGLSyncKHR gpu_fence;
 
-#if SDL_VIDEO_OPENGL_EGL
-    EGLSurface old_egl_surface;
-#endif
-
     SDL_bool modeset_pending;
     SDL_bool gbm_init;
 
@@ -129,9 +123,7 @@ typedef struct SDL_WindowData
     struct gbm_bo *bo;
     struct gbm_bo *next_bo;
 
-#if SDL_VIDEO_OPENGL_EGL
     EGLSurface egl_surface;
-#endif
 
     /* For scaling and AR correction. */
     int32_t src_w;

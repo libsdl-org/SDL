@@ -31,9 +31,7 @@
 #include <xf86drm.h>
 #include <xf86drmMode.h>
 #include <gbm.h>
-#if SDL_VIDEO_OPENGL_EGL
 #include <EGL/egl.h>
-#endif
 
 typedef struct SDL_VideoData
 {
@@ -71,10 +69,10 @@ typedef struct SDL_WindowData
     struct gbm_bo *crtc_bo;
     SDL_bool waiting_for_flip;
     SDL_bool double_buffer;
-#if SDL_VIDEO_OPENGL_EGL
+
     int egl_surface_dirty;
     EGLSurface egl_surface;
-#endif
+
 } SDL_WindowData;
 
 typedef struct KMSDRM_LEGACY_FBInfo

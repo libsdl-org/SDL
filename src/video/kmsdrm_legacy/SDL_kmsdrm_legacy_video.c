@@ -213,7 +213,7 @@ KMSDRM_LEGACY_CreateDevice(int devindex)
     device->SetWindowGrab = KMSDRM_LEGACY_SetWindowGrab;
     device->DestroyWindow = KMSDRM_LEGACY_DestroyWindow;
     device->GetWindowWMInfo = KMSDRM_LEGACY_GetWindowWMInfo;
-#if SDL_VIDEO_OPENGL_EGL
+
     device->GL_LoadLibrary = KMSDRM_LEGACY_GLES_LoadLibrary;
     device->GL_GetProcAddress = KMSDRM_LEGACY_GLES_GetProcAddress;
     device->GL_UnloadLibrary = KMSDRM_LEGACY_GLES_UnloadLibrary;
@@ -223,7 +223,7 @@ KMSDRM_LEGACY_CreateDevice(int devindex)
     device->GL_GetSwapInterval = KMSDRM_LEGACY_GLES_GetSwapInterval;
     device->GL_SwapWindow = KMSDRM_LEGACY_GLES_SwapWindow;
     device->GL_DeleteContext = KMSDRM_LEGACY_GLES_DeleteContext;
-#endif
+
     device->PumpEvents = KMSDRM_LEGACY_PumpEvents;
     device->free = KMSDRM_LEGACY_DeleteDevice;
 
@@ -369,14 +369,12 @@ KMSDRM_LEGACY_DestroySurfaces(_THIS, SDL_Window * window)
         windata->next_bo = NULL;
     }
 
-#if SDL_VIDEO_OPENGL_EGL
     SDL_EGL_MakeCurrent(_this, EGL_NO_SURFACE, EGL_NO_CONTEXT);
 
     if (windata->egl_surface != EGL_NO_SURFACE) {
         SDL_EGL_DestroySurface(_this, windata->egl_surface);
         windata->egl_surface = EGL_NO_SURFACE;
     }
-#endif
 
     if (windata->gs) {
         KMSDRM_LEGACY_gbm_surface_destroy(windata->gs);
@@ -394,18 +392,14 @@ KMSDRM_LEGACY_CreateSurfaces(_THIS, SDL_Window * window)
     Uint32 height = dispdata->mode.vdisplay;
     Uint32 surface_fmt = GBM_FORMAT_XRGB8888;
     Uint32 surface_flags = GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING;
-#if SDL_VIDEO_OPENGL_EGL
     EGLContext egl_context;
-#endif
 
     if (!KMSDRM_LEGACY_gbm_device_is_format_supported(viddata->gbm, surface_fmt, surface_flags)) {
         SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO, "GBM surface format not supported. Trying anyway.");
     }
 
-#if SDL_VIDEO_OPENGL_EGL
     SDL_EGL_SetRequiredVisualId(_this, surface_fmt);
     egl_context = (EGLContext)SDL_GL_GetCurrentContext();
-#endif
 
     KMSDRM_LEGACY_DestroySurfaces(_this, window);
 
@@ -415,7 +409,6 @@ KMSDRM_LEGACY_CreateSurfaces(_THIS, SDL_Window * window)
         return SDL_SetError("Could not create GBM surface");
     }
 
-#if SDL_VIDEO_OPENGL_EGL
     windata->egl_surface = SDL_EGL_CreateSurface(_this, (NativeWindowType)windata->gs);
 
     if (windata->egl_surface == EGL_NO_SURFACE) {
@@ -425,7 +418,6 @@ KMSDRM_LEGACY_CreateSurfaces(_THIS, SDL_Window * window)
     SDL_EGL_MakeCurrent(_this, windata->egl_surface, egl_context);
 
     windata->egl_surface_dirty = 0;
-#endif
 
     return 0;
 }
@@ -734,15 +726,9 @@ KMSDRM_LEGACY_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode 
         SDL_Window *window = viddata->windows[i];
         SDL_WindowData *windata = (SDL_WindowData *)window->driverdata;
 
-#if SDL_VIDEO_OPENGL_EGL
         /* Can't recreate EGL surfaces right now, need to wait until SwapWindow
            so the correct thread-local surface and context state are available */
         windata->egl_surface_dirty = 1;
-#else
-        if (KMSDRM_LEGACY_CreateSurfaces(_this, window)) {
-            return -1;
-        }
-#endif
 
         /* Tell app about the resize */
         SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, mode->w, mode->h);
@@ -758,13 +744,11 @@ KMSDRM_LEGACY_CreateWindow(_THIS, SDL_Window * window)
     SDL_WindowData *windata;
     SDL_VideoDisplay *display;
 
-#if SDL_VIDEO_OPENGL_EGL
     if (!_this->egl_data) {
         if (SDL_GL_LoadLibrary(NULL) < 0) {
             goto error;
         }
     }
-#endif
 
     /* Allocate window internal data */
     windata = (SDL_WindowData *)SDL_calloc(1, sizeof(SDL_WindowData));

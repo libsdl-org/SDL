@@ -21,7 +21,7 @@
 
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_KMSDRM && SDL_VIDEO_OPENGL_EGL
+#if SDL_VIDEO_DRIVER_KMSDRM
 
 #include "SDL_log.h"
 
@@ -147,6 +147,6 @@ KMSDRM_LEGACY_GLES_SwapWindow(_THIS, SDL_Window * window) {
 
 SDL_EGL_MakeCurrent_impl(KMSDRM_LEGACY)
 
-#endif /* SDL_VIDEO_DRIVER_KMSDRM && SDL_VIDEO_OPENGL_EGL */
+#endif /* SDL_VIDEO_DRIVER_KMSDRM */
 
 /* vi: set ts=4 sw=4 expandtab: */
