@@ -487,6 +487,20 @@ HIDAPI_DriverPS5_CheckPendingLEDReset(SDL_HIDAPI_Device *device)
 }
 
 static void
+HIDAPI_DriverPS5_SetEffectsSupported(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
+{
+    SDL_DriverPS5_Context *ctx = (SDL_DriverPS5_Context *)device->context;
+
+    ctx->effects_supported = SDL_TRUE;
+
+    SDL_PrivateJoystickAddTouchpad(joystick, 2);
+    SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO);
+    SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL);
+
+    HIDAPI_DriverPS5_UpdateEffects(device, k_EDS5EffectLED);
+}
+
+static void
 HIDAPI_DriverPS5_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id, int player_index)
 {
     SDL_DriverPS5_Context *ctx = (SDL_DriverPS5_Context *)device->context;
@@ -507,6 +521,7 @@ HIDAPI_DriverPS5_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
     SDL_DriverPS5_Context *ctx;
     Uint8 data[USB_PACKET_LENGTH*2];
     int size;
+    SDL_bool effects_supported = SDL_FALSE;
 
     ctx = (SDL_DriverPS5_Context *)SDL_calloc(1, sizeof(*ctx));
     if (!ctx) {
@@ -535,18 +550,18 @@ HIDAPI_DriverPS5_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
     if (size == 64) {
         /* Connected over USB */
         ctx->is_bluetooth = SDL_FALSE;
-        ctx->effects_supported = SDL_TRUE;
+        effects_supported = SDL_TRUE;
     } else if (size > 0 && data[0] == k_EPS5ReportIdBluetoothEffects) {
         /* Connected over Bluetooth, using enhanced reports */
         ctx->is_bluetooth = SDL_TRUE;
-        ctx->effects_supported = SDL_TRUE;
+        effects_supported = SDL_TRUE;
     } else {
         /* Connected over Bluetooth, using simple reports (DirectInput enabled) */
         ctx->is_bluetooth = SDL_TRUE;
-        ctx->effects_supported = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_PS5_RUMBLE, SDL_FALSE);
+        effects_supported = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_PS5_RUMBLE, SDL_FALSE);
     }
 
-    if (ctx->effects_supported) {
+    if (effects_supported) {
         /* Read the serial number (Bluetooth address in reverse byte order)
            This will also enable enhanced reports over Bluetooth
         */
@@ -578,16 +593,16 @@ HIDAPI_DriverPS5_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
     /* Initialize player index (needed for setting LEDs) */
     ctx->player_index = SDL_JoystickGetPlayerIndex(joystick);
 
-    /* Initialize LED and effect state */
-    HIDAPI_DriverPS5_UpdateEffects(device, k_EDS5EffectLED);
-
-    /* Initialize the joystick capabilities */
+    /* Initialize the joystick capabilities
+     *
+     * We can't dynamically add the touchpad button, so always report it here
+     */
     joystick->nbuttons = 17;
     joystick->naxes = SDL_CONTROLLER_AXIS_MAX;
 
-    SDL_PrivateJoystickAddTouchpad(joystick, 2);
-    SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO);
-    SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL);
+    if (effects_supported) {
+        HIDAPI_DriverPS5_SetEffectsSupported(device, joystick);
+    }
 
     return SDL_TRUE;
 }
@@ -915,15 +930,14 @@ HIDAPI_DriverPS5_UpdateDevice(SDL_HIDAPI_Device *device)
             }
             break;
         case k_EPS5ReportIdBluetoothState:
-            HIDAPI_DriverPS5_HandleStatePacket(joystick, device->dev, ctx, (PS5StatePacket_t *)&data[2]);
+            if (!ctx->effects_supported) {
+                /* This is the extended report, we can enable effects now */
+                HIDAPI_DriverPS5_SetEffectsSupported(device, joystick);
+            }
             if (ctx->led_reset_state == k_EDS5LEDResetStatePending) {
                 HIDAPI_DriverPS5_CheckPendingLEDReset(device);
             }
-            if (!ctx->effects_supported) {
-                /* This is the extended report, we can enable effects now */
-                ctx->effects_supported = SDL_TRUE;
-                HIDAPI_DriverPS5_UpdateEffects(device, k_EDS5EffectLED);
-            }
+            HIDAPI_DriverPS5_HandleStatePacket(joystick, device->dev, ctx, (PS5StatePacket_t *)&data[2]);
             break;
         default:
 #ifdef DEBUG_JOYSTICK
