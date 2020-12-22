@@ -1180,6 +1180,8 @@ elseif(UNIX AND NOT APPLE AND NOT ANDROID AND NOT RISCOS)
     CheckOpenGLESX11()
     CheckWayland()
     CheckVivante()
+    # Need to check EGL before checking KMSDRM because KMSDRM depends on it.
+    CheckEGLKMSDRM()
     CheckKMSDRM()
   endif()
 

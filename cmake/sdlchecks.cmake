@@ -759,6 +759,25 @@ endmacro()
 
 # Requires:
 # - PkgCheckModules
+macro(CheckEGLKMSDRM)
+  if (HAVE_VIDEO_OPENGLES OR HAVE_VIDEO_OPENGL)
+    pkg_check_modules(EGL egl)
+    set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} ${EGL_CFLAGS}")
+    check_c_source_compiles("
+	#define EGL_API_FB
+	#define MESA_EGL_NO_X11_HEADERS
+	#define EGL_NO_X11
+	#include <EGL/egl.h>
+	#include <EGL/eglext.h>
+	int main (int argc, char** argv) {}" HAVE_VIDEO_OPENGL_EGL)
+    if(HAVE_VIDEO_OPENGL_EGL)
+	set(SDL_VIDEO_OPENGL_EGL 1)
+    endif()
+  endif()
+endmacro()
+
+# Requires:
+# - PkgCheckModules
 macro(CheckOpenGLESX11)
   pkg_check_modules(EGL egl)
   set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} ${EGL_CFLAGS}")
@@ -1152,7 +1171,7 @@ endmacro(CheckRPI)
 macro(CheckKMSDRM)
   if(VIDEO_KMSDRM)
     pkg_check_modules(KMSDRM libdrm gbm egl)
-    if(KMSDRM_FOUND)
+    if(KMSDRM_FOUND AND HAVE_VIDEO_OPENGL_EGL)
       link_directories(
         ${KMSDRM_LIBRARY_DIRS}
       )
