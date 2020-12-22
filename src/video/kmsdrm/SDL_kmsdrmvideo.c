@@ -846,7 +846,6 @@ KMSDRM_CreateDevice(int devindex)
     device->SetWindowGrab = KMSDRM_SetWindowGrab;
     device->DestroyWindow = KMSDRM_DestroyWindow;
     device->GetWindowWMInfo = KMSDRM_GetWindowWMInfo;
-#if SDL_VIDEO_OPENGL_EGL
     device->GL_DefaultProfileConfig = KMSDRM_GLES_DefaultProfileConfig;
     device->GL_LoadLibrary = KMSDRM_GLES_LoadLibrary;
     device->GL_GetProcAddress = KMSDRM_GLES_GetProcAddress;
@@ -857,9 +856,7 @@ KMSDRM_CreateDevice(int devindex)
     device->GL_GetSwapInterval = KMSDRM_GLES_GetSwapInterval;
     device->GL_SwapWindow = KMSDRM_GLES_SwapWindow;
     device->GL_DeleteContext = KMSDRM_GLES_DeleteContext;
-#endif
-    device->PumpEvents = KMSDRM_PumpEvents;
-    device->free = KMSDRM_DeleteDevice;
+
 #if SDL_VIDEO_VULKAN
     device->Vulkan_LoadLibrary = KMSDRM_Vulkan_LoadLibrary;
     device->Vulkan_UnloadLibrary = KMSDRM_Vulkan_UnloadLibrary;
@@ -867,6 +864,10 @@ KMSDRM_CreateDevice(int devindex)
     device->Vulkan_CreateSurface = KMSDRM_Vulkan_CreateSurface;
     device->Vulkan_GetDrawableSize = KMSDRM_Vulkan_GetDrawableSize;
 #endif
+
+    device->PumpEvents = KMSDRM_PumpEvents;
+    device->free = KMSDRM_DeleteDevice;
+
     return device;
 
 cleanup:
@@ -1327,9 +1328,7 @@ KMSDRM_DestroySurfaces(_THIS, SDL_Window *window)
     SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
     KMSDRM_PlaneInfo plane_info = {0};
 
-#if SDL_VIDEO_OPENGL_EGL
     EGLContext egl_context;
-#endif
 
     /********************************************************************/
     /* BLOCK 1: protect the PRIMARY PLANE before destroying the buffers */
@@ -1380,7 +1379,6 @@ KMSDRM_DestroySurfaces(_THIS, SDL_Window *window)
     /* will get wrong info and we will be in trouble.                          */
     /***************************************************************************/
 
-#if SDL_VIDEO_OPENGL_EGL
     egl_context = (EGLContext)SDL_GL_GetCurrentContext();
     SDL_EGL_MakeCurrent(_this, EGL_NO_SURFACE, egl_context);
 
@@ -1388,7 +1386,6 @@ KMSDRM_DestroySurfaces(_THIS, SDL_Window *window)
         SDL_EGL_DestroySurface(_this, windata->egl_surface);
         windata->egl_surface = EGL_NO_SURFACE;
     }
-#endif
 
     if (windata->gs) {
         KMSDRM_gbm_surface_destroy(windata->gs);
@@ -1431,7 +1428,6 @@ KMSDRM_CreateSurfaces(_THIS, SDL_Window * window)
         return SDL_SetError("Could not create GBM surface");
     }
 
-#if SDL_VIDEO_OPENGL_EGL
     /* We can't get the EGL context yet because SDL_CreateRenderer has not been called,
        but we need an EGL surface NOW, or GL won't be able to render into any surface
        and we won't see the first frame. */
@@ -1447,8 +1443,6 @@ KMSDRM_CreateSurfaces(_THIS, SDL_Window * window)
        go back to delayed SDL_EGL_MakeCurrent() call in SwapWindow. */
     egl_context = (EGLContext)SDL_GL_GetCurrentContext();
     ret = SDL_EGL_MakeCurrent(_this, windata->egl_surface, egl_context);
-
-#endif
 
 cleanup:
 
@@ -1478,11 +1472,11 @@ KMSDRM_DestroyWindow(_THIS, SDL_Window *window)
 
     if (!is_vulkan) {
         KMSDRM_DestroySurfaces(_this, window);
-#if SDL_VIDEO_OPENGL_EGL
+
         if (_this->egl_data) {
             SDL_EGL_UnloadLibrary(_this);
         }
-#endif
+
         if (dispdata->gbm_init) {
             KMSDRM_DeinitMouse(_this);
             KMSDRM_GBMDeinit(_this, dispdata);
@@ -1754,7 +1748,6 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
                  goto cleanup;
          }
 
-#if SDL_VIDEO_OPENGL_EGL
          /* Manually load the EGL library. KMSDRM_EGL_LoadLibrary() has already
             been called by SDL_CreateWindow() but we don't do anything there,
             precisely to be able to load it here.
@@ -1766,7 +1759,6 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
                  goto cleanup;
              }
          }
-#endif
 
          /* Can't init mouse stuff sooner because cursor plane is not ready. */
          KMSDRM_InitMouse(_this);

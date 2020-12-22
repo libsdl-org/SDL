@@ -22,7 +22,7 @@
 
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_KMSDRM && SDL_VIDEO_OPENGL_EGL
+#if SDL_VIDEO_DRIVER_KMSDRM
 
 #include "SDL_kmsdrmvideo.h"
 #include "SDL_kmsdrmopengles.h"
@@ -376,6 +376,6 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window)
 
 SDL_EGL_MakeCurrent_impl(KMSDRM)
 
-#endif /* SDL_VIDEO_DRIVER_KMSDRM && SDL_VIDEO_OPENGL_EGL */
+#endif /* SDL_VIDEO_DRIVER_KMSDRM */
 
 /* vi: set ts=4 sw=4 expandtab: */
