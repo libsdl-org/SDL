@@ -1211,6 +1211,22 @@ extern "C" {
 #define SDL_HINT_WINDOWS_FORCE_MUTEX_CRITICAL_SECTIONS "SDL_WINDOWS_FORCE_MUTEX_CRITICAL_SECTIONS"
 
 /**
+ * \brief Force SDL to use Kernel Semaphores on Windows.
+ *        Kernel Semaphores are inter-process and require a context
+ *        switch on every interaction. On Windows 8 and newer, the
+ *        WaitOnAddress API is available. Using that and atomics to
+ *        implement semaphores increases performance.
+ *        SDL will fall back to Kernel Objects on older OS versions
+ *        or if forced to by this hint.
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - Use Atomics and WaitOnAddress API when available. If not, fall back to Kernel Objects. (default)
+ *    "1"       - Force the use of Kernel Objects in all cases.
+ *
+ */
+#define SDL_HINT_WINDOWS_FORCE_SEMAPHORE_KERNEL "SDL_WINDOWS_FORCE_SEMAPHORE_KERNEL"
+
+/**
  * \brief Tell SDL which Dispmanx layer to use on a Raspberry PI
  *
  * Also known as Z-order. The variable can take a negative or positive value.
