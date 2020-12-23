@@ -45,6 +45,7 @@ all: $(TARGETS)
 INCPATH = -I$(%WATCOM)/h/os2 -I$(%WATCOM)/h -I../include
 
 CFLAGS = $(INCPATH) -bt=os2 -d0 -q -bm -5s -fp5 -fpi87 -sg -oteanbmier -ei
+CFLAGS+= -wx -wcd=303
 
 LIBPATH = ..
 LIBS    = SDL2.lib $(TESTLIB)
