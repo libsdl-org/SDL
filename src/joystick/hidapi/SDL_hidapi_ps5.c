@@ -130,13 +130,12 @@ typedef struct
 } DS5EffectsState_t;
 
 typedef enum {
-    k_EDS5EffectNone,
-    k_EDS5EffectRumbleStart,
-    k_EDS5EffectRumble,
-    k_EDS5EffectLEDReset,
-    k_EDS5EffectLED,
-    k_EDS5EffectPadLights,
-    k_EDS5EffectMicLight,
+    k_EDS5EffectRumbleStart             = (1 << 0),
+    k_EDS5EffectRumble                  = (1 << 1),
+    k_EDS5EffectLEDReset                = (1 << 2),
+    k_EDS5EffectLED                     = (1 << 3),
+    k_EDS5EffectPadLights               = (1 << 4),
+    k_EDS5EffectMicLight                = (1 << 5)
 } EDS5Effect;
 
 typedef enum {
@@ -236,7 +235,7 @@ SetLightsForPlayerIndex(DS5EffectsState_t *effects, int player_index)
 
     if (player_index >= 0 && player_index < SDL_arraysize(lights)) {
         /* Bitmask, 0x1F enables all lights, 0x20 changes instantly instead of fade */
-        effects->ucPadLights = lights[player_index];
+        effects->ucPadLights = lights[player_index] | 0x20;
     } else {
         effects->ucPadLights = 0x00;
     }
@@ -372,7 +371,7 @@ HIDAPI_DriverPS5_ApplyCalibrationData(SDL_DriverPS5_Context *ctx, int index, Sin
 }
 
 static int
-HIDAPI_DriverPS5_UpdateEffects(SDL_HIDAPI_Device *device, EDS5Effect effect)
+HIDAPI_DriverPS5_UpdateEffects(SDL_HIDAPI_Device *device, int effect_mask)
 {
     SDL_DriverPS5_Context *ctx = (SDL_DriverPS5_Context *)device->context;
     DS5EffectsState_t *effects;
@@ -403,7 +402,8 @@ HIDAPI_DriverPS5_UpdateEffects(SDL_HIDAPI_Device *device, EDS5Effect effect)
     effects = (DS5EffectsState_t *)&data[offset];
 
     /* Make sure the Bluetooth connection sequence has completed before sending LED color change */
-    if (effect == k_EDS5EffectLED && ctx->is_bluetooth) {
+    if (ctx->is_bluetooth && 
+        (effect_mask & (k_EDS5EffectLED | k_EDS5EffectPadLights)) != 0) {
         if (ctx->led_reset_state != k_EDS5LEDResetStateComplete) {
             ctx->led_reset_state = k_EDS5LEDResetStatePending;
             return 0;
@@ -421,17 +421,16 @@ HIDAPI_DriverPS5_UpdateEffects(SDL_HIDAPI_Device *device, EDS5Effect effect)
         /* Leaving emulated rumble bits off will restore audio haptics */
     }
 
-    switch (effect) {
-    case k_EDS5EffectRumbleStart:
+    if ((effect_mask & k_EDS5EffectRumbleStart) != 0) {
         effects->ucEnableBits1 |= 0x02; /* Disable audio haptics */
-        break;
-    case k_EDS5EffectRumble:
+    }
+    if ((effect_mask & k_EDS5EffectRumble) != 0) {
         /* Already handled above */
-        break;
-    case k_EDS5EffectLEDReset:
+    }
+    if ((effect_mask & k_EDS5EffectLEDReset) != 0) {
         effects->ucEnableBits2 |= 0x08; /* Reset LED state */
-        break;
-    case k_EDS5EffectLED:
+    }
+    if ((effect_mask & k_EDS5EffectLED) != 0) {
         effects->ucEnableBits2 |= 0x04; /* Enable LED color */
 
         /* Populate the LED state with the appropriate color from our lookup table */
@@ -442,19 +441,16 @@ HIDAPI_DriverPS5_UpdateEffects(SDL_HIDAPI_Device *device, EDS5Effect effect)
         } else {
             SetLedsForPlayerIndex(effects, ctx->player_index);
         }
-        break;
-    case k_EDS5EffectPadLights:
+    }
+    if ((effect_mask & k_EDS5EffectPadLights) != 0) {
         effects->ucEnableBits2 |= 0x10; /* Enable touchpad lights */
 
         SetLightsForPlayerIndex(effects, ctx->player_index);
-        break;
-    case k_EDS5EffectMicLight:
+    }
+    if ((effect_mask & k_EDS5EffectMicLight) != 0) {
         effects->ucEnableBits2 |= 0x01; /* Enable microphone light */
 
         effects->ucMicLightMode = 0;    /* Bitmask, 0x00 = off, 0x01 = solid, 0x02 = pulse */
-        break;
-    default:
-        break;
     }
 
     if (ctx->is_bluetooth) {
@@ -493,17 +489,17 @@ HIDAPI_DriverPS5_CheckPendingLEDReset(SDL_HIDAPI_Device *device)
     const PS5StatePacket_t *packet = &ctx->last_state.state;
 
     /* Check the timer to make sure the Bluetooth connection LED animation is complete */
-    const Uint32 connection_complete = 10000000;
+    const Uint32 connection_complete = 10200000;
     Uint32 timer = ((Uint32)packet->rgucTimer1[0] <<  0) |
                    ((Uint32)packet->rgucTimer1[1] <<  8) |
                    ((Uint32)packet->rgucTimer1[2] << 16) |
                    ((Uint32)packet->rgucTimer1[3] << 24);
-    if (timer >= connection_complete) {
+    if (SDL_TICKS_PASSED(timer, connection_complete)) {
         HIDAPI_DriverPS5_UpdateEffects(device, k_EDS5EffectLEDReset);
 
         ctx->led_reset_state = k_EDS5LEDResetStateComplete;
 
-        HIDAPI_DriverPS5_UpdateEffects(device, k_EDS5EffectLED);
+        HIDAPI_DriverPS5_UpdateEffects(device, (k_EDS5EffectLED | k_EDS5EffectPadLights));
     }
 }
 
@@ -533,8 +529,11 @@ HIDAPI_DriverPS5_SetEnhancedMode(SDL_HIDAPI_Device *device, SDL_Joystick *joysti
         SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO);
         SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL);
 
-        HIDAPI_DriverPS5_UpdateEffects(device, k_EDS5EffectLED);
-        HIDAPI_DriverPS5_UpdateEffects(device, k_EDS5EffectPadLights);
+        /* Switch into enhanced report mode */
+        HIDAPI_DriverPS5_UpdateEffects(device, 0);
+
+        /* Update the light effects */
+        HIDAPI_DriverPS5_UpdateEffects(device, (k_EDS5EffectLED | k_EDS5EffectPadLights));
     }
 }
 
@@ -560,8 +559,7 @@ HIDAPI_DriverPS5_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID 
     ctx->player_index = player_index;
 
     /* This will set the new LED state based on the new player index */
-    HIDAPI_DriverPS5_UpdateEffects(device, k_EDS5EffectLED);
-    HIDAPI_DriverPS5_UpdateEffects(device, k_EDS5EffectPadLights);
+    HIDAPI_DriverPS5_UpdateEffects(device, (k_EDS5EffectLED | k_EDS5EffectPadLights));
 }
 
 static SDL_bool
