@@ -468,7 +468,7 @@ get_scaler_datas(int src_nb, int dst_nb, int *fp_start, int *fp_step, int *left_
     Sint64 tmp[2];
     tmp[0] = (Sint64)step * (x0 >> 16);
     tmp[1] = (Sint64)step * (x0 & 0xFFFF);
-    x0 = tmp[0] + ((tmp[1] + 0x8000) >> 16); /*  x0 == (step + 1) / 2  */
+    x0 = (int) (tmp[0] + ((tmp[1] + 0x8000) >> 16)); /*  x0 == (step + 1) / 2  */
 #endif
     /* -= 0.5, get back the pixel origin, in source coordinates  */
     x0 -= FP_ONE / 2;
