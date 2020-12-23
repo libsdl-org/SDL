@@ -170,8 +170,12 @@
 #undef HAVE_LOGF
 #undef HAVE_LOG10
 #undef HAVE_LOG10F
+#undef HAVE_LROUND
+#undef HAVE_LROUNDF
 #undef HAVE_POW
 #undef HAVE_POWF
+#undef HAVE_ROUND
+#undef HAVE_ROUNDF
 #undef HAVE_SCALBN
 #undef HAVE_SCALBNF
 #undef HAVE_SIN
