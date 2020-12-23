@@ -353,7 +353,7 @@ static SDL_bool EnqueueEvent_LockFree(SDL_EventQueue *queue, const SDL_Event *ev
     }
 
 #ifdef TEST_SPINLOCK_FIFO
-    SDL_AtomicDecRef(&queue->rwcount);
+    (void) SDL_AtomicDecRef(&queue->rwcount);
 #endif
     return status;
 }
@@ -400,7 +400,7 @@ static SDL_bool DequeueEvent_LockFree(SDL_EventQueue *queue, SDL_Event *event)
     }
 
 #ifdef TEST_SPINLOCK_FIFO
-    SDL_AtomicDecRef(&queue->rwcount);
+    (void) SDL_AtomicDecRef(&queue->rwcount);
 #endif
     return status;
 }
@@ -581,7 +581,7 @@ static int SDLCALL FIFO_Watcher(void* _data)
             SDL_Delay(0);
         }
         /* Do queue manipulation here... */
-        SDL_AtomicDecRef(&queue->watcher);
+        (void) SDL_AtomicDecRef(&queue->watcher);
         SDL_AtomicUnlock(&queue->lock);
 
         /* Wait a bit... */
