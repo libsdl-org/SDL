@@ -154,7 +154,7 @@ typedef struct {
     SDL_HIDAPI_Device *device;
     SDL_Joystick *joystick;
     SDL_bool is_bluetooth;
-    SDL_bool effects_supported;
+    SDL_bool enhanced_mode;
     SDL_bool report_sensors;
     SDL_bool hardware_calibration;
     IMUCalibrationData calibration[6];
@@ -382,7 +382,7 @@ HIDAPI_DriverPS5_UpdateEffects(SDL_HIDAPI_Device *device, EDS5Effect effect)
     int *pending_size;
     int maximum_size;
 
-    if (!ctx->effects_supported) {
+    if (!ctx->enhanced_mode) {
         return SDL_Unsupported();
     }
 
@@ -508,12 +508,12 @@ HIDAPI_DriverPS5_CheckPendingLEDReset(SDL_HIDAPI_Device *device)
 }
 
 static void
-HIDAPI_DriverPS5_SetEffectsSupported(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
+HIDAPI_DriverPS5_SetEnhancedMode(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     SDL_DriverPS5_Context *ctx = (SDL_DriverPS5_Context *)device->context;
 
-    if (!ctx->effects_supported) {
-        ctx->effects_supported = SDL_TRUE;
+    if (!ctx->enhanced_mode) {
+        ctx->enhanced_mode = SDL_TRUE;
 
         SDL_PrivateJoystickAddTouchpad(joystick, 2);
         SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO);
@@ -530,7 +530,7 @@ static void SDLCALL SDL_PS5RumbleHintChanged(void *userdata, const char *name, c
 
     /* This is a one-way trip, you can't switch the controller back to simple report mode */
     if (SDL_GetStringBoolean(hint, SDL_FALSE)) {
-        HIDAPI_DriverPS5_SetEffectsSupported(ctx->device, ctx->joystick);
+        HIDAPI_DriverPS5_SetEnhancedMode(ctx->device, ctx->joystick);
     }
 }
 
@@ -556,7 +556,7 @@ HIDAPI_DriverPS5_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
     SDL_DriverPS5_Context *ctx;
     Uint8 data[USB_PACKET_LENGTH*2];
     int size;
-    SDL_bool effects_supported = SDL_FALSE;
+    SDL_bool enhanced_mode = SDL_FALSE;
 
     ctx = (SDL_DriverPS5_Context *)SDL_calloc(1, sizeof(*ctx));
     if (!ctx) {
@@ -587,18 +587,18 @@ HIDAPI_DriverPS5_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
     if (size == 64) {
         /* Connected over USB */
         ctx->is_bluetooth = SDL_FALSE;
-        effects_supported = SDL_TRUE;
+        enhanced_mode = SDL_TRUE;
     } else if (size > 0 && data[0] == k_EPS5ReportIdBluetoothEffects) {
         /* Connected over Bluetooth, using enhanced reports */
         ctx->is_bluetooth = SDL_TRUE;
-        effects_supported = SDL_TRUE;
+        enhanced_mode = SDL_TRUE;
     } else {
         /* Connected over Bluetooth, using simple reports (DirectInput enabled) */
         ctx->is_bluetooth = SDL_TRUE;
-        effects_supported = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_PS5_RUMBLE, SDL_FALSE);
+        enhanced_mode = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_PS5_RUMBLE, SDL_FALSE);
     }
 
-    if (effects_supported) {
+    if (enhanced_mode) {
         /* Read the serial number (Bluetooth address in reverse byte order)
            This will also enable enhanced reports over Bluetooth
         */
@@ -636,9 +636,10 @@ HIDAPI_DriverPS5_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
      */
     joystick->nbuttons = 17;
     joystick->naxes = SDL_CONTROLLER_AXIS_MAX;
+    joystick->epowerlevel = ctx->is_bluetooth ? SDL_JOYSTICK_POWER_UNKNOWN : SDL_JOYSTICK_POWER_WIRED;
 
-    if (effects_supported) {
-        HIDAPI_DriverPS5_SetEffectsSupported(device, joystick);
+    if (enhanced_mode) {
+        HIDAPI_DriverPS5_SetEnhancedMode(device, joystick);
     } else {
         SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI_PS5_RUMBLE,
                             SDL_PS5RumbleHintChanged, ctx);
@@ -691,7 +692,7 @@ HIDAPI_DriverPS5_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joysti
 {
     SDL_DriverPS5_Context *ctx = (SDL_DriverPS5_Context *)device->context;
 
-    if (!ctx->effects_supported) {
+    if (!ctx->enhanced_mode) {
         return SDL_Unsupported();
     }
 
@@ -969,9 +970,9 @@ HIDAPI_DriverPS5_UpdateDevice(SDL_HIDAPI_Device *device)
             }
             break;
         case k_EPS5ReportIdBluetoothState:
-            if (!ctx->effects_supported) {
+            if (!ctx->enhanced_mode) {
                 /* This is the extended report, we can enable effects now */
-                HIDAPI_DriverPS5_SetEffectsSupported(device, joystick);
+                HIDAPI_DriverPS5_SetEnhancedMode(device, joystick);
             }
             if (ctx->led_reset_state == k_EDS5LEDResetStatePending) {
                 HIDAPI_DriverPS5_CheckPendingLEDReset(device);
