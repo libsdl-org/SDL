@@ -473,8 +473,6 @@ static SDL_bool DequeueEvent_Mutex(SDL_EventQueue *queue, SDL_Event *event)
 
 static SDL_sem *writersDone;
 static SDL_sem *readersDone;
-static SDL_atomic_t writersRunning;
-static SDL_atomic_t readersRunning;
 
 typedef struct
 {
@@ -525,7 +523,6 @@ static int SDLCALL FIFO_Writer(void* _data)
             }
         }
     }
-    SDL_AtomicAdd(&writersRunning, -1);
     SDL_SemPost(writersDone);
     return 0;
 }
@@ -563,7 +560,6 @@ static int SDLCALL FIFO_Reader(void* _data)
             }
         }
     }
-    SDL_AtomicAdd(&readersRunning, -1);
     SDL_SemPost(readersDone);
     return 0;
 }
@@ -627,7 +623,6 @@ static void RunFIFOTest(SDL_bool lock_free)
     /* Start the readers first */
     SDL_Log("Starting %d readers\n", NUM_READERS);
     SDL_zeroa(readerData);
-    SDL_AtomicSet(&readersRunning, NUM_READERS);
     for (i = 0; i < NUM_READERS; ++i) {
         char name[64];
         SDL_snprintf(name, sizeof (name), "FIFOReader%d", i);
@@ -639,7 +634,6 @@ static void RunFIFOTest(SDL_bool lock_free)
     /* Start up the writers */
     SDL_Log("Starting %d writers\n", NUM_WRITERS);
     SDL_zeroa(writerData);
-    SDL_AtomicSet(&writersRunning, NUM_WRITERS);
     for (i = 0; i < NUM_WRITERS; ++i) {
         char name[64];
         SDL_snprintf(name, sizeof (name), "FIFOWriter%d", i);
@@ -650,7 +644,7 @@ static void RunFIFOTest(SDL_bool lock_free)
     }
 
     /* Wait for the writers */
-    while (SDL_AtomicGet(&writersRunning) > 0) {
+    for (i = 0; i < NUM_WRITERS; ++i) {
         SDL_SemWait(writersDone);
     }
 
@@ -658,7 +652,7 @@ static void RunFIFOTest(SDL_bool lock_free)
     SDL_AtomicSet(&queue.active, 0);
 
     /* Wait for the readers */
-    while (SDL_AtomicGet(&readersRunning) > 0) {
+    for (i = 0; i < NUM_READERS; ++i) {
         SDL_SemWait(readersDone);
     }
 
