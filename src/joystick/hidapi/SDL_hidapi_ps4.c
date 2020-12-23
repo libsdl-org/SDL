@@ -46,6 +46,7 @@
 
 #define GYRO_RES_PER_DEGREE 1024.0f
 #define ACCEL_RES_PER_G     8192.0f
+#define BLUETOOTH_DISCONNECT_TIMEOUT_MS 500
 
 #define LOAD16(A, B)  (Sint16)((Uint16)(A) | (((Uint16)(B)) << 8))
 
@@ -131,6 +132,7 @@ typedef struct {
     SDL_bool report_sensors;
     SDL_bool hardware_calibration;
     IMUCalibrationData calibration[6];
+    Uint32 last_packet;
     int player_index;
     Uint8 rumble_left;
     Uint8 rumble_right;
@@ -441,6 +443,20 @@ HIDAPI_DriverPS4_UpdateEffects(SDL_HIDAPI_Device *device)
 }
 
 static void
+HIDAPI_DriverPS4_TickleBluetooth(SDL_HIDAPI_Device *device)
+{
+    /* This is just a dummy packet that should have no effect, since we don't set the CRC */
+    Uint8 data[78];
+
+    SDL_zero(data);
+
+    data[0] = k_EPS4ReportIdBluetoothEffects;
+    data[1] = 0xC0;  /* Magic value HID + CRC */
+
+    SDL_HIDAPI_SendRumble(device, data, sizeof(data));
+}
+
+static void
 HIDAPI_DriverPS4_SetEnhancedMode(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     SDL_DriverPS4_Context *ctx = (SDL_DriverPS4_Context *)device->context;
@@ -494,6 +510,7 @@ HIDAPI_DriverPS4_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
     }
     ctx->device = device;
     ctx->joystick = joystick;
+    ctx->last_packet = SDL_GetTicks();
 
     device->dev = hid_open_path(device->path, 0);
     if (!device->dev) {
@@ -804,6 +821,7 @@ HIDAPI_DriverPS4_UpdateDevice(SDL_HIDAPI_Device *device)
     SDL_Joystick *joystick = NULL;
     Uint8 data[USB_PACKET_LENGTH*2];
     int size;
+    int packet_count = 0;
 
     if (device->num_joysticks > 0) {
         joystick = SDL_JoystickFromInstanceID(device->joysticks[0]);
@@ -816,6 +834,9 @@ HIDAPI_DriverPS4_UpdateDevice(SDL_HIDAPI_Device *device)
 #ifdef DEBUG_PS4_PROTOCOL
         HIDAPI_DumpPacket("PS4 packet: size = %d", data, size);
 #endif
+        ++packet_count;
+        ctx->last_packet = SDL_GetTicks();
+
         switch (data[0]) {
         case k_EPS4ReportIdUsbState:
             HIDAPI_DriverPS4_HandleStatePacket(joystick, device->dev, ctx, (PS4StatePacket_t *)&data[1]);
@@ -843,6 +864,14 @@ HIDAPI_DriverPS4_UpdateDevice(SDL_HIDAPI_Device *device)
             SDL_Log("Unknown PS4 packet: 0x%.2x\n", data[0]);
 #endif
             break;
+        }
+    }
+
+    if (ctx->is_bluetooth && packet_count == 0) {
+        /* Check to see if it looks like the device disconnected */
+        if (SDL_TICKS_PASSED(SDL_GetTicks(), ctx->last_packet + BLUETOOTH_DISCONNECT_TIMEOUT_MS)) {
+            /* Send an empty output report to tickle the Bluetooth stack */
+            HIDAPI_DriverPS4_TickleBluetooth(device);
         }
     }
 

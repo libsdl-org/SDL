@@ -508,6 +508,20 @@ HIDAPI_DriverPS5_CheckPendingLEDReset(SDL_HIDAPI_Device *device)
 }
 
 static void
+HIDAPI_DriverPS5_TickleBluetooth(SDL_HIDAPI_Device *device)
+{
+    /* This is just a dummy packet that should have no effect, since we don't set the CRC */
+    Uint8 data[78];
+
+    SDL_zero(data);
+
+    data[0] = k_EPS5ReportIdBluetoothEffects;
+    data[1] = 0x02;  /* Magic value */
+
+    SDL_HIDAPI_SendRumble(device, data, sizeof(data));
+}
+
+static void
 HIDAPI_DriverPS5_SetEnhancedMode(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     SDL_DriverPS5_Context *ctx = (SDL_DriverPS5_Context *)device->context;
@@ -991,7 +1005,7 @@ HIDAPI_DriverPS5_UpdateDevice(SDL_HIDAPI_Device *device)
         /* Check to see if it looks like the device disconnected */
         if (SDL_TICKS_PASSED(SDL_GetTicks(), ctx->last_packet + BLUETOOTH_DISCONNECT_TIMEOUT_MS)) {
             /* Send an empty output report to tickle the Bluetooth stack */
-            HIDAPI_DriverPS5_UpdateEffects(device, k_EDS5EffectNone);
+            HIDAPI_DriverPS5_TickleBluetooth(device);
         }
     }
 
