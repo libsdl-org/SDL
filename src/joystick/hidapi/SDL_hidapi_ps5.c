@@ -27,6 +27,7 @@
 #include "SDL_timer.h"
 #include "SDL_joystick.h"
 #include "SDL_gamecontroller.h"
+#include "../../SDL_hints_c.h"
 #include "../SDL_sysjoystick.h"
 #include "SDL_hidapijoystick_c.h"
 #include "SDL_hidapi_rumble.h"
@@ -150,6 +151,8 @@ typedef struct {
 } IMUCalibrationData;
 
 typedef struct {
+    SDL_HIDAPI_Device *device;
+    SDL_Joystick *joystick;
     SDL_bool is_bluetooth;
     SDL_bool effects_supported;
     SDL_bool report_sensors;
@@ -509,14 +512,26 @@ HIDAPI_DriverPS5_SetEffectsSupported(SDL_HIDAPI_Device *device, SDL_Joystick *jo
 {
     SDL_DriverPS5_Context *ctx = (SDL_DriverPS5_Context *)device->context;
 
-    ctx->effects_supported = SDL_TRUE;
+    if (!ctx->effects_supported) {
+        ctx->effects_supported = SDL_TRUE;
 
-    SDL_PrivateJoystickAddTouchpad(joystick, 2);
-    SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO);
-    SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL);
+        SDL_PrivateJoystickAddTouchpad(joystick, 2);
+        SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO);
+        SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL);
 
-    HIDAPI_DriverPS5_UpdateEffects(device, k_EDS5EffectLED);
-    HIDAPI_DriverPS5_UpdateEffects(device, k_EDS5EffectPadLights);
+        HIDAPI_DriverPS5_UpdateEffects(device, k_EDS5EffectLED);
+        HIDAPI_DriverPS5_UpdateEffects(device, k_EDS5EffectPadLights);
+    }
+}
+
+static void SDLCALL SDL_PS5RumbleHintChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+{
+    SDL_DriverPS5_Context *ctx = (SDL_DriverPS5_Context *)userdata;
+
+    /* This is a one-way trip, you can't switch the controller back to simple report mode */
+    if (SDL_GetStringBoolean(hint, SDL_FALSE)) {
+        HIDAPI_DriverPS5_SetEffectsSupported(ctx->device, ctx->joystick);
+    }
 }
 
 static void
@@ -548,6 +563,8 @@ HIDAPI_DriverPS5_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
         SDL_OutOfMemory();
         return SDL_FALSE;
     }
+    ctx->device = device;
+    ctx->joystick = joystick;
     ctx->last_packet = SDL_GetTicks();
 
     device->dev = hid_open_path(device->path, 0);
@@ -594,7 +611,7 @@ HIDAPI_DriverPS5_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
         }
     }
 
-    if (!joystick->serial && SDL_strlen(device->serial) == 12) {
+    if (!joystick->serial && device->serial && SDL_strlen(device->serial) == 12) {
         int i, j;
         char serial[18];
 
@@ -622,8 +639,10 @@ HIDAPI_DriverPS5_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 
     if (effects_supported) {
         HIDAPI_DriverPS5_SetEffectsSupported(device, joystick);
+    } else {
+        SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI_PS5_RUMBLE,
+                            SDL_PS5RumbleHintChanged, ctx);
     }
-
     return SDL_TRUE;
 }
 
@@ -985,6 +1004,11 @@ HIDAPI_DriverPS5_UpdateDevice(SDL_HIDAPI_Device *device)
 static void
 HIDAPI_DriverPS5_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
+    SDL_DriverPS5_Context *ctx = (SDL_DriverPS5_Context *)device->context;
+
+    SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_PS5_RUMBLE,
+                        SDL_PS5RumbleHintChanged, ctx);
+
     hid_close(device->dev);
     device->dev = NULL;
 
