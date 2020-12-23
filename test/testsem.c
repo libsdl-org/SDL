@@ -62,7 +62,7 @@ ThreadFuncRealWorld(void *data)
 
 static void
 TestRealWorld(int init_sem) {
-    Thread_State thread_states[NUM_THREADS] = {0};
+    Thread_State thread_states[NUM_THREADS] = { {0} };
     int i;
     int loop_count;
 
@@ -181,7 +181,7 @@ TestOverheadContended(SDL_bool try_wait)
     Uint32 start_ticks;
     Uint32 end_ticks;
     Uint32 duration;
-    Thread_State thread_states[NUM_THREADS] = {0};
+    Thread_State thread_states[NUM_THREADS] = { {0} };
     char textBuffer[1024];
     int loop_count;
     int content_count;
