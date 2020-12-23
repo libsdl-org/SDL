@@ -199,7 +199,7 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
     VkExtent2D image_size;
     VkDisplayModeKHR *display_mode = NULL;
     VkDisplayModePropertiesKHR display_mode_props = {0};
-    VkDisplayModeParametersKHR new_mode_parameters = {0};
+    VkDisplayModeParametersKHR new_mode_parameters = { {0, 0}, 0};
 
     VkResult result;
     SDL_bool ret = SDL_FALSE;
