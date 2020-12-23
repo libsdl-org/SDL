@@ -195,7 +195,7 @@ int VITA_JoystickOpen(SDL_Joystick *joystick, int device_index)
  * but instead should call SDL_PrivateJoystick*() to deliver events
  * and update joystick device state.
  */
-void VITA_JoystickUpdate(SDL_Joystick *joystick)
+static void VITA_JoystickUpdate(SDL_Joystick *joystick)
 {
     int i;
     unsigned int buttons;
@@ -291,6 +291,31 @@ VITA_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16
     return SDL_Unsupported();
 }
 
+static int
+VITA_JoystickRumbleTriggers(SDL_Joystick * joystick, Uint16 left, Uint16 right)
+{
+    return SDL_Unsupported();
+}
+
+static SDL_bool
+VITA_JoystickHasLED(SDL_Joystick * joystick)
+{
+    return SDL_FALSE;
+}
+
+
+static int
+VITA_JoystickSetLED(SDL_Joystick * joystick, Uint8 red, Uint8 green, Uint8 blue)
+{
+    return SDL_Unsupported();
+}
+
+static int
+VITA_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
+{
+    return SDL_Unsupported();
+}
+
 
 SDL_JoystickDriver SDL_VITA_JoystickDriver =
 {
@@ -304,7 +329,14 @@ SDL_JoystickDriver SDL_VITA_JoystickDriver =
     VITA_JoystickGetDeviceInstanceID,
 
     VITA_JoystickOpen,
+
     VITA_JoystickRumble,
+    VITA_JoystickRumbleTriggers,
+
+    VITA_JoystickHasLED,
+    VITA_JoystickSetLED,
+    VITA_JoystickSetSensorsEnabled,
+
     VITA_JoystickUpdate,
     VITA_JoystickClose,
     VITA_JoystickQuit,
