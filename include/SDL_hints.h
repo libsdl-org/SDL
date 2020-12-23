@@ -1197,6 +1197,20 @@ extern "C" {
 #define SDL_HINT_WINDOWS_DISABLE_THREAD_NAMING "SDL_WINDOWS_DISABLE_THREAD_NAMING"
 
 /**
+ * \brief Force SDL to use Critical Sections for mutexes on Windows.
+ *        On Windows 7 and newer, Slim Reader/Writer Locks are available.
+ *        They offer better performance, allocate no kernel ressources and
+ *        use less memory. SDL will fall back to Critical Sections on older
+ *        OS versions or if forced to by this hint.
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - Use SRW Locks when available. If not, fall back to Critical Sections. (default)
+ *    "1"       - Force the use of Critical Sections in all cases.
+ *
+ */
+#define SDL_HINT_WINDOWS_FORCE_MUTEX_CRITICAL_SECTIONS "SDL_WINDOWS_FORCE_MUTEX_CRITICAL_SECTIONS"
+
+/**
  * \brief Tell SDL which Dispmanx layer to use on a Raspberry PI
  *
  * Also known as Z-order. The variable can take a negative or positive value.
