@@ -849,3 +849,4 @@ SDL_DYNAPI_PROC(SDL_bool,SDL_GameControllerIsSensorEnabled,(SDL_GameController *
 SDL_DYNAPI_PROC(int,SDL_GameControllerGetSensorData,(SDL_GameController *a, SDL_SensorType b, float *c, int d),(a,b,c,d),return)
 SDL_DYNAPI_PROC(int,SDL_wcscasecmp,(const wchar_t *a, const wchar_t *b),(a,b),return)
 SDL_DYNAPI_PROC(int,SDL_wcsncasecmp,(const wchar_t *a, const wchar_t *b, size_t c),(a,b,c),return)
+SDL_DYNAPI_PROC(int,SDL_SoftStretchLinear,(SDL_Surface *a, const SDL_Rect *b, SDL_Surface *c, const SDL_Rect *d),(a,b,c,d),return)

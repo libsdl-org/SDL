@@ -788,3 +788,4 @@
 #define SDL_GameControllerGetSensorData SDL_GameControllerGetSensorData_REAL
 #define SDL_wcscasecmp SDL_wcscasecmp_REAL
 #define SDL_wcsncasecmp SDL_wcsncasecmp_REAL
+#define SDL_SoftStretchLinear SDL_SoftStretchLinear_REAL
