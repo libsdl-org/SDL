@@ -512,7 +512,7 @@ printf_64(const char *str, void *var)
 
 /* Interpolated == x0 + frac * (x1 - x0) == x0 * (1 - frac) + x1 * frac */
 
-static inline void
+static SDL_INLINE void
 INTERPOL(const Uint32 *src_x0, const Uint32 *src_x1, int frac0, int frac1, Uint32 *dst)
 {
     const color_t *c0 = (const color_t *)src_x0;
@@ -531,7 +531,7 @@ INTERPOL(const Uint32 *src_x0, const Uint32 *src_x1, int frac0, int frac1, Uint3
 #endif
 }
 
-static inline void
+static SDL_INLINE void
 INTERPOL_BILINEAR(const Uint32 *s0, const Uint32 *s1, int frac_w0, int frac_h0, int frac_h1, Uint32 *dst)
 {
     Uint32 tmp[2];
@@ -622,7 +622,7 @@ printf_128(const char *str, __m128i var)
 }
 #endif
 
-static inline int
+static SDL_INLINE int
 hasSSE2()
 {
     static int val = -1;
@@ -633,7 +633,7 @@ hasSSE2()
     return val;
 }
 
-static inline void
+static SDL_INLINE void
 INTERPOL_BILINEAR_SSE(const Uint32 *s0, const Uint32 *s1, int frac_w, __m128i v_frac_h0, __m128i v_frac_h1, Uint32 *dst, __m128i zero)
 {
     __m128i x_00_01, x_10_11; /* Pixels in 4*uint8 in row */
@@ -795,7 +795,7 @@ scale_mat_SSE(const Uint32 *src, int src_w, int src_h, int src_pitch, Uint32 *ds
 
 #if defined(HAVE_NEON_INTRINSICS)
 
-static inline int
+static SDL_INLINE int
 hasNEON()
 {
     static int val = -1;
@@ -806,7 +806,7 @@ hasNEON()
     return val;
 }
 
-static inline void
+static SDL_INLINE void
 INTERPOL_BILINEAR_NEON(const Uint32 *s0, const Uint32 *s1, int frac_w, uint8x8_t v_frac_h0, uint8x8_t v_frac_h1, Uint32 *dst)
 {
     uint8x8_t x_00_01, x_10_11; /* Pixels in 4*uint8 in row */
