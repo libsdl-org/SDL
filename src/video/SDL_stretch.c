@@ -442,16 +442,15 @@ SDL_SoftStretchLowerNearest(SDL_Surface *src, const SDL_Rect *srcrect,
 
 
 
-
-static void
 #if defined(__clang__)
 // Remove inlining of this function
-// Crash with clang 9.0.8 / android-ndk-r21d
-// Ok with clang 11.0.5 / android-ndk-22
-#  if __clang_major__ == 9
+// Compiler crash with clang 9.0.8 / android-ndk-r21d
+// Compiler crash with clang 11.0.3 / Xcode
+// OK with clang 11.0.5 / android-ndk-22
+// OK with clang 12.0.0 / Xcode
 __attribute__((noinline))
-#  endif
 #endif
+static void
 get_scaler_datas(int src_nb, int dst_nb, int *fp_start, int *fp_step, int *left_pad, int *right_pad)
 {
 
