@@ -448,7 +448,7 @@ static void
 // Remove inlining of this function
 // Crash with clang 9.0.8 / android-ndk-r21d
 // Ok with clang 11.0.5 / android-ndk-22
-#  if __clang_major__ == 9 && __clang_minor__ == 0 && __clang_patchlevel__ == 8
+#  if __clang_major__ == 9
 __attribute__((noinline))
 #  endif
 #endif
