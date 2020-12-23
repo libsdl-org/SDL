@@ -166,8 +166,12 @@
 #cmakedefine HAVE_LOGF 1
 #cmakedefine HAVE_LOG10 1
 #cmakedefine HAVE_LOG10F 1
+#cmakedefine HAVE_LROUND 1
+#cmakedefine HAVE_LROUNDF 1
 #cmakedefine HAVE_POW 1
 #cmakedefine HAVE_POWF 1
+#cmakedefine HAVE_ROUND 1
+#cmakedefine HAVE_ROUNDF 1
 #cmakedefine HAVE_SCALBN 1
 #cmakedefine HAVE_SCALBNF 1
 #cmakedefine HAVE_SIN 1

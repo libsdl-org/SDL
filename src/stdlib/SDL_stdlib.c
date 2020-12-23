@@ -365,6 +365,50 @@ SDL_powf(float x, float y)
 }
 
 double
+SDL_round(double arg)
+{
+#if defined HAVE_ROUND
+    return round(arg);
+#else
+    if (arg >= 0.0) {
+        return SDL_floor(arg + 0.5);
+    } else {
+        return SDL_ceil(arg - 0.5);
+    }
+#endif
+}
+
+float
+SDL_roundf(float arg)
+{
+#if defined HAVE_ROUNDF
+    return roundf(arg);
+#else
+    return (float)SDL_round((double)arg);
+#endif
+}
+
+long
+SDL_lround(double arg)
+{
+#if defined HAVE_LROUND
+    return lround(arg);
+#else
+    return (long)SDL_round(arg);
+#endif
+}
+
+long
+SDL_lroundf(float arg)
+{
+#if defined HAVE_LROUNDF
+    return lroundf(arg);
+#else
+    return (long)SDL_round((double)arg);
+#endif
+}
+
+double
 SDL_scalbn(double x, int n)
 {
 #if defined(HAVE_SCALBN)

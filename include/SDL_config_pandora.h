@@ -95,6 +95,10 @@
 #define HAVE_FLOOR 1
 #define HAVE_LOG 1
 #define HAVE_LOG10 1
+#define HAVE_LROUND 1
+#define HAVE_LROUNDF 1
+#define HAVE_ROUND 1
+#define HAVE_ROUNDF 1
 #define HAVE_SCALBN 1
 #define HAVE_SIN 1
 #define HAVE_SINF 1

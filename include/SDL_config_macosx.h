@@ -115,8 +115,12 @@
 #define HAVE_LOGF   1
 #define HAVE_LOG10  1
 #define HAVE_LOG10F 1
+#define HAVE_LROUND 1
+#define HAVE_LROUNDF 1
 #define HAVE_POW    1
 #define HAVE_POWF   1
+#define HAVE_ROUND 1
+#define HAVE_ROUNDF 1
 #define HAVE_SCALBN 1
 #define HAVE_SCALBNF    1
 #define HAVE_SIN    1

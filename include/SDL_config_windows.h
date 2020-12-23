@@ -173,6 +173,10 @@ typedef unsigned int uintptr_t;
 #if _MSC_VER >= 1800
 #define HAVE_STRTOLL 1
 #define HAVE_VSSCANF 1
+#define HAVE_LROUND 1
+#define HAVE_LROUNDF 1
+#define HAVE_ROUND 1
+#define HAVE_ROUNDF 1
 #define HAVE_SCALBN 1
 #define HAVE_SCALBNF 1
 #define HAVE_TRUNC  1

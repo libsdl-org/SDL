@@ -116,16 +116,6 @@ WINRT_TransformCursorPosition(SDL_Window * window,
     return outputPosition;
 }
 
-static inline int
-_lround(float arg)
-{
-    if (arg >= 0.0f) {
-        return (int)floor(arg + 0.5f);
-    } else {
-        return (int)ceil(arg - 0.5f);
-    }
-}
-
 Uint8
 WINRT_GetSDLButtonForPointerPoint(Windows::UI::Input::PointerPoint ^pt)
 {
@@ -389,8 +379,8 @@ WINRT_ProcessMouseMovedEvent(SDL_Window * window, Windows::Devices::Input::Mouse
         window,
         0,
         1,
-        _lround(mouseDeltaInSDLWindowCoords.X),
-        _lround(mouseDeltaInSDLWindowCoords.Y));
+        SDL_lroundf(mouseDeltaInSDLWindowCoords.X),
+        SDL_lroundf(mouseDeltaInSDLWindowCoords.Y));
 }
 
 #endif // SDL_VIDEO_DRIVER_WINRT
