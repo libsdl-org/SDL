@@ -44,12 +44,6 @@
 
 SDL_Window *Vita_Window;
 
-static int
-VITA_Available(void)
-{
-    return 1;
-}
-
 static void
 VITA_Destroy(SDL_VideoDevice * device)
 {
@@ -152,7 +146,6 @@ VITA_Create()
 VideoBootStrap VITA_bootstrap = {
     "VITA",
     "VITA Video Driver",
-    VITA_Available,
     VITA_Create
 };
 
@@ -181,7 +174,7 @@ VITA_VideoInit(_THIS)
     display.current_mode = current_mode;
     display.driverdata = NULL;
 
-    SDL_AddVideoDisplay(&display);
+    SDL_AddVideoDisplay(&display, SDL_FALSE);
     VITA_InitTouch();
     VITA_InitKeyboard();
     VITA_InitMouse();
