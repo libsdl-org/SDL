@@ -175,6 +175,9 @@
 #define __SDL_NOGETPROCADDR__
 #endif
 
+#if defined(__vita__)
+#define __VITA__ 1
+#endif
 
 #include "begin_code.h"
 /* Set up for C function definitions, even when using C++ */
