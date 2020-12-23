@@ -28,6 +28,7 @@
 
 #include "SDL_video.h"
 #include "SDL_blit.h"
+#include "SDL_render.h"
 
 /* This isn't ready for general consumption yet - it should be folded
    into the general blitting mechanism.
@@ -196,29 +197,28 @@ copy_row3(Uint8 * src, int src_w, Uint8 * dst, int dst_w)
     }
 }
 
+static int SDL_SoftStretchLowerNearest(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect);
+static int SDL_UpperSoftStretch(SDL_Surface * src, const SDL_Rect * srcrect, SDL_Surface * dst, const SDL_Rect * dstrect, SDL_ScaleMode scaleMode);
+
 /* Perform a stretch blit between two surfaces of the same format.
    NOTE:  This function is not safe to call from multiple threads!
 */
 int
-SDL_SoftStretch(SDL_Surface * src, const SDL_Rect * srcrect,
-                SDL_Surface * dst, const SDL_Rect * dstrect)
+SDL_SoftStretch(SDL_Surface *src, const SDL_Rect *srcrect,
+                SDL_Surface *dst, const SDL_Rect *dstrect)
 {
+    return SDL_UpperSoftStretch(src, srcrect, dst, dstrect, SDL_ScaleModeNearest);
+}
+
+static int
+SDL_UpperSoftStretch(SDL_Surface * src, const SDL_Rect * srcrect,
+                SDL_Surface * dst, const SDL_Rect * dstrect, SDL_ScaleMode scaleMode)
+{
+    int ret;
     int src_locked;
     int dst_locked;
-    int pos, inc;
-    int dst_maxrow;
-    int src_row, dst_row;
-    Uint8 *srcp = NULL;
-    Uint8 *dstp;
     SDL_Rect full_src;
     SDL_Rect full_dst;
-#ifdef USE_ASM_STRETCH
-    SDL_bool use_asm = SDL_TRUE;
-#ifdef __GNUC__
-    int u1, u2;
-#endif
-#endif /* USE_ASM_STRETCH */
-    const int bpp = dst->format->BytesPerPixel;
 
     if (src->format->format != dst->format->format) {
         return SDL_SetError("Only works with same format surfaces");
@@ -271,6 +271,39 @@ SDL_SoftStretch(SDL_Surface * src, const SDL_Rect * srcrect,
         }
         src_locked = 1;
     }
+
+    if (scaleMode == SDL_ScaleModeNearest) {
+        ret = SDL_SoftStretchLowerNearest(src, srcrect, dst, dstrect); 
+    }
+
+    /* We need to unlock the surfaces if they're locked */
+    if (dst_locked) {
+        SDL_UnlockSurface(dst);
+    }
+    if (src_locked) {
+        SDL_UnlockSurface(src);
+    }
+
+    return ret;
+}
+
+
+int
+SDL_SoftStretchLowerNearest(SDL_Surface *src, const SDL_Rect *srcrect,
+                SDL_Surface *dst, const SDL_Rect *dstrect)
+{
+    int pos, inc;
+    int dst_maxrow;
+    int src_row, dst_row;
+    Uint8 *srcp = NULL;
+    Uint8 *dstp;
+#ifdef USE_ASM_STRETCH
+    SDL_bool use_asm = SDL_TRUE;
+#ifdef __GNUC__
+    int u1, u2;
+#endif
+#endif /* USE_ASM_STRETCH */
+    const int bpp = dst->format->BytesPerPixel;
 
     /* Set up the data... */
     pos = 0x10000;
@@ -340,14 +373,7 @@ SDL_SoftStretch(SDL_Surface * src, const SDL_Rect * srcrect,
         pos += inc;
     }
 
-    /* We need to unlock the surfaces if they're locked */
-    if (dst_locked) {
-        SDL_UnlockSurface(dst);
-    }
-    if (src_locked) {
-        SDL_UnlockSurface(src);
-    }
-    return (0);
+    return 0;
 }
 
 /* vi: set ts=4 sw=4 expandtab: */
