@@ -247,10 +247,10 @@ static void createInstance(void)
     VkInstanceCreateInfo instanceCreateInfo = {0};
     const char **extensions = NULL;
     unsigned extensionCount = 0;
-	VkResult result;
+    VkResult result;
 
 
-	appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+    appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
     appInfo.apiVersion = VK_API_VERSION_1_0;
     instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     instanceCreateInfo.pApplicationInfo = &appInfo;
@@ -323,12 +323,12 @@ static void createSurface(void)
 static void findPhysicalDevice(void)
 {
     uint32_t physicalDeviceCount = 0;
-	VkPhysicalDevice *physicalDevices;
-	VkQueueFamilyProperties *queueFamiliesProperties = NULL;
+    VkPhysicalDevice *physicalDevices;
+    VkQueueFamilyProperties *queueFamiliesProperties = NULL;
     uint32_t queueFamiliesPropertiesAllocatedSize = 0;
     VkExtensionProperties *deviceExtensions = NULL;
     uint32_t deviceExtensionsAllocatedSize = 0;
-	uint32_t physicalDeviceIndex;
+    uint32_t physicalDeviceIndex;
 
     VkResult result =
         vkEnumeratePhysicalDevices(vulkanContext.instance, &physicalDeviceCount, NULL);
@@ -366,13 +366,13 @@ static void findPhysicalDevice(void)
         physicalDeviceIndex++)
     {
         uint32_t queueFamiliesCount = 0;
-		uint32_t queueFamilyIndex;
+        uint32_t queueFamilyIndex;
         uint32_t deviceExtensionCount = 0;
-		SDL_bool hasSwapchainExtension = SDL_FALSE;
-		uint32_t i;
+        SDL_bool hasSwapchainExtension = SDL_FALSE;
+        uint32_t i;
 
 
-		VkPhysicalDevice physicalDevice = physicalDevices[physicalDeviceIndex];
+        VkPhysicalDevice physicalDevice = physicalDevices[physicalDeviceIndex];
         vkGetPhysicalDeviceProperties(physicalDevice, &vulkanContext.physicalDeviceProperties);
         if(VK_VERSION_MAJOR(vulkanContext.physicalDeviceProperties.apiVersion) < 1)
             continue;
@@ -403,7 +403,7 @@ static void findPhysicalDevice(void)
         {
             VkBool32 supported = 0;
 
-			if(queueFamiliesProperties[queueFamilyIndex].queueCount == 0)
+            if(queueFamiliesProperties[queueFamilyIndex].queueCount == 0)
                 continue;
             if(queueFamiliesProperties[queueFamilyIndex].queueFlags & VK_QUEUE_GRAPHICS_BIT)
                 vulkanContext.graphicsQueueFamilyIndex = queueFamilyIndex;
@@ -495,15 +495,15 @@ static void findPhysicalDevice(void)
 
 static void createDevice(void)
 {
-    VkDeviceQueueCreateInfo deviceQueueCreateInfo[1] = {0};
+    VkDeviceQueueCreateInfo deviceQueueCreateInfo[1] = { {0} };
     static const float queuePriority[] = {1.0f};
     VkDeviceCreateInfo deviceCreateInfo = {0};
     static const char *const deviceExtensionNames[] = {
         VK_KHR_SWAPCHAIN_EXTENSION_NAME,
     };
-	VkResult result;
+    VkResult result;
 
-	deviceQueueCreateInfo->sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+    deviceQueueCreateInfo->sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
     deviceQueueCreateInfo->queueFamilyIndex = vulkanContext.graphicsQueueFamilyIndex;
     deviceQueueCreateInfo->queueCount = 1;
     deviceQueueCreateInfo->pQueuePriorities = &queuePriority[0];
@@ -562,7 +562,7 @@ static void getQueues(void)
 
 static void createSemaphore(VkSemaphore *semaphore)
 {
-	VkResult result;
+    VkResult result;
 
     VkSemaphoreCreateInfo createInfo = {0};
     createInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
@@ -647,7 +647,7 @@ static void getSurfaceFormats(void)
 
 static void getSwapchainImages(void)
 {
-	VkResult result;
+    VkResult result;
 
     SDL_free(vulkanContext.swapchainImages);
     vulkanContext.swapchainImages = NULL;
@@ -685,10 +685,10 @@ static void getSwapchainImages(void)
 
 static SDL_bool createSwapchain(void)
 {
-	uint32_t i;
-	int w, h;
-	VkSwapchainCreateInfoKHR createInfo = {0};
-	VkResult result;
+    uint32_t i;
+    int w, h;
+    VkSwapchainCreateInfoKHR createInfo = {0};
+    VkResult result;
 
     // pick an image count
     vulkanContext.swapchainDesiredImageCount = vulkanContext.surfaceCapabilities.minImageCount + 1;
@@ -783,7 +783,7 @@ static void destroyCommandPool(void)
 
 static void createCommandPool(void)
 {
-	VkResult result;
+    VkResult result;
 
     VkCommandPoolCreateInfo createInfo = {0};
     createInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
@@ -804,7 +804,7 @@ static void createCommandPool(void)
 
 static void createCommandBuffers(void)
 {
-	VkResult result;
+    VkResult result;
 
     VkCommandBufferAllocateInfo allocateInfo = {0};
     allocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -828,7 +828,7 @@ static void createCommandBuffers(void)
 
 static void createFences(void)
 {
-	uint32_t i;
+    uint32_t i;
 
     vulkanContext.fences = SDL_malloc(sizeof(VkFence) * vulkanContext.swapchainImageCount);
     if(!vulkanContext.fences)
@@ -838,7 +838,7 @@ static void createFences(void)
     }
     for(i = 0; i < vulkanContext.swapchainImageCount; i++)
     {
-		VkResult result;
+        VkResult result;
 
         VkFenceCreateInfo createInfo = {0};
         createInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
@@ -863,7 +863,7 @@ static void createFences(void)
 
 static void destroyFences(void)
 {
-	uint32_t i;
+    uint32_t i;
 
     if(!vulkanContext.fences)
         return;
@@ -912,7 +912,7 @@ static void rerecordCommandBuffer(uint32_t frameIndex, const VkClearColorValue *
 {
     VkCommandBuffer commandBuffer = vulkanContext.commandBuffers[frameIndex];
     VkImage image = vulkanContext.swapchainImages[frameIndex];
-	VkCommandBufferBeginInfo beginInfo = {0};
+    VkCommandBufferBeginInfo beginInfo = {0};
     VkImageSubresourceRange clearRange = {0};
 
     VkResult result = vkResetCommandBuffer(commandBuffer, 0);
@@ -1024,7 +1024,7 @@ static SDL_bool render(void)
     uint32_t frameIndex;
     VkResult result;
     double currentTime;
-    VkClearColorValue clearColor = {0};
+    VkClearColorValue clearColor = { {0} };
     VkPipelineStageFlags waitDestStageMask = VK_PIPELINE_STAGE_TRANSFER_BIT;
     VkSubmitInfo submitInfo = {0};
     VkPresentInfoKHR presentInfo = {0};
