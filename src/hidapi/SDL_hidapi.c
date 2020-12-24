@@ -434,6 +434,8 @@ struct _HIDDeviceWrapper
     const struct hidapi_backend *backend;
 };
 
+#if HAVE_PLATFORM_BACKEND || HAVE_DRIVER_BACKEND || SDL_LIBUSB_DYNAMIC
+
 static HIDDeviceWrapper *
 CreateHIDDeviceWrapper(hid_device *device, const struct hidapi_backend *backend)
 {
@@ -448,6 +450,8 @@ WrapHIDDevice(HIDDeviceWrapper *wrapper)
 {
     return (hid_device *)wrapper;
 }
+
+#endif /* HAVE_PLATFORM_BACKEND || HAVE_DRIVER_BACKEND || SDL_LIBUSB_DYNAMIC */
 
 static HIDDeviceWrapper *
 UnwrapHIDDevice(hid_device *device)
@@ -547,13 +551,14 @@ static SDL_bool SDL_hidapi_wasinit = SDL_FALSE;
 
 int HID_API_EXPORT HID_API_CALL hid_init(void)
 {
-    int err;
+    int attempts = 0, success = 0;
 
     if (SDL_hidapi_wasinit == SDL_TRUE) {
         return 0;
     }
 
 #ifdef SDL_LIBUSB_DYNAMIC
+    ++attempts;
     libusb_ctx.libhandle = SDL_LoadObject(SDL_LIBUSB_DYNAMIC);
     if (libusb_ctx.libhandle != NULL) {
         SDL_bool loaded = SDL_TRUE;
@@ -587,36 +592,32 @@ int HID_API_EXPORT HID_API_CALL hid_init(void)
         LOAD_LIBUSB_SYMBOL(handle_events_completed)
         #undef LOAD_LIBUSB_SYMBOL
 
-        if (loaded == SDL_TRUE) {
-            if ((err = LIBUSB_hid_init()) < 0) {
-                SDL_UnloadObject(libusb_ctx.libhandle);
-                libusb_ctx.libhandle = NULL;
-                return err;
-            }
-        } else {
+        if (!loaded) {
             SDL_UnloadObject(libusb_ctx.libhandle);
             libusb_ctx.libhandle = NULL;
-            /* SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, SDL_LIBUSB_DYNAMIC " found but could not load function."); */
-            /* ignore error: continue without libusb */
+            /* SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, SDL_LIBUSB_DYNAMIC " found but could not load function"); */
+        } else if (LIBUSB_hid_init() < 0) {
+            SDL_UnloadObject(libusb_ctx.libhandle);
+            libusb_ctx.libhandle = NULL;
+        } else {
+            ++success;
         }
     }
 #endif /* SDL_LIBUSB_DYNAMIC */
 
 #if HAVE_PLATFORM_BACKEND
+    ++attempts;
 #if __LINUX__
     udev_ctx = SDL_UDEV_GetUdevSyms();
 #endif /* __LINUX __ */
-    if (udev_ctx && (err = PLATFORM_hid_init()) < 0) {
-#ifdef SDL_LIBUSB_DYNAMIC
-        if (libusb_ctx.libhandle) {
-            LIBUSB_hid_exit();
-            SDL_UnloadObject(libusb_ctx.libhandle);
-            libusb_ctx.libhandle = NULL;
-        }
-#endif /* SDL_LIBUSB_DYNAMIC */
-        return err;
+    if (udev_ctx && PLATFORM_hid_init() == 0) {
+        ++success;
     }
 #endif /* HAVE_PLATFORM_BACKEND */
+
+    if (attempts > 0 && success == 0) {
+        return -1;
+    }
 
     SDL_hidapi_wasinit = SDL_TRUE;
     return 0;
@@ -624,7 +625,7 @@ int HID_API_EXPORT HID_API_CALL hid_init(void)
 
 int HID_API_EXPORT HID_API_CALL hid_exit(void)
 {
-    int err = 0;
+    int result = 0;
 
     if (SDL_hidapi_wasinit == SDL_FALSE) {
         return 0;
@@ -633,21 +634,24 @@ int HID_API_EXPORT HID_API_CALL hid_exit(void)
 
 #if HAVE_PLATFORM_BACKEND
     if (udev_ctx) {
-        err = PLATFORM_hid_exit();
+        result |= PLATFORM_hid_exit();
     }
 #endif /* HAVE_PLATFORM_BACKEND */
+
 #ifdef SDL_LIBUSB_DYNAMIC
     if (libusb_ctx.libhandle) {
-        err |= LIBUSB_hid_exit(); /* Ehhhhh */
+        result |= LIBUSB_hid_exit();
         SDL_UnloadObject(libusb_ctx.libhandle);
         libusb_ctx.libhandle = NULL;
     }
 #endif /* SDL_LIBUSB_DYNAMIC */
-    return err;
+
+    return result;
 }
 
 struct hid_device_info HID_API_EXPORT * HID_API_CALL hid_enumerate(unsigned short vendor_id, unsigned short product_id)
 {
+#if HAVE_PLATFORM_BACKEND || HAVE_DRIVER_BACKEND || SDL_LIBUSB_DYNAMIC
 #ifdef SDL_LIBUSB_DYNAMIC
     struct LIBUSB_hid_device_info *usb_devs = NULL;
     struct LIBUSB_hid_device_info *usb_dev;
@@ -779,6 +783,10 @@ struct hid_device_info HID_API_EXPORT * HID_API_CALL hid_enumerate(unsigned shor
     }
 #endif
     return devs;
+
+#else
+    return NULL;
+#endif /* HAVE_PLATFORM_BACKEND || HAVE_DRIVER_BACKEND || SDL_LIBUSB_DYNAMIC */
 }
 
 void  HID_API_EXPORT HID_API_CALL hid_free_enumeration(struct hid_device_info *devs)
