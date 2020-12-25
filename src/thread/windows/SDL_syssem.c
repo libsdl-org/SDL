@@ -66,11 +66,17 @@ static SDL_sem_impl_t SDL_sem_impl_active = {0};
  * Atomic + WaitOnAddress implementation
  */
 
+#if __WINRT__
+/* Functions are guaranteed to be available */
+#define pWaitOnAddress WaitOnAddress
+#define pWakeByAddressSingle WakeByAddressSingle
+#else
 typedef BOOL(WINAPI *pfnWaitOnAddress)(volatile VOID*, PVOID, SIZE_T, DWORD);
 typedef VOID(WINAPI *pfnWakeByAddressSingle)(PVOID);
 
 static pfnWaitOnAddress pWaitOnAddress = NULL;
 static pfnWakeByAddressSingle pWakeByAddressSingle = NULL;
+#endif
 
 typedef struct SDL_semaphore_atom
 {
@@ -387,6 +393,10 @@ SDL_CreateSemaphore(Uint32 initial_value)
         const SDL_sem_impl_t * impl = &SDL_sem_impl_kern;
 
         if (!SDL_GetHintBoolean(SDL_HINT_WINDOWS_FORCE_SEMAPHORE_KERNEL, SDL_FALSE)) {
+#if __WINRT__
+            /* Link statically on this platform */
+            impl = &SDL_sem_impl_atom;
+#else
             /* We already statically link to features from this Api
              * Set (e.g. WaitForSingleObject). Dynamically loading
              * API Sets is not explicitly documented but according to
@@ -403,6 +413,7 @@ SDL_CreateSemaphore(Uint32 initial_value)
                     impl = &SDL_sem_impl_atom;
                 }
             }
+#endif
         }
 
         /* Copy instead of using pointer to save one level of indirection */
