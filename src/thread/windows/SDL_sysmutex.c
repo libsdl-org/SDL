@@ -66,12 +66,19 @@ typedef struct _SRWLOCK {
 } SRWLOCK, *PSRWLOCK;
 #endif
 
+#if __WINRT__
+/* Functions are guaranteed to be available */
+#define pReleaseSRWLockExclusive ReleaseSRWLockExclusive
+#define pAcquireSRWLockExclusive AcquireSRWLockExclusive
+#define pTryAcquireSRWLockExclusive TryAcquireSRWLockExclusive
+#else
 typedef VOID(WINAPI *pfnReleaseSRWLockExclusive)(PSRWLOCK);
 typedef VOID(WINAPI *pfnAcquireSRWLockExclusive)(PSRWLOCK);
 typedef BOOLEAN(WINAPI *pfnTryAcquireSRWLockExclusive)(PSRWLOCK);
 static pfnReleaseSRWLockExclusive pReleaseSRWLockExclusive = NULL;
 static pfnAcquireSRWLockExclusive pAcquireSRWLockExclusive = NULL;
 static pfnTryAcquireSRWLockExclusive pTryAcquireSRWLockExclusive = NULL;
+#endif
 
 typedef struct SDL_mutex_srw
 {
@@ -291,6 +298,10 @@ SDL_CreateMutex(void)
         const SDL_mutex_impl_t * impl = &SDL_mutex_impl_cs;
 
         if (!SDL_GetHintBoolean(SDL_HINT_WINDOWS_FORCE_MUTEX_CRITICAL_SECTIONS, SDL_FALSE)) {
+#if __WINRT__
+            /* Link statically on this platform */
+            impl = &SDL_mutex_impl_srw;
+#else
             /* Try faster implementation for Windows 7 and newer */
             HMODULE kernel32 = GetModuleHandleW(L"kernel32.dll");
             if (kernel32) {
@@ -303,6 +314,7 @@ SDL_CreateMutex(void)
                     impl = &SDL_mutex_impl_srw;
                 }
             }
+#endif
         }
 
         /* Copy instead of using pointer to save one level of indirection */
