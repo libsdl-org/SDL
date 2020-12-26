@@ -822,6 +822,8 @@ KMSDRM_CreateDevice(int devindex)
     viddata->devindex = devindex;
     viddata->drm_fd = -1;
 
+    viddata->vulkan_mode = SDL_FALSE;
+
     device->driverdata = viddata;
 
     /* Setup all functions that can be handled from this backend. */
@@ -1328,8 +1330,6 @@ KMSDRM_DestroySurfaces(_THIS, SDL_Window *window)
     SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
     KMSDRM_PlaneInfo plane_info = {0};
 
-    EGLContext egl_context;
-
     /********************************************************************/
     /* BLOCK 1: protect the PRIMARY PLANE before destroying the buffers */
     /* it's using, by making it point to the original CRTC buffer,      */
@@ -1370,17 +1370,9 @@ KMSDRM_DestroySurfaces(_THIS, SDL_Window *window)
 
     /***************************************************************************/
     /* Destroy the EGL surface.                                                */
-    /* In this eglMakeCurrent() call, we disable the current EGL surface       */
-    /* because we're going to destroy it, but DON'T disable the EGL context,   */
-    /* because it won't be enabled again until the programs ask for a pageflip */
-    /* so we get to SwapWindow().                                              */
-    /* If we disable the context until then and a program tries to retrieve    */
-    /* the context version info before calling for a pageflip, the program     */
-    /* will get wrong info and we will be in trouble.                          */
     /***************************************************************************/
 
-    egl_context = (EGLContext)SDL_GL_GetCurrentContext();
-    SDL_EGL_MakeCurrent(_this, EGL_NO_SURFACE, egl_context);
+    SDL_EGL_MakeCurrent(_this, EGL_NO_SURFACE, EGL_NO_CONTEXT);
 
     if (windata->egl_surface != EGL_NO_SURFACE) {
         SDL_EGL_DestroySurface(_this, windata->egl_surface);
@@ -1391,7 +1383,6 @@ KMSDRM_DestroySurfaces(_THIS, SDL_Window *window)
         KMSDRM_gbm_surface_destroy(windata->gs);
         windata->gs = NULL;
     }
-
 }
 
 int
@@ -1470,16 +1461,26 @@ KMSDRM_DestroyWindow(_THIS, SDL_Window *window)
         return;
     }
 
-    if (!is_vulkan) {
+    if ( !is_vulkan && dispdata->gbm_init ) {
+
+        /* Free cursor plane. */
+        KMSDRM_DeinitMouse(_this);
+
+        /* Destroy GBM surface and buffers. */
         KMSDRM_DestroySurfaces(_this, window);
 
+        /* Unload EGL library. */
         if (_this->egl_data) {
             SDL_EGL_UnloadLibrary(_this);
         }
+        /* Free display plane, and destroy GBM device. */
+        KMSDRM_GBMDeinit(_this, dispdata);
+    }
 
-        if (dispdata->gbm_init) {
-            KMSDRM_DeinitMouse(_this);
-            KMSDRM_GBMDeinit(_this, dispdata);
+    else {
+        /* If we were in Vulkan mode, get out of it. */
+        if (viddata->vulkan_mode) {
+            viddata->vulkan_mode = SDL_FALSE;
         }
     }
 
@@ -1528,7 +1529,6 @@ KMSDRM_ReconfigureWindow( _THIS, SDL_Window * window) {
         windata->output_x = 0;
 
     } else {
-
         /* Normal non-fullscreen windows are scaled using the CRTC,
            so get output (CRTC) size and position, for AR correction. */
         ratio = (float)window->w / (float)window->h;
@@ -1537,7 +1537,6 @@ KMSDRM_ReconfigureWindow( _THIS, SDL_Window * window) {
         windata->output_w = dispdata->mode.vdisplay * ratio;
         windata->output_h = dispdata->mode.vdisplay;
         windata->output_x = (dispdata->mode.hdisplay - windata->output_w) / 2;
-
     }
 
     if (!is_vulkan) {
@@ -1704,6 +1703,11 @@ KMSDRM_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
     drmModeConnector *conn = dispdata->connector->connector;
     int i;
 
+    /* Don't do anything if we are in Vulkan mode. */
+    if (viddata->vulkan_mode) {
+        return 0;
+    }
+
     if (!modedata) {
         return SDL_SetError("Mode doesn't have an associated index");
     }
@@ -1736,11 +1740,12 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
     SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
     SDL_DisplayData *dispdata = display->driverdata;
     SDL_bool is_vulkan = window->flags & SDL_WINDOW_VULKAN; /* Is this a VK window? */
+    SDL_bool vulkan_mode = viddata->vulkan_mode; /* Do we have any Vulkan windows? */
     NativeDisplayType egl_display;
     float ratio;
     int ret = 0;
 
-    if ( !(dispdata->gbm_init) && (!is_vulkan)) {
+    if ( !(dispdata->gbm_init) && !is_vulkan && !vulkan_mode ) {
          /* Reopen FD, create gbm dev, setup display plane, etc,.
             but only when we come here for the first time,
             and only if it's not a VK window. */
@@ -1804,7 +1809,8 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
     windata->viddata = viddata;
     window->driverdata = windata;
 
-    if (!is_vulkan) {
+    if (!is_vulkan && !vulkan_mode) {
+        /* Create the window surfaces. Needs the window diverdata in place. */
         if ((ret = KMSDRM_CreateSurfaces(_this, window))) {
             goto cleanup;
         }
@@ -1826,6 +1832,9 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
     }
 
     viddata->windows[viddata->num_windows++] = window;
+
+    /* If we have just created a Vulkan window, establish that we are in Vulkan mode now. */
+    viddata->vulkan_mode = is_vulkan;
 
     /* Focus on the newly created window */
     SDL_SetMouseFocus(window);
