@@ -659,7 +659,7 @@ PSP_QueueCopy(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * tex
 
         cmd->data.draw.count = count;
 
-        verts = (VertTV *) SDL_AllocateRenderVertices(renderer, count * sizeof (VertTV), 4, &cmd->data.draw.first);
+        verts = (VertTV *) SDL_AllocateRenderVertices(renderer, count * 2 * sizeof (VertTV), 4, &cmd->data.draw.first);
         if (!verts) {
             return -1;
         }
@@ -677,6 +677,7 @@ PSP_QueueCopy(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * tex
             verts->x = curX;
             verts->y = y;
             verts->z = 0;
+            verts++;
 
             curU += sourceWidth;
             curX += polyWidth;
@@ -686,6 +687,7 @@ PSP_QueueCopy(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * tex
             verts->x = curX;
             verts->y = (y + height);
             verts->z = 0;
+            verts++;
         }
     }
 
