@@ -26,6 +26,7 @@
 #include "SDL_RLEaccel_c.h"
 #include "SDL_pixels_c.h"
 #include "SDL_yuv_c.h"
+#include "../render/SDL_sysrender.h"
 
 
 /* Check to make sure we can safely check multiplication of surface w and pitch and it won't overflow size_t */
@@ -746,6 +747,14 @@ int
 SDL_UpperBlitScaled(SDL_Surface * src, const SDL_Rect * srcrect,
               SDL_Surface * dst, SDL_Rect * dstrect)
 {
+    return SDL_PrivateUpperBlitScaled(src, srcrect, dst, dstrect, SDL_ScaleModeNearest);
+}
+
+
+int
+SDL_PrivateUpperBlitScaled(SDL_Surface * src, const SDL_Rect * srcrect,
+              SDL_Surface * dst, SDL_Rect * dstrect, SDL_ScaleMode scaleMode)
+{
     double src_x0, src_y0, src_x1, src_y1;
     double dst_x0, dst_y0, dst_x1, dst_y1;
     SDL_Rect final_src, final_dst;
@@ -889,7 +898,7 @@ SDL_UpperBlitScaled(SDL_Surface * src, const SDL_Rect * srcrect,
         return 0;
     }
 
-    return SDL_LowerBlitScaled(src, &final_src, dst, &final_dst);
+    return SDL_PrivateLowerBlitScaled(src, &final_src, dst, &final_dst, scaleMode);
 }
 
 /**
@@ -899,6 +908,13 @@ SDL_UpperBlitScaled(SDL_Surface * src, const SDL_Rect * srcrect,
 int
 SDL_LowerBlitScaled(SDL_Surface * src, SDL_Rect * srcrect,
                 SDL_Surface * dst, SDL_Rect * dstrect)
+{
+    return SDL_PrivateLowerBlitScaled(src, srcrect, dst, dstrect, SDL_ScaleModeNearest);
+}
+
+int
+SDL_PrivateLowerBlitScaled(SDL_Surface * src, SDL_Rect * srcrect,
+                SDL_Surface * dst, SDL_Rect * dstrect, SDL_ScaleMode scaleMode)
 {
     static const Uint32 complex_copy_flags = (
         SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA |
@@ -914,7 +930,12 @@ SDL_LowerBlitScaled(SDL_Surface * src, SDL_Rect * srcrect,
     if ( !(src->map->info.flags & complex_copy_flags) &&
          src->format->format == dst->format->format &&
          !SDL_ISPIXELFORMAT_INDEXED(src->format->format) ) {
-        return SDL_SoftStretch( src, srcrect, dst, dstrect );
+
+        if (scaleMode != SDL_ScaleModeNearest && src->format->BytesPerPixel == 4 && src->format->format != SDL_PIXELFORMAT_ARGB2101010) {
+            return SDL_SoftStretchLinear(src, srcrect, dst, dstrect);
+        } else {
+            return SDL_SoftStretch( src, srcrect, dst, dstrect );
+        }
     } else {
         return SDL_LowerBlit( src, srcrect, dst, dstrect );
     }
