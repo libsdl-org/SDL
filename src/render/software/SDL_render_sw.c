@@ -434,7 +434,7 @@ SW_RenderCopyEx(SDL_Renderer * renderer, SDL_Surface *surface, SDL_Texture * tex
             retval = -1;
         } else {
             SDL_SetSurfaceBlendMode(src_clone, SDL_BLENDMODE_NONE);
-            retval = SDL_BlitScaled(src_clone, srcrect, src_scaled, &scale_rect);
+            retval = SDL_PrivateUpperBlitScaled(src_clone, srcrect, src_scaled, &scale_rect, texture->scaleMode);
             SDL_FreeSurface(src_clone);
             src_clone = src_scaled;
             src_scaled = NULL;
@@ -720,7 +720,7 @@ SW_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
                      * to avoid potentially frequent RLE encoding/decoding.
                      */
                     SDL_SetSurfaceRLE(surface, 0);
-                    SDL_BlitScaled(src, srcrect, surface, dstrect);
+                    SDL_PrivateUpperBlitScaled(src, srcrect, surface, dstrect, texture->scaleMode);
                 }
                 break;
             }
