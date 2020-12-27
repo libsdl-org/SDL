@@ -25818,27 +25818,27 @@ fi
 SDLTEST_SOURCES="$srcdir/src/test/*.c"
 
 if test x$video_wayland = xyes; then
-    WAYLAND_PROTOCOLS=`cd $srcdir/wayland-protocols ; for p in *.xml ; do echo -n "\$p" |sed 's,\\.xml\$, ,g' ; done`
-    WAYLAND_PROTOCOLS_SOURCES=`for p in $WAYLAND_PROTOCOLS ; do echo -n "\\$(gen)/\$p-protocol.c " ; done`
-    WAYLAND_PROTOCOLS_HEADERS=`for p in $WAYLAND_PROTOCOLS ; do echo -n "\\$(gen)/\$p-client-protocol.h " ; done`
+    WAYLAND_PROTOCOLS=`cd $srcdir/wayland-protocols ; for p in *.xml ; do printf '%s' "\$p" |sed 's,\\.xml\$, ,g' ; done`
+    WAYLAND_PROTOCOLS_SOURCES=`for p in $WAYLAND_PROTOCOLS ; do printf '%s' "\\$(gen)/\$p-protocol.c " ; done`
+    WAYLAND_PROTOCOLS_HEADERS=`for p in $WAYLAND_PROTOCOLS ; do printf '%s' "\\$(gen)/\$p-client-protocol.h " ; done`
     GEN_SOURCES="$GEN_SOURCES $WAYLAND_PROTOCOLS_SOURCES"
     GEN_HEADERS="$GEN_HEADERS $WAYLAND_PROTOCOLS_HEADERS"
 
     WAYLAND_PROTOCOLS_DEPENDS=`for p in $WAYLAND_PROTOCOLS ; do\
         echo ;\
-        echo "\\$(gen)/\$p-client-protocol.h: \\$(srcdir)/wayland-protocols/\$p.xml" ;\
-        echo "	@\\$(SHELL) \\$(auxdir)/mkinstalldirs \\$(gen)" ;\
-        echo "	\\$(RUN_CMD_GEN)\\$(WAYLAND_SCANNER) client-header \\$< \\$@" ;\
+        printf '%s\n' "\\$(gen)/\$p-client-protocol.h: \\$(srcdir)/wayland-protocols/\$p.xml" ;\
+        printf '%s\n' "	@\\$(SHELL) \\$(auxdir)/mkinstalldirs \\$(gen)" ;\
+        printf '%s\n' "	\\$(RUN_CMD_GEN)\\$(WAYLAND_SCANNER) client-header \\$< \\$@" ;\
         echo ;\
-        echo "\\$(gen)/\$p-protocol.c: \\$(srcdir)/wayland-protocols/\$p.xml" ;\
-        echo "	@\\$(SHELL) \\$(auxdir)/mkinstalldirs \\$(gen)" ;\
-        echo "	\\$(RUN_CMD_GEN)\\$(WAYLAND_SCANNER) code \\$< \\$@" ;\
+        printf '%s\n' "\\$(gen)/\$p-protocol.c: \\$(srcdir)/wayland-protocols/\$p.xml" ;\
+        printf '%s\n' "	@\\$(SHELL) \\$(auxdir)/mkinstalldirs \\$(gen)" ;\
+        printf '%s\n' "	\\$(RUN_CMD_GEN)\\$(WAYLAND_SCANNER) code \\$< \\$@" ;\
         echo ;\
-        echo "\\$(objects)/\$p-protocol.lo: \\$(gen)/\$p-protocol.c \\$(gen)/\$p-client-protocol.h" ;\
-        echo "	\\$(RUN_CMD_CC)\\$(LIBTOOL) --tag=CC --mode=compile \\$(CC) \\$(CFLAGS) \\$(EXTRA_CFLAGS) $DEPENDENCY_TRACKING_OPTIONS -c \\$< -o \\$@" ;\
+        printf '%s\n' "\\$(objects)/\$p-protocol.lo: \\$(gen)/\$p-protocol.c \\$(gen)/\$p-client-protocol.h" ;\
+        printf '%s\n' "	\\$(RUN_CMD_CC)\\$(LIBTOOL) --tag=CC --mode=compile \\$(CC) \\$(CFLAGS) \\$(EXTRA_CFLAGS) $DEPENDENCY_TRACKING_OPTIONS -c \\$< -o \\$@" ;\
         done ;\
         echo ;\
-        for s in $WAYLAND_SOURCES ; do echo -n "\$s:" ; for p in $WAYLAND_PROTOCOLS ; do echo -n " \\$(gen)/\$p-client-protocol.h" ; done ; echo ; done ; echo`
+        for s in $WAYLAND_SOURCES ; do printf '%s' "\$s:" ; printf ' \$(gen)/%s-client-protocol.h' $WAYLAND_PROTOCOLS ; echo ; done ; echo`
 fi
 
 OBJECTS=`echo $SOURCES`
