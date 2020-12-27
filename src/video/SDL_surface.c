@@ -948,7 +948,7 @@ SDL_PrivateLowerBlitScaled(SDL_Surface * src, SDL_Rect * srcrect,
             SDL_Surface *tmp;
             int ret;
             SDL_Rect tmprect;
-            Uint8 r, g, b, a;
+            Uint8 r, g, b;
             Uint8 alpha;
             SDL_BlendMode blendMode;
 
