@@ -944,33 +944,73 @@ SDL_PrivateLowerBlitScaled(SDL_Surface * src, SDL_Rect * srcrect,
             /* fast path */
             return SDL_SoftStretchLinear(src, srcrect, dst, dstrect);
         } else {
-            /* Use an intermediate surface */
-            SDL_Surface *tmp;
+            /* Use intermediate surface(s) */
+            SDL_Surface *tmp1 = NULL;
             int ret;
-            SDL_Rect tmprect;
+            SDL_Rect srcrect2;
+            int is_complex_copy_flags = (src->map->info.flags & complex_copy_flags);
+
+            Uint32 flags;
             Uint8 r, g, b;
             Uint8 alpha;
             SDL_BlendMode blendMode;
 
-            tmp = SDL_CreateRGBSurfaceWithFormat(src->flags, dstrect->w, dstrect->h, 0, src->format->format);
-
+            /* Save source infos */
+            flags = src->flags;
             SDL_GetSurfaceColorMod(src, &r, &g, &b);
             SDL_GetSurfaceAlphaMod(src, &alpha);
             SDL_GetSurfaceBlendMode(src, &blendMode);
+            srcrect2.x = srcrect->x;
+            srcrect2.y = srcrect->y;
+            srcrect2.w = srcrect->w;
+            srcrect2.h = srcrect->h;
 
-            SDL_SoftStretchLinear(src, srcrect, tmp, NULL);
+            /* Change source format if not appropriate for scaling */
+            if (src->format->BytesPerPixel != 4 || src->format->format == SDL_PIXELFORMAT_ARGB2101010) {
+                SDL_Rect tmprect;
+                int fmt;
+                tmprect.x = 0;
+                tmprect.y = 0;
+                tmprect.w = src->w;
+                tmprect.h = src->h;
+                if (dst->format->BytesPerPixel == 4 && dst->format->format != SDL_PIXELFORMAT_ARGB2101010) {
+                    fmt = dst->format->format;
+                } else {
+                    fmt = SDL_PIXELFORMAT_ARGB8888; 
+                }
+                tmp1 = SDL_CreateRGBSurfaceWithFormat(flags, src->w, src->h, 0, fmt);
+                SDL_LowerBlit(src, srcrect, tmp1, &tmprect);
 
-            SDL_SetSurfaceColorMod(tmp, r, g, b);
-            SDL_SetSurfaceAlphaMod(tmp, alpha);
-            SDL_SetSurfaceBlendMode(tmp, blendMode);
+                srcrect2.x = 0;
+                srcrect2.y = 0;
+                SDL_SetSurfaceColorMod(tmp1, r, g, b);
+                SDL_SetSurfaceAlphaMod(tmp1, alpha);
+                SDL_SetSurfaceBlendMode(tmp1, blendMode);
+                
+                src = tmp1;
+            }
 
-            tmprect.x = 0;
-            tmprect.y = 0;
-            tmprect.w = dstrect->w;
-            tmprect.h = dstrect->h;
-            ret = SDL_LowerBlit(tmp, &tmprect, dst, dstrect);
+            /* Intermediate scaling */
+            if (is_complex_copy_flags || src->format->format != dst->format->format) {
+                SDL_Rect tmprect;
+                SDL_Surface *tmp2 = SDL_CreateRGBSurfaceWithFormat(flags, dstrect->w, dstrect->h, 0, src->format->format);
+                SDL_SoftStretchLinear(src, &srcrect2, tmp2, NULL);
 
-            SDL_FreeSurface(tmp);
+                SDL_SetSurfaceColorMod(tmp2, r, g, b);
+                SDL_SetSurfaceAlphaMod(tmp2, alpha);
+                SDL_SetSurfaceBlendMode(tmp2, blendMode);
+
+                tmprect.x = 0;
+                tmprect.y = 0;
+                tmprect.w = dstrect->w;
+                tmprect.h = dstrect->h;
+                ret = SDL_LowerBlit(tmp2, &tmprect, dst, dstrect);
+                SDL_FreeSurface(tmp2);
+            } else {
+                ret = SDL_SoftStretchLinear(src, &srcrect2, dst, dstrect);
+            }
+        
+            SDL_FreeSurface(tmp1);
             return ret;
         }
     }
