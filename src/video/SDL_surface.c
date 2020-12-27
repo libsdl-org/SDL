@@ -927,17 +927,52 @@ SDL_PrivateLowerBlitScaled(SDL_Surface * src, SDL_Rect * srcrect,
         SDL_InvalidateMap(src->map);
     }
 
-    if ( !(src->map->info.flags & complex_copy_flags) &&
-         src->format->format == dst->format->format &&
-         !SDL_ISPIXELFORMAT_INDEXED(src->format->format) ) {
-
-        if (scaleMode != SDL_ScaleModeNearest && src->format->BytesPerPixel == 4 && src->format->format != SDL_PIXELFORMAT_ARGB2101010) {
-            return SDL_SoftStretchLinear(src, srcrect, dst, dstrect);
-        } else {
+    if (scaleMode == SDL_ScaleModeNearest) {
+        if ( !(src->map->info.flags & complex_copy_flags) &&
+                src->format->format == dst->format->format &&
+                !SDL_ISPIXELFORMAT_INDEXED(src->format->format) ) {
             return SDL_SoftStretch( src, srcrect, dst, dstrect );
+        } else {
+            return SDL_LowerBlit( src, srcrect, dst, dstrect );
         }
     } else {
-        return SDL_LowerBlit( src, srcrect, dst, dstrect );
+        if ( !(src->map->info.flags & complex_copy_flags) &&
+             src->format->format == dst->format->format &&
+             !SDL_ISPIXELFORMAT_INDEXED(src->format->format) &&
+             src->format->BytesPerPixel == 4 &&
+             src->format->format != SDL_PIXELFORMAT_ARGB2101010) {
+            /* fast path */
+            return SDL_SoftStretchLinear(src, srcrect, dst, dstrect);
+        } else {
+            /* Use an intermediate surface */
+            SDL_Surface *tmp;
+            int ret;
+            SDL_Rect tmprect;
+            Uint8 r, g, b, a;
+            Uint8 alpha;
+            SDL_BlendMode blendMode;
+
+            tmp = SDL_CreateRGBSurfaceWithFormat(src->flags, dstrect->w, dstrect->h, 0, src->format->format);
+
+            SDL_GetSurfaceColorMod(src, &r, &g, &b);
+            SDL_GetSurfaceAlphaMod(src, &alpha);
+            SDL_GetSurfaceBlendMode(src, &blendMode);
+
+            SDL_SoftStretchLinear(src, srcrect, tmp, NULL);
+
+            SDL_SetSurfaceColorMod(tmp, r, g, b);
+            SDL_SetSurfaceAlphaMod(tmp, alpha);
+            SDL_SetSurfaceBlendMode(tmp, blendMode);
+
+            tmprect.x = 0;
+            tmprect.y = 0;
+            tmprect.w = dstrect->w;
+            tmprect.h = dstrect->h;
+            ret = SDL_LowerBlit(tmp, &tmprect, dst, dstrect);
+
+            SDL_FreeSurface(tmp);
+            return ret;
+        }
     }
 }
 
