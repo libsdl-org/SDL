@@ -259,6 +259,7 @@ TextureSwizzle(PSP_TextureData *psp_texture)
     psp_texture->data = data;
     psp_texture->swizzled = SDL_TRUE;
 
+    sceKernelDcacheWritebackRange(psp_texture->data, psp_texture->size);
     return 1;
 }
 int TextureUnswizzle(PSP_TextureData *psp_texture)
@@ -290,8 +291,6 @@ int TextureUnswizzle(PSP_TextureData *psp_texture)
 
     if(!data)
         return 0;
-
-    sceKernelDcacheWritebackAll();
 
     ydst = (unsigned char *)data;
 
@@ -326,6 +325,7 @@ int TextureUnswizzle(PSP_TextureData *psp_texture)
 
     psp_texture->swizzled = SDL_FALSE;
 
+    sceKernelDcacheWritebackRange(psp_texture->data, psp_texture->size);
     return 1;
 }
 
