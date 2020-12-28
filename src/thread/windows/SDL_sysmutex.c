@@ -31,40 +31,18 @@
  */
 
 
-#include "../../core/windows/SDL_windows.h"
-
 #include "SDL_hints.h"
-#include "SDL_mutex.h"
 
-typedef SDL_mutex * (*pfnSDL_CreateMutex)(void);
-typedef int (*pfnSDL_LockMutex)(SDL_mutex *);
-typedef int (*pfnSDL_TryLockMutex)(SDL_mutex *);
-typedef int (*pfnSDL_UnlockMutex)(SDL_mutex *);
-typedef void (*pfnSDL_DestroyMutex)(SDL_mutex *);
+#include "SDL_sysmutex_c.h"
 
-typedef struct SDL_mutex_impl_t
-{
-    pfnSDL_CreateMutex Create;
-    pfnSDL_DestroyMutex Destroy;
-    pfnSDL_LockMutex Lock;
-    pfnSDL_TryLockMutex TryLock;
-    pfnSDL_UnlockMutex Unlock;
-} SDL_mutex_impl_t;
 
 /* Implementation will be chosen at runtime based on available Kernel features */
-static SDL_mutex_impl_t SDL_mutex_impl_active = {0};
+SDL_mutex_impl_t SDL_mutex_impl_active = {0};
 
 
 /**
  * Implementation based on Slim Reader/Writer (SRW) Locks for Win 7 and newer.
  */
-
-#ifndef SRWLOCK_INIT
-#define SRWLOCK_INIT {0}
-typedef struct _SRWLOCK {
-    PVOID Ptr;
-} SRWLOCK, *PSRWLOCK;
-#endif
 
 #if __WINRT__
 /* Functions are guaranteed to be available */
@@ -79,14 +57,6 @@ static pfnReleaseSRWLockExclusive pReleaseSRWLockExclusive = NULL;
 static pfnAcquireSRWLockExclusive pAcquireSRWLockExclusive = NULL;
 static pfnTryAcquireSRWLockExclusive pTryAcquireSRWLockExclusive = NULL;
 #endif
-
-typedef struct SDL_mutex_srw
-{
-    SRWLOCK srw;
-    /* SRW Locks are not recursive, that has to be handled by SDL: */
-    DWORD count;
-    DWORD owner;
-} SDL_mutex_srw;
 
 static SDL_mutex *
 SDL_CreateMutex_srw(void)
@@ -189,6 +159,7 @@ static const SDL_mutex_impl_t SDL_mutex_impl_srw =
     &SDL_LockMutex_srw,
     &SDL_TryLockMutex_srw,
     &SDL_UnlockMutex_srw,
+    SDL_MUTEX_SRW,
 };
 
 
@@ -283,6 +254,7 @@ static const SDL_mutex_impl_t SDL_mutex_impl_cs =
     &SDL_LockMutex_cs,
     &SDL_TryLockMutex_cs,
     &SDL_UnlockMutex_cs,
+    SDL_MUTEX_CS,
 };
 
 
