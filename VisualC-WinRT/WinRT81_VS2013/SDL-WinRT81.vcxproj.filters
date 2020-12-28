@@ -390,6 +390,9 @@
     <ClInclude Include="..\..\src\joystick\windows\SDL_dinputjoystick_c.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\thread\generic\SDL_syscond_c.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\thread\windows\SDL_systhread_c.h">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -741,6 +744,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\joystick\windows\SDL_dinputjoystick.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\thread\windows\SDL_syscond_srw.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\thread\windows\SDL_sysmutex.c">
