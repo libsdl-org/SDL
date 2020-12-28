@@ -47,7 +47,19 @@
 #include <errno.h>
 #include <poll.h>
 
+#ifdef __OpenBSD__
+#define KMSDRM_LEGACY_DRI_PATH "/dev/"
+#define KMSDRM_LEGACY_DRI_DEVFMT "%sdrm%d"
+#define KMSDRM_LEGACY_DRI_DEVNAME "drm"
+#define KMSDRM_LEGACY_DRI_DEVNAMESIZE 3
+#define KMSDRM_LEGACY_DRI_CARDPATHFMT "/dev/drm%d"
+#else
 #define KMSDRM_LEGACY_DRI_PATH "/dev/dri/"
+#define KMSDRM_LEGACY_DRI_DEVFMT "%scard%d"
+#define KMSDRM_LEGACY_DRI_DEVNAME "card"
+#define KMSDRM_LEGACY_DRI_DEVNAMESIZE 4
+#define KMSDRM_LEGACY_DRI_CARDPATHFMT "/dev/dri/card%d"
+#endif
 
 static int
 check_modestting(int devindex)
@@ -56,14 +68,14 @@ check_modestting(int devindex)
     char device[512];
     int drm_fd;
 
-    SDL_snprintf(device, sizeof (device), "%scard%d", KMSDRM_LEGACY_DRI_PATH, devindex);
+    SDL_snprintf(device, sizeof (device), KMSDRM_LEGACY_DRI_DEVFMT, KMSDRM_LEGACY_DRI_PATH, devindex);
 
     drm_fd = open(device, O_RDWR | O_CLOEXEC);
     if (drm_fd >= 0) {
         if (SDL_KMSDRM_LEGACY_LoadSymbols()) {
             drmModeRes *resources = KMSDRM_LEGACY_drmModeGetResources(drm_fd);
             if (resources) {
-                SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "%scard%d connector, encoder and CRTC counts are: %d %d %d",
+                SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, KMSDRM_LEGACY_DRI_DEVFMT " connector, encoder and CRTC counts are: %d %d %d",
                              KMSDRM_LEGACY_DRI_PATH, devindex,
                              resources->count_connectors, resources->count_encoders, resources->count_crtcs);
 
@@ -104,7 +116,7 @@ static int get_dricount(void)
     if (folder) {
         while ((res = readdir(folder))) {
             int len = SDL_strlen(res->d_name);
-            if (len > 4 && SDL_strncmp(res->d_name, "card", 4) == 0) {
+            if (len > KMSDRM_LEGACY_DRI_DEVNAMESIZE && SDL_strncmp(res->d_name, KMSDRM_LEGACY_DRI_DEVNAME, KMSDRM_LEGACY_DRI_DEVNAMESIZE) == 0) {
                 devcount++;
             }
         }
@@ -441,8 +453,8 @@ KMSDRM_LEGACY_VideoInit(_THIS)
 
     SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "KMSDRM_LEGACY_VideoInit()");
 
-    /* Open /dev/dri/cardNN */
-    SDL_snprintf(devname, sizeof(devname), "/dev/dri/card%d", viddata->devindex);
+    /* Open /dev/dri/cardNN (/dev/drmN if on OpenBSD) */
+    SDL_snprintf(devname, sizeof(devname), KMSDRM_LEGACY_DRI_CARDPATHFMT, viddata->devindex);
 
     SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Opening device %s", devname);
     viddata->drm_fd = open(devname, O_RDWR | O_CLOEXEC);
