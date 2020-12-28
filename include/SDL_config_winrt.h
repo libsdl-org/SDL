@@ -212,6 +212,7 @@ typedef unsigned int uintptr_t;
 
 /* Enable various threading systems */
 #if (NTDDI_VERSION >= NTDDI_WINBLUE)
+#define SDL_THREAD_GENERIC_COND_SUFFIX 1
 #define SDL_THREAD_WINDOWS  1
 #else
 /* WinRT on Windows 8.0 and Windows Phone 8.0 don't support CreateThread() */

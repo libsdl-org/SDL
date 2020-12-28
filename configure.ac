@@ -3869,6 +3869,7 @@ AS_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
         fi
         # Set up files for the thread library
         if test x$enable_threads = xyes; then
+            AC_DEFINE(SDL_THREAD_GENERIC_COND_SUFFIX, 1, [])
             AC_DEFINE(SDL_THREAD_WINDOWS, 1, [ ])
             SOURCES="$SOURCES $srcdir/src/thread/windows/*.c"
             SOURCES="$SOURCES $srcdir/src/thread/generic/SDL_syscond.c"

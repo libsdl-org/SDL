@@ -1512,13 +1512,15 @@ elseif(WINDOWS)
   endif()
 
   if(SDL_THREADS)
+    set(SDL_THREAD_GENERIC_COND_SUFFIX 1)
     set(SDL_THREAD_WINDOWS 1)
     set(SOURCE_FILES ${SOURCE_FILES}
+      ${SDL2_SOURCE_DIR}/src/thread/generic/SDL_syscond.c
+      ${SDL2_SOURCE_DIR}/src/thread/windows/SDL_syscond_srw.c
       ${SDL2_SOURCE_DIR}/src/thread/windows/SDL_sysmutex.c
       ${SDL2_SOURCE_DIR}/src/thread/windows/SDL_syssem.c
       ${SDL2_SOURCE_DIR}/src/thread/windows/SDL_systhread.c
-      ${SDL2_SOURCE_DIR}/src/thread/windows/SDL_systls.c
-      ${SDL2_SOURCE_DIR}/src/thread/generic/SDL_syscond.c)
+      ${SDL2_SOURCE_DIR}/src/thread/windows/SDL_systls.c)
     set(HAVE_SDL_THREADS TRUE)
   endif()
 
