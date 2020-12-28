@@ -25,6 +25,8 @@
 #include "../../SDL_internal.h"
 #include "../SDL_sysvideo.h"
 
+#include <psp2/types.h>
+#include <psp2/display.h>
 #include <psp2/ime_dialog.h>
 
 typedef struct SDL_VideoData
@@ -34,6 +36,7 @@ typedef struct SDL_VideoData
 
 	wchar_t ime_buffer[SCE_IME_DIALOG_MAX_TEXT_LENGTH];
 	SDL_bool ime_active;
+
 } SDL_VideoData;
 
 
@@ -46,6 +49,8 @@ typedef struct SDL_DisplayData
 typedef struct SDL_WindowData
 {
     SDL_bool uses_gles;
+    SceUID buffer_uid;
+    void* buffer;
 
 } SDL_WindowData;
 
