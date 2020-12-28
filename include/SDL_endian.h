@@ -92,6 +92,13 @@ SDL_Swap16(Uint16 x)
   __asm__("rlwimi %0,%2,8,16,23": "=&r"(result):"0"(x >> 8), "r"(x));
     return (Uint16)result;
 }
+#elif defined(__GNUC__) && defined(__aarch64__)
+SDL_FORCE_INLINE Uint16
+SDL_Swap16(Uint16 x)
+{
+  __asm__("rev16 %1, %0" : "=r"(x) : "r"(x));
+  return x;
+}
 #elif defined(__GNUC__) && (defined(__M68000__) || defined(__M68020__)) && !defined(__mcoldfire__)
 SDL_FORCE_INLINE Uint16
 SDL_Swap16(Uint16 x)
@@ -137,6 +144,13 @@ SDL_Swap32(Uint32 x)
   __asm__("rlwimi %0,%2,8,8,15": "=&r"(result):"0"(result), "r"(x));
   __asm__("rlwimi %0,%2,24,0,7": "=&r"(result):"0"(result), "r"(x));
     return result;
+}
+#elif defined(__GNUC__) && defined(__aarch64__)
+SDL_FORCE_INLINE Uint32
+SDL_Swap32(Uint32 x)
+{
+  __asm__("rev %1, %0": "=r"(x):"r"(x));
+    return x;
 }
 #elif defined(__GNUC__) && (defined(__M68000__) || defined(__M68020__)) && !defined(__mcoldfire__)
 SDL_FORCE_INLINE Uint32
