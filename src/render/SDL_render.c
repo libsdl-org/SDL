@@ -2999,24 +2999,23 @@ SDL_RenderCopyF(SDL_Renderer * renderer, SDL_Texture * texture,
     SDL_RenderGetViewport(renderer, &r);
     real_dstrect.x = 0.0f;
     real_dstrect.y = 0.0f;
-    real_dstrect.w = (float) r.w * renderer->scale.x;
-    real_dstrect.h = (float) r.h * renderer->scale.y;
+    real_dstrect.w = (float) r.w;
+    real_dstrect.h = (float) r.h;
     if (dstrect) {
-        SDL_FRect dstrect_scaled;
-        dstrect_scaled.x = dstrect->x * renderer->scale.x;
-        dstrect_scaled.y = dstrect->y * renderer->scale.y;
-        dstrect_scaled.w = dstrect->w * renderer->scale.x;
-        dstrect_scaled.h = dstrect->h * renderer->scale.y;
-
-        if (!SDL_HasIntersectionF(&dstrect_scaled, &real_dstrect)) {
+        if (!SDL_HasIntersectionF(dstrect, &real_dstrect)) {
             return 0;
         }
-        real_dstrect = dstrect_scaled;
+        real_dstrect = *dstrect;
     }
 
     if (texture->native) {
         texture = texture->native;
     }
+
+    real_dstrect.x *= renderer->scale.x;
+    real_dstrect.y *= renderer->scale.y;
+    real_dstrect.w *= renderer->scale.x;
+    real_dstrect.h *= renderer->scale.y;
 
     texture->last_command_generation = renderer->render_command_generation;
 
