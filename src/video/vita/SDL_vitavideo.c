@@ -37,6 +37,7 @@
 #include "SDL_vitatouch.h"
 #include "SDL_vitakeyboard.h"
 #include "SDL_vitamouse_c.h"
+#include "SDL_vitaframebuffer.h"
 #if SDLVIDEO_OPENGL_ES2
 #include "SDL_vitagl_c.h"
 #endif
@@ -120,6 +121,10 @@ VITA_Create()
     device->SetWindowGrab = VITA_SetWindowGrab;
     device->DestroyWindow = VITA_DestroyWindow;
     device->GetWindowWMInfo = VITA_GetWindowWMInfo;
+
+    device->CreateWindowFramebuffer = VITA_CreateWindowFramebuffer;
+    device->UpdateWindowFramebuffer = VITA_UpdateWindowFramebuffer;
+    device->DestroyWindowFramebuffer = VITA_DestroyWindowFramebuffer;
 
 #if SDL_VIDEO_OPENGL_ES2
     device->GL_LoadLibrary = VITA_GL_LoadLibrary;
