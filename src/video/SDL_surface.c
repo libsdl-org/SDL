@@ -976,17 +976,18 @@ SDL_PrivateLowerBlitScaled(SDL_Surface * src, SDL_Rect * srcrect,
                 if (dst->format->BytesPerPixel == 4 && dst->format->format != SDL_PIXELFORMAT_ARGB2101010) {
                     fmt = dst->format->format;
                 } else {
-                    fmt = SDL_PIXELFORMAT_ARGB8888; 
+                    fmt = SDL_PIXELFORMAT_ARGB8888;
                 }
                 tmp1 = SDL_CreateRGBSurfaceWithFormat(flags, src->w, src->h, 0, fmt);
                 SDL_LowerBlit(src, srcrect, tmp1, &tmprect);
+
 
                 srcrect2.x = 0;
                 srcrect2.y = 0;
                 SDL_SetSurfaceColorMod(tmp1, r, g, b);
                 SDL_SetSurfaceAlphaMod(tmp1, alpha);
                 SDL_SetSurfaceBlendMode(tmp1, blendMode);
-                
+
                 src = tmp1;
             }
 
@@ -1009,7 +1010,7 @@ SDL_PrivateLowerBlitScaled(SDL_Surface * src, SDL_Rect * srcrect,
             } else {
                 ret = SDL_SoftStretchLinear(src, &srcrect2, dst, dstrect);
             }
-        
+
             SDL_FreeSurface(tmp1);
             return ret;
         }
