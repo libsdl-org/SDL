@@ -25205,6 +25205,8 @@ $as_echo "#define SDL_FILESYSTEM_WINDOWS 1" >>confdefs.h
         fi
         # Set up files for the thread library
         if test x$enable_threads = xyes; then
+            $as_echo "#define SDL_THREAD_GENERIC_COND_SUFFIX 1" >>confdefs.h
+
 
 $as_echo "#define SDL_THREAD_WINDOWS 1" >>confdefs.h
 
