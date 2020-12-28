@@ -228,7 +228,7 @@ KMSDRM_GLES_SwapWindowFenced(_THIS, SDL_Window * window)
         add_connector_property(dispdata->atomic_req, dispdata->connector, "CRTC_ID", dispdata->crtc->crtc->crtc_id);
         KMSDRM_drmModeCreatePropertyBlob(viddata->drm_fd, &dispdata->mode, sizeof(dispdata->mode), &blob_id);
         add_crtc_property(dispdata->atomic_req, dispdata->crtc, "MODE_ID", blob_id);
-        add_crtc_property(dispdata->atomic_req, dispdata->crtc, "ACTIVE", 1);
+        add_crtc_property(dispdata->atomic_req, dispdata->crtc, "active", 1);
         dispdata->modeset_pending = SDL_FALSE;
     }
 
@@ -330,7 +330,7 @@ KMSDRM_GLES_SwapWindowDoubleBuffered(_THIS, SDL_Window * window)
         add_connector_property(dispdata->atomic_req, dispdata->connector, "CRTC_ID", dispdata->crtc->crtc->crtc_id);
         KMSDRM_drmModeCreatePropertyBlob(viddata->drm_fd, &dispdata->mode, sizeof(dispdata->mode), &blob_id);
         add_crtc_property(dispdata->atomic_req, dispdata->crtc, "MODE_ID", blob_id);
-        add_crtc_property(dispdata->atomic_req, dispdata->crtc, "ACTIVE", 1);
+        add_crtc_property(dispdata->atomic_req, dispdata->crtc, "active", 1);
         dispdata->modeset_pending = SDL_FALSE;
     }
 
