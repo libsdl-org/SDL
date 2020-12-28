@@ -821,9 +821,15 @@ KMSDRM_LEGACY_DestroyWindow(_THIS, SDL_Window * window)
         return;
     }
 
-    /* Remove from the internal window list */
     viddata = windata->viddata;
 
+    /* If this is the only window left, hide the cursor. */
+    if (viddata->num_windows == 1)
+    {
+        SDL_ShowCursor(SDL_FALSE);
+    }
+
+    /* Remove from the internal window list */
     for (i = 0; i < viddata->num_windows; i++) {
         if (viddata->windows[i] == window) {
             viddata->num_windows--;
