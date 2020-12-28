@@ -409,7 +409,6 @@ KMSDRM_InitMouse(_THIS)
     SDL_VideoData *viddata = ((SDL_VideoData *)dev->driverdata);
     SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
     SDL_Mouse *mouse = SDL_GetMouse();
-    uint64_t usable_cursor_w, usable_cursor_h;
 
     mouse->CreateCursor = KMSDRM_CreateCursor;
     mouse->ShowCursor = KMSDRM_ShowCursor;
@@ -439,23 +438,20 @@ KMSDRM_InitMouse(_THIS)
             return;
         }
 
-	if (KMSDRM_drmGetCap(viddata->drm_fd, DRM_CAP_CURSOR_WIDTH,  &usable_cursor_w) ||
-	    KMSDRM_drmGetCap(viddata->drm_fd, DRM_CAP_CURSOR_HEIGHT, &usable_cursor_h))
+	if (KMSDRM_drmGetCap(viddata->drm_fd, DRM_CAP_CURSOR_WIDTH,  &dispdata->cursor_w) ||
+	    KMSDRM_drmGetCap(viddata->drm_fd, DRM_CAP_CURSOR_HEIGHT, &dispdata->cursor_h))
 	{
 	    SDL_SetError("Could not get the recommended GBM cursor size");
 	    goto cleanup;
 	}
 
-	if (usable_cursor_w == 0 || usable_cursor_h == 0) {
+	if (dispdata->cursor_w == 0 || dispdata->cursor_h == 0) {
 	    SDL_SetError("Could not get an usable GBM cursor size");
 	    goto cleanup;
 	}
 
-        dispdata->cursor_w = usable_cursor_w;
-        dispdata->cursor_h = usable_cursor_h;
-
 	dispdata->cursor_bo = KMSDRM_gbm_bo_create(viddata->gbm_dev,
-	    usable_cursor_w, usable_cursor_h,
+	    dispdata->cursor_w, dispdata->cursor_h,
 	    GBM_FORMAT_ARGB8888, GBM_BO_USE_CURSOR | GBM_BO_USE_WRITE);
 
 	if (!dispdata->cursor_bo) {

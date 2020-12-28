@@ -1323,6 +1323,26 @@ void
 KMSDRM_DestroySurfaces(_THIS, SDL_Window *window)
 {
     SDL_WindowData *windata = (SDL_WindowData *) window->driverdata;
+    SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
+    KMSDRM_PlaneInfo plane_info = {0};
+
+    /************************************************************/
+    /* Make the display plane point to the original TTY buffer. */
+    /************************************************************/
+
+    plane_info.plane = dispdata->display_plane;
+    plane_info.crtc_id = dispdata->crtc->crtc->crtc_id;
+    plane_info.fb_id = dispdata->crtc->crtc->buffer_id;
+    plane_info.src_w = dispdata->mode.hdisplay;
+    plane_info.src_h = dispdata->mode.vdisplay;
+    plane_info.crtc_w = dispdata->mode.hdisplay;
+    plane_info.crtc_h = dispdata->mode.vdisplay;
+
+    drm_atomic_set_plane_props(&plane_info);
+
+    if (drm_atomic_commit(_this, SDL_TRUE)) {
+        SDL_SetError("Failed to issue atomic commit on surfaces destruction.");
+    }
 
     /***************************/
     /* Destroy the EGL surface */
