@@ -384,6 +384,9 @@
     <ClInclude Include="..\..\src\thread\generic\SDL_syscond_c.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\thread\windows\SDL_sysmutex_c.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\thread\windows\SDL_systhread_c.h">
       <Filter>Source Files</Filter>
     </ClInclude>

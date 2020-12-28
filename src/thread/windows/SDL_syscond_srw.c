@@ -24,6 +24,7 @@
 #include "SDL_thread.h"
 
 #include "../generic/SDL_syscond_c.h"
+#include "SDL_sysmutex_c.h"
 
 typedef SDL_cond * (*pfnSDL_CreateCond)(void);
 typedef void (*pfnSDL_DestroyCond)(SDL_cond *);
@@ -45,6 +46,136 @@ typedef struct SDL_cond_impl_t
 /* Implementation will be chosen at runtime based on available Kernel features */
 static SDL_cond_impl_t SDL_cond_impl_active = {0};
 
+
+/**
+ * Native Windows Condition Variable (SRW Locks)
+ */
+
+#ifndef CONDITION_VARIABLE_INIT
+#define CONDITION_VARIABLE_INIT {0}
+typedef struct CONDITION_VARIABLE {
+    PVOID Ptr;
+} CONDITION_VARIABLE, *PCONDITION_VARIABLE;
+#endif
+
+#if __WINRT__
+#define pWakeConditionVariable WakeConditionVariable
+#define pWakeAllConditionVariable WakeAllConditionVariable
+#define pSleepConditionVariableSRW SleepConditionVariableSRW
+#else
+typedef VOID(WINAPI *pfnWakeConditionVariable)(PCONDITION_VARIABLE);
+typedef VOID(WINAPI *pfnWakeAllConditionVariable)(PCONDITION_VARIABLE);
+typedef BOOL(WINAPI *pfnSleepConditionVariableSRW)(PCONDITION_VARIABLE, PSRWLOCK, DWORD, ULONG);
+
+static pfnWakeConditionVariable pWakeConditionVariable = NULL;
+static pfnWakeAllConditionVariable pWakeAllConditionVariable = NULL;
+static pfnSleepConditionVariableSRW pSleepConditionVariableSRW = NULL;
+#endif
+
+typedef struct SDL_cond_srw
+{
+    CONDITION_VARIABLE cond;
+} SDL_cond_srw;
+
+
+static SDL_cond *
+SDL_CreateCond_srw(void)
+{
+    SDL_cond_srw *cond;
+
+    /* Relies on CONDITION_VARIABLE_INIT == 0. */
+    cond = (SDL_cond_srw *) SDL_calloc(1, sizeof(*cond));
+    if (!cond) {
+        SDL_OutOfMemory();
+    }
+
+    return (SDL_cond *)cond;
+}
+
+static void
+SDL_DestroyCond_srw(SDL_cond * cond)
+{
+    if (cond) {
+        /* There are no kernel allocated resources */
+        SDL_free(cond);
+    }
+}
+
+static int
+SDL_CondSignal_srw(SDL_cond * _cond)
+{
+    SDL_cond_srw *cond = (SDL_cond_srw *)_cond;
+    if (!cond) {
+        return SDL_SetError("Passed a NULL condition variable");
+    }
+
+    pWakeConditionVariable(&cond->cond);
+
+    return 0;
+}
+
+static int
+SDL_CondBroadcast_srw(SDL_cond * _cond)
+{
+    SDL_cond_srw *cond = (SDL_cond_srw *)_cond;
+    if (!cond) {
+        return SDL_SetError("Passed a NULL condition variable");
+    }
+
+    pWakeAllConditionVariable(&cond->cond);
+
+    return 0;
+}
+
+static int
+SDL_CondWaitTimeout_srw(SDL_cond * _cond, SDL_mutex * _mutex, Uint32 ms)
+{
+    SDL_cond_srw *cond = (SDL_cond_srw *)_cond;
+    SDL_mutex_srw *mutex = (SDL_mutex_srw *)_mutex;
+    DWORD timeout;
+
+    if (!cond) {
+        return SDL_SetError("Passed a NULL condition variable");
+    }
+    if (!mutex) {
+        return SDL_SetError("Passed a NULL mutex");
+    }
+
+    if (mutex->count != 1) {
+        return SDL_SetError("Passed mutex is not locked or locked recursively");
+    }
+
+    if (ms == SDL_MUTEX_MAXWAIT) {
+        timeout = INFINITE;
+    } else {
+        timeout = (DWORD) ms;
+    }
+
+    if (pSleepConditionVariableSRW(&cond->cond, &mutex->srw, timeout, 0) == FALSE) {
+        if (GetLastError() == ERROR_TIMEOUT) {
+            return SDL_MUTEX_TIMEDOUT;
+        }
+        return SDL_SetError("SleepConditionVariableSRW() failed");
+    }
+
+    return 0;
+}
+
+static int
+SDL_CondWait_srw(SDL_cond * cond, SDL_mutex * mutex) {
+    return SDL_CondWaitTimeout_srw(cond, mutex, SDL_MUTEX_MAXWAIT);
+}
+
+static const SDL_cond_impl_t SDL_cond_impl_srw =
+{
+    &SDL_CreateCond_srw,
+    &SDL_DestroyCond_srw,
+    &SDL_CondSignal_srw,
+    &SDL_CondBroadcast_srw,
+    &SDL_CondWait_srw,
+    &SDL_CondWaitTimeout_srw,
+};
+
 /**
  * Generic Condition Variable implementation using SDL_mutex and SDL_sem
  */
@@ -64,7 +195,43 @@ SDL_cond *
 SDL_CreateCond(void)
 {
     if (SDL_cond_impl_active.Create == NULL) {
-        SDL_memcpy(&SDL_cond_impl_active, &SDL_cond_impl_generic, sizeof(SDL_cond_impl_active));
+        /* Default to generic implementation, works with all mutex implementations */
+        const SDL_cond_impl_t * impl = &SDL_cond_impl_generic;
+
+        if (SDL_mutex_impl_active.Type == SDL_MUTEX_INVALID) {
+            /* The mutex implementation isn't decided yet, trigger it */
+            SDL_mutex *mutex = SDL_CreateMutex();
+            if (!mutex) {
+                return NULL;
+            }
+            SDL_DestroyMutex(mutex);
+
+            SDL_assert(SDL_mutex_impl_active.Type != SDL_MUTEX_INVALID);
+        }
+
+        /* It is required SRW Locks are used */
+        if (SDL_mutex_impl_active.Type == SDL_MUTEX_SRW) {
+#if __WINRT__
+            /* Link statically on this platform */
+            impl = &SDL_cond_impl_srw;
+#else
+            HMODULE kernel32 = GetModuleHandleW(L"kernel32.dll");
+            if (kernel32) {
+                pWakeConditionVariable = (pfnWakeConditionVariable) GetProcAddress(kernel32, "WakeConditionVariable");
+                pWakeAllConditionVariable = (pfnWakeAllConditionVariable) GetProcAddress(kernel32, "WakeAllConditionVariable");
+                pSleepConditionVariableSRW = (pfnSleepConditionVariableSRW) GetProcAddress(kernel32, "SleepConditionVariableSRW");
+                if (pWakeConditionVariable && pWakeAllConditionVariable && pSleepConditionVariableSRW) {
+                    /* Use the Windows provided API */
+                    impl = &SDL_cond_impl_srw;
+                }
+            }
+            if (!(kernel32 && pWakeConditionVariable && pWakeAllConditionVariable && pSleepConditionVariableSRW)) {
+                SDL_LogWarn(SDL_LOG_CATEGORY_SYSTEM, "Could not load required imports for SRW Condition Variables although SRW Locks are used!");
+            }
+#endif
+        }
+
+        SDL_memcpy(&SDL_cond_impl_active, impl, sizeof(SDL_cond_impl_active));
     }
     return SDL_cond_impl_active.Create();
 }
