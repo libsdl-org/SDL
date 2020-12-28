@@ -1319,45 +1319,26 @@ KMSDRM_GBMDeinit (_THIS, SDL_DisplayData *dispdata)
     dispdata->gbm_init = SDL_FALSE;
 }
 
-/* Destroy the window surfaces and buffers. Have the PRIMARY PLANE
-   disconnected from these buffers before doing so, or have the PRIMARY PLANE
-   reading the original FB where the TTY lives, before doing this, or CRTC will
-   be disconnected by the kernel. */
 void
 KMSDRM_DestroySurfaces(_THIS, SDL_Window *window)
 {
     SDL_WindowData *windata = (SDL_WindowData *) window->driverdata;
-    SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
-    KMSDRM_PlaneInfo plane_info = {0};
 
-    /********************************************************************/
-    /* BLOCK 1: protect the PRIMARY PLANE before destroying the buffers */
-    /* it's using, by making it point to the original CRTC buffer,      */
-    /* where the TTY console should be.                                 */
-    /********************************************************************/
+    /***************************/
+    /* Destroy the EGL surface */
+    /***************************/
 
-    plane_info.plane = dispdata->display_plane;
-    plane_info.crtc_id = dispdata->crtc->crtc->crtc_id;
-    plane_info.fb_id = dispdata->crtc->crtc->buffer_id;
-    plane_info.src_w = dispdata->mode.hdisplay;
-    plane_info.src_h = dispdata->mode.vdisplay;
-    plane_info.crtc_w = dispdata->mode.hdisplay;
-    plane_info.crtc_h = dispdata->mode.vdisplay;
+    SDL_EGL_MakeCurrent(_this, EGL_NO_SURFACE, EGL_NO_CONTEXT);
 
-    drm_atomic_set_plane_props(&plane_info);
-
-    /* Issue blocking atomic commit. */
-    if (drm_atomic_commit(_this, SDL_TRUE)) {
-        SDL_SetError("Failed to issue atomic commit on surfaces destruction.");
+    if (windata->egl_surface != EGL_NO_SURFACE) {
+        SDL_EGL_DestroySurface(_this, windata->egl_surface);
+        windata->egl_surface = EGL_NO_SURFACE;
     }
 
-    /****************************************************************************/
-    /* BLOCK 2: We can finally destroy the window GBM and EGL surfaces, and     */
-    /* GBM buffers now that the buffers are not being used by the PRIMARY PLANE */
-    /* anymore.                                                                 */
-    /****************************************************************************/
+    /***************************/
+    /* Destroy the GBM buffers */
+    /***************************/
 
-    /* Destroy the GBM surface and buffers. */
     if (windata->bo) {
         KMSDRM_gbm_surface_release_buffer(windata->gs, windata->bo);
         windata->bo = NULL;
@@ -1368,16 +1349,9 @@ KMSDRM_DestroySurfaces(_THIS, SDL_Window *window)
         windata->next_bo = NULL;
     }
 
-    /***************************************************************************/
-    /* Destroy the EGL surface.                                                */
-    /***************************************************************************/
-
-    SDL_EGL_MakeCurrent(_this, EGL_NO_SURFACE, EGL_NO_CONTEXT);
-
-    if (windata->egl_surface != EGL_NO_SURFACE) {
-        SDL_EGL_DestroySurface(_this, windata->egl_surface);
-        windata->egl_surface = EGL_NO_SURFACE;
-    }
+    /***************************/
+    /* Destroy the GBM surface */
+    /***************************/
 
     if (windata->gs) {
         KMSDRM_gbm_surface_destroy(windata->gs);
