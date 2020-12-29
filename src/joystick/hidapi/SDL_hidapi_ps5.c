@@ -159,6 +159,7 @@ typedef struct {
     IMUCalibrationData calibration[6];
     Uint32 last_packet;
     int player_index;
+    SDL_bool player_lights;
     Uint8 rumble_left;
     Uint8 rumble_right;
     SDL_bool color_set;
@@ -445,7 +446,11 @@ HIDAPI_DriverPS5_UpdateEffects(SDL_HIDAPI_Device *device, int effect_mask)
     if ((effect_mask & k_EDS5EffectPadLights) != 0) {
         effects->ucEnableBits2 |= 0x10; /* Enable touchpad lights */
 
-        SetLightsForPlayerIndex(effects, ctx->player_index);
+        if (ctx->player_lights) {
+            SetLightsForPlayerIndex(effects, ctx->player_index);
+        } else {
+            effects->ucPadLights = 0x00;
+        }
     }
     if ((effect_mask & k_EDS5EffectMicLight) != 0) {
         effects->ucEnableBits2 |= 0x01; /* Enable microphone light */
@@ -547,6 +552,18 @@ static void SDLCALL SDL_PS5RumbleHintChanged(void *userdata, const char *name, c
     }
 }
 
+static void SDLCALL SDL_PS5PlayerLEDHintChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+{
+    SDL_DriverPS5_Context *ctx = (SDL_DriverPS5_Context *)userdata;
+    SDL_bool player_lights = SDL_GetStringBoolean(hint, SDL_TRUE);
+
+    if (player_lights != ctx->player_lights) {
+        ctx->player_lights = player_lights;
+
+        HIDAPI_DriverPS5_UpdateEffects(ctx->device, k_EDS5EffectPadLights);
+    }
+}
+
 static void
 HIDAPI_DriverPS5_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id, int player_index)
 {
@@ -641,6 +658,7 @@ HIDAPI_DriverPS5_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 
     /* Initialize player index (needed for setting LEDs) */
     ctx->player_index = SDL_JoystickGetPlayerIndex(joystick);
+    ctx->player_lights = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_PS5_PLAYER_LED, SDL_TRUE);
 
     /* Initialize the joystick capabilities
      *
@@ -656,6 +674,8 @@ HIDAPI_DriverPS5_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
         SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI_PS5_RUMBLE,
                             SDL_PS5RumbleHintChanged, ctx);
     }
+    SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI_PS5_PLAYER_LED,
+                        SDL_PS5PlayerLEDHintChanged, ctx);
     return SDL_TRUE;
 }
 
@@ -1021,6 +1041,9 @@ HIDAPI_DriverPS5_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick
 
     SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_PS5_RUMBLE,
                         SDL_PS5RumbleHintChanged, ctx);
+
+    SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_PS5_PLAYER_LED,
+                        SDL_PS5PlayerLEDHintChanged, ctx);
 
     hid_close(device->dev);
     device->dev = NULL;
