@@ -2714,11 +2714,14 @@ AS_HELP_STRING([--enable-dbus], [enable D-Bus support [[default=yes]]]),
                         , enable_dbus=yes)
     if test x$enable_dbus = xyes; then
         PKG_CHECK_MODULES([DBUS], [dbus-1], have_dbus=yes, have_dbus=no)
+        save_CPPFLAGS="$CPPFLAGS"
         save_CFLAGS="$CFLAGS"
+        CPPFLAGS="$save_CPPFLAGS $DBUS_CFLAGS"
         CFLAGS="$save_CFLAGS $DBUS_CFLAGS"
         AC_CHECK_HEADER(dbus/dbus.h,
                         have_dbus_dbus_h_hdr=yes,
                         have_dbus_dbus_h_hdr=no)
+        CPPFLAGS="$save_CPPFLAGS"
         CFLAGS="$save_CFLAGS"
         if test x$have_dbus_dbus_h_hdr = xyes; then
             AC_DEFINE(HAVE_DBUS_DBUS_H, 1, [ ])
@@ -2770,11 +2773,14 @@ AS_HELP_STRING([--enable-ibus], [enable IBus support [[default=yes]]]),
                   , enable_ibus=yes)
     if test x$enable_ibus = xyes; then
         PKG_CHECK_MODULES([IBUS], [ibus-1.0], have_ibus=yes, have_ibus=no)
+        save_CPPFLAGS="$CPPFLAGS"
         save_CFLAGS="$CFLAGS"
+        CPPFLAGS="$save_CPPFLAGS $IBUS_CFLAGS"
         CFLAGS="$save_CFLAGS $IBUS_CFLAGS"
         AC_CHECK_HEADER(ibus-1.0/ibus.h,
                         have_ibus_ibus_h_hdr=yes,
                         have_ibus_ibus_h_hdr=no)
+        CPPFLAGS="$save_CPPFLAGS"
         CFLAGS="$save_CFLAGS"
         if test x$have_ibus_ibus_h_hdr = xyes; then
             if test x$enable_ime != xyes; then
@@ -3869,7 +3875,7 @@ AS_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
         fi
         # Set up files for the thread library
         if test x$enable_threads = xyes; then
-            AC_DEFINE(SDL_THREAD_GENERIC_COND_SUFFIX, 1, [])
+            AC_DEFINE(SDL_THREAD_GENERIC_COND_SUFFIX, 1, [ ])
             AC_DEFINE(SDL_THREAD_WINDOWS, 1, [ ])
             SOURCES="$SOURCES $srcdir/src/thread/windows/*.c"
             SOURCES="$SOURCES $srcdir/src/thread/generic/SDL_syscond.c"
