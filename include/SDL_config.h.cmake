@@ -38,7 +38,7 @@
 
 /* C datatypes */
 /* Define SIZEOF_VOIDP for 64/32 architectures */
-#ifdef __LP64__
+#if defined(__LP64__) || defined(_LP64) || defined(_WIN64)
 #define SIZEOF_VOIDP 8
 #else
 #define SIZEOF_VOIDP 4
