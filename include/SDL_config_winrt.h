@@ -132,6 +132,7 @@ typedef unsigned int uintptr_t;
 #define HAVE_STRTOL 1
 #define HAVE_STRTOUL 1
 /* #undef HAVE_STRTOLL */
+/* #undef HAVE_STRTOULL */
 #define HAVE_STRTOD 1
 #define HAVE_ATOI 1
 #define HAVE_ATOF 1

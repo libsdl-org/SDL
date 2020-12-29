@@ -169,6 +169,7 @@ typedef unsigned int uintptr_t;
 /* These functions were added with the VC++ 2013 C runtime library */
 #if _MSC_VER >= 1800
 #define HAVE_STRTOLL 1
+#define HAVE_STRTOULL 1
 #define HAVE_VSSCANF 1
 #define HAVE_LROUND 1
 #define HAVE_LROUNDF 1
