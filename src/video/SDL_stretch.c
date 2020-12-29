@@ -260,7 +260,7 @@ SDL_UpperSoftStretch(SDL_Surface * src, const SDL_Rect * srcrect,
         dstrect = &full_dst;
     }
 
-    if (dstrect->w == 0 || dstrect->h == 0) {
+    if (dstrect->w <= 0 || dstrect->h <= 0) {
         return 0;
     }
 
