@@ -28,11 +28,8 @@
 
 char *SDL_strtokr(char *s1, const char *s2, char **ptr)
 {
-#if defined(HAVE_STRTOK_R)
+#ifdef HAVE_STRTOK_R
     return strtok_r(s1, s2, ptr);
-
-#elif defined(_MSC_VER) && defined(HAVE_STRTOK_S)
-    return strtok_s(s1, s2, ptr);
 
 #else /* SDL implementation */
 /*

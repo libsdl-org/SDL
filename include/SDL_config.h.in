@@ -119,7 +119,6 @@
 #undef HAVE_STRRCHR
 #undef HAVE_STRSTR
 #undef HAVE_STRTOK_R
-#undef HAVE_STRTOK_S
 #undef HAVE_ITOA
 #undef HAVE__LTOA
 #undef HAVE__UITOA
