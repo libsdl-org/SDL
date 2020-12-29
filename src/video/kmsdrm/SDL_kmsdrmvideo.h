@@ -84,7 +84,6 @@ typedef struct SDL_DisplayData
 {
     drmModeModeInfo mode;
     drmModeModeInfo preferred_mode;
-    uint32_t atomic_flags;
 
     plane *display_plane;
     plane *cursor_plane;
@@ -173,7 +172,7 @@ KMSDRM_FBInfo *KMSDRM_FBFromBO(_THIS, struct gbm_bo *bo);
 void drm_atomic_set_plane_props(struct KMSDRM_PlaneInfo *info); 
 
 void drm_atomic_waitpending(_THIS);
-int drm_atomic_commit(_THIS, SDL_bool blocking);
+int drm_atomic_commit(_THIS, SDL_bool blocking, SDL_bool allow_modeset);
 int add_plane_property(drmModeAtomicReq *req, struct plane *plane,
                              const char *name, uint64_t value);
 int add_crtc_property(drmModeAtomicReq *req, struct crtc *crtc,

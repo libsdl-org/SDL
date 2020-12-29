@@ -252,7 +252,7 @@ KMSDRM_ShowCursor(SDL_Cursor * cursor)
                 info.plane = dispdata->cursor_plane;
                 /* The rest of the members are zeroed. */
                 drm_atomic_set_plane_props(&info);
-                if (drm_atomic_commit(display->device, SDL_TRUE))
+                if (drm_atomic_commit(display->device, SDL_TRUE, SDL_FALSE))
                     return SDL_SetError("Failed atomic commit in KMSDRM_ShowCursor.");
                 }
                 return 0;
@@ -324,7 +324,7 @@ KMSDRM_ShowCursor(SDL_Cursor * cursor)
 
     drm_atomic_set_plane_props(&info);
 
-    if (drm_atomic_commit(display->device, SDL_TRUE)) {
+    if (drm_atomic_commit(display->device, SDL_TRUE, SDL_FALSE)) {
         ret = SDL_SetError("Failed atomic commit in KMSDRM_ShowCursor.");
         goto cleanup;
     }
@@ -491,7 +491,7 @@ KMSDRM_DeinitMouse(_THIS)
 	drm_atomic_set_plane_props(&info);
 	/* Wait until the cursor is unset from the cursor plane
 	   before destroying it's BO. */
-	if (drm_atomic_commit(video_device, SDL_TRUE)) {
+	if (drm_atomic_commit(video_device, SDL_TRUE, SDL_FALSE)) {
 	    SDL_SetError("Failed atomic commit in KMSDRM_DenitMouse.");
 	}
 	/* ..and finally destroy the cursor DRM BO! */

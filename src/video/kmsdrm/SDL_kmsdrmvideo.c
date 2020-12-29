@@ -486,8 +486,8 @@ void get_planes_info(_THIS)
 #endif
 
 /* Get the plane_id of a plane that is of the specified plane type (primary,
-   overlay, cursor...) and can use the CRTC we have chosen previously. */
-static int get_plane_id(_THIS, uint32_t plane_type)
+   overlay, cursor...) and can use specified CRTC. */
+static int get_plane_id(_THIS, unsigned int crtc_id, uint32_t plane_type)
 {
     drmModeRes *resources = NULL;
     drmModePlaneResPtr plane_resources = NULL;
@@ -497,14 +497,13 @@ static int get_plane_id(_THIS, uint32_t plane_type)
     int found = 0;
 
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
-    SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
 
     resources = KMSDRM_drmModeGetResources(viddata->drm_fd);
 
     /* Get the crtc_index for the current CRTC.
        It's needed to find out if a plane supports the CRTC. */
     for (i = 0; i < resources->count_crtcs; i++) {
-        if (resources->crtcs[i] == dispdata->crtc->crtc->crtc_id) {
+        if (resources->crtcs[i] == crtc_id) {
             crtc_index = i;
             break;
         }
@@ -565,6 +564,7 @@ setup_plane(_THIS, struct plane **plane, uint32_t plane_type)
 {
     uint32_t plane_id;
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
+    SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
     int ret = 0;
 
     *plane = SDL_calloc(1, sizeof(**plane));
@@ -573,8 +573,8 @@ setup_plane(_THIS, struct plane **plane, uint32_t plane_type)
         goto cleanup;
     }
 
-    /* Get plane ID. */
-    plane_id = get_plane_id(_this, plane_type);
+    /* Get plane ID for a given CRTC and plane type. */
+    plane_id = get_plane_id(_this, dispdata->crtc->crtc->crtc_id, plane_type);
 
     if (!plane_id) {
         ret = SDL_SetError("Invalid Plane ID");
@@ -671,19 +671,28 @@ drm_atomic_set_plane_props(struct KMSDRM_PlaneInfo *info)
     add_plane_property(dispdata->atomic_req, info->plane, "CRTC_Y", info->crtc_y);
 }
 
-int drm_atomic_commit(_THIS, SDL_bool blocking)
+int drm_atomic_commit(_THIS, SDL_bool blocking, SDL_bool allow_modeset)
 {
     SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
+    uint32_t atomic_flags = 0;
     int ret;
 
-    if (!blocking)
-        dispdata->atomic_flags |= DRM_MODE_ATOMIC_NONBLOCK;
+    if (!blocking) {
+        atomic_flags |= DRM_MODE_ATOMIC_NONBLOCK;
+    }
 
-    /* Never issue a new atomic commit if previous has not yet completed, or it will error. */
+    if (allow_modeset) {
+        atomic_flags |= DRM_MODE_ATOMIC_ALLOW_MODESET;
+    }
+
+    /* Never issue a new atomic commit if previous has not yet completed,
+       or it will error. */
     drm_atomic_waitpending(_this);
 
-    ret = KMSDRM_drmModeAtomicCommit(viddata->drm_fd, dispdata->atomic_req, dispdata->atomic_flags, NULL);
+    ret = KMSDRM_drmModeAtomicCommit(viddata->drm_fd, dispdata->atomic_req,
+              atomic_flags, NULL);
+
     if (ret) {
         SDL_SetError("Atomic commit failed, returned %d.", ret);
         /* Uncomment this for fast-debugging */
@@ -701,7 +710,6 @@ int drm_atomic_commit(_THIS, SDL_bool blocking)
 out:
     KMSDRM_drmModeAtomicFree(dispdata->atomic_req);
     dispdata->atomic_req = NULL;
-    dispdata->atomic_flags = 0;
 
     return ret;
 }
@@ -739,7 +747,7 @@ KMSDRM_Available(void)
     if (ret >= 0)
         return 1;
 
-    return ret;
+   return ret;
 }
 
 static void
@@ -886,7 +894,6 @@ VideoBootStrap KMSDRM_bootstrap = {
     KMSDRM_CreateDevice
 };
 
-
 static void
 KMSDRM_FBDestroyCallback(struct gbm_bo *bo, void *data)
 {
@@ -1010,7 +1017,6 @@ int KMSDRM_DisplayDataInit (_THIS, SDL_DisplayData *dispdata) {
     int ret = 0;
     unsigned i,j;
 
-    dispdata->atomic_flags = 0;
     dispdata->atomic_req = NULL;
     dispdata->kms_fence = NULL;
     dispdata->gpu_fence = NULL;
@@ -1326,6 +1332,30 @@ KMSDRM_DestroySurfaces(_THIS, SDL_Window *window)
     SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
     KMSDRM_PlaneInfo plane_info = {0};
 
+    /* TODO : Continue investigating why this doesn't work. We should do this instead
+       of making the display plane point to the TTY console, which isn't there
+       after creating and destroying a Vulkan window. */
+#if 0
+    /* Disconnect the connector from the CRTC (remember: several connectors
+       can read a CRTC), deactivate the CRTC, and set the PRIMARY PLANE props
+       CRTC_ID and FB_ID to 0. Then we can destroy the GBM buffers and surface. */
+    add_connector_property(dispdata->atomic_req, dispdata->connector , "CRTC_ID", 0);
+    add_crtc_property(dispdata->atomic_req, dispdata->crtc , "MODE_ID", 0); 
+    add_crtc_property(dispdata->atomic_req, dispdata->crtc , "active", 0); 
+
+    plane_info.plane = dispdata->display_plane;
+    plane_info.crtc_id = 0;
+    plane_info.fb_id = 0;
+
+    drm_atomic_set_plane_props(&plane_info);
+
+    /* Issue atomic commit that is blocking and allows modesetting. */
+    if (drm_atomic_commit(_this, SDL_TRUE, SDL_TRUE)) {
+        SDL_SetError("Failed to issue atomic commit on surfaces destruction.");
+    }
+#endif
+
+#if 1
     /************************************************************/
     /* Make the display plane point to the original TTY buffer. */
     /************************************************************/
@@ -1340,9 +1370,10 @@ KMSDRM_DestroySurfaces(_THIS, SDL_Window *window)
 
     drm_atomic_set_plane_props(&plane_info);
 
-    if (drm_atomic_commit(_this, SDL_TRUE)) {
+    if (drm_atomic_commit(_this, SDL_TRUE, SDL_FALSE)) {
         SDL_SetError("Failed to issue atomic commit on surfaces destruction.");
     }
+#endif
 
     /***************************/
     /* Destroy the EGL surface */
@@ -1467,6 +1498,7 @@ KMSDRM_DestroyWindow(_THIS, SDL_Window *window)
         if (_this->egl_data) {
             SDL_EGL_UnloadLibrary(_this);
         }
+
         /* Free display plane, and destroy GBM device. */
         KMSDRM_GBMDeinit(_this, dispdata);
     }
@@ -1706,10 +1738,12 @@ KMSDRM_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
         return SDL_SetError("Mode doesn't have an associated index");
     }
 
-    /* Take note of the new mode. It will be used in SwapWindow to
-       set the props needed for mode setting. */
+    /* Take note of the new mode to be set. */
     dispdata->mode = conn->modes[modedata->mode_index];
 
+    /* Take note that we have to change mode in SwapWindow(). We have to do it there
+       because we need a buffer of the new size so the commit that contains the
+       mode change can be completed OK.  */
     dispdata->modeset_pending = SDL_TRUE;
 
     for (i = 0; i < viddata->num_windows; i++) {
