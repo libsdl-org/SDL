@@ -509,6 +509,17 @@ CPU_haveNEON(void)
 #endif
 }
 
+#if defined(__e2k__)
+inline int
+CPU_have3DNow(void)
+{
+#if defined(__3dNOW__)
+    return 1;
+#else
+    return 0;
+#endif
+}
+#else
 static int
 CPU_have3DNow(void)
 {
@@ -522,7 +533,46 @@ CPU_have3DNow(void)
     }
     return 0;
 }
+#endif
 
+#if defined(__e2k__)
+#define CPU_haveRDTSC() (0)
+#if defined(__MMX__)
+#define CPU_haveMMX() (1)
+#else
+#define CPU_haveMMX() (0)
+#endif
+#if defined(__SSE__)
+#define CPU_haveSSE() (1)
+#else
+#define CPU_haveSSE() (0)
+#endif
+#if defined(__SSE2__)
+#define CPU_haveSSE2() (1)
+#else
+#define CPU_haveSSE2() (0)
+#endif
+#if defined(__SSE3__)
+#define CPU_haveSSE3() (1)
+#else
+#define CPU_haveSSE3() (0)
+#endif
+#if defined(__SSE4_1__)
+#define CPU_haveSSE41() (1)
+#else
+#define CPU_haveSSE41() (0)
+#endif
+#if defined(__SSE4_2__)
+#define CPU_haveSSE42() (1)
+#else
+#define CPU_haveSSE42() (0)
+#endif
+#if defined(__AVX__)
+#define CPU_haveAVX() (1)
+#else
+#define CPU_haveAVX() (0)
+#endif
+#else
 #define CPU_haveRDTSC() (CPU_CPUIDFeatures[3] & 0x00000010)
 #define CPU_haveMMX() (CPU_CPUIDFeatures[3] & 0x00800000)
 #define CPU_haveSSE() (CPU_CPUIDFeatures[3] & 0x02000000)
@@ -531,7 +581,19 @@ CPU_have3DNow(void)
 #define CPU_haveSSE41() (CPU_CPUIDFeatures[2] & 0x00080000)
 #define CPU_haveSSE42() (CPU_CPUIDFeatures[2] & 0x00100000)
 #define CPU_haveAVX() (CPU_OSSavesYMM && (CPU_CPUIDFeatures[2] & 0x10000000))
+#endif
 
+#if defined(__e2k__)
+inline int
+CPU_haveAVX2(void)
+{
+#if defined(__AVX2__)
+    return 1;
+#else
+    return 0;
+#endif
+}
+#else
 static int
 CPU_haveAVX2(void)
 {
@@ -543,7 +605,15 @@ CPU_haveAVX2(void)
     }
     return 0;
 }
+#endif
 
+#if defined(__e2k__)
+inline int
+CPU_haveAVX512F(void)
+{
+    return 0;
+}
+#else
 static int
 CPU_haveAVX512F(void)
 {
@@ -555,6 +625,7 @@ CPU_haveAVX512F(void)
     }
     return 0;
 }
+#endif
 
 static int SDL_CPUCount = 0;
 
@@ -596,6 +667,17 @@ SDL_GetCPUCount(void)
     return SDL_CPUCount;
 }
 
+#if defined(__e2k__)
+inline const char *
+SDL_GetCPUType(void)
+{
+    static char SDL_CPUType[13];
+
+    SDL_strlcpy(SDL_CPUType, "E2K MACHINE", sizeof(SDL_CPUType));
+
+    return SDL_CPUType;
+}
+#else
 /* Oh, such a sweet sweet trick, just not very useful. :) */
 static const char *
 SDL_GetCPUType(void)
@@ -631,9 +713,21 @@ SDL_GetCPUType(void)
     }
     return SDL_CPUType;
 }
+#endif
 
 
 #ifdef TEST_MAIN  /* !!! FIXME: only used for test at the moment. */
+#if defined(__e2k__)
+inline const char *
+SDL_GetCPUName(void)
+{
+    static char SDL_CPUName[48];
+
+    SDL_strlcpy(SDL_CPUName, __builtin_cpu_name(), sizeof(SDL_CPUName));
+
+    return SDL_CPUName;
+}
+#else
 static const char *
 SDL_GetCPUName(void)
 {
@@ -706,6 +800,7 @@ SDL_GetCPUName(void)
     }
     return SDL_CPUName;
 }
+#endif
 #endif
 
 int
