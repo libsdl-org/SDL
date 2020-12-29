@@ -116,7 +116,6 @@
 #cmakedefine HAVE_STRRCHR 1
 #cmakedefine HAVE_STRSTR 1
 #cmakedefine HAVE_STRTOK_R 1
-#cmakedefine HAVE_STRTOK_S 1
 #cmakedefine HAVE_ITOA 1
 #cmakedefine HAVE__LTOA 1
 #cmakedefine HAVE__UITOA 1
@@ -207,6 +206,7 @@
 #cmakedefine HAVE_STDARG_H 1
 #cmakedefine HAVE_STDDEF_H 1
 #cmakedefine HAVE_FLOAT_H 1
+
 #else
 /* We may need some replacement for stdarg.h here */
 #include <stdarg.h>
