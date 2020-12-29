@@ -25,6 +25,8 @@
 
 #include "SDL_platform.h"
 
+#define SIZEOF_VOIDP 4
+
 #define SDL_AUDIO_DRIVER_DUMMY 1
 #define SDL_AUDIO_DRIVER_DISK 1
 #define SDL_AUDIO_DRIVER_OS2 1
@@ -132,7 +134,8 @@
 #define HAVE_WCSLEN 1
 #define HAVE_WCSLCPY 1
 #define HAVE_WCSLCAT 1
-/* #define HAVE_WCSDUP 1 */
+/* #undef HAVE_WCSDUP */
+#define HAVE__WCSDUP 1
 /* #define wcsdup _wcsdup */
 #define HAVE_WCSSTR 1
 #define HAVE_WCSCMP 1
@@ -188,5 +191,9 @@
 /* #undef HAVE_TANF */
 /* #undef HAVE_TRUNC */
 /* #undef HAVE_TRUNCF */
+/* #undef HAVE_LROUND */
+/* #undef HAVE_LROUNDF */
+/* #undef HAVE_ROUND */
+/* #undef HAVE_ROUNDF */
 
 #endif /* SDL_config_os2_h_ */
