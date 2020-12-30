@@ -23032,9 +23032,7 @@ $as_echo "yes" >&6; }
 	have_dbus=yes
 fi
         save_CPPFLAGS="$CPPFLAGS"
-        save_CFLAGS="$CFLAGS"
         CPPFLAGS="$save_CPPFLAGS $DBUS_CFLAGS"
-        CFLAGS="$save_CFLAGS $DBUS_CFLAGS"
         ac_fn_c_check_header_mongrel "$LINENO" "dbus/dbus.h" "ac_cv_header_dbus_dbus_h" "$ac_includes_default"
 if test "x$ac_cv_header_dbus_dbus_h" = xyes; then :
   have_dbus_dbus_h_hdr=yes
@@ -23044,7 +23042,6 @@ fi
 
 
         CPPFLAGS="$save_CPPFLAGS"
-        CFLAGS="$save_CFLAGS"
         if test x$have_dbus_dbus_h_hdr = xyes; then
 
 $as_echo "#define HAVE_DBUS_DBUS_H 1" >>confdefs.h
@@ -23208,9 +23205,7 @@ $as_echo "yes" >&6; }
 	have_ibus=yes
 fi
         save_CPPFLAGS="$CPPFLAGS"
-        save_CFLAGS="$CFLAGS"
         CPPFLAGS="$save_CPPFLAGS $IBUS_CFLAGS"
-        CFLAGS="$save_CFLAGS $IBUS_CFLAGS"
         ac_fn_c_check_header_mongrel "$LINENO" "ibus-1.0/ibus.h" "ac_cv_header_ibus_1_0_ibus_h" "$ac_includes_default"
 if test "x$ac_cv_header_ibus_1_0_ibus_h" = xyes; then :
   have_ibus_ibus_h_hdr=yes
@@ -23220,7 +23215,6 @@ fi
 
 
         CPPFLAGS="$save_CPPFLAGS"
-        CFLAGS="$save_CFLAGS"
         if test x$have_ibus_ibus_h_hdr = xyes; then
             if test x$enable_ime != xyes; then
                 { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: IME support is required for IBus." >&5
