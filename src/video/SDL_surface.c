@@ -797,25 +797,25 @@ SDL_PrivateUpperBlitScaled(SDL_Surface * src, const SDL_Rect * srcrect,
     if (NULL == dstrect) {
         dst_x0 = 0;
         dst_y0 = 0;
-        dst_x1 = dst_w - 1;
-        dst_y1 = dst_h - 1;
+        dst_x1 = dst_w;
+        dst_y1 = dst_h;
     } else {
         dst_x0 = dstrect->x;
         dst_y0 = dstrect->y;
-        dst_x1 = dst_x0 + dst_w - 1;
-        dst_y1 = dst_y0 + dst_h - 1;
+        dst_x1 = dst_x0 + dst_w;
+        dst_y1 = dst_y0 + dst_h;
     }
 
     if (NULL == srcrect) {
         src_x0 = 0;
         src_y0 = 0;
-        src_x1 = src_w - 1;
-        src_y1 = src_h - 1;
+        src_x1 = src_w;
+        src_y1 = src_h;
     } else {
         src_x0 = srcrect->x;
         src_y0 = srcrect->y;
-        src_x1 = src_x0 + src_w - 1;
-        src_y1 = src_y0 + src_h - 1;
+        src_x1 = src_x0 + src_w;
+        src_y1 = src_y0 + src_h;
 
         /* Clip source rectangle to the source surface */
 
@@ -824,9 +824,9 @@ SDL_PrivateUpperBlitScaled(SDL_Surface * src, const SDL_Rect * srcrect,
             src_x0 = 0;
         }
 
-        if (src_x1 >= src->w) {
-            dst_x1 -= (src_x1 - src->w + 1) * scaling_w;
-            src_x1 = src->w - 1;
+        if (src_x1 > src->w) {
+            dst_x1 -= (src_x1 - src->w) * scaling_w;
+            src_x1 = src->w;
         }
 
         if (src_y0 < 0) {
@@ -834,9 +834,9 @@ SDL_PrivateUpperBlitScaled(SDL_Surface * src, const SDL_Rect * srcrect,
             src_y0 = 0;
         }
 
-        if (src_y1 >= src->h) {
-            dst_y1 -= (src_y1 - src->h + 1) * scaling_h;
-            src_y1 = src->h - 1;
+        if (src_y1 > src->h) {
+            dst_y1 -= (src_y1 - src->h) * scaling_h;
+            src_y1 = src->h;
         }
     }
 
@@ -853,9 +853,9 @@ SDL_PrivateUpperBlitScaled(SDL_Surface * src, const SDL_Rect * srcrect,
         dst_x0 = 0;
     }
 
-    if (dst_x1 >= dst->clip_rect.w) {
-        src_x1 -= (dst_x1 - dst->clip_rect.w + 1) / scaling_w;
-        dst_x1 = dst->clip_rect.w - 1;
+    if (dst_x1 > dst->clip_rect.w) {
+        src_x1 -= (dst_x1 - dst->clip_rect.w) / scaling_w;
+        dst_x1 = dst->clip_rect.w;
     }
 
     if (dst_y0 < 0) {
@@ -863,9 +863,9 @@ SDL_PrivateUpperBlitScaled(SDL_Surface * src, const SDL_Rect * srcrect,
         dst_y0 = 0;
     }
 
-    if (dst_y1 >= dst->clip_rect.h) {
-        src_y1 -= (dst_y1 - dst->clip_rect.h + 1) / scaling_h;
-        dst_y1 = dst->clip_rect.h - 1;
+    if (dst_y1 > dst->clip_rect.h) {
+        src_y1 -= (dst_y1 - dst->clip_rect.h) / scaling_h;
+        dst_y1 = dst->clip_rect.h;
     }
 
     /* Translate back to surface coordinates */
@@ -876,13 +876,13 @@ SDL_PrivateUpperBlitScaled(SDL_Surface * src, const SDL_Rect * srcrect,
 
     final_src.x = (int)SDL_floor(src_x0 + 0.5);
     final_src.y = (int)SDL_floor(src_y0 + 0.5);
-    final_src.w = (int)SDL_floor(src_x1 + 1 + 0.5) - (int)SDL_floor(src_x0 + 0.5);
-    final_src.h = (int)SDL_floor(src_y1 + 1 + 0.5) - (int)SDL_floor(src_y0 + 0.5);
+    final_src.w = (int)SDL_floor(src_x1 + 0.5) - (int)SDL_floor(src_x0 + 0.5);
+    final_src.h = (int)SDL_floor(src_y1 + 0.5) - (int)SDL_floor(src_y0 + 0.5);
 
     final_dst.x = (int)SDL_floor(dst_x0 + 0.5);
     final_dst.y = (int)SDL_floor(dst_y0 + 0.5);
-    final_dst.w = (int)SDL_floor(dst_x1 - dst_x0 + 1.5);
-    final_dst.h = (int)SDL_floor(dst_y1 - dst_y0 + 1.5);
+    final_dst.w = (int)SDL_floor(dst_x1 - dst_x0 + 0.5);
+    final_dst.h = (int)SDL_floor(dst_y1 - dst_y0 + 0.5);
 
     if (final_dst.w < 0)
         final_dst.w = 0;
