@@ -21960,13 +21960,8 @@ $as_echo "#define SDL_VIDEO_RENDER_DIRECTFB 1" >>confdefs.h
             SOURCES="$SOURCES $srcdir/src/video/directfb/*.c"
             EXTRA_CFLAGS="$EXTRA_CFLAGS $DIRECTFB_CFLAGS"
 
-            { $as_echo "$as_me:${as_lineno-$LINENO}: checking for directfb dynamic loading support" >&5
-$as_echo_n "checking for directfb dynamic loading support... " >&6; }
             directfb_shared=no
-            directfb_lib=`find_lib "libdirectfb*.so.*" "$DIRECTFB_LIBS"`
-            # | sed 's/.*\/\(.*\)/\1/; q'`]
-{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: \"directfb $directfb_lib\"" >&5
-$as_echo "$as_me: WARNING: \"directfb $directfb_lib\"" >&2;}
+            directfb_lib=`find_lib "libdirectfb*.so.*" "$DIRECTFB_LIBS" | sed 's/.*\/\(.*\)/\1/; q'`
             if test x$have_loadso != xyes && \
                test x$enable_directfb_shared = xyes; then
                 { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: You must have SDL_LoadObject() support for dynamic directfb loading" >&5
@@ -21975,7 +21970,7 @@ $as_echo "$as_me: WARNING: You must have SDL_LoadObject() support for dynamic di
             if test x$have_loadso = xyes && \
                test x$enable_directfb_shared = xyes && test x$directfb_lib != x; then
                 directfb_shared=yes
-                echo "-- $directfb_lib_spec -> $directfb_lib"
+                echo "-- dynamic libdirectfb -> $directfb_lib"
 
 cat >>confdefs.h <<_ACEOF
 #define SDL_VIDEO_DRIVER_DIRECTFB_DYNAMIC "$directfb_lib"
@@ -21986,8 +21981,6 @@ _ACEOF
                 EXTRA_LDFLAGS="$EXTRA_LDFLAGS $DIRECTFB_LIBS"
                 SUMMARY_video="${SUMMARY_video} directfb"
             fi
-            { $as_echo "$as_me:${as_lineno-$LINENO}: result: $directfb_shared" >&5
-$as_echo "$directfb_shared" >&6; }
             SDL_CFLAGS="$SDL_CFLAGS $DIRECTFB_CFLAGS"
             have_video=yes
         fi
