@@ -2203,11 +2203,8 @@ AS_HELP_STRING([--enable-directfb-shared], [dynamically load directfb support [[
             SOURCES="$SOURCES $srcdir/src/video/directfb/*.c"
             EXTRA_CFLAGS="$EXTRA_CFLAGS $DIRECTFB_CFLAGS"
 
-            AC_MSG_CHECKING(for directfb dynamic loading support)
             directfb_shared=no
-            directfb_lib=[`find_lib "libdirectfb*.so.*" "$DIRECTFB_LIBS"`]
-            # | sed 's/.*\/\(.*\)/\1/; q'`]
-AC_MSG_WARN("directfb $directfb_lib")
+            directfb_lib=[`find_lib "libdirectfb*.so.*" "$DIRECTFB_LIBS" | sed 's/.*\/\(.*\)/\1/; q'`]
             if test x$have_loadso != xyes && \
                test x$enable_directfb_shared = xyes; then
                 AC_MSG_WARN([You must have SDL_LoadObject() support for dynamic directfb loading])
@@ -2215,14 +2212,13 @@ AC_MSG_WARN("directfb $directfb_lib")
             if test x$have_loadso = xyes && \
                test x$enable_directfb_shared = xyes && test x$directfb_lib != x; then
                 directfb_shared=yes
-                echo "-- $directfb_lib_spec -> $directfb_lib"
+                echo "-- dynamic libdirectfb -> $directfb_lib"
                 AC_DEFINE_UNQUOTED(SDL_VIDEO_DRIVER_DIRECTFB_DYNAMIC, "$directfb_lib", [ ])
                 SUMMARY_video="${SUMMARY_video} directfb(dynamic)"
             else
                 EXTRA_LDFLAGS="$EXTRA_LDFLAGS $DIRECTFB_LIBS"
                 SUMMARY_video="${SUMMARY_video} directfb"
             fi
-            AC_MSG_RESULT($directfb_shared)
             SDL_CFLAGS="$SDL_CFLAGS $DIRECTFB_CFLAGS"
             have_video=yes
         fi
