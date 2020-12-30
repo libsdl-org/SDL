@@ -10162,6 +10162,7 @@
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				INSTALL_PATH = "@rpath";
 				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2,6";
 			};
 			name = Debug;
 		};
@@ -10178,6 +10179,7 @@
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				INSTALL_PATH = "@rpath";
 				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2,6";
 			};
 			name = Release;
 		};
@@ -10222,7 +10224,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = org.libsdl.hidapi;
 				PRODUCT_NAME = hidapi;
 				SDKROOT = iphoneos;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = "1,2,6";
 			};
 			name = Debug;
 		};
@@ -10243,7 +10245,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = org.libsdl.hidapi;
 				PRODUCT_NAME = hidapi;
 				SDKROOT = iphoneos;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = "1,2,6";
 			};
 			name = Release;
 		};
@@ -10341,7 +10343,7 @@
 				GCC_PREPROCESSOR_DEFINITIONS = "IOS_DYLIB=1";
 				OTHER_LDFLAGS = "-liconv";
 				SDKROOT = iphoneos;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = "1,2,6";
 			};
 			name = Debug;
 		};
@@ -10357,7 +10359,7 @@
 				GCC_PREPROCESSOR_DEFINITIONS = "IOS_DYLIB=1";
 				OTHER_LDFLAGS = "-liconv";
 				SDKROOT = iphoneos;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = "1,2,6";
 			};
 			name = Release;
 		};
