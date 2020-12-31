@@ -75,8 +75,8 @@ KMSDRM_GLES_LoadLibrary(_THIS, const char *path) {
 
 void
 KMSDRM_GLES_UnloadLibrary(_THIS) {
-    /* As with KMSDRM_GLES_LoadLibrary(), we define our own unloading function so
-       we manually unload the library whenever we want. */
+    /* As with KMSDRM_GLES_LoadLibrary(), we define our own "dummy" unloading function
+       so we manually unload the library whenever we want. */
 }
 
 SDL_EGL_CreateContext_impl(KMSDRM)

@@ -856,16 +856,18 @@ KMSDRM_CreateDevice(int devindex)
     device->SetWindowGrab = KMSDRM_SetWindowGrab;
     device->DestroyWindow = KMSDRM_DestroyWindow;
     device->GetWindowWMInfo = KMSDRM_GetWindowWMInfo;
+
     device->GL_DefaultProfileConfig = KMSDRM_GLES_DefaultProfileConfig;
-    device->GL_LoadLibrary = KMSDRM_GLES_LoadLibrary;
     device->GL_GetProcAddress = KMSDRM_GLES_GetProcAddress;
-    device->GL_UnloadLibrary = KMSDRM_GLES_UnloadLibrary;
     device->GL_CreateContext = KMSDRM_GLES_CreateContext;
     device->GL_MakeCurrent = KMSDRM_GLES_MakeCurrent;
     device->GL_SetSwapInterval = KMSDRM_GLES_SetSwapInterval;
     device->GL_GetSwapInterval = KMSDRM_GLES_GetSwapInterval;
     device->GL_SwapWindow = KMSDRM_GLES_SwapWindow;
     device->GL_DeleteContext = KMSDRM_GLES_DeleteContext;
+    /* Those two functions are dummy. We do these things manually. */
+    device->GL_LoadLibrary = KMSDRM_GLES_LoadLibrary;
+    device->GL_UnloadLibrary = KMSDRM_GLES_UnloadLibrary;
 
 #if SDL_VIDEO_VULKAN
     device->Vulkan_LoadLibrary = KMSDRM_Vulkan_LoadLibrary;
@@ -1499,6 +1501,11 @@ KMSDRM_DestroyWindow(_THIS, SDL_Window *window)
             SDL_EGL_UnloadLibrary(_this);
         }
 
+        /* Unload GL library. */
+        if (_this->gl_config.driver_loaded) {
+            SDL_GL_UnloadLibrary();
+        }
+
         /* Free display plane, and destroy GBM device. */
         KMSDRM_GBMDeinit(_this, dispdata);
     }
@@ -1774,6 +1781,16 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
     int ret = 0;
 
     if ( !(dispdata->gbm_init) && !is_vulkan && !vulkan_mode ) {
+
+         /* Maybe you didn't ask for an OPENGL window, but that's what you will get.
+            At the end of this function, we must have marked the window as being OPENGL
+            and we must have loaded the GL library: both things are needed so the
+            GL_CreateRenderer() and GL_LoadFunctions() calls in SDL_CreateWindow()
+            succeed without having to re-create the window.
+            We must load the EGL library too, which can't be loaded until the GBM device
+            has been created, because SDL_EGL_Library() function uses it. */ 
+         window->flags |= SDL_WINDOW_OPENGL;
+
          /* Reopen FD, create gbm dev, setup display plane, etc,.
             but only when we come here for the first time,
             and only if it's not a VK window. */
@@ -1781,19 +1798,24 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
                  goto cleanup;
          }
 
-         /* Manually load the EGL library. KMSDRM_EGL_LoadLibrary() has already
+         /* Manually load the GL library. KMSDRM_EGL_LoadLibrary() has already
             been called by SDL_CreateWindow() but we don't do anything there,
             precisely to be able to load it here.
             If we let SDL_CreateWindow() load the lib, it will be loaded
             before we call KMSDRM_GBMInit(), causing GLES programs to fail. */
          if (!_this->egl_data) {
              egl_display = (NativeDisplayType)((SDL_VideoData *)_this->driverdata)->gbm_dev;
-             if ((ret = SDL_EGL_LoadLibrary(_this, NULL, egl_display, EGL_PLATFORM_GBM_MESA))) {
+             if (SDL_EGL_LoadLibrary(_this, NULL, egl_display, EGL_PLATFORM_GBM_MESA)) {
                  goto cleanup;
              }
-         }
 
-         /* Can't init mouse stuff sooner because cursor plane is not ready. */
+             if (SDL_GL_LoadLibrary(NULL) < 0) {
+                goto cleanup;
+             }
+         }
+     
+         /* Can't init mouse stuff sooner because cursor plane is not ready,
+            so we do it here. */
          KMSDRM_InitMouse(_this);
 
          /* Since we take cursor buffer way from the cursor plane and
