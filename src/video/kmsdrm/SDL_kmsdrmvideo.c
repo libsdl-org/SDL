@@ -1781,14 +1781,17 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
     int ret = 0;
 
     if ( !(dispdata->gbm_init) && !is_vulkan && !vulkan_mode ) {
-
-         /* Maybe you didn't ask for an OPENGL window, but that's what you will get.
-            At the end of this function, we must have marked the window as being OPENGL
+ 
+         /* If this is not a Vulkan Window, then this is a GL window, so at the
+            end of this function, we must have marked the window as being OPENGL
             and we must have loaded the GL library: both things are needed so the
             GL_CreateRenderer() and GL_LoadFunctions() calls in SDL_CreateWindow()
             succeed without having to re-create the window.
-            We must load the EGL library too, which can't be loaded until the GBM device
-            has been created, because SDL_EGL_Library() function uses it. */ 
+            We must load the EGL library too, which can't be loaded until the GBM
+            device has been created, because SDL_EGL_Library() function uses it. */ 
+
+         /* Maybe you didn't ask for an OPENGL window, but that's what you will get.
+            See previous comment on why. */
          window->flags |= SDL_WINDOW_OPENGL;
 
          /* Reopen FD, create gbm dev, setup display plane, etc,.
