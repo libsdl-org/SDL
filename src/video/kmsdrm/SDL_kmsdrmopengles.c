@@ -128,6 +128,7 @@ KMSDRM_GLES_SwapWindowFenced(_THIS, SDL_Window * window)
     SDL_DisplayData *dispdata = (SDL_DisplayData *) SDL_GetDisplayForWindow(window)->driverdata;
     KMSDRM_FBInfo *fb;
     KMSDRM_PlaneInfo info = {0};
+    SDL_bool modesetting = SDL_FALSE;
 
     /******************************************************************/
     /* Create the GPU-side FENCE OBJECT. It will be inserted into the */
@@ -228,6 +229,7 @@ KMSDRM_GLES_SwapWindowFenced(_THIS, SDL_Window * window)
         KMSDRM_drmModeCreatePropertyBlob(viddata->drm_fd, &dispdata->mode, sizeof(dispdata->mode), &blob_id);
         add_crtc_property(dispdata->atomic_req, dispdata->crtc, "MODE_ID", blob_id);
         add_crtc_property(dispdata->atomic_req, dispdata->crtc, "active", 1);
+        modesetting = SDL_TRUE;
         dispdata->modeset_pending = SDL_FALSE;
     }
 
@@ -236,13 +238,8 @@ KMSDRM_GLES_SwapWindowFenced(_THIS, SDL_Window * window)
     /* this must not block so the game can start building another    */
     /* frame, even if the just-requested pageflip hasnt't completed. */
     /*****************************************************************/   
-    if (drm_atomic_commit(_this, SDL_FALSE, dispdata->modeset_pending)) {
+    if (drm_atomic_commit(_this, SDL_FALSE, modesetting)) {
         return SDL_SetError("Failed to issue atomic commit on pageflip");
-    }
-
-    /* If we had a pending modesetting, we have done it by now.  */
-    if (dispdata->modeset_pending) {
-        dispdata->modeset_pending = SDL_FALSE;
     }
 
     /* Release the previous front buffer so EGL can chose it as back buffer
@@ -286,6 +283,7 @@ KMSDRM_GLES_SwapWindowDoubleBuffered(_THIS, SDL_Window * window)
     SDL_DisplayData *dispdata = (SDL_DisplayData *) SDL_GetDisplayForWindow(window)->driverdata;
     KMSDRM_FBInfo *fb;
     KMSDRM_PlaneInfo info = {0};
+    SDL_bool modesetting = SDL_FALSE;
 
     /**********************************************************************************/
     /* In double-buffer mode, atomic_commit will always be synchronous/blocking (ie:  */
@@ -337,17 +335,14 @@ KMSDRM_GLES_SwapWindowDoubleBuffered(_THIS, SDL_Window * window)
         KMSDRM_drmModeCreatePropertyBlob(viddata->drm_fd, &dispdata->mode, sizeof(dispdata->mode), &blob_id);
         add_crtc_property(dispdata->atomic_req, dispdata->crtc, "MODE_ID", blob_id);
         add_crtc_property(dispdata->atomic_req, dispdata->crtc, "active", 1);
+        modesetting = SDL_TRUE;
+        dispdata->modeset_pending = SDL_FALSE;
     }
 
     /* Issue the one and only atomic commit where all changes will be requested!. 
        Blocking for double buffering: won't return until completed. */
-    if (drm_atomic_commit(_this, SDL_TRUE, dispdata->modeset_pending)) {
+    if (drm_atomic_commit(_this, SDL_TRUE, modesetting)) {
         return SDL_SetError("Failed to issue atomic commit on pageflip");
-    }
-
-    /* If we had a pending modesetting, we have done it by now.  */
-    if (dispdata->modeset_pending) {
-        dispdata->modeset_pending = SDL_FALSE;
     }
 
     /* Release last front buffer so EGL can chose it as back buffer and render on it again. */
