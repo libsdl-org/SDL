@@ -20,6 +20,9 @@
 */
 #include "../../SDL_internal.h"
 
+#include "SDL_render.h"
+#include "SDL_system.h"
+
 #if SDL_VIDEO_RENDER_D3D11 && !SDL_RENDER_DISABLED
 
 #define COBJMACROS
@@ -2594,5 +2597,31 @@ SDL_RenderDriver D3D11_RenderDriver = {
 };
 
 #endif /* SDL_VIDEO_RENDER_D3D11 && !SDL_RENDER_DISABLED */
+
+#ifdef __WIN32__
+/* This function needs to always exist on Windows, for the Dynamic API. */
+ID3D11Device *
+SDL_RenderGetD3D11Device(SDL_Renderer * renderer)
+{
+    ID3D11Device *device = NULL;
+
+#if SDL_VIDEO_RENDER_D3D11 && !SDL_RENDER_DISABLED
+    D3D11_RenderData *data = (D3D11_RenderData *) renderer->driverdata;
+
+    /* Make sure that this is a D3D renderer */
+    if (renderer->DestroyRenderer != D3D11_DestroyRenderer) {
+        SDL_SetError("Renderer is not a D3D11 renderer");
+        return NULL;
+    }
+
+    device = (ID3D11Device *)data->d3dDevice;
+    if (device) {
+        ID3D11Device_AddRef(device);
+    }
+#endif /* SDL_VIDEO_RENDER_D3D11 && !SDL_RENDER_DISABLED */
+
+    return device;
+}
+#endif /* __WIN32__ */
 
 /* vi: set ts=4 sw=4 expandtab: */
