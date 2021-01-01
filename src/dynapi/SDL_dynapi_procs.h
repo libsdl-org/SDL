@@ -854,3 +854,6 @@ SDL_DYNAPI_PROC(float,SDL_roundf,(float a),(a),return)
 SDL_DYNAPI_PROC(long,SDL_lround,(double a),(a),return)
 SDL_DYNAPI_PROC(long,SDL_lroundf,(float a),(a),return)
 SDL_DYNAPI_PROC(int,SDL_SoftStretchLinear,(SDL_Surface *a, const SDL_Rect *b, SDL_Surface *c, const SDL_Rect *d),(a,b,c,d),return)
+#ifdef __WIN32__
+SDL_DYNAPI_PROC(ID3D11Device*,SDL_RenderGetD3D11Device,(SDL_Renderer *a),(a),return)
+#endif
