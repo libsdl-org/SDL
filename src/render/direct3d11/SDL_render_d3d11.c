@@ -1240,6 +1240,8 @@ D3D11_DestroyTexture(SDL_Renderer * renderer,
     SAFE_RELEASE(data->mainTextureResourceViewU);
     SAFE_RELEASE(data->mainTextureV);
     SAFE_RELEASE(data->mainTextureResourceViewV);
+    SAFE_RELEASE(data->mainTextureNV);
+    SAFE_RELEASE(data->mainTextureResourceViewNV);
     SDL_free(data->pixels);
     SDL_free(data);
     texture->driverdata = NULL;
