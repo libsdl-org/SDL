@@ -932,9 +932,13 @@ int HID_API_EXPORT HID_API_CALL hid_get_feature_report(hid_device *dev, unsigned
 
 void HID_API_EXPORT HID_API_CALL hid_close(hid_device *dev)
 {
+	DWORD bytes_read = 0;
+
 	if (!dev)
 		return;
-	CancelIo(dev->device_handle);
+	CancelIoEx(dev->device_handle, NULL);
+	if (dev->read_pending)
+		GetOverlappedResult(dev->device_handle, &dev->ol, &bytes_read, TRUE/*wait*/);
 	free_hid_device(dev);
 }
 
