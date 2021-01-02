@@ -197,8 +197,8 @@ copy_row3(Uint8 * src, int src_w, Uint8 * dst, int dst_w)
     }
 }
 
-static int SDL_SoftStretchLowerNearest(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect);
-static int SDL_SoftStretchLowerLinear(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect);
+static int SDL_LowerSoftStretchNearest(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect);
+static int SDL_LowerSoftStretchLinear(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect);
 static int SDL_UpperSoftStretch(SDL_Surface * src, const SDL_Rect * srcrect, SDL_Surface * dst, const SDL_Rect * dstrect, SDL_ScaleMode scaleMode);
 
 /* Perform a stretch blit between two surfaces of the same format.
@@ -230,6 +230,12 @@ SDL_UpperSoftStretch(SDL_Surface * src, const SDL_Rect * srcrect,
 
     if (src->format->format != dst->format->format) {
         return SDL_SetError("Only works with same format surfaces");
+    }
+
+    if (scaleMode != SDL_ScaleModeNearest) {
+        if (src->format->BytesPerPixel != 4 || src->format->format == SDL_PIXELFORMAT_ARGB2101010) {
+            return SDL_SetError("Wrong format");
+        }
     }
 
     /* Verify the blit rectangles */
@@ -285,9 +291,9 @@ SDL_UpperSoftStretch(SDL_Surface * src, const SDL_Rect * srcrect,
     }
 
     if (scaleMode == SDL_ScaleModeNearest) {
-        ret = SDL_SoftStretchLowerNearest(src, srcrect, dst, dstrect);
+        ret = SDL_LowerSoftStretchNearest(src, srcrect, dst, dstrect);
     } else {
-        ret = SDL_SoftStretchLowerLinear(src, srcrect, dst, dstrect);
+        ret = SDL_LowerSoftStretchLinear(src, srcrect, dst, dstrect);
     }
 
     /* We need to unlock the surfaces if they're locked */
@@ -303,7 +309,7 @@ SDL_UpperSoftStretch(SDL_Surface * src, const SDL_Rect * srcrect,
 
 
 int
-SDL_SoftStretchLowerNearest(SDL_Surface *src, const SDL_Rect *srcrect,
+SDL_LowerSoftStretchNearest(SDL_Surface *src, const SDL_Rect *srcrect,
                 SDL_Surface *dst, const SDL_Rect *dstrect)
 {
     int pos, inc;
@@ -1066,7 +1072,7 @@ scale_mat_NEON(const Uint32 *src, int src_w, int src_h, int src_pitch, Uint32 *d
 #endif
 
 int
-SDL_SoftStretchLowerLinear(SDL_Surface *s, const SDL_Rect *srcrect,
+SDL_LowerSoftStretchLinear(SDL_Surface *s, const SDL_Rect *srcrect,
                 SDL_Surface *d, const SDL_Rect *dstrect)
 {
     int ret = -1;
