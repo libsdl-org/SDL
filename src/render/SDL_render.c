@@ -2153,6 +2153,18 @@ SDL_RenderGetViewport(SDL_Renderer * renderer, SDL_Rect * rect)
     }
 }
 
+static void
+SDL_RenderGetViewportF(SDL_Renderer * renderer, SDL_FRect * rect)
+{
+    CHECK_RENDERER_MAGIC(renderer, );
+    if (rect) {
+        rect->x = renderer->viewport.x / renderer->scale.x;
+        rect->y = renderer->viewport.y / renderer->scale.y;
+        rect->w = renderer->viewport.w / renderer->scale.x;
+        rect->h = renderer->viewport.h / renderer->scale.y;
+    }
+}
+
 int
 SDL_RenderSetClipRect(SDL_Renderer * renderer, const SDL_Rect * rect)
 {
@@ -2688,12 +2700,7 @@ SDL_RenderDrawRectF(SDL_Renderer * renderer, const SDL_FRect * rect)
 
     /* If 'rect' == NULL, then outline the whole surface */
     if (!rect) {
-        SDL_Rect r;
-        SDL_RenderGetViewport(renderer, &r);
-        frect.x = 0.0f;
-        frect.y = 0.0f;
-        frect.w = (float) r.w;
-        frect.h = (float) r.h;
+        SDL_RenderGetViewportF(renderer, &frect);
         rect = &frect;
     }
 
@@ -2780,13 +2787,7 @@ SDL_RenderFillRect(SDL_Renderer * renderer, const SDL_Rect * rect)
         frect.w = (float) rect->w;
         frect.h = (float) rect->h;
     } else {
-        SDL_Rect r;
-        SDL_zero(r);
-        SDL_RenderGetViewport(renderer, &r);
-        frect.x = 0.0f;
-        frect.y = 0.0f;
-        frect.w = (float) r.w;
-        frect.h = (float) r.h;
+        SDL_RenderGetViewportF(renderer, &frect);
     }
     return SDL_RenderFillRectsF(renderer, &frect, 1);
 }
@@ -2800,13 +2801,7 @@ SDL_RenderFillRectF(SDL_Renderer * renderer, const SDL_FRect * rect)
 
     /* If 'rect' == NULL, then outline the whole surface */
     if (!rect) {
-        SDL_Rect r;
-        SDL_zero(r);
-        SDL_RenderGetViewport(renderer, &r);
-        frect.x = 0.0f;
-        frect.y = 0.0f;
-        frect.w = (float) r.w;
-        frect.h = (float) r.h;
+        SDL_RenderGetViewportF(renderer, &frect);
         rect = &frect;
     }
     return SDL_RenderFillRectsF(renderer, rect, 1);
@@ -2995,12 +2990,17 @@ SDL_RenderCopyF(SDL_Renderer * renderer, SDL_Texture * texture,
         }
     }
 
+    SDL_Log("real_srcrect: %d %d", real_srcrect.w, real_srcrect.h);
+//    SDL_Log("dstrect: %d %d", dstrect->w, dstrect->h);
     SDL_zero(r);
-    SDL_RenderGetViewport(renderer, &r);
+    SDL_RenderGetViewportF(renderer, &real_dstrect);
+    /*
     real_dstrect.x = 0.0f;
     real_dstrect.y = 0.0f;
     real_dstrect.w = (float) r.w;
-    real_dstrect.h = (float) r.h;
+    real_dstrect.h = (float) r.h;*/
+    SDL_Log("viewport: %d %d", renderer->viewport.w, renderer->viewport.h);
+    SDL_Log("real_dstrect 1st: %f, %f,  %f x %f", real_dstrect.x, real_dstrect.y, real_dstrect.w, real_dstrect.h);
     if (dstrect) {
         if (!SDL_HasIntersectionF(dstrect, &real_dstrect)) {
             return 0;
@@ -3012,10 +3012,16 @@ SDL_RenderCopyF(SDL_Renderer * renderer, SDL_Texture * texture,
         texture = texture->native;
     }
 
+    SDL_Log("real_dstrect: %f, %f,  %f x %f", real_dstrect.x, real_dstrect.y, real_dstrect.w, real_dstrect.h);
+
     real_dstrect.x *= renderer->scale.x;
     real_dstrect.y *= renderer->scale.y;
     real_dstrect.w *= renderer->scale.x;
     real_dstrect.h *= renderer->scale.y;
+
+
+    SDL_Log("real_dstrect * scale: %f, %f,  %f x %f", real_dstrect.x, real_dstrect.y, real_dstrect.w, real_dstrect.h);
+
 
     texture->last_command_generation = renderer->render_command_generation;
 
@@ -3093,13 +3099,7 @@ SDL_RenderCopyExF(SDL_Renderer * renderer, SDL_Texture * texture,
     if (dstrect) {
         real_dstrect = *dstrect;
     } else {
-        SDL_Rect r;
-        SDL_zero(r);
-        SDL_RenderGetViewport(renderer, &r);
-        real_dstrect.x = 0.0f;
-        real_dstrect.y = 0.0f;
-        real_dstrect.w = (float) r.w;
-        real_dstrect.h = (float) r.h;
+        SDL_RenderGetViewportF(renderer, &real_dstrect);
     }
 
     if (texture->native) {
