@@ -2154,12 +2154,12 @@ SDL_RenderGetViewport(SDL_Renderer * renderer, SDL_Rect * rect)
 }
 
 static void
-SDL_RenderGetViewportF(SDL_Renderer * renderer, SDL_FRect * rect)
+RenderGetViewportSize(SDL_Renderer * renderer, SDL_FRect * rect)
 {
     CHECK_RENDERER_MAGIC(renderer, );
     if (rect) {
-        rect->x = renderer->viewport.x / renderer->scale.x;
-        rect->y = renderer->viewport.y / renderer->scale.y;
+        rect->x = 0.0f;
+        rect->y = 0.0f;
         rect->w = renderer->viewport.w / renderer->scale.x;
         rect->h = renderer->viewport.h / renderer->scale.y;
     }
@@ -2700,7 +2700,7 @@ SDL_RenderDrawRectF(SDL_Renderer * renderer, const SDL_FRect * rect)
 
     /* If 'rect' == NULL, then outline the whole surface */
     if (!rect) {
-        SDL_RenderGetViewportF(renderer, &frect);
+        RenderGetViewportSize(renderer, &frect);
         rect = &frect;
     }
 
@@ -2787,7 +2787,7 @@ SDL_RenderFillRect(SDL_Renderer * renderer, const SDL_Rect * rect)
         frect.w = (float) rect->w;
         frect.h = (float) rect->h;
     } else {
-        SDL_RenderGetViewportF(renderer, &frect);
+        RenderGetViewportSize(renderer, &frect);
     }
     return SDL_RenderFillRectsF(renderer, &frect, 1);
 }
@@ -2801,7 +2801,7 @@ SDL_RenderFillRectF(SDL_Renderer * renderer, const SDL_FRect * rect)
 
     /* If 'rect' == NULL, then outline the whole surface */
     if (!rect) {
-        SDL_RenderGetViewportF(renderer, &frect);
+        RenderGetViewportSize(renderer, &frect);
         rect = &frect;
     }
     return SDL_RenderFillRectsF(renderer, rect, 1);
@@ -2989,7 +2989,7 @@ SDL_RenderCopyF(SDL_Renderer * renderer, SDL_Texture * texture,
         }
     }
 
-    SDL_RenderGetViewportF(renderer, &real_dstrect);
+    RenderGetViewportSize(renderer, &real_dstrect);
     if (dstrect) {
         if (!SDL_HasIntersectionF(dstrect, &real_dstrect)) {
             return 0;
@@ -3082,7 +3082,7 @@ SDL_RenderCopyExF(SDL_Renderer * renderer, SDL_Texture * texture,
     if (dstrect) {
         real_dstrect = *dstrect;
     } else {
-        SDL_RenderGetViewportF(renderer, &real_dstrect);
+        RenderGetViewportSize(renderer, &real_dstrect);
     }
 
     if (texture->native) {
