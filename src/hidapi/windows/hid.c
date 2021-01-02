@@ -932,13 +932,23 @@ int HID_API_EXPORT HID_API_CALL hid_get_feature_report(hid_device *dev, unsigned
 
 void HID_API_EXPORT HID_API_CALL hid_close(hid_device *dev)
 {
-	DWORD bytes_read = 0;
+	typedef BOOL (WINAPI *CancelIoEx_t)(HANDLE hFile, LPOVERLAPPED lpOverlapped);
+	CancelIoEx_t CancelIoExFunc = (CancelIoEx_t)GetProcAddress(GetModuleHandle(TEXT("kernel32.dll")), "CancelIoEx");
 
 	if (!dev)
 		return;
-	CancelIoEx(dev->device_handle, NULL);
-	if (dev->read_pending)
+
+	if (CancelIoExFunc) {
+		CancelIoExFunc(dev->device_handle, NULL);
+	} else {
+		/* Windows XP, this will only cancel I/O on the current thread */
+		CancelIo(dev->device_handle);
+	}
+	if (dev->read_pending) {
+		DWORD bytes_read = 0;
+
 		GetOverlappedResult(dev->device_handle, &dev->ol, &bytes_read, TRUE/*wait*/);
+	}
 	free_hid_device(dev);
 }
 
