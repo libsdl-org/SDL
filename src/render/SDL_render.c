@@ -371,7 +371,7 @@ QueueCmdSetDrawColor(SDL_Renderer *renderer, const Uint8 r, const Uint8 g, const
 {
     const Uint32 color = ((a << 24) | (r << 16) | (g << 8) | b);
     int retval = 0;
-    
+
     if (!renderer->color_queued || (color != renderer->last_queued_color)) {
         SDL_RenderCommand *cmd = AllocateRenderCommand(renderer);
         retval = -1;
@@ -640,7 +640,7 @@ SDL_RendererEventWatch(void *userdata, SDL_Event *event)
                 }
             } else if (event->window.event == SDL_WINDOWEVENT_MINIMIZED) {
                 renderer->hidden = SDL_TRUE;
-            } else if (event->window.event == SDL_WINDOWEVENT_RESTORED || 
+            } else if (event->window.event == SDL_WINDOWEVENT_RESTORED ||
                        event->window.event == SDL_WINDOWEVENT_MAXIMIZED) {
                 if (!(SDL_GetWindowFlags(window) & SDL_WINDOW_HIDDEN)) {
                     renderer->hidden = SDL_FALSE;
@@ -687,7 +687,7 @@ SDL_RendererEventWatch(void *userdata, SDL_Event *event)
                 event->button.x = (int)(event->button.x / (scale.x * renderer->dpi_scale.x));
                 event->button.y = (int)(event->button.y / (scale.y * renderer->dpi_scale.y));
             }
-        }                               
+        }
     } else if (event->type == SDL_FINGERDOWN ||
                event->type == SDL_FINGERUP ||
                event->type == SDL_FINGERMOTION) {
@@ -2156,13 +2156,10 @@ SDL_RenderGetViewport(SDL_Renderer * renderer, SDL_Rect * rect)
 static void
 RenderGetViewportSize(SDL_Renderer * renderer, SDL_FRect * rect)
 {
-    CHECK_RENDERER_MAGIC(renderer, );
-    if (rect) {
-        rect->x = 0.0f;
-        rect->y = 0.0f;
-        rect->w = renderer->viewport.w / renderer->scale.x;
-        rect->h = renderer->viewport.h / renderer->scale.y;
-    }
+    rect->x = 0.0f;
+    rect->y = 0.0f;
+    rect->w = renderer->viewport.w / renderer->scale.x;
+    rect->h = renderer->viewport.h / renderer->scale.y;
 }
 
 int
