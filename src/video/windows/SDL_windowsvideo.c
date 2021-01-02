@@ -257,24 +257,24 @@ D3D_LoadDLL(void **pD3DDLL, IDirect3D9 **pDirect3D9Interface)
         typedef IDirect3D9 *(WINAPI *Direct3DCreate9_t) (UINT SDKVersion);
         Direct3DCreate9_t Direct3DCreate9Func;
 
-#ifdef USE_D3D9EX
-        typedef HRESULT (WINAPI *Direct3DCreate9Ex_t)(UINT SDKVersion, IDirect3D9Ex **ppD3D);
-        Direct3DCreate9Ex_t Direct3DCreate9ExFunc;
+        if (SDL_GetHintBoolean(SDL_HINT_WINDOWS_USE_D3D9EX, SDL_FALSE)) {
+            typedef HRESULT(WINAPI* Direct3DCreate9Ex_t)(UINT SDKVersion, IDirect3D9Ex** ppD3D);
+            Direct3DCreate9Ex_t Direct3DCreate9ExFunc;
 
-        Direct3DCreate9ExFunc = (Direct3DCreate9Ex_t)SDL_LoadFunction(*pD3DDLL, "Direct3DCreate9Ex");
-        if (Direct3DCreate9ExFunc) {
-            IDirect3D9Ex *pDirect3D9ExInterface;
-            HRESULT hr = Direct3DCreate9ExFunc(D3D_SDK_VERSION, &pDirect3D9ExInterface);
-            if (SUCCEEDED(hr)) {
-                const GUID IDirect3D9_GUID = { 0x81bdcbca, 0x64d4, 0x426d, { 0xae, 0x8d, 0xad, 0x1, 0x47, 0xf4, 0x27, 0x5c } };
-                hr = IDirect3D9Ex_QueryInterface(pDirect3D9ExInterface, &IDirect3D9_GUID, (void**)pDirect3D9Interface);
-                IDirect3D9Ex_Release(pDirect3D9ExInterface);
+            Direct3DCreate9ExFunc = (Direct3DCreate9Ex_t)SDL_LoadFunction(*pD3DDLL, "Direct3DCreate9Ex");
+            if (Direct3DCreate9ExFunc) {
+                IDirect3D9Ex* pDirect3D9ExInterface;
+                HRESULT hr = Direct3DCreate9ExFunc(D3D_SDK_VERSION, &pDirect3D9ExInterface);
                 if (SUCCEEDED(hr)) {
-                    return SDL_TRUE;
+                    const GUID IDirect3D9_GUID = { 0x81bdcbca, 0x64d4, 0x426d, { 0xae, 0x8d, 0xad, 0x1, 0x47, 0xf4, 0x27, 0x5c } };
+                    hr = IDirect3D9Ex_QueryInterface(pDirect3D9ExInterface, &IDirect3D9_GUID, (void**)pDirect3D9Interface);
+                    IDirect3D9Ex_Release(pDirect3D9ExInterface);
+                    if (SUCCEEDED(hr)) {
+                        return SDL_TRUE;
+                    }
                 }
             }
         }
-#endif /* USE_D3D9EX */
 
         Direct3DCreate9Func = (Direct3DCreate9_t)SDL_LoadFunction(*pD3DDLL, "Direct3DCreate9");
         if (Direct3DCreate9Func) {
