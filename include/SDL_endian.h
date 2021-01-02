@@ -30,6 +30,10 @@
 
 #include "SDL_stdinc.h"
 
+#ifdef _MSC_VER
+#include <intrin.h>
+#endif
+
 /**
  *  \name The two types of endianness
  */
@@ -109,6 +113,9 @@ SDL_Swap16(Uint16 x)
   __asm__("rorw #8,%0": "=d"(x): "0"(x):"cc");
     return x;
 }
+#elif defined(_MSC_VER)
+#pragma intrinsic(_byteswap_ushort)
+#define SDL_Swap16(x) _byteswap_ushort(x)
 #elif defined(__WATCOMC__) && defined(__386__)
 extern _inline Uint16 SDL_Swap16(Uint16);
 #pragma aux SDL_Swap16 = \
@@ -178,6 +185,9 @@ extern _inline Uint32 SDL_Swap32(Uint32);
   parm   [eax]   \
   modify [eax];
 #endif
+#elif defined(_MSC_VER)
+#pragma intrinsic(_byteswap_ulong)
+#define SDL_Swap32(x) _byteswap_ulong(x)
 #else
 SDL_FORCE_INLINE Uint32
 SDL_Swap32(Uint32 x)
@@ -213,6 +223,9 @@ SDL_Swap64(Uint64 x)
   __asm__("bswapq %0": "=r"(x):"0"(x));
     return x;
 }
+#elif defined(_MSC_VER)
+#pragma intrinsic(_byteswap_uint64)
+#define SDL_Swap64(x) _byteswap_uint64(x)
 #else
 SDL_FORCE_INLINE Uint64
 SDL_Swap64(Uint64 x)
