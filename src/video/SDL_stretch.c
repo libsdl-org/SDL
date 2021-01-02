@@ -613,7 +613,7 @@ scale_mat(const Uint32 *src, int src_w, int src_h, int src_pitch,
 #endif
 
 /* TODO: this didn't compile on Window10 universal package last time I tried .. */
-#if defined(__WINRT__)
+#if defined(__WINRT__) || defined(_MSC_VER)
 #  if defined(HAVE_NEON_INTRINSICS)
 #    undef HAVE_NEON_INTRINSICS
 #  endif
