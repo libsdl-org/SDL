@@ -172,8 +172,8 @@ void
 Cocoa_Metal_GetDrawableSize(_THIS, SDL_Window * window, int * w, int * h)
 { @autoreleasepool {
     SDL_WindowData *data = (__bridge SDL_WindowData *)window->driverdata;
-    NSView *view = data->nswindow.contentView;
-    SDL_cocoametalview* metalview = [view viewWithTag:METALVIEW_TAG];
+    NSView *contentView = data->sdlContentView;
+    SDL_cocoametalview* metalview = [contentView viewWithTag:METALVIEW_TAG];
     if (metalview) {
         CAMetalLayer *layer = (CAMetalLayer*)metalview.layer;
         SDL_assert(layer != NULL);
@@ -184,7 +184,21 @@ Cocoa_Metal_GetDrawableSize(_THIS, SDL_Window * window, int * w, int * h)
             *h = layer.drawableSize.height;
         }
     } else {
-        SDL_GetWindowSize(window, w, h);
+        /* Fall back to the viewport size. */
+        NSRect viewport = [contentView bounds];
+        if (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
+            /* This gives us the correct viewport for a Retina-enabled view, only
+             * supported on 10.7+. */
+            if ([contentView respondsToSelector:@selector(convertRectToBacking:)]) {
+                viewport = [contentView convertRectToBacking:viewport];
+            }
+        }
+        if (w) {
+            *w = viewport.size.width;
+        }
+        if (h) {
+            *h = viewport.size.height;
+        }
     }
 }}
 
