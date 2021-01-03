@@ -45,6 +45,9 @@
 #elif defined(__OpenBSD__)
 #include <endian.h>
 #define SDL_BYTEORDER  BYTE_ORDER
+#elif defined(__FreeBSD__)
+#include <sys/endian.h>
+#define SDL_BYTEORDER  BYTE_ORDER
 #else
 #if defined(__hppa__) || \
     defined(__m68k__) || defined(mc68000) || defined(_M_M68K) || \
