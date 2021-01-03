@@ -47,8 +47,8 @@
 
 /* Fake window to help with DirectInput events. */
 HWND SDL_HelperWindow = NULL;
-static WCHAR *SDL_HelperWindowClassName = TEXT("SDLHelperWindowInputCatcher");
-static WCHAR *SDL_HelperWindowName = TEXT("SDLHelperWindowInputMsgWindow");
+static const TCHAR *SDL_HelperWindowClassName = TEXT("SDLHelperWindowInputCatcher");
+static const TCHAR *SDL_HelperWindowName = TEXT("SDLHelperWindowInputMsgWindow");
 static ATOM SDL_HelperWindowClass = 0;
 
 /* For borderless Windows, still want the following flags:
@@ -826,7 +826,7 @@ SDL_HelperWindowCreate(void)
     /* Create the class. */
     SDL_zero(wce);
     wce.lpfnWndProc = DefWindowProc;
-    wce.lpszClassName = (LPCWSTR) SDL_HelperWindowClassName;
+    wce.lpszClassName = SDL_HelperWindowClassName;
     wce.hInstance = hInstance;
 
     /* Register the class. */
