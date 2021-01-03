@@ -1250,7 +1250,7 @@ struct SDL_WIN_OSVERSIONINFOW {
 static SDL_bool
 IsWin10FCUorNewer(void)
 {
-    HMODULE handle = GetModuleHandleW(L"ntdll.dll");
+    HMODULE handle = GetModuleHandle(TEXT("ntdll.dll"));
     if (handle) {
         typedef LONG(WINAPI* RtlGetVersionPtr)(struct SDL_WIN_OSVERSIONINFOW*);
         RtlGetVersionPtr getVersionPtr = (RtlGetVersionPtr)GetProcAddress(handle, "RtlGetVersion");

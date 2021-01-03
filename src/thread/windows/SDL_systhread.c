@@ -163,7 +163,7 @@ SDL_SYS_SetupThread(const char *name)
         static HMODULE kernel32 = 0;
 
         if (!kernel32) {
-            kernel32 = GetModuleHandleW(L"kernel32.dll");
+            kernel32 = GetModuleHandle(TEXT("kernel32.dll"));
             if (kernel32) {
                 pSetThreadDescription = (pfnSetThreadDescription) GetProcAddress(kernel32, "SetThreadDescription");
             }

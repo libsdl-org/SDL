@@ -242,7 +242,7 @@ static void register_error(hid_device *device, const char *op)
 #ifndef HIDAPI_USE_DDK
 static int lookup_functions()
 {
-	lib_handle = LoadLibraryA("hid.dll");
+	lib_handle = LoadLibrary(TEXT("hid.dll"));
 	if (lib_handle) {
 #define RESOLVE(x) x = (x##_)GetProcAddress(lib_handle, #x); if (!x) return -1;
 		RESOLVE(HidD_GetAttributes);
