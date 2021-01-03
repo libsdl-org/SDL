@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 46;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -3728,7 +3728,7 @@
 		DB31408D17554D3C006C0E22 /* ForceFeedback.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00CFA89C106B4BA100758660 /* ForceFeedback.framework */; };
 		F3631C6424884ACF004F28EA /* SDL_locale.h in Headers */ = {isa = PBXBuildFile; fileRef = 566E26792462701100718109 /* SDL_locale.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F3631C652488534E004F28EA /* SDL_locale.h in Headers */ = {isa = PBXBuildFile; fileRef = 566E26792462701100718109 /* SDL_locale.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		F376F6192559B29300CFC0BC /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F376F6182559B29300CFC0BC /* OpenGLES.framework */; };
+		F376F6192559B29300CFC0BC /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F376F6182559B29300CFC0BC /* OpenGLES.framework */; platformFilter = ios; };
 		F376F61B2559B2AF00CFC0BC /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F376F61A2559B2AF00CFC0BC /* UIKit.framework */; };
 		F376F6262559B30000CFC0BC /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F376F61A2559B2AF00CFC0BC /* UIKit.framework */; };
 		F376F6322559B31D00CFC0BC /* GameController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F376F6312559B31D00CFC0BC /* GameController.framework */; };
@@ -10038,7 +10038,11 @@
 				);
 				INFOPLIST_FILE = "Info-Framework.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
 				MACOSX_DEPLOYMENT_TARGET = 10.6;
 				PRODUCT_BUNDLE_IDENTIFIER = org.libsdl.SDL2;
 				PRODUCT_NAME = SDL2;
@@ -10117,7 +10121,11 @@
 				);
 				INFOPLIST_FILE = "Info-Framework.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
 				MACOSX_DEPLOYMENT_TARGET = 10.6;
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = org.libsdl.SDL2;
