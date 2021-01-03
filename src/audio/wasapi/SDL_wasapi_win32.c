@@ -291,7 +291,7 @@ WASAPI_PlatformThreadInit(_THIS)
     /* Set this thread to very high "Pro Audio" priority. */
     if (pAvSetMmThreadCharacteristicsW) {
         DWORD idx = 0;
-        this->hidden->task = pAvSetMmThreadCharacteristicsW(TEXT("Pro Audio"), &idx);
+        this->hidden->task = pAvSetMmThreadCharacteristicsW(L"Pro Audio", &idx);
     }
 }
 
