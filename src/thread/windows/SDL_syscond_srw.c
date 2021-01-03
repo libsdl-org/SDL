@@ -215,7 +215,7 @@ SDL_CreateCond(void)
             /* Link statically on this platform */
             impl = &SDL_cond_impl_srw;
 #else
-            HMODULE kernel32 = GetModuleHandleW(L"kernel32.dll");
+            HMODULE kernel32 = GetModuleHandle(TEXT("kernel32.dll"));
             if (kernel32) {
                 pWakeConditionVariable = (pfnWakeConditionVariable) GetProcAddress(kernel32, "WakeConditionVariable");
                 pWakeAllConditionVariable = (pfnWakeAllConditionVariable) GetProcAddress(kernel32, "WakeAllConditionVariable");

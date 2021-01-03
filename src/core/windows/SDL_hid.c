@@ -48,7 +48,7 @@ WIN_LoadHIDDLL(void)
         return 0;  /* already loaded */
     }
 
-    s_pHIDDLL = LoadLibrary(L"hid.dll");
+    s_pHIDDLL = LoadLibrary(TEXT("hid.dll"));
     if (!s_pHIDDLL) {
         return -1;
     }

@@ -275,7 +275,7 @@ SDL_CreateMutex(void)
             impl = &SDL_mutex_impl_srw;
 #else
             /* Try faster implementation for Windows 7 and newer */
-            HMODULE kernel32 = GetModuleHandleW(L"kernel32.dll");
+            HMODULE kernel32 = GetModuleHandle(TEXT("kernel32.dll"));
             if (kernel32) {
                 /* Requires Vista: */
                 pReleaseSRWLockExclusive = (pfnReleaseSRWLockExclusive) GetProcAddress(kernel32, "ReleaseSRWLockExclusive");

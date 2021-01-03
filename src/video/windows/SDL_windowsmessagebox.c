@@ -798,7 +798,7 @@ WIN_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
     }
 
     /* If we cannot load comctl32.dll use the old messagebox! */
-    hComctl32 = LoadLibrary(TEXT("Comctl32.dll"));
+    hComctl32 = LoadLibrary(TEXT("comctl32.dll"));
     if (hComctl32 == NULL) {
         return WIN_ShowOldMessageBox(messageboxdata, buttonid);
     }

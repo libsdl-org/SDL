@@ -39,7 +39,7 @@ SDL_GetBasePath(void)
     GetModuleFileNameExW_t pGetModuleFileNameExW;
     DWORD buflen = 128;
     WCHAR *path = NULL;
-    HANDLE psapi = LoadLibrary(L"psapi.dll");
+    HANDLE psapi = LoadLibrary(TEXT("psapi.dll"));
     char *retval = NULL;
     DWORD len = 0;
     int i;

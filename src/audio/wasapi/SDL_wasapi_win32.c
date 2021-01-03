@@ -251,7 +251,7 @@ WASAPI_PlatformInit(void)
         return WIN_SetErrorFromHRESULT("WASAPI CoCreateInstance(MMDeviceEnumerator)", ret);
     }
 
-    libavrt = LoadLibraryW(L"avrt.dll");  /* this library is available in Vista and later. No WinXP, so have to LoadLibrary to use it for now! */
+    libavrt = LoadLibrary(TEXT("avrt.dll"));  /* this library is available in Vista and later. No WinXP, so have to LoadLibrary to use it for now! */
     if (libavrt) {
         pAvSetMmThreadCharacteristicsW = (pfnAvSetMmThreadCharacteristicsW) GetProcAddress(libavrt, "AvSetMmThreadCharacteristicsW");
         pAvRevertMmThreadCharacteristics = (pfnAvRevertMmThreadCharacteristics) GetProcAddress(libavrt, "AvRevertMmThreadCharacteristics");
