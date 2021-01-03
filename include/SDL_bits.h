@@ -73,6 +73,12 @@ SDL_MostSignificantBitIndex32(Uint32 x)
         return -1;
     }
     return 31 - _SDL_clz_watcom(x);
+#elif defined(_MSC_VER)
+    unsigned long index;
+    if (_BitScanReverse(&index, x)) {
+        return index;
+    }
+    return -1;
 #else
     /* Based off of Bit Twiddling Hacks by Sean Eron Anderson
      * <seander@cs.stanford.edu>, released in the public domain.
