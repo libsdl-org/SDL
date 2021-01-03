@@ -610,12 +610,16 @@ scale_mat(const Uint32 *src, int src_w, int src_h, int src_pitch,
 
 #if defined(__ARM_NEON)
 #  define HAVE_NEON_INTRINSICS 1
+#  define CAST_uint8x8_t  (uint8x8_t)
+#  define CAST_uint32x2_t (uint32x2_t)
 #endif
 
-/* TODO: this didn't compile on Window10 universal package last time I tried .. */
 #if defined(__WINRT__) || defined(_MSC_VER)
 #  if defined(HAVE_NEON_INTRINSICS)
-#    undef HAVE_NEON_INTRINSICS
+#    undef CAST_uint8x8_t
+#    undef CAST_uint32x2_t
+#    define CAST_uint8x8_t
+#    define CAST_uint32x2_t
 #  endif
 #endif
 
@@ -824,8 +828,8 @@ INTERPOL_BILINEAR_NEON(const Uint32 *s0, const Uint32 *s1, int frac_w, uint8x8_t
     uint16x8_t d0;
     uint8x8_t e0;
 
-    x_00_01 = (uint8x8_t)vld1_u32(s0); /* Load 2 pixels */
-    x_10_11 = (uint8x8_t)vld1_u32(s1);
+    x_00_01 = CAST_uint8x8_t vld1_u32(s0); /* Load 2 pixels */
+    x_10_11 = CAST_uint8x8_t vld1_u32(s1);
 
     /* Interpolated == x0 + frac * (x1 - x0) == x0 * (1 - frac) + x1 * frac */
     k0 = vmull_u8(x_00_01, v_frac_h1);                          /* k0 := x0 * (1 - frac)    */
@@ -846,7 +850,7 @@ INTERPOL_BILINEAR_NEON(const Uint32 *s0, const Uint32 *s1, int frac_w, uint8x8_t
     e0 = vmovn_u16(d0);
 
     /* Store 1 pixel */
-    *dst = vget_lane_u32((uint32x2_t)e0, 0);
+    *dst = vget_lane_u32(CAST_uint32x2_t e0, 0);
 }
 
     static int
@@ -911,14 +915,14 @@ scale_mat_NEON(const Uint32 *src, int src_w, int src_h, int src_pitch, Uint32 *d
             s_16_17 = (const Uint32 *)((const Uint8 *)src_h1 + index_w_3);
 
             /* Interpolation vertical */
-            x_00_01 = (uint8x8_t)vld1_u32(s_00_01); /* Load 2 pixels */
-            x_02_03 = (uint8x8_t)vld1_u32(s_02_03);
-            x_04_05 = (uint8x8_t)vld1_u32(s_04_05);
-            x_06_07 = (uint8x8_t)vld1_u32(s_06_07);
-            x_10_11 = (uint8x8_t)vld1_u32(s_10_11);
-            x_12_13 = (uint8x8_t)vld1_u32(s_12_13);
-            x_14_15 = (uint8x8_t)vld1_u32(s_14_15);
-            x_16_17 = (uint8x8_t)vld1_u32(s_16_17);
+            x_00_01 = CAST_uint8x8_t vld1_u32(s_00_01); /* Load 2 pixels */
+            x_02_03 = CAST_uint8x8_t vld1_u32(s_02_03);
+            x_04_05 = CAST_uint8x8_t vld1_u32(s_04_05);
+            x_06_07 = CAST_uint8x8_t vld1_u32(s_06_07);
+            x_10_11 = CAST_uint8x8_t vld1_u32(s_10_11);
+            x_12_13 = CAST_uint8x8_t vld1_u32(s_12_13);
+            x_14_15 = CAST_uint8x8_t vld1_u32(s_14_15);
+            x_16_17 = CAST_uint8x8_t vld1_u32(s_16_17);
 
             /* Interpolated == x0 + frac * (x1 - x0) == x0 * (1 - frac) + x1 * frac */
             k0 = vmull_u8(x_00_01, v_frac_h1);                          /* k0 := x0 * (1 - frac)    */
@@ -970,7 +974,7 @@ scale_mat_NEON(const Uint32 *src, int src_w, int src_h, int src_pitch, Uint32 *d
             /* Narrow again */
             e1 = vmovn_u16(d1);
 
-            f0 = vcombine_u32((uint32x2_t)e0, (uint32x2_t)e1);
+            f0 = vcombine_u32(CAST_uint32x2_t e0, CAST_uint32x2_t e1);
             /* Store 4 pixels */
             vst1q_u32(dst, f0);
 
@@ -1009,10 +1013,10 @@ scale_mat_NEON(const Uint32 *src, int src_w, int src_h, int src_pitch, Uint32 *d
             s_12_13 = (const Uint32 *)((const Uint8 *)src_h1 + index_w_1);
 
             /* Interpolation vertical */
-            x_00_01 = (uint8x8_t)vld1_u32(s_00_01);/* Load 2 pixels */
-            x_02_03 = (uint8x8_t)vld1_u32(s_02_03);
-            x_10_11 = (uint8x8_t)vld1_u32(s_10_11);
-            x_12_13 = (uint8x8_t)vld1_u32(s_12_13);
+            x_00_01 = CAST_uint8x8_t vld1_u32(s_00_01);/* Load 2 pixels */
+            x_02_03 = CAST_uint8x8_t vld1_u32(s_02_03);
+            x_10_11 = CAST_uint8x8_t vld1_u32(s_10_11);
+            x_12_13 = CAST_uint8x8_t vld1_u32(s_12_13);
 
             /* Interpolated == x0 + frac * (x1 - x0) == x0 * (1 - frac) + x1 * frac */
             k0 = vmull_u8(x_00_01, v_frac_h1);                          /* k0 := x0 * (1 - frac)    */
@@ -1043,7 +1047,7 @@ scale_mat_NEON(const Uint32 *src, int src_w, int src_h, int src_pitch, Uint32 *d
             e0 = vmovn_u16(d0);
 
             /* Store 2 pixels */
-            vst1_u32(dst, (uint32x2_t)e0);
+            vst1_u32(dst, CAST_uint32x2_t e0);
             dst += 2;
         }
 
