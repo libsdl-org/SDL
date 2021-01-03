@@ -72,6 +72,9 @@ SDL_AtomicTryLock(SDL_SpinLock *lock)
         return SDL_FALSE;
     }
 
+#elif defined(_MSC_VER) && (defined(_M_ARM) || defined(_M_ARM64))
+    return (_InterlockedExchange_acq(lock, 1) == 0);
+
 #elif defined(_MSC_VER)
     SDL_COMPILE_TIME_ASSERT(locksize, sizeof(*lock) == sizeof(long));
     return (InterlockedExchange((long*)lock, 1) == 0);
@@ -173,7 +176,9 @@ SDL_AtomicLock(SDL_SpinLock *lock)
 void
 SDL_AtomicUnlock(SDL_SpinLock *lock)
 {
-#if defined(_MSC_VER)
+#if defined(_MSC_VER) && (defined(_M_ARM) || defined(_M_ARM64))
+    _InterlockedExchange_rel(lock, 0);
+#elif defined(_MSC_VER)
     _ReadWriteBarrier();
     *lock = 0;
 
