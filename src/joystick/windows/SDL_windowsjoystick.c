@@ -171,7 +171,7 @@ SDL_CreateDeviceNotification(SDL_DeviceNotificationData *data)
     data->coinitialized = WIN_CoInitialize();
 
     data->wincl.hInstance = GetModuleHandle(NULL);
-    data->wincl.lpszClassName = L"Message";
+    data->wincl.lpszClassName = TEXT("Message");
     data->wincl.lpfnWndProc = SDL_PrivateJoystickDetectProc;      /* This function is called by windows */
     data->wincl.cbSize = sizeof (WNDCLASSEX);
 
@@ -181,7 +181,7 @@ SDL_CreateDeviceNotification(SDL_DeviceNotificationData *data)
         return -1;
     }
 
-    data->messageWindow = (HWND)CreateWindowEx(0,  L"Message", NULL, 0, 0, 0, 0, 0, HWND_MESSAGE, NULL, NULL, NULL);
+    data->messageWindow = (HWND)CreateWindowEx(0,  TEXT("Message"), NULL, 0, 0, 0, 0, 0, HWND_MESSAGE, NULL, NULL, NULL);
     if (!data->messageWindow) {
         WIN_SetError("Failed to create message window for joystick autodetect");
         SDL_CleanupDeviceNotification(data);
