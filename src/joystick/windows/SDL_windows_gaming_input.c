@@ -372,7 +372,7 @@ WGI_JoystickInit(void)
         WindowsCreateStringReference_t WindowsCreateStringReferenceFunc = (WindowsCreateStringReference_t)GetProcAddress(hModule, "WindowsCreateStringReference");
         RoGetActivationFactory_t RoGetActivationFactoryFunc = (RoGetActivationFactory_t)GetProcAddress(hModule, "RoGetActivationFactory");
         if (WindowsCreateStringReferenceFunc && RoGetActivationFactoryFunc) {
-            LPTSTR pNamespace;
+            PCWSTR pNamespace;
             HSTRING_HEADER hNamespaceStringHeader;
             HSTRING hNamespaceString;
 
