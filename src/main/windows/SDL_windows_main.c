@@ -19,8 +19,6 @@
 #  undef main
 #endif /* main */
 
-#define WIN_WStringToUTF8(S) SDL_iconv_string("UTF-8", "UTF-16LE", (char *)(S), (SDL_wcslen(S)+1)*sizeof(WCHAR))
-
 /* Pop up an out of memory message, returns to Windows */
 static BOOL
 OutOfMemory(void)
@@ -57,7 +55,7 @@ main_getcmdline(void)
         return OutOfMemory();
     }
     for (i = 0; i < argc; ++i) {
-        argv[i] = WIN_WStringToUTF8(argvw[i]);
+        argv[i] = WIN_StringToUTF8W(argvw[i]);
         if (!argv[i]) {
             return OutOfMemory();
         }
