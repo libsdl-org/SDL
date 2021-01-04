@@ -733,10 +733,10 @@ RAWINPUT_AddDevice(HANDLE hDevice)
         WCHAR string[128];
 
         if (SDL_HidD_GetManufacturerString(hFile, string, sizeof(string))) {
-            manufacturer_string = WIN_StringToUTF8(string);
+            manufacturer_string = WIN_StringToUTF8W(string);
         }
         if (SDL_HidD_GetProductString(hFile, string, sizeof(string))) {
-            product_string = WIN_StringToUTF8(string);
+            product_string = WIN_StringToUTF8W(string);
         }
 
         device->name = SDL_CreateJoystickName(device->vendor_id, device->product_id, manufacturer_string, product_string);
