@@ -232,12 +232,6 @@ SetDIerror(const char *function, HRESULT code)
     return SDL_SetError("%s() DirectX error 0x%8.8lx", function, code);
 }
 
-#ifdef UNICODE
-#define SDL_tcsstr SDL_wcsstr
-#else
-#define SDL_tcsstr SDL_strstr
-#endif
-
 #if 0 /* Microsoft recommended implementation, but slower than checking raw devices */
 #define COBJMACROS
 #include <wbemidl.h>
