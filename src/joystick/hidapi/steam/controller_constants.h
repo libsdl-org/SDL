@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 2020 Valve Corporation
+  Copyright (C) 2021 Valve Corporation
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
