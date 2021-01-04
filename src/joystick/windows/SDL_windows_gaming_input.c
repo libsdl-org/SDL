@@ -197,7 +197,7 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
                     if (SUCCEEDED(hr)) {
                         PCWSTR string = WindowsGetStringRawBufferFunc(hString, NULL);
                         if (string) {
-                            name = WIN_StringToUTF8(string);
+                            name = WIN_StringToUTF8W(string);
                         }
                         WindowsDeleteStringFunc(hString);
                     }

@@ -315,7 +315,7 @@ WIN_IsXInputDevice(const TCHAR *name, const GUID* pGuidProductFromDirectInput)
                 // Check if the device ID contains "IG_".  If it does, then it's an XInput device
                 // This information can not be found from DirectInput 
                 if (SDL_wcsstr(var.bstrVal, L"IG_")) {
-                    char *bstrVal = WIN_StringToUTF8(var.bstrVal);
+                    char *bstrVal = WIN_StringToUTF8W(var.bstrVal);
 
                     // If it does, then get the VID/PID from var.bstrVal
                     DWORD dwPid = 0, dwVid = 0, dwVidPid;
