@@ -47,6 +47,12 @@
 #define WIN_UTF8ToString(S) SDL_iconv_string("ASCII", "UTF-8", (char *)(S), SDL_strlen(S)+1)
 #endif
 
+#ifdef UNICODE
+#define SDL_tcsstr SDL_wcsstr
+#else
+#define SDL_tcsstr SDL_strstr
+#endif
+
 /* Sets an error message based on a given HRESULT */
 extern int WIN_SetErrorFromHRESULT(const char *prefix, HRESULT hr);
 
