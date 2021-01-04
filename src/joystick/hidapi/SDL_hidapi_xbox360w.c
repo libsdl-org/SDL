@@ -131,7 +131,9 @@ HIDAPI_DriverXbox360W_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_Joysti
     if (!device->dev) {
         return;
     }
-    SetSlotLED(device->dev, (player_index % 4));
+    if (player_index >= 0) {
+        SetSlotLED(device->dev, (player_index % 4));
+    }
 }
 
 static SDL_bool

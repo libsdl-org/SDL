@@ -160,9 +160,6 @@ SDL_SetJoystickIDForPlayerIndex(int player_index, SDL_JoystickID instance_id)
     int device_index;
     int existing_player_index;
 
-    if (player_index < 0) {
-        return SDL_FALSE;
-    }
     if (player_index >= SDL_joystick_player_count) {
         SDL_JoystickID *new_players = (SDL_JoystickID *)SDL_realloc(SDL_joystick_players, (player_index + 1)*sizeof(*SDL_joystick_players));
         if (!new_players) {
@@ -184,7 +181,9 @@ SDL_SetJoystickIDForPlayerIndex(int player_index, SDL_JoystickID instance_id)
         SDL_joystick_players[existing_player_index] = -1;
     }
 
-    SDL_joystick_players[player_index] = instance_id;
+    if (player_index >= 0) {
+        SDL_joystick_players[player_index] = instance_id;
+    }
 
     /* Update the driver with the new index */
     device_index = SDL_JoystickGetDeviceIndexFromInstanceID(instance_id);
