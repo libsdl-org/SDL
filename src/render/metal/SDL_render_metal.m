@@ -836,6 +836,35 @@ METAL_UpdateTextureYUV(SDL_Renderer * renderer, SDL_Texture * texture,
 }}
 
 static int
+METAL_UpdateTextureNV(SDL_Renderer * renderer, SDL_Texture * texture,
+                    const SDL_Rect * rect,
+                    const Uint8 *Yplane, int Ypitch,
+                    const Uint8 *UVplane, int UVpitch)
+{ @autoreleasepool {
+    METAL_TextureData *texturedata = (__bridge METAL_TextureData *)texture->driverdata;
+    const int Uslice = 0;
+    const int Vslice = 1;
+    SDL_Rect UVrect = {rect->x / 2, rect->y / 2, (rect->w + 1) / 2, (rect->h + 1) / 2};
+
+    /* Bail out if we're supposed to update an empty rectangle */
+    if (rect->w <= 0 || rect->h <= 0) {
+        return 0;
+    }
+
+    if (METAL_UpdateTextureInternal(renderer, texturedata, texturedata.mtltexture, *rect, 0, Yplane, Ypitch) < 0) {
+        return -1;
+    }
+
+    if (METAL_UpdateTextureInternal(renderer, texturedata, texturedata.mtltexture_uv, UVrect, 0, UVplane, UVpitch) < 0) {
+        return -1;
+    }
+
+    texturedata.hasdata = YES;
+
+    return 0;
+}}
+
+static int
 METAL_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
                const SDL_Rect * rect, void **pixels, int *pitch)
 { @autoreleasepool {
@@ -1851,6 +1880,7 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->CreateTexture = METAL_CreateTexture;
     renderer->UpdateTexture = METAL_UpdateTexture;
     renderer->UpdateTextureYUV = METAL_UpdateTextureYUV;
+    renderer->UpdateTextureNV = METAL_UpdateTextureNV;
     renderer->LockTexture = METAL_LockTexture;
     renderer->UnlockTexture = METAL_UnlockTexture;
     renderer->SetTextureScaleMode = METAL_SetTextureScaleMode;
