@@ -131,6 +131,7 @@ struct SDL_Renderer
     int (*UpdateTexture) (SDL_Renderer * renderer, SDL_Texture * texture,
                           const SDL_Rect * rect, const void *pixels,
                           int pitch);
+#if SDL_HAVE_YUV
     int (*UpdateTextureYUV) (SDL_Renderer * renderer, SDL_Texture * texture,
                             const SDL_Rect * rect,
                             const Uint8 *Yplane, int Ypitch,
@@ -140,6 +141,7 @@ struct SDL_Renderer
                             const SDL_Rect * rect,
                             const Uint8 *Yplane, int Ypitch,
                             const Uint8 *UVplane, int UVpitch);
+#endif
     int (*LockTexture) (SDL_Renderer * renderer, SDL_Texture * texture,
                         const SDL_Rect * rect, void **pixels, int *pitch);
     void (*UnlockTexture) (SDL_Renderer * renderer, SDL_Texture * texture);

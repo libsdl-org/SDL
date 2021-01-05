@@ -803,6 +803,7 @@ METAL_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
     return 0;
 }}
 
+#if SDL_HAVE_YUV
 static int
 METAL_UpdateTextureYUV(SDL_Renderer * renderer, SDL_Texture * texture,
                     const SDL_Rect * rect,
@@ -861,6 +862,7 @@ METAL_UpdateTextureNV(SDL_Renderer * renderer, SDL_Texture * texture,
 
     return 0;
 }}
+#endif
 
 static int
 METAL_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
@@ -1877,8 +1879,10 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->SupportsBlendMode = METAL_SupportsBlendMode;
     renderer->CreateTexture = METAL_CreateTexture;
     renderer->UpdateTexture = METAL_UpdateTexture;
+#if SDL_HAVE_YUV
     renderer->UpdateTextureYUV = METAL_UpdateTextureYUV;
     renderer->UpdateTextureNV = METAL_UpdateTextureNV;
+#endif
     renderer->LockTexture = METAL_LockTexture;
     renderer->UnlockTexture = METAL_UnlockTexture;
     renderer->SetTextureScaleMode = METAL_SetTextureScaleMode;
