@@ -1749,6 +1749,48 @@ GLES2_UpdateTextureYUV(SDL_Renderer * renderer, SDL_Texture * texture,
 }
 
 static int
+GLES2_UpdateTextureNV(SDL_Renderer * renderer, SDL_Texture * texture,
+                    const SDL_Rect * rect,
+                    const Uint8 *Yplane, int Ypitch,
+                    const Uint8 *UVplane, int UVpitch)
+{
+    GLES2_RenderData *data = (GLES2_RenderData *)renderer->driverdata;
+    GLES2_TextureData *tdata = (GLES2_TextureData *)texture->driverdata;
+
+    GLES2_ActivateRenderer(renderer);
+
+    /* Bail out if we're supposed to update an empty rectangle */
+    if (rect->w <= 0 || rect->h <= 0) {
+        return 0;
+    }
+
+    data->drawstate.texture = NULL;  /* we trash this state. */
+
+    data->glBindTexture(tdata->texture_type, tdata->texture_u);
+    GLES2_TexSubImage2D(data, tdata->texture_type,
+            rect->x / 2,
+            rect->y / 2,
+            (rect->w + 1) / 2,
+            (rect->h + 1) / 2,
+            GL_LUMINANCE_ALPHA,
+            GL_UNSIGNED_BYTE,
+            UVplane, UVpitch / 2, 1);
+
+    data->glBindTexture(tdata->texture_type, tdata->texture);
+    GLES2_TexSubImage2D(data, tdata->texture_type,
+            rect->x,
+            rect->y,
+            rect->w,
+            rect->h,
+            tdata->pixel_format,
+            tdata->pixel_type,
+            Yplane, Ypitch, 1);
+
+    return GL_CheckError("glTexSubImage2D()", renderer);
+}
+
+
+static int
 GLES2_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_Rect *rect,
                   void **pixels, int *pitch)
 {
@@ -2126,6 +2168,7 @@ GLES2_CreateRenderer(SDL_Window *window, Uint32 flags)
     renderer->CreateTexture       = GLES2_CreateTexture;
     renderer->UpdateTexture       = GLES2_UpdateTexture;
     renderer->UpdateTextureYUV    = GLES2_UpdateTextureYUV;
+    renderer->UpdateTextureNV     = GLES2_UpdateTextureNV;
     renderer->LockTexture         = GLES2_LockTexture;
     renderer->UnlockTexture       = GLES2_UnlockTexture;
     renderer->SetTextureScaleMode = GLES2_SetTextureScaleMode;
