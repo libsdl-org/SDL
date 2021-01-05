@@ -857,3 +857,4 @@ SDL_DYNAPI_PROC(int,SDL_SoftStretchLinear,(SDL_Surface *a, const SDL_Rect *b, SD
 #ifdef __WIN32__
 SDL_DYNAPI_PROC(ID3D11Device*,SDL_RenderGetD3D11Device,(SDL_Renderer *a),(a),return)
 #endif
+SDL_DYNAPI_PROC(int,SDL_UpdateNVTexture,(SDL_Texture *a, const SDL_Rect *b, const Uint8 *c, int d, const Uint8 *e, int f),(a,b,c,d,e,f),return)
