@@ -1404,6 +1404,30 @@ D3D11_UpdateTextureYUV(SDL_Renderer * renderer, SDL_Texture * texture,
 }
 
 static int
+D3D11_UpdateTextureYUV(SDL_Renderer * renderer, SDL_Texture * texture,
+                       const SDL_Rect * rect,
+                       const Uint8 *Yplane, int Ypitch,
+                       const Uint8 *UVplane, int UVpitch)
+{
+    D3D11_RenderData *rendererData = (D3D11_RenderData *)renderer->driverdata;
+    D3D11_TextureData *textureData = (D3D11_TextureData *)texture->driverdata;
+
+    if (!textureData) {
+        SDL_SetError("Texture is not currently available");
+        return -1;
+    }
+
+    if (D3D11_UpdateTextureInternal(rendererData, textureData->mainTexture, SDL_BYTESPERPIXEL(texture->format), rect->x, rect->y, rect->w, rect->h, Yplane, Ypitch) < 0) {
+        return -1;
+    }
+
+    if (D3D11_UpdateTextureInternal(rendererData, textureData->mainTextureNV, SDL_BYTESPERPIXEL(texture->format), rect->x / 2, rect->y / 2, rect->w / 2, rect->h / 2, UVplane, UVpitch / 2) < 0) {
+        return -1;
+    }
+    return 0;
+}
+
+static int
 D3D11_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
                   const SDL_Rect * rect, void **pixels, int *pitch)
 {
@@ -2516,6 +2540,7 @@ D3D11_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->CreateTexture = D3D11_CreateTexture;
     renderer->UpdateTexture = D3D11_UpdateTexture;
     renderer->UpdateTextureYUV = D3D11_UpdateTextureYUV;
+    renderer->UpdateTextureNV = D3D11_UpdateTextureNV;
     renderer->LockTexture = D3D11_LockTexture;
     renderer->UnlockTexture = D3D11_UnlockTexture;
     renderer->SetTextureScaleMode = D3D11_SetTextureScaleMode;
