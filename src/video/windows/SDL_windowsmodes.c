@@ -32,7 +32,7 @@
 /* #define DEBUG_MODES */
 
 static void
-WIN_UpdateDisplayMode(_THIS, LPCTSTR deviceName, DWORD index, SDL_DisplayMode * mode)
+WIN_UpdateDisplayMode(_THIS, LPCWSTR deviceName, DWORD index, SDL_DisplayMode * mode)
 {
     SDL_DisplayModeData *data = (SDL_DisplayModeData *) mode->driverdata;
     HDC hdc;
@@ -109,14 +109,14 @@ WIN_UpdateDisplayMode(_THIS, LPCTSTR deviceName, DWORD index, SDL_DisplayMode * 
 }
 
 static SDL_bool
-WIN_GetDisplayMode(_THIS, LPCTSTR deviceName, DWORD index, SDL_DisplayMode * mode)
+WIN_GetDisplayMode(_THIS, LPCWSTR deviceName, DWORD index, SDL_DisplayMode * mode)
 {
     SDL_DisplayModeData *data;
     DEVMODE devmode;
 
     devmode.dmSize = sizeof(devmode);
     devmode.dmDriverExtra = 0;
-    if (!EnumDisplaySettings(deviceName, index, &devmode)) {
+    if (!EnumDisplaySettingsW(deviceName, index, &devmode)) {
         return SDL_FALSE;
     }
 
@@ -145,10 +145,10 @@ WIN_AddDisplay(_THIS, HMONITOR hMonitor, const MONITORINFOEXW *info, SDL_bool se
     SDL_VideoDisplay display;
     SDL_DisplayData *displaydata;
     SDL_DisplayMode mode;
-    DISPLAY_DEVICE device;
+    DISPLAY_DEVICEW device;
 
 #ifdef DEBUG_MODES
-    SDL_Log("Display: %s\n", WIN_StringToUTF8(info->szDevice));
+    SDL_Log("Display: %s\n", WIN_StringToUTF8W(info->szDevice));
 #endif
 
     if (!WIN_GetDisplayMode(_this, info->szDevice, ENUM_CURRENT_SETTINGS, &mode)) {
@@ -178,8 +178,8 @@ WIN_AddDisplay(_THIS, HMONITOR hMonitor, const MONITORINFOEXW *info, SDL_bool se
 
     SDL_zero(display);
     device.cb = sizeof(device);
-    if (EnumDisplayDevices(info->szDevice, 0, &device, 0)) {
-        display.name = WIN_StringToUTF8(device.DeviceString);
+    if (EnumDisplayDevicesW(info->szDevice, 0, &device, 0)) {
+        display.name = WIN_StringToUTF8W(device.DeviceString);
     }
     display.desktop_mode = mode;
     display.current_mode = mode;
@@ -383,9 +383,9 @@ WIN_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
     LONG status;
 
     if (mode->driverdata == display->desktop_mode.driverdata) {
-        status = ChangeDisplaySettingsEx(displaydata->DeviceName, NULL, NULL, CDS_FULLSCREEN, NULL);
+        status = ChangeDisplaySettingsExW(displaydata->DeviceName, NULL, NULL, CDS_FULLSCREEN, NULL);
     } else {
-        status = ChangeDisplaySettingsEx(displaydata->DeviceName, &data->DeviceMode, NULL, CDS_FULLSCREEN, NULL);
+        status = ChangeDisplaySettingsExW(displaydata->DeviceName, &data->DeviceMode, NULL, CDS_FULLSCREEN, NULL);
     }
     if (status != DISP_CHANGE_SUCCESSFUL) {
         const char *reason = "Unknown reason";
@@ -405,7 +405,7 @@ WIN_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
         }
         return SDL_SetError("ChangeDisplaySettingsEx() failed: %s", reason);
     }
-    EnumDisplaySettings(displaydata->DeviceName, ENUM_CURRENT_SETTINGS, &data->DeviceMode);
+    EnumDisplaySettingsW(displaydata->DeviceName, ENUM_CURRENT_SETTINGS, &data->DeviceMode);
     WIN_UpdateDisplayMode(_this, displaydata->DeviceName, ENUM_CURRENT_SETTINGS, mode);
     return 0;
 }

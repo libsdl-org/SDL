@@ -708,7 +708,7 @@ WIN_SetWindowGammaRamp(_THIS, SDL_Window * window, const Uint16 * ramp)
     HDC hdc;
     BOOL succeeded = FALSE;
 
-    hdc = CreateDC(data->DeviceName, NULL, NULL, NULL);
+    hdc = CreateDCW(data->DeviceName, NULL, NULL, NULL);
     if (hdc) {
         succeeded = SetDeviceGammaRamp(hdc, (LPVOID)ramp);
         if (!succeeded) {
@@ -727,7 +727,7 @@ WIN_GetWindowGammaRamp(_THIS, SDL_Window * window, Uint16 * ramp)
     HDC hdc;
     BOOL succeeded = FALSE;
 
-    hdc = CreateDC(data->DeviceName, NULL, NULL, NULL);
+    hdc = CreateDCW(data->DeviceName, NULL, NULL, NULL);
     if (hdc) {
         succeeded = GetDeviceGammaRamp(hdc, (LPVOID)ramp);
         if (!succeeded) {
