@@ -37,7 +37,7 @@ SDL_SYS_OpenURL(const char *url)
         return WIN_SetErrorFromHRESULT("CoInitialize failed", hr);
     }
 
-    wurl = WIN_UTF8ToString(url);
+    wurl = WIN_UTF8ToStringW(url);
     if (wurl == NULL) {
         WIN_CoUninitialize();
         return SDL_OutOfMemory();

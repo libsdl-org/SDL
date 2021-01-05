@@ -170,7 +170,7 @@ SDL_SYS_SetupThread(const char *name)
         }
 
         if (pSetThreadDescription != NULL) {
-            WCHAR *strw = WIN_UTF8ToString(name);
+            WCHAR *strw = WIN_UTF8ToStringW(name);
             if (strw) {
                 pSetThreadDescription(GetCurrentThread(), strw);
                 SDL_free(strw);

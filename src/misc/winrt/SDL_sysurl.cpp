@@ -18,8 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-
-#include <Windows.h>
+#include <windows.h>
 
 #include "../../core/windows/SDL_windows.h"
 #include "../SDL_sysurl.h"
@@ -27,7 +26,7 @@
 int
 SDL_SYS_OpenURL(const char *url)
 {
-    WCHAR *wurl = WIN_UTF8ToString(url);
+    WCHAR *wurl = WIN_UTF8ToStringW(url);
     if (!wurl) {
         return SDL_OutOfMemory();
     }
