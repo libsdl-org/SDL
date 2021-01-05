@@ -21,7 +21,7 @@
 
 #define MAX_WMMSG   (sizeof(wmtab)/sizeof(wmtab[0]))
 
-char *wmtab[] = {
+const char *wmtab[] = {
     "WM_NULL",
     "WM_CREATE",
     "WM_DESTROY",
