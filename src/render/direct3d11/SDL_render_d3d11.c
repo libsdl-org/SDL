@@ -1404,7 +1404,7 @@ D3D11_UpdateTextureYUV(SDL_Renderer * renderer, SDL_Texture * texture,
 }
 
 static int
-D3D11_UpdateTextureYUV(SDL_Renderer * renderer, SDL_Texture * texture,
+D3D11_UpdateTextureNV(SDL_Renderer * renderer, SDL_Texture * texture,
                        const SDL_Rect * rect,
                        const Uint8 *Yplane, int Ypitch,
                        const Uint8 *UVplane, int UVpitch)
