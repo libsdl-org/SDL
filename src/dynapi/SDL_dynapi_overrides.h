@@ -794,3 +794,4 @@
 #define SDL_lroundf SDL_lroundf_REAL
 #define SDL_SoftStretchLinear SDL_SoftStretchLinear_REAL
 #define SDL_RenderGetD3D11Device SDL_RenderGetD3D11Device_REAL
+#define SDL_UpdateNVTexture SDL_UpdateNVTexture_REAL
