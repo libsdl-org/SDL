@@ -84,7 +84,7 @@ SDL_SW_CreateYUVTexture(Uint32 format, int w, int h)
                 SDL_assert(0 && "We should never get here (caught above)");
                 break;
         }
-        swdata->pixels = (Uint8 *) SDL_malloc(dst_size);
+        swdata->pixels = (Uint8 *) SDL_SIMDAlloc(dst_size);
         if (!swdata->pixels) {
             SDL_SW_DestroyYUVTexture(swdata);
             SDL_OutOfMemory();
@@ -439,7 +439,7 @@ void
 SDL_SW_DestroyYUVTexture(SDL_SW_YUVTexture * swdata)
 {
     if (swdata) {
-        SDL_free(swdata->pixels);
+        SDL_SIMDFree(swdata->pixels);
         SDL_FreeSurface(swdata->stretch);
         SDL_FreeSurface(swdata->display);
         SDL_free(swdata);
