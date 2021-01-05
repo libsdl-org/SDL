@@ -1376,6 +1376,7 @@ D3D11_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
     return 0;
 }
 
+#if SDL_HAVE_YUV
 static int
 D3D11_UpdateTextureYUV(SDL_Renderer * renderer, SDL_Texture * texture,
                        const SDL_Rect * rect,
@@ -1426,6 +1427,7 @@ D3D11_UpdateTextureNV(SDL_Renderer * renderer, SDL_Texture * texture,
     }
     return 0;
 }
+#endif
 
 static int
 D3D11_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
@@ -2539,8 +2541,10 @@ D3D11_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->SupportsBlendMode = D3D11_SupportsBlendMode;
     renderer->CreateTexture = D3D11_CreateTexture;
     renderer->UpdateTexture = D3D11_UpdateTexture;
+#if SDL_HAVE_YUV
     renderer->UpdateTextureYUV = D3D11_UpdateTextureYUV;
     renderer->UpdateTextureNV = D3D11_UpdateTextureNV;
+#endif
     renderer->LockTexture = D3D11_LockTexture;
     renderer->UnlockTexture = D3D11_UnlockTexture;
     renderer->SetTextureScaleMode = D3D11_SetTextureScaleMode;
