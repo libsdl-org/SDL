@@ -279,7 +279,7 @@ static int ConnectSensor(ISensor *sensor)
 
     hr = ISensor_GetFriendlyName(sensor, &bstr_name);
     if (SUCCEEDED(hr) && bstr_name) {
-        name = WIN_StringToUTF8(bstr_name);
+        name = WIN_StringToUTF8W(bstr_name);
     } else {
         name = SDL_strdup("Unknown Sensor");
     }

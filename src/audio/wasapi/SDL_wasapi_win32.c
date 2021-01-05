@@ -79,7 +79,7 @@ GetWasapiDeviceName(IMMDevice *device)
         PROPVARIANT var;
         PropVariantInit(&var);
         if (SUCCEEDED(IPropertyStore_GetValue(props, &SDL_PKEY_Device_FriendlyName, &var))) {
-            utf8dev = WIN_StringToUTF8(var.pwszVal);
+            utf8dev = WIN_StringToUTF8W(var.pwszVal);
         }
         PropVariantClear(&var);
         IPropertyStore_Release(props);
