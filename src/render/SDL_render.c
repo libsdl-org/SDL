@@ -1628,6 +1628,59 @@ SDL_UpdateTextureYUVPlanar(SDL_Texture * texture, const SDL_Rect * rect,
     }
     return 0;
 }
+
+static int
+SDL_UpdateTextureNVPlanar(SDL_Texture * texture, const SDL_Rect * rect,
+                           const Uint8 *Yplane, int Ypitch,
+                           const Uint8 *UVplane, int UVpitch)
+{
+    SDL_Texture *native = texture->native;
+    SDL_Rect full_rect;
+
+    if (SDL_SW_UpdateNVTexturePlanar(texture->yuv, rect, Yplane, Ypitch, UVplane, UVpitch) < 0) {
+        return -1;
+    }
+
+    full_rect.x = 0;
+    full_rect.y = 0;
+    full_rect.w = texture->w;
+    full_rect.h = texture->h;
+    rect = &full_rect;
+
+    if (!rect->w || !rect->h) {
+        return 0;  /* nothing to do. */
+    }
+
+    if (texture->access == SDL_TEXTUREACCESS_STREAMING) {
+        /* We can lock the texture and copy to it */
+        void *native_pixels = NULL;
+        int native_pitch = 0;
+
+        if (SDL_LockTexture(native, rect, &native_pixels, &native_pitch) < 0) {
+            return -1;
+        }
+        SDL_SW_CopyYUVToRGB(texture->yuv, rect, native->format,
+                            rect->w, rect->h, native_pixels, native_pitch);
+        SDL_UnlockTexture(native);
+    } else {
+        /* Use a temporary buffer for updating */
+        const int temp_pitch = (((rect->w * SDL_BYTESPERPIXEL(native->format)) + 3) & ~3);
+        const size_t alloclen = rect->h * temp_pitch;
+        if (alloclen > 0) {
+            void *temp_pixels = SDL_malloc(alloclen);
+            if (!temp_pixels) {
+                return SDL_OutOfMemory();
+            }
+            SDL_SW_CopyYUVToRGB(texture->yuv, rect, native->format,
+                                rect->w, rect->h, temp_pixels, temp_pitch);
+            SDL_UpdateTexture(native, rect, temp_pixels, temp_pitch);
+            SDL_free(temp_pixels);
+        }
+    }
+    return 0;
+}
+
+
 #endif /* SDL_HAVE_YUV */
 
 int SDL_UpdateYUVTexture(SDL_Texture * texture, const SDL_Rect * rect,
@@ -1696,6 +1749,68 @@ int SDL_UpdateYUVTexture(SDL_Texture * texture, const SDL_Rect * rect,
     return -1;
 #endif
 }
+
+int SDL_UpdateNVTexture(SDL_Texture * texture, const SDL_Rect * rect,
+                         const Uint8 *Yplane, int Ypitch,
+                         const Uint8 *UVplane, int UVpitch)
+{
+#if SDL_HAVE_YUV
+    SDL_Renderer *renderer;
+    SDL_Rect full_rect;
+
+    CHECK_TEXTURE_MAGIC(texture, -1);
+
+    if (!Yplane) {
+        return SDL_InvalidParamError("Yplane");
+    }
+    if (!Ypitch) {
+        return SDL_InvalidParamError("Ypitch");
+    }
+    if (!UVplane) {
+        return SDL_InvalidParamError("UVplane");
+    }
+    if (!UVpitch) {
+        return SDL_InvalidParamError("UVpitch");
+    }
+
+    if (texture->format != SDL_PIXELFORMAT_NV12 &&
+        texture->format != SDL_PIXELFORMAT_NV21) {
+        return SDL_SetError("Texture format must by NV12 or NV21");
+    }
+
+    if (!rect) {
+        full_rect.x = 0;
+        full_rect.y = 0;
+        full_rect.w = texture->w;
+        full_rect.h = texture->h;
+        rect = &full_rect;
+    }
+
+    if (!rect->w || !rect->h) {
+        return 0;  /* nothing to do. */
+    }
+
+    if (texture->yuv) {
+        return SDL_UpdateTextureNVPlanar(texture, rect, Yplane, Ypitch, UVplane, UVpitch);
+    } else {
+        SDL_assert(!texture->native);
+        renderer = texture->renderer;
+        SDL_assert(renderer->UpdateTextureNV);
+        if (renderer->UpdateTextureNV) {
+            if (FlushRenderCommandsIfTextureNeeded(texture) < 0) {
+                return -1;
+            }
+            return renderer->UpdateTextureNV(renderer, texture, rect, Yplane, Ypitch, UVplane, UVpitch);
+        } else {
+            return SDL_Unsupported();
+        }
+    }
+#else
+    return -1;
+#endif
+}
+
+
 
 #if SDL_HAVE_YUV
 static int

@@ -299,6 +299,40 @@ SDL_SW_UpdateYUVTexturePlanar(SDL_SW_YUVTexture * swdata, const SDL_Rect * rect,
     return 0;
 }
 
+int SDL_SW_UpdateNVTexturePlanar(SDL_SW_YUVTexture * swdata, const SDL_Rect * rect,
+                                  const Uint8 *Yplane, int Ypitch,
+                                  const Uint8 *UVplane, int UVpitch)
+{
+    const Uint8 *src;
+    Uint8 *dst;
+    int row;
+    size_t length;
+
+    /* Copy the Y plane */
+    src = Yplane;
+    dst = swdata->pixels + rect->y * swdata->w + rect->x;
+    length = rect->w;
+    for (row = 0; row < rect->h; ++row) {
+        SDL_memcpy(dst, src, length);
+        src += Ypitch;
+        dst += swdata->w;
+    }
+
+    /* Copy the UV or VU plane */
+    src = UVplane;
+    dst = swdata->pixels + swdata->h * swdata->w;
+    dst += rect->y/2 * ((swdata->w + 1)/2) + rect->x/2;
+    length = (rect->w + 1) / 2;
+    length *= 2;
+    for (row = 0; row < (rect->h + 1)/2; ++row) {
+        SDL_memcpy(dst, src, length);
+        src += UVpitch;
+        dst += 2 * ((swdata->w + 1)/2);
+    }
+
+    return 0;
+}
+
 int
 SDL_SW_LockYUVTexture(SDL_SW_YUVTexture * swdata, const SDL_Rect * rect,
                       void **pixels, int *pitch)
