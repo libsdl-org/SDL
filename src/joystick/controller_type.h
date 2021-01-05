@@ -181,6 +181,7 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x0079, 0x0006 ), k_eControllerType_UnknownNonSteamController, NULL },	// DragonRise Generic USB PCB, sometimes configured as a PC Twin Shock Controller - looks like a DS3 but the face buttons are 1-4 instead of symbols
 
 	{ MAKE_CONTROLLER_ID( 0x0079, 0x18d4 ), k_eControllerType_XBox360Controller, NULL },	// GPD Win 2 X-Box Controller
+	{ MAKE_CONTROLLER_ID( 0x03eb, 0xff02 ), k_eControllerType_XBox360Controller, NULL },	// Wooting Two
 	{ MAKE_CONTROLLER_ID( 0x044f, 0xb326 ), k_eControllerType_XBox360Controller, NULL },	// Thrustmaster Gamepad GP XID
 	{ MAKE_CONTROLLER_ID( 0x045e, 0x028e ), k_eControllerType_XBox360Controller, "Xbox 360 Controller" },	// Microsoft X-Box 360 pad
 	{ MAKE_CONTROLLER_ID( 0x045e, 0x028f ), k_eControllerType_XBox360Controller, "Xbox 360 Controller" },	// Microsoft X-Box 360 pad v2
@@ -450,7 +451,6 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x2f24, 0x91 ), k_eControllerType_XBoxOneController, NULL },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0x1430, 0x719 ), k_eControllerType_XBoxOneController, NULL },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0xf0d, 0xed ), k_eControllerType_XBoxOneController, NULL },	// Unknown Controller
-	{ MAKE_CONTROLLER_ID( 0x3eb, 0xff02 ), k_eControllerType_XBoxOneController, NULL },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0xf0d, 0xc0 ), k_eControllerType_XBoxOneController, NULL },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0xe6f, 0x152 ), k_eControllerType_XBoxOneController, NULL },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0xe6f, 0x2a7 ), k_eControllerType_XBoxOneController, NULL },	// Unknown Controller
