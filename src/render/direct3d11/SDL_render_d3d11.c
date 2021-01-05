@@ -1422,7 +1422,7 @@ D3D11_UpdateTextureNV(SDL_Renderer * renderer, SDL_Texture * texture,
         return -1;
     }
 
-    if (D3D11_UpdateTextureInternal(rendererData, textureData->mainTextureNV, SDL_BYTESPERPIXEL(texture->format), rect->x, rect->y, rect->w, rect->h / 2, UVplane, UVpitch) < 0) {
+    if (D3D11_UpdateTextureInternal(rendererData, textureData->mainTextureNV, SDL_BYTESPERPIXEL(texture->format), rect->x / 2, rect->y / 2, rect->w, rect->h / 2, UVplane, UVpitch) < 0) {
         return -1;
     }
     return 0;
