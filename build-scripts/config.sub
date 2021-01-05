@@ -2,7 +2,7 @@
 # Configuration validation subroutine script.
 #   Copyright 1992-2020 Free Software Foundation, Inc.
 
-timestamp='2020-12-22'
+timestamp='2020-12-31'
 
 # This file is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -1230,7 +1230,7 @@ case $cpu-$vendor in
 			| powerpc | powerpc64 | powerpc64le | powerpcle | powerpcspe \
 			| pru \
 			| pyramid \
-			| riscv | riscv32 | riscv64 \
+			| riscv | riscv32 | riscv32be | riscv64 | riscv64be \
 			| rl78 | romp | rs6000 | rx \
 			| s390 | s390x \
 			| score \
