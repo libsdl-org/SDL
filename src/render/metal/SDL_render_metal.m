@@ -842,8 +842,6 @@ METAL_UpdateTextureNV(SDL_Renderer * renderer, SDL_Texture * texture,
                     const Uint8 *UVplane, int UVpitch)
 { @autoreleasepool {
     METAL_TextureData *texturedata = (__bridge METAL_TextureData *)texture->driverdata;
-    const int Uslice = 0;
-    const int Vslice = 1;
     SDL_Rect UVrect = {rect->x / 2, rect->y / 2, (rect->w + 1) / 2, (rect->h + 1) / 2};
 
     /* Bail out if we're supposed to update an empty rectangle */
