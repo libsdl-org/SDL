@@ -31,14 +31,23 @@
 
 typedef struct _KMSDRM_LEGACY_CursorData
 {
-    struct gbm_bo *bo;
-    uint32_t       crtc_id;
     int            hot_x, hot_y;
     int            w, h;
+
+    /* The buffer where we store the mouse bitmap ready to be used.
+       We get it ready and filled in CreateCursor(), and copy it
+       to a GBM BO in ShowCursor().*/     
+    uint32_t *buffer;
+    size_t buffer_size;
+    size_t buffer_pitch;
+
 } KMSDRM_LEGACY_CursorData;
 
 extern void KMSDRM_LEGACY_InitMouse(_THIS);
+extern void KMSDRM_LEGACY_DeinitMouse(_THIS);
 extern void KMSDRM_LEGACY_QuitMouse(_THIS);
+
+extern void KMSDRM_LEGACY_InitCursor();
 
 #endif /* SDL_KMSDRM_LEGACY_mouse_h_ */
 

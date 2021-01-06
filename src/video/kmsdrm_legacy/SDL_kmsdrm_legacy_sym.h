@@ -40,6 +40,7 @@ SDL_KMSDRM_LEGACY_SYM(void,drmModeFreeFB,(drmModeFBPtr ptr))
 SDL_KMSDRM_LEGACY_SYM(void,drmModeFreeCrtc,(drmModeCrtcPtr ptr))
 SDL_KMSDRM_LEGACY_SYM(void,drmModeFreeConnector,(drmModeConnectorPtr ptr))
 SDL_KMSDRM_LEGACY_SYM(void,drmModeFreeEncoder,(drmModeEncoderPtr ptr))
+SDL_KMSDRM_LEGACY_SYM(int,drmGetCap,(int fd, uint64_t capability, uint64_t *value))
 SDL_KMSDRM_LEGACY_SYM(drmModeResPtr,drmModeGetResources,(int fd))
 SDL_KMSDRM_LEGACY_SYM(int,drmModeAddFB,(int fd, uint32_t width, uint32_t height, uint8_t depth,
                                  uint8_t bpp, uint32_t pitch, uint32_t bo_handle,
@@ -62,6 +63,24 @@ SDL_KMSDRM_LEGACY_SYM(int,drmHandleEvent,(int fd,drmEventContextPtr evctx))
 SDL_KMSDRM_LEGACY_SYM(int,drmModePageFlip,(int fd, uint32_t crtc_id, uint32_t fb_id,
                                     uint32_t flags, void *user_data))
 
+/* Planes stuff. */
+SDL_KMSDRM_LEGACY_SYM(int,drmSetClientCap,(int fd, uint64_t capability, uint64_t value))
+SDL_KMSDRM_LEGACY_SYM(drmModePlaneResPtr,drmModeGetPlaneResources,(int fd))
+SDL_KMSDRM_LEGACY_SYM(drmModePlanePtr,drmModeGetPlane,(int fd, uint32_t plane_id))
+SDL_KMSDRM_LEGACY_SYM(drmModeObjectPropertiesPtr,drmModeObjectGetProperties,(int fd,uint32_t object_id,uint32_t object_type))
+SDL_KMSDRM_LEGACY_SYM(drmModePropertyPtr,drmModeGetProperty,(int fd, uint32_t propertyId))
+
+SDL_KMSDRM_LEGACY_SYM(void,drmModeFreeProperty,(drmModePropertyPtr ptr))
+SDL_KMSDRM_LEGACY_SYM(void,drmModeFreeObjectProperties,(drmModeObjectPropertiesPtr ptr))
+SDL_KMSDRM_LEGACY_SYM(void,drmModeFreePlane,(drmModePlanePtr ptr))
+SDL_KMSDRM_LEGACY_SYM(void,drmModeFreePlaneResources,(drmModePlaneResPtr ptr))
+SDL_KMSDRM_LEGACY_SYM(int,drmModeSetPlane,(int fd, uint32_t plane_id, uint32_t crtc_id,
+			   uint32_t fb_id, uint32_t flags,
+			   int32_t crtc_x, int32_t crtc_y,
+			   uint32_t crtc_w, uint32_t crtc_h,
+			   uint32_t src_x, uint32_t src_y,
+			   uint32_t src_w, uint32_t src_h))
+/* Planes stuff ends. */
 
 SDL_KMSDRM_LEGACY_MODULE(GBM)
 SDL_KMSDRM_LEGACY_SYM(int,gbm_device_get_fd,(struct gbm_device *gbm))

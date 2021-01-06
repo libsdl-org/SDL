@@ -37,7 +37,12 @@ typedef struct SDL_VideoData
 {
     int devindex;               /* device index that was passed on creation */
     int drm_fd;                 /* DRM file desc */
-    struct gbm_device *gbm;
+    char devpath[32];           /* DRM dev path. */
+
+    struct gbm_device *gbm_dev;
+
+    SDL_bool video_init;        /* Has VideoInit succeeded? */
+    SDL_bool vulkan_mode;       /* Are we in Vulkan mode? One VK window is enough to be. */
 
     SDL_Window **windows;
     int max_windows;
@@ -53,25 +58,52 @@ typedef struct SDL_DisplayModeData
 
 typedef struct SDL_DisplayData
 {
-    uint32_t crtc_id;
-    drmModeConnector *conn;
+    drmModeConnector *connector;
+    drmModeCrtc *crtc;
     drmModeModeInfo mode;
-    drmModeCrtc *saved_crtc;    /* CRTC to restore on quit */
-} SDL_DisplayData;
+    drmModeModeInfo original_mode;
+    drmModeModeInfo preferred_mode;
 
+    drmModeCrtc *saved_crtc;    /* CRTC to restore on quit */
+
+    uint32_t plane_id; /* ID of the primary plane used by the CRTC */
+
+    SDL_bool gbm_init;
+
+    /* DRM & GBM cursor stuff lives here, not in an SDL_Cursor's driverdata struct,
+       because setting/unsetting up these is done on window creation/destruction,
+       where we may not have an SDL_Cursor at all (so no SDL_Cursor driverdata).
+       There's only one cursor GBM BO because we only support one cursor. */
+    struct gbm_bo *cursor_bo;
+    uint64_t cursor_w, cursor_h;
+
+    SDL_bool modeset_pending;
+
+} SDL_DisplayData;
 
 typedef struct SDL_WindowData
 {
     SDL_VideoData *viddata;
+    /* SDL internals expect EGL surface to be here, and in KMSDRM the GBM surface is
+       what supports the EGL surface on the driver side, so all these surfaces and buffers
+       are expected to be here, in the struct pointed by SDL_Window driverdata pointer:
+       this one. So don't try to move these to dispdata!  */
     struct gbm_surface *gs;
-    struct gbm_bo *curr_bo;
+    struct gbm_bo *bo;
     struct gbm_bo *next_bo;
-    struct gbm_bo *crtc_bo;
+
     SDL_bool waiting_for_flip;
     SDL_bool double_buffer;
 
     int egl_surface_dirty;
     EGLSurface egl_surface;
+
+    /* For scaling and AR correction. */
+    int32_t src_w;
+    int32_t src_h;
+    int32_t output_w;
+    int32_t output_h;
+    int32_t output_x;
 
 } SDL_WindowData;
 
@@ -101,6 +133,7 @@ void KMSDRM_LEGACY_SetWindowTitle(_THIS, SDL_Window * window);
 void KMSDRM_LEGACY_SetWindowIcon(_THIS, SDL_Window * window, SDL_Surface * icon);
 void KMSDRM_LEGACY_SetWindowPosition(_THIS, SDL_Window * window);
 void KMSDRM_LEGACY_SetWindowSize(_THIS, SDL_Window * window);
+void KMSDRM_LEGACY_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * _display, SDL_bool fullscreen);
 void KMSDRM_LEGACY_ShowWindow(_THIS, SDL_Window * window);
 void KMSDRM_LEGACY_HideWindow(_THIS, SDL_Window * window);
 void KMSDRM_LEGACY_RaiseWindow(_THIS, SDL_Window * window);
