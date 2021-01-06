@@ -650,7 +650,7 @@ int KMSDRM_LEGACY_DisplayDataInit (_THIS, SDL_DisplayData *dispdata) {
     /*******************************************************/
     plane_resources = KMSDRM_LEGACY_drmModeGetPlaneResources(viddata->drm_fd);
 
-    for (int i = 0; (i < plane_resources->count_planes); i++) {
+    for (i = 0; (i < plane_resources->count_planes); i++) {
 
         drmModePlane *plane = KMSDRM_LEGACY_drmModeGetPlane(viddata->drm_fd,
           plane_resources->planes[i]);
@@ -718,13 +718,14 @@ SDL_bool KMSDRM_IsPlanePrimary (_THIS, drmModePlane *plane) {
 
     SDL_VideoData *viddata = (SDL_VideoData *)_this->driverdata;
     SDL_bool ret = SDL_FALSE;
+    int j;
 
     /* Find out if it's a primary plane. */
     drmModeObjectProperties *plane_props =
 	KMSDRM_LEGACY_drmModeObjectGetProperties(viddata->drm_fd,
 						   plane->plane_id, DRM_MODE_OBJECT_ANY);
 
-    for (int j = 0; (j < plane_props->count_props); j++) {
+    for (j = 0; (j < plane_props->count_props); j++) {
 
 	drmModePropertyRes *prop = KMSDRM_LEGACY_drmModeGetProperty(viddata->drm_fd,
 	  plane_props->props[j]);
