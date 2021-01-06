@@ -42,6 +42,7 @@
 #include "SDL_kmsdrm_legacy_opengles.h"
 #include "SDL_kmsdrm_legacy_mouse.h"
 #include "SDL_kmsdrm_legacy_dyn.h"
+#include "SDL_kmsdrm_legacy_vulkan.h"
 #include <sys/stat.h>
 #include <dirent.h>
 #include <errno.h>
@@ -62,6 +63,49 @@
 #endif
 
 #if 0
+/**************************************************************************************/
+/* UNUSED function because any plane compatible with the CRTC we chose is good enough */
+/* for us, whatever it's type is. Keep it here for documentation purposes.            */
+/* It cold be needed sometime in the future, too.                                     */
+/**************************************************************************************/
+
+SDL_bool KMSDRM_IsPlanePrimary (_THIS, drmModePlane *plane) {
+
+    SDL_VideoData *viddata = (SDL_VideoData *)_this->driverdata;
+    SDL_bool ret = SDL_FALSE;
+    int j;
+
+    /* Find out if it's a primary plane. */
+    drmModeObjectProperties *plane_props =
+	KMSDRM_LEGACY_drmModeObjectGetProperties(viddata->drm_fd,
+						   plane->plane_id, DRM_MODE_OBJECT_ANY);
+
+    for (j = 0; (j < plane_props->count_props); j++) {
+
+	drmModePropertyRes *prop = KMSDRM_LEGACY_drmModeGetProperty(viddata->drm_fd,
+	  plane_props->props[j]);
+
+	if ((strcmp(prop->name, "type") == 0) &&
+	   (plane_props->prop_values[j] == DRM_PLANE_TYPE_PRIMARY))
+	{
+            ret = SDL_TRUE;
+	}
+
+	KMSDRM_LEGACY_drmModeFreeProperty(prop);
+
+    }
+
+    KMSDRM_LEGACY_drmModeFreeObjectProperties(plane_props);
+
+    return ret;
+}
+#endif
+
+#if 0
+/***********************************************/
+/* Use these functions if you ever need info   */
+/* about the available planes on your machine. */
+/***********************************************/
 
 void print_plane_info(_THIS, drmModePlanePtr plane)
 {
@@ -155,11 +199,7 @@ void get_planes_info(_THIS)
 
     KMSDRM_LEGACY_drmModeFreePlaneResources(plane_resources);
 }
-
 #endif
-
-
-
 
 static int
 check_modestting(int devindex)
@@ -175,11 +215,17 @@ check_modestting(int devindex)
         if (SDL_KMSDRM_LEGACY_LoadSymbols()) {
             drmModeRes *resources = KMSDRM_LEGACY_drmModeGetResources(drm_fd);
             if (resources) {
-                SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, KMSDRM_LEGACY_DRI_DEVFMT " connector, encoder and CRTC counts are: %d %d %d",
-                             KMSDRM_LEGACY_DRI_PATH, devindex,
-                             resources->count_connectors, resources->count_encoders, resources->count_crtcs);
+                SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO,
+                  KMSDRM_LEGACY_DRI_DEVFMT
+                  " connector, encoder and CRTC counts are: %d %d %d",
+                  KMSDRM_LEGACY_DRI_PATH, devindex,
+                  resources->count_connectors, resources->count_encoders,
+                  resources->count_crtcs);
 
-                if (resources->count_connectors > 0 && resources->count_encoders > 0 && resources->count_crtcs > 0) {
+                if (resources->count_connectors > 0
+                 && resources->count_encoders > 0
+                 && resources->count_crtcs > 0)
+                {
                     available = SDL_TRUE;
                 }
                 KMSDRM_LEGACY_drmModeFreeResources(resources);
@@ -216,7 +262,8 @@ static int get_dricount(void)
     if (folder) {
         while ((res = readdir(folder))) {
             int len = SDL_strlen(res->d_name);
-            if (len > KMSDRM_LEGACY_DRI_DEVNAMESIZE && SDL_strncmp(res->d_name, KMSDRM_LEGACY_DRI_DEVNAME, KMSDRM_LEGACY_DRI_DEVNAMESIZE) == 0) {
+            if (len > KMSDRM_LEGACY_DRI_DEVNAMESIZE && SDL_strncmp(res->d_name,
+                      KMSDRM_LEGACY_DRI_DEVNAME, KMSDRM_LEGACY_DRI_DEVNAMESIZE) == 0) {
                 devcount++;
             }
         }
@@ -336,6 +383,14 @@ KMSDRM_LEGACY_CreateDevice(int devindex)
     device->GL_GetSwapInterval = KMSDRM_LEGACY_GLES_GetSwapInterval;
     device->GL_SwapWindow = KMSDRM_LEGACY_GLES_SwapWindow;
     device->GL_DeleteContext = KMSDRM_LEGACY_GLES_DeleteContext;
+
+#if SDL_VIDEO_VULKAN
+    device->Vulkan_LoadLibrary = KMSDRM_LEGACY_Vulkan_LoadLibrary;
+    device->Vulkan_UnloadLibrary = KMSDRM_LEGACY_Vulkan_UnloadLibrary;
+    device->Vulkan_GetInstanceExtensions = KMSDRM_LEGACY_Vulkan_GetInstanceExtensions;
+    device->Vulkan_CreateSurface = KMSDRM_LEGACY_Vulkan_CreateSurface;
+    device->Vulkan_GetDrawableSize = KMSDRM_LEGACY_Vulkan_GetDrawableSize;
+#endif
 
     device->PumpEvents = KMSDRM_LEGACY_PumpEvents;
     device->free = KMSDRM_LEGACY_DeleteDevice;
@@ -709,38 +764,6 @@ cleanup:
             viddata->drm_fd = -1;
         }
     }
-
-    return ret;
-}
-
-/*UNUSED function. Keep for documentation purposes. */
-SDL_bool KMSDRM_IsPlanePrimary (_THIS, drmModePlane *plane) {
-
-    SDL_VideoData *viddata = (SDL_VideoData *)_this->driverdata;
-    SDL_bool ret = SDL_FALSE;
-    int j;
-
-    /* Find out if it's a primary plane. */
-    drmModeObjectProperties *plane_props =
-	KMSDRM_LEGACY_drmModeObjectGetProperties(viddata->drm_fd,
-						   plane->plane_id, DRM_MODE_OBJECT_ANY);
-
-    for (j = 0; (j < plane_props->count_props); j++) {
-
-	drmModePropertyRes *prop = KMSDRM_LEGACY_drmModeGetProperty(viddata->drm_fd,
-	  plane_props->props[j]);
-
-	if ((strcmp(prop->name, "type") == 0) &&
-	   (plane_props->prop_values[j] == DRM_PLANE_TYPE_PRIMARY))
-	{
-            ret = SDL_TRUE;
-	}
-
-	KMSDRM_LEGACY_drmModeFreeProperty(prop);
-
-    }
-
-    KMSDRM_LEGACY_drmModeFreeObjectProperties(plane_props);
 
     return ret;
 }
