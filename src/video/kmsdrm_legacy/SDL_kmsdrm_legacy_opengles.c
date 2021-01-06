@@ -35,10 +35,36 @@
 
 /* EGL implementation of SDL OpenGL support */
 
+void
+KMSDRM_LEGACY_GLES_DefaultProfileConfig(_THIS, int *mask, int *major, int *minor)
+{
+    /* if SDL was _also_ built with the Raspberry Pi driver (so we're
+       definitely a Pi device), default to GLES2. */
+#if SDL_VIDEO_DRIVER_RPI
+    *mask = SDL_GL_CONTEXT_PROFILE_ES;
+    *major = 2;
+    *minor = 0;
+#endif
+}
+
 int
 KMSDRM_LEGACY_GLES_LoadLibrary(_THIS, const char *path) {
-    NativeDisplayType display = (NativeDisplayType)((SDL_VideoData *)_this->driverdata)->gbm;
+    /* Just pretend you do this here, but don't do it until KMSDRM_CreateWindow(),
+       where we do the same library load we would normally do here.
+       because this gets called by SDL_CreateWindow() before KMSDR_CreateWindow(),
+       so gbm dev isn't yet created when this is called, AND we can't alter the
+       call order in SDL_CreateWindow(). */
+#if 0
+    NativeDisplayType display = (NativeDisplayType)((SDL_VideoData *)_this->driverdata)->gbm_dev;
     return SDL_EGL_LoadLibrary(_this, path, display, EGL_PLATFORM_GBM_MESA);
+#endif
+    return 0;
+}
+
+void
+KMSDRM_LEGACY_GLES_UnloadLibrary(_THIS) {
+    /* As with KMSDRM_GLES_LoadLibrary(), we define our own "dummy" unloading function
+       so we manually unload the library whenever we want. */
 }
 
 SDL_EGL_CreateContext_impl(KMSDRM_LEGACY)
@@ -81,16 +107,17 @@ KMSDRM_LEGACY_GLES_SwapWindow(_THIS, SDL_Window * window) {
     }
 
     /* Release the previous front buffer */
-    if (windata->curr_bo) {
-        KMSDRM_LEGACY_gbm_surface_release_buffer(windata->gs, windata->curr_bo);
-        /* SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Released GBM surface %p", (void *)windata->curr_bo); */
-        windata->curr_bo = NULL;
+    if (windata->bo) {
+        KMSDRM_LEGACY_gbm_surface_release_buffer(windata->gs, windata->bo);
+        windata->bo = NULL;
     }
 
-    windata->curr_bo = windata->next_bo;
+    windata->bo = windata->next_bo;
 
-    /* Make the current back buffer the next front buffer */
-    if (!(_this->egl_data->eglSwapBuffers(_this->egl_data->egl_display, windata->egl_surface))) {
+    /* Mark a buffer to becume the next front buffer.
+       This won't happen until pagelip completes. */
+    if (!(_this->egl_data->eglSwapBuffers(_this->egl_data->egl_display,
+                                           windata->egl_surface))) {
         SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "eglSwapBuffers failed.");
         return 0;
     }
@@ -100,46 +127,60 @@ KMSDRM_LEGACY_GLES_SwapWindow(_THIS, SDL_Window * window) {
     if (!windata->next_bo) {
         SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Could not lock GBM surface front buffer");
         return 0;
-    /* } else {
-        SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Locked GBM surface %p", (void *)windata->next_bo); */
     }
 
+    /* Get the fb_info for the next front buffer. */
     fb_info = KMSDRM_LEGACY_FBFromBO(_this, windata->next_bo);
     if (!fb_info) {
         return 0;
     }
 
-    if (!windata->curr_bo) {
-        /* On the first swap, immediately present the new front buffer. Before
-           drmModePageFlip can be used the CRTC has to be configured to use
-           the current connector and mode with drmModeSetCrtc */
-        ret = KMSDRM_LEGACY_drmModeSetCrtc(viddata->drm_fd, dispdata->crtc_id, fb_info->fb_id, 0,
-                                    0, &dispdata->conn->connector_id, 1, &dispdata->mode);
+    if (!windata->bo) {
+        /***************************************************************************/
+        /* This is fundamental.                                                    */
+        /* We can't display an fb smaller than the resolution currently configured */
+        /* on the CRTC, because the CRTC would be scanning out of bounds.          */
+        /* So instead of using drmModeSetCrtc() to tell CRTC to scan the fb        */
+        /* directly, we use a plane (overlay or primary, doesn't mind if we        */
+        /* activated the UNVERSAL PLANES cap) to scale the buffer to the           */
+        /* resolution currently configured on the CRTC.                            */        
+        /*                                                                         */
+        /* We can't do this sooner, on CreateWindow(), because we don't have a     */
+        /* framebuffer there yet, and DRM doesn't like 0 or -1 as the fb_id.       */
+        /***************************************************************************/
+        ret = KMSDRM_LEGACY_drmModeSetPlane(viddata->drm_fd, dispdata->plane_id,
+                dispdata->crtc->crtc_id, fb_info->fb_id, 0,
+                windata->output_x, 0,
+                windata->output_w, windata->output_h,
+                0, 0,
+                windata->src_w << 16, windata->src_h << 16);
 
         if (ret) {
-          SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Could not configure CRTC");
-        }
-    } else {
-        /* On subsequent swaps, queue the new front buffer to be flipped during
-           the next vertical blank */
-        ret = KMSDRM_LEGACY_drmModePageFlip(viddata->drm_fd, dispdata->crtc_id, fb_info->fb_id,
-                                     DRM_MODE_PAGE_FLIP_EVENT, &windata->waiting_for_flip);
-        /* SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "drmModePageFlip(%d, %u, %u, DRM_MODE_PAGE_FLIP_EVENT, &windata->waiting_for_flip)",
-            viddata->drm_fd, displaydata->crtc_id, fb_info->fb_id); */
-
-        if (_this->egl_data->egl_swapinterval == 1) {
-            if (ret == 0) {
-                windata->waiting_for_flip = SDL_TRUE;
-            } else {
-                SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Could not queue pageflip: %d", ret);
-            }
+            SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Could not set PLANE");
         }
 
-        /* Wait immediately for vsync (as if we only had two buffers), for low input-lag scenarios.
-           Run your SDL2 program with "SDL_KMSDRM_LEGACY_DOUBLE_BUFFER=1 <program_name>" to enable this. */
-        if (_this->egl_data->egl_swapinterval == 1 && windata->double_buffer) {
-            KMSDRM_LEGACY_WaitPageFlip(_this, windata, -1);
-        }
+        return 0;
+    }
+
+    /* Issue pageflip on the next front buffer.
+       The pageflip will be done during the next vblank. */
+    ret = KMSDRM_LEGACY_drmModePageFlip(viddata->drm_fd, dispdata->crtc->crtc_id,
+	     fb_info->fb_id, DRM_MODE_PAGE_FLIP_EVENT, &windata->waiting_for_flip);
+
+    if (_this->egl_data->egl_swapinterval == 1) {
+	if (ret == 0) {
+	    windata->waiting_for_flip = SDL_TRUE;
+	} else {
+	    SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Could not queue pageflip: %d", ret);
+	}
+    }
+
+    /* If we are in double-buffer mode, wait immediately for vsync
+       (as if we only had two buffers),
+       Run your SDL2 program with "SDL_KMSDRM_LEGACY_DOUBLE_BUFFER=1 <program_name>"
+       to enable this. */
+    if (_this->egl_data->egl_swapinterval == 1 && windata->double_buffer) {
+	KMSDRM_LEGACY_WaitPageFlip(_this, windata, -1);
     }
 
     return 0;

@@ -31,10 +31,10 @@
 /* OpenGLES functions */
 #define KMSDRM_LEGACY_GLES_GetAttribute SDL_EGL_GetAttribute
 #define KMSDRM_LEGACY_GLES_GetProcAddress SDL_EGL_GetProcAddress
-#define KMSDRM_LEGACY_GLES_UnloadLibrary SDL_EGL_UnloadLibrary
 #define KMSDRM_LEGACY_GLES_DeleteContext SDL_EGL_DeleteContext
 #define KMSDRM_LEGACY_GLES_GetSwapInterval SDL_EGL_GetSwapInterval
 
+extern void KMSDRM_LEGACY_GLES_DefaultProfileConfig(_THIS, int *mask, int *major, int *minor);
 extern int KMSDRM_LEGACY_GLES_SetSwapInterval(_THIS, int interval);
 extern int KMSDRM_LEGACY_GLES_LoadLibrary(_THIS, const char *path);
 extern SDL_GLContext KMSDRM_LEGACY_GLES_CreateContext(_THIS, SDL_Window * window);
