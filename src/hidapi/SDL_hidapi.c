@@ -434,7 +434,7 @@ struct _HIDDeviceWrapper
     const struct hidapi_backend *backend;
 };
 
-#if HAVE_PLATFORM_BACKEND || HAVE_DRIVER_BACKEND || SDL_LIBUSB_DYNAMIC
+#if HAVE_PLATFORM_BACKEND || HAVE_DRIVER_BACKEND || defined(SDL_LIBUSB_DYNAMIC)
 
 static HIDDeviceWrapper *
 CreateHIDDeviceWrapper(hid_device *device, const struct hidapi_backend *backend)
@@ -651,7 +651,7 @@ int HID_API_EXPORT HID_API_CALL hid_exit(void)
 
 struct hid_device_info HID_API_EXPORT * HID_API_CALL hid_enumerate(unsigned short vendor_id, unsigned short product_id)
 {
-#if HAVE_PLATFORM_BACKEND || HAVE_DRIVER_BACKEND || SDL_LIBUSB_DYNAMIC
+#if HAVE_PLATFORM_BACKEND || HAVE_DRIVER_BACKEND || defined(SDL_LIBUSB_DYNAMIC)
 #ifdef SDL_LIBUSB_DYNAMIC
     struct LIBUSB_hid_device_info *usb_devs = NULL;
     struct LIBUSB_hid_device_info *usb_dev;
@@ -804,7 +804,7 @@ void  HID_API_EXPORT HID_API_CALL hid_free_enumeration(struct hid_device_info *d
 
 HID_API_EXPORT hid_device * HID_API_CALL hid_open(unsigned short vendor_id, unsigned short product_id, const wchar_t *serial_number)
 {
-#if HAVE_PLATFORM_BACKEND || HAVE_DRIVER_BACKEND || SDL_LIBUSB_DYNAMIC
+#if HAVE_PLATFORM_BACKEND || HAVE_DRIVER_BACKEND || defined(SDL_LIBUSB_DYNAMIC)
     hid_device *pDevice = NULL;
 
     if (hid_init() != 0) {
@@ -844,7 +844,7 @@ HID_API_EXPORT hid_device * HID_API_CALL hid_open(unsigned short vendor_id, unsi
 
 HID_API_EXPORT hid_device * HID_API_CALL hid_open_path(const char *path, int bExclusive /* = false */)
 {
-#if HAVE_PLATFORM_BACKEND || HAVE_DRIVER_BACKEND || SDL_LIBUSB_DYNAMIC
+#if HAVE_PLATFORM_BACKEND || HAVE_DRIVER_BACKEND || defined(SDL_LIBUSB_DYNAMIC)
     hid_device *pDevice = NULL;
 
     if (hid_init() != 0) {
