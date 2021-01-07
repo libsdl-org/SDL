@@ -1,8 +1,8 @@
 #! /bin/sh
 # Configuration validation subroutine script.
-#   Copyright 1992-2020 Free Software Foundation, Inc.
+#   Copyright 1992-2021 Free Software Foundation, Inc.
 
-timestamp='2020-12-31'
+timestamp='2021-01-07'
 
 # This file is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -1687,7 +1687,7 @@ case $os in
 	musl* | newlib* | uclibc*)
 		;;
 	# Likewise for "kernel-libc"
-	eabi | eabihf | gnueabi | gnueabihf)
+	eabi* | gnueabi*)
 		;;
 	# Now accept the basic system types.
 	# The portable systems comes first.
