@@ -411,7 +411,6 @@ VideoBootStrap KMSDRM_LEGACY_bootstrap = {
     KMSDRM_LEGACY_CreateDevice
 };
 
-
 static void
 KMSDRM_LEGACY_FBDestroyCallback(struct gbm_bo *bo, void *data)
 {
@@ -1192,6 +1191,15 @@ KMSDRM_LEGACY_CreateWindow(_THIS, SDL_Window * window)
             See previous comment on why. */
          window->flags |= SDL_WINDOW_OPENGL;
 
+         /* We need that the fb that SDL gives us has the same size as the videomode
+            currently configure on the CRTC, because the LEGACY interface doesn't
+            support scaling on the primary plane on most hardware (and overlay
+            planes are not present in all hw), so the CRTC reads the PRIMARY PLANE
+            without any scaling, and that's all.
+            So AR-correctin is also impossible on the LEGACY interface. */
+         window->w = dispdata->mode.hdisplay;
+         window->h = dispdata->mode.vdisplay;
+
          /* Reopen FD, create gbm dev, setup display plane, etc,.
             but only when we come here for the first time,
             and only if it's not a VK window. */
@@ -1266,6 +1274,25 @@ KMSDRM_LEGACY_CreateWindow(_THIS, SDL_Window * window)
         if ((ret = KMSDRM_LEGACY_CreateSurfaces(_this, window))) {
             goto cleanup;
         }
+
+        /***************************************************************************/
+        /* This is fundamental.                                                    */
+        /* We can't display an fb smaller than the resolution currently configured */
+        /* on the CRTC, because the CRTC would be scanning out of bounds, and      */
+        /* drmModeSetCrtc() would fail.                                            */
+        /* A possible solution would be scaling on the primary plane with          */
+        /* drmModeSetPlane(), but primary plane scaling is not supported in most   */
+        /* LEGACY-only hardware, so never use drmModeSetPlane().                   */
+        /***************************************************************************/
+
+	ret = KMSDRM_LEGACY_drmModeSetCrtc(viddata->drm_fd, dispdata->crtc->crtc_id,
+		/*fb_info->fb_id*/ -1, 0, 0, &dispdata->connector->connector_id, 1,
+		&dispdata->mode);
+
+	if (ret) {
+	    SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Could not set CRTC");
+            goto cleanup;
+	}
     }
 
     /* Add window to the internal list of tracked windows. Note, while it may

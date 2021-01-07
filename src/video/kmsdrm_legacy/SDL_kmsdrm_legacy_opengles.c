@@ -135,33 +135,6 @@ KMSDRM_LEGACY_GLES_SwapWindow(_THIS, SDL_Window * window) {
         return 0;
     }
 
-    if (!windata->bo) {
-        /***************************************************************************/
-        /* This is fundamental.                                                    */
-        /* We can't display an fb smaller than the resolution currently configured */
-        /* on the CRTC, because the CRTC would be scanning out of bounds.          */
-        /* So instead of using drmModeSetCrtc() to tell CRTC to scan the fb        */
-        /* directly, we use a plane (overlay or primary, doesn't mind if we        */
-        /* activated the UNVERSAL PLANES cap) to scale the buffer to the           */
-        /* resolution currently configured on the CRTC.                            */        
-        /*                                                                         */
-        /* We can't do this sooner, on CreateWindow(), because we don't have a     */
-        /* framebuffer there yet, and DRM doesn't like 0 or -1 as the fb_id.       */
-        /***************************************************************************/
-        ret = KMSDRM_LEGACY_drmModeSetPlane(viddata->drm_fd, dispdata->plane_id,
-                dispdata->crtc->crtc_id, fb_info->fb_id, 0,
-                windata->output_x, 0,
-                windata->output_w, windata->output_h,
-                0, 0,
-                windata->src_w << 16, windata->src_h << 16);
-
-        if (ret) {
-            SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Could not set PLANE");
-        }
-
-        return 0;
-    }
-
     /* Issue pageflip on the next front buffer.
        The pageflip will be done during the next vblank. */
     ret = KMSDRM_LEGACY_drmModePageFlip(viddata->drm_fd, dispdata->crtc->crtc_id,
