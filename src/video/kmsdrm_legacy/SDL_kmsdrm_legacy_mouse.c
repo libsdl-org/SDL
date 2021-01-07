@@ -299,10 +299,10 @@ KMSDRM_LEGACY_ShowCursor(SDL_Cursor * cursor)
     bo_handle = KMSDRM_LEGACY_gbm_bo_get_handle(dispdata->cursor_bo).u32;
     if (curdata->hot_x == 0 && curdata->hot_y == 0) {
         ret = KMSDRM_LEGACY_drmModeSetCursor(viddata->drm_fd, dispdata->crtc->crtc_id,
-            bo_handle, curdata->w, curdata->h);
+            bo_handle, dispdata->cursor_w, dispdata->cursor_h);
     } else {
         ret = KMSDRM_LEGACY_drmModeSetCursor2(viddata->drm_fd, dispdata->crtc->crtc_id,
-            bo_handle, curdata->w, curdata->h, curdata->hot_x, curdata->hot_y);
+            bo_handle, dispdata->cursor_w, dispdata->cursor_h, curdata->hot_x, curdata->hot_y);
     }
 
     if (ret) {
@@ -442,7 +442,7 @@ KMSDRM_LEGACY_InitMouse(_THIS)
 
 	dispdata->cursor_bo = KMSDRM_LEGACY_gbm_bo_create(viddata->gbm_dev,
 	    dispdata->cursor_w, dispdata->cursor_h,
-	    GBM_FORMAT_ARGB8888, GBM_BO_USE_CURSOR | GBM_BO_USE_WRITE);
+	    GBM_FORMAT_ARGB8888, GBM_BO_USE_CURSOR | GBM_BO_USE_WRITE | GBM_BO_USE_LINEAR);
 
 	if (!dispdata->cursor_bo) {
 	    SDL_SetError("Could not create GBM cursor BO");
