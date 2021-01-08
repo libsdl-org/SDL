@@ -239,7 +239,7 @@ KMSDRM_ShowCursor(SDL_Cursor * cursor)
     uint32_t pixel;
 
     int i,j;
-    int ret;
+    int ret = 0;
 
     mouse = SDL_GetMouse();
     if (!mouse) {
@@ -404,7 +404,6 @@ KMSDRM_DeinitMouse(_THIS)
     SDL_VideoDevice *video_device = SDL_GetVideoDevice();
     SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
     KMSDRM_PlaneInfo info = {0};
-    SDL_Mouse *mouse = SDL_GetMouse();
  
     /* 1- Destroy the curso GBM BO. */
     if (video_device && dispdata->cursor_bo) {
