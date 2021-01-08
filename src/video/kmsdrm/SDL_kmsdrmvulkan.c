@@ -174,7 +174,7 @@ void KMSDRM_Vulkan_GetDrawableSize(_THIS, SDL_Window *window, int *w, int *h)
 /* Instead, programs using SDL and Vulkan create their Vulkan instance */
 /* and we get it here, ready to use.                                   */
 /* Extensions specific for this platform are activated in              */
-/* KMSDRM_Vulkan_GetInstanceExtensions(), like we do with              */
+/* KMSDRM_Vulkan_GetInstanceExtensions(), like we do with       */
 /* VK_KHR_DISPLAY_EXTENSION_NAME, which is what we need for x-less VK. */                
 /***********************************************************************/
 SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
@@ -397,7 +397,7 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
                                      surface);
     if(result != VK_SUCCESS)
     {
-        SDL_SetError("vkCreateKMSDRMSurfaceKHR failed: %s",
+        SDL_SetError("vkCreateDisplayPlaneSurfaceKHR failed: %s",
             SDL_Vulkan_GetResultString(result));
         goto clean;
     }

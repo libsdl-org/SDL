@@ -26,8 +26,8 @@
 
 #include "../../SDL_internal.h"
 
-#ifndef SDL_kmsdrmvulkan_h_
-#define SDL_kmsdrmvulkan_h_
+#ifndef SDL_kmsdrm_vulkan_h_
+#define SDL_kmsdrm_vulkan_h_
 
 #include "../SDL_vulkan_internal.h"
 #include "../SDL_sysvideo.h"
@@ -48,6 +48,6 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
 
 #endif
 
-#endif /* SDL_kmsdrmvulkan_h_ */
+#endif /* SDL_kmsdrm_vulkan_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

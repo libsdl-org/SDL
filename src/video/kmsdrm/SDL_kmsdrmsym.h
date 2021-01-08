@@ -41,32 +41,29 @@ SDL_KMSDRM_SYM(void,drmModeFreeCrtc,(drmModeCrtcPtr ptr))
 SDL_KMSDRM_SYM(void,drmModeFreeConnector,(drmModeConnectorPtr ptr))
 SDL_KMSDRM_SYM(void,drmModeFreeEncoder,(drmModeEncoderPtr ptr))
 SDL_KMSDRM_SYM(int,drmGetCap,(int fd, uint64_t capability, uint64_t *value))
-SDL_KMSDRM_SYM(int,drmIoctl,(int fd, unsigned long request, void *arg))
 SDL_KMSDRM_SYM(drmModeResPtr,drmModeGetResources,(int fd))
-
 SDL_KMSDRM_SYM(int,drmModeAddFB,(int fd, uint32_t width, uint32_t height, uint8_t depth,
                                  uint8_t bpp, uint32_t pitch, uint32_t bo_handle,
                                  uint32_t *buf_id))
-
-SDL_KMSDRM_SYM(int,drmModeAddFB2,(int fd, uint32_t width, uint32_t height,
-                                  uint32_t pixel_format, const uint32_t bo_handles[4],
-                                  const uint32_t pitches[4], const uint32_t offsets[4],
-                                  uint32_t *buf_id, uint32_t flags))
-
-SDL_KMSDRM_SYM(int,drmModeAddFB2WithModifiers,(int fd, uint32_t width, uint32_t height,
-                                               uint32_t pixel_format, const uint32_t bo_handles[4],
-                                               const uint32_t pitches[4], const uint32_t offsets[4],
-                                               const uint64_t modifier[4], uint32_t *buf_id,
-                                               uint32_t flags))
-
 SDL_KMSDRM_SYM(int,drmModeRmFB,(int fd, uint32_t bufferId))
 SDL_KMSDRM_SYM(drmModeFBPtr,drmModeGetFB,(int fd, uint32_t buf))
 SDL_KMSDRM_SYM(drmModeCrtcPtr,drmModeGetCrtc,(int fd, uint32_t crtcId))
+SDL_KMSDRM_SYM(int,drmModeSetCrtc,(int fd, uint32_t crtcId, uint32_t bufferId,
+                                   uint32_t x, uint32_t y, uint32_t *connectors, int count,
+                                   drmModeModeInfoPtr mode))
+SDL_KMSDRM_SYM(int,drmModeSetCursor,(int fd, uint32_t crtcId, uint32_t bo_handle,
+                                     uint32_t width, uint32_t height))
+SDL_KMSDRM_SYM(int,drmModeSetCursor2,(int fd, uint32_t crtcId, uint32_t bo_handle,
+                                      uint32_t width, uint32_t height,
+                                      int32_t hot_x, int32_t hot_y))
+SDL_KMSDRM_SYM(int,drmModeMoveCursor,(int fd, uint32_t crtcId, int x, int y))
 SDL_KMSDRM_SYM(drmModeEncoderPtr,drmModeGetEncoder,(int fd, uint32_t encoder_id))
 SDL_KMSDRM_SYM(drmModeConnectorPtr,drmModeGetConnector,(int fd, uint32_t connector_id))
+SDL_KMSDRM_SYM(int,drmHandleEvent,(int fd,drmEventContextPtr evctx))
+SDL_KMSDRM_SYM(int,drmModePageFlip,(int fd, uint32_t crtc_id, uint32_t fb_id,
+                                    uint32_t flags, void *user_data))
 
-/* Atomic functions */
-
+/* Planes stuff. */
 SDL_KMSDRM_SYM(int,drmSetClientCap,(int fd, uint64_t capability, uint64_t value))
 SDL_KMSDRM_SYM(drmModePlaneResPtr,drmModeGetPlaneResources,(int fd))
 SDL_KMSDRM_SYM(drmModePlanePtr,drmModeGetPlane,(int fd, uint32_t plane_id))
@@ -77,14 +74,13 @@ SDL_KMSDRM_SYM(void,drmModeFreeProperty,(drmModePropertyPtr ptr))
 SDL_KMSDRM_SYM(void,drmModeFreeObjectProperties,(drmModeObjectPropertiesPtr ptr))
 SDL_KMSDRM_SYM(void,drmModeFreePlane,(drmModePlanePtr ptr))
 SDL_KMSDRM_SYM(void,drmModeFreePlaneResources,(drmModePlaneResPtr ptr))
-
-SDL_KMSDRM_SYM(drmModeAtomicReqPtr,drmModeAtomicAlloc,(void))
-SDL_KMSDRM_SYM(void,drmModeAtomicFree,(drmModeAtomicReqPtr req))
-SDL_KMSDRM_SYM(int,drmModeAtomicCommit,(int fd,drmModeAtomicReqPtr req,uint32_t flags,void *user_data))
-SDL_KMSDRM_SYM(int,drmModeAtomicAddProperty,(drmModeAtomicReqPtr req,uint32_t object_id,uint32_t property_id,uint64_t value))
-SDL_KMSDRM_SYM(int,drmModeCreatePropertyBlob,(int fd,const void *data,size_t size,uint32_t *id))
-
-/* End of atomic fns */
+SDL_KMSDRM_SYM(int,drmModeSetPlane,(int fd, uint32_t plane_id, uint32_t crtc_id,
+			   uint32_t fb_id, uint32_t flags,
+			   int32_t crtc_x, int32_t crtc_y,
+			   uint32_t crtc_w, uint32_t crtc_h,
+			   uint32_t src_x, uint32_t src_y,
+			   uint32_t src_w, uint32_t src_h))
+/* Planes stuff ends. */
 
 SDL_KMSDRM_MODULE(GBM)
 SDL_KMSDRM_SYM(int,gbm_device_get_fd,(struct gbm_device *gbm))
@@ -95,11 +91,6 @@ SDL_KMSDRM_SYM(struct gbm_device *,gbm_create_device,(int fd))
 SDL_KMSDRM_SYM(unsigned int,gbm_bo_get_width,(struct gbm_bo *bo))
 SDL_KMSDRM_SYM(unsigned int,gbm_bo_get_height,(struct gbm_bo *bo))
 SDL_KMSDRM_SYM(uint32_t,gbm_bo_get_stride,(struct gbm_bo *bo))
-SDL_KMSDRM_SYM(uint32_t,gbm_bo_get_stride_for_plane,(struct gbm_bo *bo,int plane))
-SDL_KMSDRM_SYM(uint32_t,gbm_bo_get_format,(struct gbm_bo *bo))
-SDL_KMSDRM_SYM(uint32_t,gbm_bo_get_offset,(struct gbm_bo *bo, int plane))
-SDL_KMSDRM_SYM(int,gbm_bo_get_plane_count,(struct gbm_bo *bo))
-
 SDL_KMSDRM_SYM(union gbm_bo_handle,gbm_bo_get_handle,(struct gbm_bo *bo))
 SDL_KMSDRM_SYM(int,gbm_bo_write,(struct gbm_bo *bo, const void *buf, size_t count))
 SDL_KMSDRM_SYM(struct gbm_device *,gbm_bo_get_device,(struct gbm_bo *bo))

@@ -1,7 +1,6 @@
 /*
   Simple DirectMedia Layer
   Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
-  Atomic KMSDRM backend by Manuel Alfayate Corchete <redwindwanderer@gmail.com>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages

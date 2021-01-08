@@ -2252,7 +2252,6 @@ AS_HELP_STRING([--enable-kmsdrm-shared], [dynamically load kmsdrm support [[defa
 
             AC_DEFINE(SDL_VIDEO_DRIVER_KMSDRM, 1, [ ])
             SOURCES="$SOURCES $srcdir/src/video/kmsdrm/*.c"
-            SOURCES="$SOURCES $srcdir/src/video/kmsdrm_legacy/*.c"
             EXTRA_CFLAGS="$EXTRA_CFLAGS $LIBDRM_CFLAGS $LIBGBM_CFLAGS"
 
             AC_MSG_CHECKING(for kmsdrm dynamic loading support)
