@@ -222,6 +222,9 @@ static void SDL_EVDEV_udev_callback(SDL_UDEV_deviceevent udev_event, int udev_cl
             SDL_UDEV_DEVICE_TOUCHSCREEN)))
             return;
 
+        if ((udev_class & SDL_UDEV_DEVICE_JOYSTICK))
+            return;
+
         SDL_EVDEV_device_added(dev_path, udev_class);
         break;  
     case SDL_UDEV_DEVICEREMOVED:
