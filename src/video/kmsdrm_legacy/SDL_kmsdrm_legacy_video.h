@@ -62,11 +62,8 @@ typedef struct SDL_DisplayData
     drmModeCrtc *crtc;
     drmModeModeInfo mode;
     drmModeModeInfo original_mode;
-    drmModeModeInfo preferred_mode;
 
     drmModeCrtc *saved_crtc;    /* CRTC to restore on quit */
-
-    uint32_t plane_id; /* ID of the primary plane used by the CRTC */
 
     SDL_bool gbm_init;
 
@@ -78,6 +75,8 @@ typedef struct SDL_DisplayData
     uint64_t cursor_w, cursor_h;
 
     SDL_bool modeset_pending;
+
+    SDL_bool set_default_cursor_pending;
 
 } SDL_DisplayData;
 

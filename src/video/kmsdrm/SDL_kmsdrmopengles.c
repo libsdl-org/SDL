@@ -287,7 +287,8 @@ KMSDRM_GLES_SwapWindowDoubleBuffered(_THIS, SDL_Window * window)
 
     /**********************************************************************************/
     /* In double-buffer mode, atomic_commit will always be synchronous/blocking (ie:  */
-    /* won't return until the requested changes are really done).                     */         /* Also, there's no need to fence KMS or the GPU, because we won't be entering    */
+    /* won't return until the requested changes are really done).                     */
+    /* Also, there's no need to fence KMS or the GPU, because we won't be entering    */
     /* game loop again (hence not building or executing a new cmdstring) until        */
     /* pageflip is done, so we don't need to protect the KMS/GPU access to the buffer.*/     
     /**********************************************************************************/ 

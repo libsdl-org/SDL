@@ -62,145 +62,6 @@
 #define KMSDRM_LEGACY_DRI_CARDPATHFMT "/dev/dri/card%d"
 #endif
 
-#if 0
-/**************************************************************************************/
-/* UNUSED function because any plane compatible with the CRTC we chose is good enough */
-/* for us, whatever it's type is. Keep it here for documentation purposes.            */
-/* It cold be needed sometime in the future, too.                                     */
-/**************************************************************************************/
-
-SDL_bool KMSDRM_IsPlanePrimary (_THIS, drmModePlane *plane) {
-
-    SDL_VideoData *viddata = (SDL_VideoData *)_this->driverdata;
-    SDL_bool ret = SDL_FALSE;
-    int j;
-
-    /* Find out if it's a primary plane. */
-    drmModeObjectProperties *plane_props =
-	KMSDRM_LEGACY_drmModeObjectGetProperties(viddata->drm_fd,
-						   plane->plane_id, DRM_MODE_OBJECT_ANY);
-
-    for (j = 0; (j < plane_props->count_props); j++) {
-
-	drmModePropertyRes *prop = KMSDRM_LEGACY_drmModeGetProperty(viddata->drm_fd,
-	  plane_props->props[j]);
-
-	if ((strcmp(prop->name, "type") == 0) &&
-	   (plane_props->prop_values[j] == DRM_PLANE_TYPE_PRIMARY))
-	{
-            ret = SDL_TRUE;
-	}
-
-	KMSDRM_LEGACY_drmModeFreeProperty(prop);
-
-    }
-
-    KMSDRM_LEGACY_drmModeFreeObjectProperties(plane_props);
-
-    return ret;
-}
-#endif
-
-#if 0
-/***********************************************/
-/* Use these functions if you ever need info   */
-/* about the available planes on your machine. */
-/***********************************************/
-
-void print_plane_info(_THIS, drmModePlanePtr plane)
-{
-    char *plane_type;
-    drmModeRes *resources;
-    uint32_t type = 0;
-    SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
-    int i;
-
-    drmModeObjectPropertiesPtr props = KMSDRM_LEGACY_drmModeObjectGetProperties(viddata->drm_fd,
-        plane->plane_id, DRM_MODE_OBJECT_PLANE);
-
-    /* Search the plane props for the plane type. */
-    for (i = 0; i < props->count_props; i++) {
-        drmModePropertyPtr p = KMSDRM_LEGACY_drmModeGetProperty(viddata->drm_fd, props->props[i]);
-        if ((strcmp(p->name, "type") == 0)) {
-            type = props->prop_values[i];
-        }
-
-        KMSDRM_LEGACY_drmModeFreeProperty(p);
-    }
-
-    switch (type) {
-        case DRM_PLANE_TYPE_OVERLAY:
-            plane_type = "overlay";
-            break;
-
-        case DRM_PLANE_TYPE_PRIMARY:
-            plane_type = "primary";
-            break;
-
-        case DRM_PLANE_TYPE_CURSOR:
-            plane_type = "cursor";
-            break;
-    }
-
-
-    /* Remember that to present a plane on screen, it has to be
-       connected to a CRTC so the CRTC scans it,
-       scales it, etc... and presents it on screen. */
-
-    /* Now we look for the CRTCs supported by the plane. */
-    resources = KMSDRM_LEGACY_drmModeGetResources(viddata->drm_fd);
-    if (!resources)
-        return;
-
-    printf("--PLANE ID: %d\nPLANE TYPE: %s\nCRTC READING THIS PLANE: %d\nCRTCS SUPPORTED BY THIS PLANE: ",  plane->plane_id, plane_type, plane->crtc_id);
-    for (i = 0; i < resources->count_crtcs; i++) {
-        if (plane->possible_crtcs & (1 << i)) {
-            uint32_t crtc_id = resources->crtcs[i];
-            printf ("%d", crtc_id);
-            break;
-        }
-    }
-
-    printf ("\n\n");
-}
-
-void get_planes_info(_THIS)
-{
-    drmModePlaneResPtr plane_resources;
-    uint32_t i;
-
-    SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
-    SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
-
-    plane_resources = KMSDRM_LEGACY_drmModeGetPlaneResources(viddata->drm_fd);
-    if (!plane_resources) {
-        printf("drmModeGetPlaneResources failed: %s\n", strerror(errno));
-        return;
-    }
-
-    printf("--Number of planes found: %d-- \n", plane_resources->count_planes);
-    printf("--Usable CRTC that we have chosen: %d-- \n", dispdata->crtc->crtc_id);
-
-    /* Iterate on all the available planes. */
-    for (i = 0; (i < plane_resources->count_planes); i++) {
-
-        uint32_t plane_id = plane_resources->planes[i];
-
-        drmModePlanePtr plane = KMSDRM_LEGACY_drmModeGetPlane(viddata->drm_fd, plane_id);
-        if (!plane) {
-            printf("drmModeGetPlane(%u) failed: %s\n", plane_id, strerror(errno));
-            continue;
-        }
-
-        /* Print plane info. */
-        print_plane_info(_this, plane);
-        KMSDRM_LEGACY_drmModeFreePlane(plane);
-    }
-
-    KMSDRM_LEGACY_drmModeFreePlaneResources(plane_resources);
-}
-#endif
-
 static int
 check_modestting(int devindex)
 {
@@ -545,12 +406,9 @@ int KMSDRM_LEGACY_DisplayDataInit (_THIS, SDL_DisplayData *dispdata) {
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
 
     drmModeRes *resources = NULL;
-    drmModePlaneRes *plane_resources = NULL;
     drmModeEncoder *encoder = NULL;
     drmModeConnector *connector = NULL;
     drmModeCrtc *crtc = NULL;
-
-    uint32_t crtc_index = 0;
 
     int ret = 0;
     unsigned i,j;
@@ -559,8 +417,6 @@ int KMSDRM_LEGACY_DisplayDataInit (_THIS, SDL_DisplayData *dispdata) {
     dispdata->gbm_init = SDL_FALSE;
 
     dispdata->cursor_bo = NULL;
-
-    dispdata->plane_id = 0;
 
     /* Open /dev/dri/cardNN (/dev/drmN if on OpenBSD) */
     SDL_snprintf(viddata->devpath, sizeof(viddata->devpath), KMSDRM_LEGACY_DRI_CARDPATHFMT, viddata->devindex);
@@ -662,7 +518,6 @@ int KMSDRM_LEGACY_DisplayDataInit (_THIS, SDL_DisplayData *dispdata) {
         for (i = 0; i < resources->count_crtcs; i++) {
             if (encoder->possible_crtcs & (1 << i)) {
                 encoder->crtc_id = resources->crtcs[i];
-                crtc_index = i;
                 crtc = KMSDRM_LEGACY_drmModeGetCrtc(viddata->drm_fd, encoder->crtc_id);
                 break;
             }
@@ -680,57 +535,13 @@ int KMSDRM_LEGACY_DisplayDataInit (_THIS, SDL_DisplayData *dispdata) {
     /* Save the original mode for restoration on quit. */
     dispdata->original_mode = dispdata->mode;
 
-    /* Find the connector's preferred mode, to be used in case the current mode
-       is not valid, or if restoring the current mode fails. */
-    for (i = 0; i < connector->count_modes; i++) {
-        if (connector->modes[i].type & DRM_MODE_TYPE_PREFERRED) {
-            dispdata->preferred_mode = connector->modes[i];
-        }
-    }
-
-    /* If the current CRTC's mode isn't valid, select the preferred
-       mode of the connector. */
-    if (crtc->mode_valid == 0) {
-        dispdata->mode = dispdata->preferred_mode;
-    }
-
     if (dispdata->mode.hdisplay == 0 || dispdata->mode.vdisplay == 0 ) {
         ret = SDL_SetError("Couldn't get a valid connector videomode.");
         goto cleanup;
     }
 
-    /*******************************************************/
-    /* Look for a plane that can be connected to our CRTC. */
-    /*******************************************************/
-    plane_resources = KMSDRM_LEGACY_drmModeGetPlaneResources(viddata->drm_fd);
-
-    for (i = 0; (i < plane_resources->count_planes); i++) {
-
-        drmModePlane *plane = KMSDRM_LEGACY_drmModeGetPlane(viddata->drm_fd,
-          plane_resources->planes[i]);
-
-        /* 1 - Does this plane support our CRTC?
-           2 - Is this plane unused or used by our CRTC? Both possibilities are good.
-           We don't mind if it's primary or overlay. */
-        if ((plane->possible_crtcs & (1 << crtc_index)) &&
-            (plane->crtc_id == crtc->crtc_id || plane->crtc_id == 0 ))
-        {
-	    dispdata->plane_id = plane->plane_id;
-	    break;
-        }
-
-        KMSDRM_LEGACY_drmModeFreePlane(plane);
-    }
-
-    KMSDRM_LEGACY_drmModeFreePlaneResources(plane_resources);
-
-    if (!dispdata->plane_id) {
-        ret = SDL_SetError("Could not locate a primary plane compatible with active CRTC.");
-        goto cleanup;
-    }
-
-    /* Store the connector and crtc for future use. These and the plane_id is
-       all we keep from this function, and these are just structs, inoffensive to VK. */
+    /* Store the connector and crtc for future use. These are all we keep
+       from this function, and these are just structs, inoffensive to VK. */
     dispdata->connector = connector;
     dispdata->crtc = crtc;
 
@@ -900,15 +711,15 @@ KMSDRM_LEGACY_CreateSurfaces(_THIS, SDL_Window * window)
     int ret = 0;
 
     /* If the current window already has surfaces, destroy them before creating other.
-       This is mainly for ReconfigureWindow, where we simply call CreateSurfaces()
+       This is mainly for ReconfigureWindow(), where we simply call CreateSurfaces()
        for regenerating a window's surfaces. */
     if (windata->gs) {
         KMSDRM_LEGACY_DestroySurfaces(_this, window);
     }
 
-    if (((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN_DESKTOP) ||
-       ((window->flags & SDL_WINDOW_FULLSCREEN) == SDL_WINDOW_FULLSCREEN)) {
-
+    if ( ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN_DESKTOP)
+      || ((window->flags & SDL_WINDOW_FULLSCREEN) == SDL_WINDOW_FULLSCREEN))
+    {
         width = dispdata->mode.hdisplay;
         height = dispdata->mode.vdisplay;
     } else {
@@ -1000,6 +811,13 @@ KMSDRM_LEGACY_VideoInit(_THIS)
 #ifdef SDL_INPUT_LINUXEV
     SDL_EVDEV_Init();
 #endif
+
+    /* Since we create and show the default cursor on KMSDRM_InitMouse() and
+       we call KMSDRM_InitMouse() everytime we create a new window, we have
+       to be sure to create and show the default cursor only the first time.
+       If we don't, new default cursors would stack up on mouse->cursors and SDL
+       would have to hide and delete them at quit, not to mention the memory leak... */
+    dispdata->set_default_cursor_pending = SDL_TRUE;
 
     viddata->video_init = SDL_TRUE;
 
@@ -1285,9 +1103,9 @@ KMSDRM_LEGACY_CreateWindow(_THIS, SDL_Window * window)
         /* LEGACY-only hardware, so never use drmModeSetPlane().                   */
         /***************************************************************************/
 
-	ret = KMSDRM_LEGACY_drmModeSetCrtc(viddata->drm_fd, dispdata->crtc->crtc_id,
-		/*fb_info->fb_id*/ -1, 0, 0, &dispdata->connector->connector_id, 1,
-		&dispdata->mode);
+        ret = KMSDRM_LEGACY_drmModeSetCrtc(viddata->drm_fd, dispdata->crtc->crtc_id,
+            /*fb_info->fb_id*/ -1, 0, 0, &dispdata->connector->connector_id, 1,
+            &dispdata->mode);
 
 	if (ret) {
 	    SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Could not set CRTC");

@@ -57,6 +57,8 @@
 
 #define KMSDRM_DRI_PATH "/dev/dri/"
 
+
+
 static int set_client_caps (int fd)
 {
     if (KMSDRM_drmSetClientCap(fd, DRM_CLIENT_CAP_ATOMIC, 1)) {
@@ -163,161 +165,6 @@ get_driindex(void)
 
     return -ENOENT;
 }
-
-#if 0
-
-/**********************/
-/* DUMB BUFFER Block. */
-/**********************/
-
-/* Create a dumb buffer, mmap the dumb buffer and fill it with pixels, */
-/* then create a KMS framebuffer wrapping the dumb buffer.             */
-static dumb_buffer *KMSDRM_CreateDumbBuffer(_THIS)
-{
-    SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
-    SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
-
-    struct drm_mode_create_dumb create;
-    struct drm_mode_map_dumb map;
-    struct drm_mode_destroy_dumb destroy;
-
-    dumb_buffer *ret = SDL_calloc(1, sizeof(*ret));
-    if (!ret) {
-        SDL_OutOfMemory();
-        return NULL;
-    }
-
-    /*
-     * The create ioctl uses the combination of depth and bpp to infer
-     * a format; 24/32 refers to DRM_FORMAT_XRGB8888 as defined in
-     * the drm_fourcc.h header. These arguments are the same as given
-     * to drmModeAddFB, which has since been superseded by
-     * drmModeAddFB2 as the latter takes an explicit format token.
-     *
-     * We only specify these arguments; the driver calculates the
-     * pitch (also known as stride or row length) and total buffer size
-     * for us, also returning us the GEM handle.
-     */
-    create = (struct drm_mode_create_dumb) {
-        .width = dispdata->mode.hdisplay,
-        .height = dispdata->mode.vdisplay,
-        .bpp = 32,
-    };
-
-    if (KMSDRM_drmIoctl(viddata->drm_fd, DRM_IOCTL_MODE_CREATE_DUMB, &create)) {
-        SDL_SetError("failed to create dumb buffer\n");
-        goto err;
-    }
-
-    ret->gem_handles[0] = create.handle;
-    ret->format = DRM_FORMAT_XRGB8888;
-    ret->modifier = DRM_FORMAT_MOD_LINEAR;
-    ret->width = create.width;
-    ret->height = create.height;
-    ret->pitches[0] = create.pitch;
-
-    /*
-     * In order to map the buffer, we call an ioctl specific to the buffer
-     * type, which returns us a fake offset to use with the mmap syscall.
-     * mmap itself then works as you expect.
-     *
-     * Note this means it is not possible to map arbitrary offsets of
-     * buffers without specifically requesting it from the kernel.
-     */
-    map = (struct drm_mode_map_dumb) {
-        .handle = ret->gem_handles[0],
-    };
-
-    if (KMSDRM_drmIoctl(viddata->drm_fd, DRM_IOCTL_MODE_MAP_DUMB, &map)) {
-        SDL_SetError("failed to get mmap offset for the dumb buffer.");
-        goto err_dumb;
-    }
-
-    ret->dumb.mem = mmap(NULL, create.size, PROT_WRITE, MAP_SHARED,
-                         viddata->drm_fd, map.offset);
-
-    if (ret->dumb.mem == MAP_FAILED) {
-        SDL_SetError("failed to get mmap offset for the dumb buffer.");
-        goto err_dumb;
-    }
-    ret->dumb.size = create.size;
-
-    return ret;
-
-err_dumb:
-    destroy = (struct drm_mode_destroy_dumb) { .handle = create.handle };
-    KMSDRM_drmIoctl(viddata->drm_fd, DRM_IOCTL_MODE_DESTROY_DUMB, &destroy);
-err:
-    SDL_free(ret);
-    return NULL;
-}
-
-static void
-KMSDRM_DestroyDumbBuffer(_THIS, dumb_buffer **buffer)
-{
-    SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
-
-    struct drm_mode_destroy_dumb destroy = {
-        .handle = (*buffer)->gem_handles[0],
-    };
-
-    KMSDRM_drmModeRmFB(viddata->drm_fd, (*buffer)->fb_id);
-
-    munmap((*buffer)->dumb.mem, (*buffer)->dumb.size);
-    KMSDRM_drmIoctl(viddata->drm_fd, DRM_IOCTL_MODE_DESTROY_DUMB, &destroy);
-    free(*buffer);
-    *buffer = NULL;
-}
-
-/* Using the CPU mapping, fill the dumb buffer with black pixels. */
-static void
-KMSDRM_FillDumbBuffer(dumb_buffer *buffer)
-{
-    unsigned int x, y;
-    for (y = 0; y < buffer->height; y++) {
-    uint32_t *pix = (uint32_t *) ((uint8_t *) buffer->dumb.mem + (y * buffer->pitches[0]));
-        for (x = 0; x < buffer->width; x++) {
-            *pix++ = (0x00000000);
-        }
-    }
-}
-
-static dumb_buffer *KMSDRM_CreateBuffer(_THIS)
-{
-    dumb_buffer *ret;
-    int err;
-
-    SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
-
-    ret = KMSDRM_CreateDumbBuffer(_this);
-
-    if (!ret)
-        return NULL;
-
-    /*
-     * Wrap our GEM buffer in a KMS framebuffer, so we can then attach it
-     * to a plane. Here's where we get out fb_id!
-     */
-    err = KMSDRM_drmModeAddFB2(viddata->drm_fd, ret->width, ret->height,
-        ret->format, ret->gem_handles, ret->pitches,
-        ret->offsets, &ret->fb_id, 0);
-
-    if (err != 0 || ret->fb_id == 0) {
-        SDL_SetError("Failed AddFB2 on dumb buffer\n");
-        goto err;
-    }
-    return ret;
-
-err:
-    KMSDRM_DestroyDumbBuffer(_this, &ret);
-    return NULL;
-}
-
-/***************************/
-/* DUMB BUFFER Block ends. */
-/***************************/
-
-#endif
 
 /*********************************/
 /* Atomic helper functions block */
@@ -1161,20 +1008,8 @@ int KMSDRM_DisplayDataInit (_THIS, SDL_DisplayData *dispdata) {
     /* Figure out the default mode to be set. */
     dispdata->mode = crtc->mode;
 
-    /* Find the connector's preferred mode, to be used in case the current mode
-       is not valid, or if restoring the current mode fails.
-       We can always count on the preferred mode! */
-    for (i = 0; i < connector->count_modes; i++) {
-        if (connector->modes[i].type & DRM_MODE_TYPE_PREFERRED) {
-            dispdata->preferred_mode = connector->modes[i];
-        }
-    }
-
-    /* If the current CRTC's mode isn't valid, select the preferred
-       mode of the connector. */
-    if (crtc->mode_valid == 0) {
-        dispdata->mode = dispdata->preferred_mode;
-    }
+    /* Save the original mode for restoration on quit. */
+    dispdata->original_mode = dispdata->mode;
 
     if (dispdata->mode.hdisplay == 0 || dispdata->mode.vdisplay == 0 ) {
         ret = SDL_SetError("Couldn't get a valid connector videomode.");
@@ -1360,15 +1195,17 @@ KMSDRM_DestroySurfaces(_THIS, SDL_Window *window)
 #if 1
     /************************************************************/
     /* Make the display plane point to the original TTY buffer. */
+    /* We have to configure it's input and output scaling       */
+    /* parameters accordingly.                                  */
     /************************************************************/
 
     plane_info.plane = dispdata->display_plane;
     plane_info.crtc_id = dispdata->crtc->crtc->crtc_id;
     plane_info.fb_id = dispdata->crtc->crtc->buffer_id;
-    plane_info.src_w = dispdata->mode.hdisplay;
-    plane_info.src_h = dispdata->mode.vdisplay;
-    plane_info.crtc_w = dispdata->mode.hdisplay;
-    plane_info.crtc_h = dispdata->mode.vdisplay;
+    plane_info.src_w = dispdata->original_mode.hdisplay;
+    plane_info.src_h = dispdata->original_mode.vdisplay;
+    plane_info.crtc_w = dispdata->original_mode.hdisplay;
+    plane_info.crtc_h = dispdata->original_mode.vdisplay;
 
     drm_atomic_set_plane_props(&plane_info);
 
@@ -1426,9 +1263,16 @@ KMSDRM_CreateSurfaces(_THIS, SDL_Window * window)
 
     int ret = 0;
 
-    if (((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN_DESKTOP) ||
-       ((window->flags & SDL_WINDOW_FULLSCREEN) == SDL_WINDOW_FULLSCREEN)) {
+    /* If the current window already has surfaces, destroy them before creating other.
+       This is mainly for ReconfigureWindow(), where we simply call CreateSurfaces()
+       for regenerating a window's surfaces. */
+    if (windata->gs) {
+        KMSDRM_DestroySurfaces(_this, window);
+    }
 
+    if ( ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN_DESKTOP)
+      || ((window->flags & SDL_WINDOW_FULLSCREEN) == SDL_WINDOW_FULLSCREEN))
+    {
         width = dispdata->mode.hdisplay;
         height = dispdata->mode.vdisplay;
     } else {
@@ -1436,11 +1280,14 @@ KMSDRM_CreateSurfaces(_THIS, SDL_Window * window)
         height = window->h;
     }
 
-    if (!KMSDRM_gbm_device_is_format_supported(viddata->gbm_dev, surface_fmt, surface_flags)) {
-        SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO, "GBM surface format not supported. Trying anyway.");
+    if (!KMSDRM_gbm_device_is_format_supported(viddata->gbm_dev,
+        surface_fmt, surface_flags)) {
+            SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO,
+            "GBM surface format not supported. Trying anyway.");
     }
 
-    windata->gs = KMSDRM_gbm_surface_create(viddata->gbm_dev, width, height, surface_fmt, surface_flags);
+    windata->gs = KMSDRM_gbm_surface_create(viddata->gbm_dev,
+        width, height, surface_fmt, surface_flags);
 
     if (!windata->gs) {
         return SDL_SetError("Could not create GBM surface");
@@ -1562,8 +1409,10 @@ KMSDRM_ReconfigureWindow( _THIS, SDL_Window * window) {
         windata->output_x = 0;
 
     } else {
-        /* Normal non-fullscreen windows are scaled using the CRTC,
-           so get output (CRTC) size and position, for AR correction. */
+        /* Normal non-fullscreen windows are scaled using the PRIMARY PLANE, so here we store:
+           input size (ie: the size of the window buffers),
+           output size (ie: th mode configured on the CRTC), an X position to compensate for AR correction.
+           These are used when we set the PRIMARY PLANE props in SwapWindow() */
         ratio = (float)window->w / (float)window->h;
         windata->src_w = window->w;
         windata->src_h = window->h;
@@ -1636,6 +1485,13 @@ KMSDRM_VideoInit(_THIS)
 #ifdef SDL_INPUT_LINUXEV
     SDL_EVDEV_Init();
 #endif
+
+    /* Since we create and show the default cursor on KMSDRM_InitMouse() and
+       we call KMSDRM_InitMouse() everytime we create a new window, we have
+       to be sure to create and show the default cursor only the first time.
+       If we don't, new default cursors would stack up on mouse->cursors and SDL
+       would have to hide and delete them at quit, not to mention the memory leak... */
+    dispdata->set_default_cursor_pending = SDL_TRUE;
 
     viddata->video_init = SDL_TRUE;
 
@@ -1821,7 +1677,7 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
             so we do it here. */
          KMSDRM_InitMouse(_this);
 
-         /* Since we take cursor buffer way from the cursor plane and
+         /* Since we take cursor buffer away from the cursor plane and
             destroy the cursor GBM BO when we destroy a window, we must
             also manually re-show the cursor on screen, if necessary,
             when we create a window. */
