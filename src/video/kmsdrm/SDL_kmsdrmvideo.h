@@ -94,7 +94,6 @@ typedef struct SDL_WindowData
     SDL_bool waiting_for_flip;
     SDL_bool double_buffer;
 
-    int egl_surface_dirty;
     EGLSurface egl_surface;
 
     /* For scaling and AR correction. */
