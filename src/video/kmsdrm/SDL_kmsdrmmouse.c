@@ -40,6 +40,21 @@ static void KMSDRM_FreeCursor(SDL_Cursor * cursor);
 static void KMSDRM_WarpMouse(SDL_Window * window, int x, int y);
 static int KMSDRM_WarpMouseGlobal(int x, int y);
 
+/**************************************************************************************/
+/* BEFORE CODING ANYTHING MOUSE/CURSOR RELATED, REMEMBER THIS.                        */
+/* How does SDL manage cursors internally? First, mouse =! cursor. The mouse can have */
+/* many cursors in mouse->cursors.                                                    */
+/* -SDL tells us to create a cursor with KMSDRM_CreateCursor(). It can create many    */
+/*  cursosr with this, not only one.                                                  */
+/* -SDL stores those cursors in a cursors array, in mouse->cursors.                   */
+/* -Whenever it wants (or the programmer wants) takes a cursor from that array        */
+/*  and shows it on screen with KMSDRM_ShowCursor().                                  */
+/*  KMSDRM_ShowCursor() simply shows or hides the cursor it receives: it does NOT     */
+/*  mind if it's mouse->cur_cursor, etc.                                              */
+/* -If KMSDRM_ShowCursor() returns succesfully, that cursor becomes mouse->cur_cursor */
+/*  and mouse->cursor_shown is 1.                                                     */
+/**************************************************************************************/
+
 /**********************************/
 /* Atomic helper functions block. */
 /**********************************/
@@ -98,8 +113,9 @@ KMSDRM_CreateDefaultCursor(void)
     return SDL_CreateCursor(default_cdata, default_cmask, DEFAULT_CWIDTH, DEFAULT_CHEIGHT, DEFAULT_CHOTX, DEFAULT_CHOTY);
 }
 
-/* This simply gets the cursor soft-buffer ready. We don't copy it to a GBO BO until ShowCursor()
-   because the cusor GBM BO (living in dispata) is destroyed and recreated when we recreate windows, etc. */
+/* This simply gets the cursor soft-buffer ready. We don't copy it to a GBO BO
+   until ShowCursor() because the cusor GBM BO (living in dispata) is destroyed
+   and recreated when we recreate windows, etc. */
 static SDL_Cursor *
 KMSDRM_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y)
 {
@@ -204,20 +220,16 @@ KMSDRM_InitCursor()
     KMSDRM_ShowCursor(mouse->cur_cursor);
 }
 
-/* Show the specified cursor, or hide if cursor is NULL.
-   cur_cursor is the current cursor, and cursor is the new cursor.
-   A cursor is displayed on a display, so we have to add a pointer to dispdata
-   to the driverdata 
- */
+/* Show the specified cursor, or hide if cursor is NULL or has no focus. */
 static int
 KMSDRM_ShowCursor(SDL_Cursor * cursor)
 {
     SDL_VideoDevice *video_device = SDL_GetVideoDevice();
-    //SDL_VideoData *viddata = ((SDL_VideoData *)dev->driverdata);
+    //SDL_VideoData *viddata = ((SDL_VideoData *)video_device->driverdata);
+    SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
     SDL_Mouse *mouse;
     KMSDRM_CursorData *curdata;
-    SDL_VideoDisplay *display = NULL;
-    SDL_DisplayData *dispdata = NULL;
+
     KMSDRM_FBInfo *fb;
     KMSDRM_PlaneInfo info = {0};
 
@@ -234,41 +246,28 @@ KMSDRM_ShowCursor(SDL_Cursor * cursor)
         return SDL_SetError("No mouse.");
     }
 
-    if (mouse->focus) {
-        display = SDL_GetDisplayForWindow(mouse->focus);
-        if (display) {
-            dispdata = (SDL_DisplayData*) display->driverdata;
+    /*********************************************************/
+    /* Hide cursor if it's NULL or it has no focus(=winwow). */
+    /*********************************************************/
+    if (!cursor || !mouse->focus) {
+        if (dispdata->cursor_plane) {
+	    /* Hide the drm cursor with no more considerations because
+	    SDL_VideoQuit() takes us here after disabling the mouse
+	    so there is no mouse->cur_cursor by now. */
+	    info.plane = dispdata->cursor_plane;
+	    /* The rest of the members are zeroed, so this takes away the cursor
+	       from the cursor plane. */
+	    drm_atomic_set_plane_props(&info);
+	    if (drm_atomic_commit(video_device, SDL_TRUE, SDL_FALSE)) {
+		ret = SDL_SetError("Failed atomic commit in KMSDRM_ShowCursor.");
+	    }
         }
-    }
-
-    /**********************************/
-    /* if cursor == NULL, HIDE cursor */
-    /**********************************/
-    if (!cursor) {
-        /* Hide CURRENT cursor, a cursor that is already on screen
-           and SDL is stored in mouse->cur_cursor. */
-        if (mouse->cur_cursor && mouse->cur_cursor->driverdata) {
-            if (dispdata && dispdata->cursor_plane) {
-                info.plane = dispdata->cursor_plane;
-                /* The rest of the members are zeroed. */
-                drm_atomic_set_plane_props(&info);
-                if (drm_atomic_commit(display->device, SDL_TRUE, SDL_FALSE))
-                    return SDL_SetError("Failed atomic commit in KMSDRM_ShowCursor.");
-                }
-                return 0;
-            }
-        return SDL_SetError("Couldn't find cursor to hide.");
+	return ret;
     }
 
     /************************************************/
     /* If cursor != NULL, DO show cursor on display */
     /************************************************/
-    if (!display) {
-        return SDL_SetError("Could not get display for mouse.");
-    }
-    if (!dispdata) {
-        return SDL_SetError("Could not get display driverdata.");
-    }
     if (!dispdata->cursor_plane) {
         return SDL_SetError("Hardware cursor plane not initialized.");
     }
@@ -279,7 +278,8 @@ KMSDRM_ShowCursor(SDL_Cursor * cursor)
         return SDL_SetError("Cursor not initialized properly.");
     }
 
-    /* Prepare a buffer we can dump to our GBM BO (different size, alpha premultiplication...) */
+    /* Prepare a buffer we can dump to our GBM BO (different
+       size, alpha premultiplication...) */
     bo_stride = KMSDRM_gbm_bo_get_stride(dispdata->cursor_bo);
     bufsize = bo_stride * curdata->h;
 
@@ -315,8 +315,8 @@ KMSDRM_ShowCursor(SDL_Cursor * cursor)
     info.plane = dispdata->cursor_plane;
     info.crtc_id = dispdata->crtc->crtc->crtc_id;
     info.fb_id = fb->fb_id; 
-    info.src_w = curdata->w;
-    info.src_h = curdata->h;
+    info.src_w = dispdata->cursor_w;
+    info.src_h = dispdata->cursor_h;
     info.crtc_x = mouse->x - curdata->hot_x;
     info.crtc_y = mouse->y - curdata->hot_y;
     info.crtc_w = curdata->w;
@@ -324,7 +324,7 @@ KMSDRM_ShowCursor(SDL_Cursor * cursor)
 
     drm_atomic_set_plane_props(&info);
 
-    if (drm_atomic_commit(display->device, SDL_TRUE, SDL_FALSE)) {
+    if (drm_atomic_commit(video_device, SDL_TRUE, SDL_FALSE)) {
         ret = SDL_SetError("Failed atomic commit in KMSDRM_ShowCursor.");
         goto cleanup;
     }
@@ -339,8 +339,7 @@ cleanup:
     return ret;
 }
 
-/* We have destroyed the cursor by now, in KMSDRM_DestroyCursor.
-   This is only for freeing the SDL_cursor.*/
+/* This is only for freeing the SDL_cursor.*/
 static void
 KMSDRM_FreeCursor(SDL_Cursor * cursor)
 {
@@ -398,13 +397,40 @@ KMSDRM_WarpMouseGlobal(int x, int y)
     return 0;
 }
 
+/* UNDO WHAT WE DID IN KMSDRM_InitMouse(). */
+void
+KMSDRM_DeinitMouse(_THIS)
+{
+    SDL_VideoDevice *video_device = SDL_GetVideoDevice();
+    SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
+    KMSDRM_PlaneInfo info = {0};
+    SDL_Mouse *mouse = SDL_GetMouse();
+ 
+    /* 1- Destroy the curso GBM BO. */
+    if (video_device && dispdata->cursor_bo) {
+	/* Unsethe the cursor BO from the cursor plane.
+	   (The other members of the plane info are zeroed). */
+	info.plane = dispdata->cursor_plane;
+	drm_atomic_set_plane_props(&info);
+	/* Wait until the cursor is unset from the cursor plane
+	   before destroying it's BO. */
+	if (drm_atomic_commit(video_device, SDL_TRUE, SDL_FALSE)) {
+	    SDL_SetError("Failed atomic commit in KMSDRM_DenitMouse.");
+	}
+	/* ..and finally destroy the cursor DRM BO! */
+	KMSDRM_gbm_bo_destroy(dispdata->cursor_bo);
+	dispdata->cursor_bo = NULL;
+    }
+
+    /* 2- Free the cursor plane, on which the cursor was being shown. */
+    if (dispdata->cursor_plane) {
+        free_plane(&dispdata->cursor_plane);
+    }
+}
+
 void
 KMSDRM_InitMouse(_THIS)
 {
-    /* FIXME: Using UDEV it should be possible to scan all mice
-     * but there's no point in doing so as there's no multimice support...yet!
-     */
-
     SDL_VideoDevice *dev = SDL_GetVideoDevice();
     SDL_VideoData *viddata = ((SDL_VideoData *)dev->driverdata);
     SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
@@ -420,7 +446,7 @@ KMSDRM_InitMouse(_THIS)
     /***************************************************************************/
     /* REMEMBER TO BE SURE OF UNDOING ALL THESE STEPS PROPERLY BEFORE CALLING  */
     /* gbm_device_destroy, OR YOU WON'T BE ABLE TO CREATE A NEW ONE (ERROR -13 */
-    /* ON gbm_create_device).                                                  */
+    /* on gbm_create_device).                                                  */
     /***************************************************************************/
 
     /* 1- Init cursor plane, if we haven't yet. */
@@ -460,8 +486,16 @@ KMSDRM_InitMouse(_THIS)
 	}
     }
 
-    /* SDL expects to set the default cursor on screen when we init the mouse. */
-    SDL_SetDefaultCursor(KMSDRM_CreateDefaultCursor());
+    /* SDL expects to set the default cursor on screen when we init the mouse,
+       but since we have moved the KMSDRM_InitMouse() call to KMSDRM_CreateWindow(),
+       we end up calling KMSDRM_InitMouse() every time we create a window, so we
+       have to prevent this from being done every time a new window is created.
+       If we don't, new default cursors would stack up on mouse->cursors and SDL
+       would have to hide and delete them at quit, not to mention the memory leak... */
+    if(dispdata->set_default_cursor_pending) { 
+        SDL_SetDefaultCursor(KMSDRM_CreateDefaultCursor());
+        dispdata->set_default_cursor_pending = SDL_FALSE;
+    }
 
     return;
 
@@ -470,40 +504,6 @@ cleanup:
 	KMSDRM_gbm_bo_destroy(dispdata->cursor_bo);
 	dispdata->cursor_bo = NULL;
     }
-}
-
-void
-KMSDRM_DeinitMouse(_THIS)
-{
-    SDL_VideoDevice *video_device = SDL_GetVideoDevice();
-    SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
-    KMSDRM_PlaneInfo info = {0};
- 
-    /*******************************************/
-    /* UNDO WHAT WE DID IN KMSDRM_InitMouse(). */
-    /*******************************************/
-    
-    /* 1- Destroy the curso GBM BO. */
-    if (video_device && dispdata->cursor_bo) {
-	/* Unsethe the cursor BO from the cursor plane.
-	   (The other members of the plane info are zeroed). */
-	info.plane = dispdata->cursor_plane;
-	drm_atomic_set_plane_props(&info);
-	/* Wait until the cursor is unset from the cursor plane
-	   before destroying it's BO. */
-	if (drm_atomic_commit(video_device, SDL_TRUE, SDL_FALSE)) {
-	    SDL_SetError("Failed atomic commit in KMSDRM_DenitMouse.");
-	}
-	/* ..and finally destroy the cursor DRM BO! */
-	KMSDRM_gbm_bo_destroy(dispdata->cursor_bo);
-	dispdata->cursor_bo = NULL;
-    }
-
-    /* 2- Free the cursor plane, on which the cursor was being shown. */
-    if (dispdata->cursor_plane) {
-        free_plane(&dispdata->cursor_plane);
-    }
-
 }
 
 /* This is called when a mouse motion event occurs */

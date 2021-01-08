@@ -38,6 +38,21 @@ static void KMSDRM_LEGACY_FreeCursor(SDL_Cursor * cursor);
 static void KMSDRM_LEGACY_WarpMouse(SDL_Window * window, int x, int y);
 static int KMSDRM_LEGACY_WarpMouseGlobal(int x, int y);
 
+/**************************************************************************************/
+/* BEFORE CODING ANYTHING MOUSE/CURSOR RELATED, REMEMBER THIS.                        */
+/* How does SDL manage cursors internally? First, mouse =! cursor. The mouse can have */
+/* many cursors in mouse->cursors.                                                    */
+/* -SDL tells us to create a cursor with KMSDRM_CreateCursor(). It can create many    */
+/*  cursosr with this, not only one.                                                  */
+/* -SDL stores those cursors in a cursors array, in mouse->cursors.                   */
+/* -Whenever it wants (or the programmer wants) takes a cursor from that array        */
+/*  and shows it on screen with KMSDRM_ShowCursor().                                  */
+/*  KMSDRM_ShowCursor() simply shows or hides the cursor it receives: it does NOT     */
+/*  mind if it's mouse->cur_cursor, etc.                                              */
+/* -If KMSDRM_ShowCursor() returns succesfully, that cursor becomes mouse->cur_cursor */
+/*  and mouse->cursor_shown is 1.                                                     */
+/**************************************************************************************/
+
 static SDL_Cursor *
 KMSDRM_LEGACY_CreateDefaultCursor(void)
 {
@@ -66,43 +81,6 @@ void legacy_alpha_premultiply_ARGB8888 (uint32_t *pixel) {
 
     /* ARGB8888 pixel recomposition. */
     (*pixel) = (((uint32_t)A << 24) | ((uint32_t)R << 16) | ((uint32_t)G << 8)) | ((uint32_t)B << 0);
-}
-
-/* Evaluate if a given cursor size is supported or not.
-   Notably, current Intel gfx only support 64x64 and up. */
-static SDL_bool
-KMSDRM_LEGACY_IsCursorSizeSupported (int w, int h, uint32_t bo_format) {
-
-    SDL_VideoDevice *dev = SDL_GetVideoDevice();
-    SDL_VideoData *viddata = ((SDL_VideoData *)dev->driverdata);
-    SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
-
-    int ret;
-    uint32_t bo_handle;
-    struct gbm_bo *bo = KMSDRM_LEGACY_gbm_bo_create(viddata->gbm_dev, w, h, bo_format,
-                                       GBM_BO_USE_CURSOR | GBM_BO_USE_WRITE);
-
-    if (!bo) {
-        SDL_SetError("Could not create GBM cursor BO width size %dx%d for size testing", w, h);
-        goto cleanup;
-    }
-
-    bo_handle = KMSDRM_LEGACY_gbm_bo_get_handle(bo).u32;
-    ret = KMSDRM_LEGACY_drmModeSetCursor(viddata->drm_fd, dispdata->crtc->crtc_id, bo_handle, w, h);
-
-    if (ret) {
-        goto cleanup;
-    }
-    else {
-        KMSDRM_LEGACY_gbm_bo_destroy(bo);
-        return SDL_TRUE;
-    }
-
-cleanup:
-    if (bo) {
-        KMSDRM_LEGACY_gbm_bo_destroy(bo);
-    }
-    return SDL_FALSE;
 }
 
 /* This simply gets the cursor soft-buffer ready.
@@ -212,7 +190,7 @@ KMSDRM_LEGACY_InitCursor()
     KMSDRM_LEGACY_ShowCursor(mouse->cur_cursor);
 }
 
-/* Show the specified cursor, or hide if cursor is NULL. */
+/* Show the specified cursor, or hide if cursor is NULL or has no focus. */
 static int
 KMSDRM_LEGACY_ShowCursor(SDL_Cursor * cursor)
 {
@@ -255,10 +233,6 @@ KMSDRM_LEGACY_ShowCursor(SDL_Cursor * cursor)
     /************************************************/
     /* If cursor != NULL, DO show cursor on display */
     /************************************************/
-    if (!dispdata) {
-        return SDL_SetError("Could not get display driverdata.");
-    }
-    
     curdata = (KMSDRM_LEGACY_CursorData *) cursor->driverdata;
 
     if (!curdata || !dispdata->cursor_bo) {
@@ -318,8 +292,7 @@ cleanup:
     return ret;
 }
 
-/* We have destroyed the cursor by now, in KMSDRM_DestroyCursor.
-   This is only for freeing the SDL_cursor.*/
+/* This is only for freeing the SDL_cursor.*/
 static void
 KMSDRM_LEGACY_FreeCursor(SDL_Cursor * cursor)
 {
@@ -450,8 +423,16 @@ KMSDRM_LEGACY_InitMouse(_THIS)
 	}
     }
 
-    /* SDL expects to set the default cursor on screen when we init the mouse. */
-    SDL_SetDefaultCursor(KMSDRM_LEGACY_CreateDefaultCursor());
+    /* SDL expects to set the default cursor on screen when we init the mouse,
+       but since we have moved the KMSDRM_InitMouse() call to KMSDRM_CreateWindow(),
+       we end up calling KMSDRM_InitMouse() every time we create a window, so we
+       have to prevent this from being done every time a new window is created.
+       If we don't, new default cursors would stack up on mouse->cursors and SDL
+       would have to hide and delete them at quit, not to mention the memory leak... */
+    if(dispdata->set_default_cursor_pending) { 
+        SDL_SetDefaultCursor(KMSDRM_LEGACY_CreateDefaultCursor());
+        dispdata->set_default_cursor_pending = SDL_FALSE;
+    }
 
     return;
 

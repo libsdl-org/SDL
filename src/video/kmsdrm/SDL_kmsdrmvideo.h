@@ -83,7 +83,7 @@ typedef struct connector {
 typedef struct SDL_DisplayData
 {
     drmModeModeInfo mode;
-    drmModeModeInfo preferred_mode;
+    drmModeModeInfo original_mode;
 
     plane *display_plane;
     plane *cursor_plane;
@@ -109,6 +109,8 @@ typedef struct SDL_DisplayData
        There's only one cursor GBM BO because we only support one cursor. */
     struct gbm_bo *cursor_bo;
     uint64_t cursor_w, cursor_h;
+
+    SDL_bool set_default_cursor_pending;
 
 } SDL_DisplayData;
 
