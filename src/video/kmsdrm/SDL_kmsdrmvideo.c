@@ -57,8 +57,6 @@
 
 #define KMSDRM_DRI_PATH "/dev/dri/"
 
-
-
 static int set_client_caps (int fd)
 {
     if (KMSDRM_drmSetClientCap(fd, DRM_CLIENT_CAP_ATOMIC, 1)) {
@@ -75,38 +73,27 @@ check_modesetting(int devindex)
 {
     SDL_bool available = SDL_FALSE;
     char device[512];
-    unsigned int i;
     int drm_fd;
 
     SDL_snprintf(device, sizeof (device), "%scard%d", KMSDRM_DRI_PATH, devindex);
-    SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "check_modesetting: probing \"%s\"", device);
 
     drm_fd = open(device, O_RDWR | O_CLOEXEC);
     if (drm_fd >= 0) {
         if (SDL_KMSDRM_LoadSymbols()) {
-            drmModeRes *resources = (set_client_caps(drm_fd) < 0) ? NULL : KMSDRM_drmModeGetResources(drm_fd);
+            drmModeRes *resources = KMSDRM_drmModeGetResources(drm_fd);
             if (resources) {
-                SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "%scard%d connector, encoder and CRTC counts are: %d %d %d",
-                             KMSDRM_DRI_PATH, devindex,
-                             resources->count_connectors, resources->count_encoders, resources->count_crtcs);
 
-                if (resources->count_connectors > 0 && resources->count_encoders > 0 && resources->count_crtcs > 0) {
-                    for (i = 0; i < resources->count_connectors; i++) {
-                        drmModeConnector *conn = KMSDRM_drmModeGetConnector(drm_fd, resources->connectors[i]);
+                SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO,
+                  "%scard%d connector, encoder and CRTC counts are: %d %d %d",
+                   KMSDRM_DRI_PATH, devindex,
+                   resources->count_connectors, resources->count_encoders,
+                   resources->count_crtcs);
 
-                        if (!conn) {
-                            continue;
-                        }
-
-                        if (conn->connection == DRM_MODE_CONNECTED && conn->count_modes) {
-                            available = SDL_TRUE;
-                        }
-
-                        KMSDRM_drmModeFreeConnector(conn);
-                        if (available) {
-                            break;
-                        }
-                    }
+                if (resources->count_connectors > 0
+                 && resources->count_encoders > 0
+                 && resources->count_crtcs > 0)
+                {
+                    available = SDL_TRUE;
                 }
                 KMSDRM_drmModeFreeResources(resources);
             }
