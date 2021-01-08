@@ -205,7 +205,7 @@ static int
 NETBSDAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
 {
     SDL_AudioFormat format = 0;
-    audio_info_t info;
+    audio_info_t info, hwinfo;
     struct audio_prinfo *prinfo = iscapture ? &info.record : &info.play;
 
     /* We don't care what the devname is...we'll try to open anything. */
@@ -233,7 +233,20 @@ NETBSDAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
 
     AUDIO_INITINFO(&info);
 
+#ifdef AUDIO_GETFORMAT /* Introduced in NetBSD 9.0 */
+    if (ioctl(this->hidden->audio_fd, AUDIO_GETFORMAT, &hwinfo) != -1) {
+        /*
+         * Use the device's native sample rate so the kernel doesn't have to
+         * resample.
+         */
+        this->spec.freq = iscapture ?
+            hwinfo.record.sample_rate : hwinfo.play.sample_rate;
+    }
+#endif
+
     prinfo->encoding = AUDIO_ENCODING_NONE;
+    prinfo->sample_rate = this->spec.freq;
+    prinfo->channels = this->spec.channels;
 
     for (format = SDL_FirstAudioFormat(this->spec.format); format;) {
         switch (format) {
@@ -280,22 +293,18 @@ NETBSDAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
         return SDL_SetError("No supported encoding for 0x%x", this->spec.format);
     }
 
-    this->spec.format = format;
-
-    /* Calculate spec parameters based on our chosen format */
-    SDL_CalculateAudioSpec(&this->spec);
-
-    info.mode = iscapture ? AUMODE_RECORD : AUMODE_PLAY;
-    info.blocksize = this->spec.size;
     info.hiwat = 5;
     info.lowat = 3;
-    prinfo->sample_rate = this->spec.freq;
-    prinfo->channels = this->spec.channels;
     (void) ioctl(this->hidden->audio_fd, AUDIO_SETINFO, &info);
 
     (void) ioctl(this->hidden->audio_fd, AUDIO_GETINFO, &info);
+
+    /* Final spec used for the device. */
+    this->spec.format = format;
     this->spec.freq = prinfo->sample_rate;
     this->spec.channels = prinfo->channels;
+
+    SDL_CalculateAudioSpec(&this->spec);
 
     if (!iscapture) {
         /* Allocate mixing buffer */
