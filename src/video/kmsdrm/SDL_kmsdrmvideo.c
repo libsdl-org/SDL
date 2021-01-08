@@ -1,7 +1,6 @@
 /*
   Simple DirectMedia Layer
   Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
-  Atomic KMSDRM backend by Manuel Alfayate Corchete <redwindwanderer@gmail.com>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -27,6 +26,8 @@
 /* SDL internals */
 #include "../SDL_sysvideo.h"
 #include "SDL_syswm.h"
+#include "SDL_log.h"
+#include "SDL_hints.h"
 #include "../../events/SDL_events_c.h"
 #include "../../events/SDL_mouse_c.h"
 #include "../../events/SDL_keyboard_c.h"
@@ -47,47 +48,42 @@
 #include <errno.h>
 #include <poll.h>
 
-/* for older KMSDRM headers... */
-#ifndef DRM_FORMAT_MOD_VENDOR_NONE
-#define DRM_FORMAT_MOD_VENDOR_NONE 0
-#endif
-#ifndef DRM_FORMAT_MOD_LINEAR
-#define DRM_FORMAT_MOD_LINEAR fourcc_mod_code(NONE, 0)
-#endif
+#ifdef __OpenBSD__
+eeefine KMSDRM_DRI_PATH "/dev/"
+ce
 
+#define KMSDRM_DRI_DEVFMT "%sdrm%d"
+#define KMSDRM_DRI_DEVNAME "drm"
+#define KMSDRM_DRI_DEVNAMESIZE 3
+#define KMSDRM_DRI_CARDPATHFMT "/dev/drm%d"
+#else
 #define KMSDRM_DRI_PATH "/dev/dri/"
-
-static int set_client_caps (int fd)
-{
-    if (KMSDRM_drmSetClientCap(fd, DRM_CLIENT_CAP_ATOMIC, 1)) {
-         return SDL_SetError("no atomic modesetting support.");
-    }
-    if (KMSDRM_drmSetClientCap(fd, DRM_CLIENT_CAP_UNIVERSAL_PLANES, 1)) {
-         return SDL_SetError("no universal planes support.");
-    }
-    return 0;
-}
+#define KMSDRM_DRI_DEVFMT "%scard%d"
+#define KMSDRM_DRI_DEVNAME "card"
+#define KMSDRM_DRI_DEVNAMESIZE 4
+#define KMSDRM_DRI_CARDPATHFMT "/dev/dri/card%d"
+#endif
 
 static int
-check_modesetting(int devindex)
+check_modestting(int devindex)
 {
     SDL_bool available = SDL_FALSE;
     char device[512];
     int drm_fd;
 
-    SDL_snprintf(device, sizeof (device), "%scard%d", KMSDRM_DRI_PATH, devindex);
+    SDL_snprintf(device, sizeof (device), KMSDRM_DRI_DEVFMT, KMSDRM_DRI_PATH, devindex);
 
     drm_fd = open(device, O_RDWR | O_CLOEXEC);
     if (drm_fd >= 0) {
         if (SDL_KMSDRM_LoadSymbols()) {
             drmModeRes *resources = KMSDRM_drmModeGetResources(drm_fd);
             if (resources) {
-
                 SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO,
-                  "%scard%d connector, encoder and CRTC counts are: %d %d %d",
-                   KMSDRM_DRI_PATH, devindex,
-                   resources->count_connectors, resources->count_encoders,
-                   resources->count_crtcs);
+                  KMSDRM_DRI_DEVFMT
+                  " connector, encoder and CRTC counts are: %d %d %d",
+                  KMSDRM_DRI_PATH, devindex,
+                  resources->count_connectors, resources->count_encoders,
+                  resources->count_crtcs);
 
                 if (resources->count_connectors > 0
                  && resources->count_encoders > 0
@@ -105,30 +101,32 @@ check_modesetting(int devindex)
     return available;
 }
 
-static unsigned int get_dricount(void)
+static int get_dricount(void)
 {
-    unsigned int devcount = 0;
+    int devcount = 0;
     struct dirent *res;
     struct stat sb;
     DIR *folder;
 
-    if (!(stat(KMSDRM_DRI_PATH, &sb) == 0 && S_ISDIR(sb.st_mode))) {
-        SDL_SetError("The path %s cannot be opened or is not available",
-        KMSDRM_DRI_PATH);
+    if (!(stat(KMSDRM_DRI_PATH, &sb) == 0
+                && S_ISDIR(sb.st_mode))) {
+        printf("The path %s cannot be opened or is not available\n",
+               KMSDRM_DRI_PATH);
         return 0;
     }
 
     if (access(KMSDRM_DRI_PATH, F_OK) == -1) {
-        SDL_SetError("The path %s cannot be opened",
-            KMSDRM_DRI_PATH);
+        printf("The path %s cannot be opened\n",
+               KMSDRM_DRI_PATH);
         return 0;
     }
 
     folder = opendir(KMSDRM_DRI_PATH);
     if (folder) {
         while ((res = readdir(folder))) {
-            size_t len = SDL_strlen(res->d_name);
-            if (len > 4 && SDL_strncmp(res->d_name, "card", 4) == 0) {
+            int len = SDL_strlen(res->d_name);
+            if (len > KMSDRM_DRI_DEVNAMESIZE && SDL_strncmp(res->d_name,
+                      KMSDRM_DRI_DEVNAME, KMSDRM_DRI_DEVNAMESIZE) == 0) {
                 devcount++;
             }
         }
@@ -141,436 +139,17 @@ static unsigned int get_dricount(void)
 static int
 get_driindex(void)
 {
-    const unsigned int devcount = get_dricount();
-    unsigned int i;
+    const int devcount = get_dricount();
+    int i;
 
     for (i = 0; i < devcount; i++) {
-        if (check_modesetting(i)) {
+        if (check_modestting(i)) {
             return i;
         }
     }
 
     return -ENOENT;
 }
-
-/*********************************/
-/* Atomic helper functions block */
-/*********************************/
-
-#define VOID2U64(x) ((uint64_t)(unsigned long)(x))
-
-int add_connector_property(drmModeAtomicReq *req, struct connector *connector,
-                                     const char *name, uint64_t value)
-{
-    unsigned int i;
-    int prop_id = 0;
-
-    for (i = 0 ; i < connector->props->count_props ; i++) {
-        if (strcmp(connector->props_info[i]->name, name) == 0) {
-            prop_id = connector->props_info[i]->prop_id;
-            break;
-        }
-    }
-
-    if (prop_id < 0) {
-        SDL_SetError("no connector property: %s", name);
-        return -EINVAL;
-    }
-
-    return KMSDRM_drmModeAtomicAddProperty(req, connector->connector->connector_id, prop_id, value);
-}
-
-int add_crtc_property(drmModeAtomicReq *req, struct crtc *crtc,
-                         const char *name, uint64_t value)
-{
-    unsigned int i;
-    int prop_id = -1;
-
-    for (i = 0 ; i < crtc->props->count_props ; i++) {
-        if (strcmp(crtc->props_info[i]->name, name) == 0) {
-            prop_id = crtc->props_info[i]->prop_id;
-            break;
-        }
-    }
-
-    if (prop_id < 0) {
-        SDL_SetError("no crtc property: %s", name);
-        return -EINVAL;
-    }
-
-    return KMSDRM_drmModeAtomicAddProperty(req, crtc->crtc->crtc_id, prop_id, value);
-}
-
-int add_plane_property(drmModeAtomicReq *req, struct plane *plane,
-                          const char *name, uint64_t value)
-{
-    unsigned int i;
-    int prop_id = -1;
-
-    for (i = 0 ; i < plane->props->count_props ; i++) {
-        if (strcmp(plane->props_info[i]->name, name) == 0) {
-            prop_id = plane->props_info[i]->prop_id;
-            break;
-        }
-    }
-
-    if (prop_id < 0) {
-        SDL_SetError("no plane property: %s", name);
-        return -EINVAL;
-    }
-
-    return KMSDRM_drmModeAtomicAddProperty(req, plane->plane->plane_id, prop_id, value);
-}
-
-#if 0
-
-void print_plane_info(_THIS, drmModePlanePtr plane)
-{
-    char *plane_type;
-    drmModeRes *resources;
-    uint32_t type = 0;
-    SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
-    int i;
-
-    drmModeObjectPropertiesPtr props = KMSDRM_drmModeObjectGetProperties(viddata->drm_fd,
-        plane->plane_id, DRM_MODE_OBJECT_PLANE);
-
-    /* Search the plane props for the plane type. */
-    for (i = 0; i < props->count_props; i++) {
-        drmModePropertyPtr p = KMSDRM_drmModeGetProperty(viddata->drm_fd, props->props[i]);
-        if ((strcmp(p->name, "type") == 0)) {
-            type = props->prop_values[i];
-        }
-
-        KMSDRM_drmModeFreeProperty(p);
-    }
-
-    switch (type) {
-        case DRM_PLANE_TYPE_OVERLAY:
-            plane_type = "overlay";
-            break;
-
-        case DRM_PLANE_TYPE_PRIMARY:
-            plane_type = "primary";
-            break;
-
-        case DRM_PLANE_TYPE_CURSOR:
-            plane_type = "cursor";
-            break;
-    }
-
-
-    /* Remember that to present a plane on screen, it has to be
-       connected to a CRTC so the CRTC scans it,
-       scales it, etc... and presents it on screen. */
-
-    /* Now we look for the CRTCs supported by the plane. */
-    resources = KMSDRM_drmModeGetResources(viddata->drm_fd);
-    if (!resources)
-        return;
-
-    printf("--PLANE ID: %d\nPLANE TYPE: %s\nCRTC READING THIS PLANE: %d\nCRTCS SUPPORTED BY THIS PLANE: ",  plane->plane_id, plane_type, plane->crtc_id);
-    for (i = 0; i < resources->count_crtcs; i++) {
-        if (plane->possible_crtcs & (1 << i)) {
-            uint32_t crtc_id = resources->crtcs[i];
-            printf ("%d", crtc_id);
-            break;
-        }
-    }
-
-    printf ("\n\n");
-}
-
-void get_planes_info(_THIS)
-{
-    drmModePlaneResPtr plane_resources;
-    uint32_t i;
-
-    SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
-    SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
-
-    plane_resources = KMSDRM_drmModeGetPlaneResources(viddata->drm_fd);
-    if (!plane_resources) {
-        printf("drmModeGetPlaneResources failed: %s\n", strerror(errno));
-        return;
-    }
-
-    printf("--Number of planes found: %d-- \n", plane_resources->count_planes);
-    printf("--Usable CRTC that we have chosen: %d-- \n", dispdata->crtc->crtc->crtc_id);
-
-    /* Iterate on all the available planes. */
-    for (i = 0; (i < plane_resources->count_planes); i++) {
-
-        uint32_t plane_id = plane_resources->planes[i];
-
-        drmModePlanePtr plane = KMSDRM_drmModeGetPlane(viddata->drm_fd, plane_id);
-        if (!plane) {
-            printf("drmModeGetPlane(%u) failed: %s\n", plane_id, strerror(errno));
-            continue;
-        }
-
-        /* Print plane info. */
-        print_plane_info(_this, plane);
-        KMSDRM_drmModeFreePlane(plane);
-    }
-
-    KMSDRM_drmModeFreePlaneResources(plane_resources);
-}
-
-#endif
-
-/* Get the plane_id of a plane that is of the specified plane type (primary,
-   overlay, cursor...) and can use specified CRTC. */
-static int get_plane_id(_THIS, unsigned int crtc_id, uint32_t plane_type)
-{
-    drmModeRes *resources = NULL;
-    drmModePlaneResPtr plane_resources = NULL;
-    uint32_t i, j;
-    unsigned int crtc_index = 0;
-    int ret = -EINVAL;
-    int found = 0;
-
-    SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
-
-    resources = KMSDRM_drmModeGetResources(viddata->drm_fd);
-
-    /* Get the crtc_index for the current CRTC.
-       It's needed to find out if a plane supports the CRTC. */
-    for (i = 0; i < resources->count_crtcs; i++) {
-        if (resources->crtcs[i] == crtc_id) {
-            crtc_index = i;
-            break;
-        }
-    }
-
-    plane_resources = KMSDRM_drmModeGetPlaneResources(viddata->drm_fd);
-    if (!plane_resources) {
-        return SDL_SetError("drmModeGetPlaneResources failed.");
-    }
-
-    /* Iterate on all the available planes. */
-    for (i = 0; (i < plane_resources->count_planes) && !found; i++) {
-
-        uint32_t plane_id = plane_resources->planes[i];
-
-        drmModePlanePtr plane = KMSDRM_drmModeGetPlane(viddata->drm_fd, plane_id);
-        if (!plane) {
-            continue;
-        }
-
-        /* See if the current CRTC is available for this plane. */
-        if (plane->possible_crtcs & (1 << crtc_index)) {
-
-            drmModeObjectPropertiesPtr props = KMSDRM_drmModeObjectGetProperties(
-                viddata->drm_fd, plane_id, DRM_MODE_OBJECT_PLANE);
-            ret = plane_id;
-
-            /* Iterate on the plane props to find the type of the plane,
-               to see if it's of the type we want. */
-            for (j = 0; j < props->count_props; j++) {
-
-                drmModePropertyPtr p = KMSDRM_drmModeGetProperty(viddata->drm_fd,
-                    props->props[j]);
-
-                if ((strcmp(p->name, "type") == 0) && (props->prop_values[j] == plane_type)) {
-                    /* found our plane, use that: */
-                    found = 1;
-                }
-
-                KMSDRM_drmModeFreeProperty(p);
-            }
-
-            KMSDRM_drmModeFreeObjectProperties(props);
-        }
-
-        KMSDRM_drmModeFreePlane(plane);
-    }
-
-    KMSDRM_drmModeFreePlaneResources(plane_resources);
-    KMSDRM_drmModeFreeResources(resources);
-
-    return ret;
-}
-
-/* Setup a plane and it's props. */
-int
-setup_plane(_THIS, struct plane **plane, uint32_t plane_type)
-{
-    uint32_t plane_id;
-    SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
-    SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
-    int ret = 0;
-
-    *plane = SDL_calloc(1, sizeof(**plane));
-    if (!(*plane)) {
-        ret = SDL_OutOfMemory();
-        goto cleanup;
-    }
-
-    /* Get plane ID for a given CRTC and plane type. */
-    plane_id = get_plane_id(_this, dispdata->crtc->crtc->crtc_id, plane_type);
-
-    if (!plane_id) {
-        ret = SDL_SetError("Invalid Plane ID");
-        goto cleanup;
-    }
-
-    /* Get the DRM plane itself. */
-    (*plane)->plane = KMSDRM_drmModeGetPlane(viddata->drm_fd, plane_id);
-
-    /* Get the DRM plane properties. */
-    if ((*plane)->plane) {
-        unsigned int i;
-        (*plane)->props = KMSDRM_drmModeObjectGetProperties(viddata->drm_fd,
-        (*plane)->plane->plane_id, DRM_MODE_OBJECT_PLANE);
-        (*plane)->props_info = SDL_calloc((*plane)->props->count_props,
-            sizeof(*(*plane)->props_info));
-
-        if ( !((*plane)->props_info) ) {
-            ret = SDL_OutOfMemory();
-            goto cleanup;
-        }
-
-        for (i = 0; i < (*plane)->props->count_props; i++) {
-            (*plane)->props_info[i] = KMSDRM_drmModeGetProperty(viddata->drm_fd,
-                (*plane)->props->props[i]);
-        }
-    }
-
-cleanup:
-
-    if (ret) {
-        if (*plane) {
-            SDL_free(*plane);
-            *plane = NULL;
-        }
-    }
-    return ret;
-}
-
-/* Free a plane and it's props. */
-void
-free_plane(struct plane **plane)
-{
-    if (*plane) {
-        if ((*plane)->plane) {
-            KMSDRM_drmModeFreePlane((*plane)->plane);
-            (*plane)->plane = NULL;
-        }
-        if ((*plane)->props_info) {
-            SDL_free((*plane)->props_info);
-            (*plane)->props_info = NULL;
-        }
-        SDL_free(*plane);
-        *plane = NULL;
-    }
-}
-
-/**********************************************************************************/
-/* The most important ATOMIC fn of the backend.                                   */
-/* A PLANE reads a BUFFER, and a CRTC reads a PLANE and sends it's contents       */
-/*   over to a CONNECTOR->ENCODER system (several CONNECTORS can be connected     */
-/*   to the same PLANE).                                                          */
-/*   Think of a plane as a "frame" sorrounding a picture, where the "picture"     */
-/*   is the buffer, and we move the "frame" from  a picture to another,           */
-/*   and the one that has the "frame" is the one sent over to the screen          */
-/*   via the CONNECTOR->ENCODER system.                                           */
-/*   Think of a PLANE as being "in the middle", it's the CENTRAL part             */
-/*   bewteen the CRTC and the BUFFER that is shown on screen.                     */
-/*   What we do here is connect a PLANE to a CRTC and a BUFFER.                   */
-/*   -ALWAYS set the CRTC_ID and FB_ID attribs of a plane at the same time,       */
-/*   meaning IN THE SAME atomic request.                                          */
-/*   -And NEVER destroy a GBM surface whose buffers are being read by a plane:    */
-/*   first, move the plane away from those buffers and ONLY THEN destroy the      */
-/*   buffers and/or the GBM surface containig them.                               */
-/**********************************************************************************/
-void
-drm_atomic_set_plane_props(struct KMSDRM_PlaneInfo *info)
-{
-    SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
-
-    /* Do we have a set of changes already in the making? If not, allocate a new one. */
-    if (!dispdata->atomic_req)
-        dispdata->atomic_req = KMSDRM_drmModeAtomicAlloc();
-
-    add_plane_property(dispdata->atomic_req, info->plane, "FB_ID", info->fb_id);
-    add_plane_property(dispdata->atomic_req, info->plane, "CRTC_ID", info->crtc_id);
-    add_plane_property(dispdata->atomic_req, info->plane, "SRC_W", info->src_w << 16);
-    add_plane_property(dispdata->atomic_req, info->plane, "SRC_H", info->src_h << 16);
-    add_plane_property(dispdata->atomic_req, info->plane, "SRC_X", info->src_x);
-    add_plane_property(dispdata->atomic_req, info->plane, "SRC_Y", info->src_y);
-    add_plane_property(dispdata->atomic_req, info->plane, "CRTC_W", info->crtc_w);
-    add_plane_property(dispdata->atomic_req, info->plane, "CRTC_H", info->crtc_h);
-    add_plane_property(dispdata->atomic_req, info->plane, "CRTC_X", info->crtc_x);
-    add_plane_property(dispdata->atomic_req, info->plane, "CRTC_Y", info->crtc_y);
-}
-
-int drm_atomic_commit(_THIS, SDL_bool blocking, SDL_bool allow_modeset)
-{
-    SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
-    SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
-    uint32_t atomic_flags = 0;
-    int ret;
-
-    if (!blocking) {
-        atomic_flags |= DRM_MODE_ATOMIC_NONBLOCK;
-    }
-
-    if (allow_modeset) {
-        atomic_flags |= DRM_MODE_ATOMIC_ALLOW_MODESET;
-    }
-
-    /* Never issue a new atomic commit if previous has not yet completed,
-       or it will error. */
-    drm_atomic_waitpending(_this);
-
-    ret = KMSDRM_drmModeAtomicCommit(viddata->drm_fd, dispdata->atomic_req,
-              atomic_flags, NULL);
-
-    if (ret) {
-        SDL_SetError("Atomic commit failed, returned %d.", ret);
-        /* Uncomment this for fast-debugging */
-#if 0
-        printf("ATOMIC COMMIT FAILED: %s.\n", strerror(errno));
-#endif
-        goto out;
-    }
-
-    if (dispdata->kms_in_fence_fd != -1) {
-        close(dispdata->kms_in_fence_fd);
-        dispdata->kms_in_fence_fd = -1;
-    }
-
-out:
-    KMSDRM_drmModeAtomicFree(dispdata->atomic_req);
-    dispdata->atomic_req = NULL;
-
-    return ret;
-}
-
-void
-drm_atomic_waitpending(_THIS)
-{
-    SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
-
-    /* Will return immediately if we have already destroyed the fence, because we NULL-ify it just after.
-       Also, will return immediately in double-buffer mode, because kms_fence will alsawys be NULL. */
-    if (dispdata->kms_fence) {
-        EGLint status;
-
-        do {
-            status = _this->egl_data->eglClientWaitSyncKHR(_this->egl_data->egl_display,
-                dispdata->kms_fence, 0, EGL_FOREVER_KHR);
-        } while (status != EGL_CONDITION_SATISFIED_KHR);
-
-        _this->egl_data->eglDestroySyncKHR(_this->egl_data->egl_display, dispdata->kms_fence);
-            dispdata->kms_fence = NULL;
-    }
-}
-
-/***************************************/
-/* End of Atomic helper functions block*/
-/***************************************/
 
 static int
 KMSDRM_Available(void)
@@ -581,7 +160,7 @@ KMSDRM_Available(void)
     if (ret >= 0)
         return 1;
 
-   return ret;
+    return ret;
 }
 
 static void
@@ -595,36 +174,6 @@ KMSDRM_DeleteDevice(SDL_VideoDevice * device)
     SDL_free(device);
 
     SDL_KMSDRM_UnloadSymbols();
-}
-
-static int
-KMSDRM_GetDisplayDPI(_THIS, SDL_VideoDisplay * display, float * ddpi, float * hdpi, float * vdpi)
-{
-    int w, h;
-
-    uint32_t display_mm_width;
-    uint32_t display_mm_height;
-
-    SDL_DisplayData *dispdata;
-
-    dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0); //viddata->devindex);
-
-
-    if (!dispdata) {
-        return SDL_SetError("No available displays");
-    }
-
-    display_mm_width = dispdata->connector->connector->mmWidth;
-    display_mm_height = dispdata->connector->connector->mmHeight;
-
-    w = dispdata->mode.hdisplay;
-    h = dispdata->mode.vdisplay;
-
-    *hdpi = display_mm_width ? (((float) w) * 25.4f / display_mm_width) : 0.0f;
-    *vdpi = display_mm_height ? (((float) h) * 25.4f / display_mm_height) : 0.0f;
-    *ddpi = SDL_ComputeDiagonalDPI(w, h, ((float) display_mm_width) / 25.4f,((float) display_mm_height) / 25.4f);
-
-    return 0;
 }
 
 static SDL_VideoDevice *
@@ -642,7 +191,7 @@ KMSDRM_CreateDevice(int devindex)
     }
 
     if (devindex < 0) {
-        SDL_SetError("devindex (%d) must be between 0 and 99.", devindex);
+        SDL_SetError("devindex (%d) must be between 0 and 99.\n", devindex);
         return NULL;
     }
 
@@ -664,16 +213,13 @@ KMSDRM_CreateDevice(int devindex)
     viddata->devindex = devindex;
     viddata->drm_fd = -1;
 
-    viddata->vulkan_mode = SDL_FALSE;
-
     device->driverdata = viddata;
 
-    /* Setup all functions that can be handled from this backend. */
+    /* Setup all functions which we can handle */
     device->VideoInit = KMSDRM_VideoInit;
     device->VideoQuit = KMSDRM_VideoQuit;
     device->GetDisplayModes = KMSDRM_GetDisplayModes;
     device->SetDisplayMode = KMSDRM_SetDisplayMode;
-    device->GetDisplayDPI = KMSDRM_GetDisplayDPI;
     device->CreateSDLWindow = KMSDRM_CreateWindow;
     device->CreateSDLWindowFrom = KMSDRM_CreateWindowFrom;
     device->SetWindowTitle = KMSDRM_SetWindowTitle;
@@ -691,17 +237,15 @@ KMSDRM_CreateDevice(int devindex)
     device->DestroyWindow = KMSDRM_DestroyWindow;
     device->GetWindowWMInfo = KMSDRM_GetWindowWMInfo;
 
-    device->GL_DefaultProfileConfig = KMSDRM_GLES_DefaultProfileConfig;
+    device->GL_LoadLibrary = KMSDRM_GLES_LoadLibrary;
     device->GL_GetProcAddress = KMSDRM_GLES_GetProcAddress;
+    device->GL_UnloadLibrary = KMSDRM_GLES_UnloadLibrary;
     device->GL_CreateContext = KMSDRM_GLES_CreateContext;
     device->GL_MakeCurrent = KMSDRM_GLES_MakeCurrent;
     device->GL_SetSwapInterval = KMSDRM_GLES_SetSwapInterval;
     device->GL_GetSwapInterval = KMSDRM_GLES_GetSwapInterval;
     device->GL_SwapWindow = KMSDRM_GLES_SwapWindow;
     device->GL_DeleteContext = KMSDRM_GLES_DeleteContext;
-    /* Those two functions are dummy. We do these things manually. */
-    device->GL_LoadLibrary = KMSDRM_GLES_LoadLibrary;
-    device->GL_UnloadLibrary = KMSDRM_GLES_UnloadLibrary;
 
 #if SDL_VIDEO_VULKAN
     device->Vulkan_LoadLibrary = KMSDRM_Vulkan_LoadLibrary;
@@ -747,11 +291,9 @@ KMSDRM_FBInfo *
 KMSDRM_FBFromBO(_THIS, struct gbm_bo *bo)
 {
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
-    unsigned width, height;
-    uint32_t format, strides[4] = {0}, handles[4] = {0}, offsets[4] = {0};
-    const int num_planes = KMSDRM_gbm_bo_get_plane_count(bo);
-    unsigned int i;
+    unsigned w,h;
     int ret;
+    Uint32 stride, handle;
 
     /* Check for an existing framebuffer */
     KMSDRM_FBInfo *fb_info = (KMSDRM_FBInfo *)KMSDRM_gbm_bo_get_user_data(bo);
@@ -760,9 +302,10 @@ KMSDRM_FBFromBO(_THIS, struct gbm_bo *bo)
         return fb_info;
     }
 
-    /* Create a structure that contains the info about framebuffer
-       that we need to use it. */
+    /* Create a structure that contains enough info to remove the framebuffer
+       when the backing buffer is destroyed */
     fb_info = (KMSDRM_FBInfo *)SDL_calloc(1, sizeof(KMSDRM_FBInfo));
+
     if (!fb_info) {
         SDL_OutOfMemory();
         return NULL;
@@ -770,33 +313,69 @@ KMSDRM_FBFromBO(_THIS, struct gbm_bo *bo)
 
     fb_info->drm_fd = viddata->drm_fd;
 
-    width = KMSDRM_gbm_bo_get_width(bo);
-    height = KMSDRM_gbm_bo_get_height(bo);
-    format = KMSDRM_gbm_bo_get_format(bo);
-
-    for (i = 0; i < num_planes; i++) {
-        strides[i] = KMSDRM_gbm_bo_get_stride_for_plane(bo, i);
-        handles[i] = KMSDRM_gbm_bo_get_handle(bo).u32;
-        offsets[i] = KMSDRM_gbm_bo_get_offset(bo, i);
-    }
-
-    /* Create framebuffer object for the buffer.
-       It's VERY important to note that fb_id is what we use to set the FB_ID prop
-       of a plane when using the ATOMIC interface, and we get the fb_id here. */
-    ret = KMSDRM_drmModeAddFB2(viddata->drm_fd, width, height, format,
-            handles, strides, offsets, &fb_info->fb_id, 0);
-
+    /* Create framebuffer object for the buffer */
+    w = KMSDRM_gbm_bo_get_width(bo);
+    h = KMSDRM_gbm_bo_get_height(bo);
+    stride = KMSDRM_gbm_bo_get_stride(bo);
+    handle = KMSDRM_gbm_bo_get_handle(bo).u32;
+    ret = KMSDRM_drmModeAddFB(viddata->drm_fd, w, h, 24, 32, stride, handle,
+                                  &fb_info->fb_id);
     if (ret) {
       SDL_free(fb_info);
       return NULL;
     }
 
-    /* Set the userdata pointer. This pointer is used to store custom data that we need
-       to access in the future, so we store the fb_id here for later use, because fb_id is
-       what we need to set the FB_ID property of a plane when using the ATOMIC interface. */
+    SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "New DRM FB (%u): %ux%u, stride %u from BO %p",
+                 fb_info->fb_id, w, h, stride, (void *)bo);
+
+    /* Associate our DRM framebuffer with this buffer object */
     KMSDRM_gbm_bo_set_user_data(bo, fb_info, KMSDRM_FBDestroyCallback);
 
     return fb_info;
+}
+
+static void
+KMSDRM_FlipHandler(int fd, unsigned int frame, unsigned int sec, unsigned int usec, void *data)
+{
+    *((SDL_bool *) data) = SDL_FALSE;
+}
+
+SDL_bool
+KMSDRM_WaitPageFlip(_THIS, SDL_WindowData *windata, int timeout) {
+    SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
+    drmEventContext ev = {0};
+    struct pollfd pfd = {0};
+
+    ev.version = DRM_EVENT_CONTEXT_VERSION;
+    ev.page_flip_handler = KMSDRM_FlipHandler;
+
+    pfd.fd = viddata->drm_fd;
+    pfd.events = POLLIN;
+
+    while (windata->waiting_for_flip) {
+        pfd.revents = 0;
+
+        if (poll(&pfd, 1, timeout) < 0) {
+            SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "DRM poll error");
+            return SDL_FALSE;
+        }
+
+        if (pfd.revents & (POLLHUP | POLLERR)) {
+            SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "DRM poll hup or error");
+            return SDL_FALSE;
+        }
+
+        if (pfd.revents & POLLIN) {
+            /* Page flip? If so, drmHandleEvent will unset windata->waiting_for_flip */
+            KMSDRM_drmHandleEvent(viddata->drm_fd, &ev);
+        } else {
+            /* Timed out and page flip didn't happen */
+            SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Dropping frame while waiting_for_flip");
+            return SDL_FALSE;
+        }
+    }
+
+    return SDL_TRUE;
 }
 
 /*****************************************************************************/
@@ -809,29 +388,13 @@ KMSDRM_FBFromBO(_THIS, struct gbm_bo *bo)
 void KMSDRM_DisplayDataDeinit (_THIS, SDL_DisplayData *dispdata) {
     /* Free connector */
     if (dispdata && dispdata->connector) {
-        if (dispdata->connector->connector) {
-            KMSDRM_drmModeFreeConnector(dispdata->connector->connector);
-            dispdata->connector->connector = NULL;
-        }
-        if (dispdata->connector->props_info) {
-            SDL_free(dispdata->connector->props_info);
-            dispdata->connector->props_info = NULL;
-        }
-        SDL_free(dispdata->connector);
-        dispdata->connector = NULL;
+	KMSDRM_drmModeFreeConnector(dispdata->connector);
+	dispdata->connector = NULL;
     }
 
     /* Free CRTC */
     if (dispdata && dispdata->crtc) {
-        if (dispdata->crtc->crtc) {
-            KMSDRM_drmModeFreeCrtc(dispdata->crtc->crtc);
-            dispdata->crtc->crtc = NULL;
-        }
-        if (dispdata->crtc->props_info) {
-            SDL_free(dispdata->crtc->props_info);
-            dispdata->crtc->props_info = NULL;
-        }
-        SDL_free(dispdata->crtc);
+        KMSDRM_drmModeFreeCrtc(dispdata->crtc);
         dispdata->crtc = NULL;
     }
 }
@@ -849,48 +412,26 @@ int KMSDRM_DisplayDataInit (_THIS, SDL_DisplayData *dispdata) {
     drmModeConnector *connector = NULL;
     drmModeCrtc *crtc = NULL;
 
-    char devname[32];
     int ret = 0;
     unsigned i,j;
 
-    dispdata->atomic_req = NULL;
-    dispdata->kms_fence = NULL;
-    dispdata->gpu_fence = NULL;
-    dispdata->kms_out_fence_fd = -1;
     dispdata->modeset_pending = SDL_FALSE;
     dispdata->gbm_init = SDL_FALSE;
 
-    dispdata->display_plane = NULL;
-    dispdata->cursor_plane = NULL;
-
     dispdata->cursor_bo = NULL;
 
-    /* Open /dev/dri/cardNN */
-    SDL_snprintf(viddata->devpath, sizeof(viddata->devpath), "/dev/dri/card%d", viddata->devindex);
+    /* Open /dev/dri/cardNN (/dev/drmN if on OpenBSD) */
+    SDL_snprintf(viddata->devpath, sizeof(viddata->devpath), KMSDRM_DRI_CARDPATHFMT, viddata->devindex);
 
-    SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Opening device %s", devname);
+    SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Opening device %s", viddata->devpath);
     viddata->drm_fd = open(viddata->devpath, O_RDWR | O_CLOEXEC);
 
     if (viddata->drm_fd < 0) {
-        ret = SDL_SetError("Could not open %s", devname);
+        ret = SDL_SetError("Could not open %s", viddata->devpath);
         goto cleanup;
     }
 
     SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Opened DRM FD (%d)", viddata->drm_fd);
-
-    /********************************************/
-    /* Block for enabling ATOMIC compatibility. */
-    /********************************************/
-
-    /* Set ATOMIC & UNIVERSAL PLANES compatibility */
-    ret = set_client_caps(viddata->drm_fd);
-    if (ret) {
-        goto cleanup;
-    }
-
-    /*******************************************/
-    /* Block for getting the ATOMIC resources. */
-    /*******************************************/
 
     /* Get all of the available connectors / devices / crtcs */
     resources = KMSDRM_drmModeGetResources(viddata->drm_fd);
@@ -909,10 +450,7 @@ int KMSDRM_DisplayDataInit (_THIS, SDL_DisplayData *dispdata) {
         }
 
         if (conn->connection == DRM_MODE_CONNECTED && conn->count_modes) {
-            SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Found connector %d with %d modes.",
-                         conn->connector_id, conn->count_modes);
             connector = conn;
-
             break;
         }
 
@@ -933,7 +471,6 @@ int KMSDRM_DisplayDataInit (_THIS, SDL_DisplayData *dispdata) {
         }
 
         if (encoder->encoder_id == connector->encoder_id) {
-            SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Found encoder %d.", encoder->encoder_id);
             break;
         }
 
@@ -944,7 +481,8 @@ int KMSDRM_DisplayDataInit (_THIS, SDL_DisplayData *dispdata) {
     if (!encoder) {
         /* No encoder was connected, find the first supported one */
         for (i = 0; i < resources->count_encoders; i++) {
-            encoder = KMSDRM_drmModeGetEncoder(viddata->drm_fd, resources->encoders[i]);
+            encoder = KMSDRM_drmModeGetEncoder(viddata->drm_fd,
+                          resources->encoders[i]);
 
             if (!encoder) {
               continue;
@@ -969,8 +507,6 @@ int KMSDRM_DisplayDataInit (_THIS, SDL_DisplayData *dispdata) {
         ret = SDL_SetError("No connected encoder found.");
         goto cleanup;
     }
-
-    SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Found encoder %d.", encoder->encoder_id);
 
     /* Try to find a CRTC connected to this encoder */
     crtc = KMSDRM_drmModeGetCrtc(viddata->drm_fd, encoder->crtc_id);
@@ -1003,53 +539,17 @@ int KMSDRM_DisplayDataInit (_THIS, SDL_DisplayData *dispdata) {
         goto cleanup;
     }
 
-    /* Get CRTC properties */
-    dispdata->crtc->props = KMSDRM_drmModeObjectGetProperties(viddata->drm_fd,
-        crtc->crtc_id, DRM_MODE_OBJECT_CRTC);
-
-    dispdata->crtc->props_info = SDL_calloc(dispdata->crtc->props->count_props,
-        sizeof(*dispdata->crtc->props_info));
-
-    if (!dispdata->crtc->props_info) {
-        ret = SDL_OutOfMemory();
-        goto cleanup;
-    }
-
-    for (i = 0; i < dispdata->crtc->props->count_props; i++) {
-        dispdata->crtc->props_info[i] = KMSDRM_drmModeGetProperty(viddata->drm_fd,
-        dispdata->crtc->props->props[i]);
-    }
-
-    /* Get connector properties */
-    dispdata->connector->props = KMSDRM_drmModeObjectGetProperties(viddata->drm_fd,
-        connector->connector_id, DRM_MODE_OBJECT_CONNECTOR);
-
-    dispdata->connector->props_info = SDL_calloc(dispdata->connector->props->count_props,
-        sizeof(*dispdata->connector->props_info));
-
-    if (!dispdata->connector->props_info) {
-        ret = SDL_OutOfMemory();
-        goto cleanup;
-    }
-
-    for (i = 0; i < dispdata->connector->props->count_props; i++) {
-        dispdata->connector->props_info[i] = KMSDRM_drmModeGetProperty(viddata->drm_fd,
-        dispdata->connector->props->props[i]);
-    }
-
-    /* Store the connector and crtc for future use. This is all we keep from this function,
-       and these are just structs, inoffensive to VK. */
-    dispdata->connector->connector = connector;
-    dispdata->crtc->crtc = crtc;
+    /* Store the connector and crtc for future use. These are all we keep
+       from this function, and these are just structs, inoffensive to VK. */
+    dispdata->connector = connector;
+    dispdata->crtc = crtc;
 
     /***********************************/
-    /* Block fpr Vulkan compatibility. */
+    /* Block for Vulkan compatibility. */
     /***********************************/
 
     /* THIS IS FOR VULKAN! Leave the FD closed, so VK can work.
        Will reopen this in CreateWindow, but only if requested a non-VK window. */
-    KMSDRM_drmSetClientCap(viddata->drm_fd, DRM_CLIENT_CAP_ATOMIC, 0);
-    KMSDRM_drmSetClientCap(viddata->drm_fd, DRM_CLIENT_CAP_UNIVERSAL_PLANES, 0);
     close (viddata->drm_fd);
     viddata->drm_fd = -1;
 
@@ -1060,21 +560,13 @@ cleanup:
         KMSDRM_drmModeFreeResources(resources);
     if (ret) {
         /* Error (complete) cleanup */
-        if (dispdata->connector->connector) {
-            KMSDRM_drmModeFreeConnector(dispdata->connector->connector);
-            dispdata->connector->connector = NULL;
+        if (dispdata->connector) {
+            KMSDRM_drmModeFreeConnector(dispdata->connector);
+            dispdata->connector = NULL;
         }
-        if (dispdata->crtc->props_info) {
-            SDL_free(dispdata->crtc->props_info);
-            dispdata->crtc->props_info = NULL;
-        }
-        if (dispdata->connector->props_info) {
-            SDL_free(dispdata->connector->props_info);
-            dispdata->connector->props_info = NULL;
-        }
-        if (dispdata->crtc->crtc) {
-            KMSDRM_drmModeFreeCrtc(dispdata->crtc->crtc);
-            dispdata->crtc->crtc = NULL;
+        if (dispdata->crtc) {
+            KMSDRM_drmModeFreeCrtc(dispdata->crtc);
+            dispdata->crtc = NULL;
         }
         if (viddata->drm_fd >= 0) {
             close(viddata->drm_fd);
@@ -1101,19 +593,11 @@ KMSDRM_GBMInit (_THIS, SDL_DisplayData *dispdata)
 
     /* Reopen the FD! */
     viddata->drm_fd = open(viddata->devpath, O_RDWR | O_CLOEXEC);
-    set_client_caps(viddata->drm_fd);
 
     /* Create the GBM device. */
     viddata->gbm_dev = KMSDRM_gbm_create_device(viddata->drm_fd);
     if (!viddata->gbm_dev) {
         ret = SDL_SetError("Couldn't create gbm device.");
-    }
-
-    /* Setup the display plane. ONLY do this after dispdata has the right
-       crtc and connector, because these are used in this function. */
-    ret = setup_plane(_this, &(dispdata->display_plane), DRM_PLANE_TYPE_PRIMARY);
-    if (ret) {
-        ret = SDL_SetError("can't find suitable display plane.");
     }
 
     dispdata->gbm_init = SDL_TRUE;
@@ -1126,12 +610,6 @@ void
 KMSDRM_GBMDeinit (_THIS, SDL_DisplayData *dispdata)
 {
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
-
-    /* Free display plane */
-    free_plane(&dispdata->display_plane);
-
-    /* Free cursor plane (if still not freed) */
-    free_plane(&dispdata->cursor_plane);
 
     /* Destroy GBM device. GBM surface is destroyed by DestroySurfaces(),
        already called when we get here. */
@@ -1152,54 +630,35 @@ KMSDRM_GBMDeinit (_THIS, SDL_DisplayData *dispdata)
 void
 KMSDRM_DestroySurfaces(_THIS, SDL_Window *window)
 {
+    SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
     SDL_WindowData *windata = (SDL_WindowData *) window->driverdata;
-    SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
-    KMSDRM_PlaneInfo plane_info = {0};
+    SDL_DisplayData *dispdata = (SDL_DisplayData *) SDL_GetDisplayForWindow(window)->driverdata;
+    int ret;
 
-    /* TODO : Continue investigating why this doesn't work. We should do this instead
-       of making the display plane point to the TTY console, which isn't there
-       after creating and destroying a Vulkan window. */
-#if 0
-    /* Disconnect the connector from the CRTC (remember: several connectors
-       can read a CRTC), deactivate the CRTC, and set the PRIMARY PLANE props
-       CRTC_ID and FB_ID to 0. Then we can destroy the GBM buffers and surface. */
-    add_connector_property(dispdata->atomic_req, dispdata->connector , "CRTC_ID", 0);
-    add_crtc_property(dispdata->atomic_req, dispdata->crtc , "MODE_ID", 0); 
-    add_crtc_property(dispdata->atomic_req, dispdata->crtc , "active", 0); 
+    /**********************************************/
+    /* Wait for last issued pageflip to complete. */
+    /**********************************************/
+    KMSDRM_WaitPageFlip(_this, windata, -1);
 
-    plane_info.plane = dispdata->display_plane;
-    plane_info.crtc_id = 0;
-    plane_info.fb_id = 0;
+    /***********************************************************************/
+    /* Restore the original CRTC configuration: configue the crtc with the */
+    /* original video mode and make it point to the original TTY buffer.   */
+    /***********************************************************************/
 
-    drm_atomic_set_plane_props(&plane_info);
+    ret = KMSDRM_drmModeSetCrtc(viddata->drm_fd, dispdata->crtc->crtc_id,
+            dispdata->crtc->buffer_id, 0, 0, &dispdata->connector->connector_id, 1,
+            &dispdata->original_mode);
 
-    /* Issue atomic commit that is blocking and allows modesetting. */
-    if (drm_atomic_commit(_this, SDL_TRUE, SDL_TRUE)) {
-        SDL_SetError("Failed to issue atomic commit on surfaces destruction.");
+    /* If we failed to set the original mode, try to set the connector prefered mode. */
+    if (ret && (dispdata->crtc->mode_valid == 0)) {
+        ret = KMSDRM_drmModeSetCrtc(viddata->drm_fd, dispdata->crtc->crtc_id,
+                dispdata->crtc->buffer_id, 0, 0, &dispdata->connector->connector_id, 1,
+                &dispdata->original_mode);
     }
-#endif
 
-#if 1
-    /************************************************************/
-    /* Make the display plane point to the original TTY buffer. */
-    /* We have to configure it's input and output scaling       */
-    /* parameters accordingly.                                  */
-    /************************************************************/
-
-    plane_info.plane = dispdata->display_plane;
-    plane_info.crtc_id = dispdata->crtc->crtc->crtc_id;
-    plane_info.fb_id = dispdata->crtc->crtc->buffer_id;
-    plane_info.src_w = dispdata->original_mode.hdisplay;
-    plane_info.src_h = dispdata->original_mode.vdisplay;
-    plane_info.crtc_w = dispdata->original_mode.hdisplay;
-    plane_info.crtc_h = dispdata->original_mode.vdisplay;
-
-    drm_atomic_set_plane_props(&plane_info);
-
-    if (drm_atomic_commit(_this, SDL_TRUE, SDL_FALSE)) {
-        SDL_SetError("Failed to issue atomic commit on surfaces destruction.");
+    if(ret) {
+        SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Could not restore CRTC");
     }
-#endif
 
     /***************************/
     /* Destroy the EGL surface */
@@ -1268,13 +727,13 @@ KMSDRM_CreateSurfaces(_THIS, SDL_Window * window)
     }
 
     if (!KMSDRM_gbm_device_is_format_supported(viddata->gbm_dev,
-        surface_fmt, surface_flags)) {
-            SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO,
-            "GBM surface format not supported. Trying anyway.");
+             surface_fmt, surface_flags)) {
+        SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO,
+        "GBM surface format not supported. Trying anyway.");
     }
 
     windata->gs = KMSDRM_gbm_surface_create(viddata->gbm_dev,
-        width, height, surface_fmt, surface_flags);
+                      width, height, surface_fmt, surface_flags);
 
     if (!windata->gs) {
         return SDL_SetError("Could not create GBM surface");
@@ -1309,6 +768,154 @@ cleanup:
     return ret;
 }
 
+int
+KMSDRM_VideoInit(_THIS)
+{
+    int ret = 0;
+
+    SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
+    SDL_DisplayData *dispdata = NULL;
+    SDL_VideoDisplay display = {0};
+
+    SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "KMSDRM_VideoInit()");
+
+    viddata->video_init = SDL_FALSE;
+
+    dispdata = (SDL_DisplayData *) SDL_calloc(1, sizeof(SDL_DisplayData));
+    if (!dispdata) {
+        return SDL_OutOfMemory();
+    }
+
+    /* Get KMSDRM resources info and store what we need. Getting and storing
+       this info isn't a problem for VK compatibility.
+       For VK-incompatible initializations we have KMSDRM_GBMInit(), which is
+       called on window creation, and only when we know it's not a VK window. */
+    if (KMSDRM_DisplayDataInit(_this, dispdata)) {
+        ret = SDL_SetError("error getting KMS/DRM information");
+        goto cleanup;
+    }
+
+    /* Setup the single display that's available.
+       There's no problem with it being still incomplete. */
+    display.driverdata = dispdata;
+    display.desktop_mode.w = dispdata->mode.hdisplay;
+    display.desktop_mode.h = dispdata->mode.vdisplay;
+    display.desktop_mode.refresh_rate = dispdata->mode.vrefresh;
+    display.desktop_mode.format = SDL_PIXELFORMAT_ARGB8888;
+    display.current_mode = display.desktop_mode;
+
+    /* Add the display only when it's ready, */
+    SDL_AddVideoDisplay(&display, SDL_FALSE);
+
+#ifdef SDL_INPUT_LINUXEV
+    SDL_EVDEV_Init();
+#endif
+
+    /* Since we create and show the default cursor on KMSDRM_InitMouse() and
+       we call KMSDRM_InitMouse() everytime we create a new window, we have
+       to be sure to create and show the default cursor only the first time.
+       If we don't, new default cursors would stack up on mouse->cursors and SDL
+       would have to hide and delete them at quit, not to mention the memory leak... */
+    dispdata->set_default_cursor_pending = SDL_TRUE;
+
+    viddata->video_init = SDL_TRUE;
+
+cleanup:
+
+    if (ret) {
+        /* Error (complete) cleanup */
+        if (dispdata->crtc) {
+            SDL_free(dispdata->crtc);
+        }
+        if (dispdata->connector) {
+            SDL_free(dispdata->connector);
+        }
+
+        SDL_free(dispdata);
+    }
+
+    return ret;
+}
+
+/* The driverdata pointers, like dispdata, viddata, windata, etc...
+   are freed by SDL internals, so not our job. */
+void
+KMSDRM_VideoQuit(_THIS)
+{
+    SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
+    SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
+
+    KMSDRM_DisplayDataDeinit(_this, dispdata);
+
+#ifdef SDL_INPUT_LINUXEV
+    SDL_EVDEV_Quit();
+#endif
+
+    /* Clear out the window list */
+    SDL_free(viddata->windows);
+    viddata->windows = NULL;
+    viddata->max_windows = 0;
+    viddata->num_windows = 0;
+    viddata->video_init = SDL_FALSE;
+}
+
+void
+KMSDRM_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
+{
+    SDL_DisplayData *dispdata = display->driverdata;
+    drmModeConnector *conn = dispdata->connector;
+    SDL_DisplayMode mode;
+    int i;
+
+    for (i = 0; i < conn->count_modes; i++) {
+        SDL_DisplayModeData *modedata = SDL_calloc(1, sizeof(SDL_DisplayModeData));
+
+        if (modedata) {
+          modedata->mode_index = i;
+        }
+
+        mode.w = conn->modes[i].hdisplay;
+        mode.h = conn->modes[i].vdisplay;
+        mode.refresh_rate = conn->modes[i].vrefresh;
+        mode.format = SDL_PIXELFORMAT_ARGB8888;
+        mode.driverdata = modedata;
+
+        if (!SDL_AddDisplayMode(display, &mode)) {
+            SDL_free(modedata);
+        }
+    }
+}
+
+int
+KMSDRM_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
+{
+    SDL_VideoData *viddata = (SDL_VideoData *)_this->driverdata;
+    SDL_DisplayData *dispdata = (SDL_DisplayData *)display->driverdata;
+    SDL_DisplayModeData *modedata = (SDL_DisplayModeData *)mode->driverdata;
+    drmModeConnector *conn = dispdata->connector;
+    int i;
+
+    if (!modedata) {
+        return SDL_SetError("Mode doesn't have an associated index");
+    }
+
+    dispdata->mode = conn->modes[modedata->mode_index];
+
+    for (i = 0; i < viddata->num_windows; i++) {
+        SDL_Window *window = viddata->windows[i];
+        SDL_WindowData *windata = (SDL_WindowData *)window->driverdata;
+
+        /* Can't recreate EGL surfaces right now, need to wait until SwapWindow
+           so the correct thread-local surface and context state are available */
+        windata->egl_surface_dirty = 1;
+
+        /* Tell app about the resize */
+        SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, mode->w, mode->h);
+    }
+
+    return 0;
+}
+
 void
 KMSDRM_DestroyWindow(_THIS, SDL_Window *window)
 {
@@ -1324,7 +931,7 @@ KMSDRM_DestroyWindow(_THIS, SDL_Window *window)
 
     if ( !is_vulkan && dispdata->gbm_init ) {
 
-        /* Free cursor plane. */
+        /* Destroy cursor GBM plane. */
         KMSDRM_DeinitMouse(_this);
 
         /* Destroy GBM surface and buffers. */
@@ -1374,242 +981,6 @@ KMSDRM_DestroyWindow(_THIS, SDL_Window *window)
     SDL_free(windata);
 }
 
-/*****************************************************************************/
-/* Reconfigure the window scaling parameters and re-construct it's surfaces, */
-/* without destroying the window itself.                                     */
-/* To be used by SetWindowSize() and SetWindowFullscreen().                  */
-/*****************************************************************************/
-static int
-KMSDRM_ReconfigureWindow( _THIS, SDL_Window * window) {
-    SDL_WindowData *windata = window->driverdata;
-    SDL_DisplayData *dispdata = (SDL_DisplayData *) SDL_GetDisplayForWindow(window)->driverdata;
-    SDL_bool is_vulkan = window->flags & SDL_WINDOW_VULKAN; /* Is this a VK window? */
-    float ratio;
-
-    if (((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN_DESKTOP) ||
-       ((window->flags & SDL_WINDOW_FULLSCREEN) == SDL_WINDOW_FULLSCREEN)) {
-
-        windata->src_w = dispdata->mode.hdisplay;
-        windata->src_h = dispdata->mode.vdisplay;
-        windata->output_w = dispdata->mode.hdisplay;
-        windata->output_h = dispdata->mode.vdisplay;
-        windata->output_x = 0;
-
-    } else {
-        /* Normal non-fullscreen windows are scaled using the PRIMARY PLANE, so here we store:
-           input size (ie: the size of the window buffers),
-           output size (ie: th mode configured on the CRTC), an X position to compensate for AR correction.
-           These are used when we set the PRIMARY PLANE props in SwapWindow() */
-        ratio = (float)window->w / (float)window->h;
-        windata->src_w = window->w;
-        windata->src_h = window->h;
-        windata->output_w = dispdata->mode.vdisplay * ratio;
-        windata->output_h = dispdata->mode.vdisplay;
-        windata->output_x = (dispdata->mode.hdisplay - windata->output_w) / 2;
-    }
-
-    if (!is_vulkan) {
-        if (KMSDRM_CreateSurfaces(_this, window)) {
-            return -1;
-        }
-    }
-    return 0;
-}
-
-int
-KMSDRM_VideoInit(_THIS)
-{
-    int ret = 0;
-
-    SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
-    SDL_DisplayData *dispdata = NULL;
-    SDL_VideoDisplay display = {0};
-
-    SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "KMSDRM_VideoInit()");
-
-    viddata->video_init = SDL_FALSE;
-
-    dispdata = (SDL_DisplayData *) SDL_calloc(1, sizeof(SDL_DisplayData));
-    if (!dispdata) {
-        return SDL_OutOfMemory();
-    }
-
-    /* Alloc memory for these. */
-    dispdata->display_plane = SDL_calloc(1, sizeof(*dispdata->display_plane));
-    dispdata->crtc = SDL_calloc(1, sizeof(*dispdata->crtc));
-    dispdata->connector = SDL_calloc(1, sizeof(*dispdata->connector));
-    if (!(dispdata->display_plane) || !(dispdata->crtc) || !(dispdata->connector)) {
-        ret = SDL_OutOfMemory();
-        goto cleanup;
-    }
-
-    /* Get KMSDRM resources info and store what we need. Getting and storing
-       this info isn't a problem for VK compatibility.
-       For VK-incompatible initializations we have KMSDRM_GBMInit(), which is
-       called on window creation, and only when we know it's not a VK window. */
-    if (KMSDRM_DisplayDataInit(_this, dispdata)) {
-        ret = SDL_SetError("error getting KMS/DRM information");
-        goto cleanup;
-    }
-
-    /* Setup the single display that's available.
-       There's no problem with it being still incomplete. */
-    display.driverdata = dispdata;
-    display.desktop_mode.w = dispdata->mode.hdisplay;
-    display.desktop_mode.h = dispdata->mode.vdisplay;
-    display.desktop_mode.refresh_rate = dispdata->mode.vrefresh;
-    display.desktop_mode.format = SDL_PIXELFORMAT_ARGB8888;
-    display.current_mode = display.desktop_mode;
-
-    /* Add the display only when it's ready, */
-    SDL_AddVideoDisplay(&display, SDL_FALSE);
-
-    /* Use this if you ever need to see info on all available planes. */
-#if 0
-    get_planes_info(_this);
-#endif
-
-#ifdef SDL_INPUT_LINUXEV
-    SDL_EVDEV_Init();
-#endif
-
-    /* Since we create and show the default cursor on KMSDRM_InitMouse() and
-       we call KMSDRM_InitMouse() everytime we create a new window, we have
-       to be sure to create and show the default cursor only the first time.
-       If we don't, new default cursors would stack up on mouse->cursors and SDL
-       would have to hide and delete them at quit, not to mention the memory leak... */
-    dispdata->set_default_cursor_pending = SDL_TRUE;
-
-    viddata->video_init = SDL_TRUE;
-
-cleanup:
-
-    if (ret) {
-        /* Error (complete) cleanup */
-        if (dispdata->display_plane) {
-            SDL_free(dispdata->display_plane);
-        }
-        if (dispdata->crtc) {
-            SDL_free(dispdata->crtc);
-        }
-        if (dispdata->connector) {
-            SDL_free(dispdata->connector);
-        }
-
-        SDL_free(dispdata);
-    }
-
-    return ret;
-}
-
-/* The driverdata pointers, like dispdata, viddata, windata, etc...
-   are freed by SDL internals, so not our job. */
-void
-KMSDRM_VideoQuit(_THIS)
-{
-    SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
-    SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
-
-    KMSDRM_DisplayDataDeinit(_this, dispdata);
-
-#ifdef SDL_INPUT_LINUXEV
-    SDL_EVDEV_Quit();
-#endif
-
-    /* Clear out the window list */
-    SDL_free(viddata->windows);
-    viddata->windows = NULL;
-    viddata->max_windows = 0;
-    viddata->num_windows = 0;
-    viddata->video_init = SDL_FALSE;
-}
-
-#if 0
-void
-KMSDRM_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
-{
-    /* Only one display mode available: the current one */
-    SDL_AddDisplayMode(display, &display->current_mode);
-}
-#endif
-
-/* We only change the video mode for FULLSCREEN windows
-   that are not FULLSCREEN_DESKTOP.
-   Normal non-fullscreen windows are scaled using the CRTC. */
-void
-KMSDRM_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
-{
-    SDL_DisplayData *dispdata = display->driverdata;
-    drmModeConnector *conn = dispdata->connector->connector;
-    SDL_DisplayMode mode;
-    int i;
-
-    for (i = 0; i < conn->count_modes; i++) {
-        SDL_DisplayModeData *modedata = SDL_calloc(1, sizeof(SDL_DisplayModeData));
-
-        if (!modedata) {
-            SDL_OutOfMemory();
-            return;
-        }
-
-        modedata->mode_index = i;
-
-        mode.w = conn->modes[i].hdisplay;
-        mode.h = conn->modes[i].vdisplay;
-        mode.refresh_rate = conn->modes[i].vrefresh;
-        mode.format = SDL_PIXELFORMAT_ARGB8888;
-        mode.driverdata = modedata;
-
-        if (!SDL_AddDisplayMode(display, &mode)) {
-            SDL_free(modedata);
-        }
-    }
-}
-
-int
-KMSDRM_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
-{
-    /* Set the dispdata->mode to the new mode and leave actual modesetting
-       pending to be done on SwapWindow(), to be included on next atomic
-       commit changeset. */
-
-    SDL_VideoData *viddata = (SDL_VideoData *)_this->driverdata;
-    SDL_DisplayData *dispdata = (SDL_DisplayData *)display->driverdata;
-    SDL_DisplayModeData *modedata = (SDL_DisplayModeData *)mode->driverdata;
-    drmModeConnector *conn = dispdata->connector->connector;
-    int i;
-
-    /* Don't do anything if we are in Vulkan mode. */
-    if (viddata->vulkan_mode) {
-        return 0;
-    }
-
-    if (!modedata) {
-        return SDL_SetError("Mode doesn't have an associated index");
-    }
-
-    /* Take note of the new mode to be set. */
-    dispdata->mode = conn->modes[modedata->mode_index];
-
-    /* Take note that we have to change mode in SwapWindow(). We have to do it there
-       because we need a buffer of the new size so the commit that contains the
-       mode change can be completed OK.  */
-    dispdata->modeset_pending = SDL_TRUE;
-
-    for (i = 0; i < viddata->num_windows; i++) {
-        SDL_Window *window = viddata->windows[i];
-
-    if (KMSDRM_CreateSurfaces(_this, window)) {
-        return -1;
-    }
-
-        /* Tell app about the window resize */
-        SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, mode->w, mode->h);
-    }
-
-    return 0;
-}
-
 int
 KMSDRM_CreateWindow(_THIS, SDL_Window * window)
 {
@@ -1636,6 +1007,15 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
          /* Maybe you didn't ask for an OPENGL window, but that's what you will get.
             See previous comment on why. */
          window->flags |= SDL_WINDOW_OPENGL;
+
+         /* We need that the fb that SDL gives us has the same size as the videomode
+            currently configure on the CRTC, because the LEGACY interface doesn't
+            support scaling on the primary plane on most hardware (and overlay
+            planes are not present in all hw), so the CRTC reads the PRIMARY PLANE
+            without any scaling, and that's all.
+            So AR-correctin is also impossible on the LEGACY interface. */
+         window->w = dispdata->mode.hdisplay;
+         window->h = dispdata->mode.vdisplay;
 
          /* Reopen FD, create gbm dev, setup display plane, etc,.
             but only when we come here for the first time,
@@ -1664,7 +1044,7 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
             so we do it here. */
          KMSDRM_InitMouse(_this);
 
-         /* Since we take cursor buffer away from the cursor plane and
+         /* Since we take cursor buffer way from the cursor plane and
             destroy the cursor GBM BO when we destroy a window, we must
             also manually re-show the cursor on screen, if necessary,
             when we create a window. */
@@ -1678,8 +1058,8 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
         goto cleanup;
     }
 
-    if (((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN_DESKTOP) ||
-       ((window->flags & SDL_WINDOW_FULLSCREEN) == SDL_WINDOW_FULLSCREEN))
+    if (((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN_DESKTOP)
+        || ((window->flags & SDL_WINDOW_FULLSCREEN) == SDL_WINDOW_FULLSCREEN))
     {
         windata->src_w = dispdata->mode.hdisplay;
         windata->src_h = dispdata->mode.vdisplay;
@@ -1687,8 +1067,9 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
         windata->output_h = dispdata->mode.vdisplay;
         windata->output_x = 0;
     } else {
-        /* Normal non-fullscreen windows are scaled using the CRTC,
-           so get output (CRTC) size and position, for AR correction. */
+        /* Normal non-fullscreen windows are scaled to the in-use video mode
+           using a PLANE connected to the CRTC, so get input size,
+           output (CRTC) size, and position. */
         ratio = (float)window->w / (float)window->h;
         windata->src_w = window->w;
         windata->src_h = window->h;
@@ -1710,6 +1091,25 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
         if ((ret = KMSDRM_CreateSurfaces(_this, window))) {
             goto cleanup;
         }
+
+        /***************************************************************************/
+        /* This is fundamental.                                                    */
+        /* We can't display an fb smaller than the resolution currently configured */
+        /* on the CRTC, because the CRTC would be scanning out of bounds, and      */
+        /* drmModeSetCrtc() would fail.                                            */
+        /* A possible solution would be scaling on the primary plane with          */
+        /* drmModeSetPlane(), but primary plane scaling is not supported in most   */
+        /* LEGACY-only hardware, so never use drmModeSetPlane().                   */
+        /***************************************************************************/
+
+        ret = KMSDRM_drmModeSetCrtc(viddata->drm_fd, dispdata->crtc->crtc_id,
+            /*fb_info->fb_id*/ -1, 0, 0, &dispdata->connector->connector_id, 1,
+            &dispdata->mode);
+
+	if (ret) {
+	    SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Could not set CRTC");
+            goto cleanup;
+	}
     }
 
     /* Add window to the internal list of tracked windows. Note, while it may
@@ -1754,6 +1154,46 @@ cleanup:
     return ret;
 }
 
+/*****************************************************************************/
+/* Reconfigure the window scaling parameters and re-construct it's surfaces, */
+/* without destroying the window itself.                                     */
+/* To be used by SetWindowSize() and SetWindowFullscreen().                  */
+/*****************************************************************************/
+static int
+KMSDRM_ReconfigureWindow( _THIS, SDL_Window * window) {
+    SDL_WindowData *windata = window->driverdata;
+    SDL_DisplayData *dispdata = (SDL_DisplayData *) SDL_GetDisplayForWindow(window)->driverdata;
+    SDL_bool is_vulkan = window->flags & SDL_WINDOW_VULKAN; /* Is this a VK window? */
+    float ratio;
+
+    if (((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN_DESKTOP) ||
+       ((window->flags & SDL_WINDOW_FULLSCREEN) == SDL_WINDOW_FULLSCREEN)) {
+
+        windata->src_w = dispdata->mode.hdisplay;
+        windata->src_h = dispdata->mode.vdisplay;
+        windata->output_w = dispdata->mode.hdisplay;
+        windata->output_h = dispdata->mode.vdisplay;
+        windata->output_x = 0;
+
+    } else {
+        /* Normal non-fullscreen windows are scaled using the CRTC,
+           so get output (CRTC) size and position, for AR correction. */
+        ratio = (float)window->w / (float)window->h;
+        windata->src_w = window->w;
+        windata->src_h = window->h;
+        windata->output_w = dispdata->mode.vdisplay * ratio;
+        windata->output_h = dispdata->mode.vdisplay;
+        windata->output_x = (dispdata->mode.hdisplay - windata->output_w) / 2;
+    }
+
+    if (!is_vulkan) {
+        if (KMSDRM_CreateSurfaces(_this, window)) {
+            return -1;
+        }
+    }
+    return 0;
+}
+
 int
 KMSDRM_CreateWindowFrom(_THIS, SDL_Window * window, const void *data)
 {
@@ -1772,7 +1212,6 @@ void
 KMSDRM_SetWindowPosition(_THIS, SDL_Window * window)
 {
 }
-
 void
 KMSDRM_SetWindowSize(_THIS, SDL_Window * window)
 {
@@ -1780,7 +1219,6 @@ KMSDRM_SetWindowSize(_THIS, SDL_Window * window)
         SDL_SetError("Can't reconfigure window on SetWindowSize.");
     }
 }
-
 void
 KMSDRM_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display, SDL_bool fullscreen)
 {
@@ -1788,7 +1226,6 @@ KMSDRM_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * displa
         SDL_SetError("Can't reconfigure window on SetWindowFullscreen.");
     }
 }
-
 void
 KMSDRM_ShowWindow(_THIS, SDL_Window * window)
 {
@@ -1829,7 +1266,7 @@ KMSDRM_GetWindowWMInfo(_THIS, SDL_Window * window, struct SDL_SysWMinfo *info)
         return SDL_TRUE;
     } else {
         SDL_SetError("application not compiled with SDL %d.%d\n",
-                      SDL_MAJOR_VERSION, SDL_MINOR_VERSION);
+                     SDL_MAJOR_VERSION, SDL_MINOR_VERSION);
         return SDL_FALSE;
     }
 
