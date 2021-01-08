@@ -91,11 +91,6 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window) {
     KMSDRM_FBInfo *fb_info;
     int ret, timeout;
 
-    /* Recreate the GBM / EGL surfaces if the display mode has changed */
-    if (windata->egl_surface_dirty) {
-        KMSDRM_CreateSurfaces(_this, window);
-    }
-
     /* Wait for confirmation that the next front buffer has been flipped, at which
        point the previous front buffer can be released */
     timeout = 0;
@@ -132,6 +127,21 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window) {
     /* Get the fb_info for the next front buffer. */
     fb_info = KMSDRM_FBFromBO(_this, windata->next_bo);
     if (!fb_info) {
+        return 0;
+    }
+
+    /* Do we have a modeset pending? If so, configure the new mode on the CRTC.
+       Has to be done before the upcoming pageflip issue, so the buffer with the
+       new size is big enough so the CRTC doesn't read out of bounds. */
+    if (dispdata->modeset_pending) {
+        ret = KMSDRM_drmModeSetCrtc(viddata->drm_fd,
+          dispdata->crtc->crtc_id, fb_info->fb_id, 0, 0,
+          &dispdata->connector->connector_id, 1, &dispdata->mode);
+
+        if (ret) {
+          SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Could not set videomode on CRTC");
+        }
+
         return 0;
     }
 

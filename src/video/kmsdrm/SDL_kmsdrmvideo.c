@@ -49,9 +49,7 @@
 #include <poll.h>
 
 #ifdef __OpenBSD__
-eeefine KMSDRM_DRI_PATH "/dev/"
-ce
-
+#define KMSDRM_DRI_PATH "/dev/"
 #define KMSDRM_DRI_DEVFMT "%sdrm%d"
 #define KMSDRM_DRI_DEVNAME "drm"
 #define KMSDRM_DRI_DEVNAMESIZE 3
@@ -889,27 +887,39 @@ KMSDRM_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
 int
 KMSDRM_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
 {
+    /* Set the dispdata->mode to the new mode and leave actual modesetting
+       pending to be done on SwapWindow() via drmModeSetCrtc() */
+
     SDL_VideoData *viddata = (SDL_VideoData *)_this->driverdata;
     SDL_DisplayData *dispdata = (SDL_DisplayData *)display->driverdata;
     SDL_DisplayModeData *modedata = (SDL_DisplayModeData *)mode->driverdata;
     drmModeConnector *conn = dispdata->connector;
     int i;
 
+    /* Don't do anything if we are in Vulkan mode. */
+    if (viddata->vulkan_mode) {
+        return 0;
+    }
+
     if (!modedata) {
         return SDL_SetError("Mode doesn't have an associated index");
     }
 
+    /* Take note of the new mode to be set. */
     dispdata->mode = conn->modes[modedata->mode_index];
+
+    /* Take note that we have to change mode in SwapWindow(). We have to do it there
+       because we need a buffer of the new size so the drmModeSetCrtc() call succeeds.  */
+    dispdata->modeset_pending = SDL_TRUE;
 
     for (i = 0; i < viddata->num_windows; i++) {
         SDL_Window *window = viddata->windows[i];
-        SDL_WindowData *windata = (SDL_WindowData *)window->driverdata;
 
-        /* Can't recreate EGL surfaces right now, need to wait until SwapWindow
-           so the correct thread-local surface and context state are available */
-        windata->egl_surface_dirty = 1;
+	if (KMSDRM_CreateSurfaces(_this, window)) {
+	    return -1;
+	}
 
-        /* Tell app about the resize */
+        /* Tell app about the window resize */
         SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, mode->w, mode->h);
     }
 
@@ -1102,6 +1112,7 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
         /* LEGACY-only hardware, so never use drmModeSetPlane().                   */
         /***************************************************************************/
 
+#if 1
         ret = KMSDRM_drmModeSetCrtc(viddata->drm_fd, dispdata->crtc->crtc_id,
             /*fb_info->fb_id*/ -1, 0, 0, &dispdata->connector->connector_id, 1,
             &dispdata->mode);
@@ -1110,6 +1121,7 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
 	    SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Could not set CRTC");
             goto cleanup;
 	}
+#endif
     }
 
     /* Add window to the internal list of tracked windows. Note, while it may
