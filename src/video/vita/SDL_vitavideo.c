@@ -196,7 +196,7 @@ VITA_VideoQuit(_THIS)
 void
 VITA_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
 {
-
+    SDL_AddDisplayMode(display, &display->current_mode);
 }
 
 int
