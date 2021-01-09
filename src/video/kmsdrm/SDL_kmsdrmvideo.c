@@ -1001,7 +1001,6 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
     SDL_bool is_vulkan = window->flags & SDL_WINDOW_VULKAN; /* Is this a VK window? */
     SDL_bool vulkan_mode = viddata->vulkan_mode; /* Do we have any Vulkan windows? */
     NativeDisplayType egl_display;
-    float ratio;
     int ret = 0;
 
     if ( !(dispdata->gbm_init) && !is_vulkan && !vulkan_mode ) {
@@ -1068,26 +1067,6 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
         goto cleanup;
     }
 
-    if (((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN_DESKTOP)
-        || ((window->flags & SDL_WINDOW_FULLSCREEN) == SDL_WINDOW_FULLSCREEN))
-    {
-        windata->src_w = dispdata->mode.hdisplay;
-        windata->src_h = dispdata->mode.vdisplay;
-        windata->output_w = dispdata->mode.hdisplay;
-        windata->output_h = dispdata->mode.vdisplay;
-        windata->output_x = 0;
-    } else {
-        /* Normal non-fullscreen windows are scaled to the in-use video mode
-           using a PLANE connected to the CRTC, so get input size,
-           output (CRTC) size, and position. */
-        ratio = (float)window->w / (float)window->h;
-        windata->src_w = window->w;
-        windata->src_h = window->h;
-        windata->output_w = dispdata->mode.vdisplay * ratio;
-        windata->output_h = dispdata->mode.vdisplay;
-        windata->output_x = (dispdata->mode.hdisplay - windata->output_w) / 2;
-    }
-
     /* Don't force fullscreen on all windows: it confuses programs that try
        to set a window fullscreen after creating it as non-fullscreen (sm64ex) */
     // window->flags |= SDL_WINDOW_FULLSCREEN;
@@ -1102,17 +1081,9 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
             goto cleanup;
         }
 
-        /***************************************************************************/
-        /* This is fundamental.                                                    */
-        /* We can't display an fb smaller than the resolution currently configured */
-        /* on the CRTC, because the CRTC would be scanning out of bounds, and      */
-        /* drmModeSetCrtc() would fail.                                            */
-        /* A possible solution would be scaling on the primary plane with          */
-        /* drmModeSetPlane(), but primary plane scaling is not supported in most   */
-        /* LEGACY-only hardware, so never use drmModeSetPlane().                   */
-        /***************************************************************************/
-
-#if 1
+        /* Configure the current video mode on the CRTC, without changing the buffer
+           it's pointing to (well, that the primary plane connected to the CRTC is
+           pointing to). */
         ret = KMSDRM_drmModeSetCrtc(viddata->drm_fd, dispdata->crtc->crtc_id,
             /*fb_info->fb_id*/ -1, 0, 0, &dispdata->connector->connector_id, 1,
             &dispdata->mode);
@@ -1121,7 +1092,6 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
 	    SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Could not set CRTC");
             goto cleanup;
 	}
-#endif
     }
 
     /* Add window to the internal list of tracked windows. Note, while it may
@@ -1167,36 +1137,12 @@ cleanup:
 }
 
 /*****************************************************************************/
-/* Reconfigure the window scaling parameters and re-construct it's surfaces, */
-/* without destroying the window itself.                                     */
+/* Re-create a window surfaces without destroying the window itself.         */ 
 /* To be used by SetWindowSize() and SetWindowFullscreen().                  */
 /*****************************************************************************/
 static int
 KMSDRM_ReconfigureWindow( _THIS, SDL_Window * window) {
-    SDL_WindowData *windata = window->driverdata;
-    SDL_DisplayData *dispdata = (SDL_DisplayData *) SDL_GetDisplayForWindow(window)->driverdata;
     SDL_bool is_vulkan = window->flags & SDL_WINDOW_VULKAN; /* Is this a VK window? */
-    float ratio;
-
-    if (((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN_DESKTOP) ||
-       ((window->flags & SDL_WINDOW_FULLSCREEN) == SDL_WINDOW_FULLSCREEN)) {
-
-        windata->src_w = dispdata->mode.hdisplay;
-        windata->src_h = dispdata->mode.vdisplay;
-        windata->output_w = dispdata->mode.hdisplay;
-        windata->output_h = dispdata->mode.vdisplay;
-        windata->output_x = 0;
-
-    } else {
-        /* Normal non-fullscreen windows are scaled using the CRTC,
-           so get output (CRTC) size and position, for AR correction. */
-        ratio = (float)window->w / (float)window->h;
-        windata->src_w = window->w;
-        windata->src_h = window->h;
-        windata->output_w = dispdata->mode.vdisplay * ratio;
-        windata->output_h = dispdata->mode.vdisplay;
-        windata->output_x = (dispdata->mode.hdisplay - windata->output_w) / 2;
-    }
 
     if (!is_vulkan) {
         if (KMSDRM_CreateSurfaces(_this, window)) {

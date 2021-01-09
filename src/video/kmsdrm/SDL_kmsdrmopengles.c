@@ -134,14 +134,25 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window) {
        Has to be done before the upcoming pageflip issue, so the buffer with the
        new size is big enough so the CRTC doesn't read out of bounds. */
     if (dispdata->modeset_pending) {
+
+        /***************************************************************************/
+        /* This is fundamental.                                                    */
+        /* We can't display an fb smaller than the resolution currently configured */
+        /* on the CRTC, because the CRTC would be scanning out of bounds, and      */
+        /* drmModeSetCrtc() would fail.                                            */
+        /* A possible solution would be scaling on the primary plane with          */
+        /* drmModeSetPlane(), but primary plane scaling is not supported in most   */
+        /* LEGACY-only hardware, so never use drmModeSetPlane().                   */
+        /***************************************************************************/
+
         ret = KMSDRM_drmModeSetCrtc(viddata->drm_fd,
           dispdata->crtc->crtc_id, fb_info->fb_id, 0, 0,
           &dispdata->connector->connector_id, 1, &dispdata->mode);
 
         if (ret) {
-          SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Could not set videomode on CRTC");
-        }
+            SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Could not set videomode on CRTC.");
 
+        }
         return 0;
     }
 
