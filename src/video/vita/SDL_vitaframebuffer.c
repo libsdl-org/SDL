@@ -78,7 +78,7 @@ int VITA_CreateWindowFramebuffer(_THIS, SDL_Window * window, Uint32 * format, vo
     for (int y = 0; y < SCREEN_H; y++) {
         unsigned int *row = (unsigned int *)data->buffer + y * SCREEN_W;
         for (int x = 0; x < SCREEN_W; x++) {
-            row[x] = 0xff0000FF;
+            row[x] = 0x000000FF;
         }
     }
 
