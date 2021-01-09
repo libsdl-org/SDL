@@ -2138,6 +2138,10 @@ elseif(VITA)
   set_property(SOURCE ${SDL2_SOURCE_DIR}/src/video/arm/pixman-arm-neon-asm.S PROPERTY LANGUAGE C)
 
   add_definitions("-D__VITA__")
+  add_definitions("-Dmemcpy=sceClibMemcpy")
+  add_definitions("-Dmemset=sceClibMemset")
+  add_definitions("-Dmemmove=sceClibMemmove")
+  add_definitions("-Dmemcmp=sceClibMemcmp")
 
   CheckPTHREAD()
 
