@@ -56,7 +56,7 @@ static unsigned int __attribute__((aligned(16))) DisplayList[262144];
 #define COL4444(r,g,b,a)    ((r>>4) | ((g>>4)<<4) | ((b>>4)<<8) | ((a>>4)<<12))
 #define COL8888(r,g,b,a)    ((r) | ((g)<<8) | ((b)<<16) | ((a)<<24))
 
-#define LOGGING
+//#define LOGGING
 #ifdef LOGGING
 #define LOG(...) printf(__VA_ARGS__)
 #else
@@ -232,15 +232,6 @@ LRUTargetRelink(PSP_TextureData* psp_texture) {
     }
 }
 
-/*static void
-LRUTargetFixTail(PSP_RenderData* data, PSP_TextureData* psp_texture) {
-    if(data->least_recent_target == psp_texture) {
-        data->least_recent_target = psp_texture->prevhotw;
-    } else if(!data->least_recent_target) {
-        data->least_recent_target = psp_texture;
-    }
-}*/
-
 static void
 LRUTargetPushFront(PSP_RenderData* data, PSP_TextureData* psp_texture) {
     LOG("Pushing %p (%dKB) front.\n", (void*)psp_texture, psp_texture->size / 1024);
@@ -274,7 +265,6 @@ LRUTargetBringFront(PSP_RenderData* data, PSP_TextureData* psp_texture) {
     if(data->most_recent_target == psp_texture) {
         return; //nothing to do
     }
-    //LRUTargetRelink(psp_texture);
     LRUTargetRemove(data, psp_texture);
     LRUTargetPushFront(data, psp_texture);
 }
@@ -1016,7 +1006,7 @@ StartDrawing(SDL_Renderer * renderer)
     if(!data->displayListAvail) {
         sceGuStart(GU_DIRECT, DisplayList);
         data->displayListAvail = SDL_TRUE;
-        ResetBlendState(&data->blendState);
+        //ResetBlendState(&data->blendState);
     }
 
     // Check if we need a draw buffer change
@@ -1427,7 +1417,6 @@ PSP_CreateRenderer(SDL_Window * window, Uint32 flags)
     doublebuffer = valloc(PSP_FRAME_BUFFER_SIZE*data->bpp*2);
     data->backbuffer = doublebuffer;
     data->frontbuffer = ((uint8_t*)doublebuffer)+PSP_FRAME_BUFFER_SIZE*data->bpp;
-    memset(&data->blendState, 0, sizeof(PSP_BlendState));
 
     sceGuInit();
     /* setup GU */
@@ -1453,16 +1442,8 @@ PSP_CreateRenderer(SDL_Window * window, Uint32 flags)
     sceGuEnable(GU_CULL_FACE);
     */
 
-    /* Texturing */
-    sceGuEnable(GU_TEXTURE_2D);
-    sceGuShadeModel(GU_SMOOTH);
-    sceGuTexWrap(GU_REPEAT, GU_REPEAT);
-
-    /* Blending */
-    //sceGuEnable(GU_BLEND);
-    //sceGuBlendFunc(GU_ADD, GU_SRC_ALPHA, GU_ONE_MINUS_SRC_ALPHA, 0, 0);
-
-    sceGuTexFilter(GU_LINEAR,GU_LINEAR);
+    //Setup initial blend state
+    ResetBlendState(&data->blendState);
 
     sceGuFinish();
     sceGuSync(0,0);
