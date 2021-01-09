@@ -122,9 +122,12 @@ VITA_Create()
     device->DestroyWindow = VITA_DestroyWindow;
     device->GetWindowWMInfo = VITA_GetWindowWMInfo;
 
+/*
+    // Disabled, causes issues on high-framerate updates. SDL still emulates this.
     device->CreateWindowFramebuffer = VITA_CreateWindowFramebuffer;
     device->UpdateWindowFramebuffer = VITA_UpdateWindowFramebuffer;
     device->DestroyWindowFramebuffer = VITA_DestroyWindowFramebuffer;
+*/
 
 #if SDL_VIDEO_OPENGL_ES2
     device->GL_LoadLibrary = VITA_GL_LoadLibrary;
