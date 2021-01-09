@@ -75,12 +75,7 @@ int VITA_CreateWindowFramebuffer(_THIS, SDL_Window * window, Uint32 * format, vo
     );
 
     // memset the buffer to black
-    for (int y = 0; y < SCREEN_H; y++) {
-        unsigned int *row = (unsigned int *)data->buffer + y * SCREEN_W;
-        for (int x = 0; x < SCREEN_W; x++) {
-            row[x] = 0x000000FF;
-        }
-    }
+    SDL_memset(data->buffer, 0x0, SCREEN_W*SCREEN_H*4);
 
     SDL_memset(&framebuf, 0x00, sizeof(SceDisplayFrameBuf));
     framebuf.size        = sizeof(SceDisplayFrameBuf);
