@@ -1046,11 +1046,8 @@ create_gxm_texture(VITA_GXM_RenderData *data, unsigned int w, unsigned int h, Sc
     const int tex_size =  ((w + 7) & ~ 7) * h * tex_format_to_bytespp(format);
     void *texture_data;
 
-    format = SCE_GXM_TEXTURE_FORMAT_A8B8G8R8;
-
     if (!texture)
         return NULL;
-
 
     /* Allocate a GPU buffer for the texture */
     texture_data = mem_gpu_alloc(

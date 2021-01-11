@@ -109,14 +109,40 @@ SDL_RenderDriver VITA_GXM_RenderDriver = {
     .info = {
         .name = "VITA gxm",
         .flags = SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE,
-        .num_texture_formats = 1,
+        .num_texture_formats = 6,
         .texture_formats = {
-            [0] = SDL_PIXELFORMAT_ABGR8888, // TODO: support more formats? ARGB8888 should be enough?
+            [0] = SDL_PIXELFORMAT_ABGR8888,
+            [1] = SDL_PIXELFORMAT_ARGB8888,
+            [2] = SDL_PIXELFORMAT_RGB888,
+            [3] = SDL_PIXELFORMAT_BGR888,
+            [2] = SDL_PIXELFORMAT_RGB565,
+            [3] = SDL_PIXELFORMAT_BGR565
         },
         .max_texture_width = 1024,
         .max_texture_height = 1024,
      }
 };
+
+static int
+PixelFormatToVITAFMT(Uint32 format)
+{
+    switch (format) {
+    case SDL_PIXELFORMAT_ARGB8888:
+        return SCE_GXM_TEXTURE_FORMAT_U8U8U8U8_ARGB;
+    case SDL_PIXELFORMAT_RGB888:
+        return SCE_GXM_TEXTURE_FORMAT_U8U8U8U8_ARGB;
+    case SDL_PIXELFORMAT_BGR888:
+        return SCE_GXM_TEXTURE_FORMAT_U8U8U8U8_ABGR;
+    case SDL_PIXELFORMAT_ABGR8888:
+        return SCE_GXM_TEXTURE_FORMAT_U8U8U8U8_ABGR;
+    case SDL_PIXELFORMAT_RGB565:
+        return SCE_GXM_TEXTURE_FORMAT_U5U6U5_RGB;
+    case SDL_PIXELFORMAT_BGR565:
+        return SCE_GXM_TEXTURE_FORMAT_U5U6U5_BGR;
+    default:
+        return SCE_GXM_TEXTURE_FORMAT_U8U8U8U8_ABGR;
+    }
+}
 
 void
 StartDrawing(SDL_Renderer *renderer)
@@ -258,7 +284,7 @@ VITA_GXM_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
         return SDL_OutOfMemory();
     }
 
-    vita_texture->tex = create_gxm_texture(data, texture->w, texture->h, SCE_GXM_TEXTURE_FORMAT_A8B8G8R8, (texture->access == SDL_TEXTUREACCESS_TARGET));
+    vita_texture->tex = create_gxm_texture(data, texture->w, texture->h, PixelFormatToVITAFMT(texture->format), (texture->access == SDL_TEXTUREACCESS_TARGET));
 
     if (!vita_texture->tex) {
         SDL_free(vita_texture);
