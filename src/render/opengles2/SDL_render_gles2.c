@@ -1787,7 +1787,7 @@ GLES2_UpdateTextureNV(SDL_Renderer * renderer, SDL_Texture * texture,
             (rect->h + 1) / 2,
             GL_LUMINANCE_ALPHA,
             GL_UNSIGNED_BYTE,
-            UVplane, UVpitch / 2, 1);
+            UVplane, UVpitch, 2);
 
     data->glBindTexture(tdata->texture_type, tdata->texture);
     GLES2_TexSubImage2D(data, tdata->texture_type,
