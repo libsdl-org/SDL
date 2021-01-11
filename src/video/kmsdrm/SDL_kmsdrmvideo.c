@@ -1099,6 +1099,11 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
         if ((ret = KMSDRM_CreateSurfaces(_this, window))) {
             goto cleanup;
         }
+
+        /* Tell app about the size we have determined for the window,
+           so SDL pre-scales to that size for us. */
+        SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED,
+        windata->surface_w, windata->surface_h);
     }
 
     /* Add window to the internal list of tracked windows. Note, while it may
@@ -1124,11 +1129,6 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
     /* Focus on the newly created window */
     SDL_SetMouseFocus(window);
     SDL_SetKeyboardFocus(window);
-
-    /* Tell app about the size we have determined for the window,
-       so SDL pre-scales to that size for us. */
-    SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED,
-        windata->surface_w, windata->surface_h);
 
     /***********************************************************/
     /* Tell SDL that the mouse has entered the window using an */
@@ -1199,7 +1199,7 @@ KMSDRM_ReconfigureWindow( _THIS, SDL_Window * window) {
     /* Tell app about the size we have determined for the window,
        so SDL pre-scales to that size for us. */
     SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED,
-    windata->surface_w, windata->surface_h);
+                        windata->surface_w, windata->surface_h);
 }
 
 int
