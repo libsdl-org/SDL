@@ -62,6 +62,7 @@ typedef struct SDL_DisplayData
     drmModeCrtc *crtc;
     drmModeModeInfo mode;
     drmModeModeInfo original_mode;
+    drmModeModeInfo next_mode; /* New mode to be set on the CRTC. */
 
     drmModeCrtc *saved_crtc;    /* CRTC to restore on quit */
 
@@ -74,9 +75,11 @@ typedef struct SDL_DisplayData
     struct gbm_bo *cursor_bo;
     uint64_t cursor_w, cursor_h;
 
+    SDL_bool set_default_cursor_pending;
     SDL_bool modeset_pending;
 
-    SDL_bool set_default_cursor_pending;
+    uint32_t surface_w;
+    uint32_t surface_h;
 
 } SDL_DisplayData;
 
@@ -107,6 +110,7 @@ typedef struct KMSDRM_FBInfo
 /* Helper functions */
 int KMSDRM_CreateSurfaces(_THIS, SDL_Window * window);
 KMSDRM_FBInfo *KMSDRM_FBFromBO(_THIS, struct gbm_bo *bo);
+KMSDRM_FBInfo *KMSDRM_FBFromBO2(_THIS, struct gbm_bo *bo, int w, int h);
 SDL_bool KMSDRM_WaitPageFlip(_THIS, SDL_WindowData *windata, int timeout);
 
 /****************************************************************************/
