@@ -72,7 +72,12 @@ SDL_EGL_CreateContext_impl(KMSDRM)
 
 int KMSDRM_GLES_SetSwapInterval(_THIS, int interval) {
 
-    /*
+    /* Issuing a new pageflip before the previous has completed
+       causes drmModePageFlip() to return EBUSY errors.
+       So just set egl_swapinterval to 1 to prevent that. */
+
+#if 0
+    
     if (!_this->egl_data) {
         return SDL_SetError("EGL not initialized");
     }
@@ -81,22 +86,13 @@ int KMSDRM_GLES_SetSwapInterval(_THIS, int interval) {
         _this->egl_data->egl_swapinterval = interval;
     } else {
         return SDL_SetError("Only swap intervals of 0 or 1 are supported");
-    }*/
+    }
+#endif
 
-    /* Issuing a new pageflip before the previous has completed
-       causes drmModePageFlip() to return EBUSY errors. Don't do it. */
     _this->egl_data->egl_swapinterval = 1;
 
     return 0;
 }
-
-/* Check if we need to re-create the GBM and EGL surfaces and setup a new mode on the CRTC
-   matching the new GBM surface size so the buffers from these surfaces can be displayed
-   on the CRTC (remember we need the CRTC mode and the buffer size to match). */
-/*KMSDRM_CheckKMSDRM (_THIS, window) {
-
-
-}*/
 
 int
 KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window) {
@@ -147,47 +143,6 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window) {
         return 0;
     }
 
-#if 0
-    /* Get an actual usable fb (of the specified dimensions) form the BO,
-       so we can pass it to the CRTC. */
-    fb_info = KMSDRM_FBFromBO2(_this, windata->next_bo, window->w, window->h);
-    if (!fb_info) {
-        return 0;
-    }
-#endif
-
-#if 0
-    /* If the window size does not match the current videomode configured on the CRTC,
-       update the current video mode and configure the new mode on the CRTC.  */
-    if (dispdata->mode.hdisplay != window->w || dispdata->mode.vdisplay != window->h) { 
-        for (int i = 0; i < dispdata->connector->count_modes; i++) {
-            drmModeModeInfo mode = dispdata->connector->modes[i] ;
-            if (mode.hdisplay == window->w && mode.vdisplay == window->h) {
-                dispdata->mode = mode;
-	        ret = KMSDRM_drmModeSetCrtc(viddata->drm_fd,
-		     dispdata->crtc->crtc_id, fb_info->fb_id, 0, 0,
-		     &dispdata->connector->connector_id, 1, &dispdata->mode);
-
-	        if (ret) {
-		    SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Could not set mode on CRTC.");
-		    printf("********Could not set mode on CRTC.\n");
-                }
-                return 0;
-            }
-        }
-        return 0;
-    }
-#endif
-
-#if 0
-    /* Get an actual usable fb for the next front buffer. */
-    fb_info = KMSDRM_FBFromBO(_this, windata->next_bo);
-    if (!fb_info) {
-        return 0;
-    }
-#endif
-
-#if 1 
     /* Do we have a modeset pending? If so, configure the new mode on the CRTC.
        Has to be done before the upcoming pageflip issue, so the buffer with the
        new size is big enough so the CRTC doesn't read out of bounds. */
@@ -205,7 +160,6 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window) {
 
         return 0;
     }
-#endif
 
     /* Issue pageflip on the next front buffer.
        The pageflip will be done during the next vblank. */
