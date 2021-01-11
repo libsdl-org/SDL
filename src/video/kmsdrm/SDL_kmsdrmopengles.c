@@ -28,6 +28,7 @@
 #include "SDL_kmsdrmvideo.h"
 #include "SDL_kmsdrmopengles.h"
 #include "SDL_kmsdrmdyn.h"
+#include <errno.h>
 
 #ifndef EGL_PLATFORM_GBM_MESA
 #define EGL_PLATFORM_GBM_MESA 0x31D7
@@ -70,6 +71,8 @@ KMSDRM_GLES_UnloadLibrary(_THIS) {
 SDL_EGL_CreateContext_impl(KMSDRM)
 
 int KMSDRM_GLES_SetSwapInterval(_THIS, int interval) {
+
+    /*
     if (!_this->egl_data) {
         return SDL_SetError("EGL not initialized");
     }
@@ -78,10 +81,22 @@ int KMSDRM_GLES_SetSwapInterval(_THIS, int interval) {
         _this->egl_data->egl_swapinterval = interval;
     } else {
         return SDL_SetError("Only swap intervals of 0 or 1 are supported");
-    }
+    }*/
+
+    /* Issuing a new pageflip before the previous has completed
+       causes drmModePageFlip() to return EBUSY errors. Don't do it. */
+    _this->egl_data->egl_swapinterval = 1;
 
     return 0;
 }
+
+/* Check if we need to re-create the GBM and EGL surfaces and setup a new mode on the CRTC
+   matching the new GBM surface size so the buffers from these surfaces can be displayed
+   on the CRTC (remember we need the CRTC mode and the buffer size to match). */
+/*KMSDRM_CheckKMSDRM (_THIS, window) {
+
+
+}*/
 
 int
 KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window) {
@@ -117,56 +132,92 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window) {
         return 0;
     }
 
-    /* Lock the next front buffer so it can't be allocated as a back buffer */
+    /* From the GBM surface, get the next BO to become the next front buffer,
+       and lock it so it can't be allocated as a back buffer (to prevent EGL
+       from drawing into it!) */
     windata->next_bo = KMSDRM_gbm_surface_lock_front_buffer(windata->gs);
     if (!windata->next_bo) {
         SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Could not lock GBM surface front buffer");
         return 0;
     }
 
-    /* Get the fb_info for the next front buffer. */
+    /* Get an actual usable fb for the next front buffer. */
     fb_info = KMSDRM_FBFromBO(_this, windata->next_bo);
     if (!fb_info) {
         return 0;
     }
 
+#if 0
+    /* Get an actual usable fb (of the specified dimensions) form the BO,
+       so we can pass it to the CRTC. */
+    fb_info = KMSDRM_FBFromBO2(_this, windata->next_bo, window->w, window->h);
+    if (!fb_info) {
+        return 0;
+    }
+#endif
+
+#if 0
+    /* If the window size does not match the current videomode configured on the CRTC,
+       update the current video mode and configure the new mode on the CRTC.  */
+    if (dispdata->mode.hdisplay != window->w || dispdata->mode.vdisplay != window->h) { 
+        for (int i = 0; i < dispdata->connector->count_modes; i++) {
+            drmModeModeInfo mode = dispdata->connector->modes[i] ;
+            if (mode.hdisplay == window->w && mode.vdisplay == window->h) {
+                dispdata->mode = mode;
+	        ret = KMSDRM_drmModeSetCrtc(viddata->drm_fd,
+		     dispdata->crtc->crtc_id, fb_info->fb_id, 0, 0,
+		     &dispdata->connector->connector_id, 1, &dispdata->mode);
+
+	        if (ret) {
+		    SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Could not set mode on CRTC.");
+		    printf("********Could not set mode on CRTC.\n");
+                }
+                return 0;
+            }
+        }
+        return 0;
+    }
+#endif
+
+#if 0
+    /* Get an actual usable fb for the next front buffer. */
+    fb_info = KMSDRM_FBFromBO(_this, windata->next_bo);
+    if (!fb_info) {
+        return 0;
+    }
+#endif
+
+#if 1 
     /* Do we have a modeset pending? If so, configure the new mode on the CRTC.
        Has to be done before the upcoming pageflip issue, so the buffer with the
        new size is big enough so the CRTC doesn't read out of bounds. */
     if (dispdata->modeset_pending) {
 
-        /***************************************************************************/
-        /* This is fundamental.                                                    */
-        /* We can't display an fb smaller than the resolution currently configured */
-        /* on the CRTC, because the CRTC would be scanning out of bounds, and      */
-        /* drmModeSetCrtc() would fail.                                            */
-        /* A possible solution would be scaling on the primary plane with          */
-        /* drmModeSetPlane(), but primary plane scaling is not supported in most   */
-        /* LEGACY-only hardware, so never use drmModeSetPlane().                   */
-        /***************************************************************************/
-
         ret = KMSDRM_drmModeSetCrtc(viddata->drm_fd,
           dispdata->crtc->crtc_id, fb_info->fb_id, 0, 0,
           &dispdata->connector->connector_id, 1, &dispdata->mode);
 
+        dispdata->modeset_pending = SDL_FALSE;
+
         if (ret) {
             SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Could not set videomode on CRTC.");
-
         }
+
         return 0;
     }
+#endif
 
     /* Issue pageflip on the next front buffer.
        The pageflip will be done during the next vblank. */
     ret = KMSDRM_drmModePageFlip(viddata->drm_fd, dispdata->crtc->crtc_id,
 	     fb_info->fb_id, DRM_MODE_PAGE_FLIP_EVENT, &windata->waiting_for_flip);
 
-    if (_this->egl_data->egl_swapinterval == 1) {
-	if (ret == 0) {
+    if (ret == 0) {
+        if (_this->egl_data->egl_swapinterval == 1) {
 	    windata->waiting_for_flip = SDL_TRUE;
-	} else {
-	    SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Could not queue pageflip: %d", ret);
-	}
+        }
+    } else {
+	SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Could not queue pageflip: %d", ret);
     }
 
     /* If we are in double-buffer mode, wait immediately for vsync
