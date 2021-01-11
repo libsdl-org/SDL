@@ -38,7 +38,7 @@
 #include "SDL_vitakeyboard.h"
 #include "SDL_vitamouse_c.h"
 #include "SDL_vitaframebuffer.h"
-#if SDLVIDEO_OPENGL_ES2
+#if SDL_VIDEO_OPENGL_ES2
 #include "SDL_vitagl_c.h"
 #endif
 #include <psp2/ime_dialog.h>
@@ -62,7 +62,7 @@ VITA_Create()
 {
     SDL_VideoDevice *device;
     SDL_VideoData *phdata;
-#if SDLVIDEO_OPENGL_ES2
+#if SDL_VIDEO_OPENGL_ES2
     SDL_GLDriverData *gldata;
 #endif
     /* Initialize SDL_VideoDevice structure */
@@ -79,7 +79,7 @@ VITA_Create()
         SDL_free(device);
         return NULL;
     }
-#if SDLVIDEO_OPENGL_ES2
+#if SDL_VIDEO_OPENGL_ES2
 
     gldata = (SDL_GLDriverData *) SDL_calloc(1, sizeof(SDL_GLDriverData));
     if (gldata == NULL) {
