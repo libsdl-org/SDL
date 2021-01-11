@@ -78,9 +78,6 @@ typedef struct SDL_DisplayData
     SDL_bool set_default_cursor_pending;
     SDL_bool modeset_pending;
 
-    uint32_t surface_w;
-    uint32_t surface_h;
-
 } SDL_DisplayData;
 
 typedef struct SDL_WindowData
@@ -98,6 +95,12 @@ typedef struct SDL_WindowData
     SDL_bool double_buffer;
 
     EGLSurface egl_surface;
+
+    /* The size we chose for the GBM surface. REMEMBER that the CRTC must always have
+       a mode with the same size configured before trying to flip to a buffer of that
+       surface or drmModePageFlip() will return -28. */
+    uint32_t surface_w;
+    uint32_t surface_h;
 
 } SDL_WindowData;
 
