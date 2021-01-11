@@ -823,7 +823,7 @@ KMSDRM_CreateSurfaces(_THIS, SDL_Window * window)
 {
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
     SDL_WindowData *windata = (SDL_WindowData *)window->driverdata;
-    SDL_DisplayData *dispdata = (SDL_DisplayData *) SDL_GetDisplayForWindow(window)->driverdata;
+
     uint32_t surface_fmt = GBM_FORMAT_ARGB8888;
     uint32_t surface_flags = GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING;
 
@@ -845,7 +845,7 @@ KMSDRM_CreateSurfaces(_THIS, SDL_Window * window)
     }
 
     windata->gs = KMSDRM_gbm_surface_create(viddata->gbm_dev,
-                      dispdata->surface_w, dispdata->surface_h, surface_fmt, surface_flags);
+                      windata->surface_w, windata->surface_h, surface_fmt, surface_flags);
 
     if (!windata->gs) {
         return SDL_SetError("Could not create GBM surface");
@@ -1020,13 +1020,10 @@ KMSDRM_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
         return SDL_SetError("Mode doesn't have an associated index");
     }
 
-    /* Take note of the new mode to be set, and leave the modeset pending. */
+    /* Take note of the new mode to be set, and leave the CRTC modeset pending
+       so it's done in SwapWindow. */
     dispdata->mode = conn->modes[modedata->mode_index];
     dispdata->modeset_pending = SDL_TRUE; 
-
-    /* Set the new surface size. */
-    dispdata->surface_w = dispdata->mode.hdisplay; 
-    dispdata->surface_h = dispdata->mode.vdisplay; 
 
     for (i = 0; i < viddata->num_windows; i++) {
         SDL_Window *window = viddata->windows[i];
@@ -1193,16 +1190,17 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
         /* Try to find a matching video mode for the window, with fallback to the
             original mode if not available, and configure that mode into the CRTC. */
 	if (mode) {
-	    dispdata->surface_w = window->w;
-	    dispdata->surface_h = window->h;
+	    windata->surface_w = window->w;
+	    windata->surface_h = window->h;
 	    dispdata->mode = *mode;
 	}
 	else {
-	    dispdata->surface_w = dispdata->original_mode.hdisplay;
-	    dispdata->surface_h = dispdata->original_mode.vdisplay;
+	    windata->surface_w = dispdata->original_mode.hdisplay;
+	    windata->surface_h = dispdata->original_mode.vdisplay;
 	    dispdata->mode = dispdata->original_mode;
 	}
 
+        /* Take note to do the modesettng on the CRTC in SwapWindow. */
 	dispdata->modeset_pending = SDL_TRUE;
 
         /* Create the window surfaces with the size we have just chosen.
@@ -1239,7 +1237,7 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
     /* Tell app about the size we have determined for the window,
        so SDL pre-scales to that size for us. */
     SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED,
-        dispdata->surface_w, dispdata->surface_h);
+        windata->surface_w, windata->surface_h);
 
     /***********************************************************/
     /* Tell SDL that the mouse has entered the window using an */
@@ -1266,8 +1264,8 @@ cleanup:
 /*****************************************************************************/
 void
 KMSDRM_ReconfigureWindow( _THIS, SDL_Window * window) {
-
     SDL_DisplayData *dispdata = (SDL_DisplayData *) SDL_GetDisplayForWindow(window)->driverdata;
+    SDL_WindowData *windata = (SDL_WindowData *) window->driverdata;
 
     if ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) ==
 			 SDL_WINDOW_FULLSCREEN_DESKTOP)
@@ -1275,8 +1273,8 @@ KMSDRM_ReconfigureWindow( _THIS, SDL_Window * window) {
 	/* Update the current mode to the desktop mode,
 	   take note of pending mode configuration to the CRTC,
 	   and recreate the GBM surface with the same size as the size. */
-	dispdata->surface_w = dispdata->original_mode.hdisplay;
-	dispdata->surface_h = dispdata->original_mode.vdisplay;
+	windata->surface_w = dispdata->original_mode.hdisplay;
+	windata->surface_h = dispdata->original_mode.vdisplay;
 	dispdata->mode = dispdata->original_mode;
     }
     else
@@ -1288,16 +1286,16 @@ KMSDRM_ReconfigureWindow( _THIS, SDL_Window * window) {
 	if (mode) {
             /* If matching mode found, recreate the GBM surface with the size
                of that mode and configure it on the CRTC. */
-	    dispdata->surface_w = window->windowed.w;
-	    dispdata->surface_h = window->windowed.h;
+	    windata->surface_w = window->windowed.w;
+	    windata->surface_h = window->windowed.h;
 	    dispdata->mode = *mode;
 	}
 	else {
             /* If not matching mode found, recreate the GBM surfaces with the
                size of the mode that was originally configured on the CRTC,
                and setup that mode on the CRTC. */
-	    dispdata->surface_w = dispdata->original_mode.hdisplay;
-	    dispdata->surface_h = dispdata->original_mode.vdisplay;
+	    windata->surface_w = dispdata->original_mode.hdisplay;
+	    windata->surface_h = dispdata->original_mode.vdisplay;
 	    dispdata->mode = dispdata->original_mode;
         }
     }
@@ -1310,7 +1308,7 @@ KMSDRM_ReconfigureWindow( _THIS, SDL_Window * window) {
     /* Tell app about the size we have determined for the window,
        so SDL pre-scales to that size for us. */
     SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED,
-    dispdata->surface_w, dispdata->surface_h);
+    windata->surface_w, windata->surface_h);
 }
 
 int
