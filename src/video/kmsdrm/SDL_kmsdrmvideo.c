@@ -1008,58 +1008,6 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
     int ret = 0;
     drmModeModeInfo *mode;
 
-    if ( !(dispdata->gbm_init) && !is_vulkan && !vulkan_mode ) {
-
-        /* If this is not a Vulkan Window, then this is a GL window, so at the
-	   end of this function, we must have marked the window as being OPENGL
-	   and we must have loaded the GL library: both things are needed so the
-	   GL_CreateRenderer() and GL_LoadFunctions() calls in SDL_CreateWindow()
-	   succeed without having to re-create the window.
-	   We must load the EGL library too, which can't be loaded until the GBM
-	   device has been created, because SDL_EGL_Library() function uses it. */ 
-
-	/* Maybe you didn't ask for an OPENGL window, but that's what you will get.
-	   See previous comment on why. */
-        window->flags |= SDL_WINDOW_OPENGL;
-
-        /* Don't force fullscreen on all windows: it confuses programs that try
-           to set a window fullscreen after creating it as non-fullscreen (sm64ex) */
-        // window->flags |= SDL_WINDOW_FULLSCREEN;
-
-        /* Reopen FD, create gbm dev, setup display plane, etc,.
-            but only when we come here for the first time,
-            and only if it's not a VK window. */
-        if ((ret = KMSDRM_GBMInit(_this, dispdata))) {
-                 goto cleanup;
-        }
-
-        /* Manually load the GL library. KMSDRM_EGL_LoadLibrary() has already
-           been called by SDL_CreateWindow() but we don't do anything there,
-           precisely to be able to load it here.
-           If we let SDL_CreateWindow() load the lib, it will be loaded
-           before we call KMSDRM_GBMInit(), causing GLES programs to fail. */
-        if (!_this->egl_data) {
-            egl_display = (NativeDisplayType)((SDL_VideoData *)_this->driverdata)->gbm_dev;
-            if (SDL_EGL_LoadLibrary(_this, NULL, egl_display, EGL_PLATFORM_GBM_MESA)) {
-                goto cleanup;
-            }
-
-            if (SDL_GL_LoadLibrary(NULL) < 0) {
-                goto cleanup;
-            }
-        }
-     
-	/* Can't init mouse stuff sooner because cursor plane is not ready,
-	   so we do it here. */
-	KMSDRM_InitMouse(_this);
-
-	/* Since we take cursor buffer way from the cursor plane and
-	   destroy the cursor GBM BO when we destroy a window, we must
-	   also manually re-show the cursor on screen, if necessary,
-	   when we create a window. */
-	KMSDRM_InitCursor();
-    }
-
     /* Allocate window internal data */
     windata = (SDL_WindowData *)SDL_calloc(1, sizeof(SDL_WindowData));
     if (!windata) {
@@ -1071,16 +1019,68 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
     windata->viddata = viddata;
     window->driverdata = windata;
 
-    /* We simply IGNORE if it's a fullscreen window, window->flags desn't reflect it.
-       If it's fullscreen, we will manage that in KMSDRM_SetWindwoFullscreen(),
-       which will be called by SDL later, if necessary. */
-    mode = KMSDRM_GetConnectorMode(dispdata->connector, window->w, window->h );
+    if (!is_vulkan && !vulkan_mode) { /* NON-Vulkan block. */
 
-    if (!is_vulkan && !vulkan_mode) {
+	if (!(dispdata->gbm_init)) {
 
-        /* Try to find a matching video mode for the window, with fallback to the
-            original mode if not available, and configure that mode into the CRTC. */
-	if (mode) {
+            /* In order for the GL_CreateRenderer() and GL_LoadFunctions() calls
+               in SDL_CreateWindow succeed (no doing so causes a windo re-creation),
+               At the end of this block, we must have: 
+               -Marked the window as being OPENGL
+               -Loaded the GL library (which can't be loaded until the GBM
+	        device has been created) because SDL_EGL_Library() function uses it.
+             */
+
+	    /* Maybe you didn't ask for an OPENGL window, but that's what you will get.
+	       See previous comment on why. */
+	    window->flags |= SDL_WINDOW_OPENGL;
+
+	    /* Reopen FD, create gbm dev, setup display plane, etc,.
+		but only when we come here for the first time,
+		and only if it's not a VK window. */
+	    if ((ret = KMSDRM_GBMInit(_this, dispdata))) {
+		     goto cleanup;
+	    }
+
+	    /* Manually load the GL library. KMSDRM_EGL_LoadLibrary() has already
+	       been called by SDL_CreateWindow() but we don't do anything there,
+	       precisely to be able to load it here.
+	       If we let SDL_CreateWindow() load the lib, it will be loaded
+	       before we call KMSDRM_GBMInit(), causing GLES programs to fail. */
+	    if (!_this->egl_data) {
+		egl_display = (NativeDisplayType)((SDL_VideoData *)_this->driverdata)->gbm_dev;
+		if (SDL_EGL_LoadLibrary(_this, NULL, egl_display, EGL_PLATFORM_GBM_MESA)) {
+		    goto cleanup;
+		}
+
+		if (SDL_GL_LoadLibrary(NULL) < 0) {
+		    goto cleanup;
+		}
+	    }
+	 
+	    /* Can't init mouse stuff sooner because cursor plane is not ready,
+	       so we do it here. */
+	    KMSDRM_InitMouse(_this);
+
+	    /* Since we take cursor buffer way from the cursor plane and
+	       destroy the cursor GBM BO when we destroy a window, we must
+	       also manually re-show the cursor on screen, if necessary,
+	       when we create a window. */
+	    KMSDRM_InitCursor();
+	}
+
+        /**********************************************************************/
+	/* We simply IGNORE if it's a fullscreen window, window->flags don't  */
+        /* reflect it: if it's fullscreen, KMSDRM_SetWindwoFullscreen() which */
+        /* will be called by SDL later, and we can manage it there.           */
+        /**********************************************************************/
+   
+       /* Try to find a matching video mode for the window, fallback to the
+          original mode if not available, and configure the mode we chose
+          into the CRTC. */
+	mode = KMSDRM_GetConnectorMode(dispdata->connector, window->w, window->h );
+
+        if (mode) {
 	    windata->surface_w = window->w;
 	    windata->surface_h = window->h;
 	    dispdata->mode = *mode;
@@ -1104,7 +1104,7 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
            so SDL pre-scales to that size for us. */
         SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED,
         windata->surface_w, windata->surface_h);
-    }
+    } /* NON-Vulkan block ends. */
 
     /* Add window to the internal list of tracked windows. Note, while it may
        seem odd to support multiple fullscreen windows, some apps create an
