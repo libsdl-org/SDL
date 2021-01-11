@@ -52,6 +52,9 @@
 /* How often you have to refresh a long duration rumble to keep the motors running */
 #define RUMBLE_REFRESH_FREQUENCY_MS 40
 
+#define SWITCH_GYRO_SCALE      14.2842f
+#define SWITCH_ACCEL_SCALE     4096.f
+
 typedef enum {
     k_eSwitchInputReportIDs_SubcommandReply       = 0x21,
     k_eSwitchInputReportIDs_FullControllerState   = 0x30,
@@ -220,6 +223,8 @@ typedef struct {
     SDL_bool m_bRumblePending;
     SDL_bool m_bRumbleZeroPending;
     Uint32 m_unRumblePending;
+    SDL_bool m_bHasSensors;
+    SDL_bool m_bReportSensors;
 
     SwitchInputOnlyControllerStatePacket_t m_lastInputOnlyState;
     SwitchSimpleStatePacket_t m_lastSimpleState;
@@ -550,6 +555,12 @@ static SDL_bool SetSlotLED(SDL_DriverSwitch_Context *ctx, Uint8 slot)
     return WriteSubcommand(ctx, k_eSwitchSubcommandIDs_SetPlayerLights, &led_data, sizeof(led_data), NULL);
 }
 
+static SDL_bool SetIMUEnabled(SDL_DriverSwitch_Context* ctx, SDL_bool enabled)
+{
+    Uint8 imu_data = enabled ? 1 : 0;
+    return WriteSubcommand(ctx, k_eSwitchSubcommandIDs_EnableIMU, &imu_data, sizeof(imu_data), NULL);
+}
+
 static SDL_bool LoadStickCalibration(SDL_DriverSwitch_Context *ctx, Uint8 input_mode)
 {
     Uint8 *pStickCal;
@@ -761,6 +772,12 @@ HIDAPI_DriverSwitch_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joysti
             device->product_id == USB_PRODUCT_NINTENDO_SWITCH_PRO) {
             input_mode = k_eSwitchInputReportIDs_FullControllerState;
         }
+        
+        if (input_mode == k_eSwitchInputReportIDs_FullControllerState) {
+            SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO);
+            SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL);
+            ctx->m_bHasSensors = SDL_TRUE;
+        }
 
         if (!LoadStickCalibration(ctx, input_mode)) {
             SDL_SetError("Couldn't load stick calibration");
@@ -945,7 +962,30 @@ HIDAPI_DriverSwitch_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joys
 static int
 HIDAPI_DriverSwitch_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, SDL_bool enabled)
 {
-    return SDL_Unsupported();
+    SDL_DriverSwitch_Context* ctx = (SDL_DriverSwitch_Context*)device->context;
+    
+    if (!ctx->m_bHasSensors) {
+        return SDL_Unsupported();
+    }
+
+    SetIMUEnabled(ctx, enabled);
+    ctx->m_bReportSensors = enabled;
+
+    return 0;
+}
+
+static float
+HIDAPI_DriverSwitch_ScaleGyro(Sint16 value)
+{
+    float result = (value / SWITCH_GYRO_SCALE) * (float)M_PI / 180.0f;
+    return result;
+}
+
+static float
+HIDAPI_DriverSwitch_ScaleAccel(Sint16 value)
+{
+    float result = (value / SWITCH_ACCEL_SCALE) * SDL_STANDARD_GRAVITY;
+    return result;
 }
 
 static void HandleInputOnlyControllerState(SDL_Joystick *joystick, SDL_DriverSwitch_Context *ctx, SwitchInputOnlyControllerStatePacket_t *packet)
@@ -1208,6 +1248,42 @@ static void HandleFullControllerState(SDL_Joystick *joystick, SDL_DriverSwitch_C
         } else {
             joystick->epowerlevel = SDL_JOYSTICK_POWER_FULL;
         }
+    }
+
+    if (ctx->m_bReportSensors) {
+        float data[3];
+
+        /* Note the order of components has been shuffled to match PlayStation controllers,
+         * since that's our de facto standard from already supporting those controllers, and
+         * users will want consistent axis mappings across devices.
+         */
+        data[0] = HIDAPI_DriverSwitch_ScaleGyro(packet->imuState[0].sGyroY);
+        data[1] = HIDAPI_DriverSwitch_ScaleGyro(packet->imuState[0].sGyroZ);
+        data[2] = HIDAPI_DriverSwitch_ScaleGyro(packet->imuState[0].sGyroX);
+        data[0] += HIDAPI_DriverSwitch_ScaleGyro(packet->imuState[1].sGyroY);
+        data[1] += HIDAPI_DriverSwitch_ScaleGyro(packet->imuState[1].sGyroZ);
+        data[2] += HIDAPI_DriverSwitch_ScaleGyro(packet->imuState[1].sGyroX);
+        data[0] += HIDAPI_DriverSwitch_ScaleGyro(packet->imuState[2].sGyroY);
+        data[1] += HIDAPI_DriverSwitch_ScaleGyro(packet->imuState[2].sGyroZ);
+        data[2] += HIDAPI_DriverSwitch_ScaleGyro(packet->imuState[2].sGyroX);
+        data[0] /= -3.f;
+        data[1] /= 3.f;
+        data[2] /= -3.f;
+        SDL_PrivateJoystickSensor(joystick, SDL_SENSOR_GYRO, data, 3);
+
+        data[0] = HIDAPI_DriverSwitch_ScaleAccel(packet->imuState[0].sAccelY);
+        data[1] = HIDAPI_DriverSwitch_ScaleAccel(packet->imuState[0].sAccelZ);
+        data[2] = HIDAPI_DriverSwitch_ScaleAccel(packet->imuState[0].sAccelX);
+        data[0] += HIDAPI_DriverSwitch_ScaleAccel(packet->imuState[1].sAccelY);
+        data[1] += HIDAPI_DriverSwitch_ScaleAccel(packet->imuState[1].sAccelZ);
+        data[2] += HIDAPI_DriverSwitch_ScaleAccel(packet->imuState[1].sAccelX);
+        data[0] += HIDAPI_DriverSwitch_ScaleAccel(packet->imuState[2].sAccelY);
+        data[1] += HIDAPI_DriverSwitch_ScaleAccel(packet->imuState[2].sAccelZ);
+        data[2] += HIDAPI_DriverSwitch_ScaleAccel(packet->imuState[2].sAccelX);
+        data[0] /= -3.f;
+        data[1] /= 3.f;
+        data[2] /= -3.f;
+        SDL_PrivateJoystickSensor(joystick, SDL_SENSOR_ACCEL, data, 3);
     }
 
     ctx->m_lastFullState = *packet;
