@@ -995,6 +995,11 @@ KMSDRM_DestroyWindow(_THIS, SDL_Window *window)
     SDL_free(windata);
 }
 
+/**********************************************************************/
+/* We simply IGNORE if it's a fullscreen window, window->flags don't  */
+/* reflect it: if it's fullscreen, KMSDRM_SetWindwoFullscreen() which */
+/* will be called by SDL later, and we can manage it there.           */
+/**********************************************************************/ 
 int
 KMSDRM_CreateWindow(_THIS, SDL_Window * window)
 {
@@ -1069,15 +1074,17 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
 	    KMSDRM_InitCursor();
 	}
 
-        /**********************************************************************/
-	/* We simply IGNORE if it's a fullscreen window, window->flags don't  */
-        /* reflect it: if it's fullscreen, KMSDRM_SetWindwoFullscreen() which */
-        /* will be called by SDL later, and we can manage it there.           */
-        /**********************************************************************/
-   
-       /* Try to find a matching video mode for the window, fallback to the
-          original mode if not available, and configure the mode we chose
-          into the CRTC. */
+        /* Try to find a matching video mode for the window, fallback to the
+           original mode if not available, and configure the mode we chose
+           into the CRTC.
+           You may be tempted to not do a videomode change, remaining always on
+           the original resolution, and use the SendWindowEvent() parameters to
+           make SDL2 pre-scale the image for us to an AR-corrected size inside
+           the original mode, but DON'T: vectorized games (GL games) are rendered
+           with the size specified in SendWindowEvent(),instead of being rendered
+           at the original size and then scaled.
+           It makes sense because GL is used to render the scene in GL games,
+           so the scene is rendered at the window size. */
 	mode = KMSDRM_GetConnectorMode(dispdata->connector, window->w, window->h );
 
         if (mode) {
