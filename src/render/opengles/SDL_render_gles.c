@@ -587,9 +587,9 @@ GLES_QueueDrawLines(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_F
         const GLfloat yend = verts[3];
 
         if (ystart == yend) {  /* horizontal line */
-            verts[2] += (xend > xstart) ? 1.0f : -1.0f;
+            verts[(xend > xstart) ? 2 : 0] += 1.0f;
         } else if (xstart == xend) {  /* vertical line */
-            verts[3] += (yend > ystart) ? 1.0f : -1.0f;
+            verts[(yend > ystart) ? 3 : 1] += 1.0f;
         } else {  /* bump a pixel in the direction we are moving in. */
             const GLfloat deltax = xend - xstart;
             const GLfloat deltay = yend - ystart;
