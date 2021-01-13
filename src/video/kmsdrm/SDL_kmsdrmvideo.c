@@ -339,11 +339,13 @@ KMSDRM_FlipHandler(int fd, unsigned int frame, unsigned int sec, unsigned int us
 }
 
 SDL_bool
-KMSDRM_WaitPageFlip(_THIS, SDL_WindowData *windata, int timeout) {
+KMSDRM_WaitPageFlip(_THIS, SDL_WindowData *windata) {
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
     drmEventContext ev = {0};
     struct pollfd pfd = {0};
-
+    /* If the pageflip hasn't completed after 10 seconds, it nevel will. */
+    uint32_t timeout = 10000;
+ 
     ev.version = DRM_EVENT_CONTEXT_VERSION;
     ev.page_flip_handler = KMSDRM_FlipHandler;
 
@@ -353,21 +355,25 @@ KMSDRM_WaitPageFlip(_THIS, SDL_WindowData *windata, int timeout) {
     while (windata->waiting_for_flip) {
         pfd.revents = 0;
 
+        /* poll() waits for events arriving on the FD, and returns < 0 if timeout
+           passes with no events.  */
         if (poll(&pfd, 1, timeout) < 0) {
             SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "DRM poll error");
             return SDL_FALSE;
         }
 
         if (pfd.revents & (POLLHUP | POLLERR)) {
+            /* An event arrived on the FD in time, but it's an error. */
             SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "DRM poll hup or error");
             return SDL_FALSE;
         }
 
         if (pfd.revents & POLLIN) {
-            /* Page flip? If so, drmHandleEvent will unset windata->waiting_for_flip */
+            /* There is data to read on the FD!
+               Is the event a pageflip? If so, drmHandleEvent will
+               unset windata->waiting_for_flip */
             KMSDRM_drmHandleEvent(viddata->drm_fd, &ev);
         } else {
-            /* Timed out and page flip didn't happen */
             SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Dropping frame while waiting_for_flip");
             return SDL_FALSE;
         }
@@ -650,7 +656,7 @@ KMSDRM_DestroySurfaces(_THIS, SDL_Window *window)
     /**********************************************/
     /* Wait for last issued pageflip to complete. */
     /**********************************************/
-    KMSDRM_WaitPageFlip(_this, windata, -1);
+    KMSDRM_WaitPageFlip(_this, windata);
 
     /***********************************************************************/
     /* Restore the original CRTC configuration: configue the crtc with the */

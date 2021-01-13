@@ -114,7 +114,7 @@ typedef struct KMSDRM_FBInfo
 int KMSDRM_CreateSurfaces(_THIS, SDL_Window * window);
 KMSDRM_FBInfo *KMSDRM_FBFromBO(_THIS, struct gbm_bo *bo);
 KMSDRM_FBInfo *KMSDRM_FBFromBO2(_THIS, struct gbm_bo *bo, int w, int h);
-SDL_bool KMSDRM_WaitPageFlip(_THIS, SDL_WindowData *windata, int timeout);
+SDL_bool KMSDRM_WaitPageFlip(_THIS, SDL_WindowData *windata);
 
 /****************************************************************************/
 /* SDL_VideoDevice functions declaration                                    */
