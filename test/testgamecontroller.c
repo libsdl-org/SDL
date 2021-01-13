@@ -267,7 +267,8 @@ loop(void *arg)
         case SDL_CONTROLLERTOUCHPADDOWN:
         case SDL_CONTROLLERTOUCHPADMOTION:
         case SDL_CONTROLLERTOUCHPADUP:
-            SDL_Log("Controller touchpad %d finger %d %s %.2f, %.2f, %.2f\n",
+            SDL_Log("Controller %d touchpad %d finger %d %s %.2f, %.2f, %.2f\n",
+                event.ctouchpad.which,
                 event.ctouchpad.touchpad,
                 event.ctouchpad.finger,
                 (event.type == SDL_CONTROLLERTOUCHPADDOWN ? "pressed at" :
@@ -279,7 +280,8 @@ loop(void *arg)
             break;
 
         case SDL_CONTROLLERSENSORUPDATE:
-            SDL_Log("Controller sensor %s: %.2f, %.2f, %.2f\n",
+            SDL_Log("Controller %d sensor %s: %.2f, %.2f, %.2f\n",
+                event.csensor.which,
                 event.csensor.sensor == SDL_SENSOR_ACCEL ? "accelerometer" :
                 event.csensor.sensor == SDL_SENSOR_GYRO ? "gyro" : "unknown",
                 event.csensor.data[0],
@@ -291,7 +293,7 @@ loop(void *arg)
             if (event.caxis.value <= (-SDL_JOYSTICK_AXIS_MAX / 2) || event.caxis.value >= (SDL_JOYSTICK_AXIS_MAX / 2)) {
                 SetController(event.caxis.which);
             }
-            SDL_Log("Controller axis %s changed to %d\n", SDL_GameControllerGetStringForAxis((SDL_GameControllerAxis)event.caxis.axis), event.caxis.value);
+            SDL_Log("Controller %d axis %s changed to %d\n", event.caxis.which, SDL_GameControllerGetStringForAxis((SDL_GameControllerAxis)event.caxis.axis), event.caxis.value);
             break;
 
         case SDL_CONTROLLERBUTTONDOWN:
@@ -299,7 +301,7 @@ loop(void *arg)
             if (event.type == SDL_CONTROLLERBUTTONDOWN) {
                 SetController(event.cbutton.which);
             }
-            SDL_Log("Controller button %s %s\n", SDL_GameControllerGetStringForButton((SDL_GameControllerButton)event.cbutton.button), event.cbutton.state ? "pressed" : "released");
+            SDL_Log("Controller %d button %s %s\n", event.cbutton.which, SDL_GameControllerGetStringForButton((SDL_GameControllerButton)event.cbutton.button), event.cbutton.state ? "pressed" : "released");
             break;
 
         case SDL_KEYDOWN:
