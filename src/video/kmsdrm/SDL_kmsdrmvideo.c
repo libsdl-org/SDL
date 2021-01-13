@@ -46,7 +46,6 @@
 #include <sys/stat.h>
 #include <dirent.h>
 #include <poll.h>
-#include <time.h>
 #include <errno.h>
 
 #ifdef __OpenBSD__
@@ -371,7 +370,7 @@ KMSDRM_WaitPageFlip(_THIS, SDL_WindowData *windata) {
     */
     while (windata->waiting_for_flip) {
 
-        pfd.revents  = 0;
+        pfd.revents = 0;
 
         /* poll() waits for events arriving on the FD, and returns < 0 if timeout
            passes with no events.
