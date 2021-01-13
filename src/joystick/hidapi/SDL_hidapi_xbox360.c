@@ -106,7 +106,8 @@ HIDAPI_DriverXbox360_GetDeviceName(Uint16 vendor_id, Uint16 product_id)
 
 static SDL_bool SetSlotLED(hid_device *dev, Uint8 slot)
 {
-    Uint8 mode = 0x02 + slot;
+    const SDL_bool blink = SDL_FALSE;
+    Uint8 mode = (blink ? 0x02 : 0x06) + slot;
     const Uint8 led_packet[] = { 0x01, 0x03, mode };
 
     if (hid_write(dev, led_packet, sizeof(led_packet)) != sizeof(led_packet)) {
