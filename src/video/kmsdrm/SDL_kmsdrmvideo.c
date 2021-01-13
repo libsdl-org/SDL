@@ -45,8 +45,9 @@
 #include "SDL_kmsdrmvulkan.h"
 #include <sys/stat.h>
 #include <dirent.h>
-#include <errno.h>
 #include <poll.h>
+#include <time.h>
+#include <errno.h>
 
 #ifdef __OpenBSD__
 #define KMSDRM_DRI_PATH "/dev/"
@@ -340,42 +341,63 @@ KMSDRM_FlipHandler(int fd, unsigned int frame, unsigned int sec, unsigned int us
 
 SDL_bool
 KMSDRM_WaitPageFlip(_THIS, SDL_WindowData *windata) {
+
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
     drmEventContext ev = {0};
     struct pollfd pfd = {0};
-    /* If the pageflip hasn't completed after 10 seconds, it nevel will. */
-    uint32_t timeout = 10000;
- 
+
     ev.version = DRM_EVENT_CONTEXT_VERSION;
     ev.page_flip_handler = KMSDRM_FlipHandler;
 
     pfd.fd = viddata->drm_fd;
     pfd.events = POLLIN;
 
+    /* Stay on loop until we get the desired event
+       We need the while the loop because we could be in a situation where:
+       -We get events on the FD in time, thus not on exiting on return number 1.
+       -These events are not errors, thus not exiting on return number 2.
+       -These events are of POLLIN type, thus not exiting on return number 3,
+        but if the event is not the pageflip we are waiting for, we arrive at the end
+        of the loop and do loop re-entry, hoping the next event will be the pageflip.
+
+        So we could erroneously exit the function without the pageflip event to arrive
+        if it wasn't for the while loop!
+
+      Vblank events, for example, hit the FD and they are POLLIN events too (POLLIN
+      means "there's data to read on the FD"), but they are not the pageflip event
+      we are waiting for, so the drmEventHandle() doesn't run the flip handler, and
+      since waiting_for_flip is set on the pageflip handle, it's not set and we stay
+      on the loop.
+    */
     while (windata->waiting_for_flip) {
-        pfd.revents = 0;
+
+        pfd.revents  = 0;
 
         /* poll() waits for events arriving on the FD, and returns < 0 if timeout
-           passes with no events.  */
-        if (poll(&pfd, 1, timeout) < 0) {
+           passes with no events.
+           We wait forever (timeout = -1), but even if we DO get an event,
+           we have yet to see if it's of the required type. */
+        if (poll(&pfd, 1, -1) < 0) {
             SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "DRM poll error");
-            return SDL_FALSE;
+            return SDL_FALSE; /* Return number 1. */
         }
 
         if (pfd.revents & (POLLHUP | POLLERR)) {
             /* An event arrived on the FD in time, but it's an error. */
             SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "DRM poll hup or error");
-            return SDL_FALSE;
+            return SDL_FALSE; /* Return number 2. */
         }
 
         if (pfd.revents & POLLIN) {
             /* There is data to read on the FD!
-               Is the event a pageflip? If so, drmHandleEvent will
-               unset windata->waiting_for_flip */
+               Is the event a pageflip? We know it is a pageflip if it matches the
+               event we are passing in &ev. If it is, drmHandleEvent() will unset
+               windata->waiting_for_flip and we will get out of the "while" loop.
+               If it's not, we keep iterating on the loop. */
             KMSDRM_drmHandleEvent(viddata->drm_fd, &ev);
         } else {
             SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Dropping frame while waiting_for_flip");
-            return SDL_FALSE;
+            return SDL_FALSE; /* Return number 3. */
         }
     }
 

@@ -154,13 +154,14 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window) {
 
     /* Issue pageflip on the next front buffer.
        Remember: drmModePageFlip() never blocks, it just issues the flip,
-       which will be done during the next vblank.
-       Since it will return EBUSY if we call it again without having
-       completed the last issued flip, we must pass the
+       which will be done during the next vblank, or immediately if
+       we pass the DRM_MODE_PAGE_FLIP_ASYNC flag.
+       Since calling drmModePageFlip() will return EBUSY if we call it
+       without having completed the last issued flip, we must pass the
        DRM_MODE_PAGE_FLIP_ASYNC if we don't block on EGL (egl_swapinterval = 0).
-       That makes it flip immediately, without waiting for the next vblank,
-       so even if we don't block on EGL, it will have flipped when we
-       get back here. */
+       That makes it flip immediately, without waiting for the next vblank
+       to do so, so even if we don't block on EGL, the flip will have completed
+       when we get here again. */
 
     if (_this->egl_data->egl_swapinterval == 0) {
         flip_flags |= DRM_MODE_PAGE_FLIP_ASYNC;
@@ -173,11 +174,15 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window) {
 	windata->waiting_for_flip = SDL_TRUE;
     } else {
 	SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Could not queue pageflip: %d", ret);
-	printf("Could not queue pageflip: %s\n", strerror(errno));
     }
 
-    /* If we are in double-buffer mode, wait immediately for vsync
-       (as if we only had two buffers),
+    /* Wait immediately for vsync (as if we only had two buffers).
+       Even if we are already doing a WaitPageFlip at the begining of this
+       function, this is NOT redundant because here we wait immediately
+       after submitting the image to the screen, reducing lag, and if
+       we have waited here, there won't be a pending pageflip so the
+       WaitPageFlip at the beggining of this function will be a no-op.
+       Just leave it here and don't worry. 
        Run your SDL2 program with "SDL_KMSDRM_DOUBLE_BUFFER=1 <program_name>"
        to enable this. */
     if (_this->egl_data->egl_swapinterval == 1 && windata->double_buffer) {
