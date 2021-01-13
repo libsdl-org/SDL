@@ -72,12 +72,6 @@ SDL_EGL_CreateContext_impl(KMSDRM)
 
 int KMSDRM_GLES_SetSwapInterval(_THIS, int interval) {
 
-    /* Issuing a new pageflip before the previous has completed
-       causes drmModePageFlip() to return EBUSY errors.
-       So just set egl_swapinterval to 1 to prevent that. */
-
-#if 0
-    
     if (!_this->egl_data) {
         return SDL_SetError("EGL not initialized");
     }
@@ -87,9 +81,6 @@ int KMSDRM_GLES_SetSwapInterval(_THIS, int interval) {
     } else {
         return SDL_SetError("Only swap intervals of 0 or 1 are supported");
     }
-#endif
-
-    _this->egl_data->egl_swapinterval = 1;
 
     return 0;
 }
@@ -100,15 +91,15 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window) {
     SDL_DisplayData *dispdata = (SDL_DisplayData *) SDL_GetDisplayForWindow(window)->driverdata;
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
     KMSDRM_FBInfo *fb_info;
-    int ret, timeout;
+    int ret = 0;
+
+    /* Always wait for the previous issued flip before issing a new one,
+       even if you do async flips. */
+    uint32_t flip_flags = DRM_MODE_PAGE_FLIP_EVENT;
 
     /* Wait for confirmation that the next front buffer has been flipped, at which
        point the previous front buffer can be released */
-    timeout = 0;
-    if (_this->egl_data->egl_swapinterval == 1) {
-        timeout = -1;
-    }
-    if (!KMSDRM_WaitPageFlip(_this, windata, timeout)) {
+    if (!KMSDRM_WaitPageFlip(_this, windata)) {
         return 0;
     }
 
@@ -162,16 +153,27 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window) {
     }
 
     /* Issue pageflip on the next front buffer.
-       The pageflip will be done during the next vblank. */
+       Remember: drmModePageFlip() never blocks, it just issues the flip,
+       which will be done during the next vblank.
+       Since it will return EBUSY if we call it again without having
+       completed the last issued flip, we must pass the
+       DRM_MODE_PAGE_FLIP_ASYNC if we don't block on EGL (egl_swapinterval = 0).
+       That makes it flip immediately, without waiting for the next vblank,
+       so even if we don't block on EGL, it will have flipped when we
+       get back here. */
+
+    if (_this->egl_data->egl_swapinterval == 0) {
+        flip_flags |= DRM_MODE_PAGE_FLIP_ASYNC;
+    }
+
     ret = KMSDRM_drmModePageFlip(viddata->drm_fd, dispdata->crtc->crtc_id,
-	     fb_info->fb_id, DRM_MODE_PAGE_FLIP_EVENT, &windata->waiting_for_flip);
+	     fb_info->fb_id, flip_flags, &windata->waiting_for_flip);
 
     if (ret == 0) {
-        if (_this->egl_data->egl_swapinterval == 1) {
-	    windata->waiting_for_flip = SDL_TRUE;
-        }
+	windata->waiting_for_flip = SDL_TRUE;
     } else {
 	SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Could not queue pageflip: %d", ret);
+	printf("Could not queue pageflip: %s\n", strerror(errno));
     }
 
     /* If we are in double-buffer mode, wait immediately for vsync
@@ -179,7 +181,7 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window) {
        Run your SDL2 program with "SDL_KMSDRM_DOUBLE_BUFFER=1 <program_name>"
        to enable this. */
     if (_this->egl_data->egl_swapinterval == 1 && windata->double_buffer) {
-	KMSDRM_WaitPageFlip(_this, windata, -1);
+	KMSDRM_WaitPageFlip(_this, windata);
     }
 
     return 0;
