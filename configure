@@ -630,6 +630,7 @@ ac_includes_default="\
 #endif"
 
 ac_subst_vars='LTLIBOBJS
+WAYLAND_SCANNER_CODE_MODE
 WAYLAND_SCANNER
 EXTRA_LDFLAGS
 BUILD_LDFLAGS
@@ -19793,6 +19794,11 @@ $as_echo_n "checking for Wayland support... " >&6; }
                 WAYLAND_CFLAGS=`$PKG_CONFIG --cflags wayland-client wayland-egl wayland-cursor xkbcommon`
                 WAYLAND_LIBS=`$PKG_CONFIG --libs wayland-client wayland-egl wayland-cursor xkbcommon`
                 WAYLAND_SCANNER=`$PKG_CONFIG --variable=wayland_scanner wayland-scanner`
+                if $PKG_CONFIG --exists 'wayland-scanner >= 1.15'; then :
+  WAYLAND_SCANNER_CODE_MODE=private-code
+else
+  WAYLAND_SCANNER_CODE_MODE=code
+fi
                 video_wayland=yes
             fi
         fi
@@ -22901,6 +22907,47 @@ $as_echo "#define SDL_INPUT_FBSDKBIO 1" >>confdefs.h
     fi
 }
 
+CheckInputWSCONS()
+{
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for OpenBSD wscons" >&5
+$as_echo_n "checking for OpenBSD wscons... " >&6; }
+    use_input_wscons=no
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+     #include <sys/time.h>
+     #include <dev/wscons/wsconsio.h>
+     #include <dev/wscons/wsksymdef.h>
+     #include <dev/wscons/wsksymvar.h>
+     #include <sys/ioctl.h>
+
+int
+main ()
+{
+
+    	struct wskbd_map_data data;
+    	ioctl(0, WSKBDIO_GETMAP, &data);
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+
+     use_input_wscons=yes
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $use_input_wscons" >&5
+$as_echo "$use_input_wscons" >&6; }
+     if test x$use_input_wscons = xyes; then
+
+$as_echo "#define SDL_INPUT_WSCONS 1" >>confdefs.h
+
+	SUMMARY_input="${SUMMARY_input} wscons"
+     fi
+}
+
 CheckLibUDev()
 {
     # Check whether --enable-libudev was given.
@@ -24853,6 +24900,9 @@ $as_echo "#define SDL_VIDEO_DRIVER_ANDROID 1" >>confdefs.h
           freebsd)
               CheckInputKBIO
           ;;
+          openbsd)
+              CheckInputWSCONS
+          ;;
         esac
         CheckUSBHID
         CheckHIDAPI
@@ -25027,6 +25077,11 @@ $as_echo "#define SDL_TIMER_UNIX 1" >>confdefs.h
             SOURCES="$SOURCES $srcdir/src/core/linux/SDL_evdev.c"
             SOURCES="$SOURCES $srcdir/src/core/linux/SDL_evdev_kbd.c"
             SOURCES="$SOURCES $srcdir/src/core/freebsd/SDL_evdev_kbd_freebsd.c"
+        fi
+        # Set up files for wscons input
+        if test x$use_input_wscons = xyes; then
+            SOURCES="$SOURCES $srcdir/src/core/openbsd/SDL_wscons_kbd.c"
+            SOURCES="$SOURCES $srcdir/src/core/openbsd/SDL_wscons_mouse.c"
         fi
         # Set up other core UNIX files
         SOURCES="$SOURCES $srcdir/src/core/linux/SDL_evdev_capabilities.c"
@@ -25822,7 +25877,7 @@ if test x$video_wayland = xyes; then
         echo ;\
         printf '%s\n' "\\$(gen)/\$p-protocol.c: \\$(srcdir)/wayland-protocols/\$p.xml" ;\
         printf '%s\n' "	@\\$(SHELL) \\$(auxdir)/mkinstalldirs \\$(gen)" ;\
-        printf '%s\n' "	\\$(RUN_CMD_GEN)\\$(WAYLAND_SCANNER) code \\$< \\$@" ;\
+        printf '%s\n' "	\\$(RUN_CMD_GEN)\\$(WAYLAND_SCANNER) \\$(WAYLAND_SCANNER_CODE_MODE) \\$< \\$@" ;\
         echo ;\
         printf '%s\n' "\\$(objects)/\$p-protocol.lo: \\$(gen)/\$p-protocol.c \\$(gen)/\$p-client-protocol.h" ;\
         printf '%s\n' "	\\$(RUN_CMD_CC)\\$(LIBTOOL) --tag=CC --mode=compile \\$(CC) \\$(CFLAGS) \\$(EXTRA_CFLAGS) $DEPENDENCY_TRACKING_OPTIONS -c \\$< -o \\$@" ;\
