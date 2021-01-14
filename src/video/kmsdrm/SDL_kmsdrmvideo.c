@@ -351,7 +351,7 @@ KMSDRM_WaitPageFlip(_THIS, SDL_WindowData *windata) {
     pfd.fd = viddata->drm_fd;
     pfd.events = POLLIN;
 
-    /* Stay on loop until we get the desired event
+    /* Stay on the while loop until we get the desired event.
        We need the while the loop because we could be in a situation where:
        -We get events on the FD in time, thus not on exiting on return number 1.
        -These events are not errors, thus not exiting on return number 2.
@@ -359,10 +359,10 @@ KMSDRM_WaitPageFlip(_THIS, SDL_WindowData *windata) {
         but if the event is not the pageflip we are waiting for, we arrive at the end
         of the loop and do loop re-entry, hoping the next event will be the pageflip.
 
-        So we could erroneously exit the function without the pageflip event to arrive
-        if it wasn't for the while loop!
+        If it wasn't for the while loop, we could erroneously exit the function
+        without the pageflip event to arrive!
 
-      Vblank events, for example, hit the FD and they are POLLIN events too (POLLIN
+      For example, vblank events hit the FD and they are POLLIN events too (POLLIN
       means "there's data to read on the FD"), but they are not the pageflip event
       we are waiting for, so the drmEventHandle() doesn't run the flip handler, and
       since waiting_for_flip is set on the pageflip handle, it's not set and we stay
@@ -390,7 +390,7 @@ KMSDRM_WaitPageFlip(_THIS, SDL_WindowData *windata) {
         if (pfd.revents & POLLIN) {
             /* There is data to read on the FD!
                Is the event a pageflip? We know it is a pageflip if it matches the
-               event we are passing in &ev. If it is, drmHandleEvent() will unset
+               event we are passing in &ev. If it does, drmHandleEvent() will unset
                windata->waiting_for_flip and we will get out of the "while" loop.
                If it's not, we keep iterating on the loop. */
             KMSDRM_drmHandleEvent(viddata->drm_fd, &ev);
