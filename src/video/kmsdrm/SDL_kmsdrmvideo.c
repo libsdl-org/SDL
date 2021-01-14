@@ -34,6 +34,8 @@
 
 #ifdef SDL_INPUT_LINUXEV
 #include "../../core/linux/SDL_evdev.h"
+#elif defined SDL_INPUT_WSCONS
+#include "../../core/openbsd/SDL_wscons.h"
 #endif
 
 /* KMS/DRM declarations */
@@ -839,6 +841,8 @@ KMSDRM_VideoInit(_THIS)
 
 #ifdef SDL_INPUT_LINUXEV
     SDL_EVDEV_Init();
+#elif defined(SDL_INPUT_WSCONS)
+    SDL_WSCONS_Init();
 #endif
 
     /* Since we create and show the default cursor on KMSDRM_InitMouse() and
@@ -879,6 +883,8 @@ KMSDRM_VideoQuit(_THIS)
 
 #ifdef SDL_INPUT_LINUXEV
     SDL_EVDEV_Quit();
+#elif defined(SDL_INPUT_WSCONS)
+    SDL_WSCONS_Quit();
 #endif
 
     /* Clear out the window list */

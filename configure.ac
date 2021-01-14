@@ -2679,6 +2679,30 @@ CheckInputKBIO()
     fi
 }
 
+dnl See if we can use the wscons input driver
+CheckInputWSCONS()
+{
+    AC_MSG_CHECKING(for OpenBSD wscons)
+    use_input_wscons=no
+    AC_TRY_COMPILE([
+     #include <sys/time.h>
+     #include <dev/wscons/wsconsio.h>
+     #include <dev/wscons/wsksymdef.h>
+     #include <dev/wscons/wsksymvar.h>
+     #include <sys/ioctl.h>
+     ],[
+    	struct wskbd_map_data data;
+    	ioctl(0, WSKBDIO_GETMAP, &data);
+     ],[
+     use_input_wscons=yes
+     ])
+     AC_MSG_RESULT($use_input_wscons)
+     if test x$use_input_wscons = xyes; then
+        AC_DEFINE(SDL_INPUT_WSCONS, 1, [ ])
+	SUMMARY_input="${SUMMARY_input} wscons"
+     fi
+}
+
 dnl See if the platform offers libudev for device enumeration and hotplugging.
 CheckLibUDev()
 {
@@ -3596,6 +3620,9 @@ case "$host" in
           freebsd)
               CheckInputKBIO
           ;;
+          openbsd)
+              CheckInputWSCONS
+          ;;
         esac
         CheckUSBHID
         CheckHIDAPI
@@ -3740,6 +3767,11 @@ case "$host" in
             SOURCES="$SOURCES $srcdir/src/core/linux/SDL_evdev.c"
             SOURCES="$SOURCES $srcdir/src/core/linux/SDL_evdev_kbd.c"
             SOURCES="$SOURCES $srcdir/src/core/freebsd/SDL_evdev_kbd_freebsd.c"
+        fi
+        # Set up files for wscons input
+        if test x$use_input_wscons = xyes; then
+            SOURCES="$SOURCES $srcdir/src/core/openbsd/SDL_wscons_kbd.c"
+            SOURCES="$SOURCES $srcdir/src/core/openbsd/SDL_wscons_mouse.c"
         fi
         # Set up other core UNIX files
         SOURCES="$SOURCES $srcdir/src/core/linux/SDL_evdev_capabilities.c"
