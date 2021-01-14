@@ -152,14 +152,17 @@ FreeDevice(recDevice *removeDevice)
         /* save next device prior to disposing of this device */
         pDeviceNext = removeDevice->pNext;
 
-        if ( gpDeviceList == removeDevice ) {
+        if (gpDeviceList == removeDevice) {
             gpDeviceList = pDeviceNext;
         } else if (gpDeviceList) {
-            recDevice *device = gpDeviceList;
-            while (device->pNext != removeDevice) {
-                device = device->pNext;
+            recDevice *device;
+
+            for (device = gpDeviceList; device; device = device->pNext) {
+                if (device->pNext == removeDevice) {
+                    device->pNext = pDeviceNext;
+                    break;
+                }
             }
-            device->pNext = pDeviceNext;
         }
         removeDevice->pNext = NULL;
 
