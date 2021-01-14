@@ -437,9 +437,9 @@ SDL_bool
 Wayland_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
-    const Uint32 version = ((((Uint32) info->version.major) * 1000000) +
-                            (((Uint32) info->version.minor) * 10000) +
-                            (((Uint32) info->version.patch)));
+    const Uint32 version = SDL_VERSIONNUM((Uint32)info->version.major,
+                                          (Uint32)info->version.minor,
+                                          (Uint32)info->version.patch);
 
     /* Before 2.0.6, it was possible to build an SDL with Wayland support
        (SDL_SysWMinfo will be large enough to hold Wayland info), but build
@@ -451,7 +451,7 @@ Wayland_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info)
        just return an error for older apps using this function. Those apps
        will need to be recompiled against newer headers or not use Wayland,
        maybe by forcing SDL_VIDEODRIVER=x11. */
-    if (version < 2000006) {
+    if (version < SDL_VERSIONNUM(2, 0, 6)) {
         info->subsystem = SDL_SYSWM_UNKNOWN;
         SDL_SetError("Version must be 2.0.6 or newer");
         return SDL_FALSE;
@@ -460,6 +460,9 @@ Wayland_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info)
     info->info.wl.display = data->waylandData->display;
     info->info.wl.surface = data->surface;
     info->info.wl.shell_surface = data->shell_surface.wl;
+    if (version >= SDL_VERSIONNUM(2, 0, 15)) {
+        info->info.wl.egl_window = data->egl_window;
+    }
     info->subsystem = SDL_SYSWM_WAYLAND;
 
     return SDL_TRUE;
