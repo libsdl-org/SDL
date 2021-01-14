@@ -1400,8 +1400,13 @@ elseif(WINDOWS)
     endif()
   endif()
 
+  if(WINDOWS_STORE)
+    file(GLOB WINRT_MISC_SOURCES ${SDL2_SOURCE_DIR}/src/misc/winrt/*.cpp)
+    set(SOURCE_FILES ${SOURCE_FILES} ${WINRT_MISC_SOURCES})
+  else()
   file(GLOB MISC_SOURCES ${SDL2_SOURCE_DIR}/src/misc/windows/*.c)
   set(SOURCE_FILES ${SOURCE_FILES} ${MISC_SOURCES})
+  endif()
   set(HAVE_SDL_MISC TRUE)
 
   # Check for DirectX
@@ -1524,7 +1529,7 @@ elseif(WINDOWS)
     set(HAVE_SDL_THREADS TRUE)
   endif()
 
-  if(SDL_SENSOR AND HAVE_SENSORSAPI_H)
+  if(SDL_SENSOR AND HAVE_SENSORSAPI_H AND NOT WINDOWS_STORE)
     set(SDL_SENSOR_WINDOWS 1)
     set(HAVE_SDL_SENSORS TRUE)
     file(GLOB WINDOWS_SENSOR_SOURCES ${SDL2_SOURCE_DIR}/src/sensor/windows/*.c)
