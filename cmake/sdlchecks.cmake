@@ -564,7 +564,7 @@ macro(CheckX11)
   endif()
 endmacro()
 
-macro(WaylandProtocolGen _SCANNER _XML _PROTL)
+macro(WaylandProtocolGen _SCANNER _CODE_MODE _XML _PROTL)
     set(_WAYLAND_PROT_C_CODE "${CMAKE_CURRENT_BINARY_DIR}/wayland-generated-protocols/${_PROTL}-protocol.c")
     set(_WAYLAND_PROT_H_CODE "${CMAKE_CURRENT_BINARY_DIR}/wayland-generated-protocols/${_PROTL}-client-protocol.h")
 
@@ -579,7 +579,7 @@ macro(WaylandProtocolGen _SCANNER _XML _PROTL)
         OUTPUT "${_WAYLAND_PROT_C_CODE}"
         DEPENDS "${_WAYLAND_PROT_H_CODE}"
         COMMAND "${_SCANNER}"
-        ARGS code "${_XML}" "${_WAYLAND_PROT_C_CODE}"
+        ARGS "${_CODE_MODE}" "${_XML}" "${_WAYLAND_PROT_C_CODE}"
     )
 
     set(SOURCE_FILES ${SOURCE_FILES} "${_WAYLAND_PROT_C_CODE}")
@@ -594,6 +594,7 @@ endmacro()
 macro(CheckWayland)
   if(VIDEO_WAYLAND)
     pkg_check_modules(WAYLAND wayland-client wayland-scanner wayland-egl wayland-cursor egl xkbcommon)
+    pkg_check_modules(WAYLAND_SCANNER_1_15 "wayland-scanner>=1.15")
 
     if(WAYLAND_FOUND)
       execute_process(
@@ -610,6 +611,12 @@ macro(CheckWayland)
     endif()
 
     if(WAYLAND_FOUND)
+      if(WAYLAND_SCANNER_1_15_FOUND)
+        set(WAYLAND_SCANNER_CODE_MODE "private-code")
+      else()
+        set(WAYLAND_SCANNER_CODE_MODE "code")
+      endif()
+
       link_directories(
           ${WAYLAND_LIBRARY_DIRS}
       )
@@ -629,7 +636,7 @@ macro(CheckWayland)
       file(GLOB WAYLAND_PROTOCOLS_XML RELATIVE "${SDL2_SOURCE_DIR}/wayland-protocols/" "${SDL2_SOURCE_DIR}/wayland-protocols/*.xml")
       foreach(_XML ${WAYLAND_PROTOCOLS_XML})
         string(REGEX REPLACE "\\.xml$" "" _PROTL "${_XML}")
-        WaylandProtocolGen("${WAYLAND_SCANNER}" "${SDL2_SOURCE_DIR}/wayland-protocols/${_XML}" "${_PROTL}")
+        WaylandProtocolGen("${WAYLAND_SCANNER}" "${WAYLAND_SCANNER_CODE_MODE}" "${SDL2_SOURCE_DIR}/wayland-protocols/${_XML}" "${_PROTL}")
       endforeach()
 
       if(VIDEO_WAYLAND_QT_TOUCH)

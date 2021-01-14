@@ -1539,6 +1539,9 @@ AS_HELP_STRING([--enable-video-wayland-qt-touch], [QtWayland server support for 
                 WAYLAND_CFLAGS=`$PKG_CONFIG --cflags wayland-client wayland-egl wayland-cursor xkbcommon`
                 WAYLAND_LIBS=`$PKG_CONFIG --libs wayland-client wayland-egl wayland-cursor xkbcommon`
                 WAYLAND_SCANNER=`$PKG_CONFIG --variable=wayland_scanner wayland-scanner`
+                AS_IF([$PKG_CONFIG --exists 'wayland-scanner >= 1.15'],
+                      [WAYLAND_SCANNER_CODE_MODE=private-code],
+                      [WAYLAND_SCANNER_CODE_MODE=code])
                 video_wayland=yes
             fi
         fi
@@ -4381,7 +4384,7 @@ if test x$video_wayland = xyes; then
         echo ;\
         printf '%s\n' "\\$(gen)/\$p-protocol.c: \\$(srcdir)/wayland-protocols/\$p.xml" ;\
         printf '%s\n' "	@\\$(SHELL) \\$(auxdir)/mkinstalldirs \\$(gen)" ;\
-        printf '%s\n' "	\\$(RUN_CMD_GEN)\\$(WAYLAND_SCANNER) code \\$< \\$@" ;\
+        printf '%s\n' "	\\$(RUN_CMD_GEN)\\$(WAYLAND_SCANNER) \\$(WAYLAND_SCANNER_CODE_MODE) \\$< \\$@" ;\
         echo ;\
         printf '%s\n' "\\$(objects)/\$p-protocol.lo: \\$(gen)/\$p-protocol.c \\$(gen)/\$p-client-protocol.h" ;\
         printf '%s\n' "	\\$(RUN_CMD_CC)\\$(LIBTOOL) --tag=CC --mode=compile \\$(CC) \\$(CFLAGS) \\$(EXTRA_CFLAGS) $DEPENDENCY_TRACKING_OPTIONS -c \\$< -o \\$@" ;\
@@ -4492,6 +4495,7 @@ AC_SUBST(EXTRA_CFLAGS)
 AC_SUBST(BUILD_LDFLAGS)
 AC_SUBST(EXTRA_LDFLAGS)
 AC_SUBST(WAYLAND_SCANNER)
+AC_SUBST(WAYLAND_SCANNER_CODE_MODE)
 
 cat >Makefile.rules <<__EOF__
 
