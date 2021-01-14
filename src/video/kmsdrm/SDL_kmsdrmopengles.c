@@ -100,6 +100,7 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window) {
     /* Wait for confirmation that the next front buffer has been flipped, at which
        point the previous front buffer can be released */
     if (!KMSDRM_WaitPageFlip(_this, windata)) {
+        SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Wait for previous pageflip failed");
         return 0;
     }
 
@@ -115,7 +116,7 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window) {
        This won't happen until pagelip completes. */
     if (!(_this->egl_data->eglSwapBuffers(_this->egl_data->egl_display,
                                            windata->egl_surface))) {
-        SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "eglSwapBuffers failed.");
+        SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "eglSwapBuffers failed");
         return 0;
     }
 
@@ -124,19 +125,20 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window) {
        from drawing into it!) */
     windata->next_bo = KMSDRM_gbm_surface_lock_front_buffer(windata->gs);
     if (!windata->next_bo) {
-        SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Could not lock GBM surface front buffer");
+        SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Could not lock front buffer on GBM surface");
         return 0;
     }
 
     /* Get an actual usable fb for the next front buffer. */
     fb_info = KMSDRM_FBFromBO(_this, windata->next_bo);
     if (!fb_info) {
+        SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Could not get a framebuffer");
         return 0;
     }
 
     /* Do we have a modeset pending? If so, configure the new mode on the CRTC.
-       Has to be done before the upcoming pageflip issue, so the buffer with the
-       new size is big enough so the CRTC doesn't read out of bounds. */
+       Has to be done before next pageflip issues, so the buffer with the
+       new size is big enough for preventing CRTC from reading out of bounds. */
     if (dispdata->modeset_pending) {
 
         ret = KMSDRM_drmModeSetCrtc(viddata->drm_fd,
@@ -147,9 +149,12 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window) {
 
         if (ret) {
             SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Could not set videomode on CRTC.");
+            return 0;
         }
 
-        return 0;
+        /* It's OK to return now if we have done a drmModeSetCrtc(),
+           it has done the pageflip and blocked until it was done. */
+        return 1;
     }
 
     /* Issue pageflip on the next front buffer.
@@ -185,11 +190,14 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window) {
        Just leave it here and don't worry. 
        Run your SDL2 program with "SDL_KMSDRM_DOUBLE_BUFFER=1 <program_name>"
        to enable this. */
-    if (_this->egl_data->egl_swapinterval == 1 && windata->double_buffer) {
-	KMSDRM_WaitPageFlip(_this, windata);
+    if (windata->double_buffer) {
+	if (!KMSDRM_WaitPageFlip(_this, windata)) {
+	    SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Immediate wait for previous pageflip failed");
+	    return 0;
+	}
     }
 
-    return 0;
+    return 1;
 }
 
 SDL_EGL_MakeCurrent_impl(KMSDRM)
