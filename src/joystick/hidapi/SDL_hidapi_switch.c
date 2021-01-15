@@ -90,6 +90,7 @@ typedef enum {
 } ESwitchSubcommandIDs;
 
 typedef enum {
+    k_eSwitchProprietaryCommandIDs_Status    = 0x01,
     k_eSwitchProprietaryCommandIDs_Handshake = 0x02,
     k_eSwitchProprietaryCommandIDs_HighSpeed = 0x03,
     k_eSwitchProprietaryCommandIDs_ForceUSB  = 0x04,
@@ -98,6 +99,7 @@ typedef enum {
 } ESwitchProprietaryCommandIDs;
 
 typedef enum {
+    k_eSwitchDeviceInfoControllerType_Unknown        = 0x0,
     k_eSwitchDeviceInfoControllerType_JoyConLeft     = 0x1,
     k_eSwitchDeviceInfoControllerType_JoyConRight    = 0x2,
     k_eSwitchDeviceInfoControllerType_ProController  = 0x3,
@@ -189,6 +191,16 @@ typedef struct
 
 typedef struct
 {
+	Uint8 ucPacketType;
+	Uint8 ucCommandID;
+	Uint8 ucFiller;
+
+	Uint8 ucDeviceType;
+	Uint8 rgucMACAddress[6];
+} SwitchProprietaryStatusPacket_t;
+
+typedef struct
+{
     Uint8 rgucData[4];
 } SwitchRumbleData_t;
 
@@ -223,6 +235,8 @@ typedef struct {
     SDL_bool m_bUsingBluetooth;
     SDL_bool m_bIsGameCube;
     SDL_bool m_bUseButtonLabels;
+    ESwitchDeviceInfoControllerType m_eControllerType;
+    Uint8 m_rgucMACAddress[6];
     Uint8 m_nCommandNumber;
     SwitchCommonOutputPacket_t m_RumblePacket;
     Uint8 m_rgucReadBuffer[k_unSwitchMaxOutputPacketLength];
@@ -298,7 +312,7 @@ HIDAPI_DriverSwitch_IsSupportedDevice(const char *name, SDL_GameControllerType t
        controller to continually attempt to reconnect is to filter it out by manufactuer/product string.
        Note that the controller does have a different product string when connected over Bluetooth.
      */
-    if (SDL_strcmp( name, "HORI Wireless Switch Pad" ) == 0) {
+    if (SDL_strcmp(name, "HORI Wireless Switch Pad") == 0) {
         return SDL_FALSE;
     }
     return (type == SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO) ? SDL_TRUE : SDL_FALSE;
@@ -511,6 +525,39 @@ static SDL_bool WriteRumble(SDL_DriverSwitch_Context *ctx)
     return WritePacket(ctx, (Uint8 *)&ctx->m_RumblePacket, sizeof(ctx->m_RumblePacket));
 }
 
+static SDL_bool BReadDeviceInfo(SDL_DriverSwitch_Context *ctx)
+{
+    SwitchSubcommandInputPacket_t *reply = NULL;
+
+    ctx->m_bUsingBluetooth = SDL_FALSE;
+
+    if (WriteProprietary(ctx, k_eSwitchProprietaryCommandIDs_Status, NULL, 0, SDL_TRUE)) {
+        SwitchProprietaryStatusPacket_t *status = (SwitchProprietaryStatusPacket_t *)&ctx->m_rgucReadBuffer[0];
+
+        ctx->m_eControllerType = (ESwitchDeviceInfoControllerType)status->ucDeviceType;
+        for (size_t i = 0; i < sizeof (ctx->m_rgucMACAddress); ++i)
+            ctx->m_rgucMACAddress[i] = status->rgucMACAddress[ sizeof(ctx->m_rgucMACAddress) - i - 1 ];
+
+        return SDL_TRUE;
+    }
+
+    ctx->m_bUsingBluetooth = SDL_TRUE;
+
+    if (WriteSubcommand(ctx, k_eSwitchSubcommandIDs_RequestDeviceInfo, NULL, 0, &reply)) {
+        // Byte 2: Controller ID (1=LJC, 2=RJC, 3=Pro)
+        ctx->m_eControllerType = (ESwitchDeviceInfoControllerType)reply->deviceInfo.ucDeviceType;
+
+        // Bytes 4-9: MAC address (big-endian)
+        memcpy(ctx->m_rgucMACAddress, reply->deviceInfo.rgucMACAddress, sizeof(ctx->m_rgucMACAddress));
+
+        return SDL_TRUE;
+    }
+
+    ctx->m_bUsingBluetooth = SDL_FALSE;
+
+    return SDL_FALSE;
+}
+
 static SDL_bool BTrySetupUSB(SDL_DriverSwitch_Context *ctx)
 {
     /* We have to send a connection handshake to the controller when communicating over USB
@@ -526,6 +573,9 @@ static SDL_bool BTrySetupUSB(SDL_DriverSwitch_Context *ctx)
         /*return SDL_FALSE;*/
     }
     if (!WriteProprietary(ctx, k_eSwitchProprietaryCommandIDs_Handshake, NULL, 0, SDL_TRUE)) {
+        return SDL_FALSE;
+    }
+    if (!WriteProprietary(ctx, k_eSwitchProprietaryCommandIDs_ForceUSB, NULL, 0, SDL_FALSE)) {
         return SDL_FALSE;
     }
     return SDL_TRUE;
@@ -764,9 +814,16 @@ HIDAPI_DriverSwitch_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joysti
         SetNeutralRumble(&ctx->m_RumblePacket.rumbleData[0]);
         SetNeutralRumble(&ctx->m_RumblePacket.rumbleData[1]);
 
-        /* Try setting up USB mode, and if that fails we're using Bluetooth */
-        if (!BTrySetupUSB(ctx)) {
-            ctx->m_bUsingBluetooth = SDL_TRUE;
+        if (!BReadDeviceInfo(ctx)) {
+            SDL_SetError("Couldn't read device info");
+            goto error;
+        }
+
+        if (!ctx->m_bUsingBluetooth) {
+            if (!BTrySetupUSB(ctx)) {
+                SDL_SetError("Couldn't setup USB mode");
+                goto error;
+            }
         }
 
         /* Determine the desired input mode (needed before loading stick calibration) */
@@ -822,6 +879,20 @@ HIDAPI_DriverSwitch_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joysti
             SetHomeLED(ctx, 100);
         }
         SetSlotLED(ctx, (joystick->instance_id % 4));
+
+        /* Set the serial number */
+        {
+            char serial[18];
+
+            SDL_snprintf(serial, sizeof(serial), "%.2x-%.2x-%.2x-%.2x-%.2x-%.2x",
+                ctx->m_rgucMACAddress[0],
+                ctx->m_rgucMACAddress[1],
+                ctx->m_rgucMACAddress[2],
+                ctx->m_rgucMACAddress[3],
+                ctx->m_rgucMACAddress[4],
+                ctx->m_rgucMACAddress[5]);
+            joystick->serial = SDL_strdup(serial);
+        }
     }
 
     if (IsGameCubeFormFactor(device->vendor_id, device->product_id)) {
