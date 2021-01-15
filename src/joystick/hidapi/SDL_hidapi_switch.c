@@ -533,9 +533,10 @@ static SDL_bool BReadDeviceInfo(SDL_DriverSwitch_Context *ctx)
 
     if (WriteProprietary(ctx, k_eSwitchProprietaryCommandIDs_Status, NULL, 0, SDL_TRUE)) {
         SwitchProprietaryStatusPacket_t *status = (SwitchProprietaryStatusPacket_t *)&ctx->m_rgucReadBuffer[0];
+        size_t i;
 
         ctx->m_eControllerType = (ESwitchDeviceInfoControllerType)status->ucDeviceType;
-        for (size_t i = 0; i < sizeof (ctx->m_rgucMACAddress); ++i)
+        for (i = 0; i < sizeof (ctx->m_rgucMACAddress); ++i)
             ctx->m_rgucMACAddress[i] = status->rgucMACAddress[ sizeof(ctx->m_rgucMACAddress) - i - 1 ];
 
         return SDL_TRUE;
