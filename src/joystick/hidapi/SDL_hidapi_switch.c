@@ -827,14 +827,18 @@ HIDAPI_DriverSwitch_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joysti
     return SDL_TRUE;
 
 error:
-    if (device->dev) {
-        hid_close(device->dev);
-        device->dev = NULL;
+    SDL_LockMutex(device->dev_lock);
+    {
+        if (device->dev) {
+            hid_close(device->dev);
+            device->dev = NULL;
+        }
+        if (device->context) {
+            SDL_free(device->context);
+            device->context = NULL;
+        }
     }
-    if (device->context) {
-        SDL_free(device->context);
-        device->context = NULL;
-    }
+    SDL_UnlockMutex(device->dev_lock);
     return SDL_FALSE;
 }
 
@@ -1353,11 +1357,15 @@ HIDAPI_DriverSwitch_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joyst
     SDL_DelHintCallback(SDL_HINT_GAMECONTROLLER_USE_BUTTON_LABELS,
                         SDL_GameControllerButtonReportingHintChanged, ctx);
 
-    hid_close(device->dev);
-    device->dev = NULL;
+    SDL_LockMutex(device->dev_lock);
+    {
+        hid_close(device->dev);
+        device->dev = NULL;
 
-    SDL_free(device->context);
-    device->context = NULL;
+        SDL_free(device->context);
+        device->context = NULL;
+    }
+    SDL_UnlockMutex(device->dev_lock);
 }
 
 static void

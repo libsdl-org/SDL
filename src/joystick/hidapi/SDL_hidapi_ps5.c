@@ -1045,11 +1045,15 @@ HIDAPI_DriverPS5_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick
     SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_PS5_PLAYER_LED,
                         SDL_PS5PlayerLEDHintChanged, ctx);
 
-    hid_close(device->dev);
-    device->dev = NULL;
+    SDL_LockMutex(device->dev_lock);
+    {
+        hid_close(device->dev);
+        device->dev = NULL;
 
-    SDL_free(device->context);
-    device->context = NULL;
+        SDL_free(device->context);
+        device->context = NULL;
+    }
+    SDL_UnlockMutex(device->dev_lock);
 }
 
 static void

@@ -312,11 +312,15 @@ HIDAPI_DriverXbox360W_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joy
 static void
 HIDAPI_DriverXbox360W_FreeDevice(SDL_HIDAPI_Device *device)
 {
-    hid_close(device->dev);
-    device->dev = NULL;
+    SDL_LockMutex(device->dev_lock);
+    {
+        hid_close(device->dev);
+        device->dev = NULL;
 
-    SDL_free(device->context);
-    device->context = NULL;
+        SDL_free(device->context);
+        device->context = NULL;
+    }
+    SDL_UnlockMutex(device->dev_lock);
 }
 
 SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXbox360W =

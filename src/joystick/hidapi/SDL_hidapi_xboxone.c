@@ -1058,11 +1058,15 @@ HIDAPI_DriverXboxOne_UpdateDevice(SDL_HIDAPI_Device *device)
 static void
 HIDAPI_DriverXboxOne_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
-    hid_close(device->dev);
-    device->dev = NULL;
+    SDL_LockMutex(device->dev_lock);
+    {
+        hid_close(device->dev);
+        device->dev = NULL;
 
-    SDL_free(device->context);
-    device->context = NULL;
+        SDL_free(device->context);
+        device->context = NULL;
+    }
+    SDL_UnlockMutex(device->dev_lock);
 }
 
 static void
