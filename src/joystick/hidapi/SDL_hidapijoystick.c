@@ -1221,7 +1221,9 @@ HIDAPI_JoystickClose(SDL_Joystick * joystick)
             SDL_LockMutex(device->dev_lock);
         }
 
+        SDL_LockMutex(device->dev_lock);
         device->driver->CloseJoystick(device, joystick);
+        SDL_UnlockMutex(device->dev_lock);
 
         SDL_free(joystick->hwdata);
         joystick->hwdata = NULL;
