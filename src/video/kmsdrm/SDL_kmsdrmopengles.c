@@ -99,7 +99,7 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window) {
 
     /* Wait for confirmation that the next front buffer has been flipped, at which
        point the previous front buffer can be released */
-    if (!KMSDRM_WaitPageFlip(_this, windata)) {
+    if (!KMSDRM_WaitPageflip(_this, windata)) {
         SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Wait for previous pageflip failed");
         return 0;
     }
@@ -182,16 +182,16 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window) {
     }
 
     /* Wait immediately for vsync (as if we only had two buffers).
-       Even if we are already doing a WaitPageFlip at the begining of this
+       Even if we are already doing a WaitPageflip at the begining of this
        function, this is NOT redundant because here we wait immediately
        after submitting the image to the screen, reducing lag, and if
        we have waited here, there won't be a pending pageflip so the
-       WaitPageFlip at the beggining of this function will be a no-op.
+       WaitPageflip at the beggining of this function will be a no-op.
        Just leave it here and don't worry. 
        Run your SDL2 program with "SDL_KMSDRM_DOUBLE_BUFFER=1 <program_name>"
        to enable this. */
     if (windata->double_buffer) {
-	if (!KMSDRM_WaitPageFlip(_this, windata)) {
+	if (!KMSDRM_WaitPageflip(_this, windata)) {
 	    SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Immediate wait for previous pageflip failed");
 	    return 0;
 	}
