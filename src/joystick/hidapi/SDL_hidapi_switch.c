@@ -44,13 +44,14 @@
 /* Define this to get log output for rumble logic */
 /*#define DEBUG_RUMBLE*/
 
-/* How often you can write rumble commands to the controller in Bluetooth mode
-   If you send commands more frequently than this, you can turn off the controller.
+/* How often you can write rumble commands to the controller.
+   If you send commands more frequently than this, you can turn off the controller
+   in Bluetooth mode, or the motors can miss the command in USB mode.
  */
-#define RUMBLE_WRITE_FREQUENCY_MS   25
+#define RUMBLE_WRITE_FREQUENCY_MS   30
 
 /* How often you have to refresh a long duration rumble to keep the motors running */
-#define RUMBLE_REFRESH_FREQUENCY_MS 40
+#define RUMBLE_REFRESH_FREQUENCY_MS 50
 
 #define SWITCH_GYRO_SCALE      14.2842f
 #define SWITCH_ACCEL_SCALE     4096.f
@@ -880,7 +881,7 @@ HIDAPI_DriverSwitch_ActuallyRumbleJoystick(SDL_DriverSwitch_Context *ctx, Uint16
 static int
 HIDAPI_DriverSwitch_SendPendingRumble(SDL_DriverSwitch_Context *ctx)
 {
-    if ((SDL_GetTicks() - ctx->m_unRumbleSent) < RUMBLE_WRITE_FREQUENCY_MS) {
+    if (!SDL_TICKS_PASSED(SDL_GetTicks(), ctx->m_unRumbleSent + RUMBLE_WRITE_FREQUENCY_MS)) {
         return 0;
     }
 
@@ -889,7 +890,7 @@ HIDAPI_DriverSwitch_SendPendingRumble(SDL_DriverSwitch_Context *ctx)
         Uint16 high_frequency_rumble = (Uint16)ctx->m_unRumblePending;
 
 #ifdef DEBUG_RUMBLE
-        SDL_Log("Sent pending rumble %d/%d\n", low_frequency_rumble, high_frequency_rumble);
+        SDL_Log("Sent pending rumble %d/%d, %d ms after previous rumble\n", low_frequency_rumble, high_frequency_rumble, SDL_GetTicks() - ctx->m_unRumbleSent);
 #endif
         ctx->m_bRumblePending = SDL_FALSE;
         ctx->m_unRumblePending = 0;
@@ -901,7 +902,7 @@ HIDAPI_DriverSwitch_SendPendingRumble(SDL_DriverSwitch_Context *ctx)
         ctx->m_bRumbleZeroPending = SDL_FALSE;
 
 #ifdef DEBUG_RUMBLE
-        SDL_Log("Sent pending zero rumble\n");
+        SDL_Log("Sent pending zero rumble, %d ms after previous rumble\n", SDL_GetTicks() - ctx->m_unRumbleSent);
 #endif
         return HIDAPI_DriverSwitch_ActuallyRumbleJoystick(ctx, 0, 0);
     }
@@ -920,7 +921,7 @@ HIDAPI_DriverSwitch_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joys
         }
     }
 
-    if (ctx->m_bUsingBluetooth && (SDL_GetTicks() - ctx->m_unRumbleSent) < RUMBLE_WRITE_FREQUENCY_MS) {
+    if (!SDL_TICKS_PASSED(SDL_GetTicks(), ctx->m_unRumbleSent + RUMBLE_WRITE_FREQUENCY_MS)) {
         if (low_frequency_rumble || high_frequency_rumble) {
             Uint32 unRumblePending = ((Uint32)low_frequency_rumble << 16) | high_frequency_rumble;
 
@@ -1332,7 +1333,7 @@ HIDAPI_DriverSwitch_UpdateDevice(SDL_HIDAPI_Device *device)
     } else if (ctx->m_bRumbleActive &&
                SDL_TICKS_PASSED(SDL_GetTicks(), ctx->m_unRumbleSent + RUMBLE_REFRESH_FREQUENCY_MS)) {
 #ifdef DEBUG_RUMBLE
-        SDL_Log("Sent continuing rumble\n");
+        SDL_Log("Sent continuing rumble, %d ms after previous rumble\n", SDL_GetTicks() - ctx->m_unRumbleSent);
 #endif
         WriteRumble(ctx);
     }
