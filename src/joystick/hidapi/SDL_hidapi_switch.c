@@ -44,6 +44,13 @@
 /* Define this to get log output for rumble logic */
 /*#define DEBUG_RUMBLE*/
 
+/* The initialization sequence doesn't appear to work correctly on Windows unless
+   the reads and writes are on the same thread.
+
+   ... and now I can't reproduce this, so I'm leaving it in, but disabled for now.
+ */
+/*#define SWITCH_SYNCHRONOUS_WRITES*/
+
 /* How often you can write rumble commands to the controller.
    If you send commands more frequently than this, you can turn off the controller
    in Bluetooth mode, or the motors can miss the command in USB mode.
@@ -316,11 +323,15 @@ static int ReadInput(SDL_DriverSwitch_Context *ctx)
 
 static int WriteOutput(SDL_DriverSwitch_Context *ctx, const Uint8 *data, int size)
 {
+#ifdef SWITCH_SYNCHRONOUS_WRITES
+    return hid_write(ctx->device->dev, data, size);
+#else
     /* Use the rumble thread for general asynchronous writes */
     if (SDL_HIDAPI_LockRumble() < 0) {
         return -1;
     }
     return SDL_HIDAPI_SendRumbleAndUnlock(ctx->device, data, size);
+#endif /* SWITCH_SYNCHRONOUS_WRITES */
 }
 
 static SwitchSubcommandInputPacket_t *ReadSubcommandReply(SDL_DriverSwitch_Context *ctx, ESwitchSubcommandIDs expectedID)
@@ -438,6 +449,7 @@ static SDL_bool WriteProprietary(SDL_DriverSwitch_Context *ctx, ESwitchProprieta
             return SDL_FALSE;
         }
 
+        SDL_zero(packet);
         packet.ucPacketType = k_eSwitchOutputReportIDs_Proprietary;
         packet.ucProprietaryID = ucCommand;
         if (pBuf) {
