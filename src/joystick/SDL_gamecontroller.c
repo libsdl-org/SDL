@@ -605,6 +605,10 @@ static ControllerMapping_t *SDL_CreateMappingForHIDAPIController(SDL_JoystickGUI
                 SDL_strlcat(mapping_string, "misc1:b15,", sizeof(mapping_string));
                 break;
             default:
+                if (vendor == 0 && product == 0) {
+                    /* This is a Bluetooth Nintendo Switch Pro controller */
+                    SDL_strlcat(mapping_string, "misc1:b15,", sizeof(mapping_string));
+                }
                 break;
             }
         }
