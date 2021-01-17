@@ -242,16 +242,14 @@ KMSDRM_ShowCursor(SDL_Cursor * cursor)
     /* Prepare a buffer we can dump to our GBM BO (different
        size, alpha premultiplication...) */
     bo_stride = KMSDRM_gbm_bo_get_stride(dispdata->cursor_bo);
-    bufsize = bo_stride * curdata->h;
+    bufsize = bo_stride * dispdata->cursor_h;
 
-    ready_buffer = (uint32_t*)SDL_malloc(bufsize);
+    ready_buffer = (uint32_t*)SDL_calloc(1, bufsize);
+
     if (!ready_buffer) {
         ret = SDL_OutOfMemory();
         goto cleanup;
     }
-
-    /* Clean the whole buffer we are preparing. */
-    SDL_memset(ready_buffer, 0x00, bo_stride * curdata->h);
 
     /* Copy from the cursor buffer to a buffer that we can dump to the GBM BO,
        pre-multiplying by alpha each pixel as we go. */
