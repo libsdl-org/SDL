@@ -23865,50 +23865,6 @@ if test "x$ac_cv_header_dxgi_h" = xyes; then :
 fi
 
 
-        ac_fn_c_check_header_mongrel "$LINENO" "xinput.h" "ac_cv_header_xinput_h" "$ac_includes_default"
-if test "x$ac_cv_header_xinput_h" = xyes; then :
-  have_xinput=yes
-fi
-
-
-        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-#include <windows.h>
-#include <xinput.h>
-XINPUT_GAMEPAD_EX x1;
-
-int
-main ()
-{
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
-  have_xinput_gamepadex=yes
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-#include <windows.h>
-#include <xinput.h>
-XINPUT_STATE_EX s1;
-
-int
-main ()
-{
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
-  have_xinput_stateex=yes
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 
         if test x$have_ddraw = xyes; then
 
@@ -23930,21 +23886,6 @@ $as_echo "#define HAVE_DSOUND_H 1" >>confdefs.h
 $as_echo "#define HAVE_DXGI_H 1" >>confdefs.h
 
         fi
-        if test x$have_xinput = xyes; then
-
-$as_echo "#define HAVE_XINPUT_H 1" >>confdefs.h
-
-        fi
-        if test x$have_xinput_gamepadex = xyes; then
-
-$as_echo "#define HAVE_XINPUT_GAMEPAD_EX 1" >>confdefs.h
-
-        fi
-        if test x$have_xinput_stateex = xyes; then
-
-$as_echo "#define HAVE_XINPUT_STATE_EX 1" >>confdefs.h
-
-        fi
 
         # FIXME: latest Cygwin finds dinput headers, but we die on other win32 headers.
         # FIXME:  ...so force it off for now.
@@ -23953,6 +23894,67 @@ $as_echo "#define HAVE_XINPUT_STATE_EX 1" >>confdefs.h
             have_dinput=false
             ;;
         esac
+    fi
+
+        ac_fn_c_check_header_mongrel "$LINENO" "xinput.h" "ac_cv_header_xinput_h" "$ac_includes_default"
+if test "x$ac_cv_header_xinput_h" = xyes; then :
+  have_xinput=yes
+fi
+
+
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <windows.h>
+#include <xinput.h>
+XINPUT_GAMEPAD_EX x1;
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  have_xinput_gamepadex=yes
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <windows.h>
+#include <xinput.h>
+XINPUT_STATE_EX s1;
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  have_xinput_stateex=yes
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+    if test x$have_xinput = xyes; then
+
+$as_echo "#define HAVE_XINPUT_H 1" >>confdefs.h
+
+    fi
+    if test x$have_xinput_gamepadex = xyes; then
+
+$as_echo "#define HAVE_XINPUT_GAMEPAD_EX 1" >>confdefs.h
+
+    fi
+    if test x$have_xinput_stateex = xyes; then
+
+$as_echo "#define HAVE_XINPUT_STATE_EX 1" >>confdefs.h
+
     fi
 
     ac_fn_c_check_header_mongrel "$LINENO" "mmdeviceapi.h" "ac_cv_header_mmdeviceapi_h" "$ac_includes_default"

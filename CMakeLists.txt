@@ -1421,26 +1421,6 @@ elseif(WINDOWS)
       set(CMAKE_REQUIRED_FLAGS "/I\"$ENV{DXSDK_DIR}\\Include\"")
     endif()
 
-    if(HAVE_WIN32_CC)
-      # xinput.h may need windows.h, but doesn't include it itself.
-      check_c_source_compiles("
-        #include <windows.h>
-        #include <xinput.h>
-        int main(int argc, char **argv) { }" HAVE_XINPUT_H)
-      check_c_source_compiles("
-        #include <windows.h>
-        #include <xinput.h>
-        XINPUT_GAMEPAD_EX x1;
-        int main(int argc, char **argv) { }" HAVE_XINPUT_GAMEPAD_EX)
-      check_c_source_compiles("
-        #include <windows.h>
-        #include <xinput.h>
-        XINPUT_STATE_EX s1;
-        int main(int argc, char **argv) { }" HAVE_XINPUT_STATE_EX)
-    else()
-      check_include_file(xinput.h HAVE_XINPUT_H)
-    endif()
-
     check_include_file(d3d9.h HAVE_D3D_H)
     check_include_file(d3d11_1.h HAVE_D3D11_H)
     check_include_file(ddraw.h HAVE_DDRAW_H)
@@ -1459,6 +1439,26 @@ elseif(WINDOWS)
       endif()
     endif()
     set(CMAKE_REQUIRED_FLAGS ${ORIG_CMAKE_REQUIRED_FLAGS})
+  endif()
+
+  if(HAVE_WIN32_CC)
+    # xinput.h may need windows.h, but does not include it itself.
+    check_c_source_compiles("
+      #include <windows.h>
+      #include <xinput.h>
+      int main(int argc, char **argv) { }" HAVE_XINPUT_H)
+    check_c_source_compiles("
+      #include <windows.h>
+      #include <xinput.h>
+      XINPUT_GAMEPAD_EX x1;
+      int main(int argc, char **argv) { }" HAVE_XINPUT_GAMEPAD_EX)
+    check_c_source_compiles("
+      #include <windows.h>
+      #include <xinput.h>
+      XINPUT_STATE_EX s1;
+      int main(int argc, char **argv) { }" HAVE_XINPUT_STATE_EX)
+  else()
+    check_include_file(xinput.h HAVE_XINPUT_H)
   endif()
 
   # headers needed elsewhere

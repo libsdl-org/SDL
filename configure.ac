@@ -3154,17 +3154,6 @@ AS_HELP_STRING([--enable-directx], [use DirectX for Windows audio/video [[defaul
         AC_CHECK_HEADER(dsound.h, have_dsound=yes)
         AC_CHECK_HEADER(dinput.h, have_dinput=yes)
         AC_CHECK_HEADER(dxgi.h, have_dxgi=yes)
-        AC_CHECK_HEADER(xinput.h, have_xinput=yes)
-        AC_TRY_COMPILE([
-#include <windows.h>
-#include <xinput.h>
-XINPUT_GAMEPAD_EX x1;
-        ],[],[have_xinput_gamepadex=yes])
-        AC_TRY_COMPILE([
-#include <windows.h>
-#include <xinput.h>
-XINPUT_STATE_EX s1;
-        ],[],[have_xinput_stateex=yes])
 
         if test x$have_ddraw = xyes; then
             AC_DEFINE(HAVE_DDRAW_H, 1, [ ])
@@ -3178,15 +3167,6 @@ XINPUT_STATE_EX s1;
         if test x$have_dxgi = xyes; then
             AC_DEFINE(HAVE_DXGI_H, 1, [ ])
         fi
-        if test x$have_xinput = xyes; then
-            AC_DEFINE(HAVE_XINPUT_H, 1, [ ])
-        fi
-        if test x$have_xinput_gamepadex = xyes; then
-            AC_DEFINE(HAVE_XINPUT_GAMEPAD_EX, 1, [ ])
-        fi
-        if test x$have_xinput_stateex = xyes; then
-            AC_DEFINE(HAVE_XINPUT_STATE_EX, 1, [ ])
-        fi
 
         # FIXME: latest Cygwin finds dinput headers, but we die on other win32 headers.
         # FIXME:  ...so force it off for now.
@@ -3195,6 +3175,29 @@ XINPUT_STATE_EX s1;
             have_dinput=false
             ;;
         esac
+    fi
+
+    dnl The following are independent of --enable-directx
+    AC_CHECK_HEADER(xinput.h, have_xinput=yes)
+    AC_TRY_COMPILE([
+#include <windows.h>
+#include <xinput.h>
+XINPUT_GAMEPAD_EX x1;
+        ],[],[have_xinput_gamepadex=yes])
+    AC_TRY_COMPILE([
+#include <windows.h>
+#include <xinput.h>
+XINPUT_STATE_EX s1;
+        ],[],[have_xinput_stateex=yes])
+
+    if test x$have_xinput = xyes; then
+        AC_DEFINE(HAVE_XINPUT_H, 1, [ ])
+    fi
+    if test x$have_xinput_gamepadex = xyes; then
+        AC_DEFINE(HAVE_XINPUT_GAMEPAD_EX, 1, [ ])
+    fi
+    if test x$have_xinput_stateex = xyes; then
+        AC_DEFINE(HAVE_XINPUT_STATE_EX, 1, [ ])
     fi
 
     AC_CHECK_HEADER(mmdeviceapi.h, have_wasapi=yes)
