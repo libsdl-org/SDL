@@ -24902,7 +24902,7 @@ $as_echo "#define SDL_VIDEO_DRIVER_ANDROID 1" >>confdefs.h
           freebsd)
               CheckInputKBIO
           ;;
-          openbsd)
+          openbsd|netbsd)
               CheckInputWSCONS
           ;;
         esac

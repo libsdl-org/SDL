@@ -38,6 +38,12 @@
 
 #include "../../events/SDL_events_c.h"
 
+#ifdef __NetBSD__
+#define KS_GROUP_Ascii KS_GROUP_Plain
+#define KS_Cmd_ScrollBack KS_Cmd_ScrollFastUp
+#define KS_Cmd_ScrollFwd KS_Cmd_ScrollFastDown
+#endif
+
 #define RETIFIOCTLERR(x) if (x == -1) { free(input); input = NULL; return NULL;}
 
 typedef struct SDL_WSCONS_mouse_input_data SDL_WSCONS_mouse_input_data;
@@ -216,11 +222,13 @@ static struct SDL_wscons_compose_tab_s {
     { { KS_asciicircum,		KS_u },			KS_ucircumflex },
     { { KS_grave,			KS_u },			KS_ugrave },
     { { KS_acute,			KS_y },			KS_yacute },
+#ifndef __NetBSD__
     { { KS_dead_caron,		KS_space },		KS_L2_caron },
     { { KS_dead_caron,		KS_S },			KS_L2_Scaron },
     { { KS_dead_caron,		KS_Z },			KS_L2_Zcaron },
     { { KS_dead_caron,		KS_s },			KS_L2_scaron },
     { { KS_dead_caron,		KS_z },			KS_L2_zcaron }
+#endif
 };
 
 static keysym_t ksym_upcase(keysym_t ksym)
@@ -306,10 +314,12 @@ static struct wscons_keycode_to_SDL {
     {KS_f18, SDL_SCANCODE_F18},
     {KS_f19, SDL_SCANCODE_F19},
     {KS_f20, SDL_SCANCODE_F20},
+#if !defined(__NetBSD__)
     {KS_f21, SDL_SCANCODE_F21},
     {KS_f22, SDL_SCANCODE_F22},
     {KS_f23, SDL_SCANCODE_F23},
     {KS_f24, SDL_SCANCODE_F24},
+#endif
     {KS_Meta_L, SDL_SCANCODE_LGUI},
     {KS_Meta_R, SDL_SCANCODE_RGUI},
     {KS_Zenkaku_Hankaku, SDL_SCANCODE_LANG5},
@@ -397,6 +407,9 @@ static SDL_WSCONS_mouse_input_data* mouseInputData = NULL;
 #define IS_CAPSLOCK_ON   (input->ledstate & LED_CAP)
 static SDL_WSCONS_input_data* SDL_WSCONS_Init_Keyboard(const char* dev)
 {
+#ifdef WSKBDIO_SETVERSION
+    int version = WSKBDIO_EVENT_VERSION;
+#endif
     SDL_WSCONS_input_data* input = (SDL_WSCONS_input_data*)SDL_calloc(1, sizeof(SDL_WSCONS_input_data));
 
     if (!input) {
@@ -419,7 +432,6 @@ static SDL_WSCONS_input_data* SDL_WSCONS_Init_Keyboard(const char* dev)
     input->origledstate = input->ledstate;
     RETIFIOCTLERR(ioctl(input->fd, WSKBDIO_GETENCODING, &input->encoding));
 #ifdef WSKBDIO_SETVERSION
-    int version = WSKBDIO_EVENT_VERSION;
     RETIFIOCTLERR(ioctl(input->fd, WSKBDIO_SETVERSION, &version));
 #endif
     return input;
@@ -583,6 +595,7 @@ static void updateKeyboard(SDL_WSCONS_input_data* input)
                     input->lockheldstate[2] = 1;
                     break;
                 }
+#ifndef __NetBSD__
                 case KS_Mode_Lock: {
                     if (input->lockheldstate[3] >= 1) break;
                     input->ledstate ^= 1 << 4;
@@ -590,6 +603,7 @@ static void updateKeyboard(SDL_WSCONS_input_data* input)
                     input->lockheldstate[3] = 1;
                     break;
                 }
+#endif
                 case KS_Shift_Lock: {
                     if (input->lockheldstate[4] >= 1) break;
                     input->ledstate ^= 1 << 5;
@@ -656,10 +670,12 @@ static void updateKeyboard(SDL_WSCONS_input_data* input)
                     if (input->lockheldstate[2]) input->lockheldstate[2] = 0;
                 }
                 break;
+#ifndef __NetBSD__
                 case KS_Mode_Lock: {
                     if (input->lockheldstate[3]) input->lockheldstate[3] = 0;
                 }
                 break;
+#endif
                 case KS_Shift_Lock: {
                     if (input->lockheldstate[4]) input->lockheldstate[4] = 0;
                 }
@@ -770,7 +786,7 @@ static void updateKeyboard(SDL_WSCONS_input_data* input)
                         result = KS_voidSymbol;
                         input->ledstate &= ~WSKBD_LED_COMPOSE;
                         ioctl(input->fd,WSKBDIO_SETLEDS, &input->ledstate);
-                        for (acc_i = 0; acc_i < nitems(compose_tab); acc_i++) {
+                        for (acc_i = 0; acc_i < SDL_arraysize(compose_tab); acc_i++) {
                             if ((compose_tab[acc_i].elem[0] == input->composebuffer[0]
                                     && compose_tab[acc_i].elem[1] == input->composebuffer[1])
                                     || (compose_tab[acc_i].elem[0] == input->composebuffer[1]

@@ -37,16 +37,20 @@ typedef struct SDL_WSCONS_mouse_input_data
 
 SDL_WSCONS_mouse_input_data* SDL_WSCONS_Init_Mouse()
 {
+#ifdef WSMOUSEIO_SETVERSION
+    int version = WSMOUSE_EVENT_VERSION;
+#endif
     SDL_WSCONS_mouse_input_data* mouseInputData = SDL_calloc(1, sizeof(SDL_WSCONS_mouse_input_data));
 
     if (!mouseInputData) return NULL;
     mouseInputData->fd = open("/dev/wsmouse",O_RDWR | O_NONBLOCK);
     if (mouseInputData->fd == -1) {free(mouseInputData); return NULL; }
+#ifdef WSMOUSEIO_SETMODE
     ioctl(mouseInputData->fd, WSMOUSEIO_SETMODE, WSMOUSE_COMPAT);
-    #ifdef WSMOUSEIO_SETVERSION
-    int version = WSMOUSEIO_EVENT_VERSION;
-    ioctl(inputData->fd, WSMOUSEIO_SETVERSION, &version);
-    #endif
+#endif
+#ifdef WSMOUSEIO_SETVERSION
+    ioctl(mouseInputData->fd, WSMOUSEIO_SETVERSION, &version);
+#endif
     return mouseInputData;
 }
 

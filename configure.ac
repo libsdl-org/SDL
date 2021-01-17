@@ -3626,7 +3626,7 @@ case "$host" in
           freebsd)
               CheckInputKBIO
           ;;
-          openbsd)
+          openbsd|netbsd)
               CheckInputWSCONS
           ;;
         esac
