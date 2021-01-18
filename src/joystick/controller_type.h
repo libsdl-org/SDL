@@ -522,11 +522,9 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x05ac, 0x0001 ), k_eControllerType_AppleController, NULL },	// MFI Extended Gamepad (generic entry for iOS/tvOS)
 	{ MAKE_CONTROLLER_ID( 0x05ac, 0x0002 ), k_eControllerType_AppleController, NULL },	// MFI Standard Gamepad (generic entry for iOS/tvOS)
 
-    // We currently don't support using a pair of Switch Joy-Con's as a single
-    // controller and we don't want to support using them individually for the
-    // time being, so these should be disabled until one of the above is true
-    // { MAKE_CONTROLLER_ID( 0x057e, 0x2006 ), k_eControllerType_SwitchJoyConLeft, NULL },    // Nintendo Switch Joy-Con (Left)
-    // { MAKE_CONTROLLER_ID( 0x057e, 0x2007 ), k_eControllerType_SwitchJoyConRight, NULL },   // Nintendo Switch Joy-Con (Right)
+    // We now support Joy-Cons if SDL_HINT_JOYSTICK_HIDAPI_JOY_CONS is set to "1", but they won't be combined into one controller.
+    { MAKE_CONTROLLER_ID( 0x057e, 0x2006 ), k_eControllerType_SwitchJoyConLeft, NULL },    // Nintendo Switch Joy-Con (Left)
+    { MAKE_CONTROLLER_ID( 0x057e, 0x2007 ), k_eControllerType_SwitchJoyConRight, NULL },   // Nintendo Switch Joy-Con (Right)
 
     // This same controller ID is spoofed by many 3rd-party Switch controllers.
     // The ones we currently know of are:

@@ -322,6 +322,16 @@ static const char *
 HIDAPI_DriverSwitch_GetDeviceName(Uint16 vendor_id, Uint16 product_id)
 {
     /* Give a user friendly name for this controller */
+    if (vendor_id == USB_VENDOR_NINTENDO) {
+        if (product_id == USB_PRODUCT_NINTENDO_SWITCH_JOY_CON_LEFT) {
+            return "Nintendo Switch Joy-Con Left";
+        }
+
+        if (product_id == USB_PRODUCT_NINTENDO_SWITCH_JOY_CON_RIGHT) {
+            return "Nintendo Switch Joy-Con Right";
+        }
+    }
+
     return "Nintendo Switch Pro Controller";
 }
 
@@ -840,7 +850,9 @@ HIDAPI_DriverSwitch_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joysti
          * level and we only care about battery level over bluetooth anyway.
          */
         if (device->vendor_id == USB_VENDOR_NINTENDO &&
-            device->product_id == USB_PRODUCT_NINTENDO_SWITCH_PRO) {
+                (device->product_id == USB_PRODUCT_NINTENDO_SWITCH_PRO ||
+                device->product_id == USB_PRODUCT_NINTENDO_SWITCH_JOY_CON_LEFT ||
+                device->product_id == USB_PRODUCT_NINTENDO_SWITCH_JOY_CON_RIGHT)) {
             input_mode = k_eSwitchInputReportIDs_FullControllerState;
         }
         
@@ -1358,6 +1370,12 @@ static void HandleFullControllerState(SDL_Joystick *joystick, SDL_DriverSwitch_C
         data[0] /= -3.f;
         data[1] /= 3.f;
         data[2] /= -3.f;
+        /* Right Joy-Con flips some axes, so let's flip them back for consistency */
+        if (ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConRight) {
+            data[0] = -data[0];
+            data[1] = -data[1];
+        }
+
         SDL_PrivateJoystickSensor(joystick, SDL_SENSOR_GYRO, data, 3);
 
         data[0] = HIDAPI_DriverSwitch_ScaleAccel(packet->imuState[0].sAccelY);
@@ -1372,6 +1390,12 @@ static void HandleFullControllerState(SDL_Joystick *joystick, SDL_DriverSwitch_C
         data[0] /= -3.f;
         data[1] /= 3.f;
         data[2] /= -3.f;
+        /* Right Joy-Con flips some axes, so let's flip them back for consistency */
+        if (ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConRight) {
+            data[0] = -data[0];
+            data[1] = -data[1];
+        }
+
         SDL_PrivateJoystickSensor(joystick, SDL_SENSOR_ACCEL, data, 3);
     }
 

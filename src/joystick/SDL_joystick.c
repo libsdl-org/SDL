@@ -1888,6 +1888,10 @@ SDL_GetJoystickGameControllerType(const char *name, Uint16 vendor, Uint16 produc
             case k_eControllerType_SwitchInputOnlyController:
                 type = SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO;
                 break;
+            case k_eControllerType_SwitchJoyConLeft:
+            case k_eControllerType_SwitchJoyConRight:
+                type = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_JOY_CONS, SDL_FALSE) ? SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO : SDL_CONTROLLER_TYPE_UNKNOWN;
+                break;
             default:
                 type = SDL_CONTROLLER_TYPE_UNKNOWN;
                 break;
@@ -1972,6 +1976,28 @@ SDL_IsJoystickNintendoSwitchProInputOnly(Uint16 vendor_id, Uint16 product_id)
 {
     EControllerType eType = GuessControllerType(vendor_id, product_id);
     return (eType == k_eControllerType_SwitchInputOnlyController);
+}
+
+SDL_bool
+SDL_IsJoystickNintendoSwitchJoyCon(Uint16 vendor_id, Uint16 product_id)
+{
+    EControllerType eType = GuessControllerType(vendor_id, product_id);
+    return (eType == k_eControllerType_SwitchJoyConLeft ||
+            eType == k_eControllerType_SwitchJoyConRight);
+}
+
+SDL_bool
+SDL_IsJoystickNintendoSwitchJoyConLeft(Uint16 vendor_id, Uint16 product_id)
+{
+    EControllerType eType = GuessControllerType(vendor_id, product_id);
+    return (eType == k_eControllerType_SwitchJoyConLeft);
+}
+
+SDL_bool
+SDL_IsJoystickNintendoSwitchJoyConRight(Uint16 vendor_id, Uint16 product_id)
+{
+    EControllerType eType = GuessControllerType(vendor_id, product_id);
+    return (eType == k_eControllerType_SwitchJoyConRight);
 }
 
 SDL_bool
