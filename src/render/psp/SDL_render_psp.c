@@ -1108,7 +1108,6 @@ PSP_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *verti
 
             case SDL_RENDERCMD_SETVIEWPORT: {
                 SDL_Rect *viewport = &cmd->data.viewport.rect;
-                /* Viewport */
                 sceGuOffset(2048 - (viewport->w >> 1), 2048 - (viewport->h >> 1));
                 sceGuViewport(2048, 2048, viewport->w, viewport->h);
                 sceGuScissor(viewport->x, viewport->y, viewport->w, viewport->h);
@@ -1117,7 +1116,6 @@ PSP_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *verti
 
             case SDL_RENDERCMD_SETCLIPRECT: {
                 const SDL_Rect *rect = &cmd->data.cliprect.rect;
-                /* Scissoring */
                 if(cmd->data.cliprect.enabled){
                     sceGuEnable(GU_SCISSOR_TEST);
                     sceGuScissor(rect->x, rect->y, rect->w, rect->h);
@@ -1382,7 +1380,7 @@ PSP_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->info.flags = (SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
     renderer->driverdata = data;
     renderer->window = window;
-    
+
     if (data->initialized != SDL_FALSE)
         return 0;
     data->initialized = SDL_TRUE;
@@ -1402,14 +1400,10 @@ PSP_CreateRenderer(SDL_Window * window, Uint32 flags)
         case GU_PSM_4444:
         case GU_PSM_5650:
         case GU_PSM_5551:
-            //data->frontbuffer = (unsigned int *)(PSP_FRAME_BUFFER_SIZE<<1);
-            //data->backbuffer =  (unsigned int *)(0);
             data->bpp = 2;
             data->psm = pixelformat;
             break;
         default:
-            //data->frontbuffer = (unsigned int *)(PSP_FRAME_BUFFER_SIZE<<2);
-            //data->backbuffer =  (unsigned int *)(0);
             data->bpp = 4;
             data->psm = GU_PSM_8888;
             break;
