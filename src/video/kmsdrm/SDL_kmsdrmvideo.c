@@ -1079,11 +1079,6 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
     int ret = 0;
     drmModeModeInfo *mode;
 
-    /* Only 1 window is allowed: we can't flip on several windows in KMSDRM. */
-    if (viddata->num_windows > 0) {
-        return -1;
-    }
-
     /* Allocate window internal data */
     windata = (SDL_WindowData *)SDL_calloc(1, sizeof(SDL_WindowData));
     if (!windata) {
@@ -1190,18 +1185,23 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
             windata->surface_w, windata->surface_h);
     } /* NON-Vulkan block ends. */
 
-    /* Add window to the internal list of tracked windows, which will
-       have 1 member only. */
-    viddata->windows = (SDL_Window **)SDL_calloc(1, sizeof(SDL_Window *));
-    viddata->num_windows++;
-    viddata->max_windows = 1;
 
-    if (!viddata->windows) {
-	ret = SDL_OutOfMemory();
-	goto cleanup;
+    /* Add window to the internal list of tracked windows. Note, while it may
+       seem odd to support multiple fullscreen windows, some apps create an
+       extra window as a dummy surface when working with multiple contexts */
+    if (viddata->num_windows >= viddata->max_windows) {
+        unsigned int new_max_windows = viddata->max_windows + 1;
+        viddata->windows = (SDL_Window **)SDL_realloc(viddata->windows,
+              new_max_windows * sizeof(SDL_Window *));
+        viddata->max_windows = new_max_windows;
+
+        if (!viddata->windows) {
+            ret = SDL_OutOfMemory();
+            goto cleanup;
+        }
     }
 
-    viddata->windows[0] = window;
+    viddata->windows[viddata->num_windows++] = window;
 
     /* If we have just created a Vulkan window, establish that we are in Vulkan mode now. */
     viddata->vulkan_mode = is_vulkan;
