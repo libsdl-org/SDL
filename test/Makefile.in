@@ -170,6 +170,9 @@ testgles$(EXE): $(srcdir)/testgles.c
 testgles2$(EXE): $(srcdir)/testgles2.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) @MATHLIB@
 
+testgles2_sdf$(EXE): $(srcdir)/testgles2_sdf.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) @MATHLIB@
+
 testhaptic$(EXE): $(srcdir)/testhaptic.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
