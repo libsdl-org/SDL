@@ -445,6 +445,6 @@ SDL_JoystickDriver SDL_VIRTUAL_JoystickDriver =
     VIRTUAL_JoystickGetGamepadMapping
 };
 
-#endif /* SDL_JOYSTICK_VIRTUAL || SDL_JOYSTICK_DISABLED */
+#endif /* SDL_JOYSTICK_VIRTUAL */
 
 /* vi: set ts=4 sw=4 expandtab: */
