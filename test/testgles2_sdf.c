@@ -265,14 +265,13 @@ typedef struct shader_data
 static void
 Render(unsigned int width, unsigned int height, shader_data* data)
 {
+    float *verts = g_verts;
     ctx.glViewport(0, 0, 640, 480);
 
     GL_CHECK(ctx.glClear(GL_COLOR_BUFFER_BIT));
 
     GL_CHECK(ctx.glUniformMatrix4fv(g_uniform_locations[GLES2_UNIFORM_PROJECTION], 1, GL_FALSE, (const float *)matrix_mvp));
     GL_CHECK(ctx.glUniform4f(g_uniform_locations[GLES2_UNIFORM_COLOR], 1.0f, 1.0f, 1.0f, 1.0f));
-
-    float *verts = g_verts;
 
     GL_CHECK(ctx.glVertexAttribPointer(GLES2_ATTRIBUTE_ANGLE,    2, GL_FLOAT, GL_FALSE, 0, (const GLvoid *) (verts + 16)));
     GL_CHECK(ctx.glVertexAttribPointer(GLES2_ATTRIBUTE_TEXCOORD, 2, GL_FLOAT, GL_FALSE, 0, (const GLvoid *) (verts + 8)));
@@ -406,7 +405,7 @@ void loop()
     
     if (0)
     {
-        float *f = matrix_mvp;
+        float *f = (float *) matrix_mvp;
         SDL_Log("-----------------------------------");
         SDL_Log("[ %f, %f, %f, %f ]", *f++, *f++, *f++, *f++);
         SDL_Log("[ %f, %f, %f, %f ]", *f++, *f++, *f++, *f++);
@@ -417,13 +416,17 @@ void loop()
 
     renderCopy_angle(g_angle);
 
-    int w, h;
-    SDL_GL_GetDrawableSize(state->windows[0], &w, &h);
-    SDL_Rect rs, rd;
-    rs.x = 0; rs.y = 0; rs.w = g_surf_sdf->w; rs.h = g_surf_sdf->h;
-    rd.w = g_surf_sdf->w * g_val; rd.h = g_surf_sdf->h * g_val;
-    rd.x = (w - rd.w) / 2; rd.y = (h - rd.h) / 2;
-    renderCopy_position(&rs, &rd);
+    {
+        int w, h;
+        SDL_Rect rs, rd;
+
+        SDL_GL_GetDrawableSize(state->windows[0], &w, &h);
+
+        rs.x = 0; rs.y = 0; rs.w = g_surf_sdf->w; rs.h = g_surf_sdf->h;
+        rd.w = g_surf_sdf->w * g_val; rd.h = g_surf_sdf->h * g_val;
+        rd.x = (w - rd.w) / 2; rd.y = (h - rd.h) / 2;
+        renderCopy_position(&rs, &rd);
+    }
     
 
     if (!done) {
@@ -544,6 +547,7 @@ main(int argc, char *argv[])
     SDL_memset(matrix_mvp, 0, sizeof (matrix_mvp));
     
     {
+        SDL_Surface *tmp;
         char *f;
         g_use_SDF = 1;
         g_use_SDF_debug = 0;
@@ -558,7 +562,7 @@ main(int argc, char *argv[])
 
         /* Load SDF BMP image */
 #if 1
-        SDL_Surface *tmp = SDL_LoadBMP(f);
+        tmp = SDL_LoadBMP(f);
         if  (tmp == NULL) {
             SDL_Log("missing image file: %s", f);
             exit(-1);
