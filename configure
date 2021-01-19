@@ -24574,15 +24574,17 @@ else
 $as_echo "yes" >&6; }
 	have_libusb=yes
 fi
-            save_CFLAGS="$CFLAGS"
-            CFLAGS="$save_CFLAGS $LIBUSB_CFLAGS"
+            save_CPPFLAGS="$CPPFLAGS"
+            CPPFLAGS="$save_CPPFLAGS $LIBUSB_CFLAGS"
             ac_fn_c_check_header_mongrel "$LINENO" "libusb.h" "ac_cv_header_libusb_h" "$ac_includes_default"
 if test "x$ac_cv_header_libusb_h" = xyes; then :
   have_libusb_h=yes
+else
+  have_libusb_h=no
 fi
 
 
-            CFLAGS="$save_CFLAGS"
+            CPPFLAGS="$save_CPPFLAGS"
             if test x$have_libusb_h = xno && test x$require_hidapi_libusb = xyes; then
                 hidapi_support=no
             fi

@@ -3415,10 +3415,10 @@ AS_HELP_STRING([--enable-hidapi-libusb], [use libusb for low level joystick driv
         hidapi_support=yes
         if test x$enable_hidapi_libusb = xyes; then
             PKG_CHECK_MODULES([LIBUSB], [libusb-1.0], have_libusb=yes, have_libusb=no)
-            save_CFLAGS="$CFLAGS"
-            CFLAGS="$save_CFLAGS $LIBUSB_CFLAGS"
-            AC_CHECK_HEADER(libusb.h, have_libusb_h=yes)
-            CFLAGS="$save_CFLAGS"
+            save_CPPFLAGS="$CPPFLAGS"
+            CPPFLAGS="$save_CPPFLAGS $LIBUSB_CFLAGS"
+            AC_CHECK_HEADER(libusb.h, have_libusb_h=yes, have_libusb_h=no)
+            CPPFLAGS="$save_CPPFLAGS"
             if test x$have_libusb_h = xno && test x$require_hidapi_libusb = xyes; then
                 hidapi_support=no
             fi
