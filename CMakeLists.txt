@@ -2143,7 +2143,7 @@ elseif(VITA)
   add_definitions("-Dmemmove=sceClibMemmove")
   add_definitions("-Dmemcmp=sceClibMemcmp")
 
-  CheckPTHREAD()
+#  CheckPTHREAD()
 
 endif()
 
