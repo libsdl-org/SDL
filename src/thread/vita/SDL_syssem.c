@@ -127,7 +127,7 @@ int SDL_SemWait(SDL_sem *sem)
 Uint32 SDL_SemValue(SDL_sem *sem)
 {
     SceKernelSemaInfo info;
-	info.size = sizeof(info);
+    info.size = sizeof(info);
 
     if (sem == NULL) {
         SDL_SetError("Passed a NULL sem");
