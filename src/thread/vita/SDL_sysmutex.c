@@ -44,7 +44,7 @@ SDL_CreateMutex(void)
     if (mutex) {
 
         mutex->uid =  sceKernelCreateMutex("SDL mutex",
-            SCE_KERNEL_MUTEX_ATTR_TH_PRIO |  SCE_KERNEL_MUTEX_ATTR_RECURSIVE,
+            SCE_KERNEL_MUTEX_ATTR_RECURSIVE,
             0,
             NULL
         );
