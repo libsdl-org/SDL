@@ -41,6 +41,7 @@
 #include "relative-pointer-unstable-v1-client-protocol.h"
 #include "xdg-shell-client-protocol.h"
 #include "xdg-shell-unstable-v6-client-protocol.h"
+#include "keyboard-shortcuts-inhibit-unstable-v1-client-protocol.h"
 
 #ifdef SDL_INPUT_LINUXEV
 #include <linux/input.h>
@@ -1415,6 +1416,37 @@ int Wayland_input_unconfine_pointer(struct SDL_WaylandInput *input)
 {
     pointer_confine_destroy(input);
     input->confined_pointer_window = NULL;
+    return 0;
+}
+
+int Wayland_input_grab_keyboard(SDL_Window *window, struct SDL_WaylandInput *input)
+{
+    SDL_WindowData *w = window->driverdata;
+    SDL_VideoData *d = input->display;
+
+    if (!d->key_inhibitor_manager)
+        return -1;
+
+    if (w->key_inhibitor)
+        return 0;
+
+    w->key_inhibitor =
+        zwp_keyboard_shortcuts_inhibit_manager_v1_inhibit_shortcuts(d->key_inhibitor_manager,
+                                                                    w->surface,
+                                                                    input->seat);
+    
+    return 0;
+}
+
+int Wayland_input_ungrab_keyboard(SDL_Window *window)
+{
+    SDL_WindowData *w = window->driverdata;
+
+    if (w->key_inhibitor) {
+        zwp_keyboard_shortcuts_inhibitor_v1_destroy(w->key_inhibitor);
+        w->key_inhibitor = NULL;
+    }
+
     return 0;
 }
 

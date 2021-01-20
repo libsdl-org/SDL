@@ -49,6 +49,9 @@ extern int Wayland_input_unconfine_pointer(struct SDL_WaylandInput *input);
 extern void Wayland_display_add_relative_pointer_manager(SDL_VideoData *d, uint32_t id);
 extern void Wayland_display_destroy_relative_pointer_manager(SDL_VideoData *d);
 
+extern int Wayland_input_grab_keyboard(SDL_Window *window, struct SDL_WaylandInput *input);
+extern int Wayland_input_ungrab_keyboard(SDL_Window *window);
+
 #endif /* SDL_waylandevents_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */
