@@ -66,6 +66,7 @@ typedef struct {
     struct zxdg_toplevel_decoration_v1 *server_decoration;
     struct org_kde_kwin_server_decoration *kwin_server_decoration;
     struct zwp_keyboard_shortcuts_inhibitor_v1 *key_inhibitor;
+    struct zwp_idle_inhibitor_v1 *idle_inhibitor;
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
     struct qt_extended_surface *extended_surface;
@@ -97,6 +98,7 @@ extern int Wayland_CreateWindow(_THIS, SDL_Window *window);
 extern void Wayland_SetWindowSize(_THIS, SDL_Window * window);
 extern void Wayland_SetWindowTitle(_THIS, SDL_Window * window);
 extern void Wayland_DestroyWindow(_THIS, SDL_Window *window);
+extern void Wayland_SuspendScreenSaver(_THIS);
 
 extern SDL_bool
 Wayland_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info);

@@ -37,6 +37,7 @@
 #include "xdg-shell-unstable-v6-client-protocol.h"
 #include "xdg-decoration-unstable-v1-client-protocol.h"
 #include "org-kde-kwin-server-decoration-manager-client-protocol.h"
+#include "idle-inhibit-unstable-v1-client-protocol.h"
 
 static float get_window_scale_factor(SDL_Window *window) {
       return ((SDL_WindowData*)window->driverdata)->scale_factor;
@@ -838,6 +839,9 @@ int Wayland_CreateWindow(_THIS, SDL_Window *window)
         }
     }
 
+    /* We may need to create an idle inhibitor for this new window */
+    Wayland_SuspendScreenSaver(_this);
+
     return 0;
 }
 
@@ -916,6 +920,44 @@ void Wayland_SetWindowTitle(_THIS, SDL_Window * window)
     WAYLAND_wl_display_flush( ((SDL_VideoData*)_this->driverdata)->display );
 }
 
+void
+Wayland_SuspendScreenSaver(_THIS)
+{
+    SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
+
+#if SDL_USE_LIBDBUS
+    if (SDL_DBus_ScreensaverInhibit(_this->suspend_screensaver)) {
+        return;
+    }
+#endif
+
+    /* The idle_inhibit_unstable_v1 protocol suspends the screensaver
+       on a per wl_surface basis, but SDL assumes that suspending
+       the screensaver can be done independently of any window.
+       
+       To reconcile these differences, we propagate the idle inhibit
+       state to each window. If there is no window active, we will
+       be able to inhibit idle once the first window is created.
+    */
+    if (data->idle_inhibit_manager) {
+        SDL_Window *window = _this->windows;
+        while (window) {
+            SDL_WindowData *win_data = window->driverdata;
+
+            if (_this->suspend_screensaver && !win_data->idle_inhibitor) {
+                win_data->idle_inhibitor =
+                    zwp_idle_inhibit_manager_v1_create_inhibitor(data->idle_inhibit_manager,
+                                                                 win_data->surface);
+            } else if (!_this->suspend_screensaver && win_data->idle_inhibitor) {
+                zwp_idle_inhibitor_v1_destroy(win_data->idle_inhibitor);
+                win_data->idle_inhibitor = NULL;
+            }
+
+            window = window->next;
+        }
+    }
+}
+
 void Wayland_DestroyWindow(_THIS, SDL_Window *window)
 {
     SDL_VideoData *data = _this->driverdata;
@@ -935,6 +977,10 @@ void Wayland_DestroyWindow(_THIS, SDL_Window *window)
 
         if (wind->kwin_server_decoration) {
             org_kde_kwin_server_decoration_release(wind->kwin_server_decoration);
+        }
+
+        if (wind->idle_inhibitor) {
+            zwp_idle_inhibitor_v1_destroy(wind->idle_inhibitor);
         }
 
         if (data->shell.xdg) {

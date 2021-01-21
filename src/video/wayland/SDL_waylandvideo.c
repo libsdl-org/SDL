@@ -50,6 +50,7 @@
 #include "xdg-decoration-unstable-v1-client-protocol.h"
 #include "org-kde-kwin-server-decoration-manager-client-protocol.h"
 #include "keyboard-shortcuts-inhibit-unstable-v1-client-protocol.h"
+#include "idle-inhibit-unstable-v1-client-protocol.h"
 
 #define WAYLANDVID_DRIVER_NAME "wayland"
 
@@ -179,6 +180,7 @@ Wayland_CreateDevice(int devindex)
     device->SetDisplayMode = Wayland_SetDisplayMode;
     device->GetDisplayModes = Wayland_GetDisplayModes;
     device->GetWindowWMInfo = Wayland_GetWindowWMInfo;
+    device->SuspendScreenSaver = Wayland_SuspendScreenSaver;
 
     device->PumpEvents = Wayland_PumpEvents;
 
@@ -397,6 +399,8 @@ display_handle_global(void *data, struct wl_registry *registry, uint32_t id,
         Wayland_display_add_pointer_constraints(d, id);
     } else if (strcmp(interface, "zwp_keyboard_shortcuts_inhibit_manager_v1") == 0) {
         d->key_inhibitor_manager = wl_registry_bind(d->registry, id, &zwp_keyboard_shortcuts_inhibit_manager_v1_interface, 1);
+    } else if (strcmp(interface, "zwp_idle_inhibit_manager_v1") == 0) {
+        d->idle_inhibit_manager = wl_registry_bind(d->registry, id, &zwp_idle_inhibit_manager_v1_interface, 1);
     } else if (strcmp(interface, "wl_data_device_manager") == 0) {
         d->data_device_manager = wl_registry_bind(d->registry, id, &wl_data_device_manager_interface, SDL_min(3, version));
     } else if (strcmp(interface, "zxdg_decoration_manager_v1") == 0) {
@@ -456,6 +460,10 @@ Wayland_VideoInit(_THIS)
 
     WAYLAND_wl_display_flush(data->display);
 
+#if SDL_USE_LIBDBUS
+    SDL_DBus_Init();
+#endif
+
     return 0;
 }
 
@@ -497,6 +505,9 @@ Wayland_VideoQuit(_THIS)
     Wayland_display_destroy_pointer_constraints(data);
     Wayland_display_destroy_relative_pointer_manager(data);
 
+    if (data->idle_inhibit_manager)
+        zwp_idle_inhibit_manager_v1_destroy(data->idle_inhibit_manager);
+
     if (data->key_inhibitor_manager)
         zwp_keyboard_shortcuts_inhibit_manager_v1_destroy(data->key_inhibitor_manager);
 
@@ -534,6 +545,12 @@ Wayland_VideoQuit(_THIS)
 
     if (data->registry)
         wl_registry_destroy(data->registry);
+
+/* !!! FIXME: other subsystems use D-Bus, so we shouldn't quit it here;
+       have SDL.c do this at a higher level, or add refcounting. */
+#if SDL_USE_LIBDBUS
+    SDL_DBus_Quit();
+#endif
 
     SDL_free(data->classname);
 }
