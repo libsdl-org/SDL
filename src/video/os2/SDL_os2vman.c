@@ -31,7 +31,7 @@
 #include "SDL_os2output.h"
 #include "SDL_os2video.h"
 
-#include "my_gradd.h"
+#include "SDL_gradd.h"
 
 typedef struct _VODATA {
   PVOID    pBuffer;

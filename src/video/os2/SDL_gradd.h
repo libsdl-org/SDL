@@ -5,8 +5,8 @@ Based on public knowledge from around the internet including pages from
 http://www.osfree.org and http://www.edm2.com
 */
 
-#ifndef my_gradd_h_
-#define my_gradd_h_
+#ifndef SDL_gradd_h_
+#define SDL_gradd_h_
 
 typedef struct _INITPROCOUT {
   ULONG     ulLength;         /*  Length of the INITPROCOUT data structure, in bytes. */
@@ -168,4 +168,4 @@ LONG GreResurrection(HDC hdc, LONG cbVmem, PULONG pReserved, PVOID pInstance, LO
 ULONG _System Gre32Entry3(ULONG, ULONG, ULONG);
 ULONG _System Gre32Entry5(ULONG, ULONG, ULONG, ULONG, ULONG);
 
-#endif /* my_gradd_h_ */
+#endif /* SDL_gradd_h_ */
