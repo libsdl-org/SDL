@@ -326,6 +326,10 @@ pointer_handle_enter(void *data, struct wl_pointer *pointer,
          * event with no following motion event, but with the new coordinates
          * as part of the enter event. */
         pointer_handle_motion(data, pointer, serial, sx_w, sy_w);
+        /* If the cursor was changed while our window didn't have pointer
+         * focus, we might need to trigger another call to
+         * wl_pointer_set_cursor() for the new cursor to be displayed. */
+        SDL_SetCursor(NULL);
     }
 }
 
