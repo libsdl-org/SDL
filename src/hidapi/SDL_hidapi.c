@@ -27,9 +27,10 @@
  * This merges the two, at a small performance cost, until distributions
  * have granted access to /dev/hidraw*
  */
-
 #include "../SDL_internal.h"
+
 #include "SDL_loadso.h"
+#include "SDL_hidapi.h"
 
 #ifdef SDL_JOYSTICK_HIDAPI
 
