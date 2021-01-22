@@ -32,6 +32,7 @@
 #include "../SDL_sysjoystick.h"
 #include "SDL_hidapijoystick_c.h"
 #include "SDL_hidapi_rumble.h"
+#include "../../hidapi/SDL_hidapi.h"
 
 
 #ifdef SDL_JOYSTICK_HIDAPI_GAMECUBE
@@ -128,6 +129,8 @@ HIDAPI_DriverGameCube_InitDevice(SDL_HIDAPI_Device *device)
     int size;
     Uint8 initMagic = 0x13;
     Uint8 rumbleMagic = 0x11;
+
+    SDL_EnableGameCubeAdaptors();
 
     ctx = (SDL_DriverGameCube_Context *)SDL_calloc(1, sizeof(*ctx));
     if (!ctx) {
