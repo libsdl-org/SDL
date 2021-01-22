@@ -21,7 +21,13 @@
 
 #ifdef SDL_JOYSTICK_HIDAPI
 
+#ifdef SDL_LIBUSB_DYNAMIC
+#define HAVE_ENABLE_GAMECUBE_ADAPTORS
+#endif
+
+#ifdef HAVE_ENABLE_GAMECUBE_ADAPTORS
 extern void SDL_EnableGameCubeAdaptors(void);
+#endif
 
 #endif /* SDL_JOYSTICK_HIDAPI */
 

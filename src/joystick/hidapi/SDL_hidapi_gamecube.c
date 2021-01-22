@@ -130,7 +130,9 @@ HIDAPI_DriverGameCube_InitDevice(SDL_HIDAPI_Device *device)
     Uint8 initMagic = 0x13;
     Uint8 rumbleMagic = 0x11;
 
+#ifdef HAVE_ENABLE_GAMECUBE_ADAPTORS
     SDL_EnableGameCubeAdaptors();
+#endif
 
     ctx = (SDL_DriverGameCube_Context *)SDL_calloc(1, sizeof(*ctx));
     if (!ctx) {

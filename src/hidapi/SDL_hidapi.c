@@ -955,6 +955,7 @@ HID_API_EXPORT const wchar_t* HID_API_CALL hid_error(hid_device *device)
     return wrapper->backend->hid_error(wrapper->device);
 }
 
+#ifdef HAVE_ENABLE_GAMECUBE_ADAPTORS
 /* This is needed to enable input for Nyko and EVORETRO GameCube adaptors */
 void SDL_EnableGameCubeAdaptors(void)
 {
@@ -1009,6 +1010,7 @@ void SDL_EnableGameCubeAdaptors(void)
     }
 #endif /* SDL_LIBUSB_DYNAMIC */
 }
+#endif /* HAVE_ENABLE_GAMECUBE_ADAPTORS */
 
 #endif /* SDL_JOYSTICK_HIDAPI */
 
