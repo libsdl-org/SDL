@@ -60,7 +60,7 @@ SRCS+= SDL_syscond.c SDL_sysmutex.c SDL_syssem.c SDL_systhread.c SDL_systls.c
 SRCS+= SDL_systimer.c
 SRCS+= SDL_sysloadso.c
 SRCS+= SDL_sysfilesystem.c
-SRCS+= SDL_syshaptic.c SDL_sysjoystick.c
+SRCS+= SDL_os2joystick.c SDL_syshaptic.c SDL_sysjoystick.c
 SRCS+= SDL_virtualjoystick.c
 SRCS+= SDL_dummyaudio.c SDL_diskaudio.c
 SRCS+= SDL_nullvideo.c SDL_nullframebuffer.c SDL_nullevents.c
@@ -83,7 +83,7 @@ MOBJS= $(MSRCS:.c=.obj)
 
 .c: ./src;./src/dynapi;./src/audio;./src/cpuinfo;./src/events;./src/file;./src/haptic;./src/joystick;./src/power;./src/render;./src/render/software;./src/sensor;./src/stdlib;./src/thread;./src/timer;./src/video;./src/video/yuv2rgb;./src/atomic;./src/audio/disk;
 .c: ./src/haptic/dummy;./src/joystick/dummy;./src/joystick/virtual;./src/audio/dummy;./src/video/dummy;./src/sensor/dummy;
-.c: ./src/core/os2;./src/core/os2/geniconv;./src/audio/os2;./src/loadso/os2;./src/filesystem/os2;./src/thread/os2;./src/timer/os2;./src/video/os2;
+.c: ./src/core/os2;./src/core/os2/geniconv;./src/audio/os2;./src/loadso/os2;./src/filesystem/os2;./src/joystick/os2;./src/thread/os2;./src/timer/os2;./src/video/os2;
 .c: ./src/locale/;./src/locale/unix;./src/misc;./src/misc/dummy
 
 all: $(DLLFILE) $(LIBFILE) .symbolic

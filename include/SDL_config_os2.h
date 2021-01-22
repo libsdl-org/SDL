@@ -32,8 +32,9 @@
 #define SDL_AUDIO_DRIVER_OS2 1
 
 #define SDL_POWER_DISABLED  1
-#define SDL_JOYSTICK_DISABLED 1
 #define SDL_HAPTIC_DISABLED 1
+#define SDL_JOYSTICK_DISABLED 1
+/*#undef SDL_JOYSTICK_OS2 */
 /*#undef SDL_JOYSTICK_HIDAPI */
 /*#undef SDL_JOYSTICK_VIRTUAL */
 
@@ -43,9 +44,6 @@
 
 /* Enable OpenGL support */
 /* #undef SDL_VIDEO_OPENGL */
-
-/* Enable Vulkan support */
-/* #undef SDL_VIDEO_VULKAN */
 
 #define SDL_THREAD_OS2 1
 #define SDL_LOADSO_OS2 1
