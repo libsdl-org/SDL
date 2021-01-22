@@ -42,6 +42,37 @@ static float get_window_scale_factor(SDL_Window *window) {
       return ((SDL_WindowData*)window->driverdata)->scale_factor;
 }
 
+static void
+SetFullscreen(SDL_Window *window, struct wl_output *output)
+{
+    SDL_WindowData *wind = window->driverdata;
+    SDL_VideoData *viddata = wind->waylandData;
+
+    if (viddata->shell.xdg) {
+        if (output) {
+            xdg_toplevel_set_fullscreen(wind->shell_surface.xdg.roleobj.toplevel, output);
+        } else {
+            xdg_toplevel_unset_fullscreen(wind->shell_surface.xdg.roleobj.toplevel);
+        }
+    } else if (viddata->shell.zxdg) {
+        if (output) {
+            zxdg_toplevel_v6_set_fullscreen(wind->shell_surface.zxdg.roleobj.toplevel, output);
+        } else {
+            zxdg_toplevel_v6_unset_fullscreen(wind->shell_surface.zxdg.roleobj.toplevel);
+        }
+    } else {
+        if (output) {
+            wl_shell_surface_set_fullscreen(wind->shell_surface.wl,
+                                            WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT,
+                                            0, output);
+        } else {
+            wl_shell_surface_set_toplevel(wind->shell_surface.wl);
+        }
+    }
+
+    WAYLAND_wl_display_flush(viddata->display);
+}
+
 /* On modern desktops, we probably will use the xdg-shell protocol instead
    of wl_shell, but wl_shell might be useful on older Wayland installs that
    don't have the newer protocol, or embedded things that don't have a full
@@ -168,6 +199,12 @@ handle_configure_zxdg_toplevel(void *data,
     }
 
     if (!fullscreen) {
+        if (window->flags & SDL_WINDOW_FULLSCREEN) {
+            /* We might need to re-enter fullscreen after being restored from minimized */
+            struct wl_output *output = (struct wl_output *) window->fullscreen_mode.driverdata;
+            SetFullscreen(window, output);
+        }
+
         if (width == 0 || height == 0) {
             width = window->windowed.w;
             height = window->windowed.h;
@@ -278,6 +315,12 @@ handle_configure_xdg_toplevel(void *data,
      }
 
     if (!fullscreen) {
+        if (window->flags & SDL_WINDOW_FULLSCREEN) {
+            /* We might need to re-enter fullscreen after being restored from minimized */
+            struct wl_output *output = (struct wl_output *) window->fullscreen_mode.driverdata;
+            SetFullscreen(window, output);
+        }
+
         if (width == 0 || height == 0) {
             width = window->windowed.w;
             height = window->windowed.h;
@@ -474,41 +517,10 @@ Wayland_SetWindowHitTest(SDL_Window *window, SDL_bool enabled)
     return 0;  /* just succeed, the real work is done elsewhere. */
 }
 
-static void
-SetFullscreen(_THIS, SDL_Window * window, struct wl_output *output)
-{
-    const SDL_VideoData *viddata = (const SDL_VideoData *) _this->driverdata;
-    SDL_WindowData *wind = window->driverdata;
-
-    if (viddata->shell.xdg) {
-        if (output) {
-            xdg_toplevel_set_fullscreen(wind->shell_surface.xdg.roleobj.toplevel, output);
-        } else {
-            xdg_toplevel_unset_fullscreen(wind->shell_surface.xdg.roleobj.toplevel);
-        }
-    } else if (viddata->shell.zxdg) {
-        if (output) {
-            zxdg_toplevel_v6_set_fullscreen(wind->shell_surface.zxdg.roleobj.toplevel, output);
-        } else {
-            zxdg_toplevel_v6_unset_fullscreen(wind->shell_surface.zxdg.roleobj.toplevel);
-        }
-    } else {
-        if (output) {
-            wl_shell_surface_set_fullscreen(wind->shell_surface.wl,
-                                            WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT,
-                                            0, output);
-        } else {
-            wl_shell_surface_set_toplevel(wind->shell_surface.wl);
-        }
-    }
-
-    WAYLAND_wl_display_flush( ((SDL_VideoData*)_this->driverdata)->display );
-}
-
 void Wayland_ShowWindow(_THIS, SDL_Window *window)
 {
     struct wl_output *output = (struct wl_output *) window->fullscreen_mode.driverdata;
-    SetFullscreen(_this, window, (window->flags & SDL_WINDOW_FULLSCREEN) ? output : NULL);
+    SetFullscreen(window, (window->flags & SDL_WINDOW_FULLSCREEN) ? output : NULL);
 }
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
@@ -582,7 +594,7 @@ Wayland_SetWindowFullscreen(_THIS, SDL_Window * window,
                             SDL_VideoDisplay * _display, SDL_bool fullscreen)
 {
     struct wl_output *output = ((SDL_WaylandOutputData*) _display->driverdata)->output;
-    SetFullscreen(_this, window, fullscreen ? output : NULL);
+    SetFullscreen(window, fullscreen ? output : NULL);
 }
 
 void
@@ -629,6 +641,21 @@ Wayland_MaximizeWindow(_THIS, SDL_Window * window)
     }
 
     WAYLAND_wl_display_flush( viddata->display );
+}
+
+void
+Wayland_MinimizeWindow(_THIS, SDL_Window * window)
+{
+    SDL_WindowData *wind = window->driverdata;
+    SDL_VideoData *viddata = (SDL_VideoData *) _this->driverdata;
+
+    if (viddata->shell.xdg) {
+        xdg_toplevel_set_minimized(wind->shell_surface.xdg.roleobj.toplevel);
+    } else if (viddata->shell.zxdg) {
+        zxdg_toplevel_v6_set_minimized(wind->shell_surface.zxdg.roleobj.toplevel);
+    }
+
+    WAYLAND_wl_display_flush(viddata->display);
 }
 
 void
