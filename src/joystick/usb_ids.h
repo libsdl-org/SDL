@@ -31,10 +31,12 @@
 #define USB_VENDOR_NVIDIA       0x0955
 #define USB_VENDOR_PDP          0x0e6f
 #define USB_VENDOR_POWERA       0x24c6
-#define USB_VENDOR_SONY         0x054c
 #define USB_VENDOR_RAZER        0x1532
+#define USB_VENDOR_SHENZHEN     0x0079
+#define USB_VENDOR_SONY         0x054c
 #define USB_VENDOR_VALVE        0x28de
 
+#define USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER           0x1846
 #define USB_PRODUCT_NINTENDO_GAMECUBE_ADAPTER           0x0337
 #define USB_PRODUCT_NINTENDO_SWITCH_PRO                 0x2009
 #define USB_PRODUCT_RAZER_PANTHERA                      0x0401
