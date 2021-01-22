@@ -966,6 +966,10 @@ void SDL_EnableGameCubeAdaptors(void)
     ssize_t i, num_devs;
     int kernel_detached = 0;
 
+    if (libusb_ctx.libhandle == NULL) {
+        return;
+    }
+
     if (libusb_init(&usb_context) == 0) {
         num_devs = libusb_get_device_list(usb_context, &devs);
         for (i = 0; i < num_devs; ++i) {
