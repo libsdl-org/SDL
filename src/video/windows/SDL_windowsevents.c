@@ -429,6 +429,47 @@ static SDL_MOUSE_EVENT_SOURCE GetMouseMessageSource()
 }
 
 LRESULT CALLBACK
+WIN_KeyboardHookProc(int nCode, WPARAM wParam, LPARAM lParam)
+{
+    if (nCode < 0 || nCode != HC_ACTION) {
+        return CallNextHookEx(NULL, nCode, wParam, lParam);
+    }
+
+    KBDLLHOOKSTRUCT* hookData = (KBDLLHOOKSTRUCT*)lParam;
+    SDL_Scancode scanCode;
+    switch (hookData->vkCode) {
+    case VK_LWIN:
+        scanCode = SDL_SCANCODE_LGUI;
+        break;
+    case VK_RWIN:
+        scanCode = SDL_SCANCODE_RGUI;
+        break;
+    case VK_LMENU:
+        scanCode = SDL_SCANCODE_LALT;
+        break;
+    case VK_RMENU:
+        scanCode = SDL_SCANCODE_RALT;
+        break;
+    case VK_LCONTROL:
+        scanCode = SDL_SCANCODE_LCTRL;
+        break;
+    case VK_RCONTROL:
+        scanCode = SDL_SCANCODE_RCTRL;
+        break;
+    default:
+        return CallNextHookEx(NULL, nCode, wParam, lParam);
+    }
+
+    if (wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN) {
+        SDL_SendKeyboardKey(SDL_PRESSED, scanCode);
+    } else {
+        SDL_SendKeyboardKey(SDL_RELEASED, scanCode);
+    }
+
+    return 1;
+}
+
+LRESULT CALLBACK
 WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     SDL_WindowData *data;
