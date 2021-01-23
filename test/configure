@@ -581,7 +581,7 @@ PACKAGE_STRING=
 PACKAGE_BUGREPORT=
 PACKAGE_URL=
 
-ac_unique_file="README"
+ac_unique_file="loopwave.c"
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
 SDL_TTF_LIB

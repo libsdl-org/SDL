@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 AC_INIT
-AC_CONFIG_SRCDIR([README])
+AC_CONFIG_SRCDIR([loopwave.c])
 
 dnl Detect the canonical build and host environments
 AC_CONFIG_AUX_DIRS($srcdir/../build-scripts)
