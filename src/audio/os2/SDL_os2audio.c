@@ -447,7 +447,9 @@ static int OS2_Init(SDL_AudioDriverImpl * impl)
 }
 
 
-AudioBootStrap OS2AUDIO_bootstrap = { "MMOS2", "OS/2 DART", OS2_Init, 0 };
+AudioBootStrap OS2AUDIO_bootstrap = {
+    "DART", "OS/2 DART", OS2_Init, 0
+};
 
 #endif /* SDL_AUDIO_DRIVER_OS2 */
 
