@@ -58,6 +58,9 @@
 #include <unistd.h>
 #include <xkbcommon/xkbcommon.h>
 
+/* Weston uses a ratio of 10 units per scroll tick */
+#define WAYLAND_WHEEL_AXIS_UNIT 10
+
 typedef struct {
     // repeat_rate in range of [1, 1000]
     int32_t repeat_rate;
@@ -471,6 +474,9 @@ pointer_handle_axis_common_v1(struct SDL_WaylandInput *input,
                 return;
         }
 
+        x /= WAYLAND_WHEEL_AXIS_UNIT;
+        y /= WAYLAND_WHEEL_AXIS_UNIT;
+
         SDL_SendMouseWheel(window->sdlwindow, 0, x, y, SDL_MOUSEWHEEL_NORMAL);
     }
 }
@@ -528,7 +534,17 @@ pointer_handle_frame(void *data, struct wl_pointer *pointer)
 {
     struct SDL_WaylandInput *input = data;
     SDL_WindowData *window = input->pointer_focus;
-    float x = input->pointer_curr_axis_info.x, y = input->pointer_curr_axis_info.y;
+    float x, y;
+
+    if (input->pointer_curr_axis_info.is_x_discrete)
+        x = input->pointer_curr_axis_info.x;
+    else
+        x = input->pointer_curr_axis_info.x / WAYLAND_WHEEL_AXIS_UNIT;
+
+    if (input->pointer_curr_axis_info.is_y_discrete)
+        y = input->pointer_curr_axis_info.y;
+    else
+        y = input->pointer_curr_axis_info.y / WAYLAND_WHEEL_AXIS_UNIT;
 
     /* clear pointer_curr_axis_info for next frame */
     memset(&input->pointer_curr_axis_info, 0, sizeof input->pointer_curr_axis_info);
