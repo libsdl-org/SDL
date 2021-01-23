@@ -62,6 +62,9 @@ static SDL_JoystickDriver *SDL_joystick_drivers[] = {
 #if defined(SDL_JOYSTICK_DINPUT) || defined(SDL_JOYSTICK_XINPUT)
     &SDL_WINDOWS_JoystickDriver,
 #endif
+#if defined(SDL_JOYSTICK_WINMM)
+    &SDL_WINMM_JoystickDriver,
+#endif
 #ifdef SDL_JOYSTICK_LINUX
     &SDL_LINUX_JoystickDriver,
 #endif
@@ -85,6 +88,9 @@ static SDL_JoystickDriver *SDL_joystick_drivers[] = {
 #endif
 #ifdef SDL_JOYSTICK_OS2
     &SDL_OS2_JoystickDriver,
+#endif
+#ifdef SDL_JOYSTICK_PSP
+    &SDL_PSP_JoystickDriver,
 #endif
 #ifdef SDL_JOYSTICK_VIRTUAL
     &SDL_VIRTUAL_JoystickDriver,
@@ -343,7 +349,7 @@ SDL_JoystickAxesCenteredAtZero(SDL_Joystick *joystick)
     Uint32 id = MAKE_VIDPID(SDL_JoystickGetVendor(joystick),
                             SDL_JoystickGetProduct(joystick));
 
-/*printf("JOYSTICK '%s' VID/PID 0x%.4x/0x%.4x AXES: %d\n", joystick->name, vendor, product, joystick->naxes);*/
+    /*printf("JOYSTICK '%s' VID/PID 0x%.4x/0x%.4x AXES: %d\n", joystick->name, vendor, product, joystick->naxes);*/
 
     if (joystick->naxes == 2) {
         /* Assume D-pad or thumbstick style axes are centered at 0 */
@@ -1249,7 +1255,6 @@ SDL_PrivateJoystickForceRecentering(SDL_Joystick *joystick)
             SDL_PrivateJoystickTouchpad(joystick, i, j, SDL_RELEASED, 0.0f, 0.0f, 0.0f);
         }
     }
-
 }
 
 void SDL_PrivateJoystickRemoved(SDL_JoystickID device_instance)
