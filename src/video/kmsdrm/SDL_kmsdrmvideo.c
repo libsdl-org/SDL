@@ -1077,7 +1077,6 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
     SDL_bool vulkan_mode = viddata->vulkan_mode; /* Do we have any Vulkan windows? */
     NativeDisplayType egl_display;
     int ret = 0;
-    drmModeModeInfo *mode;
 
     /* Allocate window internal data */
     windata = (SDL_WindowData *)SDL_calloc(1, sizeof(SDL_WindowData));
@@ -1140,35 +1139,14 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
 	    KMSDRM_InitCursor();
 	}
 
-        /* Try to find the videomode that is the closest to the original size
-           of the window, and configure the mode we chose into the CRTC.
-
-           (You may be tempted to not do a videomode change, remaining always on
-           the original resolution, and use the SendWindowEvent() parameters to
-           make SDL2 pre-scale the image for us to an AR-corrected size inside
-           the original mode, but DON'T: vectorized games (GL games) are rendered
-           with the size specified in SendWindowEvent(),instead of being rendered
-           at the original size and then scaled.
-           It makes sense because GL is used to render the scene in GL games,
-           so the scene is rendered at the window size).
-
-           The FULLSCREEN flags are cut out from window->flags at this point,
+        /* The FULLSCREEN flags are cut out from window->flags at this point,
            so we can't know if a window is fullscreen or not, hence all windows
            are considered "windowed" at this point of their life.
            If a window is fullscreen, SDL internals will call
            KMSDRM_SetWindowFullscreen() to reconfigure it if necessary. */
-	mode = KMSDRM_GetClosestDisplayMode(display,
-                 window->windowed.w, window->windowed.h, 0 );
-
-        if (mode) {
-	    windata->surface_w = mode->hdisplay;
-	    windata->surface_h = mode->vdisplay;
-	    dispdata->mode = *mode;
-	} else {
-	    windata->surface_w = dispdata->original_mode.hdisplay;
-	    windata->surface_h = dispdata->original_mode.vdisplay;
-	    dispdata->mode = dispdata->original_mode;
-	}
+	windata->surface_w = dispdata->original_mode.hdisplay;
+	windata->surface_h = dispdata->original_mode.vdisplay;
+	dispdata->mode = dispdata->original_mode;
 
         /* Take note to do the modesettng on the CRTC in SwapWindow. */
 	dispdata->modeset_pending = SDL_TRUE;
@@ -1179,12 +1157,7 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
             goto cleanup;
         }
 
-        /* Tell app about the size we have determined for the window,
-           so SDL pre-scales to that size for us. */
-        SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED,
-            windata->surface_w, windata->surface_h);
     } /* NON-Vulkan block ends. */
-
 
     /* Add window to the internal list of tracked windows. Note, while it may
        seem odd to support multiple fullscreen windows, some apps create an
@@ -1241,54 +1214,50 @@ KMSDRM_ReconfigureWindow( _THIS, SDL_Window * window) {
     SDL_DisplayData *dispdata = display->driverdata;
     uint32_t refresh_rate = 0;
 
-    if ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) ==
-			 SDL_WINDOW_FULLSCREEN_DESKTOP)
+    /* Only change videomode for FULLSCREEN windows, not for normal
+       windows or for FULLSCREEN_DESKTOP windows. */
+    if( (window->flags & SDL_WINDOW_FULLSCREEN) == SDL_WINDOW_FULLSCREEN &&
+     !( (window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN_DESKTOP) )
     {
-	/* Update the current mode to the desktop mode,
-	   take note of pending mode configuration to the CRTC,
-	   and recreate the GBM surface with the same size as the size. */
-	windata->surface_w = dispdata->original_mode.hdisplay;
-	windata->surface_h = dispdata->original_mode.vdisplay;
-	dispdata->mode = dispdata->original_mode;
-    } else {
-	drmModeModeInfo *mode;
-
-        /* Refresh rate is only important for fullscreen windows. */
-        if ((window->flags & SDL_WINDOW_FULLSCREEN) ==
-	                     SDL_WINDOW_FULLSCREEN)
-        {
-            refresh_rate = (uint32_t)window->fullscreen_mode.refresh_rate;
-        }
+        drmModeModeInfo *mode;
+	refresh_rate = (uint32_t)window->fullscreen_mode.refresh_rate;
 
 	/* Try to find a valid video mode matching the size of the window. */
 	mode = KMSDRM_GetClosestDisplayMode(display,
-	  window->windowed.w, window->windowed.h, refresh_rate );
+	  window->fullscreen_mode.w, window->fullscreen_mode.h, refresh_rate );
 
 	if (mode) {
-            /* If matching mode found, recreate the GBM surface with the size
-               of that mode and configure it on the CRTC. */
+	    /* If matching mode found, recreate the GBM surface with the size
+	       of that mode and configure it on the CRTC. */
 	    windata->surface_w = mode->hdisplay;
 	    windata->surface_h = mode->vdisplay;
 	    dispdata->mode = *mode;
 	} else {
-            /* If not matching mode found, recreate the GBM surfaces with the
-               size of the mode that was originally configured on the CRTC,
-               and setup that mode on the CRTC. */
+	    /* If not matching mode found, recreate the GBM surfaces with the
+	       size of the mode that was originally configured on the CRTC,
+	       and setup that mode on the CRTC. */
 	    windata->surface_w = dispdata->original_mode.hdisplay;
 	    windata->surface_h = dispdata->original_mode.vdisplay;
 	    dispdata->mode = dispdata->original_mode;
-        }
+	}
+
+        /* Tell app about the size we have determined for the window,
+           so SDL pre-scales to that size for us. */
+        SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED,
+                            windata->surface_w, windata->surface_h);
+
+    } else {
+        /* This is a normal window or a FULLSCREEN_DESKTOP window. */
+	windata->surface_w = dispdata->original_mode.hdisplay;
+	windata->surface_h = dispdata->original_mode.vdisplay;
+	dispdata->mode = dispdata->original_mode;
     }
 
     /* Recreate the GBM (and EGL) surfaces, and mark the CRTC mode/fb setting
-       as pending so it's done on SwaWindon.  */
+       as pending so it's done on SwapWindow.  */
     KMSDRM_CreateSurfaces(_this, window);
     dispdata->modeset_pending = SDL_TRUE;
 
-    /* Tell app about the size we have determined for the window,
-       so SDL pre-scales to that size for us. */
-    SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED,
-                        windata->surface_w, windata->surface_h);
 }
 
 int
@@ -1319,6 +1288,7 @@ KMSDRM_SetWindowSize(_THIS, SDL_Window * window)
 }
 void
 KMSDRM_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display, SDL_bool fullscreen)
+
 {
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
     if (!viddata->vulkan_mode) {

@@ -230,9 +230,9 @@ KMSDRM_ShowCursor(SDL_Cursor * cursor)
         return ret;
     }
 
-    /************************************************/
-    /* If cursor != NULL, DO show cursor on display */
-    /************************************************/
+    /*****************************************************/
+    /* If cursor != NULL, DO show cursor on it's window. */
+    /*****************************************************/
     curdata = (KMSDRM_CursorData *) cursor->driverdata;
 
     if (!curdata || !dispdata->cursor_bo) {
@@ -452,14 +452,24 @@ static void
 KMSDRM_MoveCursor(SDL_Cursor * cursor)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
-    SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
-    int drm_fd, ret;
+    SDL_Window *window;
+    SDL_DisplayData *dispdata;
+
+    int drm_fd, ret, screen_y;
 
     /* We must NOT call SDL_SendMouseMotion() here or we will enter recursivity!
        That's why we move the cursor graphic ONLY. */
-    if (mouse && mouse->cur_cursor && mouse->cur_cursor->driverdata) {
+    if (mouse && mouse->cur_cursor && mouse->cur_cursor->driverdata && mouse->focus) {
+
+        window = mouse->focus;
+        dispdata = (SDL_DisplayData *) SDL_GetDisplayForWindow(window)->driverdata;
+
+        /* Correct the Y coordinate, because DRM mouse coordinates start on screen top. */
+        screen_y = dispdata->mode.vdisplay - window->h + mouse->y;
+
         drm_fd = KMSDRM_gbm_device_get_fd(KMSDRM_gbm_bo_get_device(dispdata->cursor_bo));
-        ret = KMSDRM_drmModeMoveCursor(drm_fd, dispdata->crtc->crtc_id, mouse->x, mouse->y);
+
+        ret = KMSDRM_drmModeMoveCursor(drm_fd, dispdata->crtc->crtc_id, mouse->x, screen_y);
 
         if (ret) {
             SDL_SetError("drmModeMoveCursor() failed.");
