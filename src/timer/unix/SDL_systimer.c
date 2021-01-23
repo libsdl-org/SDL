@@ -46,7 +46,7 @@
    Also added OS X Monotonic clock support
    Based on work in https://github.com/ThomasHabets/monotonic_clock
  */
-#if HAVE_NANOSLEEP || HAVE_CLOCK_GETTIME
+#if HAVE_NANOSLEEP || HAVE_CLOCK_GETTIME || HAVE_CLOCK_GETTIME_NSEC_NP
 #include <time.h>
 #endif
 #ifdef __APPLE__
@@ -54,7 +54,7 @@
 #endif
 
 /* Use CLOCK_MONOTONIC_RAW, if available, which is not subject to adjustment by NTP */
-#if HAVE_CLOCK_GETTIME
+#if HAVE_CLOCK_GETTIME || HAVE_CLOCK_GETTIME_NSEC_NP
 #ifdef CLOCK_MONOTONIC_RAW
 #define SDL_MONOTONIC_CLOCK CLOCK_MONOTONIC_RAW
 #else
@@ -65,7 +65,7 @@
 /* The first ticks value of the application */
 #if HAVE_CLOCK_GETTIME
 static struct timespec start_ts;
-#elif defined(__APPLE__)
+#elif defined(__APPLE__) && !HAVE_CLOCK_GETTIME_NSEC_NP
 static uint64_t start_mach;
 mach_timebase_info_data_t mach_base_info;
 #endif
@@ -87,11 +87,17 @@ SDL_TicksInit(void)
         has_monotonic_time = SDL_TRUE;
     } else
 #elif defined(__APPLE__)
+#if !HAVE_CLOCK_GETTIME_NSEC_NP
     kern_return_t ret = mach_timebase_info(&mach_base_info);
     if (ret == 0) {
         has_monotonic_time = SDL_TRUE;
         start_mach = mach_absolute_time();
     } else
+#else
+    if (clock_gettime_nsec_np(SDL_MONOTONIC_CLOCK) > 0) {
+        has_monotonic_time = SDL_TRUE;
+    } else
+#endif
 #endif
     {
         gettimeofday(&start_tv, NULL);
@@ -118,8 +124,12 @@ SDL_GetTicks(void)
         clock_gettime(SDL_MONOTONIC_CLOCK, &now);
         ticks = (Uint32)((now.tv_sec - start_ts.tv_sec) * 1000 + (now.tv_nsec - start_ts.tv_nsec) / 1000000);
 #elif defined(__APPLE__)
+#if !HAVE_CLOCK_GETTIME_NSEC_NP
         uint64_t now = mach_absolute_time();
         ticks = (Uint32)((((now - start_mach) * mach_base_info.numer) / mach_base_info.denom) / 1000000);
+#else
+        ticks = (Uint32)clock_gettime_nsec_np(SDL_MONOTONIC_CLOCK);
+#endif
 #else
         SDL_assert(SDL_FALSE);
         ticks = 0;
@@ -150,7 +160,11 @@ SDL_GetPerformanceCounter(void)
         ticks *= 1000000000;
         ticks += now.tv_nsec;
 #elif defined(__APPLE__)
+#if !HAVE_CLOCK_GETTIME_NSEC_NP
         ticks = mach_absolute_time();
+#else
+        ticks = (Uint32)clock_gettime_nsec_np(SDL_MONOTONIC_CLOCK);
+#endif
 #else
         SDL_assert(SDL_FALSE);
         ticks = 0;
@@ -177,13 +191,16 @@ SDL_GetPerformanceFrequency(void)
 #if HAVE_CLOCK_GETTIME
         return 1000000000;
 #elif defined(__APPLE__)
+#if !HAVE_CLOCK_GETTIME_NSEC_NP
         Uint64 freq = mach_base_info.denom;
         freq *= 1000000000;
         freq /= mach_base_info.numer;
         return freq;
+#else
+        return 1000000000;
 #endif
-    } 
-        
+#endif
+    }
     return 1000000;
 }
 

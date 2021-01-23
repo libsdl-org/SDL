@@ -191,6 +191,7 @@
 #cmakedefine HAVE_SYSCONF 1
 #cmakedefine HAVE_SYSCTLBYNAME 1
 #cmakedefine HAVE_CLOCK_GETTIME 1
+#cmakedefine HAVE_CLOCK_GETTIME_NSEC_NP 1
 #cmakedefine HAVE_GETPAGESIZE 1
 #cmakedefine HAVE_MPROTECT 1
 #cmakedefine HAVE_ICONV 1
