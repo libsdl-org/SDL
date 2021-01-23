@@ -24,7 +24,6 @@
 
 #include "SDL_hints.h"
 #include "SDL_events.h"
-#include "SDL_timer.h"
 #include "SDL_joystick.h"
 #include "SDL_gamecontroller.h"
 #include "../SDL_sysjoystick.h"
@@ -35,7 +34,7 @@
 #ifdef SDL_JOYSTICK_HIDAPI_STADIA
 
 /* Define this if you want to log all packets from the controller */
-//#define DEBUG_STADIA_PROTOCOL
+/*#define DEBUG_STADIA_PROTOCOL*/
 
 enum
 {
@@ -148,19 +147,6 @@ HIDAPI_DriverStadia_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joy
     return SDL_Unsupported();
 }
 
-static float fsel(float fComparand, float fValGE, float fLT)
-{
-    return fComparand >= 0 ? fValGE : fLT;
-}
-
-static float RemapVal(float val, float A, float B, float C, float D)
-{
-    if (A == B) {
-        return fsel(val - B , D , C);
-    }
-    return C + (D - C) * (val - A) / (B - A);
-}
-
 static void
 HIDAPI_DriverStadia_HandleStatePacket(SDL_Joystick *joystick, SDL_DriverStadia_Context *ctx, Uint8 *data, int size)
 {
@@ -236,7 +222,7 @@ HIDAPI_DriverStadia_HandleStatePacket(SDL_Joystick *joystick, SDL_DriverStadia_C
 
 #define READ_STICK_AXIS(offset) \
     (data[offset] == 0x80 ? 0 : \
-    (Sint16)RemapVal(data[offset] - 0x80, 0x01 - 0x80, 0xff - 0x80, SDL_MIN_SINT16, SDL_MAX_SINT16))
+    (Sint16)HIDAPI_RemapVal(data[offset] - 0x80, 0x01 - 0x80, 0xff - 0x80, SDL_MIN_SINT16, SDL_MAX_SINT16))
     {
         axis = READ_STICK_AXIS(4);
         SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_LEFTX, axis);

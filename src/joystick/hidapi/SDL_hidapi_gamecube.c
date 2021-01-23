@@ -86,25 +86,6 @@ ResetAxisRange(SDL_DriverGameCube_Context *ctx, int joystick_index)
     ctx->min_axis[joystick_index*SDL_CONTROLLER_AXIS_MAX+SDL_CONTROLLER_AXIS_TRIGGERRIGHT] = 40;
 }
 
-static float fsel(float fComparand, float fValGE, float fLT)
-{
-    return fComparand >= 0 ? fValGE : fLT;
-}
-
-static float RemapVal(float val, float A, float B, float C, float D)
-{
-    if (A == B) {
-        return fsel(val - B, D, C);
-    }
-    if (val < A) {
-        val = A;
-    }
-    if (val > B) {
-        val = B;
-    }
-    return C + (D - C) * (val - A) / (B - A);
-}
-
 static void SDLCALL SDL_GameControllerButtonReportingHintChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
     SDL_DriverGameCube_Context *ctx = (SDL_DriverGameCube_Context *)userdata;
@@ -301,7 +282,7 @@ HIDAPI_DriverGameCube_HandleJoystickPacket(SDL_HIDAPI_Device *device, SDL_Driver
         v = invert ? (0xff - packet[off]) : packet[off]; \
         if (v < ctx->min_axis[i*SDL_CONTROLLER_AXIS_MAX+axis]) ctx->min_axis[i*SDL_CONTROLLER_AXIS_MAX+axis] = v; \
         if (v > ctx->max_axis[i*SDL_CONTROLLER_AXIS_MAX+axis]) ctx->max_axis[i*SDL_CONTROLLER_AXIS_MAX+axis] = v; \
-        axis_value = (Sint16)RemapVal(v, ctx->min_axis[i*SDL_CONTROLLER_AXIS_MAX+axis], ctx->max_axis[i*SDL_CONTROLLER_AXIS_MAX+axis], SDL_MIN_SINT16, SDL_MAX_SINT16); \
+        axis_value = (Sint16)HIDAPI_RemapVal(v, ctx->min_axis[i*SDL_CONTROLLER_AXIS_MAX+axis], ctx->max_axis[i*SDL_CONTROLLER_AXIS_MAX+axis], SDL_MIN_SINT16, SDL_MAX_SINT16); \
         SDL_PrivateJoystickAxis( \
             joystick, \
             axis, axis_value \
@@ -381,7 +362,7 @@ HIDAPI_DriverGameCube_HandleNintendoPacket(SDL_HIDAPI_Device *device, SDL_Driver
         #define READ_AXIS(off, axis) \
             if (curSlot[off] < ctx->min_axis[i*SDL_CONTROLLER_AXIS_MAX+axis]) ctx->min_axis[i*SDL_CONTROLLER_AXIS_MAX+axis] = curSlot[off]; \
             if (curSlot[off] > ctx->max_axis[i*SDL_CONTROLLER_AXIS_MAX+axis]) ctx->max_axis[i*SDL_CONTROLLER_AXIS_MAX+axis] = curSlot[off]; \
-            axis_value = (Sint16)(RemapVal(curSlot[off], ctx->min_axis[i*SDL_CONTROLLER_AXIS_MAX+axis], ctx->max_axis[i*SDL_CONTROLLER_AXIS_MAX+axis], SDL_MIN_SINT16, SDL_MAX_SINT16)); \
+            axis_value = (Sint16)HIDAPI_RemapVal(curSlot[off], ctx->min_axis[i*SDL_CONTROLLER_AXIS_MAX+axis], ctx->max_axis[i*SDL_CONTROLLER_AXIS_MAX+axis], SDL_MIN_SINT16, SDL_MAX_SINT16); \
             SDL_PrivateJoystickAxis( \
                 joystick, \
                 axis, axis_value \

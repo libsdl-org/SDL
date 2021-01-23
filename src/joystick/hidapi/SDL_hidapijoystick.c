@@ -413,6 +413,12 @@ HIDAPI_DumpPacket(const char *prefix, Uint8 *data, int size)
     SDL_free(buffer);
 }
 
+float
+HIDAPI_RemapVal(float val, float val_min, float val_max, float output_min, float output_max)
+{
+    return output_min + (output_max - output_min) * (val - val_min) / (val_max - val_min);
+}
+
 static void HIDAPI_JoystickDetect(void);
 static void HIDAPI_JoystickClose(SDL_Joystick * joystick);
 

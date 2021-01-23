@@ -706,19 +706,6 @@ static SDL_bool LoadStickCalibration(SDL_DriverSwitch_Context *ctx, Uint8 input_
     return SDL_TRUE;
 }
 
-static float fsel(float fComparand, float fValGE, float fLT)
-{
-    return fComparand >= 0 ? fValGE : fLT;
-}
-
-static float RemapVal(float val, float A, float B, float C, float D)
-{
-    if (A == B) {
-        return fsel(val - B , D , C);
-    }
-    return C + (D - C) * (val - A) / (B - A);
-}
-
 static Sint16 ApplyStickCalibrationCentered(SDL_DriverSwitch_Context *ctx, int nStick, int nAxis, Sint16 sRawValue, Sint16 sCenter)
 {
     sRawValue -= sCenter;
@@ -731,9 +718,9 @@ static Sint16 ApplyStickCalibrationCentered(SDL_DriverSwitch_Context *ctx, int n
     }
 
     if (sRawValue > 0) {
-        return (Sint16)(RemapVal(sRawValue, 0, ctx->m_StickExtents[nStick].axis[nAxis].sMax, 0, SDL_MAX_SINT16));
+        return (Sint16)HIDAPI_RemapVal(sRawValue, 0, ctx->m_StickExtents[nStick].axis[nAxis].sMax, 0, SDL_MAX_SINT16);
     } else {
-        return (Sint16)(RemapVal(sRawValue, ctx->m_StickExtents[nStick].axis[nAxis].sMin, 0, SDL_MIN_SINT16, 0));
+        return (Sint16)HIDAPI_RemapVal(sRawValue, ctx->m_StickExtents[nStick].axis[nAxis].sMin, 0, SDL_MIN_SINT16, 0);
     }
 }
 
@@ -1164,22 +1151,22 @@ static void HandleInputOnlyControllerState(SDL_Joystick *joystick, SDL_DriverSwi
     }
 
     if (packet->rgucJoystickLeft[0] != ctx->m_lastInputOnlyState.rgucJoystickLeft[0]) {
-        axis = (Sint16)(RemapVal(packet->rgucJoystickLeft[0], SDL_MIN_UINT8, SDL_MAX_UINT8, SDL_MIN_SINT16, SDL_MAX_SINT16));
+        axis = (Sint16)HIDAPI_RemapVal(packet->rgucJoystickLeft[0], SDL_MIN_UINT8, SDL_MAX_UINT8, SDL_MIN_SINT16, SDL_MAX_SINT16);
         SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_LEFTX, axis);
     }
 
     if (packet->rgucJoystickLeft[1] != ctx->m_lastInputOnlyState.rgucJoystickLeft[1]) {
-        axis = (Sint16)(RemapVal(packet->rgucJoystickLeft[1], SDL_MIN_UINT8, SDL_MAX_UINT8, SDL_MIN_SINT16, SDL_MAX_SINT16));
+        axis = (Sint16)HIDAPI_RemapVal(packet->rgucJoystickLeft[1], SDL_MIN_UINT8, SDL_MAX_UINT8, SDL_MIN_SINT16, SDL_MAX_SINT16);
         SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_LEFTY, axis);
     }
 
     if (packet->rgucJoystickRight[0] != ctx->m_lastInputOnlyState.rgucJoystickRight[0]) {
-        axis = (Sint16)(RemapVal(packet->rgucJoystickRight[0], SDL_MIN_UINT8, SDL_MAX_UINT8, SDL_MIN_SINT16, SDL_MAX_SINT16));
+        axis = (Sint16)HIDAPI_RemapVal(packet->rgucJoystickRight[0], SDL_MIN_UINT8, SDL_MAX_UINT8, SDL_MIN_SINT16, SDL_MAX_SINT16);
         SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_RIGHTX, axis);
     }
 
     if (packet->rgucJoystickRight[1] != ctx->m_lastInputOnlyState.rgucJoystickRight[1]) {
-        axis = (Sint16)(RemapVal(packet->rgucJoystickRight[1], SDL_MIN_UINT8, SDL_MAX_UINT8, SDL_MIN_SINT16, SDL_MAX_SINT16));
+        axis = (Sint16)HIDAPI_RemapVal(packet->rgucJoystickRight[1], SDL_MIN_UINT8, SDL_MAX_UINT8, SDL_MIN_SINT16, SDL_MAX_SINT16);
         SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_RIGHTY, axis);
     }
 
