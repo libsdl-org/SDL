@@ -3369,7 +3369,7 @@ CheckUSBHID()
                     have_machine_joystick=yes
                     ])
                     if test x$have_machine_joystick = xyes; then
-                        AC_DEFINE(SDL_JOYSTICK_USBHID_MACHINE_JOYSTICK_H, 1, [ ])
+                        AC_DEFINE(SDL_HAVE_MACHINE_JOYSTICK_H, 1, [ ])
                     fi
                     AC_MSG_RESULT($have_machine_joystick)
 
@@ -3379,6 +3379,7 @@ CheckUSBHID()
                     EXTRA_LDFLAGS="$EXTRA_LDFLAGS $USB_LIBS"
                     have_joystick=yes
                 fi
+
                 CFLAGS="$save_CFLAGS"
             fi
         ;;

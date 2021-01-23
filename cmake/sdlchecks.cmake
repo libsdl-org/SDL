@@ -1082,7 +1082,7 @@ macro(CheckUSBHID)
             return 0;
         }" HAVE_MACHINE_JOYSTICK)
     if(HAVE_MACHINE_JOYSTICK)
-      set(SDL_JOYSTICK_USBHID_MACHINE_JOYSTICK_H 1)
+      set(SDL_HAVE_MACHINE_JOYSTICK_H 1)
     endif()
     set(SDL_JOYSTICK_USBHID 1)
     file(GLOB BSD_JOYSTICK_SOURCES ${SDL2_SOURCE_DIR}/src/joystick/bsd/*.c)

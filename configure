@@ -24447,7 +24447,7 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
                     if test x$have_machine_joystick = xyes; then
 
-$as_echo "#define SDL_JOYSTICK_USBHID_MACHINE_JOYSTICK_H 1" >>confdefs.h
+$as_echo "#define SDL_HAVE_MACHINE_JOYSTICK_H 1" >>confdefs.h
 
                     fi
                     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_machine_joystick" >&5
@@ -24461,6 +24461,7 @@ $as_echo "#define SDL_JOYSTICK_USBHID 1" >>confdefs.h
                     EXTRA_LDFLAGS="$EXTRA_LDFLAGS $USB_LIBS"
                     have_joystick=yes
                 fi
+
                 CFLAGS="$save_CFLAGS"
             fi
         ;;
