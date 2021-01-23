@@ -782,14 +782,6 @@ WIN_SetWindowGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
 {
     WIN_UpdateClipCursor(window);
 
-    if (grabbed) {
-        if (SDL_GetHintBoolean(SDL_HINT_GRAB_KEYBOARD, SDL_FALSE)) {
-            WIN_GrabKeyboard(window);
-        }
-    } else {
-        WIN_UngrabKeyboard(window);
-    }
-
     if (window->flags & SDL_WINDOW_FULLSCREEN) {
         UINT flags = SWP_NOCOPYBITS | SWP_NOMOVE | SWP_NOSIZE;
 
@@ -797,6 +789,16 @@ WIN_SetWindowGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
             flags |= SWP_NOACTIVATE;
         }
         WIN_SetWindowPositionInternal(_this, window, flags);
+    }
+}
+
+void
+WIN_SetWindowKeyboardGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
+{
+    if (grabbed) {
+        WIN_GrabKeyboard(window);
+    } else {
+        WIN_UngrabKeyboard(window);
     }
 }
 

@@ -1566,7 +1566,6 @@ X11_SetWindowGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
     Display *display = data->videodata->display;
     SDL_bool oldstyle_fullscreen;
-    SDL_bool grab_keyboard;
 
     /* ICCCM2.0-compliant window managers can handle fullscreen windows
        If we're using XVidMode to change resolution we need to confine
@@ -1607,21 +1606,26 @@ X11_SetWindowGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
         /* Raise the window if we grab the mouse */
         X11_XRaiseWindow(display, data->xwindow);
 
-        /* Now grab the keyboard */
-        if (SDL_GetHintBoolean(SDL_HINT_GRAB_KEYBOARD, SDL_FALSE)) {
-            grab_keyboard = SDL_TRUE;
-        } else {
-            /* We need to do this with the old style override_redirect
-               fullscreen window otherwise we won't get keyboard focus.
-            */
-            grab_keyboard = oldstyle_fullscreen;
-        }
-        if (grab_keyboard) {
-            X11_XGrabKeyboard(display, data->xwindow, True, GrabModeAsync,
-                          GrabModeAsync, CurrentTime);
+        /* Now grab the keyboard on old-style fullscreen */
+        if (oldstyle_fullscreen) {
+            X11_SetWindowKeyboardGrab(_this, window, SDL_TRUE);
         }
     } else {
         X11_XUngrabPointer(display, CurrentTime);
+    }
+    X11_XSync(display, False);
+}
+
+void
+X11_SetWindowKeyboardGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
+{
+    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+    Display *display = data->videodata->display;
+
+    if (grabbed) {
+        X11_XGrabKeyboard(display, data->xwindow, True, GrabModeAsync,
+                          GrabModeAsync, CurrentTime);
+    } else {
         X11_XUngrabKeyboard(display, CurrentTime);
     }
     X11_XSync(display, False);

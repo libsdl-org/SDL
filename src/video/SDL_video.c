@@ -2655,6 +2655,9 @@ SDL_UpdateWindowGrab(SDL_Window * window)
             if (_this->SetWindowGrab) {
                 _this->SetWindowGrab(_this, grabbed_window, SDL_FALSE);
             }
+            if (_this->SetWindowKeyboardGrab) {
+                _this->SetWindowKeyboardGrab(_this, grabbed_window, SDL_FALSE);
+            }
         }
         _this->grabbed_window = window;
     } else if (grabbed_window == window) {
@@ -2663,6 +2666,13 @@ SDL_UpdateWindowGrab(SDL_Window * window)
 
     if (_this->SetWindowGrab) {
         _this->SetWindowGrab(_this, window, grabbed);
+    }
+    if (_this->SetWindowKeyboardGrab) {
+        if (grabbed && SDL_GetHintBoolean(SDL_HINT_GRAB_KEYBOARD, SDL_FALSE)) {
+            _this->SetWindowKeyboardGrab(_this, window, SDL_TRUE);
+        } else {
+            _this->SetWindowKeyboardGrab(_this, window, SDL_FALSE);
+        }
     }
 }
 

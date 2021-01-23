@@ -201,6 +201,7 @@ Wayland_CreateDevice(int devindex)
     device->MaximizeWindow = Wayland_MaximizeWindow;
     device->MinimizeWindow = Wayland_MinimizeWindow;
     device->SetWindowGrab = Wayland_SetWindowGrab;
+    device->SetWindowKeyboardGrab = Wayland_SetWindowKeyboardGrab;
     device->RestoreWindow = Wayland_RestoreWindow;
     device->SetWindowBordered = Wayland_SetWindowBordered;
     device->SetWindowResizable = Wayland_SetWindowResizable;

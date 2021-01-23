@@ -161,6 +161,7 @@ WIN_CreateDevice(int devindex)
     device->SetWindowGammaRamp = WIN_SetWindowGammaRamp;
     device->GetWindowGammaRamp = WIN_GetWindowGammaRamp;
     device->SetWindowGrab = WIN_SetWindowGrab;
+    device->SetWindowKeyboardGrab = WIN_SetWindowKeyboardGrab;
     device->DestroyWindow = WIN_DestroyWindow;
     device->GetWindowWMInfo = WIN_GetWindowWMInfo;
     device->CreateWindowFramebuffer = WIN_CreateWindowFramebuffer;

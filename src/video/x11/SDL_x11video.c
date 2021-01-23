@@ -225,6 +225,7 @@ X11_CreateDevice(int devindex)
     device->SetWindowFullscreen = X11_SetWindowFullscreen;
     device->SetWindowGammaRamp = X11_SetWindowGammaRamp;
     device->SetWindowGrab = X11_SetWindowGrab;
+    device->SetWindowKeyboardGrab = X11_SetWindowKeyboardGrab;
     device->DestroyWindow = X11_DestroyWindow;
     device->CreateWindowFramebuffer = X11_CreateWindowFramebuffer;
     device->UpdateWindowFramebuffer = X11_UpdateWindowFramebuffer;
