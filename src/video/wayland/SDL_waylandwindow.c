@@ -628,6 +628,16 @@ Wayland_SetWindowBordered(_THIS, SDL_Window * window, SDL_bool bordered)
 }
 
 void
+Wayland_SetWindowResizable(_THIS, SDL_Window * window, SDL_bool resizable)
+{
+    /* No-op, this is handled by the xdg-shell/wl_shell callbacks.
+     * Also note that we do NOT implement SetMaximumSize/SetMinimumSize, as
+     * those are also no-ops for the same reason, but SDL_video.c does not
+     * require a driver implementation.
+     */
+}
+
+void
 Wayland_MaximizeWindow(_THIS, SDL_Window * window)
 {
     SDL_WindowData *wind = window->driverdata;

@@ -94,6 +94,7 @@ extern void Wayland_MinimizeWindow(_THIS, SDL_Window * window);
 extern void Wayland_SetWindowGrab(_THIS, SDL_Window * window, SDL_bool grabbed);
 extern void Wayland_RestoreWindow(_THIS, SDL_Window * window);
 extern void Wayland_SetWindowBordered(_THIS, SDL_Window * window, SDL_bool bordered);
+extern void Wayland_SetWindowResizable(_THIS, SDL_Window * window, SDL_bool resizable);
 extern int Wayland_CreateWindow(_THIS, SDL_Window *window);
 extern void Wayland_SetWindowSize(_THIS, SDL_Window * window);
 extern void Wayland_SetWindowTitle(_THIS, SDL_Window * window);
