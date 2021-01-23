@@ -612,6 +612,9 @@ static ControllerMapping_t *SDL_CreateMappingForHIDAPIController(SDL_JoystickGUI
                 if (vendor == 0 && product == 0) {
                     /* This is a Bluetooth Nintendo Switch Pro controller */
                     SDL_strlcat(mapping_string, "misc1:b15,", sizeof(mapping_string));
+                } else if (vendor == USB_VENDOR_GOOGLE && product == USB_PRODUCT_GOOGLE_STADIA_CONTROLLER) {
+                    /* The Google Stadia controller has a share button and a Google Assistant button */
+                    SDL_strlcat(mapping_string, "misc1:b15,", sizeof(mapping_string));
                 }
                 break;
             }

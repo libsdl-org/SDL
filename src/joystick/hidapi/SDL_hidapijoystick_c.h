@@ -31,12 +31,13 @@
 #include "../usb_ids.h"
 
 /* This is the full set of HIDAPI drivers available */
+#define SDL_JOYSTICK_HIDAPI_GAMECUBE
 #define SDL_JOYSTICK_HIDAPI_PS4
 #define SDL_JOYSTICK_HIDAPI_PS5
+#define SDL_JOYSTICK_HIDAPI_STADIA
 #define SDL_JOYSTICK_HIDAPI_SWITCH
 #define SDL_JOYSTICK_HIDAPI_XBOX360
 #define SDL_JOYSTICK_HIDAPI_XBOXONE
-#define SDL_JOYSTICK_HIDAPI_GAMECUBE
 
 #if defined(__IPHONEOS__) || defined(__TVOS__) || defined(__ANDROID__)
 /* Very basic Steam Controller support on mobile devices */
@@ -105,14 +106,15 @@ typedef struct _SDL_HIDAPI_DeviceDriver
 
 
 /* HIDAPI device support */
+extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverGameCube;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverPS4;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverPS5;
+extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverStadia;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSteam;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSwitch;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXbox360;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXbox360W;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXboxOne;
-extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverGameCube;
 
 /* Return true if a HID device is present and supported as a joystick */
 extern SDL_bool HIDAPI_IsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name);
