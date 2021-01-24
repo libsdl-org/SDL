@@ -431,12 +431,13 @@ static SDL_MOUSE_EVENT_SOURCE GetMouseMessageSource()
 LRESULT CALLBACK
 WIN_KeyboardHookProc(int nCode, WPARAM wParam, LPARAM lParam)
 {
+    KBDLLHOOKSTRUCT* hookData = (KBDLLHOOKSTRUCT*)lParam;
+    SDL_Scancode scanCode;
+
     if (nCode < 0 || nCode != HC_ACTION) {
         return CallNextHookEx(NULL, nCode, wParam, lParam);
     }
 
-    KBDLLHOOKSTRUCT* hookData = (KBDLLHOOKSTRUCT*)lParam;
-    SDL_Scancode scanCode;
     switch (hookData->vkCode) {
     case VK_LWIN:
         scanCode = SDL_SCANCODE_LGUI;
