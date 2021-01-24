@@ -731,6 +731,12 @@ static void
 keyboard_handle_leave(void *data, struct wl_keyboard *keyboard,
                       uint32_t serial, struct wl_surface *surface)
 {
+    struct SDL_WaylandInput *input = data;
+
+    /* Stop key repeat before clearing keyboard focus */
+    keyboard_repeat_clear(&input->keyboard_repeat);
+
+    /* This will release any keys still pressed */ 
     SDL_SetKeyboardFocus(NULL);
 }
 
