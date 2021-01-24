@@ -42,36 +42,36 @@ void lockDecr(volatile int *piVal);
   parm [eax];
 */
 
-static ULONG _getEnvULong(PSZ pszName, ULONG ulMax, ULONG ulDefault)
+static ULONG _getEnvULong(const char *name, ULONG ulMax, ULONG ulDefault)
 {
     ULONG   ulValue;
-    PCHAR   pcEnd;
-    PSZ     pszEnvVal = SDL_getenv(pszName);
+    char*   end;
+    char*   envval = SDL_getenv(name);
 
-    if (pszEnvVal == NULL)
+    if (envval == NULL)
         return ulDefault;
 
-    ulValue = SDL_strtoul((const char *)pszEnvVal, &pcEnd, 10);
-    return (pcEnd == pszEnvVal) || (ulValue > ulMax)? ulDefault : ulMax;
+    ulValue = SDL_strtoul(envval, &end, 10);
+    return (end == envval) || (ulValue > ulMax)? ulDefault : ulMax;
 }
 
-static int _MCIError(PSZ pszFunc, ULONG ulResult)
+static int _MCIError(const char *func, ULONG ulResult)
 {
     CHAR    acBuf[128];
     mciGetErrorString(ulResult, acBuf, sizeof(acBuf));
-    return SDL_SetError("[%s] %s", pszFunc, acBuf);
+    return SDL_SetError("[%s] %s", func, acBuf);
 }
 
-static void _mixIOError(PSZ pszFunction, ULONG ulRC)
+static void _mixIOError(const char *function, ULONG ulRC)
 {
     debug_os2("%s() - failed, rc = 0x%X (%s)",
-              pszFunction, ulRC,
+              function, ulRC,
               (ulRC == MCIERR_INVALID_MODE)   ? "Mixer mode does not match request" :
               (ulRC == MCIERR_INVALID_BUFFER) ? "Caller sent an invalid buffer"     : "unknown");
 }
 
-LONG APIENTRY cbAudioWriteEvent(ULONG ulStatus, PMCI_MIX_BUFFER pBuffer,
-                                ULONG ulFlags)
+static LONG APIENTRY cbAudioWriteEvent(ULONG ulStatus, PMCI_MIX_BUFFER pBuffer,
+                                       ULONG ulFlags)
 {
     SDL_PrivateAudioData *pAData = (SDL_PrivateAudioData *)pBuffer->ulUserParm;
     ULONG   ulRC;
@@ -90,8 +90,8 @@ LONG APIENTRY cbAudioWriteEvent(ULONG ulStatus, PMCI_MIX_BUFFER pBuffer,
     return 1; /* It seems, return value is not matter. */
 }
 
-LONG APIENTRY cbAudioReadEvent(ULONG ulStatus, PMCI_MIX_BUFFER pBuffer,
-                               ULONG ulFlags)
+static LONG APIENTRY cbAudioReadEvent(ULONG ulStatus, PMCI_MIX_BUFFER pBuffer,
+                                      ULONG ulFlags)
 {
     SDL_PrivateAudioData *pAData = (SDL_PrivateAudioData *)pBuffer->ulUserParm;
     ULONG   ulRC;
