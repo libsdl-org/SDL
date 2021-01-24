@@ -873,7 +873,7 @@ if(LIBC)
     else()
       set(HAVE_ALLOCA_H 1)
       set(HAVE_ALLOCA 1)
-      check_symbol_exists(clock_gettime_nsec_np HAVE_CLOCK_GETTIME_NSEC_NP)
+      check_symbol_exists(clock_gettime_nsec_np "time.h" HAVE_CLOCK_GETTIME_NSEC_NP)
     endif()
 
     check_struct_has_member("struct sigaction" "sa_sigaction" "signal.h" HAVE_SA_SIGACTION)
