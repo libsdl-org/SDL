@@ -345,7 +345,7 @@ if test x$enable_libc = xyes; then
         AC_DEFINE(HAVE_MPROTECT, 1, [ ])
         ]),
     )
-    AC_CHECK_FUNCS(malloc calloc realloc free getenv setenv putenv unsetenv qsort abs bcopy memset memcpy memmove wcslen wcslcpy wcslcat wcsdup wcsstr wcscmp wcsncmp wcscasecmp _wcsicmp wcsncasecmp _wcsnicmp strlen strlcpy strlcat _strrev _strupr _strlwr strchr strrchr strstr strtok_r itoa _ltoa _uitoa _ultoa strtol strtoul _i64toa _ui64toa strtoll strtoull atoi atof strcmp strncmp _stricmp strcasecmp _strnicmp strncasecmp vsscanf vsnprintf fopen64 fseeko fseeko64 sigaction setjmp nanosleep sysconf sysctlbyname getauxval elf_aux_info clock_gettime_nsec_np poll _Exit)
+    AC_CHECK_FUNCS(malloc calloc realloc free getenv setenv putenv unsetenv qsort abs bcopy memset memcpy memmove wcslen wcslcpy wcslcat wcsdup wcsstr wcscmp wcsncmp wcscasecmp _wcsicmp wcsncasecmp _wcsnicmp strlen strlcpy strlcat _strrev _strupr _strlwr strchr strrchr strstr strtok_r itoa _ltoa _uitoa _ultoa strtol strtoul _i64toa _ui64toa strtoll strtoull atoi atof strcmp strncmp _stricmp strcasecmp _strnicmp strncasecmp vsscanf vsnprintf fopen64 fseeko fseeko64 sigaction setjmp nanosleep sysconf sysctlbyname getauxval elf_aux_info poll _Exit)
 
     AC_CHECK_LIB(m, pow, [LIBS="$LIBS -lm"; EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lm"])
     AC_CHECK_FUNCS(acos acosf asin asinf atan atanf atan2 atan2f ceil ceilf copysign copysignf cos cosf exp expf fabs fabsf floor floorf trunc truncf fmod fmodf log logf log10 log10f lround lroundf pow powf round roundf scalbn scalbnf sin sinf sqrt sqrtf tan tanf)
@@ -3486,6 +3486,29 @@ AS_HELP_STRING([--enable-clock_gettime], [use clock_gettime() instead of gettime
     fi
 }
 
+dnl Check for clock_gettime_nsec_np()
+CheckClockGettimeAPPLE()
+{
+    have_clock_gettime_apple=no
+    AC_MSG_CHECKING(for clock_gettime_nsec_np)
+    AC_TRY_LINK([
+#include <AvailabilityMacros.h>
+#include <time.h>
+      ],[
+#if MAC_OS_X_VERSION_MIN_REQUIRED < 101200
+#error Need 10.12 or newer target
+#endif
+        return !clock_gettime_nsec_np(CLOCK_MONOTONIC);
+      ],[
+        have_clock_gettime_apple=yes
+    ])
+    AC_MSG_RESULT($have_clock_gettime_apple)
+
+    if test x$have_clock_gettime_apple = xyes; then
+        AC_DEFINE(HAVE_CLOCK_GETTIME_NSEC_NP, 1, [ ])
+    fi
+}
+
 dnl Check for a valid linux/version.h
 CheckLinuxVersion()
 {
@@ -4021,6 +4044,9 @@ AS_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
         CheckVulkan
         CheckPTHREAD
 
+        dnl assuming iOS >= 10.0
+        AC_DEFINE(HAVE_CLOCK_GETTIME_NSEC_NP, 1, [ ])
+
         SOURCES="$SOURCES $srcdir/src/misc/ios/*.m"
         have_misc=yes
 
@@ -4116,6 +4142,7 @@ AS_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
 
         CheckVisibilityHidden
         CheckDeclarationAfterStatement
+        CheckClockGettimeAPPLE
         CheckDummyVideo
         CheckDiskAudio
         CheckDummyAudio
