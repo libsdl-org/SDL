@@ -138,7 +138,6 @@ void KMSDRM_RaiseWindow(_THIS, SDL_Window * window);
 void KMSDRM_MaximizeWindow(_THIS, SDL_Window * window);
 void KMSDRM_MinimizeWindow(_THIS, SDL_Window * window);
 void KMSDRM_RestoreWindow(_THIS, SDL_Window * window);
-void KMSDRM_SetWindowMouseGrab(_THIS, SDL_Window * window, SDL_bool grabbed);
 void KMSDRM_DestroyWindow(_THIS, SDL_Window * window);
 
 /* Window manager function */

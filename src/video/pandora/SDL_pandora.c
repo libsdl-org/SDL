@@ -114,7 +114,6 @@ PND_create()
     device->MaximizeWindow = PND_maximizewindow;
     device->MinimizeWindow = PND_minimizewindow;
     device->RestoreWindow = PND_restorewindow;
-    device->SetWindowMouseGrab = PND_setwindowgrab;
     device->DestroyWindow = PND_destroywindow;
 #if 0
     device->GetWindowWMInfo = PND_getwindowwminfo;
@@ -284,10 +283,6 @@ PND_minimizewindow(_THIS, SDL_Window * window)
 }
 void
 PND_restorewindow(_THIS, SDL_Window * window)
-{
-}
-void
-PND_setwindowgrab(_THIS, SDL_Window * window, SDL_bool grabbed)
 {
 }
 void
