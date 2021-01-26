@@ -114,6 +114,7 @@ DirectFB_CreateDevice(int devindex)
     device->MinimizeWindow = DirectFB_MinimizeWindow;
     device->RestoreWindow = DirectFB_RestoreWindow;
     device->SetWindowMouseGrab = DirectFB_SetWindowMouseGrab;
+    device->SetWindowKeyboardGrab = DirectFB_SetWindowKeyboardGrab;
     device->DestroyWindow = DirectFB_DestroyWindow;
     device->GetWindowWMInfo = DirectFB_GetWindowWMInfo;
 
@@ -260,7 +261,6 @@ DirectFB_VideoInit(_THIS)
 
     devdata->dfb = dfb;
     devdata->firstwin = NULL;
-    devdata->grabbed_window = NULL;
 
     _this->driverdata = devdata;
 

@@ -312,15 +312,16 @@ ProcessInputEvent(_THIS, DFBInputEvent * ievt)
     int kbd_idx;
     Uint32 unicode;
     char text[SDL_TEXTINPUTEVENT_TEXT_SIZE];
+    SDL_Window* grabbed_window = SDL_GetGrabbedWindow();
 
     if (!devdata->use_linux_input) {
         if (ievt->type == DIET_AXISMOTION) {
-            if ((devdata->grabbed_window != NULL) && (ievt->flags & DIEF_AXISREL)) {
+            if ((grabbed_window != NULL) && (ievt->flags & DIEF_AXISREL)) {
                 if (ievt->axis == DIAI_X)
-                    SDL_SendMouseMotion_ex(devdata->grabbed_window, ievt->device_id, 1,
+                    SDL_SendMouseMotion_ex(grabbed_window, ievt->device_id, 1,
                                         ievt->axisrel, 0, 0);
                 else if (ievt->axis == DIAI_Y)
-                    SDL_SendMouseMotion_ex(devdata->grabbed_window, ievt->device_id, 1, 0,
+                    SDL_SendMouseMotion_ex(grabbed_window, ievt->device_id, 1, 0,
                                         ievt->axisrel, 0);
             }
         }
@@ -339,7 +340,7 @@ ProcessInputEvent(_THIS, DFBInputEvent * ievt)
                     SDL_Mouse *mouse = SDL_GetMouse(ievt->device_id);
                     SDL_Window *window = SDL_GetWindowFromID(mouse->focus);
 #else
-                    SDL_Window *window = devdata->grabbed_window;
+                    SDL_Window *window = grabbed_window;
 #endif
                     if (window) {
                         DFB_WindowData *windata =
@@ -359,10 +360,10 @@ ProcessInputEvent(_THIS, DFBInputEvent * ievt)
                 }
             } else if (ievt->flags & DIEF_AXISREL) {
                 if (ievt->axis == DIAI_X)
-                    SDL_SendMouseMotion_ex(devdata->grabbed_window, ievt->device_id, 1,
+                    SDL_SendMouseMotion_ex(grabbed_window, ievt->device_id, 1,
                                         ievt->axisrel, 0, 0);
                 else if (ievt->axis == DIAI_Y)
-                    SDL_SendMouseMotion_ex(devdata->grabbed_window, ievt->device_id, 1, 0,
+                    SDL_SendMouseMotion_ex(grabbed_window, ievt->device_id, 1, 0,
                                         ievt->axisrel, 0);
             }
             break;
@@ -386,19 +387,19 @@ ProcessInputEvent(_THIS, DFBInputEvent * ievt)
             break;
         case DIET_BUTTONPRESS:
             if (ievt->buttons & DIBM_LEFT)
-                SDL_SendMouseButton_ex(devdata->grabbed_window, ievt->device_id, SDL_PRESSED, 1);
+                SDL_SendMouseButton_ex(grabbed_window, ievt->device_id, SDL_PRESSED, 1);
             if (ievt->buttons & DIBM_MIDDLE)
-                SDL_SendMouseButton_ex(devdata->grabbed_window, ievt->device_id, SDL_PRESSED, 2);
+                SDL_SendMouseButton_ex(grabbed_window, ievt->device_id, SDL_PRESSED, 2);
             if (ievt->buttons & DIBM_RIGHT)
-                SDL_SendMouseButton_ex(devdata->grabbed_window, ievt->device_id, SDL_PRESSED, 3);
+                SDL_SendMouseButton_ex(grabbed_window, ievt->device_id, SDL_PRESSED, 3);
             break;
         case DIET_BUTTONRELEASE:
             if (!(ievt->buttons & DIBM_LEFT))
-                SDL_SendMouseButton_ex(devdata->grabbed_window, ievt->device_id, SDL_RELEASED, 1);
+                SDL_SendMouseButton_ex(grabbed_window, ievt->device_id, SDL_RELEASED, 1);
             if (!(ievt->buttons & DIBM_MIDDLE))
-                SDL_SendMouseButton_ex(devdata->grabbed_window, ievt->device_id, SDL_RELEASED, 2);
+                SDL_SendMouseButton_ex(grabbed_window, ievt->device_id, SDL_RELEASED, 2);
             if (!(ievt->buttons & DIBM_RIGHT))
-                SDL_SendMouseButton_ex(devdata->grabbed_window, ievt->device_id, SDL_RELEASED, 3);
+                SDL_SendMouseButton_ex(grabbed_window, ievt->device_id, SDL_RELEASED, 3);
             break;
         default:
             break;              /* please gcc */

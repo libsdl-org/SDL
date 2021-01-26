@@ -153,10 +153,6 @@ struct _DFB_DeviceData
     int                 use_linux_input;
     int                 has_own_wm;
 
-
-    /* window grab */
-    SDL_Window          *grabbed_window;
-
     /* global events */
     IDirectFBEventBuffer *events;
 };

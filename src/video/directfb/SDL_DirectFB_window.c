@@ -385,23 +385,24 @@ DirectFB_RestoreWindow(_THIS, SDL_Window * window)
 void
 DirectFB_SetWindowMouseGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
 {
-    SDL_DFB_DEVICEDATA(_this);
     SDL_DFB_WINDOWDATA(window);
-    DFB_WindowData *gwindata = ((devdata->grabbed_window) ? (DFB_WindowData *) ((devdata->grabbed_window)->driverdata) : NULL);
 
-    if ((window->flags & SDL_WINDOW_INPUT_GRABBED)) {
-        if (gwindata != NULL)
-        {
-            SDL_DFB_CHECK(gwindata->dfbwin->UngrabPointer(gwindata->dfbwin));
-            SDL_DFB_CHECK(gwindata->dfbwin->UngrabKeyboard(gwindata->dfbwin));
-        }
+    if (grabbed) {
         SDL_DFB_CHECK(windata->dfbwin->GrabPointer(windata->dfbwin));
-        SDL_DFB_CHECK(windata->dfbwin->GrabKeyboard(windata->dfbwin));
-        devdata->grabbed_window = window;
     } else {
         SDL_DFB_CHECK(windata->dfbwin->UngrabPointer(windata->dfbwin));
+    }
+}
+
+void
+DirectFB_SetWindowKeyboardGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
+{
+    SDL_DFB_WINDOWDATA(window);
+
+    if (grabbed) {
+        SDL_DFB_CHECK(windata->dfbwin->GrabKeyboard(windata->dfbwin));
+    } else {
         SDL_DFB_CHECK(windata->dfbwin->UngrabKeyboard(windata->dfbwin));
-        devdata->grabbed_window = NULL;
     }
 }
 
