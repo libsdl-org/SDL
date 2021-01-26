@@ -2652,8 +2652,8 @@ SDL_UpdateWindowGrab(SDL_Window * window)
         if (grabbed_window && (grabbed_window != window)) {
             /* stealing a grab from another window! */
             grabbed_window->flags &= ~SDL_WINDOW_INPUT_GRABBED;
-            if (_this->SetWindowGrab) {
-                _this->SetWindowGrab(_this, grabbed_window, SDL_FALSE);
+            if (_this->SetWindowMouseGrab) {
+                _this->SetWindowMouseGrab(_this, grabbed_window, SDL_FALSE);
             }
             if (_this->SetWindowKeyboardGrab) {
                 _this->SetWindowKeyboardGrab(_this, grabbed_window, SDL_FALSE);
@@ -2664,8 +2664,8 @@ SDL_UpdateWindowGrab(SDL_Window * window)
         _this->grabbed_window = NULL;  /* ungrabbing. */
     }
 
-    if (_this->SetWindowGrab) {
-        _this->SetWindowGrab(_this, window, grabbed);
+    if (_this->SetWindowMouseGrab) {
+        _this->SetWindowMouseGrab(_this, window, grabbed);
     }
     if (_this->SetWindowKeyboardGrab) {
         if (grabbed && SDL_GetHintBoolean(SDL_HINT_GRAB_KEYBOARD, SDL_FALSE)) {

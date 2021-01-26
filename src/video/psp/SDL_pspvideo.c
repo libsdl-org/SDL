@@ -112,7 +112,7 @@ PSP_Create()
     device->MaximizeWindow = PSP_MaximizeWindow;
     device->MinimizeWindow = PSP_MinimizeWindow;
     device->RestoreWindow = PSP_RestoreWindow;
-    device->SetWindowGrab = PSP_SetWindowGrab;
+    device->SetWindowMouseGrab = PSP_SetWindowMouseGrab;
     device->DestroyWindow = PSP_DestroyWindow;
 #if 0
     device->GetWindowWMInfo = PSP_GetWindowWMInfo;
@@ -267,7 +267,7 @@ PSP_RestoreWindow(_THIS, SDL_Window * window)
 {
 }
 void
-PSP_SetWindowGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
+PSP_SetWindowMouseGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
 {
 
 }

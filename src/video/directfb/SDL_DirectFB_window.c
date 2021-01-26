@@ -383,7 +383,7 @@ DirectFB_RestoreWindow(_THIS, SDL_Window * window)
 }
 
 void
-DirectFB_SetWindowGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
+DirectFB_SetWindowMouseGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
 {
     SDL_DFB_DEVICEDATA(_this);
     SDL_DFB_WINDOWDATA(window);

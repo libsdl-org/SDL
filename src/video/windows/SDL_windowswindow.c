@@ -778,7 +778,7 @@ void WIN_UngrabKeyboard(SDL_Window *window)
 }
 
 void
-WIN_SetWindowGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
+WIN_SetWindowMouseGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
 {
     WIN_UpdateClipCursor(window);
 

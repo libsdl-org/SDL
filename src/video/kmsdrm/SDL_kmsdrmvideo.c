@@ -233,7 +233,7 @@ KMSDRM_CreateDevice(int devindex)
     device->MaximizeWindow = KMSDRM_MaximizeWindow;
     device->MinimizeWindow = KMSDRM_MinimizeWindow;
     device->RestoreWindow = KMSDRM_RestoreWindow;
-    device->SetWindowGrab = KMSDRM_SetWindowGrab;
+    device->SetWindowMouseGrab = KMSDRM_SetWindowMouseGrab;
     device->DestroyWindow = KMSDRM_DestroyWindow;
     device->GetWindowWMInfo = KMSDRM_GetWindowWMInfo;
 
@@ -1320,7 +1320,7 @@ KMSDRM_RestoreWindow(_THIS, SDL_Window * window)
 {
 }
 void
-KMSDRM_SetWindowGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
+KMSDRM_SetWindowMouseGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
 {
 
 }

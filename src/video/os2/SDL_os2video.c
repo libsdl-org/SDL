@@ -1147,7 +1147,7 @@ static int OS2_SetWindowHitTest(SDL_Window *window, SDL_bool enabled)
   return 0;
 }
 
-static void OS2_SetWindowGrab(_THIS, SDL_Window *window, SDL_bool grabbed)
+static void OS2_SetWindowMouseGrab(_THIS, SDL_Window *window, SDL_bool grabbed)
 {
     WINDATA *pWinData = (WINDATA *)window->driverdata;
 
@@ -1616,7 +1616,7 @@ static SDL_VideoDevice *OS2_CreateDevice(int devindex)
     device->GetWindowWMInfo = OS2_GetWindowWMInfo;
     device->OnWindowEnter = OS2_OnWindowEnter;
     device->SetWindowHitTest = OS2_SetWindowHitTest;
-    device->SetWindowGrab = OS2_SetWindowGrab;
+    device->SetWindowMouseGrab = OS2_SetWindowMouseGrab;
     device->CreateWindowFramebuffer = OS2_CreateWindowFramebuffer;
     device->UpdateWindowFramebuffer = OS2_UpdateWindowFramebuffer;
     device->DestroyWindowFramebuffer = OS2_DestroyWindowFramebuffer;

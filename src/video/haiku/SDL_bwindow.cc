@@ -205,7 +205,7 @@ int HAIKU_GetWindowGammaRamp(_THIS, SDL_Window * window, Uint16 * ramp) {
 }
 
 
-void HAIKU_SetWindowGrab(_THIS, SDL_Window * window, SDL_bool grabbed) {
+void HAIKU_SetWindowMouseGrab(_THIS, SDL_Window * window, SDL_bool grabbed) {
     /* TODO: Implement this! */
 }
 

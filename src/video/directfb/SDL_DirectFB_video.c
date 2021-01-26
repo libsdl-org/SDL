@@ -113,7 +113,7 @@ DirectFB_CreateDevice(int devindex)
     device->MaximizeWindow = DirectFB_MaximizeWindow;
     device->MinimizeWindow = DirectFB_MinimizeWindow;
     device->RestoreWindow = DirectFB_RestoreWindow;
-    device->SetWindowGrab = DirectFB_SetWindowGrab;
+    device->SetWindowMouseGrab = DirectFB_SetWindowMouseGrab;
     device->DestroyWindow = DirectFB_DestroyWindow;
     device->GetWindowWMInfo = DirectFB_GetWindowWMInfo;
 

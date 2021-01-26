@@ -120,7 +120,7 @@ RPI_Create()
     device->MaximizeWindow = RPI_MaximizeWindow;
     device->MinimizeWindow = RPI_MinimizeWindow;
     device->RestoreWindow = RPI_RestoreWindow;
-    device->SetWindowGrab = RPI_SetWindowGrab;
+    device->SetWindowMouseGrab = RPI_SetWindowMouseGrab;
     device->DestroyWindow = RPI_DestroyWindow;
 #if 0
     device->GetWindowWMInfo = RPI_GetWindowWMInfo;
@@ -422,7 +422,7 @@ RPI_RestoreWindow(_THIS, SDL_Window * window)
 {
 }
 void
-RPI_SetWindowGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
+RPI_SetWindowMouseGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
 {
 
 }

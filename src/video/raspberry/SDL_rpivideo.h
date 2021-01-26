@@ -81,7 +81,7 @@ void RPI_RaiseWindow(_THIS, SDL_Window * window);
 void RPI_MaximizeWindow(_THIS, SDL_Window * window);
 void RPI_MinimizeWindow(_THIS, SDL_Window * window);
 void RPI_RestoreWindow(_THIS, SDL_Window * window);
-void RPI_SetWindowGrab(_THIS, SDL_Window * window, SDL_bool grabbed);
+void RPI_SetWindowMouseGrab(_THIS, SDL_Window * window, SDL_bool grabbed);
 void RPI_DestroyWindow(_THIS, SDL_Window * window);
 
 /* Window manager function */

@@ -88,7 +88,7 @@ HAIKU_CreateDevice(int devindex)
     device->SetWindowFullscreen = HAIKU_SetWindowFullscreen;
     device->SetWindowGammaRamp = HAIKU_SetWindowGammaRamp;
     device->GetWindowGammaRamp = HAIKU_GetWindowGammaRamp;
-    device->SetWindowGrab = HAIKU_SetWindowGrab;
+    device->SetWindowMouseGrab = HAIKU_SetWindowMouseGrab;
     device->DestroyWindow = HAIKU_DestroyWindow;
     device->GetWindowWMInfo = HAIKU_GetWindowWMInfo;
     device->CreateWindowFramebuffer = HAIKU_CreateWindowFramebuffer;

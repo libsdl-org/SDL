@@ -98,7 +98,7 @@ Emscripten_CreateDevice(int devindex)
     device->MaximizeWindow = Emscripten_MaximizeWindow;
     device->MinimizeWindow = Emscripten_MinimizeWindow;
     device->RestoreWindow = Emscripten_RestoreWindow;
-    device->SetWindowGrab = Emscripten_SetWindowGrab;*/
+    device->SetWindowMouseGrab = Emscripten_SetWindowMouseGrab;*/
     device->DestroyWindow = Emscripten_DestroyWindow;
     device->SetWindowFullscreen = Emscripten_SetWindowFullscreen;
 

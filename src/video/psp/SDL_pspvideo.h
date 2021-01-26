@@ -73,7 +73,7 @@ void PSP_RaiseWindow(_THIS, SDL_Window * window);
 void PSP_MaximizeWindow(_THIS, SDL_Window * window);
 void PSP_MinimizeWindow(_THIS, SDL_Window * window);
 void PSP_RestoreWindow(_THIS, SDL_Window * window);
-void PSP_SetWindowGrab(_THIS, SDL_Window * window, SDL_bool grabbed);
+void PSP_SetWindowMouseGrab(_THIS, SDL_Window * window, SDL_bool grabbed);
 void PSP_DestroyWindow(_THIS, SDL_Window * window);
 
 /* Window manager function */

@@ -43,7 +43,7 @@ extern void HAIKU_SetWindowResizable(_THIS, SDL_Window * window, SDL_bool resiza
 extern void HAIKU_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display, SDL_bool fullscreen);
 extern int HAIKU_SetWindowGammaRamp(_THIS, SDL_Window * window, const Uint16 * ramp);
 extern int HAIKU_GetWindowGammaRamp(_THIS, SDL_Window * window, Uint16 * ramp);
-extern void HAIKU_SetWindowGrab(_THIS, SDL_Window * window, SDL_bool grabbed);
+extern void HAIKU_SetWindowMouseGrab(_THIS, SDL_Window * window, SDL_bool grabbed);
 extern void HAIKU_DestroyWindow(_THIS, SDL_Window * window);
 extern SDL_bool HAIKU_GetWindowWMInfo(_THIS, SDL_Window * window,
                                     struct SDL_SysWMinfo *info);

@@ -69,7 +69,7 @@ extern void DirectFB_RaiseWindow(_THIS, SDL_Window * window);
 extern void DirectFB_MaximizeWindow(_THIS, SDL_Window * window);
 extern void DirectFB_MinimizeWindow(_THIS, SDL_Window * window);
 extern void DirectFB_RestoreWindow(_THIS, SDL_Window * window);
-extern void DirectFB_SetWindowGrab(_THIS, SDL_Window * window, SDL_bool grabbed);
+extern void DirectFB_SetWindowMouseGrab(_THIS, SDL_Window * window, SDL_bool grabbed);
 extern void DirectFB_DestroyWindow(_THIS, SDL_Window * window);
 extern SDL_bool DirectFB_GetWindowWMInfo(_THIS, SDL_Window * window,
                                          struct SDL_SysWMinfo *info);

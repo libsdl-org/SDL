@@ -670,7 +670,7 @@ Wayland_MinimizeWindow(_THIS, SDL_Window * window)
 }
 
 void
-Wayland_SetWindowGrab(_THIS, SDL_Window *window, SDL_bool grabbed)
+Wayland_SetWindowMouseGrab(_THIS, SDL_Window *window, SDL_bool grabbed)
 {
     SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
 
