@@ -457,6 +457,15 @@ WIN_KeyboardHookProc(int nCode, WPARAM wParam, LPARAM lParam)
     case VK_RCONTROL:
         scanCode = SDL_SCANCODE_RCTRL;
         break;
+
+    /* These are required to intercept Alt+Tab and Alt+Esc on Windows 7 */
+    case VK_TAB:
+        scanCode = SDL_SCANCODE_TAB;
+        break;
+    case VK_ESCAPE:
+        scanCode = SDL_SCANCODE_ESCAPE;
+        break;
+
     default:
         return CallNextHookEx(NULL, nCode, wParam, lParam);
     }
