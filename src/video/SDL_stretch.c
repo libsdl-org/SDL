@@ -38,8 +38,14 @@
      (defined(__WATCOMC__) && defined(__386__)) || \
      (defined(__GNUC__) && defined(__i386__))) && SDL_ASSEMBLY_ROUTINES
 /* There's a bug with gcc 4.4.1 and -O2 where srcp doesn't get the correct
- * value after the first scanline.  FIXME? */
-/* #define USE_ASM_STRETCH */
+ * value after the first scanline. */
+/* This bug seems fixed, at least with gcc >= 4.6 */
+#  define USE_ASM_STRETCH
+#  if defined(__GNUC__)
+#    if (__GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 6))
+#      undef USE_ASM_STRETCH
+#    endif
+#  endif
 #endif
 
 #ifdef USE_ASM_STRETCH
