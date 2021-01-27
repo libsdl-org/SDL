@@ -46,6 +46,10 @@
 #      undef USE_ASM_STRETCH
 #    endif
 #  endif
+/* But it doesn't work if mprotect isn't available */
+#  if !defined(HAVE_MPROTECT) && defined(USE_ASM_STRETCH)
+#    undef USE_ASM_STRETCH
+#  endif
 #endif
 
 #ifdef USE_ASM_STRETCH
