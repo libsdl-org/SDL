@@ -90,7 +90,7 @@ Cocoa_MouseTapCallback(CGEventTapProxy proxy, CGEventType type, CGEventRef event
         return event;
     }
 
-    if (!(window->flags & SDL_WINDOW_INPUT_GRABBED)) {
+    if (!(window->flags & SDL_WINDOW_MOUSE_GRABBED)) {
         return event;
     }
 

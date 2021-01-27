@@ -1433,8 +1433,16 @@ SDL_FinishWindowCreation(SDL_Window *window, Uint32 flags)
     if (flags & SDL_WINDOW_FULLSCREEN) {
         SDL_SetWindowFullscreen(window, flags);
     }
-    if (flags & SDL_WINDOW_INPUT_GRABBED) {
+    if (flags & SDL_WINDOW_MOUSE_GRABBED) {
+        /* We must specifically call SDL_SetWindowGrab() and not
+           SDL_SetWindowMouseGrab() here because older applications may use
+           this flag plus SDL_HINT_GRAB_KEYBOARD to indicate that they want
+           the keyboard grabbed too and SDL_SetWindowMouseGrab() won't do that.
+        */
         SDL_SetWindowGrab(window, SDL_TRUE);
+    }
+    if (flags & SDL_WINDOW_KEYBOARD_GRABBED) {
+        SDL_SetWindowKeyboardGrab(window, SDL_TRUE);
     }
     if (!(flags & SDL_WINDOW_HIDDEN)) {
         SDL_ShowWindow(window);
@@ -2638,41 +2646,46 @@ SDL_GetWindowGammaRamp(SDL_Window * window, Uint16 * red,
 void
 SDL_UpdateWindowGrab(SDL_Window * window)
 {
-    SDL_Window *grabbed_window;
-    SDL_bool grabbed;
-    if ((SDL_GetMouse()->relative_mode || (window->flags & SDL_WINDOW_INPUT_GRABBED)) &&
-         (window->flags & SDL_WINDOW_INPUT_FOCUS)) {
-        grabbed = SDL_TRUE;
+    SDL_bool keyboard_grabbed, mouse_grabbed;
+
+    if (window->flags & SDL_WINDOW_INPUT_FOCUS) {
+        if (SDL_GetMouse()->relative_mode || (window->flags & SDL_WINDOW_MOUSE_GRABBED)) {
+            mouse_grabbed = SDL_TRUE;
+        } else {
+            mouse_grabbed = SDL_FALSE;
+        }
+
+        if (window->flags & SDL_WINDOW_KEYBOARD_GRABBED) {
+            keyboard_grabbed = SDL_TRUE;
+        } else {
+            keyboard_grabbed = SDL_FALSE;
+        }
     } else {
-        grabbed = SDL_FALSE;
+        mouse_grabbed = SDL_FALSE;
+        keyboard_grabbed = SDL_FALSE;
     }
 
-    grabbed_window = _this->grabbed_window;
-    if (grabbed) {
-        if (grabbed_window && (grabbed_window != window)) {
+    if (mouse_grabbed || keyboard_grabbed) {
+        if (_this->grabbed_window && (_this->grabbed_window != window)) {
             /* stealing a grab from another window! */
-            grabbed_window->flags &= ~SDL_WINDOW_INPUT_GRABBED;
+            _this->grabbed_window->flags &= ~(SDL_WINDOW_MOUSE_GRABBED | SDL_WINDOW_KEYBOARD_GRABBED);
             if (_this->SetWindowMouseGrab) {
-                _this->SetWindowMouseGrab(_this, grabbed_window, SDL_FALSE);
+                _this->SetWindowMouseGrab(_this, _this->grabbed_window, SDL_FALSE);
             }
             if (_this->SetWindowKeyboardGrab) {
-                _this->SetWindowKeyboardGrab(_this, grabbed_window, SDL_FALSE);
+                _this->SetWindowKeyboardGrab(_this, _this->grabbed_window, SDL_FALSE);
             }
         }
         _this->grabbed_window = window;
-    } else if (grabbed_window == window) {
-        _this->grabbed_window = NULL;  /* ungrabbing. */
+    } else if (_this->grabbed_window == window) {
+        _this->grabbed_window = NULL;  /* ungrabbing input. */
     }
 
     if (_this->SetWindowMouseGrab) {
-        _this->SetWindowMouseGrab(_this, window, grabbed);
+        _this->SetWindowMouseGrab(_this, window, mouse_grabbed);
     }
     if (_this->SetWindowKeyboardGrab) {
-        if (grabbed && SDL_GetHintBoolean(SDL_HINT_GRAB_KEYBOARD, SDL_FALSE)) {
-            _this->SetWindowKeyboardGrab(_this, window, SDL_TRUE);
-        } else {
-            _this->SetWindowKeyboardGrab(_this, window, SDL_FALSE);
-        }
+        _this->SetWindowKeyboardGrab(_this, window, keyboard_grabbed);
     }
 }
 
@@ -2681,13 +2694,41 @@ SDL_SetWindowGrab(SDL_Window * window, SDL_bool grabbed)
 {
     CHECK_WINDOW_MAGIC(window,);
 
-    if (!!grabbed == !!(window->flags & SDL_WINDOW_INPUT_GRABBED)) {
+    SDL_SetWindowMouseGrab(window, grabbed);
+
+    if (SDL_GetHintBoolean(SDL_HINT_GRAB_KEYBOARD, SDL_FALSE)) {
+        SDL_SetWindowKeyboardGrab(window, grabbed);
+    }
+}
+
+void
+SDL_SetWindowKeyboardGrab(SDL_Window * window, SDL_bool grabbed)
+{
+    CHECK_WINDOW_MAGIC(window,);
+
+    if (!!grabbed == !!(window->flags & SDL_WINDOW_KEYBOARD_GRABBED)) {
         return;
     }
     if (grabbed) {
-        window->flags |= SDL_WINDOW_INPUT_GRABBED;
+        window->flags |= SDL_WINDOW_KEYBOARD_GRABBED;
     } else {
-        window->flags &= ~SDL_WINDOW_INPUT_GRABBED;
+        window->flags &= ~SDL_WINDOW_KEYBOARD_GRABBED;
+    }
+    SDL_UpdateWindowGrab(window);
+}
+
+void
+SDL_SetWindowMouseGrab(SDL_Window * window, SDL_bool grabbed)
+{
+    CHECK_WINDOW_MAGIC(window,);
+
+    if (!!grabbed == !!(window->flags & SDL_WINDOW_MOUSE_GRABBED)) {
+        return;
+    }
+    if (grabbed) {
+        window->flags |= SDL_WINDOW_MOUSE_GRABBED;
+    } else {
+        window->flags &= ~SDL_WINDOW_MOUSE_GRABBED;
     }
     SDL_UpdateWindowGrab(window);
 }
@@ -2696,14 +2737,34 @@ SDL_bool
 SDL_GetWindowGrab(SDL_Window * window)
 {
     CHECK_WINDOW_MAGIC(window, SDL_FALSE);
-    SDL_assert(!_this->grabbed_window || ((_this->grabbed_window->flags & SDL_WINDOW_INPUT_GRABBED) != 0));
+    SDL_assert(!_this->grabbed_window ||
+               ((_this->grabbed_window->flags & SDL_WINDOW_MOUSE_GRABBED) != 0) ||
+               ((_this->grabbed_window->flags & SDL_WINDOW_KEYBOARD_GRABBED) != 0));
     return window == _this->grabbed_window;
+}
+
+SDL_bool
+SDL_GetWindowKeyboardGrab(SDL_Window * window)
+{
+    CHECK_WINDOW_MAGIC(window, SDL_FALSE);
+    return window == _this->grabbed_window &&
+           ((_this->grabbed_window->flags & SDL_WINDOW_KEYBOARD_GRABBED) != 0);
+}
+
+SDL_bool
+SDL_GetWindowMouseGrab(SDL_Window * window)
+{
+    CHECK_WINDOW_MAGIC(window, SDL_FALSE);
+    return window == _this->grabbed_window &&
+           ((_this->grabbed_window->flags & SDL_WINDOW_MOUSE_GRABBED) != 0);
 }
 
 SDL_Window *
 SDL_GetGrabbedWindow(void)
 {
-    SDL_assert(!_this->grabbed_window || ((_this->grabbed_window->flags & SDL_WINDOW_INPUT_GRABBED) != 0));
+    SDL_assert(!_this->grabbed_window ||
+               ((_this->grabbed_window->flags & SDL_WINDOW_MOUSE_GRABBED) != 0) ||
+               ((_this->grabbed_window->flags & SDL_WINDOW_KEYBOARD_GRABBED) != 0));
     return _this->grabbed_window;
 }
 

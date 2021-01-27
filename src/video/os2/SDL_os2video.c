@@ -183,7 +183,7 @@ static VOID _mouseCheck(WINDATA *pWinData)
 {
     SDL_Mouse *pSDLMouse = SDL_GetMouse();
 
-    if ((pSDLMouse->relative_mode || (pWinData->window->flags & SDL_WINDOW_INPUT_GRABBED) != 0) &&
+    if ((pSDLMouse->relative_mode || (pWinData->window->flags & SDL_WINDOW_MOUSE_GRABBED) != 0) &&
         ((pWinData->window->flags & SDL_WINDOW_INPUT_FOCUS) != 0)) {
         /* We will make a real capture in _wmMouseButton() */
     } else {
@@ -232,7 +232,7 @@ static VOID _wmMouseMove(WINDATA *pWinData, SHORT lX, SHORT lY)
 
     if (!pSDLMouse->relative_mode || pSDLMouse->relative_mode_warp) {
         if (!pSDLMouse->relative_mode && fWinActive &&
-            ((pWinData->window->flags & SDL_WINDOW_INPUT_GRABBED) != 0) &&
+            ((pWinData->window->flags & SDL_WINDOW_MOUSE_GRABBED) != 0) &&
             (WinQueryCapture(HWND_DESKTOP) == pWinData->hwnd)) {
 
             pointl.x = lX;
@@ -281,7 +281,7 @@ static VOID _wmMouseButton(WINDATA *pWinData, ULONG ulButton, BOOL fDown)
                                       SDL_BUTTON_MIDDLE };
     SDL_Mouse *pSDLMouse = SDL_GetMouse();
 
-    if ((pSDLMouse->relative_mode || ((pWinData->window->flags & SDL_WINDOW_INPUT_GRABBED) != 0)) &&
+    if ((pSDLMouse->relative_mode || ((pWinData->window->flags & SDL_WINDOW_MOUSE_GRABBED) != 0)) &&
         ((pWinData->window->flags & SDL_WINDOW_INPUT_FOCUS) != 0) &&
         (WinQueryCapture(HWND_DESKTOP) != pWinData->hwnd)) {
         /* Mouse should be captured. */

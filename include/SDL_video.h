@@ -68,6 +68,8 @@ typedef struct
  *  \sa SDL_GetWindowData()
  *  \sa SDL_GetWindowFlags()
  *  \sa SDL_GetWindowGrab()
+ *  \sa SDL_GetWindowKeyboardGrab()
+ *  \sa SDL_GetWindowMouseGrab()
  *  \sa SDL_GetWindowPosition()
  *  \sa SDL_GetWindowSize()
  *  \sa SDL_GetWindowTitle()
@@ -79,6 +81,8 @@ typedef struct
  *  \sa SDL_SetWindowData()
  *  \sa SDL_SetWindowFullscreen()
  *  \sa SDL_SetWindowGrab()
+ *  \sa SDL_SetWindowKeyboardGrab()
+ *  \sa SDL_SetWindowMouseGrab()
  *  \sa SDL_SetWindowIcon()
  *  \sa SDL_SetWindowPosition()
  *  \sa SDL_SetWindowSize()
@@ -104,7 +108,7 @@ typedef enum
     SDL_WINDOW_RESIZABLE = 0x00000020,          /**< window can be resized */
     SDL_WINDOW_MINIMIZED = 0x00000040,          /**< window is minimized */
     SDL_WINDOW_MAXIMIZED = 0x00000080,          /**< window is maximized */
-    SDL_WINDOW_INPUT_GRABBED = 0x00000100,      /**< window has grabbed input focus */
+    SDL_WINDOW_MOUSE_GRABBED = 0x00000100,      /**< window has grabbed mouse input */
     SDL_WINDOW_INPUT_FOCUS = 0x00000200,        /**< window has input focus */
     SDL_WINDOW_MOUSE_FOCUS = 0x00000400,        /**< window has mouse focus */
     SDL_WINDOW_FULLSCREEN_DESKTOP = ( SDL_WINDOW_FULLSCREEN | 0x00001000 ),
@@ -112,14 +116,17 @@ typedef enum
     SDL_WINDOW_ALLOW_HIGHDPI = 0x00002000,      /**< window should be created in high-DPI mode if supported.
                                                      On macOS NSHighResolutionCapable must be set true in the
                                                      application's Info.plist for this to have any effect. */
-    SDL_WINDOW_MOUSE_CAPTURE = 0x00004000,      /**< window has mouse captured (unrelated to INPUT_GRABBED) */
-    SDL_WINDOW_ALWAYS_ON_TOP = 0x00008000,      /**< window should always be above others */
-    SDL_WINDOW_SKIP_TASKBAR  = 0x00010000,      /**< window should not be added to the taskbar */
-    SDL_WINDOW_UTILITY       = 0x00020000,      /**< window should be treated as a utility window */
-    SDL_WINDOW_TOOLTIP       = 0x00040000,      /**< window should be treated as a tooltip */
-    SDL_WINDOW_POPUP_MENU    = 0x00080000,      /**< window should be treated as a popup menu */
-    SDL_WINDOW_VULKAN        = 0x10000000,      /**< window usable for Vulkan surface */
-    SDL_WINDOW_METAL         = 0x20000000       /**< window usable for Metal view */
+    SDL_WINDOW_MOUSE_CAPTURE    = 0x00004000,   /**< window has mouse captured (unrelated to MOUSE_GRABBED) */
+    SDL_WINDOW_ALWAYS_ON_TOP    = 0x00008000,   /**< window should always be above others */
+    SDL_WINDOW_SKIP_TASKBAR     = 0x00010000,   /**< window should not be added to the taskbar */
+    SDL_WINDOW_UTILITY          = 0x00020000,   /**< window should be treated as a utility window */
+    SDL_WINDOW_TOOLTIP          = 0x00040000,   /**< window should be treated as a tooltip */
+    SDL_WINDOW_POPUP_MENU       = 0x00080000,   /**< window should be treated as a popup menu */
+    SDL_WINDOW_KEYBOARD_GRABBED = 0x00100000,   /**< window has grabbed keyboard input */
+    SDL_WINDOW_VULKAN           = 0x10000000,   /**< window usable for Vulkan surface */
+    SDL_WINDOW_METAL            = 0x20000000,   /**< window usable for Metal view */
+
+    SDL_WINDOW_INPUT_GRABBED = SDL_WINDOW_MOUSE_GRABBED /**< equivalent to SDL_WINDOW_MOUSE_GRABBED for compatibility */
 } SDL_WindowFlags;
 
 /**
@@ -486,9 +493,9 @@ extern DECLSPEC Uint32 SDLCALL SDL_GetWindowPixelFormat(SDL_Window * window);
  *               ::SDL_WINDOW_FULLSCREEN,    ::SDL_WINDOW_OPENGL,
  *               ::SDL_WINDOW_HIDDEN,        ::SDL_WINDOW_BORDERLESS,
  *               ::SDL_WINDOW_RESIZABLE,     ::SDL_WINDOW_MAXIMIZED,
- *               ::SDL_WINDOW_MINIMIZED,     ::SDL_WINDOW_INPUT_GRABBED,
- *               ::SDL_WINDOW_ALLOW_HIGHDPI, ::SDL_WINDOW_VULKAN
- *               ::SDL_WINDOW_METAL.
+ *               ::SDL_WINDOW_MINIMIZED,     ::SDL_WINDOW_MOUSE_GRABBED,
+ *               ::SDL_WINDOW_ALLOW_HIGHDPI, ::SDL_WINDOW_KEYBOARD_GRABBED,
+ *               ::SDL_WINDOW_VULKAN,        ::SDL_WINDOW_METAL.
  *
  *  \return The created window, or NULL if window creation failed.
  *
@@ -881,19 +888,77 @@ extern DECLSPEC int SDLCALL SDL_UpdateWindowSurfaceRects(SDL_Window * window,
  *  If the caller enables a grab while another window is currently grabbed,
  *  the other window loses its grab in favor of the caller's window.
  *
+ *  If SDL_HINT_GRAB_KEYBOARD=1, this also grabs keyboard input.
+ *
  *  \sa SDL_GetWindowGrab()
+ *  \sa SDL_SetWindowKeyboardGrab()
+ *  \sa SDL_SetWindowMouseGrab()
  */
 extern DECLSPEC void SDLCALL SDL_SetWindowGrab(SDL_Window * window,
                                                SDL_bool grabbed);
 
 /**
- *  \brief Get a window's input grab mode.
+ *  \brief Set a window's keyboard grab mode.
  *
- *  \return This returns SDL_TRUE if input is grabbed, and SDL_FALSE otherwise.
+ *  \param window The window for which the keyboard grab mode should be set.
+ *  \param grabbed This is SDL_TRUE to grab keyboard, and SDL_FALSE to release keyboard grab.
  *
+ *  If the caller enables a grab while another window is currently grabbed,
+ *  the other window loses its grab in favor of the caller's window.
+ *
+ *  \sa SDL_GetWindowKeyboardGrab()
+ *  \sa SDL_SetWindowMouseGrab()
  *  \sa SDL_SetWindowGrab()
  */
+extern DECLSPEC void SDLCALL SDL_SetWindowKeyboardGrab(SDL_Window * window,
+                                                       SDL_bool grabbed);
+
+/**
+ *  \brief Set a window's mouse grab mode.
+ *
+ *  \param window The window for which the mouse grab mode should be set.
+ *  \param grabbed This is SDL_TRUE to grab mouse, and SDL_FALSE to release mouse grab.
+ *
+ *  If the caller enables a grab while another window is currently grabbed,
+ *  the other window loses its grab in favor of the caller's window.
+ *
+ *  \sa SDL_GetWindowMouseGrab()
+ *  \sa SDL_SetWindowKeyboardGrab()
+ *  \sa SDL_SetWindowGrab()
+ */
+extern DECLSPEC void SDLCALL SDL_SetWindowMouseGrab(SDL_Window * window,
+                                                    SDL_bool grabbed);
+
+/**
+ *  \brief Get a window's input grab mode.
+ *
+ *  \return This returns SDL_TRUE if keyboard or mouse input is grabbed, and SDL_FALSE otherwise.
+ *
+ *  \sa SDL_SetWindowGrab()
+ *  \sa SDL_GetWindowMouseGrab()
+ *  \sa SDL_GetWindowKeyboardGrab()
+ */
 extern DECLSPEC SDL_bool SDLCALL SDL_GetWindowGrab(SDL_Window * window);
+
+/**
+ *  \brief Get a window's keyboard grab mode.
+ *
+ *  \return This returns SDL_TRUE if keyboard is grabbed, and SDL_FALSE otherwise.
+ *
+ *  \sa SDL_SetWindowKeyboardGrab()
+ *  \sa SDL_GetWindowGrab()
+ */
+extern DECLSPEC SDL_bool SDLCALL SDL_GetWindowKeyboardGrab(SDL_Window * window);
+
+/**
+ *  \brief Get a window's mouse grab mode.
+ *
+ *  \return This returns SDL_TRUE if mouse is grabbed, and SDL_FALSE otherwise.
+ *
+ *  \sa SDL_SetWindowKeyboardGrab()
+ *  \sa SDL_GetWindowGrab()
+ */
+extern DECLSPEC SDL_bool SDLCALL SDL_GetWindowMouseGrab(SDL_Window * window);
 
 /**
  *  \brief Get the window that currently has an input grab enabled.

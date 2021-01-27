@@ -34,7 +34,7 @@ static const char *video_usage[] = {
     "[--icon icon.bmp]", "[--center | --position X,Y]", "[--geometry WxH]",
     "[--min-geometry WxH]", "[--max-geometry WxH]", "[--logical WxH]",
     "[--scale N]", "[--depth N]", "[--refresh R]", "[--vsync]", "[--noframe]",
-    "[--resize]", "[--minimize]", "[--maximize]", "[--grab]",
+    "[--resize]", "[--minimize]", "[--maximize]", "[--grab]", "[--keyboard-grab]",
     "[--allow-highdpi]", "[--usable-bounds]"
 };
 
@@ -412,7 +412,11 @@ SDLTest_CommonArg(SDLTest_CommonState * state, int index)
         return 1;
     }
     if (SDL_strcasecmp(argv[index], "--grab") == 0) {
-        state->window_flags |= SDL_WINDOW_INPUT_GRABBED;
+        state->window_flags |= SDL_WINDOW_MOUSE_GRABBED;
+        return 1;
+    }
+    if (SDL_strcasecmp(argv[index], "--keyboard-grab") == 0) {
+        state->window_flags |= SDL_WINDOW_KEYBOARD_GRABBED;
         return 1;
     }
     if (SDL_strcasecmp(argv[index], "--rate") == 0) {
@@ -1764,10 +1768,19 @@ SDLTest_CommonEvent(SDLTest_CommonState * state, SDL_Event * event, int *done)
             break;
         case SDLK_g:
             if (withControl) {
-                /* Ctrl-G toggle grab */
+                /* Ctrl-G toggle mouse grab */
                 SDL_Window *window = SDL_GetWindowFromID(event->key.windowID);
                 if (window) {
                     SDL_SetWindowGrab(window, !SDL_GetWindowGrab(window) ? SDL_TRUE : SDL_FALSE);
+                }
+            }
+            break;
+        case SDLK_k:
+            if (withControl) {
+                /* Ctrl-K toggle keyboard grab */
+                SDL_Window* window = SDL_GetWindowFromID(event->key.windowID);
+                if (window) {
+                    SDL_SetWindowKeyboardGrab(window, !SDL_GetWindowKeyboardGrab(window) ? SDL_TRUE : SDL_FALSE);
                 }
             }
             break;

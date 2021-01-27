@@ -212,7 +212,7 @@ ProcessWindowEvent(_THIS, SDL_Window *sdlwin, DFBWindowEvent * evt)
         case DWET_MOTION:
             if (ClientXY(windata, &evt->x, &evt->y)) {
                 if (!devdata->use_linux_input) {
-                    if (!(sdlwin->flags & SDL_WINDOW_INPUT_GRABBED))
+                    if (!(sdlwin->flags & SDL_WINDOW_MOUSE_GRABBED))
                         SDL_SendMouseMotion_ex(sdlwin, devdata->mouse_id[0], 0,
                                             evt->x, evt->y, 0);
                 } else {
