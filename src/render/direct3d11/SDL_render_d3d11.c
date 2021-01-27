@@ -54,7 +54,11 @@ extern ISwapChainBackgroundPanelNative * WINRT_GlobalSwapChainBackgroundPanelNat
 #endif  /* __WINRT__ */
 
 
+#ifdef _MSC_VER
 #define SDL_COMPOSE_ERROR(str) __FUNCTION__ ", " str
+#else
+#define SDL_COMPOSE_ERROR(str) SDL_STRINGIFY_ARG(__FUNCTION__) ", " str
+#endif
 
 #define SAFE_RELEASE(X) if ((X)) { IUnknown_Release(SDL_static_cast(IUnknown*, X)); X = NULL; }
 
