@@ -321,6 +321,7 @@ int hid_blacklist(unsigned short vendor_id, unsigned short product_id)
         { 0x1532, 0x0109 },  /* Razer Lycosa Gaming keyboard */
         { 0x1532, 0x010B },  /* Razer Arctosa Gaming keyboard */
         { 0x045E, 0x0822 },  /* Microsoft Precision Mouse */
+        { 0x0D8C, 0x0014 },  /* Sharkoon Skiller SGH2 headset */
 
         /* Turns into an Android controller when enumerated... */
         { 0x0738, 0x2217 }   /* SPEEDLINK COMPETITION PRO */
