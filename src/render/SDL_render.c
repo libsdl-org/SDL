@@ -1692,7 +1692,7 @@ int SDL_UpdateYUVTexture(SDL_Texture * texture, const SDL_Rect * rect,
 {
 #if SDL_HAVE_YUV
     SDL_Renderer *renderer;
-    SDL_Rect full_rect;
+    SDL_Rect real_rect;
 
     CHECK_TEXTURE_MAGIC(texture, -1);
 
@@ -1720,20 +1720,20 @@ int SDL_UpdateYUVTexture(SDL_Texture * texture, const SDL_Rect * rect,
         return SDL_SetError("Texture format must by YV12 or IYUV");
     }
 
-    if (!rect) {
-        full_rect.x = 0;
-        full_rect.y = 0;
-        full_rect.w = texture->w;
-        full_rect.h = texture->h;
-        rect = &full_rect;
+    real_rect.x = 0;
+    real_rect.y = 0;
+    real_rect.w = texture->w;
+    real_rect.h = texture->h;
+    if (rect) {
+        SDL_IntersectRect(rect, &real_rect, &real_rect);
     }
 
-    if (!rect->w || !rect->h) {
+    if (real_rect.w == 0 || real_rect.h == 0) {
         return 0;  /* nothing to do. */
     }
 
     if (texture->yuv) {
-        return SDL_UpdateTextureYUVPlanar(texture, rect, Yplane, Ypitch, Uplane, Upitch, Vplane, Vpitch);
+        return SDL_UpdateTextureYUVPlanar(texture, &real_rect, Yplane, Ypitch, Uplane, Upitch, Vplane, Vpitch);
     } else {
         SDL_assert(!texture->native);
         renderer = texture->renderer;
@@ -1742,7 +1742,7 @@ int SDL_UpdateYUVTexture(SDL_Texture * texture, const SDL_Rect * rect,
             if (FlushRenderCommandsIfTextureNeeded(texture) < 0) {
                 return -1;
             }
-            return renderer->UpdateTextureYUV(renderer, texture, rect, Yplane, Ypitch, Uplane, Upitch, Vplane, Vpitch);
+            return renderer->UpdateTextureYUV(renderer, texture, &real_rect, Yplane, Ypitch, Uplane, Upitch, Vplane, Vpitch);
         } else {
             return SDL_Unsupported();
         }
@@ -1758,7 +1758,7 @@ int SDL_UpdateNVTexture(SDL_Texture * texture, const SDL_Rect * rect,
 {
 #if SDL_HAVE_YUV
     SDL_Renderer *renderer;
-    SDL_Rect full_rect;
+    SDL_Rect real_rect;
 
     CHECK_TEXTURE_MAGIC(texture, -1);
 
@@ -1780,20 +1780,20 @@ int SDL_UpdateNVTexture(SDL_Texture * texture, const SDL_Rect * rect,
         return SDL_SetError("Texture format must by NV12 or NV21");
     }
 
-    if (!rect) {
-        full_rect.x = 0;
-        full_rect.y = 0;
-        full_rect.w = texture->w;
-        full_rect.h = texture->h;
-        rect = &full_rect;
+    real_rect.x = 0;
+    real_rect.y = 0;
+    real_rect.w = texture->w;
+    real_rect.h = texture->h;
+    if (rect) {
+        SDL_IntersectRect(rect, &real_rect, &real_rect);
     }
 
-    if (!rect->w || !rect->h) {
+    if (real_rect.w == 0 || real_rect.h == 0) {
         return 0;  /* nothing to do. */
     }
 
     if (texture->yuv) {
-        return SDL_UpdateTextureNVPlanar(texture, rect, Yplane, Ypitch, UVplane, UVpitch);
+        return SDL_UpdateTextureNVPlanar(texture, &real_rect, Yplane, Ypitch, UVplane, UVpitch);
     } else {
         SDL_assert(!texture->native);
         renderer = texture->renderer;
@@ -1802,7 +1802,7 @@ int SDL_UpdateNVTexture(SDL_Texture * texture, const SDL_Rect * rect,
             if (FlushRenderCommandsIfTextureNeeded(texture) < 0) {
                 return -1;
             }
-            return renderer->UpdateTextureNV(renderer, texture, rect, Yplane, Ypitch, UVplane, UVpitch);
+            return renderer->UpdateTextureNV(renderer, texture, &real_rect, Yplane, Ypitch, UVplane, UVpitch);
         } else {
             return SDL_Unsupported();
         }
