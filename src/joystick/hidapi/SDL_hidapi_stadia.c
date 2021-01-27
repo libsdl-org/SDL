@@ -222,7 +222,7 @@ HIDAPI_DriverStadia_HandleStatePacket(SDL_Joystick *joystick, SDL_DriverStadia_C
 
 #define READ_STICK_AXIS(offset) \
     (data[offset] == 0x80 ? 0 : \
-    (Sint16)HIDAPI_RemapVal(data[offset] - 0x80, 0x01 - 0x80, 0xff - 0x80, SDL_MIN_SINT16, SDL_MAX_SINT16))
+    (Sint16)HIDAPI_RemapVal((float)(data[offset] - 0x80), 0x01 - 0x80, 0xff - 0x80, SDL_MIN_SINT16, SDL_MAX_SINT16))
     {
         axis = READ_STICK_AXIS(4);
         SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_LEFTX, axis);
