@@ -34,54 +34,58 @@
    into the general blitting mechanism.
 */
 
-#if ((defined(_MSC_VER) && defined(_M_IX86))    || \
-     (defined(__WATCOMC__) && defined(__386__)) || \
+#if ((defined(_MSC_VER) && defined(_M_IX86)) || \
      (defined(__GNUC__) && defined(__i386__))) && SDL_ASSEMBLY_ROUTINES
+#define USE_ASM_STRETCH
+#endif
+
 /* There's a bug with gcc 4.4.1 and -O2 where srcp doesn't get the correct
  * value after the first scanline. */
 /* This bug seems fixed, at least with gcc >= 4.6 */
-#  define USE_ASM_STRETCH
-#  if defined(__GNUC__)
-#    if (__GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 6))
-#      undef USE_ASM_STRETCH
-#    endif
-#  endif
-/* But it doesn't work if mprotect isn't available */
-#  if !defined(HAVE_MPROTECT) && defined(USE_ASM_STRETCH)
-#    undef USE_ASM_STRETCH
-#  endif
+#if defined(USE_ASM_STRETCH) && \
+    defined(__GNUC__) && (__GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 6))
+#undef USE_ASM_STRETCH
+#endif
+
+/* And it doesn't work if mprotect isn't available */
+#if defined(USE_ASM_STRETCH) && \
+    !defined(HAVE_MPROTECT) && !defined(__WIN32__)
+#undef USE_ASM_STRETCH
 #endif
 
 #ifdef USE_ASM_STRETCH
 
-#ifdef HAVE_MPROTECT
+#ifdef __WIN32__
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#elif defined(HAVE_MPROTECT)
 #include <sys/types.h>
 #include <sys/mman.h>
 #endif
 #ifdef __GNUC__
 #define PAGE_ALIGNED __attribute__((__aligned__(4096)))
+#elif defined(_MSC_VER)
+#define PAGE_ALIGNED __declspec(align(4096))
 #else
-#define PAGE_ALIGNED
+#undef USE_ASM_STRETCH
 #endif
+#endif /**/
 
-#if defined(_M_IX86) || defined(__i386__) || defined(__386__)
+#ifdef USE_ASM_STRETCH
+
 #define PREFIX16    0x66
 #define STORE_BYTE  0xAA
 #define STORE_WORD  0xAB
 #define LOAD_BYTE   0xAC
 #define LOAD_WORD   0xAD
 #define RETURN      0xC3
-#else
-#error Need assembly opcodes for this architecture
-#endif
 
-static unsigned char copy_row[4096] PAGE_ALIGNED;
+static PAGE_ALIGNED unsigned char copy_row[4096];
 
 static int
 generate_rowbytes(int src_w, int dst_w, int bpp)
 {
-    static struct
-    {
+    static struct {
         int bpp;
         int src_w;
         int dst_w;
@@ -92,6 +96,9 @@ generate_rowbytes(int src_w, int dst_w, int bpp)
     int pos, inc;
     unsigned char *eip, *fence;
     unsigned char load, store;
+#ifdef __WIN32__
+    DWORD oldprot;
+#endif
 
     /* See if we need to regenerate the copy buffer */
     if ((src_w == last.src_w) && (dst_w == last.dst_w) && (bpp == last.bpp)) {
@@ -115,8 +122,12 @@ generate_rowbytes(int src_w, int dst_w, int bpp)
     default:
         return SDL_SetError("ASM stretch of %d bytes isn't supported", bpp);
     }
-#ifdef HAVE_MPROTECT
     /* Make the code writeable */
+#ifdef __WIN32__
+    if (!VirtualProtect(copy_row, sizeof(copy_row), PAGE_READWRITE, &oldprot)) {
+        return SDL_SetError("Couldn't make copy buffer writeable");
+    }
+#elif defined(HAVE_MPROTECT)
     if (mprotect(copy_row, sizeof(copy_row), PROT_READ | PROT_WRITE) < 0) {
         return SDL_SetError("Couldn't make copy buffer writeable");
     }
@@ -147,8 +158,12 @@ generate_rowbytes(int src_w, int dst_w, int bpp)
     }
     *eip++ = RETURN;
 
-#ifdef HAVE_MPROTECT
     /* Make the code executable but not writeable */
+#ifdef __WIN32__
+    if (!VirtualProtect(copy_row, sizeof(copy_row), PAGE_EXECUTE_READ, &oldprot)) {
+        return SDL_SetError("Couldn't make copy buffer executable");
+    }
+#elif defined(HAVE_MPROTECT)
     if (mprotect(copy_row, sizeof(copy_row), PROT_READ | PROT_EXEC) < 0) {
         return SDL_SetError("Couldn't make copy buffer executable");
     }
@@ -156,7 +171,6 @@ generate_rowbytes(int src_w, int dst_w, int bpp)
     last.status = 0;
     return (0);
 }
-
 #endif /* USE_ASM_STRETCH */
 
 #define DEFINE_COPY_ROW(name, type)         \
