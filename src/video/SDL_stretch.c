@@ -850,7 +850,7 @@ SDL_LowerSoftStretchLinear(SDL_Surface *s, const SDL_Rect *srcrect,
 #endif
 
     if (ret == -1) {
-        scale_mat(src, src_w, src_h, src_pitch, dst, dst_w, dst_h, dst_pitch);
+        ret = scale_mat(src, src_w, src_h, src_pitch, dst, dst_w, dst_h, dst_pitch);
     }
 
     return ret;
@@ -870,7 +870,7 @@ scale_mat_nearest_1(const Uint32 *src, int src_w, int src_h, int src_pitch,
         Uint32 *dst, int dst_w, int dst_h, int dst_pitch)
 {
     const int bpp = 1;
-    NEAREST___START 
+    NEAREST___START
     for (i = 0; i < dst_h; i++) {
         BILINEAR___HEIGHT
         while (middle--) {
@@ -891,7 +891,7 @@ scale_mat_nearest_2(const Uint32 *src, int src_w, int src_h, int src_pitch,
         Uint32 *dst, int dst_w, int dst_h, int dst_pitch)
 {
     const int bpp = 2;
-    NEAREST___START 
+    NEAREST___START
     for (i = 0; i < dst_h; i++) {
         BILINEAR___HEIGHT
         while (middle--) {
@@ -912,7 +912,7 @@ scale_mat_nearest_3(const Uint32 *src, int src_w, int src_h, int src_pitch,
         Uint32 *dst, int dst_w, int dst_h, int dst_pitch)
 {
     const int bpp = 3;
-    NEAREST___START 
+    NEAREST___START
     for (i = 0; i < dst_h; i++) {
         BILINEAR___HEIGHT
         while (middle--) {
@@ -935,7 +935,7 @@ scale_mat_nearest_4(const Uint32 *src, int src_w, int src_h, int src_pitch,
         Uint32 *dst, int dst_w, int dst_h, int dst_pitch)
 {
     int bpp = 4;
-    NEAREST___START 
+    NEAREST___START
     for (i = 0; i < dst_h; i++) {
         BILINEAR___HEIGHT
         while (middle--) {
