@@ -20,214 +20,14 @@
 */
 #include "../SDL_internal.h"
 
-/* This a stretch blit implementation based on ideas given to me by
-   Tomasz Cejner - thanks! :)
-
-   April 27, 2000 - Sam Lantinga
-*/
-
 #include "SDL_video.h"
 #include "SDL_blit.h"
 #include "SDL_render.h"
-
-/* This isn't ready for general consumption yet - it should be folded
-   into the general blitting mechanism.
-*/
-
-#if ((defined(_MSC_VER) && defined(_M_IX86)) || \
-     (defined(__GNUC__) && defined(__i386__))) && SDL_ASSEMBLY_ROUTINES
-#define USE_ASM_STRETCH
-#endif
-
-/* There's a bug with gcc 4.4.1 and -O2 where srcp doesn't get the correct
- * value after the first scanline. */
-/* This bug seems fixed, at least with gcc >= 4.6 */
-#if defined(USE_ASM_STRETCH) && \
-    defined(__GNUC__) && (__GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 6))
-#undef USE_ASM_STRETCH
-#endif
-
-/* And it doesn't work if mprotect isn't available */
-#if defined(USE_ASM_STRETCH) && \
-    !defined(HAVE_MPROTECT) && !defined(__WIN32__)
-#undef USE_ASM_STRETCH
-#endif
-
-#ifdef USE_ASM_STRETCH
-
-#ifdef __WIN32__
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#elif defined(HAVE_MPROTECT)
-#include <sys/types.h>
-#include <sys/mman.h>
-#endif
-#ifdef __GNUC__
-#define PAGE_ALIGNED __attribute__((__aligned__(4096)))
-#elif defined(_MSC_VER)
-#define PAGE_ALIGNED __declspec(align(4096))
-#else
-#undef USE_ASM_STRETCH
-#endif
-#endif /**/
-
-#ifdef USE_ASM_STRETCH
-
-#define PREFIX16    0x66
-#define STORE_BYTE  0xAA
-#define STORE_WORD  0xAB
-#define LOAD_BYTE   0xAC
-#define LOAD_WORD   0xAD
-#define RETURN      0xC3
-
-static PAGE_ALIGNED unsigned char copy_row[4096];
-
-static int
-generate_rowbytes(int src_w, int dst_w, int bpp)
-{
-    static struct {
-        int bpp;
-        int src_w;
-        int dst_w;
-        int status;
-    } last;
-
-    int i;
-    int pos, inc;
-    unsigned char *eip, *fence;
-    unsigned char load, store;
-#ifdef __WIN32__
-    DWORD oldprot;
-#endif
-
-    /* See if we need to regenerate the copy buffer */
-    if ((src_w == last.src_w) && (dst_w == last.dst_w) && (bpp == last.bpp)) {
-        return (last.status);
-    }
-    last.bpp = bpp;
-    last.src_w = src_w;
-    last.dst_w = dst_w;
-    last.status = -1;
-
-    switch (bpp) {
-    case 1:
-        load = LOAD_BYTE;
-        store = STORE_BYTE;
-        break;
-    case 2:
-    case 4:
-        load = LOAD_WORD;
-        store = STORE_WORD;
-        break;
-    default:
-        return SDL_SetError("ASM stretch of %d bytes isn't supported", bpp);
-    }
-    /* Make the code writeable */
-#ifdef __WIN32__
-    if (!VirtualProtect(copy_row, sizeof(copy_row), PAGE_READWRITE, &oldprot)) {
-        return SDL_SetError("Couldn't make copy buffer writeable");
-    }
-#elif defined(HAVE_MPROTECT)
-    if (mprotect(copy_row, sizeof(copy_row), PROT_READ | PROT_WRITE) < 0) {
-        return SDL_SetError("Couldn't make copy buffer writeable");
-    }
-#endif
-    pos = 0x10000;
-    inc = (src_w << 16) / dst_w;
-    eip = copy_row;
-    fence = copy_row + sizeof(copy_row)-2;
-    for (i = 0; i < dst_w; ++i) {
-        while (pos >= 0x10000L) {
-            if (eip == fence) {
-                return -1;
-            }
-            if (bpp == 2) {
-                *eip++ = PREFIX16;
-            }
-            *eip++ = load;
-            pos -= 0x10000L;
-        }
-        if (eip == fence) {
-            return -1;
-        }
-        if (bpp == 2) {
-            *eip++ = PREFIX16;
-        }
-        *eip++ = store;
-        pos += inc;
-    }
-    *eip++ = RETURN;
-
-    /* Make the code executable but not writeable */
-#ifdef __WIN32__
-    if (!VirtualProtect(copy_row, sizeof(copy_row), PAGE_EXECUTE_READ, &oldprot)) {
-        return SDL_SetError("Couldn't make copy buffer executable");
-    }
-#elif defined(HAVE_MPROTECT)
-    if (mprotect(copy_row, sizeof(copy_row), PROT_READ | PROT_EXEC) < 0) {
-        return SDL_SetError("Couldn't make copy buffer executable");
-    }
-#endif
-    last.status = 0;
-    return (0);
-}
-#endif /* USE_ASM_STRETCH */
-
-#define DEFINE_COPY_ROW(name, type)         \
-static void name(type *src, int src_w, type *dst, int dst_w)    \
-{                                           \
-    int i;                                  \
-    int pos, inc;                           \
-    type pixel = 0;                         \
-                                            \
-    pos = 0x10000;                          \
-    inc = (src_w << 16) / dst_w;            \
-    for ( i=dst_w; i>0; --i ) {             \
-        while ( pos >= 0x10000L ) {         \
-            pixel = *src++;                 \
-            pos -= 0x10000L;                \
-        }                                   \
-        *dst++ = pixel;                     \
-        pos += inc;                         \
-    }                                       \
-}
-/* *INDENT-OFF* */
-DEFINE_COPY_ROW(copy_row1, Uint8)
-DEFINE_COPY_ROW(copy_row2, Uint16)
-DEFINE_COPY_ROW(copy_row4, Uint32)
-/* *INDENT-ON* */
-
-/* The ASM code doesn't handle 24-bpp stretch blits */
-static void
-copy_row3(Uint8 * src, int src_w, Uint8 * dst, int dst_w)
-{
-    int i;
-    int pos, inc;
-    Uint8 pixel[3] = { 0, 0, 0 };
-
-    pos = 0x10000;
-    inc = (src_w << 16) / dst_w;
-    for (i = dst_w; i > 0; --i) {
-        while (pos >= 0x10000L) {
-            pixel[0] = *src++;
-            pixel[1] = *src++;
-            pixel[2] = *src++;
-            pos -= 0x10000L;
-        }
-        *dst++ = pixel[0];
-        *dst++ = pixel[1];
-        *dst++ = pixel[2];
-        pos += inc;
-    }
-}
 
 static int SDL_LowerSoftStretchNearest(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect);
 static int SDL_LowerSoftStretchLinear(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect);
 static int SDL_UpperSoftStretch(SDL_Surface * src, const SDL_Rect * srcrect, SDL_Surface * dst, const SDL_Rect * dstrect, SDL_ScaleMode scaleMode);
 
-/* Perform a stretch blit between two surfaces of the same format.
-   NOTE:  This function is not safe to call from multiple threads!
-*/
 int
 SDL_SoftStretch(SDL_Surface *src, const SDL_Rect *srcrect,
                 SDL_Surface *dst, const SDL_Rect *dstrect)
@@ -331,96 +131,6 @@ SDL_UpperSoftStretch(SDL_Surface * src, const SDL_Rect * srcrect,
     return ret;
 }
 
-
-int
-SDL_LowerSoftStretchNearest(SDL_Surface *src, const SDL_Rect *srcrect,
-                SDL_Surface *dst, const SDL_Rect *dstrect)
-{
-    int pos, inc;
-    int dst_maxrow;
-    int src_row, dst_row;
-    Uint8 *srcp = NULL;
-    Uint8 *dstp;
-#ifdef USE_ASM_STRETCH
-    SDL_bool use_asm = SDL_TRUE;
-#ifdef __GNUC__
-    int u1, u2;
-#endif
-#endif /* USE_ASM_STRETCH */
-    const int bpp = dst->format->BytesPerPixel;
-
-    /* Set up the data... */
-    pos = 0x10000;
-    inc = (srcrect->h << 16) / dstrect->h;
-    src_row = srcrect->y;
-    dst_row = dstrect->y;
-
-#ifdef USE_ASM_STRETCH
-    /* Write the opcodes for this stretch */
-    if ((bpp == 3) || (generate_rowbytes(srcrect->w, dstrect->w, bpp) < 0)) {
-        use_asm = SDL_FALSE;
-    }
-#endif
-
-    /* Perform the stretch blit */
-    for (dst_maxrow = dst_row + dstrect->h; dst_row < dst_maxrow; ++dst_row) {
-        dstp = (Uint8 *) dst->pixels + (dst_row * dst->pitch)
-            + (dstrect->x * bpp);
-        while (pos >= 0x10000L) {
-            srcp = (Uint8 *) src->pixels + (src_row * src->pitch)
-                + (srcrect->x * bpp);
-            ++src_row;
-            pos -= 0x10000L;
-        }
-#ifdef USE_ASM_STRETCH
-        if (use_asm) {
-#ifdef __GNUC__
-            __asm__ __volatile__("call *%4":"=&D"(u1), "=&S"(u2)
-                                 :"0"(dstp), "1"(srcp), "r"(copy_row)
-                                 :"memory");
-#elif defined(_MSC_VER) || defined(__WATCOMC__)
-            /* *INDENT-OFF* */
-            {
-                void *code = copy_row;
-                __asm {
-                    push edi
-                    push esi
-                    mov edi, dstp
-                    mov esi, srcp
-                    call dword ptr code
-                    pop esi
-                    pop edi
-                }
-            }
-            /* *INDENT-ON* */
-#else
-#error Need inline assembly for this compiler
-#endif
-        } else
-#endif
-            switch (bpp) {
-            case 1:
-                copy_row1(srcp, srcrect->w, dstp, dstrect->w);
-                break;
-            case 2:
-                copy_row2((Uint16 *) srcp, srcrect->w,
-                          (Uint16 *) dstp, dstrect->w);
-                break;
-            case 3:
-                copy_row3(srcp, srcrect->w, dstp, dstrect->w);
-                break;
-            case 4:
-                copy_row4((Uint32 *) srcp, srcrect->w,
-                          (Uint32 *) dstp, dstrect->w);
-                break;
-            }
-        pos += inc;
-    }
-
-    return 0;
-}
-
-
 /* bilinear interpolation precision must be < 8
    Because with SSE: add-multiply: _mm_madd_epi16 works with signed int
    so pixels 0xb1...... are negatives and false the result
@@ -434,6 +144,20 @@ SDL_LowerSoftStretchNearest(SDL_Surface *src, const SDL_Rect *srcrect,
 #define FRAC_ZERO       0
 #define FRAC_ONE        (1 << PRECISION)
 #define FP_ONE          FIXED_POINT(1)
+
+
+#define NEAREST___START                                                                         \
+    int i;                                                                                      \
+    int fp_sum_h, fp_step_h, left_pad_h, right_pad_h;                                           \
+    int fp_sum_w, fp_step_w, left_pad_w, right_pad_w;                                           \
+    int fp_sum_w_init, left_pad_w_init, right_pad_w_init, dst_gap, middle_init;                 \
+    get_scaler_datas_nearest(src_h, dst_h, &fp_sum_h, &fp_step_h, &left_pad_h, &right_pad_h);   \
+    get_scaler_datas_nearest(src_w, dst_w, &fp_sum_w, &fp_step_w, &left_pad_w, &right_pad_w);   \
+    fp_sum_w_init    = fp_sum_w + left_pad_w * fp_step_w;                                       \
+    left_pad_w_init  = left_pad_w;                                                              \
+    right_pad_w_init = right_pad_w;                                                             \
+    dst_gap          = dst_pitch - bpp * dst_w;                                                 \
+    middle_init      = dst_w - left_pad_w - right_pad_w;                                        \
 
 
 #define BILINEAR___START                                                                        \
@@ -1130,6 +854,128 @@ SDL_LowerSoftStretchLinear(SDL_Surface *s, const SDL_Rect *srcrect,
     }
 
     return ret;
+}
+
+static SDL_INLINE void
+get_scaler_datas_nearest(int src_nb, int dst_nb, int *fp_start, int *fp_step, int *left_pad, int *right_pad)
+{
+    *fp_start = 0;
+    *fp_step = (src_nb << 16) / dst_nb;
+    *left_pad = 0;
+    *right_pad = 0;
+}
+
+static int
+scale_mat_nearest_1(const Uint32 *src, int src_w, int src_h, int src_pitch,
+        Uint32 *dst, int dst_w, int dst_h, int dst_pitch)
+{
+    const int bpp = 1;
+    NEAREST___START 
+    for (i = 0; i < dst_h; i++) {
+        BILINEAR___HEIGHT
+        while (middle--) {
+            const Uint32 *s_00_01;
+            int index_w = bpp * SRC_INDEX(fp_sum_w);
+            fp_sum_w += fp_step_w;
+            s_00_01 = (const Uint32 *)((const Uint8 *)src_h0 + index_w);
+            *(Uint8*)dst = *(Uint8*)s_00_01;
+            dst = (Uint32 *)((Uint8*)dst + bpp);
+        }
+        dst = (Uint32 *)((Uint8 *)dst + dst_gap);
+    }
+    return 0;
+}
+
+static int
+scale_mat_nearest_2(const Uint32 *src, int src_w, int src_h, int src_pitch,
+        Uint32 *dst, int dst_w, int dst_h, int dst_pitch)
+{
+    const int bpp = 2;
+    NEAREST___START 
+    for (i = 0; i < dst_h; i++) {
+        BILINEAR___HEIGHT
+        while (middle--) {
+            const Uint32 *s_00_01;
+            int index_w = bpp * SRC_INDEX(fp_sum_w);
+            fp_sum_w += fp_step_w;
+            s_00_01 = (const Uint32 *)((const Uint8 *)src_h0 + index_w);
+            *(Uint16*)dst = *(Uint16*)s_00_01;
+            dst = (Uint32 *)((Uint8*)dst + bpp);
+        }
+        dst = (Uint32 *)((Uint8 *)dst + dst_gap);
+    }
+    return 0;
+}
+
+static int
+scale_mat_nearest_3(const Uint32 *src, int src_w, int src_h, int src_pitch,
+        Uint32 *dst, int dst_w, int dst_h, int dst_pitch)
+{
+    const int bpp = 3;
+    NEAREST___START 
+    for (i = 0; i < dst_h; i++) {
+        BILINEAR___HEIGHT
+        while (middle--) {
+            const Uint32 *s_00_01;
+            int index_w = bpp * SRC_INDEX(fp_sum_w);
+            fp_sum_w += fp_step_w;
+            s_00_01 = (const Uint32 *)((const Uint8 *)src_h0 + index_w);
+            ((Uint8*)dst)[0] = ((Uint8*)s_00_01)[0];
+            ((Uint8*)dst)[1] = ((Uint8*)s_00_01)[1];
+            ((Uint8*)dst)[2] = ((Uint8*)s_00_01)[2];
+            dst = (Uint32 *)((Uint8*)dst + bpp);
+        }
+        dst = (Uint32 *)((Uint8 *)dst + dst_gap);
+    }
+    return 0;
+}
+
+static int
+scale_mat_nearest_4(const Uint32 *src, int src_w, int src_h, int src_pitch,
+        Uint32 *dst, int dst_w, int dst_h, int dst_pitch)
+{
+    int bpp = 4;
+    NEAREST___START 
+    for (i = 0; i < dst_h; i++) {
+        BILINEAR___HEIGHT
+        while (middle--) {
+            const Uint32 *s_00_01;
+            int index_w = bpp * SRC_INDEX(fp_sum_w);
+            fp_sum_w += fp_step_w;
+            s_00_01 = (const Uint32 *)((const Uint8 *)src_h0 + index_w);
+            *dst = *s_00_01;
+            dst = (Uint32 *)((Uint8*)dst + bpp);
+        }
+        dst = (Uint32 *)((Uint8 *)dst + dst_gap);
+    }
+    return 0;
+}
+
+int
+SDL_LowerSoftStretchNearest(SDL_Surface *s, const SDL_Rect *srcrect,
+                SDL_Surface *d, const SDL_Rect *dstrect)
+{
+    int src_w = srcrect->w;
+    int src_h = srcrect->h;
+    int dst_w = dstrect->w;
+    int dst_h = dstrect->h;
+    int src_pitch = s->pitch;
+    int dst_pitch = d->pitch;
+    
+    const int bpp = d->format->BytesPerPixel;
+
+    Uint32 *src = (Uint32 *) ((Uint8 *)s->pixels + srcrect->x * bpp + srcrect->y * src_pitch);
+    Uint32 *dst = (Uint32 *) ((Uint8 *)d->pixels + dstrect->x * bpp + dstrect->y * dst_pitch);
+
+    if (bpp == 4) {
+        return scale_mat_nearest_4(src, src_w, src_h, src_pitch, dst, dst_w, dst_h, dst_pitch);
+    } else if (bpp == 3) {
+        return scale_mat_nearest_3(src, src_w, src_h, src_pitch, dst, dst_w, dst_h, dst_pitch);
+    } else if (bpp == 2) {
+        return scale_mat_nearest_2(src, src_w, src_h, src_pitch, dst, dst_w, dst_h, dst_pitch);
+    } else {
+        return scale_mat_nearest_1(src, src_w, src_h, src_pitch, dst, dst_w, dst_h, dst_pitch);
+    }
 }
 
 /* vi: set ts=4 sw=4 expandtab: */
