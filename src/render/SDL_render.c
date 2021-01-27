@@ -1540,7 +1540,7 @@ int
 SDL_UpdateTexture(SDL_Texture * texture, const SDL_Rect * rect,
                   const void *pixels, int pitch)
 {
-    SDL_Rect full_rect;
+    SDL_Rect real_rect;
 
     CHECK_TEXTURE_MAGIC(texture, -1);
 
@@ -1551,28 +1551,30 @@ SDL_UpdateTexture(SDL_Texture * texture, const SDL_Rect * rect,
         return SDL_InvalidParamError("pitch");
     }
 
-    if (!rect) {
-        full_rect.x = 0;
-        full_rect.y = 0;
-        full_rect.w = texture->w;
-        full_rect.h = texture->h;
-        rect = &full_rect;
+    real_rect.x = 0;
+    real_rect.y = 0;
+    real_rect.w = texture->w;
+    real_rect.h = texture->h;
+    if (rect) {
+        if (!SDL_IntersectRect(rect, &real_rect, &real_rect)) {
+            return 0;
+        }
     }
 
-    if ((rect->w == 0) || (rect->h == 0)) {
+    if (real_rect.w == 0 || real_rect.h == 0) {
         return 0;  /* nothing to do. */
 #if SDL_HAVE_YUV
     } else if (texture->yuv) {
-        return SDL_UpdateTextureYUV(texture, rect, pixels, pitch);
+        return SDL_UpdateTextureYUV(texture, &real_rect, pixels, pitch);
 #endif
     } else if (texture->native) {
-        return SDL_UpdateTextureNative(texture, rect, pixels, pitch);
+        return SDL_UpdateTextureNative(texture, &real_rect, pixels, pitch);
     } else {
         SDL_Renderer *renderer = texture->renderer;
         if (FlushRenderCommandsIfTextureNeeded(texture) < 0) {
             return -1;
         }
-        return renderer->UpdateTexture(renderer, texture, rect, pixels, pitch);
+        return renderer->UpdateTexture(renderer, texture, &real_rect, pixels, pitch);
     }
 }
 
@@ -1890,7 +1892,6 @@ SDL_LockTextureToSurface(SDL_Texture *texture, const SDL_Rect *rect,
     real_rect.y = 0;
     real_rect.w = texture->w;
     real_rect.h = texture->h;
-
     if (rect) {
         SDL_IntersectRect(rect, &real_rect, &real_rect);
     }
