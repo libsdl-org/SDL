@@ -197,7 +197,7 @@ IsWindowsVersionOrGreater(WORD wMajorVersion, WORD wMinorVersion, WORD wServiceP
 			VER_MINORVERSION, VER_GREATER_EQUAL ),
 		VER_SERVICEPACKMAJOR, VER_GREATER_EQUAL );
 
-	SDL_zero( osvi );
+	memset(&osvi, 0, sizeof(osvi));
 	osvi.dwOSVersionInfoSize = sizeof( osvi );
 	osvi.dwMajorVersion = wMajorVersion;
 	osvi.dwMinorVersion = wMinorVersion;
@@ -751,7 +751,6 @@ static int hid_write_timeout(hid_device *dev, const unsigned char *data, size_t 
 {
 	DWORD bytes_written;
 	BOOL res;
-	size_t stashed_length = length;
 	unsigned char *buf;
 
 	if (dev->use_hid_write_output_report) {
