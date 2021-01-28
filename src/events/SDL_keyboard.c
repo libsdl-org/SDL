@@ -22,6 +22,7 @@
 
 /* General keyboard handling code for SDL */
 
+#include "SDL_hints.h"
 #include "SDL_timer.h"
 #include "SDL_events.h"
 #include "SDL_events_c.h"
@@ -799,6 +800,22 @@ SDL_SendKeyboardKeyInternal(Uint8 source, Uint8 state, SDL_Scancode scancode)
         event.key.windowID = keyboard->focus ? keyboard->focus->id : 0;
         posted = (SDL_PushEvent(&event) > 0);
     }
+
+    /* If the keyboard is grabbed and the grabbed window is in full-screen,
+       minimize the window when we receive Alt+Tab, unless the application
+       has explicitly opted out of this behavior. */
+    if (keycode == SDLK_TAB &&
+        state == SDL_PRESSED &&
+        (keyboard->modstate & KMOD_ALT) &&
+        keyboard->focus &&
+        (keyboard->focus->flags & SDL_WINDOW_KEYBOARD_GRABBED) &&
+        (keyboard->focus->flags & SDL_WINDOW_FULLSCREEN) &&
+        SDL_GetHintBoolean(SDL_HINT_ALLOW_ALT_TAB_WHILE_GRABBED, SDL_TRUE)) {
+        /* We will temporarily forfeit our grab by minimizing our window, 
+           allowing the user to escape the application */
+        SDL_MinimizeWindow(keyboard->focus);
+    }
+    
     return (posted);
 }
 
