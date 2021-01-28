@@ -32,10 +32,9 @@
 static void SDL_Blit_RGB888_RGB888_Scale(SDL_BlitInfo *info)
 {
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -44,20 +43,12 @@ static void SDL_Blit_RGB888_RGB888_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             *dst = *src;
             posx += incx;
             ++dst;
@@ -124,10 +115,9 @@ static void SDL_Blit_RGB888_RGB888_Blend_Scale(SDL_BlitInfo *info)
     Uint32 dstpixel;
     Uint32 dstR, dstG, dstB;
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -136,20 +126,12 @@ static void SDL_Blit_RGB888_RGB888_Blend_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             srcpixel = *src;
             srcR = (Uint8)(srcpixel >> 16); srcG = (Uint8)(srcpixel >> 8); srcB = (Uint8)srcpixel;
             dstpixel = *dst;
@@ -226,10 +208,9 @@ static void SDL_Blit_RGB888_RGB888_Modulate_Scale(SDL_BlitInfo *info)
     Uint32 pixel;
     Uint32 R, G, B;
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -238,20 +219,12 @@ static void SDL_Blit_RGB888_RGB888_Modulate_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             pixel = *src;
             R = (Uint8)(pixel >> 16); G = (Uint8)(pixel >> 8); B = (Uint8)pixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
@@ -349,10 +322,9 @@ static void SDL_Blit_RGB888_RGB888_Modulate_Blend_Scale(SDL_BlitInfo *info)
     Uint32 dstpixel;
     Uint32 dstR, dstG, dstB;
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -361,20 +333,12 @@ static void SDL_Blit_RGB888_RGB888_Modulate_Blend_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             srcpixel = *src;
             srcR = (Uint8)(srcpixel >> 16); srcG = (Uint8)(srcpixel >> 8); srcB = (Uint8)srcpixel;
             dstpixel = *dst;
@@ -429,10 +393,9 @@ static void SDL_Blit_RGB888_BGR888_Scale(SDL_BlitInfo *info)
     Uint32 pixel;
     Uint32 R, G, B;
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -441,20 +404,12 @@ static void SDL_Blit_RGB888_BGR888_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             pixel = *src;
             R = (Uint8)(pixel >> 16); G = (Uint8)(pixel >> 8); B = (Uint8)pixel;
             pixel = (B << 16) | (G << 8) | R;
@@ -524,10 +479,9 @@ static void SDL_Blit_RGB888_BGR888_Blend_Scale(SDL_BlitInfo *info)
     Uint32 dstpixel;
     Uint32 dstR, dstG, dstB;
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -536,20 +490,12 @@ static void SDL_Blit_RGB888_BGR888_Blend_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             srcpixel = *src;
             srcR = (Uint8)(srcpixel >> 16); srcG = (Uint8)(srcpixel >> 8); srcB = (Uint8)srcpixel;
             dstpixel = *dst;
@@ -626,10 +572,9 @@ static void SDL_Blit_RGB888_BGR888_Modulate_Scale(SDL_BlitInfo *info)
     Uint32 pixel;
     Uint32 R, G, B;
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -638,20 +583,12 @@ static void SDL_Blit_RGB888_BGR888_Modulate_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             pixel = *src;
             R = (Uint8)(pixel >> 16); G = (Uint8)(pixel >> 8); B = (Uint8)pixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
@@ -749,10 +686,9 @@ static void SDL_Blit_RGB888_BGR888_Modulate_Blend_Scale(SDL_BlitInfo *info)
     Uint32 dstpixel;
     Uint32 dstR, dstG, dstB;
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -761,20 +697,12 @@ static void SDL_Blit_RGB888_BGR888_Modulate_Blend_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             srcpixel = *src;
             srcR = (Uint8)(srcpixel >> 16); srcG = (Uint8)(srcpixel >> 8); srcB = (Uint8)srcpixel;
             dstpixel = *dst;
@@ -830,10 +758,9 @@ static void SDL_Blit_RGB888_ARGB8888_Scale(SDL_BlitInfo *info)
     const Uint32 A = 0xFF;
     Uint32 R, G, B;
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -842,20 +769,12 @@ static void SDL_Blit_RGB888_ARGB8888_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             pixel = *src;
             R = (Uint8)(pixel >> 16); G = (Uint8)(pixel >> 8); B = (Uint8)pixel;
             pixel = (A << 24) | (R << 16) | (G << 8) | B;
@@ -927,10 +846,9 @@ static void SDL_Blit_RGB888_ARGB8888_Blend_Scale(SDL_BlitInfo *info)
     Uint32 dstpixel;
     Uint32 dstR, dstG, dstB, dstA;
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -939,20 +857,12 @@ static void SDL_Blit_RGB888_ARGB8888_Blend_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             srcpixel = *src;
             srcR = (Uint8)(srcpixel >> 16); srcG = (Uint8)(srcpixel >> 8); srcB = (Uint8)srcpixel;
             dstpixel = *dst;
@@ -1035,10 +945,9 @@ static void SDL_Blit_RGB888_ARGB8888_Modulate_Scale(SDL_BlitInfo *info)
     const Uint32 A = (flags & SDL_COPY_MODULATE_ALPHA) ? modulateA : 0xFF;
     Uint32 R, G, B;
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -1047,20 +956,12 @@ static void SDL_Blit_RGB888_ARGB8888_Modulate_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             pixel = *src;
             R = (Uint8)(pixel >> 16); G = (Uint8)(pixel >> 8); B = (Uint8)pixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
@@ -1160,10 +1061,9 @@ static void SDL_Blit_RGB888_ARGB8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
     Uint32 dstpixel;
     Uint32 dstR, dstG, dstB, dstA;
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -1172,20 +1072,12 @@ static void SDL_Blit_RGB888_ARGB8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             srcpixel = *src;
             srcR = (Uint8)(srcpixel >> 16); srcG = (Uint8)(srcpixel >> 8); srcB = (Uint8)srcpixel;
             dstpixel = *dst;
@@ -1242,10 +1134,9 @@ static void SDL_Blit_BGR888_RGB888_Scale(SDL_BlitInfo *info)
     Uint32 pixel;
     Uint32 R, G, B;
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -1254,20 +1145,12 @@ static void SDL_Blit_BGR888_RGB888_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             pixel = *src;
             B = (Uint8)(pixel >> 16); G = (Uint8)(pixel >> 8); R = (Uint8)pixel;
             pixel = (R << 16) | (G << 8) | B;
@@ -1337,10 +1220,9 @@ static void SDL_Blit_BGR888_RGB888_Blend_Scale(SDL_BlitInfo *info)
     Uint32 dstpixel;
     Uint32 dstR, dstG, dstB;
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -1349,20 +1231,12 @@ static void SDL_Blit_BGR888_RGB888_Blend_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             srcpixel = *src;
             srcB = (Uint8)(srcpixel >> 16); srcG = (Uint8)(srcpixel >> 8); srcR = (Uint8)srcpixel;
             dstpixel = *dst;
@@ -1439,10 +1313,9 @@ static void SDL_Blit_BGR888_RGB888_Modulate_Scale(SDL_BlitInfo *info)
     Uint32 pixel;
     Uint32 R, G, B;
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -1451,20 +1324,12 @@ static void SDL_Blit_BGR888_RGB888_Modulate_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             pixel = *src;
             B = (Uint8)(pixel >> 16); G = (Uint8)(pixel >> 8); R = (Uint8)pixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
@@ -1562,10 +1427,9 @@ static void SDL_Blit_BGR888_RGB888_Modulate_Blend_Scale(SDL_BlitInfo *info)
     Uint32 dstpixel;
     Uint32 dstR, dstG, dstB;
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -1574,20 +1438,12 @@ static void SDL_Blit_BGR888_RGB888_Modulate_Blend_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             srcpixel = *src;
             srcB = (Uint8)(srcpixel >> 16); srcG = (Uint8)(srcpixel >> 8); srcR = (Uint8)srcpixel;
             dstpixel = *dst;
@@ -1640,10 +1496,9 @@ static void SDL_Blit_BGR888_RGB888_Modulate_Blend_Scale(SDL_BlitInfo *info)
 static void SDL_Blit_BGR888_BGR888_Scale(SDL_BlitInfo *info)
 {
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -1652,20 +1507,12 @@ static void SDL_Blit_BGR888_BGR888_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             *dst = *src;
             posx += incx;
             ++dst;
@@ -1732,10 +1579,9 @@ static void SDL_Blit_BGR888_BGR888_Blend_Scale(SDL_BlitInfo *info)
     Uint32 dstpixel;
     Uint32 dstR, dstG, dstB;
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -1744,20 +1590,12 @@ static void SDL_Blit_BGR888_BGR888_Blend_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             srcpixel = *src;
             srcB = (Uint8)(srcpixel >> 16); srcG = (Uint8)(srcpixel >> 8); srcR = (Uint8)srcpixel;
             dstpixel = *dst;
@@ -1834,10 +1672,9 @@ static void SDL_Blit_BGR888_BGR888_Modulate_Scale(SDL_BlitInfo *info)
     Uint32 pixel;
     Uint32 R, G, B;
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -1846,20 +1683,12 @@ static void SDL_Blit_BGR888_BGR888_Modulate_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             pixel = *src;
             B = (Uint8)(pixel >> 16); G = (Uint8)(pixel >> 8); R = (Uint8)pixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
@@ -1957,10 +1786,9 @@ static void SDL_Blit_BGR888_BGR888_Modulate_Blend_Scale(SDL_BlitInfo *info)
     Uint32 dstpixel;
     Uint32 dstR, dstG, dstB;
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -1969,20 +1797,12 @@ static void SDL_Blit_BGR888_BGR888_Modulate_Blend_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             srcpixel = *src;
             srcB = (Uint8)(srcpixel >> 16); srcG = (Uint8)(srcpixel >> 8); srcR = (Uint8)srcpixel;
             dstpixel = *dst;
@@ -2038,10 +1858,9 @@ static void SDL_Blit_BGR888_ARGB8888_Scale(SDL_BlitInfo *info)
     const Uint32 A = 0xFF;
     Uint32 R, G, B;
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -2050,20 +1869,12 @@ static void SDL_Blit_BGR888_ARGB8888_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             pixel = *src;
             B = (Uint8)(pixel >> 16); G = (Uint8)(pixel >> 8); R = (Uint8)pixel;
             pixel = (A << 24) | (R << 16) | (G << 8) | B;
@@ -2135,10 +1946,9 @@ static void SDL_Blit_BGR888_ARGB8888_Blend_Scale(SDL_BlitInfo *info)
     Uint32 dstpixel;
     Uint32 dstR, dstG, dstB, dstA;
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -2147,20 +1957,12 @@ static void SDL_Blit_BGR888_ARGB8888_Blend_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             srcpixel = *src;
             srcB = (Uint8)(srcpixel >> 16); srcG = (Uint8)(srcpixel >> 8); srcR = (Uint8)srcpixel;
             dstpixel = *dst;
@@ -2243,10 +2045,9 @@ static void SDL_Blit_BGR888_ARGB8888_Modulate_Scale(SDL_BlitInfo *info)
     const Uint32 A = (flags & SDL_COPY_MODULATE_ALPHA) ? modulateA : 0xFF;
     Uint32 R, G, B;
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -2255,20 +2056,12 @@ static void SDL_Blit_BGR888_ARGB8888_Modulate_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             pixel = *src;
             B = (Uint8)(pixel >> 16); G = (Uint8)(pixel >> 8); R = (Uint8)pixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
@@ -2368,10 +2161,9 @@ static void SDL_Blit_BGR888_ARGB8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
     Uint32 dstpixel;
     Uint32 dstR, dstG, dstB, dstA;
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -2380,20 +2172,12 @@ static void SDL_Blit_BGR888_ARGB8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             srcpixel = *src;
             srcB = (Uint8)(srcpixel >> 16); srcG = (Uint8)(srcpixel >> 8); srcR = (Uint8)srcpixel;
             dstpixel = *dst;
@@ -2450,10 +2234,9 @@ static void SDL_Blit_ARGB8888_RGB888_Scale(SDL_BlitInfo *info)
     Uint32 pixel;
     Uint32 R, G, B;
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -2462,20 +2245,12 @@ static void SDL_Blit_ARGB8888_RGB888_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             pixel = *src;
             R = (Uint8)(pixel >> 16); G = (Uint8)(pixel >> 8); B = (Uint8)pixel;
             pixel = (R << 16) | (G << 8) | B;
@@ -2553,10 +2328,9 @@ static void SDL_Blit_ARGB8888_RGB888_Blend_Scale(SDL_BlitInfo *info)
     Uint32 dstpixel;
     Uint32 dstR, dstG, dstB;
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -2565,20 +2339,12 @@ static void SDL_Blit_ARGB8888_RGB888_Blend_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             srcpixel = *src;
             srcR = (Uint8)(srcpixel >> 16); srcG = (Uint8)(srcpixel >> 8); srcB = (Uint8)srcpixel; srcA = (Uint8)(srcpixel >> 24);
             dstpixel = *dst;
@@ -2663,10 +2429,9 @@ static void SDL_Blit_ARGB8888_RGB888_Modulate_Scale(SDL_BlitInfo *info)
     Uint32 pixel;
     Uint32 R, G, B;
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -2675,20 +2440,12 @@ static void SDL_Blit_ARGB8888_RGB888_Modulate_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             pixel = *src;
             R = (Uint8)(pixel >> 16); G = (Uint8)(pixel >> 8); B = (Uint8)pixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
@@ -2787,10 +2544,9 @@ static void SDL_Blit_ARGB8888_RGB888_Modulate_Blend_Scale(SDL_BlitInfo *info)
     Uint32 dstpixel;
     Uint32 dstR, dstG, dstB;
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -2799,20 +2555,12 @@ static void SDL_Blit_ARGB8888_RGB888_Modulate_Blend_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             srcpixel = *src;
             srcR = (Uint8)(srcpixel >> 16); srcG = (Uint8)(srcpixel >> 8); srcB = (Uint8)srcpixel; srcA = (Uint8)(srcpixel >> 24);
             dstpixel = *dst;
@@ -2870,10 +2618,9 @@ static void SDL_Blit_ARGB8888_BGR888_Scale(SDL_BlitInfo *info)
     Uint32 pixel;
     Uint32 R, G, B;
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -2882,20 +2629,12 @@ static void SDL_Blit_ARGB8888_BGR888_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             pixel = *src;
             R = (Uint8)(pixel >> 16); G = (Uint8)(pixel >> 8); B = (Uint8)pixel;
             pixel = (B << 16) | (G << 8) | R;
@@ -2973,10 +2712,9 @@ static void SDL_Blit_ARGB8888_BGR888_Blend_Scale(SDL_BlitInfo *info)
     Uint32 dstpixel;
     Uint32 dstR, dstG, dstB;
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -2985,20 +2723,12 @@ static void SDL_Blit_ARGB8888_BGR888_Blend_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             srcpixel = *src;
             srcR = (Uint8)(srcpixel >> 16); srcG = (Uint8)(srcpixel >> 8); srcB = (Uint8)srcpixel; srcA = (Uint8)(srcpixel >> 24);
             dstpixel = *dst;
@@ -3083,10 +2813,9 @@ static void SDL_Blit_ARGB8888_BGR888_Modulate_Scale(SDL_BlitInfo *info)
     Uint32 pixel;
     Uint32 R, G, B;
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -3095,20 +2824,12 @@ static void SDL_Blit_ARGB8888_BGR888_Modulate_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             pixel = *src;
             R = (Uint8)(pixel >> 16); G = (Uint8)(pixel >> 8); B = (Uint8)pixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
@@ -3207,10 +2928,9 @@ static void SDL_Blit_ARGB8888_BGR888_Modulate_Blend_Scale(SDL_BlitInfo *info)
     Uint32 dstpixel;
     Uint32 dstR, dstG, dstB;
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -3219,20 +2939,12 @@ static void SDL_Blit_ARGB8888_BGR888_Modulate_Blend_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             srcpixel = *src;
             srcR = (Uint8)(srcpixel >> 16); srcG = (Uint8)(srcpixel >> 8); srcB = (Uint8)srcpixel; srcA = (Uint8)(srcpixel >> 24);
             dstpixel = *dst;
@@ -3288,10 +3000,9 @@ static void SDL_Blit_ARGB8888_BGR888_Modulate_Blend_Scale(SDL_BlitInfo *info)
 static void SDL_Blit_ARGB8888_ARGB8888_Scale(SDL_BlitInfo *info)
 {
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -3300,20 +3011,12 @@ static void SDL_Blit_ARGB8888_ARGB8888_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             *dst = *src;
             posx += incx;
             ++dst;
@@ -3390,10 +3093,9 @@ static void SDL_Blit_ARGB8888_ARGB8888_Blend_Scale(SDL_BlitInfo *info)
     Uint32 dstpixel;
     Uint32 dstR, dstG, dstB, dstA;
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -3402,20 +3104,12 @@ static void SDL_Blit_ARGB8888_ARGB8888_Blend_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             srcpixel = *src;
             srcR = (Uint8)(srcpixel >> 16); srcG = (Uint8)(srcpixel >> 8); srcB = (Uint8)srcpixel; srcA = (Uint8)(srcpixel >> 24);
             dstpixel = *dst;
@@ -3507,10 +3201,9 @@ static void SDL_Blit_ARGB8888_ARGB8888_Modulate_Scale(SDL_BlitInfo *info)
     Uint32 pixel;
     Uint32 R, G, B, A;
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -3519,20 +3212,12 @@ static void SDL_Blit_ARGB8888_ARGB8888_Modulate_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             pixel = *src;
             R = (Uint8)(pixel >> 16); G = (Uint8)(pixel >> 8); B = (Uint8)pixel; A = (Uint8)(pixel >> 24);
             if (flags & SDL_COPY_MODULATE_COLOR) {
@@ -3636,10 +3321,9 @@ static void SDL_Blit_ARGB8888_ARGB8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
     Uint32 dstpixel;
     Uint32 dstR, dstG, dstB, dstA;
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -3648,20 +3332,12 @@ static void SDL_Blit_ARGB8888_ARGB8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             srcpixel = *src;
             srcR = (Uint8)(srcpixel >> 16); srcG = (Uint8)(srcpixel >> 8); srcB = (Uint8)srcpixel; srcA = (Uint8)(srcpixel >> 24);
             dstpixel = *dst;
@@ -3721,10 +3397,9 @@ static void SDL_Blit_RGBA8888_RGB888_Scale(SDL_BlitInfo *info)
     Uint32 pixel;
     Uint32 R, G, B;
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -3733,20 +3408,12 @@ static void SDL_Blit_RGBA8888_RGB888_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             pixel = *src;
             R = (Uint8)(pixel >> 24); G = (Uint8)(pixel >> 16); B = (Uint8)(pixel >> 8);
             pixel = (R << 16) | (G << 8) | B;
@@ -3824,10 +3491,9 @@ static void SDL_Blit_RGBA8888_RGB888_Blend_Scale(SDL_BlitInfo *info)
     Uint32 dstpixel;
     Uint32 dstR, dstG, dstB;
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -3836,20 +3502,12 @@ static void SDL_Blit_RGBA8888_RGB888_Blend_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             srcpixel = *src;
             srcR = (Uint8)(srcpixel >> 24); srcG = (Uint8)(srcpixel >> 16); srcB = (Uint8)(srcpixel >> 8); srcA = (Uint8)srcpixel;
             dstpixel = *dst;
@@ -3934,10 +3592,9 @@ static void SDL_Blit_RGBA8888_RGB888_Modulate_Scale(SDL_BlitInfo *info)
     Uint32 pixel;
     Uint32 R, G, B;
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -3946,20 +3603,12 @@ static void SDL_Blit_RGBA8888_RGB888_Modulate_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             pixel = *src;
             R = (Uint8)(pixel >> 24); G = (Uint8)(pixel >> 16); B = (Uint8)(pixel >> 8);
             if (flags & SDL_COPY_MODULATE_COLOR) {
@@ -4058,10 +3707,9 @@ static void SDL_Blit_RGBA8888_RGB888_Modulate_Blend_Scale(SDL_BlitInfo *info)
     Uint32 dstpixel;
     Uint32 dstR, dstG, dstB;
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -4070,20 +3718,12 @@ static void SDL_Blit_RGBA8888_RGB888_Modulate_Blend_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             srcpixel = *src;
             srcR = (Uint8)(srcpixel >> 24); srcG = (Uint8)(srcpixel >> 16); srcB = (Uint8)(srcpixel >> 8); srcA = (Uint8)srcpixel;
             dstpixel = *dst;
@@ -4141,10 +3781,9 @@ static void SDL_Blit_RGBA8888_BGR888_Scale(SDL_BlitInfo *info)
     Uint32 pixel;
     Uint32 R, G, B;
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -4153,20 +3792,12 @@ static void SDL_Blit_RGBA8888_BGR888_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             pixel = *src;
             R = (Uint8)(pixel >> 24); G = (Uint8)(pixel >> 16); B = (Uint8)(pixel >> 8);
             pixel = (B << 16) | (G << 8) | R;
@@ -4244,10 +3875,9 @@ static void SDL_Blit_RGBA8888_BGR888_Blend_Scale(SDL_BlitInfo *info)
     Uint32 dstpixel;
     Uint32 dstR, dstG, dstB;
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -4256,20 +3886,12 @@ static void SDL_Blit_RGBA8888_BGR888_Blend_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             srcpixel = *src;
             srcR = (Uint8)(srcpixel >> 24); srcG = (Uint8)(srcpixel >> 16); srcB = (Uint8)(srcpixel >> 8); srcA = (Uint8)srcpixel;
             dstpixel = *dst;
@@ -4354,10 +3976,9 @@ static void SDL_Blit_RGBA8888_BGR888_Modulate_Scale(SDL_BlitInfo *info)
     Uint32 pixel;
     Uint32 R, G, B;
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -4366,20 +3987,12 @@ static void SDL_Blit_RGBA8888_BGR888_Modulate_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             pixel = *src;
             R = (Uint8)(pixel >> 24); G = (Uint8)(pixel >> 16); B = (Uint8)(pixel >> 8);
             if (flags & SDL_COPY_MODULATE_COLOR) {
@@ -4478,10 +4091,9 @@ static void SDL_Blit_RGBA8888_BGR888_Modulate_Blend_Scale(SDL_BlitInfo *info)
     Uint32 dstpixel;
     Uint32 dstR, dstG, dstB;
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -4490,20 +4102,12 @@ static void SDL_Blit_RGBA8888_BGR888_Modulate_Blend_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             srcpixel = *src;
             srcR = (Uint8)(srcpixel >> 24); srcG = (Uint8)(srcpixel >> 16); srcB = (Uint8)(srcpixel >> 8); srcA = (Uint8)srcpixel;
             dstpixel = *dst;
@@ -4561,10 +4165,9 @@ static void SDL_Blit_RGBA8888_ARGB8888_Scale(SDL_BlitInfo *info)
     Uint32 pixel;
     Uint32 R, G, B, A;
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -4573,20 +4176,12 @@ static void SDL_Blit_RGBA8888_ARGB8888_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             pixel = *src;
             R = (Uint8)(pixel >> 24); G = (Uint8)(pixel >> 16); B = (Uint8)(pixel >> 8); A = (Uint8)pixel;
             pixel = (A << 24) | (R << 16) | (G << 8) | B;
@@ -4666,10 +4261,9 @@ static void SDL_Blit_RGBA8888_ARGB8888_Blend_Scale(SDL_BlitInfo *info)
     Uint32 dstpixel;
     Uint32 dstR, dstG, dstB, dstA;
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -4678,20 +4272,12 @@ static void SDL_Blit_RGBA8888_ARGB8888_Blend_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             srcpixel = *src;
             srcR = (Uint8)(srcpixel >> 24); srcG = (Uint8)(srcpixel >> 16); srcB = (Uint8)(srcpixel >> 8); srcA = (Uint8)srcpixel;
             dstpixel = *dst;
@@ -4783,10 +4369,9 @@ static void SDL_Blit_RGBA8888_ARGB8888_Modulate_Scale(SDL_BlitInfo *info)
     Uint32 pixel;
     Uint32 R, G, B, A;
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -4795,20 +4380,12 @@ static void SDL_Blit_RGBA8888_ARGB8888_Modulate_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             pixel = *src;
             R = (Uint8)(pixel >> 24); G = (Uint8)(pixel >> 16); B = (Uint8)(pixel >> 8); A = (Uint8)pixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
@@ -4912,10 +4489,9 @@ static void SDL_Blit_RGBA8888_ARGB8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
     Uint32 dstpixel;
     Uint32 dstR, dstG, dstB, dstA;
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -4924,20 +4500,12 @@ static void SDL_Blit_RGBA8888_ARGB8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             srcpixel = *src;
             srcR = (Uint8)(srcpixel >> 24); srcG = (Uint8)(srcpixel >> 16); srcB = (Uint8)(srcpixel >> 8); srcA = (Uint8)srcpixel;
             dstpixel = *dst;
@@ -4997,10 +4565,9 @@ static void SDL_Blit_ABGR8888_RGB888_Scale(SDL_BlitInfo *info)
     Uint32 pixel;
     Uint32 R, G, B;
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -5009,20 +4576,12 @@ static void SDL_Blit_ABGR8888_RGB888_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             pixel = *src;
             B = (Uint8)(pixel >> 16); G = (Uint8)(pixel >> 8); R = (Uint8)pixel;
             pixel = (R << 16) | (G << 8) | B;
@@ -5100,10 +4659,9 @@ static void SDL_Blit_ABGR8888_RGB888_Blend_Scale(SDL_BlitInfo *info)
     Uint32 dstpixel;
     Uint32 dstR, dstG, dstB;
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -5112,20 +4670,12 @@ static void SDL_Blit_ABGR8888_RGB888_Blend_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             srcpixel = *src;
             srcB = (Uint8)(srcpixel >> 16); srcG = (Uint8)(srcpixel >> 8); srcR = (Uint8)srcpixel; srcA = (Uint8)(srcpixel >> 24);
             dstpixel = *dst;
@@ -5210,10 +4760,9 @@ static void SDL_Blit_ABGR8888_RGB888_Modulate_Scale(SDL_BlitInfo *info)
     Uint32 pixel;
     Uint32 R, G, B;
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -5222,20 +4771,12 @@ static void SDL_Blit_ABGR8888_RGB888_Modulate_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             pixel = *src;
             B = (Uint8)(pixel >> 16); G = (Uint8)(pixel >> 8); R = (Uint8)pixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
@@ -5334,10 +4875,9 @@ static void SDL_Blit_ABGR8888_RGB888_Modulate_Blend_Scale(SDL_BlitInfo *info)
     Uint32 dstpixel;
     Uint32 dstR, dstG, dstB;
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -5346,20 +4886,12 @@ static void SDL_Blit_ABGR8888_RGB888_Modulate_Blend_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             srcpixel = *src;
             srcB = (Uint8)(srcpixel >> 16); srcG = (Uint8)(srcpixel >> 8); srcR = (Uint8)srcpixel; srcA = (Uint8)(srcpixel >> 24);
             dstpixel = *dst;
@@ -5417,10 +4949,9 @@ static void SDL_Blit_ABGR8888_BGR888_Scale(SDL_BlitInfo *info)
     Uint32 pixel;
     Uint32 R, G, B;
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -5429,20 +4960,12 @@ static void SDL_Blit_ABGR8888_BGR888_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             pixel = *src;
             B = (Uint8)(pixel >> 16); G = (Uint8)(pixel >> 8); R = (Uint8)pixel;
             pixel = (B << 16) | (G << 8) | R;
@@ -5520,10 +5043,9 @@ static void SDL_Blit_ABGR8888_BGR888_Blend_Scale(SDL_BlitInfo *info)
     Uint32 dstpixel;
     Uint32 dstR, dstG, dstB;
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -5532,20 +5054,12 @@ static void SDL_Blit_ABGR8888_BGR888_Blend_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             srcpixel = *src;
             srcB = (Uint8)(srcpixel >> 16); srcG = (Uint8)(srcpixel >> 8); srcR = (Uint8)srcpixel; srcA = (Uint8)(srcpixel >> 24);
             dstpixel = *dst;
@@ -5630,10 +5144,9 @@ static void SDL_Blit_ABGR8888_BGR888_Modulate_Scale(SDL_BlitInfo *info)
     Uint32 pixel;
     Uint32 R, G, B;
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -5642,20 +5155,12 @@ static void SDL_Blit_ABGR8888_BGR888_Modulate_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             pixel = *src;
             B = (Uint8)(pixel >> 16); G = (Uint8)(pixel >> 8); R = (Uint8)pixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
@@ -5754,10 +5259,9 @@ static void SDL_Blit_ABGR8888_BGR888_Modulate_Blend_Scale(SDL_BlitInfo *info)
     Uint32 dstpixel;
     Uint32 dstR, dstG, dstB;
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -5766,20 +5270,12 @@ static void SDL_Blit_ABGR8888_BGR888_Modulate_Blend_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             srcpixel = *src;
             srcB = (Uint8)(srcpixel >> 16); srcG = (Uint8)(srcpixel >> 8); srcR = (Uint8)srcpixel; srcA = (Uint8)(srcpixel >> 24);
             dstpixel = *dst;
@@ -5837,10 +5333,9 @@ static void SDL_Blit_ABGR8888_ARGB8888_Scale(SDL_BlitInfo *info)
     Uint32 pixel;
     Uint32 R, G, B, A;
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -5849,20 +5344,12 @@ static void SDL_Blit_ABGR8888_ARGB8888_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             pixel = *src;
             B = (Uint8)(pixel >> 16); G = (Uint8)(pixel >> 8); R = (Uint8)pixel; A = (Uint8)(pixel >> 24);
             pixel = (A << 24) | (R << 16) | (G << 8) | B;
@@ -5942,10 +5429,9 @@ static void SDL_Blit_ABGR8888_ARGB8888_Blend_Scale(SDL_BlitInfo *info)
     Uint32 dstpixel;
     Uint32 dstR, dstG, dstB, dstA;
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -5954,20 +5440,12 @@ static void SDL_Blit_ABGR8888_ARGB8888_Blend_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             srcpixel = *src;
             srcB = (Uint8)(srcpixel >> 16); srcG = (Uint8)(srcpixel >> 8); srcR = (Uint8)srcpixel; srcA = (Uint8)(srcpixel >> 24);
             dstpixel = *dst;
@@ -6059,10 +5537,9 @@ static void SDL_Blit_ABGR8888_ARGB8888_Modulate_Scale(SDL_BlitInfo *info)
     Uint32 pixel;
     Uint32 R, G, B, A;
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -6071,20 +5548,12 @@ static void SDL_Blit_ABGR8888_ARGB8888_Modulate_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             pixel = *src;
             B = (Uint8)(pixel >> 16); G = (Uint8)(pixel >> 8); R = (Uint8)pixel; A = (Uint8)(pixel >> 24);
             if (flags & SDL_COPY_MODULATE_COLOR) {
@@ -6188,10 +5657,9 @@ static void SDL_Blit_ABGR8888_ARGB8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
     Uint32 dstpixel;
     Uint32 dstR, dstG, dstB, dstA;
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -6200,20 +5668,12 @@ static void SDL_Blit_ABGR8888_ARGB8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             srcpixel = *src;
             srcB = (Uint8)(srcpixel >> 16); srcG = (Uint8)(srcpixel >> 8); srcR = (Uint8)srcpixel; srcA = (Uint8)(srcpixel >> 24);
             dstpixel = *dst;
@@ -6273,10 +5733,9 @@ static void SDL_Blit_BGRA8888_RGB888_Scale(SDL_BlitInfo *info)
     Uint32 pixel;
     Uint32 R, G, B;
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -6285,20 +5744,12 @@ static void SDL_Blit_BGRA8888_RGB888_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             pixel = *src;
             B = (Uint8)(pixel >> 24); G = (Uint8)(pixel >> 16); R = (Uint8)(pixel >> 8);
             pixel = (R << 16) | (G << 8) | B;
@@ -6376,10 +5827,9 @@ static void SDL_Blit_BGRA8888_RGB888_Blend_Scale(SDL_BlitInfo *info)
     Uint32 dstpixel;
     Uint32 dstR, dstG, dstB;
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -6388,20 +5838,12 @@ static void SDL_Blit_BGRA8888_RGB888_Blend_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             srcpixel = *src;
             srcB = (Uint8)(srcpixel >> 24); srcG = (Uint8)(srcpixel >> 16); srcR = (Uint8)(srcpixel >> 8); srcA = (Uint8)srcpixel;
             dstpixel = *dst;
@@ -6486,10 +5928,9 @@ static void SDL_Blit_BGRA8888_RGB888_Modulate_Scale(SDL_BlitInfo *info)
     Uint32 pixel;
     Uint32 R, G, B;
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -6498,20 +5939,12 @@ static void SDL_Blit_BGRA8888_RGB888_Modulate_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             pixel = *src;
             B = (Uint8)(pixel >> 24); G = (Uint8)(pixel >> 16); R = (Uint8)(pixel >> 8);
             if (flags & SDL_COPY_MODULATE_COLOR) {
@@ -6610,10 +6043,9 @@ static void SDL_Blit_BGRA8888_RGB888_Modulate_Blend_Scale(SDL_BlitInfo *info)
     Uint32 dstpixel;
     Uint32 dstR, dstG, dstB;
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -6622,20 +6054,12 @@ static void SDL_Blit_BGRA8888_RGB888_Modulate_Blend_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             srcpixel = *src;
             srcB = (Uint8)(srcpixel >> 24); srcG = (Uint8)(srcpixel >> 16); srcR = (Uint8)(srcpixel >> 8); srcA = (Uint8)srcpixel;
             dstpixel = *dst;
@@ -6693,10 +6117,9 @@ static void SDL_Blit_BGRA8888_BGR888_Scale(SDL_BlitInfo *info)
     Uint32 pixel;
     Uint32 R, G, B;
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -6705,20 +6128,12 @@ static void SDL_Blit_BGRA8888_BGR888_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             pixel = *src;
             B = (Uint8)(pixel >> 24); G = (Uint8)(pixel >> 16); R = (Uint8)(pixel >> 8);
             pixel = (B << 16) | (G << 8) | R;
@@ -6796,10 +6211,9 @@ static void SDL_Blit_BGRA8888_BGR888_Blend_Scale(SDL_BlitInfo *info)
     Uint32 dstpixel;
     Uint32 dstR, dstG, dstB;
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -6808,20 +6222,12 @@ static void SDL_Blit_BGRA8888_BGR888_Blend_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             srcpixel = *src;
             srcB = (Uint8)(srcpixel >> 24); srcG = (Uint8)(srcpixel >> 16); srcR = (Uint8)(srcpixel >> 8); srcA = (Uint8)srcpixel;
             dstpixel = *dst;
@@ -6906,10 +6312,9 @@ static void SDL_Blit_BGRA8888_BGR888_Modulate_Scale(SDL_BlitInfo *info)
     Uint32 pixel;
     Uint32 R, G, B;
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -6918,20 +6323,12 @@ static void SDL_Blit_BGRA8888_BGR888_Modulate_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             pixel = *src;
             B = (Uint8)(pixel >> 24); G = (Uint8)(pixel >> 16); R = (Uint8)(pixel >> 8);
             if (flags & SDL_COPY_MODULATE_COLOR) {
@@ -7030,10 +6427,9 @@ static void SDL_Blit_BGRA8888_BGR888_Modulate_Blend_Scale(SDL_BlitInfo *info)
     Uint32 dstpixel;
     Uint32 dstR, dstG, dstB;
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -7042,20 +6438,12 @@ static void SDL_Blit_BGRA8888_BGR888_Modulate_Blend_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             srcpixel = *src;
             srcB = (Uint8)(srcpixel >> 24); srcG = (Uint8)(srcpixel >> 16); srcR = (Uint8)(srcpixel >> 8); srcA = (Uint8)srcpixel;
             dstpixel = *dst;
@@ -7113,10 +6501,9 @@ static void SDL_Blit_BGRA8888_ARGB8888_Scale(SDL_BlitInfo *info)
     Uint32 pixel;
     Uint32 R, G, B, A;
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -7125,20 +6512,12 @@ static void SDL_Blit_BGRA8888_ARGB8888_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             pixel = *src;
             B = (Uint8)(pixel >> 24); G = (Uint8)(pixel >> 16); R = (Uint8)(pixel >> 8); A = (Uint8)pixel;
             pixel = (A << 24) | (R << 16) | (G << 8) | B;
@@ -7218,10 +6597,9 @@ static void SDL_Blit_BGRA8888_ARGB8888_Blend_Scale(SDL_BlitInfo *info)
     Uint32 dstpixel;
     Uint32 dstR, dstG, dstB, dstA;
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -7230,20 +6608,12 @@ static void SDL_Blit_BGRA8888_ARGB8888_Blend_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             srcpixel = *src;
             srcB = (Uint8)(srcpixel >> 24); srcG = (Uint8)(srcpixel >> 16); srcR = (Uint8)(srcpixel >> 8); srcA = (Uint8)srcpixel;
             dstpixel = *dst;
@@ -7335,10 +6705,9 @@ static void SDL_Blit_BGRA8888_ARGB8888_Modulate_Scale(SDL_BlitInfo *info)
     Uint32 pixel;
     Uint32 R, G, B, A;
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -7347,20 +6716,12 @@ static void SDL_Blit_BGRA8888_ARGB8888_Modulate_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             pixel = *src;
             B = (Uint8)(pixel >> 24); G = (Uint8)(pixel >> 16); R = (Uint8)(pixel >> 8); A = (Uint8)pixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
@@ -7464,10 +6825,9 @@ static void SDL_Blit_BGRA8888_ARGB8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
     Uint32 dstpixel;
     Uint32 dstR, dstG, dstB, dstA;
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -7476,20 +6836,12 @@ static void SDL_Blit_BGRA8888_ARGB8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
         Uint32 *src = 0;
         Uint32 *dst = (Uint32 *)info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
-            }
+            srcx = posx >> 16;
+            src = (Uint32 *)(info->src + (srcy * info->src_pitch) + (srcx * 4));
             srcpixel = *src;
             srcB = (Uint8)(srcpixel >> 24); srcG = (Uint8)(srcpixel >> 16); srcR = (Uint8)(srcpixel >> 8); srcA = (Uint8)srcpixel;
             dstpixel = *dst;
