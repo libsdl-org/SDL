@@ -25,6 +25,10 @@
 
 #include <windows.h>
 
+#ifndef _WIN32_WINNT_WIN8
+#define _WIN32_WINNT_WIN8   0x0602
+#endif
+
 #if 0 /* can cause redefinition errors on some toolchains */
 #ifdef __MINGW32__
 #include <ntdef.h>
@@ -176,7 +180,28 @@ struct hid_device_ {
 		char *read_buf;
 		OVERLAPPED ol;
 		OVERLAPPED write_ol;
+		BOOL use_hid_write_output_report;
 };
+
+static BOOL
+IsWindowsVersionOrGreater(WORD wMajorVersion, WORD wMinorVersion, WORD wServicePackMajor)
+{
+	OSVERSIONINFOEXW osvi;
+	DWORDLONG const dwlConditionMask = VerSetConditionMask(
+		VerSetConditionMask(
+			VerSetConditionMask(
+				0, VER_MAJORVERSION, VER_GREATER_EQUAL ),
+			VER_MINORVERSION, VER_GREATER_EQUAL ),
+		VER_SERVICEPACKMAJOR, VER_GREATER_EQUAL );
+
+	SDL_zero( osvi );
+	osvi.dwOSVersionInfoSize = sizeof( osvi );
+	osvi.dwMajorVersion = wMajorVersion;
+	osvi.dwMinorVersion = wMinorVersion;
+	osvi.wServicePackMajor = wServicePackMajor;
+
+	return VerifyVersionInfoW(&osvi, VER_MAJORVERSION | VER_MINORVERSION | VER_SERVICEPACKMAJOR, dwlConditionMask) != FALSE;
+}
 
 static hid_device *new_hid_device()
 {
@@ -693,6 +718,11 @@ HID_API_EXPORT hid_device * HID_API_CALL hid_open_path(const char *path, int bEx
 	dev->input_report_length = caps.InputReportByteLength;
 	HidD_FreePreparsedData(pp_data);
 
+	/* On Windows 7, we need to use hid_write_output_report() over Bluetooth */
+	if (dev->output_report_length > 512) {
+		dev->use_hid_write_output_report = !IsWindowsVersionOrGreater( HIBYTE( _WIN32_WINNT_WIN8 ), LOBYTE( _WIN32_WINNT_WIN8 ), 0 );
+	}
+
 	dev->read_buf = (char*) malloc(dev->input_report_length);
 
 	return dev;
@@ -721,14 +751,10 @@ static int hid_write_timeout(hid_device *dev, const unsigned char *data, size_t 
 	size_t stashed_length = length;
 	unsigned char *buf;
 
-#if 1
-	/* If the application is writing to the device, it knows how much data to write.
-	 * This matches the behavior on other platforms. It's also important when writing
-	 * to Sony game controllers over Bluetooth, where there's a CRC at the end which
-	 * must not be tampered with.
-	 */
-	buf = (unsigned char *) data;
-#else
+	if (dev->use_hid_write_output_report) {
+		return hid_write_output_report(dev, data, length);
+	}
+
 	/* Make sure the right number of bytes are passed to WriteFile. Windows
 	   expects the number of bytes which are in the _longest_ report (plus
 	   one for the report number) bytes even if the data is a report
@@ -746,42 +772,35 @@ static int hid_write_timeout(hid_device *dev, const unsigned char *data, size_t 
 		memset(buf + length, 0, dev->output_report_length - length);
 		length = dev->output_report_length;
 	}
-#endif
-	if (length > 512)
-	{
-		return hid_write_output_report( dev, data, stashed_length );
-	}
-	else
-	{
-		res = WriteFile( dev->device_handle, buf, ( DWORD ) length, NULL, &dev->write_ol );
-		if (!res) {
-			if (GetLastError() != ERROR_IO_PENDING) {
-				/* WriteFile() failed. Return error. */
-				register_error(dev, "WriteFile");
-				bytes_written = (DWORD) -1;
-				goto end_of_function;
-			}
-		}
 
-		/* Wait here until the write is done. This makes
-		hid_write() synchronous. */
-		res = WaitForSingleObject(dev->write_ol.hEvent, milliseconds);
-		if (res != WAIT_OBJECT_0)
-		{
-			// There was a Timeout.
-			bytes_written = (DWORD) -1;
-			register_error(dev, "WriteFile/WaitForSingleObject Timeout");
-			goto end_of_function;
-		}
-
-		res = GetOverlappedResult(dev->device_handle, &dev->write_ol, &bytes_written, FALSE/*F=don't_wait*/);
-		if (!res) {
-			/* The Write operation failed. */
+	res = WriteFile( dev->device_handle, buf, ( DWORD ) length, NULL, &dev->write_ol );
+	if (!res) {
+		if (GetLastError() != ERROR_IO_PENDING) {
+			/* WriteFile() failed. Return error. */
 			register_error(dev, "WriteFile");
 			bytes_written = (DWORD) -1;
 			goto end_of_function;
 		}
 	}
+
+	/* Wait here until the write is done. This makes hid_write() synchronous. */
+	res = WaitForSingleObject(dev->write_ol.hEvent, milliseconds);
+	if (res != WAIT_OBJECT_0)
+	{
+		// There was a Timeout.
+		bytes_written = (DWORD) -1;
+		register_error(dev, "WriteFile/WaitForSingleObject Timeout");
+		goto end_of_function;
+	}
+
+	res = GetOverlappedResult(dev->device_handle, &dev->write_ol, &bytes_written, FALSE/*F=don't_wait*/);
+	if (!res) {
+		/* The Write operation failed. */
+		register_error(dev, "WriteFile");
+		bytes_written = (DWORD) -1;
+		goto end_of_function;
+	}
+
 end_of_function:
 	if (buf != data)
 		free(buf);
