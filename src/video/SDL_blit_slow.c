@@ -40,7 +40,7 @@ SDL_Blit_Slow(SDL_BlitInfo * info)
     Uint32 dstpixel;
     Uint32 dstR, dstG, dstB, dstA;
     int srcy, srcx;
-    int posy, posx;
+    Uint32 posy, posx;
     int incy, incx;
     SDL_PixelFormat *src_fmt = info->src_fmt;
     SDL_PixelFormat *dst_fmt = info->dst_fmt;
@@ -49,7 +49,6 @@ SDL_Blit_Slow(SDL_BlitInfo * info)
     Uint32 rgbmask = ~src_fmt->Amask;
     Uint32 ckey = info->colorkey & rgbmask;
 
-    srcy = 0;
     posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -58,21 +57,11 @@ SDL_Blit_Slow(SDL_BlitInfo * info)
         Uint8 *src = 0;
         Uint8 *dst = info->dst;
         int n = info->dst_w;
-        srcx = -1;
-        posx = 0x10000L;
-        while (posy >= 0x10000L) {
-            ++srcy;
-            posy -= 0x10000L;
-        }
+        posx = 0;
+        srcy = posy >> 16;
         while (n--) {
-            if (posx >= 0x10000L) {
-                while (posx >= 0x10000L) {
-                    ++srcx;
-                    posx -= 0x10000L;
-                }
-                src =
-                    (info->src + (srcy * info->src_pitch) + (srcx * srcbpp));
-            }
+            srcx = posx >> 16;
+            src = (info->src + (srcy * info->src_pitch) + (srcx * srcbpp));
             if (src_fmt->Amask) {
                 DISEMBLE_RGBA(src, srcbpp, src_fmt, srcpixel, srcR, srcG,
                               srcB, srcA);
