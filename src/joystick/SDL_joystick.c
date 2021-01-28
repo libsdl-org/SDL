@@ -2047,7 +2047,8 @@ static SDL_bool SDL_IsJoystickProductWheel(Uint32 vidpid)
         MAKE_VIDPID(0x046d, 0xc299),    /* Logitech G25 */
         MAKE_VIDPID(0x046d, 0xc29a),    /* Logitech Driving Force GT */
         MAKE_VIDPID(0x046d, 0xc29b),    /* Logitech G27 */
-        MAKE_VIDPID(0x046d, 0xc24f),    /* Logitech G29 */
+        MAKE_VIDPID(0x046d, 0xc24f),    /* Logitech G29 (PS3) */
+        MAKE_VIDPID(0x046d, 0xc260),    /* Logitech G29 (PS4) */
         MAKE_VIDPID(0x046d, 0xc261),    /* Logitech G920 (initial mode) */
         MAKE_VIDPID(0x046d, 0xc262),    /* Logitech G920 (active mode) */
         MAKE_VIDPID(0x044f, 0xb65d),    /* Thrustmaster Wheel FFB */
