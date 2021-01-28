@@ -808,6 +808,9 @@ X11_DispatchEvent(_THIS)
             if (!mouse->relative_mode) {
                 SDL_SendMouseMotion(data->window, 0, 0, xevent.xcrossing.x, xevent.xcrossing.y);
             }
+
+            /* We ungrab in LeaveNotify, so we may need to grab again here */
+            SDL_UpdateWindowGrab(data->window);
         }
         break;
         /* Losing mouse coverage? */
@@ -829,6 +832,13 @@ X11_DispatchEvent(_THIS)
             if (xevent.xcrossing.mode != NotifyGrab &&
                 xevent.xcrossing.mode != NotifyUngrab &&
                 xevent.xcrossing.detail != NotifyInferior) {
+                
+                /* In order for interaction with the window decorations and menu to work properly
+                   on Mutter, we need to ungrab the keyboard when the the mouse leaves. */
+                if (!(data->window->flags & SDL_WINDOW_FULLSCREEN)) {
+                    X11_SetWindowKeyboardGrab(_this, data->window, SDL_FALSE);
+                }
+
                 SDL_SetMouseFocus(NULL);
             }
         }
