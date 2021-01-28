@@ -173,12 +173,8 @@
 /* #undef HAVE_LOGF */
 #define HAVE_LOG10 1
 /* #undef HAVE_LOG10F */
-/* #undef HAVE_LROUND */
-/* #undef HAVE_LROUNDF */
 #define HAVE_POW 1
 /* #undef HAVE_POWF */
-/* #undef HAVE_ROUND */
-/* #undef HAVE_ROUNDF */
 #define HAVE_SIN 1
 /* #undef HAVE_SINF */
 /* #undef HAVE_SCALBN */
