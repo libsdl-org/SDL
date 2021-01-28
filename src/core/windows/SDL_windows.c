@@ -33,6 +33,9 @@
 #ifndef _WIN32_WINNT_WIN7
 #define _WIN32_WINNT_WIN7   0x0601
 #endif
+#ifndef _WIN32_WINNT_WIN8
+#define _WIN32_WINNT_WIN8   0x0602
+#endif
 
 
 /* Sets an error message based on an HRESULT */
@@ -132,6 +135,15 @@ BOOL WIN_IsWindows7OrGreater(void)
     return TRUE;
 #else
     return IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_WIN7), LOBYTE(_WIN32_WINNT_WIN7), 0);
+#endif
+}
+
+BOOL WIN_IsWindows8OrGreater(void)
+{
+#ifdef __WINRT__
+    return TRUE;
+#else
+    return IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_WIN8), LOBYTE(_WIN32_WINNT_WIN8), 0);
 #endif
 }
 
