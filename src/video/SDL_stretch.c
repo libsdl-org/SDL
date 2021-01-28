@@ -137,28 +137,13 @@ SDL_UpperSoftStretch(SDL_Surface * src, const SDL_Rect * srcrect,
    same in NEON probably */
 #define PRECISION      7
 
-#define FIXED_POINT(i)  ((uint32_t)(i)  << 16)
-#define SRC_INDEX(fp)   ((uint32_t)(fp) >> 16)
-#define INTEGER(fp)     ((uint32_t)(fp) >> PRECISION)
-#define FRAC(fp)        ((uint32_t)(fp >> (16 - PRECISION)) & ((1<<PRECISION) - 1))
+#define FIXED_POINT(i)  ((Uint32)(i)  << 16)
+#define SRC_INDEX(fp)   ((Uint32)(fp) >> 16)
+#define INTEGER(fp)     ((Uint32)(fp) >> PRECISION)
+#define FRAC(fp)        ((Uint32)(fp >> (16 - PRECISION)) & ((1<<PRECISION) - 1))
 #define FRAC_ZERO       0
 #define FRAC_ONE        (1 << PRECISION)
 #define FP_ONE          FIXED_POINT(1)
-
-
-#define NEAREST___START                                                                         \
-    int i;                                                                                      \
-    int fp_sum_h, fp_step_h, left_pad_h, right_pad_h;                                           \
-    int fp_sum_w, fp_step_w, left_pad_w, right_pad_w;                                           \
-    int fp_sum_w_init, left_pad_w_init, right_pad_w_init, dst_gap, middle_init;                 \
-    get_scaler_datas_nearest(src_h, dst_h, &fp_sum_h, &fp_step_h, &left_pad_h, &right_pad_h);   \
-    get_scaler_datas_nearest(src_w, dst_w, &fp_sum_w, &fp_step_w, &left_pad_w, &right_pad_w);   \
-    fp_sum_w_init    = fp_sum_w + left_pad_w * fp_step_w;                                       \
-    left_pad_w_init  = left_pad_w;                                                              \
-    right_pad_w_init = right_pad_w;                                                             \
-    dst_gap          = dst_pitch - bpp * dst_w;                                                 \
-    middle_init      = dst_w - left_pad_w - right_pad_w;                                        \
-
 
 #define BILINEAR___START                                                                        \
     int i;                                                                                      \
@@ -856,29 +841,41 @@ SDL_LowerSoftStretchLinear(SDL_Surface *s, const SDL_Rect *srcrect,
     return ret;
 }
 
-static SDL_INLINE void
-get_scaler_datas_nearest(int src_nb, int dst_nb, int *fp_start, int *fp_step, int *left_pad, int *right_pad)
-{
-    *fp_start = 0;
-    *fp_step = (src_nb << 16) / dst_nb;
-    *left_pad = 0;
-    *right_pad = 0;
-}
+
+#define SDL_SCALE_NEAREST__START                                                        \
+    int i;                                                                              \
+    Uint32 posy, incy;                                                                  \
+    Uint32 posx, incx;                                                                  \
+    int dst_gap;                                                                        \
+    int srcy, n;                                                                        \
+    const Uint32 *src_h0;                                                               \
+    incy = (src_h << 16) / dst_h;                                                       \
+    incx = (src_w << 16) / dst_w;                                                       \
+    dst_gap   = dst_pitch - bpp * dst_w;                                                \
+    posy = 0;                                                                           \
+
+#define SDL_SCALE_NEAREST__HEIGHT                                                       \
+    srcy = (posy >> 16);                                                                \
+    src_h0  = (const Uint32 *)((const Uint8 *)src_ptr + srcy * src_pitch);              \
+    posy += incy;                                                                       \
+    posx = 0;                                                                           \
+    n = dst_w;
+
 
 static int
-scale_mat_nearest_1(const Uint32 *src, int src_w, int src_h, int src_pitch,
+scale_mat_nearest_1(const Uint32 *src_ptr, int src_w, int src_h, int src_pitch,
         Uint32 *dst, int dst_w, int dst_h, int dst_pitch)
 {
-    const int bpp = 1;
-    NEAREST___START
+    Uint32 bpp = 1;
+    SDL_SCALE_NEAREST__START
     for (i = 0; i < dst_h; i++) {
-        BILINEAR___HEIGHT
-        while (middle--) {
-            const Uint32 *s_00_01;
-            int index_w = bpp * SRC_INDEX(fp_sum_w);
-            fp_sum_w += fp_step_w;
-            s_00_01 = (const Uint32 *)((const Uint8 *)src_h0 + index_w);
-            *(Uint8*)dst = *(Uint8*)s_00_01;
+        SDL_SCALE_NEAREST__HEIGHT
+        while (n--) {
+            const Uint8 *src;
+            int srcx = bpp * (posx >> 16);
+            posx += incx;
+            src = (const Uint8 *)src_h0 + srcx;
+            *(Uint8*)dst = *src;
             dst = (Uint32 *)((Uint8*)dst + bpp);
         }
         dst = (Uint32 *)((Uint8 *)dst + dst_gap);
@@ -887,19 +884,19 @@ scale_mat_nearest_1(const Uint32 *src, int src_w, int src_h, int src_pitch,
 }
 
 static int
-scale_mat_nearest_2(const Uint32 *src, int src_w, int src_h, int src_pitch,
+scale_mat_nearest_2(const Uint32 *src_ptr, int src_w, int src_h, int src_pitch,
         Uint32 *dst, int dst_w, int dst_h, int dst_pitch)
 {
-    const int bpp = 2;
-    NEAREST___START
+    Uint32 bpp = 2;
+    SDL_SCALE_NEAREST__START
     for (i = 0; i < dst_h; i++) {
-        BILINEAR___HEIGHT
-        while (middle--) {
-            const Uint32 *s_00_01;
-            int index_w = bpp * SRC_INDEX(fp_sum_w);
-            fp_sum_w += fp_step_w;
-            s_00_01 = (const Uint32 *)((const Uint8 *)src_h0 + index_w);
-            *(Uint16*)dst = *(Uint16*)s_00_01;
+        SDL_SCALE_NEAREST__HEIGHT
+        while (n--) {
+            const Uint16 *src;
+            int srcx = bpp * (posx >> 16);
+            posx += incx;
+            src = (const Uint16 *)((const Uint8 *)src_h0 + srcx);
+            *(Uint16*)dst = *src;
             dst = (Uint32 *)((Uint8*)dst + bpp);
         }
         dst = (Uint32 *)((Uint8 *)dst + dst_gap);
@@ -908,21 +905,21 @@ scale_mat_nearest_2(const Uint32 *src, int src_w, int src_h, int src_pitch,
 }
 
 static int
-scale_mat_nearest_3(const Uint32 *src, int src_w, int src_h, int src_pitch,
+scale_mat_nearest_3(const Uint32 *src_ptr, int src_w, int src_h, int src_pitch,
         Uint32 *dst, int dst_w, int dst_h, int dst_pitch)
 {
-    const int bpp = 3;
-    NEAREST___START
+    Uint32 bpp = 3;
+    SDL_SCALE_NEAREST__START
     for (i = 0; i < dst_h; i++) {
-        BILINEAR___HEIGHT
-        while (middle--) {
-            const Uint32 *s_00_01;
-            int index_w = bpp * SRC_INDEX(fp_sum_w);
-            fp_sum_w += fp_step_w;
-            s_00_01 = (const Uint32 *)((const Uint8 *)src_h0 + index_w);
-            ((Uint8*)dst)[0] = ((Uint8*)s_00_01)[0];
-            ((Uint8*)dst)[1] = ((Uint8*)s_00_01)[1];
-            ((Uint8*)dst)[2] = ((Uint8*)s_00_01)[2];
+        SDL_SCALE_NEAREST__HEIGHT
+        while (n--) {
+            const Uint8 *src;
+            int srcx = bpp * (posx >> 16);
+            posx += incx;
+            src = (const Uint8 *)src_h0 + srcx;
+            ((Uint8*)dst)[0] = src[0];
+            ((Uint8*)dst)[1] = src[1];
+            ((Uint8*)dst)[2] = src[2];
             dst = (Uint32 *)((Uint8*)dst + bpp);
         }
         dst = (Uint32 *)((Uint8 *)dst + dst_gap);
@@ -931,19 +928,19 @@ scale_mat_nearest_3(const Uint32 *src, int src_w, int src_h, int src_pitch,
 }
 
 static int
-scale_mat_nearest_4(const Uint32 *src, int src_w, int src_h, int src_pitch,
+scale_mat_nearest_4(const Uint32 *src_ptr, int src_w, int src_h, int src_pitch,
         Uint32 *dst, int dst_w, int dst_h, int dst_pitch)
 {
-    int bpp = 4;
-    NEAREST___START
+    Uint32 bpp = 4;
+    SDL_SCALE_NEAREST__START
     for (i = 0; i < dst_h; i++) {
-        BILINEAR___HEIGHT
-        while (middle--) {
-            const Uint32 *s_00_01;
-            int index_w = bpp * SRC_INDEX(fp_sum_w);
-            fp_sum_w += fp_step_w;
-            s_00_01 = (const Uint32 *)((const Uint8 *)src_h0 + index_w);
-            *dst = *s_00_01;
+        SDL_SCALE_NEAREST__HEIGHT
+        while (n--) {
+            const Uint32 *src;
+            int srcx = bpp * (posx >> 16);
+            posx += incx;
+            src = (const Uint32 *)((const Uint8 *)src_h0 + srcx);
+            *dst = *src;
             dst = (Uint32 *)((Uint8*)dst + bpp);
         }
         dst = (Uint32 *)((Uint8 *)dst + dst_gap);
