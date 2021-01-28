@@ -446,8 +446,14 @@ HIDAPI_GetDeviceDriver(SDL_HIDAPI_Device *device)
     const Uint16 USAGE_MULTIAXISCONTROLLER = 0x0008;
     int i;
     SDL_GameControllerType type;
+    SDL_JoystickGUID check_guid;
 
-    if (SDL_ShouldIgnoreJoystick(device->name, device->guid)) {
+    /* Make sure we have a generic GUID here, otherwise if we pass a HIDAPI
+       guid, this call will create a game controller mapping for the device.
+     */
+    check_guid = device->guid;
+    check_guid.data[14] = 0;
+    if (SDL_ShouldIgnoreJoystick(device->name, check_guid)) {
         return NULL;
     }
 
