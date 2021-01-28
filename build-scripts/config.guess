@@ -2,7 +2,7 @@
 # Attempt to guess a canonical system name.
 #   Copyright 1992-2021 Free Software Foundation, Inc.
 
-timestamp='2021-01-01'
+timestamp='2021-01-25'
 
 # This file is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -188,10 +188,9 @@ case "$UNAME_MACHINE:$UNAME_SYSTEM:$UNAME_RELEASE:$UNAME_VERSION" in
 	#
 	# Note: NetBSD doesn't particularly care about the vendor
 	# portion of the name.  We always set it to "unknown".
-	sysctl="sysctl -n hw.machine_arch"
 	UNAME_MACHINE_ARCH=`(uname -p 2>/dev/null || \
-	    "/sbin/$sysctl" 2>/dev/null || \
-	    "/usr/sbin/$sysctl" 2>/dev/null || \
+	    /sbin/sysctl -n hw.machine_arch 2>/dev/null || \
+	    /usr/sbin/sysctl -n hw.machine_arch 2>/dev/null || \
 	    echo unknown)`
 	case "$UNAME_MACHINE_ARCH" in
 	    aarch64eb) machine=aarch64_be-unknown ;;
@@ -1483,8 +1482,8 @@ EOF
     i*86:rdos:*:*)
 	echo "$UNAME_MACHINE"-pc-rdos
 	exit ;;
-    i*86:AROS:*:*)
-	echo "$UNAME_MACHINE"-pc-aros
+    *:AROS:*:*)
+	echo "$UNAME_MACHINE"-unknown-aros
 	exit ;;
     x86_64:VMkernel:*:*)
 	echo "$UNAME_MACHINE"-unknown-esx

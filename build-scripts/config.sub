@@ -2,7 +2,7 @@
 # Configuration validation subroutine script.
 #   Copyright 1992-2021 Free Software Foundation, Inc.
 
-timestamp='2021-01-07'
+timestamp='2021-01-08'
 
 # This file is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -1683,11 +1683,14 @@ fi
 
 # Now, validate our (potentially fixed-up) OS.
 case $os in
-	# Sometimes we do "kernel-abi", so those need to count as OSes.
+	# Sometimes we do "kernel-libc", so those need to count as OSes.
 	musl* | newlib* | uclibc*)
 		;;
-	# Likewise for "kernel-libc"
+	# Likewise for "kernel-abi"
 	eabi* | gnueabi*)
+		;;
+	# VxWorks passes extra cpu info in the 4th filed.
+	simlinux | simwindows | spe)
 		;;
 	# Now accept the basic system types.
 	# The portable systems comes first.
@@ -1750,6 +1753,8 @@ case $kernel-$os in
 		exit 1
 		;;
 	kfreebsd*-gnu* | kopensolaris*-gnu*)
+		;;
+	vxworks-simlinux | vxworks-simwindows | vxworks-spe)
 		;;
 	nto-qnx*)
 		;;
