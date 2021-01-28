@@ -109,6 +109,9 @@ extern "C" {
 #ifdef _MSC_VER
 	/* Thanks Microsoft, but I know how to use strncpy(). */
 	#pragma warning(disable:4996)
+
+	/* Yes, we have some unreferenced formal parameters */
+	#pragma warning(disable:4100)
 #endif
 
 #ifdef __cplusplus
