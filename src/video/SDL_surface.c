@@ -931,6 +931,11 @@ SDL_PrivateLowerBlitScaled(SDL_Surface * src, SDL_Rect * srcrect,
         SDL_COPY_COLORKEY
     );
 
+    if (srcrect->w > SDL_MAX_UINT16 || srcrect->h > SDL_MAX_UINT16 ||
+        dstrect->w > SDL_MAX_UINT16 || dstrect->h > SDL_MAX_UINT16) {
+        return SDL_SetError("Too large size for scaling");
+    }
+
     if (!(src->map->info.flags & SDL_COPY_NEAREST)) {
         src->map->info.flags |= SDL_COPY_NEAREST;
         SDL_InvalidateMap(src->map);
