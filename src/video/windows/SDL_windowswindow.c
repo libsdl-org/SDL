@@ -759,6 +759,11 @@ static void WIN_GrabKeyboard(SDL_Window *window)
         return;
     }
 
+    /* Capture a snapshot of the current keyboard state before the hook */
+    if (!GetKeyboardState(data->videodata->pre_hook_key_state)) {
+        return;
+    }
+
     /* To grab the keyboard, we have to install a low-level keyboard hook to
        intercept keys that would normally be captured by the OS. Intercepting
        all key events on the system is rather invasive, but it's what Microsoft

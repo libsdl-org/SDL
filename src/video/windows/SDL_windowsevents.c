@@ -432,6 +432,7 @@ LRESULT CALLBACK
 WIN_KeyboardHookProc(int nCode, WPARAM wParam, LPARAM lParam)
 {
     KBDLLHOOKSTRUCT* hookData = (KBDLLHOOKSTRUCT*)lParam;
+    SDL_VideoData* data = SDL_GetVideoDevice()->driverdata;
     SDL_Scancode scanCode;
 
     if (nCode < 0 || nCode != HC_ACTION) {
@@ -474,6 +475,16 @@ WIN_KeyboardHookProc(int nCode, WPARAM wParam, LPARAM lParam)
         SDL_SendKeyboardKey(SDL_PRESSED, scanCode);
     } else {
         SDL_SendKeyboardKey(SDL_RELEASED, scanCode);
+
+        /* If the key was down prior to our hook being installed, allow the
+           key up message to pass normally the first time. This ensures other
+           windows have a consistent view of the key state, and avoids keys
+           being stuck down in those windows if they are down when the grab
+           happens and raised while grabbed. */
+        if (hookData->vkCode <= 0xFF && data->pre_hook_key_state[hookData->vkCode]) {
+            data->pre_hook_key_state[hookData->vkCode] = 0;
+            return CallNextHookEx(NULL, nCode, wParam, lParam);
+        }
     }
 
     return 1;
