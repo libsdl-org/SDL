@@ -457,83 +457,64 @@ uint32_t width, uint32_t height, uint32_t refresh_rate){
 /* _this is a SDL_VideoDevice *                                              */
 /*****************************************************************************/
 
-/* Deinitializes the dispdata members needed for KMSDRM operation that are
-   inoffeensive for VK compatibility. */
-void KMSDRM_DisplayDataDeinit (_THIS, SDL_DisplayData *dispdata) {
-    /* Free connector */
-    if (dispdata && dispdata->connector) {
-	KMSDRM_drmModeFreeConnector(dispdata->connector);
-	dispdata->connector = NULL;
-    }
+/* Deinitializes the driverdata of the SDL Displays in the SDL display list. */
+void KMSDRM_DeinitDisplays (_THIS) {
 
-    /* Free CRTC */
-    if (dispdata && dispdata->crtc) {
-        KMSDRM_drmModeFreeCrtc(dispdata->crtc);
-        dispdata->crtc = NULL;
+    SDL_DisplayData *dispdata;
+    int num_displays, i;
+
+    num_displays = SDL_GetNumVideoDisplays();
+
+    /* Iterate on the SDL Display list. */
+    for (i = 0; i < num_displays; i++) {
+  
+        /* Get the driverdata for this display */   
+        dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(i);
+
+	/* Free connector */
+	if (dispdata && dispdata->connector) {
+	    KMSDRM_drmModeFreeConnector(dispdata->connector);
+	    dispdata->connector = NULL;
+	}
+
+	/* Free CRTC */
+	if (dispdata && dispdata->crtc) {
+	    KMSDRM_drmModeFreeCrtc(dispdata->crtc);
+	    dispdata->crtc = NULL;
+	}
     }
 }
 
-/* Initializes the dispdata members needed for KMSDRM operation that are
-   inoffeensive for VK compatibility, except we must leave the drm_fd
-   closed when we get to the end of this function.
-   This is to be called early, in VideoInit(), because it gets us
-   the videomode information, which SDL needs immediately after VideoInit(). */
-int KMSDRM_DisplayDataInit (_THIS, SDL_DisplayData *dispdata) {
+/* Gets a DRM connector, builds an SDL_Display with it, and adds it to the
+   list of SDL Displays.  */
+void KMSDRM_AddDisplay (_THIS, drmModeConnector *connector, drmModeRes *resources) {
+
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
-
-    drmModeRes *resources = NULL;
+    SDL_DisplayData *dispdata = NULL;
+    SDL_VideoDisplay display = {0};
     drmModeEncoder *encoder = NULL;
-    drmModeConnector *connector = NULL;
     drmModeCrtc *crtc = NULL;
-
+    int i, j;
     int ret = 0;
-    unsigned i,j;
 
+    /* Reserve memory for the new display's driverdata. */
+    dispdata = (SDL_DisplayData *) SDL_calloc(1, sizeof(SDL_DisplayData));
+    if (!dispdata) {
+        ret = SDL_OutOfMemory();
+    }
+
+    /* Initialize some of the members of the new display's driverdata
+       to sane values. */
     dispdata->gbm_init = SDL_FALSE;
     dispdata->modeset_pending = SDL_FALSE;
     dispdata->cursor_bo = NULL;
 
-    /* Open /dev/dri/cardNN (/dev/drmN if on OpenBSD) */
-    SDL_snprintf(viddata->devpath, sizeof(viddata->devpath), KMSDRM_DRI_CARDPATHFMT, viddata->devindex);
-
-    SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Opening device %s", viddata->devpath);
-    viddata->drm_fd = open(viddata->devpath, O_RDWR | O_CLOEXEC);
-
-    if (viddata->drm_fd < 0) {
-        ret = SDL_SetError("Could not open %s", viddata->devpath);
-        goto cleanup;
-    }
-
-    SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Opened DRM FD (%d)", viddata->drm_fd);
-
-    /* Get all of the available connectors / devices / crtcs */
-    resources = KMSDRM_drmModeGetResources(viddata->drm_fd);
-    if (!resources) {
-        ret = SDL_SetError("drmModeGetResources(%d) failed", viddata->drm_fd);
-        goto cleanup;
-    }
-
-    /* Iterate on the available connectors to find a connected connector. */
-    for (i = 0; i < resources->count_connectors; i++) {
-        drmModeConnector *conn = KMSDRM_drmModeGetConnector(viddata->drm_fd,
-            resources->connectors[i]);
-
-        if (!conn) {
-            continue;
-        }
-
-        if (conn->connection == DRM_MODE_CONNECTED && conn->count_modes) {
-            connector = conn;
-            break;
-        }
-
-        KMSDRM_drmModeFreeConnector(conn);
-    }
-
-    if (!connector) {
-        ret = SDL_SetError("No currently active connector found.");
-        goto cleanup;
-    }
+    /* Since we create and show the default cursor on KMSDRM_InitMouse() and
+       we call KMSDRM_InitMouse() everytime we create a new window, we have
+       to be sure to create and show the default cursor only the first time.
+       If we don't, new default cursors would stack up on mouse->cursors and SDL
+       would have to hide and delete them at quit, not to mention the memory leak... */
+    dispdata->set_default_cursor_pending = SDL_TRUE;
 
     /* Try to find the connector's current encoder */
     for (i = 0; i < resources->count_encoders; i++) {
@@ -558,7 +539,7 @@ int KMSDRM_DisplayDataInit (_THIS, SDL_DisplayData *dispdata) {
                           resources->encoders[i]);
 
             if (!encoder) {
-              continue;
+                continue;
             }
 
             for (j = 0; j < connector->count_encoders; j++) {
@@ -568,7 +549,7 @@ int KMSDRM_DisplayDataInit (_THIS, SDL_DisplayData *dispdata) {
             }
 
             if (j != connector->count_encoders) {
-              break;
+                break;
             }
 
             KMSDRM_drmModeFreeEncoder(encoder);
@@ -577,7 +558,7 @@ int KMSDRM_DisplayDataInit (_THIS, SDL_DisplayData *dispdata) {
     }
 
     if (!encoder) {
-        ret = SDL_SetError("No connected encoder found.");
+        ret = SDL_SetError("No connected encoder found for connector.");
         goto cleanup;
     }
 
@@ -597,11 +578,21 @@ int KMSDRM_DisplayDataInit (_THIS, SDL_DisplayData *dispdata) {
     }
 
     if (!crtc) {
-        ret = SDL_SetError("No CRTC found.");
+        ret = SDL_SetError("No CRTC found for connector.");
         goto cleanup;
     }
 
-    /* Figure out the default mode to be set. */
+    /*********************************************/
+    /* Create an SDL Display for this connector. */
+    /*********************************************/
+
+    /*********************************************/
+    /* Part 1: setup the SDL_Display driverdata. */
+    /*********************************************/
+
+    /* Get the mode currently setup for this display,
+       which is the mode currently setup on the CRTC
+       we found for the active connector. */
     dispdata->mode = crtc->mode;
 
     /* Save the original mode for restoration on quit. */
@@ -612,10 +603,107 @@ int KMSDRM_DisplayDataInit (_THIS, SDL_DisplayData *dispdata) {
         goto cleanup;
     }
 
-    /* Store the connector and crtc for future use. These are all we keep
-       from this function, and these are just structs, inoffensive to VK. */
+    /* Store the connector and crtc for this display. */
     dispdata->connector = connector;
     dispdata->crtc = crtc;
+
+    /*****************************************/
+    /* Part 2: setup the SDL_Display itself. */
+    /*****************************************/
+
+    /* Setup the display.
+       There's no problem with it being still incomplete. */
+    display.driverdata = dispdata;
+    display.desktop_mode.w = dispdata->mode.hdisplay;
+    display.desktop_mode.h = dispdata->mode.vdisplay;
+    display.desktop_mode.refresh_rate = dispdata->mode.vrefresh;
+    display.desktop_mode.format = SDL_PIXELFORMAT_ARGB8888;
+    display.current_mode = display.desktop_mode;
+
+    /* Add the display to the list of SDL displays. */
+    SDL_AddVideoDisplay(&display, SDL_FALSE);
+
+cleanup:
+    if (encoder)
+        KMSDRM_drmModeFreeEncoder(encoder);
+    if (ret) {
+        /* Error (complete) cleanup */
+        if (dispdata->connector) {
+            KMSDRM_drmModeFreeConnector(dispdata->connector);
+            dispdata->connector = NULL;
+        }
+        if (dispdata->crtc) {
+            KMSDRM_drmModeFreeCrtc(dispdata->crtc);
+            dispdata->crtc = NULL;
+        }
+        if (dispdata) {
+            SDL_free(dispdata);
+        }
+    }
+}
+
+/* Initializes the list of SDL displays: we build a new display for each
+   connecter connector we find.
+   Inoffeensive for VK compatibility, except we must leave the drm_fd
+   closed when we get to the end of this function.
+   This is to be called early, in VideoInit(), because it gets us
+   the videomode information, which SDL needs immediately after VideoInit(). */
+int KMSDRM_InitDisplays (_THIS) {
+
+    SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
+    drmModeRes *resources = NULL;
+
+    int ret = 0;
+    int i;
+
+    /* Open /dev/dri/cardNN (/dev/drmN if on OpenBSD) */
+    SDL_snprintf(viddata->devpath, sizeof(viddata->devpath), KMSDRM_DRI_CARDPATHFMT, viddata->devindex);
+
+    SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Opening device %s", viddata->devpath);
+    viddata->drm_fd = open(viddata->devpath, O_RDWR | O_CLOEXEC);
+
+    if (viddata->drm_fd < 0) {
+        ret = SDL_SetError("Could not open %s", viddata->devpath);
+        goto cleanup;
+    }
+
+    SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Opened DRM FD (%d)", viddata->drm_fd);
+
+    /* Get all of the available connectors / devices / crtcs */
+    resources = KMSDRM_drmModeGetResources(viddata->drm_fd);
+    if (!resources) {
+        ret = SDL_SetError("drmModeGetResources(%d) failed", viddata->drm_fd);
+        goto cleanup;
+    }
+
+    /* Iterate on the available connectors. For every connected connector,
+       we create an SDL_Display and add it to the list of SDL Displays. */
+    for (i = 0; i < resources->count_connectors; i++) {
+        drmModeConnector *connector = KMSDRM_drmModeGetConnector(viddata->drm_fd,
+            resources->connectors[i]);
+
+        if (!connector) {
+            continue;
+        }
+
+        if (connector->connection == DRM_MODE_CONNECTED && connector->count_modes) {
+            /* If it's a connected connector with available videomodes, try to add
+               an SDL Display representing it. KMSDRM_AddDisplay() is purposely void,
+               so if it fails (no encoder for connector, no valid video mode for
+               connector etc...) we can keep looking for connected connectors. */
+            KMSDRM_AddDisplay (_this, connector, resources);
+        }
+        else {
+            /* If it's not, free it now. */
+            KMSDRM_drmModeFreeConnector(connector);
+        }
+    }
+
+    /* Have we added any SDL displays? */
+    if (!SDL_GetNumVideoDisplays()) {
+        ret = SDL_SetError("No connected displays found.");
+        goto cleanup;
+    }
 
     /***********************************/
     /* Block for Vulkan compatibility. */
@@ -627,26 +715,14 @@ int KMSDRM_DisplayDataInit (_THIS, SDL_DisplayData *dispdata) {
     viddata->drm_fd = -1;
 
 cleanup:
-    if (encoder)
-        KMSDRM_drmModeFreeEncoder(encoder);
     if (resources)
         KMSDRM_drmModeFreeResources(resources);
     if (ret) {
-        /* Error (complete) cleanup */
-        if (dispdata->connector) {
-            KMSDRM_drmModeFreeConnector(dispdata->connector);
-            dispdata->connector = NULL;
-        }
-        if (dispdata->crtc) {
-            KMSDRM_drmModeFreeCrtc(dispdata->crtc);
-            dispdata->crtc = NULL;
-        }
         if (viddata->drm_fd >= 0) {
             close(viddata->drm_fd);
             viddata->drm_fd = -1;
         }
     }
-
     return ret;
 }
 
@@ -838,38 +914,17 @@ KMSDRM_VideoInit(_THIS)
     int ret = 0;
 
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
-    SDL_DisplayData *dispdata = NULL;
-    SDL_VideoDisplay display = {0};
-
     SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "KMSDRM_VideoInit()");
 
     viddata->video_init = SDL_FALSE;
-
-    dispdata = (SDL_DisplayData *) SDL_calloc(1, sizeof(SDL_DisplayData));
-    if (!dispdata) {
-        return SDL_OutOfMemory();
-    }
 
     /* Get KMSDRM resources info and store what we need. Getting and storing
        this info isn't a problem for VK compatibility.
        For VK-incompatible initializations we have KMSDRM_GBMInit(), which is
        called on window creation, and only when we know it's not a VK window. */
-    if (KMSDRM_DisplayDataInit(_this, dispdata)) {
+    if (KMSDRM_InitDisplays(_this)) {
         ret = SDL_SetError("error getting KMS/DRM information");
-        goto cleanup;
     }
-
-    /* Setup the single display that's available.
-       There's no problem with it being still incomplete. */
-    display.driverdata = dispdata;
-    display.desktop_mode.w = dispdata->mode.hdisplay;
-    display.desktop_mode.h = dispdata->mode.vdisplay;
-    display.desktop_mode.refresh_rate = dispdata->mode.vrefresh;
-    display.desktop_mode.format = SDL_PIXELFORMAT_ARGB8888;
-    display.current_mode = display.desktop_mode;
-
-    /* Add the display only when it's ready, */
-    SDL_AddVideoDisplay(&display, SDL_FALSE);
 
 #ifdef SDL_INPUT_LINUXEV
     SDL_EVDEV_Init();
@@ -877,28 +932,7 @@ KMSDRM_VideoInit(_THIS)
     SDL_WSCONS_Init();
 #endif
 
-    /* Since we create and show the default cursor on KMSDRM_InitMouse() and
-       we call KMSDRM_InitMouse() everytime we create a new window, we have
-       to be sure to create and show the default cursor only the first time.
-       If we don't, new default cursors would stack up on mouse->cursors and SDL
-       would have to hide and delete them at quit, not to mention the memory leak... */
-    dispdata->set_default_cursor_pending = SDL_TRUE;
-
     viddata->video_init = SDL_TRUE;
-
-cleanup:
-
-    if (ret) {
-        /* Error (complete) cleanup */
-        if (dispdata->crtc) {
-            SDL_free(dispdata->crtc);
-        }
-        if (dispdata->connector) {
-            SDL_free(dispdata->connector);
-        }
-
-        SDL_free(dispdata);
-    }
 
     return ret;
 }
@@ -909,9 +943,8 @@ void
 KMSDRM_VideoQuit(_THIS)
 {
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
-    SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayDriverData(0);
 
-    KMSDRM_DisplayDataDeinit(_this, dispdata);
+    KMSDRM_DeinitDisplays(_this);
 
 #ifdef SDL_INPUT_LINUXEV
     SDL_EVDEV_Quit();
@@ -1010,8 +1043,8 @@ KMSDRM_DestroyWindow(_THIS, SDL_Window *window)
 
     if ( !is_vulkan && dispdata->gbm_init ) {
 
-        /* Destroy cursor GBM plane. */
-        KMSDRM_DeinitMouse(_this);
+        /* Destroy the window display's cursor GBM BO. */
+        KMSDRM_DestroyCursorBO(_this, SDL_GetDisplayForWindow(window));
 
         /* Destroy GBM surface and buffers. */
         KMSDRM_DestroySurfaces(_this, window);
@@ -1126,15 +1159,20 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
 		    goto cleanup;
 		}
 	    }
-	 
-	    /* Can't init mouse stuff sooner because cursor plane is not ready,
-	       so we do it here. */
-	    KMSDRM_InitMouse(_this);
 
-	    /* Since we take cursor buffer way from the cursor plane and
-	       destroy the cursor GBM BO when we destroy a window, we must
-	       also manually re-show the cursor on screen, if necessary,
-	       when we create a window. */
+            /* Create the cursor BO for the display of this window,
+               now that we know this is not a VK window. */
+            KMSDRM_CreateCursorBO(display);
+
+            /* Init mouse (=create and set the default cursor),
+               now that we know this is not a VK window. */
+	    KMSDRM_InitMouse(_this, display);
+
+	    /* When we destroy a window, we remove the cursor buffer from
+               the cursor plane and destroy the cursor GBM BO, but SDL expects
+               that we keep showing the visible cursors bewteen window
+               destruction/creation cycles. So we must manually re-show the
+               visible cursors, if necessary, when we create a window. */
 	    KMSDRM_InitCursor();
 	}
 
@@ -1256,7 +1294,6 @@ KMSDRM_ReconfigureWindow( _THIS, SDL_Window * window) {
        as pending so it's done on SwapWindow.  */
     KMSDRM_CreateSurfaces(_this, window);
     dispdata->modeset_pending = SDL_TRUE;
-
 }
 
 int
