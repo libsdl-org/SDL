@@ -2021,6 +2021,10 @@ elseif(VITA)
     set_source_files_properties(${SDL2_SOURCE_DIR}/src/atomic/SDL_spinlock.c PROPERTIES COMPILE_FLAGS -marm)
   endif()
 
+  file(GLOB MISC_SOURCES ${SDL2_SOURCE_DIR}/src/misc/vita/*.c)
+  set(SOURCE_FILES ${SOURCE_FILES} ${MISC_SOURCES})
+  set(HAVE_SDL_MISC TRUE)
+
   if(SDL_AUDIO)
     set(SDL_AUDIO_DRIVER_VITA 1)
     file(GLOB VITA_AUDIO_SOURCES ${SDL2_SOURCE_DIR}/src/audio/vita/*.c)
