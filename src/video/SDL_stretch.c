@@ -94,9 +94,8 @@ SDL_UpperSoftStretch(SDL_Surface * src, const SDL_Rect * srcrect,
         return 0;
     }
 
-    if (srcrect->w > SDL_MAX_UINT16 || srcrect->h > SDL_MAX_UINT16 ||
-        dstrect->w > SDL_MAX_UINT16 || dstrect->h > SDL_MAX_UINT16) {
-        return SDL_SetError("Too large size for scaling");
+    if (srcrect->w > SDL_MAX_UINT16 || srcrect->h > SDL_MAX_UINT16) {
+        return SDL_SetError("Source size too large for scaling");
     }
 
     /* Lock the destination if it's in hardware */
