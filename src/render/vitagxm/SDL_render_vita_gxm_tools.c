@@ -32,6 +32,7 @@
 #include <psp2/gxm.h>
 #include <psp2/types.h>
 #include <psp2/kernel/sysmem.h>
+#include <psp2/message_dialog.h>
 
 #include <stdio.h>
 #include <string.h>
@@ -1176,6 +1177,91 @@ gxm_texture_set_filters(gxm_texture *texture, SceGxmTextureFilter min_filter, Sc
 {
     sceGxmTextureSetMinFilter(&texture->gxm_tex, min_filter);
     sceGxmTextureSetMagFilter(&texture->gxm_tex, mag_filter);
+}
+
+static unsigned int back_buffer_index_for_common_dialog = 0;
+static unsigned int front_buffer_index_for_common_dialog = 0;
+struct
+{
+    VITA_GXM_DisplayData displayData;
+    SceGxmSyncObject* sync;
+    SceGxmColorSurface surf;
+    SceUID uid;
+} buffer_for_common_dialog[VITA_GXM_BUFFERS];
+
+void gxm_minimal_init_for_common_dialog(void)
+{
+    SceGxmInitializeParams initializeParams;
+    SDL_zero(initializeParams);
+    initializeParams.flags                          = 0;
+    initializeParams.displayQueueMaxPendingCount    = VITA_GXM_PENDING_SWAPS;
+    initializeParams.displayQueueCallback           = display_callback;
+    initializeParams.displayQueueCallbackDataSize   = sizeof(VITA_GXM_DisplayData);
+    initializeParams.parameterBufferSize            = SCE_GXM_DEFAULT_PARAMETER_BUFFER_SIZE;
+    sceGxmInitialize(&initializeParams);
+}
+
+void gxm_minimal_term_for_common_dialog(void)
+{
+    sceGxmTerminate();
+}
+
+void gxm_init_for_common_dialog(void)
+{
+    for (int i = 0; i < VITA_GXM_BUFFERS; i += 1)
+    {
+        buffer_for_common_dialog[i].displayData.wait_vblank = SDL_TRUE;
+        buffer_for_common_dialog[i].displayData.address = mem_gpu_alloc(
+            SCE_KERNEL_MEMBLOCK_TYPE_USER_CDRAM_RW,
+            4 * VITA_GXM_SCREEN_STRIDE * VITA_GXM_SCREEN_HEIGHT,
+            SCE_GXM_COLOR_SURFACE_ALIGNMENT,
+            SCE_GXM_MEMORY_ATTRIB_READ | SCE_GXM_MEMORY_ATTRIB_WRITE,
+            &buffer_for_common_dialog[i].uid);
+        sceGxmColorSurfaceInit(
+            &buffer_for_common_dialog[i].surf,
+            VITA_GXM_PIXEL_FORMAT,
+            SCE_GXM_COLOR_SURFACE_LINEAR,
+            SCE_GXM_COLOR_SURFACE_SCALE_NONE,
+            SCE_GXM_OUTPUT_REGISTER_SIZE_32BIT,
+            VITA_GXM_SCREEN_WIDTH,
+            VITA_GXM_SCREEN_HEIGHT,
+            VITA_GXM_SCREEN_STRIDE,
+            buffer_for_common_dialog[i].displayData.address
+        );
+        sceGxmSyncObjectCreate(&buffer_for_common_dialog[i].sync);
+    }
+    sceGxmDisplayQueueFinish();
+}
+
+void gxm_swap_for_common_dialog(void)
+{
+    SceCommonDialogUpdateParam updateParam;
+    SDL_zero(updateParam);
+    updateParam.renderTarget.colorFormat    = VITA_GXM_PIXEL_FORMAT;
+    updateParam.renderTarget.surfaceType    = SCE_GXM_COLOR_SURFACE_LINEAR;
+    updateParam.renderTarget.width          = VITA_GXM_SCREEN_WIDTH;
+    updateParam.renderTarget.height         = VITA_GXM_SCREEN_HEIGHT;
+    updateParam.renderTarget.strideInPixels = VITA_GXM_SCREEN_STRIDE;
+
+    updateParam.renderTarget.colorSurfaceData = buffer_for_common_dialog[back_buffer_index_for_common_dialog].displayData.address;
+
+    updateParam.displaySyncObject = buffer_for_common_dialog[back_buffer_index_for_common_dialog].sync;
+    SDL_memset(buffer_for_common_dialog[back_buffer_index_for_common_dialog].displayData.address, 0, 4 * VITA_GXM_SCREEN_STRIDE * VITA_GXM_SCREEN_HEIGHT);
+    sceCommonDialogUpdate(&updateParam);
+
+    sceGxmDisplayQueueAddEntry(buffer_for_common_dialog[front_buffer_index_for_common_dialog].sync, buffer_for_common_dialog[back_buffer_index_for_common_dialog].sync, &buffer_for_common_dialog[back_buffer_index_for_common_dialog].displayData);
+    front_buffer_index_for_common_dialog = back_buffer_index_for_common_dialog;
+    back_buffer_index_for_common_dialog = (back_buffer_index_for_common_dialog + 1) % VITA_GXM_BUFFERS;
+}
+
+void gxm_term_for_common_dialog(void)
+{
+    sceGxmDisplayQueueFinish();
+    for (int i = 0; i < VITA_GXM_BUFFERS; i += 1)
+    {
+        mem_gpu_free(buffer_for_common_dialog[i].uid);
+        sceGxmSyncObjectDestroy(buffer_for_common_dialog[i].sync);
+    }
 }
 
 #endif /* SDL_VIDEO_RENDER_VITA_GXM */

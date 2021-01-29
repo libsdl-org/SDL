@@ -59,6 +59,12 @@ unsigned int gxm_texture_get_height(const gxm_texture *texture);
 unsigned int gxm_texture_get_stride(const gxm_texture *texture);
 void *gxm_texture_get_datap(const gxm_texture *texture);
 
+void gxm_minimal_init_for_common_dialog(void);
+void gxm_minimal_term_for_common_dialog(void);
+void gxm_init_for_common_dialog(void);
+void gxm_swap_for_common_dialog(void);
+void gxm_term_for_common_dialog(void);
+
 #endif /* SDL_RENDER_VITA_GXM_TOOLS_H */
 
 /* vi: set ts=4 sw=4 expandtab: */
