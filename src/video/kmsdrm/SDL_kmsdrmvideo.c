@@ -1164,8 +1164,8 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
                now that we know this is not a VK window. */
             KMSDRM_CreateCursorBO(display);
 
-            /* Init mouse (=create and set the default cursor),
-               now that we know this is not a VK window. */
+            /* Create and set the default cursor now that we know
+               this is not a VK window. */
 	    KMSDRM_InitMouse(_this, display);
 
 	    /* When we destroy a window, we remove the cursor buffer from
