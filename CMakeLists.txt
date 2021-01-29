@@ -386,6 +386,7 @@ foreach(_SUB ${SDL_X11_OPTIONS})
 endforeach()
 set_option(VIDEO_COCOA         "Use Cocoa video driver" ${APPLE})
 set_option(DIRECTX             "Use DirectX for Windows audio/video" ${WINDOWS})
+set_option(XINPUT              "Use Xinput for Windows" ${WINDOWS})
 set_option(WASAPI              "Use the Windows WASAPI audio driver" ${WINDOWS})
 set_option(RENDER_D3D          "Enable the Direct3D render driver" ${WINDOWS})
 set_option(RENDER_METAL        "Enable the Metal render driver" ${APPLE})
@@ -1453,7 +1454,7 @@ elseif(WINDOWS)
     set(CMAKE_REQUIRED_FLAGS ${ORIG_CMAKE_REQUIRED_FLAGS})
   endif()
 
-  if(HAVE_WIN32_CC)
+  if(XINPUT)
     # xinput.h may need windows.h, but does not include it itself.
     check_c_source_compiles("
       #include <windows.h>
@@ -1469,8 +1470,6 @@ elseif(WINDOWS)
       #include <xinput.h>
       XINPUT_STATE_EX s1;
       int main(int argc, char **argv) { }" HAVE_XINPUT_STATE_EX)
-  else()
-    check_include_file(xinput.h HAVE_XINPUT_H)
   endif()
 
   # headers needed elsewhere

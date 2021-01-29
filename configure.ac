@@ -3146,7 +3146,7 @@ CheckDIRECTX()
 {
     AC_ARG_ENABLE(directx,
 AS_HELP_STRING([--enable-directx], [use DirectX for Windows audio/video [[default=yes]]]),
-                  , enable_directx=yes)
+                                 , enable_directx=yes)
     if test x$enable_directx = xyes; then
         AC_CHECK_HEADER(d3d9.h, have_d3d=yes)
         AC_CHECK_HEADER(d3d11_1.h, have_d3d11=yes)
@@ -3177,27 +3177,37 @@ AS_HELP_STRING([--enable-directx], [use DirectX for Windows audio/video [[defaul
         esac
     fi
 
-    dnl The following are independent of --enable-directx
-    AC_CHECK_HEADER(xinput.h, have_xinput=yes)
-    AC_TRY_COMPILE([
+    AC_ARG_ENABLE(xinput,
+AS_HELP_STRING([--enable-xinput], [use Xinput for Windows [[default=yes]]]),
+                                , enable_xinput=yes)
+    if test x$enable_xinput = xyes; then
+        have_xinput_gamepadex=no
+        have_xinput_stateex=no
+        AC_CHECK_HEADER(xinput.h, have_xinput=yes)
+        AC_MSG_CHECKING(for struct XINPUT_GAMEPAD_EX)
+        AC_TRY_COMPILE([
 #include <windows.h>
 #include <xinput.h>
 XINPUT_GAMEPAD_EX x1;
-        ],[],[have_xinput_gamepadex=yes])
-    AC_TRY_COMPILE([
+            ],[],[have_xinput_gamepadex=yes])
+        AC_MSG_RESULT($have_xinput_gamepadex)
+        AC_MSG_CHECKING(for struct XINPUT_STATE_EX)
+        AC_TRY_COMPILE([
 #include <windows.h>
 #include <xinput.h>
 XINPUT_STATE_EX s1;
-        ],[],[have_xinput_stateex=yes])
+            ],[],[have_xinput_stateex=yes])
+        AC_MSG_RESULT($have_xinput_stateex)
 
-    if test x$have_xinput = xyes; then
-        AC_DEFINE(HAVE_XINPUT_H, 1, [ ])
-    fi
-    if test x$have_xinput_gamepadex = xyes; then
-        AC_DEFINE(HAVE_XINPUT_GAMEPAD_EX, 1, [ ])
-    fi
-    if test x$have_xinput_stateex = xyes; then
-        AC_DEFINE(HAVE_XINPUT_STATE_EX, 1, [ ])
+        if test x$have_xinput = xyes; then
+            AC_DEFINE(HAVE_XINPUT_H, 1, [ ])
+        fi
+        if test x$have_xinput_gamepadex = xyes; then
+            AC_DEFINE(HAVE_XINPUT_GAMEPAD_EX, 1, [ ])
+        fi
+        if test x$have_xinput_stateex = xyes; then
+            AC_DEFINE(HAVE_XINPUT_STATE_EX, 1, [ ])
+        fi
     fi
 
     AC_CHECK_HEADER(mmdeviceapi.h, have_wasapi=yes)

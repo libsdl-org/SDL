@@ -892,6 +892,7 @@ enable_joystick_mfi
 enable_pthreads
 enable_pthread_sem
 enable_directx
+enable_xinput
 enable_wasapi
 enable_sdl_dlopen
 enable_hidapi
@@ -1677,6 +1678,7 @@ Optional Features:
                           [[default=yes]]
   --enable-pthread-sem    use pthread semaphores [[default=yes]]
   --enable-directx        use DirectX for Windows audio/video [[default=yes]]
+  --enable-xinput         use Xinput for Windows [[default=yes]]
   --enable-wasapi         use the Windows WASAPI audio driver [[default=yes]]
   --enable-sdl-dlopen     use dlopen for shared object loading [[default=yes]]
   --enable-hidapi         use HIDAPI for low level joystick drivers
@@ -23896,13 +23898,25 @@ $as_echo "#define HAVE_DXGI_H 1" >>confdefs.h
         esac
     fi
 
+    # Check whether --enable-xinput was given.
+if test "${enable_xinput+set}" = set; then :
+  enableval=$enable_xinput;
+else
+  enable_xinput=yes
+fi
+
+    if test x$enable_xinput = xyes; then
+        have_xinput_gamepadex=no
+        have_xinput_stateex=no
         ac_fn_c_check_header_mongrel "$LINENO" "xinput.h" "ac_cv_header_xinput_h" "$ac_includes_default"
 if test "x$ac_cv_header_xinput_h" = xyes; then :
   have_xinput=yes
 fi
 
 
-    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for struct XINPUT_GAMEPAD_EX" >&5
+$as_echo_n "checking for struct XINPUT_GAMEPAD_EX... " >&6; }
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #include <windows.h>
@@ -23921,7 +23935,11 @@ if ac_fn_c_try_compile "$LINENO"; then :
   have_xinput_gamepadex=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_xinput_gamepadex" >&5
+$as_echo "$have_xinput_gamepadex" >&6; }
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for struct XINPUT_STATE_EX" >&5
+$as_echo_n "checking for struct XINPUT_STATE_EX... " >&6; }
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #include <windows.h>
@@ -23940,21 +23958,24 @@ if ac_fn_c_try_compile "$LINENO"; then :
   have_xinput_stateex=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_xinput_stateex" >&5
+$as_echo "$have_xinput_stateex" >&6; }
 
-    if test x$have_xinput = xyes; then
+        if test x$have_xinput = xyes; then
 
 $as_echo "#define HAVE_XINPUT_H 1" >>confdefs.h
 
-    fi
-    if test x$have_xinput_gamepadex = xyes; then
+        fi
+        if test x$have_xinput_gamepadex = xyes; then
 
 $as_echo "#define HAVE_XINPUT_GAMEPAD_EX 1" >>confdefs.h
 
-    fi
-    if test x$have_xinput_stateex = xyes; then
+        fi
+        if test x$have_xinput_stateex = xyes; then
 
 $as_echo "#define HAVE_XINPUT_STATE_EX 1" >>confdefs.h
 
+        fi
     fi
 
     ac_fn_c_check_header_mongrel "$LINENO" "mmdeviceapi.h" "ac_cv_header_mmdeviceapi_h" "$ac_includes_default"
