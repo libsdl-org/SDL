@@ -253,6 +253,10 @@ HIDAPI_DriverGameCube_HandleJoystickPacket(SDL_HIDAPI_Device *device, SDL_Driver
     }
 
     joystick = SDL_JoystickFromInstanceID(ctx->joysticks[i]);
+    if (!joystick) {
+        /* Hasn't been opened yet, skip */
+        return;
+    }
 
     #define READ_BUTTON(off, flag, button) \
         SDL_PrivateJoystickButton( \
