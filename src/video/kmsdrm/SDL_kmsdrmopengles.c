@@ -168,7 +168,7 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window) {
        to do so, so even if we don't block on EGL, the flip will have completed
        when we get here again. */
 
-    if (_this->egl_data->egl_swapinterval == 0) {
+    if (_this->egl_data->egl_swapinterval == 0 && viddata->async_pageflip_support) {
         flip_flags |= DRM_MODE_PAGE_FLIP_ASYNC;
     }
 

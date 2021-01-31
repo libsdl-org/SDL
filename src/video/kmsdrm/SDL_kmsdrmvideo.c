@@ -653,6 +653,7 @@ int KMSDRM_InitDisplays (_THIS) {
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
     drmModeRes *resources = NULL;
 
+    uint64_t async_pageflip = 0;
     int ret = 0;
     int i;
 
@@ -704,6 +705,13 @@ int KMSDRM_InitDisplays (_THIS) {
         ret = SDL_SetError("No connected displays found.");
         goto cleanup;
     }
+
+    /* Determine if video hardware supports async pageflips. */
+    ret = KMSDRM_drmGetCap(viddata->drm_fd, DRM_CAP_ASYNC_PAGE_FLIP, &async_pageflip);
+    if (ret) {
+        SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Could not determine async page flip capability.");
+    }
+    viddata->async_pageflip_support = async_pageflip ? SDL_TRUE : SDL_FALSE;
 
     /***********************************/
     /* Block for Vulkan compatibility. */

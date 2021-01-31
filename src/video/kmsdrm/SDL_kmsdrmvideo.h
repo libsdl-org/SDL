@@ -41,8 +41,9 @@ typedef struct SDL_VideoData
 
     struct gbm_device *gbm_dev;
 
-    SDL_bool video_init;        /* Has VideoInit succeeded? */
-    SDL_bool vulkan_mode;       /* Are we in Vulkan mode? One VK window is enough to be. */
+    SDL_bool video_init;             /* Has VideoInit succeeded? */
+    SDL_bool vulkan_mode;            /* Are we in Vulkan mode? One VK window is enough to be. */
+    SDL_bool async_pageflip_support; /* Does the hardware support async. pageflips? */ 
 
     SDL_Window **windows;
     int max_windows;
