@@ -1370,16 +1370,22 @@ KMSDRM_RestoreWindow(_THIS, SDL_Window * window)
 SDL_bool
 KMSDRM_GetWindowWMInfo(_THIS, SDL_Window * window, struct SDL_SysWMinfo *info)
 {
-    if (info->version.major <= SDL_MAJOR_VERSION) {
-        return SDL_TRUE;
-    } else {
-        SDL_SetError("application not compiled with SDL %d.%d\n",
-                     SDL_MAJOR_VERSION, SDL_MINOR_VERSION);
-        return SDL_FALSE;
-    }
+     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
+     const Uint32 version = SDL_VERSIONNUM((Uint32)info->version.major,
+                                           (Uint32)info->version.minor,
+                                           (Uint32)info->version.patch);
+ 
+     if (version < SDL_VERSIONNUM(2, 0, 15)) {
+         SDL_SetError("Version must be 2.0.15 or newer");
+         return SDL_FALSE;
+     }
 
-    /* Failed to get window manager information */
-    return SDL_FALSE;
+     info->subsystem = SDL_SYSWM_KMSDRM;
+     info->info.kmsdrm.dev_index = viddata->devindex;
+     info->info.kmsdrm.drm_fd = viddata->drm_fd;
+     info->info.kmsdrm.gbm_dev = viddata->gbm_dev;
+ 
+     return SDL_TRUE;
 }
 
 #endif /* SDL_VIDEO_DRIVER_KMSDRM */

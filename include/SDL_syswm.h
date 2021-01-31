@@ -113,6 +113,10 @@ typedef void *EGLSurface;
 #endif
 #endif /* SDL_PROTOTYPES_ONLY */
 
+#if defined(SDL_VIDEO_DRIVER_KMSDRM)
+struct gbm_device;
+#endif
+
 
 #include "begin_code.h"
 /* Set up for C function definitions, even when using C++ */
@@ -138,7 +142,8 @@ typedef enum
     SDL_SYSWM_ANDROID,
     SDL_SYSWM_VIVANTE,
     SDL_SYSWM_OS2,
-    SDL_SYSWM_HAIKU
+    SDL_SYSWM_HAIKU,
+    SDL_SYSWM_KMSDRM
 } SDL_SYSWM_TYPE;
 
 /**
@@ -310,6 +315,15 @@ struct SDL_SysWMinfo
             EGLNativeDisplayType display;
             EGLNativeWindowType window;
         } vivante;
+#endif
+
+#if defined(SDL_VIDEO_DRIVER_KMSDRM)
+        struct
+        {
+            int dev_index;               /**< Device index (ex: the X in /dev/dri/cardX) */
+            int drm_fd;                  /**< DRM FD (unavailable on Vulkan windows) */
+            struct gbm_device *gbm_dev;  /**< GBM device (unavailable on Vulkan windows) */
+        } kmsdrm;
 #endif
 
         /* Make sure this union is always 64 bytes (8 64-bit pointers). */
