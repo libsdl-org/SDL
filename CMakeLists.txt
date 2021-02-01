@@ -2323,6 +2323,23 @@ if(SDL_STATIC)
   endif()
 endif()
 
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} \
+    -fsanitize=address \
+    -fsanitize=bool \
+    -fsanitize=bounds \
+    -fsanitize=enum \
+    -fsanitize=float-cast-overflow \
+    -fsanitize=float-divide-by-zero \
+    -fsanitize=nonnull-attribute \
+    -fsanitize=returns-nonnull-attribute \
+    -fsanitize=signed-integer-overflow \
+    -fsanitize=undefined \
+    -fsanitize=vla-bound \
+    -fno-sanitize=alignment \
+    -fsanitize=leak \
+    -fsanitize=object-size \
+")
+
 ##### Tests #####
 
 if(SDL_TEST)
