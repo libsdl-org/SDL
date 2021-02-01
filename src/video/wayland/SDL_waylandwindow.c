@@ -414,11 +414,15 @@ update_scale_factor(SDL_WindowData *window) {
    }
 
    if (FULLSCREEN_VISIBLE(window->sdlwindow) && window->sdlwindow->fullscreen_mode.driverdata) {
-       new_factor = ((SDL_WaylandOutputData*)(wl_output_get_user_data(window->sdlwindow->fullscreen_mode.driverdata)))->scale_factor;
+       SDL_VideoDisplay *display = wl_output_get_user_data(window->sdlwindow->fullscreen_mode.driverdata);
+       SDL_WaylandOutputData* driverdata = display->driverdata;
+       new_factor = driverdata->scale_factor;
    }
 
    for (i = 0; i < window->num_outputs; i++) {
-       float factor = ((SDL_WaylandOutputData*)(wl_output_get_user_data(window->outputs[i])))->scale_factor;
+       SDL_VideoDisplay *display = wl_output_get_user_data(window->outputs[i]);
+       SDL_WaylandOutputData* driverdata = display->driverdata;
+       float factor = driverdata->scale_factor;
        if (factor > new_factor) {
            new_factor = factor;
        }

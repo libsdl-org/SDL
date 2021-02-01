@@ -273,10 +273,14 @@ static void
 display_handle_done(void *data,
                     struct wl_output *output)
 {
-    /* !!! FIXME: this will fail on any further property changes! */
     SDL_VideoDisplay *display = data;
     SDL_WaylandOutputData* driverdata = display->driverdata;
     SDL_DisplayMode mode;
+
+    if (driverdata->done)
+        return;
+
+    driverdata->done = SDL_TRUE;
 
     SDL_zero(mode);
     mode.format = SDL_PIXELFORMAT_RGB888;
@@ -293,9 +297,7 @@ display_handle_done(void *data,
     display->desktop_mode = mode;
 
     SDL_AddVideoDisplay(display, SDL_FALSE);
-    wl_output_set_user_data(output, display->driverdata);
     SDL_free(display->name);
-    SDL_free(display);
 }
 
 static void
@@ -335,6 +337,7 @@ Wayland_add_display(SDL_VideoData *d, uint32_t id)
     data = SDL_malloc(sizeof *data);
     data->output = output;
     data->scale_factor = 1.0;
+    data->done = SDL_FALSE;
     display->driverdata = data;
 
     wl_output_add_listener(output, &output_listener, display);

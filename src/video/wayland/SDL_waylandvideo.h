@@ -20,6 +20,7 @@
 */
 
 #include "../../SDL_internal.h"
+#include "SDL_stdinc.h"
 
 #ifndef SDL_waylandvideo_h_
 #define SDL_waylandvideo_h_
@@ -91,6 +92,7 @@ typedef struct {
     struct wl_output *output;
     float scale_factor;
     int width, height, refresh, transform;
+    SDL_bool done;
 } SDL_WaylandOutputData;
 
 #endif /* SDL_waylandvideo_h_ */
