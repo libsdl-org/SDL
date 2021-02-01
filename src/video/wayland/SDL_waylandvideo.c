@@ -539,6 +539,9 @@ Wayland_VideoQuit(_THIS)
     Wayland_touch_destroy(data);
 #endif /* SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH */
 
+    if (data->data_device_manager)
+        wl_data_device_manager_destroy(data->data_device_manager);
+
     if (data->shm)
         wl_shm_destroy(data->shm);
 
