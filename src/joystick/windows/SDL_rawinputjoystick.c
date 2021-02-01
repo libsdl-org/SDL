@@ -1482,7 +1482,9 @@ RAWINPUT_UpdateOtherAPIs(SDL_Joystick *joystick)
 #ifdef SDL_JOYSTICK_RAWINPUT_WGI
     /* Parallel logic to WINDOWS_XINPUT below */
     RAWINPUT_UpdateWindowsGamingInput();
-    if (ctx->wgi_correlated) {
+    if (ctx->wgi_correlated &&
+        !joystick->low_frequency_rumble && !joystick->high_frequency_rumble &&
+        !joystick->left_trigger_rumble && !joystick->right_trigger_rumble) {
         /* We have been previously correlated, ensure we are still matching, see comments in XINPUT section */
         if (RAWINPUT_WindowsGamingInputSlotMatches(&match_state_xinput, ctx->wgi_slot)) {
             ctx->wgi_uncorrelate_count = 0;
@@ -1490,9 +1492,9 @@ RAWINPUT_UpdateOtherAPIs(SDL_Joystick *joystick)
             ++ctx->wgi_uncorrelate_count;
             /* Only un-correlate if this is consistent over multiple Update() calls - the timing of polling/event
               pumping can easily cause this to uncorrelate for a frame.  2 seemed reliable in my testing, but
-              let's set it to 3 to be safe.  An incorrect un-correlation will simply result in lower precision
+              let's set it to 5 to be safe.  An incorrect un-correlation will simply result in lower precision
               triggers for a frame. */
-            if (ctx->wgi_uncorrelate_count >= 3) {
+            if (ctx->wgi_uncorrelate_count >= 5) {
 #ifdef DEBUG_RAWINPUT
                 SDL_Log("UN-Correlated joystick %d to WindowsGamingInput device #%d\n", joystick->instance_id, ctx->wgi_slot);
 #endif
@@ -1560,7 +1562,8 @@ RAWINPUT_UpdateOtherAPIs(SDL_Joystick *joystick)
     /* Parallel logic to WINDOWS_GAMING_INPUT above */
     if (ctx->xinput_enabled) {
         RAWINPUT_UpdateXInput();
-        if (ctx->xinput_correlated) {
+        if (ctx->xinput_correlated &&
+            !joystick->low_frequency_rumble && !joystick->high_frequency_rumble) {
             /* We have been previously correlated, ensure we are still matching */
             /* This is required to deal with two (mostly) un-preventable mis-correlation situations:
               A) Since the HID data stream does not provide an initial state (but polling XInput does), if we open
@@ -1583,9 +1586,9 @@ RAWINPUT_UpdateOtherAPIs(SDL_Joystick *joystick)
                 ++ctx->xinput_uncorrelate_count;
                 /* Only un-correlate if this is consistent over multiple Update() calls - the timing of polling/event
                   pumping can easily cause this to uncorrelate for a frame.  2 seemed reliable in my testing, but
-                  let's set it to 3 to be safe.  An incorrect un-correlation will simply result in lower precision
+                  let's set it to 5 to be safe.  An incorrect un-correlation will simply result in lower precision
                   triggers for a frame. */
-                if (ctx->xinput_uncorrelate_count >= 3) {
+                if (ctx->xinput_uncorrelate_count >= 5) {
 #ifdef DEBUG_RAWINPUT
                     SDL_Log("UN-Correlated joystick %d to XInput device #%d\n", joystick->instance_id, ctx->xinput_slot);
 #endif
