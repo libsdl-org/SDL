@@ -260,7 +260,10 @@ Cocoa_CreateImage(SDL_Surface * surface)
 
 void SDL_NSLog(const char *text)
 {
-    NSLog(@"%s", text);
+    @autoreleasepool {
+        NSString *str = [NSString stringWithUTF8String:text];
+        NSLog(@"%@", str);
+    }
 }
 
 #endif /* SDL_VIDEO_DRIVER_COCOA */
