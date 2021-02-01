@@ -247,6 +247,7 @@ display_handle_geometry(void *data,
     SDL_VideoDisplay *display = data;
 
     display->name = SDL_strdup(model);
+    ((SDL_WaylandOutputData*)display->driverdata)->transform = transform;
 }
 
 static void
@@ -259,18 +260,12 @@ display_handle_mode(void *data,
 {
     SDL_DisplayMode mode;
     SDL_VideoDisplay *display = data;
-
-    SDL_zero(mode);
-    mode.format = SDL_PIXELFORMAT_RGB888;
-    mode.w = width;
-    mode.h = height;
-    mode.refresh_rate = refresh / 1000; // mHz to Hz
-    mode.driverdata = ((SDL_WaylandOutputData*)display->driverdata)->output;
-    SDL_AddDisplayMode(display, &mode);
+    SDL_WaylandOutputData* driverdata = display->driverdata;
 
     if (flags & WL_OUTPUT_MODE_CURRENT) {
-        display->current_mode = mode;
-        display->desktop_mode = mode;
+        driverdata->width = width;
+        driverdata->height = height;
+        driverdata->refresh = refresh;
     }
 }
 
@@ -280,6 +275,23 @@ display_handle_done(void *data,
 {
     /* !!! FIXME: this will fail on any further property changes! */
     SDL_VideoDisplay *display = data;
+    SDL_WaylandOutputData* driverdata = display->driverdata;
+    SDL_DisplayMode mode;
+
+    SDL_zero(mode);
+    mode.format = SDL_PIXELFORMAT_RGB888;
+    mode.w = driverdata->width / driverdata->scale_factor;
+    mode.h = driverdata->height / driverdata->scale_factor;
+    if (driverdata->transform & WL_OUTPUT_TRANSFORM_90) {
+       mode.w = driverdata->height / driverdata->scale_factor;
+       mode.h = driverdata->width / driverdata->scale_factor;
+    }
+    mode.refresh_rate = driverdata->refresh / 1000; // mHz to Hz
+    mode.driverdata = driverdata->output;
+    SDL_AddDisplayMode(display, &mode);
+    display->current_mode = mode;
+    display->desktop_mode = mode;
+
     SDL_AddVideoDisplay(display, SDL_FALSE);
     wl_output_set_user_data(output, display->driverdata);
     SDL_free(display->name);
