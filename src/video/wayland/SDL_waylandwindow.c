@@ -1021,6 +1021,8 @@ void Wayland_DestroyWindow(_THIS, SDL_Window *window)
             }
         }
 
+        SDL_free(wind->outputs);
+
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
         if (wind->extended_surface) {
             QtExtendedSurface_Unsubscribe(wind->extended_surface, SDL_HINT_QTWAYLAND_CONTENT_ORIENTATION);
