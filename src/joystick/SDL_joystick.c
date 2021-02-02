@@ -1915,29 +1915,6 @@ SDL_IsJoystickXboxOneElite(Uint16 vendor_id, Uint16 product_id)
 }
 
 SDL_bool
-SDL_IsJoystickXboxOneEliteSeries1(Uint16 vendor_id, Uint16 product_id)
-{
-    if (vendor_id == USB_VENDOR_MICROSOFT) {
-        if (product_id == USB_PRODUCT_XBOX_ONE_ELITE_SERIES_1) {
-            return SDL_TRUE;
-        }
-    }
-    return SDL_FALSE;
-}
-
-SDL_bool
-SDL_IsJoystickXboxOneEliteSeries2(Uint16 vendor_id, Uint16 product_id)
-{
-    if (vendor_id == USB_VENDOR_MICROSOFT) {
-        if (product_id == USB_PRODUCT_XBOX_ONE_ELITE_SERIES_2 ||
-            product_id == USB_PRODUCT_XBOX_ONE_ELITE_SERIES_2_BLUETOOTH) {
-            return SDL_TRUE;
-        }
-    }
-    return SDL_FALSE;
-}
-
-SDL_bool
 SDL_IsJoystickXboxOneSeriesX(Uint16 vendor_id, Uint16 product_id)
 {
     if (vendor_id == USB_VENDOR_MICROSOFT) {

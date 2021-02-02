@@ -585,11 +585,8 @@ static ControllerMapping_t *SDL_CreateMappingForHIDAPIController(SDL_JoystickGUI
         if (SDL_IsJoystickXboxOneSeriesX(vendor, product)) {
             /* XBox One Series X Controllers have a share button under the guide button */
             SDL_strlcat(mapping_string, "misc1:b15,", sizeof(mapping_string));
-        } else if (SDL_IsJoystickXboxOneElite(vendor, product) &&
-                   !SDL_IsJoystickXboxOneEliteSeries1(vendor, product)) {
-            /* XBox One Elite Controllers have 4 back paddle buttons
-             * The Series 1 controller has paddles but they can't be unmapped
-             */
+        } else if (SDL_IsJoystickXboxOneElite(vendor, product)) {
+            /* XBox One Elite Controllers have 4 back paddle buttons */
             SDL_strlcat(mapping_string, "paddle1:b15,paddle2:b17,paddle3:b16,paddle4:b18,", sizeof(mapping_string));
         } else if (SDL_IsJoystickSteamController(vendor, product)) {
             /* Steam controllers have 2 back paddle buttons */
