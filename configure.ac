@@ -3496,29 +3496,6 @@ AS_HELP_STRING([--enable-clock_gettime], [use clock_gettime() instead of gettime
     fi
 }
 
-dnl Check for clock_gettime_nsec_np()
-CheckClockGettimeAPPLE()
-{
-    have_clock_gettime_apple=no
-    AC_MSG_CHECKING(for clock_gettime_nsec_np)
-    AC_TRY_LINK([
-#include <AvailabilityMacros.h>
-#include <time.h>
-      ],[
-#if MAC_OS_X_VERSION_MIN_REQUIRED < 101200
-#error Need 10.12 or newer target
-#endif
-        return !clock_gettime_nsec_np(CLOCK_MONOTONIC);
-      ],[
-        have_clock_gettime_apple=yes
-    ])
-    AC_MSG_RESULT($have_clock_gettime_apple)
-
-    if test x$have_clock_gettime_apple = xyes; then
-        AC_DEFINE(HAVE_CLOCK_GETTIME_NSEC_NP, 1, [ ])
-    fi
-}
-
 dnl Check for a valid linux/version.h
 CheckLinuxVersion()
 {
@@ -4054,9 +4031,6 @@ AS_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
         CheckVulkan
         CheckPTHREAD
 
-        dnl assuming iOS >= 10.0
-        AC_DEFINE(HAVE_CLOCK_GETTIME_NSEC_NP, 1, [ ])
-
         SOURCES="$SOURCES $srcdir/src/misc/ios/*.m"
         have_misc=yes
 
@@ -4152,7 +4126,6 @@ AS_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
 
         CheckVisibilityHidden
         CheckDeclarationAfterStatement
-        CheckClockGettimeAPPLE
         CheckDummyVideo
         CheckDiskAudio
         CheckDummyAudio

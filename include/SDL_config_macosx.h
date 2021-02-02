@@ -56,9 +56,6 @@
 #define HAVE_CALLOC 1
 #define HAVE_REALLOC    1
 #define HAVE_FREE   1
-#if MAC_OS_X_VERSION_MIN_REQUIRED >= 101200
-#define HAVE_CLOCK_GETTIME_NSEC_NP 1
-#endif
 #define HAVE_ALLOCA 1
 #define HAVE_GETENV 1
 #define HAVE_SETENV 1

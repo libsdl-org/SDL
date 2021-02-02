@@ -24769,47 +24769,6 @@ $as_echo "#define HAVE_CLOCK_GETTIME 1" >>confdefs.h
     fi
 }
 
-CheckClockGettimeAPPLE()
-{
-    have_clock_gettime_apple=no
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for clock_gettime_nsec_np" >&5
-$as_echo_n "checking for clock_gettime_nsec_np... " >&6; }
-    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-#include <AvailabilityMacros.h>
-#include <time.h>
-
-int
-main ()
-{
-
-#if MAC_OS_X_VERSION_MIN_REQUIRED < 101200
-#error Need 10.12 or newer target
-#endif
-        return !clock_gettime_nsec_np(CLOCK_MONOTONIC);
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-
-        have_clock_gettime_apple=yes
-
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_clock_gettime_apple" >&5
-$as_echo "$have_clock_gettime_apple" >&6; }
-
-    if test x$have_clock_gettime_apple = xyes; then
-
-$as_echo "#define HAVE_CLOCK_GETTIME_NSEC_NP 1" >>confdefs.h
-
-    fi
-}
-
 CheckLinuxVersion()
 {
     ac_fn_c_check_header_mongrel "$LINENO" "linux/version.h" "ac_cv_header_linux_version_h" "$ac_includes_default"
@@ -25504,10 +25463,6 @@ fi
         CheckVulkan
         CheckPTHREAD
 
-
-$as_echo "#define HAVE_CLOCK_GETTIME_NSEC_NP 1" >>confdefs.h
-
-
         SOURCES="$SOURCES $srcdir/src/misc/ios/*.m"
         have_misc=yes
 
@@ -25625,7 +25580,6 @@ $as_echo "#define SDL_VIDEO_RENDER_OGL_ES2 1" >>confdefs.h
 
         CheckVisibilityHidden
         CheckDeclarationAfterStatement
-        CheckClockGettimeAPPLE
         CheckDummyVideo
         CheckDiskAudio
         CheckDummyAudio
