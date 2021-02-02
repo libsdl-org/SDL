@@ -1674,7 +1674,7 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
     }
 
     window_flags = SDL_GetWindowFlags(window);
-    if (!(window_flags & SDL_WINDOW_METAL)) {
+    if (!(window_flags & (SDL_WINDOW_METAL|SDL_WINDOW_OPENGL))) {
         changed_window = SDL_TRUE;
         if (SDL_RecreateWindow(window, (window_flags & ~(SDL_WINDOW_VULKAN | SDL_WINDOW_OPENGL)) | SDL_WINDOW_METAL) < 0) {
             return NULL;
