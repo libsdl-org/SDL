@@ -30,6 +30,7 @@ static const char *video_usage[] = {
     "[--video driver]", "[--renderer driver]", "[--gldebug]",
     "[--info all|video|modes|render|event]",
     "[--log all|error|system|audio|video|render|input]", "[--display N]",
+    "[--metal-window | --opengl-window | --vulkan-window]",
     "[--fullscreen | --fullscreen-desktop | --windows N]", "[--title title]",
     "[--icon icon.bmp]", "[--center | --position X,Y]", "[--geometry WxH]",
     "[--min-geometry WxH]", "[--max-geometry WxH]", "[--logical WxH]",
@@ -217,6 +218,18 @@ SDLTest_CommonArg(SDLTest_CommonState * state, int index)
             state->window_y = SDL_WINDOWPOS_CENTERED_DISPLAY(state->display);
         }
         return 2;
+    }
+    if (SDL_strcasecmp(argv[index], "--metal-window") == 0) {
+        state->window_flags |= SDL_WINDOW_METAL;
+        return 1;
+    }
+    if (SDL_strcasecmp(argv[index], "--opengl-window") == 0) {
+        state->window_flags |= SDL_WINDOW_OPENGL;
+        return 1;
+    }
+    if (SDL_strcasecmp(argv[index], "--vulkan-window") == 0) {
+        state->window_flags |= SDL_WINDOW_VULKAN;
+        return 1;
     }
     if (SDL_strcasecmp(argv[index], "--fullscreen") == 0) {
         state->window_flags |= SDL_WINDOW_FULLSCREEN;
