@@ -34,6 +34,7 @@ include(CheckSymbolExists)
 include(CheckCSourceCompiles)
 include(CheckCSourceRuns)
 include(CheckCCompilerFlag)
+include(CheckCXXCompilerFlag)
 include(CheckTypeSize)
 include(CheckStructHasMember)
 include(CMakeDependentOption)
@@ -2322,6 +2323,56 @@ if(SDL_STATIC)
     set_property(TARGET SDL2-static APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
   endif()
 endif()
+
+macro(asan_check_add_debug_flag ASAN_FLAG)
+    set(FLAG "-fsanitize=${ASAN_FLAG}")
+
+    check_c_compiler_flag(${FLAG} HAS_C_FLAG_${ASAN_FLAG})
+    if (HAS_C_FLAG_${ASAN_FLAG})
+        set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} ${FLAG}")
+    endif()
+
+    check_cxx_compiler_flag("${FLAG}" HAS_CXX_${ASAN_FLAG})
+    if (HAS_CXX_${ASAN_FLAG})
+        set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${FLAG}")
+    endif()
+endmacro()
+
+macro(asan_check_add_debug_flag2 ASAN_FLAG)
+    # for some sanitize flags we have to manipulate the CMAKE_REQUIRED_LIBRARIES:
+    # http://cmake.3232098.n2.nabble.com/CHECK-CXX-COMPILER-FLAG-doesn-t-give-correct-result-for-fsanitize-address-tp7600216p7600217.html
+
+    set(FLAG "-fsanitize=${ASAN_FLAG}")
+
+    set (STORED_REQLIBS ${CMAKE_REQUIRED_LIBRARIES})
+    set (CMAKE_REQUIRED_LIBRARIES "${FLAG};asan")
+    check_c_compiler_flag (${FLAG} HAS_C_FLAG_${ASAN_FLAG})
+    check_cxx_compiler_flag (${FLAG} HAS_CXX_FLAG_${ASAN_FLAG})
+    set (CMAKE_REQUIRED_LIBRARIES ${STORED_REQLIBS})
+
+    if (HAS_C_FLAG_${ASAN_FLAG})
+        set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} ${FLAG}")
+    endif()
+
+    if (HAS_CXX_${ASAN_FLAG})
+        set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${FLAG}")
+    endif()
+endmacro()
+
+# enable AddressSanitizer if supported
+asan_check_add_debug_flag2("address")
+asan_check_add_debug_flag("bool")
+asan_check_add_debug_flag("bounds")
+asan_check_add_debug_flag("enum")
+asan_check_add_debug_flag("float-cast-overflow")
+asan_check_add_debug_flag("float-divide-by-zero")
+asan_check_add_debug_flag("nonnull-attribute")
+asan_check_add_debug_flag("returns-nonnull-attribute")
+asan_check_add_debug_flag("signed-integer-overflow")
+asan_check_add_debug_flag("undefined")
+asan_check_add_debug_flag("vla-bound")
+asan_check_add_debug_flag("leak")
+asan_check_add_debug_flag("object-size")
 
 ##### Tests #####
 
