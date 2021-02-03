@@ -44,7 +44,7 @@ Build-Depends: debhelper (>= 9),
                wayland-protocols
 Homepage: http://www.libsdl.org/
 
-Package: libsdl2
+Package: libsdl2-2.0-0
 Architecture: any
 Multi-Arch: same
 Pre-Depends: ${misc:Pre-Depends}
@@ -65,7 +65,7 @@ Section: libdevel
 Architecture: any
 Multi-Arch: same
 Depends: ${misc:Depends},
-         libsdl2 (= ${binary:Version}),
+         libsdl2-2.0-0 (= ${binary:Version}),
          libc6-dev,
          libgl1-mesa-dev
 Conflicts: libsdl-1.3-dev
@@ -82,7 +82,7 @@ Section: debug
 Architecture: any
 Multi-Arch: same
 Depends: ${misc:Depends},
-         libsdl2 (= ${binary:Version}),
+         libsdl2-2.0-0 (= ${binary:Version}),
 Description: Simple DirectMedia Layer debug files
  SDL is a library that allows programs portable low level access to a video
  framebuffer, audio output, mouse, and keyboard.
