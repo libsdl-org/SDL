@@ -326,11 +326,12 @@ SDL_GetColorKey(SDL_Surface * surface, Uint32 * key)
     return 0;
 }
 
-/* This is a fairly slow function to switch from colorkey to alpha */
+/* This is a fairly slow function to switch from colorkey to alpha 
+   NB: it doesn't handle bpp 1 or 3, because they have no alpha channel */
 static void
 SDL_ConvertColorkeyToAlpha(SDL_Surface * surface, SDL_bool ignore_alpha)
 {
-    int x, y;
+    int x, y, bpp;
 
     if (!surface) {
         return;
@@ -341,82 +342,74 @@ SDL_ConvertColorkeyToAlpha(SDL_Surface * surface, SDL_bool ignore_alpha)
         return;
     }
 
+    bpp = surface->format->BytesPerPixel;
+
     SDL_LockSurface(surface);
 
-    switch (surface->format->BytesPerPixel) {
-    case 2:
-        {
-            Uint16 *row, *spot;
-            Uint16 ckey = (Uint16) surface->map->info.colorkey;
-            Uint16 mask = (Uint16) (~surface->format->Amask);
+    if (bpp == 2) {
+        Uint16 *row, *spot;
+        Uint16 ckey = (Uint16) surface->map->info.colorkey;
+        Uint16 mask = (Uint16) (~surface->format->Amask);
 
-            /* Ignore, or not, alpha in colorkey comparison */
-            if (ignore_alpha) {
-                ckey &= mask;
-                row = (Uint16 *) surface->pixels;
-                for (y = surface->h; y--;) {
-                    spot = row;
-                    for (x = surface->w; x--;) {
-                        if ((*spot & mask) == ckey) {
-                            *spot &= mask;
-                        }
-                        ++spot;
+        /* Ignore, or not, alpha in colorkey comparison */
+        if (ignore_alpha) {
+            ckey &= mask;
+            row = (Uint16 *) surface->pixels;
+            for (y = surface->h; y--;) {
+                spot = row;
+                for (x = surface->w; x--;) {
+                    if ((*spot & mask) == ckey) {
+                        *spot &= mask;
                     }
-                    row += surface->pitch / 2;
+                    ++spot;
                 }
-            } else {
-                row = (Uint16 *) surface->pixels;
-                for (y = surface->h; y--;) {
-                    spot = row;
-                    for (x = surface->w; x--;) {
-                        if (*spot == ckey) {
-                            *spot &= mask;
-                        }
-                        ++spot;
+                row += surface->pitch / 2;
+            }
+        } else {
+            row = (Uint16 *) surface->pixels;
+            for (y = surface->h; y--;) {
+                spot = row;
+                for (x = surface->w; x--;) {
+                    if (*spot == ckey) {
+                        *spot &= mask;
                     }
-                    row += surface->pitch / 2;
+                    ++spot;
                 }
+                row += surface->pitch / 2;
             }
         }
-        break;
-    case 3:
-        /* FIXME */
-        break;
-    case 4:
-        {
-            Uint32 *row, *spot;
-            Uint32 ckey = surface->map->info.colorkey;
-            Uint32 mask = ~surface->format->Amask;
+    } else if (bpp == 4) {
+        Uint32 *row, *spot;
+        Uint32 ckey = surface->map->info.colorkey;
+        Uint32 mask = ~surface->format->Amask;
 
-            /* Ignore, or not, alpha in colorkey comparison */
-            if (ignore_alpha) {
-                ckey &= mask;
-                row = (Uint32 *) surface->pixels;
-                for (y = surface->h; y--;) {
-                    spot = row;
-                    for (x = surface->w; x--;) {
-                        if ((*spot & mask) == ckey) {
-                            *spot &= mask;
-                        }
-                        ++spot;
+        /* Ignore, or not, alpha in colorkey comparison */
+        if (ignore_alpha) {
+            ckey &= mask;
+            row = (Uint32 *) surface->pixels;
+            for (y = surface->h; y--;) {
+                spot = row;
+                for (x = surface->w; x--;) {
+                    if ((*spot & mask) == ckey) {
+                        *spot &= mask;
                     }
-                    row += surface->pitch / 4;
+                    ++spot;
                 }
-            } else {
-                row = (Uint32 *) surface->pixels;
-                for (y = surface->h; y--;) {
-                    spot = row;
-                    for (x = surface->w; x--;) {
-                        if (*spot == ckey) {
-                            *spot &= mask;
-                        }
-                        ++spot;
+                row += surface->pitch / 4;
+            }
+        } else {
+            row = (Uint32 *) surface->pixels;
+            for (y = surface->h; y--;) {
+                spot = row;
+                for (x = surface->w; x--;) {
+                    if (*spot == ckey) {
+                        *spot &= mask;
                     }
-                    row += surface->pitch / 4;
+                    ++spot;
                 }
+                row += surface->pitch / 4;
             }
         }
-        break;
     }
 
     SDL_UnlockSurface(surface);
