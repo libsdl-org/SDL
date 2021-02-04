@@ -258,7 +258,6 @@ display_handle_mode(void *data,
                     int height,
                     int refresh)
 {
-    SDL_DisplayMode mode;
     SDL_VideoDisplay *display = data;
     SDL_WaylandOutputData* driverdata = display->driverdata;
 
