@@ -205,10 +205,37 @@ app can continue to operate as it was.
 
 However, there's a chance (on older hardware, or on systems under heavy load),
 where the GL context can not be restored. In that case you have to listen for
-a specific message, (which is not yet implemented!) and restore your textures
-manually or quit the app (which is actually the kind of behaviour you'll see
-under iOS, if the OS can not restore your GL context it will just kill your app)
+a specific message (SDL_RENDER_DEVICE_RESET) and restore your textures
+manually or quit the app.
 
+You should not use the SDL renderer API while the app going in background:
+- SDL_APP_WILLENTERBACKGROUND:
+    after you read this message, GL context gets backed-up and you should not
+    use the SDL renderer API.
+
+- SDL_APP_DIDENTERFOREGROUND:
+   GL context is restored, and the SDL renderer API is available (unless you
+   receive SDL_RENDER_DEVICE_RESET).
+
+================================================================================
+ Mouse / Touch events
+================================================================================
+
+In some case, SDL generates synthetic mouse (resp. touch) events for touch
+(resp. mouse) devices.
+To enable/disable this behavior, see SDL_hints.h:
+- SDL_HINT_TOUCH_MOUSE_EVENTS
+- SDL_HINT_MOUSE_TOUCH_EVENTS
+
+================================================================================
+ Misc
+================================================================================
+
+For some device, it appears to works better setting explicitly GL attributes
+before creating a window:
+  SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 5);
+  SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 6);
+  SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 5);
 
 ================================================================================
  Threads and the Java VM
