@@ -129,22 +129,6 @@ typedef struct {
     Uint8 right_trigger_rumble;
 } SDL_DriverXboxOne_Context;
 
-
-static SDL_bool
-IsBluetoothXboxOneController(Uint16 vendor_id, Uint16 product_id)
-{
-    /* Check to see if it's the Xbox One S or Xbox One Elite Series 2 in Bluetooth mode */
-    if (vendor_id == USB_VENDOR_MICROSOFT) {
-        if (product_id == USB_PRODUCT_XBOX_ONE_S_REV1_BLUETOOTH ||
-            product_id == USB_PRODUCT_XBOX_ONE_S_REV2_BLUETOOTH ||
-            product_id == USB_PRODUCT_XBOX_ONE_ELITE_SERIES_2_BLUETOOTH ||
-            product_id == USB_PRODUCT_XBOX_ONE_SERIES_X_BLUETOOTH) {
-            return SDL_TRUE;
-        }
-    }
-    return SDL_FALSE;
-}
-
 static SDL_bool
 ControllerHasPaddles(Uint16 vendor_id, Uint16 product_id)
 {
@@ -289,7 +273,7 @@ HIDAPI_DriverXboxOne_IsSupportedDevice(const char *name, SDL_GameControllerType 
 #endif
 #ifdef __MACOSX__
     /* Wired Xbox One controllers are handled by the 360Controller driver */
-    if (!IsBluetoothXboxOneController(vendor_id, product_id)) {
+    if (!SDL_IsJoystickBluetoothXboxOne(vendor_id, product_id)) {
         return SDL_FALSE;
     }
 #endif
@@ -343,7 +327,7 @@ HIDAPI_DriverXboxOne_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joyst
 
     ctx->vendor_id = device->vendor_id;
     ctx->product_id = device->product_id;
-    ctx->bluetooth = IsBluetoothXboxOneController(device->vendor_id, device->product_id);
+    ctx->bluetooth = SDL_IsJoystickBluetoothXboxOne(device->vendor_id, device->product_id);
     ctx->start_time = SDL_GetTicks();
     ctx->sequence = 1;
     ctx->has_paddles = ControllerHasPaddles(ctx->vendor_id, ctx->product_id);

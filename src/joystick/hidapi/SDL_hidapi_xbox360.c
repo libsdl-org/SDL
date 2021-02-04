@@ -42,22 +42,6 @@ typedef struct {
     Uint8 last_state[USB_PACKET_LENGTH];
 } SDL_DriverXbox360_Context;
 
-#if defined(__MACOSX__)
-static SDL_bool
-IsBluetoothXboxOneController(Uint16 vendor_id, Uint16 product_id)
-{
-    /* Check to see if it's the Xbox One S or Xbox One Elite Series 2 in Bluetooth mode */
-    if (vendor_id == USB_VENDOR_MICROSOFT) {
-        if (product_id == USB_PRODUCT_XBOX_ONE_S_REV1_BLUETOOTH ||
-            product_id == USB_PRODUCT_XBOX_ONE_S_REV2_BLUETOOTH ||
-            product_id == USB_PRODUCT_XBOX_ONE_ELITE_SERIES_2_BLUETOOTH) {
-            return SDL_TRUE;
-        }
-    }
-    return SDL_FALSE;
-}
-#endif
-
 static SDL_bool
 HIDAPI_DriverXbox360_IsSupportedDevice(const char *name, SDL_GameControllerType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
@@ -89,7 +73,7 @@ HIDAPI_DriverXbox360_IsSupportedDevice(const char *name, SDL_GameControllerType 
 
        Bluetooth Xbox One controllers are handled by the SDL Xbox One driver
     */
-    if (IsBluetoothXboxOneController(vendor_id, product_id)) {
+    if (SDL_IsJoystickBluetoothXboxOne(vendor_id, product_id)) {
         return SDL_FALSE;
     }
     return (type == SDL_CONTROLLER_TYPE_XBOX360 || type == SDL_CONTROLLER_TYPE_XBOXONE) ? SDL_TRUE : SDL_FALSE;
@@ -177,7 +161,7 @@ static int
 HIDAPI_DriverXbox360_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
 #ifdef __MACOSX__
-    if (IsBluetoothXboxOneController(device->vendor_id, device->product_id)) {
+    if (SDL_IsJoystickBluetoothXboxOne(device->vendor_id, device->product_id)) {
         Uint8 rumble_packet[] = { 0x03, 0x0F, 0x00, 0x00, 0x00, 0x00, 0xff, 0x00, 0x00 };
 
         rumble_packet[4] = (low_frequency_rumble >> 8);

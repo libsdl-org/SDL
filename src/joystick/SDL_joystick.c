@@ -1927,6 +1927,20 @@ SDL_IsJoystickXboxOneSeriesX(Uint16 vendor_id, Uint16 product_id)
 }
 
 SDL_bool
+SDL_IsJoystickBluetoothXboxOne(Uint16 vendor_id, Uint16 product_id)
+{
+    if (vendor_id == USB_VENDOR_MICROSOFT) {
+        if (product_id == USB_PRODUCT_XBOX_ONE_S_REV1_BLUETOOTH ||
+            product_id == USB_PRODUCT_XBOX_ONE_S_REV2_BLUETOOTH ||
+            product_id == USB_PRODUCT_XBOX_ONE_ELITE_SERIES_2_BLUETOOTH ||
+            product_id == USB_PRODUCT_XBOX_ONE_SERIES_X_BLUETOOTH) {
+            return SDL_TRUE;
+        }
+    }
+    return SDL_FALSE;
+}
+
+SDL_bool
 SDL_IsJoystickPS4(Uint16 vendor_id, Uint16 product_id)
 {
     EControllerType eType = GuessControllerType(vendor_id, product_id);
