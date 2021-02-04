@@ -1480,6 +1480,13 @@ SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
         return NULL;
     }
 
+    /* Some platforms don't have a window manager */
+    if (SDL_strcmp(_this->name, "KMSDRM") == 0) {
+        if (!(flags & SDL_WINDOW_FULLSCREEN)) {
+            flags |= SDL_WINDOW_FULLSCREEN;
+        }
+    }
+
     /* Some platforms have OpenGL enabled by default */
 #if (SDL_VIDEO_OPENGL && __MACOSX__) || (__IPHONEOS__ && !TARGET_OS_MACCATALYST) || __ANDROID__ || __NACL__
     if (!_this->is_dummy && !(flags & SDL_WINDOW_VULKAN) && !(flags & SDL_WINDOW_METAL) && !SDL_IsVideoContextExternal()) {
