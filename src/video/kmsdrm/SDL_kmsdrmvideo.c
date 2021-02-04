@@ -1244,15 +1244,6 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
     SDL_SetMouseFocus(window);
     SDL_SetKeyboardFocus(window);
 
-    /***********************************************************/
-    /* Tell SDL that the mouse has entered the window using an */
-    /* artificial event: we have no windowing system to tell   */
-    /* SDL that it has happened. This makes SDL set the        */
-    /* SDL_WINDOW_MOUSE_FOCUS on this window, thus fixing      */
-    /* Scummvm sticky-on-sides software cursor.                */
-    /***********************************************************/
-    SDL_SendWindowEvent(window, SDL_WINDOWEVENT_ENTER, 0, 0);
-
 cleanup:
 
     if (ret) {
