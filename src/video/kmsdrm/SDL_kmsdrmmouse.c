@@ -349,8 +349,7 @@ cleanup:
 void
 KMSDRM_InitCursor()
 {
-    SDL_Mouse *mouse = NULL;
-    mouse = SDL_GetMouse();
+    SDL_Mouse *mouse = SDL_GetMouse();
 
     if (!mouse || !mouse->cur_cursor || !mouse->cursor_shown) {
         return;
@@ -442,14 +441,11 @@ KMSDRM_WarpMouseGlobal(int x, int y)
 
         /* And now update the cursor graphic position on screen. */
         if (dispdata->cursor_bo) {
-	    int drm_fd, screen_y;
+	    int drm_fd;
             int ret = 0;
 
-            /* Correct the Y coordinate, because DRM mouse coordinates start on screen top. */
-            screen_y = dispdata->mode.vdisplay - window->h + mouse->y;
-
 	    drm_fd = KMSDRM_gbm_device_get_fd(KMSDRM_gbm_bo_get_device(dispdata->cursor_bo));
-	    ret = KMSDRM_drmModeMoveCursor(drm_fd, dispdata->crtc->crtc_id, x, screen_y);
+	    ret = KMSDRM_drmModeMoveCursor(drm_fd, dispdata->crtc->crtc_id, x, y);
 
 	    if (ret) {
 		SDL_SetError("drmModeMoveCursor() failed.");
@@ -504,7 +500,7 @@ static void
 KMSDRM_MoveCursor(SDL_Cursor * cursor)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
-    int drm_fd, screen_y;
+    int drm_fd;
     int ret = 0;
 
     /* We must NOT call SDL_SendMouseMotion() here or we will enter recursivity!
@@ -521,10 +517,7 @@ KMSDRM_MoveCursor(SDL_Cursor * cursor)
 
         drm_fd = KMSDRM_gbm_device_get_fd(KMSDRM_gbm_bo_get_device(dispdata->cursor_bo));
 
-        /* Correct the Y coordinate, because DRM mouse coordinates start on screen top. */
-        screen_y = dispdata->mode.vdisplay - window->h + mouse->y;
-
-        ret = KMSDRM_drmModeMoveCursor(drm_fd, dispdata->crtc->crtc_id, mouse->x, screen_y);
+        ret = KMSDRM_drmModeMoveCursor(drm_fd, dispdata->crtc->crtc_id, mouse->x, mouse->y);
 
         if (ret) {
             SDL_SetError("drmModeMoveCursor() failed.");
