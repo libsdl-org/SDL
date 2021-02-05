@@ -64,7 +64,7 @@ void SDL_WAYLAND_UnloadSymbols(void);
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC
 
-#ifdef _WAYLAND_CLIENT_H
+#if defined(_WAYLAND_CLIENT_H) || defined(WAYLAND_CLIENT_H)
 #error Do not include wayland-client ahead of SDL_waylanddyn.h in dynamic loading mode
 #endif
 
