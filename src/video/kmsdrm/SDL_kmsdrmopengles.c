@@ -173,12 +173,12 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window) {
     }
 
     ret = KMSDRM_drmModePageFlip(viddata->drm_fd, dispdata->crtc->crtc_id,
-	     fb_info->fb_id, flip_flags, &windata->waiting_for_flip);
+             fb_info->fb_id, flip_flags, &windata->waiting_for_flip);
 
     if (ret == 0) {
-	windata->waiting_for_flip = SDL_TRUE;
+        windata->waiting_for_flip = SDL_TRUE;
     } else {
-	SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Could not queue pageflip: %d", ret);
+        SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Could not queue pageflip: %d", ret);
     }
 
     /* Wait immediately for vsync (as if we only had two buffers).
@@ -191,10 +191,10 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window) {
        Run your SDL2 program with "SDL_KMSDRM_DOUBLE_BUFFER=1 <program_name>"
        to enable this. */
     if (windata->double_buffer) {
-	if (!KMSDRM_WaitPageflip(_this, windata)) {
-	    SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Immediate wait for previous pageflip failed");
-	    return 0;
-	}
+        if (!KMSDRM_WaitPageflip(_this, windata)) {
+            SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Immediate wait for previous pageflip failed");
+            return 0;
+        }
     }
 
     return 1;

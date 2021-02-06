@@ -85,11 +85,11 @@ SDL_KMSDRM_SYM(void,drmModeFreeObjectProperties,(drmModeObjectPropertiesPtr ptr)
 SDL_KMSDRM_SYM(void,drmModeFreePlane,(drmModePlanePtr ptr))
 SDL_KMSDRM_SYM(void,drmModeFreePlaneResources,(drmModePlaneResPtr ptr))
 SDL_KMSDRM_SYM(int,drmModeSetPlane,(int fd, uint32_t plane_id, uint32_t crtc_id,
-			   uint32_t fb_id, uint32_t flags,
-			   int32_t crtc_x, int32_t crtc_y,
-			   uint32_t crtc_w, uint32_t crtc_h,
-			   uint32_t src_x, uint32_t src_y,
-			   uint32_t src_w, uint32_t src_h))
+                                    uint32_t fb_id, uint32_t flags,
+                                    int32_t crtc_x, int32_t crtc_y,
+                                    uint32_t crtc_w, uint32_t crtc_h,
+                                    uint32_t src_x, uint32_t src_y,
+                                    uint32_t src_w, uint32_t src_h))
 /* Planes stuff ends. */
 
 SDL_KMSDRM_MODULE(GBM)

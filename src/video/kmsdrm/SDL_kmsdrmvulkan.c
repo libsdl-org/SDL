@@ -361,22 +361,22 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
         new_mode_parameters.visibleRegion.width = window->w;
         new_mode_parameters.visibleRegion.height = window->h;
         new_mode_parameters.refreshRate = 60000; /* Always use 60Hz for now. */
-	display_mode_create_info.sType = VK_STRUCTURE_TYPE_DISPLAY_MODE_CREATE_INFO_KHR;
-	display_mode_create_info.parameters = new_mode_parameters;
-	result = vkCreateDisplayModeKHR(gpu,
-				  displays_props[display_index].display,
-				  &display_mode_create_info,
-				  NULL, display_mode);
-	if (result != VK_SUCCESS) {
-	    SDL_SetError("Vulkan couldn't find a predefined mode for that window size and couldn't create a suitable mode.");
-	    goto clean;
-	}
+        display_mode_create_info.sType = VK_STRUCTURE_TYPE_DISPLAY_MODE_CREATE_INFO_KHR;
+        display_mode_create_info.parameters = new_mode_parameters;
+        result = vkCreateDisplayModeKHR(gpu,
+                                        displays_props[display_index].display,
+                                        &display_mode_create_info,
+                                        NULL, display_mode);
+        if (result != VK_SUCCESS) {
+            SDL_SetError("Vulkan couldn't find a predefined mode for that window size and couldn't create a suitable mode.");
+            goto clean;
+         }
     }
 
     /* Just in case we get here without a display_mode. */
     if (!display_mode) {
-	    SDL_SetError("Vulkan couldn't get a display mode.");
-	    goto clean;
+            SDL_SetError("Vulkan couldn't get a display mode.");
+            goto clean;
     }
 
     /********************************************/
