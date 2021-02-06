@@ -152,7 +152,8 @@ HIDAPI_DriverStadia_HandleStatePacket(SDL_Joystick *joystick, SDL_DriverStadia_C
 {
     Sint16 axis;
 
-    if (size < 11 || data[0] != 0x03) {
+	// The format is the same but the original FW will send 10 bytes and January '21 FW update will send 11
+    if (size < 10 || data[0] != 0x03) {
         /* We don't know how to handle this report */
         return;
     }
