@@ -33,6 +33,10 @@
 
 #ifdef SDL_JOYSTICK_HIDAPI
 
+#if defined(HAVE__WCSDUP) && !defined(HAVE_WCSDUP)
+#define wcsdup _wcsdup
+#endif
+
 #include <libusb.h>
 #include <locale.h> /* setlocale */
 

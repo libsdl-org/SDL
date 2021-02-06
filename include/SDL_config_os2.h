@@ -105,14 +105,22 @@
 #define HAVE_WCSCMP 1
 #define HAVE__WCSICMP 1
 #define HAVE__WCSNICMP 1
+#define HAVE_WCSLEN 1
+#define HAVE_WCSLCPY 1
+#define HAVE_WCSLCAT 1
+/* #undef HAVE_WCSDUP */
+#define HAVE__WCSDUP 1
+#define HAVE_WCSSTR 1
+#define HAVE_WCSCMP 1
+#define HAVE_WCSNCMP 1
 #define HAVE_STRLEN 1
 #define HAVE_STRLCPY 1
 #define HAVE_STRLCAT 1
 #define HAVE__STRREV 1
 #define HAVE__STRUPR 1
 #define HAVE__STRLWR 1
-#define HAVE_INDEX 1
-#define HAVE_RINDEX 1
+/* #undef HAVE_INDEX */
+/* #undef HAVE_RINDEX */
 #define HAVE_STRCHR 1
 #define HAVE_STRRCHR 1
 #define HAVE_STRSTR 1
@@ -129,15 +137,6 @@
 #define HAVE_STRTOD 1
 #define HAVE_ATOI 1
 #define HAVE_ATOF 1
-#define HAVE_WCSLEN 1
-#define HAVE_WCSLCPY 1
-#define HAVE_WCSLCAT 1
-/* #undef HAVE_WCSDUP */
-#define HAVE__WCSDUP 1
-/* #define wcsdup _wcsdup */
-#define HAVE_WCSSTR 1
-#define HAVE_WCSCMP 1
-#define HAVE_WCSNCMP 1
 #define HAVE_STRCMP 1
 #define HAVE_STRNCMP 1
 #define HAVE_STRICMP 1

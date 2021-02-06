@@ -100,6 +100,7 @@
 #undef HAVE_WCSLEN
 #undef HAVE_WCSLCPY
 #undef HAVE_WCSLCAT
+#undef HAVE__WCSDUP
 #undef HAVE_WCSDUP
 #undef HAVE_WCSSTR
 #undef HAVE_WCSCMP
