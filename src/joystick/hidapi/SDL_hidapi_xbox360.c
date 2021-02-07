@@ -92,8 +92,9 @@ static SDL_bool SetSlotLED(hid_device *dev, Uint8 slot)
 {
     const SDL_bool blink = SDL_FALSE;
     Uint8 mode = (blink ? 0x02 : 0x06) + slot;
-    const Uint8 led_packet[] = { 0x01, 0x03, mode };
+    Uint8 led_packet[] = { 0x01, 0x03, 0x00 };
 
+    led_packet[2] = mode;
     if (hid_write(dev, led_packet, sizeof(led_packet)) != sizeof(led_packet)) {
         return SDL_FALSE;
     }

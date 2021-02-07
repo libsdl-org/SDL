@@ -163,7 +163,11 @@ SendAckIfNeeded(SDL_HIDAPI_Device *device, Uint8 *data, int size)
     /* The Windows driver is taking care of acks */
 #else
     if ((data[1] & 0x30) == 0x30) {
-        Uint8 ack_packet[] = { 0x01, 0x20, data[2], 0x09, 0x00, data[0], 0x20, data[3], 0x00, 0x00, 0x00, 0x00, 0x00 };
+        Uint8 ack_packet[] = { 0x01, 0x20, 0x00, 0x09, 0x00, 0x00, 0x20, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+
+        ack_packet[2] = data[2];
+        ack_packet[5] = data[0];
+        ack_packet[7] = data[3];
 
         /* The initial ack needs 0x80 added to the response, for some reason */
         if (data[0] == 0x04 && data[1] == 0xF0) {
