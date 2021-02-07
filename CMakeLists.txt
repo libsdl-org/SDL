@@ -2312,18 +2312,20 @@ if(SDL_STATIC)
   endif()
 endif()
 
-macro(asan_check_add_debug_flag ASAN_FLAG)
-    set(FLAG "-fsanitize=${ASAN_FLAG}")
-
-    check_c_compiler_flag(${FLAG} HAS_C_FLAG_${ASAN_FLAG})
-    if (HAS_C_FLAG_${ASAN_FLAG})
+macro(check_add_debug_flag FLAG SUFFIX)
+    check_c_compiler_flag(${FLAG} HAS_C_FLAG_${SUFFIX})
+    if (HAS_C_FLAG_${SUFFIX})
         set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} ${FLAG}")
     endif()
 
-    check_cxx_compiler_flag("${FLAG}" HAS_CXX_${ASAN_FLAG})
-    if (HAS_CXX_${ASAN_FLAG})
+    check_cxx_compiler_flag(${FLAG} HAS_CXX_${SUFFIX})
+    if (HAS_CXX_${SUFFIX})
         set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${FLAG}")
     endif()
+endmacro()
+
+macro(asan_check_add_debug_flag ASAN_FLAG)
+    check_add_debug_flag("-fsanitize=${ASAN_FLAG}" "${ASAN_FLAG}")
 endmacro()
 
 macro(asan_check_add_debug_flag2 ASAN_FLAG)
@@ -2348,6 +2350,7 @@ macro(asan_check_add_debug_flag2 ASAN_FLAG)
 endmacro()
 
 # enable AddressSanitizer if supported
+check_add_debug_flag("-shared-libasan" "shared_libasan")
 asan_check_add_debug_flag2("address")
 asan_check_add_debug_flag("bool")
 asan_check_add_debug_flag("bounds")
