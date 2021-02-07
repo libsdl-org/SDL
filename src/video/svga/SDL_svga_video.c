@@ -50,24 +50,6 @@ static void SVGA_DestroyWindow(_THIS, SDL_Window * window);
 
 /* SVGA driver bootstrap functions */
 
-static int
-SVGA_Available(void)
-{
-    VBEInfo info;
-    int status = SVGA_GetVBEInfo(&info);
-
-    if (status) {
-        /* TODO: Differentiate between failure and missing. */
-        SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "SVGA_GetVBEInfo failed: %d", status);
-        return 0;
-    }
-
-    SDL_LogInfo(SDL_LOG_CATEGORY_VIDEO, "SVGA: Detected VESA BIOS Extensions v%u.%u",
-        info.vbe_version.major, info.vbe_version.minor);
-
-    return info.vbe_version.major >= 2;
-}
-
 static void
 SVGA_DeleteDevice(SDL_VideoDevice * device)
 {
@@ -87,6 +69,8 @@ SVGA_CreateDevice(int devindex)
     }
 
     if (SVGA_GetVBEInfo(&devdata->vbe_info) || devdata->vbe_info.vbe_version.major < 2) {
+        SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "SVGA: VESA BIOS Extensions v2.0 or greater is required");
+        SDL_Unsupported();
         SDL_free(devdata);
         return NULL;
     }
@@ -120,7 +104,7 @@ SVGA_CreateDevice(int devindex)
 
 VideoBootStrap SVGA_bootstrap = {
     SVGAVID_DRIVER_NAME, "SDL SVGA video driver",
-    SVGA_Available, SVGA_CreateDevice
+    SVGA_CreateDevice
 };
 
 static int
