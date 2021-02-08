@@ -401,6 +401,7 @@ option_string(BACKGROUNDING_SIGNAL "number to use for magic backgrounding signal
 option_string(FOREGROUNDING_SIGNAL "number to use for magic foregrounding signal or 'OFF'" "OFF")
 set_option(HIDAPI              "Use HIDAPI for low level joystick drivers" ${OPT_DEF_HIDAPI})
 set_option(JOYSTICK_VIRTUAL    "Enable the virtual-joystick driver" ON)
+set_option(ASAN                "Use AddressSanitizer to detect memory errors" OFF)
 
 set(SDL_SHARED ${SDL_SHARED_ENABLED_BY_DEFAULT} CACHE BOOL "Build a shared version of the library")
 set(SDL_STATIC ${SDL_STATIC_ENABLED_BY_DEFAULT} CACHE BOOL "Build a static version of the library")
@@ -2350,7 +2351,7 @@ macro(asan_check_add_debug_flag2 ASAN_FLAG)
 endmacro()
 
 # enable AddressSanitizer if supported
-if ( (CMAKE_C_COMPILER_ID STREQUAL "GNU") AND CMAKE_C_COMPILER_VERSION VERSION_GREATER 4)
+if (ASAN)
   asan_check_add_debug_flag2("address")
   asan_check_add_debug_flag("bool")
   asan_check_add_debug_flag("bounds")
