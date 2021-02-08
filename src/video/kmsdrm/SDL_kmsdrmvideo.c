@@ -70,6 +70,7 @@ check_modestting(int devindex)
     SDL_bool available = SDL_FALSE;
     char device[512];
     int drm_fd;
+    int i;
 
     SDL_snprintf(device, sizeof (device), KMSDRM_DRI_DEVFMT, KMSDRM_DRI_PATH, devindex);
 
@@ -89,7 +90,22 @@ check_modestting(int devindex)
                  && resources->count_encoders > 0
                  && resources->count_crtcs > 0)
                 {
-                    available = SDL_TRUE;
+                    available = SDL_FALSE;
+                    for (i = 0; i < resources->count_connectors; i++) {
+                        drmModeConnector *conn = KMSDRM_drmModeGetConnector(drm_fd,
+                            resources->connectors[i]);
+
+                        if (!conn) {
+                            continue;
+                        }
+
+                        if (conn->connection == DRM_MODE_CONNECTED && conn->count_modes) {
+                            available = SDL_TRUE;
+                            break;
+                        }
+
+                        KMSDRM_drmModeFreeConnector(conn);
+                    }
                 }
                 KMSDRM_drmModeFreeResources(resources);
             }
@@ -750,6 +766,15 @@ KMSDRM_GBMInit (_THIS, SDL_DisplayData *dispdata)
 
     /* Reopen the FD! */
     viddata->drm_fd = open(viddata->devpath, O_RDWR | O_CLOEXEC);
+
+    /* Set the FD we just opened as current DRM master. */
+    KMSDRM_drmSetMaster(viddata->drm_fd);
+
+    /* Check if we are the current DRM master. */
+    if (KMSDRM_drmAuthMagic(viddata->drm_fd, 0) == -EACCES) {
+        ret = SDL_SetError("DRM device is claimed by another program as master.");
+        return ret;
+    }
 
     /* Create the GBM device. */
     viddata->gbm_dev = KMSDRM_gbm_create_device(viddata->drm_fd);
