@@ -297,6 +297,10 @@ display_handle_done(void *data,
 
     SDL_AddVideoDisplay(display, SDL_FALSE);
     SDL_free(display->name);
+    /* The 'display' content was copied in previous SDL_AddVideoDisplay call.
+     * We have to remove this reference, else it will be lost indefinitely.
+     */
+    SDL_free(display);
 }
 
 static void
