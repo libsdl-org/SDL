@@ -133,6 +133,7 @@ SDL_CondWaitTimeout_srw(SDL_cond * _cond, SDL_mutex * _mutex, Uint32 ms)
     SDL_cond_srw *cond = (SDL_cond_srw *)_cond;
     SDL_mutex_srw *mutex = (SDL_mutex_srw *)_mutex;
     DWORD timeout;
+    int ret;
 
     if (!cond) {
         return SDL_SetError("Passed a NULL condition variable");
@@ -141,7 +142,7 @@ SDL_CondWaitTimeout_srw(SDL_cond * _cond, SDL_mutex * _mutex, Uint32 ms)
         return SDL_SetError("Passed a NULL mutex");
     }
 
-    if (mutex->count != 1) {
+    if (mutex->count != 1 || mutex->owner != GetCurrentThreadId()) {
         return SDL_SetError("Passed mutex is not locked or locked recursively");
     }
 
@@ -151,14 +152,26 @@ SDL_CondWaitTimeout_srw(SDL_cond * _cond, SDL_mutex * _mutex, Uint32 ms)
         timeout = (DWORD) ms;
     }
 
+    /* The mutex must be updated to the released state */
+    mutex->count = 0;
+    mutex->owner = 0;
+
     if (pSleepConditionVariableSRW(&cond->cond, &mutex->srw, timeout, 0) == FALSE) {
         if (GetLastError() == ERROR_TIMEOUT) {
-            return SDL_MUTEX_TIMEDOUT;
+            ret = SDL_MUTEX_TIMEDOUT;
+        } else {
+            ret = SDL_SetError("SleepConditionVariableSRW() failed");
         }
-        return SDL_SetError("SleepConditionVariableSRW() failed");
+    } else {
+        ret = 0;
     }
 
-    return 0;
+    /* The mutex is owned by us again, regardless of status of the wait */
+    SDL_assert(mutex->count == 0 && mutex->owner == 0);
+    mutex->count = 1;
+    mutex->owner = GetCurrentThreadId();
+
+    return ret;
 }
 
 static int

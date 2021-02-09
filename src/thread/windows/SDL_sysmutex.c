@@ -100,8 +100,9 @@ SDL_LockMutex_srw(SDL_mutex * _mutex)
            so unlocks from other threads will fail.
          */
         pAcquireSRWLockExclusive(&mutex->srw);
+        SDL_assert(mutex->count == 0 && mutex->owner == 0);
         mutex->owner = this_thread;
-        ++mutex->count;
+        mutex->count = 1;
     }
     return 0;
 }
@@ -122,8 +123,9 @@ SDL_TryLockMutex_srw(SDL_mutex * _mutex)
         ++mutex->count;
     } else {
         if (pTryAcquireSRWLockExclusive(&mutex->srw) != 0) {
+            SDL_assert(mutex->count == 0 && mutex->owner == 0);
             mutex->owner = this_thread;
-            ++mutex->count;
+            mutex->count = 1;
         } else {
             retval = SDL_MUTEX_TIMEDOUT;
         }
