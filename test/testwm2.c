@@ -104,8 +104,10 @@ loop()
 
         for (i = 0; i < state->num_windows; ++i) {
             SDL_Renderer *renderer = state->renderers[i];
-            SDL_RenderClear(renderer);
-            SDL_RenderPresent(renderer);
+            if (renderer != NULL) {
+                SDL_RenderClear(renderer);
+                SDL_RenderPresent(renderer);
+            }
         }
 #ifdef __EMSCRIPTEN__
     if (done) {
