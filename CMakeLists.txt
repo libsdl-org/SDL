@@ -2214,6 +2214,8 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${EXTRA_CFLAGS}")
 # Always build SDLmain
 if(NOT WINDOWS_STORE)
 add_library(SDL2main STATIC ${SDLMAIN_SOURCES})
+# alias target for in-tree builds
+add_library(SDL2::SDL2main ALIAS SDL2main)
 target_include_directories(SDL2main PUBLIC "$<BUILD_INTERFACE:${SDL2_SOURCE_DIR}/include>" $<INSTALL_INTERFACE:include> $<INSTALL_INTERFACE:include/SDL2>)
 set(_INSTALL_LIBS "SDL2main")
 if (NOT ANDROID)
@@ -2227,6 +2229,8 @@ endif()
 
 if(SDL_SHARED)
   add_library(SDL2 SHARED ${SOURCE_FILES} ${VERSION_SOURCES})
+  # alias target for in-tree builds
+  add_library(SDL2::SDL2 ALIAS SDL2)
   if(APPLE)
     set_target_properties(SDL2 PROPERTIES
       MACOSX_RPATH 1
@@ -2269,6 +2273,8 @@ endif()
 if(ANDROID)
   if(HAVE_HIDAPI)
     add_library(hidapi SHARED ${SDL2_SOURCE_DIR}/src/hidapi/android/hid.cpp)
+    # alias target for in-tree builds
+    add_library(SDL2::hidapi ALIAS hidapi)
   endif()
 
   if(MSVC AND NOT LIBC)
@@ -2285,6 +2291,8 @@ endif()
 if(SDL_STATIC)
   set (BUILD_SHARED_LIBS FALSE)
   add_library(SDL2-static STATIC ${SOURCE_FILES})
+  # alias target for in-tree builds
+  add_library(SDL2::SDL2-static ALIAS SDL2-static)
   if (NOT SDL_SHARED OR NOT WIN32)
     set_target_properties(SDL2-static PROPERTIES OUTPUT_NAME "SDL2")
     # Note: Apparently, OUTPUT_NAME must really be unique; even when
