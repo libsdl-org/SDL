@@ -751,7 +751,7 @@ SDLTest_PrintRenderer(SDL_RendererInfo * info)
 
     SDL_Log("  Renderer %s:\n", info->name);
 
-    SDL_snprintf(text, sizeof(text), "    Flags: 0x%8.8X", info->flags);
+    SDL_snprintf(text, sizeof(text), "    Flags: 0x%8.8" SDL_PRIX32, info->flags);
     SDL_snprintfcat(text, sizeof(text), " (");
     count = 0;
     for (i = 0; i < sizeof(info->flags) * 8; ++i) {
@@ -767,7 +767,7 @@ SDLTest_PrintRenderer(SDL_RendererInfo * info)
     SDL_snprintfcat(text, sizeof(text), ")");
     SDL_Log("%s\n", text);
 
-    SDL_snprintf(text, sizeof(text), "    Texture formats (%d): ", info->num_texture_formats);
+    SDL_snprintf(text, sizeof(text), "    Texture formats (%" SDL_PRIu32 "): ", info->num_texture_formats);
     for (i = 0; i < (int) info->num_texture_formats; ++i) {
         if (i > 0) {
             SDL_snprintfcat(text, sizeof(text), ", ");
@@ -948,11 +948,11 @@ SDLTest_CommonInit(SDLTest_CommonState * state)
                         mode.w, mode.h, mode.refresh_rate, bpp,
                         SDL_GetPixelFormatName(mode.format));
                 if (Rmask || Gmask || Bmask) {
-                    SDL_Log("      Red Mask   = 0x%.8x\n", Rmask);
-                    SDL_Log("      Green Mask = 0x%.8x\n", Gmask);
-                    SDL_Log("      Blue Mask  = 0x%.8x\n", Bmask);
+                    SDL_Log("      Red Mask   = 0x%.8" SDL_PRIx32 "\n", Rmask);
+                    SDL_Log("      Green Mask = 0x%.8" SDL_PRIx32 "\n", Gmask);
+                    SDL_Log("      Blue Mask  = 0x%.8" SDL_PRIx32 "\n", Bmask);
                     if (Amask)
-                        SDL_Log("      Alpha Mask = 0x%.8x\n", Amask);
+                        SDL_Log("      Alpha Mask = 0x%.8" SDL_PRIx32 "\n", Amask);
                 }
 
                 /* Print available fullscreen video modes */
@@ -969,14 +969,14 @@ SDLTest_CommonInit(SDLTest_CommonState * state)
                                 j, mode.w, mode.h, mode.refresh_rate, bpp,
                                 SDL_GetPixelFormatName(mode.format));
                         if (Rmask || Gmask || Bmask) {
-                            SDL_Log("        Red Mask   = 0x%.8x\n",
+                            SDL_Log("        Red Mask   = 0x%.8" SDL_PRIx32 "\n",
                                     Rmask);
-                            SDL_Log("        Green Mask = 0x%.8x\n",
+                            SDL_Log("        Green Mask = 0x%.8" SDL_PRIx32 "\n",
                                     Gmask);
-                            SDL_Log("        Blue Mask  = 0x%.8x\n",
+                            SDL_Log("        Blue Mask  = 0x%.8" SDL_PRIx32 "\n",
                                     Bmask);
                             if (Amask)
-                                SDL_Log("        Alpha Mask = 0x%.8x\n",
+                                SDL_Log("        Alpha Mask = 0x%.8" SDL_PRIx32 "\n",
                                         Amask);
                         }
                     }
@@ -1256,10 +1256,11 @@ SDLTest_PrintEvent(SDL_Event * event)
     case SDL_DISPLAYEVENT:
         switch (event->display.event) {
         case SDL_DISPLAYEVENT_ORIENTATION:
-            SDL_Log("SDL EVENT: Display %d changed orientation to %s", event->display.display, DisplayOrientationName(event->display.data1));
+            SDL_Log("SDL EVENT: Display %" SDL_PRIu32 " changed orientation to %s",
+                    event->display.display, DisplayOrientationName(event->display.data1));
             break;
         default:
-            SDL_Log("SDL EVENT: Display %d got unknown event 0x%4.4x",
+            SDL_Log("SDL EVENT: Display %" SDL_PRIu32 " got unknown event 0x%4.4x",
                     event->display.display, event->display.event);
             break;
         }
@@ -1267,123 +1268,120 @@ SDLTest_PrintEvent(SDL_Event * event)
     case SDL_WINDOWEVENT:
         switch (event->window.event) {
         case SDL_WINDOWEVENT_SHOWN:
-            SDL_Log("SDL EVENT: Window %d shown", event->window.windowID);
+            SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " shown", event->window.windowID);
             break;
         case SDL_WINDOWEVENT_HIDDEN:
-            SDL_Log("SDL EVENT: Window %d hidden", event->window.windowID);
+            SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " hidden", event->window.windowID);
             break;
         case SDL_WINDOWEVENT_EXPOSED:
-            SDL_Log("SDL EVENT: Window %d exposed", event->window.windowID);
+            SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " exposed", event->window.windowID);
             break;
         case SDL_WINDOWEVENT_MOVED:
-            SDL_Log("SDL EVENT: Window %d moved to %d,%d",
-                    event->window.windowID, event->window.data1,
-                    event->window.data2);
+            SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " moved to %" SDL_PRIs32 ",%" SDL_PRIs32,
+                    event->window.windowID, event->window.data1, event->window.data2);
             break;
         case SDL_WINDOWEVENT_RESIZED:
-            SDL_Log("SDL EVENT: Window %d resized to %dx%d",
-                    event->window.windowID, event->window.data1,
-                    event->window.data2);
+            SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " resized to %" SDL_PRIs32 "x%" SDL_PRIs32,
+                    event->window.windowID, event->window.data1, event->window.data2);
             break;
         case SDL_WINDOWEVENT_SIZE_CHANGED:
-            SDL_Log("SDL EVENT: Window %d changed size to %dx%d",
-                    event->window.windowID, event->window.data1,
-                    event->window.data2);
+            SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " changed size to %" SDL_PRIs32 "x%" SDL_PRIs32,
+                    event->window.windowID, event->window.data1, event->window.data2);
             break;
         case SDL_WINDOWEVENT_MINIMIZED:
-            SDL_Log("SDL EVENT: Window %d minimized", event->window.windowID);
+            SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " minimized", event->window.windowID);
             break;
         case SDL_WINDOWEVENT_MAXIMIZED:
-            SDL_Log("SDL EVENT: Window %d maximized", event->window.windowID);
+            SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " maximized", event->window.windowID);
             break;
         case SDL_WINDOWEVENT_RESTORED:
-            SDL_Log("SDL EVENT: Window %d restored", event->window.windowID);
+            SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " restored", event->window.windowID);
             break;
         case SDL_WINDOWEVENT_ENTER:
-            SDL_Log("SDL EVENT: Mouse entered window %d",
+            SDL_Log("SDL EVENT: Mouse entered window %" SDL_PRIu32 "",
                     event->window.windowID);
             break;
         case SDL_WINDOWEVENT_LEAVE:
-            SDL_Log("SDL EVENT: Mouse left window %d", event->window.windowID);
+            SDL_Log("SDL EVENT: Mouse left window %" SDL_PRIu32 "", event->window.windowID);
             break;
         case SDL_WINDOWEVENT_FOCUS_GAINED:
-            SDL_Log("SDL EVENT: Window %d gained keyboard focus",
+            SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " gained keyboard focus",
                     event->window.windowID);
             break;
         case SDL_WINDOWEVENT_FOCUS_LOST:
-            SDL_Log("SDL EVENT: Window %d lost keyboard focus",
+            SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " lost keyboard focus",
                     event->window.windowID);
             break;
         case SDL_WINDOWEVENT_CLOSE:
-            SDL_Log("SDL EVENT: Window %d closed", event->window.windowID);
+            SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " closed", event->window.windowID);
             break;
         case SDL_WINDOWEVENT_TAKE_FOCUS:
-            SDL_Log("SDL EVENT: Window %d take focus", event->window.windowID);
+            SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " take focus", event->window.windowID);
             break;
         case SDL_WINDOWEVENT_HIT_TEST:
-            SDL_Log("SDL EVENT: Window %d hit test", event->window.windowID);
+            SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " hit test", event->window.windowID);
             break;
         default:
-            SDL_Log("SDL EVENT: Window %d got unknown event 0x%4.4x",
+            SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " got unknown event 0x%4.4x",
                     event->window.windowID, event->window.event);
             break;
         }
         break;
     case SDL_KEYDOWN:
-        SDL_Log("SDL EVENT: Keyboard: key pressed  in window %d: scancode 0x%08X = %s, keycode 0x%08X = %s",
+        SDL_Log("SDL EVENT: Keyboard: key pressed  in window %" SDL_PRIu32 ": scancode 0x%08X = %s, keycode 0x%08" SDL_PRIX32 " = %s",
                 event->key.windowID,
                 event->key.keysym.scancode,
                 SDL_GetScancodeName(event->key.keysym.scancode),
                 event->key.keysym.sym, SDL_GetKeyName(event->key.keysym.sym));
         break;
     case SDL_KEYUP:
-        SDL_Log("SDL EVENT: Keyboard: key released in window %d: scancode 0x%08X = %s, keycode 0x%08X = %s",
+        SDL_Log("SDL EVENT: Keyboard: key released in window %" SDL_PRIu32 ": scancode 0x%08X = %s, keycode 0x%08" SDL_PRIX32 " = %s",
                 event->key.windowID,
                 event->key.keysym.scancode,
                 SDL_GetScancodeName(event->key.keysym.scancode),
                 event->key.keysym.sym, SDL_GetKeyName(event->key.keysym.sym));
         break;
     case SDL_TEXTEDITING:
-        SDL_Log("SDL EVENT: Keyboard: text editing \"%s\" in window %d",
+        SDL_Log("SDL EVENT: Keyboard: text editing \"%s\" in window %" SDL_PRIu32,
                 event->edit.text, event->edit.windowID);
         break;
     case SDL_TEXTINPUT:
-        SDL_Log("SDL EVENT: Keyboard: text input \"%s\" in window %d",
+        SDL_Log("SDL EVENT: Keyboard: text input \"%s\" in window %" SDL_PRIu32,
                 event->text.text, event->text.windowID);
         break;
     case SDL_KEYMAPCHANGED:
         SDL_Log("SDL EVENT: Keymap changed");
         break;
     case SDL_MOUSEMOTION:
-        SDL_Log("SDL EVENT: Mouse: moved to %d,%d (%d,%d) in window %d",
+        SDL_Log("SDL EVENT: Mouse: moved to %" SDL_PRIs32 ",%" SDL_PRIs32 " (%" SDL_PRIs32 ",%" SDL_PRIs32 ") in window %" SDL_PRIu32,
                 event->motion.x, event->motion.y,
                 event->motion.xrel, event->motion.yrel,
                 event->motion.windowID);
         break;
     case SDL_MOUSEBUTTONDOWN:
-        SDL_Log("SDL EVENT: Mouse: button %d pressed at %d,%d with click count %d in window %d",
+        SDL_Log("SDL EVENT: Mouse: button %d pressed at %" SDL_PRIs32 ",%" SDL_PRIs32 " with click count %d in window %" SDL_PRIu32,
                 event->button.button, event->button.x, event->button.y, event->button.clicks,
                 event->button.windowID);
         break;
     case SDL_MOUSEBUTTONUP:
-        SDL_Log("SDL EVENT: Mouse: button %d released at %d,%d with click count %d in window %d",
+        SDL_Log("SDL EVENT: Mouse: button %d released at %" SDL_PRIs32 ",%" SDL_PRIs32 " with click count %d in window %" SDL_PRIu32,
                 event->button.button, event->button.x, event->button.y, event->button.clicks,
                 event->button.windowID);
         break;
     case SDL_MOUSEWHEEL:
-        SDL_Log("SDL EVENT: Mouse: wheel scrolled %d in x and %d in y (reversed: %d) in window %d",
+        SDL_Log("SDL EVENT: Mouse: wheel scrolled %" SDL_PRIs32 " in x and %" SDL_PRIs32 " in y (reversed: %" SDL_PRIu32 ") in window %" SDL_PRIu32,
                 event->wheel.x, event->wheel.y, event->wheel.direction, event->wheel.windowID);
         break;
     case SDL_JOYDEVICEADDED:
-        SDL_Log("SDL EVENT: Joystick index %d attached",
+        SDL_Log("SDL EVENT: Joystick index %" SDL_PRIs32 " attached",
             event->jdevice.which);
         break;
     case SDL_JOYDEVICEREMOVED:
-        SDL_Log("SDL EVENT: Joystick %d removed",
+        SDL_Log("SDL EVENT: Joystick %" SDL_PRIs32 " removed",
             event->jdevice.which);
         break;
     case SDL_JOYBALLMOTION:
-        SDL_Log("SDL EVENT: Joystick %d: ball %d moved by %d,%d",
+        SDL_Log("SDL EVENT: Joystick %" SDL_PRIs32 ": ball %d moved by %d,%d",
                 event->jball.which, event->jball.ball, event->jball.xrel,
                 event->jball.yrel);
         break;
@@ -1419,40 +1417,40 @@ SDLTest_PrintEvent(SDL_Event * event)
                 position = "LEFTUP";
                 break;
             }
-            SDL_Log("SDL EVENT: Joystick %d: hat %d moved to %s", event->jhat.which,
-                event->jhat.hat, position);
+            SDL_Log("SDL EVENT: Joystick %" SDL_PRIs32 ": hat %d moved to %s",
+                    event->jhat.which, event->jhat.hat, position);
         }
         break;
     case SDL_JOYBUTTONDOWN:
-        SDL_Log("SDL EVENT: Joystick %d: button %d pressed",
+        SDL_Log("SDL EVENT: Joystick %" SDL_PRIs32 ": button %d pressed",
                 event->jbutton.which, event->jbutton.button);
         break;
     case SDL_JOYBUTTONUP:
-        SDL_Log("SDL EVENT: Joystick %d: button %d released",
+        SDL_Log("SDL EVENT: Joystick %" SDL_PRIs32 ": button %d released",
                 event->jbutton.which, event->jbutton.button);
         break;
     case SDL_CONTROLLERDEVICEADDED:
-        SDL_Log("SDL EVENT: Controller index %d attached",
+        SDL_Log("SDL EVENT: Controller index %" SDL_PRIs32 " attached",
             event->cdevice.which);
         break;
     case SDL_CONTROLLERDEVICEREMOVED:
-        SDL_Log("SDL EVENT: Controller %d removed",
+        SDL_Log("SDL EVENT: Controller %" SDL_PRIs32 " removed",
             event->cdevice.which);
         break;
     case SDL_CONTROLLERAXISMOTION:
-        SDL_Log("SDL EVENT: Controller %d axis %d ('%s') value: %d",
+        SDL_Log("SDL EVENT: Controller %" SDL_PRIs32 " axis %d ('%s') value: %d",
             event->caxis.which,
             event->caxis.axis,
             ControllerAxisName((SDL_GameControllerAxis)event->caxis.axis),
             event->caxis.value);
         break;
     case SDL_CONTROLLERBUTTONDOWN:
-        SDL_Log("SDL EVENT: Controller %d button %d ('%s') down",
+        SDL_Log("SDL EVENT: Controller %" SDL_PRIs32 "button %d ('%s') down",
             event->cbutton.which, event->cbutton.button,
             ControllerButtonName((SDL_GameControllerButton)event->cbutton.button));
         break;
     case SDL_CONTROLLERBUTTONUP:
-        SDL_Log("SDL EVENT: Controller %d button %d ('%s') up",
+        SDL_Log("SDL EVENT: Controller %" SDL_PRIs32 " button %d ('%s') up",
             event->cbutton.which, event->cbutton.button,
             ControllerButtonName((SDL_GameControllerButton)event->cbutton.button));
         break;
@@ -1527,10 +1525,10 @@ SDLTest_PrintEvent(SDL_Event * event)
         SDL_Log("SDL EVENT: Quit requested");
         break;
     case SDL_USEREVENT:
-        SDL_Log("SDL EVENT: User event %d", event->user.code);
+        SDL_Log("SDL EVENT: User event %" SDL_PRIs32, event->user.code);
         break;
     default:
-        SDL_Log("Unknown event 0x%4.4x", event->type);
+        SDL_Log("Unknown event 0x%4.4" SDL_PRIu32, event->type);
         break;
     }
 }
@@ -1911,7 +1909,8 @@ SDLTest_CommonEvent(SDLTest_CommonState * state, SDL_Event * event, int *done)
             char message[256];
             SDL_Window *window = SDL_GetWindowFromID(event->key.windowID);
 
-            SDL_snprintf(message, sizeof(message), "(%i, %i), rel (%i, %i)\n", lastEvent.x, lastEvent.y, lastEvent.xrel, lastEvent.yrel);
+            SDL_snprintf(message, sizeof(message), "(%" SDL_PRIs32 ", %" SDL_PRIs32 "), rel (%" SDL_PRIs32 ", %" SDL_PRIs32 ")\n",
+                    lastEvent.x, lastEvent.y, lastEvent.xrel, lastEvent.yrel);
             SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "Last mouse position", message, window);
             break;
         }
