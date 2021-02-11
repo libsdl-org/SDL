@@ -223,7 +223,7 @@ typedef uint64_t Uint64;
 
 /* @} *//* Basic data types */
 
-/* Make sure we have macros for printing 64 bit values.
+/* Make sure we have macros for printing width-based integers.
  * <stdint.h> should define these but this is not true all platforms.
  * (for example win32) */
 #ifndef SDL_PRIs64
@@ -268,6 +268,34 @@ typedef uint64_t Uint64;
 #define SDL_PRIX64 "lX"
 #else
 #define SDL_PRIX64 "llX"
+#endif
+#endif
+#ifndef SDL_PRIs32
+#ifdef PRId32
+#define SDL_PRIs32 PRId32
+#else
+#define SDL_PRIs32 "d"
+#endif
+#endif
+#ifndef SDL_PRIu32
+#ifdef PRIu32
+#define SDL_PRIu32 PRIu32
+#else
+#define SDL_PRIu32 "u"
+#endif
+#endif
+#ifndef SDL_PRIx32
+#ifdef PRIx32
+#define SDL_PRIx32 PRIx32
+#else
+#define SDL_PRIx32 "x"
+#endif
+#endif
+#ifndef SDL_PRIX32
+#ifdef PRIX32
+#define SDL_PRIX32 PRIX32
+#else
+#define SDL_PRIX32 "X"
 #endif
 #endif
 
