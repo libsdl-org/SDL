@@ -37,10 +37,8 @@
  *  SDL video driver.  Renamed to "DUMMY" by Sam Lantinga.
  */
 
-#include "SDL_version.h"
 #include "SDL_video.h"
 #include "SDL_mouse.h"
-#include "SDL_syswm.h"
 #include "../SDL_sysvideo.h"
 #include "../SDL_pixels_c.h"
 #include "../../events/SDL_events_c.h"
@@ -48,6 +46,7 @@
 #include "SDL_riscosvideo.h"
 #include "SDL_riscosevents_c.h"
 #include "SDL_riscosframebuffer_c.h"
+#include "SDL_riscoswindow.h"
 
 #include <kernel.h>
 #include <swis.h>
@@ -58,7 +57,6 @@
 static int RISCOS_VideoInit(_THIS);
 static int RISCOS_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode);
 static void RISCOS_VideoQuit(_THIS);
-SDL_bool RISCOS_GetWindowWMInfo(_THIS, SDL_Window * window, struct SDL_SysWMinfo *info);
 
 /* RISC OS driver bootstrap functions */
 
@@ -86,11 +84,13 @@ RISCOS_CreateDevice(int devindex)
     device->SetDisplayMode = RISCOS_SetDisplayMode;
     device->PumpEvents = RISCOS_PumpEvents;
 
+    device->CreateSDLWindow = RISCOS_CreateWindow;
+    device->DestroyWindow = RISCOS_DestroyWindow;
     device->GetWindowWMInfo = RISCOS_GetWindowWMInfo;
 
-    device->CreateWindowFramebuffer = SDL_RISCOS_CreateWindowFramebuffer;
-    device->UpdateWindowFramebuffer = SDL_RISCOS_UpdateWindowFramebuffer;
-    device->DestroyWindowFramebuffer = SDL_RISCOS_DestroyWindowFramebuffer;
+    device->CreateWindowFramebuffer = RISCOS_CreateWindowFramebuffer;
+    device->UpdateWindowFramebuffer = RISCOS_UpdateWindowFramebuffer;
+    device->DestroyWindowFramebuffer = RISCOS_DestroyWindowFramebuffer;
 
     device->free = RISCOS_DeleteDevice;
 
@@ -232,18 +232,6 @@ RISCOS_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
 void
 RISCOS_VideoQuit(_THIS)
 {
-}
-
-SDL_bool RISCOS_GetWindowWMInfo(_THIS, SDL_Window * window, struct SDL_SysWMinfo *info) {
-    if (info->version.major == SDL_MAJOR_VERSION &&
-        info->version.minor == SDL_MINOR_VERSION) {
-        info->subsystem = SDL_SYSWM_RISCOS;
-        return SDL_TRUE;
-    } else {
-        SDL_SetError("Application not compiled with SDL %d.%d",
-                     SDL_MAJOR_VERSION, SDL_MINOR_VERSION);
-        return SDL_FALSE;
-    }
 }
 
 #endif /* SDL_VIDEO_DRIVER_RISCOS */
