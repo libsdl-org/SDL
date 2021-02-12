@@ -54,7 +54,7 @@ If you need help with the library, or just want to discuss SDL related
 issues, you can join the [developers mailing list](http://www.libsdl.org/mailing-list.php)
 
 If you want to report bugs or contribute patches, please submit them to
-[bugzilla](https://bugzilla.libsdl.org/)
+[our bug tracker](https://github.com/libsdl-org/SDL/issues)
 
 Enjoy!
 

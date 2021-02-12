@@ -69,7 +69,7 @@ Android_GLES_SwapWindow(_THIS, SDL_Window * window)
 
     /* The following two calls existed in the original Java code
      * If you happen to have a device that's affected by their removal,
-     * please report to Bugzilla. -- Gabriel
+     * please report to our bug tracker. -- Gabriel
      */
 
     /*_this->egl_data->eglWaitNative(EGL_CORE_NATIVE_ENGINE);
