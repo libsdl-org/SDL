@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -18,16 +18,25 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-
-#ifndef SDL_riscosframebuffer_c_h_
-#define SDL_riscosframebuffer_c_h_
-
 #include "../../SDL_internal.h"
 
-extern int RISCOS_CreateWindowFramebuffer(_THIS, SDL_Window * window, Uint32 * format, void ** pixels, int *pitch);
-extern int RISCOS_UpdateWindowFramebuffer(_THIS, SDL_Window * window, const SDL_Rect * rects, int numrects);
-extern void RISCOS_DestroyWindowFramebuffer(_THIS, SDL_Window * window);
+#ifndef SDL_riscoswindow_h_
+#define SDL_riscoswindow_h_
 
-#endif /* SDL_riscosframebuffer_c_h_ */
+#include "SDL_riscosdefs.h"
+
+typedef struct
+{
+    SDL_Window *window;
+    sprite_area *fb_area;
+    sprite_header *fb_sprite;
+} SDL_WindowData;
+
+extern int RISCOS_CreateWindow(_THIS, SDL_Window * window);
+extern void RISCOS_DestroyWindow(_THIS, SDL_Window * window);
+extern SDL_bool RISCOS_GetWindowWMInfo(_THIS, SDL_Window * window,
+                                    struct SDL_SysWMinfo *info);
+
+#endif /* SDL_riscoswindow_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */
