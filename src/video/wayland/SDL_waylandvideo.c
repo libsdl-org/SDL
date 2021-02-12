@@ -206,6 +206,8 @@ Wayland_CreateDevice(int devindex)
     device->SetWindowBordered = Wayland_SetWindowBordered;
     device->SetWindowResizable = Wayland_SetWindowResizable;
     device->SetWindowSize = Wayland_SetWindowSize;
+    device->SetWindowMinimumSize = Wayland_SetWindowMinimumSize;
+    device->SetWindowMaximumSize = Wayland_SetWindowMaximumSize;
     device->SetWindowTitle = Wayland_SetWindowTitle;
     device->DestroyWindow = Wayland_DestroyWindow;
     device->SetWindowHitTest = Wayland_SetWindowHitTest;
