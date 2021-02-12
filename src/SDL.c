@@ -468,7 +468,7 @@ SDL_GetRevision(void)
 int
 SDL_GetRevisionNumber(void)
 {
-    return SDL_REVISION_NUMBER;
+    return 0;  /* doesn't make sense without Mercurial. */
 }
 
 /* Get the name of the platform */

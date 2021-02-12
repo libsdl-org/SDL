@@ -142,13 +142,15 @@ extern DECLSPEC void SDLCALL SDL_GetVersion(SDL_version * ver);
 extern DECLSPEC const char *SDLCALL SDL_GetRevision(void);
 
 /**
- *  \brief Get the revision number of SDL that is linked against your program.
+ *  \brief Obsolete function, do not use.
  *
- *  Returns a number uniquely identifying the exact revision of the SDL
- *  library in use. It is an incrementing number based on commits to
- *  hg.libsdl.org.
+ *  When SDL was hosted in a Mercurial repository, and was built carefully,
+ *  this would return the revision number that the build was created from.
+ *  This number was not reliable for several reasons, but more importantly,
+ *  SDL is now hosted in a git repository, which does not offer numbers at
+ *  all, only hashes. This function only ever returns zero now. Don't use it.
  */
-extern DECLSPEC int SDLCALL SDL_GetRevisionNumber(void);
+extern SDL_DEPRECATED DECLSPEC int SDLCALL SDL_GetRevisionNumber(void);
 
 
 /* Ends C function definitions when using C++ */

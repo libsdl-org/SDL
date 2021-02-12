@@ -82,9 +82,9 @@ esac
 
 if test x$srcdir != x.; then
     INCLUDE="-Iinclude $INCLUDE"
-elif test -d .hg; then
+elif test -d .git; then
     AC_MSG_ERROR([
-*** When building from Mercurial you should configure and build in a
+*** When building from a git clone you should configure and build in a
     separate directory so you don't clobber SDL_config.h, SDL_revision.h
 ])
 fi

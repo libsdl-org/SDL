@@ -35,7 +35,7 @@ More documentation and FAQs are available online at [the wiki](http://wiki.libsd
 - [DynAPI](README-dynapi.md)
 - [Emscripten](README-emscripten.md)
 - [Gesture](README-gesture.md)
-- [Mercurial](README-hg.md)
+- [Git](README-git.md)
 - [iOS](README-ios.md)
 - [Linux](README-linux.md)
 - [OS X](README-macosx.md)

@@ -1,6 +1,4 @@
-We are no longer hosted in Mercurial. The official repo is now:
-
-   https://github.com/libsdl-org/SDL
+We are no longer hosted in Mercurial. Please see README-git.md for details.
 
 Thanks!
 

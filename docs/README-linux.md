@@ -15,7 +15,7 @@ Build Dependencies
     
 Ubuntu 20.04, all available features enabled:
 
-sudo apt-get install build-essential mercurial make cmake autoconf automake \
+sudo apt-get install build-essential git make cmake autoconf automake \
 libtool libasound2-dev libpulse-dev libaudio-dev libx11-dev libxext-dev \
 libxrandr-dev libxcursor-dev libxi-dev libxinerama-dev libxxf86vm-dev \
 libxss-dev libgl1-mesa-dev libdbus-1-dev libudev-dev libgles2-mesa-dev \

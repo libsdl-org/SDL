@@ -141,9 +141,6 @@ int platform_testGetFunctions (void *arg)
    SDLTest_AssertPass("SDL_GetRevision()");
    SDLTest_AssertCheck(revision != NULL, "SDL_GetRevision() != NULL");
 
-   ret = SDL_GetRevisionNumber();
-   SDLTest_AssertPass("SDL_GetRevisionNumber()");
-
    return TEST_COMPLETED;
 }
 
