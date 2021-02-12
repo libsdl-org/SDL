@@ -138,7 +138,8 @@ ControllerHasPaddles(Uint16 vendor_id, Uint16 product_id)
 static SDL_bool
 ControllerHasTriggerRumble(Uint16 vendor_id, Uint16 product_id)
 {
-    return SDL_IsJoystickXboxOneElite(vendor_id, product_id);
+    // All the Microsoft Xbox One controllers have trigger rumble
+    return (vendor_id == USB_VENDOR_MICROSOFT);
 }
 
 static SDL_bool
