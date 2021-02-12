@@ -774,7 +774,7 @@ if(LIBC)
     set(HAVE_SIGNAL_H 1)
     foreach(_FN
             malloc calloc realloc free qsort abs memset memcpy memmove memcmp
-            wcslen wcsdup wcsstr wcscmp wcsncmp _wcsicmp _wcsnicmp
+            wcslen _wcsdup wcsdup wcsstr wcscmp wcsncmp _wcsicmp _wcsnicmp
             strlen _strrev _strupr _strlwr strchr strrchr strstr itoa _ltoa
             _ultoa strtol strtoul strtoll strtod atoi atof strcmp strncmp
             _stricmp _strnicmp sscanf
@@ -813,10 +813,10 @@ if(LIBC)
     foreach(_FN
             strtod malloc calloc realloc free getenv setenv putenv unsetenv
             qsort abs bcopy memset memcpy memmove memcmp strlen strlcpy strlcat
-            _strrev _strupr _strlwr strchr strrchr strstr strtok_r itoa _ltoa
-            _uitoa _ultoa strtol strtoul _i64toa _ui64toa strtoll strtoull
+            _strrev _strupr _strlwr index rindex strchr strrchr strstr strtok_r
+            itoa _ltoa _uitoa _ultoa strtol strtoul _i64toa _ui64toa strtoll strtoull
             atoi atof strcmp strncmp _stricmp strcasecmp _strnicmp strncasecmp
-            wcscmp wcsdup wcslcat wcslcpy wcslen wcsncmp wcsstr
+            wcscmp _wcsdup wcsdup wcslcat wcslcpy wcslen wcsncmp wcsstr
             wcscasecmp _wcsicmp wcsncasecmp _wcsnicmp
             sscanf vsscanf vsnprintf fopen64 fseeko fseeko64 _Exit
             )
@@ -2307,18 +2307,20 @@ if(SDL_STATIC)
   endif()
 endif()
 
-macro(asan_check_add_debug_flag ASAN_FLAG)
-    set(FLAG "-fsanitize=${ASAN_FLAG}")
-
-    check_c_compiler_flag(${FLAG} HAS_C_FLAG_${ASAN_FLAG})
-    if (HAS_C_FLAG_${ASAN_FLAG})
+macro(check_add_debug_flag FLAG SUFFIX)
+    check_c_compiler_flag(${FLAG} HAS_C_FLAG_${SUFFIX})
+    if (HAS_C_FLAG_${SUFFIX})
         set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} ${FLAG}")
     endif()
 
-    check_cxx_compiler_flag("${FLAG}" HAS_CXX_${ASAN_FLAG})
-    if (HAS_CXX_${ASAN_FLAG})
+    check_cxx_compiler_flag("${FLAG}" HAS_CXX_${SUFFIX})
+    if (HAS_CXX_${SUFFIX})
         set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${FLAG}")
     endif()
+endmacro()
+
+macro(asan_check_add_debug_flag ASAN_FLAG)	
+    check_add_debug_flag("-fsanitize=${ASAN_FLAG}" "${ASAN_FLAG}")	
 endmacro()
 
 macro(asan_check_add_debug_flag2 ASAN_FLAG)
@@ -2343,21 +2345,24 @@ macro(asan_check_add_debug_flag2 ASAN_FLAG)
 endmacro()
 
 # enable AddressSanitizer if supported
-asan_check_add_debug_flag2("address")
-asan_check_add_debug_flag("bool")
-asan_check_add_debug_flag("bounds")
-asan_check_add_debug_flag("enum")
-asan_check_add_debug_flag("float-cast-overflow")
-asan_check_add_debug_flag("float-divide-by-zero")
-asan_check_add_debug_flag("nonnull-attribute")
-asan_check_add_debug_flag("returns-nonnull-attribute")
-asan_check_add_debug_flag("signed-integer-overflow")
-asan_check_add_debug_flag("undefined")
-asan_check_add_debug_flag("vla-bound")
-asan_check_add_debug_flag("leak")
-# The object size sanitizer has no effect on unoptimized builds on Clang.
-if((NOT USE_CLANG) OR (CMAKE_BUILD_TYPE STREQUAL ""))
-asan_check_add_debug_flag("object-size")
+if (ASAN)
+  asan_check_add_debug_flag2("address")
+  asan_check_add_debug_flag("bool")
+  asan_check_add_debug_flag("bounds")
+  asan_check_add_debug_flag("enum")
+  asan_check_add_debug_flag("float-cast-overflow")
+  asan_check_add_debug_flag("float-divide-by-zero")
+  asan_check_add_debug_flag("nonnull-attribute")
+  asan_check_add_debug_flag("returns-nonnull-attribute")
+  asan_check_add_debug_flag("signed-integer-overflow")
+  asan_check_add_debug_flag("undefined")
+  asan_check_add_debug_flag("vla-bound")
+  asan_check_add_debug_flag("leak")
+  # The object size sanitizer has no effect on unoptimized builds on Clang,
+  # but causes warnings.
+  if((NOT USE_CLANG) OR (CMAKE_BUILD_TYPE STREQUAL ""))
+    asan_check_add_debug_flag("object-size")
+  endif()
 endif()
 
 ##### Tests #####
