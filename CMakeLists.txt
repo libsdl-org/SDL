@@ -2313,14 +2313,14 @@ macro(check_add_debug_flag FLAG SUFFIX)
         set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} ${FLAG}")
     endif()
 
-    check_cxx_compiler_flag("${FLAG}" HAS_CXX_${SUFFIX})
+    check_cxx_compiler_flag(${FLAG} HAS_CXX_${SUFFIX})
     if (HAS_CXX_${SUFFIX})
         set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${FLAG}")
     endif()
 endmacro()
 
-macro(asan_check_add_debug_flag ASAN_FLAG)	
-    check_add_debug_flag("-fsanitize=${ASAN_FLAG}" "${ASAN_FLAG}")	
+macro(asan_check_add_debug_flag ASAN_FLAG)
+    check_add_debug_flag("-fsanitize=${ASAN_FLAG}" "${ASAN_FLAG}")
 endmacro()
 
 macro(asan_check_add_debug_flag2 ASAN_FLAG)
