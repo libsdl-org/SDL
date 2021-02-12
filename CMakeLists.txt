@@ -159,16 +159,6 @@ else()
   set(SDL_PTHREADS_ENABLED_BY_DEFAULT OFF)
 endif()
 
-# Default option knobs
-if(APPLE OR ARCH_64)
-  if(NOT "${CMAKE_OSX_ARCHITECTURES}" MATCHES "arm")
-    set(OPT_DEF_SSEMATH ON)
-  endif()
-endif()
-if(UNIX OR MINGW OR MSYS)
-  set(OPT_DEF_LIBC ON)
-endif()
-
 # The hidraw support doesn't catch Xbox, PS4 and Nintendo controllers,
 #  so we'll just use libusb when it's available. libusb does not support iOS,
 #  so we default to yes on iOS.
@@ -191,11 +181,11 @@ else()
 endif()
 
 # Compiler info
-if(CMAKE_COMPILER_IS_GNUCC)
-  set(USE_GCC TRUE)
-  set(OPT_DEF_ASM TRUE)
-elseif(CMAKE_C_COMPILER_ID MATCHES "Clang")
+if(CMAKE_C_COMPILER_ID MATCHES "Clang")
   set(USE_CLANG TRUE)
+  set(OPT_DEF_ASM TRUE)
+elseif(CMAKE_COMPILER_IS_GNUCC)
+  set(USE_GCC TRUE)
   set(OPT_DEF_ASM TRUE)
 elseif(MSVC_VERSION GREATER 1400) # VisualStudio 8.0+
   set(OPT_DEF_ASM TRUE)
@@ -206,6 +196,16 @@ endif()
 
 if(USE_GCC OR USE_CLANG)
   set(OPT_DEF_GCC_ATOMICS ON)
+endif()
+
+# Default option knobs
+if(APPLE OR ARCH_64)
+  if(NOT "${CMAKE_OSX_ARCHITECTURES}" MATCHES "arm")
+    set(OPT_DEF_SSEMATH ON)
+  endif()
+endif()
+if(UNIX OR MINGW OR MSYS OR USE_CLANG)
+  set(OPT_DEF_LIBC ON)
 endif()
 
 # Default flags, if not set otherwise
@@ -401,7 +401,6 @@ option_string(BACKGROUNDING_SIGNAL "number to use for magic backgrounding signal
 option_string(FOREGROUNDING_SIGNAL "number to use for magic foregrounding signal or 'OFF'" "OFF")
 set_option(HIDAPI              "Use HIDAPI for low level joystick drivers" ${OPT_DEF_HIDAPI})
 set_option(JOYSTICK_VIRTUAL    "Enable the virtual-joystick driver" ON)
-set_option(ASAN                "Use AddressSanitizer to detect memory errors" OFF)
 
 set(SDL_SHARED ${SDL_SHARED_ENABLED_BY_DEFAULT} CACHE BOOL "Build a shared version of the library")
 set(SDL_STATIC ${SDL_STATIC_ENABLED_BY_DEFAULT} CACHE BOOL "Build a static version of the library")
@@ -535,7 +534,7 @@ if(USE_GCC OR USE_CLANG)
     set(CMAKE_REQUIRED_FLAGS "-Wl,--no-undefined")
     check_c_compiler_flag("" HAVE_NO_UNDEFINED)
     set(CMAKE_REQUIRED_FLAGS ${ORIG_CMAKE_REQUIRED_FLAGS})
-    if(HAVE_NO_UNDEFINED)
+    if(HAVE_NO_UNDEFINED AND NOT USE_CLANG)
       list(APPEND EXTRA_LDFLAGS "-Wl,--no-undefined")
     endif()
   endif()
@@ -760,11 +759,6 @@ if(ASSEMBLY)
     set(HAVE_SSE3 TRUE)
     set(SDL_ASSEMBLY_ROUTINES 1)
   endif()
-# TODO:
-#else()
-#  if(USE_GCC OR USE_CLANG)
-#    list(APPEND EXTRA_CFLAGS "-mno-sse" "-mno-sse2" "-mno-sse3" "-mno-mmx")
-#  endif()
 endif()
 
 # TODO: Can't deactivate on FreeBSD? w/o LIBC, SDL_stdinc.h can't define
@@ -780,7 +774,7 @@ if(LIBC)
     set(HAVE_SIGNAL_H 1)
     foreach(_FN
             malloc calloc realloc free qsort abs memset memcpy memmove memcmp
-            wcslen _wcsdup wcsdup wcsstr wcscmp wcsncmp _wcsicmp _wcsnicmp
+            wcslen wcsdup wcsstr wcscmp wcsncmp _wcsicmp _wcsnicmp
             strlen _strrev _strupr _strlwr strchr strrchr strstr itoa _ltoa
             _ultoa strtol strtoul strtoll strtod atoi atof strcmp strncmp
             _stricmp _strnicmp sscanf
@@ -819,10 +813,10 @@ if(LIBC)
     foreach(_FN
             strtod malloc calloc realloc free getenv setenv putenv unsetenv
             qsort abs bcopy memset memcpy memmove memcmp strlen strlcpy strlcat
-            _strrev _strupr _strlwr index rindex strchr strrchr strstr strtok_r
-            itoa _ltoa _uitoa _ultoa strtol strtoul _i64toa _ui64toa strtoll strtoull
+            _strrev _strupr _strlwr strchr strrchr strstr strtok_r itoa _ltoa
+            _uitoa _ultoa strtol strtoul _i64toa _ui64toa strtoll strtoull
             atoi atof strcmp strncmp _stricmp strcasecmp _strnicmp strncasecmp
-            wcscmp _wcsdup wcsdup wcslcat wcslcpy wcslen wcsncmp wcsstr
+            wcscmp wcsdup wcslcat wcslcpy wcslen wcsncmp wcsstr
             wcscasecmp _wcsicmp wcsncasecmp _wcsnicmp
             sscanf vsscanf vsnprintf fopen64 fseeko fseeko64 _Exit
             )
@@ -2313,20 +2307,18 @@ if(SDL_STATIC)
   endif()
 endif()
 
-macro(check_add_debug_flag FLAG SUFFIX)
-    check_c_compiler_flag(${FLAG} HAS_C_FLAG_${SUFFIX})
-    if (HAS_C_FLAG_${SUFFIX})
+macro(asan_check_add_debug_flag ASAN_FLAG)
+    set(FLAG "-fsanitize=${ASAN_FLAG}")
+
+    check_c_compiler_flag(${FLAG} HAS_C_FLAG_${ASAN_FLAG})
+    if (HAS_C_FLAG_${ASAN_FLAG})
         set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} ${FLAG}")
     endif()
 
-    check_cxx_compiler_flag(${FLAG} HAS_CXX_${SUFFIX})
-    if (HAS_CXX_${SUFFIX})
+    check_cxx_compiler_flag("${FLAG}" HAS_CXX_${ASAN_FLAG})
+    if (HAS_CXX_${ASAN_FLAG})
         set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${FLAG}")
     endif()
-endmacro()
-
-macro(asan_check_add_debug_flag ASAN_FLAG)
-    check_add_debug_flag("-fsanitize=${ASAN_FLAG}" "${ASAN_FLAG}")
 endmacro()
 
 macro(asan_check_add_debug_flag2 ASAN_FLAG)
@@ -2351,20 +2343,21 @@ macro(asan_check_add_debug_flag2 ASAN_FLAG)
 endmacro()
 
 # enable AddressSanitizer if supported
-if (ASAN)
-  asan_check_add_debug_flag2("address")
-  asan_check_add_debug_flag("bool")
-  asan_check_add_debug_flag("bounds")
-  asan_check_add_debug_flag("enum")
-  asan_check_add_debug_flag("float-cast-overflow")
-  asan_check_add_debug_flag("float-divide-by-zero")
-  asan_check_add_debug_flag("nonnull-attribute")
-  asan_check_add_debug_flag("returns-nonnull-attribute")
-  asan_check_add_debug_flag("signed-integer-overflow")
-  asan_check_add_debug_flag("undefined")
-  asan_check_add_debug_flag("vla-bound")
-  asan_check_add_debug_flag("leak")
-  asan_check_add_debug_flag("object-size")
+asan_check_add_debug_flag2("address")
+asan_check_add_debug_flag("bool")
+asan_check_add_debug_flag("bounds")
+asan_check_add_debug_flag("enum")
+asan_check_add_debug_flag("float-cast-overflow")
+asan_check_add_debug_flag("float-divide-by-zero")
+asan_check_add_debug_flag("nonnull-attribute")
+asan_check_add_debug_flag("returns-nonnull-attribute")
+asan_check_add_debug_flag("signed-integer-overflow")
+asan_check_add_debug_flag("undefined")
+asan_check_add_debug_flag("vla-bound")
+asan_check_add_debug_flag("leak")
+# The object size sanitizer has no effect on unoptimized builds on Clang.
+if((NOT USE_CLANG) OR (CMAKE_BUILD_TYPE STREQUAL ""))
+asan_check_add_debug_flag("object-size")
 endif()
 
 ##### Tests #####
