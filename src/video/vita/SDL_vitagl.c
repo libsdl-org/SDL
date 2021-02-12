@@ -106,7 +106,7 @@ VITA_GL_CreateContext(_THIS, SDL_Window * window)
     attribs[i++] = EGL_ALPHA_SIZE;
     attribs[i++] = 8;
     attribs[i++] = EGL_STENCIL_SIZE;
-    attribs[i++] = 0;;
+    attribs[i++] = 0;
 
     attribs[i++] = EGL_SURFACE_TYPE;
     attribs[i++] = 5;
