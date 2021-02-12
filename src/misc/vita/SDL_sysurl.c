@@ -34,8 +34,13 @@ SDL_SYS_OpenURL(const char *url)
     SDL_zero(boot_param);
     sceAppUtilInit(&init_param, &boot_param);
     SDL_zero(browser_param);
+#if DOLCEVITA
+    browser_param.wbstr = (SceChar8*)url;
+    browser_param.wbstrLength = strlen(url);
+#else
     browser_param.str = url;
     browser_param.strlen = strlen(url);
+#endif
     sceAppUtilLaunchWebBrowser(&browser_param);
     return 0;
 }
