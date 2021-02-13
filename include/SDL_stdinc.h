@@ -440,10 +440,18 @@ extern DECLSPEC int SDLCALL SDL_abs(int x);
 #define SDL_min(x, y) (((x) < (y)) ? (x) : (y))
 #define SDL_max(x, y) (((x) > (y)) ? (x) : (y))
 
+extern DECLSPEC int SDLCALL SDL_isalpha(int x);
+extern DECLSPEC int SDLCALL SDL_isalnum(int x);
+extern DECLSPEC int SDLCALL SDL_isblank(int x);
+extern DECLSPEC int SDLCALL SDL_iscntrl(int x);
 extern DECLSPEC int SDLCALL SDL_isdigit(int x);
+extern DECLSPEC int SDLCALL SDL_isxdigit(int x);
+extern DECLSPEC int SDLCALL SDL_ispunct(int x);
 extern DECLSPEC int SDLCALL SDL_isspace(int x);
 extern DECLSPEC int SDLCALL SDL_isupper(int x);
 extern DECLSPEC int SDLCALL SDL_islower(int x);
+extern DECLSPEC int SDLCALL SDL_isprint(int x);
+extern DECLSPEC int SDLCALL SDL_isgraph(int x);
 extern DECLSPEC int SDLCALL SDL_toupper(int x);
 extern DECLSPEC int SDLCALL SDL_tolower(int x);
 
