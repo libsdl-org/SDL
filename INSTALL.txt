@@ -5,7 +5,7 @@ To compile and install SDL:
         * Read VisualC.html
 
         Windows with gcc, either native or cross-compiling:
-        * Read the FAQ at https://github.com/libsdl-org/SDL/wiki/moin.fcg/FAQWindows
+        * Read the FAQ at https://github.com/libsdl-org/SDL/wiki/FAQWindows
         * Run './configure; make; make install'
 
         Mac OS X with Xcode:
