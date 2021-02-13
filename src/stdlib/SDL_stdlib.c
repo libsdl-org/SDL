@@ -521,8 +521,8 @@ int SDL_tolower(int x) { return tolower(x); }
 int SDL_isalpha(int x) { return (SDL_isupper(x)) || (SDL_islower(x)); }
 int SDL_isalnum(int x) { return (SDL_isalpha(x)) || (SDL_isdigit(x)); }
 int SDL_isdigit(int x) { return ((x) >= '0') && ((x) <= '9'); }
-int SDL_isxdigit(int x) { return (SDL_isalpha(x)) || (SDL_isdigit(x)); }
-int SDL_ispunct(int x) { return (SDL_isprint(x)) && (!SDL_isalnum(x)); }
+int SDL_isxdigit(int x) { return (((x) >= 'A') && ((x) <= 'F')) || (((x) >= 'a') && ((x) <= 'f')) || (SDL_isdigit(x)); }
+int SDL_ispunct(int x) { return (SDL_isgraph(x)) && (!SDL_isalnum(x)); }
 int SDL_isspace(int x) { return ((x) == ' ') || ((x) == '\t') || ((x) == '\r') || ((x) == '\n') || ((x) == '\f') || ((x) == '\v'); }
 int SDL_isupper(int x) { return ((x) >= 'A') && ((x) <= 'Z'); }
 int SDL_islower(int x) { return ((x) >= 'a') && ((x) <= 'z'); }
