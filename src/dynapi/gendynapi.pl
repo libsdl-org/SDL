@@ -21,7 +21,7 @@
 
 # WHAT IS THIS?
 #  When you add a public API to SDL, please run this script, make sure the
-#  output looks sane (hg diff, it adds to existing files), and commit it.
+#  output looks sane (git diff, it adds to existing files), and commit it.
 #  It keeps the dynamic API jump table operating correctly.
 
 # If you wanted this to be readable, you shouldn't have used perl.

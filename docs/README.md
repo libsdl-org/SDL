@@ -35,7 +35,7 @@ More documentation and FAQs are available online at [the wiki](http://wiki.libsd
 - [DynAPI](README-dynapi.md)
 - [Emscripten](README-emscripten.md)
 - [Gesture](README-gesture.md)
-- [Mercurial](README-hg.md)
+- [Git](README-git.md)
 - [iOS](README-ios.md)
 - [Linux](README-linux.md)
 - [OS X](README-macosx.md)
@@ -54,7 +54,7 @@ If you need help with the library, or just want to discuss SDL related
 issues, you can join the [developers mailing list](http://www.libsdl.org/mailing-list.php)
 
 If you want to report bugs or contribute patches, please submit them to
-[bugzilla](https://bugzilla.libsdl.org/)
+[our bug tracker](https://github.com/libsdl-org/SDL/issues)
 
 Enjoy!
 
