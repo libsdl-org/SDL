@@ -47,6 +47,7 @@ xcuserdata
 *.xcworkspace
 
 # for Visual C++
+.vs
 Debug
 Release
 *.user
