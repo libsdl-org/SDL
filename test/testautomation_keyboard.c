@@ -16,7 +16,7 @@
 /**
  * @brief Check call to SDL_GetKeyboardState with and without numkeys reference.
  *
- * @sa http://wiki.libsdl.org/moin.cgi/SDL_GetKeyboardState
+ * @sa http://github.com/libsdl-org/SDL/wiki/moin.cgi/SDL_GetKeyboardState
  */
 int
 keyboard_getKeyboardState(void *arg)
@@ -42,7 +42,7 @@ keyboard_getKeyboardState(void *arg)
 /**
  * @brief Check call to SDL_GetKeyboardFocus
  *
- * @sa http://wiki.libsdl.org/moin.cgi/SDL_GetKeyboardFocus
+ * @sa http://github.com/libsdl-org/SDL/wiki/moin.cgi/SDL_GetKeyboardFocus
  */
 int
 keyboard_getKeyboardFocus(void *arg)
@@ -59,7 +59,7 @@ keyboard_getKeyboardFocus(void *arg)
 /**
  * @brief Check call to SDL_GetKeyFromName for known, unknown and invalid name.
  *
- * @sa http://wiki.libsdl.org/moin.cgi/SDL_GetKeyFromName
+ * @sa http://github.com/libsdl-org/SDL/wiki/moin.cgi/SDL_GetKeyFromName
  */
 int
 keyboard_getKeyFromName(void *arg)
@@ -126,7 +126,7 @@ _checkInvalidScancodeError()
 /**
  * @brief Check call to SDL_GetKeyFromScancode
  *
- * @sa http://wiki.libsdl.org/moin.cgi/SDL_GetKeyFromScancode
+ * @sa http://github.com/libsdl-org/SDL/wiki/moin.cgi/SDL_GetKeyFromScancode
  */
 int
 keyboard_getKeyFromScancode(void *arg)
@@ -165,7 +165,7 @@ keyboard_getKeyFromScancode(void *arg)
 /**
  * @brief Check call to SDL_GetKeyName
  *
- * @sa http://wiki.libsdl.org/moin.cgi/SDL_GetKeyName
+ * @sa http://github.com/libsdl-org/SDL/wiki/moin.cgi/SDL_GetKeyName
  */
 int
 keyboard_getKeyName(void *arg)
@@ -221,7 +221,7 @@ keyboard_getKeyName(void *arg)
 /**
  * @brief SDL_GetScancodeName negative cases
  *
- * @sa http://wiki.libsdl.org/moin.cgi/SDL_GetScancodeName
+ * @sa http://github.com/libsdl-org/SDL/wiki/moin.cgi/SDL_GetScancodeName
  */
 int
 keyboard_getScancodeNameNegative(void *arg)
@@ -248,7 +248,7 @@ keyboard_getScancodeNameNegative(void *arg)
 /**
  * @brief SDL_GetKeyName negative cases
  *
- * @sa http://wiki.libsdl.org/moin.cgi/SDL_GetKeyName
+ * @sa http://github.com/libsdl-org/SDL/wiki/moin.cgi/SDL_GetKeyName
  */
 int
 keyboard_getKeyNameNegative(void *arg)
@@ -285,8 +285,8 @@ keyboard_getKeyNameNegative(void *arg)
 /**
  * @brief Check call to SDL_GetModState and SDL_SetModState
  *
- * @sa http://wiki.libsdl.org/moin.cgi/SDL_GetModState
- * @sa http://wiki.libsdl.org/moin.cgi/SDL_SetModState
+ * @sa http://github.com/libsdl-org/SDL/wiki/moin.cgi/SDL_GetModState
+ * @sa http://github.com/libsdl-org/SDL/wiki/moin.cgi/SDL_SetModState
  */
 int
 keyboard_getSetModState(void *arg)
@@ -346,8 +346,8 @@ keyboard_getSetModState(void *arg)
 /**
  * @brief Check call to SDL_StartTextInput and SDL_StopTextInput
  *
- * @sa http://wiki.libsdl.org/moin.cgi/SDL_StartTextInput
- * @sa http://wiki.libsdl.org/moin.cgi/SDL_StopTextInput
+ * @sa http://github.com/libsdl-org/SDL/wiki/moin.cgi/SDL_StartTextInput
+ * @sa http://github.com/libsdl-org/SDL/wiki/moin.cgi/SDL_StopTextInput
  */
 int
 keyboard_startStopTextInput(void *arg)
@@ -393,7 +393,7 @@ void _testSetTextInputRect(SDL_Rect refRect)
 /**
  * @brief Check call to SDL_SetTextInputRect
  *
- * @sa http://wiki.libsdl.org/moin.cgi/SDL_SetTextInputRect
+ * @sa http://github.com/libsdl-org/SDL/wiki/moin.cgi/SDL_SetTextInputRect
  */
 int
 keyboard_setTextInputRect(void *arg)
@@ -473,7 +473,7 @@ keyboard_setTextInputRect(void *arg)
 /**
  * @brief Check call to SDL_SetTextInputRect with invalid data
  *
- * @sa http://wiki.libsdl.org/moin.cgi/SDL_SetTextInputRect
+ * @sa http://github.com/libsdl-org/SDL/wiki/moin.cgi/SDL_SetTextInputRect
  */
 int
 keyboard_setTextInputRectNegative(void *arg)
@@ -511,8 +511,8 @@ keyboard_setTextInputRectNegative(void *arg)
 /**
  * @brief Check call to SDL_GetScancodeFromKey
  *
- * @sa http://wiki.libsdl.org/moin.cgi/SDL_GetScancodeFromKey
- * @sa http://wiki.libsdl.org/moin.cgi/SDL_Keycode
+ * @sa http://github.com/libsdl-org/SDL/wiki/moin.cgi/SDL_GetScancodeFromKey
+ * @sa http://github.com/libsdl-org/SDL/wiki/moin.cgi/SDL_Keycode
  */
 int
 keyboard_getScancodeFromKey(void *arg)
@@ -535,8 +535,8 @@ keyboard_getScancodeFromKey(void *arg)
 /**
  * @brief Check call to SDL_GetScancodeFromName
  *
- * @sa http://wiki.libsdl.org/moin.cgi/SDL_GetScancodeFromName
- * @sa http://wiki.libsdl.org/moin.cgi/SDL_Keycode
+ * @sa http://github.com/libsdl-org/SDL/wiki/moin.cgi/SDL_GetScancodeFromName
+ * @sa http://github.com/libsdl-org/SDL/wiki/moin.cgi/SDL_Keycode
  */
 int
 keyboard_getScancodeFromName(void *arg)
@@ -608,8 +608,8 @@ _checkInvalidNameError()
 /**
  * @brief Check call to SDL_GetScancodeFromName with invalid data
  *
- * @sa http://wiki.libsdl.org/moin.cgi/SDL_GetScancodeFromName
- * @sa http://wiki.libsdl.org/moin.cgi/SDL_Keycode
+ * @sa http://github.com/libsdl-org/SDL/wiki/moin.cgi/SDL_GetScancodeFromName
+ * @sa http://github.com/libsdl-org/SDL/wiki/moin.cgi/SDL_Keycode
  */
 int
 keyboard_getScancodeFromNameNegative(void *arg)

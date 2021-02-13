@@ -101,11 +101,11 @@ int platform_testEndianessAndSwap(void *arg)
 /* !
  * \brief Tests SDL_GetXYZ() functions
  * \sa
- * http://wiki.libsdl.org/moin.cgi/SDL_GetPlatform
- * http://wiki.libsdl.org/moin.cgi/SDL_GetCPUCount
- * http://wiki.libsdl.org/moin.cgi/SDL_GetCPUCacheLineSize
- * http://wiki.libsdl.org/moin.cgi/SDL_GetRevision
- * http://wiki.libsdl.org/moin.cgi/SDL_GetRevisionNumber
+ * http://github.com/libsdl-org/SDL/wiki/moin.cgi/SDL_GetPlatform
+ * http://github.com/libsdl-org/SDL/wiki/moin.cgi/SDL_GetCPUCount
+ * http://github.com/libsdl-org/SDL/wiki/moin.cgi/SDL_GetCPUCacheLineSize
+ * http://github.com/libsdl-org/SDL/wiki/moin.cgi/SDL_GetRevision
+ * http://github.com/libsdl-org/SDL/wiki/moin.cgi/SDL_GetRevisionNumber
  */
 int platform_testGetFunctions (void *arg)
 {
@@ -147,16 +147,16 @@ int platform_testGetFunctions (void *arg)
 /* !
  * \brief Tests SDL_HasXYZ() functions
  * \sa
- * http://wiki.libsdl.org/moin.cgi/SDL_Has3DNow
- * http://wiki.libsdl.org/moin.cgi/SDL_HasAltiVec
- * http://wiki.libsdl.org/moin.cgi/SDL_HasMMX
- * http://wiki.libsdl.org/moin.cgi/SDL_HasRDTSC
- * http://wiki.libsdl.org/moin.cgi/SDL_HasSSE
- * http://wiki.libsdl.org/moin.cgi/SDL_HasSSE2
- * http://wiki.libsdl.org/moin.cgi/SDL_HasSSE3
- * http://wiki.libsdl.org/moin.cgi/SDL_HasSSE41
- * http://wiki.libsdl.org/moin.cgi/SDL_HasSSE42
- * http://wiki.libsdl.org/moin.cgi/SDL_HasAVX
+ * http://github.com/libsdl-org/SDL/wiki/moin.cgi/SDL_Has3DNow
+ * http://github.com/libsdl-org/SDL/wiki/moin.cgi/SDL_HasAltiVec
+ * http://github.com/libsdl-org/SDL/wiki/moin.cgi/SDL_HasMMX
+ * http://github.com/libsdl-org/SDL/wiki/moin.cgi/SDL_HasRDTSC
+ * http://github.com/libsdl-org/SDL/wiki/moin.cgi/SDL_HasSSE
+ * http://github.com/libsdl-org/SDL/wiki/moin.cgi/SDL_HasSSE2
+ * http://github.com/libsdl-org/SDL/wiki/moin.cgi/SDL_HasSSE3
+ * http://github.com/libsdl-org/SDL/wiki/moin.cgi/SDL_HasSSE41
+ * http://github.com/libsdl-org/SDL/wiki/moin.cgi/SDL_HasSSE42
+ * http://github.com/libsdl-org/SDL/wiki/moin.cgi/SDL_HasAVX
  */
 int platform_testHasFunctions (void *arg)
 {
@@ -200,7 +200,7 @@ int platform_testHasFunctions (void *arg)
 /* !
  * \brief Tests SDL_GetVersion
  * \sa
- * http://wiki.libsdl.org/moin.cgi/SDL_GetVersion
+ * http://github.com/libsdl-org/SDL/wiki/moin.cgi/SDL_GetVersion
  */
 int platform_testGetVersion(void *arg)
 {
@@ -270,9 +270,9 @@ int platform_testDefaultInit(void *arg)
 /* !
  * \brief Tests SDL_Get/Set/ClearError
  * \sa
- * http://wiki.libsdl.org/moin.cgi/SDL_GetError
- * http://wiki.libsdl.org/moin.cgi/SDL_SetError
- * http://wiki.libsdl.org/moin.cgi/SDL_ClearError
+ * http://github.com/libsdl-org/SDL/wiki/moin.cgi/SDL_GetError
+ * http://github.com/libsdl-org/SDL/wiki/moin.cgi/SDL_SetError
+ * http://github.com/libsdl-org/SDL/wiki/moin.cgi/SDL_ClearError
  */
 int platform_testGetSetClearError(void *arg)
 {
@@ -324,7 +324,7 @@ int platform_testGetSetClearError(void *arg)
 /* !
  * \brief Tests SDL_SetError with empty input
  * \sa
- * http://wiki.libsdl.org/moin.cgi/SDL_SetError
+ * http://github.com/libsdl-org/SDL/wiki/moin.cgi/SDL_SetError
  */
 int platform_testSetErrorEmptyInput(void *arg)
 {
@@ -362,7 +362,7 @@ int platform_testSetErrorEmptyInput(void *arg)
 /* !
  * \brief Tests SDL_SetError with invalid input
  * \sa
- * http://wiki.libsdl.org/moin.cgi/SDL_SetError
+ * http://github.com/libsdl-org/SDL/wiki/moin.cgi/SDL_SetError
  */
 int platform_testSetErrorInvalidInput(void *arg)
 {
@@ -445,7 +445,7 @@ int platform_testSetErrorInvalidInput(void *arg)
 /* !
  * \brief Tests SDL_GetPowerInfo
  * \sa
- * http://wiki.libsdl.org/moin.cgi/SDL_GetPowerInfo
+ * http://github.com/libsdl-org/SDL/wiki/moin.cgi/SDL_GetPowerInfo
  */
 int platform_testGetPowerInfo(void *arg)
 {

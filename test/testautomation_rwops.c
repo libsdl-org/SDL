@@ -88,8 +88,8 @@ RWopsTearDown(void *arg)
  * @brief Makes sure parameters work properly. Local helper function.
  *
  * \sa
- * http://wiki.libsdl.org/moin.cgi/SDL_RWseek
- * http://wiki.libsdl.org/moin.cgi/SDL_RWread
+ * http://github.com/libsdl-org/SDL/wiki/moin.cgi/SDL_RWseek
+ * http://github.com/libsdl-org/SDL/wiki/moin.cgi/SDL_RWread
  */
 void
 _testGenericRWopsValidations(SDL_RWops *rw, int write)
@@ -168,7 +168,7 @@ _testGenericRWopsValidations(SDL_RWops *rw, int write)
 /* !
  * Negative test for SDL_RWFromFile parameters
  *
- * \sa http://wiki.libsdl.org/moin.cgi/SDL_RWFromFile
+ * \sa http://github.com/libsdl-org/SDL/wiki/moin.cgi/SDL_RWFromFile
  *
  */
 int
@@ -215,8 +215,8 @@ rwops_testParamNegative (void)
 /**
  * @brief Tests opening from memory.
  *
- * \sa http://wiki.libsdl.org/moin.cgi/SDL_RWFromMem
- * \sa http://wiki.libsdl.org/moin.cgi/SDL_RWClose
+ * \sa http://github.com/libsdl-org/SDL/wiki/moin.cgi/SDL_RWFromMem
+ * \sa http://github.com/libsdl-org/SDL/wiki/moin.cgi/SDL_RWClose
  */
 int
 rwops_testMem (void)
@@ -255,8 +255,8 @@ rwops_testMem (void)
  * @brief Tests opening from memory.
  *
  * \sa
- * http://wiki.libsdl.org/moin.cgi/SDL_RWFromConstMem
- * http://wiki.libsdl.org/moin.cgi/SDL_RWClose
+ * http://github.com/libsdl-org/SDL/wiki/moin.cgi/SDL_RWFromConstMem
+ * http://github.com/libsdl-org/SDL/wiki/moin.cgi/SDL_RWClose
  */
 int
 rwops_testConstMem (void)
@@ -291,8 +291,8 @@ rwops_testConstMem (void)
  * @brief Tests reading from file.
  *
  * \sa
- * http://wiki.libsdl.org/moin.cgi/SDL_RWFromFile
- * http://wiki.libsdl.org/moin.cgi/SDL_RWClose
+ * http://github.com/libsdl-org/SDL/wiki/moin.cgi/SDL_RWFromFile
+ * http://github.com/libsdl-org/SDL/wiki/moin.cgi/SDL_RWClose
  */
 int
 rwops_testFileRead(void)
@@ -338,8 +338,8 @@ rwops_testFileRead(void)
  * @brief Tests writing from file.
  *
  * \sa
- * http://wiki.libsdl.org/moin.cgi/SDL_RWFromFile
- * http://wiki.libsdl.org/moin.cgi/SDL_RWClose
+ * http://github.com/libsdl-org/SDL/wiki/moin.cgi/SDL_RWFromFile
+ * http://github.com/libsdl-org/SDL/wiki/moin.cgi/SDL_RWClose
  */
 int
 rwops_testFileWrite(void)
@@ -386,8 +386,8 @@ rwops_testFileWrite(void)
  * @brief Tests reading from file handle
  *
  * \sa
- * http://wiki.libsdl.org/moin.cgi/SDL_RWFromFP
- * http://wiki.libsdl.org/moin.cgi/SDL_RWClose
+ * http://github.com/libsdl-org/SDL/wiki/moin.cgi/SDL_RWFromFP
+ * http://github.com/libsdl-org/SDL/wiki/moin.cgi/SDL_RWClose
  *
  */
 int
@@ -436,8 +436,8 @@ rwops_testFPRead(void)
  * @brief Tests writing to file handle
  *
  * \sa
- * http://wiki.libsdl.org/moin.cgi/SDL_RWFromFP
- * http://wiki.libsdl.org/moin.cgi/SDL_RWClose
+ * http://github.com/libsdl-org/SDL/wiki/moin.cgi/SDL_RWFromFP
+ * http://github.com/libsdl-org/SDL/wiki/moin.cgi/SDL_RWClose
  *
  */
 int
@@ -484,8 +484,8 @@ rwops_testFPWrite(void)
 /**
  * @brief Tests alloc and free RW context.
  *
- * \sa http://wiki.libsdl.org/moin.cgi/SDL_AllocRW
- * \sa http://wiki.libsdl.org/moin.cgi/SDL_FreeRW
+ * \sa http://github.com/libsdl-org/SDL/wiki/moin.cgi/SDL_AllocRW
+ * \sa http://github.com/libsdl-org/SDL/wiki/moin.cgi/SDL_FreeRW
  */
 int
 rwops_testAllocFree (void)
@@ -511,8 +511,8 @@ rwops_testAllocFree (void)
 /**
  * @brief Compare memory and file reads
  *
- * \sa http://wiki.libsdl.org/moin.cgi/SDL_RWFromMem
- * \sa http://wiki.libsdl.org/moin.cgi/SDL_RWFromFile
+ * \sa http://github.com/libsdl-org/SDL/wiki/moin.cgi/SDL_RWFromMem
+ * \sa http://github.com/libsdl-org/SDL/wiki/moin.cgi/SDL_RWFromFile
  */
 int
 rwops_testCompareRWFromMemWithRWFromFile(void)
@@ -578,10 +578,10 @@ rwops_testCompareRWFromMemWithRWFromFile(void)
  * @brief Tests writing and reading from file using endian aware functions.
  *
  * \sa
- * http://wiki.libsdl.org/moin.cgi/SDL_RWFromFile
- * http://wiki.libsdl.org/moin.cgi/SDL_RWClose
- * http://wiki.libsdl.org/moin.cgi/SDL_ReadBE16
- * http://wiki.libsdl.org/moin.cgi/SDL_WriteBE16
+ * http://github.com/libsdl-org/SDL/wiki/moin.cgi/SDL_RWFromFile
+ * http://github.com/libsdl-org/SDL/wiki/moin.cgi/SDL_RWClose
+ * http://github.com/libsdl-org/SDL/wiki/moin.cgi/SDL_ReadBE16
+ * http://github.com/libsdl-org/SDL/wiki/moin.cgi/SDL_WriteBE16
  */
 int
 rwops_testFileWriteReadEndian(void)
