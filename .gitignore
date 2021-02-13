@@ -14,16 +14,30 @@ build
 gen
 Build
 
+*.so
+*.so.*
+*.dll
+*.o
+*.obj
+*.lib
+*.a
+*.la
+*.lnk
+*.err
+*.exp
+*.map
+*.orig
+*~
+*.swp
+*.tmp
+*.rej
+
 # for CMake
 CMakeFiles/
 CMakeCache.txt
 cmake_install.cmake
 cmake_uninstall.cmake
 SDL2ConfigVersion.cmake
-*.a
-*.la
-*.so
-*.so.*
 .ninja_*
 *.ninja
 
@@ -32,12 +46,6 @@ SDL2ConfigVersion.cmake
 cmake-build-*
 
 # for Xcode
-*.orig
-*.swp
-*.tmp
-*.rej
-*~
-*.o
 *.mode1*
 *.perspective*
 *.pbxuser
@@ -85,7 +93,6 @@ test/config.cache
 test/config.log
 test/config.status
 test/Makefile
-test/SDL2.dll
 test/checkkeys
 test/controllermap
 test/loopwave
