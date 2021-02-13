@@ -13,8 +13,8 @@
 /* !
  * \brief Tests SDL_Init() and SDL_Quit() of Joystick and Haptic subsystems
  * \sa
- * http://github.com/libsdl-org/SDL/wiki/SDL_Init
- * http://github.com/libsdl-org/SDL/wiki/SDL_Quit
+ * https://github.com/libsdl-org/SDL/wiki/SDL_Init
+ * https://github.com/libsdl-org/SDL/wiki/SDL_Quit
  */
 static int main_testInitQuitJoystickHaptic (void *arg)
 {
@@ -41,8 +41,8 @@ static int main_testInitQuitJoystickHaptic (void *arg)
 /* !
  * \brief Tests SDL_InitSubSystem() and SDL_QuitSubSystem()
  * \sa
- * http://github.com/libsdl-org/SDL/wiki/SDL_Init
- * http://github.com/libsdl-org/SDL/wiki/SDL_Quit
+ * https://github.com/libsdl-org/SDL/wiki/SDL_Init
+ * https://github.com/libsdl-org/SDL/wiki/SDL_Quit
  */
 static int main_testInitQuitSubSystem (void *arg)
 {
