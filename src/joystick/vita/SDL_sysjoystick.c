@@ -40,17 +40,50 @@
 #include "SDL_timer.h"
 
 /* Current pad state */
-static SceCtrlData pad0 = { .lx = 0, .ly = 0, .rx = 0, .ry = 0, .buttons = 0 };
-static SceCtrlData pad1 = { .lx = 0, .ly = 0, .rx = 0, .ry = 0, .buttons = 0 };
-static SceCtrlData pad2 = { .lx = 0, .ly = 0, .rx = 0, .ry = 0, .buttons = 0 };
-static SceCtrlData pad3 = { .lx = 0, .ly = 0, .rx = 0, .ry = 0, .buttons = 0 };
+static SceCtrlData pad0 = { .lx = 0, .ly = 0, .rx = 0, .ry = 0, .lt = 0, .rt = 0, .buttons = 0 };
+static SceCtrlData pad1 = { .lx = 0, .ly = 0, .rx = 0, .ry = 0, .lt = 0, .rt = 0, .buttons = 0 };
+static SceCtrlData pad2 = { .lx = 0, .ly = 0, .rx = 0, .ry = 0, .lt = 0, .rt = 0, .buttons = 0 };
+static SceCtrlData pad3 = { .lx = 0, .ly = 0, .rx = 0, .ry = 0, .lt = 0, .rt = 0, .buttons = 0 };
+
 static int port_map[4]= { 0, 2, 3, 4 }; //index: SDL joy number, entry: Vita port number
+static int ext_port_map[4]= { 1, 2, 3, 4 }; //index: SDL joy number, entry: Vita port number. For external controllers
+
 static int SDL_numjoysticks = 1;
+
 static const unsigned int button_map[] = {
-    SCE_CTRL_TRIANGLE, SCE_CTRL_CIRCLE, SCE_CTRL_CROSS, SCE_CTRL_SQUARE,
-    SCE_CTRL_LTRIGGER, SCE_CTRL_RTRIGGER,
-    SCE_CTRL_DOWN, SCE_CTRL_LEFT, SCE_CTRL_UP, SCE_CTRL_RIGHT,
-    SCE_CTRL_SELECT, SCE_CTRL_START};
+    SCE_CTRL_TRIANGLE,
+    SCE_CTRL_CIRCLE,
+    SCE_CTRL_CROSS,
+    SCE_CTRL_SQUARE,
+    SCE_CTRL_LTRIGGER,
+    SCE_CTRL_RTRIGGER,
+    SCE_CTRL_DOWN,
+    SCE_CTRL_LEFT,
+    SCE_CTRL_UP,
+    SCE_CTRL_RIGHT,
+    SCE_CTRL_SELECT,
+    SCE_CTRL_START
+};
+
+static const unsigned int ext_button_map[] = {
+    SCE_CTRL_TRIANGLE,
+    SCE_CTRL_CIRCLE,
+    SCE_CTRL_CROSS,
+    SCE_CTRL_SQUARE,
+    SCE_CTRL_L1,
+    SCE_CTRL_R1,
+    SCE_CTRL_DOWN,
+    SCE_CTRL_LEFT,
+    SCE_CTRL_UP,
+    SCE_CTRL_RIGHT,
+    SCE_CTRL_SELECT,
+    SCE_CTRL_START,
+    SCE_CTRL_L2,
+    SCE_CTRL_R2,
+    SCE_CTRL_L3,
+    SCE_CTRL_R3
+};
+
 static int analog_map[256];  /* Map analog inputs to -32768 -> 32767 */
 
 typedef struct
@@ -97,6 +130,7 @@ int VITA_JoystickInit(void)
 
     /* Setup input */
     sceCtrlSetSamplingMode(SCE_CTRL_MODE_ANALOG_WIDE);
+    sceCtrlSetSamplingModeExt(SCE_CTRL_MODE_ANALOG_WIDE);
 
     /* Create an accurate map from analog inputs (0 to 255)
        to SDL joystick positions (-32768 to 32767) */
@@ -182,8 +216,8 @@ VITA_JoystickSetDevicePlayerIndex(int device_index, int player_index)
  */
 int VITA_JoystickOpen(SDL_Joystick *joystick, int device_index)
 {
-    joystick->nbuttons = sizeof(button_map)/sizeof(*button_map);
-    joystick->naxes = 4;
+    joystick->nbuttons = SDL_arraysize(ext_button_map);
+    joystick->naxes = 6;
     joystick->nhats = 0;
     joystick->instance_id = device_index;
 
@@ -200,13 +234,16 @@ static void VITA_JoystickUpdate(SDL_Joystick *joystick)
     int i;
     unsigned int buttons;
     unsigned int changed;
-    unsigned char lx, ly, rx, ry;
+    unsigned char lx, ly, rx, ry, lt, rt;
     static unsigned int old_buttons[] = { 0, 0, 0, 0 };
     static unsigned char old_lx[] = { 0, 0, 0, 0 };
     static unsigned char old_ly[] = { 0, 0, 0, 0 };
     static unsigned char old_rx[] = { 0, 0, 0, 0 };
     static unsigned char old_ry[] = { 0, 0, 0, 0 };
+    static unsigned char old_lt[] = { 0, 0, 0, 0 };
+    static unsigned char old_rt[] = { 0, 0, 0, 0 };
     SceCtrlData *pad = NULL;
+    SDL_bool fallback = SDL_FALSE;
 
     int index = (int) SDL_JoystickInstanceID(joystick);
 
@@ -216,53 +253,78 @@ static void VITA_JoystickUpdate(SDL_Joystick *joystick)
     else if (index == 3) pad = &pad3;
     else return;
 
-    sceCtrlPeekBufferPositive(port_map[index], pad, 1);
+    if (index == 0) {
+        if (sceCtrlPeekBufferPositiveExt2(ext_port_map[index], pad, 1) < 0) {
+            // on vita fallback to port 0
+            sceCtrlPeekBufferPositive(port_map[index], pad, 1);
+            fallback = SDL_TRUE;
+        }
+    } else {
+        sceCtrlPeekBufferPositiveExt2(ext_port_map[index], pad, 1);
+    }
 
     buttons = pad->buttons;
+
     lx = pad->lx;
     ly = pad->ly;
     rx = pad->rx;
     ry = pad->ry;
-/*
-    for(i=0; i<sizeof(button_map)/sizeof(button_map[0]); i++) {
-        SDL_PrivateJoystickButton(
-            joystick, i,
-            (buttons & button_map[i]) ?
-            SDL_PRESSED : SDL_RELEASED);
-}
-*/
+    lt = pad->lt;
+    rt = pad->rt;
+
     // Axes
 
-    if(old_lx[index] != lx) {
+    if (old_lx[index] != lx) {
         SDL_PrivateJoystickAxis(joystick, 0, analog_map[lx]);
         old_lx[index] = lx;
     }
-    if(old_ly[index] != ly) {
+    if (old_ly[index] != ly) {
         SDL_PrivateJoystickAxis(joystick, 1, analog_map[ly]);
         old_ly[index] = ly;
     }
-    if(old_rx[index] != rx) {
+    if (old_rx[index] != rx) {
         SDL_PrivateJoystickAxis(joystick, 2, analog_map[rx]);
         old_rx[index] = rx;
     }
-    if(old_ry[index] != ry) {
+    if (old_ry[index] != ry) {
         SDL_PrivateJoystickAxis(joystick, 3, analog_map[ry]);
         old_ry[index] = ry;
+    }
+
+    if (old_lt[index] != lt) {
+        SDL_PrivateJoystickAxis(joystick, 4, analog_map[lt]);
+        old_lt[index] = lt;
+    }
+    if (old_rt[index] != rt) {
+        SDL_PrivateJoystickAxis(joystick, 5, analog_map[rt]);
+        old_rt[index] = rt;
     }
 
     // Buttons
     changed = old_buttons[index] ^ buttons;
     old_buttons[index] = buttons;
-    if(changed) {
-        for(i=0; i<sizeof(button_map)/sizeof(button_map[0]); i++) {
-            if(changed & button_map[i]) {
-                SDL_PrivateJoystickButton(
-                    joystick, i,
-                    (buttons & button_map[i]) ?
-                    SDL_PRESSED : SDL_RELEASED);
+
+    if (changed) {
+        if (fallback) {
+            for (i = 0; i < SDL_arraysize(button_map); i++) {
+                if (changed & button_map[i]) {
+                    SDL_PrivateJoystickButton(
+                        joystick, i,
+                        (buttons & button_map[i]) ?
+                        SDL_PRESSED : SDL_RELEASED);
+                }
+            }
+        } else {
+            for (i = 0; i < SDL_arraysize(ext_button_map); i++) {
+                if (changed & ext_button_map[i]) {
+                    SDL_PrivateJoystickButton(
+                        joystick, i,
+                        (buttons & ext_button_map[i]) ?
+                        SDL_PRESSED : SDL_RELEASED);
+                }
             }
         }
-     }
+    }
 }
 
 /* Function to close a joystick after use */
@@ -288,7 +350,14 @@ SDL_JoystickGUID VITA_JoystickGetDeviceGUID( int device_index )
 static int
 VITA_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
-    return SDL_Unsupported();
+    int index = (int) SDL_JoystickInstanceID(joystick);
+    SceCtrlActuator act;
+    SDL_zero(act);
+
+    act.small = high_frequency_rumble / 256;
+    act.large = low_frequency_rumble / 256;
+    sceCtrlSetActuator(ext_port_map[index], &act);
+    return 0;
 }
 
 static int
@@ -300,14 +369,17 @@ VITA_JoystickRumbleTriggers(SDL_Joystick * joystick, Uint16 left, Uint16 right)
 static SDL_bool
 VITA_JoystickHasLED(SDL_Joystick * joystick)
 {
-    return SDL_FALSE;
+    // always return true for now
+    return SDL_TRUE;
 }
 
 
 static int
 VITA_JoystickSetLED(SDL_Joystick * joystick, Uint8 red, Uint8 green, Uint8 blue)
 {
-    return SDL_Unsupported();
+    int index = (int) SDL_JoystickInstanceID(joystick);
+    sceCtrlSetLightBar(ext_port_map[index], red, green, blue);
+    return 0;
 }
 
 static int
