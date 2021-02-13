@@ -121,8 +121,8 @@ char* _invalidPixelFormatsVerbose[] =
 /**
  * @brief Call to SDL_AllocFormat and SDL_FreeFormat
  *
- * @sa http://github.com/libsdl-org/SDL/wiki/moin.fcg/SDL_AllocFormat
- * @sa http://github.com/libsdl-org/SDL/wiki/moin.fcg/SDL_FreeFormat
+ * @sa http://github.com/libsdl-org/SDL/wiki/SDL_AllocFormat
+ * @sa http://github.com/libsdl-org/SDL/wiki/SDL_FreeFormat
  */
 int
 pixels_allocFreeFormat(void *arg)
@@ -228,7 +228,7 @@ pixels_allocFreeFormat(void *arg)
 /**
  * @brief Call to SDL_GetPixelFormatName
  *
- * @sa http://github.com/libsdl-org/SDL/wiki/moin.fcg/SDL_GetPixelFormatName
+ * @sa http://github.com/libsdl-org/SDL/wiki/SDL_GetPixelFormatName
  */
 int
 pixels_getPixelFormatName(void *arg)
@@ -312,8 +312,8 @@ pixels_getPixelFormatName(void *arg)
 /**
  * @brief Call to SDL_AllocPalette and SDL_FreePalette
  *
- * @sa http://github.com/libsdl-org/SDL/wiki/moin.fcg/SDL_AllocPalette
- * @sa http://github.com/libsdl-org/SDL/wiki/moin.fcg/SDL_FreePalette
+ * @sa http://github.com/libsdl-org/SDL/wiki/SDL_AllocPalette
+ * @sa http://github.com/libsdl-org/SDL/wiki/SDL_FreePalette
  */
 int
 pixels_allocFreePalette(void *arg)
@@ -402,7 +402,7 @@ pixels_allocFreePalette(void *arg)
 /**
  * @brief Call to SDL_CalculateGammaRamp
  *
- * @sa http://github.com/libsdl-org/SDL/wiki/moin.fcg/SDL_CalculateGammaRamp
+ * @sa http://github.com/libsdl-org/SDL/wiki/SDL_CalculateGammaRamp
  */
 int
 pixels_calcGammaRamp(void *arg)
