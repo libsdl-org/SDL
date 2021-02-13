@@ -1017,6 +1017,42 @@ AS_HELP_STRING([--enable-esd-shared], [dynamically load ESD audio support [[defa
     fi
 }
 
+dnl Find Pipewire
+CheckPipewire()
+{
+    AC_ARG_ENABLE(pipewire,
+AS_HELP_STRING([--enable-pipewire], [use Pipewire [[default=yes]]]),
+                  , enable_pipewire=yes)
+    if test x$enable_audio = xyes -a x$enable_pipewire = xyes; then
+        PKG_CHECK_MODULES([PIPEWIRE], [libpipewire-0.3 >= 0.3.20], audio_pipewire=yes, audio_pipewire=no)
+
+        if test x$audio_pipewire = xyes; then
+            AC_ARG_ENABLE(pipewire-shared,
+AS_HELP_STRING([--enable-pipewire-shared], [dynamically load Pipewire support [[default=yes]]]),
+                          , enable_pipewire_shared=yes)
+            pipewire_lib=[`find_lib "libpipewire-0.3.so.*" "$PIPEWIRE_LIBS" | sed 's/.*\/\(.*\)/\1/; q'`]
+
+            AC_DEFINE(SDL_AUDIO_DRIVER_PIPEWIRE, 1, [ ])
+            SOURCES="$SOURCES $srcdir/src/audio/pipewire/*.c"
+            EXTRA_CFLAGS="$EXTRA_CFLAGS $PIPEWIRE_CFLAGS"
+            if test x$have_loadso != xyes && \
+               test x$enable_pipewire_shared = xyes; then
+                AC_MSG_WARN([You must have SDL_LoadObject() support for dynamic Pipewire loading])
+            fi
+            if test x$have_loadso = xyes && \
+               test x$enable_pipewire_shared = xyes && test x$pipewire_lib != x; then
+                echo "-- dynamic libpipewire-0.3 -> $pipewire_lib"
+                AC_DEFINE_UNQUOTED(SDL_AUDIO_DRIVER_PIPEWIRE_DYNAMIC, "$pipewire_lib", [ ])
+                SUMMARY_audio="${SUMMARY_audio} pipewire(dynamic)"
+            else
+                EXTRA_LDFLAGS="$EXTRA_LDFLAGS $PIPEWIRE_LIBS"
+                SUMMARY_audio="${SUMMARY_audio} pipewire"
+            fi
+            have_audio=yes
+        fi
+    fi
+}
+
 dnl Find PulseAudio
 CheckPulseAudio()
 {
@@ -3604,6 +3640,7 @@ case "$host" in
         CheckNEON
         CheckOSS
         CheckALSA
+        CheckPipewire
         CheckPulseAudio
         CheckJACK
         CheckARTSC

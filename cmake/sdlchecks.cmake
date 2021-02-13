@@ -131,6 +131,37 @@ endmacro()
 # Requires:
 # - PkgCheckModules
 # Optional:
+# - PIPEWIRE_SHARED opt
+# - HAVE_DLOPEN opt
+macro(CheckPipewire)
+    if(PIPEWIRE)
+        pkg_check_modules(PKG_PIPEWIRE libpipewire-0.3>=0.3.20)
+        if(PKG_PIPEWIRE_FOUND)
+            set(HAVE_PIPEWIRE TRUE)
+            file(GLOB PIPEWIRE_SOURCES ${SDL2_SOURCE_DIR}/src/audio/pipewire/*.c)
+            set(SOURCE_FILES ${SOURCE_FILES} ${PIPEWIRE_SOURCES})
+            set(SDL_AUDIO_DRIVER_PIPEWIRE 1)
+            list(APPEND EXTRA_CFLAGS ${PKG_PIPEWIRE_CFLAGS})
+            if(PIPEWIRE_SHARED)
+                if(NOT HAVE_DLOPEN)
+                    message_warn("You must have SDL_LoadObject() support for dynamic Pipewire loading")
+                else()
+                    FindLibraryAndSONAME("pipewire-0.3")
+                    set(SDL_AUDIO_DRIVER_PIPEWIRE_DYNAMIC "\"${PIPEWIRE_0.3_LIB_SONAME}\"")
+                    set(HAVE_PIPEWIRE_SHARED TRUE)
+                endif()
+            else()
+                list(APPEND EXTRA_LDFLAGS ${PKG_PIPEWIRE_LDFLAGS})
+            endif()
+            set(HAVE_SDL_AUDIO TRUE)
+        endif()
+    endif()
+endmacro()
+
+
+# Requires:
+# - PkgCheckModules
+# Optional:
 # - PULSEAUDIO_SHARED opt
 # - HAVE_DLOPEN opt
 macro(CheckPulseAudio)
