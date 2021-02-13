@@ -676,6 +676,8 @@ RPI_CFLAGS
 FUSIONSOUND_LIBS
 FUSIONSOUND_CFLAGS
 ARTSCONFIG
+PIPEWIRE_LIBS
+PIPEWIRE_CFLAGS
 PULSEAUDIO_LIBS
 PULSEAUDIO_CFLAGS
 ESD_LIBS
@@ -838,6 +840,8 @@ with_esd_prefix
 with_esd_exec_prefix
 enable_esdtest
 enable_esd_shared
+enable_pipewire
+enable_pipewire_shared
 enable_pulseaudio
 enable_pulseaudio_shared
 enable_arts
@@ -923,6 +927,8 @@ PKG_CONFIG_PATH
 PKG_CONFIG_LIBDIR
 JACK_CFLAGS
 JACK_LIBS
+PIPEWIRE_CFLAGS
+PIPEWIRE_LIBS
 PULSEAUDIO_CFLAGS
 PULSEAUDIO_LIBS
 FUSIONSOUND_CFLAGS
@@ -1605,6 +1611,9 @@ Optional Features:
   --enable-esd            support the Enlightened Sound Daemon [[default=yes]]
   --disable-esdtest       Do not try to compile and run a test ESD program
   --enable-esd-shared     dynamically load ESD audio support [[default=yes]]
+  --enable-pipewire       use Pipewire [[default=yes]]
+  --enable-pipewire-shared
+                          dynamically load Pipewire support [[default=yes]]
   --enable-pulseaudio     use PulseAudio [[default=yes]]
   --enable-pulseaudio-shared
                           dynamically load PulseAudio support [[default=yes]]
@@ -1732,6 +1741,10 @@ Some influential environment variables:
               path overriding pkg-config's built-in search path
   JACK_CFLAGS C compiler flags for JACK, overriding pkg-config
   JACK_LIBS   linker flags for JACK, overriding pkg-config
+  PIPEWIRE_CFLAGS
+              C compiler flags for PIPEWIRE, overriding pkg-config
+  PIPEWIRE_LIBS
+              linker flags for PIPEWIRE, overriding pkg-config
   PULSEAUDIO_CFLAGS
               C compiler flags for PULSEAUDIO, overriding pkg-config
   PULSEAUDIO_LIBS
@@ -18778,6 +18791,126 @@ _ACEOF
     fi
 }
 
+CheckPipewire()
+{
+    # Check whether --enable-pipewire was given.
+if test "${enable_pipewire+set}" = set; then :
+  enableval=$enable_pipewire;
+else
+  enable_pipewire=yes
+fi
+
+    if test x$enable_audio = xyes -a x$enable_pipewire = xyes; then
+
+pkg_failed=no
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for libpipewire-0.3 >= 0.3.20" >&5
+$as_echo_n "checking for libpipewire-0.3 >= 0.3.20... " >&6; }
+
+if test -n "$PIPEWIRE_CFLAGS"; then
+    pkg_cv_PIPEWIRE_CFLAGS="$PIPEWIRE_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libpipewire-0.3 >= 0.3.20\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libpipewire-0.3 >= 0.3.20") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_PIPEWIRE_CFLAGS=`$PKG_CONFIG --cflags "libpipewire-0.3 >= 0.3.20" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$PIPEWIRE_LIBS"; then
+    pkg_cv_PIPEWIRE_LIBS="$PIPEWIRE_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libpipewire-0.3 >= 0.3.20\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libpipewire-0.3 >= 0.3.20") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_PIPEWIRE_LIBS=`$PKG_CONFIG --libs "libpipewire-0.3 >= 0.3.20" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+	        PIPEWIRE_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libpipewire-0.3 >= 0.3.20" 2>&1`
+        else
+	        PIPEWIRE_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libpipewire-0.3 >= 0.3.20" 2>&1`
+        fi
+	# Put the nasty error message in config.log where it belongs
+	echo "$PIPEWIRE_PKG_ERRORS" >&5
+
+	audio_pipewire=no
+elif test $pkg_failed = untried; then
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+	audio_pipewire=no
+else
+	PIPEWIRE_CFLAGS=$pkg_cv_PIPEWIRE_CFLAGS
+	PIPEWIRE_LIBS=$pkg_cv_PIPEWIRE_LIBS
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+	audio_pipewire=yes
+fi
+
+        if test x$audio_pipewire = xyes; then
+            # Check whether --enable-pipewire-shared was given.
+if test "${enable_pipewire_shared+set}" = set; then :
+  enableval=$enable_pipewire_shared;
+else
+  enable_pipewire_shared=yes
+fi
+
+            pipewire_lib=`find_lib "libpipewire-0.3.so.*" "$PIPEWIRE_LIBS" | sed 's/.*\/\(.*\)/\1/; q'`
+
+
+$as_echo "#define SDL_AUDIO_DRIVER_PIPEWIRE 1" >>confdefs.h
+
+            SOURCES="$SOURCES $srcdir/src/audio/pipewire/*.c"
+            EXTRA_CFLAGS="$EXTRA_CFLAGS $PIPEWIRE_CFLAGS"
+            if test x$have_loadso != xyes && \
+               test x$enable_pipewire_shared = xyes; then
+                { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: You must have SDL_LoadObject() support for dynamic Pipewire loading" >&5
+$as_echo "$as_me: WARNING: You must have SDL_LoadObject() support for dynamic Pipewire loading" >&2;}
+            fi
+            if test x$have_loadso = xyes && \
+               test x$enable_pipewire_shared = xyes && test x$pipewire_lib != x; then
+                echo "-- dynamic libpipewire-0.3 -> $pipewire_lib"
+
+cat >>confdefs.h <<_ACEOF
+#define SDL_AUDIO_DRIVER_PIPEWIRE_DYNAMIC "$pipewire_lib"
+_ACEOF
+
+                SUMMARY_audio="${SUMMARY_audio} pipewire(dynamic)"
+            else
+                EXTRA_LDFLAGS="$EXTRA_LDFLAGS $PIPEWIRE_LIBS"
+                SUMMARY_audio="${SUMMARY_audio} pipewire"
+            fi
+            have_audio=yes
+        fi
+    fi
+}
+
 CheckPulseAudio()
 {
     # Check whether --enable-pulseaudio was given.
@@ -24893,6 +25026,7 @@ $as_echo "#define SDL_VIDEO_DRIVER_ANDROID 1" >>confdefs.h
         CheckNEON
         CheckOSS
         CheckALSA
+        CheckPipewire
         CheckPulseAudio
         CheckJACK
         CheckARTSC
