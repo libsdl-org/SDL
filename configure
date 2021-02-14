@@ -28802,7 +28802,7 @@ _LT_EOF
 
  ;;
     "sdl2_config":C) chmod a+x sdl2-config ;;
-    "summary":C) echo -en "$SUMMARY" ;;
+    "summary":C) printf "$SUMMARY" ;;
 
   esac
 done # for ac_tag
