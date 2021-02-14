@@ -13,6 +13,7 @@ SDL2.spec
 build
 gen
 Build
+buildbot
 
 *.so
 *.so.*
@@ -22,6 +23,9 @@ Build
 *.lib
 *.a
 *.la
+*.dSYM
+*,e1f
+*,ff8
 *.lnk
 *.err
 *.exp
@@ -87,12 +91,6 @@ VisualC/visualtest/testsprite2_sample.parameters
 # for Android
 android-project/local.properties
 
-test/aclocal.m4
-test/autom4te*
-test/config.cache
-test/config.log
-test/config.status
-test/Makefile
 test/checkkeys
 test/controllermap
 test/loopwave
@@ -154,9 +152,3 @@ test/testvulkan
 test/testwm2
 test/testyuv
 test/torturethread
-test/*.exe
-test/*,e1f
-test/*,ff8
-test/*.dSYM
-buildbot
-test/buildbot
