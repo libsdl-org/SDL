@@ -1264,7 +1264,10 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
 
     /* If we have just created a Vulkan window, establish that we are in Vulkan mode now. */
     viddata->vulkan_mode = is_vulkan;
-
+    if (!is_vulkan)
+    {
+        SDL_WarpMouseGlobal(windata->surface_w / 2, windata->surface_h / 2);
+    }
     /* Focus on the newly created window */
     SDL_SetMouseFocus(window);
     SDL_SetKeyboardFocus(window);
