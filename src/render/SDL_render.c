@@ -2819,12 +2819,12 @@ SDL_RenderDrawRectF(SDL_Renderer * renderer, const SDL_FRect * rect)
 
     points[0].x = rect->x;
     points[0].y = rect->y;
-    points[1].x = rect->x+rect->w-1;
+    points[1].x = rect->x + rect->w - 1.0f;
     points[1].y = rect->y;
-    points[2].x = rect->x+rect->w-1;
-    points[2].y = rect->y+rect->h-1;
+    points[2].x = points[1].x;
+    points[2].y = rect->y + rect->h - 1.0f;
     points[3].x = rect->x;
-    points[3].y = rect->y+rect->h-1;
+    points[3].y = points[2].y;
     points[4].x = rect->x;
     points[4].y = rect->y;
     return SDL_RenderDrawLinesF(renderer, points, 5);
