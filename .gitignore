@@ -18,6 +18,7 @@ buildbot
 *.so
 *.so.*
 *.dll
+*.exe
 *.o
 *.obj
 *.lib
