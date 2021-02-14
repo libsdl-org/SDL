@@ -93,6 +93,7 @@ static void kbd_cleanup(void)
         return;
     }
     kbd_cleanup_state = NULL;
+    SDL_zero(mData);
     mData.operation = MOUSE_SHOW;
     ioctl(kbd->keyboard_fd, KDSKBMODE, kbd->old_kbd_mode);
     if (kbd->keyboard_fd != kbd->console_fd) close(kbd->keyboard_fd);
@@ -227,7 +228,7 @@ SDL_EVDEV_kbd_init(void)
     char flag_state;
     char* devicePath;
 
-    memset(&mData, 0, sizeof(struct mouse_info));
+    SDL_zero(mData);
     mData.operation = MOUSE_HIDE;
     kbd = (SDL_EVDEV_keyboard_state *)SDL_calloc(1, sizeof(SDL_EVDEV_keyboard_state));
     if (!kbd) {
@@ -303,7 +304,7 @@ SDL_EVDEV_kbd_quit(SDL_EVDEV_keyboard_state *kbd)
     if (!kbd) {
         return;
     }
-    memset(&mData, 0, sizeof(struct mouse_data));
+    SDL_zero(mData);
     mData.operation = MOUSE_SHOW;
     ioctl(kbd->console_fd, CONS_MOUSECTL, &mData);
 
