@@ -9,8 +9,8 @@ yourself.
 ### Building SDL
 
 0. To build SDL, your machine must, at a minimum, have the DirectX9.0c SDK installed. It may or may not be retrievable from
-the [Microsoft](https://www.microsoft.com) website, so you might need to locate it [online](https://duckduckgo.com/?q=directx9.0c+sdk+download&t=h_&ia=web.
-_Editor's note: I've been able to successfully build SDL using Visual Studio 2019 without the DX9.0c SDK_
+the [Microsoft](https://www.microsoft.com) website, so you might need to locate it [online](https://duckduckgo.com/?q=directx9.0c+sdk+download&t=h_&ia=web).
+_Editor's note: I've been able to successfully build SDL using Visual Studio 2019 **without** the DX9.0c SDK_
 
 1. Open the Visual Studio solution file at `./VisualC/SDL.sln`.
 
@@ -18,7 +18,7 @@ _Editor's note: I've been able to successfully build SDL using Visual Studio 201
 all of the affected project files should be checked allowing you to use the latest `Windows SDK Version` you have installed, along with
 the `Platform Toolset`.
    
-If you choose NOT to upgrade to use the latest `Windows SDK Version` or `Platform Toolset`, then you'll need the `Visual Studio 2010 Platform Toolset`.
+If you choose *NOT* to upgrade to use the latest `Windows SDK Version` or `Platform Toolset`, then you'll need the `Visual Studio 2010 Platform Toolset`.
 
 3. Build the `.dll` and `.lib` files by right clicking on each project in turn (Projects are listed in the _Workspace_ 
 panel in the _FileView_ tab), and selecting `Build`.
@@ -27,11 +27,11 @@ You may get a few warnings, but you should not get any errors.
 
 Later, we will refer to the following `.lib` and `.dll` files that have just been generated:
 
--   `SDL2.dll`
--   `SDL2.lib`
--   `SDL2main.lib`
+-   `./VisualC/Win32/Debug/SDL2.dll` or `./VisualC/Win32/Release/SDL2.dll`
+-   `./VisualC/Win32/Debug/SDL2.lib` or `./VisualC/Win32/Release/SDL2.lib`
+-   `./VisualC/Win32/Debug/SDL2main.lib` or `./VisualC/Win32/Release/SDL2main.lib`
 
-Search for these using the Windows Find (Windows-F) utility inside the `VisualC` directory.
+_Note for the `x64` versions, just replace `Win32` in the path with `x64`_
 
 ### Creating a Project with SDL
 
@@ -53,7 +53,8 @@ Directory Icon" and add the [SDLROOT]\\include directory (e.g. If you
 installed to c:\\SDL\\ add c:\\SDL\\include). Proceed to change the
 dropbox selection to "Library Files" and add [SDLROOT]\\lib.**
 
-The `include directory` I am referring to is the `include` folder within the main SDL directory (the one that this HTML file located within).
+The `include directory` I am referring to is the `include` folder within the main SDL directory (the one that this HTML
+file located within).
 
 Now we're going to use the files that we had created earlier in the Build SDL step.
 
@@ -69,31 +70,39 @@ Add the following files to your project (It is not necessary to copy them to you
 To add them to your project, right click on your project, and select
 `Add files to project`.
 
-**Instead of adding the files to your project, it is more desirable to
-add them to the linker options: Project|Properties|Linker|Command Line
-and type the names of the libraries to link with in the "Additional
-Options:" box. Note: This must be done for each build configuration
+**Instead of adding the files to your project, it is more desirable to add them to the linker options: Project|Properties|Linker|Command Line
+and type the names of the libraries to link with in the "Additional Options:" box. Note: This must be done for each build configuration
 (e.g. Release,Debug).**
 
-### SDL 101, First Day of Class
+### Hello SDL2
 
-Now create the basic body of your project. The body of your program
-should take the following form:
+Here's a sample SDL snippet to verify everything is setup in your IDE:
 
 ```
     #include "SDL.h"
 
     int main( int argc, char* argv[] )
     {
-      // Body of the program goes here.
-      return 0;
+        const int WIDTH = 640;
+        const int HEIGHT = 480;
+        SDL_Window* window = NULL;
+        SDL_Renderer* renderer = NULL;
+
+        SDL_Init(SDL_INIT_VIDEO);
+        window = SDL_CreateWindow("SDL2 Test", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WIDTH, HEIGHT, SDL_WINDOW_SHOWN);
+        renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+ 
+        SDL_DestroyRenderer(renderer);
+        SDL_DestroyWindow(window);
+        SDL_Quit();
+        return 0;
     }
  ```               
 
 ### That's it!
 
-I hope that this document has helped you get through the most difficult part of using the SDL: installing it. Suggestions for improvements to
-this document should be sent to the writers of this document.
+I hope that this document has helped you get through the most difficult part of using the SDL: installing it. 
+Suggestions for improvements should be posted to the [Github Issues](https://github.com/libsdl-org/SDL/issues).
 
 ### Credits
 
