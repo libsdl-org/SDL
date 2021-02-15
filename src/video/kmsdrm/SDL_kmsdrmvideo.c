@@ -1348,6 +1348,10 @@ KMSDRM_ReconfigureWindow( _THIS, SDL_Window * window) {
        so SDL pre-scales to that size for us. */
     SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED,
                         windata->surface_w, windata->surface_h);
+    if (!is_vulkan)
+    {
+        SDL_WarpMouseGlobal(windata->surface_w / 2, windata->surface_h / 2);
+    }
 }
 
 int
