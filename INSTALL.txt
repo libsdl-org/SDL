@@ -2,7 +2,7 @@
 To compile and install SDL:
 
     1.  Windows with Visual Studio:
-        * Read VisualC.html
+        * Read ./docs/README-visualc.md
 
         Windows with gcc, either native or cross-compiling:
         * Read the FAQ at https://github.com/libsdl-org/SDL/wiki/FAQWindows
