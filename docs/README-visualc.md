@@ -45,18 +45,17 @@ _Note for the `x64` versions, just replace `Win32` in the path with `x64`_
 - Add the SDL `include` directory to your list of includes in the menu:
 `Project|Settings|C/C++ tab|Preprocessor|Additional include directories `
 
- ** VC7 Specific: Instead of doing this, I find it easier to add the
+*VC7 Specific: Instead of doing this, I find it easier to add the
 include and library directories to the list that VC7 keeps. Do this by
 selecting Tools|Options|Projects|VC++ Directories and under the "Show
 Directories For:" dropbox select "Include Files", and click the "New
 Directory Icon" and add the [SDLROOT]\\include directory (e.g. If you
 installed to c:\\SDL\\ add c:\\SDL\\include). Proceed to change the
-dropbox selection to "Library Files" and add [SDLROOT]\\lib.**
+dropbox selection to "Library Files" and add [SDLROOT]\\lib.*
 
-The `include directory` I am referring to is the `include` folder within the main SDL directory (the one that this HTML
-file located within).
+The "include directory" I am referring to is the `./include` folder.
 
-Now we're going to use the files that we had created earlier in the Build SDL step.
+Now we're going to use the files that we had created earlier in the *Build SDL* step.
 
 Copy the following file into your Project directory:
 
