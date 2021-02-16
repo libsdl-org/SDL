@@ -8,7 +8,6 @@ WSCONS support has been brought back, but only as an input backend. It will not 
 OpenBSD note: Note that the video backend assumes that the user has read/write permissions to the /dev/drm* devices.
 
 
-===================================================
 SDL2 WSCONS input backend features
 ===================================================
 1. It is keymap-aware; it will work properly with different keymaps.
@@ -17,13 +16,11 @@ SDL2 WSCONS input backend features
 4. Compose keys are supported.
 5. AltGr and Meta Shift keys work as intended.
 
-==================================================
 Partially working or no input on OpenBSD/NetBSD.
 ==================================================
 
 The WSCONS input backend needs read/write access to the /dev/wskbd* devices, without which it will not work properly. /dev/wsmouse must also be read/write accessible, otherwise mouse input will not work.
 
-==================================================
 Partially working or no input on FreeBSD.
 ==================================================
 
