@@ -52,6 +52,13 @@
 #ifdef SDL_USE_LIBUDEV
 #include <poll.h>
 #endif
+#ifdef HAVE_INOTIFY
+#include <errno.h>              /* errno, strerror */
+#include <fcntl.h>
+#include <limits.h>             /* For the definition of NAME_MAX */
+#include <sys/inotify.h>
+#include <unistd.h>
+#endif
 #endif
 
 typedef enum
@@ -101,6 +108,7 @@ static SDL_HIDAPI_Device *SDL_HIDAPI_devices;
 static int SDL_HIDAPI_numjoysticks = 0;
 static SDL_bool initialized = SDL_FALSE;
 static SDL_bool shutting_down = SDL_FALSE;
+static int inotify_fd = -1;
 
 #if defined(SDL_USE_LIBUDEV)
 static const SDL_UDEV_Symbols * usyms = NULL;
@@ -193,6 +201,46 @@ static void CallbackIOServiceFunc(void *context, io_iterator_t portIterator)
     }
 }
 #endif /* __MACOSX__ */
+
+#ifdef HAVE_INOTIFY
+#ifdef HAVE_INOTIFY_INIT1
+static int SDL_inotify_init1(void) {
+    return inotify_init1(IN_NONBLOCK | IN_CLOEXEC);
+}
+#else
+static int SDL_inotify_init1(void) {
+    int fd = inotify_init();
+    if (fd  < 0) return -1;
+    fcntl(fd, F_SETFL, O_NONBLOCK);
+    fcntl(fd, F_SETFD, FD_CLOEXEC);
+    return fd;
+}
+#endif
+
+static int
+StrHasPrefix(const char *string, const char *prefix)
+{
+    return (SDL_strncmp(string, prefix, SDL_strlen(prefix)) == 0);
+}
+
+static int
+StrIsInteger(const char *string)
+{
+    const char *p;
+
+    if (*string == '\0') {
+        return 0;
+    }
+
+    for (p = string; *p != '\0'; p++) {
+        if (*p < '0' || *p > '9') {
+            return 0;
+        }
+    }
+
+    return 1;
+}
+#endif
 
 static void
 HIDAPI_InitializeDiscovery()
@@ -301,7 +349,37 @@ HIDAPI_InitializeDiscovery()
             }
         }
     }
+    else
 #endif /* SDL_USE_LIBUDEV */
+    {
+#if defined(HAVE_INOTIFY)
+        inotify_fd = SDL_inotify_init1();
+
+        if (inotify_fd < 0) {
+            SDL_LogWarn(SDL_LOG_CATEGORY_INPUT,
+                        "Unable to initialize inotify, falling back to polling: %s",
+                        strerror(errno));
+            return;
+        }
+
+        /* We need to watch for attribute changes in addition to
+         * creation, because when a device is first created, it has
+         * permissions that we can't read. When udev chmods it to
+         * something that we maybe *can* read, we'll get an
+         * IN_ATTRIB event to tell us. */
+        if (inotify_add_watch(inotify_fd, "/dev",
+                              IN_CREATE | IN_DELETE | IN_MOVE | IN_ATTRIB) < 0) {
+            close(inotify_fd);
+            inotify_fd = -1;
+            SDL_LogWarn(SDL_LOG_CATEGORY_INPUT,
+                        "Unable to add inotify watch, falling back to polling: %s",
+                        strerror (errno));
+            return;
+        }
+
+        SDL_HIDAPI_discovery.m_bCanGetNotifications = SDL_TRUE;
+#endif /* HAVE_INOTIFY */
+    }
 }
 
 static void
@@ -368,7 +446,49 @@ HIDAPI_UpdateDiscovery()
             }
         }
     }
+    else
 #endif /* SDL_USE_LIBUDEV */
+    {
+#if defined(HAVE_INOTIFY)
+        if (inotify_fd >= 0) {
+            union
+            {
+                struct inotify_event event;
+                char storage[4096];
+                char enough_for_inotify[sizeof (struct inotify_event) + NAME_MAX + 1];
+            } buf;
+            ssize_t bytes;
+            size_t remain = 0;
+            size_t len;
+
+            bytes = read(inotify_fd, &buf, sizeof (buf));
+
+            if (bytes > 0) {
+                remain = (size_t) bytes;
+            }
+
+            while (remain > 0) {
+                if (buf.event.len > 0 &&
+                    !SDL_HIDAPI_discovery.m_bHaveDevicesChanged) {
+                    if (StrHasPrefix(buf.event.name, "hidraw") &&
+                        StrIsInteger(buf.event.name + strlen ("hidraw"))) {
+                        SDL_HIDAPI_discovery.m_bHaveDevicesChanged = SDL_TRUE;
+                        /* We found an hidraw change. We still continue to
+                         * drain the inotify fd to avoid leaving old
+                         * notifications in the queue. */
+                    }
+                }
+
+                len = sizeof (struct inotify_event) + buf.event.len;
+                remain -= len;
+
+                if (remain != 0) {
+                    memmove(&buf.storage[0], &buf.storage[len], remain);
+                }
+            }
+        }
+#endif /* HAVE_INOTIFY */
+    }
 }
 
 static void
@@ -1282,6 +1402,11 @@ HIDAPI_JoystickQuit(void)
     HIDAPI_ShutdownDiscovery();
 
     SDL_HIDAPI_QuitRumble();
+
+    if (inotify_fd >= 0) {
+        close(inotify_fd);
+        inotify_fd = -1;
+    }
 
     while (SDL_HIDAPI_devices) {
         HIDAPI_DelDevice(SDL_HIDAPI_devices);
