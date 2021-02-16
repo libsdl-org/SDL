@@ -740,6 +740,14 @@ HIDAPI_JoystickInit(void)
             SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
                          "udev disabled by SDL_HIDAPI_JOYSTICK_DISABLE_UDEV");
             linux_enumeration_method = ENUMERATION_FALLBACK;
+        } else if (access("/.flatpak-info", F_OK) == 0
+                   || access("/run/host/container-manager", F_OK) == 0) {
+            /* Explicitly check `/.flatpak-info` because, for old versions of
+             * Flatpak, this was the only available way to tell if we were in
+             * a Flatpak container. */
+            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                         "Container detected, disabling HIDAPI udev integration");
+            linux_enumeration_method = ENUMERATION_FALLBACK;
         } else {
             SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
                          "Using udev for HIDAPI joystick device discovery");

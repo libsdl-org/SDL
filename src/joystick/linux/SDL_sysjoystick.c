@@ -658,7 +658,10 @@ LINUX_JoystickInit(void)
             enumeration_method = ENUMERATION_FALLBACK;
         }
         else if (access("/.flatpak-info", F_OK) == 0
-                 || access("/run/pressure-vessel", F_OK) == 0) {
+                 || access("/run/host/container-manager", F_OK) == 0) {
+            /* Explicitly check `/.flatpak-info` because, for old versions of
+             * Flatpak, this was the only available way to tell if we were in
+             * a Flatpak container. */
             SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
                          "Container detected, disabling udev integration");
             enumeration_method = ENUMERATION_FALLBACK;
