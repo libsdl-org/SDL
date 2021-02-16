@@ -28,6 +28,7 @@
 #include "SDL_thread.h"
 #include "SDL_timer.h"
 #include "SDL_joystick.h"
+#include "SDL_log.h"
 #include "../SDL_sysjoystick.h"
 #include "SDL_hidapijoystick_c.h"
 #include "SDL_hidapi_rumble.h"
@@ -52,6 +53,15 @@
 #include <poll.h>
 #endif
 #endif
+
+typedef enum
+{
+    ENUMERATION_UNSET,
+    ENUMERATION_LIBUDEV,
+    ENUMERATION_FALLBACK
+} LinuxEnumerationMethod;
+
+static LinuxEnumerationMethod linux_enumeration_method = ENUMERATION_UNSET;
 
 struct joystick_hwdata
 {
@@ -273,23 +283,24 @@ HIDAPI_InitializeDiscovery()
 #endif // __MACOSX__
 
 #if defined(SDL_USE_LIBUDEV)
-    SDL_HIDAPI_discovery.m_pUdev = NULL;
-    SDL_HIDAPI_discovery.m_pUdevMonitor = NULL;
-    SDL_HIDAPI_discovery.m_nUdevFd = -1;
+    if (linux_enumeration_method == ENUMERATION_LIBUDEV) {
+        SDL_HIDAPI_discovery.m_pUdev = NULL;
+        SDL_HIDAPI_discovery.m_pUdevMonitor = NULL;
+        SDL_HIDAPI_discovery.m_nUdevFd = -1;
 
-    usyms = SDL_UDEV_GetUdevSyms();
-    if (usyms) {
-        SDL_HIDAPI_discovery.m_pUdev = usyms->udev_new();
-    }
-    if (SDL_HIDAPI_discovery.m_pUdev) {
-        SDL_HIDAPI_discovery.m_pUdevMonitor = usyms->udev_monitor_new_from_netlink(SDL_HIDAPI_discovery.m_pUdev, "udev");
-        if (SDL_HIDAPI_discovery.m_pUdevMonitor) {
-            usyms->udev_monitor_enable_receiving(SDL_HIDAPI_discovery.m_pUdevMonitor);
-            SDL_HIDAPI_discovery.m_nUdevFd = usyms->udev_monitor_get_fd(SDL_HIDAPI_discovery.m_pUdevMonitor);
-            SDL_HIDAPI_discovery.m_bCanGetNotifications = SDL_TRUE;
+        usyms = SDL_UDEV_GetUdevSyms();
+        if (usyms) {
+            SDL_HIDAPI_discovery.m_pUdev = usyms->udev_new();
+        }
+        if (SDL_HIDAPI_discovery.m_pUdev) {
+            SDL_HIDAPI_discovery.m_pUdevMonitor = usyms->udev_monitor_new_from_netlink(SDL_HIDAPI_discovery.m_pUdev, "udev");
+            if (SDL_HIDAPI_discovery.m_pUdevMonitor) {
+                usyms->udev_monitor_enable_receiving(SDL_HIDAPI_discovery.m_pUdevMonitor);
+                SDL_HIDAPI_discovery.m_nUdevFd = usyms->udev_monitor_get_fd(SDL_HIDAPI_discovery.m_pUdevMonitor);
+                SDL_HIDAPI_discovery.m_bCanGetNotifications = SDL_TRUE;
+            }
         }
     }
-
 #endif /* SDL_USE_LIBUDEV */
 }
 
@@ -331,31 +342,33 @@ HIDAPI_UpdateDiscovery()
 #endif
 
 #if defined(SDL_USE_LIBUDEV)
-    if (SDL_HIDAPI_discovery.m_nUdevFd >= 0) {
-        /* Drain all notification events.
-         * We don't expect a lot of device notifications so just
-         * do a new discovery on any kind or number of notifications.
-         * This could be made more restrictive if necessary.
-         */
-        for (;;) {
-            struct pollfd PollUdev;
-            struct udev_device *pUdevDevice;
+    if (linux_enumeration_method == ENUMERATION_LIBUDEV) {
+        if (SDL_HIDAPI_discovery.m_nUdevFd >= 0) {
+            /* Drain all notification events.
+             * We don't expect a lot of device notifications so just
+             * do a new discovery on any kind or number of notifications.
+             * This could be made more restrictive if necessary.
+             */
+            for (;;) {
+                struct pollfd PollUdev;
+                struct udev_device *pUdevDevice;
 
-            PollUdev.fd = SDL_HIDAPI_discovery.m_nUdevFd;
-            PollUdev.events = POLLIN;
-            if (poll(&PollUdev, 1, 0) != 1) {
-                break;
-            }
+                PollUdev.fd = SDL_HIDAPI_discovery.m_nUdevFd;
+                PollUdev.events = POLLIN;
+                if (poll(&PollUdev, 1, 0) != 1) {
+                    break;
+                }
 
-            SDL_HIDAPI_discovery.m_bHaveDevicesChanged = SDL_TRUE;
+                SDL_HIDAPI_discovery.m_bHaveDevicesChanged = SDL_TRUE;
 
-            pUdevDevice = usyms->udev_monitor_receive_device(SDL_HIDAPI_discovery.m_pUdevMonitor);
-            if (pUdevDevice) {
-                usyms->udev_device_unref(pUdevDevice);
+                pUdevDevice = usyms->udev_monitor_receive_device(SDL_HIDAPI_discovery.m_pUdevMonitor);
+                if (pUdevDevice) {
+                    usyms->udev_device_unref(pUdevDevice);
+                }
             }
         }
     }
-#endif
+#endif /* SDL_USE_LIBUDEV */
 }
 
 static void
@@ -379,7 +392,8 @@ HIDAPI_ShutdownDiscovery()
 #endif
 
 #if defined(SDL_USE_LIBUDEV)
-    if (usyms) {
+    if (linux_enumeration_method == ENUMERATION_LIBUDEV &&
+        usyms) {
         if (SDL_HIDAPI_discovery.m_pUdevMonitor) {
             usyms->udev_monitor_unref(SDL_HIDAPI_discovery.m_pUdevMonitor);
         }
@@ -599,6 +613,20 @@ HIDAPI_JoystickInit(void)
     if (initialized) {
         return 0;
     }
+
+#if defined(SDL_USE_LIBUDEV)
+    if (linux_enumeration_method == ENUMERATION_UNSET) {
+        if (SDL_getenv("SDL_HIDAPI_JOYSTICK_DISABLE_UDEV") != NULL) {
+            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                         "udev disabled by SDL_HIDAPI_JOYSTICK_DISABLE_UDEV");
+            linux_enumeration_method = ENUMERATION_FALLBACK;
+        } else {
+            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                         "Using udev for HIDAPI joystick device discovery");
+            linux_enumeration_method = ENUMERATION_LIBUDEV;
+        }
+    }
+#endif
 
 #if defined(__MACOSX__) || defined(__IPHONEOS__) || defined(__TVOS__)
     /* The hidapi framwork is weak-linked on Apple platforms */
