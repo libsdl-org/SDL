@@ -63,7 +63,13 @@
 #include <sys/syspage.h>
 #endif
 
-#if (defined(__LINUX__) || defined(__ANDROID__)) && defined(__ARM_ARCH)
+#if (defined(__LINUX__) || defined(__ANDROID__)) && defined(__arm__)
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <elf.h>
+
 /*#include <asm/hwcap.h>*/
 #ifndef AT_HWCAP
 #define AT_HWCAP 16
@@ -71,27 +77,16 @@
 #ifndef AT_PLATFORM
 #define AT_PLATFORM 15
 #endif
-/* Prevent compilation error when including elf.h would also try to define AT_* as an enum */
-#ifndef AT_NULL
-#define AT_NULL 0
-#endif
 #ifndef HWCAP_NEON
 #define HWCAP_NEON (1 << 12)
 #endif
-#if defined HAVE_GETAUXVAL
-#include <sys/auxv.h>
-#else
-#include <fcntl.h>
-#endif
 #endif
 
-#if defined(__ANDROID__) && defined(__ARM_ARCH) && !defined(HAVE_GETAUXVAL)
-#if __ARM_ARCH < 8
+#if defined(__ANDROID__) && defined(__arm__) && !defined(HAVE_GETAUXVAL)
 #include <cpu-features.h>
 #endif
-#endif
 
-#if defined(HAVE_ELF_AUX_INFO)
+#if defined(HAVE_GETAUXVAL) || defined(HAVE_ELF_AUX_INFO)
 #include <sys/auxv.h>
 #endif
 
@@ -345,7 +340,7 @@ CPU_haveAltiVec(void)
     return altivec;
 }
 
-#if defined(__ARM_ARCH) && (__ARM_ARCH >= 6)
+#if (defined(__ARM_ARCH) && (__ARM_ARCH >= 6)) || defined(__aarch64__)
 static int
 CPU_haveARMSIMD(void)
 {
@@ -360,12 +355,6 @@ CPU_haveARMSIMD(void)
 }
 
 #elif defined(__LINUX__)
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <elf.h>
-
 static int
 CPU_haveARMSIMD(void)
 {
@@ -393,7 +382,6 @@ CPU_haveARMSIMD(void)
 }
 
 #elif defined(__RISCOS__)
-
 static int
 CPU_haveARMSIMD(void)
 {
@@ -422,17 +410,20 @@ CPU_haveARMSIMD(void)
 }
 #endif
 
-#if defined(__LINUX__) && defined(__ARM_ARCH) && !defined(HAVE_GETAUXVAL)
+#if defined(__LINUX__) && defined(__arm__) && !defined(HAVE_GETAUXVAL)
 static int
 readProcAuxvForNeon(void)
 {
     int neon = 0;
-    int kv[2];
-    const int fd = open("/proc/self/auxv", O_RDONLY);
-    if (fd != -1) {
-        while (read(fd, kv, sizeof (kv)) == sizeof (kv)) {
-            if (kv[0] == AT_HWCAP) {
-                neon = ((kv[1] & HWCAP_NEON) == HWCAP_NEON);
+    int fd;
+
+    fd = open("/proc/self/auxv", O_RDONLY);
+    if (fd >= 0)
+    {
+        Elf32_auxv_t aux;
+        while (read(fd, &aux, sizeof (aux)) == sizeof (aux)) {
+            if (aux.a_type == AT_HWCAP) {
+                neon = (aux.a_un.a_val & HWCAP_NEON) == HWCAP_NEON;
                 break;
             }
         }
@@ -457,22 +448,22 @@ CPU_haveNEON(void)
 #  endif
 /* All WinRT ARM devices are required to support NEON, but just in case. */
     return IsProcessorFeaturePresent(PF_ARM_NEON_INSTRUCTIONS_AVAILABLE) != 0;
-#elif defined(__ARM_ARCH) && (__ARM_ARCH >= 8)
+#elif (defined(__ARM_ARCH) && (__ARM_ARCH >= 8)) || defined(__aarch64__)
     return 1;  /* ARMv8 always has non-optional NEON support. */
 #elif defined(__APPLE__) && defined(__ARM_ARCH) && (__ARM_ARCH >= 7)
     /* (note that sysctlbyname("hw.optional.neon") doesn't work!) */
     return 1;  /* all Apple ARMv7 chips and later have NEON. */
 #elif defined(__APPLE__)
     return 0;  /* assume anything else from Apple doesn't have NEON. */
+#elif !defined(__arm__)
+    return 0;  /* not an ARM CPU at all. */
 #elif defined(__OpenBSD__)
     return 1;  /* OpenBSD only supports ARMv7 CPUs that have NEON. */
-#elif defined(HAVE_ELF_AUX_INFO) && defined(HWCAP_NEON)
+#elif defined(HAVE_ELF_AUX_INFO)
     unsigned long hasneon = 0;
     if (elf_aux_info(AT_HWCAP, (void *)&hasneon, (int)sizeof(hasneon)) != 0)
         return 0;
     return ((hasneon & HWCAP_NEON) == HWCAP_NEON);
-#elif !defined(__arm__)
-    return 0;  /* not an ARM CPU at all. */
 #elif defined(__QNXNTO__)
     return SYSPAGE_ENTRY(cpuinfo)->flags & ARM_CPU_FLAG_NEON;
 #elif (defined(__LINUX__) || defined(__ANDROID__)) && defined(HAVE_GETAUXVAL)
