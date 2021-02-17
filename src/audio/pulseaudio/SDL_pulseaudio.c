@@ -600,6 +600,7 @@ PULSEAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
 
     /* Reduced prebuffering compared to the defaults. */
 #ifdef PA_STREAM_ADJUST_LATENCY
+    paattr.fragsize = this->spec.size;
     /* 2x original requested bufsize */
     paattr.tlength = h->mixlen * 4;
     paattr.prebuf = -1;
@@ -608,6 +609,7 @@ PULSEAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     paattr.minreq = h->mixlen;
     flags = PA_STREAM_ADJUST_LATENCY;
 #else
+    paattr.fragsize = this->spec.size;
     paattr.tlength = h->mixlen*2;
     paattr.prebuf = h->mixlen*2;
     paattr.maxlength = h->mixlen*2;
