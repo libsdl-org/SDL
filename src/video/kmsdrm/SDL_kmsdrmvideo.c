@@ -1157,7 +1157,7 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
 
     if (!is_vulkan && !vulkan_mode) { /* NON-Vulkan block. */
 
-    if (!(dispdata->gbm_init)) {
+        if (!(dispdata->gbm_init)) {
 
             /* In order for the GL_CreateRenderer() and GL_LoadFunctions() calls
                in SDL_CreateWindow succeed (no doing so causes a windo re-creation),
