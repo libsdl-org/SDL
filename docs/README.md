@@ -51,7 +51,8 @@ More documentation and FAQs are available online at [the wiki](https://github.co
 - [WinRT](README-winrt.md)
 
 If you need help with the library, or just want to discuss SDL related
-issues, you can join the [developers mailing list](http://www.libsdl.org/mailing-list.php)
+issues, you can join the [SDL Discourse](https://discourse.libsdl.org/),
+which can be used as a web forum or a mailing list, at your preference.
 
 If you want to report bugs or contribute patches, please submit them to
 [our bug tracker](https://github.com/libsdl-org/SDL/issues)
