@@ -1,4 +1,4 @@
-/* See COPYING.txt for the full license governing this code. */
+/* See LICENSE.txt for the full license governing this code. */
 /**
  * \file variator_exhaustive.c
  *

@@ -21,7 +21,7 @@ SDL is written in C, works natively with C++, and there are bindings
 available for several other languages, including C# and Python.
 
 This library is distributed under the zlib license, which can be found
-in the file "COPYING.txt".
+in the file "LICENSE.txt".
 
 The best way to learn how to use SDL is to check out the header files in
 the "include" subdirectory and the programs in the "test" subdirectory.
