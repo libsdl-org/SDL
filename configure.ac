@@ -60,7 +60,7 @@ PKG_PROG_PKG_CONFIG
 
 dnl Make sure that srcdir is a full pathname
 case "$host" in
-    *-*-mingw32*)
+    *-*-mingw*)
         # Except on msys, where make can't handle full pathnames (bug 1972)
         ;;
     *)
@@ -321,7 +321,7 @@ if test x$enable_libc = xyes; then
 
     dnl Checks for library functions.
     case "$host" in
-    *-*-cygwin* | *-*-mingw32*)
+    *-*-cygwin* | *-*-mingw*)
         ;;
     *)
         AC_FUNC_ALLOCA
@@ -3418,7 +3418,7 @@ AS_HELP_STRING([--enable-hidapi-libusb], [use libusb for low level joystick driv
                 require_hidapi_libusb=yes
                 ;;
             # RAWINPUT is only available on Win32, but can be enabled if HIDAPI is
-            *-*-cygwin* | *-*-mingw32*)
+            *-*-cygwin* | *-*-mingw*)
                 enable_joystick_rawinput=yes
                 ;;
         esac
@@ -3458,7 +3458,7 @@ AS_HELP_STRING([--enable-hidapi-libusb], [use libusb for low level joystick driv
                         *-*-darwin* )
                             libusb_lib="libusb-1.0.0.dylib"
                             ;;
-                        *-*-cygwin* | *-*-mingw32* )
+                        *-*-cygwin* | *-*-mingw* )
                             libusb_lib="libusb-1.0.dll"
                             ;;
                     esac
@@ -3795,7 +3795,7 @@ case "$host" in
         SOURCES="$SOURCES $srcdir/src/core/linux/SDL_threadprio.c"
         SOURCES="$SOURCES $srcdir/src/core/unix/*.c"
         ;;
-    *-*-cygwin* | *-*-mingw32*)
+    *-*-cygwin* | *-*-mingw*)
         ARCH=win32
         if test "$build" != "$host"; then # cross-compiling
             # Default cross-compile location
