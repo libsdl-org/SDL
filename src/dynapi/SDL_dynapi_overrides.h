@@ -766,6 +766,7 @@
 #define SDL_GetPreferredLocales SDL_GetPreferredLocales_REAL
 #define SDL_SIMDRealloc SDL_SIMDRealloc_REAL
 #define SDL_AndroidRequestPermission SDL_AndroidRequestPermission_REAL
+#define SDL_AndroidShowToast SDL_AndroidShowToast_REAL
 #define SDL_OpenURL SDL_OpenURL_REAL
 #define SDL_HasSurfaceRLE SDL_HasSurfaceRLE_REAL
 #define SDL_GameControllerHasLED SDL_GameControllerHasLED_REAL
