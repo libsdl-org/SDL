@@ -793,7 +793,7 @@ output_callback(void *data)
   if (!SDL_AtomicGet(&this->paused)) {
     if (!this->stream) {
       SDL_LockMutex(this->mixer_lock);
-      this->callbackspec.callback(this->spec.userdata, dst, this->callbackspec.size);
+      this->callbackspec.callback(this->callbackspec.userdata, dst, this->callbackspec.size);
       SDL_UnlockMutex(this->mixer_lock);
     } else {
       int got;
