@@ -118,8 +118,8 @@ SDL_RenderDriver VITA_GXM_RenderDriver = {
             [4] = SDL_PIXELFORMAT_RGB565,
             [5] = SDL_PIXELFORMAT_BGR565
         },
-        .max_texture_width = 1024,
-        .max_texture_height = 1024,
+        .max_texture_width = 4096,
+        .max_texture_height = 4096,
      }
 };
 
