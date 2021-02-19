@@ -127,6 +127,12 @@ VideoBootStrap VIVANTE_bootstrap = {
 /*****************************************************************************/
 
 static int
+VIVANTE_SetRelativeMouseMode(SDL_bool enabled)
+{
+    return 0;
+}
+
+static int
 VIVANTE_AddVideoDisplays(_THIS)
 {
     SDL_VideoData *videodata = _this->driverdata;
@@ -221,6 +227,7 @@ VIVANTE_VideoInit(_THIS)
     if (SDL_EVDEV_Init() < 0) {
         return -1;
     }
+    SDL_GetMouse()->SetRelativeMouseMode = VIVANTE_SetRelativeMouseMode;
 #endif
 
     return 0;
