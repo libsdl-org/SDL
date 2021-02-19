@@ -826,7 +826,6 @@ SDL_DYNAPI_PROC(SDL_Locale *,SDL_GetPreferredLocales,(void),(),return)
 SDL_DYNAPI_PROC(void*,SDL_SIMDRealloc,(void *a, const size_t b),(a, b),return)
 #ifdef __ANDROID__
 SDL_DYNAPI_PROC(SDL_bool,SDL_AndroidRequestPermission,(const char *a),(a),return)
-SDL_DYNAPI_PROC(int,SDL_AndroidShowToast,(const char* message, int duration, int gravity, int xOffset, int yOffset),(message,duration,gravity,xOffset,yOffset),return)
 #endif
 SDL_DYNAPI_PROC(int,SDL_OpenURL,(const char *a),(a),return)
 SDL_DYNAPI_PROC(SDL_bool,SDL_HasSurfaceRLE,(SDL_Surface *a),(a),return)
@@ -871,3 +870,6 @@ SDL_DYNAPI_PROC(int,SDL_isxdigit,(int a),(a),return)
 SDL_DYNAPI_PROC(int,SDL_ispunct,(int a),(a),return)
 SDL_DYNAPI_PROC(int,SDL_isprint,(int a),(a),return)
 SDL_DYNAPI_PROC(int,SDL_isgraph,(int a),(a),return)
+#ifdef __ANDROID__
+SDL_DYNAPI_PROC(int,SDL_AndroidShowToast,(const char *a, int b, int c, int d, int e),(a,b,c,d,e),return)
+#endif
