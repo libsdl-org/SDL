@@ -228,6 +228,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_AndroidRequestPermission(const char *permis
                 choose some value from https://developer.android.com/reference/android/view/Gravity
     xOffset   : set this parameter only when gravity >=0
     yOffset   : set this parameter only when gravity >=0
+    Returns 0 if success, -1 if any error occured.
 */
 extern DECLSPEC int SDLCALL SDL_AndroidShowToast(const char* message, int duration, int gravity, int xOffset, int yOffset);
 
