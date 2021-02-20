@@ -103,6 +103,8 @@ static int (*PULSEAUDIO_pa_stream_connect_record) (pa_stream *, const char *,
 static pa_stream_state_t (*PULSEAUDIO_pa_stream_get_state) (pa_stream *);
 static size_t (*PULSEAUDIO_pa_stream_writable_size) (pa_stream *);
 static size_t (*PULSEAUDIO_pa_stream_readable_size) (pa_stream *);
+static int (*PULSEAUDIO_pa_stream_begin_write) (pa_stream *, void **, size_t*);
+static int (*PULSEAUDIO_pa_stream_cancel_write) (pa_stream *);
 static int (*PULSEAUDIO_pa_stream_write) (pa_stream *, const void *, size_t,
     pa_free_cb_t, int64_t, pa_seek_mode_t);
 static pa_operation * (*PULSEAUDIO_pa_stream_drain) (pa_stream *,
@@ -216,6 +218,8 @@ load_pulseaudio_syms(void)
     SDL_PULSEAUDIO_SYM(pa_stream_writable_size);
     SDL_PULSEAUDIO_SYM(pa_stream_readable_size);
     SDL_PULSEAUDIO_SYM(pa_stream_write);
+    SDL_PULSEAUDIO_SYM(pa_stream_begin_write);
+    SDL_PULSEAUDIO_SYM(pa_stream_cancel_write);
     SDL_PULSEAUDIO_SYM(pa_stream_drain);
     SDL_PULSEAUDIO_SYM(pa_stream_disconnect);
     SDL_PULSEAUDIO_SYM(pa_stream_peek);
@@ -366,7 +370,7 @@ PULSEAUDIO_PlayDevice(_THIS)
     /* Write the audio data */
     struct SDL_PrivateAudioData *h = this->hidden;
     if (SDL_AtomicGet(&this->enabled)) {
-        if (PULSEAUDIO_pa_stream_write(h->stream, h->mixbuf, h->mixlen, NULL, 0LL, PA_SEEK_RELATIVE) < 0) {
+        if (PULSEAUDIO_pa_stream_write(h->stream, h->pabuf, h->mixlen, NULL, 0LL, PA_SEEK_RELATIVE) < 0) {
             SDL_OpenedAudioDeviceDisconnected(this);
         }
     }
@@ -375,7 +379,21 @@ PULSEAUDIO_PlayDevice(_THIS)
 static Uint8 *
 PULSEAUDIO_GetDeviceBuf(_THIS)
 {
-    return (this->hidden->mixbuf);
+    struct SDL_PrivateAudioData *h = this->hidden;
+    size_t nbytes = h->mixlen;
+    int ret;
+
+    ret = PULSEAUDIO_pa_stream_begin_write(h->stream, &h->pabuf, &nbytes);
+
+    if (ret != 0) {
+        /* fall back it intermediate buffer */
+        h->pabuf = h->mixbuf;
+    } else if (nbytes < h->mixlen) {
+        PULSEAUDIO_pa_stream_cancel_write(h->stream);
+        h->pabuf = h->mixbuf;
+    }
+
+    return (Uint8 *)h->pabuf;
 }
 
 
