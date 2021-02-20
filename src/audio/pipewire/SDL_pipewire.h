@@ -28,13 +28,14 @@
 #include <pipewire/pipewire.h>
 
 /* Hidden "this" pointer for the audio functions */
-#define _THIS SDL_AudioDevice* this
+#define _THIS SDL_AudioDevice *this
 
 struct SDL_PrivateAudioData
 {
-  struct pw_thread_loop* loop;
-  struct pw_stream*      stream;
-  struct pw_context*     context;
+  struct pw_thread_loop *loop;
+  struct pw_stream      *stream;
+  struct pw_context     *context;
+  struct SDL_DataQueue  *buffer;
 
   Sint32 stride; /* Bytes-per-frame */
 };
