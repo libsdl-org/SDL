@@ -145,6 +145,12 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
                    selector:@selector(localeDidChange:)
                        name:NSCurrentLocaleDidChangeNotification
                      object:nil];
+
+        [[NSAppleEventManager sharedAppleEventManager]
+            setEventHandler:self
+                andSelector:@selector(handleURLEvent:withReplyEvent:)
+            forEventClass:kInternetEventClass
+                andEventID:kAEGetURL];
     }
 
     return self;
@@ -261,12 +267,6 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
         SDL_Delay(300);  /* !!! FIXME: this isn't right. */
         [NSApp activateIgnoringOtherApps:YES];
     }
-
-    [[NSAppleEventManager sharedAppleEventManager]
-    setEventHandler:self
-        andSelector:@selector(handleURLEvent:withReplyEvent:)
-      forEventClass:kInternetEventClass
-         andEventID:kAEGetURL];
 
     /* If we call this before NSApp activation, macOS might print a complaint
      * about ApplePersistenceIgnoreState. */
