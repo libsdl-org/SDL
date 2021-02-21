@@ -1,4 +1,5 @@
 site_name: SDL
+site_author: Sam Lantinga slouken@libsdl.org
 site_description: Simple Direct Media Layer
 docs_dir: docs
 site_dir: build/docs
@@ -15,29 +16,30 @@ markdown_extensions:
       toc_depth: 2
 
 nav:
-  - README.md
-  - README-android.md
-  - README-cmake.md
-  - README-directfb.md
-  - README-dynapi.md
-  - README-emscripten.md
-  - README-gesture.md
-  - README-git.md
-  - README-hg.md
-  - README-ios.md
-  - README-kmsbsd.md
-  - README-linux.md
-  - README-macosx.md
-  - README.md
-  - README-nacl.md
-  - README-os2.md
-  - README-pandora.md
-  - README-platforms.md
-  - README-porting.md
-  - README-psp.md
-  - README-raspberrypi.md
-  - README-touch.md
-  - README-visualc.md
-  - README-wince.md
-  - README-windows.md
-  - README-winrt.md
+  - Home: README.md
+  - General:
+    - CMake: README-cmake.md
+    - Git: README-git.md
+    - HG: README-hg.md
+    - VisualC: README-visualc.md
+    - KMSDRN: README-kmsbsd.md
+    - Porting: README-porting.md
+    - DirectFB: README-directfb.md
+    - DynAPI: README-dynapi.md
+    - Gestures: README-gesture.md
+    - Touch: README-touch.md
+  - Platform:
+    - Overview: README-platforms.md
+    - Android: README-android.md
+    - Empscripten: README-emscripten.md
+    - Linux: README-linux.md
+    - OS X: README-macosx.md
+    - iOS: README-ios.md
+    - NativeClient: README-nacl.md
+    - OS2: README-os2.md
+    - Pandora: README-pandora.md
+    - PSP: README-psp.md
+    - Raspberry Pi: README-raspberrypi.md
+    - WinCE: README-wince.md
+    - Windows: README-windows.md
+    - WinRT: README-winrt.md
