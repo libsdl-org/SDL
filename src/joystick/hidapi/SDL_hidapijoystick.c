@@ -57,8 +57,8 @@
 #include <fcntl.h>
 #include <limits.h>             /* For the definition of NAME_MAX */
 #include <sys/inotify.h>
-#include <unistd.h>
 #endif
+#include <unistd.h>
 #endif
 
 typedef enum
