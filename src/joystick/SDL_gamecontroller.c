@@ -470,6 +470,10 @@ static int SDLCALL SDL_GameControllerEventWatcher(void *userdata, SDL_Event * ev
  */
 static ControllerMapping_t *SDL_CreateMappingForAndroidController(SDL_JoystickGUID guid)
 {
+    const int face_button_mask = ((1 << SDL_CONTROLLER_BUTTON_A) |
+                                  (1 << SDL_CONTROLLER_BUTTON_B) |
+                                  (1 << SDL_CONTROLLER_BUTTON_X) |
+                                  (1 << SDL_CONTROLLER_BUTTON_Y));
     SDL_bool existing;
     char mapping_string[1024];
     int button_mask;
@@ -479,6 +483,10 @@ static ControllerMapping_t *SDL_CreateMappingForAndroidController(SDL_JoystickGU
     axis_mask = SDL_SwapLE16(*(Uint16*)(&guid.data[sizeof(guid.data)-2]));
     if (!button_mask && !axis_mask) {
         /* Accelerometer, shouldn't have a game controller mapping */
+        return NULL;
+    }
+    if (!(button_mask & face_button_mask) || !axis_mask) {
+        /* We don't know what buttons or axes are supported, don't make up a mapping */
         return NULL;
     }
 
