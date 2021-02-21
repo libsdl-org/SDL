@@ -898,12 +898,13 @@ HIDAPI_UpdateDeviceList(void)
         }
     }
 
-    /* Remove any devices that weren't seen */
+    /* Remove any devices that weren't seen or have been disconnected due to read errors */
     device = SDL_HIDAPI_devices;
     while (device) {
         SDL_HIDAPI_Device *next = device->next;
 
-        if (!device->seen) {
+        if (!device->seen ||
+            (device->driver && device->num_joysticks == 0 && !device->dev)) {
             HIDAPI_DelDevice(device);
         }
         device = next;
