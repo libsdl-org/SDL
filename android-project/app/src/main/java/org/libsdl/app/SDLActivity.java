@@ -987,11 +987,6 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
      */
     public static boolean supportsRelativeMouse()
     {
-        // ChromeOS doesn't provide relative mouse motion via the Android 7 APIs
-        if (isChromebook()) {
-            return false;
-        }
-
         // DeX mode in Samsung Experience 9.0 and earlier doesn't support relative mice properly under
         // Android 7 APIs, and simply returns no data under Android 8 APIs.
         //
