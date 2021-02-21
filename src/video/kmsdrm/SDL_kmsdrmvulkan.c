@@ -282,7 +282,9 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
     /* A GPU (or physical_device, in vkcube terms) is a physical GPU.
        A machine with more than one video output doesn't need to have more than one GPU,
        like the Pi4 which has 1 GPU and 2 video outputs.
-       Just in case, we test that the GPU we choose is Vulkan-capable. 
+       Just in case, we test that the GPU we choose is Vulkan-capable.
+       If there are new reports about VK init failures, hardcode
+       gpu = physical_devices[0], instead of probing, and go with that.
     */
 
     /* Get the physical device count. */
@@ -313,6 +315,7 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
         {
             gpu = physical_devices[i];
             valid_gpu = SDL_TRUE;
+            break;
         }
     }
 
