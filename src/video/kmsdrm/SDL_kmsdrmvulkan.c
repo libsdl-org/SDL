@@ -440,6 +440,8 @@ clean:
         SDL_free (physical_devices);
     if (displays_props)
         SDL_free (displays_props);
+    if (device_props)
+        SDL_free (device_props);
     if (planes_props)
         SDL_free (planes_props);
     if (modes_props)
