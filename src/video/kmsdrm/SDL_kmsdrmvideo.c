@@ -517,6 +517,7 @@ void KMSDRM_AddDisplay (_THIS, drmModeConnector *connector, drmModeRes *resource
     dispdata = (SDL_DisplayData *) SDL_calloc(1, sizeof(SDL_DisplayData));
     if (!dispdata) {
         ret = SDL_OutOfMemory();
+        goto cleanup;
     }
 
     /* Initialize some of the members of the new display's driverdata
@@ -644,15 +645,15 @@ cleanup:
         KMSDRM_drmModeFreeEncoder(encoder);
     if (ret) {
         /* Error (complete) cleanup */
-        if (dispdata->connector) {
-            KMSDRM_drmModeFreeConnector(dispdata->connector);
-            dispdata->connector = NULL;
-        }
-        if (dispdata->crtc) {
-            KMSDRM_drmModeFreeCrtc(dispdata->crtc);
-            dispdata->crtc = NULL;
-        }
         if (dispdata) {
+            if (dispdata->connector) {
+                KMSDRM_drmModeFreeConnector(dispdata->connector);
+                dispdata->connector = NULL;
+            }
+            if (dispdata->crtc) {
+                KMSDRM_drmModeFreeCrtc(dispdata->crtc);
+                dispdata->crtc = NULL;
+            }
             SDL_free(dispdata);
         }
     }
