@@ -61,6 +61,7 @@
 #include <unistd.h>
 #endif
 
+#if defined(SDL_USE_LIBUDEV)
 typedef enum
 {
     ENUMERATION_UNSET,
@@ -69,6 +70,7 @@ typedef enum
 } LinuxEnumerationMethod;
 
 static LinuxEnumerationMethod linux_enumeration_method = ENUMERATION_UNSET;
+#endif
 
 struct joystick_hwdata
 {
@@ -108,7 +110,10 @@ static SDL_HIDAPI_Device *SDL_HIDAPI_devices;
 static int SDL_HIDAPI_numjoysticks = 0;
 static SDL_bool initialized = SDL_FALSE;
 static SDL_bool shutting_down = SDL_FALSE;
+
+#if defined(HAVE_INOTIFY)
 static int inotify_fd = -1;
+#endif
 
 #if defined(SDL_USE_LIBUDEV)
 static const SDL_UDEV_Symbols * usyms = NULL;
@@ -1411,10 +1416,12 @@ HIDAPI_JoystickQuit(void)
 
     SDL_HIDAPI_QuitRumble();
 
+#if defined(HAVE_INOTIFY)
     if (inotify_fd >= 0) {
         close(inotify_fd);
         inotify_fd = -1;
     }
+#endif
 
     while (SDL_HIDAPI_devices) {
         HIDAPI_DelDevice(SDL_HIDAPI_devices);
