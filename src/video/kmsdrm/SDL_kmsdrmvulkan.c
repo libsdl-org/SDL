@@ -438,6 +438,8 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
 clean:
     if (physical_devices)
         SDL_free (physical_devices);
+    if (device_props)
+        SDL_free (device_props);
     if (displays_props)
         SDL_free (displays_props);
     if (planes_props)
