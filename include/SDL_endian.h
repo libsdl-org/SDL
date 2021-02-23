@@ -232,6 +232,14 @@ SDL_Swap64(Uint64 x)
   __asm__("bswapq %0": "=r"(x):"0"(x));
     return x;
 }
+#elif defined(__WATCOMC__) && defined(__386__)
+extern _inline Uint64 SDL_Swap64(Uint64);
+#pragma aux SDL_Swap64 = \
+  "bswap eax"     \
+  "bswap edx"     \
+  "xchg eax,edx"  \
+  parm [eax edx]  \
+  modify [eax edx];
 #elif defined(_MSC_VER)
 #pragma intrinsic(_byteswap_uint64)
 #define SDL_Swap64(x) _byteswap_uint64(x)
