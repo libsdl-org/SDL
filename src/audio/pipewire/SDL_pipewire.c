@@ -767,17 +767,17 @@ static const enum spa_audio_channel PIPEWIRE_channel_map_1[] = { SPA_AUDIO_CHANN
 static const enum spa_audio_channel PIPEWIRE_channel_map_2[] = { SPA_AUDIO_CHANNEL_FL, SPA_AUDIO_CHANNEL_FR };
 static const enum spa_audio_channel PIPEWIRE_channel_map_3[] = { SPA_AUDIO_CHANNEL_FL, SPA_AUDIO_CHANNEL_FR,
                                                                  SPA_AUDIO_CHANNEL_LFE };
-static const enum spa_audio_channel PIPEWIRE_channel_map_4[] = { SPA_AUDIO_CHANNEL_FL, SPA_AUDIO_CHANNEL_FR, SPA_AUDIO_CHANNEL_SL,
-                                                                 SPA_AUDIO_CHANNEL_SR };
+static const enum spa_audio_channel PIPEWIRE_channel_map_4[] = { SPA_AUDIO_CHANNEL_FL, SPA_AUDIO_CHANNEL_FR, SPA_AUDIO_CHANNEL_RL,
+                                                                 SPA_AUDIO_CHANNEL_RR };
 static const enum spa_audio_channel PIPEWIRE_channel_map_5[] = { SPA_AUDIO_CHANNEL_FL, SPA_AUDIO_CHANNEL_FR, SPA_AUDIO_CHANNEL_FC,
-                                                                 SPA_AUDIO_CHANNEL_SL, SPA_AUDIO_CHANNEL_SR };
+                                                                 SPA_AUDIO_CHANNEL_RL, SPA_AUDIO_CHANNEL_RR };
 static const enum spa_audio_channel PIPEWIRE_channel_map_6[] = {
   SPA_AUDIO_CHANNEL_FL,  SPA_AUDIO_CHANNEL_FR, SPA_AUDIO_CHANNEL_FC,
-  SPA_AUDIO_CHANNEL_LFE, SPA_AUDIO_CHANNEL_SL, SPA_AUDIO_CHANNEL_SR
+  SPA_AUDIO_CHANNEL_LFE, SPA_AUDIO_CHANNEL_RL, SPA_AUDIO_CHANNEL_RR
 };
 static const enum spa_audio_channel PIPEWIRE_channel_map_7[] = { SPA_AUDIO_CHANNEL_FL,  SPA_AUDIO_CHANNEL_FR, SPA_AUDIO_CHANNEL_FC,
-                                                                 SPA_AUDIO_CHANNEL_LFE, SPA_AUDIO_CHANNEL_RC, SPA_AUDIO_CHANNEL_SL,
-                                                                 SPA_AUDIO_CHANNEL_SR };
+                                                                 SPA_AUDIO_CHANNEL_LFE, SPA_AUDIO_CHANNEL_RC, SPA_AUDIO_CHANNEL_RL,
+                                                                 SPA_AUDIO_CHANNEL_RR };
 static const enum spa_audio_channel PIPEWIRE_channel_map_8[] = { SPA_AUDIO_CHANNEL_FL,  SPA_AUDIO_CHANNEL_FR, SPA_AUDIO_CHANNEL_FC,
                                                                  SPA_AUDIO_CHANNEL_LFE, SPA_AUDIO_CHANNEL_RL, SPA_AUDIO_CHANNEL_RR,
                                                                  SPA_AUDIO_CHANNEL_SL,  SPA_AUDIO_CHANNEL_SR };
