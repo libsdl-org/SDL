@@ -188,7 +188,7 @@ deinit_pipewire_library()
   unload_pipewire_library();
 }
 
-/* Linked lists for tracking nodes and connected devices */
+/* A generic Pipewire node object used for enumeration. */
 struct node_object
 {
   struct spa_list link;
@@ -202,7 +202,8 @@ struct node_object
   struct spa_hook  core_listener;
 };
 
-struct connected_device
+/* A sink/source node used for stream I/O. */
+struct io_node
 {
   struct spa_list link;
 
@@ -221,7 +222,7 @@ static struct pw_registry *   hotplug_registry;
 static struct spa_hook        hotplug_registry_listener;
 static struct spa_hook        hotplug_core_listener;
 static struct spa_list        hotplug_pending_list;
-static struct spa_list        hotplug_device_list;
+static struct spa_list        hotplug_io_list;
 static int                    hotplug_init_seq_val;
 static SDL_atomic_t           hotplug_init_complete;
 static SDL_atomic_t           hotplug_events_enabled;
@@ -229,28 +230,28 @@ static SDL_atomic_t           hotplug_events_enabled;
 Uint32 pipewire_default_sink_id   = SPA_ID_INVALID;
 Uint32 pipewire_default_source_id = SPA_ID_INVALID;
 
-/* The active device list */
+/* The active node list */
 static SDL_bool
-check_add_device(struct connected_device *new_dev)
+io_list_check_add(struct io_node *node)
 {
-  struct connected_device *dev;
-  SDL_bool                 ret = SDL_TRUE;
+  struct io_node *n;
+  SDL_bool        ret = SDL_TRUE;
 
   PIPEWIRE_pw_thread_loop_lock(hotplug_loop);
 
-  /* See if the device is already in the list */
-  spa_list_for_each (dev, &hotplug_device_list, link) {
-    if (dev->id == new_dev->id) {
+  /* See if the node is already in the list */
+  spa_list_for_each (n, &hotplug_io_list, link) {
+    if (n->id == node->id) {
       ret = SDL_FALSE;
       goto dup_found;
     }
   }
 
-  /* Add to the list if the device doesn't already exist */
-  spa_list_append(&hotplug_device_list, &new_dev->link);
+  /* Add to the list if the node doesn't already exist */
+  spa_list_append(&hotplug_io_list, &node->link);
 
   if (SDL_AtomicGet(&hotplug_events_enabled)) {
-    SDL_AddAudioDevice(new_dev->is_capture, new_dev->name, PW_ID_TO_HANDLE(new_dev->id));
+    SDL_AddAudioDevice(node->is_capture, node->name, PW_ID_TO_HANDLE(node->id));
   }
 
 dup_found:
@@ -261,22 +262,22 @@ dup_found:
 }
 
 static void
-remove_device(Uint32 id)
+io_list_remove(Uint32 id)
 {
-  struct connected_device *dev, *temp;
+  struct io_node *n, *temp;
 
   PIPEWIRE_pw_thread_loop_lock(hotplug_loop);
 
-  /* Find and remove the device from the list */
-  spa_list_for_each_safe (dev, temp, &hotplug_device_list, link) {
-    if (dev->id == id) {
-      spa_list_remove(&dev->link);
+  /* Find and remove the node from the list */
+  spa_list_for_each_safe (n, temp, &hotplug_io_list, link) {
+    if (n->id == id) {
+      spa_list_remove(&n->link);
 
       if (SDL_AtomicGet(&hotplug_events_enabled)) {
-        SDL_RemoveAudioDevice(dev->is_capture, PW_ID_TO_HANDLE(id));
+        SDL_RemoveAudioDevice(n->is_capture, PW_ID_TO_HANDLE(id));
       }
 
-      SDL_free(dev);
+      SDL_free(n);
 
       break;
     }
@@ -286,49 +287,50 @@ remove_device(Uint32 id)
 }
 
 static void
-sort_devices()
+io_list_sort()
 {
-  struct connected_device *dev, *temp, *default_sink, *default_source;
+  struct io_node *n, *temp, *default_sink, *default_source;
 
   PIPEWIRE_pw_thread_loop_lock(hotplug_loop);
 
-  /* Find and move the default devices to the beginning of the list */
-  spa_list_for_each_safe (dev, temp, &hotplug_device_list, link) {
-    if (dev->id == pipewire_default_sink_id) {
-      default_sink = dev;
-      spa_list_remove(&dev->link);
-    } else if (dev->id == pipewire_default_source_id) {
-      default_source = dev;
-      spa_list_remove(&dev->link);
+  /* Find and move the default nodes to the beginning of the list */
+  spa_list_for_each_safe (n, temp, &hotplug_io_list, link) {
+    if (n->id == pipewire_default_sink_id) {
+      default_sink = n;
+      spa_list_remove(&n->link);
+    } else if (n->id == pipewire_default_source_id) {
+      default_source = n;
+      spa_list_remove(&n->link);
     }
   }
 
   if (default_source) {
-    spa_list_prepend(&hotplug_device_list, &default_source->link);
+    spa_list_prepend(&hotplug_io_list, &default_source->link);
   }
 
   if (default_sink) {
-    spa_list_prepend(&hotplug_device_list, &default_sink->link);
+    spa_list_prepend(&hotplug_io_list, &default_sink->link);
   }
 
   PIPEWIRE_pw_thread_loop_unlock(hotplug_loop);
 }
 
 static void
-release_device_list()
+io_list_clear()
 {
-  struct connected_device *dev, *temp;
+  struct io_node *n, *temp;
 
-  spa_list_for_each_safe (dev, temp, &hotplug_device_list, link) {
-    spa_list_remove(&dev->link);
-    SDL_free(dev);
+  spa_list_for_each_safe (n, temp, &hotplug_io_list, link) {
+    spa_list_remove(&n->link);
+    SDL_free(n);
   }
 }
 
-/* The pending node list */
 static void
-destroy_node_object(struct node_object *node)
+node_object_destroy(struct node_object *node)
 {
+  SDL_assert(node);
+
   spa_list_remove(&node->link);
   spa_hook_remove(&node->node_listener);
   spa_hook_remove(&node->core_listener);
@@ -336,37 +338,38 @@ destroy_node_object(struct node_object *node)
   PIPEWIRE_pw_proxy_destroy(node->proxy);
 }
 
+/* The pending node list */
 static void
-add_pending(struct node_object *node)
+pending_list_add(struct node_object *node)
 {
   SDL_assert(node);
   spa_list_append(&hotplug_pending_list, &node->link);
 }
 
 static void
-remove_pending(Uint32 id)
+pending_list_remove(Uint32 id)
 {
   struct node_object *node, *temp;
 
   spa_list_for_each_safe (node, temp, &hotplug_pending_list, link) {
     if (node->id == id) {
-      destroy_node_object(node);
+      node_object_destroy(node);
     }
   }
 }
 
 static void
-release_pending_list()
+pending_list_clear()
 {
   struct node_object *node, *temp;
 
   spa_list_for_each_safe (node, temp, &hotplug_pending_list, link) {
-    destroy_node_object(node);
+    node_object_destroy(node);
   }
 }
 
 static void *
-alloc_node_object(Uint32 id, const char *type, Uint32 version, const void *funcs, const struct pw_core_events *core_events)
+node_object_new(Uint32 id, const char *type, Uint32 version, const void *funcs, const struct pw_core_events *core_events)
 {
   struct pw_proxy *   proxy;
   struct node_object *node;
@@ -389,7 +392,7 @@ alloc_node_object(Uint32 id, const char *type, Uint32 version, const void *funcs
   PIPEWIRE_pw_proxy_add_object_listener(node->proxy, &node->node_listener, funcs, node);
 
   /* Add the node to the active list */
-  add_pending(node);
+  pending_list_add(node);
 
   return node;
 }
@@ -404,7 +407,7 @@ core_events_hotplug_init_callback(void *object, uint32_t id, int seq)
     /* This core listener is no longer needed. */
     spa_hook_remove(&hotplug_core_listener);
 
-    /* Signal that the initial device list is populated */
+    /* Signal that the initial I/O list is populated */
     SDL_AtomicSet(&hotplug_init_complete, 1);
     PIPEWIRE_pw_thread_loop_signal(hotplug_loop, false);
 
@@ -415,19 +418,19 @@ core_events_hotplug_init_callback(void *object, uint32_t id, int seq)
 static void
 core_events_interface_callback(void *object, uint32_t id, int seq)
 {
-  struct node_object *     node = object;
-  struct connected_device *dev  = node->userdata;
+  struct node_object *node = object;
+  struct io_node *    io   = node->userdata;
 
   if (id == PW_ID_CORE && seq == node->seq) {
     /*
-     * Move the device to the connected list.
-     * On success, the device list owns the device object.
+     * Move the I/O node to the connected list.
+     * On success, the list owns the I/O node object.
      */
-    if (check_add_device(dev)) {
+    if (io_list_check_add(io)) {
       node->userdata = NULL;
     }
 
-    destroy_node_object(node);
+    node_object_destroy(node);
   }
 }
 
@@ -437,7 +440,7 @@ core_events_metadata_callback(void *object, uint32_t id, int seq)
   struct node_object *node = object;
 
   if (id == PW_ID_CORE && seq == node->seq) {
-    destroy_node_object(node);
+    node_object_destroy(node);
   }
 }
 
@@ -450,7 +453,7 @@ hotplug_core_sync(struct node_object *node)
 {
   /*
    * Node sync events *must* come before the hotplug init sync events or the initial
-   * device list will be incomplete when the main hotplug sync point is hit.
+   * I/O list will be incomplete when the main hotplug sync point is hit.
    */
   if (node) {
     node->seq = pw_core_sync(hotplug_core, PW_ID_CORE, node->seq);
@@ -521,15 +524,15 @@ get_int_param(const struct spa_pod *param, Uint32 key, int *val)
 static void
 node_event_info(void *object, const struct pw_node_info *info)
 {
-  struct node_object *     node = object;
-  struct connected_device *dev  = node->userdata;
-  const char *             prop_val;
-  Uint32                   i;
+  struct node_object *node = object;
+  struct io_node *    io   = node->userdata;
+  const char *        prop_val;
+  Uint32              i;
 
   if (info) {
     prop_val = spa_dict_lookup(info->props, PW_KEY_AUDIO_CHANNELS);
     if (prop_val) {
-      dev->spec.channels = (Uint8)SDL_atoi(prop_val);
+      io->spec.channels = (Uint8)SDL_atoi(prop_val);
     }
 
     /* Need to parse the parameters to get the sample rate */
@@ -544,22 +547,22 @@ node_event_info(void *object, const struct pw_node_info *info)
 static void
 node_event_param(void *object, int seq, uint32_t id, uint32_t index, uint32_t next, const struct spa_pod *param)
 {
-  struct node_object *     node = object;
-  struct connected_device *dev  = node->userdata;
+  struct node_object *node = object;
+  struct io_node *    io   = node->userdata;
 
   /* Get the default frequency */
-  if (dev->spec.freq == 0) {
-    get_range_param(param, SPA_FORMAT_AUDIO_rate, &dev->spec.freq, NULL, NULL);
+  if (io->spec.freq == 0) {
+    get_range_param(param, SPA_FORMAT_AUDIO_rate, &io->spec.freq, NULL, NULL);
   }
 
   /*
    * The channel count should have come from the node properties,
    * but it is stored here as well. If one failed, try the other.
    */
-  if (dev->spec.channels == 0) {
+  if (io->spec.channels == 0) {
     int channels;
     if (get_int_param(param, SPA_FORMAT_AUDIO_channels, &channels)) {
-      dev->spec.channels = (Uint8)channels;
+      io->spec.channels = (Uint8)channels;
     }
   }
 }
@@ -598,10 +601,10 @@ registry_event_global_callback(void *object, uint32_t id, uint32_t permissions, 
     const char *media_class = spa_dict_lookup(props, PW_KEY_MEDIA_CLASS);
 
     if (media_class) {
-      const char *             node_nick, *node_desc;
-      struct connected_device *dev;
-      SDL_bool                 is_capture;
-      int                      str_buffer_len;
+      const char *    node_nick, *node_desc;
+      struct io_node *io;
+      SDL_bool        is_capture;
+      int             str_buffer_len;
 
       /* Just want sink and capture */
       if (!SDL_strcasecmp(media_class, "Audio/Sink")) {
@@ -616,33 +619,33 @@ registry_event_global_callback(void *object, uint32_t id, uint32_t permissions, 
       node_desc = spa_dict_lookup(props, PW_KEY_NODE_DESCRIPTION);
 
       if (node_nick && node_desc) {
-        node = alloc_node_object(id, type, version, &interface_node_events, &interface_core_events);
+        node = node_object_new(id, type, version, &interface_node_events, &interface_core_events);
         if (node == NULL) {
           SDL_SetError("Pipewire: Failed to allocate interface node");
           return;
         }
 
-        /* Allocate and initialize the device information struct */
+        /* Allocate and initialize the I/O node information struct */
         str_buffer_len = SDL_strlen(node_nick) + SDL_strlen(node_desc) + 3;
-        node->userdata = dev = SDL_calloc(1, sizeof(struct connected_device) + str_buffer_len);
-        if (dev == NULL) {
-          destroy_node_object(node);
+        node->userdata = io = SDL_calloc(1, sizeof(struct io_node) + str_buffer_len);
+        if (io == NULL) {
+          node_object_destroy(node);
           SDL_OutOfMemory();
           return;
         }
 
-        /* Begin setting the device properties */
-        dev->id          = id;
-        dev->is_capture  = is_capture;
-        dev->spec.format = AUDIO_F32; /* Pipewire uses floats internally, other formats require conversion */
-        SDL_snprintf(dev->name, str_buffer_len, "%s: %s", node_nick, node_desc);
+        /* Begin setting the node properties */
+        io->id          = id;
+        io->is_capture  = is_capture;
+        io->spec.format = AUDIO_F32; /* Pipewire uses floats internally, other formats require conversion. */
+        SDL_snprintf(io->name, str_buffer_len, "%s: %s", node_nick, node_desc);
 
         /* Update sync points */
         hotplug_core_sync(node);
       }
     }
   } else if (!SDL_strcmp(type, PW_TYPE_INTERFACE_Metadata)) {
-    node = alloc_node_object(id, type, version, &metadata_node_events, &metadata_core_events);
+    node = node_object_new(id, type, version, &metadata_node_events, &metadata_core_events);
     if (node == NULL) {
       SDL_SetError("Pipewire: Failed to allocate metadata node");
       return;
@@ -656,20 +659,21 @@ registry_event_global_callback(void *object, uint32_t id, uint32_t permissions, 
 static void
 registry_event_remove_callback(void *object, uint32_t id)
 {
-  remove_pending(id);
-  remove_device(id);
+  io_list_remove(id);
+  pending_list_remove(id);
 }
 
 static const struct pw_registry_events registry_events = { PW_VERSION_REGISTRY_EVENTS, .global = registry_event_global_callback,
                                                            .global_remove = registry_event_remove_callback };
 
+/* The hotplug thread */
 static int
 hotplug_loop_init()
 {
   int res;
 
   spa_list_init(&hotplug_pending_list);
-  spa_list_init(&hotplug_device_list);
+  spa_list_init(&hotplug_io_list);
 
   hotplug_loop = PIPEWIRE_pw_thread_loop_new("SDLAudioHotplug", NULL);
   if (hotplug_loop == NULL) {
@@ -714,8 +718,8 @@ hotplug_loop_destroy()
     PIPEWIRE_pw_thread_loop_stop(hotplug_loop);
   }
 
-  release_pending_list();
-  release_device_list();
+  pending_list_clear();
+  io_list_clear();
 
   if (hotplug_registry) {
     PIPEWIRE_pw_proxy_destroy((struct pw_proxy *)hotplug_registry);
@@ -737,7 +741,7 @@ hotplug_loop_destroy()
 static void
 PIPEWIRE_DetectDevices()
 {
-  struct connected_device *dev;
+  struct io_node *io;
 
   PIPEWIRE_pw_thread_loop_lock(hotplug_loop);
 
@@ -746,11 +750,11 @@ PIPEWIRE_DetectDevices()
     PIPEWIRE_pw_thread_loop_wait(hotplug_loop);
   }
 
-  /* Sort the device list so the default source/sink are listed first */
-  sort_devices();
+  /* Sort the I/O list so the default source/sink are listed first */
+  io_list_sort();
 
-  spa_list_for_each (dev, &hotplug_device_list, link) {
-    SDL_AddAudioDevice(dev->is_capture, dev->name, PW_ID_TO_HANDLE(dev->id));
+  spa_list_for_each (io, &hotplug_io_list, link) {
+    SDL_AddAudioDevice(io->is_capture, io->name, PW_ID_TO_HANDLE(io->id));
   }
 
   SDL_AtomicSet(&hotplug_events_enabled, 1);
@@ -997,7 +1001,7 @@ PIPEWIRE_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
   struct SDL_PrivateAudioData *priv;
   struct pw_properties *       props;
   const char *                 stream_name, *stream_role;
-  const Uint32                 device_id = this->handle == NULL ? PW_ID_ANY : PW_HANDLE_TO_ID(this->handle);
+  const Uint32                 node_id = this->handle == NULL ? PW_ID_ANY : PW_HANDLE_TO_ID(this->handle);
   int                          min_period, adjusted_samples;
   enum pw_stream_state         state;
   int                          res;
@@ -1096,7 +1100,7 @@ PIPEWIRE_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     return SDL_SetError("Pipewire: Failed to create stream (%i)", errno);
   }
 
-  res = PIPEWIRE_pw_stream_connect(priv->stream, iscapture ? PW_DIRECTION_INPUT : PW_DIRECTION_OUTPUT, device_id, STREAM_FLAGS,
+  res = PIPEWIRE_pw_stream_connect(priv->stream, iscapture ? PW_DIRECTION_INPUT : PW_DIRECTION_OUTPUT, node_id, STREAM_FLAGS,
                                    &params, 1);
   if (res != 0) {
     return SDL_SetError("Pipewire: Failed to connect stream");
