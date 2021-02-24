@@ -41,9 +41,6 @@ static const AudioBootStrap *const bootstrap[] = {
 #if SDL_AUDIO_DRIVER_ALSA
     &ALSA_bootstrap,
 #endif
-#if SDL_AUDIO_DRIVER_PIPEWIRE
-    &PIPEWIRE_bootstrap,
-#endif
 #if SDL_AUDIO_DRIVER_SNDIO
     &SNDIO_bootstrap,
 #endif
@@ -106,6 +103,9 @@ static const AudioBootStrap *const bootstrap[] = {
 #endif
 #if SDL_AUDIO_DRIVER_JACK
     &JACK_bootstrap,
+#endif
+#if SDL_AUDIO_DRIVER_PIPEWIRE
+    &PIPEWIRE_bootstrap,
 #endif
 #if SDL_AUDIO_DRIVER_OS2
     &OS2AUDIO_bootstrap,
