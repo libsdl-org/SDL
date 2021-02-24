@@ -129,7 +129,7 @@ CPU_haveCPUID(void)
 
 /* *INDENT-OFF* */
 #ifndef SDL_CPUINFO_DISABLED
-#if defined(__GNUC__) && defined(i386)
+#if defined(__GNUC__) && defined(__i386__)
     __asm__ (
 "        pushfl                      # Get original EFLAGS             \n"
 "        popl    %%eax                                                 \n"
@@ -220,7 +220,7 @@ done:
     return has_CPUID;
 }
 
-#if defined(__GNUC__) && defined(i386)
+#if defined(__GNUC__) && defined(__i386__)
 #define cpuid(func, a, b, c, d) \
     __asm__ __volatile__ ( \
 "        pushl %%ebx        \n" \
@@ -289,7 +289,7 @@ CPU_calcCPUIDFeatures(void)
                 /* Check to make sure we can call xgetbv */
                 if (c & 0x08000000) {
                     /* Call xgetbv to see if YMM (etc) register state is saved */
-#if defined(__GNUC__) && (defined(i386) || defined(__x86_64__))
+#if defined(__GNUC__) && (defined(__i386__) || defined(__x86_64__))
                     __asm__(".byte 0x0f, 0x01, 0xd0" : "=a" (a) : "c" (0) : "%edx");
 #elif defined(_MSC_VER) && (defined(_M_IX86) || defined(_M_X64)) && (_MSC_FULL_VER >= 160040219) /* VS2010 SP1 */
                     a = (int)_xgetbv(0);
