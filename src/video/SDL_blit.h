@@ -27,6 +27,12 @@
 #include "SDL_endian.h"
 #include "SDL_surface.h"
 
+/* pixman ARM blitters are 32 bit only : */
+#if defined(__aarch64__)||defined(_M_ARM64)
+#undef SDL_ARM_SIMD_BLITTERS
+#undef SDL_ARM_NEON_BLITTERS
+#endif
+
 /* Table to do pixel byte expansion */
 extern Uint8* SDL_expand_byte[9];
 
