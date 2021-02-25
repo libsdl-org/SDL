@@ -596,7 +596,7 @@ registry_event_global_callback(void *object, uint32_t id, uint32_t permissions, 
 {
   struct node_object *node;
 
-  /* We're only interested in nodes */
+  /* We're only interested in interface and metadata nodes. */
   if (!SDL_strcmp(type, PW_TYPE_INTERFACE_Node)) {
     const char *media_class = spa_dict_lookup(props, PW_KEY_MEDIA_CLASS);
 
