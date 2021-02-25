@@ -243,6 +243,8 @@ KMSDRM_CreateDevice(int devindex)
     device->SetWindowPosition = KMSDRM_SetWindowPosition;
     device->SetWindowSize = KMSDRM_SetWindowSize;
     device->SetWindowFullscreen = KMSDRM_SetWindowFullscreen;
+    device->GetWindowGammaRamp = KMSDRM_GetWindowGammaRamp;
+    device->SetWindowGammaRamp = KMSDRM_SetWindowGammaRamp;
     device->ShowWindow = KMSDRM_ShowWindow;
     device->HideWindow = KMSDRM_HideWindow;
     device->RaiseWindow = KMSDRM_RaiseWindow;
@@ -1346,6 +1348,34 @@ KMSDRM_ReconfigureWindow( _THIS, SDL_Window * window) {
        so SDL pre-scales to that size for us. */
     SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED,
                         windata->surface_w, windata->surface_h);
+}
+
+int
+KMSDRM_GetWindowGammaRamp(_THIS, SDL_Window * window, Uint16 * ramp)
+{
+    SDL_WindowData *windata = (SDL_WindowData*)window->driverdata;
+    SDL_VideoData *viddata = (SDL_VideoData*)windata->viddata;
+    SDL_VideoDisplay *disp = SDL_GetDisplayForWindow(window);
+    SDL_DisplayData* dispdata = (SDL_DisplayData*)disp->driverdata;
+    if (KMSDRM_drmModeCrtcGetGamma(viddata->drm_fd, dispdata->crtc->crtc_id, 256, &ramp[0*256], &ramp[1*256], &ramp[2*256]) == -1)
+    {
+        return SDL_SetError("Failed to get gamma ramp");
+    }
+    return 0;
+}
+
+int
+KMSDRM_SetWindowGammaRamp(_THIS, SDL_Window * window, const Uint16 * ramp)
+{
+    SDL_WindowData *windata = (SDL_WindowData*)window->driverdata;
+    SDL_VideoData *viddata = (SDL_VideoData*)windata->viddata;
+    SDL_VideoDisplay *disp = SDL_GetDisplayForWindow(window);
+    SDL_DisplayData* dispdata = (SDL_DisplayData*)disp->driverdata;
+    if (KMSDRM_drmModeCrtcSetGamma(viddata->drm_fd, dispdata->crtc->crtc_id, 256, &ramp[0*256], &ramp[1*256], &ramp[2*256]) == -1)
+    {
+        return SDL_SetError("Failed to set gamma ramp");
+    }
+    return 0;
 }
 
 int
