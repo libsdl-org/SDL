@@ -9,18 +9,18 @@ at runtime, and you won't get a missing library error, at least with the
 default configuration parameters.
 
 
-================================================================================
 Build Dependencies
-================================================================================
+--------------------------------------------------------------------------------
     
 Ubuntu 20.04, all available features enabled:
 
-sudo apt-get install build-essential git make cmake autoconf automake \
-libtool libasound2-dev libpulse-dev libaudio-dev libx11-dev libxext-dev \
-libxrandr-dev libxcursor-dev libxi-dev libxinerama-dev libxxf86vm-dev \
-libxss-dev libgl1-mesa-dev libdbus-1-dev libudev-dev libgles2-mesa-dev \
-libegl1-mesa-dev libibus-1.0-dev fcitx-libs-dev libsamplerate0-dev \
-libsndio-dev libwayland-dev libxkbcommon-dev
+    sudo apt-get install build-essential git make cmake autoconf automake \
+    libtool pkg-config libasound2-dev libpulse-dev libaudio-dev libjack-dev \
+    libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxi-dev \
+    libxinerama-dev libxxf86vm-dev libxss-dev libgl1-mesa-dev libdbus-1-dev \
+    libudev-dev libgles2-mesa-dev libegl1-mesa-dev libibus-1.0-dev \
+    fcitx-libs-dev libsamplerate0-dev libsndio-dev libwayland-dev \
+    libxkbcommon-dev libdrm-dev libgbm-dev
 
 NOTES:
 - This includes all the audio targets except arts and esd, because Ubuntu
@@ -34,9 +34,8 @@ NOTES:
   configure script to include DirectFB support. Send patches.  :)
 
 
-================================================================================
 Joystick does not work
-================================================================================
+--------------------------------------------------------------------------------
 
 If you compiled or are using a version of SDL with udev support (and you should!)
 there's a few issues that may cause SDL to fail to detect your joystick. To
@@ -66,8 +65,8 @@ you need to set up an udev rule to force this variable.
 A combined rule for the Saitek Pro Flight Rudder Pedals to fix both issues looks 
 like:
     
-   SUBSYSTEM=="input", ATTRS{idProduct}=="0763", ATTRS{idVendor}=="06a3", MODE="0666", ENV{ID_INPUT_JOYSTICK}="1"
-   SUBSYSTEM=="input", ATTRS{idProduct}=="0764", ATTRS{idVendor}=="06a3", MODE="0666", ENV{ID_INPUT_JOYSTICK}="1"
+    SUBSYSTEM=="input", ATTRS{idProduct}=="0763", ATTRS{idVendor}=="06a3", MODE="0666", ENV{ID_INPUT_JOYSTICK}="1"
+    SUBSYSTEM=="input", ATTRS{idProduct}=="0764", ATTRS{idVendor}=="06a3", MODE="0666", ENV{ID_INPUT_JOYSTICK}="1"
    
 You can set up similar rules for your device by changing the values listed in
 idProduct and idVendor. To obtain these values, try:
