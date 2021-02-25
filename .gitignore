@@ -8,11 +8,35 @@ Makefile
 Makefile.rules
 sdl2-config
 sdl2-config.cmake
+sdl2-config-version.cmake
 sdl2.pc
 SDL2.spec
 build
 gen
 Build
+buildbot
+
+*.so
+*.so.*
+*.dll
+*.exe
+*.o
+*.obj
+*.lib
+*.a
+*.la
+*.dSYM
+*,e1f
+*,ff8
+*.lnk
+*.err
+*.exp
+*.map
+*.orig
+*~
+*.swp
+*.tmp
+*.rej
 
 # for CMake
 CMakeFiles/
@@ -20,10 +44,6 @@ CMakeCache.txt
 cmake_install.cmake
 cmake_uninstall.cmake
 SDL2ConfigVersion.cmake
-*.a
-*.la
-*.so
-*.so.*
 .ninja_*
 *.ninja
 
@@ -32,12 +52,6 @@ SDL2ConfigVersion.cmake
 cmake-build-*
 
 # for Xcode
-*.orig
-*.swp
-*.tmp
-*.rej
-*~
-*.o
 *.mode1*
 *.perspective*
 *.pbxuser
@@ -47,6 +61,7 @@ xcuserdata
 *.xcworkspace
 
 # for Visual C++
+.vs
 Debug
 Release
 *.user
@@ -78,13 +93,6 @@ VisualC/visualtest/testsprite2_sample.parameters
 # for Android
 android-project/local.properties
 
-test/aclocal.m4
-test/autom4te*
-test/config.cache
-test/config.log
-test/config.status
-test/Makefile
-test/SDL2.dll
 test/checkkeys
 test/controllermap
 test/loopwave
@@ -101,6 +109,7 @@ test/testdraw2
 test/testdrawchessboard
 test/testdropfile
 test/testerror
+test/testevdev
 test/testfile
 test/testfilesystem
 test/testgamecontroller
@@ -117,6 +126,7 @@ test/testintersections
 test/testjoystick
 test/testkeys
 test/testloadso
+test/testlocale
 test/testlock
 test/testmessage
 test/testmultiaudio
@@ -140,15 +150,10 @@ test/testspriteminimal
 test/teststreaming
 test/testthread
 test/testtimer
+test/testurl
 test/testver
 test/testviewport
 test/testvulkan
 test/testwm2
 test/testyuv
 test/torturethread
-test/*.exe
-test/*,e1f
-test/*,ff8
-test/*.dSYM
-buildbot
-test/buildbot

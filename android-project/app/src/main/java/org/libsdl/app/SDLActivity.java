@@ -52,6 +52,7 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.Hashtable;
 import java.util.Locale;
@@ -986,11 +987,6 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
      */
     public static boolean supportsRelativeMouse()
     {
-        // ChromeOS doesn't provide relative mouse motion via the Android 7 APIs
-        if (isChromebook()) {
-            return false;
-        }
-
         // DeX mode in Samsung Experience 9.0 and earlier doesn't support relative mice properly under
         // Android 7 APIs, and simply returns no data under Android 8 APIs.
         //
@@ -1626,6 +1622,52 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
 
             mSingleton.startActivity(i);
         } catch (Exception ex) {
+            return -1;
+        }
+        return 0;
+    }
+
+    /**
+     * This method is called by SDL using JNI.
+     */
+    public static int showToast(String message, int duration, int gravity, int xOffset, int yOffset)
+    {
+        if(null == mSingleton) {
+            return - 1;
+        }
+
+        try
+        {
+            class OneShotTask implements Runnable {
+                String mMessage;
+                int mDuration;
+                int mGravity;
+                int mXOffset;
+                int mYOffset;
+
+                OneShotTask(String message, int duration, int gravity, int xOffset, int yOffset) {
+                    mMessage  = message;
+                    mDuration = duration;
+                    mGravity  = gravity;
+                    mXOffset  = xOffset;
+                    mYOffset  = yOffset;
+                }
+
+                public void run() {
+                    try
+                    {
+                        Toast toast = Toast.makeText(mSingleton, mMessage, mDuration);
+                        if (mGravity >= 0) {
+                            toast.setGravity(mGravity, mXOffset, mYOffset);
+                        }
+                        toast.show();
+                    } catch(Exception ex) {
+                        Log.e(TAG, ex.getMessage());
+                    }
+                }
+            }
+            mSingleton.runOnUiThread(new OneShotTask(message, duration, gravity, xOffset, yOffset));
+        } catch(Exception ex) {
             return -1;
         }
         return 0;

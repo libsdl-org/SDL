@@ -440,10 +440,18 @@ extern DECLSPEC int SDLCALL SDL_abs(int x);
 #define SDL_min(x, y) (((x) < (y)) ? (x) : (y))
 #define SDL_max(x, y) (((x) > (y)) ? (x) : (y))
 
+extern DECLSPEC int SDLCALL SDL_isalpha(int x);
+extern DECLSPEC int SDLCALL SDL_isalnum(int x);
+extern DECLSPEC int SDLCALL SDL_isblank(int x);
+extern DECLSPEC int SDLCALL SDL_iscntrl(int x);
 extern DECLSPEC int SDLCALL SDL_isdigit(int x);
+extern DECLSPEC int SDLCALL SDL_isxdigit(int x);
+extern DECLSPEC int SDLCALL SDL_ispunct(int x);
 extern DECLSPEC int SDLCALL SDL_isspace(int x);
 extern DECLSPEC int SDLCALL SDL_isupper(int x);
 extern DECLSPEC int SDLCALL SDL_islower(int x);
+extern DECLSPEC int SDLCALL SDL_isprint(int x);
+extern DECLSPEC int SDLCALL SDL_isgraph(int x);
 extern DECLSPEC int SDLCALL SDL_toupper(int x);
 extern DECLSPEC int SDLCALL SDL_tolower(int x);
 
@@ -460,7 +468,7 @@ SDL_FORCE_INLINE void SDL_memset4(void *dst, Uint32 val, size_t dwords)
 {
 #ifdef __APPLE__
     memset_pattern4(dst, &val, dwords * 4);
-#elif defined(__GNUC__) && defined(i386)
+#elif defined(__GNUC__) && defined(__i386__)
     int u0, u1, u2;
     __asm__ __volatile__ (
         "cld \n\t"

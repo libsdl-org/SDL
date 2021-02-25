@@ -43,6 +43,12 @@ struct SDL_PrivateAudioData
     Uint8 *mixbuf;
     int mixlen;
 
+    /* Pointer to the actual buffer in use in the current
+       GetDeviceBuf() -> PlayDevice() iteration.
+       Can be either the pointer returned by pa_stream_begin_write()
+       or mixbuf */
+    void *pabuf;
+
     const Uint8 *capturebuf;
     int capturelen;
 };

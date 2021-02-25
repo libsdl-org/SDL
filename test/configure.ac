@@ -21,7 +21,7 @@ ISMACOSX="false"
 
 dnl Figure out which math library to use
 case "$host" in
-    *-*-cygwin* | *-*-mingw32*)
+    *-*-cygwin* | *-*-mingw*)
         ISWINDOWS="true"
         EXE=".exe"
         MATHLIB=""

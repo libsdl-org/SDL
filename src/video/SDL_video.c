@@ -1453,6 +1453,7 @@ SDL_Window *
 SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
 {
     SDL_Window *window;
+    Uint32 graphics_flags = flags & (SDL_WINDOW_OPENGL | SDL_WINDOW_METAL | SDL_WINDOW_VULKAN);
 
     if (!_this) {
         /* Initialize the video system if needed */
@@ -1480,16 +1481,16 @@ SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
         return NULL;
     }
 
-    /* Some platforms have OpenGL enabled by default */
+    /* Some platforms have certain graphics backends enabled by default */
+    if (!_this->is_dummy && !graphics_flags && !SDL_IsVideoContextExternal()) {
 #if (SDL_VIDEO_OPENGL && __MACOSX__) || (__IPHONEOS__ && !TARGET_OS_MACCATALYST) || __ANDROID__ || __NACL__
-    if (!_this->is_dummy && !(flags & SDL_WINDOW_VULKAN) && !(flags & SDL_WINDOW_METAL) && !SDL_IsVideoContextExternal()) {
         flags |= SDL_WINDOW_OPENGL;
-    }
-#elif TARGET_OS_MACCATALYST
-    if (!_this->is_dummy && !(flags & SDL_WINDOW_VULKAN) && !(flags & SDL_WINDOW_OPENGL) && !SDL_IsVideoContextExternal()) {
-        flags |= SDL_WINDOW_METAL;
-    }
 #endif
+#if SDL_VIDEO_METAL && (TARGET_OS_MACCATALYST || __MACOSX__ || __IPHONEOS__)
+        flags |= SDL_WINDOW_METAL;
+#endif
+    }
+
     if (flags & SDL_WINDOW_OPENGL) {
         if (!_this->GL_CreateContext) {
             SDL_SetError("OpenGL support is either not configured in SDL "
@@ -1509,7 +1510,7 @@ SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
                          "(%s) or platform", _this->name);
             return NULL;
         }
-        if (flags & SDL_WINDOW_OPENGL) {
+        if (graphics_flags & SDL_WINDOW_OPENGL) {
             SDL_SetError("Vulkan and OpenGL not supported on same window");
             return NULL;
         }
@@ -1525,11 +1526,12 @@ SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
                          "(%s) or platform", _this->name);
             return NULL;
         }
-        if (flags & SDL_WINDOW_OPENGL) {
+        /* 'flags' may have default flags appended, don't check against that. */
+        if (graphics_flags & SDL_WINDOW_OPENGL) {
             SDL_SetError("Metal and OpenGL not supported on same window");
             return NULL;
         }
-        if (flags & SDL_WINDOW_VULKAN) {
+        if (graphics_flags & SDL_WINDOW_VULKAN) {
             SDL_SetError("Metal and Vulkan not supported on same window. "
                          "To use MoltenVK, set SDL_WINDOW_VULKAN only.");
             return NULL;

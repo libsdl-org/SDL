@@ -173,9 +173,9 @@ SDL_Swap32(Uint32 x)
 {
     Uint32 result;
 
-  __asm__("rlwimi %0,%2,24,16,23": "=&r"(result):"0"(x >> 24), "r"(x));
-  __asm__("rlwimi %0,%2,8,8,15": "=&r"(result):"0"(result), "r"(x));
-  __asm__("rlwimi %0,%2,24,0,7": "=&r"(result):"0"(result), "r"(x));
+  __asm__("rlwimi %0,%2,24,16,23": "=&r"(result): "0" (x>>24),  "r"(x));
+  __asm__("rlwimi %0,%2,8,8,15"  : "=&r"(result): "0" (result), "r"(x));
+  __asm__("rlwimi %0,%2,24,0,7"  : "=&r"(result): "0" (result), "r"(x));
     return result;
 }
 #elif defined(__GNUC__) && defined(__aarch64__)
@@ -194,19 +194,10 @@ SDL_Swap32(Uint32 x)
 }
 #elif defined(__WATCOMC__) && defined(__386__)
 extern _inline Uint32 SDL_Swap32(Uint32);
-#ifndef __SW_3 /* 486+ */
 #pragma aux SDL_Swap32 = \
   "bswap eax"  \
   parm   [eax] \
   modify [eax];
-#else  /* 386-only */
-#pragma aux SDL_Swap32 = \
-  "xchg al, ah"  \
-  "ror  eax, 16" \
-  "xchg al, ah"  \
-  parm   [eax]   \
-  modify [eax];
-#endif
 #elif defined(_MSC_VER)
 #pragma intrinsic(_byteswap_ulong)
 #define SDL_Swap32(x) _byteswap_ulong(x)
@@ -227,18 +218,16 @@ SDL_Swap32(Uint32 x)
 SDL_FORCE_INLINE Uint64
 SDL_Swap64(Uint64 x)
 {
-    union
-    {
-        struct
-        {
+    union {
+        struct {
             Uint32 a, b;
         } s;
         Uint64 u;
     } v;
     v.u = x;
-  __asm__("bswapl %0 ; bswapl %1 ; xchgl %0,%1": "=r"(v.s.a), "=r"(v.s.b):"0"(v.s.a),
-            "1"(v.s.
-                b));
+  __asm__("bswapl %0 ; bswapl %1 ; xchgl %0,%1"
+          : "=r"(v.s.a), "=r"(v.s.b)
+          : "0" (v.s.a),  "1"(v.s.b));
     return v.u;
 }
 #elif defined(__GNUC__) && defined(__x86_64__)
@@ -248,6 +237,14 @@ SDL_Swap64(Uint64 x)
   __asm__("bswapq %0": "=r"(x):"0"(x));
     return x;
 }
+#elif defined(__WATCOMC__) && defined(__386__)
+extern _inline Uint64 SDL_Swap64(Uint64);
+#pragma aux SDL_Swap64 = \
+  "bswap eax"     \
+  "bswap edx"     \
+  "xchg eax,edx"  \
+  parm [eax edx]  \
+  modify [eax edx];
 #elif defined(_MSC_VER)
 #pragma intrinsic(_byteswap_uint64)
 #define SDL_Swap64(x) _byteswap_uint64(x)
@@ -272,8 +269,7 @@ SDL_Swap64(Uint64 x)
 SDL_FORCE_INLINE float
 SDL_SwapFloat(float x)
 {
-    union
-    {
+    union {
         float f;
         Uint32 ui32;
     } swapper;
@@ -289,22 +285,22 @@ SDL_SwapFloat(float x)
  */
 /* @{ */
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
-#define SDL_SwapLE16(X) (X)
-#define SDL_SwapLE32(X) (X)
-#define SDL_SwapLE64(X) (X)
+#define SDL_SwapLE16(X)     (X)
+#define SDL_SwapLE32(X)     (X)
+#define SDL_SwapLE64(X)     (X)
 #define SDL_SwapFloatLE(X)  (X)
-#define SDL_SwapBE16(X) SDL_Swap16(X)
-#define SDL_SwapBE32(X) SDL_Swap32(X)
-#define SDL_SwapBE64(X) SDL_Swap64(X)
+#define SDL_SwapBE16(X)     SDL_Swap16(X)
+#define SDL_SwapBE32(X)     SDL_Swap32(X)
+#define SDL_SwapBE64(X)     SDL_Swap64(X)
 #define SDL_SwapFloatBE(X)  SDL_SwapFloat(X)
 #else
-#define SDL_SwapLE16(X) SDL_Swap16(X)
-#define SDL_SwapLE32(X) SDL_Swap32(X)
-#define SDL_SwapLE64(X) SDL_Swap64(X)
+#define SDL_SwapLE16(X)     SDL_Swap16(X)
+#define SDL_SwapLE32(X)     SDL_Swap32(X)
+#define SDL_SwapLE64(X)     SDL_Swap64(X)
 #define SDL_SwapFloatLE(X)  SDL_SwapFloat(X)
-#define SDL_SwapBE16(X) (X)
-#define SDL_SwapBE32(X) (X)
-#define SDL_SwapBE64(X) (X)
+#define SDL_SwapBE16(X)     (X)
+#define SDL_SwapBE32(X)     (X)
+#define SDL_SwapBE64(X)     (X)
 #define SDL_SwapFloatBE(X)  (X)
 #endif
 /* @} *//* Swap to native */

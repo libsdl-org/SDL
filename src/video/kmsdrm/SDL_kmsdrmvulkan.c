@@ -189,6 +189,7 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
     uint32_t plane_count;
 
     VkPhysicalDevice *physical_devices = NULL;
+    VkPhysicalDeviceProperties *device_props = NULL;
     VkDisplayPropertiesKHR *displays_props = NULL;
     VkDisplayModePropertiesKHR *modes_props = NULL;
     VkDisplayPlanePropertiesKHR *planes_props = NULL;
@@ -203,6 +204,7 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
 
     VkResult result;
     SDL_bool ret = SDL_FALSE;
+    SDL_bool valid_gpu = SDL_FALSE;
     SDL_bool mode_found = SDL_FALSE;
 
     /* We don't receive a display index in KMSDRM_CreateDevice(), only
@@ -213,8 +215,6 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
     int display_index = 0;
 
     int i;
-
-    SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
 
     /* Get the function pointers for the functions we will use. */
     PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr =
@@ -227,6 +227,10 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
     PFN_vkEnumeratePhysicalDevices vkEnumeratePhysicalDevices =
         (PFN_vkEnumeratePhysicalDevices)vkGetInstanceProcAddr(
             instance, "vkEnumeratePhysicalDevices");
+
+    PFN_vkGetPhysicalDeviceProperties vkGetPhysicalDeviceProperties =
+        (PFN_vkGetPhysicalDeviceProperties)vkGetInstanceProcAddr(
+            instance, "vkGetPhysicalDeviceProperties");
 
     PFN_vkGetPhysicalDeviceDisplayPropertiesKHR vkGetPhysicalDeviceDisplayPropertiesKHR =
         (PFN_vkGetPhysicalDeviceDisplayPropertiesKHR)vkGetInstanceProcAddr(
@@ -275,6 +279,14 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
         goto clean;
     }
 
+    /* A GPU (or physical_device, in vkcube terms) is a physical GPU.
+       A machine with more than one video output doesn't need to have more than one GPU,
+       like the Pi4 which has 1 GPU and 2 video outputs.
+       Just in case, we test that the GPU we choose is Vulkan-capable.
+       If there are new reports about VK init failures, hardcode
+       gpu = physical_devices[0], instead of probing, and go with that.
+    */
+
     /* Get the physical device count. */
     vkEnumeratePhysicalDevices(instance, &gpu_count, NULL);
 
@@ -285,13 +297,32 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
 
     /* Get the physical devices. */
     physical_devices = SDL_malloc(sizeof(VkPhysicalDevice) * gpu_count);
+    device_props = SDL_malloc(sizeof(VkPhysicalDeviceProperties));
     vkEnumeratePhysicalDevices(instance, &gpu_count, physical_devices);
 
-    /* A GPU (or physical_device, in vkcube terms) is a GPU. A machine with more
-       than one video output doen't need to have more than one GPU, like the Pi4
-       which has 1 GPU and 2 video outputs.
-       We grab the GPU/physical_device with the index we got in KMSDR_CreateDevice(). */
-    gpu = physical_devices[viddata->devindex]; 
+    /* Iterate on the physical devices. */
+    for (i = 0; i < gpu_count; i++) {
+
+        /* Get the physical device properties. */
+        vkGetPhysicalDeviceProperties(
+            physical_devices[i],
+            device_props
+        );
+
+        /* Is this device a real GPU that supports API version 1 at least? */
+        if (device_props->apiVersion >= 1 && 
+           (device_props->deviceType == 1 || device_props->deviceType == 2))
+        {
+            gpu = physical_devices[i];
+            valid_gpu = SDL_TRUE;
+            break;
+        }
+    }
+
+    if (!valid_gpu) {
+        SDL_SetError("Vulkan can't find a valid physical device (gpu).");
+        goto clean;
+    }
 
     /* A display is a video output. 1 GPU can have N displays.
        Vulkan only counts the connected displays.
@@ -409,6 +440,8 @@ clean:
         SDL_free (physical_devices);
     if (displays_props)
         SDL_free (displays_props);
+    if (device_props)
+        SDL_free (device_props);
     if (planes_props)
         SDL_free (planes_props);
     if (modes_props)

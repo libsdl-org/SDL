@@ -610,6 +610,7 @@ D3D_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
     return 0;
 }
 
+#if SDL_HAVE_YUV
 static int
 D3D_UpdateTextureYUV(SDL_Renderer * renderer, SDL_Texture * texture,
                      const SDL_Rect * rect,
@@ -636,6 +637,7 @@ D3D_UpdateTextureYUV(SDL_Renderer * renderer, SDL_Texture * texture,
     }
     return 0;
 }
+#endif
 
 static int
 D3D_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
@@ -1710,7 +1712,9 @@ D3D_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->SupportsBlendMode = D3D_SupportsBlendMode;
     renderer->CreateTexture = D3D_CreateTexture;
     renderer->UpdateTexture = D3D_UpdateTexture;
+#if SDL_HAVE_YUV
     renderer->UpdateTextureYUV = D3D_UpdateTextureYUV;
+#endif
     renderer->LockTexture = D3D_LockTexture;
     renderer->UnlockTexture = D3D_UnlockTexture;
     renderer->SetTextureScaleMode = D3D_SetTextureScaleMode;

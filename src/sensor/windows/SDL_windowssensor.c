@@ -294,6 +294,7 @@ static int ConnectSensor(ISensor *sensor)
     new_sensors = (SDL_Windows_Sensor *)SDL_realloc(SDL_sensors, (SDL_num_sensors + 1) * sizeof(SDL_Windows_Sensor));
     if (new_sensors == NULL) {
         SDL_UnlockSensors();
+        SDL_free(name);
         return SDL_OutOfMemory();
     }
 

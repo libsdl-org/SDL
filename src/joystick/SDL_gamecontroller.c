@@ -470,6 +470,10 @@ static int SDLCALL SDL_GameControllerEventWatcher(void *userdata, SDL_Event * ev
  */
 static ControllerMapping_t *SDL_CreateMappingForAndroidController(SDL_JoystickGUID guid)
 {
+    const int face_button_mask = ((1 << SDL_CONTROLLER_BUTTON_A) |
+                                  (1 << SDL_CONTROLLER_BUTTON_B) |
+                                  (1 << SDL_CONTROLLER_BUTTON_X) |
+                                  (1 << SDL_CONTROLLER_BUTTON_Y));
     SDL_bool existing;
     char mapping_string[1024];
     int button_mask;
@@ -479,6 +483,10 @@ static ControllerMapping_t *SDL_CreateMappingForAndroidController(SDL_JoystickGU
     axis_mask = SDL_SwapLE16(*(Uint16*)(&guid.data[sizeof(guid.data)-2]));
     if (!button_mask && !axis_mask) {
         /* Accelerometer, shouldn't have a game controller mapping */
+        return NULL;
+    }
+    if (!(button_mask & face_button_mask) || !axis_mask) {
+        /* We don't know what buttons or axes are supported, don't make up a mapping */
         return NULL;
     }
 
@@ -604,6 +612,13 @@ static ControllerMapping_t *SDL_CreateMappingForHIDAPIController(SDL_JoystickGUI
             case SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO:
                 /* Nintendo Switch Pro controllers have a screenshot button */
                 SDL_strlcat(mapping_string, "misc1:b15,", sizeof(mapping_string));
+                /* Joy-Cons have extra buttons in the same place as paddles */
+                if (SDL_IsJoystickNintendoSwitchJoyConLeft(vendor, product)) {
+                    SDL_strlcat(mapping_string, "paddle2:b17,paddle4:b19,", sizeof(mapping_string));
+                }
+                else if (SDL_IsJoystickNintendoSwitchJoyConRight(vendor, product)) {
+                    SDL_strlcat(mapping_string, "paddle1:b16,paddle3:b18,", sizeof(mapping_string));
+                }
                 break;
             default:
                 if (vendor == 0 && product == 0) {

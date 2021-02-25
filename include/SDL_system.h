@@ -215,6 +215,23 @@ extern DECLSPEC const char * SDLCALL SDL_AndroidGetExternalStoragePath(void);
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_AndroidRequestPermission(const char *permission);
 
+/**
+   \brief Shows android toast notification
+
+   \note Shows toast in UI thread [https://developer.android.com/guide/topics/ui/notifiers/toasts]
+
+   \param message   : text message to be shown
+        duration  : 0 - short [https://developer.android.com/reference/android/widget/Toast#LENGTH_SHORT],
+                    1 - long  [https://developer.android.com/reference/android/widget/Toast#LENGTH_LONG]
+        gravity   : the location at which the notification should appear on the screen.
+                    It's an optional parameter. Set -1 if you don't want specify any gravity or
+                    choose some value from https://developer.android.com/reference/android/view/Gravity
+        xOffset   : set this parameter only when gravity >=0
+        yOffset   : set this parameter only when gravity >=0
+   \return 0 if success, -1 if any error occurs.
+*/
+extern DECLSPEC int SDLCALL SDL_AndroidShowToast(const char* message, int duration, int gravity, int xOffset, int yOffset);
+
 #endif /* __ANDROID__ */
 
 /* Platform specific functions for WinRT */

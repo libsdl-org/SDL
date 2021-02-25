@@ -87,15 +87,18 @@ static int fatal_signals[] =
 
 static void kbd_cleanup(void)
 {
+    struct mouse_info mData;
     SDL_EVDEV_keyboard_state* kbd = kbd_cleanup_state;
     if (kbd == NULL) {
         return;
     }
     kbd_cleanup_state = NULL;
-    
+    SDL_zero(mData);
+    mData.operation = MOUSE_SHOW;
     ioctl(kbd->keyboard_fd, KDSKBMODE, kbd->old_kbd_mode);
     if (kbd->keyboard_fd != kbd->console_fd) close(kbd->keyboard_fd);
     ioctl(kbd->console_fd, CONS_SETKBD, (unsigned long)(kbd->kbInfo->kb_index));
+    ioctl(kbd->console_fd, CONS_MOUSECTL, &mData);
 }
 
 void
@@ -221,9 +224,12 @@ SDL_EVDEV_keyboard_state *
 SDL_EVDEV_kbd_init(void)
 {
     SDL_EVDEV_keyboard_state *kbd;
+    struct mouse_info mData;
     char flag_state;
     char* devicePath;
 
+    SDL_zero(mData);
+    mData.operation = MOUSE_HIDE;
     kbd = (SDL_EVDEV_keyboard_state *)SDL_calloc(1, sizeof(SDL_EVDEV_keyboard_state));
     if (!kbd) {
         return NULL;
@@ -241,7 +247,8 @@ SDL_EVDEV_kbd_init(void)
     kbd->kbInfo = SDL_calloc(sizeof(keyboard_info_t), 1);    
 
     ioctl(kbd->console_fd, KDGKBINFO, kbd->kbInfo);
-
+    ioctl(kbd->console_fd, CONS_MOUSECTL, &mData);
+    
     if (ioctl(kbd->console_fd, KDGKBSTATE, &flag_state) == 0) {
         kbd->ledflagstate = flag_state;
     }
@@ -292,9 +299,14 @@ SDL_EVDEV_kbd_init(void)
 void
 SDL_EVDEV_kbd_quit(SDL_EVDEV_keyboard_state *kbd)
 {
+    struct mouse_info mData;
+
     if (!kbd) {
         return;
     }
+    SDL_zero(mData);
+    mData.operation = MOUSE_SHOW;
+    ioctl(kbd->console_fd, CONS_MOUSECTL, &mData);
 
     kbd_unregister_emerg_cleanup();
 

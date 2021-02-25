@@ -21,13 +21,13 @@ SDL is written in C, works natively with C++, and there are bindings
 available for several other languages, including C# and Python.
 
 This library is distributed under the zlib license, which can be found
-in the file "COPYING.txt".
+in the file "LICENSE.txt".
 
 The best way to learn how to use SDL is to check out the header files in
 the "include" subdirectory and the programs in the "test" subdirectory.
 The header files and test programs are well commented and always up to date.
 
-More documentation and FAQs are available online at [the wiki](http://wiki.libsdl.org/)
+More documentation and FAQs are available online at [the wiki](https://github.com/libsdl-org/SDL/wiki/)
 
 - [Android](README-android.md)
 - [CMake](README-cmake.md)
@@ -51,7 +51,8 @@ More documentation and FAQs are available online at [the wiki](http://wiki.libsd
 - [WinRT](README-winrt.md)
 
 If you need help with the library, or just want to discuss SDL related
-issues, you can join the [developers mailing list](http://www.libsdl.org/mailing-list.php)
+issues, you can join the [SDL Discourse](https://discourse.libsdl.org/),
+which can be used as a web forum or a mailing list, at your preference.
 
 If you want to report bugs or contribute patches, please submit them to
 [our bug tracker](https://github.com/libsdl-org/SDL/issues)

@@ -76,5 +76,4 @@ print("\n") if $reported;
 
 exit(0);  # Let the push go forward.
 
-# end of git-pre-push-hook.pl ...
-
+# vi: set ts=4 sw=4 expandtab:

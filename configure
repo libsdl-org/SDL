@@ -15980,7 +15980,7 @@ $as_echo "no" >&6; }
 fi
 
 case "$host" in
-    *-*-mingw32*)
+    *-*-mingw*)
         # Except on msys, where make can't handle full pathnames (bug 1972)
         ;;
     *)
@@ -16666,7 +16666,7 @@ $as_echo "#define HAVE_M_PI /**/" >>confdefs.h
 
 
         case "$host" in
-    *-*-cygwin* | *-*-mingw32*)
+    *-*-cygwin* | *-*-mingw*)
         ;;
     *)
         # The Ultrix 4.2 mips builtin alloca declared by alloca.h only works
@@ -24518,7 +24518,7 @@ fi
                 require_hidapi_libusb=yes
                 ;;
             # RAWINPUT is only available on Win32, but can be enabled if HIDAPI is
-            *-*-cygwin* | *-*-mingw32*)
+            *-*-cygwin* | *-*-mingw*)
                 enable_joystick_rawinput=yes
                 ;;
         esac
@@ -24640,7 +24640,7 @@ $as_echo "$as_me: WARNING: You must have SDL_LoadObject() support for dynamic li
                         *-*-darwin* )
                             libusb_lib="libusb-1.0.0.dylib"
                             ;;
-                        *-*-cygwin* | *-*-mingw32* )
+                        *-*-cygwin* | *-*-mingw* )
                             libusb_lib="libusb-1.0.dll"
                             ;;
                     esac
@@ -25114,7 +25114,7 @@ $as_echo "#define SDL_TIMER_UNIX 1" >>confdefs.h
         SOURCES="$SOURCES $srcdir/src/core/linux/SDL_threadprio.c"
         SOURCES="$SOURCES $srcdir/src/core/unix/*.c"
         ;;
-    *-*-cygwin* | *-*-mingw32*)
+    *-*-cygwin* | *-*-mingw*)
         ARCH=win32
         if test "$build" != "$host"; then # cross-compiling
             # Default cross-compile location
@@ -28802,7 +28802,7 @@ _LT_EOF
 
  ;;
     "sdl2_config":C) chmod a+x sdl2-config ;;
-    "summary":C) echo -en "$SUMMARY" ;;
+    "summary":C) printf "$SUMMARY" ;;
 
   esac
 done # for ac_tag

@@ -485,6 +485,7 @@ DEFAULT_MMAP_THRESHOLD       default: 256K
 #define WIN32 1
 #endif /* _WIN32 */
 #endif /* WIN32 */
+
 #ifdef WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -2326,7 +2327,7 @@ static size_t traverse_and_check(mstate m);
 #define treebin_at(M,i)     (&((M)->treebins[i]))
 
 /* assign tree index for size S to variable I */
-#if defined(__GNUC__) && defined(i386)
+#if defined(__GNUC__) && defined(__i386__)
 #define compute_tree_index(S, I)\
 {\
   size_t X = S >> TREEBIN_SHIFT;\
@@ -2391,7 +2392,7 @@ static size_t traverse_and_check(mstate m);
 
 /* index corresponding to given bit */
 
-#if defined(__GNUC__) && defined(i386)
+#if defined(__GNUC__) && defined(__i386__)
 #define compute_bit2idx(X, I)\
 {\
   unsigned int J;\

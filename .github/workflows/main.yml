@@ -1,0 +1,46 @@
+name: Build
+
+on: [push, pull_request]
+
+jobs:
+    mac:
+        runs-on: macos-latest
+        steps:
+        - uses: actions/checkout@v1
+
+        - name: Build
+          run: |
+            mkdir build
+            cd build
+            cmake ..
+            cmake --build .
+
+    linux:
+        runs-on: ubuntu-20.04
+        steps:
+        - uses: actions/checkout@v1
+
+        - name: Setup
+          run: |
+            sudo apt-get update
+            sudo apt-get install wayland-protocols pkg-config ninja-build
+
+        - name: Linux
+          run: |
+            mkdir build
+            cd build
+            cmake .. -GNinja
+            cmake --build .
+
+    windows:
+        runs-on: windows-latest
+
+        steps:
+        - uses: actions/checkout@v1
+
+        - name: Build
+          run: |
+            mkdir build
+            cd build
+            cmake ..
+            cmake --build .

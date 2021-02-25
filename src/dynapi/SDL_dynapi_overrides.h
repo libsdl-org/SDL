@@ -799,3 +799,12 @@
 #define SDL_SetWindowMouseGrab SDL_SetWindowMouseGrab_REAL
 #define SDL_GetWindowKeyboardGrab SDL_GetWindowKeyboardGrab_REAL
 #define SDL_GetWindowMouseGrab SDL_GetWindowMouseGrab_REAL
+#define SDL_isalpha SDL_isalpha_REAL
+#define SDL_isalnum SDL_isalnum_REAL
+#define SDL_isblank SDL_isblank_REAL
+#define SDL_iscntrl SDL_iscntrl_REAL
+#define SDL_isxdigit SDL_isxdigit_REAL
+#define SDL_ispunct SDL_ispunct_REAL
+#define SDL_isprint SDL_isprint_REAL
+#define SDL_isgraph SDL_isgraph_REAL
+#define SDL_AndroidShowToast SDL_AndroidShowToast_REAL

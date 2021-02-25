@@ -3,7 +3,7 @@
 \mainpage Visual and Interactive Test Automation for SDL 2.0
 
 \section license_sec License
-Check the file \c COPYING.txt for licensing information.
+Check the file \c LICENSE.txt for licensing information.
 
 \section intro_sec Introduction
 The goal of this GSoC project is to automate the testing of testsprite2.

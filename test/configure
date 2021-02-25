@@ -2899,7 +2899,7 @@ ISWINDOWS="false"
 ISMACOSX="false"
 
 case "$host" in
-    *-*-cygwin* | *-*-mingw32*)
+    *-*-cygwin* | *-*-mingw*)
         ISWINDOWS="true"
         EXE=".exe"
         MATHLIB=""
