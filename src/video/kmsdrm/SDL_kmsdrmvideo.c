@@ -100,6 +100,14 @@ check_modestting(int devindex)
                         }
 
                         if (conn->connection == DRM_MODE_CONNECTED && conn->count_modes) {
+                            if (SDL_GetHintBoolean(SDL_HINT_KMSDRM_REQUIRE_DRM_MASTER, SDL_TRUE)) {
+                                /* Skip this device if we can't obtain DRM master */
+                                KMSDRM_drmSetMaster(drm_fd);
+                                if (KMSDRM_drmAuthMagic(drm_fd, 0) == -EACCES) {
+                                    continue;
+                                }
+                            }
+
                             available = SDL_TRUE;
                             break;
                         }
@@ -772,12 +780,6 @@ KMSDRM_GBMInit (_THIS, SDL_DisplayData *dispdata)
 
     /* Set the FD we just opened as current DRM master. */
     KMSDRM_drmSetMaster(viddata->drm_fd);
-
-    /* Check if we are the current DRM master. */
-    if (KMSDRM_drmAuthMagic(viddata->drm_fd, 0) == -EACCES) {
-        ret = SDL_SetError("DRM device is claimed by another program as master.");
-        return ret;
-    }
 
     /* Create the GBM device. */
     viddata->gbm_dev = KMSDRM_gbm_create_device(viddata->drm_fd);
