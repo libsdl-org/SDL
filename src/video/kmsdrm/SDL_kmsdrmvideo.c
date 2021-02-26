@@ -1373,13 +1373,12 @@ KMSDRM_SetWindowGammaRamp(_THIS, SDL_Window * window, const Uint16 * ramp)
     SDL_VideoData *viddata = (SDL_VideoData*)windata->viddata;
     SDL_VideoDisplay *disp = SDL_GetDisplayForWindow(window);
     SDL_DisplayData* dispdata = (SDL_DisplayData*)disp->driverdata;
-    Uint16* tempRamp = SDL_calloc(3 * sizeof(Uint16),256);
+    Uint16* tempRamp = SDL_calloc(3 * sizeof(Uint16), 256);
     if (tempRamp == NULL)
     {
-        SDL_OutOfMemory();
-        return -1;
+        return SDL_OutOfMemory();
     }
-    SDL_memcpy(tempRamp,ramp,3 * sizeof(Uint16) * 256);
+    SDL_memcpy(tempRamp, ramp, 3 * sizeof(Uint16) * 256);
     if (KMSDRM_drmModeCrtcSetGamma(viddata->drm_fd, dispdata->crtc->crtc_id, 256, &tempRamp[0*256], &tempRamp[1*256], &tempRamp[2*256]) == -1)
     {
         SDL_free(tempRamp);
