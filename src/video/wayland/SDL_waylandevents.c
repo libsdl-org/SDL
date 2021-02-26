@@ -61,55 +61,6 @@
 /* Weston uses a ratio of 10 units per scroll tick */
 #define WAYLAND_WHEEL_AXIS_UNIT 10
 
-typedef struct {
-    // repeat_rate in range of [1, 1000]
-    int32_t repeat_rate;
-    int32_t repeat_delay;
-    SDL_bool is_initialized;
-
-    SDL_bool is_key_down;
-    uint32_t next_repeat_ms;
-    uint32_t scancode;
-    char text[8];
-} SDL_WaylandKeyboardRepeat;
-
-struct SDL_WaylandInput {
-    SDL_VideoData *display;
-    struct wl_seat *seat;
-    struct wl_pointer *pointer;
-    struct wl_touch *touch;
-    struct wl_keyboard *keyboard;
-    SDL_WaylandDataDevice *data_device;
-    struct zwp_relative_pointer_v1 *relative_pointer;
-    struct zwp_confined_pointer_v1 *confined_pointer;
-    SDL_Window *confined_pointer_window;
-    SDL_WindowData *pointer_focus;
-    SDL_WindowData *keyboard_focus;
-
-    /* Last motion location */
-    wl_fixed_t sx_w;
-    wl_fixed_t sy_w;
-
-    double dx_frac;
-    double dy_frac;
-
-    struct {
-        struct xkb_keymap *keymap;
-        struct xkb_state *state;
-    } xkb;
-
-    /* information about axis events on current frame */
-    struct {
-        SDL_bool is_x_discrete;
-        float x;
-
-        SDL_bool is_y_discrete;
-        float y;
-    } pointer_curr_axis_info;
-
-    SDL_WaylandKeyboardRepeat keyboard_repeat;
-};
-
 struct SDL_WaylandTouchPoint {
     SDL_TouchID id;
     float x;
@@ -324,6 +275,7 @@ pointer_handle_enter(void *data, struct wl_pointer *pointer,
 
     if (window) {
         input->pointer_focus = window;
+        input->pointer_enter_serial = serial;
         SDL_SetMouseFocus(window->sdlwindow);
         /* In the case of e.g. a pointer confine warp, we may receive an enter
          * event with no following motion event, but with the new coordinates
