@@ -399,29 +399,12 @@ EnumJoysticksCallback(const DIDEVICEINSTANCE * pdidInstance, VOID * pContext)
 {
     JoyStick_DeviceData *pNewJoystick;
     JoyStick_DeviceData *pPrevJoystick = NULL;
-    const DWORD devtype = (pdidInstance->dwDevType & 0xFF);
     Uint16 *guid16;
     Uint16 vendor = 0;
     Uint16 product = 0;
     Uint16 version = 0;
     WCHAR hidPath[MAX_PATH];
     char *name;
-
-    if (devtype == DI8DEVTYPE_SUPPLEMENTAL) {
-        /* Add any supplemental devices that should be ignored here */
-#define MAKE_TABLE_ENTRY(VID, PID)    ((((DWORD)PID)<<16)|VID)
-        static DWORD ignored_devices[] = {
-            MAKE_TABLE_ENTRY(0, 0)
-        };
-#undef MAKE_TABLE_ENTRY
-        unsigned int i;
-
-        for (i = 0; i < SDL_arraysize(ignored_devices); ++i) {
-            if (pdidInstance->guidProduct.Data1 == ignored_devices[i]) {
-                return DIENUM_CONTINUE;
-            }
-        }
-    }
 
     if (SDL_IsXInputDevice(pdidInstance->tszProductName, &pdidInstance->guidProduct)) {
         return DIENUM_CONTINUE;  /* ignore XInput devices here, keep going. */
