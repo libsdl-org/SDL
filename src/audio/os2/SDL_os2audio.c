@@ -160,9 +160,9 @@ static void OS2_DetectDevices(void)
         }
 
         ulHandle++;
-        SDL_AddAudioDevice(0, stLogDevice.szProductInfo, (void *)(ulHandle));
+        SDL_AddAudioDevice(0, stLogDevice.szProductInfo, NULL, (void *)(ulHandle));
         ulHandle++;
-        SDL_AddAudioDevice(1, stLogDevice.szProductInfo, (void *)(ulHandle));
+        SDL_AddAudioDevice(1, stLogDevice.szProductInfo, NULL, (void *)(ulHandle));
     }
 }
 

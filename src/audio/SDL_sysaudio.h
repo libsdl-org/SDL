@@ -39,7 +39,7 @@ typedef struct SDL_AudioDevice SDL_AudioDevice;
 /* Audio targets should call this as devices are added to the system (such as
    a USB headset being plugged in), and should also be called for
    for every device found during DetectDevices(). */
-extern void SDL_AddAudioDevice(const int iscapture, const char *name, void *handle);
+extern void SDL_AddAudioDevice(const int iscapture, const char *name, SDL_AudioSpec *spec, void *handle);
 
 /* Audio targets should call this as devices are removed, so SDL can update
    its list of available devices. */
@@ -99,6 +99,7 @@ typedef struct SDL_AudioDeviceItem
     void *handle;
     char *name;
     char *original_name;
+    SDL_AudioSpec spec;
     int dupenum;
     struct SDL_AudioDeviceItem *next;
 } SDL_AudioDeviceItem;
