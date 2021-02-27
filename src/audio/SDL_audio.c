@@ -224,9 +224,9 @@ SDL_AudioDetectDevices_Default(void)
     SDL_assert(current_audio.impl.OnlyHasDefaultOutputDevice);
     SDL_assert(current_audio.impl.OnlyHasDefaultCaptureDevice || !current_audio.impl.HasCaptureSupport);
 
-    SDL_AddAudioDevice(SDL_FALSE, DEFAULT_OUTPUT_DEVNAME, (void *) ((size_t) 0x1));
+    SDL_AddAudioDevice(SDL_FALSE, DEFAULT_OUTPUT_DEVNAME, NULL, (void *) ((size_t) 0x1));
     if (current_audio.impl.HasCaptureSupport) {
-        SDL_AddAudioDevice(SDL_TRUE, DEFAULT_INPUT_DEVNAME, (void *) ((size_t) 0x2));
+        SDL_AddAudioDevice(SDL_TRUE, DEFAULT_INPUT_DEVNAME, NULL, (void *) ((size_t) 0x2));
     }
 }
 
@@ -378,7 +378,7 @@ finish_audio_entry_points_init(void)
 /* device hotplug support... */
 
 static int
-add_audio_device(const char *name, void *handle, SDL_AudioDeviceItem **devices, int *devCount)
+add_audio_device(const char *name, SDL_AudioSpec *spec, void *handle, SDL_AudioDeviceItem **devices, int *devCount)
 {
     int retval = -1;
     SDL_AudioDeviceItem *item;
@@ -401,6 +401,11 @@ add_audio_device(const char *name, void *handle, SDL_AudioDeviceItem **devices, 
 
     item->dupenum = 0;
     item->name = item->original_name;
+    if (spec != NULL) {
+        SDL_memcpy(&item->spec, spec, sizeof(SDL_AudioSpec));
+    } else {
+        SDL_zero(item->spec);
+    }
     item->handle = handle;
 
     SDL_LockMutex(current_audio.detectionLock);
@@ -438,16 +443,16 @@ add_audio_device(const char *name, void *handle, SDL_AudioDeviceItem **devices, 
 }
 
 static SDL_INLINE int
-add_capture_device(const char *name, void *handle)
+add_capture_device(const char *name, SDL_AudioSpec *spec, void *handle)
 {
     SDL_assert(current_audio.impl.HasCaptureSupport);
-    return add_audio_device(name, handle, &current_audio.inputDevices, &current_audio.inputDeviceCount);
+    return add_audio_device(name, spec, handle, &current_audio.inputDevices, &current_audio.inputDeviceCount);
 }
 
 static SDL_INLINE int
-add_output_device(const char *name, void *handle)
+add_output_device(const char *name, SDL_AudioSpec *spec, void *handle)
 {
-    return add_audio_device(name, handle, &current_audio.outputDevices, &current_audio.outputDeviceCount);
+    return add_audio_device(name, spec, handle, &current_audio.outputDevices, &current_audio.outputDeviceCount);
 }
 
 static void
@@ -473,9 +478,9 @@ free_device_list(SDL_AudioDeviceItem **devices, int *devCount)
 
 /* The audio backends call this when a new device is plugged in. */
 void
-SDL_AddAudioDevice(const int iscapture, const char *name, void *handle)
+SDL_AddAudioDevice(const int iscapture, const char *name, SDL_AudioSpec *spec, void *handle)
 {
-    const int device_index = iscapture ? add_capture_device(name, handle) : add_output_device(name, handle);
+    const int device_index = iscapture ? add_capture_device(name, spec, handle) : add_output_device(name, spec, handle);
     if (device_index != -1) {
         /* Post the event, if desired */
         if (SDL_GetEventState(SDL_AUDIODEVICEADDED) == SDL_ENABLE) {
@@ -1110,6 +1115,44 @@ SDL_GetAudioDeviceName(int index, int iscapture)
     }
 
     return retval;
+}
+
+
+int
+SDL_GetAudioDeviceSpec(int index, int iscapture, SDL_AudioSpec *spec)
+{
+    if (spec == NULL) {
+        return SDL_InvalidParamError("spec");
+    }
+
+    SDL_zerop(spec);
+
+    if (!SDL_WasInit(SDL_INIT_AUDIO)) {
+        return SDL_SetError("Audio subsystem is not initialized");
+    }
+
+    if (iscapture && !current_audio.impl.HasCaptureSupport) {
+        return SDL_SetError("No capture support");
+    }
+
+    if (index >= 0) {
+        SDL_AudioDeviceItem *item;
+        int i;
+
+        SDL_LockMutex(current_audio.detectionLock);
+        item = iscapture ? current_audio.inputDevices : current_audio.outputDevices;
+        i = iscapture ? current_audio.inputDeviceCount : current_audio.outputDeviceCount;
+        if (index < i) {
+            for (i--; i > index; i--, item = item->next) {
+                SDL_assert(item != NULL);
+            }
+            SDL_assert(item != NULL);
+            SDL_memcpy(spec, &item->spec, sizeof(SDL_AudioSpec));
+        }
+        SDL_UnlockMutex(current_audio.detectionLock);
+    }
+
+    return 0;
 }
 
 

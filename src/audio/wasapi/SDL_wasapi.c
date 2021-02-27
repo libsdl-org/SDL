@@ -117,10 +117,34 @@ WASAPI_RemoveDevice(const SDL_bool iscapture, LPCWSTR devid)
     }
 }
 
+static SDL_AudioFormat
+WaveFormatToSDLFormat(WAVEFORMATEX *waveformat)
+{
+    if ((waveformat->wFormatTag == WAVE_FORMAT_IEEE_FLOAT) && (waveformat->wBitsPerSample == 32)) {
+        return AUDIO_F32SYS;
+    } else if ((waveformat->wFormatTag == WAVE_FORMAT_PCM) && (waveformat->wBitsPerSample == 16)) {
+        return AUDIO_S16SYS;
+    } else if ((waveformat->wFormatTag == WAVE_FORMAT_PCM) && (waveformat->wBitsPerSample == 32)) {
+        return AUDIO_S32SYS;
+    } else if (waveformat->wFormatTag == WAVE_FORMAT_EXTENSIBLE) {
+        const WAVEFORMATEXTENSIBLE *ext = (const WAVEFORMATEXTENSIBLE *) waveformat;
+        if ((SDL_memcmp(&ext->SubFormat, &SDL_KSDATAFORMAT_SUBTYPE_IEEE_FLOAT, sizeof (GUID)) == 0) && (waveformat->wBitsPerSample == 32)) {
+            return AUDIO_F32SYS;
+        } else if ((SDL_memcmp(&ext->SubFormat, &SDL_KSDATAFORMAT_SUBTYPE_PCM, sizeof (GUID)) == 0) && (waveformat->wBitsPerSample == 16)) {
+            return AUDIO_S16SYS;
+        } else if ((SDL_memcmp(&ext->SubFormat, &SDL_KSDATAFORMAT_SUBTYPE_PCM, sizeof (GUID)) == 0) && (waveformat->wBitsPerSample == 32)) {
+            return AUDIO_S32SYS;
+        }
+    }
+    SDL_assert(0 && "Unrecognized wFormatTag!");
+    return 0;
+}
+
 void
-WASAPI_AddDevice(const SDL_bool iscapture, const char *devname, LPCWSTR devid)
+WASAPI_AddDevice(const SDL_bool iscapture, const char *devname, WAVEFORMATEXTENSIBLE *fmt, LPCWSTR devid)
 {
     DevIdList *devidlist;
+    SDL_AudioSpec spec;
 
     /* You can have multiple endpoints on a device that are mutually exclusive ("Speakers" vs "Line Out" or whatever).
        In a perfect world, things that are unplugged won't be in this collection. The only gotcha is probably for
@@ -149,7 +173,11 @@ WASAPI_AddDevice(const SDL_bool iscapture, const char *devname, LPCWSTR devid)
     devidlist->next = deviceid_list;
     deviceid_list = devidlist;
 
-    SDL_AddAudioDevice(iscapture, devname, (void *) devid);
+    SDL_zero(spec);
+    spec.channels = fmt->Format.nChannels;
+    spec.freq = fmt->Format.nSamplesPerSec;
+    spec.format = WaveFormatToSDLFormat((WAVEFORMATEX *) fmt);
+    SDL_AddAudioDevice(iscapture, devname, &spec, (void *) devid);
 }
 
 static void
@@ -539,22 +567,7 @@ WASAPI_PrepDevice(_THIS, const SDL_bool updatestream)
     this->spec.channels = (Uint8) waveformat->nChannels;
 
     /* Make sure we have a valid format that we can convert to whatever WASAPI wants. */
-    if ((waveformat->wFormatTag == WAVE_FORMAT_IEEE_FLOAT) && (waveformat->wBitsPerSample == 32)) {
-        wasapi_format = AUDIO_F32SYS;
-    } else if ((waveformat->wFormatTag == WAVE_FORMAT_PCM) && (waveformat->wBitsPerSample == 16)) {
-        wasapi_format = AUDIO_S16SYS;
-    } else if ((waveformat->wFormatTag == WAVE_FORMAT_PCM) && (waveformat->wBitsPerSample == 32)) {
-        wasapi_format = AUDIO_S32SYS;
-    } else if (waveformat->wFormatTag == WAVE_FORMAT_EXTENSIBLE) {
-        const WAVEFORMATEXTENSIBLE *ext = (const WAVEFORMATEXTENSIBLE *) waveformat;
-        if ((SDL_memcmp(&ext->SubFormat, &SDL_KSDATAFORMAT_SUBTYPE_IEEE_FLOAT, sizeof (GUID)) == 0) && (waveformat->wBitsPerSample == 32)) {
-            wasapi_format = AUDIO_F32SYS;
-        } else if ((SDL_memcmp(&ext->SubFormat, &SDL_KSDATAFORMAT_SUBTYPE_PCM, sizeof (GUID)) == 0) && (waveformat->wBitsPerSample == 16)) {
-            wasapi_format = AUDIO_S16SYS;
-        } else if ((SDL_memcmp(&ext->SubFormat, &SDL_KSDATAFORMAT_SUBTYPE_PCM, sizeof (GUID)) == 0) && (waveformat->wBitsPerSample == 32)) {
-            wasapi_format = AUDIO_S32SYS;
-        }
-    }
+    wasapi_format = WaveFormatToSDLFormat(waveformat);
 
     while ((!valid_format) && (test_format)) {
         if (test_format == wasapi_format) {

@@ -262,7 +262,7 @@ io_list_check_add(struct io_node *node)
     spa_list_append(&hotplug_io_list, &node->link);
 
     if (SDL_AtomicGet(&hotplug_events_enabled)) {
-        SDL_AddAudioDevice(node->is_capture, node->name, PW_ID_TO_HANDLE(node->id));
+        SDL_AddAudioDevice(node->is_capture, node->name, &node->spec, PW_ID_TO_HANDLE(node->id));
     }
 
 dup_found:
@@ -765,7 +765,7 @@ PIPEWIRE_DetectDevices()
     io_list_sort();
 
     spa_list_for_each (io, &hotplug_io_list, link) {
-        SDL_AddAudioDevice(io->is_capture, io->name, PW_ID_TO_HANDLE(io->id));
+        SDL_AddAudioDevice(io->is_capture, io->name, &io->spec, PW_ID_TO_HANDLE(io->id));
     }
 
     SDL_AtomicSet(&hotplug_events_enabled, 1);

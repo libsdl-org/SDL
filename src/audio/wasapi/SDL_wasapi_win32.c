@@ -65,26 +65,31 @@ static const IID SDL_IID_IMMNotificationClient = { 0x7991eec9, 0x7e89, 0x4d85,{ 
 static const IID SDL_IID_IMMEndpoint = { 0x1be09788, 0x6894, 0x4089,{ 0x85, 0x86, 0x9a, 0x2a, 0x6c, 0x26, 0x5a, 0xc5 } };
 static const IID SDL_IID_IAudioClient = { 0x1cb9ad4c, 0xdbfa, 0x4c32,{ 0xb1, 0x78, 0xc2, 0xf5, 0x68, 0xa7, 0x03, 0xb2 } };
 static const PROPERTYKEY SDL_PKEY_Device_FriendlyName = { { 0xa45c254e, 0xdf1c, 0x4efd,{ 0x80, 0x20, 0x67, 0xd1, 0x46, 0xa8, 0x50, 0xe0, } }, 14 };
+static const PROPERTYKEY SDL_PKEY_AudioEngine_DeviceFormat = { { 0xf19f064d, 0x82c, 0x4e27,{ 0xbc, 0x73, 0x68, 0x82, 0xa1, 0xbb, 0x8e, 0x4c, } }, 0 };
 
 
-static char *
-GetWasapiDeviceName(IMMDevice *device)
+static void
+GetWasapiDeviceInfo(IMMDevice *device, char **utf8dev, WAVEFORMATEXTENSIBLE *fmt)
 {
     /* PKEY_Device_FriendlyName gives you "Speakers (SoundBlaster Pro)" which drives me nuts. I'd rather it be
        "SoundBlaster Pro (Speakers)" but I guess that's developers vs users. Windows uses the FriendlyName in
        its own UIs, like Volume Control, etc. */
-    char *utf8dev = NULL;
     IPropertyStore *props = NULL;
+    *utf8dev = NULL;
+    SDL_zerop(fmt);
     if (SUCCEEDED(IMMDevice_OpenPropertyStore(device, STGM_READ, &props))) {
         PROPVARIANT var;
         PropVariantInit(&var);
         if (SUCCEEDED(IPropertyStore_GetValue(props, &SDL_PKEY_Device_FriendlyName, &var))) {
-            utf8dev = WIN_StringToUTF8W(var.pwszVal);
+            *utf8dev = WIN_StringToUTF8W(var.pwszVal);
+        }
+        PropVariantClear(&var);
+        if (SUCCEEDED(IPropertyStore_GetValue(props, &SDL_PKEY_AudioEngine_DeviceFormat, &var))) {
+            SDL_memcpy(fmt, var.blob.pBlobData, SDL_min(var.blob.cbSize, sizeof(WAVEFORMATEXTENSIBLE)));
         }
         PropVariantClear(&var);
         IPropertyStore_Release(props);
     }
-    return utf8dev;
 }
 
 
@@ -194,9 +199,11 @@ SDLMMNotificationClient_OnDeviceStateChanged(IMMNotificationClient *ithis, LPCWS
             if (SUCCEEDED(IMMEndpoint_GetDataFlow(endpoint, &flow))) {
                 const SDL_bool iscapture = (flow == eCapture);
                 if (dwNewState == DEVICE_STATE_ACTIVE) {
-                    char *utf8dev = GetWasapiDeviceName(device);
+                    char *utf8dev;
+                    WAVEFORMATEXTENSIBLE fmt;
+                    GetWasapiDeviceInfo(device, &utf8dev, &fmt);
                     if (utf8dev) {
-                        WASAPI_AddDevice(iscapture, utf8dev, pwstrDeviceId);
+                        WASAPI_AddDevice(iscapture, utf8dev, &fmt, pwstrDeviceId);
                         SDL_free(utf8dev);
                     }
                 } else {
@@ -352,6 +359,7 @@ typedef struct
 {
     LPWSTR devid;
     char *devname;
+    WAVEFORMATEXTENSIBLE fmt;
 } EndpointItem;
 
 static int sort_endpoints(const void *_a, const void *_b)
@@ -408,7 +416,7 @@ WASAPI_EnumerateEndpointsForFlow(const SDL_bool iscapture)
         IMMDevice *device = NULL;
         if (SUCCEEDED(IMMDeviceCollection_Item(collection, i, &device))) {
             if (SUCCEEDED(IMMDevice_GetId(device, &item->devid))) {
-                item->devname = GetWasapiDeviceName(device);
+                GetWasapiDeviceInfo(device, &item->devname, &item->fmt);
             }
             IMMDevice_Release(device);
         }
@@ -421,7 +429,7 @@ WASAPI_EnumerateEndpointsForFlow(const SDL_bool iscapture)
     for (i = 0; i < total; i++) {
         EndpointItem *item = items + i;
         if ((item->devid) && (item->devname)) {
-            WASAPI_AddDevice(iscapture, item->devname, item->devid);
+            WASAPI_AddDevice(iscapture, item->devname, &item->fmt, item->devid);
         }
         SDL_free(item->devname);
         CoTaskMemFree(item->devid);

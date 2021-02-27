@@ -808,3 +808,4 @@
 #define SDL_isprint SDL_isprint_REAL
 #define SDL_isgraph SDL_isgraph_REAL
 #define SDL_AndroidShowToast SDL_AndroidShowToast_REAL
+#define SDL_GetAudioDeviceSpec SDL_GetAudioDeviceSpec_REAL
