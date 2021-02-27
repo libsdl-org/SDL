@@ -32,12 +32,14 @@
 
 struct SDL_PrivateAudioData
 {
-  struct pw_thread_loop *loop;
-  struct pw_stream      *stream;
-  struct pw_context     *context;
-  struct SDL_DataQueue  *buffer;
+    struct pw_thread_loop *loop;
+    struct pw_stream      *stream;
+    struct pw_context     *context;
+    struct SDL_DataQueue  *buffer;
 
-  Sint32 stride; /* Bytes-per-frame */
+    Sint32 stride; /* Bytes-per-frame */
 };
 
 #endif /* SDL_pipewire_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */
