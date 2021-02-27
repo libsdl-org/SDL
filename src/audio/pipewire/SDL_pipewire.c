@@ -38,6 +38,9 @@
 #define PW_MIN_SAMPLES 32   /* About 0.67ms at 48kHz */
 #define PW_MAX_SAMPLES 8192 /* About 170.6ms at 48kHz */
 
+#define PW_POD_BUFFER_LENGTH 1024
+#define PW_THREAD_NAME_BUFFER_LENGTH 128
+
 #define PW_ID_TO_HANDLE(x) (void *)((uintptr_t)x)
 #define PW_HANDLE_TO_ID(x) (uint32_t)((uintptr_t)x)
 
@@ -195,7 +198,15 @@ struct node_object
 
   Uint32 id;
   int    seq;
-  void * userdata;
+
+  /*
+   * NOTE: If used, this is *must* be allocated with SDL_malloc() or similar
+   * as SDL_free() will be called on it when the node_object is destroyed.
+   *
+   * If ownership of the referenced memory is transferred, this must be set
+   * to NULL or the memory will be freed when the node_object is destroyed.
+   */
+  void *userdata;
 
   struct pw_proxy *proxy;
   struct spa_hook  node_listener;
@@ -986,15 +997,15 @@ PIPEWIRE_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
 {
   /*
    * NOTE: The PW_STREAM_FLAG_RT_PROCESS flag can be set to call the stream
-   * processing callback from the realtime thread, however it comes with some
+   * processing callback from the realtime thread.  However, it comes with some
    * caveats: no file IO, allocations, locking or other blocking operations
    * must occur in the mixer callback.  As this cannot be guaranteed when the
    * callback is in the calling application, this flag is omitted.
    */
   static const enum pw_stream_flags STREAM_FLAGS = PW_STREAM_FLAG_AUTOCONNECT | PW_STREAM_FLAG_MAP_BUFFERS;
 
-  char                         thread_name[128];
-  Uint8                        pod_buffer[1024];
+  char                         thread_name[PW_THREAD_NAME_BUFFER_LENGTH];
+  Uint8                        pod_buffer[PW_POD_BUFFER_LENGTH];
   struct spa_pod_builder       b        = SPA_POD_BUILDER_INIT(pod_buffer, sizeof(pod_buffer));
   struct spa_audio_info_raw    spa_info = { 0 };
   const struct spa_pod *       params   = NULL;
@@ -1032,11 +1043,9 @@ PIPEWIRE_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
   min_period       = PW_MIN_SAMPLES * SPA_MAX(this->spec.freq / 48000, 1);
   adjusted_samples = SPA_CLAMP(this->spec.samples, min_period, PW_MAX_SAMPLES);
 
-  if ((priv = SDL_calloc(1, sizeof(struct SDL_PrivateAudioData))) == NULL) {
+  if ((this->hidden = priv = SDL_calloc(1, sizeof(struct SDL_PrivateAudioData))) == NULL) {
     return SDL_OutOfMemory();
   }
-
-  this->hidden = priv;
 
   /* Size of a single audio frame in bytes */
   priv->stride = (SDL_AUDIO_BITSIZE(this->spec.format) >> 3) * this->spec.channels;
