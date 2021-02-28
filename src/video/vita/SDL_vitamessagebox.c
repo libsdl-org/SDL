@@ -32,6 +32,11 @@
 
 int VITA_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
 {
+#if !SDL_VIDEO_RENDER_VITA_GXM
+    {
+        return -1;
+    }
+#else
     SceCommonDialogConfigParam commonDialogConfigParam;
     SceMsgDialogParam param;
     SceMsgDialogUserMessageParam msgParam;
@@ -41,12 +46,7 @@ int VITA_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
     SceMsgDialogResult dialog_result;
     SceCommonDialogErrorCode init_result;
     SDL_bool setup_minimal_gxm = SDL_FALSE;
-#if !SDL_VIDEO_RENDER_VITA_GXM
-    {
-        return -1;
-    }
-#endif
-#if SDL_VIDEO_RENDER_VITA_GXM
+
     if (messageboxdata->numbuttons > 3)
     {
         return -1;
