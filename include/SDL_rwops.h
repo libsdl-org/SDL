@@ -45,6 +45,9 @@ extern "C" {
 #define SDL_RWOPS_JNIFILE   3U  /**< Android asset */
 #define SDL_RWOPS_MEMORY    4U  /**< Memory stream */
 #define SDL_RWOPS_MEMORY_RO 5U  /**< Read-Only memory stream */
+#if defined(__VITA__)
+#define SDL_RWOPS_VITAFILE  6U  /**< Vita file */
+#endif
 
 /**
  * This is the read/write operation structure -- very basic.
@@ -110,6 +113,17 @@ typedef struct SDL_RWops
                 size_t left;
             } buffer;
         } windowsio;
+#elif defined(__VITA__)
+        struct
+        {
+            int h;
+            struct
+            {
+                void *data;
+                size_t size;
+                size_t left;
+            } buffer;
+        } vitaio;
 #endif
 
 #ifdef HAVE_STDIO_H
