@@ -32,11 +32,7 @@
 
 int VITA_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
 {
-#if !SDL_VIDEO_RENDER_VITA_GXM
-    {
-        return -1;
-    }
-#else
+#if SDL_VIDEO_RENDER_VITA_GXM
     SceCommonDialogConfigParam commonDialogConfigParam;
     SceMsgDialogParam param;
     SceMsgDialogUserMessageParam msgParam;
@@ -139,6 +135,10 @@ int VITA_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
     }
 
     return 0;
+#else
+    (void)messageboxdata;
+    (void)buttonid;
+    return -1;
 #endif
 }
 
