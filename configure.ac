@@ -1021,7 +1021,7 @@ dnl Find Pipewire
 CheckPipewire()
 {
     AC_ARG_ENABLE(pipewire,
-AS_HELP_STRING([--enable-pipewire], [use Pipewire [[default=yes]]]),
+AS_HELP_STRING([--enable-pipewire], [use Pipewire audio [[default=yes]]]),
                   , enable_pipewire=yes)
     if test x$enable_audio = xyes -a x$enable_pipewire = xyes; then
         PKG_CHECK_MODULES([PIPEWIRE], [libpipewire-0.3 >= 0.3.20], audio_pipewire=yes, audio_pipewire=no)

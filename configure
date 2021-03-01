@@ -676,10 +676,10 @@ RPI_CFLAGS
 FUSIONSOUND_LIBS
 FUSIONSOUND_CFLAGS
 ARTSCONFIG
-PIPEWIRE_LIBS
-PIPEWIRE_CFLAGS
 PULSEAUDIO_LIBS
 PULSEAUDIO_CFLAGS
+PIPEWIRE_LIBS
+PIPEWIRE_CFLAGS
 ESD_LIBS
 ESD_CFLAGS
 ESD_CONFIG
@@ -1611,7 +1611,7 @@ Optional Features:
   --enable-esd            support the Enlightened Sound Daemon [[default=yes]]
   --disable-esdtest       Do not try to compile and run a test ESD program
   --enable-esd-shared     dynamically load ESD audio support [[default=yes]]
-  --enable-pipewire       use Pipewire [[default=yes]]
+  --enable-pipewire       use Pipewire audio [[default=yes]]
   --enable-pipewire-shared
                           dynamically load Pipewire support [[default=yes]]
   --enable-pulseaudio     use PulseAudio [[default=yes]]
