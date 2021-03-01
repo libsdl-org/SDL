@@ -300,7 +300,8 @@ io_list_remove(Uint32 id)
 static void
 io_list_sort()
 {
-    struct io_node *n, *temp, *default_sink, *default_source;
+    struct io_node *default_sink = NULL, *default_source = NULL;
+    struct io_node *n, *temp;
 
     PIPEWIRE_pw_thread_loop_lock(hotplug_loop);
 
@@ -518,9 +519,7 @@ get_int_param(const struct spa_pod *param, Uint32 key, int *val)
 
     prop = spa_pod_find_prop(param, NULL, key);
 
-    if (prop && prop->value.type == SPA_TYPE_Int) {
-        spa_pod_get_int(&prop->value, &v);
-
+    if (prop && spa_pod_get_int(&prop->value, &v) == 0) {
         if (val) {
             *val = (int)v;
         }
