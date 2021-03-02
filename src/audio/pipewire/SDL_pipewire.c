@@ -34,9 +34,13 @@
 /*
  * These seem to be sane limits as Pipewire
  * uses them in several of it's own modules.
+ *
+ * NOTE: 8192 is a hard upper limit in Pipewire and
+ * increasing this value can lead to buffer overflows.
  */
-#define PW_MIN_SAMPLES 32   /* About 0.67ms at 48kHz */
-#define PW_MAX_SAMPLES 8192 /* About 170.6ms at 48kHz */
+#define PW_MIN_SAMPLES     32   /* About 0.67ms at 48kHz */
+#define PW_MAX_SAMPLES     8192 /* About 170.6ms at 48kHz */
+#define PW_BASE_CLOCK_RATE 48000
 
 #define PW_POD_BUFFER_LENGTH         1024
 #define PW_THREAD_NAME_BUFFER_LENGTH 128
@@ -1009,9 +1013,12 @@ PIPEWIRE_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     struct pw_properties *       props;
     const char *                 stream_name, *stream_role;
     const Uint32                 node_id = this->handle == NULL ? PW_ID_ANY : PW_HANDLE_TO_ID(this->handle);
-    int                          min_period, adjusted_samples;
     enum pw_stream_state         state;
     int                          res;
+
+    /* Clamp the period size to sane values */
+    const int min_period       = PW_MIN_SAMPLES * SPA_MAX(this->spec.freq / PW_BASE_CLOCK_RATE, 1);
+    const int adjusted_samples = SPA_CLAMP(this->spec.samples, min_period, PW_MAX_SAMPLES);
 
     /* Get the hints for the stream name and role */
     stream_name = SDL_GetHint(SDL_HINT_AUDIO_DEVICE_STREAM_NAME);
@@ -1034,10 +1041,6 @@ PIPEWIRE_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     if (params == NULL) {
         return SDL_SetError("Pipewire: Failed to set audio format parameters");
     }
-
-    /* Clamp the sample count to sane values */
-    min_period       = PW_MIN_SAMPLES * SPA_MAX(this->spec.freq / 48000, 1);
-    adjusted_samples = SPA_CLAMP(this->spec.samples, min_period, PW_MAX_SAMPLES);
 
     if ((this->hidden = priv = SDL_calloc(1, sizeof(struct SDL_PrivateAudioData))) == NULL) {
         return SDL_OutOfMemory();
