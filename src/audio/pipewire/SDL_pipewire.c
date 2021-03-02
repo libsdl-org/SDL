@@ -238,8 +238,8 @@ static int                    hotplug_init_seq_val;
 static SDL_atomic_t           hotplug_init_complete;
 static SDL_atomic_t           hotplug_events_enabled;
 
-Uint32 pipewire_default_sink_id   = SPA_ID_INVALID;
-Uint32 pipewire_default_source_id = SPA_ID_INVALID;
+static Uint32 pipewire_default_sink_id   = SPA_ID_INVALID;
+static Uint32 pipewire_default_source_id = SPA_ID_INVALID;
 
 /* The active node list */
 static SDL_bool
@@ -456,9 +456,9 @@ core_events_metadata_callback(void *object, uint32_t id, int seq)
     }
 }
 
-const struct pw_core_events hotplug_init_core_events = { PW_VERSION_CORE_EVENTS, .done = core_events_hotplug_init_callback };
-const struct pw_core_events interface_core_events    = { PW_VERSION_CORE_EVENTS, .done = core_events_interface_callback };
-const struct pw_core_events metadata_core_events     = { PW_VERSION_CORE_EVENTS, .done = core_events_metadata_callback };
+static const struct pw_core_events hotplug_init_core_events = { PW_VERSION_CORE_EVENTS, .done = core_events_hotplug_init_callback };
+static const struct pw_core_events interface_core_events    = { PW_VERSION_CORE_EVENTS, .done = core_events_interface_callback };
+static const struct pw_core_events metadata_core_events     = { PW_VERSION_CORE_EVENTS, .done = core_events_metadata_callback };
 
 static void
 hotplug_core_sync(struct node_object *node)
@@ -985,8 +985,8 @@ input_callback(void *data)
     PIPEWIRE_pw_stream_queue_buffer(stream, pw_buf);
 }
 
-const struct pw_stream_events stream_output_events = { PW_VERSION_STREAM_EVENTS, .process = output_callback };
-const struct pw_stream_events stream_input_events  = { PW_VERSION_STREAM_EVENTS, .process = input_callback };
+static const struct pw_stream_events stream_output_events = { PW_VERSION_STREAM_EVENTS, .process = output_callback };
+static const struct pw_stream_events stream_input_events  = { PW_VERSION_STREAM_EVENTS, .process = input_callback };
 
 static int
 PIPEWIRE_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
