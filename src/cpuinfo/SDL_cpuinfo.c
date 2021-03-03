@@ -129,7 +129,7 @@ CPU_haveCPUID(void)
 
 /* *INDENT-OFF* */
 #ifndef SDL_CPUINFO_DISABLED
-#if defined(__GNUC__) && defined(__i386__)
+#if (defined(__GNUC__) || defined(__llvm__)) && defined(__i386__)
     __asm__ (
 "        pushfl                      # Get original EFLAGS             \n"
 "        popl    %%eax                                                 \n"
@@ -147,7 +147,7 @@ CPU_haveCPUID(void)
     :
     : "%eax", "%ecx"
     );
-#elif defined(__GNUC__) && defined(__x86_64__)
+#elif (defined(__GNUC__) || defined(__llvm__)) && defined(__x86_64__)
 /* Technically, if this is being compiled under __x86_64__ then it has 
    CPUid by definition.  But it's nice to be able to prove it.  :)      */
     __asm__ (
@@ -220,7 +220,7 @@ done:
     return has_CPUID;
 }
 
-#if defined(__GNUC__) && defined(__i386__)
+#if (defined(__GNUC__) || defined(__llvm__)) && defined(__i386__)
 #define cpuid(func, a, b, c, d) \
     __asm__ __volatile__ ( \
 "        pushl %%ebx        \n" \
@@ -229,7 +229,7 @@ done:
 "        movl %%ebx, %%esi  \n" \
 "        popl %%ebx         \n" : \
             "=a" (a), "=S" (b), "=c" (c), "=d" (d) : "a" (func))
-#elif defined(__GNUC__) && defined(__x86_64__)
+#elif (defined(__GNUC__) || defined(__llvm__)) && defined(__x86_64__)
 #define cpuid(func, a, b, c, d) \
     __asm__ __volatile__ ( \
 "        pushq %%rbx        \n" \
