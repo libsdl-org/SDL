@@ -116,7 +116,6 @@ static const AudioBootStrap *const bootstrap[] = {
 #if SDL_AUDIO_DRIVER_DUMMY
     &DUMMYAUDIO_bootstrap,
 #endif
-
     NULL
 };
 
@@ -1185,8 +1184,8 @@ prepare_audiospec(const SDL_AudioSpec * orig, SDL_AudioSpec * prepared)
             const char *env = SDL_getenv("SDL_AUDIO_CHANNELS");
             if ((!env) || ((prepared->channels = (Uint8) SDL_atoi(env)) == 0)) {
                 prepared->channels = 2; /* a reasonable default */
+                break;
             }
-            break;
         }
     case 1:                    /* Mono */
     case 2:                    /* Stereo */
