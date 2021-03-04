@@ -33,6 +33,7 @@
 #include "SDL_drawline.h"
 #include "SDL_drawpoint.h"
 #include "SDL_rotate.h"
+#include "SDL_triangle.h"
 
 /* SDL surface based renderer implementation */
 
@@ -266,6 +267,33 @@ SW_QueueFillRects(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FRe
 }
 
 static int
+SW_QueueFillTriangles(SDL_Renderer *renderer, SDL_RenderCommand *cmd, const SDL_FPoint *points, int count)
+{
+    int i;
+    SDL_Point *verts = (SDL_Point *) SDL_AllocateRenderVertices(renderer, count * sizeof (SDL_Point), 0, &cmd->data.draw.first);
+
+    if (!verts) {
+        return -1;
+    }
+
+    cmd->data.draw.count = count;
+
+    for (i = 0; i < count; i++) {
+        if (renderer->viewport.x || renderer->viewport.y) {
+            verts->x = (int) (renderer->viewport.x + points[i].x);
+            verts->y = (int) (renderer->viewport.y + points[i].y);
+        } else {
+            verts->x = (int) points[i].x;
+            verts->y = (int) points[i].y;
+        }
+
+        verts += 1;
+    }
+
+    return 0;
+}
+
+static int
 SW_QueueCopy(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * texture,
              const SDL_Rect * srcrect, const SDL_FRect * dstrect)
 {
@@ -289,6 +317,37 @@ SW_QueueCopy(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * text
     }
     verts->w = (int)dstrect->w;
     verts->h = (int)dstrect->h;
+
+    return 0;
+}
+
+static int
+SW_QueueCopyTriangles(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
+             const SDL_Point *srcpoints, const SDL_FPoint *dstpoints, int count)
+{
+    int i;
+    SDL_Point *verts = (SDL_Point *) SDL_AllocateRenderVertices(renderer, count * 2 * sizeof (SDL_Point), 0, &cmd->data.draw.first);
+    if (!verts) {
+        return -1;
+    }
+
+    cmd->data.draw.count = count;
+
+    for (i = 0; i < count; i++) {
+        verts->x = srcpoints[i].x;
+        verts->y = srcpoints[i].y;
+        verts += 1;
+
+        if (renderer->viewport.x || renderer->viewport.y) {
+            verts->x = (int) (renderer->viewport.x + dstpoints[i].x);
+            verts->y = (int) (renderer->viewport.y + dstpoints[i].y);
+        } else {
+            verts->x = (int) dstpoints[i].x;
+            verts->y = (int) dstpoints[i].y;
+        }
+
+        verts += 1;
+    }
 
     return 0;
 }
@@ -634,7 +693,7 @@ SW_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
             }
 
             case SDL_RENDERCMD_SETCLIPRECT: {
-                drawstate.cliprect = cmd->data.cliprect.enabled ? &cmd->data.cliprect.rect : NULL;                
+                drawstate.cliprect = cmd->data.cliprect.enabled ? &cmd->data.cliprect.rect : NULL;
                 drawstate.surface_cliprect_dirty = SDL_TRUE;
                 break;
             }
@@ -702,6 +761,25 @@ SW_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
                 break;
             }
 
+            case SDL_RENDERCMD_FILL_TRIANGLES: {
+                int i;
+                const Uint8 r = cmd->data.draw.r;
+                const Uint8 g = cmd->data.draw.g;
+                const Uint8 b = cmd->data.draw.b;
+                const Uint8 a = cmd->data.draw.a;
+                const int count = (int) cmd->data.draw.count;
+                SDL_Point *verts = (SDL_Point *) (((Uint8 *) vertices) + cmd->data.draw.first);
+                const SDL_BlendMode blend = cmd->data.draw.blend;
+                SetDrawState(surface, &drawstate);
+                for (i = 0; i < count; i++){
+                    trianglepoint_2_fixedpoint(&verts[i]);
+                }
+                for (i = 0; i < count - 2; i++) {
+                    SDL_SW_FillTriangle(surface, &verts[i], blend, SDL_MapRGBA(surface->format, r, g, b, a));
+                }
+                break;
+            }
+
             case SDL_RENDERCMD_COPY: {
                 SDL_Rect *verts = (SDL_Rect *) (((Uint8 *) vertices) + cmd->data.draw.first);
                 const SDL_Rect *srcrect = verts;
@@ -731,6 +809,24 @@ SW_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
                 PrepTextureForCopy(cmd);
                 SW_RenderCopyEx(renderer, surface, cmd->data.draw.texture, &copydata->srcrect,
                                 &copydata->dstrect, copydata->angle, &copydata->center, copydata->flip);
+                break;
+            }
+
+            case SDL_RENDERCMD_COPY_TRIANGLES: {
+                int i;
+                SDL_Point *verts = (SDL_Point *) (((Uint8 *) vertices) + cmd->data.draw.first);
+                const size_t count = cmd->data.draw.count;
+                SDL_Texture *texture = cmd->data.draw.texture;
+                SDL_Surface *src = (SDL_Surface *) texture->driverdata;
+                SetDrawState(surface, &drawstate);
+                PrepTextureForCopy(cmd);
+                for (i = 0; i < count; i++){
+                    /* only dst points need to be converted to fixed point */
+                    trianglepoint_2_fixedpoint(&verts[2 * i + 1]);
+                }
+                for (i = 0; i < count - 2; i++) {
+                    SDL_SW_BlitTriangle(src, surface, &verts[2 * i]);
+                }
                 break;
             }
 
@@ -841,7 +937,9 @@ SW_CreateRendererForSurface(SDL_Surface * surface)
     renderer->QueueDrawPoints = SW_QueueDrawPoints;
     renderer->QueueDrawLines = SW_QueueDrawPoints;  /* lines and points queue vertices the same way. */
     renderer->QueueFillRects = SW_QueueFillRects;
+    renderer->QueueFillTriangles = SW_QueueFillTriangles;
     renderer->QueueCopy = SW_QueueCopy;
+    renderer->QueueCopyTriangles = SW_QueueCopyTriangles;
     renderer->QueueCopyEx = SW_QueueCopyEx;
     renderer->RunCommandQueue = SW_RunCommandQueue;
     renderer->RenderReadPixels = SW_RenderReadPixels;
