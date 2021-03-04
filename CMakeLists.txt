@@ -191,11 +191,11 @@ else()
 endif()
 
 # Compiler info
-if(CMAKE_COMPILER_IS_GNUCC)
-  set(USE_GCC TRUE)
-  set(OPT_DEF_ASM TRUE)
-elseif(CMAKE_C_COMPILER_ID MATCHES "Clang")
+if(CMAKE_C_COMPILER_ID MATCHES "Clang")
   set(USE_CLANG TRUE)
+  set(OPT_DEF_ASM TRUE)
+elseif(CMAKE_COMPILER_IS_GNUCC)
+  set(USE_GCC TRUE)
   set(OPT_DEF_ASM TRUE)
 elseif(MSVC_VERSION GREATER 1400) # VisualStudio 8.0+
   set(OPT_DEF_ASM TRUE)
