@@ -952,6 +952,26 @@ GL_QueueFillRects(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FRe
 }
 
 static int
+GL_QueueFillTriangles(SDL_Renderer *renderer, SDL_RenderCommand *cmd, const SDL_FPoint *points, int count)
+{
+    int i;
+    GLfloat *verts = (GLfloat *) SDL_AllocateRenderVertices(renderer, count * 2 * sizeof (GLfloat), 0, &cmd->data.draw.first);
+
+    if (!verts) {
+        return -1;
+    }
+
+    cmd->data.draw.count = count;
+
+    for (i = 0; i < count; i++) {
+        *(verts++) = points[i].x;
+        *(verts++) = points[i].y;
+    }
+
+    return 0;
+}
+
+static int
 GL_QueueCopy(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * texture,
              const SDL_Rect * srcrect, const SDL_FRect * dstrect)
 {
@@ -989,6 +1009,31 @@ GL_QueueCopy(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * text
     *(verts++) = maxu;
     *(verts++) = minv;
     *(verts++) = maxv;
+    return 0;
+}
+
+static int
+GL_QueueCopyTriangles(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
+             const SDL_Point *srcpoints, const SDL_FPoint *dstpoints, int count)
+{
+    int i;
+    GL_TextureData *texturedata = (GL_TextureData *) texture->driverdata;
+    GLfloat *verts = (GLfloat *) SDL_AllocateRenderVertices(renderer, count * 2 * 2 * sizeof (GLfloat), 0, &cmd->data.draw.first);
+
+    if (!verts) {
+        return -1;
+    }
+
+    cmd->data.draw.count = count;
+
+    for (i = 0; i < count; i++) {
+        *(verts++) = (GLfloat) srcpoints[i].x  / texture->w;
+        *(verts++) = (GLfloat) srcpoints[i].y  / texture->h;
+
+        *(verts++) = dstpoints[i].x;
+        *(verts++) = dstpoints[i].y;
+    }
+
     return 0;
 }
 
@@ -1316,6 +1361,23 @@ GL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
                 break;
             }
 
+            case SDL_RENDERCMD_FILL_TRIANGLES: {
+                const size_t count = cmd->data.draw.count;
+                const GLfloat *verts = (GLfloat *) (((Uint8 *) vertices) + cmd->data.draw.first);
+
+                SetDrawState(data, cmd, SHADER_SOLID);
+
+                data->glBegin(GL_TRIANGLE_STRIP);
+
+                for (i = 0; i < count; i++) {
+                    data->glVertex2f(verts[0], verts[1]);
+                    verts += 2;
+                }
+
+                data->glEnd();
+                break;
+            }
+
             case SDL_RENDERCMD_COPY: {
                 const GLfloat *verts = (GLfloat *) (((Uint8 *) vertices) + cmd->data.draw.first);
                 const GLfloat minx = verts[0];
@@ -1336,6 +1398,24 @@ GL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
                 data->glVertex2f(minx, maxy);
                 data->glTexCoord2f(maxu, maxv);
                 data->glVertex2f(maxx, maxy);
+                data->glEnd();
+                break;
+            }
+
+            case SDL_RENDERCMD_COPY_TRIANGLES: {
+                const size_t count = cmd->data.draw.count;
+                const GLfloat *verts = (GLfloat *) (((Uint8 *) vertices) + cmd->data.draw.first);
+
+                SetCopyState(data, cmd);
+                data->glBegin(GL_TRIANGLE_STRIP);
+
+                for (i = 0; i < count; i++) {
+                    data->glTexCoord2f(verts[0], verts[1]);
+                    verts += 2;
+                    data->glVertex2f(verts[0], verts[1]);
+                    verts += 2;
+                }
+
                 data->glEnd();
                 break;
             }
@@ -1652,7 +1732,9 @@ GL_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->QueueDrawPoints = GL_QueueDrawPoints;
     renderer->QueueDrawLines = GL_QueueDrawLines;
     renderer->QueueFillRects = GL_QueueFillRects;
+    renderer->QueueFillTriangles = GL_QueueFillTriangles;
     renderer->QueueCopy = GL_QueueCopy;
+    renderer->QueueCopyTriangles = GL_QueueCopyTriangles;
     renderer->QueueCopyEx = GL_QueueCopyEx;
     renderer->RunCommandQueue = GL_RunCommandQueue;
     renderer->RenderReadPixels = GL_RenderReadPixels;
