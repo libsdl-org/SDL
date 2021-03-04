@@ -28,7 +28,7 @@
 #ifdef __SSE__
 /* *INDENT-OFF* */
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER) && !defined(__clang__)
 #define SSE_BEGIN \
     __m128 c128; \
     c128.m128_u32[0] = color; \
