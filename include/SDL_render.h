@@ -878,6 +878,19 @@ extern DECLSPEC int SDLCALL SDL_RenderFillRects(SDL_Renderer * renderer,
                                                 int count);
 
 /**
+ *  \brief Fill some number of triangles on the current rendering target with the drawing color.
+ *
+ *  \param renderer The renderer which should fill multiple triangles.
+ *  \param points   A pointer to an array of destination points representing a triangle strip.
+ *  \param count    The number of points (number of triangles + 2).
+ *
+ *  \return 0 on success, or -1 on error
+ */
+extern DECLSPEC int SDLCALL SDL_RenderFillTriangles(SDL_Renderer *renderer,
+                                                    const SDL_Point *points,
+                                                    int count);
+
+/**
  *  \brief Copy a portion of the texture to the current rendering target.
  *
  *  \param renderer The renderer which should copy parts of a texture.
@@ -917,6 +930,22 @@ extern DECLSPEC int SDLCALL SDL_RenderCopyEx(SDL_Renderer * renderer,
                                            const SDL_Point *center,
                                            const SDL_RendererFlip flip);
 
+/**
+ *  \brief Copy triangles portions of the texture to the current rendering target.
+ *
+ *  \param renderer     The renderer which should copy parts of a texture.
+ *  \param texture      The source texture.
+ *  \param srcpoints    A pointer to the source triangles points (triangle strip)
+ *  \param dstpoints    A pointer to the destination triangles points (triangle strip)
+ *  \param count        The number of points (number of triangles + 2).
+ *
+ *  \return 0 on success, or -1 on error
+ */
+extern DECLSPEC int SDLCALL SDL_RenderCopyTriangles(SDL_Renderer *renderer,
+                                                    SDL_Texture *texture,
+                                                    const SDL_Point *srcpoints,
+                                                    const SDL_Point *dstpoints,
+                                                    int count);
 
 /**
  *  \brief Draw a point on the current rendering target.
@@ -1020,6 +1049,19 @@ extern DECLSPEC int SDLCALL SDL_RenderFillRectsF(SDL_Renderer * renderer,
                                                  int count);
 
 /**
+ *  \brief Fill some number of triangles on the current rendering target with the drawing color.
+ *
+ *  \param renderer The renderer which should fill multiple triangles.
+ *  \param points   A pointer to an array of destination points representing a triangle strip.
+ *  \param count    The number of points (number of triangles + 2).
+ *
+ *  \return 0 on success, or -1 on error
+ */
+extern DECLSPEC int SDLCALL SDL_RenderFillTrianglesF(SDL_Renderer *renderer,
+                                                    const SDL_FPoint *points,
+                                                    int count);
+
+/**
  *  \brief Copy a portion of the texture to the current rendering target.
  *
  *  \param renderer The renderer which should copy parts of a texture.
@@ -1058,6 +1100,23 @@ extern DECLSPEC int SDLCALL SDL_RenderCopyExF(SDL_Renderer * renderer,
                                             const double angle,
                                             const SDL_FPoint *center,
                                             const SDL_RendererFlip flip);
+
+/**
+ *  \brief Copy triangles portions of the texture to the current rendering target.
+ *
+ *  \param renderer     The renderer which should copy parts of a texture.
+ *  \param texture      The source texture.
+ *  \param srcpoints    A pointer to the source triangles points (triangle strip)
+ *  \param dstpoints    A pointer to the destination triangles points (triangle strip)
+ *  \param count        The number of points (number of triangles + 2).
+ *
+ *  \return 0 on success, or -1 on error
+ */
+extern DECLSPEC int SDLCALL SDL_RenderCopyTrianglesF(SDL_Renderer *renderer,
+                                                    SDL_Texture *texture,
+                                                    const SDL_Point *srcpoints,
+                                                    const SDL_FPoint *dstpoints,
+                                                    int count);
 
 /**
  *  \brief Read pixels from the current rendering target.
