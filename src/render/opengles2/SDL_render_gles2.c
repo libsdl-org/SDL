@@ -757,6 +757,26 @@ GLES2_QueueFillRects(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_
 }
 
 static int
+GLES2_QueueFillTriangles(SDL_Renderer *renderer, SDL_RenderCommand *cmd, const SDL_FPoint *points, int count)
+{
+    int i;
+    GLfloat *verts = (GLfloat *) SDL_AllocateRenderVertices(renderer, count * 2 * sizeof (GLfloat), 0, &cmd->data.draw.first);
+
+    if (!verts) {
+        return -1;
+    }
+
+    cmd->data.draw.count = count;
+
+    for (i = 0; i < count; i++) {
+        *(verts++) = points[i].x;
+        *(verts++) = points[i].y;
+    }
+
+    return 0;
+}
+
+static int
 GLES2_QueueCopy(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * texture,
                           const SDL_Rect * srcrect, const SDL_FRect * dstrect)
 {
@@ -797,6 +817,31 @@ GLES2_QueueCopy(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * t
     *(verts++) = maxv;
     *(verts++) = maxu;
     *(verts++) = maxv;
+
+    return 0;
+}
+
+static int
+GLES2_QueueCopyTriangles(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
+             const SDL_Point *srcpoints, const SDL_FPoint *dstpoints, int count)
+{
+    int i;
+    GLfloat *verts = (GLfloat *) SDL_AllocateRenderVertices(renderer, count * 2 * 2 * sizeof (GLfloat), 0, &cmd->data.draw.first);
+    if (!verts) {
+        return -1;
+    }
+
+    cmd->data.draw.count = count;
+
+    for (i = 0; i < count; i++) {
+        *(verts++) = dstpoints[i].x;
+        *(verts++) = dstpoints[i].y;
+    }
+
+    for (i = 0; i < count; i++) {
+        *(verts++) = (GLfloat) srcpoints[i].x  / texture->w;
+        *(verts++) = (GLfloat) srcpoints[i].y  / texture->h;
+    }
 
     return 0;
 }
@@ -961,7 +1006,13 @@ SetDrawState(GLES2_RenderData *data, const SDL_RenderCommand *cmd, const GLES2_I
     }
 
     if (texture) {
-        data->glVertexAttribPointer(GLES2_ATTRIBUTE_TEXCOORD, 2, GL_FLOAT, GL_FALSE, 0, (const GLvoid *) (cmd->data.draw.first + (sizeof (GLfloat) * 8)));
+        int sz = 8;
+
+        if (cmd->command == SDL_RENDERCMD_COPY_TRIANGLES) {
+            sz = cmd->data.draw.count * 2;
+        }
+
+        data->glVertexAttribPointer(GLES2_ATTRIBUTE_TEXCOORD, 2, GL_FLOAT, GL_FALSE, 0, (const GLvoid *) (cmd->data.draw.first + (sizeof (GLfloat) * sz)));
     }
 
     if (GLES2_SelectProgram(data, imgsrc, texture ? texture->w : 0, texture ? texture->h : 0) < 0) {
@@ -1257,10 +1308,26 @@ GLES2_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
                 break;
             }
 
+            case SDL_RENDERCMD_FILL_TRIANGLES: {
+                const size_t count = cmd->data.draw.count;
+                if (SetDrawState(data, cmd, GLES2_IMAGESOURCE_SOLID) == 0) {
+                    data->glDrawArrays(GL_TRIANGLE_STRIP, 0, count);
+                }
+                break;
+            }
+
             case SDL_RENDERCMD_COPY:
             case SDL_RENDERCMD_COPY_EX: {
                 if (SetCopyState(renderer, cmd) == 0) {
                     data->glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+                }
+                break;
+            }
+
+            case SDL_RENDERCMD_COPY_TRIANGLES: {
+                const size_t count = cmd->data.draw.count;
+                if (SetCopyState(renderer, cmd) == 0) {
+                    data->glDrawArrays(GL_TRIANGLE_STRIP, 0, count);
                 }
                 break;
             }
@@ -2057,7 +2124,9 @@ GLES2_CreateRenderer(SDL_Window *window, Uint32 flags)
     renderer->QueueDrawPoints     = GLES2_QueueDrawPoints;
     renderer->QueueDrawLines      = GLES2_QueueDrawLines;
     renderer->QueueFillRects      = GLES2_QueueFillRects;
+    renderer->QueueFillTriangles  = GLES2_QueueFillTriangles;
     renderer->QueueCopy           = GLES2_QueueCopy;
+    renderer->QueueCopyTriangles  = GLES2_QueueCopyTriangles;
     renderer->QueueCopyEx         = GLES2_QueueCopyEx;
     renderer->RunCommandQueue     = GLES2_RunCommandQueue;
     renderer->RenderReadPixels    = GLES2_RenderReadPixels;
