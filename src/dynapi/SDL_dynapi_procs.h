@@ -873,3 +873,9 @@ SDL_DYNAPI_PROC(int,SDL_isgraph,(int a),(a),return)
 #ifdef __ANDROID__
 SDL_DYNAPI_PROC(int,SDL_AndroidShowToast,(const char *a, int b, int c, int d, int e),(a,b,c,d,e),return)
 #endif
+SDL_DYNAPI_PROC(int,SDL_FillTriangle,(SDL_Surface *a, const SDL_Point b, Uint32 c),(a,b,c),return)
+SDL_DYNAPI_PROC(int,SDL_BlitTriangle,(SDL_Surface *a, const SDL_Point b, SDL_Surface *c, const SDL_Point d),(a,b,c,d),return)
+SDL_DYNAPI_PROC(int,SDL_RenderFillTriangles,(SDL_Renderer *a, const SDL_Point *b, int c),(a,b,c),return)
+SDL_DYNAPI_PROC(int,SDL_RenderCopyTriangles,(SDL_Renderer *a, SDL_Texture *b, const SDL_Point *c, const SDL_Point *d, int e),(a,b,c,d,e),return)
+SDL_DYNAPI_PROC(int,SDL_RenderFillTrianglesF,(SDL_Renderer *a, const SDL_FPoint *b, int c),(a,b,c),return)
+SDL_DYNAPI_PROC(int,SDL_RenderCopyTrianglesF,(SDL_Renderer *a, SDL_Texture *b, const SDL_Point *c, const SDL_FPoint *d, int e),(a,b,c,d,e),return)
