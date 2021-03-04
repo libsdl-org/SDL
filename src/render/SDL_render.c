@@ -180,6 +180,16 @@ DebugLogRenderCommands(const SDL_RenderCommand *cmd)
                         (int) cmd->data.draw.blend);
                 break;
 
+            case SDL_RENDERCMD_FILL_TRIANGLES:
+                SDL_Log(" %u. fill triangles (first=%u, count=%u, r=%d, g=%d, b=%d, a=%d, blend=%d)", i++,
+                        (unsigned int) cmd->data.draw.first,
+                        (unsigned int) cmd->data.draw.count,
+                        (int) cmd->data.draw.r, (int) cmd->data.draw.g,
+                        (int) cmd->data.draw.b, (int) cmd->data.draw.a,
+                        (int) cmd->data.draw.blend);
+                break;
+
+
             case SDL_RENDERCMD_COPY:
                 SDL_Log(" %u. copy (first=%u, count=%u, r=%d, g=%d, b=%d, a=%d, blend=%d, tex=%p)", i++,
                         (unsigned int) cmd->data.draw.first,
@@ -188,6 +198,17 @@ DebugLogRenderCommands(const SDL_RenderCommand *cmd)
                         (int) cmd->data.draw.b, (int) cmd->data.draw.a,
                         (int) cmd->data.draw.blend, cmd->data.draw.texture);
                 break;
+
+            case SDL_RENDERCMD_COPY_TRIANGLES:
+                SDL_Log(" %u. copy triangles (first=%u, count=%u, r=%d, g=%d, b=%d, a=%d, blend=%d, tex=%p)", i++,
+                        (unsigned int) cmd->data.draw.first,
+                        (unsigned int) cmd->data.draw.count,
+                        (int) cmd->data.draw.r, (int) cmd->data.draw.g,
+                        (int) cmd->data.draw.b, (int) cmd->data.draw.a,
+                        (int) cmd->data.draw.blend, cmd->data.draw.texture);
+                break;
+
+
 
 
             case SDL_RENDERCMD_COPY_EX:
@@ -492,6 +513,24 @@ QueueCmdFillRects(SDL_Renderer *renderer, const SDL_FRect * rects, const int cou
     return retval;
 }
 
+static int
+QueueCmdFillTriangles(SDL_Renderer *renderer, const SDL_FPoint *points, int count)
+{
+    SDL_RenderCommand *cmd = PrepQueueCmdDrawSolid(renderer, SDL_RENDERCMD_FILL_TRIANGLES);
+    int retval = -1;
+    if (cmd != NULL) {
+        if (renderer->QueueFillTriangles == NULL) {
+            return SDL_Unsupported();
+        }
+
+        retval = renderer->QueueFillTriangles(renderer, cmd, points, count);
+        if (retval < 0) {
+            cmd->command = SDL_RENDERCMD_NO_OP;
+        }
+    }
+    return retval;
+}
+
 static SDL_RenderCommand *
 PrepQueueCmdDrawTexture(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_RenderCommandType cmdtype)
 {
@@ -521,6 +560,25 @@ QueueCmdCopy(SDL_Renderer *renderer, SDL_Texture * texture, const SDL_Rect * src
     int retval = -1;
     if (cmd != NULL) {
         retval = renderer->QueueCopy(renderer, cmd, texture, srcrect, dstrect);
+        if (retval < 0) {
+            cmd->command = SDL_RENDERCMD_NO_OP;
+        }
+    }
+    return retval;
+}
+
+static int
+QueueCmdCopyTriangles(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_Point *srcpoints, const SDL_FPoint *dstpoints, int count)
+{
+    SDL_RenderCommand *cmd = PrepQueueCmdDrawTexture(renderer, texture, SDL_RENDERCMD_COPY_TRIANGLES);
+    int retval = -1;
+    if (cmd != NULL) {
+
+        if (renderer->QueueCopyTriangles == NULL) {
+            return SDL_Unsupported();
+        }
+
+        retval = renderer->QueueCopyTriangles(renderer, cmd, texture, srcpoints, dstpoints, count);
         if (retval < 0) {
             cmd->command = SDL_RENDERCMD_NO_OP;
         }
@@ -3002,6 +3060,81 @@ SDL_RenderFillRectsF(SDL_Renderer * renderer,
     return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
 }
 
+int SDL_RenderFillTriangles(SDL_Renderer *renderer, const SDL_Point *points, int count)
+{
+    SDL_FPoint *fpoints;
+    int i;
+    int retval;
+    SDL_bool isstack;
+
+    CHECK_RENDERER_MAGIC(renderer, -1);
+
+    if (!points) {
+        return SDL_SetError("SDL_RenderFillTriangles(): Passed NULL points");
+    }
+    if (count < 3) {
+        return 0;
+    }
+
+    /* Don't draw while we're hidden */
+    if (renderer->hidden) {
+        return 0;
+    }
+
+    fpoints = SDL_small_alloc(SDL_FPoint, count, &isstack);
+    if (!fpoints) {
+        return SDL_OutOfMemory();
+    }
+    for (i = 0; i < count; ++i) {
+        fpoints[i].x = points[i].x * renderer->scale.x;
+        fpoints[i].y = points[i].y * renderer->scale.y;
+    }
+
+    retval = QueueCmdFillTriangles(renderer, fpoints, count);
+
+    SDL_small_free(fpoints, isstack);
+
+    return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
+}
+
+int SDL_RenderFillTrianglesF(SDL_Renderer *renderer, const SDL_FPoint *points, int count)
+{
+    SDL_FPoint *fpoints;
+    int i;
+    int retval;
+    SDL_bool isstack;
+
+    CHECK_RENDERER_MAGIC(renderer, -1);
+
+    if (!points) {
+        return SDL_SetError("SDL_RenderFillTrianglesF(): Passed NULL points");
+    }
+    if (count < 3) {
+        return 0;
+    }
+
+    /* Don't draw while we're hidden */
+    if (renderer->hidden) {
+        return 0;
+    }
+
+    fpoints = SDL_small_alloc(SDL_FPoint, count, &isstack);
+    if (!fpoints) {
+        return SDL_OutOfMemory();
+    }
+    for (i = 0; i < count; ++i) {
+        fpoints[i].x = points[i].x * renderer->scale.x;
+        fpoints[i].y = points[i].y * renderer->scale.y;
+    }
+
+    retval = QueueCmdFillTriangles(renderer, fpoints, count);
+
+    SDL_small_free(fpoints, isstack);
+
+    return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
+}
+
+
 /* !!! FIXME: move this to a public API if we want to do float versions of all of these later */
 SDL_FORCE_INLINE SDL_bool SDL_FRectEmpty(const SDL_FRect *r)
 {
@@ -3122,6 +3255,112 @@ SDL_RenderCopyF(SDL_Renderer * renderer, SDL_Texture * texture,
     texture->last_command_generation = renderer->render_command_generation;
 
     retval = QueueCmdCopy(renderer, texture, &real_srcrect, &real_dstrect);
+    return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
+}
+
+
+extern DECLSPEC int SDLCALL SDL_RenderCopyTriangles(SDL_Renderer *renderer,
+                                           SDL_Texture *texture,
+                                           const SDL_Point *srcpoints,
+                                           const SDL_Point *dstpoints,
+                                           int count)
+{
+    int retval;
+    int i;
+    SDL_bool isstack;
+    SDL_FPoint *fpoints;
+
+    CHECK_RENDERER_MAGIC(renderer, -1);
+    CHECK_TEXTURE_MAGIC(texture, -1);
+
+    if (renderer != texture->renderer) {
+        return SDL_SetError("Texture was not created with this renderer");
+    }
+
+    /* Don't draw while we're hidden */
+    if (renderer->hidden) {
+        return 0;
+    }
+
+    if (texture->native) {
+        texture = texture->native;
+    }
+
+    texture->last_command_generation = renderer->render_command_generation;
+
+
+    fpoints = SDL_small_alloc(SDL_FPoint, count, &isstack);
+    if (!fpoints) {
+        return SDL_OutOfMemory();
+    }
+
+    for (i = 0; i < count; ++i) {
+        if (srcpoints[i].x < 0 || srcpoints[i].y < 0 || srcpoints[i].x >= texture->w || srcpoints[i].y >= texture->h) {
+            return SDL_SetError("Values of 'srcpoints' out of bounds");
+        }
+    }
+
+
+    for (i = 0; i < count; ++i) {
+        fpoints[i].x = dstpoints[i].x * renderer->scale.x;
+        fpoints[i].y = dstpoints[i].y * renderer->scale.y;
+    }
+
+    retval = QueueCmdCopyTriangles(renderer, texture, srcpoints, fpoints, count);
+
+    SDL_small_free(fpoints, isstack);
+    return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
+}
+
+extern DECLSPEC int SDLCALL SDL_RenderCopyTrianglesF(SDL_Renderer *renderer,
+                                           SDL_Texture *texture,
+                                           const SDL_Point *srcpoints,
+                                           const SDL_FPoint *dstpoints,
+                                           int count)
+{
+    int retval;
+    int i;
+    SDL_bool isstack;
+    SDL_FPoint *fpoints;
+
+    CHECK_RENDERER_MAGIC(renderer, -1);
+    CHECK_TEXTURE_MAGIC(texture, -1);
+
+    if (renderer != texture->renderer) {
+        return SDL_SetError("Texture was not created with this renderer");
+    }
+
+    /* Don't draw while we're hidden */
+    if (renderer->hidden) {
+        return 0;
+    }
+
+    if (texture->native) {
+        texture = texture->native;
+    }
+
+    texture->last_command_generation = renderer->render_command_generation;
+
+
+    fpoints = SDL_small_alloc(SDL_FPoint, count, &isstack);
+    if (!fpoints) {
+        return SDL_OutOfMemory();
+    }
+
+    for (i = 0; i < count; ++i) {
+        if (srcpoints[i].x < 0 || srcpoints[i].y < 0 || srcpoints[i].x >= texture->w || srcpoints[i].y >= texture->h) {
+            return SDL_SetError("Values of 'srcpoints' out of bounds");
+        }
+    }
+
+    for (i = 0; i < count; ++i) {
+        fpoints[i].x = dstpoints[i].x * renderer->scale.x;
+        fpoints[i].y = dstpoints[i].y * renderer->scale.y;
+    }
+
+    retval = QueueCmdCopyTriangles(renderer, texture, srcpoints, fpoints, count);
+
+    SDL_small_free(fpoints, isstack);
     return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
 }
 
