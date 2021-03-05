@@ -1119,6 +1119,20 @@ extern DECLSPEC int SDLCALL SDL_RenderCopyTrianglesF(SDL_Renderer *renderer,
                                                     int count);
 
 /**
+ *  \brief Render a set of vertex, optionally using a texture and indices into the vertex array
+ *
+ *  \param texture  (optional) The SDL texture to unbind
+ *  \param vertices  An array of SDL_Vertex elements to be rendered
+ *  \param num_vertices  Number of elements in the vertices array
+ *  \param indices (optional) An array of integers indices into the vertices array, if NULL all vertices will be rendered in sequential order
+ *  \param num_indices  Number of elements in the indices array (ignored if indices is NULL)
+ *  \param translation (optional) A translation vector that will be applied to the vertices prior to rendering
+ *
+ *  \return 0 on success, or -1 if the operation is not supported
+ */
+extern DECLSPEC int SDL_RenderGeometry(SDL_Renderer *renderer, SDL_Texture *texture, SDL_Point *points, int num_points, int *indices, int num_indices, const SDL_FPoint *translation);
+
+/**
  *  \brief Read pixels from the current rendering target.
  *
  *  \param renderer The renderer from which pixels should be read.

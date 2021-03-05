@@ -3364,6 +3364,107 @@ extern DECLSPEC int SDLCALL SDL_RenderCopyTrianglesF(SDL_Renderer *renderer,
     return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
 }
 
+int SDL_RenderGeometry(SDL_Renderer *renderer, SDL_Texture *texture,
+        SDL_Point *points, int num_points, int *indices, int num_indices, const SDL_FPoint *translation)
+{
+    SDL_FPoint tr;
+    int retval;
+    int i;
+    SDL_bool isstack_1 = 0; /* prevent warning */
+    SDL_bool isstack_2;
+    SDL_Point *src_points = NULL;
+    SDL_FPoint *dst_points = NULL;
+    int count = indices ? num_indices : num_points;
+
+    if (texture && renderer != texture->renderer) {
+        return SDL_SetError("Texture was not created with this renderer");
+    }
+
+    /* Don't draw while we're hidden */
+    if (renderer->hidden) {
+        return 0;
+    }
+
+    if (num_points < 3) {
+        return 0;
+    }
+
+    if (texture && texture->native) {
+        texture = texture->native;
+    }
+
+    if (translation == NULL) {
+        translation = &tr;
+        tr.x = 0;
+        tr.y = 0;
+    }
+
+    if (texture) {
+        for (i = 0; i < num_points; ++i) {
+            if (points[i].x < 0 || points[i].y < 0 || points[i].x >= texture->w || points[i].y >= texture->h) {
+                return SDL_SetError("Values of 'points' out of bounds");
+            }
+        }
+    }
+
+    if (indices) {
+        for (i = 0; i < num_indices; ++i) {
+            if (indices[i] < 0 || indices[i] >= num_points) {
+                return SDL_SetError("Values of 'indices' out of bounds");
+            }
+        }
+    }
+
+    /* Prepare dst points */
+    {
+        float trx = translation->x;
+        float try = translation->y;
+        dst_points = SDL_small_alloc(SDL_FPoint, count, &isstack_2);
+        if (!dst_points) {
+            return SDL_OutOfMemory();
+        }
+        for (i = 0; i < count; i++) {
+            const SDL_Point *p = &points[indices ? indices[i] : i];
+            dst_points[i].x = (p->x + trx) * renderer->scale.x;
+            dst_points[i].y = (p->y + try) * renderer->scale.y;
+        }
+    }
+
+    /* Prepare src points, if needed */
+    if (texture && indices) {
+        src_points = SDL_small_alloc(SDL_Point, count, &isstack_1);
+        if (!src_points) {
+            if (dst_points) {
+                SDL_small_free(dst_points, isstack_2);
+            }
+            return SDL_OutOfMemory();
+        }
+        for (i = 0; i < count; i++) {
+            const SDL_Point *p = &points[indices[i]];
+            src_points[i].x = p->x;
+            src_points[i].y = p->y;
+        }
+        points = src_points;
+    }
+
+    if (texture) {
+        texture->last_command_generation = renderer->render_command_generation;
+        retval = QueueCmdCopyTriangles(renderer, texture, points, dst_points, count);
+    } else {
+        retval = QueueCmdFillTriangles(renderer, dst_points, count);
+    }
+
+    if (src_points) {
+        SDL_small_free(src_points, isstack_1);
+    }
+
+    if (dst_points) {
+        SDL_small_free(dst_points, isstack_2);
+    }
+
+    return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
+}
+
 int
 SDL_RenderCopyEx(SDL_Renderer * renderer, SDL_Texture * texture,
                const SDL_Rect * srcrect, const SDL_Rect * dstrect,
