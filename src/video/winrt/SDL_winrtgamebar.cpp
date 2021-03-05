@@ -89,7 +89,7 @@ WINRT_GetGameBar()
     IGameBarStatics_ *pGameBar = NULL;
     HRESULT hr;
 
-    hr = ::WindowsCreateString(wClassName, (UINT32)wcslen(wClassName), &hClassName);
+    hr = ::WindowsCreateString(wClassName, (UINT32)SDL_wcslen(wClassName), &hClassName);
     if (FAILED(hr)) {
         goto done;
     }

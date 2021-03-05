@@ -58,42 +58,6 @@ static const IID SDL_IID_IAudioCaptureClient = { 0xc8adbd64, 0xe71e, 0x48a0,{ 0x
 static const GUID SDL_KSDATAFORMAT_SUBTYPE_PCM = { 0x00000001, 0x0000, 0x0010,{ 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71 } };
 static const GUID SDL_KSDATAFORMAT_SUBTYPE_IEEE_FLOAT = { 0x00000003, 0x0000, 0x0010,{ 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71 } };
 
-static SDL_bool
-WStrEqual(const WCHAR *a, const WCHAR *b)
-{
-    while (*a) {
-        if (*a != *b) {
-            return SDL_FALSE;
-        }
-        a++;
-        b++;
-    }
-    return *b == 0;
-}
-
-static size_t
-WStrLen(const WCHAR *wstr)
-{
-    size_t retval = 0;
-    if (wstr) {
-        while (*(wstr++)) {
-            retval++;
-        }
-    }
-    return retval;
-}
-
-static WCHAR *
-WStrDupe(const WCHAR *wstr)
-{
-    const size_t len = (WStrLen(wstr) + 1) * sizeof (WCHAR);
-    WCHAR *retval = (WCHAR *) SDL_malloc(len);
-    if (retval) {
-        SDL_memcpy(retval, wstr, len);
-    }
-    return retval;
-}
-
 
 void
 WASAPI_RemoveDevice(const SDL_bool iscapture, LPCWSTR devid)
@@ -103,7 +67,7 @@ WASAPI_RemoveDevice(const SDL_bool iscapture, LPCWSTR devid)
     DevIdList *prev = NULL;
     for (i = deviceid_list; i; i = next) {
         next = i->next;
-        if (WStrEqual(i->str, devid)) {
+        if (SDL_wcscmp(i->str, devid) == 0) {
             if (prev) {
                 prev->next = next;
             } else {
@@ -129,7 +93,7 @@ WASAPI_AddDevice(const SDL_bool iscapture, const char *devname, LPCWSTR devid)
 
     /* see if we already have this one. */
     for (devidlist = deviceid_list; devidlist; devidlist = devidlist->next) {
-        if (WStrEqual(devidlist->str, devid)) {
+        if (SDL_wcscmp(devidlist->str, devid) == 0) {
             return;  /* we already have this. */
         }
     }
@@ -139,7 +103,7 @@ WASAPI_AddDevice(const SDL_bool iscapture, const char *devname, LPCWSTR devid)
         return;  /* oh well. */
     }
 
-    devid = WStrDupe(devid);
+    devid = SDL_wcsdup(devid);
     if (!devid) {
         SDL_free(devidlist);
         return;  /* oh well. */
@@ -677,7 +641,7 @@ WASAPI_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     if (!devid) {  /* is default device? */
         this->hidden->default_device_generation = SDL_AtomicGet(iscapture ? &WASAPI_DefaultCaptureGeneration : &WASAPI_DefaultPlaybackGeneration);
     } else {
-        this->hidden->devid = WStrDupe(devid);
+        this->hidden->devid = SDL_wcsdup(devid);
         if (!this->hidden->devid) {
             return SDL_OutOfMemory();
         }
