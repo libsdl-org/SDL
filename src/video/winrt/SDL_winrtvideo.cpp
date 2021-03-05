@@ -782,7 +782,7 @@ WINRT_CreateDisplayRequest(_THIS)
     ABI::Windows::System::Display::IDisplayRequest * pDisplayRequest = nullptr;
     HRESULT hr;
 
-    hr = ::WindowsCreateString(wClassName, (UINT32)wcslen(wClassName), &hClassName);
+    hr = ::WindowsCreateString(wClassName, (UINT32)SDL_wcslen(wClassName), &hClassName);
     if (FAILED(hr)) {
         goto done;
     }

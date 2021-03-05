@@ -46,10 +46,12 @@
 #if UNICODE
 #define WIN_StringToUTF8 WIN_StringToUTF8W
 #define WIN_UTF8ToString WIN_UTF8ToStringW
+#define SDL_tcslen SDL_wcslen
 #define SDL_tcsstr SDL_wcsstr
 #else
 #define WIN_StringToUTF8 WIN_StringToUTF8A
 #define WIN_UTF8ToString WIN_UTF8ToStringA
+#define SDL_tcslen SDL_strlen
 #define SDL_tcsstr SDL_strstr
 #endif
 
