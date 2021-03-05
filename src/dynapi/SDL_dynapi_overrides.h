@@ -808,9 +808,3 @@
 #define SDL_isprint SDL_isprint_REAL
 #define SDL_isgraph SDL_isgraph_REAL
 #define SDL_AndroidShowToast SDL_AndroidShowToast_REAL
-#define SDL_FillTriangle SDL_FillTriangle_REAL
-#define SDL_BlitTriangle SDL_BlitTriangle_REAL
-#define SDL_RenderFillTriangles SDL_RenderFillTriangles_REAL
-#define SDL_RenderCopyTriangles SDL_RenderCopyTriangles_REAL
-#define SDL_RenderFillTrianglesF SDL_RenderFillTrianglesF_REAL
-#define SDL_RenderCopyTrianglesF SDL_RenderCopyTrianglesF_REAL
