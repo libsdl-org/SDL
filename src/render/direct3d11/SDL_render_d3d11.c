@@ -1697,6 +1697,38 @@ D3D11_QueueFillRects(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_
 }
 
 static int
+D3D11_QueueFillTriangles(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FPoint *points, int count)
+{
+    VertexPositionColor *verts = (VertexPositionColor *)SDL_AllocateRenderVertices(renderer, count * sizeof(VertexPositionColor), 0, &cmd->data.draw.first);
+    const float r = (float)(cmd->data.draw.r / 255.0f);
+    const float g = (float)(cmd->data.draw.g / 255.0f);
+    const float b = (float)(cmd->data.draw.b / 255.0f);
+    const float a = (float)(cmd->data.draw.a / 255.0f);
+    int i;
+
+    if (!verts) {
+        return -1;
+    }
+
+    cmd->data.draw.count = count;
+
+    for (i = 0; i < count; i++) {
+        verts->pos.x = points[i].x;
+        verts->pos.y = points[i].y;
+        verts->pos.z = 0.0f;
+        verts->tex.x = 0.0f;
+        verts->tex.y = 0.0f;
+        verts->color.x = r;
+        verts->color.y = g;
+        verts->color.z = b;
+        verts->color.w = a;
+        verts++;
+    }
+
+    return 0;
+}
+
+static int
 D3D11_QueueCopy(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * texture,
              const SDL_Rect * srcrect, const SDL_FRect * dstrect)
 {
@@ -1759,6 +1791,39 @@ D3D11_QueueCopy(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * t
     verts->color.z = b;
     verts->color.w = a;
     verts++;
+
+    return 0;
+}
+
+static int
+D3D11_QueueCopyTriangles(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
+    const SDL_Point *srcpoints, const SDL_FPoint *dstpoints, int count)
+{
+    VertexPositionColor *verts = (VertexPositionColor *)SDL_AllocateRenderVertices(renderer, count * sizeof(VertexPositionColor), 0, &cmd->data.draw.first);
+    const float r = (float)(cmd->data.draw.r / 255.0f);
+    const float g = (float)(cmd->data.draw.g / 255.0f);
+    const float b = (float)(cmd->data.draw.b / 255.0f);
+    const float a = (float)(cmd->data.draw.a / 255.0f);
+    int i;
+
+    if (!verts) {
+        return -1;
+    }
+
+    cmd->data.draw.count = count;
+
+    for (i = 0; i < count; i++) {
+        verts->pos.x = dstpoints[i].x;
+        verts->pos.y = dstpoints[i].y;
+        verts->pos.z = 0.0f;
+        verts->tex.x = (float)srcpoints[i].x / texture->w;
+        verts->tex.y = (float)srcpoints[i].y / texture->h;
+        verts->color.x = r;
+        verts->color.y = g;
+        verts->color.z = b;
+        verts->color.w = a;
+        verts++;
+    }
 
     return 0;
 }
@@ -2323,6 +2388,15 @@ D3D11_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
                 break;
             }
 
+            case SDL_RENDERCMD_FILL_TRIANGLES: {
+                const size_t count = cmd->data.draw.count;
+                const size_t first = cmd->data.draw.first;
+                const size_t start = first / sizeof(VertexPositionColor);
+                D3D11_SetDrawState(renderer, cmd, rendererData->pixelShaders[SHADER_SOLID], 0, NULL, NULL, NULL);
+                D3D11_DrawPrimitives(renderer, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, start, count);
+                break;
+            }
+
             case SDL_RENDERCMD_COPY: {
                 const size_t first = cmd->data.draw.first;
                 const size_t start = first / sizeof (VertexPositionColor);
@@ -2342,6 +2416,15 @@ D3D11_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
                 const Float4X4 matrix = MatrixMultiply(MatrixRotationZ(rotation), MatrixTranslation(translatex, translatey, 0));
                 D3D11_SetCopyState(renderer, cmd, &matrix);
                 D3D11_DrawPrimitives(renderer, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, start, 4);
+                break;
+            }
+
+            case SDL_RENDERCMD_COPY_TRIANGLES: {
+                const size_t count = cmd->data.draw.count;
+                const size_t first = cmd->data.draw.first;
+                const size_t start = first / sizeof(VertexPositionColor);
+                D3D11_SetCopyState(renderer, cmd, NULL);
+                D3D11_DrawPrimitives(renderer, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, start, count);
                 break;
             }
 
@@ -2558,7 +2641,9 @@ D3D11_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->QueueDrawPoints = D3D11_QueueDrawPoints;
     renderer->QueueDrawLines = D3D11_QueueDrawPoints;  /* lines and points queue vertices the same way. */
     renderer->QueueFillRects = D3D11_QueueFillRects;
+    renderer->QueueFillTriangles = D3D11_QueueFillTriangles;
     renderer->QueueCopy = D3D11_QueueCopy;
+    renderer->QueueCopyTriangles = D3D11_QueueCopyTriangles;
     renderer->QueueCopyEx = D3D11_QueueCopyEx;
     renderer->RunCommandQueue = D3D11_RunCommandQueue;
     renderer->RenderReadPixels = D3D11_RenderReadPixels;
