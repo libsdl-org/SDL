@@ -587,7 +587,7 @@ METAL_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
             mtltexdesc.usage = MTLTextureUsageShaderRead;
         }
     }
-    
+
     id<MTLTexture> mtltexture = [data.mtldevice newTextureWithDescriptor:mtltexdesc];
     if (mtltexture == nil) {
         return SDL_SetError("Texture allocation failed");
@@ -1157,6 +1157,25 @@ METAL_QueueFillRects(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_
 }
 
 static int
+METAL_QueueFillTriangles(SDL_Renderer *renderer, SDL_RenderCommand *cmd, const SDL_FPoint *points, int count)
+{
+    const size_t vertlen = (sizeof (float) * 2) * count;
+    float *verts = (float *) SDL_AllocateRenderVertices(renderer, vertlen, DEVICE_ALIGN(8), &cmd->data.draw.first);
+    if (!verts) {
+        return -1;
+    }
+
+    cmd->data.draw.count = count;
+
+    for (int i = 0; i < count; i++) {
+        *(verts++) = points[i].x;
+        *(verts++) = points[i].y;
+    }
+
+    return 0;
+}
+
+static int
 METAL_QueueCopy(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * texture,
                 const SDL_Rect * srcrect, const SDL_FRect * dstrect)
 {
@@ -1191,6 +1210,31 @@ METAL_QueueCopy(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * t
     *(verts++) = dstrect->y;
     *(verts++) = normtex(srcrect->x + srcrect->w, texw);
     *(verts++) = normtex(srcrect->y, texh);
+
+    return 0;
+}
+
+static int
+METAL_QueueCopyTriangles(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
+             const SDL_Point *srcpoints, const SDL_FPoint *dstpoints, int count)
+{
+    const float texw = (float) texture->w;
+    const float texh = (float) texture->h;
+    const size_t vertlen = (sizeof (float) * 2) * 2 * count;
+    float *verts = (float *) SDL_AllocateRenderVertices(renderer, vertlen, DEVICE_ALIGN(8), &cmd->data.draw.first);
+    if (!verts) {
+        return -1;
+    }
+
+    cmd->data.draw.count = count;
+
+    for (int i = 0; i < count; i++) {
+        *(verts++) = dstpoints[i].x;
+        *(verts++) = dstpoints[i].y;
+
+        *(verts++) = normtex(srcpoints[i].x, texw);
+        *(verts++) = normtex(srcpoints[i].y, texh);
+    }
 
     return 0;
 }
@@ -1519,6 +1563,16 @@ METAL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
                 break;
             }
 
+            case SDL_RENDERCMD_FILL_TRIANGLES: {
+                const size_t count = cmd->data.draw.count;
+                SetDrawState(renderer, cmd, SDL_METAL_FRAGMENT_SOLID, CONSTANTS_OFFSET_IDENTITY, mtlbufvertex, &statecache);
+                for (size_t i = 0; i < count - 2; i += 1) {
+                    /* FIXME: use some vertex buffer */
+                    [data.mtlcmdencoder drawPrimitives:MTLPrimitiveTypeTriangleStrip vertexStart:i vertexCount:3];
+                }
+                break;
+            }
+
             case SDL_RENDERCMD_COPY: {
                 SetCopyState(renderer, cmd, CONSTANTS_OFFSET_IDENTITY, mtlbufvertex, &statecache);
                 [data.mtlcmdencoder drawPrimitives:MTLPrimitiveTypeTriangleStrip vertexStart:0 vertexCount:4];
@@ -1529,6 +1583,13 @@ METAL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
                 SetCopyState(renderer, cmd, CONSTANTS_OFFSET_INVALID, mtlbufvertex, &statecache);
                 [data.mtlcmdencoder setVertexBuffer:mtlbufvertex offset:cmd->data.draw.count atIndex:3];  // transform
                 [data.mtlcmdencoder drawPrimitives:MTLPrimitiveTypeTriangleStrip vertexStart:0 vertexCount:4];
+                break;
+            }
+
+            case SDL_RENDERCMD_COPY_TRIANGLES: {
+                const size_t count = cmd->data.draw.count;
+                SetCopyState(renderer, cmd, CONSTANTS_OFFSET_IDENTITY, mtlbufvertex, &statecache);
+                [data.mtlcmdencoder drawPrimitives:MTLPrimitiveTypeTriangleStrip vertexStart:0 vertexCount:count];
                 break;
             }
 
@@ -1892,7 +1953,9 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->QueueDrawPoints = METAL_QueueDrawPoints;
     renderer->QueueDrawLines = METAL_QueueDrawLines;
     renderer->QueueFillRects = METAL_QueueFillRects;
+    renderer->QueueFillTriangles = METAL_QueueFillTriangles;
     renderer->QueueCopy = METAL_QueueCopy;
+    renderer->QueueCopyTriangles = METAL_QueueCopyTriangles;
     renderer->QueueCopyEx = METAL_QueueCopyEx;
     renderer->RunCommandQueue = METAL_RunCommandQueue;
     renderer->RenderReadPixels = METAL_RenderReadPixels;
