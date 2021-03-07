@@ -118,7 +118,8 @@ VITA_Create()
     device->MaximizeWindow = VITA_MaximizeWindow;
     device->MinimizeWindow = VITA_MinimizeWindow;
     device->RestoreWindow = VITA_RestoreWindow;
-    device->SetWindowGrab = VITA_SetWindowGrab;
+    device->SetWindowMouseGrab = VITA_SetWindowGrab;
+    device->SetWindowKeyboardGrab = VITA_SetWindowGrab;
     device->DestroyWindow = VITA_DestroyWindow;
     device->GetWindowWMInfo = VITA_GetWindowWMInfo;
 
