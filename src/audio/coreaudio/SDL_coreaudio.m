@@ -56,7 +56,7 @@ static const AudioObjectPropertyAddress devlist_address = {
     kAudioObjectPropertyElementMaster
 };
 
-typedef void (*addDevFn)(const char *name, const int iscapture, AudioDeviceID devId, void *data);
+typedef void (*addDevFn)(const char *name, SDL_AudioSpec *spec, const int iscapture, AudioDeviceID devId, void *data);
 
 typedef struct AudioDeviceList
 {
@@ -88,10 +88,10 @@ add_to_internal_dev_list(const int iscapture, AudioDeviceID devId)
 }
 
 static void
-addToDevList(const char *name, const int iscapture, AudioDeviceID devId, void *data)
+addToDevList(const char *name, SDL_AudioSpec *spec, const int iscapture, AudioDeviceID devId, void *data)
 {
     if (add_to_internal_dev_list(iscapture, devId)) {
-        SDL_AddAudioDevice(iscapture, name, (void *) ((size_t) devId));
+        SDL_AddAudioDevice(iscapture, name, spec, (void *) ((size_t) devId));
     }
 }
 
@@ -126,14 +126,20 @@ build_device_list(int iscapture, addDevFn addfn, void *addfndata)
         AudioBufferList *buflist = NULL;
         int usable = 0;
         CFIndex len = 0;
+        double sampleRate = 0;
+        SDL_AudioSpec spec;
         const AudioObjectPropertyAddress addr = {
             kAudioDevicePropertyStreamConfiguration,
             iscapture ? kAudioDevicePropertyScopeInput : kAudioDevicePropertyScopeOutput,
             kAudioObjectPropertyElementMaster
         };
-
         const AudioObjectPropertyAddress nameaddr = {
             kAudioObjectPropertyName,
+            iscapture ? kAudioDevicePropertyScopeInput : kAudioDevicePropertyScopeOutput,
+            kAudioObjectPropertyElementMaster
+        };
+        const AudioObjectPropertyAddress freqaddr = {
+            kAudioDevicePropertyNominalSampleRate,
             iscapture ? kAudioDevicePropertyScopeInput : kAudioDevicePropertyScopeOutput,
             kAudioObjectPropertyElementMaster
         };
@@ -149,21 +155,24 @@ build_device_list(int iscapture, addDevFn addfn, void *addfndata)
         result = AudioObjectGetPropertyData(dev, &addr, 0, NULL,
                                             &size, buflist);
 
+        SDL_zero(spec);
         if (result == noErr) {
             UInt32 j;
             for (j = 0; j < buflist->mNumberBuffers; j++) {
-                if (buflist->mBuffers[j].mNumberChannels > 0) {
-                    usable = 1;
-                    break;
-                }
+                spec.channels += buflist->mBuffers[j].mNumberChannels;
             }
         }
 
         SDL_free(buflist);
 
-        if (!usable)
+        if (spec.channels == 0)
             continue;
 
+        size = sizeof (sampleRate);
+        result = AudioObjectGetPropertyData(dev, &freqaddr, 0, NULL, &size, &sampleRate);
+        if (result == noErr) {
+            spec.freq = (int) sampleRate;
+        }
 
         size = sizeof (CFStringRef);
         result = AudioObjectGetPropertyData(dev, &nameaddr, 0, NULL, &size, &cfstr);
@@ -197,7 +206,7 @@ build_device_list(int iscapture, addDevFn addfn, void *addfndata)
                    ((iscapture) ? "capture" : "output"),
                    (int) i, ptr, (int) dev);
 #endif
-            addfn(ptr, iscapture, dev, addfndata);
+            addfn(ptr, &spec, iscapture, dev, addfndata);
         }
         SDL_free(ptr);  /* addfn() would have copied the string. */
     }
@@ -223,7 +232,7 @@ COREAUDIO_DetectDevices(void)
 }
 
 static void
-build_device_change_list(const char *name, const int iscapture, AudioDeviceID devId, void *data)
+build_device_change_list(const char *name, SDL_AudioSpec *spec, const int iscapture, AudioDeviceID devId, void *data)
 {
     AudioDeviceList **list = (AudioDeviceList **) data;
     AudioDeviceList *item;
@@ -235,7 +244,7 @@ build_device_change_list(const char *name, const int iscapture, AudioDeviceID de
     }
 
     add_to_internal_dev_list(iscapture, devId);  /* new device, add it. */
-    SDL_AddAudioDevice(iscapture, name, (void *) ((size_t) devId));
+    SDL_AddAudioDevice(iscapture, name, spec, (void *) ((size_t) devId));
 }
 
 static void

@@ -63,7 +63,7 @@ extern SDL_atomic_t WASAPI_DefaultCaptureGeneration;
 int WASAPI_PrepDevice(_THIS, const SDL_bool updatestream);
 void WASAPI_RefDevice(_THIS);
 void WASAPI_UnrefDevice(_THIS);
-void WASAPI_AddDevice(const SDL_bool iscapture, const char *devname, LPCWSTR devid);
+void WASAPI_AddDevice(const SDL_bool iscapture, const char *devname, WAVEFORMATEXTENSIBLE *fmt, LPCWSTR devid);
 void WASAPI_RemoveDevice(const SDL_bool iscapture, LPCWSTR devid);
 
 /* These are functions that are implemented differently for Windows vs WinRT. */

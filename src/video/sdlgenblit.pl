@@ -458,15 +458,15 @@ __EOF__
 
     print FILE <<__EOF__;
 
-    posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
+    posy = incy / 2;
 
     while (info->dst_h--) {
         $format_type{$src} *src = 0;
         $format_type{$dst} *dst = ($format_type{$dst} *)info->dst;
         int n = info->dst_w;
-        posx = 0;
+        posx = incx / 2;
 
         srcy = posy >> 16;
         while (n--) {

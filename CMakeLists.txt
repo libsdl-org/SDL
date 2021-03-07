@@ -159,16 +159,6 @@ else()
   set(SDL_PTHREADS_ENABLED_BY_DEFAULT OFF)
 endif()
 
-# Default option knobs
-if(APPLE OR ARCH_64)
-  if(NOT "${CMAKE_OSX_ARCHITECTURES}" MATCHES "arm")
-    set(OPT_DEF_SSEMATH ON)
-  endif()
-endif()
-if(UNIX OR MINGW OR MSYS)
-  set(OPT_DEF_LIBC ON)
-endif()
-
 # The hidraw support doesn't catch Xbox, PS4 and Nintendo controllers,
 #  so we'll just use libusb when it's available. libusb does not support iOS,
 #  so we default to yes on iOS.
@@ -191,11 +181,11 @@ else()
 endif()
 
 # Compiler info
-if(CMAKE_COMPILER_IS_GNUCC)
-  set(USE_GCC TRUE)
-  set(OPT_DEF_ASM TRUE)
-elseif(CMAKE_C_COMPILER_ID MATCHES "Clang")
+if(CMAKE_C_COMPILER_ID MATCHES "Clang")
   set(USE_CLANG TRUE)
+  set(OPT_DEF_ASM TRUE)
+elseif(CMAKE_COMPILER_IS_GNUCC)
+  set(USE_GCC TRUE)
   set(OPT_DEF_ASM TRUE)
 elseif(MSVC_VERSION GREATER 1400) # VisualStudio 8.0+
   set(OPT_DEF_ASM TRUE)
@@ -206,6 +196,16 @@ endif()
 
 if(USE_GCC OR USE_CLANG)
   set(OPT_DEF_GCC_ATOMICS ON)
+endif()
+
+# Default option knobs
+if(APPLE OR ARCH_64)
+  if(NOT "${CMAKE_OSX_ARCHITECTURES}" MATCHES "arm")
+    set(OPT_DEF_SSEMATH ON)
+  endif()
+endif()
+if(UNIX OR MINGW OR MSYS OR USE_CLANG)
+  set(OPT_DEF_LIBC ON)
 endif()
 
 # Default flags, if not set otherwise
@@ -537,7 +537,7 @@ if(USE_GCC OR USE_CLANG)
     set(CMAKE_REQUIRED_FLAGS "-Wl,--no-undefined")
     check_c_compiler_flag("" HAVE_NO_UNDEFINED)
     set(CMAKE_REQUIRED_FLAGS ${ORIG_CMAKE_REQUIRED_FLAGS})
-    if(HAVE_NO_UNDEFINED)
+    if(HAVE_NO_UNDEFINED AND NOT (USE_CLANG AND WINDOWS))
       list(APPEND EXTRA_LDFLAGS "-Wl,--no-undefined")
     endif()
   endif()

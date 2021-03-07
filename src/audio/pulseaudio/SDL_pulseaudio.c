@@ -696,12 +696,45 @@ static SDL_Thread *hotplug_thread = NULL;
 
 /* device handles are device index + 1, cast to void*, so we never pass a NULL. */
 
+static SDL_AudioFormat
+PulseFormatToSDLFormat(pa_sample_format_t format)
+{
+    switch (format) {
+    case PA_SAMPLE_U8:
+        return AUDIO_U8;
+    case PA_SAMPLE_S16LE:
+        return AUDIO_S16LSB;
+    case PA_SAMPLE_S16BE:
+        return AUDIO_S16MSB;
+    case PA_SAMPLE_S32LE:
+        return AUDIO_S32LSB;
+    case PA_SAMPLE_S32BE:
+        return AUDIO_S32MSB;
+    case PA_SAMPLE_FLOAT32LE:
+        return AUDIO_F32LSB;
+    case PA_SAMPLE_FLOAT32BE:
+        return AUDIO_F32MSB;
+    default:
+        return 0;
+    }
+}
+
 /* This is called when PulseAudio adds an output ("sink") device. */
 static void
 SinkInfoCallback(pa_context *c, const pa_sink_info *i, int is_last, void *data)
 {
+    SDL_AudioSpec spec;
     if (i) {
-        SDL_AddAudioDevice(SDL_FALSE, i->description, (void *) ((size_t) i->index+1));
+        spec.freq = i->sample_spec.rate;
+        spec.channels = i->sample_spec.channels;
+        spec.format = PulseFormatToSDLFormat(i->sample_spec.format);
+        spec.silence = 0;
+        spec.samples = 0;
+        spec.size = 0;
+        spec.callback = NULL;
+        spec.userdata = NULL;
+
+        SDL_AddAudioDevice(SDL_FALSE, i->description, &spec, (void *) ((size_t) i->index+1));
     }
 }
 
@@ -709,10 +742,20 @@ SinkInfoCallback(pa_context *c, const pa_sink_info *i, int is_last, void *data)
 static void
 SourceInfoCallback(pa_context *c, const pa_source_info *i, int is_last, void *data)
 {
+    SDL_AudioSpec spec;
     if (i) {
         /* Skip "monitor" sources. These are just output from other sinks. */
         if (i->monitor_of_sink == PA_INVALID_INDEX) {
-            SDL_AddAudioDevice(SDL_TRUE, i->description, (void *) ((size_t) i->index+1));
+            spec.freq = i->sample_spec.rate;
+            spec.channels = i->sample_spec.channels;
+            spec.format = PulseFormatToSDLFormat(i->sample_spec.format);
+            spec.silence = 0;
+            spec.samples = 0;
+            spec.size = 0;
+            spec.callback = NULL;
+            spec.userdata = NULL;
+
+            SDL_AddAudioDevice(SDL_TRUE, i->description, &spec, (void *) ((size_t) i->index+1));
         }
     }
 }

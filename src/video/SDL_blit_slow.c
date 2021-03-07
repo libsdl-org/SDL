@@ -49,15 +49,15 @@ SDL_Blit_Slow(SDL_BlitInfo * info)
     Uint32 rgbmask = ~src_fmt->Amask;
     Uint32 ckey = info->colorkey & rgbmask;
 
-    posy = 0;
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
+    posy = incy / 2; /* start at the middle of pixel */
 
     while (info->dst_h--) {
         Uint8 *src = 0;
         Uint8 *dst = info->dst;
         int n = info->dst_w;
-        posx = 0;
+        posx = incx / 2; /* start at the middle of pixel */
         srcy = posy >> 16;
         while (n--) {
             srcx = posx >> 16;
