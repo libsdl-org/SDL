@@ -921,6 +921,14 @@ PSP_DestroyRenderer(SDL_Renderer * renderer)
     SDL_free(renderer);
 }
 
+static int
+PSP_SetVSync(SDL_Renderer * renderer, const int vsync)
+{
+    PSP_RenderData *data = renderer->driverdata;
+    data->vsync = vsync;
+    return 0;
+}
+
 SDL_Renderer *
 PSP_CreateRenderer(SDL_Window * window, Uint32 flags)
 {
@@ -962,6 +970,7 @@ PSP_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->RenderPresent = PSP_RenderPresent;
     renderer->DestroyTexture = PSP_DestroyTexture;
     renderer->DestroyRenderer = PSP_DestroyRenderer;
+    renderer->SetVSync = PSP_SetVSync;
     renderer->info = PSP_RenderDriver.info;
     renderer->info.flags = (SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
     renderer->driverdata = data;

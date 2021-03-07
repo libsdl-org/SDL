@@ -201,6 +201,20 @@ StartDrawing(SDL_Renderer *renderer)
     data->drawing = SDL_TRUE;
 }
 
+static int
+VITA_GXM_SetVSync(SDL_Renderer * renderer, const int vsync)
+{
+    VITA_GXM_RenderData *data = renderer->driverdata;
+    if (vsync) {
+        data->displayData.wait_vblank = SDL_TRUE;
+        renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
+    } else {
+        data->displayData.wait_vblank = SDL_FALSE;
+        renderer->info.flags &= ~SDL_RENDERER_PRESENTVSYNC;
+    }
+    return 0;
+}
+
 SDL_Renderer *
 VITA_GXM_CreateRenderer(SDL_Window *window, Uint32 flags)
 {
@@ -241,6 +255,7 @@ VITA_GXM_CreateRenderer(SDL_Window *window, Uint32 flags)
     renderer->RenderPresent = VITA_GXM_RenderPresent;
     renderer->DestroyTexture = VITA_GXM_DestroyTexture;
     renderer->DestroyRenderer = VITA_GXM_DestroyRenderer;
+    renderer->SetVSync = VITA_GXM_SetVSync;
 
     renderer->info = VITA_GXM_RenderDriver.info;
     renderer->info.flags = (SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);

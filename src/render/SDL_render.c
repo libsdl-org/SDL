@@ -4124,4 +4124,15 @@ SDL_GetBlendModeAlphaOperation(SDL_BlendMode blendMode)
     return (SDL_BlendOperation)(((Uint32)blendMode >> 16) & 0xF);
 }
 
+int
+SDL_RenderSetVSync(SDL_Renderer * renderer, int vsync)
+{
+    CHECK_RENDERER_MAGIC(renderer, -1);
+
+    if (renderer->SetVSync) {
+        return renderer->SetVSync(renderer, vsync);
+    }
+    return SDL_Unsupported();
+}
+
 /* vi: set ts=4 sw=4 expandtab: */
