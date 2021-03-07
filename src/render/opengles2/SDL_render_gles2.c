@@ -2012,6 +2012,26 @@ GLES2_RenderPresent(SDL_Renderer *renderer)
     SDL_GL_SwapWindow(renderer->window);
 }
 
+static int
+GLES2_SetVSync(SDL_Renderer * renderer, const int vsync)
+{
+    int retval;
+    if (vsync) {
+        retval = SDL_GL_SetSwapInterval(1);
+    } else {
+        retval = SDL_GL_SetSwapInterval(0);
+    }
+    if (retval != 0) {
+        return retval;
+    }
+    if (SDL_GL_GetSwapInterval() > 0) {
+        renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
+    } else {
+        renderer->info.flags &= ~SDL_RENDERER_PRESENTVSYNC;
+    }
+    return retval;
+}
+
 
 /*************************************************************************************************
  * Bind/unbinding of textures
@@ -2197,6 +2217,7 @@ GLES2_CreateRenderer(SDL_Window *window, Uint32 flags)
     renderer->RenderPresent       = GLES2_RenderPresent;
     renderer->DestroyTexture      = GLES2_DestroyTexture;
     renderer->DestroyRenderer     = GLES2_DestroyRenderer;
+    renderer->SetVSync            = GLES2_SetVSync;
     renderer->GL_BindTexture      = GLES2_BindTexture;
     renderer->GL_UnbindTexture    = GLES2_UnbindTexture;
 

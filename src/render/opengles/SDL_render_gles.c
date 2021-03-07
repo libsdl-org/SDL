@@ -1229,6 +1229,27 @@ static int GLES_UnbindTexture (SDL_Renderer * renderer, SDL_Texture *texture)
     return 0;
 }
 
+static int
+GLES_SetVSync(SDL_Renderer * renderer, const int vsync)
+{
+    int retval;
+    if (vsync) {
+        retval = SDL_GL_SetSwapInterval(1);
+    } else {
+        retval = SDL_GL_SetSwapInterval(0);
+    }
+    if (retval != 0) {
+        return retval;
+    }
+    if (SDL_GL_GetSwapInterval() > 0) {
+        renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
+    } else {
+        renderer->info.flags &= ~SDL_RENDERER_PRESENTVSYNC;
+    }
+    return retval;
+}
+
+
 static SDL_Renderer *
 GLES_CreateRenderer(SDL_Window * window, Uint32 flags)
 {
@@ -1294,6 +1315,7 @@ GLES_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->RenderPresent = GLES_RenderPresent;
     renderer->DestroyTexture = GLES_DestroyTexture;
     renderer->DestroyRenderer = GLES_DestroyRenderer;
+    renderer->SetVSync = GLES_SetVSync;
     renderer->GL_BindTexture = GLES_BindTexture;
     renderer->GL_UnbindTexture = GLES_UnbindTexture;
     renderer->info = GLES_RenderDriver.info;

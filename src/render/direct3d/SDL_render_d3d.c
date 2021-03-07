@@ -1743,6 +1743,24 @@ D3D_Reset(SDL_Renderer * renderer)
     return 0;
 }
 
+static int
+D3D_SetVSync(SDL_Renderer * renderer, const int vsync)
+{
+    D3D_RenderData *data = renderer->driverdata;
+    if (vsync) {
+        data->pparams.PresentationInterval = D3DPRESENT_INTERVAL_ONE;
+        renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
+    } else {
+        data->pparams.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
+        renderer->info.flags &= ~SDL_RENDERER_PRESENTVSYNC;
+    }
+    if (D3D_Reset(renderer) < 0) {
+        /* D3D_Reset will call SDL_SetError() */
+        return -1;
+    }
+    return 0;
+}
+
 SDL_Renderer *
 D3D_CreateRenderer(SDL_Window * window, Uint32 flags)
 {
@@ -1805,6 +1823,7 @@ D3D_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->RenderPresent = D3D_RenderPresent;
     renderer->DestroyTexture = D3D_DestroyTexture;
     renderer->DestroyRenderer = D3D_DestroyRenderer;
+    renderer->SetVSync = D3D_SetVSync;
     renderer->info = D3D_RenderDriver.info;
     renderer->info.flags = (SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
     renderer->driverdata = data;

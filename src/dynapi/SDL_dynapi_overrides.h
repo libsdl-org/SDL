@@ -819,3 +819,4 @@
 #define SDL_GetTextureUserData SDL_GetTextureUserData_REAL
 #define SDL_RenderGeometry SDL_RenderGeometry_REAL
 #define SDL_RenderGeometryRaw SDL_RenderGeometryRaw_REAL
+#define SDL_RenderSetVSync SDL_RenderSetVSync_REAL
