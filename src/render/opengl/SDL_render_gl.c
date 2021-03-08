@@ -1017,7 +1017,6 @@ GL_QueueCopyTriangles(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Textur
              const SDL_Point *srcpoints, const SDL_FPoint *dstpoints, int count)
 {
     int i;
-    GL_TextureData *texturedata = (GL_TextureData *) texture->driverdata;
     GLfloat *verts = (GLfloat *) SDL_AllocateRenderVertices(renderer, count * 2 * 2 * sizeof (GLfloat), 0, &cmd->data.draw.first);
 
     if (!verts) {
