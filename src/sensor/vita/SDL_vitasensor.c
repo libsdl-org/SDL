@@ -28,9 +28,6 @@
 #include "SDL_vitasensor.h"
 #include "../SDL_syssensor.h"
 #include <psp2/motion.h>
-#if DOLCEVITA
-#include <psp2/error.h>
-#endif
 
 #if !defined(SCE_MOTION_MAX_NUM_STATES)
 #define SCE_MOTION_MAX_NUM_STATES 64
@@ -143,12 +140,12 @@ SDL_VITA_SensorOpen(SDL_Sensor *sensor, int device_index)
 static void
 SDL_VITA_SensorUpdate(SDL_Sensor *sensor)
 {
-    int err = SCE_OK;
+    int err = 0;
     SceMotionSensorState motionState[SCE_MOTION_MAX_NUM_STATES];
     SDL_memset(motionState, 0, sizeof(motionState));
 
     err = sceMotionGetSensorState(motionState, SCE_MOTION_MAX_NUM_STATES);
-    if (err != SCE_OK)
+    if (err != 0)
     {
         return;
     }

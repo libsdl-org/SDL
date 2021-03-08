@@ -2077,55 +2077,35 @@ elseif(VITA)
     set(SOURCE_FILES ${SOURCE_FILES} ${VITA_VIDEO_SOURCES})
     set(HAVE_SDL_VIDEO TRUE)
 
-    if(DOLCESDK)
-      add_definitions("-DDOLCEVITA")
+    check_include_file(pib.h HAVE_PIGS_IN_BLANKET_H)
+
+
+    if(HAVE_PIGS_IN_BLANKET_H)
       set(SDL_VIDEO_OPENGL_ES2 1)
       set(SDL_VIDEO_RENDER_VITA_GLES2 1)
-    else()
-      add_definitions("-DSCE_OK=0")
+      list(APPEND EXTRA_LIBS
+        pib
+      )
+
     endif()
     set(SDL_VIDEO_RENDER_VITA_GXM 1)
 
-    if(DOLCESDK)
-      list(APPEND EXTRA_LIBS
-        pib
-        SceGxm_stub
-        SceGxmInternalForVsh_stub
-        SceDisplay_stub
-        SceCtrl_stub
-        SceAppMgr_stub
-        SceAppMgrUser_stub
-        SceAudio_stub
-        SceSysmodule_stub
-        SceSharedFb_stub
-        SceDisplay_stub
-        SceDisplayUser_stub
-        SceCtrl_stub
-        SceIofilemgr_stub
-        SceCommonDialog_stub
-        SceTouch_stub
-        SceHid_stub
-        SceMotion_stub
-        m
-      )
-    else()
-      list(APPEND EXTRA_LIBS
-        SceGxm_stub
-        SceDisplay_stub
-        SceCtrl_stub
-        SceAppMgr_stub
-        SceAudio_stub
-        SceSysmodule_stub
-        SceDisplay_stub
-        SceCtrl_stub
-        SceIofilemgr_stub
-        SceCommonDialog_stub
-        SceTouch_stub
-        SceHid_stub
-        SceMotion_stub
-        m
-      )
-    endif()
+    list(APPEND EXTRA_LIBS
+      SceGxm_stub
+      SceDisplay_stub
+      SceCtrl_stub
+      SceAppMgr_stub
+      SceAudio_stub
+      SceSysmodule_stub
+      SceDisplay_stub
+      SceCtrl_stub
+      SceIofilemgr_stub
+      SceCommonDialog_stub
+      SceTouch_stub
+      SceHid_stub
+      SceMotion_stub
+      m
+    )
   endif()
 
   set(HAVE_ARMSIMD TRUE)
