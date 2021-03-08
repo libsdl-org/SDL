@@ -38,7 +38,7 @@ int VITA_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
     SceMsgDialogUserMessageParam msgParam;
     SceMsgDialogButtonsParam buttonParam;
     SceDisplayFrameBuf dispparam;
-    
+
     SceMsgDialogResult dialog_result;
     SceCommonDialogErrorCode init_result;
     SDL_bool setup_minimal_gxm = SDL_FALSE;
@@ -76,7 +76,7 @@ int VITA_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
     dispparam.size = sizeof(dispparam);
 
     init_result = sceMsgDialogInit(&param);
-    
+
     // Setup display if it hasn't been initialized before
     if (init_result == SCE_COMMON_DIALOG_ERROR_GXM_IS_UNINITIALIZED)
     {

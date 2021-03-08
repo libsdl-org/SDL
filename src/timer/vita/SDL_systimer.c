@@ -87,5 +87,4 @@ void SDL_Delay(Uint32 ms)
 
 #endif /* SDL_TIMER_VITA */
 
-/* vim: ts=4 sw=4
- */
+/* vi: set ts=4 sw=4 expandtab: */

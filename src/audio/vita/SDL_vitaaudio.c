@@ -172,10 +172,6 @@ VITAAUD_Init(SDL_AudioDriverImpl * impl)
 
     impl->OnlyHasDefaultInputDevice = 1;
 */
-    /*
-    impl->DetectDevices = DSOUND_DetectDevices;
-    impl->Deinitialize = DSOUND_Deinitialize;
-    */
     return 1;   /* this audio target is available. */
 }
 

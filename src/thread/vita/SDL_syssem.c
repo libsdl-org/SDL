@@ -159,5 +159,4 @@ int SDL_SemPost(SDL_sem *sem)
 
 #endif /* SDL_THREAD_VITA */
 
-/* vim: ts=4 sw=4
- */
+/* vi: set ts=4 sw=4 expandtab: */

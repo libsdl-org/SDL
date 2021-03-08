@@ -208,7 +208,6 @@ VITA_JoystickSetDevicePlayerIndex(int device_index, int player_index)
 {
 }
 
-
 /* Function to open a joystick for use.
    The joystick to open is specified by the device index.
    This should fill the nbuttons and naxes fields of the joystick structure.
@@ -388,7 +387,6 @@ VITA_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
     return SDL_Unsupported();
 }
 
-
 SDL_JoystickDriver SDL_VITA_JoystickDriver =
 {
     VITA_JoystickInit,
@@ -414,8 +412,6 @@ SDL_JoystickDriver SDL_VITA_JoystickDriver =
     VITA_JoystickQuit,
 };
 
-
 #endif /* SDL_JOYSTICK_VITA */
 
-/* vim: ts=4 sw=4
- */
+/* vi: set ts=4 sw=4 expandtab: */
