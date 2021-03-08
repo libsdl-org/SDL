@@ -143,7 +143,7 @@ SDL_GetPrefPath(const char *org, const char *app)
         return NULL;
     }
 
-    new_wpath_len = lstrlenW(worg) + lstrlenW(wapp) + lstrlenW(path) + 3;
+    new_wpath_len = SDL_wcslen(worg) + SDL_wcslen(wapp) + SDL_wcslen(path) + 3;
 
     if ((new_wpath_len + 1) > MAX_PATH) {
         SDL_free(worg);
@@ -153,8 +153,8 @@ SDL_GetPrefPath(const char *org, const char *app)
     }
 
     if (*worg) {
-        lstrcatW(path, L"\\");
-        lstrcatW(path, worg);
+        SDL_wcslcat(path, L"\\", SDL_arraysize(path));
+        SDL_wcslcat(path, worg, SDL_arraysize(path));
     }
     SDL_free(worg);
 
@@ -167,8 +167,8 @@ SDL_GetPrefPath(const char *org, const char *app)
         }
     }
 
-    lstrcatW(path, L"\\");
-    lstrcatW(path, wapp);
+    SDL_wcslcat(path, L"\\", SDL_arraysize(path));
+    SDL_wcslcat(path, wapp, SDL_arraysize(path));
     SDL_free(wapp);
 
     api_result = CreateDirectoryW(path, NULL);
@@ -179,7 +179,7 @@ SDL_GetPrefPath(const char *org, const char *app)
         }
     }
 
-    lstrcatW(path, L"\\");
+    SDL_wcslcat(path, L"\\", SDL_arraysize(path));
 
     retval = WIN_StringToUTF8W(path);
 

@@ -765,7 +765,11 @@ add_device(const int iscapture, const char *name, void *hint, ALSA_Device **pSee
         return;
     }
 
-    SDL_AddAudioDevice(iscapture, desc, handle);
+    /* Note that spec is NULL, because we are required to open the device before
+     * acquiring the mix format, making this information inaccessible at
+     * enumeration time
+     */
+    SDL_AddAudioDevice(iscapture, desc, NULL, handle);
     if (hint)
         free(desc);
     dev->name = handle;

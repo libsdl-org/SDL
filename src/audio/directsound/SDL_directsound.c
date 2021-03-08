@@ -163,7 +163,12 @@ FindAllDevs(LPGUID guid, LPCWSTR desc, LPCWSTR module, LPVOID data)
         if (str != NULL) {
             LPGUID cpyguid = (LPGUID) SDL_malloc(sizeof (GUID));
             SDL_memcpy(cpyguid, guid, sizeof (GUID));
-            SDL_AddAudioDevice(iscapture, str, cpyguid);
+
+            /* Note that spec is NULL, because we are required to connect to the
+             * device before getting the channel mask and output format, making
+             * this information inaccessible at enumeration time
+             */
+            SDL_AddAudioDevice(iscapture, str, NULL, cpyguid);
             SDL_free(str);  /* addfn() makes a copy of this string. */
         }
     }

@@ -59,7 +59,13 @@ test_device(const int iscapture, const char *fname, int flags, int (*test) (int 
                 static size_t dummyhandle = 0;
                 dummyhandle++;
                 SDL_assert(dummyhandle != 0);
-                SDL_AddAudioDevice(iscapture, fname, (void *) dummyhandle);
+
+                /* Note that spec is NULL; while we are opening the device
+                 * endpoint here, the endpoint does not provide any mix format
+                 * information,  making this information inaccessible at
+                 * enumeration time
+                 */
+                SDL_AddAudioDevice(iscapture, fname, NULL, (void *) dummyhandle);
             }
         }
     }

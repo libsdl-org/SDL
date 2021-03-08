@@ -873,6 +873,7 @@ SDL_DYNAPI_PROC(int,SDL_isgraph,(int a),(a),return)
 #ifdef __ANDROID__
 SDL_DYNAPI_PROC(int,SDL_AndroidShowToast,(const char *a, int b, int c, int d, int e),(a,b,c,d,e),return)
 #endif
+SDL_DYNAPI_PROC(int,SDL_GetAudioDeviceSpec,(int a, int b, SDL_AudioSpec *c),(a,b,c),return)
 SDL_DYNAPI_PROC(int,SDL_FillTriangle,(SDL_Surface *a, const SDL_Point b, Uint32 c),(a,b,c),return)
 SDL_DYNAPI_PROC(int,SDL_BlitTriangle,(SDL_Surface *a, const SDL_Point b, SDL_Surface *c, const SDL_Point d),(a,b,c,d),return)
 SDL_DYNAPI_PROC(int,SDL_RenderFillTriangles,(SDL_Renderer *a, const SDL_Point *b, int c, SDL_bool d),(a,b,c,d),return)
