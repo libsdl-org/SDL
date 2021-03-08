@@ -108,5 +108,4 @@ int SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
 
 #endif /* SDL_THREAD_VITA */
 
-/* vim: ts=4 sw=4
- */
+/* vi: set ts=4 sw=4 expandtab: */
