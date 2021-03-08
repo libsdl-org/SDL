@@ -34,7 +34,7 @@ typedef struct SDL_VideoData
 	SDL_bool egl_initialized;   /* OpenGL device initialization status */
 	uint32_t egl_refcount;      /* OpenGL reference count              */
 
-	wchar_t ime_buffer[SCE_IME_DIALOG_MAX_TEXT_LENGTH];
+	SceWChar16 ime_buffer[SCE_IME_DIALOG_MAX_TEXT_LENGTH];
 	SDL_bool ime_active;
 
 } SDL_VideoData;
