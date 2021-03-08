@@ -180,7 +180,8 @@ DebugLogRenderCommands(const SDL_RenderCommand *cmd)
                         (int) cmd->data.draw.blend);
                 break;
 
-            case SDL_RENDERCMD_FILL_TRIANGLES:
+            case SDL_RENDERCMD_FILL_TRIANGLES_LIST:
+            case SDL_RENDERCMD_FILL_TRIANGLES_STRIP:
                 SDL_Log(" %u. fill triangles (first=%u, count=%u, r=%d, g=%d, b=%d, a=%d, blend=%d)", i++,
                         (unsigned int) cmd->data.draw.first,
                         (unsigned int) cmd->data.draw.count,
@@ -199,7 +200,8 @@ DebugLogRenderCommands(const SDL_RenderCommand *cmd)
                         (int) cmd->data.draw.blend, cmd->data.draw.texture);
                 break;
 
-            case SDL_RENDERCMD_COPY_TRIANGLES:
+            case SDL_RENDERCMD_COPY_TRIANGLES_LIST:
+            case SDL_RENDERCMD_COPY_TRIANGLES_STRIP:
                 SDL_Log(" %u. copy triangles (first=%u, count=%u, r=%d, g=%d, b=%d, a=%d, blend=%d, tex=%p)", i++,
                         (unsigned int) cmd->data.draw.first,
                         (unsigned int) cmd->data.draw.count,
@@ -207,9 +209,6 @@ DebugLogRenderCommands(const SDL_RenderCommand *cmd)
                         (int) cmd->data.draw.b, (int) cmd->data.draw.a,
                         (int) cmd->data.draw.blend, cmd->data.draw.texture);
                 break;
-
-
-
 
             case SDL_RENDERCMD_COPY_EX:
                 SDL_Log(" %u. copyex (first=%u, count=%u, r=%d, g=%d, b=%d, a=%d, blend=%d, tex=%p)", i++,
@@ -514,9 +513,9 @@ QueueCmdFillRects(SDL_Renderer *renderer, const SDL_FRect * rects, const int cou
 }
 
 static int
-QueueCmdFillTriangles(SDL_Renderer *renderer, const SDL_FPoint *points, int count)
+QueueCmdFillTriangles(SDL_Renderer *renderer, const SDL_FPoint *points, int count, SDL_bool list)
 {
-    SDL_RenderCommand *cmd = PrepQueueCmdDrawSolid(renderer, SDL_RENDERCMD_FILL_TRIANGLES);
+    SDL_RenderCommand *cmd = PrepQueueCmdDrawSolid(renderer, list ? SDL_RENDERCMD_FILL_TRIANGLES_LIST : SDL_RENDERCMD_FILL_TRIANGLES_STRIP);
     int retval = -1;
     if (cmd != NULL) {
         if (renderer->QueueFillTriangles == NULL) {
@@ -568,9 +567,9 @@ QueueCmdCopy(SDL_Renderer *renderer, SDL_Texture * texture, const SDL_Rect * src
 }
 
 static int
-QueueCmdCopyTriangles(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_Point *srcpoints, const SDL_FPoint *dstpoints, int count)
+QueueCmdCopyTriangles(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_Point *srcpoints, const SDL_FPoint *dstpoints, int count, SDL_bool list)
 {
-    SDL_RenderCommand *cmd = PrepQueueCmdDrawTexture(renderer, texture, SDL_RENDERCMD_COPY_TRIANGLES);
+    SDL_RenderCommand *cmd = PrepQueueCmdDrawTexture(renderer, texture, list ? SDL_RENDERCMD_COPY_TRIANGLES_LIST : SDL_RENDERCMD_COPY_TRIANGLES_STRIP);
     int retval = -1;
     if (cmd != NULL) {
 
@@ -3060,7 +3059,7 @@ SDL_RenderFillRectsF(SDL_Renderer * renderer,
     return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
 }
 
-int SDL_RenderFillTriangles(SDL_Renderer *renderer, const SDL_Point *points, int count)
+int SDL_RenderFillTriangles(SDL_Renderer *renderer, const SDL_Point *points, int count, SDL_bool list)
 {
     SDL_FPoint *fpoints;
     int i;
@@ -3070,10 +3069,14 @@ int SDL_RenderFillTriangles(SDL_Renderer *renderer, const SDL_Point *points, int
     CHECK_RENDERER_MAGIC(renderer, -1);
 
     if (!points) {
-        return SDL_SetError("SDL_RenderFillTriangles(): Passed NULL points");
+        return SDL_InvalidParamError("points");
     }
     if (count < 3) {
         return 0;
+    }
+
+    if (list && 3 * (count / 3) != count) {
+        return SDL_InvalidParamError("count");
     }
 
     /* Don't draw while we're hidden */
@@ -3090,14 +3093,14 @@ int SDL_RenderFillTriangles(SDL_Renderer *renderer, const SDL_Point *points, int
         fpoints[i].y = points[i].y * renderer->scale.y;
     }
 
-    retval = QueueCmdFillTriangles(renderer, fpoints, count);
+    retval = QueueCmdFillTriangles(renderer, fpoints, count, list);
 
     SDL_small_free(fpoints, isstack);
 
     return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
 }
 
-int SDL_RenderFillTrianglesF(SDL_Renderer *renderer, const SDL_FPoint *points, int count)
+int SDL_RenderFillTrianglesF(SDL_Renderer *renderer, const SDL_FPoint *points, int count, SDL_bool list)
 {
     SDL_FPoint *fpoints;
     int i;
@@ -3107,10 +3110,13 @@ int SDL_RenderFillTrianglesF(SDL_Renderer *renderer, const SDL_FPoint *points, i
     CHECK_RENDERER_MAGIC(renderer, -1);
 
     if (!points) {
-        return SDL_SetError("SDL_RenderFillTrianglesF(): Passed NULL points");
+        return SDL_InvalidParamError("points");
     }
     if (count < 3) {
         return 0;
+    }
+    if (list && 3 * (count / 3) != count) {
+        return SDL_InvalidParamError("count");
     }
 
     /* Don't draw while we're hidden */
@@ -3127,7 +3133,7 @@ int SDL_RenderFillTrianglesF(SDL_Renderer *renderer, const SDL_FPoint *points, i
         fpoints[i].y = points[i].y * renderer->scale.y;
     }
 
-    retval = QueueCmdFillTriangles(renderer, fpoints, count);
+    retval = QueueCmdFillTriangles(renderer, fpoints, count, list);
 
     SDL_small_free(fpoints, isstack);
 
@@ -3263,7 +3269,7 @@ extern DECLSPEC int SDLCALL SDL_RenderCopyTriangles(SDL_Renderer *renderer,
                                            SDL_Texture *texture,
                                            const SDL_Point *srcpoints,
                                            const SDL_Point *dstpoints,
-                                           int count)
+                                           int count, SDL_bool list)
 {
     int retval;
     int i;
@@ -3275,6 +3281,15 @@ extern DECLSPEC int SDLCALL SDL_RenderCopyTriangles(SDL_Renderer *renderer,
 
     if (renderer != texture->renderer) {
         return SDL_SetError("Texture was not created with this renderer");
+    }
+    if (!srcpoints) {
+        return SDL_InvalidParamError("srcpoints");
+    }
+    if (!dstpoints) {
+        return SDL_InvalidParamError("dstpoints");
+    }
+    if (list && 3 * (count / 3) != count) {
+        return SDL_InvalidParamError("count");
     }
 
     /* Don't draw while we're hidden */
@@ -3306,7 +3321,7 @@ extern DECLSPEC int SDLCALL SDL_RenderCopyTriangles(SDL_Renderer *renderer,
         fpoints[i].y = dstpoints[i].y * renderer->scale.y;
     }
 
-    retval = QueueCmdCopyTriangles(renderer, texture, srcpoints, fpoints, count);
+    retval = QueueCmdCopyTriangles(renderer, texture, srcpoints, fpoints, count, list);
 
     SDL_small_free(fpoints, isstack);
     return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
@@ -3316,7 +3331,7 @@ extern DECLSPEC int SDLCALL SDL_RenderCopyTrianglesF(SDL_Renderer *renderer,
                                            SDL_Texture *texture,
                                            const SDL_Point *srcpoints,
                                            const SDL_FPoint *dstpoints,
-                                           int count)
+                                           int count, SDL_bool list)
 {
     int retval;
     int i;
@@ -3328,6 +3343,15 @@ extern DECLSPEC int SDLCALL SDL_RenderCopyTrianglesF(SDL_Renderer *renderer,
 
     if (renderer != texture->renderer) {
         return SDL_SetError("Texture was not created with this renderer");
+    }
+    if (!srcpoints) {
+        return SDL_InvalidParamError("srcpoints");
+    }
+    if (!dstpoints) {
+        return SDL_InvalidParamError("dstpoints");
+    }
+    if (list && 3 * (count / 3) != count) {
+        return SDL_InvalidParamError("count");
     }
 
     /* Don't draw while we're hidden */
@@ -3358,14 +3382,14 @@ extern DECLSPEC int SDLCALL SDL_RenderCopyTrianglesF(SDL_Renderer *renderer,
         fpoints[i].y = dstpoints[i].y * renderer->scale.y;
     }
 
-    retval = QueueCmdCopyTriangles(renderer, texture, srcpoints, fpoints, count);
+    retval = QueueCmdCopyTriangles(renderer, texture, srcpoints, fpoints, count, list);
 
     SDL_small_free(fpoints, isstack);
     return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
 }
 
 int SDL_RenderGeometry(SDL_Renderer *renderer, SDL_Texture *texture,
-        SDL_Point *points, int num_points, int *indices, int num_indices, const SDL_FPoint *translation)
+        SDL_Point *points, int num_points, int *indices, int num_indices, const SDL_FPoint *translation, SDL_bool list)
 {
     SDL_FPoint tr;
     int retval;
@@ -3378,6 +3402,13 @@ int SDL_RenderGeometry(SDL_Renderer *renderer, SDL_Texture *texture,
 
     if (texture && renderer != texture->renderer) {
         return SDL_SetError("Texture was not created with this renderer");
+    }
+
+    if (!points) {
+        return SDL_InvalidParamError("points");
+    }
+    if (list && 3 * (count / 3) != count) {
+        return SDL_InvalidParamError(indices ? "num_indices" : "num_points");
     }
 
     /* Don't draw while we're hidden */
@@ -3449,9 +3480,9 @@ int SDL_RenderGeometry(SDL_Renderer *renderer, SDL_Texture *texture,
 
     if (texture) {
         texture->last_command_generation = renderer->render_command_generation;
-        retval = QueueCmdCopyTriangles(renderer, texture, points, dst_points, count);
+        retval = QueueCmdCopyTriangles(renderer, texture, points, dst_points, count, list);
     } else {
-        retval = QueueCmdFillTriangles(renderer, dst_points, count);
+        retval = QueueCmdFillTriangles(renderer, dst_points, count, list);
     }
 
     if (src_points) {

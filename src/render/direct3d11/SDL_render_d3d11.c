@@ -2388,12 +2388,15 @@ D3D11_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
                 break;
             }
 
-            case SDL_RENDERCMD_FILL_TRIANGLES: {
+            case SDL_RENDERCMD_FILL_TRIANGLES_LIST:
+            case SDL_RENDERCMD_FILL_TRIANGLES_STRIP: {
                 const size_t count = cmd->data.draw.count;
                 const size_t first = cmd->data.draw.first;
                 const size_t start = first / sizeof(VertexPositionColor);
                 D3D11_SetDrawState(renderer, cmd, rendererData->pixelShaders[SHADER_SOLID], 0, NULL, NULL, NULL);
-                D3D11_DrawPrimitives(renderer, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, start, count);
+                D3D11_DrawPrimitives(renderer, 
+                        (cmd->command == SDL_RENDERCMD_FILL_TRIANGLES_STRIP ? D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP : D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST),
+                        start, count);
                 break;
             }
 
@@ -2419,12 +2422,16 @@ D3D11_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
                 break;
             }
 
-            case SDL_RENDERCMD_COPY_TRIANGLES: {
+            case SDL_RENDERCMD_COPY_TRIANGLES_LIST:
+            case SDL_RENDERCMD_COPY_TRIANGLES_STRIP: {
                 const size_t count = cmd->data.draw.count;
                 const size_t first = cmd->data.draw.first;
                 const size_t start = first / sizeof(VertexPositionColor);
                 D3D11_SetCopyState(renderer, cmd, NULL);
-                D3D11_DrawPrimitives(renderer, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, start, count);
+                D3D11_DrawPrimitives(renderer, 
+                        (cmd->command == SDL_RENDERCMD_COPY_TRIANGLES_STRIP ? D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP : D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST),
+                        start, count);
+
                 break;
             }
 

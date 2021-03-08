@@ -1008,7 +1008,7 @@ SetDrawState(GLES2_RenderData *data, const SDL_RenderCommand *cmd, const GLES2_I
     if (texture) {
         int sz = 8;
 
-        if (cmd->command == SDL_RENDERCMD_COPY_TRIANGLES) {
+        if (cmd->command == SDL_RENDERCMD_COPY_TRIANGLES_STRIP || cmd->command == SDL_RENDERCMD_COPY_TRIANGLES_LIST) {
             sz = cmd->data.draw.count * 2;
         }
 
@@ -1308,10 +1308,13 @@ GLES2_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
                 break;
             }
 
-            case SDL_RENDERCMD_FILL_TRIANGLES: {
+            case SDL_RENDERCMD_FILL_TRIANGLES_LIST:
+            case SDL_RENDERCMD_FILL_TRIANGLES_STRIP: {
                 const size_t count = cmd->data.draw.count;
                 if (SetDrawState(data, cmd, GLES2_IMAGESOURCE_SOLID) == 0) {
-                    data->glDrawArrays(GL_TRIANGLE_STRIP, 0, count);
+                    data->glDrawArrays(
+                            (cmd->command == SDL_RENDERCMD_FILL_TRIANGLES_STRIP ? GL_TRIANGLE_STRIP : GL_TRIANGLES),
+                            0, count);
                 }
                 break;
             }
@@ -1324,10 +1327,13 @@ GLES2_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
                 break;
             }
 
-            case SDL_RENDERCMD_COPY_TRIANGLES: {
+            case SDL_RENDERCMD_COPY_TRIANGLES_LIST:
+            case SDL_RENDERCMD_COPY_TRIANGLES_STRIP: {
                 const size_t count = cmd->data.draw.count;
                 if (SetCopyState(renderer, cmd) == 0) {
-                    data->glDrawArrays(GL_TRIANGLE_STRIP, 0, count);
+                    data->glDrawArrays(
+                            (cmd->command == SDL_RENDERCMD_COPY_TRIANGLES_STRIP ? GL_TRIANGLE_STRIP : GL_TRIANGLES),
+                            0, count);
                 }
                 break;
             }

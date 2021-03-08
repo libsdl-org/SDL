@@ -1361,13 +1361,14 @@ GL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
                 break;
             }
 
-            case SDL_RENDERCMD_FILL_TRIANGLES: {
+            case SDL_RENDERCMD_FILL_TRIANGLES_LIST:
+            case SDL_RENDERCMD_FILL_TRIANGLES_STRIP: {
                 const size_t count = cmd->data.draw.count;
                 const GLfloat *verts = (GLfloat *) (((Uint8 *) vertices) + cmd->data.draw.first);
 
                 SetDrawState(data, cmd, SHADER_SOLID);
 
-                data->glBegin(GL_TRIANGLE_STRIP);
+                data->glBegin((cmd->command == SDL_RENDERCMD_FILL_TRIANGLES_STRIP ? GL_TRIANGLE_STRIP : GL_TRIANGLES));
 
                 for (i = 0; i < count; i++) {
                     data->glVertex2f(verts[0], verts[1]);
@@ -1402,12 +1403,13 @@ GL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
                 break;
             }
 
-            case SDL_RENDERCMD_COPY_TRIANGLES: {
+            case SDL_RENDERCMD_COPY_TRIANGLES_LIST:
+            case SDL_RENDERCMD_COPY_TRIANGLES_STRIP: {
                 const size_t count = cmd->data.draw.count;
                 const GLfloat *verts = (GLfloat *) (((Uint8 *) vertices) + cmd->data.draw.first);
 
                 SetCopyState(data, cmd);
-                data->glBegin(GL_TRIANGLE_STRIP);
+                data->glBegin((cmd->command == SDL_RENDERCMD_COPY_TRIANGLES_STRIP ? GL_TRIANGLE_STRIP : GL_TRIANGLES));
 
                 for (i = 0; i < count; i++) {
                     data->glTexCoord2f(verts[0], verts[1]);

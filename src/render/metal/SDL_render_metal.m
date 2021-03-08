@@ -1563,7 +1563,17 @@ METAL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
                 break;
             }
 
-            case SDL_RENDERCMD_FILL_TRIANGLES: {
+            case SDL_RENDERCMD_FILL_TRIANGLES_LIST: {
+                const size_t count = cmd->data.draw.count;
+                SetDrawState(renderer, cmd, SDL_METAL_FRAGMENT_SOLID, CONSTANTS_OFFSET_IDENTITY, mtlbufvertex, &statecache);
+                for (size_t i = 0; i < count; i += 3) {
+                    /* FIXME: use some vertex buffer */
+                    [data.mtlcmdencoder drawPrimitives:MTLPrimitiveTypeTriangle vertexStart:i vertexCount:3];
+                }
+                break;
+            }
+
+            case SDL_RENDERCMD_FILL_TRIANGLES_STRIP: {
                 const size_t count = cmd->data.draw.count;
                 SetDrawState(renderer, cmd, SDL_METAL_FRAGMENT_SOLID, CONSTANTS_OFFSET_IDENTITY, mtlbufvertex, &statecache);
                 for (size_t i = 0; i < count - 2; i += 1) {
@@ -1586,7 +1596,14 @@ METAL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
                 break;
             }
 
-            case SDL_RENDERCMD_COPY_TRIANGLES: {
+            case SDL_RENDERCMD_COPY_TRIANGLES_LIST: {
+                const size_t count = cmd->data.draw.count;
+                SetCopyState(renderer, cmd, CONSTANTS_OFFSET_IDENTITY, mtlbufvertex, &statecache);
+                [data.mtlcmdencoder drawPrimitives:MTLPrimitiveTypeTriangle vertexStart:0 vertexCount:count];
+                break;
+            }
+
+            case SDL_RENDERCMD_COPY_TRIANGLES_STRIP: {
                 const size_t count = cmd->data.draw.count;
                 SetCopyState(renderer, cmd, CONSTANTS_OFFSET_IDENTITY, mtlbufvertex, &statecache);
                 [data.mtlcmdencoder drawPrimitives:MTLPrimitiveTypeTriangleStrip vertexStart:0 vertexCount:count];

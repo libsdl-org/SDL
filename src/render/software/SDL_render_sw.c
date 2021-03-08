@@ -761,7 +761,8 @@ SW_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
                 break;
             }
 
-            case SDL_RENDERCMD_FILL_TRIANGLES: {
+            case SDL_RENDERCMD_FILL_TRIANGLES_LIST:
+            case SDL_RENDERCMD_FILL_TRIANGLES_STRIP: {
                 int i;
                 const Uint8 r = cmd->data.draw.r;
                 const Uint8 g = cmd->data.draw.g;
@@ -774,8 +775,14 @@ SW_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
                 for (i = 0; i < count; i++){
                     trianglepoint_2_fixedpoint(&verts[i]);
                 }
-                for (i = 0; i < count - 2; i++) {
-                    SDL_SW_FillTriangle(surface, &verts[i], blend, SDL_MapRGBA(surface->format, r, g, b, a));
+                if (cmd->command == SDL_RENDERCMD_FILL_TRIANGLES_STRIP) {
+                    for (i = 0; i < count - 2; i++) {
+                        SDL_SW_FillTriangle(surface, &verts[i], blend, SDL_MapRGBA(surface->format, r, g, b, a));
+                    }
+                } else {
+                    for (i = 0; i < count; i += 3) {
+                        SDL_SW_FillTriangle(surface, &verts[i], blend, SDL_MapRGBA(surface->format, r, g, b, a));
+                    }
                 }
                 break;
             }
@@ -812,7 +819,8 @@ SW_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
                 break;
             }
 
-            case SDL_RENDERCMD_COPY_TRIANGLES: {
+            case SDL_RENDERCMD_COPY_TRIANGLES_LIST:
+            case SDL_RENDERCMD_COPY_TRIANGLES_STRIP: {
                 int i;
                 SDL_Point *verts = (SDL_Point *) (((Uint8 *) vertices) + cmd->data.draw.first);
                 const size_t count = cmd->data.draw.count;
@@ -824,11 +832,19 @@ SW_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
                     /* only dst points need to be converted to fixed point */
                     trianglepoint_2_fixedpoint(&verts[2 * i + 1]);
                 }
-                for (i = 0; i < count - 2; i++) {
-                    SDL_SW_BlitTriangle(src, surface, &verts[2 * i]);
+                if (cmd->command == SDL_RENDERCMD_COPY_TRIANGLES_STRIP) {
+                    for (i = 0; i < count - 2; i++) {
+                        SDL_SW_BlitTriangle(src, surface, &verts[2 * i]);
+                    }
+                } else {
+                    for (i = 0; i < count; i += 3) {
+                        SDL_SW_BlitTriangle(src, surface, &verts[2 * i]);
+                    }
                 }
                 break;
             }
+
+
 
             case SDL_RENDERCMD_NO_OP:
                 break;
