@@ -337,8 +337,8 @@ void VITA_ShowScreenKeyboard(_THIS, SDL_Window *window)
 {
     SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
 
-    wchar_t *title = L"";
-    wchar_t *text = L"";
+    SceWChar16 *title = (SceWChar16*)"";
+    SceWChar16 *text = (SceWChar16*)"";
     SceInt32 res;
 
     SceImeDialogParam param;
