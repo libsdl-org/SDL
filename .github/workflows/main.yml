@@ -54,3 +54,4 @@ jobs:
       run: cmake -B build ${{ matrix.platform.flags }}
     - name: Build
       run: cmake --build build/
+
