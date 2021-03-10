@@ -796,6 +796,22 @@ macro(CheckOpenGLX11)
 endmacro()
 
 # Requires:
+# - nada
+macro(CheckOpenGLKMSDRM)
+  if(VIDEO_OPENGL AND VIDEO_KMSDRM)
+    check_c_source_compiles("
+        #include <GL/gl.h>
+        int main(int argc, char** argv) {}" HAVE_VIDEO_OPENGL)
+
+    if(HAVE_VIDEO_OPENGL)
+      set(HAVE_VIDEO_OPENGL TRUE)
+      set(SDL_VIDEO_OPENGL 1)
+      set(SDL_VIDEO_RENDER_OGL 1)
+    endif()
+  endif()
+endmacro()
+
+# Requires:
 # - PkgCheckModules
 macro(CheckEGLKMSDRM)
   if (HAVE_VIDEO_OPENGLES OR HAVE_VIDEO_OPENGL)

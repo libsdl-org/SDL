@@ -2399,7 +2399,6 @@ CheckOpenGLKMSDRM()
         AC_MSG_RESULT($video_opengl)
         if test x$video_opengl = xyes; then 
             AC_DEFINE(SDL_VIDEO_OPENGL, 1, [ ]) 
-            AC_DEFINE(SDL_VIDEO_OPENGL_GLVND, 1, [ ]) 
             AC_DEFINE(SDL_VIDEO_RENDER_OGL, 1, [ ]) 
             SUMMARY_video="${SUMMARY_video} opengl"
         fi   
