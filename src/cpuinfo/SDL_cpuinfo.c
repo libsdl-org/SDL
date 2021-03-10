@@ -26,6 +26,9 @@
 
 #if defined(__WIN32__) || defined(__WINRT__)
 #include "../core/windows/SDL_windows.h"
+#    ifdef __MINGW32__
+#        include <_mingw.h>
+#    endif
 #endif
 #if defined(__OS2__)
 #undef HAVE_SYSCTLBYNAME
