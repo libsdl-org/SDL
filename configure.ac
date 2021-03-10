@@ -2387,7 +2387,7 @@ CheckOpenGLX11()
 dnl Find KMSDRM OpenGL (GLVND, NOT GLX and it's huge dependencies.)
 CheckOpenGLKMSDRM()
 {
-    if test x$enable_video = xyes -a x$enable_video_opengl = xyes; then 
+    if test x$enable_video = xyes -a x$enable_video_opengl = xyes -a x$enable_video_kmsdrm = xyes; then
         AC_MSG_CHECKING(for OpenGL (GLVND) support)
         video_opengl=no
         AC_TRY_COMPILE([
