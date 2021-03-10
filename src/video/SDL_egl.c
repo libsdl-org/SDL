@@ -79,6 +79,15 @@
 #define DEFAULT_OGL_ES_PVR "libGLES_CM.so"
 #define DEFAULT_OGL_ES "libGLESv1_CM.so"
 
+#elif SDL_VIDEO_DRIVER_KMSDRM
+/* Non-desktop Linux must NOT depend on X11/GLX for FULL OpenGL,
+   it must use GLVND instead so it's libOpenGL.so instead of libGL.so. */
+#define DEFAULT_OGL "libOpenGL.so"
+#define DEFAULT_EGL "libEGL.so"
+#define DEFAULT_OGL_ES2 "libGLESv2.so"
+#define DEFAULT_OGL_ES_PVR "libGLES_CM.so"
+#define DEFAULT_OGL_ES "libGLESv1_CM.so"
+
 #else
 /* Desktop Linux */
 #define DEFAULT_OGL "libGL.so.1"
