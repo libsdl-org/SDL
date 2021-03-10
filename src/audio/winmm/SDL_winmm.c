@@ -75,12 +75,19 @@ static void DetectWave##typ##Devs(void) { \
     const UINT iscapture = iscap ? 1 : 0; \
     const UINT devcount = wave##typ##GetNumDevs(); \
     capstyp##2W caps; \
+    SDL_AudioSpec spec; \
     UINT i; \
+    SDL_zero(spec); \
     for (i = 0; i < devcount; i++) { \
         if (wave##typ##GetDevCaps(i,(LP##capstyp##W)&caps,sizeof(caps))==MMSYSERR_NOERROR) { \
             char *name = WIN_LookupAudioDeviceName(caps.szPname,&caps.NameGuid); \
             if (name != NULL) { \
-                SDL_AddAudioDevice((int) iscapture, name, (void *) ((size_t) i+1)); \
+                /* Note that freq/format are not filled in, as this information \
+                 * is not provided by the caps struct! At best, we get possible \
+                 * sample formats, but not an _active_ format. \
+                 */ \
+                spec.channels = caps.wChannels; \
+                SDL_AddAudioDevice((int) iscapture, name, &spec, (void *) ((size_t) i+1)); \
                 SDL_free(name); \
             } \
         } \

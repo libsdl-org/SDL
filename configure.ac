@@ -184,8 +184,8 @@ AC_C_VOLATILE
 
 dnl See whether we want assertions for debugging/sanity checking SDL itself.
 AC_ARG_ENABLE(assertions,
-AS_HELP_STRING([--enable-assertions],
-               [Enable internal sanity checks (auto/disabled/release/enabled/paranoid) [[default=auto]]]),
+[AS_HELP_STRING([--enable-assertions],
+               [Enable internal sanity checks (auto/disabled/release/enabled/paranoid) [default=auto]])],
               , enable_assertions=auto)
 case "$enable_assertions" in
     auto) # Use optimization settings to determine assertion level
@@ -209,8 +209,8 @@ esac
 
 dnl See whether we can use gcc style dependency tracking
 AC_ARG_ENABLE(dependency-tracking,
-AS_HELP_STRING([--enable-dependency-tracking],
-               [Use gcc -MMD -MT dependency tracking [[default=yes]]]),
+[AS_HELP_STRING([--enable-dependency-tracking],
+               [Use gcc -MMD -MT dependency tracking [default=yes]])],
               , enable_dependency_tracking=yes)
 if test x$enable_dependency_tracking = xyes; then
     have_gcc_mmd_mt=no
@@ -304,7 +304,7 @@ AC_MSG_RESULT($have_high_entropy_va)
 
 dnl See whether we are allowed to use the system C library
 AC_ARG_ENABLE(libc,
-AS_HELP_STRING([--enable-libc], [Use the system C library [[default=yes]]]),
+[AS_HELP_STRING([--enable-libc], [Use the system C library [default=yes]])],
               , enable_libc=yes)
 if test x$enable_libc = xyes; then
     AC_DEFINE(HAVE_LIBC, 1, [ ])
@@ -363,8 +363,8 @@ dnl AC_CHECK_SIZEOF(void*)
 
 dnl See whether we can use gcc atomic operations on this architecture
 AC_ARG_ENABLE(gcc-atomics,
-AS_HELP_STRING([--enable-gcc-atomics],
-               [Use gcc builtin atomics [[default=yes]]]),
+[AS_HELP_STRING([--enable-gcc-atomics],
+               [Use gcc builtin atomics [default=yes]])],
               , enable_gcc_atomics=yes)
 if test x$enable_gcc_atomics = xyes; then
     have_gcc_atomics=no
@@ -428,7 +428,7 @@ SOURCES="$SOURCES $srcdir/src/locale/*.c"
 dnl Enable/disable various subsystems of the SDL library
 
 AC_ARG_ENABLE(atomic,
-AS_HELP_STRING([--enable-atomic], [Enable the atomic operations subsystem [[default=yes]]]),
+[AS_HELP_STRING([--enable-atomic], [Enable the atomic operations subsystem [default=yes]])],
               , enable_atomic=yes)
 if test x$enable_atomic != xyes; then
     AC_DEFINE(SDL_ATOMIC_DISABLED, 1, [ ])
@@ -436,7 +436,7 @@ else
     SUMMARY_modules="${SUMMARY_modules} atomic"
 fi
 AC_ARG_ENABLE(audio,
-AS_HELP_STRING([--enable-audio], [Enable the audio subsystem [[default=yes]]]),
+[AS_HELP_STRING([--enable-audio], [Enable the audio subsystem [default=yes]])],
               , enable_audio=yes)
 if test x$enable_audio != xyes; then
     AC_DEFINE(SDL_AUDIO_DISABLED, 1, [ ])
@@ -444,7 +444,7 @@ else
     SUMMARY_modules="${SUMMARY_modules} audio"
 fi
 AC_ARG_ENABLE(video,
-AS_HELP_STRING([--enable-video], [Enable the video subsystem [[default=yes]]]),
+[AS_HELP_STRING([--enable-video], [Enable the video subsystem [default=yes]])],
               , enable_video=yes)
 if test x$enable_video != xyes; then
     AC_DEFINE(SDL_VIDEO_DISABLED, 1, [ ])
@@ -452,7 +452,7 @@ else
     SUMMARY_modules="${SUMMARY_modules} video"
 fi
 AC_ARG_ENABLE(render,
-AS_HELP_STRING([--enable-render], [Enable the render subsystem [[default=yes]]]),
+[AS_HELP_STRING([--enable-render], [Enable the render subsystem [default=yes]])],
               , enable_render=yes)
 if test x$enable_render != xyes; then
     AC_DEFINE(SDL_RENDER_DISABLED, 1, [ ])
@@ -460,7 +460,7 @@ else
     SUMMARY_modules="${SUMMARY_modules} render"
 fi
 AC_ARG_ENABLE(events,
-AS_HELP_STRING([--enable-events], [Enable the events subsystem [[default=yes]]]),
+[AS_HELP_STRING([--enable-events], [Enable the events subsystem [default=yes]])],
               , enable_events=yes)
 if test x$enable_events != xyes; then
     AC_DEFINE(SDL_EVENTS_DISABLED, 1, [ ])
@@ -468,7 +468,7 @@ else
     SUMMARY_modules="${SUMMARY_modules} events"
 fi
 AC_ARG_ENABLE(joystick,
-AS_HELP_STRING([--enable-joystick], [Enable the joystick subsystem [[default=yes]]]),
+[AS_HELP_STRING([--enable-joystick], [Enable the joystick subsystem [default=yes]])],
               , enable_joystick=yes)
 if test x$enable_joystick != xyes; then
     AC_DEFINE(SDL_JOYSTICK_DISABLED, 1, [ ])
@@ -476,7 +476,7 @@ else
     SUMMARY_modules="${SUMMARY_modules} joystick"
 fi
 AC_ARG_ENABLE(haptic,
-AS_HELP_STRING([--enable-haptic], [Enable the haptic (force feedback) subsystem [[default=yes]]]),
+[AS_HELP_STRING([--enable-haptic], [Enable the haptic (force feedback) subsystem [default=yes]])],
               , enable_haptic=yes)
 if test x$enable_haptic != xyes; then
     AC_DEFINE(SDL_HAPTIC_DISABLED, 1, [ ])
@@ -484,7 +484,7 @@ else
     SUMMARY_modules="${SUMMARY_modules} haptic"
 fi
 AC_ARG_ENABLE(sensor,
-AS_HELP_STRING([--enable-sensor], [Enable the sensor subsystem [[default=yes]]]),
+[AS_HELP_STRING([--enable-sensor], [Enable the sensor subsystem [default=yes]])],
               , enable_sensor=yes)
 if test x$enable_sensor != xyes; then
     AC_DEFINE(SDL_SENSOR_DISABLED, 1, [ ])
@@ -492,7 +492,7 @@ else
     SUMMARY_modules="${SUMMARY_modules} sensor"
 fi
 AC_ARG_ENABLE(power,
-AS_HELP_STRING([--enable-power], [Enable the power subsystem [[default=yes]]]),
+[AS_HELP_STRING([--enable-power], [Enable the power subsystem [default=yes]])],
               , enable_power=yes)
 if test x$enable_power != xyes; then
     AC_DEFINE(SDL_POWER_DISABLED, 1, [ ])
@@ -500,7 +500,7 @@ else
     SUMMARY_modules="${SUMMARY_modules} power"
 fi
 AC_ARG_ENABLE(filesystem,
-AS_HELP_STRING([--enable-filesystem], [Enable the filesystem subsystem [[default=yes]]]),
+[AS_HELP_STRING([--enable-filesystem], [Enable the filesystem subsystem [default=yes]])],
               , enable_filesystem=yes)
 if test x$enable_filesystem != xyes; then
     AC_DEFINE(SDL_FILESYSTEM_DISABLED, 1, [ ])
@@ -508,7 +508,7 @@ else
     SUMMARY_modules="${SUMMARY_modules} filesystem"
 fi
 AC_ARG_ENABLE(threads,
-AS_HELP_STRING([--enable-threads], [Enable the threading subsystem [[default=yes]]]),
+[AS_HELP_STRING([--enable-threads], [Enable the threading subsystem [default=yes]])],
               , enable_threads=yes)
 if test x$enable_threads != xyes; then
     AC_DEFINE(SDL_THREADS_DISABLED, 1, [ ])
@@ -516,7 +516,7 @@ else
     SUMMARY_modules="${SUMMARY_modules} threads"
 fi
 AC_ARG_ENABLE(timers,
-AS_HELP_STRING([--enable-timers], [Enable the timer subsystem [[default=yes]]]),
+[AS_HELP_STRING([--enable-timers], [Enable the timer subsystem [default=yes]])],
               , enable_timers=yes)
 if test x$enable_timers != xyes; then
     AC_DEFINE(SDL_TIMERS_DISABLED, 1, [ ])
@@ -524,7 +524,7 @@ else
     SUMMARY_modules="${SUMMARY_modules} timers"
 fi
 AC_ARG_ENABLE(file,
-AS_HELP_STRING([--enable-file], [Enable the file subsystem [[default=yes]]]),
+[AS_HELP_STRING([--enable-file], [Enable the file subsystem [default=yes]])],
               , enable_file=yes)
 if test x$enable_file != xyes; then
     AC_DEFINE(SDL_FILE_DISABLED, 1, [ ])
@@ -532,7 +532,7 @@ else
     SUMMARY_modules="${SUMMARY_modules} file"
 fi
 AC_ARG_ENABLE(loadso,
-AS_HELP_STRING([--enable-loadso], [Enable the shared object loading subsystem [[default=yes]]]),
+[AS_HELP_STRING([--enable-loadso], [Enable the shared object loading subsystem [default=yes]])],
               , enable_loadso=yes)
 if test x$enable_loadso != xyes; then
     AC_DEFINE(SDL_LOADSO_DISABLED, 1, [ ])
@@ -540,7 +540,7 @@ else
     SUMMARY_modules="${SUMMARY_modules} loadso"
 fi
 AC_ARG_ENABLE(cpuinfo,
-AS_HELP_STRING([--enable-cpuinfo], [Enable the cpuinfo subsystem [[default=yes]]]),
+[AS_HELP_STRING([--enable-cpuinfo], [Enable the cpuinfo subsystem [default=yes]])],
               , enable_cpuinfo=yes)
 if test x$enable_cpuinfo != xyes; then
     AC_DEFINE(SDL_CPUINFO_DISABLED, 1, [ ])
@@ -548,7 +548,7 @@ else
     SUMMARY_modules="${SUMMARY_modules} cpuinfo"
 fi
 AC_ARG_ENABLE(assembly,
-AS_HELP_STRING([--enable-assembly], [Enable assembly routines [[default=yes]]]),
+[AS_HELP_STRING([--enable-assembly], [Enable assembly routines [default=yes]])],
               , enable_assembly=yes)
 if test x$enable_assembly = xyes; then
     SUMMARY_modules="${SUMMARY_modules} assembly"
@@ -571,7 +571,7 @@ if test x$enable_assembly = xyes; then
             ;;
     esac
     AC_ARG_ENABLE(ssemath,
-AS_HELP_STRING([--enable-ssemath], [Allow GCC to use SSE floating point math [[default=maybe]]]),
+[AS_HELP_STRING([--enable-ssemath], [Allow GCC to use SSE floating point math [default=maybe]])],
                   , enable_ssemath=$default_ssemath)
     if test x$enable_ssemath = xno; then
         if test x$have_gcc_sse = xyes -o x$have_gcc_sse2 = xyes -o x$have_gcc_sse3 = xyes; then
@@ -581,7 +581,7 @@ AS_HELP_STRING([--enable-ssemath], [Allow GCC to use SSE floating point math [[d
 
     dnl Check for various instruction support
     AC_ARG_ENABLE(mmx,
-AS_HELP_STRING([--enable-mmx], [use MMX assembly routines [[default=yes]]]),
+[AS_HELP_STRING([--enable-mmx], [use MMX assembly routines [default=yes]])],
                   , enable_mmx=yes)
     if test x$enable_mmx = xyes; then
         save_CFLAGS="$CFLAGS"
@@ -618,7 +618,7 @@ AS_HELP_STRING([--enable-mmx], [use MMX assembly routines [[default=yes]]]),
     fi
 
     AC_ARG_ENABLE(3dnow,
-AS_HELP_STRING([--enable-3dnow], [use 3DNow! assembly routines [[default=yes]]]),
+[AS_HELP_STRING([--enable-3dnow], [use 3DNow! assembly routines [default=yes]])],
                   , enable_3dnow=yes)
     if test x$enable_3dnow = xyes; then
         save_CFLAGS="$CFLAGS"
@@ -648,7 +648,7 @@ AS_HELP_STRING([--enable-3dnow], [use 3DNow! assembly routines [[default=yes]]])
     fi
 
     AC_ARG_ENABLE(sse,
-AS_HELP_STRING([--enable-sse], [use SSE assembly routines [[default=yes]]]),
+[AS_HELP_STRING([--enable-sse], [use SSE assembly routines [default=yes]])],
                   , enable_sse=yes)
     if test x$enable_sse = xyes; then
         save_CFLAGS="$CFLAGS"
@@ -685,7 +685,7 @@ AS_HELP_STRING([--enable-sse], [use SSE assembly routines [[default=yes]]]),
     fi
 
     AC_ARG_ENABLE(sse2,
-AS_HELP_STRING([--enable-sse2], [use SSE2 assembly routines [[default=maybe]]]),
+[AS_HELP_STRING([--enable-sse2], [use SSE2 assembly routines [default=maybe]])],
                   , enable_sse2=$default_ssemath)
     if test x$enable_sse2 = xyes; then
         save_CFLAGS="$CFLAGS"
@@ -722,7 +722,7 @@ AS_HELP_STRING([--enable-sse2], [use SSE2 assembly routines [[default=maybe]]]),
     fi
 
     AC_ARG_ENABLE(sse3,
-AS_HELP_STRING([--enable-sse3], [use SSE3 assembly routines [[default=maybe]]]),
+[AS_HELP_STRING([--enable-sse3], [use SSE3 assembly routines [default=maybe]])],
                   , enable_sse3=$default_ssemath)
     if test x$enable_sse3 = xyes; then
         save_CFLAGS="$CFLAGS"
@@ -766,7 +766,7 @@ AS_HELP_STRING([--enable-sse3], [use SSE3 assembly routines [[default=maybe]]]),
     fi
 
     AC_ARG_ENABLE(altivec,
-AS_HELP_STRING([--enable-altivec], [use Altivec assembly routines [[default=yes]]]),
+[AS_HELP_STRING([--enable-altivec], [use Altivec assembly routines [default=yes]])],
                   , enable_altivec=yes)
     if test x$enable_altivec = xyes; then
         save_CFLAGS="$CFLAGS"
@@ -847,7 +847,7 @@ dnl See if the OSS audio interface is supported
 CheckOSS()
 {
     AC_ARG_ENABLE(oss,
-AS_HELP_STRING([--enable-oss], [support the OSS audio API [[default=maybe]]]),
+[AS_HELP_STRING([--enable-oss], [support the OSS audio API [default=maybe]])],
                   , enable_oss=maybe)
 
     # OpenBSD "has" OSS, but it's not really for app use. They want you to
@@ -903,7 +903,7 @@ dnl See if the ALSA audio interface is supported
 CheckALSA()
 {
     AC_ARG_ENABLE(alsa,
-AS_HELP_STRING([--enable-alsa], [support the ALSA audio API [[default=yes]]]),
+[AS_HELP_STRING([--enable-alsa], [support the ALSA audio API [default=yes]])],
                   , enable_alsa=yes)
     if test x$enable_audio = xyes -a x$enable_alsa = xyes; then
         AM_PATH_ALSA(1.0.11, have_alsa=yes, have_alsa=no)
@@ -913,7 +913,7 @@ AS_HELP_STRING([--enable-alsa], [support the ALSA audio API [[default=yes]]]),
         LIBS="$alsa_save_LIBS"
         if test x$have_alsa = xyes; then
             AC_ARG_ENABLE(alsa-shared,
-AS_HELP_STRING([--enable-alsa-shared], [dynamically load ALSA audio support [[default=yes]]]),
+[AS_HELP_STRING([--enable-alsa-shared], [dynamically load ALSA audio support [default=yes]])],
                           , enable_alsa_shared=yes)
             alsa_lib=[`find_lib "libasound.so.*" "$ALSA_LIBS" | sed 's/.*\/\(.*\)/\1/; q'`]
 
@@ -942,14 +942,14 @@ dnl Find JACK Audio
 CheckJACK()
 {
     AC_ARG_ENABLE(jack,
-AS_HELP_STRING([--enable-jack], [use JACK audio [[default=yes]]]),
+[AS_HELP_STRING([--enable-jack], [use JACK audio [default=yes]])],
                   , enable_jack=yes)
     if test x$enable_audio = xyes -a x$enable_jack = xyes; then
         PKG_CHECK_MODULES([JACK], [jack >= 0.125], audio_jack=yes, audio_jack=no)
 
         if test x$audio_jack = xyes; then
             AC_ARG_ENABLE(jack-shared,
-AS_HELP_STRING([--enable-jack-shared], [dynamically load JACK audio support [[default=yes]]]),
+[AS_HELP_STRING([--enable-jack-shared], [dynamically load JACK audio support [default=yes]])],
                           , enable_jack_shared=yes)
             jack_lib=[`find_lib "libjack.so.*" "$JACK_LIBS" | sed 's/.*\/\(.*\)/\1/; q'`]
 
@@ -986,13 +986,13 @@ dnl Find the ESD includes and libraries
 CheckESD()
 {
     AC_ARG_ENABLE(esd,
-AS_HELP_STRING([--enable-esd], [support the Enlightened Sound Daemon [[default=yes]]]),
+[AS_HELP_STRING([--enable-esd], [support the Enlightened Sound Daemon [default=yes]])],
                   , enable_esd=yes)
     if test x$enable_audio = xyes -a x$enable_esd = xyes; then
         AM_PATH_ESD(0.2.8, have_esd=yes, have_esd=no)
         if test x$have_esd = xyes; then
             AC_ARG_ENABLE(esd-shared,
-AS_HELP_STRING([--enable-esd-shared], [dynamically load ESD audio support [[default=yes]]]),
+[AS_HELP_STRING([--enable-esd-shared], [dynamically load ESD audio support [default=yes]])],
                           , enable_esd_shared=yes)
             esd_lib=[`find_lib "libesd.so.*" "$ESD_LIBS" | sed 's/.*\/\(.*\)/\1/; q'`]
 
@@ -1017,18 +1017,54 @@ AS_HELP_STRING([--enable-esd-shared], [dynamically load ESD audio support [[defa
     fi
 }
 
+dnl Find Pipewire
+CheckPipewire()
+{
+    AC_ARG_ENABLE(pipewire,
+[AS_HELP_STRING([--enable-pipewire], [use Pipewire audio [default=yes]])],
+                  , enable_pipewire=yes)
+    if test x$enable_audio = xyes -a x$enable_pipewire = xyes; then
+        PKG_CHECK_MODULES([PIPEWIRE], [libpipewire-0.3 >= 0.3.20], audio_pipewire=yes, audio_pipewire=no)
+
+        if test x$audio_pipewire = xyes; then
+            AC_ARG_ENABLE(pipewire-shared,
+[AS_HELP_STRING([--enable-pipewire-shared], [dynamically load Pipewire support [default=yes]])],
+                          , enable_pipewire_shared=yes)
+            pipewire_lib=[`find_lib "libpipewire-0.3.so.*" "$PIPEWIRE_LIBS" | sed 's/.*\/\(.*\)/\1/; q'`]
+
+            AC_DEFINE(SDL_AUDIO_DRIVER_PIPEWIRE, 1, [ ])
+            SOURCES="$SOURCES $srcdir/src/audio/pipewire/*.c"
+            EXTRA_CFLAGS="$EXTRA_CFLAGS $PIPEWIRE_CFLAGS"
+            if test x$have_loadso != xyes && \
+               test x$enable_pipewire_shared = xyes; then
+                AC_MSG_WARN([You must have SDL_LoadObject() support for dynamic Pipewire loading])
+            fi
+            if test x$have_loadso = xyes && \
+               test x$enable_pipewire_shared = xyes && test x$pipewire_lib != x; then
+                echo "-- dynamic libpipewire-0.3 -> $pipewire_lib"
+                AC_DEFINE_UNQUOTED(SDL_AUDIO_DRIVER_PIPEWIRE_DYNAMIC, "$pipewire_lib", [ ])
+                SUMMARY_audio="${SUMMARY_audio} pipewire(dynamic)"
+            else
+                EXTRA_LDFLAGS="$EXTRA_LDFLAGS $PIPEWIRE_LIBS"
+                SUMMARY_audio="${SUMMARY_audio} pipewire"
+            fi
+            have_audio=yes
+        fi
+    fi
+}
+
 dnl Find PulseAudio
 CheckPulseAudio()
 {
     AC_ARG_ENABLE(pulseaudio,
-AS_HELP_STRING([--enable-pulseaudio], [use PulseAudio [[default=yes]]]),
+[AS_HELP_STRING([--enable-pulseaudio], [use PulseAudio [default=yes]])],
                   , enable_pulseaudio=yes)
     if test x$enable_audio = xyes -a x$enable_pulseaudio = xyes; then
         PKG_CHECK_MODULES([PULSEAUDIO], [libpulse-simple >= 0.9], audio_pulseaudio=yes, audio_pulseaudio=no)
 
         if test x$audio_pulseaudio = xyes; then
             AC_ARG_ENABLE(pulseaudio-shared,
-AS_HELP_STRING([--enable-pulseaudio-shared], [dynamically load PulseAudio support [[default=yes]]]),
+[AS_HELP_STRING([--enable-pulseaudio-shared], [dynamically load PulseAudio support [default=yes]])],
                           , enable_pulseaudio_shared=yes)
             pulseaudio_lib=[`find_lib "libpulse-simple.so.*" "$PULSEAUDIO_LIBS" | sed 's/.*\/\(.*\)/\1/; q'`]
 
@@ -1064,7 +1100,7 @@ AS_HELP_STRING([--enable-pulseaudio-shared], [dynamically load PulseAudio suppor
 CheckARTSC()
 {
     AC_ARG_ENABLE(arts,
-AS_HELP_STRING([--enable-arts], [support the Analog Real Time Synthesizer [[default=yes]]]),
+[AS_HELP_STRING([--enable-arts], [support the Analog Real Time Synthesizer [default=yes]])],
                   , enable_arts=yes)
     if test x$enable_audio = xyes -a x$enable_arts = xyes; then
         AC_PATH_PROG(ARTSCONFIG, artsc-config)
@@ -1088,7 +1124,7 @@ AS_HELP_STRING([--enable-arts], [support the Analog Real Time Synthesizer [[defa
             AC_MSG_RESULT($audio_arts)
             if test x$audio_arts = xyes; then
                 AC_ARG_ENABLE(arts-shared,
-AS_HELP_STRING([--enable-arts-shared], [dynamically load aRts audio support [[default=yes]]]),
+[AS_HELP_STRING([--enable-arts-shared], [dynamically load aRts audio support [default=yes]])],
                               , enable_arts_shared=yes)
                 arts_lib=[`find_lib "libartsc.so.*" "$ARTS_LIBS" | sed 's/.*\/\(.*\)/\1/; q'`]
 
@@ -1118,7 +1154,7 @@ dnl See if the NAS audio interface is supported
 CheckNAS()
 {
     AC_ARG_ENABLE(nas,
-AS_HELP_STRING([--enable-nas], [support the NAS audio API [[default=yes]]]),
+[AS_HELP_STRING([--enable-nas], [support the NAS audio API [default=yes]])],
                   , enable_nas=yes)
     if test x$enable_audio = xyes -a x$enable_nas = xyes; then
         AC_CHECK_HEADER(audio/audiolib.h, have_nas_hdr=yes)
@@ -1142,7 +1178,7 @@ AS_HELP_STRING([--enable-nas], [support the NAS audio API [[default=yes]]]),
 
         if test x$have_nas = xyes; then
             AC_ARG_ENABLE(nas-shared,
-AS_HELP_STRING([--enable-nas-shared], [dynamically load NAS audio support [[default=yes]]]),
+[AS_HELP_STRING([--enable-nas-shared], [dynamically load NAS audio support [default=yes]])],
                           , enable_nas_shared=yes)
             nas_lib=[`find_lib "libaudio.so.*" "$NAS_LIBS" | sed 's/.*\/\(.*\)/\1/; q'`]
 
@@ -1172,7 +1208,7 @@ dnl See if the sndio audio interface is supported
 CheckSNDIO()
 {
     AC_ARG_ENABLE(sndio,
-AS_HELP_STRING([--enable-sndio], [support the sndio audio API [[default=yes]]]),
+[AS_HELP_STRING([--enable-sndio], [support the sndio audio API [default=yes]])],
                   , enable_sndio=yes)
     if test x$enable_audio = xyes -a x$enable_sndio = xyes; then
         AC_CHECK_HEADER(sndio.h, have_sndio_hdr=yes)
@@ -1190,7 +1226,7 @@ AS_HELP_STRING([--enable-sndio], [support the sndio audio API [[default=yes]]]),
 
         if test x$have_sndio = xyes; then
             AC_ARG_ENABLE(sndio-shared,
-AS_HELP_STRING([--enable-sndio-shared], [dynamically load sndio audio support [[default=yes]]]),
+[AS_HELP_STRING([--enable-sndio-shared], [dynamically load sndio audio support [default=yes]])],
                           , enable_sndio_shared=yes)
             sndio_lib=[`find_lib "libsndio.so.*" "$SNDIO_LIBS" | sed 's/.*\/\(.*\)/\1/; q'`]
 
@@ -1220,7 +1256,7 @@ dnl Find FusionSound
 CheckFusionSound()
 {
     AC_ARG_ENABLE(fusionsound,
-AS_HELP_STRING([--enable-fusionsound], [use FusionSound audio driver [[default=no]]]),
+[AS_HELP_STRING([--enable-fusionsound], [use FusionSound audio driver [default=no]])],
                   , enable_fusionsound=no)
     if test x$enable_audio = xyes -a x$enable_fusionsound = xyes; then
         PKG_CHECK_MODULES([FUSIONSOUND], [fusionsound >= 1.1.1], fusionsound=yes, fusionsound=no)
@@ -1231,7 +1267,7 @@ AS_HELP_STRING([--enable-fusionsound], [use FusionSound audio driver [[default=n
             EXTRA_CFLAGS="$EXTRA_CFLAGS $FUSIONSOUND_CFLAGS"
 
             AC_ARG_ENABLE(fusionsound-shared,
-AS_HELP_STRING([--enable-fusionsound-shared], [dynamically load fusionsound audio support [[default=yes]]]),
+[AS_HELP_STRING([--enable-fusionsound-shared], [dynamically load fusionsound audio support [default=yes]])],
                           , enable_fusionsound_shared=yes)
             fusionsound_shared=no
             AC_MSG_CHECKING(for FusionSound dynamic loading support)
@@ -1259,7 +1295,7 @@ dnl rcg07142001 See if the user wants the disk writer audio driver...
 CheckDiskAudio()
 {
     AC_ARG_ENABLE(diskaudio,
-AS_HELP_STRING([--enable-diskaudio], [support the disk writer audio driver [[default=yes]]]),
+[AS_HELP_STRING([--enable-diskaudio], [support the disk writer audio driver [default=yes]])],
                   , enable_diskaudio=yes)
     if test x$enable_audio = xyes -a x$enable_diskaudio = xyes; then
         AC_DEFINE(SDL_AUDIO_DRIVER_DISK, 1, [ ])
@@ -1272,7 +1308,7 @@ dnl rcg03142006 See if the user wants the dummy audio driver...
 CheckDummyAudio()
 {
     AC_ARG_ENABLE(dummyaudio,
-AS_HELP_STRING([--enable-dummyaudio], [support the dummy audio driver [[default=yes]]]),
+[AS_HELP_STRING([--enable-dummyaudio], [support the dummy audio driver [default=yes]])],
                   , enable_dummyaudio=yes)
     if test x$enable_audio = xyes -a x$enable_dummyaudio = xyes; then
         AC_DEFINE(SDL_AUDIO_DRIVER_DUMMY, 1, [ ])
@@ -1285,7 +1321,7 @@ dnl See if libsamplerate is available
 CheckLibSampleRate()
 {
     AC_ARG_ENABLE(libsamplerate,
-AS_HELP_STRING([--enable-libsamplerate], [use libsamplerate for audio rate conversion [[default=yes]]]),
+[AS_HELP_STRING([--enable-libsamplerate], [use libsamplerate for audio rate conversion [default=yes]])],
                   , enable_libsamplerate=yes)
     if test x$enable_libsamplerate = xyes; then
         AC_CHECK_HEADER(samplerate.h,
@@ -1295,7 +1331,7 @@ AS_HELP_STRING([--enable-libsamplerate], [use libsamplerate for audio rate conve
             AC_DEFINE(HAVE_LIBSAMPLERATE_H, 1, [ ])
 
             AC_ARG_ENABLE(libsamplerate-shared,
-AS_HELP_STRING([--enable-libsamplerate-shared], [dynamically load libsamplerate [[default=yes]]]),
+[AS_HELP_STRING([--enable-libsamplerate-shared], [dynamically load libsamplerate [default=yes]])],
                           , enable_libsamplerate_shared=yes)
 
             samplerate_lib=[`find_lib "libsamplerate.so.*" "" | sed 's/.*\/\(.*\)/\1/; q'`]
@@ -1319,7 +1355,7 @@ dnl Check for ARM instruction support using gas syntax
 CheckARM()
 {
     AC_ARG_ENABLE(arm-simd,
-AS_HELP_STRING([--enable-arm-simd], [use SIMD assembly blitters on ARM [[default=no]]]),
+[AS_HELP_STRING([--enable-arm-simd], [use SIMD assembly blitters on ARM [default=no]])],
                   enable_arm_simd=$enableval, enable_arm_simd=no)
     if test x$enable_video = xyes -a x$enable_assembly = xyes -a x$enable_arm_simd = xyes; then
         save_CFLAGS="$CFLAGS"
@@ -1355,7 +1391,7 @@ dnl Check for ARM NEON instruction support using gas syntax
 CheckNEON()
 {
     AC_ARG_ENABLE(arm-neon,
-AS_HELP_STRING([--enable-arm-neon], [use NEON assembly blitters on ARM [[default=no]]]),
+[AS_HELP_STRING([--enable-arm-neon], [use NEON assembly blitters on ARM [default=no]])],
                   enable_arm_neon=$enableval, enable_arm_neon=no)
     if test x$enable_video = xyes -a x$enable_assembly = xyes -a x$enable_arm_neon = xyes; then
         save_CFLAGS="$CFLAGS"
@@ -1523,11 +1559,11 @@ dnl Check for Wayland
 CheckWayland()
 {
     AC_ARG_ENABLE(video-wayland,
-AS_HELP_STRING([--enable-video-wayland], [use Wayland video driver [[default=yes]]]),
+[AS_HELP_STRING([--enable-video-wayland], [use Wayland video driver [default=yes]])],
                   ,enable_video_wayland=yes)
 
     AC_ARG_ENABLE(video-wayland-qt-touch,
-AS_HELP_STRING([--enable-video-wayland-qt-touch], [QtWayland server support for Wayland video driver [[default=yes]]]),
+[AS_HELP_STRING([--enable-video-wayland-qt-touch], [QtWayland server support for Wayland video driver [default=yes]])],
                   ,enable_video_wayland_qt_touch=yes)
 
     if test x$enable_video = xyes -a x$enable_video_wayland = xyes; then
@@ -1557,7 +1593,7 @@ AS_HELP_STRING([--enable-video-wayland-qt-touch], [QtWayland server support for 
             SOURCES="$SOURCES $WAYLAND_SOURCES"
             EXTRA_CFLAGS="$EXTRA_CFLAGS $WAYLAND_CFLAGS -I\$(gen)"
             AC_ARG_ENABLE(wayland-shared,
-AS_HELP_STRING([--enable-wayland-shared], [dynamically load Wayland support [[default=maybe]]]),
+[AS_HELP_STRING([--enable-wayland-shared], [dynamically load Wayland support [default=maybe]])],
                           , enable_wayland_shared=maybe)
 
             dnl FIXME: Do BSD and OS X need special cases?
@@ -1636,7 +1672,7 @@ CheckNativeClient()
 CheckRPI()
 {
     AC_ARG_ENABLE(video-rpi,
-AS_HELP_STRING([--enable-video-rpi], [use Raspberry Pi video driver [[default=yes]]]),
+[AS_HELP_STRING([--enable-video-rpi], [use Raspberry Pi video driver [default=yes]])],
                   , enable_video_rpi=yes)
     if test x$enable_video = xyes -a x$enable_video_rpi = xyes; then
         PKG_CHECK_MODULES([RPI], [bcm_host brcmegl], video_rpi=yes, video_rpi=no)
@@ -1688,7 +1724,7 @@ dnl Find the X11 include and library directories
 CheckX11()
 {
     AC_ARG_ENABLE(video-x11,
-AS_HELP_STRING([--enable-video-x11], [use X11 video driver [[default=yes]]]),
+[AS_HELP_STRING([--enable-video-x11], [use X11 video driver [default=yes]])],
                   , enable_video_x11=yes)
     if test x$enable_video = xyes -a x$enable_video_x11 = xyes; then
         case "$host" in
@@ -1707,7 +1743,7 @@ AS_HELP_STRING([--enable-video-x11], [use X11 video driver [[default=yes]]]),
         AC_PATH_XTRA
         if test x$have_x = xyes; then
             AC_ARG_ENABLE(x11-shared,
-AS_HELP_STRING([--enable-x11-shared], [dynamically load X11 support [[default=maybe]]]),
+[AS_HELP_STRING([--enable-x11-shared], [dynamically load X11 support [default=maybe]])],
                           , enable_x11_shared=maybe)
 
             case "$host" in
@@ -1830,7 +1866,7 @@ XFreeEventData(display, cookie);
             AC_CHECK_LIB(X11, XkbKeycodeToKeysym, AC_DEFINE(SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM, 1, [Have XkbKeycodeToKeysym]))
 
             AC_ARG_ENABLE(video-x11-xcursor,
-AS_HELP_STRING([--enable-video-x11-xcursor], [enable X11 Xcursor support [[default=yes]]]),
+[AS_HELP_STRING([--enable-video-x11-xcursor], [enable X11 Xcursor support [default=yes]])],
                             , enable_video_x11_xcursor=yes)
             if test x$enable_video_x11_xcursor = xyes; then
                 definitely_enable_video_x11_xcursor=no
@@ -1858,7 +1894,7 @@ AS_HELP_STRING([--enable-video-x11-xcursor], [enable X11 Xcursor support [[defau
                 SUMMARY_video_x11="${SUMMARY_video_x11} xcursor"
             fi
             AC_ARG_ENABLE(video-x11-xdbe,
-AS_HELP_STRING([--enable-video-x11-xdbe], [enable X11 Xdbe support [[default=yes]]]),
+[AS_HELP_STRING([--enable-video-x11-xdbe], [enable X11 Xdbe support [default=yes]])],
                             , enable_video_x11_xdbe=yes)
             if test x$enable_video_x11_xdbe = xyes; then
                 AC_CHECK_HEADER(X11/extensions/Xdbe.h,
@@ -1872,7 +1908,7 @@ AS_HELP_STRING([--enable-video-x11-xdbe], [enable X11 Xdbe support [[default=yes
                 fi
             fi
             AC_ARG_ENABLE(video-x11-xinerama,
-AS_HELP_STRING([--enable-video-x11-xinerama], [enable X11 Xinerama support [[default=yes]]]),
+[AS_HELP_STRING([--enable-video-x11-xinerama], [enable X11 Xinerama support [default=yes]])],
                             , enable_video_x11_xinerama=yes)
             if test x$enable_video_x11_xinerama = xyes; then
                 definitely_enable_video_x11_xinerama=no
@@ -1900,7 +1936,7 @@ AS_HELP_STRING([--enable-video-x11-xinerama], [enable X11 Xinerama support [[def
                 SUMMARY_video_x11="${SUMMARY_video_x11} xinerama"
             fi
             AC_ARG_ENABLE(video-x11-xinput,
-AS_HELP_STRING([--enable-video-x11-xinput], [enable X11 XInput extension for manymouse, tablets, etc [[default=yes]]]),
+[AS_HELP_STRING([--enable-video-x11-xinput], [enable X11 XInput extension for manymouse, tablets, etc [default=yes]])],
                             , enable_video_x11_xinput=yes)
             if test x$enable_video_x11_xinput = xyes; then
                 definitely_enable_video_x11_xinput=no
@@ -1943,7 +1979,7 @@ XITouchClassInfo *t;
                 AC_MSG_RESULT($have_xinput2_multitouch)
             fi
             AC_ARG_ENABLE(video-x11-xrandr,
-AS_HELP_STRING([--enable-video-x11-xrandr], [enable X11 Xrandr extension for fullscreen [[default=yes]]]),
+[AS_HELP_STRING([--enable-video-x11-xrandr], [enable X11 Xrandr extension for fullscreen [default=yes]])],
                             , enable_video_x11_xrandr=yes)
             if test x$enable_video_x11_xrandr = xyes; then
                 dnl XRRScreenResources is only present in Xrandr >= 1.2, we use that as a test.
@@ -1976,7 +2012,7 @@ AS_HELP_STRING([--enable-video-x11-xrandr], [enable X11 Xrandr extension for ful
                 SUMMARY_video_x11="${SUMMARY_video_x11} xrandr"
             fi
             AC_ARG_ENABLE(video-x11-scrnsaver,
-AS_HELP_STRING([--enable-video-x11-scrnsaver], [enable X11 screensaver extension [[default=yes]]]),
+[AS_HELP_STRING([--enable-video-x11-scrnsaver], [enable X11 screensaver extension [default=yes]])],
                             , enable_video_x11_scrnsaver=yes)
             if test x$enable_video_x11_scrnsaver = xyes; then
                 AC_CHECK_HEADER(X11/extensions/scrnsaver.h,
@@ -2003,7 +2039,7 @@ AS_HELP_STRING([--enable-video-x11-scrnsaver], [enable X11 screensaver extension
                 SUMMARY_video_x11="${SUMMARY_video_x11} xscrnsaver"
             fi
             AC_ARG_ENABLE(video-x11-xshape,
-AS_HELP_STRING([--enable-video-x11-xshape], [enable X11 XShape support [[default=yes]]]),
+[AS_HELP_STRING([--enable-video-x11-xshape], [enable X11 XShape support [default=yes]])],
                             , enable_video_x11_xshape=yes)
             if test x$enable_video_x11_xshape = xyes; then
                 AC_CHECK_HEADER(X11/extensions/shape.h,
@@ -2017,7 +2053,7 @@ AS_HELP_STRING([--enable-video-x11-xshape], [enable X11 XShape support [[default
                 fi
             fi
             AC_ARG_ENABLE(video-x11-vm,
-AS_HELP_STRING([--enable-video-x11-vm], [use X11 VM extension for fullscreen [[default=yes]]]),
+[AS_HELP_STRING([--enable-video-x11-vm], [use X11 VM extension for fullscreen [default=yes]])],
                             , enable_video_x11_vm=yes)
             if test x$enable_video_x11_vm = xyes; then
                 definitely_enable_video_x11_vm=no
@@ -2055,7 +2091,7 @@ dnl Set up the Vivante video driver if enabled
 CheckVivanteVideo()
 {
     AC_ARG_ENABLE(video-vivante,
-AS_HELP_STRING([--enable-video-vivante], [use Vivante EGL video driver [[default=yes]]]),
+[AS_HELP_STRING([--enable-video-vivante], [use Vivante EGL video driver [default=yes]])],
                   , enable_video_vivante=yes)
     if test x$enable_video = xyes -a x$enable_video_vivante = xyes; then
         AC_MSG_CHECKING(for Vivante VDK API)
@@ -2111,7 +2147,7 @@ dnl Set up the Cocoa video driver for Mac OS X (but not Darwin)
 CheckCOCOA()
 {
     AC_ARG_ENABLE(video-cocoa,
-AS_HELP_STRING([--enable-video-cocoa], [use Cocoa video driver [[default=yes]]]),
+[AS_HELP_STRING([--enable-video-cocoa], [use Cocoa video driver [default=yes]])],
                   , enable_video_cocoa=yes)
     if test x$enable_video = xyes -a x$enable_video_cocoa = xyes; then
         save_CFLAGS="$CFLAGS"
@@ -2139,10 +2175,10 @@ AS_HELP_STRING([--enable-video-cocoa], [use Cocoa video driver [[default=yes]]])
 CheckMETAL()
 {
     AC_ARG_ENABLE(video-metal,
-AS_HELP_STRING([--enable-video-metal], [include Metal support [[default=yes]]]),
+[AS_HELP_STRING([--enable-video-metal], [include Metal support [default=yes]])],
               , enable_video_metal=yes)
     AC_ARG_ENABLE(render-metal,
-AS_HELP_STRING([--enable-render-metal], [enable the Metal render driver [[default=yes]]]),
+[AS_HELP_STRING([--enable-render-metal], [enable the Metal render driver [default=yes]])],
                                 , enable_render_metal=yes)
     if test x$enable_video = xyes -a x$enable_video_metal = xyes; then
         save_CFLAGS="$CFLAGS"
@@ -2182,7 +2218,7 @@ dnl Find DirectFB
 CheckDirectFB()
 {
     AC_ARG_ENABLE(video-directfb,
-AS_HELP_STRING([--enable-video-directfb], [use DirectFB video driver [[default=no]]]),
+[AS_HELP_STRING([--enable-video-directfb], [use DirectFB video driver [default=no]])],
                   , enable_video_directfb=no)
     if test x$enable_video = xyes -a x$enable_video_directfb = xyes; then
         PKG_CHECK_MODULES([DIRECTFB], [directfb >= 1.0.0], video_directfb=yes, video_directfb=no)
@@ -2198,7 +2234,7 @@ AS_HELP_STRING([--enable-video-directfb], [use DirectFB video driver [[default=n
 
         if test x$video_directfb = xyes; then
             AC_ARG_ENABLE(directfb-shared,
-AS_HELP_STRING([--enable-directfb-shared], [dynamically load directfb support [[default=yes]]]),
+[AS_HELP_STRING([--enable-directfb-shared], [dynamically load directfb support [default=yes]])],
                               , enable_directfb_shared=yes)
 
             AC_DEFINE(SDL_VIDEO_DRIVER_DIRECTFB, 1, [ ])
@@ -2232,7 +2268,7 @@ dnl Find KMSDRM
 CheckKMSDRM()
 {
     AC_ARG_ENABLE(video-kmsdrm,
-AS_HELP_STRING([--enable-video-kmsdrm], [use KMSDRM video driver [[default=no]]]),
+[AS_HELP_STRING([--enable-video-kmsdrm], [use KMSDRM video driver [default=no]])],
                   , enable_video_kmsdrm=no)
 
     if  test x$enable_video = xyes && \
@@ -2250,7 +2286,7 @@ AS_HELP_STRING([--enable-video-kmsdrm], [use KMSDRM video driver [[default=no]]]
 
         if test x$video_kmsdrm = xyes; then
             AC_ARG_ENABLE(kmsdrm-shared,
-AS_HELP_STRING([--enable-kmsdrm-shared], [dynamically load kmsdrm support [[default=yes]]]),
+[AS_HELP_STRING([--enable-kmsdrm-shared], [dynamically load kmsdrm support [default=yes]])],
                 , enable_kmsdrm_shared=yes)
 
             AC_DEFINE(SDL_VIDEO_DRIVER_KMSDRM, 1, [ ])
@@ -2286,7 +2322,7 @@ dnl rcg04172001 Set up the Null video driver.
 CheckDummyVideo()
 {
     AC_ARG_ENABLE(video-dummy,
-AS_HELP_STRING([--enable-video-dummy], [use dummy video driver [[default=yes]]]),
+[AS_HELP_STRING([--enable-video-dummy], [use dummy video driver [default=yes]])],
                   , enable_video_dummy=yes)
     if test x$enable_video_dummy = xyes; then
         AC_DEFINE(SDL_VIDEO_DRIVER_DUMMY, 1, [ ])
@@ -2322,7 +2358,7 @@ CheckQNXAudio()
 
 dnl Check to see if OpenGL support is desired
 AC_ARG_ENABLE(video-opengl,
-AS_HELP_STRING([--enable-video-opengl], [include OpenGL support [[default=yes]]]),
+[AS_HELP_STRING([--enable-video-opengl], [include OpenGL support [default=yes]])],
               , enable_video_opengl=yes)
 
 dnl Find OpenGL
@@ -2350,13 +2386,13 @@ CheckOpenGLX11()
 
 dnl Check to see if OpenGL ES support is desired
 AC_ARG_ENABLE(video-opengles,
-AS_HELP_STRING([--enable-video-opengles], [include OpenGL ES support [[default=yes]]]),
+[AS_HELP_STRING([--enable-video-opengles], [include OpenGL ES support [default=yes]])],
               , enable_video_opengles=yes)
 AC_ARG_ENABLE(video-opengles1,
-AS_HELP_STRING([--enable-video-opengles1], [include OpenGL ES 1.1 support [[default=yes]]]),
+[AS_HELP_STRING([--enable-video-opengles1], [include OpenGL ES 1.1 support [default=yes]])],
               , enable_video_opengles1=yes)
 AC_ARG_ENABLE(video-opengles2,
-AS_HELP_STRING([--enable-video-opengles2], [include OpenGL ES 2.0 support [[default=yes]]]),
+[AS_HELP_STRING([--enable-video-opengles2], [include OpenGL ES 2.0 support [default=yes]])],
               , enable_video_opengles2=yes)
 
 dnl Find OpenGL ES
@@ -2563,7 +2599,7 @@ CheckEmscriptenGLES()
 
 dnl Check to see if Vulkan support is desired
 AC_ARG_ENABLE(video-vulkan,
-AS_HELP_STRING([--enable-video-vulkan], [include Vulkan support [[default=yes]]]),
+[AS_HELP_STRING([--enable-video-vulkan], [include Vulkan support [default=yes]])],
               , enable_video_vulkan=yes)
 
 dnl Find Vulkan Header
@@ -2710,7 +2746,7 @@ dnl See if the platform offers libudev for device enumeration and hotplugging.
 CheckLibUDev()
 {
     AC_ARG_ENABLE(libudev,
-AS_HELP_STRING([--enable-libudev], [enable libudev support [[default=yes]]]),
+[AS_HELP_STRING([--enable-libudev], [enable libudev support [default=yes]])],
                         , enable_libudev=yes)
     if test x$enable_libudev = xyes; then
         AC_CHECK_HEADER(libudev.h,
@@ -2732,7 +2768,7 @@ dnl See if the platform offers libdbus for various IPC techniques.
 CheckDBus()
 {
     AC_ARG_ENABLE(dbus,
-AS_HELP_STRING([--enable-dbus], [enable D-Bus support [[default=yes]]]),
+[AS_HELP_STRING([--enable-dbus], [enable D-Bus support [default=yes]])],
                         , enable_dbus=yes)
     if test x$enable_dbus = xyes; then
         PKG_CHECK_MODULES([DBUS], [dbus-1], have_dbus=yes, have_dbus=no)
@@ -2754,7 +2790,7 @@ dnl See if the platform wanna IME support.
 CheckIME()
 {
     AC_ARG_ENABLE(ime,
-AS_HELP_STRING([--enable-ime], [enable IME support [[default=yes]]]),
+[AS_HELP_STRING([--enable-ime], [enable IME support [default=yes]])],
                   , enable_ime=yes)
     if test x$enable_ime = xyes; then
         AC_DEFINE(SDL_USE_IME, 1, [ ])
@@ -2788,7 +2824,7 @@ dnl See if the platform has libibus IME support.
 CheckIBus()
 {
     AC_ARG_ENABLE(ibus,
-AS_HELP_STRING([--enable-ibus], [enable IBus support [[default=yes]]]),
+[AS_HELP_STRING([--enable-ibus], [enable IBus support [default=yes]])],
                   , enable_ibus=yes)
     if test x$enable_ibus = xyes; then
         PKG_CHECK_MODULES([IBUS], [ibus-1.0], have_ibus=yes, have_ibus=no)
@@ -2821,7 +2857,7 @@ dnl See if the platform has fcitx IME support.
 CheckFcitx()
 {
     AC_ARG_ENABLE(fcitx,
-AS_HELP_STRING([--enable-fcitx], [enable fcitx support [[default=yes]]]),
+[AS_HELP_STRING([--enable-fcitx], [enable fcitx support [default=yes]])],
                   , enable_fcitx=yes)
     if test x$enable_fcitx = xyes; then
         AC_MSG_CHECKING(for fcitx support)
@@ -2843,7 +2879,7 @@ dnl Check to see if GameController framework support is desired
 CheckJoystickMFI()
 {
     AC_ARG_ENABLE(joystick-mfi,
-AS_HELP_STRING([--enable-joystick-mfi], [include macOS MFI joystick support [[default=yes]]]),
+[AS_HELP_STRING([--enable-joystick-mfi], [include macOS MFI joystick support [default=yes]])],
               , enable_joystick_mfi=yes)
 
     if test x$enable_joystick_mfi = xyes; then
@@ -2885,11 +2921,11 @@ CheckPTHREAD()
 {
     dnl Check for pthread support
     AC_ARG_ENABLE(pthreads,
-AS_HELP_STRING([--enable-pthreads], [use POSIX threads for multi-threading [[default=yes]]]),
+[AS_HELP_STRING([--enable-pthreads], [use POSIX threads for multi-threading [default=yes]])],
                   , enable_pthreads=yes)
     dnl This is used on Linux for glibc binary compatibility (Doh!)
     AC_ARG_ENABLE(pthread-sem,
-AS_HELP_STRING([--enable-pthread-sem], [use pthread semaphores [[default=yes]]]),
+[AS_HELP_STRING([--enable-pthread-sem], [use pthread semaphores [default=yes]])],
                   , enable_pthread_sem=yes)
     case "$host" in
          *-*-android*)
@@ -3145,7 +3181,7 @@ dnl Find the DirectX includes and libraries
 CheckDIRECTX()
 {
     AC_ARG_ENABLE(directx,
-AS_HELP_STRING([--enable-directx], [use DirectX for Windows audio/video [[default=yes]]]),
+[AS_HELP_STRING([--enable-directx], [use DirectX for Windows audio/video [default=yes]])],
                                  , enable_directx=yes)
     if test x$enable_directx = xyes; then
         AC_CHECK_HEADER(d3d9.h, have_d3d=yes)
@@ -3178,7 +3214,7 @@ AS_HELP_STRING([--enable-directx], [use DirectX for Windows audio/video [[defaul
     fi
 
     AC_ARG_ENABLE(xinput,
-AS_HELP_STRING([--enable-xinput], [use Xinput for Windows [[default=yes]]]),
+[AS_HELP_STRING([--enable-xinput], [use Xinput for Windows [default=yes]])],
                                 , enable_xinput=yes)
     if test x$enable_xinput = xyes; then
         have_xinput_gamepadex=no
@@ -3220,7 +3256,7 @@ XINPUT_STATE_EX s1;
     fi
 
     AC_ARG_ENABLE(wasapi,
-AS_HELP_STRING([--enable-wasapi], [use the Windows WASAPI audio driver [[default=yes]]]),
+[AS_HELP_STRING([--enable-wasapi], [use the Windows WASAPI audio driver [default=yes]])],
                                 , enable_wasapi=yes)
 }
 
@@ -3228,7 +3264,7 @@ dnl Check for the dlfcn.h interface for dynamically loading objects
 CheckDLOPEN()
 {
     AC_ARG_ENABLE(sdl-dlopen,
-AS_HELP_STRING([--enable-sdl-dlopen], [use dlopen for shared object loading [[default=yes]]]),
+[AS_HELP_STRING([--enable-sdl-dlopen], [use dlopen for shared object loading [default=yes]])],
                   , enable_sdl_dlopen=yes)
     if test x$enable_sdl_dlopen = xyes; then
         AC_MSG_CHECKING(for dlopen)
@@ -3400,10 +3436,10 @@ dnl Check for HIDAPI joystick drivers
 CheckHIDAPI()
 {
     AC_ARG_ENABLE(hidapi,
-AS_HELP_STRING([--enable-hidapi], [use HIDAPI for low level joystick drivers [[default=yes]]]),
+[AS_HELP_STRING([--enable-hidapi], [use HIDAPI for low level joystick drivers [default=yes]])],
                   , enable_hidapi=yes)
     AC_ARG_ENABLE(hidapi-libusb,
-AS_HELP_STRING([--enable-hidapi-libusb], [use libusb for low level joystick drivers [[default=maybe]]]),
+[AS_HELP_STRING([--enable-hidapi-libusb], [use libusb for low level joystick drivers [default=maybe]])],
                   , enable_hidapi_libusb=maybe)
 
     if test x$enable_joystick = xyes -a x$enable_hidapi = xyes; then
@@ -3479,7 +3515,7 @@ dnl Check for clock_gettime()
 CheckClockGettime()
 {
     AC_ARG_ENABLE(clock_gettime,
-AS_HELP_STRING([--enable-clock_gettime], [use clock_gettime() instead of gettimeofday() on UNIX [[default=yes]]]),
+[AS_HELP_STRING([--enable-clock_gettime], [use clock_gettime() instead of gettimeofday() on UNIX [default=yes]])],
                   , enable_clock_gettime=yes)
     if test x$enable_clock_gettime = xyes; then
         AC_CHECK_LIB(rt, clock_gettime, have_clock_gettime=yes)
@@ -3509,7 +3545,7 @@ dnl Check if we want to use RPATH
 CheckRPATH()
 {
     AC_ARG_ENABLE(rpath,
-AS_HELP_STRING([--enable-rpath], [use an rpath when linking SDL [[default=yes]]]),
+[AS_HELP_STRING([--enable-rpath], [use an rpath when linking SDL [default=yes]])],
                   , enable_rpath=yes)
 }
 
@@ -3519,14 +3555,14 @@ dnl  environment, etc, but most people don't need this.
 CheckEventSignals()
 {
     AC_ARG_ENABLE(backgrounding-signal,
-AS_HELP_STRING([--enable-backgrounding-signal], [number to use for magic backgrounding signal or 'no' [[default=no]]]),
+[AS_HELP_STRING([--enable-backgrounding-signal], [number to use for magic backgrounding signal or 'no' [default=no]])],
                   , enable_backgrounding_signal=no)
     if test x$enable_backgrounding_signal != xno; then
         EXTRA_CFLAGS="$EXTRA_CFLAGS -DSDL_BACKGROUNDING_SIGNAL=$enable_backgrounding_signal"
     fi
 
     AC_ARG_ENABLE(foregrounding-signal,
-AS_HELP_STRING([--enable-foregrounding-signal], [number to use for magic foregrounding signal or 'no' [[default=no]]]),
+[AS_HELP_STRING([--enable-foregrounding-signal], [number to use for magic foregrounding signal or 'no' [default=no]])],
                   , enable_foregrounding_signal=no)
     if test x$enable_foregrounding_signal != xno; then
         EXTRA_CFLAGS="$EXTRA_CFLAGS -DSDL_FOREGROUNDING_SIGNAL=$enable_foregrounding_signal"
@@ -3537,7 +3573,7 @@ dnl Set up the Virtual joystick driver.
 CheckVirtualJoystick()
 {
     AC_ARG_ENABLE(joystick-virtual,
-AS_HELP_STRING([--enable-joystick-virtual], [enable virtual joystick APIs [[default=yes]]]),
+[AS_HELP_STRING([--enable-joystick-virtual], [enable virtual joystick APIs [default=yes]])],
                   , enable_joystick_virtual=yes)
     if test x$enable_joystick = xyes -a x$enable_joystick_virtual = xyes; then
         AC_DEFINE(SDL_JOYSTICK_VIRTUAL, 1, [ ])
@@ -3604,6 +3640,7 @@ case "$host" in
         CheckNEON
         CheckOSS
         CheckALSA
+        CheckPipewire
         CheckPulseAudio
         CheckJACK
         CheckARTSC
@@ -3833,7 +3870,7 @@ case "$host" in
             SOURCES="$SOURCES $srcdir/src/video/windows/*.c"
             have_video=yes
             AC_ARG_ENABLE(render-d3d,
-AS_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[default=yes]]]),
+[AS_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [default=yes]])],
                                 , enable_render_d3d=yes)
             if test x$enable_render_d3d = xyes -a x$have_d3d = xyes; then
                 AC_DEFINE(SDL_VIDEO_RENDER_D3D, 1, [ ])
@@ -4315,7 +4352,7 @@ CheckVirtualJoystick
 # Check whether to install sdl2-config
 AC_MSG_CHECKING(whether to install sdl2-config)
 AC_ARG_ENABLE([sdl2-config],
-    AS_HELP_STRING([--enable-sdl2-config], [Install sdl2-config [default=yes]]),
+    [AS_HELP_STRING([--enable-sdl2-config],[Install sdl2-config [default=yes]])],
     [case "${enableval}" in
         yes) enable_sdl2_config="TRUE" ;;
         no) enable_sdl2_config="FALSE" ;;

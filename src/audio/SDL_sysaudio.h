@@ -39,7 +39,7 @@ typedef struct SDL_AudioDevice SDL_AudioDevice;
 /* Audio targets should call this as devices are added to the system (such as
    a USB headset being plugged in), and should also be called for
    for every device found during DetectDevices(). */
-extern void SDL_AddAudioDevice(const int iscapture, const char *name, void *handle);
+extern void SDL_AddAudioDevice(const int iscapture, const char *name, SDL_AudioSpec *spec, void *handle);
 
 /* Audio targets should call this as devices are removed, so SDL can update
    its list of available devices. */
@@ -99,6 +99,7 @@ typedef struct SDL_AudioDeviceItem
     void *handle;
     char *name;
     char *original_name;
+    SDL_AudioSpec spec;
     int dupenum;
     struct SDL_AudioDeviceItem *next;
 } SDL_AudioDeviceItem;
@@ -182,6 +183,7 @@ typedef struct AudioBootStrap
 } AudioBootStrap;
 
 /* Not all of these are available in a given build. Use #ifdefs, etc. */
+extern AudioBootStrap PIPEWIRE_bootstrap;
 extern AudioBootStrap PULSEAUDIO_bootstrap;
 extern AudioBootStrap ALSA_bootstrap;
 extern AudioBootStrap JACK_bootstrap;
@@ -206,6 +208,7 @@ extern AudioBootStrap FUSIONSOUND_bootstrap;
 extern AudioBootStrap openslES_bootstrap;
 extern AudioBootStrap ANDROIDAUDIO_bootstrap;
 extern AudioBootStrap PSPAUDIO_bootstrap;
+extern AudioBootStrap VITAAUD_bootstrap;
 extern AudioBootStrap EMSCRIPTENAUDIO_bootstrap;
 extern AudioBootStrap OS2AUDIO_bootstrap;
 

@@ -129,7 +129,7 @@ CPU_haveCPUID(void)
 
 /* *INDENT-OFF* */
 #ifndef SDL_CPUINFO_DISABLED
-#if defined(__GNUC__) && defined(__i386__)
+#if (defined(__GNUC__) || defined(__llvm__)) && defined(__i386__)
     __asm__ (
 "        pushfl                      # Get original EFLAGS             \n"
 "        popl    %%eax                                                 \n"
@@ -147,7 +147,7 @@ CPU_haveCPUID(void)
     :
     : "%eax", "%ecx"
     );
-#elif defined(__GNUC__) && defined(__x86_64__)
+#elif (defined(__GNUC__) || defined(__llvm__)) && defined(__x86_64__)
 /* Technically, if this is being compiled under __x86_64__ then it has 
    CPUid by definition.  But it's nice to be able to prove it.  :)      */
     __asm__ (
@@ -220,7 +220,7 @@ done:
     return has_CPUID;
 }
 
-#if defined(__GNUC__) && defined(__i386__)
+#if (defined(__GNUC__) || defined(__llvm__)) && defined(__i386__)
 #define cpuid(func, a, b, c, d) \
     __asm__ __volatile__ ( \
 "        pushl %%ebx        \n" \
@@ -229,7 +229,7 @@ done:
 "        movl %%ebx, %%esi  \n" \
 "        popl %%ebx         \n" : \
             "=a" (a), "=S" (b), "=c" (c), "=d" (d) : "a" (func))
-#elif defined(__GNUC__) && defined(__x86_64__)
+#elif (defined(__GNUC__) || defined(__llvm__)) && defined(__x86_64__)
 #define cpuid(func, a, b, c, d) \
     __asm__ __volatile__ ( \
 "        pushq %%rbx        \n" \
@@ -289,7 +289,7 @@ CPU_calcCPUIDFeatures(void)
                 /* Check to make sure we can call xgetbv */
                 if (c & 0x08000000) {
                     /* Call xgetbv to see if YMM (etc) register state is saved */
-#if (defined(__GNUC__) || defined(__clang__)) && (defined(__i386__) || defined(__x86_64__))
+#if (defined(__GNUC__) || defined(__llvm__)) && (defined(__i386__) || defined(__x86_64__))
                     __asm__(".byte 0x0f, 0x01, 0xd0" : "=a" (a) : "c" (0) : "%edx");
 #elif defined(_MSC_VER) && (defined(_M_IX86) || defined(_M_X64)) && (_MSC_FULL_VER >= 160040219) /* VS2010 SP1 */
                     a = (int)_xgetbv(0);
@@ -450,6 +450,8 @@ CPU_haveNEON(void)
     return IsProcessorFeaturePresent(PF_ARM_NEON_INSTRUCTIONS_AVAILABLE) != 0;
 #elif (defined(__ARM_ARCH) && (__ARM_ARCH >= 8)) || defined(__aarch64__)
     return 1;  /* ARMv8 always has non-optional NEON support. */
+#elif __VITA__
+    return 1;
 #elif defined(__APPLE__) && defined(__ARM_ARCH) && (__ARM_ARCH >= 7)
     /* (note that sysctlbyname("hw.optional.neon") doesn't work!) */
     return 1;  /* all Apple ARMv7 chips and later have NEON. */

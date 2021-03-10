@@ -318,6 +318,7 @@ Wayland_ShowCursor(SDL_Cursor *cursor)
 {
     SDL_VideoDevice *vd = SDL_GetVideoDevice();
     SDL_VideoData *d = vd->driverdata;
+    struct SDL_WaylandInput *input = d->input;
 
     struct wl_pointer *pointer = d->pointer;
 
@@ -328,7 +329,8 @@ Wayland_ShowCursor(SDL_Cursor *cursor)
     {
         Wayland_CursorData *data = cursor->driverdata;
 
-        wl_pointer_set_cursor (pointer, 0,
+        wl_pointer_set_cursor (pointer,
+                               input->pointer_enter_serial,
                                data->surface,
                                data->hot_x,
                                data->hot_y);
@@ -338,7 +340,8 @@ Wayland_ShowCursor(SDL_Cursor *cursor)
     }
     else
     {
-        wl_pointer_set_cursor (pointer, 0,
+        wl_pointer_set_cursor (pointer,
+                               input->pointer_enter_serial,
                                NULL,
                                0,
                                0);

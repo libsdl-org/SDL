@@ -107,13 +107,19 @@ while (my $d = readdir(HEADERS)) {
                     $type =~ s/\s*\*\Z/*/g;
                     $type =~ s/\s*(\*+)\Z/ $1/;
                     #print("SPLIT: ($type, $var)\n");
+                    my $var_array_suffix = "";
+                    # parse array suffix
+                    if ($var =~ /\A.*(\[.*\])\Z/) {
+                        #print("PARSED ARRAY SUFFIX: [$1] of '$var'\n");
+                        $var_array_suffix = $1;
+                    }
                     my $name = chr(ord('a') + $i);
                     if ($i > 0) {
                         $paramstr .= ', ';
                         $argstr .= ',';
                     }
                     my $spc = ($type =~ /\*\Z/) ? '' : ' ';
-                    $paramstr .= "$type$spc$name";
+                    $paramstr .= "$type$spc$name$var_array_suffix";
                     $argstr .= "$name";
                 }
                 $i++;

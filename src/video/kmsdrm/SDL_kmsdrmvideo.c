@@ -100,6 +100,14 @@ check_modestting(int devindex)
                         }
 
                         if (conn->connection == DRM_MODE_CONNECTED && conn->count_modes) {
+                            if (SDL_GetHintBoolean(SDL_HINT_KMSDRM_REQUIRE_DRM_MASTER, SDL_TRUE)) {
+                                /* Skip this device if we can't obtain DRM master */
+                                KMSDRM_drmSetMaster(drm_fd);
+                                if (KMSDRM_drmAuthMagic(drm_fd, 0) == -EACCES) {
+                                    continue;
+                                }
+                            }
+
                             available = SDL_TRUE;
                             break;
                         }
@@ -243,6 +251,8 @@ KMSDRM_CreateDevice(int devindex)
     device->SetWindowPosition = KMSDRM_SetWindowPosition;
     device->SetWindowSize = KMSDRM_SetWindowSize;
     device->SetWindowFullscreen = KMSDRM_SetWindowFullscreen;
+    device->GetWindowGammaRamp = KMSDRM_GetWindowGammaRamp;
+    device->SetWindowGammaRamp = KMSDRM_SetWindowGammaRamp;
     device->ShowWindow = KMSDRM_ShowWindow;
     device->HideWindow = KMSDRM_HideWindow;
     device->RaiseWindow = KMSDRM_RaiseWindow;
@@ -770,12 +780,6 @@ KMSDRM_GBMInit (_THIS, SDL_DisplayData *dispdata)
 
     /* Set the FD we just opened as current DRM master. */
     KMSDRM_drmSetMaster(viddata->drm_fd);
-
-    /* Check if we are the current DRM master. */
-    if (KMSDRM_drmAuthMagic(viddata->drm_fd, 0) == -EACCES) {
-        ret = SDL_SetError("DRM device is claimed by another program as master.");
-        return ret;
-    }
 
     /* Create the GBM device. */
     viddata->gbm_dev = KMSDRM_gbm_create_device(viddata->drm_fd);
@@ -1346,6 +1350,42 @@ KMSDRM_ReconfigureWindow( _THIS, SDL_Window * window) {
        so SDL pre-scales to that size for us. */
     SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED,
                         windata->surface_w, windata->surface_h);
+}
+
+int
+KMSDRM_GetWindowGammaRamp(_THIS, SDL_Window * window, Uint16 * ramp)
+{
+    SDL_WindowData *windata = (SDL_WindowData*)window->driverdata;
+    SDL_VideoData *viddata = (SDL_VideoData*)windata->viddata;
+    SDL_VideoDisplay *disp = SDL_GetDisplayForWindow(window);
+    SDL_DisplayData* dispdata = (SDL_DisplayData*)disp->driverdata;
+    if (KMSDRM_drmModeCrtcGetGamma(viddata->drm_fd, dispdata->crtc->crtc_id, 256, &ramp[0*256], &ramp[1*256], &ramp[2*256]) == -1)
+    {
+        return SDL_SetError("Failed to get gamma ramp");
+    }
+    return 0;
+}
+
+int
+KMSDRM_SetWindowGammaRamp(_THIS, SDL_Window * window, const Uint16 * ramp)
+{
+    SDL_WindowData *windata = (SDL_WindowData*)window->driverdata;
+    SDL_VideoData *viddata = (SDL_VideoData*)windata->viddata;
+    SDL_VideoDisplay *disp = SDL_GetDisplayForWindow(window);
+    SDL_DisplayData* dispdata = (SDL_DisplayData*)disp->driverdata;
+    Uint16* tempRamp = SDL_calloc(3 * sizeof(Uint16), 256);
+    if (tempRamp == NULL)
+    {
+        return SDL_OutOfMemory();
+    }
+    SDL_memcpy(tempRamp, ramp, 3 * sizeof(Uint16) * 256);
+    if (KMSDRM_drmModeCrtcSetGamma(viddata->drm_fd, dispdata->crtc->crtc_id, 256, &tempRamp[0*256], &tempRamp[1*256], &tempRamp[2*256]) == -1)
+    {
+        SDL_free(tempRamp);
+        return SDL_SetError("Failed to set gamma ramp");
+    }
+    SDL_free(tempRamp);
+    return 0;
 }
 
 int

@@ -38,6 +38,7 @@ SDL_bool SDL_GetPowerInfo_MacOSX(SDL_PowerState *, int *, int *);
 SDL_bool SDL_GetPowerInfo_Haiku(SDL_PowerState *, int *, int *);
 SDL_bool SDL_GetPowerInfo_Android(SDL_PowerState *, int *, int *);
 SDL_bool SDL_GetPowerInfo_PSP(SDL_PowerState *, int *, int *);
+SDL_bool SDL_GetPowerInfo_VITA(SDL_PowerState *, int *, int *);
 SDL_bool SDL_GetPowerInfo_WinRT(SDL_PowerState *, int *, int *);
 SDL_bool SDL_GetPowerInfo_Emscripten(SDL_PowerState *, int *, int *);
 

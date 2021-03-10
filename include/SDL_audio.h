@@ -359,6 +359,25 @@ extern DECLSPEC int SDLCALL SDL_GetNumAudioDevices(int iscapture);
 extern DECLSPEC const char *SDLCALL SDL_GetAudioDeviceName(int index,
                                                            int iscapture);
 
+/**
+ *  Get the audio format of a specific audio device.
+ *  Must be a value between 0 and (number of audio devices-1).
+ *  Only valid after a successfully initializing the audio subsystem.
+ *  The values returned by this function reflect the latest call to
+ *  SDL_GetNumAudioDevices(); recall that function to redetect available
+ *  hardware.
+ *
+ *  The spec will be filled with the sample rate, sample format, and channel
+ *  count. All other values in the structure are filled with 0. When the
+ *  supported struct members are 0, SDL was unable to get the property from the
+ *  backend.
+ *
+ *  \return 0 on success, nonzero on error
+ */
+extern DECLSPEC int SDLCALL SDL_GetAudioDeviceSpec(int index,
+                                                   int iscapture,
+                                                   SDL_AudioSpec *spec);
+
 
 /**
  *  Open a specific audio device. Passing in a device name of NULL requests

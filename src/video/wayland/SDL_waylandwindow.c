@@ -634,11 +634,40 @@ Wayland_SetWindowBordered(_THIS, SDL_Window * window, SDL_bool bordered)
 void
 Wayland_SetWindowResizable(_THIS, SDL_Window * window, SDL_bool resizable)
 {
-    /* No-op, this is handled by the xdg-shell/wl_shell callbacks.
-     * Also note that we do NOT implement SetMaximumSize/SetMinimumSize, as
-     * those are also no-ops for the same reason, but SDL_video.c does not
-     * require a driver implementation.
-     */
+    int min_width, min_height, max_width, max_height;
+    SDL_VideoData *data = _this->driverdata;
+    SDL_WindowData *wind = window->driverdata;
+
+    if (resizable) {
+        /* FIXME: Is there a better way to get max window size from Wayland? -flibit */
+        const int maxsize = 0x7FFFFFFF;
+        min_width = window->min_w;
+        min_height = window->min_h;
+        max_width = (window->max_w == 0) ? maxsize : window->max_w;
+        max_height = (window->max_h == 0) ? maxsize : window->max_h;
+    } else {
+        min_width = window->w;
+        min_height = window->h;
+        max_width = window->w;
+        max_height = window->h;
+    }
+
+    /* Note that this is also handled by the xdg-shell/wl_shell callbacks! */
+    if (data->shell.xdg) {
+        xdg_toplevel_set_min_size(wind->shell_surface.xdg.roleobj.toplevel,
+                                  min_width,
+                                  min_height);
+        xdg_toplevel_set_max_size(wind->shell_surface.xdg.roleobj.toplevel,
+                                  max_width,
+                                  max_height);
+    } else if (data->shell.zxdg) {
+        zxdg_toplevel_v6_set_min_size(wind->shell_surface.zxdg.roleobj.toplevel,
+                                      min_width,
+                                      min_height);
+        zxdg_toplevel_v6_set_max_size(wind->shell_surface.zxdg.roleobj.toplevel,
+                                      max_width,
+                                      max_height);
+    }
 }
 
 void
@@ -757,12 +786,28 @@ int Wayland_CreateWindow(_THIS, SDL_Window *window)
         data->shell_surface.xdg.roleobj.toplevel = xdg_surface_get_toplevel(data->shell_surface.xdg.surface);
         xdg_toplevel_add_listener(data->shell_surface.xdg.roleobj.toplevel, &toplevel_listener_xdg, data);
         xdg_toplevel_set_app_id(data->shell_surface.xdg.roleobj.toplevel, c->classname);
+        if (!(window->flags & SDL_WINDOW_RESIZABLE)) {
+            xdg_toplevel_set_min_size(data->shell_surface.xdg.roleobj.toplevel,
+                                      window->w,
+                                      window->h);
+            xdg_toplevel_set_max_size(data->shell_surface.xdg.roleobj.toplevel,
+                                      window->w,
+                                      window->h);
+        }
     } else if (c->shell.zxdg) {
         data->shell_surface.zxdg.surface = zxdg_shell_v6_get_xdg_surface(c->shell.zxdg, data->surface);
         /* !!! FIXME: add popup role */
         data->shell_surface.zxdg.roleobj.toplevel = zxdg_surface_v6_get_toplevel(data->shell_surface.zxdg.surface);
         zxdg_toplevel_v6_add_listener(data->shell_surface.zxdg.roleobj.toplevel, &toplevel_listener_zxdg, data);
         zxdg_toplevel_v6_set_app_id(data->shell_surface.zxdg.roleobj.toplevel, c->classname);
+        if (!(window->flags & SDL_WINDOW_RESIZABLE)) {
+            zxdg_toplevel_v6_set_min_size(data->shell_surface.zxdg.roleobj.toplevel,
+                                          window->w,
+                                          window->h);
+            zxdg_toplevel_v6_set_max_size(data->shell_surface.zxdg.roleobj.toplevel,
+                                          window->w,
+                                          window->h);
+        }
     } else {
         data->shell_surface.wl = wl_shell_get_shell_surface(c->shell.wl, data->surface);
         wl_shell_surface_set_class(data->shell_surface.wl, c->classname);
@@ -906,11 +951,67 @@ Wayland_HandlePendingResize(SDL_Window *window)
     }
 }
 
+void
+Wayland_SetWindowMinimumSize(_THIS, SDL_Window * window)
+{
+    SDL_VideoData *data = _this->driverdata;
+    SDL_WindowData *wind = window->driverdata;
+
+    if (window->flags & SDL_WINDOW_RESIZABLE) {
+        if (data->shell.xdg) {
+            xdg_toplevel_set_min_size(wind->shell_surface.xdg.roleobj.toplevel,
+                                      window->min_w,
+                                      window->min_h);
+        } else if (data->shell.zxdg) {
+            zxdg_toplevel_v6_set_min_size(wind->shell_surface.zxdg.roleobj.toplevel,
+                                          window->min_w,
+                                          window->min_h);
+        }
+    }
+}
+
+void
+Wayland_SetWindowMaximumSize(_THIS, SDL_Window * window)
+{
+    SDL_VideoData *data = _this->driverdata;
+    SDL_WindowData *wind = window->driverdata;
+
+    if (window->flags & SDL_WINDOW_RESIZABLE) {
+        if (data->shell.xdg) {
+            xdg_toplevel_set_max_size(wind->shell_surface.xdg.roleobj.toplevel,
+                                      window->max_w,
+                                      window->max_h);
+        } else if (data->shell.zxdg) {
+            zxdg_toplevel_v6_set_max_size(wind->shell_surface.zxdg.roleobj.toplevel,
+                                          window->max_w,
+                                          window->max_h);
+        }
+    }
+}
+
 void Wayland_SetWindowSize(_THIS, SDL_Window * window)
 {
     SDL_VideoData *data = _this->driverdata;
     SDL_WindowData *wind = window->driverdata;
     struct wl_region *region;
+
+    if (!(window->flags & SDL_WINDOW_RESIZABLE)) {
+        if (data->shell.xdg) {
+            xdg_toplevel_set_min_size(wind->shell_surface.xdg.roleobj.toplevel,
+                                      window->w,
+                                      window->h);
+            xdg_toplevel_set_max_size(wind->shell_surface.xdg.roleobj.toplevel,
+                                      window->w,
+                                      window->h);
+        } else if (data->shell.zxdg) {
+            zxdg_toplevel_v6_set_min_size(wind->shell_surface.zxdg.roleobj.toplevel,
+                                          window->w,
+                                          window->h);
+            zxdg_toplevel_v6_set_max_size(wind->shell_surface.zxdg.roleobj.toplevel,
+                                          window->w,
+                                          window->h);
+        }
+    }
 
     wl_surface_set_buffer_scale(wind->surface, get_window_scale_factor(window));
 

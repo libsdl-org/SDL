@@ -3,44 +3,55 @@ name: Build
 on: [push, pull_request]
 
 jobs:
-    mac:
-        runs-on: macos-latest
-        steps:
-        - uses: actions/checkout@v1
+  Build:
+    name: ${{ matrix.platform.name }}
+    runs-on: ${{ matrix.platform.os }}
+    strategy:
+      matrix:
+        platform:
+        - { name: Windows, os: windows-latest }
+        - { name: Linux,   os: ubuntu-20.04, flags: -GNinja }
+        - { name: MacOS,   os: macos-latest }
+    steps:
+    - name: Setup Linux dependencies
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt-get update
+        sudo apt-get install wayland-protocols \
+          pkg-config \
+          ninja-build \
+          libasound2-dev \
+          libdbus-1-dev \
+          libegl1-mesa-dev \
+          libgl1-mesa-dev \
+          libgles2-mesa-dev \
+          libglu1-mesa-dev \
+          libibus-1.0-dev \
+          libpulse-dev \
+          libsdl2-2.0-0 \
+          libsndio-dev \
+          libudev-dev \
+          libwayland-dev \
+          libwayland-client++0 \
+          wayland-scanner++ \
+          libwayland-cursor++0 \
+          libx11-dev \
+          libxcursor-dev \
+          libxext-dev \
+          libxi-dev \
+          libxinerama-dev \
+          libxkbcommon-dev \
+          libxrandr-dev \
+          libxss-dev \
+          libxt-dev \
+          libxv-dev \
+          libxxf86vm-dev \
+          libdrm-dev \
+          libgbm-dev\
+          libpulse-dev
+    - uses: actions/checkout@v2
+    - name: Configure CMake
+      run: cmake -B build ${{ matrix.platform.flags }}
+    - name: Build
+      run: cmake --build build/
 
-        - name: Build
-          run: |
-            mkdir build
-            cd build
-            cmake ..
-            cmake --build .
-
-    linux:
-        runs-on: ubuntu-20.04
-        steps:
-        - uses: actions/checkout@v1
-
-        - name: Setup
-          run: |
-            sudo apt-get update
-            sudo apt-get install wayland-protocols pkg-config ninja-build
-
-        - name: Linux
-          run: |
-            mkdir build
-            cd build
-            cmake .. -GNinja
-            cmake --build .
-
-    windows:
-        runs-on: windows-latest
-
-        steps:
-        - uses: actions/checkout@v1
-
-        - name: Build
-          run: |
-            mkdir build
-            cd build
-            cmake ..
-            cmake --build .

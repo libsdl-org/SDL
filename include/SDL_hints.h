@@ -1325,6 +1325,29 @@ extern "C" {
 #define SDL_HINT_VIDEO_DOUBLE_BUFFER      "SDL_VIDEO_DOUBLE_BUFFER"
 
 /**
+ * \brief Determines whether SDL enforces that DRM master is required in order
+ *        to initialize the KMSDRM video backend.
+ *
+ * The DRM subsystem has a concept of a "DRM master" which is a DRM client that
+ * has the ability to set planes, set cursor, etc. When SDL is DRM master, it
+ * can draw to the screen using the SDL rendering APIs. Without DRM master, SDL
+ * is still able to process input and query attributes of attached displays,
+ * but it cannot change display state or draw to the screen directly.
+ *
+ * In some cases, it can be useful to have the KMSDRM backend even if it cannot
+ * be used for rendering. An app may want to use SDL for input processing while
+ * using another rendering API (such as an MMAL overlay on Raspberry Pi) or
+ * using its own code to render to DRM overlays that SDL doesn't support.
+ *
+ * This hint must be set before initializing the video subsystem.
+ *
+ * This variable can be set to the following values:
+ *    "0"       - SDL will allow usage of the KMSDRM backend without DRM master
+ *    "1"       - SDL Will require DRM master to use the KMSDRM backend (default)
+ */
+#define SDL_HINT_KMSDRM_REQUIRE_DRM_MASTER      "SDL_KMSDRM_REQUIRE_DRM_MASTER"
+
+/**
  *  \brief  A variable controlling what driver to use for OpenGL ES contexts.
  *
  *  On some platforms, currently Windows and X11, OpenGL drivers may support
@@ -1586,6 +1609,26 @@ extern "C" {
  * On targets where this is not supported, this hint does nothing.
  */
 #define SDL_HINT_AUDIO_DEVICE_STREAM_NAME "SDL_AUDIO_DEVICE_STREAM_NAME"
+
+/**
+ *  \brief Specify an application role for an audio device.
+ *
+ * Some audio backends (such as Pipewire) allow you to describe the role of
+ * your audio stream. Among other things, this description might show up in
+ * a system control panel or software for displaying and manipulating media
+ * playback/capture graphs.
+ *
+ * This hints lets you transmit that information to the OS. The contents of
+ * this hint are used while opening an audio device. You should use a string
+ * that describes your what your program is playing (Game, Music, Movie,
+ * etc...).
+ *
+ * Setting this to "" or leaving it unset will have SDL use a reasonable
+ * default: "Game" or something similar.
+ *
+ * On targets where this is not supported, this hint does nothing.
+ */
+#define SDL_HINT_AUDIO_DEVICE_STREAM_ROLE "SDL_AUDIO_DEVICE_STREAM_ROLE"
 
 /**
  *  \brief Specify the behavior of Alt+Tab while the keyboard is grabbed.

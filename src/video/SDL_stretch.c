@@ -857,13 +857,13 @@ SDL_LowerSoftStretchLinear(SDL_Surface *s, const SDL_Rect *srcrect,
     incy = (src_h << 16) / dst_h;                                                       \
     incx = (src_w << 16) / dst_w;                                                       \
     dst_gap   = dst_pitch - bpp * dst_w;                                                \
-    posy = 0;                                                                           \
+    posy = incy / 2;                                                                    \
 
 #define SDL_SCALE_NEAREST__HEIGHT                                                       \
     srcy = (posy >> 16);                                                                \
     src_h0  = (const Uint32 *)((const Uint8 *)src_ptr + srcy * src_pitch);              \
     posy += incy;                                                                       \
-    posx = 0;                                                                           \
+    posx = incx / 2;                                                                    \
     n = dst_w;
 
 

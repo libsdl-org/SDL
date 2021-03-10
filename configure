@@ -678,6 +678,8 @@ FUSIONSOUND_CFLAGS
 ARTSCONFIG
 PULSEAUDIO_LIBS
 PULSEAUDIO_CFLAGS
+PIPEWIRE_LIBS
+PIPEWIRE_CFLAGS
 ESD_LIBS
 ESD_CFLAGS
 ESD_CONFIG
@@ -838,6 +840,8 @@ with_esd_prefix
 with_esd_exec_prefix
 enable_esdtest
 enable_esd_shared
+enable_pipewire
+enable_pipewire_shared
 enable_pulseaudio
 enable_pulseaudio_shared
 enable_arts
@@ -923,6 +927,8 @@ PKG_CONFIG_PATH
 PKG_CONFIG_LIBDIR
 JACK_CFLAGS
 JACK_LIBS
+PIPEWIRE_CFLAGS
+PIPEWIRE_LIBS
 PULSEAUDIO_CFLAGS
 PULSEAUDIO_LIBS
 FUSIONSOUND_CFLAGS
@@ -1564,139 +1570,140 @@ Optional Features:
   --disable-libtool-lock  avoid locking (might break parallel builds)
   --enable-assertions     Enable internal sanity checks
                           (auto/disabled/release/enabled/paranoid)
-                          [[default=auto]]
+                          [default=auto]
   --enable-dependency-tracking
-                          Use gcc -MMD -MT dependency tracking [[default=yes]]
-  --enable-libc           Use the system C library [[default=yes]]
-  --enable-gcc-atomics    Use gcc builtin atomics [[default=yes]]
-  --enable-atomic         Enable the atomic operations subsystem
-                          [[default=yes]]
-  --enable-audio          Enable the audio subsystem [[default=yes]]
-  --enable-video          Enable the video subsystem [[default=yes]]
-  --enable-render         Enable the render subsystem [[default=yes]]
-  --enable-events         Enable the events subsystem [[default=yes]]
-  --enable-joystick       Enable the joystick subsystem [[default=yes]]
+                          Use gcc -MMD -MT dependency tracking [default=yes]
+  --enable-libc           Use the system C library [default=yes]
+  --enable-gcc-atomics    Use gcc builtin atomics [default=yes]
+  --enable-atomic         Enable the atomic operations subsystem [default=yes]
+  --enable-audio          Enable the audio subsystem [default=yes]
+  --enable-video          Enable the video subsystem [default=yes]
+  --enable-render         Enable the render subsystem [default=yes]
+  --enable-events         Enable the events subsystem [default=yes]
+  --enable-joystick       Enable the joystick subsystem [default=yes]
   --enable-haptic         Enable the haptic (force feedback) subsystem
-                          [[default=yes]]
-  --enable-sensor         Enable the sensor subsystem [[default=yes]]
-  --enable-power          Enable the power subsystem [[default=yes]]
-  --enable-filesystem     Enable the filesystem subsystem [[default=yes]]
-  --enable-threads        Enable the threading subsystem [[default=yes]]
-  --enable-timers         Enable the timer subsystem [[default=yes]]
-  --enable-file           Enable the file subsystem [[default=yes]]
+                          [default=yes]
+  --enable-sensor         Enable the sensor subsystem [default=yes]
+  --enable-power          Enable the power subsystem [default=yes]
+  --enable-filesystem     Enable the filesystem subsystem [default=yes]
+  --enable-threads        Enable the threading subsystem [default=yes]
+  --enable-timers         Enable the timer subsystem [default=yes]
+  --enable-file           Enable the file subsystem [default=yes]
   --enable-loadso         Enable the shared object loading subsystem
-                          [[default=yes]]
-  --enable-cpuinfo        Enable the cpuinfo subsystem [[default=yes]]
-  --enable-assembly       Enable assembly routines [[default=yes]]
+                          [default=yes]
+  --enable-cpuinfo        Enable the cpuinfo subsystem [default=yes]
+  --enable-assembly       Enable assembly routines [default=yes]
   --enable-ssemath        Allow GCC to use SSE floating point math
-                          [[default=maybe]]
-  --enable-mmx            use MMX assembly routines [[default=yes]]
-  --enable-3dnow          use 3DNow! assembly routines [[default=yes]]
-  --enable-sse            use SSE assembly routines [[default=yes]]
-  --enable-sse2           use SSE2 assembly routines [[default=maybe]]
-  --enable-sse3           use SSE3 assembly routines [[default=maybe]]
-  --enable-altivec        use Altivec assembly routines [[default=yes]]
-  --enable-oss            support the OSS audio API [[default=maybe]]
-  --enable-alsa           support the ALSA audio API [[default=yes]]
+                          [default=maybe]
+  --enable-mmx            use MMX assembly routines [default=yes]
+  --enable-3dnow          use 3DNow! assembly routines [default=yes]
+  --enable-sse            use SSE assembly routines [default=yes]
+  --enable-sse2           use SSE2 assembly routines [default=maybe]
+  --enable-sse3           use SSE3 assembly routines [default=maybe]
+  --enable-altivec        use Altivec assembly routines [default=yes]
+  --enable-oss            support the OSS audio API [default=maybe]
+  --enable-alsa           support the ALSA audio API [default=yes]
   --disable-alsatest      Do not try to compile and run a test Alsa program
-  --enable-alsa-shared    dynamically load ALSA audio support [[default=yes]]
-  --enable-jack           use JACK audio [[default=yes]]
-  --enable-jack-shared    dynamically load JACK audio support [[default=yes]]
-  --enable-esd            support the Enlightened Sound Daemon [[default=yes]]
+  --enable-alsa-shared    dynamically load ALSA audio support [default=yes]
+  --enable-jack           use JACK audio [default=yes]
+  --enable-jack-shared    dynamically load JACK audio support [default=yes]
+  --enable-esd            support the Enlightened Sound Daemon [default=yes]
   --disable-esdtest       Do not try to compile and run a test ESD program
-  --enable-esd-shared     dynamically load ESD audio support [[default=yes]]
-  --enable-pulseaudio     use PulseAudio [[default=yes]]
+  --enable-esd-shared     dynamically load ESD audio support [default=yes]
+  --enable-pipewire       use Pipewire audio [default=yes]
+  --enable-pipewire-shared
+                          dynamically load Pipewire support [default=yes]
+  --enable-pulseaudio     use PulseAudio [default=yes]
   --enable-pulseaudio-shared
-                          dynamically load PulseAudio support [[default=yes]]
+                          dynamically load PulseAudio support [default=yes]
   --enable-arts           support the Analog Real Time Synthesizer
-                          [[default=yes]]
-  --enable-arts-shared    dynamically load aRts audio support [[default=yes]]
-  --enable-nas            support the NAS audio API [[default=yes]]
-  --enable-nas-shared     dynamically load NAS audio support [[default=yes]]
-  --enable-sndio          support the sndio audio API [[default=yes]]
-  --enable-sndio-shared   dynamically load sndio audio support [[default=yes]]
-  --enable-fusionsound    use FusionSound audio driver [[default=no]]
+                          [default=yes]
+  --enable-arts-shared    dynamically load aRts audio support [default=yes]
+  --enable-nas            support the NAS audio API [default=yes]
+  --enable-nas-shared     dynamically load NAS audio support [default=yes]
+  --enable-sndio          support the sndio audio API [default=yes]
+  --enable-sndio-shared   dynamically load sndio audio support [default=yes]
+  --enable-fusionsound    use FusionSound audio driver [default=no]
   --enable-fusionsound-shared
                           dynamically load fusionsound audio support
-                          [[default=yes]]
-  --enable-diskaudio      support the disk writer audio driver [[default=yes]]
-  --enable-dummyaudio     support the dummy audio driver [[default=yes]]
+                          [default=yes]
+  --enable-diskaudio      support the disk writer audio driver [default=yes]
+  --enable-dummyaudio     support the dummy audio driver [default=yes]
   --enable-libsamplerate  use libsamplerate for audio rate conversion
-                          [[default=yes]]
+                          [default=yes]
   --enable-libsamplerate-shared
-                          dynamically load libsamplerate [[default=yes]]
-  --enable-arm-simd       use SIMD assembly blitters on ARM [[default=no]]
-  --enable-arm-neon       use NEON assembly blitters on ARM [[default=no]]
-  --enable-video-wayland  use Wayland video driver [[default=yes]]
+                          dynamically load libsamplerate [default=yes]
+  --enable-arm-simd       use SIMD assembly blitters on ARM [default=no]
+  --enable-arm-neon       use NEON assembly blitters on ARM [default=no]
+  --enable-video-wayland  use Wayland video driver [default=yes]
   --enable-video-wayland-qt-touch
                           QtWayland server support for Wayland video driver
-                          [[default=yes]]
-  --enable-wayland-shared dynamically load Wayland support [[default=maybe]]
-  --enable-video-rpi      use Raspberry Pi video driver [[default=yes]]
-  --enable-video-x11      use X11 video driver [[default=yes]]
-  --enable-x11-shared     dynamically load X11 support [[default=maybe]]
+                          [default=yes]
+  --enable-wayland-shared dynamically load Wayland support [default=maybe]
+  --enable-video-rpi      use Raspberry Pi video driver [default=yes]
+  --enable-video-x11      use X11 video driver [default=yes]
+  --enable-x11-shared     dynamically load X11 support [default=maybe]
   --enable-video-x11-xcursor
-                          enable X11 Xcursor support [[default=yes]]
-  --enable-video-x11-xdbe enable X11 Xdbe support [[default=yes]]
+                          enable X11 Xcursor support [default=yes]
+  --enable-video-x11-xdbe enable X11 Xdbe support [default=yes]
   --enable-video-x11-xinerama
-                          enable X11 Xinerama support [[default=yes]]
+                          enable X11 Xinerama support [default=yes]
   --enable-video-x11-xinput
                           enable X11 XInput extension for manymouse, tablets,
-                          etc [[default=yes]]
+                          etc [default=yes]
   --enable-video-x11-xrandr
                           enable X11 Xrandr extension for fullscreen
-                          [[default=yes]]
+                          [default=yes]
   --enable-video-x11-scrnsaver
-                          enable X11 screensaver extension [[default=yes]]
+                          enable X11 screensaver extension [default=yes]
   --enable-video-x11-xshape
-                          enable X11 XShape support [[default=yes]]
-  --enable-video-x11-vm   use X11 VM extension for fullscreen [[default=yes]]
-  --enable-video-vivante  use Vivante EGL video driver [[default=yes]]
-  --enable-video-cocoa    use Cocoa video driver [[default=yes]]
-  --enable-video-metal    include Metal support [[default=yes]]
-  --enable-render-metal   enable the Metal render driver [[default=yes]]
-  --enable-video-directfb use DirectFB video driver [[default=no]]
+                          enable X11 XShape support [default=yes]
+  --enable-video-x11-vm   use X11 VM extension for fullscreen [default=yes]
+  --enable-video-vivante  use Vivante EGL video driver [default=yes]
+  --enable-video-cocoa    use Cocoa video driver [default=yes]
+  --enable-video-metal    include Metal support [default=yes]
+  --enable-render-metal   enable the Metal render driver [default=yes]
+  --enable-video-directfb use DirectFB video driver [default=no]
   --enable-directfb-shared
-                          dynamically load directfb support [[default=yes]]
-  --enable-video-kmsdrm   use KMSDRM video driver [[default=no]]
-  --enable-kmsdrm-shared  dynamically load kmsdrm support [[default=yes]]
-  --enable-video-dummy    use dummy video driver [[default=yes]]
-  --enable-video-opengl   include OpenGL support [[default=yes]]
-  --enable-video-opengles include OpenGL ES support [[default=yes]]
+                          dynamically load directfb support [default=yes]
+  --enable-video-kmsdrm   use KMSDRM video driver [default=no]
+  --enable-kmsdrm-shared  dynamically load kmsdrm support [default=yes]
+  --enable-video-dummy    use dummy video driver [default=yes]
+  --enable-video-opengl   include OpenGL support [default=yes]
+  --enable-video-opengles include OpenGL ES support [default=yes]
   --enable-video-opengles1
-                          include OpenGL ES 1.1 support [[default=yes]]
+                          include OpenGL ES 1.1 support [default=yes]
   --enable-video-opengles2
-                          include OpenGL ES 2.0 support [[default=yes]]
-  --enable-video-vulkan   include Vulkan support [[default=yes]]
-  --enable-libudev        enable libudev support [[default=yes]]
-  --enable-dbus           enable D-Bus support [[default=yes]]
-  --enable-ime            enable IME support [[default=yes]]
-  --enable-ibus           enable IBus support [[default=yes]]
-  --enable-fcitx          enable fcitx support [[default=yes]]
-  --enable-joystick-mfi   include macOS MFI joystick support [[default=yes]]
-  --enable-pthreads       use POSIX threads for multi-threading
-                          [[default=yes]]
-  --enable-pthread-sem    use pthread semaphores [[default=yes]]
-  --enable-directx        use DirectX for Windows audio/video [[default=yes]]
-  --enable-xinput         use Xinput for Windows [[default=yes]]
-  --enable-wasapi         use the Windows WASAPI audio driver [[default=yes]]
-  --enable-sdl-dlopen     use dlopen for shared object loading [[default=yes]]
+                          include OpenGL ES 2.0 support [default=yes]
+  --enable-video-vulkan   include Vulkan support [default=yes]
+  --enable-libudev        enable libudev support [default=yes]
+  --enable-dbus           enable D-Bus support [default=yes]
+  --enable-ime            enable IME support [default=yes]
+  --enable-ibus           enable IBus support [default=yes]
+  --enable-fcitx          enable fcitx support [default=yes]
+  --enable-joystick-mfi   include macOS MFI joystick support [default=yes]
+  --enable-pthreads       use POSIX threads for multi-threading [default=yes]
+  --enable-pthread-sem    use pthread semaphores [default=yes]
+  --enable-directx        use DirectX for Windows audio/video [default=yes]
+  --enable-xinput         use Xinput for Windows [default=yes]
+  --enable-wasapi         use the Windows WASAPI audio driver [default=yes]
+  --enable-sdl-dlopen     use dlopen for shared object loading [default=yes]
   --enable-hidapi         use HIDAPI for low level joystick drivers
-                          [[default=yes]]
+                          [default=yes]
   --enable-hidapi-libusb  use libusb for low level joystick drivers
-                          [[default=maybe]]
+                          [default=maybe]
   --enable-clock_gettime  use clock_gettime() instead of gettimeofday() on
-                          UNIX [[default=yes]]
-  --enable-rpath          use an rpath when linking SDL [[default=yes]]
+                          UNIX [default=yes]
+  --enable-rpath          use an rpath when linking SDL [default=yes]
   --enable-backgrounding-signal
                           number to use for magic backgrounding signal or 'no'
-                          [[default=no]]
+                          [default=no]
   --enable-foregrounding-signal
                           number to use for magic foregrounding signal or 'no'
-                          [[default=no]]
+                          [default=no]
   --enable-joystick-virtual
-                          enable virtual joystick APIs [[default=yes]]
-  --enable-render-d3d     enable the Direct3D render driver [[default=yes]]
+                          enable virtual joystick APIs [default=yes]
+  --enable-render-d3d     enable the Direct3D render driver [default=yes]
   --enable-sdl2-config    Install sdl2-config [default=yes]
 
 Optional Packages:
@@ -1732,6 +1739,10 @@ Some influential environment variables:
               path overriding pkg-config's built-in search path
   JACK_CFLAGS C compiler flags for JACK, overriding pkg-config
   JACK_LIBS   linker flags for JACK, overriding pkg-config
+  PIPEWIRE_CFLAGS
+              C compiler flags for PIPEWIRE, overriding pkg-config
+  PIPEWIRE_LIBS
+              linker flags for PIPEWIRE, overriding pkg-config
   PULSEAUDIO_CFLAGS
               C compiler flags for PULSEAUDIO, overriding pkg-config
   PULSEAUDIO_LIBS
@@ -18778,6 +18789,126 @@ _ACEOF
     fi
 }
 
+CheckPipewire()
+{
+    # Check whether --enable-pipewire was given.
+if test "${enable_pipewire+set}" = set; then :
+  enableval=$enable_pipewire;
+else
+  enable_pipewire=yes
+fi
+
+    if test x$enable_audio = xyes -a x$enable_pipewire = xyes; then
+
+pkg_failed=no
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for libpipewire-0.3 >= 0.3.20" >&5
+$as_echo_n "checking for libpipewire-0.3 >= 0.3.20... " >&6; }
+
+if test -n "$PIPEWIRE_CFLAGS"; then
+    pkg_cv_PIPEWIRE_CFLAGS="$PIPEWIRE_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libpipewire-0.3 >= 0.3.20\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libpipewire-0.3 >= 0.3.20") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_PIPEWIRE_CFLAGS=`$PKG_CONFIG --cflags "libpipewire-0.3 >= 0.3.20" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$PIPEWIRE_LIBS"; then
+    pkg_cv_PIPEWIRE_LIBS="$PIPEWIRE_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libpipewire-0.3 >= 0.3.20\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libpipewire-0.3 >= 0.3.20") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_PIPEWIRE_LIBS=`$PKG_CONFIG --libs "libpipewire-0.3 >= 0.3.20" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+	        PIPEWIRE_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libpipewire-0.3 >= 0.3.20" 2>&1`
+        else
+	        PIPEWIRE_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libpipewire-0.3 >= 0.3.20" 2>&1`
+        fi
+	# Put the nasty error message in config.log where it belongs
+	echo "$PIPEWIRE_PKG_ERRORS" >&5
+
+	audio_pipewire=no
+elif test $pkg_failed = untried; then
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+	audio_pipewire=no
+else
+	PIPEWIRE_CFLAGS=$pkg_cv_PIPEWIRE_CFLAGS
+	PIPEWIRE_LIBS=$pkg_cv_PIPEWIRE_LIBS
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+	audio_pipewire=yes
+fi
+
+        if test x$audio_pipewire = xyes; then
+            # Check whether --enable-pipewire-shared was given.
+if test "${enable_pipewire_shared+set}" = set; then :
+  enableval=$enable_pipewire_shared;
+else
+  enable_pipewire_shared=yes
+fi
+
+            pipewire_lib=`find_lib "libpipewire-0.3.so.*" "$PIPEWIRE_LIBS" | sed 's/.*\/\(.*\)/\1/; q'`
+
+
+$as_echo "#define SDL_AUDIO_DRIVER_PIPEWIRE 1" >>confdefs.h
+
+            SOURCES="$SOURCES $srcdir/src/audio/pipewire/*.c"
+            EXTRA_CFLAGS="$EXTRA_CFLAGS $PIPEWIRE_CFLAGS"
+            if test x$have_loadso != xyes && \
+               test x$enable_pipewire_shared = xyes; then
+                { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: You must have SDL_LoadObject() support for dynamic Pipewire loading" >&5
+$as_echo "$as_me: WARNING: You must have SDL_LoadObject() support for dynamic Pipewire loading" >&2;}
+            fi
+            if test x$have_loadso = xyes && \
+               test x$enable_pipewire_shared = xyes && test x$pipewire_lib != x; then
+                echo "-- dynamic libpipewire-0.3 -> $pipewire_lib"
+
+cat >>confdefs.h <<_ACEOF
+#define SDL_AUDIO_DRIVER_PIPEWIRE_DYNAMIC "$pipewire_lib"
+_ACEOF
+
+                SUMMARY_audio="${SUMMARY_audio} pipewire(dynamic)"
+            else
+                EXTRA_LDFLAGS="$EXTRA_LDFLAGS $PIPEWIRE_LIBS"
+                SUMMARY_audio="${SUMMARY_audio} pipewire"
+            fi
+            have_audio=yes
+        fi
+    fi
+}
+
 CheckPulseAudio()
 {
     # Check whether --enable-pulseaudio was given.
@@ -24893,6 +25024,7 @@ $as_echo "#define SDL_VIDEO_DRIVER_ANDROID 1" >>confdefs.h
         CheckNEON
         CheckOSS
         CheckALSA
+        CheckPipewire
         CheckPulseAudio
         CheckJACK
         CheckARTSC
