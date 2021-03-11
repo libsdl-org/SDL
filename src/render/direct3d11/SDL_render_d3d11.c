@@ -1721,13 +1721,13 @@ D3D11_QueueFillTriangles(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const 
             if (i % 3 == 0) {
                 verts->pos.x = x0;
                 verts->pos.y = y0;
-				i2 += 2;
+                i2 += 2;
             } else {
                 verts->pos.x = points[i - i2].x;
                 verts->pos.y = points[i - i2].y;
             }
 
-			verts->pos.z = 0.0f;
+            verts->pos.z = 0.0f;
             verts->tex.x = 0.0f;
             verts->tex.y = 0.0f;
             verts->color.x = r;
@@ -1855,7 +1855,7 @@ D3D11_QueueCopyTriangles(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Tex
                 verts->pos.y = dy0;
                 verts->tex.x = sx0;
                 verts->tex.y = sy0;
-				i2 += 2;
+                i2 += 2;
             } else {
                 verts->pos.x = dstpoints[i - i2].x;
                 verts->pos.y = dstpoints[i - i2].y;
