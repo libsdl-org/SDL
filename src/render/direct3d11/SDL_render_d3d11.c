@@ -1709,7 +1709,7 @@ D3D11_QueueFillTriangles(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const 
         /* D3D11 doesn't handle FAN, create a list */
         int new_count = (count - 2) * 3;
         float x0, y0;
-        int i2 = 0;
+        int i2 = -2;
         VertexPositionColor *verts = (VertexPositionColor *)SDL_AllocateRenderVertices(renderer, new_count * sizeof(VertexPositionColor), 0, &cmd->data.draw.first);
         if (!verts) {
             return -1;
@@ -1721,12 +1721,13 @@ D3D11_QueueFillTriangles(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const 
             if (i % 3 == 0) {
                 verts->pos.x = x0;
                 verts->pos.y = y0;
+				i2 += 2;
             } else {
-                verts->pos.x = points[i2].x;
-                verts->pos.y = points[i2].y;
-                i2++;
+                verts->pos.x = points[i - i2].x;
+                verts->pos.y = points[i - i2].y;
             }
-            verts->pos.z = 0.0f;
+
+			verts->pos.z = 0.0f;
             verts->tex.x = 0.0f;
             verts->tex.y = 0.0f;
             verts->color.x = r;
@@ -1838,7 +1839,7 @@ D3D11_QueueCopyTriangles(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Tex
         /* D3D11 doesn't handle FAN, create a list */
         int new_count = (count - 2) * 3;
         float sx0, sy0, dx0, dy0;
-        int i2 = 0;
+        int i2 = -2;
         VertexPositionColor *verts = (VertexPositionColor *)SDL_AllocateRenderVertices(renderer, new_count * sizeof(VertexPositionColor), 0, &cmd->data.draw.first);
         if (!verts) {
             return -1;
@@ -1854,12 +1855,12 @@ D3D11_QueueCopyTriangles(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Tex
                 verts->pos.y = dy0;
                 verts->tex.x = sx0;
                 verts->tex.y = sy0;
+				i2 += 2;
             } else {
-                verts->pos.x = dstpoints[i2].x;
-                verts->pos.y = dstpoints[i2].y;
-                verts->tex.x = (float)srcpoints[i2].x / texture->w;
-                verts->tex.y = (float)srcpoints[i2].y / texture->h;
-                i2++;
+                verts->pos.x = dstpoints[i - i2].x;
+                verts->pos.y = dstpoints[i - i2].y;
+                verts->tex.x = (float)srcpoints[i - i2].x / texture->w;
+                verts->tex.y = (float)srcpoints[i - i2].y / texture->h;
             }
             verts->pos.z = 0.0f;
             verts->color.x = r;
