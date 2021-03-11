@@ -1163,7 +1163,7 @@ METAL_QueueFillTriangles(SDL_Renderer *renderer, SDL_RenderCommand *cmd, const S
         /* METAL doesn't handle FAN, create a list */
         int new_count = (count - 2) * 3;
         float x0, y0;
-        int i2 = 0;
+        int i2 = -2;
         const size_t vertlen = (sizeof (float) * 2) * new_count;
         float *verts = (float *) SDL_AllocateRenderVertices(renderer, vertlen, DEVICE_ALIGN(8), &cmd->data.draw.first);
         if (!verts) {
@@ -1176,10 +1176,10 @@ METAL_QueueFillTriangles(SDL_Renderer *renderer, SDL_RenderCommand *cmd, const S
             if (i % 3 == 0) {
                 *(verts++) = x0;
                 *(verts++) = y0;
+                i2 += 2;
             } else {
-                *(verts++) = points[i2].x;
-                *(verts++) = points[i2].y;
-                i2++;
+                *(verts++) = points[i - i2].x;
+                *(verts++) = points[i - i2].y;
             }
         }
     } else {
@@ -1249,7 +1249,7 @@ METAL_QueueCopyTriangles(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Tex
         /* METAL doesn't handle FAN, create a list */
         int new_count = (count - 2) * 3;
         float sx0, sy0, dx0, dy0;
-        int i2 = 0;
+        int i2 = -2;
         const size_t vertlen = (sizeof (float) * 2) * 2 * new_count;
         float *verts = (float *) SDL_AllocateRenderVertices(renderer, vertlen, DEVICE_ALIGN(8), &cmd->data.draw.first);
         if (!verts) {
@@ -1266,13 +1266,12 @@ METAL_QueueCopyTriangles(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Tex
                 *(verts++) = dy0;
                 *(verts++) = sx0;
                 *(verts++) = sy0;
+                i2 += 2;
             } else {
-                *(verts++) = dstpoints[i2].x;
-                *(verts++) = dstpoints[i2].y;
-
-                *(verts++) = normtex(srcpoints[i2].x, texw);
-                *(verts++) = normtex(srcpoints[i2].y, texh);
-                i2++;
+                *(verts++) = dstpoints[i - i2].x;
+                *(verts++) = dstpoints[i - i2].y;
+                *(verts++) = normtex(srcpoints[i - i2].x, texw);
+                *(verts++) = normtex(srcpoints[i - i2].y, texh);
             }
         }
     } else {
