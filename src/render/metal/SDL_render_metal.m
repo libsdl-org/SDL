@@ -1163,7 +1163,7 @@ METAL_QueueFillTriangles(SDL_Renderer *renderer, SDL_RenderCommand *cmd, const S
         /* METAL doesn't handle FAN, create a list */
         int new_count = (count - 2) * 3;
         float x0, y0;
-        int i2;
+        int i2 = 0;
         const size_t vertlen = (sizeof (float) * 2) * new_count;
         float *verts = (float *) SDL_AllocateRenderVertices(renderer, vertlen, DEVICE_ALIGN(8), &cmd->data.draw.first);
         if (!verts) {
@@ -1249,7 +1249,7 @@ METAL_QueueCopyTriangles(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Tex
         /* METAL doesn't handle FAN, create a list */
         int new_count = (count - 2) * 3;
         float sx0, sy0, dx0, dy0;
-        int i2;
+        int i2 = 0;
         const size_t vertlen = (sizeof (float) * 2) * 2 * new_count;
         float *verts = (float *) SDL_AllocateRenderVertices(renderer, vertlen, DEVICE_ALIGN(8), &cmd->data.draw.first);
         if (!verts) {
