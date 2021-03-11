@@ -797,9 +797,16 @@ endmacro()
 
 # Requires:
 # - PkgCheckModules
+macro(CheckEGL)
+  pkg_check_modules(EGL egl)
+  string(REPLACE "-D_THREAD_SAFE;" "-D_THREAD_SAFE=1;" EGL_CFLAGS ${EGL_CFLAGS})
+endmacro()
+
+# Requires:
+# - PkgCheckModules
 macro(CheckEGLKMSDRM)
   if (HAVE_VIDEO_OPENGLES OR HAVE_VIDEO_OPENGL)
-    pkg_check_modules(EGL egl)
+    CheckEGL()
     set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} ${EGL_CFLAGS}")
     check_c_source_compiles("
 	#define EGL_API_FB
@@ -817,7 +824,7 @@ endmacro()
 # Requires:
 # - PkgCheckModules
 macro(CheckOpenGLESX11)
-  pkg_check_modules(EGL egl)
+  CheckEGL()
   set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} ${EGL_CFLAGS}")
   if(VIDEO_OPENGLES)
     check_c_source_compiles("
