@@ -75,9 +75,11 @@ typedef enum
     SDL_RENDERCMD_FILL_RECTS,
     SDL_RENDERCMD_FILL_TRIANGLES_LIST,
     SDL_RENDERCMD_FILL_TRIANGLES_STRIP,
+    SDL_RENDERCMD_FILL_TRIANGLES_FAN,
     SDL_RENDERCMD_COPY,
     SDL_RENDERCMD_COPY_TRIANGLES_LIST,
     SDL_RENDERCMD_COPY_TRIANGLES_STRIP,
+    SDL_RENDERCMD_COPY_TRIANGLES_FAN,
     SDL_RENDERCMD_COPY_EX
 } SDL_RenderCommandType;
 
@@ -126,12 +128,12 @@ struct SDL_Renderer
                             int count);
     int (*QueueFillRects) (SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FRect * rects,
                             int count);
-    int (*QueueFillTriangles) (SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FPoint *points,
+    int (*QueueFillTriangles) (SDL_Renderer *renderer, SDL_RenderCommand *cmd, const SDL_FPoint *points,
                             int count);
     int (*QueueCopy) (SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * texture,
                        const SDL_Rect * srcrect, const SDL_FRect * dstrect);
 
-    int (*QueueCopyTriangles) (SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * texture,
+    int (*QueueCopyTriangles) (SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
                        const SDL_Point *srcpoints, const SDL_FPoint *dstpoints, int count);
 
     int (*QueueCopyEx) (SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * texture,

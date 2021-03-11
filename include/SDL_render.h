@@ -73,6 +73,22 @@ typedef enum
 } SDL_RendererFlags;
 
 /**
+ *  \brief The rendering mode when using triangle shapes
+ */
+typedef enum
+{
+    SDL_TRIANGLE_LIST = 0,      /**< Interpret the points as a list of triangles.
+                                     Vertices 0, 1, and 2 form a triangle. Vertices 3, 4, and 5 form a triangle. And so on.
+                                     Number of points is '2 * number_of_triangles' */
+    SDL_TRIANGLE_STRIP = 1,     /**< Intrepret the points as a strip of triangles sharing a vertice.
+                                     Every group of 3 adjacent vertices forms a triangle.
+                                     Number of points is 'number_of_triangles + 2' */
+    SDL_TRIANGLE_FAN = 2        /**< Interpret the points as a fan of triangles.
+                                     The first vertex is always held fixed. From there on, every group of 2 adjacent vertices form a triangle with the first.
+                                     Number of points is 'number_of_triangles + 2' */
+} SDL_TriangleMode;
+
+/**
  *  \brief Information on the capabilities of a render driver or context.
  */
 typedef struct SDL_RendererInfo
@@ -881,15 +897,18 @@ extern DECLSPEC int SDLCALL SDL_RenderFillRects(SDL_Renderer * renderer,
  *  \brief Fill some number of triangles on the current rendering target with the drawing color.
  *
  *  \param renderer The renderer which should fill multiple triangles.
- *  \param points   A pointer to an array of destination points representing a triangle strip.
- *  \param count    The number of points (number of triangles * 2, or number of triangles + 2).
- *  \param list     Draw as a triangle list (SDL_TRUE) or strip (SDL_FALSE)
+ *  \param points   Pointer to the destination triangles points.
+ *  \param count    Number of points.
+ *  \param mode     Triangle rendering mode.
+ *
+ *  \sa SDL_TriangleMode
  *
  *  \return 0 on success, or -1 on error
  */
 extern DECLSPEC int SDLCALL SDL_RenderFillTriangles(SDL_Renderer *renderer,
                                                     const SDL_Point *points,
-                                                    int count, SDL_bool list);
+                                                    int count,
+                                                    SDL_TriangleMode mode);
 
 /**
  *  \brief Copy a portion of the texture to the current rendering target.
@@ -935,11 +954,13 @@ extern DECLSPEC int SDLCALL SDL_RenderCopyEx(SDL_Renderer * renderer,
  *  \brief Copy triangles portions of the texture to the current rendering target.
  *
  *  \param renderer     The renderer which should copy parts of a texture.
- *  \param texture      The source texture.
- *  \param srcpoints    A pointer to the source triangles points (triangle strip)
- *  \param dstpoints    A pointer to the destination triangles points (triangle strip)
- *  \param count        The number of points (number of triangles * 2, or number of triangles + 2).
- *  \param list         Draw as a triangle list (SDL_TRUE) or strip (SDL_FALSE)
+ *  \param texture      Source texture.
+ *  \param srcpoints    Pointer to the source triangles points.
+ *  \param dstpoints    Pointer to the destination triangles points.
+ *  \param count        Number of points.
+ *  \param mode         Triangle rendering mode.
+ *
+ *  \sa SDL_TriangleMode
  *
  *  \return 0 on success, or -1 on error
  */
@@ -947,7 +968,8 @@ extern DECLSPEC int SDLCALL SDL_RenderCopyTriangles(SDL_Renderer *renderer,
                                                     SDL_Texture *texture,
                                                     const SDL_Point *srcpoints,
                                                     const SDL_Point *dstpoints,
-                                                    int count, SDL_bool list);
+                                                    int count, 
+                                                    SDL_TriangleMode mode);
 
 /**
  *  \brief Draw a point on the current rendering target.
@@ -1054,15 +1076,18 @@ extern DECLSPEC int SDLCALL SDL_RenderFillRectsF(SDL_Renderer * renderer,
  *  \brief Fill some number of triangles on the current rendering target with the drawing color.
  *
  *  \param renderer The renderer which should fill multiple triangles.
- *  \param points   A pointer to an array of destination points representing a triangle strip.
- *  \param count    The number of points (number of triangles * 2, or number of triangles + 2).
- *  \param list     Draw as a triangle list (SDL_TRUE) or strip (SDL_FALSE)
+ *  \param points   Pointer to the destination triangles points.
+ *  \param count    Number of points.
+ *  \param mode     Triangle rendering mode.
+ *
+ *  \sa SDL_TriangleMode
  *
  *  \return 0 on success, or -1 on error
  */
 extern DECLSPEC int SDLCALL SDL_RenderFillTrianglesF(SDL_Renderer *renderer,
                                                      const SDL_FPoint *points,
-                                                     int count, SDL_bool list);
+                                                     int count, 
+                                                     SDL_TriangleMode mode);
 
 /**
  *  \brief Copy a portion of the texture to the current rendering target.
@@ -1108,11 +1133,13 @@ extern DECLSPEC int SDLCALL SDL_RenderCopyExF(SDL_Renderer * renderer,
  *  \brief Copy triangles portions of the texture to the current rendering target.
  *
  *  \param renderer     The renderer which should copy parts of a texture.
- *  \param texture      The source texture.
- *  \param srcpoints    A pointer to the source triangles points (triangle strip)
- *  \param dstpoints    A pointer to the destination triangles points (triangle strip)
- *  \param count        The number of points (number of triangles * 2, or number of triangles + 2).
- *  \param list         Draw as a triangle list (SDL_TRUE) or strip (SDL_FALSE)
+ *  \param texture      Source texture.
+ *  \param srcpoints    Pointer to the source triangles points.
+ *  \param dstpoints    Pointer to the destination triangles points.
+ *  \param count        Number of points.
+ *  \param mode         Triangle rendering mode.
+ *
+ *  \sa SDL_TriangleMode
  *
  *  \return 0 on success, or -1 on error
  */
@@ -1120,18 +1147,21 @@ extern DECLSPEC int SDLCALL SDL_RenderCopyTrianglesF(SDL_Renderer *renderer,
                                                      SDL_Texture *texture,
                                                      const SDL_Point *srcpoints,
                                                      const SDL_FPoint *dstpoints,
-                                                     int count, SDL_bool list);
+                                                     int count,
+                                                     SDL_TriangleMode mode);
 
 /**
  *  \brief Render triangles, optionally using a texture and indices into the vertex array
  *
- *  \param texture      (optional) The SDL texture to use, or the current drawing color
- *  \param points       An array of SDL_Point elements, representing vertices
- *  \param num_points   Number of elements in the 'points' array
- *  \param indices      (optional) An array of integer indices into the 'point' array, if NULL all vertices will be rendered in sequential order
- *  \param num_indices  Number of elements in the 'indices' array (ignored if indices is NULL)
- *  \param translation  (optional) A translation vector that will be applied to the vertices prior to rendering
- *  \param list         Draw as a triangle list (SDL_TRUE) or strip (SDL_FALSE)
+ *  \param texture      (optional) The SDL texture to use, or the current drawing color.
+ *  \param points       An array of SDL_Point elements, representing vertices.
+ *  \param num_points   Number of elements in the 'points' array.
+ *  \param indices      (optional) An array of integer indices into the 'point' array, if NULL all vertices will be rendered in sequential order.
+ *  \param num_indices  Number of elements in the 'indices' array (ignored if indices is NULL).
+ *  \param translation  (optional) A translation vector that will be applied to the vertices prior to rendering.
+ *  \param mode         Triangle rendering mode.
+ *
+ *  \sa SDL_TriangleMode
  *
  *  \return 0 on success, or -1 if the operation is not supported
  */
@@ -1139,7 +1169,8 @@ extern DECLSPEC int SDLCALL SDL_RenderGeometry(SDL_Renderer *renderer,
                                                SDL_Texture *texture,
                                                SDL_Point *points, int num_points,
                                                int *indices, int num_indices,
-                                               const SDL_FPoint *translation, SDL_bool list);
+                                               const SDL_FPoint *translation,
+                                               SDL_TriangleMode mode);
 
 /**
  *  \brief Read pixels from the current rendering target.

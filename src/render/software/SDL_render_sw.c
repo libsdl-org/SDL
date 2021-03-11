@@ -762,7 +762,8 @@ SW_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
             }
 
             case SDL_RENDERCMD_FILL_TRIANGLES_LIST:
-            case SDL_RENDERCMD_FILL_TRIANGLES_STRIP: {
+            case SDL_RENDERCMD_FILL_TRIANGLES_STRIP:
+            case SDL_RENDERCMD_FILL_TRIANGLES_FAN: {
                 int i;
                 const Uint8 r = cmd->data.draw.r;
                 const Uint8 g = cmd->data.draw.g;
@@ -779,8 +780,16 @@ SW_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
                     for (i = 0; i < count - 2; i++) {
                         SDL_SW_FillTriangle(surface, &verts[i], blend, SDL_MapRGBA(surface->format, r, g, b, a));
                     }
-                } else {
+                } else if (cmd->command == SDL_RENDERCMD_FILL_TRIANGLES_LIST) {
                     for (i = 0; i < count; i += 3) {
+                        SDL_SW_FillTriangle(surface, &verts[i], blend, SDL_MapRGBA(surface->format, r, g, b, a));
+                    }
+                } else { /* FAN */
+                    int x0 = verts[0].x;
+                    int y0 = verts[0].y;
+                    for (i = 0; i < count - 2; i++) {
+                        verts[i].x = x0;
+                        verts[i].y = y0;
                         SDL_SW_FillTriangle(surface, &verts[i], blend, SDL_MapRGBA(surface->format, r, g, b, a));
                     }
                 }
@@ -820,7 +829,8 @@ SW_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
             }
 
             case SDL_RENDERCMD_COPY_TRIANGLES_LIST:
-            case SDL_RENDERCMD_COPY_TRIANGLES_STRIP: {
+            case SDL_RENDERCMD_COPY_TRIANGLES_STRIP:
+            case SDL_RENDERCMD_COPY_TRIANGLES_FAN: {
                 int i;
                 SDL_Point *verts = (SDL_Point *) (((Uint8 *) vertices) + cmd->data.draw.first);
                 const size_t count = cmd->data.draw.count;
@@ -836,15 +846,25 @@ SW_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
                     for (i = 0; i < count - 2; i++) {
                         SDL_SW_BlitTriangle(src, surface, &verts[2 * i]);
                     }
-                } else {
+                } else if (cmd->command == SDL_RENDERCMD_COPY_TRIANGLES_LIST) {
                     for (i = 0; i < count; i += 3) {
+                        SDL_SW_BlitTriangle(src, surface, &verts[2 * i]);
+                    }
+                } else { /* FAN*/
+                    int sx0 = verts[0].x;
+                    int sy0 = verts[0].y;
+                    int dx0 = verts[1].x;
+                    int dy0 = verts[1].y;
+                    for (i = 0; i < count - 2; i++) {
+                        verts[2 * i].x = sx0;
+                        verts[2 * i].y = sy0;
+                        verts[2 * i + 1].x = dx0;
+                        verts[2 * i + 1].y = dy0;
                         SDL_SW_BlitTriangle(src, surface, &verts[2 * i]);
                     }
                 }
                 break;
             }
-
-
 
             case SDL_RENDERCMD_NO_OP:
                 break;

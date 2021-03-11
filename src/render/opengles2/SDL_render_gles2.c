@@ -1008,7 +1008,9 @@ SetDrawState(GLES2_RenderData *data, const SDL_RenderCommand *cmd, const GLES2_I
     if (texture) {
         int sz = 8;
 
-        if (cmd->command == SDL_RENDERCMD_COPY_TRIANGLES_STRIP || cmd->command == SDL_RENDERCMD_COPY_TRIANGLES_LIST) {
+        if (cmd->command == SDL_RENDERCMD_COPY_TRIANGLES_LIST ||
+            cmd->command == SDL_RENDERCMD_COPY_TRIANGLES_STRIP ||
+            cmd->command == SDL_RENDERCMD_COPY_TRIANGLES_FAN) {
             sz = cmd->data.draw.count * 2;
         }
 
@@ -1309,12 +1311,19 @@ GLES2_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
             }
 
             case SDL_RENDERCMD_FILL_TRIANGLES_LIST:
-            case SDL_RENDERCMD_FILL_TRIANGLES_STRIP: {
+            case SDL_RENDERCMD_FILL_TRIANGLES_STRIP:
+            case SDL_RENDERCMD_FILL_TRIANGLES_FAN: {
                 const size_t count = cmd->data.draw.count;
                 if (SetDrawState(data, cmd, GLES2_IMAGESOURCE_SOLID) == 0) {
-                    data->glDrawArrays(
-                            (cmd->command == SDL_RENDERCMD_FILL_TRIANGLES_STRIP ? GL_TRIANGLE_STRIP : GL_TRIANGLES),
-                            0, count);
+                    GLint mode;
+                    if (cmd->command == SDL_RENDERCMD_FILL_TRIANGLES_LIST) {
+                        mode = GL_TRIANGLES;
+                    } else  if (cmd->command == SDL_RENDERCMD_FILL_TRIANGLES_STRIP) {
+                        mode = GL_TRIANGLE_STRIP;
+                    } else {
+                        mode = GL_TRIANGLE_FAN;
+                    }
+                    data->glDrawArrays(mode, 0, count);
                 }
                 break;
             }
@@ -1328,12 +1337,19 @@ GLES2_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
             }
 
             case SDL_RENDERCMD_COPY_TRIANGLES_LIST:
-            case SDL_RENDERCMD_COPY_TRIANGLES_STRIP: {
+            case SDL_RENDERCMD_COPY_TRIANGLES_STRIP:
+            case SDL_RENDERCMD_COPY_TRIANGLES_FAN: {
                 const size_t count = cmd->data.draw.count;
                 if (SetCopyState(renderer, cmd) == 0) {
-                    data->glDrawArrays(
-                            (cmd->command == SDL_RENDERCMD_COPY_TRIANGLES_STRIP ? GL_TRIANGLE_STRIP : GL_TRIANGLES),
-                            0, count);
+                    GLint mode;
+                    if (cmd->command == SDL_RENDERCMD_COPY_TRIANGLES_LIST) {
+                        mode = GL_TRIANGLES;
+                    } else  if (cmd->command == SDL_RENDERCMD_COPY_TRIANGLES_STRIP) {
+                        mode = GL_TRIANGLE_STRIP;
+                    } else {
+                        mode = GL_TRIANGLE_FAN;
+                    }
+                    data->glDrawArrays(mode, 0, count);
                 }
                 break;
             }

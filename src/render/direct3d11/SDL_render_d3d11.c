@@ -1699,32 +1699,61 @@ D3D11_QueueFillRects(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_
 static int
 D3D11_QueueFillTriangles(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FPoint *points, int count)
 {
-    VertexPositionColor *verts = (VertexPositionColor *)SDL_AllocateRenderVertices(renderer, count * sizeof(VertexPositionColor), 0, &cmd->data.draw.first);
     const float r = (float)(cmd->data.draw.r / 255.0f);
     const float g = (float)(cmd->data.draw.g / 255.0f);
     const float b = (float)(cmd->data.draw.b / 255.0f);
     const float a = (float)(cmd->data.draw.a / 255.0f);
     int i;
 
-    if (!verts) {
-        return -1;
+    if (cmd->command == SDL_RENDERCMD_FILL_TRIANGLES_FAN) {
+        /* D3D11 doesn't handle FAN, create a list */
+        int new_count = (count - 2) * 3;
+        float x0, y0;
+        int i2 = 0;
+        VertexPositionColor *verts = (VertexPositionColor *)SDL_AllocateRenderVertices(renderer, new_count * sizeof(VertexPositionColor), 0, &cmd->data.draw.first);
+        if (!verts) {
+            return -1;
+        }
+        cmd->data.draw.count = new_count;
+        x0 = points[0].x;
+        y0 = points[0].y;
+        for (i = 0; i < new_count; i++) {
+            if (i % 3 == 0) {
+                verts->pos.x = x0;
+                verts->pos.y = y0;
+            } else {
+                verts->pos.x = points[i2].x;
+                verts->pos.y = points[i2].y;
+                i2++;
+            }
+            verts->pos.z = 0.0f;
+            verts->tex.x = 0.0f;
+            verts->tex.y = 0.0f;
+            verts->color.x = r;
+            verts->color.y = g;
+            verts->color.z = b;
+            verts->color.w = a;
+            verts++;
+        }
+    } else {
+        VertexPositionColor *verts = (VertexPositionColor *)SDL_AllocateRenderVertices(renderer, count * sizeof(VertexPositionColor), 0, &cmd->data.draw.first);
+        if (!verts) {
+            return -1;
+        }
+        cmd->data.draw.count = count;
+        for (i = 0; i < count; i++) {
+            verts->pos.x = points[i].x;
+            verts->pos.y = points[i].y;
+            verts->pos.z = 0.0f;
+            verts->tex.x = 0.0f;
+            verts->tex.y = 0.0f;
+            verts->color.x = r;
+            verts->color.y = g;
+            verts->color.z = b;
+            verts->color.w = a;
+            verts++;
+        }
     }
-
-    cmd->data.draw.count = count;
-
-    for (i = 0; i < count; i++) {
-        verts->pos.x = points[i].x;
-        verts->pos.y = points[i].y;
-        verts->pos.z = 0.0f;
-        verts->tex.x = 0.0f;
-        verts->tex.y = 0.0f;
-        verts->color.x = r;
-        verts->color.y = g;
-        verts->color.z = b;
-        verts->color.w = a;
-        verts++;
-    }
-
     return 0;
 }
 
@@ -1799,32 +1828,65 @@ static int
 D3D11_QueueCopyTriangles(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
     const SDL_Point *srcpoints, const SDL_FPoint *dstpoints, int count)
 {
-    VertexPositionColor *verts = (VertexPositionColor *)SDL_AllocateRenderVertices(renderer, count * sizeof(VertexPositionColor), 0, &cmd->data.draw.first);
     const float r = (float)(cmd->data.draw.r / 255.0f);
     const float g = (float)(cmd->data.draw.g / 255.0f);
     const float b = (float)(cmd->data.draw.b / 255.0f);
     const float a = (float)(cmd->data.draw.a / 255.0f);
     int i;
 
-    if (!verts) {
-        return -1;
+    if (cmd->command == SDL_RENDERCMD_COPY_TRIANGLES_FAN) {
+        /* D3D11 doesn't handle FAN, create a list */
+        int new_count = (count - 2) * 3;
+        float sx0, sy0, dx0, dy0;
+        int i2 = 0;
+        VertexPositionColor *verts = (VertexPositionColor *)SDL_AllocateRenderVertices(renderer, new_count * sizeof(VertexPositionColor), 0, &cmd->data.draw.first);
+        if (!verts) {
+            return -1;
+        }
+        cmd->data.draw.count = new_count;
+        sx0 = (float)srcpoints[0].x / texture->w;
+        sy0 = (float)srcpoints[0].y / texture->h;
+        dx0 = dstpoints[0].x;
+        dy0 = dstpoints[0].y;
+        for (i = 0; i < new_count; i++) {
+            if (i % 3 == 0) {
+                verts->pos.x = dx0;
+                verts->pos.y = dy0;
+                verts->tex.x = sx0;
+                verts->tex.y = sy0;
+            } else {
+                verts->pos.x = dstpoints[i2].x;
+                verts->pos.y = dstpoints[i2].y;
+                verts->tex.x = (float)srcpoints[i2].x / texture->w;
+                verts->tex.y = (float)srcpoints[i2].y / texture->h;
+                i2++;
+            }
+            verts->pos.z = 0.0f;
+            verts->color.x = r;
+            verts->color.y = g;
+            verts->color.z = b;
+            verts->color.w = a;
+            verts++;
+        }
+    } else {
+        VertexPositionColor *verts = (VertexPositionColor *)SDL_AllocateRenderVertices(renderer, count * sizeof(VertexPositionColor), 0, &cmd->data.draw.first);
+        if (!verts) {
+            return -1;
+        }
+        cmd->data.draw.count = count;
+        for (i = 0; i < count; i++) {
+            verts->pos.x = dstpoints[i].x;
+            verts->pos.y = dstpoints[i].y;
+            verts->pos.z = 0.0f;
+            verts->tex.x = (float)srcpoints[i].x / texture->w;
+            verts->tex.y = (float)srcpoints[i].y / texture->h;
+            verts->color.x = r;
+            verts->color.y = g;
+            verts->color.z = b;
+            verts->color.w = a;
+            verts++;
+        }
     }
-
-    cmd->data.draw.count = count;
-
-    for (i = 0; i < count; i++) {
-        verts->pos.x = dstpoints[i].x;
-        verts->pos.y = dstpoints[i].y;
-        verts->pos.z = 0.0f;
-        verts->tex.x = (float)srcpoints[i].x / texture->w;
-        verts->tex.y = (float)srcpoints[i].y / texture->h;
-        verts->color.x = r;
-        verts->color.y = g;
-        verts->color.z = b;
-        verts->color.w = a;
-        verts++;
-    }
-
     return 0;
 }
 
@@ -2389,14 +2451,21 @@ D3D11_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
             }
 
             case SDL_RENDERCMD_FILL_TRIANGLES_LIST:
-            case SDL_RENDERCMD_FILL_TRIANGLES_STRIP: {
+            case SDL_RENDERCMD_FILL_TRIANGLES_STRIP:
+            case SDL_RENDERCMD_FILL_TRIANGLES_FAN: {
                 const size_t count = cmd->data.draw.count;
                 const size_t first = cmd->data.draw.first;
                 const size_t start = first / sizeof(VertexPositionColor);
+                int mode;
+                if (cmd->command == SDL_RENDERCMD_FILL_TRIANGLES_LIST) {
+                    mode = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+                } else  if (cmd->command == SDL_RENDERCMD_FILL_TRIANGLES_STRIP) {
+                    mode = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP;
+                } else { /* FAN */
+                    mode = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+                }
                 D3D11_SetDrawState(renderer, cmd, rendererData->pixelShaders[SHADER_SOLID], 0, NULL, NULL, NULL);
-                D3D11_DrawPrimitives(renderer, 
-                        (cmd->command == SDL_RENDERCMD_FILL_TRIANGLES_STRIP ? D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP : D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST),
-                        start, count);
+                D3D11_DrawPrimitives(renderer, mode, start, count);
                 break;
             }
 
@@ -2423,15 +2492,21 @@ D3D11_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
             }
 
             case SDL_RENDERCMD_COPY_TRIANGLES_LIST:
-            case SDL_RENDERCMD_COPY_TRIANGLES_STRIP: {
+            case SDL_RENDERCMD_COPY_TRIANGLES_STRIP:
+            case SDL_RENDERCMD_COPY_TRIANGLES_FAN: {
                 const size_t count = cmd->data.draw.count;
                 const size_t first = cmd->data.draw.first;
                 const size_t start = first / sizeof(VertexPositionColor);
+                int mode;
+                if (cmd->command == SDL_RENDERCMD_COPY_TRIANGLES_LIST) {
+                    mode = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+                } else if (cmd->command == SDL_RENDERCMD_COPY_TRIANGLES_STRIP) {
+                    mode = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP;
+                } else { /* FAN */
+                    mode = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+                }
                 D3D11_SetCopyState(renderer, cmd, NULL);
-                D3D11_DrawPrimitives(renderer, 
-                        (cmd->command == SDL_RENDERCMD_COPY_TRIANGLES_STRIP ? D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP : D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST),
-                        start, count);
-
+                D3D11_DrawPrimitives(renderer, mode, start, count);
                 break;
             }
 

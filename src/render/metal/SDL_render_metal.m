@@ -1159,19 +1159,43 @@ METAL_QueueFillRects(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_
 static int
 METAL_QueueFillTriangles(SDL_Renderer *renderer, SDL_RenderCommand *cmd, const SDL_FPoint *points, int count)
 {
-    const size_t vertlen = (sizeof (float) * 2) * count;
-    float *verts = (float *) SDL_AllocateRenderVertices(renderer, vertlen, DEVICE_ALIGN(8), &cmd->data.draw.first);
-    if (!verts) {
-        return -1;
+    if (cmd->command == SDL_RENDERCMD_FILL_TRIANGLES_FAN) {
+        /* METAL doesn't handle FAN, create a list */
+        int new_count = (count - 2) * 3;
+        float x0, y0;
+        int i2;
+        const size_t vertlen = (sizeof (float) * 2) * new_count;
+        float *verts = (float *) SDL_AllocateRenderVertices(renderer, vertlen, DEVICE_ALIGN(8), &cmd->data.draw.first);
+        if (!verts) {
+            return -1;
+        }
+        cmd->data.draw.count = new_count;
+        x0 = points[0].x;
+        y0 = points[0].y;
+        for (int i = 0; i < new_count; i++) {
+            if (i % 3 == 0) {
+                *(verts++) = x0;
+                *(verts++) = y0;
+            } else {
+                *(verts++) = points[i2].x;
+                *(verts++) = points[i2].y;
+                i2++;
+            }
+        }
+    } else {
+        const size_t vertlen = (sizeof (float) * 2) * count;
+        float *verts = (float *) SDL_AllocateRenderVertices(renderer, vertlen, DEVICE_ALIGN(8), &cmd->data.draw.first);
+        if (!verts) {
+            return -1;
+        }
+
+        cmd->data.draw.count = count;
+
+        for (int i = 0; i < count; i++) {
+            *(verts++) = points[i].x;
+            *(verts++) = points[i].y;
+        }
     }
-
-    cmd->data.draw.count = count;
-
-    for (int i = 0; i < count; i++) {
-        *(verts++) = points[i].x;
-        *(verts++) = points[i].y;
-    }
-
     return 0;
 }
 
@@ -1220,22 +1244,54 @@ METAL_QueueCopyTriangles(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Tex
 {
     const float texw = (float) texture->w;
     const float texh = (float) texture->h;
-    const size_t vertlen = (sizeof (float) * 2) * 2 * count;
-    float *verts = (float *) SDL_AllocateRenderVertices(renderer, vertlen, DEVICE_ALIGN(8), &cmd->data.draw.first);
-    if (!verts) {
-        return -1;
+
+    if (cmd->command == SDL_RENDERCMD_COPY_TRIANGLES_FAN) {
+        /* METAL doesn't handle FAN, create a list */
+        int new_count = (count - 2) * 3;
+        float sx0, sy0, dx0, dy0;
+        int i2;
+        const size_t vertlen = (sizeof (float) * 2) * 2 * new_count;
+        float *verts = (float *) SDL_AllocateRenderVertices(renderer, vertlen, DEVICE_ALIGN(8), &cmd->data.draw.first);
+        if (!verts) {
+            return -1;
+        }
+        cmd->data.draw.count = new_count;
+        sx0 = normtex(srcpoints[0].x, texw);
+        sy0 = normtex(srcpoints[0].y, texh);
+        dx0 = dstpoints[0].x;
+        dy0 = dstpoints[0].y;
+        for (int i = 0; i < new_count; i++) {
+            if (i % 3 == 0) {
+                *(verts++) = dx0;
+                *(verts++) = dy0;
+                *(verts++) = sx0;
+                *(verts++) = sy0;
+            } else {
+                *(verts++) = dstpoints[i2].x;
+                *(verts++) = dstpoints[i2].y;
+
+                *(verts++) = normtex(srcpoints[i2].x, texw);
+                *(verts++) = normtex(srcpoints[i2].y, texh);
+                i2++;
+            }
+        }
+    } else {
+        const size_t vertlen = (sizeof (float) * 2) * 2 * count;
+        float *verts = (float *) SDL_AllocateRenderVertices(renderer, vertlen, DEVICE_ALIGN(8), &cmd->data.draw.first);
+        if (!verts) {
+            return -1;
+        }
+
+        cmd->data.draw.count = count;
+
+        for (int i = 0; i < count; i++) {
+            *(verts++) = dstpoints[i].x;
+            *(verts++) = dstpoints[i].y;
+
+            *(verts++) = normtex(srcpoints[i].x, texw);
+            *(verts++) = normtex(srcpoints[i].y, texh);
+        }
     }
-
-    cmd->data.draw.count = count;
-
-    for (int i = 0; i < count; i++) {
-        *(verts++) = dstpoints[i].x;
-        *(verts++) = dstpoints[i].y;
-
-        *(verts++) = normtex(srcpoints[i].x, texw);
-        *(verts++) = normtex(srcpoints[i].y, texh);
-    }
-
     return 0;
 }
 
@@ -1563,6 +1619,7 @@ METAL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
                 break;
             }
 
+            case SDL_RENDERCMD_FILL_TRIANGLES_FAN:
             case SDL_RENDERCMD_FILL_TRIANGLES_LIST: {
                 const size_t count = cmd->data.draw.count;
                 SetDrawState(renderer, cmd, SDL_METAL_FRAGMENT_SOLID, CONSTANTS_OFFSET_IDENTITY, mtlbufvertex, &statecache);
@@ -1596,6 +1653,7 @@ METAL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
                 break;
             }
 
+            case SDL_RENDERCMD_COPY_TRIANGLES_FAN:
             case SDL_RENDERCMD_COPY_TRIANGLES_LIST: {
                 const size_t count = cmd->data.draw.count;
                 SetCopyState(renderer, cmd, CONSTANTS_OFFSET_IDENTITY, mtlbufvertex, &statecache);

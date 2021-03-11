@@ -1361,13 +1361,22 @@ GL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
             }
 
             case SDL_RENDERCMD_FILL_TRIANGLES_LIST:
-            case SDL_RENDERCMD_FILL_TRIANGLES_STRIP: {
+            case SDL_RENDERCMD_FILL_TRIANGLES_STRIP:
+            case SDL_RENDERCMD_FILL_TRIANGLES_FAN: {
                 const size_t count = cmd->data.draw.count;
                 const GLfloat *verts = (GLfloat *) (((Uint8 *) vertices) + cmd->data.draw.first);
+                GLint mode;
+                if (cmd->command == SDL_RENDERCMD_FILL_TRIANGLES_LIST) {
+                    mode = GL_TRIANGLES;
+                } else  if (cmd->command == SDL_RENDERCMD_FILL_TRIANGLES_STRIP) {
+                    mode = GL_TRIANGLE_STRIP;
+                } else {
+                    mode = GL_TRIANGLE_FAN;
+                }
 
                 SetDrawState(data, cmd, SHADER_SOLID);
 
-                data->glBegin((cmd->command == SDL_RENDERCMD_FILL_TRIANGLES_STRIP ? GL_TRIANGLE_STRIP : GL_TRIANGLES));
+                data->glBegin(mode);
 
                 for (i = 0; i < count; i++) {
                     data->glVertex2f(verts[0], verts[1]);
@@ -1403,12 +1412,21 @@ GL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
             }
 
             case SDL_RENDERCMD_COPY_TRIANGLES_LIST:
-            case SDL_RENDERCMD_COPY_TRIANGLES_STRIP: {
+            case SDL_RENDERCMD_COPY_TRIANGLES_STRIP:
+            case SDL_RENDERCMD_COPY_TRIANGLES_FAN: {
                 const size_t count = cmd->data.draw.count;
                 const GLfloat *verts = (GLfloat *) (((Uint8 *) vertices) + cmd->data.draw.first);
+                GLint mode;
+                if (cmd->command == SDL_RENDERCMD_COPY_TRIANGLES_LIST) {
+                    mode = GL_TRIANGLES;
+                } else  if (cmd->command == SDL_RENDERCMD_COPY_TRIANGLES_STRIP) {
+                    mode = GL_TRIANGLE_STRIP;
+                } else {
+                    mode = GL_TRIANGLE_FAN;
+                }
 
                 SetCopyState(data, cmd);
-                data->glBegin((cmd->command == SDL_RENDERCMD_COPY_TRIANGLES_STRIP ? GL_TRIANGLE_STRIP : GL_TRIANGLES));
+                data->glBegin(mode);
 
                 for (i = 0; i < count; i++) {
                     data->glTexCoord2f(verts[0], verts[1]);
