@@ -4051,9 +4051,6 @@ case "$host" in
         # The Haiku platform requires special setup.
         SOURCES="$srcdir/src/main/haiku/*.cc $SOURCES"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lroot -lbe -lmedia -lgame -ldevice -ltextencoding"
-        # Haiku's x86 spins use libstdc++.r4.so (for binary compat?), but
-        #  other spins, like x86-64, use a more standard "libstdc++.so.*"
-        AC_CHECK_FILE("/boot/system/lib/libstdc++.r4.so", EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lstdc++.r4", EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lstdc++")
         ;;
     *-ios-*)
         ARCH=ios
