@@ -31,6 +31,10 @@
 #include "SDL_endian.h"
 
 #if defined(HAVE_ICONV) && defined(HAVE_ICONV_H)
+#ifdef __FreeBSD__
+/* Define LIBICONV_PLUG to use iconv from the base instead of ports and avoid linker errors. */
+#define LIBICONV_PLUG 1
+#endif
 #include <iconv.h>
 
 /* Depending on which standard the iconv() was implemented with,
