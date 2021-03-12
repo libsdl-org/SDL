@@ -41,6 +41,7 @@
 /* KMS/DRM declarations */
 #include "SDL_kmsdrmvideo.h"
 #include "SDL_kmsdrmevents.h"
+#include "SDL_kmsdrmegl.h"
 #include "SDL_kmsdrmopengles.h"
 #include "SDL_kmsdrmmouse.h"
 #include "SDL_kmsdrmdyn.h"
@@ -1087,14 +1088,10 @@ KMSDRM_DestroyWindow(_THIS, SDL_Window *window)
         /* Destroy GBM surface and buffers. */
         KMSDRM_DestroySurfaces(_this, window);
 
-        /* Unload EGL library. */
+        /* Unload EGL library. No need to unload the GL library
+           because we haven't explicitly loaded it. */
         if (_this->egl_data) {
             SDL_EGL_UnloadLibrary(_this);
-        }
-
-        /* Unload GL library. */
-        if (_this->gl_config.driver_loaded) {
-            SDL_GL_UnloadLibrary();
         }
 
         /* Free display plane, and destroy GBM device. */
@@ -1190,11 +1187,10 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
                before we call KMSDRM_GBMInit(), causing GLES programs to fail. */
             if (!_this->egl_data) {
                 egl_display = (NativeDisplayType)((SDL_VideoData *)_this->driverdata)->gbm_dev;
-                if (SDL_EGL_LoadLibrary(_this, NULL, egl_display, EGL_PLATFORM_GBM_MESA)) {
-                    goto cleanup;
-                }
 
-                if (SDL_GL_LoadLibrary(NULL) < 0) {
+                /* Load EGL library, libEGL.so. No need to load libOpenGL.so (which is what
+                   MESA libglvnd GL is called) manually. */
+                if (KMSDRM_EGL_LoadLibrary(_this, egl_display)) {
                     goto cleanup;
                 }
             }
