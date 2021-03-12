@@ -35,7 +35,7 @@
 #define DEFAULT_FONT "NoDefaultFont.ttf"
 #endif
 #else
-#define DEFAULT_FONT "unifont-9.0.02.hex"
+#define DEFAULT_FONT "unifont-13.0.06.hex"
 #endif
 #define MAX_TEXT_LENGTH 256
 
