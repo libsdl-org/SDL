@@ -87,7 +87,9 @@ WIN_DeleteDevice(SDL_VideoDevice * device)
     if (data->shcoreDLL) {
         SDL_UnloadObject(data->shcoreDLL);
     }
-
+    if (device->wakeup_lock) {
+        SDL_DestroyMutex(device->wakeup_lock);
+    }
     SDL_free(device->driverdata);
     SDL_free(device);
 }
@@ -113,6 +115,7 @@ WIN_CreateDevice(int devindex)
         return NULL;
     }
     device->driverdata = data;
+    device->wakeup_lock = SDL_CreateMutex();
 
     data->userDLL = SDL_LoadObject("USER32.DLL");
     if (data->userDLL) {
@@ -139,6 +142,8 @@ WIN_CreateDevice(int devindex)
     device->GetDisplayModes = WIN_GetDisplayModes;
     device->SetDisplayMode = WIN_SetDisplayMode;
     device->PumpEvents = WIN_PumpEvents;
+    device->WaitEventTimeout = WIN_WaitEventTimeout;
+    device->SendWakeupEvent = WIN_SendWakeupEvent;
     device->SuspendScreenSaver = WIN_SuspendScreenSaver;
 
     device->CreateSDLWindow = WIN_CreateWindow;
@@ -226,6 +231,8 @@ VideoBootStrap WINDOWS_bootstrap = {
 int
 WIN_VideoInit(_THIS)
 {
+    SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
+
     if (WIN_InitModes(_this) < 0) {
         return -1;
     }
@@ -235,6 +242,8 @@ WIN_VideoInit(_THIS)
 
     SDL_AddHintCallback(SDL_HINT_WINDOWS_ENABLE_MESSAGELOOP, UpdateWindowsEnableMessageLoop, NULL);
     SDL_AddHintCallback(SDL_HINT_WINDOW_FRAME_USABLE_WHILE_CURSOR_HIDDEN, UpdateWindowFrameUsableWhileCursorHidden, NULL);
+
+    data->_SDL_WAKEUP = RegisterWindowMessageA("_SDL_WAKEUP");
 
     return 0;
 }

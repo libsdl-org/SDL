@@ -190,6 +190,7 @@ typedef struct SDL_VideoData
     TSFSink *ime_ippasink;
 
     BYTE pre_hook_key_state[256];
+    UINT _SDL_WAKEUP;
 } SDL_VideoData;
 
 extern SDL_bool g_WindowsEnableMessageLoop;

@@ -105,7 +105,13 @@ X11_DeleteDevice(SDL_VideoDevice * device)
         X11_XSetErrorHandler(orig_x11_errhandler);
         X11_XCloseDisplay(data->display);
     }
+    if (data->request_display) {
+        X11_XCloseDisplay(data->request_display);
+    }
     SDL_free(data->windowlist);
+    if (device->wakeup_lock) {
+        SDL_DestroyMutex(device->wakeup_lock);
+    }
     SDL_free(device->driverdata);
     SDL_free(device);
 
@@ -178,10 +184,22 @@ X11_CreateDevice(int devindex)
         return NULL;
     }
     device->driverdata = data;
+    device->wakeup_lock = SDL_CreateMutex();
 
     data->global_mouse_changed = SDL_TRUE;
 
     data->display = x11_display;
+    data->request_display = X11_XOpenDisplay(display);
+    if (data->request_display == NULL) {
+        X11_XCloseDisplay(data->display);
+        SDL_free(device->driverdata);
+        SDL_free(device);
+        SDL_X11_UnloadSymbols();
+        return NULL;
+    }
+
+    device->wakeup_lock = SDL_CreateMutex();
+
 #ifdef X11_DEBUG
     X11_XSynchronize(data->display, True);
 #endif
@@ -201,6 +219,8 @@ X11_CreateDevice(int devindex)
     device->SetDisplayMode = X11_SetDisplayMode;
     device->SuspendScreenSaver = X11_SuspendScreenSaver;
     device->PumpEvents = X11_PumpEvents;
+    device->WaitEventTimeout = X11_WaitEventTimeout;
+    device->SendWakeupEvent = X11_SendWakeupEvent;
 
     device->CreateSDLWindow = X11_CreateWindow;
     device->CreateSDLWindowFrom = X11_CreateWindowFrom;
@@ -403,6 +423,7 @@ X11_VideoInit(_THIS)
     GET_ATOM(_NET_WM_USER_TIME);
     GET_ATOM(_NET_ACTIVE_WINDOW);
     GET_ATOM(_NET_FRAME_EXTENTS);
+    GET_ATOM(_SDL_WAKEUP);
     GET_ATOM(UTF8_STRING);
     GET_ATOM(PRIMARY);
     GET_ATOM(XdndEnter);
