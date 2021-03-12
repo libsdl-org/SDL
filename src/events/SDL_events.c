@@ -759,6 +759,80 @@ SDL_PollEvent(SDL_Event * event)
     return SDL_WaitEventTimeout(event, 0);
 }
 
+static int
+SDL_WaitEventTimeout_Device(_THIS, SDL_Window *wakeup_window, SDL_Event * event, int timeout)
+{
+    /* Release any keys held down from last frame */
+    SDL_ReleaseAutoReleaseKeys();
+
+    for (;;) {
+        if (!_this->wakeup_lock || SDL_LockMutex(_this->wakeup_lock) == 0) {
+            int status = SDL_PeepEvents(event, 1, SDL_GETEVENT, SDL_FIRSTEVENT, SDL_LASTEVENT);
+            /* If status == 0 we are going to block so wakeup will be needed. */
+            if (status == 0) {
+                _this->wakeup_window = wakeup_window;
+                _this->blocking_thread_id = SDL_ThreadID();
+            } else {
+                _this->wakeup_window = NULL;
+                _this->blocking_thread_id = 0;
+            }
+            if (_this->wakeup_lock) {
+                SDL_UnlockMutex(_this->wakeup_lock);
+            }
+            if (status < 0) {
+                /* Got an error: return */
+                break;
+            }
+            if (status > 0) {
+                /* There is an event, we can return. */
+                SDL_SendPendingSignalEvents();  /* in case we had a signal handler fire, etc. */
+                return 1;
+            }
+            /* No events found in the queue, call WaitEventTimeout to wait for an event. */
+            status = _this->WaitEventTimeout(_this, timeout);
+            /* Set wakeup_window to NULL without holding the lock. */
+            _this->wakeup_window = NULL;
+            if (status <= 0) {
+                /* There is either an error or the timeout is elapsed: return */
+                return 0;
+            }
+            /* An event was found and pumped into the SDL events queue. Continue the loop
+              to let SDL_PeepEvents pick it up .*/
+        }
+    }
+    return 0;
+}
+
+static int
+SDL_events_need_polling() {
+    SDL_bool need_polling = SDL_FALSE;
+
+#if !SDL_JOYSTICK_DISABLED
+    need_polling = \
+        (!SDL_disabled_events[SDL_JOYAXISMOTION >> 8] || SDL_JoystickEventState(SDL_QUERY)) \
+        && (SDL_NumJoysticks() > 0);
+#endif
+
+#if !SDL_SENSOR_DISABLED
+    need_polling = need_polling || (!SDL_disabled_events[SDL_SENSORUPDATE >> 8] && \
+        (SDL_NumSensors() > 0));
+#endif
+
+    return need_polling;
+}
+
+static SDL_Window *
+SDL_find_active_window(SDL_VideoDevice * _this)
+{
+    SDL_Window *window;
+    for (window = _this->windows; window; window = window->next) {
+        if (!window->is_destroying) {
+            return window;
+        }
+    }
+    return NULL;
+}
+
 int
 SDL_WaitEvent(SDL_Event * event)
 {
@@ -768,10 +842,23 @@ SDL_WaitEvent(SDL_Event * event)
 int
 SDL_WaitEventTimeout(SDL_Event * event, int timeout)
 {
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
+    SDL_bool need_polling = SDL_events_need_polling();
+    SDL_Window *wakeup_window = NULL;
     Uint32 expiration = 0;
 
     if (timeout > 0)
         expiration = SDL_GetTicks() + timeout;
+
+    if (!need_polling && _this) {
+        /* Look if a shown window is available to send the wakeup event. */
+        wakeup_window = SDL_find_active_window(_this);
+        need_polling = (wakeup_window == NULL);
+    }
+
+    if (!need_polling && _this && _this->WaitEventTimeout && _this->SendWakeupEvent) {
+        return SDL_WaitEventTimeout_Device(_this, wakeup_window, event, timeout);
+    }
 
     for (;;) {
         SDL_PumpEvents();
@@ -794,6 +881,24 @@ SDL_WaitEventTimeout(SDL_Event * event, int timeout)
             return 1;
         }
     }
+}
+
+static int
+SDL_SendWakeupEvent()
+{
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
+    if (!_this || !_this->SendWakeupEvent) {
+        return 0;
+    }
+    if (!_this->wakeup_lock || SDL_LockMutex(_this->wakeup_lock) == 0) {
+        if (_this->wakeup_window && _this->blocking_thread_id != 0 && _this->blocking_thread_id != SDL_ThreadID()) {
+            _this->SendWakeupEvent(_this, _this->wakeup_window);
+        }
+        if (_this->wakeup_lock) {
+            SDL_UnlockMutex(_this->wakeup_lock);
+        }
+    }
+    return 0;
 }
 
 int
@@ -845,6 +950,7 @@ SDL_PushEvent(SDL_Event * event)
         return -1;
     }
 
+    SDL_SendWakeupEvent();
     SDL_GestureProcessEvent(event);
 
     return 1;

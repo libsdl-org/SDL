@@ -9,6 +9,7 @@ LIBS	= @LIBS@
 
 TARGETS = \
 	checkkeys$(EXE) \
+	checkkeysthreads$(EXE) \
 	controllermap$(EXE) \
 	loopwave$(EXE) \
 	loopwavequeue$(EXE) \
@@ -81,6 +82,9 @@ Makefile: $(srcdir)/Makefile.in
 	$(SHELL) config.status $@
 
 checkkeys$(EXE): $(srcdir)/checkkeys.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+checkkeysthreads$(EXE): $(srcdir)/checkkeysthreads.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
 loopwave$(EXE): $(srcdir)/loopwave.c

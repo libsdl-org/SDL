@@ -1276,6 +1276,45 @@ void SDL_SetWindowsMessageHook(SDL_WindowsMessageHook callback, void *userdata)
     g_WindowsMessageHookData = userdata;
 }
 
+int
+WIN_WaitEventTimeout(_THIS, int timeout)
+{
+    MSG msg;
+    if (g_WindowsEnableMessageLoop) {
+        BOOL message_result;
+        UINT_PTR timer_id = 0;
+        if (timeout > 0) {
+            timer_id = SetTimer(NULL, 0, timeout, NULL);
+            message_result = GetMessage(&msg, 0, 0, 0);
+            KillTimer(NULL, timer_id);
+        } else if (timeout == 0) {
+            message_result = PeekMessage(&msg, NULL, 0, 0, PM_REMOVE);
+        } else {
+            message_result = GetMessage(&msg, 0, 0, 0);
+        }
+        if (message_result) {
+            if (msg.message == WM_TIMER && msg.hwnd == NULL && msg.wParam == timer_id) {
+                return 0;
+            }
+            if (g_WindowsMessageHook) {
+                g_WindowsMessageHook(g_WindowsMessageHookData, msg.hwnd, msg.message, msg.wParam, msg.lParam);
+            }
+            /* Always translate the message in case it's a non-SDL window (e.g. with Qt integration) */
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+            return 1;
+        }
+    }
+    return 0;
+}
+
+void
+WIN_SendWakeupEvent(_THIS, SDL_Window *window)
+{
+    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+    PostMessage(data->hwnd, data->videodata->_SDL_WAKEUP, 0, 0);
+}
+
 void
 WIN_PumpEvents(_THIS)
 {
