@@ -1088,11 +1088,15 @@ KMSDRM_DestroyWindow(_THIS, SDL_Window *window)
         /* Destroy GBM surface and buffers. */
         KMSDRM_DestroySurfaces(_this, window);
 
-        /* Unload EGL library. No need to unload the GL library
-           because we haven't explicitly loaded it. */
+        /* Unload EGL library. */
         if (_this->egl_data) {
             SDL_EGL_UnloadLibrary(_this);
         }
+
+        /* Unload GL library. */
+        if (_this->gl_config.driver_loaded) {
+            SDL_GL_UnloadLibrary();
+        } 
 
         /* Free display plane, and destroy GBM device. */
         KMSDRM_GBMDeinit(_this, dispdata);
@@ -1162,11 +1166,11 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
         if (!(dispdata->gbm_init)) {
 
             /* In order for the GL_CreateRenderer() and GL_LoadFunctions() calls
-               in SDL_CreateWindow succeed (no doing so causes a windo re-creation),
+               in SDL_CreateWindow succeed (no doing so causes a window re-creation),
                At the end of this block, we must have: 
                -Marked the window as being OPENGL
                -Loaded the GL library (which can't be loaded until the GBM
-                device has been created) because SDL_EGL_Library() function uses it.
+                device has been created) because SDL_EGL_LoadLibrary() function uses it.
              */
 
             /* Maybe you didn't ask for an OPENGL window, but that's what you will get.
@@ -1188,11 +1192,18 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
             if (!_this->egl_data) {
                 egl_display = (NativeDisplayType)((SDL_VideoData *)_this->driverdata)->gbm_dev;
 
-                /* Load EGL library, libEGL.so. No need to load libOpenGL.so (which is what
-                   MESA libglvnd GL is called) manually. */
+                /* Load EGL library, libEGL.so. No real need to load a separate GL library,
+                   but we do or GL_CreateRenderer won't succeed. */
                 if (KMSDRM_EGL_LoadLibrary(_this, egl_display)) {
                     goto cleanup;
                 }
+
+                /* Do this or GL_CreateRenderer won't succeed and there will be an
+                   unwanted window recreation. */
+                if (SDL_GL_LoadLibrary(NULL) < 0) {
+                    goto cleanup;
+                }
+
             }
 
             /* Create the cursor BO for the display of this window,

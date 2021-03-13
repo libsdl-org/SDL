@@ -118,16 +118,6 @@ KMSDRM_EGL_LoadLibraryOnly(_THIS)
     LOAD_FUNC_EGLEXT(eglQueryDevicesEXT);
     LOAD_FUNC_EGLEXT(eglGetPlatformDisplayEXT);
 
-    #if 0 /* If these are ever needed again, they should be loaded here. */
-    /* Atomic functions */
-    LOAD_FUNC_EGLEXT(eglCreateSyncKHR);
-    LOAD_FUNC_EGLEXT(eglDestroySyncKHR);
-    LOAD_FUNC_EGLEXT(eglDupNativeFenceFDANDROID);
-    LOAD_FUNC_EGLEXT(eglWaitSyncKHR);
-    LOAD_FUNC_EGLEXT(eglClientWaitSyncKHR);
-    /* Atomic functions end */
-    #endif
-
     return 0;
 }
 
