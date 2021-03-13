@@ -780,9 +780,11 @@ SDL_WaitEventTimeout_Device(_THIS, SDL_Window *wakeup_window, SDL_Event * event,
                 SDL_UnlockMutex(_this->wakeup_lock);
             }
             if (status < 0) {
+                /* Got an error: return */
                 break;
             }
             if (status > 0) {
+                /* There is an event, we can return. */
                 SDL_SendPendingSignalEvents();  /* in case we had a signal handler fire, etc. */
                 return 1;
             }
@@ -790,7 +792,12 @@ SDL_WaitEventTimeout_Device(_THIS, SDL_Window *wakeup_window, SDL_Event * event,
             status = _this->WaitEventTimeout(_this, timeout);
             /* Set wakeup_window to NULL without holding the lock. */
             _this->wakeup_window = NULL;
-            return status;
+            if (status <= 0) {
+                /* There is either an error or the timeout is elapsed: return */
+                return 0;
+            }
+            /* An event was found and pumped into the SDL events queue. Continue the loop
+              to let SDL_PeepEvents pick it up .*/
         }
     }
     return 0;
