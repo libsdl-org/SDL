@@ -2073,6 +2073,35 @@ Blit_RGB565_BGRA8888(SDL_BlitInfo * info)
 
 #endif /* SDL_HAVE_BLIT_N_RGB565 */
 
+/* RGB555->ARGB1555, and BGR555->ABGR1555, SET_ALPHA */
+static void
+Blit_RGB555_ARGB1555(SDL_BlitInfo * info)
+{
+    int width = info->dst_w;
+    int height = info->dst_h;
+    Uint16 *src = (Uint16 *) info->src;
+    int srcskip = info->src_skip;
+    Uint16 *dst = (Uint16 *) info->dst;
+    int dstskip = info->dst_skip;
+    SDL_PixelFormat *dstfmt = info->dst_fmt;
+
+    Uint16 mask = ((Uint32)info->a >> dstfmt->Aloss) << dstfmt->Ashift;
+
+    while (height--) {
+        /* *INDENT-OFF* */
+        DUFFS_LOOP(
+        {
+            *dst = *src | mask;
+            ++dst;
+            ++src;
+        },
+        width);
+        /* *INDENT-ON* */
+        src = (Uint16 *) ((Uint8 *) src + srcskip);
+        dst = (Uint16 *) ((Uint8 *) dst + dstskip);
+    }
+}
+
 static void
 BlitNto1(SDL_BlitInfo * info)
 {
@@ -3259,6 +3288,10 @@ static const struct blit_table normal_blit_2[] = {
     {0x0000F800, 0x000007E0, 0x0000001F, 4, 0x0000FF00, 0x00FF0000, 0xFF000000,
      0, Blit_RGB565_BGRA8888, NO_ALPHA | COPY_ALPHA | SET_ALPHA},
 #endif
+    {0x00007C00, 0x000003E0, 0x0000001F, 2, 0x00007C00, 0x000003E0, 0x0000001F,
+     0, Blit_RGB555_ARGB1555, SET_ALPHA},
+    {0x0000001F, 0x000003E0, 0x00007C00, 2, 0x0000001F, 0x000003E0, 0x00007C00,
+     0, Blit_RGB555_ARGB1555, SET_ALPHA},
 
     /* Default for 16-bit RGB source, used if no other blitter matches */
     {0, 0, 0, 0, 0, 0, 0, 0, BlitNtoN, 0}
