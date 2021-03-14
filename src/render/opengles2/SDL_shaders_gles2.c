@@ -39,10 +39,12 @@
 static const Uint8 GLES2_Vertex_Default[] = " \
     uniform mat4 u_projection; \
     attribute vec2 a_position; \
+    attribute vec4 a_color; \
     attribute vec2 a_texCoord; \
     attribute vec2 a_angle; \
     attribute vec2 a_center; \
     varying vec2 v_texCoord; \
+    varying vec4 v_color; \
     \
     void main() \
     { \
@@ -53,29 +55,30 @@ static const Uint8 GLES2_Vertex_Default[] = " \
         v_texCoord = a_texCoord; \
         gl_Position = u_projection * vec4(position, 0.0, 1.0);\
         gl_PointSize = 1.0; \
+        v_color = a_color; \
     } \
 ";
 
 static const Uint8 GLES2_Fragment_Solid[] = " \
     precision mediump float; \
-    uniform vec4 u_color; \
+    varying vec4 v_color; \
     \
     void main() \
     { \
-        gl_FragColor = u_color; \
+        gl_FragColor = v_color; \
     } \
 ";
 
 static const Uint8 GLES2_Fragment_TextureABGR[] = " \
     precision mediump float; \
     uniform sampler2D u_texture; \
-    uniform vec4 u_color; \
+    varying vec4 v_color; \
     varying vec2 v_texCoord; \
     \
     void main() \
     { \
         gl_FragColor = texture2D(u_texture, v_texCoord); \
-        gl_FragColor *= u_color; \
+        gl_FragColor *= v_color; \
     } \
 ";
 
@@ -83,7 +86,7 @@ static const Uint8 GLES2_Fragment_TextureABGR[] = " \
 static const Uint8 GLES2_Fragment_TextureARGB[] = " \
     precision mediump float; \
     uniform sampler2D u_texture; \
-    uniform vec4 u_color; \
+    varying vec4 v_color; \
     varying vec2 v_texCoord; \
     \
     void main() \
@@ -92,7 +95,7 @@ static const Uint8 GLES2_Fragment_TextureARGB[] = " \
         gl_FragColor = abgr; \
         gl_FragColor.r = abgr.b; \
         gl_FragColor.b = abgr.r; \
-        gl_FragColor *= u_color; \
+        gl_FragColor *= v_color; \
     } \
 ";
 
@@ -100,7 +103,7 @@ static const Uint8 GLES2_Fragment_TextureARGB[] = " \
 static const Uint8 GLES2_Fragment_TextureRGB[] = " \
     precision mediump float; \
     uniform sampler2D u_texture; \
-    uniform vec4 u_color; \
+    varying vec4 v_color; \
     varying vec2 v_texCoord; \
     \
     void main() \
@@ -110,7 +113,7 @@ static const Uint8 GLES2_Fragment_TextureRGB[] = " \
         gl_FragColor.r = abgr.b; \
         gl_FragColor.b = abgr.r; \
         gl_FragColor.a = 1.0; \
-        gl_FragColor *= u_color; \
+        gl_FragColor *= v_color; \
     } \
 ";
 
@@ -118,7 +121,7 @@ static const Uint8 GLES2_Fragment_TextureRGB[] = " \
 static const Uint8 GLES2_Fragment_TextureBGR[] = " \
     precision mediump float; \
     uniform sampler2D u_texture; \
-    uniform vec4 u_color; \
+    varying vec4 v_color; \
     varying vec2 v_texCoord; \
     \
     void main() \
@@ -126,7 +129,7 @@ static const Uint8 GLES2_Fragment_TextureBGR[] = " \
         vec4 abgr = texture2D(u_texture, v_texCoord); \
         gl_FragColor = abgr; \
         gl_FragColor.a = 1.0; \
-        gl_FragColor *= u_color; \
+        gl_FragColor *= v_color; \
     } \
 ";
 
@@ -163,7 +166,7 @@ static const Uint8 GLES2_Fragment_TextureBGR[] = " \
 "uniform sampler2D u_texture;\n"                                \
 "uniform sampler2D u_texture_u;\n"                              \
 "uniform sampler2D u_texture_v;\n"                              \
-"uniform vec4 u_color;\n"                                  \
+"varying vec4 v_color;\n"                                  \
 "varying vec2 v_texCoord;\n"                                    \
 "\n"                                                            \
 
@@ -185,7 +188,7 @@ static const Uint8 GLES2_Fragment_TextureBGR[] = " \
 "\n"                                                            \
 "    // That was easy. :) \n"                                   \
 "    gl_FragColor = vec4(rgb, 1);\n"                            \
-"    gl_FragColor *= u_color;\n"                           \
+"    gl_FragColor *= v_color;\n"                           \
 "}"                                                             \
 
 #define NV12_SHADER_BODY                                        \
@@ -205,7 +208,7 @@ static const Uint8 GLES2_Fragment_TextureBGR[] = " \
 "\n"                                                            \
 "    // That was easy. :) \n"                                   \
 "    gl_FragColor = vec4(rgb, 1);\n"                            \
-"    gl_FragColor *= u_color;\n"                           \
+"    gl_FragColor *= v_color;\n"                           \
 "}"                                                             \
 
 #define NV21_SHADER_BODY                                        \
@@ -225,7 +228,7 @@ static const Uint8 GLES2_Fragment_TextureBGR[] = " \
 "\n"                                                            \
 "    // That was easy. :) \n"                                   \
 "    gl_FragColor = vec4(rgb, 1);\n"                            \
-"    gl_FragColor *= u_color;\n"                           \
+"    gl_FragColor *= v_color;\n"                           \
 "}"                                                             \
 
 /* YUV to ABGR conversion */
@@ -284,13 +287,13 @@ static const Uint8 GLES2_Fragment_TextureExternalOES[] = " \
     #extension GL_OES_EGL_image_external : require\n\
     precision mediump float; \
     uniform samplerExternalOES u_texture; \
-    uniform vec4 u_color; \
+    varying vec4 v_color; \
     varying vec2 v_texCoord; \
     \
     void main() \
     { \
         gl_FragColor = texture2D(u_texture, v_texCoord); \
-        gl_FragColor *= u_color; \
+        gl_FragColor *= v_color; \
     } \
 ";
 
