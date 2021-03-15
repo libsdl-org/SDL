@@ -2384,6 +2384,27 @@ CheckOpenGLX11()
     fi
 }
 
+dnl Find KMSDRM OpenGL (GLVND)
+CheckOpenGLKMSDRM()
+{
+    if test x$enable_video = xyes -a x$enable_video_opengl = xyes -a x$enable_video_kmsdrm = xyes; then
+        AC_MSG_CHECKING(for OpenGL (GLVND) support)
+        video_opengl=no
+        AC_TRY_COMPILE([
+         #include <GL/gl.h>
+        ],[  
+        ],[  
+        video_opengl=yes
+        ])   
+        AC_MSG_RESULT($video_opengl)
+        if test x$video_opengl = xyes; then 
+            AC_DEFINE(SDL_VIDEO_OPENGL, 1, [ ]) 
+            AC_DEFINE(SDL_VIDEO_RENDER_OGL, 1, [ ]) 
+            SUMMARY_video="${SUMMARY_video} opengl"
+        fi   
+    fi   
+}
+
 dnl Check to see if OpenGL ES support is desired
 AC_ARG_ENABLE(video-opengles,
 [AS_HELP_STRING([--enable-video-opengles], [include OpenGL ES support [default=yes]])],
@@ -3656,6 +3677,7 @@ case "$host" in
         # Need to check for EGL first because KMSDRM depends on it.
         CheckEGLKMSDRM
         CheckKMSDRM
+        CheckOpenGLKMSDRM
         CheckOpenGLX11
         CheckOpenGLESX11
         CheckVulkan
