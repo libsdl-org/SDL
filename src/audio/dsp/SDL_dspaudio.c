@@ -295,6 +295,13 @@ DSP_FlushCapture(_THIS)
 static int
 DSP_Init(SDL_AudioDriverImpl * impl)
 {
+    struct stat st;
+
+    /* Check for the presence of OSS devices */
+    if (stat("/dev/dsp", &st) == -1) {
+        return 0;
+    }
+
     /* Set the function pointers */
     impl->DetectDevices = DSP_DetectDevices;
     impl->OpenDevice = DSP_OpenDevice;
