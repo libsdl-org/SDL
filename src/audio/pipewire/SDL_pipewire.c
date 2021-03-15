@@ -615,7 +615,7 @@ registry_event_global_callback(void *object, uint32_t id, uint32_t permissions, 
         const char *media_class = spa_dict_lookup(props, PW_KEY_MEDIA_CLASS);
 
         if (media_class) {
-            const char *    node_nick, *node_desc;
+            const char *    node_desc;
             struct io_node *io;
             SDL_bool        is_capture;
             int             str_buffer_len;
@@ -629,10 +629,9 @@ registry_event_global_callback(void *object, uint32_t id, uint32_t permissions, 
                 return;
             }
 
-            node_nick = spa_dict_lookup(props, PW_KEY_NODE_NICK);
             node_desc = spa_dict_lookup(props, PW_KEY_NODE_DESCRIPTION);
 
-            if (node_nick && node_desc) {
+            if (node_desc) {
                 node = node_object_new(id, type, version, &interface_node_events, &interface_core_events);
                 if (node == NULL) {
                     SDL_SetError("Pipewire: Failed to allocate interface node");
@@ -640,7 +639,7 @@ registry_event_global_callback(void *object, uint32_t id, uint32_t permissions, 
                 }
 
                 /* Allocate and initialize the I/O node information struct */
-                str_buffer_len = SDL_strlen(node_nick) + SDL_strlen(node_desc) + 3;
+                str_buffer_len = SDL_strlen(node_desc) + 1;
                 node->userdata = io = SDL_calloc(1, sizeof(struct io_node) + str_buffer_len);
                 if (io == NULL) {
                     node_object_destroy(node);
@@ -652,7 +651,7 @@ registry_event_global_callback(void *object, uint32_t id, uint32_t permissions, 
                 io->id          = id;
                 io->is_capture  = is_capture;
                 io->spec.format = AUDIO_F32; /* Pipewire uses floats internally, other formats require conversion. */
-                SDL_snprintf(io->name, str_buffer_len, "%s: %s", node_nick, node_desc);
+                SDL_strlcpy(io->name, node_desc, str_buffer_len);
 
                 /* Update sync points */
                 hotplug_core_sync(node);
