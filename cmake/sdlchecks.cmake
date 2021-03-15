@@ -799,7 +799,7 @@ endmacro()
 # - PkgCheckModules
 macro(CheckEGL)
   pkg_check_modules(EGL egl)
-  string(REPLACE "-D_THREAD_SAFE;" "-D_THREAD_SAFE=1;" EGL_CFLAGS ${EGL_CFLAGS})
+  string(REPLACE "-D_THREAD_SAFE;" "-D_THREAD_SAFE=1;" EGL_CFLAGS "${EGL_CFLAGS}")
 endmacro()
 
 # Requires:
