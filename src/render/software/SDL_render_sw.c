@@ -33,6 +33,7 @@
 #include "SDL_drawline.h"
 #include "SDL_drawpoint.h"
 #include "SDL_rotate.h"
+#include "SDL_triangle.h"
 
 /* SDL surface based renderer implementation */
 
@@ -560,6 +561,71 @@ SW_RenderCopyEx(SDL_Renderer * renderer, SDL_Surface *surface, SDL_Texture * tex
     return retval;
 }
 
+
+typedef struct GeometryFillData
+{
+    SDL_Point dst;
+    SDL_Color color;
+} GeometryFillData;
+
+typedef struct GeometryCopyData
+{
+    SDL_Point src;
+    SDL_Point dst;
+    SDL_Color color;
+} GeometryCopyData;
+
+static int
+SW_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
+        SDL_Vertex *vertices, int num_vertices, int *indices, int num_indices, float scale_x, float scale_y)
+{
+    int i;
+    int count = indices ? num_indices : num_vertices;
+    void *verts;
+    int sz = texture ? sizeof (GeometryCopyData) : sizeof (GeometryFillData);
+
+    verts = (void *) SDL_AllocateRenderVertices(renderer, count * sz, 0, &cmd->data.draw.first);
+    if (!verts) {
+        return -1;
+    }
+
+    cmd->data.draw.count = count;
+
+    if (texture) {
+        GeometryCopyData *ptr = (GeometryCopyData *) verts;
+        for (i = 0; i < count; i++) {
+            SDL_Vertex *v = &vertices[indices ? indices[i] : i];
+
+            ptr->src.x = v->tex_coord.x;
+            ptr->src.y = v->tex_coord.y;
+
+            ptr->dst.x = v->position.x * scale_x + renderer->viewport.x;
+            ptr->dst.y = v->position.y * scale_y + renderer->viewport.y;
+            trianglepoint_2_fixedpoint(&ptr->dst);
+
+            ptr->color = v->color;
+
+            ptr++;
+       }
+    } else {
+        GeometryFillData *ptr = (GeometryFillData *) verts;
+
+        for (i = 0; i < count; i++) {
+            SDL_Vertex *v = &vertices[indices ? indices[i] : i];
+
+            ptr->dst.x = v->position.x * scale_x + renderer->viewport.x;
+            ptr->dst.y = v->position.y * scale_y + renderer->viewport.y;
+            trianglepoint_2_fixedpoint(&ptr->dst);
+
+            ptr->color = v->color;
+
+            ptr++;
+       }
+    }
+
+    return 0;
+}
+
 static void
 PrepTextureForCopy(const SDL_RenderCommand *cmd)
 {
@@ -734,6 +800,39 @@ SW_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
                 break;
             }
 
+            case SDL_RENDERCMD_GEOMETRY: {
+                int i;
+                SDL_Rect *verts = (SDL_Rect *) (((Uint8 *) vertices) + cmd->data.draw.first);
+                const int count = (int) cmd->data.draw.count;
+                SDL_Texture *texture = cmd->data.draw.texture;
+                const SDL_BlendMode blend = cmd->data.draw.blend;
+
+                SetDrawState(surface, &drawstate);
+
+                if (texture) {
+                    SDL_Surface *src = (SDL_Surface *) texture->driverdata;
+
+                    GeometryCopyData *ptr = (GeometryCopyData *) verts;
+
+                    PrepTextureForCopy(cmd);
+                    for (i = 0; i < count; i += 3, ptr += 3) {
+                        SDL_SW_BlitTriangle(
+                                src,
+                                &(ptr[0].src), &(ptr[1].src), &(ptr[2].src),
+                                surface,
+                                &(ptr[0].dst), &(ptr[1].dst), &(ptr[2].dst),
+                                ptr[0].color, ptr[1].color, ptr[2].color);
+                    }
+                } else {
+                    GeometryFillData *ptr = (GeometryFillData *) verts;
+                    for (i = 0; i < count; i += 3, ptr += 3) {
+                        SDL_SW_FillTriangle(surface, &(ptr[0].dst), &(ptr[1].dst), &(ptr[2].dst), blend, ptr[0].color, ptr[1].color, ptr[2].color);
+                    }
+                }
+
+                break;
+            }
+
             case SDL_RENDERCMD_NO_OP:
                 break;
         }
@@ -843,6 +942,7 @@ SW_CreateRendererForSurface(SDL_Surface * surface)
     renderer->QueueFillRects = SW_QueueFillRects;
     renderer->QueueCopy = SW_QueueCopy;
     renderer->QueueCopyEx = SW_QueueCopyEx;
+    renderer->QueueGeometry = SW_QueueGeometry;
     renderer->RunCommandQueue = SW_RunCommandQueue;
     renderer->RenderReadPixels = SW_RenderReadPixels;
     renderer->RenderPresent = SW_RenderPresent;
