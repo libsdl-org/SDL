@@ -3417,6 +3417,24 @@ extern DECLSPEC int SDLCALL SDL_RenderCopyTrianglesF(SDL_Renderer *renderer,
 int SDL_RenderGeometry(SDL_Renderer *renderer, SDL_Texture *texture,
         SDL_Point *points, int num_points, int *indices, int num_indices, const SDL_FPoint *translation, SDL_TriangleMode mode)
 {
+    return -1;
+#if 0
+/*
+ Commented out this function
+    this is actually the wrong prototype
+
+    and it should be changed to have SDL_Vertex in input
+
+typedef struct SDL_Vertex
+{
+    SDL_FPoint position;        /**< Vertex position, in SDL_Renderer coordinates  */
+    SDL_FPoint tex_coord;       /**< Texture coordinates (0..texture width, 0..texture height),
+                                  if needed */
+} SDL_Vertex;
+
+
+*/
+
     SDL_FPoint tr;
     int retval;
     int i;
@@ -3520,6 +3538,7 @@ int SDL_RenderGeometry(SDL_Renderer *renderer, SDL_Texture *texture,
     }
 
     return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
+#endif
 }
 
 int
