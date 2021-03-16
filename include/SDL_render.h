@@ -137,6 +137,17 @@ typedef struct SDL_Renderer SDL_Renderer;
 struct SDL_Texture;
 typedef struct SDL_Texture SDL_Texture;
 
+/**
+ *  \brief Vertex structure
+ */
+typedef struct SDL_Vertex
+{
+    SDL_FPoint position;        /**< Vertex position, in SDL_Renderer coordinates  */
+    SDL_Color  color;           /**< Vertex color */
+    SDL_FPoint tex_coord;       /**< Texture coordinates (0..texture width, 0..texture height),
+				     if needed */
+} SDL_Vertex;
+
 
 /* Function prototypes */
 
@@ -1441,6 +1452,26 @@ extern DECLSPEC int SDLCALL SDL_RenderCopyExF(SDL_Renderer * renderer,
                                             const double angle,
                                             const SDL_FPoint *center,
                                             const SDL_RendererFlip flip);
+
+/**
+ *  \brief Render a list of triangles, optionally using a texture and indices into the vertex array
+ *  Color and alpha modulation is done per vertex (SDL_SetTextureColorMod and SDL_SetTextureAlphaMod are ignored).
+ *
+ *  \param texture      (optional) The SDL texture to use.
+ *  \param vertices     Vertices.
+ *  \param num_vertices Number of vertices.
+ *  \param indices      (optional) An array of integer indices into the 'vertices' array, if NULL all vertices will be rendered in sequential order.
+ *  \param num_indices  Number of indices.
+ *
+ *  \sa SDL_Vertex
+ *
+ *  \return 0 on success, or -1 if the operation is not supported
+ */
+extern DECLSPEC int SDLCALL SDL_RenderGeometry(SDL_Renderer *renderer,
+                                               SDL_Texture *texture,
+                                               SDL_Vertex *vertices, int num_vertices,
+                                               int *indices, int num_indices);
+
 
 /**
  * Read pixels from the current rendering target to an array of pixels.
