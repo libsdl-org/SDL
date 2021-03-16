@@ -562,6 +562,25 @@ QueueCmdCopyEx(SDL_Renderer *renderer, SDL_Texture * texture,
     return retval;
 }
 
+static int
+QueueCmdGeometry(SDL_Renderer *renderer, SDL_Texture *texture,
+        SDL_Vertex *vertices, int num_vertices, int *indices, int num_indices, float scale_x, float scale_y)
+{
+    SDL_RenderCommand *cmd;
+    int retval = -1;
+    if (texture) {
+        cmd = PrepQueueCmdDrawTexture(renderer, texture, SDL_RENDERCMD_GEOMETRY);
+    } else {
+        cmd = PrepQueueCmdDrawSolid(renderer, SDL_RENDERCMD_GEOMETRY);
+    }
+    if (cmd != NULL) {
+        retval = renderer->QueueGeometry(renderer, cmd, texture, vertices, num_vertices, indices, num_indices, scale_x, scale_y);
+        if (retval < 0) {
+            cmd->command = SDL_RENDERCMD_NO_OP;
+        }
+    }
+    return retval;
+}
 
 static int UpdateLogicalSize(SDL_Renderer *renderer);
 
@@ -3300,6 +3319,77 @@ SDL_RenderCopyExF(SDL_Renderer * renderer, SDL_Texture * texture,
     texture->last_command_generation = renderer->render_command_generation;
 
     retval = QueueCmdCopyEx(renderer, texture, &real_srcrect, &real_dstrect, angle, &real_center, flip);
+    return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
+}
+
+int
+SDL_RenderGeometry(SDL_Renderer *renderer,
+                   SDL_Texture *texture,
+                   SDL_Vertex *vertices, int num_vertices,
+                   int *indices, int num_indices)
+{
+    int i;
+    int retval;
+    int count = indices ? num_indices : num_vertices;
+
+    CHECK_RENDERER_MAGIC(renderer, -1);
+
+    if (!renderer->QueueGeometry) {
+        return SDL_Unsupported();
+    }
+
+    if (texture) {
+        CHECK_TEXTURE_MAGIC(texture, -1);
+
+        if (renderer != texture->renderer) {
+            return SDL_SetError("Texture was not created with this renderer");
+        }
+    }
+
+    if (!vertices) {
+        return SDL_InvalidParamError("points");
+    }
+
+    if (count % 3 != 0) {
+        return SDL_InvalidParamError(indices ? "num_indices" : "num_vertices");
+    }
+
+    /* Don't draw while we're hidden */
+    if (renderer->hidden) {
+        return 0;
+    }
+
+    if (num_vertices < 3) {
+        return 0;
+    }
+
+    if (texture && texture->native) {
+        texture = texture->native;
+    }
+
+    if (texture) {
+        for (i = 0; i < num_vertices; ++i) {
+            if (vertices[i].tex_coord.x < 0 || vertices[i].tex_coord.y < 0 || vertices[i].tex_coord.x >= texture->w || vertices[i].tex_coord.y >= texture->h) {
+                return SDL_SetError("Values of 'vertices' out of bounds");
+            }
+        }
+    }
+
+    if (indices) {
+        for (i = 0; i < num_indices; ++i) {
+            if (indices[i] < 0 || indices[i] >= num_vertices) {
+                return SDL_SetError("Values of 'indices' out of bounds");
+            }
+        }
+    }
+
+
+    if (texture) {
+        texture->last_command_generation = renderer->render_command_generation;
+    }
+
+    retval = QueueCmdGeometry(renderer, texture, vertices, num_vertices, indices, num_indices, renderer->scale.x, renderer->scale.y);
+
     return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
 }
 
