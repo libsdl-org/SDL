@@ -309,6 +309,9 @@
     <ClInclude Include="..\..\src\render\software\SDL_rotate.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\render\software\SDL_triangle.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\SDL_assert_c.h">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -606,6 +609,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\render\software\SDL_rotate.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\render\software\SDL_triangle.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\SDL.c">
