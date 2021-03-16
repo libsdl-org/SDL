@@ -50,7 +50,7 @@ SRCS+= SDL_events.c SDL_quit.c SDL_keyboard.c SDL_mouse.c SDL_windowevents.c &
 SRCS+= SDL_haptic.c SDL_gamecontroller.c SDL_joystick.c
 SRCS+= SDL_render.c yuv_rgb.c SDL_yuv.c SDL_yuv_sw.c SDL_blendfillrect.c &
        SDL_blendline.c SDL_blendpoint.c SDL_drawline.c SDL_drawpoint.c &
-       SDL_render_sw.c SDL_rotate.c
+       SDL_render_sw.c SDL_rotate.c SDL_triangle.c
 SRCS+= SDL_blit.c SDL_blit_0.c SDL_blit_1.c SDL_blit_A.c SDL_blit_auto.c &
        SDL_blit_copy.c SDL_blit_N.c SDL_blit_slow.c SDL_fillrect.c SDL_bmp.c &
        SDL_pixels.c SDL_rect.c SDL_RLEaccel.c SDL_shape.c SDL_stretch.c &
