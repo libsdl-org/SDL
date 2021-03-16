@@ -3288,9 +3288,22 @@ SDL_GL_ResetAttributes()
     _this->gl_config.accelerated = -1;  /* accelerated or not, both are fine */
 
 #if SDL_VIDEO_OPENGL
-    _this->gl_config.major_version = 2;
-    _this->gl_config.minor_version = 1;
-    _this->gl_config.profile_mask = 0;
+
+#if SDL_VIDEO_DRIVER_KMSDRM
+    /* Even if full OpenGL works with the KMSDRM backend, GLES2 renderer is still preferred. */
+    if (SDL_strcmp(_this->name, "KMSDRM") == 0) {
+        _this->gl_config.major_version = 2;
+        _this->gl_config.minor_version = 0;
+        _this->gl_config.profile_mask = SDL_GL_CONTEXT_PROFILE_ES;
+    } else
+#endif
+    {
+        _this->gl_config.major_version = 2;
+        _this->gl_config.minor_version = 1;
+        _this->gl_config.profile_mask = 0;
+    }
+#endif
+
 #elif SDL_VIDEO_OPENGL_ES2
     _this->gl_config.major_version = 2;
     _this->gl_config.minor_version = 0;
