@@ -1865,6 +1865,44 @@ D3D11_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture *
     return 0;
 }
 
+static int
+GLES2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
+        SDL_Vertex *vertices, int num_vertices, int *indices, int num_indices, float scale_x, float scale_y)
+{
+    int i;
+    int count = indices ? num_indices : num_vertices;
+    VertexPositionColor *verts = (VertexPositionColor *) SDL_AllocateRenderVertices(renderer, count * sizeof (VertexPositionColor), 0, &cmd->data.draw.first);
+
+    if (!verts) {
+        return -1;
+    }
+
+    cmd->data.draw.count = count;
+
+    for (i = 0; i < count; i++) {
+        SDL_Vertex *v = &vertices[indices ? indices[i] : i];
+
+        verts->pos.x = v->position.x * scale_x;
+        verts->pos.y = v->position.y * scale_y;
+        verts->pos.z = 0.0f;
+        verts->color.r = v->color.r / 255.0f;
+        verts->color.g = v->color.g / 255.0f;
+        verts->color.b = v->color.b / 255.0f;
+        verts->color.a = v->color.a / 255.0f;
+
+        if (texture) {
+            verts->tex.x = v->tex_coord.x / texture->w;
+            verts->tex.y = v->tex_coord.y / texture->h;
+        } else {
+            verts->tex.x = 0.0f;
+            verts->tex.y = 0.0f;
+        }
+
+        verts += 1;
+    }
+    return 0;
+}
+
 
 static int
 D3D11_UpdateVertexBuffer(SDL_Renderer *renderer,
@@ -2347,6 +2385,22 @@ D3D11_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
                 break;
             }
 
+            case SDL_RENDERCMD_GEOMETRY: {
+                SDL_Texture *texture = cmd->data.draw.texture;
+                const size_t count = cmd->data.draw.count;
+                const size_t first = cmd->data.draw.first;
+                const size_t start = first / sizeof (VertexPositionColor);
+
+                if (texture) {
+                    D3D11_SetCopyState(renderer, cmd, NULL);
+                } else {
+                    D3D11_SetDrawState(renderer, cmd, rendererData->pixelShaders[SHADER_SOLID], 0, NULL, NULL, NULL);
+                }
+
+                D3D11_DrawPrimitives(renderer, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST, start, count);
+                break;
+            }
+
             case SDL_RENDERCMD_NO_OP:
                 break;
         }
@@ -2562,6 +2616,7 @@ D3D11_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->QueueFillRects = D3D11_QueueFillRects;
     renderer->QueueCopy = D3D11_QueueCopy;
     renderer->QueueCopyEx = D3D11_QueueCopyEx;
+    renderer->QueueGeometry = D3D11_QueueGeometry;
     renderer->RunCommandQueue = D3D11_RunCommandQueue;
     renderer->RenderReadPixels = D3D11_RenderReadPixels;
     renderer->RenderPresent = D3D11_RenderPresent;
