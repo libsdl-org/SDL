@@ -749,6 +749,9 @@
     <ClInclude Include="..\..\src\render\software\SDL_rotate.h">
       <Filter>render\software</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\render\software\SDL_triangle.h">
+      <Filter>render\software</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\power\SDL_syspower.h">
       <Filter>power</Filter>
     </ClInclude>
@@ -1301,6 +1304,9 @@
       <Filter>render\software</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\render\software\SDL_rotate.c">
+      <Filter>render\software</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\render\software\SDL_triangle.c">
       <Filter>render\software</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\power\SDL_power.c">
