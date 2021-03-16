@@ -1052,6 +1052,46 @@ GL_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * te
     return 0;
 }
 
+static int
+GL_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
+        SDL_Vertex *vertices, int num_vertices, int *indices, int num_indices, float scale_x, float scale_y)
+{
+    GL_TextureData *texturedata = NULL;
+    int i;
+    int count = indices ? num_indices : num_vertices;
+    GLfloat *verts;
+    int sz = 2 + 4 + (texture ? 2 : 0);
+
+    verts = (GLfloat *) SDL_AllocateRenderVertices(renderer, count * sz * sizeof (GLfloat), 0, &cmd->data.draw.first);
+    if (!verts) {
+        return -1;
+    }
+
+    if (texture) {
+        texturedata = (GL_TextureData *) texture->driverdata;
+    }
+
+    cmd->data.draw.count = count;
+
+    for (i = 0; i < count; i++) {
+        SDL_Vertex *v = &vertices[indices ? indices[i] : i];
+
+        *(verts++) = v->position.x * scale_x;
+        *(verts++) = v->position.y * scale_y;
+
+        *(verts++) = v->color.r * inv255f;
+        *(verts++) = v->color.g * inv255f;
+        *(verts++) = v->color.b * inv255f;
+        *(verts++) = v->color.a * inv255f;
+
+        if (texture) {
+            *(verts++) = (v->tex_coord.x / texture->w) * texturedata->texw;
+            *(verts++) = (v->tex_coord.y / texture->h) * texturedata->texh;
+        }
+    }
+    return 0;
+}
+
 static void
 SetDrawState(GL_RenderData *data, const SDL_RenderCommand *cmd, const GL_Shader shader)
 {
@@ -1373,6 +1413,48 @@ GL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
                 break;
             }
 
+            case SDL_RENDERCMD_GEOMETRY: {
+                const GLfloat *verts = (GLfloat *) (((Uint8 *) vertices) + cmd->data.draw.first);
+                SDL_Texture *texture = cmd->data.draw.texture;
+                const size_t count = cmd->data.draw.count;
+
+                if (texture) {
+                    SetCopyState(data, cmd);
+                } else {
+                    SetDrawState(data, cmd, SHADER_SOLID);
+                }
+
+                {
+                    int j;
+                    float currentColor[4];
+                    data->glGetFloatv(GL_CURRENT_COLOR, currentColor);
+                    data->glBegin(GL_TRIANGLES);
+                    for (j = 0; j < count; ++j)
+                    {
+                        const GLfloat x = *(verts++);
+                        const GLfloat y = *(verts++);
+
+                        const GLfloat r = *(verts++);
+                        const GLfloat g = *(verts++);
+                        const GLfloat b = *(verts++);
+                        const GLfloat a = *(verts++);
+
+                        data->glColor4f(r, g, b, a);
+
+                        if (texture) {
+                            GLfloat u = *(verts++);
+                            GLfloat v = *(verts++);
+                            data->glTexCoord2f(u,v);
+                        }
+                        data->glVertex2f(x, y);
+                    }
+                    data->glEnd();
+                    data->glColor4f(currentColor[0], currentColor[1], currentColor[2], currentColor[3]);
+                }
+                break;
+           }
+
+
             case SDL_RENDERCMD_NO_OP:
                 break;
         }
@@ -1654,6 +1736,7 @@ GL_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->QueueFillRects = GL_QueueFillRects;
     renderer->QueueCopy = GL_QueueCopy;
     renderer->QueueCopyEx = GL_QueueCopyEx;
+    renderer->QueueGeometry = GL_QueueGeometry;
     renderer->RunCommandQueue = GL_RunCommandQueue;
     renderer->RenderReadPixels = GL_RenderReadPixels;
     renderer->RenderPresent = GL_RenderPresent;

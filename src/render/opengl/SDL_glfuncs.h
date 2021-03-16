@@ -159,7 +159,7 @@ SDL_PROC_UNUSED(void, glGetBooleanv, (GLenum pname, GLboolean * params))
 SDL_PROC_UNUSED(void, glGetClipPlane, (GLenum plane, GLdouble * equation))
 SDL_PROC_UNUSED(void, glGetDoublev, (GLenum pname, GLdouble * params))
 SDL_PROC(GLenum, glGetError, (void))
-SDL_PROC_UNUSED(void, glGetFloatv, (GLenum pname, GLfloat * params))
+SDL_PROC(void, glGetFloatv, (GLenum pname, GLfloat * params))
 SDL_PROC(void, glGetIntegerv, (GLenum pname, GLint * params))
 SDL_PROC_UNUSED(void, glGetLightfv,
                 (GLenum light, GLenum pname, GLfloat * params))
