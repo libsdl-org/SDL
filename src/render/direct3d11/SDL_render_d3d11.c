@@ -1866,7 +1866,7 @@ D3D11_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture *
 }
 
 static int
-GLES2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
+D3D11_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
         SDL_Vertex *vertices, int num_vertices, int *indices, int num_indices, float scale_x, float scale_y)
 {
     int i;
@@ -1885,10 +1885,10 @@ GLES2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture 
         verts->pos.x = v->position.x * scale_x;
         verts->pos.y = v->position.y * scale_y;
         verts->pos.z = 0.0f;
-        verts->color.r = v->color.r / 255.0f;
-        verts->color.g = v->color.g / 255.0f;
-        verts->color.b = v->color.b / 255.0f;
-        verts->color.a = v->color.a / 255.0f;
+        verts->color.x = v->color.r / 255.0f;
+        verts->color.y = v->color.g / 255.0f;
+        verts->color.z = v->color.b / 255.0f;
+        verts->color.w = v->color.a / 255.0f;
 
         if (texture) {
             verts->tex.x = v->tex_coord.x / texture->w;
