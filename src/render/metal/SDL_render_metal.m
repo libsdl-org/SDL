@@ -1142,7 +1142,7 @@ METAL_QueueDrawLines(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_
        angles. Maybe !!! FIXME for later, though. */
 
     points -= 2;  /* update the last line. */
-    verts -= (count * 2) - 2;
+    verts -= 2 + 4;
 
     const float xstart = points[0].x;
     const float ystart = points[0].y;
