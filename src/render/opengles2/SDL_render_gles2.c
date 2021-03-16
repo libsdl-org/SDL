@@ -959,6 +959,41 @@ GLES2_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture *
 }
 
 static int
+GLES2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
+        SDL_Vertex *vertices, int num_vertices, int *indices, int num_indices, float scale_x, float scale_y)
+{
+    int i;
+    const SDL_bool colorswap = (renderer->target && (renderer->target->format == SDL_PIXELFORMAT_ARGB8888 || renderer->target->format == SDL_PIXELFORMAT_RGB888));
+    int count = indices ? num_indices : num_vertices;
+    GLfloat *verts;
+    int sz = 2 + 4 + (texture ? 2 : 0);
+
+    verts = (GLfloat *) SDL_AllocateRenderVertices(renderer, count * sz * sizeof (GLfloat), 0, &cmd->data.draw.first);
+    if (!verts) {
+        return -1;
+    }
+
+    cmd->data.draw.count = count;
+
+    for (i = 0; i < count; i++) {
+        SDL_Vertex *v = &vertices[indices ? indices[i] : i];
+
+        *(verts++) = v->position.x * scale_x;
+        *(verts++) = v->position.y * scale_y;
+        *(verts++) = (colorswap ? v->color.b : v->color.r) * inv255f;
+        *(verts++) = v->color.g * inv255f;
+        *(verts++) = (colorswap ? v->color.r : v->color.b) * inv255f;
+        *(verts++) = v->color.a * inv255f;
+
+        if (texture) {
+            *(verts++) = v->tex_coord.x / texture->w;
+            *(verts++) = v->tex_coord.y / texture->h;
+        }
+    }
+    return 0;
+}
+
+static int
 SetDrawState(GLES2_RenderData *data, const SDL_RenderCommand *cmd, const GLES2_ImageSource imgsrc)
 {
     const SDL_bool was_copy_ex = data->drawstate.is_copy_ex;
@@ -1329,6 +1364,23 @@ GLES2_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
             case SDL_RENDERCMD_COPY_EX: {
                 if (SetCopyState(renderer, cmd) == 0) {
                     data->glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+                }
+                break;
+            }
+
+            case SDL_RENDERCMD_GEOMETRY: {
+                SDL_Texture *texture = cmd->data.draw.texture;
+                const size_t count = cmd->data.draw.count;
+                int ret;
+
+                if (texture) {
+                    ret = SetCopyState(renderer, cmd);
+                } else {
+                    ret = SetDrawState(data, cmd, GLES2_IMAGESOURCE_SOLID);
+                }
+
+                if (ret == 0) {
+                    data->glDrawArrays(GL_TRIANGLES, 0, count);
                 }
                 break;
             }
@@ -2127,6 +2179,7 @@ GLES2_CreateRenderer(SDL_Window *window, Uint32 flags)
     renderer->QueueFillRects      = GLES2_QueueFillRects;
     renderer->QueueCopy           = GLES2_QueueCopy;
     renderer->QueueCopyEx         = GLES2_QueueCopyEx;
+    renderer->QueueGeometry       = GLES2_QueueGeometry;
     renderer->RunCommandQueue     = GLES2_RunCommandQueue;
     renderer->RenderReadPixels    = GLES2_RenderReadPixels;
     renderer->RenderPresent       = GLES2_RenderPresent;
