@@ -80,7 +80,15 @@ case "$host" in
         ISUNIX="true"
         EXE=""
         MATHLIB="-lm"
+        dnl Use the new libOpenGL if present.
+        have_glvnd=no
+        AC_CHECK_LIB(OpenGL, glBegin,
+        [   
+        dnl have_glvnd=yes
+        SYS_GL_LIBS="-lOpenGL"
+        ],[ 
         SYS_GL_LIBS="-lGL"
+        ])  
         ;;
 esac
 AC_SUBST(EXE)
