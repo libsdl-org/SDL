@@ -986,8 +986,8 @@ GLES2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture 
         *(verts++) = v->color.a * inv255f;
 
         if (texture) {
-            *(verts++) = v->tex_coord.x / texture->w;
-            *(verts++) = v->tex_coord.y / texture->h;
+            *(verts++) = v->tex_coord.x;
+            *(verts++) = v->tex_coord.y;
         }
     }
     return 0;

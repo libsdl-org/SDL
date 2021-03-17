@@ -1381,12 +1381,8 @@ static int
 METAL_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
         SDL_Vertex *vertices, int num_vertices, int *indices, int num_indices, float scale_x, float scale_y)
 {
-    const float texw = (float) (texture ? texture->w : 0);
-    const float texh = (float) (texture ? texture->h : 0);
     int count = indices ? num_indices : num_vertices;
-    int i;
     int sz = 2 + 4 + (texture ? 2 : 0);
-
     const size_t vertlen = sizeof (float) * sz * count;
     float *verts = (float *) SDL_AllocateRenderVertices(renderer, vertlen, DEVICE_ALIGN(8), &cmd->data.draw.first);
     if (!verts) {
@@ -1395,7 +1391,7 @@ METAL_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture 
 
     cmd->data.draw.count = count;
 
-    for (i = 0; i < count; i++) {
+    for (int i = 0; i < count; i++) {
         SDL_Vertex *v = &vertices[indices ? indices[i] : i];
 
         *(verts++) = v->position.x * scale_x;
@@ -1407,8 +1403,8 @@ METAL_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture 
         *(verts++) = v->color.a * inv255f;
 
         if (texture) {
-            *(verts++) = normtex(v->tex_coord.x, texw);
-            *(verts++) = normtex(v->tex_coord.y, texh);
+            *(verts++) = v->tex_coord.x;
+            *(verts++) = v->tex_coord.y;
         }
     }
  

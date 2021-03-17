@@ -596,8 +596,8 @@ SW_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *te
         for (i = 0; i < count; i++) {
             SDL_Vertex *v = &vertices[indices ? indices[i] : i];
 
-            ptr->src.x = v->tex_coord.x;
-            ptr->src.y = v->tex_coord.y;
+            ptr->src.x = v->tex_coord.x * texture->w;
+            ptr->src.y = v->tex_coord.y * texture->h;
 
             ptr->dst.x = v->position.x * scale_x + renderer->viewport.x;
             ptr->dst.y = v->position.y * scale_y + renderer->viewport.y;
