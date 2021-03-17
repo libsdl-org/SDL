@@ -1085,8 +1085,8 @@ GL_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *te
         *(verts++) = v->color.a * inv255f;
 
         if (texture) {
-            *(verts++) = (v->tex_coord.x / texture->w) * texturedata->texw;
-            *(verts++) = (v->tex_coord.y / texture->h) * texturedata->texh;
+            *(verts++) = v->tex_coord.x * texturedata->texw;
+            *(verts++) = v->tex_coord.y * texturedata->texh;
         }
     }
     return 0;

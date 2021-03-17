@@ -3369,7 +3369,7 @@ SDL_RenderGeometry(SDL_Renderer *renderer,
 
     if (texture) {
         for (i = 0; i < num_vertices; ++i) {
-            if (vertices[i].tex_coord.x < 0 || vertices[i].tex_coord.y < 0 || vertices[i].tex_coord.x >= texture->w || vertices[i].tex_coord.y >= texture->h) {
+            if (vertices[i].tex_coord.x < 0.0f || vertices[i].tex_coord.y < 0.0f || vertices[i].tex_coord.x > 1.0f || vertices[i].tex_coord.y > 1.0f) {
                 return SDL_SetError("Values of 'vertices' out of bounds");
             }
         }

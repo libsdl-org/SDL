@@ -1891,8 +1891,8 @@ D3D11_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture 
         verts->color.w = v->color.a / 255.0f;
 
         if (texture) {
-            verts->tex.x = v->tex_coord.x / texture->w;
-            verts->tex.y = v->tex_coord.y / texture->h;
+            verts->tex.x = v->tex_coord.x;
+            verts->tex.y = v->tex_coord.y;
         } else {
             verts->tex.x = 0.0f;
             verts->tex.y = 0.0f;
