@@ -532,7 +532,6 @@ void KMSDRM_AddDisplay (_THIS, drmModeConnector *connector, drmModeRes *resource
 
     /* Initialize some of the members of the new display's driverdata
        to sane values. */
-    dispdata->gbm_init = SDL_FALSE;
     dispdata->modeset_pending = SDL_FALSE;
     dispdata->cursor_bo = NULL;
 
@@ -787,7 +786,7 @@ KMSDRM_GBMInit (_THIS, SDL_DisplayData *dispdata)
         ret = SDL_SetError("Couldn't create gbm device.");
     }
 
-    dispdata->gbm_init = SDL_TRUE;
+    viddata->gbm_init = SDL_TRUE;
 
     return ret;
 }
@@ -811,7 +810,7 @@ KMSDRM_GBMDeinit (_THIS, SDL_DisplayData *dispdata)
         viddata->drm_fd = -1;
     }
 
-    dispdata->gbm_init = SDL_FALSE;
+    viddata->gbm_init = SDL_FALSE;
 }
 
 void
@@ -955,6 +954,7 @@ KMSDRM_VideoInit(_THIS)
     SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "KMSDRM_VideoInit()");
 
     viddata->video_init = SDL_FALSE;
+    viddata->gbm_init = SDL_FALSE;
 
     /* Get KMSDRM resources info and store what we need. Getting and storing
        this info isn't a problem for VK compatibility.
@@ -1079,7 +1079,7 @@ KMSDRM_DestroyWindow(_THIS, SDL_Window *window)
         return;
     }
 
-    if ( !is_vulkan && dispdata->gbm_init ) {
+    if ( !is_vulkan && viddata->gbm_init ) {
 
         /* Destroy the window display's cursor GBM BO. */
         KMSDRM_DestroyCursorBO(_this, SDL_GetDisplayForWindow(window));
@@ -1158,7 +1158,7 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
 
     if (!is_vulkan && !vulkan_mode) { /* NON-Vulkan block. */
 
-        if (!(dispdata->gbm_init)) {
+        if (!(viddata->gbm_init)) {
 
             /* After SDL_CreateWindow, most SDL2 programs will do SDL_CreateRenderer(),
                which will in turn call GL_CreateRenderer() or GLES2_CreateRenderer().
