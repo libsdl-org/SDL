@@ -1079,7 +1079,7 @@ KMSDRM_DestroyWindow(_THIS, SDL_Window *window)
         return;
     }
 
-    if ( !is_vulkan && viddata->gbm_init ) {
+    if ( !is_vulkan && viddata->gbm_init) {
 
         /* Destroy the window display's cursor GBM BO. */
         KMSDRM_DestroyCursorBO(_this, SDL_GetDisplayForWindow(window));
@@ -1087,14 +1087,18 @@ KMSDRM_DestroyWindow(_THIS, SDL_Window *window)
         /* Destroy GBM surface and buffers. */
         KMSDRM_DestroySurfaces(_this, window);
 
-        /* Unload EGL/GL library and free egl_data.  */
-        if (_this->egl_data) {
-            SDL_EGL_UnloadLibrary(_this);
-            _this->gl_config.driver_loaded = 0;
-        }
+        /* Unload library and deinit GBM, but only if this is the last remaining window.*/
+        if (viddata->num_windows < 2) {
 
-        /* Free display plane, and destroy GBM device. */
-        KMSDRM_GBMDeinit(_this, dispdata);
+	    /* Unload EGL/GL library and free egl_data.  */
+	    if (_this->egl_data) {
+		SDL_EGL_UnloadLibrary(_this);
+		_this->gl_config.driver_loaded = 0;
+	    }
+
+	    /* Free display plane, and destroy GBM device. */
+	    KMSDRM_GBMDeinit(_this, dispdata);
+	}
 
     } else {
 
