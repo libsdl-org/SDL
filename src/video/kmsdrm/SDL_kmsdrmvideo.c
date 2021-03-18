@@ -1158,6 +1158,10 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
 
     if (!is_vulkan && !vulkan_mode) { /* NON-Vulkan block. */
 
+        /* Maybe you didn't ask for an OPENGL window, but that's what you will get.
+           See following comments on why. */
+        window->flags |= SDL_WINDOW_OPENGL;
+
         if (!(viddata->gbm_init)) {
 
             /* After SDL_CreateWindow, most SDL2 programs will do SDL_CreateRenderer(),
@@ -1172,10 +1176,6 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
                don't be shy to debug GL_CreateRenderer() or GLES2_CreateRenderer()
                to find out why!
              */
-
-            /* Maybe you didn't ask for an OPENGL window, but that's what you will get.
-               See previous comment on why. */
-            window->flags |= SDL_WINDOW_OPENGL;
 
             /* Reopen FD, create gbm dev, setup display plane, etc,.
                but only when we come here for the first time,
