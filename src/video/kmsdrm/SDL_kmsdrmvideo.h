@@ -48,6 +48,11 @@ typedef struct SDL_VideoData
     SDL_Window **windows;
     int max_windows;
     int num_windows;
+
+    /* Even if we have several displays, we only have to
+       open 1 FD and create 1 gbm device. */
+    SDL_bool gbm_init;
+
 } SDL_VideoData;
 
 
@@ -66,8 +71,6 @@ typedef struct SDL_DisplayData
     drmModeModeInfo next_mode; /* New mode to be set on the CRTC. */
 
     drmModeCrtc *saved_crtc;    /* CRTC to restore on quit */
-
-    SDL_bool gbm_init;
 
     /* DRM & GBM cursor stuff lives here, not in an SDL_Cursor's driverdata struct,
        because setting/unsetting up these is done on window creation/destruction,

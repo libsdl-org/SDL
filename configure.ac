@@ -2379,7 +2379,7 @@ CheckOpenGLX11()
             AC_DEFINE(SDL_VIDEO_OPENGL, 1, [ ])
             AC_DEFINE(SDL_VIDEO_OPENGL_GLX, 1, [ ])
             AC_DEFINE(SDL_VIDEO_RENDER_OGL, 1, [ ])
-            SUMMARY_video="${SUMMARY_video} opengl"
+            SUMMARY_video="${SUMMARY_video} opengl(glx)"
         fi
     fi
 }
@@ -2400,7 +2400,7 @@ CheckOpenGLKMSDRM()
         if test x$video_opengl = xyes; then 
             AC_DEFINE(SDL_VIDEO_OPENGL, 1, [ ]) 
             AC_DEFINE(SDL_VIDEO_RENDER_OGL, 1, [ ]) 
-            SUMMARY_video="${SUMMARY_video} opengl"
+            SUMMARY_video="${SUMMARY_video} opengl(glvnd)"
         fi   
     fi   
 }

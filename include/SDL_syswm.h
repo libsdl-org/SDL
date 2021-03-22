@@ -344,23 +344,23 @@ struct SDL_SysWMinfo
 
 typedef struct SDL_SysWMinfo SDL_SysWMinfo;
 
-/* Function prototypes */
+
 /**
- *  \brief This function allows access to driver-dependent window information.
+ * Get driver-specific information about a window.
  *
- *  \param window The window about which information is being requested
- *  \param info This structure must be initialized with the SDL version, and is
- *              then filled in with information about the given window.
+ * You must include SDL_syswm.h for the declaration of SDL_SysWMinfo.
  *
- *  \return SDL_TRUE if the function is implemented and the version member of
- *          the \c info struct is valid, SDL_FALSE otherwise.
+ * The caller must initialize the `info` structure's version by using
+ * `SDL_VERSION(&info.version)`, and then this function will fill in the
+ * rest of the structure with information about the given window.
  *
- *  You typically use this function like this:
- *  \code
- *  SDL_SysWMinfo info;
- *  SDL_VERSION(&info.version);
- *  if ( SDL_GetWindowWMInfo(window, &info) ) { ... }
- *  \endcode
+ * \param window the window about which information is being requested
+ * \param info an SDL_SysWMinfo structure filled in with window information
+ * \returns SDL_TRUE if the function is implemented and the `version` member
+ *          of the `info` struct is valid, or SDL_FALSE if the information
+ *          could not be retrieved; call SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 2.0.0.
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_GetWindowWMInfo(SDL_Window * window,
                                                      SDL_SysWMinfo * info);

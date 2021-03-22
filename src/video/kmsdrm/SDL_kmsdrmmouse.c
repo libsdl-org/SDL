@@ -477,17 +477,8 @@ KMSDRM_InitMouse(_THIS, SDL_VideoDisplay *display)
     mouse->WarpMouse = KMSDRM_WarpMouse;
     mouse->WarpMouseGlobal = KMSDRM_WarpMouseGlobal;
 
-    /* SDL expects to set the default cursor of the display when we init the mouse,
-       but since we have moved the KMSDRM_InitMouse() call to KMSDRM_CreateWindow(),
-       we end up calling KMSDRM_InitMouse() every time we create a window, so we
-       have to prevent this from being done every time a new window is created.
-       If we don't, new default cursors would stack up on mouse->cursors and SDL
-       would have to hide and delete them at quit, not to mention the memory leak... */
-
-    if(dispdata->set_default_cursor_pending) { 
-        SDL_SetDefaultCursor(KMSDRM_CreateDefaultCursor());
-        dispdata->set_default_cursor_pending = SDL_FALSE;
-    }
+    SDL_SetDefaultCursor(KMSDRM_CreateDefaultCursor());
+    dispdata->set_default_cursor_pending = SDL_FALSE;
 }
 
 void
