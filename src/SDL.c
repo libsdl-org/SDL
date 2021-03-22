@@ -447,9 +447,6 @@ SDL_Quit(void)
      */
     SDL_memset( SDL_SubsystemRefCount, 0x0, sizeof(SDL_SubsystemRefCount) );
 
-    /* Cleanup all TLS data */
-    SDL_Generic_CleanupAllTLSData();
-
     SDL_bInMainQuit = SDL_FALSE;
 }
 

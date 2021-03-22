@@ -97,9 +97,6 @@ extern SDL_TLSData *SDL_Generic_GetTLSData(void);
  */
 extern int SDL_Generic_SetTLSData(SDL_TLSData *data);
 
-/* Cleanup all TLS data for this thread. */
-extern void SDL_Generic_CleanupAllTLSData(void);
-
 #endif /* SDL_thread_c_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

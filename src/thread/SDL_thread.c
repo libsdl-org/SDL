@@ -200,12 +200,6 @@ SDL_Generic_SetTLSData(SDL_TLSData *storage)
     return 0;
 }
 
-void
-SDL_Generic_CleanupAllTLSData(void)
-{
-    SDL_TLSCleanup();
-}
-
 /* Routine to get the thread-specific error variable */
 SDL_error *
 SDL_GetErrBuf(void)
