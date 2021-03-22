@@ -480,6 +480,7 @@
 #define SDL_TLSCreate SDL_TLSCreate_REAL
 #define SDL_TLSGet SDL_TLSGet_REAL
 #define SDL_TLSSet SDL_TLSSet_REAL
+#define SDL_TLSCleanup SDL_TLSCleanup_REAL
 #define SDL_GetTicks SDL_GetTicks_REAL
 #define SDL_GetPerformanceCounter SDL_GetPerformanceCounter_REAL
 #define SDL_GetPerformanceFrequency SDL_GetPerformanceFrequency_REAL
