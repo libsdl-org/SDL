@@ -79,7 +79,7 @@ typedef struct SDL_DisplayData
     struct gbm_bo *cursor_bo;
     uint64_t cursor_w, cursor_h;
 
-    SDL_bool set_default_cursor_pending;
+    SDL_bool default_cursor_init;
     SDL_bool modeset_pending;
 
 } SDL_DisplayData;
