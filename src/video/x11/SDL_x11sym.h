@@ -138,6 +138,7 @@ SDL_X11_SYM(int,XWarpPointer,(Display* a,Window b,Window c,int d,int e,unsigned 
 SDL_X11_SYM(int,XWindowEvent,(Display* a,Window b,long c,XEvent* d),(a,b,c,d),return)
 SDL_X11_SYM(Status,XWithdrawWindow,(Display* a,Window b,int c),(a,b,c),return)
 SDL_X11_SYM(VisualID,XVisualIDFromVisual,(Visual* a),(a),return)
+SDL_X11_SYM(char*,XGetDefault,(Display* a,char* b, char* c),(a,b,c),return)
 #if SDL_VIDEO_DRIVER_X11_CONST_PARAM_XEXTADDDISPLAY
 SDL_X11_SYM(XExtDisplayInfo*,XextAddDisplay,(XExtensionInfo* a,Display* b,_Xconst char* c,XExtensionHooks* d,int e,XPointer f),(a,b,c,d,e,f),return)
 #else

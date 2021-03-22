@@ -345,6 +345,29 @@ SetXRandRDisplayName(Display *dpy, Atom EDID, char *name, const size_t namelen, 
 #endif
 }
 
+static int
+GetXftDPI(Display* dpy)
+{
+    char* xdefault_resource;
+    int xft_dpi, err;
+
+    xdefault_resource = X11_XGetDefault(dpy, "Xft", "dpi");
+
+    if(!xdefault_resource) {
+        return 0;
+    }
+
+    /*
+     * It's possible for SDL_atoi to call strtol, if it fails due to a
+     * overflow or an underflow, it will return LONG_MAX or LONG_MIN and set
+     * errno to ERANGE. So we need to check for this so we dont get crazy dpi
+     * values
+     */
+    xft_dpi = SDL_atoi(xdefault_resource);
+    err = errno;
+
+    return err == ERANGE ? 0 : xft_dpi;
+}
 
 static int
 X11_InitModes_XRandR(_THIS)
@@ -417,6 +440,7 @@ X11_InitModes_XRandR(_THIS)
                 RRMode modeID;
                 RRCrtc output_crtc;
                 XRRCrtcInfo *crtc;
+                float xft_dpi;
 
                 /* The primary output _should_ always be sorted first, but just in case... */
                 if ((looking_for_primary && (res->outputs[output] != primary)) ||
@@ -471,6 +495,14 @@ X11_InitModes_XRandR(_THIS)
                 displaydata->hdpi = display_mm_width ? (((float) mode.w) * 25.4f / display_mm_width) : 0.0f;
                 displaydata->vdpi = display_mm_height ? (((float) mode.h) * 25.4f / display_mm_height) : 0.0f;
                 displaydata->ddpi = SDL_ComputeDiagonalDPI(mode.w, mode.h, ((float) display_mm_width) / 25.4f,((float) display_mm_height) / 25.4f);
+
+                /* if xft dpi is available we will use this over xrandr */
+                xft_dpi = (float)GetXftDPI(dpy);
+                if(xft_dpi > 0) {
+                    displaydata->hdpi = xft_dpi;
+                    displaydata->vdpi = xft_dpi;
+                }
+
                 displaydata->scanline_pad = scanline_pad;
                 displaydata->x = display_x;
                 displaydata->y = display_y;
