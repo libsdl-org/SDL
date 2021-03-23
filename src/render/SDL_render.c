@@ -838,28 +838,6 @@ SDL_CreateRenderer(SDL_Window * window, int index, Uint32 flags)
             }
         }
 
-#if SDL_VIDEO_DRIVER_KMSDRM
-
-    /* Even if full OpenGL works with the KMSDRM backend, GLES2 renderer is still preferred. */
-    if ((SDL_strcmp(SDL_GetCurrentVideoDriver(), "KMSDRM") == 0) && (!renderer)) {
-
-        for (index = 0; index < n; ++index) {
-
-            const SDL_RenderDriver *driver = render_drivers[index];
-
-            if ((SDL_strcmp(driver->info.name, "opengles2") == 0) && (!renderer)) {
-                /* Create a new renderer instance */
-                renderer = driver->CreateRenderer(window, flags);
-                if (renderer) {
-                    /* Got an OpenGL_ES2 renderer as expected for KMSDRM by default. */
-                    break;
-                }
-            }
-        }
-    }
-
-#endif
-
         if (!renderer) {
             for (index = 0; index < n; ++index) {
                 const SDL_RenderDriver *driver = render_drivers[index];
