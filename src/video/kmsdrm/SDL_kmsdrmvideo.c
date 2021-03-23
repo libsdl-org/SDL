@@ -540,7 +540,7 @@ void KMSDRM_AddDisplay (_THIS, drmModeConnector *connector, drmModeRes *resource
        if the display used by the window already has a default cursor or not.
        If we don't, new default cursors would stack up on mouse->cursors and SDL
        would have to hide and delete them at quit, not to mention the memory leak... */
-    dispdata->set_default_cursor_pending = SDL_TRUE;
+    dispdata->default_cursor_init = SDL_FALSE;
 
     /* Try to find the connector's current encoder */
     for (i = 0; i < resources->count_encoders; i++) {
@@ -1081,7 +1081,7 @@ KMSDRM_DestroyWindow(_THIS, SDL_Window *window)
 
     if ( !is_vulkan && viddata->gbm_init) {
 
-        /* Destroy the window display's cursor GBM BO. */
+        /* Destroy cursor GBM BO of the display of this window. */
         KMSDRM_DestroyCursorBO(_this, SDL_GetDisplayForWindow(window));
 
         /* Destroy GBM surface and buffers. */
@@ -1207,27 +1207,13 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
 
 	}
 
-        /* Init the cursor stuff for the window display, but ONLY if we haven't done so
-           on this display before. */
-        if (!dispdata->set_default_cursor_pending) {
+	/* Create the cursor BO for the display of this window,
+	   now that we know this is not a VK window. */
+	KMSDRM_CreateCursorBO(display);
 
-	    /* Create the cursor BO for the display of this window,
-               now that we know this is not a VK window. */
-            KMSDRM_CreateCursorBO(display);
-
-            /* Create and set the default cursor now that we know
-               this is not a VK window. */
-            KMSDRM_InitMouse(_this, display);
-
-            /* When we destroy a window, we remove the cursor buffer from
-               the cursor plane and destroy the cursor GBM BO, but SDL expects
-               that we keep showing the visible cursors bewteen window
-               destruction/creation cycles. So we must manually re-show the
-               visible cursors, if necessary, when we create a window. */
-            KMSDRM_InitCursor();
-
-            dispdata->set_default_cursor_pending = SDL_TRUE;
-        }
+	/* Create and set the default cursor for the display
+           of this window, now that we know this is not a VK window. */
+	KMSDRM_InitMouse(_this, display);
 
         /* The FULLSCREEN flags are cut out from window->flags at this point,
            so we can't know if a window is fullscreen or not, hence all windows
@@ -1283,7 +1269,8 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
     /* If we have just created a Vulkan window, establish that we are in Vulkan mode now. */
     viddata->vulkan_mode = is_vulkan;
 
-    /* Focus on the newly created window */
+    /* Focus on the newly created window.
+       SDL_SetMouseFocus() also takes care of calling KMSDRM_ShowCursor() if necessary. */
     SDL_SetMouseFocus(window);
     SDL_SetKeyboardFocus(window);
 

@@ -341,24 +341,6 @@ cleanup:
     return ret;
 }
 
-/* When we create a window, we have to test if we have to show the cursor,
-   and explicily do so if necessary.
-   This is because when we destroy a window, we take the cursor away from the
-   cursor plane, and destroy the cusror GBM BO. So we have to re-show it,
-   so to say. */
-void
-KMSDRM_InitCursor()
-{
-    SDL_Mouse *mouse = SDL_GetMouse();
-
-    if (!mouse || !mouse->cur_cursor || !mouse->cursor_shown) {
-        return;
-    }
-
-    /* Re-dump cursor buffer to the GBM BO of the focused window display. */
-    KMSDRM_ShowCursor(mouse->cur_cursor);
-}
-
 /* Show the specified cursor, or hide if cursor is NULL or has no focus. */
 static int
 KMSDRM_ShowCursor(SDL_Cursor * cursor)
@@ -477,8 +459,12 @@ KMSDRM_InitMouse(_THIS, SDL_VideoDisplay *display)
     mouse->WarpMouse = KMSDRM_WarpMouse;
     mouse->WarpMouseGlobal = KMSDRM_WarpMouseGlobal;
 
-    SDL_SetDefaultCursor(KMSDRM_CreateDefaultCursor());
-    dispdata->set_default_cursor_pending = SDL_FALSE;
+    /* Only create the default cursor for this display if we haven't done so before,
+       we don't want several cursors to be created for the same display. */
+    if (!dispdata->default_cursor_init) {
+        SDL_SetDefaultCursor(KMSDRM_CreateDefaultCursor());
+        dispdata->default_cursor_init = SDL_TRUE;
+    }
 }
 
 void
