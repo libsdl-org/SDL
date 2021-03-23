@@ -22431,7 +22431,47 @@ $as_echo "#define SDL_VIDEO_OPENGL_GLX 1" >>confdefs.h
 
 $as_echo "#define SDL_VIDEO_RENDER_OGL 1" >>confdefs.h
 
-            SUMMARY_video="${SUMMARY_video} opengl"
+            SUMMARY_video="${SUMMARY_video} opengl(glx)"
+        fi
+    fi
+}
+
+CheckOpenGLKMSDRM()
+{
+    if test x$enable_video = xyes -a x$enable_video_opengl = xyes -a x$enable_video_kmsdrm = xyes; then
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for OpenGL (GLVND) support" >&5
+$as_echo_n "checking for OpenGL (GLVND) support... " >&6; }
+        video_opengl=no
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+         #include <GL/gl.h>
+
+int
+main ()
+{
+
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+
+        video_opengl=yes
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: $video_opengl" >&5
+$as_echo "$video_opengl" >&6; }
+        if test x$video_opengl = xyes; then
+
+$as_echo "#define SDL_VIDEO_OPENGL 1" >>confdefs.h
+
+
+$as_echo "#define SDL_VIDEO_RENDER_OGL 1" >>confdefs.h
+
+            SUMMARY_video="${SUMMARY_video} opengl(glvnd)"
         fi
     fi
 }
@@ -25040,6 +25080,7 @@ $as_echo "#define SDL_VIDEO_DRIVER_ANDROID 1" >>confdefs.h
         # Need to check for EGL first because KMSDRM depends on it.
         CheckEGLKMSDRM
         CheckKMSDRM
+        CheckOpenGLKMSDRM
         CheckOpenGLX11
         CheckOpenGLESX11
         CheckVulkan
