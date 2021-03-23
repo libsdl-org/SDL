@@ -93,7 +93,7 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window) {
     KMSDRM_FBInfo *fb_info;
     int ret = 0;
 
-    /* Always wait for the previous issued flip before issing a new one,
+    /* Always wait for the previous issued flip before issuing a new one,
        even if you do async flips. */
     uint32_t flip_flags = DRM_MODE_PAGE_FLIP_EVENT;
 
