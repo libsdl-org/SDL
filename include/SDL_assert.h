@@ -189,6 +189,14 @@ extern DECLSPEC SDL_AssertState SDLCALL SDL_ReportAssertion(SDL_AssertData *,
 #define SDL_assert_always(condition) SDL_enabled_assert(condition)
 
 
+/**
+ * A callback that fires when an SDL assertion fails.
+ *
+ * \param data a pointer to the SDL_AssertData structure corresponding to the
+ *             current assertion
+ * \param userdata what was passed as `userdata` to SDL_SetAssertionHandler()
+ * \returns an SDL_AssertState value indicating how to handle the failure.
+ */
 typedef SDL_AssertState (SDLCALL *SDL_AssertionHandler)(
                                  const SDL_AssertData* data, void* userdata);
 
@@ -200,29 +208,13 @@ typedef SDL_AssertState (SDLCALL *SDL_AssertionHandler)(
  * provide this, SDL will try to do the right thing, popping up a
  * system-specific GUI dialog, and probably minimizing any fullscreen windows.
  *
- * The function prototype for `handler` is:
- *
- * ```c
- * SDL_AssertState YourAssertionHandler(const SDL_AssertData* data, void* userdata)
- * ```
- *
- * where `YourAssertionHandler` is the name of your function and its
- * parameters are:
- *
- * - `data`: a pointer to the SDL_AssertData structure corresponding to the
- *   current assertion
- * - `userdata`: what was passed as `userdata` to SDL_SetAssertionHandler()
- *
- * This callback should return an SDL_AssertState value indicating how to
- * handle the assertion failure.
- *
  * This callback may fire from any thread, but it runs wrapped in a mutex, so
  * it will only fire from one thread at a time.
  *
  * This callback is NOT reset to SDL's internal handler upon SDL_Quit()!
  *
- * \param handler the function to call when an assertion fails or NULL for the
- *                default handler
+ * \param handler the SDL_AssertionHandler function to call when an assertion
+ *                fails or NULL for the default handler
  * \param userdata a pointer that is passed to `handler`
  *
  * \sa SDL_GetAssertionHandler

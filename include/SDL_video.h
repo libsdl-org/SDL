@@ -1074,8 +1074,6 @@ extern DECLSPEC void SDLCALL SDL_MinimizeWindow(SDL_Window * window);
 /**
  * Restore the size and position of a minimized or maximized window.
  *
- * *You can add useful comments here*
- *
  * \param window the window to restore
  *
  * \sa  SDL_MaximizeWindow
