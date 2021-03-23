@@ -1087,14 +1087,10 @@ KMSDRM_DestroyWindow(_THIS, SDL_Window *window)
         /* Destroy GBM surface and buffers. */
         KMSDRM_DestroySurfaces(_this, window);
 
-        /* Unload EGL library. */
+        /* Unload EGL/GL library and free egl_data.  */
         if (_this->egl_data) {
             SDL_EGL_UnloadLibrary(_this);
-        }
-
-        /* Unload GL library. */
-        if (_this->gl_config.driver_loaded) {
-            SDL_GL_UnloadLibrary();
+            _this->gl_config.driver_loaded = 0;
         }
 
         /* Free display plane, and destroy GBM device. */
@@ -1164,12 +1160,17 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
 
         if (!(dispdata->gbm_init)) {
 
-            /* In order for the GL_CreateRenderer() and GL_LoadFunctions() calls
-               in SDL_CreateWindow succeed (no doing so causes a windo re-creation),
-               At the end of this block, we must have: 
-               -Marked the window as being OPENGL
-               -Loaded the GL library (which can't be loaded until the GBM
-                device has been created) because SDL_EGL_Library() function uses it.
+            /* After SDL_CreateWindow, most SDL2 programs will do SDL_CreateRenderer(),
+               which will in turn call GL_CreateRenderer() or GLES2_CreateRenderer().
+               In order for the GL_CreateRenderer() or GLES2_CreateRenderer() call to
+               succeed without an unnecessary window re-creation, we must: 
+               -Mark the window as being OPENGL
+               -Load the GL library (which can't be done until the GBM device has been
+                created, so we have to do it here instead of doing it on VideoInit())
+                and mark it as loaded by setting gl_config.driver_loaded to 1.
+               So if you ever see KMSDRM_CreateWindow() to be called two times in tests,
+               don't be shy to debug GL_CreateRenderer() or GLES2_CreateRenderer()
+               to find out why!
              */
 
             /* Maybe you didn't ask for an OPENGL window, but that's what you will get.
@@ -1185,18 +1186,17 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
 
             /* Manually load the GL library. KMSDRM_EGL_LoadLibrary() has already
                been called by SDL_CreateWindow() but we don't do anything there,
-               precisely to be able to load it here.
-               If we let SDL_CreateWindow() load the lib, it will be loaded
-               before we call KMSDRM_GBMInit(), causing GLES programs to fail. */
+               out KMSDRM_EGL_LoadLibrary() is a dummy precisely to be able to load it here.
+               If we let SDL_CreateWindow() load the lib, it would be loaded
+               before we call KMSDRM_GBMInit(), causing all GLES programs to fail. */
             if (!_this->egl_data) {
                 egl_display = (NativeDisplayType)((SDL_VideoData *)_this->driverdata)->gbm_dev;
                 if (SDL_EGL_LoadLibrary(_this, NULL, egl_display, EGL_PLATFORM_GBM_MESA)) {
                     goto cleanup;
                 }
 
-                if (SDL_GL_LoadLibrary(NULL) < 0) {
-                    goto cleanup;
-                }
+                _this->gl_config.driver_loaded = 1;
+
             }
 
             /* Create the cursor BO for the display of this window,
