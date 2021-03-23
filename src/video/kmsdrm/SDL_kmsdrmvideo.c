@@ -1088,7 +1088,7 @@ KMSDRM_DestroyWindow(_THIS, SDL_Window *window)
         KMSDRM_DestroySurfaces(_this, window);
 
         /* Unload library and deinit GBM, but only if this is the last remaining window.*/
-        if (viddata->num_windows < 2) {
+        if ((viddata->num_windows - 1) == 0) {
 
 	    /* Unload EGL/GL library and free egl_data.  */
 	    if (_this->egl_data) {
