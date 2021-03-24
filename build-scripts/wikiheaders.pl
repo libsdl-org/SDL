@@ -233,11 +233,19 @@ my @standard_wiki_sections = (
     'Draft',
     '[Brief]',
     'Syntax',
-    'Remarks',
     'Function Parameters',
     'Return Value',
+    'Remarks',
     'Version',
+    'Code Examples',
     'Related Functions'
+);
+
+# Sections that only ever exist in the wiki and shouldn't be deleted when
+#  not found in the headers.
+my %only_wiki_sections = (  # The ones don't mean anything, I just need to check for key existence.
+    'Draft', 1,
+    'Code Examples', 1
 );
 
 
@@ -761,7 +769,9 @@ if ($copy_direction == 1) {  # --copy-to-headers
 
         foreach (@standard_wiki_sections) {
             # drop sections we either replaced or removed from the original wiki's contents.
-            delete($$sectionsref{$_});
+            if (not defined $only_wiki_sections{$_}) {
+                delete($$sectionsref{$_});
+            }
         }
 
         my $wikisectionorderref = $wikisectionorder{$fn};
