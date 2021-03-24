@@ -113,6 +113,9 @@ typedef struct SDL_joylist_item
 
     /* Steam Controller support */
     SDL_bool m_bSteamController;
+
+    SDL_GamepadMapping *mapping;
+    SDL_bool has_gamepad_mapping;
 } SDL_joylist_item;
 
 static SDL_joylist_item *SDL_joylist = NULL;
@@ -376,6 +379,7 @@ MaybeRemoveDevice(const char *path)
 
             SDL_PrivateJoystickRemoved(item->device_instance);
 
+            SDL_free(item->mapping);
             SDL_free(item->path);
             SDL_free(item->name);
             SDL_free(item);
@@ -1403,6 +1407,21 @@ static SDL_bool
 LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
 {
     SDL_Joystick *joystick;
+    SDL_joylist_item *item = JoystickByDevIndex(device_index);
+
+    if (item->has_gamepad_mapping) {
+        SDL_memcpy(out, item->mapping, sizeof(*out));
+        return SDL_TRUE;
+    }
+
+    if (item->mapping)
+        return SDL_FALSE;
+
+    item->mapping = (SDL_GamepadMapping *) SDL_calloc(sizeof(*item->mapping), 1);
+    if (item->mapping == NULL) {
+        SDL_OutOfMemory();
+        return SDL_FALSE;
+    }
 
     joystick = (SDL_Joystick *) SDL_calloc(sizeof(*joystick), 1);
     if (joystick == NULL) {
@@ -1565,6 +1584,9 @@ LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
 
     LINUX_JoystickClose(joystick);
     SDL_free(joystick);
+
+    SDL_memcpy(item->mapping, out, sizeof(*out));
+    item->has_gamepad_mapping = SDL_TRUE;
 
     return SDL_TRUE;
 }
