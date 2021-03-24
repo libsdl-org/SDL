@@ -427,6 +427,12 @@ while (readdir(DH)) {
     }
     close(FH);
 
+    foreach (keys %sections) {
+        $sections{$_} =~ s/\A\n+//;
+        $sections{$_} =~ s/\n+\Z//;
+        $sections{$_} .= "\n";
+    }
+
     if (0) {
         foreach (@section_order) {
             print("$fn SECTION '$_':\n");
