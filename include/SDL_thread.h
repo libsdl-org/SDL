@@ -435,6 +435,10 @@ extern DECLSPEC void * SDLCALL SDL_TLSGet(SDL_TLSID id);
  */
 extern DECLSPEC int SDLCALL SDL_TLSSet(SDL_TLSID id, const void *value, void (SDLCALL *destructor)(void*));
 
+/**
+ *  \brief Cleanup all TLS data for this thread.
+ */
+extern DECLSPEC void SDLCALL SDL_TLSCleanup(void);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
