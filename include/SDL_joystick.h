@@ -666,26 +666,17 @@ extern DECLSPEC SDL_bool SDLCALL SDL_JoystickGetAxisInitialState(SDL_Joystick *j
  * The returned value will be one of the following positions:
  *
  * - `SDL_HAT_CENTERED`
- *
  * - `SDL_HAT_UP`
- *
  * - `SDL_HAT_RIGHT`
- *
  * - `SDL_HAT_DOWN`
- *
  * - `SDL_HAT_LEFT`
- *
  * - `SDL_HAT_RIGHTUP`
- *
  * - `SDL_HAT_RIGHTDOWN`
- *
  * - `SDL_HAT_LEFTUP`
- *
  * - `SDL_HAT_LEFTDOWN`
  *
  * \param joystick an SDL_Joystick structure containing joystick information
- * \param hat the hat index to get the state from; hat indices start at index
- *            0
+ * \param hat the hat index to get the state from; indices start at index 0
  * \returns the current hat position.
  *
  * \sa SDL_JoystickNumHats

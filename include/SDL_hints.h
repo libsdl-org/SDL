@@ -1319,6 +1319,7 @@ extern "C" {
  *
  * Since it's driver-specific, it's only supported where possible and
  * implemented. Currently supported the following drivers:
+ *
  * - KMSDRM (kmsdrm)
  * - Raspberry Pi (raspberrypi)
  */

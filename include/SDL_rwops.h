@@ -201,9 +201,7 @@ extern DECLSPEC Sint64 SDLCALL SDL_RWsize(SDL_RWops *context);
  * `whence` may be any of the following values:
  *
  * - `RW_SEEK_SET`: seek from the beginning of data
- *
  * - `RW_SEEK_CUR`: seek relative to current read point
- *
  * - `RW_SEEK_END`: seek relative to the end of data
  *
  * If this stream can not seek, it will return -1.

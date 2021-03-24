@@ -118,7 +118,7 @@ extern "C" {
  *   events subsystem
  * - `SDL_INIT_HAPTIC`: haptic (force feedback) subsystem
  * - `SDL_INIT_GAMECONTROLLER`: controller subsystem; automatically
- * initializes the joystick subsystem
+ *   initializes the joystick subsystem
  * - `SDL_INIT_EVENTS`: events subsystem
  * - `SDL_INIT_EVERYTHING`: all of the above subsystems
  * - `SDL_INIT_NOPARACHUTE`: compatibility; this flag is ignored

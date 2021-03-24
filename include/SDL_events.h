@@ -672,15 +672,13 @@ typedef enum
  * `action` may be any of the following:
  *
  * - `SDL_ADDEVENT`: up to `numevents` events will be added to the back of
- * the event queue.
- *
+ *   the event queue.
  * - `SDL_PEEKEVENT`: `numevents` events at the front of the event queue,
- * within the specified minimum and maximum type, will be returned to the
- * caller and will _not_ be removed from the queue.
- *
+ *   within the specified minimum and maximum type, will be returned to the
+ *   caller and will _not_ be removed from the queue.
  * - `SDL_GETEVENT`: up to `numevents` events at the front of the event queue,
- * within the specified minimum and maximum type, will be returned to the
- * caller and will be removed from the queue.
+ *   within the specified minimum and maximum type, will be returned to the
+ *   caller and will be removed from the queue.
  *
  * You may have to call SDL_PumpEvents() before calling this function.
  * Otherwise, the events may not be ready to be filtered when you call
@@ -1050,10 +1048,8 @@ extern DECLSPEC void SDLCALL SDL_FilterEvents(SDL_EventFilter filter,
  * `state` may be any of the following:
  *
  * - `SDL_QUERY`: returns the current processing state of the specified event
- *
  * - `SDL_IGNORE` (aka `SDL_DISABLE`): the event will automatically be dropped
- * from the event queue and will not be filtered
- *
+ *   from the event queue and will not be filtered
  * - `SDL_ENABLE`: the event will be processed normally
  *
  * \param type the type of event; see SDL_EventType for details

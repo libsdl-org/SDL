@@ -469,13 +469,9 @@ extern DECLSPEC int SDLCALL SDL_GetNumDisplayModes(int displayIndex);
  * The display modes are sorted in this priority:
  *
  * - width -> largest to smallest
- *
  * - height -> largest to smallest
- *
  * - bits per pixel -> more colors to fewer colors
- *
  * - packed pixel layout -> largest to smallest
- *
  * - refresh rate -> highest to lowest
  *
  * \param displayIndex the index of the display to query
@@ -619,29 +615,18 @@ extern DECLSPEC Uint32 SDLCALL SDL_GetWindowPixelFormat(SDL_Window * window);
  * `flags` may be any of the following OR'd together:
  *
  * - `SDL_WINDOW_FULLSCREEN`: fullscreen window
- *
- * - `SDL_WINDOW_FULLSCREEN_DESKTOP: fullscreen window at desktop resolution
- *
+ * - `SDL_WINDOW_FULLSCREEN_DESKTOP`: fullscreen window at desktop resolution
  * - `SDL_WINDOW_OPENGL`: window usable with an OpenGL context
- *
  * - `SDL_WINDOW_VULKAN`: window usable with a Vulkan instance
- *
  * - `SDL_WINDOW_METAL`: window usable with a Metal instance
- *
  * - `SDL_WINDOW_HIDDEN`: window is not visible
- *
  * - `SDL_WINDOW_BORDERLESS`: no window decoration
- *
  * - `SDL_WINDOW_RESIZABLE`: window can be resized
- *
  * - `SDL_WINDOW_MINIMIZED`: window is minimized
- *
  * - `SDL_WINDOW_MAXIMIZED`: window is maximized
- *
  * - `SDL_WINDOW_INPUT_GRABBED`: window has grabbed input focus
- *
  * - `SDL_WINDOW_ALLOW_HIGHDPI`: window should be created in high-DPI mode if
- * supported (>= SDL 2.0.1)
+ *   supported (>= SDL 2.0.1)
  *
  * `SDL_WINDOW_SHOWN` is ignored by SDL_CreateWindow(). The SDL_Window is
  * implicitly shown if SDL_WINDOW_HIDDEN is not set. `SDL_WINDOW_SHOWN` may be
@@ -1594,7 +1579,7 @@ extern DECLSPEC int SDLCALL SDL_GL_LoadLibrary(const char *path);
  * There are some quirks to looking up OpenGL functions that require some
  * extra care from the application. If you code carefully, you can handle
  * these quirks without any platform-specific code, though:
-
+ *
  * - On Windows, function pointers are specific to the current GL context;
  * this means you need to have created a GL context and made it current before
  * calling SDL_GL_GetProcAddress(). If you recreate your context or create a
@@ -1604,7 +1589,6 @@ extern DECLSPEC int SDLCALL SDL_GL_LoadLibrary(const char *path);
  * but it is still the way the wgl API is documented to work and you should
  * expect crashes if you don't respect it. Store a copy of the function
  * pointers that comes and goes with context lifespan.
- *
  * - On X11, function pointers returned by this function are valid for any
  * context, and can even be looked up before a context is created at all. This
  * means that, for at least some common OpenGL implementations, if you look up
@@ -1614,17 +1598,14 @@ extern DECLSPEC int SDLCALL SDL_GL_LoadLibrary(const char *path);
  * the appropriate extension with SDL_GL_ExtensionSupported(), or verifying
  * that the version of OpenGL you're using offers the function as core
  * functionality.
- *
  * - Some OpenGL drivers, on all platforms, *will* return NULL if a function
  * isn't supported, but you can't count on this behavior. Check for extensions
  * you use, and if you get a NULL anyway, act as if that extension wasn't
  * available. This is probably a bug in the driver, but you can code
  * defensively for this scenario anyhow.
- *
  * - Just because you're on Linux/Unix, don't assume you'll be using X11.
  * Next-gen display servers are waiting to replace it, and may or may not make
  * the same promises about function pointers.
- *
  * - OpenGL function pointers must be declared `APIENTRY` as in the example
  * code. This will ensure the proper calling convention is followed on
  * platforms where this matters (Win32) thereby avoiding stack corruption.

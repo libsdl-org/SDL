@@ -300,12 +300,11 @@ extern DECLSPEC const char *SDLCALL SDL_GetCurrentAudioDriver(void);
  * With two notable exceptions:
  *
  * - If `obtained` is NULL, we use `desired` (and allow no changes), which
- * means desired will be modified to have the correct values for silence, etc,
- * and SDL will convert any differences between your app's specific request
- * and the hardware behind the scenes.
- *
+ *   means desired will be modified to have the correct values for silence,
+ *   etc, and SDL will convert any differences between your app's specific
+ *   request and the hardware behind the scenes.
  * - The return value is always success or failure, and not a device ID, which
- * means you can only have one device open at a time with this function.
+ *   means you can only have one device open at a time with this function.
  *
  * \param desired an SDL_AudioSpec structure representing the desired output
  *                format. Please refer to the SDL_OpenAudioDevice documentation
@@ -464,9 +463,7 @@ extern DECLSPEC int SDLCALL SDL_GetAudioDeviceSpec(int index,
  * When filling in the desired audio spec structure:
  *
  * - `desired->freq` should be the frequency in sample-frames-per-second (Hz).
- *
  * - `desired->format` should be the audio format (`AUDIO_S16SYS`, etc).
- *
  * - `desired->samples` is the desired size of the audio buffer, in
  *    _sample frames_ (with stereo output, two samples--left and right--would
  *    make a single sample frame). This number should be a power of two, and
@@ -477,13 +474,10 @@ extern DECLSPEC int SDLCALL SDL_GetAudioDeviceSpec(int index,
  *    processing and cannot fill the audio buffer in time. Note that the
  *    number of sample frames is directly related to time by the following
  *    formula: `ms = (sampleframes*1000)/freq`
- *
  *  - `desired->size` is the size in _bytes_ of the audio buffer, and is
  *    calculated by SDL_OpenAudioDevice(). You don't initialize this.
- *
  *  - `desired->silence` is the value used to set the buffer to silence,
  *    and is calculated by SDL_OpenAudioDevice(). You don't initialize this.
- *
  *  - `desired->callback` should be set to a function that will be called
  *    when the audio device is ready for more data.  It is passed a pointer
  *    to the audio buffer, and the length in bytes of the audio buffer.
@@ -493,7 +487,6 @@ extern DECLSPEC int SDLCALL SDL_GetAudioDeviceSpec(int index,
  *    pointer here, and call SDL_QueueAudio() with some frequency, to queue
  *    more audio samples to be played (or for capture devices, call
  *    SDL_DequeueAudio() with some frequency, to obtain audio samples).
- *
  *  - `desired->userdata` is passed as the first parameter to your callback
  *    function. If you passed a NULL callback, this value is ignored.
  *

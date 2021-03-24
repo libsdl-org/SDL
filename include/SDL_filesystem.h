@@ -54,13 +54,11 @@ extern "C" {
  * application in /Applications/SDLApp/MyApp.app):
  *
  * - `resource`: bundle resource directory (the default). For example:
- * `/Applications/SDLApp/MyApp.app/Contents/Resources`
- *
+ *   `/Applications/SDLApp/MyApp.app/Contents/Resources`
  * - `bundle`: the Bundle directory. Fpr example:
- * `/Applications/SDLApp/MyApp.app/`
- *
+ *   `/Applications/SDLApp/MyApp.app/`
  * - `parent`: the containing directory of the bundle. For example:
- * `/Applications/SDLApp/`
+ *   `/Applications/SDLApp/`
  *
  * The returned path is guaranteed to end with a path separator ('\' on
  * Windows, '/' on most other platforms).
@@ -111,15 +109,12 @@ extern DECLSPEC char *SDLCALL SDL_GetBasePath(void);
  * follow these rules:
  *
  * - Try to use the same org string (_including case-sensitivity_) for all
- * your applications that use this function.
- *
+ *   your applications that use this function.
  * - Always use a unique app string for each one, and make sure it never
- * changes for an app once you've decided on it.
- *
+ *   changes for an app once you've decided on it.
  * - Unicode characters are legal, as long as it's UTF-8 encoded, but...
- *
  * - ...only use letters, numbers, and spaces. Avoid punctuation like "Game
- * Name 2: Bad Guy's Revenge!" ... "Game Name 2" is sufficient.
+ *   Name 2: Bad Guy's Revenge!" ... "Game Name 2" is sufficient.
  *
  * The returned path is guaranteed to end with a path separator ('\' on
  * Windows, '/' on most other platforms).

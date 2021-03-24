@@ -113,13 +113,9 @@ typedef enum
  * `alphaOperation(src, dst)` can return one of the following:
  *
  * - `src + dst`
- *
  * - `src - dst`
- *
  * - `dst - src`
- *
  * - `min(src, dst)`
- *
  * - `max(src, dst)`
  *
  * The red, green, and blue components are always multiplied with the first,
@@ -140,28 +136,22 @@ typedef enum
  * SDL_BlendMode enumeration.
  *
  * - **direct3d**: Supports `SDL_BLENDOPERATION_ADD` with all factors.
- *
  * - **direct3d11**: Supports all operations with all factors. However, some
- * factors produce unexpected results with `SDL_BLENDOPERATION_MINIMUM` and
- * `SDL_BLENDOPERATION_MAXIMUM`.
- *
+ *   factors produce unexpected results with `SDL_BLENDOPERATION_MINIMUM` and
+ *   `SDL_BLENDOPERATION_MAXIMUM`.
  * - **opengl**: Supports the `SDL_BLENDOPERATION_ADD` operation with all
- * factors. OpenGL versions 1.1, 1.2, and 1.3 do not work correctly with
- * SDL 2.0.6.
- *
+ *   factors. OpenGL versions 1.1, 1.2, and 1.3 do not work correctly with
+ *   SDL 2.0.6.
  * - **opengles**: Supports the `SDL_BLENDOPERATION_ADD` operation with all
- * factors. Color and alpha factors need to be the same. OpenGL ES 1
- * implementation specific: May also support `SDL_BLENDOPERATION_SUBTRACT`
- * and `SDL_BLENDOPERATION_REV_SUBTRACT`. May support color and alpha
- * operations being different from each other. May support color and alpha
- * factors being different from each other.
- *
+ *   factors. Color and alpha factors need to be the same. OpenGL ES 1
+ *   implementation specific: May also support `SDL_BLENDOPERATION_SUBTRACT`
+ *   and `SDL_BLENDOPERATION_REV_SUBTRACT`. May support color and alpha
+ *   operations being different from each other. May support color and alpha
+ *   factors being different from each other.
  * - **opengles2**: Supports the `SDL_BLENDOPERATION_ADD`,
- * `SDL_BLENDOPERATION_SUBTRACT`, `SDL_BLENDOPERATION_REV_SUBTRACT` operations
- * with all factors.
- *
+ *   `SDL_BLENDOPERATION_SUBTRACT`, `SDL_BLENDOPERATION_REV_SUBTRACT` operations
+ *   with all factors.
  * - **psp**: No custom blend mode support.
- *
  * - **software**: No custom blend mode support.
  *
  * Some renderers do not provide an alpha component for the default render
