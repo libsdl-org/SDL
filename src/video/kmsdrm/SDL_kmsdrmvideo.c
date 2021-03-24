@@ -469,7 +469,7 @@ uint32_t width, uint32_t height, uint32_t refresh_rate){
     target.refresh_rate = refresh_rate;
     target.driverdata = 0; /* Initialize to 0 */
 
-    if (!SDL_GetClosestDisplayMode(0, &target, &closest)) {
+    if (!SDL_GetClosestDisplayMode(SDL_atoi(display->name), &target, &closest)) {
         return NULL;
     } else {
         SDL_DisplayModeData *modedata = (SDL_DisplayModeData *)closest.driverdata;
@@ -512,7 +512,7 @@ void KMSDRM_DeinitDisplays (_THIS) {
 }
 
 /* Gets a DRM connector, builds an SDL_Display with it, and adds it to the
-   list of SDL Displays.  */
+   list of SDL Displays in _this->displays[]  */
 void KMSDRM_AddDisplay (_THIS, drmModeConnector *connector, drmModeRes *resources) {
 
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
