@@ -17,6 +17,81 @@ foreach (@ARGV) {
     $wikipath = $_, next if not defined $wikipath;
 }
 
+my $wordwrap_mode = 'mediawiki';
+sub wordwrap_atom {   # don't call this directly.
+    my $str = shift;
+    return fill('', '', $str);
+}
+
+sub wordwrap_with_bullet_indent {  # don't call this directly.
+    my $bullet = shift;
+    my $str = shift;
+    my $retval = '';
+
+    # You _can't_ (at least with Pandoc) have a bullet item with a newline in
+    #  MediaWiki, so _remove_ wrapping!
+    if ($wordwrap_mode eq 'mediawiki') {
+        $retval = "$bullet$str";
+        $retval =~ s/\n/ /gms;
+        return "$retval\n";
+    }
+
+    my $bulletlen = length($bullet);
+
+    # wrap it and then indent each line to be under the bullet.
+    $Text::Wrap::columns -= $bulletlen;
+    my @wrappedlines = split /\n/, wordwrap_atom($str);
+    $Text::Wrap::columns += $bulletlen;
+
+    my $prefix = $bullet;
+    my $usual_prefix = ' ' x $bulletlen;
+
+    foreach (@wrappedlines) {
+        $retval .= "$prefix$_\n";
+        $prefix = $usual_prefix;
+    }
+
+    return $retval;
+}
+
+sub wordwrap_one_paragraph {  # don't call this directly.
+    my $retval = '';
+    my $p = shift;
+    #print "\n\n\nPARAGRAPH: [$p]\n\n\n";
+    if ($p =~ s/\A([\*\-] )//) {  # bullet list, starts with "* " or "- ".
+        my $bullet = $1;
+        my $item = '';
+        my @items = split /\n/, $p;
+        foreach (@items) {
+            if (s/\A([\*\-] )//) {
+                $retval .= wordwrap_with_bullet_indent($bullet, $item);
+                $item = '';
+            }
+            s/\A\s*//;
+            $item .= "$_\n";   # accumulate lines until we hit the end or another bullet.
+        }
+        if ($item ne '') {
+            $retval .= wordwrap_with_bullet_indent($bullet, $item);
+        }
+    } else {
+        $retval = wordwrap_atom($p) . "\n";
+    }
+
+    return $retval;
+}
+
+sub wordwrap_paragraphs {  # don't call this directly.
+    my $str = shift;
+    my $retval = '';
+    my @paragraphs = split /\n\n/, $str;
+    foreach (@paragraphs) {
+        next if $_ eq '';
+        $retval .= wordwrap_one_paragraph($_);
+        $retval .= "\n";
+    }
+    return $retval;
+}
+
 my $wordwrap_default_columns = 76;
 sub wordwrap {
     my $str = shift;
@@ -28,24 +103,13 @@ sub wordwrap {
 
     my $retval = '';
 
-    # !!! FIXME: at some point it would be neat if this understood lists, so
-    #
-    # * Item 1
-    # * Item 2
-    #
-    # was understood to a) not wrap into one line and b) knew to wrap so overflow
-    # lined up _indented_ under the '*' (etc) char. But we don't do that currently,
-    # so cheat and make each bullet its own paragraph instead, which is Good Enough
-    # for the time being.
-
-    while ($str =~ s/(.*?)(\n*\`\`\`.*?\`\`\`\n*|\n*\<syntaxhighlight.*?\<\/syntaxhighlight\>\n*)//ms) {
-        $retval .= fill('', '', $1);  # wrap it.
+    while ($str =~ s/(.*?)(\n+\`\`\`.*?\`\`\`\n+|\n+\<syntaxhighlight.*?\<\/syntaxhighlight\>\n+)//ms) {
+        $retval .= wordwrap_paragraphs($1); # wrap it.
         $retval .= $2;  # don't wrap it.
     }
 
-    return $retval . fill('', '', $str);  # wrap what's left.
+    return $retval . wordwrap_paragraphs($str);  # wrap what's left.
 }
-
 
 
 sub wikify {
@@ -70,6 +134,9 @@ sub wikify {
 
         # italic
         $str =~ s/\*(.*?)\*/''$1''/gms;
+
+        # bullets
+        $str =~ s/^\- /* /gm;
     } elsif ($wikitype eq 'md') {
         # Convert obvious SDL things to wikilinks.
         $str =~ s/\b(SDL_[a-zA-Z0-9_]+)/[$1]($1)/gms;
@@ -146,6 +213,9 @@ sub dewikify {
 
         # italic
         $str =~ s/\''(.*?)''/*$1*/gms;
+
+        # bullets
+        $str =~ s/^\* /- /gm;
     }
 
     return $str;
@@ -529,8 +599,12 @@ if ($copy_direction == 1) {  # --copy-to-headers
 } elsif ($copy_direction == -1) { # --copy-to-wiki
     foreach (keys %headerfuncs) {
         my $fn = $_;
-        my $wikitype = defined $wikitypes{$fn} ? $wikitypes{$fn} : 'md';  # default to Markdown for new stuff.
+        my $wikitype = defined $wikitypes{$fn} ? $wikitypes{$fn} : 'mediawiki';  # default to MediaWiki for new stuff FOR NOW.
         die("Unexpected wikitype '$wikitype'\n") if (($wikitype ne 'mediawiki') and ($wikitype ne 'md'));
+
+        #print("$fn\n"); next;
+
+        $wordwrap_mode = $wikitype;
 
         my $raw = $headerfuncs{$fn};  # raw doxygen text with comment characters stripped from start/end and start of each line.
         $raw =~ s/\A\s*\\brief\s+//;  # Technically we don't need \brief (please turn on JAVADOC_AUTOBRIEF if you use Doxygen), so just in case one is present, strip it.
@@ -549,7 +623,7 @@ if ($copy_direction == 1) {  # --copy-to-headers
 
         $brief =~ s/\A(.*?\.) /$1\n\n/;  # \brief should only be one sentence, delimited by a period+space. Split if necessary.
         my @briefsplit = split /\n/, $brief;
-        $brief = wikify($wikitype, shift @briefsplit);
+        $brief = wikify($wikitype, shift @briefsplit) . "\n";
         @doxygenlines = (@briefsplit, @doxygenlines);
 
         my $remarks = '';
@@ -634,13 +708,16 @@ if ($copy_direction == 1) {  # --copy-to-headers
             }
         }
 
+        # Make sure this ends with a double-newline.
+        $sections{'Related Functions'} .= "\n" if defined $sections{'Related Functions'};
+
         # We can build the wiki table now that we have all the data.
         if (scalar(@params) > 0) {
             my $str = '';
             if ($wikitype eq 'mediawiki') {
                 while (scalar(@params) > 0) {
                     my $arg = shift @params;
-                    my $desc = shift @params;
+                    my $desc = wikify($wikitype, shift @params);
                     $str .= ($str eq '') ? "{|\n" : "|-\n";
                     $str .= "|'''$arg'''\n";
                     $str .= "|$desc\n";
@@ -651,11 +728,12 @@ if ($copy_direction == 1) {  # --copy-to-headers
                 my $longest_desc = 0;
                 my $which = 0;
                 foreach (@params) {
-                    my $len = length($_);
                     if ($which == 0) {
+                        my $len = length($_) + 4;
                         $longest_arg = $len if ($len > $longest_arg);
                         $which = 1;
                     } else {
+                        my $len = length(wikify($wikitype, $_));
                         $longest_desc = $len if ($len > $longest_desc);
                         $which = 0;
                     }
@@ -667,7 +745,7 @@ if ($copy_direction == 1) {  # --copy-to-headers
 
                 while (@params) {
                     my $arg = shift @params;
-                    my $desc = shift @params;
+                    my $desc = wikify($wikitype, shift @params);
                     $str .= "| **$arg** " . (' ' x ($longest_arg - length($arg))) . "| $desc" . (' ' x ($longest_desc - length($desc))) . " |\n";
                 }
             } else {
