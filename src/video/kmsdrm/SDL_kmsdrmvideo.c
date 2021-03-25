@@ -64,6 +64,10 @@
 #define KMSDRM_DRI_CARDPATHFMT "/dev/dri/card%d"
 #endif
 
+#ifndef EGL_PLATFORM_GBM_MESA
+#define EGL_PLATFORM_GBM_MESA 0x31D7
+#endif
+
 static int
 check_modestting(int devindex)
 {
@@ -1457,7 +1461,7 @@ KMSDRM_GetWindowWMInfo(_THIS, SDL_Window * window, struct SDL_SysWMinfo *info)
      const Uint32 version = SDL_VERSIONNUM((Uint32)info->version.major,
                                            (Uint32)info->version.minor,
                                            (Uint32)info->version.patch);
- 
+
      if (version < SDL_VERSIONNUM(2, 0, 15)) {
          SDL_SetError("Version must be 2.0.15 or newer");
          return SDL_FALSE;
@@ -1467,7 +1471,7 @@ KMSDRM_GetWindowWMInfo(_THIS, SDL_Window * window, struct SDL_SysWMinfo *info)
      info->info.kmsdrm.dev_index = viddata->devindex;
      info->info.kmsdrm.drm_fd = viddata->drm_fd;
      info->info.kmsdrm.gbm_dev = viddata->gbm_dev;
- 
+
      return SDL_TRUE;
 }
 
