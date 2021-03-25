@@ -682,7 +682,7 @@ if ($copy_direction == 1) {  # --copy-to-headers
                     last if $subline =~ /\A\\/;  # some sort of doxygen command, assume we're past this thing.
                     last if $subline eq '';  # empty line, this param is done.
                     shift @doxygenlines;  # dump this line from the array; we're using it.
-                    $desc .= wikify($wikitype, " $subline");
+                    $desc .= " $subline";
                 }
 
                 # We need to know the length of the longest string to make Markdown tables, so we just store these off until everything is parsed.
