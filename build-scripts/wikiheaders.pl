@@ -466,6 +466,9 @@ if ($warn_about_missing) {
 
 if ($copy_direction == 1) {  # --copy-to-headers
     my %changed_headers = ();
+
+    $wordwrap_mode = 'md';   # the headers use Markdown format.
+
     # if it's not in the headers already, we don't add it, so iterate what we know is already there for changes.
     foreach (keys %headerfuncs) {
         my $fn = $_;
