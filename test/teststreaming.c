@@ -67,7 +67,7 @@ void quit(int rc)
     exit(rc);
 }
 
-void UpdateTexture(SDL_Texture *texture, int frame)
+void UpdateTexture(SDL_Texture *texture)
 {
     SDL_Color *color;
     Uint8 *src;
@@ -110,7 +110,7 @@ loop()
     }
 
     frame = (frame + 1) % MOOSEFRAMES_COUNT;
-    UpdateTexture(MooseTexture, frame);
+    UpdateTexture(MooseTexture);
 
     SDL_RenderClear(renderer);
     SDL_RenderCopy(renderer, MooseTexture, NULL, NULL);
