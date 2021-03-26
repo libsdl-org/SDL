@@ -438,7 +438,7 @@ extern DECLSPEC int SDLCALL SDL_GetDisplayDPI(int displayIndex, float * ddpi, fl
 /**
  * Get the orientation of a display.
  *
- * \params displayIndex the index of the display to query
+ * \param displayIndex the index of the display to query
  * \returns The SDL_DisplayOrientation enum value of the display, or
  *          `SDL_ORIENTATION_UNKNOWN` if it isn't available.
  *
@@ -1314,7 +1314,7 @@ extern DECLSPEC int SDLCALL SDL_SetWindowOpacity(SDL_Window * window, float opac
  * This function also returns -1 if an invalid window was provided.
  *
  * \param window the window to get the current opacity value from
- * \param opacity the float filled in (0.0f - transparent, 1.0f - opaque)
+ * \param out_opacity the float filled in (0.0f - transparent, 1.0f - opaque)
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *

@@ -149,7 +149,7 @@ extern DECLSPEC void SDLCALL SDL_Vulkan_UnloadLibrary(void);
  *               should be retrieved (will be deprecated in a future release)
  * \param pCount A pointer to an unsigned int corresponding to the
  *               number of extensions to be returned
- * \param names NULL or a pointer to an array to be filled with required
+ * \param pNames NULL or a pointer to an array to be filled with required
  *              Vulkan instance extensions
  * \returns SDL_TRUE on success, SDL_FALSE on error.
  *

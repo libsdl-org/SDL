@@ -275,7 +275,7 @@ extern DECLSPEC SDL_Joystick *SDLCALL SDL_JoystickOpen(int device_index);
 /**
  * Get the SDL_Joystick associated with an instance id.
  *
- * \param joyid the instance id to get the SDL_Joystick for
+ * \param instance_id the instance id to get the SDL_Joystick for
  * \returns an SDL_Joystick on success or NULL on failure; call SDL_GetError()
  *          for more information.
  *
