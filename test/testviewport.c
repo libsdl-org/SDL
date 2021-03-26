@@ -92,7 +92,7 @@ LoadSprite(char *file, SDL_Renderer *renderer)
 }
 
 void
-DrawOnViewport(SDL_Renderer * renderer, SDL_Rect viewport)
+DrawOnViewport(SDL_Renderer * renderer)
 {    
     SDL_Rect rect;
 
@@ -174,7 +174,7 @@ loop()
             continue;
 
         /* Draw using viewport */
-        DrawOnViewport(state->renderers[i], viewport);
+        DrawOnViewport(state->renderers[i]);
 
         /* Update the screen! */
         if (use_target) {
