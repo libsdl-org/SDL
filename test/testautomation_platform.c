@@ -160,38 +160,36 @@ int platform_testGetFunctions (void *arg)
  */
 int platform_testHasFunctions (void *arg)
 {
-   int ret;
-
    /* TODO: independently determine and compare values as well */
 
-   ret = SDL_HasRDTSC();
+   SDL_HasRDTSC();
    SDLTest_AssertPass("SDL_HasRDTSC()");
 
-   ret = SDL_HasAltiVec();
+   SDL_HasAltiVec();
    SDLTest_AssertPass("SDL_HasAltiVec()");
 
-   ret = SDL_HasMMX();
+   SDL_HasMMX();
    SDLTest_AssertPass("SDL_HasMMX()");
 
-   ret = SDL_Has3DNow();
+   SDL_Has3DNow();
    SDLTest_AssertPass("SDL_Has3DNow()");
 
-   ret = SDL_HasSSE();
+   SDL_HasSSE();
    SDLTest_AssertPass("SDL_HasSSE()");
 
-   ret = SDL_HasSSE2();
+   SDL_HasSSE2();
    SDLTest_AssertPass("SDL_HasSSE2()");
 
-   ret = SDL_HasSSE3();
+   SDL_HasSSE3();
    SDLTest_AssertPass("SDL_HasSSE3()");
 
-   ret = SDL_HasSSE41();
+   SDL_HasSSE41();
    SDLTest_AssertPass("SDL_HasSSE41()");
 
-   ret = SDL_HasSSE42();
+   SDL_HasSSE42();
    SDLTest_AssertPass("SDL_HasSSE42()");
 
-   ret = SDL_HasAVX();
+   SDL_HasAVX();
    SDLTest_AssertPass("SDL_HasAVX()");
 
    return TEST_COMPLETED;
