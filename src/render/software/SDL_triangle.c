@@ -154,22 +154,23 @@ static void bounding_rect(const SDL_Point *a, const SDL_Point *b, const SDL_Poin
                     Uint8 *dptr = (Uint8 *) dst_ptr + x * dstbpp;                                       \
 
 
+/* Use 64 bits precision to prevent overflow when interpolating color / texture with wide triangles */
 #define TRIANGLE_GET_TEXTCOORD                                                                          \
-                    int srcx = (w0 * s2s0_x + w1 * s2s1_x + s2_x_area.x) / area;                        \
-                    int srcy = (w0 * s2s0_y + w1 * s2s1_y + s2_x_area.y) / area;                        \
+                    int srcx = ((Sint64)w0 * s2s0_x + (Sint64)w1 * s2s1_x + s2_x_area.x) / area;        \
+                    int srcy = ((Sint64)w0 * s2s0_y + (Sint64)w1 * s2s1_y + s2_x_area.y) / area;        \
 
 #define TRIANGLE_GET_MAPPED_COLOR                                                                       \
-                    int r = (w0 * c0.r + w1 * c1.r + w2 * c2.r) / area;                                 \
-                    int g = (w0 * c0.g + w1 * c1.g + w2 * c2.g) / area;                                 \
-                    int b = (w0 * c0.b + w1 * c1.b + w2 * c2.b) / area;                                 \
-                    int a = (w0 * c0.a + w1 * c1.a + w2 * c2.a) / area;                                 \
+                    int r = ((Sint64)w0 * c0.r + (Sint64)w1 * c1.r + (Sint64)w2 * c2.r) / area;         \
+                    int g = ((Sint64)w0 * c0.g + (Sint64)w1 * c1.g + (Sint64)w2 * c2.g) / area;         \
+                    int b = ((Sint64)w0 * c0.b + (Sint64)w1 * c1.b + (Sint64)w2 * c2.b) / area;         \
+                    int a = ((Sint64)w0 * c0.a + (Sint64)w1 * c1.a + (Sint64)w2 * c2.a) / area;         \
                     int color = SDL_MapRGBA(format, r, g, b, a);                                        \
 
 #define TRIANGLE_GET_COLOR                                                                              \
-                    int r = (w0 * c0.r + w1 * c1.r + w2 * c2.r) / area;                                 \
-                    int g = (w0 * c0.g + w1 * c1.g + w2 * c2.g) / area;                                 \
-                    int b = (w0 * c0.b + w1 * c1.b + w2 * c2.b) / area;                                 \
-                    int a = (w0 * c0.a + w1 * c1.a + w2 * c2.a) / area;                                 \
+                    int r = ((Sint64)w0 * c0.r + (Sint64)w1 * c1.r + (Sint64)w2 * c2.r) / area;         \
+                    int g = ((Sint64)w0 * c0.g + (Sint64)w1 * c1.g + (Sint64)w2 * c2.g) / area;         \
+                    int b = ((Sint64)w0 * c0.b + (Sint64)w1 * c1.b + (Sint64)w2 * c2.b) / area;         \
+                    int a = ((Sint64)w0 * c0.a + (Sint64)w1 * c1.a + (Sint64)w2 * c2.a) / area;         \
 
 
 #define TRIANGLE_END_LOOP                                                                               \
