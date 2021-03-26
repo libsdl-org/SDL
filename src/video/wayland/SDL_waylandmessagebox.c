@@ -76,10 +76,17 @@ Wayland_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
         }
     ADD_ARGUMENT(title_len, title)
     ADD_ARGUMENT(message_len, message)
-    for (i = 0; i < messageboxdata->numbuttons; i += 1) {
-        ADD_ARGUMENT(extrabutton_len, buttons[i].text)
-    }
     #undef ADD_ARGUMENT
+    for (i = 0; i < messageboxdata->numbuttons; i += 1) {
+        command_len += extrabutton_len + 3; /* Two " and a space */
+        if (messageboxdata->buttons[i].text != NULL) {
+            const size_t button_len = SDL_strlen(messageboxdata->buttons[i].text);
+            command_len += button_len;
+            if (button_len > output_len) {
+                output_len = button_len;
+            }
+        }
+    }
 
     /* Don't forget null terminators! */
     command_len += 1;
