@@ -477,7 +477,6 @@ video_getClosestDisplayModeRandomResolution(void *arg)
 {
   SDL_DisplayMode target;
   SDL_DisplayMode closest;
-  SDL_DisplayMode* dResult;
   int displayNum;
   int i;
   int variation;
@@ -500,7 +499,7 @@ video_getClosestDisplayModeRandomResolution(void *arg)
       target.driverdata = 0;
 
       /* Make call; may or may not find anything, so don't validate any further */
-      dResult = SDL_GetClosestDisplayMode(i, &target, &closest);
+      SDL_GetClosestDisplayMode(i, &target, &closest);
       SDLTest_AssertPass("Call to SDL_GetClosestDisplayMode(target=random/variation%d)", variation);
     }
   }
@@ -830,7 +829,7 @@ video_getSetWindowGrab(void *arg)
 {
   const char* title = "video_getSetWindowGrab Test Window";
   SDL_Window* window;
-  SDL_bool originalMouseState, originalKeyboardState, dummyState;
+  SDL_bool originalMouseState, originalKeyboardState;
 
   /* Call against new test window */
   window = _createVideoSuiteTestWindow(title);
@@ -927,11 +926,11 @@ video_getSetWindowGrab(void *arg)
                       "SDL_GetWindowKeyboardGrab() should return SDL_FALSE");
 
   /* Negative tests */
-  dummyState = SDL_GetWindowGrab(NULL);
+  SDL_GetWindowGrab(NULL);
   SDLTest_AssertPass("Call to SDL_GetWindowGrab(window=NULL)");
   _checkInvalidWindowError();
 
-  dummyState = SDL_GetWindowKeyboardGrab(NULL);
+  SDL_GetWindowKeyboardGrab(NULL);
   SDLTest_AssertPass("Call to SDL_GetWindowKeyboardGrab(window=NULL)");
   _checkInvalidWindowError();
 

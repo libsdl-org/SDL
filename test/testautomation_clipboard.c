@@ -21,8 +21,7 @@
 int
 clipboard_testHasClipboardText(void *arg)
 {
-    SDL_bool result;
-    result = SDL_HasClipboardText();
+    SDL_HasClipboardText();
     SDLTest_AssertPass("Call to SDL_HasClipboardText succeeded");
 
     return TEST_COMPLETED;

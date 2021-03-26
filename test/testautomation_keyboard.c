@@ -47,10 +47,8 @@ keyboard_getKeyboardState(void *arg)
 int
 keyboard_getKeyboardFocus(void *arg)
 {
-   SDL_Window* window;
-
    /* Call, but ignore return value */
-   window = SDL_GetKeyboardFocus();
+   SDL_GetKeyboardFocus();
    SDLTest_AssertPass("Call to SDL_GetKeyboardFocus()");
 
    return TEST_COMPLETED;
