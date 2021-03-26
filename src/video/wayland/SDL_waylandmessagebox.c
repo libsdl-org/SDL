@@ -32,7 +32,7 @@ Wayland_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
     #define ZENITY_CONST(name, str) \
         const char *name = str; \
         const size_t name##_len = SDL_strlen(name);
-    ZENITY_CONST(zenity, "zenity --question --switch --icon-name=dialog-")
+    ZENITY_CONST(zenity, "zenity --question --switch --no-wrap --icon-name=dialog-")
     ZENITY_CONST(title, "--title=")
     ZENITY_CONST(message, "--text=")
     ZENITY_CONST(extrabutton, "--extra-button=")
