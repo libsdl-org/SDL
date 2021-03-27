@@ -367,14 +367,15 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
     planes_props = SDL_malloc(sizeof(VkDisplayPlanePropertiesKHR) * plane_count);
     vkGetPhysicalDeviceDisplayPlanePropertiesKHR(gpu, &plane_count, planes_props);
 
-    /* Get a video mode equal or smaller than the window size. REMEMBER:
-       We have to get a small enough videomode for the window size,
+    /* Get a video mode equal to the window size among the predefined ones,
+       if possible.
+       REMEMBER: We have to get a small enough videomode for the window size,
        because videomode determines how big the scanout region is and we can't
        scanout a region bigger than the window (we would be reading past the
        buffer, and Vulkan would give us a confusing VK_ERROR_SURFACE_LOST_KHR). */
     for (i = 0; i < mode_count; i++) {
-        if (modes_props[i].parameters.visibleRegion.width <= window->w &&
-            modes_props[i].parameters.visibleRegion.height <= window->h)
+        if (modes_props[i].parameters.visibleRegion.width == window->w &&
+            modes_props[i].parameters.visibleRegion.height == window->h)
         {
             display_mode_props = modes_props[i];
             mode_found = SDL_TRUE;
