@@ -722,7 +722,7 @@ int KMSDRM_InitDisplays (_THIS) {
                an SDL Display representing it. KMSDRM_AddDisplay() is purposely void,
                so if it fails (no encoder for connector, no valid video mode for
                connector etc...) we can keep looking for connected connectors. */
-            KMSDRM_AddDisplay (_this, connector, resources);
+            KMSDRM_AddDisplay(_this, connector, resources);
         }
         else {
             /* If it's not, free it now. */
