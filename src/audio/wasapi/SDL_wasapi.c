@@ -100,7 +100,6 @@ WaveFormatToSDLFormat(WAVEFORMATEX *waveformat)
             return AUDIO_S32SYS;
         }
     }
-    SDL_assert(0 && "Unrecognized wFormatTag!");
     return 0;
 }
 
