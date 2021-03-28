@@ -418,16 +418,12 @@ static void
 core_events_hotplug_init_callback(void *object, uint32_t id, int seq)
 {
     if (id == PW_ID_CORE && seq == hotplug_init_seq_val) {
-        PIPEWIRE_pw_thread_loop_lock(hotplug_loop);
-
         /* This core listener is no longer needed. */
         spa_hook_remove(&hotplug_core_listener);
 
         /* Signal that the initial I/O list is populated */
         SDL_AtomicSet(&hotplug_init_complete, 1);
         PIPEWIRE_pw_thread_loop_signal(hotplug_loop, false);
-
-        PIPEWIRE_pw_thread_loop_unlock(hotplug_loop);
     }
 }
 
