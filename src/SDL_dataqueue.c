@@ -290,6 +290,42 @@ SDL_ReadFromDataQueue(SDL_DataQueue *queue, void *_buf, const size_t _len)
 }
 
 size_t
+SDL_RemoveFromDataQueue(SDL_DataQueue *queue, const size_t _len)
+{
+    size_t len = _len;
+    SDL_DataQueuePacket *packet;
+
+    if (!queue) {
+        return 0;
+    }
+
+    while ((len > 0) && ((packet = queue->head) != NULL)) {
+        const size_t avail = packet->datalen - packet->startpos;
+        const size_t cpy = SDL_min(len, avail);
+        SDL_assert(queue->queued_bytes >= avail);
+
+        packet->startpos += cpy;
+        queue->queued_bytes -= cpy;
+        len -= cpy;
+
+        if (packet->startpos == packet->datalen) {  /* packet is done, put it in the pool. */
+            queue->head = packet->next;
+            SDL_assert((packet->next != NULL) || (packet == queue->tail));
+            packet->next = queue->pool;
+            queue->pool = packet;
+        }
+    }
+
+    SDL_assert((queue->head != NULL) == (queue->queued_bytes != 0));
+
+    if (queue->head == NULL) {
+        queue->tail = NULL;  /* in case we drained the queue entirely. */
+    }
+
+    return _len - len;
+}
+
+size_t
 SDL_CountDataQueue(SDL_DataQueue *queue)
 {
     return queue ? queue->queued_bytes : 0;
