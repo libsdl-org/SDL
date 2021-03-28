@@ -893,14 +893,14 @@ output_callback(void *data)
      * and run the callback with the work buffer to keep the callback
      * firing regularly in case the audio is being used as a timer.
      */
-    if (SDL_AtomicGet(&this->enabled)) {
-        dst = spa_buf->datas[0].data;
-    } else {
-        dst = this->work_buffer;
-        SDL_memset(spa_buf->datas[0].data, this->spec.silence, this->spec.size);
-    }
-
     if (!SDL_AtomicGet(&this->paused)) {
+        if (SDL_AtomicGet(&this->enabled)) {
+            dst = spa_buf->datas[0].data;
+        } else {
+            dst = this->work_buffer;
+            SDL_memset(spa_buf->datas[0].data, this->spec.silence, this->spec.size);
+        }
+
         if (!this->stream) {
             SDL_LockMutex(this->mixer_lock);
             this->callbackspec.callback(this->callbackspec.userdata, dst, this->callbackspec.size);
@@ -920,8 +920,8 @@ output_callback(void *data)
             got = SDL_AudioStreamGet(this->stream, dst, this->spec.size);
             SDL_assert(got == this->spec.size);
         }
-    } else if (dst != this->work_buffer) {
-        SDL_memset(dst, this->spec.silence, this->spec.size);
+    } else {
+        SDL_memset(spa_buf->datas[0].data, this->spec.silence, this->spec.size);
     }
 
     spa_buf->datas[0].chunk->offset = 0;
@@ -939,7 +939,6 @@ input_callback(void *data)
     Uint8 *            src;
     _THIS                    = (SDL_AudioDevice *)data;
     struct pw_stream *stream = this->hidden->stream;
-    Uint32            offset, size;
 
     /* Shutting down, don't do anything */
     if (SDL_AtomicGet(&this->shutdown)) {
@@ -957,21 +956,21 @@ input_callback(void *data)
         return;
     }
 
-    /* Calculate the offset and data size */
-    offset = SPA_MIN(spa_buf->datas[0].chunk->offset, spa_buf->datas[0].maxsize);
-    size   = SPA_MIN(spa_buf->datas[0].chunk->size, spa_buf->datas[0].maxsize - offset);
-
-    src += offset;
-
-    /* Fill the buffer with silence if the stream is disabled. */
-    if (!SDL_AtomicGet(&this->enabled)) {
-        SDL_memset(src, this->callbackspec.silence, size);
-    }
-
-    /* Pipewire can vary the latency, so buffer all incoming data */
-    SDL_WriteToDataQueue(this->hidden->buffer, src, size);
-
     if (!SDL_AtomicGet(&this->paused)) {
+        /* Calculate the offset and data size */
+        const Uint32 offset = SPA_MIN(spa_buf->datas[0].chunk->offset, spa_buf->datas[0].maxsize);
+        const Uint32 size   = SPA_MIN(spa_buf->datas[0].chunk->size, spa_buf->datas[0].maxsize - offset);
+
+        src += offset;
+
+        /* Fill the buffer with silence if the stream is disabled. */
+        if (!SDL_AtomicGet(&this->enabled)) {
+            SDL_memset(src, this->callbackspec.silence, size);
+        }
+
+        /* Pipewire can vary the latency, so buffer all incoming data */
+        SDL_WriteToDataQueue(this->hidden->buffer, src, size);
+
         while (SDL_CountDataQueue(this->hidden->buffer) >= this->callbackspec.size) {
             SDL_ReadFromDataQueue(this->hidden->buffer, this->work_buffer, this->callbackspec.size);
 
@@ -979,9 +978,9 @@ input_callback(void *data)
             this->callbackspec.callback(this->callbackspec.userdata, this->work_buffer, this->callbackspec.size);
             SDL_UnlockMutex(this->mixer_lock);
         }
-    } else { /* Keep data moving through the buffer while paused */
-        while (SDL_CountDataQueue(this->hidden->buffer) >= this->callbackspec.size) {
-            SDL_ReadFromDataQueue(this->hidden->buffer, this->work_buffer, this->callbackspec.size);
+    } else { /* Flush the buffer when paused */
+        if (SDL_CountDataQueue(this->hidden->buffer) != 0) {
+            SDL_ClearDataQueue(this->hidden->buffer, this->hidden->buffer_period_size * 2);
         }
     }
 
@@ -1060,10 +1059,10 @@ PIPEWIRE_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
 
     /* The latency of source nodes can change, so buffering is required. */
     if (iscapture) {
-        const size_t period_size = adjusted_samples * priv->stride;
+        priv->buffer_period_size = SPA_MAX(this->spec.samples, adjusted_samples) * priv->stride;
 
         /* A packet size of 4 periods should be more than is ever needed (no more than 2 should be queued in practice). */
-        priv->buffer = SDL_NewDataQueue(period_size * 4, period_size * 2);
+        priv->buffer = SDL_NewDataQueue(priv->buffer_period_size * 4, priv->buffer_period_size * 2);
         if (priv->buffer == NULL) {
             return SDL_SetError("Pipewire: Failed to allocate source buffer");
         }
