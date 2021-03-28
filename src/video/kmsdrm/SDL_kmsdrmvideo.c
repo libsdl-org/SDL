@@ -965,7 +965,7 @@ KMSDRM_VideoInit(_THIS)
        For VK-incompatible initializations we have KMSDRM_GBMInit(), which is
        called on window creation, and only when we know it's not a VK window. */
     if (KMSDRM_InitDisplays(_this)) {
-        ret = SDL_SetError("error getting KMS/DRM information");
+        ret = SDL_SetError("error getting KMSDRM displays information");
     }
 
 #ifdef SDL_INPUT_LINUXEV
