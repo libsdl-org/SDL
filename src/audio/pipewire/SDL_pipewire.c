@@ -983,8 +983,23 @@ input_callback(void *data)
     PIPEWIRE_pw_stream_queue_buffer(stream, pw_buf);
 }
 
-static const struct pw_stream_events stream_output_events = { PW_VERSION_STREAM_EVENTS, .process = output_callback };
-static const struct pw_stream_events stream_input_events  = { PW_VERSION_STREAM_EVENTS, .process = input_callback };
+static void
+stream_state_changed_callback(void *data, enum pw_stream_state old, enum pw_stream_state state, const char *error)
+{
+    _THIS = data;
+
+    if (state == PW_STREAM_STATE_STREAMING || state == PW_STREAM_STATE_ERROR) {
+        SDL_AtomicSet(&this->hidden->stream_initialized, 1);
+        PIPEWIRE_pw_thread_loop_signal(this->hidden->loop, false);
+    }
+}
+
+static const struct pw_stream_events stream_output_events = { PW_VERSION_STREAM_EVENTS,
+                                                              .state_changed = stream_state_changed_callback,
+                                                              .process       = output_callback };
+static const struct pw_stream_events stream_input_events  = { PW_VERSION_STREAM_EVENTS,
+                                                             .state_changed = stream_state_changed_callback,
+                                                             .process       = input_callback };
 
 static int
 PIPEWIRE_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
@@ -1005,7 +1020,7 @@ PIPEWIRE_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     const struct spa_pod *       params   = NULL;
     struct SDL_PrivateAudioData *priv;
     struct pw_properties *       props;
-    const char *                 app_name, *stream_name, *stream_role;
+    const char *                 app_name, *stream_name, *stream_role, *error;
     const Uint32                 node_id = this->handle == NULL ? PW_ID_ANY : PW_HANDLE_TO_ID(this->handle);
     enum pw_stream_state         state;
     int                          res;
@@ -1120,14 +1135,17 @@ PIPEWIRE_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     }
 
     /* Wait until the stream is either running or failed */
-    do {
-        const char *error;
-        state = PIPEWIRE_pw_stream_get_state(priv->stream, &error);
+    PIPEWIRE_pw_thread_loop_lock(priv->loop);
+    if (!SDL_AtomicGet(&priv->stream_initialized)) {
+        PIPEWIRE_pw_thread_loop_wait(priv->loop);
+    }
+    PIPEWIRE_pw_thread_loop_unlock(priv->loop);
 
-        if (state == PW_STREAM_STATE_ERROR) {
-            return SDL_SetError("Pipewire: Stream error: %s", error);
-        }
-    } while (state != PW_STREAM_STATE_STREAMING);
+    state = PIPEWIRE_pw_stream_get_state(priv->stream, &error);
+
+    if (state == PW_STREAM_STATE_ERROR) {
+        return SDL_SetError("Pipewire: Stream error: %s", error);
+    }
 
     return 0;
 }
