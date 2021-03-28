@@ -257,7 +257,12 @@ IBus_GetDBusAddressFilename(void)
     }
     
     if (!*host) {
-        host = "unix";
+        const char *session = SDL_getenv("XDG_SESSION_TYPE");
+        if (session != NULL && SDL_strcmp(session, "wayland") == 0) {
+            host = "unix-wayland";
+        } else {
+            host = "unix";
+        }
     }
         
     SDL_memset(config_dir, 0, sizeof(config_dir));
