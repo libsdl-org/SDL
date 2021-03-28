@@ -893,14 +893,14 @@ output_callback(void *data)
      * and run the callback with the work buffer to keep the callback
      * firing regularly in case the audio is being used as a timer.
      */
-    if (SDL_AtomicGet(&this->enabled)) {
-        dst = spa_buf->datas[0].data;
-    } else {
-        dst = this->work_buffer;
-        SDL_memset(spa_buf->datas[0].data, this->spec.silence, this->spec.size);
-    }
-
     if (!SDL_AtomicGet(&this->paused)) {
+        if (SDL_AtomicGet(&this->enabled)) {
+            dst = spa_buf->datas[0].data;
+        } else {
+            dst = this->work_buffer;
+            SDL_memset(spa_buf->datas[0].data, this->spec.silence, this->spec.size);
+        }
+
         if (!this->stream) {
             SDL_LockMutex(this->mixer_lock);
             this->callbackspec.callback(this->callbackspec.userdata, dst, this->callbackspec.size);
@@ -920,8 +920,8 @@ output_callback(void *data)
             got = SDL_AudioStreamGet(this->stream, dst, this->spec.size);
             SDL_assert(got == this->spec.size);
         }
-    } else if (dst != this->work_buffer) {
-        SDL_memset(dst, this->spec.silence, this->spec.size);
+    } else {
+        SDL_memset(spa_buf->datas[0].data, this->spec.silence, this->spec.size);
     }
 
     spa_buf->datas[0].chunk->offset = 0;
@@ -965,7 +965,7 @@ input_callback(void *data)
 
     /* Fill the buffer with silence if the stream is disabled. */
     if (!SDL_AtomicGet(&this->enabled)) {
-        SDL_memset(src, this->callbackspec.silence, size);
+        SDL_memset(src, this->spec.silence, size);
     }
 
     /* Pipewire can vary the latency, so buffer all incoming data */
@@ -980,8 +980,8 @@ input_callback(void *data)
             SDL_UnlockMutex(this->mixer_lock);
         }
     } else { /* Keep data moving through the buffer while paused */
-        while (SDL_CountDataQueue(this->hidden->buffer) >= this->callbackspec.size) {
-            SDL_ReadFromDataQueue(this->hidden->buffer, this->work_buffer, this->callbackspec.size);
+        while (SDL_CountDataQueue(this->hidden->buffer) >= this->hidden->packet_size) {
+            SDL_RemoveFromDataQueue(this->hidden->buffer, this->hidden->packet_size);
         }
     }
 
@@ -1051,7 +1051,8 @@ PIPEWIRE_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     }
 
     /* Size of a single audio frame in bytes */
-    priv->stride = (SDL_AUDIO_BITSIZE(this->spec.format) >> 3) * this->spec.channels;
+    priv->stride      = (SDL_AUDIO_BITSIZE(this->spec.format) >> 3) * this->spec.channels;
+    priv->packet_size = this->spec.samples * priv->stride;
 
     if (this->spec.samples != adjusted_samples && !iscapture) {
         this->spec.samples = adjusted_samples;
