@@ -189,6 +189,12 @@ main(int argc, char *argv[])
         SDL_Event event;
         SDL_Window *window = SDL_CreateWindow("Test", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 640, 480, 0);
 
+        /* On wayland, no window will actually show until something has
+           actually been displayed.
+        */
+        SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, 0);
+        SDL_RenderPresent(renderer);
+
         success = SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
                     "Simple MessageBox",
                     "This is a simple error MessageBox with a parent window",
