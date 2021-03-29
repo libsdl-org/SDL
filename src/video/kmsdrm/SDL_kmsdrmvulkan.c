@@ -174,7 +174,7 @@ void KMSDRM_Vulkan_GetDrawableSize(_THIS, SDL_Window *window, int *w, int *h)
 /* Instead, programs using SDL and Vulkan create their Vulkan instance */
 /* and we get it here, ready to use.                                   */
 /* Extensions specific for this platform are activated in              */
-/* KMSDRM_Vulkan_GetInstanceExtensions(), like we do with       */
+/* KMSDRM_Vulkan_GetInstanceExtensions(), like we do with              */
 /* VK_KHR_DISPLAY_EXTENSION_NAME, which is what we need for x-less VK. */                
 /***********************************************************************/
 SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
@@ -198,7 +198,7 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
     VkDisplaySurfaceCreateInfoKHR display_plane_surface_create_info;
 
     VkExtent2D image_size;
-    VkDisplayModeKHR *display_mode = NULL;
+    VkDisplayModeKHR display_mode = NULL;
     VkDisplayModePropertiesKHR display_mode_props = {0};
     VkDisplayModeParametersKHR new_mode_parameters = { {0, 0}, 0};
 
@@ -207,13 +207,9 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
     SDL_bool valid_gpu = SDL_FALSE;
     SDL_bool mode_found = SDL_FALSE;
 
-    /* We don't receive a display index in KMSDRM_CreateDevice(), only
-       a device index, which determines the GPU to use, but not the output.
-       So we simply use the first connected output (ie, the first connected
-       video output) for now.
-       In other words, change this index to select a different output. Easy! */
-    int display_index = 0;
-
+    /* Get the display index from the display being used by the window. */
+    SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
+    int display_index = SDL_atoi(display->name);
     int i;
 
     /* Get the function pointers for the functions we will use. */
@@ -387,22 +383,26 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
         display_mode_props.parameters.visibleRegion.width > 0 &&
         display_mode_props.parameters.visibleRegion.height > 0 ) {
         /* Found a suitable mode among the predefined ones. Use that. */
-        display_mode = &(display_mode_props.displayMode);
+        display_mode = display_mode_props.displayMode;
     } else {
-        /* Can't find a suitable mode among the predefined ones, so try to create our own. */
+
+        /* Couldn't find a suitable mode among the predefined ones, so try to create our own.
+           This won't work for some video chips atm (like Pi's VideoCore) so these are limited
+           to supported resolutions. Don't try to use "closest" resolutions either, because
+           those are often bigger than the window size, thus causing out-of-bunds scanout. */
         new_mode_parameters.visibleRegion.width = window->w;
         new_mode_parameters.visibleRegion.height = window->h;
-        new_mode_parameters.refreshRate = 60000; /* Always use 60Hz for now. */
+        new_mode_parameters.refreshRate = window->fullscreen_mode.refresh_rate;
         display_mode_create_info.sType = VK_STRUCTURE_TYPE_DISPLAY_MODE_CREATE_INFO_KHR;
         display_mode_create_info.parameters = new_mode_parameters;
         result = vkCreateDisplayModeKHR(gpu,
                                         displays_props[display_index].display,
                                         &display_mode_create_info,
-                                        NULL, display_mode);
+                                        NULL, &display_mode);
         if (result != VK_SUCCESS) {
             SDL_SetError("Vulkan couldn't find a predefined mode for that window size and couldn't create a suitable mode.");
             goto clean;
-         }
+        }
     }
 
     /* Just in case we get here without a display_mode. */
@@ -419,7 +419,7 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
     image_size.height = window->h;
     
     display_plane_surface_create_info.sType = VK_STRUCTURE_TYPE_DISPLAY_SURFACE_CREATE_INFO_KHR;
-    display_plane_surface_create_info.displayMode = *display_mode;
+    display_plane_surface_create_info.displayMode = display_mode;
     /* For now, simply use the first plane. */
     display_plane_surface_create_info.planeIndex = 0;
     display_plane_surface_create_info.imageExtent = image_size;

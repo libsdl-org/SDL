@@ -1015,7 +1015,7 @@ KMSDRM_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
         SDL_DisplayModeData *modedata = SDL_calloc(1, sizeof(SDL_DisplayModeData));
 
         if (modedata) {
-          modedata->mode_index = i;
+            modedata->mode_index = i;
         }
 
         mode.w = conn->modes[i].hdisplay;
