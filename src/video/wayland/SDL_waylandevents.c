@@ -216,6 +216,12 @@ Wayland_PumpEvents(_THIS)
 
     WAYLAND_wl_display_flush(d->display);
 
+#ifdef SDL_USE_IME
+    if (SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE) {
+        SDL_IME_PumpEvents();
+    }
+#endif
+
     if (input) {
         uint32_t now = SDL_GetTicks();
         keyboard_repeat_handle(&input->keyboard_repeat, now);
@@ -677,6 +683,9 @@ keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
         window->keyboard_device = input;
         SDL_SetKeyboardFocus(window->sdlwindow);
     }
+#ifdef SDL_USE_IME
+    SDL_IME_SetFocus(SDL_TRUE);
+#endif
 }
 
 static void
@@ -690,10 +699,13 @@ keyboard_handle_leave(void *data, struct wl_keyboard *keyboard,
 
     /* This will release any keys still pressed */ 
     SDL_SetKeyboardFocus(NULL);
+#ifdef SDL_USE_IME
+    SDL_IME_SetFocus(SDL_FALSE);
+#endif
 }
 
 static SDL_bool
-keyboard_input_get_text(char text[8], const struct SDL_WaylandInput *input, uint32_t key)
+keyboard_input_get_text(char text[8], const struct SDL_WaylandInput *input, uint32_t key, SDL_bool *handled_by_ime)
 {
     SDL_WindowData *window = input->keyboard_focus;
     const xkb_keysym_t *syms;
@@ -707,6 +719,13 @@ keyboard_input_get_text(char text[8], const struct SDL_WaylandInput *input, uint
         return SDL_FALSE;
     }
 
+#ifdef SDL_USE_IME
+    if (SDL_IME_ProcessKeyEvent(syms[0], key + 8)) {
+        *handled_by_ime = SDL_TRUE;
+        return SDL_TRUE;
+    }
+#endif
+
     return WAYLAND_xkb_keysym_to_utf8(syms[0], text, 8) > 0;
 }
 
@@ -719,8 +738,14 @@ keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
     enum wl_keyboard_key_state state = state_w;
     uint32_t scancode = SDL_SCANCODE_UNKNOWN;
     char text[8];
+    SDL_bool has_text = SDL_FALSE;
+    SDL_bool handled_by_ime = SDL_FALSE;
 
-    if (key < SDL_arraysize(xfree86_scancode_table2)) {
+    if (state == WL_KEYBOARD_KEY_STATE_PRESSED) {
+        has_text = keyboard_input_get_text(text, input, key, &handled_by_ime);
+    }
+
+    if (!handled_by_ime && key < SDL_arraysize(xfree86_scancode_table2)) {
         scancode = xfree86_scancode_table2[key];
 
         if (scancode != SDL_SCANCODE_UNKNOWN) {
@@ -730,10 +755,11 @@ keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
     }
 
     if (state == WL_KEYBOARD_KEY_STATE_PRESSED) {
-        SDL_bool has_text = keyboard_input_get_text(text, input, key);
         if (has_text) {
             Wayland_data_device_set_serial(input->data_device, serial);
-            SDL_SendKeyboardText(text);
+            if (!handled_by_ime) {
+                SDL_SendKeyboardText(text);
+            }
         }
         keyboard_repeat_set(&input->keyboard_repeat, scancode, has_text, text);
     } else {

@@ -33,6 +33,7 @@
 #include "SDL_waylandwindow.h"
 #include "SDL_waylandopengles.h"
 #include "SDL_waylandmouse.h"
+#include "SDL_waylandkeyboard.h"
 #include "SDL_waylandtouch.h"
 #include "SDL_waylandclipboard.h"
 #include "SDL_waylandvulkan.h"
@@ -215,6 +216,9 @@ Wayland_CreateDevice(int devindex)
     device->SetClipboardText = Wayland_SetClipboardText;
     device->GetClipboardText = Wayland_GetClipboardText;
     device->HasClipboardText = Wayland_HasClipboardText;
+    device->StartTextInput = Wayland_StartTextInput;
+    device->StopTextInput = Wayland_StopTextInput;
+    device->SetTextInputRect = Wayland_SetTextInputRect;
 
 #if SDL_VIDEO_VULKAN
     device->Vulkan_LoadLibrary = Wayland_Vulkan_LoadLibrary;
@@ -478,6 +482,8 @@ Wayland_VideoInit(_THIS)
 
     WAYLAND_wl_display_flush(data->display);
 
+    Wayland_InitKeyboard(_this);
+
 #if SDL_USE_LIBDBUS
     SDL_DBus_Init();
 #endif
@@ -566,6 +572,8 @@ Wayland_VideoQuit(_THIS)
 
     if (data->registry)
         wl_registry_destroy(data->registry);
+
+    Wayland_QuitKeyboard(_this);
 
 /* !!! FIXME: other subsystems use D-Bus, so we shouldn't quit it here;
        have SDL.c do this at a higher level, or add refcounting. */
