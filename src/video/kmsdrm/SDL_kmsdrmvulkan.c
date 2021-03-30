@@ -208,8 +208,7 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
     SDL_bool mode_found = SDL_FALSE;
 
     /* Get the display index from the display being used by the window. */
-    SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
-    int display_index = SDL_atoi(display->name);
+    int display_index = SDL_atoi(SDL_GetDisplayForWindow(window)->name);
     int i;
 
     /* Get the function pointers for the functions we will use. */
@@ -346,7 +345,7 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
         goto clean;
     }
 
-    /* Get the props of the videomodes for the first display. */
+    /* Get the props of the videomodes for the display. */
     modes_props = (VkDisplayModePropertiesKHR *) SDL_malloc(mode_count * sizeof(*modes_props));
     vkGetDisplayModePropertiesKHR(gpu,
                                  displays_props[display_index].display,
