@@ -609,6 +609,8 @@ SDL_GetPlatform(void)
     return "PlayStation Vita";
 #elif __NGAGE__
     return "Nokia N-Gage";
+#elif __3DS__
+    return "Nintendo 3DS";
 #else
     return "Unknown (see SDL_platform.h)";
 #endif

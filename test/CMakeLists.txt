@@ -14,6 +14,10 @@ if(SDL_INSTALL_TESTS)
     include(GNUInstallDirs)
 endif()
 
+if(N3DS)
+    link_libraries(SDL2::SDL2main)
+endif()
+
 if(PSP)
     link_libraries(
         SDL2::SDL2main
@@ -426,6 +430,27 @@ if(PSP)
             TARGET ${APP} POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E remove
             $<TARGET_FILE_DIR:${ARG_TARGET}>/PARAM.SFO
+        )
+    endforeach()
+endif()
+
+if(N3DS)
+    set(ROMFS_DIR "${CMAKE_CURRENT_BINARY_DIR}/romfs")
+    file(COPY ${RESOURCE_FILES} DESTINATION "${ROMFS_DIR}")
+
+    foreach(APP IN LISTS ALL_TESTS)
+        get_target_property(TARGET_BINARY_DIR ${APP} BINARY_DIR)
+        set(SMDH_FILE "${TARGET_BINARY_DIR}/${APP}.smdh")
+        ctr_generate_smdh("${SMDH_FILE}" 
+            NAME "SDL-${APP}"
+            DESCRIPTION "SDL2 Test suite"
+            AUTHOR "SDL2 Contributors"
+            ICON "${CMAKE_CURRENT_SOURCE_DIR}/n3ds/logo48x48.png"
+        )
+        ctr_create_3dsx(
+            ${APP}
+            ROMFS "${ROMFS_DIR}"
+            SMDH "${SMDH_FILE}"
         )
     endforeach()
 endif()

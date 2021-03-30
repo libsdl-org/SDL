@@ -105,6 +105,9 @@ static const AudioBootStrap *const bootstrap[] = {
 #if SDL_AUDIO_DRIVER_VITA
     &VITAAUD_bootstrap,
 #endif
+#if SDL_AUDIO_DRIVER_N3DS
+    &N3DSAUDIO_bootstrap,
+#endif
 #if SDL_AUDIO_DRIVER_EMSCRIPTEN
     &EMSCRIPTENAUDIO_bootstrap,
 #endif
