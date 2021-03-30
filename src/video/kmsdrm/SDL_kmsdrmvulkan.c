@@ -391,7 +391,9 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
            those are often bigger than the window size, thus causing out-of-bunds scanout. */
         new_mode_parameters.visibleRegion.width = window->w;
         new_mode_parameters.visibleRegion.height = window->h;
-        new_mode_parameters.refreshRate = window->fullscreen_mode.refresh_rate;
+        /* SDL (and DRM, if we look at drmModeModeInfo vrefresh) uses plain integer Hz for
+           display mode refresh rate, but Vulkan expects higher precision. */
+        new_mode_parameters.refreshRate = window->fullscreen_mode.refresh_rate * 1000;
         display_mode_create_info.sType = VK_STRUCTURE_TYPE_DISPLAY_MODE_CREATE_INFO_KHR;
         display_mode_create_info.parameters = new_mode_parameters;
         result = vkCreateDisplayModeKHR(gpu,
