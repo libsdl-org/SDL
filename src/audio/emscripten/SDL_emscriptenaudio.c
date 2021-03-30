@@ -59,6 +59,9 @@ HandleAudioProcess(_THIS)
         if (this->stream) {
             SDL_AudioStreamClear(this->stream);
         }
+
+        SDL_memset(this->work_buffer, this->spec.silence, this->spec.size);
+        FeedAudioDevice(this, this->work_buffer, this->spec.size);
         return;
     }
 
