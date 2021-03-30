@@ -85,6 +85,8 @@ typedef enum MONITOR_DPI_TYPE {
     MDT_DEFAULT = MDT_EFFECTIVE_DPI
 } MONITOR_DPI_TYPE;
 
+#else
+#include <shellscalingapi.h>
 #endif /* WINVER < 0x0603 */
 
 typedef BOOL  (*PFNSHFullScreen)(HWND, DWORD);
