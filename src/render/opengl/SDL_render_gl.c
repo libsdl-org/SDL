@@ -21,7 +21,6 @@
 #include "../../SDL_internal.h"
 
 #if SDL_VIDEO_RENDER_OGL && !SDL_RENDER_DISABLED
-
 #include "SDL_hints.h"
 #include "SDL_opengl.h"
 #include "../SDL_sysrender.h"
@@ -1077,6 +1076,8 @@ GL_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *te
 
     for (i = 0; i < count; i++) {
         int j;
+        float *xy_;
+        SDL_Color col_;
         if (size_indice == 4) {
             j = ((const Uint32 *)indices)[i];
         } else if (size_indice == 2) {
@@ -1087,8 +1088,8 @@ GL_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *te
             j = i;
         }
 
-        float *xy_ = (float *)((char*)xy + j * xy_stride);
-        SDL_Color col_ = *(SDL_Color *)((char*)color + j * color_stride);
+        xy_ = (float *)((char*)xy + j * xy_stride);
+        col_ = *(SDL_Color *)((char*)color + j * color_stride);
 
         *(verts++) = xy_[0] * scale_x;
         *(verts++) = xy_[1] * scale_y;

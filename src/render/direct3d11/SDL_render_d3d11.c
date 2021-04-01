@@ -1867,9 +1867,9 @@ D3D11_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture *
 
 static int
 D3D11_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
-	const float *xy, int xy_stride, const int *color, int color_stride, const float *uv, int uv_stride,
-	int num_vertices, const void *indices, int num_indices, int size_indice,
-	float scale_x, float scale_y)
+                    const float *xy, int xy_stride, const int *color, int color_stride, const float *uv, int uv_stride,
+                    int num_vertices, const void *indices, int num_indices, int size_indice,
+                    float scale_x, float scale_y)
 {
     int i;
     int count = indices ? num_indices : num_vertices;
@@ -1882,22 +1882,21 @@ D3D11_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture 
     cmd->data.draw.count = count;
 
     for (i = 0; i < count; i++) {
-		int j;
-		if (size_indice == 4) {
-			j = ((const Uint32 *)indices)[i];
-		}
-		else if (size_indice == 2) {
-			j = ((const Uint16 *)indices)[i];
-		}
-		else if (size_indice == 1) {
-			j = ((const Uint8 *)indices)[i];
-		}
-		else {
-			j = i;
-		}
+        int j;
+        float *xy_;
+        SDL_Color col_;
+        if (size_indice == 4) {
+            j = ((const Uint32 *)indices)[i];
+        } else if (size_indice == 2) {
+            j = ((const Uint16 *)indices)[i];
+        } else if (size_indice == 1) {
+            j = ((const Uint8 *)indices)[i];
+        } else {
+            j = i;
+        }
 
-		float *xy_ = (float *)((char*)xy + j * xy_stride);
-		SDL_Color col_ = *(SDL_Color *)((char*)color + j * color_stride);
+        xy_ = (float *)((char*)xy + j * xy_stride);
+        col_ = *(SDL_Color *)((char*)color + j * color_stride);
 
         verts->pos.x = xy_[0] * scale_x;
         verts->pos.y = xy_[1] * scale_y;
@@ -1908,7 +1907,7 @@ D3D11_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture 
         verts->color.w = col_.a / 255.0f;
 
         if (texture) {
-			float *uv_ = (float *)((char*)uv + j * uv_stride);
+            float *uv_ = (float *)((char*)uv + j * uv_stride);
             verts->tex.x = uv_[0];
             verts->tex.y = uv_[1];
         } else {

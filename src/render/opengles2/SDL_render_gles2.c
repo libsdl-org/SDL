@@ -979,6 +979,8 @@ GLES2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture 
 
     for (i = 0; i < count; i++) {
         int j;
+        float *xy_;
+        SDL_Color col_;
         if (size_indice == 4) {
             j = ((const Uint32 *)indices)[i];
         } else if (size_indice == 2) {
@@ -989,8 +991,8 @@ GLES2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture 
             j = i;
         }
 
-        float *xy_ = (float *)((char*)xy + j * xy_stride);
-        SDL_Color col_ = *(SDL_Color *)((char*)color + j * color_stride);
+        xy_ = (float *)((char*)xy + j * xy_stride);
+        col_ = *(SDL_Color *)((char*)color + j * color_stride);
 
         *(verts++) = xy_[0] * scale_x;
         *(verts++) = xy_[1] * scale_y;

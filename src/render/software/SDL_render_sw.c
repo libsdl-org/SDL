@@ -597,6 +597,9 @@ SW_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *te
         GeometryCopyData *ptr = (GeometryCopyData *) verts;
         for (i = 0; i < count; i++) {
             int j;
+            float *xy_;
+            SDL_Color col_;
+            float *uv_;
             if (size_indice == 4) {
                 j = ((const Uint32 *)indices)[i];
             } else if (size_indice == 2) {
@@ -607,10 +610,10 @@ SW_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *te
                 j = i;
             }
 
-            float *xy_ = (float *)((char*)xy + j * xy_stride);
-            SDL_Color col_ = *(SDL_Color *)((char*)color + j * color_stride);
+            xy_ = (float *)((char*)xy + j * xy_stride);
+            col_ = *(SDL_Color *)((char*)color + j * color_stride);
 
-            float *uv_ = (float *)((char*)uv + j * uv_stride);
+            uv_ = (float *)((char*)uv + j * uv_stride);
 
             ptr->src.x = uv_[0] * texture->w;
             ptr->src.y = uv_[1] * texture->h;
@@ -628,6 +631,8 @@ SW_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *te
 
         for (i = 0; i < count; i++) {
             int j;
+            float *xy_;
+            SDL_Color col_;
             if (size_indice == 4) {
                 j = ((const Uint32 *)indices)[i];
             } else if (size_indice == 2) {
@@ -638,8 +643,8 @@ SW_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *te
                 j = i;
             }
 
-            float *xy_ = (float *)((char*)xy + j * xy_stride);
-            SDL_Color col_ = *(SDL_Color *)((char*)color + j * color_stride);
+            xy_ = (float *)((char*)xy + j * xy_stride);
+            col_ = *(SDL_Color *)((char*)color + j * color_stride);
 
             ptr->dst.x = xy_[0] * scale_x + renderer->viewport.x;
             ptr->dst.y = xy_[1] * scale_y + renderer->viewport.y;

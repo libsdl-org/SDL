@@ -3356,7 +3356,7 @@ remap_one_indice(
         SDL_Texture *texture,
         const float *xy, int xy_stride,
         const int *color, int color_stride,
-        const float *uv, int uv_stride) 
+        const float *uv, int uv_stride)
 {
     const float *xy0_, *xy1_, *uv0_, *uv1_;
     int col0_, col1_;
@@ -3429,7 +3429,7 @@ SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
     int texw = 0, texh = 0;
 
     if (texture) {
-        SDL_QueryTexture(texture, NULL, NULL, &texw, &texh); 
+        SDL_QueryTexture(texture, NULL, NULL, &texw, &texh);
     }
 
     prev[0] = -1; prev[1] = -1; prev[2] = -1;
@@ -3468,7 +3468,7 @@ SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
             prev[0] = k0;
             prev[1] = k1;
             prev[2] = k2;
-            continue; 
+            continue;
         }
 
         /* Two triangles forming a quadialateral,
@@ -3551,7 +3551,7 @@ SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
             x1 = xy1_[0]; y1 = xy1_[1];
             x2 = xy2_[0]; y2 = xy2_[1];
 
-            /* Check if triangle A B C is rectangle */ 
+            /* Check if triangle A B C is rectangle */
             if ((x0 == x2 && y1 == y2) || (y0 == y2 && x1 == x2)){
                 /* ok */
             } else {
@@ -3562,7 +3562,7 @@ SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
             xy2_ = (const float *)((const char*)xy + C2 * xy_stride);
             x2 = xy2_[0]; y2 = xy2_[1];
 
-            /* Check if triangle A B C2 is rectangle */ 
+            /* Check if triangle A B C2 is rectangle */
             if ((x0 == x2 && y1 == y2) || (y0 == y2 && x1 == x2)){
                 /* ok */
             } else {
@@ -3616,7 +3616,7 @@ SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
                 SDL_RenderCopyF(renderer, texture, &s, &d);
 
                 if (debug) {
-                    SDL_Log("Rect-COPY: RGB %d %d %d - Alpha:%d - texture=%p: src=(%d,%d, %d x %d) dst (%f, %f, %f x %f)", col0_.r, col0_.g, col0_.b, col0_.a, 
+                    SDL_Log("Rect-COPY: RGB %d %d %d - Alpha:%d - texture=%p: src=(%d,%d, %d x %d) dst (%f, %f, %f x %f)", col0_.r, col0_.g, col0_.b, col0_.a,
                             (void *)texture, s.x, s.y, s.w, s.h, d.x, d.y, d.w, d.h);
                 }
             } else if (d.w != 0.0f && d.h != 0.0f) { /* Rect, no texture */
@@ -3625,12 +3625,12 @@ SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
                 SDL_RenderFillRectF(renderer, &d);
 
                 if (debug) {
-                    SDL_Log("Rect-FILL: RGB %d %d %d - Alpha:%d - texture=%p: src=(%d,%d, %d x %d) dst (%f, %f, %f x %f)", col0_.r, col0_.g, col0_.b, col0_.a, 
+                    SDL_Log("Rect-FILL: RGB %d %d %d - Alpha:%d - texture=%p: src=(%d,%d, %d x %d) dst (%f, %f, %f x %f)", col0_.r, col0_.g, col0_.b, col0_.a,
                             (void *)texture, s.x, s.y, s.w, s.h, d.x, d.y, d.w, d.h);
                 }
             } else {
                 if (debug) {
-                    SDL_Log("Rect-DISMISS: RGB %d %d %d - Alpha:%d - texture=%p: src=(%d,%d, %d x %d) dst (%f, %f, %f x %f)", col0_.r, col0_.g, col0_.b, col0_.a, 
+                    SDL_Log("Rect-DISMISS: RGB %d %d %d - Alpha:%d - texture=%p: src=(%d,%d, %d x %d) dst (%f, %f, %f x %f)", col0_.r, col0_.g, col0_.b, col0_.a,
                             (void *)texture, s.x, s.y, s.w, s.h, d.x, d.y, d.w, d.h);
                 }
             }
