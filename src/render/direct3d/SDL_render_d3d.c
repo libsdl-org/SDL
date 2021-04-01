@@ -1021,6 +1021,58 @@ D3D_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * t
 }
 
 static int
+D3D_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
+        const float *xy, int xy_stride, const int *color, int color_stride, const float *uv, int uv_stride,
+        int num_vertices, const void *indices, int num_indices, int size_indice,
+        float scale_x, float scale_y)
+{
+    int i;
+    int count = indices ? num_indices : num_vertices;
+    Vertex *verts = (Vertex *) SDL_AllocateRenderVertices(renderer, count * sizeof (Vertex), 0, &cmd->data.draw.first);
+
+    if (!verts) {
+        return -1;
+    }
+
+    cmd->data.draw.count = count;
+
+    for (i = 0; i < count; i++) {
+        int j;
+        float *xy_;
+        SDL_Color col_;
+        if (size_indice == 4) {
+            j = ((const Uint32 *)indices)[i];
+        } else if (size_indice == 2) {
+            j = ((const Uint16 *)indices)[i];
+        } else if (size_indice == 1) {
+            j = ((const Uint8 *)indices)[i];
+        } else {
+            j = i;
+        }
+
+        xy_ = (float *)((char*)xy + j * xy_stride);
+        col_ = *(SDL_Color *)((char*)color + j * color_stride);
+
+        verts->x = xy_[0] * scale_x;
+        verts->y = xy_[1] * scale_y;
+        verts->z = 0.0f;
+        verts->color = D3DCOLOR_ARGB(col_.a, col_.r, col_.g, col_.b);
+
+        if (texture) {
+            float *uv_ = (float *)((char*)uv + j * uv_stride);
+            verts->u = uv_[0];
+            verts->v = uv_[1];
+        } else {
+            verts->u = 0.0f;
+            verts->v = 0.0f;
+        }
+
+        verts += 1;
+    }
+    return 0;
+}
+
+static int
 UpdateDirtyTexture(IDirect3DDevice9 *device, D3D_TextureRep *texture)
 {
     if (texture->dirty && texture->staging) {
@@ -1432,6 +1484,19 @@ D3D_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *verti
                 }
                 break;
             }
+            
+            case SDL_RENDERCMD_GEOMETRY: {
+                const size_t count = cmd->data.draw.count;
+                const size_t first = cmd->data.draw.first;
+                SetDrawState(data, cmd);
+                if (vbo) {
+                    IDirect3DDevice9_DrawPrimitive(data->device, D3DPT_TRIANGLELIST, (UINT) (first / sizeof (Vertex)), count);
+                } else {
+                    const Vertex* verts = (Vertex*)(((Uint8*)vertices) + first);
+                    IDirect3DDevice9_DrawPrimitiveUP(data->device, D3DPT_TRIANGLELIST, count, verts, sizeof(Vertex));
+                }
+                break;
+            }
 
             case SDL_RENDERCMD_NO_OP:
                 break;
@@ -1727,6 +1792,7 @@ D3D_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->QueueFillRects = D3D_QueueFillRects;
     renderer->QueueCopy = D3D_QueueCopy;
     renderer->QueueCopyEx = D3D_QueueCopyEx;
+    renderer->QueueGeometry = D3D_QueueGeometry;
     renderer->RunCommandQueue = D3D_RunCommandQueue;
     renderer->RenderReadPixels = D3D_RenderReadPixels;
     renderer->RenderPresent = D3D_RenderPresent;
