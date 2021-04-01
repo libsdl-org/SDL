@@ -3330,6 +3330,25 @@ SDL_RenderCopyExF(SDL_Renderer * renderer, SDL_Texture * texture,
     return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
 }
 
+
+#define SDL_OFFSETOF(_TYPE,_MEMBER)  ((size_t)&(((_TYPE*)0)->_MEMBER))
+int
+SDL_RenderGeometry(SDL_Renderer *renderer,
+                               SDL_Texture *texture,
+                               const SDL_Vertex *vertices, int num_vertices,
+                               const int *indices, int num_indices)
+{
+    const float *xy = (const float *)((const Uint8 *)vertices + SDL_OFFSETOF(SDL_Vertex, position));
+    int xy_stride = sizeof (SDL_Vertex);
+    const int *color = (const int *) ((const Uint8 *)vertices + SDL_OFFSETOF(SDL_Vertex, color));
+    int color_stride = sizeof (SDL_Vertex);
+    const float *uv = (const float *)((const Uint8 *)vertices + SDL_OFFSETOF(SDL_Vertex, tex_coord));
+    int uv_stride = sizeof (SDL_Vertex);
+    int size_indice = 4;
+
+    return SDL_RenderGeometryRaw(renderer, texture, xy, xy_stride, color, color_stride, uv, uv_stride, num_vertices, indices, num_indices, size_indice);
+}
+
 int
 SDL_RenderGeometryRaw(SDL_Renderer *renderer,
                                   SDL_Texture *texture,
