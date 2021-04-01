@@ -1399,7 +1399,7 @@ GLES2_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
                 }
 
                 if (ret == 0) {
-                    data->glDrawArrays(GL_TRIANGLES, 0, count);
+                    data->glDrawArrays(GL_TRIANGLES, 0, (GLsizei) count);
                 }
                 break;
             }
