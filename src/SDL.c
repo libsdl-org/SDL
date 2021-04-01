@@ -86,7 +86,7 @@ SDL_NORETURN void SDL_ExitProcess(int exitcode)
 #endif
 }
 
-sdfsdfsdf.
+//sdfsdfsdf.
 
 /* The initialized subsystems */
 #ifdef SDL_MAIN_NEEDED
