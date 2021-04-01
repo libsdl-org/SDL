@@ -1867,7 +1867,9 @@ D3D11_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture *
 
 static int
 D3D11_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
-        SDL_Vertex *vertices, int num_vertices, int *indices, int num_indices, float scale_x, float scale_y)
+	const float *xy, int xy_stride, const int *color, int color_stride, const float *uv, int uv_stride,
+	int num_vertices, const void *indices, int num_indices, int size_indice,
+	float scale_x, float scale_y)
 {
     int i;
     int count = indices ? num_indices : num_vertices;
@@ -1880,19 +1882,35 @@ D3D11_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture 
     cmd->data.draw.count = count;
 
     for (i = 0; i < count; i++) {
-        SDL_Vertex *v = &vertices[indices ? indices[i] : i];
+		int j;
+		if (size_indice == 4) {
+			j = ((const Uint32 *)indices)[i];
+		}
+		else if (size_indice == 2) {
+			j = ((const Uint16 *)indices)[i];
+		}
+		else if (size_indice == 1) {
+			j = ((const Uint8 *)indices)[i];
+		}
+		else {
+			j = i;
+		}
 
-        verts->pos.x = v->position.x * scale_x;
-        verts->pos.y = v->position.y * scale_y;
+		float *xy_ = (float *)((char*)xy + j * xy_stride);
+		SDL_Color col_ = *(SDL_Color *)((char*)color + j * color_stride);
+
+        verts->pos.x = xy_[0] * scale_x;
+        verts->pos.y = xy_[1] * scale_y;
         verts->pos.z = 0.0f;
-        verts->color.x = v->color.r / 255.0f;
-        verts->color.y = v->color.g / 255.0f;
-        verts->color.z = v->color.b / 255.0f;
-        verts->color.w = v->color.a / 255.0f;
+        verts->color.x = col_.r / 255.0f;
+        verts->color.y = col_.g / 255.0f;
+        verts->color.z = col_.b / 255.0f;
+        verts->color.w = col_.a / 255.0f;
 
         if (texture) {
-            verts->tex.x = v->tex_coord.x;
-            verts->tex.y = v->tex_coord.y;
+			float *uv_ = (float *)((char*)uv + j * uv_stride);
+            verts->tex.x = uv_[0];
+            verts->tex.y = uv_[1];
         } else {
             verts->tex.x = 0.0f;
             verts->tex.y = 0.0f;
@@ -1902,7 +1920,6 @@ D3D11_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture 
     }
     return 0;
 }
-
 
 static int
 D3D11_UpdateVertexBuffer(SDL_Renderer *renderer,
