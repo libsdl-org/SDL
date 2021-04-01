@@ -101,11 +101,11 @@ int platform_testEndianessAndSwap(void *arg)
 /* !
  * \brief Tests SDL_GetXYZ() functions
  * \sa
- * https://github.com/libsdl-org/SDL/wiki/SDL_GetPlatform
- * https://github.com/libsdl-org/SDL/wiki/SDL_GetCPUCount
- * https://github.com/libsdl-org/SDL/wiki/SDL_GetCPUCacheLineSize
- * https://github.com/libsdl-org/SDL/wiki/SDL_GetRevision
- * https://github.com/libsdl-org/SDL/wiki/SDL_GetRevisionNumber
+ * http://wiki.libsdl.org/moin.cgi/SDL_GetPlatform
+ * http://wiki.libsdl.org/moin.cgi/SDL_GetCPUCount
+ * http://wiki.libsdl.org/moin.cgi/SDL_GetCPUCacheLineSize
+ * http://wiki.libsdl.org/moin.cgi/SDL_GetRevision
+ * http://wiki.libsdl.org/moin.cgi/SDL_GetRevisionNumber
  */
 int platform_testGetFunctions (void *arg)
 {
@@ -147,16 +147,16 @@ int platform_testGetFunctions (void *arg)
 /* !
  * \brief Tests SDL_HasXYZ() functions
  * \sa
- * https://github.com/libsdl-org/SDL/wiki/SDL_Has3DNow
- * https://github.com/libsdl-org/SDL/wiki/SDL_HasAltiVec
- * https://github.com/libsdl-org/SDL/wiki/SDL_HasMMX
- * https://github.com/libsdl-org/SDL/wiki/SDL_HasRDTSC
- * https://github.com/libsdl-org/SDL/wiki/SDL_HasSSE
- * https://github.com/libsdl-org/SDL/wiki/SDL_HasSSE2
- * https://github.com/libsdl-org/SDL/wiki/SDL_HasSSE3
- * https://github.com/libsdl-org/SDL/wiki/SDL_HasSSE41
- * https://github.com/libsdl-org/SDL/wiki/SDL_HasSSE42
- * https://github.com/libsdl-org/SDL/wiki/SDL_HasAVX
+ * http://wiki.libsdl.org/moin.cgi/SDL_Has3DNow
+ * http://wiki.libsdl.org/moin.cgi/SDL_HasAltiVec
+ * http://wiki.libsdl.org/moin.cgi/SDL_HasMMX
+ * http://wiki.libsdl.org/moin.cgi/SDL_HasRDTSC
+ * http://wiki.libsdl.org/moin.cgi/SDL_HasSSE
+ * http://wiki.libsdl.org/moin.cgi/SDL_HasSSE2
+ * http://wiki.libsdl.org/moin.cgi/SDL_HasSSE3
+ * http://wiki.libsdl.org/moin.cgi/SDL_HasSSE41
+ * http://wiki.libsdl.org/moin.cgi/SDL_HasSSE42
+ * http://wiki.libsdl.org/moin.cgi/SDL_HasAVX
  */
 int platform_testHasFunctions (void *arg)
 {
@@ -198,7 +198,7 @@ int platform_testHasFunctions (void *arg)
 /* !
  * \brief Tests SDL_GetVersion
  * \sa
- * https://github.com/libsdl-org/SDL/wiki/SDL_GetVersion
+ * http://wiki.libsdl.org/moin.cgi/SDL_GetVersion
  */
 int platform_testGetVersion(void *arg)
 {
@@ -268,9 +268,9 @@ int platform_testDefaultInit(void *arg)
 /* !
  * \brief Tests SDL_Get/Set/ClearError
  * \sa
- * https://github.com/libsdl-org/SDL/wiki/SDL_GetError
- * https://github.com/libsdl-org/SDL/wiki/SDL_SetError
- * https://github.com/libsdl-org/SDL/wiki/SDL_ClearError
+ * http://wiki.libsdl.org/moin.cgi/SDL_GetError
+ * http://wiki.libsdl.org/moin.cgi/SDL_SetError
+ * http://wiki.libsdl.org/moin.cgi/SDL_ClearError
  */
 int platform_testGetSetClearError(void *arg)
 {
@@ -322,7 +322,7 @@ int platform_testGetSetClearError(void *arg)
 /* !
  * \brief Tests SDL_SetError with empty input
  * \sa
- * https://github.com/libsdl-org/SDL/wiki/SDL_SetError
+ * http://wiki.libsdl.org/moin.cgi/SDL_SetError
  */
 int platform_testSetErrorEmptyInput(void *arg)
 {
@@ -360,7 +360,7 @@ int platform_testSetErrorEmptyInput(void *arg)
 /* !
  * \brief Tests SDL_SetError with invalid input
  * \sa
- * https://github.com/libsdl-org/SDL/wiki/SDL_SetError
+ * http://wiki.libsdl.org/moin.cgi/SDL_SetError
  */
 int platform_testSetErrorInvalidInput(void *arg)
 {
@@ -443,7 +443,7 @@ int platform_testSetErrorInvalidInput(void *arg)
 /* !
  * \brief Tests SDL_GetPowerInfo
  * \sa
- * https://github.com/libsdl-org/SDL/wiki/SDL_GetPowerInfo
+ * http://wiki.libsdl.org/moin.cgi/SDL_GetPowerInfo
  */
 int platform_testGetPowerInfo(void *arg)
 {

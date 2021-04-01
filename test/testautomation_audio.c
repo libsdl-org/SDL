@@ -59,8 +59,8 @@ void SDLCALL _audio_testCallback(void *userdata, Uint8 *stream, int len)
 /**
  * \brief Stop and restart audio subsystem
  *
- * \sa https://github.com/libsdl-org/SDL/wiki/SDL_QuitSubSystem
- * \sa https://github.com/libsdl-org/SDL/wiki/SDL_InitSubSystem
+ * \sa https://wiki.libsdl.org/SDL_QuitSubSystem
+ * \sa https://wiki.libsdl.org/SDL_InitSubSystem
  */
 int audio_quitInitAudioSubSystem()
 {
@@ -77,8 +77,8 @@ int audio_quitInitAudioSubSystem()
 /**
  * \brief Start and stop audio directly
  *
- * \sa https://github.com/libsdl-org/SDL/wiki/SDL_InitAudio
- * \sa https://github.com/libsdl-org/SDL/wiki/SDL_QuitAudio
+ * \sa https://wiki.libsdl.org/SDL_InitAudio
+ * \sa https://wiki.libsdl.org/SDL_QuitAudio
  */
 int audio_initQuitAudio()
 {
@@ -131,10 +131,10 @@ int audio_initQuitAudio()
 /**
  * \brief Start, open, close and stop audio
  *
- * \sa https://github.com/libsdl-org/SDL/wiki/SDL_InitAudio
- * \sa https://github.com/libsdl-org/SDL/wiki/SDL_OpenAudio
- * \sa https://github.com/libsdl-org/SDL/wiki/SDL_CloseAudio
- * \sa https://github.com/libsdl-org/SDL/wiki/SDL_QuitAudio
+ * \sa https://wiki.libsdl.org/SDL_InitAudio
+ * \sa https://wiki.libsdl.org/SDL_OpenAudio
+ * \sa https://wiki.libsdl.org/SDL_CloseAudio
+ * \sa https://wiki.libsdl.org/SDL_QuitAudio
  */
 int audio_initOpenCloseQuitAudio()
 {
@@ -220,7 +220,7 @@ int audio_initOpenCloseQuitAudio()
 /**
  * \brief Pause and unpause audio
  *
- * \sa https://github.com/libsdl-org/SDL/wiki/SDL_PauseAudio
+ * \sa https://wiki.libsdl.org/SDL_PauseAudio
  */
 int audio_pauseUnpauseAudio()
 {
@@ -340,8 +340,8 @@ int audio_pauseUnpauseAudio()
 /**
  * \brief Enumerate and name available audio devices (output and capture).
  *
- * \sa https://github.com/libsdl-org/SDL/wiki/SDL_GetNumAudioDevices
- * \sa https://github.com/libsdl-org/SDL/wiki/SDL_GetAudioDeviceName
+ * \sa https://wiki.libsdl.org/SDL_GetNumAudioDevices
+ * \sa https://wiki.libsdl.org/SDL_GetAudioDeviceName
  */
 int audio_enumerateAndNameAudioDevices()
 {
@@ -398,8 +398,8 @@ int audio_enumerateAndNameAudioDevices()
 /**
  * \brief Negative tests around enumeration and naming of audio devices.
  *
- * \sa https://github.com/libsdl-org/SDL/wiki/SDL_GetNumAudioDevices
- * \sa https://github.com/libsdl-org/SDL/wiki/SDL_GetAudioDeviceName
+ * \sa https://wiki.libsdl.org/SDL_GetNumAudioDevices
+ * \sa https://wiki.libsdl.org/SDL_GetAudioDeviceName
  */
 int audio_enumerateAndNameAudioDevicesNegativeTests()
 {
@@ -445,8 +445,8 @@ int audio_enumerateAndNameAudioDevicesNegativeTests()
 /**
  * \brief Checks available audio driver names.
  *
- * \sa https://github.com/libsdl-org/SDL/wiki/SDL_GetNumAudioDrivers
- * \sa https://github.com/libsdl-org/SDL/wiki/SDL_GetAudioDriver
+ * \sa https://wiki.libsdl.org/SDL_GetNumAudioDrivers
+ * \sa https://wiki.libsdl.org/SDL_GetAudioDriver
  */
 int audio_printAudioDrivers()
 {
@@ -478,7 +478,7 @@ int audio_printAudioDrivers()
 /**
  * \brief Checks current audio driver name with initialized audio.
  *
- * \sa https://github.com/libsdl-org/SDL/wiki/SDL_GetCurrentAudioDriver
+ * \sa https://wiki.libsdl.org/SDL_GetCurrentAudioDriver
  */
 int audio_printCurrentAudioDriver()
 {
@@ -510,7 +510,7 @@ int _audioFrequencies[] = { 11025, 22050, 44100, 48000 };
 /**
  * \brief Builds various audio conversion structures
  *
- * \sa https://github.com/libsdl-org/SDL/wiki/SDL_BuildAudioCVT
+ * \sa https://wiki.libsdl.org/SDL_BuildAudioCVT
  */
 int audio_buildAudioCVT()
 {
@@ -574,7 +574,7 @@ int audio_buildAudioCVT()
 /**
  * \brief Checkes calls with invalid input to SDL_BuildAudioCVT
  *
- * \sa https://github.com/libsdl-org/SDL/wiki/SDL_BuildAudioCVT
+ * \sa https://wiki.libsdl.org/SDL_BuildAudioCVT
  */
 int audio_buildAudioCVTNegative()
 {
@@ -669,7 +669,7 @@ int audio_buildAudioCVTNegative()
 /**
  * \brief Checks current audio status.
  *
- * \sa https://github.com/libsdl-org/SDL/wiki/SDL_GetAudioStatus
+ * \sa https://wiki.libsdl.org/SDL_GetAudioStatus
  */
 int audio_getAudioStatus()
 {
@@ -690,7 +690,7 @@ int audio_getAudioStatus()
 /**
  * \brief Opens, checks current audio status, and closes a device.
  *
- * \sa https://github.com/libsdl-org/SDL/wiki/SDL_GetAudioStatus
+ * \sa https://wiki.libsdl.org/SDL_GetAudioStatus
  */
 int audio_openCloseAndGetAudioStatus()
 {
@@ -748,8 +748,8 @@ int audio_openCloseAndGetAudioStatus()
 /**
  * \brief Locks and unlocks open audio device.
  *
- * \sa https://github.com/libsdl-org/SDL/wiki/SDL_LockAudioDevice
- * \sa https://github.com/libsdl-org/SDL/wiki/SDL_UnlockAudioDevice
+ * \sa https://wiki.libsdl.org/SDL_LockAudioDevice
+ * \sa https://wiki.libsdl.org/SDL_UnlockAudioDevice
  */
 int audio_lockUnlockOpenAudioDevice()
 {
@@ -811,8 +811,8 @@ int audio_lockUnlockOpenAudioDevice()
 /**
  * \brief Convert audio using various conversion structures
  *
- * \sa https://github.com/libsdl-org/SDL/wiki/SDL_BuildAudioCVT
- * \sa https://github.com/libsdl-org/SDL/wiki/SDL_ConvertAudio
+ * \sa https://wiki.libsdl.org/SDL_BuildAudioCVT
+ * \sa https://wiki.libsdl.org/SDL_ConvertAudio
  */
 int audio_convertAudio()
 {
@@ -910,7 +910,7 @@ int audio_convertAudio()
 /**
  * \brief Opens, checks current connected status, and closes a device.
  *
- * \sa https://github.com/libsdl-org/SDL/wiki/SDL_AudioDeviceConnected
+ * \sa https://wiki.libsdl.org/SDL_AudioDeviceConnected
  */
 int audio_openCloseAudioDeviceConnected()
 {
