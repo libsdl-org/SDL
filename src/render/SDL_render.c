@@ -213,6 +213,16 @@ DebugLogRenderCommands(const SDL_RenderCommand *cmd)
                         (int) cmd->data.draw.b, (int) cmd->data.draw.a,
                         (int) cmd->data.draw.blend, cmd->data.draw.texture);
                 break;
+
+            case SDL_RENDERCMD_GEOMETRY:
+                SDL_Log(" %u. geometry (first=%u, count=%u, r=%d, g=%d, b=%d, a=%d, blend=%d, tex=%p)", i++,
+                        (unsigned int) cmd->data.draw.first,
+                        (unsigned int) cmd->data.draw.count,
+                        (int) cmd->data.draw.r, (int) cmd->data.draw.g,
+                        (int) cmd->data.draw.b, (int) cmd->data.draw.a,
+                        (int) cmd->data.draw.blend, cmd->data.draw.texture);
+                break;
+
         }
         cmd = cmd->next;
     }
@@ -3427,8 +3437,8 @@ SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
     const int debug = 0;
     int prev[3]; /* Previous triangle vertex indices */
     int texw = 0, texh = 0;
-    SDL_BlendMode blendMode;
-    Uint8 r, g, b, a;
+    SDL_BlendMode blendMode = SDL_BLENDMODE_NONE;
+    Uint8 r = 0, g = 0, b = 0, a = 0;
 
     /* Save */
     SDL_GetRenderDrawBlendMode(renderer, &blendMode);
@@ -3604,10 +3614,10 @@ SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
             if (texture) {
                 uv0_ = (const float *)((const char*)uv + A * uv_stride);
                 uv1_ = (const float *)((const char*)uv + B * uv_stride);
-                s.x = uv0_[0] * texw;
-                s.y = uv0_[1] * texh;
-                s.w = uv1_[0] * texw - s.x;
-                s.h = uv1_[1] * texh - s.y;
+                s.x = (int) (uv0_[0] * texw);
+                s.y = (int) (uv0_[1] * texh);
+                s.w = (int) (uv1_[0] * texw - s.x);
+                s.h = (int) (uv1_[1] * texh - s.y);
             }
 
             d.x = xy0_[0];
