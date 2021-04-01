@@ -137,17 +137,6 @@ typedef struct SDL_Renderer SDL_Renderer;
 struct SDL_Texture;
 typedef struct SDL_Texture SDL_Texture;
 
-/**
- *  \brief Vertex structure
- */
-typedef struct SDL_Vertex
-{
-    SDL_FPoint position;        /**< Vertex position, in SDL_Renderer coordinates  */
-    SDL_Color  color;           /**< Vertex color */
-    SDL_FPoint tex_coord;       /**< Normalized texture coordinates, if needed */
-} SDL_Vertex;
-
-
 /* Function prototypes */
 
 /**
@@ -1453,23 +1442,30 @@ extern DECLSPEC int SDLCALL SDL_RenderCopyExF(SDL_Renderer * renderer,
                                             const SDL_RendererFlip flip);
 
 /**
- *  \brief Render a list of triangles, optionally using a texture and indices into the vertex array
+ *  \brief Render a list of triangles, optionally using a texture and indices into the vertex arrays
  *  Color and alpha modulation is done per vertex (SDL_SetTextureColorMod and SDL_SetTextureAlphaMod are ignored).
  *
  *  \param texture      (optional) The SDL texture to use.
- *  \param vertices     Vertices.
+ *  \param xy           Vertex positions
+ *  \param xy_stride    Byte size to move from one element to the next element
+ *  \param color        Vertex colors (as SDL_Color)
+ *  \param color_stride Byte size to move from one element to the next element
+ *  \param uv           Vertex normalized texture coordinates
+ *  \param uv_stride    Byte size to move from one element to the next element
  *  \param num_vertices Number of vertices.
- *  \param indices      (optional) An array of integer indices into the 'vertices' array, if NULL all vertices will be rendered in sequential order.
+ *  \param indices      (optional) An array of indices into the 'vertices' arrays, if NULL all vertices will be rendered in sequential order.
  *  \param num_indices  Number of indices.
- *
- *  \sa SDL_Vertex
+ *  \param size_indice  Indice size: 1 (byte), 2 (short), 4 (int)
  *
  *  \return 0 on success, or -1 if the operation is not supported
  */
-extern DECLSPEC int SDLCALL SDL_RenderGeometry(SDL_Renderer *renderer,
+extern DECLSPEC int SDLCALL SDL_RenderGeometryRaw(SDL_Renderer *renderer,
                                                SDL_Texture *texture,
-                                               SDL_Vertex *vertices, int num_vertices,
-                                               int *indices, int num_indices);
+                                               const float *xy, int xy_stride,
+                                               const int *color, int color_stride,
+                                               const float *uv, int uv_stride,
+                                               int num_vertices,
+                                               const void *indices, int num_indices, int size_indice);
 
 /**
  * Read pixels from the current rendering target to an array of pixels.

@@ -564,7 +564,12 @@ QueueCmdCopyEx(SDL_Renderer *renderer, SDL_Texture * texture,
 
 static int
 QueueCmdGeometry(SDL_Renderer *renderer, SDL_Texture *texture,
-        SDL_Vertex *vertices, int num_vertices, int *indices, int num_indices, float scale_x, float scale_y)
+        const float *xy, int xy_stride,
+        const int *color, int color_stride,
+        const float *uv, int uv_stride,
+        int num_vertices,
+        const void *indices, int num_indices, int size_indice,
+        float scale_x, float scale_y)
 {
     SDL_RenderCommand *cmd;
     int retval = -1;
@@ -574,7 +579,10 @@ QueueCmdGeometry(SDL_Renderer *renderer, SDL_Texture *texture,
         cmd = PrepQueueCmdDrawSolid(renderer, SDL_RENDERCMD_GEOMETRY);
     }
     if (cmd != NULL) {
-        retval = renderer->QueueGeometry(renderer, cmd, texture, vertices, num_vertices, indices, num_indices, scale_x, scale_y);
+        retval = renderer->QueueGeometry(renderer, cmd, texture,
+                xy, xy_stride, color, color_stride, uv, uv_stride,
+                num_vertices, indices, num_indices, size_indice,
+                scale_x, scale_y);
         if (retval < 0) {
             cmd->command = SDL_RENDERCMD_NO_OP;
         }
@@ -3323,13 +3331,16 @@ SDL_RenderCopyExF(SDL_Renderer * renderer, SDL_Texture * texture,
 }
 
 int
-SDL_RenderGeometry(SDL_Renderer *renderer,
-                   SDL_Texture *texture,
-                   SDL_Vertex *vertices, int num_vertices,
-                   int *indices, int num_indices)
+SDL_RenderGeometryRaw(SDL_Renderer *renderer,
+                                  SDL_Texture *texture,
+                                  const float *xy, int xy_stride,
+                                  const int *color, int color_stride,
+                                  const float *uv, int uv_stride,
+                                  int num_vertices,
+                                  const void *indices, int num_indices, int size_indice)
 {
     int i;
-    int retval;
+    int retval = 0;
     int count = indices ? num_indices : num_vertices;
 
     CHECK_RENDERER_MAGIC(renderer, -1);
@@ -3346,12 +3357,28 @@ SDL_RenderGeometry(SDL_Renderer *renderer,
         }
     }
 
-    if (!vertices) {
-        return SDL_InvalidParamError("points");
+    if (!xy) {
+        return SDL_InvalidParamError("xy");
+    }
+
+    if (!color) {
+        return SDL_InvalidParamError("color");
+    }
+
+    if (texture && !uv) {
+        return SDL_InvalidParamError("uv");
     }
 
     if (count % 3 != 0) {
         return SDL_InvalidParamError(indices ? "num_indices" : "num_vertices");
+    }
+
+    if (indices) {
+        if (size_indice != 1 && size_indice != 2 && size_indice != 4) {
+            return SDL_InvalidParamError("size_indice");
+        }
+    } else {
+        size_indice = 0;
     }
 
     /* Don't draw while we're hidden */
@@ -3369,26 +3396,40 @@ SDL_RenderGeometry(SDL_Renderer *renderer,
 
     if (texture) {
         for (i = 0; i < num_vertices; ++i) {
-            if (vertices[i].tex_coord.x < 0.0f || vertices[i].tex_coord.y < 0.0f || vertices[i].tex_coord.x > 1.0f || vertices[i].tex_coord.y > 1.0f) {
-                return SDL_SetError("Values of 'vertices' out of bounds");
+            const float *uv_ = (const float *)((const char*)uv + i * uv_stride);
+            float u = uv_[0];
+            float v = uv_[1];
+            if (u < 0.0f || v < 0.0f || u > 1.0f || v > 1.0f) {
+                return SDL_SetError("Values of 'uv' out of bounds %f %f at %d/%d", u, v, i, num_vertices);
             }
         }
     }
 
     if (indices) {
         for (i = 0; i < num_indices; ++i) {
-            if (indices[i] < 0 || indices[i] >= num_vertices) {
+            int j;
+            if (size_indice == 4) {
+                j = ((const Uint32 *)indices)[i];
+            } else if (size_indice == 2) {
+                j = ((const Uint16 *)indices)[i];
+            } else {
+                j = ((const Uint8 *)indices)[i];
+            }
+            if (j < 0 || j >= num_vertices) {
                 return SDL_SetError("Values of 'indices' out of bounds");
             }
         }
     }
 
-
     if (texture) {
         texture->last_command_generation = renderer->render_command_generation;
     }
 
-    retval = QueueCmdGeometry(renderer, texture, vertices, num_vertices, indices, num_indices, renderer->scale.x, renderer->scale.y);
+    retval = QueueCmdGeometry(renderer, texture,
+            xy, xy_stride, color, color_stride, uv, uv_stride,
+            num_vertices,
+            indices, num_indices, size_indice,
+            renderer->scale.x, renderer->scale.y);
 
     return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
 }

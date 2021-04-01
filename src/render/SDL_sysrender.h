@@ -131,7 +131,9 @@ struct SDL_Renderer
                         const double angle, const SDL_FPoint *center, const SDL_RendererFlip flip);
 
     int (*QueueGeometry) (SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
-                          SDL_Vertex *vertices, int num_vertices, int *indices, int num_indices, float scale_x, float scale_y);
+                          const float *xy, int xy_stride, const int *color, int color_stride, const float *uv, int uv_stride,
+                          int num_vertices, const void *indices, int num_indices, int size_indice,
+                          float scale_x, float scale_y);
 
     int (*RunCommandQueue) (SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertices, size_t vertsize);
     int (*UpdateTexture) (SDL_Renderer * renderer, SDL_Texture * texture,

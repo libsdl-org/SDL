@@ -577,7 +577,9 @@ typedef struct GeometryCopyData
 
 static int
 SW_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
-        SDL_Vertex *vertices, int num_vertices, int *indices, int num_indices, float scale_x, float scale_y)
+        const float *xy, int xy_stride, const int *color, int color_stride, const float *uv, int uv_stride,
+        int num_vertices, const void *indices, int num_indices, int size_indice,
+        float scale_x, float scale_y)
 {
     int i;
     int count = indices ? num_indices : num_vertices;
@@ -594,16 +596,30 @@ SW_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *te
     if (texture) {
         GeometryCopyData *ptr = (GeometryCopyData *) verts;
         for (i = 0; i < count; i++) {
-            SDL_Vertex *v = &vertices[indices ? indices[i] : i];
+            int j;
+            if (size_indice == 4) {
+                j = ((const Uint32 *)indices)[i];
+            } else if (size_indice == 2) {
+                j = ((const Uint16 *)indices)[i];
+            } else if (size_indice == 1) {
+                j = ((const Uint8 *)indices)[i];
+            } else {
+                j = i;
+            }
 
-            ptr->src.x = v->tex_coord.x * texture->w;
-            ptr->src.y = v->tex_coord.y * texture->h;
+            float *xy_ = (float *)((char*)xy + j * xy_stride);
+            SDL_Color col_ = *(SDL_Color *)((char*)color + j * color_stride);
 
-            ptr->dst.x = v->position.x * scale_x + renderer->viewport.x;
-            ptr->dst.y = v->position.y * scale_y + renderer->viewport.y;
+            float *uv_ = (float *)((char*)uv + j * uv_stride);
+
+            ptr->src.x = uv_[0] * texture->w;
+            ptr->src.y = uv_[1] * texture->h;
+
+            ptr->dst.x = xy_[0] * scale_x + renderer->viewport.x;
+            ptr->dst.y = xy_[1] * scale_y + renderer->viewport.y;
             trianglepoint_2_fixedpoint(&ptr->dst);
 
-            ptr->color = v->color;
+            ptr->color = col_;
 
             ptr++;
        }
@@ -611,18 +627,29 @@ SW_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *te
         GeometryFillData *ptr = (GeometryFillData *) verts;
 
         for (i = 0; i < count; i++) {
-            SDL_Vertex *v = &vertices[indices ? indices[i] : i];
+            int j;
+            if (size_indice == 4) {
+                j = ((const Uint32 *)indices)[i];
+            } else if (size_indice == 2) {
+                j = ((const Uint16 *)indices)[i];
+            } else if (size_indice == 1) {
+                j = ((const Uint8 *)indices)[i];
+            } else {
+                j = i;
+            }
 
-            ptr->dst.x = v->position.x * scale_x + renderer->viewport.x;
-            ptr->dst.y = v->position.y * scale_y + renderer->viewport.y;
+            float *xy_ = (float *)((char*)xy + j * xy_stride);
+            SDL_Color col_ = *(SDL_Color *)((char*)color + j * color_stride);
+
+            ptr->dst.x = xy_[0] * scale_x + renderer->viewport.x;
+            ptr->dst.y = xy_[1] * scale_y + renderer->viewport.y;
             trianglepoint_2_fixedpoint(&ptr->dst);
 
-            ptr->color = v->color;
+            ptr->color = col_;
 
             ptr++;
        }
     }
-
     return 0;
 }
 
@@ -700,7 +727,7 @@ SW_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
             }
 
             case SDL_RENDERCMD_SETCLIPRECT: {
-                drawstate.cliprect = cmd->data.cliprect.enabled ? &cmd->data.cliprect.rect : NULL;                
+                drawstate.cliprect = cmd->data.cliprect.enabled ? &cmd->data.cliprect.rect : NULL;
                 drawstate.surface_cliprect_dirty = SDL_TRUE;
                 break;
             }
