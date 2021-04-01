@@ -3427,6 +3427,12 @@ SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
     const int debug = 0;
     int prev[3]; /* Previous triangle vertex indices */
     int texw = 0, texh = 0;
+    SDL_BlendMode blendMode;
+    Uint8 r, g, b, a;
+
+    /* Save */
+    SDL_GetRenderDrawBlendMode(renderer, &blendMode);
+    SDL_GetRenderDrawColor(renderer, &r, &g, &b, &a);
 
     if (texture) {
         SDL_QueryTexture(texture, NULL, NULL, &texw, &texh);
@@ -3646,7 +3652,7 @@ SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
                                           xy, xy_stride, color, color_stride, uv, uv_stride,
                                           num_vertices, prev, 3, 4, renderer->scale.x, renderer->scale.y);
                 if (retval < 0) {
-                    return retval;
+                    goto end;
                 } else {
                     FlushRenderCommandsIfNotBatching(renderer);
                 }
@@ -3667,11 +3673,16 @@ SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
                                   xy, xy_stride, color, color_stride, uv, uv_stride,
                                   num_vertices, prev, 3, 4, renderer->scale.x, renderer->scale.y);
         if (retval < 0) {
-            return retval;
+            goto end;
         } else {
             FlushRenderCommandsIfNotBatching(renderer);
         }
     }
+
+end:
+    /* Restore */
+    SDL_SetRenderDrawBlendMode(renderer, blendMode);
+    SDL_SetRenderDrawColor(renderer, r, g, b, a);
 
     return retval;
 }
