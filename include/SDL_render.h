@@ -86,6 +86,16 @@ typedef struct SDL_RendererInfo
 } SDL_RendererInfo;
 
 /**
+ *  \brief Vertex structure
+ */
+typedef struct SDL_Vertex
+{
+    SDL_FPoint position;        /**< Vertex position, in SDL_Renderer coordinates  */
+    SDL_Color  color;           /**< Vertex color */
+    SDL_FPoint tex_coord;       /**< Normalized texture coordinates, if needed */
+} SDL_Vertex;
+
+/**
  * The scaling mode for a texture.
  */
 typedef enum
@@ -1440,6 +1450,25 @@ extern DECLSPEC int SDLCALL SDL_RenderCopyExF(SDL_Renderer * renderer,
                                             const double angle,
                                             const SDL_FPoint *center,
                                             const SDL_RendererFlip flip);
+
+/**
+ *  \brief Render a list of triangles, optionally using a texture and indices into the vertex array
+ *  Color and alpha modulation is done per vertex (SDL_SetTextureColorMod and SDL_SetTextureAlphaMod are ignored).
+ *
+ *  \param texture      (optional) The SDL texture to use.
+ *  \param vertices     Vertices.
+ *  \param num_vertices Number of vertices.
+ *  \param indices      (optional) An array of integer indices into the 'vertices' array, if NULL all vertices will be rendered in sequential order.
+ *  \param num_indices  Number of indices.
+ *
+ *  \sa SDL_Vertex
+ *
+ *  \return 0 on success, or -1 if the operation is not supported
+ */
+extern DECLSPEC int SDLCALL SDL_RenderGeometry(SDL_Renderer *renderer,
+                                               SDL_Texture *texture,
+                                               const SDL_Vertex *vertices, int num_vertices,
+                                               const int *indices, int num_indices);
 
 /**
  *  \brief Render a list of triangles, optionally using a texture and indices into the vertex arrays
