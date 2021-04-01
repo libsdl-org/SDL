@@ -615,11 +615,11 @@ SW_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *te
 
             uv_ = (float *)((char*)uv + j * uv_stride);
 
-            ptr->src.x = uv_[0] * texture->w;
-            ptr->src.y = uv_[1] * texture->h;
+            ptr->src.x = (int)(uv_[0] * texture->w);
+            ptr->src.y = (int)(uv_[1] * texture->h);
 
-            ptr->dst.x = xy_[0] * scale_x + renderer->viewport.x;
-            ptr->dst.y = xy_[1] * scale_y + renderer->viewport.y;
+            ptr->dst.x = (int)(xy_[0] * scale_x + renderer->viewport.x);
+            ptr->dst.y = (int)(xy_[1] * scale_y + renderer->viewport.y);
             trianglepoint_2_fixedpoint(&ptr->dst);
 
             ptr->color = col_;
@@ -646,8 +646,8 @@ SW_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *te
             xy_ = (float *)((char*)xy + j * xy_stride);
             col_ = *(SDL_Color *)((char*)color + j * color_stride);
 
-            ptr->dst.x = xy_[0] * scale_x + renderer->viewport.x;
-            ptr->dst.y = xy_[1] * scale_y + renderer->viewport.y;
+            ptr->dst.x = (int)(xy_[0] * scale_x + renderer->viewport.x);
+            ptr->dst.y = (int)(xy_[1] * scale_y + renderer->viewport.y);
             trianglepoint_2_fixedpoint(&ptr->dst);
 
             ptr->color = col_;

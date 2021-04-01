@@ -88,7 +88,7 @@ int SDL_FillTriangle(SDL_Surface *dst, const SDL_Point points[3], Uint32 color)
 #endif
 
 /* cross product AB x AC */
-static float cross_product(const SDL_Point *a, const SDL_Point *b, int c_x, int c_y)
+static int cross_product(const SDL_Point *a, const SDL_Point *b, int c_x, int c_y)
 {
     return (b->x - a->x) * (c_y - a->y) - (b->y - a->y) * (c_x - a->x);
 }
