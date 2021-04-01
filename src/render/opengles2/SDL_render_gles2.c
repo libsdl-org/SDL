@@ -960,7 +960,9 @@ GLES2_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture *
 
 static int
 GLES2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
-        SDL_Vertex *vertices, int num_vertices, int *indices, int num_indices, float scale_x, float scale_y)
+        const float *xy, int xy_stride, const int *color, int color_stride, const float *uv, int uv_stride,
+        int num_vertices, const void *indices, int num_indices, int size_indice,
+        float scale_x, float scale_y)
 {
     int i;
     const SDL_bool colorswap = (renderer->target && (renderer->target->format == SDL_PIXELFORMAT_ARGB8888 || renderer->target->format == SDL_PIXELFORMAT_RGB888));
@@ -976,20 +978,35 @@ GLES2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture 
     cmd->data.draw.count = count;
 
     for (i = 0; i < count; i++) {
-        SDL_Vertex *v = &vertices[indices ? indices[i] : i];
+        int j;
+        if (size_indice == 4) {
+            j = ((const Uint32 *)indices)[i];
+        } else if (size_indice == 2) {
+            j = ((const Uint16 *)indices)[i];
+        } else if (size_indice == 1) {
+            j = ((const Uint8 *)indices)[i];
+        } else {
+            j = i;
+        }
 
-        *(verts++) = v->position.x * scale_x;
-        *(verts++) = v->position.y * scale_y;
-        *(verts++) = (colorswap ? v->color.b : v->color.r) * inv255f;
-        *(verts++) = v->color.g * inv255f;
-        *(verts++) = (colorswap ? v->color.r : v->color.b) * inv255f;
-        *(verts++) = v->color.a * inv255f;
+        float *xy_ = (float *)((char*)xy + j * xy_stride);
+        SDL_Color col_ = *(SDL_Color *)((char*)color + j * color_stride);
+
+        *(verts++) = xy_[0] * scale_x;
+        *(verts++) = xy_[1] * scale_y;
+
+        *(verts++) = (colorswap ? col_.b : col_.r) * inv255f;
+        *(verts++) = col_.g * inv255f;
+        *(verts++) = (colorswap ? col_.r : col_.b) * inv255f;
+        *(verts++) = col_.a * inv255f;
 
         if (texture) {
-            *(verts++) = v->tex_coord.x;
-            *(verts++) = v->tex_coord.y;
+            float *uv_ = (float *)((char*)uv + j * uv_stride);
+            *(verts++) = uv_[0];
+            *(verts++) = uv_[1];
         }
     }
+
     return 0;
 }
 
