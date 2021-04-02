@@ -93,6 +93,24 @@
 		75E09169241EA924004729E1 /* SDL_virtualjoystick_c.h in Headers */ = {isa = PBXBuildFile; fileRef = 75E09159241EA924004729E1 /* SDL_virtualjoystick_c.h */; };
 		75E0916A241EA924004729E1 /* SDL_virtualjoystick_c.h in Headers */ = {isa = PBXBuildFile; fileRef = 75E09159241EA924004729E1 /* SDL_virtualjoystick_c.h */; };
 		75E0916B241EA924004729E1 /* SDL_virtualjoystick_c.h in Headers */ = {isa = PBXBuildFile; fileRef = 75E09159241EA924004729E1 /* SDL_virtualjoystick_c.h */; };
+		A1626A3E2617006A003F1973 /* SDL_triangle.c in Sources */ = {isa = PBXBuildFile; fileRef = A1626A3D2617006A003F1973 /* SDL_triangle.c */; };
+		A1626A3F2617006A003F1973 /* SDL_triangle.c in Sources */ = {isa = PBXBuildFile; fileRef = A1626A3D2617006A003F1973 /* SDL_triangle.c */; };
+		A1626A402617006A003F1973 /* SDL_triangle.c in Sources */ = {isa = PBXBuildFile; fileRef = A1626A3D2617006A003F1973 /* SDL_triangle.c */; };
+		A1626A412617006A003F1973 /* SDL_triangle.c in Sources */ = {isa = PBXBuildFile; fileRef = A1626A3D2617006A003F1973 /* SDL_triangle.c */; };
+		A1626A422617006A003F1973 /* SDL_triangle.c in Sources */ = {isa = PBXBuildFile; fileRef = A1626A3D2617006A003F1973 /* SDL_triangle.c */; };
+		A1626A432617006A003F1973 /* SDL_triangle.c in Sources */ = {isa = PBXBuildFile; fileRef = A1626A3D2617006A003F1973 /* SDL_triangle.c */; };
+		A1626A442617006A003F1973 /* SDL_triangle.c in Sources */ = {isa = PBXBuildFile; fileRef = A1626A3D2617006A003F1973 /* SDL_triangle.c */; };
+		A1626A452617006A003F1973 /* SDL_triangle.c in Sources */ = {isa = PBXBuildFile; fileRef = A1626A3D2617006A003F1973 /* SDL_triangle.c */; };
+		A1626A462617006A003F1973 /* SDL_triangle.c in Sources */ = {isa = PBXBuildFile; fileRef = A1626A3D2617006A003F1973 /* SDL_triangle.c */; };
+		A1626A522617008D003F1973 /* SDL_triangle.h in Headers */ = {isa = PBXBuildFile; fileRef = A1626A512617008C003F1973 /* SDL_triangle.h */; };
+		A1626A532617008D003F1973 /* SDL_triangle.h in Headers */ = {isa = PBXBuildFile; fileRef = A1626A512617008C003F1973 /* SDL_triangle.h */; };
+		A1626A542617008D003F1973 /* SDL_triangle.h in Headers */ = {isa = PBXBuildFile; fileRef = A1626A512617008C003F1973 /* SDL_triangle.h */; };
+		A1626A552617008D003F1973 /* SDL_triangle.h in Headers */ = {isa = PBXBuildFile; fileRef = A1626A512617008C003F1973 /* SDL_triangle.h */; };
+		A1626A562617008D003F1973 /* SDL_triangle.h in Headers */ = {isa = PBXBuildFile; fileRef = A1626A512617008C003F1973 /* SDL_triangle.h */; };
+		A1626A572617008D003F1973 /* SDL_triangle.h in Headers */ = {isa = PBXBuildFile; fileRef = A1626A512617008C003F1973 /* SDL_triangle.h */; };
+		A1626A582617008D003F1973 /* SDL_triangle.h in Headers */ = {isa = PBXBuildFile; fileRef = A1626A512617008C003F1973 /* SDL_triangle.h */; };
+		A1626A592617008D003F1973 /* SDL_triangle.h in Headers */ = {isa = PBXBuildFile; fileRef = A1626A512617008C003F1973 /* SDL_triangle.h */; };
+		A1626A5A2617008D003F1973 /* SDL_triangle.h in Headers */ = {isa = PBXBuildFile; fileRef = A1626A512617008C003F1973 /* SDL_triangle.h */; };
 		A7381E961D8B69D600B177DD /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A7381E951D8B69D600B177DD /* CoreAudio.framework */; };
 		A7381E971D8B6A0300B177DD /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A7381E931D8B69C300B177DD /* AudioToolbox.framework */; };
 		A75FCCFD23E25AB700529352 /* SDL_shaders_metal_tvos.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A8E323E2514000DCD162 /* SDL_shaders_metal_tvos.h */; };
@@ -3909,6 +3927,8 @@
 		5C2EF7001FC9EF0F003F5197 /* SDL_egl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_egl.h; sourceTree = "<group>"; };
 		75E09158241EA924004729E1 /* SDL_virtualjoystick.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_virtualjoystick.c; sourceTree = "<group>"; };
 		75E09159241EA924004729E1 /* SDL_virtualjoystick_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_virtualjoystick_c.h; sourceTree = "<group>"; };
+		A1626A3D2617006A003F1973 /* SDL_triangle.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_triangle.c; sourceTree = "<group>"; };
+		A1626A512617008C003F1973 /* SDL_triangle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_triangle.h; sourceTree = "<group>"; };
 		A7381E931D8B69C300B177DD /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		A7381E951D8B69D600B177DD /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudio.framework; path = System/Library/Frameworks/CoreAudio.framework; sourceTree = SDKROOT; };
 		A75FCEB323E25AB700529352 /* libSDL2.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libSDL2.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -5543,6 +5563,8 @@
 		A7D8A8EF23E2514000DCD162 /* software */ = {
 			isa = PBXGroup;
 			children = (
+				A1626A512617008C003F1973 /* SDL_triangle.h */,
+				A1626A3D2617006A003F1973 /* SDL_triangle.c */,
 				A7D8A8FD23E2514000DCD162 /* SDL_blendfillrect.c */,
 				A7D8A8F623E2514000DCD162 /* SDL_blendfillrect.h */,
 				A7D8A8FB23E2514000DCD162 /* SDL_blendline.c */,
@@ -5802,6 +5824,7 @@
 				A75FCD6A23E25AB700529352 /* imKStoUCS.h in Headers */,
 				A75FCD6B23E25AB700529352 /* SDL_offscreenevents_c.h in Headers */,
 				A75FCD6C23E25AB700529352 /* SDL_x11sym.h in Headers */,
+				A1626A592617008D003F1973 /* SDL_triangle.h in Headers */,
 				A75FCD6D23E25AB700529352 /* SDL_coreaudio.h in Headers */,
 				A75FCD6E23E25AB700529352 /* SDL_draw.h in Headers */,
 				A75FCD6F23E25AB700529352 /* SDL_drawline.h in Headers */,
@@ -6044,6 +6067,7 @@
 				A75FCF2323E25AC700529352 /* imKStoUCS.h in Headers */,
 				A75FCF2423E25AC700529352 /* SDL_offscreenevents_c.h in Headers */,
 				A75FCF2523E25AC700529352 /* SDL_x11sym.h in Headers */,
+				A1626A5A2617008D003F1973 /* SDL_triangle.h in Headers */,
 				A75FCF2623E25AC700529352 /* SDL_coreaudio.h in Headers */,
 				A75FCF2723E25AC700529352 /* SDL_draw.h in Headers */,
 				A75FCF2823E25AC700529352 /* SDL_drawline.h in Headers */,
@@ -6280,6 +6304,7 @@
 				A769B0ED23E259AE00872273 /* SDL_drawpoint.h in Headers */,
 				A769B0EF23E259AE00872273 /* SDL_wave.h in Headers */,
 				A769B0F023E259AE00872273 /* SDL_cocoaopengl.h in Headers */,
+				A1626A572617008D003F1973 /* SDL_triangle.h in Headers */,
 				A769B0F123E259AE00872273 /* yuv_rgb_sse_func.h in Headers */,
 				A769B0F223E259AE00872273 /* imKStoUCS.h in Headers */,
 				A769B0F323E259AE00872273 /* SDL_offscreenevents_c.h in Headers */,
@@ -6598,6 +6623,7 @@
 				A7D8BB2223E2514500DCD162 /* scancodes_windows.h in Headers */,
 				A7D8BBA023E2514500DCD162 /* scancodes_xfree86.h in Headers */,
 				A7D8B57023E2514300DCD162 /* usb_ids.h in Headers */,
+				A1626A532617008D003F1973 /* SDL_triangle.h in Headers */,
 				A7D8B25523E2514200DCD162 /* vk_icd.h in Headers */,
 				A7D8B24F23E2514200DCD162 /* vk_layer.h in Headers */,
 				A7D8B26723E2514200DCD162 /* vk_platform.h in Headers */,
@@ -6845,6 +6871,7 @@
 				A7D8BB2323E2514500DCD162 /* scancodes_windows.h in Headers */,
 				A7D8BBA123E2514500DCD162 /* scancodes_xfree86.h in Headers */,
 				A7D8B57123E2514300DCD162 /* usb_ids.h in Headers */,
+				A1626A542617008D003F1973 /* SDL_triangle.h in Headers */,
 				A7D8B25623E2514200DCD162 /* vk_icd.h in Headers */,
 				A7D8B25023E2514200DCD162 /* vk_layer.h in Headers */,
 				A7D8B26823E2514200DCD162 /* vk_platform.h in Headers */,
@@ -6957,6 +6984,7 @@
 				A7D8B9F323E2514400DCD162 /* SDL_drawpoint.h in Headers */,
 				A7D8B87023E2514400DCD162 /* SDL_wave.h in Headers */,
 				A7D8AEE023E2514100DCD162 /* SDL_cocoaopengl.h in Headers */,
+				A1626A562617008D003F1973 /* SDL_triangle.h in Headers */,
 				A7D8B3CC23E2514300DCD162 /* yuv_rgb_sse_func.h in Headers */,
 				A7D8B21C23E2514200DCD162 /* imKStoUCS.h in Headers */,
 				A7D8AB5F23E2514100DCD162 /* SDL_offscreenevents_c.h in Headers */,
@@ -7275,6 +7303,7 @@
 				A7D8BB2123E2514500DCD162 /* scancodes_windows.h in Headers */,
 				A7D8BB9F23E2514500DCD162 /* scancodes_xfree86.h in Headers */,
 				A7D8B56F23E2514300DCD162 /* usb_ids.h in Headers */,
+				A1626A522617008D003F1973 /* SDL_triangle.h in Headers */,
 				A7D8B25423E2514200DCD162 /* vk_icd.h in Headers */,
 				A7D8B24E23E2514200DCD162 /* vk_layer.h in Headers */,
 				A7D8B26623E2514200DCD162 /* vk_platform.h in Headers */,
@@ -7413,6 +7442,7 @@
 				A7D8B23323E2514200DCD162 /* gl2platform.h in Headers */,
 				A7D8B25123E2514200DCD162 /* vk_layer.h in Headers */,
 				A7D8B26923E2514200DCD162 /* vk_platform.h in Headers */,
+				A1626A552617008D003F1973 /* SDL_triangle.h in Headers */,
 				A7D8BBF323E2574800DCD162 /* SDL_uikitmessagebox.h in Headers */,
 				A7D8AEB523E2514100DCD162 /* SDL_cocoametalview.h in Headers */,
 				A7D8AEF123E2514100DCD162 /* SDL_cocoaopengles.h in Headers */,
@@ -7599,6 +7629,7 @@
 				5605721B2473688D00B46B66 /* SDL_syslocale.h in Headers */,
 				A7D8AB6023E2514100DCD162 /* SDL_offscreenevents_c.h in Headers */,
 				A7D8B1B123E2514200DCD162 /* SDL_x11sym.h in Headers */,
+				A1626A582617008D003F1973 /* SDL_triangle.h in Headers */,
 				A7D8B8D123E2514400DCD162 /* SDL_coreaudio.h in Headers */,
 				A7D8BA1E23E2514400DCD162 /* SDL_draw.h in Headers */,
 				A7D8BA0C23E2514400DCD162 /* SDL_drawline.h in Headers */,
@@ -8246,6 +8277,7 @@
 				A75FDAB123E2795C00529352 /* SDL_hidapi_steam.c in Sources */,
 				A75FCDFA23E25AB700529352 /* SDL_touch.c in Sources */,
 				A75FCDFB23E25AB700529352 /* SDL_x11events.c in Sources */,
+				A1626A452617006A003F1973 /* SDL_triangle.c in Sources */,
 				A75FCDFC23E25AB700529352 /* SDL_uikitmessagebox.m in Sources */,
 				A75FCDFD23E25AB700529352 /* SDL_thread.c in Sources */,
 				A75FCDFE23E25AB700529352 /* SDL_hidapi_xbox360w.c in Sources */,
@@ -8448,6 +8480,7 @@
 				A75FDAB223E2795C00529352 /* SDL_hidapi_steam.c in Sources */,
 				A75FCFB323E25AC700529352 /* SDL_touch.c in Sources */,
 				A75FCFB423E25AC700529352 /* SDL_x11events.c in Sources */,
+				A1626A462617006A003F1973 /* SDL_triangle.c in Sources */,
 				A75FCFB523E25AC700529352 /* SDL_uikitmessagebox.m in Sources */,
 				A75FCFB623E25AC700529352 /* SDL_thread.c in Sources */,
 				A75FCFB723E25AC700529352 /* SDL_hidapi_xbox360w.c in Sources */,
@@ -8846,6 +8879,7 @@
 				A769B22A23E259AE00872273 /* SDL_x11opengl.c in Sources */,
 				A769B22B23E259AE00872273 /* SDL_cocoavulkan.m in Sources */,
 				A769B22C23E259AE00872273 /* SDL_uikitappdelegate.m in Sources */,
+				A1626A432617006A003F1973 /* SDL_triangle.c in Sources */,
 				A769B22D23E259AE00872273 /* SDL_offscreenwindow.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -8877,6 +8911,7 @@
 				A7D8B19B23E2514200DCD162 /* SDL_x11events.c in Sources */,
 				A7D8AC5223E2514100DCD162 /* SDL_uikitmessagebox.m in Sources */,
 				A7D8B3F323E2514300DCD162 /* SDL_thread.c in Sources */,
+				A1626A3F2617006A003F1973 /* SDL_triangle.c in Sources */,
 				A7D8B55E23E2514300DCD162 /* SDL_hidapi_xbox360w.c in Sources */,
 				A7D8A95823E2514000DCD162 /* SDL_atomic.c in Sources */,
 				A7D8BB2823E2514500DCD162 /* SDL_displayevents.c in Sources */,
@@ -9079,6 +9114,7 @@
 				A7D8B19C23E2514200DCD162 /* SDL_x11events.c in Sources */,
 				A7D8AC5323E2514100DCD162 /* SDL_uikitmessagebox.m in Sources */,
 				A7D8B3F423E2514300DCD162 /* SDL_thread.c in Sources */,
+				A1626A402617006A003F1973 /* SDL_triangle.c in Sources */,
 				A7D8B55F23E2514300DCD162 /* SDL_hidapi_xbox360w.c in Sources */,
 				A7D8A95923E2514000DCD162 /* SDL_atomic.c in Sources */,
 				A7D8BB2923E2514500DCD162 /* SDL_displayevents.c in Sources */,
@@ -9453,6 +9489,7 @@
 				A7D8B15C23E2514200DCD162 /* SDL_x11opengl.c in Sources */,
 				A7D8AEA423E2514100DCD162 /* SDL_cocoavulkan.m in Sources */,
 				A7D8AC6723E2514100DCD162 /* SDL_uikitappdelegate.m in Sources */,
+				A1626A422617006A003F1973 /* SDL_triangle.c in Sources */,
 				A7D8AB6523E2514100DCD162 /* SDL_offscreenwindow.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -9484,6 +9521,7 @@
 				A7D8A97523E2514000DCD162 /* SDL_coremotionsensor.m in Sources */,
 				A7D8BB8D23E2514500DCD162 /* SDL_touch.c in Sources */,
 				A7D8B19A23E2514200DCD162 /* SDL_x11events.c in Sources */,
+				A1626A3E2617006A003F1973 /* SDL_triangle.c in Sources */,
 				A7D8B3F223E2514300DCD162 /* SDL_thread.c in Sources */,
 				A7D8B55D23E2514300DCD162 /* SDL_hidapi_xbox360w.c in Sources */,
 				A7D8A95723E2514000DCD162 /* SDL_atomic.c in Sources */,
@@ -9686,6 +9724,7 @@
 				A7D8B19D23E2514200DCD162 /* SDL_x11events.c in Sources */,
 				A7D8B3F523E2514300DCD162 /* SDL_thread.c in Sources */,
 				A7D8B56023E2514300DCD162 /* SDL_hidapi_xbox360w.c in Sources */,
+				A1626A412617006A003F1973 /* SDL_triangle.c in Sources */,
 				5616CA59252BB35C005D5928 /* SDL_sysurl.m in Sources */,
 				A7D8A95A23E2514000DCD162 /* SDL_atomic.c in Sources */,
 				A75FDBD123EA380300529352 /* SDL_hidapi_rumble.c in Sources */,
@@ -9888,6 +9927,7 @@
 				A7D8AC5623E2514100DCD162 /* SDL_uikitmessagebox.m in Sources */,
 				A7D8B3F723E2514300DCD162 /* SDL_thread.c in Sources */,
 				A7D8B56223E2514300DCD162 /* SDL_hidapi_xbox360w.c in Sources */,
+				A1626A442617006A003F1973 /* SDL_triangle.c in Sources */,
 				5616CA62252BB35E005D5928 /* SDL_sysurl.m in Sources */,
 				A7D8A95C23E2514000DCD162 /* SDL_atomic.c in Sources */,
 				A75FDBD423EA380300529352 /* SDL_hidapi_rumble.c in Sources */,
