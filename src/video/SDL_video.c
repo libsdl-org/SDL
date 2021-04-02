@@ -498,11 +498,20 @@ SDL_VideoInit(const char *driver_name)
         driver_name = SDL_getenv("SDL_VIDEODRIVER");
     }
     if (driver_name != NULL) {
-        for (i = 0; bootstrap[i]; ++i) {
-            if (SDL_strncasecmp(bootstrap[i]->name, driver_name, SDL_strlen(driver_name)) == 0) {
-                video = bootstrap[i]->create(index);
-                break;
+        const char *driver_attempt = driver_name;
+        while(driver_attempt != NULL && *driver_attempt != 0 && video == NULL) {
+            const char* driver_attempt_end = SDL_strchr(driver_attempt, ',');
+            size_t driver_attempt_len = (driver_attempt_end != NULL) ? (driver_attempt_end - driver_attempt)
+                                                                     : SDL_strlen(driver_attempt);
+
+            for (i = 0; bootstrap[i]; ++i) {
+                if (SDL_strncasecmp(bootstrap[i]->name, driver_attempt, driver_attempt_len) == 0) {
+                    video = bootstrap[i]->create(index);
+                    break;
+                }
             }
+
+            driver_attempt = (driver_attempt_end != NULL) ? (driver_attempt_end + 1) : NULL;
         }
     } else {
         for (i = 0; bootstrap[i]; ++i) {
