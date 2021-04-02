@@ -972,19 +972,38 @@ SDL_AudioInit(const char *driver_name)
         driver_name = SDL_getenv("SDL_AUDIODRIVER");
     }
 
-    for (i = 0; (!initialized) && (bootstrap[i]); ++i) {
-        /* make sure we should even try this driver before doing so... */
-        const AudioBootStrap *backend = bootstrap[i];
-        if ((driver_name && (SDL_strncasecmp(backend->name, driver_name, SDL_strlen(driver_name)) != 0)) ||
-            (!driver_name && backend->demand_only)) {
-            continue;
-        }
+    if (driver_name != NULL) {
+        const char *driver_attempt = driver_name;
+        while (driver_attempt != NULL && *driver_attempt != 0 && !initialized) {
+            const char *driver_attempt_end = SDL_strchr(driver_attempt, ',');
+            size_t driver_attempt_len = (driver_attempt_end != NULL) ? (driver_attempt_end - driver_attempt)
+                                                                     : SDL_strlen(driver_attempt);
 
-        tried_to_init = 1;
-        SDL_zero(current_audio);
-        current_audio.name = backend->name;
-        current_audio.desc = backend->desc;
-        initialized = backend->init(&current_audio.impl);
+            for (i = 0; bootstrap[i]; ++i) {
+                if (SDL_strncasecmp(bootstrap[i]->name, driver_attempt, driver_attempt_len) == 0) {
+                    tried_to_init = 1;
+                    SDL_zero(current_audio);
+                    current_audio.name = bootstrap[i]->name;
+                    current_audio.desc = bootstrap[i]->desc;
+                    initialized = bootstrap[i]->init(&current_audio.impl);
+                    break;
+                }
+            }
+
+            driver_attempt = (driver_attempt_end != NULL) ? (driver_attempt_end + 1) : NULL;
+        }
+    } else {
+        for (i = 0; (!initialized) && (bootstrap[i]); ++i) {
+            if(bootstrap[i]->demand_only) {
+                continue;
+            }
+
+            tried_to_init = 1;
+            SDL_zero(current_audio);
+            current_audio.name = bootstrap[i]->name;
+            current_audio.desc = bootstrap[i]->desc;
+            initialized = bootstrap[i]->init(&current_audio.impl);
+        }
     }
 
     if (!initialized) {
