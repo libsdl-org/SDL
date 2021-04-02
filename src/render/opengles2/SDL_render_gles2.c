@@ -912,11 +912,6 @@ SetDrawState(GLES2_RenderData *data, const SDL_RenderCommand *cmd, const GLES2_I
         stride = sizeof(SDL_Vertex);
     } else {
         stride = sizeof(SDL_VertexSolid);
-
-            /* Generate mipmaps for minification if scaling using mipmaps is enabled */
-            if(texture->scaleMode == SDL_ScaleModeBest && tdata->texture_type == GL_TEXTURE_2D) {
-                data->glGenerateMipmap(tdata->texture_type);
-            }
     }
 
     if (texture) {
@@ -1411,7 +1406,7 @@ GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     data->texture_u = 0;
     data->texture_v = 0;
 #endif
-    
+
     switch(texture->scaleMode) {
             case SDL_ScaleModeNearest:
                 magnificationScaleMode = GL_NEAREST;
@@ -1508,14 +1503,21 @@ GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     texture->driverdata = data;
     renderdata->glActiveTexture(GL_TEXTURE0);
     renderdata->glBindTexture(data->texture_type, data->texture);
+
     renderdata->glTexParameteri(data->texture_type, GL_TEXTURE_MIN_FILTER, minificationScaleMode);
     renderdata->glTexParameteri(data->texture_type, GL_TEXTURE_MAG_FILTER, magnificationScaleMode);
     renderdata->glTexParameteri(data->texture_type, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     renderdata->glTexParameteri(data->texture_type, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
     if (texture->format != SDL_PIXELFORMAT_EXTERNAL_OES) {
         renderdata->glTexImage2D(data->texture_type, 0, format, texture->w, texture->h, 0, format, type, NULL);
         if (GL_CheckError("glTexImage2D()", renderer) < 0) {
             return -1;
+        }
+
+        /* Generate mipmaps for minification if scaling using mipmaps is enabled */
+        if(texture->scaleMode == SDL_ScaleModeBest) {
+            renderdata->glGenerateMipmap(GL_TEXTURE_2D);
         }
     }
 
@@ -1617,6 +1619,11 @@ GLES2_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_Rect
                     tdata->pixel_format,
                     tdata->pixel_type,
                     pixels, pitch, SDL_BYTESPERPIXEL(texture->format));
+
+    /* Re-generate mipmaps for minification if scaling using mipmaps is enabled */
+    if(texture->scaleMode == SDL_ScaleModeBest && tdata->texture_type == GL_TEXTURE_2D) {
+        data->glGenerateMipmap(tdata->texture_type);
+    }
 
 #if SDL_HAVE_YUV
     if (tdata->yuv) {
@@ -1799,31 +1806,50 @@ GLES2_SetTextureScaleMode(SDL_Renderer * renderer, SDL_Texture * texture, SDL_Sc
 {
     GLES2_RenderData *renderdata = (GLES2_RenderData *) renderer->driverdata;
     GLES2_TextureData *data = (GLES2_TextureData *) texture->driverdata;
-    GLenum glScaleMode = (scaleMode == SDL_ScaleModeNearest) ? GL_NEAREST : GL_LINEAR;
+    GLenum magnificationScaleMode;
+    GLenum minificationScaleMode;
 
+    switch(texture->scaleMode) {
+        case SDL_ScaleModeNearest:
+            magnificationScaleMode = GL_NEAREST;
+            minificationScaleMode = GL_NEAREST;
+            break;
+        case SDL_ScaleModeLinear:
+            magnificationScaleMode = GL_LINEAR;
+            minificationScaleMode = GL_LINEAR;
+            break;
+        case SDL_ScaleModeBest:
+            magnificationScaleMode = GL_LINEAR;
+            minificationScaleMode =  (data->texture_type == GL_TEXTURE_2D) ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR;
+            break;
+        default:
+            magnificationScaleMode = GL_NEAREST;
+            minificationScaleMode = GL_NEAREST;
+            break;
+    }
 #if SDL_HAVE_YUV
     if (data->yuv) {
         renderdata->glActiveTexture(GL_TEXTURE2);
         renderdata->glBindTexture(data->texture_type, data->texture_v);
-        renderdata->glTexParameteri(data->texture_type, GL_TEXTURE_MIN_FILTER, glScaleMode);
-        renderdata->glTexParameteri(data->texture_type, GL_TEXTURE_MAG_FILTER, glScaleMode);
+        renderdata->glTexParameteri(data->texture_type, GL_TEXTURE_MIN_FILTER, minificationScaleMode);
+        renderdata->glTexParameteri(data->texture_type, GL_TEXTURE_MAG_FILTER, magnificationScaleMode);
 
         renderdata->glActiveTexture(GL_TEXTURE1);
         renderdata->glBindTexture(data->texture_type, data->texture_u);
-        renderdata->glTexParameteri(data->texture_type, GL_TEXTURE_MIN_FILTER, glScaleMode);
-        renderdata->glTexParameteri(data->texture_type, GL_TEXTURE_MAG_FILTER, glScaleMode);
+        renderdata->glTexParameteri(data->texture_type, GL_TEXTURE_MIN_FILTER, minificationScaleMode);
+        renderdata->glTexParameteri(data->texture_type, GL_TEXTURE_MAG_FILTER, magnificationScaleMode);
     } else if (data->nv12) {
         renderdata->glActiveTexture(GL_TEXTURE1);
         renderdata->glBindTexture(data->texture_type, data->texture_u);
-        renderdata->glTexParameteri(data->texture_type, GL_TEXTURE_MIN_FILTER, glScaleMode);
-        renderdata->glTexParameteri(data->texture_type, GL_TEXTURE_MAG_FILTER, glScaleMode);
+        renderdata->glTexParameteri(data->texture_type, GL_TEXTURE_MIN_FILTER, minificationScaleMode);
+        renderdata->glTexParameteri(data->texture_type, GL_TEXTURE_MAG_FILTER, magnificationScaleMode);
     }
 #endif
 
     renderdata->glActiveTexture(GL_TEXTURE0);
     renderdata->glBindTexture(data->texture_type, data->texture);
-    renderdata->glTexParameteri(data->texture_type, GL_TEXTURE_MIN_FILTER, glScaleMode);
-    renderdata->glTexParameteri(data->texture_type, GL_TEXTURE_MAG_FILTER, glScaleMode);
+    renderdata->glTexParameteri(data->texture_type, GL_TEXTURE_MIN_FILTER, minificationScaleMode);
+    renderdata->glTexParameteri(data->texture_type, GL_TEXTURE_MAG_FILTER, magnificationScaleMode);
 }
 
 static int

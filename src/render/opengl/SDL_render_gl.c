@@ -551,10 +551,12 @@ GL_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 
     renderdata->glEnable(textype);
     renderdata->glBindTexture(textype, data->texture);
+
     /* Generate mipmaps for minification if scaling using mipmaps is enabled  */
     if(texture->scaleMode == SDL_ScaleModeBest) {
         renderdata->glTexParameteri(textype, GL_GENERATE_MIPMAP, GL_TRUE);
     }
+
     renderdata->glTexParameteri(textype, GL_TEXTURE_MIN_FILTER, minificationScaleMode);
     renderdata->glTexParameteri(textype, GL_TEXTURE_MAG_FILTER, magnificationScaleMode);
     /* According to the spec, CLAMP_TO_EDGE is the default for TEXTURE_RECTANGLE
