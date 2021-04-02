@@ -575,12 +575,6 @@ Wayland_VideoQuit(_THIS)
 
     Wayland_QuitKeyboard(_this);
 
-/* !!! FIXME: other subsystems use D-Bus, so we shouldn't quit it here;
-       have SDL.c do this at a higher level, or add refcounting. */
-#if SDL_USE_LIBDBUS
-    SDL_DBus_Quit();
-#endif
-
     SDL_free(data->classname);
 }
 

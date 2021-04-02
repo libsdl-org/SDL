@@ -457,12 +457,6 @@ X11_VideoQuit(_THIS)
     X11_QuitKeyboard(_this);
     X11_QuitMouse(_this);
     X11_QuitTouch(_this);
-
-/* !!! FIXME: other subsystems use D-Bus, so we shouldn't quit it here;
-       have SDL.c do this at a higher level, or add refcounting. */
-#if SDL_USE_LIBDBUS
-    SDL_DBus_Quit();
-#endif
 }
 
 SDL_bool
