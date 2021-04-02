@@ -162,7 +162,7 @@ WIN_SetWindowPositionInternal(_THIS, SDL_Window * window, UINT flags)
         top = HWND_NOTOPMOST;
     }
 
-    WIN_AdjustWindowRect(window, &x, &y, &w, &h, SDL_TRUE);    
+    WIN_AdjustWindowRect(window, &x, &y, &w, &h, SDL_TRUE);
 
     data->expected_resize = SDL_TRUE;
     SetWindowPos(hwnd, top, x, y, w, h, flags);
@@ -364,7 +364,7 @@ WIN_CreateWindow(_THIS, SDL_Window * window)
         return 0;
 #else
         return SDL_SetError("Could not create GLES window surface (EGL support not configured)");
-#endif /* SDL_VIDEO_OPENGL_EGL */ 
+#endif /* SDL_VIDEO_OPENGL_EGL */
     }
 #endif /* SDL_VIDEO_OPENGL_ES2 */
 
@@ -559,7 +559,7 @@ WIN_ShowWindow(_THIS, SDL_Window * window)
     DWORD style;
     HWND hwnd;
     int nCmdShow;
-    
+
     hwnd = ((SDL_WindowData *)window->driverdata)->hwnd;
     nCmdShow = SW_SHOW;
     style = GetWindowLong(hwnd, GWL_EXSTYLE);
