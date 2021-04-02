@@ -778,11 +778,6 @@ if(ASSEMBLY)
     set(HAVE_SSE3 TRUE)
     set(SDL_ASSEMBLY_ROUTINES 1)
   endif()
-# TODO:
-#else()
-#  if(USE_GCC OR USE_CLANG)
-#    list(APPEND EXTRA_CFLAGS "-mno-sse" "-mno-sse2" "-mno-sse3" "-mno-mmx")
-#  endif()
 endif()
 
 # TODO: Can't deactivate on FreeBSD? w/o LIBC, SDL_stdinc.h can't define
@@ -2526,7 +2521,11 @@ if (ASAN)
   asan_check_add_debug_flag("undefined")
   asan_check_add_debug_flag("vla-bound")
   asan_check_add_debug_flag("leak")
-  asan_check_add_debug_flag("object-size")
+  # The object size sanitizer has no effect on unoptimized builds on Clang,
+  # but causes warnings.
+  if((NOT USE_CLANG) OR (CMAKE_BUILD_TYPE STREQUAL ""))
+    asan_check_add_debug_flag("object-size")
+  endif()
 endif()
 
 ##### Tests #####
