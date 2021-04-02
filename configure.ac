@@ -244,7 +244,7 @@ case "$host" in
         ],[
         ],[
         have_no_undefined=yes
-        EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,--no-undefined"
+        BUILD_LDFLAGS="$BUILD_LDFLAGS -Wl,--no-undefined"
         ])
         LDFLAGS="$save_LDFLAGS"
         ;;

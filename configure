@@ -16380,7 +16380,7 @@ _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
 
         have_no_undefined=yes
-        EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,--no-undefined"
+        BUILD_LDFLAGS="$BUILD_LDFLAGS -Wl,--no-undefined"
 
 fi
 rm -f core conftest.err conftest.$ac_objext \
