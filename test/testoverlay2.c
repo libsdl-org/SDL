@@ -144,7 +144,6 @@ SDL_Texture *MooseTexture;
 SDL_Rect displayrect;
 int window_w;
 int window_h;
-SDL_Window *window;
 SDL_Renderer *renderer;
 int paused = 0;
 int i;

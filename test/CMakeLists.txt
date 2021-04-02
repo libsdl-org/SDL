@@ -107,7 +107,7 @@ endif()
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/resources_dummy.c "int main(int argc, const char **argv){ return 1; }\n")
 add_executable(SDL2_test_resoureces ${CMAKE_CURRENT_BINARY_DIR}/resources_dummy.c)
 
-file(GLOB RESOURCE_FILES *.bmp *.hex *.wav moose.dat utf8.txt)
+file(GLOB RESOURCE_FILES *.bmp *.wav moose.dat utf8.txt)
 foreach(RESOURCE_FILE ${RESOURCE_FILES})
     add_custom_command(TARGET SDL2_test_resoureces POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different ${RESOURCE_FILE} $<TARGET_FILE_DIR:SDL2_test_resoureces>)
 endforeach(RESOURCE_FILE)

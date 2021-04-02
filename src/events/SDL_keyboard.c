@@ -537,27 +537,12 @@ SDL_UCS4ToUTF8(Uint32 ch, char *dst)
         p[1] = 0x80 | (Uint8) ((ch >> 6) & 0x3F);
         p[2] = 0x80 | (Uint8) (ch & 0x3F);
         dst += 3;
-    } else if (ch <= 0x1FFFFF) {
+    } else {
         p[0] = 0xF0 | (Uint8) ((ch >> 18) & 0x07);
         p[1] = 0x80 | (Uint8) ((ch >> 12) & 0x3F);
         p[2] = 0x80 | (Uint8) ((ch >> 6) & 0x3F);
         p[3] = 0x80 | (Uint8) (ch & 0x3F);
         dst += 4;
-    } else if (ch <= 0x3FFFFFF) {
-        p[0] = 0xF8 | (Uint8) ((ch >> 24) & 0x03);
-        p[1] = 0x80 | (Uint8) ((ch >> 18) & 0x3F);
-        p[2] = 0x80 | (Uint8) ((ch >> 12) & 0x3F);
-        p[3] = 0x80 | (Uint8) ((ch >> 6) & 0x3F);
-        p[4] = 0x80 | (Uint8) (ch & 0x3F);
-        dst += 5;
-    } else {
-        p[0] = 0xFC | (Uint8) ((ch >> 30) & 0x01);
-        p[1] = 0x80 | (Uint8) ((ch >> 24) & 0x3F);
-        p[2] = 0x80 | (Uint8) ((ch >> 18) & 0x3F);
-        p[3] = 0x80 | (Uint8) ((ch >> 12) & 0x3F);
-        p[4] = 0x80 | (Uint8) ((ch >> 6) & 0x3F);
-        p[5] = 0x80 | (Uint8) (ch & 0x3F);
-        dst += 6;
     }
     return dst;
 }

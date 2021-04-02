@@ -18,30 +18,17 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-
 #include "../../SDL_internal.h"
 
-#ifndef SDL_pipewire_h_
-#define SDL_pipewire_h_
+#ifndef SDL_waylandkeyboard_h_
+#define SDL_waylandkeyboard_h_
 
-#include "../SDL_sysaudio.h"
-#include <pipewire/pipewire.h>
+extern int Wayland_InitKeyboard(_THIS);
+extern void Wayland_QuitKeyboard(_THIS);
+extern void Wayland_StartTextInput(_THIS);
+extern void Wayland_StopTextInput(_THIS);
+extern void Wayland_SetTextInputRect(_THIS, SDL_Rect *rect);
 
-/* Hidden "this" pointer for the audio functions */
-#define _THIS SDL_AudioDevice *this
-
-struct SDL_PrivateAudioData
-{
-    struct pw_thread_loop *loop;
-    struct pw_stream      *stream;
-    struct pw_context     *context;
-    struct SDL_DataQueue  *buffer;
-
-    size_t       buffer_period_size;
-    Sint32       stride; /* Bytes-per-frame */
-    SDL_atomic_t stream_initialized;
-};
-
-#endif /* SDL_pipewire_h_ */
+#endif /* SDL_waylandkeyboard_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

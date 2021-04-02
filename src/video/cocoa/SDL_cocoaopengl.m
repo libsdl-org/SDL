@@ -135,7 +135,7 @@
     if ([NSThread isMainThread]) {
         [super update];
     } else {
-        dispatch_sync(dispatch_get_main_queue(), ^{ [super update]; });
+        dispatch_async(dispatch_get_main_queue(), ^{ [super update]; });
     }
 }
 

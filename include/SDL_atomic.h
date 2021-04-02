@@ -89,25 +89,47 @@ extern "C" {
 typedef int SDL_SpinLock;
 
 /**
- * \brief Try to lock a spin lock by setting it to a non-zero value.
+ * Try to lock a spin lock by setting it to a non-zero value.
  *
- * \param lock Points to the lock.
+ * ***Please note that spinlocks are dangerous if you don't know what you're
+ * doing. Please be careful using any sort of spinlock!***
  *
- * \return SDL_TRUE if the lock succeeded, SDL_FALSE if the lock is already held.
+ * \param lock a pointer to a lock variable
+ * \returns SDL_TRUE if the lock succeeded, SDL_FALSE if the lock is already
+ *          held.
+ *
+ * \sa SDL_AtomicLock
+ * \sa SDL_AtomicUnlock
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_AtomicTryLock(SDL_SpinLock *lock);
 
 /**
- * \brief Lock a spin lock by setting it to a non-zero value.
+ * Lock a spin lock by setting it to a non-zero value.
  *
- * \param lock Points to the lock.
+ * ***Please note that spinlocks are dangerous if you don't know what you're
+ * doing. Please be careful using any sort of spinlock!***
+ *
+ * \param lock a pointer to a lock variable
+ *
+ * \sa SDL_AtomicTryLock
+ * \sa SDL_AtomicUnlock
  */
 extern DECLSPEC void SDLCALL SDL_AtomicLock(SDL_SpinLock *lock);
 
 /**
- * \brief Unlock a spin lock by setting it to 0. Always returns immediately
+ * Unlock a spin lock by setting it to 0.
  *
- * \param lock Points to the lock.
+ * Always returns immediately.
+ *
+ * ***Please note that spinlocks are dangerous if you don't know what you're
+ * doing. Please be careful using any sort of spinlock!***
+ *
+ * \param lock a pointer to a lock variable
+ *
+ * \since This function is available since SDL 2.0.0.
+ *
+ * \sa SDL_AtomicLock
+ * \sa SDL_AtomicTryLock
  */
 extern DECLSPEC void SDLCALL SDL_AtomicUnlock(SDL_SpinLock *lock);
 
@@ -216,32 +238,68 @@ typedef void (*SDL_KernelMemoryBarrierFunc)();
 typedef struct { int value; } SDL_atomic_t;
 
 /**
- * \brief Set an atomic variable to a new value if it is currently an old value.
+ * Set an atomic variable to a new value if it is
+ * currently an old value.
  *
- * \return SDL_TRUE if the atomic variable was set, SDL_FALSE otherwise.
+ * ***Note: If you don't know what this function is for, you shouldn't use
+ * it!***
  *
- * \note If you don't know what this function is for, you shouldn't use it!
-*/
+ * \param a a pointer to an SDL_atomic_t variable to be modified
+ * \param oldval the old value
+ * \param newval the new value
+ * \returns SDL_TRUE if the atomic variable was set, SDL_FALSE otherwise.
+ *
+ * \since This function is available since SDL 2.0.0.
+ *
+ * \sa SDL_AtomicCASPtr
+ * \sa SDL_AtomicGet
+ * \sa SDL_AtomicSet
+ */
 extern DECLSPEC SDL_bool SDLCALL SDL_AtomicCAS(SDL_atomic_t *a, int oldval, int newval);
 
 /**
- * \brief Set an atomic variable to a value.
+ * Set an atomic variable to a value.
  *
- * \return The previous value of the atomic variable.
+ * This function also acts as a full memory barrier.
+ *
+ * ***Note: If you don't know what this function is for, you shouldn't use
+ * it!***
+ *
+ * \param a a pointer to an SDL_atomic_t variable to be modified
+ * \param v the desired value
+ * \returns the previous value of the atomic variable.
+ *
+ * \sa SDL_AtomicGet
  */
 extern DECLSPEC int SDLCALL SDL_AtomicSet(SDL_atomic_t *a, int v);
 
 /**
- * \brief Get the value of an atomic variable
+ * Get the value of an atomic variable.
+ *
+ * ***Note: If you don't know what this function is for, you shouldn't use
+ * it!***
+ *
+ * \param a a pointer to an SDL_atomic_t variable
+ * \returns the current value of an atomic variable.
+ *
+ * \sa SDL_AtomicSet
  */
 extern DECLSPEC int SDLCALL SDL_AtomicGet(SDL_atomic_t *a);
 
 /**
- * \brief Add to an atomic variable.
+ * Add to an atomic variable.
  *
- * \return The previous value of the atomic variable.
+ * This function also acts as a full memory barrier.
  *
- * \note This same style can be used for any number operation
+ * ***Note: If you don't know what this function is for, you shouldn't use
+ * it!***
+ *
+ * \param a a pointer to an SDL_atomic_t variable to be modified
+ * \param v the desired value to add
+ * \returns the previous value of the atomic variable.
+ *
+ * \sa SDL_AtomicDecRef
+ * \sa SDL_AtomicIncRef
  */
 extern DECLSPEC int SDLCALL SDL_AtomicAdd(SDL_atomic_t *a, int v);
 
@@ -263,23 +321,51 @@ extern DECLSPEC int SDLCALL SDL_AtomicAdd(SDL_atomic_t *a, int v);
 #endif
 
 /**
- * \brief Set a pointer to a new value if it is currently an old value.
+ * Set a pointer to a new value if it is currently an old
+ * value.
  *
- * \return SDL_TRUE if the pointer was set, SDL_FALSE otherwise.
+ * ***Note: If you don't know what this function is for, you shouldn't use
+ * it!***
  *
- * \note If you don't know what this function is for, you shouldn't use it!
-*/
+ * \param a a pointer to a pointer
+ * \param oldval the old pointer value
+ * \param newval the new pointer value
+ * \returns SDL_TRUE if the pointer was set, SDL_FALSE otherwise.
+ *
+ * \since This function is available since SDL 2.0.0.
+ *
+ * \sa SDL_AtomicCAS
+ * \sa SDL_AtomicGetPtr
+ * \sa SDL_AtomicSetPtr
+ */
 extern DECLSPEC SDL_bool SDLCALL SDL_AtomicCASPtr(void **a, void *oldval, void *newval);
 
 /**
- * \brief Set a pointer to a value atomically.
+ * Set a pointer to a value atomically.
  *
- * \return The previous value of the pointer.
+ * ***Note: If you don't know what this function is for, you shouldn't use
+ * it!***
+ *
+ * \param a a pointer to a pointer
+ * \param v the desired pointer value
+ * \returns the previous value of the pointer.
+ *
+ * \sa SDL_AtomicCASPtr
+ * \sa SDL_AtomicGetPtr
  */
 extern DECLSPEC void* SDLCALL SDL_AtomicSetPtr(void **a, void* v);
 
 /**
- * \brief Get the value of a pointer atomically.
+ * Get the value of a pointer atomically.
+ *
+ * ***Note: If you don't know what this function is for, you shouldn't use
+ * it!***
+ *
+ * \param a a pointer to a pointer
+ * \returns the current value of a pointer.
+ *
+ * \sa SDL_AtomicCASPtr
+ * \sa SDL_AtomicSetPtr
  */
 extern DECLSPEC void* SDLCALL SDL_AtomicGetPtr(void **a);
 

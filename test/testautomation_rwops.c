@@ -88,8 +88,8 @@ RWopsTearDown(void *arg)
  * @brief Makes sure parameters work properly. Local helper function.
  *
  * \sa
- * https://github.com/libsdl-org/SDL/wiki/SDL_RWseek
- * https://github.com/libsdl-org/SDL/wiki/SDL_RWread
+ * http://wiki.libsdl.org/SDL_RWseek
+ * http://wiki.libsdl.org/SDL_RWread
  */
 void
 _testGenericRWopsValidations(SDL_RWops *rw, int write)
@@ -168,7 +168,7 @@ _testGenericRWopsValidations(SDL_RWops *rw, int write)
 /* !
  * Negative test for SDL_RWFromFile parameters
  *
- * \sa https://github.com/libsdl-org/SDL/wiki/SDL_RWFromFile
+ * \sa http://wiki.libsdl.org/SDL_RWFromFile
  *
  */
 int
@@ -215,8 +215,8 @@ rwops_testParamNegative (void)
 /**
  * @brief Tests opening from memory.
  *
- * \sa https://github.com/libsdl-org/SDL/wiki/SDL_RWFromMem
- * \sa https://github.com/libsdl-org/SDL/wiki/SDL_RWClose
+ * \sa http://wiki.libsdl.org/SDL_RWFromMem
+ * \sa http://wiki.libsdl.org/SDL_RWClose
  */
 int
 rwops_testMem (void)
@@ -255,8 +255,8 @@ rwops_testMem (void)
  * @brief Tests opening from memory.
  *
  * \sa
- * https://github.com/libsdl-org/SDL/wiki/SDL_RWFromConstMem
- * https://github.com/libsdl-org/SDL/wiki/SDL_RWClose
+ * http://wiki.libsdl.org/SDL_RWFromConstMem
+ * http://wiki.libsdl.org/SDL_RWClose
  */
 int
 rwops_testConstMem (void)
@@ -291,8 +291,8 @@ rwops_testConstMem (void)
  * @brief Tests reading from file.
  *
  * \sa
- * https://github.com/libsdl-org/SDL/wiki/SDL_RWFromFile
- * https://github.com/libsdl-org/SDL/wiki/SDL_RWClose
+ * http://wiki.libsdl.org/SDL_RWFromFile
+ * http://wiki.libsdl.org/SDL_RWClose
  */
 int
 rwops_testFileRead(void)
@@ -338,8 +338,8 @@ rwops_testFileRead(void)
  * @brief Tests writing from file.
  *
  * \sa
- * https://github.com/libsdl-org/SDL/wiki/SDL_RWFromFile
- * https://github.com/libsdl-org/SDL/wiki/SDL_RWClose
+ * http://wiki.libsdl.org/SDL_RWFromFile
+ * http://wiki.libsdl.org/SDL_RWClose
  */
 int
 rwops_testFileWrite(void)
@@ -386,8 +386,8 @@ rwops_testFileWrite(void)
  * @brief Tests reading from file handle
  *
  * \sa
- * https://github.com/libsdl-org/SDL/wiki/SDL_RWFromFP
- * https://github.com/libsdl-org/SDL/wiki/SDL_RWClose
+ * http://wiki.libsdl.org/SDL_RWFromFP
+ * http://wiki.libsdl.org/SDL_RWClose
  *
  */
 int
@@ -436,8 +436,8 @@ rwops_testFPRead(void)
  * @brief Tests writing to file handle
  *
  * \sa
- * https://github.com/libsdl-org/SDL/wiki/SDL_RWFromFP
- * https://github.com/libsdl-org/SDL/wiki/SDL_RWClose
+ * http://wiki.libsdl.org/SDL_RWFromFP
+ * http://wiki.libsdl.org/SDL_RWClose
  *
  */
 int
@@ -484,8 +484,8 @@ rwops_testFPWrite(void)
 /**
  * @brief Tests alloc and free RW context.
  *
- * \sa https://github.com/libsdl-org/SDL/wiki/SDL_AllocRW
- * \sa https://github.com/libsdl-org/SDL/wiki/SDL_FreeRW
+ * \sa http://wiki.libsdl.org/SDL_AllocRW
+ * \sa http://wiki.libsdl.org/SDL_FreeRW
  */
 int
 rwops_testAllocFree (void)
@@ -511,8 +511,8 @@ rwops_testAllocFree (void)
 /**
  * @brief Compare memory and file reads
  *
- * \sa https://github.com/libsdl-org/SDL/wiki/SDL_RWFromMem
- * \sa https://github.com/libsdl-org/SDL/wiki/SDL_RWFromFile
+ * \sa http://wiki.libsdl.org/SDL_RWFromMem
+ * \sa http://wiki.libsdl.org/SDL_RWFromFile
  */
 int
 rwops_testCompareRWFromMemWithRWFromFile(void)
@@ -578,10 +578,10 @@ rwops_testCompareRWFromMemWithRWFromFile(void)
  * @brief Tests writing and reading from file using endian aware functions.
  *
  * \sa
- * https://github.com/libsdl-org/SDL/wiki/SDL_RWFromFile
- * https://github.com/libsdl-org/SDL/wiki/SDL_RWClose
- * https://github.com/libsdl-org/SDL/wiki/SDL_ReadBE16
- * https://github.com/libsdl-org/SDL/wiki/SDL_WriteBE16
+ * http://wiki.libsdl.org/SDL_RWFromFile
+ * http://wiki.libsdl.org/SDL_RWClose
+ * http://wiki.libsdl.org/SDL_ReadBE16
+ * http://wiki.libsdl.org/SDL_WriteBE16
  */
 int
 rwops_testFileWriteReadEndian(void)

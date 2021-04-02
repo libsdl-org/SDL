@@ -18,30 +18,58 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-
 #include "../../SDL_internal.h"
 
-#ifndef SDL_pipewire_h_
-#define SDL_pipewire_h_
+#if SDL_VIDEO_DRIVER_WAYLAND
 
-#include "../SDL_sysaudio.h"
-#include <pipewire/pipewire.h>
+#include "../SDL_sysvideo.h"
+#include "SDL_waylandvideo.h"
 
-/* Hidden "this" pointer for the audio functions */
-#define _THIS SDL_AudioDevice *this
-
-struct SDL_PrivateAudioData
+int
+Wayland_InitKeyboard(_THIS)
 {
-    struct pw_thread_loop *loop;
-    struct pw_stream      *stream;
-    struct pw_context     *context;
-    struct SDL_DataQueue  *buffer;
+#ifdef SDL_USE_IME
+    SDL_IME_Init();
+#endif
 
-    size_t       buffer_period_size;
-    Sint32       stride; /* Bytes-per-frame */
-    SDL_atomic_t stream_initialized;
-};
+    return 0;
+}
 
-#endif /* SDL_pipewire_h_ */
+void
+Wayland_QuitKeyboard(_THIS)
+{
+#ifdef SDL_USE_IME
+    SDL_IME_Quit();
+#endif
+}
+
+void
+Wayland_StartTextInput(_THIS)
+{
+    /* No-op */
+}
+
+void
+Wayland_StopTextInput(_THIS)
+{
+#ifdef SDL_USE_IME
+    SDL_IME_Reset();
+#endif
+}
+
+void
+Wayland_SetTextInputRect(_THIS, SDL_Rect *rect)
+{
+    if (!rect) {
+        SDL_InvalidParamError("rect");
+        return;
+    }
+       
+#ifdef SDL_USE_IME
+    SDL_IME_UpdateTextRect(rect);
+#endif
+}
+
+#endif /* SDL_VIDEO_DRIVER_WAYLAND */
 
 /* vi: set ts=4 sw=4 expandtab: */

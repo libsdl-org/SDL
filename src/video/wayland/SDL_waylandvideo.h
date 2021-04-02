@@ -40,6 +40,7 @@
 #include "wayland-util.h"
 
 #include "../../core/linux/SDL_dbus.h"
+#include "../../core/linux/SDL_ime.h"
 
 struct xkb_context;
 struct SDL_WaylandInput;

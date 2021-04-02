@@ -15,5 +15,5 @@ If you are building SDL via configure, you will need to run autogen.sh
 before running configure.
 
 There is a web interface to the Git repository at:
-	https://github.com/libsdl-org/SDL/
+	http://github.com/libsdl-org/SDL/
 

@@ -29,7 +29,7 @@ SDL_Surface *surface;
 int done;
 
 void
-DrawChessBoard(SDL_Renderer * renderer)
+DrawChessBoard()
 {
     int row = 0,column = 0,x = 0;
     SDL_Rect rect, darea;
@@ -90,7 +90,7 @@ loop()
         }
     }
 
-    DrawChessBoard(renderer);
+    DrawChessBoard();
 
     /* Got everything on rendering surface,
        now Update the drawing image on window screen */

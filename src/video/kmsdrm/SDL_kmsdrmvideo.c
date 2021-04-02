@@ -64,6 +64,10 @@
 #define KMSDRM_DRI_CARDPATHFMT "/dev/dri/card%d"
 #endif
 
+#ifndef EGL_PLATFORM_GBM_MESA
+#define EGL_PLATFORM_GBM_MESA 0x31D7
+#endif
+
 static int
 check_modestting(int devindex)
 {
@@ -469,7 +473,7 @@ uint32_t width, uint32_t height, uint32_t refresh_rate){
     target.refresh_rate = refresh_rate;
     target.driverdata = 0; /* Initialize to 0 */
 
-    if (!SDL_GetClosestDisplayMode(0, &target, &closest)) {
+    if (!SDL_GetClosestDisplayMode(SDL_atoi(display->name), &target, &closest)) {
         return NULL;
     } else {
         SDL_DisplayModeData *modedata = (SDL_DisplayModeData *)closest.driverdata;
@@ -512,7 +516,7 @@ void KMSDRM_DeinitDisplays (_THIS) {
 }
 
 /* Gets a DRM connector, builds an SDL_Display with it, and adds it to the
-   list of SDL Displays.  */
+   list of SDL Displays in _this->displays[]  */
 void KMSDRM_AddDisplay (_THIS, drmModeConnector *connector, drmModeRes *resources) {
 
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
@@ -532,16 +536,15 @@ void KMSDRM_AddDisplay (_THIS, drmModeConnector *connector, drmModeRes *resource
 
     /* Initialize some of the members of the new display's driverdata
        to sane values. */
-    dispdata->gbm_init = SDL_FALSE;
     dispdata->modeset_pending = SDL_FALSE;
     dispdata->cursor_bo = NULL;
 
-    /* Since we create and show the default cursor on KMSDRM_InitMouse() and
-       we call KMSDRM_InitMouse() everytime we create a new window, we have
-       to be sure to create and show the default cursor only the first time.
+    /* Since we create and show the default cursor on KMSDRM_InitMouse(),
+       and we call KMSDRM_InitMouse() when we create a window, we have to know
+       if the display used by the window already has a default cursor or not.
        If we don't, new default cursors would stack up on mouse->cursors and SDL
        would have to hide and delete them at quit, not to mention the memory leak... */
-    dispdata->set_default_cursor_pending = SDL_TRUE;
+    dispdata->default_cursor_init = SDL_FALSE;
 
     /* Try to find the connector's current encoder */
     for (i = 0; i < resources->count_encoders; i++) {
@@ -719,7 +722,7 @@ int KMSDRM_InitDisplays (_THIS) {
                an SDL Display representing it. KMSDRM_AddDisplay() is purposely void,
                so if it fails (no encoder for connector, no valid video mode for
                connector etc...) we can keep looking for connected connectors. */
-            KMSDRM_AddDisplay (_this, connector, resources);
+            KMSDRM_AddDisplay(_this, connector, resources);
         }
         else {
             /* If it's not, free it now. */
@@ -787,7 +790,7 @@ KMSDRM_GBMInit (_THIS, SDL_DisplayData *dispdata)
         ret = SDL_SetError("Couldn't create gbm device.");
     }
 
-    dispdata->gbm_init = SDL_TRUE;
+    viddata->gbm_init = SDL_TRUE;
 
     return ret;
 }
@@ -811,7 +814,7 @@ KMSDRM_GBMDeinit (_THIS, SDL_DisplayData *dispdata)
         viddata->drm_fd = -1;
     }
 
-    dispdata->gbm_init = SDL_FALSE;
+    viddata->gbm_init = SDL_FALSE;
 }
 
 void
@@ -955,13 +958,14 @@ KMSDRM_VideoInit(_THIS)
     SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "KMSDRM_VideoInit()");
 
     viddata->video_init = SDL_FALSE;
+    viddata->gbm_init = SDL_FALSE;
 
     /* Get KMSDRM resources info and store what we need. Getting and storing
        this info isn't a problem for VK compatibility.
        For VK-incompatible initializations we have KMSDRM_GBMInit(), which is
        called on window creation, and only when we know it's not a VK window. */
     if (KMSDRM_InitDisplays(_this)) {
-        ret = SDL_SetError("error getting KMS/DRM information");
+        ret = SDL_SetError("error getting KMSDRM displays information");
     }
 
 #ifdef SDL_INPUT_LINUXEV
@@ -1011,7 +1015,7 @@ KMSDRM_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
         SDL_DisplayModeData *modedata = SDL_calloc(1, sizeof(SDL_DisplayModeData));
 
         if (modedata) {
-          modedata->mode_index = i;
+            modedata->mode_index = i;
         }
 
         mode.w = conn->modes[i].hdisplay;
@@ -1071,7 +1075,7 @@ KMSDRM_DestroyWindow(_THIS, SDL_Window *window)
 {
     SDL_WindowData *windata = (SDL_WindowData *) window->driverdata;
     SDL_DisplayData *dispdata = (SDL_DisplayData *) SDL_GetDisplayForWindow(window)->driverdata;
-    SDL_VideoData *viddata = windata->viddata;
+    SDL_VideoData *viddata;
     SDL_bool is_vulkan = window->flags & SDL_WINDOW_VULKAN; /* Is this a VK window? */
     unsigned int i, j;
 
@@ -1079,26 +1083,32 @@ KMSDRM_DestroyWindow(_THIS, SDL_Window *window)
         return;
     }
 
-    if ( !is_vulkan && dispdata->gbm_init ) {
+    viddata = windata->viddata;
 
-        /* Destroy the window display's cursor GBM BO. */
+    if ( !is_vulkan && viddata->gbm_init) {
+
+        /* Destroy cursor GBM BO of the display of this window. */
         KMSDRM_DestroyCursorBO(_this, SDL_GetDisplayForWindow(window));
 
         /* Destroy GBM surface and buffers. */
         KMSDRM_DestroySurfaces(_this, window);
 
-        /* Unload EGL library. */
-        if (_this->egl_data) {
-            SDL_EGL_UnloadLibrary(_this);
-        }
+        /* Unload library and deinit GBM, but only if this is the last window.
+           Note that this is the right comparision because num_windows could be 1
+           if there is a complete window, or 0 if we got here from SDL_CreateWindow()
+           because KMSDRM_CreateWindow() returned an error so the window wasn't
+           added to the windows list. */
+        if (viddata->num_windows <= 1) {
 
-        /* Unload GL library. */
-        if (_this->gl_config.driver_loaded) {
-            SDL_GL_UnloadLibrary();
-        }
+	    /* Unload EGL/GL library and free egl_data.  */
+	    if (_this->egl_data) {
+		SDL_EGL_UnloadLibrary(_this);
+		_this->gl_config.driver_loaded = 0;
+	    }
 
-        /* Free display plane, and destroy GBM device. */
-        KMSDRM_GBMDeinit(_this, dispdata);
+	    /* Free display plane, and destroy GBM device. */
+	    KMSDRM_GBMDeinit(_this, dispdata);
+	}
 
     } else {
 
@@ -1152,8 +1162,7 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
     /* Allocate window internal data */
     windata = (SDL_WindowData *)SDL_calloc(1, sizeof(SDL_WindowData));
     if (!windata) {
-        ret = SDL_OutOfMemory();
-        goto cleanup;
+        return(SDL_OutOfMemory());
     }
 
     /* Setup driver data for this window */
@@ -1162,58 +1171,55 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
 
     if (!is_vulkan && !vulkan_mode) { /* NON-Vulkan block. */
 
-        if (!(dispdata->gbm_init)) {
+        /* Maybe you didn't ask for an OPENGL window, but that's what you will get.
+           See following comments on why. */
+        window->flags |= SDL_WINDOW_OPENGL;
 
-            /* In order for the GL_CreateRenderer() and GL_LoadFunctions() calls
-               in SDL_CreateWindow succeed (no doing so causes a windo re-creation),
-               At the end of this block, we must have: 
-               -Marked the window as being OPENGL
-               -Loaded the GL library (which can't be loaded until the GBM
-                device has been created) because SDL_EGL_Library() function uses it.
+        if (!(viddata->gbm_init)) {
+
+            /* After SDL_CreateWindow, most SDL2 programs will do SDL_CreateRenderer(),
+               which will in turn call GL_CreateRenderer() or GLES2_CreateRenderer().
+               In order for the GL_CreateRenderer() or GLES2_CreateRenderer() call to
+               succeed without an unnecessary window re-creation, we must: 
+               -Mark the window as being OPENGL
+               -Load the GL library (which can't be done until the GBM device has been
+                created, so we have to do it here instead of doing it on VideoInit())
+                and mark it as loaded by setting gl_config.driver_loaded to 1.
+               So if you ever see KMSDRM_CreateWindow() to be called two times in tests,
+               don't be shy to debug GL_CreateRenderer() or GLES2_CreateRenderer()
+               to find out why!
              */
-
-            /* Maybe you didn't ask for an OPENGL window, but that's what you will get.
-               See previous comment on why. */
-            window->flags |= SDL_WINDOW_OPENGL;
 
             /* Reopen FD, create gbm dev, setup display plane, etc,.
                but only when we come here for the first time,
                and only if it's not a VK window. */
             if ((ret = KMSDRM_GBMInit(_this, dispdata))) {
-                goto cleanup;
+                return (SDL_SetError("Can't init GBM on window creation."));
             }
-
-            /* Manually load the GL library. KMSDRM_EGL_LoadLibrary() has already
-               been called by SDL_CreateWindow() but we don't do anything there,
-               precisely to be able to load it here.
-               If we let SDL_CreateWindow() load the lib, it will be loaded
-               before we call KMSDRM_GBMInit(), causing GLES programs to fail. */
-            if (!_this->egl_data) {
-                egl_display = (NativeDisplayType)((SDL_VideoData *)_this->driverdata)->gbm_dev;
-                if (SDL_EGL_LoadLibrary(_this, NULL, egl_display, EGL_PLATFORM_GBM_MESA)) {
-                    goto cleanup;
-                }
-
-                if (SDL_GL_LoadLibrary(NULL) < 0) {
-                    goto cleanup;
-                }
-            }
-
-            /* Create the cursor BO for the display of this window,
-               now that we know this is not a VK window. */
-            KMSDRM_CreateCursorBO(display);
-
-            /* Create and set the default cursor now that we know
-               this is not a VK window. */
-            KMSDRM_InitMouse(_this, display);
-
-            /* When we destroy a window, we remove the cursor buffer from
-               the cursor plane and destroy the cursor GBM BO, but SDL expects
-               that we keep showing the visible cursors bewteen window
-               destruction/creation cycles. So we must manually re-show the
-               visible cursors, if necessary, when we create a window. */
-            KMSDRM_InitCursor();
         }
+
+	/* Manually load the GL library. KMSDRM_EGL_LoadLibrary() has already
+	   been called by SDL_CreateWindow() but we don't do anything there,
+	   out KMSDRM_EGL_LoadLibrary() is a dummy precisely to be able to load it here.
+	   If we let SDL_CreateWindow() load the lib, it would be loaded
+	   before we call KMSDRM_GBMInit(), causing all GLES programs to fail. */
+	if (!_this->egl_data) {
+	    egl_display = (NativeDisplayType)((SDL_VideoData *)_this->driverdata)->gbm_dev;
+	    if (SDL_EGL_LoadLibrary(_this, NULL, egl_display, EGL_PLATFORM_GBM_MESA)) {
+                return (SDL_SetError("Can't load EGL/GL library on window creation."));
+	    }
+
+	    _this->gl_config.driver_loaded = 1;
+
+	}
+
+	/* Create the cursor BO for the display of this window,
+	   now that we know this is not a VK window. */
+	KMSDRM_CreateCursorBO(display);
+
+	/* Create and set the default cursor for the display
+           of this window, now that we know this is not a VK window. */
+	KMSDRM_InitMouse(_this, display);
 
         /* The FULLSCREEN flags are cut out from window->flags at this point,
            so we can't know if a window is fullscreen or not, hence all windows
@@ -1240,7 +1246,7 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
         /* Create the window surfaces with the size we have just chosen.
            Needs the window diverdata in place. */
         if ((ret = KMSDRM_CreateSurfaces(_this, window))) {
-            goto cleanup;
+            return (SDL_SetError("Can't window GBM/EGL surfaces on window creation."));
         }
 
         /* Tell app about the size we have determined for the window,
@@ -1260,8 +1266,7 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
         viddata->max_windows = new_max_windows;
 
         if (!viddata->windows) {
-            ret = SDL_OutOfMemory();
-            goto cleanup;
+            return (SDL_OutOfMemory());
         }
     }
 
@@ -1270,16 +1275,14 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
     /* If we have just created a Vulkan window, establish that we are in Vulkan mode now. */
     viddata->vulkan_mode = is_vulkan;
 
-    /* Focus on the newly created window */
+    /* Focus on the newly created window.
+       SDL_SetMouseFocus() also takes care of calling KMSDRM_ShowCursor() if necessary. */
     SDL_SetMouseFocus(window);
     SDL_SetKeyboardFocus(window);
 
-cleanup:
-
-    if (ret) {
-        /* Allocated windata will be freed in KMSDRM_DestroyWindow */
-        KMSDRM_DestroyWindow(_this, window);
-    }
+    /* Allocated windata will be freed in KMSDRM_DestroyWindow,
+       and KMSDRM_DestroyWindow() will be called by SDL_CreateWindow()
+       if we return error on any of the previous returns of the function. */ 
     return ret;
 }
 
@@ -1458,7 +1461,7 @@ KMSDRM_GetWindowWMInfo(_THIS, SDL_Window * window, struct SDL_SysWMinfo *info)
      const Uint32 version = SDL_VERSIONNUM((Uint32)info->version.major,
                                            (Uint32)info->version.minor,
                                            (Uint32)info->version.patch);
- 
+
      if (version < SDL_VERSIONNUM(2, 0, 15)) {
          SDL_SetError("Version must be 2.0.15 or newer");
          return SDL_FALSE;
@@ -1468,7 +1471,7 @@ KMSDRM_GetWindowWMInfo(_THIS, SDL_Window * window, struct SDL_SysWMinfo *info)
      info->info.kmsdrm.dev_index = viddata->devindex;
      info->info.kmsdrm.drm_fd = viddata->drm_fd;
      info->info.kmsdrm.gbm_dev = viddata->gbm_dev;
- 
+
      return SDL_TRUE;
 }
 

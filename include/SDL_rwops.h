@@ -182,77 +182,192 @@ extern DECLSPEC void SDLCALL SDL_FreeRW(SDL_RWops * area);
 #define RW_SEEK_END 2       /**< Seek relative to the end of data */
 
 /**
- *  Return the size of the file in this rwops, or -1 if unknown
+ * Use this macro to get the size of the data stream in an SDL_RWops.
+ *
+ * \param context the SDL_RWops to get the size of the data stream from
+ * \returns the size of the data stream in the SDL_RWops on success, -1 if
+ *          unknown or a negative error code on failure; call SDL_GetError()
+ *          for more information.
+ *
+ * \since This function is available since SDL 2.0.0.
  */
 extern DECLSPEC Sint64 SDLCALL SDL_RWsize(SDL_RWops *context);
 
 /**
- *  Seek to \c offset relative to \c whence, one of stdio's whence values:
- *  RW_SEEK_SET, RW_SEEK_CUR, RW_SEEK_END
+ * Seek within an SDL_RWops data stream.
  *
- *  \return the final offset in the data stream, or -1 on error.
+ * This function seeks to byte `offset`, relative to `whence`.
+ *
+ * `whence` may be any of the following values:
+ *
+ * - `RW_SEEK_SET`: seek from the beginning of data
+ * - `RW_SEEK_CUR`: seek relative to current read point
+ * - `RW_SEEK_END`: seek relative to the end of data
+ *
+ * If this stream can not seek, it will return -1.
+ *
+ * SDL_RWseek() is actually a wrapper function that calls the SDL_RWops's
+ * `seek` method appropriately, to simplify application development.
+ *
+ * \param context a pointer to an SDL_RWops structure
+ * \param offset an offset in bytes, relative to **whence** location; can be
+ *               negative
+ * \param whence any of `RW_SEEK_SET`, `RW_SEEK_CUR`, `RW_SEEK_END`
+ * \returns the final offset in the data stream after the seek or -1 on error.
+ *
+ * \sa SDL_RWclose
+ * \sa SDL_RWFromConstMem
+ * \sa SDL_RWFromFile
+ * \sa SDL_RWFromFP
+ * \sa SDL_RWFromMem
+ * \sa SDL_RWread
+ * \sa SDL_RWtell
+ * \sa SDL_RWwrite
  */
 extern DECLSPEC Sint64 SDLCALL SDL_RWseek(SDL_RWops *context,
                                           Sint64 offset, int whence);
 
 /**
- *  Return the current offset in the data stream, or -1 on error.
+ * Determine the current read/write offset in an SDL_RWops data stream.
+ *
+ * SDL_RWtell is actually a wrapper function that calls the SDL_RWops's
+ * `seek` method, with an offset of 0 bytes from `RW_SEEK_CUR`, to simplify
+ * application development.
+ *
+ * \param context a SDL_RWops data stream object from which to get the current
+ *                offset
+ * \returns the current offset in the stream, or -1 if the information can not
+ *          be determined.
+ *
+ * \sa SDL_RWclose
+ * \sa SDL_RWFromConstMem
+ * \sa SDL_RWFromFile
+ * \sa SDL_RWFromFP
+ * \sa SDL_RWFromMem
+ * \sa SDL_RWread
+ * \sa SDL_RWseek
+ * \sa SDL_RWwrite
  */
 extern DECLSPEC Sint64 SDLCALL SDL_RWtell(SDL_RWops *context);
 
 /**
- *  Read up to \c maxnum objects each of size \c size from the data
- *  stream to the area pointed at by \c ptr.
+ * Read from a data source.
  *
- *  \return the number of objects read, or 0 at error or end of file.
+ * This function reads up to `maxnum` objects each of size `size` from the
+ * data source to the area pointed at by `ptr`. This function may read less
+ * objects than requested. It will return zero when there has been an error or
+ * the data stream is completely read.
+ *
+ * SDL_RWread() is actually a function wrapper that calls the SDL_RWops's
+ * `read` method appropriately, to simplify application development.
+ *
+ * \param context a pointer to an SDL_RWops structure
+ * \param ptr a pointer to a buffer to read data into
+ * \param size the size of each object to read, in bytes
+ * \param maxnum the maximum number of objects to be read
+ * \returns the number of objects read, or 0 at error or end of file; call
+ *          SDL_GetError() for more information.
+ *
+ * \sa SDL_RWclose
+ * \sa SDL_RWFromConstMem
+ * \sa SDL_RWFromFile
+ * \sa SDL_RWFromFP
+ * \sa SDL_RWFromMem
+ * \sa SDL_RWseek
+ * \sa SDL_RWwrite
  */
 extern DECLSPEC size_t SDLCALL SDL_RWread(SDL_RWops *context,
-                                          void *ptr, size_t size, size_t maxnum);
+                                          void *ptr, size_t size,
+                                          size_t maxnum);
 
 /**
- *  Write exactly \c num objects each of size \c size from the area
- *  pointed at by \c ptr to data stream.
+ * Write to an SDL_RWops data stream.
  *
- *  \return the number of objects written, or 0 at error or end of file.
+ * This function writes exactly `num` objects each of size `size` from the
+ * area pointed at by `ptr` to the stream. If this fails for any reason,
+ * it'll return less than `num` to demonstrate how far the write progressed.
+ * On success, it returns `num`.
+ *
+ * SDL_RWwrite is actually a function wrapper that calls the SDL_RWops's
+ * `write` method appropriately, to simplify application development.
+ *
+ * \param context a pointer to an SDL_RWops structure
+ * \param ptr a pointer to a buffer containing data to write
+ * \param size the size of an object to write, in bytes
+ * \param num the number of objects to write
+ * \returns the number of objects written, which will be less than **num** on
+ *          error; call SDL_GetError() for more information.
+ *
+ * \sa SDL_RWclose
+ * \sa SDL_RWFromConstMem
+ * \sa SDL_RWFromFile
+ * \sa SDL_RWFromFP
+ * \sa SDL_RWFromMem
+ * \sa SDL_RWread
+ * \sa SDL_RWseek
  */
 extern DECLSPEC size_t SDLCALL SDL_RWwrite(SDL_RWops *context,
-                                           const void *ptr, size_t size, size_t num);
+                                           const void *ptr, size_t size,
+                                           size_t num);
 
 /**
- *  Close and free an allocated SDL_RWops structure.
+ * Close and free an allocated SDL_RWops structure.
  *
- *  \return 0 if successful or -1 on write error when flushing data.
+ * SDL_RWclose() closes and cleans up the SDL_RWops stream. It releases any
+ * resources used by the stream and frees the SDL_RWops itself with
+ * SDL_FreeRW(). This returns 0 on success, or -1 if the stream failed to
+ * flush to its output (e.g. to disk).
+ *
+ * Note that if this fails to flush the stream to disk, this function reports
+ * an error, but the SDL_RWops is still invalid once this function returns.
+ *
+ * SDL_RWclose() is actually a macro that calls the SDL_RWops's `close`
+ * method appropriately, to simplify application development.
+ *
+ * \param context SDL_RWops structure to close
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \sa SDL_RWFromConstMem
+ * \sa SDL_RWFromFile
+ * \sa SDL_RWFromFP
+ * \sa SDL_RWFromMem
+ * \sa SDL_RWread
+ * \sa SDL_RWseek
+ * \sa SDL_RWwrite
  */
 extern DECLSPEC int SDLCALL SDL_RWclose(SDL_RWops *context);
 
 /**
- *  Load all the data from an SDL data stream.
+ * Load all the data from an SDL data stream.
  *
- *  The data is allocated with a zero byte at the end (null terminated)
+ * The data is allocated with a zero byte at the end (null terminated) for
+ * convenience. This extra byte is not included in the value reported via
+ * `datasize`.
  *
- *  If \c datasize is not NULL, it is filled with the size of the data read.
+ * The data should be freed with SDL_free().
  *
- *  If \c freesrc is non-zero, the stream will be closed after being read.
- *
- *  The data should be freed with SDL_free().
- *
- *  \return the data, or NULL if there was an error.
+ * \param src the SDL_RWops to read all available data from
+ * \param datasize if not NULL, will store the number of bytes read
+ * \param freesrc if non-zero, calls SDL_RWclose() on `src` before returning
+ * \returns the data, or NULL if there was an error.
  */
-extern DECLSPEC void *SDLCALL SDL_LoadFile_RW(SDL_RWops * src, size_t *datasize,
-                                                    int freesrc);
+extern DECLSPEC void *SDLCALL SDL_LoadFile_RW(SDL_RWops *src,
+                                              size_t *datasize,
+                                              int freesrc);
 
 /**
- *  Load an entire file.
+ * Load all the data from a file path.
  *
- *  The data is allocated with a zero byte at the end (null terminated)
+ * The data is allocated with a zero byte at the end (null terminated) for
+ * convenience. This extra byte is not included in the value reported via
+ * `datasize`.
  *
- *  If \c datasize is not NULL, it is filled with the size of the data read.
+ * The data should be freed with SDL_free().
  *
- *  If \c freesrc is non-zero, the stream will be closed after being read.
- *
- *  The data should be freed with SDL_free().
- *
- *  \return the data, or NULL if there was an error.
+ * \param file the path to read all available data from
+ * \param datasize if not NULL, will store the number of bytes read
+ * \returns the data, or NULL if there was an error.
  */
 extern DECLSPEC void *SDLCALL SDL_LoadFile(const char *file, size_t *datasize);
 

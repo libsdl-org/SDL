@@ -477,7 +477,6 @@ video_getClosestDisplayModeRandomResolution(void *arg)
 {
   SDL_DisplayMode target;
   SDL_DisplayMode closest;
-  SDL_DisplayMode* dResult;
   int displayNum;
   int i;
   int variation;
@@ -500,7 +499,7 @@ video_getClosestDisplayModeRandomResolution(void *arg)
       target.driverdata = 0;
 
       /* Make call; may or may not find anything, so don't validate any further */
-      dResult = SDL_GetClosestDisplayMode(i, &target, &closest);
+      SDL_GetClosestDisplayMode(i, &target, &closest);
       SDLTest_AssertPass("Call to SDL_GetClosestDisplayMode(target=random/variation%d)", variation);
     }
   }
@@ -511,7 +510,7 @@ video_getClosestDisplayModeRandomResolution(void *arg)
 /**
  * @brief Tests call to SDL_GetWindowBrightness
  *
-* @sa https://github.com/libsdl-org/SDL/wiki/SDL_GetWindowBrightness
+* @sa http://wiki.libsdl.org/SDL_GetWindowBrightness
  */
 int
 video_getWindowBrightness(void *arg)
@@ -537,7 +536,7 @@ video_getWindowBrightness(void *arg)
 /**
  * @brief Tests call to SDL_GetWindowBrightness with invalid input
  *
-* @sa https://github.com/libsdl-org/SDL/wiki/SDL_GetWindowBrightness
+* @sa http://wiki.libsdl.org/SDL_GetWindowBrightness
  */
 int
 video_getWindowBrightnessNegative(void *arg)
@@ -566,7 +565,7 @@ video_getWindowBrightnessNegative(void *arg)
 /**
  * @brief Tests call to SDL_GetWindowDisplayMode
  *
- * @sa https://github.com/libsdl-org/SDL/wiki/SDL_GetWindowDisplayMode
+ * @sa http://wiki.libsdl.org/SDL_GetWindowDisplayMode
  */
 int
 video_getWindowDisplayMode(void *arg)
@@ -620,7 +619,7 @@ void _checkInvalidWindowError()
 /**
  * @brief Tests call to SDL_GetWindowDisplayMode with invalid input
  *
- * @sa https://github.com/libsdl-org/SDL/wiki/SDL_GetWindowDisplayMode
+ * @sa http://wiki.libsdl.org/SDL_GetWindowDisplayMode
  */
 int
 video_getWindowDisplayModeNegative(void *arg)
@@ -664,7 +663,7 @@ video_getWindowDisplayModeNegative(void *arg)
 /**
  * @brief Tests call to SDL_GetWindowGammaRamp
  *
- * @sa https://github.com/libsdl-org/SDL/wiki/SDL_GetWindowGammaRamp
+ * @sa http://wiki.libsdl.org/SDL_GetWindowGammaRamp
  */
 int
 video_getWindowGammaRamp(void *arg)
@@ -725,7 +724,7 @@ video_getWindowGammaRamp(void *arg)
 /**
  * @brief Tests call to SDL_GetWindowGammaRamp with invalid input
  *
-* @sa https://github.com/libsdl-org/SDL/wiki/SDL_GetWindowGammaRamp
+* @sa http://wiki.libsdl.org/SDL_GetWindowGammaRamp
  */
 int
 video_getWindowGammaRampNegative(void *arg)
@@ -822,15 +821,15 @@ _setAndCheckWindowKeyboardGrabState(SDL_Window* window, SDL_bool desiredState)
 /**
  * @brief Tests keyboard and mouse grab support
  *
- * @sa https://github.com/libsdl-org/SDL/wiki/SDL_GetWindowGrab
- * @sa https://github.com/libsdl-org/SDL/wiki/SDL_SetWindowGrab
+ * @sa http://wiki.libsdl.org/SDL_GetWindowGrab
+ * @sa http://wiki.libsdl.org/SDL_SetWindowGrab
  */
 int
 video_getSetWindowGrab(void *arg)
 {
   const char* title = "video_getSetWindowGrab Test Window";
   SDL_Window* window;
-  SDL_bool originalMouseState, originalKeyboardState, dummyState;
+  SDL_bool originalMouseState, originalKeyboardState;
 
   /* Call against new test window */
   window = _createVideoSuiteTestWindow(title);
@@ -927,11 +926,11 @@ video_getSetWindowGrab(void *arg)
                       "SDL_GetWindowKeyboardGrab() should return SDL_FALSE");
 
   /* Negative tests */
-  dummyState = SDL_GetWindowGrab(NULL);
+  SDL_GetWindowGrab(NULL);
   SDLTest_AssertPass("Call to SDL_GetWindowGrab(window=NULL)");
   _checkInvalidWindowError();
 
-  dummyState = SDL_GetWindowKeyboardGrab(NULL);
+  SDL_GetWindowKeyboardGrab(NULL);
   SDLTest_AssertPass("Call to SDL_GetWindowKeyboardGrab(window=NULL)");
   _checkInvalidWindowError();
 
@@ -965,8 +964,8 @@ video_getSetWindowGrab(void *arg)
 /**
  * @brief Tests call to SDL_GetWindowID and SDL_GetWindowFromID
  *
- * @sa https://github.com/libsdl-org/SDL/wiki/SDL_GetWindowID
- * @sa https://github.com/libsdl-org/SDL/wiki/SDL_SetWindowFromID
+ * @sa http://wiki.libsdl.org/SDL_GetWindowID
+ * @sa http://wiki.libsdl.org/SDL_SetWindowFromID
  */
 int
 video_getWindowId(void *arg)
@@ -1021,7 +1020,7 @@ video_getWindowId(void *arg)
 /**
  * @brief Tests call to SDL_GetWindowPixelFormat
  *
- * @sa https://github.com/libsdl-org/SDL/wiki/SDL_GetWindowPixelFormat
+ * @sa http://wiki.libsdl.org/SDL_GetWindowPixelFormat
  */
 int
 video_getWindowPixelFormat(void *arg)
@@ -1055,8 +1054,8 @@ video_getWindowPixelFormat(void *arg)
 /**
  * @brief Tests call to SDL_GetWindowPosition and SDL_SetWindowPosition
  *
- * @sa https://github.com/libsdl-org/SDL/wiki/SDL_GetWindowPosition
- * @sa https://github.com/libsdl-org/SDL/wiki/SDL_SetWindowPosition
+ * @sa http://wiki.libsdl.org/SDL_GetWindowPosition
+ * @sa http://wiki.libsdl.org/SDL_SetWindowPosition
  */
 int
 video_getSetWindowPosition(void *arg)
@@ -1198,8 +1197,8 @@ void _checkInvalidParameterError()
 /**
  * @brief Tests call to SDL_GetWindowSize and SDL_SetWindowSize
  *
- * @sa https://github.com/libsdl-org/SDL/wiki/SDL_GetWindowSize
- * @sa https://github.com/libsdl-org/SDL/wiki/SDL_SetWindowSize
+ * @sa http://wiki.libsdl.org/SDL_GetWindowSize
+ * @sa http://wiki.libsdl.org/SDL_SetWindowSize
  */
 int
 video_getSetWindowSize(void *arg)
@@ -1637,8 +1636,8 @@ video_getSetWindowMaximumSize(void *arg)
 /**
  * @brief Tests call to SDL_SetWindowData and SDL_GetWindowData
  *
- * @sa https://github.com/libsdl-org/SDL/wiki/SDL_SetWindowData
- * @sa https://github.com/libsdl-org/SDL/wiki/SDL_GetWindowData
+ * @sa http://wiki.libsdl.org/SDL_SetWindowData
+ * @sa http://wiki.libsdl.org/SDL_GetWindowData
  */
 int
 video_getSetWindowData(void *arg)

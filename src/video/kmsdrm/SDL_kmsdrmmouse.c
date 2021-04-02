@@ -341,24 +341,6 @@ cleanup:
     return ret;
 }
 
-/* When we create a window, we have to test if we have to show the cursor,
-   and explicily do so if necessary.
-   This is because when we destroy a window, we take the cursor away from the
-   cursor plane, and destroy the cusror GBM BO. So we have to re-show it,
-   so to say. */
-void
-KMSDRM_InitCursor()
-{
-    SDL_Mouse *mouse = SDL_GetMouse();
-
-    if (!mouse || !mouse->cur_cursor || !mouse->cursor_shown) {
-        return;
-    }
-
-    /* Re-dump cursor buffer to the GBM BO of the focused window display. */
-    KMSDRM_ShowCursor(mouse->cur_cursor);
-}
-
 /* Show the specified cursor, or hide if cursor is NULL or has no focus. */
 static int
 KMSDRM_ShowCursor(SDL_Cursor * cursor)
@@ -477,16 +459,11 @@ KMSDRM_InitMouse(_THIS, SDL_VideoDisplay *display)
     mouse->WarpMouse = KMSDRM_WarpMouse;
     mouse->WarpMouseGlobal = KMSDRM_WarpMouseGlobal;
 
-    /* SDL expects to set the default cursor of the display when we init the mouse,
-       but since we have moved the KMSDRM_InitMouse() call to KMSDRM_CreateWindow(),
-       we end up calling KMSDRM_InitMouse() every time we create a window, so we
-       have to prevent this from being done every time a new window is created.
-       If we don't, new default cursors would stack up on mouse->cursors and SDL
-       would have to hide and delete them at quit, not to mention the memory leak... */
-
-    if(dispdata->set_default_cursor_pending) { 
+    /* Only create the default cursor for this display if we haven't done so before,
+       we don't want several cursors to be created for the same display. */
+    if (!dispdata->default_cursor_init) {
         SDL_SetDefaultCursor(KMSDRM_CreateDefaultCursor());
-        dispdata->set_default_cursor_pending = SDL_FALSE;
+        dispdata->default_cursor_init = SDL_TRUE;
     }
 }
 

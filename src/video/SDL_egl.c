@@ -73,6 +73,7 @@
 #define DEFAULT_OGL_ES "libGLESv1_CM.dylib"     //???
 
 #elif defined(__OpenBSD__)
+/* OpenBSD */
 #define DEFAULT_OGL "libGL.so"
 #define DEFAULT_EGL "libEGL.so"
 #define DEFAULT_OGL_ES2 "libGLESv2.so"
@@ -80,9 +81,10 @@
 #define DEFAULT_OGL_ES "libGLESv1_CM.so"
 
 #else
-/* Desktop Linux */
+/* Desktop Linux/Unix-like */
 #define DEFAULT_OGL "libGL.so.1"
 #define DEFAULT_EGL "libEGL.so.1"
+#define ALT_OGL "libOpenGL.so.0"
 #define DEFAULT_OGL_ES2 "libGLESv2.so.2"
 #define DEFAULT_OGL_ES_PVR "libGLES_CM.so.1"
 #define DEFAULT_OGL_ES "libGLESv1_CM.so.1"
@@ -374,6 +376,12 @@ SDL_EGL_LoadLibraryOnly(_THIS, const char *egl_path)
         else {
             path = DEFAULT_OGL;
             egl_dll_handle = SDL_LoadObject(path);
+#ifdef ALT_OGL
+            if (egl_dll_handle == NULL) {
+                path = ALT_OGL;
+                egl_dll_handle = SDL_LoadObject(path);
+            }
+#endif
         }
 #endif        
     }

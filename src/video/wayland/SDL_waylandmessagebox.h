@@ -19,29 +19,15 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "../../SDL_internal.h"
+#ifndef SDL_waylandmessagebox_h_
+#define SDL_waylandmessagebox_h_
 
-#ifndef SDL_pipewire_h_
-#define SDL_pipewire_h_
+#if SDL_VIDEO_DRIVER_WAYLAND
 
-#include "../SDL_sysaudio.h"
-#include <pipewire/pipewire.h>
+extern int Wayland_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid);
 
-/* Hidden "this" pointer for the audio functions */
-#define _THIS SDL_AudioDevice *this
+#endif /* SDL_VIDEO_DRIVER_WAYLAND */
 
-struct SDL_PrivateAudioData
-{
-    struct pw_thread_loop *loop;
-    struct pw_stream      *stream;
-    struct pw_context     *context;
-    struct SDL_DataQueue  *buffer;
-
-    size_t       buffer_period_size;
-    Sint32       stride; /* Bytes-per-frame */
-    SDL_atomic_t stream_initialized;
-};
-
-#endif /* SDL_pipewire_h_ */
+#endif /* SDL_waylandmessagebox_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

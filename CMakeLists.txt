@@ -1192,6 +1192,7 @@ elseif(UNIX AND NOT APPLE AND NOT ANDROID AND NOT RISCOS)
     # Need to check EGL before checking KMSDRM because KMSDRM depends on it.
     CheckEGLKMSDRM()
     CheckKMSDRM()
+    CheckOpenGLKMSDRM()
   endif()
 
   if(UNIX)

@@ -1815,6 +1815,7 @@ SDL_GetJoystickGameControllerType(const char *name, Uint16 vendor, Uint16 produc
             0x15e4, /* Numark */
             0x162e, /* Joytech */
             0x1689, /* Razer Onza */
+            0x1949, /* Lab126, Inc. */
             0x1bad, /* Harmonix */
             0x20d6, /* PowerA */
             0x24c6, /* PowerA */
