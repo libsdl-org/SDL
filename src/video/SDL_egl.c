@@ -692,9 +692,9 @@ static void dumpconfig(_THIS, EGLConfig config)
 #endif /* DUMP_EGL_CONFIG */
 
 int
-SDL_EGL_ChooseConfig(_THIS) 
+SDL_EGL_ChooseConfig(_THIS)
 {
-/* 64 seems nice. */
+    /* 64 seems nice. */
     EGLint attribs[64];
     EGLint found_configs = 0, value;
     /* 128 seems even nicer here */
@@ -706,7 +706,7 @@ SDL_EGL_ChooseConfig(_THIS)
         /* The EGL library wasn't loaded, SDL_GetError() should have info */
         return -1;
     }
-  
+
     /* Get a valid EGL configuration */
     i = 0;
     attribs[i++] = EGL_RED_SIZE;
@@ -775,6 +775,8 @@ SDL_EGL_ChooseConfig(_THIS)
 
     attribs[i++] = EGL_NONE;
 
+    SDL_assert(i < SDL_arraysize(attribs));
+
     if (_this->egl_data->eglChooseConfig(_this->egl_data->egl_display,
         attribs,
         configs, SDL_arraysize(configs),
@@ -784,15 +786,17 @@ SDL_EGL_ChooseConfig(_THIS)
     }
 
     /* first ensure that a found config has a matching format, or the function will fall through. */
-    for (i = 0; i < found_configs; i++ ) {
-        if (_this->egl_data->egl_required_visual_id)
-        {
+    if (_this->egl_data->egl_required_visual_id)
+    {
+        for (i = 0; i < found_configs; i++ ) {
             EGLint format;
             _this->egl_data->eglGetConfigAttrib(_this->egl_data->egl_display,
                                             configs[i],
                                             EGL_NATIVE_VISUAL_ID, &format);
-            if (_this->egl_data->egl_required_visual_id == format)
+            if (_this->egl_data->egl_required_visual_id == format) {
                 has_matching_format = SDL_TRUE;
+                break;
+            }
         }
     }
 
