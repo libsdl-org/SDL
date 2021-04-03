@@ -548,16 +548,12 @@ extern DECLSPEC int SDLCALL SDL_GetAudioDeviceSpec(int index,
  * \sa SDL_PauseAudioDevice
  * \sa SDL_UnlockAudioDevice
  */
-extern DECLSPEC SDL_AudioDeviceID SDLCALL SDL_OpenAudioDevice(const char
-                                                              *device,
-                                                              int iscapture,
-                                                              const
-                                                              SDL_AudioSpec *
-                                                              desired,
-                                                              SDL_AudioSpec *
-                                                              obtained,
-                                                              int
-                                                              allowed_changes);
+extern DECLSPEC SDL_AudioDeviceID SDLCALL SDL_OpenAudioDevice(
+                                                  const char *device,
+                                                  int iscapture,
+                                                  const SDL_AudioSpec *desired,
+                                                  SDL_AudioSpec *obtained,
+                                                  int allowed_changes);
 
 
 
