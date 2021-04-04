@@ -484,7 +484,7 @@ IBus_SimpleMessage(const char *method)
 {   
     SDL_DBusContext *dbus = SDL_DBus_GetContext();
     
-    if (IBus_CheckConnection(dbus)) {
+    if ((input_ctx_path != NULL) && (IBus_CheckConnection(dbus))) {
         SDL_DBus_CallVoidMethodOnConnection(ibus_conn, IBUS_SERVICE, input_ctx_path, IBUS_INPUT_INTERFACE, method, DBUS_TYPE_INVALID);
     }
 }
