@@ -2941,13 +2941,39 @@ dnl See what type of thread model to use on Linux and Solaris
 CheckPTHREAD()
 {
     dnl Check for pthread support
+
+    dnl Emscripten pthreads work, but you need to have a non-pthread fallback build
+    dnl  for systems without support. It's not currently enough to not use
+    dnl  pthread functions in a pthread-build; it won't start up on unsupported
+    dnl  browsers. As such, you have to explicitly enable it on Emscripten builds
+    dnl  for the time being. This default with change to ON once this becomes
+    dnl  commonly supported in browsers or the Emscripten teams makes a single
+    dnl  binary work everywhere.
+
+    case "$host" in
+        *-*-emscripten*)
+            enable_pthreads_default=no
+            ;;
+        *)
+            enable_pthreads_default=yes
+            ;;
+    esac
+
     AC_ARG_ENABLE(pthreads,
-[AS_HELP_STRING([--enable-pthreads], [use POSIX threads for multi-threading [default=yes]])],
-                  , enable_pthreads=yes)
+[AS_HELP_STRING([--enable-pthreads], [use POSIX threads for multi-threading [default=maybe]])],
+                  , enable_pthreads=maybe)
     dnl This is used on Linux for glibc binary compatibility (Doh!)
     AC_ARG_ENABLE(pthread-sem,
-[AS_HELP_STRING([--enable-pthread-sem], [use pthread semaphores [default=yes]])],
-                  , enable_pthread_sem=yes)
+[AS_HELP_STRING([--enable-pthread-sem], [use pthread semaphores [default=maybe]])],
+                  , enable_pthread_sem=maybe)
+
+    if test x$enable_pthreads = xmaybe; then
+        enable_pthreads=$enable_pthreads_default
+    fi
+    if test x$enable_pthread_sem = xmaybe; then
+        enable_pthread_sem=$enable_pthreads
+    fi
+
     case "$host" in
          *-*-android*)
             pthread_cflags="-D_REENTRANT -D_THREAD_SAFE"
@@ -3012,6 +3038,10 @@ CheckPTHREAD()
         *-*-nto*)
             pthread_cflags="-D_REENTRANT"
             pthread_lib=""
+            ;;
+        *-*-emscripten*)
+            pthread_cflags="-D_REENTRANT -pthread"
+            pthread_lib="-pthread"
             ;;
         *)
             pthread_cflags="-D_REENTRANT"
@@ -4302,6 +4332,7 @@ case "$host" in
         CheckDummyVideo
         CheckDiskAudio
         CheckDummyAudio
+        CheckPTHREAD
         CheckDLOPEN
         CheckClockGettime
         CheckEmscriptenGLES

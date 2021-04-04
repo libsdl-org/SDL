@@ -153,7 +153,14 @@ else()
   set(UNIX_OR_MAC_SYS OFF)
 endif()
 
-if (UNIX_OR_MAC_SYS AND NOT EMSCRIPTEN) # JavaScript does not yet have threading support, so disable pthreads when building for Emscripten.
+# Emscripten pthreads work, but you need to have a non-pthread fallback build
+#  for systems without support. It's not currently enough to not use
+#  pthread functions in a pthread-build; it won't start up on unsupported
+#  browsers. As such, you have to explicitly enable it on Emscripten builds
+#  for the time being. This default with change to ON once this becomes
+#  commonly supported in browsers or the Emscripten teams makes a single
+#  binary work everywhere.
+if (UNIX_OR_MAC_SYS AND NOT EMSCRIPTEN)
   set(SDL_PTHREADS_ENABLED_BY_DEFAULT ON)
 else()
   set(SDL_PTHREADS_ENABLED_BY_DEFAULT OFF)
@@ -289,11 +296,14 @@ set(OPT_DEF_ASM TRUE)
 if(EMSCRIPTEN)
   # Set up default values for the currently supported set of subsystems:
   # Emscripten/Javascript does not have assembly support, a dynamic library
-  # loading architecture, low-level CPU inspection or multithreading.
+  # loading architecture, or low-level CPU inspection.
+
+  # SDL_THREADS_ENABLED_BY_DEFAULT now defaults to ON, but pthread support might be disabled by default.
+  # !!! FIXME: most of these subsystems should default to ON if there are dummy implementations to be used.
+
   set(OPT_DEF_ASM FALSE)
   set(SDL_SHARED_ENABLED_BY_DEFAULT OFF)
   set(SDL_ATOMIC_ENABLED_BY_DEFAULT OFF)
-  set(SDL_THREADS_ENABLED_BY_DEFAULT OFF)
   set(SDL_LOADSO_ENABLED_BY_DEFAULT OFF)
   set(SDL_CPUINFO_ENABLED_BY_DEFAULT OFF)
   set(SDL_DLOPEN_ENABLED_BY_DEFAULT OFF)
@@ -1153,6 +1163,8 @@ elseif(EMSCRIPTEN)
       set(SDL_VIDEO_RENDER_OGL_ES2 1)
     endif()
   endif()
+
+  CheckPTHREAD()
 
 elseif(UNIX AND NOT APPLE AND NOT ANDROID AND NOT RISCOS)
   if(SDL_AUDIO)
