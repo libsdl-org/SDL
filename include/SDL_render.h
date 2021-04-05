@@ -102,7 +102,6 @@ typedef enum
 {
     SDL_ScaleModeNearest, /**< nearest pixel sampling */
     SDL_ScaleModeLinear,  /**< linear filtering */
-    SDL_ScaleModeMipmap,  /**< linear filtering with mipmaps */
     SDL_ScaleModeBest     /**< anisotropic filtering */
 } SDL_ScaleMode;
 

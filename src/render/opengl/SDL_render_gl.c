@@ -91,6 +91,7 @@ typedef struct
     GLvoid *next_error_userparam;
 
     GLenum textype;
+    SDL_bool generate_mipmaps;
 
     SDL_bool GL_ARB_texture_non_power_of_two_supported;
     SDL_bool GL_ARB_texture_rectangle_supported;
@@ -130,6 +131,7 @@ typedef struct
     void *pixels;
     int pitch;
     SDL_Rect locked_rect;
+    SDL_bool mipmap;
 
 #if SDL_HAVE_YUV
     /* YUV texture support */
@@ -529,25 +531,21 @@ GL_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
         data->texh = (GLfloat) texture->h / texture_h;
     }
 
+    data->mipmap = renderdata->generate_mipmaps && (textype == GL_TEXTURE_2D);
     data->format = format;
     data->formattype = type;
     switch(texture->scaleMode) {
         case SDL_ScaleModeNearest:
             magnificationScaleMode = GL_NEAREST;
-            minificationScaleMode = GL_NEAREST;
+            minificationScaleMode = data->mipmap ? GL_NEAREST_MIPMAP_NEAREST : GL_NEAREST;
             break;
         case SDL_ScaleModeLinear:
             magnificationScaleMode = GL_LINEAR;
-            minificationScaleMode = GL_LINEAR;
-            break;
-        case SDL_ScaleModeMipmap:
-            magnificationScaleMode = GL_LINEAR;
-            minificationScaleMode = (textype == GL_TEXTURE_2D) ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR;
-            generateMipmaps = (textype == GL_TEXTURE_2D) ? GL_TRUE : GL_FALSE;
+            minificationScaleMode = data->mipmap ? GL_NEAREST_MIPMAP_LINEAR : GL_LINEAR;
             break;
         case SDL_ScaleModeBest:
             magnificationScaleMode = GL_LINEAR;
-            minificationScaleMode = GL_LINEAR;
+            minificationScaleMode = data->mipmap ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR;
             break;
         default:
             magnificationScaleMode = GL_NEAREST;
@@ -887,23 +885,18 @@ GL_SetTextureScaleMode(SDL_Renderer * renderer, SDL_Texture * texture, SDL_Scale
     GLenum minificationScaleMode;
     GLboolean generateMipmaps = GL_FALSE;
 
-    switch(scaleMode) {
+    switch(texture->scaleMode) {
         case SDL_ScaleModeNearest:
             magnificationScaleMode = GL_NEAREST;
-            minificationScaleMode = GL_NEAREST;
+            minificationScaleMode = data->mipmap ? GL_NEAREST_MIPMAP_NEAREST : GL_NEAREST;
             break;
         case SDL_ScaleModeLinear:
             magnificationScaleMode = GL_LINEAR;
-            minificationScaleMode = GL_LINEAR;
-            break;
-        case SDL_ScaleModeMipmap:
-            magnificationScaleMode = GL_LINEAR;
-            minificationScaleMode = (textype == GL_TEXTURE_2D) ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR;
-            generateMipmaps = (textype == GL_TEXTURE_2D) ? GL_TRUE : GL_FALSE;
+            minificationScaleMode = data->mipmap ? GL_NEAREST_MIPMAP_LINEAR : GL_LINEAR;
             break;
         case SDL_ScaleModeBest:
             magnificationScaleMode = GL_LINEAR;
-            minificationScaleMode = GL_LINEAR;
+            minificationScaleMode = data->mipmap ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR;
             break;
         default:
             magnificationScaleMode = GL_NEAREST;
@@ -912,7 +905,7 @@ GL_SetTextureScaleMode(SDL_Renderer * renderer, SDL_Texture * texture, SDL_Scale
     }
 
     renderdata->glBindTexture(textype, data->texture);
-    renderdata->glTexParameteri(textype, GL_GENERATE_MIPMAP, generateMipmaps);
+    renderdata->glTexParameteri(textype, GL_GENERATE_MIPMAP, data->mipmap ? GL_TRUE : GL_FALSE);
     renderdata->glTexParameteri(textype, GL_TEXTURE_MIN_FILTER, minificationScaleMode);
     renderdata->glTexParameteri(textype, GL_TEXTURE_MAG_FILTER, magnificationScaleMode);
 
@@ -1956,6 +1949,9 @@ GL_CreateRenderer(SDL_Window * window, Uint32 flags)
     }
     SDL_LogInfo(SDL_LOG_CATEGORY_RENDER, "OpenGL shaders: %s",
                 data->shaders ? "ENABLED" : "DISABLED");
+
+    /* Check mipmap texture filtering */
+    data->generate_mipmaps = SDL_GetHintBoolean(SDL_HINT_RENDER_OPENGL_FILTER_MIPMAP, SDL_FALSE);
 
     /* We support YV12 textures using 3 textures and a shader */
     if (data->shaders && data->num_texture_units >= 3) {
