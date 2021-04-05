@@ -147,17 +147,17 @@ GL_TranslateError (GLenum error)
 {
 #define GL_ERROR_TRANSLATE(e) case e: return #e;
     switch (error) {
-    GL_ERROR_TRANSLATE(GL_INVALID_ENUM)
-    GL_ERROR_TRANSLATE(GL_INVALID_VALUE)
-    GL_ERROR_TRANSLATE(GL_INVALID_OPERATION)
-    GL_ERROR_TRANSLATE(GL_OUT_OF_MEMORY)
-    GL_ERROR_TRANSLATE(GL_NO_ERROR)
-    GL_ERROR_TRANSLATE(GL_STACK_OVERFLOW)
-    GL_ERROR_TRANSLATE(GL_STACK_UNDERFLOW)
-    GL_ERROR_TRANSLATE(GL_TABLE_TOO_LARGE)
-    default:
-        return "UNKNOWN";
-}
+        GL_ERROR_TRANSLATE(GL_INVALID_ENUM)
+        GL_ERROR_TRANSLATE(GL_INVALID_VALUE)
+        GL_ERROR_TRANSLATE(GL_INVALID_OPERATION)
+        GL_ERROR_TRANSLATE(GL_OUT_OF_MEMORY)
+        GL_ERROR_TRANSLATE(GL_NO_ERROR)
+        GL_ERROR_TRANSLATE(GL_STACK_OVERFLOW)
+        GL_ERROR_TRANSLATE(GL_STACK_UNDERFLOW)
+        GL_ERROR_TRANSLATE(GL_TABLE_TOO_LARGE)
+        default:
+            return "UNKNOWN";
+    }
 #undef GL_ERROR_TRANSLATE
 }
 
@@ -329,42 +329,42 @@ GL_GetOutputSize(SDL_Renderer * renderer, int *w, int *h)
 static GLenum GetBlendFunc(SDL_BlendFactor factor)
 {
     switch (factor) {
-    case SDL_BLENDFACTOR_ZERO:
-        return GL_ZERO;
-    case SDL_BLENDFACTOR_ONE:
-        return GL_ONE;
-    case SDL_BLENDFACTOR_SRC_COLOR:
-        return GL_SRC_COLOR;
-    case SDL_BLENDFACTOR_ONE_MINUS_SRC_COLOR:
-        return GL_ONE_MINUS_SRC_COLOR;
-    case SDL_BLENDFACTOR_SRC_ALPHA:
-        return GL_SRC_ALPHA;
-    case SDL_BLENDFACTOR_ONE_MINUS_SRC_ALPHA:
-        return GL_ONE_MINUS_SRC_ALPHA;
-    case SDL_BLENDFACTOR_DST_COLOR:
-        return GL_DST_COLOR;
-    case SDL_BLENDFACTOR_ONE_MINUS_DST_COLOR:
-        return GL_ONE_MINUS_DST_COLOR;
-    case SDL_BLENDFACTOR_DST_ALPHA:
-        return GL_DST_ALPHA;
-    case SDL_BLENDFACTOR_ONE_MINUS_DST_ALPHA:
-        return GL_ONE_MINUS_DST_ALPHA;
-    default:
-        return GL_INVALID_ENUM;
+        case SDL_BLENDFACTOR_ZERO:
+            return GL_ZERO;
+        case SDL_BLENDFACTOR_ONE:
+            return GL_ONE;
+        case SDL_BLENDFACTOR_SRC_COLOR:
+            return GL_SRC_COLOR;
+        case SDL_BLENDFACTOR_ONE_MINUS_SRC_COLOR:
+            return GL_ONE_MINUS_SRC_COLOR;
+        case SDL_BLENDFACTOR_SRC_ALPHA:
+            return GL_SRC_ALPHA;
+        case SDL_BLENDFACTOR_ONE_MINUS_SRC_ALPHA:
+            return GL_ONE_MINUS_SRC_ALPHA;
+        case SDL_BLENDFACTOR_DST_COLOR:
+            return GL_DST_COLOR;
+        case SDL_BLENDFACTOR_ONE_MINUS_DST_COLOR:
+            return GL_ONE_MINUS_DST_COLOR;
+        case SDL_BLENDFACTOR_DST_ALPHA:
+            return GL_DST_ALPHA;
+        case SDL_BLENDFACTOR_ONE_MINUS_DST_ALPHA:
+            return GL_ONE_MINUS_DST_ALPHA;
+        default:
+            return GL_INVALID_ENUM;
     }
 }
 
 static GLenum GetBlendEquation(SDL_BlendOperation operation)
 {
     switch (operation) {
-    case SDL_BLENDOPERATION_ADD:
-        return GL_FUNC_ADD;
-    case SDL_BLENDOPERATION_SUBTRACT:
-        return GL_FUNC_SUBTRACT;
-    case SDL_BLENDOPERATION_REV_SUBTRACT:
-        return GL_FUNC_REVERSE_SUBTRACT;
-    default:
-        return GL_INVALID_ENUM;
+        case SDL_BLENDOPERATION_ADD:
+            return GL_FUNC_ADD;
+        case SDL_BLENDOPERATION_SUBTRACT:
+            return GL_FUNC_SUBTRACT;
+        case SDL_BLENDOPERATION_REV_SUBTRACT:
+            return GL_FUNC_REVERSE_SUBTRACT;
+        default:
+            return GL_INVALID_ENUM;
     }
 }
 
@@ -408,35 +408,35 @@ convert_format(GL_RenderData *renderdata, Uint32 pixel_format,
                GLint* internalFormat, GLenum* format, GLenum* type)
 {
     switch (pixel_format) {
-    case SDL_PIXELFORMAT_ARGB8888:
-    case SDL_PIXELFORMAT_RGB888:
-        *internalFormat = GL_RGBA8;
-        *format = GL_BGRA;
-        *type = GL_UNSIGNED_INT_8_8_8_8_REV;
-        break;
-    case SDL_PIXELFORMAT_ABGR8888:
-    case SDL_PIXELFORMAT_BGR888:
-        *internalFormat = GL_RGBA8;
-        *format = GL_RGBA;
-        *type = GL_UNSIGNED_INT_8_8_8_8_REV;
-        break;
-    case SDL_PIXELFORMAT_YV12:
-    case SDL_PIXELFORMAT_IYUV:
-    case SDL_PIXELFORMAT_NV12:
-    case SDL_PIXELFORMAT_NV21:
-        *internalFormat = GL_LUMINANCE;
-        *format = GL_LUMINANCE;
-        *type = GL_UNSIGNED_BYTE;
-        break;
+        case SDL_PIXELFORMAT_ARGB8888:
+        case SDL_PIXELFORMAT_RGB888:
+            *internalFormat = GL_RGBA8;
+            *format = GL_BGRA;
+            *type = GL_UNSIGNED_INT_8_8_8_8_REV;
+            break;
+        case SDL_PIXELFORMAT_ABGR8888:
+        case SDL_PIXELFORMAT_BGR888:
+            *internalFormat = GL_RGBA8;
+            *format = GL_RGBA;
+            *type = GL_UNSIGNED_INT_8_8_8_8_REV;
+            break;
+        case SDL_PIXELFORMAT_YV12:
+        case SDL_PIXELFORMAT_IYUV:
+        case SDL_PIXELFORMAT_NV12:
+        case SDL_PIXELFORMAT_NV21:
+            *internalFormat = GL_LUMINANCE;
+            *format = GL_LUMINANCE;
+            *type = GL_UNSIGNED_BYTE;
+            break;
 #ifdef __MACOSX__
-    case SDL_PIXELFORMAT_UYVY:
+            case SDL_PIXELFORMAT_UYVY:
         *internalFormat = GL_RGB8;
         *format = GL_YCBCR_422_APPLE;
         *type = GL_UNSIGNED_SHORT_8_8_APPLE;
         break;
 #endif
-    default:
-        return SDL_FALSE;
+        default:
+            return SDL_FALSE;
     }
     return SDL_TRUE;
 }
@@ -452,6 +452,7 @@ GL_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     int texture_w, texture_h;
     GLenum magnificationScaleMode;
     GLenum minificationScaleMode;
+    GLboolean generateMipmaps = GL_FALSE;
 
     GL_ActivateRenderer(renderer);
 
@@ -539,9 +540,14 @@ GL_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
             magnificationScaleMode = GL_LINEAR;
             minificationScaleMode = GL_LINEAR;
             break;
+        case SDL_ScaleModeMipmap:
+            magnificationScaleMode = GL_LINEAR;
+            minificationScaleMode = (textype == GL_TEXTURE_2D) ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR;
+            generateMipmaps = (textype == GL_TEXTURE_2D) ? GL_TRUE : GL_FALSE;
+            break;
         case SDL_ScaleModeBest:
             magnificationScaleMode = GL_LINEAR;
-            minificationScaleMode = GL_LINEAR_MIPMAP_LINEAR;
+            minificationScaleMode = GL_LINEAR;
             break;
         default:
             magnificationScaleMode = GL_NEAREST;
@@ -553,9 +559,7 @@ GL_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     renderdata->glBindTexture(textype, data->texture);
 
     /* Generate mipmaps for minification if scaling using mipmaps is enabled  */
-    if(texture->scaleMode == SDL_ScaleModeBest) {
-        renderdata->glTexParameteri(textype, GL_GENERATE_MIPMAP, GL_TRUE);
-    }
+    renderdata->glTexParameteri(textype, GL_GENERATE_MIPMAP, generateMipmaps);
 
     renderdata->glTexParameteri(textype, GL_TEXTURE_MIN_FILTER, minificationScaleMode);
     renderdata->glTexParameteri(textype, GL_TEXTURE_MAG_FILTER, magnificationScaleMode);
@@ -569,7 +573,7 @@ GL_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
                                     GL_CLAMP_TO_EDGE);
     }
 #ifdef __MACOSX__
-#ifndef GL_TEXTURE_STORAGE_HINT_APPLE
+    #ifndef GL_TEXTURE_STORAGE_HINT_APPLE
 #define GL_TEXTURE_STORAGE_HINT_APPLE       0x85BC
 #endif
 #ifndef STORAGE_CACHED_APPLE
@@ -815,9 +819,9 @@ GL_UpdateTextureYUV(SDL_Renderer * renderer, SDL_Texture * texture,
 
 static int
 GL_UpdateTextureNV(SDL_Renderer * renderer, SDL_Texture * texture,
-                    const SDL_Rect * rect,
-                    const Uint8 *Yplane, int Ypitch,
-                    const Uint8 *UVplane, int UVpitch)
+                   const SDL_Rect * rect,
+                   const Uint8 *Yplane, int Ypitch,
+                   const Uint8 *UVplane, int UVpitch)
 {
     GL_RenderData *renderdata = (GL_RenderData *) renderer->driverdata;
     const GLenum textype = renderdata->textype;
@@ -853,8 +857,8 @@ GL_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
 
     data->locked_rect = *rect;
     *pixels =
-        (void *) ((Uint8 *) data->pixels + rect->y * data->pitch +
-                  rect->x * SDL_BYTESPERPIXEL(texture->format));
+            (void *) ((Uint8 *) data->pixels + rect->y * data->pitch +
+                      rect->x * SDL_BYTESPERPIXEL(texture->format));
     *pitch = data->pitch;
     return 0;
 }
@@ -868,8 +872,8 @@ GL_UnlockTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 
     rect = &data->locked_rect;
     pixels =
-        (void *) ((Uint8 *) data->pixels + rect->y * data->pitch +
-                  rect->x * SDL_BYTESPERPIXEL(texture->format));
+            (void *) ((Uint8 *) data->pixels + rect->y * data->pitch +
+                      rect->x * SDL_BYTESPERPIXEL(texture->format));
     GL_UpdateTexture(renderer, texture, rect, pixels, data->pitch);
 }
 
@@ -879,31 +883,63 @@ GL_SetTextureScaleMode(SDL_Renderer * renderer, SDL_Texture * texture, SDL_Scale
     GL_RenderData *renderdata = (GL_RenderData *) renderer->driverdata;
     const GLenum textype = renderdata->textype;
     GL_TextureData *data = (GL_TextureData *) texture->driverdata;
-    GLenum glScaleMode = (scaleMode == SDL_ScaleModeNearest) ? GL_NEAREST : GL_LINEAR;
+    GLenum magnificationScaleMode;
+    GLenum minificationScaleMode;
+    GLboolean generateMipmaps = GL_FALSE;
+
+    switch(scaleMode) {
+        case SDL_ScaleModeNearest:
+            magnificationScaleMode = GL_NEAREST;
+            minificationScaleMode = GL_NEAREST;
+            break;
+        case SDL_ScaleModeLinear:
+            magnificationScaleMode = GL_LINEAR;
+            minificationScaleMode = GL_LINEAR;
+            break;
+        case SDL_ScaleModeMipmap:
+            magnificationScaleMode = GL_LINEAR;
+            minificationScaleMode = (textype == GL_TEXTURE_2D) ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR;
+            generateMipmaps = (textype == GL_TEXTURE_2D) ? GL_TRUE : GL_FALSE;
+            break;
+        case SDL_ScaleModeBest:
+            magnificationScaleMode = GL_LINEAR;
+            minificationScaleMode = GL_LINEAR;
+            break;
+        default:
+            magnificationScaleMode = GL_NEAREST;
+            minificationScaleMode = GL_NEAREST;
+            break;
+    }
 
     renderdata->glBindTexture(textype, data->texture);
-    renderdata->glTexParameteri(textype, GL_TEXTURE_MIN_FILTER, glScaleMode);
-    renderdata->glTexParameteri(textype, GL_TEXTURE_MAG_FILTER, glScaleMode);
+    renderdata->glTexParameteri(textype, GL_GENERATE_MIPMAP, generateMipmaps);
+    renderdata->glTexParameteri(textype, GL_TEXTURE_MIN_FILTER, minificationScaleMode);
+    renderdata->glTexParameteri(textype, GL_TEXTURE_MAG_FILTER, magnificationScaleMode);
 
 #if SDL_HAVE_YUV
     if (texture->format == SDL_PIXELFORMAT_YV12 ||
         texture->format == SDL_PIXELFORMAT_IYUV) {
         renderdata->glBindTexture(textype, data->utexture);
-        renderdata->glTexParameteri(textype, GL_TEXTURE_MIN_FILTER, glScaleMode);
-        renderdata->glTexParameteri(textype, GL_TEXTURE_MAG_FILTER, glScaleMode);
+        renderdata->glTexParameteri(textype, GL_GENERATE_MIPMAP, generateMipmaps);
+        renderdata->glTexParameteri(textype, GL_TEXTURE_MIN_FILTER, minificationScaleMode);
+        renderdata->glTexParameteri(textype, GL_TEXTURE_MAG_FILTER, magnificationScaleMode);
 
         renderdata->glBindTexture(textype, data->vtexture);
-        renderdata->glTexParameteri(textype, GL_TEXTURE_MIN_FILTER, glScaleMode);
-        renderdata->glTexParameteri(textype, GL_TEXTURE_MAG_FILTER, glScaleMode);
+        renderdata->glTexParameteri(textype, GL_GENERATE_MIPMAP, generateMipmaps);
+        renderdata->glTexParameteri(textype, GL_TEXTURE_MIN_FILTER, minificationScaleMode);
+        renderdata->glTexParameteri(textype, GL_TEXTURE_MAG_FILTER, magnificationScaleMode);
     }
 
     if (texture->format == SDL_PIXELFORMAT_NV12 ||
         texture->format == SDL_PIXELFORMAT_NV21) {
         renderdata->glBindTexture(textype, data->utexture);
-        renderdata->glTexParameteri(textype, GL_TEXTURE_MIN_FILTER, glScaleMode);
-        renderdata->glTexParameteri(textype, GL_TEXTURE_MAG_FILTER, glScaleMode);
+        renderdata->glTexParameteri(textype, GL_GENERATE_MIPMAP, generateMipmaps);
+        renderdata->glTexParameteri(textype, GL_TEXTURE_MIN_FILTER, minificationScaleMode);
+        renderdata->glTexParameteri(textype, GL_TEXTURE_MAG_FILTER, magnificationScaleMode);
     }
 #endif
+
+    texture->scaleMode = scaleMode;
 }
 
 static int
@@ -1936,15 +1972,15 @@ GL_CreateRenderer(SDL_Window * window, Uint32 flags)
     if (SDL_GL_ExtensionSupported("GL_EXT_framebuffer_object")) {
         data->GL_EXT_framebuffer_object_supported = SDL_TRUE;
         data->glGenFramebuffersEXT = (PFNGLGENFRAMEBUFFERSEXTPROC)
-            SDL_GL_GetProcAddress("glGenFramebuffersEXT");
+                SDL_GL_GetProcAddress("glGenFramebuffersEXT");
         data->glDeleteFramebuffersEXT = (PFNGLDELETEFRAMEBUFFERSEXTPROC)
-            SDL_GL_GetProcAddress("glDeleteFramebuffersEXT");
+                SDL_GL_GetProcAddress("glDeleteFramebuffersEXT");
         data->glFramebufferTexture2DEXT = (PFNGLFRAMEBUFFERTEXTURE2DEXTPROC)
-            SDL_GL_GetProcAddress("glFramebufferTexture2DEXT");
+                SDL_GL_GetProcAddress("glFramebufferTexture2DEXT");
         data->glBindFramebufferEXT = (PFNGLBINDFRAMEBUFFEREXTPROC)
-            SDL_GL_GetProcAddress("glBindFramebufferEXT");
+                SDL_GL_GetProcAddress("glBindFramebufferEXT");
         data->glCheckFramebufferStatusEXT = (PFNGLCHECKFRAMEBUFFERSTATUSEXTPROC)
-            SDL_GL_GetProcAddress("glCheckFramebufferStatusEXT");
+                SDL_GL_GetProcAddress("glCheckFramebufferStatusEXT");
         renderer->info.flags |= SDL_RENDERER_TARGETTEXTURE;
     }
     data->framebuffers = NULL;
@@ -1968,7 +2004,7 @@ GL_CreateRenderer(SDL_Window * window, Uint32 flags)
 
     return renderer;
 
-error:
+    error:
     if (changed_window) {
         /* Uh oh, better try to put it back... */
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, profile_mask);
@@ -1981,19 +2017,19 @@ error:
 
 
 SDL_RenderDriver GL_RenderDriver = {
-    GL_CreateRenderer,
-    {
-     "opengl",
-     (SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE),
-     4,
-     {
-         SDL_PIXELFORMAT_ARGB8888,
-         SDL_PIXELFORMAT_ABGR8888,
-         SDL_PIXELFORMAT_RGB888,
-         SDL_PIXELFORMAT_BGR888
-     },
-     0,
-     0}
+        GL_CreateRenderer,
+        {
+                "opengl",
+                (SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE),
+                4,
+                {
+                        SDL_PIXELFORMAT_ARGB8888,
+                        SDL_PIXELFORMAT_ABGR8888,
+                        SDL_PIXELFORMAT_RGB888,
+                        SDL_PIXELFORMAT_BGR888
+                },
+                0,
+                0}
 };
 
 
