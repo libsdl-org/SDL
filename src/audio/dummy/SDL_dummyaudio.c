@@ -37,10 +37,10 @@ static int
 DUMMYAUDIO_CaptureFromDevice(_THIS, void *buffer, int buflen)
 {
     /* Delay to make this sort of simulate real audio input. */
-    SDL_Delay((this->spec.samples * 1000) / this->spec.freq);
+    SDL_Delay((_this->spec.samples * 1000) / _this->spec.freq);
 
     /* always return a full buffer of silence. */
-    SDL_memset(buffer, this->spec.silence, buflen);
+    SDL_memset(buffer, _this->spec.silence, buflen);
     return buflen;
 }
 
