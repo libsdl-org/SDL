@@ -30,6 +30,7 @@
 static int
 DUMMYAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
 {
+    _this->hidden = (void *) 0x1;  /* just something non-NULL */
     return 0;                   /* always succeeds. */
 }
 
