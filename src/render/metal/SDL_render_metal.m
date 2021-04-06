@@ -1318,6 +1318,7 @@ METAL_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture *
     return 0;
 }
 
+#if SDL_HAVE_RENDER_GEOMETRY
 static int
 METAL_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
         const float *xy, int xy_stride, const int *color, int color_stride, const float *uv, int uv_stride,
@@ -1362,6 +1363,7 @@ METAL_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture 
 
     return 0;
 }
+#endif
 
 typedef struct
 {
@@ -1622,6 +1624,7 @@ METAL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
             }
 
             case SDL_RENDERCMD_GEOMETRY: {
+#if SDL_HAVE_RENDER_GEOMETRY
                 const size_t count = cmd->data.draw.count;
                 SDL_Texture *texture = cmd->data.draw.texture;
 
@@ -1632,6 +1635,7 @@ METAL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
                     SetDrawState(renderer, cmd, SDL_METAL_FRAGMENT_SOLID, CONSTANTS_OFFSET_IDENTITY, mtlbufvertex, &statecache);
                     [data.mtlcmdencoder drawPrimitives:MTLPrimitiveTypeTriangle vertexStart:0 vertexCount:count];
                 }
+#endif
                 break;
             }
 
@@ -1997,7 +2001,9 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->QueueFillRects = METAL_QueueFillRects;
     renderer->QueueCopy = METAL_QueueCopy;
     renderer->QueueCopyEx = METAL_QueueCopyEx;
+#if SDL_HAVE_RENDER_GEOMETRY
     renderer->QueueGeometry = METAL_QueueGeometry;
+#endif
     renderer->RunCommandQueue = METAL_RunCommandQueue;
     renderer->RenderReadPixels = METAL_RenderReadPixels;
     renderer->RenderPresent = METAL_RenderPresent;

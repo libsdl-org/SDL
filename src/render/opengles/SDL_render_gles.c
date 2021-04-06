@@ -755,6 +755,7 @@ GLES_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * 
     return 0;
 }
 
+#if SDL_HAVE_RENDER_GEOMETRY
 static int
 GLES_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
         const float *xy, int xy_stride, const int *color, int color_stride, const float *uv, int uv_stride,
@@ -811,6 +812,7 @@ GLES_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *
     }
     return 0;
 }
+#endif
 
 static void
 SetDrawState(GLES_RenderData *data, const SDL_RenderCommand *cmd)
@@ -1046,6 +1048,7 @@ GLES_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vert
             }
 
             case SDL_RENDERCMD_GEOMETRY: {
+#if SDL_HAVE_RENDER_GEOMETRY
                 const GLfloat *verts = (GLfloat *) (((Uint8 *) vertices) + cmd->data.draw.first);
                 SDL_Texture *texture = cmd->data.draw.texture;
                 const size_t count = cmd->data.draw.count;
@@ -1068,7 +1071,7 @@ GLES_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vert
                 data->glDrawArrays(GL_TRIANGLES, 0, (GLsizei) count);
 
                 data->glDisableClientState(GL_COLOR_ARRAY);
-
+#endif
                 break;
             }
 
@@ -1282,7 +1285,9 @@ GLES_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->QueueFillRects = GLES_QueueFillRects;
     renderer->QueueCopy = GLES_QueueCopy;
     renderer->QueueCopyEx = GLES_QueueCopyEx;
+#if SDL_HAVE_RENDER_GEOMETRY
     renderer->QueueGeometry = GLES_QueueGeometry;
+#endif
     renderer->RunCommandQueue = GLES_RunCommandQueue;
     renderer->RenderReadPixels = GLES_RenderReadPixels;
     renderer->RenderPresent = GLES_RenderPresent;

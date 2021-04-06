@@ -937,6 +937,7 @@ GLES2_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture *
     return 0;
 }
 
+#if SDL_HAVE_RENDER_GEOMETRY
 static int
 GLES2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
         const float *xy, int xy_stride, const int *color, int color_stride, const float *uv, int uv_stride,
@@ -996,6 +997,7 @@ GLES2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture 
 
     return 0;
 }
+#endif
 
 static int
 SetDrawState(GLES2_RenderData *data, const SDL_RenderCommand *cmd, const GLES2_ImageSource imgsrc)
@@ -1373,6 +1375,7 @@ GLES2_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
             }
 
             case SDL_RENDERCMD_GEOMETRY: {
+#if SDL_HAVE_RENDER_GEOMETRY
                 SDL_Texture *texture = cmd->data.draw.texture;
                 const size_t count = cmd->data.draw.count;
                 int ret;
@@ -1386,6 +1389,7 @@ GLES2_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
                 if (ret == 0) {
                     data->glDrawArrays(GL_TRIANGLES, 0, (GLsizei) count);
                 }
+#endif
                 break;
             }
 
@@ -2183,7 +2187,9 @@ GLES2_CreateRenderer(SDL_Window *window, Uint32 flags)
     renderer->QueueFillRects      = GLES2_QueueFillRects;
     renderer->QueueCopy           = GLES2_QueueCopy;
     renderer->QueueCopyEx         = GLES2_QueueCopyEx;
+#if SDL_HAVE_RENDER_GEOMETRY
     renderer->QueueGeometry       = GLES2_QueueGeometry;
+#endif
     renderer->RunCommandQueue     = GLES2_RunCommandQueue;
     renderer->RenderReadPixels    = GLES2_RenderReadPixels;
     renderer->RenderPresent       = GLES2_RenderPresent;

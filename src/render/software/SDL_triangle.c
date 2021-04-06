@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_RENDER_SW && !SDL_RENDER_DISABLED
+#if SDL_VIDEO_RENDER_SW && !SDL_RENDER_DISABLED && SDL_HAVE_RENDER_GEOMETRY
 
 #include "SDL_surface.h"
 #include "SDL_triangle.h"

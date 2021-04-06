@@ -1865,6 +1865,7 @@ D3D11_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture *
     return 0;
 }
 
+#if SDL_HAVE_RENDER_GEOMETRY
 static int
 D3D11_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
                     const float *xy, int xy_stride, const int *color, int color_stride, const float *uv, int uv_stride,
@@ -1919,6 +1920,7 @@ D3D11_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture 
     }
     return 0;
 }
+#endif
 
 static int
 D3D11_UpdateVertexBuffer(SDL_Renderer *renderer,
@@ -2402,6 +2404,7 @@ D3D11_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
             }
 
             case SDL_RENDERCMD_GEOMETRY: {
+#if SDL_HAVE_RENDER_GEOMETRY
                 SDL_Texture *texture = cmd->data.draw.texture;
                 const size_t count = cmd->data.draw.count;
                 const size_t first = cmd->data.draw.first;
@@ -2414,6 +2417,7 @@ D3D11_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
                 }
 
                 D3D11_DrawPrimitives(renderer, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST, start, count);
+#endif
                 break;
             }
 
@@ -2632,7 +2636,9 @@ D3D11_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->QueueFillRects = D3D11_QueueFillRects;
     renderer->QueueCopy = D3D11_QueueCopy;
     renderer->QueueCopyEx = D3D11_QueueCopyEx;
+#if SDL_HAVE_RENDER_GEOMETRY
     renderer->QueueGeometry = D3D11_QueueGeometry;
+#endif
     renderer->RunCommandQueue = D3D11_RunCommandQueue;
     renderer->RenderReadPixels = D3D11_RenderReadPixels;
     renderer->RenderPresent = D3D11_RenderPresent;
