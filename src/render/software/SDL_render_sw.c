@@ -562,6 +562,7 @@ SW_RenderCopyEx(SDL_Renderer * renderer, SDL_Surface *surface, SDL_Texture * tex
 }
 
 
+#if SDL_HAVE_RENDER_GEOMETRY
 typedef struct GeometryFillData
 {
     SDL_Point dst;
@@ -657,6 +658,7 @@ SW_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *te
     }
     return 0;
 }
+#endif
 
 static void
 PrepTextureForCopy(const SDL_RenderCommand *cmd)
@@ -833,6 +835,7 @@ SW_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
             }
 
             case SDL_RENDERCMD_GEOMETRY: {
+#if SDL_HAVE_RENDER_GEOMETRY
                 int i;
                 SDL_Rect *verts = (SDL_Rect *) (((Uint8 *) vertices) + cmd->data.draw.first);
                 const int count = (int) cmd->data.draw.count;
@@ -861,7 +864,7 @@ SW_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
                         SDL_SW_FillTriangle(surface, &(ptr[0].dst), &(ptr[1].dst), &(ptr[2].dst), blend, ptr[0].color, ptr[1].color, ptr[2].color);
                     }
                 }
-
+#endif
                 break;
             }
 
@@ -974,7 +977,9 @@ SW_CreateRendererForSurface(SDL_Surface * surface)
     renderer->QueueFillRects = SW_QueueFillRects;
     renderer->QueueCopy = SW_QueueCopy;
     renderer->QueueCopyEx = SW_QueueCopyEx;
+#if SDL_HAVE_RENDER_GEOMETRY
     renderer->QueueGeometry = SW_QueueGeometry;
+#endif
     renderer->RunCommandQueue = SW_RunCommandQueue;
     renderer->RenderReadPixels = SW_RenderReadPixels;
     renderer->RenderPresent = SW_RenderPresent;

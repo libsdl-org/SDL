@@ -116,6 +116,12 @@
 #define SDL_HAVE_YUV                    !SDL_LEAN_AND_MEAN
 #endif
 
+/* SDL Renderer
+   - SDL_RenderGeometry() */
+#ifndef SDL_HAVE_RENDER_GEOMETRY
+#define SDL_HAVE_RENDER_GEOMETRY        !SDL_LEAN_AND_MEAN
+#endif
+
 #include "SDL_assert.h"
 #include "SDL_log.h"
 

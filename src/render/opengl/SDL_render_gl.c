@@ -1051,6 +1051,7 @@ GL_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * te
     return 0;
 }
 
+#if SDL_HAVE_RENDER_GEOMETRY
 static int
 GL_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
         const float *xy, int xy_stride, const int *color, int color_stride, const float *uv, int uv_stride,
@@ -1107,6 +1108,7 @@ GL_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *te
     }
     return 0;
 }
+#endif
 
 static void
 SetDrawState(GL_RenderData *data, const SDL_RenderCommand *cmd, const GL_Shader shader)
@@ -1430,6 +1432,7 @@ GL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
             }
 
             case SDL_RENDERCMD_GEOMETRY: {
+#if SDL_HAVE_RENDER_GEOMETRY
                 const GLfloat *verts = (GLfloat *) (((Uint8 *) vertices) + cmd->data.draw.first);
                 SDL_Texture *texture = cmd->data.draw.texture;
                 const size_t count = cmd->data.draw.count;
@@ -1467,6 +1470,7 @@ GL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
                     data->glEnd();
                     data->glColor4f(currentColor[0], currentColor[1], currentColor[2], currentColor[3]);
                 }
+#endif
                 break;
            }
 
@@ -1752,7 +1756,9 @@ GL_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->QueueFillRects = GL_QueueFillRects;
     renderer->QueueCopy = GL_QueueCopy;
     renderer->QueueCopyEx = GL_QueueCopyEx;
+#if SDL_HAVE_RENDER_GEOMETRY
     renderer->QueueGeometry = GL_QueueGeometry;
+#endif
     renderer->RunCommandQueue = GL_RunCommandQueue;
     renderer->RenderReadPixels = GL_RenderReadPixels;
     renderer->RenderPresent = GL_RenderPresent;

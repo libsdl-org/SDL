@@ -1020,6 +1020,7 @@ D3D_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * t
     return 0;
 }
 
+#if SDL_HAVE_RENDER_GEOMETRY
 static int
 D3D_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
         const float *xy, int xy_stride, const int *color, int color_stride, const float *uv, int uv_stride,
@@ -1071,6 +1072,7 @@ D3D_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *t
     }
     return 0;
 }
+#endif
 
 static int
 UpdateDirtyTexture(IDirect3DDevice9 *device, D3D_TextureRep *texture)
@@ -1486,6 +1488,7 @@ D3D_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *verti
             }
             
             case SDL_RENDERCMD_GEOMETRY: {
+#if SDL_HAVE_RENDER_GEOMETRY
                 const size_t count = cmd->data.draw.count;
                 const size_t first = cmd->data.draw.first;
                 SetDrawState(data, cmd);
@@ -1495,6 +1498,7 @@ D3D_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *verti
                     const Vertex* verts = (Vertex*)(((Uint8*)vertices) + first);
                     IDirect3DDevice9_DrawPrimitiveUP(data->device, D3DPT_TRIANGLELIST, (UINT) count, verts, sizeof(Vertex));
                 }
+#endif
                 break;
             }
 
@@ -1792,7 +1796,9 @@ D3D_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->QueueFillRects = D3D_QueueFillRects;
     renderer->QueueCopy = D3D_QueueCopy;
     renderer->QueueCopyEx = D3D_QueueCopyEx;
+#if SDL_HAVE_RENDER_GEOMETRY
     renderer->QueueGeometry = D3D_QueueGeometry;
+#endif
     renderer->RunCommandQueue = D3D_RunCommandQueue;
     renderer->RenderReadPixels = D3D_RenderReadPixels;
     renderer->RenderPresent = D3D_RenderPresent;

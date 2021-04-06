@@ -572,6 +572,7 @@ QueueCmdCopyEx(SDL_Renderer *renderer, SDL_Texture * texture,
     return retval;
 }
 
+#if SDL_HAVE_RENDER_GEOMETRY
 static int
 QueueCmdGeometry(SDL_Renderer *renderer, SDL_Texture *texture,
         const float *xy, int xy_stride,
@@ -599,6 +600,7 @@ QueueCmdGeometry(SDL_Renderer *renderer, SDL_Texture *texture,
     }
     return retval;
 }
+#endif
 
 static int UpdateLogicalSize(SDL_Renderer *renderer);
 
@@ -3359,6 +3361,7 @@ SDL_RenderGeometry(SDL_Renderer *renderer,
     return SDL_RenderGeometryRaw(renderer, texture, xy, xy_stride, color, color_stride, uv, uv_stride, num_vertices, indices, num_indices, size_indice);
 }
 
+#if SDL_HAVE_RENDER_GEOMETRY
 static int
 remap_one_indice(
         int prev,
@@ -3696,6 +3699,7 @@ end:
 
     return retval;
 }
+#endif
 
 int
 SDL_RenderGeometryRaw(SDL_Renderer *renderer,
@@ -3706,6 +3710,7 @@ SDL_RenderGeometryRaw(SDL_Renderer *renderer,
                                   int num_vertices,
                                   const void *indices, int num_indices, int size_indice)
 {
+#if SDL_HAVE_RENDER_GEOMETRY
     int i;
     int retval = 0;
     int count = indices ? num_indices : num_vertices;
@@ -3806,7 +3811,11 @@ SDL_RenderGeometryRaw(SDL_Renderer *renderer,
             renderer->scale.x, renderer->scale.y);
 
     return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
+#else
+    return SDL_SetError("SDL not built with RenderGeometry support");
+#endif
 }
+
 
 int
 SDL_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
