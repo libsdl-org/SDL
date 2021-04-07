@@ -64,7 +64,6 @@ typedef struct {
     EGLSurface egl_surface;
     struct zwp_locked_pointer_v1 *locked_pointer;
     struct zxdg_toplevel_decoration_v1 *server_decoration;
-    struct org_kde_kwin_server_decoration *kwin_server_decoration;
     struct zwp_keyboard_shortcuts_inhibitor_v1 *key_inhibitor;
     struct zwp_idle_inhibitor_v1 *idle_inhibitor;
 
