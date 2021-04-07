@@ -734,9 +734,14 @@ X11_SetWindowTitle(_THIS, SDL_Window * window)
     status = X11_XChangeProperty(display, data->xwindow, _NET_WM_NAME, UTF8_STRING, 8, 0, (const unsigned char *) title, strlen(title));
 
     if (status != Success) {
-        char* x11err = malloc(1024);
-        X11_XGetErrorText(display, status, x11err, 1024);
-        SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Error when setting X11 window title to %s: %s\n", title, x11err);
+        char *x11_error = NULL;
+        char x11_error_locale[256];
+        if (X11_XGetErrorText(display, status, x11_error_locale, sizeof(x11_error_locale)) == Success)
+        {
+            x11_error = SDL_iconv_string("UTF-8", "", x11_error_locale, SDL_strlen(x11_error_locale)+1);
+            SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Error when setting X11 window title to %s: %s\n", title, x11_error);
+            SDL_free(x11_error);
+        }
     }
 
     X11_XFlush(display);
