@@ -564,6 +564,9 @@ Wayland_VideoQuit(_THIS)
     if (data->shell.zxdg)
         zxdg_shell_v6_destroy(data->shell.zxdg);
 
+    if (data->decoration_manager)
+        zxdg_decoration_manager_v1_destroy(data->decoration_manager);
+
     if (data->compositor)
         wl_compositor_destroy(data->compositor);
 
