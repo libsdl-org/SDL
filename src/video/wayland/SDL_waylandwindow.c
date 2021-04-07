@@ -250,8 +250,8 @@ handle_configure_zxdg_toplevel(void *data,
     if (!fullscreen) {
         if (window->flags & SDL_WINDOW_FULLSCREEN) {
             /* We might need to re-enter fullscreen after being restored from minimized */
-            struct wl_output *output = (struct wl_output *) window->fullscreen_mode.driverdata;
-            SetFullscreen(window, output);
+            SDL_WaylandOutputData *driverdata = (SDL_WaylandOutputData *) SDL_GetDisplayForWindow(window)->driverdata;
+            SetFullscreen(window, driverdata->output);
         }
 
         if (width == 0 || height == 0) {
@@ -366,8 +366,8 @@ handle_configure_xdg_toplevel(void *data,
     if (!fullscreen) {
         if (window->flags & SDL_WINDOW_FULLSCREEN) {
             /* We might need to re-enter fullscreen after being restored from minimized */
-            struct wl_output *output = (struct wl_output *) window->fullscreen_mode.driverdata;
-            SetFullscreen(window, output);
+            SDL_WaylandOutputData *driverdata = (SDL_WaylandOutputData *) SDL_GetDisplayForWindow(window)->driverdata;
+            SetFullscreen(window, driverdata->output);
         }
 
         if (width == 0 || height == 0) {
@@ -461,8 +461,8 @@ update_scale_factor(SDL_WindowData *window) {
        new_factor = old_factor;
    }
 
-   if (FULLSCREEN_VISIBLE(window->sdlwindow) && window->sdlwindow->fullscreen_mode.driverdata) {
-       SDL_VideoDisplay *display = wl_output_get_user_data(window->sdlwindow->fullscreen_mode.driverdata);
+   if (FULLSCREEN_VISIBLE(window->sdlwindow)) {
+       SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window->sdlwindow);
        SDL_WaylandOutputData* driverdata = display->driverdata;
        new_factor = driverdata->scale_factor;
    }
@@ -572,8 +572,8 @@ Wayland_SetWindowHitTest(SDL_Window *window, SDL_bool enabled)
 
 void Wayland_ShowWindow(_THIS, SDL_Window *window)
 {
-    struct wl_output *output = (struct wl_output *) window->fullscreen_mode.driverdata;
-    SetFullscreen(window, (window->flags & SDL_WINDOW_FULLSCREEN) ? output : NULL);
+    SDL_WaylandOutputData *driverdata = (SDL_WaylandOutputData *) SDL_GetDisplayForWindow(window)->driverdata;
+    SetFullscreen(window, (window->flags & SDL_WINDOW_FULLSCREEN) ? driverdata->output : NULL);
 }
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
