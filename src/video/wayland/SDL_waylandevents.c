@@ -1192,15 +1192,6 @@ void Wayland_display_destroy_input(SDL_VideoData *d)
     d->input = NULL;
 }
 
-SDL_WaylandDataDevice* Wayland_get_data_device(struct SDL_WaylandInput *input)
-{
-    if (input == NULL) {
-        return NULL;
-    }
-
-    return input->data_device;
-}
-
 /* !!! FIXME: just merge these into display_handle_global(). */
 void Wayland_display_add_relative_pointer_manager(SDL_VideoData *d, uint32_t id)
 {
