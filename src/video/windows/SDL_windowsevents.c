@@ -490,6 +490,22 @@ WIN_KeyboardHookProc(int nCode, WPARAM wParam, LPARAM lParam)
     return 1;
 }
 
+static void UpdateFocus(HWND hwnd, SDL_Window * window)
+{
+    if (SDL_GetKeyboardFocus() != window) {
+        /* There's no guarantee at this point that the window has focus.
+           It can happen on startup that the user has since focused another window (and if they are dragging
+           that other window it can retain focus indefinitely).
+
+           Therefore we should confirm our focus state rather than rely on an assumption that the keyboard
+           focus conditional is accurate. */
+        if (GetForegroundWindow() == hwnd)
+            SDL_SetKeyboardFocus(window);
+        else
+            SDL_SetKeyboardFocus(NULL);
+    }
+}
+
 LRESULT CALLBACK
 WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -580,9 +596,8 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 }
 
                 SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_SHOWN, 0, 0);
-                if (SDL_GetKeyboardFocus() != data->window) {
-                    SDL_SetKeyboardFocus(data->window);
-                }
+
+                UpdateFocus(hwnd, data->window);
 
                 GetCursorPos(&cursorPos);
                 ScreenToClient(hwnd, &cursorPos);
@@ -1042,6 +1057,11 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             if (GetUpdateRect(hwnd, &rect, FALSE)) {
                 ValidateRect(hwnd, NULL);
                 SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_EXPOSED, 0, 0);
+
+                /* If the SDL window was created while not focused, it is possible that a WM_ACTIVATED
+                   event will never arrive for the next window focus. Luckily, a WM_PAINT arrives so
+                   we can recover by handling focus update here too. */
+                UpdateFocus(hwnd, data->window);
             }
         }
         returnCode = 0;
