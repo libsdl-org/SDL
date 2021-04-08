@@ -80,7 +80,8 @@ Wayland_GetClipboardText(_THIS)
                 if (length > 0) {
                     text = (char*) buffer;
                 }
-            } else if (data_device->selection_source != NULL) {
+            }
+            if (length == 0 && data_device->selection_source != NULL) {
                 buffer = Wayland_data_source_get_data(data_device->selection_source,
                                                       &length, TEXT_MIME, SDL_TRUE);
                 if (length > 0) {
