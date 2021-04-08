@@ -80,6 +80,8 @@ struct SDL_WaylandInput {
 
 extern void Wayland_PumpEvents(_THIS);
 
+extern void Wayland_add_data_device_manager(SDL_VideoData *d, uint32_t id, uint32_t version);
+
 extern void Wayland_display_add_input(SDL_VideoData *d, uint32_t id, uint32_t version);
 extern void Wayland_display_destroy_input(SDL_VideoData *d);
 

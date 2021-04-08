@@ -1087,11 +1087,45 @@ static const struct wl_data_device_listener data_device_listener = {
     data_device_handle_selection
 };
 
+static void
+Wayland_create_data_device(SDL_VideoData *d)
+{
+    SDL_WaylandDataDevice *data_device = NULL;
+
+    data_device = SDL_calloc(1, sizeof *data_device);
+    if (data_device == NULL) {
+        return;
+    }
+
+    data_device->data_device = wl_data_device_manager_get_data_device(
+        d->data_device_manager, d->input->seat
+    );
+    data_device->video_data = d;
+
+    if (data_device->data_device == NULL) {
+        SDL_free(data_device);
+    } else {
+        wl_data_device_set_user_data(data_device->data_device, data_device);
+        wl_data_device_add_listener(data_device->data_device,
+                                    &data_device_listener, data_device);
+        d->input->data_device = data_device;
+    }
+}
+
+void
+Wayland_add_data_device_manager(SDL_VideoData *d, uint32_t id, uint32_t version)
+{
+    d->data_device_manager = wl_registry_bind(d->registry, id, &wl_data_device_manager_interface, SDL_min(3, version));
+
+    if (d->input != NULL) {
+        Wayland_create_data_device(d);
+    }
+}
+
 void
 Wayland_display_add_input(SDL_VideoData *d, uint32_t id, uint32_t version)
 {
     struct SDL_WaylandInput *input;
-    SDL_WaylandDataDevice *data_device = NULL;
 
     input = SDL_calloc(1, sizeof *input);
     if (input == NULL)
@@ -1104,24 +1138,7 @@ Wayland_display_add_input(SDL_VideoData *d, uint32_t id, uint32_t version)
     d->input = input;
 
     if (d->data_device_manager != NULL) {
-        data_device = SDL_calloc(1, sizeof *data_device);
-        if (data_device == NULL) {
-            return;
-        }
-
-        data_device->data_device = wl_data_device_manager_get_data_device(
-            d->data_device_manager, input->seat
-        );
-        data_device->video_data = d;
-
-        if (data_device->data_device == NULL) {
-            SDL_free(data_device);
-        } else {
-            wl_data_device_set_user_data(data_device->data_device, data_device);
-            wl_data_device_add_listener(data_device->data_device,
-                                        &data_device_listener, data_device);
-            input->data_device = data_device;
-        }
+        Wayland_create_data_device(d);
     }
 
     wl_seat_add_listener(input->seat, &seat_listener, input);
