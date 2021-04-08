@@ -6,15 +6,8 @@ cmake_minimum_required(VERSION 3.0.0)
 project(SDL2 C CXX)
 
 if(WINDOWS_STORE)
-  enable_language(CXX)
   cmake_minimum_required(VERSION 3.11)
   add_definitions(-DSDL_BUILDING_WINRT=1 -ZW)
-  link_libraries(
-    -nodefaultlib:vccorlib$<$<CONFIG:Debug>:d>
-    -nodefaultlib:msvcrt$<$<CONFIG:Debug>:d>
-    vccorlib$<$<CONFIG:Debug>:d>.lib
-    msvcrt$<$<CONFIG:Debug>:d>.lib
-  )
 endif()
 
 # !!! FIXME: this should probably do "MACOSX_RPATH ON" as a target property
@@ -1571,7 +1564,11 @@ elseif(WINDOWS)
   endif()
 
   if(SDL_LOCALE)
-    file(GLOB LOCALE_SOURCES ${SDL2_SOURCE_DIR}/src/locale/windows/*.c)
+    if(WINDOWS_STORE)
+      file(GLOB LOCALE_SOURCES ${SDL2_SOURCE_DIR}/src/locale/winrt/*.c)
+    else()
+      file(GLOB LOCALE_SOURCES ${SDL2_SOURCE_DIR}/src/locale/windows/*.c)
+    endif()
     set(SOURCE_FILES ${SOURCE_FILES} ${LOCALE_SOURCES})
     set(HAVE_SDL_LOCALE TRUE)
   endif()
@@ -1590,6 +1587,15 @@ elseif(WINDOWS)
   # Libraries for Win32 native and MinGW
   if(NOT WINDOWS_STORE)
     list(APPEND EXTRA_LIBS user32 gdi32 winmm imm32 ole32 oleaut32 version uuid advapi32 setupapi shell32)
+  endif()
+
+  if(WINDOWS_STORE)
+    list(APPEND EXTRA_LIBS
+      -nodefaultlib:vccorlib$<$<CONFIG:Debug>:d>
+      -nodefaultlib:msvcrt$<$<CONFIG:Debug>:d>
+      vccorlib$<$<CONFIG:Debug>:d>.lib
+      msvcrt$<$<CONFIG:Debug>:d>.lib
+    )
   endif()
 
   # TODO: in configure.ac the check for timers is set on
@@ -2401,8 +2407,10 @@ if(SDL_SHARED)
   endif()
   if(MSVC AND NOT LIBC)
     # Don't try to link with the default set of libraries.
-    set_target_properties(SDL2 PROPERTIES LINK_FLAGS_RELEASE "/NODEFAULTLIB")
-    set_target_properties(SDL2 PROPERTIES LINK_FLAGS_DEBUG "/NODEFAULTLIB")
+    if(NOT WINDOWS_STORE)
+      set_target_properties(SDL2 PROPERTIES LINK_FLAGS_RELEASE "/NODEFAULTLIB")
+      set_target_properties(SDL2 PROPERTIES LINK_FLAGS_DEBUG "/NODEFAULTLIB")
+    endif()
     set_target_properties(SDL2 PROPERTIES STATIC_LIBRARY_FLAGS "/NODEFAULTLIB")
   endif()
   set(_INSTALL_LIBS "SDL2" ${_INSTALL_LIBS})
