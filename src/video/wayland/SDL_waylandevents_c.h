@@ -85,8 +85,6 @@ extern void Wayland_add_data_device_manager(SDL_VideoData *d, uint32_t id, uint3
 extern void Wayland_display_add_input(SDL_VideoData *d, uint32_t id, uint32_t version);
 extern void Wayland_display_destroy_input(SDL_VideoData *d);
 
-extern SDL_WaylandDataDevice* Wayland_get_data_device(struct SDL_WaylandInput *input);
-
 extern void Wayland_display_add_pointer_constraints(SDL_VideoData *d, uint32_t id);
 extern void Wayland_display_destroy_pointer_constraints(SDL_VideoData *d);
 
