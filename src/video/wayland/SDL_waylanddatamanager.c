@@ -204,7 +204,7 @@ mime_data_list_add(struct wl_list* list,
         } else {
             WAYLAND_wl_list_insert(list, &(mime_data->link));
 
-            mime_type_length = strlen(mime_type) + 1;
+            mime_type_length = SDL_strlen(mime_type) + 1;
             mime_data->mime_type = SDL_malloc(mime_type_length);
             if (mime_data->mime_type == NULL) {
                 status = SDL_OutOfMemory();
