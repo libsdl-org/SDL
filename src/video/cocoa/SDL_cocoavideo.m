@@ -150,6 +150,7 @@ Cocoa_CreateDevice(void)
         device->GL_UnloadLibrary = Cocoa_GLES_UnloadLibrary;
         device->GL_CreateContext = Cocoa_GLES_CreateContext;
         device->GL_MakeCurrent = Cocoa_GLES_MakeCurrent;
+        device->GL_GetDrawableSize = Cocoa_GLES_GetDrawableSize;
         device->GL_SetSwapInterval = Cocoa_GLES_SetSwapInterval;
         device->GL_GetSwapInterval = Cocoa_GLES_GetSwapInterval;
         device->GL_SwapWindow = Cocoa_GLES_SwapWindow;
