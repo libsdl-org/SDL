@@ -118,6 +118,13 @@ SDL_WAYLAND_SYM(enum xkb_state_component, xkb_state_update_mask, (struct xkb_sta
                       xkb_layout_index_t depressed_layout,\
                       xkb_layout_index_t latched_layout,\
                       xkb_layout_index_t locked_layout) )
+SDL_WAYLAND_SYM(void, xkb_keymap_key_for_each, (struct xkb_keymap *, xkb_keymap_key_iter_t, void*) )
+SDL_WAYLAND_SYM(int, xkb_keymap_key_get_syms_by_level, (struct xkb_keymap *,
+                                                        xkb_keycode_t,
+                                                        xkb_layout_index_t,
+                                                        xkb_layout_index_t,
+                                                        const xkb_keysym_t **) )
+SDL_WAYLAND_SYM(uint32_t, xkb_keysym_to_utf32, (xkb_keysym_t) )
 
 #undef SDL_WAYLAND_MODULE
 #undef SDL_WAYLAND_SYM

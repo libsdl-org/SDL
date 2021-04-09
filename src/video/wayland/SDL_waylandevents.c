@@ -767,6 +767,54 @@ keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
     }
 }
 
+typedef struct Wayland_Keymap
+{
+    xkb_layout_index_t layout;
+    SDL_Keycode keymap[SDL_NUM_SCANCODES];
+} Wayland_Keymap;
+
+static void
+Wayland_keymap_iter(struct xkb_keymap *keymap, xkb_keycode_t key, void *data)
+{
+    const xkb_keysym_t *syms;
+    Wayland_Keymap *sdlKeymap = (Wayland_Keymap *)data;
+
+    if ((key - 8) < SDL_arraysize(xfree86_scancode_table2)) {
+        SDL_Scancode scancode = xfree86_scancode_table2[key - 8];
+        if (scancode == SDL_SCANCODE_UNKNOWN) {
+            return;
+        }
+
+        if (WAYLAND_xkb_keymap_key_get_syms_by_level(keymap, key, sdlKeymap->layout, 0, &syms) > 0) {
+            uint32_t keycode = WAYLAND_xkb_keysym_to_utf32(syms[0]);
+            if (keycode) {
+                sdlKeymap->keymap[scancode] = keycode;
+            } else {
+                switch (scancode) {
+                    case SDL_SCANCODE_RETURN:
+                        sdlKeymap->keymap[scancode] = SDLK_RETURN;
+                        break;
+                    case SDL_SCANCODE_ESCAPE:
+                        sdlKeymap->keymap[scancode] = SDLK_ESCAPE;
+                        break;
+                    case SDL_SCANCODE_BACKSPACE:
+                        sdlKeymap->keymap[scancode] = SDLK_BACKSPACE;
+                        break;
+                    case SDL_SCANCODE_TAB:
+                        sdlKeymap->keymap[scancode] = SDLK_TAB;
+                        break;
+                    case SDL_SCANCODE_DELETE:
+                        sdlKeymap->keymap[scancode] = SDLK_DELETE;
+                        break;
+                    default:
+                        sdlKeymap->keymap[scancode] = SDL_SCANCODE_TO_KEYCODE(scancode);
+                        break;
+                }
+            }
+        }
+    }
+}
+
 static void
 keyboard_handle_modifiers(void *data, struct wl_keyboard *keyboard,
                           uint32_t serial, uint32_t mods_depressed,
@@ -774,9 +822,18 @@ keyboard_handle_modifiers(void *data, struct wl_keyboard *keyboard,
                           uint32_t group)
 {
     struct SDL_WaylandInput *input = data;
+    Wayland_Keymap keymap;
 
     WAYLAND_xkb_state_update_mask(input->xkb.state, mods_depressed, mods_latched,
                           mods_locked, 0, 0, group);
+
+    keymap.layout = group;
+    SDL_GetDefaultKeymap(keymap.keymap);
+    WAYLAND_xkb_keymap_key_for_each(input->xkb.keymap,
+                                    Wayland_keymap_iter,
+                                    &keymap);
+    SDL_SetKeymap(0, keymap.keymap, SDL_NUM_SCANCODES);
+    SDL_SendKeymapChangedEvent();
 }
 
 static void
