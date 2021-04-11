@@ -607,9 +607,6 @@ Emscripten_HandleFullscreenChange(int eventType, const EmscriptenFullscreenChang
         window_data->window->flags |= window_data->requested_fullscreen_mode;
 
         window_data->requested_fullscreen_mode = 0;
-
-        if(!window_data->requested_fullscreen_mode)
-            window_data->window->flags |= SDL_WINDOW_FULLSCREEN; /*we didn't request fullscreen*/
     }
     else
     {
