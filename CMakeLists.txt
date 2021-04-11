@@ -2316,6 +2316,9 @@ endmacro()
 
 macro(asan_check_add_debug_flag ASAN_FLAG)
     check_add_debug_flag("-fsanitize=${ASAN_FLAG}" "${ASAN_FLAG}")
+    if(HAS_C_${ASAN_FLAG} OR HAS_CXX_${ASAN_FLAG})
+      set(HAVE_ASAN ON)
+    endif()
 endmacro()
 
 macro(asan_check_add_debug_flag2 ASAN_FLAG)
@@ -2336,6 +2339,10 @@ macro(asan_check_add_debug_flag2 ASAN_FLAG)
 
     if (HAS_CXX_${ASAN_FLAG})
         set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${FLAG}")
+    endif()
+
+    if(HAS_C_${ASAN_FLAG} OR HAS_CXX_${ASAN_FLAG})
+      set(HAVE_ASAN ON)
     endif()
 endmacro()
 
