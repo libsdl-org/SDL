@@ -36,6 +36,21 @@
 #define NSAppKitVersionNumber10_8 1187
 #endif
 
+static SDL_Window *FindSDLWindowForNSWindow(NSWindow *win)
+{
+    SDL_Window *sdlwindow = NULL;
+    SDL_VideoDevice *device = SDL_GetVideoDevice();
+    if (device && device->windows) {
+        for (sdlwindow = device->windows; sdlwindow; sdlwindow = sdlwindow->next) {
+            NSWindow *nswindow = ((SDL_WindowData *) sdlwindow->driverdata)->nswindow;
+            if (win == nswindow)
+                return sdlwindow;
+        }
+    }
+
+    return sdlwindow;
+}
+
 @interface SDLApplication : NSApplication
 
 - (void)terminate:(id)sender;
@@ -145,12 +160,6 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
                    selector:@selector(localeDidChange:)
                        name:NSCurrentLocaleDidChangeNotification
                      object:nil];
-
-        [[NSAppleEventManager sharedAppleEventManager]
-            setEventHandler:self
-                andSelector:@selector(handleURLEvent:withReplyEvent:)
-            forEventClass:kInternetEventClass
-                andEventID:kAEGetURL];
     }
 
     return self;
@@ -164,6 +173,13 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
     [center removeObserver:self name:NSApplicationDidBecomeActiveNotification object:nil];
     [center removeObserver:self name:NSCurrentLocaleDidChangeNotification object:nil];
 
+    /* Remove our URL event handler only if we set it */
+    if ([NSApp delegate] == self) {
+        [[NSAppleEventManager sharedAppleEventManager]
+            removeEventHandlerForEventClass:kInternetEventClass
+                                 andEventID:kAEGetURL];
+    }
+
     [super dealloc];
 }
 
@@ -174,6 +190,10 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
     if (![win isKeyWindow]) {
         return;
     }
+
+    /* Don't do anything if this was not an SDL window that was closed */
+    if (FindSDLWindowForNSWindow(win) == NULL)
+        return;
 
     /* HACK: Make the next window in the z-order key when the key window is
      * closed. The custom event loop and/or windowing code we have seems to
@@ -216,6 +236,13 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
      */
     if (!seenFirstActivate) {
         seenFirstActivate = YES;
+        return;
+    }
+
+    /* Don't do anything if the application already has a key window
+     * that is not an SDL window.
+     */
+    if ([NSApp keyWindow] && FindSDLWindowForNSWindow([NSApp keyWindow]) == NULL) {
         return;
     }
 
@@ -469,6 +496,15 @@ Cocoa_RegisterApp(void)
          * termination into SDL_Quit, and we can't handle application:openFile:
          */
         if (![NSApp delegate]) {
+            /* Only register the URL event handler if we are being set as the
+             * app delegate to avoid replacing any existing event handler.
+             */
+            [[NSAppleEventManager sharedAppleEventManager]
+                setEventHandler:appDelegate
+                    andSelector:@selector(handleURLEvent:withReplyEvent:)
+                  forEventClass:kInternetEventClass
+                     andEventID:kAEGetURL];
+
             [(NSApplication *)NSApp setDelegate:appDelegate];
         } else {
             appDelegate->seenFirstActivate = YES;
