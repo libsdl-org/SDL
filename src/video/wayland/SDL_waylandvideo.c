@@ -309,8 +309,8 @@ display_handle_done(void *data,
     SDL_zero(mode);
     mode.format = SDL_PIXELFORMAT_RGB888;
     if (driverdata->transform & WL_OUTPUT_TRANSFORM_90) {
-       mode.w = driverdata->height / driverdata->scale_factor;
-       mode.h = driverdata->width / driverdata->scale_factor;
+        mode.w = driverdata->height / driverdata->scale_factor;
+        mode.h = driverdata->width / driverdata->scale_factor;
     } else {
         mode.w = driverdata->width / driverdata->scale_factor;
         mode.h = driverdata->height / driverdata->scale_factor;
