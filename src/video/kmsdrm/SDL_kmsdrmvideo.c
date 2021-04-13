@@ -1280,6 +1280,9 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
     SDL_SetMouseFocus(window);
     SDL_SetKeyboardFocus(window);
 
+    /* Tell the app that the window has moved to top-left. */
+    SDL_SendWindowEvent(window, SDL_WINDOWEVENT_MOVED, 0, 0);
+
     /* Allocated windata will be freed in KMSDRM_DestroyWindow,
        and KMSDRM_DestroyWindow() will be called by SDL_CreateWindow()
        if we return error on any of the previous returns of the function. */ 
