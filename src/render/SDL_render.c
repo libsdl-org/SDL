@@ -1086,6 +1086,7 @@ SDL_Texture *
 SDL_CreateTexture(SDL_Renderer * renderer, Uint32 format, int access, int w, int h)
 {
     SDL_Texture *texture;
+    SDL_bool texture_is_fourcc_and_target;
 
     CHECK_RENDERER_MAGIC(renderer, NULL);
 
@@ -1131,15 +1132,24 @@ SDL_CreateTexture(SDL_Renderer * renderer, Uint32 format, int access, int w, int
     }
     renderer->textures = texture;
 
-    if (IsSupportedFormat(renderer, format)) {
+    /* FOURCC format cannot be used directly by renderer back-ends for target texture */
+    texture_is_fourcc_and_target = (access == SDL_TEXTUREACCESS_TARGET && SDL_ISPIXELFORMAT_FOURCC(texture->format));
+
+    if (texture_is_fourcc_and_target == SDL_FALSE && IsSupportedFormat(renderer, format)) {
         if (renderer->CreateTexture(renderer, texture) < 0) {
             SDL_DestroyTexture(texture);
             return NULL;
         }
     } else {
-        texture->native = SDL_CreateTexture(renderer,
-                                GetClosestSupportedFormat(renderer, format),
-                                access, w, h);
+        int closest_format;
+
+        if (texture_is_fourcc_and_target == SDL_FALSE) {
+            closest_format = GetClosestSupportedFormat(renderer, format);
+        } else {
+            closest_format = renderer->info.texture_formats[0];
+        }
+
+        texture->native = SDL_CreateTexture(renderer, closest_format, access, w, h);
         if (!texture->native) {
             SDL_DestroyTexture(texture);
             return NULL;
