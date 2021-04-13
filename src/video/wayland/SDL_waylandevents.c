@@ -811,6 +811,54 @@ keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
     }
 }
 
+typedef struct Wayland_Keymap
+{
+    xkb_layout_index_t layout;
+    SDL_Keycode keymap[SDL_NUM_SCANCODES];
+} Wayland_Keymap;
+
+static void
+Wayland_keymap_iter(struct xkb_keymap *keymap, xkb_keycode_t key, void *data)
+{
+    const xkb_keysym_t *syms;
+    Wayland_Keymap *sdlKeymap = (Wayland_Keymap *)data;
+
+    if ((key - 8) < SDL_arraysize(xfree86_scancode_table2)) {
+        SDL_Scancode scancode = xfree86_scancode_table2[key - 8];
+        if (scancode == SDL_SCANCODE_UNKNOWN) {
+            return;
+        }
+
+        if (WAYLAND_xkb_keymap_key_get_syms_by_level(keymap, key, sdlKeymap->layout, 0, &syms) > 0) {
+            uint32_t keycode = WAYLAND_xkb_keysym_to_utf32(syms[0]);
+            if (keycode) {
+                sdlKeymap->keymap[scancode] = keycode;
+            } else {
+                switch (scancode) {
+                    case SDL_SCANCODE_RETURN:
+                        sdlKeymap->keymap[scancode] = SDLK_RETURN;
+                        break;
+                    case SDL_SCANCODE_ESCAPE:
+                        sdlKeymap->keymap[scancode] = SDLK_ESCAPE;
+                        break;
+                    case SDL_SCANCODE_BACKSPACE:
+                        sdlKeymap->keymap[scancode] = SDLK_BACKSPACE;
+                        break;
+                    case SDL_SCANCODE_TAB:
+                        sdlKeymap->keymap[scancode] = SDLK_TAB;
+                        break;
+                    case SDL_SCANCODE_DELETE:
+                        sdlKeymap->keymap[scancode] = SDLK_DELETE;
+                        break;
+                    default:
+                        sdlKeymap->keymap[scancode] = SDL_SCANCODE_TO_KEYCODE(scancode);
+                        break;
+                }
+            }
+        }
+    }
+}
+
 static void
 keyboard_handle_modifiers(void *data, struct wl_keyboard *keyboard,
                           uint32_t serial, uint32_t mods_depressed,
@@ -818,9 +866,18 @@ keyboard_handle_modifiers(void *data, struct wl_keyboard *keyboard,
                           uint32_t group)
 {
     struct SDL_WaylandInput *input = data;
+    Wayland_Keymap keymap;
 
     WAYLAND_xkb_state_update_mask(input->xkb.state, mods_depressed, mods_latched,
                           mods_locked, 0, 0, group);
+
+    keymap.layout = group;
+    SDL_GetDefaultKeymap(keymap.keymap);
+    WAYLAND_xkb_keymap_key_for_each(input->xkb.keymap,
+                                    Wayland_keymap_iter,
+                                    &keymap);
+    SDL_SetKeymap(0, keymap.keymap, SDL_NUM_SCANCODES);
+    SDL_SendKeymapChangedEvent();
 }
 
 static void
@@ -1131,11 +1188,45 @@ static const struct wl_data_device_listener data_device_listener = {
     data_device_handle_selection
 };
 
+static void
+Wayland_create_data_device(SDL_VideoData *d)
+{
+    SDL_WaylandDataDevice *data_device = NULL;
+
+    data_device = SDL_calloc(1, sizeof *data_device);
+    if (data_device == NULL) {
+        return;
+    }
+
+    data_device->data_device = wl_data_device_manager_get_data_device(
+        d->data_device_manager, d->input->seat
+    );
+    data_device->video_data = d;
+
+    if (data_device->data_device == NULL) {
+        SDL_free(data_device);
+    } else {
+        wl_data_device_set_user_data(data_device->data_device, data_device);
+        wl_data_device_add_listener(data_device->data_device,
+                                    &data_device_listener, data_device);
+        d->input->data_device = data_device;
+    }
+}
+
+void
+Wayland_add_data_device_manager(SDL_VideoData *d, uint32_t id, uint32_t version)
+{
+    d->data_device_manager = wl_registry_bind(d->registry, id, &wl_data_device_manager_interface, SDL_min(3, version));
+
+    if (d->input != NULL) {
+        Wayland_create_data_device(d);
+    }
+}
+
 void
 Wayland_display_add_input(SDL_VideoData *d, uint32_t id, uint32_t version)
 {
     struct SDL_WaylandInput *input;
-    SDL_WaylandDataDevice *data_device = NULL;
 
     input = SDL_calloc(1, sizeof *input);
     if (input == NULL)
@@ -1148,24 +1239,7 @@ Wayland_display_add_input(SDL_VideoData *d, uint32_t id, uint32_t version)
     d->input = input;
 
     if (d->data_device_manager != NULL) {
-        data_device = SDL_calloc(1, sizeof *data_device);
-        if (data_device == NULL) {
-            return;
-        }
-
-        data_device->data_device = wl_data_device_manager_get_data_device(
-            d->data_device_manager, input->seat
-        );
-        data_device->video_data = d;
-
-        if (data_device->data_device == NULL) {
-            SDL_free(data_device);
-        } else {
-            wl_data_device_set_user_data(data_device->data_device, data_device);
-            wl_data_device_add_listener(data_device->data_device,
-                                        &data_device_listener, data_device);
-            input->data_device = data_device;
-        }
+        Wayland_create_data_device(d);
     }
 
     wl_seat_add_listener(input->seat, &seat_listener, input);
@@ -1223,15 +1297,6 @@ void Wayland_display_destroy_input(SDL_VideoData *d)
 
     SDL_free(input);
     d->input = NULL;
-}
-
-SDL_WaylandDataDevice* Wayland_get_data_device(struct SDL_WaylandInput *input)
-{
-    if (input == NULL) {
-        return NULL;
-    }
-
-    return input->data_device;
 }
 
 /* !!! FIXME: just merge these into display_handle_global(). */

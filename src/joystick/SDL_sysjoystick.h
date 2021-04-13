@@ -99,6 +99,7 @@ struct _SDL_Joystick
     Uint8 led_red;
     Uint8 led_green;
     Uint8 led_blue;
+    Uint32 led_expiration;
 
     SDL_bool attached;
     SDL_bool is_game_controller;
@@ -188,6 +189,8 @@ typedef struct _SDL_JoystickDriver
 
 /* Windows and Mac OSX has a limit of MAX_DWORD / 1000, Linux kernel has a limit of 0xFFFF */
 #define SDL_MAX_RUMBLE_DURATION_MS  0xFFFF
+
+#define SDL_LED_MIN_REPEAT_MS  5000
 
 /* The available joystick drivers */
 extern SDL_JoystickDriver SDL_ANDROID_JoystickDriver;

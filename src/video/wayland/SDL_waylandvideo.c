@@ -265,12 +265,32 @@ display_handle_mode(void *data,
 {
     SDL_VideoDisplay *display = data;
     SDL_WaylandOutputData* driverdata = display->driverdata;
+    SDL_DisplayMode mode;
 
     if (flags & WL_OUTPUT_MODE_CURRENT) {
         driverdata->width = width;
         driverdata->height = height;
         driverdata->refresh = refresh;
     }
+
+    /* Note that the width/height are NOT multiplied by scale_factor!
+     * This is intentional and is designed to get the unscaled modes, which is
+     * important for high-DPI games intending to use the display mode as the
+     * target drawable size. The scaled desktop mode will be added at the end
+     * when display_handle_done is called (see below).
+     */
+    SDL_zero(mode);
+    mode.format = SDL_PIXELFORMAT_RGB888;
+    if (driverdata->transform & WL_OUTPUT_TRANSFORM_90) {
+        mode.w = height;
+        mode.h = width;
+    } else {
+        mode.w = width;
+        mode.h = height;
+    }
+    mode.refresh_rate = refresh / 1000; /* mHz to Hz */
+    mode.driverdata = driverdata->output;
+    SDL_AddDisplayMode(display, &mode);
 }
 
 static void
@@ -288,13 +308,14 @@ display_handle_done(void *data,
 
     SDL_zero(mode);
     mode.format = SDL_PIXELFORMAT_RGB888;
-    mode.w = driverdata->width / driverdata->scale_factor;
-    mode.h = driverdata->height / driverdata->scale_factor;
     if (driverdata->transform & WL_OUTPUT_TRANSFORM_90) {
-       mode.w = driverdata->height / driverdata->scale_factor;
-       mode.h = driverdata->width / driverdata->scale_factor;
+        mode.w = driverdata->height / driverdata->scale_factor;
+        mode.h = driverdata->width / driverdata->scale_factor;
+    } else {
+        mode.w = driverdata->width / driverdata->scale_factor;
+        mode.h = driverdata->height / driverdata->scale_factor;
     }
-    mode.refresh_rate = driverdata->refresh / 1000; // mHz to Hz
+    mode.refresh_rate = driverdata->refresh / 1000; /* mHz to Hz */
     mode.driverdata = driverdata->output;
     SDL_AddDisplayMode(display, &mode);
     display->current_mode = mode;
@@ -423,7 +444,7 @@ display_handle_global(void *data, struct wl_registry *registry, uint32_t id,
     } else if (strcmp(interface, "zwp_idle_inhibit_manager_v1") == 0) {
         d->idle_inhibit_manager = wl_registry_bind(d->registry, id, &zwp_idle_inhibit_manager_v1_interface, 1);
     } else if (strcmp(interface, "wl_data_device_manager") == 0) {
-        d->data_device_manager = wl_registry_bind(d->registry, id, &wl_data_device_manager_interface, SDL_min(3, version));
+        Wayland_add_data_device_manager(d, id, version);
     } else if (strcmp(interface, "zxdg_decoration_manager_v1") == 0) {
         d->decoration_manager = wl_registry_bind(d->registry, id, &zxdg_decoration_manager_v1_interface, 1);
 
