@@ -64,6 +64,8 @@ struct SDL_WaylandInput {
     struct {
         struct xkb_keymap *keymap;
         struct xkb_state *state;
+        struct xkb_compose_table *compose_table;
+        struct xkb_compose_state *compose_state;
     } xkb;
 
     /* information about axis events on current frame */

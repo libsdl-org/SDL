@@ -57,6 +57,7 @@
 #include <poll.h>
 #include <unistd.h>
 #include <xkbcommon/xkbcommon.h>
+#include <xkbcommon/xkbcommon-compose.h>
 
 /* Weston uses a ratio of 10 units per scroll tick */
 #define WAYLAND_WHEEL_AXIS_UNIT 10
@@ -624,7 +625,7 @@ keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
                        uint32_t format, int fd, uint32_t size)
 {
     struct SDL_WaylandInput *input = data;
-    char *map_str;
+    char *map_str, *locale;
 
     if (!data) {
         close(fd);
@@ -660,6 +661,30 @@ keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
         WAYLAND_xkb_keymap_unref(input->xkb.keymap);
         input->xkb.keymap = NULL;
         return;
+    }
+
+    /*
+     * See https://blogs.s-osg.org/compose-key-support-weston/
+     * for further explanation on dead keys in Wayland.
+     */
+
+    /* Look up the preferred locale, falling back to "C" as default */
+    if (!(locale = SDL_getenv("LC_ALL")))
+        if (!(locale = SDL_getenv("LC_CTYPE")))
+            if (!(locale = SDL_getenv("LANG")))
+                locale = "C";
+    /* Set up XKB compose table */
+    input->xkb.compose_table = WAYLAND_xkb_compose_table_new_from_locale(input->display->xkb_context,
+                                              locale, XKB_COMPOSE_COMPILE_NO_FLAGS);
+    if (input->xkb.compose_table) {
+        /* Set up XKB compose state */
+        input->xkb.compose_state = WAYLAND_xkb_compose_state_new(input->xkb.compose_table,
+                                              XKB_COMPOSE_STATE_NO_FLAGS);
+        if (!input->xkb.compose_state) {
+            fprintf(stderr, "could not create XKB compose state\n");
+            WAYLAND_xkb_compose_table_unref(input->xkb.compose_table);
+            input->xkb.compose_table = NULL;
+        }
     }
 }
 
@@ -709,6 +734,7 @@ keyboard_input_get_text(char text[8], const struct SDL_WaylandInput *input, uint
 {
     SDL_WindowData *window = input->keyboard_focus;
     const xkb_keysym_t *syms;
+    xkb_keysym_t sym;
 
     if (!window || window->keyboard_device != input || !input->xkb.state) {
         return SDL_FALSE;
@@ -718,15 +744,33 @@ keyboard_input_get_text(char text[8], const struct SDL_WaylandInput *input, uint
     if (WAYLAND_xkb_state_key_get_syms(input->xkb.state, key + 8, &syms) != 1) {
         return SDL_FALSE;
     }
+    sym = syms[0];
 
 #ifdef SDL_USE_IME
-    if (SDL_IME_ProcessKeyEvent(syms[0], key + 8)) {
+    if (SDL_IME_ProcessKeyEvent(sym, key + 8)) {
         *handled_by_ime = SDL_TRUE;
         return SDL_TRUE;
     }
 #endif
 
-    return WAYLAND_xkb_keysym_to_utf8(syms[0], text, 8) > 0;
+    if (WAYLAND_xkb_compose_state_feed(input->xkb.compose_state, sym) == XKB_COMPOSE_FEED_ACCEPTED) {
+        switch(WAYLAND_xkb_compose_state_get_status(input->xkb.compose_state)) {
+            case XKB_COMPOSE_COMPOSING:
+                *handled_by_ime = SDL_TRUE;
+                return SDL_TRUE;
+            case XKB_COMPOSE_CANCELLED:
+            default:
+                sym = XKB_KEY_NoSymbol;
+                break;
+            case XKB_COMPOSE_NOTHING:
+                break;
+            case XKB_COMPOSE_COMPOSED:
+                sym = WAYLAND_xkb_compose_state_get_one_sym(input->xkb.compose_state);
+                break;
+        }
+    }
+
+    return WAYLAND_xkb_keysym_to_utf8(sym, text, 8) > 0;
 }
 
 static void
@@ -1238,6 +1282,12 @@ void Wayland_display_destroy_input(SDL_VideoData *d)
 
     if (input->seat)
         wl_seat_destroy(input->seat);
+
+    if (input->xkb.compose_state)
+        WAYLAND_xkb_compose_state_unref(input->xkb.compose_state);
+
+    if (input->xkb.compose_table)
+        WAYLAND_xkb_compose_table_unref(input->xkb.compose_table);
 
     if (input->xkb.state)
         WAYLAND_xkb_state_unref(input->xkb.state);

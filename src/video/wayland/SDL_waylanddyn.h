@@ -38,6 +38,7 @@ struct wl_shm;
 #include "wayland-cursor.h"
 #include "wayland-util.h"
 #include "xkbcommon/xkbcommon.h"
+#include "xkbcommon/xkbcommon-compose.h"
 
 #ifdef __cplusplus
 extern "C"
