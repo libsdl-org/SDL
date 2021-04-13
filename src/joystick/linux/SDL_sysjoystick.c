@@ -1444,24 +1444,24 @@ LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
 
     /* We have a gamepad, start filling out the mappings */
 
-    if (joystick->hwdata->has_key[BTN_SOUTH]) {
+    if (joystick->hwdata->has_key[BTN_A]) {
         out->a.kind = EMappingKind_Button;
-        out->a.target = joystick->hwdata->key_map[BTN_SOUTH];
+        out->a.target = joystick->hwdata->key_map[BTN_A];
     }
 
-    if (joystick->hwdata->has_key[BTN_EAST]) {
+    if (joystick->hwdata->has_key[BTN_B]) {
         out->b.kind = EMappingKind_Button;
-        out->b.target = joystick->hwdata->key_map[BTN_EAST];
+        out->b.target = joystick->hwdata->key_map[BTN_B];
     }
 
-    if (joystick->hwdata->has_key[BTN_NORTH]) {
-        out->y.kind = EMappingKind_Button;
-        out->y.target = joystick->hwdata->key_map[BTN_NORTH];
-    }
-
-    if (joystick->hwdata->has_key[BTN_WEST]) {
+    if (joystick->hwdata->has_key[BTN_X]) {
         out->x.kind = EMappingKind_Button;
-        out->x.target = joystick->hwdata->key_map[BTN_WEST];
+        out->x.target = joystick->hwdata->key_map[BTN_X];
+    }
+
+    if (joystick->hwdata->has_key[BTN_Y]) {
+        out->y.kind = EMappingKind_Button;
+        out->y.target = joystick->hwdata->key_map[BTN_Y];
     }
 
     if (joystick->hwdata->has_key[BTN_SELECT]) {
@@ -1525,11 +1525,17 @@ LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
         if (joystick->hwdata->has_key[BTN_TL2]) {
             out->lefttrigger.kind = EMappingKind_Button;
             out->lefttrigger.target = joystick->hwdata->key_map[BTN_TL2];
+        } else if (joystick->hwdata->has_abs[ABS_Z]) {
+            out->lefttrigger.kind = EMappingKind_Axis;
+            out->lefttrigger.target = joystick->hwdata->abs_map[ABS_Z];
         }
 
         if (joystick->hwdata->has_key[BTN_TR2]) {
             out->righttrigger.kind = EMappingKind_Button;
             out->righttrigger.target = joystick->hwdata->key_map[BTN_TR2];
+        } else if (joystick->hwdata->has_abs[ABS_RZ]) {
+            out->righttrigger.kind = EMappingKind_Axis;
+            out->righttrigger.target = joystick->hwdata->abs_map[ABS_RZ];
         }
     }
 
