@@ -16032,20 +16032,16 @@ $as_echo_n "checking for GCC -mno-cygwin option... " >&6; }
         cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-
 int
 main ()
 {
-
 
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-        have_no_cygwin=yes
-
+  have_no_cygwin=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_no_cygwin" >&5
@@ -16336,15 +16332,12 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-    have_gcc_mmd_mt=yes
-
+  have_gcc_mmd_mt=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_gcc_mmd_mt" >&5
@@ -16372,7 +16365,6 @@ case "$host" in
 int
 main ()
 {
-
 
   ;
   return 0;
@@ -16407,7 +16399,6 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
@@ -16441,7 +16432,6 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
@@ -16474,7 +16464,6 @@ case "$host" in
 int
 main ()
 {
-
 
   ;
   return 0;
@@ -17067,7 +17056,6 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
@@ -17238,7 +17226,6 @@ $as_echo_n "checking for GCC builtin atomic operations... " >&6; }
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-
 int
 main ()
 {
@@ -17256,9 +17243,7 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
-
-    have_gcc_atomics=yes
-
+  have_gcc_atomics=yes
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
@@ -17274,7 +17259,6 @@ $as_echo "#define HAVE_GCC_ATOMICS 1" >>confdefs.h
         cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-
 int
 main ()
 {
@@ -17288,9 +17272,7 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
-
-        have_gcc_sync_lock_test_and_set=yes
-
+  have_gcc_sync_lock_test_and_set=yes
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
@@ -17615,15 +17597,12 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-        have_gcc_mmx=yes
-
+  have_gcc_mmx=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_gcc_mmx" >&5
@@ -17671,9 +17650,7 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
-
-        have_gcc_3dnow=yes
-
+  have_gcc_3dnow=yes
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
@@ -17723,15 +17700,12 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-        have_gcc_sse=yes
-
+  have_gcc_sse=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_gcc_sse" >&5
@@ -17780,15 +17754,12 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-        have_gcc_sse2=yes
-
+  have_gcc_sse2=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_gcc_sse2" >&5
@@ -17837,15 +17808,12 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-        have_gcc_sse3=yes
-
+  have_gcc_sse3=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_gcc_sse3" >&5
@@ -17900,7 +17868,6 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
@@ -17929,15 +17896,12 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-            have_gcc_altivec=yes
-
+  have_gcc_altivec=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_gcc_altivec" >&5
@@ -17960,7 +17924,6 @@ $as_echo_n "checking for Altivec with GCC altivec.h and -faltivec option... " >&
 int
 main ()
 {
-
 
   ;
   return 0;
@@ -17991,15 +17954,12 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-            have_gcc_altivec=yes
-
+  have_gcc_altivec=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_gcc_altivec" >&5
@@ -18064,9 +18024,7 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-            have_oss=yes
-
+  have_oss=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
         fi
@@ -19114,9 +19072,7 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-            audio_arts=yes
-
+  audio_arts=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
             CFLAGS="$save_CFLAGS"
@@ -19718,15 +19674,12 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-    have_gcc_fvisibility=yes
-
+  have_gcc_fvisibility=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_gcc_fvisibility" >&5
@@ -19755,15 +19708,12 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-    have_gcc_no_strict_aliasing=yes
-
+  have_gcc_no_strict_aliasing=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_gcc_no_strict_aliasing" >&5
@@ -19792,15 +19742,12 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-    have_gcc_preferred_stack_boundary=yes
-
+  have_gcc_preferred_stack_boundary=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_gcc_preferred_stack_boundary" >&5
@@ -19829,15 +19776,12 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-    have_gcc_declaration_after_statement=yes
-
+  have_gcc_declaration_after_statement=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_gcc_declaration_after_statement" >&5
@@ -19866,15 +19810,12 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-    have_gcc_Wall=yes
-
+  have_gcc_Wall=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_gcc_Wall" >&5
@@ -20035,7 +19976,6 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
@@ -20190,9 +20130,7 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
-
-        have_video_rpi=yes
-
+  have_video_rpi=yes
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
@@ -21076,7 +21014,6 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
@@ -21502,9 +21439,7 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-                have_xrandr_h_hdr=yes
-
+  have_xrandr_h_hdr=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
                 if test x$have_xrandr_h_hdr = xyes; then
@@ -21789,15 +21724,12 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-        have_vivante_vdk=yes
-
+  have_vivante_vdk=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_vivante_vdk" >&5
@@ -21817,15 +21749,12 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-        have_vivante_egl=yes
-
+  have_vivante_egl=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_vivante_egl" >&5
@@ -21885,15 +21814,12 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-        have_cocoa=yes
-
+  have_cocoa=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_cocoa" >&5
@@ -21947,15 +21873,12 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-        have_metal=yes
-
+  have_metal=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
         CFLAGS="$save_CFLAGS"
@@ -22409,15 +22332,12 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-        video_opengl=yes
-
+  video_opengl=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: $video_opengl" >&5
@@ -22452,15 +22372,12 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-        video_opengl=yes
-
+  video_opengl=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: $video_opengl" >&5
@@ -22519,15 +22436,12 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-        video_opengl_egl=yes
-
+  video_opengl_egl=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: $video_opengl_egl" >&5
@@ -22552,15 +22466,12 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-            video_opengles_v1=yes
-
+  video_opengles_v1=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: $video_opengles_v1" >&5
@@ -22590,15 +22501,12 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-            video_opengles_v2=yes
-
+  video_opengles_v2=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: $video_opengles_v2" >&5
@@ -22635,15 +22543,12 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-    video_opengl_egl=yes
-
+  video_opengl_egl=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $video_opengl_egl" >&5
@@ -22687,15 +22592,12 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-        video_opengl_egl=yes
-
+  video_opengl_egl=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: $video_opengl_egl" >&5
@@ -22723,15 +22625,12 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-        video_opengles_v2=yes
-
+  video_opengles_v2=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: $video_opengles_v2" >&5
@@ -22817,15 +22716,12 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-        video_opengl_egl=yes
-
+  video_opengl_egl=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: $video_opengl_egl" >&5
@@ -22849,15 +22745,12 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-        video_opengles_v2=yes
-
+  video_opengles_v2=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: $video_opengles_v2" >&5
@@ -22898,18 +22791,14 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
 
-
 else
-
-                    enable_video_vulkan=no
-
+  enable_video_vulkan=no
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
                 ;;
@@ -22931,18 +22820,14 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
 
-
 else
-
-                    enable_video_vulkan=no
-
+  enable_video_vulkan=no
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
                 CFLAGS="$save_CFLAGS"
@@ -22988,9 +22873,7 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-        use_input_events=yes
-
+  use_input_events=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: $use_input_events" >&5
@@ -23028,9 +22911,7 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-    use_input_kd=yes
-
+  use_input_kd=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $use_input_kd" >&5
@@ -23066,9 +22947,7 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-    use_input_kbio=yes
-
+  use_input_kbio=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $use_input_kbio" >&5
@@ -23099,27 +22978,25 @@ int
 main ()
 {
 
-    	struct wskbd_map_data data;
-    	ioctl(0, WSKBDIO_GETMAP, &data);
+     struct wskbd_map_data data;
+     ioctl(0, WSKBDIO_GETMAP, &data);
 
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-     use_input_wscons=yes
-
+  use_input_wscons=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $use_input_wscons" >&5
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $use_input_wscons" >&5
 $as_echo "$use_input_wscons" >&6; }
-     if test x$use_input_wscons = xyes; then
+    if test x$use_input_wscons = xyes; then
 
 $as_echo "#define SDL_INPUT_WSCONS 1" >>confdefs.h
 
-	SUMMARY_input="${SUMMARY_input} wscons"
-     fi
+        SUMMARY_input="${SUMMARY_input} wscons"
+    fi
 }
 
 CheckLibUDev()
@@ -23519,9 +23396,7 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
-
-        enable_joystick_mfi=yes
-
+  enable_joystick_mfi=yes
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
@@ -23675,9 +23550,7 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
-
-        use_pthreads=yes
-
+  use_pthreads=yes
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
@@ -23780,15 +23653,12 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-                have_pthread_sem=yes
-
+  have_pthread_sem=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
                 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_pthread_sem" >&5
@@ -23962,15 +23832,12 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-    have_win32_gcc=yes
-
+  have_win32_gcc=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_win32_gcc" >&5
@@ -23994,7 +23861,6 @@ $as_echo_n "checking Windows CE... " >&6; }
 int
 main ()
 {
-
 
   ;
   return 0;
@@ -24237,9 +24103,7 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-        have_dlopen=yes
-
+  have_dlopen=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_dlopen" >&5
@@ -24532,9 +24396,7 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-                have_usbhid=yes
-
+  have_usbhid=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
                 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_usbhid" >&5
@@ -24578,9 +24440,7 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-                    have_usbhid_ucr_data=yes
-
+  have_usbhid_ucr_data=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
                     if test x$have_usbhid_ucr_data = xyes; then
@@ -24626,9 +24486,7 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-                    have_usbhid_new=yes
-
+  have_usbhid_new=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
                     if test x$have_usbhid_new = xyes; then
@@ -24656,9 +24514,7 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-                    have_machine_joystick=yes
-
+  have_machine_joystick=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
                     if test x$have_machine_joystick = xyes; then
@@ -26135,7 +25991,6 @@ $as_echo_n "checking for linker option --enable-new-dtags... " >&6; }
 int
 main ()
 {
-
 
   ;
   return 0;
