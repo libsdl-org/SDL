@@ -1,8 +1,9 @@
 dnl Process this file with autoconf to produce a configure script.
+AC_PREREQ([2.59])
 AC_INIT
 AC_CONFIG_SRCDIR([src/SDL.c])
-AC_CONFIG_HEADERS(include/SDL_config.h)
-AC_CONFIG_AUX_DIR(build-scripts)
+AC_CONFIG_HEADERS([include/SDL_config.h])
+AC_CONFIG_AUX_DIR([build-scripts])
 AC_CONFIG_MACRO_DIR([acinclude])
 
 dnl Save the CFLAGS to see whether they were passed in or generated
@@ -4416,12 +4417,12 @@ AC_SUBST(SDL_LIBS)
 AC_SUBST(SDL_STATIC_LIBS)
 AC_SUBST(SDL_RLD_FLAGS)
 if test x$enable_shared = xyes; then
-    PKG_CONFIG_LIBS_PRIV="
+    PKGCONFIG_LIBS_PRIV="
 Libs.private:"
     ENABLE_SHARED_TRUE=
     ENABLE_SHARED_FALSE="#"
 else
-    PKG_CONFIG_LIBS_PRIV=
+    PKGCONFIG_LIBS_PRIV=
     ENABLE_SHARED_TRUE="#"
     ENABLE_SHARED_FALSE=
 fi
@@ -4432,7 +4433,7 @@ else
     ENABLE_STATIC_TRUE="#"
     ENABLE_STATIC_FALSE=
 fi
-AC_SUBST(PKG_CONFIG_LIBS_PRIV)
+AC_SUBST(PKGCONFIG_LIBS_PRIV)
 AC_SUBST(ENABLE_SHARED_TRUE)
 AC_SUBST(ENABLE_SHARED_FALSE)
 AC_SUBST(ENABLE_STATIC_TRUE)
