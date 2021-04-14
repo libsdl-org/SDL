@@ -56,18 +56,6 @@
 #ifndef SYN_DROPPED
 #define SYN_DROPPED 3
 #endif
-#ifndef BTN_SOUTH
-#define BTN_SOUTH       0x130
-#endif
-#ifndef BTN_EAST
-#define BTN_EAST        0x131
-#endif
-#ifndef BTN_NORTH
-#define BTN_NORTH       0x133
-#endif
-#ifndef BTN_WEST
-#define BTN_WEST        0x134
-#endif
 #ifndef BTN_DPAD_UP
 #define BTN_DPAD_UP     0x220
 #endif
@@ -115,7 +103,6 @@ typedef struct SDL_joylist_item
     SDL_bool m_bSteamController;
 
     SDL_GamepadMapping *mapping;
-    SDL_bool has_gamepad_mapping;
 } SDL_joylist_item;
 
 static SDL_joylist_item *SDL_joylist = NULL;
@@ -379,7 +366,9 @@ MaybeRemoveDevice(const char *path)
 
             SDL_PrivateJoystickRemoved(item->device_instance);
 
-            SDL_free(item->mapping);
+            if (item->mapping) {
+                SDL_free(item->mapping);
+            }
             SDL_free(item->path);
             SDL_free(item->name);
             SDL_free(item);
@@ -1409,18 +1398,9 @@ LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
     SDL_Joystick *joystick;
     SDL_joylist_item *item = JoystickByDevIndex(device_index);
 
-    if (item->has_gamepad_mapping) {
+    if (item->mapping) {
         SDL_memcpy(out, item->mapping, sizeof(*out));
         return SDL_TRUE;
-    }
-
-    if (item->mapping)
-        return SDL_FALSE;
-
-    item->mapping = (SDL_GamepadMapping *) SDL_calloc(sizeof(*item->mapping), 1);
-    if (item->mapping == NULL) {
-        SDL_OutOfMemory();
-        return SDL_FALSE;
     }
 
     joystick = (SDL_Joystick *) SDL_calloc(sizeof(*joystick), 1);
@@ -1591,8 +1571,11 @@ LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
     LINUX_JoystickClose(joystick);
     SDL_free(joystick);
 
-    SDL_memcpy(item->mapping, out, sizeof(*out));
-    item->has_gamepad_mapping = SDL_TRUE;
+    /* Cache the mapping for later */
+    item->mapping = (SDL_GamepadMapping *)SDL_malloc(sizeof(*item->mapping));
+    if (item->mapping) {
+        SDL_memcpy(item->mapping, out, sizeof(*out));
+    }
 
     return SDL_TRUE;
 }

@@ -74,6 +74,7 @@ struct joystick_hwdata
 
     /* Steam Controller support */
     SDL_bool m_bSteamController;
+
     /* 4 = (ABS_HAT3X-ABS_HAT0X)/2 (see input-event-codes.h in kernel) */
     int hats_indices[4];
     SDL_bool has_hat[4];
