@@ -83,7 +83,7 @@ static SLObjectItf outputMixObject;
 
 /* buffer queue player interfaces */
 static SLObjectItf bqPlayerObject;
-static SLPlayItf bqPlayerPlay;
+static SLPlayItf bqPlayerPlay = NULL;
 static SLAndroidSimpleBufferQueueItf bqPlayerBufferQueue;
 #if 0
 static SLVolumeItf bqPlayerVolume;
