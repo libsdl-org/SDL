@@ -539,11 +539,11 @@ void Cocoa_SendWakeupEvent(_THIS, SDL_Window *window)
 {
     NSWindow *nswindow = ((SDL_WindowData *) window->driverdata)->nswindow;
 
-    NSEvent* event = [NSEvent otherEventWithType: NSApplicationDefined
+    NSEvent* event = [NSEvent otherEventWithType: NSEventTypeApplicationDefined
                                     location: NSMakePoint(0,0)
                                modifierFlags: 0
                                    timestamp: 0.0
-                                windowNumber: [nswindow getWindowNumber]
+                                windowNumber: nswindow.windowNumber
                                      context: nil
                                      subtype: 0
                                        data1: 0
