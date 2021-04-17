@@ -61,11 +61,11 @@ static VideoBootStrap *bootstrap[] = {
 #if SDL_VIDEO_DRIVER_COCOA
     &COCOA_bootstrap,
 #endif
-#if SDL_VIDEO_DRIVER_X11
-    &X11_bootstrap,
-#endif
 #if SDL_VIDEO_DRIVER_WAYLAND
     &Wayland_bootstrap,
+#endif
+#if SDL_VIDEO_DRIVER_X11
+    &X11_bootstrap,
 #endif
 #if SDL_VIDEO_DRIVER_VIVANTE
     &VIVANTE_bootstrap,
@@ -4249,11 +4249,11 @@ SDL_IsScreenKeyboardShown(SDL_Window *window)
 #if SDL_VIDEO_DRIVER_UIKIT
 #include "uikit/SDL_uikitmessagebox.h"
 #endif
-#if SDL_VIDEO_DRIVER_X11
-#include "x11/SDL_x11messagebox.h"
-#endif
 #if SDL_VIDEO_DRIVER_WAYLAND
 #include "wayland/SDL_waylandmessagebox.h"
+#endif
+#if SDL_VIDEO_DRIVER_X11
+#include "x11/SDL_x11messagebox.h"
 #endif
 #if SDL_VIDEO_DRIVER_HAIKU
 #include "haiku/SDL_bmessagebox.h"
@@ -4362,17 +4362,17 @@ SDL_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
         retval = 0;
     }
 #endif
-#if SDL_VIDEO_DRIVER_X11
-    if (retval == -1 &&
-        SDL_MessageboxValidForDriver(messageboxdata, SDL_SYSWM_X11) &&
-        X11_ShowMessageBox(messageboxdata, buttonid) == 0) {
-        retval = 0;
-    }
-#endif
 #if SDL_VIDEO_DRIVER_WAYLAND
     if (retval == -1 &&
         SDL_MessageboxValidForDriver(messageboxdata, SDL_SYSWM_WAYLAND) &&
         Wayland_ShowMessageBox(messageboxdata, buttonid) == 0) {
+        retval = 0;
+    }
+#endif
+#if SDL_VIDEO_DRIVER_X11
+    if (retval == -1 &&
+        SDL_MessageboxValidForDriver(messageboxdata, SDL_SYSWM_X11) &&
+        X11_ShowMessageBox(messageboxdata, buttonid) == 0) {
         retval = 0;
     }
 #endif
