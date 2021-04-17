@@ -249,10 +249,10 @@ display_handle_geometry(void *data,
                         int transform)
 
 {
-    SDL_VideoDisplay *display = data;
+    SDL_WaylandOutputData *driverdata = data;
 
-    display->name = SDL_strdup(model);
-    ((SDL_WaylandOutputData*)display->driverdata)->transform = transform;
+    driverdata->placeholder.name = SDL_strdup(model);
+    driverdata->transform = transform;
 }
 
 static void
@@ -263,8 +263,7 @@ display_handle_mode(void *data,
                     int height,
                     int refresh)
 {
-    SDL_VideoDisplay *display = data;
-    SDL_WaylandOutputData* driverdata = display->driverdata;
+    SDL_WaylandOutputData* driverdata = data;
     SDL_DisplayMode mode;
 
     if (flags & WL_OUTPUT_MODE_CURRENT) {
@@ -290,15 +289,14 @@ display_handle_mode(void *data,
     }
     mode.refresh_rate = refresh / 1000; /* mHz to Hz */
     mode.driverdata = driverdata->output;
-    SDL_AddDisplayMode(display, &mode);
+    SDL_AddDisplayMode(&driverdata->placeholder, &mode);
 }
 
 static void
 display_handle_done(void *data,
                     struct wl_output *output)
 {
-    SDL_VideoDisplay *display = data;
-    SDL_WaylandOutputData* driverdata = display->driverdata;
+    SDL_WaylandOutputData* driverdata = data;
     SDL_DisplayMode mode;
 
     if (driverdata->done)
@@ -317,12 +315,13 @@ display_handle_done(void *data,
     }
     mode.refresh_rate = driverdata->refresh / 1000; /* mHz to Hz */
     mode.driverdata = driverdata->output;
-    SDL_AddDisplayMode(display, &mode);
-    display->current_mode = mode;
-    display->desktop_mode = mode;
+    SDL_AddDisplayMode(&driverdata->placeholder, &mode);
+    driverdata->placeholder.current_mode = mode;
+    driverdata->placeholder.desktop_mode = mode;
 
-    SDL_AddVideoDisplay(display, SDL_FALSE);
-    SDL_free(display->name);
+    driverdata->placeholder.driverdata = driverdata;
+    SDL_AddVideoDisplay(&driverdata->placeholder, SDL_FALSE);
+    SDL_zero(driverdata->placeholder);
 }
 
 static void
@@ -330,8 +329,8 @@ display_handle_scale(void *data,
                      struct wl_output *output,
                      int32_t factor)
 {
-    SDL_VideoDisplay *display = data;
-    ((SDL_WaylandOutputData*)display->driverdata)->scale_factor = factor;
+    SDL_WaylandOutputData *driverdata = data;
+    driverdata->scale_factor = factor;
 }
 
 static const struct wl_output_listener output_listener = {
@@ -346,26 +345,18 @@ Wayland_add_display(SDL_VideoData *d, uint32_t id)
 {
     struct wl_output *output;
     SDL_WaylandOutputData *data;
-    SDL_VideoDisplay *display = SDL_malloc(sizeof *display);
-    if (!display) {
-        SDL_OutOfMemory();
-        return;
-    }
-    SDL_zero(*display);
 
     output = wl_registry_bind(d->registry, id, &wl_output_interface, 2);
     if (!output) {
         SDL_SetError("Failed to retrieve output.");
-        SDL_free(display);
         return;
     }
     data = SDL_malloc(sizeof *data);
+    SDL_zerop(data);
     data->output = output;
     data->scale_factor = 1.0;
-    data->done = SDL_FALSE;
-    display->driverdata = data;
 
-    wl_output_add_listener(output, &output_listener, display);
+    wl_output_add_listener(output, &output_listener, data);
 }
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
