@@ -207,7 +207,7 @@ static int ping_thread(void *ptr)
 {
     int cnt;
     SDL_Event sdlevent;
-    memset(&sdlevent, sizeof(SDL_Event), 0);
+    memset(&sdlevent, 0 , sizeof(SDL_Event));
     for (cnt = 0; cnt < 10; ++cnt) {
         fprintf(stderr, "sending event (%d/%d) from thread.\n", cnt + 1, 10); fflush(stderr);
         sdlevent.type = SDL_KEYDOWN;
