@@ -39,6 +39,7 @@
 #include <EGL/egl.h>
 #include "wayland-util.h"
 
+#include "../SDL_sysvideo.h"
 #include "../../core/linux/SDL_dbus.h"
 #include "../../core/linux/SDL_ime.h"
 
@@ -93,6 +94,7 @@ typedef struct {
     struct wl_output *output;
     float scale_factor;
     int width, height, refresh, transform;
+    SDL_VideoDisplay placeholder;
     SDL_bool done;
 } SDL_WaylandOutputData;
 

@@ -467,8 +467,7 @@ update_scale_factor(SDL_WindowData *window) {
    }
 
    for (i = 0; i < window->num_outputs; i++) {
-       SDL_VideoDisplay *display = wl_output_get_user_data(window->outputs[i]);
-       SDL_WaylandOutputData* driverdata = display->driverdata;
+       SDL_WaylandOutputData* driverdata = wl_output_get_user_data(window->outputs[i]);
        float factor = driverdata->scale_factor;
        if (factor > new_factor) {
            new_factor = factor;
@@ -487,26 +486,50 @@ update_scale_factor(SDL_WindowData *window) {
    }
 }
 
+/* While we can't get window position from the compositor, we do at least know
+ * what monitor we're on, so let's send move events that put the window at the
+ * center of the whatever display the wl_surface_listener events give us.
+ */
+static void
+Wayland_move_window(SDL_Window *window,
+                    SDL_WaylandOutputData *driverdata)
+{
+    int i, numdisplays = SDL_GetNumVideoDisplays();
+    for (i = 0; i < numdisplays; i += 1) {
+        if (SDL_GetDisplay(i)->driverdata == driverdata) {
+            SDL_SendWindowEvent(window, SDL_WINDOWEVENT_MOVED,
+                                SDL_WINDOWPOS_CENTERED_DISPLAY(i),
+                                SDL_WINDOWPOS_CENTERED_DISPLAY(i));
+            break;
+        }
+    }
+}
+
 static void
 handle_surface_enter(void *data, struct wl_surface *surface,
-        struct wl_output *output) {
+                     struct wl_output *output)
+{
     SDL_WindowData *window = data;
 
     window->outputs = SDL_realloc(window->outputs, (window->num_outputs + 1) * sizeof *window->outputs);
     window->outputs[window->num_outputs++] = output;
     update_scale_factor(window);
+
+    Wayland_move_window(window->sdlwindow, wl_output_get_user_data(output));
 }
 
 static void
 handle_surface_leave(void *data, struct wl_surface *surface,
-        struct wl_output *output) {
+                     struct wl_output *output)
+{
     SDL_WindowData *window = data;
-    int i;
+    int i, send_move_event = 0;
 
     for (i = 0; i < window->num_outputs; i++) {
         if (window->outputs[i] == output) {  /* remove this one */
             if (i == (window->num_outputs-1)) {
                 window->outputs[i] = NULL;
+                send_move_event = 1;
             } else {
                 SDL_memmove(&window->outputs[i], &window->outputs[i+1], sizeof (output) * ((window->num_outputs - i) - 1));
             }
@@ -518,6 +541,9 @@ handle_surface_leave(void *data, struct wl_surface *surface,
     if (window->num_outputs == 0) {
        SDL_free(window->outputs);
        window->outputs = NULL;
+    } else if (send_move_event) {
+        Wayland_move_window(window->sdlwindow,
+                            wl_output_get_user_data(window->outputs[window->num_outputs - 1]));
     }
 
     update_scale_factor(window);
