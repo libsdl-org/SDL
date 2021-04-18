@@ -58,10 +58,6 @@
 static int
 Wayland_VideoInit(_THIS);
 
-static void
-Wayland_GetDisplayModes(_THIS, SDL_VideoDisplay *sdl_display);
-static int
-Wayland_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
 static int
 Wayland_GetDisplayBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect);
 
@@ -179,8 +175,6 @@ Wayland_CreateDevice(int devindex)
     /* Set the function pointers */
     device->VideoInit = Wayland_VideoInit;
     device->VideoQuit = Wayland_VideoQuit;
-    device->SetDisplayMode = Wayland_SetDisplayMode;
-    device->GetDisplayModes = Wayland_GetDisplayModes;
     device->GetDisplayBounds = Wayland_GetDisplayBounds;
     device->GetWindowWMInfo = Wayland_GetWindowWMInfo;
     device->SuspendScreenSaver = Wayland_SuspendScreenSaver;
@@ -503,19 +497,6 @@ Wayland_VideoInit(_THIS)
 #endif
 
     return 0;
-}
-
-static void
-Wayland_GetDisplayModes(_THIS, SDL_VideoDisplay *sdl_display)
-{
-    // Nothing to do here, everything was already done in the wl_output
-    // callbacks.
-}
-
-static int
-Wayland_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
-{
-    return SDL_Unsupported();
 }
 
 static int
