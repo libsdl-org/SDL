@@ -402,7 +402,7 @@ struct SDL_VideoDevice
     struct SDL_EGL_VideoData *egl_data;
 #endif
     
-#if SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2
+#if SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2 || SDL_VIDEO_METALANGLE
     struct SDL_PrivateGLESData *gles_data;
 #endif
 

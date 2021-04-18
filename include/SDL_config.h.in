@@ -424,6 +424,9 @@
 /* Enable Metal support */
 #undef SDL_VIDEO_METAL
 
+/* Enable MetalANGLE support */
+#undef SDL_VIDEO_METALANGLE
+
 /* Enable system power support */
 #undef SDL_POWER_LINUX
 #undef SDL_POWER_WINDOWS

@@ -46,6 +46,14 @@
 #include "SDL_opengles2.h"
 #endif /* SDL_VIDEO_OPENGL_ES2 && !SDL_VIDEO_OPENGL */
 
+#if SDL_VIDEO_METALANGLE
+#include <MetalANGLE/GLES2/gl2.h>
+#include <MetalANGLE/GLES2/gl2ext.h>
+#ifndef APIENTRY
+#define APIENTRY GL_APIENTRY
+#endif
+#endif /* SDL_VIDEO_METALANGLE */
+
 #if !SDL_VIDEO_OPENGL
 #ifndef GL_CONTEXT_RELEASE_BEHAVIOR_KHR
 #define GL_CONTEXT_RELEASE_BEHAVIOR_KHR 0x82FB
@@ -247,7 +255,7 @@ ShouldUseTextureFramebuffer()
         }
         return hasAcceleratedOpenGL;
     }
-#elif SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2
+#elif SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2 || SDL_VIDEO_METALANGLE
     /* Let's be optimistic about this! */
     return SDL_TRUE;
 #else
@@ -3158,7 +3166,7 @@ SDL_GL_UnloadLibrary(void)
     }
 }
 
-#if SDL_VIDEO_OPENGL || SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2
+#if SDL_VIDEO_OPENGL || SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2 || SDL_VIDEO_METALANGLE
 static SDL_INLINE SDL_bool
 isAtLeastGL3(const char *verstr)
 {
@@ -3169,7 +3177,7 @@ isAtLeastGL3(const char *verstr)
 SDL_bool
 SDL_GL_ExtensionSupported(const char *extension)
 {
-#if SDL_VIDEO_OPENGL || SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2
+#if SDL_VIDEO_OPENGL || SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2 || SDL_VIDEO_METALANGLE
     const GLubyte *(APIENTRY * glGetStringFunc) (GLenum);
     const char *extensions;
     const char *start;
@@ -3261,7 +3269,7 @@ SDL_GL_DeduceMaxSupportedESProfile(int* major, int* minor)
 {
 /* THIS REQUIRES AN EXISTING GL CONTEXT THAT HAS BEEN MADE CURRENT. */
 /*  Please refer to https://bugzilla.libsdl.org/show_bug.cgi?id=3725 for discussion. */
-#if SDL_VIDEO_OPENGL || SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2
+#if SDL_VIDEO_OPENGL || SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2 || SDL_VIDEO_METALANGLE
     /* XXX This is fragile; it will break in the event of release of
      * new versions of OpenGL ES.
      */
@@ -3310,7 +3318,7 @@ SDL_GL_ResetAttributes()
     _this->gl_config.major_version = 2;
     _this->gl_config.minor_version = 1;
     _this->gl_config.profile_mask = 0;
-#elif SDL_VIDEO_OPENGL_ES2
+#elif SDL_VIDEO_OPENGL_ES2 || SDL_VIDEO_METALANGLE
     _this->gl_config.major_version = 2;
     _this->gl_config.minor_version = 0;
     _this->gl_config.profile_mask = SDL_GL_CONTEXT_PROFILE_ES;
@@ -3338,7 +3346,7 @@ SDL_GL_ResetAttributes()
 int
 SDL_GL_SetAttribute(SDL_GLattr attr, int value)
 {
-#if SDL_VIDEO_OPENGL || SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2
+#if SDL_VIDEO_OPENGL || SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2 || SDL_VIDEO_METALANGLE
     int retval;
 
     if (!_this) {
@@ -3459,7 +3467,7 @@ SDL_GL_SetAttribute(SDL_GLattr attr, int value)
 int
 SDL_GL_GetAttribute(SDL_GLattr attr, int *value)
 {
-#if SDL_VIDEO_OPENGL || SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2
+#if SDL_VIDEO_OPENGL || SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2 || SDL_VIDEO_METALANGLE
     GLenum (APIENTRY *glGetErrorFunc) (void);
     GLenum attrib = 0;
     GLenum error = 0;

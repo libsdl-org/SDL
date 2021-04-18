@@ -3668,6 +3668,42 @@
 		AAC07105195606770073DCDF /* SDL_opengles2_khrplatform.h in Headers */ = {isa = PBXBuildFile; fileRef = AAC070F8195606770073DCDF /* SDL_opengles2_khrplatform.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		AAC07107195606770073DCDF /* SDL_opengles2_khrplatform.h in Headers */ = {isa = PBXBuildFile; fileRef = AAC070F8195606770073DCDF /* SDL_opengles2_khrplatform.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		AADA5B8716CCAB3000107CF7 /* SDL_bits.h in Headers */ = {isa = PBXBuildFile; fileRef = AADA5B8616CCAB3000107CF7 /* SDL_bits.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		AC6A5E89262C3582003D03DF /* SDL_uikitmetalangleview.m in Sources */ = {isa = PBXBuildFile; fileRef = AC6A5E85262C3582003D03DF /* SDL_uikitmetalangleview.m */; };
+		AC6A5E8A262C3582003D03DF /* SDL_uikitmetalangleview.m in Sources */ = {isa = PBXBuildFile; fileRef = AC6A5E85262C3582003D03DF /* SDL_uikitmetalangleview.m */; };
+		AC6A5E8B262C3582003D03DF /* SDL_uikitmetalangleview.m in Sources */ = {isa = PBXBuildFile; fileRef = AC6A5E85262C3582003D03DF /* SDL_uikitmetalangleview.m */; };
+		AC6A5E8C262C3582003D03DF /* SDL_uikitmetalangleview.m in Sources */ = {isa = PBXBuildFile; fileRef = AC6A5E85262C3582003D03DF /* SDL_uikitmetalangleview.m */; };
+		AC6A5E8D262C3582003D03DF /* SDL_uikitmetalangleview.m in Sources */ = {isa = PBXBuildFile; fileRef = AC6A5E85262C3582003D03DF /* SDL_uikitmetalangleview.m */; };
+		AC6A5E8E262C3582003D03DF /* SDL_uikitmetalangleview.m in Sources */ = {isa = PBXBuildFile; fileRef = AC6A5E85262C3582003D03DF /* SDL_uikitmetalangleview.m */; };
+		AC6A5E8F262C3582003D03DF /* SDL_uikitmetalangleview.m in Sources */ = {isa = PBXBuildFile; fileRef = AC6A5E85262C3582003D03DF /* SDL_uikitmetalangleview.m */; };
+		AC6A5E90262C3582003D03DF /* SDL_uikitmetalangleview.m in Sources */ = {isa = PBXBuildFile; fileRef = AC6A5E85262C3582003D03DF /* SDL_uikitmetalangleview.m */; };
+		AC6A5E91262C3582003D03DF /* SDL_uikitmetalangleview.m in Sources */ = {isa = PBXBuildFile; fileRef = AC6A5E85262C3582003D03DF /* SDL_uikitmetalangleview.m */; };
+		AC6A5E92262C3582003D03DF /* SDL_uikitmetalangleview.h in Headers */ = {isa = PBXBuildFile; fileRef = AC6A5E86262C3582003D03DF /* SDL_uikitmetalangleview.h */; };
+		AC6A5E93262C3582003D03DF /* SDL_uikitmetalangleview.h in Headers */ = {isa = PBXBuildFile; fileRef = AC6A5E86262C3582003D03DF /* SDL_uikitmetalangleview.h */; };
+		AC6A5E94262C3582003D03DF /* SDL_uikitmetalangleview.h in Headers */ = {isa = PBXBuildFile; fileRef = AC6A5E86262C3582003D03DF /* SDL_uikitmetalangleview.h */; };
+		AC6A5E95262C3582003D03DF /* SDL_uikitmetalangleview.h in Headers */ = {isa = PBXBuildFile; fileRef = AC6A5E86262C3582003D03DF /* SDL_uikitmetalangleview.h */; };
+		AC6A5E96262C3582003D03DF /* SDL_uikitmetalangleview.h in Headers */ = {isa = PBXBuildFile; fileRef = AC6A5E86262C3582003D03DF /* SDL_uikitmetalangleview.h */; };
+		AC6A5E97262C3582003D03DF /* SDL_uikitmetalangleview.h in Headers */ = {isa = PBXBuildFile; fileRef = AC6A5E86262C3582003D03DF /* SDL_uikitmetalangleview.h */; };
+		AC6A5E98262C3582003D03DF /* SDL_uikitmetalangleview.h in Headers */ = {isa = PBXBuildFile; fileRef = AC6A5E86262C3582003D03DF /* SDL_uikitmetalangleview.h */; };
+		AC6A5E99262C3582003D03DF /* SDL_uikitmetalangleview.h in Headers */ = {isa = PBXBuildFile; fileRef = AC6A5E86262C3582003D03DF /* SDL_uikitmetalangleview.h */; };
+		AC6A5E9A262C3582003D03DF /* SDL_uikitmetalangleview.h in Headers */ = {isa = PBXBuildFile; fileRef = AC6A5E86262C3582003D03DF /* SDL_uikitmetalangleview.h */; };
+		AC6A5E9B262C3582003D03DF /* SDL_uikitmetalangle.h in Headers */ = {isa = PBXBuildFile; fileRef = AC6A5E87262C3582003D03DF /* SDL_uikitmetalangle.h */; };
+		AC6A5E9C262C3582003D03DF /* SDL_uikitmetalangle.h in Headers */ = {isa = PBXBuildFile; fileRef = AC6A5E87262C3582003D03DF /* SDL_uikitmetalangle.h */; };
+		AC6A5E9D262C3582003D03DF /* SDL_uikitmetalangle.h in Headers */ = {isa = PBXBuildFile; fileRef = AC6A5E87262C3582003D03DF /* SDL_uikitmetalangle.h */; };
+		AC6A5E9E262C3582003D03DF /* SDL_uikitmetalangle.h in Headers */ = {isa = PBXBuildFile; fileRef = AC6A5E87262C3582003D03DF /* SDL_uikitmetalangle.h */; };
+		AC6A5E9F262C3582003D03DF /* SDL_uikitmetalangle.h in Headers */ = {isa = PBXBuildFile; fileRef = AC6A5E87262C3582003D03DF /* SDL_uikitmetalangle.h */; };
+		AC6A5EA0262C3582003D03DF /* SDL_uikitmetalangle.h in Headers */ = {isa = PBXBuildFile; fileRef = AC6A5E87262C3582003D03DF /* SDL_uikitmetalangle.h */; };
+		AC6A5EA1262C3582003D03DF /* SDL_uikitmetalangle.h in Headers */ = {isa = PBXBuildFile; fileRef = AC6A5E87262C3582003D03DF /* SDL_uikitmetalangle.h */; };
+		AC6A5EA2262C3582003D03DF /* SDL_uikitmetalangle.h in Headers */ = {isa = PBXBuildFile; fileRef = AC6A5E87262C3582003D03DF /* SDL_uikitmetalangle.h */; };
+		AC6A5EA3262C3582003D03DF /* SDL_uikitmetalangle.h in Headers */ = {isa = PBXBuildFile; fileRef = AC6A5E87262C3582003D03DF /* SDL_uikitmetalangle.h */; };
+		AC6A5EA4262C3582003D03DF /* SDL_uikitmetalangle.m in Sources */ = {isa = PBXBuildFile; fileRef = AC6A5E88262C3582003D03DF /* SDL_uikitmetalangle.m */; };
+		AC6A5EA5262C3582003D03DF /* SDL_uikitmetalangle.m in Sources */ = {isa = PBXBuildFile; fileRef = AC6A5E88262C3582003D03DF /* SDL_uikitmetalangle.m */; };
+		AC6A5EA6262C3582003D03DF /* SDL_uikitmetalangle.m in Sources */ = {isa = PBXBuildFile; fileRef = AC6A5E88262C3582003D03DF /* SDL_uikitmetalangle.m */; };
+		AC6A5EA7262C3582003D03DF /* SDL_uikitmetalangle.m in Sources */ = {isa = PBXBuildFile; fileRef = AC6A5E88262C3582003D03DF /* SDL_uikitmetalangle.m */; };
+		AC6A5EA8262C3582003D03DF /* SDL_uikitmetalangle.m in Sources */ = {isa = PBXBuildFile; fileRef = AC6A5E88262C3582003D03DF /* SDL_uikitmetalangle.m */; };
+		AC6A5EA9262C3582003D03DF /* SDL_uikitmetalangle.m in Sources */ = {isa = PBXBuildFile; fileRef = AC6A5E88262C3582003D03DF /* SDL_uikitmetalangle.m */; };
+		AC6A5EAA262C3582003D03DF /* SDL_uikitmetalangle.m in Sources */ = {isa = PBXBuildFile; fileRef = AC6A5E88262C3582003D03DF /* SDL_uikitmetalangle.m */; };
+		AC6A5EAB262C3582003D03DF /* SDL_uikitmetalangle.m in Sources */ = {isa = PBXBuildFile; fileRef = AC6A5E88262C3582003D03DF /* SDL_uikitmetalangle.m */; };
+		AC6A5EAC262C3582003D03DF /* SDL_uikitmetalangle.m in Sources */ = {isa = PBXBuildFile; fileRef = AC6A5E88262C3582003D03DF /* SDL_uikitmetalangle.m */; };
 		DB0F489317C400E6008798C5 /* SDL_messagebox.h in Headers */ = {isa = PBXBuildFile; fileRef = AA9FF9591637CBF9000DF050 /* SDL_messagebox.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DB0F490C17CA57ED008798C5 /* SDL_filesystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 567E2F2017C44C35005F1892 /* SDL_filesystem.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DB313FC817554B71006C0E22 /* begin_code.h in Headers */ = {isa = PBXBuildFile; fileRef = AA7557C71595D4D800BBD41B /* begin_code.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -4357,6 +4393,10 @@
 		AAC070F7195606770073DCDF /* SDL_opengles2_gl2platform.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_opengles2_gl2platform.h; sourceTree = "<group>"; };
 		AAC070F8195606770073DCDF /* SDL_opengles2_khrplatform.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_opengles2_khrplatform.h; sourceTree = "<group>"; };
 		AADA5B8616CCAB3000107CF7 /* SDL_bits.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_bits.h; sourceTree = "<group>"; };
+		AC6A5E85262C3582003D03DF /* SDL_uikitmetalangleview.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDL_uikitmetalangleview.m; sourceTree = "<group>"; };
+		AC6A5E86262C3582003D03DF /* SDL_uikitmetalangleview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_uikitmetalangleview.h; sourceTree = "<group>"; };
+		AC6A5E87262C3582003D03DF /* SDL_uikitmetalangle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_uikitmetalangle.h; sourceTree = "<group>"; };
+		AC6A5E88262C3582003D03DF /* SDL_uikitmetalangle.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDL_uikitmetalangle.m; sourceTree = "<group>"; };
 		BECDF66B0761BA81005FE872 /* Info-Framework.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Info-Framework.plist"; sourceTree = "<group>"; };
 		BECDF66C0761BA81005FE872 /* SDL2.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = SDL2.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		BECDF6B30761BA81005FE872 /* libSDL2.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libSDL2.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -5042,6 +5082,10 @@
 				A7D8A62D23E2513D00DCD162 /* SDL_uikitevents.h */,
 				A7D8A61C23E2513D00DCD162 /* SDL_uikitevents.m */,
 				A7D8A62623E2513D00DCD162 /* SDL_uikitmessagebox.h */,
+				AC6A5E87262C3582003D03DF /* SDL_uikitmetalangle.h */,
+				AC6A5E88262C3582003D03DF /* SDL_uikitmetalangle.m */,
+				AC6A5E86262C3582003D03DF /* SDL_uikitmetalangleview.h */,
+				AC6A5E85262C3582003D03DF /* SDL_uikitmetalangleview.m */,
 				A7D8A61B23E2513D00DCD162 /* SDL_uikitmessagebox.m */,
 				A7D8A61D23E2513D00DCD162 /* SDL_uikitmetalview.h */,
 				A7D8A62E23E2513D00DCD162 /* SDL_uikitmetalview.m */,
@@ -5758,6 +5802,7 @@
 				A75FCD4823E25AB700529352 /* SDL_keycode.h in Headers */,
 				A75FCD4923E25AB700529352 /* SDL_x11keyboard.h in Headers */,
 				5616CA63252BB35F005D5928 /* SDL_sysurl.h in Headers */,
+				AC6A5E99262C3582003D03DF /* SDL_uikitmetalangleview.h in Headers */,
 				A75FCD4A23E25AB700529352 /* SDL_cocoakeyboard.h in Headers */,
 				A75FCD4B23E25AB700529352 /* SDL_uikitvulkan.h in Headers */,
 				A75FCD4C23E25AB700529352 /* SDL_x11framebuffer.h in Headers */,
@@ -5767,6 +5812,7 @@
 				A75FCD5023E25AB700529352 /* gl2ext.h in Headers */,
 				A75FCD5123E25AB700529352 /* SDL_clipboardevents_c.h in Headers */,
 				A75FCD5223E25AB700529352 /* SDL_x11touch.h in Headers */,
+				AC6A5EA2262C3582003D03DF /* SDL_uikitmetalangle.h in Headers */,
 				A75FCD5323E25AB700529352 /* SDL_syshaptic_c.h in Headers */,
 				A75FCD5423E25AB700529352 /* SDL_hints_c.h in Headers */,
 				A75FCD5523E25AB700529352 /* SDL_audiodev_c.h in Headers */,
@@ -6001,6 +6047,7 @@
 				A75FCF0123E25AC700529352 /* SDL_keycode.h in Headers */,
 				A75FCF0223E25AC700529352 /* SDL_x11keyboard.h in Headers */,
 				5616CA66252BB361005D5928 /* SDL_sysurl.h in Headers */,
+				AC6A5E9A262C3582003D03DF /* SDL_uikitmetalangleview.h in Headers */,
 				A75FCF0323E25AC700529352 /* SDL_cocoakeyboard.h in Headers */,
 				A75FCF0423E25AC700529352 /* SDL_uikitvulkan.h in Headers */,
 				A75FCF0523E25AC700529352 /* SDL_x11framebuffer.h in Headers */,
@@ -6010,6 +6057,7 @@
 				A75FCF0923E25AC700529352 /* gl2ext.h in Headers */,
 				A75FCF0A23E25AC700529352 /* SDL_clipboardevents_c.h in Headers */,
 				A75FCF0B23E25AC700529352 /* SDL_x11touch.h in Headers */,
+				AC6A5EA3262C3582003D03DF /* SDL_uikitmetalangle.h in Headers */,
 				A75FCF0C23E25AC700529352 /* SDL_syshaptic_c.h in Headers */,
 				A75FCF0D23E25AC700529352 /* SDL_hints_c.h in Headers */,
 				A75FCF0E23E25AC700529352 /* SDL_audiodev_c.h in Headers */,
@@ -6251,6 +6299,7 @@
 				A769B0D323E259AE00872273 /* SDL_x11video.h in Headers */,
 				A769B0D423E259AE00872273 /* vulkan.hpp in Headers */,
 				A769B0D623E259AE00872273 /* gl2ext.h in Headers */,
+				AC6A5EA0262C3582003D03DF /* SDL_uikitmetalangle.h in Headers */,
 				A769B0D723E259AE00872273 /* SDL_clipboardevents_c.h in Headers */,
 				A769B0D823E259AE00872273 /* SDL_x11touch.h in Headers */,
 				A769B0D923E259AE00872273 /* SDL_syshaptic_c.h in Headers */,
@@ -6337,6 +6386,7 @@
 				A769B13F23E259AE00872273 /* SDL_offscreenframebuffer_c.h in Headers */,
 				A769B14023E259AE00872273 /* SDL_displayevents_c.h in Headers */,
 				A769B14123E259AE00872273 /* SDL_timer_c.h in Headers */,
+				AC6A5E97262C3582003D03DF /* SDL_uikitmetalangleview.h in Headers */,
 				A769B14223E259AE00872273 /* gl2.h in Headers */,
 				A769B14323E259AE00872273 /* SDL_sysmutex_c.h in Headers */,
 				A769B14423E259AE00872273 /* scancodes_windows.h in Headers */,
@@ -6421,6 +6471,7 @@
 				A7D8B9F023E2514400DCD162 /* SDL_drawpoint.h in Headers */,
 				A7D8BB2E23E2514500DCD162 /* SDL_dropevents_c.h in Headers */,
 				A7D8B79523E2514400DCD162 /* SDL_dummyaudio.h in Headers */,
+				AC6A5E93262C3582003D03DF /* SDL_uikitmetalangleview.h in Headers */,
 				A7D8A96423E2514000DCD162 /* SDL_dummysensor.h in Headers */,
 				A7D8AB0B23E2514100DCD162 /* SDL_dynapi.h in Headers */,
 				A7D8AB1123E2514100DCD162 /* SDL_dynapi_overrides.h in Headers */,
@@ -6521,6 +6572,7 @@
 				A7D88A5323E2437C00DCD162 /* SDL_system.h in Headers */,
 				A7D8B3E723E2514300DCD162 /* SDL_systhread.h in Headers */,
 				A7D8B42923E2514300DCD162 /* SDL_systhread_c.h in Headers */,
+				AC6A5E9C262C3582003D03DF /* SDL_uikitmetalangle.h in Headers */,
 				5616CA51252BB35A005D5928 /* SDL_sysurl.h in Headers */,
 				A7D8AC4023E2514100DCD162 /* SDL_sysvideo.h in Headers */,
 				A7D88A5423E2437C00DCD162 /* SDL_syswm.h in Headers */,
@@ -6669,6 +6721,7 @@
 				A7D8B9F123E2514400DCD162 /* SDL_drawpoint.h in Headers */,
 				A7D8BB2F23E2514500DCD162 /* SDL_dropevents_c.h in Headers */,
 				A7D8B79623E2514400DCD162 /* SDL_dummyaudio.h in Headers */,
+				AC6A5E94262C3582003D03DF /* SDL_uikitmetalangleview.h in Headers */,
 				A7D8A96523E2514000DCD162 /* SDL_dummysensor.h in Headers */,
 				A7D8AB0C23E2514100DCD162 /* SDL_dynapi.h in Headers */,
 				A7D8AB1223E2514100DCD162 /* SDL_dynapi_overrides.h in Headers */,
@@ -6769,6 +6822,7 @@
 				A7D88C0E23E24BED00DCD162 /* SDL_system.h in Headers */,
 				A7D8B3E823E2514300DCD162 /* SDL_systhread.h in Headers */,
 				A7D8B42A23E2514300DCD162 /* SDL_systhread_c.h in Headers */,
+				AC6A5E9D262C3582003D03DF /* SDL_uikitmetalangle.h in Headers */,
 				5616CA54252BB35B005D5928 /* SDL_sysurl.h in Headers */,
 				A7D8AC4123E2514100DCD162 /* SDL_sysvideo.h in Headers */,
 				A7D88C0F23E24BED00DCD162 /* SDL_syswm.h in Headers */,
@@ -6931,6 +6985,7 @@
 				A7D8B22223E2514200DCD162 /* SDL_x11video.h in Headers */,
 				A7D8B27023E2514200DCD162 /* vulkan.hpp in Headers */,
 				A7D8B22823E2514200DCD162 /* gl2ext.h in Headers */,
+				AC6A5E9F262C3582003D03DF /* SDL_uikitmetalangle.h in Headers */,
 				A7D8BB7323E2514500DCD162 /* SDL_clipboardevents_c.h in Headers */,
 				A7D8B14A23E2514200DCD162 /* SDL_x11touch.h in Headers */,
 				A7D8AAE423E2514100DCD162 /* SDL_syshaptic_c.h in Headers */,
@@ -7017,6 +7072,7 @@
 				A7D8AB8323E2514100DCD162 /* SDL_offscreenframebuffer_c.h in Headers */,
 				A7D8BB4323E2514500DCD162 /* SDL_displayevents_c.h in Headers */,
 				A7D8AB3523E2514100DCD162 /* SDL_timer_c.h in Headers */,
+				AC6A5E96262C3582003D03DF /* SDL_uikitmetalangleview.h in Headers */,
 				A7D8B22E23E2514200DCD162 /* gl2.h in Headers */,
 				A7D8B44423E2514300DCD162 /* SDL_sysmutex_c.h in Headers */,
 				A7D8BB2523E2514500DCD162 /* scancodes_windows.h in Headers */,
@@ -7101,6 +7157,7 @@
 				A7D8B9EF23E2514400DCD162 /* SDL_drawpoint.h in Headers */,
 				A7D8BB2D23E2514500DCD162 /* SDL_dropevents_c.h in Headers */,
 				A7D8B79423E2514400DCD162 /* SDL_dummyaudio.h in Headers */,
+				AC6A5E92262C3582003D03DF /* SDL_uikitmetalangleview.h in Headers */,
 				A7D8A96323E2514000DCD162 /* SDL_dummysensor.h in Headers */,
 				A7D8AB0A23E2514100DCD162 /* SDL_dynapi.h in Headers */,
 				A7D8AB1023E2514100DCD162 /* SDL_dynapi_overrides.h in Headers */,
@@ -7201,6 +7258,7 @@
 				AA75584E1595D4D800BBD41B /* SDL_system.h in Headers */,
 				A7D8B3E623E2514300DCD162 /* SDL_systhread.h in Headers */,
 				A7D8B42823E2514300DCD162 /* SDL_systhread_c.h in Headers */,
+				AC6A5E9B262C3582003D03DF /* SDL_uikitmetalangle.h in Headers */,
 				5616CA4D252BB2A6005D5928 /* SDL_sysurl.h in Headers */,
 				A7D8AC3F23E2514100DCD162 /* SDL_sysvideo.h in Headers */,
 				AA7558501595D4D800BBD41B /* SDL_syswm.h in Headers */,
@@ -7312,6 +7370,7 @@
 				A7D8AB8823E2514100DCD162 /* SDL_offscreenwindow.h in Headers */,
 				A7D8A97223E2514000DCD162 /* SDL_coremotionsensor.h in Headers */,
 				A7D8BB3023E2514500DCD162 /* SDL_dropevents_c.h in Headers */,
+				AC6A5E9E262C3582003D03DF /* SDL_uikitmetalangle.h in Headers */,
 				A7D8AABF23E2514100DCD162 /* SDL_haptic_c.h in Headers */,
 				A7D8A94823E2514000DCD162 /* SDL_dataqueue.h in Headers */,
 				A7D8A96023E2514000DCD162 /* SDL_error_c.h in Headers */,
@@ -7407,6 +7466,7 @@
 				A7D8B1F723E2514200DCD162 /* SDL_x11dyn.h in Headers */,
 				A7D8BB6623E2514500DCD162 /* SDL_touch_c.h in Headers */,
 				A7D8B4AF23E2514300DCD162 /* SDL_gamecontrollerdb.h in Headers */,
+				AC6A5E95262C3582003D03DF /* SDL_uikitmetalangleview.h in Headers */,
 				A7D8AEEB23E2514100DCD162 /* SDL_cocoavulkan.h in Headers */,
 				A7D8B23323E2514200DCD162 /* gl2platform.h in Headers */,
 				A7D8B25123E2514200DCD162 /* vk_layer.h in Headers */,
@@ -7563,6 +7623,7 @@
 				DB313FDB17554B71006C0E22 /* SDL_keycode.h in Headers */,
 				A7D8B20B23E2514200DCD162 /* SDL_x11keyboard.h in Headers */,
 				A7D8AE9323E2514100DCD162 /* SDL_cocoakeyboard.h in Headers */,
+				AC6A5E98262C3582003D03DF /* SDL_uikitmetalangleview.h in Headers */,
 				A7D8ACE623E2514100DCD162 /* SDL_uikitvulkan.h in Headers */,
 				A7D8B1F323E2514200DCD162 /* SDL_x11framebuffer.h in Headers */,
 				A7D8B22323E2514200DCD162 /* SDL_x11video.h in Headers */,
@@ -7572,6 +7633,7 @@
 				A7D8BB7423E2514500DCD162 /* SDL_clipboardevents_c.h in Headers */,
 				A7D8B14B23E2514200DCD162 /* SDL_x11touch.h in Headers */,
 				A7D8AAE523E2514100DCD162 /* SDL_syshaptic_c.h in Headers */,
+				AC6A5EA1262C3582003D03DF /* SDL_uikitmetalangle.h in Headers */,
 				A7D8B94F23E2514400DCD162 /* SDL_hints_c.h in Headers */,
 				A7D8B7B723E2514400DCD162 /* SDL_audiodev_c.h in Headers */,
 				A7D8B7A523E2514400DCD162 /* SDL_audio_c.h in Headers */,
@@ -8202,6 +8264,7 @@
 				A75FCE1323E25AB700529352 /* SDL_coreaudio.m in Sources */,
 				A75FCE1423E25AB700529352 /* SDL_blendline.c in Sources */,
 				A75FCE1523E25AB700529352 /* SDL_blit_A.c in Sources */,
+				AC6A5E90262C3582003D03DF /* SDL_uikitmetalangleview.m in Sources */,
 				A75FCE1623E25AB700529352 /* SDL_d3dmath.c in Sources */,
 				A75FCE1723E25AB700529352 /* SDL_x11mouse.c in Sources */,
 				A75FCE1823E25AB700529352 /* SDL_nullvideo.c in Sources */,
@@ -8273,6 +8336,7 @@
 				A75FCE5523E25AB700529352 /* SDL_blit_0.c in Sources */,
 				A75FCE5623E25AB700529352 /* k_tan.c in Sources */,
 				A75FCE5723E25AB700529352 /* SDL_x11vulkan.c in Sources */,
+				AC6A5EAB262C3582003D03DF /* SDL_uikitmetalangle.m in Sources */,
 				A75FCE5823E25AB700529352 /* SDL_diskaudio.c in Sources */,
 				A75FCE5923E25AB700529352 /* SDL_egl.c in Sources */,
 				A75FCE5A23E25AB700529352 /* SDL_RLEaccel.c in Sources */,
@@ -8404,6 +8468,7 @@
 				A75FCFCC23E25AC700529352 /* SDL_coreaudio.m in Sources */,
 				A75FCFCD23E25AC700529352 /* SDL_blendline.c in Sources */,
 				A75FCFCE23E25AC700529352 /* SDL_blit_A.c in Sources */,
+				AC6A5E91262C3582003D03DF /* SDL_uikitmetalangleview.m in Sources */,
 				A75FCFCF23E25AC700529352 /* SDL_d3dmath.c in Sources */,
 				A75FCFD023E25AC700529352 /* SDL_x11mouse.c in Sources */,
 				A75FCFD123E25AC700529352 /* SDL_nullvideo.c in Sources */,
@@ -8475,6 +8540,7 @@
 				A75FD00E23E25AC700529352 /* SDL_blit_0.c in Sources */,
 				A75FD00F23E25AC700529352 /* k_tan.c in Sources */,
 				A75FD01023E25AC700529352 /* SDL_x11vulkan.c in Sources */,
+				AC6A5EAC262C3582003D03DF /* SDL_uikitmetalangle.m in Sources */,
 				A75FD01123E25AC700529352 /* SDL_diskaudio.c in Sources */,
 				A75FD01223E25AC700529352 /* SDL_egl.c in Sources */,
 				A75FD01323E25AC700529352 /* SDL_RLEaccel.c in Sources */,
@@ -8629,6 +8695,7 @@
 				A769B19E23E259AE00872273 /* SDL_blit_A.c in Sources */,
 				A769B19F23E259AE00872273 /* SDL_d3dmath.c in Sources */,
 				A769B1A023E259AE00872273 /* SDL_x11mouse.c in Sources */,
+				AC6A5E8E262C3582003D03DF /* SDL_uikitmetalangleview.m in Sources */,
 				A769B1A123E259AE00872273 /* SDL_nullvideo.c in Sources */,
 				A769B1A223E259AE00872273 /* SDL_offscreenevents.c in Sources */,
 				A769B1A323E259AE00872273 /* SDL_uikitview.m in Sources */,
@@ -8756,6 +8823,7 @@
 				A769B21723E259AE00872273 /* SDL_offscreenopengl.c in Sources */,
 				A769B21823E259AE00872273 /* SDL_uikitmetalview.m in Sources */,
 				A769B21923E259AE00872273 /* SDL_shaders_gles2.c in Sources */,
+				AC6A5EA9262C3582003D03DF /* SDL_uikitmetalangle.m in Sources */,
 				A769B21A23E259AE00872273 /* SDL_blit_1.c in Sources */,
 				A769B21B23E259AE00872273 /* SDL_x11dyn.c in Sources */,
 				A769B21C23E259AE00872273 /* SDL_mouse.c in Sources */,
@@ -8833,6 +8901,7 @@
 				A7D8ADF323E2514100DCD162 /* SDL_blit_A.c in Sources */,
 				A7D8BA3823E2514400DCD162 /* SDL_d3dmath.c in Sources */,
 				A7D8B17723E2514200DCD162 /* SDL_x11mouse.c in Sources */,
+				AC6A5E8A262C3582003D03DF /* SDL_uikitmetalangleview.m in Sources */,
 				A7D8ABEC23E2514100DCD162 /* SDL_nullvideo.c in Sources */,
 				A7D8AB6823E2514100DCD162 /* SDL_offscreenevents.c in Sources */,
 				A7D8ACA623E2514100DCD162 /* SDL_uikitview.m in Sources */,
@@ -8904,6 +8973,7 @@
 				A7D8B15F23E2514200DCD162 /* SDL_x11vulkan.c in Sources */,
 				A7D8B8A923E2514400DCD162 /* SDL_diskaudio.c in Sources */,
 				A7D8AFC123E2514200DCD162 /* SDL_egl.c in Sources */,
+				AC6A5EA5262C3582003D03DF /* SDL_uikitmetalangle.m in Sources */,
 				A7D8AC3423E2514100DCD162 /* SDL_RLEaccel.c in Sources */,
 				A7D8BBB223E2514500DCD162 /* SDL_assert.c in Sources */,
 				A7D8B3DB23E2514300DCD162 /* SDL_bmp.c in Sources */,
@@ -9035,6 +9105,7 @@
 				A7D8ADF423E2514100DCD162 /* SDL_blit_A.c in Sources */,
 				A7D8BA3923E2514400DCD162 /* SDL_d3dmath.c in Sources */,
 				A7D8B17823E2514200DCD162 /* SDL_x11mouse.c in Sources */,
+				AC6A5E8B262C3582003D03DF /* SDL_uikitmetalangleview.m in Sources */,
 				A7D8ABED23E2514100DCD162 /* SDL_nullvideo.c in Sources */,
 				A7D8AB6923E2514100DCD162 /* SDL_offscreenevents.c in Sources */,
 				A7D8ACA723E2514100DCD162 /* SDL_uikitview.m in Sources */,
@@ -9106,6 +9177,7 @@
 				A75FDBD023EA380300529352 /* SDL_hidapi_rumble.c in Sources */,
 				A7D8B8AA23E2514400DCD162 /* SDL_diskaudio.c in Sources */,
 				A7D8AFC223E2514200DCD162 /* SDL_egl.c in Sources */,
+				AC6A5EA6262C3582003D03DF /* SDL_uikitmetalangle.m in Sources */,
 				A7D8AC3523E2514100DCD162 /* SDL_RLEaccel.c in Sources */,
 				A7D8BBB323E2514500DCD162 /* SDL_assert.c in Sources */,
 				A7D8B3DC23E2514300DCD162 /* SDL_bmp.c in Sources */,
@@ -9236,6 +9308,7 @@
 				A7D8ADF623E2514100DCD162 /* SDL_blit_A.c in Sources */,
 				A7D8BA3B23E2514400DCD162 /* SDL_d3dmath.c in Sources */,
 				A7D8B17A23E2514200DCD162 /* SDL_x11mouse.c in Sources */,
+				AC6A5E8D262C3582003D03DF /* SDL_uikitmetalangleview.m in Sources */,
 				A7D8ABEF23E2514100DCD162 /* SDL_nullvideo.c in Sources */,
 				A7D8AB6B23E2514100DCD162 /* SDL_offscreenevents.c in Sources */,
 				A7D8ACA923E2514100DCD162 /* SDL_uikitview.m in Sources */,
@@ -9363,6 +9436,7 @@
 				A7D8AB5923E2514100DCD162 /* SDL_offscreenopengl.c in Sources */,
 				A7D8ACC723E2514100DCD162 /* SDL_uikitmetalview.m in Sources */,
 				A7D8BA5F23E2514400DCD162 /* SDL_shaders_gles2.c in Sources */,
+				AC6A5EA8262C3582003D03DF /* SDL_uikitmetalangle.m in Sources */,
 				A7D8B14423E2514200DCD162 /* SDL_blit_1.c in Sources */,
 				A7D8B18023E2514200DCD162 /* SDL_x11dyn.c in Sources */,
 				A7D8BB1923E2514500DCD162 /* SDL_mouse.c in Sources */,
@@ -9440,6 +9514,7 @@
 				A7D8BA1F23E2514400DCD162 /* SDL_blendline.c in Sources */,
 				A7D8BBE723E2574800DCD162 /* SDL_uikitviewcontroller.m in Sources */,
 				A7D8ADF223E2514100DCD162 /* SDL_blit_A.c in Sources */,
+				AC6A5E89262C3582003D03DF /* SDL_uikitmetalangleview.m in Sources */,
 				A7D8BBDD23E2574800DCD162 /* SDL_uikitmodes.m in Sources */,
 				A7D8BA3723E2514400DCD162 /* SDL_d3dmath.c in Sources */,
 				A7D8B17623E2514200DCD162 /* SDL_x11mouse.c in Sources */,
@@ -9511,6 +9586,7 @@
 				A7D8ADE623E2514100DCD162 /* SDL_blit_0.c in Sources */,
 				A7D8BB0923E2514500DCD162 /* k_tan.c in Sources */,
 				A7D8B15E23E2514200DCD162 /* SDL_x11vulkan.c in Sources */,
+				AC6A5EA4262C3582003D03DF /* SDL_uikitmetalangle.m in Sources */,
 				A7D8B8A823E2514400DCD162 /* SDL_diskaudio.c in Sources */,
 				566E26CF246274CC00718109 /* SDL_syslocale.m in Sources */,
 				A7D8AFC023E2514200DCD162 /* SDL_egl.c in Sources */,
@@ -9642,6 +9718,7 @@
 				A7D8B53C23E2514300DCD162 /* SDL_hidapi_xbox360.c in Sources */,
 				A7D8B8D523E2514400DCD162 /* SDL_coreaudio.m in Sources */,
 				A7D8BA2223E2514400DCD162 /* SDL_blendline.c in Sources */,
+				AC6A5E8C262C3582003D03DF /* SDL_uikitmetalangleview.m in Sources */,
 				A7D8BC0623E2574800DCD162 /* SDL_uikitwindow.m in Sources */,
 				A7D8ADF523E2514100DCD162 /* SDL_blit_A.c in Sources */,
 				A7D8BA3A23E2514400DCD162 /* SDL_d3dmath.c in Sources */,
@@ -9713,6 +9790,7 @@
 				A7D8BBF223E2574800DCD162 /* SDL_uikitevents.m in Sources */,
 				A7D8B16123E2514200DCD162 /* SDL_x11vulkan.c in Sources */,
 				A7D8BBB923E2560500DCD162 /* SDL_steamcontroller.c in Sources */,
+				AC6A5EA7262C3582003D03DF /* SDL_uikitmetalangle.m in Sources */,
 				A7D8B8AB23E2514400DCD162 /* SDL_diskaudio.c in Sources */,
 				A7D8AFC323E2514200DCD162 /* SDL_egl.c in Sources */,
 				A7D8AC3623E2514100DCD162 /* SDL_RLEaccel.c in Sources */,
@@ -9844,6 +9922,7 @@
 				A7D8B8D723E2514400DCD162 /* SDL_coreaudio.m in Sources */,
 				A7D8BA2423E2514400DCD162 /* SDL_blendline.c in Sources */,
 				A7D8ADF723E2514100DCD162 /* SDL_blit_A.c in Sources */,
+				AC6A5E8F262C3582003D03DF /* SDL_uikitmetalangleview.m in Sources */,
 				A7D8BA3C23E2514400DCD162 /* SDL_d3dmath.c in Sources */,
 				A7D8B17B23E2514200DCD162 /* SDL_x11mouse.c in Sources */,
 				A7D8ABF023E2514100DCD162 /* SDL_nullvideo.c in Sources */,
@@ -9915,6 +9994,7 @@
 				A7D8ADEB23E2514100DCD162 /* SDL_blit_0.c in Sources */,
 				A7D8BB0E23E2514500DCD162 /* k_tan.c in Sources */,
 				A7D8B16323E2514200DCD162 /* SDL_x11vulkan.c in Sources */,
+				AC6A5EAA262C3582003D03DF /* SDL_uikitmetalangle.m in Sources */,
 				A7D8B8AD23E2514400DCD162 /* SDL_diskaudio.c in Sources */,
 				A7D8AFC523E2514200DCD162 /* SDL_egl.c in Sources */,
 				A7D8AC3823E2514100DCD162 /* SDL_RLEaccel.c in Sources */,
@@ -10037,6 +10117,7 @@
 				DYLIB_CURRENT_VERSION = 15.1.0;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				FRAMEWORK_SEARCH_PATHS = "./third-party/frameworks";
 				GCC_ALTIVEC_EXTENSIONS = YES;
 				GCC_AUTO_VECTORIZATION = YES;
 				GCC_ENABLE_SSE3_EXTENSIONS = YES;
@@ -10121,6 +10202,7 @@
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
+				FRAMEWORK_SEARCH_PATHS = "./third-party/frameworks";
 				GCC_ALTIVEC_EXTENSIONS = YES;
 				GCC_AUTO_VECTORIZATION = YES;
 				GCC_ENABLE_SSE3_EXTENSIONS = YES;
