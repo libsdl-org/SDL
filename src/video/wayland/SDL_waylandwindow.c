@@ -681,8 +681,11 @@ Wayland_RestoreWindow(_THIS, SDL_Window * window)
     SDL_WindowData *wind = window->driverdata;
     const SDL_VideoData *viddata = (const SDL_VideoData *) _this->driverdata;
 
+    /* Note that xdg-shell does NOT provide a way to unset minimize! */
     if (viddata->shell.xdg) {
+        xdg_toplevel_unset_maximized(wind->shell_surface.xdg.roleobj.toplevel);
     } else if (viddata->shell.zxdg) {
+        zxdg_toplevel_v6_unset_maximized(wind->shell_surface.zxdg.roleobj.toplevel);
     } else {
         wl_shell_surface_set_toplevel(wind->shell_surface.wl);
     }
