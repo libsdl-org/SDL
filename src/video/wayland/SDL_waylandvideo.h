@@ -93,7 +93,7 @@ typedef struct {
 typedef struct {
     struct wl_output *output;
     float scale_factor;
-    int width, height, refresh, transform;
+    int x, y, width, height, refresh, transform;
     SDL_VideoDisplay placeholder;
     SDL_bool done;
 } SDL_WaylandOutputData;

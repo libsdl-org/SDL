@@ -62,6 +62,8 @@ static void
 Wayland_GetDisplayModes(_THIS, SDL_VideoDisplay *sdl_display);
 static int
 Wayland_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
+static int
+Wayland_GetDisplayBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect);
 
 static void
 Wayland_VideoQuit(_THIS);
@@ -179,6 +181,7 @@ Wayland_CreateDevice(int devindex)
     device->VideoQuit = Wayland_VideoQuit;
     device->SetDisplayMode = Wayland_SetDisplayMode;
     device->GetDisplayModes = Wayland_GetDisplayModes;
+    device->GetDisplayBounds = Wayland_GetDisplayBounds;
     device->GetWindowWMInfo = Wayland_GetWindowWMInfo;
     device->SuspendScreenSaver = Wayland_SuspendScreenSaver;
 
@@ -251,6 +254,8 @@ display_handle_geometry(void *data,
 {
     SDL_WaylandOutputData *driverdata = data;
 
+    driverdata->x = x;
+    driverdata->y = y;
     driverdata->placeholder.name = SDL_strdup(model);
     driverdata->transform = transform;
 }
@@ -511,6 +516,17 @@ static int
 Wayland_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
 {
     return SDL_Unsupported();
+}
+
+static int
+Wayland_GetDisplayBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect)
+{
+    SDL_WaylandOutputData *driverdata = (SDL_WaylandOutputData *)display->driverdata;
+    rect->x = driverdata->x;
+    rect->y = driverdata->y;
+    rect->w = display->current_mode.w;
+    rect->h = display->current_mode.h;
+    return 0;
 }
 
 void
