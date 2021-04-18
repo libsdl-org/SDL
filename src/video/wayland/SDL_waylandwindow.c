@@ -595,6 +595,27 @@ Wayland_SetWindowHitTest(SDL_Window *window, SDL_bool enabled)
     return 0;  /* just succeed, the real work is done elsewhere. */
 }
 
+int
+Wayland_SetWindowModalFor(_THIS, SDL_Window *modal_window, SDL_Window *parent_window)
+{
+    const SDL_VideoData *viddata = (const SDL_VideoData *) _this->driverdata;
+    SDL_WindowData *modal_data = modal_window->driverdata;
+    SDL_WindowData *parent_data = parent_window->driverdata;
+
+    if (viddata->shell.xdg) {
+        xdg_toplevel_set_parent(modal_data->shell_surface.xdg.roleobj.toplevel,
+                                parent_data->shell_surface.xdg.roleobj.toplevel);
+    } else if (viddata->shell.zxdg) {
+        zxdg_toplevel_v6_set_parent(modal_data->shell_surface.zxdg.roleobj.toplevel,
+                                    parent_data->shell_surface.zxdg.roleobj.toplevel);
+    } else {
+        return SDL_Unsupported();
+    }
+
+    WAYLAND_wl_display_flush( ((SDL_VideoData*)_this->driverdata)->display );
+    return 0;
+}
+
 void Wayland_ShowWindow(_THIS, SDL_Window *window)
 {
     SDL_WaylandOutputData *driverdata = (SDL_WaylandOutputData *) SDL_GetDisplayForWindow(window)->driverdata;
