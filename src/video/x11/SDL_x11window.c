@@ -668,6 +668,8 @@ X11_CreateWindow(_THIS, SDL_Window * window)
                  PropertyChangeMask | StructureNotifyMask |
                  KeymapStateMask | fevent));
 
+    X11_XkbSelectEvents(display, XkbUseCoreKbd, XkbStateNotifyMask, XkbStateNotifyMask);
+
     X11_XFlush(display);
 
     return 0;
