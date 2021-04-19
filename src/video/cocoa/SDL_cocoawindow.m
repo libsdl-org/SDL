@@ -1820,6 +1820,18 @@ Cocoa_SetWindowResizable(_THIS, SDL_Window * window, SDL_bool resizable)
 }}
 
 void
+Cocoa_SetWindowAlwaysOnTop(_THIS, SDL_Window * window, SDL_bool on_top)
+{ @autoreleasepool
+    {
+        NSWindow *nswindow = ((SDL_WindowData *) window->driverdata)->nswindow;
+        if (on_top) {
+            [nswindow setLevel:NSFloatingWindowLevel];
+        } else {
+            [nswindow setLevel:kCGNormalWindowLevel];
+        }
+    }}
+
+void
 Cocoa_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display, SDL_bool fullscreen)
 { @autoreleasepool
 {

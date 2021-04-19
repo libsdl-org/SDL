@@ -92,6 +92,7 @@ Cocoa_CreateDevice(int devindex)
     device->RestoreWindow = Cocoa_RestoreWindow;
     device->SetWindowBordered = Cocoa_SetWindowBordered;
     device->SetWindowResizable = Cocoa_SetWindowResizable;
+    device->SetWindowAlwaysOnTop = Cocoa_SetWindowAlwaysOnTop;
     device->SetWindowFullscreen = Cocoa_SetWindowFullscreen;
     device->SetWindowGammaRamp = Cocoa_SetWindowGammaRamp;
     device->GetWindowGammaRamp = Cocoa_GetWindowGammaRamp;

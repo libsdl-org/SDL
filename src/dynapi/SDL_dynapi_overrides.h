@@ -810,3 +810,4 @@
 #define SDL_AndroidShowToast SDL_AndroidShowToast_REAL
 #define SDL_GetAudioDeviceSpec SDL_GetAudioDeviceSpec_REAL
 #define SDL_TLSCleanup SDL_TLSCleanup_REAL
+#define SDL_SetWindowAlwaysOnTop SDL_SetWindowAlwaysOnTop_REAL

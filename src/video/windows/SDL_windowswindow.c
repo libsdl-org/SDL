@@ -632,6 +632,18 @@ WIN_SetWindowResizable(_THIS, SDL_Window * window, SDL_bool resizable)
 }
 
 void
+WIN_SetWindowAlwaysOnTop(_THIS, SDL_Window * window, SDL_bool on_top)
+{
+    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
+    HWND hwnd = data->hwnd;
+    if (on_top) {
+        SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+    } else {
+        SetWindowPos(hwnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+    }
+}
+
+void
 WIN_RestoreWindow(_THIS, SDL_Window * window)
 {
     SDL_WindowData *data = (SDL_WindowData *)window->driverdata;

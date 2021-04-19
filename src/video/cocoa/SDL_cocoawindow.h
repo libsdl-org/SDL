@@ -142,6 +142,7 @@ extern void Cocoa_MinimizeWindow(_THIS, SDL_Window * window);
 extern void Cocoa_RestoreWindow(_THIS, SDL_Window * window);
 extern void Cocoa_SetWindowBordered(_THIS, SDL_Window * window, SDL_bool bordered);
 extern void Cocoa_SetWindowResizable(_THIS, SDL_Window * window, SDL_bool resizable);
+extern void Cocoa_SetWindowAlwaysOnTop(_THIS, SDL_Window * window, SDL_bool on_top);
 extern void Cocoa_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display, SDL_bool fullscreen);
 extern int Cocoa_SetWindowGammaRamp(_THIS, SDL_Window * window, const Uint16 * ramp);
 extern int Cocoa_GetWindowGammaRamp(_THIS, SDL_Window * window, Uint16 * ramp);
