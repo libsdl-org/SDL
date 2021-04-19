@@ -1560,6 +1560,85 @@ X11_SetWindowGammaRamp(_THIS, SDL_Window * window, const Uint16 * ramp)
     return 0;
 }
 
+typedef struct {
+    unsigned char *data;
+    int format, count;
+    Atom type;
+} SDL_x11Prop;
+
+/* Reads property
+   Must call X11_XFree on results
+ */
+static void X11_ReadProperty(SDL_x11Prop *p, Display *disp, Window w, Atom prop)
+{
+    unsigned char *ret=NULL;
+    Atom type;
+    int fmt;
+    unsigned long count;
+    unsigned long bytes_left;
+    int bytes_fetch = 0;
+
+    do {
+        if (ret != 0) X11_XFree(ret);
+        X11_XGetWindowProperty(disp, w, prop, 0, bytes_fetch, False, AnyPropertyType, &type, &fmt, &count, &bytes_left, &ret);
+        bytes_fetch += bytes_left;
+    } while (bytes_left != 0);
+
+    p->data=ret;
+    p->format=fmt;
+    p->count=count;
+    p->type=type;
+}
+
+void*
+X11_GetWindowICCProfile(_THIS, SDL_Window * window, size_t * size)
+{
+    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+    Display *display = data->videodata->display;
+    XWindowAttributes attributes;
+    Atom icc_profile_atom;
+    char* icc_atom_string = "_ICC_PROFILE";
+    void* ret_icc_profile_data = SDL_calloc(1, 1024 * 1024 * 4);
+    CARD8* icc_profile_data;
+    Atom real_type;
+    int real_format;
+    unsigned long real_nitems;
+    SDL_x11Prop atomProp;
+
+    if (!icc_atom_string) {
+        SDL_OutOfMemory();
+        return NULL;
+    }
+    if (!ret_icc_profile_data) {
+        SDL_OutOfMemory();
+        return NULL;
+    }
+    X11_XGetWindowAttributes(display, X11_IsWindowLegacyFullscreen(_this, window) ? data->fswindow : data->xwindow, &attributes);
+    X11_XGetWindowAttributes(display, RootWindowOfScreen(attributes.screen), &attributes);
+    icc_profile_atom = X11_XInternAtom(display, icc_atom_string, True);
+    if (icc_profile_atom == None) {
+        SDL_SetError("Screen is not calibrated.\n");
+        SDL_free(ret_icc_profile_data);
+        return NULL;
+    }
+    X11_ReadProperty(&atomProp, display, RootWindowOfScreen(attributes.screen), icc_profile_atom);
+    real_format = atomProp.type;
+    real_nitems = atomProp.count;
+    icc_profile_data = atomProp.data;
+    real_type = atomProp.type;
+    if (real_format == None) {
+        SDL_SetError("Screen is not calibrated.\n");
+        SDL_free(ret_icc_profile_data);
+        return NULL;
+    }
+    SDL_realloc(ret_icc_profile_data, real_nitems);
+    SDL_memcpy(ret_icc_profile_data, icc_profile_data, real_nitems);
+    *size = real_nitems;
+    X11_XFree(icc_profile_data);
+    
+    return ret_icc_profile_data;
+}
+
 void
 X11_SetWindowMouseGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
 {
