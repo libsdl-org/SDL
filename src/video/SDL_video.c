@@ -2110,6 +2110,25 @@ SDL_SetWindowResizable(SDL_Window * window, SDL_bool resizable)
 }
 
 void
+SDL_SetWindowAlwaysOnTop(SDL_Window * window, SDL_bool on_top)
+{
+    CHECK_WINDOW_MAGIC(window,);
+    if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
+        const int want = (on_top != SDL_FALSE);  /* normalize the flag. */
+        const int have = ((window->flags & SDL_WINDOW_ALWAYS_ON_TOP) != 0);
+        if ((want != have) && (_this->SetWindowAlwaysOnTop)) {
+            if (want) {
+                window->flags |= SDL_WINDOW_ALWAYS_ON_TOP;
+            } else {
+                window->flags &= ~SDL_WINDOW_ALWAYS_ON_TOP;
+            }
+            
+            _this->SetWindowAlwaysOnTop(_this, window, (SDL_bool) want);
+        }
+    }
+}
+
+void
 SDL_SetWindowSize(SDL_Window * window, int w, int h)
 {
     CHECK_WINDOW_MAGIC(window,);
