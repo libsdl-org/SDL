@@ -24,142 +24,167 @@
 #if SDL_VIDEO_DRIVER_WAYLAND
 
 #include "SDL.h"
-#include <stdlib.h> /* popen/pclose/fgets */
+#include <stdlib.h> /* fgets */
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/wait.h>
+#include <errno.h>
+
+#define MAX_BUTTONS             8       /* Maximum number of buttons supported */
 
 int
 Wayland_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
 {
-    #define ZENITY_CONST(name, str) \
-        const char *name = str; \
-        const size_t name##_len = SDL_strlen(name);
-    ZENITY_CONST(zenity, "zenity --question --switch --no-wrap --icon-name=dialog-")
-    ZENITY_CONST(title, "--title=")
-    ZENITY_CONST(message, "--text=")
-    ZENITY_CONST(extrabutton, "--extra-button=")
-    ZENITY_CONST(icon_info, "information")
-    ZENITY_CONST(icon_warn, "warning")
-    ZENITY_CONST(icon_error, "error")
-    #undef ZENITY_CONST
+    int fd_pipe[2]; /* fd_pipe[0]: read end of pipe, fd_pipe[1]: write end of pipe */
+    pid_t pid1;
 
-    char *command, *output;
-    size_t command_len, output_len;
-    const char *icon;
-    char *tmp;
-    FILE *process;
-    int i;
-
-    /* Start by calculating the lengths of the strings. These commands can get
-     * pretty long, so we need to dynamically allocate this.
-     */
-    command_len = zenity_len;
-    output_len = 0;
-    switch (messageboxdata->flags)
-    {
-    case SDL_MESSAGEBOX_ERROR:
-        icon = icon_error;
-        command_len += icon_error_len;
-        break;
-    case SDL_MESSAGEBOX_WARNING:
-        icon = icon_warn;
-        command_len += icon_warn_len;
-        break;
-    case SDL_MESSAGEBOX_INFORMATION:
-    default:
-        icon = icon_info;
-        command_len += icon_info_len;
-        break;
+    if (messageboxdata->numbuttons > MAX_BUTTONS) {
+        return SDL_SetError("Too many buttons (%d max allowed)", MAX_BUTTONS);
     }
-    #define ADD_ARGUMENT(arg, value) \
-        command_len += arg + 3; /* Two " and a space */ \
-        if (messageboxdata->value != NULL) { \
-            command_len += SDL_strlen(messageboxdata->value); \
+
+    if (pipe(fd_pipe) != 0) { /* create a pipe */
+        return SDL_SetError("pipe() failed: %s", strerror(errno));
+    }
+
+    pid1 = fork();
+    if (pid1 == 0) {  /* child process */
+        int argc = 4, i;
+        const char* argv[4 + 2/* icon name */ + 2/* title */ + 2/* message */ + 2*MAX_BUTTONS + 1/* NULL */] = {
+            "zenity", "--question", "--switch", "--no-wrap",
+        };
+
+        close(fd_pipe[0]); /* no reading from pipe */
+        /* write stdout in pipe */
+        if (dup2(fd_pipe[1], STDOUT_FILENO) == -1) {
+            _exit(EXIT_FAILURE);
         }
-    ADD_ARGUMENT(title_len, title)
-    ADD_ARGUMENT(message_len, message)
-    #undef ADD_ARGUMENT
-    for (i = 0; i < messageboxdata->numbuttons; i += 1) {
-        command_len += extrabutton_len + 3; /* Two " and a space */
-        if (messageboxdata->buttons[i].text != NULL) {
-            const size_t button_len = SDL_strlen(messageboxdata->buttons[i].text);
-            command_len += button_len;
-            if (button_len > output_len) {
-                output_len = button_len;
+
+        argv[argc++] = "--icon-name";
+        switch (messageboxdata->flags) {
+        case SDL_MESSAGEBOX_ERROR:
+            argv[argc++] = "error";
+            break;
+        case SDL_MESSAGEBOX_WARNING:
+            argv[argc++] = "warning";
+            break;
+        case SDL_MESSAGEBOX_INFORMATION:
+        default:
+            argv[argc++] = "information";
+            break;
+        }
+
+        if (messageboxdata->title && messageboxdata->title[0]) {
+            argv[argc++] = "--title";
+            argv[argc++] = messageboxdata->title;
+        } else {
+            argv[argc++] = "--title=\"\"";
+        }
+
+        if (messageboxdata->message && messageboxdata->message[0]) {
+            argv[argc++] = "--text";
+            argv[argc++] = messageboxdata->message;
+        } else {
+            argv[argc++] = "--text=\"\"";
+        }
+
+        for (i = 0; i < messageboxdata->numbuttons; ++i) {
+            if (messageboxdata->buttons[i].text && messageboxdata->buttons[i].text[0]) {
+                argv[argc++] = "--extra-button";
+                argv[argc++] = messageboxdata->buttons[i].text;
+            } else {
+                argv[argc++] = "--extra-button=\"\"";
             }
         }
-    }
+        argv[argc] = NULL;
 
-    /* Don't forget null terminators! */
-    command_len += 1;
-    output_len += 1;
+        /* const casting argv is fine:
+         * https://pubs.opengroup.org/onlinepubs/9699919799/functions/fexecve.html -> rational
+         */
+        execvp("zenity", argv);
+        _exit(EXIT_FAILURE);
+    } else if (pid1 < 0) {
+        close(fd_pipe[0]);
+        close(fd_pipe[1]);
+        return SDL_SetError("fork() failed: %s", strerror(errno));
+    } else {
+        int status;
+        if (waitpid(pid1, &status, 0) == pid1) {
+            if (WIFEXITED(status)) {
+                if (WEXITSTATUS(status) >= 0) {
+                    int i;
+                    size_t output_len = 1;
+                    char* output = NULL;
+                    char* tmp = NULL;
+                    FILE* stdout = NULL;
 
-    /* Now that we know the length of the command, allocate! */
-    command = (char*) SDL_malloc(command_len + output_len);
-    if (command == NULL) {
-        return SDL_OutOfMemory();
-    }
-    output = command + command_len;
-    command[0] = '\0';
-    output[0] = '\0';
+                    close(fd_pipe[1]); /* no writing to pipe */
+                    /* At this point, if no button ID is needed, we can just bail as soon as the
+                     * process has completed.
+                     */
+                    if (buttonid == NULL) {
+                        close(fd_pipe[0]);
+                        return 0;
+                    }
+                    *buttonid = -1;
 
-    /* Now we can build the command... */
-    SDL_strlcpy(command, zenity, command_len);
-    SDL_strlcat(command, icon, command_len);
-    #define ADD_ARGUMENT(arg, value) \
-        SDL_strlcat(command, " ", command_len); \
-        SDL_strlcat(command, arg, command_len); \
-        SDL_strlcat(command, "\"", command_len); \
-        if (value != NULL) { \
-            SDL_strlcat(command, value, command_len); \
-        } \
-        SDL_strlcat(command, "\"", command_len)
-    ADD_ARGUMENT(title, messageboxdata->title);
-    ADD_ARGUMENT(message, messageboxdata->message);
-    for (i = 0; i < messageboxdata->numbuttons; i += 1) {
-        ADD_ARGUMENT(extrabutton, messageboxdata->buttons[i].text);
-    }
-    #undef ADD_ARGUMENT
+                    /* find button with longest text */
+                    for (i = 0; i < messageboxdata->numbuttons; ++i) {
+                        if (messageboxdata->buttons[i].text != NULL) {
+                            const size_t button_len = SDL_strlen(messageboxdata->buttons[i].text);
+                            if (button_len > output_len) {
+                                output_len = button_len;
+                            }
+                        }
+                    }
+                    output = SDL_malloc(output_len + 1);
+                    if (!output) {
+                        close(fd_pipe[0]);
+                        return SDL_OutOfMemory();
+                    }
+                    output[0] = '\0';
 
-    /* ... then run it, finally. */
-    process = popen(command, "r");
-    if (process == NULL) {
-        SDL_free(command);
-        return SDL_SetError("zenity failed to run");
-    }
+                    stdout = fdopen(fd_pipe[0], "r");
+                    if (!stdout) {
+                        SDL_free(output);
+                        close(fd_pipe[0]);
+                        return SDL_SetError("Couldn't open pipe for reading: %s", strerror(errno));
+                    }
+                    tmp = fgets(output, output_len + 1, stdout);
+                    fclose(stdout);
 
-    /* At this point, if no button ID is needed, we can just bail as soon as the
-     * process has completed.
-     */
-    if (buttonid == NULL) {
-        pclose(process);
-        goto end;
-    }
-    *buttonid = -1;
+                    if ((tmp == NULL) || (*tmp == '\0') || (*tmp == '\n')) {
+                        SDL_free(output);
+                        return 0; /* User simply closed the dialog */
+                    }
 
-    /* Read the result from stdout */
-    tmp = fgets(output, output_len, process);
-    pclose(process);
-    if ((tmp == NULL) || (*tmp == '\0') || (*tmp == '\n')) {
-        goto end; /* User simply closed the dialog */
-    }
+                    /* It likes to add a newline... */
+                    tmp = SDL_strrchr(output, '\n');
+                    if (tmp != NULL) {
+                        *tmp = '\0';
+                    }
 
-    /* It likes to add a newline... */
-    tmp = SDL_strrchr(output, '\n');
-    if (tmp != NULL) {
-        *tmp = '\0';
-    }
+                    /* Check which button got pressed */
+                    for (i = 0; i < messageboxdata->numbuttons; i += 1) {
+                        if (messageboxdata->buttons[i].text != NULL) {
+                            if (SDL_strcmp(output, messageboxdata->buttons[i].text) == 0) {
+                                *buttonid = i;
+                                break;
+                            }
+                        }
+                    }
 
-    /* Check which button got pressed */
-    for (i = 0; i < messageboxdata->numbuttons; i += 1) {
-        if (messageboxdata->buttons[i].text != NULL) {
-            if (SDL_strcmp(output, messageboxdata->buttons[i].text) == 0) {
-                *buttonid = i;
-                break;
-            }
+                    SDL_free(output);
+                    return 0;  /* success! */
+                } else {
+                    return SDL_SetError("zenity reported error or failed to launch: %d", WEXITSTATUS(status));
+                }
+             } else {
+                return SDL_SetError("zenity failed for some reason");
+             }
+        } else {
+            return SDL_SetError("Waiting on zenity failed: %s", strerror(errno));
         }
     }
-
-end:
-    SDL_free(command);
     return 0;
 }
 
