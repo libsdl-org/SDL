@@ -331,11 +331,21 @@ ProcessHitTest(struct SDL_WaylandInput *input, uint32_t serial)
         switch (rc) {
             case SDL_HITTEST_DRAGGABLE:
                 if (input->display->shell.xdg) {
-                    xdg_toplevel_move(window_data->shell_surface.xdg.roleobj.toplevel, input->seat, serial);
+                    if (window_data->shell_surface.xdg.roleobj.toplevel) {
+                        xdg_toplevel_move(window_data->shell_surface.xdg.roleobj.toplevel,
+                                          input->seat,
+                                          serial);
+                    }
                 } else if (input->display->shell.zxdg) {
-                    zxdg_toplevel_v6_move(window_data->shell_surface.zxdg.roleobj.toplevel, input->seat, serial);
+                    if (window_data->shell_surface.zxdg.roleobj.toplevel) {
+                        zxdg_toplevel_v6_move(window_data->shell_surface.zxdg.roleobj.toplevel,
+                                              input->seat,
+                                              serial);
+                    }
                 } else {
-                    wl_shell_surface_move(window_data->shell_surface.wl, input->seat, serial);
+                    if (window_data->shell_surface.wl) {
+                        wl_shell_surface_move(window_data->shell_surface.wl, input->seat, serial);
+                    }
                 }
                 return SDL_TRUE;
 
@@ -348,11 +358,23 @@ ProcessHitTest(struct SDL_WaylandInput *input, uint32_t serial)
             case SDL_HITTEST_RESIZE_BOTTOMLEFT:
             case SDL_HITTEST_RESIZE_LEFT:
                 if (input->display->shell.xdg) {
-                    xdg_toplevel_resize(window_data->shell_surface.xdg.roleobj.toplevel, input->seat, serial, directions_zxdg[rc - SDL_HITTEST_RESIZE_TOPLEFT]);
+                    if (window_data->shell_surface.xdg.roleobj.toplevel) {
+                        xdg_toplevel_resize(window_data->shell_surface.xdg.roleobj.toplevel,
+                                            input->seat,
+                                            serial,
+                                            directions_zxdg[rc - SDL_HITTEST_RESIZE_TOPLEFT]);
+                    }
                 } else if (input->display->shell.zxdg) {
-                    zxdg_toplevel_v6_resize(window_data->shell_surface.zxdg.roleobj.toplevel, input->seat, serial, directions_zxdg[rc - SDL_HITTEST_RESIZE_TOPLEFT]);
+                    if (window_data->shell_surface.zxdg.roleobj.toplevel) {
+                        zxdg_toplevel_v6_resize(window_data->shell_surface.zxdg.roleobj.toplevel,
+                                                input->seat,
+                                                serial,
+                                                directions_zxdg[rc - SDL_HITTEST_RESIZE_TOPLEFT]);
+                    }
                 } else {
-                    wl_shell_surface_resize(window_data->shell_surface.wl, input->seat, serial, directions_wl[rc - SDL_HITTEST_RESIZE_TOPLEFT]);
+                    if (window_data->shell_surface.wl) {
+                        wl_shell_surface_resize(window_data->shell_surface.wl, input->seat, serial, directions_wl[rc - SDL_HITTEST_RESIZE_TOPLEFT]);
+                    }
                 }
                 return SDL_TRUE;
 
