@@ -167,7 +167,7 @@ Wayland_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
                     for (i = 0; i < messageboxdata->numbuttons; i += 1) {
                         if (messageboxdata->buttons[i].text != NULL) {
                             if (SDL_strcmp(output, messageboxdata->buttons[i].text) == 0) {
-                                *buttonid = i;
+                                *buttonid = messageboxdata->buttons[i].buttonid;
                                 break;
                             }
                         }
