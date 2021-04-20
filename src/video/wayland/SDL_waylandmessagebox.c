@@ -48,9 +48,9 @@ Wayland_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
 
     pid1 = fork();
     if (pid1 == 0) {  /* child process */
-        int argc = 4, i;
-        const char* argv[4 + 2/* icon name */ + 2/* title */ + 2/* message */ + 2*MAX_BUTTONS + 1/* NULL */] = {
-            "zenity", "--question", "--switch", "--no-wrap",
+        int argc = 5, i;
+        const char* argv[5 + 2/* icon name */ + 2/* title */ + 2/* message */ + 2*MAX_BUTTONS + 1/* NULL */] = {
+            "zenity", "--question", "--switch", "--no-wrap", "--no-markup"
         };
 
         close(fd_pipe[0]); /* no reading from pipe */
