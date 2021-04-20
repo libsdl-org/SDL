@@ -46,16 +46,19 @@
 #include "SDL_kmsdrmdyn.h"
 #include "SDL_kmsdrmvulkan.h"
 #include <sys/stat.h>
+#include <sys/param.h>
+#include <sys/utsname.h>
 #include <dirent.h>
 #include <poll.h>
 #include <errno.h>
 
 #ifdef __OpenBSD__
-#define KMSDRM_DRI_PATH "/dev/"
-#define KMSDRM_DRI_DEVFMT "%sdrm%d"
-#define KMSDRM_DRI_DEVNAME "drm"
-#define KMSDRM_DRI_DEVNAMESIZE 3
-#define KMSDRM_DRI_CARDPATHFMT "/dev/drm%d"
+static SDL_bool openbsd69orgreater = SDL_FALSE;
+#define KMSDRM_DRI_PATH openbsd69orgreater ? "/dev/dri/" : "/dev/"
+#define KMSDRM_DRI_DEVFMT openbsd69orgreater ? "%scard%d" : "%sdrm%d"
+#define KMSDRM_DRI_DEVNAME openbsd69orgreater ? "card" : "drm"
+#define KMSDRM_DRI_DEVNAMESIZE openbsd69orgreater ? 4 : 3
+#define KMSDRM_DRI_CARDPATHFMT openbsd69orgreater ? "/dev/dri/card%d" : "/dev/drm%d"
 #else
 #define KMSDRM_DRI_PATH "/dev/dri/"
 #define KMSDRM_DRI_DEVFMT "%scard%d"
@@ -182,8 +185,20 @@ get_driindex(void)
 static int
 KMSDRM_Available(void)
 {
+#ifdef __OpenBSD__
+    struct utsname nameofsystem;
+    double releaseversion;
+#endif
     int ret = -ENOENT;
 
+#ifdef __OpenBSD__
+    if (!(uname(&nameofsystem) < 0)) {
+        releaseversion = SDL_atof(nameofsystem.release);
+        if (releaseversion >= 6.9) {
+            openbsd69orgreater = SDL_TRUE;
+        }
+    }
+#endif
     ret = get_driindex();
     if (ret >= 0)
         return 1;
