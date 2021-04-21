@@ -25,9 +25,10 @@
 
 #include "SDL.h"
 #include <stdlib.h> /* fgets */
-#include <stdio.h>
-#include <unistd.h>
-#include <sys/wait.h>
+#include <stdio.h> /* FILE, STDOUT_FILENO, fdopen, fclose */
+#include <unistd.h> /* pid_t, pipe, fork, close, dup2, execvp, _exit, EXIT_FAILURE */
+#include <sys/wait.h> /* waitpid, WIFEXITED, WEXITSTATUS */
+#include <string.h> /* strerr */
 #include <errno.h>
 
 #define MAX_BUTTONS             8       /* Maximum number of buttons supported */
@@ -62,14 +63,14 @@ Wayland_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
         argv[argc++] = "--icon-name";
         switch (messageboxdata->flags) {
         case SDL_MESSAGEBOX_ERROR:
-            argv[argc++] = "error";
+            argv[argc++] = "dialog-error";
             break;
         case SDL_MESSAGEBOX_WARNING:
-            argv[argc++] = "warning";
+            argv[argc++] = "dialog-warning";
             break;
         case SDL_MESSAGEBOX_INFORMATION:
         default:
-            argv[argc++] = "information";
+            argv[argc++] = "dialog-information";
             break;
         }
 
@@ -100,7 +101,7 @@ Wayland_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
         /* const casting argv is fine:
          * https://pubs.opengroup.org/onlinepubs/9699919799/functions/fexecve.html -> rational
          */
-        execvp("zenity", argv);
+        execvp("zenity", (char **)argv);
         _exit(EXIT_FAILURE);
     } else if (pid1 < 0) {
         close(fd_pipe[0]);
