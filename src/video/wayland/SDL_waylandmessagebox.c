@@ -26,7 +26,7 @@
 #include "SDL.h"
 #include <stdlib.h> /* fgets */
 #include <stdio.h> /* FILE, STDOUT_FILENO, fdopen, fclose */
-#include <unistd.h> /* pid_t, pipe, fork, close, dup2, execvp, _exit, EXIT_FAILURE */
+#include <unistd.h> /* pid_t, pipe, fork, close, dup2, execvp, _exit */
 #include <sys/wait.h> /* waitpid, WIFEXITED, WEXITSTATUS */
 #include <string.h> /* strerr */
 #include <errno.h>
@@ -57,7 +57,7 @@ Wayland_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
         close(fd_pipe[0]); /* no reading from pipe */
         /* write stdout in pipe */
         if (dup2(fd_pipe[1], STDOUT_FILENO) == -1) {
-            _exit(EXIT_FAILURE);
+            _exit(128);
         }
 
         argv[argc++] = "--icon-name";
@@ -102,7 +102,7 @@ Wayland_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
          * https://pubs.opengroup.org/onlinepubs/9699919799/functions/fexecve.html -> rational
          */
         execvp("zenity", (char **)argv);
-        _exit(EXIT_FAILURE);
+        _exit(129);
     } else if (pid1 < 0) {
         close(fd_pipe[0]);
         close(fd_pipe[1]);
@@ -111,7 +111,7 @@ Wayland_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
         int status;
         if (waitpid(pid1, &status, 0) == pid1) {
             if (WIFEXITED(status)) {
-                if (WEXITSTATUS(status) >= 0) {
+                if (WEXITSTATUS(status) < 128) {
                     int i;
                     size_t output_len = 1;
                     char* output = NULL;
@@ -179,9 +179,9 @@ Wayland_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
                 } else {
                     return SDL_SetError("zenity reported error or failed to launch: %d", WEXITSTATUS(status));
                 }
-             } else {
+            } else {
                 return SDL_SetError("zenity failed for some reason");
-             }
+            }
         } else {
             return SDL_SetError("Waiting on zenity failed: %s", strerror(errno));
         }
