@@ -222,6 +222,7 @@ X11_CreateDevice(int devindex)
     device->RestoreWindow = X11_RestoreWindow;
     device->SetWindowBordered = X11_SetWindowBordered;
     device->SetWindowResizable = X11_SetWindowResizable;
+    device->SetWindowAlwaysOnTop = X11_SetWindowAlwaysOnTop;
     device->SetWindowFullscreen = X11_SetWindowFullscreen;
     device->SetWindowGammaRamp = X11_SetWindowGammaRamp;
     device->SetWindowMouseGrab = X11_SetWindowMouseGrab;
