@@ -645,7 +645,8 @@ typedef struct {
     char const* name;
 } Attribute;
 
-Attribute attributes[] = {
+static
+Attribute all_attributes[] = {
         ATTRIBUTE( EGL_BUFFER_SIZE ),
         ATTRIBUTE( EGL_ALPHA_SIZE ),
         ATTRIBUTE( EGL_BLUE_SIZE ),
@@ -685,10 +686,10 @@ Attribute attributes[] = {
 static void dumpconfig(_THIS, EGLConfig config)
 {
     int attr;
-    for (attr = 0 ; attr<sizeof(attributes)/sizeof(Attribute) ; attr++) {
+    for (attr = 0 ; attr<sizeof(all_attributes)/sizeof(Attribute) ; attr++) {
         EGLint value;
-        _this->egl_data->eglGetConfigAttrib(_this->egl_data->egl_display, config, attributes[attr].attribute, &value);
-        SDL_Log("\t%-32s: %10d (0x%08x)\n", attributes[attr].name, value, value);
+        _this->egl_data->eglGetConfigAttrib(_this->egl_data->egl_display, config, all_attributes[attr].attribute, &value);
+        SDL_Log("\t%-32s: %10d (0x%08x)\n", all_attributes[attr].name, value, value);
     }
 }
 
@@ -729,10 +730,12 @@ SDL_EGL_ChooseConfig(_THIS)
         attribs[i++] = EGL_BUFFER_SIZE;
         attribs[i++] = _this->gl_config.buffer_size;
     }
-    
-    attribs[i++] = EGL_DEPTH_SIZE;
-    attribs[i++] = _this->gl_config.depth_size;
-    
+
+    if (_this->gl_config.depth_size) {
+        attribs[i++] = EGL_DEPTH_SIZE;
+        attribs[i++] = _this->gl_config.depth_size;
+    }
+
     if (_this->gl_config.stencil_size) {
         attribs[i++] = EGL_STENCIL_SIZE;
         attribs[i++] = _this->gl_config.stencil_size;
