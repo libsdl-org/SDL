@@ -1981,6 +1981,42 @@ Cocoa_SetWindowGammaRamp(_THIS, SDL_Window * window, const Uint16 * ramp)
     return 0;
 }
 
+void*
+Cocoa_GetWindowICCProfile(_THIS, SDL_Window * window, size_t * size)
+{
+    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+    NSWindow *nswindow = data->nswindow;
+    NSScreen *screen = [nswindow screen];
+    NSData* iccProfileData = nil;
+    void* retIccProfileData = NULL;
+
+    if (screen == nil) {
+        SDL_SetError("Could not get screen of window.");
+        return NULL;
+    }
+
+    if ([screen colorSpace] == nil) {
+        SDL_SetError("Could not get colorspace information of screen.");
+        return NULL;
+    }
+
+    iccProfileData = [[screen colorSpace] ICCProfileData];
+    if (iccProfileData == nil) {
+        SDL_SetError("Could not get ICC profile data.");
+        return NULL;
+	}
+
+    retIccProfileData = SDL_malloc([iccProfileData length]);
+    if (!retIccProfileData) {
+        SDL_OutOfMemory();
+        return NULL;
+    }
+
+    [iccProfileData getBytes:retIccProfileData length:[iccProfileData length]];
+    *size = [iccProfileData length];
+    return retIccProfileData;
+}
+
 int
 Cocoa_GetWindowGammaRamp(_THIS, SDL_Window * window, Uint16 * ramp)
 {

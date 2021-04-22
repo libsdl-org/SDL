@@ -725,6 +725,32 @@ WIN_SetWindowGammaRamp(_THIS, SDL_Window * window, const Uint16 * ramp)
     return succeeded ? 0 : -1;
 }
 
+void*
+WIN_GetWindowICCProfile(_THIS, SDL_Window * window, size_t * size)
+{
+    SDL_VideoDisplay* display = SDL_GetDisplayForWindow(window);
+    SDL_DisplayData* data = (SDL_DisplayData*)display->driverdata;
+    HDC hdc;
+    BOOL succeeded = FALSE;
+    WCHAR filename[MAX_PATH];
+    DWORD fileNameSize = MAX_PATH;
+    void* iccProfileData = NULL;
+
+    hdc = CreateDCW(data->DeviceName, NULL, NULL, NULL);
+    if (hdc) {
+        succeeded = GetICMProfileW(hdc, &fileNameSize, filename);
+        DeleteDC(hdc);
+    }
+
+    if (succeeded) {
+        iccProfileData = SDL_LoadFile(WIN_StringToUTF8(filename), size);
+        if (!iccProfileData)
+            SDL_SetError("Could not open ICC profile");
+    }
+
+    return iccProfileData;
+}
+
 int
 WIN_GetWindowGammaRamp(_THIS, SDL_Window * window, Uint16 * ramp)
 {

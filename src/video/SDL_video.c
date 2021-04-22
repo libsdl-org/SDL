@@ -1207,6 +1207,16 @@ SDL_GetWindowDisplayMode(SDL_Window * window, SDL_DisplayMode * mode)
     return 0;
 }
 
+void*
+SDL_GetWindowICCProfile(SDL_Window * window, size_t* size)
+{
+    if (!_this->GetWindowICCProfile) {
+        SDL_Unsupported();
+        return NULL;
+    }
+    return _this->GetWindowICCProfile(_this, window, size);
+}
+
 Uint32
 SDL_GetWindowPixelFormat(SDL_Window * window)
 {
