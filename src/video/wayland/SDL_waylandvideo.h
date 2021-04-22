@@ -61,7 +61,6 @@ typedef struct {
     struct {
         struct xdg_wm_base *xdg;
         struct zxdg_shell_v6 *zxdg;
-        struct wl_shell *wl;
 #ifdef HAVE_LIBDECOR_H
         struct libdecor *libdecor;
 #endif

@@ -68,7 +68,6 @@ typedef struct {
 #ifdef HAVE_LIBDECOR_H
         SDL_libdecor_surface libdecor;
 #endif
-        struct wl_shell_surface *wl;
     } shell_surface;
     struct wl_egl_window *egl_window;
     struct SDL_WaylandInput *keyboard_device;

@@ -367,10 +367,6 @@ ProcessHitTest(struct SDL_WaylandInput *input, uint32_t serial)
                                               input->seat,
                                               serial);
                     }
-                } else {
-                    if (window_data->shell_surface.wl) {
-                        wl_shell_surface_move(window_data->shell_surface.wl, input->seat, serial);
-                    }
                 }
                 return SDL_TRUE;
 
@@ -402,10 +398,6 @@ ProcessHitTest(struct SDL_WaylandInput *input, uint32_t serial)
                                                 input->seat,
                                                 serial,
                                                 directions_zxdg[rc - SDL_HITTEST_RESIZE_TOPLEFT]);
-                    }
-                } else {
-                    if (window_data->shell_surface.wl) {
-                        wl_shell_surface_resize(window_data->shell_surface.wl, input->seat, serial, directions_wl[rc - SDL_HITTEST_RESIZE_TOPLEFT]);
                     }
                 }
                 return SDL_TRUE;
@@ -784,7 +776,7 @@ keyboard_handle_leave(void *data, struct wl_keyboard *keyboard,
     /* Stop key repeat before clearing keyboard focus */
     keyboard_repeat_clear(&input->keyboard_repeat);
 
-    /* This will release any keys still pressed */ 
+    /* This will release any keys still pressed */
     SDL_SetKeyboardFocus(NULL);
 #ifdef SDL_USE_IME
     SDL_IME_SetFocus(SDL_FALSE);
@@ -1615,7 +1607,7 @@ int Wayland_input_grab_keyboard(SDL_Window *window, struct SDL_WaylandInput *inp
         zwp_keyboard_shortcuts_inhibit_manager_v1_inhibit_shortcuts(d->key_inhibitor_manager,
                                                                     w->surface,
                                                                     input->seat);
-    
+
     return 0;
 }
 

@@ -480,12 +480,6 @@ display_handle_global(void *data, struct wl_registry *registry, uint32_t id,
                SDL_strcmp(interface, "zxdg_shell_v6") == 0) {
         d->shell.zxdg = wl_registry_bind(d->registry, id, &zxdg_shell_v6_interface, 1);
         zxdg_shell_v6_add_listener(d->shell.zxdg, &shell_listener_zxdg, NULL);
-    } else if (
-#ifdef HAVE_LIBDECOR_H
-               !d->shell.libdecor &&
-#endif
-               SDL_strcmp(interface, "wl_shell") == 0) {
-        d->shell.wl = wl_registry_bind(d->registry, id, &wl_shell_interface, 1);
     } else if (SDL_strcmp(interface, "wl_shm") == 0) {
         d->shm = wl_registry_bind(registry, id, &wl_shm_interface, 1);
         d->cursor_theme = WAYLAND_wl_cursor_theme_load(NULL, 32, d->shm);
@@ -656,9 +650,6 @@ Wayland_VideoQuit(_THIS)
 
     if (data->cursor_theme)
         WAYLAND_wl_cursor_theme_destroy(data->cursor_theme);
-
-    if (data->shell.wl)
-        wl_shell_destroy(data->shell.wl);
 
     if (data->shell.xdg)
         xdg_wm_base_destroy(data->shell.xdg);
