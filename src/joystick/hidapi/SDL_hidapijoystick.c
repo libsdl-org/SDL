@@ -442,10 +442,13 @@ HIDAPI_UpdateDiscovery()
                     break;
                 }
 
-                SDL_HIDAPI_discovery.m_bHaveDevicesChanged = SDL_TRUE;
-
                 pUdevDevice = usyms->udev_monitor_receive_device(SDL_HIDAPI_discovery.m_pUdevMonitor);
                 if (pUdevDevice) {
+                    const char *action = NULL;
+                    action = usyms->udev_device_get_action(pUdevDevice);
+                    if (!action || SDL_strcmp(action, "add") == 0 || SDL_strcmp(action, "remove") == 0) {
+                        SDL_HIDAPI_discovery.m_bHaveDevicesChanged = SDL_TRUE;
+                    }
                     usyms->udev_device_unref(pUdevDevice);
                 }
             }
