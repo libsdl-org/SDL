@@ -930,17 +930,13 @@ macro(CheckPTHREAD)
     # Run some tests
     set(ORIG_CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS}")
     set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} ${PTHREAD_CFLAGS} ${PTHREAD_LDFLAGS}")
-    if(CMAKE_CROSSCOMPILING)
-      set(HAVE_PTHREADS 1)
-    else()
-      check_c_source_runs("
-        #include <pthread.h>
-        int main(int argc, char** argv) {
-          pthread_attr_t type;
-          pthread_attr_init(&type);
-          return 0;
-        }" HAVE_PTHREADS)
-    endif()
+    check_c_source_compiles("
+      #include <pthread.h>
+      int main(int argc, char** argv) {
+        pthread_attr_t type;
+        pthread_attr_init(&type);
+        return 0;
+      }" HAVE_PTHREADS)
     if(HAVE_PTHREADS)
       set(SDL_THREAD_PTHREAD 1)
       list(APPEND EXTRA_CFLAGS ${PTHREAD_CFLAGS})
@@ -949,6 +945,7 @@ macro(CheckPTHREAD)
       list(APPEND SDL_LIBS ${PTHREAD_LDFLAGS})
 
       check_c_source_compiles("
+        #define _GNU_SOURCE 1
         #include <pthread.h>
         int main(int argc, char **argv) {
           pthread_mutexattr_t attr;
@@ -959,6 +956,7 @@ macro(CheckPTHREAD)
         set(SDL_THREAD_PTHREAD_RECURSIVE_MUTEX 1)
       else()
         check_c_source_compiles("
+            #define _GNU_SOURCE 1
             #include <pthread.h>
             int main(int argc, char **argv) {
               pthread_mutexattr_t attr;
