@@ -28,6 +28,7 @@
 #if SDL_VIDEO_DRIVER_ANDROID
 #include <android/native_window.h>
 #include "../core/android/SDL_android.h"
+#include "../video/android/SDL_androidvideo.h"
 #endif
 
 #include "SDL_sysvideo.h"
@@ -1132,6 +1133,10 @@ SDL_EGL_DeleteContext(_THIS, SDL_GLContext context)
 EGLSurface *
 SDL_EGL_CreateSurface(_THIS, NativeWindowType nw) 
 {
+#if SDL_VIDEO_DRIVER_ANDROID
+    EGLint format_wanted;
+    EGLint format_got;
+#endif
     /* max 2 values plus terminator. */
     EGLint attribs[3];
     int attr = 0;
@@ -1141,24 +1146,18 @@ SDL_EGL_CreateSurface(_THIS, NativeWindowType nw)
     if (SDL_EGL_ChooseConfig(_this) != 0) {
         return EGL_NO_SURFACE;
     }
-    
+
 #if SDL_VIDEO_DRIVER_ANDROID
-    {
-        /* Android docs recommend doing this!
-         * Ref: http://developer.android.com/reference/android/app/NativeActivity.html 
-         */
-        EGLint format;
-        _this->egl_data->eglGetConfigAttrib(_this->egl_data->egl_display,
-                                            _this->egl_data->egl_config, 
-                                            EGL_NATIVE_VISUAL_ID, &format);
+    /* On Android, EGL_NATIVE_VISUAL_ID is an attribute of the EGLConfig that is
+     * guaranteed to be accepted by ANativeWindow_setBuffersGeometry(). */
+    _this->egl_data->eglGetConfigAttrib(_this->egl_data->egl_display,
+            _this->egl_data->egl_config,
+            EGL_NATIVE_VISUAL_ID, &format_wanted);
 
-        ANativeWindow_setBuffersGeometry(nw, 0, 0, format);
+    /* Format based on selected egl config. */
+    ANativeWindow_setBuffersGeometry(nw, 0, 0, format_wanted);
+#endif
 
-        /* Update SurfaceView holder format.
-         * May triggers a sequence surfaceDestroyed(), surfaceCreated(), surfaceChanged(). */
-        Android_JNI_SetSurfaceViewFormat(format);
-    }
-#endif    
     if (_this->gl_config.framebuffer_srgb_capable) {
 #ifdef EGL_KHR_gl_colorspace
         if (SDL_EGL_HasExtension(_this, SDL_EGL_DISPLAY_EXTENSION, "EGL_KHR_gl_colorspace")) {
@@ -1181,6 +1180,12 @@ SDL_EGL_CreateSurface(_THIS, NativeWindowType nw)
     if (surface == EGL_NO_SURFACE) {
         SDL_EGL_SetError("unable to create an EGL window surface", "eglCreateWindowSurface");
     }
+
+#if SDL_VIDEO_DRIVER_ANDROID
+    format_got = ANativeWindow_getFormat(nw);
+    Android_SetFormat(format_wanted, format_got);
+#endif
+
     return surface;
 }
 
