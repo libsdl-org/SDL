@@ -784,7 +784,6 @@ Wayland_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info)
 
     info->info.wl.display = data->waylandData->display;
     info->info.wl.surface = data->surface;
-    info->info.wl.shell_surface = data->shell_surface.wl;
     if (version >= SDL_VERSIONNUM(2, 0, 15)) {
         info->info.wl.egl_window = data->egl_window;
     }
@@ -1447,7 +1446,7 @@ int Wayland_CreateWindow(_THIS, SDL_Window *window)
 
         /* Create the GLES window surface */
         data->egl_surface = SDL_EGL_CreateSurface(_this, (NativeWindowType) data->egl_window);
-    
+
         if (data->egl_surface == EGL_NO_SURFACE) {
             return SDL_SetError("failed to create an EGL window surface");
         }
@@ -1622,7 +1621,7 @@ Wayland_SuspendScreenSaver(_THIS)
     /* The idle_inhibit_unstable_v1 protocol suspends the screensaver
        on a per wl_surface basis, but SDL assumes that suspending
        the screensaver can be done independently of any window.
-       
+
        To reconcile these differences, we propagate the idle inhibit
        state to each window. If there is no window active, we will
        be able to inhibit idle once the first window is created.
