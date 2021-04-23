@@ -3746,7 +3746,7 @@ SDL_RenderGeometryRaw(SDL_Renderer *renderer,
     }
 
     if (indices) {
-        if (size_indices != 1 && size_indice != 2 && size_indice != 4) {
+        if (size_indices != 1 && size_indices != 2 && size_indices != 4) {
             return SDL_InvalidParamError("size_indices");
         }
     } else {
