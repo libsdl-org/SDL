@@ -579,7 +579,7 @@ QueueCmdGeometry(SDL_Renderer *renderer, SDL_Texture *texture,
         const int *color, int color_stride,
         const float *uv, int uv_stride,
         int num_vertices,
-        const void *indices, int num_indices, int size_indice,
+        const void *indices, int num_indices, int size_indices,
         float scale_x, float scale_y)
 {
     SDL_RenderCommand *cmd;
@@ -592,7 +592,7 @@ QueueCmdGeometry(SDL_Renderer *renderer, SDL_Texture *texture,
     if (cmd != NULL) {
         retval = renderer->QueueGeometry(renderer, cmd, texture,
                 xy, xy_stride, color, color_stride, uv, uv_stride,
-                num_vertices, indices, num_indices, size_indice,
+                num_vertices, indices, num_indices, size_indices,
                 scale_x, scale_y);
         if (retval < 0) {
             cmd->command = SDL_RENDERCMD_NO_OP;
@@ -3356,9 +3356,9 @@ SDL_RenderGeometry(SDL_Renderer *renderer,
     int color_stride = sizeof (SDL_Vertex);
     const float *uv = (const float *)((const Uint8 *)vertices + SDL_OFFSETOF(SDL_Vertex, tex_coord));
     int uv_stride = sizeof (SDL_Vertex);
-    int size_indice = 4;
+    int size_indices = 4;
 
-    return SDL_RenderGeometryRaw(renderer, texture, xy, xy_stride, color, color_stride, uv, uv_stride, num_vertices, indices, num_indices, size_indice);
+    return SDL_RenderGeometryRaw(renderer, texture, xy, xy_stride, color, color_stride, uv, uv_stride, num_vertices, indices, num_indices, size_indices);
 }
 
 #if SDL_HAVE_RENDER_GEOMETRY
@@ -3432,7 +3432,7 @@ SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
                          const int *color, int color_stride,
                          const float *uv, int uv_stride,
                          int num_vertices,
-                         const void *indices, int num_indices, int size_indice)
+                         const void *indices, int num_indices, int size_indices)
 {
     int i;
     int retval = 0;
@@ -3463,15 +3463,15 @@ SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
         int C = -1;  /* Third vertex of current triangle */
         int C2 = -1; /* Last, vertex of previous triangle */
 
-        if (size_indice == 4) {
+        if (size_indices == 4) {
             k0 = ((const Uint32 *)indices)[i];
             k1 = ((const Uint32 *)indices)[i + 1];
             k2 = ((const Uint32 *)indices)[i + 2];
-        } else if (size_indice == 2) {
+        } else if (size_indices == 2) {
             k0 = ((const Uint16 *)indices)[i];
             k1 = ((const Uint16 *)indices)[i + 1];
             k2 = ((const Uint16 *)indices)[i + 2];
-        } else if (size_indice == 1) {
+        } else if (size_indices == 1) {
             k0 = ((const Uint8 *)indices)[i];
             k1 = ((const Uint8 *)indices)[i + 1];
             k2 = ((const Uint8 *)indices)[i + 2];
@@ -3708,7 +3708,7 @@ SDL_RenderGeometryRaw(SDL_Renderer *renderer,
                                   const int *color, int color_stride,
                                   const float *uv, int uv_stride,
                                   int num_vertices,
-                                  const void *indices, int num_indices, int size_indice)
+                                  const void *indices, int num_indices, int size_indices)
 {
 #if SDL_HAVE_RENDER_GEOMETRY
     int i;
@@ -3746,11 +3746,11 @@ SDL_RenderGeometryRaw(SDL_Renderer *renderer,
     }
 
     if (indices) {
-        if (size_indice != 1 && size_indice != 2 && size_indice != 4) {
-            return SDL_InvalidParamError("size_indice");
+        if (size_indices != 1 && size_indice != 2 && size_indice != 4) {
+            return SDL_InvalidParamError("size_indices");
         }
     } else {
-        size_indice = 0;
+        size_indices = 0;
     }
 
     /* Don't draw while we're hidden */
@@ -3780,9 +3780,9 @@ SDL_RenderGeometryRaw(SDL_Renderer *renderer,
     if (indices) {
         for (i = 0; i < num_indices; ++i) {
             int j;
-            if (size_indice == 4) {
+            if (size_indices == 4) {
                 j = ((const Uint32 *)indices)[i];
-            } else if (size_indice == 2) {
+            } else if (size_indices == 2) {
                 j = ((const Uint16 *)indices)[i];
             } else {
                 j = ((const Uint8 *)indices)[i];
@@ -3801,13 +3801,13 @@ SDL_RenderGeometryRaw(SDL_Renderer *renderer,
     if (renderer->info.flags & SDL_RENDERER_SOFTWARE) {
         return SDL_SW_RenderGeometryRaw(renderer, texture,
                 xy, xy_stride, color, color_stride, uv, uv_stride, num_vertices,
-                indices, num_indices, size_indice);
+                indices, num_indices, size_indices);
     }
 
     retval = QueueCmdGeometry(renderer, texture,
             xy, xy_stride, color, color_stride, uv, uv_stride,
             num_vertices,
-            indices, num_indices, size_indice,
+            indices, num_indices, size_indices,
             renderer->scale.x, renderer->scale.y);
 
     return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);

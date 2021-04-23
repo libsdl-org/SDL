@@ -579,7 +579,7 @@ typedef struct GeometryCopyData
 static int
 SW_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
         const float *xy, int xy_stride, const int *color, int color_stride, const float *uv, int uv_stride,
-        int num_vertices, const void *indices, int num_indices, int size_indice,
+        int num_vertices, const void *indices, int num_indices, int size_indices,
         float scale_x, float scale_y)
 {
     int i;
@@ -601,11 +601,11 @@ SW_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *te
             float *xy_;
             SDL_Color col_;
             float *uv_;
-            if (size_indice == 4) {
+            if (size_indices == 4) {
                 j = ((const Uint32 *)indices)[i];
-            } else if (size_indice == 2) {
+            } else if (size_indices == 2) {
                 j = ((const Uint16 *)indices)[i];
-            } else if (size_indice == 1) {
+            } else if (size_indices == 1) {
                 j = ((const Uint8 *)indices)[i];
             } else {
                 j = i;
@@ -634,11 +634,11 @@ SW_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *te
             int j;
             float *xy_;
             SDL_Color col_;
-            if (size_indice == 4) {
+            if (size_indices == 4) {
                 j = ((const Uint32 *)indices)[i];
-            } else if (size_indice == 2) {
+            } else if (size_indices == 2) {
                 j = ((const Uint16 *)indices)[i];
-            } else if (size_indice == 1) {
+            } else if (size_indices == 1) {
                 j = ((const Uint8 *)indices)[i];
             } else {
                 j = i;
