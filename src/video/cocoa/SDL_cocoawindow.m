@@ -352,6 +352,7 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
         [center addObserver:self selector:@selector(windowDidBecomeKey:) name:NSWindowDidBecomeKeyNotification object:window];
         [center addObserver:self selector:@selector(windowDidResignKey:) name:NSWindowDidResignKeyNotification object:window];
         [center addObserver:self selector:@selector(windowDidChangeBackingProperties:) name:NSWindowDidChangeBackingPropertiesNotification object:window];
+        [center addObserver:self selector:@selector(windowDidChangeScreenProfile:) name:NSWindowDidChangeScreenProfileNotification object:window];
         [center addObserver:self selector:@selector(windowWillEnterFullScreen:) name:NSWindowWillEnterFullScreenNotification object:window];
         [center addObserver:self selector:@selector(windowDidEnterFullScreen:) name:NSWindowDidEnterFullScreenNotification object:window];
         [center addObserver:self selector:@selector(windowWillExitFullScreen:) name:NSWindowWillExitFullScreenNotification object:window];
@@ -483,6 +484,7 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
         [center removeObserver:self name:NSWindowDidBecomeKeyNotification object:window];
         [center removeObserver:self name:NSWindowDidResignKeyNotification object:window];
         [center removeObserver:self name:NSWindowDidChangeBackingPropertiesNotification object:window];
+        [center removeObserver:self name:NSWindowDidChangeScreenProfileNotification object:window];
         [center removeObserver:self name:NSWindowWillEnterFullScreenNotification object:window];
         [center removeObserver:self name:NSWindowDidEnterFullScreenNotification object:window];
         [center removeObserver:self name:NSWindowWillExitFullScreenNotification object:window];
@@ -748,6 +750,11 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
         _data->window->h = 0;
         [self windowDidResize:aNotification];
     }
+}
+
+- (void)windowDidChangeScreenProfile:(NSNotification *)aNotification
+{
+    SDL_SendWindowEvent(_data->window, SDL_WINDOWEVENT_ICCPROF_CHANGED, 0, 0);
 }
 
 - (void)windowWillEnterFullScreen:(NSNotification *)aNotification
