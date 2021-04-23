@@ -132,7 +132,7 @@ struct SDL_Renderer
 #if SDL_HAVE_RENDER_GEOMETRY
     int (*QueueGeometry) (SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
                           const float *xy, int xy_stride, const int *color, int color_stride, const float *uv, int uv_stride,
-                          int num_vertices, const void *indices, int num_indices, int size_indice,
+                          int num_vertices, const void *indices, int num_indices, int size_indices,
                           float scale_x, float scale_y);
 #endif
 

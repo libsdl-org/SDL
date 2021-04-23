@@ -1484,7 +1484,7 @@ extern DECLSPEC int SDLCALL SDL_RenderGeometry(SDL_Renderer *renderer,
  *  \param num_vertices Number of vertices.
  *  \param indices      (optional) An array of indices into the 'vertices' arrays, if NULL all vertices will be rendered in sequential order.
  *  \param num_indices  Number of indices.
- *  \param size_indice  Indice size: 1 (byte), 2 (short), 4 (int)
+ *  \param size_indices Index size: 1 (byte), 2 (short), 4 (int)
  *
  *  \return 0 on success, or -1 if the operation is not supported
  */
@@ -1494,7 +1494,7 @@ extern DECLSPEC int SDLCALL SDL_RenderGeometryRaw(SDL_Renderer *renderer,
                                                const int *color, int color_stride,
                                                const float *uv, int uv_stride,
                                                int num_vertices,
-                                               const void *indices, int num_indices, int size_indice);
+                                               const void *indices, int num_indices, int size_indices);
 
 /**
  * Read pixels from the current rendering target to an array of pixels.
