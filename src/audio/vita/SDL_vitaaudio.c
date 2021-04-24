@@ -48,6 +48,7 @@ static int
 VITAAUD_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
 {
     int format, mixlen, i, port = SCE_AUDIO_OUT_PORT_TYPE_MAIN;
+    int vols[2] = {SCE_AUDIO_MAX_VOLUME, SCE_AUDIO_MAX_VOLUME};
 
     this->hidden = (struct SDL_PrivateAudioData *)
         SDL_malloc(sizeof(*this->hidden));
@@ -97,6 +98,8 @@ VITAAUD_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
         return SDL_SetError("Couldn't reserve hardware channel");
     }
 
+    sceAudioOutSetVolume(this->hidden->channel, SCE_AUDIO_VOLUME_FLAG_L_CH|SCE_AUDIO_VOLUME_FLAG_R_CH, vols);
+
     memset(this->hidden->rawbuf, 0, mixlen);
     for (i = 0; i < NUM_BUFFERS; i++) {
         this->hidden->mixbufs[i] = &this->hidden->rawbuf[i * this->spec.size];
@@ -110,8 +113,6 @@ static void VITAAUD_PlayDevice(_THIS)
 {
     Uint8 *mixbuf = this->hidden->mixbufs[this->hidden->next_buffer];
 
-    int vols[2] = {SCE_AUDIO_MAX_VOLUME, SCE_AUDIO_MAX_VOLUME};
-    sceAudioOutSetVolume(this->hidden->channel, SCE_AUDIO_VOLUME_FLAG_L_CH|SCE_AUDIO_VOLUME_FLAG_R_CH, vols);
     sceAudioOutOutput(this->hidden->channel, mixbuf);
 
     this->hidden->next_buffer = (this->hidden->next_buffer + 1) % NUM_BUFFERS;
