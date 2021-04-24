@@ -30,28 +30,30 @@
 
 struct SDL_mutex
 {
-    SceUID uid;
+    SceKernelLwMutexWork lock;
 };
 
 /* Create a mutex */
 SDL_mutex *
 SDL_CreateMutex(void)
 {
-    SDL_mutex *mutex;
+    SDL_mutex *mutex = NULL;
+    SceInt32 res = 0;
 
     /* Allocate mutex memory */
     mutex = (SDL_mutex *) SDL_malloc(sizeof(*mutex));
     if (mutex) {
 
-        mutex->uid =  sceKernelCreateMutex("SDL mutex",
+        res = sceKernelCreateLwMutex(
+            &mutex->lock,
+            "SDL mutex",
             SCE_KERNEL_MUTEX_ATTR_RECURSIVE,
             0,
             NULL
         );
 
-        if (mutex->uid <= 0) {
-            printf("Error creating mutex: %x\n", mutex->uid);
-            SDL_OutOfMemory(); // TODO: proper error
+        if (res < 0) {
+            SDL_SetError("Error trying to create mutex: %x", res);
         }
     } else {
         SDL_OutOfMemory();
@@ -64,7 +66,7 @@ void
 SDL_DestroyMutex(SDL_mutex * mutex)
 {
     if (mutex) {
-        sceKernelDeleteMutex(mutex->uid);
+        sceKernelDeleteLwMutex(&mutex->lock);
         SDL_free(mutex);
     }
 }
@@ -81,7 +83,7 @@ SDL_TryLockMutex(SDL_mutex * mutex)
         return SDL_SetError("Passed a NULL mutex");
     }
 
-    res = sceKernelTryLockMutex(mutex->uid, 1);
+    res = sceKernelTryLockLwMutex(&mutex->lock, 1);
     switch (res) {
         case SCE_KERNEL_OK:
             return 0;
@@ -111,7 +113,7 @@ SDL_mutexP(SDL_mutex * mutex)
         return SDL_SetError("Passed a NULL mutex");
     }
 
-    res = sceKernelLockMutex(mutex->uid, 1, NULL);
+    res = sceKernelLockLwMutex(&mutex->lock, 1, NULL);
     if (res != SCE_KERNEL_OK) {
         return SDL_SetError("Error trying to lock mutex: %x", res);
     }
@@ -133,7 +135,7 @@ SDL_mutexV(SDL_mutex * mutex)
         return SDL_SetError("Passed a NULL mutex");
     }
 
-    res = sceKernelUnlockMutex(mutex->uid, 1);
+    res = sceKernelUnlockLwMutex(&mutex->lock, 1);
     if (res != 0) {
         return SDL_SetError("Error trying to unlock mutex: %x", res);
     }
