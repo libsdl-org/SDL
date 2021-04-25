@@ -32,6 +32,7 @@ static const char *video_usage[] = {
     "[--log all|error|system|audio|video|render|input]", "[--display N]",
     "[--metal-window | --opengl-window | --vulkan-window]",
     "[--fullscreen | --fullscreen-desktop | --windows N]", "[--title title]",
+    "[--resizable]",
     "[--icon icon.bmp]", "[--center | --position X,Y]", "[--geometry WxH]",
     "[--min-geometry WxH]", "[--max-geometry WxH]", "[--logical WxH]",
     "[--scale N]", "[--depth N]", "[--refresh R]", "[--vsync]", "[--noframe]",
@@ -239,6 +240,10 @@ SDLTest_CommonArg(SDLTest_CommonState * state, int index)
     if (SDL_strcasecmp(argv[index], "--fullscreen-desktop") == 0) {
         state->window_flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
         state->num_windows = 1;
+        return 1;
+    }
+    if (SDL_strcasecmp(argv[index], "--resizable") == 0) {
+        state->window_flags |= SDL_WINDOW_RESIZABLE;
         return 1;
     }
     if (SDL_strcasecmp(argv[index], "--allow-highdpi") == 0) {
