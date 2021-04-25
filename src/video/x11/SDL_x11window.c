@@ -445,6 +445,7 @@ X11_CreateWindow(_THIS, SDL_Window * window)
     }
 
     xattr.override_redirect = ((window->flags & SDL_WINDOW_TOOLTIP) || (window->flags & SDL_WINDOW_POPUP_MENU)) ? True : False;
+    xattr.backing_store = NotUseful;
     xattr.background_pixmap = None;
     xattr.border_pixel = 0;
 
@@ -531,7 +532,7 @@ X11_CreateWindow(_THIS, SDL_Window * window)
                       window->x, window->y, window->w, window->h,
                       0, depth, InputOutput, visual,
                       (CWOverrideRedirect | CWBackPixmap | CWBorderPixel |
-                       CWColormap), &xattr);
+                       CWBackingStore | CWColormap), &xattr);
     if (!w) {
         return SDL_SetError("Couldn't create window");
     }
