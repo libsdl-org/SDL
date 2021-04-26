@@ -35,7 +35,7 @@ static const char *video_usage[] = {
     "[--icon icon.bmp]", "[--center | --position X,Y]", "[--geometry WxH]",
     "[--min-geometry WxH]", "[--max-geometry WxH]", "[--logical WxH]",
     "[--scale N]", "[--depth N]", "[--refresh R]", "[--vsync]", "[--noframe]",
-    "[--resize]", "[--minimize]", "[--maximize]", "[--grab]", "[--keyboard-grab]",
+    "[--resizable]", "[--minimize]", "[--maximize]", "[--grab]", "[--keyboard-grab]",
     "[--allow-highdpi]", "[--usable-bounds]"
 };
 
@@ -412,7 +412,7 @@ SDLTest_CommonArg(SDLTest_CommonState * state, int index)
         state->window_flags |= SDL_WINDOW_BORDERLESS;
         return 1;
     }
-    if (SDL_strcasecmp(argv[index], "--resize") == 0) {
+    if (SDL_strcasecmp(argv[index], "--resizable") == 0) {
         state->window_flags |= SDL_WINDOW_RESIZABLE;
         return 1;
     }
