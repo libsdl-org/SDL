@@ -38,7 +38,6 @@
 #include "SDL_cocoavideo.h"
 #include "SDL_cocoashape.h"
 #include "SDL_cocoamouse.h"
-#include "SDL_cocoamousetap.h"
 #include "SDL_cocoaopengl.h"
 #include "SDL_cocoaopengles.h"
 
@@ -1122,13 +1121,7 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
                 y = window->h - 1;
             }
 
-#if !SDL_MAC_NO_SANDBOX
             CGPoint cgpoint;
-
-            /* When SDL_MAC_NO_SANDBOX is set, this is handled by
-             * SDL_cocoamousetap.m.
-             */
-
             cgpoint.x = window->x + x;
             cgpoint.y = window->y + y;
 
@@ -1136,7 +1129,6 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
             CGAssociateMouseAndMouseCursorPosition(YES);
 
             Cocoa_HandleMouseWarp(cgpoint.x, cgpoint.y);
-#endif
         }
     }
 
@@ -1972,11 +1964,7 @@ Cocoa_GetWindowGammaRamp(_THIS, SDL_Window * window, Uint16 * ramp)
 void
 Cocoa_SetWindowMouseGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
 {
-    SDL_Mouse *mouse = SDL_GetMouse();
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
-
-    /* Enable or disable the event tap as necessary */
-    Cocoa_EnableMouseEventTap(mouse->driverdata, grabbed);
 
     /* Move the cursor to the nearest point in the window */
     if (grabbed && data && ![data->listener isMoving]) {
