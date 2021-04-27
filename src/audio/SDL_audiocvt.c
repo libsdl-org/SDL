@@ -353,9 +353,9 @@ SDL_Convert51To71(SDL_AudioCVT * cvt, SDL_AudioFormat format)
         rs = (rf + rb) * 0.5f;
         /* !!! FIXME: these four may clip */
         lf += lf - ls;
-        rf += rf - ls;
+        rf += rf - rs;
         lb += lb - ls;
-        rb += rb - ls;
+        rb += rb - rs;
         dst[3] = src[3];  /* LFE */
         dst[2] = src[2];  /* FC */
         dst[7] = rs; /* SR */
