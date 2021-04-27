@@ -1405,7 +1405,10 @@ SetupWindowData(_THIS, SDL_Window * window, NSWindow *nswindow, NSView *nsview, 
     {
         unsigned long style = [nswindow styleMask];
 
-        if (style == NSWindowStyleMaskBorderless) {
+        /* NSWindowStyleMaskBorderless is zero, and it's possible to be
+            Resizeable _and_ borderless, so we can't do a simple bitwise AND
+            of NSWindowStyleMaskBorderless here. */
+        if ((style & ~NSWindowStyleMaskResizable) == NSWindowStyleMaskBorderless) {
             window->flags |= SDL_WINDOW_BORDERLESS;
         } else {
             window->flags &= ~SDL_WINDOW_BORDERLESS;
