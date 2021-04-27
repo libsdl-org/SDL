@@ -238,7 +238,6 @@
 		A75FCD8D23E25AB700529352 /* gl2platform.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A72523E2513E00DCD162 /* gl2platform.h */; };
 		A75FCD8E23E25AB700529352 /* SDL_pixels.h in Headers */ = {isa = PBXBuildFile; fileRef = AA7557E51595D4D800BBD41B /* SDL_pixels.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		A75FCD8F23E25AB700529352 /* vk_layer.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A72D23E2513E00DCD162 /* vk_layer.h */; };
-		A75FCD9023E25AB700529352 /* SDL_cocoamousetap.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A68823E2513E00DCD162 /* SDL_cocoamousetap.h */; };
 		A75FCD9123E25AB700529352 /* vk_platform.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A73123E2513E00DCD162 /* vk_platform.h */; };
 		A75FCD9223E25AB700529352 /* SDL_cocoametalview.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A68623E2513E00DCD162 /* SDL_cocoametalview.h */; };
 		A75FCD9323E25AB700529352 /* SDL_cocoaopengles.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A69023E2513E00DCD162 /* SDL_cocoaopengles.h */; };
@@ -347,7 +346,6 @@
 		A75FCDFE23E25AB700529352 /* SDL_hidapi_xbox360w.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A7C823E2513E00DCD162 /* SDL_hidapi_xbox360w.c */; };
 		A75FCDFF23E25AB700529352 /* SDL_atomic.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A57423E2513D00DCD162 /* SDL_atomic.c */; };
 		A75FCE0023E25AB700529352 /* SDL_displayevents.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A92D23E2514000DCD162 /* SDL_displayevents.c */; };
-		A75FCE0123E25AB700529352 /* SDL_cocoamousetap.m in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A69723E2513E00DCD162 /* SDL_cocoamousetap.m */; };
 		A75FCE0223E25AB700529352 /* SDL_log.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A5DD23E2513D00DCD162 /* SDL_log.c */; };
 		A75FCE0323E25AB700529352 /* SDL_cocoaopengl.m in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A67F23E2513E00DCD162 /* SDL_cocoaopengl.m */; };
 		A75FCE0423E25AB700529352 /* SDL_offscreenframebuffer.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A5F223E2513D00DCD162 /* SDL_offscreenframebuffer.c */; };
@@ -656,7 +654,6 @@
 		A75FCF4623E25AC700529352 /* gl2platform.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A72523E2513E00DCD162 /* gl2platform.h */; };
 		A75FCF4723E25AC700529352 /* SDL_pixels.h in Headers */ = {isa = PBXBuildFile; fileRef = AA7557E51595D4D800BBD41B /* SDL_pixels.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		A75FCF4823E25AC700529352 /* vk_layer.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A72D23E2513E00DCD162 /* vk_layer.h */; };
-		A75FCF4923E25AC700529352 /* SDL_cocoamousetap.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A68823E2513E00DCD162 /* SDL_cocoamousetap.h */; };
 		A75FCF4A23E25AC700529352 /* vk_platform.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A73123E2513E00DCD162 /* vk_platform.h */; };
 		A75FCF4B23E25AC700529352 /* SDL_cocoametalview.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A68623E2513E00DCD162 /* SDL_cocoametalview.h */; };
 		A75FCF4C23E25AC700529352 /* SDL_cocoaopengles.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A69023E2513E00DCD162 /* SDL_cocoaopengles.h */; };
@@ -765,7 +762,6 @@
 		A75FCFB723E25AC700529352 /* SDL_hidapi_xbox360w.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A7C823E2513E00DCD162 /* SDL_hidapi_xbox360w.c */; };
 		A75FCFB823E25AC700529352 /* SDL_atomic.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A57423E2513D00DCD162 /* SDL_atomic.c */; };
 		A75FCFB923E25AC700529352 /* SDL_displayevents.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A92D23E2514000DCD162 /* SDL_displayevents.c */; };
-		A75FCFBA23E25AC700529352 /* SDL_cocoamousetap.m in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A69723E2513E00DCD162 /* SDL_cocoamousetap.m */; };
 		A75FCFBB23E25AC700529352 /* SDL_log.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A5DD23E2513D00DCD162 /* SDL_log.c */; };
 		A75FCFBC23E25AC700529352 /* SDL_cocoaopengl.m in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A67F23E2513E00DCD162 /* SDL_cocoaopengl.m */; };
 		A75FCFBD23E25AC700529352 /* SDL_offscreenframebuffer.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A5F223E2513D00DCD162 /* SDL_offscreenframebuffer.c */; };
@@ -1111,7 +1107,6 @@
 		A769B11223E259AE00872273 /* SDL_cocoavulkan.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A68F23E2513E00DCD162 /* SDL_cocoavulkan.h */; };
 		A769B11323E259AE00872273 /* gl2platform.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A72523E2513E00DCD162 /* gl2platform.h */; };
 		A769B11523E259AE00872273 /* vk_layer.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A72D23E2513E00DCD162 /* vk_layer.h */; };
-		A769B11723E259AE00872273 /* SDL_cocoamousetap.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A68823E2513E00DCD162 /* SDL_cocoamousetap.h */; };
 		A769B11823E259AE00872273 /* vk_platform.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A73123E2513E00DCD162 /* vk_platform.h */; };
 		A769B11A23E259AE00872273 /* SDL_cocoametalview.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A68623E2513E00DCD162 /* SDL_cocoametalview.h */; };
 		A769B11B23E259AE00872273 /* SDL_cocoaopengles.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A69023E2513E00DCD162 /* SDL_cocoaopengles.h */; };
@@ -1196,7 +1191,6 @@
 		A769B18723E259AE00872273 /* SDL_hidapi_xbox360w.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A7C823E2513E00DCD162 /* SDL_hidapi_xbox360w.c */; };
 		A769B18823E259AE00872273 /* SDL_atomic.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A57423E2513D00DCD162 /* SDL_atomic.c */; };
 		A769B18923E259AE00872273 /* SDL_displayevents.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A92D23E2514000DCD162 /* SDL_displayevents.c */; };
-		A769B18A23E259AE00872273 /* SDL_cocoamousetap.m in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A69723E2513E00DCD162 /* SDL_cocoamousetap.m */; };
 		A769B18B23E259AE00872273 /* SDL_log.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A5DD23E2513D00DCD162 /* SDL_log.c */; };
 		A769B18C23E259AE00872273 /* SDL_cocoaopengl.m in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A67F23E2513E00DCD162 /* SDL_cocoaopengl.m */; };
 		A769B18D23E259AE00872273 /* SDL_offscreenframebuffer.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A5F223E2513D00DCD162 /* SDL_offscreenframebuffer.c */; };
@@ -2062,12 +2056,6 @@
 		A7D8AEBB23E2514100DCD162 /* SDL_cocoamouse.m in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A68723E2513E00DCD162 /* SDL_cocoamouse.m */; };
 		A7D8AEBC23E2514100DCD162 /* SDL_cocoamouse.m in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A68723E2513E00DCD162 /* SDL_cocoamouse.m */; };
 		A7D8AEBD23E2514100DCD162 /* SDL_cocoamouse.m in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A68723E2513E00DCD162 /* SDL_cocoamouse.m */; };
-		A7D8AEBE23E2514100DCD162 /* SDL_cocoamousetap.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A68823E2513E00DCD162 /* SDL_cocoamousetap.h */; };
-		A7D8AEBF23E2514100DCD162 /* SDL_cocoamousetap.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A68823E2513E00DCD162 /* SDL_cocoamousetap.h */; };
-		A7D8AEC023E2514100DCD162 /* SDL_cocoamousetap.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A68823E2513E00DCD162 /* SDL_cocoamousetap.h */; };
-		A7D8AEC123E2514100DCD162 /* SDL_cocoamousetap.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A68823E2513E00DCD162 /* SDL_cocoamousetap.h */; };
-		A7D8AEC223E2514100DCD162 /* SDL_cocoamousetap.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A68823E2513E00DCD162 /* SDL_cocoamousetap.h */; };
-		A7D8AEC323E2514100DCD162 /* SDL_cocoamousetap.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A68823E2513E00DCD162 /* SDL_cocoamousetap.h */; };
 		A7D8AEC423E2514100DCD162 /* SDL_cocoaevents.m in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A68923E2513E00DCD162 /* SDL_cocoaevents.m */; };
 		A7D8AEC523E2514100DCD162 /* SDL_cocoaevents.m in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A68923E2513E00DCD162 /* SDL_cocoaevents.m */; };
 		A7D8AEC623E2514100DCD162 /* SDL_cocoaevents.m in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A68923E2513E00DCD162 /* SDL_cocoaevents.m */; };
@@ -2152,12 +2140,6 @@
 		A7D8AF1523E2514100DCD162 /* SDL_cocoaevents.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A69623E2513E00DCD162 /* SDL_cocoaevents.h */; };
 		A7D8AF1623E2514100DCD162 /* SDL_cocoaevents.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A69623E2513E00DCD162 /* SDL_cocoaevents.h */; };
 		A7D8AF1723E2514100DCD162 /* SDL_cocoaevents.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A69623E2513E00DCD162 /* SDL_cocoaevents.h */; };
-		A7D8AF1823E2514100DCD162 /* SDL_cocoamousetap.m in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A69723E2513E00DCD162 /* SDL_cocoamousetap.m */; };
-		A7D8AF1923E2514100DCD162 /* SDL_cocoamousetap.m in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A69723E2513E00DCD162 /* SDL_cocoamousetap.m */; };
-		A7D8AF1A23E2514100DCD162 /* SDL_cocoamousetap.m in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A69723E2513E00DCD162 /* SDL_cocoamousetap.m */; };
-		A7D8AF1B23E2514100DCD162 /* SDL_cocoamousetap.m in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A69723E2513E00DCD162 /* SDL_cocoamousetap.m */; };
-		A7D8AF1C23E2514100DCD162 /* SDL_cocoamousetap.m in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A69723E2513E00DCD162 /* SDL_cocoamousetap.m */; };
-		A7D8AF1D23E2514100DCD162 /* SDL_cocoamousetap.m in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A69723E2513E00DCD162 /* SDL_cocoamousetap.m */; };
 		A7D8AF1E23E2514100DCD162 /* SDL_cocoamouse.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A69823E2513E00DCD162 /* SDL_cocoamouse.h */; };
 		A7D8AF1F23E2514100DCD162 /* SDL_cocoamouse.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A69823E2513E00DCD162 /* SDL_cocoamouse.h */; };
 		A7D8AF2023E2514100DCD162 /* SDL_cocoamouse.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A69823E2513E00DCD162 /* SDL_cocoamouse.h */; };
@@ -4051,7 +4033,6 @@
 		A7D8A68523E2513E00DCD162 /* SDL_cocoavideo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDL_cocoavideo.m; sourceTree = "<group>"; };
 		A7D8A68623E2513E00DCD162 /* SDL_cocoametalview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_cocoametalview.h; sourceTree = "<group>"; };
 		A7D8A68723E2513E00DCD162 /* SDL_cocoamouse.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDL_cocoamouse.m; sourceTree = "<group>"; };
-		A7D8A68823E2513E00DCD162 /* SDL_cocoamousetap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_cocoamousetap.h; sourceTree = "<group>"; };
 		A7D8A68923E2513E00DCD162 /* SDL_cocoaevents.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDL_cocoaevents.m; sourceTree = "<group>"; };
 		A7D8A68A23E2513E00DCD162 /* SDL_cocoaclipboard.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_cocoaclipboard.h; sourceTree = "<group>"; };
 		A7D8A68B23E2513E00DCD162 /* SDL_cocoamessagebox.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDL_cocoamessagebox.m; sourceTree = "<group>"; };
@@ -4066,7 +4047,6 @@
 		A7D8A69423E2513E00DCD162 /* SDL_cocoamessagebox.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_cocoamessagebox.h; sourceTree = "<group>"; };
 		A7D8A69523E2513E00DCD162 /* SDL_cocoaclipboard.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDL_cocoaclipboard.m; sourceTree = "<group>"; };
 		A7D8A69623E2513E00DCD162 /* SDL_cocoaevents.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_cocoaevents.h; sourceTree = "<group>"; };
-		A7D8A69723E2513E00DCD162 /* SDL_cocoamousetap.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDL_cocoamousetap.m; sourceTree = "<group>"; };
 		A7D8A69823E2513E00DCD162 /* SDL_cocoamouse.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_cocoamouse.h; sourceTree = "<group>"; };
 		A7D8A69923E2513E00DCD162 /* SDL_cocoametalview.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDL_cocoametalview.m; sourceTree = "<group>"; };
 		A7D8A6B623E2513E00DCD162 /* SDL_egl.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_egl.c; sourceTree = "<group>"; };
@@ -5082,8 +5062,6 @@
 				A7D8A68123E2513E00DCD162 /* SDL_cocoamodes.m */,
 				A7D8A69823E2513E00DCD162 /* SDL_cocoamouse.h */,
 				A7D8A68723E2513E00DCD162 /* SDL_cocoamouse.m */,
-				A7D8A68823E2513E00DCD162 /* SDL_cocoamousetap.h */,
-				A7D8A69723E2513E00DCD162 /* SDL_cocoamousetap.m */,
 				A7D8A68D23E2513E00DCD162 /* SDL_cocoaopengl.h */,
 				A7D8A67F23E2513E00DCD162 /* SDL_cocoaopengl.m */,
 				A7D8A69023E2513E00DCD162 /* SDL_cocoaopengles.h */,
@@ -5828,7 +5806,6 @@
 				A75FCD8D23E25AB700529352 /* gl2platform.h in Headers */,
 				A75FCD8E23E25AB700529352 /* SDL_pixels.h in Headers */,
 				A75FCD8F23E25AB700529352 /* vk_layer.h in Headers */,
-				A75FCD9023E25AB700529352 /* SDL_cocoamousetap.h in Headers */,
 				A75FCD9123E25AB700529352 /* vk_platform.h in Headers */,
 				A75FCD9223E25AB700529352 /* SDL_cocoametalview.h in Headers */,
 				A75FCD9323E25AB700529352 /* SDL_cocoaopengles.h in Headers */,
@@ -6071,7 +6048,6 @@
 				A75FCF4623E25AC700529352 /* gl2platform.h in Headers */,
 				A75FCF4723E25AC700529352 /* SDL_pixels.h in Headers */,
 				A75FCF4823E25AC700529352 /* vk_layer.h in Headers */,
-				A75FCF4923E25AC700529352 /* SDL_cocoamousetap.h in Headers */,
 				A75FCF4A23E25AC700529352 /* vk_platform.h in Headers */,
 				A75FCF4B23E25AC700529352 /* SDL_cocoametalview.h in Headers */,
 				A75FCF4C23E25AC700529352 /* SDL_cocoaopengles.h in Headers */,
@@ -6303,7 +6279,6 @@
 				A769B11223E259AE00872273 /* SDL_cocoavulkan.h in Headers */,
 				A769B11323E259AE00872273 /* gl2platform.h in Headers */,
 				A769B11523E259AE00872273 /* vk_layer.h in Headers */,
-				A769B11723E259AE00872273 /* SDL_cocoamousetap.h in Headers */,
 				A769B11823E259AE00872273 /* vk_platform.h in Headers */,
 				A769B11A23E259AE00872273 /* SDL_cocoametalview.h in Headers */,
 				A769B11B23E259AE00872273 /* SDL_cocoaopengles.h in Headers */,
@@ -6399,7 +6374,6 @@
 				A7D8AEB323E2514100DCD162 /* SDL_cocoametalview.h in Headers */,
 				A7D8AEF523E2514100DCD162 /* SDL_cocoamodes.h in Headers */,
 				A7D8AF1F23E2514100DCD162 /* SDL_cocoamouse.h in Headers */,
-				A7D8AEBF23E2514100DCD162 /* SDL_cocoamousetap.h in Headers */,
 				A7D8AEDD23E2514100DCD162 /* SDL_cocoaopengl.h in Headers */,
 				A7D8AEEF23E2514100DCD162 /* SDL_cocoaopengles.h in Headers */,
 				A7D8AE8323E2514100DCD162 /* SDL_cocoashape.h in Headers */,
@@ -6647,7 +6621,6 @@
 				A7D8AEB423E2514100DCD162 /* SDL_cocoametalview.h in Headers */,
 				A7D8AEF623E2514100DCD162 /* SDL_cocoamodes.h in Headers */,
 				A7D8AF2023E2514100DCD162 /* SDL_cocoamouse.h in Headers */,
-				A7D8AEC023E2514100DCD162 /* SDL_cocoamousetap.h in Headers */,
 				A7D8AEDE23E2514100DCD162 /* SDL_cocoaopengl.h in Headers */,
 				A7D8AEF023E2514100DCD162 /* SDL_cocoaopengles.h in Headers */,
 				A7D8AE8423E2514100DCD162 /* SDL_cocoashape.h in Headers */,
@@ -6983,7 +6956,6 @@
 				A7D8AEEC23E2514100DCD162 /* SDL_cocoavulkan.h in Headers */,
 				A7D8B23423E2514200DCD162 /* gl2platform.h in Headers */,
 				A7D8B25223E2514200DCD162 /* vk_layer.h in Headers */,
-				A7D8AEC223E2514100DCD162 /* SDL_cocoamousetap.h in Headers */,
 				A7D8B26A23E2514200DCD162 /* vk_platform.h in Headers */,
 				A7D8AEB623E2514100DCD162 /* SDL_cocoametalview.h in Headers */,
 				A7D8AEF223E2514100DCD162 /* SDL_cocoaopengles.h in Headers */,
@@ -7079,7 +7051,6 @@
 				A7D8AEB223E2514100DCD162 /* SDL_cocoametalview.h in Headers */,
 				A7D8AEF423E2514100DCD162 /* SDL_cocoamodes.h in Headers */,
 				A7D8AF1E23E2514100DCD162 /* SDL_cocoamouse.h in Headers */,
-				A7D8AEBE23E2514100DCD162 /* SDL_cocoamousetap.h in Headers */,
 				A7D8AEDC23E2514100DCD162 /* SDL_cocoaopengl.h in Headers */,
 				A7D8AEEE23E2514100DCD162 /* SDL_cocoaopengles.h in Headers */,
 				A7D8AE8223E2514100DCD162 /* SDL_cocoashape.h in Headers */,
@@ -7410,7 +7381,6 @@
 				A7D8AEEB23E2514100DCD162 /* SDL_cocoavulkan.h in Headers */,
 				A7D8B23323E2514200DCD162 /* gl2platform.h in Headers */,
 				A7D8B25123E2514200DCD162 /* vk_layer.h in Headers */,
-				A7D8AEC123E2514100DCD162 /* SDL_cocoamousetap.h in Headers */,
 				A7D8B26923E2514200DCD162 /* vk_platform.h in Headers */,
 				A7D8BBF323E2574800DCD162 /* SDL_uikitmessagebox.h in Headers */,
 				A7D8AEB523E2514100DCD162 /* SDL_cocoametalview.h in Headers */,
@@ -7632,7 +7602,6 @@
 				A7D8B23523E2514200DCD162 /* gl2platform.h in Headers */,
 				DB313FE517554B71006C0E22 /* SDL_pixels.h in Headers */,
 				A7D8B25323E2514200DCD162 /* vk_layer.h in Headers */,
-				A7D8AEC323E2514100DCD162 /* SDL_cocoamousetap.h in Headers */,
 				A7D8B26B23E2514200DCD162 /* vk_platform.h in Headers */,
 				A7D8AEB723E2514100DCD162 /* SDL_cocoametalview.h in Headers */,
 				A7D8AEF323E2514100DCD162 /* SDL_cocoaopengles.h in Headers */,
@@ -8181,7 +8150,6 @@
 				A75FCDFE23E25AB700529352 /* SDL_hidapi_xbox360w.c in Sources */,
 				A75FCDFF23E25AB700529352 /* SDL_atomic.c in Sources */,
 				A75FCE0023E25AB700529352 /* SDL_displayevents.c in Sources */,
-				A75FCE0123E25AB700529352 /* SDL_cocoamousetap.m in Sources */,
 				A75FCE0223E25AB700529352 /* SDL_log.c in Sources */,
 				A75FCE0323E25AB700529352 /* SDL_cocoaopengl.m in Sources */,
 				A75FCE0423E25AB700529352 /* SDL_offscreenframebuffer.c in Sources */,
@@ -8383,7 +8351,6 @@
 				A75FCFB723E25AC700529352 /* SDL_hidapi_xbox360w.c in Sources */,
 				A75FCFB823E25AC700529352 /* SDL_atomic.c in Sources */,
 				A75FCFB923E25AC700529352 /* SDL_displayevents.c in Sources */,
-				A75FCFBA23E25AC700529352 /* SDL_cocoamousetap.m in Sources */,
 				A75FCFBB23E25AC700529352 /* SDL_log.c in Sources */,
 				A75FCFBC23E25AC700529352 /* SDL_cocoaopengl.m in Sources */,
 				A75FCFBD23E25AC700529352 /* SDL_offscreenframebuffer.c in Sources */,
@@ -8606,7 +8573,6 @@
 				A769B18723E259AE00872273 /* SDL_hidapi_xbox360w.c in Sources */,
 				A769B18823E259AE00872273 /* SDL_atomic.c in Sources */,
 				A769B18923E259AE00872273 /* SDL_displayevents.c in Sources */,
-				A769B18A23E259AE00872273 /* SDL_cocoamousetap.m in Sources */,
 				A769B18B23E259AE00872273 /* SDL_log.c in Sources */,
 				A769B18C23E259AE00872273 /* SDL_cocoaopengl.m in Sources */,
 				A769B18D23E259AE00872273 /* SDL_offscreenframebuffer.c in Sources */,
@@ -8810,7 +8776,6 @@
 				A7D8B55E23E2514300DCD162 /* SDL_hidapi_xbox360w.c in Sources */,
 				A7D8A95823E2514000DCD162 /* SDL_atomic.c in Sources */,
 				A7D8BB2823E2514500DCD162 /* SDL_displayevents.c in Sources */,
-				A7D8AF1923E2514100DCD162 /* SDL_cocoamousetap.m in Sources */,
 				A7D8AB2623E2514100DCD162 /* SDL_log.c in Sources */,
 				A7D8AE8923E2514100DCD162 /* SDL_cocoaopengl.m in Sources */,
 				A7D8AB7423E2514100DCD162 /* SDL_offscreenframebuffer.c in Sources */,
@@ -9012,7 +8977,6 @@
 				A7D8B55F23E2514300DCD162 /* SDL_hidapi_xbox360w.c in Sources */,
 				A7D8A95923E2514000DCD162 /* SDL_atomic.c in Sources */,
 				A7D8BB2923E2514500DCD162 /* SDL_displayevents.c in Sources */,
-				A7D8AF1A23E2514100DCD162 /* SDL_cocoamousetap.m in Sources */,
 				A7D8AB2723E2514100DCD162 /* SDL_log.c in Sources */,
 				A7D8AE8A23E2514100DCD162 /* SDL_cocoaopengl.m in Sources */,
 				A7D8AB7523E2514100DCD162 /* SDL_offscreenframebuffer.c in Sources */,
@@ -9213,7 +9177,6 @@
 				A7D8B56123E2514300DCD162 /* SDL_hidapi_xbox360w.c in Sources */,
 				A7D8A95B23E2514000DCD162 /* SDL_atomic.c in Sources */,
 				A7D8BB2B23E2514500DCD162 /* SDL_displayevents.c in Sources */,
-				A7D8AF1C23E2514100DCD162 /* SDL_cocoamousetap.m in Sources */,
 				A7D8AB2923E2514100DCD162 /* SDL_log.c in Sources */,
 				A7D8AE8C23E2514100DCD162 /* SDL_cocoaopengl.m in Sources */,
 				A7D8AB7723E2514100DCD162 /* SDL_offscreenframebuffer.c in Sources */,
@@ -9419,7 +9382,6 @@
 				A7D8A95723E2514000DCD162 /* SDL_atomic.c in Sources */,
 				A75FDBCE23EA380300529352 /* SDL_hidapi_rumble.c in Sources */,
 				A7D8BB2723E2514500DCD162 /* SDL_displayevents.c in Sources */,
-				A7D8AF1823E2514100DCD162 /* SDL_cocoamousetap.m in Sources */,
 				A7D8AB2523E2514100DCD162 /* SDL_log.c in Sources */,
 				A7D8AE8823E2514100DCD162 /* SDL_cocoaopengl.m in Sources */,
 				A7D8AB7323E2514100DCD162 /* SDL_offscreenframebuffer.c in Sources */,
@@ -9621,7 +9583,6 @@
 				A75FDBD123EA380300529352 /* SDL_hidapi_rumble.c in Sources */,
 				A7D8BB2A23E2514500DCD162 /* SDL_displayevents.c in Sources */,
 				A7D8BBFC23E2574800DCD162 /* SDL_uikitopenglview.m in Sources */,
-				A7D8AF1B23E2514100DCD162 /* SDL_cocoamousetap.m in Sources */,
 				A7D8AB2823E2514100DCD162 /* SDL_log.c in Sources */,
 				A7D8BC0223E2574800DCD162 /* SDL_uikitviewcontroller.m in Sources */,
 				A7D8AE8B23E2514100DCD162 /* SDL_cocoaopengl.m in Sources */,
@@ -9822,7 +9783,6 @@
 				A7D8A95C23E2514000DCD162 /* SDL_atomic.c in Sources */,
 				A75FDBD423EA380300529352 /* SDL_hidapi_rumble.c in Sources */,
 				A7D8BB2C23E2514500DCD162 /* SDL_displayevents.c in Sources */,
-				A7D8AF1D23E2514100DCD162 /* SDL_cocoamousetap.m in Sources */,
 				A7D8AB2A23E2514100DCD162 /* SDL_log.c in Sources */,
 				A7D8AE8D23E2514100DCD162 /* SDL_cocoaopengl.m in Sources */,
 				A7D8AB7823E2514100DCD162 /* SDL_offscreenframebuffer.c in Sources */,
