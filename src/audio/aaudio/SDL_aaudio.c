@@ -165,18 +165,20 @@ aaudio_CloseDevice(_THIS)
     aaudio_result_t res;
     LOGI(__func__);
 
-    res = ctx.AAudioStream_requestStop(private->stream);
-    if (res != AAUDIO_OK) {
-        LOGI("SDL Failed AAudioStream_requestStop %d", res);
-        SDL_SetError("%s : %s", __func__, ctx.AAudio_convertResultToText(res));
-        return;
-    }
+    if (private->stream) {
+        res = ctx.AAudioStream_requestStop(private->stream);
+        if (res != AAUDIO_OK) {
+            LOGI("SDL Failed AAudioStream_requestStop %d", res);
+            SDL_SetError("%s : %s", __func__, ctx.AAudio_convertResultToText(res));
+            return;
+        }
 
-    res = ctx.AAudioStream_close(private->stream);
-    if (res != AAUDIO_OK) {
-        LOGI("SDL Failed AAudioStreamBuilder_delete %d", res);
-        SDL_SetError("%s : %s", __func__, ctx.AAudio_convertResultToText(res));
-        return;
+        res = ctx.AAudioStream_close(private->stream);
+        if (res != AAUDIO_OK) {
+            LOGI("SDL Failed AAudioStreamBuilder_delete %d", res);
+            SDL_SetError("%s : %s", __func__, ctx.AAudio_convertResultToText(res));
+            return;
+        }
     }
 
     if (this->iscapture) {
