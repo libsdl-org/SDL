@@ -22,8 +22,12 @@
 #if SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2
 
 #import <UIKit/UIKit.h>
+#if SDL_VIDEO_OPENGL_METALANGLE
+#import <MetalANGLE/MGLKit.h>
+#else
 #import <OpenGLES/EAGL.h>
 #import <OpenGLES/ES3/gl.h>
+#endif
 
 #import "SDL_uikitview.h"
 #include "SDL_uikitvideo.h"
@@ -41,9 +45,17 @@
                   stencilBits:(int)stencilBits
                          sRGB:(BOOL)sRGB
                  multisamples:(int)multisamples
+#if SDL_VIDEO_OPENGL_METALANGLE
+                      context:(MGLContext *)glcontext;
+#else
                       context:(EAGLContext *)glcontext;
+#endif
 
+#if SDL_VIDEO_OPENGL_METALANGLE
+@property (nonatomic, readonly, weak) MGLContext *context;
+#else
 @property (nonatomic, readonly, weak) EAGLContext *context;
+#endif
 
 /* The width and height of the drawable in pixels (as opposed to points.) */
 @property (nonatomic, readonly) int backingWidth;

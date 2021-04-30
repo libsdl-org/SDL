@@ -36,7 +36,6 @@
 #include "SDL_uikitmodes.h"
 #include "SDL_uikitwindow.h"
 #include "SDL_uikitopengles.h"
-#include "SDL_uikitmetalangle.h"
 #include "SDL_uikitclipboard.h"
 #include "SDL_uikitvulkan.h"
 #include "SDL_uikitmetalview.h"
@@ -112,7 +111,7 @@ UIKit_CreateDevice(int devindex)
         device->HasClipboardText = UIKit_HasClipboardText;
 
         /* OpenGL (ES) functions */
-#if SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2 || SDL_VIDEO_METALANGLE
+#if SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2
         device->GL_MakeCurrent      = UIKit_GL_MakeCurrent;
         device->GL_GetDrawableSize  = UIKit_GL_GetDrawableSize;
         device->GL_SwapWindow       = UIKit_GL_SwapWindow;

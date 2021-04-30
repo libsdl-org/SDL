@@ -22,8 +22,15 @@
 
 #if SDL_VIDEO_DRIVER_UIKIT && (SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2)
 
+#if SDL_VIDEO_OPENGL_METALANGLE
+#import <MetalANGLE/GLES2/gl2.h>
+#import <MetalANGLE/GLES2/gl2ext.h>
+#import <MetalANGLE/GLES3/gl3.h>
+#import <MetalANGLE/MGLKit.h>
+#else
 #include <OpenGLES/EAGLDrawable.h>
 #include <OpenGLES/ES2/glext.h>
+#endif
 #import "SDL_uikitopenglview.h"
 #include "SDL_uikitwindow.h"
 
@@ -54,7 +61,11 @@
 
 + (Class)layerClass
 {
+#if SDL_VIDEO_OPENGL_METALANGLE
+    return [MGLLayer class];
+#else
     return [CAEAGLLayer class];
+#endif
 }
 
 - (instancetype)initWithFrame:(CGRect)frame
@@ -68,22 +79,31 @@
                   stencilBits:(int)stencilBits
                          sRGB:(BOOL)sRGB
                  multisamples:(int)multisamples
+#if SDL_VIDEO_OPENGL_METALANGLE
+                      context:(MGLContext *)glcontext
+#else
                       context:(EAGLContext *)glcontext
+#endif
 {
     if ((self = [super initWithFrame:frame])) {
         const BOOL useStencilBuffer = (stencilBits != 0);
         const BOOL useDepthBuffer = (depthBits != 0);
+#if SDL_VIDEO_OPENGL_METALANGLE
+        int colorFormat;
+#else
         NSString *colorFormat = nil;
+#endif
 
         context = glcontext;
         samples = multisamples;
         retainedBacking = retained;
 
+#if !SDL_VIDEO_OPENGL_METALANGLE
         if (!context || ![EAGLContext setCurrentContext:context]) {
             SDL_SetError("Could not create OpenGL ES drawable (could not make context current)");
             return nil;
         }
-
+#endif
         if (samples > 0) {
             GLint maxsamples = 0;
             glGetIntegerv(GL_MAX_SAMPLES, &maxsamples);
@@ -92,6 +112,24 @@
             samples = MIN(samples, maxsamples);
         }
 
+#if SDL_VIDEO_OPENGL_METALANGLE
+        if (sRGB) {
+            colorFormat = MGLDrawableColorFormatSRGBA8888;
+        } else if (rBits >= 8 || gBits >= 8 || bBits >= 8 || aBits > 0) {
+            /* if user specifically requests rbg888 or some color format higher than 16bpp */
+            colorFormat = MGLDrawableColorFormatRGBA8888;
+        } else {
+            /* default case (potentially faster) */
+            colorFormat = MGLDrawableColorFormatRGB565;
+        }
+
+        MGLLayer *eaglLayer = (MGLLayer *)self.layer;
+
+        eaglLayer.drawableColorFormat = colorFormat;
+        eaglLayer.retainedBacking = retained;
+        eaglLayer.contentsScale = scale;
+
+#else
         if (sRGB) {
             /* sRGB EAGL drawable support was added in iOS 7. */
             if (UIKit_IsSystemVersionAtLeast(7.0)) {
@@ -113,15 +151,42 @@
 
         CAEAGLLayer *eaglLayer = (CAEAGLLayer *)self.layer;
 
-        eaglLayer.opaque = YES;
         eaglLayer.drawableProperties = @{
             kEAGLDrawablePropertyRetainedBacking:@(retained),
             kEAGLDrawablePropertyColorFormat:colorFormat
         };
 
+#endif
+
+        eaglLayer.opaque = YES;
+        
+
         /* Set the appropriate scale (for retina display support) */
         self.contentScaleFactor = scale;
 
+#if SDL_VIDEO_OPENGL_METALANGLE
+        if (!context || ![MGLContext setCurrentContext:context]) {
+             SDL_SetError("Could not create OpenGL ES drawable (could not make context current)");
+            return nil;
+        }
+
+        viewFramebuffer = eaglLayer.defaultOpenGLFrameBufferID;
+        backingWidth = eaglLayer.drawableSize.width;
+        backingHeight = eaglLayer.drawableSize.height;
+
+        if (samples > 0) {
+            eaglLayer.drawableMultisample = samples;
+        }
+
+        if (useDepthBuffer || useStencilBuffer) {
+            if (useDepthBuffer) {
+                eaglLayer.drawableDepthFormat = MGLDrawableDepthFormat16;
+            }
+            if (useStencilBuffer) {
+                eaglLayer.drawableStencilFormat = MGLDrawableStencilFormat8;
+            }
+        }
+#else
         /* Create the color Renderbuffer Object */
         glGenRenderbuffers(1, &viewRenderbuffer);
         glBindRenderbuffer(GL_RENDERBUFFER, viewRenderbuffer);
@@ -193,7 +258,7 @@
         }
 
         glBindRenderbuffer(GL_RENDERBUFFER, viewRenderbuffer);
-
+#endif
         [self setDebugLabels];
     }
 
@@ -207,16 +272,23 @@
 
 - (GLuint)drawableFramebuffer
 {
+#if SDL_VIDEO_OPENGL_METALANGLE
+    return viewFramebuffer;
+#else
     /* When MSAA is used, the MSAA draw framebuffer is used for drawing. */
     if (msaaFramebuffer) {
         return msaaFramebuffer;
     } else {
         return viewFramebuffer;
     }
+#endif
 }
 
 - (GLuint)msaaResolveFramebuffer
 {
+#if SDL_VIDEO_OPENGL_METALANGLE
+    return viewFramebuffer;
+#else
     /* When MSAA is used, the MSAA draw framebuffer is used for drawing and the
      * view framebuffer is used as a MSAA resolve framebuffer. */
     if (msaaFramebuffer) {
@@ -224,10 +296,12 @@
     } else {
         return 0;
     }
+#endif
 }
 
 - (void)updateFrame
 {
+#if !SDL_VIDEO_OPENGL_METALANGLE
     GLint prevRenderbuffer = 0;
     glGetIntegerv(GL_RENDERBUFFER_BINDING, &prevRenderbuffer);
 
@@ -253,10 +327,12 @@
     }
 
     glBindRenderbuffer(GL_RENDERBUFFER, prevRenderbuffer);
+#endif
 }
 
 - (void)setDebugLabels
 {
+#if !SDL_VIDEO_OPENGL_METALANGLE
     if (viewFramebuffer != 0) {
         glLabelObjectEXT(GL_FRAMEBUFFER, viewFramebuffer, 0, "context FBO");
     }
@@ -280,10 +356,16 @@
     if (msaaRenderbuffer != 0) {
         glLabelObjectEXT(GL_RENDERBUFFER, msaaRenderbuffer, 0, "context MSAA renderbuffer");
     }
+#endif
 }
 
 - (void)swapBuffers
 {
+#if SDL_VIDEO_OPENGL_METALANGLE
+    MGLLayer *eaglLayer = (MGLLayer *)self.layer;
+    [MGLContext setCurrentContext:context forLayer:eaglLayer];
+    [context present:eaglLayer];
+#else
     if (msaaFramebuffer) {
         const GLenum attachments[] = {GL_COLOR_ATTACHMENT0};
 
@@ -317,6 +399,7 @@
      * else is responsible for rebinding viewRenderbuffer, to reduce duplicate
      * state changes. */
     [context presentRenderbuffer:GL_RENDERBUFFER];
+#endif
 }
 
 - (void)layoutSubviews
@@ -328,6 +411,12 @@
 
     /* Update the color and depth buffer storage if the layer size has changed. */
     if (width != backingWidth || height != backingHeight) {
+#if SDL_VIDEO_OPENGL_METALANGLE
+        MGLLayer *eaglLayer = (MGLLayer *)self.layer;
+        [MGLContext setCurrentContext:context forLayer:eaglLayer];
+        backingWidth = eaglLayer.drawableSize.width;
+        backingHeight = eaglLayer.drawableSize.height;
+#else
         EAGLContext *prevContext = [EAGLContext currentContext];
         if (prevContext != context) {
             [EAGLContext setCurrentContext:context];
@@ -338,11 +427,14 @@
         if (prevContext != context) {
             [EAGLContext setCurrentContext:prevContext];
         }
+    
+#endif
     }
 }
 
 - (void)destroyFramebuffer
 {
+#if !SDL_VIDEO_OPENGL_METALANGLE
     if (viewFramebuffer != 0) {
         glDeleteFramebuffers(1, &viewFramebuffer);
         viewFramebuffer = 0;
@@ -367,14 +459,21 @@
         glDeleteRenderbuffers(1, &msaaRenderbuffer);
         msaaRenderbuffer = 0;
     }
+#endif
 }
 
 - (void)dealloc
 {
+#if SDL_VIDEO_OPENGL_METALANGLE
+    if (context && context == [MGLContext currentContext]) {
+        [MGLContext setCurrentContext:nil];
+    }
+#else
     if (context && context == [EAGLContext currentContext]) {
         [self destroyFramebuffer];
         [EAGLContext setCurrentContext:nil];
     }
+#endif
 }
 
 @end

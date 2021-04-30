@@ -27,7 +27,6 @@
 #include "SDL_uikitvideo.h"
 #include "SDL_uikitevents.h"
 #include "SDL_uikitopengles.h"
-#include "SDL_uikitmetalangle.h"
 
 #import <Foundation/Foundation.h>
 
@@ -73,7 +72,7 @@ UIKit_PumpEvents(_THIS)
     } while(result == kCFRunLoopRunHandledSource);
 
     /* See the comment in the function definition. */
-#if SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2 || SDL_VIDEO_METALANGLE
+#if SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2
     UIKit_GL_RestoreCurrentContext();
 #endif
 }

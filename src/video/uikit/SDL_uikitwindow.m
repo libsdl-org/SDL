@@ -37,12 +37,7 @@
 #import "SDL_uikitappdelegate.h"
 
 #import "SDL_uikitview.h"
-
-#if SDL_VIDEO_METALANGLE
-#import "SDL_uikitmetalangleview.h"
-#else
-#import"SDL_uikitopenglview.h"
-#endif
+#import "SDL_uikitopenglview.h"
 
 #include <Foundation/Foundation.h>
 
@@ -374,13 +369,6 @@ UIKit_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info)
                     info->info.uikit.framebuffer = glview.drawableFramebuffer;
                     info->info.uikit.colorbuffer = glview.drawableRenderbuffer;
                     info->info.uikit.resolveFramebuffer = glview.msaaResolveFramebuffer;
-                } else {
-#elif SDL_VIDEO_METALANGLE
-                if ([data.viewcontroller.view isKindOfClass:[SDL_uikitmetalangleview class]]) {
-                        SDL_uikitmetalangleview *glview = (SDL_uikitmetalangleview *)data.viewcontroller.view;
-                        info->info.uikit.framebuffer = glview.drawableFramebuffer;
-                        info->info.uikit.colorbuffer = glview.drawableRenderbuffer;
-                        info->info.uikit.resolveFramebuffer = glview.msaaResolveFramebuffer;
                 } else {
 #else
                 {
