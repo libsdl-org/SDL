@@ -35,7 +35,8 @@ static const char *video_usage[] = {
     "[--icon icon.bmp]", "[--center | --position X,Y]", "[--geometry WxH]",
     "[--min-geometry WxH]", "[--max-geometry WxH]", "[--logical WxH]",
     "[--scale N]", "[--depth N]", "[--refresh R]", "[--vsync]", "[--noframe]",
-    "[--resize]", "[--minimize]", "[--maximize]", "[--grab]", "[--keyboard-grab]",
+    "[--resizable]", "[--minimize]", "[--maximize]", "[--grab]", "[--keyboard-grab]",
+    "[--shown]", "[--hidden]", "[--input-focus]", "[--mouse-focus]",
     "[--allow-highdpi]", "[--usable-bounds]"
 };
 
@@ -412,7 +413,7 @@ SDLTest_CommonArg(SDLTest_CommonState * state, int index)
         state->window_flags |= SDL_WINDOW_BORDERLESS;
         return 1;
     }
-    if (SDL_strcasecmp(argv[index], "--resize") == 0) {
+    if (SDL_strcasecmp(argv[index], "--resizable") == 0) {
         state->window_flags |= SDL_WINDOW_RESIZABLE;
         return 1;
     }
@@ -422,6 +423,22 @@ SDLTest_CommonArg(SDLTest_CommonState * state, int index)
     }
     if (SDL_strcasecmp(argv[index], "--maximize") == 0) {
         state->window_flags |= SDL_WINDOW_MAXIMIZED;
+        return 1;
+    }
+    if (SDL_strcasecmp(argv[index], "--shown") == 0) {
+        state->window_flags |= SDL_WINDOW_SHOWN;
+        return 1;
+    }
+    if (SDL_strcasecmp(argv[index], "--hidden") == 0) {
+        state->window_flags |= SDL_WINDOW_HIDDEN;
+        return 1;
+    }
+    if (SDL_strcasecmp(argv[index], "--input-focus") == 0) {
+        state->window_flags |= SDL_WINDOW_INPUT_FOCUS;
+        return 1;
+    }
+    if (SDL_strcasecmp(argv[index], "--mouse-focus") == 0) {
+        state->window_flags |= SDL_WINDOW_MOUSE_FOCUS;
         return 1;
     }
     if (SDL_strcasecmp(argv[index], "--grab") == 0) {

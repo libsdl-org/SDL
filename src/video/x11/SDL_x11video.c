@@ -222,6 +222,7 @@ X11_CreateDevice(int devindex)
     device->RestoreWindow = X11_RestoreWindow;
     device->SetWindowBordered = X11_SetWindowBordered;
     device->SetWindowResizable = X11_SetWindowResizable;
+    device->SetWindowAlwaysOnTop = X11_SetWindowAlwaysOnTop;
     device->SetWindowFullscreen = X11_SetWindowFullscreen;
     device->SetWindowGammaRamp = X11_SetWindowGammaRamp;
     device->SetWindowMouseGrab = X11_SetWindowMouseGrab;
@@ -457,12 +458,6 @@ X11_VideoQuit(_THIS)
     X11_QuitKeyboard(_this);
     X11_QuitMouse(_this);
     X11_QuitTouch(_this);
-
-/* !!! FIXME: other subsystems use D-Bus, so we shouldn't quit it here;
-       have SDL.c do this at a higher level, or add refcounting. */
-#if SDL_USE_LIBDBUS
-    SDL_DBus_Quit();
-#endif
 }
 
 SDL_bool

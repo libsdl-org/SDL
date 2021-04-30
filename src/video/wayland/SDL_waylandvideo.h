@@ -39,6 +39,7 @@
 #include <EGL/egl.h>
 #include "wayland-util.h"
 
+#include "../SDL_sysvideo.h"
 #include "../../core/linux/SDL_dbus.h"
 #include "../../core/linux/SDL_ime.h"
 
@@ -68,7 +69,6 @@ typedef struct {
     struct zwp_pointer_constraints_v1 *pointer_constraints;
     struct wl_data_device_manager *data_device_manager;
     struct zxdg_decoration_manager_v1 *decoration_manager;
-    struct org_kde_kwin_server_decoration_manager *kwin_server_decoration_manager;
     struct zwp_keyboard_shortcuts_inhibit_manager_v1 *key_inhibitor_manager;
     struct zwp_idle_inhibit_manager_v1 *idle_inhibit_manager;
 
@@ -93,7 +93,10 @@ typedef struct {
 typedef struct {
     struct wl_output *output;
     float scale_factor;
-    int width, height, refresh, transform;
+    int x, y, width, height, refresh, transform;
+    int physical_width, physical_height;
+    float ddpi, hdpi, vdpi;
+    SDL_VideoDisplay placeholder;
     SDL_bool done;
 } SDL_WaylandOutputData;
 

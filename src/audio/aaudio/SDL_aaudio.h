@@ -20,15 +20,32 @@
 */
 #include "../../SDL_internal.h"
 
-#ifndef SDL_cocoamousetap_h_
-#define SDL_cocoamousetap_h_
+#ifndef _SDL_aaudio_h
+#define _SDL_aaudio_h
 
-#include "SDL_cocoamouse.h"
+#include "../SDL_sysaudio.h"
+#include <aaudio/AAudio.h>
 
-extern void Cocoa_InitMouseEventTap(SDL_MouseData *driverdata);
-extern void Cocoa_EnableMouseEventTap(SDL_MouseData *driverdata, SDL_bool enabled);
-extern void Cocoa_QuitMouseEventTap(SDL_MouseData *driverdata);
+/* Hidden "this" pointer for the audio functions */
+#define _THIS   SDL_AudioDevice *this
 
-#endif /* SDL_cocoamousetap_h_ */
+struct SDL_PrivateAudioData
+{
+    AAudioStream *stream;
+
+    /* Raw mixing buffer */
+    Uint8 *mixbuf;
+    int mixlen;
+    int frame_size;
+
+    /* Resume device if it was paused automatically */
+    int resume;
+};
+ 
+void aaudio_ResumeDevices(void);
+void aaudio_PauseDevices(void);
+
+
+#endif /* _SDL_aaudio_h */
 
 /* vi: set ts=4 sw=4 expandtab: */

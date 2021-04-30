@@ -157,3 +157,12 @@ test/testvulkan
 test/testwm2
 test/testyuv
 test/torturethread
+
+builddir/
+debian/*.debhelper.log
+debian/*.substvars
+debian/*.tar.gz
+debian/.debhelper/
+debian/files
+debian/libsdl*/
+debian/tmp/

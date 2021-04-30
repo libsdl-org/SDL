@@ -27,7 +27,7 @@
 #include "../SDL_sysaudio.h"
 
 /* Hidden "this" pointer for the audio functions */
-#define _THIS   SDL_AudioDevice *this
+#define _THIS   SDL_AudioDevice *_this
 
 struct SDL_PrivateAudioData
 {

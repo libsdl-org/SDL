@@ -1011,6 +1011,21 @@ extern DECLSPEC void SDLCALL SDL_SetWindowResizable(SDL_Window * window,
                                                     SDL_bool resizable);
 
 /**
+ *  \brief Set the window to always be above the others.
+ *
+ *  This will add or remove the window's `SDL_WINDOW_ALWAYS_ON_TOP`
+ *  flag. This will bring the window to the front and keep the window above
+ *  the rest.
+ *
+ *  \param window The window of which to change the always on top state.
+ *  \param on_top  SDL_TRUE to set the window always on top, SDL_FALSE to disable.
+ *
+ *  \sa SDL_SetWindowAlwaysOnTop
+ */
+
+extern DECLSPEC void SDLCALL SDL_SetWindowAlwaysOnTop(SDL_Window * window,
+                                                      SDL_bool on_top);
+/**
  * Show a window.
  *
  * \param window the window to show

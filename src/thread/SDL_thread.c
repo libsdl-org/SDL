@@ -141,10 +141,10 @@ SDL_Generic_GetTLSData(void)
         }
         SDL_AtomicUnlock(&tls_lock);
     }
-#endif /* SDL_THREADS_DISABLED */
-
     SDL_MemoryBarrierAcquire();
     SDL_LockMutex(SDL_generic_TLS_mutex);
+#endif /* SDL_THREADS_DISABLED */
+
     for (entry = SDL_generic_TLS; entry; entry = entry->next) {
         if (entry->thread == thread) {
             storage = entry->storage;

@@ -807,7 +807,7 @@ extern "C" {
  *
  *  The higher resolution the timer, the more frequently the CPU services
  *  timer interrupts, and the more precise delays are, but this takes up
- *  power and CPU time.  This hint is only used on Windows 7 and earlier.
+ *  power and CPU time.  This hint is only used on Windows.
  *
  *  See this blog post for more information:
  *  http://randomascii.wordpress.com/2013/07/08/windows-timer-resolution-megawatts-wasted/

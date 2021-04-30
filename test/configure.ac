@@ -81,14 +81,8 @@ case "$host" in
         EXE=""
         MATHLIB="-lm"
         dnl Use the new libOpenGL if present.
-        have_glvnd=no
         AC_CHECK_LIB(OpenGL, glBegin,
-        [   
-        dnl have_glvnd=yes
-        SYS_GL_LIBS="-lOpenGL"
-        ],[ 
-        SYS_GL_LIBS="-lGL"
-        ])  
+            [SYS_GL_LIBS="-lOpenGL"],[SYS_GL_LIBS="-lGL"])
         ;;
 esac
 AC_SUBST(EXE)
@@ -130,43 +124,34 @@ fi
 dnl Check for OpenGL
 AC_MSG_CHECKING(for OpenGL support)
 have_opengl=no
-AC_TRY_COMPILE([
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
  #include "SDL_opengl.h"
  #ifndef SDL_VIDEO_OPENGL
  #error SDL_VIDEO_OPENGL
  #endif
-],[
-],[
-have_opengl=yes
-])
+]],[])], [have_opengl=yes],[])
 AC_MSG_RESULT($have_opengl)
 
 dnl Check for OpenGL ES
 AC_MSG_CHECKING(for OpenGL ES support)
 have_opengles=no
-AC_TRY_COMPILE([
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
  #include "SDL_opengles.h"
  #ifndef SDL_VIDEO_OPENGL_ES
  #error SDL_VIDEO_OPENGL_ES
  #endif
-],[
-],[
-have_opengles=yes
-])
+]],[])] ,[have_opengles=yes],[])
 AC_MSG_RESULT($have_opengles)
 
 dnl Check for OpenGL ES2
 AC_MSG_CHECKING(for OpenGL ES2 support)
 have_opengles2=no
-AC_TRY_COMPILE([
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
  #include "SDL_opengles2.h"
  #ifndef SDL_VIDEO_OPENGL_ES2
  #error SDL_VIDEO_OPENGL_ES2
  #endif
-],[
-],[
-have_opengles2=yes
-])
+]],[])], [have_opengles2=yes],[])
 AC_MSG_RESULT($have_opengles2)
 
 GLLIB=""

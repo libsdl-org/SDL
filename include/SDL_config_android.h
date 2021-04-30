@@ -142,6 +142,7 @@
 /* Enable various audio drivers */
 #define SDL_AUDIO_DRIVER_ANDROID    1
 #define SDL_AUDIO_DRIVER_OPENSLES   1
+#define SDL_AUDIO_DRIVER_AAUDIO     0
 #define SDL_AUDIO_DRIVER_DUMMY  1
 
 /* Enable various input drivers */

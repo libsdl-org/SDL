@@ -34,11 +34,20 @@
 /* Visual Studio 2005 has a bug where intrin.h conflicts with winnt.h */
 #if defined(_MSC_VER) && (_MSC_VER >= 1500) && (defined(_M_IX86) || defined(_M_X64))
 #ifdef __clang__
-/* Many of the intrinsics SDL uses are not implemented by clang with Visual Studio */
-#undef __MMX__
-#undef __SSE__
-#undef __SSE2__
-#else
+/* As of Clang 11, '_m_prefetchw' is conflicting with the winnt.h's version,
+   so we define the needed '_m_prefetch' here as a pseudo-header, until the issue is fixed. */
+
+#ifndef __PRFCHWINTRIN_H
+#define __PRFCHWINTRIN_H
+
+static __inline__ void __attribute__((__always_inline__, __nodebug__))
+_m_prefetch(void *__P)
+{
+  __builtin_prefetch (__P, 0, 3 /* _MM_HINT_T0 */);
+}
+
+#endif /* __PRFCHWINTRIN_H */
+#endif /* __clang__ */
 #include <intrin.h>
 #ifndef _WIN64
 #ifndef __MMX__
@@ -54,7 +63,6 @@
 #ifndef __SSE2__
 #define __SSE2__
 #endif
-#endif /* __clang__ */
 #elif defined(__MINGW64_VERSION_MAJOR)
 #include <intrin.h>
 #if !defined(SDL_DISABLE_ARM_NEON_H) && defined(__ARM_NEON)
@@ -82,6 +90,8 @@
 #    endif
 #  endif
 #endif
+#endif /* compiler version */
+
 #if defined(__3dNOW__) && !defined(SDL_DISABLE_MM3DNOW_H)
 #include <mm3dnow.h>
 #endif
@@ -101,7 +111,6 @@
 #include <pmmintrin.h>
 #endif
 #endif /* HAVE_IMMINTRIN_H */
-#endif /* compiler version */
 
 #include "begin_code.h"
 /* Set up for C function definitions, even when using C++ */

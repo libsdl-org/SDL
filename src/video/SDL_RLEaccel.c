@@ -1423,9 +1423,13 @@ SDL_RLESurface(SDL_Surface * surface)
         return -1;
     }
 
-    /* If we don't have colorkey or blending, nothing to do... */
     flags = surface->map->info.flags;
-    if (!(flags & (SDL_COPY_COLORKEY | SDL_COPY_BLEND))) {
+    if (flags & SDL_COPY_COLORKEY) {
+        /* ok */
+    } else if ((flags & SDL_COPY_BLEND) && surface->format->Amask) {
+        /* ok */
+    } else {
+        /* If we don't have colorkey or blending, nothing to do... */
         return -1;
     }
 

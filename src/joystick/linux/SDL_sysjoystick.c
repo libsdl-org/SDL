@@ -56,18 +56,6 @@
 #ifndef SYN_DROPPED
 #define SYN_DROPPED 3
 #endif
-#ifndef BTN_SOUTH
-#define BTN_SOUTH       0x130
-#endif
-#ifndef BTN_EAST
-#define BTN_EAST        0x131
-#endif
-#ifndef BTN_NORTH
-#define BTN_NORTH       0x133
-#endif
-#ifndef BTN_WEST
-#define BTN_WEST        0x134
-#endif
 #ifndef BTN_DPAD_UP
 #define BTN_DPAD_UP     0x220
 #endif
@@ -113,6 +101,8 @@ typedef struct SDL_joylist_item
 
     /* Steam Controller support */
     SDL_bool m_bSteamController;
+
+    SDL_GamepadMapping *mapping;
 } SDL_joylist_item;
 
 static SDL_joylist_item *SDL_joylist = NULL;
@@ -376,6 +366,9 @@ MaybeRemoveDevice(const char *path)
 
             SDL_PrivateJoystickRemoved(item->device_instance);
 
+            if (item->mapping) {
+                SDL_free(item->mapping);
+            }
             SDL_free(item->path);
             SDL_free(item->name);
             SDL_free(item);
@@ -1403,6 +1396,12 @@ static SDL_bool
 LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
 {
     SDL_Joystick *joystick;
+    SDL_joylist_item *item = JoystickByDevIndex(device_index);
+
+    if (item->mapping) {
+        SDL_memcpy(out, item->mapping, sizeof(*out));
+        return SDL_TRUE;
+    }
 
     joystick = (SDL_Joystick *) SDL_calloc(sizeof(*joystick), 1);
     if (joystick == NULL) {
@@ -1425,24 +1424,24 @@ LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
 
     /* We have a gamepad, start filling out the mappings */
 
-    if (joystick->hwdata->has_key[BTN_SOUTH]) {
+    if (joystick->hwdata->has_key[BTN_A]) {
         out->a.kind = EMappingKind_Button;
-        out->a.target = joystick->hwdata->key_map[BTN_SOUTH];
+        out->a.target = joystick->hwdata->key_map[BTN_A];
     }
 
-    if (joystick->hwdata->has_key[BTN_EAST]) {
+    if (joystick->hwdata->has_key[BTN_B]) {
         out->b.kind = EMappingKind_Button;
-        out->b.target = joystick->hwdata->key_map[BTN_EAST];
+        out->b.target = joystick->hwdata->key_map[BTN_B];
     }
 
-    if (joystick->hwdata->has_key[BTN_NORTH]) {
-        out->y.kind = EMappingKind_Button;
-        out->y.target = joystick->hwdata->key_map[BTN_NORTH];
-    }
-
-    if (joystick->hwdata->has_key[BTN_WEST]) {
+    if (joystick->hwdata->has_key[BTN_X]) {
         out->x.kind = EMappingKind_Button;
-        out->x.target = joystick->hwdata->key_map[BTN_WEST];
+        out->x.target = joystick->hwdata->key_map[BTN_X];
+    }
+
+    if (joystick->hwdata->has_key[BTN_Y]) {
+        out->y.kind = EMappingKind_Button;
+        out->y.target = joystick->hwdata->key_map[BTN_Y];
     }
 
     if (joystick->hwdata->has_key[BTN_SELECT]) {
@@ -1506,11 +1505,17 @@ LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
         if (joystick->hwdata->has_key[BTN_TL2]) {
             out->lefttrigger.kind = EMappingKind_Button;
             out->lefttrigger.target = joystick->hwdata->key_map[BTN_TL2];
+        } else if (joystick->hwdata->has_abs[ABS_Z]) {
+            out->lefttrigger.kind = EMappingKind_Axis;
+            out->lefttrigger.target = joystick->hwdata->abs_map[ABS_Z];
         }
 
         if (joystick->hwdata->has_key[BTN_TR2]) {
             out->righttrigger.kind = EMappingKind_Button;
             out->righttrigger.target = joystick->hwdata->key_map[BTN_TR2];
+        } else if (joystick->hwdata->has_abs[ABS_RZ]) {
+            out->righttrigger.kind = EMappingKind_Axis;
+            out->righttrigger.target = joystick->hwdata->abs_map[ABS_RZ];
         }
     }
 
@@ -1565,6 +1570,12 @@ LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
 
     LINUX_JoystickClose(joystick);
     SDL_free(joystick);
+
+    /* Cache the mapping for later */
+    item->mapping = (SDL_GamepadMapping *)SDL_malloc(sizeof(*item->mapping));
+    if (item->mapping) {
+        SDL_memcpy(item->mapping, out, sizeof(*out));
+    }
 
     return SDL_TRUE;
 }

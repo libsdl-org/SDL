@@ -42,8 +42,8 @@ using namespace Windows::UI::ViewManagement;
 
 
 /* [re]declare Windows GUIDs locally, to limit the amount of external lib(s) SDL has to link to */
-static const GUID IID_IDisplayRequest   = { 0xe5732044, 0xf49f, 0x4b60, { 0x8d, 0xd4, 0x5e, 0x7e, 0x3a, 0x63, 0x2a, 0xc0 } };
-static const GUID IID_IDXGIFactory2     = { 0x50c83a1c, 0xe072, 0x4c48, { 0x87, 0xb0, 0x36, 0x30, 0xfa, 0x36, 0xa6, 0xd0 } };
+static const GUID SDL_IID_IDisplayRequest   = { 0xe5732044, 0xf49f, 0x4b60, { 0x8d, 0xd4, 0x5e, 0x7e, 0x3a, 0x63, 0x2a, 0xc0 } };
+static const GUID SDL_IID_IDXGIFactory2     = { 0x50c83a1c, 0xe072, 0x4c48, { 0x87, 0xb0, 0x36, 0x30, 0xfa, 0x36, 0xa6, 0xd0 } };
 
 
 /* SDL includes */
@@ -402,7 +402,7 @@ WINRT_InitModes(_THIS)
     HRESULT hr;
     IDXGIFactory2 * dxgiFactory2 = NULL;
 
-    hr = CreateDXGIFactory1(IID_IDXGIFactory2, (void **)&dxgiFactory2);
+    hr = CreateDXGIFactory1(SDL_IID_IDXGIFactory2, (void **)&dxgiFactory2);
     if (FAILED(hr)) {
         WIN_SetErrorFromHRESULT(__FUNCTION__ ", CreateDXGIFactory1() failed", hr);
         return -1;
@@ -797,7 +797,7 @@ WINRT_CreateDisplayRequest(_THIS)
         goto done;
     }
 
-    hr = pDisplayRequestRaw->QueryInterface(IID_IDisplayRequest, (void **) &pDisplayRequest);
+    hr = pDisplayRequestRaw->QueryInterface(SDL_IID_IDisplayRequest, (void **) &pDisplayRequest);
     if (FAILED(hr)) {
         goto done;
     }
