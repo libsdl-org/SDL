@@ -43,7 +43,9 @@
 #include "TargetConditionals.h"
 #endif
 
-#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE  /* probably not useful on iOS. */
+#if (defined(__MACOSX__) || defined(__IPHONEOS__) || defined(__LINUX__)) && !defined(SDL_LOADSO_DLOPEN) /* can't be used if the toolchain does not support dlfcn.h. */
+#define SDL_DYNAMIC_API 0
+#elif defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE  /* probably not useful on iOS. */
 #define SDL_DYNAMIC_API 0
 #elif defined(__native_client__) && __native_client__  /* probably not useful on NACL. */
 #define SDL_DYNAMIC_API 0
