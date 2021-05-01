@@ -54,6 +54,7 @@ typedef struct {
     SDL_Window *sdlwindow;
     SDL_VideoData *waylandData;
     struct wl_surface *surface;
+    struct wl_callback *frame_callback;
     union {
         SDL_xdg_shell_surface xdg;
         SDL_zxdg_shell_surface zxdg;
