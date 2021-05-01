@@ -1012,8 +1012,14 @@ int Wayland_CreateWindow(_THIS, SDL_Window *window)
         wl_compositor_create_surface(c->compositor);
     wl_surface_add_listener(data->surface, &surface_listener, data);
 
-    /* fire a callback when the compositor wants a new frame rendered. */
-    wl_callback_add_listener(wl_surface_frame(data->surface), &surface_frame_listener, data);
+    /* Fire a callback when the compositor wants a new frame rendered.
+     * Right now this only matters for OpenGL; we use this callback to add a
+     * wait timeout that avoids getting deadlocked by the compositor when the
+     * window isn't visible.
+     */
+    if (window->flags & SDL_WINDOW_OPENGL) {
+        wl_callback_add_listener(wl_surface_frame(data->surface), &surface_frame_listener, data);
+    }
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
     if (c->surface_extension) {
