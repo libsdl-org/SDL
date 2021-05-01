@@ -116,8 +116,9 @@ Wayland_GLES_SwapWindow(_THIS, SDL_Window *window)
 
     /* Control swap interval ourselves. See comments on Wayland_GLES_SetSwapInterval */
     if (swap_interval != 0) {
-        const Uint32 max_wait = SDL_GetTicks() + 100;  /* ~10 fps, so we'll progress even if throttled to zero. */
         struct wl_display *display = ((SDL_VideoData *)_this->driverdata)->display;
+        SDL_VideoDisplay *sdldisplay = SDL_GetDisplayForWindow(window);
+        const Uint32 max_wait = SDL_GetTicks() + (10000 / sdldisplay->current_mode.refresh_rate);  /* ~10 frames, so we'll progress even if throttled to zero. */
         while ((SDL_AtomicGet(&data->swap_interval_ready) == 0) && (!SDL_TICKS_PASSED(SDL_GetTicks(), max_wait))) {
             /* !!! FIXME: this is just the crucial piece of Wayland_PumpEvents */
             WAYLAND_wl_display_flush(display);
