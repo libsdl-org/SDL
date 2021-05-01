@@ -306,8 +306,14 @@ WASAPI_WaitDevice(_THIS)
             UINT32 padding = 0;
             if (!WasapiFailed(this, IAudioClient_GetCurrentPadding(this->hidden->client, &padding))) {
                 /*SDL_Log("WASAPI EVENT! padding=%u maxpadding=%u", (unsigned int)padding, (unsigned int)maxpadding);*/
-                if (padding <= maxpadding) {
-                    break;
+                if (this->iscapture) {
+                    if (padding > 0) {
+                        break;
+                    }
+                } else {
+                    if (padding <= maxpadding) {
+                        break;
+                    }
                 }
             }
         } else if (waitResult != WAIT_TIMEOUT) {
