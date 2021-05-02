@@ -1223,7 +1223,9 @@ void Wayland_DestroyWindow(_THIS, SDL_Window *window)
 
         SDL_free(wind->outputs);
 
-        wl_callback_destroy(wind->frame_callback);
+        if (wind->frame_callback) {
+            wl_callback_destroy(wind->frame_callback);
+        }
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
         if (wind->extended_surface) {
