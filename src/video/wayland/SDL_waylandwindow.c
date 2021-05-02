@@ -850,6 +850,11 @@ Wayland_RestoreWindow(_THIS, SDL_Window * window)
     SDL_WindowData *wind = window->driverdata;
     const SDL_VideoData *viddata = (const SDL_VideoData *) _this->driverdata;
 
+    /* Set this flag now even if we never actually maximized, eventually
+     * ShowWindow will take care of it along with the other window state.
+     */
+    window->flags &= ~SDL_WINDOW_MAXIMIZED;
+
     /* Note that xdg-shell does NOT provide a way to unset minimize! */
     if (viddata->shell.xdg) {
         if (wind->shell_surface.xdg.roleobj.toplevel == NULL) {
@@ -893,6 +898,15 @@ Wayland_MaximizeWindow(_THIS, SDL_Window * window)
 {
     SDL_WindowData *wind = window->driverdata;
     SDL_VideoData *viddata = (SDL_VideoData *) _this->driverdata;
+
+    if (!(window->flags & SDL_WINDOW_RESIZABLE)) {
+        return;
+    }
+
+    /* Set this flag now even if we don't actually maximize yet, eventually
+     * ShowWindow will take care of it along with the other window state.
+     */
+    window->flags |= SDL_WINDOW_MAXIMIZED;
 
     if (viddata->shell.xdg) {
         if (wind->shell_surface.xdg.roleobj.toplevel == NULL) {
