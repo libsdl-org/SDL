@@ -246,8 +246,8 @@ SDL_ConvertStereoTo51(SDL_AudioCVT * cvt, SDL_AudioFormat format)
         lf = src[0];
         rf = src[1];
         ce = (lf + rf) * 0.5f;
-        dst[0] = 0.5 * (lf + (lf - ce));  /* FL */
-        dst[1] = 0.5 * (rf + (rf - ce));  /* FR */
+        dst[0] = 0.5f * (lf + (lf - ce));  /* FL */
+        dst[1] = 0.5f * (rf + (rf - ce));  /* FR */
         dst[2] = ce;  /* FC */
         dst[3] = 0;   /* LFE (only meant for special LFE effects) */
         dst[4] = lf;  /* BL */
@@ -282,8 +282,8 @@ SDL_ConvertQuadTo51(SDL_AudioCVT * cvt, SDL_AudioFormat format)
         lb = src[2];
         rb = src[3];
         ce = (lf + rf) * 0.5f;
-        dst[0] = 0.5 * (lf + (lf - ce));  /* FL */
-        dst[1] = 0.5 * (rf + (rf - ce));  /* FR */
+        dst[0] = 0.5f * (lf + (lf - ce));  /* FL */
+        dst[1] = 0.5f * (rf + (rf - ce));  /* FR */
         dst[2] = ce;  /* FC */
         dst[3] = 0;   /* LFE (only meant for special LFE effects) */
         dst[4] = lb;  /* BL */
@@ -357,10 +357,10 @@ SDL_Convert51To71(SDL_AudioCVT * cvt, SDL_AudioFormat format)
         dst[2] = src[2];  /* FC */
         dst[7] = rs; /* SR */
         dst[6] = ls; /* SL */
-        dst[5] = 0.5 * rb;  /* BR */
-        dst[4] = 0.5 * lb;  /* BL */
-        dst[1] = 0.5 * rf;  /* FR */
-        dst[0] = 0.5 * lf;  /* FL */
+        dst[5] = 0.5f * rb;  /* BR */
+        dst[4] = 0.5f * lb;  /* BL */
+        dst[1] = 0.5f * rf;  /* FR */
+        dst[0] = 0.5f * lf;  /* FL */
     }
 
     cvt->len_cvt = cvt->len_cvt * 4 / 3;
