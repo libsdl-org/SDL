@@ -2018,7 +2018,8 @@ XITouchClassInfo *t;
                 SUMMARY_video_x11="${SUMMARY_video_x11} xvidmode"
             fi
         fi
-    else
+    fi
+    if test x$have_x != xyes; then
         # Prevent Mesa from including X11 headers
         EXTRA_CFLAGS="$EXTRA_CFLAGS -DMESA_EGL_NO_X11_HEADERS -DEGL_NO_X11"
     fi
@@ -2286,40 +2287,19 @@ AC_ARG_ENABLE(video-opengl,
 [AS_HELP_STRING([--enable-video-opengl], [include OpenGL support [default=yes]])],
               , enable_video_opengl=yes)
 
-dnl Find OpenGL
-CheckOpenGLX11()
+dnl Find GLX
+CheckGLX()
 {
     if test x$enable_video = xyes -a x$enable_video_opengl = xyes; then
-        AC_MSG_CHECKING(for OpenGL (GLX) support)
-        video_opengl=no
+        AC_MSG_CHECKING(for GLX support)
+        video_opengl_glx=no
         AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
-         #include <GL/gl.h>
          #include <GL/glx.h>
-        ]],[])], [video_opengl=yes],[])
-        AC_MSG_RESULT($video_opengl)
-        if test x$video_opengl = xyes; then
+        ]],[])], [video_opengl_glx=yes],[])
+        AC_MSG_RESULT($video_opengl_glx)
+        if test x$video_opengl_glx = xyes; then
             AC_DEFINE(SDL_VIDEO_OPENGL, 1, [ ])
             AC_DEFINE(SDL_VIDEO_OPENGL_GLX, 1, [ ])
-            AC_DEFINE(SDL_VIDEO_RENDER_OGL, 1, [ ])
-            SUMMARY_video="${SUMMARY_video} opengl(glx)"
-        fi
-    fi
-}
-
-dnl Find KMSDRM OpenGL (GLVND)
-CheckOpenGLKMSDRM()
-{
-    if test x$enable_video = xyes -a x$enable_video_opengl = xyes -a x$enable_video_kmsdrm = xyes; then
-        AC_MSG_CHECKING(for OpenGL (GLVND) support)
-        video_opengl=no
-        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
-         #include <GL/gl.h>
-        ]],[])], [video_opengl=yes],[])
-        AC_MSG_RESULT($video_opengl)
-        if test x$video_opengl = xyes; then 
-            AC_DEFINE(SDL_VIDEO_OPENGL, 1, [ ])
-            AC_DEFINE(SDL_VIDEO_RENDER_OGL, 1, [ ])
-            SUMMARY_video="${SUMMARY_video} opengl(glvnd)"
         fi
     fi
 }
@@ -2335,10 +2315,10 @@ AC_ARG_ENABLE(video-opengles2,
 [AS_HELP_STRING([--enable-video-opengles2], [include OpenGL ES 2.0 support [default=yes]])],
               , enable_video_opengles2=yes)
 
-dnl Find OpenGL ES
-CheckOpenGLESX11()
+dnl Find EGL
+CheckEGL()
 {
-    if test x$enable_video = xyes -a x$enable_video_opengles = xyes; then
+    if test x$enable_video = xyes -a x$enable_video_opengl = xyes || test x$enable_video = xyes -a x$enable_video_opengles = xyes; then
         AC_MSG_CHECKING(for EGL support)
         video_opengl_egl=no
         AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
@@ -2353,7 +2333,32 @@ CheckOpenGLESX11()
         if test x$video_opengl_egl = xyes; then
             AC_DEFINE(SDL_VIDEO_OPENGL_EGL, 1, [ ])
         fi
+    fi
+}
 
+dnl Find OpenGL
+CheckOpenGL()
+{
+    if test x$enable_video = xyes -a x$enable_video_opengl = xyes; then
+        AC_MSG_CHECKING(for OpenGL headers)
+        video_opengl=no
+        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+         #include <GL/gl.h>
+         #include <GL/glext.h>
+        ]],[])], [video_opengl=yes],[])
+        AC_MSG_RESULT($video_opengl)
+        if test x$video_opengl = xyes; then 
+            AC_DEFINE(SDL_VIDEO_OPENGL, 1, [ ])
+            AC_DEFINE(SDL_VIDEO_RENDER_OGL, 1, [ ])
+            SUMMARY_video="${SUMMARY_video} opengl"
+        fi
+    fi
+}
+
+dnl Find OpenGL ES
+CheckOpenGLES()
+{
+    if test x$enable_video = xyes -a x$enable_video_opengles = xyes; then
         if test x$enable_video_opengles1 = xyes; then
             AC_MSG_CHECKING(for OpenGL ES v1 headers)
             video_opengles_v1=no
@@ -2383,25 +2388,6 @@ CheckOpenGLESX11()
                 SUMMARY_video="${SUMMARY_video} opengl_es2"
             fi
         fi
-    fi
-}
-
-dnl Find EGL
-CheckEGLKMSDRM()
-{
-    AC_MSG_CHECKING(for EGL support)
-    video_opengl_egl=no
-    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
-      #define LINUX
-      #define EGL_API_FB
-      #define MESA_EGL_NO_X11_HEADERS
-      #define EGL_NO_X11
-      #include <EGL/egl.h>
-      #include <EGL/eglext.h>
-    ]],[])], [video_opengl_egl=yes],[])
-    AC_MSG_RESULT($video_opengl_egl)
-    if test x$video_opengl_egl = xyes; then
-        AC_DEFINE(SDL_VIDEO_OPENGL_EGL, 1, [ ])
     fi
 }
 
@@ -3562,12 +3548,12 @@ case "$host" in
         CheckRPI
         CheckX11
         CheckDirectFB
-        # Need to check for EGL first because KMSDRM depends on it.
-        CheckEGLKMSDRM
+        # Need to check for EGL first because KMSDRM and Wayland depends on it.
+        CheckEGL
         CheckKMSDRM
-        CheckOpenGLKMSDRM
-        CheckOpenGLX11
-        CheckOpenGLESX11
+        CheckGLX
+        CheckOpenGL
+        CheckOpenGLES
         CheckVulkan
         CheckWayland
         CheckInputEvents
@@ -4079,7 +4065,8 @@ case "$host" in
         CheckX11
         CheckMacGL
         CheckMacGLES
-        CheckOpenGLX11
+        CheckGLX
+        CheckOpenGL
         CheckVulkan
         CheckPTHREAD
         CheckHIDAPI
