@@ -12,7 +12,7 @@ include("${CMAKE_CURRENT_LIST_DIR}/SDL2Targets.cmake")
 # But at least if building worked with sdl2-config.cmake it will also work with this.
 get_target_property(SDL2_INCLUDE_DIRS SDL2::SDL2 INTERFACE_INCLUDE_DIRECTORIES)
 
-# get the paths to the .lib files for both SDL2 and SDL2main
+# get the paths to the files to link against (.lib or .dll.a on Windows, .so or .a on Unix, ...) for both SDL2 and SDL2main
 
 # for the "normal"/release build they could be in lots of different properties..
 set(relprops IMPORTED_IMPLIB_RELEASE IMPORTED_IMPLIB_NOCONFIG IMPORTED_IMPLIB IMPORTED_IMPLIB_MINSIZEREL IMPORTED_IMPLIB_RELWITHDEBINFO
@@ -26,8 +26,6 @@ foreach(prop ${relprops})
 	if(sdl2implib)
 		#message("set sdl2implib from ${prop}")
 		break()
-	else()
-		#message("no luck for sdl2implib with  ${prop}")
 	endif()
 endforeach()
 
@@ -36,8 +34,6 @@ foreach(prop ${relprops})
 	if(sdl2mainimplib)
 		#message("set sdl2mainimplib from ${prop}")
 		break()
-	else()
-		#message("no luck for sdl2mainimplib with  ${prop}")
 	endif()
 endforeach()
 
@@ -46,8 +42,6 @@ foreach(prop ${dbgprops})
 	if(sdl2implibdbg)
 		#message("set sdl2implibdbg from ${prop}")
 		break()
-	else()
-		#message("no luck for sdl2implibdbg with  ${prop}")
 	endif()
 endforeach()
 
@@ -56,8 +50,6 @@ foreach(prop ${dbgprops})
 	if(sdl2mainimplibdbg)
 		#message("set sdl2mainimplibdbg from ${prop}")
 		break()
-	else()
-		#message("no luck for sdl2mainimplibdbg with  ${prop}")
 	endif()
 endforeach()
 
@@ -83,6 +75,11 @@ else()
 	else()
 		message(FATAL_ERROR, "SDL2::SDL2 doesn't seem to contain any kind of lib to link against in IMPORTED_IMPLIB* or IMPORTED_LOCATION*")
 	endif()
+
+	# TODO: should something like INTERFACE_LINK_LIBRARIES be appended? or wherever -mwindows and things like that
+	#       might be defined (if they were defined by the CMake build at all; autotools has @SDL_RLD_FLAGS@ @SDL_LIBS@)?
+	#       LINK_DEPENDS? LINK_FLAGS?
+
 endif()
 
 get_filename_component(SDL2_LIBDIR ${sdl2implib} PATH)
@@ -91,29 +88,7 @@ get_filename_component(SDL2_LIBDIR ${sdl2implib} PATH)
 #       which is different to what it looks like when coming from sdl2-config.cmake
 #       (there it's more like "-L${SDL2_LIBDIR} -lSDL2main -lSDL2" - and also -lmingw32 and -mwindows)
 #       This seems to work with both MSVC and MinGW though, while the other only worked with MinGW
-#       We *could* use if(MSVC) here and make the MinGW case oldschool, BUT keep in mind that
-#       for some reason vcpkg has SDL2.lib and SDL2main.lib in different directories!
 #   On Linux it looks like "/tmp/sdl2inst/lib/libSDL2main.a;/tmp/sdl2inst/lib/libSDL2-2.0.so.0.14.1" which also seems to work
-
-if(FALSE) # this (not tested much) could be used to make SDL2_LIBRARIES look/behave more like the original from sdl2-config.cmake
-#if(NOT MSVC) # this is GCC/ld syntax (should also work for mingw and clang), not suitable for MSVC
-
-	if(sdl2mainimplib) # we have libSDL2main
-		# first set libSDL2main and its directory
-		get_filename_component(sdl2main_libdir ${sdl2mainimplib} PATH)
-		set(SDL2_LIBRARIES "-L${sdl2main_libdir} -lSDL2main")
-		# SDL2main can be in a different directory than libSDL2 itself, at least when using vcpkg
-		# if that's the case, add an additional "-L" part for libSDL2's libdir
-		if( NOT (sdl2main_libdir STREQUAL SDL2_LIBDIR) )
-			set(SDL2_LIBRARIES "${SDL2_LIBRARIES} -L${SDL2_LIBDIR}")
-		endif()
-		# lastly, add -lSDL2 itself
-		set(SDL2_LIBRARIES "${SDL2_LIBRARIES} -lSDL2")
-		unset(sdl2main_libdir)
-	else() # no SDL2main, just libSDL2 itself
-		set(SDL2_LIBRARIES "-L${SDL2_LIBDIR} -lSDL2")
-	endif()
-endif()
 
 # the exec prefix is one level up from lib/ - TODO: really, always? at least on Linux there's /usr/lib/x86_64-bla-blub/libSDL2-asdf.so.0 ..
 get_filename_component(SDL2_EXEC_PREFIX ${SDL2_LIBDIR} PATH)
