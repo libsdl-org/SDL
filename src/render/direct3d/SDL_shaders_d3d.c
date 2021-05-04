@@ -41,6 +41,152 @@
      hexdump -v -e '6/4 "0x%08.8x, " "\n"' <FILE>
 */
 
+
+/* --- D3D9_PixelShader_ARGB.hlsl ---
+* This shader implements Bicubic filtering and it is based on:
+* https://gist.github.com/TheRealMJP/c83b8c0f46b63f3a88a5986f4fa982b1
+* 
+    Texture2D theTexture : register(t0);
+    SamplerState theSampler = sampler_state
+    {
+	    addressU = Clamp;
+	    addressV = Clamp;
+	    mipfilter = NONE;
+	    minfilter = LINEAR;
+	    magfilter = LINEAR;
+    };
+    float4 texSize : register(c1);
+
+    float4 SampleTextureCatmullRom(in Texture2D<float4> tex, in SamplerState linearSampler, in float2 uv, in float2 texSize)
+    {
+        // We're going to sample a a 4x4 grid of texels surrounding the target UV coordinate. We'll do this by rounding
+        // down the sample location to get the exact center of our "starting" texel. The starting texel will be at
+        // location [1, 1] in the grid, where [0, 0] is the top left corner.
+        float2 samplePos = uv * texSize;
+        float2 texPos1 = floor(samplePos - 0.5f) + 0.5f;
+
+        // Compute the fractional offset from our starting texel to our original sample location, which we'll
+        // feed into the Catmull-Rom spline function to get our filter weights.
+        float2 f = samplePos - texPos1;
+
+        // Compute the Catmull-Rom weights using the fractional offset that we calculated earlier.
+        // These equations are pre-expanded based on our knowledge of where the texels will be located,
+        // which lets us avoid having to evaluate a piece-wise function.
+        float2 w0 = f * (-0.5f + f * (1.0f - 0.5f * f));
+        float2 w1 = 1.0f + f * f * (-2.5f + 1.5f * f);
+        float2 w2 = f * (0.5f + f * (2.0f - 1.5f * f));
+        float2 w3 = f * f * (-0.5f + 0.5f * f);
+
+        // Work out weighting factors and sampling offsets that will let us use bilinear filtering to
+        // simultaneously evaluate the middle 2 samples from the 4x4 grid.
+        float2 w12 = w1 + w2;
+        float2 offset12 = w2 / (w1 + w2);
+
+        // Compute the final UV coordinates we'll use for sampling the texture
+        float2 texPos0 = texPos1 - 1;
+        float2 texPos3 = texPos1 + 2;
+        float2 texPos12 = texPos1 + offset12;
+
+        texPos0 /= texSize;
+        texPos3 /= texSize;
+        texPos12 /= texSize;
+
+        float4 result = 0.0f;
+        result += tex.Sample(linearSampler, float2(texPos0.x, texPos0.y)) * w0.x * w0.y;
+        result += tex.Sample(linearSampler, float2(texPos12.x, texPos0.y)) * w12.x * w0.y;
+        result += tex.Sample(linearSampler, float2(texPos3.x, texPos0.y)) * w3.x * w0.y;
+
+        result += tex.Sample(linearSampler, float2(texPos0.x, texPos12.y)) * w0.x * w12.y;
+        result += tex.Sample(linearSampler, float2(texPos12.x, texPos12.y)) * w12.x * w12.y;
+        result += tex.Sample(linearSampler, float2(texPos3.x, texPos12.y)) * w3.x * w12.y;
+
+        result += tex.Sample(linearSampler, float2(texPos0.x, texPos3.y)) * w0.x * w3.y;
+        result += tex.Sample(linearSampler, float2(texPos12.x, texPos3.y)) * w12.x * w3.y;
+        result += tex.Sample(linearSampler, float2(texPos3.x, texPos3.y)) * w3.x * w3.y;
+
+        return result;
+    }
+
+    struct PixelShaderInput
+    {
+	    float4 pos : SV_POSITION;
+	    float2 tex : TEXCOORD0;
+	    float4 color : COLOR0;
+    };
+
+    float4 main(PixelShaderInput input) : SV_TARGET
+    {
+	    float width = texSize[0];
+	    float height = texSize[1];
+	    //theTexture.GetDimensions(width,height);
+	    float2 size = float2(width,height);
+	    float4 res = SampleTextureCatmullRom(theTexture, theSampler, input.tex, size);
+	    return res * input.color;
+	    //return theTexture.Sample(theSampler, input.tex) * input.color;
+    }
+
+*/
+static const DWORD D3D9_PixelShader_ARGB[] = {
+    0xffff0200, 0x002efffe, 0x42415443, 0x0000001c, 0x0000008b, 0xffff0200,
+    0x00000002, 0x0000001c, 0x00000100, 0x00000084, 0x00000044, 0x00010002,
+    0x00060001, 0x0000004c, 0x00000000, 0x0000005c, 0x00000003, 0x00000001,
+    0x00000074, 0x00000000, 0x53786574, 0x00657a69, 0x00030001, 0x00040001,
+    0x00000001, 0x00000000, 0x53656874, 0x6c706d61, 0x742b7265, 0x65546568,
+    0x72757478, 0xabab0065, 0x00070004, 0x00040001, 0x00000001, 0x00000000,
+    0x325f7370, 0x4d00305f, 0x6f726369, 0x74666f73, 0x29522820, 0x534c4820,
+    0x6853204c, 0x72656461, 0x6d6f4320, 0x656c6970, 0x30312072, 0xab00312e,
+    0x05000051, 0xa00f0000, 0xbf000000, 0x3f000000, 0x3f800000, 0x40200000,
+    0x05000051, 0xa00f0002, 0x3fc00000, 0xc0200000, 0x40000000, 0x00000000,
+    0x0200001f, 0x80000000, 0xb0030000, 0x0200001f, 0x80000000, 0x900f0000,
+    0x0200001f, 0x90000000, 0xa00f0800, 0x02000001, 0x80080000, 0xa0000000,
+    0x04000004, 0x80030000, 0xb0e40000, 0xa0e40001, 0x80ff0000, 0x02000013,
+    0x800c0000, 0x801b0000, 0x03000002, 0x80030000, 0x811b0000, 0x80e40000,
+    0x03000002, 0x800c0000, 0x801b0000, 0xa0550000, 0x04000004, 0x80030001,
+    0xb0e40000, 0xa0e40001, 0x811b0000, 0x04000004, 0x800c0001, 0x801b0001,
+    0xa1000002, 0xa0aa0002, 0x04000004, 0x800c0001, 0x801b0001, 0x80e40001,
+    0xa0550000, 0x03000005, 0x80030002, 0x801b0001, 0x80e40001, 0x04000004,
+    0x800c0002, 0x801b0001, 0xa0000002, 0xa0550002, 0x03000005, 0x80030003,
+    0x80e40001, 0x80e40001, 0x04000004, 0x800c0002, 0x801b0003, 0x80e40002,
+    0xa0aa0000, 0x04000004, 0x800c0001, 0x801b0001, 0x80e40001, 0x80e40002,
+    0x02000006, 0x80010004, 0x80ff0001, 0x02000006, 0x80020004, 0x80aa0001,
+    0x04000004, 0x800c0000, 0x801b0002, 0x801b0004, 0x80e40000, 0x02000006,
+    0x80010002, 0xa0000001, 0x02000006, 0x80020002, 0xa0550001, 0x03000005,
+    0x80030004, 0x801b0000, 0x80e40002, 0x02000001, 0x80010005, 0x80000004,
+    0x03000002, 0x800c0000, 0x801b0000, 0xa0000000, 0x03000002, 0x80030000,
+    0x80e40000, 0xa0ff0000, 0x03000005, 0x80030000, 0x80e40002, 0x80e40000,
+    0x03000005, 0x80030002, 0x80e40002, 0x801b0000, 0x02000001, 0x80020005,
+    0x80550002, 0x02000001, 0x80010006, 0x80000005, 0x02000001, 0x80020007,
+    0x80550005, 0x02000001, 0x80010008, 0x80000002, 0x02000001, 0x80010007,
+    0x80000000, 0x02000001, 0x80010009, 0x80000007, 0x02000001, 0x80020008,
+    0x80550004, 0x02000001, 0x8001000a, 0x80000008, 0x02000001, 0x80020009,
+    0x80550008, 0x02000001, 0x8002000a, 0x80550000, 0x02000001, 0x80020006,
+    0x8055000a, 0x03000042, 0x800f0005, 0x80e40005, 0xa0e40800, 0x03000042,
+    0x800f0002, 0x80e40002, 0xa0e40800, 0x03000042, 0x800f0007, 0x80e40007,
+    0xa0e40800, 0x03000042, 0x800f0004, 0x80e40004, 0xa0e40800, 0x03000042,
+    0x800f0008, 0x80e40008, 0xa0e40800, 0x03000042, 0x800f0009, 0x80e40009,
+    0xa0e40800, 0x03000042, 0x800f0000, 0x80e40000, 0xa0e40800, 0x03000042,
+    0x800f0006, 0x80e40006, 0xa0e40800, 0x03000005, 0x800f0005, 0x80ff0001,
+    0x80e40005, 0x04000004, 0x800c0003, 0x801b0001, 0xa1550000, 0xa0aa0000,
+    0x04000004, 0x800c0003, 0x801b0001, 0x80e40003, 0xa0000000, 0x03000005,
+    0x800c0003, 0x801b0001, 0x80e40003, 0x04000004, 0x80030001, 0x80e40001,
+    0xa0550000, 0xa0000000, 0x03000005, 0x80030001, 0x80e40001, 0x80e40003,
+    0x03000005, 0x800f0005, 0x80aa0003, 0x80e40005, 0x03000005, 0x800f0002,
+    0x80e40002, 0x80ff0003, 0x04000004, 0x800f0002, 0x80e40002, 0x80aa0003,
+    0x80e40005, 0x03000005, 0x800f0005, 0x80000001, 0x80e40007, 0x04000004,
+    0x800f0002, 0x80e40005, 0x80aa0003, 0x80e40002, 0x03000005, 0x800f0004,
+    0x80ff0001, 0x80e40004, 0x03000005, 0x800f0005, 0x80000001, 0x80e40009,
+    0x03000005, 0x800f0007, 0x80ff0003, 0x80e40008, 0x04000004, 0x800f0002,
+    0x80e40007, 0x80aa0001, 0x80e40002, 0x04000004, 0x800f0002, 0x80e40004,
+    0x80aa0001, 0x80e40002, 0x04000004, 0x800f0002, 0x80e40005, 0x80aa0001,
+    0x80e40002, 0x03000005, 0x800f0000, 0x80e40000, 0x80000001, 0x03000042,
+    0x800f0004, 0x80e4000a, 0xa0e40800, 0x03000005, 0x800f0005, 0x80ff0001,
+    0x80e40006, 0x03000005, 0x800f0003, 0x80ff0003, 0x80e40004, 0x04000004,
+    0x800f0002, 0x80e40003, 0x80550001, 0x80e40002, 0x04000004, 0x800f0002,
+    0x80e40005, 0x80550001, 0x80e40002, 0x04000004, 0x800f0000, 0x80e40000,
+    0x80550001, 0x80e40002, 0x03000005, 0x800f0000, 0x80e40000, 0x90e40000,
+    0x02000001, 0x800f0800, 0x80e40000, 0x0000ffff
+};
+
 /* --- D3D9_PixelShader_YUV_JPEG.hlsl ---
     Texture2D theTextureY : register(t0);
     Texture2D theTextureU : register(t1);
@@ -262,6 +408,7 @@ static const DWORD *D3D9_shaders[] = {
     D3D9_PixelShader_YUV_JPEG,
     D3D9_PixelShader_YUV_BT601,
     D3D9_PixelShader_YUV_BT709,
+    D3D9_PixelShader_ARGB,
 };
 
 HRESULT D3D9_CreatePixelShader(IDirect3DDevice9 *d3dDevice, D3D9_Shader shader, IDirect3DPixelShader9 **pixelShader)

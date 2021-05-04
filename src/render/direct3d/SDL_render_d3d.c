@@ -1113,6 +1113,9 @@ SetupTextureState(D3D_RenderData *data, SDL_Texture * texture, LPDIRECT3DPIXELSH
             return -1;
         }
     }
+    else {
+        *shader = data->shaders[SHADER_ARGB];
+    }
     return 0;
 }
 
@@ -1398,6 +1401,19 @@ D3D_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *verti
                 const size_t count = cmd->data.draw.count;
                 const size_t first = cmd->data.draw.first;
                 SetDrawState(data, cmd);
+
+                // the following code passes the texture dimensions as 
+                // constant values to the pixel shader
+                SDL_Texture* texture = cmd->data.draw.texture;
+                if (texture) {
+                    float texSize[4];
+                    texSize[0] = texture->w + 0.0f;
+                    texSize[1] = texture->h + 0.0f;
+                    texSize[2] = 0.f;
+                    texSize[3] = 0.f;
+                    IDirect3DDevice9Ex_SetPixelShaderConstantF(data->device, (UINT)1, texSize, (UINT)1);
+                }
+
                 if (vbo) {
                     size_t offset = 0;
                     for (i = 0; i < count; ++i, offset += 4) {
