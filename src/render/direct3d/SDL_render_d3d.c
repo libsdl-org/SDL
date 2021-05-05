@@ -95,7 +95,7 @@ typedef struct
 {
     D3D_TextureRep texture;
     D3DTEXTUREFILTERTYPE scaleMode;
-
+    int enableBicubicFiltering;
     /* YV12 texture support */
     SDL_bool yuv;
     D3D_TextureRep utexture;
@@ -522,8 +522,15 @@ D3D_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     if (!texturedata) {
         return SDL_OutOfMemory();
     }
-    texturedata->scaleMode = (texture->scaleMode == SDL_ScaleModeNearest) ? D3DTEXF_POINT : D3DTEXF_LINEAR;
-
+    texturedata->enableBicubicFiltering = 0;
+    if (texture->scaleMode == SDL_ScaleModeNearest)
+        texturedata->scaleMode = D3DTEXF_POINT;
+    else if (texture->scaleMode == SDL_ScaleModeLinear)
+        texturedata->scaleMode = D3DTEXF_LINEAR;
+    else if (texture->scaleMode == SDL_ScaleModeBest) {
+        texturedata->scaleMode = D3DTEXF_LINEAR;
+        texturedata->enableBicubicFiltering = 1;
+    }
     texture->driverdata = texturedata;
 
     if (texture->access == SDL_TEXTUREACCESS_TARGET) {
@@ -731,8 +738,15 @@ D3D_SetTextureScaleMode(SDL_Renderer * renderer, SDL_Texture * texture, SDL_Scal
     if (!texturedata) {
         return;
     }
-
-    texturedata->scaleMode = (scaleMode == SDL_ScaleModeNearest) ? D3DTEXF_POINT : D3DTEXF_LINEAR;
+    texturedata->enableBicubicFiltering = 0;
+    if (scaleMode == SDL_ScaleModeNearest)
+        texturedata->scaleMode = D3DTEXF_POINT;
+    else if (scaleMode == SDL_ScaleModeLinear)
+        texturedata->scaleMode = D3DTEXF_LINEAR;
+    else if (scaleMode == SDL_ScaleModeBest){
+        texturedata->scaleMode = D3DTEXF_LINEAR;
+        texturedata->enableBicubicFiltering = 1;
+    }
 }
 
 static int
@@ -1114,7 +1128,13 @@ SetupTextureState(D3D_RenderData *data, SDL_Texture * texture, LPDIRECT3DPIXELSH
         }
     }
     else {
-        *shader = data->shaders[SHADER_ARGB];
+        if (texturedata->enableBicubicFiltering == 1) {
+            // change SHADER_ARGB_Bicubic_Bspline to SHADER_ARGB_Bicubic_CatmullRom to try other bicubic filtering scheme
+            *shader = data->shaders[SHADER_ARGB_Bicubic_Bspline];
+        }
+        else {
+            // shader will be null and therefore linear filtering
+        }
     }
     return 0;
 }
@@ -1861,7 +1881,6 @@ D3D_CreateRenderer(SDL_Window * window, Uint32 flags)
     }
 
     data->drawstate.blend = SDL_BLENDMODE_INVALID;
-
     return renderer;
 }
 

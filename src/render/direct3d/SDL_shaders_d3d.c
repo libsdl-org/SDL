@@ -43,7 +43,7 @@
 
 
 /* --- D3D9_PixelShader_ARGB.hlsl ---
-* This shader implements Bicubic filtering and it is based on:
+* This shader implements Bicubic filtering with CatmullRom and it is based on:
 * https://gist.github.com/TheRealMJP/c83b8c0f46b63f3a88a5986f4fa982b1
 * 
     Texture2D theTexture : register(t0);
@@ -126,7 +126,7 @@
     }
 
 */
-static const DWORD D3D9_PixelShader_ARGB[] = {
+static const DWORD D3D9_PixelShader_ARGB_Bicubic_CatmullRom[] = {
     0xffff0200, 0x002efffe, 0x42415443, 0x0000001c, 0x0000008b, 0xffff0200,
     0x00000002, 0x0000001c, 0x00000100, 0x00000084, 0x00000044, 0x00010002,
     0x00060001, 0x0000004c, 0x00000000, 0x0000005c, 0x00000003, 0x00000001,
@@ -184,7 +184,130 @@ static const DWORD D3D9_PixelShader_ARGB[] = {
     0x800f0002, 0x80e40003, 0x80550001, 0x80e40002, 0x04000004, 0x800f0002,
     0x80e40005, 0x80550001, 0x80e40002, 0x04000004, 0x800f0000, 0x80e40000,
     0x80550001, 0x80e40002, 0x03000005, 0x800f0000, 0x80e40000, 0x90e40000,
-    0x02000001, 0x800f0800, 0x80e40000, 0x0000ffff
+    0x02000001, 0x800f0800, 0x80e40000, 0x0000ffff,
+};
+
+/* --- D3D9_PixelShader_ARGB_Bicubic_Bspline.hlsl ---
+* This shader implements Bicubic filtering with Bspline and it is based on:
+https://groups.google.com/g/comp.graphics.api.opengl/c/kqrujgJfTxo*
+    Texture2D theTexture : register(t0);
+    SamplerState theSampler = sampler_state
+    {
+	    addressU = Clamp;
+	    addressV = Clamp;
+	    mipfilter = NONE;
+	    minfilter = LINEAR;
+	    magfilter = LINEAR;
+    };
+    float4 texSize : register(c1);
+
+    float4 cubic(float v)
+    {
+        float4 n = float4(1.0, 2.0, 3.0, 4.0) - v;
+        float4 s = n * n * n;
+        float x = s.x;
+        float y = s.y - 4.0 * s.x;
+        float z = s.z - 4.0 * s.y + 6.0 * s.x;
+        float w = 6.0 - x - y - z;
+        return float4(x, y, z, w);
+    }
+
+    float4 BicubicBSpline(in Texture2D<float4> tex, in SamplerState linearSampler, in float2 uv, in float2 texscale )
+    {
+	    float2 texcoord = uv * texscale;
+	    float2 fxy = frac(texcoord);
+	    texcoord -= fxy;
+	
+	    float4 xcubic = cubic(fxy.x);
+	    float4 ycubic = cubic(fxy.y);
+
+	    float4 c = float4(texcoord.x - 0.5, texcoord.x + 1.5, texcoord.y - 0.5, texcoord.y + 1.5);
+	    float4 s = float4(xcubic.x + xcubic.y, xcubic.z + xcubic.w, ycubic.x + ycubic.y, ycubic.z + ycubic.w);
+	    float4 offset = c + float4(xcubic.y, xcubic.w, ycubic.y, ycubic.w) / s;
+
+	    float4 sample0 = tex.Sample(linearSampler,float2(offset.x, offset.z) * (1/texscale)); 
+	    float4 sample1 = tex.Sample(linearSampler,float2(offset.y, offset.z) * (1/texscale)); 
+	    float4 sample2 = tex.Sample(linearSampler,float2(offset.x, offset.w) * (1/texscale)); 
+	    float4 sample3 = tex.Sample(linearSampler,float2(offset.y, offset.w) * (1/texscale)); 
+
+	    float sx = s.x / (s.x + s.y);
+	    float sy = s.z / (s.z + s.w);
+
+	    return lerp( lerp(sample3, sample2, sx), lerp(sample1, sample0, sx), sy);
+    }
+
+    struct PixelShaderInput
+    {
+	    float4 pos : SV_POSITION;
+	    float2 tex : TEXCOORD0;
+	    float4 color : COLOR0;
+    };
+
+    float4 main(PixelShaderInput input) : SV_TARGET
+    {
+	    float width = texSize[0];
+	    float height = texSize[1];
+	    //theTexture.GetDimensions(width,height);
+	    float2 size = float2(width,height);
+	    float4 res = BicubicBSpline(theTexture, theSampler, input.tex, size);
+	    return res * input.color;
+	    //return theTexture.Sample(theSampler, input.tex) * input.color;
+    }
+
+
+*/
+static const DWORD D3D9_PixelShader_ARGB_Bicubic_Bspline[] = {
+    0xffff0200, 0x002efffe, 0x42415443, 0x0000001c, 0x0000008b, 0xffff0200,
+    0x00000002, 0x0000001c, 0x00000100, 0x00000084, 0x00000044, 0x00010002,
+    0x00060001, 0x0000004c, 0x00000000, 0x0000005c, 0x00000003, 0x00000001,
+    0x00000074, 0x00000000, 0x53786574, 0x00657a69, 0x00030001, 0x00040001,
+    0x00000001, 0x00000000, 0x53656874, 0x6c706d61, 0x742b7265, 0x65546568,
+    0x72757478, 0xabab0065, 0x00070004, 0x00040001, 0x00000001, 0x00000000,
+    0x325f7370, 0x4d00305f, 0x6f726369, 0x74666f73, 0x29522820, 0x534c4820,
+    0x6853204c, 0x72656461, 0x6d6f4320, 0x656c6970, 0x30312072, 0xab00312e,
+    0x05000051, 0xa00f0000, 0x3f800000, 0x40000000, 0x40400000, 0x40800000,
+    0x05000051, 0xa00f0002, 0xbf000000, 0x3fc00000, 0xbf000000, 0x3fc00000,
+    0x05000051, 0xa00f0003, 0x40c00000, 0x00000000, 0x00000000, 0x00000000,
+    0x0200001f, 0x80000000, 0xb0030000, 0x0200001f, 0x80000000, 0x900f0000,
+    0x0200001f, 0x90000000, 0xa00f0800, 0x03000005, 0x80020000, 0xb0000000,
+    0xa0000001, 0x03000005, 0x80080000, 0xb0550000, 0xa0550001, 0x02000013,
+    0x800c0001, 0x80ff0000, 0x02000013, 0x80030001, 0x80550000, 0x04000004,
+    0x800c0000, 0xb0550000, 0xa0550001, 0x81e40001, 0x04000004, 0x80030000,
+    0xb0000000, 0xa0000001, 0x81e40001, 0x03000002, 0x800f0000, 0x80e40000,
+    0xa0e40002, 0x03000002, 0x80070001, 0x81550001, 0xa0e40000, 0x03000002,
+    0x80070002, 0x81ff0001, 0xa0e40000, 0x03000005, 0x80070003, 0x80e40001,
+    0x80e40001, 0x03000005, 0x800e0001, 0x801b0001, 0x801b0003, 0x04000004,
+    0x80080002, 0x80aa0001, 0xa1ff0000, 0x80550001, 0x04000004, 0x80080002,
+    0x80ff0001, 0xa0000003, 0x80ff0002, 0x04000004, 0x80010004, 0x80ff0001,
+    0xa1ff0000, 0x80aa0001, 0x04000004, 0x80020001, 0x80000003, 0x81000001,
+    0xa0000003, 0x04000004, 0x80010001, 0x80000003, 0x80000001, 0x80000004,
+    0x03000002, 0x80020001, 0x81000004, 0x80550001, 0x03000002, 0x80020004,
+    0x81ff0002, 0x80550001, 0x03000005, 0x80070003, 0x80e40002, 0x80e40002,
+    0x03000005, 0x800e0002, 0x801b0002, 0x801b0003, 0x04000004, 0x80040001,
+    0x80aa0002, 0xa1ff0000, 0x80550002, 0x04000004, 0x80040001, 0x80ff0002,
+    0xa0000003, 0x80aa0001, 0x04000004, 0x80040004, 0x80ff0002, 0xa1ff0000,
+    0x80aa0002, 0x04000004, 0x80080001, 0x80000003, 0x81000002, 0xa0000003,
+    0x04000004, 0x80010002, 0x80000003, 0x80000002, 0x80aa0004, 0x03000002,
+    0x80080001, 0x81aa0004, 0x80ff0001, 0x03000002, 0x80080004, 0x81aa0001,
+    0x80ff0001, 0x02000006, 0x80020003, 0x80550001, 0x03000002, 0x80020001,
+    0x80550001, 0x80000001, 0x02000006, 0x80020001, 0x80550001, 0x03000005,
+    0x80020001, 0x80550001, 0x80000001, 0x02000006, 0x80010003, 0x80000001,
+    0x02000006, 0x80080003, 0x80ff0001, 0x03000002, 0x80010001, 0x80ff0001,
+    0x80000002, 0x02000006, 0x80010001, 0x80000001, 0x03000005, 0x80010001,
+    0x80000001, 0x80000002, 0x02000006, 0x80040003, 0x80000002, 0x04000004,
+    0x800f0000, 0x80e40004, 0x80e40003, 0x80e40000, 0x02000006, 0x80010002,
+    0xa0000001, 0x02000006, 0x80020002, 0xa0550001, 0x03000005, 0x80010003,
+    0x80000000, 0x80000002, 0x03000005, 0x80020003, 0x80ff0000, 0x80550002,
+    0x03000005, 0x80010004, 0x80550000, 0x80000002, 0x03000005, 0x80020004,
+    0x80ff0000, 0x80550002, 0x03000005, 0x80010005, 0x80000000, 0x80000002,
+    0x03000005, 0x80020005, 0x80aa0000, 0x80550002, 0x03000005, 0x80030000,
+    0x80c90000, 0x80e40002, 0x03000042, 0x800f0002, 0x80e40003, 0xa0e40800,
+    0x03000042, 0x800f0003, 0x80e40004, 0xa0e40800, 0x03000042, 0x800f0000,
+    0x80e40000, 0xa0e40800, 0x03000042, 0x800f0004, 0x80e40005, 0xa0e40800,
+    0x04000012, 0x800f0005, 0x80550001, 0x80e40002, 0x80e40003, 0x04000012,
+    0x800f0002, 0x80550001, 0x80e40004, 0x80e40000, 0x04000012, 0x800f0000,
+    0x80000001, 0x80e40002, 0x80e40005, 0x03000005, 0x800f0000, 0x80e40000,
+    0x90e40000, 0x02000001, 0x800f0800, 0x80e40000, 0x0000ffff,
 };
 
 /* --- D3D9_PixelShader_YUV_JPEG.hlsl ---
@@ -408,7 +531,8 @@ static const DWORD *D3D9_shaders[] = {
     D3D9_PixelShader_YUV_JPEG,
     D3D9_PixelShader_YUV_BT601,
     D3D9_PixelShader_YUV_BT709,
-    D3D9_PixelShader_ARGB,
+    D3D9_PixelShader_ARGB_Bicubic_CatmullRom,
+    D3D9_PixelShader_ARGB_Bicubic_Bspline,
 };
 
 HRESULT D3D9_CreatePixelShader(IDirect3DDevice9 *d3dDevice, D3D9_Shader shader, IDirect3DPixelShader9 **pixelShader)
