@@ -10,7 +10,7 @@
 #if defined(__WIN32__)
 #include <Windows.h>
 #include <Shlwapi.h>
-#elif defined(__LINUX__)
+#elif defined(__linux__)
 #include <unistd.h>
 #else
 #error "Unsupported platform."
@@ -33,7 +33,7 @@ typedef struct SDL_ProcessInfo
 #if defined(__WIN32__)
     PROCESS_INFORMATION pi;
 //#elif defined(__linux__)
-#elif defined(__LINUX__)
+#elif defined(__linux__)
     int pid;
 #endif
 } SDL_ProcessInfo;

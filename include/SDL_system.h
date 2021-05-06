@@ -122,7 +122,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_DXGIGetOutputInfo( int displayIndex, int *a
 
 
 /* Platform specific functions for Linux */
-#ifdef __LINUX__
+#ifdef __linux__
 
 /**
  * Sets the UNIX nice value for a thread.
@@ -135,7 +135,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_DXGIGetOutputInfo( int displayIndex, int *a
  */
 extern DECLSPEC int SDLCALL SDL_LinuxSetThreadPriority(Sint64 threadID, int priority);
  
-#endif /* __LINUX__ */
+#endif /* __linux__ */
 	
 /* Platform specific functions for iOS */
 #ifdef __IPHONEOS__

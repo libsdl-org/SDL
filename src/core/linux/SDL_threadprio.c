@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#ifdef __LINUX__
+#ifdef __linux__
 
 #include "SDL_error.h"
 #include "SDL_stdinc.h"
@@ -294,6 +294,6 @@ SDL_LinuxSetThreadPriorityAndPolicy(Sint64 threadID, int sdlPriority, int schedP
 #endif
 }
 
-#endif  /* __LINUX__ */
+#endif  /* __linux__ */
 
 /* vi: set ts=4 sw=4 expandtab: */

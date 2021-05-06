@@ -215,7 +215,7 @@ ShouldUseTextureFramebuffer()
     /* Mac OS X uses OpenGL as the native fast path (for cocoa and X11) */
     return SDL_TRUE;
 
-#elif defined(__LINUX__)
+#elif defined(__linux__)
     /* Properly configured OpenGL drivers are faster than MIT-SHM */
 #if SDL_VIDEO_OPENGL
     /* Ugh, find a way to cache this value! */

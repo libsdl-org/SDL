@@ -19,7 +19,7 @@
 #include <direct.h>
 #elif defined(__WIN32__) && defined(__CYGWIN__)
 #include <signal.h>
-#elif defined(__LINUX__)
+#elif defined(__linux__)
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <signal.h>
@@ -63,7 +63,7 @@ usage()
 }
 
 /* register Ctrl+C handlers */
-#if defined(__LINUX__) || defined(__CYGWIN__)
+#if defined(__linux__) || defined(__CYGWIN__)
 static void
 CtrlCHandlerCallback(int signum)
 {
@@ -405,7 +405,7 @@ main(int argc, char* argv[])
         goto cleanup_generic;
     }
 
-#if defined(__LINUX__) || defined(__CYGWIN__)
+#if defined(__linux__) || defined(__CYGWIN__)
     signal(SIGINT, CtrlCHandlerCallback);
 #endif
 
@@ -428,7 +428,7 @@ main(int argc, char* argv[])
     }
 
     /* create an output directory if none exists */
-#if defined(__LINUX__) || defined(__CYGWIN__)
+#if defined(__linux__) || defined(__CYGWIN__)
     mkdir(state.output_dir, 0777);
 #elif defined(__WIN32__)
     _mkdir(state.output_dir);

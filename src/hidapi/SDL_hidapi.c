@@ -65,7 +65,7 @@
 #define read_thread                     PLATFORM_read_thread
 
 #undef HIDAPI_H__
-#if __LINUX__
+#if __linux__
 
 #include "../../core/linux/SDL_udev.h"
 #if SDL_USE_LIBUDEV
@@ -608,9 +608,9 @@ int HID_API_EXPORT HID_API_CALL hid_init(void)
 
 #if HAVE_PLATFORM_BACKEND
     ++attempts;
-#if __LINUX__
+#if __linux__
     udev_ctx = SDL_UDEV_GetUdevSyms();
-#endif /* __LINUX __ */
+#endif /* __linux__ */
     if (udev_ctx && PLATFORM_hid_init() == 0) {
         ++success;
     }

@@ -1148,7 +1148,7 @@ static ControllerMapping_t *SDL_PrivateGetControllerMappingForNameAndGUID(const 
     ControllerMapping_t *mapping;
 
     mapping = SDL_PrivateGetControllerMappingForGUID(guid, SDL_FALSE);
-#ifdef __LINUX__
+#ifdef __linux__
     if (!mapping && name) {
         if (SDL_strstr(name, "Xbox 360 Wireless Receiver")) {
             /* The Linux driver xpad.c maps the wireless dpad to buttons */
@@ -1158,7 +1158,7 @@ static ControllerMapping_t *SDL_PrivateGetControllerMappingForNameAndGUID(const 
                           &existing, SDL_CONTROLLER_MAPPING_PRIORITY_DEFAULT);
         }
     }
-#endif /* __LINUX__ */
+#endif /* __linux__ */
 
     if (!mapping && name && !SDL_IsJoystickWGI(guid)) {
         if (SDL_strstr(name, "Xbox") || SDL_strstr(name, "X-Box") || SDL_strstr(name, "XBOX")) {
@@ -1763,7 +1763,7 @@ SDL_bool SDL_ShouldIgnoreGameController(const char *name, SDL_JoystickGUID guid)
     Uint16 version;
     Uint32 vidpid;
 
-#if defined(__LINUX__)
+#if defined(__linux__)
     if (name && SDL_strstr(name, "Motion Sensors")) {
         /* Don't treat the PS3 and PS4 motion controls as a separate game controller */
         return SDL_TRUE;
@@ -1780,7 +1780,7 @@ SDL_bool SDL_ShouldIgnoreGameController(const char *name, SDL_JoystickGUID guid)
     if (SDL_GetHintBoolean("SDL_GAMECONTROLLER_ALLOW_STEAM_VIRTUAL_GAMEPAD", SDL_FALSE)) {
         /* We shouldn't ignore Steam's virtual gamepad since it's using the hints to filter out the real controllers so it can remap input for the virtual controller */
         SDL_bool bSteamVirtualGamepad = SDL_FALSE;
-#if defined(__LINUX__)
+#if defined(__linux__)
         bSteamVirtualGamepad = (vendor == 0x28DE && product == 0x11FF);
 #elif defined(__MACOSX__)
         bSteamVirtualGamepad = (vendor == 0x045E && product == 0x028E && version == 1);

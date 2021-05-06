@@ -79,7 +79,7 @@ get_classname()
     the application's .desktop file as the class." */
 
     char *spot;
-#if defined(__LINUX__) || defined(__FREEBSD__)
+#if defined(__linux__) || defined(__FREEBSD__)
     char procfile[1024];
     char linkfile[1024];
     int linksize;
@@ -98,8 +98,8 @@ get_classname()
     }
 
     /* Next look at the application's executable name */
-#if defined(__LINUX__) || defined(__FREEBSD__)
-#if defined(__LINUX__)
+#if defined(__linux__) || defined(__FREEBSD__)
+#if defined(__linux__)
     SDL_snprintf(procfile, SDL_arraysize(procfile), "/proc/%d/exe", getpid());
 #elif defined(__FREEBSD__)
     SDL_snprintf(procfile, SDL_arraysize(procfile), "/proc/%d/file",
@@ -117,7 +117,7 @@ get_classname()
             return SDL_strdup(linkfile);
         }
     }
-#endif /* __LINUX__ || __FREEBSD__ */
+#endif /* __linux__ || __FREEBSD__ */
 
     /* Finally use the default we've used forever */
     return SDL_strdup("SDL_App");

@@ -504,7 +504,7 @@ SDL_GetPlatform()
     return "HP-UX";
 #elif __IRIX__
     return "Irix";
-#elif __LINUX__
+#elif __linux__
     return "Linux";
 #elif __MINT__
     return "Atari MiNT";

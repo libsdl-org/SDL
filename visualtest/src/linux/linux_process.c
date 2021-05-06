@@ -17,7 +17,7 @@
 #include "SDL_visualtest_harness_argparser.h"
 #include "SDL_visualtest_parsehelper.h"
 
-#if defined(__LINUX__)
+#if defined(__linux__)
 
 static void
 LogLastError(char* str)

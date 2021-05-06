@@ -708,7 +708,7 @@ SDL_DYNAPI_PROC(SDL_bool,SDL_IsAndroidTV,(void),(),return)
 SDL_DYNAPI_PROC(double,SDL_log10,(double a),(a),return)
 SDL_DYNAPI_PROC(float,SDL_log10f,(float a),(a),return)
 SDL_DYNAPI_PROC(char*,SDL_GameControllerMappingForDeviceIndex,(int a),(a),return)
-#ifdef __LINUX__
+#ifdef __linux__
 SDL_DYNAPI_PROC(int,SDL_LinuxSetThreadPriority,(Sint64 a, int b),(a,b),return)
 #endif
 SDL_DYNAPI_PROC(SDL_bool,SDL_HasAVX512F,(void),(),return)

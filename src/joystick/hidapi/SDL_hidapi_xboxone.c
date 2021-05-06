@@ -270,7 +270,7 @@ SendControllerInit(SDL_HIDAPI_Device *device, SDL_DriverXboxOne_Context *ctx)
 static SDL_bool
 HIDAPI_DriverXboxOne_IsSupportedDevice(const char *name, SDL_GameControllerType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
-#ifdef __LINUX__
+#ifdef __linux__
     if (vendor_id == USB_VENDOR_POWERA && product_id == 0x541a) {
         /* The PowerA Mini controller, model 1240245-01, blocks while writing feature reports */
         return SDL_FALSE;

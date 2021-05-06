@@ -185,7 +185,7 @@ static char *
 get_progname(void)
 {
     char *progname = NULL;
-#ifdef __LINUX__
+#ifdef __linux__
     FILE *fp;
     static char temp[BUFSIZ];
 

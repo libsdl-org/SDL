@@ -58,13 +58,13 @@ static FcitxClient fcitx_client;
 static char*
 GetAppName()
 {
-#if defined(__LINUX__) || defined(__FREEBSD__)
+#if defined(__linux__) || defined(__FREEBSD__)
     char *spot;
     char procfile[1024];
     char linkfile[1024];
     int linksize;
 
-#if defined(__LINUX__)
+#if defined(__linux__)
     SDL_snprintf(procfile, sizeof(procfile), "/proc/%d/exe", getpid());
 #elif defined(__FREEBSD__)
     SDL_snprintf(procfile, sizeof(procfile), "/proc/%d/file", getpid());
@@ -79,7 +79,7 @@ GetAppName()
             return SDL_strdup(linkfile);
         }
     }
-#endif /* __LINUX__ || __FREEBSD__ */
+#endif /* __linux__ || __FREEBSD__ */
 
     return SDL_strdup("SDL_App");
 }

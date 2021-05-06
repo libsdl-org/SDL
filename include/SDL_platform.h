@@ -57,12 +57,12 @@
 #define __IRIX__    1
 #endif
 #if (defined(linux) || defined(__linux) || defined(__linux__))
-#undef __LINUX__
-#define __LINUX__   1
+#undef __linux__
+#define __linux__   1
 #endif
 #if defined(ANDROID) || defined(__ANDROID__)
 #undef __ANDROID__
-#undef __LINUX__ /* do we need to do this? */
+#undef __linux__ /* do we need to do this? */
 #define __ANDROID__ 1
 #endif
 
@@ -163,12 +163,12 @@
  * Ref: http://www.chromium.org/nativeclient/pnacl/stability-of-the-pnacl-bitcode-abi
  */
 #if defined(__native_client__)
-#undef __LINUX__
+#undef __linux__
 #undef __NACL__
 #define __NACL__ 1
 #endif
 #if defined(__pnacl__)
-#undef __LINUX__
+#undef __linux__
 #undef __PNACL__
 #define __PNACL__ 1
 /* PNACL with newlib supports static linking only */

@@ -184,7 +184,7 @@ extern DECLSPEC void SDLCALL SDL_MemoryBarrierAcquireFunction(void);
 #define SDL_MemoryBarrierRelease()   __asm__ __volatile__ ("dmb ish" : : : "memory")
 #define SDL_MemoryBarrierAcquire()   __asm__ __volatile__ ("dmb ish" : : : "memory")
 #elif defined(__GNUC__) && defined(__arm__)
-#if 0 /* defined(__LINUX__) || defined(__ANDROID__) */
+#if 0 /* defined(__linux__) || defined(__ANDROID__) */
 /* Information from:
    https://chromium.googlesource.com/chromium/chromium/+/trunk/base/atomicops_internals_arm_gcc.h#19
 
@@ -216,7 +216,7 @@ typedef void (*SDL_KernelMemoryBarrierFunc)();
 #else
 #define SDL_MemoryBarrierRelease()   __asm__ __volatile__ ("" : : : "memory")
 #define SDL_MemoryBarrierAcquire()   __asm__ __volatile__ ("" : : : "memory")
-#endif /* __LINUX__ || __ANDROID__ */
+#endif /* __linux__ || __ANDROID__ */
 #endif /* __GNUC__ && __arm__ */
 #else
 #if (defined(__SUNPRO_C) && (__SUNPRO_C >= 0x5120))

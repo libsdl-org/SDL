@@ -31,7 +31,7 @@
 
 #include <signal.h>
 
-#ifdef __LINUX__
+#ifdef __linux__
 #include <sys/time.h>
 #include <sys/resource.h>
 #include <sys/syscall.h>
@@ -39,9 +39,9 @@
 #include <errno.h>
 
 #include "../../core/linux/SDL_dbus.h"
-#endif /* __LINUX__ */
+#endif /* __linux__ */
 
-#if defined(__LINUX__) || defined(__MACOSX__) || defined(__IPHONEOS__)
+#if defined(__linux__) || defined(__MACOSX__) || defined(__IPHONEOS__)
 #include <dlfcn.h>
 #ifndef RTLD_DEFAULT
 #define RTLD_DEFAULT NULL
@@ -81,7 +81,7 @@ RunThread(void *data)
 #if defined(__MACOSX__) || defined(__IPHONEOS__)
 static SDL_bool checked_setname = SDL_FALSE;
 static int (*ppthread_setname_np)(const char*) = NULL;
-#elif defined(__LINUX__)
+#elif defined(__linux__)
 static SDL_bool checked_setname = SDL_FALSE;
 static int (*ppthread_setname_np)(pthread_t, const char*) = NULL;
 #endif
@@ -91,12 +91,12 @@ SDL_SYS_CreateThread(SDL_Thread * thread)
     pthread_attr_t type;
 
     /* do this here before any threads exist, so there's no race condition. */
-    #if defined(__MACOSX__) || defined(__IPHONEOS__) || defined(__LINUX__)
+    #if defined(__MACOSX__) || defined(__IPHONEOS__) || defined(__linux__)
     if (!checked_setname) {
         void *fn = dlsym(RTLD_DEFAULT, "pthread_setname_np");
         #if defined(__MACOSX__) || defined(__IPHONEOS__)
         ppthread_setname_np = (int(*)(const char*)) fn;
-        #elif defined(__LINUX__)
+        #elif defined(__linux__)
         ppthread_setname_np = (int(*)(pthread_t, const char*)) fn;
         #endif
         checked_setname = SDL_TRUE;
@@ -131,12 +131,12 @@ SDL_SYS_SetupThread(const char *name)
 #endif /* !__NACL__ */
 
     if (name != NULL) {
-        #if defined(__MACOSX__) || defined(__IPHONEOS__) || defined(__LINUX__)
+        #if defined(__MACOSX__) || defined(__IPHONEOS__) || defined(__linux__)
         SDL_assert(checked_setname);
         if (ppthread_setname_np != NULL) {
             #if defined(__MACOSX__) || defined(__IPHONEOS__)
             ppthread_setname_np(name);
-            #elif defined(__LINUX__)
+            #elif defined(__linux__)
             ppthread_setname_np(pthread_self(), name);
             #endif
         }
@@ -183,7 +183,7 @@ SDL_ThreadID(void)
     return ((SDL_threadID) pthread_self());
 }
 
-#if __LINUX__
+#if __linux__
 /**
    \brief Sets the SDL priority (not nice level) for a thread, using setpriority() if appropriate, and RealtimeKit if available.
    Differs from SDL_LinuxSetThreadPriority in also taking the desired scheduler policy,
@@ -255,7 +255,7 @@ SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
         policy = pri_policy;
     }
 
-#if __LINUX__
+#if __linux__
     {
         pid_t linuxTid = syscall(SYS_gettid);
         return SDL_LinuxSetThreadPriorityAndPolicy(linuxTid, priority, policy);
