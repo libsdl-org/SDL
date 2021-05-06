@@ -593,6 +593,10 @@ macro(CheckX11)
       set(CMAKE_REQUIRED_LIBRARIES)
     endif()
   endif()
+  if(NOT HAVE_VIDEO_X11)
+    # Prevent Mesa from including X11 headers
+    list(APPEND EXTRA_CFLAGS "-DMESA_EGL_NO_X11_HEADERS -DEGL_NO_X11")
+  endif()
 endmacro()
 
 macro(WaylandProtocolGen _SCANNER _CODE_MODE _XML _PROTL)
@@ -627,7 +631,7 @@ macro(CheckWayland)
     pkg_check_modules(WAYLAND wayland-client wayland-scanner wayland-egl wayland-cursor egl xkbcommon)
     pkg_check_modules(WAYLAND_SCANNER_1_15 "wayland-scanner>=1.15")
 
-    if(WAYLAND_FOUND)
+    if(WAYLAND_FOUND AND HAVE_VIDEO_OPENGL_EGL)
       execute_process(
         COMMAND ${PKG_CONFIG_EXECUTABLE} --variable=wayland_scanner wayland-scanner
         WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
@@ -778,15 +782,47 @@ macro(CheckVivante)
 endmacro(CheckVivante)
 
 # Requires:
-# - libglvnd
-macro(CheckOpenGLKMSDRM)
-  if(VIDEO_OPENGL AND HAVE_VIDEO_KMSDRM)
+# - nada
+macro(CheckGLX)
+  if(VIDEO_OPENGL)
+    check_c_source_compiles("
+        #include <GL/glx.h>
+        int main(int argc, char** argv) {}" HAVE_VIDEO_OPENGL_GLX)
+    if(HAVE_VIDEO_OPENGL_GLX)
+      set(SDL_VIDEO_OPENGL_GLX 1)
+    endif()
+  endif()
+endmacro()
+
+# Requires:
+# - PkgCheckModules
+macro(CheckEGL)
+  if (VIDEO_OPENGL OR VIDEO_OPENGLES)
+    pkg_check_modules(EGL egl)
+    string(REPLACE "-D_THREAD_SAFE;" "-D_THREAD_SAFE=1;" EGL_CFLAGS "${EGL_CFLAGS}")
+    set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} ${EGL_CFLAGS}")
+    check_c_source_compiles("
+        #define EGL_API_FB
+        #define MESA_EGL_NO_X11_HEADERS
+        #define EGL_NO_X11
+        #include <EGL/egl.h>
+        #include <EGL/eglext.h>
+        int main (int argc, char** argv) {}" HAVE_VIDEO_OPENGL_EGL)
+    if(HAVE_VIDEO_OPENGL_EGL)
+      set(SDL_VIDEO_OPENGL_EGL 1)
+    endif()
+  endif()
+endmacro()
+
+# Requires:
+# - nada
+macro(CheckOpenGL)
+  if(VIDEO_OPENGL)
     check_c_source_compiles("
         #include <GL/gl.h>
+        #include <GL/glext.h>
         int main(int argc, char** argv) {}" HAVE_VIDEO_OPENGL)
-
     if(HAVE_VIDEO_OPENGL)
-      set(HAVE_VIDEO_OPENGL TRUE)
       set(SDL_VIDEO_OPENGL 1)
       set(SDL_VIDEO_RENDER_OGL 1)
     endif()
@@ -795,80 +831,26 @@ endmacro()
 
 # Requires:
 # - nada
-macro(CheckOpenGLX11)
-  if(VIDEO_OPENGL)
-    check_c_source_compiles("
-        #include <GL/gl.h>
-        #include <GL/glx.h>
-        int main(int argc, char** argv) {}" HAVE_VIDEO_OPENGL)
-
-    if(HAVE_VIDEO_OPENGL)
-      set(HAVE_VIDEO_OPENGL TRUE)
-      set(SDL_VIDEO_OPENGL 1)
-      set(SDL_VIDEO_OPENGL_GLX 1)
-      set(SDL_VIDEO_RENDER_OGL 1)
-    endif()
-  endif()
-endmacro()
-
-# Requires:
-# - PkgCheckModules
-macro(CheckEGL)
-  pkg_check_modules(EGL egl)
-  string(REPLACE "-D_THREAD_SAFE;" "-D_THREAD_SAFE=1;" EGL_CFLAGS "${EGL_CFLAGS}")
-endmacro()
-
-# Requires:
-# - PkgCheckModules
-macro(CheckEGLKMSDRM)
-  if (HAVE_VIDEO_OPENGLES OR HAVE_VIDEO_OPENGL)
-    CheckEGL()
-    set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} ${EGL_CFLAGS}")
-    check_c_source_compiles("
-	#define EGL_API_FB
-	#define MESA_EGL_NO_X11_HEADERS
-	#define EGL_NO_X11
-	#include <EGL/egl.h>
-	#include <EGL/eglext.h>
-	int main (int argc, char** argv) {}" HAVE_VIDEO_OPENGL_EGL)
-    if(HAVE_VIDEO_OPENGL_EGL)
-	set(SDL_VIDEO_OPENGL_EGL 1)
-    endif()
-  endif()
-endmacro()
-
-# Requires:
-# - PkgCheckModules
-macro(CheckOpenGLESX11)
-  CheckEGL()
-  set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} ${EGL_CFLAGS}")
+macro(CheckOpenGLES)
   if(VIDEO_OPENGLES)
     check_c_source_compiles("
-        #define EGL_API_FB
-        #include <EGL/egl.h>
-        int main (int argc, char** argv) {}" HAVE_VIDEO_OPENGL_EGL)
-    if(HAVE_VIDEO_OPENGL_EGL)
-        set(SDL_VIDEO_OPENGL_EGL 1)
-    endif()
-    check_c_source_compiles("
-      #include <GLES/gl.h>
-      #include <GLES/glext.h>
-      int main (int argc, char** argv) {}" HAVE_VIDEO_OPENGLES_V1)
+        #include <GLES/gl.h>
+        #include <GLES/glext.h>
+        int main (int argc, char** argv) {}" HAVE_VIDEO_OPENGLES_V1)
     if(HAVE_VIDEO_OPENGLES_V1)
         set(HAVE_VIDEO_OPENGLES TRUE)
         set(SDL_VIDEO_OPENGL_ES 1)
         set(SDL_VIDEO_RENDER_OGL_ES 1)
     endif()
     check_c_source_compiles("
-      #include <GLES2/gl2.h>
-      #include <GLES2/gl2ext.h>
-      int main (int argc, char** argv) {}" HAVE_VIDEO_OPENGLES_V2)
+        #include <GLES2/gl2.h>
+        #include <GLES2/gl2ext.h>
+        int main (int argc, char** argv) {}" HAVE_VIDEO_OPENGLES_V2)
     if(HAVE_VIDEO_OPENGLES_V2)
         set(HAVE_VIDEO_OPENGLES TRUE)
         set(SDL_VIDEO_OPENGL_ES2 1)
         set(SDL_VIDEO_RENDER_OGL_ES2 1)
     endif()
-
   endif()
 endmacro()
 
