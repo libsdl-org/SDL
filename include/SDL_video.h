@@ -1795,7 +1795,7 @@ extern DECLSPEC void SDLCALL SDL_GL_GetDrawableSize(SDL_Window * window, int *w,
  * vsync. Adaptive vsync works the same as vsync, but if you've already missed
  * the vertical retrace for a given frame, it swaps buffers immediately, which
  * might be less jarring for the user during occasional framerate drops. If
- * application requests adaptive vsync and the system does not support it,
+ * an application requests adaptive vsync and the system does not support it,
  * this function will fail and return -1. In such a case, you should probably
  * retry the call with 1 for the interval.
  *

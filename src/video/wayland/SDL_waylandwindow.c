@@ -199,6 +199,22 @@ static const struct wl_shell_surface_listener shell_surface_listener_wl = {
 };
 
 
+static const struct wl_callback_listener surface_frame_listener;
+
+static void
+handle_surface_frame_done(void *data, struct wl_callback *cb, uint32_t time)
+{
+    SDL_WindowData *wind = (SDL_WindowData *) data;
+    SDL_AtomicSet(&wind->swap_interval_ready, 1);  /* mark window as ready to present again. */
+
+    /* reset this callback to fire again once a new frame was presented and compositor wants the next one. */
+    wl_callback_destroy(cb);
+    wl_callback_add_listener(wl_surface_frame(wind->surface), &surface_frame_listener, data);
+}
+
+static const struct wl_callback_listener surface_frame_listener = {
+    handle_surface_frame_done
+};
 
 
 static void
@@ -995,6 +1011,9 @@ int Wayland_CreateWindow(_THIS, SDL_Window *window)
     data->surface =
         wl_compositor_create_surface(c->compositor);
     wl_surface_add_listener(data->surface, &surface_listener, data);
+
+    /* fire a callback when the compositor wants a new frame rendered. */
+    wl_callback_add_listener(wl_surface_frame(data->surface), &surface_frame_listener, data);
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
     if (c->surface_extension) {
