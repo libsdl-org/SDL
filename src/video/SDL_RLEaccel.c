@@ -1423,6 +1423,7 @@ SDL_RLESurface(SDL_Surface * surface)
         return -1;
     }
 
+    flags = surface->map->info.flags;
     if (flags & SDL_COPY_COLORKEY) {
         /* ok */
     } else if ((flags & SDL_COPY_BLEND) && surface->format->Amask) {
