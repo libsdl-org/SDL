@@ -75,24 +75,24 @@
 #define SL_ANDROID_SPEAKER_7DOT1 (SL_ANDROID_SPEAKER_5DOT1 | SL_SPEAKER_SIDE_LEFT | SL_SPEAKER_SIDE_RIGHT)
 
 /* engine interfaces */
-static SLObjectItf engineObject;
-static SLEngineItf engineEngine;
+static SLObjectItf engineObject = NULL;
+static SLEngineItf engineEngine = NULL;
 
 /* output mix interfaces */
-static SLObjectItf outputMixObject;
+static SLObjectItf outputMixObject = NULL;
 
 /* buffer queue player interfaces */
-static SLObjectItf bqPlayerObject;
+static SLObjectItf bqPlayerObject = NULL;
 static SLPlayItf bqPlayerPlay = NULL;
-static SLAndroidSimpleBufferQueueItf bqPlayerBufferQueue;
+static SLAndroidSimpleBufferQueueItf bqPlayerBufferQueue = NULL;
 #if 0
 static SLVolumeItf bqPlayerVolume;
 #endif
 
 /* recorder interfaces */
-static SLObjectItf recorderObject;
-static SLRecordItf recorderRecord;
-static SLAndroidSimpleBufferQueueItf recorderBufferQueue;
+static SLObjectItf recorderObject = NULL;
+static SLRecordItf recorderRecord = NULL;
+static SLAndroidSimpleBufferQueueItf recorderBufferQueue = NULL;
 
 #if 0
 static const char *sldevaudiorecorderstr = "SLES Audio Recorder";
@@ -355,8 +355,6 @@ openslES_CreatePCMRecorder(_THIS)
 
 failed:
 
-    openslES_DestroyPCMRecorder(this);
-
     return SDL_SetError("Open device failed!");
 }
 
@@ -580,8 +578,6 @@ openslES_CreatePCMPlayer(_THIS)
     return 0;
 
 failed:
-
-    openslES_DestroyPCMPlayer(this);
 
     return SDL_SetError("Open device failed!");
 }
