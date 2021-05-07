@@ -695,8 +695,8 @@ static void dumpconfig(_THIS, EGLConfig config)
 
 #endif /* DUMP_EGL_CONFIG */
 
-int
-SDL_EGL_ChooseConfig(_THIS)
+static int
+SDL_EGL_PrivateChooseConfig(_THIS, SDL_bool set_config_caveat_none)
 {
     /* 64 seems nice. */
     EGLint attribs[64];
@@ -706,11 +706,6 @@ SDL_EGL_ChooseConfig(_THIS)
     SDL_bool has_matching_format = SDL_FALSE;
     int i, j, best_bitdiff = -1, best_truecolor_bitdiff = -1;
     int truecolor_config_idx = -1;
-   
-    if (!_this->egl_data) {
-        /* The EGL library wasn't loaded, SDL_GetError() should have info */
-        return -1;
-    }
 
     /* Get a valid EGL configuration */
     i = 0;
@@ -720,12 +715,17 @@ SDL_EGL_ChooseConfig(_THIS)
     attribs[i++] = _this->gl_config.green_size;
     attribs[i++] = EGL_BLUE_SIZE;
     attribs[i++] = _this->gl_config.blue_size;
-    
+
+    if (set_config_caveat_none) {
+        attribs[i++] = EGL_CONFIG_CAVEAT;
+        attribs[i++] = EGL_NONE;
+    }
+
     if (_this->gl_config.alpha_size) {
         attribs[i++] = EGL_ALPHA_SIZE;
         attribs[i++] = _this->gl_config.alpha_size;
     }
-    
+
     if (_this->gl_config.buffer_size) {
         attribs[i++] = EGL_BUFFER_SIZE;
         attribs[i++] = _this->gl_config.buffer_size;
@@ -740,12 +740,12 @@ SDL_EGL_ChooseConfig(_THIS)
         attribs[i++] = EGL_STENCIL_SIZE;
         attribs[i++] = _this->gl_config.stencil_size;
     }
-    
+
     if (_this->gl_config.multisamplebuffers) {
         attribs[i++] = EGL_SAMPLE_BUFFERS;
         attribs[i++] = _this->gl_config.multisamplebuffers;
     }
-    
+
     if (_this->gl_config.multisamplesamples) {
         attribs[i++] = EGL_SAMPLES;
         attribs[i++] = _this->gl_config.multisamplesamples;
@@ -789,7 +789,7 @@ SDL_EGL_ChooseConfig(_THIS)
         configs, SDL_arraysize(configs),
         &found_configs) == EGL_FALSE ||
         found_configs == 0) {
-        return SDL_EGL_SetError("Couldn't find matching EGL config", "eglChooseConfig");
+        return -1;
     }
 
     /* first ensure that a found config has a matching format, or the function will fall through. */
@@ -817,7 +817,7 @@ SDL_EGL_ChooseConfig(_THIS)
         if (has_matching_format && _this->egl_data->egl_required_visual_id) {
             EGLint format;
             _this->egl_data->eglGetConfigAttrib(_this->egl_data->egl_display,
-                                            configs[i], 
+                                            configs[i],
                                             EGL_NATIVE_VISUAL_ID, &format);
             if (_this->egl_data->egl_required_visual_id != format) {
                 continue;
@@ -839,7 +839,7 @@ SDL_EGL_ChooseConfig(_THIS)
             if (attribs[j] == EGL_NONE) {
                break;
             }
-            
+
             if ( attribs[j+1] != EGL_DONT_CARE && (
                 attribs[j] == EGL_RED_SIZE ||
                 attribs[j] == EGL_GREEN_SIZE ||
@@ -887,8 +887,34 @@ SDL_EGL_ChooseConfig(_THIS)
 #ifdef DUMP_EGL_CONFIG
     dumpconfig(_this, _this->egl_data->egl_config);
 #endif
-    
+
     return 0;
+}
+
+int
+SDL_EGL_ChooseConfig(_THIS)
+{
+    int ret;
+
+    if (!_this->egl_data) {
+        /* The EGL library wasn't loaded, SDL_GetError() should have info */
+        return -1;
+    }
+
+    /* Try with EGL_CONFIG_CAVEAT set to EGL_NONE, to avoid any EGL_SLOW_CONFIG or EGL_NON_CONFORMANT_CONFIG */
+    ret = SDL_EGL_PrivateChooseConfig(_this, SDL_TRUE);
+    if (ret == 0) {
+        return 0;
+    }
+
+    /* Fallback with all configs */
+    ret = SDL_EGL_PrivateChooseConfig(_this, SDL_FALSE);
+    if (ret == 0) {
+        SDL_Log("SDL_EGL_ChooseConfig: found a slow EGL config");
+        return 0;
+    }
+
+    return SDL_EGL_SetError("Couldn't find matching EGL config", "eglChooseConfig");
 }
 
 SDL_GLContext
