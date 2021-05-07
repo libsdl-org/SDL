@@ -117,7 +117,7 @@ static SDL_bool GetButtonIndex(const SDL_MessageBoxData *messageboxdata, Uint32 
     return SDL_FALSE;
 }
 
-static INT_PTR MessageBoxDialogProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK MessageBoxDialogProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lParam)
 {
     const SDL_MessageBoxData *messageboxdata;
     size_t buttonindex;
@@ -742,7 +742,7 @@ WIN_ShowOldMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
         ParentWindow = ((SDL_WindowData*)messageboxdata->window->driverdata)->hwnd;
     }
 
-    result = DialogBoxIndirectParam(NULL, (DLGTEMPLATE*)dialog->lpDialog, ParentWindow, (DLGPROC)MessageBoxDialogProc, (LPARAM)messageboxdata);
+    result = DialogBoxIndirectParam(NULL, (DLGTEMPLATE*)dialog->lpDialog, ParentWindow, MessageBoxDialogProc, (LPARAM)messageboxdata);
     if (result >= IDBUTTONINDEX0 && result - IDBUTTONINDEX0 < messageboxdata->numbuttons) {
         *buttonid = messageboxdata->buttons[result - IDBUTTONINDEX0].buttonid;
         retval = 0;
