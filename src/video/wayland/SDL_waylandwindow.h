@@ -54,6 +54,7 @@ typedef struct {
     SDL_Window *sdlwindow;
     SDL_VideoData *waylandData;
     struct wl_surface *surface;
+    struct wl_callback *frame_callback;
     union {
         SDL_xdg_shell_surface xdg;
         SDL_zxdg_shell_surface zxdg;
@@ -64,9 +65,10 @@ typedef struct {
     EGLSurface egl_surface;
     struct zwp_locked_pointer_v1 *locked_pointer;
     struct zxdg_toplevel_decoration_v1 *server_decoration;
-    struct org_kde_kwin_server_decoration *kwin_server_decoration;
     struct zwp_keyboard_shortcuts_inhibitor_v1 *key_inhibitor;
     struct zwp_idle_inhibitor_v1 *idle_inhibitor;
+
+    SDL_atomic_t swap_interval_ready;
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
     struct qt_extended_surface *extended_surface;
@@ -86,6 +88,7 @@ typedef struct {
 } SDL_WindowData;
 
 extern void Wayland_ShowWindow(_THIS, SDL_Window *window);
+extern void Wayland_HideWindow(_THIS, SDL_Window *window);
 extern void Wayland_SetWindowFullscreen(_THIS, SDL_Window * window,
                                         SDL_VideoDisplay * _display,
                                         SDL_bool fullscreen);
@@ -100,6 +103,7 @@ extern int Wayland_CreateWindow(_THIS, SDL_Window *window);
 extern void Wayland_SetWindowSize(_THIS, SDL_Window * window);
 extern void Wayland_SetWindowMinimumSize(_THIS, SDL_Window * window);
 extern void Wayland_SetWindowMaximumSize(_THIS, SDL_Window * window);
+extern int Wayland_SetWindowModalFor(_THIS, SDL_Window * modal_window, SDL_Window * parent_window);
 extern void Wayland_SetWindowTitle(_THIS, SDL_Window * window);
 extern void Wayland_DestroyWindow(_THIS, SDL_Window *window);
 extern void Wayland_SuspendScreenSaver(_THIS);

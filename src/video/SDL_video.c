@@ -2110,6 +2110,25 @@ SDL_SetWindowResizable(SDL_Window * window, SDL_bool resizable)
 }
 
 void
+SDL_SetWindowAlwaysOnTop(SDL_Window * window, SDL_bool on_top)
+{
+    CHECK_WINDOW_MAGIC(window,);
+    if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
+        const int want = (on_top != SDL_FALSE);  /* normalize the flag. */
+        const int have = ((window->flags & SDL_WINDOW_ALWAYS_ON_TOP) != 0);
+        if ((want != have) && (_this->SetWindowAlwaysOnTop)) {
+            if (want) {
+                window->flags |= SDL_WINDOW_ALWAYS_ON_TOP;
+            } else {
+                window->flags &= ~SDL_WINDOW_ALWAYS_ON_TOP;
+            }
+            
+            _this->SetWindowAlwaysOnTop(_this, window, (SDL_bool) want);
+        }
+    }
+}
+
+void
 SDL_SetWindowSize(SDL_Window * window, int w, int h)
 {
     CHECK_WINDOW_MAGIC(window,);
@@ -4042,6 +4061,9 @@ SDL_IsScreenKeyboardShown(SDL_Window *window)
 #if SDL_VIDEO_DRIVER_X11
 #include "x11/SDL_x11messagebox.h"
 #endif
+#if SDL_VIDEO_DRIVER_WAYLAND
+#include "wayland/SDL_waylandmessagebox.h"
+#endif
 #if SDL_VIDEO_DRIVER_HAIKU
 #include "haiku/SDL_bmessagebox.h"
 #endif
@@ -4052,7 +4074,7 @@ SDL_IsScreenKeyboardShown(SDL_Window *window)
 #include "vita/SDL_vitamessagebox.h"
 #endif
 
-#if SDL_VIDEO_DRIVER_WINDOWS || SDL_VIDEO_DRIVER_WINRT || SDL_VIDEO_DRIVER_COCOA || SDL_VIDEO_DRIVER_UIKIT || SDL_VIDEO_DRIVER_X11 || SDL_VIDEO_DRIVER_HAIKU || SDL_VIDEO_DRIVER_OS2
+#if SDL_VIDEO_DRIVER_WINDOWS || SDL_VIDEO_DRIVER_WINRT || SDL_VIDEO_DRIVER_COCOA || SDL_VIDEO_DRIVER_UIKIT || SDL_VIDEO_DRIVER_X11 || SDL_VIDEO_DRIVER_WAYLAND || SDL_VIDEO_DRIVER_HAIKU || SDL_VIDEO_DRIVER_OS2
 static SDL_bool SDL_MessageboxValidForDriver(const SDL_MessageBoxData *messageboxdata, SDL_SYSWM_TYPE drivertype)
 {
     SDL_SysWMinfo info;
@@ -4148,6 +4170,13 @@ SDL_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
     if (retval == -1 &&
         SDL_MessageboxValidForDriver(messageboxdata, SDL_SYSWM_X11) &&
         X11_ShowMessageBox(messageboxdata, buttonid) == 0) {
+        retval = 0;
+    }
+#endif
+#if SDL_VIDEO_DRIVER_WAYLAND
+    if (retval == -1 &&
+        SDL_MessageboxValidForDriver(messageboxdata, SDL_SYSWM_WAYLAND) &&
+        Wayland_ShowMessageBox(messageboxdata, buttonid) == 0) {
         retval = 0;
     }
 #endif

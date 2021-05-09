@@ -28,6 +28,7 @@
 #if SDL_VIDEO_DRIVER_ANDROID
 #include <android/native_window.h>
 #include "../core/android/SDL_android.h"
+#include "../video/android/SDL_androidvideo.h"
 #endif
 
 #include "SDL_sysvideo.h"
@@ -73,6 +74,7 @@
 #define DEFAULT_OGL_ES "libGLESv1_CM.dylib"     //???
 
 #elif defined(__OpenBSD__)
+/* OpenBSD */
 #define DEFAULT_OGL "libGL.so"
 #define DEFAULT_EGL "libEGL.so"
 #define DEFAULT_OGL_ES2 "libGLESv2.so"
@@ -80,9 +82,10 @@
 #define DEFAULT_OGL_ES "libGLESv1_CM.so"
 
 #else
-/* Desktop Linux */
+/* Desktop Linux/Unix-like */
 #define DEFAULT_OGL "libGL.so.1"
 #define DEFAULT_EGL "libEGL.so.1"
+#define ALT_OGL "libOpenGL.so.0"
 #define DEFAULT_OGL_ES2 "libGLESv2.so.2"
 #define DEFAULT_OGL_ES_PVR "libGLES_CM.so.1"
 #define DEFAULT_OGL_ES "libGLESv1_CM.so.1"
@@ -374,6 +377,12 @@ SDL_EGL_LoadLibraryOnly(_THIS, const char *egl_path)
         else {
             path = DEFAULT_OGL;
             egl_dll_handle = SDL_LoadObject(path);
+#ifdef ALT_OGL
+            if (egl_dll_handle == NULL) {
+                path = ALT_OGL;
+                egl_dll_handle = SDL_LoadObject(path);
+            }
+#endif
         }
 #endif        
     }
@@ -476,26 +485,28 @@ SDL_EGL_GetVersion(_THIS) {
 int
 SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_display, EGLenum platform)
 {
-    int egl_version_major, egl_version_minor;
     int library_load_retcode = SDL_EGL_LoadLibraryOnly(_this, egl_path);
     if (library_load_retcode != 0) {
         return library_load_retcode;
     }
 
-    /* EGL 1.5 allows querying for client version with EGL_NO_DISPLAY */
-    SDL_EGL_GetVersion(_this);
-
-    egl_version_major = _this->egl_data->egl_version_major;
-    egl_version_minor = _this->egl_data->egl_version_minor;
-
-    if (egl_version_major == 1 && egl_version_minor == 5) {
-        LOAD_FUNC(eglGetPlatformDisplay);
-    }
-
     _this->egl_data->egl_display = EGL_NO_DISPLAY;
+
 #if !defined(__WINRT__)
     if (platform) {
-        if (egl_version_major == 1 && egl_version_minor == 5) {
+        /* EGL 1.5 allows querying for client version with EGL_NO_DISPLAY
+         * --
+         * Khronos doc: "EGL_BAD_DISPLAY is generated if display is not an EGL display connection, unless display is EGL_NO_DISPLAY and name is EGL_EXTENSIONS."
+         * Therefore SDL_EGL_GetVersion() shouldn't work with uninitialized display.
+         * - it actually doesn't work on Android that has 1.5 egl client
+         * - it works on desktop X11 (using SDL_VIDEO_X11_FORCE_EGL=1) */
+        SDL_EGL_GetVersion(_this);
+
+        if (_this->egl_data->egl_version_major == 1 && _this->egl_data->egl_version_minor == 5) {
+            LOAD_FUNC(eglGetPlatformDisplay);
+        }
+
+        if (_this->egl_data->eglGetPlatformDisplay) {
             _this->egl_data->egl_display = _this->egl_data->eglGetPlatformDisplay(platform, (void *)(size_t)native_display, NULL);
         } else {
             if (SDL_EGL_HasExtension(_this, SDL_EGL_CLIENT_EXTENSION, "EGL_EXT_platform_base")) {
@@ -515,7 +526,7 @@ SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_displa
         *_this->gl_config.driver_path = '\0';
         return SDL_SetError("Could not get EGL display");
     }
-    
+
     if (_this->egl_data->eglInitialize(_this->egl_data->egl_display, NULL, NULL) != EGL_TRUE) {
         _this->gl_config.driver_loaded = 0;
         *_this->gl_config.driver_path = '\0';
@@ -634,7 +645,8 @@ typedef struct {
     char const* name;
 } Attribute;
 
-Attribute attributes[] = {
+static
+Attribute all_attributes[] = {
         ATTRIBUTE( EGL_BUFFER_SIZE ),
         ATTRIBUTE( EGL_ALPHA_SIZE ),
         ATTRIBUTE( EGL_BLUE_SIZE ),
@@ -674,31 +686,27 @@ Attribute attributes[] = {
 static void dumpconfig(_THIS, EGLConfig config)
 {
     int attr;
-    for (attr = 0 ; attr<sizeof(attributes)/sizeof(Attribute) ; attr++) {
+    for (attr = 0 ; attr<sizeof(all_attributes)/sizeof(Attribute) ; attr++) {
         EGLint value;
-        _this->egl_data->eglGetConfigAttrib(_this->egl_data->egl_display, config, attributes[attr].attribute, &value);
-        SDL_Log("\t%-32s: %10d (0x%08x)\n", attributes[attr].name, value, value);
+        _this->egl_data->eglGetConfigAttrib(_this->egl_data->egl_display, config, all_attributes[attr].attribute, &value);
+        SDL_Log("\t%-32s: %10d (0x%08x)\n", all_attributes[attr].name, value, value);
     }
 }
 
 #endif /* DUMP_EGL_CONFIG */
 
-int
-SDL_EGL_ChooseConfig(_THIS) 
+static int
+SDL_EGL_PrivateChooseConfig(_THIS, SDL_bool set_config_caveat_none)
 {
-/* 64 seems nice. */
+    /* 64 seems nice. */
     EGLint attribs[64];
     EGLint found_configs = 0, value;
     /* 128 seems even nicer here */
     EGLConfig configs[128];
     SDL_bool has_matching_format = SDL_FALSE;
-    int i, j, best_bitdiff = -1, bitdiff;
-   
-    if (!_this->egl_data) {
-        /* The EGL library wasn't loaded, SDL_GetError() should have info */
-        return -1;
-    }
-  
+    int i, j, best_bitdiff = -1, best_truecolor_bitdiff = -1;
+    int truecolor_config_idx = -1;
+
     /* Get a valid EGL configuration */
     i = 0;
     attribs[i++] = EGL_RED_SIZE;
@@ -707,30 +715,37 @@ SDL_EGL_ChooseConfig(_THIS)
     attribs[i++] = _this->gl_config.green_size;
     attribs[i++] = EGL_BLUE_SIZE;
     attribs[i++] = _this->gl_config.blue_size;
-    
+
+    if (set_config_caveat_none) {
+        attribs[i++] = EGL_CONFIG_CAVEAT;
+        attribs[i++] = EGL_NONE;
+    }
+
     if (_this->gl_config.alpha_size) {
         attribs[i++] = EGL_ALPHA_SIZE;
         attribs[i++] = _this->gl_config.alpha_size;
     }
-    
+
     if (_this->gl_config.buffer_size) {
         attribs[i++] = EGL_BUFFER_SIZE;
         attribs[i++] = _this->gl_config.buffer_size;
     }
-    
-    attribs[i++] = EGL_DEPTH_SIZE;
-    attribs[i++] = _this->gl_config.depth_size;
-    
+
+    if (_this->gl_config.depth_size) {
+        attribs[i++] = EGL_DEPTH_SIZE;
+        attribs[i++] = _this->gl_config.depth_size;
+    }
+
     if (_this->gl_config.stencil_size) {
         attribs[i++] = EGL_STENCIL_SIZE;
         attribs[i++] = _this->gl_config.stencil_size;
     }
-    
+
     if (_this->gl_config.multisamplebuffers) {
         attribs[i++] = EGL_SAMPLE_BUFFERS;
         attribs[i++] = _this->gl_config.multisamplebuffers;
     }
-    
+
     if (_this->gl_config.multisamplesamples) {
         attribs[i++] = EGL_SAMPLES;
         attribs[i++] = _this->gl_config.multisamplesamples;
@@ -767,24 +782,28 @@ SDL_EGL_ChooseConfig(_THIS)
 
     attribs[i++] = EGL_NONE;
 
+    SDL_assert(i < SDL_arraysize(attribs));
+
     if (_this->egl_data->eglChooseConfig(_this->egl_data->egl_display,
         attribs,
         configs, SDL_arraysize(configs),
         &found_configs) == EGL_FALSE ||
         found_configs == 0) {
-        return SDL_EGL_SetError("Couldn't find matching EGL config", "eglChooseConfig");
+        return -1;
     }
 
     /* first ensure that a found config has a matching format, or the function will fall through. */
-    for (i = 0; i < found_configs; i++ ) {
-        if (_this->egl_data->egl_required_visual_id)
-        {
+    if (_this->egl_data->egl_required_visual_id)
+    {
+        for (i = 0; i < found_configs; i++ ) {
             EGLint format;
             _this->egl_data->eglGetConfigAttrib(_this->egl_data->egl_display,
                                             configs[i],
                                             EGL_NATIVE_VISUAL_ID, &format);
-            if (_this->egl_data->egl_required_visual_id == format)
+            if (_this->egl_data->egl_required_visual_id == format) {
                 has_matching_format = SDL_TRUE;
+                break;
+            }
         }
     }
 
@@ -792,22 +811,35 @@ SDL_EGL_ChooseConfig(_THIS)
     /* From those, we select the one that matches our requirements more closely via a makeshift algorithm */
 
     for (i = 0; i < found_configs; i++ ) {
-        if (has_matching_format && _this->egl_data->egl_required_visual_id)
-        {
+        SDL_bool is_truecolor = SDL_FALSE;
+        int bitdiff = 0;
+
+        if (has_matching_format && _this->egl_data->egl_required_visual_id) {
             EGLint format;
             _this->egl_data->eglGetConfigAttrib(_this->egl_data->egl_display,
-                                            configs[i], 
+                                            configs[i],
                                             EGL_NATIVE_VISUAL_ID, &format);
-            if (_this->egl_data->egl_required_visual_id != format)
+            if (_this->egl_data->egl_required_visual_id != format) {
                 continue;
+            }
         }
 
-        bitdiff = 0;
+        _this->egl_data->eglGetConfigAttrib(_this->egl_data->egl_display, configs[i], EGL_RED_SIZE, &value);
+        if (value == 8) {
+            _this->egl_data->eglGetConfigAttrib(_this->egl_data->egl_display, configs[i], EGL_GREEN_SIZE, &value);
+            if (value == 8) {
+                _this->egl_data->eglGetConfigAttrib(_this->egl_data->egl_display, configs[i], EGL_BLUE_SIZE, &value);
+                if (value == 8) {
+                    is_truecolor = SDL_TRUE;
+                }
+            }
+        }
+
         for (j = 0; j < SDL_arraysize(attribs) - 1; j += 2) {
             if (attribs[j] == EGL_NONE) {
                break;
             }
-            
+
             if ( attribs[j+1] != EGL_DONT_CARE && (
                 attribs[j] == EGL_RED_SIZE ||
                 attribs[j] == EGL_GREEN_SIZE ||
@@ -820,22 +852,69 @@ SDL_EGL_ChooseConfig(_THIS)
             }
         }
 
-        if (bitdiff < best_bitdiff || best_bitdiff == -1) {
+        if ((bitdiff < best_bitdiff) || (best_bitdiff == -1)) {
             _this->egl_data->egl_config = configs[i];
-            
             best_bitdiff = bitdiff;
         }
 
-        if (bitdiff == 0) {
-            break; /* we found an exact match! */
+        if (is_truecolor && ((bitdiff < best_truecolor_bitdiff) || (best_truecolor_bitdiff == -1))) {
+            truecolor_config_idx = i;
+            best_truecolor_bitdiff = bitdiff;
         }
     }
+
+    #define FAVOR_TRUECOLOR 1
+    #if FAVOR_TRUECOLOR
+    /* Some apps request a low color depth, either because they _assume_
+       they'll get a larger one but don't want to fail if only smaller ones
+       are available, or they just never called SDL_GL_SetAttribute at all and
+       got a tiny default. For these cases, a game that would otherwise run
+       at 24-bit color might get dithered down to something smaller, which is
+       worth avoiding. If the app requested <= 16 bit color and an exact 24-bit
+       match is available, favor that. Otherwise, we look for the closest
+       match. Note that while the API promises what you request _or better_,
+       it's feasible this can be disastrous for performance for custom software
+       on small hardware that all expected to actually get 16-bit color. In this
+       case, turn off FAVOR_TRUECOLOR (and maybe send a patch to make this more
+       flexible). */
+    if ( ((_this->gl_config.red_size + _this->gl_config.blue_size + _this->gl_config.green_size) <= 16) ) {
+        if (truecolor_config_idx != -1) {
+            _this->egl_data->egl_config = configs[truecolor_config_idx];
+        }
+    }
+    #endif
 
 #ifdef DUMP_EGL_CONFIG
     dumpconfig(_this, _this->egl_data->egl_config);
 #endif
-    
+
     return 0;
+}
+
+int
+SDL_EGL_ChooseConfig(_THIS)
+{
+    int ret;
+
+    if (!_this->egl_data) {
+        /* The EGL library wasn't loaded, SDL_GetError() should have info */
+        return -1;
+    }
+
+    /* Try with EGL_CONFIG_CAVEAT set to EGL_NONE, to avoid any EGL_SLOW_CONFIG or EGL_NON_CONFORMANT_CONFIG */
+    ret = SDL_EGL_PrivateChooseConfig(_this, SDL_TRUE);
+    if (ret == 0) {
+        return 0;
+    }
+
+    /* Fallback with all configs */
+    ret = SDL_EGL_PrivateChooseConfig(_this, SDL_FALSE);
+    if (ret == 0) {
+        SDL_Log("SDL_EGL_ChooseConfig: found a slow EGL config");
+        return 0;
+    }
+
+    return SDL_EGL_SetError("Couldn't find matching EGL config", "eglChooseConfig");
 }
 
 SDL_GLContext
@@ -1034,6 +1113,13 @@ SDL_EGL_SetSwapInterval(_THIS, int interval)
     if (!_this->egl_data) {
         return SDL_SetError("EGL not initialized");
     }
+
+    /* FIXME: Revisit this check when EGL_EXT_swap_control_tear is published:
+     * https://github.com/KhronosGroup/EGL-Registry/pull/113
+     */
+    if (interval < 0) {
+        return SDL_SetError("Late swap tearing currently unsupported");
+    }
     
     status = _this->egl_data->eglSwapInterval(_this->egl_data->egl_display, interval);
     if (status == EGL_TRUE) {
@@ -1083,6 +1169,10 @@ SDL_EGL_DeleteContext(_THIS, SDL_GLContext context)
 EGLSurface *
 SDL_EGL_CreateSurface(_THIS, NativeWindowType nw) 
 {
+#if SDL_VIDEO_DRIVER_ANDROID
+    EGLint format_wanted;
+    EGLint format_got;
+#endif
     /* max 2 values plus terminator. */
     EGLint attribs[3];
     int attr = 0;
@@ -1092,24 +1182,18 @@ SDL_EGL_CreateSurface(_THIS, NativeWindowType nw)
     if (SDL_EGL_ChooseConfig(_this) != 0) {
         return EGL_NO_SURFACE;
     }
-    
+
 #if SDL_VIDEO_DRIVER_ANDROID
-    {
-        /* Android docs recommend doing this!
-         * Ref: http://developer.android.com/reference/android/app/NativeActivity.html 
-         */
-        EGLint format;
-        _this->egl_data->eglGetConfigAttrib(_this->egl_data->egl_display,
-                                            _this->egl_data->egl_config, 
-                                            EGL_NATIVE_VISUAL_ID, &format);
+    /* On Android, EGL_NATIVE_VISUAL_ID is an attribute of the EGLConfig that is
+     * guaranteed to be accepted by ANativeWindow_setBuffersGeometry(). */
+    _this->egl_data->eglGetConfigAttrib(_this->egl_data->egl_display,
+            _this->egl_data->egl_config,
+            EGL_NATIVE_VISUAL_ID, &format_wanted);
 
-        ANativeWindow_setBuffersGeometry(nw, 0, 0, format);
+    /* Format based on selected egl config. */
+    ANativeWindow_setBuffersGeometry(nw, 0, 0, format_wanted);
+#endif
 
-        /* Update SurfaceView holder format.
-         * May triggers a sequence surfaceDestroyed(), surfaceCreated(), surfaceChanged(). */
-        Android_JNI_SetSurfaceViewFormat(format);
-    }
-#endif    
     if (_this->gl_config.framebuffer_srgb_capable) {
 #ifdef EGL_KHR_gl_colorspace
         if (SDL_EGL_HasExtension(_this, SDL_EGL_DISPLAY_EXTENSION, "EGL_KHR_gl_colorspace")) {
@@ -1132,6 +1216,12 @@ SDL_EGL_CreateSurface(_THIS, NativeWindowType nw)
     if (surface == EGL_NO_SURFACE) {
         SDL_EGL_SetError("unable to create an EGL window surface", "eglCreateWindowSurface");
     }
+
+#if SDL_VIDEO_DRIVER_ANDROID
+    format_got = ANativeWindow_getFormat(nw);
+    Android_SetFormat(format_wanted, format_got);
+#endif
+
     return surface;
 }
 

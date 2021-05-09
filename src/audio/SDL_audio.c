@@ -89,6 +89,9 @@ static const AudioBootStrap *const bootstrap[] = {
 #if SDL_AUDIO_DRIVER_FUSIONSOUND
     &FUSIONSOUND_bootstrap,
 #endif
+#if SDL_AUDIO_DRIVER_AAUDIO
+    &aaudio_bootstrap,
+#endif
 #if SDL_AUDIO_DRIVER_OPENSLES
     &openslES_bootstrap,
 #endif
@@ -759,7 +762,7 @@ SDL_RunAudio(void *devicep)
                 int got;
                 data = SDL_AtomicGet(&device->enabled) ? current_audio.impl.GetDeviceBuf(device) : NULL;
                 got = SDL_AudioStreamGet(device->stream, data ? data : device->work_buffer, device->spec.size);
-                SDL_assert((got < 0) || (got == device->spec.size));
+                SDL_assert((got <= 0) || (got == device->spec.size));
 
                 if (data == NULL) {  /* device is having issues... */
                     const Uint32 delay = ((device->spec.samples * 1000) / device->spec.freq);

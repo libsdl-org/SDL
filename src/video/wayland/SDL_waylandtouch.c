@@ -73,8 +73,8 @@ touch_handle_touch(void *data,
      **/
 
     float FIXED_TO_FLOAT = 1. / 10000.;
-    float xf = FIXED_TO_FLOAT * x;
-    float yf = FIXED_TO_FLOAT * y;
+    float xf = FIXED_TO_FLOAT * normalized_x;
+    float yf = FIXED_TO_FLOAT * normalized_y;
 
     float PRESSURE_TO_FLOAT = 1. / 255.;
     float pressuref = PRESSURE_TO_FLOAT * pressure;

@@ -648,7 +648,7 @@ ENABLE_STATIC_FALSE
 ENABLE_STATIC_TRUE
 ENABLE_SHARED_FALSE
 ENABLE_SHARED_TRUE
-PKG_CONFIG_LIBS_PRIV
+PKGCONFIG_LIBS_PRIV
 SDL_RLD_FLAGS
 SDL_STATIC_LIBS
 SDL_LIBS
@@ -1682,8 +1682,9 @@ Optional Features:
   --enable-ibus           enable IBus support [default=yes]
   --enable-fcitx          enable fcitx support [default=yes]
   --enable-joystick-mfi   include macOS MFI joystick support [default=yes]
-  --enable-pthreads       use POSIX threads for multi-threading [default=yes]
-  --enable-pthread-sem    use pthread semaphores [default=yes]
+  --enable-pthreads       use POSIX threads for multi-threading
+                          [default=maybe]
+  --enable-pthread-sem    use pthread semaphores [default=maybe]
   --enable-directx        use DirectX for Windows audio/video [default=yes]
   --enable-xinput         use Xinput for Windows [default=yes]
   --enable-wasapi         use the Windows WASAPI audio driver [default=yes]
@@ -16031,20 +16032,16 @@ $as_echo_n "checking for GCC -mno-cygwin option... " >&6; }
         cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-
 int
 main ()
 {
-
 
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-        have_no_cygwin=yes
-
+  have_no_cygwin=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_no_cygwin" >&5
@@ -16335,15 +16332,12 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-    have_gcc_mmd_mt=yes
-
+  have_gcc_mmd_mt=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_gcc_mmd_mt" >&5
@@ -16372,7 +16366,6 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
@@ -16380,7 +16373,7 @@ _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
 
         have_no_undefined=yes
-        EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,--no-undefined"
+        BUILD_LDFLAGS="$BUILD_LDFLAGS -Wl,--no-undefined"
 
 fi
 rm -f core conftest.err conftest.$ac_objext \
@@ -16405,7 +16398,6 @@ case "$host" in
 int
 main ()
 {
-
 
   ;
   return 0;
@@ -16440,7 +16432,6 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
@@ -16473,7 +16464,6 @@ case "$host" in
 int
 main ()
 {
-
 
   ;
   return 0;
@@ -17066,7 +17056,6 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
@@ -17237,7 +17226,6 @@ $as_echo_n "checking for GCC builtin atomic operations... " >&6; }
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-
 int
 main ()
 {
@@ -17255,9 +17243,7 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
-
-    have_gcc_atomics=yes
-
+  have_gcc_atomics=yes
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
@@ -17273,7 +17259,6 @@ $as_echo "#define HAVE_GCC_ATOMICS 1" >>confdefs.h
         cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-
 int
 main ()
 {
@@ -17287,9 +17272,7 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
-
-        have_gcc_sync_lock_test_and_set=yes
-
+  have_gcc_sync_lock_test_and_set=yes
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
@@ -17614,15 +17597,12 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-        have_gcc_mmx=yes
-
+  have_gcc_mmx=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_gcc_mmx" >&5
@@ -17670,9 +17650,7 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
-
-        have_gcc_3dnow=yes
-
+  have_gcc_3dnow=yes
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
@@ -17722,15 +17700,12 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-        have_gcc_sse=yes
-
+  have_gcc_sse=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_gcc_sse" >&5
@@ -17779,15 +17754,12 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-        have_gcc_sse2=yes
-
+  have_gcc_sse2=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_gcc_sse2" >&5
@@ -17836,15 +17808,12 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-        have_gcc_sse3=yes
-
+  have_gcc_sse3=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_gcc_sse3" >&5
@@ -17899,7 +17868,6 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
@@ -17928,15 +17896,12 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-            have_gcc_altivec=yes
-
+  have_gcc_altivec=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_gcc_altivec" >&5
@@ -17959,7 +17924,6 @@ $as_echo_n "checking for Altivec with GCC altivec.h and -faltivec option... " >&
 int
 main ()
 {
-
 
   ;
   return 0;
@@ -17990,15 +17954,12 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-            have_gcc_altivec=yes
-
+  have_gcc_altivec=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_gcc_altivec" >&5
@@ -18063,9 +18024,7 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-            have_oss=yes
-
+  have_oss=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
         fi
@@ -19113,9 +19072,7 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-            audio_arts=yes
-
+  audio_arts=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
             CFLAGS="$save_CFLAGS"
@@ -19717,15 +19674,12 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-    have_gcc_fvisibility=yes
-
+  have_gcc_fvisibility=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_gcc_fvisibility" >&5
@@ -19754,15 +19708,12 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-    have_gcc_no_strict_aliasing=yes
-
+  have_gcc_no_strict_aliasing=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_gcc_no_strict_aliasing" >&5
@@ -19791,15 +19742,12 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-    have_gcc_preferred_stack_boundary=yes
-
+  have_gcc_preferred_stack_boundary=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_gcc_preferred_stack_boundary" >&5
@@ -19828,15 +19776,12 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-    have_gcc_declaration_after_statement=yes
-
+  have_gcc_declaration_after_statement=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_gcc_declaration_after_statement" >&5
@@ -19865,15 +19810,12 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-    have_gcc_Wall=yes
-
+  have_gcc_Wall=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_gcc_Wall" >&5
@@ -20034,7 +19976,6 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
@@ -20189,9 +20130,7 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
-
-        have_video_rpi=yes
-
+  have_video_rpi=yes
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
@@ -21075,7 +21014,6 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
@@ -21501,9 +21439,7 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-                have_xrandr_h_hdr=yes
-
+  have_xrandr_h_hdr=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
                 if test x$have_xrandr_h_hdr = xyes; then
@@ -21758,7 +21694,8 @@ $as_echo "#define SDL_VIDEO_DRIVER_X11_XVIDMODE 1" >>confdefs.h
                 SUMMARY_video_x11="${SUMMARY_video_x11} xvidmode"
             fi
         fi
-    else
+    fi
+    if test x$have_x != xyes; then
         # Prevent Mesa from including X11 headers
         EXTRA_CFLAGS="$EXTRA_CFLAGS -DMESA_EGL_NO_X11_HEADERS -DEGL_NO_X11"
     fi
@@ -21788,15 +21725,12 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-        have_vivante_vdk=yes
-
+  have_vivante_vdk=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_vivante_vdk" >&5
@@ -21816,15 +21750,12 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-        have_vivante_egl=yes
-
+  have_vivante_egl=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_vivante_egl" >&5
@@ -21884,15 +21815,12 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-        have_cocoa=yes
-
+  have_cocoa=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_cocoa" >&5
@@ -21946,15 +21874,12 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-        have_metal=yes
-
+  have_metal=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
         CFLAGS="$save_CFLAGS"
@@ -22392,46 +22317,38 @@ else
 fi
 
 
-CheckOpenGLX11()
+CheckGLX()
 {
     if test x$enable_video = xyes -a x$enable_video_opengl = xyes; then
-        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for OpenGL (GLX) support" >&5
-$as_echo_n "checking for OpenGL (GLX) support... " >&6; }
-        video_opengl=no
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for GLX support" >&5
+$as_echo_n "checking for GLX support... " >&6; }
+        video_opengl_glx=no
         cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-         #include <GL/gl.h>
          #include <GL/glx.h>
 
 int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-        video_opengl=yes
-
+  video_opengl_glx=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-        { $as_echo "$as_me:${as_lineno-$LINENO}: result: $video_opengl" >&5
-$as_echo "$video_opengl" >&6; }
-        if test x$video_opengl = xyes; then
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: $video_opengl_glx" >&5
+$as_echo "$video_opengl_glx" >&6; }
+        if test x$video_opengl_glx = xyes; then
 
 $as_echo "#define SDL_VIDEO_OPENGL 1" >>confdefs.h
 
 
 $as_echo "#define SDL_VIDEO_OPENGL_GLX 1" >>confdefs.h
 
-
-$as_echo "#define SDL_VIDEO_RENDER_OGL 1" >>confdefs.h
-
-            SUMMARY_video="${SUMMARY_video} opengl"
         fi
     fi
 }
@@ -22458,9 +22375,9 @@ else
 fi
 
 
-CheckOpenGLESX11()
+CheckEGL()
 {
-    if test x$enable_video = xyes -a x$enable_video_opengles = xyes; then
+    if test x$enable_video = xyes -a x$enable_video_opengl = xyes || test x$enable_video = xyes -a x$enable_video_opengles = xyes; then
         { $as_echo "$as_me:${as_lineno-$LINENO}: checking for EGL support" >&5
 $as_echo_n "checking for EGL support... " >&6; }
         video_opengl_egl=no
@@ -22478,15 +22395,12 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-        video_opengl_egl=yes
-
+  video_opengl_egl=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: $video_opengl_egl" >&5
@@ -22496,7 +22410,50 @@ $as_echo "$video_opengl_egl" >&6; }
 $as_echo "#define SDL_VIDEO_OPENGL_EGL 1" >>confdefs.h
 
         fi
+    fi
+}
 
+CheckOpenGL()
+{
+    if test x$enable_video = xyes -a x$enable_video_opengl = xyes; then
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for OpenGL headers" >&5
+$as_echo_n "checking for OpenGL headers... " >&6; }
+        video_opengl=no
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+         #include <GL/gl.h>
+         #include <GL/glext.h>
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  video_opengl=yes
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: $video_opengl" >&5
+$as_echo "$video_opengl" >&6; }
+        if test x$video_opengl = xyes; then
+
+$as_echo "#define SDL_VIDEO_OPENGL 1" >>confdefs.h
+
+
+$as_echo "#define SDL_VIDEO_RENDER_OGL 1" >>confdefs.h
+
+            SUMMARY_video="${SUMMARY_video} opengl"
+        fi
+    fi
+}
+
+CheckOpenGLES()
+{
+    if test x$enable_video = xyes -a x$enable_video_opengles = xyes; then
         if test x$enable_video_opengles1 = xyes; then
             { $as_echo "$as_me:${as_lineno-$LINENO}: checking for OpenGL ES v1 headers" >&5
 $as_echo_n "checking for OpenGL ES v1 headers... " >&6; }
@@ -22511,15 +22468,12 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-            video_opengles_v1=yes
-
+  video_opengles_v1=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: $video_opengles_v1" >&5
@@ -22549,15 +22503,12 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-            video_opengles_v2=yes
-
+  video_opengles_v2=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: $video_opengles_v2" >&5
@@ -22572,45 +22523,6 @@ $as_echo "#define SDL_VIDEO_RENDER_OGL_ES2 1" >>confdefs.h
                 SUMMARY_video="${SUMMARY_video} opengl_es2"
             fi
         fi
-    fi
-}
-
-CheckEGLKMSDRM()
-{
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for EGL support" >&5
-$as_echo_n "checking for EGL support... " >&6; }
-    video_opengl_egl=no
-    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-      #define LINUX
-      #define EGL_API_FB
-      #define MESA_EGL_NO_X11_HEADERS
-      #define EGL_NO_X11
-      #include <EGL/egl.h>
-      #include <EGL/eglext.h>
-
-int
-main ()
-{
-
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
-
-    video_opengl_egl=yes
-
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $video_opengl_egl" >&5
-$as_echo "$video_opengl_egl" >&6; }
-    if test x$video_opengl_egl = xyes; then
-
-$as_echo "#define SDL_VIDEO_OPENGL_EGL 1" >>confdefs.h
-
     fi
 }
 
@@ -22646,15 +22558,12 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-        video_opengl_egl=yes
-
+  video_opengl_egl=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: $video_opengl_egl" >&5
@@ -22682,15 +22591,12 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-        video_opengles_v2=yes
-
+  video_opengles_v2=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: $video_opengles_v2" >&5
@@ -22776,15 +22682,12 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-        video_opengl_egl=yes
-
+  video_opengl_egl=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: $video_opengl_egl" >&5
@@ -22808,15 +22711,12 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-        video_opengles_v2=yes
-
+  video_opengles_v2=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: $video_opengles_v2" >&5
@@ -22857,18 +22757,14 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
 
-
 else
-
-                    enable_video_vulkan=no
-
+  enable_video_vulkan=no
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
                 ;;
@@ -22890,18 +22786,14 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
 
-
 else
-
-                    enable_video_vulkan=no
-
+  enable_video_vulkan=no
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
                 CFLAGS="$save_CFLAGS"
@@ -22947,9 +22839,7 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-        use_input_events=yes
-
+  use_input_events=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: $use_input_events" >&5
@@ -22987,9 +22877,7 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-    use_input_kd=yes
-
+  use_input_kd=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $use_input_kd" >&5
@@ -23025,9 +22913,7 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-    use_input_kbio=yes
-
+  use_input_kbio=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $use_input_kbio" >&5
@@ -23058,27 +22944,25 @@ int
 main ()
 {
 
-    	struct wskbd_map_data data;
-    	ioctl(0, WSKBDIO_GETMAP, &data);
+     struct wskbd_map_data data;
+     ioctl(0, WSKBDIO_GETMAP, &data);
 
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-     use_input_wscons=yes
-
+  use_input_wscons=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $use_input_wscons" >&5
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $use_input_wscons" >&5
 $as_echo "$use_input_wscons" >&6; }
-     if test x$use_input_wscons = xyes; then
+    if test x$use_input_wscons = xyes; then
 
 $as_echo "#define SDL_INPUT_WSCONS 1" >>confdefs.h
 
-	SUMMARY_input="${SUMMARY_input} wscons"
-     fi
+        SUMMARY_input="${SUMMARY_input} wscons"
+    fi
 }
 
 CheckLibUDev()
@@ -23478,9 +23362,7 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
-
-        enable_joystick_mfi=yes
-
+  enable_joystick_mfi=yes
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
@@ -23501,19 +23383,38 @@ $as_echo "#define SDL_JOYSTICK_MFI 1" >>confdefs.h
 
 CheckPTHREAD()
 {
-        # Check whether --enable-pthreads was given.
+
+
+    case "$host" in
+        *-*-emscripten*)
+            enable_pthreads_default=no
+            ;;
+        *)
+            enable_pthreads_default=yes
+            ;;
+    esac
+
+    # Check whether --enable-pthreads was given.
 if test "${enable_pthreads+set}" = set; then :
   enableval=$enable_pthreads;
 else
-  enable_pthreads=yes
+  enable_pthreads=maybe
 fi
 
         # Check whether --enable-pthread-sem was given.
 if test "${enable_pthread_sem+set}" = set; then :
   enableval=$enable_pthread_sem;
 else
-  enable_pthread_sem=yes
+  enable_pthread_sem=maybe
 fi
+
+
+    if test x$enable_pthreads = xmaybe; then
+        enable_pthreads=$enable_pthreads_default
+    fi
+    if test x$enable_pthread_sem = xmaybe; then
+        enable_pthread_sem=$enable_pthreads
+    fi
 
     case "$host" in
          *-*-android*)
@@ -23580,6 +23481,10 @@ fi
             pthread_cflags="-D_REENTRANT"
             pthread_lib=""
             ;;
+        *-*-emscripten*)
+            pthread_cflags="-D_REENTRANT -pthread"
+            pthread_lib="-pthread"
+            ;;
         *)
             pthread_cflags="-D_REENTRANT"
             pthread_lib="-lpthread"
@@ -23611,9 +23516,7 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
-
-        use_pthreads=yes
-
+  use_pthreads=yes
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
@@ -23716,15 +23619,12 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-                have_pthread_sem=yes
-
+  have_pthread_sem=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
                 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_pthread_sem" >&5
@@ -23898,15 +23798,12 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-    have_win32_gcc=yes
-
+  have_win32_gcc=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_win32_gcc" >&5
@@ -23930,7 +23827,6 @@ $as_echo_n "checking Windows CE... " >&6; }
 int
 main ()
 {
-
 
   ;
   return 0;
@@ -24173,9 +24069,7 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-        have_dlopen=yes
-
+  have_dlopen=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_dlopen" >&5
@@ -24468,9 +24362,7 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-                have_usbhid=yes
-
+  have_usbhid=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
                 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_usbhid" >&5
@@ -24514,9 +24406,7 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-                    have_usbhid_ucr_data=yes
-
+  have_usbhid_ucr_data=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
                     if test x$have_usbhid_ucr_data = xyes; then
@@ -24562,9 +24452,7 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-                    have_usbhid_new=yes
-
+  have_usbhid_new=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
                     if test x$have_usbhid_new = xyes; then
@@ -24592,9 +24480,7 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-                    have_machine_joystick=yes
-
+  have_machine_joystick=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
                     if test x$have_machine_joystick = xyes; then
@@ -25037,11 +24923,12 @@ $as_echo "#define SDL_VIDEO_DRIVER_ANDROID 1" >>confdefs.h
         CheckRPI
         CheckX11
         CheckDirectFB
-        # Need to check for EGL first because KMSDRM depends on it.
-        CheckEGLKMSDRM
+        # Need to check for EGL first because KMSDRM and Wayland depends on it.
+        CheckEGL
         CheckKMSDRM
-        CheckOpenGLX11
-        CheckOpenGLESX11
+        CheckGLX
+        CheckOpenGL
+        CheckOpenGLES
         CheckVulkan
         CheckWayland
         CheckInputEvents
@@ -25556,31 +25443,6 @@ $as_echo "#define SDL_FILESYSTEM_HAIKU 1" >>confdefs.h
         # The Haiku platform requires special setup.
         SOURCES="$srcdir/src/main/haiku/*.cc $SOURCES"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lroot -lbe -lmedia -lgame -ldevice -ltextencoding"
-        # Haiku's x86 spins use libstdc++.r4.so (for binary compat?), but
-        #  other spins, like x86-64, use a more standard "libstdc++.so.*"
-        as_ac_File=`$as_echo "ac_cv_file_"/boot/system/lib/libstdc++.r4.so"" | $as_tr_sh`
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for \"/boot/system/lib/libstdc++.r4.so\"" >&5
-$as_echo_n "checking for \"/boot/system/lib/libstdc++.r4.so\"... " >&6; }
-if eval \${$as_ac_File+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  test "$cross_compiling" = yes &&
-  as_fn_error $? "cannot check for file existence when cross compiling" "$LINENO" 5
-if test -r ""/boot/system/lib/libstdc++.r4.so""; then
-  eval "$as_ac_File=yes"
-else
-  eval "$as_ac_File=no"
-fi
-fi
-eval ac_res=\$$as_ac_File
-	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
-$as_echo "$ac_res" >&6; }
-if eval test \"x\$"$as_ac_File"\" = x"yes"; then :
-  EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lstdc++.r4"
-else
-  EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lstdc++"
-fi
-
         ;;
     *-ios-*)
         ARCH=ios
@@ -25721,7 +25583,8 @@ $as_echo "#define SDL_VIDEO_RENDER_OGL_ES2 1" >>confdefs.h
         CheckX11
         CheckMacGL
         CheckMacGLES
-        CheckOpenGLX11
+        CheckGLX
+        CheckOpenGL
         CheckVulkan
         CheckPTHREAD
         CheckHIDAPI
@@ -25852,6 +25715,7 @@ $as_echo "#define SDL_AUDIO_DRIVER_EMSCRIPTEN 1" >>confdefs.h
         CheckDummyVideo
         CheckDiskAudio
         CheckDummyAudio
+        CheckPTHREAD
         CheckDLOPEN
         CheckClockGettime
         CheckEmscriptenGLES
@@ -26095,7 +25959,6 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
@@ -26126,12 +25989,12 @@ SDL_STATIC_LIBS="$EXTRA_LDFLAGS"
 
 
 if test x$enable_shared = xyes; then
-    PKG_CONFIG_LIBS_PRIV="
+    PKGCONFIG_LIBS_PRIV="
 Libs.private:"
     ENABLE_SHARED_TRUE=
     ENABLE_SHARED_FALSE="#"
 else
-    PKG_CONFIG_LIBS_PRIV=
+    PKGCONFIG_LIBS_PRIV=
     ENABLE_SHARED_TRUE="#"
     ENABLE_SHARED_FALSE=
 fi

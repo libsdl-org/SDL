@@ -64,6 +64,8 @@ struct SDL_WaylandInput {
     struct {
         struct xkb_keymap *keymap;
         struct xkb_state *state;
+        struct xkb_compose_table *compose_table;
+        struct xkb_compose_state *compose_state;
     } xkb;
 
     /* information about axis events on current frame */
@@ -80,10 +82,10 @@ struct SDL_WaylandInput {
 
 extern void Wayland_PumpEvents(_THIS);
 
+extern void Wayland_add_data_device_manager(SDL_VideoData *d, uint32_t id, uint32_t version);
+
 extern void Wayland_display_add_input(SDL_VideoData *d, uint32_t id, uint32_t version);
 extern void Wayland_display_destroy_input(SDL_VideoData *d);
-
-extern SDL_WaylandDataDevice* Wayland_get_data_device(struct SDL_WaylandInput *input);
 
 extern void Wayland_display_add_pointer_constraints(SDL_VideoData *d, uint32_t id);
 extern void Wayland_display_destroy_pointer_constraints(SDL_VideoData *d);

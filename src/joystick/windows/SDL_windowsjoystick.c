@@ -356,6 +356,15 @@ WINDOWS_JoystickInit(void)
 
     WINDOWS_JoystickDetect();
 
+#ifdef __WINRT__
+    /* FIXME: WinRT silently does not support device notifications.
+     * Revisit this if UWP ever adds support in a future release.
+     */
+    s_bJoystickThread = SDL_TRUE;
+    if (SDL_StartJoystickThread() < 0) {
+        return -1;
+    }
+#else
     s_bJoystickThread = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_THREAD, SDL_FALSE);
     if (s_bJoystickThread) {
         if (SDL_StartJoystickThread() < 0) {
@@ -366,6 +375,7 @@ WINDOWS_JoystickInit(void)
             return -1;
         }
     }
+#endif
     return 0;
 }
 

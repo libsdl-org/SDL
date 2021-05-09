@@ -27,6 +27,7 @@ my $url = $ARGV[1];
 #print("remote: $remote\n");
 #print("url: $url\n");
 
+$url =~ s/\.git$//;  # change myorg/myproject.git to myorg/myproject
 $url =~ s#^git\@github\.com\:#https://github.com/#i;
 my $commiturl = $url =~ /\Ahttps?:\/\/github.com\// ? "$url/commit/" : '';
 

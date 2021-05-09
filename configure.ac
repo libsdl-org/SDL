@@ -1,8 +1,9 @@
 dnl Process this file with autoconf to produce a configure script.
+AC_PREREQ([2.63])
 AC_INIT
 AC_CONFIG_SRCDIR([src/SDL.c])
-AC_CONFIG_HEADERS(include/SDL_config.h)
-AC_CONFIG_AUX_DIR(build-scripts)
+AC_CONFIG_HEADERS([include/SDL_config.h])
+AC_CONFIG_AUX_DIR([build-scripts])
 AC_CONFIG_MACRO_DIR([acinclude])
 
 dnl Save the CFLAGS to see whether they were passed in or generated
@@ -98,11 +99,7 @@ case "$host" in
         AC_MSG_CHECKING(for GCC -mno-cygwin option)
         CFLAGS="$save_CFLAGS -mno-cygwin"
 
-        AC_TRY_COMPILE([
-        ],[
-        ],[
-        have_no_cygwin=yes
-        ])
+        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([],[])], [have_no_cygwin=yes],[])
         AC_MSG_RESULT($have_no_cygwin)
         CFLAGS="$save_CFLAGS"
 
@@ -215,14 +212,11 @@ AC_ARG_ENABLE(dependency-tracking,
 if test x$enable_dependency_tracking = xyes; then
     have_gcc_mmd_mt=no
     AC_MSG_CHECKING(for GCC -MMD -MT option)
-    AC_TRY_COMPILE([
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
     #if !defined(__GNUC__) || __GNUC__ < 3
     #error Dependency tracking requires GCC 3.0 or newer
     #endif
-    ],[
-    ],[
-    have_gcc_mmd_mt=yes
-    ])
+    ]],[])], [have_gcc_mmd_mt=yes],[])
     AC_MSG_RESULT($have_gcc_mmd_mt)
 
     if test x$have_gcc_mmd_mt = xyes; then
@@ -240,12 +234,11 @@ case "$host" in
     *)
         save_LDFLAGS="$LDFLAGS"
         LDFLAGS="$LDFLAGS -Wl,--no-undefined"
-        AC_TRY_LINK([
-        ],[
-        ],[
+        AC_LINK_IFELSE([AC_LANG_PROGRAM([[
+        ]],[])], [
         have_no_undefined=yes
-        EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,--no-undefined"
-        ])
+        BUILD_LDFLAGS="$BUILD_LDFLAGS -Wl,--no-undefined"
+        ],[])
         LDFLAGS="$save_LDFLAGS"
         ;;
 esac
@@ -257,12 +250,11 @@ case "$host" in
     *)
         save_LDFLAGS="$LDFLAGS"
         LDFLAGS="$LDFLAGS -Wl,--dynamicbase"
-        AC_TRY_LINK([
-        ],[
-        ],[
+        AC_LINK_IFELSE([AC_LANG_PROGRAM([[
+        ]],[])], [
         have_dynamicbase=yes
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,--dynamicbase"
-        ])
+        ],[])
         LDFLAGS="$save_LDFLAGS"
         ;;
 esac
@@ -274,12 +266,11 @@ case "$host" in
     *)
         save_LDFLAGS="$LDFLAGS"
         LDFLAGS="$LDFLAGS -Wl,--nxcompat"
-        AC_TRY_LINK([
-        ],[
-        ],[
+        AC_LINK_IFELSE([AC_LANG_PROGRAM([[
+        ]],[])], [
         have_nxcompat=yes
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,--nxcompat"
-        ])
+        ],[])
         LDFLAGS="$save_LDFLAGS"
         ;;
 esac
@@ -291,12 +282,11 @@ case "$host" in
     *)
         save_LDFLAGS="$LDFLAGS"
         LDFLAGS="$LDFLAGS -Wl,--high-entropy-va"
-        AC_TRY_LINK([
-        ],[
-        ],[
+        AC_LINK_IFELSE([AC_LANG_PROGRAM([[
+        ]],[])], [
         have_high_entropy_va=yes
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,--high-entropy-va"
-        ])
+        ],[])
         LDFLAGS="$save_LDFLAGS"
         ;;
 esac
@@ -337,13 +327,12 @@ if test x$enable_libc = xyes; then
         AC_DEFINE(HAVE_STRTOD, 1, [ ])
     fi
     AC_CHECK_FUNC(mprotect,
-        AC_TRY_COMPILE([
+        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
           #include <sys/types.h>
           #include <sys/mman.h>
-        ],[
-        ],[
+        ]],[])], [
         AC_DEFINE(HAVE_MPROTECT, 1, [ ])
-        ]),
+        ],[]),
     )
     AC_CHECK_FUNCS(malloc calloc realloc free getenv setenv putenv unsetenv qsort abs bcopy memset memcpy memmove wcslen wcslcpy wcslcat _wcsdup wcsdup wcsstr wcscmp wcsncmp wcscasecmp _wcsicmp wcsncasecmp _wcsnicmp strlen strlcpy strlcat _strrev _strupr _strlwr index rindex strchr strrchr strstr strtok_r itoa _ltoa _uitoa _ultoa strtol strtoul _i64toa _ui64toa strtoll strtoull atoi atof strcmp strncmp _stricmp strcasecmp _strnicmp strncasecmp vsscanf vsnprintf fopen64 fseeko fseeko64 sigaction setjmp nanosleep sysconf sysctlbyname getauxval elf_aux_info poll _Exit)
 
@@ -369,8 +358,7 @@ AC_ARG_ENABLE(gcc-atomics,
 if test x$enable_gcc_atomics = xyes; then
     have_gcc_atomics=no
     AC_MSG_CHECKING(for GCC builtin atomic operations)
-    AC_TRY_LINK([
-    ],[
+    AC_LINK_IFELSE([AC_LANG_PROGRAM([],[[
     int a;
     void *x, *y, *z;
     __sync_lock_test_and_set(&a, 4);
@@ -378,23 +366,19 @@ if test x$enable_gcc_atomics = xyes; then
     __sync_fetch_and_add(&a, 1);
     __sync_bool_compare_and_swap(&a, 5, 10);
     __sync_bool_compare_and_swap(&x, y, z);
-    ],[
-    have_gcc_atomics=yes
-    ])
+    ]])],
+     [have_gcc_atomics=yes],[])
     AC_MSG_RESULT($have_gcc_atomics)
 
     if test x$have_gcc_atomics = xyes; then
         AC_DEFINE(HAVE_GCC_ATOMICS, 1, [ ])
     else
         # See if we have the minimum operation needed for GCC atomics
-        AC_TRY_LINK([
-        ],[
+        AC_LINK_IFELSE([AC_LANG_PROGRAM([],[[
         int a;
         __sync_lock_test_and_set(&a, 1);
         __sync_lock_release(&a);
-        ],[
-        have_gcc_sync_lock_test_and_set=yes
-        ])
+        ]])], [have_gcc_sync_lock_test_and_set=yes],[])
         if test x$have_gcc_sync_lock_test_and_set = xyes; then
             AC_DEFINE(HAVE_GCC_SYNC_LOCK_TEST_AND_SET, 1, [ ])
         fi
@@ -590,7 +574,7 @@ if test x$enable_assembly = xyes; then
         mmx_CFLAGS="-mmmx"
         CFLAGS="$save_CFLAGS $mmx_CFLAGS"
 
-        AC_TRY_COMPILE([
+        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
         #ifdef __MINGW32__
         #include <_mingw.h>
         #ifdef __MINGW64_VERSION_MAJOR
@@ -604,10 +588,7 @@ if test x$enable_assembly = xyes; then
         #ifndef __MMX__
         #error Assembler CPP flag not enabled
         #endif
-        ],[
-        ],[
-        have_gcc_mmx=yes
-        ])
+        ]],[])], [have_gcc_mmx=yes],[])
         AC_MSG_RESULT($have_gcc_mmx)
         CFLAGS="$save_CFLAGS"
 
@@ -627,17 +608,16 @@ if test x$enable_assembly = xyes; then
         amd3dnow_CFLAGS="-m3dnow"
         CFLAGS="$save_CFLAGS $amd3dnow_CFLAGS"
 
-        AC_TRY_LINK([
+        AC_LINK_IFELSE([AC_LANG_PROGRAM([[
         #include <mm3dnow.h>
         #ifndef __3dNOW__
         #error Assembler CPP flag not enabled
         #endif
-        ],[
+        ]], [[
         void *p = 0;
         _m_prefetch(p);
-        ],[
-        have_gcc_3dnow=yes
-        ])
+        ]])],
+         [have_gcc_3dnow=yes],[])
         AC_MSG_RESULT($have_gcc_3dnow)
         CFLAGS="$save_CFLAGS"
 
@@ -657,7 +637,7 @@ if test x$enable_assembly = xyes; then
         sse_CFLAGS="-msse"
         CFLAGS="$save_CFLAGS $sse_CFLAGS"
 
-        AC_TRY_COMPILE([
+        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
         #ifdef __MINGW32__
         #include <_mingw.h>
         #ifdef __MINGW64_VERSION_MAJOR
@@ -671,10 +651,7 @@ if test x$enable_assembly = xyes; then
         #ifndef __SSE__
         #error Assembler CPP flag not enabled
         #endif
-        ],[
-        ],[
-        have_gcc_sse=yes
-        ])
+        ]],[])], [have_gcc_sse=yes],[])
         AC_MSG_RESULT($have_gcc_sse)
         CFLAGS="$save_CFLAGS"
 
@@ -694,7 +671,7 @@ if test x$enable_assembly = xyes; then
         sse2_CFLAGS="-msse2"
         CFLAGS="$save_CFLAGS $sse2_CFLAGS"
 
-        AC_TRY_COMPILE([
+        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
         #ifdef __MINGW32__
         #include <_mingw.h>
         #ifdef __MINGW64_VERSION_MAJOR
@@ -708,10 +685,7 @@ if test x$enable_assembly = xyes; then
         #ifndef __SSE2__
         #error Assembler CPP flag not enabled
         #endif
-        ],[
-        ],[
-        have_gcc_sse2=yes
-        ])
+        ]],[])], [have_gcc_sse2=yes],[])
         AC_MSG_RESULT($have_gcc_sse2)
         CFLAGS="$save_CFLAGS"
 
@@ -731,7 +705,7 @@ if test x$enable_assembly = xyes; then
         sse3_CFLAGS="-msse3"
         CFLAGS="$save_CFLAGS $sse3_CFLAGS"
 
-        AC_TRY_COMPILE([
+        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
         #ifdef __MINGW32__
         #include <_mingw.h>
         #ifdef __MINGW64_VERSION_MAJOR
@@ -745,10 +719,7 @@ if test x$enable_assembly = xyes; then
         #ifndef __SSE2__
         #error Assembler CPP flag not enabled
         #endif
-        ],[
-        ],[
-        have_gcc_sse3=yes
-        ])
+        ]],[])], [have_gcc_sse3=yes],[])
         AC_MSG_RESULT($have_gcc_sse3)
         CFLAGS="$save_CFLAGS"
 
@@ -776,28 +747,24 @@ if test x$enable_assembly = xyes; then
         CFLAGS="$save_CFLAGS $altivec_CFLAGS"
 
         AC_MSG_CHECKING(for Altivec with GCC altivec.h and -maltivec option)
-        AC_TRY_COMPILE([
+        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
         #include <altivec.h>
         vector unsigned int vzero() {
             return vec_splat_u32(0);
         }
-        ],[
-        ],[
+        ]],[])], [
         have_gcc_altivec=yes
         have_altivec_h_hdr=yes
-        ])
+        ],[])
         AC_MSG_RESULT($have_gcc_altivec)
 
         if test x$have_gcc_altivec = xno; then
             AC_MSG_CHECKING(for Altivec with GCC -maltivec option)
-            AC_TRY_COMPILE([
+            AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
             vector unsigned int vzero() {
                 return vec_splat_u32(0);
             }
-            ],[
-            ],[
-            have_gcc_altivec=yes
-            ])
+            ]],[])], [have_gcc_altivec=yes],[])
             AC_MSG_RESULT($have_gcc_altivec)
         fi
 
@@ -805,29 +772,25 @@ if test x$enable_assembly = xyes; then
             AC_MSG_CHECKING(for Altivec with GCC altivec.h and -faltivec option)
             altivec_CFLAGS="-faltivec"
             CFLAGS="$save_CFLAGS $altivec_CFLAGS"
-            AC_TRY_COMPILE([
+            AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
             #include <altivec.h>
             vector unsigned int vzero() {
                 return vec_splat_u32(0);
             }
-            ],[
-            ],[
+            ]],[])], [
             have_gcc_altivec=yes
             have_altivec_h_hdr=yes
-            ])
+            ],[])
             AC_MSG_RESULT($have_gcc_altivec)
         fi
 
         if test x$have_gcc_altivec = xno; then
             AC_MSG_CHECKING(for Altivec with GCC -faltivec option)
-            AC_TRY_COMPILE([
+            AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
             vector unsigned int vzero() {
                 return vec_splat_u32(0);
             }
-            ],[
-            ],[
-            have_gcc_altivec=yes
-            ])
+            ]],[])], [have_gcc_altivec=yes],[])
             AC_MSG_RESULT($have_gcc_altivec)
         fi
         CFLAGS="$save_CFLAGS"
@@ -865,23 +828,21 @@ CheckOSS()
         AC_MSG_CHECKING(for OSS audio support)
         have_oss=no
         if test x$have_oss != xyes; then
-            AC_TRY_COMPILE([
+            AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
               #include <sys/soundcard.h>
-            ],[
+            ]], [[
               int arg = SNDCTL_DSP_SETFRAGMENT;
-            ],[
-            have_oss=yes
-            ])
+            ]])], [have_oss=yes],[])
         fi
         if test x$have_oss != xyes; then
-            AC_TRY_COMPILE([
+            AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
               #include <soundcard.h>
-            ],[
+            ]], [[
               int arg = SNDCTL_DSP_SETFRAGMENT;
-            ],[
+            ]])], [
             have_oss=yes
             AC_DEFINE(SDL_AUDIO_DRIVER_OSS_SOUNDCARD_H, 1, [ ])
-            ])
+            ],[])
         fi
         AC_MSG_RESULT($have_oss)
         if test x$have_oss = xyes; then
@@ -1113,13 +1074,11 @@ CheckARTSC()
             audio_arts=no
             save_CFLAGS="$CFLAGS"
             CFLAGS="$CFLAGS $ARTS_CFLAGS"
-            AC_TRY_COMPILE([
+            AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
              #include <artsc.h>
-            ],[
+            ]], [[
              arts_stream_t stream;
-            ],[
-            audio_arts=yes
-            ])
+            ]])], [audio_arts=yes],[])
             CFLAGS="$save_CFLAGS"
             AC_MSG_RESULT($audio_arts)
             if test x$audio_arts = xyes; then
@@ -1434,14 +1393,11 @@ CheckVisibilityHidden()
     visibility_CFLAGS="-fvisibility=hidden"
     save_CFLAGS="$CFLAGS"
     CFLAGS="$save_CFLAGS $visibility_CFLAGS -Werror"
-    AC_TRY_COMPILE([
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
     #if !defined(__GNUC__) || __GNUC__ < 4
     #error SDL only uses visibility attributes in GCC 4 or newer
     #endif
-    ],[
-    ],[
-    have_gcc_fvisibility=yes
-    ])
+    ]],[])], [have_gcc_fvisibility=yes],[])
     AC_MSG_RESULT($have_gcc_fvisibility)
     CFLAGS="$save_CFLAGS"
 
@@ -1459,12 +1415,9 @@ CheckNoStrictAliasing()
 
     save_CFLAGS="$CFLAGS"
     CFLAGS="$save_CFLAGS -fno-strict-aliasing"
-    AC_TRY_COMPILE([
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
     int x = 0;
-    ],[
-    ],[
-    have_gcc_no_strict_aliasing=yes
-    ])
+    ]],[])], [have_gcc_no_strict_aliasing=yes],[])
     AC_MSG_RESULT($have_gcc_no_strict_aliasing)
     CFLAGS="$save_CFLAGS"
 
@@ -1482,12 +1435,9 @@ CheckStackBoundary()
 
     save_CFLAGS="$CFLAGS"
     CFLAGS="$save_CFLAGS -mpreferred-stack-boundary=2"
-    AC_TRY_COMPILE([
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
     int x = 0;
-    ],[
-    ],[
-    have_gcc_preferred_stack_boundary=yes
-    ])
+    ]],[])], [have_gcc_preferred_stack_boundary=yes],[])
     AC_MSG_RESULT($have_gcc_preferred_stack_boundary)
     CFLAGS="$save_CFLAGS"
 
@@ -1506,12 +1456,9 @@ CheckDeclarationAfterStatement()
 
     save_CFLAGS="$CFLAGS"
     CFLAGS="$save_CFLAGS -Wdeclaration-after-statement -Werror=declaration-after-statement"
-    AC_TRY_COMPILE([
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
     int x = 0;
-    ],[
-    ],[
-    have_gcc_declaration_after_statement=yes
-    ])
+    ]],[])], [have_gcc_declaration_after_statement=yes],[])
     AC_MSG_RESULT($have_gcc_declaration_after_statement)
     CFLAGS="$save_CFLAGS"
 
@@ -1528,12 +1475,9 @@ CheckWarnAll()
 
     save_CFLAGS="$CFLAGS"
     CFLAGS="$save_CFLAGS -Wall"
-    AC_TRY_COMPILE([
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
     int x = 0;
-    ],[
-    ],[
-    have_gcc_Wall=yes
-    ])
+    ]],[])], [have_gcc_Wall=yes],[])
     AC_MSG_RESULT($have_gcc_Wall)
     CFLAGS="$save_CFLAGS"
 
@@ -1646,12 +1590,11 @@ CheckWayland()
 dnl Check for Native Client stuff
 CheckNativeClient()
 {
-        AC_TRY_COMPILE([
+        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
           #if !defined(__native_client__)
           #error "NO NACL"
           #endif
-        ],[
-        ],[
+        ]],[])], [
         AC_DEFINE(SDL_VIDEO_DRIVER_NACL, 1, [ ])
         AC_DEFINE(SDL_AUDIO_DRIVER_NACL, 1, [ ])
         AC_DEFINE(HAVE_POW, 1, [ ])
@@ -1666,7 +1609,7 @@ CheckNativeClient()
         SUMMARY_audio="${SUMMARY_audio} nacl"
         SOURCES="$SOURCES $srcdir/src/video/nacl/*.c"
         SUMMARY_video="${SUMMARY_video} nacl opengles2"
-        ])
+        ],[])
 }
 
 CheckRPI()
@@ -1695,14 +1638,11 @@ CheckRPI()
 
         AC_MSG_CHECKING(for Raspberry Pi)
         have_video_rpi=no
-        AC_TRY_LINK([
+        AC_LINK_IFELSE([AC_LANG_PROGRAM([[
           #include <bcm_host.h>
-        ],[
+        ]], [[
           bcm_host_init();
-        ],[
-        have_video_rpi=yes
-        ],[
-        ])
+        ]])], [have_video_rpi=yes],[])
         AC_MSG_RESULT($have_video_rpi)
 
         # Restore the compiler flags and libraries
@@ -1832,35 +1772,34 @@ CheckX11()
 
             AC_MSG_CHECKING(for const parameter to XextAddDisplay)
             have_const_param_XextAddDisplay=no
-            AC_TRY_COMPILE([
+            AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
               #include <X11/Xlib.h>
               #include <X11/Xproto.h>
               #include <X11/extensions/Xext.h>
               #include <X11/extensions/extutil.h>
               extern XExtDisplayInfo* XextAddDisplay(XExtensionInfo* a,Display* b,_Xconst char* c,XExtensionHooks* d,int e,XPointer f);
-            ],[
-            ],[
+            ]],[])], [
             have_const_param_XextAddDisplay=yes
             AC_DEFINE([SDL_VIDEO_DRIVER_X11_CONST_PARAM_XEXTADDDISPLAY], 1, [ ])
-            ])
+            ],[])
             AC_MSG_RESULT($have_const_param_XextAddDisplay)
 
             dnl AC_CHECK_LIB(X11, XGetEventData, AC_DEFINE(SDL_VIDEO_DRIVER_X11_SUPPORTS_GENERIC_EVENTS, 1, [Have XGenericEvent]))
             AC_MSG_CHECKING([for XGenericEvent])
             have_XGenericEvent=no
-            AC_TRY_COMPILE([
+            AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
                 #include <X11/Xlib.h>
-            ],[
+            ]], [[
 Display *display;
 XEvent event;
 XGenericEventCookie *cookie = &event.xcookie;
 XNextEvent(display, &event);
 XGetEventData(display, cookie);
 XFreeEventData(display, cookie);
-            ],[
+            ]])], [
                 have_XGenericEvent=yes
                 AC_DEFINE([SDL_VIDEO_DRIVER_X11_SUPPORTS_GENERIC_EVENTS], 1, [ ])
-            ])
+            ],[])
             AC_MSG_RESULT($have_XGenericEvent)
 
             AC_CHECK_LIB(X11, XkbKeycodeToKeysym, AC_DEFINE(SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM, 1, [Have XkbKeycodeToKeysym]))
@@ -1964,18 +1903,18 @@ XFreeEventData(display, cookie);
                 AC_DEFINE(SDL_VIDEO_DRIVER_X11_XINPUT2, 1, [ ])
                 AC_MSG_CHECKING(for xinput2 multitouch)
                 have_xinput2_multitouch=no
-                AC_TRY_COMPILE([
+                AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
                     #include <X11/Xlib.h>
                     #include <X11/Xproto.h>
                     #include <X11/extensions/XInput2.h>
-                    ],[
+                    ]], [[
 int event_type = XI_TouchBegin;
 XITouchClassInfo *t;
-                    ],[
+                    ]])], [
                     have_xinput2_multitouch=yes
                     AC_DEFINE([SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH], 1, [ ])
                     SUMMARY_video_x11="${SUMMARY_video_x11} xinput2_multitouch"
-                    ])
+                    ],[])
                 AC_MSG_RESULT($have_xinput2_multitouch)
             fi
             AC_ARG_ENABLE(video-x11-xrandr,
@@ -1985,14 +1924,12 @@ XITouchClassInfo *t;
                 dnl XRRScreenResources is only present in Xrandr >= 1.2, we use that as a test.
                 definitely_enable_video_x11_xrandr=no
                 have_xrandr_h_hdr=no
-                AC_TRY_COMPILE([
+                AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
                 #include <X11/Xlib.h>
                 #include <X11/extensions/Xrandr.h>
-                ],[
+                ]], [[
                 XRRScreenResources *res = NULL;
-                ],[
-                have_xrandr_h_hdr=yes
-                ])
+                ]])], [have_xrandr_h_hdr=yes],[])
                 if test x$have_xrandr_h_hdr = xyes; then
                     if test x$enable_x11_shared = xyes && test x$xrandr_lib != x ; then
                         echo "-- dynamic libXrandr -> $xrandr_lib"
@@ -2081,7 +2018,8 @@ XITouchClassInfo *t;
                 SUMMARY_video_x11="${SUMMARY_video_x11} xvidmode"
             fi
         fi
-    else
+    fi
+    if test x$have_x != xyes; then
         # Prevent Mesa from including X11 headers
         EXTRA_CFLAGS="$EXTRA_CFLAGS -DMESA_EGL_NO_X11_HEADERS -DEGL_NO_X11"
     fi
@@ -2096,26 +2034,20 @@ CheckVivanteVideo()
     if test x$enable_video = xyes -a x$enable_video_vivante = xyes; then
         AC_MSG_CHECKING(for Vivante VDK API)
         have_vivante_vdk=no
-        AC_TRY_COMPILE([
+        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
           #define LINUX
           #define EGL_API_FB
           #include <gc_vdk.h>
-        ],[
-        ],[
-        have_vivante_vdk=yes
-        ])
+        ]],[])], [have_vivante_vdk=yes],[])
         AC_MSG_RESULT($have_vivante_vdk)
 
         AC_MSG_CHECKING(for Vivante FB API)
         have_vivante_egl=no
-        AC_TRY_COMPILE([
+        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
           #define LINUX
           #define EGL_API_FB
           #include <EGL/eglvivante.h>
-        ],[
-        ],[
-        have_vivante_egl=yes
-        ])
+        ]],[])], [have_vivante_egl=yes],[])
         AC_MSG_RESULT($have_vivante_egl)
 
         if test x$have_vivante_vdk = xyes -o x$have_vivante_egl = xyes; then
@@ -2155,12 +2087,9 @@ CheckCOCOA()
         CFLAGS="$CFLAGS -x objective-c"
         AC_MSG_CHECKING(for Cocoa framework)
         have_cocoa=no
-        AC_TRY_COMPILE([
+        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
           #import <Cocoa/Cocoa.h>
-        ],[
-        ],[
-        have_cocoa=yes
-        ])
+        ]],[])], [have_cocoa=yes],[])
         AC_MSG_RESULT($have_cocoa)
         CFLAGS="$save_CFLAGS"
         if test x$have_cocoa = xyes; then
@@ -2186,7 +2115,7 @@ CheckMETAL()
         CFLAGS="$CFLAGS -x objective-c"
         AC_MSG_CHECKING(for Metal framework)
         have_metal=no
-        AC_TRY_COMPILE([
+        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
           #import <Cocoa/Cocoa.h>
           #import <Metal/Metal.h>
           #import <QuartzCore/CAMetalLayer.h>
@@ -2194,10 +2123,7 @@ CheckMETAL()
           #if TARGET_CPU_X86
           #error Metal doesn't work on this configuration
           #endif
-        ],[
-        ],[
-        have_metal=yes
-        ])
+        ]],[])], [have_metal=yes],[])
         CFLAGS="$save_CFLAGS"
         AC_MSG_RESULT($have_metal)
         if test x$have_metal = xyes; then
@@ -2361,25 +2287,19 @@ AC_ARG_ENABLE(video-opengl,
 [AS_HELP_STRING([--enable-video-opengl], [include OpenGL support [default=yes]])],
               , enable_video_opengl=yes)
 
-dnl Find OpenGL
-CheckOpenGLX11()
+dnl Find GLX
+CheckGLX()
 {
     if test x$enable_video = xyes -a x$enable_video_opengl = xyes; then
-        AC_MSG_CHECKING(for OpenGL (GLX) support)
-        video_opengl=no
-        AC_TRY_COMPILE([
-         #include <GL/gl.h>
+        AC_MSG_CHECKING(for GLX support)
+        video_opengl_glx=no
+        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
          #include <GL/glx.h>
-        ],[
-        ],[
-        video_opengl=yes
-        ])
-        AC_MSG_RESULT($video_opengl)
-        if test x$video_opengl = xyes; then
+        ]],[])], [video_opengl_glx=yes],[])
+        AC_MSG_RESULT($video_opengl_glx)
+        if test x$video_opengl_glx = xyes; then
             AC_DEFINE(SDL_VIDEO_OPENGL, 1, [ ])
             AC_DEFINE(SDL_VIDEO_OPENGL_GLX, 1, [ ])
-            AC_DEFINE(SDL_VIDEO_RENDER_OGL, 1, [ ])
-            SUMMARY_video="${SUMMARY_video} opengl"
         fi
     fi
 }
@@ -2395,38 +2315,57 @@ AC_ARG_ENABLE(video-opengles2,
 [AS_HELP_STRING([--enable-video-opengles2], [include OpenGL ES 2.0 support [default=yes]])],
               , enable_video_opengles2=yes)
 
-dnl Find OpenGL ES
-CheckOpenGLESX11()
+dnl Find EGL
+CheckEGL()
 {
-    if test x$enable_video = xyes -a x$enable_video_opengles = xyes; then
+    if test x$enable_video = xyes -a x$enable_video_opengl = xyes || test x$enable_video = xyes -a x$enable_video_opengles = xyes; then
         AC_MSG_CHECKING(for EGL support)
         video_opengl_egl=no
-        AC_TRY_COMPILE([
+        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
           #define LINUX
           #define EGL_API_FB
           #define MESA_EGL_NO_X11_HEADERS
           #define EGL_NO_X11
           #include <EGL/egl.h>
           #include <EGL/eglext.h>
-        ],[
-        ],[
-        video_opengl_egl=yes
-        ])
+        ]],[])], [video_opengl_egl=yes],[])
         AC_MSG_RESULT($video_opengl_egl)
         if test x$video_opengl_egl = xyes; then
             AC_DEFINE(SDL_VIDEO_OPENGL_EGL, 1, [ ])
         fi
+    fi
+}
 
+dnl Find OpenGL
+CheckOpenGL()
+{
+    if test x$enable_video = xyes -a x$enable_video_opengl = xyes; then
+        AC_MSG_CHECKING(for OpenGL headers)
+        video_opengl=no
+        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+         #include <GL/gl.h>
+         #include <GL/glext.h>
+        ]],[])], [video_opengl=yes],[])
+        AC_MSG_RESULT($video_opengl)
+        if test x$video_opengl = xyes; then 
+            AC_DEFINE(SDL_VIDEO_OPENGL, 1, [ ])
+            AC_DEFINE(SDL_VIDEO_RENDER_OGL, 1, [ ])
+            SUMMARY_video="${SUMMARY_video} opengl"
+        fi
+    fi
+}
+
+dnl Find OpenGL ES
+CheckOpenGLES()
+{
+    if test x$enable_video = xyes -a x$enable_video_opengles = xyes; then
         if test x$enable_video_opengles1 = xyes; then
             AC_MSG_CHECKING(for OpenGL ES v1 headers)
             video_opengles_v1=no
-            AC_TRY_COMPILE([
+            AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
              #include <GLES/gl.h>
              #include <GLES/glext.h>
-            ],[
-            ],[
-            video_opengles_v1=yes
-            ])
+            ]],[])], [video_opengles_v1=yes],[])
             AC_MSG_RESULT($video_opengles_v1)
             if test x$video_opengles_v1 = xyes; then
                 AC_DEFINE(SDL_VIDEO_OPENGL_ES, 1, [ ])
@@ -2438,13 +2377,10 @@ CheckOpenGLESX11()
         if test x$enable_video_opengles2 = xyes; then
             AC_MSG_CHECKING(for OpenGL ES v2 headers)
             video_opengles_v2=no
-            AC_TRY_COMPILE([
+            AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
              #include <GLES2/gl2.h>
              #include <GLES2/gl2ext.h>
-            ],[
-            ],[
-            video_opengles_v2=yes
-            ])
+            ]],[])], [video_opengles_v2=yes],[])
             AC_MSG_RESULT($video_opengles_v2)
             if test x$video_opengles_v2 = xyes; then
                 AC_DEFINE(SDL_VIDEO_OPENGL_ES2, 1, [ ])
@@ -2452,28 +2388,6 @@ CheckOpenGLESX11()
                 SUMMARY_video="${SUMMARY_video} opengl_es2"
             fi
         fi
-    fi
-}
-
-dnl Find EGL
-CheckEGLKMSDRM()
-{
-    AC_MSG_CHECKING(for EGL support)
-    video_opengl_egl=no
-    AC_TRY_COMPILE([
-      #define LINUX
-      #define EGL_API_FB
-      #define MESA_EGL_NO_X11_HEADERS
-      #define EGL_NO_X11
-      #include <EGL/egl.h>
-      #include <EGL/eglext.h>
-    ],[
-    ],[
-    video_opengl_egl=yes
-    ])
-    AC_MSG_RESULT($video_opengl_egl)
-    if test x$video_opengl_egl = xyes; then
-	AC_DEFINE(SDL_VIDEO_OPENGL_EGL, 1, [ ])
     fi
 }
 
@@ -2495,12 +2409,9 @@ CheckWINDOWSGLES()
 
         AC_MSG_CHECKING(for EGL support)
         video_opengl_egl=no
-        AC_TRY_COMPILE([
+        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
          #include <EGL/egl.h>
-        ],[
-        ],[
-        video_opengl_egl=yes
-        ])
+        ]],[])], [video_opengl_egl=yes],[])
         AC_MSG_RESULT($video_opengl_egl)
         if test x$video_opengl_egl = xyes; then
             AC_DEFINE(SDL_VIDEO_OPENGL, 1, [ ])
@@ -2510,13 +2421,10 @@ CheckWINDOWSGLES()
 
         AC_MSG_CHECKING(for OpenGL ES v2 headers)
         video_opengles_v2=no
-        AC_TRY_COMPILE([
+        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
          #include <GLES2/gl2.h>
          #include <GLES2/gl2ext.h>
-        ],[
-        ],[
-        video_opengles_v2=yes
-        ])
+        ]],[])], [video_opengles_v2=yes],[])
         AC_MSG_RESULT($video_opengles_v2)
         if test x$video_opengles_v2 = xyes; then
             AC_DEFINE(SDL_VIDEO_OPENGL, 1, [ ])
@@ -2568,12 +2476,9 @@ CheckEmscriptenGLES()
     if test x$enable_video = xyes -a x$enable_video_opengles = xyes; then
         AC_MSG_CHECKING(for EGL support)
         video_opengl_egl=no
-        AC_TRY_COMPILE([
+        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
          #include <EGL/egl.h>
-        ],[
-        ],[
-        video_opengl_egl=yes
-        ])
+        ]],[])], [video_opengl_egl=yes],[])
         AC_MSG_RESULT($video_opengl_egl)
         if test x$video_opengl_egl = xyes; then
             AC_DEFINE(SDL_VIDEO_OPENGL_EGL, 1, [ ])
@@ -2581,13 +2486,10 @@ CheckEmscriptenGLES()
 
         AC_MSG_CHECKING(for OpenGL ES v2 headers)
         video_opengles_v2=no
-        AC_TRY_COMPILE([
+        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
          #include <GLES2/gl2.h>
          #include <GLES2/gl2ext.h>
-        ],[
-        ],[
-        video_opengles_v2=yes
-        ])
+        ]],[])], [video_opengles_v2=yes],[])
         AC_MSG_RESULT($video_opengles_v2)
         if test x$video_opengles_v2 = xyes; then
             AC_DEFINE(SDL_VIDEO_OPENGL_ES2, 1, [ ])
@@ -2608,21 +2510,17 @@ CheckVulkan()
     if test x$enable_video = xyes -a x$enable_video_vulkan = xyes; then
         case "$host" in
             *-*-android*)
-                AC_TRY_COMPILE([
+                AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
                   #if defined(__ARM_ARCH) && __ARM_ARCH < 7
                   #error Vulkan doesn't work on this configuration
                   #endif
-                ],[
-                ],[
-                ],[
-                    enable_video_vulkan=no
-                ])
+                ]],[])], [],[enable_video_vulkan=no])
                 ;;
             *-*-darwin*)
                 save_CFLAGS="$CFLAGS"
                 dnl Work around that we don't have Objective-C support in autoconf
                 CFLAGS="$CFLAGS -x objective-c"
-                AC_TRY_COMPILE([
+                AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
                   #include <Cocoa/Cocoa.h>
                   #include <Metal/Metal.h>
                   #include <QuartzCore/CAMetalLayer.h>
@@ -2630,11 +2528,7 @@ CheckVulkan()
                   #if TARGET_CPU_X86
                   #error Vulkan doesn't work on this configuration
                   #endif
-                ],[
-                ],[
-                ],[
-                    enable_video_vulkan=no
-                ])
+                ]],[])], [],[enable_video_vulkan=no])
                 CFLAGS="$save_CFLAGS"
                 ;;
             *)
@@ -2658,15 +2552,13 @@ CheckInputEvents()
     dnl Check for Linux 2.4 unified input event interface support
         AC_MSG_CHECKING(for Linux 2.4 unified input interface)
         use_input_events=no
-        AC_TRY_COMPILE([
+        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
           #include <linux/input.h>
-        ],[
+        ]], [[
           #ifndef EVIOCGNAME
           #error EVIOCGNAME() ioctl not available
           #endif
-        ],[
-        use_input_events=yes
-        ])
+        ]])], [use_input_events=yes],[])
         AC_MSG_RESULT($use_input_events)
         if test x$use_input_events = xyes; then
             AC_DEFINE(SDL_INPUT_LINUXEV, 1, [ ])
@@ -2680,16 +2572,14 @@ CheckInputKD()
 
     AC_MSG_CHECKING(for Linux kd.h)
     use_input_kd=no
-    AC_TRY_COMPILE([
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
       #include <linux/kd.h>
       #include <linux/keyboard.h>
-    ],[
+    ]], [[
         struct kbentry kbe;
         kbe.kb_table = KG_CTRL;
         ioctl(0, KDGKBENT, &kbe);
-    ],[
-    use_input_kd=yes
-    ])
+    ]])], [use_input_kd=yes],[])
     AC_MSG_RESULT($use_input_kd)
     if test x$use_input_kd = xyes; then
         AC_DEFINE(SDL_INPUT_LINUXKD, 1, [ ])
@@ -2702,15 +2592,13 @@ CheckInputKBIO()
 {
     AC_MSG_CHECKING(for FreeBSD kbio.h)
     use_input_kbio=no
-    AC_TRY_COMPILE([
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
       #include <sys/kbio.h>
       #include <sys/ioctl.h>
-    ],[
+    ]], [[
         accentmap_t accTable;
         ioctl(0, KDENABIO, 1);
-    ],[
-    use_input_kbio=yes
-    ])
+    ]])], [use_input_kbio=yes],[])
     AC_MSG_RESULT($use_input_kbio)
     if test x$use_input_kbio = xyes; then
         AC_DEFINE(SDL_INPUT_FBSDKBIO, 1, [ ])
@@ -2723,23 +2611,21 @@ CheckInputWSCONS()
 {
     AC_MSG_CHECKING(for OpenBSD wscons)
     use_input_wscons=no
-    AC_TRY_COMPILE([
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
      #include <sys/time.h>
      #include <dev/wscons/wsconsio.h>
      #include <dev/wscons/wsksymdef.h>
      #include <dev/wscons/wsksymvar.h>
      #include <sys/ioctl.h>
-     ],[
-    	struct wskbd_map_data data;
-    	ioctl(0, WSKBDIO_GETMAP, &data);
-     ],[
-     use_input_wscons=yes
-     ])
-     AC_MSG_RESULT($use_input_wscons)
-     if test x$use_input_wscons = xyes; then
+    ]], [[
+     struct wskbd_map_data data;
+     ioctl(0, WSKBDIO_GETMAP, &data);
+    ]])], [use_input_wscons=yes],[])
+    AC_MSG_RESULT($use_input_wscons)
+    if test x$use_input_wscons = xyes; then
         AC_DEFINE(SDL_INPUT_WSCONS, 1, [ ])
-	SUMMARY_input="${SUMMARY_input} wscons"
-     fi
+        SUMMARY_input="${SUMMARY_input} wscons"
+    fi
 }
 
 dnl See if the platform offers libudev for device enumeration and hotplugging.
@@ -2890,20 +2776,18 @@ CheckJoystickMFI()
         LDFLAGS="$LDFLAGS -Wl,-weak_framework,CoreHaptics -Wl,-weak_framework,GameController"
         AC_MSG_CHECKING(for GameController framework)
         enable_joystick_mfi=no
-        AC_TRY_LINK([
+        AC_LINK_IFELSE([AC_LANG_PROGRAM([[
           #include <AvailabilityMacros.h>
           #include <TargetConditionals.h>
           #import <GameController/GameController.h>
-        ],[
+        ]], [[
           #if MAC_OS_X_VERSION_MIN_REQUIRED < 1080
           #error GameController framework doesn't work on this configuration
           #endif
           #if TARGET_CPU_X86
           #error GameController framework doesn't work on this configuration
           #endif
-        ],[
-        enable_joystick_mfi=yes
-        ])
+        ]])], [enable_joystick_mfi=yes],[])
         CFLAGS="$save_CFLAGS"
         LDFLAGS="$save_LDFLAGS"
 
@@ -2920,13 +2804,39 @@ dnl See what type of thread model to use on Linux and Solaris
 CheckPTHREAD()
 {
     dnl Check for pthread support
+
+    dnl Emscripten pthreads work, but you need to have a non-pthread fallback build
+    dnl  for systems without support. It's not currently enough to not use
+    dnl  pthread functions in a pthread-build; it won't start up on unsupported
+    dnl  browsers. As such, you have to explicitly enable it on Emscripten builds
+    dnl  for the time being. This default with change to ON once this becomes
+    dnl  commonly supported in browsers or the Emscripten teams makes a single
+    dnl  binary work everywhere.
+
+    case "$host" in
+        *-*-emscripten*)
+            enable_pthreads_default=no
+            ;;
+        *)
+            enable_pthreads_default=yes
+            ;;
+    esac
+
     AC_ARG_ENABLE(pthreads,
-[AS_HELP_STRING([--enable-pthreads], [use POSIX threads for multi-threading [default=yes]])],
-                  , enable_pthreads=yes)
+[AS_HELP_STRING([--enable-pthreads], [use POSIX threads for multi-threading [default=maybe]])],
+                  , enable_pthreads=maybe)
     dnl This is used on Linux for glibc binary compatibility (Doh!)
     AC_ARG_ENABLE(pthread-sem,
-[AS_HELP_STRING([--enable-pthread-sem], [use pthread semaphores [default=yes]])],
-                  , enable_pthread_sem=yes)
+[AS_HELP_STRING([--enable-pthread-sem], [use pthread semaphores [default=maybe]])],
+                  , enable_pthread_sem=maybe)
+
+    if test x$enable_pthreads = xmaybe; then
+        enable_pthreads=$enable_pthreads_default
+    fi
+    if test x$enable_pthread_sem = xmaybe; then
+        enable_pthread_sem=$enable_pthreads
+    fi
+
     case "$host" in
          *-*-android*)
             pthread_cflags="-D_REENTRANT -D_THREAD_SAFE"
@@ -2992,6 +2902,10 @@ CheckPTHREAD()
             pthread_cflags="-D_REENTRANT"
             pthread_lib=""
             ;;
+        *-*-emscripten*)
+            pthread_cflags="-D_REENTRANT -pthread"
+            pthread_lib="-pthread"
+            ;;
         *)
             pthread_cflags="-D_REENTRANT"
             pthread_lib="-lpthread"
@@ -3005,14 +2919,12 @@ CheckPTHREAD()
         # Check to see if we have pthread support on this system
         AC_MSG_CHECKING(for pthreads)
         use_pthreads=no
-        AC_TRY_LINK([
+        AC_LINK_IFELSE([AC_LANG_PROGRAM([[
          #include <pthread.h>
-        ],[
+        ]], [[
          pthread_attr_t type;
          pthread_attr_init(&type);
-        ],[
-        use_pthreads=yes
-        ])
+        ]])], [use_pthreads=yes],[])
         AC_MSG_RESULT($use_pthreads)
         # Restore the compiler flags and libraries
         CFLAGS="$ac_save_cflags"; LIBS="$ac_save_libs"
@@ -3033,28 +2945,28 @@ CheckPTHREAD()
             AC_MSG_CHECKING(for recursive mutexes)
             has_recursive_mutexes=no
             if test x$has_recursive_mutexes = xno; then
-                AC_TRY_LINK([
+                AC_LINK_IFELSE([AC_LANG_PROGRAM([[
                   #define _GNU_SOURCE 1
                   #include <pthread.h>
-                ],[
+                ]], [[
                   pthread_mutexattr_t attr;
                   pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
-                ],[
+                ]])], [
                 has_recursive_mutexes=yes
                 AC_DEFINE(SDL_THREAD_PTHREAD_RECURSIVE_MUTEX, 1, [ ])
-                ])
+                ],[])
             fi
             if test x$has_recursive_mutexes = xno; then
-                AC_TRY_LINK([
+                AC_LINK_IFELSE([AC_LANG_PROGRAM([[
                   #define _GNU_SOURCE 1
                   #include <pthread.h>
-                ],[
+                ]], [[
                   pthread_mutexattr_t attr;
                   pthread_mutexattr_setkind_np(&attr, PTHREAD_MUTEX_RECURSIVE_NP);
-                ],[
+                ]])],[
                 has_recursive_mutexes=yes
                 AC_DEFINE(SDL_THREAD_PTHREAD_RECURSIVE_MUTEX_NP, 1, [ ])
-                ])
+                ],[])
             fi
             AC_MSG_RESULT($has_recursive_mutexes)
 
@@ -3062,27 +2974,24 @@ CheckPTHREAD()
             if test x$enable_pthread_sem = xyes; then
                 AC_MSG_CHECKING(for pthread semaphores)
                 have_pthread_sem=no
-                AC_TRY_COMPILE([
+                AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
                   #include <pthread.h>
                   #include <semaphore.h>
-                ],[
-                ],[
-                have_pthread_sem=yes
-                ])
+                ]],[])], [have_pthread_sem=yes],[])
                 AC_MSG_RESULT($have_pthread_sem)
             fi
             if test x$have_pthread_sem = xyes; then
                 AC_MSG_CHECKING(for sem_timedwait)
                 have_sem_timedwait=no
-                AC_TRY_LINK([
+                AC_LINK_IFELSE([AC_LANG_PROGRAM([[
                   #include <pthread.h>
                   #include <semaphore.h>
-                ],[
+                ]], [[
                   sem_timedwait(NULL, NULL);
-                ],[
+                ]])], [
                 have_sem_timedwait=yes
                 AC_DEFINE([HAVE_SEM_TIMEDWAIT], 1, [ ])
-                ])
+                ],[])
                 AC_MSG_RESULT($have_sem_timedwait)
             fi
 
@@ -3145,12 +3054,9 @@ CheckWINDOWS()
 {
     AC_MSG_CHECKING(Windows compiler)
     have_win32_gcc=no
-    AC_TRY_COMPILE([
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
      #include <windows.h>
-    ],[
-    ],[
-    have_win32_gcc=yes
-    ])
+    ]],[])], [have_win32_gcc=yes],[])
     AC_MSG_RESULT($have_win32_gcc)
     if test x$have_win32_gcc != xyes; then
        AC_MSG_ERROR([
@@ -3160,17 +3066,16 @@ CheckWINDOWS()
 
     AC_MSG_CHECKING(Windows CE)
     have_wince=no
-    AC_TRY_COMPILE([
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
 #if !defined(_WIN32_WCE) && !defined(__MINGW32CE__)
 #error This is not Windows CE
 #endif
-    ],[
-    ],[
+    ]],[])], [
     have_wince=yes
        AC_MSG_ERROR([
 *** Sorry, Windows CE is no longer supported.
        ])
-    ])
+    ],[])
     AC_MSG_RESULT($have_wince)
 
     # This fixes Windows stack alignment with newer GCC
@@ -3221,18 +3126,18 @@ CheckDIRECTX()
         have_xinput_stateex=no
         AC_CHECK_HEADER(xinput.h, have_xinput=yes)
         AC_MSG_CHECKING(for struct XINPUT_GAMEPAD_EX)
-        AC_TRY_COMPILE([
+        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
 #include <windows.h>
 #include <xinput.h>
 XINPUT_GAMEPAD_EX x1;
-            ],[],[have_xinput_gamepadex=yes])
+            ]],[])], [have_xinput_gamepadex=yes],[])
         AC_MSG_RESULT($have_xinput_gamepadex)
         AC_MSG_CHECKING(for struct XINPUT_STATE_EX)
-        AC_TRY_COMPILE([
+        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
 #include <windows.h>
 #include <xinput.h>
 XINPUT_STATE_EX s1;
-            ],[],[have_xinput_stateex=yes])
+            ]],[])], [have_xinput_stateex=yes],[])
         AC_MSG_RESULT($have_xinput_stateex)
 
         if test x$have_xinput = xyes; then
@@ -3269,14 +3174,12 @@ CheckDLOPEN()
     if test x$enable_sdl_dlopen = xyes; then
         AC_MSG_CHECKING(for dlopen)
         have_dlopen=no
-        AC_TRY_COMPILE([
+        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
          #include <dlfcn.h>
-        ],[
+        ]], [[
          void *handle = dlopen("", RTLD_NOW);
          const char *loaderror = (char *) dlerror();
-        ],[
-        have_dlopen=yes
-        ])
+        ]])], [have_dlopen=yes],[])
         AC_MSG_RESULT($have_dlopen)
 
         if test x$have_dlopen = xyes; then
@@ -3312,7 +3215,7 @@ CheckUSBHID()
 
                 AC_MSG_CHECKING(for usbhid)
                 have_usbhid=no
-                AC_TRY_COMPILE([
+                AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
                   #include <sys/types.h>
                   #if defined(HAVE_USB_H)
                   #include <usb.h>
@@ -3331,19 +3234,17 @@ CheckUSBHID()
                   #elif defined(HAVE_LIBUSBHID_H)
                   #include <libusbhid.h>
                   #endif
-                ],[
+                ]], [[
                   struct report_desc *repdesc;
                   struct usb_ctl_report *repbuf;
                   hid_kind_t hidkind;
-                ],[
-                have_usbhid=yes
-                ])
+                ]])], [have_usbhid=yes],[])
                 AC_MSG_RESULT($have_usbhid)
 
                 if test x$have_usbhid = xyes; then
                     AC_MSG_CHECKING(for ucr_data member of usb_ctl_report)
                     have_usbhid_ucr_data=no
-                    AC_TRY_COMPILE([
+                    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
                       #include <sys/types.h>
                       #if defined(HAVE_USB_H)
                       #include <usb.h>
@@ -3362,12 +3263,10 @@ CheckUSBHID()
                       #elif defined(HAVE_LIBUSBHID_H)
                       #include <libusbhid.h>
                       #endif
-                    ],[
+                    ]], [[
                       struct usb_ctl_report buf;
                       if (buf.ucr_data) { }
-                    ],[
-                    have_usbhid_ucr_data=yes
-                    ])
+                    ]])], [have_usbhid_ucr_data=yes],[])
                     if test x$have_usbhid_ucr_data = xyes; then
                         USB_CFLAGS="$USB_CFLAGS -DUSBHID_UCR_DATA"
                     fi
@@ -3375,7 +3274,7 @@ CheckUSBHID()
 
                     AC_MSG_CHECKING(for new usbhid API)
                     have_usbhid_new=no
-                    AC_TRY_COMPILE([
+                    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
                       #include <sys/types.h>
                       #if defined(HAVE_USB_H)
                       #include <usb.h>
@@ -3394,12 +3293,10 @@ CheckUSBHID()
                       #elif defined(HAVE_LIBUSBHID_H)
                       #include <libusbhid.h>
                       #endif
-                    ],[
+                    ]], [[
                       report_desc_t d;
                       hid_start_parse(d, 1, 1);
-                    ],[
-                    have_usbhid_new=yes
-                    ])
+                    ]])], [have_usbhid_new=yes],[])
                     if test x$have_usbhid_new = xyes; then
                         USB_CFLAGS="$USB_CFLAGS -DUSBHID_NEW"
                     fi
@@ -3407,13 +3304,11 @@ CheckUSBHID()
 
                     AC_MSG_CHECKING(for struct joystick in machine/joystick.h)
                     have_machine_joystick=no
-                    AC_TRY_COMPILE([
+                    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
                       #include <machine/joystick.h>
-                    ],[
+                    ]], [[
                       struct joystick t;
-                    ],[
-                    have_machine_joystick=yes
-                    ])
+                    ]])], [have_machine_joystick=yes],[])
                     if test x$have_machine_joystick = xyes; then
                         AC_DEFINE(SDL_HAVE_MACHINE_JOYSTICK_H, 1, [ ])
                     fi
@@ -3653,11 +3548,12 @@ case "$host" in
         CheckRPI
         CheckX11
         CheckDirectFB
-        # Need to check for EGL first because KMSDRM depends on it.
-        CheckEGLKMSDRM
+        # Need to check for EGL first because KMSDRM and Wayland depends on it.
+        CheckEGL
         CheckKMSDRM
-        CheckOpenGLX11
-        CheckOpenGLESX11
+        CheckGLX
+        CheckOpenGL
+        CheckOpenGLES
         CheckVulkan
         CheckWayland
         CheckInputEvents
@@ -4051,9 +3947,6 @@ case "$host" in
         # The Haiku platform requires special setup.
         SOURCES="$srcdir/src/main/haiku/*.cc $SOURCES"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lroot -lbe -lmedia -lgame -ldevice -ltextencoding"
-        # Haiku's x86 spins use libstdc++.r4.so (for binary compat?), but
-        #  other spins, like x86-64, use a more standard "libstdc++.so.*"
-        AC_CHECK_FILE("/boot/system/lib/libstdc++.r4.so", EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lstdc++.r4", EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lstdc++")
         ;;
     *-ios-*)
         ARCH=ios
@@ -4172,7 +4065,8 @@ case "$host" in
         CheckX11
         CheckMacGL
         CheckMacGLES
-        CheckOpenGLX11
+        CheckGLX
+        CheckOpenGL
         CheckVulkan
         CheckPTHREAD
         CheckHIDAPI
@@ -4283,6 +4177,7 @@ case "$host" in
         CheckDummyVideo
         CheckDiskAudio
         CheckDummyAudio
+        CheckPTHREAD
         CheckDLOPEN
         CheckClockGettime
         CheckEmscriptenGLES
@@ -4486,12 +4381,11 @@ if test "x$enable_rpath" = "xyes" -a "x$enable_shared" = "xyes"; then
     have_enable_new_dtags=no
     save_LDFLAGS="$LDFLAGS"
     LDFLAGS="$LDFLAGS -Wl,--enable-new-dtags"
-    AC_TRY_LINK([
-    ],[
-    ],[
+    AC_LINK_IFELSE([AC_LANG_PROGRAM([[
+    ]],[])], [
     have_enable_new_dtags=yes
     SDL_RLD_FLAGS="$SDL_RLD_FLAGS -Wl,--enable-new-dtags"
-    ])
+    ],[])
     LDFLAGS="$save_LDFLAGS"
     AC_MSG_RESULT($have_enable_new_dtags)
   fi
@@ -4510,12 +4404,12 @@ AC_SUBST(SDL_LIBS)
 AC_SUBST(SDL_STATIC_LIBS)
 AC_SUBST(SDL_RLD_FLAGS)
 if test x$enable_shared = xyes; then
-    PKG_CONFIG_LIBS_PRIV="
+    PKGCONFIG_LIBS_PRIV="
 Libs.private:"
     ENABLE_SHARED_TRUE=
     ENABLE_SHARED_FALSE="#"
 else
-    PKG_CONFIG_LIBS_PRIV=
+    PKGCONFIG_LIBS_PRIV=
     ENABLE_SHARED_TRUE="#"
     ENABLE_SHARED_FALSE=
 fi
@@ -4526,7 +4420,7 @@ else
     ENABLE_STATIC_TRUE="#"
     ENABLE_STATIC_FALSE=
 fi
-AC_SUBST(PKG_CONFIG_LIBS_PRIV)
+AC_SUBST(PKGCONFIG_LIBS_PRIV)
 AC_SUBST(ENABLE_SHARED_TRUE)
 AC_SUBST(ENABLE_SHARED_FALSE)
 AC_SUBST(ENABLE_STATIC_TRUE)

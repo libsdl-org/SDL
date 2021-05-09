@@ -18,17 +18,16 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
 
-#ifndef SDL_cocoamousetap_h_
-#define SDL_cocoamousetap_h_
+#ifndef SDL_waylandmessagebox_h_
+#define SDL_waylandmessagebox_h_
 
-#include "SDL_cocoamouse.h"
+#if SDL_VIDEO_DRIVER_WAYLAND
 
-extern void Cocoa_InitMouseEventTap(SDL_MouseData *driverdata);
-extern void Cocoa_EnableMouseEventTap(SDL_MouseData *driverdata, SDL_bool enabled);
-extern void Cocoa_QuitMouseEventTap(SDL_MouseData *driverdata);
+extern int Wayland_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid);
 
-#endif /* SDL_cocoamousetap_h_ */
+#endif /* SDL_VIDEO_DRIVER_WAYLAND */
+
+#endif /* SDL_waylandmessagebox_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

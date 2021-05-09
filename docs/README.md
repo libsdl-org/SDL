@@ -27,7 +27,7 @@ The best way to learn how to use SDL is to check out the header files in
 the "include" subdirectory and the programs in the "test" subdirectory.
 The header files and test programs are well commented and always up to date.
 
-More documentation and FAQs are available online at [the wiki](https://github.com/libsdl-org/SDL/wiki/)
+More documentation and FAQs are available online at [the wiki](http://wiki.libsdl.org/)
 
 - [Android](README-android.md)
 - [CMake](README-cmake.md)

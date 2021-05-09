@@ -783,8 +783,16 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     }
                }
             }
-            SDL_SetMouseFocus(NULL);
         }
+
+        /* When WM_MOUSELEAVE is fired we can be assured that the cursor has left the window.
+           Regardless of relative mode, it is important that mouse focus is reset as there is a potential
+           race condition when in the process of leaving/entering relative mode, resulting in focus never
+           being lost. This then causes a cascading failure where SDL_WINDOWEVENT_ENTER / SDL_WINDOWEVENT_LEAVE
+           can stop firing permanently, due to the focus being in the wrong state and TrackMouseEvent never
+           resubscribing. */
+        SDL_SetMouseFocus(NULL);
+
         returnCode = 0;
         break;
 #endif /* WM_MOUSELEAVE */

@@ -35,11 +35,11 @@ typedef struct SDL_PrivateGLESData
 #define Wayland_GLES_GetAttribute SDL_EGL_GetAttribute
 #define Wayland_GLES_GetProcAddress SDL_EGL_GetProcAddress
 #define Wayland_GLES_UnloadLibrary SDL_EGL_UnloadLibrary
-#define Wayland_GLES_SetSwapInterval SDL_EGL_SetSwapInterval
-#define Wayland_GLES_GetSwapInterval SDL_EGL_GetSwapInterval
 
 extern int Wayland_GLES_LoadLibrary(_THIS, const char *path);
 extern SDL_GLContext Wayland_GLES_CreateContext(_THIS, SDL_Window * window);
+extern int Wayland_GLES_SetSwapInterval(_THIS, int interval);
+extern int Wayland_GLES_GetSwapInterval(_THIS);
 extern int Wayland_GLES_SwapWindow(_THIS, SDL_Window * window);
 extern int Wayland_GLES_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context);
 extern void Wayland_GLES_GetDrawableSize(_THIS, SDL_Window * window, int * w, int * h);

@@ -40,7 +40,6 @@ typedef struct {
     /* What location we last saw the cursor move to. */
     CGFloat lastMoveX;
     CGFloat lastMoveY;
-    void *tapdata;
 } SDL_MouseData;
 
 @interface NSCursor (InvisibleCursor)

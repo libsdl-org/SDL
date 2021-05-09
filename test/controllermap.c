@@ -53,7 +53,7 @@ static struct
     double angle;
     int marker;
 
-} s_arrBindingDisplay[BINDING_COUNT] = {
+} s_arrBindingDisplay[] = {
     { 387, 167, 0.0, MARKER_BUTTON }, /* SDL_CONTROLLER_BUTTON_A */
     { 431, 132, 0.0, MARKER_BUTTON }, /* SDL_CONTROLLER_BUTTON_B */
     { 342, 132, 0.0, MARKER_BUTTON }, /* SDL_CONTROLLER_BUTTON_X */
@@ -86,8 +86,9 @@ static struct
     {  91, -20, 180.0, MARKER_AXIS }, /* SDL_CONTROLLER_BINDING_AXIS_TRIGGERLEFT */
     { 375, -20, 180.0, MARKER_AXIS }, /* SDL_CONTROLLER_BINDING_AXIS_TRIGGERRIGHT */
 };
+SDL_COMPILE_TIME_ASSERT(s_arrBindingDisplay, SDL_arraysize(s_arrBindingDisplay) == BINDING_COUNT);
 
-static int s_arrBindingOrder[BINDING_COUNT] = {
+static int s_arrBindingOrder[] = {
     SDL_CONTROLLER_BUTTON_A,
     SDL_CONTROLLER_BUTTON_B,
     SDL_CONTROLLER_BUTTON_Y,
@@ -118,7 +119,9 @@ static int s_arrBindingOrder[BINDING_COUNT] = {
     SDL_CONTROLLER_BUTTON_PADDLE2,
     SDL_CONTROLLER_BUTTON_PADDLE3,
     SDL_CONTROLLER_BUTTON_PADDLE4,
+    -1,
 };
+SDL_COMPILE_TIME_ASSERT(s_arrBindingOrder, SDL_arraysize(s_arrBindingOrder) == BINDING_COUNT);
 
 typedef struct
 {
@@ -221,6 +224,12 @@ SetCurrentBinding(int iBinding)
 
     if (iBinding == BINDING_COUNT) {
         s_bBindingComplete = SDL_TRUE;
+        return;
+    }
+
+    if (s_arrBindingOrder[iBinding] == -1)
+    {
+        SetCurrentBinding(iBinding + 1);
         return;
     }
 
@@ -412,10 +421,10 @@ WatchJoystick(SDL_Joystick * joystick)
     s_nNumAxes = SDL_JoystickNumAxes(joystick);
     s_arrAxisState = (AxisState *)SDL_calloc(s_nNumAxes, sizeof(*s_arrAxisState));
 
-	/* Skip any spurious events at start */
-	while (SDL_PollEvent(&event) > 0) {
-		continue;
-	}
+    /* Skip any spurious events at start */
+    while (SDL_PollEvent(&event) > 0) {
+        continue;
+    }
 
     /* Loop, getting joystick events! */
     while (!done && !s_bBindingComplete) {

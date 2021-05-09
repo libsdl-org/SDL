@@ -89,6 +89,7 @@ static id disconnectObserver = nil;
 #define ENABLE_MFI_RUMBLE
 #define ENABLE_MFI_LIGHT
 #define ENABLE_MFI_SENSORS
+#define ENABLE_MFI_SYSTEM_GESTURE_STATE
 #define ENABLE_PHYSICAL_INPUT_PROFILE
 #endif
 
@@ -153,8 +154,9 @@ IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controlle
         GCExtendedGamepad *gamepad = controller.extendedGamepad;
         BOOL is_xbox = [controller.vendorName containsString: @"Xbox"];
         BOOL is_ps4 = [controller.vendorName containsString: @"DUALSHOCK"];
+        BOOL is_ps5 = [controller.vendorName containsString: @"DualSense"];
 #if TARGET_OS_TV
-        BOOL is_MFi = (!is_xbox && !is_ps4);
+        BOOL is_MFi = (!is_xbox && !is_ps4 && !is_ps5);
 #endif
         int nbuttons = 0;
 
@@ -250,6 +252,10 @@ IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controlle
             } else {
                 subtype = 0;
             }
+        } else if (is_ps5) {
+            vendor = USB_VENDOR_SONY;
+            product = USB_PRODUCT_SONY_DS5;
+			subtype = 0;
         } else {
             vendor = USB_VENDOR_APPLE;
             product = 1;
@@ -655,6 +661,18 @@ IOS_JoystickOpen(SDL_Joystick *joystick, int device_index)
                 }
             }
 #endif /* ENABLE_MFI_SENSORS */
+
+#ifdef ENABLE_MFI_SYSTEM_GESTURE_STATE
+            if (@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)) {
+                GCController *controller = joystick->hwdata->controller;
+				if (controller.extendedGamepad) {
+					GCExtendedGamepad *gamepad = controller.extendedGamepad;
+					if ([gamepad.buttonOptions isBoundToSystemGesture]) {
+						gamepad.buttonOptions.preferredSystemGestureState = GCSystemGestureStateDisabled;
+					}
+				}
+            }
+#endif /* ENABLE_MFI_SYSTEM_GESTURE_STATE */
 
 #endif /* SDL_JOYSTICK_MFI */
         }
@@ -1331,7 +1349,18 @@ IOS_JoystickClose(SDL_Joystick *joystick)
             GCController *controller = device->controller;
             controller.controllerPausedHandler = nil;
             controller.playerIndex = -1;
-#endif
+
+#ifdef ENABLE_MFI_SYSTEM_GESTURE_STATE
+            if (@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)) {
+                GCController *controller = joystick->hwdata->controller;
+				if (controller.extendedGamepad) {
+					GCExtendedGamepad *gamepad = controller.extendedGamepad;
+					gamepad.buttonOptions.preferredSystemGestureState = GCSystemGestureStateEnabled;
+                }
+            }
+#endif /* ENABLE_MFI_SYSTEM_GESTURE_STATE */
+
+#endif /* SDL_JOYSTICK_MFI */
         }
     }
     if (device->remote) {

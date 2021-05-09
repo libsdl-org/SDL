@@ -18,11 +18,14 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+
 #include "../../SDL_internal.h"
 #include "../../main/haiku/SDL_BApp.h"
 
 #if SDL_VIDEO_DRIVER_HAIKU
 
+#include "SDL_BWin.h"
+#include <Url.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -37,7 +40,9 @@ extern "C" {
 #include "SDL_bframebuffer.h"
 #include "SDL_bevents.h"
 
-#include <Url.h>
+static SDL_INLINE SDL_BWin *_ToBeWin(SDL_Window *window) {
+    return ((SDL_BWin*)(window->driverdata));
+}
 
 /* FIXME: Undefined functions */
 //    #define HAIKU_PumpEvents NULL
@@ -135,21 +140,94 @@ void HAIKU_DeleteDevice(SDL_VideoDevice * device)
     SDL_free(device);
 }
 
-static int HAIKU_ShowCursor(SDL_Cursor *cur)
+static SDL_Cursor *
+HAIKU_CreateSystemCursor(SDL_SystemCursor id)
+{
+    SDL_Cursor *cursor;
+    BCursorID cursorId = B_CURSOR_ID_SYSTEM_DEFAULT;
+
+    switch(id)
+    {
+    default:
+        SDL_assert(0);
+        return NULL;
+    case SDL_SYSTEM_CURSOR_ARROW:     cursorId = B_CURSOR_ID_SYSTEM_DEFAULT; break;
+    case SDL_SYSTEM_CURSOR_IBEAM:     cursorId = B_CURSOR_ID_I_BEAM; break;
+    case SDL_SYSTEM_CURSOR_WAIT:      cursorId = B_CURSOR_ID_PROGRESS; break;
+    case SDL_SYSTEM_CURSOR_CROSSHAIR: cursorId = B_CURSOR_ID_CROSS_HAIR; break;
+    case SDL_SYSTEM_CURSOR_WAITARROW: cursorId = B_CURSOR_ID_PROGRESS; break;
+    case SDL_SYSTEM_CURSOR_SIZENWSE:  cursorId = B_CURSOR_ID_RESIZE_NORTH_WEST_SOUTH_EAST; break;
+    case SDL_SYSTEM_CURSOR_SIZENESW:  cursorId = B_CURSOR_ID_RESIZE_NORTH_EAST_SOUTH_WEST; break;
+    case SDL_SYSTEM_CURSOR_SIZEWE:    cursorId = B_CURSOR_ID_RESIZE_EAST_WEST; break;
+    case SDL_SYSTEM_CURSOR_SIZENS:    cursorId = B_CURSOR_ID_RESIZE_NORTH_SOUTH; break;
+    case SDL_SYSTEM_CURSOR_SIZEALL:   cursorId = B_CURSOR_ID_MOVE; break;
+    case SDL_SYSTEM_CURSOR_NO:        cursorId = B_CURSOR_ID_NOT_ALLOWED; break;
+    case SDL_SYSTEM_CURSOR_HAND:      cursorId = B_CURSOR_ID_FOLLOW_LINK; break;
+    }
+
+    cursor = (SDL_Cursor *) SDL_calloc(1, sizeof(*cursor));
+    if (cursor) {
+        cursor->driverdata = (void *)new BCursor(cursorId);
+    } else {
+        SDL_OutOfMemory();
+    }
+
+    return cursor;
+}
+
+static SDL_Cursor *
+HAIKU_CreateDefaultCursor()
+{
+    return HAIKU_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW);
+}
+
+static void
+HAIKU_FreeCursor(SDL_Cursor * cursor)
+{
+    if (cursor->driverdata) {
+        delete (BCursor*) cursor->driverdata;
+    }
+    SDL_free(cursor);
+}
+
+static int HAIKU_ShowCursor(SDL_Cursor *cursor)
 {
 	SDL_Mouse *mouse = SDL_GetMouse();
-	int show;
+
 	if (!mouse)
 		return 0;
-	show = (cur || !mouse->focus);
-	if (show) {
-		if (be_app->IsCursorHidden())
-			be_app->ShowCursor();
+
+	if (cursor) {
+		BCursor *hCursor = (BCursor*)cursor->driverdata;
+		be_app->SetCursor(hCursor);
 	} else {
-		if (!be_app->IsCursorHidden())
-			be_app->HideCursor();
+		BCursor *hCursor = new BCursor(B_CURSOR_ID_NO_CURSOR);
+		be_app->SetCursor(hCursor);
+		delete hCursor;
 	}
+
 	return 0;
+}
+
+static int
+HAIKU_SetRelativeMouseMode(SDL_bool enabled)
+{
+    SDL_Window *window = SDL_GetMouseFocus();
+    if (!window) {
+      return 0;
+    }
+
+	SDL_BWin *bewin = _ToBeWin(window);
+	BGLView *_SDL_GLView = bewin->GetGLView();
+
+	bewin->Lock();
+	if (enabled)
+		_SDL_GLView->SetEventMask(B_POINTER_EVENTS | B_KEYBOARD_EVENTS, B_NO_POINTER_HISTORY);
+	else
+		_SDL_GLView->SetEventMask(0, 0);
+	bewin->Unlock();
+
+    return 0;
 }
 
 static void HAIKU_MouseInit(_THIS)
@@ -157,9 +235,12 @@ static void HAIKU_MouseInit(_THIS)
 	SDL_Mouse *mouse = SDL_GetMouse();
 	if (!mouse)
 		return;
+	mouse->CreateSystemCursor = HAIKU_CreateSystemCursor;
 	mouse->ShowCursor = HAIKU_ShowCursor;
-	mouse->cur_cursor = (SDL_Cursor*)0x1;
-	mouse->def_cursor = (SDL_Cursor*)0x2;
+	mouse->FreeCursor = HAIKU_FreeCursor;
+	mouse->SetRelativeMouseMode = HAIKU_SetRelativeMouseMode;
+
+	SDL_SetDefaultCursor(HAIKU_CreateDefaultCursor());
 }
 
 int HAIKU_VideoInit(_THIS)

@@ -148,7 +148,7 @@ SDL_ceilf(float x)
 #if defined(HAVE_CEILF)
     return ceilf(x);
 #else
-    return (float)SDL_ceil((float)x);
+    return (float)SDL_ceil((double)x);
 #endif
 }
 

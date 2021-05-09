@@ -118,6 +118,21 @@ SDL_WAYLAND_SYM(enum xkb_state_component, xkb_state_update_mask, (struct xkb_sta
                       xkb_layout_index_t depressed_layout,\
                       xkb_layout_index_t latched_layout,\
                       xkb_layout_index_t locked_layout) )
+SDL_WAYLAND_SYM(struct xkb_compose_table *, xkb_compose_table_new_from_locale, (struct xkb_context *,\
+                      const char *locale, enum xkb_compose_compile_flags) )
+SDL_WAYLAND_SYM(void, xkb_compose_table_unref, (struct xkb_compose_table *) )
+SDL_WAYLAND_SYM(struct xkb_compose_state *, xkb_compose_state_new, (struct xkb_compose_table *, enum xkb_compose_state_flags) )
+SDL_WAYLAND_SYM(void, xkb_compose_state_unref, (struct xkb_compose_state *) )
+SDL_WAYLAND_SYM(enum xkb_compose_feed_result, xkb_compose_state_feed, (struct xkb_compose_state *, xkb_keysym_t) )
+SDL_WAYLAND_SYM(enum xkb_compose_status, xkb_compose_state_get_status, (struct xkb_compose_state *) )
+SDL_WAYLAND_SYM(xkb_keysym_t, xkb_compose_state_get_one_sym, (struct xkb_compose_state *) )
+SDL_WAYLAND_SYM(void, xkb_keymap_key_for_each, (struct xkb_keymap *, xkb_keymap_key_iter_t, void*) )
+SDL_WAYLAND_SYM(int, xkb_keymap_key_get_syms_by_level, (struct xkb_keymap *,
+                                                        xkb_keycode_t,
+                                                        xkb_layout_index_t,
+                                                        xkb_layout_index_t,
+                                                        const xkb_keysym_t **) )
+SDL_WAYLAND_SYM(uint32_t, xkb_keysym_to_utf32, (xkb_keysym_t) )
 
 #undef SDL_WAYLAND_MODULE
 #undef SDL_WAYLAND_SYM

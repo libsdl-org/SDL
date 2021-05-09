@@ -295,9 +295,13 @@ NETBSDAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
 
     info.hiwat = 5;
     info.lowat = 3;
-    (void) ioctl(this->hidden->audio_fd, AUDIO_SETINFO, &info);
+    if (ioctl(this->hidden->audio_fd, AUDIO_SETINFO, &info) < 0) {
+        return SDL_SetError("AUDIO_SETINFO failed for %s: %s", devname, strerror(errno));
+    }
 
-    (void) ioctl(this->hidden->audio_fd, AUDIO_GETINFO, &info);
+    if (ioctl(this->hidden->audio_fd, AUDIO_GETINFO, &info) < 0) {
+        return SDL_SetError("AUDIO_GETINFO failed for %s: %s", devname, strerror(errno));
+    }
 
     /* Final spec used for the device. */
     this->spec.format = format;
