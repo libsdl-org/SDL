@@ -700,7 +700,6 @@ void Wayland_ShowWindow(_THIS, SDL_Window *window)
 
     /* Restore state that was set prior to this call */
     Wayland_SetWindowTitle(_this, window);
-    Wayland_SetWindowBordered(_this, window, (window->flags & SDL_WINDOW_BORDERLESS) == 0);
     if (window->flags & SDL_WINDOW_MAXIMIZED) {
         Wayland_MaximizeWindow(_this, window);
     }
@@ -731,6 +730,15 @@ void Wayland_ShowWindow(_THIS, SDL_Window *window)
                 WAYLAND_wl_display_dispatch(c->display);
             }
         }
+    }
+
+    /* Unlike the rest of window state we have to set this _after_ flushing the
+     * display, because we need to create the decorations before possibly hiding
+     * them immediately afterward. But don't call it redundantly, the protocol
+     * may not interpret a redundant call nicely and cause weird stuff to happen
+     */
+    if (window->flags & SDL_WINDOW_BORDERLESS) {
+        Wayland_SetWindowBordered(_this, window, SDL_FALSE);
     }
 }
 
