@@ -682,11 +682,6 @@ void Wayland_ShowWindow(_THIS, SDL_Window *window)
         data->shell_surface.xdg.roleobj.toplevel = xdg_surface_get_toplevel(data->shell_surface.xdg.surface);
         xdg_toplevel_set_app_id(data->shell_surface.xdg.roleobj.toplevel, c->classname);
         xdg_toplevel_add_listener(data->shell_surface.xdg.roleobj.toplevel, &toplevel_listener_xdg, data);
-
-        /* Create the window decorations */
-        if (c->decoration_manager) {
-            data->server_decoration = zxdg_decoration_manager_v1_get_toplevel_decoration(c->decoration_manager, data->shell_surface.xdg.roleobj.toplevel);
-        }
     } else if (c->shell.zxdg) {
         data->shell_surface.zxdg.surface = zxdg_shell_v6_get_xdg_surface(c->shell.zxdg, data->surface);
         zxdg_surface_v6_set_user_data(data->shell_surface.zxdg.surface, data);
@@ -723,6 +718,11 @@ void Wayland_ShowWindow(_THIS, SDL_Window *window)
                 WAYLAND_wl_display_flush(c->display);
                 WAYLAND_wl_display_dispatch(c->display);
             }
+        }
+
+        /* Create the window decorations */
+        if (data->shell_surface.xdg.roleobj.toplevel && c->decoration_manager) {
+            data->server_decoration = zxdg_decoration_manager_v1_get_toplevel_decoration(c->decoration_manager, data->shell_surface.xdg.roleobj.toplevel);
         }
     } else if (c->shell.zxdg) {
         if (data->shell_surface.zxdg.surface) {
