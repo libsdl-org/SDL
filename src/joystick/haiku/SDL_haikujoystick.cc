@@ -260,7 +260,7 @@ extern "C"
     }
 
 
-    static int HAIKU_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
+    static int HAIKU_JoystickSetTriggerEffect(SDL_Joystick *joystick, const SDL_JoystickTriggerEffect *left_effect, const SDL_JoystickTriggerEffect *right_effect)
     {
         return SDL_Unsupported();
     }
@@ -298,7 +298,7 @@ extern "C"
         HAIKU_JoystickGetDeviceInstanceID,
         HAIKU_JoystickOpen,
         HAIKU_JoystickRumble,
-        HAIKU_JoystickRumbleTriggers,
+        HAIKU_JoystickSetTriggerEffect,
         HAIKU_JoystickHasLED,
         HAIKU_JoystickSetLED,
         HAIKU_JoystickSetSensorsEnabled,

@@ -1256,22 +1256,46 @@ RAWINPUT_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uin
 }
 
 static int
-RAWINPUT_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
+RAWINPUT_JoystickSetTriggerEffect(SDL_Joystick *joystick, const SDL_JoystickTriggerEffect *left_effect, const SDL_JoystickTriggerEffect *right_effect)
 {
 #if defined(SDL_JOYSTICK_RAWINPUT_WGI)
     RAWINPUT_DeviceContext *ctx = joystick->hwdata;
-    
+    int error_code = 0; // no error
     if (ctx->wgi_correlated) {
         WindowsGamingInputGamepadState *gamepad_state = ctx->wgi_slot;
         HRESULT hr;
-        gamepad_state->vibration.LeftTrigger = (DOUBLE)left_rumble / SDL_MAX_UINT16;
-        gamepad_state->vibration.RightTrigger = (DOUBLE)right_rumble / SDL_MAX_UINT16;
+        if (left_effect) {
+            if (left_effect->mode == SDL_JOYSTICK_TRIGGER_RUMBLE) {
+                gamepad_state->vibration.LeftTrigger = (DOUBLE)left_effect->strength / SDL_MAX_UINT16;
+            }
+            else if (left_effect->mode == SDL_JOYSTICK_TRIGGER_NO_EFFECT) {
+                gamepad_state->vibration.LeftTrigger = 0;
+            }
+            else {
+                error_code = SDL_Unsupported();
+            }
+        }
+        // else don't change left effect
+
+        if (right_effect) {
+            if (right_effect->mode == SDL_JOYSTICK_TRIGGER_RUMBLE) {
+                gamepad_state->vibration.RightTrigger = (DOUBLE)right_effect->strength / SDL_MAX_UINT16;
+            }
+            else if (right_effect->mode == SDL_JOYSTICK_TRIGGER_NO_EFFECT) {
+                gamepad_state->vibration.RightTrigger = 0;
+            }
+            else {
+                error_code = SDL_Unsupported();
+            }
+        }
+        // else don't change right effect
+        
         hr = __x_ABI_CWindows_CGaming_CInput_CIGamepad_put_Vibration(gamepad_state->gamepad, gamepad_state->vibration);
         if (!SUCCEEDED(hr)) {
             return SDL_SetError("Setting vibration failed: 0x%x\n", hr);
         }
     }
-    return 0;
+    return error_code;
 #else
     return SDL_Unsupported();
 #endif
@@ -1921,7 +1945,7 @@ SDL_JoystickDriver SDL_RAWINPUT_JoystickDriver =
     RAWINPUT_JoystickGetDeviceInstanceID,
     RAWINPUT_JoystickOpen,
     RAWINPUT_JoystickRumble,
-    RAWINPUT_JoystickRumbleTriggers,
+    RAWINPUT_JoystickSetTriggerEffect,
     RAWINPUT_JoystickHasLED,
     RAWINPUT_JoystickSetLED,
     RAWINPUT_JoystickSetSensorsEnabled,

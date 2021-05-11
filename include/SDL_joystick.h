@@ -107,6 +107,36 @@ typedef enum
     SDL_JOYSTICK_POWER_MAX
 } SDL_JoystickPowerLevel;
 
+
+/**
+ * This enum identifies different trigger effects that can be applied to a joystick.
+ * The Xbox one controller only supports Rumble effects. but the Dualsense supports 
+ * all of them. More effects can be added in the future.
+ * Currently, the value assigned matches the Dualsense mode byte.
+ * source: https://controllers.fandom.com/wiki/Sony_DualSense
+*/
+
+typedef enum {
+    SDL_JOYSTICK_TRIGGER_NO_EFFECT = SDL_FALSE, /* Apply no effect on the trigger */
+    SDL_JOYSTICK_TRIGGER_CONSTANT = 0x01,       /* Apply the same resistance on the whole trigger */
+    SDL_JOYSTICK_TRIGGER_SEGMENT = 0x02,        /* Apply the same resistance on a segment of the trigger */
+    SDL_JOYSTICK_TRIGGER_RUMBLE = 0x06,         /* Apply a rumbling effect on the trigger */
+} SDL_JoystickTriggerEffectMode;
+
+/**
+ * This structure describes an effect applied to a joystick trigger. Depending
+ * on the mode and the implementations, some fields may be used or ignored.
+ * For example, the Xbox One controller can apply rumble effects on triggers
+ * but the Dualsense can additionally specify the frequency and start position.
+ */
+typedef struct {
+    Uint8 mode;         /* An enum value of the SDL_JoystickTriggerEffectMode */
+    Uint16 strength;    /* The strength of the effect */
+    Uint8 start;        /* The point on the trigger where to start the effect */
+    Uint8 end;          /* The point on the trigger where to end the effect */
+    Uint8 frequency;    /* The frequency of the effect in Hz */
+} SDL_JoystickTriggerEffect;
+
 /* Set max recognized G-force from accelerometer
    See src/joystick/uikit/SDL_sysjoystick.m for notes on why this is needed
  */
@@ -736,14 +766,35 @@ extern DECLSPEC Uint8 SDLCALL SDL_JoystickGetButton(SDL_Joystick *joystick,
 extern DECLSPEC int SDLCALL SDL_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms);
 
 /**
+ * Start an effect in the joystick's triggers
+ *
+ * Each call to this function cancels any previous trigger effect unless the
+ * parameter is null, in which case the previous effect is left untouched.
+ *
+ * \param joystick The joystick to vibrate
+ * \param left_effect A pointer to the description of the trigger effect for the
+ *                     left trigger
+ * \param right_rumble A pointer to the description of the trigger effect for the
+ *                     right trigger
+ * \param duration_ms The duration of the effect, in milliseconds. 
+                       SDL_JOYSTICK_TRIGGER_NO_EFFECT is applied after this time.
+ *
+ * \returns 0, or -1 if this trigger effect isn't supported on this joystick
+ */
+extern DECLSPEC int SDLCALL SDL_JoystickSetTriggerEffect(SDL_Joystick *joystick, const SDL_JoystickTriggerEffect *left_effect, const SDL_JoystickTriggerEffect *right_effect, Uint32 duration_ms);
+
+/**
  * Start a rumble effect in the joystick's triggers
  *
- * Each call to this function cancels any previous trigger rumble effect,
+ * Each call to this function cancels any previous trigger effect,
  * and calling it with 0 intensity stops any rumbling.
  *
  * Note that this function is for _trigger_ rumble; the first joystick to
- * support this was the PlayStation 5's DualShock 5 controller. If you want
+ * support this was the Xbox One's Impulse Triggers. If you want
  * the (more common) whole-controller rumble, use SDL_JoystickRumble() instead.
+ * 
+ * Under the hood, this function calls SDL_JoystickSetTriggerEffect with 
+ * SDL_JOYSTICK_TRIGGER_RUMBLE as the mode.
  *
  * \param joystick The joystick to vibrate
  * \param left_rumble The intensity of the left trigger rumble motor, from 0

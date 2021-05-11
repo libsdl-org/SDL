@@ -1309,14 +1309,14 @@ HIDAPI_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint
 }
 
 static int
-HIDAPI_JoystickRumbleTriggers(SDL_Joystick * joystick, Uint16 left_rumble, Uint16 right_rumble)
+HIDAPI_JoystickSetTriggerEffect(SDL_Joystick * joystick, const SDL_JoystickTriggerEffect *left_effect, const SDL_JoystickTriggerEffect *right_effect)
 {
     int result;
 
     if (joystick->hwdata) {
         SDL_HIDAPI_Device *device = joystick->hwdata->device;
 
-        result = device->driver->RumbleJoystickTriggers(device, joystick, left_rumble, right_rumble);
+        result = device->driver->TriggerEffect(device, joystick, left_effect, right_effect);
     } else {
         SDL_SetError("Rumble failed, device disconnected");
         result = -1;
@@ -1464,7 +1464,7 @@ SDL_JoystickDriver SDL_HIDAPI_JoystickDriver =
     HIDAPI_JoystickGetDeviceInstanceID,
     HIDAPI_JoystickOpen,
     HIDAPI_JoystickRumble,
-    HIDAPI_JoystickRumbleTriggers,
+    HIDAPI_JoystickSetTriggerEffect,
     HIDAPI_JoystickHasLED,
     HIDAPI_JoystickSetLED,
     HIDAPI_JoystickSetSensorsEnabled,

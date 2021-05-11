@@ -611,7 +611,7 @@ ANDROID_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uin
 }
 
 static int
-ANDROID_JoystickRumbleTriggers(SDL_Joystick * joystick, Uint16 left_rumble, Uint16 right_rumble)
+ANDROID_JoystickSetTriggerEffect(SDL_Joystick * joystick, const SDL_JoystickTriggerEffect *left_effect, const SDL_JoystickTriggerEffect *right_effect)
 {
     return SDL_Unsupported();
 }
@@ -712,7 +712,7 @@ SDL_JoystickDriver SDL_ANDROID_JoystickDriver =
     ANDROID_JoystickGetDeviceInstanceID,
     ANDROID_JoystickOpen,
     ANDROID_JoystickRumble,
-    ANDROID_JoystickRumbleTriggers,
+    ANDROID_JoystickSetTriggerEffect,
     ANDROID_JoystickHasLED,
     ANDROID_JoystickSetLED,
     ANDROID_JoystickSetSensorsEnabled,

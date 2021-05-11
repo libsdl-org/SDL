@@ -877,3 +877,5 @@ SDL_DYNAPI_PROC(int,SDL_GetAudioDeviceSpec,(int a, int b, SDL_AudioSpec *c),(a,b
 SDL_DYNAPI_PROC(void,SDL_TLSCleanup,(void),(),)
 SDL_DYNAPI_PROC(void,SDL_SetWindowAlwaysOnTop,(SDL_Window *a, SDL_bool b),(a,b),)
 SDL_DYNAPI_PROC(int,SDL_FlashWindow,(SDL_Window *a, Uint32 b),(a, b),return)
+SDL_DYNAPI_PROC(int,SDL_GameControllerSetTriggerEffect,(SDL_GameController *a, const SDL_JoystickTriggerEffect *b, const SDL_JoystickTriggerEffect *c, Uint32 d),(a,b,c,d),return)
+SDL_DYNAPI_PROC(int,SDL_JoystickSetTriggerEffect,(SDL_Joystick *a, const SDL_JoystickTriggerEffect *b, const SDL_JoystickTriggerEffect *c, Uint32 d),(a,b,c,d),return)

@@ -2381,11 +2381,16 @@ SDL_GameControllerButtonBind SDL_GameControllerGetBindForButton(SDL_GameControll
     return bind;
 }
 
-
 int
 SDL_GameControllerRumble(SDL_GameController *gamecontroller, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms)
 {
     return SDL_JoystickRumble(SDL_GameControllerGetJoystick(gamecontroller), low_frequency_rumble, high_frequency_rumble, duration_ms);
+}
+
+int
+SDL_GameControllerSetTriggerEffect(SDL_GameController *gamecontroller, const SDL_JoystickTriggerEffect *left_effect, const SDL_JoystickTriggerEffect *right_effect, Uint32 duration_ms)
+{
+    return SDL_JoystickSetTriggerEffect(SDL_GameControllerGetJoystick(gamecontroller), left_effect, right_effect, duration_ms);
 }
 
 int

@@ -403,7 +403,7 @@ EMSCRIPTEN_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, U
 }
 
 static int
-EMSCRIPTEN_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
+EMSCRIPTEN_JoystickSetTriggerEffect(SDL_Joystick *joystick, const SDL_JoystickTriggerEffect *left_effect, const SDL_JoystickTriggerEffect *right_effect)
 {
     return SDL_Unsupported();
 }
@@ -444,7 +444,7 @@ SDL_JoystickDriver SDL_EMSCRIPTEN_JoystickDriver =
     EMSCRIPTEN_JoystickGetDeviceInstanceID,
     EMSCRIPTEN_JoystickOpen,
     EMSCRIPTEN_JoystickRumble,
-    EMSCRIPTEN_JoystickRumbleTriggers,
+    EMSCRIPTEN_JoystickSetTriggerEffect,
     EMSCRIPTEN_JoystickHasLED,
     EMSCRIPTEN_JoystickSetLED,
     EMSCRIPTEN_JoystickSetSensorsEnabled,

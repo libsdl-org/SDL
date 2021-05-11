@@ -469,7 +469,7 @@ static int OS2_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumbl
 	return SDL_Unsupported();
 }
 
-static int OS2_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
+static int OS2_JoystickSetTriggerEffect(SDL_Joystick *joystick, const SDL_JoystickTriggerEffect *left_effect, const SDL_JoystickTriggerEffect *right_effect)
 {
 	return SDL_Unsupported();
 }
@@ -774,7 +774,7 @@ SDL_JoystickDriver SDL_OS2_JoystickDriver =
 	OS2_JoystickGetDeviceInstanceID,
 	OS2_JoystickOpen,
 	OS2_JoystickRumble,
-	OS2_JoystickRumbleTriggers,
+	OS2_JoystickSetTriggerEffect,
 	OS2_JoystickHasLED,
 	OS2_JoystickSetLED,
 	OS2_JoystickSetSensorsEnabled,

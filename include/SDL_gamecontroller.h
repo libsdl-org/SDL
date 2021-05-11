@@ -781,19 +781,41 @@ extern DECLSPEC int SDLCALL SDL_GameControllerGetSensorData(SDL_GameController *
 extern DECLSPEC int SDLCALL SDL_GameControllerRumble(SDL_GameController *gamecontroller, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms);
 
 /**
- * Start a rumble effect in the game controller's triggers.
+ * Start an effect in the controller's triggers
  *
- * Each call to this function cancels any previous trigger rumble effect, and
- * calling it with 0 intensity stops any rumbling.
+ * Each call to this function cancels any previous trigger effect unless the
+ * parameter is null, in which case the previous effect is left untouched.
  *
- * Note that this is rumbling of the _triggers_ and not the game controller as
- * a whole. The first controller to offer this feature was the PlayStation 5's
- * DualShock 5.
+ * \param gamecontroller The game controller to perform the effect
+ * \param left_effect A pointer to the description of the trigger effect for the
+ *                     left trigger
+ * \param right_effect A pointer to the description of the trigger effect for the
+ *                     right trigger
+ * \param duration_ms The duration of the effect, in milliseconds. 
+                       SDL_JOYSTICK_TRIGGER_NO_EFFECT is applied after this time.
+ *
+ * \returns 0, or -1 if this trigger effect isn't supported on this controller
+ */
+extern DECLSPEC int SDLCALL SDL_GameControllerSetTriggerEffect(SDL_GameController *gamecontroller, const SDL_JoystickTriggerEffect *left_effect, const SDL_JoystickTriggerEffect *right_effect, Uint32 duration_ms);
+
+/**
+ * Start a rumble effect in the controller's triggers
+ *
+ * Each call to this function cancels any previous trigger effect,
+ * and calling it with 0 intensity stops any rumbling.
+ *
+ * Note that this function is for _trigger_ rumble; the first controller to
+ * support this was the Xbox One controller. If you want
+ * the (more common) whole-controller rumble, use SDL_JoystickRumble() instead.
+ * 
+ * Under the hood, this function calls SDL_JoystickSetTriggerEffect with 
+ * SDL_JOYSTICK_TRIGGER_RUMBLE as the mode.
  *
  * \param gamecontroller The controller to vibrate
  * \param left_rumble The intensity of the left trigger rumble motor, from 0
  *                    to 0xFFFF
- * \param right_rumble The intensity of the right trigger rumble motor, from 0 to 0xFFFF
+ * \param right_rumble The intensity of the right trigger rumble motor, from 0
+ *                     to 0xFFFF
  * \param duration_ms The duration of the rumble effect, in milliseconds
  *
  * \returns 0, or -1 if trigger rumble isn't supported on this controller

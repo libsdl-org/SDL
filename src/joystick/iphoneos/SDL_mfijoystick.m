@@ -1219,10 +1219,13 @@ IOS_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 h
 }
 
 static int
-IOS_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
+IOS_JoystickSetTriggerEffect(SDL_Joystick *joystick, const SDL_JoystickTriggerEffect *left_effect, const SDL_JoystickTriggerEffect *right_effect)
 {
 #ifdef ENABLE_MFI_RUMBLE
     SDL_JoystickDeviceItem *device = joystick->hwdata;
+    int error_code = 0, result;
+    Uint16 leftStrength = 0; // TODO: Init to previous value
+    Uint16 rightStrength = 0; // TODO: Init to previous value
 
     if (@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)) {
         if (!device->rumble && device->controller && device->controller.haptics) {
@@ -1234,8 +1237,38 @@ IOS_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 ri
     }
 
     if (device->rumble) {
+        // TODO: I'm don't have the means to compile and test this. The goal is the following:
+        // * Effect parameters could be nullptr in which case NO CHANGE (whatever was set last)
+        // * If either effect is an unsupported mode, the function must return SDL_Unsupported
+        // * I'm assuming there's no harm in calling the rumble function with same parameters as last call
+        if (left_effect) {
+            if (left_effect->mode == SDL_JOYSTICK_TRIGGER_RUMBLE) {
+                leftStrength = left_effect->strength / 655;
+            }
+            else if (left_effect->mode == SDL_JOYSTICK_TRIGGER_NO_EFFECT) {
+                leftStrength =  0;
+            }
+            else {
+                error_code = SDL_Unsupported();
+            }
+        }
+        // else don't change left effect
+
+        if (right_effect) {
+            if (right_effect->mode == SDL_JOYSTICK_TRIGGER_RUMBLE) {
+                rightStrength = right_effect->strength / 655;
+            }
+            else if (right_effect->mode == SDL_JOYSTICK_TRIGGER_NO_EFFECT) {
+                rightStrength =  0;
+            }
+            else {
+                error_code = SDL_Unsupported();
+            }
+        }
+    
         SDL_RumbleContext *rumble = (__bridge SDL_RumbleContext *)device->rumble;
-        return [rumble rumbleLeftTrigger:left_rumble andRightTrigger:right_rumble];
+        result = [rumble rumbleLeftTrigger:leftStrength andRightTrigger:rightStrength];
+        return result != 0 ? result : error_code;
     } else {
         return SDL_Unsupported();
     }
@@ -1431,7 +1464,7 @@ SDL_JoystickDriver SDL_IOS_JoystickDriver =
     IOS_JoystickGetDeviceInstanceID,
     IOS_JoystickOpen,
     IOS_JoystickRumble,
-    IOS_JoystickRumbleTriggers,
+    IOS_JoystickSetTriggerEffect,
     IOS_JoystickHasLED,
     IOS_JoystickSetLED,
     IOS_JoystickSetSensorsEnabled,

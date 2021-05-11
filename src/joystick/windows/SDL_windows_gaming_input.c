@@ -579,18 +579,40 @@ WGI_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 
 }
 
 static int
-WGI_JoystickRumbleTriggers(SDL_Joystick * joystick, Uint16 left_rumble, Uint16 right_rumble)
+WGI_JoystickSetTriggerEffect(SDL_Joystick * joystick, SDL_JoystickTriggerEffect left_effect, SDL_JoystickTriggerEffect right_effect)
 {
     struct joystick_hwdata *hwdata = joystick->hwdata;
+    int error_code = 0; //no error
+    if (hwdata->gamepad)
+    {
+        if (left_effect) {
+            if (left_effect->mode == SDL_JOYSTICK_TRIGGER_RUMBLE) {
+                hwdata->vibration.LeftTrigger = (DOUBLE)left_effect->strength / SDL_MAX_UINT16;
+            }
+            else if (left_effect->mode == SDL_JOYSTICK_TRIGGER_NO_EFFECT) {
+                hwdata->vibration.LeftTrigger = 0;
+            }
+            else {
+                error_code = SDL_Unsupported();
+            }
+        }
 
-    if (hwdata->gamepad) {
-        HRESULT hr;
+        if (right_effect)
+        {
+            if (right_effect->mode == SDL_JOYSTICK_TRIGGER_RUMBLE) {
+                hwdata->vibration.RightTrigger = (DOUBLE)right_effect->strength / SDL_MAX_UINT16;
+            }
+            else if (right_effect->mode == SDL_JOYSTICK_TRIGGER_NO_EFFECT) {
+                hwdata->vibration.RightTrigger = 0;
+            }
+            else {
+                error_code = SDL_Unsupported();
+            }
+        }
 
-        hwdata->vibration.LeftTrigger = (DOUBLE)left_rumble / SDL_MAX_UINT16;
-        hwdata->vibration.RightTrigger = (DOUBLE)right_rumble / SDL_MAX_UINT16;
-        hr = __x_ABI_CWindows_CGaming_CInput_CIGamepad_put_Vibration(hwdata->gamepad, hwdata->vibration);
+        HRESULT hr = __x_ABI_CWindows_CGaming_CInput_CIGamepad_put_Vibration(hwdata->gamepad, hwdata->vibration);
         if (SUCCEEDED(hr)) {
-            return 0;
+            return error_code; // One mode may have succeded but the other may be unsupported.
         } else {
             return SDL_SetError("Setting vibration failed: 0x%x\n", hr);
         }
@@ -759,7 +781,7 @@ SDL_JoystickDriver SDL_WGI_JoystickDriver =
     WGI_JoystickGetDeviceInstanceID,
     WGI_JoystickOpen,
     WGI_JoystickRumble,
-    WGI_JoystickRumbleTriggers,
+    WGI_JoystickSetTriggerEffect,
     WGI_JoystickHasLED,
     WGI_JoystickSetLED,
     WGI_JoystickSetSensorsEnabled,

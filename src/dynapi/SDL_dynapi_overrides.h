@@ -812,3 +812,5 @@
 #define SDL_TLSCleanup SDL_TLSCleanup_REAL
 #define SDL_SetWindowAlwaysOnTop SDL_SetWindowAlwaysOnTop_REAL
 #define SDL_FlashWindow SDL_FlashWindow_REAL
+#define SDL_GameControllerSetTriggerEffect SDL_GameControllerSetTriggerEffect_REAL
+#define SDL_JoystickSetTriggerEffect SDL_JoystickSetTriggerEffect_REAL

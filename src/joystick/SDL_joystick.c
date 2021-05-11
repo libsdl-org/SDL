@@ -900,37 +900,62 @@ SDL_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 h
 }
 
 int
-SDL_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble, Uint32 duration_ms)
+SDL_JoystickSetTriggerEffect(SDL_Joystick *joystick, const SDL_JoystickTriggerEffect *left_effect, const SDL_JoystickTriggerEffect *right_effect, Uint32 duration_ms)
 {
-    int result;
+    int result = 0;
 
     if (!SDL_PrivateJoystickValid(joystick)) {
         return -1;
     }
 
     SDL_LockJoysticks();
-    if (left_rumble == joystick->left_trigger_rumble && right_rumble == joystick->right_trigger_rumble) {
-        /* Just update the expiration */
-        result = 0;
-    } else {
-        result = joystick->driver->RumbleTriggers(joystick, left_rumble, right_rumble);
+
+    if (left_effect && SDL_memcmp(left_effect, &joystick->left_trigger_effect, sizeof(SDL_JoystickTriggerEffect)) != 0)
+    {
+        // new left trigger effect: raise a flag
+        result++;
+        joystick->left_trigger_effect = *left_effect; // Adopt the new effect
+    }
+    if (right_effect && SDL_memcmp(right_effect, &joystick->right_trigger_effect, sizeof(SDL_JoystickTriggerEffect)) != 0) {
+        // new right trigger effect: raise a flag
+        result++;
+        joystick->right_trigger_effect = *right_effect; // Adopt the new effect
     }
 
-    /* Save the rumble value regardless of success, so we don't spam the driver */
-    joystick->left_trigger_rumble = left_rumble;
-    joystick->right_trigger_rumble = right_rumble;
+    if(result != 0) {
+        /* Call once regardless of result, so we don't spam the driver */
+        result = joystick->driver->TriggerEffect(joystick, &joystick->left_trigger_effect, &joystick->right_trigger_effect);
+    }
+    /* else, just update the expiration because both effects are either nullptr or same as currrent */
 
-    if ((left_rumble || right_rumble) && duration_ms) {
-        joystick->trigger_rumble_expiration = SDL_GetTicks() + SDL_min(duration_ms, SDL_MAX_RUMBLE_DURATION_MS);
-        if (!joystick->trigger_rumble_expiration) {
-            joystick->trigger_rumble_expiration = 1;
-        }
+    if (((left_effect && left_effect->mode) || (right_effect && right_effect->mode)) && duration_ms) {
+        // Some effect is active for some time
+        joystick->trigger_effect_expiration = SDL_max(1, SDL_GetTicks() + SDL_min(duration_ms, SDL_MAX_RUMBLE_DURATION_MS));
     } else {
-        joystick->trigger_rumble_expiration = 0;
+        joystick->trigger_effect_expiration = 0;
     }
     SDL_UnlockJoysticks();
 
     return result;
+}
+
+int
+SDL_JoystickRumbleTriggers(SDL_Joystick* joystick, Uint16 left_rumble, Uint16 right_rumble, Uint32 duration_ms)
+{
+    SDL_JoystickTriggerEffect trigger_effects[2];
+    SDL_memset(trigger_effects, 0, 2 * sizeof(SDL_JoystickTriggerEffect));
+    
+    if (left_rumble) {
+        trigger_effects[0].mode = SDL_JOYSTICK_TRIGGER_RUMBLE;
+        trigger_effects[0].strength = left_rumble;
+        trigger_effects[0].frequency = 40; // Arbitrary. What is the impulse trigger frequency?!?
+    }
+    if (right_rumble) {
+        trigger_effects[1].mode = SDL_JOYSTICK_TRIGGER_RUMBLE;
+        trigger_effects[1].strength = right_rumble;
+        trigger_effects[1].frequency = 40; // Arbitrary. What is the impulse trigger frequency?!?
+    }
+    return SDL_JoystickSetTriggerEffect(joystick, &trigger_effects[0], &trigger_effects[1], duration_ms);
 }
 
 SDL_bool
@@ -1016,8 +1041,10 @@ SDL_JoystickClose(SDL_Joystick *joystick)
     if (joystick->rumble_expiration) {
         SDL_JoystickRumble(joystick, 0, 0, 0);
     }
-    if (joystick->trigger_rumble_expiration) {
-        SDL_JoystickRumbleTriggers(joystick, 0, 0, 0);
+    if (joystick->trigger_effect_expiration) {
+        SDL_JoystickTriggerEffect no_effect;
+        SDL_memset(&no_effect, 0, sizeof(SDL_JoystickTriggerEffect));
+        SDL_JoystickSetTriggerEffect(joystick, &no_effect, &no_effect, 0);
     }
 
     joystick->driver->Close(joystick);
@@ -1547,12 +1574,14 @@ SDL_JoystickUpdate(void)
             SDL_UnlockJoysticks();
         }
 
-        if (joystick->trigger_rumble_expiration) {
+        if (joystick->trigger_effect_expiration) {
             SDL_LockJoysticks();
             /* Double check now that the lock is held */
-            if (joystick->trigger_rumble_expiration &&
-                SDL_TICKS_PASSED(SDL_GetTicks(), joystick->trigger_rumble_expiration)) {
-                SDL_JoystickRumbleTriggers(joystick, 0, 0, 0);
+            if (joystick->trigger_effect_expiration &&
+                SDL_TICKS_PASSED(SDL_GetTicks(), joystick->trigger_effect_expiration)) {
+                SDL_JoystickTriggerEffect no_effect;
+                SDL_memset(&no_effect, 0, sizeof(SDL_JoystickTriggerEffect));
+                SDL_JoystickSetTriggerEffect(joystick, &no_effect, &no_effect, 0);
             }
             SDL_UnlockJoysticks();
         }

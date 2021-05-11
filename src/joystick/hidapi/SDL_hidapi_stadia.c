@@ -124,7 +124,7 @@ HIDAPI_DriverStadia_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joys
 }
 
 static int
-HIDAPI_DriverStadia_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
+HIDAPI_DriverStadia_SetTriggerEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const SDL_JoystickTriggerEffect *left_effect, const SDL_JoystickTriggerEffect *right_effect)
 {
     return SDL_Unsupported();
 }
@@ -311,7 +311,7 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverStadia =
     HIDAPI_DriverStadia_UpdateDevice,
     HIDAPI_DriverStadia_OpenJoystick,
     HIDAPI_DriverStadia_RumbleJoystick,
-    HIDAPI_DriverStadia_RumbleJoystickTriggers,
+    HIDAPI_DriverStadia_SetTriggerEffect,
     HIDAPI_DriverStadia_HasJoystickLED,
     HIDAPI_DriverStadia_SetJoystickLED,
     HIDAPI_DriverStadia_SetJoystickSensorsEnabled,

@@ -95,7 +95,7 @@ typedef struct _SDL_HIDAPI_DeviceDriver
     SDL_bool (*UpdateDevice)(SDL_HIDAPI_Device *device);
     SDL_bool (*OpenJoystick)(SDL_HIDAPI_Device *device, SDL_Joystick *joystick);
     int (*RumbleJoystick)(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble);
-    int (*RumbleJoystickTriggers)(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble);
+    int (*TriggerEffect)(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const SDL_JoystickTriggerEffect *left_effect, const SDL_JoystickTriggerEffect *right_effect);
     SDL_bool (*HasJoystickLED)(SDL_HIDAPI_Device *device, SDL_Joystick *joystick);
     int (*SetJoystickLED)(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue);
     int (*SetJoystickSensorsEnabled)(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, SDL_bool enabled);

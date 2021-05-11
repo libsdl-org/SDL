@@ -204,7 +204,7 @@ PSP_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 h
 }
 
 static int
-PSP_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
+PSP_JoystickSetTriggerEffect(SDL_Joystick *joystick, const SDL_JoystickTriggerEffect *left_effect, const SDL_JoystickTriggerEffect *right_effect)
 {
     return SDL_Unsupported();
 }
@@ -304,7 +304,7 @@ SDL_JoystickDriver SDL_PSP_JoystickDriver =
     PSP_JoystickGetDeviceInstanceID,
     PSP_JoystickOpen,
     PSP_JoystickRumble,
-    PSP_JoystickRumbleTriggers,
+    PSP_JoystickSetTriggerEffect,
     PSP_JoystickHasLED,
     PSP_JoystickSetLED,
     PSP_JoystickSetSensorsEnabled,

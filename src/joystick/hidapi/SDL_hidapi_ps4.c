@@ -626,7 +626,7 @@ HIDAPI_DriverPS4_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystic
 }
 
 static int
-HIDAPI_DriverPS4_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
+HIDAPI_DriverPS4_SetTriggerEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const SDL_JoystickTriggerEffect *left_effect, const SDL_JoystickTriggerEffect *right_effect)
 {
     return SDL_Unsupported();
 }
@@ -918,7 +918,7 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverPS4 =
     HIDAPI_DriverPS4_UpdateDevice,
     HIDAPI_DriverPS4_OpenJoystick,
     HIDAPI_DriverPS4_RumbleJoystick,
-    HIDAPI_DriverPS4_RumbleJoystickTriggers,
+    HIDAPI_DriverPS4_SetTriggerEffect,
     HIDAPI_DriverPS4_HasJoystickLED,
     HIDAPI_DriverPS4_SetJoystickLED,
     HIDAPI_DriverPS4_SetJoystickSensorsEnabled,

@@ -411,19 +411,43 @@ HIDAPI_DriverXboxOne_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joy
 }
 
 static int
-HIDAPI_DriverXboxOne_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
+HIDAPI_DriverXboxOne_SetTriggerEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const SDL_JoystickTriggerEffect *left_effect, const SDL_JoystickTriggerEffect *right_effect)
 {
     SDL_DriverXboxOne_Context *ctx = (SDL_DriverXboxOne_Context *)device->context;
+    int error_code = 0, result;
 
     if (!ctx->has_trigger_rumble) {
         return SDL_Unsupported();
     }
-
     /* Magnitude is 1..100 so scale the 16-bit input here */
-    ctx->left_trigger_rumble = left_rumble / 655;
-    ctx->right_trigger_rumble = right_rumble / 655;
+    if (left_effect) {
+        if (left_effect->mode == SDL_JOYSTICK_TRIGGER_RUMBLE) {
+            ctx->left_trigger_rumble = left_effect->strength / 655;
+        }
+        else if (left_effect->mode == SDL_JOYSTICK_TRIGGER_NO_EFFECT) {
+            ctx->left_trigger_rumble =  0;
+        }
+        else {
+            error_code = SDL_Unsupported();
+        }
+    }
+    // else don't change left effect
 
-    return HIDAPI_DriverXboxOne_UpdateRumble(device);
+    if (right_effect) {
+        if (right_effect->mode == SDL_JOYSTICK_TRIGGER_RUMBLE) {
+            ctx->right_trigger_rumble = right_effect->strength / 655;
+        }
+        else if (right_effect->mode == SDL_JOYSTICK_TRIGGER_NO_EFFECT) {
+            ctx->right_trigger_rumble =  0;
+        }
+        else {
+            error_code = SDL_Unsupported();
+        }
+    }
+    // else don't change right effect
+    
+    result = HIDAPI_DriverXboxOne_UpdateRumble(device);
+    return result != 0 ? result : error_code;
 }
 
 static SDL_bool
@@ -1075,7 +1099,7 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXboxOne =
     HIDAPI_DriverXboxOne_UpdateDevice,
     HIDAPI_DriverXboxOne_OpenJoystick,
     HIDAPI_DriverXboxOne_RumbleJoystick,
-    HIDAPI_DriverXboxOne_RumbleJoystickTriggers,
+    HIDAPI_DriverXboxOne_SetTriggerEffect,
     HIDAPI_DriverXboxOne_HasJoystickLED,
     HIDAPI_DriverXboxOne_SetJoystickLED,
     HIDAPI_DriverXboxOne_SetJoystickSensorsEnabled,

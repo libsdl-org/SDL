@@ -766,7 +766,7 @@ BSD_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 h
 }
 
 static int
-BSD_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
+BSD_JoystickSetTriggerEffect(SDL_Joystick *joystick, const SDL_JoystickTriggerEffect *left_effect, const SDL_JoystickTriggerEffect *right_effect)
 {
     return SDL_Unsupported();
 }
@@ -807,7 +807,7 @@ SDL_JoystickDriver SDL_BSD_JoystickDriver =
     BSD_JoystickGetDeviceInstanceID,
     BSD_JoystickOpen,
     BSD_JoystickRumble,
-    BSD_JoystickRumbleTriggers,
+    BSD_JoystickSetTriggerEffect,
     BSD_JoystickHasLED,
     BSD_JoystickSetLED,
     BSD_JoystickSetSensorsEnabled,

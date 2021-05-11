@@ -562,7 +562,7 @@ WINDOWS_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uin
 }
 
 static int
-WINDOWS_JoystickRumbleTriggers(SDL_Joystick * joystick, Uint16 left_rumble, Uint16 right_rumble)
+WINDOWS_JoystickSetTriggerEffect(SDL_Joystick * joystick, const SDL_JoystickTriggerEffect *left_effect, const SDL_JoystickTriggerEffect *right_effect)
 {
     return SDL_Unsupported();
 }
@@ -656,7 +656,7 @@ SDL_JoystickDriver SDL_WINDOWS_JoystickDriver =
     WINDOWS_JoystickGetDeviceInstanceID,
     WINDOWS_JoystickOpen,
     WINDOWS_JoystickRumble,
-    WINDOWS_JoystickRumbleTriggers,
+    WINDOWS_JoystickSetTriggerEffect,
     WINDOWS_JoystickHasLED,
     WINDOWS_JoystickSetLED,
     WINDOWS_JoystickSetSensorsEnabled,

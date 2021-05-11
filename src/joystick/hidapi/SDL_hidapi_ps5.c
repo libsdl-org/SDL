@@ -32,7 +32,6 @@
 #include "SDL_hidapijoystick_c.h"
 #include "SDL_hidapi_rumble.h"
 
-
 #ifdef SDL_JOYSTICK_HIDAPI_PS5
 
 /* Define this if you want to log all packets from the controller */
@@ -135,7 +134,8 @@ typedef enum {
     k_EDS5EffectLEDReset                = (1 << 2),
     k_EDS5EffectLED                     = (1 << 3),
     k_EDS5EffectPadLights               = (1 << 4),
-    k_EDS5EffectMicLight                = (1 << 5)
+    k_EDS5EffectMicLight                = (1 << 5),
+    k_EDS5EffectTriggers                = (1 << 6),
 } EDS5Effect;
 
 typedef enum {
@@ -143,6 +143,13 @@ typedef enum {
     k_EDS5LEDResetStatePending,
     k_EDS5LEDResetStateComplete,
 } EDS5LEDResetState;
+
+typedef enum {
+    k_EDS5TriggerEffectNone = 0x05,
+    k_EDS5TriggerEffectRigid = 0x01,
+    k_EDS5TriggerEffectPulse = 0x02,
+    k_EDS5TriggerEffectAdvanced = 0x24,
+} EDS5_TriggerEffectMode;
 
 typedef struct {
     Sint16 bias;
@@ -162,6 +169,8 @@ typedef struct {
     SDL_bool player_lights;
     Uint8 rumble_left;
     Uint8 rumble_right;
+    SDL_JoystickTriggerEffect left_trigger_effect;
+    SDL_JoystickTriggerEffect right_trigger_effect;
     SDL_bool color_set;
     Uint8 led_red;
     Uint8 led_green;
@@ -239,6 +248,32 @@ SetLightsForPlayerIndex(DS5EffectsState_t *effects, int player_index)
         effects->ucPadLights = lights[player_index] | 0x20;
     } else {
         effects->ucPadLights = 0x00;
+    }
+}
+
+static void 
+LoadTriggerEffect(Uint8* rgucTriggerEffect, const SDL_JoystickTriggerEffect *trigger_effect)
+{
+    rgucTriggerEffect[0] = trigger_effect->mode;
+    switch (rgucTriggerEffect[0])
+    {
+    case SDL_JOYSTICK_TRIGGER_CONSTANT:
+	    rgucTriggerEffect[1] = trigger_effect->start;
+	    rgucTriggerEffect[2] = trigger_effect->strength >> 8;
+        break;
+    case SDL_JOYSTICK_TRIGGER_SEGMENT:
+	    rgucTriggerEffect[1] = trigger_effect->start;
+	    rgucTriggerEffect[2] = trigger_effect->end;
+        rgucTriggerEffect[3] = trigger_effect->strength >> 8;
+        break;
+    case SDL_JOYSTICK_TRIGGER_RUMBLE:
+        rgucTriggerEffect[1] = trigger_effect->frequency;
+        rgucTriggerEffect[2] = trigger_effect->strength >> 8;
+        rgucTriggerEffect[3] = trigger_effect->start;
+        break;
+    case SDL_JOYSTICK_TRIGGER_NO_EFFECT:
+    default:
+        rgucTriggerEffect[0] = k_EDS5TriggerEffectNone;
     }
 }
 
@@ -456,6 +491,12 @@ HIDAPI_DriverPS5_UpdateEffects(SDL_HIDAPI_Device *device, int effect_mask)
         effects->ucEnableBits2 |= 0x01; /* Enable microphone light */
 
         effects->ucMicLightMode = 0;    /* Bitmask, 0x00 = off, 0x01 = solid, 0x02 = pulse */
+    }
+    if ((effect_mask & k_EDS5EffectTriggers) != 0) 
+    {
+        effects->ucEnableBits1 |= 0x08 | 0x04; // Enable left and right trigger effect respectively
+        LoadTriggerEffect(effects->rgucLeftTriggerEffect, &ctx->left_trigger_effect);
+        LoadTriggerEffect(effects->rgucRightTriggerEffect, &ctx->right_trigger_effect);
     }
 
     if (ctx->is_bluetooth) {
@@ -701,9 +742,25 @@ HIDAPI_DriverPS5_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystic
 }
 
 static int
-HIDAPI_DriverPS5_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
+HIDAPI_DriverPS5_SetTriggerEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const SDL_JoystickTriggerEffect *left_effect, const SDL_JoystickTriggerEffect *right_effect)
 {
-    return SDL_Unsupported();
+    SDL_DriverPS5_Context *ctx = (SDL_DriverPS5_Context *)device->context;
+
+    int result = 0;
+    if (left_effect) {
+        ctx->left_trigger_effect = *left_effect;
+        result++; // raise a flag
+    }
+    if (right_effect) {
+        ctx->right_trigger_effect = *right_effect;
+        result++; // raise a flag
+    }
+
+    if (result != 0) {
+        // Update with new effect and capture new result
+        result = HIDAPI_DriverPS5_UpdateEffects(device, k_EDS5EffectTriggers);
+    }
+    return result;
 }
 
 static SDL_bool
@@ -1079,7 +1136,7 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverPS5 =
     HIDAPI_DriverPS5_UpdateDevice,
     HIDAPI_DriverPS5_OpenJoystick,
     HIDAPI_DriverPS5_RumbleJoystick,
-    HIDAPI_DriverPS5_RumbleJoystickTriggers,
+    HIDAPI_DriverPS5_SetTriggerEffect,
     HIDAPI_DriverPS5_HasJoystickLED,
     HIDAPI_DriverPS5_SetJoystickLED,
     HIDAPI_DriverPS5_SetJoystickSensorsEnabled,
