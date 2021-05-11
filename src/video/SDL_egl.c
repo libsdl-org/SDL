@@ -1089,7 +1089,16 @@ SDL_EGL_MakeCurrent(_THIS, EGLSurface egl_surface, SDL_GLContext context)
     if (!_this->egl_data) {
         return SDL_SetError("OpenGL not initialized");
     }
-    
+
+    if (!_this->egl_data->eglMakeCurrent) {
+        if (!egl_surface && !context) {
+            /* Can't do the nothing there is to do? Probably trying to cleanup a failed startup, just return. */
+            return 0;
+        } else {
+            return SDL_SetError("OpenGL not initialized");  /* something clearly went wrong somewhere. */
+        }
+    }
+
     /* The android emulator crashes badly if you try to eglMakeCurrent 
      * with a valid context and invalid surface, so we have to check for both here.
      */
@@ -1101,7 +1110,7 @@ SDL_EGL_MakeCurrent(_THIS, EGLSurface egl_surface, SDL_GLContext context)
             return SDL_EGL_SetError("Unable to make EGL context current", "eglMakeCurrent");
         }
     }
-      
+
     return 0;
 }
 
