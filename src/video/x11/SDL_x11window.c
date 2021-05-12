@@ -1623,6 +1623,8 @@ X11_SetWindowMouseGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
             }
         }
 
+        X11_Xinput2GrabTouch(_this, window);
+
         /* Raise the window if we grab the mouse */
         X11_XRaiseWindow(display, data->xwindow);
 
@@ -1632,6 +1634,8 @@ X11_SetWindowMouseGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
         }
     } else {
         X11_XUngrabPointer(display, CurrentTime);
+
+        X11_Xinput2UngrabTouch(_this, window);
     }
     X11_XSync(display, False);
 }
