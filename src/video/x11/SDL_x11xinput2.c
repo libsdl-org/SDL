@@ -366,7 +366,7 @@ X11_Xinput2GrabTouch(_THIS, SDL_Window *window)
     XISetMask(eventmask.mask, XI_TouchEnd);
     XISetMask(eventmask.mask, XI_Motion);
 
-    XIGrabTouchBegin(display, XIAllDevices, data->xwindow, True, &eventmask, 1, &mods);
+    X11_XIGrabTouchBegin(display, XIAllDevices, data->xwindow, True, &eventmask, 1, &mods);
 #endif
 }
 
@@ -382,7 +382,7 @@ X11_Xinput2UngrabTouch(_THIS, SDL_Window *window)
     mods.modifiers = XIAnyModifier;
     mods.status = 0;
 
-    XIUngrabTouchBegin(display, XIAllDevices, data->xwindow, 1, &mods);
+    X11_XIUngrabTouchBegin(display, XIAllDevices, data->xwindow, 1, &mods);
 #endif
 }
 
