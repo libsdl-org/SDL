@@ -1,7 +1,7 @@
 KMSDRM on *BSD
 ==================================================
 
-KMSDRM is supported on FreeBSD and OpenBSD. DragonFlyBSD is not tested yet, but should work. NetBSD isn't supported yet because the application will crash when creating the KMSDRM screen.
+KMSDRM is supported on FreeBSD and OpenBSD. DragonFlyBSD works but requires being a root user. NetBSD isn't supported yet because the application will crash when creating the KMSDRM screen.
 
 WSCONS support has been brought back, but only as an input backend. It will not be brought back as a video backend to ease maintenance.
 
