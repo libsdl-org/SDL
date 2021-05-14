@@ -346,7 +346,11 @@ loop(void *arg)
             if (SDL_GameControllerGetButton(gamecontroller, (SDL_GameControllerButton)i) == SDL_PRESSED) {
                 SDL_bool on_front = (i < SDL_CONTROLLER_BUTTON_PADDLE1 || i > SDL_CONTROLLER_BUTTON_PADDLE4);
                 if (on_front == showing_front) {
-                    const SDL_Rect dst = { button_positions[i].x, button_positions[i].y, 50, 50 };
+                    SDL_Rect dst;
+                    dst.x = button_positions[i].x;
+                    dst.y = button_positions[i].y;
+                    dst.w = 50;
+                    dst.h = 50;
                     SDL_RenderCopyEx(screen, button, NULL, &dst, 0, NULL, SDL_FLIP_NONE);
                 }
             }
@@ -357,12 +361,20 @@ loop(void *arg)
                 const Sint16 deadzone = 8000;  /* !!! FIXME: real deadzone */
                 const Sint16 value = SDL_GameControllerGetAxis(gamecontroller, (SDL_GameControllerAxis)(i));
                 if (value < -deadzone) {
-                    const SDL_Rect dst = { axis_positions[i].x, axis_positions[i].y, 50, 50 };
                     const double angle = axis_positions[i].angle;
+                    SDL_Rect dst;
+                    dst.x = axis_positions[i].x;
+                    dst.y = axis_positions[i].y;
+                    dst.w = 50;
+                    dst.h = 50;
                     SDL_RenderCopyEx(screen, axis, NULL, &dst, angle, NULL, SDL_FLIP_NONE);
                 } else if (value > deadzone) {
-                    const SDL_Rect dst = { axis_positions[i].x, axis_positions[i].y, 50, 50 };
                     const double angle = axis_positions[i].angle + 180.0;
+                    SDL_Rect dst;
+                    dst.x = axis_positions[i].x;
+                    dst.y = axis_positions[i].y;
+                    dst.w = 50;
+                    dst.h = 50;
                     SDL_RenderCopyEx(screen, axis, NULL, &dst, angle, NULL, SDL_FLIP_NONE);
                 }
             }
