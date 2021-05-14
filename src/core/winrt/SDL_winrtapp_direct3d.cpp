@@ -729,15 +729,18 @@ void SDL_WinRTApp::OnExiting(Platform::Object^ sender, Platform::Object^ args)
 static void
 WINRT_LogPointerEvent(const char * header, Windows::UI::Core::PointerEventArgs ^ args, Windows::Foundation::Point transformedPoint)
 {
+    Uint8 button, pressed;
     Windows::UI::Input::PointerPoint ^ pt = args->CurrentPoint;
-    SDL_Log("%s: Position={%f,%f}, Transformed Pos={%f, %f}, MouseWheelDelta=%d, FrameId=%d, PointerId=%d, SDL button=%d\n",
+    WINRT_GetSDLButtonForPointerPoint(pt, &button, &pressed);
+    SDL_Log("%s: Position={%f,%f}, Transformed Pos={%f, %f}, MouseWheelDelta=%d, FrameId=%d, PointerId=%d, SDL button=%d pressed=%d\n",
         header,
         pt->Position.X, pt->Position.Y,
         transformedPoint.X, transformedPoint.Y,
         pt->Properties->MouseWheelDelta,
         pt->FrameId,
         pt->PointerId,
-        WINRT_GetSDLButtonForPointerPoint(pt));
+        button,
+        pressed);
 }
 
 void SDL_WinRTApp::OnPointerPressed(CoreWindow^ sender, PointerEventArgs^ args)
