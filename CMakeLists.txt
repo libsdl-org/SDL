@@ -1215,9 +1215,7 @@ elseif(UNIX AND NOT APPLE AND NOT ANDROID AND NOT RISCOS)
   if(UNIX)
     file(GLOB CORE_UNIX_SOURCES ${SDL2_SOURCE_DIR}/src/core/unix/*.c)
     set(SOURCE_FILES ${SOURCE_FILES} ${CORE_UNIX_SOURCES})
-  endif()
 
-  if(LINUX)
     check_c_source_compiles("
         #include <linux/input.h>
         #ifndef EVIOCGNAME
@@ -1225,16 +1223,28 @@ elseif(UNIX AND NOT APPLE AND NOT ANDROID AND NOT RISCOS)
         #endif
         int main(int argc, char** argv) {}" HAVE_INPUT_EVENTS)
 
-    check_c_source_compiles("
-        #include <linux/kd.h>
-        #include <linux/keyboard.h>
+    if(LINUX)
+      check_c_source_compiles("
+          #include <linux/kd.h>
+          #include <linux/keyboard.h>
 
-        int main(int argc, char **argv)
-        {
-            struct kbentry kbe;
-            kbe.kb_table = KG_CTRL;
-            ioctl(0, KDGKBENT, &kbe);
-        }" HAVE_INPUT_KD)
+          int main(int argc, char **argv)
+          {
+              struct kbentry kbe;
+              kbe.kb_table = KG_CTRL;
+              ioctl(0, KDGKBENT, &kbe);
+          }" HAVE_INPUT_KD)
+    elseif(FREEBSD)
+      check_c_source_compiles("
+          #include <sys/kbio.h>
+          #include <sys/ioctl.h>
+
+          int main(int argc, char **argv)
+          {
+              accentmap_t accTable;
+              ioctl(0, KDENABIO, 1);
+          }" HAVE_INPUT_KBIO)
+    endif()
 
     if(HAVE_INPUT_EVENTS)
       set(SDL_INPUT_LINUXEV 1)
@@ -1250,11 +1260,16 @@ elseif(UNIX AND NOT APPLE AND NOT ANDROID AND NOT RISCOS)
     if(HAVE_INPUT_KD)
       set(SDL_INPUT_LINUXKD 1)
     endif()
+      
+    if(HAVE_INPUT_KBIO)
+      set(SDL_INPUT_FBSDKBIO 1)
+    endif()
 
     check_include_file("libudev.h" HAVE_LIBUDEV_H)
     check_include_file("sys/inotify.h" HAVE_SYS_INOTIFY_H)
     check_symbol_exists(inotify_init "sys/inotify.h" HAVE_INOTIFY_INIT)
     check_symbol_exists(inotify_init1 "sys/inotify.h" HAVE_INOTIFY_INIT1)
+      
     if(HAVE_SYS_INOTIFY_H AND HAVE_INOTIFY_INIT)
       set(HAVE_INOTIFY 1)
     endif()
@@ -1280,6 +1295,16 @@ elseif(UNIX AND NOT APPLE AND NOT ANDROID AND NOT RISCOS)
         set(SDL_USE_IME TRUE)
         add_definitions(-DSDL_USE_IME)   # !!! FIXME: why isn't this a definition and not in SDL_config.h.cmake?
       endif()
+        
+      if(FREEBSD AND NOT HAVE_INOTIFY)
+        pkg_search_module(INOTIFY libinotify)
+        if(INOTIFY_FOUND)
+          set(HAVE_INOTIFY 1)
+          include_directories(${INOTIFY_INCLUDE_DIRS})
+          list(APPEND EXTRA_LIBS ${INOTIFY_LIBRARIES})
+        endif()
+      endif()
+
       if(HAVE_LIBUNWIND_H)
         # We've already found the header, so REQUIRE the lib to be present
         pkg_search_module(UNWIND REQUIRED libunwind)
@@ -1311,6 +1336,10 @@ elseif(UNIX AND NOT APPLE AND NOT ANDROID AND NOT RISCOS)
     if(HAVE_INPUT_EVENTS)
       set(SOURCE_FILES ${SOURCE_FILES} "${SDL2_SOURCE_DIR}/src/core/linux/SDL_evdev.c")
       set(SOURCE_FILES ${SOURCE_FILES} "${SDL2_SOURCE_DIR}/src/core/linux/SDL_evdev_kbd.c")
+    endif()
+      
+    if(HAVE_INPUT_KBIO)
+      set(SOURCE_FILES ${SOURCE_FILES} "${SDL2_SOURCE_DIR}/src/core/freebsd/SDL_evdev_kbd_freebsd.c")
     endif()
 
     # Always compiled for Linux, unconditionally:
