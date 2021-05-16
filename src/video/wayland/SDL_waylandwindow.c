@@ -133,8 +133,6 @@ SetFullscreen(SDL_Window *window, struct wl_output *output)
             wl_shell_surface_set_toplevel(wind->shell_surface.wl);
         }
     }
-
-    WAYLAND_wl_display_flush(viddata->display);
 }
 
 /* On modern desktops, we probably will use the xdg-shell protocol instead
