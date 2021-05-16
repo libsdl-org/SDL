@@ -2530,7 +2530,7 @@ if(SDL_SHARED)
   elseif(UNIX AND NOT ANDROID)
     set_target_properties(SDL2 PROPERTIES
       VERSION ${LT_VERSION}
-      SOVERSION ${LT_REVISION}
+      SOVERSION ${LT_MAJOR}
       OUTPUT_NAME "SDL2-${LT_RELEASE}")
   else()
     if(WINDOWS OR CYGWIN)
