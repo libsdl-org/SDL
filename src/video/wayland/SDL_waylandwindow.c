@@ -272,9 +272,12 @@ handle_configure_zxdg_toplevel(void *data,
 
     enum zxdg_toplevel_v6_state *state;
     SDL_bool fullscreen = SDL_FALSE;
+    SDL_bool maximized = SDL_FALSE;
     wl_array_for_each(state, states) {
         if (*state == ZXDG_TOPLEVEL_V6_STATE_FULLSCREEN) {
             fullscreen = SDL_TRUE;
+        } else if (*state == ZXDG_TOPLEVEL_V6_STATE_MAXIMIZED) {
+            maximized = SDL_TRUE;
         }
     }
 
@@ -283,6 +286,7 @@ handle_configure_zxdg_toplevel(void *data,
             /* We might need to re-enter fullscreen after being restored from minimized */
             SDL_WaylandOutputData *driverdata = (SDL_WaylandOutputData *) SDL_GetDisplayForWindow(window)->driverdata;
             SetFullscreen(window, driverdata->output);
+            fullscreen = SDL_TRUE;
         }
 
         if (width == 0 || height == 0) {
@@ -308,6 +312,19 @@ handle_configure_zxdg_toplevel(void *data,
             wind->resize.height = window->h;
             return;
         }
+    }
+
+    /* Always send a maximized/restore event; if the event is redundant it will
+     * automatically be discarded (see src/events/SDL_windowevents.c).
+     *
+     * No, we do not get minimize events from zxdg-shell.
+     */
+    if (!fullscreen) {
+        SDL_SendWindowEvent(window,
+                            maximized ?
+                                SDL_WINDOWEVENT_MAXIMIZED :
+                                SDL_WINDOWEVENT_RESTORED,
+                            0, 0);
     }
 
     if (width == 0 || height == 0) {
@@ -388,9 +405,12 @@ handle_configure_xdg_toplevel(void *data,
 
     enum xdg_toplevel_state *state;
     SDL_bool fullscreen = SDL_FALSE;
+    SDL_bool maximized = SDL_FALSE;
     wl_array_for_each(state, states) {
         if (*state == XDG_TOPLEVEL_STATE_FULLSCREEN) {
             fullscreen = SDL_TRUE;
+        } else if (*state == XDG_TOPLEVEL_STATE_MAXIMIZED) {
+            maximized = SDL_TRUE;
         }
     }
 
@@ -399,6 +419,7 @@ handle_configure_xdg_toplevel(void *data,
             /* We might need to re-enter fullscreen after being restored from minimized */
             SDL_WaylandOutputData *driverdata = (SDL_WaylandOutputData *) SDL_GetDisplayForWindow(window)->driverdata;
             SetFullscreen(window, driverdata->output);
+            fullscreen = SDL_TRUE;
         }
 
         if (width == 0 || height == 0) {
@@ -424,6 +445,19 @@ handle_configure_xdg_toplevel(void *data,
             wind->resize.height = window->h;
             return;
         }
+    }
+
+    /* Always send a maximized/restore event; if the event is redundant it will
+     * automatically be discarded (see src/events/SDL_windowevents.c)
+     *
+     * No, we do not get minimize events from xdg-shell.
+     */
+    if (!fullscreen) {
+        SDL_SendWindowEvent(window,
+                            maximized ?
+                                SDL_WINDOWEVENT_MAXIMIZED :
+                                SDL_WINDOWEVENT_RESTORED,
+                            0, 0);
     }
 
     if (width == 0 || height == 0) {
