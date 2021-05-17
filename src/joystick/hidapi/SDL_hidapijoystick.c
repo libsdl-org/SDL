@@ -1086,12 +1086,12 @@ HIDAPI_IsEquivalentToDevice(Uint16 vendor_id, Uint16 product_id, SDL_HIDAPI_Devi
 
     if (vendor_id == USB_VENDOR_MICROSOFT) {
         /* If we're looking for the wireless XBox 360 controller, also look for the dongle */
-        if (product_id == 0x02a1 && device->product_id == 0x0719) {
+        if (product_id == USB_PRODUCT_XBOX360_XUSB_CONTROLLER && device->product_id == USB_PRODUCT_XBOX360_WIRELESS_RECEIVER) {
             return SDL_TRUE;
         }
 
         /* If we're looking for the raw input Xbox One controller, match it against any other Xbox One controller */
-        if (product_id == USB_PRODUCT_XBOX_ONE_RAW_INPUT_CONTROLLER &&
+        if (product_id == USB_PRODUCT_XBOX_ONE_XBOXGIP_CONTROLLER &&
             SDL_GetJoystickGameControllerType(device->name, device->vendor_id, device->product_id, device->interface_number, device->interface_class, device->interface_subclass, device->interface_protocol) == SDL_CONTROLLER_TYPE_XBOXONE) {
             return SDL_TRUE;
         }
