@@ -2,7 +2,7 @@
 # Configuration validation subroutine script.
 #   Copyright 1992-2021 Free Software Foundation, Inc.
 
-timestamp='2021-01-08'
+timestamp='2021-04-30'
 
 # This file is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -1165,7 +1165,7 @@ case $cpu-$vendor in
 			| alphapca5[67] | alpha64pca5[67] \
 			| am33_2.0 \
 			| amdgcn \
-			| arc | arceb \
+			| arc | arceb | arc64 \
 			| arm | arm[lb]e | arme[lb] | armv* \
 			| avr | avr32 \
 			| asmjs \
@@ -1204,9 +1204,13 @@ case $cpu-$vendor in
 			| mips64vr5900 | mips64vr5900el \
 			| mipsisa32 | mipsisa32el \
 			| mipsisa32r2 | mipsisa32r2el \
+			| mipsisa32r3 | mipsisa32r3el \
+			| mipsisa32r5 | mipsisa32r5el \
 			| mipsisa32r6 | mipsisa32r6el \
 			| mipsisa64 | mipsisa64el \
 			| mipsisa64r2 | mipsisa64r2el \
+			| mipsisa64r3 | mipsisa64r3el \
+			| mipsisa64r5 | mipsisa64r5el \
 			| mipsisa64r6 | mipsisa64r6el \
 			| mipsisa64sb1 | mipsisa64sb1el \
 			| mipsisa64sr71k | mipsisa64sr71kel \
@@ -1707,12 +1711,12 @@ case $os in
 	     | nindy* | vxsim* | vxworks* | ebmon* | hms* | mvs* \
 	     | clix* | riscos* | uniplus* | iris* | isc* | rtu* | xenix* \
 	     | mirbsd* | netbsd* | dicos* | openedition* | ose* \
-	     | bitrig* | openbsd* | solidbsd* | libertybsd* | os108* \
+	     | bitrig* | openbsd* | secbsd* | solidbsd* | libertybsd* | os108* \
 	     | ekkobsd* | freebsd* | riscix* | lynxos* | os400* \
 	     | bosx* | nextstep* | cxux* | aout* | elf* | oabi* \
 	     | ptx* | coff* | ecoff* | winnt* | domain* | vsta* \
 	     | udi* | lites* | ieee* | go32* | aux* | hcos* \
-	     | chorusrdb* | cegcc* | glidix* \
+	     | chorusrdb* | cegcc* | glidix* | serenity* \
 	     | cygwin* | msys* | pe* | moss* | proelf* | rtems* \
 	     | midipix* | mingw32* | mingw64* | mint* \
 	     | uxpv* | beos* | mpeix* | udk* | moxiebox* \
