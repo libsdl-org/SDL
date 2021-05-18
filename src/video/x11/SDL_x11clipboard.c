@@ -61,7 +61,9 @@ X11_GetSDLCutBufferClipboardType(Display *display, enum ESDLX11ClipboardMimeType
     switch (mime_type) {
         case SDL_X11_CLIPBOARD_MIME_TYPE_STRING:
         case SDL_X11_CLIPBOARD_MIME_TYPE_TEXT_PLAIN:
+        #ifdef X_HAVE_UTF8_STRING
         case SDL_X11_CLIPBOARD_MIME_TYPE_TEXT_PLAIN_UTF8:
+        #endif
         case SDL_X11_CLIPBOARD_MIME_TYPE_TEXT:
             return X11_XInternAtom(display, "SDL_CUTBUFFER", False);
         default:
@@ -83,8 +85,10 @@ X11_GetSDLCutBufferClipboardExternalFormat(Display *display, enum ESDLX11Clipboa
             #endif
         case SDL_X11_CLIPBOARD_MIME_TYPE_TEXT_PLAIN:
             return X11_XInternAtom(display, "text/plain", False);
+        #ifdef X_HAVE_UTF8_STRING
         case SDL_X11_CLIPBOARD_MIME_TYPE_TEXT_PLAIN_UTF8:
             return X11_XInternAtom(display, "text/plain;charset=utf-8", False);
+        #endif
         case SDL_X11_CLIPBOARD_MIME_TYPE_TEXT:
             return X11_XInternAtom(display, "TEXT", False);
         default:
@@ -98,7 +102,9 @@ X11_GetSDLCutBufferClipboardInternalFormat(Display *display, enum ESDLX11Clipboa
     switch (mime_type) {
         case SDL_X11_CLIPBOARD_MIME_TYPE_STRING:
         case SDL_X11_CLIPBOARD_MIME_TYPE_TEXT_PLAIN:
+        #ifdef X_HAVE_UTF8_STRING
         case SDL_X11_CLIPBOARD_MIME_TYPE_TEXT_PLAIN_UTF8:
+        #endif
         case SDL_X11_CLIPBOARD_MIME_TYPE_TEXT:
             /* If you don't support UTF-8, you might use XA_STRING here */
             #ifdef X_HAVE_UTF8_STRING
