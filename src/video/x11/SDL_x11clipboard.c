@@ -61,7 +61,9 @@ X11_GetSDLCutBufferClipboardType(Display *display, enum ESDLX11ClipboardMimeType
     switch (mime_type) {
         case SDL_X11_CLIPBOARD_MIME_TYPE_STRING:
         case SDL_X11_CLIPBOARD_MIME_TYPE_TEXT_PLAIN:
-            return X11_XInternAtom(display, "SDL_CUTBUFFER_STRING", False);
+        case SDL_X11_CLIPBOARD_MIME_TYPE_TEXT_PLAIN_UTF8:
+        case SDL_X11_CLIPBOARD_MIME_TYPE_TEXT:
+            return X11_XInternAtom(display, "SDL_CUTBUFFER", False);
         default:
             SDL_SetError("Can't find mime_type.");
             return XA_STRING;

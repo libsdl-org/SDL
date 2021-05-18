@@ -614,12 +614,16 @@ X11_HandleClipboardEvent(_THIS, const XEvent *xevent)
                         X11_GetSDLCutBufferClipboardType(display, i), 0, INT_MAX/4, False, X11_GetSDLCutBufferClipboardInternalFormat(display, i),
                         &sevent.xselection.target, &seln_format, &nbytes,
                         &overflow, &seln_data) == Success) {
-                            X11_XChangeProperty(display, req->requestor, req->property,
-                                sevent.xselection.target, seln_format, PropModeReplace,
-                                seln_data, nbytes);
-                            sevent.xselection.property = req->property;
-                            X11_XFree(seln_data);
-                            break;
+                            if (seln_format != None) {
+                                X11_XChangeProperty(display, req->requestor, req->property,
+                                    sevent.xselection.target, seln_format, PropModeReplace,
+                                    seln_data, nbytes);
+                                sevent.xselection.property = req->property;
+                                X11_XFree(seln_data);
+                                break;
+                            } else {
+                                X11_XFree(seln_data);
+                            }
                     }
                 }
             }
