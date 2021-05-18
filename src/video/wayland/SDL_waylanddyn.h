@@ -139,6 +139,8 @@ void SDL_WAYLAND_UnloadSymbols(void);
 #define libdecor_frame_set_capabilities (*WAYLAND_libdecor_frame_set_capabilities)
 #define libdecor_frame_unset_capabilities (*WAYLAND_libdecor_frame_unset_capabilities)
 #define libdecor_frame_has_capability (*WAYLAND_libdecor_frame_has_capability)
+#define libdecor_frame_set_visibility (*WAYLAND_libdecor_frame_set_visibility)
+#define libdecor_frame_is_visible (*WAYLAND_libdecor_frame_is_visible)
 #define libdecor_frame_map (*WAYLAND_libdecor_frame_map)
 #define libdecor_state_new (*WAYLAND_libdecor_state_new)
 #define libdecor_state_free (*WAYLAND_libdecor_state_free)

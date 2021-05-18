@@ -1234,7 +1234,9 @@ Wayland_SetWindowBordered(_THIS, SDL_Window * window, SDL_bool bordered)
     const SDL_VideoData *viddata = (const SDL_VideoData *) _this->driverdata;
 #ifdef HAVE_LIBDECOR_H
     if (viddata->shell.libdecor) {
-        SDL_SetError("FIXME libdecor: Implement toggling decorations");
+        if (wind->shell_surface.libdecor.frame) {
+            libdecor_frame_set_visibility(wind->shell_surface.libdecor.frame, bordered);
+        }
     } else
 #endif
     if ((viddata->decoration_manager) && (wind->server_decoration)) {
