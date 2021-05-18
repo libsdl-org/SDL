@@ -23,10 +23,20 @@
 #ifndef SDL_x11clipboard_h_
 #define SDL_x11clipboard_h_
 
+enum ESDLX11ClipboardMimeType {
+    SDL_X11_CLIPBOARD_MIME_TYPE_STRING,
+    SDL_X11_CLIPBOARD_MIME_TYPE_TEXT_PLAIN,
+    SDL_X11_CLIPBOARD_MIME_TYPE_TEXT_PLAIN_UTF8,
+    SDL_X11_CLIPBOARD_MIME_TYPE_TEXT,
+    SDL_X11_CLIPBOARD_MIME_TYPE_MAX
+};
+
 extern int X11_SetClipboardText(_THIS, const char *text);
 extern char *X11_GetClipboardText(_THIS);
 extern SDL_bool X11_HasClipboardText(_THIS);
-extern Atom X11_GetSDLCutBufferClipboardType(Display *display);
+extern Atom X11_GetSDLCutBufferClipboardType(Display *display, enum ESDLX11ClipboardMimeType mime_type);
+extern Atom X11_GetSDLCutBufferClipboardExternalFormat(Display *display, enum ESDLX11ClipboardMimeType mime_type);
+extern Atom X11_GetSDLCutBufferClipboardInternalFormat(Display *display, enum ESDLX11ClipboardMimeType mime_type);
 
 #endif /* SDL_x11clipboard_h_ */
 
