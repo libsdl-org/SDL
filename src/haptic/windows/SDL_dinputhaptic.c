@@ -419,7 +419,6 @@ SDL_DINPUT_HapticOpen(SDL_Haptic * haptic, SDL_hapticlist_item *item)
 {
     HRESULT ret;
     LPDIRECTINPUTDEVICE8 device;
-    LPDIRECTINPUTDEVICE8 device8;
 
     /* Open the device */
     ret = IDirectInput8_CreateDevice(dinput, &item->instance.guidInstance,
@@ -429,19 +428,8 @@ SDL_DINPUT_HapticOpen(SDL_Haptic * haptic, SDL_hapticlist_item *item)
         return -1;
     }
 
-    /* Now get the IDirectInputDevice8 interface, instead. */
-    ret = IDirectInputDevice8_QueryInterface(device,
-        &IID_IDirectInputDevice8,
-        (LPVOID *)&device8);
-    /* Done with the temporary one now. */
-    IDirectInputDevice8_Release(device);
-    if (FAILED(ret)) {
-        DI_SetError("Querying DirectInput interface", ret);
-        return -1;
-    }
-
-    if (SDL_DINPUT_HapticOpenFromDevice(haptic, device8, SDL_FALSE) < 0) {
-        IDirectInputDevice8_Release(device8);
+    if (SDL_DINPUT_HapticOpenFromDevice(haptic, device, SDL_FALSE) < 0) {
+        IDirectInputDevice8_Release(device);
         return -1;
     }
     return 0;
@@ -713,7 +701,7 @@ SDL_SYS_ToDIEFFECT(SDL_Haptic * haptic, DIEFFECT * dest,
         /* Specifics */
         periodic->dwMagnitude = CONVERT(SDL_abs(hap_periodic->magnitude));
         periodic->lOffset = CONVERT(hap_periodic->offset);
-        periodic->dwPhase = 
+        periodic->dwPhase =
                 (hap_periodic->phase + (hap_periodic->magnitude < 0 ? 18000 : 0)) % 36000;
         periodic->dwPeriod = hap_periodic->period * 1000;
         dest->cbTypeSpecificParams = sizeof(DIPERIODIC);
