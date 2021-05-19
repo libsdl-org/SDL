@@ -255,6 +255,7 @@ static struct wscons_keycode_to_SDL {
     {KS_Num_Lock, SDL_SCANCODE_NUMLOCKCLEAR},
     {KS_Caps_Lock, SDL_SCANCODE_CAPSLOCK},
     {KS_BackSpace, SDL_SCANCODE_BACKSPACE},
+    {KS_space, SDL_SCANCODE_SPACE},
     {KS_Delete, SDL_SCANCODE_BACKSPACE},
     {KS_Home, SDL_SCANCODE_HOME},
     {KS_End, SDL_SCANCODE_END},
