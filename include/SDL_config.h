@@ -43,6 +43,8 @@
 #include "SDL_config_psp.h"
 #elif defined(__OS2__)
 #include "SDL_config_os2.h"
+#elif defined(__EMSCRIPTEN__)
+#include "SDL_config_emscripten.h"
 #else
 /* This is a minimal configuration just to get SDL running on new platforms. */
 #include "SDL_config_minimal.h"
