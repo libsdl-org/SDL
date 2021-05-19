@@ -103,12 +103,12 @@ void updateMouse(SDL_WSCONS_mouse_input_data* inputData)
                 break;
             case WSCONS_EVENT_MOUSE_DELTA_X:
                 {
-                    SDL_SendMouseMotion(mouse->focus, mouse->mouseID, 1, events[i].value * 2, 0);
+                    SDL_SendMouseMotion(mouse->focus, mouse->mouseID, 1, events[i].value, 0);
                     break;
                 }
             case WSCONS_EVENT_MOUSE_DELTA_Y:
                 {
-                    SDL_SendMouseMotion(mouse->focus, mouse->mouseID, 1, 0, -events[i].value * 2);
+                    SDL_SendMouseMotion(mouse->focus, mouse->mouseID, 1, 0, -events[i].value);
                     break;
                 }
             case WSCONS_EVENT_MOUSE_DELTA_W:
