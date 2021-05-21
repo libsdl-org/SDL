@@ -1163,6 +1163,12 @@ SDL_SetWindowDisplayMode(SDL_Window * window, const SDL_DisplayMode * mode)
         SDL_DisplayMode fullscreen_mode;
         if (SDL_GetWindowDisplayMode(window, &fullscreen_mode) == 0) {
             SDL_SetDisplayModeForDisplay(SDL_GetDisplayForWindow(window), &fullscreen_mode);
+            /* make sure the window size (and internals like window-surface size) are adjusted */
+            if (window->w != fullscreen_mode.w || window->h != fullscreen_mode.h) {
+                window->w = fullscreen_mode.w;
+                window->h = fullscreen_mode.h;
+                SDL_OnWindowResized(window);
+            }
         }
     }
     return 0;
