@@ -428,6 +428,23 @@ static SDL_MOUSE_EVENT_SOURCE GetMouseMessageSource()
     return SDL_MOUSE_EVENT_SOURCE_MOUSE;
 }
 
+static SDL_WindowData *
+WIN_GetWindowDataFromHWND(HWND hwnd)
+{
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
+    SDL_Window *window;
+
+    if (_this) {
+        for (window = _this->windows; window; window = window->next) {
+            SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
+            if (data && data->hwnd == hwnd) {
+                return data;
+            }
+        }
+    }
+    return NULL;
+}
+
 LRESULT CALLBACK
 WIN_KeyboardHookProc(int nCode, WPARAM wParam, LPARAM lParam)
 {
@@ -510,7 +527,11 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     }
 
     /* Get the window data for the window */
-    data = (SDL_WindowData *) GetProp(hwnd, TEXT("SDL_WindowData"));
+    data = WIN_GetWindowDataFromHWND(hwnd);
+    if (!data) {
+        /* Fallback */
+        data = (SDL_WindowData *) GetProp(hwnd, TEXT("SDL_WindowData"));
+    }
     if (!data) {
         return CallWindowProc(DefWindowProc, hwnd, msg, wParam, lParam);
     }
@@ -693,8 +714,8 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
             /* Mouse data (ignoring synthetic mouse events generated for touchscreens) */
             if (inp.header.dwType == RIM_TYPEMOUSE) {
-                if (GetMouseMessageSource() == SDL_MOUSE_EVENT_SOURCE_TOUCH ||
-                    (GetMessageExtraInfo() & 0x82) == 0x82) {
+                if (SDL_GetNumTouchDevices() > 0 &&
+                    (GetMouseMessageSource() == SDL_MOUSE_EVENT_SOURCE_TOUCH || (GetMessageExtraInfo() & 0x82) == 0x82)) {
                     break;
                 }
                 if (isRelative) {
