@@ -562,29 +562,32 @@ decoration_frame_configure(struct libdecor_frame *frame,
         window_state = LIBDECOR_WINDOW_STATE_NONE;
     }
 
-    if (window_state & LIBDECOR_WINDOW_STATE_MAXIMIZED) {
-        window->flags |= SDL_WINDOW_MAXIMIZED;
-    }
-    else {
-        window->flags &= ~SDL_WINDOW_MAXIMIZED;
-    }
-
-    if (window_state & LIBDECOR_WINDOW_STATE_ACTIVE) {
-        window->flags |= SDL_WINDOW_INPUT_FOCUS;
-    }
-    else {
-        window->flags &= ~SDL_WINDOW_INPUT_FOCUS;
-    }
-
-    /* The fullscreen flag is already set my some other entity when 'SDL_SetWindowFullscreen'
-     * is called, but we will set it here again in case the compositor requests fullscreen.
+   /* Always send maximized/restored/focus events; if the event is redundant it will
+     * automatically be discarded (see src/events/SDL_windowevents.c).
+     *
+     * No, we do not get minimize events from libdecor.
      */
     if (window_state & LIBDECOR_WINDOW_STATE_FULLSCREEN) {
         window->flags |= SDL_WINDOW_FULLSCREEN;
-    }
-    else {
+    } else {
+        if (window->flags & SDL_WINDOW_FULLSCREEN) {
+            /* We might need to re-enter fullscreen after being restored from minimized */
+            SDL_WaylandOutputData *driverdata = (SDL_WaylandOutputData *) SDL_GetDisplayForWindow(window)->driverdata;
+            SetFullscreen(window, driverdata->output);
+        } else {
+            SDL_SendWindowEvent(window,
+                                (window_state & LIBDECOR_WINDOW_STATE_MAXIMIZED) ?
+                                    SDL_WINDOWEVENT_MAXIMIZED :
+                                    SDL_WINDOWEVENT_RESTORED,
+                                0, 0);
+        }
         window->flags &= ~SDL_WINDOW_FULLSCREEN;
     }
+    SDL_SendWindowEvent(window,
+                        (window_state & LIBDECOR_WINDOW_STATE_ACTIVE) ?
+                            SDL_WINDOWEVENT_FOCUS_GAINED :
+                            SDL_WINDOWEVENT_FOCUS_LOST,
+                        0, 0);
 
     /* commit frame state */
     state = libdecor_state_new(width, height);
