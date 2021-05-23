@@ -1312,29 +1312,23 @@ KMSDRM_ReconfigureWindow( _THIS, SDL_Window * window)
 {
     SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
     SDL_DisplayData *dispdata = display->driverdata;
-    uint32_t refresh_rate = 0;
 
-    if ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) ==
-                         SDL_WINDOW_FULLSCREEN_DESKTOP)
+    if ((window->flags & SDL_WINDOW_FULLSCREEN) ==
+                         SDL_WINDOW_FULLSCREEN)
     {
-
+        /* Nothing to do, honor the most recent mode requested by the user */
+    }
+    else if ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) ==
+                              SDL_WINDOW_FULLSCREEN_DESKTOP)
+    {
         /* Update the current mode to the desktop mode. */
         dispdata->mode = dispdata->original_mode;
-
     } else {
-
         drmModeModeInfo *mode;
-
-        /* Refresh rate is only important for fullscreen windows. */
-        if ((window->flags & SDL_WINDOW_FULLSCREEN) ==
-                             SDL_WINDOW_FULLSCREEN)
-        {
-            refresh_rate = (uint32_t)window->fullscreen_mode.refresh_rate;
-        }
 
         /* Try to find a valid video mode matching the size of the window. */
         mode = KMSDRM_GetClosestDisplayMode(display,
-          window->windowed.w, window->windowed.h, refresh_rate );
+          window->windowed.w, window->windowed.h, 0);
 
         if (mode) {
             /* If matching mode found, recreate the GBM surface with the size
@@ -1346,11 +1340,6 @@ KMSDRM_ReconfigureWindow( _THIS, SDL_Window * window)
                and setup that mode on the CRTC. */
             dispdata->mode = dispdata->original_mode;
         }
-
-        /* Tell app about the size we have determined for the window,
-           so SDL pre-scales to that size for us. */
-        SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED,
-                            dispdata->mode.hdisplay, dispdata->mode.vdisplay);
     }
 
     /* Recreate the GBM (and EGL) surfaces, and mark the CRTC mode/fb setting
