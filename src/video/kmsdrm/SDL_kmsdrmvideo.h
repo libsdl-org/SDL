@@ -80,8 +80,6 @@ typedef struct SDL_DisplayData
     uint64_t cursor_w, cursor_h;
 
     SDL_bool default_cursor_init;
-    SDL_bool modeset_pending;
-
 } SDL_DisplayData;
 
 typedef struct SDL_WindowData
