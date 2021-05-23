@@ -907,6 +907,7 @@ KMSDRM_CreateSurfaces(_THIS, SDL_Window * window)
 {
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
     SDL_WindowData *windata = (SDL_WindowData *)window->driverdata;
+    SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayForWindow(window)->driverdata;
 
     uint32_t surface_fmt = GBM_FORMAT_ARGB8888;
     uint32_t surface_flags = GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING;
@@ -929,7 +930,8 @@ KMSDRM_CreateSurfaces(_THIS, SDL_Window * window)
     }
 
     windata->gs = KMSDRM_gbm_surface_create(viddata->gbm_dev,
-                      windata->surface_w, windata->surface_h, surface_fmt, surface_flags);
+                      dispdata->mode.hdisplay, dispdata->mode.vdisplay,
+                      surface_fmt, surface_flags);
 
     if (!windata->gs) {
         return SDL_SetError("Could not create GBM surface");
@@ -1246,12 +1248,8 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
                  window->windowed.w, window->windowed.h, 0 );
 
         if (mode) {
-            windata->surface_w = mode->hdisplay;
-            windata->surface_h = mode->vdisplay;
             dispdata->mode = *mode;
         } else {
-            windata->surface_w = dispdata->original_mode.hdisplay;
-            windata->surface_h = dispdata->original_mode.vdisplay;
             dispdata->mode = dispdata->original_mode;
         }
 
@@ -1267,7 +1265,7 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
         /* Tell app about the size we have determined for the window,
            so SDL pre-scales to that size for us. */
         SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED,
-            windata->surface_w, windata->surface_h);
+            dispdata->mode.hdisplay, dispdata->mode.vdisplay);
 
     } /* NON-Vulkan block ends. */
 
@@ -1310,9 +1308,8 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
 /* To be used by SetWindowSize() and SetWindowFullscreen().                  */
 /*****************************************************************************/
 void
-KMSDRM_ReconfigureWindow( _THIS, SDL_Window * window) {
-
-    SDL_WindowData *windata = (SDL_WindowData *) window->driverdata;
+KMSDRM_ReconfigureWindow( _THIS, SDL_Window * window)
+{
     SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
     SDL_DisplayData *dispdata = display->driverdata;
     uint32_t refresh_rate = 0;
@@ -1322,8 +1319,6 @@ KMSDRM_ReconfigureWindow( _THIS, SDL_Window * window) {
     {
 
         /* Update the current mode to the desktop mode. */
-        windata->surface_w = dispdata->original_mode.hdisplay;
-        windata->surface_h = dispdata->original_mode.vdisplay;
         dispdata->mode = dispdata->original_mode;
 
     } else {
@@ -1344,22 +1339,18 @@ KMSDRM_ReconfigureWindow( _THIS, SDL_Window * window) {
         if (mode) {
             /* If matching mode found, recreate the GBM surface with the size
                of that mode and configure it on the CRTC. */
-            windata->surface_w = mode->hdisplay;
-            windata->surface_h = mode->vdisplay;
             dispdata->mode = *mode;
         } else {
             /* If not matching mode found, recreate the GBM surfaces with the
                size of the mode that was originally configured on the CRTC,
                and setup that mode on the CRTC. */
-            windata->surface_w = dispdata->original_mode.hdisplay;
-            windata->surface_h = dispdata->original_mode.vdisplay;
             dispdata->mode = dispdata->original_mode;
         }
 
         /* Tell app about the size we have determined for the window,
            so SDL pre-scales to that size for us. */
         SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED,
-                            windata->surface_w, windata->surface_h);
+                            dispdata->mode.hdisplay, dispdata->mode.vdisplay);
     }
 
     /* Recreate the GBM (and EGL) surfaces, and mark the CRTC mode/fb setting
@@ -1370,7 +1361,7 @@ KMSDRM_ReconfigureWindow( _THIS, SDL_Window * window) {
     /* Tell app about the size we have determined for the window,
        so SDL pre-scales to that size for us. */
     SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED,
-                        windata->surface_w, windata->surface_h);
+                        dispdata->mode.hdisplay, dispdata->mode.vdisplay);
 }
 
 int
