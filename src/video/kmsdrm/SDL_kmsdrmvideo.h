@@ -99,7 +99,7 @@ typedef struct SDL_WindowData
     SDL_bool double_buffer;
 
     EGLSurface egl_surface;
-
+    SDL_bool egl_surface_dirty;
 } SDL_WindowData;
 
 typedef struct KMSDRM_FBInfo
