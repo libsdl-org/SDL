@@ -100,12 +100,6 @@ typedef struct SDL_WindowData
 
     EGLSurface egl_surface;
 
-    /* The size we chose for the GBM surface. REMEMBER that the CRTC must always have
-       a mode with the same size configured before trying to flip to a buffer of that
-       surface or drmModePageFlip() will return -28. */
-    uint32_t surface_w;
-    uint32_t surface_h;
-
 } SDL_WindowData;
 
 typedef struct KMSDRM_FBInfo
