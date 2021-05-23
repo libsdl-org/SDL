@@ -953,6 +953,8 @@ KMSDRM_CreateSurfaces(_THIS, SDL_Window * window)
     egl_context = (EGLContext)SDL_GL_GetCurrentContext();
     ret = SDL_EGL_MakeCurrent(_this, windata->egl_surface, egl_context);
 
+    windata->egl_surface_dirty = SDL_FALSE;
+
 cleanup:
 
     if (ret) {
@@ -1075,10 +1077,11 @@ KMSDRM_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
 
     for (i = 0; i < viddata->num_windows; i++) {
         SDL_Window *window = viddata->windows[i];
+        SDL_WindowData *windata = (SDL_WindowData *)window->driverdata;
 
-        if (KMSDRM_CreateSurfaces(_this, window)) {
-            return -1;
-        }
+        /* Can't recreate EGL surfaces right now, need to wait until SwapWindow
+           so the correct thread-local surface and context state are available */
+        windata->egl_surface_dirty = SDL_TRUE;
 
         /* Tell app about the window resize */
         SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, mode->w, mode->h);

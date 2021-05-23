@@ -97,6 +97,11 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window) {
        even if you do async flips. */
     uint32_t flip_flags = DRM_MODE_PAGE_FLIP_EVENT;
 
+    /* Recreate the GBM / EGL surfaces if the display mode has changed */
+    if (windata->egl_surface_dirty) {
+        KMSDRM_CreateSurfaces(_this, window);
+    }
+
     /* Wait for confirmation that the next front buffer has been flipped, at which
        point the previous front buffer can be released */
     if (!KMSDRM_WaitPageflip(_this, windata)) {
