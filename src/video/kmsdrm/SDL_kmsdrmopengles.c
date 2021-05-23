@@ -141,64 +141,58 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window) {
         return 0;
     }
 
-    /* Do we have a modeset pending? If so, configure the new mode on the CRTC.
-       Has to be done before next pageflip issues, so the buffer with the
-       new size is big enough for preventing CRTC from reading out of bounds. */
-    if (dispdata->modeset_pending) {
-
+    if (!windata->bo) {
+        /* On the first swap, immediately present the new front buffer. Before
+           drmModePageFlip can be used the CRTC has to be configured to use
+           the current connector and mode with drmModeSetCrtc */
         ret = KMSDRM_drmModeSetCrtc(viddata->drm_fd,
           dispdata->crtc->crtc_id, fb_info->fb_id, 0, 0,
           &dispdata->connector->connector_id, 1, &dispdata->mode);
-
-        dispdata->modeset_pending = SDL_FALSE;
 
         if (ret) {
             SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Could not set videomode on CRTC.");
             return 0;
         }
-
-        /* It's OK to return now if we have done a drmModeSetCrtc(),
-           it has done the pageflip and blocked until it was done. */
-        return 1;
-    }
-
-    /* Issue pageflip on the next front buffer.
-       Remember: drmModePageFlip() never blocks, it just issues the flip,
-       which will be done during the next vblank, or immediately if
-       we pass the DRM_MODE_PAGE_FLIP_ASYNC flag.
-       Since calling drmModePageFlip() will return EBUSY if we call it
-       without having completed the last issued flip, we must pass the
-       DRM_MODE_PAGE_FLIP_ASYNC if we don't block on EGL (egl_swapinterval = 0).
-       That makes it flip immediately, without waiting for the next vblank
-       to do so, so even if we don't block on EGL, the flip will have completed
-       when we get here again. */
-
-    if (_this->egl_data->egl_swapinterval == 0 && viddata->async_pageflip_support) {
-        flip_flags |= DRM_MODE_PAGE_FLIP_ASYNC;
-    }
-
-    ret = KMSDRM_drmModePageFlip(viddata->drm_fd, dispdata->crtc->crtc_id,
-             fb_info->fb_id, flip_flags, &windata->waiting_for_flip);
-
-    if (ret == 0) {
-        windata->waiting_for_flip = SDL_TRUE;
     } else {
-        SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Could not queue pageflip: %d", ret);
-    }
+        /* On subsequent swaps, queue the new front buffer to be flipped during
+           the next vertical blank
 
-    /* Wait immediately for vsync (as if we only had two buffers).
-       Even if we are already doing a WaitPageflip at the begining of this
-       function, this is NOT redundant because here we wait immediately
-       after submitting the image to the screen, reducing lag, and if
-       we have waited here, there won't be a pending pageflip so the
-       WaitPageflip at the beggining of this function will be a no-op.
-       Just leave it here and don't worry. 
-       Run your SDL2 program with "SDL_KMSDRM_DOUBLE_BUFFER=1 <program_name>"
-       to enable this. */
-    if (windata->double_buffer) {
-        if (!KMSDRM_WaitPageflip(_this, windata)) {
-            SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Immediate wait for previous pageflip failed");
-            return 0;
+           Remember: drmModePageFlip() never blocks, it just issues the flip,
+           which will be done during the next vblank, or immediately if
+           we pass the DRM_MODE_PAGE_FLIP_ASYNC flag.
+           Since calling drmModePageFlip() will return EBUSY if we call it
+           without having completed the last issued flip, we must pass the
+           DRM_MODE_PAGE_FLIP_ASYNC if we don't block on EGL (egl_swapinterval = 0).
+           That makes it flip immediately, without waiting for the next vblank
+           to do so, so even if we don't block on EGL, the flip will have completed
+           when we get here again. */
+        if (_this->egl_data->egl_swapinterval == 0 && viddata->async_pageflip_support) {
+            flip_flags |= DRM_MODE_PAGE_FLIP_ASYNC;
+        }
+
+        ret = KMSDRM_drmModePageFlip(viddata->drm_fd, dispdata->crtc->crtc_id,
+                 fb_info->fb_id, flip_flags, &windata->waiting_for_flip);
+
+        if (ret == 0) {
+            windata->waiting_for_flip = SDL_TRUE;
+        } else {
+            SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Could not queue pageflip: %d", ret);
+        }
+
+        /* Wait immediately for vsync (as if we only had two buffers).
+           Even if we are already doing a WaitPageflip at the begining of this
+           function, this is NOT redundant because here we wait immediately
+           after submitting the image to the screen, reducing lag, and if
+           we have waited here, there won't be a pending pageflip so the
+           WaitPageflip at the beggining of this function will be a no-op.
+           Just leave it here and don't worry.
+           Run your SDL2 program with "SDL_KMSDRM_DOUBLE_BUFFER=1 <program_name>"
+           to enable this. */
+        if (windata->double_buffer) {
+            if (!KMSDRM_WaitPageflip(_this, windata)) {
+                SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Immediate wait for previous pageflip failed");
+                return 0;
+            }
         }
     }
 

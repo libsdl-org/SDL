@@ -551,7 +551,6 @@ void KMSDRM_AddDisplay (_THIS, drmModeConnector *connector, drmModeRes *resource
 
     /* Initialize some of the members of the new display's driverdata
        to sane values. */
-    dispdata->modeset_pending = SDL_FALSE;
     dispdata->cursor_bo = NULL;
 
     /* Since we create and show the default cursor on KMSDRM_InitMouse(),
@@ -1073,7 +1072,6 @@ KMSDRM_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
     /* Take note of the new mode to be set, and leave the CRTC modeset pending
        so it's done in SwapWindow. */
     dispdata->mode = conn->modes[modedata->mode_index];
-    dispdata->modeset_pending = SDL_TRUE; 
 
     for (i = 0; i < viddata->num_windows; i++) {
         SDL_Window *window = viddata->windows[i];
@@ -1256,9 +1254,6 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
             dispdata->mode = dispdata->original_mode;
         }
 
-        /* Take note to do the modesettng on the CRTC in SwapWindow. */
-        dispdata->modeset_pending = SDL_TRUE;
-
         /* Create the window surfaces with the size we have just chosen.
            Needs the window diverdata in place. */
         if ((ret = KMSDRM_CreateSurfaces(_this, window))) {
@@ -1348,7 +1343,6 @@ KMSDRM_ReconfigureWindow( _THIS, SDL_Window * window)
     /* Recreate the GBM (and EGL) surfaces, and mark the CRTC mode/fb setting
        as pending so it's done on SwapWindow.  */
     KMSDRM_CreateSurfaces(_this, window);
-    dispdata->modeset_pending = SDL_TRUE;
 
     /* Tell app about the size we have determined for the window,
        so SDL pre-scales to that size for us. */
