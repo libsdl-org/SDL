@@ -35,6 +35,17 @@
 #include "SDL_atomic.h"
 #include "SDL_mutex.h"
 
+#if defined(__WIN32__)
+#include <process.h> /* _beginthreadex() and _endthreadex() */
+#endif
+#if defined(__OS2__) /* for _beginthread() and _endthread() */
+#ifndef __EMX__
+#include <process.h>
+#else
+#include <stdlib.h>
+#endif
+#endif
+
 #include "begin_code.h"
 /* Set up for C function definitions, even when using C++ */
 #ifdef __cplusplus
@@ -99,7 +110,6 @@ typedef int (SDLCALL * SDL_ThreadFunction) (void *data);
  *  library!
  */
 #define SDL_PASSED_BEGINTHREAD_ENDTHREAD
-#include <process.h> /* _beginthreadex() and _endthreadex() */
 
 typedef uintptr_t (__cdecl * pfnSDL_CurrentBeginThread)
                    (void *, unsigned, unsigned (__stdcall *func)(void *),
@@ -147,12 +157,6 @@ SDL_CreateThreadWithStackSize(int (SDLCALL * fn) (void *),
  * into a dll with Watcom's runtime statically linked.
  */
 #define SDL_PASSED_BEGINTHREAD_ENDTHREAD
-
-#ifndef __EMX__
-#include <process.h>
-#else
-#include <stdlib.h>
-#endif
 
 typedef int (*pfnSDL_CurrentBeginThread)(void (*func)(void *), void *, unsigned, void * /*arg*/);
 typedef void (*pfnSDL_CurrentEndThread)(void);
