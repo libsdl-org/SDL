@@ -601,7 +601,7 @@ inputCallback(void *inUserData, AudioQueueRef inAQ, AudioQueueBufferRef inBuffer
     }
 
     /* ignore unless we're active. */
-    if (!SDL_AtomicGet(&this->paused) && SDL_AtomicGet(&this->enabled) && !SDL_AtomicGet(&this->paused)) {
+    if (!SDL_AtomicGet(&this->paused) && SDL_AtomicGet(&this->enabled)) {
         const Uint8 *ptr = (const Uint8 *) inBuffer->mAudioData;
         UInt32 remaining = inBuffer->mAudioDataByteSize;
         while (remaining > 0) {
