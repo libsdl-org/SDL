@@ -61,7 +61,7 @@ static BOOL CALLBACK
 EnumHapticsCallback(const DIDEVICEINSTANCE * pdidInstance, VOID * pContext)
 {
     (void) pContext;
-    SDL_DINPUT_MaybeAddDevice(pdidInstance);
+    SDL_DINPUT_HapticMaybeAddDevice(pdidInstance);
     return DIENUM_CONTINUE;  /* continue enumerating */
 }
 
@@ -117,7 +117,7 @@ SDL_DINPUT_HapticInit(void)
 }
 
 int
-SDL_DINPUT_MaybeAddDevice(const DIDEVICEINSTANCE * pdidInstance)
+SDL_DINPUT_HapticMaybeAddDevice(const DIDEVICEINSTANCE * pdidInstance)
 {
     HRESULT ret;
     LPDIRECTINPUTDEVICE8 device;
@@ -176,7 +176,7 @@ SDL_DINPUT_MaybeAddDevice(const DIDEVICEINSTANCE * pdidInstance)
 }
 
 int
-SDL_DINPUT_MaybeRemoveDevice(const DIDEVICEINSTANCE * pdidInstance)
+SDL_DINPUT_HapticMaybeRemoveDevice(const DIDEVICEINSTANCE * pdidInstance)
 {
     SDL_hapticlist_item *item;
     SDL_hapticlist_item *prev = NULL;
@@ -1188,13 +1188,13 @@ SDL_DINPUT_HapticInit(void)
 }
 
 int
-SDL_DINPUT_MaybeAddDevice(const DIDEVICEINSTANCE * pdidInstance)
+SDL_DINPUT_HapticMaybeAddDevice(const DIDEVICEINSTANCE * pdidInstance)
 {
     return SDL_Unsupported();
 }
 
 int
-SDL_DINPUT_MaybeRemoveDevice(const DIDEVICEINSTANCE * pdidInstance)
+SDL_DINPUT_HapticMaybeRemoveDevice(const DIDEVICEINSTANCE * pdidInstance)
 {
     return SDL_Unsupported();
 }
