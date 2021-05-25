@@ -429,11 +429,11 @@ WINDOWS_JoystickDetect(void)
 
         if (pCurList->bXInputDevice) {
 #if SDL_HAPTIC_XINPUT
-            SDL_XINPUT_MaybeRemoveDevice(pCurList->XInputUserId);
+            SDL_XINPUT_HapticMaybeRemoveDevice(pCurList->XInputUserId);
 #endif
         } else {
 #if SDL_HAPTIC_DINPUT
-            SDL_DINPUT_MaybeRemoveDevice(&pCurList->dxdevice);
+            SDL_DINPUT_HapticMaybeRemoveDevice(&pCurList->dxdevice);
 #endif
         }
 
@@ -449,11 +449,11 @@ WINDOWS_JoystickDetect(void)
         if (pCurList->send_add_event) {
             if (pCurList->bXInputDevice) {
 #if SDL_HAPTIC_XINPUT
-                SDL_XINPUT_MaybeAddDevice(pCurList->XInputUserId);
+                SDL_XINPUT_HapticMaybeAddDevice(pCurList->XInputUserId);
 #endif
             } else {
 #if SDL_HAPTIC_DINPUT
-                SDL_DINPUT_MaybeAddDevice(&pCurList->dxdevice);
+                SDL_DINPUT_HapticMaybeAddDevice(&pCurList->dxdevice);
 #endif
             }
 

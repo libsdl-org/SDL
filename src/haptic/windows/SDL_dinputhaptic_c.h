@@ -25,8 +25,8 @@
 
 
 extern int SDL_DINPUT_HapticInit(void);
-extern int SDL_DINPUT_MaybeAddDevice(const DIDEVICEINSTANCE *pdidInstance);
-extern int SDL_DINPUT_MaybeRemoveDevice(const DIDEVICEINSTANCE *pdidInstance);
+extern int SDL_DINPUT_HapticMaybeAddDevice(const DIDEVICEINSTANCE *pdidInstance);
+extern int SDL_DINPUT_HapticMaybeRemoveDevice(const DIDEVICEINSTANCE *pdidInstance);
 extern int SDL_DINPUT_HapticOpen(SDL_Haptic * haptic, SDL_hapticlist_item *item);
 extern int SDL_DINPUT_JoystickSameHaptic(SDL_Haptic * haptic, SDL_Joystick * joystick);
 extern int SDL_DINPUT_HapticOpenFromJoystick(SDL_Haptic * haptic, SDL_Joystick * joystick);
