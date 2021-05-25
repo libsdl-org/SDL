@@ -440,7 +440,7 @@ X11_InitModes_XRandR(_THIS)
                 RRMode modeID;
                 RRCrtc output_crtc;
                 XRRCrtcInfo *crtc;
-                float xft_dpi;
+                int xft_dpi = 0;
 
                 /* The primary output _should_ always be sorted first, but just in case... */
                 if ((looking_for_primary && (res->outputs[output] != primary)) ||
@@ -497,10 +497,10 @@ X11_InitModes_XRandR(_THIS)
                 displaydata->ddpi = SDL_ComputeDiagonalDPI(mode.w, mode.h, ((float) display_mm_width) / 25.4f,((float) display_mm_height) / 25.4f);
 
                 /* if xft dpi is available we will use this over xrandr */
-                xft_dpi = (float)GetXftDPI(dpy);
+                xft_dpi = GetXftDPI(dpy);
                 if(xft_dpi > 0) {
-                    displaydata->hdpi = xft_dpi;
-                    displaydata->vdpi = xft_dpi;
+                    displaydata->hdpi = (float)xft_dpi;
+                    displaydata->vdpi = (float)xft_dpi;
                 }
 
                 displaydata->scanline_pad = scanline_pad;
