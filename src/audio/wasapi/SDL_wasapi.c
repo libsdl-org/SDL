@@ -137,7 +137,7 @@ WASAPI_AddDevice(const SDL_bool iscapture, const char *devname, WAVEFORMATEXTENS
     deviceid_list = devidlist;
 
     SDL_zero(spec);
-    spec.channels = fmt->Format.nChannels;
+    spec.channels = (Uint8)fmt->Format.nChannels;
     spec.freq = fmt->Format.nSamplesPerSec;
     spec.format = WaveFormatToSDLFormat((WAVEFORMATEX *) fmt);
     SDL_AddAudioDevice(iscapture, devname, &spec, (void *) devid);

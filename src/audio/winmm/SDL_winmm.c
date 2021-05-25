@@ -86,7 +86,7 @@ static void DetectWave##typ##Devs(void) { \
                  * is not provided by the caps struct! At best, we get possible \
                  * sample formats, but not an _active_ format. \
                  */ \
-                spec.channels = caps.wChannels; \
+                spec.channels = (Uint8)caps.wChannels; \
                 SDL_AddAudioDevice((int) iscapture, name, &spec, (void *) ((size_t) i+1)); \
                 SDL_free(name); \
             } \
