@@ -407,14 +407,20 @@ SDL_LoadBMP_RW(SDL_RWops * src, int freesrc)
             goto done;
         }
 
-        /*
-        | guich: always use 1<<bpp b/c some bitmaps can bring wrong information
-        | for colorsUsed
-        */
-        /* if (biClrUsed == 0) {  */
-        biClrUsed = 1 << biBitCount;
-        /* } */
-        if (biSize == 12) {
+        if (biClrUsed == 0) {
+            biClrUsed = 1 << biBitCount;
+        }
+
+        if (biClrUsed > palette->ncolors) {
+            biClrUsed = 1 << biBitCount;  /* try forcing it? */
+            if (biClrUsed > palette->ncolors) {
+                SDL_SetError("Unsupported or incorrect biClrUsed field");
+                was_error = SDL_TRUE;
+                goto done;
+            }
+        }
+
+       if (biSize == 12) {
             for (i = 0; i < (int) biClrUsed; ++i) {
                 SDL_RWread(src, &palette->colors[i].b, 1, 1);
                 SDL_RWread(src, &palette->colors[i].g, 1, 1);
