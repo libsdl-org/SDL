@@ -127,6 +127,14 @@ FixupDeviceInfoForMapping(int fd, struct input_id *inpid)
             inpid->version = 0x0902;
         }
     }
+
+    /* For Atari vcs modern and classic controllers have the version reflecting
+     * firmware version, but the mapping stays stable so ignore
+     * version information */
+    if (inpid->vendor == 0x3250
+            && (inpid->product == 0x1001 || inpid->product == 0x1002)) {
+        inpid->version = 0;
+    }
 }
 
 #ifdef SDL_JOYSTICK_HIDAPI
