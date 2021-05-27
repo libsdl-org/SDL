@@ -488,6 +488,13 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 			continue;
 		}
 
+		#if defined(SDL_JOYSTICK_MFI) && defined(__MACOSX__)
+		extern SDL_bool IOS_SupportedHIDDevice(IOHIDDeviceRef device);
+		if (IOS_SupportedHIDDevice(dev)) {
+			continue;
+		}
+		#endif
+
 		dev_vid = get_vendor_id(dev);
 		dev_pid = get_product_id(dev);
 		
