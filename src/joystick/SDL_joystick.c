@@ -2063,6 +2063,7 @@ static SDL_bool SDL_IsJoystickProductWheel(Uint32 vidpid)
         MAKE_VIDPID(0x044f, 0xb66d),    /* Thrustmaster Wheel FFB */
         MAKE_VIDPID(0x044f, 0xb677),    /* Thrustmaster T150 */
         MAKE_VIDPID(0x044f, 0xb66e),    /* Thrustmaster T300RS */
+        MAKE_VIDPID(0x044f, 0xb65e),    /* Thrustmaster T500RS */
         MAKE_VIDPID(0x044f, 0xb664),    /* Thrustmaster TX (initial mode) */
         MAKE_VIDPID(0x044f, 0xb669),    /* Thrustmaster TX (active mode) */
     };
