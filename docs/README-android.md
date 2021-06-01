@@ -243,6 +243,16 @@ your thread automatically anyway (when you make an SDL call), but it'll never
 detach it.
 
 
+If you ever want to use JNI in a native thread (created by "SDL_CreateThread()"),
+it won't be able to find your java class and method because of the java class loader
+which is different for native threads, than for java threads (eg your "main()").
+
+the work-around is to find class/method, in you "main()" thread, and to use them
+in your native thread.
+
+see:
+https://developer.android.com/training/articles/perf-jni#faq:-why-didnt-findclass-find-my-class
+
 Using STL
 ================================================================================
 
