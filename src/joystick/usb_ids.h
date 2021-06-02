@@ -52,6 +52,7 @@
 #define USB_PRODUCT_SONY_DS4_SLIM                       0x09cc
 #define USB_PRODUCT_SONY_DS5                            0x0ce6
 #define USB_PRODUCT_XBOX360_XUSB_CONTROLLER             0x02a1    /* XUSB driver software PID */
+#define USB_PRODUCT_XBOX360_WIRED_CONTROLLER            0x028e
 #define USB_PRODUCT_XBOX360_WIRELESS_RECEIVER           0x0719
 #define USB_PRODUCT_XBOX_ONE_ELITE_SERIES_1             0x02e3
 #define USB_PRODUCT_XBOX_ONE_ELITE_SERIES_2             0x0b00
@@ -67,6 +68,7 @@
 #define USB_PRODUCT_XBOX_SERIES_X_POWERA_FUSION_PRO2    0x4001
 #define USB_PRODUCT_XBOX_ONE_XBOXGIP_CONTROLLER         0x02ff    /* XBOXGIP driver software PID */
 #define USB_PRODUCT_XBOX_ONE_XINPUT_CONTROLLER          0x02fe    /* Made up product ID for XInput */
+#define USB_PRODUCT_STEAM_VIRTUAL_GAMEPAD               0x11ff
 
 /* USB usage pages */
 #define USB_USAGEPAGE_GENERIC_DESKTOP   0x0001

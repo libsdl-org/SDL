@@ -245,7 +245,7 @@ SDL_IsXInputDevice(Uint16 vendor_id, Uint16 product_id, const char* hidPath)
     type = SDL_GetJoystickGameControllerType("", vendor_id, product_id, -1, 0, 0, 0);
     if (type == SDL_CONTROLLER_TYPE_XBOX360 ||
         type == SDL_CONTROLLER_TYPE_XBOXONE ||
-        (vendor_id == 0x28DE && product_id == 0x11FF)) {
+        (vendor_id == USB_VENDOR_VALVE && product_id == USB_PRODUCT_STEAM_VIRTUAL_GAMEPAD)) {
         return SDL_TRUE;
     }
 
