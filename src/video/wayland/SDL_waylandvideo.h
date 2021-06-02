@@ -69,6 +69,7 @@ typedef struct {
     struct zxdg_decoration_manager_v1 *decoration_manager;
     struct zwp_keyboard_shortcuts_inhibit_manager_v1 *key_inhibitor_manager;
     struct zwp_idle_inhibit_manager_v1 *idle_inhibit_manager;
+    struct xdg_activation_v1 *activation_manager;
 
     EGLDisplay edpy;
     EGLContext context;

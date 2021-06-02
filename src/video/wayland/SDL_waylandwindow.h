@@ -67,6 +67,7 @@ typedef struct {
     struct zxdg_toplevel_decoration_v1 *server_decoration;
     struct zwp_keyboard_shortcuts_inhibitor_v1 *key_inhibitor;
     struct zwp_idle_inhibitor_v1 *idle_inhibitor;
+    struct xdg_activation_token_v1 *activation_token;
 
     SDL_atomic_t swap_interval_ready;
 
@@ -89,6 +90,7 @@ typedef struct {
 
 extern void Wayland_ShowWindow(_THIS, SDL_Window *window);
 extern void Wayland_HideWindow(_THIS, SDL_Window *window);
+extern void Wayland_RaiseWindow(_THIS, SDL_Window *window);
 extern void Wayland_SetWindowFullscreen(_THIS, SDL_Window * window,
                                         SDL_VideoDisplay * _display,
                                         SDL_bool fullscreen);
