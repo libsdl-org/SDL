@@ -37,6 +37,7 @@
 #include "xdg-shell-unstable-v6-client-protocol.h"
 #include "xdg-decoration-unstable-v1-client-protocol.h"
 #include "idle-inhibit-unstable-v1-client-protocol.h"
+#include "xdg-activation-v1-client-protocol.h"
 
 static float get_window_scale_factor(SDL_Window *window) {
       return ((SDL_WindowData*)window->driverdata)->scale_factor;
@@ -812,6 +813,57 @@ void Wayland_HideWindow(_THIS, SDL_Window *window)
     }
 }
 
+static void
+handle_xdg_activation_done(void *data,
+                           struct xdg_activation_token_v1 *xdg_activation_token_v1,
+                           const char *token)
+{
+    SDL_WindowData *window = data;
+    if (xdg_activation_token_v1 == window->activation_token) {
+        xdg_activation_v1_activate(window->waylandData->activation_manager,
+                                   token,
+                                   window->surface);
+        xdg_activation_token_v1_destroy(window->activation_token);
+        window->activation_token = NULL;
+    }
+}
+
+static const struct xdg_activation_token_v1_listener activation_listener_xdg = {
+    handle_xdg_activation_done
+};
+
+void Wayland_RaiseWindow(_THIS, SDL_Window *window)
+{
+    SDL_VideoData *data = _this->driverdata;
+    SDL_WindowData *wind = window->driverdata;
+
+    if (data->activation_manager) {
+        if (wind->activation_token != NULL) {
+            /* We're about to overwrite this with a new request */
+            xdg_activation_token_v1_destroy(wind->activation_token);
+        }
+
+        wind->activation_token = xdg_activation_v1_get_activation_token(data->activation_manager);
+        xdg_activation_token_v1_add_listener(wind->activation_token,
+                                             &activation_listener_xdg,
+                                             wind);
+
+        /* Note that we are not setting the app_id or serial here.
+         *
+         * Hypothetically we could set the app_id from data->classname, but
+         * that part of the API is for _external_ programs, not ourselves.
+         *
+         * As for a serial, this Raise event is arbitrary and doesn't come from
+         * an event, so it's actually very likely that this token will be
+         * ignored! TODO: Maybe add support for Raise via serial?
+         *
+         * -flibit
+         */
+        xdg_activation_token_v1_set_surface(wind->activation_token, wind->surface);
+        xdg_activation_token_v1_commit(wind->activation_token);
+    }
+}
+
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
 static void SDLCALL
 QtExtendedSurface_OnHintChanged(void *userdata, const char *name,
@@ -1275,6 +1327,10 @@ void Wayland_DestroyWindow(_THIS, SDL_Window *window)
 
         if (wind->idle_inhibitor) {
             zwp_idle_inhibitor_v1_destroy(wind->idle_inhibitor);
+        }
+
+        if (wind->activation_token) {
+            xdg_activation_token_v1_destroy(wind->activation_token);
         }
 
         SDL_free(wind->outputs);

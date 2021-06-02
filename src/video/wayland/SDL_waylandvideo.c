@@ -51,6 +51,7 @@
 #include "xdg-decoration-unstable-v1-client-protocol.h"
 #include "keyboard-shortcuts-inhibit-unstable-v1-client-protocol.h"
 #include "idle-inhibit-unstable-v1-client-protocol.h"
+#include "xdg-activation-v1-client-protocol.h"
 
 #define WAYLANDVID_DRIVER_NAME "wayland"
 
@@ -199,6 +200,7 @@ Wayland_CreateDevice(int devindex)
     device->CreateSDLWindow = Wayland_CreateWindow;
     device->ShowWindow = Wayland_ShowWindow;
     device->HideWindow = Wayland_HideWindow;
+    device->RaiseWindow = Wayland_RaiseWindow;
     device->SetWindowFullscreen = Wayland_SetWindowFullscreen;
     device->MaximizeWindow = Wayland_MaximizeWindow;
     device->MinimizeWindow = Wayland_MinimizeWindow;
@@ -463,6 +465,8 @@ display_handle_global(void *data, struct wl_registry *registry, uint32_t id,
         d->key_inhibitor_manager = wl_registry_bind(d->registry, id, &zwp_keyboard_shortcuts_inhibit_manager_v1_interface, 1);
     } else if (strcmp(interface, "zwp_idle_inhibit_manager_v1") == 0) {
         d->idle_inhibit_manager = wl_registry_bind(d->registry, id, &zwp_idle_inhibit_manager_v1_interface, 1);
+    } else if (strcmp(interface, "xdg_activation_v1") == 0) {
+        d->activation_manager = wl_registry_bind(d->registry, id, &xdg_activation_v1_interface, 1);
     } else if (strcmp(interface, "wl_data_device_manager") == 0) {
         Wayland_add_data_device_manager(d, id, version);
     } else if (strcmp(interface, "zxdg_decoration_manager_v1") == 0) {
@@ -582,6 +586,9 @@ Wayland_VideoQuit(_THIS)
     Wayland_display_destroy_input(data);
     Wayland_display_destroy_pointer_constraints(data);
     Wayland_display_destroy_relative_pointer_manager(data);
+
+    if (data->activation_manager)
+        xdg_activation_v1_destroy(data->activation_manager);
 
     if (data->idle_inhibit_manager)
         zwp_idle_inhibit_manager_v1_destroy(data->idle_inhibit_manager);
