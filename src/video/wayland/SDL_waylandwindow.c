@@ -775,6 +775,22 @@ void Wayland_ShowWindow(_THIS, SDL_Window *window)
     if (window->flags & SDL_WINDOW_BORDERLESS) {
         Wayland_SetWindowBordered(_this, window, SDL_FALSE);
     }
+
+    /* We're finally done putting the window together, raise if possible */
+    if (c->activation_manager) {
+        /* Note that we don't check for empty strings, as that is still
+         * considered a valid activation token!
+         */
+        const char *activation_token = SDL_getenv("XDG_ACTIVATION_TOKEN");
+        if (activation_token) {
+            xdg_activation_v1_activate(c->activation_manager,
+                                       activation_token,
+                                       data->surface);
+
+            /* Clear this variable, per the protocol's request */
+            unsetenv("XDG_ACTIVATION_TOKEN");
+        }
+    }
 }
 
 void Wayland_HideWindow(_THIS, SDL_Window *window)
