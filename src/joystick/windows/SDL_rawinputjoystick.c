@@ -891,7 +891,7 @@ RAWINPUT_IsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, co
         /* The Xbox One controller shows up as a hardcoded raw input VID/PID */
         if (name && SDL_strcmp(name, "Xbox One Game Controller") == 0 &&
             device->vendor_id == USB_VENDOR_MICROSOFT &&
-            device->product_id == USB_PRODUCT_XBOX_ONE_RAW_INPUT_CONTROLLER) {
+            device->product_id == USB_PRODUCT_XBOX_ONE_XBOXGIP_CONTROLLER) {
             return SDL_TRUE;
         }
 
