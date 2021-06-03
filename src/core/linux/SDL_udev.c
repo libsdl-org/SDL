@@ -435,32 +435,42 @@ device_event(SDL_UDEV_deviceevent type, struct udev_device *dev)
 void 
 SDL_UDEV_Poll(void)
 {
-    struct udev_device *dev = NULL;
-    const char *action = NULL;
+    static struct udev_device *dev = NULL;
+    static Uint32 abletousedevtimeout = 0;
+    static const char *action = NULL;
 
     if (_this == NULL) {
         return;
     }
 
-    while (SDL_UDEV_hotplug_update_available()) {
-        dev = _this->syms.udev_monitor_receive_device(_this->udev_mon);
+    while (dev != NULL || SDL_UDEV_hotplug_update_available()) {
         if (dev == NULL) {
-            break;
+            dev = _this->syms.udev_monitor_receive_device(_this->udev_mon);
+            if (dev == NULL) {
+                break;
+            }
+
+            abletousedevtimeout = SDL_GetTicks() + 100; // Leave 100 ms for the device to initialize
+            action = _this->syms.udev_device_get_action(dev);
         }
-        action = _this->syms.udev_device_get_action(dev);
 
         if (action) {
             if (SDL_strcmp(action, "add") == 0) {
-                /* Wait for the device to finish initialization */
-                SDL_Delay(100);
+                if (!SDL_TICKS_PASSED(SDL_GetTicks(), abletousedevtimeout)) {
+                    // Come back in a future SDL_UDEV_Poll once the device has finished initialization
+                    break;
+                }
 
                 device_event(SDL_UDEV_DEVICEADDED, dev);
             } else if (SDL_strcmp(action, "remove") == 0) {
                 device_event(SDL_UDEV_DEVICEREMOVED, dev);
             }
         }
-        
+
         _this->syms.udev_device_unref(dev);
+        dev = NULL;
+        abletousedevtimeout = 0;
+        action = NULL;
     }
 }
 
