@@ -488,12 +488,14 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 			continue;
 		}
 
-		#if defined(SDL_JOYSTICK_MFI) && defined(__MACOSX__)
+#if defined(SDL_JOYSTICK_MFI)
+		// We want to prefer Game Controller support where available,
+		// as Apple will likely be requiring that for supported devices.
 		extern SDL_bool IOS_SupportedHIDDevice(IOHIDDeviceRef device);
 		if (IOS_SupportedHIDDevice(dev)) {
 			continue;
 		}
-		#endif
+#endif
 
 		dev_vid = get_vendor_id(dev);
 		dev_pid = get_product_id(dev);
