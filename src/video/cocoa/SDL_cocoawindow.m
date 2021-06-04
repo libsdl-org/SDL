@@ -2117,6 +2117,15 @@ Cocoa_AcceptDragAndDrop(SDL_Window * window, SDL_bool accept)
 }
 
 int
+Cocoa_FlashWindow(_THIS, SDL_Window *window, Uint32 flash_count)
+{ @autoreleasepool
+{
+    /* Note that this is app-wide and not window-specific! */
+    [NSApp requestUserAttention:NSInformationalRequest];
+    return 0;
+}}
+
+int
 Cocoa_SetWindowOpacity(_THIS, SDL_Window * window, float opacity)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
