@@ -113,6 +113,7 @@ extern void Wayland_SuspendScreenSaver(_THIS);
 extern SDL_bool
 Wayland_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info);
 extern int Wayland_SetWindowHitTest(SDL_Window *window, SDL_bool enabled);
+extern int Wayland_FlashWindow(_THIS, SDL_Window * window, Uint32 flash_count);
 
 extern void Wayland_HandlePendingResize(SDL_Window *window);
 
