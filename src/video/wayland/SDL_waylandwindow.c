@@ -848,11 +848,31 @@ static const struct xdg_activation_token_v1_listener activation_listener_xdg = {
     handle_xdg_activation_done
 };
 
-void Wayland_RaiseWindow(_THIS, SDL_Window *window)
+/* The xdg-activation protocol considers "activation" to be one of two things:
+ *
+ * 1: Raising a window to the top and flashing the titlebar
+ * 2: Flashing the titlebar while keeping the window where it is
+ *
+ * As you might expect from Wayland, the general policy is to go with #2 unless
+ * the client can prove to the compositor beyond a reasonable doubt that raising
+ * the window will not be malicuous behavior.
+ *
+ * For SDL this means RaiseWindow and FlashWindow both use the same protocol,
+ * but in different ways: RaiseWindow will provide as _much_ information as
+ * possible while FlashWindow will provide as _little_ information as possible,
+ * to nudge the compositor into doing what we want.
+ *
+ * This isn't _strictly_ what the protocol says will happen, but this is what
+ * current implementations are doing (as of writing, YMMV in the far distant
+ * future).
+ *
+ * -flibit
+ */
+static void
+Wayland_activate_window(SDL_VideoData *data, SDL_WindowData *wind,
+                        struct wl_surface *surface,
+                        uint32_t serial, struct wl_seat *seat)
 {
-    SDL_VideoData *data = _this->driverdata;
-    SDL_WindowData *wind = window->driverdata;
-
     if (data->activation_manager) {
         if (wind->activation_token != NULL) {
             /* We're about to overwrite this with a new request */
@@ -869,15 +889,45 @@ void Wayland_RaiseWindow(_THIS, SDL_Window *window)
          * Hypothetically we could set the app_id from data->classname, but
          * that part of the API is for _external_ programs, not ourselves.
          *
-         * As for a serial, this Raise event is arbitrary and doesn't come from
-         * an event, so it's actually very likely that this token will be
-         * ignored! TODO: Maybe add support for Raise via serial?
-         *
          * -flibit
          */
-        xdg_activation_token_v1_set_surface(wind->activation_token, wind->surface);
+        if (surface != NULL) {
+            xdg_activation_token_v1_set_surface(wind->activation_token, surface);
+        }
+        if (seat != NULL) {
+            xdg_activation_token_v1_set_serial(wind->activation_token, serial, seat);
+        }
         xdg_activation_token_v1_commit(wind->activation_token);
     }
+}
+
+void
+Wayland_RaiseWindow(_THIS, SDL_Window *window)
+{
+    SDL_WindowData *wind = window->driverdata;
+
+    /* FIXME: This Raise event is arbitrary and doesn't come from an event, so
+     * it's actually very likely that this token will be ignored! Maybe add
+     * support for passing serials (and the associated seat) so this can have
+     * a better chance of actually raising the window.
+     * -flibit
+     */
+    Wayland_activate_window(_this->driverdata,
+                            wind,
+                            wind->surface,
+                            0,
+                            NULL);
+}
+
+int
+Wayland_FlashWindow(_THIS, SDL_Window *window, Uint32 flash_count)
+{
+    Wayland_activate_window(_this->driverdata,
+                            window->driverdata,
+                            NULL,
+                            0,
+                            NULL);
+    return 0;
 }
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
