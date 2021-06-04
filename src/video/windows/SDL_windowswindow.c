@@ -1084,6 +1084,24 @@ WIN_AcceptDragAndDrop(SDL_Window * window, SDL_bool accept)
     DragAcceptFiles(data->hwnd, accept ? TRUE : FALSE);
 }
 
+int
+WIN_FlashWindow(_THIS, SDL_Window * window, Uint32 flash_count)
+{
+    HWND hwnd;
+    FLASHWINFO desc;
+
+    hwnd = ((SDL_WindowData *) window->driverdata)->hwnd;
+    desc.cbSize = sizeof(desc);
+    desc.hwnd = hwnd;
+    desc.dwFlags = FLASHW_TRAY;
+    desc.uCount = flash_count; /* flash x times */
+    desc.dwTimeout = 0;
+
+    FlashWindowEx(&desc);
+
+    return 0;
+}
+
 #endif /* SDL_VIDEO_DRIVER_WINDOWS */
 
 /* vi: set ts=4 sw=4 expandtab: */

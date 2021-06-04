@@ -811,3 +811,4 @@
 #define SDL_GetAudioDeviceSpec SDL_GetAudioDeviceSpec_REAL
 #define SDL_TLSCleanup SDL_TLSCleanup_REAL
 #define SDL_SetWindowAlwaysOnTop SDL_SetWindowAlwaysOnTop_REAL
+#define SDL_FlashWindow SDL_FlashWindow_REAL

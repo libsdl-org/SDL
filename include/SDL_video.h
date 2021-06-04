@@ -65,6 +65,7 @@ typedef struct
  *  \sa SDL_CreateWindow()
  *  \sa SDL_CreateWindowFrom()
  *  \sa SDL_DestroyWindow()
+ *  \sa SDL_FlashWindow()
  *  \sa SDL_GetWindowData()
  *  \sa SDL_GetWindowFlags()
  *  \sa SDL_GetWindowGrab()
@@ -1508,6 +1509,18 @@ typedef SDL_HitTestResult (SDLCALL *SDL_HitTest)(SDL_Window *win,
 extern DECLSPEC int SDLCALL SDL_SetWindowHitTest(SDL_Window * window,
                                                  SDL_HitTest callback,
                                                  void *callback_data);
+
+/**
+ * Request a window to give a signal, e.g. a visual signal, to demand attention from the user.
+ *
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \param window the window to request the flashing for
+ * \param flash_count number of times the window gets flashed on systems that support flashing the
+ *                    window multiple times, like Windows, else it is ignored
+ */
+extern DECLSPEC int SDLCALL SDL_FlashWindow(SDL_Window * window, Uint32 flash_count);
 
 /**
  * Destroy a window.
