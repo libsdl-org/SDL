@@ -11,6 +11,7 @@ TARGETS = testatomic.exe testdisplayinfo.exe testbounds.exe testdraw2.exe &
           testshader.exe testshape.exe testsprite2.exe testspriteminimal.exe &
           teststreaming.exe testthread.exe testtimer.exe testver.exe &
           testviewport.exe testwm2.exe torturethread.exe checkkeys.exe &
+          checkkeysthreads.exe &
           controllermap.exe testhaptic.exe testqsort.exe testresample.exe &
           testaudioinfo.exe testaudiocapture.exe loopwave.exe loopwavequeue.exe &
           testyuv.exe testgl2.exe testvulkan.exe testnative.exe testautomation.exe

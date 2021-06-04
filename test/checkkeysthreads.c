@@ -203,7 +203,7 @@ loop()
 }
 
 /* Very simple thread - counts 0 to 9 delaying 50ms between increments */
-static int ping_thread(void *ptr)
+static int SDLCALL ping_thread(void *ptr)
 {
     int cnt;
     SDL_Event sdlevent;
@@ -222,6 +222,7 @@ int
 main(int argc, char *argv[])
 {
     SDL_Window *window;
+    SDL_Thread *thread;
 
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
@@ -256,7 +257,6 @@ main(int argc, char *argv[])
     /* Watch keystrokes */
     done = 0;
 
-    SDL_Thread *thread;
     thread = SDL_CreateThread(ping_thread, "PingThread", (void *)NULL);
 
 #ifdef __EMSCRIPTEN__
