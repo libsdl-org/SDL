@@ -2792,6 +2792,18 @@ SDL_GetGrabbedWindow(void)
     return _this->grabbed_window;
 }
 
+int
+SDL_FlashWindow(SDL_Window * window, Uint32 flash_count)
+{
+    CHECK_WINDOW_MAGIC(window, -1);
+
+    if (_this->FlashWindow) {
+        return _this->FlashWindow(_this, window, flash_count);
+    }
+
+    return SDL_Unsupported();
+}
+
 void
 SDL_OnWindowShown(SDL_Window * window)
 {
