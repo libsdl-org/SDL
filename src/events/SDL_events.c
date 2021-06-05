@@ -866,26 +866,23 @@ int
 SDL_WaitEventTimeout(SDL_Event * event, int timeout)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
-    SDL_bool need_polling = SDL_events_need_polling();
-    SDL_Window *wakeup_window = NULL;
+    SDL_Window *wakeup_window;
     Uint32 expiration = 0;
 
     if (timeout > 0)
         expiration = SDL_GetTicks() + timeout;
 
-    if (!need_polling && _this) {
+    if (timeout != 0 && _this && _this->WaitEventTimeout && _this->SendWakeupEvent && !SDL_events_need_polling()) {
         /* Look if a shown window is available to send the wakeup event. */
         wakeup_window = SDL_find_active_window(_this);
-        need_polling = (wakeup_window == NULL);
-    }
+        if (wakeup_window) {
+            int status = SDL_WaitEventTimeout_Device(_this, wakeup_window, event, timeout);
 
-    if (!need_polling && _this && _this->WaitEventTimeout && _this->SendWakeupEvent) {
-        int status = SDL_WaitEventTimeout_Device(_this, wakeup_window, event, timeout);
-
-        /* There may be implementation-defined conditions where the backend cannot
-           reliably wait for the next event. If that happens, fall back to polling */
-        if (status >= 0) {
-            return status;
+            /* There may be implementation-defined conditions where the backend cannot
+               reliably wait for the next event. If that happens, fall back to polling. */
+            if (status >= 0) {
+                return status;
+            }
         }
     }
 
