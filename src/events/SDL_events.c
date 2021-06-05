@@ -817,7 +817,7 @@ SDL_WaitEventTimeout_Device(_THIS, SDL_Window *wakeup_window, SDL_Event * event,
             _this->wakeup_window = NULL;
             if (status <= 0) {
                 /* There is either an error or the timeout is elapsed: return */
-                return 0;
+                return status;
             }
             /* An event was found and pumped into the SDL events queue. Continue the loop
               to let SDL_PeepEvents pick it up .*/
@@ -880,7 +880,13 @@ SDL_WaitEventTimeout(SDL_Event * event, int timeout)
     }
 
     if (!need_polling && _this && _this->WaitEventTimeout && _this->SendWakeupEvent) {
-        return SDL_WaitEventTimeout_Device(_this, wakeup_window, event, timeout);
+        int status = SDL_WaitEventTimeout_Device(_this, wakeup_window, event, timeout);
+
+        /* There may be implementation-defined conditions where the backend cannot
+           reliably wait for the next event. If that happens, fall back to polling */
+        if (status >= 0) {
+            return status;
+        }
     }
 
     for (;;) {

@@ -1303,9 +1303,13 @@ WIN_WaitEventTimeout(_THIS, int timeout)
             TranslateMessage(&msg);
             DispatchMessage(&msg);
             return 1;
+        } else {
+            return 0;
         }
+    } else {
+        /* Fail the wait so the caller falls back to polling */
+        return -1;
     }
-    return 0;
 }
 
 void
