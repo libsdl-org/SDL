@@ -586,6 +586,24 @@ SDL_CutEvent(SDL_EventEntry *entry)
     SDL_AtomicAdd(&SDL_EventQ.count, -1);
 }
 
+static int
+SDL_SendWakeupEvent()
+{
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
+    if (!_this || !_this->SendWakeupEvent) {
+        return 0;
+    }
+    if (!_this->wakeup_lock || SDL_LockMutex(_this->wakeup_lock) == 0) {
+        if (_this->wakeup_window && _this->blocking_thread_id != 0 && _this->blocking_thread_id != SDL_ThreadID()) {
+            _this->SendWakeupEvent(_this, _this->wakeup_window);
+        }
+        if (_this->wakeup_lock) {
+            SDL_UnlockMutex(_this->wakeup_lock);
+        }
+    }
+    return 0;
+}
+
 /* Lock the event queue, take a peep at it, and unlock it */
 int
 SDL_PeepEvents(SDL_Event * events, int numevents, SDL_eventaction action,
@@ -662,6 +680,11 @@ SDL_PeepEvents(SDL_Event * events, int numevents, SDL_eventaction action,
     } else {
         return SDL_SetError("Couldn't lock event queue");
     }
+
+    if (used > 0 && action == SDL_ADDEVENT) {
+        SDL_SendWakeupEvent();
+    }
+
     return (used);
 }
 
@@ -883,24 +906,6 @@ SDL_WaitEventTimeout(SDL_Event * event, int timeout)
     }
 }
 
-static int
-SDL_SendWakeupEvent()
-{
-    SDL_VideoDevice *_this = SDL_GetVideoDevice();
-    if (!_this || !_this->SendWakeupEvent) {
-        return 0;
-    }
-    if (!_this->wakeup_lock || SDL_LockMutex(_this->wakeup_lock) == 0) {
-        if (_this->wakeup_window && _this->blocking_thread_id != 0 && _this->blocking_thread_id != SDL_ThreadID()) {
-            _this->SendWakeupEvent(_this, _this->wakeup_window);
-        }
-        if (_this->wakeup_lock) {
-            SDL_UnlockMutex(_this->wakeup_lock);
-        }
-    }
-    return 0;
-}
-
 int
 SDL_PushEvent(SDL_Event * event)
 {
@@ -950,7 +955,6 @@ SDL_PushEvent(SDL_Event * event)
         return -1;
     }
 
-    SDL_SendWakeupEvent();
     SDL_GestureProcessEvent(event);
 
     return 1;
