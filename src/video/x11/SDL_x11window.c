@@ -796,42 +796,23 @@ X11_SetWindowPosition(_THIS, SDL_Window * window)
     Window childReturn, root, parent;
     Window* children;
     XWindowAttributes attrs;
-    int orig_x, orig_y;
-    Uint32 timeout;
-
-    X11_XSync(display, False);
-    X11_XQueryTree(display, data->xwindow, &root, &parent, &children, &childCount);
-    X11_XGetWindowAttributes(display, data->xwindow, &attrs);
-    X11_XTranslateCoordinates(display, parent, DefaultRootWindow(display),
-                              attrs.x, attrs.y, &orig_x, &orig_y, &childReturn);
+    int x, y;
 
     /*Attempt to move the window*/
     X11_XMoveWindow(display, data->xwindow, window->x - data->border_left, window->y - data->border_top);
 
-    /* Wait a brief time to see if the window manager decided to let this move happen.
-       If the window changes at all, even to an unexpected value, we break out. */
-    timeout = SDL_GetTicks() + 100;
-    while (SDL_TRUE) {
-        int x, y;
-        X11_XSync(display, False);
-        X11_XGetWindowAttributes(display, data->xwindow, &attrs);
-        X11_XTranslateCoordinates(display, parent, DefaultRootWindow(display),
-                                  attrs.x, attrs.y, &x, &y, &childReturn);
+    /* WM may interfere with window positioning. Obtain actual current position and keep it. We may not get a final
+       window position here. If window position changes further after this function returns - it will be updated by
+       ConfigureNotify event handler.
+     */
+    X11_XSync(display, False);
+    X11_XQueryTree(display, data->xwindow, &root, &parent, &children, &childCount);
+    X11_XGetWindowAttributes(display, data->xwindow, &attrs);
+    X11_XTranslateCoordinates(display, parent, DefaultRootWindow(display),
+                              attrs.x, attrs.y, &x, &y, &childReturn);
 
-        if ((x != orig_x) || (y != orig_y)) {
-            window->x = x;
-            window->y = y;
-            break;  /* window moved, time to go. */
-        } else if ((x == window->x) && (y == window->y)) {
-            break;  /* we're at the place we wanted to be anyhow, drop out. */
-        }
-
-        if (SDL_TICKS_PASSED(SDL_GetTicks(), timeout)) {
-            break;
-        }
-
-        SDL_Delay(10);
-    }
+    window->x = x;
+    window->y = y;
 }
 
 void
