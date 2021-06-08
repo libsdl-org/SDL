@@ -920,6 +920,22 @@ KMSDRM_GetModeToSet(SDL_Window *window, drmModeModeInfo *out_mode) {
     }
 }
 
+static void
+KMSDRM_DirtySurfaces(SDL_Window *window) {
+    SDL_WindowData *windata = (SDL_WindowData *)window->driverdata;
+    drmModeModeInfo mode;
+
+    /* Can't recreate EGL surfaces right now, need to wait until SwapWindow
+       so the correct thread-local surface and context state are available */
+    windata->egl_surface_dirty = SDL_TRUE;
+
+    /* The app may be waiting for the resize event after calling SetWindowSize
+       or SetWindowFullscreen, send a fake event for now since the actual
+       recreation is deferred */
+    KMSDRM_GetModeToSet(window, &mode);
+    SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, mode.hdisplay, mode.vdisplay);
+}
+
 /* This determines the size of the fb, which comes from the GBM surface
    that we create here. */
 int
@@ -1098,15 +1114,7 @@ KMSDRM_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
     dispdata->fullscreen_mode = conn->modes[modedata->mode_index];
 
     for (i = 0; i < viddata->num_windows; i++) {
-        SDL_Window *window = viddata->windows[i];
-        SDL_WindowData *windata = (SDL_WindowData *)window->driverdata;
-
-        /* Can't recreate EGL surfaces right now, need to wait until SwapWindow
-           so the correct thread-local surface and context state are available */
-        windata->egl_surface_dirty = SDL_TRUE;
-
-        /* Tell app about the window resize */
-        SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, mode->w, mode->h);
+        KMSDRM_DirtySurfaces(viddata->windows[i]);
     }
 
     return 0;
@@ -1376,7 +1384,7 @@ KMSDRM_SetWindowSize(_THIS, SDL_Window * window)
 {
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
     if (!viddata->vulkan_mode) {
-        KMSDRM_CreateSurfaces(_this, window);
+        KMSDRM_DirtySurfaces(window);
     }
 }
 void
@@ -1385,7 +1393,7 @@ KMSDRM_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * displa
 {
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
     if (!viddata->vulkan_mode) {
-        KMSDRM_CreateSurfaces(_this, window);
+        KMSDRM_DirtySurfaces(window);
     }
 }
 void
