@@ -105,7 +105,12 @@ loop()
         for (i = 0; i < state->num_windows; ++i) {
             SDL_Renderer *renderer = state->renderers[i];
             if (renderer != NULL) {
+                SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
                 SDL_RenderClear(renderer);
+
+                SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+                SDLTest_CommonDrawWindowInfo(renderer, state->windows[i]);
+
                 SDL_RenderPresent(renderer);
             }
         }
