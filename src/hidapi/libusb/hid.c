@@ -480,6 +480,7 @@ static void usb_string_cache_destroy()
 
 	usb_string_cache = NULL;
 	usb_string_cache_size = 0;
+	usb_string_cache_insert_pos = 0;
 }
 
 static struct usb_string_cache_entry *usb_string_cache_insert()
