@@ -1,6 +1,7 @@
 /*
   Simple DirectMedia Layer
   Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 2021 NVIDIA Corporation
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -420,6 +421,9 @@ X11_GL_InitExtensions(_THIS)
         _this->gl_data->glXChooseFBConfig =
             (GLXFBConfig *(*)(Display *, int, const int *, int *))
                 X11_GL_GetProcAddress(_this, "glXChooseFBConfig");
+        _this->gl_data->glXGetVisualFromFBConfig =
+            (XVisualInfo *(*)(Display *, GLXFBConfig))
+                X11_GL_GetProcAddress(_this, "glXGetVisualFromFBConfig");
     }
 
     /* Check for GLX_EXT_visual_rating */
@@ -598,7 +602,7 @@ X11_GL_GetVisual(_THIS, Display * display, int screen)
 {
     /* 64 seems nice. */
     int attribs[64];
-    XVisualInfo *vinfo;
+    XVisualInfo *vinfo = NULL;
     int *pvistypeattr = NULL;
 
     if (!_this->gl_data) {
@@ -606,12 +610,33 @@ X11_GL_GetVisual(_THIS, Display * display, int screen)
         return NULL;
     }
 
-    X11_GL_GetAttributes(_this, display, screen, attribs, 64, SDL_FALSE, &pvistypeattr);
-    vinfo = _this->gl_data->glXChooseVisual(display, screen, attribs);
+    if (_this->gl_data->glXChooseFBConfig &&
+        _this->gl_data->glXGetVisualFromFBConfig) {
+        GLXFBConfig *framebuffer_config = NULL;
+        int fbcount = 0;
 
-    if (!vinfo && (pvistypeattr != NULL)) {
-        *pvistypeattr = None;
+        X11_GL_GetAttributes(_this, display, screen, attribs, 64, SDL_TRUE, &pvistypeattr);
+        framebuffer_config = _this->gl_data->glXChooseFBConfig(display, screen, attribs, &fbcount);
+        if (!framebuffer_config && (pvistypeattr != NULL)) {
+            *pvistypeattr = None;
+            framebuffer_config = _this->gl_data->glXChooseFBConfig(display, screen, attribs, &fbcount);
+        }
+
+        if (framebuffer_config) {
+            vinfo = _this->gl_data->glXGetVisualFromFBConfig(display, framebuffer_config[0]);
+        }
+
+        X11_XFree(framebuffer_config);
+    }
+
+    if (!vinfo) {
+        X11_GL_GetAttributes(_this, display, screen, attribs, 64, SDL_FALSE, &pvistypeattr);
         vinfo = _this->gl_data->glXChooseVisual(display, screen, attribs);
+
+        if (!vinfo && (pvistypeattr != NULL)) {
+            *pvistypeattr = None;
+            vinfo = _this->gl_data->glXChooseVisual(display, screen, attribs);
+        }
     }
 
     if (!vinfo) {
