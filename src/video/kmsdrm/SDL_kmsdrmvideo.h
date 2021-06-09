@@ -68,7 +68,7 @@ typedef struct SDL_DisplayData
     drmModeCrtc *crtc;
     drmModeModeInfo mode;
     drmModeModeInfo original_mode;
-    drmModeModeInfo next_mode; /* New mode to be set on the CRTC. */
+    drmModeModeInfo fullscreen_mode;
 
     drmModeCrtc *saved_crtc;    /* CRTC to restore on quit */
 
