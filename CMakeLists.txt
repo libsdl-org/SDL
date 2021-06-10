@@ -420,6 +420,10 @@ set(SDL_STATIC ${SDL_STATIC_ENABLED_BY_DEFAULT} CACHE BOOL "Build a static versi
 dep_option(SDL_STATIC_PIC      "Static version of the library should be built with Position Independent Code" OFF "SDL_STATIC" OFF)
 set_option(SDL_TEST            "Build the test directory" OFF)
 
+if(VITA)
+    set_option(VIDEO_VITA_PIB  "Build with PSVita piglet gles2 support" OFF)
+endif()
+
 # General source files
 file(GLOB SOURCE_FILES
   ${SDL2_SOURCE_DIR}/src/*.c
@@ -2142,16 +2146,22 @@ elseif(VITA)
     set(SOURCE_FILES ${SOURCE_FILES} ${VITA_VIDEO_SOURCES})
     set(HAVE_SDL_VIDEO TRUE)
 
-    check_include_file(pib.h HAVE_PIGS_IN_BLANKET_H)
 
+    if(VIDEO_VITA_PIB)
+      check_include_file(pib.h HAVE_PIGS_IN_BLANKET_H)
 
-    if(HAVE_PIGS_IN_BLANKET_H)
-      set(SDL_VIDEO_OPENGL_ES2 1)
-      list(APPEND EXTRA_LIBS
-        pib
-      )
-
+      if(HAVE_PIGS_IN_BLANKET_H)
+        set(SDL_VIDEO_OPENGL_ES2 1)
+        list(APPEND EXTRA_LIBS
+          pib
+        )
+        set(HAVE_VIDEO_VITA_PIB ON)
+        set(SDL_VIDEO_VITA_PIB 1)
+      else()
+        set(HAVE_VIDEO_VITA_PIB OFF)
+      endif()
     endif()
+
     set(SDL_VIDEO_RENDER_VITA_GXM 1)
 
     list(APPEND EXTRA_LIBS
