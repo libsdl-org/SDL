@@ -33,7 +33,6 @@
 int VITA_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
 {
 #if SDL_VIDEO_RENDER_VITA_GXM
-    SceCommonDialogConfigParam commonDialogConfigParam;
     SceMsgDialogParam param;
     SceMsgDialogUserMessageParam msgParam;
     SceMsgDialogButtonsParam buttonParam;
@@ -47,14 +46,15 @@ int VITA_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
     {
         return -1;
     }
-    SDL_zero(commonDialogConfigParam);
-    sceCommonDialogSetConfigParam(&commonDialogConfigParam);
+
     SDL_zero(param);
     sceMsgDialogParamInit(&param);
     param.mode = SCE_MSG_DIALOG_MODE_USER_MSG;
+
     SDL_zero(msgParam);
     msgParam.msg = (const SceChar8*)messageboxdata->message;
     SDL_zero(buttonParam);
+
     if (messageboxdata->numbuttons == 3)
     {
         msgParam.buttonType = SCE_MSG_DIALOG_BUTTON_TYPE_3BUTTONS;
