@@ -1659,6 +1659,17 @@ extern "C" {
  */
 #define SDL_HINT_PREFERRED_LOCALES "SDL_PREFERRED_LOCALES"
 
+/**
+ *  \brief Mark X11 windows as override-redirect.
+ *
+ *  If set, this _might_ increase framerate at the expense of the desktop
+ *  not working as expected. Override-redirect windows aren't noticed by the
+ *  window manager at all.
+ *
+ *  You should probably only use this for fullscreen windows, and you probably
+ *  shouldn't even use it for that. But it's here if you want to try!
+ */
+#define SDL_HINT_X11_FORCE_OVERRIDE_REDIRECT "SDL_X11_FORCE_OVERRIDE_REDIRECT"
 
 /**
  *  \brief  An enumeration of hint priorities
