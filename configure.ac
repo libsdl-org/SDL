@@ -2194,8 +2194,8 @@ dnl Find KMSDRM
 CheckKMSDRM()
 {
     AC_ARG_ENABLE(video-kmsdrm,
-[AS_HELP_STRING([--enable-video-kmsdrm], [use KMSDRM video driver [default=no]])],
-                  , enable_video_kmsdrm=no)
+[AS_HELP_STRING([--enable-video-kmsdrm], [use KMSDRM video driver [default=yes]])],
+                  , enable_video_kmsdrm=yes)
 
     if  test x$enable_video = xyes && \
         test x$enable_video_kmsdrm = xyes && \

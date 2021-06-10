@@ -1666,7 +1666,7 @@ Optional Features:
   --enable-video-directfb use DirectFB video driver [default=no]
   --enable-directfb-shared
                           dynamically load directfb support [default=yes]
-  --enable-video-kmsdrm   use KMSDRM video driver [default=no]
+  --enable-video-kmsdrm   use KMSDRM video driver [default=yes]
   --enable-kmsdrm-shared  dynamically load kmsdrm support [default=yes]
   --enable-video-dummy    use dummy video driver [default=yes]
   --enable-video-opengl   include OpenGL support [default=yes]
@@ -22052,7 +22052,7 @@ CheckKMSDRM()
 if test "${enable_video_kmsdrm+set}" = set; then :
   enableval=$enable_video_kmsdrm;
 else
-  enable_video_kmsdrm=no
+  enable_video_kmsdrm=yes
 fi
 
 
