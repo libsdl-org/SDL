@@ -537,60 +537,28 @@ SDL_DINPUT_JoystickDetect(JoyStick_DeviceData **pContext)
     IDirectInput8_EnumDevices(dinput, DI8DEVCLASS_GAMECTRL, EnumJoysticksCallback, pContext, DIEDFL_ATTACHEDONLY);
 }
 
-typedef struct
+SDL_bool
+SDL_DINPUT_JoystickPresent(Uint16 vendor_id, Uint16 product_id, Uint16 version_number)
 {
-    Uint16 vendor;
-    Uint16 product;
-    Uint16 version;
-    SDL_bool present;
-} EnumJoystickPresentData;
-
-static BOOL CALLBACK
-EnumJoystickPresentCallback(LPCDIDEVICEINSTANCE pDeviceInstance, LPVOID pContext)
-{
-#define CHECK(exp) { if(!(exp)) goto err; }
-    EnumJoystickPresentData *data = (EnumJoystickPresentData *)pContext;
+    JoyStick_DeviceData* joystick = SYS_Joystick;
     Uint16 vendor = 0;
     Uint16 product = 0;
-    LPDIRECTINPUTDEVICE8 device = NULL;
-    BOOL ret = DIENUM_CONTINUE;
+    Uint16 version = 0;
 
-    /* We are only supporting HID devices. */
-    CHECK((pDeviceInstance->dwDevType & DIDEVTYPE_HID) != 0);
+    while (joystick) {
+        SDL_GetJoystickGUIDInfo(joystick->guid, &vendor, &product, &version);
 
-    CHECK(SUCCEEDED(IDirectInput8_CreateDevice(dinput, &pDeviceInstance->guidInstance, &device, NULL)));
-    CHECK(QueryDeviceInfo(device, &vendor, &product));
+        if (!joystick->bXInputDevice &&
+            vendor == vendor_id &&
+            product == product_id &&
+            version == version_number) {
+            return SDL_TRUE;
+        }
 
-    CHECK(data->vendor == vendor && data->product == product);
-
-    data->present = SDL_TRUE;
-    ret = DIENUM_STOP;
-
-err:
-    if (device) {
-        IDirectInputDevice8_Release(device);
+        joystick = joystick->pNext;
     }
 
-    return ret;
-#undef CHECK
-}
-
-SDL_bool
-SDL_DINPUT_JoystickPresent(Uint16 vendor, Uint16 product, Uint16 version)
-{
-    EnumJoystickPresentData data;
-
-    if (dinput == NULL) {
-        return SDL_FALSE;
-    }
-
-    data.vendor = vendor;
-    data.product = product;
-    data.version = version;
-    data.present = SDL_FALSE;
-    IDirectInput8_EnumDevices(dinput, DI8DEVCLASS_GAMECTRL, EnumJoystickPresentCallback, &data, DIEDFL_ATTACHEDONLY);
-
-    return data.present;
+    return SDL_FALSE;
 }
 
 static BOOL CALLBACK
