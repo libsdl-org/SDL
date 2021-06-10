@@ -35,6 +35,10 @@
 
 #define DEBUG_AUDIOSTREAM 0
 
+#ifdef __SSE__
+#define HAVE_SSE_INTRINSICS 1
+#endif
+
 #ifdef __SSE3__
 #define HAVE_SSE3_INTRINSICS 1
 #endif
@@ -96,6 +100,66 @@ SDL_ConvertStereoToMono(SDL_AudioCVT * cvt, SDL_AudioFormat format)
     }
 }
 
+
+#if HAVE_SSE_INTRINSICS
+/* Convert from 5.1 to stereo. Average left and right, distribute center, discard LFE. */
+static void SDLCALL
+SDL_Convert51ToStereo_SSE(SDL_AudioCVT * cvt, SDL_AudioFormat format)
+{
+    float *dst = (float *) cvt->buf;
+    const float *src = dst;
+    int i = cvt->len_cvt / (sizeof (float) * 6);
+    const float two_fifths_f = 1.0f / 2.5f;
+    const __m128 two_fifths_v = _mm_set1_ps(two_fifths_f);
+    const __m128 half = _mm_set1_ps(0.5f);
+
+    LOG_DEBUG_CONVERT("5.1", "stereo (using SSE)");
+    SDL_assert(format == AUDIO_F32SYS);
+
+    /* SDL's 5.1 layout: FL+FR+FC+LFE+BL+BR */
+    /* Just use unaligned load/stores, if the memory at runtime is */
+    /* aligned it'll be just as fast on modern processors */
+    while (i >= 2) {
+        /* Two 5.1 samples (12 floats) fit nicely in three 128bit */
+        /* registers. Using shuffles they can be rearranged so that */
+        /* the conversion math can be vectorized. */
+        __m128 in0 = _mm_loadu_ps(src);     /* 0FL 0FR 0FC 0LF */
+        __m128 in1 = _mm_loadu_ps(src + 4); /* 0BL 0BR 1FL 1FR */
+        __m128 in2 = _mm_loadu_ps(src + 8); /* 1FC 1LF 1BL 1BR */
+
+        /* 0FC 0FC 1FC 1FC */
+        __m128 fc_distributed = _mm_mul_ps(half, _mm_shuffle_ps(in0, in2, _MM_SHUFFLE(0, 0, 2, 2)));
+
+        /* 0FL 0FR 1BL 1BR */
+        __m128 blended = _mm_shuffle_ps(in0, in2, _MM_SHUFFLE(3, 2, 1, 0));
+
+        /*   0FL 0FR 1BL 1BR */
+        /* + 0BL 0BR 1FL 1FR */
+        /* =  0L  0R  1L  1R */
+        __m128 out = _mm_add_ps(blended, in1);
+        out = _mm_add_ps(out, fc_distributed);
+        out = _mm_mul_ps(out, two_fifths_v);
+
+        _mm_storeu_ps(dst, out);
+
+        i -= 2; src += 12; dst += 4;
+    }
+
+
+    /* Finish off any leftovers with scalar operations. */
+    while (i) {
+        const float front_center_distributed = src[2] * 0.5f;
+        dst[0] = (src[0] + front_center_distributed + src[4]) * two_fifths_f;  /* left */
+        dst[1] = (src[1] + front_center_distributed + src[5]) * two_fifths_f;  /* right */
+        i--; src += 6; dst+=2;
+    }
+
+    cvt->len_cvt /= 3;
+    if (cvt->filters[++cvt->filter_index]) {
+        cvt->filters[cvt->filter_index] (cvt, format);
+    }
+}
+#endif
 
 /* Convert from 5.1 to stereo. Average left and right, distribute center, discard LFE. */
 static void SDLCALL
@@ -1020,7 +1084,19 @@ SDL_BuildAudioCVT(SDL_AudioCVT * cvt,
         }
         /* [7.1 ->] 5.1 -> Stereo [-> Mono] */
         if ((src_channels == 6) && (dst_channels <= 2)) {
-            if (SDL_AddAudioCVTFilter(cvt, SDL_Convert51ToStereo) < 0) {
+            SDL_AudioFilter filter = NULL;
+
+            #if HAVE_SSE_INTRINSICS
+            if (SDL_HasSSE()) {
+                filter = SDL_Convert51ToStereo_SSE;
+            }
+            #endif
+
+            if (!filter) {
+                filter = SDL_Convert51ToStereo;
+            }
+
+            if (SDL_AddAudioCVTFilter(cvt, filter) < 0) {
                 return -1;
             }
             src_channels = 2;
