@@ -104,6 +104,7 @@ SDL_Convert51ToStereo(SDL_AudioCVT * cvt, SDL_AudioFormat format)
     float *dst = (float *) cvt->buf;
     const float *src = dst;
     int i;
+    const float two_fifths = 1.0f / 2.5f;
 
     LOG_DEBUG_CONVERT("5.1", "stereo");
     SDL_assert(format == AUDIO_F32SYS);
@@ -111,8 +112,8 @@ SDL_Convert51ToStereo(SDL_AudioCVT * cvt, SDL_AudioFormat format)
     /* SDL's 5.1 layout: FL+FR+FC+LFE+BL+BR */
     for (i = cvt->len_cvt / (sizeof (float) * 6); i; --i, src += 6, dst += 2) {
         const float front_center_distributed = src[2] * 0.5f;
-        dst[0] = (src[0] + front_center_distributed + src[4]) / 2.5f;  /* left */
-        dst[1] = (src[1] + front_center_distributed + src[5]) / 2.5f;  /* right */
+        dst[0] = (src[0] + front_center_distributed + src[4]) * two_fifths;  /* left */
+        dst[1] = (src[1] + front_center_distributed + src[5]) * two_fifths;  /* right */
     }
 
     cvt->len_cvt /= 3;
@@ -152,6 +153,7 @@ SDL_Convert71To51(SDL_AudioCVT * cvt, SDL_AudioFormat format)
     float *dst = (float *) cvt->buf;
     const float *src = dst;
     int i;
+    const float two_thirds = 1.0f / 1.5f;
 
     LOG_DEBUG_CONVERT("7.1", "5.1");
     SDL_assert(format == AUDIO_F32SYS);
@@ -159,12 +161,12 @@ SDL_Convert71To51(SDL_AudioCVT * cvt, SDL_AudioFormat format)
     for (i = cvt->len_cvt / (sizeof (float) * 8); i; --i, src += 8, dst += 6) {
         const float surround_left_distributed = src[6] * 0.5f;
         const float surround_right_distributed = src[7] * 0.5f;
-        dst[0] = (src[0] + surround_left_distributed) / 1.5f;  /* FL */
-        dst[1] = (src[1] + surround_right_distributed) / 1.5f;  /* FR */
-        dst[2] = src[2] / 1.5f; /* CC */
-        dst[3] = src[3] / 1.5f; /* LFE */
-        dst[4] = (src[4] + surround_left_distributed) / 1.5f;  /* BL */
-        dst[5] = (src[5] + surround_right_distributed) / 1.5f;  /* BR */
+        dst[0] = (src[0] + surround_left_distributed) * two_thirds;  /* FL */
+        dst[1] = (src[1] + surround_right_distributed) * two_thirds;  /* FR */
+        dst[2] = src[2] * two_thirds; /* CC */
+        dst[3] = src[3] * two_thirds; /* LFE */
+        dst[4] = (src[4] + surround_left_distributed) * two_thirds;  /* BL */
+        dst[5] = (src[5] + surround_right_distributed) * two_thirds;  /* BR */
     }
 
     cvt->len_cvt /= 8;
@@ -182,6 +184,7 @@ SDL_Convert51ToQuad(SDL_AudioCVT * cvt, SDL_AudioFormat format)
     float *dst = (float *) cvt->buf;
     const float *src = dst;
     int i;
+    const float two_thirds = 1.0f / 1.5f;
 
     LOG_DEBUG_CONVERT("5.1", "quad");
     SDL_assert(format == AUDIO_F32SYS);
@@ -190,10 +193,10 @@ SDL_Convert51ToQuad(SDL_AudioCVT * cvt, SDL_AudioFormat format)
     /* SDL's 5.1 layout: FL+FR+FC+LFE+BL+BR */
     for (i = cvt->len_cvt / (sizeof (float) * 6); i; --i, src += 6, dst += 4) {
         const float front_center_distributed = src[2] * 0.5f;
-        dst[0] = (src[0] + front_center_distributed) / 1.5f;  /* FL */
-        dst[1] = (src[1] + front_center_distributed) / 1.5f;  /* FR */
-        dst[2] = src[4] / 1.5f;  /* BL */
-        dst[3] = src[5] / 1.5f;  /* BR */
+        dst[0] = (src[0] + front_center_distributed) * two_thirds;  /* FL */
+        dst[1] = (src[1] + front_center_distributed) * two_thirds;  /* FR */
+        dst[2] = src[4] * two_thirds;  /* BL */
+        dst[3] = src[5] * two_thirds;  /* BR */
     }
 
     cvt->len_cvt /= 6;
