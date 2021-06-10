@@ -446,6 +446,8 @@ EnumJoysticksCallback(LPCDIDEVICEINSTANCE pDeviceInstance, LPVOID pContext)
     CHECK(QueryDevicePath(device, &hidPath));
     CHECK(QueryDeviceInfo(device, &vendor, &product));
 
+    CHECK(!SDL_IsXInputDevice(vendor, product, hidPath));
+
     pNewJoystick = *(JoyStick_DeviceData**)pContext;
     while (pNewJoystick) {
         /* update GUIDs of joysticks with matching paths, in case they're not open yet */
@@ -498,8 +500,6 @@ EnumJoysticksCallback(LPCDIDEVICEINSTANCE pDeviceInstance, LPVOID pContext)
         *guid16++ = 0;
         SDL_strlcpy((char*)guid16, pNewJoystick->joystickname, sizeof(pNewJoystick->guid.data) - 4);
     }
-
-    CHECK(!SDL_IsXInputDevice(vendor, product, hidPath));
 
     CHECK(!SDL_ShouldIgnoreJoystick(pNewJoystick->joystickname, pNewJoystick->guid));
 
