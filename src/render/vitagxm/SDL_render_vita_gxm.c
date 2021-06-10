@@ -1144,20 +1144,8 @@ VITA_GXM_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 
     sceGxmFinish(data->gxm_context);
 
-    if (vita_texture->tex->gxm_rendertarget) {
-        sceGxmDestroyRenderTarget(vita_texture->tex->gxm_rendertarget);
-    }
+    free_gxm_texture(vita_texture->tex);
 
-    if (vita_texture->tex->depth_UID) {
-        mem_gpu_free(vita_texture->tex->depth_UID);
-    }
-
-    if (vita_texture->tex->palette_UID) {
-        mem_gpu_free(vita_texture->tex->palette_UID);
-    }
-
-    mem_gpu_free(vita_texture->tex->data_UID);
-    SDL_free(vita_texture->tex);
     SDL_free(vita_texture);
 
     texture->driverdata = NULL;

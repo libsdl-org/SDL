@@ -1001,9 +1001,6 @@ free_gxm_texture(gxm_texture *texture)
         if (texture->depth_UID) {
             mem_gpu_free(texture->depth_UID);
         }
-        if (texture->palette_UID) {
-            mem_gpu_free(texture->palette_UID);
-        }
         mem_gpu_free(texture->data_UID);
         SDL_free(texture);
     }
@@ -1069,29 +1066,6 @@ create_gxm_texture(VITA_GXM_RenderData *data, unsigned int w, unsigned int h, Sc
 
     /* Create the gxm texture */
     sceGxmTextureInitLinear( &texture->gxm_tex, texture_data, format, w, h, 0);
-
-    if ((format & 0x9f000000U) == SCE_GXM_TEXTURE_BASE_FORMAT_P8) {
-        const int pal_size = 256 * sizeof(uint32_t);
-
-        void *texture_palette = mem_gpu_alloc(
-            SCE_KERNEL_MEMBLOCK_TYPE_USER_CDRAM_RW,
-            pal_size,
-            SCE_GXM_PALETTE_ALIGNMENT,
-            SCE_GXM_MEMORY_ATTRIB_READ,
-            &texture->palette_UID);
-
-        if (!texture_palette) {
-            texture->palette_UID = 0;
-            free_gxm_texture(texture);
-            return NULL;
-        }
-
-        SDL_memset(texture_palette, 0, pal_size);
-
-        sceGxmTextureSetPalette(&texture->gxm_tex, texture_palette);
-    } else {
-        texture->palette_UID = 0;
-    }
 
     if (isRenderTarget) {
         void *depthBufferData;
