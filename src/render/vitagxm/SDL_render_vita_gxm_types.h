@@ -76,7 +76,6 @@ typedef struct texture_vertex {
 typedef struct gxm_texture {
     SceGxmTexture gxm_tex;
     SceUID data_UID;
-    SceUID palette_UID;
     SceGxmRenderTarget *gxm_rendertarget;
     SceGxmColorSurface gxm_colorsurface;
     SceGxmDepthStencilSurface gxm_depthstencil;
