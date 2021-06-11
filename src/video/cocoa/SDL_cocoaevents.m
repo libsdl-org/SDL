@@ -35,6 +35,9 @@
 #ifndef NSAppKitVersionNumber10_8
 #define NSAppKitVersionNumber10_8 1187
 #endif
+#ifndef MAC_OS_X_VERSION_10_12
+#define NSEventTypeApplicationDefined NSApplicationDefined
+#endif
 
 static SDL_Window *FindSDLWindowForNSWindow(NSWindow *win)
 {
