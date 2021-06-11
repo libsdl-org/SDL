@@ -84,7 +84,10 @@ typedef unsigned int uintptr_t;
 #define HAVE_XINPUT_H 1
 #define HAVE_MMDEVICEAPI_H 1
 #define HAVE_AUDIOCLIENT_H 1
-#define HAVE_SENSORSAPI_H
+#define HAVE_SENSORSAPI_H 1
+#if defined(_M_IX86) || defined(_M_X64) || defined(_M_AMD64)
+#define HAVE_IMMINTRIN_H 1
+#endif
 
 /* This is disabled by default to avoid C runtime dependencies and manifest requirements */
 #ifdef HAVE_LIBC
