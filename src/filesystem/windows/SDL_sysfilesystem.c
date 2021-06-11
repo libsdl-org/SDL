@@ -68,7 +68,9 @@ SDL_GetBasePath(void)
         path = (WCHAR *) ptr;
 
         len = pGetModuleFileNameExW(GetCurrentProcess(), NULL, path, buflen);
-        if (len != buflen) {
+        /* if it truncated, then len >= buflen - 1 */
+        /* if there was enough room (or failure), len < buflen - 1 */
+        if (len < buflen - 1) {
             break;
         }
 
