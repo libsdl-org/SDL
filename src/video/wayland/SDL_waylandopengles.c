@@ -114,6 +114,18 @@ Wayland_GLES_SwapWindow(_THIS, SDL_Window *window)
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
     const int swap_interval = _this->egl_data->egl_swapinterval;
 
+    /* For windows that we know are hidden, skip swaps entirely, if we don't do
+     * this compositors will intentionally stall us indefinitely and there's no
+     * way for an end user to show the window, unlike other situations (i.e.
+     * the window is minimized, behind another window, etc.).
+     *
+     * FIXME: Request EGL_WAYLAND_swap_buffers_with_timeout.
+     * -flibit
+     */
+    if (window->flags & SDL_WINDOW_HIDDEN) {
+        return 0;
+    }
+
     /* Control swap interval ourselves. See comments on Wayland_GLES_SetSwapInterval */
     if (swap_interval != 0) {
         struct wl_display *display = ((SDL_VideoData *)_this->driverdata)->display;
