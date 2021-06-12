@@ -20,6 +20,8 @@
 */
 #include "../../SDL_internal.h"
 
+#include "SDL_platform.h"
+
 #ifdef __LINUX__
 
 #include "SDL_error.h"
