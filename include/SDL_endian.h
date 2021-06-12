@@ -65,7 +65,7 @@ _m_prefetch(void *__P)
 #elif defined(__OpenBSD__)
 #include <endian.h>
 #define SDL_BYTEORDER  BYTE_ORDER
-#elif defined(__FreeBSD__)
+#elif defined(__FreeBSD__) || defined(__NetBSD__)
 #include <sys/endian.h>
 #define SDL_BYTEORDER  BYTE_ORDER
 #else
