@@ -176,7 +176,7 @@ SDL_JoystickSetVirtualAxisInner(SDL_Joystick * joystick, int axis, Sint16 value)
     }
 
     hwdata = (joystick_hwdata *)joystick->hwdata;
-    if (axis < 0 || axis >= hwdata->nbuttons) {
+    if (axis < 0 || axis >= hwdata->naxes) {
         SDL_UnlockJoysticks();
         return SDL_SetError("Invalid axis index");
     }
@@ -226,7 +226,7 @@ SDL_JoystickSetVirtualHatInner(SDL_Joystick * joystick, int hat, Uint8 value)
     }
 
     hwdata = (joystick_hwdata *)joystick->hwdata;
-    if (hat < 0 || hat >= hwdata->nbuttons) {
+    if (hat < 0 || hat >= hwdata->nhats) {
         SDL_UnlockJoysticks();
         return SDL_SetError("Invalid hat index");
     }
