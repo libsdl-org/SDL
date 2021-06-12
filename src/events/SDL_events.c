@@ -596,6 +596,9 @@ SDL_SendWakeupEvent()
     if (!_this->wakeup_lock || SDL_LockMutex(_this->wakeup_lock) == 0) {
         if (_this->wakeup_window) {
             _this->SendWakeupEvent(_this, _this->wakeup_window);
+
+            /* No more wakeup events needed until we enter a new wait */
+            _this->wakeup_window = NULL;
         }
         if (_this->wakeup_lock) {
             SDL_UnlockMutex(_this->wakeup_lock);
