@@ -1562,8 +1562,14 @@ static int OS2_GetDisplayDPI(_THIS, SDL_VideoDisplay *display, float *ddpi,
 
 static void OS2_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
 {
+    SDL_DisplayMode mode;
+
     debug_os2("Enter");
-    SDL_AddDisplayMode(display, &display->current_mode);
+    SDL_memcpy(&mode, &display->current_mode, sizeof(SDL_DisplayMode));
+    mode.driverdata = (MODEDATA *) SDL_malloc(sizeof(MODEDATA));
+    if (!mode.driverdata) return; /* yikes.. */
+    SDL_memcpy(mode.driverdata, display->current_mode.driverdata, sizeof(MODEDATA));
+    SDL_AddDisplayMode(display, &mode);
 }
 
 static int OS2_SetDisplayMode(_THIS, SDL_VideoDisplay *display,
