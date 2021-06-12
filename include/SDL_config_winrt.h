@@ -201,6 +201,7 @@ typedef unsigned int uintptr_t;
 #define SDL_HAPTIC_DISABLED 1
 #else
 #define SDL_JOYSTICK_VIRTUAL    1
+/* #undef SDL_JOYSTICK_TRANSLATOR */
 #define SDL_JOYSTICK_XINPUT 1
 #define SDL_HAPTIC_XINPUT   1
 #endif
