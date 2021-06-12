@@ -605,6 +605,9 @@ SDL_SetKeymap(int start, SDL_Keycode * keys, int length)
 void
 SDL_SetScancodeName(SDL_Scancode scancode, const char *name)
 {
+    if (scancode >= SDL_NUM_SCANCODES) {
+        return;
+    }
     SDL_scancode_names[scancode] = name;
 }
 
@@ -675,7 +678,7 @@ SDL_SendKeyboardKeyInternal(Uint8 source, Uint8 state, SDL_Scancode scancode)
     Uint32 type;
     Uint8 repeat = SDL_FALSE;
 
-    if (scancode == SDL_SCANCODE_UNKNOWN) {
+    if (scancode == SDL_SCANCODE_UNKNOWN || scancode >= SDL_NUM_SCANCODES) {
         return 0;
     }
 
@@ -800,7 +803,7 @@ SDL_SendKeyboardKeyInternal(Uint8 source, Uint8 state, SDL_Scancode scancode)
            allowing the user to escape the application */
         SDL_MinimizeWindow(keyboard->focus);
     }
-    
+
     return (posted);
 }
 
