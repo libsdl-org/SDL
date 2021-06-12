@@ -788,10 +788,14 @@ SDL_PollEvent(SDL_Event * event)
 static int
 SDL_WaitEventTimeout_Device(_THIS, SDL_Window *wakeup_window, SDL_Event * event, int timeout)
 {
-    /* Release any keys held down from last frame */
-    SDL_ReleaseAutoReleaseKeys();
-
     for (;;) {
+        /* Pump events on entry and each time we wake to ensure:
+           a) All pending events are batch processed after waking up from a wait
+           b) Waiting can be completely skipped if events are already available to be pumped
+           c) Periodic processing that takes place in some platform PumpEvents() functions happens
+        */
+        SDL_PumpEvents();
+
         if (!_this->wakeup_lock || SDL_LockMutex(_this->wakeup_lock) == 0) {
             int status = SDL_PeepEvents(event, 1, SDL_GETEVENT, SDL_FIRSTEVENT, SDL_LASTEVENT);
             /* If status == 0 we are going to block so wakeup will be needed. */
