@@ -2180,6 +2180,15 @@ elseif(VITA)
       SceMotion_stub
       m
     )
+    if(HAVE_VIDEO_VITA_PIB)
+        list(PREPEND EXTRA_LIBS
+          pib
+          libScePiglet_stub
+          SceShaccCg_stub
+          taihen_stub
+        )
+    endif()
+
   endif()
 
   set(HAVE_ARMSIMD TRUE)
