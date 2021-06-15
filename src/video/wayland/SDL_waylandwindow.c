@@ -61,10 +61,10 @@ CommitMinMaxDimensions(SDL_Window *window)
         max_width = window->max_w;
         max_height = window->max_h;
     } else {
-        min_width = window->w;
-        min_height = window->h;
-        max_width = window->w;
-        max_height = window->h;
+        min_width = window->windowed.w;
+        min_height = window->windowed.h;
+        max_width = window->windowed.w;
+        max_height = window->windowed.h;
     }
 
     if (data->shell.xdg) {
@@ -1002,6 +1002,20 @@ Wayland_SetWindowFullscreen(_THIS, SDL_Window * window,
 {
     struct wl_output *output = ((SDL_WaylandOutputData*) _display->driverdata)->output;
     SetFullscreen(window, fullscreen ? output : NULL);
+
+    /* The window may have been resized to the output size, so reset this when
+     * returning to a window
+     */
+    if (!fullscreen) {
+        SDL_WindowData *wind = (SDL_WindowData*) window->driverdata;
+        wind->resize.width = window->windowed.w;
+        wind->resize.height = window->windowed.h;
+        wind->resize.pending = SDL_TRUE;
+
+        if (!(window->flags & SDL_WINDOW_OPENGL)) {
+            Wayland_HandlePendingResize(window);
+        }
+    }
 }
 
 void
