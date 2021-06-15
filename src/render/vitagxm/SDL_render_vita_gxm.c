@@ -380,9 +380,6 @@ VITA_GXM_SetTextureScaleMode(SDL_Renderer * renderer, SDL_Texture * texture, SDL
 static int
 VITA_GXM_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
 {
-    VITA_GXM_RenderData *data = (VITA_GXM_RenderData *) renderer->driverdata;
-
-    data->drawstate.viewport_dirty = SDL_TRUE;
     return 0;
 }
 
