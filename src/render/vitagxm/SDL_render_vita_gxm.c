@@ -157,6 +157,7 @@ StartDrawing(SDL_Renderer *renderer)
     data->drawstate.fragment_program = NULL;
     data->drawstate.last_command = -1;
     data->drawstate.texture_color = 0xFFFFFFFF;
+    data->drawstate.viewport_dirty = SDL_TRUE;
 
     // reset blend mode
 //    data->currentBlendMode = SDL_BLENDMODE_BLEND;
@@ -379,7 +380,10 @@ VITA_GXM_SetTextureScaleMode(SDL_Renderer * renderer, SDL_Texture * texture, SDL
 static int
 VITA_GXM_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
 {
-    return 0; // nothing to do here
+    VITA_GXM_RenderData *data = (VITA_GXM_RenderData *) renderer->driverdata;
+
+    data->drawstate.viewport_dirty = SDL_TRUE;
+    return 0;
 }
 
 static void
@@ -417,7 +421,7 @@ VITA_GXM_SetBlendMode(VITA_GXM_RenderData *data, int blendMode)
 static int
 VITA_GXM_QueueSetViewport(SDL_Renderer * renderer, SDL_RenderCommand *cmd)
 {
-    return 0; // TODO
+    return 0;
 }
 
 static int
