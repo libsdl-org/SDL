@@ -411,9 +411,9 @@ SDL_LoadBMP_RW(SDL_RWops * src, int freesrc)
             biClrUsed = 1 << biBitCount;
         }
 
-        if (biClrUsed > palette->ncolors) {
+        if (biClrUsed > (Uint32)palette->ncolors) {
             biClrUsed = 1 << biBitCount;  /* try forcing it? */
-            if (biClrUsed > palette->ncolors) {
+            if (biClrUsed > (Uint32)palette->ncolors) {
                 SDL_SetError("Unsupported or incorrect biClrUsed field");
                 was_error = SDL_TRUE;
                 goto done;
