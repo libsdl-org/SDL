@@ -699,11 +699,11 @@ static SDL_INLINE int GetDefaultDeadzoneSizeForControllerType( EControllerType e
 	case k_eControllerType_AppleController:
 	case k_eControllerType_AndroidController:
 	case k_eControllerType_PS3Controller:
+	case k_eControllerType_PS5Controller:
 		return 10000;
 	case k_eControllerType_SteamControllerV2:
 		return 8192;
 	case k_eControllerType_PS4Controller:
-	case k_eControllerType_PS5Controller:
 		return 4096;
 	case k_eControllerType_SwitchJoyConLeft:
 	case k_eControllerType_SwitchJoyConRight:
