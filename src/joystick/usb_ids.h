@@ -31,8 +31,8 @@
 #define USB_VENDOR_NINTENDO     0x057e
 #define USB_VENDOR_NVIDIA       0x0955
 #define USB_VENDOR_PDP          0x0e6f
-#define USB_VENDOR_POWERA_ALT   0x20d6
 #define USB_VENDOR_POWERA       0x24c6
+#define USB_VENDOR_POWERA_ALT   0x20d6
 #define USB_VENDOR_RAZER        0x1532
 #define USB_VENDOR_SHENZHEN     0x0079
 #define USB_VENDOR_SONY         0x054c
@@ -59,9 +59,12 @@
 #define USB_PRODUCT_XBOX_ONE_S                          0x02ea
 #define USB_PRODUCT_XBOX_ONE_S_REV1_BLUETOOTH           0x02e0
 #define USB_PRODUCT_XBOX_ONE_S_REV2_BLUETOOTH           0x02fd
-#define USB_PRODUCT_XBOX_ONE_SERIES_X                   0x0b12
-#define USB_PRODUCT_XBOX_ONE_SERIES_X_BLUETOOTH         0x0b13
-#define USB_PRODUCT_XBOX_ONE_SERIES_X_POWERA            0x2001
+#define USB_PRODUCT_XBOX_SERIES_X                       0x0b12
+#define USB_PRODUCT_XBOX_SERIES_X_BLUETOOTH             0x0b13
+#define USB_PRODUCT_XBOX_SERIES_X_PDP_AFTERGLOW         0x02da
+#define USB_PRODUCT_XBOX_SERIES_X_PDP_BLUE              0x02d9
+#define USB_PRODUCT_XBOX_SERIES_X_POWERA                0x2001
+#define USB_PRODUCT_XBOX_SERIES_X_POWERA_FUSION_PRO2    0x4001
 #define USB_PRODUCT_XBOX_ONE_XBOXGIP_CONTROLLER         0x02ff    /* XBOXGIP driver software PID */
 #define USB_PRODUCT_XBOX_ONE_XINPUT_CONTROLLER          0x02fe    /* Made up product ID for XInput */
 
