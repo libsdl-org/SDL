@@ -1544,6 +1544,15 @@ void Wayland_SetWindowSize(_THIS, SDL_Window * window)
     struct libdecor_state *state;
 #endif
 
+#ifdef HAVE_LIBDECOR_H
+    /* we must not resize the window while we have a static (non-floating) size */
+    if (data->shell.libdecor &&
+        wind->shell_surface.libdecor.frame &&
+        !libdecor_frame_is_floating(wind->shell_surface.libdecor.frame)) {
+            return;
+    }
+#endif
+
     wl_surface_set_buffer_scale(wind->surface, get_window_scale_factor(window));
 
     if (wind->egl_window) {
