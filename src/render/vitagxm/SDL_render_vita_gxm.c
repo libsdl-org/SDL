@@ -458,6 +458,7 @@ VITA_GXM_QueueDrawPoints(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const 
         vertex[i].z = +0.5f;
         vertex[i].color = color;
     }
+
     return 0;
 }
 
@@ -691,6 +692,7 @@ VITA_GXM_RenderClear(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
     float clear_color[4];
 
     VITA_GXM_RenderData *data = (VITA_GXM_RenderData *) renderer->driverdata;
+    unset_clip_rectangle(data);
 
     clear_color[0] = (cmd->data.color.r)/255.0f;
     clear_color[1] = (cmd->data.color.g)/255.0f;
@@ -711,6 +713,7 @@ VITA_GXM_RenderClear(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
     sceGxmSetVertexStream(data->gxm_context, 0, data->clearVertices);
     sceGxmDraw(data->gxm_context, SCE_GXM_PRIMITIVE_TRIANGLES, SCE_GXM_INDEX_FORMAT_U16, data->linearIndices, 3);
 
+    data->drawstate.cliprect_dirty = SDL_TRUE;
     return 0;
 }
 
@@ -780,7 +783,7 @@ SetDrawState(VITA_GXM_RenderData *data, const SDL_RenderCommand *cmd, SDL_bool s
         float y_scale = -(sh);
         float y_off = viewport->y + sh;
 
-        sceGxmSetViewport(data->gxm_context, x_off, x_scale, y_off, y_scale, -0.5f, 0.5f);
+        sceGxmSetViewport(data->gxm_context, x_off, x_scale, y_off, y_scale, 0.5f, 0.5f);
 
         if (viewport->w && viewport->h) {
             init_orthographic_matrix(data->ortho_matrix,
