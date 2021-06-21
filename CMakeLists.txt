@@ -2178,6 +2178,7 @@ elseif(VITA)
       SceTouch_stub
       SceHid_stub
       SceMotion_stub
+      ScePower_stub
       m
     )
     if(HAVE_VIDEO_VITA_PIB)
