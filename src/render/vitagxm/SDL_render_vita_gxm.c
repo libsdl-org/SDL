@@ -808,9 +808,8 @@ SetDrawState(VITA_GXM_RenderData *data, const SDL_RenderCommand *cmd, SDL_bool s
     if (data->drawstate.cliprect_enabled && data->drawstate.cliprect_dirty) {
         const SDL_Rect *viewport = &data->drawstate.viewport;
         const SDL_Rect *rect = &data->drawstate.cliprect;
-        set_clip_rectangle(data, viewport->x + rect->x,
-                        data->drawstate.target ? viewport->y + rect->y : data->drawstate.drawableh - viewport->y - rect->y - rect->h,
-                        rect->w, rect->h);
+        set_clip_rectangle(data, rect->x, rect->y,
+                        rect->x + rect->w, rect->y + rect->h);
         data->drawstate.cliprect_dirty = SDL_FALSE;
     }
 
