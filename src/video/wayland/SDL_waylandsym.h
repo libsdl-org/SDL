@@ -180,6 +180,7 @@ SDL_WAYLAND_SYM(bool, libdecor_frame_has_capability, (struct libdecor_frame *, \
                                                       enum libdecor_capabilities))
 SDL_WAYLAND_SYM(void, libdecor_frame_set_visibility, (struct libdecor_frame *, bool))
 SDL_WAYLAND_SYM(bool, libdecor_frame_is_visible, (struct libdecor_frame *))
+SDL_WAYLAND_SYM(bool, libdecor_frame_is_floating, (struct libdecor_frame *))
 SDL_WAYLAND_SYM(void, libdecor_frame_map, (struct libdecor_frame *))
 SDL_WAYLAND_SYM(struct libdecor_state *, libdecor_state_new, (int, int))
 SDL_WAYLAND_SYM(void, libdecor_state_free, (struct libdecor_state *))
