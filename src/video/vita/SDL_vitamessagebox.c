@@ -37,6 +37,7 @@ int VITA_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
     SceMsgDialogUserMessageParam msgParam;
     SceMsgDialogButtonsParam buttonParam;
     SceDisplayFrameBuf dispparam;
+    char message[512];
 
     SceMsgDialogResult dialog_result;
     SceCommonDialogErrorCode init_result;
@@ -52,7 +53,9 @@ int VITA_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
     param.mode = SCE_MSG_DIALOG_MODE_USER_MSG;
 
     SDL_zero(msgParam);
-    msgParam.msg = (const SceChar8*)messageboxdata->message;
+    SDL_snprintf(message, 512, "%s\r\n\r\n%s", messageboxdata->title, messageboxdata->message);
+
+    msgParam.msg = (const SceChar8*)message;
     SDL_zero(buttonParam);
 
     if (messageboxdata->numbuttons == 3)
