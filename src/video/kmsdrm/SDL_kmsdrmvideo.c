@@ -538,8 +538,10 @@ void KMSDRM_AddDisplay (_THIS, drmModeConnector *connector, drmModeRes *resource
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
     SDL_DisplayData *dispdata = NULL;
     SDL_VideoDisplay display = {0};
+    SDL_DisplayModeData *modedata = NULL;
     drmModeEncoder *encoder = NULL;
     drmModeCrtc *crtc = NULL;
+    int mode_index;
     int i, j;
     int ret = 0;
 
@@ -627,6 +629,23 @@ void KMSDRM_AddDisplay (_THIS, drmModeConnector *connector, drmModeRes *resource
         goto cleanup;
     }
 
+    /* Find the index of the mode attached to this CRTC */
+    mode_index = -1;
+
+    for (i = 0; i < connector->count_modes; i++) {
+        drmModeModeInfo *mode = &connector->modes[i];
+
+        if (!memcmp(mode, &crtc->mode, sizeof(crtc->mode))) {
+          mode_index = i;
+          break;
+        }
+    }
+
+    if (mode_index == -1) {
+      ret = SDL_SetError("Failed to find index of mode attached to the CRTC.");
+      goto cleanup;
+    }
+
     /*********************************************/
     /* Create an SDL Display for this connector. */
     /*********************************************/
@@ -657,11 +676,21 @@ void KMSDRM_AddDisplay (_THIS, drmModeConnector *connector, drmModeRes *resource
 
     /* Setup the display.
        There's no problem with it being still incomplete. */
+    modedata = SDL_calloc(1, sizeof(SDL_DisplayModeData));
+
+    if (!modedata) {
+        ret = SDL_OutOfMemory();
+        goto cleanup;
+    }
+
+    modedata->mode_index = mode_index;
+
     display.driverdata = dispdata;
     display.desktop_mode.w = dispdata->mode.hdisplay;
     display.desktop_mode.h = dispdata->mode.vdisplay;
     display.desktop_mode.refresh_rate = dispdata->mode.vrefresh;
     display.desktop_mode.format = SDL_PIXELFORMAT_ARGB8888;
+    display.desktop_mode.driverdata = modedata;
     display.current_mode = display.desktop_mode;
 
     /* Add the display to the list of SDL displays. */
