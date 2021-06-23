@@ -943,7 +943,8 @@ KMSDRM_CreateSurfaces(_THIS, SDL_Window * window)
 {
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
     SDL_WindowData *windata = (SDL_WindowData *)window->driverdata;
-    SDL_DisplayData *dispdata = (SDL_DisplayData *)SDL_GetDisplayForWindow(window)->driverdata;
+    SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
+    SDL_DisplayData *dispdata = (SDL_DisplayData *)display->driverdata;
 
     uint32_t surface_fmt = GBM_FORMAT_ARGB8888;
     uint32_t surface_flags = GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING;
@@ -963,7 +964,15 @@ KMSDRM_CreateSurfaces(_THIS, SDL_Window * window)
         "GBM surface format not supported. Trying anyway.");
     }
 
+    /* The KMSDRM backend doesn't always set the mode the higher-level code in
+       SDL_video.c expects. Hulk-smash the display's current_mode to keep the
+       mode that's set in sync with what SDL_video.c thinks is set */
     KMSDRM_GetModeToSet(window, &dispdata->mode);
+
+    display->current_mode.w = dispdata->mode.hdisplay;
+    display->current_mode.h = dispdata->mode.vdisplay;
+    display->current_mode.refresh_rate = dispdata->mode.vrefresh;
+    display->current_mode.format = SDL_PIXELFORMAT_ARGB8888;
 
     windata->gs = KMSDRM_gbm_surface_create(viddata->gbm_dev,
                       dispdata->mode.hdisplay, dispdata->mode.vdisplay,
