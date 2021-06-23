@@ -3870,7 +3870,8 @@ case "$host" in
         else
             LIBUUID=-luuid
         fi
-        EXTRA_LDFLAGS="$EXTRA_LDFLAGS -luser32 -lgdi32 -lwinmm -limm32 -lole32 -loleaut32 -lshell32 -lsetupapi -lversion $LIBUUID -static-libgcc"
+        EXTRA_LDFLAGS="$EXTRA_LDFLAGS -luser32 -lgdi32 -lwinmm -limm32 -lole32 -loleaut32 -lshell32 -lsetupapi -lversion $LIBUUID"
+        BUILD_LDFLAGS="$BUILD_LDFLAGS -Wc,-static-libgcc"
         # The Windows platform requires special setup
         VERSION_SOURCES="$srcdir/src/main/windows/*.rc"
         SDLMAIN_SOURCES="$srcdir/src/main/windows/*.c"
