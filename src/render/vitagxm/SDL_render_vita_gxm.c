@@ -38,6 +38,12 @@
 
 #include <psp2/common_dialog.h>
 
+/* #define DEBUG_RAZOR */
+
+#if DEBUG_RAZOR
+#include <psp2/sysmodule.h>
+#endif
+
 static SDL_Renderer *VITA_GXM_CreateRenderer(SDL_Window *window, Uint32 flags);
 
 static void VITA_GXM_WindowEvent(SDL_Renderer *renderer, const SDL_WindowEvent *event);
@@ -252,6 +258,11 @@ VITA_GXM_CreateRenderer(SDL_Window *window, Uint32 flags)
     } else {
         data->displayData.wait_vblank = SDL_FALSE;
     }
+
+#if DEBUG_RAZOR
+    sceSysmoduleLoadModule( SCE_SYSMODULE_RAZOR_HUD );
+    sceSysmoduleLoadModule( SCE_SYSMODULE_RAZOR_CAPTURE );
+#endif
 
     if (gxm_init(renderer) != 0)
     {
@@ -806,10 +817,8 @@ SetDrawState(VITA_GXM_RenderData *data, const SDL_RenderCommand *cmd, SDL_bool s
     }
 
     if (data->drawstate.cliprect_enabled && data->drawstate.cliprect_dirty) {
-        const SDL_Rect *viewport = &data->drawstate.viewport;
         const SDL_Rect *rect = &data->drawstate.cliprect;
-        set_clip_rectangle(data, rect->x, rect->y,
-                        rect->x + rect->w, rect->y + rect->h);
+        set_clip_rectangle(data, rect->x, rect->y, rect->x + rect->w, rect->y + rect->h);
         data->drawstate.cliprect_dirty = SDL_FALSE;
     }
 
@@ -1113,6 +1122,12 @@ VITA_GXM_RenderPresent(SDL_Renderer *renderer)
 
     sceCommonDialogUpdate(&updateParam);
 
+#if DEBUG_RAZOR
+    sceGxmPadHeartbeat(
+        (const SceGxmColorSurface *)&data->displaySurface[data->backBufferIndex],
+        (SceGxmSyncObject *)data->displayBufferSync[data->backBufferIndex]
+    );
+#endif
 
     sceGxmDisplayQueueAddEntry(
         data->displayBufferSync[data->frontBufferIndex],    // OLD fb
