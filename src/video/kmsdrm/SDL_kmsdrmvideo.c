@@ -635,7 +635,7 @@ void KMSDRM_AddDisplay (_THIS, drmModeConnector *connector, drmModeRes *resource
     for (i = 0; i < connector->count_modes; i++) {
         drmModeModeInfo *mode = &connector->modes[i];
 
-        if (!memcmp(mode, &crtc->mode, sizeof(crtc->mode))) {
+        if (!SDL_memcmp(mode, &crtc->mode, sizeof(crtc->mode))) {
           mode_index = i;
           break;
         }
