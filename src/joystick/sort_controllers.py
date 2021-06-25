@@ -67,7 +67,7 @@ def write_controllers():
     for entry in sorted(controllers, key=lambda entry: entry[2]+"-"+entry[1]):
         line = "".join(entry) + "\n"
         line = line.replace("\t", "    ")
-        if not line.endswith(",\n") and not line.endswith("*/\n"):
+        if not line.endswith(",\n") and not line.endswith("*/\n") and not line.endswith(",\r\n") and not line.endswith("*/\r\n"):
             print("Warning: '%s' is missing a comma at the end of the line" % (line))
         output.write(line)
 
