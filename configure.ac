@@ -2248,7 +2248,7 @@ dnl Find ATOMIC
 CheckATOMIC()
 {
     AC_ARG_ENABLE(video-atomic,
-[AS_HELP_STRING([--enable-video-atomic], [use ATOMIC video driver [default=yes]])],
+[AS_HELP_STRING([--enable-video-atomic], [use ATOMIC video driver [default=no]])],
                   , enable_video_atomic=yes)
 
     if  test x$enable_video = xyes && \
