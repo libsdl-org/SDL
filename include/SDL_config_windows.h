@@ -195,7 +195,7 @@ typedef unsigned int uintptr_t;
 #endif
 
 /* Check to see if we have Windows 10 build environment */
-#if _MSC_VER >= 1911        /* Visual Studio 15.3 */
+#if defined(_MSC_VER) && (_MSC_VER >= 1911)        /* Visual Studio 15.3 */
 #include <sdkddkver.h>
 #if _WIN32_WINNT >= 0x0601  /* Windows 7 */
 #define SDL_WINDOWS7_SDK
