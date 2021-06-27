@@ -2312,6 +2312,9 @@ SDL_bool SDL_ShouldIgnoreJoystick(const char *name, SDL_JoystickGUID guid)
 
         MAKE_VIDPID(0x2516, 0x001f),  /* Cooler Master Storm Mizar Mouse */
         MAKE_VIDPID(0x2516, 0x0028),  /* Cooler Master Storm Alcor Mouse */
+
+        /* Anne Pro II Keyboard */
+        MAKE_VIDPID(0x04d9, 0x8009),  /* OBINLB USB-HID Keyboard */
     };
 
     unsigned int i;
