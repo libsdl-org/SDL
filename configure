@@ -17826,14 +17826,27 @@ $as_echo "$have_gcc_sse3" >&6; }
         fi
     fi
 
-    ac_fn_c_check_header_mongrel "$LINENO" "immintrin.h" "ac_cv_header_immintrin_h" "$ac_includes_default"
-if test "x$ac_cv_header_immintrin_h" = xyes; then :
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for immintrin.h" >&5
+$as_echo_n "checking for immintrin.h... " >&6; }
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <immintrin.h>
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
   have_immintrin_h_hdr=yes
 else
   have_immintrin_h_hdr=no
 fi
-
-
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_immintrin_h_hdr" >&5
+$as_echo "$have_immintrin_h_hdr" >&6; }
     if test x$have_immintrin_h_hdr = xyes; then
 
 $as_echo "#define HAVE_IMMINTRIN_H 1" >>confdefs.h
@@ -26104,7 +26117,6 @@ if test x$WARN_ABOUT_ARM_SIMD_ASM_MIT = xyes; then
     SUMMARY="${SUMMARY}configure script with:\n"
     SUMMARY="${SUMMARY}\n    --disable-arm-simd\n"
 fi
-
 if test x$WARN_ABOUT_ARM_NEON_ASM_MIT = xyes; then
     SUMMARY="${SUMMARY}\nSDL is being built with ARM NEON optimizations, which\n"
     SUMMARY="${SUMMARY}uses code licensed under the MIT license. If this is a\n"

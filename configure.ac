@@ -729,9 +729,10 @@ if test x$enable_assembly = xyes; then
         fi
     fi
 
-    AC_CHECK_HEADER(immintrin.h,
-                    have_immintrin_h_hdr=yes,
-                    have_immintrin_h_hdr=no)
+    AC_MSG_CHECKING(for immintrin.h)
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <immintrin.h>]])],
+       [have_immintrin_h_hdr=yes],[have_immintrin_h_hdr=no])
+    AC_MSG_RESULT($have_immintrin_h_hdr)
     if test x$have_immintrin_h_hdr = xyes; then
         AC_DEFINE(HAVE_IMMINTRIN_H, 1, [ ])
     fi
@@ -4520,7 +4521,6 @@ if test x$WARN_ABOUT_ARM_SIMD_ASM_MIT = xyes; then
     SUMMARY="${SUMMARY}configure script with:\n"
     SUMMARY="${SUMMARY}\n    --disable-arm-simd\n"
 fi
-
 if test x$WARN_ABOUT_ARM_NEON_ASM_MIT = xyes; then
     SUMMARY="${SUMMARY}\nSDL is being built with ARM NEON optimizations, which\n"
     SUMMARY="${SUMMARY}uses code licensed under the MIT license. If this is a\n"
