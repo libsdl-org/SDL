@@ -53,7 +53,7 @@ int VITA_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
     param.mode = SCE_MSG_DIALOG_MODE_USER_MSG;
 
     SDL_zero(msgParam);
-    SDL_snprintf(message, 512, "%s\r\n\r\n%s", messageboxdata->title, messageboxdata->message);
+    SDL_snprintf(message, sizeof(message), "%s\r\n\r\n%s", messageboxdata->title, messageboxdata->message);
 
     msgParam.msg = (const SceChar8*)message;
     SDL_zero(buttonParam);
