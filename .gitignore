@@ -94,6 +94,7 @@ VisualC/visualtest/testsprite2_sample.parameters
 android-project/local.properties
 
 test/checkkeys
+test/checkkeysthreads
 test/controllermap
 test/loopwave
 test/loopwavequeue
