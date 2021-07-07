@@ -3820,6 +3820,15 @@
 		F3ADAB912576F0B400A6B1D9 /* SDL_sysurl.m in Sources */ = {isa = PBXBuildFile; fileRef = F3ADAB8D2576F0B300A6B1D9 /* SDL_sysurl.m */; };
 		F3ADAB922576F0B400A6B1D9 /* SDL_sysurl.m in Sources */ = {isa = PBXBuildFile; fileRef = F3ADAB8D2576F0B300A6B1D9 /* SDL_sysurl.m */; };
 		F3ADAB932576F0B400A6B1D9 /* SDL_sysurl.m in Sources */ = {isa = PBXBuildFile; fileRef = F3ADAB8D2576F0B300A6B1D9 /* SDL_sysurl.m */; };
+		F3F07D5A269640160074468B /* SDL_hidapi_luna.c in Sources */ = {isa = PBXBuildFile; fileRef = F3F07D59269640160074468B /* SDL_hidapi_luna.c */; };
+		F3F07D5B269640160074468B /* SDL_hidapi_luna.c in Sources */ = {isa = PBXBuildFile; fileRef = F3F07D59269640160074468B /* SDL_hidapi_luna.c */; };
+		F3F07D5C269640160074468B /* SDL_hidapi_luna.c in Sources */ = {isa = PBXBuildFile; fileRef = F3F07D59269640160074468B /* SDL_hidapi_luna.c */; };
+		F3F07D5D269640160074468B /* SDL_hidapi_luna.c in Sources */ = {isa = PBXBuildFile; fileRef = F3F07D59269640160074468B /* SDL_hidapi_luna.c */; };
+		F3F07D5E269640160074468B /* SDL_hidapi_luna.c in Sources */ = {isa = PBXBuildFile; fileRef = F3F07D59269640160074468B /* SDL_hidapi_luna.c */; };
+		F3F07D5F269640160074468B /* SDL_hidapi_luna.c in Sources */ = {isa = PBXBuildFile; fileRef = F3F07D59269640160074468B /* SDL_hidapi_luna.c */; };
+		F3F07D60269640160074468B /* SDL_hidapi_luna.c in Sources */ = {isa = PBXBuildFile; fileRef = F3F07D59269640160074468B /* SDL_hidapi_luna.c */; };
+		F3F07D61269640160074468B /* SDL_hidapi_luna.c in Sources */ = {isa = PBXBuildFile; fileRef = F3F07D59269640160074468B /* SDL_hidapi_luna.c */; };
+		F3F07D62269640160074468B /* SDL_hidapi_luna.c in Sources */ = {isa = PBXBuildFile; fileRef = F3F07D59269640160074468B /* SDL_hidapi_luna.c */; };
 		FA24348B21D41FFB00B8918A /* SDL_metal.h in Headers */ = {isa = PBXBuildFile; fileRef = FA24348A21D41FFB00B8918A /* SDL_metal.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		FA73671D19A540EF004122E4 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA73671C19A540EF004122E4 /* CoreVideo.framework */; };
 		FA73671F19A54144004122E4 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA73671C19A540EF004122E4 /* CoreVideo.framework */; };
@@ -4367,6 +4376,7 @@
 		F3984CCF25BCC92800374F43 /* SDL_hidapi_stadia.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_stadia.c; sourceTree = "<group>"; };
 		F3A4909D2554D38500E92A8B /* SDL_hidapi_ps5.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_ps5.c; sourceTree = "<group>"; };
 		F3ADAB8D2576F0B300A6B1D9 /* SDL_sysurl.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDL_sysurl.m; sourceTree = "<group>"; };
+		F3F07D59269640160074468B /* SDL_hidapi_luna.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_luna.c; sourceTree = "<group>"; };
 		F59C710300D5CB5801000001 /* ReadMe.txt */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = ReadMe.txt; sourceTree = "<group>"; };
 		F59C710600D5CB5801000001 /* SDL.info */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = SDL.info; sourceTree = "<group>"; };
 		F5A2EF3900C6A39A01000001 /* BUGS.txt */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = BUGS.txt; path = ../../BUGS.txt; sourceTree = SOURCE_ROOT; };
@@ -5280,6 +5290,7 @@
 			isa = PBXGroup;
 			children = (
 				A7D8A7C923E2513E00DCD162 /* SDL_hidapi_gamecube.c */,
+				F3F07D59269640160074468B /* SDL_hidapi_luna.c */,
 				A7D8A7C323E2513E00DCD162 /* SDL_hidapi_ps4.c */,
 				F3A4909D2554D38500E92A8B /* SDL_hidapi_ps5.c */,
 				A75FDBC423EA380300529352 /* SDL_hidapi_rumble.c */,
@@ -8289,6 +8300,7 @@
 				A75FCE8623E25AB700529352 /* SDL_cocoawindow.m in Sources */,
 				A75FCE8723E25AB700529352 /* SDL_sysmutex.c in Sources */,
 				A75FCE8823E25AB700529352 /* SDL_syshaptic.c in Sources */,
+				F3F07D61269640160074468B /* SDL_hidapi_luna.c in Sources */,
 				A75FCE8923E25AB700529352 /* SDL_rwopsbundlesupport.m in Sources */,
 				A75FCE8A23E25AB700529352 /* SDL_video.c in Sources */,
 				A75FCE8B23E25AB700529352 /* SDL_offscreenopengl.c in Sources */,
@@ -8490,6 +8502,7 @@
 				A75FD03F23E25AC700529352 /* SDL_cocoawindow.m in Sources */,
 				A75FD04023E25AC700529352 /* SDL_sysmutex.c in Sources */,
 				A75FD04123E25AC700529352 /* SDL_syshaptic.c in Sources */,
+				F3F07D62269640160074468B /* SDL_hidapi_luna.c in Sources */,
 				A75FD04223E25AC700529352 /* SDL_rwopsbundlesupport.m in Sources */,
 				A75FD04323E25AC700529352 /* SDL_video.c in Sources */,
 				A75FD04423E25AC700529352 /* SDL_offscreenopengl.c in Sources */,
@@ -8670,6 +8683,7 @@
 				A769B1E823E259AE00872273 /* SDL_bmp.c in Sources */,
 				75E0915F241EA924004729E1 /* SDL_virtualjoystick.c in Sources */,
 				A769B1E923E259AE00872273 /* SDL_uikit_main.c in Sources */,
+				F3F07D5F269640160074468B /* SDL_hidapi_luna.c in Sources */,
 				A769B1EA23E259AE00872273 /* SDL_stdlib.c in Sources */,
 				A769B1EB23E259AE00872273 /* SDL_dummyaudio.c in Sources */,
 				A769B1EC23E259AE00872273 /* SDL_fillrect.c in Sources */,
@@ -8917,6 +8931,7 @@
 				A7D8B5CA23E2514300DCD162 /* SDL_rwopsbundlesupport.m in Sources */,
 				A7D8AC1023E2514100DCD162 /* SDL_video.c in Sources */,
 				560572062473687700B46B66 /* SDL_syslocale.m in Sources */,
+				F3F07D5B269640160074468B /* SDL_hidapi_luna.c in Sources */,
 				A7D8AB5623E2514100DCD162 /* SDL_offscreenopengl.c in Sources */,
 				A7D8ACC423E2514100DCD162 /* SDL_uikitmetalview.m in Sources */,
 				A7D8BA5C23E2514400DCD162 /* SDL_shaders_gles2.c in Sources */,
@@ -9118,6 +9133,7 @@
 				A7D8B5CB23E2514300DCD162 /* SDL_rwopsbundlesupport.m in Sources */,
 				A7D8AC1123E2514100DCD162 /* SDL_video.c in Sources */,
 				560572072473687800B46B66 /* SDL_syslocale.m in Sources */,
+				F3F07D5C269640160074468B /* SDL_hidapi_luna.c in Sources */,
 				A7D8AB5723E2514100DCD162 /* SDL_offscreenopengl.c in Sources */,
 				A7D8ACC523E2514100DCD162 /* SDL_uikitmetalview.m in Sources */,
 				A7D8BA5D23E2514400DCD162 /* SDL_shaders_gles2.c in Sources */,
@@ -9274,6 +9290,7 @@
 				A7D8B3DE23E2514300DCD162 /* SDL_bmp.c in Sources */,
 				75E0915E241EA924004729E1 /* SDL_virtualjoystick.c in Sources */,
 				A7D8BC0723E2590800DCD162 /* SDL_uikit_main.c in Sources */,
+				F3F07D5E269640160074468B /* SDL_hidapi_luna.c in Sources */,
 				A7D8B97223E2514400DCD162 /* SDL_stdlib.c in Sources */,
 				A7D8B79E23E2514400DCD162 /* SDL_dummyaudio.c in Sources */,
 				A7D8B3A823E2514200DCD162 /* SDL_fillrect.c in Sources */,
@@ -9521,6 +9538,7 @@
 				A7D8AEA623E2514100DCD162 /* SDL_cocoawindow.m in Sources */,
 				A7D8B43A23E2514300DCD162 /* SDL_sysmutex.c in Sources */,
 				A7D8AAB023E2514100DCD162 /* SDL_syshaptic.c in Sources */,
+				F3F07D5A269640160074468B /* SDL_hidapi_luna.c in Sources */,
 				A7D8BBD523E2574800DCD162 /* SDL_uikitclipboard.m in Sources */,
 				A7D8B5C923E2514300DCD162 /* SDL_rwopsbundlesupport.m in Sources */,
 				A7D8AC0F23E2514100DCD162 /* SDL_video.c in Sources */,
@@ -9722,6 +9740,7 @@
 				A7D8BB8423E2514500DCD162 /* SDL_quit.c in Sources */,
 				A7D8AEA923E2514100DCD162 /* SDL_cocoawindow.m in Sources */,
 				A7D8B43D23E2514300DCD162 /* SDL_sysmutex.c in Sources */,
+				F3F07D5D269640160074468B /* SDL_hidapi_luna.c in Sources */,
 				A7D8AAB323E2514100DCD162 /* SDL_syshaptic.c in Sources */,
 				A7D8B5CC23E2514300DCD162 /* SDL_rwopsbundlesupport.m in Sources */,
 				A7D8AC1223E2514100DCD162 /* SDL_video.c in Sources */,
@@ -9923,6 +9942,7 @@
 				A7D8B43F23E2514300DCD162 /* SDL_sysmutex.c in Sources */,
 				A7D8AAB523E2514100DCD162 /* SDL_syshaptic.c in Sources */,
 				A7D8B5CE23E2514300DCD162 /* SDL_rwopsbundlesupport.m in Sources */,
+				F3F07D60269640160074468B /* SDL_hidapi_luna.c in Sources */,
 				A7D8AC1423E2514100DCD162 /* SDL_video.c in Sources */,
 				A7D8AB5A23E2514100DCD162 /* SDL_offscreenopengl.c in Sources */,
 				A7D8ACC823E2514100DCD162 /* SDL_uikitmetalview.m in Sources */,
