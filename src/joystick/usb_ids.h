@@ -93,6 +93,12 @@
 #define USB_USAGE_GENERIC_WHEEL                 0x0038
 #define USB_USAGE_GENERIC_HAT                   0x0039
 
+/* Bluetooth SIG assigned Company Identifiers
+   https://www.bluetooth.com/specifications/assigned-numbers/company-identifiers/ */
+#define BLUETOOTH_VENDOR_AMAZON                 0x0171
+
+#define BLUETOOTH_PRODUCT_LUNA_CONTROLLER       0x0419
+
 #endif /* usb_ids_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

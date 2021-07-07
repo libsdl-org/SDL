@@ -32,6 +32,7 @@
 
 /* This is the full set of HIDAPI drivers available */
 #define SDL_JOYSTICK_HIDAPI_GAMECUBE
+#define SDL_JOYSTICK_HIDAPI_LUNA
 #define SDL_JOYSTICK_HIDAPI_PS4
 #define SDL_JOYSTICK_HIDAPI_PS5
 #define SDL_JOYSTICK_HIDAPI_STADIA
@@ -107,6 +108,7 @@ typedef struct _SDL_HIDAPI_DeviceDriver
 
 /* HIDAPI device support */
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverGameCube;
+extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverLuna;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverPS4;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverPS5;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverStadia;
