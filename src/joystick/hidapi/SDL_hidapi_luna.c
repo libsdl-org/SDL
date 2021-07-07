@@ -234,18 +234,20 @@ HIDAPI_DriverLuna_HandleStatePacket(SDL_Joystick *joystick, SDL_DriverLuna_Conte
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_RIGHTSHOULDER, (data[14] & 0x80) ? SDL_PRESSED : SDL_RELEASED);
     }
     if (ctx->last_state[15] != data[15]) {
-        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_LUNA_MIC, (data[15] & 0x02) ? SDL_PRESSED : SDL_RELEASED);
+        /* The mic button appears to be in byte 16 in firmware version 305164320 */
+        /*SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_LUNA_MIC, (data[15] & 0x02) ? SDL_PRESSED : SDL_RELEASED);*/
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_START, (data[15] & 0x08) ? SDL_PRESSED : SDL_RELEASED);
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_LEFTSTICK, (data[15] & 0x20) ? SDL_PRESSED : SDL_RELEASED);
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_RIGHTSTICK, (data[15] & 0x40) ? SDL_PRESSED : SDL_RELEASED);
     }
     if (ctx->last_state[16] != data[16]) {
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_BACK, (data[16] & 0x01) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_LUNA_MIC, (data[16] & 0x02) ? SDL_PRESSED : SDL_RELEASED);
     }
 
 #define READ_STICK_AXIS(offset) \
     (data[offset] == 0x7f ? 0 : \
-    (Sint16)HIDAPI_RemapVal((float)((int)(data[offset] - 0x7e)), 0x01 - 0x7f, 0xff - 0x7f, SDL_MIN_SINT16, SDL_MAX_SINT16))
+    (Sint16)HIDAPI_RemapVal((float)data[offset], 0x00, 0xff, SDL_MIN_SINT16, SDL_MAX_SINT16))
     {
         Sint16 axis = READ_STICK_AXIS(2);
         SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_LEFTX, axis);
