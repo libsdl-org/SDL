@@ -619,7 +619,7 @@ typedef enum
     SDL_CONTROLLER_BUTTON_DPAD_DOWN,
     SDL_CONTROLLER_BUTTON_DPAD_LEFT,
     SDL_CONTROLLER_BUTTON_DPAD_RIGHT,
-    SDL_CONTROLLER_BUTTON_MISC1,    /* Xbox Series X share button, PS5 microphone button, Nintendo Switch Pro capture button */
+    SDL_CONTROLLER_BUTTON_MISC1,    /* Xbox Series X share button, PS5 microphone button, Nintendo Switch Pro capture button, Amazon Luna microphone button */
     SDL_CONTROLLER_BUTTON_PADDLE1,  /* Xbox Elite paddle P1 */
     SDL_CONTROLLER_BUTTON_PADDLE2,  /* Xbox Elite paddle P3 */
     SDL_CONTROLLER_BUTTON_PADDLE3,  /* Xbox Elite paddle P2 */
