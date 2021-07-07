@@ -15,3 +15,9 @@ with README.md
 Enjoy!
 
 Sam Lantinga (slouken@libsdl.org)
+
+
+## License
+
+This library is distributed under the terms of the zlib license:
+https://www.zlib.net/zlib_license.html
