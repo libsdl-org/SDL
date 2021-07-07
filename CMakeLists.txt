@@ -2311,7 +2311,7 @@ if(NOT CMAKE_HOST_WIN32)
   execute_process(COMMAND sh ${SDL2_SOURCE_DIR}/build-scripts/updaterev.sh
     WORKING_DIRECTORY ${SDL2_BINARY_DIR})
 endif()
-if(NOT WINDOWS OR CYGWIN)
+if(NOT WINDOWS OR CYGWIN OR MINGW)
 
   set(prefix ${CMAKE_INSTALL_PREFIX})
 
@@ -2672,7 +2672,7 @@ else()
   set(SOPOSTFIX "")
 endif()
 
-if(NOT (WINDOWS OR CYGWIN))
+if(NOT (WINDOWS OR CYGWIN OR MINGW))
   if(SDL_SHARED)
     set(SOEXT ${CMAKE_SHARED_LIBRARY_SUFFIX}) # ".so", ".dylib", etc.
     get_target_property(SONAME SDL2 OUTPUT_NAME)
