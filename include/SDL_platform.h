@@ -87,6 +87,9 @@
 #ifndef TARGET_OS_TV
 #define TARGET_OS_TV 0
 #endif
+#ifndef TARGET_OS_SIMULATOR
+#define TARGET_OS_SIMULATOR 0
+#endif
 
 #if TARGET_OS_TV
 #undef __TVOS__
