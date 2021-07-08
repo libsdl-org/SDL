@@ -44,8 +44,17 @@ WIN_SetErrorFromHRESULT(const char *prefix, HRESULT hr)
 {
     TCHAR buffer[1024];
     char *message;
+    TCHAR *p = buffer;
     FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, hr, 0,
                   buffer, SDL_arraysize(buffer), NULL);
+    /* kill CR/LF that FormatMessage() sticks at the end */
+    while (*p) {
+        if (*p == '\r') {
+            *p = 0;
+            break;
+        }
+        ++p;
+    }
     message = WIN_StringToUTF8(buffer);
     SDL_SetError("%s%s%s", prefix ? prefix : "", prefix ? ": " : "", message);
     SDL_free(message);
