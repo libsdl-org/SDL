@@ -79,7 +79,7 @@
 #define TARGET_OS_MACCATALYST 0
 #endif
 #ifndef TARGET_OS_IOS
-#define TARGET_OS_IOS    0
+#define TARGET_OS_IOS 0
 #endif
 #ifndef TARGET_OS_IPHONE
 #define TARGET_OS_IPHONE 0
