@@ -477,6 +477,12 @@ HIDAPI_DriverGameCube_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *jo
 }
 
 static int
+HIDAPI_DriverGameCube_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *data, int size)
+{
+    return SDL_Unsupported();
+}
+
+static int
 HIDAPI_DriverGameCube_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, SDL_bool enabled)
 {
     return SDL_Unsupported();
@@ -528,6 +534,7 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverGameCube =
     HIDAPI_DriverGameCube_RumbleJoystickTriggers,
     HIDAPI_DriverGameCube_HasJoystickLED,
     HIDAPI_DriverGameCube_SetJoystickLED,
+    HIDAPI_DriverGameCube_SendJoystickEffect,
     HIDAPI_DriverGameCube_SetJoystickSensorsEnabled,
     HIDAPI_DriverGameCube_CloseJoystick,
     HIDAPI_DriverGameCube_FreeDevice,

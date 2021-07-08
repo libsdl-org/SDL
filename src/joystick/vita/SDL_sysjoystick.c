@@ -347,7 +347,7 @@ SDL_JoystickGUID VITA_JoystickGetDeviceGUID( int device_index )
 }
 
 static int
-VITA_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+VITA_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     int index = (int) SDL_JoystickInstanceID(joystick);
     SceCtrlActuator act;
@@ -360,13 +360,13 @@ VITA_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16
 }
 
 static int
-VITA_JoystickRumbleTriggers(SDL_Joystick * joystick, Uint16 left, Uint16 right)
+VITA_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left, Uint16 right)
 {
     return SDL_Unsupported();
 }
 
 static SDL_bool
-VITA_JoystickHasLED(SDL_Joystick * joystick)
+VITA_JoystickHasLED(SDL_Joystick *joystick)
 {
     // always return true for now
     return SDL_TRUE;
@@ -374,11 +374,17 @@ VITA_JoystickHasLED(SDL_Joystick * joystick)
 
 
 static int
-VITA_JoystickSetLED(SDL_Joystick * joystick, Uint8 red, Uint8 green, Uint8 blue)
+VITA_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
 {
     int index = (int) SDL_JoystickInstanceID(joystick);
     sceCtrlSetLightBar(ext_port_map[index], red, green, blue);
     return 0;
+}
+
+static int
+VITA_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
+{
+    return SDL_Unsupported();
 }
 
 static int
@@ -405,6 +411,7 @@ SDL_JoystickDriver SDL_VITA_JoystickDriver =
 
     VITA_JoystickHasLED,
     VITA_JoystickSetLED,
+    VITA_JoystickSendEffect,
     VITA_JoystickSetSensorsEnabled,
 
     VITA_JoystickUpdate,

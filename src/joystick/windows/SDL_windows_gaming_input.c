@@ -486,7 +486,7 @@ WGI_JoystickGetDeviceInstanceID(int device_index)
 }
 
 static int
-WGI_JoystickOpen(SDL_Joystick * joystick, int device_index)
+WGI_JoystickOpen(SDL_Joystick *joystick, int device_index)
 {
     WindowsGamingInputControllerState *state = &wgi.controllers[device_index];
     struct joystick_hwdata *hwdata;
@@ -558,7 +558,7 @@ WGI_JoystickOpen(SDL_Joystick * joystick, int device_index)
 }
 
 static int
-WGI_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+WGI_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     struct joystick_hwdata *hwdata = joystick->hwdata;
 
@@ -579,7 +579,7 @@ WGI_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 
 }
 
 static int
-WGI_JoystickRumbleTriggers(SDL_Joystick * joystick, Uint16 left_rumble, Uint16 right_rumble)
+WGI_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
 {
     struct joystick_hwdata *hwdata = joystick->hwdata;
 
@@ -600,13 +600,19 @@ WGI_JoystickRumbleTriggers(SDL_Joystick * joystick, Uint16 left_rumble, Uint16 r
 }
 
 static SDL_bool
-WGI_JoystickHasLED(SDL_Joystick * joystick)
+WGI_JoystickHasLED(SDL_Joystick *joystick)
 {
     return SDL_FALSE;
 }
 
 static int
-WGI_JoystickSetLED(SDL_Joystick * joystick, Uint8 red, Uint8 green, Uint8 blue)
+WGI_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
+{
+    return SDL_Unsupported();
+}
+
+static int
+WGI_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
 {
     return SDL_Unsupported();
 }
@@ -643,7 +649,7 @@ ConvertHatValue(__x_ABI_CWindows_CGaming_CInput_CGameControllerSwitchPosition va
 }
 
 static void
-WGI_JoystickUpdate(SDL_Joystick * joystick)
+WGI_JoystickUpdate(SDL_Joystick *joystick)
 {
     struct joystick_hwdata *hwdata = joystick->hwdata;
     HRESULT hr;
@@ -677,7 +683,7 @@ WGI_JoystickUpdate(SDL_Joystick * joystick)
 }
 
 static void
-WGI_JoystickClose(SDL_Joystick * joystick)
+WGI_JoystickClose(SDL_Joystick *joystick)
 {
     struct joystick_hwdata *hwdata = joystick->hwdata;
 
@@ -762,6 +768,7 @@ SDL_JoystickDriver SDL_WGI_JoystickDriver =
     WGI_JoystickRumbleTriggers,
     WGI_JoystickHasLED,
     WGI_JoystickSetLED,
+    WGI_JoystickSendEffect,
     WGI_JoystickSetSensorsEnabled,
     WGI_JoystickUpdate,
     WGI_JoystickClose,

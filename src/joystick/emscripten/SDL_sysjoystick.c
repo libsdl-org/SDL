@@ -427,6 +427,12 @@ EMSCRIPTEN_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 
 }
 
 static int
+EMSCRIPTEN_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
+{
+    return SDL_Unsupported();
+}
+
+static int
 EMSCRIPTEN_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
 {
     return SDL_Unsupported();
@@ -447,6 +453,7 @@ SDL_JoystickDriver SDL_EMSCRIPTEN_JoystickDriver =
     EMSCRIPTEN_JoystickRumbleTriggers,
     EMSCRIPTEN_JoystickHasLED,
     EMSCRIPTEN_JoystickSetLED,
+    EMSCRIPTEN_JoystickSendEffect,
     EMSCRIPTEN_JoystickSetSensorsEnabled,
     EMSCRIPTEN_JoystickUpdate,
     EMSCRIPTEN_JoystickClose,

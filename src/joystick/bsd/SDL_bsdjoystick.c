@@ -790,6 +790,12 @@ BSD_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
 }
 
 static int
+BSD_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
+{
+    return SDL_Unsupported();
+}
+
+static int
 BSD_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
 {
     return SDL_Unsupported();
@@ -810,6 +816,7 @@ SDL_JoystickDriver SDL_BSD_JoystickDriver =
     BSD_JoystickRumbleTriggers,
     BSD_JoystickHasLED,
     BSD_JoystickSetLED,
+    BSD_JoystickSendEffect,
     BSD_JoystickSetSensorsEnabled,
     BSD_JoystickUpdate,
     BSD_JoystickClose,

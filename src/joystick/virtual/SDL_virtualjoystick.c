@@ -164,7 +164,7 @@ SDL_JoystickDetachVirtualInner(int device_index)
 
 
 int
-SDL_JoystickSetVirtualAxisInner(SDL_Joystick * joystick, int axis, Sint16 value)
+SDL_JoystickSetVirtualAxisInner(SDL_Joystick *joystick, int axis, Sint16 value)
 {
     joystick_hwdata *hwdata;
 
@@ -189,7 +189,7 @@ SDL_JoystickSetVirtualAxisInner(SDL_Joystick * joystick, int axis, Sint16 value)
 
 
 int
-SDL_JoystickSetVirtualButtonInner(SDL_Joystick * joystick, int button, Uint8 value)
+SDL_JoystickSetVirtualButtonInner(SDL_Joystick *joystick, int button, Uint8 value)
 {
     joystick_hwdata *hwdata;
 
@@ -214,7 +214,7 @@ SDL_JoystickSetVirtualButtonInner(SDL_Joystick * joystick, int button, Uint8 val
 
 
 int
-SDL_JoystickSetVirtualHatInner(SDL_Joystick * joystick, int hat, Uint8 value)
+SDL_JoystickSetVirtualHatInner(SDL_Joystick *joystick, int hat, Uint8 value)
 {
     joystick_hwdata *hwdata;
 
@@ -313,7 +313,7 @@ VIRTUAL_JoystickGetDeviceInstanceID(int device_index)
 
 
 static int
-VIRTUAL_JoystickOpen(SDL_Joystick * joystick, int device_index)
+VIRTUAL_JoystickOpen(SDL_Joystick *joystick, int device_index)
 {
     joystick_hwdata *hwdata = VIRTUAL_HWDataForIndex(device_index);
     if (!hwdata) {
@@ -333,27 +333,33 @@ VIRTUAL_JoystickOpen(SDL_Joystick * joystick, int device_index)
 
 
 static int
-VIRTUAL_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+VIRTUAL_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     return SDL_Unsupported();
 }
 
 static int
-VIRTUAL_JoystickRumbleTriggers(SDL_Joystick * joystick, Uint16 left_rumble, Uint16 right_rumble)
+VIRTUAL_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
 {
     return SDL_Unsupported();
 }
 
 
 static SDL_bool
-VIRTUAL_JoystickHasLED(SDL_Joystick * joystick)
+VIRTUAL_JoystickHasLED(SDL_Joystick *joystick)
 {
     return SDL_FALSE;
 }
 
 
 static int
-VIRTUAL_JoystickSetLED(SDL_Joystick * joystick, Uint8 red, Uint8 green, Uint8 blue)
+VIRTUAL_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
+{
+    return SDL_Unsupported();
+}
+
+static int
+VIRTUAL_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
 {
     return SDL_Unsupported();
 }
@@ -366,7 +372,7 @@ VIRTUAL_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
 
 
 static void
-VIRTUAL_JoystickUpdate(SDL_Joystick * joystick)
+VIRTUAL_JoystickUpdate(SDL_Joystick *joystick)
 {
     joystick_hwdata *hwdata;
     int i;
@@ -393,7 +399,7 @@ VIRTUAL_JoystickUpdate(SDL_Joystick * joystick)
 
 
 static void
-VIRTUAL_JoystickClose(SDL_Joystick * joystick)
+VIRTUAL_JoystickClose(SDL_Joystick *joystick)
 {
     joystick_hwdata *hwdata;
 
@@ -438,6 +444,7 @@ SDL_JoystickDriver SDL_VIRTUAL_JoystickDriver =
     VIRTUAL_JoystickRumbleTriggers,
     VIRTUAL_JoystickHasLED,
     VIRTUAL_JoystickSetLED,
+    VIRTUAL_JoystickSendEffect,
     VIRTUAL_JoystickSetSensorsEnabled,
     VIRTUAL_JoystickUpdate,
     VIRTUAL_JoystickClose,

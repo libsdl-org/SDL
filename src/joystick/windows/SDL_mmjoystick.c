@@ -244,7 +244,7 @@ static SDL_JoystickID WINMM_JoystickGetDeviceInstanceID(int device_index)
    It returns 0, or -1 if there is an error.
  */
 static int
-WINMM_JoystickOpen(SDL_Joystick * joystick, int device_index)
+WINMM_JoystickOpen(SDL_Joystick *joystick, int device_index)
 {
     int index, i;
     int caps_flags[MAX_AXES - 2] =
@@ -345,6 +345,12 @@ WINMM_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
     return SDL_Unsupported();
 }
 
+static int
+WINMM_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
+{
+    return SDL_Unsupported();
+}
+
 static int WINMM_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
 {
     return SDL_Unsupported();
@@ -356,7 +362,7 @@ static int WINMM_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enab
  * and update joystick device state.
  */
 static void
-WINMM_JoystickUpdate(SDL_Joystick * joystick)
+WINMM_JoystickUpdate(SDL_Joystick *joystick)
 {
     MMRESULT result;
     int i;
@@ -414,7 +420,7 @@ WINMM_JoystickUpdate(SDL_Joystick * joystick)
 
 /* Function to close a joystick after use */
 static void
-WINMM_JoystickClose(SDL_Joystick * joystick)
+WINMM_JoystickClose(SDL_Joystick *joystick)
 {
     SDL_free(joystick->hwdata);
 }
@@ -496,6 +502,7 @@ SDL_JoystickDriver SDL_WINMM_JoystickDriver =
     WINMM_JoystickRumbleTriggers,
     WINMM_JoystickHasLED,
     WINMM_JoystickSetLED,
+    WINMM_JoystickSendEffect,
     WINMM_JoystickSetSensorsEnabled,
     WINMM_JoystickUpdate,
     WINMM_JoystickClose,

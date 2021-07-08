@@ -821,6 +821,16 @@ extern DECLSPEC SDL_bool SDLCALL SDL_GameControllerHasLED(SDL_GameController *ga
 extern DECLSPEC int SDLCALL SDL_GameControllerSetLED(SDL_GameController *gamecontroller, Uint8 red, Uint8 green, Uint8 blue);
 
 /**
+ * Send a controller specific effect packet
+ *
+ * \param gamecontroller The controller to affect
+ * \param data The data to send to the controller
+ * \param size The size of the data to send to the controller
+ * \returns 0, or -1 if this controller or driver doesn't support effect packets
+ */
+extern DECLSPEC int SDLCALL SDL_GameControllerSendEffect(SDL_GameController *gamecontroller, const void *data, int size);
+
+/**
  * Close a game controller previously opened with SDL_GameControllerOpen().
  *
  * \param gamecontroller a game controller identifier previously returned by

@@ -986,6 +986,24 @@ SDL_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
     return result;
 }
 
+int
+SDL_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
+{
+    int result;
+
+    if (!SDL_PrivateJoystickValid(joystick)) {
+        return -1;
+    }
+
+    SDL_LockJoysticks();
+
+    result = joystick->driver->SendEffect(joystick, data, size);
+
+    SDL_UnlockJoysticks();
+
+    return result;
+}
+
 /*
  * Close a joystick previously opened with SDL_JoystickOpen()
  */

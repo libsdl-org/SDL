@@ -1284,6 +1284,12 @@ IOS_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
 }
 
 static int
+IOS_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
+{
+    return SDL_Unsupported();
+}
+
+static int
 IOS_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
 {
 #ifdef ENABLE_MFI_SENSORS
@@ -1434,6 +1440,7 @@ SDL_JoystickDriver SDL_IOS_JoystickDriver =
     IOS_JoystickRumbleTriggers,
     IOS_JoystickHasLED,
     IOS_JoystickSetLED,
+    IOS_JoystickSendEffect,
     IOS_JoystickSetSensorsEnabled,
     IOS_JoystickUpdate,
     IOS_JoystickClose,

@@ -526,7 +526,7 @@ WINDOWS_JoystickGetDeviceInstanceID(int device_index)
    It returns 0, or -1 if there is an error.
  */
 static int
-WINDOWS_JoystickOpen(SDL_Joystick * joystick, int device_index)
+WINDOWS_JoystickOpen(SDL_Joystick *joystick, int device_index)
 {
     JoyStick_DeviceData *device = SYS_Joystick;
     int index;
@@ -552,7 +552,7 @@ WINDOWS_JoystickOpen(SDL_Joystick * joystick, int device_index)
 }
 
 static int
-WINDOWS_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+WINDOWS_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     if (joystick->hwdata->bXInputDevice) {
         return SDL_XINPUT_JoystickRumble(joystick, low_frequency_rumble, high_frequency_rumble);
@@ -562,19 +562,25 @@ WINDOWS_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uin
 }
 
 static int
-WINDOWS_JoystickRumbleTriggers(SDL_Joystick * joystick, Uint16 left_rumble, Uint16 right_rumble)
+WINDOWS_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
 {
     return SDL_Unsupported();
 }
 
 static SDL_bool
-WINDOWS_JoystickHasLED(SDL_Joystick * joystick)
+WINDOWS_JoystickHasLED(SDL_Joystick *joystick)
 {
     return SDL_FALSE;
 }
 
 static int
-WINDOWS_JoystickSetLED(SDL_Joystick * joystick, Uint8 red, Uint8 green, Uint8 blue)
+WINDOWS_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
+{
+    return SDL_Unsupported();
+}
+
+static int
+WINDOWS_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
 {
     return SDL_Unsupported();
 }
@@ -586,7 +592,7 @@ WINDOWS_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
 }
 
 static void
-WINDOWS_JoystickUpdate(SDL_Joystick * joystick)
+WINDOWS_JoystickUpdate(SDL_Joystick *joystick)
 {
     if (!joystick->hwdata) {
         return;
@@ -601,7 +607,7 @@ WINDOWS_JoystickUpdate(SDL_Joystick * joystick)
 
 /* Function to close a joystick after use */
 static void
-WINDOWS_JoystickClose(SDL_Joystick * joystick)
+WINDOWS_JoystickClose(SDL_Joystick *joystick)
 {
     if (joystick->hwdata->bXInputDevice) {
         SDL_XINPUT_JoystickClose(joystick);
@@ -659,6 +665,7 @@ SDL_JoystickDriver SDL_WINDOWS_JoystickDriver =
     WINDOWS_JoystickRumbleTriggers,
     WINDOWS_JoystickHasLED,
     WINDOWS_JoystickSetLED,
+    WINDOWS_JoystickSendEffect,
     WINDOWS_JoystickSetSensorsEnabled,
     WINDOWS_JoystickUpdate,
     WINDOWS_JoystickClose,

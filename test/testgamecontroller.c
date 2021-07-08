@@ -61,15 +61,16 @@ static const struct { int x; int y; double angle; } axis_positions[] = {
     {375, -20,   0.0},  /* TRIGGERRIGHT */
 };
 
-SDL_Window *window = NULL;
-SDL_Renderer *screen = NULL;
-SDL_bool retval = SDL_FALSE;
-SDL_bool done = SDL_FALSE;
-SDL_bool set_LED = SDL_FALSE;
-SDL_Texture *background_front, *background_back, *button, *axis;
-SDL_GameController *gamecontroller;
-SDL_GameController **gamecontrollers;
-int num_controllers = 0;
+static SDL_Window *window = NULL;
+static SDL_Renderer *screen = NULL;
+static SDL_bool retval = SDL_FALSE;
+static SDL_bool done = SDL_FALSE;
+static SDL_bool set_LED = SDL_FALSE;
+static int trigger_effect = 0;
+static SDL_Texture *background_front, *background_back, *button, *axis;
+static SDL_GameController *gamecontroller;
+static SDL_GameController **gamecontrollers;
+static int num_controllers = 0;
 
 static void UpdateWindowTitle()
 {
@@ -146,6 +147,7 @@ static void AddController(int device_index, SDL_bool verbose)
     controllers[num_controllers++] = controller;
     gamecontrollers = controllers;
     gamecontroller = controller;
+    trigger_effect = 0;
 
     if (verbose) {
         const char *name = SDL_GameControllerName(gamecontroller);
@@ -245,6 +247,57 @@ static Uint16 ConvertAxisToRumble(Sint16 axis)
     }
 }
 
+/* PS5 trigger effect documentation:
+   https://controllers.fandom.com/wiki/Sony_DualSense#FFB_Trigger_Modes
+*/
+typedef struct
+{
+    Uint8 ucEnableBits1;                /* 0 */
+    Uint8 ucEnableBits2;                /* 1 */
+    Uint8 ucRumbleRight;                /* 2 */
+    Uint8 ucRumbleLeft;                 /* 3 */
+    Uint8 ucHeadphoneVolume;            /* 4 */
+    Uint8 ucSpeakerVolume;              /* 5 */
+    Uint8 ucMicrophoneVolume;           /* 6 */
+    Uint8 ucAudioEnableBits;            /* 7 */
+    Uint8 ucMicLightMode;               /* 8 */
+    Uint8 ucAudioMuteBits;              /* 9 */
+    Uint8 rgucRightTriggerEffect[11];   /* 10 */
+    Uint8 rgucLeftTriggerEffect[11];    /* 21 */
+    Uint8 rgucUnknown1[6];              /* 32 */
+    Uint8 ucLedFlags;                   /* 38 */
+    Uint8 rgucUnknown2[2];              /* 39 */
+    Uint8 ucLedAnim;                    /* 41 */
+    Uint8 ucLedBrightness;              /* 42 */
+    Uint8 ucPadLights;                  /* 43 */
+    Uint8 ucLedRed;                     /* 44 */
+    Uint8 ucLedGreen;                   /* 45 */
+    Uint8 ucLedBlue;                    /* 46 */
+} DS5EffectsState_t;
+
+static void CyclePS5TriggerEffect()
+{
+    DS5EffectsState_t state;
+
+    Uint8 effects[3][11] =
+    {
+        /* Clear trigger effect */
+        { 0x05, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+        /* Constant resistance across entire trigger pull */
+        { 0x01, 0, 110, 0, 0, 0, 0, 0, 0, 0, 0 },
+        /* Resistance and vibration when trigger is pulled */
+        { 0x06, 15, 63, 128, 0, 0, 0, 0, 0, 0, 0 },
+    };
+
+    trigger_effect = (trigger_effect + 1) % SDL_arraysize(effects);
+
+    SDL_zero(state);
+    state.ucEnableBits1 |= (0x04 | 0x08); /* Modify right and left trigger effect respectively */
+    SDL_memcpy(state.rgucRightTriggerEffect, effects[trigger_effect], sizeof(effects[trigger_effect]));
+    SDL_memcpy(state.rgucLeftTriggerEffect, effects[trigger_effect], sizeof(effects[trigger_effect]));
+    SDL_GameControllerSendEffect(gamecontroller, &state, sizeof(state));
+}
+
 void
 loop(void *arg)
 {
@@ -279,6 +332,8 @@ loop(void *arg)
                 event.ctouchpad.pressure);
             break;
 
+#define VERBOSE_SENSORS
+#ifdef VERBOSE_SENSORS
         case SDL_CONTROLLERSENSORUPDATE:
             SDL_Log("Controller %d sensor %s: %.2f, %.2f, %.2f\n",
                 event.csensor.which,
@@ -288,13 +343,17 @@ loop(void *arg)
                 event.csensor.data[1],
                 event.csensor.data[2]);
             break;
+#endif /* VERBOSE_SENSORS */
 
+#define VERBOSE_AXES
+#ifdef VERBOSE_AXES
         case SDL_CONTROLLERAXISMOTION:
             if (event.caxis.value <= (-SDL_JOYSTICK_AXIS_MAX / 2) || event.caxis.value >= (SDL_JOYSTICK_AXIS_MAX / 2)) {
                 SetController(event.caxis.which);
             }
             SDL_Log("Controller %d axis %s changed to %d\n", event.caxis.which, SDL_GameControllerGetStringForAxis((SDL_GameControllerAxis)event.caxis.axis), event.caxis.value);
             break;
+#endif /* VERBOSE_AXES */
 
         case SDL_CONTROLLERBUTTONDOWN:
         case SDL_CONTROLLERBUTTONUP:
@@ -302,6 +361,13 @@ loop(void *arg)
                 SetController(event.cbutton.which);
             }
             SDL_Log("Controller %d button %s %s\n", event.cbutton.which, SDL_GameControllerGetStringForButton((SDL_GameControllerButton)event.cbutton.button), event.cbutton.state ? "pressed" : "released");
+
+            /* Cycle PS5 trigger effects when the microphone button is pressed */
+            if (event.type == SDL_CONTROLLERBUTTONDOWN &&
+                event.cbutton.button == SDL_CONTROLLER_BUTTON_MISC1 &&
+                SDL_GameControllerGetType(gamecontroller) == SDL_CONTROLLER_TYPE_PS5) {
+                CyclePS5TriggerEffect();
+            }
             break;
 
         case SDL_KEYDOWN:
@@ -408,23 +474,25 @@ loop(void *arg)
             }
         }
 
-        /* Update rumble based on trigger state */
-        {
-            Sint16 left = SDL_GameControllerGetAxis(gamecontroller, SDL_CONTROLLER_AXIS_TRIGGERLEFT);
-            Sint16 right = SDL_GameControllerGetAxis(gamecontroller, SDL_CONTROLLER_AXIS_TRIGGERRIGHT);
-            Uint16 low_frequency_rumble = ConvertAxisToRumble(left);
-            Uint16 high_frequency_rumble = ConvertAxisToRumble(right);
-            SDL_GameControllerRumble(gamecontroller, low_frequency_rumble, high_frequency_rumble, 250);
-        }
+        if (trigger_effect == 0) {
+            /* Update rumble based on trigger state */
+            {
+                Sint16 left = SDL_GameControllerGetAxis(gamecontroller, SDL_CONTROLLER_AXIS_TRIGGERLEFT);
+                Sint16 right = SDL_GameControllerGetAxis(gamecontroller, SDL_CONTROLLER_AXIS_TRIGGERRIGHT);
+                Uint16 low_frequency_rumble = ConvertAxisToRumble(left);
+                Uint16 high_frequency_rumble = ConvertAxisToRumble(right);
+                SDL_GameControllerRumble(gamecontroller, low_frequency_rumble, high_frequency_rumble, 250);
+            }
 
-        /* Update trigger rumble based on thumbstick state */
-        {
-            Sint16 left = SDL_GameControllerGetAxis(gamecontroller, SDL_CONTROLLER_AXIS_LEFTY);
-            Sint16 right = SDL_GameControllerGetAxis(gamecontroller, SDL_CONTROLLER_AXIS_RIGHTY);
-            Uint16 left_rumble = ConvertAxisToRumble(~left);
-            Uint16 right_rumble = ConvertAxisToRumble(~right);
+            /* Update trigger rumble based on thumbstick state */
+            {
+                Sint16 left = SDL_GameControllerGetAxis(gamecontroller, SDL_CONTROLLER_AXIS_LEFTY);
+                Sint16 right = SDL_GameControllerGetAxis(gamecontroller, SDL_CONTROLLER_AXIS_RIGHTY);
+                Uint16 left_rumble = ConvertAxisToRumble(~left);
+                Uint16 right_rumble = ConvertAxisToRumble(~right);
 
-            SDL_GameControllerRumbleTriggers(gamecontroller, left_rumble, right_rumble, 250);
+                SDL_GameControllerRumbleTriggers(gamecontroller, left_rumble, right_rumble, 250);
+            }
         }
     }
 
@@ -576,6 +644,12 @@ main(int argc, char *argv[])
         loop(NULL);
     }
 #endif
+
+    /* Reset trigger state */
+    if (trigger_effect != 0) {
+        trigger_effect = -1;
+        CyclePS5TriggerEffect();
+    }
 
     SDL_DestroyRenderer(screen);
     SDL_DestroyWindow(window);

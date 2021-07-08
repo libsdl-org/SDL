@@ -2411,6 +2411,12 @@ SDL_GameControllerSetLED(SDL_GameController *gamecontroller, Uint8 red, Uint8 gr
     return SDL_JoystickSetLED(SDL_GameControllerGetJoystick(gamecontroller), red, green, blue);
 }
 
+int
+SDL_GameControllerSendEffect(SDL_GameController *gamecontroller, const void *data, int size)
+{
+    return SDL_JoystickSendEffect(SDL_GameControllerGetJoystick(gamecontroller), data, size);
+}
+
 void
 SDL_GameControllerClose(SDL_GameController *gamecontroller)
 {

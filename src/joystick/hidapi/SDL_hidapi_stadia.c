@@ -142,6 +142,12 @@ HIDAPI_DriverStadia_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joys
 }
 
 static int
+HIDAPI_DriverStadia_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *data, int size)
+{
+    return SDL_Unsupported();
+}
+
+static int
 HIDAPI_DriverStadia_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, SDL_bool enabled)
 {
     return SDL_Unsupported();
@@ -314,6 +320,7 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverStadia =
     HIDAPI_DriverStadia_RumbleJoystickTriggers,
     HIDAPI_DriverStadia_HasJoystickLED,
     HIDAPI_DriverStadia_SetJoystickLED,
+    HIDAPI_DriverStadia_SendJoystickEffect,
     HIDAPI_DriverStadia_SetJoystickSensorsEnabled,
     HIDAPI_DriverStadia_CloseJoystick,
     HIDAPI_DriverStadia_FreeDevice,

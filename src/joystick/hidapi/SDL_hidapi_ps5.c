@@ -175,6 +175,8 @@ typedef struct {
 } SDL_DriverPS5_Context;
 
 
+static int HIDAPI_DriverPS5_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *effect, int size);
+
 static SDL_bool
 HIDAPI_DriverPS5_IsSupportedDevice(const char *name, SDL_GameControllerType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
@@ -375,32 +377,13 @@ static int
 HIDAPI_DriverPS5_UpdateEffects(SDL_HIDAPI_Device *device, int effect_mask)
 {
     SDL_DriverPS5_Context *ctx = (SDL_DriverPS5_Context *)device->context;
-    DS5EffectsState_t *effects;
-    Uint8 data[78];
-    int report_size, offset;
-    Uint8 *pending_data;
-    int *pending_size;
-    int maximum_size;
+    DS5EffectsState_t effects;
 
     if (!ctx->enhanced_mode) {
         return SDL_Unsupported();
     }
 
-    SDL_zero(data);
-
-    if (ctx->is_bluetooth) {
-        data[0] = k_EPS5ReportIdBluetoothEffects;
-        data[1] = 0x02;  /* Magic value */
-
-        report_size = 78;
-        offset = 2;
-    } else {
-        data[0] = k_EPS5ReportIdUsbEffects;
-
-        report_size = 48;
-        offset = 1;
-    }
-    effects = (DS5EffectsState_t *)&data[offset];
+    SDL_zero(effects);
 
     /* Make sure the Bluetooth connection sequence has completed before sending LED color change */
     if (ctx->is_bluetooth && 
@@ -412,79 +395,53 @@ HIDAPI_DriverPS5_UpdateEffects(SDL_HIDAPI_Device *device, int effect_mask)
     }
 
     if (ctx->rumble_left || ctx->rumble_right) {
-        effects->ucEnableBits1 |= 0x01; /* Enable rumble emulation */
-        effects->ucEnableBits1 |= 0x02; /* Disable audio haptics */
+        effects.ucEnableBits1 |= 0x01; /* Enable rumble emulation */
+        effects.ucEnableBits1 |= 0x02; /* Disable audio haptics */
 
         /* Shift to reduce effective rumble strength to match Xbox controllers */
-        effects->ucRumbleLeft = ctx->rumble_left >> 1;
-        effects->ucRumbleRight = ctx->rumble_right >> 1;
+        effects.ucRumbleLeft = ctx->rumble_left >> 1;
+        effects.ucRumbleRight = ctx->rumble_right >> 1;
     } else {
         /* Leaving emulated rumble bits off will restore audio haptics */
     }
 
     if ((effect_mask & k_EDS5EffectRumbleStart) != 0) {
-        effects->ucEnableBits1 |= 0x02; /* Disable audio haptics */
+        effects.ucEnableBits1 |= 0x02; /* Disable audio haptics */
     }
     if ((effect_mask & k_EDS5EffectRumble) != 0) {
         /* Already handled above */
     }
     if ((effect_mask & k_EDS5EffectLEDReset) != 0) {
-        effects->ucEnableBits2 |= 0x08; /* Reset LED state */
+        effects.ucEnableBits2 |= 0x08; /* Reset LED state */
     }
     if ((effect_mask & k_EDS5EffectLED) != 0) {
-        effects->ucEnableBits2 |= 0x04; /* Enable LED color */
+        effects.ucEnableBits2 |= 0x04; /* Enable LED color */
 
         /* Populate the LED state with the appropriate color from our lookup table */
         if (ctx->color_set) {
-            effects->ucLedRed = ctx->led_red;
-            effects->ucLedGreen = ctx->led_green;
-            effects->ucLedBlue = ctx->led_blue;
+            effects.ucLedRed = ctx->led_red;
+            effects.ucLedGreen = ctx->led_green;
+            effects.ucLedBlue = ctx->led_blue;
         } else {
-            SetLedsForPlayerIndex(effects, ctx->player_index);
+            SetLedsForPlayerIndex(&effects, ctx->player_index);
         }
     }
     if ((effect_mask & k_EDS5EffectPadLights) != 0) {
-        effects->ucEnableBits2 |= 0x10; /* Enable touchpad lights */
+        effects.ucEnableBits2 |= 0x10; /* Enable touchpad lights */
 
         if (ctx->player_lights) {
-            SetLightsForPlayerIndex(effects, ctx->player_index);
+            SetLightsForPlayerIndex(&effects, ctx->player_index);
         } else {
-            effects->ucPadLights = 0x00;
+            effects.ucPadLights = 0x00;
         }
     }
     if ((effect_mask & k_EDS5EffectMicLight) != 0) {
-        effects->ucEnableBits2 |= 0x01; /* Enable microphone light */
+        effects.ucEnableBits2 |= 0x01; /* Enable microphone light */
 
-        effects->ucMicLightMode = 0;    /* Bitmask, 0x00 = off, 0x01 = solid, 0x02 = pulse */
+        effects.ucMicLightMode = 0;    /* Bitmask, 0x00 = off, 0x01 = solid, 0x02 = pulse */
     }
 
-    if (ctx->is_bluetooth) {
-        /* Bluetooth reports need a CRC at the end of the packet (at least on Linux) */
-        Uint8 ubHdr = 0xA2; /* hidp header is part of the CRC calculation */
-        Uint32 unCRC;
-        unCRC = SDL_crc32(0, &ubHdr, 1);
-        unCRC = SDL_crc32(unCRC, data, (size_t)(report_size - sizeof(unCRC)));
-        SDL_memcpy(&data[report_size - sizeof(unCRC)], &unCRC, sizeof(unCRC));
-    }
-
-    if (SDL_HIDAPI_LockRumble() < 0) {
-        return -1;
-    }
-
-    /* See if we can update an existing pending request */
-    if (SDL_HIDAPI_GetPendingRumbleLocked(device, &pending_data, &pending_size, &maximum_size)) {
-        DS5EffectsState_t *pending_effects = (DS5EffectsState_t *)&pending_data[offset];
-        if (report_size == *pending_size &&
-            effects->ucEnableBits1 == pending_effects->ucEnableBits1 &&
-            effects->ucEnableBits2 == pending_effects->ucEnableBits2) {
-            /* We're simply updating the data for this request */
-            SDL_memcpy(pending_data, data, report_size);
-            SDL_HIDAPI_UnlockRumble();
-            return 0;
-        }
-    }
-
-    return SDL_HIDAPI_SendRumbleAndUnlock(device, data, report_size);
+    return HIDAPI_DriverPS5_SendJoystickEffect(device, ctx->joystick, &effects, sizeof(effects));
 }
 
 static void
@@ -723,6 +680,67 @@ HIDAPI_DriverPS5_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystic
     ctx->led_blue = blue;
 
     return HIDAPI_DriverPS5_UpdateEffects(device, k_EDS5EffectLED);
+}
+
+static int
+HIDAPI_DriverPS5_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *effect, int size)
+{
+    SDL_DriverPS5_Context *ctx = (SDL_DriverPS5_Context *)device->context;
+    Uint8 data[78];
+    int report_size, offset;
+    Uint8 *pending_data;
+    int *pending_size;
+    int maximum_size;
+
+    if (!ctx->enhanced_mode) {
+        HIDAPI_DriverPS5_SetEnhancedMode(device, joystick);
+    }
+
+    SDL_zero(data);
+
+    if (ctx->is_bluetooth) {
+        data[0] = k_EPS5ReportIdBluetoothEffects;
+        data[1] = 0x02;  /* Magic value */
+
+        report_size = 78;
+        offset = 2;
+    } else {
+        data[0] = k_EPS5ReportIdUsbEffects;
+
+        report_size = 48;
+        offset = 1;
+    }
+
+    SDL_memcpy(&data[offset], effect, SDL_min((sizeof(data) - offset), size));
+
+    if (ctx->is_bluetooth) {
+        /* Bluetooth reports need a CRC at the end of the packet (at least on Linux) */
+        Uint8 ubHdr = 0xA2; /* hidp header is part of the CRC calculation */
+        Uint32 unCRC;
+        unCRC = SDL_crc32(0, &ubHdr, 1);
+        unCRC = SDL_crc32(unCRC, data, (size_t)(report_size - sizeof(unCRC)));
+        SDL_memcpy(&data[report_size - sizeof(unCRC)], &unCRC, sizeof(unCRC));
+    }
+
+    if (SDL_HIDAPI_LockRumble() < 0) {
+        return -1;
+    }
+
+    /* See if we can update an existing pending request */
+    if (SDL_HIDAPI_GetPendingRumbleLocked(device, &pending_data, &pending_size, &maximum_size)) {
+        DS5EffectsState_t *effects = (DS5EffectsState_t *)&data[offset];
+        DS5EffectsState_t *pending_effects = (DS5EffectsState_t *)&pending_data[offset];
+        if (report_size == *pending_size &&
+            effects->ucEnableBits1 == pending_effects->ucEnableBits1 &&
+            effects->ucEnableBits2 == pending_effects->ucEnableBits2) {
+            /* We're simply updating the data for this request */
+            SDL_memcpy(pending_data, data, report_size);
+            SDL_HIDAPI_UnlockRumble();
+            return 0;
+        }
+    }
+
+    return SDL_HIDAPI_SendRumbleAndUnlock(device, data, report_size);
 }
 
 static int
@@ -1082,6 +1100,7 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverPS5 =
     HIDAPI_DriverPS5_RumbleJoystickTriggers,
     HIDAPI_DriverPS5_HasJoystickLED,
     HIDAPI_DriverPS5_SetJoystickLED,
+    HIDAPI_DriverPS5_SendJoystickEffect,
     HIDAPI_DriverPS5_SetJoystickSensorsEnabled,
     HIDAPI_DriverPS5_CloseJoystick,
     HIDAPI_DriverPS5_FreeDevice,

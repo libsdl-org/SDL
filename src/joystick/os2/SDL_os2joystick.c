@@ -484,6 +484,11 @@ static int OS2_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Ui
 	return SDL_Unsupported();
 }
 
+static int OS2_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
+{
+    return SDL_Unsupported();
+}
+
 static int OS2_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
 {
 	return SDL_Unsupported();
@@ -777,6 +782,7 @@ SDL_JoystickDriver SDL_OS2_JoystickDriver =
 	OS2_JoystickRumbleTriggers,
 	OS2_JoystickHasLED,
 	OS2_JoystickSetLED,
+	OS2_JoystickSendEffect,
 	OS2_JoystickSetSensorsEnabled,
 	OS2_JoystickUpdate,
 	OS2_JoystickClose,

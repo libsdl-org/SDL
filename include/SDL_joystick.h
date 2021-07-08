@@ -783,6 +783,16 @@ extern DECLSPEC SDL_bool SDLCALL SDL_JoystickHasLED(SDL_Joystick *joystick);
 extern DECLSPEC int SDLCALL SDL_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue);
 
 /**
+ * Send a joystick specific effect packet
+ *
+ * \param joystick The joystick to affect
+ * \param data The data to send to the joystick
+ * \param size The size of the data to send to the joystick
+ * \returns 0, or -1 if this joystick or driver doesn't support effect packets
+ */
+extern DECLSPEC int SDLCALL SDL_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size);
+
+/**
  * Close a joystick previously opened with SDL_JoystickOpen().
  *
  * \param joystick The joystick device to close

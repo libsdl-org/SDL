@@ -108,6 +108,12 @@ DUMMY_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
 }
 
 static int
+DUMMY_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
+{
+    return SDL_Unsupported();
+}
+
+static int
 DUMMY_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
 {
     return SDL_Unsupported();
@@ -149,6 +155,7 @@ SDL_JoystickDriver SDL_DUMMY_JoystickDriver =
     DUMMY_JoystickRumbleTriggers,
     DUMMY_JoystickHasLED,
     DUMMY_JoystickSetLED,
+    DUMMY_JoystickSendEffect,
     DUMMY_JoystickSetSensorsEnabled,
     DUMMY_JoystickUpdate,
     DUMMY_JoystickClose,
