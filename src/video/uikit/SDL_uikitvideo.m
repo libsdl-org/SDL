@@ -93,6 +93,7 @@ UIKit_CreateDevice(int devindex)
         device->RaiseWindow = UIKit_RaiseWindow;
         device->SetWindowBordered = UIKit_SetWindowBordered;
         device->SetWindowFullscreen = UIKit_SetWindowFullscreen;
+        device->SetWindowMouseGrab = UIKit_SetWindowMouseGrab;
         device->DestroyWindow = UIKit_DestroyWindow;
         device->GetWindowWMInfo = UIKit_GetWindowWMInfo;
         device->GetDisplayUsableBounds = UIKit_GetDisplayUsableBounds;
@@ -159,8 +160,8 @@ UIKit_VideoInit(_THIS)
         return -1;
     }
 
-	SDL_InitGCKeyboard();
-	SDL_InitGCMouse();
+    SDL_InitGCKeyboard();
+    SDL_InitGCMouse();
 
     return 0;
 }
@@ -168,8 +169,8 @@ UIKit_VideoInit(_THIS)
 void
 UIKit_VideoQuit(_THIS)
 {
-	SDL_QuitGCKeyboard();
-	SDL_QuitGCMouse();
+    SDL_QuitGCKeyboard();
+    SDL_QuitGCMouse();
 
     UIKit_QuitModes(_this);
 }

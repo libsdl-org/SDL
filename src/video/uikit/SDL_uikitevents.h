@@ -31,6 +31,7 @@ extern void SDL_QuitGCKeyboard(void);
 
 extern void SDL_InitGCMouse(void);
 extern SDL_bool SDL_HasGCMouse(void);
+extern SDL_bool SDL_GCMouseRelativeMode(void);
 extern void SDL_QuitGCMouse(void);
 
 #endif /* SDL_uikitevents_h_ */

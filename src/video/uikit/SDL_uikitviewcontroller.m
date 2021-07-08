@@ -27,8 +27,9 @@
 #include "../SDL_sysvideo.h"
 #include "../../events/SDL_events_c.h"
 
-#import "SDL_uikitviewcontroller.h"
-#import "SDL_uikitmessagebox.h"
+#include "SDL_uikitviewcontroller.h"
+#include "SDL_uikitmessagebox.h"
+#include "SDL_uikitevents.h"
 #include "SDL_uikitvideo.h"
 #include "SDL_uikitmodes.h"
 #include "SDL_uikitwindow.h"
@@ -246,7 +247,20 @@ SDL_HideHomeIndicatorHintChanged(void *userdata, const char *name, const char *o
         return UIRectEdgeNone;
     }
 }
-#endif
+
+- (BOOL)prefersPointerLocked
+{
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
+    
+    if (SDL_HasGCMouse() &&
+        (SDL_GCMouseRelativeMode() || _this->grabbed_window == window)) {
+        return YES;
+    } else {
+        return NO;
+    }
+}
+
+#endif /* !TARGET_OS_TV */
 
 /*
  ---- Keyboard related functionality below this line ----

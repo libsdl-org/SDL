@@ -91,9 +91,9 @@ static void OnGCKeyboardConnected(GCKeyboard *keyboard) API_AVAILABLE(macos(11.0
         SDL_SendKeyboardKey(pressed ? SDL_PRESSED : SDL_RELEASED, (SDL_Scancode)keyCode);
     };
 
-	dispatch_queue_t queue = dispatch_queue_create( "org.libsdl.input.keyboard", DISPATCH_QUEUE_SERIAL );
-	dispatch_set_target_queue( queue, dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_HIGH, 0 ) );
-	keyboard.handlerQueue = queue;
+    dispatch_queue_t queue = dispatch_queue_create( "org.libsdl.input.keyboard", DISPATCH_QUEUE_SERIAL );
+    dispatch_set_target_queue( queue, dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_HIGH, 0 ) );
+    keyboard.handlerQueue = queue;
 }
 
 static void OnGCKeyboardDisconnected(GCKeyboard *keyboard) API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0))
@@ -182,10 +182,22 @@ void SDL_QuitGCKeyboard(void)
 static int mice_connected = 0;
 static id mouse_connect_observer = nil;
 static id mouse_disconnect_observer = nil;
+static bool mouse_relative_mode = SDL_FALSE;
+
+static void UpdateMouseGrab()
+{
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
+    SDL_Window *window;
+
+    for (window = _this->windows; window != NULL; window = window->next) {
+        SDL_UpdateWindowGrab(window);
+    }
+}
 
 static int SetGCMouseRelativeMode(SDL_bool enabled)
 {
-    /* We'll always send relative motion and we can't warp, so nothing to do here */
+	mouse_relative_mode = enabled;
+    UpdateMouseGrab();
     return 0;
 }
 
@@ -222,14 +234,16 @@ static void OnGCMouseConnected(GCMouse *mouse) API_AVAILABLE(macos(11.0), ios(14
 
     mouse.mouseInput.mouseMovedHandler = ^(GCMouseInput *mouse, float deltaX, float deltaY)
     {
-		SDL_SendMouseMotion(SDL_GetMouseFocus(), mouseID, SDL_TRUE, (int)deltaX, -(int)deltaY);
+        SDL_SendMouseMotion(SDL_GetMouseFocus(), mouseID, SDL_TRUE, (int)deltaX, -(int)deltaY);
     };
 
-	dispatch_queue_t queue = dispatch_queue_create( "org.libsdl.input.mouse", DISPATCH_QUEUE_SERIAL );
-	dispatch_set_target_queue( queue, dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_HIGH, 0 ) );
-	mouse.handlerQueue = queue;
+    dispatch_queue_t queue = dispatch_queue_create( "org.libsdl.input.mouse", DISPATCH_QUEUE_SERIAL );
+    dispatch_set_target_queue( queue, dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_HIGH, 0 ) );
+    mouse.handlerQueue = queue;
 
     ++mice_connected;
+
+    UpdateMouseGrab();
 }
 
 static void OnGCMouseDisconnected(GCMouse *mouse) API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0))
@@ -245,12 +259,14 @@ static void OnGCMouseDisconnected(GCMouse *mouse) API_AVAILABLE(macos(11.0), ios
     for (GCControllerButtonInput *button in mouse.mouseInput.auxiliaryButtons) {
         button.pressedChangedHandler = nil;
     }
+
+    UpdateMouseGrab();
 }
 
 void SDL_InitGCMouse(void)
 {
-	@autoreleasepool {
-		/* There is a bug where mouse accumulates duplicate deltas over time in iOS 14.0 */
+    @autoreleasepool {
+        /* There is a bug where mouse accumulates duplicate deltas over time in iOS 14.0 */
         if (@available(iOS 14.1, tvOS 14.1, *)) {
             NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
 
@@ -282,6 +298,11 @@ void SDL_InitGCMouse(void)
 SDL_bool SDL_HasGCMouse(void)
 {
     return (mice_connected > 0);
+}
+
+SDL_bool SDL_GCMouseRelativeMode(void)
+{
+    return mouse_relative_mode;
 }
 
 void SDL_QuitGCMouse(void)
@@ -316,6 +337,11 @@ void SDL_InitGCMouse(void)
 }
 
 SDL_bool SDL_HasGCMouse(void)
+{
+    return SDL_FALSE;
+}
+
+SDL_bool SDL_GCMouseRelativeMode(void)
 {
     return SDL_FALSE;
 }
