@@ -1088,7 +1088,32 @@ int  HID_API_EXPORT HID_API_CALL hid_write(hid_device *device, const unsigned ch
 	return -1; // Controller was disconnected
 }
 
-// TODO: Implement timeout?
+static uint32_t getms()
+{
+	struct timeval now;
+
+	gettimeofday(&now, NULL);
+	return (uint32_t)(now.tv_sec * 1000 + now.tv_usec / 1000);
+}
+
+static void delayms(uint32_t ms)
+{
+    int was_error;
+
+    struct timespec elapsed, tv;
+
+    /* Set the timeout interval */
+    elapsed.tv_sec = ms / 1000;
+    elapsed.tv_nsec = (ms % 1000) * 1000000;
+    do {
+        errno = 0;
+
+        tv.tv_sec = elapsed.tv_sec;
+        tv.tv_nsec = elapsed.tv_nsec;
+        was_error = nanosleep(&tv, &elapsed);
+    } while (was_error && (errno == EINTR));
+}
+
 int HID_API_EXPORT HID_API_CALL hid_read_timeout(hid_device *device, unsigned char *data, size_t length, int milliseconds)
 {
 	if ( device )
@@ -1097,7 +1122,17 @@ int HID_API_EXPORT HID_API_CALL hid_read_timeout(hid_device *device, unsigned ch
 		hid_device_ref<CHIDDevice> pDevice = FindDevice( device->m_nId );
 		if ( pDevice )
 		{
-			return pDevice->GetInput( data, length );
+			int nResult = pDevice->GetInput( data, length );
+			if ( nResult == 0 && milliseconds > 0 )
+			{
+				uint32_t start = getms();
+				do
+				{
+					delayms( 1 );
+					nResult = pDevice->GetInput( data, length );
+				} while ( nResult == 0 && ( getms() - start ) < milliseconds );
+			}
+			return nResult;
 		}
 		LOGV( "controller was disconnected" );
 	}
