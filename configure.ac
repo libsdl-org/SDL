@@ -3349,10 +3349,6 @@ CheckHIDAPI()
                 enable_hidapi_libusb=yes
                 require_hidapi_libusb=yes
                 ;;
-            # RAWINPUT is only available on Win32, but can be enabled if HIDAPI is
-            *-*-cygwin* | *-*-mingw*)
-                enable_joystick_rawinput=yes
-                ;;
         esac
 
         hidapi_support=yes
@@ -3369,9 +3365,6 @@ CheckHIDAPI()
 
         if test x$hidapi_support = xyes; then
             AC_DEFINE(SDL_JOYSTICK_HIDAPI, 1, [ ])
-            if test x$enable_joystick_rawinput = xyes; then
-                AC_DEFINE(SDL_JOYSTICK_RAWINPUT, 1, [ ])
-            fi
             EXTRA_CFLAGS="$EXTRA_CFLAGS -I$srcdir/src/hidapi/hidapi"
             SOURCES="$SOURCES $srcdir/src/joystick/hidapi/*.c"
             SOURCES="$SOURCES $srcdir/src/hidapi/SDL_hidapi.c"
@@ -3797,6 +3790,7 @@ case "$host" in
         fi
         # Set up files for the joystick library
         if test x$enable_joystick = xyes; then
+            AC_DEFINE(SDL_JOYSTICK_RAWINPUT, 1, [ ])
             if test x$have_dinput = xyes -o x$have_xinput = xyes; then
                 if test x$have_xinput = xyes; then
                     AC_DEFINE(SDL_JOYSTICK_XINPUT, 1, [ ])

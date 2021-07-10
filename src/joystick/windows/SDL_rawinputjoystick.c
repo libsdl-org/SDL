@@ -1042,7 +1042,7 @@ RAWINPUT_JoystickOpen(SDL_Joystick *joystick, int device_index)
         /* We'll try to get guide button and trigger axes from XInput */
 #ifdef SDL_JOYSTICK_RAWINPUT_XINPUT
         xinput_device_change = SDL_TRUE;
-        ctx->xinput_enabled = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_CORRELATE_XINPUT, SDL_TRUE);
+        ctx->xinput_enabled = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_RAWINPUT_CORRELATE_XINPUT, SDL_TRUE);
         if (ctx->xinput_enabled && (WIN_LoadXInputDLL() < 0 || !XINPUTGETSTATE)) {
             ctx->xinput_enabled = SDL_FALSE;
         }
