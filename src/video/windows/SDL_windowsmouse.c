@@ -31,7 +31,7 @@ HCURSOR SDL_cursor = NULL;
 
 static int rawInputEnableCount = 0;
 
-static int 
+static int
 ToggleRawInput(SDL_bool enabled)
 {
     RAWINPUTDEVICE rawMouse = { 0x01, 0x02, 0, NULL }; /* Mouse: UsagePage = 1, Usage = 2 */
@@ -57,6 +57,9 @@ ToggleRawInput(SDL_bool enabled)
 
     /* (Un)register raw input for mice */
     if (RegisterRawInputDevices(&rawMouse, 1, sizeof(RAWINPUTDEVICE)) == FALSE) {
+        /* Reset the enable count, otherwise subsequent enable calls will
+           believe raw input is enabled */
+        rawInputEnableCount = 0;
 
         /* Only return an error when registering. If we unregister and fail,
            then it's probably that we unregistered twice. That's OK. */
