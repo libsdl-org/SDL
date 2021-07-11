@@ -1,0 +1,14 @@
+name: Build (Android)
+
+on: [push, pull_request]
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: r21e
+      - name: Build
+        run: ./build-scripts/androidbuildlibs.sh
