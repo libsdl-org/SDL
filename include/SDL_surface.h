@@ -806,8 +806,6 @@ extern DECLSPEC int SDLCALL SDL_LowerBlit
   * Perform a fast, low quality, stretch blit between two surfaces of the
   * same format.
   *
-  * **Warning**: This function uses a static buffer, and is not thread-safe.
-  *
   * Please use SDL_BlitScaled() instead.
   */
 extern DECLSPEC int SDLCALL SDL_SoftStretch(SDL_Surface * src,
