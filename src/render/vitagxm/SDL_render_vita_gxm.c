@@ -549,22 +549,12 @@ VITA_GXM_QueueFillRects(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const S
     return 0;
 }
 
-
-#define PI   3.14159265358979f
-
-#define degToRad(x) ((x)*PI/180.f)
+#define degToRad(x) ((x)*M_PI/180.f)
 
 void MathSincos(float r, float *s, float *c)
 {
-    *s = sinf(r);
-    *c = cosf(r);
-}
-
-void Swap(float *a, float *b)
-{
-    float n=*a;
-    *a = *b;
-    *b = n;
+    *s = SDL_sin(r);
+    *c = SDL_cos(r);
 }
 
 static int
@@ -622,19 +612,14 @@ VITA_GXM_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Textur
     const SDL_Rect * srcrect, const SDL_FRect * dstrect,
     const double angle, const SDL_FPoint *center, const SDL_RendererFlip flip)
 {
-    texture_vertex *vertices;
-    float u0, v0, u1, v1;
-    float s, c;
-    float cw, sw, ch, sh;
-
     VITA_GXM_RenderData *data = (VITA_GXM_RenderData *) renderer->driverdata;
 
-    const float centerx = center->x;
-    const float centery = center->y;
-    const float x = dstrect->x + centerx;
-    const float y = dstrect->y + centery;
-    const float width = dstrect->w - centerx;
-    const float height = dstrect->h - centery;
+    texture_vertex *vertices;
+    float u0, v0, u1, v1;
+    float x0, y0, x1, y1;
+    float s, c;
+    const float centerx = center->x + dstrect->x;
+    const float centery = center->y + dstrect->y;
 
     cmd->data.draw.count = 1;
 
@@ -646,51 +631,61 @@ VITA_GXM_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Textur
     cmd->data.draw.first = (size_t)vertices;
     cmd->data.draw.texture = texture;
 
+    if (flip & SDL_FLIP_HORIZONTAL) {
+        x0 = dstrect->x + dstrect->w;
+        x1 = dstrect->x;
+    } else {
+        x0 = dstrect->x;
+        x1 = dstrect->x + dstrect->w;
+    }
+
+    if (flip & SDL_FLIP_VERTICAL) {
+        y0 = dstrect->y + dstrect->h;
+        y1 = dstrect->y;
+    } else {
+        y0 = dstrect->y;
+        y1 = dstrect->y + dstrect->h;
+    }
+
     u0 = (float)srcrect->x / (float)texture->w;
     v0 = (float)srcrect->y / (float)texture->h;
     u1 = (float)(srcrect->x + srcrect->w) / (float)texture->w;
     v1 = (float)(srcrect->y + srcrect->h) / (float)texture->h;
 
-    if (flip & SDL_FLIP_VERTICAL) {
-        Swap(&v0, &v1);
-    }
-
-    if (flip & SDL_FLIP_HORIZONTAL) {
-        Swap(&u0, &u1);
-    }
-
-
     MathSincos(degToRad(angle), &s, &c);
 
-    cw = c * width;
-    sw = s * width;
-    ch = c * height;
-    sh = s * height;
-
-    vertices[0].x = x - cw + sh;
-    vertices[0].y = y - sw - ch;
+    vertices[0].x = x0 - centerx;
+    vertices[0].y = y0 - centery;
     vertices[0].z = +0.5f;
     vertices[0].u = u0;
     vertices[0].v = v0;
 
-    vertices[1].x = x + cw + sh;
-    vertices[1].y = y + sw - ch;
+    vertices[1].x = x1 - centerx;
+    vertices[1].y = y0 - centery;
     vertices[1].z = +0.5f;
     vertices[1].u = u1;
     vertices[1].v = v0;
 
 
-    vertices[2].x = x - cw - sh;
-    vertices[2].y = y - sw + ch;
+    vertices[2].x = x0 - centerx;
+    vertices[2].y = y1 - centery;
     vertices[2].z = +0.5f;
     vertices[2].u = u0;
     vertices[2].v = v1;
 
-    vertices[3].x = x + cw - sh;
-    vertices[3].y = y + sw + ch;
+    vertices[3].x = x1 - centerx;
+    vertices[3].y = y1 - centery;
     vertices[3].z = +0.5f;
     vertices[3].u = u1;
     vertices[3].v = v1;
+
+    for (int i = 0; i < 4; ++i)
+    {
+        float _x = vertices[i].x;
+        float _y = vertices[i].y;
+        vertices[i].x = _x * c - _y * s + centerx;
+        vertices[i].y = _x * s + _y * c + centery;
+    }
 
     return 0;
 }
