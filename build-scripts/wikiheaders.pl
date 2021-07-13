@@ -268,7 +268,7 @@ while (readdir(DH)) {
 
     while (<FH>) {
         chomp;
-        if (not /\A\/\*\*/) {  # not doxygen comment start?
+        if (not /\A\/\*\*\s*\Z/) {  # not doxygen comment start?
             push @contents, $_;
             next;
         }
