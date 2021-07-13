@@ -53,6 +53,7 @@
 
 static id connectObserver = nil;
 static id disconnectObserver = nil;
+static NSString *GCInputXboxShareButton = @"Button Share";
 
 #include <Availability.h>
 #include <objc/message.h>
@@ -228,6 +229,11 @@ IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controlle
                 device->button_mask |= (1 << SDL_CONTROLLER_BUTTON_PADDLE4);
                 ++nbuttons;
             }
+            if (controller.physicalInputProfile.buttons[GCInputXboxShareButton] != nil) {
+                device->has_xbox_share_button = SDL_TRUE;
+                device->button_mask |= (1 << SDL_CONTROLLER_BUTTON_MISC1);
+                ++nbuttons;
+            }
         }
 #endif
 #pragma clang diagnostic pop
@@ -237,6 +243,10 @@ IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controlle
             if (device->has_xbox_paddles) {
                 /* Assume Xbox One Elite Series 2 Controller unless/until GCController flows VID/PID */
                 product = USB_PRODUCT_XBOX_ONE_ELITE_SERIES_2_BLUETOOTH;
+                subtype = 1;
+            } else if (device->has_xbox_share_button) {
+                /* Assume Xbox Series X Controller unless/until GCController flows VID/PID */
+                product = USB_PRODUCT_XBOX_SERIES_X_BLUETOOTH;
                 subtype = 1;
             } else {
                 /* Assume Xbox One S BLE Controller unless/until GCController flows VID/PID */
@@ -255,7 +265,7 @@ IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controlle
         } else if (is_ps5) {
             vendor = USB_VENDOR_SONY;
             product = USB_PRODUCT_SONY_DS5;
-			subtype = 0;
+            subtype = 0;
         } else {
             vendor = USB_VENDOR_APPLE;
             product = 1;
@@ -665,12 +675,12 @@ IOS_JoystickOpen(SDL_Joystick *joystick, int device_index)
 #ifdef ENABLE_MFI_SYSTEM_GESTURE_STATE
             if (@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)) {
                 GCController *controller = joystick->hwdata->controller;
-				if (controller.extendedGamepad) {
-					GCExtendedGamepad *gamepad = controller.extendedGamepad;
-					if ([gamepad.buttonOptions isBoundToSystemGesture]) {
-						gamepad.buttonOptions.preferredSystemGestureState = GCSystemGestureStateDisabled;
-					}
-				}
+                for (id key in controller.physicalInputProfile.buttons) {
+                    GCControllerButtonInput *button = controller.physicalInputProfile.buttons[key];
+                    if ([button isBoundToSystemGesture]) {
+                        button.preferredSystemGestureState = GCSystemGestureStateDisabled;
+                    }
+                }
             }
 #endif /* ENABLE_MFI_SYSTEM_GESTURE_STATE */
 
@@ -856,6 +866,10 @@ IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
                     controller.physicalInputProfile.buttons[GCInputXboxPaddleThree].isPressed,
                     controller.physicalInputProfile.buttons[GCInputXboxPaddleFour].isPressed);
                 */
+            }
+
+            if (joystick->hwdata->has_xbox_share_button) {
+                buttons[button_count++] = controller.physicalInputProfile.buttons[GCInputXboxShareButton].isPressed;
             }
 #endif
 #pragma clang diagnostic pop
@@ -1359,9 +1373,11 @@ IOS_JoystickClose(SDL_Joystick *joystick)
 #ifdef ENABLE_MFI_SYSTEM_GESTURE_STATE
             if (@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)) {
                 GCController *controller = joystick->hwdata->controller;
-				if (controller.extendedGamepad) {
-					GCExtendedGamepad *gamepad = controller.extendedGamepad;
-					gamepad.buttonOptions.preferredSystemGestureState = GCSystemGestureStateEnabled;
+                for (id key in controller.physicalInputProfile.buttons) {
+                    GCControllerButtonInput *button = controller.physicalInputProfile.buttons[key];
+                    if ([button isBoundToSystemGesture]) {
+                        button.preferredSystemGestureState = GCSystemGestureStateEnabled;
+                    }
                 }
             }
 #endif /* ENABLE_MFI_SYSTEM_GESTURE_STATE */

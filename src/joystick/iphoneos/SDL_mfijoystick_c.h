@@ -50,6 +50,7 @@ typedef struct joystick_hwdata
     Uint32 button_mask;
     SDL_bool has_dualshock_touchpad;
     SDL_bool has_xbox_paddles;
+    SDL_bool has_xbox_share_button;
 
     struct joystick_hwdata *next;
 } joystick_hwdata;
