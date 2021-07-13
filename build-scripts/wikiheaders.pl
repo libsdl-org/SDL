@@ -108,7 +108,9 @@ sub wordwrap {
         $retval .= $2;  # don't wrap it.
     }
 
-    return $retval . wordwrap_paragraphs($str);  # wrap what's left.
+    $retval .= wordwrap_paragraphs($str);  # wrap what's left.
+    $retval =~ s/\n+$//;
+    return $retval;
 }
 
 
