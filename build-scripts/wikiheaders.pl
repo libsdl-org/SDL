@@ -123,7 +123,7 @@ sub wikify {
         $str =~ s/\b(SDL_[a-zA-Z0-9_]+)/[[$1]]/gms;
 
         # Make some Markdown things into MediaWiki...
-        $str =~ s/\`\`\`(c|c++)(.*?)\`\`\`/<syntaxhighlight lang='$1'>$2<\/syntaxhighlight>/gms;
+        $str =~ s/\`\`\`(c\+\+|c)(.*?)\`\`\`/<syntaxhighlight lang='$1'>$2<\/syntaxhighlight>/gms;
 
         # <code></code> is also popular.  :/
         $str =~ s/\`(.*?)\`/<code>$1<\/code>/gms;
