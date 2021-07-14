@@ -311,9 +311,8 @@ extern DECLSPEC const char *SDLCALL SDL_GetCurrentAudioDriver(void);
  *                for details on how to prepare this structure.
  * \param obtained an SDL_AudioSpec structure filled in with the actual
  *                 parameters, or NULL.
- * \returns This function opens the audio device with the desired parameters,
- *          and returns 0 if successful, placing the actual hardware
- *          parameters in the structure pointed to by `obtained`.
+ * \returns 0 if successful, placing the actual hardware parameters in the
+ *          structure pointed to by `obtained`.
  *
  *          If `obtained` is NULL, the audio data passed to the callback
  *          function will be guaranteed to be in the requested format, and
