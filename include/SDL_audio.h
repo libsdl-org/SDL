@@ -307,8 +307,8 @@ extern DECLSPEC const char *SDLCALL SDL_GetCurrentAudioDriver(void);
  *   means you can only have one device open at a time with this function.
  *
  * \param desired an SDL_AudioSpec structure representing the desired output
- *                format. Please refer to the SDL_OpenAudioDevice documentation
- *                for details on how to prepare this structure.
+ *                format. Please refer to the SDL_OpenAudioDevice
+ *                documentation for details on how to prepare this structure.
  * \param obtained an SDL_AudioSpec structure filled in with the actual
  *                 parameters, or NULL.
  * \returns 0 if successful, placing the actual hardware parameters in the
@@ -317,8 +317,8 @@ extern DECLSPEC const char *SDLCALL SDL_GetCurrentAudioDriver(void);
  *          If `obtained` is NULL, the audio data passed to the callback
  *          function will be guaranteed to be in the requested format, and
  *          will be automatically converted to the actual hardware audio
- *          format if necessary. If `obtained` is NULL, `desired` will
- *          have fields modified.
+ *          format if necessary. If `obtained` is NULL, `desired` will have
+ *          fields modified.
  *
  *          This function returns a negative error code on failure to open the
  *          audio device or failure to set up the audio thread; call
@@ -350,8 +350,8 @@ typedef Uint32 SDL_AudioDeviceID;
  * subsystem.
  *
  * Note that audio capture support is not implemented as of SDL 2.0.4, so the
- * `iscapture` parameter is for future expansion and should always be zero
- * for now.
+ * `iscapture` parameter is for future expansion and should always be zero for
+ * now.
  *
  * This function will return -1 if an explicit list of devices can't be
  * determined. Returning -1 is not an error. For example, if SDL is set up to
@@ -463,31 +463,31 @@ extern DECLSPEC int SDLCALL SDL_GetAudioDeviceSpec(int index,
  *
  * - `desired->freq` should be the frequency in sample-frames-per-second (Hz).
  * - `desired->format` should be the audio format (`AUDIO_S16SYS`, etc).
- * - `desired->samples` is the desired size of the audio buffer, in
- *    _sample frames_ (with stereo output, two samples--left and right--would
- *    make a single sample frame). This number should be a power of two, and
- *    may be adjusted by the audio driver to a value more suitable for the
- *    hardware.  Good values seem to range between 512 and 8096 inclusive,
- *    depending on the application and CPU speed.  Smaller values reduce
- *    latency, but can lead to underflow if the application is doing heavy
- *    processing and cannot fill the audio buffer in time. Note that the
- *    number of sample frames is directly related to time by the following
- *    formula: `ms = (sampleframes*1000)/freq`
- *  - `desired->size` is the size in _bytes_ of the audio buffer, and is
- *    calculated by SDL_OpenAudioDevice(). You don't initialize this.
- *  - `desired->silence` is the value used to set the buffer to silence,
- *    and is calculated by SDL_OpenAudioDevice(). You don't initialize this.
- *  - `desired->callback` should be set to a function that will be called
- *    when the audio device is ready for more data.  It is passed a pointer
- *    to the audio buffer, and the length in bytes of the audio buffer.
- *    This function usually runs in a separate thread, and so you should
- *    protect data structures that it accesses by calling SDL_LockAudioDevice()
- *    and SDL_UnlockAudioDevice() in your code. Alternately, you may pass a NULL
- *    pointer here, and call SDL_QueueAudio() with some frequency, to queue
- *    more audio samples to be played (or for capture devices, call
- *    SDL_DequeueAudio() with some frequency, to obtain audio samples).
- *  - `desired->userdata` is passed as the first parameter to your callback
- *    function. If you passed a NULL callback, this value is ignored.
+ * - `desired->samples` is the desired size of the audio buffer, in _sample
+ *   frames_ (with stereo output, two samples--left and right--would make a
+ *   single sample frame). This number should be a power of two, and may be
+ *   adjusted by the audio driver to a value more suitable for the hardware.
+ *   Good values seem to range between 512 and 8096 inclusive, depending on
+ *   the application and CPU speed. Smaller values reduce latency, but can
+ *   lead to underflow if the application is doing heavy processing and cannot
+ *   fill the audio buffer in time. Note that the number of sample frames is
+ *   directly related to time by the following formula: `ms =
+ *   (sampleframes*1000)/freq`
+ * - `desired->size` is the size in _bytes_ of the audio buffer, and is
+ *   calculated by SDL_OpenAudioDevice(). You don't initialize this.
+ * - `desired->silence` is the value used to set the buffer to silence, and is
+ *   calculated by SDL_OpenAudioDevice(). You don't initialize this.
+ * - `desired->callback` should be set to a function that will be called when
+ *   the audio device is ready for more data. It is passed a pointer to the
+ *   audio buffer, and the length in bytes of the audio buffer. This function
+ *   usually runs in a separate thread, and so you should protect data
+ *   structures that it accesses by calling SDL_LockAudioDevice() and
+ *   SDL_UnlockAudioDevice() in your code. Alternately, you may pass a NULL
+ *   pointer here, and call SDL_QueueAudio() with some frequency, to queue
+ *   more audio samples to be played (or for capture devices, call
+ *   SDL_DequeueAudio() with some frequency, to obtain audio samples).
+ * - `desired->userdata` is passed as the first parameter to your callback
+ *   function. If you passed a NULL callback, this value is ignored.
  *
  * `allowed_changes` can have the following flags OR'd together:
  *
@@ -502,11 +502,10 @@ extern DECLSPEC int SDLCALL SDL_GetAudioDeviceSpec(int index,
  *
  * For example, if you ask for float32 audio format, but the sound card only
  * supports int16, SDL will set the hardware to int16. If you had set
- * SDL_AUDIO_ALLOW_FORMAT_CHANGE, SDL will change the format in the
- * `obtained` structure. If that flag was *not* set, SDL will prepare to
- * convert your callback's float32 audio to int16 before feeding it to the
- * hardware and will keep the originally requested format in the `obtained`
- * structure.
+ * SDL_AUDIO_ALLOW_FORMAT_CHANGE, SDL will change the format in the `obtained`
+ * structure. If that flag was *not* set, SDL will prepare to convert your
+ * callback's float32 audio to int16 before feeding it to the hardware and
+ * will keep the originally requested format in the `obtained` structure.
  *
  * If your application can only handle one specific data format, pass a zero
  * for `allowed_changes` and let SDL transparently handle any differences.
@@ -590,24 +589,24 @@ extern DECLSPEC void SDLCALL SDL_PauseAudioDevice(SDL_AudioDeviceID dev,
 /**
  * Load the audio data of a WAVE file into memory.
  *
- * Loading a WAVE file requires `src`, `spec`, `audio_buf` and `audio_len`
- * to be valid pointers. The entire data portion of the file is then loaded
- * into memory and decoded if necessary.
+ * Loading a WAVE file requires `src`, `spec`, `audio_buf` and `audio_len` to
+ * be valid pointers. The entire data portion of the file is then loaded into
+ * memory and decoded if necessary.
  *
  * If `freesrc` is non-zero, the data source gets automatically closed and
  * freed before the function returns.
  *
  * Supported formats are RIFF WAVE files with the formats PCM (8, 16, 24, and
- * 32 bits), IEEE Float (32 bits), Microsoft ADPCM and IMA ADPCM (4 bits),
- * and A-law and mu-law (8 bits). Other formats are currently unsupported and
+ * 32 bits), IEEE Float (32 bits), Microsoft ADPCM and IMA ADPCM (4 bits), and
+ * A-law and mu-law (8 bits). Other formats are currently unsupported and
  * cause an error.
  *
  * If this function succeeds, the pointer returned by it is equal to `spec`
  * and the pointer to the audio data allocated by the function is written to
  * `audio_buf` and its length in bytes to `audio_len`. The SDL_AudioSpec
- * members `freq`, `channels`, and `format` are set to the values of the
- * audio data in the buffer. The `samples` member is set to a sane default
- * and all others are set to zero.
+ * members `freq`, `channels`, and `format` are set to the values of the audio
+ * data in the buffer. The `samples` member is set to a sane default and all
+ * others are set to zero.
  *
  * It's necessary to use SDL_FreeWAV() to free the audio data returned in
  * `audio_buf` when it is no longer used.
@@ -616,19 +615,21 @@ extern DECLSPEC void SDLCALL SDL_PauseAudioDevice(SDL_AudioDeviceID dev,
  * problematic files in the wild that cause issues with strict decoders. To
  * provide compatibility with these files, this decoder is lenient in regards
  * to the truncation of the file, the fact chunk, and the size of the RIFF
- * chunk. The hints `SDL_HINT_WAVE_RIFF_CHUNK_SIZE`, `SDL_HINT_WAVE_TRUNCATION`,
- * and `SDL_HINT_WAVE_FACT_CHUNK` can be used to tune the behavior of the
- * loading process.
+ * chunk. The hints `SDL_HINT_WAVE_RIFF_CHUNK_SIZE`,
+ * `SDL_HINT_WAVE_TRUNCATION`, and `SDL_HINT_WAVE_FACT_CHUNK` can be used to
+ * tune the behavior of the loading process.
  *
  * Any file that is invalid (due to truncation, corruption, or wrong values in
  * the headers), too big, or unsupported causes an error. Additionally, any
  * critical I/O error from the data source will terminate the loading process
- * with an error. The function returns NULL on error and in all cases (with the
- * exception of `src` being NULL), an appropriate error message will be set.
+ * with an error. The function returns NULL on error and in all cases (with
+ * the exception of `src` being NULL), an appropriate error message will be
+ * set.
  *
  * It is required that the data source supports seeking.
  *
  * Example:
+ *
  * ```c++
  * SDL_LoadWAV_RW(SDL_RWFromFile("sample.wav", "rb"), 1, &spec, &buf, &len);
  * ```
@@ -644,8 +645,10 @@ extern DECLSPEC void SDLCALL SDL_PauseAudioDevice(SDL_AudioDeviceID dev,
  * \param freesrc If non-zero, SDL will _always_ free the data source
  * \param spec An SDL_AudioSpec that will be filled in with the wave file's
  *             format details
- * \param audio_buf A pointer filled with the audio data, allocated by the function.
- * \param audio_len A pointer filled with the length of the audio data buffer in bytes
+ * \param audio_buf A pointer filled with the audio data, allocated by the
+ *                  function.
+ * \param audio_len A pointer filled with the length of the audio data buffer
+ *                  in bytes
  * \returns This function, if successfully called, returns `spec`, which will
  *          be filled with the audio data format of the wave source data.
  *          `audio_buf` will be filled with a pointer to an allocated buffer
@@ -713,8 +716,7 @@ extern DECLSPEC void SDLCALL SDL_FreeWAV(Uint8 * audio_buf);
  * \param dst_format the destination format of the audio data; for more info
  *                   see SDL_AudioFormat
  * \param dst_channels the number of channels in the destination
- * \param dst_rate the frequency (sample-frames-per-second) of the
- *                 destination
+ * \param dst_rate the frequency (sample-frames-per-second) of the destination
  * \returns 1 if the audio filter is prepared, 0 if no conversion is needed,
  *          or a negative error code on failure; call SDL_GetError() for more
  *          information.
@@ -749,8 +751,8 @@ extern DECLSPEC int SDLCALL SDL_BuildAudioCVT(SDL_AudioCVT * cvt,
  * in-place, the application must allocate a buffer that will fully contain
  * the data during its largest conversion pass. After SDL_BuildAudioCVT()
  * returns, the application should set the `cvt->len` field to the size, in
- * bytes, of the source data, and allocate a buffer that is
- * `cvt->len * cvt->len_mult` bytes long for the `buf` field.
+ * bytes, of the source data, and allocate a buffer that is `cvt->len *
+ * cvt->len_mult` bytes long for the `buf` field.
  *
  * The source data should be copied into this buffer before the call to
  * SDL_ConvertAudio(). Upon successful return, this buffer will contain the
@@ -779,22 +781,22 @@ struct _SDL_AudioStream;
 typedef struct _SDL_AudioStream SDL_AudioStream;
 
 /**
- *  Create a new audio stream.
+ * Create a new audio stream.
  *
- *  \param src_format The format of the source audio
- *  \param src_channels The number of channels of the source audio
- *  \param src_rate The sampling rate of the source audio
- *  \param dst_format The format of the desired audio output
- *  \param dst_channels The number of channels of the desired audio output
- *  \param dst_rate The sampling rate of the desired audio output
- *  \returns 0 on success, or -1 on error.
+ * \param src_format The format of the source audio
+ * \param src_channels The number of channels of the source audio
+ * \param src_rate The sampling rate of the source audio
+ * \param dst_format The format of the desired audio output
+ * \param dst_channels The number of channels of the desired audio output
+ * \param dst_rate The sampling rate of the desired audio output
+ * \returns 0 on success, or -1 on error.
  *
- *  \sa SDL_AudioStreamPut
- *  \sa SDL_AudioStreamGet
- *  \sa SDL_AudioStreamAvailable
- *  \sa SDL_AudioStreamFlush
- *  \sa SDL_AudioStreamClear
- *  \sa SDL_FreeAudioStream
+ * \sa SDL_AudioStreamPut
+ * \sa SDL_AudioStreamGet
+ * \sa SDL_AudioStreamAvailable
+ * \sa SDL_AudioStreamFlush
+ * \sa SDL_AudioStreamClear
+ * \sa SDL_FreeAudioStream
  */
 extern DECLSPEC SDL_AudioStream * SDLCALL SDL_NewAudioStream(const SDL_AudioFormat src_format,
                                            const Uint8 src_channels,
@@ -804,92 +806,93 @@ extern DECLSPEC SDL_AudioStream * SDLCALL SDL_NewAudioStream(const SDL_AudioForm
                                            const int dst_rate);
 
 /**
- *  Add data to be converted/resampled to the stream.
+ * Add data to be converted/resampled to the stream.
  *
- *  \param stream The stream the audio data is being added to
- *  \param buf A pointer to the audio data to add
- *  \param len The number of bytes to write to the stream
- *  \returns 0 on success, or -1 on error.
+ * \param stream The stream the audio data is being added to
+ * \param buf A pointer to the audio data to add
+ * \param len The number of bytes to write to the stream
+ * \returns 0 on success, or -1 on error.
  *
- *  \sa SDL_NewAudioStream
- *  \sa SDL_AudioStreamGet
- *  \sa SDL_AudioStreamAvailable
- *  \sa SDL_AudioStreamFlush
- *  \sa SDL_AudioStreamClear
- *  \sa SDL_FreeAudioStream
+ * \sa SDL_NewAudioStream
+ * \sa SDL_AudioStreamGet
+ * \sa SDL_AudioStreamAvailable
+ * \sa SDL_AudioStreamFlush
+ * \sa SDL_AudioStreamClear
+ * \sa SDL_FreeAudioStream
  */
 extern DECLSPEC int SDLCALL SDL_AudioStreamPut(SDL_AudioStream *stream, const void *buf, int len);
 
 /**
- *  Get converted/resampled data from the stream
+ * Get converted/resampled data from the stream
  *
- *  \param stream The stream the audio is being requested from
- *  \param buf A buffer to fill with audio data
- *  \param len The maximum number of bytes to fill
- *  \returns the number of bytes read from the stream, or -1 on error
+ * \param stream The stream the audio is being requested from
+ * \param buf A buffer to fill with audio data
+ * \param len The maximum number of bytes to fill
+ * \returns the number of bytes read from the stream, or -1 on error
  *
- *  \sa SDL_NewAudioStream
- *  \sa SDL_AudioStreamPut
- *  \sa SDL_AudioStreamAvailable
- *  \sa SDL_AudioStreamFlush
- *  \sa SDL_AudioStreamClear
- *  \sa SDL_FreeAudioStream
+ * \sa SDL_NewAudioStream
+ * \sa SDL_AudioStreamPut
+ * \sa SDL_AudioStreamAvailable
+ * \sa SDL_AudioStreamFlush
+ * \sa SDL_AudioStreamClear
+ * \sa SDL_FreeAudioStream
  */
 extern DECLSPEC int SDLCALL SDL_AudioStreamGet(SDL_AudioStream *stream, void *buf, int len);
 
 /**
- * Get the number of converted/resampled bytes available. The stream may be
- *  buffering data behind the scenes until it has enough to resample
- *  correctly, so this number might be lower than what you expect, or even
- *  be zero. Add more data or flush the stream if you need the data now.
+ * Get the number of converted/resampled bytes available.
  *
- *  \sa SDL_NewAudioStream
- *  \sa SDL_AudioStreamPut
- *  \sa SDL_AudioStreamGet
- *  \sa SDL_AudioStreamFlush
- *  \sa SDL_AudioStreamClear
- *  \sa SDL_FreeAudioStream
+ * The stream may be buffering data behind the scenes until it has enough to
+ * resample correctly, so this number might be lower than what you expect, or
+ * even be zero. Add more data or flush the stream if you need the data now.
+ *
+ * \sa SDL_NewAudioStream
+ * \sa SDL_AudioStreamPut
+ * \sa SDL_AudioStreamGet
+ * \sa SDL_AudioStreamFlush
+ * \sa SDL_AudioStreamClear
+ * \sa SDL_FreeAudioStream
  */
 extern DECLSPEC int SDLCALL SDL_AudioStreamAvailable(SDL_AudioStream *stream);
 
 /**
  * Tell the stream that you're done sending data, and anything being buffered
- *  should be converted/resampled and made available immediately.
+ * should be converted/resampled and made available immediately.
  *
- * It is legal to add more data to a stream after flushing, but there will
- *  be audio gaps in the output. Generally this is intended to signal the
- *  end of input, so the complete output becomes available.
+ * It is legal to add more data to a stream after flushing, but there will be
+ * audio gaps in the output. Generally this is intended to signal the end of
+ * input, so the complete output becomes available.
  *
- *  \sa SDL_NewAudioStream
- *  \sa SDL_AudioStreamPut
- *  \sa SDL_AudioStreamGet
- *  \sa SDL_AudioStreamAvailable
- *  \sa SDL_AudioStreamClear
- *  \sa SDL_FreeAudioStream
+ * \sa SDL_NewAudioStream
+ * \sa SDL_AudioStreamPut
+ * \sa SDL_AudioStreamGet
+ * \sa SDL_AudioStreamAvailable
+ * \sa SDL_AudioStreamClear
+ * \sa SDL_FreeAudioStream
  */
 extern DECLSPEC int SDLCALL SDL_AudioStreamFlush(SDL_AudioStream *stream);
 
 /**
- *  Clear any pending data in the stream without converting it
+ * Clear any pending data in the stream without converting it
  *
- *  \sa SDL_NewAudioStream
- *  \sa SDL_AudioStreamPut
- *  \sa SDL_AudioStreamGet
- *  \sa SDL_AudioStreamAvailable
- *  \sa SDL_AudioStreamFlush
- *  \sa SDL_FreeAudioStream
+ * \sa SDL_NewAudioStream
+ * \sa SDL_AudioStreamPut
+ * \sa SDL_AudioStreamGet
+ * \sa SDL_AudioStreamAvailable
+ * \sa SDL_AudioStreamFlush
+ * \sa SDL_FreeAudioStream
  */
 extern DECLSPEC void SDLCALL SDL_AudioStreamClear(SDL_AudioStream *stream);
 
 /**
  * Free an audio stream
  *
- *  \sa SDL_NewAudioStream
- *  \sa SDL_AudioStreamPut
- *  \sa SDL_AudioStreamGet
- *  \sa SDL_AudioStreamAvailable
- *  \sa SDL_AudioStreamFlush
- *  \sa SDL_AudioStreamClear
+ * \sa SDL_NewAudioStream
+ * \sa SDL_AudioStreamPut
+ * \sa SDL_AudioStreamGet
+ * \sa SDL_AudioStreamAvailable
+ * \sa SDL_AudioStreamFlush
+ * \sa SDL_AudioStreamClear
  */
 extern DECLSPEC void SDLCALL SDL_FreeAudioStream(SDL_AudioStream *stream);
 
@@ -920,8 +923,8 @@ extern DECLSPEC void SDLCALL SDL_MixAudio(Uint8 * dst, const Uint8 * src,
 /**
  * Mix audio data in a specified format.
  *
- * This takes an audio buffer `src` of `len` bytes of `format` data and
- * mixes it into `dst`, performing addition, volume adjustment, and overflow
+ * This takes an audio buffer `src` of `len` bytes of `format` data and mixes
+ * it into `dst`, performing addition, volume adjustment, and overflow
  * clipping. The buffer pointed to by `dst` must also be `len` bytes of
  * `format` data.
  *
@@ -981,6 +984,11 @@ extern DECLSPEC void SDLCALL SDL_MixAudioFormat(Uint8 * dst,
  * You should not call SDL_LockAudio() on the device before queueing; SDL
  * handles locking internally for this function.
  *
+ * Note that SDL2
+ * [https://discourse.libsdl.org/t/sdl2-support-for-planar-audio/31263/3 does
+ * not support planar audio]. You will need to resample from planar audio
+ * formats into a non-planar one (see SDL_AudioFormat) before queuing audio.
+ *
  * \param dev the device ID to which we will queue audio
  * \param data the data to queue to the device for later playback
  * \param len the number of bytes (not samples!) to which `data` points
@@ -1032,8 +1040,8 @@ extern DECLSPEC int SDLCALL SDL_QueueAudio(SDL_AudioDeviceID dev, const void *da
  * \param dev the device ID from which we will dequeue audio
  * \param data a pointer into where audio data should be copied
  * \param len the number of bytes (not samples!) to which (data) points
- * \returns the number of bytes dequeued, which could be less than requested; call
- *          SDL_GetError() for more information.
+ * \returns the number of bytes dequeued, which could be less than requested;
+ *          call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 2.0.5.
  *
@@ -1045,9 +1053,8 @@ extern DECLSPEC Uint32 SDLCALL SDL_DequeueAudio(SDL_AudioDeviceID dev, void *dat
 /**
  * Get the number of bytes of still-queued audio.
  *
- * For playback devices: this is the number of bytes that have been queued
- * for playback with SDL_QueueAudio(), but have not yet been sent to the
- * hardware.
+ * For playback devices: this is the number of bytes that have been queued for
+ * playback with SDL_QueueAudio(), but have not yet been sent to the hardware.
  *
  * Once we've sent it to the hardware, this function can not decide the exact
  * byte boundary of what has been played. It's possible that we just gave the

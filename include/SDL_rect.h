@@ -169,8 +169,8 @@ extern DECLSPEC void SDLCALL SDL_UnionRect(const SDL_Rect * A,
 /**
  * Calculate a minimal rectangle enclosing a set of points.
  *
- * If `clip` is not NULL then only points inside of the clipping rectangle
- * are considered.
+ * If `clip` is not NULL then only points inside of the clipping rectangle are
+ * considered.
  *
  * \param points an array of SDL_Point structures representing points to be
  *               enclosed

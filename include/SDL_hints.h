@@ -1770,7 +1770,7 @@ typedef void (SDLCALL *SDL_HintCallback)(void *userdata, const char *name, const
  *
  * \param name the hint to watch
  * \param callback An SDL_HintCallback function that will be called when the
- *        hint value changes
+ *                 hint value changes
  * \param userdata a pointer to pass to the callback function
  *
  * \since This function is available since SDL 2.0.0.
@@ -1786,7 +1786,7 @@ extern DECLSPEC void SDLCALL SDL_AddHintCallback(const char *name,
  *
  * \param name the hint being watched
  * \param callback An SDL_HintCallback function that will be called when the
- *        hint value changes
+ *                 hint value changes
  * \param userdata a pointer being passed to the callback function
  *
  * \since This function is available since SDL 2.0.0.

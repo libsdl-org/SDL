@@ -230,8 +230,8 @@ extern DECLSPEC Sint64 SDLCALL SDL_RWseek(SDL_RWops *context,
 /**
  * Determine the current read/write offset in an SDL_RWops data stream.
  *
- * SDL_RWtell is actually a wrapper function that calls the SDL_RWops's
- * `seek` method, with an offset of 0 bytes from `RW_SEEK_CUR`, to simplify
+ * SDL_RWtell is actually a wrapper function that calls the SDL_RWops's `seek`
+ * method, with an offset of 0 bytes from `RW_SEEK_CUR`, to simplify
  * application development.
  *
  * \param context a SDL_RWops data stream object from which to get the current
@@ -284,9 +284,9 @@ extern DECLSPEC size_t SDLCALL SDL_RWread(SDL_RWops *context,
  * Write to an SDL_RWops data stream.
  *
  * This function writes exactly `num` objects each of size `size` from the
- * area pointed at by `ptr` to the stream. If this fails for any reason,
- * it'll return less than `num` to demonstrate how far the write progressed.
- * On success, it returns `num`.
+ * area pointed at by `ptr` to the stream. If this fails for any reason, it'll
+ * return less than `num` to demonstrate how far the write progressed. On
+ * success, it returns `num`.
  *
  * SDL_RWwrite is actually a function wrapper that calls the SDL_RWops's
  * `write` method appropriately, to simplify application development.
@@ -321,8 +321,8 @@ extern DECLSPEC size_t SDLCALL SDL_RWwrite(SDL_RWops *context,
  * Note that if this fails to flush the stream to disk, this function reports
  * an error, but the SDL_RWops is still invalid once this function returns.
  *
- * SDL_RWclose() is actually a macro that calls the SDL_RWops's `close`
- * method appropriately, to simplify application development.
+ * SDL_RWclose() is actually a macro that calls the SDL_RWops's `close` method
+ * appropriately, to simplify application development.
  *
  * \param context SDL_RWops structure to close
  * \returns 0 on success or a negative error code on failure; call

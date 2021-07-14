@@ -178,9 +178,8 @@ extern DECLSPEC void SDLCALL SDL_QuitSubSystem(Uint32 flags);
  * Get a mask of the specified subsystems which are currently initialized.
  *
  * \param flags any of the flags used by SDL_Init(); see SDL_Init for details.
- * \returns a mask of all initialized subsystems if `flags` is 0,
- *          otherwise it returns the initialization status of the specified
- *          subsystems.
+ * \returns a mask of all initialized subsystems if `flags` is 0, otherwise it
+ *          returns the initialization status of the specified subsystems.
  *
  *          The return value does not include SDL_INIT_NOPARACHUTE.
  *

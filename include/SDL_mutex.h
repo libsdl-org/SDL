@@ -86,8 +86,8 @@ extern DECLSPEC SDL_mutex *SDLCALL SDL_CreateMutex(void);
  * it. Of all threads waiting to lock the mutex, only one may do so at a time.
  *
  * It is legal for the owning thread to lock an already-locked mutex. It must
- * unlock it the same number of times before it is actually made available
- * for other threads in the system (this is known as a "recursive mutex").
+ * unlock it the same number of times before it is actually made available for
+ * other threads in the system (this is known as a "recursive mutex").
  *
  * \param mutex the mutex to lock
  * \return 0, or -1 on error.
@@ -105,8 +105,8 @@ extern DECLSPEC int SDLCALL SDL_LockMutex(SDL_mutex * mutex);
  * don't want to wait for it, and will return to it to try again later.
  *
  * \param mutex the mutex to try to lock
- * \returns 0, `SDL_MUTEX_TIMEDOUT`, or -1 on error; call
- *          SDL_GetError() for more information.
+ * \returns 0, `SDL_MUTEX_TIMEDOUT`, or -1 on error; call SDL_GetError() for
+ *          more information.
  *
  * \sa SDL_CreateMutex
  * \sa SDL_DestroyMutex
@@ -119,8 +119,8 @@ extern DECLSPEC int SDLCALL SDL_TryLockMutex(SDL_mutex * mutex);
  * Unlock the mutex.
  *
  * It is legal for the owning thread to lock an already-locked mutex. It must
- * unlock it the same number of times before it is actually made available
- * for other threads in the system (this is known as a "recursive mutex").
+ * unlock it the same number of times before it is actually made available for
+ * other threads in the system (this is known as a "recursive mutex").
  *
  * It is an error to unlock a mutex that has not been locked by the current
  * thread, and doing so results in undefined behavior.
@@ -250,8 +250,7 @@ extern DECLSPEC int SDLCALL SDL_SemWait(SDL_sem * sem);
 extern DECLSPEC int SDLCALL SDL_SemTryWait(SDL_sem * sem);
 
 /**
- * Wait until a semaphore has a positive value and then
- * decrements it.
+ * Wait until a semaphore has a positive value and then decrements it.
  *
  * This function suspends the calling thread until either the semaphore
  * pointed to by `sem` has a positive value, the call is interrupted by a
@@ -371,10 +370,10 @@ extern DECLSPEC int SDLCALL SDL_CondBroadcast(SDL_cond * cond);
 /**
  * Wait until a condition variable is signaled.
  *
- * This function unlocks the specified `mutex` and waits for another thread
- * to call SDL_CondSignal() or SDL_CondBroadcast() on the condition variable
- * `cond`. Once the condition variable is signaled, the mutex is re-locked
- * and the function returns.
+ * This function unlocks the specified `mutex` and waits for another thread to
+ * call SDL_CondSignal() or SDL_CondBroadcast() on the condition variable
+ * `cond`. Once the condition variable is signaled, the mutex is re-locked and
+ * the function returns.
  *
  * The mutex must be locked before calling this function.
  *
@@ -397,10 +396,10 @@ extern DECLSPEC int SDLCALL SDL_CondWait(SDL_cond * cond, SDL_mutex * mutex);
 /**
  * Wait until a condition variable is signaled or a certain time has passed.
  *
- * This function unlocks the specified `mutex` and waits for another thread
- * to call SDL_CondSignal() or SDL_CondBroadcast() on the condition variable
- * `cond`, or for the specified time to elapse. Once the condition variable
- * is signaled or the time elapsed, the mutex is re-locked and the function
+ * This function unlocks the specified `mutex` and waits for another thread to
+ * call SDL_CondSignal() or SDL_CondBroadcast() on the condition variable
+ * `cond`, or for the specified time to elapse. Once the condition variable is
+ * signaled or the time elapsed, the mutex is re-locked and the function
  * returns.
  *
  * The mutex must be locked before calling this function.

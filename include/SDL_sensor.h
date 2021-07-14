@@ -130,9 +130,9 @@ typedef enum
  * If you are using the sensor API or handling events from multiple threads
  * you should use these locking functions to protect access to the sensors.
  *
- * In particular, you are guaranteed that the sensor list won't change, so
- * the API functions that take a sensor index will be valid, and sensor
- * events will not be delivered.
+ * In particular, you are guaranteed that the sensor list won't change, so the
+ * API functions that take a sensor index will be valid, and sensor events
+ * will not be delivered.
  */
 extern DECLSPEC void SDLCALL SDL_LockSensors(void);
 extern DECLSPEC void SDLCALL SDL_UnlockSensors(void);
@@ -230,7 +230,7 @@ extern DECLSPEC SDL_SensorID SDLCALL SDL_SensorGetInstanceID(SDL_Sensor *sensor)
 /**
  * Get the current state of an opened sensor.
  *
- *  The number of values and interpretation of the data is sensor dependent.
+ * The number of values and interpretation of the data is sensor dependent.
  *
  * \param sensor The SDL_Sensor object to query
  * \param data A pointer filled with the current sensor state

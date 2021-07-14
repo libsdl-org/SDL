@@ -65,8 +65,8 @@ extern DECLSPEC SDL_Window * SDLCALL SDL_GetKeyboardFocus(void);
  * Get a snapshot of the current state of the keyboard.
  *
  * The pointer returned is a pointer to an internal SDL array. It will be
- * valid for the whole lifetime of the application and should not be freed
- * by the caller.
+ * valid for the whole lifetime of the application and should not be freed by
+ * the caller.
  *
  * A array element with a value of 1 means that the key is pressed and a value
  * of 0 means that it is not. Indexes into this array are obtained by using
@@ -118,8 +118,8 @@ extern DECLSPEC SDL_Keymod SDLCALL SDL_GetModState(void);
 extern DECLSPEC void SDLCALL SDL_SetModState(SDL_Keymod modstate);
 
 /**
- * Get the key code corresponding to the given scancode
- * according to the current keyboard layout.
+ * Get the key code corresponding to the given scancode according to the
+ * current keyboard layout.
  *
  * See SDL_Keycode for details.
  *
@@ -132,8 +132,8 @@ extern DECLSPEC void SDLCALL SDL_SetModState(SDL_Keymod modstate);
 extern DECLSPEC SDL_Keycode SDLCALL SDL_GetKeyFromScancode(SDL_Scancode scancode);
 
 /**
- * Get the scancode corresponding to the given key code
- * according to the current keyboard layout.
+ * Get the scancode corresponding to the given key code according to the
+ * current keyboard layout.
  *
  * See SDL_Scancode for details.
  *
@@ -220,8 +220,8 @@ extern DECLSPEC SDL_Keycode SDLCALL SDL_GetKeyFromName(const char *name);
  *
  * This function will start accepting Unicode text input events in the focused
  * SDL window, and start emitting SDL_TextInputEvent (SDL_TEXTINPUT) and
- * SDL_TextEditingEvent (SDL_TEXTEDITING) events. Please use this function
- * in pair with SDL_StopTextInput().
+ * SDL_TextEditingEvent (SDL_TEXTEDITING) events. Please use this function in
+ * pair with SDL_StopTextInput().
  *
  * On some platforms using this function activates the screen keyboard.
  *

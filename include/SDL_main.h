@@ -122,7 +122,8 @@ extern SDLMAIN_DECLSPEC int SDL_main(int argc, char *argv[]);
 
 
 /**
- * Circumvent failure of SDL_Init() when not using SDL_main() as an entry point.
+ * Circumvent failure of SDL_Init() when not using SDL_main() as an entry
+ * point.
  *
  * This function is defined in SDL_main.h, along with the preprocessor rule to
  * redefine main() as SDL_main(). Thus to ensure that your main() function
@@ -136,7 +137,7 @@ extern DECLSPEC void SDLCALL SDL_SetMainReady(void);
 #ifdef __WIN32__
 
 /**
- *  This can be called to set the application class at startup
+ * This can be called to set the application class at startup
  */
 extern DECLSPEC int SDLCALL SDL_RegisterApp(char *name, Uint32 style, void *hInst);
 extern DECLSPEC void SDLCALL SDL_UnregisterApp(void);

@@ -178,8 +178,8 @@ extern DECLSPEC void * SDLCALL SDL_AndroidGetJNIEnv(void);
  * return type, even if the implementation returns a jobject. The rationale
  * being that the SDL headers can avoid including jni.h.
  *
- * The jobject returned by the function is a local reference and must
- * be released by the caller. See the PushLocalFrame() and PopLocalFrame() or
+ * The jobject returned by the function is a local reference and must be
+ * released by the caller. See the PushLocalFrame() and PopLocalFrame() or
  * DeleteLocalRef() functions of the Java native interface:
  *
  * https://docs.oracle.com/javase/1.5.0/docs/guide/jni/spec/functions.html
@@ -311,8 +311,7 @@ extern DECLSPEC const char * SDLCALL SDL_AndroidGetExternalStoragePath(void);
 /**
  * Request permissions at runtime.
  *
- * This blocks the calling thread until the permission is granted or
- * denied.
+ * This blocks the calling thread until the permission is granted or denied.
  *
  * \param permission The permission to request.
  * \returns SDL_TRUE if the permission was granted, SDL_FALSE otherwise.

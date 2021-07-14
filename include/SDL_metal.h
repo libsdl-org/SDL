@@ -49,59 +49,46 @@ typedef void *SDL_MetalView;
 /* @{ */
 
 /**
- *  \brief Create a CAMetalLayer-backed NSView/UIView and attach it to the
- *        specified window.
+ * Create a CAMetalLayer-backed NSView/UIView and attach it to the specified
+ * window.
  *
- *  On macOS, this does *not* associate a MTLDevice with the CAMetalLayer on its
- *  own. It is up to user code to do that.
+ * On macOS, this does *not* associate a MTLDevice with the CAMetalLayer on
+ * its own. It is up to user code to do that.
  *
- *  The returned handle can be casted directly to a NSView or UIView.
- *  To access the backing CAMetalLayer, call SDL_Metal_GetLayer().
+ * The returned handle can be casted directly to a NSView or UIView. To access
+ * the backing CAMetalLayer, call SDL_Metal_GetLayer().
  *
- *  \note \a window must be created with the SDL_WINDOW_METAL flag.
- *
- *  \sa SDL_Metal_DestroyView
- *  \sa SDL_Metal_GetLayer
+ * \sa SDL_Metal_DestroyView
+ * \sa SDL_Metal_GetLayer
  */
 extern DECLSPEC SDL_MetalView SDLCALL SDL_Metal_CreateView(SDL_Window * window);
 
 /**
- *  \brief Destroy an existing SDL_MetalView object.
+ * Destroy an existing SDL_MetalView object.
  *
- *  This should be called before SDL_DestroyWindow, if SDL_Metal_CreateView was
- *  called after SDL_CreateWindow.
+ * This should be called before SDL_DestroyWindow, if SDL_Metal_CreateView was
+ * called after SDL_CreateWindow.
  *
- *  \sa SDL_Metal_CreateView
+ * \sa SDL_Metal_CreateView
  */
 extern DECLSPEC void SDLCALL SDL_Metal_DestroyView(SDL_MetalView view);
 
 /**
- *  \brief Get a pointer to the backing CAMetalLayer for the given view.
+ * Get a pointer to the backing CAMetalLayer for the given view.
  *
- *  \sa SDL_MetalCreateView
+ * \sa SDL_MetalCreateView
  */
 extern DECLSPEC void *SDLCALL SDL_Metal_GetLayer(SDL_MetalView view);
 
 /**
- *  \brief Get the size of a window's underlying drawable in pixels (for use
- *         with setting viewport, scissor & etc).
+ * Get the size of a window's underlying drawable in pixels (for use with
+ * setting viewport, scissor & etc).
  *
- *  \param window   SDL_Window from which the drawable size should be queried
- *  \param w        Pointer to variable for storing the width in pixels,
- *                  may be NULL
- *  \param h        Pointer to variable for storing the height in pixels,
- *                  may be NULL
+ * \param window SDL_Window from which the drawable size should be queried
+ * \param w Pointer to variable for storing the width in pixels, may be NULL
  *
- * This may differ from SDL_GetWindowSize() if we're rendering to a high-DPI
- * drawable, i.e. the window was created with SDL_WINDOW_ALLOW_HIGHDPI on a
- * platform with high-DPI support (Apple calls this "Retina"), and not disabled
- * by the \c SDL_HINT_VIDEO_HIGHDPI_DISABLED hint.
- *
- *  \note On macOS high-DPI support must be enabled for an application by
- *        setting NSHighResolutionCapable to true in its Info.plist.
- *
- *  \sa SDL_GetWindowSize()
- *  \sa SDL_CreateWindow()
+ * \sa SDL_GetWindowSize
+ * \sa SDL_CreateWindow
  */
 extern DECLSPEC void SDLCALL SDL_Metal_GetDrawableSize(SDL_Window* window, int *w,
                                                        int *h);

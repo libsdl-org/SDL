@@ -411,8 +411,7 @@ extern DECLSPEC int SDLCALL SDL_SetTextureAlphaMod(SDL_Texture * texture,
                                                    Uint8 alpha);
 
 /**
- * Get the additional alpha value multiplied into render
- * copy operations.
+ * Get the additional alpha value multiplied into render copy operations.
  *
  * \param texture the texture to query
  * \param alpha a pointer filled in with the current alpha value
@@ -426,8 +425,7 @@ extern DECLSPEC int SDLCALL SDL_GetTextureAlphaMod(SDL_Texture * texture,
                                                    Uint8 * alpha);
 
 /**
- * Set the blend mode for a texture, used by
- * SDL_RenderCopy().
+ * Set the blend mode for a texture, used by SDL_RenderCopy().
  *
  * If the blend mode is not supported, the closest supported mode is chosen
  * and this function returns -1.
@@ -465,7 +463,7 @@ extern DECLSPEC int SDLCALL SDL_GetTextureBlendMode(SDL_Texture * texture,
  * \param scaleMode the SDL_ScaleMode to use for texture scaling.
  * \returns 0 on success, or -1 if the texture is not valid.
  *
- * \sa SDL_GetTextureScaleMode()
+ * \sa SDL_GetTextureScaleMode
  */
 extern DECLSPEC int SDLCALL SDL_SetTextureScaleMode(SDL_Texture * texture,
                                                     SDL_ScaleMode scaleMode);
@@ -477,7 +475,7 @@ extern DECLSPEC int SDLCALL SDL_SetTextureScaleMode(SDL_Texture * texture,
  * \param scaleMode a pointer filled in with the current scale mode.
  * \return 0 on success, or -1 if the texture is not valid.
  *
- * \sa SDL_SetTextureScaleMode()
+ * \sa SDL_SetTextureScaleMode
  */
 extern DECLSPEC int SDLCALL SDL_GetTextureScaleMode(SDL_Texture * texture,
                                                     SDL_ScaleMode *scaleMode);
@@ -514,8 +512,8 @@ extern DECLSPEC int SDLCALL SDL_UpdateTexture(SDL_Texture * texture,
                                               const void *pixels, int pitch);
 
 /**
- * Update a rectangle within a planar YV12 or IYUV
- * texture with new pixel data.
+ * Update a rectangle within a planar YV12 or IYUV texture with new pixel
+ * data.
  *
  * You can use SDL_UpdateTexture() as long as your pixel data is a contiguous
  * block of Y and U/V planes in the proper order, but this function is
@@ -557,9 +555,11 @@ extern DECLSPEC int SDLCALL SDL_UpdateYUVTexture(SDL_Texture * texture,
  * \param rect a pointer to the rectangle of pixels to update, or NULL to
  *             update the entire texture.
  * \param Yplane the raw pixel data for the Y plane.
- * \param Ypitch the number of bytes between rows of pixel data for the Y plane.
+ * \param Ypitch the number of bytes between rows of pixel data for the Y
+ *               plane.
  * \param UVplane the raw pixel data for the UV plane.
- * \param UVpitch the number of bytes between rows of pixel data for the UV plane.
+ * \param UVpitch the number of bytes between rows of pixel data for the UV
+ *                plane.
  * \return 0 on success, or -1 if the texture is not valid.
  */
 extern DECLSPEC int SDLCALL SDL_UpdateNVTexture(SDL_Texture * texture,
@@ -590,7 +590,7 @@ extern DECLSPEC int SDLCALL SDL_UpdateNVTexture(SDL_Texture * texture,
  *          or was not created with `SDL_TEXTUREACCESS_STREAMING`; call
  *          SDL_GetError() for more information.
  *
- * \sa  SDL_UnlockTexture
+ * \sa SDL_UnlockTexture
  */
 extern DECLSPEC int SDLCALL SDL_LockTexture(SDL_Texture * texture,
                                             const SDL_Rect * rect,
@@ -623,8 +623,8 @@ extern DECLSPEC int SDLCALL SDL_LockTexture(SDL_Texture * texture,
  * \returns 0 on success, or -1 if the texture is not valid or was not created
  *          with `SDL_TEXTUREACCESS_STREAMING`
  *
- * \sa SDL_LockTexture()
- * \sa SDL_UnlockTexture()
+ * \sa SDL_LockTexture
+ * \sa SDL_UnlockTexture
  */
 extern DECLSPEC int SDLCALL SDL_LockTextureToSurface(SDL_Texture *texture,
                                             const SDL_Rect *rect,
@@ -638,8 +638,8 @@ extern DECLSPEC int SDLCALL SDL_LockTextureToSurface(SDL_Texture *texture,
  * be provided. You must fully initialize any area of a texture that you lock
  * before unlocking it, as the pixels might otherwise be uninitialized memory.
  *
- * Which is to say: locking and immediately unlocking a texture can result
- * in corrupted textures, depending on the renderer in use.
+ * Which is to say: locking and immediately unlocking a texture can result in
+ * corrupted textures, depending on the renderer in use.
  *
  * \param texture a texture locked by SDL_LockTexture()
  *
@@ -663,8 +663,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_RenderTargetSupported(SDL_Renderer *rendere
  * Set a texture as the current rendering target.
  *
  * Before using this function, you should check the
- * `SDL_RENDERER_TARGETTEXTURE` bit in the flags of SDL_RendererInfo to see
- * if render targets are supported.
+ * `SDL_RENDERER_TARGETTEXTURE` bit in the flags of SDL_RendererInfo to see if
+ * render targets are supported.
  *
  * The default render target is the window for which the renderer was created.
  * To stop rendering to a texture and render to the window again, call this
@@ -672,8 +672,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_RenderTargetSupported(SDL_Renderer *rendere
  *
  * \param renderer the rendering context
  * \param texture the targeted texture, which must be created with the
- *                `SDL_TEXTUREACCESS_TARGET` flag, or NULL
- *                to render to the window instead of a texture.
+ *                `SDL_TEXTUREACCESS_TARGET` flag, or NULL to render to the
+ *                window instead of a texture.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -704,7 +704,7 @@ extern DECLSPEC SDL_Texture * SDLCALL SDL_GetRenderTarget(SDL_Renderer *renderer
  *
  * This function uses the viewport and scaling functionality to allow a fixed
  * logical resolution for rendering, regardless of the actual output
- * resolution.  If the actual output resolution doesn't have the same aspect
+ * resolution. If the actual output resolution doesn't have the same aspect
  * ratio the output rendering will be centered within the output display.
  *
  * If the output display is a window, mouse and touch events in the window
@@ -779,8 +779,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_RenderGetIntegerScale(SDL_Renderer * render
 /**
  * Set the drawing area for rendering on the current target.
  *
- * When the window is resized, the viewport is reset to fill the entire
- * new window size.
+ * When the window is resized, the viewport is reset to fill the entire new
+ * window size.
  *
  * \param renderer the rendering context
  * \param rect the SDL_Rect structure representing the drawing area, or NULL
@@ -891,8 +891,8 @@ extern DECLSPEC void SDLCALL SDL_RenderGetScale(SDL_Renderer * renderer,
 /**
  * Set the color used for drawing operations (Rect, Line and Clear).
  *
- * Set the color for drawing or filling rectangles, lines, and points,
- * and for SDL_RenderClear().
+ * Set the color for drawing or filling rectangles, lines, and points, and for
+ * SDL_RenderClear().
  *
  * \param renderer the rendering context
  * \param r the red value used to draw on the rendering target
@@ -1234,9 +1234,9 @@ extern DECLSPEC int SDLCALL SDL_RenderCopy(SDL_Renderer * renderer,
  * Copy a portion of the texture to the current rendering, with optional
  * rotation and flipping.
  *
- * Copy a portion of the texture to the current rendering
- * target, optionally rotating it by angle around the given center and also
- * flipping it top-bottom and/or left-right.
+ * Copy a portion of the texture to the current rendering target, optionally
+ * rotating it by angle around the given center and also flipping it
+ * top-bottom and/or left-right.
  *
  * The texture is blended with the destination based on its blend mode set
  * with SDL_SetTextureBlendMode().
@@ -1329,7 +1329,8 @@ extern DECLSPEC int SDLCALL SDL_RenderDrawLinesF(SDL_Renderer * renderer,
  * Draw a rectangle on the current rendering target at subpixel precision.
  *
  * \param renderer The renderer which should draw a rectangle.
- * \param rect A pointer to the destination rectangle, or NULL to outline the entire rendering target.
+ * \param rect A pointer to the destination rectangle, or NULL to outline the
+ *             entire rendering target.
  * \return 0 on success, or -1 on error
  */
 extern DECLSPEC int SDLCALL SDL_RenderDrawRectF(SDL_Renderer * renderer,
@@ -1349,8 +1350,8 @@ extern DECLSPEC int SDLCALL SDL_RenderDrawRectsF(SDL_Renderer * renderer,
                                                  int count);
 
 /**
- * Fill a rectangle on the current rendering target with the drawing color
- * at subpixel precision.
+ * Fill a rectangle on the current rendering target with the drawing color at
+ * subpixel precision.
  *
  * \param renderer The renderer which should fill a rectangle.
  * \param rect A pointer to the destination rectangle, or NULL for the entire
@@ -1391,8 +1392,8 @@ extern DECLSPEC int SDLCALL SDL_RenderCopyF(SDL_Renderer * renderer,
                                             const SDL_FRect * dstrect);
 
 /**
- * Copy a portion of the source texture to the current rendering target,
- * with rotation and flipping, at subpixel precision.
+ * Copy a portion of the source texture to the current rendering target, with
+ * rotation and flipping, at subpixel precision.
  *
  * \param renderer The renderer which should copy parts of a texture.
  * \param texture The source texture.
@@ -1400,10 +1401,13 @@ extern DECLSPEC int SDLCALL SDL_RenderCopyF(SDL_Renderer * renderer,
  *                texture.
  * \param dstrect A pointer to the destination rectangle, or NULL for the
  *                entire rendering target.
- * \param angle An angle in degrees that indicates the rotation that will be applied to dstrect, rotating it in a clockwise direction
- * \param center A pointer to a point indicating the point around which dstrect will be rotated (if NULL, rotation will be done around dstrect.w/2, dstrect.h/2).
- * \param flip An SDL_RendererFlip value stating which flipping actions should be performed on the texture
- *
+ * \param angle An angle in degrees that indicates the rotation that will be
+ *              applied to dstrect, rotating it in a clockwise direction
+ * \param center A pointer to a point indicating the point around which
+ *               dstrect will be rotated (if NULL, rotation will be done
+ *               around dstrect.w/2, dstrect.h/2).
+ * \param flip An SDL_RendererFlip value stating which flipping actions should
+ *             be performed on the texture
  * \return 0 on success, or -1 on error
  */
 extern DECLSPEC int SDLCALL SDL_RenderCopyExF(SDL_Renderer * renderer,
@@ -1443,8 +1447,7 @@ extern DECLSPEC int SDLCALL SDL_RenderReadPixels(SDL_Renderer * renderer,
                                                  void *pixels, int pitch);
 
 /**
- * Update the screen with any rendering performed since
- * the previous call.
+ * Update the screen with any rendering performed since the previous call.
  *
  * SDL's rendering functions operate on a backbuffer; that is, calling a
  * rendering function such as SDL_RenderDrawLine() does not directly put a
@@ -1504,9 +1507,9 @@ extern DECLSPEC void SDLCALL SDL_DestroyRenderer(SDL_Renderer * renderer);
  * Force the rendering context to flush any pending commands to the underlying
  * rendering API.
  *
- * You do not need to (and in fact, shouldn't) call this function unless
- * you are planning to call into OpenGL/Direct3D/Metal/whatever directly
- * in addition to using an SDL_Renderer.
+ * You do not need to (and in fact, shouldn't) call this function unless you
+ * are planning to call into OpenGL/Direct3D/Metal/whatever directly in
+ * addition to using an SDL_Renderer.
  *
  * This is for a very-specific case: if you are using SDL's render API, you
  * asked for a specific renderer backend (OpenGL, Direct3D, etc), you set
@@ -1519,9 +1522,9 @@ extern DECLSPEC void SDLCALL SDL_DestroyRenderer(SDL_Renderer * renderer);
  * maximum performance out of a specific situation. In all other cases, SDL
  * will do the right thing, perhaps at a performance loss.
  *
- * This function is first available in SDL 2.0.10, and is not needed in
- * 2.0.9 and earlier, as earlier versions did not queue rendering commands
- * at all, instead flushing them to the OS immediately.
+ * This function is first available in SDL 2.0.10, and is not needed in 2.0.9
+ * and earlier, as earlier versions did not queue rendering commands at all,
+ * instead flushing them to the OS immediately.
  *
  * \param renderer the rendering context
  * \returns 0 on success or a negative error code on failure; call
@@ -1589,10 +1592,10 @@ extern DECLSPEC int SDLCALL SDL_GL_UnbindTexture(SDL_Texture *texture);
  * headers, but it can be safely cast to a `CAMetalLayer *`.
  *
  * \param renderer The renderer to query
- * \returns a `CAMetalLayer *` on success, or NULL if the renderer isn't a Metal
- *          renderer
+ * \returns a `CAMetalLayer *` on success, or NULL if the renderer isn't a
+ *          Metal renderer
  *
- * \sa SDL_RenderGetMetalCommandEncoder()
+ * \sa SDL_RenderGetMetalCommandEncoder
  */
 extern DECLSPEC void *SDLCALL SDL_RenderGetMetalLayer(SDL_Renderer * renderer);
 
@@ -1603,10 +1606,10 @@ extern DECLSPEC void *SDLCALL SDL_RenderGetMetalLayer(SDL_Renderer * renderer);
  * headers, but it can be safely cast to an `id<MTLRenderCommandEncoder>`.
  *
  * \param renderer The renderer to query
- * \returns an `id<MTLRenderCommandEncoder>` on success, or NULL if the renderer
- *          isn't a Metal renderer.
+ * \returns an `id<MTLRenderCommandEncoder>` on success, or NULL if the
+ *          renderer isn't a Metal renderer.
  *
- *  \sa SDL_RenderGetMetalLayer()
+ * \sa SDL_RenderGetMetalLayer
  */
 extern DECLSPEC void *SDLCALL SDL_RenderGetMetalCommandEncoder(SDL_Renderer * renderer);
 

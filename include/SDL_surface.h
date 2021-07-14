@@ -188,8 +188,8 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateRGBSurfaceWithFormat
  * not allocate memory for the pixel data, instead the caller provides an
  * existing buffer of data for the surface to use.
  *
- * No copy is made of the pixel data. Pixel data is not managed
- * automatically; you must free the surface before you free the pixel data.
+ * No copy is made of the pixel data. Pixel data is not managed automatically;
+ * you must free the surface before you free the pixel data.
  *
  * \param pixels a pointer to existing pixel data
  * \param width the width of the surface
@@ -226,8 +226,8 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateRGBSurfaceFrom(void *pixels,
  * instead of providing pixel color masks, you provide it with a predefined
  * format from SDL_PixelFormatEnum.
  *
- * No copy is made of the pixel data. Pixel data is not managed
- * automatically; you must free the surface before you free the pixel data.
+ * No copy is made of the pixel data. Pixel data is not managed automatically;
+ * you must free the surface before you free the pixel data.
  *
  * \param pixels a pointer to existing pixel data
  * \param width the width of the surface
@@ -298,7 +298,7 @@ extern DECLSPEC int SDLCALL SDL_LockSurface(SDL_Surface * surface);
  *
  * \param surface the SDL_Surface structure to be unlocked
  *
- * \sa SDL_LockSurface()
+ * \sa SDL_LockSurface
  */
 extern DECLSPEC void SDLCALL SDL_UnlockSurface(SDL_Surface * surface);
 
@@ -545,8 +545,8 @@ extern DECLSPEC int SDLCALL SDL_GetSurfaceBlendMode(SDL_Surface * surface,
 /**
  * Set the clipping rectangle for a surface.
  *
- * When `surface` is the destination of a blit, only the area within the
- * clip rectangle is drawn into.
+ * When `surface` is the destination of a blit, only the area within the clip
+ * rectangle is drawn into.
  *
  * Note that blits are automatically clipped to the edges of the source and
  * destination surfaces.
@@ -566,8 +566,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_SetClipRect(SDL_Surface * surface,
 /**
  * Get the clipping rectangle for a surface.
  *
- * When `surface` is the destination of a blit, only the area within the
- * clip rectangle is drawn into.
+ * When `surface` is the destination of a blit, only the area within the clip
+ * rectangle is drawn into.
  *
  * \param surface the SDL_Surface structure representing the surface to be
  *                clipped
@@ -618,8 +618,8 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_ConvertSurface
  * Copy an existing surface to a new surface of the specified format enum.
  *
  * This function operates just like SDL_ConvertSurface(), but accepts an
- * SDL_PixelFormatEnum value instead of an SDL_PixelFormat structure. As
- * such, it might be easier to call but it doesn't have access to palette
+ * SDL_PixelFormatEnum value instead of an SDL_PixelFormat structure. As such,
+ * it might be easier to call but it doesn't have access to palette
  * information for the destination surface, in case that would be important.
  *
  * \param src the existing SDL_Surface structure to convert
@@ -768,8 +768,8 @@ extern DECLSPEC int SDLCALL SDL_FillRects
 /**
  * Perform a fast blit from the source surface to the destination surface.
  *
- * SDL_UpperBlit() has been replaced by SDL_BlitSurface(), which is merely
- * a macro for this function with a less confusing name.
+ * SDL_UpperBlit() has been replaced by SDL_BlitSurface(), which is merely a
+ * macro for this function with a less confusing name.
  *
  * \sa SDL_BlitSurface
  */
@@ -868,7 +868,8 @@ extern DECLSPEC void SDLCALL SDL_SetYUVConversionMode(SDL_YUV_CONVERSION_MODE mo
 extern DECLSPEC SDL_YUV_CONVERSION_MODE SDLCALL SDL_GetYUVConversionMode(void);
 
 /**
- * Get the YUV conversion mode, returning the correct mode for the resolution when the current conversion mode is SDL_YUV_CONVERSION_AUTOMATIC
+ * Get the YUV conversion mode, returning the correct mode for the resolution
+ * when the current conversion mode is SDL_YUV_CONVERSION_AUTOMATIC
  */
 extern DECLSPEC SDL_YUV_CONVERSION_MODE SDLCALL SDL_GetYUVConversionModeForResolution(int width, int height);
 

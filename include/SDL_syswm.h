@@ -351,8 +351,8 @@ typedef struct SDL_SysWMinfo SDL_SysWMinfo;
  * You must include SDL_syswm.h for the declaration of SDL_SysWMinfo.
  *
  * The caller must initialize the `info` structure's version by using
- * `SDL_VERSION(&info.version)`, and then this function will fill in the
- * rest of the structure with information about the given window.
+ * `SDL_VERSION(&info.version)`, and then this function will fill in the rest
+ * of the structure with information about the given window.
  *
  * \param window the window about which information is being requested
  * \param info an SDL_SysWMinfo structure filled in with window information
