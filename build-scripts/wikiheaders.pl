@@ -611,6 +611,7 @@ if ($copy_direction == 1) {  # --copy-to-headers
             my @desclines = split /\n/, $v;
             foreach (@desclines) {
                 s/\A(\:|\* )//;
+                s/\(\)\Z//;  # Convert "SDL_Func()" to "SDL_Func"
                 $str .= "\\sa $_\n";
             }
         }
@@ -764,6 +765,7 @@ if ($copy_direction == 1) {  # --copy-to-headers
                 $sections{'Version'} = wordwrap($desc) . "\n";
             } elsif ($l =~ /\A\\sa\s+(.*)\Z/) {
                 my $sa = $1;
+                $sa =~ s/\(\)\Z//;  # Convert "SDL_Func()" to "SDL_Func"
                 $sections{'Related Functions'} = '' if not defined $sections{'Related Functions'};
                 if ($wikitype eq 'mediawiki') {
                     $sections{'Related Functions'} .= ":[[$sa]]\n";
