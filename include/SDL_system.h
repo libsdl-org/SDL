@@ -218,7 +218,7 @@ extern DECLSPEC void * SDLCALL SDL_AndroidGetActivity(void);
  * - API level 11: Android 3.0
  * - API level 10: Android 2.3.3
  *
- * \returns Android API level.
+ * \returns the Android API level.
  */
 extern DECLSPEC int SDLCALL SDL_GetAndroidSDKVersion(void);
 
@@ -439,7 +439,7 @@ extern DECLSPEC const char * SDLCALL SDL_WinRTGetFSPathUTF8(SDL_WinRT_Path pathT
 /**
  * Detects the device family of WinRT plattform at runtime.
  *
- * \returns A value from the SDL_WinRT_DeviceFamily enum.
+ * \returns a value from the SDL_WinRT_DeviceFamily enum.
  */
 extern DECLSPEC SDL_WinRT_DeviceFamily SDLCALL SDL_WinRTGetDeviceFamily();
 

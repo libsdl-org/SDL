@@ -66,7 +66,7 @@ void SDLTest_Assert(int assertCondition, SDL_PRINTF_FORMAT_STRING const char *as
  * \param assertCondition Evaluated condition or variable to assert; fail (==0) or pass (!=0).
  * \param assertDescription Message to log with the assert describing it.
  *
- * \returns Returns the assertCondition so it can be used to externally to break execution flow if desired.
+ * \returns the assertCondition so it can be used to externally to break execution flow if desired.
  */
 int SDLTest_AssertCheck(int assertCondition, SDL_PRINTF_FORMAT_STRING const char *assertDescription, ...) SDL_PRINTF_VARARG_FUNC(2);
 

@@ -106,7 +106,7 @@ extern DECLSPEC const char *SDLCALL SDL_GetError(void);
  * \param errstr A buffer to fill with the last error message that was set
  *                for the current thread
  * \param maxlen The size of the buffer pointed to by the errstr parameter
- * \returns The pointer passed in as the `errstr` parameter.
+ * \returns the pointer passed in as the `errstr` parameter.
  *
  * \sa SDL_GetError
  */

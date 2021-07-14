@@ -105,7 +105,7 @@ extern DECLSPEC int SDLCALL SDL_LockMutex(SDL_mutex * mutex);
  * don't want to wait for it, and will return to it to try again later.
  *
  * \param mutex the mutex to try to lock
- * \returns return 0, `SDL_MUTEX_TIMEDOUT`, or -1 on error; call
+ * \returns 0, `SDL_MUTEX_TIMEDOUT`, or -1 on error; call
  *          SDL_GetError() for more information.
  *
  * \sa SDL_CreateMutex

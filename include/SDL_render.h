@@ -1589,7 +1589,7 @@ extern DECLSPEC int SDLCALL SDL_GL_UnbindTexture(SDL_Texture *texture);
  * headers, but it can be safely cast to a `CAMetalLayer *`.
  *
  * \param renderer The renderer to query
- * \returns CAMetalLayer* on success, or NULL if the renderer isn't a Metal
+ * \returns a `CAMetalLayer *` on success, or NULL if the renderer isn't a Metal
  *          renderer
  *
  * \sa SDL_RenderGetMetalCommandEncoder()
@@ -1603,7 +1603,7 @@ extern DECLSPEC void *SDLCALL SDL_RenderGetMetalLayer(SDL_Renderer * renderer);
  * headers, but it can be safely cast to an `id<MTLRenderCommandEncoder>`.
  *
  * \param renderer The renderer to query
- * \returns `id<MTLRenderCommandEncoder>` on success, or NULL if the renderer
+ * \returns an `id<MTLRenderCommandEncoder>` on success, or NULL if the renderer
  *          isn't a Metal renderer.
  *
  *  \sa SDL_RenderGetMetalLayer()

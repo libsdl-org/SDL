@@ -714,7 +714,7 @@ extern DECLSPEC int SDLCALL SDL_FillRects
  *  surface (\c src or \c dst) is copied.  The final blit rectangles are saved
  *  in \c srcrect and \c dstrect after all clipping is performed.
  *
- *  \return If the blit is successful, it returns 0, otherwise it returns -1.
+ *  \returns 0 if the blit is successful, otherwise it returns -1.
  *
  *  The blit function should not be called on a locked surface.
  *

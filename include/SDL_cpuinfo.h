@@ -426,7 +426,7 @@ extern DECLSPEC int SDLCALL SDL_GetSystemRAM(void);
  * not 64 for the AVX-512 instructions that exist but SDL doesn't know about.
  * Plan accordingly.
  *
- * \returns Alignment in bytes needed for available, known SIMD instructions.
+ * \returns the alignment in bytes needed for available, known SIMD instructions.
  */
 extern DECLSPEC size_t SDLCALL SDL_SIMDGetAlignment(void);
 
@@ -459,7 +459,7 @@ extern DECLSPEC size_t SDLCALL SDL_SIMDGetAlignment(void);
  *
  * \param len The length, in bytes, of the block to allocate. The actual
  *            allocated block might be larger due to padding, etc.
- * \returns Pointer to newly-allocated block, NULL if out of memory.
+ * \returns a pointer to thenewly-allocated block, NULL if out of memory.
  *
  * \sa SDL_SIMDAlignment
  * \sa SDL_SIMDRealloc
@@ -481,7 +481,7 @@ extern DECLSPEC void * SDLCALL SDL_SIMDAlloc(const size_t len);
  *            allocated block might be larger due to padding, etc. Passing 0
  *            will return a non-NULL pointer, assuming the system isn't out of
  *            memory.
- * \returns Pointer to newly-reallocated block, NULL if out of memory.
+ * \returns a pointer to the newly-reallocated block, NULL if out of memory.
  *
  * \sa SDL_SIMDAlignment
  * \sa SDL_SIMDAlloc

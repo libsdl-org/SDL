@@ -59,7 +59,7 @@ extern "C" {
  *               ::SDL_WINDOW_MAXIMIZED,  ::SDL_WINDOW_MINIMIZED,
  *       ::SDL_WINDOW_BORDERLESS is always set, and ::SDL_WINDOW_FULLSCREEN is always unset.
  *
- *  \return The window created, or NULL if window creation failed.
+ *  \return the window created, or NULL if window creation failed.
  *
  *  \sa SDL_DestroyWindow()
  */

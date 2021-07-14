@@ -1244,7 +1244,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_GetWindowKeyboardGrab(SDL_Window * window);
  * Get a window's mouse grab mode.
  *
  * \param window the window to query
- * \returns This returns SDL_TRUE if mouse is grabbed, and SDL_FALSE otherwise.
+ * \returns SDL_TRUE if mouse is grabbed, and SDL_FALSE otherwise.
  *
  * \sa SDL_SetWindowKeyboardGrab
  * \sa SDL_GetWindowGrab

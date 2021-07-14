@@ -129,7 +129,7 @@ extern "C" {
  * \param argv Array of command line parameters
  * \param flags Flags indicating which subsystem to initialize (i.e. SDL_INIT_VIDEO | SDL_INIT_AUDIO)
  *
- * \returns Returns a newly allocated common state object.
+ * \returns a newly allocated common state object.
  */
 SDLTest_CommonState *SDLTest_CommonCreateState(char **argv, Uint32 flags);
 
@@ -139,7 +139,7 @@ SDLTest_CommonState *SDLTest_CommonCreateState(char **argv, Uint32 flags);
  * \param state The common state describing the test window to create.
  * \param index The index of the argument to process in argv[].
  *
- * \returns The number of arguments processed (i.e. 1 for --fullscreen, 2 for --video [videodriver], or -1 on error.
+ * \returns the number of arguments processed (i.e. 1 for --fullscreen, 2 for --video [videodriver], or -1 on error.
  */
 int SDLTest_CommonArg(SDLTest_CommonState * state, int index);
 
@@ -167,7 +167,7 @@ void SDLTest_CommonLogUsage(SDLTest_CommonState * state, const char *argv0, cons
  *  those strings' memory is freed and can no longer be used.
  *
  * \param state The common state describing the test window to create.
- * \returns String with usage information
+ * \returns a string with usage information
  */
 const char *SDLTest_CommonUsage(SDLTest_CommonState * state);
 
@@ -176,7 +176,7 @@ const char *SDLTest_CommonUsage(SDLTest_CommonState * state);
  *
  * \param state The common state describing the test window to create.
  *
- * \returns True if initialization succeeded, false otherwise
+ * \returns SDL_TRUE if initialization succeeded, false otherwise
  */
 SDL_bool SDLTest_CommonInit(SDLTest_CommonState * state);
 
@@ -187,7 +187,7 @@ SDL_bool SDLTest_CommonInit(SDLTest_CommonState * state);
  * \param argc argc, as supplied to SDL_main
  * \param argv argv, as supplied to SDL_main
  *
- * \returns False if app should quit, true otherwise.
+ * \returns SDL_FALSE if app should quit, true otherwise.
  */
 SDL_bool SDLTest_CommonDefaultArgs(SDLTest_CommonState * state, const int argc, char **argv);
 

@@ -388,7 +388,7 @@ extern DECLSPEC SDL_GameControllerType SDLCALL SDL_GameControllerGetType(SDL_Gam
  *  For XInput controllers this returns the XInput user index.
  *
  * \param gamecontroller the game controller object to query.
- * \returns player index for controller, or -1 if it's not available.
+ * \returns the player index for controller, or -1 if it's not available.
  */
 extern DECLSPEC int SDLCALL SDL_GameControllerGetPlayerIndex(SDL_GameController *gamecontroller);
 
@@ -406,7 +406,7 @@ extern DECLSPEC void SDLCALL SDL_GameControllerSetPlayerIndex(SDL_GameController
  * If the vendor ID isn't available this function returns 0.
  *
  * \param gamecontroller the game controller object to query.
- * \return USB vendor ID, or zero if unavailable.
+ * \return the USB vendor ID, or zero if unavailable.
  */
 extern DECLSPEC Uint16 SDLCALL SDL_GameControllerGetVendor(SDL_GameController *gamecontroller);
 
@@ -416,7 +416,7 @@ extern DECLSPEC Uint16 SDLCALL SDL_GameControllerGetVendor(SDL_GameController *g
  * If the product ID isn't available this function returns 0.
  *
  * \param gamecontroller the game controller object to query.
- * \return USB product ID, or zero if unavailable.
+ * \return the USB product ID, or zero if unavailable.
  */
 extern DECLSPEC Uint16 SDLCALL SDL_GameControllerGetProduct(SDL_GameController *gamecontroller);
 
@@ -426,7 +426,7 @@ extern DECLSPEC Uint16 SDLCALL SDL_GameControllerGetProduct(SDL_GameController *
  * If the product version isn't available this function returns 0.
  *
  * \param gamecontroller the game controller object to query.
- * \return USB product version, or zero if unavailable.
+ * \return the USB product version, or zero if unavailable.
  */
 extern DECLSPEC Uint16 SDLCALL SDL_GameControllerGetProductVersion(SDL_GameController *gamecontroller);
 
@@ -436,7 +436,7 @@ extern DECLSPEC Uint16 SDLCALL SDL_GameControllerGetProductVersion(SDL_GameContr
  * Returns the serial number of the controller, or NULL if it is not available.
  *
  * \param gamecontroller the game controller object to query.
- * \return Serial number, or NULL if unavailable.
+ * \return the serial number, or NULL if unavailable.
  */
 extern DECLSPEC const char * SDLCALL SDL_GameControllerGetSerial(SDL_GameController *gamecontroller);
 

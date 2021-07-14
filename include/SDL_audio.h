@@ -1032,7 +1032,7 @@ extern DECLSPEC int SDLCALL SDL_QueueAudio(SDL_AudioDeviceID dev, const void *da
  * \param dev the device ID from which we will dequeue audio
  * \param data a pointer into where audio data should be copied
  * \param len the number of bytes (not samples!) to which (data) points
- * \returns number of bytes dequeued, which could be less than requested; call
+ * \returns the number of bytes dequeued, which could be less than requested; call
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 2.0.5.

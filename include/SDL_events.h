@@ -909,9 +909,8 @@ extern DECLSPEC int SDLCALL SDL_PushEvent(SDL_Event * event);
  * \param userdata what was passed as `userdata` to SDL_SetEventFilter()
  *        or SDL_AddEventWatch, etc
  * \param event the event that triggered the callback
- * \returns Filters return 1 to permit event to be added to the queue, and
- *          0 to disallow it. When used with SDL_AddEventWatch, the return
- *          value is ignored.
+ * \returns 1 to permit event to be added to the queue, and 0 to disallow
+ *          it. When used with SDL_AddEventWatch, the return value is ignored.
  *
  * \sa SDL_SetEventFilter
  * \sa SDL_AddEventWatch
@@ -1074,7 +1073,7 @@ extern DECLSPEC Uint8 SDLCALL SDL_EventState(Uint32 type, int state);
  * 0xFFFFFFFF), but is clearer to write.
  *
  * \param numevents the number of events to be allocated
- * \returns The beginning event number, or (Uint32)-1 if there are not enough
+ * \returns the beginning event number, or (Uint32)-1 if there are not enough
  *          user-defined events left.
  *
  * \since This function is available since SDL 2.0.0.

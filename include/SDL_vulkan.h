@@ -114,7 +114,7 @@ extern DECLSPEC int SDLCALL SDL_Vulkan_LoadLibrary(const char *path);
  * This should be called after either calling SDL_Vulkan_LoadLibrary()
  * or creating an SDL_Window with the `SDL_WINDOW_VULKAN` flag.
  *
- * \returns The function pointer for `vkGetInstanceProcAddr` or NULL on error.
+ * \returns the function pointer for `vkGetInstanceProcAddr` or NULL on error.
  */
 extern DECLSPEC void *SDLCALL SDL_Vulkan_GetVkGetInstanceProcAddr(void);
 
