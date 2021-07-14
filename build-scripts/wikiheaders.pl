@@ -28,11 +28,15 @@ sub wordwrap_with_bullet_indent {  # don't call this directly.
     my $str = shift;
     my $retval = '';
 
+    #print("WORDWRAP BULLET ('$bullet'):\n\n$str\n\n");
+
     # You _can't_ (at least with Pandoc) have a bullet item with a newline in
     #  MediaWiki, so _remove_ wrapping!
     if ($wordwrap_mode eq 'mediawiki') {
         $retval = "$bullet$str";
         $retval =~ s/\n/ /gms;
+        $retval =~ s/\s+$//gms;
+        #print("WORDWRAP BULLET DONE:\n\n$retval\n\n");
         return "$retval\n";
     }
 
@@ -104,6 +108,8 @@ sub wordwrap {
     my $retval = '';
 
     #print("\n\nWORDWRAP:\n\n$str\n\n\n");
+
+    $str =~ s/\A\n+//ms;
 
     while ($str =~ s/(.*?)(\`\`\`.*?\`\`\`|\<syntaxhighlight.*?\<\/syntaxhighlight\>)//ms) {
         #print("\n\nWORDWRAP BLOCK:\n\n$1\n\n ===\n\n$2\n\n\n");
