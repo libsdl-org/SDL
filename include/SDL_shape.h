@@ -117,7 +117,7 @@ typedef struct SDL_WindowShapeMode {
  *         not reference a valid shaped window.
  *
  * \sa SDL_WindowShapeMode
- * \sa [[SDL_GetShapedWindowMode.]]
+ * \sa SDL_GetShapedWindowMode
  */
 extern DECLSPEC int SDLCALL SDL_SetWindowShape(SDL_Window *window,SDL_Surface *shape,SDL_WindowShapeMode *shape_mode);
 

@@ -1686,7 +1686,6 @@ extern DECLSPEC SDL_bool SDLCALL SDL_GL_ExtensionSupported(const char
  *
  * \sa SDL_GL_GetAttribute
  * \sa SDL_GL_SetAttribute
- * \sa [[<!-- #Remove this section if empty -->]]
  */
 extern DECLSPEC void SDLCALL SDL_GL_ResetAttributes(void);
 
