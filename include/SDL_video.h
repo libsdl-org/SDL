@@ -1511,7 +1511,7 @@ extern DECLSPEC int SDLCALL SDL_SetWindowHitTest(SDL_Window * window,
                                                  void *callback_data);
 
 /**
- * Request a window to give a signal, e.g. a visual signal, to demand attention from the user.
+ * Request a window to demand attention from the user.
  *
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
