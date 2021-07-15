@@ -9,8 +9,9 @@ jobs:
     strategy:
       matrix:
         platform:
-        - { name: Windows (x64), os: windows-latest }
+        - { name: Windows (x64), os: windows-latest, flags: -A x64 }
         - { name: Windows (x86), os: windows-latest, flags: -A Win32 }
+        - { name: Windows (ARM64), os: windows-latest, flags: -A ARM64 }
         - { name: Linux,   os: ubuntu-20.04, flags: -GNinja }
         - { name: MacOS,   os: macos-latest }
     steps:
