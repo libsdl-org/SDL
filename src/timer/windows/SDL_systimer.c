@@ -33,6 +33,10 @@
 static DWORD start = 0;
 static BOOL ticks_started = FALSE;
 
+#ifndef __WINRT__
+    static UINT timer_period = 0;
+#endif
+
 /* Store if a high-resolution performance counter exists on the system */
 static BOOL hires_timer_available;
 /* The first high-resolution ticks value of the application */
@@ -44,8 +48,6 @@ static void
 SDL_SetSystemTimerResolution(const UINT uPeriod)
 {
 #ifndef __WINRT__
-    static UINT timer_period = 0;
-
     if (uPeriod != timer_period) {
         if (timer_period) {
             timeEndPeriod(timer_period);
