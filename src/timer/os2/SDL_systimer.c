@@ -103,6 +103,13 @@ SDL_GetPerformanceFrequency(void)
     return (ulTmrFreq == 0)? 1000 : (Uint64)ulTmrFreq;
 }
 
+Uint32
+SDL_GetSchedulerPrecision(void)
+{
+	SDL_Unsupported();
+	return 0;
+}
+
 void
 SDL_Delay(Uint32 ms)
 {

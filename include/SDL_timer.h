@@ -90,6 +90,15 @@ extern DECLSPEC Uint64 SDLCALL SDL_GetPerformanceCounter(void);
 extern DECLSPEC Uint64 SDLCALL SDL_GetPerformanceFrequency(void);
 
 /**
+ * Gets the precision of the system scheduler.
+ *
+ * \returns the precision of the system scheduler in microseconds, or 0 on failure.
+ *
+ * \sa SDL_GetSchedulerPrecision
+ */
+extern DECLSPEC Uint32 SDLCALL SDL_GetSchedulerPrecision(void);
+
+/**
  * Wait a specified number of milliseconds before returning.
  *
  * This function waits a specified number of milliseconds before returning. It

@@ -27,6 +27,10 @@
 #include <unistd.h>
 #include <errno.h>
 
+#ifdef __LINUX__
+#include <sys/utsname.h>
+#endif
+
 #include "SDL_timer.h"
 #include "SDL_hints.h"
 #include "../SDL_timer_c.h"
@@ -182,9 +186,60 @@ SDL_GetPerformanceFrequency(void)
         freq /= mach_base_info.numer;
         return freq;
 #endif
-    } 
-        
+    }
+
     return 1000000;
+}
+
+Uint32
+SDL_GetSchedulerPrecision(void)
+{
+#if defined(__APPLE__)
+	/** https://developer.apple.com/library/archive/technotes/tn2169/_index.html
+	 *
+	 * If an otherwise unloaded machine or device is consistently
+ 	 * missing your scheduled time by more than 500 microseconds, that
+ 	 * should be considered an error, please file a bug with Apple.
+	 */
+	return 500;
+#elif defined(__LINUX__)
+	/** Amazingly, UNIX does not provide a system call to query
+	 *  the scheduler timing, so we have to search the boot config.
+	 */
+	FILE *fp;
+	struct utsname name;
+	char hz_search_command[286] = "grep CONFIG_HZ= /boot/config-";
+	char grep_result[256] = "\0";
+	char hz_string[16] = "\0";
+	Uint32 hz_result;
+
+	uname(&name);
+	SDL_strlcat(hz_search_command, name.release, sizeof(hz_search_command));
+
+	fp = popen(hz_search_command, "r");
+	if (fp == NULL)
+	{
+		SDL_SetError("Failed to grep!");
+		return 0;
+	}
+
+	fgets(grep_result, sizeof(grep_result), fp);
+	pclose(fp);
+
+	if (grep_result[0] == '\0')
+	{
+		SDL_SetError("CONFIG_HZ not found!");
+		return 0;
+	}
+
+	SDL_sscanf(grep_result, "CONFIG_HZ=%s", hz_string);
+	hz_result = strtoul(hz_string, NULL, 10);
+
+	return 1000000 / hz_result;
+#else
+	SDL_Unsupported();
+	return 0;
+#endif
 }
 
 void

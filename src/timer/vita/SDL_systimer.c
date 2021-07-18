@@ -77,6 +77,13 @@ SDL_GetPerformanceFrequency(void)
     return 1000000;
 }
 
+Uint32
+SDL_GetSchedulerPrecision(void)
+{
+	SDL_Unsupported();
+	return 0;
+}
+
 void SDL_Delay(Uint32 ms)
 {
     const Uint32 max_delay = 0xffffffffUL / 1000;

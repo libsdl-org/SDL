@@ -879,3 +879,4 @@ SDL_DYNAPI_PROC(void,SDL_SetWindowAlwaysOnTop,(SDL_Window *a, SDL_bool b),(a,b),
 SDL_DYNAPI_PROC(int,SDL_FlashWindow,(SDL_Window *a, Uint32 b),(a, b),return)
 SDL_DYNAPI_PROC(int,SDL_GameControllerSendEffect,(SDL_GameController *a, const void *b, int c),(a,b,c),return)
 SDL_DYNAPI_PROC(int,SDL_JoystickSendEffect,(SDL_Joystick *a, const void *b, int c),(a,b,c),return)
+SDL_DYNAPI_PROC(Uint32,SDL_GetSchedulerPrecision,(void),(),return)
