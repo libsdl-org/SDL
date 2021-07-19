@@ -427,6 +427,8 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
     /* For now, simply use the first plane. */
     display_plane_surface_create_info.planeIndex = 0;
     display_plane_surface_create_info.imageExtent = image_size;
+    display_plane_surface_create_info.transform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
+    display_plane_surface_create_info.alphaMode = VK_DISPLAY_PLANE_ALPHA_OPAQUE_BIT_KHR;
     result = vkCreateDisplayPlaneSurfaceKHR(instance,
                                      &display_plane_surface_create_info,
                                      NULL,
