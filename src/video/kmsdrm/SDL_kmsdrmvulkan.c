@@ -394,6 +394,8 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
         /* SDL (and DRM, if we look at drmModeModeInfo vrefresh) uses plain integer Hz for
            display mode refresh rate, but Vulkan expects higher precision. */
         new_mode_parameters.refreshRate = window->fullscreen_mode.refresh_rate * 1000;
+
+        SDL_zero(display_mode_create_info);
         display_mode_create_info.sType = VK_STRUCTURE_TYPE_DISPLAY_MODE_CREATE_INFO_KHR;
         display_mode_create_info.parameters = new_mode_parameters;
         result = vkCreateDisplayModeKHR(gpu,
@@ -419,6 +421,7 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
     image_size.width = window->w;
     image_size.height = window->h;
     
+    SDL_zero(display_plane_surface_create_info);
     display_plane_surface_create_info.sType = VK_STRUCTURE_TYPE_DISPLAY_SURFACE_CREATE_INFO_KHR;
     display_plane_surface_create_info.displayMode = display_mode;
     /* For now, simply use the first plane. */
