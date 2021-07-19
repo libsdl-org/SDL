@@ -115,14 +115,12 @@ SDL_RenderDriver VITA_GXM_RenderDriver = {
     .info = {
         .name = "VITA gxm",
         .flags = SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE,
-        .num_texture_formats = 6,
+        .num_texture_formats = 4,
         .texture_formats = {
             [0] = SDL_PIXELFORMAT_ABGR8888,
             [1] = SDL_PIXELFORMAT_ARGB8888,
-            [2] = SDL_PIXELFORMAT_RGB888,
-            [3] = SDL_PIXELFORMAT_BGR888,
-            [4] = SDL_PIXELFORMAT_RGB565,
-            [5] = SDL_PIXELFORMAT_BGR565
+            [2] = SDL_PIXELFORMAT_RGB565,
+            [3] = SDL_PIXELFORMAT_BGR565
         },
         .max_texture_width = 4096,
         .max_texture_height = 4096,
