@@ -44,6 +44,23 @@
         }                                       \
     } while (0)
 
+void 
+VITA_GL_KeyboardCallback(ScePigletPreSwapData *data)
+{
+    SceCommonDialogUpdateParam commonDialogParam;
+    SDL_zero(commonDialogParam);
+    commonDialogParam.renderTarget.colorFormat = data->colorFormat;
+    commonDialogParam.renderTarget.surfaceType = data->surfaceType;
+    commonDialogParam.renderTarget.colorSurfaceData = data->colorSurfaceData;
+    commonDialogParam.renderTarget.depthSurfaceData = data->depthSurfaceData;
+    commonDialogParam.renderTarget.width = data->width;
+    commonDialogParam.renderTarget.height = data->height;
+    commonDialogParam.renderTarget.strideInPixels = data->strideInPixels;
+    commonDialogParam.displaySyncObject = data->displaySyncObject;
+
+    sceCommonDialogUpdate(&commonDialogParam);
+}
+
 int
 VITA_GL_LoadLibrary(_THIS, const char *path)
 {
@@ -78,6 +95,7 @@ VITA_GL_CreateContext(_THIS, SDL_Window * window)
     EGLSurface surface;
     EGLConfig config;
     EGLint num_configs;
+    PFNEGLPIGLETVITASETPRESWAPCALLBACKSCEPROC preSwapCallback;
     int i;
 
     const EGLint contextAttribs[] = {
@@ -139,6 +157,9 @@ VITA_GL_CreateContext(_THIS, SDL_Window * window)
     _this->gl_data->display = display;
     _this->gl_data->context = context;
     _this->gl_data->surface = surface;
+
+    preSwapCallback = (PFNEGLPIGLETVITASETPRESWAPCALLBACKSCEPROC) eglGetProcAddress("eglPigletVitaSetPreSwapCallbackSCE");
+    preSwapCallback(VITA_GL_KeyboardCallback);
 
     return context;
 }
