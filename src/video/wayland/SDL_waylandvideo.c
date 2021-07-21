@@ -441,45 +441,45 @@ display_handle_global(void *data, struct wl_registry *registry, uint32_t id,
 
     /*printf("WAYLAND INTERFACE: %s\n", interface);*/
 
-    if (strcmp(interface, "wl_compositor") == 0) {
+    if (SDL_strcmp(interface, "wl_compositor") == 0) {
         d->compositor = wl_registry_bind(d->registry, id, &wl_compositor_interface, SDL_min(3, version));
-    } else if (strcmp(interface, "wl_output") == 0) {
+    } else if (SDL_strcmp(interface, "wl_output") == 0) {
         Wayland_add_display(d, id);
-    } else if (strcmp(interface, "wl_seat") == 0) {
+    } else if (SDL_strcmp(interface, "wl_seat") == 0) {
         Wayland_display_add_input(d, id, version);
-    } else if (strcmp(interface, "xdg_wm_base") == 0) {
+    } else if (SDL_strcmp(interface, "xdg_wm_base") == 0) {
         d->shell.xdg = wl_registry_bind(d->registry, id, &xdg_wm_base_interface, 1);
         xdg_wm_base_add_listener(d->shell.xdg, &shell_listener_xdg, NULL);
-    } else if (strcmp(interface, "zxdg_shell_v6") == 0) {
+    } else if (SDL_strcmp(interface, "zxdg_shell_v6") == 0) {
         d->shell.zxdg = wl_registry_bind(d->registry, id, &zxdg_shell_v6_interface, 1);
         zxdg_shell_v6_add_listener(d->shell.zxdg, &shell_listener_zxdg, NULL);
-    } else if (strcmp(interface, "wl_shell") == 0) {
+    } else if (SDL_strcmp(interface, "wl_shell") == 0) {
         d->shell.wl = wl_registry_bind(d->registry, id, &wl_shell_interface, 1);
-    } else if (strcmp(interface, "wl_shm") == 0) {
+    } else if (SDL_strcmp(interface, "wl_shm") == 0) {
         d->shm = wl_registry_bind(registry, id, &wl_shm_interface, 1);
         d->cursor_theme = WAYLAND_wl_cursor_theme_load(NULL, 32, d->shm);
-    } else if (strcmp(interface, "zwp_relative_pointer_manager_v1") == 0) {
+    } else if (SDL_strcmp(interface, "zwp_relative_pointer_manager_v1") == 0) {
         Wayland_display_add_relative_pointer_manager(d, id);
-    } else if (strcmp(interface, "zwp_pointer_constraints_v1") == 0) {
+    } else if (SDL_strcmp(interface, "zwp_pointer_constraints_v1") == 0) {
         Wayland_display_add_pointer_constraints(d, id);
-    } else if (strcmp(interface, "zwp_keyboard_shortcuts_inhibit_manager_v1") == 0) {
+    } else if (SDL_strcmp(interface, "zwp_keyboard_shortcuts_inhibit_manager_v1") == 0) {
         d->key_inhibitor_manager = wl_registry_bind(d->registry, id, &zwp_keyboard_shortcuts_inhibit_manager_v1_interface, 1);
-    } else if (strcmp(interface, "zwp_idle_inhibit_manager_v1") == 0) {
+    } else if (SDL_strcmp(interface, "zwp_idle_inhibit_manager_v1") == 0) {
         d->idle_inhibit_manager = wl_registry_bind(d->registry, id, &zwp_idle_inhibit_manager_v1_interface, 1);
-    } else if (strcmp(interface, "xdg_activation_v1") == 0) {
+    } else if (SDL_strcmp(interface, "xdg_activation_v1") == 0) {
         d->activation_manager = wl_registry_bind(d->registry, id, &xdg_activation_v1_interface, 1);
-    } else if (strcmp(interface, "wl_data_device_manager") == 0) {
+    } else if (SDL_strcmp(interface, "wl_data_device_manager") == 0) {
         Wayland_add_data_device_manager(d, id, version);
-    } else if (strcmp(interface, "zxdg_decoration_manager_v1") == 0) {
+    } else if (SDL_strcmp(interface, "zxdg_decoration_manager_v1") == 0) {
         d->decoration_manager = wl_registry_bind(d->registry, id, &zxdg_decoration_manager_v1_interface, 1);
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
-    } else if (strcmp(interface, "qt_touch_extension") == 0) {
+    } else if (SDL_strcmp(interface, "qt_touch_extension") == 0) {
         Wayland_touch_create(d, id);
-    } else if (strcmp(interface, "qt_surface_extension") == 0) {
+    } else if (SDL_strcmp(interface, "qt_surface_extension") == 0) {
         d->surface_extension = wl_registry_bind(registry, id,
                 &qt_surface_extension_interface, 1);
-    } else if (strcmp(interface, "qt_windowmanager") == 0) {
+    } else if (SDL_strcmp(interface, "qt_windowmanager") == 0) {
         d->windowmanager = wl_registry_bind(registry, id,
                 &qt_windowmanager_interface, 1);
         qt_windowmanager_add_listener(d->windowmanager, &windowmanager_listener, d);

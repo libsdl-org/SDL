@@ -27,7 +27,6 @@
 #include <sys/mman.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <stdlib.h>
 #include <limits.h>
 
 #include "../SDL_sysvideo.h"
@@ -148,14 +147,14 @@ Wayland_CreateCursor(SDL_Surface *surface, int hot_x, int hot_y)
 {
     SDL_Cursor *cursor;
 
-    cursor = calloc(1, sizeof (*cursor));
+    cursor = SDL_calloc(1, sizeof (*cursor));
     if (cursor) {
         SDL_VideoDevice *vd = SDL_GetVideoDevice ();
         SDL_VideoData *wd = (SDL_VideoData *) vd->driverdata;
-        Wayland_CursorData *data = calloc (1, sizeof (Wayland_CursorData));
+        Wayland_CursorData *data = SDL_calloc (1, sizeof (Wayland_CursorData));
         if (!data) {
             SDL_OutOfMemory();
-            free(cursor);
+            SDL_free(cursor);
             return NULL;
         }
         cursor->driverdata = (void *) data;
@@ -170,8 +169,8 @@ Wayland_CreateCursor(SDL_Surface *surface, int hot_x, int hot_y)
                                     surface->h,
                                     WL_SHM_FORMAT_ARGB8888) < 0)
         {
-            free (cursor->driverdata);
-            free (cursor);
+            SDL_free (cursor->driverdata);
+            SDL_free (cursor);
             return NULL;
         }
 
@@ -198,12 +197,12 @@ CreateCursorFromWlCursor(SDL_VideoData *d, struct wl_cursor *wlcursor)
 {
     SDL_Cursor *cursor;
 
-    cursor = calloc(1, sizeof (*cursor));
+    cursor = SDL_calloc(1, sizeof (*cursor));
     if (cursor) {
-        Wayland_CursorData *data = calloc (1, sizeof (Wayland_CursorData));
+        Wayland_CursorData *data = SDL_calloc (1, sizeof (Wayland_CursorData));
         if (!data) {
             SDL_OutOfMemory();
-            free(cursor);
+            SDL_free(cursor);
             return NULL;
         }
         cursor->driverdata = (void *) data;
@@ -309,7 +308,7 @@ Wayland_FreeCursor(SDL_Cursor *cursor)
         wl_surface_destroy(d->surface);
 
     /* Not sure what's meant to happen to shm_data */
-    free (cursor->driverdata);
+    SDL_free (cursor->driverdata);
     SDL_free(cursor);
 }
 

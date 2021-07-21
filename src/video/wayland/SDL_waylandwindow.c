@@ -941,44 +941,44 @@ QtExtendedSurface_OnHintChanged(void *userdata, const char *name,
         return;
     }
 
-    if (strcmp(name, SDL_HINT_QTWAYLAND_CONTENT_ORIENTATION) == 0) {
+    if (SDL_strcmp(name, SDL_HINT_QTWAYLAND_CONTENT_ORIENTATION) == 0) {
         int32_t orientation = QT_EXTENDED_SURFACE_ORIENTATION_PRIMARYORIENTATION;
 
         if (newValue != NULL) {
-            if (strcmp(newValue, "portrait") == 0) {
+            if (SDL_strcmp(newValue, "portrait") == 0) {
                 orientation = QT_EXTENDED_SURFACE_ORIENTATION_PORTRAITORIENTATION;
-            } else if (strcmp(newValue, "landscape") == 0) {
+            } else if (SDL_strcmp(newValue, "landscape") == 0) {
                 orientation = QT_EXTENDED_SURFACE_ORIENTATION_LANDSCAPEORIENTATION;
-            } else if (strcmp(newValue, "inverted-portrait") == 0) {
+            } else if (SDL_strcmp(newValue, "inverted-portrait") == 0) {
                 orientation = QT_EXTENDED_SURFACE_ORIENTATION_INVERTEDPORTRAITORIENTATION;
-            } else if (strcmp(newValue, "inverted-landscape") == 0) {
+            } else if (SDL_strcmp(newValue, "inverted-landscape") == 0) {
                 orientation = QT_EXTENDED_SURFACE_ORIENTATION_INVERTEDLANDSCAPEORIENTATION;
             }
         }
 
         qt_extended_surface_set_content_orientation(qt_extended_surface, orientation);
-    } else if (strcmp(name, SDL_HINT_QTWAYLAND_WINDOW_FLAGS) == 0) {
+    } else if (SDL_strcmp(name, SDL_HINT_QTWAYLAND_WINDOW_FLAGS) == 0) {
         uint32_t flags = 0;
 
         if (newValue != NULL) {
-            char *tmp = strdup(newValue);
+            char *tmp = SDL_strdup(newValue);
             char *saveptr = NULL;
 
-            char *flag = strtok_r(tmp, " ", &saveptr);
+            char *flag = SDL_strtokr(tmp, " ", &saveptr);
             while (flag) {
-                if (strcmp(flag, "OverridesSystemGestures") == 0) {
+                if (SDL_strcmp(flag, "OverridesSystemGestures") == 0) {
                     flags |= QT_EXTENDED_SURFACE_WINDOWFLAG_OVERRIDESSYSTEMGESTURES;
-                } else if (strcmp(flag, "StaysOnTop") == 0) {
+                } else if (SDL_strcmp(flag, "StaysOnTop") == 0) {
                     flags |= QT_EXTENDED_SURFACE_WINDOWFLAG_STAYSONTOP;
-                } else if (strcmp(flag, "BypassWindowManager") == 0) {
+                } else if (SDL_strcmp(flag, "BypassWindowManager") == 0) {
                     // See https://github.com/qtproject/qtwayland/commit/fb4267103d
                     flags |= 4 /* QT_EXTENDED_SURFACE_WINDOWFLAG_BYPASSWINDOWMANAGER */;
                 }
 
-                flag = strtok_r(NULL, " ", &saveptr);
+                flag = SDL_strtokr(NULL, " ", &saveptr);
             }
 
-            free(tmp);
+            SDL_free(tmp);
         }
 
         qt_extended_surface_set_window_flags(qt_extended_surface, flags);

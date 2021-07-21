@@ -202,7 +202,7 @@ keyboard_repeat_set(SDL_WaylandKeyboardRepeat* repeat_info,
     repeat_info->next_repeat_ms = SDL_GetTicks() + repeat_info->repeat_delay;
     repeat_info->scancode = scancode;
     if (has_text) {
-        memcpy(repeat_info->text, text, 8);
+        SDL_memcpy(repeat_info->text, text, 8);
     } else {
         repeat_info->text[0] = '\0';
     }
@@ -528,7 +528,7 @@ pointer_handle_frame(void *data, struct wl_pointer *pointer)
         y = input->pointer_curr_axis_info.y / WAYLAND_WHEEL_AXIS_UNIT;
 
     /* clear pointer_curr_axis_info for next frame */
-    memset(&input->pointer_curr_axis_info, 0, sizeof input->pointer_curr_axis_info);
+    SDL_memset(&input->pointer_curr_axis_info, 0, sizeof input->pointer_curr_axis_info);
 
     if(x == 0.0f && y == 0.0f)
         return;
@@ -929,7 +929,7 @@ seat_handle_capabilities(void *data, struct wl_seat *seat,
 
     if ((caps & WL_SEAT_CAPABILITY_POINTER) && !input->pointer) {
         input->pointer = wl_seat_get_pointer(seat);
-        memset(&input->pointer_curr_axis_info, 0, sizeof input->pointer_curr_axis_info);
+        SDL_memset(&input->pointer_curr_axis_info, 0, sizeof input->pointer_curr_axis_info);
         input->display->pointer = input->pointer;
         wl_pointer_set_user_data(input->pointer, input);
         wl_pointer_add_listener(input->pointer, &pointer_listener,
