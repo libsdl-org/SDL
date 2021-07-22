@@ -2222,8 +2222,8 @@ CheckKMSDRM()
 
             AC_MSG_CHECKING(for kmsdrm dynamic loading support)
             kmsdrm_shared=no
-            drm_lib=[`find_lib "libdrm.so.*" "$DRM_LIBS"`]
-            gbm_lib=[`find_lib "libgbm.so.*" "$DRM_LIBS"`]
+            drm_lib=[`find_lib "libdrm.so.*" "$LIBDRM_LIBS"`]
+            gbm_lib=[`find_lib "libgbm.so.*" "$LIBGBM_LIBS"`]
             if test x$have_loadso != xyes && \
                test x$enable_kmsdrm_shared = xyes; then
                 AC_MSG_WARN([You must have SDL_LoadObject() support for dynamic kmsdrm loading])
@@ -2240,6 +2240,10 @@ CheckKMSDRM()
                 SUMMARY_video="${SUMMARY_video} kmsdrm"
             fi
             AC_MSG_RESULT($kmsdrm_shared)
+            if test x$kmsdrm_shared = xyes; then
+                echo "-- dynamic libdrm -> $drm_lib"
+                echo "-- dynamic libgmb -> $gbm_lib"
+            fi
             have_video=yes
         fi
     fi

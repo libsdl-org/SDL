@@ -22240,8 +22240,8 @@ $as_echo "#define SDL_VIDEO_DRIVER_KMSDRM 1" >>confdefs.h
             { $as_echo "$as_me:${as_lineno-$LINENO}: checking for kmsdrm dynamic loading support" >&5
 $as_echo_n "checking for kmsdrm dynamic loading support... " >&6; }
             kmsdrm_shared=no
-            drm_lib=`find_lib "libdrm.so.*" "$DRM_LIBS"`
-            gbm_lib=`find_lib "libgbm.so.*" "$DRM_LIBS"`
+            drm_lib=`find_lib "libdrm.so.*" "$LIBDRM_LIBS"`
+            gbm_lib=`find_lib "libgbm.so.*" "$LIBGBM_LIBS"`
             if test x$have_loadso != xyes && \
                test x$enable_kmsdrm_shared = xyes; then
                 { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: You must have SDL_LoadObject() support for dynamic kmsdrm loading" >&5
@@ -22272,6 +22272,10 @@ _ACEOF
             fi
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: $kmsdrm_shared" >&5
 $as_echo "$kmsdrm_shared" >&6; }
+            if test x$kmsdrm_shared = xyes; then
+                echo "-- dynamic libdrm -> $drm_lib"
+                echo "-- dynamic libgmb -> $gbm_lib"
+            fi
             have_video=yes
         fi
     fi
