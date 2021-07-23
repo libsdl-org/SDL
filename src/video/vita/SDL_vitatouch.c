@@ -65,7 +65,7 @@ VITA_InitTouch(void)
 
     // Support passing both front and back touch devices in events
     SDL_AddTouch((SDL_TouchID)0, SDL_TOUCH_DEVICE_DIRECT, "Front");
-    SDL_AddTouch((SDL_TouchID)1, SDL_TOUCH_DEVICE_DIRECT,  "Back");
+    SDL_AddTouch((SDL_TouchID)1, SDL_TOUCH_DEVICE_INDIRECT_ABSOLUTE,  "Back");
 }
 
 void 
