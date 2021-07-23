@@ -1,7 +1,6 @@
-Dynamic API
-================================================================================
-Originally posted by Ryan at:
-  https://plus.google.com/103391075724026391227/posts/TB8UfnDYu4U
+# Dynamic API
+
+Originally posted [on Ryan's Google+ account](https://plus.google.com/103391075724026391227/posts/TB8UfnDYu4U).
 
 Background:
 
@@ -35,10 +34,12 @@ So here's what we did:
 SDL now has, internally, a table of function pointers. So, this is what SDL_Init
 now looks like:
 
-    UInt32 SDL_Init(Uint32 flags)
-    {
-        return jump_table.SDL_Init(flags);
-    }
+```c
+UInt32 SDL_Init(Uint32 flags)
+{
+    return jump_table.SDL_Init(flags);
+}
+```
 
 Except that is all done with a bunch of macro magic so we don't have to maintain
 every one of these.
@@ -47,22 +48,26 @@ What is jump_table.SDL_init()? Eventually, that's a function pointer of the real
 SDL_Init() that you've been calling all this time. But at startup, it looks more 
 like this:
 
-    Uint32 SDL_Init_DEFAULT(Uint32 flags)
-    {
-        SDL_InitDynamicAPI();
-        return jump_table.SDL_Init(flags);
-    }
+```c
+Uint32 SDL_Init_DEFAULT(Uint32 flags)
+{
+    SDL_InitDynamicAPI();
+    return jump_table.SDL_Init(flags);
+}
+```
 
 SDL_InitDynamicAPI() fills in jump_table with all the actual SDL function 
-pointers, which means that this _DEFAULT function never gets called again. 
+pointers, which means that this `_DEFAULT` function never gets called again. 
 First call to any SDL function sets the whole thing up.
 
 So you might be asking, what was the value in that? Isn't this what the operating
 system's dynamic loader was supposed to do for us? Yes, but now we've got this 
 level of indirection, we can do things like this:
 
-    export SDL_DYNAMIC_API=/my/actual/libSDL-2.0.so.0
-    ./MyGameThatIsStaticallyLinkedToSDL2
+```bash
+export SDL_DYNAMIC_API=/my/actual/libSDL-2.0.so.0
+./MyGameThatIsStaticallyLinkedToSDL2
+```
 
 And now, this game that is statically linked to SDL, can still be overridden 
 with a newer, or better, SDL. The statically linked one will only be used as 
@@ -94,7 +99,9 @@ SDL's function pointers (which might be statically linked into a program, or in
 a shared library of its own). If so, it loads that library and looks for and 
 calls a single function:
 
-    SInt32 SDL_DYNAPI_entry(Uint32 version, void *table, Uint32 tablesize);
+```c
+SInt32 SDL_DYNAPI_entry(Uint32 version, void *table, Uint32 tablesize);
+```
 
 That function takes a version number (more on that in a moment), the address of
 the jump table, and the size, in bytes, of the table. 
@@ -116,6 +123,7 @@ Steam Client, this isn't a bad option.
 
 Finally, I'm sure some people are reading this and thinking,
 "I don't want that overhead in my project!"  
+
 To which I would point out that the extra function call through the jump table 
 probably wouldn't even show up in a profile, but lucky you: this can all be 
 disabled. You can build SDL without this if you absolutely must, but we would 
