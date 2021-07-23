@@ -1425,7 +1425,7 @@ extern DECLSPEC int SDLCALL SDL_RenderCopyExF(SDL_Renderer * renderer,
  * frequently.
  *
  * `pitch` specifies the number of bytes between rows in the destination
- * `pixels data. This allows you to write to a subrectangle or have padded
+ * `pixels` data. This allows you to write to a subrectangle or have padded
  * rows in the destination. Generally, `pitch` should equal the number of
  * pixels per row in the `pixels` data times the number of bytes per pixel,
  * but it might contain additional padding (for example, 24bit RGB Windows

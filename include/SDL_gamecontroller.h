@@ -532,7 +532,7 @@ typedef enum
  * unless you are parsing SDL_GameController mappings in your own code.
  *
  * Note specially that "righttrigger" and "lefttrigger" map to
- * SDL_CONTROLLER_AXIS_TRIGGERRIGHT and SDL_CONTROLLER_AXIS_TRIGGERLEFT,
+ * `SDL_CONTROLLER_AXIS_TRIGGERRIGHT` and `SDL_CONTROLLER_AXIS_TRIGGERLEFT`,
  * respectively.
  *
  * \param str string representing a SDL_GameController axis

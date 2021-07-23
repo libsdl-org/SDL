@@ -1378,12 +1378,13 @@ extern DECLSPEC int SDLCALL SDL_SetWindowInputFocus(SDL_Window * window);
  * the video hardware. Each table is an array of 256 16-bit quantities,
  * representing a mapping between the input and output for that channel. The
  * input is the index into the array, and the output is the 16-bit gamma value
- * at that index, scaled to the output color precision. Despite the name and
- * signature, this method sets the gamma ramp of the entire display, not an
- * individual window. A window is considered to be owned by the display that
- * contains the window's center pixel. (The index of this display can be
- * retrieved using SDL_GetWindowDisplayIndex().) The gamma ramp set will not
- * follow the window if it is moved to another display.
+ * at that index, scaled to the output color precision.
+ *
+ * Despite the name and signature, this method sets the gamma ramp of the
+ * entire display, not an individual window. A window is considered to be
+ * owned by the display that contains the window's center pixel. (The index of
+ * this display can be retrieved using SDL_GetWindowDisplayIndex().) The gamma
+ * ramp set will not follow the window if it is moved to another display.
  *
  * \param window the window used to select the display whose gamma ramp will
  *               be changed
