@@ -531,6 +531,10 @@ typedef enum
  * SDL_GameController mapping. You do not normally need to call this function
  * unless you are parsing SDL_GameController mappings in your own code.
  *
+ * Note specially that "righttrigger" and "lefttrigger" map to
+ * SDL_CONTROLLER_AXIS_TRIGGERRIGHT and SDL_CONTROLLER_AXIS_TRIGGERLEFT,
+ * respectively.
+ *
  * \param str string representing a SDL_GameController axis
  * \returns the SDL_GameControllerAxis enum corresponding to the input string,
  *          or `SDL_CONTROLLER_AXIS_INVALID` if no match was found.
