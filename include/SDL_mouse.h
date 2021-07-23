@@ -255,7 +255,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_GetRelativeMouseMode(void);
  *
  * - data=0, mask=1: white
  * - data=1, mask=1: black
- * - data=0, mask=1: transparent
+ * - data=0, mask=0: transparent
  * - data=1, mask=0: inverted color if possible, black if not.
  *
  * Cursors created with this function must be freed with SDL_FreeCursor().
