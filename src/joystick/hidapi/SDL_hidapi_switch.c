@@ -491,6 +491,64 @@ static SDL_bool WriteProprietary(SDL_DriverSwitch_Context *ctx, ESwitchProprieta
     return SDL_FALSE;
 }
 
+static Uint8 EncodeRumbleHighAmplitude(Uint16 amplitude) {
+    /* More information about these values can be found here:
+     * https://github.com/dekuNukem/Nintendo_Switch_Reverse_Engineering/blob/master/rumble_data_table.md
+     */
+    Uint16 hfa[101][2] = { {0, 0x0},{514, 0x2},{775, 0x4},{921, 0x6},{1096, 0x8},{1303, 0x0a},{1550, 0x0c},
+        {1843, 0x0e},{2192, 0x10},{2606, 0x12},{3100, 0x14},{3686, 0x16},{4383, 0x18},{5213, 0x1a},
+        {6199, 0x1c},{7372, 0x1e},{7698, 0x20},{8039, 0x22},{8395, 0x24},{8767, 0x26},{9155, 0x28},
+        {9560, 0x2a},{9984, 0x2c},{10426, 0x2e},{10887, 0x30},{11369, 0x32},{11873, 0x34},{12398, 0x36},
+        {12947, 0x38},{13520, 0x3a},{14119, 0x3c},{14744, 0x3e},{15067, 0x40},{15397, 0x42},{15734, 0x44},
+        {16079, 0x46},{16431, 0x48},{16790, 0x4a},{17158, 0x4c},{17534, 0x4e},{17918, 0x50},{18310, 0x52},
+        {18711, 0x54},{19121, 0x56},{19540, 0x58},{19967, 0x5a},{20405, 0x5c},{20851, 0x5e},{21308, 0x60},
+        {21775, 0x62},{22251, 0x64},{22739, 0x66},{23236, 0x68},{23745, 0x6a},{24265, 0x6c},{24797, 0x6e},
+        {25340, 0x70},{25894, 0x72},{26462, 0x74},{27041, 0x76},{27633, 0x78},{28238, 0x7a},{28856, 0x7c},
+        {29488, 0x7e},{30134, 0x80},{30794, 0x82},{31468, 0x84},{32157, 0x86},{32861, 0x88},{33581, 0x8a},
+        {34316, 0x8c},{35068, 0x8e},{35836, 0x90},{36620, 0x92},{37422, 0x94},{38242, 0x96},{39079, 0x98},
+        {39935, 0x9a},{40809, 0x9c},{41703, 0x9e},{42616, 0xa0},{43549, 0xa2},{44503, 0xa4},{45477, 0xa6},
+        {46473, 0xa8},{47491, 0xaa},{48531, 0xac},{49593, 0xae},{50679, 0xb0},{51789, 0xb2},{52923, 0xb4},
+        {54082, 0xb6},{55266, 0xb8},{56476, 0xba},{57713, 0xbc},{58977, 0xbe},{60268, 0xc0},{61588, 0xc2},
+        {62936, 0xc4},{64315, 0xc6},{65535, 0xc8} };
+    int index = 0;
+    for ( ; index < 101; index++) {
+        if (amplitude <= hfa[index][0]) {
+            return (Uint8)hfa[index][1];
+        }
+    }
+    return (Uint8)hfa[100][1];
+}
+
+static Uint16 EncodeRumbleLowAmplitude(Uint16 amplitude) {
+    /* More information about these values can be found here:
+     * https://github.com/dekuNukem/Nintendo_Switch_Reverse_Engineering/blob/master/rumble_data_table.md
+     */
+    Uint16 lfa[101][2] = { {0, 0x0040},{514, 0x8040},{775, 0x0041},{921, 0x8041},{1096, 0x0042},
+        {1303, 0x8042},{1550, 0x0043},{1843, 0x8043},{2192, 0x0044},{2606, 0x8044},{3100, 0x0045},
+        {3686, 0x8045},{4383, 0x0046},{5213, 0x8046},{6199, 0x0047},{7372, 0x8047},{7698, 0x0048},
+        {8039, 0x8048},{8395, 0x0049},{8767, 0x8049},{9155, 0x004a},{9560, 0x804a},{9984, 0x004b},
+        {10426, 0x804b},{10887, 0x004c},{11369, 0x804c},{11873, 0x004d},{12398, 0x804d},{12947, 0x004e},
+        {13520, 0x804e},{14119, 0x004f},{14744, 0x804f},{15067, 0x0050},{15397, 0x8050},{15734, 0x0051},
+        {16079, 0x8051},{16431, 0x0052},{16790, 0x8052},{17158, 0x0053},{17534, 0x8053},{17918, 0x0054},
+        {18310, 0x8054},{18711, 0x0055},{19121, 0x8055},{19540, 0x0056},{19967, 0x8056},{20405, 0x0057},
+        {20851, 0x8057},{21308, 0x0058},{21775, 0x8058},{22251, 0x0059},{22739, 0x8059},{23236, 0x005a},
+        {23745, 0x805a},{24265, 0x005b},{24797, 0x805b},{25340, 0x005c},{25894, 0x805c},{26462, 0x005d},
+        {27041, 0x805d},{27633, 0x005e},{28238, 0x805e},{28856, 0x005f},{29488, 0x805f},{30134, 0x0060},
+        {30794, 0x8060},{31468, 0x0061},{32157, 0x8061},{32861, 0x0062},{33581, 0x8062},{34316, 0x0063},
+        {35068, 0x8063},{35836, 0x0064},{36620, 0x8064},{37422, 0x0065},{38242, 0x8065},{39079, 0x0066},
+        {39935, 0x8066},{40809, 0x0067},{41703, 0x8067},{42616, 0x0068},{43549, 0x8068},{44503, 0x0069},
+        {45477, 0x8069},{46473, 0x006a},{47491, 0x806a},{48531, 0x006b},{49593, 0x806b},{50679, 0x006c},
+        {51789, 0x806c},{52923, 0x006d},{54082, 0x806d},{55266, 0x006e},{56476, 0x806e},{57713, 0x006f},
+        {58977, 0x806f},{60268, 0x0070},{61588, 0x8070},{62936, 0x0071},{64315, 0x8071},{65535, 0x0072} };
+    int index = 0;
+    for (; index < 101; index++) {
+        if (amplitude <= lfa[index][0]) {
+            return lfa[index][1];
+        }
+    }
+    return lfa[100][1];
+}
+
 static void SetNeutralRumble(SwitchRumbleData_t *pRumble)
 {
     pRumble->rgucData[0] = 0x00;
@@ -941,19 +999,15 @@ HIDAPI_DriverSwitch_ActuallyRumbleJoystick(SDL_DriverSwitch_Context *ctx, Uint16
      * https://github.com/dekuNukem/Nintendo_Switch_Reverse_Engineering/blob/master/rumble_data_table.md
      */
     const Uint16 k_usHighFreq = 0x0074;
-    const Uint8  k_ucHighFreqAmp = 0xBE;
+    const Uint8  k_ucHighFreqAmp = EncodeRumbleHighAmplitude(high_frequency_rumble);
     const Uint8  k_ucLowFreq = 0x3D;
-    const Uint16 k_usLowFreqAmp = 0x806F;
+    const Uint16 k_usLowFreqAmp = EncodeRumbleLowAmplitude(low_frequency_rumble);
 
-    if (low_frequency_rumble) {
+    if (low_frequency_rumble || high_frequency_rumble) {
         EncodeRumble(&ctx->m_RumblePacket.rumbleData[0], k_usHighFreq, k_ucHighFreqAmp, k_ucLowFreq, k_usLowFreqAmp);
-    } else {
-        SetNeutralRumble(&ctx->m_RumblePacket.rumbleData[0]);
-    }
-
-    if (high_frequency_rumble) {
         EncodeRumble(&ctx->m_RumblePacket.rumbleData[1], k_usHighFreq, k_ucHighFreqAmp, k_ucLowFreq, k_usLowFreqAmp);
     } else {
+        SetNeutralRumble(&ctx->m_RumblePacket.rumbleData[0]);
         SetNeutralRumble(&ctx->m_RumblePacket.rumbleData[1]);
     }
 
