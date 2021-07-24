@@ -2346,9 +2346,9 @@ if(NOT WINDOWS OR CYGWIN OR MINGW)
   set(prefix ${CMAKE_INSTALL_PREFIX})
 
   set(exec_prefix "\${prefix}")
-  set(libdir "\${exec_prefix}/lib${LIB_SUFFIX}")
-  set(bindir "\${exec_prefix}/bin")
-  set(includedir "\${prefix}/include")
+  set(libdir "${CMAKE_INSTALL_LIBDIR}")
+  set(bindir "${CMAKE_INSTALL_BINDIR}")
+  set(includedir "${CMAKE_INSTALL_INCLUDEDIR}")
   if(SDL_STATIC)
     set(ENABLE_STATIC_TRUE "")
     set(ENABLE_STATIC_FALSE "#")
@@ -2538,7 +2538,7 @@ if(NOT WINDOWS_STORE)
 add_library(SDL2main STATIC ${SDLMAIN_SOURCES})
 # alias target for in-tree builds
 add_library(SDL2::SDL2main ALIAS SDL2main)
-target_include_directories(SDL2main PUBLIC "$<BUILD_INTERFACE:${SDL2_SOURCE_DIR}/include>" $<INSTALL_INTERFACE:include> $<INSTALL_INTERFACE:include/SDL2>)
+target_include_directories(SDL2main PUBLIC "$<BUILD_INTERFACE:${SDL2_SOURCE_DIR}/include>" $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}> $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/SDL2>)
 set(_INSTALL_LIBS "SDL2main")
 if (NOT ANDROID)
   set_target_properties(SDL2main PROPERTIES DEBUG_POSTFIX "${SDL_CMAKE_DEBUG_POSTFIX}")
@@ -2582,7 +2582,7 @@ if(SDL_SHARED)
   endif()
   set(_INSTALL_LIBS "SDL2" ${_INSTALL_LIBS})
   target_link_libraries(SDL2 PRIVATE ${EXTRA_LIBS} ${EXTRA_LDFLAGS})
-  target_include_directories(SDL2 PUBLIC "$<BUILD_INTERFACE:${SDL2_SOURCE_DIR}/include>" $<INSTALL_INTERFACE:include> $<INSTALL_INTERFACE:include/SDL2>)
+  target_include_directories(SDL2 PUBLIC "$<BUILD_INTERFACE:${SDL2_SOURCE_DIR}/include>" $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}> $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/SDL2>)
   if(ANDROID)
     target_include_directories(SDL2 PRIVATE ${ANDROID_NDK}/sources/android/cpufeatures)
   else()
@@ -2656,15 +2656,15 @@ endif()
 
 ##### Installation targets #####
 install(TARGETS ${_INSTALL_LIBS} EXPORT SDL2Targets
-  LIBRARY DESTINATION "lib${LIB_SUFFIX}"
-  ARCHIVE DESTINATION "lib${LIB_SUFFIX}"
-  RUNTIME DESTINATION bin)
+  LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}${LIB_SUFFIX}"
+  ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}${LIB_SUFFIX}"
+  RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
 
 ##### Export files #####
 if (WINDOWS)
   set(PKG_PREFIX "cmake")
 else ()
-  set(PKG_PREFIX "lib${LIB_SUFFIX}/cmake/SDL2")
+  set(PKG_PREFIX "${CMAKE_INSTALL_LIBDIR}${LIB_SUFFIX}/cmake/SDL2")
 endif ()
 
 include(CMakePackageConfigHelpers)
@@ -2693,7 +2693,7 @@ foreach(_FNAME ${BIN_INCLUDE_FILES})
   list(REMOVE_ITEM INCLUDE_FILES ${SDL2_SOURCE_DIR}/include/${_INCNAME})
 endforeach()
 list(APPEND INCLUDE_FILES ${BIN_INCLUDE_FILES})
-install(FILES ${INCLUDE_FILES} DESTINATION include/SDL2)
+install(FILES ${INCLUDE_FILES} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/SDL2)
 
 string(TOUPPER "${CMAKE_BUILD_TYPE}" UPPER_BUILD_TYPE)
 if (UPPER_BUILD_TYPE MATCHES DEBUG)
@@ -2711,7 +2711,7 @@ if(NOT (WINDOWS OR CYGWIN OR MINGW))
           execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
             \"lib${SONAME}${SOPOSTFIX}${SOEXT}\" \"libSDL2${SOPOSTFIX}${SOEXT}\"
             WORKING_DIRECTORY \"${SDL2_BINARY_DIR}\")")
-        install(FILES ${SDL2_BINARY_DIR}/libSDL2${SOPOSTFIX}${SOEXT} DESTINATION "lib${LIB_SUFFIX}")
+        install(FILES ${SDL2_BINARY_DIR}/libSDL2${SOPOSTFIX}${SOEXT} DESTINATION "${CMAKE_INSTALL_LIBDIR}${LIB_SUFFIX}")
     endif()
   endif()
   if(FREEBSD)
@@ -2719,9 +2719,9 @@ if(NOT (WINDOWS OR CYGWIN OR MINGW))
     install(FILES ${SDL2_BINARY_DIR}/sdl2.pc DESTINATION "libdata/pkgconfig")
   else()
     install(FILES ${SDL2_BINARY_DIR}/sdl2.pc
-      DESTINATION "lib${LIB_SUFFIX}/pkgconfig")
+      DESTINATION "${CMAKE_INSTALL_LIBDIR}${LIB_SUFFIX}/pkgconfig")
   endif()
-  install(PROGRAMS ${SDL2_BINARY_DIR}/sdl2-config DESTINATION bin)
+  install(PROGRAMS ${SDL2_BINARY_DIR}/sdl2-config DESTINATION "${CMAKE_INSTALL_BINDIR}")
   # TODO: what about the .spec file? Is it only needed for RPM creation?
   install(FILES "${SDL2_SOURCE_DIR}/sdl2.m4" DESTINATION "${CMAKE_INSTALL_FULL_DATAROOTDIR}/aclocal")
 endif()
