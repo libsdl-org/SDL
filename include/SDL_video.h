@@ -188,6 +188,9 @@ typedef enum
     SDL_DISPLAYEVENT_DISCONNECTED   /**< Display has been removed from the system */
 } SDL_DisplayEventID;
 
+/**
+ *  \brief Display orientation
+ */
 typedef enum
 {
     SDL_ORIENTATION_UNKNOWN,            /**< The display orientation can't be determined */
@@ -196,6 +199,16 @@ typedef enum
     SDL_ORIENTATION_PORTRAIT,           /**< The display is in portrait mode */
     SDL_ORIENTATION_PORTRAIT_FLIPPED    /**< The display is in portrait mode, upside down */
 } SDL_DisplayOrientation;
+
+/**
+ *  \brief Window flash operation
+ */
+typedef enum
+{
+    SDL_FLASH_CANCEL,                   /**< Cancel any window flash state */
+    SDL_FLASH_BRIEFLY,                  /**< Flash the window briefly to get attention */
+    SDL_FLASH_UNTIL_FOCUSED,            /**< Flash the window until it gets focus */
+} SDL_FlashOperation;
 
 /**
  *  \brief An opaque handle to an OpenGL context.
@@ -1511,10 +1524,11 @@ extern DECLSPEC int SDLCALL SDL_SetWindowHitTest(SDL_Window * window,
  * Request a window to demand attention from the user.
  *
  * \param window the window to be flashed
+ * \param the flash operation
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  */
-extern DECLSPEC int SDLCALL SDL_FlashWindow(SDL_Window * window);
+extern DECLSPEC int SDLCALL SDL_FlashWindow(SDL_Window * window, SDL_FlashOperation operation);
 
 /**
  * Destroy a window.

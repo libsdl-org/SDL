@@ -1441,15 +1441,6 @@ extern "C" {
 #define SDL_HINT_WAVE_TRUNCATION   "SDL_WAVE_TRUNCATION"
 
 /**
- *  \brief  Controls the number of times a window flashes with SDL_FlashWindow()
- *
- *  On Windows, if this variable is set, the SDL_FlashWindow() call will flash
- *  the specified number of times. Otherwise the window will flash until it
- *  becomes the foreground window.
- */
-#define SDL_HINT_WINDOW_FLASH_COUNT "SDL_WINDOW_FLASH_COUNT"
-
-/**
  * \brief Tell SDL not to name threads on Windows with the 0x406D1388 Exception.
  *        The 0x406D1388 Exception is a trick used to inform Visual Studio of a
  *        thread's name, but it tends to cause problems with other debuggers,

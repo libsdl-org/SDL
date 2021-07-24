@@ -1064,19 +1064,26 @@ WIN_AcceptDragAndDrop(SDL_Window * window, SDL_bool accept)
 }
 
 int
-WIN_FlashWindow(_THIS, SDL_Window * window)
+WIN_FlashWindow(_THIS, SDL_Window * window, SDL_FlashOperation operation)
 {
     FLASHWINFO desc;
-    const char *hint = SDL_GetHint(SDL_HINT_WINDOW_FLASH_COUNT);
 
     SDL_zero(desc);
     desc.cbSize = sizeof(desc);
     desc.hwnd = ((SDL_WindowData *) window->driverdata)->hwnd;
-    desc.dwFlags = FLASHW_TRAY;
-    if (hint && *hint) {
-        desc.uCount = SDL_atoi(hint);
-    } else {
-        desc.dwFlags |= FLASHW_TIMERNOFG;
+    switch (operation) {
+    case SDL_FLASH_CANCEL:
+        desc.dwFlags = FLASHW_STOP;
+        break;
+    case SDL_FLASH_BRIEFLY:
+        desc.dwFlags = FLASHW_TRAY;
+        desc.uCount = 1;
+        break;
+    case SDL_FLASH_UNTIL_FOCUSED:
+        desc.dwFlags = (FLASHW_TRAY | FLASHW_TIMERNOFG);
+        break;
+    default:
+        return SDL_Unsupported();
     }
 
     FlashWindowEx(&desc);

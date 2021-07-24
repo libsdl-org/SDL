@@ -196,7 +196,7 @@ static void UpdateMouseGrab()
 
 static int SetGCMouseRelativeMode(SDL_bool enabled)
 {
-	mouse_relative_mode = enabled;
+    mouse_relative_mode = enabled;
     UpdateMouseGrab();
     return 0;
 }

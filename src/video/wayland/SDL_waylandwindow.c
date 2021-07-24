@@ -920,7 +920,7 @@ Wayland_RaiseWindow(_THIS, SDL_Window *window)
 }
 
 int
-Wayland_FlashWindow(_THIS, SDL_Window *window)
+Wayland_FlashWindow(_THIS, SDL_Window *window, SDL_FlashOperation operation)
 {
     Wayland_activate_window(_this->driverdata,
                             window->driverdata,

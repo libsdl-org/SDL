@@ -37,7 +37,7 @@ static const char *video_usage[] = {
     "[--scale N]", "[--depth N]", "[--refresh R]", "[--vsync]", "[--noframe]",
     "[--resizable]", "[--minimize]", "[--maximize]", "[--grab]", "[--keyboard-grab]",
     "[--shown]", "[--hidden]", "[--input-focus]", "[--mouse-focus]",
-    "[--allow-highdpi]", "[--usable-bounds]"
+    "[--flash-on-focus-loss]", "[--allow-highdpi]", "[--usable-bounds]"
 };
 
 static const char *audio_usage[] = {
@@ -439,6 +439,10 @@ SDLTest_CommonArg(SDLTest_CommonState * state, int index)
     }
     if (SDL_strcasecmp(argv[index], "--mouse-focus") == 0) {
         state->window_flags |= SDL_WINDOW_MOUSE_FOCUS;
+        return 1;
+    }
+    if (SDL_strcasecmp(argv[index], "--flash-on-focus-loss") == 0) {
+        state->flash_on_focus_loss = SDL_TRUE;
         return 1;
     }
     if (SDL_strcasecmp(argv[index], "--grab") == 0) {
@@ -1808,6 +1812,16 @@ SDLTest_CommonEvent(SDLTest_CommonState * state, SDL_Event * event, int *done)
                 }
             }
             break;
+        case SDL_WINDOWEVENT_FOCUS_LOST:
+            if (state->flash_on_focus_loss) {
+                SDL_Window *window = SDL_GetWindowFromID(event->window.windowID);
+                if (window) {
+                    SDL_FlashWindow(window, SDL_FLASH_UNTIL_FOCUSED);
+                }
+            }
+            break;
+        default:
+            break;
         }
         break;
     case SDL_KEYDOWN: {
@@ -1963,7 +1977,7 @@ SDLTest_CommonEvent(SDLTest_CommonState * state, SDL_Event * event, int *done)
                 /* Ctrl-F flash the window */
                 SDL_Window *window = SDL_GetWindowFromID(event->key.windowID);
                 if (window) {
-                    SDL_FlashWindow(window);
+                    SDL_FlashWindow(window, SDL_FLASH_BRIEFLY);
                 }
             }
             break;

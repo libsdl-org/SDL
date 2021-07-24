@@ -2793,12 +2793,12 @@ SDL_GetGrabbedWindow(void)
 }
 
 int
-SDL_FlashWindow(SDL_Window * window)
+SDL_FlashWindow(SDL_Window * window, SDL_FlashOperation operation)
 {
     CHECK_WINDOW_MAGIC(window, -1);
 
     if (_this->FlashWindow) {
-        return _this->FlashWindow(_this, window);
+        return _this->FlashWindow(_this, window, operation);
     }
 
     return SDL_Unsupported();

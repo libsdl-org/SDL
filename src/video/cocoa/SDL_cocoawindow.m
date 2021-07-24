@@ -2117,11 +2117,30 @@ Cocoa_AcceptDragAndDrop(SDL_Window * window, SDL_bool accept)
 }
 
 int
-Cocoa_FlashWindow(_THIS, SDL_Window *window)
+Cocoa_FlashWindow(_THIS, SDL_Window *window, SDL_FlashOperation operation)
 { @autoreleasepool
 {
     /* Note that this is app-wide and not window-specific! */
-    [NSApp requestUserAttention:NSInformationalRequest];
+    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+
+    if (data->flash_request) {
+        [NSApp cancelUserAttentionRequest:data->flash_request];
+        data->flash_request = 0;
+    }
+
+    switch (operation) {
+    case SDL_FLASH_CANCEL:
+        /* Canceled above */
+        break;
+    case SDL_FLASH_BRIEFLY:
+        data->flash_request = [NSApp requestUserAttention:NSInformationalRequest];
+        break;
+    case SDL_FLASH_UNTIL_FOCUSED:
+        data->flash_request = [NSApp requestUserAttention:NSCriticalRequest];
+        break;
+    default:
+        return SDL_Unsupported();
+    }
     return 0;
 }}
 

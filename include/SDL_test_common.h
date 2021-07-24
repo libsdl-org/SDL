@@ -64,6 +64,7 @@ typedef struct
     const char *window_title;
     const char *window_icon;
     Uint32 window_flags;
+    SDL_bool flash_on_focus_loss;
     int window_x;
     int window_y;
     int window_w;
