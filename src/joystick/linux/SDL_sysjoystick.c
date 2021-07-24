@@ -965,6 +965,47 @@ ConfigJoystick(SDL_Joystick *joystick, int fd)
 }
 
 
+/* This is used to do the heavy lifting for LINUX_JoystickOpen and
+   also LINUX_JoystickGetGamepadMapping, so we can query the hardware
+   without adding an opened SDL_Joystick object to the system.
+   This expects `joystick->hwdata` to be allocated and will not free it
+   on error. Returns -1 on error, 0 on success. */
+static int
+PrepareJoystickHwdata(SDL_Joystick *joystick, SDL_joylist_item *item)
+{
+    joystick->hwdata->item = item;
+    joystick->hwdata->guid = item->guid;
+    joystick->hwdata->effect.id = -1;
+    joystick->hwdata->m_bSteamController = item->m_bSteamController;
+    SDL_memset(joystick->hwdata->abs_map, 0xFF, sizeof(joystick->hwdata->abs_map));
+
+    if (item->m_bSteamController) {
+        joystick->hwdata->fd = -1;
+        SDL_GetSteamControllerInputs(&joystick->nbuttons,
+                                     &joystick->naxes,
+                                     &joystick->nhats);
+    } else {
+        const int fd = open(item->path, O_RDWR, 0);
+        if (fd < 0) {
+            return SDL_SetError("Unable to open %s", item->path);
+        }
+
+        joystick->hwdata->fd = fd;
+        joystick->hwdata->fname = SDL_strdup(item->path);
+        if (joystick->hwdata->fname == NULL) {
+            close(fd);
+            return SDL_OutOfMemory();
+        }
+
+        /* Set the joystick to non-blocking read mode */
+        fcntl(fd, F_SETFL, O_NONBLOCK);
+
+        /* Get the number of buttons and axes on the joystick */
+        ConfigJoystick(joystick, fd);
+    }
+}
+
+
 /* Function to open a joystick for use.
    The joystick to open is specified by the device index.
    This should fill the nbuttons and naxes fields of the joystick structure.
@@ -985,39 +1026,11 @@ LINUX_JoystickOpen(SDL_Joystick *joystick, int device_index)
     if (joystick->hwdata == NULL) {
         return SDL_OutOfMemory();
     }
-    joystick->hwdata->item = item;
-    joystick->hwdata->guid = item->guid;
-    joystick->hwdata->effect.id = -1;
-    joystick->hwdata->m_bSteamController = item->m_bSteamController;
-    SDL_memset(joystick->hwdata->abs_map, 0xFF, sizeof(joystick->hwdata->abs_map));
 
-    if (item->m_bSteamController) {
-        joystick->hwdata->fd = -1;
-        SDL_GetSteamControllerInputs(&joystick->nbuttons,
-                                     &joystick->naxes,
-                                     &joystick->nhats);
-    } else {
-        int fd = open(item->path, O_RDWR, 0);
-        if (fd < 0) {
-            SDL_free(joystick->hwdata);
-            joystick->hwdata = NULL;
-            return SDL_SetError("Unable to open %s", item->path);
-        }
-
-        joystick->hwdata->fd = fd;
-        joystick->hwdata->fname = SDL_strdup(item->path);
-        if (joystick->hwdata->fname == NULL) {
-            SDL_free(joystick->hwdata);
-            joystick->hwdata = NULL;
-            close(fd);
-            return SDL_OutOfMemory();
-        }
-
-        /* Set the joystick to non-blocking read mode */
-        fcntl(fd, F_SETFL, O_NONBLOCK);
-
-        /* Get the number of buttons and axes on the joystick */
-        ConfigJoystick(joystick, fd);
+    if (PrepareJoystickHwdata(joystick, item) == -1) {
+        SDL_free(joystick->hwdata);
+        joystick->hwdata = NULL;
+        return -1;  /* SDL_SetError will already have been called */
     }
 
     SDL_assert(item->hwdata == NULL);
@@ -1026,7 +1039,7 @@ LINUX_JoystickOpen(SDL_Joystick *joystick, int device_index)
     /* mark joystick as fresh and ready */
     joystick->hwdata->fresh = SDL_TRUE;
 
-    return (0);
+    return 0;
 }
 
 static int
@@ -1417,17 +1430,31 @@ LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
         return SDL_TRUE;
     }
 
+    /* We temporarily open the device to check how it's configured. Make
+       a fake SDL_Joystick object to do so. */
     joystick = (SDL_Joystick *) SDL_calloc(sizeof(*joystick), 1);
     if (joystick == NULL) {
         SDL_OutOfMemory();
         return SDL_FALSE;
     }
 
-    /* We temporarily open the device to check how it's configured. */
-    if (LINUX_JoystickOpen(joystick, device_index) < 0) {
+    joystick->hwdata = (struct joystick_hwdata *)
+        SDL_calloc(1, sizeof(*joystick->hwdata));
+    if (joystick->hwdata == NULL) {
         SDL_free(joystick);
+        SDL_OutOfMemory();
         return SDL_FALSE;
     }
+
+    if (PrepareJoystickHwdata(joystick, item) == -1) {
+        SDL_free(joystick->hwdata);
+        SDL_free(joystick);
+        return SDL_FALSE;  /* SDL_SetError will already have been called */
+    }
+
+    /* don't assign `item->hwdata` so it's not in any global state. */
+
+    /* it is now safe to call LINUX_JoystickClose on this fake joystick. */
 
     if (!joystick->hwdata->has_key[BTN_GAMEPAD]) {
         /* Not a gamepad according to the specs. */
