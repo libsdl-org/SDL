@@ -1365,6 +1365,13 @@ WIN_PumpEvents(_THIS)
     if ((keystate[SDL_SCANCODE_RSHIFT] == SDL_PRESSED) && !(GetKeyState(VK_RSHIFT) & 0x8000)) {
         SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_RSHIFT);
     }
+    /* The Windows key state gets lost when using Windows+Space or Windows+G shortcuts */
+    if ((keystate[SDL_SCANCODE_LGUI] == SDL_PRESSED) && !(GetKeyState(VK_LWIN) & 0x8000)) {
+        SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_LGUI);
+    }
+    if ((keystate[SDL_SCANCODE_RGUI] == SDL_PRESSED) && !(GetKeyState(VK_RWIN) & 0x8000)) {
+        SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_RGUI);
+    }
 
     /* Update the clipping rect in case someone else has stolen it */
     WIN_UpdateClipCursorForWindows();
