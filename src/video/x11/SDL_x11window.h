@@ -68,6 +68,8 @@ typedef struct
     unsigned long user_time;
     Atom xdnd_req;
     Window xdnd_source;
+    SDL_bool flashing_window;
+    Uint32 flash_cancel_time;
 #if SDL_VIDEO_OPENGL_EGL  
     EGLSurface egl_surface;
 #endif

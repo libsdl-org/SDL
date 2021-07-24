@@ -404,6 +404,9 @@ X11_DispatchFocusIn(_THIS, SDL_WindowData *data)
 #ifdef SDL_USE_IME
     SDL_IME_SetFocus(SDL_TRUE);
 #endif
+    if (data->flashing_window) {
+        X11_FlashWindow(_this, data->window, SDL_FLASH_CANCEL);
+    }
 }
 
 static void
@@ -1548,6 +1551,7 @@ X11_PumpEvents(_THIS)
 {
     SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
     XEvent xevent;
+    int i;
 
     if (data->last_mode_change_deadline) {
         if (SDL_TICKS_PASSED(SDL_GetTicks(), data->last_mode_change_deadline)) {
@@ -1586,6 +1590,15 @@ X11_PumpEvents(_THIS)
 
     /* FIXME: Only need to do this when there are pending focus changes */
     X11_HandleFocusChanges(_this);
+
+    /* FIXME: Only need to do this when there are flashing windows */
+    for (i = 0; i < data->numwindows; ++i) {
+        if (data->windowlist[i] != NULL &&
+            data->windowlist[i]->flash_cancel_time &&
+            SDL_TICKS_PASSED(SDL_GetTicks(), data->windowlist[i]->flash_cancel_time)) {
+            X11_FlashWindow(_this, data->windowlist[i]->window, SDL_FLASH_CANCEL);
+        }
+    }
 }
 
 

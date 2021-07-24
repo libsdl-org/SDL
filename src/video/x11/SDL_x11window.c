@@ -1752,23 +1752,45 @@ int
 X11_FlashWindow(_THIS, SDL_Window * window, SDL_FlashOperation operation)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
-    SDL_DisplayData *displaydata = (SDL_DisplayData *) SDL_GetDisplayForWindow(window)->driverdata;
     Display *display = data->videodata->display;
+    XWMHints *wmhints;
 
-    Atom demands_attention = X11_XInternAtom(display, "_NET_WM_STATE_DEMANDS_ATTENTION", 1);
-    Atom wm_state = X11_XInternAtom(display, "_NET_WM_STATE", 1);
+    wmhints = X11_XGetWMHints(display, data->xwindow);
+    if (!wmhints) {
+        return SDL_SetError("Couldn't get WM hints");
+    }
 
-    XEvent snd_ntfy_ev = {ClientMessage};
-    snd_ntfy_ev.xclient.window = data->xwindow;
-    snd_ntfy_ev.xclient.message_type = wm_state;
-    snd_ntfy_ev.xclient.format = 32;
-    snd_ntfy_ev.xclient.data.l[0] = 1; /* _NET_WM_STATE_ADD */
-    snd_ntfy_ev.xclient.data.l[1] = demands_attention;
-    snd_ntfy_ev.xclient.data.l[2] = 0;
-    snd_ntfy_ev.xclient.data.l[3] = 1; /* normal application */
-    snd_ntfy_ev.xclient.data.l[4] = 0;
-    X11_XSendEvent(display, RootWindow(display, displaydata->screen), False, SubstructureNotifyMask | SubstructureRedirectMask, &snd_ntfy_ev);
+    wmhints->flags &= ~XUrgencyHint;
+    data->flashing_window = SDL_FALSE;
+    data->flash_cancel_time = 0;
 
+    switch (operation) {
+    case SDL_FLASH_CANCEL:
+        /* Taken care of above */
+        break;
+    case SDL_FLASH_BRIEFLY:
+        if (!(window->flags & SDL_WINDOW_INPUT_FOCUS)) {
+            wmhints->flags |= XUrgencyHint;
+            data->flashing_window = SDL_TRUE;
+            /* On Ubuntu 21.04 this causes a dialog to pop up, so leave it up for a full second so users can see it */
+            data->flash_cancel_time = SDL_GetTicks() + 1000;
+            if (!data->flash_cancel_time) {
+                data->flash_cancel_time = 1;
+            }
+        }
+        break;
+    case SDL_FLASH_UNTIL_FOCUSED:
+        if (!(window->flags & SDL_WINDOW_INPUT_FOCUS)) {
+            wmhints->flags |= XUrgencyHint;
+            data->flashing_window = SDL_TRUE;
+        }
+        break;
+    default:
+        break;
+    }
+
+    X11_XSetWMHints(display, data->xwindow, wmhints);
+    X11_XFree(wmhints);
     return 0;
 }
 
