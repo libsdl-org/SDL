@@ -711,7 +711,7 @@ HIDAPI_DriverPS5_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joy
         offset = 1;
     }
 
-    SDL_memcpy(&data[offset], effect, SDL_min((sizeof(data) - offset), size));
+    SDL_memcpy(&data[offset], effect, SDL_min((sizeof(data) - offset), (size_t)size));
 
     if (ctx->is_bluetooth) {
         /* Bluetooth reports need a CRC at the end of the packet (at least on Linux) */
