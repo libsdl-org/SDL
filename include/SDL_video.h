@@ -1510,14 +1510,11 @@ extern DECLSPEC int SDLCALL SDL_SetWindowHitTest(SDL_Window * window,
 /**
  * Request a window to demand attention from the user.
  *
- * \param window the window to request the flashing for
- * \param flash_count number of times the window gets flashed on systems that
- *                    support flashing the window multiple times, like
- *                    Windows, else it is ignored
+ * \param window the window to be flashed
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  */
-extern DECLSPEC int SDLCALL SDL_FlashWindow(SDL_Window * window, Uint32 flash_count);
+extern DECLSPEC int SDLCALL SDL_FlashWindow(SDL_Window * window);
 
 /**
  * Destroy a window.

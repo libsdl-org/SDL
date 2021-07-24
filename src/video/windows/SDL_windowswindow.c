@@ -1064,17 +1064,20 @@ WIN_AcceptDragAndDrop(SDL_Window * window, SDL_bool accept)
 }
 
 int
-WIN_FlashWindow(_THIS, SDL_Window * window, Uint32 flash_count)
+WIN_FlashWindow(_THIS, SDL_Window * window)
 {
-    HWND hwnd;
     FLASHWINFO desc;
+    const char *hint = SDL_GetHint(SDL_HINT_WINDOW_FLASH_COUNT);
 
-    hwnd = ((SDL_WindowData *) window->driverdata)->hwnd;
+    SDL_zero(desc);
     desc.cbSize = sizeof(desc);
-    desc.hwnd = hwnd;
+    desc.hwnd = ((SDL_WindowData *) window->driverdata)->hwnd;
     desc.dwFlags = FLASHW_TRAY;
-    desc.uCount = flash_count; /* flash x times */
-    desc.dwTimeout = 0;
+    if (hint && *hint) {
+        desc.uCount = SDL_atoi(hint);
+    } else {
+        desc.dwFlags |= FLASHW_TIMERNOFG;
+    }
 
     FlashWindowEx(&desc);
 

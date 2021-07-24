@@ -1749,7 +1749,7 @@ X11_AcceptDragAndDrop(SDL_Window * window, SDL_bool accept)
 }
 
 int
-X11_FlashWindow(_THIS, SDL_Window * window, Uint32 flash_count)
+X11_FlashWindow(_THIS, SDL_Window * window)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
     SDL_DisplayData *displaydata = (SDL_DisplayData *) SDL_GetDisplayForWindow(window)->driverdata;

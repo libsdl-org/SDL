@@ -2117,7 +2117,7 @@ Cocoa_AcceptDragAndDrop(SDL_Window * window, SDL_bool accept)
 }
 
 int
-Cocoa_FlashWindow(_THIS, SDL_Window *window, Uint32 flash_count)
+Cocoa_FlashWindow(_THIS, SDL_Window *window)
 { @autoreleasepool
 {
     /* Note that this is app-wide and not window-specific! */

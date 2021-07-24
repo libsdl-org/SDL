@@ -1958,6 +1958,15 @@ SDLTest_CommonEvent(SDLTest_CommonState * state, SDL_Event * event, int *done)
                 SDL_free(text);
             }
             break;
+        case SDLK_f:
+            if (withControl) {
+                /* Ctrl-F flash the window */
+                SDL_Window *window = SDL_GetWindowFromID(event->key.windowID);
+                if (window) {
+                    SDL_FlashWindow(window);
+                }
+            }
+            break;
         case SDLK_g:
             if (withControl) {
                 /* Ctrl-G toggle mouse grab */
