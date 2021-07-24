@@ -1,5 +1,7 @@
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31515.178
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{D69D5741-611F-4E14-8541-1FEE94F50B5A}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SDL2", "SDL\SDL.vcxproj", "{81CE8DAF-EBB2-4761-8E45-B71ABCCA8C68}"
@@ -298,5 +300,8 @@ Global
 		{0D604DFD-AAB6-442C-9368-F91A344146AB} = {D69D5741-611F-4E14-8541-1FEE94F50B5A}
 		{40FB7794-D3C3-4CFE-BCF4-A80C97635682} = {D69D5741-611F-4E14-8541-1FEE94F50B5A}
 		{C4E04D18-EF76-4B42-B4C2-16A1BACDC0A4} = {D69D5741-611F-4E14-8541-1FEE94F50B5A}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {C6B61D42-57D2-49FE-9B23-1FCC5C2BD24D}
 	EndGlobalSection
 EndGlobal
