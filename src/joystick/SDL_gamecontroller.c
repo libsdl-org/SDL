@@ -593,10 +593,6 @@ static ControllerMapping_t *SDL_CreateMappingForHIDAPIController(SDL_JoystickGUI
         if (SDL_IsJoystickXboxSeriesX(vendor, product)) {
             /* XBox Series X Controllers have a share button under the guide button */
             SDL_strlcat(mapping_string, "misc1:b15,", sizeof(mapping_string));
-        } else if ((vendor == USB_VENDOR_AMAZON && product == USB_PRODUCT_AMAZON_LUNA_CONTROLLER) ||
-                   (vendor == BLUETOOTH_VENDOR_AMAZON && product == BLUETOOTH_PRODUCT_LUNA_CONTROLLER)) {
-            /* Amazon Luna Controller has a mic button under the guide button */
-            SDL_strlcat(mapping_string, "misc1:b15,", sizeof(mapping_string));
         } else if (SDL_IsJoystickXboxOneElite(vendor, product)) {
             /* XBox One Elite Controllers have 4 back paddle buttons */
             SDL_strlcat(mapping_string, "paddle1:b15,paddle2:b17,paddle3:b16,paddle4:b18,", sizeof(mapping_string));
@@ -624,12 +620,17 @@ static ControllerMapping_t *SDL_CreateMappingForHIDAPIController(SDL_JoystickGUI
                     SDL_strlcat(mapping_string, "paddle1:b16,paddle3:b18,", sizeof(mapping_string));
                 }
                 break;
+            case SDL_CONTROLLER_TYPE_AMAZON_LUNA:
+                /* Amazon Luna Controller has a mic button under the guide button */
+                SDL_strlcat(mapping_string, "misc1:b15,", sizeof(mapping_string));
+                break;
+            case SDL_CONTROLLER_TYPE_GOOGLE_STADIA:
+                /* The Google Stadia controller has a share button and a Google Assistant button */
+                SDL_strlcat(mapping_string, "misc1:b15,", sizeof(mapping_string));
+                break;
             default:
                 if (vendor == 0 && product == 0) {
                     /* This is a Bluetooth Nintendo Switch Pro controller */
-                    SDL_strlcat(mapping_string, "misc1:b15,", sizeof(mapping_string));
-                } else if (vendor == USB_VENDOR_GOOGLE && product == USB_PRODUCT_GOOGLE_STADIA_CONTROLLER) {
-                    /* The Google Stadia controller has a share button and a Google Assistant button */
                     SDL_strlcat(mapping_string, "misc1:b15,", sizeof(mapping_string));
                 }
                 break;
