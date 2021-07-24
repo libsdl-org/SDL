@@ -820,8 +820,8 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
 
             X11_UpdateKeymap(_this);
             SDL_SendKeymapChangedEvent();
-        } else if (xevent.type == PropertyNotify && videodata && videodata->windowlist) {
-            char* name_of_atom = X11_XGetAtomName(display, xevent.xproperty.atom);
+        } else if (xevent->type == PropertyNotify && videodata && videodata->windowlist) {
+            char* name_of_atom = X11_XGetAtomName(display, xevent->xproperty.atom);
 
             if (SDL_strncmp(name_of_atom, "_ICC_PROFILE", sizeof("_ICC_PROFILE") - 1) == 0) {
                 XWindowAttributes attrib;
