@@ -59,6 +59,77 @@
 #define DEVICE_NOTIFY_WINDOW_HANDLE 0x00000000
 #endif
 
+/* CM_Register_Notification definitions */
+
+#define CR_SUCCESS (0x00000000)
+
+DECLARE_HANDLE(HCMNOTIFICATION);
+typedef HCMNOTIFICATION* PHCMNOTIFICATION;
+
+typedef enum _CM_NOTIFY_FILTER_TYPE {
+    CM_NOTIFY_FILTER_TYPE_DEVICEINTERFACE = 0,
+    CM_NOTIFY_FILTER_TYPE_DEVICEHANDLE,
+    CM_NOTIFY_FILTER_TYPE_DEVICEINSTANCE,
+    CM_NOTIFY_FILTER_TYPE_MAX
+} CM_NOTIFY_FILTER_TYPE, * PCM_NOTIFY_FILTER_TYPE;
+
+typedef struct _CM_NOTIFY_FILTER {
+    DWORD cbSize;
+    DWORD Flags;
+    CM_NOTIFY_FILTER_TYPE FilterType;
+    DWORD Reserved;
+    union {
+        struct {
+            GUID ClassGuid;
+        } DeviceInterface;
+        struct {
+            HANDLE  hTarget;
+        } DeviceHandle;
+        struct {
+            WCHAR InstanceId[200];
+        } DeviceInstance;
+    } u;
+} CM_NOTIFY_FILTER, * PCM_NOTIFY_FILTER;
+
+typedef enum _CM_NOTIFY_ACTION {
+    CM_NOTIFY_ACTION_DEVICEINTERFACEARRIVAL = 0,
+    CM_NOTIFY_ACTION_DEVICEINTERFACEREMOVAL,
+    CM_NOTIFY_ACTION_DEVICEQUERYREMOVE,
+    CM_NOTIFY_ACTION_DEVICEQUERYREMOVEFAILED,
+    CM_NOTIFY_ACTION_DEVICEREMOVEPENDING,
+    CM_NOTIFY_ACTION_DEVICEREMOVECOMPLETE,
+    CM_NOTIFY_ACTION_DEVICECUSTOMEVENT,
+    CM_NOTIFY_ACTION_DEVICEINSTANCEENUMERATED,
+    CM_NOTIFY_ACTION_DEVICEINSTANCESTARTED,
+    CM_NOTIFY_ACTION_DEVICEINSTANCEREMOVED,
+    CM_NOTIFY_ACTION_MAX
+} CM_NOTIFY_ACTION, * PCM_NOTIFY_ACTION;
+
+typedef struct _CM_NOTIFY_EVENT_DATA {
+    CM_NOTIFY_FILTER_TYPE FilterType;
+    DWORD Reserved;
+    union {
+        struct {
+            GUID ClassGuid;
+            WCHAR SymbolicLink[ANYSIZE_ARRAY];
+        } DeviceInterface;
+        struct {
+            GUID EventGuid;
+            LONG NameOffset;
+            DWORD DataSize;
+            BYTE Data[ANYSIZE_ARRAY];
+        } DeviceHandle;
+        struct {
+            WCHAR InstanceId[ANYSIZE_ARRAY];
+        } DeviceInstance;
+    } u;
+} CM_NOTIFY_EVENT_DATA, * PCM_NOTIFY_EVENT_DATA;
+
+typedef DWORD (CALLBACK *PCM_NOTIFY_CALLBACK)(HCMNOTIFICATION hNotify, PVOID Context, CM_NOTIFY_ACTION Action, PCM_NOTIFY_EVENT_DATA EventData, DWORD EventDataSize);
+
+typedef DWORD (WINAPI *CM_Register_NotificationFunc)(PCM_NOTIFY_FILTER pFilter, PVOID pContext, PCM_NOTIFY_CALLBACK pCallback, PHCMNOTIFICATION pNotifyContext);
+typedef DWORD (WINAPI *CM_Unregister_NotificationFunc)(HCMNOTIFICATION NotifyContext);
+
 /* local variables */
 static SDL_bool s_bJoystickThread = SDL_FALSE;
 static SDL_bool s_bWindowsDeviceChanged = SDL_FALSE;
@@ -66,34 +137,65 @@ static SDL_cond *s_condJoystickThread = NULL;
 static SDL_mutex *s_mutexJoyStickEnum = NULL;
 static SDL_Thread *s_joystickThread = NULL;
 static SDL_bool s_bJoystickThreadQuit = SDL_FALSE;
+static GUID GUID_DEVINTERFACE_HID = { 0x4D1E55B2L, 0xF16F, 0x11CF, { 0x88, 0xCB, 0x00, 0x11, 0x11, 0x00, 0x00, 0x30 } };
 
 JoyStick_DeviceData *SYS_Joystick;    /* array to hold joystick ID values */
 
-#ifdef __WINRT__
 
-typedef struct
-{
-    int unused;
-} SDL_DeviceNotificationData;
+static HMODULE cfgmgr32_lib_handle;
+static CM_Register_NotificationFunc CM_Register_Notification;
+static CM_Unregister_NotificationFunc CM_Unregister_Notification;
+static HCMNOTIFICATION s_DeviceNotificationFuncHandle;
 
-static void
-SDL_CleanupDeviceNotification(SDL_DeviceNotificationData *data)
+static DWORD CALLBACK
+SDL_DeviceNotificationFunc(HCMNOTIFICATION hNotify, PVOID context, CM_NOTIFY_ACTION action, PCM_NOTIFY_EVENT_DATA eventData, DWORD event_data_size)
 {
+    if (action == CM_NOTIFY_ACTION_DEVICEINTERFACEARRIVAL ||
+	    action == CM_NOTIFY_ACTION_DEVICEINTERFACEREMOVAL) {
+        s_bWindowsDeviceChanged = SDL_TRUE;
+    }
+    return ERROR_SUCCESS;
 }
 
-static int
-SDL_CreateDeviceNotification(SDL_DeviceNotificationData *data)
+static void
+SDL_CleanupDeviceNotificationFunc(void)
 {
-    return 0;
+    if (cfgmgr32_lib_handle) {
+        if (s_DeviceNotificationFuncHandle) {
+            CM_Unregister_Notification(s_DeviceNotificationFuncHandle);
+            s_DeviceNotificationFuncHandle = NULL;
+        }
+
+        FreeLibrary(cfgmgr32_lib_handle);
+        cfgmgr32_lib_handle = NULL;
+    }
 }
 
 static SDL_bool
-SDL_WaitForDeviceNotification(SDL_DeviceNotificationData *data, SDL_mutex *mutex)
+SDL_CreateDeviceNotificationFunc(void)
 {
+    cfgmgr32_lib_handle = LoadLibraryA("cfgmgr32.dll");
+    if (cfgmgr32_lib_handle) {
+        CM_Register_Notification = (CM_Register_NotificationFunc)GetProcAddress(cfgmgr32_lib_handle, "CM_Register_Notification");
+        CM_Unregister_Notification = (CM_Unregister_NotificationFunc)GetProcAddress(cfgmgr32_lib_handle, "CM_Unregister_Notification");
+        if (CM_Register_Notification && CM_Unregister_Notification) {
+			CM_NOTIFY_FILTER notify_filter;
+
+            SDL_zero(notify_filter);
+			notify_filter.cbSize = sizeof(notify_filter);
+			notify_filter.FilterType = CM_NOTIFY_FILTER_TYPE_DEVICEINTERFACE;
+			notify_filter.u.DeviceInterface.ClassGuid = GUID_DEVINTERFACE_HID;
+			if (CM_Register_Notification(&notify_filter, NULL, SDL_DeviceNotificationFunc, &s_DeviceNotificationFuncHandle) == CR_SUCCESS) {
+                return SDL_TRUE;
+			}
+        }
+    }
+
+    SDL_CleanupDeviceNotificationFunc();
     return SDL_FALSE;
 }
 
-#else /* !__WINRT__ */
+#ifndef __WINRT__
 
 typedef struct
 {
@@ -164,7 +266,6 @@ static int
 SDL_CreateDeviceNotification(SDL_DeviceNotificationData *data)
 {
     DEV_BROADCAST_DEVICEINTERFACE dbh;
-    GUID GUID_DEVINTERFACE_HID = { 0x4D1E55B2L, 0xF16F, 0x11CF, { 0x88, 0xCB, 0x00, 0x11, 0x11, 0x00, 0x00, 0x30 } };
 
     SDL_zerop(data);
 
@@ -227,8 +328,6 @@ SDL_WaitForDeviceNotification(SDL_DeviceNotificationData *data, SDL_mutex *mutex
     SDL_LockMutex(mutex);
     return (lastret != -1) ? SDL_TRUE : SDL_FALSE;
 }
-
-#endif /* __WINRT__ */
 
 static SDL_DeviceNotificationData s_notification_data;
 
@@ -310,9 +409,7 @@ SDL_StopJoystickThread(void)
     s_bJoystickThreadQuit = SDL_TRUE;
     SDL_CondBroadcast(s_condJoystickThread); /* signal the joystick thread to quit */
     SDL_UnlockMutex(s_mutexJoyStickEnum);
-#ifndef __WINRT__
     PostThreadMessage(SDL_GetThreadID(s_joystickThread), WM_QUIT, 0, 0);
-#endif
     SDL_WaitThread(s_joystickThread, NULL); /* wait for it to bugger off */
 
     SDL_DestroyCond(s_condJoystickThread);
@@ -323,6 +420,8 @@ SDL_StopJoystickThread(void)
 
     s_joystickThread = NULL;
 }
+
+#endif /* !__WINRT__ */
 
 void WINDOWS_AddJoystickDevice(JoyStick_DeviceData *device)
 {
@@ -356,15 +455,9 @@ WINDOWS_JoystickInit(void)
 
     WINDOWS_JoystickDetect();
 
-#ifdef __WINRT__
-    /* FIXME: WinRT silently does not support device notifications.
-     * Revisit this if UWP ever adds support in a future release.
-     */
-    s_bJoystickThread = SDL_TRUE;
-    if (SDL_StartJoystickThread() < 0) {
-        return -1;
-    }
-#else
+    SDL_CreateDeviceNotificationFunc();
+
+#ifndef __WINRT__
     s_bJoystickThread = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_THREAD, SDL_FALSE);
     if (s_bJoystickThread) {
         if (SDL_StartJoystickThread() < 0) {
@@ -632,11 +725,15 @@ WINDOWS_JoystickQuit(void)
     }
     SYS_Joystick = NULL;
 
+#ifndef __WINRT__
     if (s_bJoystickThread) {
         SDL_StopJoystickThread();
     } else {
         SDL_CleanupDeviceNotification(&s_notification_data);
     }
+#endif
+
+    SDL_CleanupDeviceNotificationFunc();
 
     SDL_DINPUT_JoystickQuit();
     SDL_XINPUT_JoystickQuit();
