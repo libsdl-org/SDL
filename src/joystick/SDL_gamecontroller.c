@@ -485,7 +485,7 @@ static ControllerMapping_t *SDL_CreateMappingForAndroidController(SDL_JoystickGU
         /* Accelerometer, shouldn't have a game controller mapping */
         return NULL;
     }
-    if (!(button_mask & face_button_mask) || !axis_mask) {
+    if (!(button_mask & face_button_mask)) {
         /* We don't know what buttons or axes are supported, don't make up a mapping */
         return NULL;
     }
