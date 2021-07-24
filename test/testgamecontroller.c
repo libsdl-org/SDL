@@ -554,11 +554,14 @@ main(int argc, char *argv[])
             controller_count++;
             name = SDL_GameControllerNameForIndex(i);
             switch (SDL_GameControllerTypeForIndex(i)) {
-            case SDL_CONTROLLER_TYPE_XBOX360:
-                description = "XBox 360 Controller";
+            case SDL_CONTROLLER_TYPE_AMAZON_LUNA:
+                description = "Amazon Luna Controller";
                 break;
-            case SDL_CONTROLLER_TYPE_XBOXONE:
-                description = "XBox One Controller";
+            case SDL_CONTROLLER_TYPE_GOOGLE_STADIA:
+                description = "Google Stadia Controller";
+                break;
+            case SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO:
+                description = "Nintendo Switch Pro Controller";
                 break;
             case SDL_CONTROLLER_TYPE_PS3:
                 description = "PS3 Controller";
@@ -566,8 +569,14 @@ main(int argc, char *argv[])
             case SDL_CONTROLLER_TYPE_PS4:
                 description = "PS4 Controller";
                 break;
-            case SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO:
-                description = "Nintendo Switch Pro Controller";
+            case SDL_CONTROLLER_TYPE_PS5:
+                description = "PS5 Controller";
+                break;
+            case SDL_CONTROLLER_TYPE_XBOX360:
+                description = "XBox 360 Controller";
+                break;
+            case SDL_CONTROLLER_TYPE_XBOXONE:
+                description = "XBox One Controller";
                 break;
             case SDL_CONTROLLER_TYPE_VIRTUAL:
                 description = "Virtual Game Controller";
