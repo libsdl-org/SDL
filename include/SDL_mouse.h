@@ -150,6 +150,9 @@ extern DECLSPEC Uint32 SDLCALL SDL_GetRelativeMouseState(int *x, int *y);
  *
  * This function generates a mouse motion event.
  *
+ * Note that this function will appear to succeed, but not actually move
+ * the mouse when used over Microsoft Remote Desktop.
+ *
  * \param window the window to move the mouse into, or NULL for the current
  *               mouse focus
  * \param x the x coordinate within the window
@@ -168,6 +171,9 @@ extern DECLSPEC void SDLCALL SDL_WarpMouseInWindow(SDL_Window * window,
  * A failure of this function usually means that it is unsupported by a
  * platform.
  *
+ * Note that this function will appear to succeed, but not actually move
+ * the mouse when used over Microsoft Remote Desktop.
+ *
  * \param x the x coordinate
  * \param y the y coordinate
  * \returns 0 on success or a negative error code on failure; call
@@ -185,6 +191,10 @@ extern DECLSPEC int SDLCALL SDL_WarpMouseGlobal(int x, int y);
  * While the mouse is in relative mode, the cursor is hidden, and the driver
  * will try to report continuous motion in the current window. Only relative
  * motion events will be delivered, the mouse position will not change.
+ *
+ * Note that this function will not be able to provide continuous relative
+ * motion when used over Microsoft Remote Desktop, instead motion is limited
+ * to the bounds of the screen.
  *
  * This function will flush any pending mouse motion.
  *
