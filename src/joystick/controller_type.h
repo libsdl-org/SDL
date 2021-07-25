@@ -51,7 +51,7 @@ typedef enum
 	k_eControllerType_SwitchJoyConLeft = 39,
 	k_eControllerType_SwitchJoyConRight = 40,
 	k_eControllerType_SwitchJoyConPair = 41,
-    k_eControllerType_SwitchInputOnlyController = 42,
+	k_eControllerType_SwitchInputOnlyController = 42,
 	k_eControllerType_MobileTouch = 43,
 	k_eControllerType_XInputSwitchController = 44,  // Client-side only, used to mark Switch-compatible controllers as not supporting Switch controller protocol
 	k_eControllerType_PS5Controller = 45,
@@ -160,7 +160,7 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x1532, 0x1009 ), k_eControllerType_PS4Controller, NULL },	// Razer Raiju 2 Ultimate BT
 	{ MAKE_CONTROLLER_ID( 0x1532, 0x100A ), k_eControllerType_PS4Controller, NULL },	// Razer Raiju 2 Tournament edition BT
 	{ MAKE_CONTROLLER_ID( 0x1532, 0x1100 ), k_eControllerType_PS4Controller, NULL },	// Razer RAION Fightpad - Trackpad, no gyro, lightbar hardcoded to green
-	{ MAKE_CONTROLLER_ID( 0x20d6, 0x792a ), k_eControllerType_PS4Controller, NULL },	// PowerA - Fusion Fight Pad
+	{ MAKE_CONTROLLER_ID( 0x20d6, 0x792a ), k_eControllerType_PS4Controller, NULL },	// PowerA Fusion Fight Pad
 	{ MAKE_CONTROLLER_ID( 0x7545, 0x0104 ), k_eControllerType_PS4Controller, NULL },	// Armor 3 or Level Up Cobra - At least one variant has gyro
 	{ MAKE_CONTROLLER_ID( 0x9886, 0x0025 ), k_eControllerType_PS4Controller, NULL },	// Astro C40
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0207 ), k_eControllerType_PS4Controller, NULL },	// Victrix Pro Fightstick w/ Touchpad for PS4
@@ -578,8 +578,10 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0180 ), k_eControllerType_SwitchInputOnlyController, NULL },  // PDP Faceoff Wired Pro Controller for Nintendo Switch
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0181 ), k_eControllerType_SwitchInputOnlyController, NULL },  // PDP Faceoff Deluxe Wired Pro Controller for Nintendo Switch
 	{ MAKE_CONTROLLER_ID( 0x20d6, 0xa711 ), k_eControllerType_SwitchInputOnlyController, NULL },  // PowerA Wired Controller Plus/PowerA Wired Controller Nintendo GameCube Style
-	{ MAKE_CONTROLLER_ID( 0x20d6, 0xa712 ), k_eControllerType_SwitchInputOnlyController, NULL },  // PowerA - Fusion Fight Pad
-	{ MAKE_CONTROLLER_ID( 0x20d6, 0xa713 ), k_eControllerType_SwitchInputOnlyController, NULL },  // PowerA - Super Mario Controller
+	{ MAKE_CONTROLLER_ID( 0x20d6, 0xa712 ), k_eControllerType_SwitchInputOnlyController, NULL },  // PowerA Nintendo Switch Fusion Fight Pad
+	{ MAKE_CONTROLLER_ID( 0x20d6, 0xa713 ), k_eControllerType_SwitchInputOnlyController, NULL },  // PowerA Super Mario Controller
+	{ MAKE_CONTROLLER_ID( 0x20d6, 0xa714 ), k_eControllerType_SwitchInputOnlyController, NULL },  // PowerA Nintendo Switch Spectra Controller
+	{ MAKE_CONTROLLER_ID( 0x20d6, 0xa716 ), k_eControllerType_SwitchInputOnlyController, NULL },  // PowerA Nintendo Switch Fusion Pro Controller - USB charging, no input
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0186 ), k_eControllerType_SwitchProController, NULL },  // PDP Afterglow Wireless Switch Controller - working gyro. USB doesn't work
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0184 ), k_eControllerType_SwitchInputOnlyController, NULL },  // PDP Faceoff Wired Deluxe+ Audio Controller
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x00aa ), k_eControllerType_SwitchInputOnlyController, NULL },  // HORI Real Arcade Pro V Hayabusa in Switch Mode
