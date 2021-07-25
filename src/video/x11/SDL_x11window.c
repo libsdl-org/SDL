@@ -734,7 +734,7 @@ X11_SetWindowTitle(_THIS, SDL_Window * window)
 
     status = X11_XChangeProperty(display, data->xwindow, _NET_WM_NAME, UTF8_STRING, 8, 0, (const unsigned char *) title, strlen(title));
 
-    if (status != Success) {
+    if (status != 1) {
         char *x11_error = NULL;
         char x11_error_locale[256];
         if (X11_XGetErrorText(display, status, x11_error_locale, sizeof(x11_error_locale)) == Success)
