@@ -81,6 +81,17 @@ case "$host" in
         ;;
 esac
 
+dnl use CXX for linker on Haiku
+case "$host" in
+    *-*-haiku*)
+        LINKER=CXX
+        ;;
+    *)
+        LINKER=CC
+        ;;
+esac
+AC_SUBST(LINKER)
+
 if test x$srcdir != x.; then
     INCLUDE="-Iinclude $INCLUDE"
 elif test -d .git; then
