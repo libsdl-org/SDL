@@ -690,6 +690,7 @@ ALSA_CFLAGS
 POW_LIB
 LIBOBJS
 ALLOCA
+LINKER
 PKG_CONFIG_LIBDIR
 PKG_CONFIG_PATH
 PKG_CONFIG
@@ -892,6 +893,8 @@ enable_dbus
 enable_ime
 enable_ibus
 enable_fcitx
+enable_libdecor
+enable_libdecor_shared
 enable_joystick_mfi
 enable_pthreads
 enable_pthread_sem
@@ -1681,6 +1684,10 @@ Optional Features:
   --enable-ime            enable IME support [default=yes]
   --enable-ibus           enable IBus support [default=yes]
   --enable-fcitx          enable fcitx support [default=yes]
+  --enable-libdecor       use libdecor for Wayland client-side decorations
+                          [default=yes]
+  --enable-libdecor-shared
+                          dynamically load libdecor [default=yes]
   --enable-joystick-mfi   include macOS MFI joystick support [default=yes]
   --enable-pthreads       use POSIX threads for multi-threading
                           [default=maybe]
@@ -16010,6 +16017,16 @@ case "$host" in
         ;;
 esac
 
+case "$host" in
+    *-*-haiku*)
+        LINKER=CXX
+        ;;
+    *)
+        LINKER=CC
+        ;;
+esac
+
+
 if test x$srcdir != x.; then
     INCLUDE="-Iinclude $INCLUDE"
 elif test -d .git; then
@@ -23338,6 +23355,61 @@ $as_echo "$have_fcitx" >&6; }
     fi
 }
 
+CheckLibDecor()
+{
+    # Check whether --enable-libdecor was given.
+if test "${enable_libdecor+set}" = set; then :
+  enableval=$enable_libdecor;
+else
+  enable_libdecor=yes
+fi
+
+    if test x$enable_libdecor = xyes; then
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for libdecor support" >&5
+$as_echo_n "checking for libdecor support... " >&6; }
+        if $PKG_CONFIG --exists libdecor-0; then :
+  video_libdecor=yes
+else
+  video_libdecor=no
+fi
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: $video_libdecor" >&5
+$as_echo "$video_libdecor" >&6; }
+        if test x$video_libdecor = xyes; then
+            EXTRA_CFLAGS="$EXTRA_CFLAGS `$PKG_CONFIG --cflags libdecor-0`"
+
+$as_echo "#define HAVE_LIBDECOR_H 1" >>confdefs.h
+
+
+            # Check whether --enable-libdecor-shared was given.
+if test "${enable_libdecor_shared+set}" = set; then :
+  enableval=$enable_libdecor_shared;
+else
+  enable_libdecor_shared=yes
+fi
+
+
+            decor_lib=`find_lib "libdecor-0.so.*" "" | sed 's/.*\/\(.*\)/\1/; q'`
+
+            if test x$have_loadso != xyes && \
+               test x$enable_libdecor_shared = xyes; then
+                { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: You must have SDL_LoadObject() support for dynamic libdecor loading" >&5
+$as_echo "$as_me: WARNING: You must have SDL_LoadObject() support for dynamic libdecor loading" >&2;}
+            fi
+            if test x$have_loadso = xyes && \
+               test x$enable_libdecor_shared = xyes && test x$decor_lib != x; then
+                echo "-- dynamic libdecor -> $decor_lib"
+
+cat >>confdefs.h <<_ACEOF
+#define SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_LIBDECOR "$decor_lib"
+_ACEOF
+
+            else
+                EXTRA_LDFLAGS="$EXTRA_LDFLAGS `$PKG_CONFIG --libs libdecor-0`"
+            fi
+        fi
+    fi
+}
+
 CheckJoystickMFI()
 {
     # Check whether --enable-joystick-mfi was given.
@@ -24946,6 +25018,7 @@ $as_echo "#define SDL_VIDEO_DRIVER_ANDROID 1" >>confdefs.h
         CheckInotify
         CheckIBus
         CheckFcitx
+        CheckLibDecor
         case $ARCH in
           linux)
               CheckInputKD
