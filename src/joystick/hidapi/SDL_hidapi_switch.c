@@ -1057,6 +1057,10 @@ HIDAPI_DriverSwitch_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joys
 {
     SDL_DriverSwitch_Context *ctx = (SDL_DriverSwitch_Context *)device->context;
 
+    if (ctx->m_bInputOnly) {
+        return SDL_Unsupported();
+    }
+
     if (ctx->m_bRumblePending) {
         if (HIDAPI_DriverSwitch_SendPendingRumble(ctx) < 0) {
             return -1;
