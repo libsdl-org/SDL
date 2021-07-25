@@ -414,16 +414,10 @@ static void utf16_to_utf8(const uint16_t *src, uint8_t *dst) {
   *dst = '\0';
 }
 
-static SDL_bool reset_enter = SDL_FALSE;
 void VITA_PumpEvents(_THIS)
 {
     SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
 
-    // Little fix for adding proper enter key emulation
-    if (reset_enter == SDL_TRUE) {
-        SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_RETURN);
-        reset_enter = SDL_FALSE;
-    }
 
     VITA_PollTouch();
     VITA_PollKeyboard();
@@ -446,10 +440,8 @@ void VITA_PumpEvents(_THIS)
             SDL_SendKeyboardText((const char*)utf8_buffer);
 
             // Send enter key only on enter
-            if (result.button == SCE_IME_DIALOG_BUTTON_ENTER) {
-                SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_RETURN);
-                reset_enter = SDL_TRUE;
-            }
+            if (result.button == SCE_IME_DIALOG_BUTTON_ENTER)
+                SDL_SendKeyboardKeyAutoRelease(SDL_SCANCODE_RETURN);
 
             sceImeDialogTerm();
 
@@ -462,3 +454,4 @@ void VITA_PumpEvents(_THIS)
 #endif /* SDL_VIDEO_DRIVER_VITA */
 
 /* vi: set ts=4 sw=4 expandtab: */
+
