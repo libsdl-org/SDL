@@ -1003,6 +1003,7 @@ PrepareJoystickHwdata(SDL_Joystick *joystick, SDL_joylist_item *item)
         /* Get the number of buttons and axes on the joystick */
         ConfigJoystick(joystick, fd);
     }
+    return 0;
 }
 
 
