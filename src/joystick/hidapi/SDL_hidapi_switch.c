@@ -244,7 +244,7 @@ typedef struct {
     Uint32 m_unRumbleSent;
     SDL_bool m_bRumblePending;
     SDL_bool m_bRumbleZeroPending;
-    Uint64 m_unRumblePending;
+    Uint32 m_unRumblePending;
     SDL_bool m_bHasSensors;
     SDL_bool m_bReportSensors;
 
@@ -548,73 +548,6 @@ static Uint16 EncodeRumbleLowAmplitude(Uint16 amplitude) {
     }
     return lfa[100][1];
 }
-
-static Uint16 EncodeRumbleHighFrequency(Uint16 frequency) {
-    /* More information about these values can be found here:
-     * https://github.com/dekuNukem/Nintendo_Switch_Reverse_Engineering/blob/master/rumble_data_table.md
-     */
-    Uint16 hf[127][2] = { {82, 0x0004}, { 84, 0x0008 }, { 85, 0x000c }, { 87, 0x0010 }, { 89, 0x0014 },
-        { 91, 0x0018 }, { 93, 0x001c }, { 95, 0x0020 }, { 97, 0x0024 }, { 99, 0x0028 }, { 102, 0x002c },
-        { 104, 0x0030 }, { 106, 0x0034 }, { 108, 0x0038 }, { 111, 0x003c }, { 113, 0x0040 }, { 116, 0x0044 },
-        { 118, 0x0048 }, { 121, 0x004c }, { 123, 0x0050 }, { 126, 0x0054 }, { 129, 0x0058 }, { 132, 0x005c },
-        { 135, 0x0060 }, { 137, 0x0064 }, { 141, 0x0068 }, { 144, 0x006c }, { 147, 0x0070 }, { 150, 0x0074 },
-        { 153, 0x0078 }, { 157, 0x007c }, { 160, 0x0080 }, { 164, 0x0084 }, { 167, 0x0088 }, { 171, 0x008c },
-        { 174, 0x0090 }, { 178, 0x0094 }, { 182, 0x0098 }, { 186, 0x009c }, { 190, 0x00a0 }, { 194, 0x00a4 },
-        { 199, 0x00a8 }, { 203, 0x00ac }, { 207, 0x00b0 }, { 212, 0x00b4 }, { 217, 0x00b8 }, { 221, 0x00bc },
-        { 226, 0x00c0 }, { 231, 0x00c4 }, { 236, 0x00c8 }, { 241, 0x00cc }, { 247, 0x00d0 }, { 252, 0x00d4 },
-        { 258, 0x00d8 }, { 263, 0x00dc }, { 269, 0x00e0 }, { 275, 0x00e4 }, { 281, 0x00e8 }, { 287, 0x00ec },
-        { 293, 0x00f0 }, { 300, 0x00f4 }, { 306, 0x00f8 }, { 313, 0x00fc }, { 320, 0x0100 }, { 327, 0x0104 },
-        { 334, 0x0108 }, { 341, 0x010c }, { 349, 0x0110 }, { 357, 0x0114 }, { 364, 0x0118 }, { 372, 0x011c },
-        { 381, 0x0120 }, { 389, 0x0124 }, { 397, 0x0128 }, { 406, 0x012c }, { 415, 0x0130 }, { 424, 0x0134 },
-        { 433, 0x0138 }, { 443, 0x013c }, { 453, 0x0140 }, { 462, 0x0144 }, { 473, 0x0148 }, { 483, 0x014c },
-        { 494, 0x0150 }, { 504, 0x0154 }, { 515, 0x0158 }, { 527, 0x015c }, { 538, 0x0160 }, { 550, 0x0164 },
-        { 562, 0x0168 }, { 574, 0x016c }, { 587, 0x0170 }, { 600, 0x0174 }, { 613, 0x0178 }, { 626, 0x017c },
-        { 640, 0x0180 }, { 654, 0x0184 }, { 668, 0x0188 }, { 683, 0x018c }, { 698, 0x0190 }, { 713, 0x0194 },
-        { 729, 0x0198 }, { 745, 0x019c }, { 761, 0x01a0 }, { 778, 0x01a4 }, { 795, 0x01a8 }, { 812, 0x01ac },
-        { 830, 0x01b0 }, { 848, 0x01b4 }, { 867, 0x01b8 }, { 886, 0x01bc }, { 905, 0x01c0 }, { 925, 0x01c4 },
-        { 945, 0x01c8 }, { 966, 0x01cc }, { 987, 0x01d0 }, { 1009, 0x01d4 }, { 1031, 0x01d8 }, { 1053, 0x01dc },
-        { 1076, 0x01e0 }, { 1100, 0x01e4 }, { 1124, 0x01e8 }, { 1149, 0x01ec }, { 1174, 0x01f0 }, { 1199, 0x01f4 },
-        { 1226, 0x01f8 }, { 1253, 0x01fc } };
-
-    int index = 0;
-    for (; index < 127; index++) {
-        if (frequency <= hf[index][0]) {
-            return hf[index][1];
-        }
-    }
-    return hf[126][1];
-}
-
-static Uint8 EncodeRumbleLowFrequency(Uint16 frequency) {
-    /* More information about these values can be found here:
-     * https://github.com/dekuNukem/Nintendo_Switch_Reverse_Engineering/blob/master/rumble_data_table.md
-     */
-    Uint16 lf[127][2] = { {41, 0x1},{42, 0x2},{43, 0x3},{44, 0x4},{45, 0x5},{46, 0x6},{47, 0x7},{48, 0x8},
-        {49, 0x9},{50, 0x0A},{51, 0x0B},{52, 0x0C},{53, 0x0D},{54, 0x0E},{55, 0x0F},{57, 0x10},{58, 0x11},
-        {59, 0x12},{60, 0x13},{62, 0x14},{63, 0x15},{64, 0x16},{66, 0x17},{67, 0x18},{69, 0x19},{70, 0x1A},
-        {72, 0x1B},{73, 0x1C},{75, 0x1D},{77, 0x1e},{78, 0x1f},{80, 0x20},{82, 0x21},{84, 0x22},{85, 0x23},
-        {87, 0x24},{89, 0x25},{91, 0x26},{93, 0x27},{95, 0x28},{97, 0x29},{99, 0x2a},{102, 0x2b},{104, 0x2c},
-        {106, 0x2d},{108, 0x2e},{111, 0x2f},{113, 0x30},{116, 0x31},{118, 0x32},{121, 0x33},{123, 0x34},
-        {126, 0x35},{129, 0x36},{132, 0x37},{135, 0x38},{137, 0x39},{141, 0x3a},{144, 0x3b},{147, 0x3c},
-        {150, 0x3d},{153, 0x3e},{157, 0x3f},{160, 0x40},{164, 0x41},{167, 0x42},{171, 0x43},{174, 0x44},
-        {178, 0x45},{182, 0x46},{186, 0x47},{190, 0x48},{194, 0x49},{199, 0x4a},{203, 0x4b},{207, 0x4c},
-        {212, 0x4d},{217, 0x4e},{221, 0x4f},{226, 0x50},{231, 0x51},{236, 0x52},{241, 0x53},{247, 0x54},
-        {252, 0x55},{258, 0x56},{263, 0x57},{269, 0x58},{275, 0x59},{281, 0x5a},{287, 0x5b},{293, 0x5c},
-        {300, 0x5d},{306, 0x5e},{313, 0x5f},{320, 0x60},{327, 0x61},{334, 0x62},{341, 0x63},{349, 0x64},
-        {357, 0x65},{364, 0x66},{372, 0x67},{381, 0x68},{389, 0x69},{397, 0x6a},{406, 0x6b},{415, 0x6c},
-        {424, 0x6d},{433, 0x6e},{443, 0x6f},{453, 0x70},{462, 0x71},{473, 0x72},{483, 0x73},{494, 0x74},
-        {504, 0x75},{515, 0x76},{527, 0x77},{538, 0x78},{550, 0x79},{562, 0x7a},{574, 0x7b},{587, 0x7c},
-        {600, 0x7d},{613, 0x7e},{626, 0x7f} };
-
-    int index = 0;
-    for (; index < 127; index++) {
-        if (frequency <= lf[index][0]) {
-            return (Uint8)lf[index][1];
-        }
-    }
-    return (Uint8)lf[126][1];
-}
-
 
 static void SetNeutralRumble(SwitchRumbleData_t *pRumble)
 {
@@ -1057,7 +990,7 @@ error:
 }
 
 static int
-HIDAPI_DriverSwitch_ActuallyRumbleJoystick(SDL_DriverSwitch_Context *ctx, Uint16 low_amplitude_rumble, Uint16 high_amplitude_rumble, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+HIDAPI_DriverSwitch_ActuallyRumbleJoystick(SDL_DriverSwitch_Context *ctx, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     /* Experimentally determined rumble values. These will only matter on some controllers as tested ones
      * seem to disregard these and just use any non-zero rumble values as a binary flag for constant rumble
@@ -1065,20 +998,20 @@ HIDAPI_DriverSwitch_ActuallyRumbleJoystick(SDL_DriverSwitch_Context *ctx, Uint16
      * More information about these values can be found here:
      * https://github.com/dekuNukem/Nintendo_Switch_Reverse_Engineering/blob/master/rumble_data_table.md
      */
-    const Uint16 k_usHighFreq = EncodeRumbleHighFrequency(high_frequency_rumble);
-    const Uint8  k_ucHighFreqAmp = EncodeRumbleHighAmplitude(high_amplitude_rumble);
-    const Uint8  k_ucLowFreq = EncodeRumbleLowFrequency(low_frequency_rumble);
-    const Uint16 k_usLowFreqAmp = EncodeRumbleLowAmplitude(low_amplitude_rumble);
+    const Uint16 k_usHighFreq = 0x0074;
+    const Uint8  k_ucHighFreqAmp = EncodeRumbleHighAmplitude(high_frequency_rumble);
+    const Uint8  k_ucLowFreq = 0x3D;
+    const Uint16 k_usLowFreqAmp = EncodeRumbleLowAmplitude(low_frequency_rumble);
 
-    if (low_amplitude_rumble || high_amplitude_rumble) {
+    if (low_frequency_rumble || high_frequency_rumble) {
         EncodeRumble(&ctx->m_RumblePacket.rumbleData[0], k_usHighFreq, k_ucHighFreqAmp, k_ucLowFreq, k_usLowFreqAmp);
         EncodeRumble(&ctx->m_RumblePacket.rumbleData[1], k_usHighFreq, k_ucHighFreqAmp, k_ucLowFreq, k_usLowFreqAmp);
-        ctx->m_bRumbleActive = SDL_TRUE;
     } else {
         SetNeutralRumble(&ctx->m_RumblePacket.rumbleData[0]);
         SetNeutralRumble(&ctx->m_RumblePacket.rumbleData[1]);
-        ctx->m_bRumbleActive = SDL_FALSE;
     }
+
+    ctx->m_bRumbleActive = (low_frequency_rumble || high_frequency_rumble) ? SDL_TRUE : SDL_FALSE;
 
     if (!WriteRumble(ctx)) {
         SDL_SetError("Couldn't send rumble packet");
@@ -1095,18 +1028,16 @@ HIDAPI_DriverSwitch_SendPendingRumble(SDL_DriverSwitch_Context *ctx)
     }
 
     if (ctx->m_bRumblePending) {
-        Uint16 low_frequency_rumble = (Uint16)(ctx->m_unRumblePending >> 48);
-        Uint16 high_frequency_rumble = (Uint16)(ctx->m_unRumblePending >> 32);
-        Uint16 low_amplitude_rumble = (Uint16)(ctx->m_unRumblePending >> 16);
-        Uint16 high_amplitude_rumble = (Uint16)ctx->m_unRumblePending;
+        Uint16 low_frequency_rumble = (Uint16)(ctx->m_unRumblePending >> 16);
+        Uint16 high_frequency_rumble = (Uint16)ctx->m_unRumblePending;
 
 #ifdef DEBUG_RUMBLE
-        SDL_Log("Sent pending rumble %d/%d, %d ms after previous rumble\n", low_amplitude_rumble, high_amplitude_rumble, SDL_GetTicks() - ctx->m_unRumbleSent);
+        SDL_Log("Sent pending rumble %d/%d, %d ms after previous rumble\n", low_frequency_rumble, high_frequency_rumble, SDL_GetTicks() - ctx->m_unRumbleSent);
 #endif
         ctx->m_bRumblePending = SDL_FALSE;
         ctx->m_unRumblePending = 0;
 
-        return HIDAPI_DriverSwitch_ActuallyRumbleJoystick(ctx, low_amplitude_rumble, high_amplitude_rumble, low_frequency_rumble, high_frequency_rumble);
+        return HIDAPI_DriverSwitch_ActuallyRumbleJoystick(ctx, low_frequency_rumble, high_frequency_rumble);
     }
 
     if (ctx->m_bRumbleZeroPending) {
@@ -1115,18 +1046,16 @@ HIDAPI_DriverSwitch_SendPendingRumble(SDL_DriverSwitch_Context *ctx)
 #ifdef DEBUG_RUMBLE
         SDL_Log("Sent pending zero rumble, %d ms after previous rumble\n", SDL_GetTicks() - ctx->m_unRumbleSent);
 #endif
-        return HIDAPI_DriverSwitch_ActuallyRumbleJoystick(ctx, 0, 0, 160, 320);
+        return HIDAPI_DriverSwitch_ActuallyRumbleJoystick(ctx, 0, 0);
     }
 
     return 0;
 }
 
 static int
-HIDAPI_DriverSwitch_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_amplitude_rumble, Uint16 high_amplitude_rumble)
+HIDAPI_DriverSwitch_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     SDL_DriverSwitch_Context *ctx = (SDL_DriverSwitch_Context *)device->context;
-    Uint16 low_frequency_rumble = 160;
-    Uint16 high_frequency_rumble = 320;
 
     if (ctx->m_bInputOnly) {
         return SDL_Unsupported();
@@ -1139,9 +1068,8 @@ HIDAPI_DriverSwitch_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joys
     }
 
     if (!SDL_TICKS_PASSED(SDL_GetTicks(), ctx->m_unRumbleSent + RUMBLE_WRITE_FREQUENCY_MS)) {
-        if (low_amplitude_rumble || high_amplitude_rumble) {
-            Uint64 unRumblePending = ((Uint64)low_amplitude_rumble << 48) | ((Uint64)high_amplitude_rumble << 32) |
-                ((Uint64)low_frequency_rumble << 16) | high_frequency_rumble;
+        if (low_frequency_rumble || high_frequency_rumble) {
+            Uint32 unRumblePending = ((Uint32)low_frequency_rumble << 16) | high_frequency_rumble;
 
             /* Keep the highest rumble intensity in the given interval */
             if (unRumblePending > ctx->m_unRumblePending) {
@@ -1157,10 +1085,10 @@ HIDAPI_DriverSwitch_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joys
     }
 
 #ifdef DEBUG_RUMBLE
-    SDL_Log("Sent rumble %d/%d\n", low_amplitude_rumble, high_amplitude_rumble);
+    SDL_Log("Sent rumble %d/%d\n", low_frequency_rumble, high_frequency_rumble);
 #endif
 
-    return HIDAPI_DriverSwitch_ActuallyRumbleJoystick(ctx, low_amplitude_rumble, high_amplitude_rumble, low_frequency_rumble, high_frequency_rumble);
+    return HIDAPI_DriverSwitch_ActuallyRumbleJoystick(ctx, low_frequency_rumble, high_frequency_rumble);
 }
 
 static int
@@ -1183,53 +1111,9 @@ HIDAPI_DriverSwitch_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joys
 }
 
 static int
-HIDAPI_DriverSwitch_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *vibration, int size)
+HIDAPI_DriverSwitch_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *data, int size)
 {
-    SDL_DriverSwitch_Context *ctx = (SDL_DriverSwitch_Context *)device->context;
-    Uint64 vibration_data;
-    Uint16 low_amplitude_rumble, high_amplitude_rumble;
-    Uint16 low_frequency_rumble, high_frequency_rumble;
-    if (size != 8) {
-        SDL_SetError("Wrong size of vibration data");
-        return -1;
-    }
-
-    SDL_memcpy(&vibration_data, vibration, sizeof(vibration_data));
-    low_amplitude_rumble = (Uint16)(vibration_data >> 48);
-    high_amplitude_rumble = (Uint16)(vibration_data >> 32);
-    low_frequency_rumble = (Uint16)(vibration_data >> 16);
-    high_frequency_rumble = (Uint16)vibration_data;
-
-    if (ctx->m_bRumblePending) {
-        if (HIDAPI_DriverSwitch_SendPendingRumble(ctx) < 0) {
-            return -1;
-        }
-    }
-
-    if (!SDL_TICKS_PASSED(SDL_GetTicks(), ctx->m_unRumbleSent + RUMBLE_WRITE_FREQUENCY_MS)) {
-        if (low_amplitude_rumble || high_amplitude_rumble) {
-            Uint64 unRumblePending = ((Uint64)low_frequency_rumble << 48) | ((Uint64)high_frequency_rumble << 32) |
-                ((Uint64)low_amplitude_rumble << 16) | high_amplitude_rumble;
-
-            /* Keep the highest rumble intensity in the given interval */
-            if (unRumblePending > ctx->m_unRumblePending) {
-                ctx->m_unRumblePending = unRumblePending;
-            }
-            ctx->m_bRumblePending = SDL_TRUE;
-            ctx->m_bRumbleZeroPending = SDL_FALSE;
-        }
-        else {
-            /* When rumble is complete, turn it off */
-            ctx->m_bRumbleZeroPending = SDL_TRUE;
-        }
-        return 0;
-    }
-
-#ifdef DEBUG_RUMBLE
-    SDL_Log("Sent rumble %d/%d/%d/%d\n", low_amplitude_rumble, high_amplitude_rumble, low_frequency_rumble, high_frequency_rumble);
-#endif
-
-    return HIDAPI_DriverSwitch_ActuallyRumbleJoystick(ctx, low_amplitude_rumble, high_amplitude_rumble, low_frequency_rumble, high_frequency_rumble);
+    return SDL_Unsupported();
 }
 
 static int
