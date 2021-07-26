@@ -589,6 +589,18 @@ LINUX_InotifyJoystickDetect(void)
  * have to do this the first time, to detect devices that already existed
  * before we started; in the non-inotify code path we do this repeatedly
  * (polling). */
+static int
+filter_entries(const struct dirent *entry)
+{
+    return (SDL_strlen(entry->d_name) > 5 && SDL_strncmp(entry->d_name, "event", 5) == 0);
+}
+static int
+sort_entries(const struct dirent **a, const struct dirent **b)
+{
+    int numA = SDL_atoi((*a)->d_name+5);
+    int numB = SDL_atoi((*b)->d_name+5);
+    return (numA - numB);
+}
 static void
 LINUX_FallbackJoystickDetect(void)
 {
@@ -600,22 +612,18 @@ LINUX_FallbackJoystickDetect(void)
 
         /* Opening input devices can generate synchronous device I/O, so avoid it if we can */
         if (stat("/dev/input", &sb) == 0 && sb.st_mtime != last_input_dir_mtime) {
-            DIR *folder;
-            struct dirent *dent;
+            int i, count;
+            struct dirent **entries;
+            char path[PATH_MAX];
 
-            folder = opendir("/dev/input");
-            if (folder) {
-                while ((dent = readdir(folder))) {
-                    int len = SDL_strlen(dent->d_name);
-                    if (len > 5 && SDL_strncmp(dent->d_name, "event", 5) == 0) {
-                        char path[PATH_MAX];
-                        SDL_snprintf(path, SDL_arraysize(path), "/dev/input/%s", dent->d_name);
-                        MaybeAddDevice(path);
-                    }
-                }
+            count = scandir("/dev/input", &entries, filter_entries, sort_entries);
+            for (i = 0; i < count; ++i) {
+                SDL_snprintf(path, SDL_arraysize(path), "/dev/input/%s", entries[i]->d_name);
+                MaybeAddDevice(path);
 
-                closedir(folder);
+                free(entries[i]); /* This should NOT be SDL_free() */
             }
+            free(entries); /* This should NOT be SDL_free() */
 
             last_input_dir_mtime = sb.st_mtime;
         }
