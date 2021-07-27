@@ -353,7 +353,7 @@ Cocoa_InitMouse(_THIS)
     return 0;
 }
 
-void
+static void
 Cocoa_HandleTitleButtonEvent(_THIS, NSEvent *event)
 {
     SDL_Window *window;
