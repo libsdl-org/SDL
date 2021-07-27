@@ -709,7 +709,8 @@ extern DECLSPEC SDL_Texture * SDLCALL SDL_GetRenderTarget(SDL_Renderer *renderer
  *
  * If the output display is a window, mouse and touch events in the window
  * will be filtered and scaled so they seem to arrive within the logical
- * resolution.
+ * resolution. The SDL_HINT_MOUSE_RELATIVE_SCALING hint controls whether
+ * relative motion events are also scaled.
  *
  * If this function results in scaling or subpixel drawing by the rendering
  * backend, it will be handled using the appropriate quality hints.
