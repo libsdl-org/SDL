@@ -1524,7 +1524,7 @@ extern DECLSPEC int SDLCALL SDL_SetWindowHitTest(SDL_Window * window,
  * Request a window to demand attention from the user.
  *
  * \param window the window to be flashed
- * \param the flash operation
+ * \param operation the flash operation
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  */
