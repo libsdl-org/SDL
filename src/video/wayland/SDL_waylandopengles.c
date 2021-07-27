@@ -33,7 +33,6 @@
 #include "SDL_waylanddyn.h"
 
 #include "xdg-shell-client-protocol.h"
-#include "xdg-shell-unstable-v6-client-protocol.h"
 
 /* EGL implementation of SDL OpenGL ES support */
 
@@ -41,12 +40,12 @@ int
 Wayland_GLES_LoadLibrary(_THIS, const char *path) {
     int ret;
     SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
-    
+
     ret = SDL_EGL_LoadLibrary(_this, path, (NativeDisplayType) data->display, 0);
 
     Wayland_PumpEvents(_this);
     WAYLAND_wl_display_flush(data->display);
-    
+
     return ret;
 }
 
@@ -57,6 +56,7 @@ Wayland_GLES_CreateContext(_THIS, SDL_Window * window)
     SDL_GLContext context;
     context = SDL_EGL_CreateContext(_this, ((SDL_WindowData *) window->driverdata)->egl_surface);
     WAYLAND_wl_display_flush( ((SDL_VideoData*)_this->driverdata)->display );
+
     return context;
 }
 
@@ -160,14 +160,14 @@ int
 Wayland_GLES_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context)
 {
     int ret;
-    
+
     if (window && context) {
         ret = SDL_EGL_MakeCurrent(_this, ((SDL_WindowData *) window->driverdata)->egl_surface, context);
     }
     else {
         ret = SDL_EGL_MakeCurrent(_this, NULL, NULL);
     }
-    
+
     WAYLAND_wl_display_flush( ((SDL_VideoData*)_this->driverdata)->display );
 
     _this->egl_data->eglSwapInterval(_this->egl_data->egl_display, 0);  /* see comments on Wayland_GLES_SetSwapInterval. */
@@ -192,7 +192,7 @@ Wayland_GLES_GetDrawableSize(_THIS, SDL_Window * window, int * w, int * h)
     }
 }
 
-void 
+void
 Wayland_GLES_DeleteContext(_THIS, SDL_GLContext context)
 {
     SDL_EGL_DeleteContext(_this, context);

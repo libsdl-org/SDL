@@ -29,7 +29,7 @@
     DEALINGS IN THE SOFTWARE.
   </copyright>
 
-  <interface name="xdg_wm_base" version="1">
+  <interface name="xdg_wm_base" version="3">
     <description summary="create desktop-style surfaces">
       The xdg_wm_base interface is exposed as a global object enabling clients
       to turn their wl_surfaces into windows in a desktop environment. It
@@ -101,7 +101,7 @@
       <description summary="check if the client is alive">
 	The ping event asks the client if it's still alive. Pass the
 	serial specified in the event back to the compositor by sending
-	a "pong" request back with the specified serial. See xdg_wm_base.ping.
+	a "pong" request back with the specified serial. See xdg_wm_base.pong.
 
 	Compositors can use this to determine if the client is still
 	alive. It's unspecified what will happen if the client doesn't
@@ -115,7 +115,7 @@
     </event>
   </interface>
 
-  <interface name="xdg_positioner" version="1">
+  <interface name="xdg_positioner" version="3">
     <description summary="child surface positioner">
       The xdg_positioner provides a collection of rules for the placement of a
       child surface relative to a parent surface. Rules can be defined to ensure
@@ -357,9 +357,49 @@
       <arg name="x" type="int" summary="surface position x offset"/>
       <arg name="y" type="int" summary="surface position y offset"/>
     </request>
+
+    <!-- Version 3 additions -->
+
+    <request name="set_reactive" since="3">
+      <description summary="continuously reconstrain the surface">
+	When set reactive, the surface is reconstrained if the conditions used
+	for constraining changed, e.g. the parent window moved.
+
+	If the conditions changed and the popup was reconstrained, an
+	xdg_popup.configure event is sent with updated geometry, followed by an
+	xdg_surface.configure event.
+      </description>
+    </request>
+
+    <request name="set_parent_size" since="3">
+      <description summary="">
+	Set the parent window geometry the compositor should use when
+	positioning the popup. The compositor may use this information to
+	determine the future state the popup should be constrained using. If
+	this doesn't match the dimension of the parent the popup is eventually
+	positioned against, the behavior is undefined.
+
+	The arguments are given in the surface-local coordinate space.
+      </description>
+      <arg name="parent_width" type="int"
+	   summary="future window geometry width of parent"/>
+      <arg name="parent_height" type="int"
+	   summary="future window geometry height of parent"/>
+    </request>
+
+    <request name="set_parent_configure" since="3">
+      <description summary="set parent configure this is a response to">
+	Set the serial of a xdg_surface.configure event this positioner will be
+	used in response to. The compositor may use this information together
+	with set_parent_size to determine what future state the popup should be
+	constrained using.
+      </description>
+      <arg name="serial" type="uint"
+	   summary="serial of parent configure event"/>
+    </request>
   </interface>
 
-  <interface name="xdg_surface" version="1">
+  <interface name="xdg_surface" version="3">
     <description summary="desktop user interface surface base interface">
       An interface that may be implemented by a wl_surface, for
       implementations that provide a desktop-style user interface.
@@ -526,9 +566,10 @@
       </description>
       <arg name="serial" type="uint" summary="serial of the configure event"/>
     </event>
+
   </interface>
 
-  <interface name="xdg_toplevel" version="1">
+  <interface name="xdg_toplevel" version="3">
     <description summary="toplevel surface">
       This interface defines an xdg_surface role which allows a surface to,
       among other things, set window-like properties such as maximize,
@@ -603,6 +644,9 @@
 	ID's that match the basename of the application's .desktop file.
 	For example, "org.freedesktop.FooViewer" where the .desktop file is
 	"org.freedesktop.FooViewer.desktop".
+
+	Like other properties, a set_app_id request can be sent after the
+	xdg_toplevel has been mapped to update the property.
 
 	See the desktop-entry specification [0] for more details on
 	application identifiers and how they relate to well-known D-Bus
@@ -707,7 +751,7 @@
       </description>
       <arg name="seat" type="object" interface="wl_seat" summary="the wl_seat of the user event"/>
       <arg name="serial" type="uint" summary="the serial of the user event"/>
-      <arg name="edges" type="uint" summary="which edge or corner is being dragged"/>
+      <arg name="edges" type="uint" enum="resize_edge" summary="which edge or corner is being dragged"/>
     </request>
 
     <enum name="state">
@@ -724,6 +768,9 @@
 	<description summary="the surface is maximized">
 	  The surface is maximized. The window geometry specified in the configure
 	  event must be obeyed by the client.
+
+	  The client should draw without shadow or other
+	  decoration outside of the window geometry.
 	</description>
       </entry>
       <entry name="fullscreen" value="2" summary="the surface is fullscreen">
@@ -748,6 +795,30 @@
 	  Client window decorations should be painted as if the window is
 	  active. Do not assume this means that the window actually has
 	  keyboard or pointer focus.
+	</description>
+      </entry>
+      <entry name="tiled_left" value="5" since="2">
+	<description summary="the surface is tiled">
+	  The window is currently in a tiled layout and the left edge is
+	  considered to be adjacent to another part of the tiling grid.
+	</description>
+      </entry>
+      <entry name="tiled_right" value="6" since="2">
+	<description summary="the surface is tiled">
+	  The window is currently in a tiled layout and the right edge is
+	  considered to be adjacent to another part of the tiling grid.
+	</description>
+      </entry>
+      <entry name="tiled_top" value="7" since="2">
+	<description summary="the surface is tiled">
+	  The window is currently in a tiled layout and the top edge is
+	  considered to be adjacent to another part of the tiling grid.
+	</description>
+      </entry>
+      <entry name="tiled_bottom" value="8" since="2">
+	<description summary="the surface is tiled">
+	  The window is currently in a tiled layout and the bottom edge is
+	  considered to be adjacent to another part of the tiling grid.
 	</description>
       </entry>
     </enum>
@@ -839,12 +910,11 @@
 	Maximize the surface.
 
 	After requesting that the surface should be maximized, the compositor
-	will respond by emitting a configure event with the "maximized" state
-	and the required window geometry. The client should then update its
-	content, drawing it in a maximized state, i.e. without shadow or other
-	decoration outside of the window geometry. The client must also
-	acknowledge the configure when committing the new content (see
-	ack_configure).
+	will respond by emitting a configure event. Whether this configure
+	actually sets the window maximized is subject to compositor policies.
+	The client must then update its content, drawing in the configured
+	state. The client must also acknowledge the configure when committing
+	the new content (see ack_configure).
 
 	It is up to the compositor to decide how and where to maximize the
 	surface, for example which output and what region of the screen should
@@ -854,8 +924,8 @@
 	a configure event with the "maximized" state.
 
 	If the surface is in a fullscreen state, this request has no direct
-	effect. It will alter the state the surface is returned to when
-	unmaximized if not overridden by the compositor.
+	effect. It may alter the state the surface is returned to when
+	unmaximized unless overridden by the compositor.
       </description>
     </request>
 
@@ -864,13 +934,13 @@
 	Unmaximize the surface.
 
 	After requesting that the surface should be unmaximized, the compositor
-	will respond by emitting a configure event without the "maximized"
-	state. If available, the compositor will include the window geometry
-	dimensions the window had prior to being maximized in the configure
-	event. The client must then update its content, drawing it in a
-	regular state, i.e. potentially with shadow, etc. The client must also
-	acknowledge the configure when committing the new content (see
-	ack_configure).
+	will respond by emitting a configure event. Whether this actually
+	un-maximizes the window is subject to compositor policies.
+	If available and applicable, the compositor will include the window
+	geometry dimensions the window had prior to being maximized in the
+	configure event. The client must then update its content, drawing it in
+	the configured state. The client must also acknowledge the configure
+	when committing the new content (see ack_configure).
 
 	It is up to the compositor to position the surface after it was
 	unmaximized; usually the position the surface had before maximizing, if
@@ -880,8 +950,8 @@
 	emit a configure event without the "maximized" state.
 
 	If the surface is in a fullscreen state, this request has no direct
-	effect. It will alter the state the surface is returned to when
-	unmaximized if not overridden by the compositor.
+	effect. It may alter the state the surface is returned to when
+	unmaximized unless overridden by the compositor.
       </description>
     </request>
 
@@ -890,10 +960,10 @@
 	Make the surface fullscreen.
 
 	After requesting that the surface should be fullscreened, the
-	compositor will respond by emitting a configure event with the
-	"fullscreen" state and the fullscreen window geometry. The client must
-	also acknowledge the configure when committing the new content (see
-	ack_configure).
+	compositor will respond by emitting a configure event. Whether the
+	client is actually put into a fullscreen state is subject to compositor
+	policies. The client must also acknowledge the configure when
+	committing the new content (see ack_configure).
 
 	The output passed by the request indicates the client's preference as
 	to which display it should be set fullscreen on. If this value is NULL,
@@ -919,8 +989,9 @@
 	Make the surface no longer fullscreen.
 
 	After requesting that the surface should be unfullscreened, the
-	compositor will respond by emitting a configure event without the
-	"fullscreen" state.
+	compositor will respond by emitting a configure event.
+	Whether this actually removes the fullscreen state of the client is
+	subject to compositor policies.
 
 	Making a surface unfullscreen sets states for the surface based on the following:
 	* the state(s) it may have had before becoming fullscreen
@@ -989,7 +1060,7 @@
     </event>
   </interface>
 
-  <interface name="xdg_popup" version="1">
+  <interface name="xdg_popup" version="3">
     <description summary="short-lived, popup surfaces for menus">
       A popup surface is a short-lived, temporary surface. It can be used to
       implement for example menus, popovers, tooltips and other similar user
@@ -1007,20 +1078,11 @@
       surface of their own is clicked should dismiss the popup using the destroy
       request.
 
-      The parent surface must have either the xdg_toplevel or xdg_popup surface
-      role.
-
       A newly created xdg_popup will be stacked on top of all previously created
       xdg_popup surfaces associated with the same xdg_toplevel.
 
       The parent of an xdg_popup must be mapped (see the xdg_surface
       description) before the xdg_popup itself.
-
-      The x and y arguments passed when creating the popup object specify
-      where the top left of the popup should be placed, relative to the
-      local surface coordinates of the parent surface. See
-      xdg_surface.get_popup. An xdg_popup must intersect with or be at least
-      partially adjacent to its parent surface.
 
       The client must call wl_surface.commit on the corresponding wl_surface
       for the xdg_popup state to take effect.
@@ -1099,6 +1161,11 @@
 	The x and y arguments represent the position the popup was placed at
 	given the xdg_positioner rule, relative to the upper left corner of the
 	window geometry of the parent surface.
+
+	For version 2 or older, the configure event for an xdg_popup is only
+	ever sent once for the initial configuration. Starting with version 3,
+	it may be sent again if the popup is setup with an xdg_positioner with
+	set_reactive requested, or in response to xdg_popup.reposition requests.
       </description>
       <arg name="x" type="int"
 	   summary="x position relative to parent surface window geometry"/>
@@ -1114,6 +1181,59 @@
 	compositor. The client should destroy the xdg_popup object at this
 	point.
       </description>
+    </event>
+
+    <!-- Version 3 additions -->
+
+    <request name="reposition" since="3">
+      <description summary="recalculate the popup's location">
+	Reposition an already-mapped popup. The popup will be placed given the
+	details in the passed xdg_positioner object, and a
+	xdg_popup.repositioned followed by xdg_popup.configure and
+	xdg_surface.configure will be emitted in response. Any parameters set
+	by the previous positioner will be discarded.
+
+	The passed token will be sent in the corresponding
+	xdg_popup.repositioned event. The new popup position will not take
+	effect until the corresponding configure event is acknowledged by the
+	client. See xdg_popup.repositioned for details. The token itself is
+	opaque, and has no other special meaning.
+
+	If multiple reposition requests are sent, the compositor may skip all
+	but the last one.
+
+	If the popup is repositioned in response to a configure event for its
+	parent, the client should send an xdg_positioner.set_parent_configure
+	and possibly a xdg_positioner.set_parent_size request to allow the
+	compositor to properly constrain the popup.
+
+	If the popup is repositioned together with a parent that is being
+	resized, but not in response to a configure event, the client should
+	send a xdg_positioner.set_parent_size request.
+      </description>
+      <arg name="positioner" type="object" interface="xdg_positioner"/>
+      <arg name="token" type="uint" summary="reposition request token"/>
+    </request>
+
+    <event name="repositioned" since="3">
+      <description summary="signal the completion of a repositioned request">
+	The repositioned event is sent as part of a popup configuration
+	sequence, together with xdg_popup.configure and lastly
+	xdg_surface.configure to notify the completion of a reposition request.
+
+	The repositioned event is to notify about the completion of a
+	xdg_popup.reposition request. The token argument is the token passed
+	in the xdg_popup.reposition request.
+
+	Immediately after this event is emitted, xdg_popup.configure and
+	xdg_surface.configure will be sent with the updated size and position,
+	as well as a new configure serial.
+
+	The client should optionally update the content of the popup, but must
+	acknowledge the new popup configuration for the new position to take
+	effect. See xdg_surface.ack_configure for details.
+      </description>
+      <arg name="token" type="uint" summary="reposition request token"/>
     </event>
 
   </interface>
