@@ -81,7 +81,7 @@ typedef struct {
         float scale_factor;
     } resize;
 
-    struct wl_output **outputs;
+    SDL_WaylandOutputData **outputs;
     int num_outputs;
 
     float scale_factor;
