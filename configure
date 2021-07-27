@@ -859,6 +859,8 @@ enable_libsamplerate
 enable_libsamplerate_shared
 enable_arm_simd
 enable_arm_neon
+enable_libdecor
+enable_libdecor_shared
 enable_video_wayland
 enable_video_wayland_qt_touch
 enable_wayland_shared
@@ -893,8 +895,6 @@ enable_dbus
 enable_ime
 enable_ibus
 enable_fcitx
-enable_libdecor
-enable_libdecor_shared
 enable_joystick_mfi
 enable_pthreads
 enable_pthread_sem
@@ -1638,6 +1638,10 @@ Optional Features:
                           dynamically load libsamplerate [default=yes]
   --enable-arm-simd       use SIMD assembly blitters on ARM [default=no]
   --enable-arm-neon       use NEON assembly blitters on ARM [default=no]
+  --enable-libdecor       use libdecor for Wayland client-side decorations
+                          [default=yes]
+  --enable-libdecor-shared
+                          dynamically load libdecor [default=yes]
   --enable-video-wayland  use Wayland video driver [default=yes]
   --enable-video-wayland-qt-touch
                           QtWayland server support for Wayland video driver
@@ -1684,10 +1688,6 @@ Optional Features:
   --enable-ime            enable IME support [default=yes]
   --enable-ibus           enable IBus support [default=yes]
   --enable-fcitx          enable fcitx support [default=yes]
-  --enable-libdecor       use libdecor for Wayland client-side decorations
-                          [default=yes]
-  --enable-libdecor-shared
-                          dynamically load libdecor [default=yes]
   --enable-joystick-mfi   include macOS MFI joystick support [default=yes]
   --enable-pthreads       use POSIX threads for multi-threading
                           [default=maybe]
@@ -19871,6 +19871,62 @@ $as_echo "$need_gcc_Wno_multichar" >&6; }
     fi
 }
 
+CheckLibDecor()
+{
+    # Check whether --enable-libdecor was given.
+if test "${enable_libdecor+set}" = set; then :
+  enableval=$enable_libdecor;
+else
+  enable_libdecor=yes
+fi
+
+    if test x$enable_libdecor = xyes; then
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for libdecor support" >&5
+$as_echo_n "checking for libdecor support... " >&6; }
+        if $PKG_CONFIG --exists libdecor-0; then :
+  video_libdecor=yes
+else
+  video_libdecor=no
+fi
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: $video_libdecor" >&5
+$as_echo "$video_libdecor" >&6; }
+        if test x$video_libdecor = xyes; then
+            EXTRA_CFLAGS="$EXTRA_CFLAGS `$PKG_CONFIG --cflags libdecor-0`"
+
+$as_echo "#define HAVE_LIBDECOR_H 1" >>confdefs.h
+
+
+            # Check whether --enable-libdecor-shared was given.
+if test "${enable_libdecor_shared+set}" = set; then :
+  enableval=$enable_libdecor_shared;
+else
+  enable_libdecor_shared=yes
+fi
+
+
+            decor_lib=`find_lib "libdecor-0.so.*" "" | sed 's/.*\/\(.*\)/\1/; q'`
+
+            if test x$have_loadso != xyes && \
+               test x$enable_libdecor_shared = xyes; then
+                { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: You must have SDL_LoadObject() support for dynamic libdecor loading" >&5
+$as_echo "$as_me: WARNING: You must have SDL_LoadObject() support for dynamic libdecor loading" >&2;}
+            fi
+
+            if test x$have_loadso = xyes && \
+               test x$enable_libdecor_shared = xyes && test x$decor_lib != x; then
+                echo "-- dynamic libdecor -> $decor_lib"
+
+cat >>confdefs.h <<_ACEOF
+#define SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_LIBDECOR "$decor_lib"
+_ACEOF
+
+            else
+                EXTRA_LDFLAGS="$EXTRA_LDFLAGS `$PKG_CONFIG --libs libdecor-0`"
+            fi
+        fi
+    fi
+}
+
 CheckWayland()
 {
     # Check whether --enable-video-wayland was given.
@@ -19989,6 +20045,8 @@ _ACEOF
                 SUMMARY_video="${SUMMARY_video} wayland"
             fi
             have_video=yes
+
+            CheckLibDecor
         fi
     fi
 }
@@ -23355,61 +23413,6 @@ $as_echo "$have_fcitx" >&6; }
     fi
 }
 
-CheckLibDecor()
-{
-    # Check whether --enable-libdecor was given.
-if test "${enable_libdecor+set}" = set; then :
-  enableval=$enable_libdecor;
-else
-  enable_libdecor=yes
-fi
-
-    if test x$enable_libdecor = xyes; then
-        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for libdecor support" >&5
-$as_echo_n "checking for libdecor support... " >&6; }
-        if $PKG_CONFIG --exists libdecor-0; then :
-  video_libdecor=yes
-else
-  video_libdecor=no
-fi
-        { $as_echo "$as_me:${as_lineno-$LINENO}: result: $video_libdecor" >&5
-$as_echo "$video_libdecor" >&6; }
-        if test x$video_libdecor = xyes; then
-            EXTRA_CFLAGS="$EXTRA_CFLAGS `$PKG_CONFIG --cflags libdecor-0`"
-
-$as_echo "#define HAVE_LIBDECOR_H 1" >>confdefs.h
-
-
-            # Check whether --enable-libdecor-shared was given.
-if test "${enable_libdecor_shared+set}" = set; then :
-  enableval=$enable_libdecor_shared;
-else
-  enable_libdecor_shared=yes
-fi
-
-
-            decor_lib=`find_lib "libdecor-0.so.*" "" | sed 's/.*\/\(.*\)/\1/; q'`
-
-            if test x$have_loadso != xyes && \
-               test x$enable_libdecor_shared = xyes; then
-                { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: You must have SDL_LoadObject() support for dynamic libdecor loading" >&5
-$as_echo "$as_me: WARNING: You must have SDL_LoadObject() support for dynamic libdecor loading" >&2;}
-            fi
-            if test x$have_loadso = xyes && \
-               test x$enable_libdecor_shared = xyes && test x$decor_lib != x; then
-                echo "-- dynamic libdecor -> $decor_lib"
-
-cat >>confdefs.h <<_ACEOF
-#define SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_LIBDECOR "$decor_lib"
-_ACEOF
-
-            else
-                EXTRA_LDFLAGS="$EXTRA_LDFLAGS `$PKG_CONFIG --libs libdecor-0`"
-            fi
-        fi
-    fi
-}
-
 CheckJoystickMFI()
 {
     # Check whether --enable-joystick-mfi was given.
@@ -25018,7 +25021,6 @@ $as_echo "#define SDL_VIDEO_DRIVER_ANDROID 1" >>confdefs.h
         CheckInotify
         CheckIBus
         CheckFcitx
-        CheckLibDecor
         case $ARCH in
           linux)
               CheckInputKD
