@@ -46,6 +46,10 @@
 #include "SDL_loadso.h"
 #include "../../thread/SDL_systhread.h"
 
+/* should we include monitors in the device list? Set at SDL_Init time */
+static SDL_bool include_monitors = SDL_FALSE;
+
+
 #if (PA_API_VERSION < 12)
 /** Return non-zero if the passed state is one of the connected states */
 static SDL_INLINE int PA_CONTEXT_IS_GOOD(pa_context_state_t x) {
@@ -744,8 +748,8 @@ SourceInfoCallback(pa_context *c, const pa_source_info *i, int is_last, void *da
 {
     SDL_AudioSpec spec;
     if (i) {
-        /* Skip "monitor" sources. These are just output from other sinks. */
-        if (i->monitor_of_sink == PA_INVALID_INDEX) {
+        /* Maybe skip "monitor" sources. These are just output from other sinks. */
+        if (include_monitors || (i->monitor_of_sink == PA_INVALID_INDEX)) {
             spec.freq = i->sample_spec.rate;
             spec.channels = i->sample_spec.channels;
             spec.format = PulseFormatToSDLFormat(i->sample_spec.format);
@@ -833,6 +837,8 @@ PULSEAUDIO_Init(SDL_AudioDriverImpl * impl)
         UnloadPulseAudioLibrary();
         return 0;
     }
+
+    include_monitors = SDL_GetHintBoolean(SDL_HINT_AUDIO_INCLUDE_MONITORS, SDL_FALSE);
 
     /* Set the function pointers */
     impl->DetectDevices = PULSEAUDIO_DetectDevices;
