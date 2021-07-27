@@ -27,6 +27,7 @@
 #include "SDL_stdinc.h"
 #include "../SDL_sysjoystick.h"
 #include "../SDL_joystick_c.h"
+#include "../hidapi/SDL_hidapijoystick_c.h"
 #include "../usb_ids.h"
 
 #include "SDL_mfijoystick_c.h"
@@ -128,7 +129,49 @@ GetDeviceForIndex(int device_index)
 }
 
 #ifdef SDL_JOYSTICK_MFI
-static void
+static BOOL
+IsControllerPS4(GCController *controller)
+{
+    if (@available(macOS 10.15, iOS 13.0, tvOS 13.0, *)) {
+        if ([controller.productCategory isEqualToString:@"DualShock 4"]) {
+            return TRUE;
+        }
+    } else {
+        if ([controller.vendorName containsString: @"DUALSHOCK"]) {
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
+static BOOL
+IsControllerPS5(GCController *controller)
+{
+    if (@available(macOS 10.15, iOS 13.0, tvOS 13.0, *)) {
+        if ([controller.productCategory isEqualToString:@"DualSense"]) {
+            return TRUE;
+        }
+    } else {
+        if ([controller.vendorName containsString: @"DualSense"]) {
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
+static BOOL
+IsControllerXbox(GCController *controller)
+{
+    if (@available(macOS 10.15, iOS 13.0, tvOS 13.0, *)) {
+        if ([controller.productCategory isEqualToString:@"Xbox One"]) {
+            return TRUE;
+        }
+    } else {
+        if ([controller.vendorName containsString: @"Xbox"]) {
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
+static BOOL
 IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controller)
 {
     Uint16 *guid16 = (Uint16 *)device->guid.data;
@@ -153,13 +196,22 @@ IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controlle
 
     if (controller.extendedGamepad) {
         GCExtendedGamepad *gamepad = controller.extendedGamepad;
-        BOOL is_xbox = [controller.vendorName containsString: @"Xbox"];
-        BOOL is_ps4 = [controller.vendorName containsString: @"DUALSHOCK"];
-        BOOL is_ps5 = [controller.vendorName containsString: @"DualSense"];
+        BOOL is_xbox = IsControllerXbox(controller);
+        BOOL is_ps4 = IsControllerPS4(controller);
+        BOOL is_ps5 = IsControllerPS5(controller);
 #if TARGET_OS_TV
         BOOL is_MFi = (!is_xbox && !is_ps4 && !is_ps5);
 #endif
         int nbuttons = 0;
+
+#ifdef SDL_JOYSTICK_HIDAPI
+        if ((is_xbox && HIDAPI_IsDeviceTypePresent(SDL_CONTROLLER_TYPE_XBOXONE)) ||
+            (is_ps4 && HIDAPI_IsDeviceTypePresent(SDL_CONTROLLER_TYPE_PS4)) ||
+            (is_ps5 && HIDAPI_IsDeviceTypePresent(SDL_CONTROLLER_TYPE_PS5))) {
+            /* The HIDAPI driver is taking care of this device */
+            return FALSE;
+        }
+#endif
 
         /* These buttons are part of the original MFi spec */
         device->button_mask |= (1 << SDL_CONTROLLER_BUTTON_A);
@@ -342,6 +394,7 @@ IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controlle
     /* This will be set when the first button press of the controller is
      * detected. */
     controller.playerIndex = -1;
+    return TRUE;
 }
 #endif /* SDL_JOYSTICK_MFI */
 
@@ -390,7 +443,10 @@ IOS_AddJoystickDevice(GCController *controller, SDL_bool accelerometer)
 #endif /* SDL_JOYSTICK_iOS_ACCELEROMETER */
     } else if (controller) {
 #ifdef SDL_JOYSTICK_MFI
-        IOS_AddMFIJoystickDevice(device, controller);
+        if (!IOS_AddMFIJoystickDevice(device, controller)) {
+            SDL_free(device);
+            return;
+        }
 #else
         SDL_free(device);
         return;
