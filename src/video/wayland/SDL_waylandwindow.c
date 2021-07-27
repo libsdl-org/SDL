@@ -164,6 +164,9 @@ static const struct wl_callback_listener surface_frame_listener = {
     handle_surface_frame_done
 };
 
+
+static void Wayland_HandlePendingResize(SDL_Window *window);
+
 static void
 handle_configure_xdg_shell_surface(void *data, struct xdg_surface *xdg, uint32_t serial)
 {
@@ -198,9 +201,7 @@ handle_configure_xdg_shell_surface(void *data, struct xdg_surface *xdg, uint32_t
         wind->resize.pending = SDL_TRUE;
         wind->resize.configure = SDL_TRUE;
         wind->resize.serial = serial;
-        if (!(window->flags & SDL_WINDOW_OPENGL)) {
-            Wayland_HandlePendingResize(window);  /* OpenGL windows handle this in SwapWindow */
-        }
+        Wayland_HandlePendingResize(window);
     }
 }
 
@@ -457,9 +458,7 @@ update_scale_factor(SDL_WindowData *window)
         window->resize.height = window->sdlwindow->h;
         window->resize.scale_factor = new_factor;
         window->resize.pending = SDL_TRUE;
-        if (!(window->sdlwindow->flags & SDL_WINDOW_OPENGL)) {
-            Wayland_HandlePendingResize(window->sdlwindow);  /* OpenGL windows handle this in SwapWindow */
-        }
+        Wayland_HandlePendingResize(window->sdlwindow);
     }
 }
 
@@ -929,10 +928,7 @@ Wayland_SetWindowFullscreen(_THIS, SDL_Window * window,
         wind->resize.width = window->windowed.w;
         wind->resize.height = window->windowed.h;
         wind->resize.pending = SDL_TRUE;
-
-        if (!(window->flags & SDL_WINDOW_OPENGL)) {
-            Wayland_HandlePendingResize(window);
-        }
+        Wayland_HandlePendingResize(window);
     }
 }
 
@@ -1204,7 +1200,7 @@ int Wayland_CreateWindow(_THIS, SDL_Window *window)
 }
 
 
-void
+static void
 Wayland_HandlePendingResize(SDL_Window *window)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
