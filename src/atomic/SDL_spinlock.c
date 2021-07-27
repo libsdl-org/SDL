@@ -72,6 +72,9 @@ SDL_AtomicTryLock(SDL_SpinLock *lock)
         return SDL_FALSE;
     }
 
+#elif HAVE_GCC_ATOMICS || HAVE_GCC_SYNC_LOCK_TEST_AND_SET
+    return (__sync_lock_test_and_set(lock, 1) == 0);
+
 #elif defined(_MSC_VER) && (defined(_M_ARM) || defined(_M_ARM64))
     return (_InterlockedExchange_acq(lock, 1) == 0);
 
@@ -81,9 +84,6 @@ SDL_AtomicTryLock(SDL_SpinLock *lock)
 
 #elif defined(__WATCOMC__) && defined(__386__)
     return _SDL_xchg_watcom(lock, 1) == 0;
-
-#elif HAVE_GCC_ATOMICS || HAVE_GCC_SYNC_LOCK_TEST_AND_SET
-    return (__sync_lock_test_and_set(lock, 1) == 0);
 
 #elif defined(__GNUC__) && defined(__arm__) && \
         (defined(__ARM_ARCH_3__) || defined(__ARM_ARCH_3M__) || \
@@ -176,8 +176,12 @@ SDL_AtomicLock(SDL_SpinLock *lock)
 void
 SDL_AtomicUnlock(SDL_SpinLock *lock)
 {
-#if defined(_MSC_VER) && (defined(_M_ARM) || defined(_M_ARM64))
+#if HAVE_GCC_ATOMICS || HAVE_GCC_SYNC_LOCK_TEST_AND_SET
+    __sync_lock_release(lock);
+
+#elif defined(_MSC_VER) && (defined(_M_ARM) || defined(_M_ARM64))
     _InterlockedExchange_rel(lock, 0);
+
 #elif defined(_MSC_VER)
     _ReadWriteBarrier();
     *lock = 0;
@@ -185,9 +189,6 @@ SDL_AtomicUnlock(SDL_SpinLock *lock)
 #elif defined(__WATCOMC__) && defined(__386__)
     SDL_CompilerBarrier ();
     *lock = 0;
-
-#elif HAVE_GCC_ATOMICS || HAVE_GCC_SYNC_LOCK_TEST_AND_SET
-    __sync_lock_release(lock);
 
 #elif defined(__SOLARIS__)
     /* Used for Solaris when not using gcc. */
