@@ -52,6 +52,7 @@
 static void SDLCALL
 SDL_ConvertStereoToMono_SSE3(SDL_AudioCVT * cvt, SDL_AudioFormat format)
 {
+    const __m128 divby2 = _mm_set1_ps(0.5f);
     float *dst = (float *) cvt->buf;
     const float *src = dst;
     int i = cvt->len_cvt / 8;
@@ -59,15 +60,12 @@ SDL_ConvertStereoToMono_SSE3(SDL_AudioCVT * cvt, SDL_AudioFormat format)
     LOG_DEBUG_CONVERT("stereo", "mono (using SSE3)");
     SDL_assert(format == AUDIO_F32SYS);
 
-    /* We can only do this if dst is aligned to 16 bytes; since src is the
-       same pointer and it moves by 2, it can't be forcibly aligned. */
-    if ((((size_t) dst) & 15) == 0) {
-        /* Aligned! Do SSE blocks as long as we have 16 bytes available. */
-        const __m128 divby2 = _mm_set1_ps(0.5f);
-        while (i >= 4) {   /* 4 * float32 */
-            _mm_store_ps(dst, _mm_mul_ps(_mm_hadd_ps(_mm_load_ps(src), _mm_load_ps(src+4)), divby2));
-            i -= 4; src += 8; dst += 4;
-        }
+    /* Do SSE blocks as long as we have 16 bytes available.
+       Just use unaligned load/stores, if the memory at runtime is
+       aligned it'll be just as fast on modern processors */
+    while (i >= 4) {   /* 4 * float32 */
+        _mm_storeu_ps(dst, _mm_mul_ps(_mm_hadd_ps(_mm_load_ps(src), _mm_loadu_ps(src+4)), divby2));
+        i -= 4; src += 8; dst += 4;
     }
 
     /* Finish off any leftovers with scalar operations. */
