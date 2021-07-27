@@ -52,10 +52,6 @@ SDL_bool SDL_WAYLAND_own_surface(struct wl_surface *surface)
     return SDL_TRUE; /* For older clients we have to assume this is us... */
 }
 
-static float get_window_scale_factor(SDL_Window *window) {
-      return ((SDL_WindowData*)window->driverdata)->scale_factor;
-}
-
 static void
 CommitMinMaxDimensions(SDL_Window *window)
 {
@@ -182,9 +178,12 @@ handle_configure_xdg_shell_surface(void *data, struct xdg_surface *xdg, uint32_t
         window->w = wind->resize.width;
         window->h = wind->resize.height;
 
-        wl_surface_set_buffer_scale(wind->surface, get_window_scale_factor(window));
+        wl_surface_set_buffer_scale(wind->surface, wind->scale_factor);
         if (wind->egl_window) {
-            WAYLAND_wl_egl_window_resize(wind->egl_window, window->w * get_window_scale_factor(window), window->h * get_window_scale_factor(window), 0, 0);
+            WAYLAND_wl_egl_window_resize(wind->egl_window,
+                                         window->w * wind->scale_factor,
+                                         window->h * wind->scale_factor,
+                                         0, 0);
         }
 
         xdg_surface_ack_configure(xdg, serial);
@@ -422,42 +421,46 @@ static const struct qt_extended_surface_listener extended_surface_listener = {
 #endif /* SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH */
 
 static void
-update_scale_factor(SDL_WindowData *window) {
-   float old_factor = window->scale_factor, new_factor = 0.0;
-   int i;
+update_scale_factor(SDL_WindowData *window)
+{
+    float old_factor = window->scale_factor;
+    float new_factor;
+    int i;
 
-   if (!(window->sdlwindow->flags & SDL_WINDOW_ALLOW_HIGHDPI)) {
-       return;
-   }
+    if (!(window->sdlwindow->flags & SDL_WINDOW_ALLOW_HIGHDPI)) {
+        /* Scale will always be 1, just ignore this */
+        return;
+    }
 
-   if (!window->num_outputs) {
-       new_factor = old_factor;
-   }
+    if (FULLSCREEN_VISIBLE(window->sdlwindow)) {
+        /* For fullscreen, use the active display's scale factor */
+        SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window->sdlwindow);
+        SDL_WaylandOutputData* driverdata = display->driverdata;
+        new_factor = driverdata->scale_factor;
+    } else if (window->num_outputs == 0) {
+        /* No monitor (somehow)? Just fall back. */
+        new_factor = old_factor;
+    } else {
+        /* Check every display's factor, use the highest */
+        new_factor = 0.0f;
+        for (i = 0; i < window->num_outputs; i++) {
+            SDL_WaylandOutputData* driverdata = window->outputs[i];
+            if (driverdata->scale_factor > new_factor) {
+                new_factor = driverdata->scale_factor;
+            }
+        }
+    }
 
-   if (FULLSCREEN_VISIBLE(window->sdlwindow)) {
-       SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window->sdlwindow);
-       SDL_WaylandOutputData* driverdata = display->driverdata;
-       new_factor = driverdata->scale_factor;
-   }
-
-   for (i = 0; i < window->num_outputs; i++) {
-       SDL_WaylandOutputData* driverdata = wl_output_get_user_data(window->outputs[i]);
-       float factor = driverdata->scale_factor;
-       if (factor > new_factor) {
-           new_factor = factor;
-       }
-   }
-
-   if (new_factor != old_factor) {
-       /* force the resize event to trigger, as the logical size didn't change */
-       window->resize.width = window->sdlwindow->w;
-       window->resize.height = window->sdlwindow->h;
-       window->resize.scale_factor = new_factor;
-       window->resize.pending = SDL_TRUE;
-       if (!(window->sdlwindow->flags & SDL_WINDOW_OPENGL)) {
-           Wayland_HandlePendingResize(window->sdlwindow);  /* OpenGL windows handle this in SwapWindow */
-       }
-   }
+    if (new_factor != old_factor) {
+        /* force the resize event to trigger, as the logical size didn't change */
+        window->resize.width = window->sdlwindow->w;
+        window->resize.height = window->sdlwindow->h;
+        window->resize.scale_factor = new_factor;
+        window->resize.pending = SDL_TRUE;
+        if (!(window->sdlwindow->flags & SDL_WINDOW_OPENGL)) {
+            Wayland_HandlePendingResize(window->sdlwindow);  /* OpenGL windows handle this in SwapWindow */
+        }
+    }
 }
 
 /* While we can't get window position from the compositor, we do at least know
@@ -484,12 +487,18 @@ handle_surface_enter(void *data, struct wl_surface *surface,
                      struct wl_output *output)
 {
     SDL_WindowData *window = data;
+    SDL_WaylandOutputData *driverdata = wl_output_get_user_data(output);
 
-    window->outputs = SDL_realloc(window->outputs, (window->num_outputs + 1) * sizeof *window->outputs);
-    window->outputs[window->num_outputs++] = output;
+    if (!SDL_WAYLAND_own_surface(surface)) {
+        return;
+    }
+
+    window->outputs = SDL_realloc(window->outputs,
+                                  sizeof(SDL_WaylandOutputData*) * (window->num_outputs + 1));
+    window->outputs[window->num_outputs++] = driverdata;
     update_scale_factor(window);
 
-    Wayland_move_window(window->sdlwindow, wl_output_get_user_data(output));
+    Wayland_move_window(window->sdlwindow, driverdata);
 }
 
 static void
@@ -498,14 +507,21 @@ handle_surface_leave(void *data, struct wl_surface *surface,
 {
     SDL_WindowData *window = data;
     int i, send_move_event = 0;
+    SDL_WaylandOutputData *driverdata = wl_output_get_user_data(output);
+
+    if (!SDL_WAYLAND_own_surface(surface)) {
+        return;
+    }
 
     for (i = 0; i < window->num_outputs; i++) {
-        if (window->outputs[i] == output) {  /* remove this one */
+        if (window->outputs[i] == driverdata) {  /* remove this one */
             if (i == (window->num_outputs-1)) {
                 window->outputs[i] = NULL;
                 send_move_event = 1;
             } else {
-                SDL_memmove(&window->outputs[i], &window->outputs[i+1], sizeof (output) * ((window->num_outputs - i) - 1));
+                SDL_memmove(&window->outputs[i],
+                            &window->outputs[i + 1],
+                            sizeof(SDL_WaylandOutputData*) * ((window->num_outputs - i) - 1));
             }
             window->num_outputs--;
             i--;
@@ -513,11 +529,11 @@ handle_surface_leave(void *data, struct wl_surface *surface,
     }
 
     if (window->num_outputs == 0) {
-       SDL_free(window->outputs);
-       window->outputs = NULL;
+        SDL_free(window->outputs);
+        window->outputs = NULL;
     } else if (send_move_event) {
         Wayland_move_window(window->sdlwindow,
-                            wl_output_get_user_data(window->outputs[window->num_outputs - 1]));
+                            window->outputs[window->num_outputs - 1]);
     }
 
     update_scale_factor(window);
@@ -1205,7 +1221,10 @@ Wayland_HandlePendingResize(SDL_Window *window)
         data->scale_factor = data->resize.scale_factor;
         wl_surface_set_buffer_scale(data->surface, data->scale_factor);
         if (data->egl_window) {
-            WAYLAND_wl_egl_window_resize(data->egl_window, window->w * data->scale_factor, window->h * data->scale_factor, 0, 0);
+            WAYLAND_wl_egl_window_resize(data->egl_window,
+                                         window->w * data->scale_factor,
+                                         window->h * data->scale_factor,
+                                         0, 0);
         }
 
         if (data->resize.configure) {
@@ -1259,10 +1278,13 @@ void Wayland_SetWindowSize(_THIS, SDL_Window * window)
     }
 #endif
 
-    wl_surface_set_buffer_scale(wind->surface, get_window_scale_factor(window));
+    wl_surface_set_buffer_scale(wind->surface, wind->scale_factor);
 
     if (wind->egl_window) {
-        WAYLAND_wl_egl_window_resize(wind->egl_window, window->w * get_window_scale_factor(window), window->h * get_window_scale_factor(window), 0, 0);
+        WAYLAND_wl_egl_window_resize(wind->egl_window,
+                                     window->w * wind->scale_factor,
+                                     window->h * wind->scale_factor,
+                                     0, 0);
     }
 
 #ifdef HAVE_LIBDECOR_H
