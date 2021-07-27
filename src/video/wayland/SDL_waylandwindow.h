@@ -114,8 +114,6 @@ Wayland_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info);
 extern int Wayland_SetWindowHitTest(SDL_Window *window, SDL_bool enabled);
 extern int Wayland_FlashWindow(_THIS, SDL_Window * window, SDL_FlashOperation operation);
 
-extern SDL_bool SDL_WAYLAND_own_surface(struct wl_surface *surface);
-
 #endif /* SDL_waylandwindow_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */
