@@ -38,6 +38,7 @@ static const char *cursorNames[] = {
 };
 int system_cursor = -1;
 SDL_Cursor *cursor = NULL;
+SDL_bool relative_mode = SDL_FALSE;
 
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
 static void
@@ -74,6 +75,17 @@ loop()
                             event.window.data1,
                             event.window.data2,
                             SDL_GetDisplayName(SDL_GetWindowDisplayIndex(window)));
+                    }
+                }
+                if (event.window.event == SDL_WINDOWEVENT_FOCUS_LOST) {
+                    relative_mode = SDL_GetRelativeMouseMode();
+                    if (relative_mode) {
+                        SDL_SetRelativeMouseMode(SDL_FALSE);
+                    }
+                }
+                if (event.window.event == SDL_WINDOWEVENT_FOCUS_GAINED) {
+                    if (relative_mode) {
+                        SDL_SetRelativeMouseMode(SDL_TRUE);
                     }
                 }
             }
