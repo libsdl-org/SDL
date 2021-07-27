@@ -197,7 +197,7 @@ main(int argc, char *argv[])
 
         success = SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
                     "Simple MessageBox",
-                    "This is a simple error MessageBox with a parent window",
+                    "This is a simple error MessageBox with a parent window. Press a key or close the window after dismissing this messagebox.",
                     window);
         if (success == -1) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Error Presenting MessageBox: %s\n", SDL_GetError());
