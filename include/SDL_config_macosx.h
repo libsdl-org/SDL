@@ -137,6 +137,12 @@
 #define HAVE_SYSCONF    1
 #define HAVE_SYSCTLBYNAME 1
 
+#if defined(__has_include) && (defined(__i386__) || defined(__x86_64))
+# if __has_include(<immintrin.h>)
+#   define HAVE_IMMINTRIN_H 1
+# endif
+#endif
+
 #define HAVE_GCC_ATOMICS 1
 
 /* Enable various audio drivers */
