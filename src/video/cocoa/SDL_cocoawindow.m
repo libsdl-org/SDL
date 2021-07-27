@@ -508,6 +508,26 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
     return isMoving;
 }
 
+- (BOOL)isMovingOrFocusClickPending
+{
+    return isMoving || (focusClickPending != 0);
+}
+
+-(void) setFocusClickPending:(int) button
+{
+    focusClickPending |= (1 << button);
+}
+
+-(void) clearFocusClickPending:(int) button
+{
+    if ((focusClickPending & (1 << button)) != 0) {
+        focusClickPending &= ~(1 << button);
+        if (focusClickPending == 0) {
+            [self onMovingOrFocusClickPendingStateCleared];
+        }
+    }
+}
+
 -(void) setPendingMoveX:(int)x Y:(int)y
 {
     pendingWindowWarpX = x;
@@ -516,15 +536,36 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
 
 - (void)windowDidFinishMoving
 {
-    if ([self isMoving]) {
+    if (isMoving) {
         isMoving = NO;
+        [self onMovingOrFocusClickPendingStateCleared];
+    }
+}
 
+- (void)onMovingOrFocusClickPendingStateCleared
+{
+    if (![self isMovingOrFocusClickPending]) {
         SDL_Mouse *mouse = SDL_GetMouse();
         if (pendingWindowWarpX != INT_MAX && pendingWindowWarpY != INT_MAX) {
             mouse->WarpMouseGlobal(pendingWindowWarpX, pendingWindowWarpY);
             pendingWindowWarpX = pendingWindowWarpY = INT_MAX;
         }
         if (mouse->relative_mode && !mouse->relative_mode_warp && mouse->focus == _data->window) {
+            /* Move the cursor to the nearest point in the window */
+            {
+                int x, y;
+                CGPoint cgpoint;
+
+                SDL_GetMouseState(&x, &y);
+                cgpoint.x = _data->window->x + x;
+                cgpoint.y = _data->window->y + y;
+
+                Cocoa_HandleMouseWarp(cgpoint.x, cgpoint.y);
+
+                DLog("Returning cursor to (%g, %g)", cgpoint.x, cgpoint.y);
+                CGDisplayMoveCursorToPoint(kCGDirectMainDisplay, cgpoint);
+            }
+
             mouse->SetRelativeMouseMode(SDL_TRUE);
         }
     }
@@ -641,7 +682,7 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
     /* This needs to be done before restoring the relative mouse mode. */
     SDL_SetKeyboardFocus(window);
 
-    if (mouse->relative_mode && !mouse->relative_mode_warp && ![self isMoving]) {
+    if (mouse->relative_mode && !mouse->relative_mode_warp && ![self isMovingOrFocusClickPending]) {
         mouse->SetRelativeMouseMode(SDL_TRUE);
     }
 
@@ -1970,7 +2011,7 @@ Cocoa_SetWindowMouseGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
 
     /* Move the cursor to the nearest point in the window */
-    if (grabbed && data && ![data->listener isMoving]) {
+    if (grabbed && data && ![data->listener isMovingOrFocusClickPending]) {
         int x, y;
         CGPoint cgpoint;
 

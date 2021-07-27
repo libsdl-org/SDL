@@ -48,6 +48,7 @@ typedef enum
     BOOL inFullscreenTransition;
     PendingWindowOperation pendingWindowOperation;
     BOOL isMoving;
+    int focusClickPending;
     int pendingWindowWarpX, pendingWindowWarpY;
     BOOL isDragAreaRunning;
 }
@@ -62,8 +63,12 @@ typedef enum
 -(void) close;
 
 -(BOOL) isMoving;
+-(BOOL) isMovingOrFocusClickPending;
+-(void) setFocusClickPending:(int) button;
+-(void) clearFocusClickPending:(int) button;
 -(void) setPendingMoveX:(int)x Y:(int)y;
 -(void) windowDidFinishMoving;
+-(void) onMovingOrFocusClickPendingStateCleared;
 
 /* Window delegate functionality */
 -(BOOL) windowShouldClose:(id) sender;
