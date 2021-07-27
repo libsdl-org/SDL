@@ -557,6 +557,11 @@ Wayland_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info)
     if (version >= SDL_VERSIONNUM(2, 0, 15)) {
         info->info.wl.egl_window = data->egl_window;
     }
+
+    info->info.wl.shell_surface = NULL;
+    info->info.wl.xdg_surface = data->shell_surface.xdg.surface;
+
+
     info->subsystem = SDL_SYSWM_WAYLAND;
 
     return SDL_TRUE;
