@@ -91,6 +91,11 @@ typedef struct {
     SDL_bool done;
 } SDL_WaylandOutputData;
 
+extern void SDL_WAYLAND_register_surface(struct wl_surface *surface);
+extern void SDL_WAYLAND_register_output(struct wl_output *output);
+extern SDL_bool SDL_WAYLAND_own_surface(struct wl_surface *surface);
+extern SDL_bool SDL_WAYLAND_own_output(struct wl_output *output);
+
 #endif /* SDL_waylandvideo_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

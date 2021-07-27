@@ -42,16 +42,6 @@
 #include <libdecor.h>
 #endif
 
-static const char *SDL_WAYLAND_surface_tag = "sdl-window";
-
-SDL_bool SDL_WAYLAND_own_surface(struct wl_surface *surface)
-{
-    if (SDL_WAYLAND_HAVE_WAYLAND_CLIENT_1_18) {
-        return wl_proxy_get_tag((struct wl_proxy *) surface) == &SDL_WAYLAND_surface_tag;
-    }
-    return SDL_TRUE; /* For older clients we have to assume this is us... */
-}
-
 static void
 CommitMinMaxDimensions(SDL_Window *window)
 {
@@ -488,7 +478,7 @@ handle_surface_enter(void *data, struct wl_surface *surface,
     SDL_WindowData *window = data;
     SDL_WaylandOutputData *driverdata = wl_output_get_user_data(output);
 
-    if (!SDL_WAYLAND_own_surface(surface)) {
+    if (!SDL_WAYLAND_own_output(output) || !SDL_WAYLAND_own_surface(surface)) {
         return;
     }
 
@@ -508,7 +498,7 @@ handle_surface_leave(void *data, struct wl_surface *surface,
     int i, send_move_event = 0;
     SDL_WaylandOutputData *driverdata = wl_output_get_user_data(output);
 
-    if (!SDL_WAYLAND_own_surface(surface)) {
+    if (!SDL_WAYLAND_own_output(output) || !SDL_WAYLAND_own_surface(surface)) {
         return;
     }
 
@@ -1138,9 +1128,7 @@ int Wayland_CreateWindow(_THIS, SDL_Window *window)
         wl_compositor_create_surface(c->compositor);
     wl_surface_add_listener(data->surface, &surface_listener, data);
 
-    if (SDL_WAYLAND_HAVE_WAYLAND_CLIENT_1_18) {
-        wl_proxy_set_tag((struct wl_proxy *)data->surface, &SDL_WAYLAND_surface_tag);
-    }
+    SDL_WAYLAND_register_surface(data->surface);
 
     /* Fire a callback when the compositor wants a new frame rendered.
      * Right now this only matters for OpenGL; we use this callback to add a

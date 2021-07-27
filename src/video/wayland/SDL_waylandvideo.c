@@ -127,6 +127,39 @@ get_classname()
     return SDL_strdup("SDL_App");
 }
 
+static const char *SDL_WAYLAND_surface_tag = "sdl-window";
+static const char *SDL_WAYLAND_output_tag = "sdl-output";
+
+void SDL_WAYLAND_register_surface(struct wl_surface *surface)
+{
+    if (SDL_WAYLAND_HAVE_WAYLAND_CLIENT_1_18) {
+        wl_proxy_set_tag((struct wl_proxy *)surface, &SDL_WAYLAND_surface_tag);
+    }
+}
+
+void SDL_WAYLAND_register_output(struct wl_output *output)
+{
+    if (SDL_WAYLAND_HAVE_WAYLAND_CLIENT_1_18) {
+        wl_proxy_set_tag((struct wl_proxy *)output, &SDL_WAYLAND_output_tag);
+    }
+}
+
+SDL_bool SDL_WAYLAND_own_surface(struct wl_surface *surface)
+{
+    if (SDL_WAYLAND_HAVE_WAYLAND_CLIENT_1_18) {
+        return wl_proxy_get_tag((struct wl_proxy *) surface) == &SDL_WAYLAND_surface_tag;
+    }
+    return SDL_TRUE; /* For older clients we have to assume this is us... */
+}
+
+SDL_bool SDL_WAYLAND_own_output(struct wl_output *output)
+{
+    if (SDL_WAYLAND_HAVE_WAYLAND_CLIENT_1_18) {
+        return wl_proxy_get_tag((struct wl_proxy *) output) == &SDL_WAYLAND_output_tag;
+    }
+    return SDL_TRUE; /* For older clients we have to assume this is us... */
+}
+
 static void
 Wayland_DeleteDevice(SDL_VideoDevice *device)
 {
@@ -392,6 +425,7 @@ Wayland_add_display(SDL_VideoData *d, uint32_t id)
     data->scale_factor = 1.0;
 
     wl_output_add_listener(output, &output_listener, data);
+    SDL_WAYLAND_register_output(output);
 }
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
