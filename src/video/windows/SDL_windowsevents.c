@@ -963,6 +963,14 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             /* Fix our size to the current size */
             info = (MINMAXINFO *) lParam;
             if (SDL_GetWindowFlags(data->window) & SDL_WINDOW_RESIZABLE) {
+                if (SDL_GetWindowFlags(data->window) & SDL_WINDOW_BORDERLESS) {
+                    int screenW = GetSystemMetrics(SM_CXSCREEN);
+                    int screenH = GetSystemMetrics(SM_CYSCREEN);
+                    info->ptMaxSize.x = SDL_max(w, screenW);
+                    info->ptMaxSize.y = SDL_max(h, screenH);
+                    info->ptMaxPosition.x = SDL_min(0, ((screenW - w) / 2));
+                    info->ptMaxPosition.y = SDL_min(0, ((screenH - h) / 2));
+                }
                 info->ptMinTrackSize.x = w + min_w;
                 info->ptMinTrackSize.y = h + min_h;
                 if (constrain_max_size) {
