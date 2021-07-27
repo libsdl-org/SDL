@@ -496,7 +496,6 @@ WASAPI_PrepDevice(_THIS, const SDL_bool updatestream)
     const SDL_AudioSpec oldspec = this->spec;
     const AUDCLNT_SHAREMODE sharemode = AUDCLNT_SHAREMODE_SHARED;
     UINT32 bufsize = 0;  /* this is in sample frames, not samples, not bytes. */
-    REFERENCE_TIME duration = 0;
     REFERENCE_TIME default_period = 0;
     IAudioClient *client = this->hidden->client;
     IAudioRenderClient *render = NULL;
@@ -546,11 +545,7 @@ WASAPI_PrepDevice(_THIS, const SDL_bool updatestream)
         return SDL_SetError("WASAPI: Unsupported audio format");
     }
 
-    if (this->iscapture) {
-        ret = IAudioClient_GetDevicePeriod(client, NULL, &duration);
-    } else {
-        ret = IAudioClient_GetDevicePeriod(client, &default_period, NULL);
-    }
+    ret = IAudioClient_GetDevicePeriod(client, &default_period, NULL);
     if (FAILED(ret)) {
         return WIN_SetErrorFromHRESULT("WASAPI can't determine minimum device period", ret);
     }
@@ -572,12 +567,7 @@ WASAPI_PrepDevice(_THIS, const SDL_bool updatestream)
 #endif
 
     streamflags |= AUDCLNT_STREAMFLAGS_EVENTCALLBACK;
-    if (this->iscapture) {
-        ret = IAudioClient_Initialize(client, sharemode, streamflags, duration, sharemode == AUDCLNT_SHAREMODE_SHARED ? 0 : duration, waveformat, NULL);
-    } else {
-        ret = IAudioClient_Initialize(client, sharemode, streamflags, 0, 0, waveformat, NULL);
-    }
-
+    ret = IAudioClient_Initialize(client, sharemode, streamflags, 0, 0, waveformat, NULL);
     if (FAILED(ret)) {
         return WIN_SetErrorFromHRESULT("WASAPI can't initialize audio client", ret);
     }
@@ -594,9 +584,7 @@ WASAPI_PrepDevice(_THIS, const SDL_bool updatestream)
 
     /* Match the callback size to the period size to cut down on the number of
        interrupts waited for in each call to WaitDevice */
-    if (this->iscapture) {
-        this->spec.samples = ((Uint16) bufsize) / 2;  /* fill half of the DMA buffer on each run. */
-    } else {
+    {
         const float period_millis = default_period / 10000.0f;
         const float period_frames = period_millis * this->spec.freq / 1000.0f;
         this->spec.samples = (Uint16)SDL_ceilf(period_frames);
