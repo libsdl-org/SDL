@@ -638,11 +638,6 @@ void Wayland_ShowWindow(_THIS, SDL_Window *window)
         xdg_toplevel_add_listener(data->shell_surface.xdg.roleobj.toplevel, &toplevel_listener_xdg, data);
     }
 
-    /* Create the window decorations */
-    if (c->decoration_manager) {
-        data->server_decoration = zxdg_decoration_manager_v1_get_toplevel_decoration(c->decoration_manager, data->shell_surface.xdg.roleobj.toplevel);
-    }
-
     /* Restore state that was set prior to this call */
     Wayland_SetWindowTitle(_this, window);
     if (window->flags & SDL_WINDOW_MAXIMIZED) {
