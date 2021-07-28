@@ -134,32 +134,23 @@ SDL_Convert51ToStereo_AVX(SDL_AudioCVT * cvt, SDL_AudioFormat format)
     SDL_assert(format == AUDIO_F32SYS);
 
     /* SDL's 5.1 layout: FL+FR+FC+LFE+BL+BR */
-    /* This implementation is based on SDL_Convert51ToStereo_SSE */
-    /* Because AVX operates with two 128 bit lanes, the shuffling */
-    /* here is not very efficient. AVX512F lifts this limitation. */
     while (i >= 4) {
-        __m128 in0 = _mm_loadu_ps(src);      /* 0FL 0FR 0FC 0LF */
-        __m128 in1 = _mm_loadu_ps(src + 4);  /* 0BL 0BR 1FL 1FR */
-        __m128 in2 = _mm_loadu_ps(src + 8);  /* 1FC 1LF 1BL 1BR */
-        __m128 in3 = _mm_loadu_ps(src + 12); /* 2FL 2FR 2FC 2LF */
-        __m128 in4 = _mm_loadu_ps(src + 16); /* 2BL 2BR 3FL 3FR */
-        __m128 in5 = _mm_loadu_ps(src + 20); /* 3FC 3LF 3BL 3BR */
+        __m256 in0 = _mm256_loadu_ps(src + 0);  /* 0FL 0FR 0FC 0LF 0BL 0BR 1FL 1FR */
+        __m256 in1 = _mm256_loadu_ps(src + 8);  /* 1FC 1LF 1BL 1BR 2FL 2FR 2FC 2LF */
+        __m256 in2 = _mm256_loadu_ps(src + 16); /* 2BL 2BR 3FL 3FR 3FC 3LF 3BL 3BR */
 
-        /* 0FC 0FC 1FC 1FC */
-        __m128 fc_distributed_lo = _mm_shuffle_ps(in0, in2, _MM_SHUFFLE(0, 0, 2, 2));
-        /* 2FC 2FC 3FC 3FC */
-        __m128 fc_distributed_hi = _mm_shuffle_ps(in3, in5, _MM_SHUFFLE(0, 0, 2, 2));
+        /* 0FL 0FR 0FC 0LF 2FL 2FR 2FC 2LF */
+        __m256 temp0 = _mm256_blend_ps(in0, in1, 0xF0);
+        /* 1FC 1LF 1BL 1BR 3FC 3LF 3BL 3BR */
+        __m256 temp1 = _mm256_blend_ps(in1, in2, 0xF0);
+
         /* 0FC 0FC 1FC 1FC 2FC 2FC 3FC 3FC */
-        __m256 fc_distributed = _mm256_mul_ps(half, _mm256_insertf128_ps(_mm256_castps128_ps256(fc_distributed_lo), fc_distributed_hi, 1));
+        __m256 fc_distributed = _mm256_mul_ps(half, _mm256_shuffle_ps(temp0, temp1, _MM_SHUFFLE(0, 0, 2, 2)));
 
-        /* 0FL 0FR 1BL 1BR */
-        __m128 permuted0_lo = _mm_shuffle_ps(in0, in2, _MM_SHUFFLE(3, 2, 1, 0));
-        /* 2FL 2FR 3BL 3BR */
-        __m128 permuted0_hi = _mm_shuffle_ps(in3, in5, _MM_SHUFFLE(3, 2, 1, 0));
         /* 0FL 0FR 1BL 1BR 2FL 2FR 3BL 3BR */
-        __m256 permuted0 = _mm256_insertf128_ps(_mm256_castps128_ps256(permuted0_lo), permuted0_hi, 1);
+        __m256 permuted0 = _mm256_blend_ps(temp0, temp1, 0xCC);
         /* 0BL 0BR 1FL 1FR 2BL 2BR 3FL 3FR */
-        __m256 permuted1 = _mm256_insertf128_ps(_mm256_castps128_ps256(in1), in4, 1);
+        __m256 permuted1 = _mm256_permute2f128_ps(in0, in2, 0x21);
 
         /*   0FL 0FR 1BL 1BR 2FL 2FR 3BL 3BR */
         /* + 0BL 0BR 1FL 1FR 2BL 2BR 3FL 3FR */
