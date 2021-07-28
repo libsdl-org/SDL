@@ -114,6 +114,13 @@ Wayland_GLES_SwapWindow(_THIS, SDL_Window *window)
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
     const int swap_interval = _this->egl_data->egl_swapinterval;
 
+    if (data->suspension) {
+        /* For systems with surface suspension exposed we can skip _all_ this
+         * crap below and go straight to SwapBuffers, EGL will know what to do.
+         */
+        goto present;
+    }
+
     /* For windows that we know are hidden, skip swaps entirely, if we don't do
      * this compositors will intentionally stall us indefinitely and there's no
      * way for an end user to show the window, unlike other situations (i.e.
@@ -143,6 +150,7 @@ Wayland_GLES_SwapWindow(_THIS, SDL_Window *window)
         SDL_AtomicSet(&data->swap_interval_ready, 0);
     }
 
+present:
     /* Feed the frame to Wayland. This will set it so the wl_surface_frame callback can fire again. */
     if (!_this->egl_data->eglSwapBuffers(_this->egl_data->egl_display, data->egl_surface)) {
         return SDL_EGL_SetError("unable to show color buffer in an OS-native window", "eglSwapBuffers");

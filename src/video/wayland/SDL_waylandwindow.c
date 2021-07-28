@@ -37,6 +37,7 @@
 #include "xdg-decoration-unstable-v1-client-protocol.h"
 #include "idle-inhibit-unstable-v1-client-protocol.h"
 #include "xdg-activation-v1-client-protocol.h"
+#include "surface-suspension-v1-client-protocol.h"
 
 #ifdef HAVE_LIBDECOR_H
 #include <libdecor.h>
@@ -152,6 +153,26 @@ handle_surface_frame_done(void *data, struct wl_callback *cb, uint32_t time)
 
 static const struct wl_callback_listener surface_frame_listener = {
     handle_surface_frame_done
+};
+
+static void
+handle_surface_suspended(void *data, struct wp_surface_suspension_v1 *wp_surface_suspension_v1)
+{
+    SDL_SendWindowEvent((SDL_Window *)data, SDL_WINDOWEVENT_HIDDEN, 0, 0);
+}
+
+static void
+handle_surface_resumed(void *data, struct wp_surface_suspension_v1 *wp_surface_suspension_v1)
+{
+    /* Send SHOWN, to remove the HIDDEN flag, and EXPOSED, to request a frame */
+    SDL_Window *window = (SDL_Window *)data;
+    SDL_SendWindowEvent(window, SDL_WINDOWEVENT_SHOWN, 0, 0);
+    SDL_SendWindowEvent(window, SDL_WINDOWEVENT_EXPOSED, 0, 0);
+}
+
+static const struct wp_surface_suspension_v1_listener suspension_listener = {
+    handle_surface_suspended,
+    handle_surface_resumed
 };
 
 
@@ -1149,12 +1170,18 @@ int Wayland_CreateWindow(_THIS, SDL_Window *window)
 
     SDL_WAYLAND_register_surface(data->surface);
 
-    /* Fire a callback when the compositor wants a new frame rendered.
-     * Right now this only matters for OpenGL; we use this callback to add a
-     * wait timeout that avoids getting deadlocked by the compositor when the
-     * window isn't visible.
-     */
-    if (window->flags & SDL_WINDOW_OPENGL) {
+    if (c->suspension_manager) {
+        data->suspension = wp_surface_suspension_manager_v1_get_surface_suspension(c->suspension_manager,
+                                                                                   data->surface);
+        wp_surface_suspension_v1_add_listener(data->suspension,
+                                              &suspension_listener,
+                                              window);
+    } else if (window->flags & SDL_WINDOW_OPENGL) {
+        /* Fire a callback when the compositor wants a new frame rendered.
+         * Right now this only matters for OpenGL; we use this callback to add a
+         * wait timeout that avoids getting deadlocked by the compositor when the
+         * window isn't visible.
+         */
         data->frame_callback = wl_surface_frame(data->surface);
         wl_callback_add_listener(data->frame_callback, &surface_frame_listener, data);
     }
@@ -1387,6 +1414,10 @@ void Wayland_DestroyWindow(_THIS, SDL_Window *window)
 
         if (wind->activation_token) {
             xdg_activation_token_v1_destroy(wind->activation_token);
+        }
+
+        if (wind->suspension) {
+            wp_surface_suspension_v1_destroy(wind->suspension);
         }
 
         SDL_free(wind->outputs);

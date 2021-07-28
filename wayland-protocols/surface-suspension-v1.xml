@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<protocol name="wp_surface_suspension_v1">
+<!-- wrap:70 -->
+
+  <copyright>
+    Copyright © 2021 Joshua Ashton
+
+    Permission is hereby granted, free of charge, to any person obtaining a
+    copy of this software and associated documentation files (the "Software"),
+    to deal in the Software without restriction, including without limitation
+    the rights to use, copy, modify, merge, publish, distribute, sublicense,
+    and/or sell copies of the Software, and to permit persons to whom the
+    Software is furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice (including the next
+    paragraph) shall be included in all copies or substantial portions of the
+    Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+    THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+    DEALINGS IN THE SOFTWARE.
+  </copyright>
+
+  <description summary="Surface suspension protocol">
+    This protocol provides the ability for clients to know when their surfaces
+    are suspended or resumed via a pair of events indicating surface
+    suspension and resumption suspension states.
+
+    Surfaces start out in the resumed suspension state at creation.
+
+    Surfaces may be put into the suspended state by a compositor issuing
+    the suspended event when the compositor believes they are likely not
+    to be sent any frame callbacks soon.
+    Surfaces in suspended state must not be sent any wl_surface.frame events.
+
+    Surfaces may be put into the resumed suspension state by a compositor issuing
+    the resume event.
+    Surfaces in resumed state may be sent wl_surface.frame events.
+
+    Subsurfaces are not affected by their parent surface's suspension state.
+    
+    Client apps and their windowing/graphics APIs can listen to these events and
+    handle surface suspension accordingly (eg. releasing graphics resources
+    such as buffers or suspending work relating to rendering.)
+  </description>
+
+  <interface name="wp_surface_suspension_manager_v1" version="1">
+    <description summary="surface suspension manager">
+      The surface suspension manager is a singleton global object that
+      provides the ability to create wp_surface_suspension_v1 for a
+      given wl_surface.
+    </description>
+
+    <request name="destroy" type="destructor">
+      <description summary="destroy the surface suspension manager">
+        Destroy the surface suspension manager.
+
+        Child wp_surface_suspension_v1 objects are not affected
+        by the destruction of their suspension manager.
+      </description>
+    </request>
+
+    <request name="get_surface_suspension">
+      <description summary="get a surface suspension object">
+        Create a surface suspension interface for a given wl_surface object.
+        See the wp_surface_suspension_v1 interface for more details.
+      </description>
+      <arg name="id" type="new_id" interface="wp_surface_suspension_v1"/>
+      <arg name="surface" type="object" interface="wl_surface"/>
+    </request>
+  </interface>
+
+  <interface name="wp_surface_suspension_v1" version="1">
+    <request name="destroy" type="destructor">
+      <description summary="release the surface suspension object"/>
+    </request>
+
+    <event name="suspended">
+      <description summary="surface suspension event">
+        This event is sent whenever a surface has been suspended.
+
+        This puts the surface into the suspended suspension state.
+
+        If the surface is currently suspended at the time of the surface
+        suspension object's creation, this event will be fired immediately.
+      </description>
+    </event>
+
+    <event name="resumed">
+      <description summary="surface resumption event">
+        This event is sent whenever a surface has been resumed.
+
+        This puts the surface into the resumed suspension state.
+      </description>
+    </event>
+  </interface>
+
+</protocol>

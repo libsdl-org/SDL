@@ -67,6 +67,7 @@ typedef struct {
     struct zwp_keyboard_shortcuts_inhibitor_v1 *key_inhibitor;
     struct zwp_idle_inhibitor_v1 *idle_inhibitor;
     struct xdg_activation_token_v1 *activation_token;
+    struct wp_surface_suspension_v1 *suspension;
 
     SDL_atomic_t swap_interval_ready;
 
