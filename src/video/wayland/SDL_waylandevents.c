@@ -955,13 +955,13 @@ seat_handle_capabilities(void *data, struct wl_seat *seat,
     }
 
     if ((caps & WL_SEAT_CAPABILITY_TOUCH) && !input->touch) {
-        SDL_AddTouch((SDL_TouchID)seat, SDL_TOUCH_DEVICE_DIRECT, "wayland_touch");
+        SDL_AddTouch((SDL_TouchID)(intptr_t)seat, SDL_TOUCH_DEVICE_DIRECT, "wayland_touch");
         input->touch = wl_seat_get_touch(seat);
         wl_touch_set_user_data(input->touch, input);
         wl_touch_add_listener(input->touch, &touch_listener,
                                  input);
     } else if (!(caps & WL_SEAT_CAPABILITY_TOUCH) && input->touch) {
-        SDL_DelTouch((SDL_TouchID)seat);
+        SDL_DelTouch((SDL_TouchID)(intptr_t)seat);
         wl_touch_destroy(input->touch);
         input->touch = NULL;
     }
