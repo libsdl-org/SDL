@@ -179,6 +179,8 @@ SDL_WAYLAND_SYM(bool, libdecor_frame_has_capability, (struct libdecor_frame *, \
 SDL_WAYLAND_SYM(void, libdecor_frame_set_visibility, (struct libdecor_frame *, bool))
 SDL_WAYLAND_SYM(bool, libdecor_frame_is_visible, (struct libdecor_frame *))
 SDL_WAYLAND_SYM(bool, libdecor_frame_is_floating, (struct libdecor_frame *))
+SDL_WAYLAND_SYM(void, libdecor_frame_set_parent, (struct libdecor_frame *,\
+                                                  struct libdecor_frame *))
 SDL_WAYLAND_SYM(struct xdg_surface *, libdecor_frame_get_xdg_surface, (struct libdecor_frame *))
 SDL_WAYLAND_SYM(void, libdecor_frame_map, (struct libdecor_frame *))
 SDL_WAYLAND_SYM(struct libdecor_state *, libdecor_state_new, (int, int))

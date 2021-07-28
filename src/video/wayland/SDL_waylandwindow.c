@@ -595,6 +595,18 @@ Wayland_SetWindowModalFor(_THIS, SDL_Window *modal_window, SDL_Window *parent_wi
     SDL_WindowData *modal_data = modal_window->driverdata;
     SDL_WindowData *parent_data = parent_window->driverdata;
 
+#ifdef HAVE_LIBDECOR_H
+    if (viddata->shell.libdecor) {
+        if (modal_data->shell_surface.libdecor.frame == NULL) {
+            return SDL_SetError("Modal window was hidden");
+        }
+        if (parent_data->shell_surface.libdecor.frame == NULL) {
+            return SDL_SetError("Parent window was hidden");
+        }
+        libdecor_frame_set_parent(modal_data->shell_surface.libdecor.frame,
+                                  parent_data->shell_surface.libdecor.frame);
+    } else
+#endif
     if (viddata->shell.xdg) {
         if (modal_data->shell_surface.xdg.roleobj.toplevel == NULL) {
             return SDL_SetError("Modal window was hidden");
@@ -604,6 +616,8 @@ Wayland_SetWindowModalFor(_THIS, SDL_Window *modal_window, SDL_Window *parent_wi
         }
         xdg_toplevel_set_parent(modal_data->shell_surface.xdg.roleobj.toplevel,
                                 parent_data->shell_surface.xdg.roleobj.toplevel);
+    } else {
+        return SDL_Unsupported();
     }
 
     WAYLAND_wl_display_flush(viddata->display);
