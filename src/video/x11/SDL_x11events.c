@@ -562,6 +562,7 @@ X11_UpdateUserTime(SDL_WindowData *data, const unsigned long latest)
 static void
 X11_HandleClipboardEvent(_THIS, const XEvent *xevent)
 {
+    int i;
     SDL_VideoData *videodata = (SDL_VideoData *) _this->driverdata;
     Display *display = videodata->display;
 
@@ -573,10 +574,12 @@ X11_HandleClipboardEvent(_THIS, const XEvent *xevent)
         case SelectionRequest: {
             const XSelectionRequestEvent *req = &xevent->xselectionrequest;
             XEvent sevent;
-            int seln_format;
+            int seln_format, mime_formats;
             unsigned long nbytes;
             unsigned long overflow;
-            unsigned char *seln_data;
+            unsigned char *seln_data;            
+            Atom supportedFormats[SDL_X11_CLIPBOARD_MIME_TYPE_MAX+1];
+            Atom XA_TARGETS = X11_XInternAtom(display, "TARGETS", 0);
 
 #ifdef DEBUG_XEVENTS
             printf("window CLIPBOARD: SelectionRequest (requestor = %ld, target = %ld)\n",
@@ -594,27 +597,38 @@ X11_HandleClipboardEvent(_THIS, const XEvent *xevent)
             /* !!! FIXME: We were probably storing this on the root window
                because an SDL window might go away...? but we don't have to do
                this now (or ever, really). */
-            if (X11_XGetWindowProperty(display, DefaultRootWindow(display),
-                    X11_GetSDLCutBufferClipboardType(display), 0, INT_MAX/4, False, req->target,
-                    &sevent.xselection.target, &seln_format, &nbytes,
-                    &overflow, &seln_data) == Success) {
-                /* !!! FIXME: cache atoms */
-                Atom XA_TARGETS = X11_XInternAtom(display, "TARGETS", 0);
-                if (sevent.xselection.target == req->target) {
-                    X11_XChangeProperty(display, req->requestor, req->property,
-                        sevent.xselection.target, seln_format, PropModeReplace,
-                        seln_data, nbytes);
-                    sevent.xselection.property = req->property;
-                } else if (XA_TARGETS == req->target) {
-                    Atom SupportedFormats[] = { XA_TARGETS, sevent.xselection.target };
-                    X11_XChangeProperty(display, req->requestor, req->property,
-                        XA_ATOM, 32, PropModeReplace,
-                        (unsigned char*)SupportedFormats,
-                        SDL_arraysize(SupportedFormats));
-                    sevent.xselection.property = req->property;
-                    sevent.xselection.target = XA_TARGETS;
+            
+            if (req->target == XA_TARGETS) {
+                supportedFormats[0] = XA_TARGETS;
+                mime_formats = 1;
+                for (i = 0; i < SDL_X11_CLIPBOARD_MIME_TYPE_MAX; ++i) 
+                    supportedFormats[mime_formats++] = X11_GetSDLCutBufferClipboardExternalFormat(display, i);
+                X11_XChangeProperty(display, req->requestor, req->property,
+                    XA_ATOM, 32, PropModeReplace,
+                    (unsigned char*)supportedFormats,
+                    mime_formats);
+                sevent.xselection.property = req->property;
+                sevent.xselection.target = XA_TARGETS;
+            } else {
+                for (i = 0; i < SDL_X11_CLIPBOARD_MIME_TYPE_MAX; ++i) {
+                    if (X11_GetSDLCutBufferClipboardExternalFormat(display, i) != req->target)
+                        continue;
+                    if (X11_XGetWindowProperty(display, DefaultRootWindow(display),
+                        X11_GetSDLCutBufferClipboardType(display, i), 0, INT_MAX/4, False, X11_GetSDLCutBufferClipboardInternalFormat(display, i),
+                        &sevent.xselection.target, &seln_format, &nbytes,
+                        &overflow, &seln_data) == Success) {
+                            if (seln_format != None) {
+                                X11_XChangeProperty(display, req->requestor, req->property,
+                                    sevent.xselection.target, seln_format, PropModeReplace,
+                                    seln_data, nbytes);
+                                sevent.xselection.property = req->property;
+                                X11_XFree(seln_data);
+                                break;
+                            } else {
+                                X11_XFree(seln_data);
+                            }
+                    }
                 }
-                X11_XFree(seln_data);
             }
             X11_XSendEvent(display, req->requestor, False, 0, &sevent);
             X11_XSync(display, False);
