@@ -18,7 +18,6 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-
 #ifndef SDL_waylanddyn_h_
 #define SDL_waylanddyn_h_
 
@@ -67,7 +66,6 @@ void SDL_WAYLAND_UnloadSymbols(void);
     extern SDL_DYNWAYLANDFN_##fn WAYLAND_##fn;
 #define SDL_WAYLAND_INTERFACE(iface) extern const struct wl_interface *WAYLAND_##iface;
 #include "SDL_waylandsym.h"
-
 
 #ifdef __cplusplus
 }
@@ -145,6 +143,12 @@ void SDL_WAYLAND_UnloadSymbols(void);
 #define libdecor_state_free (*WAYLAND_libdecor_state_free)
 #define libdecor_configuration_get_content_size (*WAYLAND_libdecor_configuration_get_content_size)
 #define libdecor_configuration_get_window_state (*WAYLAND_libdecor_configuration_get_window_state)
+#endif
+
+#else /* SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC */
+
+#ifdef HAVE_LIBDECOR_H
+#include <libdecor.h>
 #endif
 
 #endif /* SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC */
