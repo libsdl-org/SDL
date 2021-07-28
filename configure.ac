@@ -1511,44 +1511,6 @@ CheckWarnAll()
     fi
 }
 
-dnl See if libdecor is available
-CheckLibDecor()
-{
-    AC_ARG_ENABLE(libdecor,
-[AS_HELP_STRING([--enable-libdecor], [use libdecor for Wayland client-side decorations [default=yes]])],
-                  , enable_libdecor=yes)
-    if test x$enable_libdecor = xyes; then
-        AC_MSG_CHECKING(for libdecor support)
-        AS_IF([$PKG_CONFIG --exists libdecor-0],
-              [video_libdecor=yes],
-              [video_libdecor=no])
-        AC_MSG_RESULT($video_libdecor)
-        if test x$video_libdecor = xyes; then
-            EXTRA_CFLAGS="$EXTRA_CFLAGS `$PKG_CONFIG --cflags libdecor-0`"
-            AC_DEFINE(HAVE_LIBDECOR_H, 1, [ ])
-
-            AC_ARG_ENABLE(libdecor-shared,
-[AS_HELP_STRING([--enable-libdecor-shared], [dynamically load libdecor [default=yes]])],
-                 , enable_libdecor_shared=yes)
-
-            decor_lib=[`find_lib "libdecor-0.so.*" "" | sed 's/.*\/\(.*\)/\1/; q'`]
-
-            if test x$have_loadso != xyes && \
-               test x$enable_libdecor_shared = xyes; then
-                AC_MSG_WARN([You must have SDL_LoadObject() support for dynamic libdecor loading])
-            fi
-
-            if test x$have_loadso = xyes && \
-               test x$enable_libdecor_shared = xyes && test x$decor_lib != x; then
-                echo "-- dynamic libdecor -> $decor_lib"
-                AC_DEFINE_UNQUOTED(SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_LIBDECOR, "$decor_lib", [ ])
-            else
-                EXTRA_LDFLAGS="$EXTRA_LDFLAGS `$PKG_CONFIG --libs libdecor-0`"
-            fi
-        fi
-    fi
-}
-
 dnl Check for Wayland
 CheckWayland()
 {
@@ -1590,7 +1552,7 @@ CheckWayland()
 [AS_HELP_STRING([--enable-wayland-shared], [dynamically load Wayland support [default=maybe]])],
                           , enable_wayland_shared=maybe)
 
-            dnl FIXME: Do BSD and OS X need special cases?
+dnl FIXME: Do BSD and OS X need special cases?
             case "$host" in
                 *)
                     wayland_client_lib=[`find_lib "libwayland-client.so.*" "$WAYLAND_LIBS" | sed 's/.*\/\(.*\)/\1/; q'`]
@@ -1634,7 +1596,44 @@ CheckWayland()
             fi
             have_video=yes
 
-            CheckLibDecor
+dnl See if libdecor is available
+            AC_ARG_ENABLE(libdecor,
+[AS_HELP_STRING([--enable-libdecor], [use libdecor for Wayland client-side decorations [default=yes]])],
+                          , enable_libdecor=yes)
+            if test x$enable_libdecor = xyes; then
+                AC_MSG_CHECKING(for libdecor support)
+                AS_IF([$PKG_CONFIG --exists libdecor-0],
+                      [video_libdecor=yes],
+                      [video_libdecor=no])
+                AC_MSG_RESULT($video_libdecor)
+                if test x$video_libdecor = xyes; then
+                    EXTRA_CFLAGS="$EXTRA_CFLAGS `$PKG_CONFIG --cflags libdecor-0`"
+                    AC_DEFINE(HAVE_LIBDECOR_H, 1, [ ])
+
+                    AC_ARG_ENABLE(libdecor-shared,
+[AS_HELP_STRING([--enable-libdecor-shared], [dynamically load libdecor [default=yes]])],
+                         , enable_libdecor_shared=yes)
+
+                    if test x$enable_wayland_shared != xyes; then
+                       enable_libdecor_shared=no
+                    fi
+
+                    decor_lib=[`find_lib "libdecor-0.so.*" "" | sed 's/.*\/\(.*\)/\1/; q'`]
+
+                    if test x$have_loadso != xyes && \
+                       test x$enable_libdecor_shared = xyes; then
+                        AC_MSG_WARN([You must have SDL_LoadObject() support for dynamic libdecor loading])
+                    fi
+
+                    if test x$have_loadso = xyes && \
+                       test x$enable_libdecor_shared = xyes && test x$decor_lib != x; then
+                        echo "-- dynamic libdecor -> $decor_lib"
+                        AC_DEFINE_UNQUOTED(SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_LIBDECOR, "$decor_lib", [ ])
+                    else
+                        EXTRA_LDFLAGS="$EXTRA_LDFLAGS `$PKG_CONFIG --libs libdecor-0`"
+                    fi
+                fi
+            fi
         fi
     fi
 }
