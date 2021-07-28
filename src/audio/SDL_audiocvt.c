@@ -46,6 +46,15 @@
 #if defined(HAVE_IMMINTRIN_H) && !defined(SDL_DISABLE_IMMINTRIN_H)
 #define HAVE_AVX_INTRINSICS 1
 #endif
+#if defined __clang__
+# if (__clang_major__ < 5)
+#   undef HAVE_AVX_INTRINSICS
+# endif
+#elif defined __GNUC__
+# if (__GNUC__ < 4) || (__GNUC__ == 4 && __GNUC_MINOR__ < 9)
+#   undef HAVE_AVX_INTRINSICS
+# endif
+#endif
 
 #if HAVE_SSE3_INTRINSICS
 /* Convert from stereo to mono. Average left and right. */
