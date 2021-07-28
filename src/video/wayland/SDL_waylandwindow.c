@@ -536,6 +536,7 @@ static const struct wl_surface_listener surface_listener = {
 SDL_bool
 Wayland_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info)
 {
+    SDL_VideoData *viddata = (SDL_VideoData *) _this->driverdata;
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
     const Uint32 version = SDL_VERSIONNUM((Uint32)info->version.major,
                                           (Uint32)info->version.minor,
@@ -564,7 +565,16 @@ Wayland_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info)
     }
 
     info->info.wl.shell_surface = NULL;
-    info->info.wl.xdg_surface = data->shell_surface.xdg.surface;
+#ifdef HAVE_LIBDECOR_H
+    if (viddata->shell.libdecor && data->shell_surface.libdecor.frame != NULL) {
+        info->info.wl.xdg_surface = libdecor_frame_get_xdg_surface(data->shell_surface.libdecor.frame);
+    } else
+#endif
+    if (viddata->shell.xdg && data->shell_surface.xdg.surface != NULL) {
+        info->info.wl.xdg_surface = data->shell_surface.xdg.surface;
+    } else {
+        info->info.wl.xdg_surface = NULL;
+    }
 
 
     info->subsystem = SDL_SYSWM_WAYLAND;
