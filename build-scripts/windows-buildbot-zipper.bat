@@ -13,16 +13,10 @@ IF EXIST zipper GOTO zippermade
 mkdir zipper
 :zippermade
 mkdir zipper\SDL
-mkdir zipper\SDL\include
 mkdir zipper\SDL\lib
-copy include\*.h include\
 copy %2\%1\Release\SDL2.dll zipper\SDL\lib\
 copy %2\%1\Release\SDL2.lib zipper\SDL\lib\
 copy %2\%1\Release\SDL2main.lib zipper\SDL\lib\
-cd zipper
-zip -9r ..\%3 SDL
-cd ..
-erase /q /f /s zipper
 
 :done
 

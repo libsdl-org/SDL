@@ -62,5 +62,16 @@ jobs:
     - name: Configure CMake
       run: cmake -B build ${{ matrix.platform.flags }}
     - name: Build
-      run: cmake --build build/
+      run: cmake --build build/ --config Release
+    - name: Copy artifacts (Windows)
+      if: runner.os == 'Windows'
+      run: |
+        cd ..
+        SDL\build-scripts\windows-buildbot-zipper.bat build SDL SDL2
+    - name: Upload artifacts (Windows)
+      if: runner.os == 'Windows'
+      uses: actions/upload-artifact@v1
+      with:
+        name: SDL2-${{ matrix.platform.name }}
+        path: ..\zipper
 
