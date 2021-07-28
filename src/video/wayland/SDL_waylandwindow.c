@@ -1136,7 +1136,8 @@ int Wayland_CreateWindow(_THIS, SDL_Window *window)
      * window isn't visible.
      */
     if (window->flags & SDL_WINDOW_OPENGL) {
-        wl_callback_add_listener(wl_surface_frame(data->surface), &surface_frame_listener, data);
+        data->frame_callback = wl_surface_frame(data->surface);
+        wl_callback_add_listener(data->frame_callback, &surface_frame_listener, data);
     }
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
