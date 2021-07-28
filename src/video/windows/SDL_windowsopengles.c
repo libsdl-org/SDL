@@ -108,9 +108,10 @@ WIN_GLES_SetupWindow(_THIS, SDL_Window * window)
     SDL_GLContext current_ctx = SDL_GL_GetCurrentContext();
 
     if (_this->egl_data == NULL) {
-        // When hint SDL_HINT_OPENGL_ES_DRIVER is set to "1" (e.g. for ANGLE support),
-        // _this->gl_config.driver_loaded can be 0, while the below lines function.
-        // SDL_assert(!_this->gl_config.driver_loaded);
+        /* !!! FIXME: commenting out this assertion is (I think) incorrect; figure out why driver_loaded is wrong for ANGLE instead. --ryan. */
+        #if 0  /* When hint SDL_HINT_OPENGL_ES_DRIVER is set to "1" (e.g. for ANGLE support), _this->gl_config.driver_loaded can be 0, while the below lines function. */
+        SDL_assert(!_this->gl_config.driver_loaded);
+        #endif
         if (SDL_EGL_LoadLibrary(_this, NULL, EGL_DEFAULT_DISPLAY, 0) < 0) {
             SDL_EGL_UnloadLibrary(_this);
             return -1;
