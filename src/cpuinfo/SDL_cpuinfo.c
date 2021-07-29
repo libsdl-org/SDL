@@ -1087,9 +1087,6 @@ SDL_SIMDRealloc(void *mem, const size_t len)
 
     ptr = (Uint8 *) SDL_realloc(mem, padded + alignment + sizeof (void *));
 
-    if (ptr == mem) {
-        return retval; /* Pointer didn't change, nothing to do */
-    }
     if (ptr == NULL) {
         return NULL; /* Out of memory, bail! */
     }
@@ -1102,7 +1099,7 @@ SDL_SIMDRealloc(void *mem, const size_t len)
     if (mem) {
         ptrdiff = ((size_t) retval) - ((size_t) ptr);
         if (memdiff != ptrdiff) { /* Delta has changed, copy to new offset! */
-            oldmem = (void*) (((size_t) ptr) + memdiff);
+            oldmem = (void*) (((uintptr_t) ptr) + memdiff);
 
             /* Even though the data past the old `len` is undefined, this is the
              * only length value we have, and it guarantees that we copy all the
