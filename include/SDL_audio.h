@@ -214,9 +214,12 @@ typedef void (SDLCALL * SDL_AudioFilter) (struct SDL_AudioCVT * cvt,
  *  set both its (buf) field to a pointer that is aligned to 16 bytes, and its
  *  (len) field to something that's a multiple of 16, if possible.
  */
-#ifdef __GNUC__
+#if defined(__GNUC__) && !defined(__CHERI_PURE_CAPABILITY__)
 /* This structure is 84 bytes on 32-bit architectures, make sure GCC doesn't
    pad it out to 88 bytes to guarantee ABI compatibility between compilers.
+   This is not a concern on CHERI architectures, where pointers must be stored
+   at aligned locations otherwise they will become invalid, and thus structs
+   containing pointers cannot be packed without giving a warning or error.
    vvv
    The next time we rev the ABI, make sure to size the ints and add padding.
 */
