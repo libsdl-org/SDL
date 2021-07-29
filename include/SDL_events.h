@@ -620,18 +620,24 @@ typedef union SDL_Event
     SDL_DollarGestureEvent dgesture;        /**< Gesture event data */
     SDL_DropEvent drop;                     /**< Drag and drop event data */
 
-    /* This is necessary for ABI compatibility between Visual C++ and GCC
-       Visual C++ will respect the push pack pragma and use 52 bytes for
-       this structure, and GCC will use the alignment of the largest datatype
-       within the union, which is 8 bytes.
+    /* This is necessary for ABI compatibility between Visual C++ and GCC.
+       Visual C++ will respect the push pack pragma and use 52 bytes (size of
+       SDL_TextEditingEvent, the largest structure for 32-bit and 64-bit
+       architectures) for this union, and GCC will use the alignment of the
+       largest datatype within the union, which is 8 bytes on 64-bit
+       architectures.
 
        So... we'll add padding to force the size to be 56 bytes for both.
+
+       On architectures where pointers are 16 bytes, this needs rounding up to
+       the next multiple of 16, 64, and on architectures where pointers are
+       even larger the size of SDL_UserEvent will dominate as being 3 pointers.
     */
-    Uint8 padding[56];
+    Uint8 padding[sizeof(void *) <= 8 ? 56 : sizeof(void *) == 16 ? 64 : 3 * sizeof(void *)];
 } SDL_Event;
 
 /* Make sure we haven't broken binary compatibility */
-SDL_COMPILE_TIME_ASSERT(SDL_Event, sizeof(SDL_Event) == 56);
+SDL_COMPILE_TIME_ASSERT(SDL_Event, sizeof(SDL_Event) == sizeof(((SDL_Event *)NULL)->padding));
 
 
 /* Function prototypes */
