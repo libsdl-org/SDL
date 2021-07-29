@@ -1341,9 +1341,15 @@ static void SendSensorUpdate(SDL_Joystick *joystick, SDL_DriverSwitch_Context *c
      * since that's our de facto standard from already supporting those controllers, and
      * users will want consistent axis mappings across devices.
      */
-    data[0] = -HIDAPI_DriverSwitch_ScaleGyro(values[1]);
-    data[1] = HIDAPI_DriverSwitch_ScaleGyro(values[2]);
-    data[2] = -HIDAPI_DriverSwitch_ScaleGyro(values[0]);
+    if (type == SDL_SENSOR_GYRO) {
+        data[0] = -HIDAPI_DriverSwitch_ScaleGyro(values[1]);
+        data[1] = HIDAPI_DriverSwitch_ScaleGyro(values[2]);
+        data[2] = -HIDAPI_DriverSwitch_ScaleGyro(values[0]);
+    } else {
+        data[0] = -HIDAPI_DriverSwitch_ScaleAccel(values[1]);
+        data[1] = HIDAPI_DriverSwitch_ScaleAccel(values[2]);
+        data[2] = -HIDAPI_DriverSwitch_ScaleAccel(values[0]);
+    }
 
     /* Right Joy-Con flips some axes, so let's flip them back for consistency */
     if (ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConRight) {
