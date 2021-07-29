@@ -305,7 +305,11 @@ loop(void *arg)
     int i;
     SDL_bool showing_front = SDL_TRUE;
 
-    while (SDL_PollEvent(&event)) {
+    /* Update to get the current event state */
+    SDL_PumpEvents();
+
+    /* Process all currently pending events */
+    while (SDL_PeepEvents(&event, 1, SDL_GETEVENT, SDL_FIRSTEVENT, SDL_LASTEVENT) == 1) {
         switch (event.type) {
         case SDL_CONTROLLERDEVICEADDED:
             SDL_Log("Game controller device %d added.\n", (int) SDL_JoystickGetDeviceInstanceID(event.cdevice.which));
