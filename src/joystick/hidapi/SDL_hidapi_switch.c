@@ -898,8 +898,8 @@ HIDAPI_DriverSwitch_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joysti
         }
         
         if (input_mode == k_eSwitchInputReportIDs_FullControllerState) {
-            SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO);
-            SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL);
+            SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, 200.0f);
+            SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, 200.0f);
             ctx->m_bHasSensors = SDL_TRUE;
         }
 
@@ -1333,6 +1333,27 @@ static void HandleSimpleControllerState(SDL_Joystick *joystick, SDL_DriverSwitch
     ctx->m_lastSimpleState = *packet;
 }
 
+static void SendSensorUpdate(SDL_Joystick *joystick, SDL_DriverSwitch_Context *ctx, SDL_SensorType type, Sint16 *values)
+{
+    float data[3];
+
+    /* Note the order of components has been shuffled to match PlayStation controllers,
+     * since that's our de facto standard from already supporting those controllers, and
+     * users will want consistent axis mappings across devices.
+     */
+    data[0] = -HIDAPI_DriverSwitch_ScaleGyro(values[1]);
+    data[1] = HIDAPI_DriverSwitch_ScaleGyro(values[2]);
+    data[2] = -HIDAPI_DriverSwitch_ScaleGyro(values[0]);
+
+    /* Right Joy-Con flips some axes, so let's flip them back for consistency */
+    if (ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConRight) {
+        data[0] = -data[0];
+        data[1] = -data[1];
+    }
+
+    SDL_PrivateJoystickSensor(joystick, type, data, 3);
+}
+
 static void HandleFullControllerState(SDL_Joystick *joystick, SDL_DriverSwitch_Context *ctx, SwitchStatePacket_t *packet)
 {
     Sint16 axis;
@@ -1416,51 +1437,13 @@ static void HandleFullControllerState(SDL_Joystick *joystick, SDL_DriverSwitch_C
     }
 
     if (ctx->m_bReportSensors) {
-        float data[3];
+        SendSensorUpdate(joystick, ctx, SDL_SENSOR_GYRO, &packet->imuState[2].sGyroX);
+        SendSensorUpdate(joystick, ctx, SDL_SENSOR_GYRO, &packet->imuState[1].sGyroX);
+        SendSensorUpdate(joystick, ctx, SDL_SENSOR_GYRO, &packet->imuState[0].sGyroX);
 
-        /* Note the order of components has been shuffled to match PlayStation controllers,
-         * since that's our de facto standard from already supporting those controllers, and
-         * users will want consistent axis mappings across devices.
-         */
-        data[0] = HIDAPI_DriverSwitch_ScaleGyro(packet->imuState[0].sGyroY);
-        data[1] = HIDAPI_DriverSwitch_ScaleGyro(packet->imuState[0].sGyroZ);
-        data[2] = HIDAPI_DriverSwitch_ScaleGyro(packet->imuState[0].sGyroX);
-        data[0] += HIDAPI_DriverSwitch_ScaleGyro(packet->imuState[1].sGyroY);
-        data[1] += HIDAPI_DriverSwitch_ScaleGyro(packet->imuState[1].sGyroZ);
-        data[2] += HIDAPI_DriverSwitch_ScaleGyro(packet->imuState[1].sGyroX);
-        data[0] += HIDAPI_DriverSwitch_ScaleGyro(packet->imuState[2].sGyroY);
-        data[1] += HIDAPI_DriverSwitch_ScaleGyro(packet->imuState[2].sGyroZ);
-        data[2] += HIDAPI_DriverSwitch_ScaleGyro(packet->imuState[2].sGyroX);
-        data[0] /= -3.f;
-        data[1] /= 3.f;
-        data[2] /= -3.f;
-        /* Right Joy-Con flips some axes, so let's flip them back for consistency */
-        if (ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConRight) {
-            data[0] = -data[0];
-            data[1] = -data[1];
-        }
-
-        SDL_PrivateJoystickSensor(joystick, SDL_SENSOR_GYRO, data, 3);
-
-        data[0] = HIDAPI_DriverSwitch_ScaleAccel(packet->imuState[0].sAccelY);
-        data[1] = HIDAPI_DriverSwitch_ScaleAccel(packet->imuState[0].sAccelZ);
-        data[2] = HIDAPI_DriverSwitch_ScaleAccel(packet->imuState[0].sAccelX);
-        data[0] += HIDAPI_DriverSwitch_ScaleAccel(packet->imuState[1].sAccelY);
-        data[1] += HIDAPI_DriverSwitch_ScaleAccel(packet->imuState[1].sAccelZ);
-        data[2] += HIDAPI_DriverSwitch_ScaleAccel(packet->imuState[1].sAccelX);
-        data[0] += HIDAPI_DriverSwitch_ScaleAccel(packet->imuState[2].sAccelY);
-        data[1] += HIDAPI_DriverSwitch_ScaleAccel(packet->imuState[2].sAccelZ);
-        data[2] += HIDAPI_DriverSwitch_ScaleAccel(packet->imuState[2].sAccelX);
-        data[0] /= -3.f;
-        data[1] /= 3.f;
-        data[2] /= -3.f;
-        /* Right Joy-Con flips some axes, so let's flip them back for consistency */
-        if (ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConRight) {
-            data[0] = -data[0];
-            data[1] = -data[1];
-        }
-
-        SDL_PrivateJoystickSensor(joystick, SDL_SENSOR_ACCEL, data, 3);
+        SendSensorUpdate(joystick, ctx, SDL_SENSOR_ACCEL, &packet->imuState[2].sAccelX);
+        SendSensorUpdate(joystick, ctx, SDL_SENSOR_ACCEL, &packet->imuState[1].sAccelX);
+        SendSensorUpdate(joystick, ctx, SDL_SENSOR_ACCEL, &packet->imuState[0].sAccelX);
     }
 
     ctx->m_lastFullState = *packet;

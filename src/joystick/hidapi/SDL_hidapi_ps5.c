@@ -488,8 +488,8 @@ HIDAPI_DriverPS5_SetEnhancedMode(SDL_HIDAPI_Device *device, SDL_Joystick *joysti
         ctx->enhanced_mode = SDL_TRUE;
 
         SDL_PrivateJoystickAddTouchpad(joystick, 2);
-        SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO);
-        SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL);
+        SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, 250.0f);
+        SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, 250.0f);
 
         /* Switch into enhanced report mode */
         HIDAPI_DriverPS5_UpdateEffects(device, 0);

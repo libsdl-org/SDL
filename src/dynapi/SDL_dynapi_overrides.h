@@ -814,3 +814,4 @@
 #define SDL_FlashWindow SDL_FlashWindow_REAL
 #define SDL_GameControllerSendEffect SDL_GameControllerSendEffect_REAL
 #define SDL_JoystickSendEffect SDL_JoystickSendEffect_REAL
+#define SDL_GameControllerGetSensorDataRate SDL_GameControllerGetSensorDataRate_REAL

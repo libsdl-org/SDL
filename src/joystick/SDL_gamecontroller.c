@@ -2182,6 +2182,29 @@ SDL_bool SDL_GameControllerIsSensorEnabled(SDL_GameController *gamecontroller, S
 }
 
 /*
+ *  Get the data rate of a game controller sensor.
+ */
+float
+SDL_GameControllerGetSensorDataRate(SDL_GameController *gamecontroller, SDL_SensorType type)
+{
+    SDL_Joystick *joystick = SDL_GameControllerGetJoystick(gamecontroller);
+    int i;
+
+    if (!joystick) {
+        return 0.0f;
+    }
+
+    for (i = 0; i < joystick->nsensors; ++i) {
+        SDL_JoystickSensorInfo *sensor = &joystick->sensors[i];
+
+        if (sensor->type == type) {
+            return sensor->rate;
+        }
+    }
+    return 0.0f;
+}
+
+/*
  *  Get the current state of a game controller sensor.
  */
 int

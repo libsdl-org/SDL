@@ -156,14 +156,14 @@ static void AddController(int device_index, SDL_bool verbose)
 
     if (SDL_GameControllerHasSensor(gamecontroller, SDL_SENSOR_ACCEL)) {
         if (verbose) {
-            SDL_Log("Enabling accelerometer\n");
+            SDL_Log("Enabling accelerometer at %.2f Hz\n", SDL_GameControllerGetSensorDataRate(gamecontroller, SDL_SENSOR_ACCEL));
         }
         SDL_GameControllerSetSensorEnabled(gamecontroller, SDL_SENSOR_ACCEL, SDL_TRUE);
     }
 
     if (SDL_GameControllerHasSensor(gamecontroller, SDL_SENSOR_GYRO)) {
         if (verbose) {
-            SDL_Log("Enabling gyro\n");
+            SDL_Log("Enabling gyro at %.2f Hz\n", SDL_GameControllerGetSensorDataRate(gamecontroller, SDL_SENSOR_ACCEL));
         }
         SDL_GameControllerSetSensorEnabled(gamecontroller, SDL_SENSOR_GYRO, SDL_TRUE);
     }

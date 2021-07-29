@@ -1162,7 +1162,7 @@ void SDL_PrivateJoystickAddTouchpad(SDL_Joystick *joystick, int nfingers)
     }
 }
 
-void SDL_PrivateJoystickAddSensor(SDL_Joystick *joystick, SDL_SensorType type)
+void SDL_PrivateJoystickAddSensor(SDL_Joystick *joystick, SDL_SensorType type, float rate)
 {
     int nsensors = joystick->nsensors + 1;
     SDL_JoystickSensorInfo *sensors = (SDL_JoystickSensorInfo *)SDL_realloc(joystick->sensors, (nsensors * sizeof(SDL_JoystickSensorInfo)));
@@ -1171,6 +1171,7 @@ void SDL_PrivateJoystickAddSensor(SDL_Joystick *joystick, SDL_SensorType type)
 
         SDL_zerop(sensor);
         sensor->type = type;
+        sensor->rate = rate;
 
         joystick->nsensors = nsensors;
         joystick->sensors = sensors;
@@ -2707,25 +2708,23 @@ int SDL_PrivateJoystickSensor(SDL_Joystick *joystick, SDL_SensorType type, const
         if (sensor->type == type) {
             if (sensor->enabled) {
                 num_values = SDL_min(num_values, SDL_arraysize(sensor->data));
-                if (SDL_memcmp(data, sensor->data, num_values*sizeof(*data)) != 0) {
 
-                    /* Update internal sensor state */
-                    SDL_memcpy(sensor->data, data, num_values*sizeof(*data));
+                /* Update internal sensor state */
+                SDL_memcpy(sensor->data, data, num_values*sizeof(*data));
 
-                    /* Post the event, if desired */
+                /* Post the event, if desired */
 #if !SDL_EVENTS_DISABLED
-                    if (SDL_GetEventState(SDL_CONTROLLERSENSORUPDATE) == SDL_ENABLE) {
-                        SDL_Event event;
-                        event.type = SDL_CONTROLLERSENSORUPDATE;
-                        event.csensor.which = joystick->instance_id;
-                        event.csensor.sensor = type;
-                        num_values = SDL_min(num_values, SDL_arraysize(event.csensor.data));
-                        SDL_memset(event.csensor.data, 0, sizeof(event.csensor.data));
-                        SDL_memcpy(event.csensor.data, data, num_values*sizeof(*data));
-                        posted = SDL_PushEvent(&event) == 1;
-                    }
-#endif /* !SDL_EVENTS_DISABLED */
+                if (SDL_GetEventState(SDL_CONTROLLERSENSORUPDATE) == SDL_ENABLE) {
+                    SDL_Event event;
+                    event.type = SDL_CONTROLLERSENSORUPDATE;
+                    event.csensor.which = joystick->instance_id;
+                    event.csensor.sensor = type;
+                    num_values = SDL_min(num_values, SDL_arraysize(event.csensor.data));
+                    SDL_memset(event.csensor.data, 0, sizeof(event.csensor.data));
+                    SDL_memcpy(event.csensor.data, data, num_values*sizeof(*data));
+                    posted = SDL_PushEvent(&event) == 1;
                 }
+#endif /* !SDL_EVENTS_DISABLED */
             }
             break;
         }
