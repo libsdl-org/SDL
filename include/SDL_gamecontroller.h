@@ -759,7 +759,8 @@ extern DECLSPEC int SDLCALL SDL_GameControllerSetSensorEnabled(SDL_GameControlle
 extern DECLSPEC SDL_bool SDLCALL SDL_GameControllerIsSensorEnabled(SDL_GameController *gamecontroller, SDL_SensorType type);
 
 /**
- * Get the data rate (number of events per second) of a game controller sensor.
+ * Get the data rate (number of events per second) of a game controller
+ * sensor.
  *
  * \param gamecontroller The controller to query
  * \param type The type of sensor to query
