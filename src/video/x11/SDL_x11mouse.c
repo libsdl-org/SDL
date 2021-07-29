@@ -77,7 +77,7 @@ X11_CreateDefaultCursor()
     cursor = SDL_calloc(1, sizeof(*cursor));
     if (cursor) {
         /* None is used to indicate the default cursor */
-        cursor->driverdata = (void*)None;
+        cursor->driverdata = (void*)(uintptr_t)None;
     } else {
         SDL_OutOfMemory();
     }
@@ -216,7 +216,7 @@ X11_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y)
         if (x11_cursor == None) {
             x11_cursor = X11_CreatePixmapCursor(surface, hot_x, hot_y);
         }
-        cursor->driverdata = (void*)x11_cursor;
+        cursor->driverdata = (void*)(uintptr_t)x11_cursor;
     } else {
         SDL_OutOfMemory();
     }
@@ -257,7 +257,7 @@ X11_CreateSystemCursor(SDL_SystemCursor id)
 
         x11_cursor = X11_XCreateFontCursor(GetDisplay(), shape);
 
-        cursor->driverdata = (void*)x11_cursor;
+        cursor->driverdata = (void*)(uintptr_t)x11_cursor;
     } else {
         SDL_OutOfMemory();
     }

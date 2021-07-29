@@ -955,8 +955,8 @@ SDL_BuildAudioResampleCVT(SDL_AudioCVT * cvt, const int dst_channels,
     if (cvt->filter_index >= (SDL_AUDIOCVT_MAX_FILTERS-2)) {
         return SDL_SetError("Too many filters needed for conversion, exceeded maximum of %d", SDL_AUDIOCVT_MAX_FILTERS-2);
     }
-    cvt->filters[SDL_AUDIOCVT_MAX_FILTERS-1] = (SDL_AudioFilter) (size_t) src_rate;
-    cvt->filters[SDL_AUDIOCVT_MAX_FILTERS] = (SDL_AudioFilter) (size_t) dst_rate;
+    cvt->filters[SDL_AUDIOCVT_MAX_FILTERS-1] = (SDL_AudioFilter) (uintptr_t) src_rate;
+    cvt->filters[SDL_AUDIOCVT_MAX_FILTERS] = (SDL_AudioFilter) (uintptr_t) dst_rate;
 
     if (src_rate < dst_rate) {
         const double mult = ((double) dst_rate) / ((double) src_rate);
