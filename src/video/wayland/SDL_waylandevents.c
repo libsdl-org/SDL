@@ -41,6 +41,7 @@
 #include "relative-pointer-unstable-v1-client-protocol.h"
 #include "xdg-shell-client-protocol.h"
 #include "keyboard-shortcuts-inhibit-unstable-v1-client-protocol.h"
+#include "text-input-unstable-v3-client-protocol.h"
 
 #ifdef HAVE_LIBDECOR_H
 #include <libdecor.h>
@@ -221,7 +222,7 @@ Wayland_PumpEvents(_THIS)
     WAYLAND_wl_display_flush(d->display);
 
 #ifdef SDL_USE_IME
-    if (SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE) {
+    if (d->text_input_manager == NULL && SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE) {
         SDL_IME_PumpEvents();
     }
 #endif
@@ -741,7 +742,9 @@ keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
         SDL_SetKeyboardFocus(window->sdlwindow);
     }
 #ifdef SDL_USE_IME
-    SDL_IME_SetFocus(SDL_TRUE);
+    if (!input->text_input) {
+        SDL_IME_SetFocus(SDL_TRUE);
+    }
 #endif
 }
 
@@ -760,8 +763,11 @@ keyboard_handle_leave(void *data, struct wl_keyboard *keyboard,
 
     /* This will release any keys still pressed */
     SDL_SetKeyboardFocus(NULL);
+
 #ifdef SDL_USE_IME
-    SDL_IME_SetFocus(SDL_FALSE);
+    if (!input->text_input) {
+        SDL_IME_SetFocus(SDL_FALSE);
+    }
 #endif
 }
 
@@ -1225,6 +1231,93 @@ static const struct wl_data_device_listener data_device_listener = {
 };
 
 static void
+text_input_enter(void *data,
+                 struct zwp_text_input_v3 *zwp_text_input_v3,
+                 struct wl_surface *surface)
+{
+    /* No-op */
+}
+
+static void
+text_input_leave(void *data,
+                 struct zwp_text_input_v3 *zwp_text_input_v3,
+                 struct wl_surface *surface)
+{
+    /* No-op */
+}
+
+static void
+text_input_preedit_string(void *data,
+                          struct zwp_text_input_v3 *zwp_text_input_v3,
+                          const char *text,
+                          int32_t cursor_begin,
+                          int32_t cursor_end)
+{
+    char buf[SDL_TEXTEDITINGEVENT_TEXT_SIZE];
+    if (text) {
+        size_t text_bytes = SDL_strlen(text), i = 0;
+        size_t cursor = 0;
+
+        do {
+            const size_t sz = SDL_utf8strlcpy(buf, text+i, sizeof(buf));
+            const size_t chars = SDL_utf8strlen(buf);
+
+            SDL_SendEditingText(buf, cursor, chars);
+
+            i += sz;
+            cursor += chars;
+        } while (i < text_bytes);
+    } else {
+        buf[0] = '\0';
+        SDL_SendEditingText(buf, 0, 0);
+    }
+}
+
+static void
+text_input_commit_string(void *data,
+                         struct zwp_text_input_v3 *zwp_text_input_v3,
+                         const char *text)
+{
+    if (text && *text) {
+        char buf[SDL_TEXTINPUTEVENT_TEXT_SIZE];
+        size_t text_bytes = SDL_strlen(text), i = 0;
+
+        while (i < text_bytes) {
+            size_t sz = SDL_utf8strlcpy(buf, text+i, sizeof(buf));
+            SDL_SendKeyboardText(buf);
+
+            i += sz;
+        }
+    }
+}
+
+static void
+text_input_delete_surrounding_text(void *data,
+                                   struct zwp_text_input_v3 *zwp_text_input_v3,
+                                   uint32_t before_length,
+                                   uint32_t after_length)
+{
+    /* FIXME: Do we care about this event? */
+}
+
+static void
+text_input_done(void *data,
+                struct zwp_text_input_v3 *zwp_text_input_v3,
+                uint32_t serial)
+{
+    /* No-op */
+}
+
+static const struct zwp_text_input_v3_listener text_input_listener = {
+    text_input_enter,
+    text_input_leave,
+    text_input_preedit_string,
+    text_input_commit_string,
+    text_input_delete_surrounding_text,
+    text_input_done
+};
+
+static void
 Wayland_create_data_device(SDL_VideoData *d)
 {
     SDL_WaylandDataDevice *data_device = NULL;
@@ -1249,6 +1342,30 @@ Wayland_create_data_device(SDL_VideoData *d)
     }
 }
 
+static void
+Wayland_create_text_input(SDL_VideoData *d)
+{
+    SDL_WaylandTextInput *text_input = NULL;
+
+    text_input = SDL_calloc(1, sizeof *text_input);
+    if (text_input == NULL) {
+        return;
+    }
+
+    text_input->text_input = zwp_text_input_manager_v3_get_text_input(
+        d->text_input_manager, d->input->seat
+    );
+
+    if (text_input->text_input == NULL) {
+        SDL_free(text_input);
+    } else {
+        zwp_text_input_v3_set_user_data(text_input->text_input, text_input);
+        zwp_text_input_v3_add_listener(text_input->text_input,
+                                       &text_input_listener, text_input);
+        d->input->text_input = text_input;
+    }
+}
+
 void
 Wayland_add_data_device_manager(SDL_VideoData *d, uint32_t id, uint32_t version)
 {
@@ -1256,6 +1373,16 @@ Wayland_add_data_device_manager(SDL_VideoData *d, uint32_t id, uint32_t version)
 
     if (d->input != NULL) {
         Wayland_create_data_device(d);
+    }
+}
+
+void
+Wayland_add_text_input_manager(SDL_VideoData *d, uint32_t id, uint32_t version)
+{
+    d->text_input_manager = wl_registry_bind(d->registry, id, &zwp_text_input_manager_v3_interface, 1);
+
+    if (d->input != NULL) {
+        Wayland_create_text_input(d);
     }
 }
 
@@ -1276,6 +1403,9 @@ Wayland_display_add_input(SDL_VideoData *d, uint32_t id, uint32_t version)
 
     if (d->data_device_manager != NULL) {
         Wayland_create_data_device(d);
+    }
+    if (d->text_input_manager != NULL) {
+        Wayland_create_text_input(d);
     }
 
     wl_seat_add_listener(input->seat, &seat_listener, input);
@@ -1303,6 +1433,11 @@ void Wayland_display_destroy_input(SDL_VideoData *d)
             wl_data_device_release(input->data_device->data_device);
         }
         SDL_free(input->data_device);
+    }
+
+    if (input->text_input != NULL) {
+        zwp_text_input_v3_destroy(input->text_input->text_input);
+        SDL_free(input->text_input);
     }
 
     if (input->keyboard)

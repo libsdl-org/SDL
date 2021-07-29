@@ -27,6 +27,7 @@
 #include "SDL_waylandvideo.h"
 #include "SDL_waylandwindow.h"
 #include "SDL_waylanddatamanager.h"
+#include "SDL_waylandkeyboard.h"
 
 typedef struct {
     // repeat_rate in range of [1, 1000]
@@ -47,6 +48,7 @@ struct SDL_WaylandInput {
     struct wl_touch *touch;
     struct wl_keyboard *keyboard;
     SDL_WaylandDataDevice *data_device;
+    SDL_WaylandTextInput *text_input;
     struct zwp_relative_pointer_v1 *relative_pointer;
     struct zwp_confined_pointer_v1 *confined_pointer;
     SDL_Window *confined_pointer_window;
@@ -83,6 +85,7 @@ struct SDL_WaylandInput {
 extern void Wayland_PumpEvents(_THIS);
 
 extern void Wayland_add_data_device_manager(SDL_VideoData *d, uint32_t id, uint32_t version);
+extern void Wayland_add_text_input_manager(SDL_VideoData *d, uint32_t id, uint32_t version);
 
 extern void Wayland_display_add_input(SDL_VideoData *d, uint32_t id, uint32_t version);
 extern void Wayland_display_destroy_input(SDL_VideoData *d);
