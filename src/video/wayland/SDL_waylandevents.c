@@ -592,7 +592,7 @@ touch_handler_down(void *data, struct wl_touch *touch, unsigned int serial,
 
     touch_add(id, x, y, surface);
 
-    SDL_SendTouch(1, (SDL_FingerID)id, window_data->sdlwindow, SDL_TRUE, x, y, 1.0f);
+    SDL_SendTouch((SDL_TouchID)(intptr_t)touch, (SDL_FingerID)id, window_data->sdlwindow, SDL_TRUE, x, y, 1.0f);
 }
 
 static void
@@ -610,7 +610,7 @@ touch_handler_up(void *data, struct wl_touch *touch, unsigned int serial,
         window = window_data->sdlwindow;
     }
 
-    SDL_SendTouch(1, (SDL_FingerID)id, window, SDL_FALSE, x, y, 0.0f);
+    SDL_SendTouch((SDL_TouchID)(intptr_t)touch, (SDL_FingerID)id, window, SDL_FALSE, x, y, 0.0f);
 }
 
 static void
@@ -624,7 +624,7 @@ touch_handler_motion(void *data, struct wl_touch *touch, unsigned int timestamp,
     const float y = dbly / window_data->sdlwindow->h;
 
     touch_update(id, x, y);
-    SDL_SendTouchMotion(1, (SDL_FingerID)id, window_data->sdlwindow, x, y, 1.0f);
+    SDL_SendTouchMotion((SDL_TouchID)(intptr_t)touch, (SDL_FingerID)id, window_data->sdlwindow, x, y, 1.0f);
 }
 
 static void
@@ -961,13 +961,13 @@ seat_handle_capabilities(void *data, struct wl_seat *seat,
     }
 
     if ((caps & WL_SEAT_CAPABILITY_TOUCH) && !input->touch) {
-        SDL_AddTouch((SDL_TouchID)(intptr_t)seat, SDL_TOUCH_DEVICE_DIRECT, "wayland_touch");
         input->touch = wl_seat_get_touch(seat);
+        SDL_AddTouch((SDL_TouchID)(intptr_t)input->touch, SDL_TOUCH_DEVICE_DIRECT, "wayland_touch");
         wl_touch_set_user_data(input->touch, input);
         wl_touch_add_listener(input->touch, &touch_listener,
                                  input);
     } else if (!(caps & WL_SEAT_CAPABILITY_TOUCH) && input->touch) {
-        SDL_DelTouch((SDL_TouchID)(intptr_t)seat);
+        SDL_DelTouch((SDL_TouchID)(intptr_t)input->touch);
         wl_touch_destroy(input->touch);
         input->touch = NULL;
     }
