@@ -602,6 +602,23 @@ Cocoa_QuitKeyboard(_THIS)
 {
 }
 
+typedef int CGSConnection;
+typedef enum {
+    CGSGlobalHotKeyEnable = 0,
+    CGSGlobalHotKeyDisable = 1,
+} CGSGlobalHotKeyOperatingMode;
+
+extern CGSConnection _CGSDefaultConnection(void);
+extern CGError CGSSetGlobalHotKeyOperatingMode(CGSConnection connection, CGSGlobalHotKeyOperatingMode mode);
+
+void
+Cocoa_SetWindowKeyboardGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
+{
+#if SDL_MAC_NO_SANDBOX
+    CGSSetGlobalHotKeyOperatingMode(_CGSDefaultConnection(), grabbed ? CGSGlobalHotKeyDisable : CGSGlobalHotKeyEnable);
+#endif
+}
+
 #endif /* SDL_VIDEO_DRIVER_COCOA */
 
 /* vi: set ts=4 sw=4 expandtab: */
