@@ -1219,7 +1219,7 @@ Wayland_HandlePendingResize(SDL_Window *window)
 
     if (data->resize.pending) {
         struct wl_region *region;
-        if (data->scale_factor != data->resize.scale_factor) {
+        if (data->scale_factor != data->resize.scale_factor || data->resize.configure) {
             window->w = 0;
             window->h = 0;
         }
