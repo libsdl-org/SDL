@@ -2666,7 +2666,9 @@ RenderDrawLinesWithRects(SDL_Renderer * renderer,
         }
     }
 
-    retval += QueueCmdFillRects(renderer, frects, nrects);
+    if (nrects) {
+        retval += QueueCmdFillRects(renderer, frects, nrects);
+    }
 
     SDL_small_free(frects, isstack);
 
@@ -2721,7 +2723,9 @@ RenderDrawLinesWithRectsF(SDL_Renderer * renderer,
         }
     }
 
-    retval += QueueCmdFillRects(renderer, frects, nrects);
+    if (nrects) {
+        retval += QueueCmdFillRects(renderer, frects, nrects);
+    }
 
     SDL_small_free(frects, isstack);
 
