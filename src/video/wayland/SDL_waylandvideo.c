@@ -489,11 +489,7 @@ display_handle_global(void *data, struct wl_registry *registry, uint32_t id,
         Wayland_add_display(d, id);
     } else if (SDL_strcmp(interface, "wl_seat") == 0) {
         Wayland_display_add_input(d, id, version);
-    } else if (
-#ifdef HAVE_LIBDECOR_H
-               !d->shell.libdecor &&
-#endif
-               SDL_strcmp(interface, "xdg_wm_base") == 0) {
+    } else if (SDL_strcmp(interface, "xdg_wm_base") == 0) {
         d->shell.xdg = wl_registry_bind(d->registry, id, &xdg_wm_base_interface, 1);
         xdg_wm_base_add_listener(d->shell.xdg, &shell_listener_xdg, NULL);
     } else if (SDL_strcmp(interface, "wl_shm") == 0) {
@@ -553,16 +549,23 @@ Wayland_VideoInit(_THIS)
         return SDL_SetError("Failed to get the Wayland registry");
     }
 
-#ifdef HAVE_LIBDECOR_H
-    if (SDL_WAYLAND_HAVE_WAYLAND_LIBDECOR) {
-        data->shell.libdecor = libdecor_new(data->display, &libdecor_interface);
-    }
-#endif
-
     wl_registry_add_listener(data->registry, &registry_listener, data);
 
     // First roundtrip to receive all registry objects.
     WAYLAND_wl_display_roundtrip(data->display);
+
+#ifdef HAVE_LIBDECOR_H
+    /* Don't have server-side decorations? Try client-side instead. */
+    if (!data->decoration_manager && SDL_WAYLAND_HAVE_WAYLAND_LIBDECOR) {
+        data->shell.libdecor = libdecor_new(data->display, &libdecor_interface);
+
+        /* If libdecor works, we don't need xdg-shell anymore. */
+        if (data->shell.libdecor && data->shell.xdg) {
+            xdg_wm_base_destroy(data->shell.xdg);
+            data->shell.xdg = NULL;
+        }
+    }
+#endif
 
     // Second roundtrip to receive all output events.
     WAYLAND_wl_display_roundtrip(data->display);
