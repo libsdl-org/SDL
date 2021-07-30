@@ -562,22 +562,24 @@ Wayland_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info)
 
     info->info.wl.display = data->waylandData->display;
     info->info.wl.surface = data->surface;
+
     if (version >= SDL_VERSIONNUM(2, 0, 15)) {
         info->info.wl.egl_window = data->egl_window;
-    }
 
-    info->info.wl.shell_surface = NULL;
 #ifdef HAVE_LIBDECOR_H
-    if (viddata->shell.libdecor && data->shell_surface.libdecor.frame != NULL) {
-        info->info.wl.xdg_surface = libdecor_frame_get_xdg_surface(data->shell_surface.libdecor.frame);
-    } else
+        if (viddata->shell.libdecor && data->shell_surface.libdecor.frame != NULL) {
+            info->info.wl.xdg_surface = libdecor_frame_get_xdg_surface(data->shell_surface.libdecor.frame);
+        } else
 #endif
-    if (viddata->shell.xdg && data->shell_surface.xdg.surface != NULL) {
-        info->info.wl.xdg_surface = data->shell_surface.xdg.surface;
-    } else {
-        info->info.wl.xdg_surface = NULL;
+        if (viddata->shell.xdg && data->shell_surface.xdg.surface != NULL) {
+            info->info.wl.xdg_surface = data->shell_surface.xdg.surface;
+        } else {
+            info->info.wl.xdg_surface = NULL;
+        }
     }
 
+    /* Deprecated in 2.0.16 */
+    info->info.wl.shell_surface = NULL;
 
     info->subsystem = SDL_SYSWM_WAYLAND;
 
