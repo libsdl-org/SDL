@@ -6,6 +6,7 @@
 /* Include the SDL main definition header */
 #include "SDL_main.h"
 
+#ifndef SDL_MAIN_HANDLED
 #ifdef main
 #undef main
 #endif
@@ -15,5 +16,6 @@ main(int argc, char *argv[])
 {
     return SDL_UIKitRunApp(argc, argv, SDL_main);
 }
+#endif /* !SDL_MAIN_HANDLED */
 
 /* vi: set ts=4 sw=4 expandtab: */
