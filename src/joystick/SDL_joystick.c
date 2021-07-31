@@ -2349,8 +2349,6 @@ SDL_bool SDL_ShouldIgnoreJoystick(const char *name, SDL_JoystickGUID guid)
 
         /* Anne Pro II Keyboard */
         MAKE_VIDPID(0x04d9, 0x8009),  /* OBINLB USB-HID Keyboard */
-
-        MAKE_VIDPID(0x0e6f, 0x0186),  /* PDP Afterglow Wireless Switch Controller - USB charging, no input */
     };
 
     unsigned int i;
