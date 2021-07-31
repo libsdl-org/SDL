@@ -1963,8 +1963,9 @@ SDL_IsJoystickXboxSeriesX(Uint16 vendor_id, Uint16 product_id)
         }
     }
     if (vendor_id == USB_VENDOR_PDP) {
-        if (product_id == USB_PRODUCT_XBOX_SERIES_X_PDP_AFTERGLOW ||
-            product_id == USB_PRODUCT_XBOX_SERIES_X_PDP_BLUE) {
+        if (product_id == USB_PRODUCT_XBOX_SERIES_X_VICTRIX_GAMBIT ||
+            product_id == USB_PRODUCT_XBOX_SERIES_X_PDP_BLUE ||
+            product_id == USB_PRODUCT_XBOX_SERIES_X_PDP_AFTERGLOW) {
             return SDL_TRUE;
         }
     }

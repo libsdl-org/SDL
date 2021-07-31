@@ -486,14 +486,19 @@ HIDAPI_DriverXboxOne_HandleStatePacket(SDL_Joystick *joystick, SDL_DriverXboxOne
         /* Xbox Series X firmware version 5.0, report is 36 bytes, share button is in byte 18
          * Xbox Series X firmware version 5.1, report is 44 bytes, share button is in byte 18
          * Xbox Series X firmware version 5.5, report is 48 bytes, share button is in byte 22
+         * Victrix Gambit Tournament Controller, report is 50 bytes, share button is in byte 32
          */
         if (size < 48) {
             if (ctx->last_state[18] != data[18]) {
                 SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_MISC1, (data[18] & 0x01) ? SDL_PRESSED : SDL_RELEASED);
             }
-        } else {
+        } else if (size == 48) {
             if (ctx->last_state[22] != data[22]) {
                 SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_MISC1, (data[22] & 0x01) ? SDL_PRESSED : SDL_RELEASED);
+            }
+        } else if (size == 50) {
+            if (ctx->last_state[32] != data[32]) {
+                SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_MISC1, (data[32] & 0x01) ? SDL_PRESSED : SDL_RELEASED);
             }
         }
     }
