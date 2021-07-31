@@ -2,7 +2,7 @@
 # wmake -f Makefile.os2
 
 LIBNAME = SDL2
-VERSION = 2.0.15
+VERSION = 2.0.16
 DESCRIPTION = Simple DirectMedia Layer 2
 
 LIBHOME = .

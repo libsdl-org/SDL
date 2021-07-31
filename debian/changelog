@@ -1,3 +1,9 @@
+libsdl2 (2.0.16) UNRELEASED; urgency=low
+
+  * Updated SDL to version 2.0.16
+
+ -- Sam Lantinga <slouken@libsdl.org>  Sat, 31 Jul 2021 13:27:38 -0800
+
 libsdl2 (2.0.15) UNRELEASED; urgency=low
 
   * Updated SDL to version 2.0.15 for development builds
