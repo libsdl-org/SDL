@@ -10166,7 +10166,6 @@
 					"$(inherited)",
 					"$(SDKROOT)/System/iOSSupport/System/Library/Frameworks",
 				);
-				GCC_PREPROCESSOR_DEFINITIONS = "IOS_DYLIB=1";
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				INSTALL_PATH = "@rpath";
 				SDKROOT = iphoneos;
@@ -10183,7 +10182,6 @@
 					"$(inherited)",
 					"$(SDKROOT)/System/iOSSupport/System/Library/Frameworks",
 				);
-				GCC_PREPROCESSOR_DEFINITIONS = "IOS_DYLIB=1";
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				INSTALL_PATH = "@rpath";
 				SDKROOT = iphoneos;
@@ -10196,7 +10194,6 @@
 			buildSettings = {
 				CLANG_ENABLE_OBJC_ARC = YES;
 				EXECUTABLE_PREFIX = lib;
-				GCC_PREPROCESSOR_DEFINITIONS = "IOS_DYLIB=1";
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				INSTALL_PATH = "@rpath";
 				SDKROOT = appletvos;
@@ -10208,7 +10205,6 @@
 			buildSettings = {
 				CLANG_ENABLE_OBJC_ARC = YES;
 				EXECUTABLE_PREFIX = lib;
-				GCC_PREPROCESSOR_DEFINITIONS = "IOS_DYLIB=1";
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				INSTALL_PATH = "@rpath";
 				SDKROOT = appletvos;
@@ -10348,7 +10344,6 @@
 					"$(inherited)",
 					"$(SDKROOT)/System/iOSSupport/System/Library/Frameworks",
 				);
-				GCC_PREPROCESSOR_DEFINITIONS = "IOS_DYLIB=1";
 				OTHER_LDFLAGS = "-liconv";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2,6";
@@ -10364,7 +10359,6 @@
 					"$(inherited)",
 					"$(SDKROOT)/System/iOSSupport/System/Library/Frameworks",
 				);
-				GCC_PREPROCESSOR_DEFINITIONS = "IOS_DYLIB=1";
 				OTHER_LDFLAGS = "-liconv";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2,6";
@@ -10376,7 +10370,6 @@
 			buildSettings = {
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CLANG_LINK_OBJC_RUNTIME = NO;
-				GCC_PREPROCESSOR_DEFINITIONS = "IOS_DYLIB=1";
 				OTHER_LDFLAGS = "-liconv";
 				SDKROOT = appletvos;
 			};
@@ -10387,7 +10380,6 @@
 			buildSettings = {
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CLANG_LINK_OBJC_RUNTIME = NO;
-				GCC_PREPROCESSOR_DEFINITIONS = "IOS_DYLIB=1";
 				OTHER_LDFLAGS = "-liconv";
 				SDKROOT = appletvos;
 			};
