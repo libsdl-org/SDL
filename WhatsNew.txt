@@ -2,6 +2,45 @@
 This is a list of major changes in SDL's version history.
 
 ---------------------------------------------------------------------------
+2.0.16:
+---------------------------------------------------------------------------
+General:
+* Added SDL_FlashWindow() to get a user's attention
+* Added SDL_GetAudioDeviceSpec() to get the preferred audio format of a device
+* Added SDL_SetWindowAlwaysOnTop() to dynamically change the SDL_WINDOW_ALWAYS_ON_TOP flag for a window
+* Added SDL_SoftStretchLinear() to do bilinear scaling between 32-bit software surfaces
+* Added SDL_UpdateNVTexture() to update streaming NV12/21 textures
+* Added SDL_GameControllerSendEffect() and SDL_JoystickSendEffect() to allow sending custom trigger effects to the DualSense controller
+* Added SDL_GameControllerGetSensorDataRate() to get the sensor data rate for PlayStation and Nintendo Switch controllers
+* Added support for the Amazon Luna game controller
+* Added rumble support for the Google Stadia controller using the HIDAPI driver
+* Added SDL_GameControllerType constants for the Amazon Luna and Google Stadia controllers
+* Added analog rumble for Nintendo Switch Pro controllers using the HIDAPI driver
+* Reduced CPU usage when using SDL_WaitEvent() and SDL_WaitEventTimeout()
+
+Windows:
+* Added SDL_SetWindowsMessageHook() to set a function that is called for all Windows messages
+* Added SDL_RenderGetD3D11Device() to get the D3D11 device used by the SDL renderer
+
+Linux:
+* Greatly improved Wayland support
+* Added support for audio output and capture using Pipewire
+* Added the hint SDL_HINT_AUDIO_INCLUDE_MONITORS to control whether PulseAudio recording should include monitor devices
+* Added the hint SDL_HINT_AUDIO_DEVICE_STREAM_ROLE to describe the role of your application for audio control panels
+
+Android:
+* Added support for audio output and capture using AAudio
+* Added SDL_AndroidShowToast() to show a lightweight notification
+
+iOS:
+* Added support for mouse relative mode on iOS 14.1 and newer
+* Added support for the Xbox Series X controller
+
+tvOS:
+* Added support for the Xbox Series X controller
+
+
+---------------------------------------------------------------------------
 2.0.14:
 ---------------------------------------------------------------------------
 General:
