@@ -214,11 +214,23 @@ handle_configure_xdg_toplevel(void *data,
     enum xdg_toplevel_state *state;
     SDL_bool fullscreen = SDL_FALSE;
     SDL_bool maximized = SDL_FALSE;
+    SDL_bool floating = SDL_TRUE;
     wl_array_for_each(state, states) {
-        if (*state == XDG_TOPLEVEL_STATE_FULLSCREEN) {
+        switch (*state) {
+        case XDG_TOPLEVEL_STATE_FULLSCREEN:
             fullscreen = SDL_TRUE;
-        } else if (*state == XDG_TOPLEVEL_STATE_MAXIMIZED) {
+            floating = SDL_FALSE;
+            break;
+        case XDG_TOPLEVEL_STATE_MAXIMIZED:
             maximized = SDL_TRUE;
+            floating = SDL_FALSE;
+            break;
+        case XDG_TOPLEVEL_STATE_TILED_LEFT:
+        case XDG_TOPLEVEL_STATE_TILED_RIGHT:
+        case XDG_TOPLEVEL_STATE_TILED_TOP:
+        case XDG_TOPLEVEL_STATE_TILED_BOTTOM:
+            floating = SDL_FALSE;
+            break;
         }
     }
 
@@ -231,8 +243,8 @@ handle_configure_xdg_toplevel(void *data,
         }
 
         if (width == 0 || height == 0) {
-            width = window->windowed.w;
-            height = window->windowed.h;
+            width = wind->floating_width;
+            height = wind->floating_height;
         }
 
         /* xdg_toplevel spec states that this is a suggestion.
@@ -272,6 +284,12 @@ handle_configure_xdg_toplevel(void *data,
         wind->resize.width = window->w;
         wind->resize.height = window->h;
         return;
+    }
+
+    if (floating) {
+        /* store current floating dimensions for restoring */
+        wind->floating_width = width;
+        wind->floating_height = height;
     }
 
     wind->resize.width = width;
@@ -1302,6 +1320,11 @@ void Wayland_SetWindowSize(_THIS, SDL_Window * window)
         libdecor_state_free(state);
     }
 #endif
+
+    if (!(window->flags & (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_MAXIMIZED))) {
+        wind->floating_width = window->w;
+        wind->floating_height = window->h;
+    }
 
     region = wl_compositor_create_region(data->compositor);
     wl_region_add(region, 0, 0, window->w, window->h);
