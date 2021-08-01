@@ -199,7 +199,7 @@ keyboard_repeat_clear(SDL_WaylandKeyboardRepeat* repeat_info) {
 static void
 keyboard_repeat_set(SDL_WaylandKeyboardRepeat* repeat_info,
                     uint32_t scancode, SDL_bool has_text, char text[8]) {
-    if (!repeat_info->is_initialized) {
+    if (!repeat_info->is_initialized || !repeat_info->repeat_rate) {
         return;
     }
     repeat_info->is_key_down = SDL_TRUE;
