@@ -36,6 +36,8 @@ SDL_SYS_OpenURL(const char *url)
         /* Notice this is vfork and not fork! */
         const pid_t pid2 = vfork();
         if (pid2 == 0) {  /* Grandchild process will try to launch the url */
+            /* Clear LD_PRELOAD so Chrome opens correctly when this application is launched by Steam */
+            unsetenv("LD_PRELOAD");
             execlp("xdg-open", "xdg-open", url, NULL);
             _exit(EXIT_FAILURE);
         } else if (pid2 < 0) {   /* There was an error forking */
