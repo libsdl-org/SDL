@@ -948,7 +948,24 @@ Wayland_SetWindowFullscreen(_THIS, SDL_Window * window,
     SDL_VideoData *viddata = (SDL_VideoData *) _this->driverdata;
     SetFullscreen(window, fullscreen ? output : NULL);
 
-    WAYLAND_wl_display_flush( viddata->display );
+    WAYLAND_wl_display_flush(viddata->display);
+#ifdef HAVE_LIBDECOR_H
+    /* For libdecor we _have_ to dispatch immediately, because libdecor state
+     * strongly depends on the "current" state of the window. For example, if an
+     * application calls SetWindowSize right after this, libdecor will still
+     * think the window is fullscreen and not floating because configuration has
+     * not yet occurred, so the call will get completely ignored! So, take the
+     * time penalty and ensure that libdecor state matches SDL state.
+     *
+     * TODO: If Wayland_SetWindowSize ever stops checking for floating state,
+     * this can be removed.
+     *
+     * -flibit
+     */
+    if (viddata->shell.libdecor) {
+        WAYLAND_wl_display_dispatch(viddata->display);
+    }
+#endif
 }
 
 void
