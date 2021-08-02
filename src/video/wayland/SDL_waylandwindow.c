@@ -713,7 +713,19 @@ void Wayland_ShowWindow(_THIS, SDL_Window *window)
      * display, because we need to create the decorations before possibly hiding
      * them immediately afterward.
      */
-    Wayland_SetWindowBordered(_this, window, !(window->flags & SDL_WINDOW_BORDERLESS));
+#ifdef HAVE_LIBDECOR_H
+    if (c->shell.libdecor) {
+        /* ... but don't call it redundantly for libdecor, the decorator
+         * may not interpret a redundant call nicely and cause weird stuff to happen
+         */
+        if (window->flags & SDL_WINDOW_BORDERLESS) {
+            Wayland_SetWindowBordered(_this, window, SDL_FALSE);
+        }
+    } else
+#endif
+    {
+        Wayland_SetWindowBordered(_this, window, !(window->flags & SDL_WINDOW_BORDERLESS));
+    }
 
     /* We're finally done putting the window together, raise if possible */
     if (c->activation_manager) {
