@@ -1142,6 +1142,9 @@ int Wayland_CreateWindow(_THIS, SDL_Window *window)
     data->outputs = NULL;
     data->num_outputs = 0;
 
+    data->floating_width = window->windowed.w;
+    data->floating_height = window->windowed.h;
+
     data->surface =
         wl_compositor_create_surface(c->compositor);
     wl_surface_add_listener(data->surface, &surface_listener, data);
