@@ -236,17 +236,13 @@ handle_configure_xdg_toplevel(void *data,
                 height = SDL_min(height, window->max_h);
             }
             height = SDL_max(height, window->min_h);
-        } else {
-            return;
         }
-    }
 
-    /* Always send a maximized/restore event; if the event is redundant it will
-     * automatically be discarded (see src/events/SDL_windowevents.c)
-     *
-     * No, we do not get minimize events from xdg-shell.
-     */
-    if (!fullscreen) {
+        /* Always send a maximized/restore event; if the event is redundant it will
+         * automatically be discarded (see src/events/SDL_windowevents.c)
+         *
+         * No, we do not get minimize events from xdg-shell.
+         */
         SDL_SendWindowEvent(window,
                             maximized ?
                                 SDL_WINDOWEVENT_MAXIMIZED :
