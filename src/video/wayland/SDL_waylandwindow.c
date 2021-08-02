@@ -205,6 +205,8 @@ handle_configure_xdg_toplevel(void *data,
         case XDG_TOPLEVEL_STATE_TILED_BOTTOM:
             floating = SDL_FALSE;
             break;
+        default:
+            break;
         }
     }
 
