@@ -77,13 +77,6 @@ typedef struct {
     struct qt_extended_surface *extended_surface;
 #endif /* SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH */
 
-    struct {
-        SDL_bool pending, configure;
-        uint32_t serial;
-        int width, height;
-        float scale_factor;
-    } resize;
-
     SDL_WaylandOutputData **outputs;
     int num_outputs;
 
