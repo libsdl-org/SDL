@@ -1211,6 +1211,7 @@ static void
 Wayland_HandleResize(SDL_Window *window, int width, int height, float scale)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+    SDL_VideoData *viddata = data->waylandData;
 
     struct wl_region *region;
     window->w = 0;
@@ -1233,6 +1234,15 @@ Wayland_HandleResize(SDL_Window *window, int width, int height, float scale)
     wl_region_add(region, 0, 0, window->w, window->h);
     wl_surface_set_opaque_region(data->surface, region);
     wl_region_destroy(region);
+
+    /* XXX: This workarounds issues with commiting buffers with old size after
+     * already acknowledging the new size, which can cause protocol violations.
+     * It doesn't fix the first frames after resize being glitched visually,
+     * but at least lets us not be terminated by the compositor.
+     * Can be removed once SDL's resize logic becomes compliant. */
+    if (viddata->shell.xdg && data->shell_surface.xdg.surface) {
+       xdg_surface_set_window_geometry(data->shell_surface.xdg.surface, 0, 0, window->w, window->h);
+    }
 }
 
 void
@@ -1291,6 +1301,11 @@ void Wayland_SetWindowSize(_THIS, SDL_Window * window)
     wl_region_add(region, 0, 0, window->w, window->h);
     wl_surface_set_opaque_region(wind->surface, region);
     wl_region_destroy(region);
+
+    /* Update the geometry which may have been set by a hack in Wayland_HandleResize */
+    if (data->shell.xdg && wind->shell_surface.xdg.surface) {
+       xdg_surface_set_window_geometry(wind->shell_surface.xdg.surface, 0, 0, window->w, window->h);
+    }
 }
 
 void Wayland_SetWindowTitle(_THIS, SDL_Window * window)
