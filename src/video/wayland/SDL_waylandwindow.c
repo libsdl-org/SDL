@@ -243,11 +243,13 @@ handle_configure_xdg_toplevel(void *data,
          *
          * No, we do not get minimize events from xdg-shell.
          */
-        SDL_SendWindowEvent(window,
-                            maximized ?
-                                SDL_WINDOWEVENT_MAXIMIZED :
-                                SDL_WINDOWEVENT_RESTORED,
-                            0, 0);
+        if (!fullscreen) {
+            SDL_SendWindowEvent(window,
+                                maximized ?
+                                    SDL_WINDOWEVENT_MAXIMIZED :
+                                    SDL_WINDOWEVENT_RESTORED,
+                                0, 0);
+        }
     }
 
     if (width == 0 || height == 0) {
