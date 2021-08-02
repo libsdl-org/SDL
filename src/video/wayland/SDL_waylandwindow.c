@@ -290,17 +290,11 @@ decoration_frame_configure(struct libdecor_frame *frame,
     enum libdecor_window_state window_state;
     struct libdecor_state *state;
 
-    SDL_bool fullscreen = SDL_FALSE;
-    SDL_bool maximized = SDL_FALSE;
-
     /* window size */
     if (!libdecor_configuration_get_content_size(configuration, frame, &width, &height)) {
-        width = wind->floating_width;
-        height = wind->floating_height;
+        width = window->w;
+        height = window->h;
     }
-
-    width = (width == 0) ? window->w : width;
-    height = (height == 0) ? window->h : height;
 
     Wayland_HandleResize(window, width, height, wind->scale_factor);
     wind->shell_surface.libdecor.initial_configure_seen = SDL_TRUE;
@@ -310,51 +304,33 @@ decoration_frame_configure(struct libdecor_frame *frame,
         window_state = LIBDECOR_WINDOW_STATE_NONE;
     }
 
-    /* translate libdecor to SDL states */
-    switch (window_state) {
-    case LIBDECOR_WINDOW_STATE_FULLSCREEN:
-        fullscreen = SDL_TRUE;
-        break;
-    case LIBDECOR_WINDOW_STATE_MAXIMIZED:
-        maximized = SDL_TRUE;
-        break;
-    }
-
-    if (!fullscreen) {
+   /* Always send maximized/restored/focus events; if the event is redundant it will
+     * automatically be discarded (see src/events/SDL_windowevents.c).
+     *
+     * No, we do not get minimize events from libdecor.
+     */
+    if (window_state & LIBDECOR_WINDOW_STATE_FULLSCREEN) {
+        window->flags |= SDL_WINDOW_FULLSCREEN;
+    } else {
         if (window->flags & SDL_WINDOW_FULLSCREEN) {
             /* We might need to re-enter fullscreen after being restored from minimized */
             SDL_WaylandOutputData *driverdata = (SDL_WaylandOutputData *) SDL_GetDisplayForWindow(window)->driverdata;
             SetFullscreen(window, driverdata->output);
-            fullscreen = SDL_TRUE;
-        }
-
-        if (width == 0 || height == 0) {
-            width = wind->floating_width;
-            height = wind->floating_height;
-        }
-
-        if ((window->flags & SDL_WINDOW_RESIZABLE)) {
-            if (window->max_w > 0) {
-                width = SDL_min(width, window->max_w);
-            }
-            width = SDL_max(width, window->min_w);
-
-            if (window->max_h > 0) {
-                height = SDL_min(height, window->max_h);
-            }
-            height = SDL_max(height, window->min_h);
         } else {
-            return;
+            SDL_SendWindowEvent(window,
+                                (window_state & LIBDECOR_WINDOW_STATE_MAXIMIZED) ?
+                                    SDL_WINDOWEVENT_MAXIMIZED :
+                                    SDL_WINDOWEVENT_RESTORED,
+                                0, 0);
         }
+        window->flags &= ~SDL_WINDOW_FULLSCREEN;
     }
 
-    if (!fullscreen) {
-        SDL_SendWindowEvent(window,
-                            maximized ?
-                                SDL_WINDOWEVENT_MAXIMIZED :
-                                SDL_WINDOWEVENT_RESTORED,
-                            0, 0);
-    }
+    SDL_SendWindowEvent(window,
+                        (window_state & LIBDECOR_WINDOW_STATE_ACTIVE) ?
+                            SDL_WINDOWEVENT_FOCUS_GAINED :
+                            SDL_WINDOWEVENT_FOCUS_LOST,
+                        0, 0);
 
     /* commit frame state */
     state = libdecor_state_new(width, height);
