@@ -206,6 +206,9 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
             }
             __x_ABI_CWindows_CGaming_CInput_CIRawGameController2_Release(controller2);
         }
+        if (!name) {
+            name = "";
+        }
 
         hr = __x_ABI_CWindows_CGaming_CInput_CIRawGameController_QueryInterface(controller, &IID_IGameController, (void **)&gamecontroller);
         if (SUCCEEDED(hr)) {
