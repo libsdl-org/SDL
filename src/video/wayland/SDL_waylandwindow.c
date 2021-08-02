@@ -756,12 +756,9 @@ void Wayland_ShowWindow(_THIS, SDL_Window *window)
 
     /* Unlike the rest of window state we have to set this _after_ flushing the
      * display, because we need to create the decorations before possibly hiding
-     * them immediately afterward. But don't call it redundantly, the protocol
-     * may not interpret a redundant call nicely and cause weird stuff to happen
+     * them immediately afterward.
      */
-    if (window->flags & SDL_WINDOW_BORDERLESS) {
-        Wayland_SetWindowBordered(_this, window, SDL_FALSE);
-    }
+    Wayland_SetWindowBordered(_this, window, !(window->flags & SDL_WINDOW_BORDERLESS));
 
     /* We're finally done putting the window together, raise if possible */
     if (c->activation_manager) {
