@@ -157,44 +157,18 @@ static const struct wl_callback_listener surface_frame_listener = {
 };
 
 
-static void Wayland_HandlePendingResize(SDL_Window *window);
+static void Wayland_HandleResize(SDL_Window *window, int width, int height, float scale);
 
 static void
 handle_configure_xdg_shell_surface(void *data, struct xdg_surface *xdg, uint32_t serial)
 {
     SDL_WindowData *wind = (SDL_WindowData *)data;
     SDL_Window *window = wind->sdlwindow;
-    struct wl_region *region;
 
-    if (!wind->shell_surface.xdg.initial_configure_seen) {
-        window->w = 0;
-        window->h = 0;
-        SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, wind->resize.width, wind->resize.height);
-        window->w = wind->resize.width;
-        window->h = wind->resize.height;
+    Wayland_HandleResize(window, window->w, window->h, wind->scale_factor);
+    xdg_surface_ack_configure(xdg, serial);
 
-        wl_surface_set_buffer_scale(wind->surface, wind->scale_factor);
-        if (wind->egl_window) {
-            WAYLAND_wl_egl_window_resize(wind->egl_window,
-                                         window->w * wind->scale_factor,
-                                         window->h * wind->scale_factor,
-                                         0, 0);
-        }
-
-        xdg_surface_ack_configure(xdg, serial);
-
-        region = wl_compositor_create_region(wind->waylandData->compositor);
-        wl_region_add(region, 0, 0, window->w, window->h);
-        wl_surface_set_opaque_region(wind->surface, region);
-        wl_region_destroy(region);
-
-        wind->shell_surface.xdg.initial_configure_seen = SDL_TRUE;
-    } else {
-        wind->resize.pending = SDL_TRUE;
-        wind->resize.configure = SDL_TRUE;
-        wind->resize.serial = serial;
-        Wayland_HandlePendingResize(window);
-    }
+    wind->shell_surface.xdg.initial_configure_seen = SDL_TRUE;
 }
 
 static const struct xdg_surface_listener shell_surface_listener_xdg = {
@@ -261,8 +235,6 @@ handle_configure_xdg_toplevel(void *data,
             }
             height = SDL_max(height, window->min_h);
         } else {
-            wind->resize.width = window->w;
-            wind->resize.height = window->h;
             return;
         }
     }
@@ -281,8 +253,6 @@ handle_configure_xdg_toplevel(void *data,
     }
 
     if (width == 0 || height == 0) {
-        wind->resize.width = window->w;
-        wind->resize.height = window->h;
         return;
     }
 
@@ -292,8 +262,8 @@ handle_configure_xdg_toplevel(void *data,
         wind->floating_height = height;
     }
 
-    wind->resize.width = width;
-    wind->resize.height = height;
+    window->w = width;
+    window->h = height;
 }
 
 static void
@@ -332,16 +302,8 @@ decoration_frame_configure(struct libdecor_frame *frame,
     width = (width == 0) ? window->w : width;
     height = (height == 0) ? window->h : height;
 
-    wind->resize.width = width;
-    wind->resize.height = height;
-
-    wind->resize.pending = SDL_TRUE;
-    wind->resize.configure = SDL_TRUE;
-    Wayland_HandlePendingResize(window);
+    Wayland_HandleResize(window, width, height, wind->scale_factor);
     wind->shell_surface.libdecor.initial_configure_seen = SDL_TRUE;
-
-    window->w = wind->resize.width;
-    window->h = wind->resize.height;
 
     /* window state */
     if (!libdecor_configuration_get_window_state(configuration, &window_state)) {
@@ -382,8 +344,6 @@ decoration_frame_configure(struct libdecor_frame *frame,
             }
             height = SDL_max(height, window->min_h);
         } else {
-            wind->resize.width = window->w;
-            wind->resize.height = window->h;
             return;
         }
     }
@@ -496,12 +456,7 @@ update_scale_factor(SDL_WindowData *window)
     }
 
     if (new_factor != old_factor) {
-        /* force the resize event to trigger, as the logical size didn't change */
-        window->resize.width = window->sdlwindow->w;
-        window->resize.height = window->sdlwindow->h;
-        window->resize.scale_factor = new_factor;
-        window->resize.pending = SDL_TRUE;
-        Wayland_HandlePendingResize(window->sdlwindow);
+        Wayland_HandleResize(window->sdlwindow, window->sdlwindow->w, window->sdlwindow->h, new_factor);
     }
 }
 
@@ -989,10 +944,7 @@ Wayland_SetWindowFullscreen(_THIS, SDL_Window * window,
      */
     if (!fullscreen) {
         SDL_WindowData *wind = (SDL_WindowData*) window->driverdata;
-        wind->resize.width = window->windowed.w;
-        wind->resize.height = window->windowed.h;
-        wind->resize.pending = SDL_TRUE;
-        Wayland_HandlePendingResize(window);
+        Wayland_HandleResize(window, window->windowed.w, window->windowed.h, wind->scale_factor);
     }
 }
 
@@ -1190,11 +1142,6 @@ int Wayland_CreateWindow(_THIS, SDL_Window *window)
         }
     }
 
-    data->resize.pending = SDL_FALSE;
-    data->resize.width = window->w;
-    data->resize.height = window->h;
-    data->resize.scale_factor = data->scale_factor;
-
     data->outputs = NULL;
     data->num_outputs = 0;
 
@@ -1264,47 +1211,31 @@ int Wayland_CreateWindow(_THIS, SDL_Window *window)
 
 
 static void
-Wayland_HandlePendingResize(SDL_Window *window)
+Wayland_HandleResize(SDL_Window *window, int width, int height, float scale)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
 
-    if (data->resize.pending) {
-        struct wl_region *region;
-        if (data->scale_factor != data->resize.scale_factor || data->resize.configure) {
-            window->w = 0;
-            window->h = 0;
-        }
-        SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, data->resize.width, data->resize.height);
-        window->w = data->resize.width;
-        window->h = data->resize.height;
-        data->scale_factor = data->resize.scale_factor;
-        wl_surface_set_buffer_scale(data->surface, data->scale_factor);
-        if (data->egl_window) {
-            WAYLAND_wl_egl_window_resize(data->egl_window,
-                                         window->w * data->scale_factor,
-                                         window->h * data->scale_factor,
-                                         0, 0);
-        }
+    struct wl_region *region;
+    window->w = 0;
+    window->h = 0;
+    SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, width, height);
+    window->w = width;
+    window->h = height;
+    data->scale_factor = scale;
 
-        if (data->resize.configure) {
-#ifdef HAVE_LIBDECOR_H
-           if (data->waylandData->shell.libdecor) {
-              /* this has already been acknowledged in the the frames's 'configure' callback */
-           } else
-#endif
-           if (data->waylandData->shell.xdg) {
-              xdg_surface_ack_configure(data->shell_surface.xdg.surface, data->resize.serial);
-           }
-           data->resize.configure = SDL_FALSE;
-        }
+    wl_surface_set_buffer_scale(data->surface, data->scale_factor);
 
-        region = wl_compositor_create_region(data->waylandData->compositor);
-        wl_region_add(region, 0, 0, window->w, window->h);
-        wl_surface_set_opaque_region(data->surface, region);
-        wl_region_destroy(region);
-
-        data->resize.pending = SDL_FALSE;
+    if (data->egl_window) {
+        WAYLAND_wl_egl_window_resize(data->egl_window,
+                                        window->w * data->scale_factor,
+                                        window->h * data->scale_factor,
+                                        0, 0);
     }
+
+    region = wl_compositor_create_region(data->waylandData->compositor);
+    wl_region_add(region, 0, 0, window->w, window->h);
+    wl_surface_set_opaque_region(data->surface, region);
+    wl_region_destroy(region);
 }
 
 void
