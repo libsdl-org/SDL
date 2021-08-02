@@ -934,15 +934,10 @@ Wayland_SetWindowFullscreen(_THIS, SDL_Window * window,
                             SDL_VideoDisplay * _display, SDL_bool fullscreen)
 {
     struct wl_output *output = ((SDL_WaylandOutputData*) _display->driverdata)->output;
+    SDL_VideoData *viddata = (SDL_VideoData *) _this->driverdata;
     SetFullscreen(window, fullscreen ? output : NULL);
 
-    /* The window may have been resized to the output size, so reset this when
-     * returning to a window
-     */
-    if (!fullscreen) {
-        SDL_WindowData *wind = (SDL_WindowData*) window->driverdata;
-        Wayland_HandleResize(window, window->windowed.w, window->windowed.h, wind->scale_factor);
-    }
+    WAYLAND_wl_display_flush( viddata->display );
 }
 
 void
