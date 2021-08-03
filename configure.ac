@@ -84,10 +84,10 @@ esac
 dnl use CXX for linker on Haiku
 case "$host" in
     *-*-haiku*)
-        LINKER=CXX
+        LINKER='$(CXX)'
         ;;
     *)
-        LINKER=CC
+        LINKER='$(CC)'
         ;;
 esac
 AC_SUBST(LINKER)
