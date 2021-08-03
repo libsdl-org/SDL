@@ -746,7 +746,7 @@ main(int argc, char *argv[])
         return 2;
     }
 
-    while (SDL_NumJoysticks() == 0) {
+    while (!done && SDL_NumJoysticks() == 0) {
         SDL_Event event;
 
         while (SDL_PollEvent(&event) > 0) {
