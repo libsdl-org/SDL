@@ -30,7 +30,6 @@
 #include "SDL_waylandwindow.h"
 #include "SDL_waylandvideo.h"
 #include "SDL_waylandtouch.h"
-#include "SDL_waylanddyn.h"
 #include "SDL_hints.h"
 
 #include "xdg-shell-client-protocol.h"

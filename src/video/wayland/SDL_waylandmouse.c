@@ -36,7 +36,6 @@
 #include "SDL_waylandvideo.h"
 #include "SDL_waylandevents_c.h"
 
-#include "SDL_waylanddyn.h"
 #include "wayland-cursor.h"
 
 

@@ -35,8 +35,6 @@
 #include "SDL_waylandevents_c.h"
 #include "SDL_waylandwindow.h"
 
-#include "SDL_waylanddyn.h"
-
 #include "pointer-constraints-unstable-v1-client-protocol.h"
 #include "relative-pointer-unstable-v1-client-protocol.h"
 #include "xdg-shell-client-protocol.h"
