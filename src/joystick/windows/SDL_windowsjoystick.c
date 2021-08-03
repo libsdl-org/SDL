@@ -141,7 +141,7 @@ static GUID GUID_DEVINTERFACE_HID = { 0x4D1E55B2L, 0xF16F, 0x11CF, { 0x88, 0xCB,
 
 JoyStick_DeviceData *SYS_Joystick;    /* array to hold joystick ID values */
 
-
+#ifndef __WINRT__
 static HMODULE cfgmgr32_lib_handle;
 static CM_Register_NotificationFunc CM_Register_Notification;
 static CM_Unregister_NotificationFunc CM_Unregister_Notification;
@@ -194,8 +194,6 @@ SDL_CreateDeviceNotificationFunc(void)
     SDL_CleanupDeviceNotificationFunc();
     return SDL_FALSE;
 }
-
-#ifndef __WINRT__
 
 typedef struct
 {
@@ -455,9 +453,9 @@ WINDOWS_JoystickInit(void)
 
     WINDOWS_JoystickDetect();
 
+#ifndef __WINRT__
     SDL_CreateDeviceNotificationFunc();
 
-#ifndef __WINRT__
     s_bJoystickThread = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_THREAD, SDL_FALSE);
     if (s_bJoystickThread) {
         if (SDL_StartJoystickThread() < 0) {
@@ -731,9 +729,9 @@ WINDOWS_JoystickQuit(void)
     } else {
         SDL_CleanupDeviceNotification(&s_notification_data);
     }
-#endif
 
     SDL_CleanupDeviceNotificationFunc();
+#endif
 
     SDL_DINPUT_JoystickQuit();
     SDL_XINPUT_JoystickQuit();
