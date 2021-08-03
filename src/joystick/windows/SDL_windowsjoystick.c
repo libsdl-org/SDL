@@ -768,6 +768,13 @@ SDL_JoystickDriver SDL_WINDOWS_JoystickDriver =
     WINDOWS_JoystickGetGamepadMapping
 };
 
+#else
+
+#if SDL_JOYSTICK_RAWINPUT
+/* The RAWINPUT driver needs the device notification setup above */
+#error SDL_JOYSTICK_RAWINPUT requires SDL_JOYSTICK_DINPUT || SDL_JOYSTICK_XINPUT
+#endif
+
 #endif /* SDL_JOYSTICK_DINPUT || SDL_JOYSTICK_XINPUT */
 
 /* vi: set ts=4 sw=4 expandtab: */
