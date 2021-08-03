@@ -8,6 +8,7 @@ General:
 * Added SDL_FlashWindow() to get a user's attention
 * Added SDL_GetAudioDeviceSpec() to get the preferred audio format of a device
 * Added SDL_SetWindowAlwaysOnTop() to dynamically change the SDL_WINDOW_ALWAYS_ON_TOP flag for a window
+* Added SDL_SetWindowKeyboardGrab() to support grabbing the keyboard independently of the mouse
 * Added SDL_SoftStretchLinear() to do bilinear scaling between 32-bit software surfaces
 * Added SDL_UpdateNVTexture() to update streaming NV12/21 textures
 * Added SDL_GameControllerSendEffect() and SDL_JoystickSendEffect() to allow sending custom trigger effects to the DualSense controller
