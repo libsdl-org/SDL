@@ -1814,10 +1814,10 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
     };
 
     float decodetransformBT709[4*4] = {
-        0.0, -0.501960814, -0.501960814, 0.0, /* offset */
-        1.0000,  0.0000,  1.4020, 0.0,        /* Rcoeff */
-        1.0000, -0.3441, -0.7141, 0.0,        /* Gcoeff */
-        1.0000,  1.7720,  0.0000, 0.0,        /* Bcoeff */
+        -0.0627451017, -0.501960814, -0.501960814, 0.0, /* offset */
+        1.1644,  0.0000,  1.7927, 0.0,        /* Rcoeff */
+        1.1644, -0.2132, -0.5329, 0.0,        /* Gcoeff */
+        1.1644,  2.1124,  0.0000, 0.0,        /* Bcoeff */
     };
 
     id<MTLBuffer> mtlbufconstantstaging = [data.mtldevice newBufferWithLength:CONSTANTS_LENGTH options:MTLResourceStorageModeShared];
