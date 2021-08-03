@@ -119,68 +119,6 @@ int SDL_WinRTInitNonXAMLApp(int (*mainFunction)(int, char **))
     return 0;
 }
 
-static void SDLCALL
-WINRT_SetDisplayOrientationsPreference(void *userdata, const char *name, const char *oldValue, const char *newValue)
-{
-    SDL_assert(SDL_strcmp(name, SDL_HINT_ORIENTATIONS) == 0);
-
-    /* HACK: prevent SDL from altering an app's .appxmanifest-set orientation
-     * from being changed on startup, by detecting when SDL_HINT_ORIENTATIONS
-     * is getting registered.
-     *
-     * TODO, WinRT: consider reading in an app's .appxmanifest file, and apply its orientation when 'newValue == NULL'.
-     */
-    if ((oldValue == NULL) && (newValue == NULL)) {
-        return;
-    }
-
-    // Start with no orientation flags, then add each in as they're parsed
-    // from newValue.
-    unsigned int orientationFlags = 0;
-    if (newValue) {
-        std::istringstream tokenizer(newValue);
-        while (!tokenizer.eof()) {
-            std::string orientationName;
-            std::getline(tokenizer, orientationName, ' ');
-            if (orientationName == "LandscapeLeft") {
-                orientationFlags |= (unsigned int) DisplayOrientations::LandscapeFlipped;
-            } else if (orientationName == "LandscapeRight") {
-                orientationFlags |= (unsigned int) DisplayOrientations::Landscape;
-            } else if (orientationName == "Portrait") {
-                orientationFlags |= (unsigned int) DisplayOrientations::Portrait;
-            } else if (orientationName == "PortraitUpsideDown") {
-                orientationFlags |= (unsigned int) DisplayOrientations::PortraitFlipped;
-            }
-        }
-    }
-
-    // If no valid orientation flags were specified, use a reasonable set of defaults:
-    if (!orientationFlags) {
-        // TODO, WinRT: consider seeing if an app's default orientation flags can be found out via some API call(s).
-        orientationFlags = (unsigned int) ( \
-            DisplayOrientations::Landscape |
-            DisplayOrientations::LandscapeFlipped |
-            DisplayOrientations::Portrait |
-            DisplayOrientations::PortraitFlipped);
-    }
-
-    // Set the orientation/rotation preferences.  Please note that this does
-    // not constitute a 100%-certain lock of a given set of possible
-    // orientations.  According to Microsoft's documentation on WinRT [1]
-    // when a device is not capable of being rotated, Windows may ignore
-    // the orientation preferences, and stick to what the device is capable of
-    // displaying.
-    //
-    // [1] Documentation on the 'InitialRotationPreference' setting for a
-    // Windows app's manifest file describes how some orientation/rotation
-    // preferences may be ignored.  See
-    // http://msdn.microsoft.com/en-us/library/windows/apps/hh700343.aspx
-    // for details.  Microsoft's "Display orientation sample" also gives an
-    // outline of how Windows treats device rotation
-    // (http://code.msdn.microsoft.com/Display-Orientation-Sample-19a58e93).
-    WINRT_DISPLAY_PROPERTY(AutoRotationPreferences) = (DisplayOrientations) orientationFlags;
-}
-
 static void
 WINRT_ProcessWindowSizeChange() // TODO: Pass an SDL_Window-identifying thing into WINRT_ProcessWindowSizeChange()
 {
@@ -396,10 +334,6 @@ void SDL_WinRTApp::SetWindow(CoreWindow^ window)
     DisplayProperties::OrientationChanged +=
         ref new DisplayPropertiesEventHandler(this, &SDL_WinRTApp::OnOrientationChanged);
 #endif
-
-    // Register the hint, SDL_HINT_ORIENTATIONS, with SDL.
-    // TODO, WinRT: see if an app's default orientation can be found out via WinRT API(s), then set the initial value of SDL_HINT_ORIENTATIONS accordingly.
-    SDL_AddHintCallback(SDL_HINT_ORIENTATIONS, WINRT_SetDisplayOrientationsPreference, NULL);
 
 #if (WINAPI_FAMILY == WINAPI_FAMILY_APP) && (NTDDI_VERSION < NTDDI_WIN10)  // for Windows 8/8.1/RT apps... (and not Phone apps)
     // Make sure we know when a user has opened the app's settings pane.
