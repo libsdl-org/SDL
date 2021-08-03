@@ -962,7 +962,7 @@ Wayland_SetWindowFullscreen(_THIS, SDL_Window * window,
      *
      * -flibit
      */
-    if (viddata->shell.libdecor) {
+    if (viddata->shell.libdecor && (window->flags & SDL_WINDOW_SHOWN)) {
         WAYLAND_wl_display_dispatch(viddata->display);
     }
 #endif
