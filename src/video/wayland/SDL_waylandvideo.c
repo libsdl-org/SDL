@@ -43,7 +43,6 @@
 #include <fcntl.h>
 #include <xkbcommon/xkbcommon.h>
 
-#include "SDL_waylanddyn.h"
 #include <wayland-util.h>
 
 #include "xdg-shell-client-protocol.h"

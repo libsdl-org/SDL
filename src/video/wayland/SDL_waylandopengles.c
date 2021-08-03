@@ -30,7 +30,6 @@
 #include "SDL_waylandopengles.h"
 #include "SDL_waylandwindow.h"
 #include "SDL_waylandevents_c.h"
-#include "SDL_waylanddyn.h"
 
 #include "xdg-shell-client-protocol.h"
 

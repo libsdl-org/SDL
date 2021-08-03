@@ -34,8 +34,6 @@
 #include "SDL_waylandvideo.h"
 #include "SDL_waylanddatamanager.h"
 
-#include "SDL_waylanddyn.h"
-
 /* FIXME: This is arbitrary, but we want this to be less than a frame because
  * any longer can potentially spin an infinite loop of PumpEvents (!)
  */

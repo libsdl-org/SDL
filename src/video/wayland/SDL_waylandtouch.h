@@ -30,7 +30,6 @@
 #include <stdint.h>
 #include <stddef.h>
 #include "wayland-util.h"
-#include "SDL_waylanddyn.h"
 
 
 void Wayland_touch_create(SDL_VideoData *data, uint32_t id);

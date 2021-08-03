@@ -92,7 +92,7 @@ typedef struct {
     SDL_bool done;
 } SDL_WaylandOutputData;
 
-/* Needed to get wl_surface declaration, fixes GitHub#4594 */
+/* Needed here to get wl_surface declaration, fixes GitHub#4594 */
 #include "SDL_waylanddyn.h"
 
 extern void SDL_WAYLAND_register_surface(struct wl_surface *surface);
