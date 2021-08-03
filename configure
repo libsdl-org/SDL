@@ -16019,10 +16019,10 @@ esac
 
 case "$host" in
     *-*-haiku*)
-        LINKER=CXX
+        LINKER='$(CXX)'
         ;;
     *)
-        LINKER=CC
+        LINKER='$(CC)'
         ;;
 esac
 
