@@ -453,10 +453,6 @@ X11_VideoInit(_THIS)
 
     X11_InitTouch(_this);
 
-#if SDL_USE_LIBDBUS
-    SDL_DBus_Init();
-#endif
-
     return 0;
 }
 
