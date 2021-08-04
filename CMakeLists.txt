@@ -10,6 +10,10 @@ if(WINDOWS_STORE)
   add_definitions(-DSDL_BUILDING_WINRT=1 -ZW)
 endif()
 
+if (HAIKU)
+  set(LINKER_LANGUAGE CXX)
+endif()
+
 # !!! FIXME: this should probably do "MACOSX_RPATH ON" as a target property
 # !!! FIXME:  for the SDL2 shared library (so you get an
 # !!! FIXME:  install_name ("soname") of "@rpath/libSDL-whatever.dylib"
