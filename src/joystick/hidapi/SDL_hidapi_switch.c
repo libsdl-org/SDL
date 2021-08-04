@@ -323,6 +323,10 @@ HIDAPI_DriverSwitch_GetDeviceName(Uint16 vendor_id, Uint16 product_id)
 {
     /* Give a user friendly name for this controller */
     if (vendor_id == USB_VENDOR_NINTENDO) {
+        if (product_id == USB_PRODUCT_NINTENDO_SWITCH_JOY_CON_GRIP) {
+            return "Nintendo Switch Joy-Con Grip";
+        }
+
         if (product_id == USB_PRODUCT_NINTENDO_SWITCH_JOY_CON_LEFT) {
             return "Nintendo Switch Joy-Con Left";
         }
@@ -642,7 +646,8 @@ static SDL_bool BTrySetupUSB(SDL_DriverSwitch_Context *ctx)
         /*return SDL_FALSE;*/
     }
     if (!WriteProprietary(ctx, k_eSwitchProprietaryCommandIDs_Handshake, NULL, 0, SDL_TRUE)) {
-        return SDL_FALSE;
+        /* This fails on the right Joy-Con when plugged into the charging grip */
+        /*return SDL_FALSE;*/
     }
     if (!WriteProprietary(ctx, k_eSwitchProprietaryCommandIDs_ForceUSB, NULL, 0, SDL_FALSE)) {
         return SDL_FALSE;
@@ -892,6 +897,7 @@ HIDAPI_DriverSwitch_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joysti
          */
         if (device->vendor_id == USB_VENDOR_NINTENDO &&
                 (device->product_id == USB_PRODUCT_NINTENDO_SWITCH_PRO ||
+                device->product_id == USB_PRODUCT_NINTENDO_SWITCH_JOY_CON_GRIP ||
                 device->product_id == USB_PRODUCT_NINTENDO_SWITCH_JOY_CON_LEFT ||
                 device->product_id == USB_PRODUCT_NINTENDO_SWITCH_JOY_CON_RIGHT)) {
             input_mode = k_eSwitchInputReportIDs_FullControllerState;

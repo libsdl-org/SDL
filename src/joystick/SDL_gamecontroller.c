@@ -615,8 +615,7 @@ static ControllerMapping_t *SDL_CreateMappingForHIDAPIController(SDL_JoystickGUI
                 /* Joy-Cons have extra buttons in the same place as paddles */
                 if (SDL_IsJoystickNintendoSwitchJoyConLeft(vendor, product)) {
                     SDL_strlcat(mapping_string, "paddle2:b17,paddle4:b19,", sizeof(mapping_string));
-                }
-                else if (SDL_IsJoystickNintendoSwitchJoyConRight(vendor, product)) {
+                } else if (SDL_IsJoystickNintendoSwitchJoyConRight(vendor, product)) {
                     SDL_strlcat(mapping_string, "paddle1:b16,paddle3:b18,", sizeof(mapping_string));
                 }
                 break;
