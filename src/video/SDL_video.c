@@ -1169,7 +1169,7 @@ SDL_SetWindowDisplayMode(SDL_Window * window, const SDL_DisplayMode * mode)
                  * use fullscreen_mode.w and fullscreen_mode.h, but rather get our current native size.  As such,
                  * Android's SetWindowFullscreen will generate the window event for us with the proper final size.
                  */
-                SDL_SendWindowEvent(other, SDL_WINDOWEVENT_RESIZED, fullscreen_mode.w, fullscreen_mode.h);
+                SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, fullscreen_mode.w, fullscreen_mode.h);
 #endif
             }
         }
