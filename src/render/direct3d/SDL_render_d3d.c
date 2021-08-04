@@ -1318,6 +1318,7 @@ D3D_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *verti
                 const SDL_Rect *viewport = &data->drawstate.viewport;
                 const int backw = istarget ? renderer->target->w : data->pparams.BackBufferWidth;
                 const int backh = istarget ? renderer->target->h : data->pparams.BackBufferHeight;
+                const SDL_bool viewport_equal = ((viewport->x == 0) && (viewport->y == 0) && (viewport->w == backw) && (viewport->h == backh)) ? SDL_TRUE : SDL_FALSE;
 
                 if (data->drawstate.cliprect_enabled || data->drawstate.cliprect_enabled_dirty) {
                     IDirect3DDevice9_SetRenderState(data->device, D3DRS_SCISSORTESTENABLE, FALSE);
@@ -1325,13 +1326,13 @@ D3D_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *verti
                 }
 
                 /* Don't reset the viewport if we don't have to! */
-                if (!viewport->x && !viewport->y && (viewport->w == backw) && (viewport->h == backh)) {
+                if (!data->drawstate.viewport_dirty && viewport_equal) {
                     IDirect3DDevice9_Clear(data->device, 0, NULL, D3DCLEAR_TARGET, color, 0.0f, 0);
                 } else {
                     /* Clear is defined to clear the entire render target */
                     const D3DVIEWPORT9 wholeviewport = { 0, 0, backw, backh, 0.0f, 1.0f };
                     IDirect3DDevice9_SetViewport(data->device, &wholeviewport);
-                    data->drawstate.viewport_dirty = SDL_TRUE;
+                    data->drawstate.viewport_dirty = SDL_TRUE;  /* we still need to (re)set orthographic projection, so always mark it dirty. */
                     IDirect3DDevice9_Clear(data->device, 0, NULL, D3DCLEAR_TARGET, color, 0.0f, 0);
                 }
 
