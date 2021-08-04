@@ -122,7 +122,8 @@ WINRT_GetSDLButtonForPointerPoint(Windows::UI::Input::PointerPoint ^pt, Uint8 *b
     using namespace Windows::UI::Input;
 
 #if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
-    return SDL_BUTTON_LEFT;
+    *button = SDL_BUTTON_LEFT;
+    return SDL_TRUE;
 #else
     switch (pt->Properties->PointerUpdateKind)
     {
