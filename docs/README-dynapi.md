@@ -1,6 +1,6 @@
 # Dynamic API
 
-Originally posted [on Ryan's Google+ account](https://plus.google.com/103391075724026391227/posts/TB8UfnDYu4U).
+Originally posted on Ryan's Google+ account.
 
 Background:
 
