@@ -1616,7 +1616,7 @@ SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
             SDL_zero(fullscreen_mode);
             fullscreen_mode.w = w;
             fullscreen_mode.h = h;
-            if(SDL_GetClosestDisplayModeForDisplay(display, &fullscreen_mode, &closest_mode) != NULL) {
+            if (SDL_GetClosestDisplayModeForDisplay(display, &fullscreen_mode, &closest_mode) != NULL) {
                 bounds.w = closest_mode.w;
                 bounds.h = closest_mode.h;
             }
