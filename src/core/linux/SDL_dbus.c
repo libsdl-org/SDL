@@ -20,6 +20,7 @@
 */
 #include "../../SDL_internal.h"
 #include "SDL_dbus.h"
+#include "SDL_atomic.h"
 
 #if SDL_USE_LIBDBUS
 /* we never link directly to libdbus. */
@@ -113,8 +114,12 @@ LoadDBUSLibrary(void)
     return retval;
 }
 
-void
-SDL_DBus_Init(void)
+
+static SDL_SpinLock spinlock_dbus_init = 0;
+
+/* you must hold spinlock_dbus_init before calling this! */
+static void
+SDL_DBus_Init_Spinlocked(void)
 {
     static SDL_bool is_dbus_available = SDL_TRUE;
     if (!is_dbus_available) {
@@ -154,6 +159,14 @@ SDL_DBus_Init(void)
 
         dbus.error_free(&err);
     }
+}
+
+void
+SDL_DBus_Init(void)
+{
+    SDL_AtomicLock(&spinlock_dbus_init);  /* make sure two threads can't init at same time, since this can happen before SDL_Init. */
+    SDL_DBus_Init_Spinlocked();
+    SDL_AtomicUnlock(&spinlock_dbus_init);
 }
 
 void
