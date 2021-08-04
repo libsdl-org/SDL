@@ -56,7 +56,6 @@
 #include <X11/extensions/xf86vmode.h>
 #endif
 
-#include "../../core/linux/SDL_dbus.h"
 #include "../../core/linux/SDL_ime.h"
 
 #include "SDL_x11dyn.h"

@@ -578,10 +578,6 @@ Wayland_VideoInit(_THIS)
 
     Wayland_InitKeyboard(_this);
 
-#if SDL_USE_LIBDBUS
-    SDL_DBus_Init();
-#endif
-
     return 0;
 }
 
