@@ -183,6 +183,7 @@ handle_configure_xdg_toplevel(void *data,
 {
     SDL_WindowData *wind = (SDL_WindowData *)data;
     SDL_Window *window = wind->sdlwindow;
+    SDL_WaylandOutputData *driverdata;
 
     enum xdg_toplevel_state *state;
     SDL_bool fullscreen = SDL_FALSE;
@@ -209,15 +210,31 @@ handle_configure_xdg_toplevel(void *data,
         }
     }
 
+    driverdata = (SDL_WaylandOutputData *) SDL_GetDisplayForWindow(window)->driverdata;
+
     if (!fullscreen) {
         if (window->flags & SDL_WINDOW_FULLSCREEN) {
             /* We might need to re-enter fullscreen after being restored from minimized */
-            SDL_WaylandOutputData *driverdata = (SDL_WaylandOutputData *) SDL_GetDisplayForWindow(window)->driverdata;
             SetFullscreen(window, driverdata->output);
-            fullscreen = SDL_TRUE;
+
+            /* Foolishly do what the compositor says here. If it's wrong, don't
+             * blame us, we were explicitly instructed to do this.
+             */
+            window->w = width;
+            window->h = height;
+
+            /* This part is good though. */
+            if (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
+                wind->scale_factor = driverdata->scale_factor;
+            }
+
+            return;
         }
 
         if (width == 0 || height == 0) {
+            /* This usually happens when we're being restored from a
+             * non-floating state, so use the cached floating size here.
+             */
             width = wind->floating_width;
             height = wind->floating_height;
         }
@@ -235,6 +252,12 @@ handle_configure_xdg_toplevel(void *data,
                 height = SDL_min(height, window->max_h);
             }
             height = SDL_max(height, window->min_h);
+        } else if (floating) {
+            /* If we're a fixed-size window, we know our size for sure.
+             * Always assume the configure is wrong.
+             */
+            width = window->windowed.w;
+            height = window->windowed.h;
         }
 
         /* Always send a maximized/restore event; if the event is redundant it will
@@ -242,28 +265,33 @@ handle_configure_xdg_toplevel(void *data,
          *
          * No, we do not get minimize events from xdg-shell.
          */
-        if (!fullscreen) {
-            SDL_SendWindowEvent(window,
-                                maximized ?
-                                    SDL_WINDOWEVENT_MAXIMIZED :
-                                    SDL_WINDOWEVENT_RESTORED,
-                                0, 0);
+        SDL_SendWindowEvent(window,
+                            maximized ?
+                                SDL_WINDOWEVENT_MAXIMIZED :
+                                SDL_WINDOWEVENT_RESTORED,
+                            0, 0);
+
+        /* Store current floating dimensions for restoring */
+        if (floating) {
+            wind->floating_width = width;
+            wind->floating_height = height;
+        }
+
+        /* Store this now so the xdg_surface configure knows what to resize to */
+        window->w = width;
+        window->h = height;
+    } else {
+        /* For fullscreen, foolishly do what the compositor says. If it's wrong,
+         * don't blame us, we were explicitly instructed to do this.
+         */
+        window->w = width;
+        window->h = height;
+
+        /* This part is good though. */
+        if (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
+            wind->scale_factor = driverdata->scale_factor;
         }
     }
-
-    if (width == 0 || height == 0) {
-        return;
-    }
-
-    if (floating) {
-        /* store current floating dimensions for restoring */
-        wind->floating_width = width;
-        wind->floating_height = height;
-    }
-
-    /* Store this now so the xdg_surface configure knows what to resize to */
-    window->w = width;
-    window->h = height;
 }
 
 static void
@@ -286,6 +314,7 @@ decoration_frame_configure(struct libdecor_frame *frame,
 {
     SDL_WindowData *wind = (SDL_WindowData *)user_data;
     SDL_Window *window = wind->sdlwindow;
+    SDL_WaylandOutputData *driverdata;
     struct libdecor_state *state;
 
     enum libdecor_window_state window_state;
@@ -311,10 +340,11 @@ decoration_frame_configure(struct libdecor_frame *frame,
     }
     floating = !(fullscreen || maximized || tiled);
 
+    driverdata = (SDL_WaylandOutputData *) SDL_GetDisplayForWindow(window)->driverdata;
+
     if (!fullscreen) {
         if (window->flags & SDL_WINDOW_FULLSCREEN) {
             /* We might need to re-enter fullscreen after being restored from minimized */
-            SDL_WaylandOutputData *driverdata = (SDL_WaylandOutputData *) SDL_GetDisplayForWindow(window)->driverdata;
             SetFullscreen(window, driverdata->output);
             fullscreen = SDL_TRUE;
         }
@@ -340,17 +370,46 @@ decoration_frame_configure(struct libdecor_frame *frame,
                             SDL_WINDOWEVENT_FOCUS_LOST,
                         0, 0);
 
-    /* This will never set 0 for width/height unless the function returns false */
-    if (!libdecor_configuration_get_content_size(configuration, frame, &width, &height)) {
-        if (floating) {
-            width = wind->floating_width;
-            height = wind->floating_height;
-        } else {
+    /* For fullscreen or fixed-size windows we know our size.
+     * Always assume the configure is wrong.
+     */
+    if (fullscreen) {
+        /* FIXME: We have been explicitly told to respect the fullscreen size
+         * parameters here, even though they are known to be wrong on GNOME at
+         * bare minimum. If this is wrong, don't blame us, we were explicitly
+         * told to do this.
+         */
+        if (!libdecor_configuration_get_content_size(configuration, frame,
+                                                     &width, &height)) {
             width = window->w;
             height = window->h;
         }
-    } else if (floating) {
-        /* store current floating dimensions for restoring */
+
+        /* This part is good though. */
+        if (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
+            wind->scale_factor = driverdata->scale_factor;
+        }
+    } else if (!(window->flags & SDL_WINDOW_RESIZABLE)) {
+        width = window->windowed.w;
+        height = window->windowed.h;
+    } else {
+        /* This will never set 0 for width/height unless the function returns false */
+        if (!libdecor_configuration_get_content_size(configuration, frame, &width, &height)) {
+            if (floating) {
+                /* This usually happens when we're being restored from a
+                 * non-floating state, so use the cached floating size here.
+                 */
+                width = wind->floating_width;
+                height = wind->floating_height;
+            } else {
+                width = window->w;
+                height = window->h;
+            }
+        }
+    }
+
+    /* Store current floating dimensions for restoring */
+    if (floating) {
         wind->floating_width = width;
         wind->floating_height = height;
     }
@@ -948,23 +1007,6 @@ Wayland_SetWindowFullscreen(_THIS, SDL_Window * window,
     SetFullscreen(window, fullscreen ? output : NULL);
 
     WAYLAND_wl_display_flush(viddata->display);
-#ifdef HAVE_LIBDECOR_H
-    /* For libdecor we _have_ to dispatch immediately, because libdecor state
-     * strongly depends on the "current" state of the window. For example, if an
-     * application calls SetWindowSize right after this, libdecor will still
-     * think the window is fullscreen and not floating because configuration has
-     * not yet occurred, so the call will get completely ignored! So, take the
-     * time penalty and ensure that libdecor state matches SDL state.
-     *
-     * TODO: If Wayland_SetWindowSize ever stops checking for floating state,
-     * this can be removed.
-     *
-     * -flibit
-     */
-    if (viddata->shell.libdecor && (window->flags & SDL_WINDOW_SHOWN)) {
-        WAYLAND_wl_display_dispatch(viddata->display);
-    }
-#endif
 }
 
 void
@@ -1317,10 +1359,9 @@ void Wayland_SetWindowSize(_THIS, SDL_Window * window)
     }
 #endif
 
-    if (!(window->flags & (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_MAXIMIZED))) {
-        wind->floating_width = window->w;
-        wind->floating_height = window->h;
-    }
+    /* windowed is unconditionally set, so we can trust it here */
+    wind->floating_width = window->windowed.w;
+    wind->floating_height = window->windowed.h;
 
     region = wl_compositor_create_region(data->compositor);
     wl_region_add(region, 0, 0, window->w, window->h);
