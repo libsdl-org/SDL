@@ -97,8 +97,8 @@ int RISCOS_UpdateWindowFramebuffer(_THIS, SDL_Window * window, const SDL_Rect * 
     regs.r[0] = 512+52;
     regs.r[1] = (int)driverdata->fb_area;
     regs.r[2] = (int)driverdata->fb_sprite;
-    regs.r[3] = window->x << 1;
-    regs.r[4] = window->y << 1;
+    regs.r[3] = 0; /* window->x << 1; */
+    regs.r[4] = 0; /* window->y << 1; */
     regs.r[5] = 0x50;
     regs.r[6] = 0;
     regs.r[7] = 0;
