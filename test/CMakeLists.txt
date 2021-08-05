@@ -106,11 +106,11 @@ endif()
 # Need to make it an executable so we can use the TARGET_FILE_DIR generator expression.
 # This is needed so they get copied to the correct Debug/Release subdirectory in Xcode.
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/resources_dummy.c "int main(int argc, const char **argv){ return 1; }\n")
-add_executable(SDL2_test_resoureces ${CMAKE_CURRENT_BINARY_DIR}/resources_dummy.c)
+add_executable(SDL2_test_resources ${CMAKE_CURRENT_BINARY_DIR}/resources_dummy.c)
 
 file(GLOB RESOURCE_FILES *.bmp *.wav *.hex moose.dat utf8.txt)
 foreach(RESOURCE_FILE ${RESOURCE_FILES})
-    add_custom_command(TARGET SDL2_test_resoureces POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different ${RESOURCE_FILE} $<TARGET_FILE_DIR:SDL2_test_resoureces>)
+    add_custom_command(TARGET SDL2_test_resources POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different ${RESOURCE_FILE} $<TARGET_FILE_DIR:SDL2_test_resources>)
 endforeach(RESOURCE_FILE)
 
 file(COPY ${RESOURCE_FILES} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
@@ -138,7 +138,7 @@ set(NEEDS_RESOURCES
     testmultiaudio
 )
 foreach(APP IN LISTS NEEDS_RESOURCES)
-    add_dependencies(${APP} SDL2_test_resoureces)
+    add_dependencies(${APP} SDL2_test_resources)
     if(APPLE)
         # Make sure resource files get installed into macOS/iOS .app bundles.  
         target_sources(${APP} PRIVATE "${RESOURCE_FILES}")
