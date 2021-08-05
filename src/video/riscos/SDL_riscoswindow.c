@@ -40,6 +40,8 @@ RISCOS_CreateWindow(_THIS, SDL_Window * window)
     }
     driverdata->window = window;
 
+    window->flags |= SDL_WINDOW_FULLSCREEN;
+
     /* All done! */
     window->driverdata = driverdata;
     return 0;
