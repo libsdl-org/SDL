@@ -25,6 +25,13 @@
 
 #include "../SDL_sysvideo.h"
 
+#define RISCOS_MAX_KEYS_PRESSED 6
+
+typedef struct SDL_VideoData
+{
+    Uint8 key_pressed[RISCOS_MAX_KEYS_PRESSED];
+} SDL_VideoData;
+
 #endif /* SDL_riscosvideo_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */
