@@ -347,6 +347,7 @@ decoration_frame_configure(struct libdecor_frame *frame,
             /* We might need to re-enter fullscreen after being restored from minimized */
             SetFullscreen(window, driverdata->output);
             fullscreen = SDL_TRUE;
+            floating = SDL_FALSE;
         }
 
         /* Always send a maximized/restore event; if the event is redundant it will
