@@ -47,18 +47,18 @@
 #include <IOKit/usb/USBSpec.h>
 #endif
 
-#if defined(__LINUX__)
-#include "../../core/linux/SDL_udev.h"
 #ifdef SDL_USE_LIBUDEV
+#include "../../core/linux/SDL_udev.h"
 #include <poll.h>
+#include <unistd.h>
 #endif
+
 #ifdef HAVE_INOTIFY
+#include <unistd.h>  /* just in case we didn't use that SDL_USE_LIBUDEV block... */
 #include <errno.h>              /* errno, strerror */
 #include <fcntl.h>
 #include <limits.h>             /* For the definition of NAME_MAX */
 #include <sys/inotify.h>
-#endif
-#include <unistd.h>
 #endif
 
 #if defined(SDL_USE_LIBUDEV)
