@@ -47,7 +47,7 @@
 #define HAVE_AVX_INTRINSICS 1
 #endif
 #if defined __clang__
-# if (__clang_major__ < 5)
+# if (__clang_major__ < 5) || !defined(__AVX__)
 #   undef HAVE_AVX_INTRINSICS
 # endif
 #elif defined __GNUC__
