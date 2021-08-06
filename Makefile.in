@@ -30,6 +30,7 @@ AR	= @AR@
 RANLIB	= @RANLIB@
 RC	= @RC@
 LINKER = @LINKER@
+LIBTOOLLINKERTAG = @LIBTOOLLINKERTAG@
 
 TARGET  = libSDL2.la
 OBJECTS = @OBJECTS@
@@ -153,13 +154,13 @@ update-revision:
 .PHONY: all update-revision install install-bin install-hdrs install-lib install-data uninstall uninstall-bin uninstall-hdrs uninstall-lib uninstall-data clean distclean dist $(OBJECTS:.lo=.d)
 
 $(objects)/$(TARGET): $(GEN_HEADERS) $(GEN_OBJECTS) $(OBJECTS) $(VERSION_OBJECTS)
-	$(RUN_CMD_LTLINK)$(LIBTOOL) --tag=CC --mode=link $(LINKER) -o $@ $(OBJECTS) $(GEN_OBJECTS) $(VERSION_OBJECTS) $(LDFLAGS) $(EXTRA_LDFLAGS) $(LT_LDFLAGS)
+	$(RUN_CMD_LTLINK)$(LIBTOOL) --tag=$(LIBTOOLLINKERTAG) --mode=link $(LINKER) -o $@ $(OBJECTS) $(GEN_OBJECTS) $(VERSION_OBJECTS) $(LDFLAGS) $(EXTRA_LDFLAGS) $(LT_LDFLAGS)
 
 $(objects)/$(SDLMAIN_TARGET): $(SDLMAIN_OBJECTS)
-	$(RUN_CMD_LTLINK)$(LIBTOOL) --tag=CC --mode=link $(LINKER) -static -o $@ $(SDLMAIN_OBJECTS) -rpath $(libdir)
+	$(RUN_CMD_LTLINK)$(LIBTOOL) --tag=$(LIBTOOLLINKERTAG) --mode=link $(LINKER) -static -o $@ $(SDLMAIN_OBJECTS) -rpath $(libdir)
 
 $(objects)/$(SDLTEST_TARGET): $(SDLTEST_OBJECTS)
-	$(RUN_CMD_LTLINK)$(LIBTOOL) --tag=CC --mode=link $(LINKER) -static -o $@ $(SDLTEST_OBJECTS) -rpath $(libdir)
+	$(RUN_CMD_LTLINK)$(LIBTOOL) --tag=$(LIBTOOLLINKERTAG) --mode=link $(LINKER) -static -o $@ $(SDLTEST_OBJECTS) -rpath $(libdir)
 
 install: all install-bin install-hdrs install-lib install-data
 install-bin:

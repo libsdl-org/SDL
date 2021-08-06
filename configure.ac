@@ -85,12 +85,15 @@ dnl use CXX for linker on Haiku
 case "$host" in
     *-*-haiku*)
         LINKER='$(CXX)'
+        LIBTOOLLINKERTAG='CXX'
         ;;
     *)
         LINKER='$(CC)'
+        LIBTOOLLINKERTAG='CC'
         ;;
 esac
 AC_SUBST(LINKER)
+AC_SUBST(LIBTOOLLINKERTAG)
 
 if test x$srcdir != x.; then
     INCLUDE="-Iinclude $INCLUDE"

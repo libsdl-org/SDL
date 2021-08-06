@@ -690,6 +690,7 @@ ALSA_CFLAGS
 POW_LIB
 LIBOBJS
 ALLOCA
+LIBTOOLLINKERTAG
 LINKER
 PKG_CONFIG_LIBDIR
 PKG_CONFIG_PATH
@@ -16020,11 +16021,14 @@ esac
 case "$host" in
     *-*-haiku*)
         LINKER='$(CXX)'
+        LIBTOOLLINKERTAG='CXX'
         ;;
     *)
         LINKER='$(CC)'
+        LIBTOOLLINKERTAG='CC'
         ;;
 esac
+
 
 
 if test x$srcdir != x.; then
