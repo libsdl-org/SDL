@@ -97,8 +97,8 @@ extern "C" {
 } /* extern "C" */
 #endif
 
-#include <stdio.h>
-#include <stdlib.h>
+/*#include <stdio.h>*/
+/*#include <stdlib.h>*/
 
 
 #include "../hidapi/hidapi.h"

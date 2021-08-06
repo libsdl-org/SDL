@@ -34,7 +34,7 @@ SDL_memcpySSE(Uint8 * dst, const Uint8 * src, int len)
 
     __m128 values[4];
     for (i = len / 64; i--;) {
-        _mm_prefetch(src, _MM_HINT_NTA);
+        _mm_prefetch((const char *)src, _MM_HINT_NTA);
         values[0] = *(__m128 *) (src + 0);
         values[1] = *(__m128 *) (src + 16);
         values[2] = *(__m128 *) (src + 32);

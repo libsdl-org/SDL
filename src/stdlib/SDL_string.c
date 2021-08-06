@@ -281,7 +281,7 @@ SDL_memset(SDL_OUT_BYTECAP(len) void *dst, int c, size_t len)
      * execute a 32-bit set. Set first bytes manually if needed until it is
      * aligned. */
     value1 = (Uint8)c;
-    while ((intptr_t)dstp1 & 0x3) {
+    while ((uintptr_t)dstp1 & 0x3) {
         if (len--) {
             *dstp1++ = value1;
         } else {
@@ -329,7 +329,7 @@ SDL_memcpy(SDL_OUT_BYTECAP(len) void *dst, SDL_IN_BYTECAP(len) const void *src, 
        using Uint32* pointers, so we need to make sure the pointers are
        aligned before we loop using them.
      */
-    if (((intptr_t)src & 0x3) || ((intptr_t)dst & 0x3)) {
+    if (((uintptr_t)src & 0x3) || ((uintptr_t)dst & 0x3)) {
         /* Do an unaligned byte copy */
         Uint8 *srcp1 = (Uint8 *)src;
         Uint8 *dstp1 = (Uint8 *)dst;
