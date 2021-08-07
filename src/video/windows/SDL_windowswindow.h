@@ -41,6 +41,7 @@ typedef struct
     SDL_bool created;
     WPARAM mouse_button_flags;
     LPARAM last_pointer_update;
+    WCHAR high_surrogate;
     SDL_bool initializing;
     SDL_bool expected_resize;
     SDL_bool in_border_change;

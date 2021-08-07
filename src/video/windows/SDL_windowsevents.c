@@ -862,15 +862,41 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     case WM_UNICHAR:
         if (wParam == UNICODE_NOCHAR) {
             returnCode = 1;
-            break;
-        }
-        /* otherwise fall through to below */
-    case WM_CHAR:
-        {
+        } else {
             char text[5];
             if (WIN_ConvertUTF32toUTF8((UINT32)wParam, text)) {
                 SDL_SendKeyboardText(text);
             }
+            returnCode = 0;
+        }
+        break;
+
+    case WM_CHAR:
+        /* When a user enters a Unicode code point defined in the Basic Multilingual Plane, Windows sends a WM_CHAR
+           message with the code point encoded as UTF-16. When a user enters a Unicode code point from a Supplementary
+           Plane, Windows sends the code point in two separate WM_CHAR messages: The first message includes the UTF-16
+           High Surrogate and the second the UTF-16 Low Surrogate. The High and Low Surrogates cannot be individually
+           converted to valid UTF-8, therefore, we must save the High Surrogate from the first WM_CHAR message and
+           concatenate it with the Low Surrogate from the second WM_CHAR message. At that point, we have a valid
+           UTF-16 surrogate pair ready to re-encode as UTF-8. */
+        if (IS_HIGH_SURROGATE(wParam)) {
+            data->high_surrogate = (WCHAR)wParam;
+        } else if (IS_SURROGATE_PAIR(data->high_surrogate, wParam)) {
+            /* The code point is in a Supplementary Plane.
+               Here wParam is the Low Surrogate. */
+            const WCHAR surrogate_pair[] = {data->high_surrogate, (WCHAR)wParam, 0};
+            char *s;
+            s = SDL_iconv_string("UTF-8", "UTF-16LE", (const char *)surrogate_pair, sizeof(surrogate_pair));
+            SDL_SendKeyboardText(s);
+            SDL_free(s);
+            data->high_surrogate = 0;
+        } else {
+            /* The code point is in the Basic Multilingual Plane */
+            const WCHAR wchar[] = {(WCHAR)wParam, 0};
+            char *s;
+            s = SDL_iconv_string("UTF-8", "UTF-16LE", (const char *)wchar, sizeof(wchar));
+            SDL_SendKeyboardText(s);
+            SDL_free(s);
         }
         returnCode = 0;
         break;

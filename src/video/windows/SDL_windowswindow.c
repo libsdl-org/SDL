@@ -186,6 +186,7 @@ SetupWindowData(_THIS, SDL_Window * window, HWND hwnd, HWND parent, SDL_bool cre
     data->hdc = GetDC(hwnd);
     data->hinstance = (HINSTANCE) GetWindowLongPtr(hwnd, GWLP_HINSTANCE);
     data->created = created;
+    data->high_surrogate = 0;
     data->mouse_button_flags = 0;
     data->last_pointer_update = (LPARAM)-1;
     data->videodata = videodata;
