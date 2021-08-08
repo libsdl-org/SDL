@@ -37,6 +37,7 @@
 #include "SDL_waylandtouch.h"
 #include "SDL_waylandclipboard.h"
 #include "SDL_waylandvulkan.h"
+#include "SDL_hints.h"
 
 #include <sys/types.h>
 #include <unistd.h>
@@ -555,7 +556,7 @@ Wayland_VideoInit(_THIS)
 
 #ifdef HAVE_LIBDECOR_H
     /* Don't have server-side decorations? Try client-side instead. */
-    if (!data->decoration_manager && SDL_WAYLAND_HAVE_WAYLAND_LIBDECOR) {
+    if (!data->decoration_manager && SDL_WAYLAND_HAVE_WAYLAND_LIBDECOR && SDL_GetHintBoolean(SDL_HINT_VIDEO_WAYLAND_ALLOW_LIBDECOR, SDL_TRUE)) {
         data->shell.libdecor = libdecor_new(data->display, &libdecor_interface);
 
         /* If libdecor works, we don't need xdg-shell anymore. */
