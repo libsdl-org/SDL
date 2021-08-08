@@ -898,7 +898,8 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             }
             data->high_surrogate = 0;
         } else {
-            /* The code point is in the Basic Multilingual Plane */
+            /* The code point is in the Basic Multilingual Plane.
+               It's numerically equal to UTF-32. */
             char text[5];
             if (WIN_ConvertUTF32toUTF8((UINT32)wParam, text)) {
                 SDL_SendKeyboardText(text);
