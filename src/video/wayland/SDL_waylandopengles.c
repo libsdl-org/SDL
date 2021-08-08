@@ -130,14 +130,28 @@ Wayland_GLES_SwapWindow(_THIS, SDL_Window *window)
         struct wl_display *display = ((SDL_VideoData *)_this->driverdata)->display;
         SDL_VideoDisplay *sdldisplay = SDL_GetDisplayForWindow(window);
         const Uint32 max_wait = SDL_GetTicks() + (10000 / sdldisplay->current_mode.refresh_rate);  /* ~10 frames, so we'll progress even if throttled to zero. */
-        while ((SDL_AtomicGet(&data->swap_interval_ready) == 0) && (!SDL_TICKS_PASSED(SDL_GetTicks(), max_wait))) {
+        while (SDL_AtomicGet(&data->swap_interval_ready) == 0) {
+            Uint32 now;
+
             /* !!! FIXME: this is just the crucial piece of Wayland_PumpEvents */
             WAYLAND_wl_display_flush(display);
-            if (SDL_IOReady(WAYLAND_wl_display_get_fd(display), SDL_FALSE, 0)) {
-                WAYLAND_wl_display_dispatch(display);
-            } else {
-                WAYLAND_wl_display_dispatch_pending(display);
+            if (WAYLAND_wl_display_dispatch_pending(display) > 0) {
+                /* We dispatched some pending events. Check if the frame callback happened. */
+                continue;
             }
+
+            now = SDL_GetTicks();
+            if (SDL_TICKS_PASSED(now, max_wait)) {
+                /* Timeout expired */
+                break;
+            }
+
+            if (SDL_IOReady(WAYLAND_wl_display_get_fd(display), SDL_FALSE, max_wait - now) <= 0) {
+                /* Error or timeout expired without any events for us */
+                break;
+            }
+
+            WAYLAND_wl_display_dispatch(display);
         }
         SDL_AtomicSet(&data->swap_interval_ready, 0);
     }
