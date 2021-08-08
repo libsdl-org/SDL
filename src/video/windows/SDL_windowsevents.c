@@ -386,6 +386,14 @@ WIN_ConvertUTF32toUTF8(UINT32 codepoint, char * text)
     return SDL_TRUE;
 }
 
+static BOOL
+WIN_ConvertUTF16toUTF8(UINT32 high_surrogate, UINT32 low_surrogate, char * text)
+{
+    const UINT32 SURROGATE_OFFSET = 0x10000 - (0xD800 << 10) - 0xDC00;
+    const UINT32 codepoint = (high_surrogate << 10) + low_surrogate + SURROGATE_OFFSET;
+    return WIN_ConvertUTF32toUTF8(codepoint, text);
+}
+
 static SDL_bool
 ShouldGenerateWindowCloseOnAltF4(void)
 {
@@ -884,19 +892,17 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         } else if (IS_SURROGATE_PAIR(data->high_surrogate, wParam)) {
             /* The code point is in a Supplementary Plane.
                Here wParam is the Low Surrogate. */
-            const WCHAR surrogate_pair[] = {data->high_surrogate, (WCHAR)wParam, 0};
-            char *s;
-            s = SDL_iconv_string("UTF-8", "UTF-16LE", (const char *)surrogate_pair, sizeof(surrogate_pair));
-            SDL_SendKeyboardText(s);
-            SDL_free(s);
+            char text[5];
+            if (WIN_ConvertUTF16toUTF8((UINT32)data->high_surrogate, (UINT32)wParam, text)) {
+                SDL_SendKeyboardText(text);
+            }
             data->high_surrogate = 0;
         } else {
             /* The code point is in the Basic Multilingual Plane */
-            const WCHAR wchar[] = {(WCHAR)wParam, 0};
-            char *s;
-            s = SDL_iconv_string("UTF-8", "UTF-16LE", (const char *)wchar, sizeof(wchar));
-            SDL_SendKeyboardText(s);
-            SDL_free(s);
+            char text[5];
+            if (WIN_ConvertUTF32toUTF8((UINT32)wParam, text)) {
+                SDL_SendKeyboardText(text);
+            }
         }
         returnCode = 0;
         break;
