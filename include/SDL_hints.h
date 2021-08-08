@@ -1266,6 +1266,17 @@ extern "C" {
 #define SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS   "SDL_VIDEO_MINIMIZE_ON_FOCUS_LOSS"
 
 /**
+ *  \brief  A variable controlling whether the libdecor Wayland backend is allowed to be used.
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - libdecor use is disabled.
+ *    "1"       - libdecor use is enabled (default).
+ *
+ *  libdecor is used over xdg-shell when xdg-decoration protocol is unavailable.
+ */
+#define SDL_HINT_VIDEO_WAYLAND_ALLOW_LIBDECOR "SDL_VIDEO_WAYLAND_ALLOW_LIBDECOR"
+
+/**
 *  \brief  A variable that is the address of another SDL_Window* (as a hex string formatted with "%p").
 *  
 *  If this hint is set before SDL_CreateWindowFrom() and the SDL_Window* it is set to has
