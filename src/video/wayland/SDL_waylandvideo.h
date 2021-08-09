@@ -29,6 +29,7 @@
 #include "wayland-util.h"
 
 #include "../SDL_sysvideo.h"
+#include "../../core/linux/SDL_dbus.h"
 #include "../../core/linux/SDL_ime.h"
 
 struct xkb_context;
