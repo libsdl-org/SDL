@@ -980,7 +980,8 @@ SDL_AudioInit(const char *driver_name)
                                                                      : SDL_strlen(driver_attempt);
 
             for (i = 0; bootstrap[i]; ++i) {
-                if (SDL_strncasecmp(bootstrap[i]->name, driver_attempt, driver_attempt_len) == 0) {
+                if ((driver_attempt_len == SDL_strlen(bootstrap[i]->name)) &&
+                    (SDL_strncasecmp(bootstrap[i]->name, driver_attempt, driver_attempt_len) == 0)) {
                     tried_to_init = 1;
                     SDL_zero(current_audio);
                     current_audio.name = bootstrap[i]->name;
