@@ -58,6 +58,7 @@ struct SDL_Texture
     Uint32 last_command_generation; /* last command queue generation this texture was in. */
 
     void *driverdata;           /**< Driver specific texture representation */
+    void *userdata;
 
     SDL_Texture *prev;
     SDL_Texture *next;

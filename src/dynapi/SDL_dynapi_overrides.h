@@ -815,3 +815,5 @@
 #define SDL_GameControllerSendEffect SDL_GameControllerSendEffect_REAL
 #define SDL_JoystickSendEffect SDL_JoystickSendEffect_REAL
 #define SDL_GameControllerGetSensorDataRate SDL_GameControllerGetSensorDataRate_REAL
+#define SDL_SetTextureUserData SDL_SetTextureUserData_REAL
+#define SDL_GetTextureUserData SDL_GetTextureUserData_REAL

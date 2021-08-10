@@ -1486,6 +1486,23 @@ SDL_GetTextureScaleMode(SDL_Texture * texture, SDL_ScaleMode *scaleMode)
     return 0;
 }
 
+int
+SDL_SetTextureUserData(SDL_Texture * texture, void *userdata)
+{
+    CHECK_TEXTURE_MAGIC(texture, -1);
+
+    texture->userdata = userdata;
+    return 0;
+}
+
+void *
+SDL_GetTextureUserData(SDL_Texture * texture)
+{
+    CHECK_TEXTURE_MAGIC(texture, NULL);
+
+    return texture->userdata;
+}
+
 #if SDL_HAVE_YUV
 static int
 SDL_UpdateTextureYUV(SDL_Texture * texture, const SDL_Rect * rect,

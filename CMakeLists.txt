@@ -52,7 +52,7 @@ include(${SDL2_SOURCE_DIR}/cmake/sdlchecks.cmake)
 set(SDL_MAJOR_VERSION 2)
 set(SDL_MINOR_VERSION 0)
 set(SDL_MICRO_VERSION 17)
-set(SDL_INTERFACE_AGE 1)
+set(SDL_INTERFACE_AGE 0)
 set(SDL_BINARY_AGE 17)
 set(SDL_VERSION "${SDL_MAJOR_VERSION}.${SDL_MINOR_VERSION}.${SDL_MICRO_VERSION}")
 # the following should match the versions in Xcode project file:
