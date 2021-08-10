@@ -2,6 +2,13 @@
 This is a list of major changes in SDL's version history.
 
 ---------------------------------------------------------------------------
+2.0.18:
+---------------------------------------------------------------------------
+
+Android:
+* Added support for audio output and capture using AAudio
+
+---------------------------------------------------------------------------
 2.0.16:
 ---------------------------------------------------------------------------
 General:
@@ -30,7 +37,6 @@ Linux:
 * Added the hint SDL_HINT_AUDIO_DEVICE_STREAM_ROLE to describe the role of your application for audio control panels
 
 Android:
-* Added support for audio output and capture using AAudio
 * Added SDL_AndroidShowToast() to show a lightweight notification
 
 iOS:

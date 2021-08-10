@@ -3660,6 +3660,15 @@ case "$host" in
                 AC_DEFINE(SDL_AUDIO_DRIVER_ANDROID, 1, [ ])
                 SOURCES="$SOURCES $srcdir/src/audio/android/*.c"
                 SUMMARY_audio="${SUMMARY_audio} android"
+
+                AC_DEFINE(SDL_AUDIO_DRIVER_OPENSLES, 1, [ ])
+                SOURCES="$SOURCES $srcdir/src/audio/openslES/*.c"
+                SUMMARY_audio="${SUMMARY_audio} openslES"
+
+                AC_DEFINE(SDL_AUDIO_DRIVER_AAUDIO, 1, [ ])
+                SOURCES="$SOURCES $srcdir/src/audio/aaudio/*.c"
+                SUMMARY_audio="${SUMMARY_audio} aaudio"
+
                 have_audio=yes
             ;;
             nto)
