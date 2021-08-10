@@ -2839,7 +2839,7 @@ orig_CFLAGS="$CFLAGS"
 SDL_MAJOR_VERSION=2
 SDL_MINOR_VERSION=0
 SDL_MICRO_VERSION=17
-SDL_INTERFACE_AGE=1
+SDL_INTERFACE_AGE=0
 SDL_BINARY_AGE=17
 SDL_VERSION=$SDL_MAJOR_VERSION.$SDL_MINOR_VERSION.$SDL_MICRO_VERSION
 
@@ -25025,6 +25025,19 @@ $as_echo "#define SDL_AUDIO_DRIVER_ANDROID 1" >>confdefs.h
 
                 SOURCES="$SOURCES $srcdir/src/audio/android/*.c"
                 SUMMARY_audio="${SUMMARY_audio} android"
+
+
+$as_echo "#define SDL_AUDIO_DRIVER_OPENSLES 1" >>confdefs.h
+
+                SOURCES="$SOURCES $srcdir/src/audio/openslES/*.c"
+                SUMMARY_audio="${SUMMARY_audio} openslES"
+
+
+$as_echo "#define SDL_AUDIO_DRIVER_AAUDIO 1" >>confdefs.h
+
+                SOURCES="$SOURCES $srcdir/src/audio/aaudio/*.c"
+                SUMMARY_audio="${SUMMARY_audio} aaudio"
+
                 have_audio=yes
             ;;
             nto)
