@@ -833,7 +833,8 @@ SDL_CreateRenderer(SDL_Window * window, int index, Uint32 flags)
         goto error;
     }
 
-    if (SDL_GetHint(SDL_HINT_RENDER_VSYNC)) {
+    hint = SDL_GetHint(SDL_HINT_RENDER_VSYNC);
+    if (hint && *hint) {
         if (SDL_GetHintBoolean(SDL_HINT_RENDER_VSYNC, SDL_TRUE)) {
             flags |= SDL_RENDERER_PRESENTVSYNC;
         } else {

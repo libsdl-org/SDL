@@ -172,6 +172,39 @@ typedef struct {
     int bytes_per_pixel;
 } SDL_WindowTextureData;
 
+#if SDL_VIDEO_OPENGL
+static SDL_bool
+HasAcceleratedOpenGL()
+{
+    SDL_Window *window;
+    SDL_GLContext context;
+    SDL_bool hasAcceleratedOpenGL = SDL_FALSE;
+
+    window = SDL_CreateWindow("OpenGL test", -32, -32, 32, 32, SDL_WINDOW_OPENGL|SDL_WINDOW_HIDDEN);
+    if (window) {
+        context = SDL_GL_CreateContext(window);
+        if (context) {
+            const GLubyte *(APIENTRY * glGetStringFunc) (GLenum);
+            const char *vendor = NULL;
+
+            glGetStringFunc = SDL_GL_GetProcAddress("glGetString");
+            if (glGetStringFunc) {
+                vendor = (const char *) glGetStringFunc(GL_VENDOR);
+            }
+            /* Add more vendors here at will... */
+            if (vendor &&
+                (SDL_strstr(vendor, "ATI Technologies") ||
+                 SDL_strstr(vendor, "NVIDIA"))) {
+                hasAcceleratedOpenGL = SDL_TRUE;
+            }
+            SDL_GL_DeleteContext(context);
+        }
+        SDL_DestroyWindow(window);
+    }
+    return hasAcceleratedOpenGL;
+}
+#endif /* SDL_VIDEO_OPENGL */
+
 static SDL_bool
 ShouldUseTextureFramebuffer()
 {
@@ -184,14 +217,6 @@ ShouldUseTextureFramebuffer()
 
     /* If this is the dummy driver there is no texture support */
     if (_this->is_dummy) {
-        return SDL_FALSE;
-    }
-
-    /* If the user has specified a software renderer we can't use a
-       texture framebuffer, or renderer creation will go recursive.
-     */
-    hint = SDL_GetHint(SDL_HINT_RENDER_DRIVER);
-    if (hint && SDL_strcasecmp(hint, "software") == 0) {
         return SDL_FALSE;
     }
 
@@ -218,33 +243,8 @@ ShouldUseTextureFramebuffer()
 #elif defined(__LINUX__)
     /* Properly configured OpenGL drivers are faster than MIT-SHM */
 #if SDL_VIDEO_OPENGL
-    /* Ugh, find a way to cache this value! */
     {
-        SDL_Window *window;
-        SDL_GLContext context;
-        SDL_bool hasAcceleratedOpenGL = SDL_FALSE;
-
-        window = SDL_CreateWindow("OpenGL test", -32, -32, 32, 32, SDL_WINDOW_OPENGL|SDL_WINDOW_HIDDEN);
-        if (window) {
-            context = SDL_GL_CreateContext(window);
-            if (context) {
-                const GLubyte *(APIENTRY * glGetStringFunc) (GLenum);
-                const char *vendor = NULL;
-
-                glGetStringFunc = SDL_GL_GetProcAddress("glGetString");
-                if (glGetStringFunc) {
-                    vendor = (const char *) glGetStringFunc(GL_VENDOR);
-                }
-                /* Add more vendors here at will... */
-                if (vendor &&
-                    (SDL_strstr(vendor, "ATI Technologies") ||
-                     SDL_strstr(vendor, "NVIDIA"))) {
-                    hasAcceleratedOpenGL = SDL_TRUE;
-                }
-                SDL_GL_DeleteContext(context);
-            }
-            SDL_DestroyWindow(window);
-        }
+        static SDL_bool hasAcceleratedOpenGL = HasAcceleratedOpenGL();
         return hasAcceleratedOpenGL;
     }
 #elif SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2
