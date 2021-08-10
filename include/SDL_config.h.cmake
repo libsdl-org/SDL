@@ -75,6 +75,7 @@
 #cmakedefine HAVE_LIBUNWIND_H 1
 
 /* C library functions */
+#cmakedefine HAVE_DLOPEN 1
 #cmakedefine HAVE_MALLOC 1
 #cmakedefine HAVE_CALLOC 1
 #cmakedefine HAVE_REALLOC 1
@@ -468,6 +469,9 @@
 #cmakedefine SDL_ALTIVEC_BLITTERS @SDL_ALTIVEC_BLITTERS@
 #cmakedefine SDL_ARM_SIMD_BLITTERS @SDL_ARM_SIMD_BLITTERS@
 #cmakedefine SDL_ARM_NEON_BLITTERS @SDL_ARM_NEON_BLITTERS@
+
+/* Whether SDL_DYNAMIC_API needs dlopen */
+#cmakedefine DYNAPI_NEEDS_DLOPEN  @DYNAPI_NEEDS_DLOPEN@
 
 /* Enable dynamic libsamplerate support */
 #cmakedefine SDL_LIBSAMPLERATE_DYNAMIC @SDL_LIBSAMPLERATE_DYNAMIC@

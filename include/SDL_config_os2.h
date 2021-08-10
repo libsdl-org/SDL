@@ -80,6 +80,7 @@
 #define HAVE_FLOAT_H 1
 #define HAVE_SIGNAL_H 1
 
+/* #undef HAVE_DLOPEN */
 #define HAVE_MALLOC 1
 #define HAVE_CALLOC 1
 #define HAVE_REALLOC 1

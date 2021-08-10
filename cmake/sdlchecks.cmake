@@ -32,15 +32,12 @@ endmacro()
 macro(CheckDLOPEN)
   check_symbol_exists(dlopen "dlfcn.h" HAVE_DLOPEN)
   if(NOT HAVE_DLOPEN)
-    foreach(_LIBNAME dl tdl)
-      check_library_exists("${_LIBNAME}" "dlopen" "" DLOPEN_LIB)
-      if(DLOPEN_LIB)
-        list(APPEND EXTRA_LIBS ${_LIBNAME})
-        set(_DLLIB ${_LIBNAME})
-        set(HAVE_DLOPEN TRUE)
-        break()
-      endif()
-    endforeach()
+    check_library_exists(dl dlopen "" DLOPEN_LIB)
+    if(DLOPEN_LIB)
+      list(APPEND EXTRA_LIBS dl)
+      set(_DLLIB dl)
+      set(HAVE_DLOPEN TRUE)
+    endif()
   endif()
 
   if(HAVE_DLOPEN)
@@ -54,14 +51,6 @@ macro(CheckDLOPEN)
          const char *loaderror = (char *) dlerror();
        }" HAVE_DLOPEN)
     set(CMAKE_REQUIRED_LIBRARIES)
-  endif()
-
-  if (HAVE_DLOPEN)
-    set(SDL_LOADSO_DLOPEN 1)
-    set(HAVE_SDL_DLOPEN TRUE)
-    file(GLOB DLOPEN_SOURCES ${SDL2_SOURCE_DIR}/src/loadso/dlopen/*.c)
-    set(SOURCE_FILES ${SOURCE_FILES} ${DLOPEN_SOURCES})
-    set(HAVE_SDL_LOADSO TRUE)
   endif()
 endmacro()
 
@@ -100,7 +89,7 @@ endmacro()
 # - n/a
 # Optional:
 # - ALSA_SHARED opt
-# - HAVE_DLOPEN opt
+# - HAVE_SDL_LOADSO opt
 macro(CheckALSA)
   if(ALSA)
     CHECK_INCLUDE_FILE(alsa/asoundlib.h HAVE_ASOUNDLIB_H)
@@ -113,7 +102,7 @@ macro(CheckALSA)
       set(SOURCE_FILES ${SOURCE_FILES} ${ALSA_SOURCES})
       set(SDL_AUDIO_DRIVER_ALSA 1)
       if(ALSA_SHARED)
-        if(NOT HAVE_DLOPEN)
+        if(NOT HAVE_SDL_LOADSO)
           message_warn("You must have SDL_LoadObject() support for dynamic ALSA loading")
         else()
           FindLibraryAndSONAME("asound")
@@ -132,7 +121,7 @@ endmacro()
 # - PkgCheckModules
 # Optional:
 # - PIPEWIRE_SHARED opt
-# - HAVE_DLOPEN opt
+# - HAVE_SDL_LOADSO opt
 macro(CheckPipewire)
     if(PIPEWIRE)
         pkg_check_modules(PKG_PIPEWIRE libpipewire-0.3>=0.3.20)
@@ -143,7 +132,7 @@ macro(CheckPipewire)
             set(SDL_AUDIO_DRIVER_PIPEWIRE 1)
             list(APPEND EXTRA_CFLAGS ${PKG_PIPEWIRE_CFLAGS})
             if(PIPEWIRE_SHARED)
-                if(NOT HAVE_DLOPEN)
+                if(NOT HAVE_SDL_LOADSO)
                     message_warn("You must have SDL_LoadObject() support for dynamic Pipewire loading")
                 else()
                     FindLibraryAndSONAME("pipewire-0.3")
@@ -163,7 +152,7 @@ endmacro()
 # - PkgCheckModules
 # Optional:
 # - PULSEAUDIO_SHARED opt
-# - HAVE_DLOPEN opt
+# - HAVE_SDL_LOADSO opt
 macro(CheckPulseAudio)
   if(PULSEAUDIO)
     pkg_check_modules(PKG_PULSEAUDIO libpulse-simple)
@@ -174,7 +163,7 @@ macro(CheckPulseAudio)
       set(SDL_AUDIO_DRIVER_PULSEAUDIO 1)
       list(APPEND EXTRA_CFLAGS ${PKG_PULSEAUDIO_CFLAGS})
       if(PULSEAUDIO_SHARED)
-        if(NOT HAVE_DLOPEN)
+        if(NOT HAVE_SDL_LOADSO)
           message_warn("You must have SDL_LoadObject() support for dynamic PulseAudio loading")
         else()
           FindLibraryAndSONAME("pulse-simple")
@@ -193,7 +182,7 @@ endmacro()
 # - PkgCheckModules
 # Optional:
 # - JACK_SHARED opt
-# - HAVE_DLOPEN opt
+# - HAVE_SDL_LOADSO opt
 macro(CheckJACK)
   if(JACK)
     pkg_check_modules(PKG_JACK jack)
@@ -204,7 +193,7 @@ macro(CheckJACK)
       set(SDL_AUDIO_DRIVER_JACK 1)
       list(APPEND EXTRA_CFLAGS ${PKG_JACK_CFLAGS})
       if(JACK_SHARED)
-        if(NOT HAVE_DLOPEN)
+        if(NOT HAVE_SDL_LOADSO)
           message_warn("You must have SDL_LoadObject() support for dynamic JACK audio loading")
         else()
           FindLibraryAndSONAME("jack")
@@ -223,7 +212,7 @@ endmacro()
 # - PkgCheckModules
 # Optional:
 # - ESD_SHARED opt
-# - HAVE_DLOPEN opt
+# - HAVE_SDL_LOADSO opt
 macro(CheckESD)
   if(ESD)
     pkg_check_modules(PKG_ESD esound)
@@ -234,7 +223,7 @@ macro(CheckESD)
       set(SDL_AUDIO_DRIVER_ESD 1)
       list(APPEND EXTRA_CFLAGS ${PKG_ESD_CFLAGS})
       if(ESD_SHARED)
-        if(NOT HAVE_DLOPEN)
+        if(NOT HAVE_SDL_LOADSO)
           message_warn("You must have SDL_LoadObject() support for dynamic ESD loading")
         else()
           FindLibraryAndSONAME(esd)
@@ -253,7 +242,7 @@ endmacro()
 # - n/a
 # Optional:
 # - ARTS_SHARED opt
-# - HAVE_DLOPEN opt
+# - HAVE_SDL_LOADSO opt
 macro(CheckARTS)
   if(ARTS)
     find_program(ARTS_CONFIG arts-config)
@@ -268,7 +257,7 @@ macro(CheckARTS)
       set(SDL_AUDIO_DRIVER_ARTS 1)
       set(HAVE_ARTS TRUE)
       if(ARTS_SHARED)
-        if(NOT HAVE_DLOPEN)
+        if(NOT HAVE_SDL_LOADSO)
           message_warn("You must have SDL_LoadObject() support for dynamic ARTS loading")
         else()
           # TODO
@@ -288,7 +277,7 @@ endmacro()
 # - n/a
 # Optional:
 # - NAS_SHARED opt
-# - HAVE_DLOPEN opt
+# - HAVE_SDL_LOADSO opt
 macro(CheckNAS)
   if(NAS)
     # TODO: set include paths properly, so the NAS headers are found
@@ -300,7 +289,7 @@ macro(CheckNAS)
       set(SOURCE_FILES ${SOURCE_FILES} ${NAS_SOURCES})
       set(SDL_AUDIO_DRIVER_NAS 1)
       if(NAS_SHARED)
-        if(NOT HAVE_DLOPEN)
+        if(NOT HAVE_SDL_LOADSO)
           message_warn("You must have SDL_LoadObject() support for dynamic NAS loading")
         else()
           FindLibraryAndSONAME("audio")
@@ -319,7 +308,7 @@ endmacro()
 # - n/a
 # Optional:
 # - SNDIO_SHARED opt
-# - HAVE_DLOPEN opt
+# - HAVE_SDL_LOADSO opt
 macro(CheckSNDIO)
   if(SNDIO)
     # TODO: set include paths properly, so the sndio headers are found
@@ -331,7 +320,7 @@ macro(CheckSNDIO)
       set(SOURCE_FILES ${SOURCE_FILES} ${SNDIO_SOURCES})
       set(SDL_AUDIO_DRIVER_SNDIO 1)
       if(SNDIO_SHARED)
-        if(NOT HAVE_DLOPEN)
+        if(NOT HAVE_SDL_LOADSO)
           message_warn("You must have SDL_LoadObject() support for dynamic sndio loading")
         else()
           FindLibraryAndSONAME("sndio")
@@ -350,7 +339,7 @@ endmacro()
 # - PkgCheckModules
 # Optional:
 # - FUSIONSOUND_SHARED opt
-# - HAVE_DLOPEN opt
+# - HAVE_SDL_LOADSO opt
 macro(CheckFusionSound)
   if(FUSIONSOUND)
     pkg_check_modules(PKG_FUSIONSOUND fusionsound>=1.0.0)
@@ -361,7 +350,7 @@ macro(CheckFusionSound)
       set(SDL_AUDIO_DRIVER_FUSIONSOUND 1)
       list(APPEND EXTRA_CFLAGS ${PKG_FUSIONSOUND_CFLAGS})
       if(FUSIONSOUND_SHARED)
-        if(NOT HAVE_DLOPEN)
+        if(NOT HAVE_SDL_LOADSO)
           message_warn("You must have SDL_LoadObject() support for dynamic FusionSound loading")
         else()
           FindLibraryAndSONAME("fusionsound")
@@ -380,14 +369,14 @@ endmacro()
 # - LIBSAMPLERATE
 # Optional:
 # - LIBSAMPLERATE_SHARED opt
-# - HAVE_DLOPEN opt
+# - HAVE_SDL_LOADSO opt
 macro(CheckLibSampleRate)
   if(LIBSAMPLERATE)
     check_include_file(samplerate.h HAVE_LIBSAMPLERATE_H)
     if(HAVE_LIBSAMPLERATE_H)
       set(HAVE_LIBSAMPLERATE TRUE)
       if(LIBSAMPLERATE_SHARED)
-        if(NOT HAVE_DLOPEN)
+        if(NOT HAVE_SDL_LOADSO)
           message_warn("You must have SDL_LoadObject() support for dynamic libsamplerate loading")
         else()
           FindLibraryAndSONAME("samplerate")
@@ -405,7 +394,7 @@ endmacro()
 # - n/a
 # Optional:
 # - X11_SHARED opt
-# - HAVE_DLOPEN opt
+# - HAVE_SDL_LOADSO opt
 macro(CheckX11)
   if(VIDEO_X11)
     foreach(_LIB X11 Xext Xcursor Xinerama Xi Xrandr Xrender Xss Xxf86vm)
@@ -468,7 +457,7 @@ macro(CheckX11)
       endif()
 
       if(X11_SHARED)
-        if(NOT HAVE_DLOPEN)
+        if(NOT HAVE_SDL_LOADSO)
           message_warn("You must have SDL_LoadObject() support for dynamic X11 loading")
           set(HAVE_X11_SHARED FALSE)
         else()
@@ -625,7 +614,7 @@ endmacro()
 # - PkgCheckModules
 # Optional:
 # - WAYLAND_SHARED opt
-# - HAVE_DLOPEN opt
+# - HAVE_SDL_LOADSO opt
 macro(CheckWayland)
   if(VIDEO_WAYLAND)
     pkg_check_modules(WAYLAND wayland-client wayland-scanner wayland-egl wayland-cursor egl xkbcommon)
@@ -680,7 +669,7 @@ macro(CheckWayland)
       endif()
 
       if(WAYLAND_SHARED)
-        if(NOT HAVE_DLOPEN)
+        if(NOT HAVE_SDL_LOADSO)
           message_warn("You must have SDL_LoadObject() support for dynamic Wayland loading")
         else()
           FindLibraryAndSONAME(wayland-client)
@@ -705,7 +694,7 @@ macro(CheckWayland)
             link_directories(${LIBDECOR_LIBRARY_DIRS})
             include_directories(${LIBDECOR_INCLUDE_DIRS})
             if(LIBDECOR_SHARED)
-              if(NOT HAVE_DLOPEN)
+              if(NOT HAVE_SDL_LOADSO)
                 message_warn("You must have SDL_LoadObject() support for dynamic libdecor loading")
               else()
                 set(HAVE_LIBDECOR_SHARED TRUE)
@@ -745,7 +734,7 @@ endmacro()
 # - PkgCheckModules
 # Optional:
 # - DIRECTFB_SHARED opt
-# - HAVE_DLOPEN opt
+# - HAVE_SDL_LOADSO opt
 macro(CheckDirectFB)
   if(VIDEO_DIRECTFB)
     pkg_check_modules(PKG_DIRECTFB directfb>=1.0.0)
@@ -757,7 +746,7 @@ macro(CheckDirectFB)
       set(SDL_VIDEO_RENDER_DIRECTFB 1)
       list(APPEND EXTRA_CFLAGS ${PKG_DIRECTFB_CFLAGS})
       if(DIRECTFB_SHARED)
-        if(NOT HAVE_DLOPEN)
+        if(NOT HAVE_SDL_LOADSO)
           message_warn("You must have SDL_LoadObject() support for dynamic DirectFB loading")
         else()
           FindLibraryAndSONAME("directfb")
@@ -1232,7 +1221,7 @@ endmacro(CheckRPI)
 # - PkgCheckModules
 # Optional:
 # - KMSDRM_SHARED opt
-# - HAVE_DLOPEN opt
+# - HAVE_SDL_LOADSO opt
 macro(CheckKMSDRM)
   if(VIDEO_KMSDRM)
     pkg_check_modules(KMSDRM libdrm gbm egl)
@@ -1254,7 +1243,7 @@ macro(CheckKMSDRM)
       set(SDL_VIDEO_DRIVER_KMSDRM 1)
 
       if(KMSDRM_SHARED)
-        if(NOT HAVE_DLOPEN)
+        if(NOT HAVE_SDL_LOADSO)
           message_warn("You must have SDL_LoadObject() support for dynamic KMS/DRM loading")
         else()
           FindLibraryAndSONAME(drm)

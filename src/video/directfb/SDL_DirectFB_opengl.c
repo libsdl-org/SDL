@@ -47,7 +47,7 @@ struct SDL_GLDriverData
 };
 
 #define OPENGL_REQUIRS_DLOPEN
-#if defined(OPENGL_REQUIRS_DLOPEN) && defined(SDL_LOADSO_DLOPEN)
+#if defined(OPENGL_REQUIRS_DLOPEN) && defined(HAVE_DLOPEN)
 #include <dlfcn.h>
 #define GL_LoadObject(X)    dlopen(X, (RTLD_NOW|RTLD_GLOBAL))
 #define GL_LoadFunction     dlsym
