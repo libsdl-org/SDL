@@ -2662,15 +2662,15 @@ endif()
 
 ##### Installation targets #####
 install(TARGETS ${_INSTALL_LIBS} EXPORT SDL2Targets
-  LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}${LIB_SUFFIX}"
-  ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}${LIB_SUFFIX}"
+  LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+  ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
   RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
 
 ##### Export files #####
 if (WINDOWS)
   set(PKG_PREFIX "cmake")
 else ()
-  set(PKG_PREFIX "${CMAKE_INSTALL_LIBDIR}${LIB_SUFFIX}/cmake/SDL2")
+  set(PKG_PREFIX "${CMAKE_INSTALL_LIBDIR}/cmake/SDL2")
 endif ()
 
 include(CMakePackageConfigHelpers)
@@ -2717,7 +2717,7 @@ if(NOT (WINDOWS OR CYGWIN OR MINGW))
           execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
             \"lib${SONAME}${SOPOSTFIX}${SOEXT}\" \"libSDL2${SOPOSTFIX}${SOEXT}\"
             WORKING_DIRECTORY \"${SDL2_BINARY_DIR}\")")
-        install(FILES ${SDL2_BINARY_DIR}/libSDL2${SOPOSTFIX}${SOEXT} DESTINATION "${CMAKE_INSTALL_LIBDIR}${LIB_SUFFIX}")
+        install(FILES ${SDL2_BINARY_DIR}/libSDL2${SOPOSTFIX}${SOEXT} DESTINATION "${CMAKE_INSTALL_LIBDIR}")
     endif()
   endif()
   if(FREEBSD)
@@ -2725,7 +2725,7 @@ if(NOT (WINDOWS OR CYGWIN OR MINGW))
     install(FILES ${SDL2_BINARY_DIR}/sdl2.pc DESTINATION "libdata/pkgconfig")
   else()
     install(FILES ${SDL2_BINARY_DIR}/sdl2.pc
-      DESTINATION "${CMAKE_INSTALL_LIBDIR}${LIB_SUFFIX}/pkgconfig")
+      DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
   endif()
   install(PROGRAMS ${SDL2_BINARY_DIR}/sdl2-config DESTINATION "${CMAKE_INSTALL_BINDIR}")
   # TODO: what about the .spec file? Is it only needed for RPM creation?
