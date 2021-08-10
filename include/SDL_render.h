@@ -496,7 +496,8 @@ extern DECLSPEC int SDLCALL SDL_SetTextureUserData(SDL_Texture * texture,
  * Get the user-specified pointer associated with a texture
  *
  * \param texture the texture to query.
- * \return the pointer associated with the texture, or NULL if the texture is not valid.
+ * \return the pointer associated with the texture, or NULL if the texture is
+ *         not valid.
  *
  * \sa SDL_SetTextureUserData
  */
