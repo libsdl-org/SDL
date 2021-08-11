@@ -63,6 +63,9 @@ _m_prefetch(void *__P)
 #ifndef __SSE2__
 #define __SSE2__
 #endif
+#ifndef __SSE3__
+#define __SSE3__
+#endif
 #elif defined(__MINGW64_VERSION_MAJOR)
 #include <intrin.h>
 #if !defined(SDL_DISABLE_ARM_NEON_H) && defined(__ARM_NEON)
