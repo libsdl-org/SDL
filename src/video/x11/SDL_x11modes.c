@@ -1059,7 +1059,6 @@ X11_SetDisplayMode(_THIS, SDL_VideoDisplay * sdl_display, SDL_DisplayMode * mode
            crashing */
         PreXRRSetScreenSizeErrorHandler = X11_XSetErrorHandler(SDL_XRRSetScreenSizeErrHandler);
         X11_XRRSetScreenSize(display, RootWindow(display, data->screen), mode->w, mode->h, mm_width, mm_height);
-        X11_XSync(display, False);  /* hopefully force any protocol errors to process with this handler. */
         X11_XSetErrorHandler(PreXRRSetScreenSizeErrorHandler);
 
         status = X11_XRRSetCrtcConfig (display, res, output_info->crtc, CurrentTime,
