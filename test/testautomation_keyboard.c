@@ -305,7 +305,7 @@ keyboard_getSetModState(void *arg)
     KMOD_NUM |
     KMOD_CAPS |
     KMOD_MODE |
-    KMOD_RESERVED;
+    KMOD_SCROLL;
 
    /* Get state, cache for later reset */
    result = SDL_GetModState();

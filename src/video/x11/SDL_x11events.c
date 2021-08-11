@@ -353,6 +353,32 @@ X11_GetNumLockModifierMask(_THIS)
     return num_mask;
 }
 
+static unsigned
+X11_GetScrollLockModifierMask(_THIS)
+{
+    SDL_VideoData *viddata = (SDL_VideoData *) _this->driverdata;
+    Display *display = viddata->display;
+    unsigned num_mask = 0;
+    int i, j;
+    XModifierKeymap *xmods;
+    unsigned n;
+
+    xmods = X11_XGetModifierMapping(display);
+    n = xmods->max_keypermod;
+    for(i = 3; i < 8; i++) {
+        for(j = 0; j < n; j++) {
+            KeyCode kc = xmods->modifiermap[i * n + j];
+            if (viddata->key_layout[kc] == SDL_SCANCODE_SCROLLLOCK) {
+                num_mask = 1 << i;
+                break;
+            }
+        }
+    }
+    X11_XFreeModifiermap(xmods);
+
+    return num_mask;
+}
+
 static void
 X11_ReconcileKeyboardState(_THIS)
 {
@@ -371,6 +397,7 @@ X11_ReconcileKeyboardState(_THIS)
     if (X11_XQueryPointer(display, DefaultRootWindow(display), &junk_window, &junk_window, &x, &y, &x, &y, &mask)) {
         SDL_ToggleModState(KMOD_CAPS, (mask & LockMask) != 0);
         SDL_ToggleModState(KMOD_NUM, (mask & X11_GetNumLockModifierMask(_this)) != 0);
+        SDL_ToggleModState(KMOD_SCROLL, (mask & X11_GetScrollLockModifierMask(_this)) != 0);
     }
 
     keyboardState = SDL_GetKeyboardState(0);

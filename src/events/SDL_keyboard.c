@@ -767,6 +767,9 @@ SDL_SendKeyboardKeyInternal(Uint8 source, Uint8 state, SDL_Scancode scancode)
         case SDLK_CAPSLOCK:
             keyboard->modstate ^= KMOD_CAPS;
             break;
+        case SDLK_SCROLLLOCK:
+            keyboard->modstate ^= KMOD_SCROLL;
+            break;
         default:
             keyboard->modstate |= modifier;
             break;
