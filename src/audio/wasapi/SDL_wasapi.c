@@ -34,9 +34,15 @@
 
 #include "SDL_wasapi.h"
 
-/* This constant isn't available on MinGW-w64 */
+/* These constants aren't available in older SDKs */
 #ifndef AUDCLNT_STREAMFLAGS_RATEADJUST
 #define AUDCLNT_STREAMFLAGS_RATEADJUST  0x00100000
+#endif
+#ifndef AUDCLNT_STREAMFLAGS_SRC_DEFAULT_QUALITY
+#define AUDCLNT_STREAMFLAGS_SRC_DEFAULT_QUALITY 0x08000000
+#endif
+#ifndef AUDCLNT_STREAMFLAGS_AUTOCONVERTPCM
+#define AUDCLNT_STREAMFLAGS_AUTOCONVERTPCM 0x80000000
 #endif
 
 /* these increment as default devices change. Opened default devices pick up changes in their threads. */
