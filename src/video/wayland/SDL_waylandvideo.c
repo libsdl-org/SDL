@@ -391,6 +391,7 @@ display_handle_done(void *data,
 
     driverdata->placeholder.driverdata = driverdata;
     SDL_AddVideoDisplay(&driverdata->placeholder, SDL_FALSE);
+    SDL_free(driverdata->placeholder.name);
     SDL_zero(driverdata->placeholder);
 }
 
