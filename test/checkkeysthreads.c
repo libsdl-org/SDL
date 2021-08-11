@@ -86,6 +86,8 @@ print_modifiers(char **text, size_t *maxlen)
         print_string(text, maxlen, " CAPS");
     if (mod & KMOD_MODE)
         print_string(text, maxlen, " MODE");
+    if (mod & KMOD_SCROLL)
+        print_string(text, maxlen, " SCROLL");
 }
 
 static void

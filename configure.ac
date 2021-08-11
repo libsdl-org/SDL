@@ -22,9 +22,9 @@ dnl Set various version strings - taken gratefully from the GTk sources
 #
 SDL_MAJOR_VERSION=2
 SDL_MINOR_VERSION=0
-SDL_MICRO_VERSION=16
+SDL_MICRO_VERSION=17
 SDL_INTERFACE_AGE=0
-SDL_BINARY_AGE=16
+SDL_BINARY_AGE=17
 SDL_VERSION=$SDL_MAJOR_VERSION.$SDL_MINOR_VERSION.$SDL_MICRO_VERSION
 
 AC_SUBST(SDL_MAJOR_VERSION)
@@ -3224,30 +3224,26 @@ XINPUT_STATE_EX s1;
 }
 
 dnl Check for the dlfcn.h interface for dynamically loading objects
+dnl NOTE: CheckDLOPEN is called only for relevant platforms
 CheckDLOPEN()
 {
-    AC_ARG_ENABLE(sdl-dlopen,
-[AS_HELP_STRING([--enable-sdl-dlopen], [use dlopen for shared object loading [default=yes]])],
-                  , enable_sdl_dlopen=yes)
-    if test x$enable_sdl_dlopen = xyes; then
-        AC_MSG_CHECKING(for dlopen)
-        have_dlopen=no
-        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
-         #include <dlfcn.h>
-        ]], [[
-         void *handle = dlopen("", RTLD_NOW);
-         const char *loaderror = (char *) dlerror();
-        ]])], [have_dlopen=yes],[])
-        AC_MSG_RESULT($have_dlopen)
+    AC_DEFINE(DYNAPI_NEEDS_DLOPEN,1,[])
 
-        if test x$have_dlopen = xyes; then
-            AC_CHECK_LIB(c, dlopen, EXTRA_LDFLAGS="$EXTRA_LDFLAGS",
-               AC_CHECK_LIB(dl, dlopen, EXTRA_LDFLAGS="$EXTRA_LDFLAGS -ldl",
-                  AC_CHECK_LIB(ltdl, dlopen, EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lltdl")))
-            AC_DEFINE(SDL_LOADSO_DLOPEN, 1, [ ])
-            SOURCES="$SOURCES $srcdir/src/loadso/dlopen/*.c"
-            have_loadso=yes
-        fi
+    AC_CHECK_HEADER(dlfcn.h,have_dlfcn_h=yes,have_dlfcn_h=no)
+
+    have_dlopen=no
+    AC_CHECK_LIB(c, dlopen, have_dlopen=yes,
+       AC_CHECK_LIB(dl, dlopen, [have_dlopen=yes; EXTRA_LDFLAGS="$EXTRA_LDFLAGS -ldl"]))
+    AC_MSG_CHECKING(for dlopen)
+    AC_MSG_RESULT($have_dlopen)
+
+    if test x$have_dlfcn_h = xyes -a x$have_dlopen = xyes; then
+       AC_DEFINE(HAVE_DLOPEN,1,[])
+       if test x$enable_loadso = xyes; then
+          AC_DEFINE(SDL_LOADSO_DLOPEN,1,[])
+          SOURCES="$SOURCES $srcdir/src/loadso/dlopen/*.c"
+          have_loadso=yes
+       fi
     fi
 }
 
@@ -3664,6 +3660,15 @@ case "$host" in
                 AC_DEFINE(SDL_AUDIO_DRIVER_ANDROID, 1, [ ])
                 SOURCES="$SOURCES $srcdir/src/audio/android/*.c"
                 SUMMARY_audio="${SUMMARY_audio} android"
+
+                AC_DEFINE(SDL_AUDIO_DRIVER_OPENSLES, 1, [ ])
+                SOURCES="$SOURCES $srcdir/src/audio/openslES/*.c"
+                SUMMARY_audio="${SUMMARY_audio} openslES"
+
+                AC_DEFINE(SDL_AUDIO_DRIVER_AAUDIO, 1, [ ])
+                SOURCES="$SOURCES $srcdir/src/audio/aaudio/*.c"
+                SUMMARY_audio="${SUMMARY_audio} aaudio"
+
                 have_audio=yes
             ;;
             nto)

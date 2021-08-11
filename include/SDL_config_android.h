@@ -48,6 +48,7 @@
 #define HAVE_SYS_TYPES_H    1
 
 /* C library functions */
+#define HAVE_DLOPEN 1
 #define HAVE_MALLOC 1
 #define HAVE_CALLOC 1
 #define HAVE_REALLOC    1
@@ -142,7 +143,7 @@
 /* Enable various audio drivers */
 #define SDL_AUDIO_DRIVER_ANDROID    1
 #define SDL_AUDIO_DRIVER_OPENSLES   1
-#define SDL_AUDIO_DRIVER_AAUDIO     0
+#define SDL_AUDIO_DRIVER_AAUDIO     1
 #define SDL_AUDIO_DRIVER_DUMMY  1
 
 /* Enable various input drivers */

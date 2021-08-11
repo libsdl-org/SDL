@@ -902,7 +902,6 @@ enable_pthread_sem
 enable_directx
 enable_xinput
 enable_wasapi
-enable_sdl_dlopen
 enable_hidapi
 enable_hidapi_libusb
 enable_clock_gettime
@@ -1696,7 +1695,6 @@ Optional Features:
   --enable-directx        use DirectX for Windows audio/video [default=yes]
   --enable-xinput         use Xinput for Windows [default=yes]
   --enable-wasapi         use the Windows WASAPI audio driver [default=yes]
-  --enable-sdl-dlopen     use dlopen for shared object loading [default=yes]
   --enable-hidapi         use HIDAPI for low level joystick drivers
                           [default=yes]
   --enable-hidapi-libusb  use libusb for low level joystick drivers
@@ -2840,9 +2838,9 @@ orig_CFLAGS="$CFLAGS"
 #
 SDL_MAJOR_VERSION=2
 SDL_MINOR_VERSION=0
-SDL_MICRO_VERSION=16
+SDL_MICRO_VERSION=17
 SDL_INTERFACE_AGE=0
-SDL_BINARY_AGE=16
+SDL_BINARY_AGE=17
 SDL_VERSION=$SDL_MAJOR_VERSION.$SDL_MINOR_VERSION.$SDL_MICRO_VERSION
 
 
@@ -24136,42 +24134,20 @@ fi
 
 CheckDLOPEN()
 {
-    # Check whether --enable-sdl-dlopen was given.
-if test "${enable_sdl_dlopen+set}" = set; then :
-  enableval=$enable_sdl_dlopen;
+    $as_echo "#define DYNAPI_NEEDS_DLOPEN 1" >>confdefs.h
+
+
+    ac_fn_c_check_header_mongrel "$LINENO" "dlfcn.h" "ac_cv_header_dlfcn_h" "$ac_includes_default"
+if test "x$ac_cv_header_dlfcn_h" = xyes; then :
+  have_dlfcn_h=yes
 else
-  enable_sdl_dlopen=yes
+  have_dlfcn_h=no
 fi
 
-    if test x$enable_sdl_dlopen = xyes; then
-        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for dlopen" >&5
-$as_echo_n "checking for dlopen... " >&6; }
-        have_dlopen=no
-        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
 
-         #include <dlfcn.h>
 
-int
-main ()
-{
-
-         void *handle = dlopen("", RTLD_NOW);
-         const char *loaderror = (char *) dlerror();
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
-  have_dlopen=yes
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-        { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_dlopen" >&5
-$as_echo "$have_dlopen" >&6; }
-
-        if test x$have_dlopen = xyes; then
-            { $as_echo "$as_me:${as_lineno-$LINENO}: checking for dlopen in -lc" >&5
+    have_dlopen=no
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for dlopen in -lc" >&5
 $as_echo_n "checking for dlopen in -lc... " >&6; }
 if ${ac_cv_lib_c_dlopen+:} false; then :
   $as_echo_n "(cached) " >&6
@@ -24208,7 +24184,7 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_c_dlopen" >&5
 $as_echo "$ac_cv_lib_c_dlopen" >&6; }
 if test "x$ac_cv_lib_c_dlopen" = xyes; then :
-  EXTRA_LDFLAGS="$EXTRA_LDFLAGS"
+  have_dlopen=yes
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for dlopen in -ldl" >&5
 $as_echo_n "checking for dlopen in -ldl... " >&6; }
@@ -24247,58 +24223,25 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_dl_dlopen" >&5
 $as_echo "$ac_cv_lib_dl_dlopen" >&6; }
 if test "x$ac_cv_lib_dl_dlopen" = xyes; then :
-  EXTRA_LDFLAGS="$EXTRA_LDFLAGS -ldl"
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for dlopen in -lltdl" >&5
-$as_echo_n "checking for dlopen in -lltdl... " >&6; }
-if ${ac_cv_lib_ltdl_dlopen+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lltdl  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char dlopen ();
-int
-main ()
-{
-return dlopen ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_ltdl_dlopen=yes
-else
-  ac_cv_lib_ltdl_dlopen=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_ltdl_dlopen" >&5
-$as_echo "$ac_cv_lib_ltdl_dlopen" >&6; }
-if test "x$ac_cv_lib_ltdl_dlopen" = xyes; then :
-  EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lltdl"
+  have_dlopen=yes; EXTRA_LDFLAGS="$EXTRA_LDFLAGS -ldl"
 fi
 
 fi
 
-fi
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for dlopen" >&5
+$as_echo_n "checking for dlopen... " >&6; }
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_dlopen" >&5
+$as_echo "$have_dlopen" >&6; }
 
+    if test x$have_dlfcn_h = xyes -a x$have_dlopen = xyes; then
+       $as_echo "#define HAVE_DLOPEN 1" >>confdefs.h
 
-$as_echo "#define SDL_LOADSO_DLOPEN 1" >>confdefs.h
+       if test x$enable_loadso = xyes; then
+          $as_echo "#define SDL_LOADSO_DLOPEN 1" >>confdefs.h
 
-            SOURCES="$SOURCES $srcdir/src/loadso/dlopen/*.c"
-            have_loadso=yes
-        fi
+          SOURCES="$SOURCES $srcdir/src/loadso/dlopen/*.c"
+          have_loadso=yes
+       fi
     fi
 }
 
@@ -25082,6 +25025,19 @@ $as_echo "#define SDL_AUDIO_DRIVER_ANDROID 1" >>confdefs.h
 
                 SOURCES="$SOURCES $srcdir/src/audio/android/*.c"
                 SUMMARY_audio="${SUMMARY_audio} android"
+
+
+$as_echo "#define SDL_AUDIO_DRIVER_OPENSLES 1" >>confdefs.h
+
+                SOURCES="$SOURCES $srcdir/src/audio/openslES/*.c"
+                SUMMARY_audio="${SUMMARY_audio} openslES"
+
+
+$as_echo "#define SDL_AUDIO_DRIVER_AAUDIO 1" >>confdefs.h
+
+                SOURCES="$SOURCES $srcdir/src/audio/aaudio/*.c"
+                SUMMARY_audio="${SUMMARY_audio} aaudio"
+
                 have_audio=yes
             ;;
             nto)

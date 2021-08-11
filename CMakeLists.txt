@@ -51,9 +51,9 @@ include(${SDL2_SOURCE_DIR}/cmake/sdlchecks.cmake)
 # set SDL_BINARY_AGE and SDL_INTERFACE_AGE to 0.
 set(SDL_MAJOR_VERSION 2)
 set(SDL_MINOR_VERSION 0)
-set(SDL_MICRO_VERSION 16)
+set(SDL_MICRO_VERSION 17)
 set(SDL_INTERFACE_AGE 0)
-set(SDL_BINARY_AGE 16)
+set(SDL_BINARY_AGE 17)
 set(SDL_VERSION "${SDL_MAJOR_VERSION}.${SDL_MINOR_VERSION}.${SDL_MICRO_VERSION}")
 # the following should match the versions in Xcode project file:
 set(DYLIB_CURRENT_VERSION 17.0.0)
@@ -303,13 +303,11 @@ if(EMSCRIPTEN)
   set(SDL_ATOMIC_ENABLED_BY_DEFAULT OFF)
   set(SDL_LOADSO_ENABLED_BY_DEFAULT OFF)
   set(SDL_CPUINFO_ENABLED_BY_DEFAULT OFF)
-  set(SDL_DLOPEN_ENABLED_BY_DEFAULT OFF)
 endif()
 
 if(VITA)
   set(SDL_SHARED_ENABLED_BY_DEFAULT OFF)
   set(SDL_LOADSO_ENABLED_BY_DEFAULT OFF)
-  set(SDL_DLOPEN_ENABLED_BY_DEFAULT OFF)
 endif()
 
 # When defined, respect CMake's BUILD_SHARED_LIBS setting:
@@ -365,7 +363,6 @@ set_option(VIDEO_OPENGL        "Include OpenGL support" ON)
 set_option(VIDEO_OPENGLES      "Include OpenGL ES support" ON)
 set_option(PTHREADS            "Use POSIX threads for multi-threading" ${SDL_PTHREADS_ENABLED_BY_DEFAULT})
 dep_option(PTHREADS_SEM        "Use pthread semaphores" ON "PTHREADS" OFF)
-set_option(SDL_DLOPEN          "Use dlopen for shared object loading" ${SDL_DLOPEN_ENABLED_BY_DEFAULT})
 dep_option(OSS                 "Support the OSS audio API" ON "UNIX_SYS OR RISCOS" OFF)
 set_option(ALSA                "Support the ALSA audio API" ${UNIX_SYS})
 dep_option(ALSA_SHARED         "Dynamically load ALSA audio support" ON "ALSA" OFF)
@@ -926,11 +923,6 @@ if(SDL_HAPTIC)
 endif()
 
 
-# TODO: in configure.ac, the test for LOADSO and SDL_DLOPEN is a bit weird:
-# if LOADSO is not wanted, SDL_LOADSO_DISABLED is set
-# If however on Unix or APPLE dlopen() is detected via CheckDLOPEN(),
-# SDL_LOADSO_DISABLED will not be set, regardless of the LOADSO settings
-
 # General SDL subsystem options, valid for all platforms
 if(SDL_AUDIO)
   # CheckDummyAudio/CheckDiskAudio - valid for all platforms
@@ -948,10 +940,15 @@ if(SDL_AUDIO)
   endif()
 endif()
 
-if(SDL_DLOPEN)
+if(UNIX OR APPLE)
   # Relevant for Unix/Darwin only
-  if(UNIX OR APPLE)
-    CheckDLOPEN()
+  set(DYNAPI_NEEDS_DLOPEN 1)
+  CheckDLOPEN()
+  if(SDL_LOADSO AND HAVE_DLOPEN)
+    set(SDL_LOADSO_DLOPEN 1)
+    file(GLOB DLOPEN_SOURCES ${SDL2_SOURCE_DIR}/src/loadso/dlopen/*.c)
+    set(SOURCE_FILES ${SOURCE_FILES} ${DLOPEN_SOURCES})
+    set(HAVE_SDL_LOADSO TRUE)
   endif()
 endif()
 
@@ -1013,7 +1010,7 @@ if(ANDROID)
     find_library(ANDROID_OPENSLES_LIBRARY OpenSLES)
     list(APPEND EXTRA_LIBS ${ANDROID_DL_LIBRARY} ${ANDROID_OPENSLES_LIBRARY})
 
-    set(SDL_AUDIO_DRIVER_AAUDIO 0)
+    set(SDL_AUDIO_DRIVER_AAUDIO 1)
     file(GLOB AAUDIO_AUDIO_SOURCES ${SDL2_SOURCE_DIR}/src/audio/aaudio/*.c)
     set(SOURCE_FILES ${SOURCE_FILES} ${AAUDIO_AUDIO_SOURCES})
 
@@ -2662,15 +2659,15 @@ endif()
 
 ##### Installation targets #####
 install(TARGETS ${_INSTALL_LIBS} EXPORT SDL2Targets
-  LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}${LIB_SUFFIX}"
-  ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}${LIB_SUFFIX}"
+  LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+  ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
   RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
 
 ##### Export files #####
 if (WINDOWS)
   set(PKG_PREFIX "cmake")
 else ()
-  set(PKG_PREFIX "${CMAKE_INSTALL_LIBDIR}${LIB_SUFFIX}/cmake/SDL2")
+  set(PKG_PREFIX "${CMAKE_INSTALL_LIBDIR}/cmake/SDL2")
 endif ()
 
 include(CMakePackageConfigHelpers)
@@ -2717,7 +2714,7 @@ if(NOT (WINDOWS OR CYGWIN OR MINGW))
           execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
             \"lib${SONAME}${SOPOSTFIX}${SOEXT}\" \"libSDL2${SOPOSTFIX}${SOEXT}\"
             WORKING_DIRECTORY \"${SDL2_BINARY_DIR}\")")
-        install(FILES ${SDL2_BINARY_DIR}/libSDL2${SOPOSTFIX}${SOEXT} DESTINATION "${CMAKE_INSTALL_LIBDIR}${LIB_SUFFIX}")
+        install(FILES ${SDL2_BINARY_DIR}/libSDL2${SOPOSTFIX}${SOEXT} DESTINATION "${CMAKE_INSTALL_LIBDIR}")
     endif()
   endif()
   if(FREEBSD)
@@ -2725,7 +2722,7 @@ if(NOT (WINDOWS OR CYGWIN OR MINGW))
     install(FILES ${SDL2_BINARY_DIR}/sdl2.pc DESTINATION "libdata/pkgconfig")
   else()
     install(FILES ${SDL2_BINARY_DIR}/sdl2.pc
-      DESTINATION "${CMAKE_INSTALL_LIBDIR}${LIB_SUFFIX}/pkgconfig")
+      DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
   endif()
   install(PROGRAMS ${SDL2_BINARY_DIR}/sdl2-config DESTINATION "${CMAKE_INSTALL_BINDIR}")
   # TODO: what about the .spec file? Is it only needed for RPM creation?

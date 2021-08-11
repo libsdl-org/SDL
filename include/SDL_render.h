@@ -481,6 +481,29 @@ extern DECLSPEC int SDLCALL SDL_GetTextureScaleMode(SDL_Texture * texture,
                                                     SDL_ScaleMode *scaleMode);
 
 /**
+ * Associate a user-specified pointer with a texture.
+ *
+ * \param texture the texture to update.
+ * \param userdata the pointer to associate with the texture.
+ * \returns 0 on success, or -1 if the texture is not valid.
+ *
+ * \sa SDL_GetTextureUserData
+ */
+extern DECLSPEC int SDLCALL SDL_SetTextureUserData(SDL_Texture * texture,
+                                                   void *userdata);
+
+/**
+ * Get the user-specified pointer associated with a texture
+ *
+ * \param texture the texture to query.
+ * \return the pointer associated with the texture, or NULL if the texture is
+ *         not valid.
+ *
+ * \sa SDL_SetTextureUserData
+ */
+extern DECLSPEC void * SDLCALL SDL_GetTextureUserData(SDL_Texture * texture);
+
+/**
  * Update the given texture rectangle with new pixel data.
  *
  * The pixel data must be in the pixel format of the texture. Use

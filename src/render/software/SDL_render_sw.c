@@ -859,9 +859,22 @@ SW_CreateRendererForSurface(SDL_Surface * surface)
 static SDL_Renderer *
 SW_CreateRenderer(SDL_Window * window, Uint32 flags)
 {
+    const char *hint;
     SDL_Surface *surface;
 
+    /* Set the vsync hint based on our flags, if it's not already set */
+    hint = SDL_GetHint(SDL_HINT_RENDER_VSYNC);
+    if (!hint || !*hint) {
+        SDL_SetHint(SDL_HINT_RENDER_VSYNC, (flags & SDL_RENDERER_PRESENTVSYNC) ? "1" : "0");
+    }
+
     surface = SDL_GetWindowSurface(window);
+
+    /* Reset the vsync hint if we set it above */
+    if (!hint || !*hint) {
+        SDL_SetHint(SDL_HINT_RENDER_VSYNC, "");
+    }
+
     if (!surface) {
         return NULL;
     }
@@ -872,7 +885,7 @@ SDL_RenderDriver SW_RenderDriver = {
     SW_CreateRenderer,
     {
      "software",
-     SDL_RENDERER_SOFTWARE | SDL_RENDERER_TARGETTEXTURE,
+     SDL_RENDERER_SOFTWARE | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE,
      8,
      {
       SDL_PIXELFORMAT_ARGB8888,

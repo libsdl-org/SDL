@@ -386,6 +386,14 @@ WIN_ConvertUTF32toUTF8(UINT32 codepoint, char * text)
     return SDL_TRUE;
 }
 
+static BOOL
+WIN_ConvertUTF16toUTF8(UINT32 high_surrogate, UINT32 low_surrogate, char * text)
+{
+    const UINT32 SURROGATE_OFFSET = 0x10000 - (0xD800 << 10) - 0xDC00;
+    const UINT32 codepoint = (high_surrogate << 10) + low_surrogate + SURROGATE_OFFSET;
+    return WIN_ConvertUTF32toUTF8(codepoint, text);
+}
+
 static SDL_bool
 ShouldGenerateWindowCloseOnAltF4(void)
 {
@@ -619,6 +627,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
                 SDL_ToggleModState(KMOD_CAPS, (GetKeyState(VK_CAPITAL) & 0x0001) != 0);
                 SDL_ToggleModState(KMOD_NUM, (GetKeyState(VK_NUMLOCK) & 0x0001) != 0);
+                SDL_ToggleModState(KMOD_SCROLL, (GetKeyState(VK_SCROLL) & 0x0001) != 0);
             } else {
                 RECT rect;
 
@@ -862,11 +871,36 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     case WM_UNICHAR:
         if (wParam == UNICODE_NOCHAR) {
             returnCode = 1;
-            break;
+        } else {
+            char text[5];
+            if (WIN_ConvertUTF32toUTF8((UINT32)wParam, text)) {
+                SDL_SendKeyboardText(text);
+            }
+            returnCode = 0;
         }
-        /* otherwise fall through to below */
+        break;
+
     case WM_CHAR:
-        {
+        /* When a user enters a Unicode code point defined in the Basic Multilingual Plane, Windows sends a WM_CHAR
+           message with the code point encoded as UTF-16. When a user enters a Unicode code point from a Supplementary
+           Plane, Windows sends the code point in two separate WM_CHAR messages: The first message includes the UTF-16
+           High Surrogate and the second the UTF-16 Low Surrogate. The High and Low Surrogates cannot be individually
+           converted to valid UTF-8, therefore, we must save the High Surrogate from the first WM_CHAR message and
+           concatenate it with the Low Surrogate from the second WM_CHAR message. At that point, we have a valid
+           UTF-16 surrogate pair ready to re-encode as UTF-8. */
+        if (IS_HIGH_SURROGATE(wParam)) {
+            data->high_surrogate = (WCHAR)wParam;
+        } else if (IS_SURROGATE_PAIR(data->high_surrogate, wParam)) {
+            /* The code point is in a Supplementary Plane.
+               Here wParam is the Low Surrogate. */
+            char text[5];
+            if (WIN_ConvertUTF16toUTF8((UINT32)data->high_surrogate, (UINT32)wParam, text)) {
+                SDL_SendKeyboardText(text);
+            }
+            data->high_surrogate = 0;
+        } else {
+            /* The code point is in the Basic Multilingual Plane.
+               It's numerically equal to UTF-32. */
             char text[5];
             if (WIN_ConvertUTF32toUTF8((UINT32)wParam, text)) {
                 SDL_SendKeyboardText(text);

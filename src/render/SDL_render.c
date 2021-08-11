@@ -833,7 +833,8 @@ SDL_CreateRenderer(SDL_Window * window, int index, Uint32 flags)
         goto error;
     }
 
-    if (SDL_GetHint(SDL_HINT_RENDER_VSYNC)) {
+    hint = SDL_GetHint(SDL_HINT_RENDER_VSYNC);
+    if (hint && *hint) {
         if (SDL_GetHintBoolean(SDL_HINT_RENDER_VSYNC, SDL_TRUE)) {
             flags |= SDL_RENDERER_PRESENTVSYNC;
         } else {
@@ -1483,6 +1484,23 @@ SDL_GetTextureScaleMode(SDL_Texture * texture, SDL_ScaleMode *scaleMode)
         *scaleMode = texture->scaleMode;
     }
     return 0;
+}
+
+int
+SDL_SetTextureUserData(SDL_Texture * texture, void *userdata)
+{
+    CHECK_TEXTURE_MAGIC(texture, -1);
+
+    texture->userdata = userdata;
+    return 0;
+}
+
+void *
+SDL_GetTextureUserData(SDL_Texture * texture)
+{
+    CHECK_TEXTURE_MAGIC(texture, NULL);
+
+    return texture->userdata;
 }
 
 #if SDL_HAVE_YUV

@@ -187,14 +187,6 @@ ShouldUseTextureFramebuffer()
         return SDL_FALSE;
     }
 
-    /* If the user has specified a software renderer we can't use a
-       texture framebuffer, or renderer creation will go recursive.
-     */
-    hint = SDL_GetHint(SDL_HINT_RENDER_DRIVER);
-    if (hint && SDL_strcasecmp(hint, "software") == 0) {
-        return SDL_FALSE;
-    }
-
     /* See if the user or application wants a specific behavior */
     hint = SDL_GetHint(SDL_HINT_FRAMEBUFFER_ACCELERATION);
     if (hint) {
