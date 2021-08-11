@@ -1021,6 +1021,8 @@ X11_SetDisplayMode(_THIS, SDL_VideoDisplay * sdl_display, SDL_DisplayMode * mode
         XRROutputInfo *output_info;
         XRRCrtcInfo *crtc;
         Status status;
+        const size_t xwayland_len = strlen("XWAYLAND");
+        bool xwayland = false;
 
         res = X11_XRRGetScreenResources (display, RootWindow(display, data->screen));
         if (!res) {
@@ -1032,6 +1034,12 @@ X11_SetDisplayMode(_THIS, SDL_VideoDisplay * sdl_display, SDL_DisplayMode * mode
             X11_XRRFreeScreenResources(res);
             return SDL_SetError("Couldn't get XRandR output info");
         }
+        if (output_info->nameLen > xwayland_len &&
+            SDL_strncmp(output_info->name, "XWAYLAND", xwayland_len) == 0) {
+            /* This is how https://gitlab.freedesktop.org/xorg/app/xisxwayland/
+               detects that an X server is Xwayland */
+            xwayland = true;
+        }
 
         crtc = X11_XRRGetCrtcInfo(display, res, output_info->crtc);
         if (!crtc) {
@@ -1041,10 +1049,15 @@ X11_SetDisplayMode(_THIS, SDL_VideoDisplay * sdl_display, SDL_DisplayMode * mode
         }
 
         X11_XGrabServer(display);
-        status = X11_XRRSetCrtcConfig(display, res, output_info->crtc, CurrentTime,
-          0, 0, None, crtc->rotation, NULL, 0);
-        if (status != Success) {
-            goto setCrtcError;
+        /* Don't disable the CRTC on Xwayland. If we do, it seems we can't
+           re-enable it, leaving Xwayland in a broken state:
+           https://gitlab.freedesktop.org/xorg/xserver/-/issues/1209 */
+        if (!xwayland) {
+            status = X11_XRRSetCrtcConfig(display, res, output_info->crtc, CurrentTime,
+              0, 0, None, crtc->rotation, NULL, 0);
+            if (status != Success) {
+                goto setCrtcError;
+            }
         }
 
         mm_width = mode->w * DisplayWidthMM(display, data->screen) / DisplayWidth(display, data->screen);
