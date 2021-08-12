@@ -91,7 +91,7 @@ extern "C" {
 /**
  *  \file SDL_endian.h
  */
-#if (defined(__clang__) && (__clang_major__ > 3 || (__clang_major__ == 3 && __clang_minor__ >= 2))) || \
+#if (_SDL_HAS_BUILTIN(__builtin_bswap16)) || \
     (defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 8)))
 #define SDL_Swap16(x) __builtin_bswap16(x)
 #elif defined(__GNUC__) && defined(__i386__) && \
@@ -149,7 +149,7 @@ SDL_Swap16(Uint16 x)
 }
 #endif
 
-#if (defined(__clang__) && (__clang_major__ > 2 || (__clang_major__ == 2 && __clang_minor__ >= 6))) || \
+#if (_SDL_HAS_BUILTIN(__builtin_bswap32)) || \
     (defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 3)))
 #define SDL_Swap32(x) __builtin_bswap32(x)
 #elif defined(__GNUC__) && defined(__i386__) && \
@@ -210,7 +210,7 @@ SDL_Swap32(Uint32 x)
 }
 #endif
 
-#if (defined(__clang__) && (__clang_major__ > 2 || (__clang_major__ == 2 && __clang_minor__ >= 6))) || \
+#if (_SDL_HAS_BUILTIN(__builtin_bswap64)) || \
     (defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 3)))
 #define SDL_Swap64(x) __builtin_bswap64(x)
 #elif defined(__GNUC__) && defined(__i386__) && \
