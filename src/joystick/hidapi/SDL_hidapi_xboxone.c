@@ -120,6 +120,7 @@ typedef struct {
     Uint32 send_time;
     Uint8 last_state[USB_PACKET_LENGTH];
     SDL_bool has_guide_packet;
+    SDL_bool has_color_led;
     SDL_bool has_paddles;
     SDL_bool has_trigger_rumble;
     SDL_bool has_share_button;
@@ -130,6 +131,12 @@ typedef struct {
 } SDL_DriverXboxOne_Context;
 
 static SDL_bool
+ControllerHasColorLED(Uint16 vendor_id, Uint16 product_id)
+{
+    return (vendor_id == USB_VENDOR_MICROSOFT && product_id == USB_PRODUCT_XBOX_ONE_ELITE_SERIES_2);
+}
+
+static SDL_bool
 ControllerHasPaddles(Uint16 vendor_id, Uint16 product_id)
 {
     return SDL_IsJoystickXboxOneElite(vendor_id, product_id);
@@ -138,7 +145,7 @@ ControllerHasPaddles(Uint16 vendor_id, Uint16 product_id)
 static SDL_bool
 ControllerHasTriggerRumble(Uint16 vendor_id, Uint16 product_id)
 {
-    // All the Microsoft Xbox One controllers have trigger rumble
+    /* All the Microsoft Xbox One controllers have trigger rumble */
     return (vendor_id == USB_VENDOR_MICROSOFT);
 }
 
@@ -335,6 +342,7 @@ HIDAPI_DriverXboxOne_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joyst
     ctx->bluetooth = SDL_IsJoystickBluetoothXboxOne(device->vendor_id, device->product_id);
     ctx->start_time = SDL_GetTicks();
     ctx->sequence = 1;
+    ctx->has_color_led = ControllerHasColorLED(ctx->vendor_id, ctx->product_id);
     ctx->has_paddles = ControllerHasPaddles(ctx->vendor_id, ctx->product_id);
     ctx->has_trigger_rumble = ControllerHasTriggerRumble(ctx->vendor_id, ctx->product_id);
     ctx->has_share_button = ControllerHasShareButton(ctx->vendor_id, ctx->product_id);
@@ -429,14 +437,31 @@ HIDAPI_DriverXboxOne_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joyst
 static SDL_bool
 HIDAPI_DriverXboxOne_HasJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
-    /* Doesn't have an RGB LED, so don't return true here */
-    return SDL_FALSE;
+    SDL_DriverXboxOne_Context *ctx = (SDL_DriverXboxOne_Context *)device->context;
+
+    return ctx->has_color_led;
 }
 
 static int
 HIDAPI_DriverXboxOne_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
 {
-    return SDL_Unsupported();
+    SDL_DriverXboxOne_Context *ctx = (SDL_DriverXboxOne_Context *)device->context;
+
+    if (ctx->has_color_led) {
+        Uint8 led_packet[] = { 0x0E, 0x00, 0x00, 0x05, 0x00, 0x00, 0x00, 0x00, 0x00 };
+
+        led_packet[5] = 0x00; /* Whiteness? Sets white intensity when RGB is 0, seems additive */
+        led_packet[6] = red;
+        led_packet[7] = green;
+        led_packet[8] = blue;
+
+        if (SDL_HIDAPI_SendRumble(device, led_packet, sizeof(led_packet)) != sizeof(led_packet)) {
+            return SDL_SetError("Couldn't send LED packet");
+        }
+        return 0;
+    } else {
+        return SDL_Unsupported();
+    }
 }
 
 static int
