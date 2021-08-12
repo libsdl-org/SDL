@@ -44,32 +44,22 @@
 #define CONTROLLER_PREPARE_INPUT_TIMEOUT_MS 50
 
 
-/* Connect controller */
+/* Start controller */
 static const Uint8 xboxone_init0[] = {
-    0x04, 0x20, 0x00, 0x00
-};
-/* Start controller - extended? */
-static const Uint8 xboxone_init1[] = {
-    0x05, 0x20, 0x00, 0x0F, 0x06, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x55, 0x53, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00
-};
-/* Start controller with input */
-static const Uint8 xboxone_init2[] = {
     0x05, 0x20, 0x03, 0x01, 0x00
 };
 /* Enable LED */
-static const Uint8 xboxone_init3[] = {
+static const Uint8 xboxone_init1[] = {
     0x0A, 0x20, 0x00, 0x03, 0x00, 0x01, 0x14
 };
-/* Start input reports? */
-static const Uint8 xboxone_init4[] = {
-    0x06, 0x20, 0x00, 0x02, 0x01, 0x00
-};
-/* Start rumble? */
-static const Uint8 xboxone_init5[] = {
+/* Setup rumble (not needed for Microsoft controllers, but it doesn't hurt) */
+static const Uint8 xboxone_init2[] = {
     0x09, 0x00, 0x00, 0x09, 0x00, 0x0F, 0x00, 0x00,
     0x00, 0x00, 0xFF, 0x00, 0xEB
+};
+/* This controller passed security check */
+static const Uint8 security_passed_packet[] = {
+    0x06, 0x20, 0x00, 0x02, 0x01, 0x00
 };
 
 /*
@@ -90,16 +80,11 @@ typedef struct {
 
 
 static const SDL_DriverXboxOne_InitPacket xboxone_init_packets[] = {
-    { 0x0000, 0x0000, 0x0000, 0x0000, xboxone_init0, sizeof(xboxone_init0), { 0x04, 0xb0 } },
+    /* The PDP Rock Candy controller doesn't start sending input until it gets this packet */
+    { 0x0e6f, 0x0246, 0x0000, 0x0000, security_passed_packet, sizeof(security_passed_packet), { 0x00, 0x00 } },
+    { 0x0000, 0x0000, 0x0000, 0x0000, xboxone_init0, sizeof(xboxone_init0), { 0x00, 0x00 } },
     { 0x0000, 0x0000, 0x0000, 0x0000, xboxone_init1, sizeof(xboxone_init1), { 0x00, 0x00 } },
     { 0x0000, 0x0000, 0x0000, 0x0000, xboxone_init2, sizeof(xboxone_init2), { 0x00, 0x00 } },
-    { 0x0000, 0x0000, 0x0000, 0x0000, xboxone_init3, sizeof(xboxone_init3), { 0x00, 0x00 } },
-
-    /* These next packets are required for third party controllers (PowerA, PDP, HORI),
-       but aren't the correct protocol for Microsoft Xbox controllers.
-     */
-    { 0x0000, 0x0000, 0x045e, 0x0000, xboxone_init4, sizeof(xboxone_init4), { 0x00, 0x00 } },
-    { 0x0000, 0x0000, 0x045e, 0x0000, xboxone_init5, sizeof(xboxone_init5), { 0x00, 0x00 } },
 };
 
 typedef enum {
@@ -185,7 +170,10 @@ SendAckIfNeeded(SDL_HIDAPI_Device *device, Uint8 *data, int size)
 #ifdef DEBUG_XBOX_PROTOCOL
         HIDAPI_DumpPacket("Xbox One sending ACK packet: size = %d", ack_packet, sizeof(ack_packet));
 #endif
-        hid_write(device->dev, ack_packet, sizeof(ack_packet));
+        if (SDL_HIDAPI_LockRumble() < 0 ||
+            SDL_HIDAPI_SendRumbleAndUnlock(device, ack_packet, sizeof(ack_packet)) != sizeof(ack_packet)) {
+            SDL_SetError("Couldn't send ack packet");
+        }
     }
 #endif /* __WIN32__ */
 }
@@ -634,6 +622,14 @@ HIDAPI_DriverXboxOne_HandleStatePacket(SDL_Joystick *joystick, SDL_DriverXboxOne
 }
 
 static void
+HIDAPI_DriverXboxOne_HandleStatusPacket(SDL_Joystick *joystick, SDL_DriverXboxOne_Context *ctx, Uint8 *data, int size)
+{
+    if (ctx->init_state < XBOX_ONE_INIT_STATE_COMPLETE) {
+        SetInitState(ctx, XBOX_ONE_INIT_STATE_COMPLETE);
+    }
+}
+
+static void
 HIDAPI_DriverXboxOne_HandleModePacket(SDL_Joystick *joystick, SDL_DriverXboxOne_Context *ctx, Uint8 *data, int size)
 {
     SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_GUIDE, (data[4] & 0x01) ? SDL_PRESSED : SDL_RELEASED);
@@ -1000,16 +996,18 @@ HIDAPI_DriverXboxOne_UpdateJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joy
                              is firmware version 5.5.2641.0, and product version 0x0505 = 1285
                    then 8 bytes of unknown data
                 */
+                if (data[1] == 0x20) {
 #ifdef DEBUG_JOYSTICK
-                SDL_Log("Controller announce after %u ms\n", (SDL_GetTicks() - ctx->start_time));
+                    SDL_Log("Controller announce after %u ms\n", (SDL_GetTicks() - ctx->start_time));
 #endif
-                SetInitState(ctx, XBOX_ONE_INIT_STATE_START_NEGOTIATING);
+                    SetInitState(ctx, XBOX_ONE_INIT_STATE_START_NEGOTIATING);
+                } else {
+                    /* Possibly an announce from a device plugged into the controller */
+                }
                 break;
             case 0x03:
-                /* Controller heartbeat */
-                if (ctx->init_state < XBOX_ONE_INIT_STATE_COMPLETE) {
-                    SetInitState(ctx, XBOX_ONE_INIT_STATE_COMPLETE);
-                }
+                /* Controller status update */
+                HIDAPI_DriverXboxOne_HandleStatusPacket(joystick, ctx, data, size);
                 break;
             case 0x04:
                 /* Unknown chatty controller information, sent by both sides */
