@@ -47,8 +47,8 @@
 #include <IOKit/usb/USBSpec.h>
 #endif
 
-#ifdef SDL_USE_LIBUDEV
 #include "../../core/linux/SDL_udev.h"
+#ifdef SDL_USE_LIBUDEV
 #include <poll.h>
 #include <unistd.h>
 #endif
