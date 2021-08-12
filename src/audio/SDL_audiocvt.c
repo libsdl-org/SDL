@@ -47,7 +47,7 @@
 #define HAVE_AVX_INTRINSICS 1
 #endif
 #if defined __clang__
-# if (__clang_major__ < 5)
+# if (!__has_attribute(target))
 #   undef HAVE_AVX_INTRINSICS
 # endif
 # if (defined(_MSC_VER) || defined(__SCE__)) && !defined(__AVX__)
@@ -116,11 +116,8 @@ SDL_ConvertStereoToMono(SDL_AudioCVT * cvt, SDL_AudioFormat format)
 
 #if HAVE_AVX_INTRINSICS
 /* MSVC will always accept AVX intrinsics when compiling for x64 */
-#if defined(__clang__)
-#pragma clang attribute push (__attribute__((target("avx"))), apply_to=function)
-#elif defined(__GNUC__)
-#pragma GCC push_options
-#pragma GCC target("avx")
+#if defined(__clang__) || defined(__GNUC__)
+__attribute__((target("avx")))
 #endif
 /* Convert from 5.1 to stereo. Average left and right, distribute center, discard LFE. */
 static void SDLCALL
@@ -181,11 +178,6 @@ SDL_Convert51ToStereo_AVX(SDL_AudioCVT * cvt, SDL_AudioFormat format)
         cvt->filters[cvt->filter_index] (cvt, format);
     }
 }
-#if defined(__clang__)
-#pragma clang attribute pop
-#elif defined(__GNUC__)
-#pragma GCC pop_options
-#endif
 #endif
 
 #if HAVE_SSE_INTRINSICS
