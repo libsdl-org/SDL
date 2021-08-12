@@ -1040,11 +1040,20 @@ X11_SetDisplayMode(_THIS, SDL_VideoDisplay * sdl_display, SDL_DisplayMode * mode
             return SDL_SetError("Couldn't get XRandR crtc info");
         }
 
+        if (crtc->mode == modedata->xrandr_mode) {
+#ifdef X11MODES_DEBUG
+            printf("already in desired mode 0x%lx (%ux%u), nothing to do\n",
+                   crtc->mode, crtc->width, crtc->height);
+#endif
+            status = Success;
+            goto freeInfo;
+        }
+
         X11_XGrabServer(display);
         status = X11_XRRSetCrtcConfig(display, res, output_info->crtc, CurrentTime,
           0, 0, None, crtc->rotation, NULL, 0);
         if (status != Success) {
-            goto setCrtcError;
+            goto ungrabServer;
         }
 
         mm_width = mode->w * DisplayWidthMM(display, data->screen) / DisplayWidth(display, data->screen);
@@ -1067,8 +1076,9 @@ X11_SetDisplayMode(_THIS, SDL_VideoDisplay * sdl_display, SDL_DisplayMode * mode
           crtc->x, crtc->y, modedata->xrandr_mode, crtc->rotation,
           &data->xrandr_output, 1);
 
-setCrtcError:
+ungrabServer:
         X11_XUngrabServer(display);
+freeInfo:
         X11_XRRFreeCrtcInfo(crtc);
         X11_XRRFreeOutputInfo(output_info);
         X11_XRRFreeScreenResources(res);
