@@ -508,12 +508,16 @@ HIDAPI_DriverXboxOne_HandleStatePacket(SDL_Joystick *joystick, SDL_DriverXboxOne
         Paddle bits:
             P3: 0x01 (A)    P1: 0x02 (B)
             P4: 0x04 (X)    P2: 0x08 (Y)
-       Xbox One Elite Series 2 report is 38 bytes, paddles in data[18], mode in data[19], mode 0 has no mapped paddles by default
+       Xbox One Elite Series 2 4.x firmware report is 38 bytes, paddles in data[18], mode in data[19], mode 0 has no mapped paddles by default
+        Paddle bits:
+            P3: 0x04 (A)    P1: 0x01 (B)
+            P4: 0x08 (X)    P2: 0x02 (Y)
+       Xbox One Elite Series 2 5.x firmware report is 50 bytes, paddles in data[22], mode in data[23], mode 0 has no mapped paddles by default
         Paddle bits:
             P3: 0x04 (A)    P1: 0x01 (B)
             P4: 0x08 (X)    P2: 0x02 (Y)
     */
-    if (ctx->has_paddles && (size == 33 || size == 38)) {
+    if (ctx->has_paddles && (size == 33 || size == 38 || size == 50)) {
         int paddle_index;
         int button1_bit;
         int button2_bit;
@@ -532,7 +536,7 @@ HIDAPI_DriverXboxOne_HandleStatePacket(SDL_Joystick *joystick, SDL_DriverXboxOne
             /* The mapped controller state is at offset 4, the raw state is at offset 18, compare them to see if the paddles are mapped */
             paddles_mapped = (SDL_memcmp(&data[4], &data[18], 2) != 0);
 
-        } else /* if (size == 38) */ {
+        } else if (size == 38) {
             /* XBox One Elite Series 2 */
             paddle_index = 18;
             button1_bit = 0x01;
@@ -540,6 +544,15 @@ HIDAPI_DriverXboxOne_HandleStatePacket(SDL_Joystick *joystick, SDL_DriverXboxOne
             button3_bit = 0x04;
             button4_bit = 0x08;
             paddles_mapped = (data[19] != 0);
+
+        } else if (size == 50) {
+            /* XBox One Elite Series 2 */
+            paddle_index = 22;
+            button1_bit = 0x01;
+            button2_bit = 0x02;
+            button3_bit = 0x04;
+            button4_bit = 0x08;
+            paddles_mapped = (data[23] != 0);
         }
 #ifdef DEBUG_XBOX_PROTOCOL
         SDL_Log(">>> Paddles: %d,%d,%d,%d mapped = %s\n",
@@ -629,6 +642,7 @@ HIDAPI_DriverXboxOneBluetooth_HandleButtons16(SDL_Joystick *joystick, SDL_Driver
  * Xbox One S with firmware 4.8.1923 uses a 17 byte packet with BACK button in byte 16 and the GUIDE button in a separate packet (on Windows), or in byte 15 (on Linux)
  * Xbox One Elite Series 2 with firmware 4.7.1872 uses a 55 byte packet with BACK button in byte 16, paddles starting at byte 33, and the GUIDE button in a separate packet
  * Xbox One Elite Series 2 with firmware 4.8.1908 uses a 33 byte packet with BACK button in byte 16, paddles starting at byte 17, and the GUIDE button in a separate packet
+ * Xbox One Elite Series 2 with firmware 5.11.3112 uses a 19 byte packet with BACK and GUIDE buttons in byte 15
  * Xbox Series X with firmware 5.5.2641 uses a 17 byte packet with BACK and GUIDE buttons in byte 15, and SHARE button in byte 17
  */
 static void
@@ -644,7 +658,7 @@ HIDAPI_DriverXboxOneBluetooth_HandleButtons(SDL_Joystick *joystick, SDL_DriverXb
     }
 
     if (ctx->last_state[15] != data[15]) {
-        if (ctx->has_share_button) {
+        if (ctx->has_share_button || size == 19) {
             SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_BACK, (data[15] & 0x04) ? SDL_PRESSED : SDL_RELEASED);
             SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_GUIDE, (data[15] & 0x10) ? SDL_PRESSED : SDL_RELEASED);
         } else if (!ctx->has_guide_packet) {

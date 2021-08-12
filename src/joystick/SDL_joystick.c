@@ -1989,6 +1989,7 @@ SDL_IsJoystickBluetoothXboxOne(Uint16 vendor_id, Uint16 product_id)
         if (product_id == USB_PRODUCT_XBOX_ONE_S_REV1_BLUETOOTH ||
             product_id == USB_PRODUCT_XBOX_ONE_S_REV2_BLUETOOTH ||
             product_id == USB_PRODUCT_XBOX_ONE_ELITE_SERIES_2_BLUETOOTH ||
+            product_id == USB_PRODUCT_XBOX_ONE_ELITE_SERIES_2_REV2_BLUETOOTH ||
             product_id == USB_PRODUCT_XBOX_SERIES_X_BLUETOOTH) {
             return SDL_TRUE;
         }
