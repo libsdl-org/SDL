@@ -664,7 +664,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     lParam != data->last_pointer_update) {
                     SDL_SendMouseMotion(data->window, 0, 0, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
                     if (isWin10FCUorNewer && mouse->relative_mode_warp &&
-                        (data->window->flags & SDL_WINDOW_INPUT_FOCUS)) {
+                        (data->window->flags & SDL_WINDOW_INPUT_FOCUS) != 0) {
                         /* To work around #3931, Win10 bug introduced in Fall Creators Update, where
                            SetCursorPos() (SDL_WarpMouseInWindow()) doesn't reliably generate mouse events anymore,
                            after each windows mouse event generate a fake event for the middle of the window
