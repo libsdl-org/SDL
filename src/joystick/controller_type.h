@@ -328,6 +328,7 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x045e, 0x0b05 ), k_eControllerType_XBoxOneController, "Xbox One Elite 2 Controller" },	// Microsoft X-Box One Elite Series 2 pad (Bluetooth)
 	{ MAKE_CONTROLLER_ID( 0x045e, 0x0b12 ), k_eControllerType_XBoxOneController, "Xbox Series X Controller" },	// Microsoft X-Box Series X pad
 	{ MAKE_CONTROLLER_ID( 0x045e, 0x0b13 ), k_eControllerType_XBoxOneController, "Xbox Series X Controller" },	// Microsoft X-Box Series X pad (Bluetooth)
+	{ MAKE_CONTROLLER_ID( 0x045e, 0x0b20 ), k_eControllerType_XBoxOneController, "Xbox One S Controller" },	// Microsoft X-Box One S pad (Bluetooth) with 5.x firmware
 	{ MAKE_CONTROLLER_ID( 0x045e, 0x0b22 ), k_eControllerType_XBoxOneController, "Xbox One Elite 2 Controller" },	// Microsoft X-Box One Elite Series 2 pad (Bluetooth) with 5.x firmware
 	{ MAKE_CONTROLLER_ID( 0x0738, 0x4a01 ), k_eControllerType_XBoxOneController, NULL },	// Mad Catz FightStick TE 2
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0139 ), k_eControllerType_XBoxOneController, "PDP Xbox One Afterglow" },	// PDP Afterglow Wired Controller for Xbox One
