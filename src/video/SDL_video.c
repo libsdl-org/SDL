@@ -2787,11 +2787,7 @@ SDL_SetWindowMouseGrab(SDL_Window * window, SDL_bool grabbed)
 SDL_bool
 SDL_GetWindowGrab(SDL_Window * window)
 {
-    CHECK_WINDOW_MAGIC(window, SDL_FALSE);
-    SDL_assert(!_this->grabbed_window ||
-               ((_this->grabbed_window->flags & SDL_WINDOW_MOUSE_GRABBED) != 0) ||
-               ((_this->grabbed_window->flags & SDL_WINDOW_KEYBOARD_GRABBED) != 0));
-    return window == _this->grabbed_window;
+    return (SDL_GetWindowKeyboardGrab(window) || SDL_GetWindowMouseGrab(window));
 }
 
 SDL_bool
