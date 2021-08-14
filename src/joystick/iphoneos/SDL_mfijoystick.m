@@ -783,9 +783,9 @@ IOS_AccelerometerUpdate(SDL_Joystick *joystick)
      */
 
     /* clamp the data */
-    accel.x = SDL_min(SDL_max(accel.x, -maxgforce), maxgforce);
-    accel.y = SDL_min(SDL_max(accel.y, -maxgforce), maxgforce);
-    accel.z = SDL_min(SDL_max(accel.z, -maxgforce), maxgforce);
+    accel.x = SDL_clamp(accel.x, -maxgforce, maxgforce);
+    accel.y = SDL_clamp(accel.y, -maxgforce, maxgforce);
+    accel.z = SDL_clamp(accel.z, -maxgforce, maxgforce);
 
     /* pass in data mapped to range of SInt16 */
     SDL_PrivateJoystickAxis(joystick, 0,  (accel.x / maxgforce) * maxsint16);

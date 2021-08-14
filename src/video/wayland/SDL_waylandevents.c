@@ -925,7 +925,7 @@ keyboard_handle_repeat_info(void *data, struct wl_keyboard *wl_keyboard,
                             int32_t rate, int32_t delay)
 {
     struct SDL_WaylandInput *input = data;
-    input->keyboard_repeat.repeat_rate = SDL_max(0, SDL_min(rate, 1000));
+    input->keyboard_repeat.repeat_rate = SDL_clamp(rate, 0, 1000);
     input->keyboard_repeat.repeat_delay = delay;
     input->keyboard_repeat.is_initialized = SDL_TRUE;
 }

@@ -146,7 +146,7 @@ static int SDL_DoEventLogging = 0;
 static void SDLCALL
 SDL_EventLoggingChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
-    SDL_DoEventLogging = (hint && *hint) ? SDL_max(SDL_min(SDL_atoi(hint), 2), 0) : 0;
+    SDL_DoEventLogging = (hint && *hint) ? SDL_clamp(SDL_atoi(hint), 0, 2) : 0;
 }
 
 static void

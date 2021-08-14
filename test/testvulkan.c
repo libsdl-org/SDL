@@ -722,13 +722,13 @@ static SDL_bool createSwapchain(void)
 
     // Clamp the size to the allowable image extent.
     // SDL_Vulkan_GetDrawableSize()'s result it not always in this range (bug #3287)
-    vulkanContext.swapchainSize.width = SDL_max(vulkanContext.surfaceCapabilities.minImageExtent.width,
-                                                SDL_min(w,
-                                                        vulkanContext.surfaceCapabilities.maxImageExtent.width));
+    vulkanContext.swapchainSize.width = SDL_clamp(w,
+                                                  vulkanContext.surfaceCapabilities.minImageExtent.width,
+                                                  vulkanContext.surfaceCapabilities.maxImageExtent.width);
 
-    vulkanContext.swapchainSize.height = SDL_max(vulkanContext.surfaceCapabilities.minImageExtent.height,
-                                                SDL_min(h,
-                                                        vulkanContext.surfaceCapabilities.maxImageExtent.height));
+    vulkanContext.swapchainSize.height = SDL_clamp(h,
+                                                   vulkanContext.surfaceCapabilities.minImageExtent.height,
+                                                   vulkanContext.surfaceCapabilities.maxImageExtent.height);
 
     if(w == 0 || h == 0)
         return SDL_FALSE;
