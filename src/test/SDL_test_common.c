@@ -2019,6 +2019,20 @@ SDLTest_CommonEvent(SDLTest_CommonState * state, SDL_Event * event, int *done)
                 SDL_SetRelativeMouseMode(!SDL_GetRelativeMouseMode() ? SDL_TRUE : SDL_FALSE);
             }
             break;
+        case SDLK_t:
+            if (withControl) {
+                /* Ctrl-T toggle topmost mode */
+                SDL_Window *window = SDL_GetWindowFromID(event->key.windowID);
+                if (window) {
+                    Uint32 flags = SDL_GetWindowFlags(window);
+                    if (flags & SDL_WINDOW_ALWAYS_ON_TOP) {
+                        SDL_SetWindowAlwaysOnTop(window, SDL_FALSE);
+                    } else {
+                        SDL_SetWindowAlwaysOnTop(window, SDL_TRUE);
+                    }
+                }
+            }
+            break;
         case SDLK_z:
             if (withControl) {
                 /* Ctrl-Z minimize */
