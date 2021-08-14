@@ -820,6 +820,11 @@ SDL_SetRelativeMouseMode(SDL_bool enabled)
     mouse->scale_accum_x = 0.0f;
     mouse->scale_accum_y = 0.0f;
 
+    if (enabled) {
+        /* Update cursor visibility before we potentially warp the mouse */
+        SDL_SetCursor(NULL);
+    }
+
     if (enabled && focusWindow) {
         SDL_SetMouseFocus(focusWindow);
 
@@ -827,20 +832,22 @@ SDL_SetRelativeMouseMode(SDL_bool enabled)
             SDL_WarpMouseInWindow(focusWindow, focusWindow->w/2, focusWindow->h/2);
     }
 
-    if (mouse->focus) {
-        SDL_UpdateWindowGrab(mouse->focus);
+    if (focusWindow) {
+        SDL_UpdateWindowGrab(focusWindow);
 
         /* Put the cursor back to where the application expects it */
         if (!enabled) {
-            SDL_WarpMouseInWindow(mouse->focus, mouse->x, mouse->y);
+            SDL_WarpMouseInWindow(focusWindow, mouse->x, mouse->y);
         }
+    }
+
+    if (!enabled) {
+        /* Update cursor visibility after we restore the mouse position */
+        SDL_SetCursor(NULL);
     }
 
     /* Flush pending mouse motion - ideally we would pump events, but that's not always safe */
     SDL_FlushEvent(SDL_MOUSEMOTION);
-
-    /* Update cursor visibility */
-    SDL_SetCursor(NULL);
 
     return 0;
 }
