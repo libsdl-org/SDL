@@ -57,16 +57,19 @@
 #define USB_PRODUCT_XBOX360_XUSB_CONTROLLER                 0x02a1    /* XUSB driver software PID */
 #define USB_PRODUCT_XBOX360_WIRED_CONTROLLER                0x028e
 #define USB_PRODUCT_XBOX360_WIRELESS_RECEIVER               0x0719
+#define USB_PRODUCT_XBOX_ONE_ADAPTIVE                       0x0b0a
+#define USB_PRODUCT_XBOX_ONE_ADAPTIVE_BLUETOOTH             0x0b0c
+#define USB_PRODUCT_XBOX_ONE_ADAPTIVE_BLE                   0x0b21
 #define USB_PRODUCT_XBOX_ONE_ELITE_SERIES_1                 0x02e3
 #define USB_PRODUCT_XBOX_ONE_ELITE_SERIES_2                 0x0b00
 #define USB_PRODUCT_XBOX_ONE_ELITE_SERIES_2_BLUETOOTH       0x0b05
-#define USB_PRODUCT_XBOX_ONE_ELITE_SERIES_2_BLUETOOTH_V5    0x0b22
+#define USB_PRODUCT_XBOX_ONE_ELITE_SERIES_2_BLE             0x0b22
 #define USB_PRODUCT_XBOX_ONE_S                              0x02ea
 #define USB_PRODUCT_XBOX_ONE_S_REV1_BLUETOOTH               0x02e0
 #define USB_PRODUCT_XBOX_ONE_S_REV2_BLUETOOTH               0x02fd
-#define USB_PRODUCT_XBOX_ONE_S_REV2_BLUETOOTH_V5            0x0b20
+#define USB_PRODUCT_XBOX_ONE_S_REV2_BLE                     0x0b20
 #define USB_PRODUCT_XBOX_SERIES_X                           0x0b12
-#define USB_PRODUCT_XBOX_SERIES_X_BLUETOOTH                 0x0b13
+#define USB_PRODUCT_XBOX_SERIES_X_BLE                       0x0b13
 #define USB_PRODUCT_XBOX_SERIES_X_VICTRIX_GAMBIT            0x02d6
 #define USB_PRODUCT_XBOX_SERIES_X_PDP_BLUE                  0x02d9
 #define USB_PRODUCT_XBOX_SERIES_X_PDP_AFTERGLOW             0x02da
