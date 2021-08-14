@@ -298,10 +298,10 @@ IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controlle
                 subtype = 1;
             } else if (device->has_xbox_share_button) {
                 /* Assume Xbox Series X Controller unless/until GCController flows VID/PID */
-                product = USB_PRODUCT_XBOX_SERIES_X_BLUETOOTH;
+                product = USB_PRODUCT_XBOX_SERIES_X_BLE;
                 subtype = 1;
             } else {
-                /* Assume Xbox One S BLE Controller unless/until GCController flows VID/PID */
+                /* Assume Xbox One S Bluetooth Controller unless/until GCController flows VID/PID */
                 product = USB_PRODUCT_XBOX_ONE_S_REV1_BLUETOOTH;
                 subtype = 0;
             }
