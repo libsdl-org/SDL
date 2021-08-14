@@ -714,7 +714,8 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             const SDL_bool isRelative = mouse->relative_mode || mouse->relative_mode_warp;
             const SDL_bool isCapture = ((data->window->flags & SDL_WINDOW_MOUSE_CAPTURE) != 0);
 
-            if (!isRelative || mouse->focus != data->window) {
+            /* Relative mouse motion is delivered to the window with keyboard focus */
+            if (!isRelative || data->window != SDL_GetKeyboardFocus()) {
                 if (!isCapture) {
                     break;
                 }
