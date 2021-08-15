@@ -793,7 +793,7 @@ keyboard_input_get_text(char text[8], const struct SDL_WaylandInput *input, uint
     }
 #endif
 
-    if (WAYLAND_xkb_compose_state_feed(input->xkb.compose_state, sym) == XKB_COMPOSE_FEED_ACCEPTED) {
+    if (input->xkb.compose_state && WAYLAND_xkb_compose_state_feed(input->xkb.compose_state, sym) == XKB_COMPOSE_FEED_ACCEPTED) {
         switch(WAYLAND_xkb_compose_state_get_status(input->xkb.compose_state)) {
             case XKB_COMPOSE_COMPOSING:
                 *handled_by_ime = SDL_TRUE;
