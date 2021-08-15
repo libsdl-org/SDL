@@ -343,7 +343,9 @@ typedef enum
     KMOD_CTRL = KMOD_LCTRL | KMOD_RCTRL,
     KMOD_SHIFT = KMOD_LSHIFT | KMOD_RSHIFT,
     KMOD_ALT = KMOD_LALT | KMOD_RALT,
-    KMOD_GUI = KMOD_LGUI | KMOD_RGUI
+    KMOD_GUI = KMOD_LGUI | KMOD_RGUI,
+
+    KMOD_RESERVED = KMOD_SCROLL /* This is for source-level compatibility with SDL 2.0.0. */
 } SDL_Keymod;
 
 #endif /* SDL_keycode_h_ */
