@@ -38,9 +38,19 @@
 #include "SDL_vitakeyboard.h"
 #include "SDL_vitamouse_c.h"
 #include "SDL_vitaframebuffer.h"
-#if SDL_VIDEO_VITA_PIB
-#include "SDL_vitagl_c.h"
+
+#if defined(SDL_VIDEO_VITA_PIB)
+  #include "SDL_vitagl_c.h"
+#elif defined(SDL_VIDEO_VITA_PVR)
+  #include "SDL_vitagl_pvr_c.h"
+  #include "../SDL_egl_c.h"
+  #define VITA_GL_GetProcAddress SDL_EGL_GetProcAddress
+  #define VITA_GL_UnloadLibrary SDL_EGL_UnloadLibrary
+  #define VITA_GL_SetSwapInterval SDL_EGL_SetSwapInterval
+  #define VITA_GL_GetSwapInterval SDL_EGL_GetSwapInterval
+  #define VITA_GL_DeleteContext SDL_EGL_DeleteContext
 #endif
+
 #include <psp2/ime_dialog.h>
 
 SDL_Window *Vita_Window;
@@ -130,7 +140,7 @@ VITA_Create()
     device->DestroyWindowFramebuffer = VITA_DestroyWindowFramebuffer;
 */
 
-#if SDL_VIDEO_VITA_PIB
+#if defined(SDL_VIDEO_VITA_PIB) || defined(SDL_VIDEO_VITA_PVR)
     device->GL_LoadLibrary = VITA_GL_LoadLibrary;
     device->GL_GetProcAddress = VITA_GL_GetProcAddress;
     device->GL_UnloadLibrary = VITA_GL_UnloadLibrary;
@@ -231,6 +241,16 @@ VITA_CreateWindow(_THIS, SDL_Window * window)
     }
 
     Vita_Window = window;
+
+#if defined(SDL_VIDEO_VITA_PVR)
+    if ((window->flags & SDL_WINDOW_OPENGL) != 0) {
+      wdata->egl_surface = SDL_EGL_CreateSurface(_this, (NativeWindowType) 0);
+
+      if (wdata->egl_surface == EGL_NO_SURFACE) {
+          return SDL_SetError("Could not create GLES window surface");
+      }
+    }
+#endif
 
     // fix input, we need to find a better way
     SDL_SetKeyboardFocus(window);

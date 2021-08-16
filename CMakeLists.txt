@@ -425,6 +425,7 @@ set_option(SDL_TEST            "Build the test directory" OFF)
 
 if(VITA)
     set_option(VIDEO_VITA_PIB  "Build with PSVita piglet gles2 support" OFF)
+    set_option(VIDEO_VITA_PVR  "Build with PSVita PVR gles/gles2 support" OFF)
 endif()
 
 # General source files
@@ -2202,6 +2203,29 @@ elseif(VITA)
         set(SDL_VIDEO_VITA_PIB 1)
       else()
         set(HAVE_VIDEO_VITA_PIB OFF)
+      endif()
+    endif()
+
+    if(VIDEO_VITA_PVR)
+      check_include_file(gpu_es4/psp2_pvr_hint.h HAVE_PVR_H)
+
+      if(HAVE_PVR_H)
+        add_definitions("-D__psp2__")
+        set(SDL_VIDEO_OPENGL_EGL 1)
+        set(HAVE_VIDEO_OPENGLES TRUE)
+        set(SDL_VIDEO_OPENGL_ES 1)
+        set(SDL_VIDEO_RENDER_OGL_ES 1)
+        set(SDL_VIDEO_OPENGL_ES2 1)
+        set(SDL_VIDEO_RENDER_OGL_ES2 1)
+
+        list(APPEND EXTRA_LIBS
+          libgpu_es4_ext_stub_weak
+          libIMGEGL_stub_weak
+        )
+        set(HAVE_VIDEO_VITA_PVR ON)
+        set(SDL_VIDEO_VITA_PVR 1)
+      else()
+        set(HAVE_VIDEO_VITA_PVR OFF)
       endif()
     endif()
 
