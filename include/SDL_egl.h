@@ -26,6 +26,10 @@
  */
 #if !defined(_MSC_VER) && !defined(__ANDROID__)
 
+#if defined(__vita__) || defined(__psp2__)
+#include <psp2/types.h>
+#endif
+
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 

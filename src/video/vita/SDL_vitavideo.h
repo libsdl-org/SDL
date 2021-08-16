@@ -24,6 +24,7 @@
 
 #include "../../SDL_internal.h"
 #include "../SDL_sysvideo.h"
+#include "../SDL_egl_c.h"
 
 #include <psp2/types.h>
 #include <psp2/display.h>
@@ -51,6 +52,8 @@ typedef struct SDL_WindowData
     SDL_bool uses_gles;
     SceUID buffer_uid;
     void* buffer;
+    EGLSurface egl_surface;
+    EGLContext egl_context;
 
 } SDL_WindowData;
 
