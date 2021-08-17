@@ -204,7 +204,7 @@
 #cmakedefine HAVE_POLL 1
 #cmakedefine HAVE__EXIT 1
 
-#elif __WIN32__
+#elif defined(__WIN32__)
 #cmakedefine HAVE_STDARG_H 1
 #cmakedefine HAVE_STDDEF_H 1
 #cmakedefine HAVE_FLOAT_H 1
