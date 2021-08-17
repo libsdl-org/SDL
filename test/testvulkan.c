@@ -206,12 +206,12 @@ static SDLTest_CommonState *state;
 static VulkanContext *vulkanContexts = NULL;  // an array of state->num_windows items
 static VulkanContext *vulkanContext = NULL;  // for the currently-rendering window
 
-static void shutdownVulkan(void);
+static void shutdownVulkan(SDL_bool doDestroySwapchain);
 
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
 static void quit(int rc)
 {
-    shutdownVulkan();
+    shutdownVulkan(SDL_TRUE);
     SDLTest_CommonQuit(state);
     exit(rc);
 }
@@ -735,6 +735,8 @@ static SDL_bool createSwapchain(void)
     if(w == 0 || h == 0)
         return SDL_FALSE;
 
+    getSurfaceCaps();
+
     createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
     createInfo.surface = vulkanContext->surface;
     createInfo.minImageCount = vulkanContext->swapchainDesiredImageCount;
@@ -975,6 +977,7 @@ static void rerecordCommandBuffer(uint32_t frameIndex, const VkClearColorValue *
 
 static void destroySwapchainAndSwapchainSpecificStuff(SDL_bool doDestroySwapchain)
 {
+    vkDeviceWaitIdle(vulkanContext->device);
     destroyFences();
     destroyCommandBuffers();
     destroyCommandPool();
@@ -1023,7 +1026,7 @@ static void initVulkan(void)
     }
 }
 
-static void shutdownVulkan(void)
+static void shutdownVulkan(SDL_bool doDestroySwapchain)
 {
     if (vulkanContexts) {
         int i;
@@ -1031,7 +1034,7 @@ static void shutdownVulkan(void)
             vulkanContext = &vulkanContexts[i];
             if(vulkanContext->device && vkDeviceWaitIdle)
                 vkDeviceWaitIdle(vulkanContext->device);
-            destroySwapchainAndSwapchainSpecificStuff(SDL_TRUE);
+            destroySwapchainAndSwapchainSpecificStuff(doDestroySwapchain);
             if(vulkanContext->imageAvailableSemaphore && vkDestroySemaphore)
                 vkDestroySemaphore(vulkanContext->device, vulkanContext->imageAvailableSemaphore, NULL);
             if(vulkanContext->renderingFinishedSemaphore && vkDestroySemaphore)
@@ -1194,6 +1197,11 @@ int main(int argc, char *argv[])
         ++frames;
         while(SDL_PollEvent(&event))  /* !!! FIXME: fix coding conventions with braces and spaces */
         {
+            /* Need to destroy the swapchain before the window created
+             * by SDL.
+             */
+            if (event.type == SDL_WINDOWEVENT_CLOSE)
+                destroySwapchainAndSwapchainSpecificStuff(SDL_TRUE);
             SDLTest_CommonEvent(state, &event, &done);
         }
 
@@ -1214,7 +1222,8 @@ int main(int argc, char *argv[])
     {
         SDL_Log("%2.2f frames per second\n", ((double)frames * 1000) / (now - then));
     }
-    quit(0);
+    shutdownVulkan(SDL_TRUE);
+    SDLTest_CommonQuit(state);
     return 0;
 }
 
