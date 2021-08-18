@@ -86,7 +86,7 @@ typedef struct SDL_RendererInfo
 } SDL_RendererInfo;
 
 /**
- *  \brief Vertex structure
+ *  Vertex structure
  */
 typedef struct SDL_Vertex
 {
@@ -1452,7 +1452,7 @@ extern DECLSPEC int SDLCALL SDL_RenderCopyExF(SDL_Renderer * renderer,
                                             const SDL_RendererFlip flip);
 
 /**
- *  \brief Render a list of triangles, optionally using a texture and indices into the vertex array
+ *  Render a list of triangles, optionally using a texture and indices into the vertex array
  *  Color and alpha modulation is done per vertex (SDL_SetTextureColorMod and SDL_SetTextureAlphaMod are ignored).
  *
  *  \param texture      (optional) The SDL texture to use.
@@ -1471,7 +1471,7 @@ extern DECLSPEC int SDLCALL SDL_RenderGeometry(SDL_Renderer *renderer,
                                                const int *indices, int num_indices);
 
 /**
- *  \brief Render a list of triangles, optionally using a texture and indices into the vertex arrays
+ *  Render a list of triangles, optionally using a texture and indices into the vertex arrays
  *  Color and alpha modulation is done per vertex (SDL_SetTextureColorMod and SDL_SetTextureAlphaMod are ignored).
  *
  *  \param texture      (optional) The SDL texture to use.
