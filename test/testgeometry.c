@@ -140,13 +140,13 @@ loop()
 
         {
             SDL_Rect viewport;
+            SDL_Vertex verts[3];
             double a;
             double d;
             int cx, cy;
 
             /* Query the sizes */
             SDL_RenderGetViewport(renderer, &viewport);
-            SDL_Vertex verts[3];
             SDL_zeroa(verts);
             cx = viewport.x + viewport.w / 2;
             cy = viewport.y + viewport.h / 2;
