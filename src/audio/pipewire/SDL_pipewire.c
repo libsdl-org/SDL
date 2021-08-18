@@ -738,6 +738,9 @@ hotplug_loop_destroy()
     pending_list_clear();
     io_list_clear();
 
+    SDL_AtomicSet(&hotplug_init_complete, 0);
+    SDL_AtomicSet(&hotplug_events_enabled, 0);
+
     if (hotplug_registry) {
         PIPEWIRE_pw_proxy_destroy((struct pw_proxy *)hotplug_registry);
     }
