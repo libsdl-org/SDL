@@ -1452,18 +1452,20 @@ extern DECLSPEC int SDLCALL SDL_RenderCopyExF(SDL_Renderer * renderer,
                                             const SDL_RendererFlip flip);
 
 /**
- *  Render a list of triangles, optionally using a texture and indices into the vertex array
- *  Color and alpha modulation is done per vertex (SDL_SetTextureColorMod and SDL_SetTextureAlphaMod are ignored).
+ * Render a list of triangles, optionally using a texture and indices into the
+ * vertex array Color and alpha modulation is done per vertex
+ * (SDL_SetTextureColorMod and SDL_SetTextureAlphaMod are ignored).
  *
- *  \param texture      (optional) The SDL texture to use.
- *  \param vertices     Vertices.
- *  \param num_vertices Number of vertices.
- *  \param indices      (optional) An array of integer indices into the 'vertices' array, if NULL all vertices will be rendered in sequential order.
- *  \param num_indices  Number of indices.
+ * \param texture (optional) The SDL texture to use.
+ * \param vertices Vertices.
+ * \param num_vertices Number of vertices.
+ * \param indices (optional) An array of integer indices into the 'vertices'
+ *                array, if NULL all vertices will be rendered in sequential
+ *                order.
+ * \param num_indices Number of indices.
+ * \return 0 on success, or -1 if the operation is not supported
  *
- *  \sa SDL_Vertex
- *
- *  \return 0 on success, or -1 if the operation is not supported
+ * \sa SDL_Vertex
  */
 extern DECLSPEC int SDLCALL SDL_RenderGeometry(SDL_Renderer *renderer,
                                                SDL_Texture *texture,
@@ -1471,22 +1473,23 @@ extern DECLSPEC int SDLCALL SDL_RenderGeometry(SDL_Renderer *renderer,
                                                const int *indices, int num_indices);
 
 /**
- *  Render a list of triangles, optionally using a texture and indices into the vertex arrays
- *  Color and alpha modulation is done per vertex (SDL_SetTextureColorMod and SDL_SetTextureAlphaMod are ignored).
+ * Render a list of triangles, optionally using a texture and indices into the
+ * vertex arrays Color and alpha modulation is done per vertex
+ * (SDL_SetTextureColorMod and SDL_SetTextureAlphaMod are ignored).
  *
- *  \param texture      (optional) The SDL texture to use.
- *  \param xy           Vertex positions
- *  \param xy_stride    Byte size to move from one element to the next element
- *  \param color        Vertex colors (as SDL_Color)
- *  \param color_stride Byte size to move from one element to the next element
- *  \param uv           Vertex normalized texture coordinates
- *  \param uv_stride    Byte size to move from one element to the next element
- *  \param num_vertices Number of vertices.
- *  \param indices      (optional) An array of indices into the 'vertices' arrays, if NULL all vertices will be rendered in sequential order.
- *  \param num_indices  Number of indices.
- *  \param size_indices Index size: 1 (byte), 2 (short), 4 (int)
- *
- *  \return 0 on success, or -1 if the operation is not supported
+ * \param texture (optional) The SDL texture to use.
+ * \param xy Vertex positions
+ * \param xy_stride Byte size to move from one element to the next element
+ * \param color Vertex colors (as SDL_Color)
+ * \param color_stride Byte size to move from one element to the next element
+ * \param uv Vertex normalized texture coordinates
+ * \param uv_stride Byte size to move from one element to the next element
+ * \param num_vertices Number of vertices.
+ * \param indices (optional) An array of indices into the 'vertices' arrays,
+ *                if NULL all vertices will be rendered in sequential order.
+ * \param num_indices Number of indices.
+ * \param size_indices Index size: 1 (byte), 2 (short), 4 (int)
+ * \return 0 on success, or -1 if the operation is not supported
  */
 extern DECLSPEC int SDLCALL SDL_RenderGeometryRaw(SDL_Renderer *renderer,
                                                SDL_Texture *texture,
