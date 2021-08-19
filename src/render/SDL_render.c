@@ -3343,7 +3343,7 @@ SDL_RenderCopyExF(SDL_Renderer * renderer, SDL_Texture * texture,
 }
 
 
-#define SDL_OFFSETOF(_TYPE,_MEMBER)  ((size_t)&(((_TYPE*)0)->_MEMBER))
+#define SDL_OFFSETOF(_TYPE,_MEMBER)  ((intptr_t)&(((_TYPE*)0)->_MEMBER))
 int
 SDL_RenderGeometry(SDL_Renderer *renderer,
                                SDL_Texture *texture,
