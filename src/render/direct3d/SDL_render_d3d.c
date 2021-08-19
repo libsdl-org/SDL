@@ -1054,8 +1054,8 @@ D3D_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *t
         xy_ = (float *)((char*)xy + j * xy_stride);
         col_ = *(SDL_Color *)((char*)color + j * color_stride);
 
-        verts->x = xy_[0] * scale_x;
-        verts->y = xy_[1] * scale_y;
+        verts->x = xy_[0] * scale_x - 0.5f;
+        verts->y = xy_[1] * scale_y - 0.5f;
         verts->z = 0.0f;
         verts->color = D3DCOLOR_ARGB(col_.a, col_.r, col_.g, col_.b);
 
