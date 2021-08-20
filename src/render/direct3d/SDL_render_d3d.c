@@ -1493,10 +1493,10 @@ D3D_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *verti
                 const size_t first = cmd->data.draw.first;
                 SetDrawState(data, cmd);
                 if (vbo) {
-                    IDirect3DDevice9_DrawPrimitive(data->device, D3DPT_TRIANGLELIST, (UINT) (first / sizeof (Vertex)), (UINT) count);
+                    IDirect3DDevice9_DrawPrimitive(data->device, D3DPT_TRIANGLELIST, (UINT) (first / sizeof (Vertex)), (UINT) count / 3);
                 } else {
                     const Vertex* verts = (Vertex*)(((Uint8*)vertices) + first);
-                    IDirect3DDevice9_DrawPrimitiveUP(data->device, D3DPT_TRIANGLELIST, (UINT) count, verts, sizeof(Vertex));
+                    IDirect3DDevice9_DrawPrimitiveUP(data->device, D3DPT_TRIANGLELIST, (UINT) count / 3, verts, sizeof(Vertex));
                 }
 #endif
                 break;
