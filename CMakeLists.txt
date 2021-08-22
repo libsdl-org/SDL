@@ -557,6 +557,15 @@ if(USE_GCC OR USE_CLANG)
       list(APPEND EXTRA_LDFLAGS "-Wl,--no-undefined")
     endif()
   endif()
+
+  # Force color diagnostics when one of these conditions are met
+  if(DEFINED ENV{CI} OR DEFINED ENV{USE_CCACHE} OR CMAKE_GENERATOR MATCHES Ninja)
+    if(EMSCRIPTEN OR (USE_GCC AND NOT CMAKE_C_COMPILER_VERSION VERSION_LESS 4.9))
+      list(APPEND EXTRA_CFLAGS -fdiagnostics-color=always)
+    elseif(USE_CLANG AND NOT CMAKE_C_COMPILER_ID MATCHES AppleClang)
+      list(APPEND EXTRA_CFLAGS -fcolor-diagnostics)
+    endif()
+  endif()
 endif()
 
 if(ASSEMBLY)
