@@ -177,6 +177,12 @@ SDL_GetMouse(void)
     return &SDL_mouse;
 }
 
+SDL_bool
+SDL_IsMouseInRelativeMode(void)
+{
+    return SDL_GetMouse()->relative_mode;
+}
+
 SDL_Window *
 SDL_GetMouseFocus(void)
 {
@@ -368,7 +374,7 @@ SDL_PrivateSendMouseMotion(SDL_Window * window, SDL_MouseID mouseID, int relativ
     }
 
     if (relative) {
-        if (mouse->relative_mode) {
+        if (SDL_IsMouseInRelativeMode()) {
             x = GetScaledMouseDelta(mouse->relative_speed_scale, x, &mouse->scale_accum_x);
             y = GetScaledMouseDelta(mouse->relative_speed_scale, y, &mouse->scale_accum_y);
         } else {
@@ -405,7 +411,7 @@ SDL_PrivateSendMouseMotion(SDL_Window * window, SDL_MouseID mouseID, int relativ
     }
 
     /* Update internal mouse coordinates */
-    if (!mouse->relative_mode) {
+    if (!SDL_IsMouseInRelativeMode()) {
         mouse->x = x;
         mouse->y = y;
     } else {
@@ -441,7 +447,7 @@ SDL_PrivateSendMouseMotion(SDL_Window * window, SDL_MouseID mouseID, int relativ
     mouse->ydelta += yrel;
 
     /* Move the mouse cursor, if needed */
-    if (mouse->cursor_shown && !mouse->relative_mode &&
+    if (mouse->cursor_shown && !SDL_IsMouseInRelativeMode() &&
         mouse->MoveCursor && mouse->cur_cursor) {
         mouse->MoveCursor(mouse->cur_cursor);
     }
@@ -775,7 +781,7 @@ SDL_WarpMouseInWindow(SDL_Window * window, int x, int y)
     mouse->has_position = SDL_FALSE;
 
     if (mouse->WarpMouse &&
-        (!mouse->relative_mode || mouse->relative_mode_warp)) {
+        (!SDL_IsMouseInRelativeMode() || mouse->relative_mode_warp)) {
         mouse->WarpMouse(window, x, y);
     } else {
         SDL_PrivateSendMouseMotion(window, mouse->mouseID, 0, x, y);
@@ -811,7 +817,12 @@ SDL_SetRelativeMouseMode(SDL_bool enabled)
     SDL_Mouse *mouse = SDL_GetMouse();
     SDL_Window *focusWindow = SDL_GetKeyboardFocus();
 
-    if (enabled == mouse->relative_mode) {
+    /* If keyboard does not have focus only use had_relative_mode */
+    if (!focusWindow) {
+        mouse->had_relative_mode = enabled;
+        return 0;
+    }
+    else if (enabled == mouse->relative_mode) {
         return 0;
     }
 
@@ -830,6 +841,7 @@ SDL_SetRelativeMouseMode(SDL_bool enabled)
         }
     }
     mouse->relative_mode = enabled;
+    mouse->had_relative_mode = enabled;
     mouse->scale_accum_x = 0.0f;
     mouse->scale_accum_y = 0.0f;
 
@@ -870,7 +882,7 @@ SDL_GetRelativeMouseMode()
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 
-    return mouse->relative_mode;
+    return mouse->relative_mode || mouse->had_relative_mode;
 }
 
 int
@@ -1053,7 +1065,7 @@ SDL_SetCursor(SDL_Cursor * cursor)
         }
     }
 
-    if (cursor && mouse->cursor_shown && !mouse->relative_mode) {
+    if (cursor && mouse->cursor_shown && !SDL_IsMouseInRelativeMode()) {
         if (mouse->ShowCursor) {
             mouse->ShowCursor(cursor);
         }

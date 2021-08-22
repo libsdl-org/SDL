@@ -84,6 +84,7 @@ typedef struct
     float accumulated_wheel_y;
     Uint32 buttonstate;
     SDL_bool has_position;
+    SDL_bool had_relative_mode; /* to save if the mouse had relative mouse mode enabled on focus change */
     SDL_bool relative_mode;
     SDL_bool relative_mode_warp;
     float normal_speed_scale;
@@ -115,6 +116,13 @@ extern int SDL_MouseInit(void);
 
 /* Get the mouse state structure */
 SDL_Mouse *SDL_GetMouse(void);
+
+/**
+* Check if the mouse is currently in relative mouse mode.
+* In contrast to @see SDL_GetRelativeMouseMode this does return the actual internal state.
+* E.g. if the window is not focused and mouse mode is disabled internally.
+*/
+SDL_bool SDL_IsMouseInRelativeMode(void);
 
 /* Set the default mouse cursor */
 extern void SDL_SetDefaultCursor(SDL_Cursor * cursor);

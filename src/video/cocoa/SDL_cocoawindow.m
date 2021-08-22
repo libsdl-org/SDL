@@ -552,7 +552,7 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
             mouse->WarpMouseGlobal(pendingWindowWarpX, pendingWindowWarpY);
             pendingWindowWarpX = pendingWindowWarpY = INT_MAX;
         }
-        if (mouse->relative_mode && !mouse->relative_mode_warp && mouse->focus == _data->window) {
+        if (SDL_IsMouseInRelativeMode() && !mouse->relative_mode_warp && mouse->focus == _data->window) {
             /* Move the cursor to the nearest point in the window */
             {
                 int x, y;
@@ -684,12 +684,12 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
     /* This needs to be done before restoring the relative mouse mode. */
     SDL_SetKeyboardFocus(window);
 
-    if (mouse->relative_mode && !mouse->relative_mode_warp && ![self isMovingOrFocusClickPending]) {
+    if (SDL_IsMouseInRelativeMode() && !mouse->relative_mode_warp && ![self isMovingOrFocusClickPending]) {
         mouse->SetRelativeMouseMode(SDL_TRUE);
     }
 
     /* If we just gained focus we need the updated mouse position */
-    if (!mouse->relative_mode) {
+    if (!SDL_IsMouseInRelativeMode()) {
         NSPoint point;
         int x, y;
 
@@ -717,7 +717,7 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
 - (void)windowDidResignKey:(NSNotification *)aNotification
 {
     SDL_Mouse *mouse = SDL_GetMouse();
-    if (mouse->relative_mode && !mouse->relative_mode_warp) {
+    if (SDL_IsMouseInRelativeMode() && !mouse->relative_mode_warp) {
         mouse->SetRelativeMouseMode(SDL_FALSE);
     }
 
@@ -1148,7 +1148,7 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
         return;  /* dragging, drop event. */
     }
 
-    if (mouse->relative_mode) {
+    if (SDL_IsMouseInRelativeMode()) {
         return;
     }
 
@@ -1390,7 +1390,7 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
     [super resetCursorRects];
     SDL_Mouse *mouse = SDL_GetMouse();
 
-    if (mouse->cursor_shown && mouse->cur_cursor && !mouse->relative_mode) {
+    if (mouse->cursor_shown && mouse->cur_cursor && !SDL_IsMouseInRelativeMode()) {
         [self addCursorRect:[self bounds]
                      cursor:mouse->cur_cursor->driverdata];
     } else {

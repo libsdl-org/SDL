@@ -869,7 +869,7 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
             mouse->last_x = xevent->xcrossing.x;
             mouse->last_y = xevent->xcrossing.y;
 
-            if (!mouse->relative_mode) {
+            if (!SDL_IsMouseInRelativeMode()) {
                 SDL_SendMouseMotion(data->window, 0, 0, xevent->xcrossing.x, xevent->xcrossing.y);
             }
 
@@ -889,7 +889,7 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
             if (xevent->xcrossing.mode == NotifyUngrab)
                 printf("Mode: NotifyUngrab\n");
 #endif
-            if (!SDL_GetMouse()->relative_mode) {
+            if (!SDL_IsMouseInRelativeMode()) {
                 SDL_SendMouseMotion(data->window, 0, 0, xevent->xcrossing.x, xevent->xcrossing.y);
             }
 
@@ -1237,7 +1237,7 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
 
     case MotionNotify:{
             SDL_Mouse *mouse = SDL_GetMouse();
-            if(!mouse->relative_mode || mouse->relative_mode_warp) {
+            if(!SDL_IsMouseInRelativeMode() || mouse->relative_mode_warp) {
 #ifdef DEBUG_MOTION
                 printf("window %p: X11 motion: %d,%d\n", data, xevent->xmotion.x, xevent->xmotion.y);
 #endif

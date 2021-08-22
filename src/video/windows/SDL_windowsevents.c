@@ -404,7 +404,7 @@ WIN_UpdateFocus(SDL_Window *window)
         SDL_SetKeyboardFocus(window);
 
         /* In relative mode we are guaranteed to have mouse focus if we have keyboard focus */
-        if (!SDL_GetMouse()->relative_mode) {
+        if (!SDL_IsMouseInRelativeMode()) {
             GetCursorPos(&cursorPos);
             ScreenToClient(hwnd, &cursorPos);
             SDL_SendMouseMotion(window, 0, 0, cursorPos.x, cursorPos.y);
@@ -720,7 +720,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 }
             }
 
-            if (!mouse->relative_mode || mouse->relative_mode_warp) {
+            if (!SDL_IsMouseInRelativeMode() || mouse->relative_mode_warp) {
                 /* Only generate mouse events for real mouse */
                 if (GetMouseMessageSource() != SDL_MOUSE_EVENT_SOURCE_TOUCH &&
                     lParam != data->last_pointer_update) {
@@ -743,7 +743,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     case WM_XBUTTONDBLCLK:
         {
             SDL_Mouse *mouse = SDL_GetMouse();
-            if (!mouse->relative_mode || mouse->relative_mode_warp) {
+            if (!SDL_IsMouseInRelativeMode() || mouse->relative_mode_warp) {
                 if (GetMouseMessageSource() != SDL_MOUSE_EVENT_SOURCE_TOUCH &&
                     lParam != data->last_pointer_update) {
                     WIN_CheckWParamMouseButtons(wParam, data, 0);
@@ -760,7 +760,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             UINT size = sizeof(inp);
 
             /* We only use raw mouse input in relative mode */
-            if (!mouse->relative_mode || mouse->relative_mode_warp) {
+            if (!SDL_IsMouseInRelativeMode() || mouse->relative_mode_warp) {
                 break;
             }
 
@@ -875,7 +875,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
     case WM_MOUSELEAVE:
         if (!(data->window->flags & SDL_WINDOW_MOUSE_CAPTURE)) {
-            if (SDL_GetMouseFocus() == data->window && !SDL_GetMouse()->relative_mode && !IsIconic(hwnd)) {
+            if (SDL_GetMouseFocus() == data->window && !SDL_IsMouseInRelativeMode() && !IsIconic(hwnd)) {
                 SDL_Mouse *mouse;
                 POINT cursorPos;
                 GetCursorPos(&cursorPos);

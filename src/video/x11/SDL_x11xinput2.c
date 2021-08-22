@@ -181,7 +181,7 @@ X11_HandleXinput2Event(SDL_VideoData *videodata,XGenericEventCookie *cookie)
 
             videodata->global_mouse_changed = SDL_TRUE;
 
-            if (!mouse->relative_mode || mouse->relative_mode_warp) {
+            if (!SDL_IsMouseInRelativeMode() || mouse->relative_mode_warp) {
                 return 0;
             }
 
@@ -214,7 +214,7 @@ X11_HandleXinput2Event(SDL_VideoData *videodata,XGenericEventCookie *cookie)
 
             if (! pointer_emulated) {
                 SDL_Mouse *mouse = SDL_GetMouse();
-                if(!mouse->relative_mode || mouse->relative_mode_warp) {
+                if(!SDL_IsMouseInRelativeMode() || mouse->relative_mode_warp) {
                     SDL_Window *window = xinput2_get_sdlwindow(videodata, xev->event);
                     if (window) {
                         SDL_SendMouseMotion(window, 0, 0, xev->event_x, xev->event_y);

@@ -23,6 +23,7 @@
 /* General keyboard handling code for SDL */
 
 #include "SDL_hints.h"
+#include "SDL_mouse.h"
 #include "SDL_timer.h"
 #include "SDL_events.h"
 #include "SDL_events_c.h"
@@ -623,10 +624,17 @@ void
 SDL_SetKeyboardFocus(SDL_Window * window)
 {
     SDL_Keyboard *keyboard = &SDL_keyboard;
+    SDL_Mouse *mouse = SDL_GetMouse();
 
     if (keyboard->focus && !window) {
         /* We won't get anymore keyboard messages, so reset keyboard state */
         SDL_ResetKeyboard();
+
+        /* if the mouse was relative, save this state and disable relative mouse mode */
+        if (mouse->relative_mode) {
+            SDL_SetRelativeMouseMode(SDL_FALSE);
+            mouse->had_relative_mode = SDL_TRUE;
+        }
     }
 
     /* See if the current window has lost focus */
@@ -664,6 +672,12 @@ SDL_SetKeyboardFocus(SDL_Window * window)
             if (video && video->StartTextInput) {
                 video->StartTextInput(video);
             }
+        }
+
+        /* if the mouse was not relative, but had it before restore this mode */
+        if (!mouse->relative_mode && mouse->had_relative_mode) {
+            SDL_SetRelativeMouseMode(SDL_TRUE);
+            mouse->had_relative_mode = SDL_FALSE;
         }
     }
 }

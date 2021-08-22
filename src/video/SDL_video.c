@@ -2715,7 +2715,7 @@ SDL_UpdateWindowGrab(SDL_Window * window)
     SDL_bool keyboard_grabbed, mouse_grabbed;
 
     if (window->flags & SDL_WINDOW_INPUT_FOCUS) {
-        if (SDL_GetMouse()->relative_mode || (window->flags & SDL_WINDOW_MOUSE_GRABBED)) {
+        if (SDL_IsMouseInRelativeMode() || (window->flags & SDL_WINDOW_MOUSE_GRABBED)) {
             mouse_grabbed = SDL_TRUE;
         } else {
             mouse_grabbed = SDL_FALSE;
@@ -2927,6 +2927,7 @@ SDL_OnWindowFocusGained(SDL_Window * window)
         _this->SetWindowGammaRamp(_this, window, window->gamma);
     }
 
+    // TODO: this looks useless now
     if (mouse && mouse->relative_mode) {
         SDL_SetMouseFocus(window);
         if (mouse->relative_mode_warp) {

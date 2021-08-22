@@ -998,9 +998,9 @@ WIN_UpdateClipCursor(SDL_Window *window)
         return;
     }
 
-    if ((mouse->relative_mode || (window->flags & SDL_WINDOW_MOUSE_GRABBED)) &&
+    if ((SDL_IsMouseInRelativeMode() || (window->flags & SDL_WINDOW_MOUSE_GRABBED)) &&
         (window->flags & SDL_WINDOW_INPUT_FOCUS)) {
-        if (mouse->relative_mode && !mouse->relative_mode_warp) {
+        if (SDL_IsMouseInRelativeMode() && !mouse->relative_mode_warp) {
             if (GetWindowRect(data->hwnd, &rect)) {
                 LONG cx, cy;
 

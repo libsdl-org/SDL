@@ -231,14 +231,14 @@ Cocoa_WarpMouseGlobal(int x, int y)
      * Calling this directly after. CGSetLocalEventsSuppressionInterval can also
      * prevent it, but it's deprecated as of OS X 10.6.
      */
-    if (!mouse->relative_mode) {
+    if (!SDL_IsMouseInRelativeMode()) {
         CGAssociateMouseAndMouseCursorPosition(YES);
     }
 
     /* CGWarpMouseCursorPosition doesn't generate a window event, unlike our
      * other implementations' APIs. Send what's appropriate.
      */
-    if (!mouse->relative_mode) {
+    if (!SDL_IsMouseInRelativeMode()) {
         SDL_Window *win = SDL_FindWindowAtPoint(x, y);
         SDL_SetMouseFocus(win);
         if (win) {
@@ -429,7 +429,7 @@ Cocoa_HandleMouseEvent(_THIS, NSEvent *event)
     DLog("Last seen mouse: (%g, %g)", location.x, location.y);
 
     /* Non-relative movement is handled in -[Cocoa_WindowListener mouseMoved:] */
-    if (!mouse->relative_mode) {
+    if (!SDL_IsMouseInRelativeMode()) {
         return;
     }
 
