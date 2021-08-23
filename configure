@@ -22901,6 +22901,11 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 $as_echo "$as_me: WARNING: Vulkan does not work on this configuration." >&2;}
         fi
     fi
+    if test x$have_loadso != xyes; then
+        { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Vulkan support is available, but disabled because there's no loadso." >&5
+$as_echo "$as_me: WARNING: Vulkan support is available, but disabled because there's no loadso." >&2;}
+        enable_video_vulkan=no
+    fi
     if test x$enable_video_vulkan = xyes; then
 
 $as_echo "#define SDL_VIDEO_VULKAN 1" >>confdefs.h

@@ -2598,6 +2598,10 @@ CheckVulkan()
             AC_MSG_WARN([Vulkan does not work on this configuration.])
         fi
     fi
+    if test x$have_loadso != xyes; then
+        AC_MSG_WARN([Vulkan support is available, but disabled because there's no loadso.])
+        enable_video_vulkan=no
+    fi
     if test x$enable_video_vulkan = xyes; then
         AC_DEFINE(SDL_VIDEO_VULKAN, 1, [ ])
         SUMMARY_video="${SUMMARY_video} vulkan"
