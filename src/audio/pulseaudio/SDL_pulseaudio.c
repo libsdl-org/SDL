@@ -80,7 +80,7 @@ static void (*PULSEAUDIO_pa_mainloop_quit) (pa_mainloop *, int);
 static void (*PULSEAUDIO_pa_mainloop_free) (pa_mainloop *);
 
 static pa_operation_state_t (*PULSEAUDIO_pa_operation_get_state) (
-    pa_operation *);
+    const pa_operation *);
 static void (*PULSEAUDIO_pa_operation_cancel) (pa_operation *);
 static void (*PULSEAUDIO_pa_operation_unref) (pa_operation *);
 
@@ -92,7 +92,7 @@ static pa_operation * (*PULSEAUDIO_pa_context_get_sink_info_list) (pa_context *,
 static pa_operation * (*PULSEAUDIO_pa_context_get_source_info_list) (pa_context *, pa_source_info_cb_t, void *);
 static pa_operation * (*PULSEAUDIO_pa_context_get_sink_info_by_index) (pa_context *, uint32_t, pa_sink_info_cb_t, void *);
 static pa_operation * (*PULSEAUDIO_pa_context_get_source_info_by_index) (pa_context *, uint32_t, pa_source_info_cb_t, void *);
-static pa_context_state_t (*PULSEAUDIO_pa_context_get_state) (pa_context *);
+static pa_context_state_t (*PULSEAUDIO_pa_context_get_state) (const pa_context *);
 static pa_operation * (*PULSEAUDIO_pa_context_subscribe) (pa_context *, pa_subscription_mask_t, pa_context_success_cb_t, void *);
 static void (*PULSEAUDIO_pa_context_set_subscribe_callback) (pa_context *, pa_context_subscribe_cb_t, void *);
 static void (*PULSEAUDIO_pa_context_disconnect) (pa_context *);
@@ -101,12 +101,12 @@ static void (*PULSEAUDIO_pa_context_unref) (pa_context *);
 static pa_stream * (*PULSEAUDIO_pa_stream_new) (pa_context *, const char *,
     const pa_sample_spec *, const pa_channel_map *);
 static int (*PULSEAUDIO_pa_stream_connect_playback) (pa_stream *, const char *,
-    const pa_buffer_attr *, pa_stream_flags_t, pa_cvolume *, pa_stream *);
+    const pa_buffer_attr *, pa_stream_flags_t, const pa_cvolume *, pa_stream *);
 static int (*PULSEAUDIO_pa_stream_connect_record) (pa_stream *, const char *,
     const pa_buffer_attr *, pa_stream_flags_t);
-static pa_stream_state_t (*PULSEAUDIO_pa_stream_get_state) (pa_stream *);
-static size_t (*PULSEAUDIO_pa_stream_writable_size) (pa_stream *);
-static size_t (*PULSEAUDIO_pa_stream_readable_size) (pa_stream *);
+static pa_stream_state_t (*PULSEAUDIO_pa_stream_get_state) (const pa_stream *);
+static size_t (*PULSEAUDIO_pa_stream_writable_size) (const pa_stream *);
+static size_t (*PULSEAUDIO_pa_stream_readable_size) (const pa_stream *);
 static int (*PULSEAUDIO_pa_stream_begin_write) (pa_stream *, void **, size_t*);
 static int (*PULSEAUDIO_pa_stream_cancel_write) (pa_stream *);
 static int (*PULSEAUDIO_pa_stream_write) (pa_stream *, const void *, size_t,
