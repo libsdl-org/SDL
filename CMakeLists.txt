@@ -2249,6 +2249,11 @@ elseif(VITA)
 
 endif()
 
+if(VIDEO_VULKAN AND NOT SDL_LOADSO)
+  message(STATUS "Vulkan support is available, but disabled because there's no loadso.")
+  set(VIDEO_VULKAN OFF)
+endif()
+
 if(VIDEO_VULKAN)
   set(SDL_VIDEO_VULKAN 1)
   set(HAVE_VIDEO_VULKAN TRUE)
