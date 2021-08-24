@@ -1547,9 +1547,6 @@ extern "C" {
  *        They offer better performance, allocate no kernel ressources and
  *        use less memory. SDL will fall back to Critical Sections on older
  *        OS versions or if forced to by this hint.
- *        This also affects Condition Variables. When SRW mutexes are used,
- *        SDL will use Windows Condition Variables as well. Else, a generic
- *        SDL_cond implementation will be used that works with all mutexes.
  *
  *  This variable can be set to the following values:
  *    "0"       - Use SRW Locks when available. If not, fall back to Critical Sections. (default)
