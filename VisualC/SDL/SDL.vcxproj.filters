@@ -1201,7 +1201,7 @@
     <ClCompile Include="..\..\src\thread\SDL_thread.c">
       <Filter>thread</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\thread\windows\SDL_syscond_srw.c">
+    <ClCompile Include="..\..\src\thread\windows\SDL_syscond_cv.c" />
       <Filter>thread\windows</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\thread\windows\SDL_sysmutex.c">

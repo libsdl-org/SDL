@@ -559,7 +559,7 @@
     <ClCompile Include="..\..\src\stdlib\SDL_strtokr.c" />
     <ClCompile Include="..\..\src\thread\generic\SDL_syscond.c" />
     <ClCompile Include="..\..\src\thread\SDL_thread.c" />
-    <ClCompile Include="..\..\src\thread\windows\SDL_syscond_srw.c" />
+    <ClCompile Include="..\..\src\thread\windows\SDL_syscond_cv.c" />
     <ClCompile Include="..\..\src\thread\windows\SDL_sysmutex.c" />
     <ClCompile Include="..\..\src\thread\windows\SDL_syssem.c" />
     <ClCompile Include="..\..\src\thread\windows\SDL_systhread.c" />
