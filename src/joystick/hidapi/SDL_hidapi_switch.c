@@ -936,10 +936,13 @@ HIDAPI_DriverSwitch_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joysti
 
         /* Set the LED state */
         if (ctx->m_bHasHomeLED) {
-            if (SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_SWITCH_HOME_LED, SDL_TRUE)) {
-                SetHomeLED(ctx, 100);
-            } else {
-                SetHomeLED(ctx, 0);
+            const char *hint = SDL_GetHint(SDL_HINT_JOYSTICK_HIDAPI_SWITCH_HOME_LED);
+            if (hint && *hint) {
+                if (SDL_GetStringBoolean(hint, SDL_TRUE)) {
+                    SetHomeLED(ctx, 100);
+                } else {
+                    SetHomeLED(ctx, 0);
+                }
             }
         }
         SetSlotLED(ctx, (joystick->instance_id % 4));

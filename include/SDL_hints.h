@@ -711,8 +711,10 @@ extern "C" {
  *  \brief  A variable controlling whether the Home button LED should be turned on when a Nintendo Switch controller is opened
  *
  *  This variable can be set to the following values:
- *    "0"       - home button LED is left off
- *    "1"       - home button LED is turned on (the default)
+ *    "0"       - home button LED is turned off
+ *    "1"       - home button LED is turned on
+ *
+ *  By default the Home button LED state is not changed.
  */
 #define SDL_HINT_JOYSTICK_HIDAPI_SWITCH_HOME_LED "SDL_JOYSTICK_HIDAPI_SWITCH_HOME_LED"
 
