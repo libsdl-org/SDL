@@ -676,6 +676,9 @@ LINUX_JoystickInit(void)
     last_joy_detect_time = 0;
     last_input_dir_mtime = 0;
 
+    /* Manually scan first, since we sort by device number and udev doesn't */
+    LINUX_JoystickDetect();
+
 #if SDL_USE_LIBUDEV
     if (enumeration_method == ENUMERATION_LIBUDEV) {
         if (SDL_UDEV_Init() < 0) {
@@ -717,9 +720,6 @@ LINUX_JoystickInit(void)
             }
         }
 #endif /* HAVE_INOTIFY */
-
-        /* Report all devices currently present */
-        LINUX_JoystickDetect();
     }
 
     return 0;
