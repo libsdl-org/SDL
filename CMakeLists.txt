@@ -1299,6 +1299,7 @@ elseif(UNIX AND NOT APPLE AND NOT ANDROID AND NOT RISCOS AND NOT HAIKU)
         list(APPEND EXTRA_LIBS ${DBUS_LIBRARIES})
         # Fcitx need only dbus.
         set(HAVE_FCITX TRUE)
+        set(SDL_USE_IME TRUE)
       endif()
 
       pkg_search_module(IBUS ibus-1.0 ibus)
@@ -1306,13 +1307,9 @@ elseif(UNIX AND NOT APPLE AND NOT ANDROID AND NOT RISCOS AND NOT HAIKU)
         set(HAVE_IBUS_IBUS_H TRUE)
         include_directories(${IBUS_INCLUDE_DIRS})
         list(APPEND EXTRA_LIBS ${IBUS_LIBRARIES})
+        set(SDL_USE_IME TRUE)
       endif()
 
-      if (HAVE_IBUS_IBUS_H OR HAVE_FCITX)
-        set(SDL_USE_IME TRUE)
-        add_definitions(-DSDL_USE_IME)   # !!! FIXME: why isn't this a definition and not in SDL_config.h.cmake?
-      endif()
-        
       if(FREEBSD AND NOT HAVE_INOTIFY)
         pkg_search_module(INOTIFY libinotify)
         if(INOTIFY_FOUND)

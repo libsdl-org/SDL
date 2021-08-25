@@ -470,6 +470,9 @@
 #cmakedefine SDL_ARM_SIMD_BLITTERS @SDL_ARM_SIMD_BLITTERS@
 #cmakedefine SDL_ARM_NEON_BLITTERS @SDL_ARM_NEON_BLITTERS@
 
+/* Enable ime support */
+#cmakedefine SDL_USE_IME @SDL_USE_IME@
+
 /* Whether SDL_DYNAMIC_API needs dlopen */
 #cmakedefine DYNAPI_NEEDS_DLOPEN  @DYNAPI_NEEDS_DLOPEN@
 
