@@ -3424,6 +3424,7 @@ remap_indices(
     return k;
 }
 
+#define DEBUG_SW_RENDER_GEOMETRY 0
 /* For the software renderer, try to reinterpret triangles as SDL_Rect */
 static int SDLCALL
 SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
@@ -3437,7 +3438,6 @@ SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
     int i;
     int retval = 0;
     int count = indices ? num_indices : num_vertices;
-    const int debug = 0;
     int prev[3]; /* Previous triangle vertex indices */
     int texw = 0, texh = 0;
     SDL_BlendMode blendMode = SDL_BLENDMODE_NONE;
@@ -3456,8 +3456,10 @@ SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
     for (i = 0; i < count; i += 3) {
         int k0, k1, k2; /* Current triangle indices */
         int is_quad = 1;
+#if DEBUG_SW_RENDER_GEOMETRY
         int is_uniform = 1;
         int is_rectangle = 1;
+#endif
         int A = -1;  /* Top left vertex */
         int B = -1;  /* Bottom right vertex */
         int C = -1;  /* Third vertex of current triangle */
@@ -3575,7 +3577,9 @@ SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
                 /* ok */
             } else {
                 is_quad = 0;
+#if DEBUG_SW_RENDER_GEOMETRY
                 is_rectangle = 0;
+#endif
             }
 
             xy2_ = (const float *)((const char*)xy + C2 * xy_stride);
@@ -3586,7 +3590,9 @@ SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
                 /* ok */
             } else {
                 is_quad = 0;
+#if DEBUG_SW_RENDER_GEOMETRY
                 is_rectangle = 0;
+#endif
             }
         }
 
@@ -3600,7 +3606,9 @@ SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
                 /* ok */
             } else {
                 is_quad = 0;
+#if DEBUG_SW_RENDER_GEOMETRY
                 is_uniform = 0;
+#endif
             }
         }
 
@@ -3633,34 +3641,30 @@ SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
                 SDL_SetTextureAlphaMod(texture, col0_.a);
                 SDL_SetTextureColorMod(texture, col0_.r, col0_.g, col0_.b);
                 SDL_RenderCopyF(renderer, texture, &s, &d);
-
-                if (debug) {
-                    SDL_Log("Rect-COPY: RGB %d %d %d - Alpha:%d - texture=%p: src=(%d,%d, %d x %d) dst (%f, %f, %f x %f)", col0_.r, col0_.g, col0_.b, col0_.a,
-                            (void *)texture, s.x, s.y, s.w, s.h, d.x, d.y, d.w, d.h);
-                }
+#if DEBUG_SW_RENDER_GEOMETRY
+                SDL_Log("Rect-COPY: RGB %d %d %d - Alpha:%d - texture=%p: src=(%d,%d, %d x %d) dst (%f, %f, %f x %f)", col0_.r, col0_.g, col0_.b, col0_.a,
+                        (void *)texture, s.x, s.y, s.w, s.h, d.x, d.y, d.w, d.h);
+#endif
             } else if (d.w != 0.0f && d.h != 0.0f) { /* Rect, no texture */
                 SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
                 SDL_SetRenderDrawColor(renderer, col0_.r, col0_.g, col0_.b, col0_.a);
                 SDL_RenderFillRectF(renderer, &d);
-
-                if (debug) {
-                    SDL_Log("Rect-FILL: RGB %d %d %d - Alpha:%d - texture=%p: src=(%d,%d, %d x %d) dst (%f, %f, %f x %f)", col0_.r, col0_.g, col0_.b, col0_.a,
-                            (void *)texture, s.x, s.y, s.w, s.h, d.x, d.y, d.w, d.h);
-                }
+#if DEBUG_SW_RENDER_GEOMETRY
+                SDL_Log("Rect-FILL: RGB %d %d %d - Alpha:%d - texture=%p: src=(%d,%d, %d x %d) dst (%f, %f, %f x %f)", col0_.r, col0_.g, col0_.b, col0_.a,
+                        (void *)texture, s.x, s.y, s.w, s.h, d.x, d.y, d.w, d.h);
             } else {
-                if (debug) {
-                    SDL_Log("Rect-DISMISS: RGB %d %d %d - Alpha:%d - texture=%p: src=(%d,%d, %d x %d) dst (%f, %f, %f x %f)", col0_.r, col0_.g, col0_.b, col0_.a,
-                            (void *)texture, s.x, s.y, s.w, s.h, d.x, d.y, d.w, d.h);
-                }
+                SDL_Log("Rect-DISMISS: RGB %d %d %d - Alpha:%d - texture=%p: src=(%d,%d, %d x %d) dst (%f, %f, %f x %f)", col0_.r, col0_.g, col0_.b, col0_.a,
+                        (void *)texture, s.x, s.y, s.w, s.h, d.x, d.y, d.w, d.h);
+#endif
             }
 
             prev[0] = -1;
         } else {
             /* Render triangles */
             if (prev[0] != -1) {
-                if (debug) {
-                    SDL_Log("Triangle %d %d %d - is_uniform:%d is_rectangle:%d", prev[0], prev[1], prev[2], is_uniform, is_rectangle);
-                }
+#if DEBUG_SW_RENDER_GEOMETRY
+                SDL_Log("Triangle %d %d %d - is_uniform:%d is_rectangle:%d", prev[0], prev[1], prev[2], is_uniform, is_rectangle);
+#endif
                 retval = QueueCmdGeometry(renderer, texture,
                                           xy, xy_stride, color, color_stride, uv, uv_stride,
                                           num_vertices, prev, 3, 4, renderer->scale.x, renderer->scale.y);
@@ -3679,9 +3683,9 @@ SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
 
     if (prev[0] != -1) {
         /* flush the last triangle */
-        if (debug) {
-            SDL_Log("Last triangle %d %d %d", prev[0], prev[1], prev[2]);
-        }
+#if DEBUG_SW_RENDER_GEOMETRY
+        SDL_Log("Last triangle %d %d %d", prev[0], prev[1], prev[2]);
+#endif
         retval = QueueCmdGeometry(renderer, texture,
                                   xy, xy_stride, color, color_stride, uv, uv_stride,
                                   num_vertices, prev, 3, 4, renderer->scale.x, renderer->scale.y);
