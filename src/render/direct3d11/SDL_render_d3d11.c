@@ -1881,6 +1881,7 @@ D3D11_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture 
     }
 
     cmd->data.draw.count = count;
+    size_indices = indices ? size_indices : 0;
 
     for (i = 0; i < count; i++) {
         int j;

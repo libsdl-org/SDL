@@ -593,6 +593,7 @@ SW_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *te
     }
 
     cmd->data.draw.count = count;
+    size_indices = indices ? size_indices : 0;
 
     if (texture) {
         GeometryCopyData *ptr = (GeometryCopyData *) verts;
