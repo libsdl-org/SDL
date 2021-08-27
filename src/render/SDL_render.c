@@ -3452,6 +3452,7 @@ SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
     }
 
     prev[0] = -1; prev[1] = -1; prev[2] = -1;
+    size_indices = indices ? size_indices : 0;
 
     for (i = 0; i < count; i += 3) {
         int k0, k1, k2; /* Current triangle indices */
