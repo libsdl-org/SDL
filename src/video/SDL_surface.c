@@ -1092,6 +1092,7 @@ SDL_ConvertSurface(SDL_Surface * surface, const SDL_PixelFormat * format,
     int palette_ck_value = 0;
     SDL_bool palette_has_alpha = SDL_FALSE;
     Uint8 *palette_saved_alpha = NULL;
+    int palette_saved_alpha_ncolors = 0;
 
     if (!surface) {
         SDL_InvalidParamError("surface");
@@ -1173,8 +1174,9 @@ SDL_ConvertSurface(SDL_Surface * surface, const SDL_PixelFormat * format,
         /* Set opaque and backup palette alpha values */
         if (set_opaque) {
             int i;
-            palette_saved_alpha = SDL_stack_alloc(Uint8, surface->format->palette->ncolors);
-            for (i = 0; i < surface->format->palette->ncolors; i++) {
+            palette_saved_alpha_ncolors = surface->format->palette->ncolors;
+            palette_saved_alpha = SDL_stack_alloc(Uint8, palette_saved_alpha_ncolors);
+            for (i = 0; i < palette_saved_alpha_ncolors; i++) {
                 palette_saved_alpha[i] = surface->format->palette->colors[i].a;
                 surface->format->palette->colors[i].a = SDL_ALPHA_OPAQUE;
             }
@@ -1201,7 +1203,7 @@ SDL_ConvertSurface(SDL_Surface * surface, const SDL_PixelFormat * format,
     /* Restore palette alpha values */
     if (palette_saved_alpha) {
         int i;
-        for (i = 0; i < surface->format->palette->ncolors; i++) {
+        for (i = 0; i < palette_saved_alpha_ncolors; i++) {
             surface->format->palette->colors[i].a = palette_saved_alpha[i];
         }
         SDL_stack_free(palette_saved_alpha);
