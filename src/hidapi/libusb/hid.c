@@ -1031,8 +1031,9 @@ static int read_thread(void *param)
 	return 0;
 }
 
-static void init_xboxone(libusb_device_handle *device_handle, struct libusb_config_descriptor *conf_desc)
+static void init_xboxone(libusb_device_handle *device_handle, unsigned short idVendor, unsigned short idProduct, struct libusb_config_descriptor *conf_desc)
 {
+	static const int VENDOR_MICROSOFT = 0x045e;
 	static const int XB1_IFACE_SUBCLASS = 71;
 	static const int XB1_IFACE_PROTOCOL = 208;
 	int j, k, res;
@@ -1040,26 +1041,36 @@ static void init_xboxone(libusb_device_handle *device_handle, struct libusb_conf
 	for (j = 0; j < conf_desc->bNumInterfaces; j++) {
 		const struct libusb_interface *intf = &conf_desc->interface[j];
 		for (k = 0; k < intf->num_altsetting; k++) {
-			const struct libusb_interface_descriptor *intf_desc;
-			intf_desc = &intf->altsetting[k];
-
-			if (intf_desc->bInterfaceNumber != 0 &&
-			    intf_desc->bAlternateSetting == 0 &&
-			    intf_desc->bInterfaceClass == LIBUSB_CLASS_VENDOR_SPEC &&
+			const struct libusb_interface_descriptor *intf_desc = &intf->altsetting[k];
+			if (intf_desc->bInterfaceClass == LIBUSB_CLASS_VENDOR_SPEC &&
 			    intf_desc->bInterfaceSubClass == XB1_IFACE_SUBCLASS &&
 			    intf_desc->bInterfaceProtocol == XB1_IFACE_PROTOCOL) {
-				res = libusb_claim_interface(device_handle, intf_desc->bInterfaceNumber);
-				if (res < 0) {
-					LOG("can't claim interface %d: %d\n", intf_desc->bInterfaceNumber, res);
-					continue;
+				int bSetAlternateSetting = 0;
+
+				/* Newer Microsoft Xbox One controllers have a high speed alternate setting */
+				if (idVendor == VENDOR_MICROSOFT &&
+				    intf_desc->bInterfaceNumber == 0 && intf_desc->bAlternateSetting == 1) {
+					bSetAlternateSetting = 1;
+				} else if (intf_desc->bInterfaceNumber != 0 && intf_desc->bAlternateSetting == 0) {
+					bSetAlternateSetting = 1;
 				}
 
-				res = libusb_set_interface_alt_setting(device_handle, intf_desc->bInterfaceNumber, intf_desc->bAlternateSetting);
-				if (res < 0) {
-					LOG("xbox init: can't set alt setting %d: %d\n", intf_desc->bInterfaceNumber, res);
-				}
+				if (bSetAlternateSetting) {
+					res = libusb_claim_interface(device_handle, intf_desc->bInterfaceNumber);
+					if (res < 0) {
+						LOG("can't claim interface %d: %d\n", intf_desc->bInterfaceNumber, res);
+						continue;
+					}
 
-				libusb_release_interface(device_handle, intf_desc->bInterfaceNumber);
+					LOG("Setting alternate setting for VID/PID 0x%x/0x%x interface %d to %d\n",  idVendor, idProduct, intf_desc->bInterfaceNumber, intf_desc->bAlternateSetting);
+
+					res = libusb_set_interface_alt_setting(device_handle, intf_desc->bInterfaceNumber, intf_desc->bAlternateSetting);
+					if (res < 0) {
+						LOG("xbox init: can't set alt setting %d: %d\n", intf_desc->bInterfaceNumber, res);
+					}
+
+					libusb_release_interface(device_handle, intf_desc->bInterfaceNumber);
+				}
 			}
 		}
 	}
@@ -1141,7 +1152,7 @@ hid_device * HID_API_EXPORT hid_open_path(const char *path, int bExclusive)
 
 						/* Initialize XBox One controllers */
 						if (is_xboxone(desc.idVendor, intf_desc)) {
-							init_xboxone(dev->device_handle, conf_desc);
+							init_xboxone(dev->device_handle, desc.idVendor, desc.idProduct, conf_desc);
 						}
 
 						/* Store off the string descriptor indexes */
