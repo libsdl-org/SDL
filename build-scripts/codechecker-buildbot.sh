@@ -31,7 +31,13 @@ perl -w -pi -e 's/\-arch\s+.*?\s+//g;' compile_commands.json
 
 rm -rf ../analysis
 CodeChecker analyze compile_commands.json -o ./reports
+
+# "parse" returns 2 if there was a static analysis issue to report, but this
+#  does not signify an error in the parsing (that would be error code 1). Turn
+#  off the abort-on-error flag.
+set +e
 CodeChecker parse ./reports -e html -o ../analysis
+set -e
 
 cd ..
 chmod -R a+r analysis
