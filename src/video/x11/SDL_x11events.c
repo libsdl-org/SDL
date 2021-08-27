@@ -1228,7 +1228,7 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
             printf("window %p: ButtonPress (X11 button = %d)\n", data, xevent->xbutton.button);
 #endif
             if (X11_IsWheelEvent(display,xevent,&xticks, &yticks)) {
-                SDL_SendMouseWheel(data->window, 0, (float) xticks, (float) yticks, SDL_MOUSEWHEEL_NORMAL);
+                SDL_SendMouseWheel(data->window, 0, (float) -xticks, (float) yticks, SDL_MOUSEWHEEL_NORMAL);
             } else {
                 SDL_bool ignore_click = SDL_FALSE;
                 int button = xevent->xbutton.button;
