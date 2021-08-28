@@ -1043,7 +1043,10 @@ PIPEWIRE_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     /* Get the hints for the application name, stream name and role */
     app_name = SDL_GetHint(SDL_HINT_AUDIO_DEVICE_APP_NAME);
     if (!app_name || *app_name == '\0') {
-        app_name = "SDL Application";
+        app_name = SDL_GetHint(SDL_HINT_APP_NAME);
+        if (!app_name || *app_name == '\0') {   
+            app_name = "SDL Application";
+        }
     }
 
     stream_name = SDL_GetHint(SDL_HINT_AUDIO_DEVICE_STREAM_NAME);

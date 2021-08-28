@@ -19,6 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 #include "../../SDL_internal.h"
+#include "SDL_hints.h"
 #include "SDL_dbus.h"
 #include "SDL_atomic.h"
 
@@ -365,8 +366,15 @@ SDL_DBus_ScreensaverInhibit(SDL_bool inhibit)
         const char *interface = "org.freedesktop.ScreenSaver";
 
         if (inhibit) {
-            const char *app = "My SDL application";
-            const char *reason = "Playing a game";
+            const char *app = SDL_GetHint(SDL_HINT_APP_NAME);
+            const char *reason = SDL_GetHint(SDL_HINT_SCREENSAVER_INHIBIT_ACTIVITY_NAME);
+            if (!app || !app[0]) {
+               app  = "My SDL application";
+            }
+            if (!reason || !reason[0]) {
+                reason = "Playing a game";
+            }
+
             if (!SDL_DBus_CallMethod(node, path, interface, "Inhibit",
                     DBUS_TYPE_STRING, &app, DBUS_TYPE_STRING, &reason, DBUS_TYPE_INVALID,
                     DBUS_TYPE_UINT32, &screensaver_cookie, DBUS_TYPE_INVALID)) {

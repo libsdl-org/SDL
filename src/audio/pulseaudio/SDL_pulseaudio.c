@@ -246,7 +246,13 @@ static const char *
 getAppName(void)
 {
     const char *retval = SDL_GetHint(SDL_HINT_AUDIO_DEVICE_APP_NAME);
-    if (!retval || !*retval) {
+    if (retval && *retval) {
+        return retval;
+    }
+    retval = SDL_GetHint(SDL_HINT_APP_NAME);
+    if (retval && *retval) {
+        return retval;
+    } else {
         const char *verstr = PULSEAUDIO_pa_get_library_version();
         retval = "SDL Application";  /* the "oh well" default. */
         if (verstr != NULL) {
