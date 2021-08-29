@@ -972,7 +972,7 @@ SDL_AudioInit(const char *driver_name)
         driver_name = SDL_getenv("SDL_AUDIODRIVER");
     }
 
-    if (driver_name != NULL) {
+    if (driver_name != NULL && *driver_name != 0) {
         const char *driver_attempt = driver_name;
         while (driver_attempt != NULL && *driver_attempt != 0 && !initialized) {
             const char *driver_attempt_end = SDL_strchr(driver_attempt, ',');
