@@ -558,6 +558,15 @@ extern "C" {
 #define SDL_HINT_IME_INTERNAL_EDITING "SDL_IME_INTERNAL_EDITING"
 
 /**
+ * \brief A variable to control whether certain IMEs should show native UI components (such as the Candidate List) instead of suppressing them.
+ *
+ * The variable can be set to the following values:
+ *   "0"       - Native UI components are not display. (default)
+ *   "1"       - Native UI components are displayed.
+ */
+#define SDL_HINT_IME_SHOW_UI "SDL_IME_SHOW_UI"
+
+/**
  * \brief  A variable controlling whether the home indicator bar on iPhone X
  *         should be hidden.
  *
