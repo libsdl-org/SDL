@@ -23,6 +23,7 @@
 #if SDL_VIDEO_DRIVER_WINDOWS
 
 #include "SDL_windowsvideo.h"
+#include "SDL_hints.h"
 
 #include "../../events/SDL_keyboard_c.h"
 #include "../../events/scancodes_windows.h"
@@ -245,13 +246,21 @@ WIN_SetTextInputRect(_THIS, SDL_Rect *rect)
     himc = ImmGetContext(videodata->ime_hwnd_current);
     if (himc)
     {
-        COMPOSITIONFORM cf;
+        CANDIDATEFORM cf;
+        cf.dwIndex = 0;
+        cf.dwStyle = CFS_POINT;
         cf.ptCurrentPos.x = videodata->ime_rect.x;
         cf.ptCurrentPos.y = videodata->ime_rect.y;
-        cf.dwStyle = CFS_FORCE_POSITION;
-        ImmSetCompositionWindow(himc, &cf);
+        
+        ImmSetCandidateWindow(himc, &cf);
         ImmReleaseContext(videodata->ime_hwnd_current, himc);
     }
+}
+
+static SDL_bool
+WIN_ShouldShowNativeUI()
+{
+    return SDL_GetHintBoolean(SDL_HINT_IME_SHOW_UI, SDL_FALSE);
 }
 
 #ifdef SDL_DISABLE_WINDOWS_IME
@@ -371,7 +380,10 @@ IME_Init(SDL_VideoData *videodata, HWND hwnd)
     videodata->ime_available = SDL_TRUE;
     IME_UpdateInputLocale(videodata);
     IME_SetupAPI(videodata);
-    videodata->ime_uiless = UILess_SetupSinks(videodata);
+    if (WIN_ShouldShowNativeUI())
+        videodata->ime_uiless = SDL_FALSE;
+    else
+        videodata->ime_uiless = UILess_SetupSinks(videodata);
     IME_UpdateInputLocale(videodata);
     IME_Disable(videodata, hwnd);
 }
