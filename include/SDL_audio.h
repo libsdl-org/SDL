@@ -473,6 +473,62 @@ extern DECLSPEC int SDLCALL SDL_GetAudioDeviceSpec(int index,
  * pausing playback with SDL_LockAudioDevice(). For more information about the
  * callback, see SDL_AudioSpec.
  *
+ * Managing the audio spec via 'desired' and 'obtained':
+ *
+ * When filling in the desired audio spec structure:
+ *
+ * - `desired->freq` should be the frequency in sample-frames-per-second (Hz).
+ * - `desired->format` should be the audio format (`AUDIO_S16SYS`, etc).
+ * - `desired->samples` is the desired size of the audio buffer, in _sample
+ *   frames_ (with stereo output, two samples--left and right--would make a
+ *   single sample frame). This number should be a power of two, and may be
+ *   adjusted by the audio driver to a value more suitable for the hardware.
+ *   Good values seem to range between 512 and 8096 inclusive, depending on
+ *   the application and CPU speed. Smaller values reduce latency, but can
+ *   lead to underflow if the application is doing heavy processing and cannot
+ *   fill the audio buffer in time. Note that the number of sample frames is
+ *   directly related to time by the following formula: `ms =
+ *   (sampleframes*1000)/freq`
+ * - `desired->size` is the size in _bytes_ of the audio buffer, and is
+ *   calculated by SDL_OpenAudioDevice(). You don't initialize this.
+ * - `desired->silence` is the value used to set the buffer to silence, and is
+ *   calculated by SDL_OpenAudioDevice(). You don't initialize this.
+ * - `desired->callback` should be set to a function that will be called when
+ *   the audio device is ready for more data. It is passed a pointer to the
+ *   audio buffer, and the length in bytes of the audio buffer. This function
+ *   usually runs in a separate thread, and so you should protect data
+ *   structures that it accesses by calling SDL_LockAudioDevice() and
+ *   SDL_UnlockAudioDevice() in your code. Alternately, you may pass a NULL
+ *   pointer here, and call SDL_QueueAudio() with some frequency, to queue
+ *   more audio samples to be played (or for capture devices, call
+ *   SDL_DequeueAudio() with some frequency, to obtain audio samples).
+ * - `desired->userdata` is passed as the first parameter to your callback
+ *   function. If you passed a NULL callback, this value is ignored.
+ *
+ * `allowed_changes` can have the following flags OR'd together:
+ *
+ * - `SDL_AUDIO_ALLOW_FREQUENCY_CHANGE`
+ * - `SDL_AUDIO_ALLOW_FORMAT_CHANGE`
+ * - `SDL_AUDIO_ALLOW_CHANNELS_CHANGE`
+ * - `SDL_AUDIO_ALLOW_ANY_CHANGE`
+ *
+ * These flags specify how SDL should behave when a device cannot offer a
+ * specific feature. If the application requests a feature that the hardware
+ * doesn't offer, SDL will always try to get the closest equivalent.
+ *
+ * For example, if you ask for float32 audio format, but the sound card only
+ * supports int16, SDL will set the hardware to int16. If you had set
+ * SDL_AUDIO_ALLOW_FORMAT_CHANGE, SDL will change the format in the `obtained`
+ * structure. If that flag was *not* set, SDL will prepare to convert your
+ * callback's float32 audio to int16 before feeding it to the hardware and
+ * will keep the originally requested format in the `obtained` structure.
+ *
+ * The resulting audio specs, varying depending on hardware and on what
+ * changes were allowed, will then be written back to `obtained`.
+ *
+ * If your application can only handle one specific data format, pass a zero
+ * for `allowed_changes` and let SDL transparently handle any differences.
+ *
  * \param device a UTF-8 string reported by SDL_GetAudioDeviceName() or a
  *               driver-specific name as appropriate. NULL requests the most
  *               reasonable default device.
