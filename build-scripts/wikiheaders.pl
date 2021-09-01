@@ -854,30 +854,57 @@ if ($copy_direction == 1) {  # --copy-to-headers
         }
 
         my $wikisectionorderref = $wikisectionorder{$fn};
-        my @ordered_sections = (@standard_wiki_sections, defined $wikisectionorderref ? @$wikisectionorderref : ());  # this copies the arrays into one.
 
+        # Make sure there's a footer in the wiki that puts this function in CategoryAPI...
+        if (not $$sectionsref{'[footer]'}) {
+            $$sectionsref{'[footer]'} = '';
+            push @$wikisectionorderref, '[footer]';
+        }
+
+        # !!! FIXME: This won't be CategoryAPI if we eventually handle things other than functions.
+        my $footer = $$sectionsref{'[footer]'};
+        if ($wikitype eq 'mediawiki') {
+            $footer =~ s/\[\[CategoryAPI\]\],?\s*//g;
+            $footer = '[[CategoryAPI]]' . (($footer eq '') ? "\n" : ", $footer");
+        } elsif ($wikitype eq 'md') {
+            $footer =~ s/\[CategoryAPI\]\(CategoryAPI\),?\s*//g;
+            $footer = '[CategoryAPI](CategoryAPI)' . (($footer eq '') ? '' : ', ') . $footer;
+        } else { die("Unexpected wikitype '$wikitype'\n"); }
+        $$sectionsref{'[footer]'} = $footer;
+
+        my $prevsectstr = '';
+        my @ordered_sections = (@standard_wiki_sections, defined $wikisectionorderref ? @$wikisectionorderref : ());  # this copies the arrays into one.
         foreach (@ordered_sections) {
             my $sect = $_;
             next if $sect eq '[start]';
             next if (not defined $sections{$sect} and not defined $$sectionsref{$sect});
             my $section = defined $sections{$sect} ? $sections{$sect} : $$sectionsref{$sect};
             if ($sect eq '[footer]') {
+                # Make sure previous section ends with two newlines.
+                if (substr($prevsectstr, -1) ne "\n") {
+                    print FH "\n\n";
+                } elsif (substr($prevsectstr, -2) ne "\n\n") {
+                    print FH "\n";
+                }
                 print FH "----\n";   # It's the same in Markdown and MediaWiki.
             } elsif ($sect eq '[Brief]') {
                 if ($wikitype eq 'mediawiki') {
                     print FH  "= $fn =\n\n";
                 } elsif ($wikitype eq 'md') {
                     print FH "# $fn\n\n";
-                } else { die("Expected wikitype '$wikitype'\n"); }
+                } else { die("Unexpected wikitype '$wikitype'\n"); }
             } else {
                 if ($wikitype eq 'mediawiki') {
                     print FH  "\n== $sect ==\n\n";
                 } elsif ($wikitype eq 'md') {
                     print FH "\n## $sect\n\n";
-                } else { die("Expected wikitype '$wikitype'\n"); }
+                } else { die("Unexpected wikitype '$wikitype'\n"); }
             }
 
-            print FH defined $sections{$sect} ? $sections{$sect} : $$sectionsref{$sect};
+            my $sectstr = defined $sections{$sect} ? $sections{$sect} : $$sectionsref{$sect};
+            print FH $sectstr;
+
+            $prevsectstr = $sectstr;
 
             # make sure these don't show up twice.
             delete($sections{$sect});
