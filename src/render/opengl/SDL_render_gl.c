@@ -1240,18 +1240,26 @@ SetCopyState(GL_RenderData *data, const SDL_RenderCommand *cmd)
         const GLenum textype = data->textype;
 #if SDL_HAVE_YUV
         if (texturedata->yuv) {
-            data->glActiveTextureARB(GL_TEXTURE2_ARB);
+            if (data->GL_ARB_multitexture_supported) {
+                data->glActiveTextureARB(GL_TEXTURE2_ARB);
+            }
             data->glBindTexture(textype, texturedata->vtexture);
 
-            data->glActiveTextureARB(GL_TEXTURE1_ARB);
+            if (data->GL_ARB_multitexture_supported) {
+                data->glActiveTextureARB(GL_TEXTURE1_ARB);
+            }
             data->glBindTexture(textype, texturedata->utexture);
         }
         if (texturedata->nv12) {
-            data->glActiveTextureARB(GL_TEXTURE1_ARB);
+            if (data->GL_ARB_multitexture_supported) {
+                data->glActiveTextureARB(GL_TEXTURE1_ARB);
+            }
             data->glBindTexture(textype, texturedata->utexture);
         }
 #endif
-        data->glActiveTextureARB(GL_TEXTURE0_ARB);
+        if (data->GL_ARB_multitexture_supported) {
+            data->glActiveTextureARB(GL_TEXTURE0_ARB);
+        }
         data->glBindTexture(textype, texturedata->texture);
 
         data->drawstate.texture = texture;
@@ -1647,13 +1655,19 @@ GL_BindTexture (SDL_Renderer * renderer, SDL_Texture *texture, float *texw, floa
     data->glEnable(textype);
 #if SDL_HAVE_YUV
     if (texturedata->yuv) {
-        data->glActiveTextureARB(GL_TEXTURE2_ARB);
+        if (data->GL_ARB_multitexture_supported) {
+            data->glActiveTextureARB(GL_TEXTURE2_ARB);
+        }
         data->glBindTexture(textype, texturedata->vtexture);
 
-        data->glActiveTextureARB(GL_TEXTURE1_ARB);
+        if (data->GL_ARB_multitexture_supported) {
+            data->glActiveTextureARB(GL_TEXTURE1_ARB);
+        }
         data->glBindTexture(textype, texturedata->utexture);
 
-        data->glActiveTextureARB(GL_TEXTURE0_ARB);
+        if (data->GL_ARB_multitexture_supported) {
+            data->glActiveTextureARB(GL_TEXTURE0_ARB);
+        }
     }
 #endif
     data->glBindTexture(textype, texturedata->texture);
@@ -1678,13 +1692,19 @@ GL_UnbindTexture (SDL_Renderer * renderer, SDL_Texture *texture)
 
 #if SDL_HAVE_YUV
     if (texturedata->yuv) {
-        data->glActiveTextureARB(GL_TEXTURE2_ARB);
+        if (data->GL_ARB_multitexture_supported) {
+            data->glActiveTextureARB(GL_TEXTURE2_ARB);
+        }
         data->glDisable(textype);
 
-        data->glActiveTextureARB(GL_TEXTURE1_ARB);
+        if (data->GL_ARB_multitexture_supported) {
+            data->glActiveTextureARB(GL_TEXTURE1_ARB);
+        }
         data->glDisable(textype);
 
-        data->glActiveTextureARB(GL_TEXTURE0_ARB);
+        if (data->GL_ARB_multitexture_supported) {
+            data->glActiveTextureARB(GL_TEXTURE0_ARB);
+        }
     }
 #endif
 
