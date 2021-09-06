@@ -336,26 +336,24 @@ distclean: clean
 	rm -f config.status config.cache config.log
 	rm -rf $(srcdir)/autom4te*
 
+DATA = \
+	axis.bmp \
+	button.bmp \
+	controllermap.bmp \
+	controllermap_back.bmp \
+	icon.bmp \
+	moose.dat \
+	sample.bmp \
+	sample.wav \
+	testgles2_sdf_img_normal.bmp \
+	testgles2_sdf_img_sdf.bmp \
+	testyuv.bmp \
+	$(NULL)
+
 ifneq ($(srcdir), .)
-%.bmp: $(srcdir)/%.bmp
-	cp $< $@
-
-%.wav: $(srcdir)/%.wav
-	cp $< $@
-
-%.dat: $(srcdir)/%.dat
+$(DATA) : %: $(srcdir)/% Makefile
 	cp $< $@
 endif
 
-copydatafiles: copybmpfiles copywavfiles copydatfiles
+copydatafiles: $(DATA)
 .PHONY : copydatafiles
-
-copybmpfiles: $(foreach bmp,$(wildcard $(srcdir)/*.bmp),$(notdir $(bmp)))
-.PHONY : copybmpfiles
-
-copywavfiles: $(foreach wav,$(wildcard $(srcdir)/*.wav),$(notdir $(wav)))
-.PHONY : copywavfiles
-
-copydatfiles: $(foreach dat,$(wildcard $(srcdir)/*.dat),$(notdir $(dat)))
-.PHONY : copydatfiles
-
