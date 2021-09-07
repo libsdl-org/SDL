@@ -277,6 +277,14 @@ FreeJoylistItem(SDL_joylist_item *item)
     SDL_free(item);
 }
 
+/* check whether path looks like /dev/input/js0 */
+static int
+IsJoystickDevicePath(const char *path)
+{
+    size_t l = SDL_strlen(path);
+    return l >= 4 && path[l-4] == '/' && path[l-3] == 'j' && path[l-2] == 's';
+}
+
 static int
 MaybeAddDevice(const char *path)
 {
@@ -312,6 +320,13 @@ MaybeAddDevice(const char *path)
 #endif
 
     isstick = IsJoystick(fd, &name, &guid);
+    if (!isstick && (isstick = IsJoystickDevicePath(path))) {
+        /* some joysticks addressed by classical path do not respond to
+           evdev ioctls */
+        name = SDL_CreateJoystickName(0, 0, NULL, "Unknown controller");
+        SDL_memcpy(guid.data, "oldskool", 8);
+    }
+
     close(fd);
     if (!isstick) {
         return -1;
@@ -528,8 +543,10 @@ LINUX_InotifyJoystickDetect(void)
 
     while (remain > 0) {
         if (buf.event.len > 0) {
-            if (StrHasPrefix(buf.event.name, "event") &&
-                StrIsInteger(buf.event.name + SDL_strlen ("event"))) {
+            if ((StrHasPrefix(buf.event.name, "event") &&
+                 StrIsInteger(buf.event.name + SDL_strlen ("event"))) ||
+                (StrHasPrefix(buf.event.name, "js") &&
+                 StrIsInteger(buf.event.name + SDL_strlen ("js")))) {
                 char path[PATH_MAX];
 
                 SDL_snprintf(path, SDL_arraysize(path), "/dev/input/%s", buf.event.name);
@@ -560,7 +577,8 @@ LINUX_InotifyJoystickDetect(void)
 static int
 filter_entries(const struct dirent *entry)
 {
-    return (SDL_strlen(entry->d_name) > 5 && SDL_strncmp(entry->d_name, "event", 5) == 0);
+    return ((SDL_strncmp(entry->d_name, "event", 5) == 0 && entry->d_name[5]) ||
+            (SDL_strncmp(entry->d_name, "js", 2) == 0 && entry->d_name[2]));
 }
 static int
 sort_entries(const struct dirent **a, const struct dirent **b)
@@ -603,6 +621,7 @@ LINUX_FallbackJoystickDetect(void)
 static void
 LINUX_JoystickDetect(void)
 {
+    int fallback_used = 0;
 #if SDL_USE_LIBUDEV
     if (enumeration_method == ENUMERATION_LIBUDEV) {
         SDL_UDEV_Poll();
@@ -617,7 +636,11 @@ LINUX_JoystickDetect(void)
 #endif
     {
         LINUX_FallbackJoystickDetect();
+        fallback_used = 1;
     }
+
+    if (numjoysticks == 0 && !fallback_used)
+        LINUX_FallbackJoystickDetect();
 
     HandlePendingRemovals();
 
@@ -930,6 +953,45 @@ ConfigJoystick(SDL_Joystick *joystick, int fd)
                 joystick->nballs = 0;
             }
         }
+    } else {
+        unsigned char na, nb, axmap[ABS_CNT];
+        int hat_index;
+        /* use old-school linux joystick.h ioctls */
+        if ((ioctl(fd, JSIOCGAXES, &na, 1) >= 0) &&
+            (ioctl(fd, JSIOCGBUTTONS, &nb, 1) >= 0) &&
+            (ioctl(fd, JSIOCGAXMAP, axmap, sizeof(axmap)) >= 0)) {
+            for (i = BTN_GAMEPAD; i < KEY_MAX && i < BTN_GAMEPAD+nb; ++i) {
+#ifdef DEBUG_INPUT_EVENTS
+                printf("Old-school Joystick has button: 0x%x\n", i);
+#endif
+                joystick->hwdata->key_map[i] = joystick->nbuttons;
+                joystick->hwdata->has_key[i] = SDL_TRUE;
+                ++joystick->nbuttons;
+            }
+            for (i = 0; i < na; ++i) {
+                switch (axmap[i]) {
+                case ABS_HAT0X: case ABS_HAT0Y:
+                case ABS_HAT1X: case ABS_HAT1Y:
+                case ABS_HAT2X: case ABS_HAT2Y:
+                case ABS_HAT3X: case ABS_HAT3Y:
+                    hat_index = (axmap[i] - ABS_HAT0X) / 2;
+                    joystick->hwdata->hats_indices[hat_index] = joystick->nhats++;
+                    joystick->hwdata->has_hat[hat_index] = SDL_TRUE;
+                    /* fall-through */
+                default:
+                    joystick->hwdata->abs_map[joystick->naxes] = axmap[i];
+                    joystick->hwdata->has_abs[joystick->naxes++] = SDL_TRUE;
+                }
+            }
+            /* todo: this is an exact copy of above, move it outside for
+               upstreamable patch version */
+            /* Allocate data to keep track of these thingamajigs */
+            if (joystick->nhats > 0) {
+                if (allocate_hatdata(joystick) < 0) {
+                    joystick->nhats = 0;
+                }
+            }
+        }
     }
 
     if (ioctl(fd, EVIOCGBIT(EV_FF, sizeof(ffbit)), ffbit) >= 0) {
@@ -1225,6 +1287,44 @@ PollAllValues(SDL_Joystick *joystick)
 }
 
 static SDL_INLINE void
+HandleInputEventsOldschool(SDL_Joystick *joystick)
+{
+    struct js_event events[32];
+    int i, len, code;
+
+    joystick->hwdata->fresh = SDL_FALSE;
+    while ((len = read(joystick->hwdata->fd, events, (sizeof events))) > 0) {
+        len /= sizeof(events[0]);
+        for (i = 0; i < len; ++i) {
+            code = events[i].number;
+            switch (events[i].type) {
+            case JS_EVENT_BUTTON:
+                SDL_PrivateJoystickButton(joystick,
+                                          joystick->hwdata->key_map[code+BTN_GAMEPAD],
+                                          events[i].value);
+                break;
+            case JS_EVENT_AXIS:
+                switch (joystick->hwdata->abs_map[code & ABS_MAX]) {
+                case 0xff: break;
+                case ABS_HAT0X: case ABS_HAT0Y:
+                case ABS_HAT1X: case ABS_HAT1Y:
+                case ABS_HAT2X: case ABS_HAT2Y:
+                case ABS_HAT3X: case ABS_HAT3Y:
+                    code = joystick->hwdata->abs_map[code & ABS_MAX];
+                    code -= ABS_HAT0X;
+                    HandleHat(joystick, joystick->hwdata->hats_indices[code / 2], code % 2, events[i].value);
+                    break;
+                default:
+                    events[i].value =
+                        AxisCorrect(joystick, code, events[i].value);
+                    SDL_PrivateJoystickAxis(joystick, code, events[i].value);
+                }
+            }
+        }
+    }
+}
+
+static SDL_INLINE void
 HandleInputEvents(SDL_Joystick *joystick)
 {
     struct input_event events[32];
@@ -1326,6 +1426,10 @@ LINUX_JoystickUpdate(SDL_Joystick *joystick)
     if (joystick->hwdata->m_bSteamController) {
         SDL_UpdateSteamController(joystick);
         return;
+    }
+
+    if (SDL_memcmp(joystick->guid.data, "oldskool", 8) == 0) {
+        HandleInputEventsOldschool(joystick);
     }
 
     HandleInputEvents(joystick);
