@@ -3758,10 +3758,12 @@ SDL_RenderGeometryRaw(SDL_Renderer *renderer,
         size_indices = 0;
     }
 
+#if DONT_DRAW_WHILE_HIDDEN
     /* Don't draw while we're hidden */
     if (renderer->hidden) {
         return 0;
     }
+#endif
 
     if (num_vertices < 3) {
         return 0;
