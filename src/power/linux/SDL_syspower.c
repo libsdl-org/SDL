@@ -51,7 +51,7 @@ open_power_file(const char *base, const char *node, const char *key)
     }
 
     snprintf(path, pathlen, "%s/%s/%s", base, node, key);
-    return open(path, O_RDONLY);
+    return open(path, O_RDONLY | O_CLOEXEC);
 }
 
 
@@ -330,7 +330,7 @@ SDL_GetPowerInfo_Linux_proc_apm(SDL_PowerState * state,
     int battery_flag = 0;
     int battery_percent = 0;
     int battery_time = 0;
-    const int fd = open(proc_apm_path, O_RDONLY);
+    const int fd = open(proc_apm_path, O_RDONLY | O_CLOEXEC);
     char buf[128];
     char *ptr = &buf[0];
     char *str = NULL;

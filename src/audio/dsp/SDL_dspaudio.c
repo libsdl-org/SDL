@@ -103,7 +103,7 @@ DSP_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     SDL_zerop(this->hidden);
 
     /* Open the audio device */
-    this->hidden->audio_fd = open(devname, flags, 0);
+    this->hidden->audio_fd = open(devname, flags | O_CLOEXEC, 0);
     if (this->hidden->audio_fd < 0) {
         return SDL_SetError("Couldn't open %s: %s", devname, strerror(errno));
     }

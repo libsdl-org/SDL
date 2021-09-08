@@ -51,7 +51,7 @@ test_device(const int iscapture, const char *fname, int flags, int (*test) (int 
 {
     struct stat sb;
     if ((stat(fname, &sb) == 0) && (S_ISCHR(sb.st_mode))) {
-        const int audio_fd = open(fname, flags, 0);
+        const int audio_fd = open(fname, flags | O_CLOEXEC, 0);
         if (audio_fd >= 0) {
             const int okay = test(audio_fd);
             close(audio_fd);

@@ -238,7 +238,7 @@ SDL_EVDEV_kbd_init(void)
     kbd->npadch = -1;
 
     /* This might fail if we're not connected to a tty (e.g. on the Steam Link) */
-    kbd->keyboard_fd = kbd->console_fd = open("/dev/tty", O_RDONLY);
+    kbd->keyboard_fd = kbd->console_fd = open("/dev/tty", O_RDONLY | O_CLOEXEC);
 
     kbd->shift_state = 0;
 
@@ -274,7 +274,7 @@ SDL_EVDEV_kbd_init(void)
              */
             ioctl(kbd->console_fd, CONS_RELKBD, 1ul);
             asprintf(&devicePath, "/dev/kbd%d", kbd->kbInfo->kb_index);         
-            kbd->keyboard_fd = open(devicePath, O_WRONLY);
+            kbd->keyboard_fd = open(devicePath, O_WRONLY | O_CLOEXEC);
             if (kbd->keyboard_fd == -1)
             {
                 // Give keyboard back.

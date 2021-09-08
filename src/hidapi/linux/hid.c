@@ -716,7 +716,7 @@ hid_device * HID_API_EXPORT hid_open_path(const char *path, int bExclusive)
 	dev = new_hid_device();
 
 	/* OPEN HERE */
-	dev->device_handle = open(path, O_RDWR);
+	dev->device_handle = open(path, O_RDWR | O_CLOEXEC);
 
 	/* If we have a good handle, return it. */
 	if (dev->device_handle >= 0) {

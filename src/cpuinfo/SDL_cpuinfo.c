@@ -361,7 +361,7 @@ CPU_haveARMSIMD(void)
     int arm_simd = 0;
     int fd;
 
-    fd = open("/proc/self/auxv", O_RDONLY);
+    fd = open("/proc/self/auxv", O_RDONLY | O_CLOEXEC);
     if (fd >= 0)
     {
         Elf32_auxv_t aux;
@@ -417,7 +417,7 @@ readProcAuxvForNeon(void)
     int neon = 0;
     int fd;
 
-    fd = open("/proc/self/auxv", O_RDONLY);
+    fd = open("/proc/self/auxv", O_RDONLY | O_CLOEXEC);
     if (fd >= 0)
     {
         Elf32_auxv_t aux;
