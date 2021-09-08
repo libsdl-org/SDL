@@ -843,20 +843,24 @@ int HID_API_EXPORT hid_send_feature_report(hid_device *dev, const unsigned char 
 int HID_API_EXPORT hid_get_feature_report(hid_device *dev, unsigned char *data, size_t length)
 {
 	int res;
+    unsigned char report = data[0];
 
-	/* It looks like HIDIOCGFEATURE() on Bluetooth LE devices doesn't return the report number */
-	if (dev->needs_ble_hack) {
-		data[1] = data[0];
-		++data;
-		--length;
-	}
-	res = ioctl(dev->device_handle, HIDIOCGFEATURE(length), data);
-	if (res < 0)
-		perror("ioctl (GFEATURE)");
-	else if (dev->needs_ble_hack)
-		++res;
-
-	return res;
+    res = ioctl(dev->device_handle, HIDIOCGFEATURE(length), data);
+    if (res < 0)
+        perror("ioctl (GFEATURE)");
+    else if (dev->needs_ble_hack) {
+        /* Versions of BlueZ before 5.56 don't include the report in the data, and versions of BlueZ >= 5.56 include 2 copies of the report.
+         * We'll fix it so that there is a single copy of the report in both cases
+        */
+        if (data[0] == report && data[1] == report) {
+            memmove(&data[0], &data[1], res);
+        } else if (data[0] != report) {
+            memmove(&data[1], &data[0], res);
+            data[0] = report;
+            ++res;
+        }
+    }
+    return res;
 }
 
 
