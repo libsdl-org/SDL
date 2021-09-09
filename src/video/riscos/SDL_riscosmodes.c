@@ -247,6 +247,9 @@ RISCOS_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
         _kernel_oswrch(disable_cursor[i]);
     }
 
+    /* Turn the mouse pointer on */
+    _kernel_osbyte(106, 1, 0);
+
     return 0;
 }
 

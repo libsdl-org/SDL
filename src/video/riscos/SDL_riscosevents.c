@@ -30,6 +30,7 @@
 #include "scancodes_riscos.h"
 
 #include <kernel.h>
+#include <swis.h>
 
 static SDL_Scancode
 SDL_RISCOS_translate_keycode(int keycode)
@@ -104,6 +105,47 @@ RISCOS_PollKeyboard(_THIS)
     }
 }
 
+static const Uint8 mouse_button_map[] = {
+    SDL_BUTTON_RIGHT,
+    SDL_BUTTON_MIDDLE,
+    SDL_BUTTON_LEFT,
+    SDL_BUTTON_X1,
+    SDL_BUTTON_X2,
+    SDL_BUTTON_X2 + 1,
+    SDL_BUTTON_X2 + 2,
+    SDL_BUTTON_X2 + 3
+};
+
+void
+RISCOS_PollMouse(_THIS)
+{
+    SDL_VideoData *driverdata = (SDL_VideoData *)_this->driverdata;
+    SDL_Mouse *mouse = SDL_GetMouse();
+    SDL_Rect rect;
+    _kernel_swi_regs regs;
+    int i, x, y, buttons;
+
+    if (SDL_GetDisplayBounds(0, &rect) < 0) {
+        return;
+    }
+
+    _kernel_swi(OS_Mouse, &regs, &regs);
+    x = (regs.r[0] >> 1);
+    y = rect.h - (regs.r[1] >> 1);
+    buttons = regs.r[2];
+
+    if (mouse->x != x || mouse->y != y) {
+        SDL_SendMouseMotion(mouse->focus, mouse->mouseID, 0, x, y);
+    }
+
+    if (driverdata->last_mouse_buttons != buttons) {
+        for (i = 0; i < SDL_arraysize(mouse_button_map); i++) {
+            SDL_SendMouseButton(mouse->focus, mouse->mouseID, (buttons & (1 << i)) ? SDL_PRESSED : SDL_RELEASED, mouse_button_map[i]);
+        }
+        driverdata->last_mouse_buttons = buttons;
+    }
+}
+
 int
 RISCOS_InitEvents(_THIS)
 {
@@ -126,6 +168,7 @@ RISCOS_InitEvents(_THIS)
 void
 RISCOS_PumpEvents(_THIS)
 {
+    RISCOS_PollMouse(_this);
     RISCOS_PollKeyboard(_this);
 }
 
