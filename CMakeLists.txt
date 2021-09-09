@@ -2658,7 +2658,7 @@ if(SDL_STATIC)
   add_library(SDL2-static STATIC ${SOURCE_FILES})
   # alias target for in-tree builds
   add_library(SDL2::SDL2-static ALIAS SDL2-static)
-  if (NOT SDL_SHARED OR NOT WIN32)
+  if (NOT SDL_SHARED OR NOT WIN32 OR MINGW)
     set_target_properties(SDL2-static PROPERTIES OUTPUT_NAME "SDL2")
     # Note: Apparently, OUTPUT_NAME must really be unique; even when
     # CMAKE_IMPORT_LIBRARY_SUFFIX or the like are given. Otherwise
@@ -2702,7 +2702,7 @@ install(TARGETS ${_INSTALL_LIBS} EXPORT SDL2Targets
   RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
 
 ##### Export files #####
-if (WINDOWS)
+if (WINDOWS AND NOT MINGW)
   set(PKG_PREFIX "cmake")
 else ()
   set(PKG_PREFIX "${CMAKE_INSTALL_LIBDIR}/cmake/SDL2")
@@ -2743,11 +2743,11 @@ else()
   set(SOPOSTFIX "")
 endif()
 
-if(NOT (WINDOWS OR CYGWIN OR MINGW))
+if(NOT (WINDOWS OR CYGWIN) OR MINGW)
   if(SDL_SHARED)
     set(SOEXT ${CMAKE_SHARED_LIBRARY_SUFFIX}) # ".so", ".dylib", etc.
     get_target_property(SONAME SDL2 OUTPUT_NAME)
-    if(NOT ANDROID)
+    if(NOT ANDROID AND NOT MINGW)
         install(CODE "
           execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
             \"lib${SONAME}${SOPOSTFIX}${SOEXT}\" \"libSDL2${SOPOSTFIX}${SOEXT}\"
