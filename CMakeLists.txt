@@ -2378,11 +2378,34 @@ listtostr(EXTRA_CFLAGS _EXTRA_CFLAGS)
 set(EXTRA_CFLAGS ${_EXTRA_CFLAGS})
 
 # Compat helpers for the configuration files
-if(NOT CMAKE_HOST_WIN32)
-  # TODO: we need a Windows script, too
-  execute_process(COMMAND sh ${SDL2_SOURCE_DIR}/build-scripts/updaterev.sh
-    WORKING_DIRECTORY ${SDL2_BINARY_DIR})
+find_package(Git)
+if(Git_FOUND)
+  execute_process(COMMAND
+    "${GIT_EXECUTABLE}" remote get-url origin
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+    RESULT_VARIABLE GIT_URL_STATUS
+    OUTPUT_VARIABLE GIT_URL
+    ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+  execute_process(COMMAND
+    "${GIT_EXECUTABLE}" rev-list --max-count=1 HEAD~..
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+    RESULT_VARIABLE GIT_REVISION_STATUS
+    OUTPUT_VARIABLE GIT_REVISION
+    ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+  if(GIT_URL_STATUS EQUAL 0 OR GIT_REVISION_STATUS EQUAL 0)
+    set(SDL_REVISION "${GIT_URL}@${GIT_REVISION}")
+  else()
+    set(SDL_REVISION "")
+  endif()
+else()
+  set(SDL_REVISION "")
 endif()
+
+configure_file("${SDL2_SOURCE_DIR}/include/SDL_revision.h.cmake"
+  "${SDL2_BINARY_DIR}/include/SDL_revision.h")
+
 if(NOT WINDOWS OR CYGWIN OR MINGW)
 
   set(prefix ${CMAKE_INSTALL_PREFIX})
@@ -2513,6 +2536,7 @@ message(STATUS "")
 message(STATUS "Platform: ${CMAKE_SYSTEM}")
 message(STATUS "64-bit:   ${ARCH_64}")
 message(STATUS "Compiler: ${CMAKE_C_COMPILER}")
+message(STATUS "Revision: ${SDL_REVISION}")
 message(STATUS "")
 message(STATUS "Subsystems:")
 foreach(_SUB ${SDL_SUBSYSTEMS})
