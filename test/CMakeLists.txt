@@ -57,6 +57,7 @@ add_executable(testjoystick testjoystick.c)
 add_executable(testkeys testkeys.c)
 add_executable(testloadso testloadso.c)
 add_executable(testlock testlock.c)
+add_executable(testmouse testmouse.c)
 
 if(APPLE)
     add_executable(testnative testnative.c

@@ -14,6 +14,7 @@ These are test programs for the SDL library:
 	testloadso	Tests the loadable library layer
 	testlocale  Test Locale API
 	testlock	Hacked up test of multi-threading and locking
+	testmouse	Tests mouse coordinates
 	testmultiaudio	Tests using several audio devices
 	testoverlay2	Tests the overlay flickering/scaling during playback.
 	testplatform	Tests types, endianness and cpu capabilities

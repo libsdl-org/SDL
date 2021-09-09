@@ -43,6 +43,7 @@ TARGETS = \
 	testlocale$(EXE) \
 	testlock$(EXE) \
 	testmessage$(EXE) \
+	testmouse$(EXE) \
 	testmultiaudio$(EXE) \
 	testnative$(EXE) \
 	testoverlay2$(EXE) \
@@ -325,6 +326,9 @@ testvulkan$(EXE): $(srcdir)/testvulkan.c
 
 testlocale$(EXE): $(srcdir)/testlocale.c
 	$(CC) -o $@ $? $(CFLAGS) $(LIBS)
+
+testmouse$(EXE): $(srcdir)/testmouse.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
 
 
