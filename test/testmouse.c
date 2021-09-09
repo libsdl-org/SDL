@@ -74,9 +74,8 @@ AppendLine(Line *line)
 }
 
 void
-loop()
+loop(void)
 {
-    int i;
     SDL_Event event;
 
     /* Check for events */
