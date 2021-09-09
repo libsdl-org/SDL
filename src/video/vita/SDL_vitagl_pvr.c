@@ -39,7 +39,7 @@ VITA_GL_LoadLibrary(_THIS, const char *path)
 {
   PVRSRV_PSP2_APPHINT hint;
   char* override = SDL_getenv("VITA_MODULE_PATH");
-  char* default_path = "app0:module/";
+  char* default_path = "app0:module";
   char target_path[MAX_PATH];
 
   if (override != NULL)
