@@ -489,7 +489,7 @@ void VITA_ShowScreenKeyboard(_THIS, SDL_Window *window)
         return;
     }
 
-#elif
+#else
     SceWChar16 *title = u"";
     SceWChar16 *text = u"";
 
@@ -544,7 +544,7 @@ SDL_bool VITA_IsScreenKeyboardShown(_THIS, SDL_Window *window)
 #if defined(SDL_VIDEO_VITA_PVR)
     SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
     return videodata->ime_active;
-#elif
+#else
     SceCommonDialogStatus dialogStatus = sceImeDialogGetStatus();
     return (dialogStatus == SCE_COMMON_DIALOG_STATUS_RUNNING);
 #endif
