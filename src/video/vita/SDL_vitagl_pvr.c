@@ -37,34 +37,34 @@
 int
 VITA_GL_LoadLibrary(_THIS, const char *path)
 {
-  PVRSRV_PSP2_APPHINT hint;
-  char* override = SDL_getenv("VITA_MODULE_PATH");
-  char* default_path = "app0:module";
-  char target_path[MAX_PATH];
+    PVRSRV_PSP2_APPHINT hint;
+    char* override = SDL_getenv("VITA_MODULE_PATH");
+    char* default_path = "app0:module";
+    char target_path[MAX_PATH];
 
-  if (override != NULL)
-  {
-    default_path = override;
-  }
+    if (override != NULL)
+    {
+      default_path = override;
+    }
 
-  sceKernelLoadStartModule("vs0:sys/external/libfios2.suprx", 0, NULL, 0, NULL, NULL);
-  sceKernelLoadStartModule("vs0:sys/external/libc.suprx", 0, NULL, 0, NULL, NULL);
+    sceKernelLoadStartModule("vs0:sys/external/libfios2.suprx", 0, NULL, 0, NULL, NULL);
+    sceKernelLoadStartModule("vs0:sys/external/libc.suprx", 0, NULL, 0, NULL, NULL);
 
-  SDL_snprintf(target_path, MAX_PATH, "%s/%s", default_path, "libgpu_es4_ext.suprx");
-  sceKernelLoadStartModule(target_path, 0, NULL, 0, NULL, NULL);
+    SDL_snprintf(target_path, MAX_PATH, "%s/%s", default_path, "libgpu_es4_ext.suprx");
+    sceKernelLoadStartModule(target_path, 0, NULL, 0, NULL, NULL);
 
-  SDL_snprintf(target_path, MAX_PATH, "%s/%s", default_path, "libIMGEGL.suprx");
-  sceKernelLoadStartModule(target_path, 0, NULL, 0, NULL, NULL);
+    SDL_snprintf(target_path, MAX_PATH, "%s/%s", default_path, "libIMGEGL.suprx");
+    sceKernelLoadStartModule(target_path, 0, NULL, 0, NULL, NULL);
 
-  PVRSRVInitializeAppHint(&hint);
+    PVRSRVInitializeAppHint(&hint);
 
-  SDL_snprintf(hint.szGLES1, MAX_PATH, "%s/%s", default_path, "libGLESv1_CM.suprx");
-  SDL_snprintf(hint.szGLES2, MAX_PATH, "%s/%s", default_path, "libGLESv2.suprx");
-  SDL_snprintf(hint.szWindowSystem, MAX_PATH, "%s/%s", default_path, "libpvrPSP2_WSEGL.suprx");
+    SDL_snprintf(hint.szGLES1, MAX_PATH, "%s/%s", default_path, "libGLESv1_CM.suprx");
+    SDL_snprintf(hint.szGLES2, MAX_PATH, "%s/%s", default_path, "libGLESv2.suprx");
+    SDL_snprintf(hint.szWindowSystem, MAX_PATH, "%s/%s", default_path, "libpvrPSP2_WSEGL.suprx");
 
-  PVRSRVCreateVirtualAppHint(&hint);
+    PVRSRVCreateVirtualAppHint(&hint);
 
-  return SDL_EGL_LoadLibrary(_this, path, (NativeDisplayType) 0, 0);
+    return SDL_EGL_LoadLibrary(_this, path, (NativeDisplayType) 0, 0);
 }
 
 SDL_GLContext
@@ -86,6 +86,10 @@ VITA_GL_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context)
 int
 VITA_GL_SwapWindow(_THIS, SDL_Window * window)
 {
+    SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
+    if (videodata->ime_active) {
+        sceImeUpdate();
+    }
     return SDL_EGL_SwapBuffers(_this, ((SDL_WindowData *) window->driverdata)->egl_surface);
 }
 

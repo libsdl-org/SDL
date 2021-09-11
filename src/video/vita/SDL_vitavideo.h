@@ -29,6 +29,7 @@
 #include <psp2/types.h>
 #include <psp2/display.h>
 #include <psp2/ime_dialog.h>
+#include <psp2/sysmodule.h>
 
 typedef struct SDL_VideoData
 {
