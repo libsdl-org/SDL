@@ -51,8 +51,6 @@
   #define VITA_GL_DeleteContext SDL_EGL_DeleteContext
 #endif
 
-#include <psp2/ime_dialog.h>
-
 SDL_Window *Vita_Window;
 
 static void
@@ -176,11 +174,32 @@ VITA_VideoInit(_THIS)
 {
     SDL_VideoDisplay display;
     SDL_DisplayMode current_mode;
-
+#if defined(SDL_VIDEO_VITA_PVR)
+    char* res = SDL_getenv("VITA_RESOLUTION");
+#endif
     SDL_zero(current_mode);
 
-    current_mode.w = 960;
-    current_mode.h = 544;
+#if defined(SDL_VIDEO_VITA_PVR)
+    if (res) {
+        /* 1088i for PSTV (Or Sharpscale) */
+        if (!SDL_strncmp(res, "1080", 4)) {
+            current_mode.w = 1920;
+            current_mode.h = 1088;
+        }
+        /* 725p for PSTV (Or Sharpscale) */
+        else if (!SDL_strncmp(res, "720", 3)) {
+            current_mode.w = 1280;
+            current_mode.h = 725;
+        }
+    }
+    /* 544p */
+    else {
+#endif
+        current_mode.w = 960;
+        current_mode.h = 544;
+#if defined(SDL_VIDEO_VITA_PVR)
+    }
+#endif
 
     current_mode.refresh_rate = 60;
     /* 32 bpp for default */
@@ -223,6 +242,9 @@ int
 VITA_CreateWindow(_THIS, SDL_Window * window)
 {
     SDL_WindowData *wdata;
+#if defined(SDL_VIDEO_VITA_PVR)
+    Psp2NativeWindow win;
+#endif
 
     /* Allocate window internal data */
     wdata = (SDL_WindowData *) SDL_calloc(1, sizeof(SDL_WindowData));
@@ -243,8 +265,24 @@ VITA_CreateWindow(_THIS, SDL_Window * window)
     Vita_Window = window;
 
 #if defined(SDL_VIDEO_VITA_PVR)
+    win.type = PSP2_DRAWABLE_TYPE_WINDOW;
+    win.numFlipBuffers = 2;
+	win.flipChainThrdAffinity = 0x20000;
+
+    /* 1088i for PSTV (Or Sharpscale) */
+    if (window->w == 1920) {
+        win.windowSize = PSP2_WINDOW_1920X1088;
+    }
+    /* 725p for PSTV (Or Sharpscale) */
+    else if (window->w == 1280) {
+        win.windowSize = PSP2_WINDOW_1280X725;
+    }
+    /* 544p */
+    else {
+	    win.windowSize = PSP2_WINDOW_960X544;
+    }
     if ((window->flags & SDL_WINDOW_OPENGL) != 0) {
-      wdata->egl_surface = SDL_EGL_CreateSurface(_this, (NativeWindowType) 0);
+      wdata->egl_surface = SDL_EGL_CreateSurface(_this, &win);
 
       if (wdata->egl_surface == EGL_NO_SURFACE) {
           return SDL_SetError("Could not create GLES window surface");
@@ -353,63 +391,6 @@ SDL_bool VITA_HasScreenKeyboardSupport(_THIS)
 #define SCE_IME_LANGUAGE_ENGLISH_US SCE_IME_LANGUAGE_ENGLISH
 #endif
 
-void VITA_ShowScreenKeyboard(_THIS, SDL_Window *window)
-{
-    SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
-
-    SceWChar16 *title = u"";
-    SceWChar16 *text = u"";
-    SceInt32 res;
-
-    SceImeDialogParam param;
-    sceImeDialogParamInit(&param);
-
-    param.supportedLanguages = SCE_IME_LANGUAGE_ENGLISH_US;
-    param.languagesForced = SCE_FALSE;
-    param.type = SCE_IME_TYPE_DEFAULT;
-    param.option = 0;
-    param.textBoxMode = SCE_IME_DIALOG_TEXTBOX_MODE_WITH_CLEAR;
-    param.maxTextLength = SCE_IME_DIALOG_MAX_TEXT_LENGTH;
-
-    param.title = title;
-    param.initialText = text;
-    param.inputTextBuffer = videodata->ime_buffer;
-
-    res = sceImeDialogInit(&param);
-    if (res < 0) {
-        SDL_SetError("Failed to init IME dialog");
-        return;
-    }
-
-    videodata->ime_active = SDL_TRUE;
-}
-
-void VITA_HideScreenKeyboard(_THIS, SDL_Window *window)
-{
-    SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
-
-    SceCommonDialogStatus dialogStatus = sceImeDialogGetStatus();
-
-    switch (dialogStatus) {
-        default:
-        case SCE_COMMON_DIALOG_STATUS_NONE:
-        case SCE_COMMON_DIALOG_STATUS_RUNNING:
-                break;
-        case SCE_COMMON_DIALOG_STATUS_FINISHED:
-                sceImeDialogTerm();
-                break;
-    }
-
-    videodata->ime_active = SDL_FALSE;
-}
-
-SDL_bool VITA_IsScreenKeyboardShown(_THIS, SDL_Window *window)
-{
-    SceCommonDialogStatus dialogStatus = sceImeDialogGetStatus();
-    return (dialogStatus == SCE_COMMON_DIALOG_STATUS_RUNNING);
-}
-
-
 static void utf16_to_utf8(const uint16_t *src, uint8_t *dst) {
   int i;
   for (i = 0; src[i]; i++) {
@@ -434,15 +415,153 @@ static void utf16_to_utf8(const uint16_t *src, uint8_t *dst) {
   *dst = '\0';
 }
 
-void VITA_PumpEvents(_THIS)
+#if defined (SDL_VIDEO_VITA_PVR)
+SceWChar16 libime_out[SCE_IME_MAX_PREEDIT_LENGTH + SCE_IME_MAX_TEXT_LENGTH + 1];
+char libime_initval[8] = { 1 };
+SceImeCaret caret_rev;
+
+void VITA_ImeEventHandler(void *arg, const SceImeEventData *e)
+{
+    SDL_VideoData *videodata = (SDL_VideoData *)arg;
+    SDL_Scancode scancode;
+    uint8_t utf8_buffer[SCE_IME_MAX_TEXT_LENGTH];
+	switch (e->id) {
+	case SCE_IME_EVENT_UPDATE_TEXT:
+		if (e->param.text.caretIndex == 0) {
+            scancode = SDL_GetScancodeFromKey(0x08);
+			SDL_SendKeyboardKeyAutoRelease(scancode);
+			sceImeSetText((SceWChar16 *)libime_initval, 4);
+		}
+		else {
+            scancode = SDL_GetScancodeFromKey(*(SceWChar16 *)&libime_out[1]);
+            if (scancode == SDL_SCANCODE_SPACE) {
+                SDL_SendKeyboardKeyAutoRelease(SDL_SCANCODE_SPACE);
+            }
+            else {
+                utf16_to_utf8((SceWChar16 *)&libime_out[1], utf8_buffer);
+			    SDL_SendKeyboardText((const char*)utf8_buffer);
+            }
+			SDL_memset(&caret_rev, 0, sizeof(SceImeCaret));
+            SDL_memset(libime_out, 0, ((SCE_IME_MAX_PREEDIT_LENGTH + SCE_IME_MAX_TEXT_LENGTH + 1) * sizeof(SceWChar16)));
+			caret_rev.index = 1;
+			sceImeSetCaret(&caret_rev);
+			sceImeSetText((SceWChar16 *)libime_initval, 4);
+		}
+		break;
+	case SCE_IME_EVENT_PRESS_ENTER:
+        scancode = SDL_GetScancodeFromKey(0x0D);
+		SDL_SendKeyboardKeyAutoRelease(scancode);
+	case SCE_IME_EVENT_PRESS_CLOSE:
+        sceImeClose();
+        videodata->ime_active = SDL_FALSE;
+		break;
+	}
+}
+#endif
+
+void VITA_ShowScreenKeyboard(_THIS, SDL_Window *window)
 {
     SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
+    SceInt32 res;
 
+#if defined(SDL_VIDEO_VITA_PVR)
 
+    SceUInt32 libime_work[SCE_IME_WORK_BUFFER_SIZE / sizeof(SceInt32)];
+    SceImeParam param;
+
+    sceImeParamInit(&param);
+
+    SDL_memset(libime_out, 0, ((SCE_IME_MAX_PREEDIT_LENGTH + SCE_IME_MAX_TEXT_LENGTH + 1) * sizeof(SceWChar16)));
+
+    param.supportedLanguages = SCE_IME_LANGUAGE_ENGLISH_US;
+	param.languagesForced = SCE_FALSE;
+	param.type = SCE_IME_TYPE_DEFAULT;
+	param.option = SCE_IME_OPTION_NO_ASSISTANCE;
+	param.inputTextBuffer = libime_out;
+	param.maxTextLength = SCE_IME_MAX_TEXT_LENGTH;
+	param.handler = VITA_ImeEventHandler;
+	param.filter = NULL;
+	param.initialText = (SceWChar16 *)libime_initval;
+	param.arg = videodata;
+	param.work = libime_work;
+
+	res = sceImeOpen(&param);
+	if (res < 0) {
+		SDL_SetError("Failed to init IME");
+		return;
+	}
+
+#elif
+    SceWChar16 *title = u"";
+    SceWChar16 *text = u"";
+
+    SceImeDialogParam param;
+    sceImeDialogParamInit(&param);
+
+    param.supportedLanguages = SCE_IME_LANGUAGE_ENGLISH_US;
+    param.languagesForced = SCE_FALSE;
+    param.type = SCE_IME_TYPE_DEFAULT;
+    param.option = 0;
+    param.textBoxMode = SCE_IME_DIALOG_TEXTBOX_MODE_WITH_CLEAR;
+    param.maxTextLength = SCE_IME_DIALOG_MAX_TEXT_LENGTH;
+
+    param.title = title;
+    param.initialText = text;
+    param.inputTextBuffer = videodata->ime_buffer;
+
+    res = sceImeDialogInit(&param);
+    if (res < 0) {
+        SDL_SetError("Failed to init IME dialog");
+        return;
+    }
+
+#endif
+
+    videodata->ime_active = SDL_TRUE;
+}
+
+void VITA_HideScreenKeyboard(_THIS, SDL_Window *window)
+{
+#if !defined(SDL_VIDEO_VITA_PVR)
+    SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
+
+    SceCommonDialogStatus dialogStatus = sceImeDialogGetStatus();
+
+    switch (dialogStatus) {
+        default:
+        case SCE_COMMON_DIALOG_STATUS_NONE:
+        case SCE_COMMON_DIALOG_STATUS_RUNNING:
+                break;
+        case SCE_COMMON_DIALOG_STATUS_FINISHED:
+                sceImeDialogTerm();
+                break;
+    }
+
+    videodata->ime_active = SDL_FALSE;
+#endif
+}
+
+SDL_bool VITA_IsScreenKeyboardShown(_THIS, SDL_Window *window)
+{
+#if defined(SDL_VIDEO_VITA_PVR)
+    SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
+    return videodata->ime_active;
+#elif
+    SceCommonDialogStatus dialogStatus = sceImeDialogGetStatus();
+    return (dialogStatus == SCE_COMMON_DIALOG_STATUS_RUNNING);
+#endif
+}
+
+void VITA_PumpEvents(_THIS)
+{
+#if !defined(SDL_VIDEO_VITA_PVR)
+    SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
+#endif
     VITA_PollTouch();
     VITA_PollKeyboard();
     VITA_PollMouse();
 
+#if !defined(SDL_VIDEO_VITA_PVR)
     if (videodata->ime_active == SDL_TRUE) {
         // update IME status. Terminate, if finished
         SceCommonDialogStatus dialogStatus = sceImeDialogGetStatus();
@@ -469,6 +588,7 @@ void VITA_PumpEvents(_THIS)
         }
 
     }
+#endif
 }
 
 #endif /* SDL_VIDEO_DRIVER_VITA */

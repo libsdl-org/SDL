@@ -42,6 +42,9 @@ Uint8 lock_key_down = 0;
 void 
 VITA_InitKeyboard(void)
 {
+#if defined(SDL_VIDEO_VITA_PVR)
+    sceSysmoduleLoadModule(SCE_SYSMODULE_IME); /** For PVR OSK Support **/
+#endif
     sceHidKeyboardEnumerate(&keyboard_hid_handle, 1);
 }
 
