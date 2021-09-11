@@ -42,9 +42,15 @@ struct{
     float range;
 } force_info[SCE_TOUCH_PORT_MAX_NUM];
 
+char* disableFrontPoll = NULL;
+char* disableBackPoll = NULL;
+
 void 
 VITA_InitTouch(void)
 {
+    disableFrontPoll = SDL_getenv("VITA_DISABLE_TOUCH_FRONT");
+    disableBackPoll = SDL_getenv("VITA_DISABLE_TOUCH_BACK");
+
     sceTouchSetSamplingState(SCE_TOUCH_PORT_FRONT, SCE_TOUCH_SAMPLING_STATE_START);
     sceTouchSetSamplingState(SCE_TOUCH_PORT_BACK, SCE_TOUCH_SAMPLING_STATE_START);
     sceTouchEnableTouchForce(SCE_TOUCH_PORT_FRONT);
@@ -87,6 +93,10 @@ VITA_PollTouch(void)
     memcpy(touch_old, touch, sizeof(touch_old));
 
     for(port = 0; port < SCE_TOUCH_PORT_MAX_NUM; port++) {
+        /** Skip polling of Touch Device if environment variable is set **/
+        if (((port == 0) && disableFrontPoll) || ((port == 1) && disableBackPoll)) {
+            continue;
+        }
         sceTouchPeek(port, &touch[port], 1);
         if (touch[port].reportNum > 0) {
             for (int i = 0; i < touch[port].reportNum; i++)
