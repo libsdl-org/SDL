@@ -428,8 +428,7 @@ void VITA_ImeEventHandler(void *arg, const SceImeEventData *e)
     switch (e->id) {
     case SCE_IME_EVENT_UPDATE_TEXT:
         if (e->param.text.caretIndex == 0) {
-            scancode = SDL_GetScancodeFromKey(0x08);
-            SDL_SendKeyboardKeyAutoRelease(scancode);
+            SDL_SendKeyboardKeyAutoRelease(SDL_SCANCODE_BACKSPACE);
             sceImeSetText((SceWChar16 *)libime_initval, 4);
         }
         else {
@@ -449,8 +448,7 @@ void VITA_ImeEventHandler(void *arg, const SceImeEventData *e)
         }
         break;
     case SCE_IME_EVENT_PRESS_ENTER:
-        scancode = SDL_GetScancodeFromKey(0x0D);
-        SDL_SendKeyboardKeyAutoRelease(scancode);
+        SDL_SendKeyboardKeyAutoRelease(SDL_SCANCODE_RETURN);
     case SCE_IME_EVENT_PRESS_CLOSE:
         sceImeClose();
         videodata->ime_active = SDL_FALSE;
