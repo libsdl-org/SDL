@@ -585,6 +585,9 @@ SDL_SetKeymap(int start, SDL_Keycode * keys, int length)
 {
     SDL_Keyboard *keyboard = &SDL_keyboard;
     SDL_Scancode scancode;
+    SDL_bool num_keycode_exists[10] = {SDL_FALSE};
+    SDL_bool all_numbers_present = SDL_TRUE;
+    int i;
 
     if (start < 0 || start + length > SDL_NUM_SCANCODES) {
         return;
@@ -592,13 +595,30 @@ SDL_SetKeymap(int start, SDL_Keycode * keys, int length)
 
     SDL_memcpy(&keyboard->keymap[start], keys, sizeof(*keys) * length);
 
-    /* The number key scancodes always map to the number key keycodes.
+    /* If any number key keycode is missing,
+     * the number key scancodes map to the number key keycodes.
      * On AZERTY layouts these technically are symbols, but users (and games)
      * always think of them and view them in UI as number keys.
+     * But on one-handed dvorak layouts most number keys are on lower rows,
+     * while the top row has some ASCII letters.
      */
-    keyboard->keymap[SDL_SCANCODE_0] = SDLK_0;
-    for (scancode = SDL_SCANCODE_1; scancode <= SDL_SCANCODE_9; ++scancode) {
-        keyboard->keymap[scancode] = SDLK_1 + (scancode - SDL_SCANCODE_1);
+    for (scancode = 0; scancode < SDL_NUM_SCANCODES; scancode++) {
+        if (keyboard->keymap[scancode] == SDLK_0) {
+            num_keycode_exists[0] = SDL_TRUE;
+        } else if (keyboard->keymap[scancode] >= SDLK_1 && keyboard->keymap[scancode] <= SDLK_9) {
+            num_keycode_exists[1 + keyboard->keymap[scancode] - SDLK_1] = SDL_TRUE;
+        }
+    }
+    for (i = 0; i < 10; i++) {
+        all_numbers_present &= num_keycode_exists[i];
+    }
+
+    if (!all_numbers_present)
+    {
+        keyboard->keymap[SDL_SCANCODE_0] = SDLK_0;
+        for (scancode = SDL_SCANCODE_1; scancode <= SDL_SCANCODE_9; ++scancode) {
+            keyboard->keymap[scancode] = SDLK_1 + (scancode - SDL_SCANCODE_1);
+        }
     }
 }
 
