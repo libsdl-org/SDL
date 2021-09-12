@@ -39,30 +39,34 @@ VITA_GL_LoadLibrary(_THIS, const char *path)
 {
     PVRSRV_PSP2_APPHINT hint;
     char* override = SDL_getenv("VITA_MODULE_PATH");
+    char* skip_init = SDL_getenv("VITA_PVR_SKIP_INIT");
     char* default_path = "app0:module";
     char target_path[MAX_PATH];
 
-    if (override != NULL)
+    if (skip_init == NULL) // we don't care about actual value
     {
-      default_path = override;
+        if (override != NULL)
+        {
+          default_path = override;
+        }
+
+        sceKernelLoadStartModule("vs0:sys/external/libfios2.suprx", 0, NULL, 0, NULL, NULL);
+        sceKernelLoadStartModule("vs0:sys/external/libc.suprx", 0, NULL, 0, NULL, NULL);
+
+        SDL_snprintf(target_path, MAX_PATH, "%s/%s", default_path, "libgpu_es4_ext.suprx");
+        sceKernelLoadStartModule(target_path, 0, NULL, 0, NULL, NULL);
+
+        SDL_snprintf(target_path, MAX_PATH, "%s/%s", default_path, "libIMGEGL.suprx");
+        sceKernelLoadStartModule(target_path, 0, NULL, 0, NULL, NULL);
+
+        PVRSRVInitializeAppHint(&hint);
+
+        SDL_snprintf(hint.szGLES1, MAX_PATH, "%s/%s", default_path, "libGLESv1_CM.suprx");
+        SDL_snprintf(hint.szGLES2, MAX_PATH, "%s/%s", default_path, "libGLESv2.suprx");
+        SDL_snprintf(hint.szWindowSystem, MAX_PATH, "%s/%s", default_path, "libpvrPSP2_WSEGL.suprx");
+
+        PVRSRVCreateVirtualAppHint(&hint);
     }
-
-    sceKernelLoadStartModule("vs0:sys/external/libfios2.suprx", 0, NULL, 0, NULL, NULL);
-    sceKernelLoadStartModule("vs0:sys/external/libc.suprx", 0, NULL, 0, NULL, NULL);
-
-    SDL_snprintf(target_path, MAX_PATH, "%s/%s", default_path, "libgpu_es4_ext.suprx");
-    sceKernelLoadStartModule(target_path, 0, NULL, 0, NULL, NULL);
-
-    SDL_snprintf(target_path, MAX_PATH, "%s/%s", default_path, "libIMGEGL.suprx");
-    sceKernelLoadStartModule(target_path, 0, NULL, 0, NULL, NULL);
-
-    PVRSRVInitializeAppHint(&hint);
-
-    SDL_snprintf(hint.szGLES1, MAX_PATH, "%s/%s", default_path, "libGLESv1_CM.suprx");
-    SDL_snprintf(hint.szGLES2, MAX_PATH, "%s/%s", default_path, "libGLESv2.suprx");
-    SDL_snprintf(hint.szWindowSystem, MAX_PATH, "%s/%s", default_path, "libpvrPSP2_WSEGL.suprx");
-
-    PVRSRVCreateVirtualAppHint(&hint);
 
     return SDL_EGL_LoadLibrary(_this, path, (NativeDisplayType) 0, 0);
 }
