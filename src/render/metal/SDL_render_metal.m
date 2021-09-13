@@ -570,6 +570,8 @@ METAL_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
         case SDL_PIXELFORMAT_YV12:
         case SDL_PIXELFORMAT_NV12:
         case SDL_PIXELFORMAT_NV21:
+        case SDL_PIXELFORMAT_I422:
+        case SDL_PIXELFORMAT_I444:
             pixfmt = MTLPixelFormatR8Unorm;
             break;
         default:
@@ -595,13 +597,23 @@ METAL_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 
     id<MTLTexture> mtltexture_uv = nil;
 
-    BOOL yuv = (texture->format == SDL_PIXELFORMAT_IYUV) || (texture->format == SDL_PIXELFORMAT_YV12);
+    BOOL yuv =
+        (texture->format == SDL_PIXELFORMAT_IYUV) ||
+        (texture->format == SDL_PIXELFORMAT_YV12) ||
+        (texture->format == SDL_PIXELFORMAT_I422) ||
+        (texture->format == SDL_PIXELFORMAT_I444);
     BOOL nv12 = (texture->format == SDL_PIXELFORMAT_NV12) || (texture->format == SDL_PIXELFORMAT_NV21);
 
     if (yuv) {
+        SDL_bool is444 = texture->format == SDL_PIXELFORMAT_I444;
+        SDL_bool is422 = texture->format == SDL_PIXELFORMAT_I422;
+        
+        int w = is444 ? texture->w : (texture->w + 1) / 2;
+        int h = is444 || is422 ? texture->h : (texture->h + 1) / 2;
+        
         mtltexdesc.pixelFormat = MTLPixelFormatR8Unorm;
-        mtltexdesc.width = (texture->w + 1) / 2;
-        mtltexdesc.height = (texture->h + 1) / 2;
+        mtltexdesc.width = w;
+        mtltexdesc.height = h;
         mtltexdesc.textureType = MTLTextureType2DArray;
         mtltexdesc.arrayLength = 2;
     } else if (nv12) {
@@ -771,9 +783,23 @@ METAL_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
     if (texturedata.yuv) {
         int Uslice = texture->format == SDL_PIXELFORMAT_YV12 ? 1 : 0;
         int Vslice = texture->format == SDL_PIXELFORMAT_YV12 ? 0 : 1;
-        int UVpitch = (pitch + 1) / 2;
-        SDL_Rect UVrect = {rect->x / 2, rect->y / 2, (rect->w + 1) / 2, (rect->h + 1) / 2};
+        SDL_bool is444 = texture->format == SDL_PIXELFORMAT_I444;
+        SDL_bool is422 = texture->format == SDL_PIXELFORMAT_I422;
 
+        int x = is444 ? rect->x : rect->x / 2;
+        int y = is444 || is422 ? rect->y : rect->y / 2;
+        int w = is444 ? rect->w : (rect->w + 1) / 2;
+        int h = is444 || is422 ? rect->h : (rect->h + 1) / 2;
+        
+        SDL_Rect UVrect = {
+            x,
+            y,
+            w,
+            h
+        };
+        
+        int UVpitch = is444 ? pitch : (pitch + 1) / 2;
+        
         /* Skip to the correct offset into the next texture */
         pixels = (const void*)((const Uint8*)pixels + rect->h * pitch);
         if (METAL_UpdateTextureInternal(renderer, texturedata, texturedata.mtltexture_uv, UVrect, Uslice, pixels, UVpitch) < 0) {
@@ -814,13 +840,27 @@ METAL_UpdateTextureYUV(SDL_Renderer * renderer, SDL_Texture * texture,
     METAL_TextureData *texturedata = (__bridge METAL_TextureData *)texture->driverdata;
     const int Uslice = 0;
     const int Vslice = 1;
-    SDL_Rect UVrect = {rect->x / 2, rect->y / 2, (rect->w + 1) / 2, (rect->h + 1) / 2};
 
     /* Bail out if we're supposed to update an empty rectangle */
     if (rect->w <= 0 || rect->h <= 0) {
         return 0;
     }
+    
+    SDL_bool is444 = texture->format == SDL_PIXELFORMAT_I444;
+    SDL_bool is422 = texture->format == SDL_PIXELFORMAT_I422;
 
+    int x = is444 ? rect->x : rect->x / 2;
+    int y = is444 || is422 ? rect->y : rect->y / 2;
+    int w = is444 ? rect->w : (rect->w + 1) / 2;
+    int h = is444 || is422 ? rect->h : (rect->h + 1) / 2;
+    
+    SDL_Rect UVrect = {
+        x,
+        y,
+        w,
+        h
+    };
+    
     if (METAL_UpdateTextureInternal(renderer, texturedata, texturedata.mtltexture, *rect, 0, Yplane, Ypitch) < 0) {
         return -1;
     }
@@ -1976,14 +2016,16 @@ SDL_RenderDriver METAL_RenderDriver = {
     {
         "metal",
         (SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE),
-        6,
+        8,
         {
             SDL_PIXELFORMAT_ARGB8888,
             SDL_PIXELFORMAT_ABGR8888,
             SDL_PIXELFORMAT_YV12,
             SDL_PIXELFORMAT_IYUV,
             SDL_PIXELFORMAT_NV12,
-            SDL_PIXELFORMAT_NV21
+            SDL_PIXELFORMAT_NV21,
+            SDL_PIXELFORMAT_I422,
+            SDL_PIXELFORMAT_I444
         },
     0, 0,
     }
