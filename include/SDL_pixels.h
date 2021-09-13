@@ -298,7 +298,11 @@ typedef enum
     SDL_PIXELFORMAT_NV21 =      /**< Planar mode: Y + V/U interleaved  (2 planes) */
         SDL_DEFINE_PIXELFOURCC('N', 'V', '2', '1'),
     SDL_PIXELFORMAT_EXTERNAL_OES =      /**< Android video texture format */
-        SDL_DEFINE_PIXELFOURCC('O', 'E', 'S', ' ')
+        SDL_DEFINE_PIXELFOURCC('O', 'E', 'S', ' '),
+    SDL_PIXELFORMAT_I422 =   // YUV 422 planar (3 planes)
+        SDL_DEFINE_PIXELFOURCC('I', '4', '2', '2'),
+    SDL_PIXELFORMAT_I444 = // YUV 444 planar (3 planes)
+        SDL_DEFINE_PIXELFOURCC('I', '4', '4', '4')
 } SDL_PixelFormatEnum;
 
 typedef struct SDL_Color

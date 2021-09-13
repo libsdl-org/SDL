@@ -1746,7 +1746,9 @@ int SDL_UpdateYUVTexture(SDL_Texture * texture, const SDL_Rect * rect,
     }
 
     if (texture->format != SDL_PIXELFORMAT_YV12 &&
-        texture->format != SDL_PIXELFORMAT_IYUV) {
+        texture->format != SDL_PIXELFORMAT_IYUV &&
+        texture->format != SDL_PIXELFORMAT_I422 &&
+        texture->format != SDL_PIXELFORMAT_I444) {
         return SDL_SetError("Texture format must by YV12 or IYUV");
     }
 

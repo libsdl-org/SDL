@@ -220,6 +220,8 @@ SDLPixelFormatToDXGIFormat(Uint32 sdlFormat)
         case SDL_PIXELFORMAT_IYUV:
         case SDL_PIXELFORMAT_NV12:  /* For the Y texture */
         case SDL_PIXELFORMAT_NV21:  /* For the Y texture */
+        case SDL_PIXELFORMAT_I422:
+        case SDL_PIXELFORMAT_I444:
             return DXGI_FORMAT_R8_UNORM;
         default:
             return DXGI_FORMAT_UNKNOWN;
@@ -1103,11 +1105,25 @@ D3D11_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     }
 
     if (texture->format == SDL_PIXELFORMAT_YV12 ||
-        texture->format == SDL_PIXELFORMAT_IYUV) {
+        texture->format == SDL_PIXELFORMAT_IYUV ||
+        texture->format == SDL_PIXELFORMAT_I422 ||
+        texture->format == SDL_PIXELFORMAT_I444) {
         textureData->yuv = SDL_TRUE;
 
-        textureDesc.Width = (textureDesc.Width + 1) / 2;
-        textureDesc.Height = (textureDesc.Height + 1) / 2;
+        if (texture->format == SDL_PIXELFORMAT_I422)
+        {
+            textureDesc.Width = (textureDesc.Width + 1) / 2;
+            textureDesc.Height = textureDesc.Height;
+        }
+        else if (texture->format == SDL_PIXELFORMAT_I444)
+        {
+            // Nothing to do
+        }
+        else
+        {
+            textureDesc.Width = (textureDesc.Width + 1) / 2;
+            textureDesc.Height = (textureDesc.Height + 1) / 2;
+        }
 
         result = ID3D11Device_CreateTexture2D(rendererData->d3dDevice,
             &textureDesc,
@@ -1358,14 +1374,29 @@ D3D11_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
         /* Skip to the correct offset into the next texture */
         srcPixels = (const void*)((const Uint8*)srcPixels + rect->h * srcPitch);
 
-        if (D3D11_UpdateTextureInternal(rendererData, texture->format == SDL_PIXELFORMAT_YV12 ? textureData->mainTextureV : textureData->mainTextureU, SDL_BYTESPERPIXEL(texture->format), rect->x / 2, rect->y / 2, (rect->w + 1) / 2, (rect->h + 1) / 2, srcPixels, (srcPitch + 1) / 2) < 0) {
-            return -1;
+        SDL_bool is444 = texture->format == SDL_PIXELFORMAT_I444;
+        SDL_bool is422 = texture->format == SDL_PIXELFORMAT_I422;
+
+        int x = is444 ? rect->x : rect->x / 2;
+        int y = is444 || is422 ? rect->y : rect->y / 2;
+        int w = is444 ? rect->w : (rect->w + 1) / 2;
+        int h = is444 || is422 ? rect->h : (rect->h + 1) / 2;
+        int pitch = is444 ? srcPitch : (srcPitch + 1) / 2;
+
+        {
+            ID3D11Texture2D* target = texture->format == SDL_PIXELFORMAT_YV12 ? textureData->mainTextureV : textureData->mainTextureU;
+            if (D3D11_UpdateTextureInternal(rendererData, target, SDL_BYTESPERPIXEL(texture->format), x, y, w, h, srcPixels, pitch) < 0) {
+                return -1;
+            }
+            /* Skip to the correct offset into the next texture */
+            srcPixels = (const void*)((const Uint8*)srcPixels + (h * (pitch)));
         }
 
-        /* Skip to the correct offset into the next texture */
-        srcPixels = (const void*)((const Uint8*)srcPixels + ((rect->h + 1) / 2) * ((srcPitch + 1) / 2));
-        if (D3D11_UpdateTextureInternal(rendererData, texture->format == SDL_PIXELFORMAT_YV12 ? textureData->mainTextureU : textureData->mainTextureV, SDL_BYTESPERPIXEL(texture->format), rect->x / 2, rect->y / 2, (rect->w + 1) / 2, (rect->h + 1) / 2, srcPixels, (srcPitch + 1) / 2) < 0) {
-            return -1;
+        {
+            ID3D11Texture2D* target = texture->format == SDL_PIXELFORMAT_YV12 ? textureData->mainTextureU : textureData->mainTextureV;
+            if (D3D11_UpdateTextureInternal(rendererData, target, SDL_BYTESPERPIXEL(texture->format), x, y, w, h, srcPixels, pitch) < 0) {
+                return -1;
+            }
         }
     }
 
@@ -1399,10 +1430,19 @@ D3D11_UpdateTextureYUV(SDL_Renderer * renderer, SDL_Texture * texture,
     if (D3D11_UpdateTextureInternal(rendererData, textureData->mainTexture, SDL_BYTESPERPIXEL(texture->format), rect->x, rect->y, rect->w, rect->h, Yplane, Ypitch) < 0) {
         return -1;
     }
-    if (D3D11_UpdateTextureInternal(rendererData, textureData->mainTextureU, SDL_BYTESPERPIXEL(texture->format), rect->x / 2, rect->y / 2, rect->w / 2, rect->h / 2, Uplane, Upitch) < 0) {
+
+    SDL_bool is444 = texture->format == SDL_PIXELFORMAT_I444;
+    SDL_bool is422 = texture->format == SDL_PIXELFORMAT_I422;
+
+    int x = is444 ? rect->x : rect->x / 2;
+    int y = is444 || is422 ? rect->y : rect->y / 2;
+    int w = is444 ? rect->w : (rect->w + 1) / 2;
+    int h = is444 || is422 ? rect->h : (rect->h + 1) / 2;
+
+    if (D3D11_UpdateTextureInternal(rendererData, textureData->mainTextureU, SDL_BYTESPERPIXEL(texture->format), x, y, w, h, Uplane, Upitch) < 0) {
         return -1;
     }
-    if (D3D11_UpdateTextureInternal(rendererData, textureData->mainTextureV, SDL_BYTESPERPIXEL(texture->format), rect->x / 2, rect->y / 2, rect->w / 2, rect->h / 2, Vplane, Vpitch) < 0) {
+    if (D3D11_UpdateTextureInternal(rendererData, textureData->mainTextureV, SDL_BYTESPERPIXEL(texture->format), x, y, w, h, Vplane, Vpitch) < 0) {
         return -1;
     }
     return 0;
@@ -2615,14 +2655,16 @@ SDL_RenderDriver D3D11_RenderDriver = {
             SDL_RENDERER_PRESENTVSYNC |
             SDL_RENDERER_TARGETTEXTURE
         ),                          /* flags.  see SDL_RendererFlags */
-        6,                          /* num_texture_formats */
+        8,                          /* num_texture_formats */
         {                           /* texture_formats */
             SDL_PIXELFORMAT_ARGB8888,
             SDL_PIXELFORMAT_RGB888,
             SDL_PIXELFORMAT_YV12,
             SDL_PIXELFORMAT_IYUV,
             SDL_PIXELFORMAT_NV12,
-            SDL_PIXELFORMAT_NV21
+            SDL_PIXELFORMAT_NV21,
+            SDL_PIXELFORMAT_I422,
+            SDL_PIXELFORMAT_I444,
         },
         0,                          /* max_texture_width: will be filled in later */
         0                           /* max_texture_height: will be filled in later */
