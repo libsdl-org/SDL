@@ -174,6 +174,7 @@ WIN_ResetDeadKeys()
 
     GetKeyboardState(keyboardState);
 
+
     keycode = VK_SPACE;
     scancode = MapVirtualKey(keycode, MAPVK_VK_TO_VSC);
     if (scancode == 0) {
@@ -253,20 +254,12 @@ WIN_SetTextInputRect(_THIS, SDL_Rect *rect)
         cof.dwStyle = CFS_FORCE_POSITION;
         cof.ptCurrentPos.x = videodata->ime_rect.x;
         cof.ptCurrentPos.y = videodata->ime_rect.y;
-        cof.rcArea.left = videodata->ime_rect.x;
-        cof.rcArea.right = videodata->ime_rect.x + videodata->ime_rect.w;
-        cof.rcArea.top = videodata->ime_rect.y;
-        cof.rcArea.bottom = videodata->ime_rect.y + videodata->ime_rect.h;
         ImmSetCompositionWindow(himc, &cof);
 
         caf.dwIndex = 0;
-        caf.dwStyle = CFS_CANDIDATEPOS;
+        caf.dwStyle = CFS_POINT;
         caf.ptCurrentPos.x = videodata->ime_rect.x;
         caf.ptCurrentPos.y = videodata->ime_rect.y;
-        caf.rcArea.left = videodata->ime_rect.x;
-        caf.rcArea.right = videodata->ime_rect.x + videodata->ime_rect.w;
-        caf.rcArea.top = videodata->ime_rect.y;
-        caf.rcArea.bottom = videodata->ime_rect.y + videodata->ime_rect.h;
         ImmSetCandidateWindow(himc, &caf);
 
         ImmReleaseContext(videodata->ime_hwnd_current, himc);
@@ -767,6 +760,7 @@ IME_GetCompositionString(SDL_VideoData *videodata, HIMC himc, DWORD string)
 
         --length;
     }
+
     videodata->ime_composition[length] = 0;
 
     // Get the correct caret position if we've selected a candidate from the candidate window
