@@ -820,3 +820,5 @@
 #define SDL_RenderGeometry SDL_RenderGeometry_REAL
 #define SDL_RenderGeometryRaw SDL_RenderGeometryRaw_REAL
 #define SDL_RenderSetVSync SDL_RenderSetVSync_REAL
+#define SDL_asprintf SDL_asprintf_REAL
+#define SDL_vasprintf SDL_vasprintf_REAL

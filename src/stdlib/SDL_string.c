@@ -1941,4 +1941,60 @@ SDL_vsnprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, const char *fmt, 
 }
 #endif /* HAVE_VSNPRINTF */
 
+int
+SDL_asprintf(char **strp, SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
+{
+    va_list ap;
+    int retval;
+
+    va_start(ap, fmt);
+    retval = SDL_vasprintf(strp, fmt, ap);
+    va_end(ap);
+
+    return retval;
+}
+
+int
+SDL_vasprintf(char **strp, const char *fmt, va_list ap)
+{
+    int retval;
+    int size = 100;     /* Guess we need no more than 100 bytes */
+    char *p, *np;
+    va_list aq;
+
+    *strp = NULL;
+
+    p = (char *)SDL_malloc(size);
+    if (p == NULL)
+        return -1;
+
+    while (1) {
+        /* Try to print in the allocated space */
+        va_copy(aq, ap);
+        retval = SDL_vsnprintf(p, size, fmt, aq);
+        va_end(aq);
+
+        /* Check error code */
+        if (retval < 0)
+            return retval;
+
+        /* If that worked, return the string */
+        if (retval < size) {
+            *strp = p;
+            return retval;
+        }
+
+        /* Else try again with more space */
+        size = retval + 1;       /* Precisely what is needed */
+
+        np = (char *)SDL_realloc(p, size);
+        if (np == NULL) {
+            SDL_free(p);
+            return -1;
+        } else {
+            p = np;
+        }
+    }
+}
+
 /* vi: set ts=4 sw=4 expandtab: */
