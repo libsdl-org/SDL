@@ -4129,6 +4129,10 @@ SDL_RenderSetVSync(SDL_Renderer * renderer, int vsync)
 {
     CHECK_RENDERER_MAGIC(renderer, -1);
 
+    if (vsync != 0 && vsync != 1) {
+        return SDL_Unsupported();
+    }
+
     if (renderer->SetVSync) {
         return renderer->SetVSync(renderer, vsync);
     }
