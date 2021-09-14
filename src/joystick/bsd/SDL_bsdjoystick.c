@@ -426,7 +426,7 @@ BSD_JoystickOpen(SDL_Joystick *joy, int device_index)
             str[i] = UGETW(usd.usd_desc.bString[i]);
         }
         str[i] = '\0';
-        asprintf(&new_name, "%s @ %s", str, path);
+        SDL_asprintf(&new_name, "%s @ %s", str, path);
         if (new_name != NULL) {
             SDL_free(joydevnames[numjoysticks]);
             joydevnames[numjoysticks] = new_name;
