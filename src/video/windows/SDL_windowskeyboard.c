@@ -249,7 +249,7 @@ WIN_SetTextInputRect(_THIS, SDL_Rect *rect)
         COMPOSITIONFORM cof;
         CANDIDATEFORM caf;
 
-        cof.dwStyle = CFS_RECT;
+        cof.dwStyle = CFS_FORCE_POSITION;
         cof.ptCurrentPos.x = videodata->ime_rect.x;
         cof.ptCurrentPos.y = videodata->ime_rect.y;
         cof.rcArea.left = videodata->ime_rect.x;
@@ -259,7 +259,7 @@ WIN_SetTextInputRect(_THIS, SDL_Rect *rect)
         ImmSetCompositionWindow(himc, &cof);
 
         caf.dwIndex = 0;
-        caf.dwStyle = CFS_EXCLUDE;
+        caf.dwStyle = CFS_POINT;
         caf.ptCurrentPos.x = videodata->ime_rect.x;
         caf.ptCurrentPos.y = videodata->ime_rect.y;
         caf.rcArea.left = videodata->ime_rect.x;
@@ -760,7 +760,6 @@ IME_GetCompositionString(SDL_VideoData *videodata, HIMC himc, DWORD string)
 
         --length;
     }
-
     videodata->ime_composition[length] = 0;
 }
 
