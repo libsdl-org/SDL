@@ -246,13 +246,20 @@ WIN_SetTextInputRect(_THIS, SDL_Rect *rect)
     himc = ImmGetContext(videodata->ime_hwnd_current);
     if (himc)
     {
-        CANDIDATEFORM cf;
-        cf.dwIndex = 0;
-        cf.dwStyle = CFS_POINT;
-        cf.ptCurrentPos.x = videodata->ime_rect.x;
-        cf.ptCurrentPos.y = videodata->ime_rect.y;
-        
-        ImmSetCandidateWindow(himc, &cf);
+        COMPOSITIONFORM cof;
+        CANDIDATEFORM caf;
+
+        cof.dwStyle = CFS_FORCE_POSITION;
+        cof.ptCurrentPos.x = videodata->ime_rect.x;
+        cof.ptCurrentPos.y = videodata->ime_rect.y;
+        ImmSetCompositionWindow(himc, &cof);
+
+        caf.dwIndex = 0;
+        caf.dwStyle = CFS_CANDIDATEPOS;
+        caf.ptCurrentPos.x = videodata->ime_rect.x;
+        caf.ptCurrentPos.y = videodata->ime_rect.y;
+        ImmSetCandidateWindow(himc, &caf);
+
         ImmReleaseContext(videodata->ime_hwnd_current, himc);
     }
 }
@@ -748,13 +755,16 @@ IME_GetCompositionString(SDL_VideoData *videodata, HIMC himc, DWORD string)
 
     length /= sizeof(videodata->ime_composition[0]);
     videodata->ime_cursor = LOWORD(ImmGetCompositionStringW(himc, GCS_CURSORPOS, 0, 0));
-    if (videodata->ime_cursor < SDL_arraysize(videodata->ime_composition) && videodata->ime_composition[videodata->ime_cursor] == 0x3000) {
+    if (videodata->ime_cursor > 0 &&
+        videodata->ime_cursor < SDL_arraysize(videodata->ime_composition) &&
+        videodata->ime_composition[videodata->ime_cursor] == 0x3000) {
         int i;
         for (i = videodata->ime_cursor + 1; i < length; ++i)
             videodata->ime_composition[i - 1] = videodata->ime_composition[i];
 
         --length;
     }
+
     videodata->ime_composition[length] = 0;
 }
 
