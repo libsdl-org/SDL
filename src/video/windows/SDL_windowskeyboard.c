@@ -255,7 +255,7 @@ WIN_SetTextInputRect(_THIS, SDL_Rect *rect)
 
         CANDIDATEFORM caf;
         caf.dwIndex = 0;
-        caf.dwStyle = CFS_POINT;
+        caf.dwStyle = CFS_CANDIDATEPOS;
         caf.ptCurrentPos.x = videodata->ime_rect.x;
         caf.ptCurrentPos.y = videodata->ime_rect.y;
         ImmSetCandidateWindow(himc, &caf);
