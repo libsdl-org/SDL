@@ -213,7 +213,8 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
     </Link>
     <PostBuildEvent>
-      <Command>copy /B /Y $(SolutionDir)$(Platform)\$(Configuration)\SDL2.dll "X:\YoYoStudio\IDE\YoYoStudio\bin\x64\Debug\SDL2.dll"</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
