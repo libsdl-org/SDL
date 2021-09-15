@@ -247,12 +247,13 @@ WIN_SetTextInputRect(_THIS, SDL_Rect *rect)
     if (himc)
     {
         COMPOSITIONFORM cof;
+        CANDIDATEFORM caf;
+
         cof.dwStyle = CFS_FORCE_POSITION;
         cof.ptCurrentPos.x = videodata->ime_rect.x;
         cof.ptCurrentPos.y = videodata->ime_rect.y;
         ImmSetCompositionWindow(himc, &cof);
 
-        CANDIDATEFORM caf;
         caf.dwIndex = 0;
         caf.dwStyle = CFS_CANDIDATEPOS;
         caf.ptCurrentPos.x = videodata->ime_rect.x;
