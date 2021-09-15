@@ -239,6 +239,9 @@ static int WriteSegmentToSteamControllerPacketAssembler( SteamControllerPacketAs
 {
     if ( pAssembler->bIsBle )
     {
+        uint8_t uSegmentHeader = pSegment[ 1 ];
+        int nSegmentNumber = uSegmentHeader & 0x07;
+
         HEXDUMP( pSegment, nSegmentLength );
 
         if ( pSegment[ 0 ] != BLE_REPORT_NUMBER )
@@ -255,7 +258,6 @@ static int WriteSegmentToSteamControllerPacketAssembler( SteamControllerPacketAs
             return -1;
         }
         
-        uint8_t uSegmentHeader = pSegment[ 1 ];
         DPRINTF("GOT PACKET HEADER = 0x%x\n", uSegmentHeader);
         
         if ( ( uSegmentHeader & REPORT_SEGMENT_DATA_FLAG ) == 0 )
@@ -264,7 +266,6 @@ static int WriteSegmentToSteamControllerPacketAssembler( SteamControllerPacketAs
             return 0;
         }
         
-        int nSegmentNumber = uSegmentHeader & 0x07;
         if ( nSegmentNumber != pAssembler->nExpectedSegmentNumber )
         {
             ResetSteamControllerPacketAssembler( pAssembler );
@@ -306,20 +307,21 @@ static int WriteSegmentToSteamControllerPacketAssembler( SteamControllerPacketAs
 
 static int SetFeatureReport( hid_device *dev, unsigned char uBuffer[65], int nActualDataLen )
 {
-    DPRINTF("SetFeatureReport %p %p %d\n", dev, uBuffer, nActualDataLen);
     int nRet = -1;
     bool bBle = true; // only wireless/BLE for now, though macOS could do wired in the future
     
+    DPRINTF("SetFeatureReport %p %p %d\n", dev, uBuffer, nActualDataLen);
+
     if ( bBle )
     {
+        int nSegmentNumber = 0;
+        uint8_t uPacketBuffer[ MAX_REPORT_SEGMENT_SIZE ];
+        unsigned char *pBufferPtr = uBuffer + 1;
+
         if ( nActualDataLen < 1 )
             return -1;
         
-        int nSegmentNumber = 0;
-        uint8_t uPacketBuffer[ MAX_REPORT_SEGMENT_SIZE ];
-        
         // Skip report number in data
-        unsigned char *pBufferPtr = uBuffer + 1;
         nActualDataLen--;
         
         while ( nActualDataLen > 0 )
@@ -347,17 +349,19 @@ static int SetFeatureReport( hid_device *dev, unsigned char uBuffer[65], int nAc
 
 static int GetFeatureReport( hid_device *dev, unsigned char uBuffer[65] )
 {
-    DPRINTF("GetFeatureReport( %p %p )\n", dev, uBuffer );
     int nRet = -1;
     bool bBle = true;
 
+    DPRINTF("GetFeatureReport( %p %p )\n", dev, uBuffer );
+
     if ( bBle )
     {
+        int nRetries = 0;
+        uint8_t uSegmentBuffer[ MAX_REPORT_SEGMENT_SIZE ];
+
         SteamControllerPacketAssembler assembler;
         InitializeSteamControllerPacketAssembler( &assembler );
         
-        int nRetries = 0;
-        uint8_t uSegmentBuffer[ MAX_REPORT_SEGMENT_SIZE ];
         while( nRetries < BLE_MAX_READ_RETRIES )
         {
             memset( uSegmentBuffer, 0, sizeof( uSegmentBuffer ) );
@@ -398,8 +402,9 @@ static int GetFeatureReport( hid_device *dev, unsigned char uBuffer[65] )
 
 static int ReadResponse( hid_device *dev, uint8_t uBuffer[65], int nExpectedResponse )
 {
-    DPRINTF("ReadResponse( %p %p %d )\n", dev, uBuffer, nExpectedResponse );
     int nRet = GetFeatureReport( dev, uBuffer );
+
+    DPRINTF("ReadResponse( %p %p %d )\n", dev, uBuffer, nExpectedResponse );
 
     if ( nRet < 0 )
         return nRet;
@@ -418,11 +423,14 @@ static int ReadResponse( hid_device *dev, uint8_t uBuffer[65], int nExpectedResp
 //---------------------------------------------------------------------------
 static bool ResetSteamController( hid_device *dev, bool bSuppressErrorSpew )
 {
-    DPRINTF( "ResetSteamController hid=%p\n", dev );
     // Firmware quirk: Set Feature and Get Feature requests always require a 65-byte buffer.
     unsigned char buf[65];
     int res = -1;
+    int nSettings = 0;
+    int nAttributesLength;
     
+    DPRINTF( "ResetSteamController hid=%p\n", dev );
+
     buf[0] = 0;
     buf[1] = ID_GET_ATTRIBUTES_VALUES;
     res = SetFeatureReport( dev, buf, 2 );
@@ -444,7 +452,7 @@ static bool ResetSteamController( hid_device *dev, bool bSuppressErrorSpew )
         return false;
     }
     
-    int nAttributesLength = buf[ 2 ];
+    nAttributesLength = buf[ 2 ];
     if ( nAttributesLength > res )
     {
         if ( !bSuppressErrorSpew )
@@ -476,7 +484,6 @@ static bool ResetSteamController( hid_device *dev, bool bSuppressErrorSpew )
     }
     
     // Apply custom settings - clear trackpad modes (cancel mouse emulation), etc
-    int nSettings = 0;
 #define ADD_SETTING(SETTING, VALUE)    \
 buf[3+nSettings*3] = SETTING;    \
 buf[3+nSettings*3+1] = ((uint16_t)VALUE)&0xFF; \
@@ -651,6 +658,15 @@ static void RotatePadShort( short *pX, short *pY, float flAngleInRad )
 //---------------------------------------------------------------------------
 static void FormatStatePacketUntilGyro( SteamControllerStateInternal_t *pState, ValveControllerStatePacket_t *pStatePacket )
 {
+    int nLeftPadX;
+    int nLeftPadY;
+    int nRightPadX;
+    int nRightPadY;
+    int nPadOffset;
+
+    // 15 degrees in rad
+    const float flRotationAngle = 0.261799f;
+
     memset(pState, 0, offsetof(SteamControllerStateInternal_t, sBatteryLevel));
 
     //pState->eControllerType = m_eControllerType;
@@ -735,18 +751,14 @@ static void FormatStatePacketUntilGyro( SteamControllerStateInternal_t *pState, 
     pState->sRightPadX = pStatePacket->sRightPadX;
     pState->sRightPadY = pStatePacket->sRightPadY;
 
-    int nLeftPadX = pState->sLeftPadX;
-    int nLeftPadY = pState->sLeftPadY;
-    int nRightPadX = pState->sRightPadX;
-    int nRightPadY = pState->sRightPadY;
-
-    // 15 degrees in rad
-    const float flRotationAngle = 0.261799f;
+    nLeftPadX = pState->sLeftPadX;
+    nLeftPadY = pState->sLeftPadY;
+    nRightPadX = pState->sRightPadX;
+    nRightPadY = pState->sRightPadY;
 
     RotatePad(&nLeftPadX, &nLeftPadY, -flRotationAngle);
     RotatePad(&nRightPadX, &nRightPadY, flRotationAngle);
 
-    int nPadOffset;
     if (pState->ulButtons & STEAM_LEFTPAD_FINGERDOWN_MASK)
         nPadOffset = 1000;
     else
@@ -1002,6 +1014,7 @@ HIDAPI_DriverSteam_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystic
         SDL_SetError("Couldn't open %s", device->path);
         goto error;
     }
+    hid_set_nonblocking(device->dev, 1);
 
     if (!ResetSteamController(device->dev, false)) {
         goto error;

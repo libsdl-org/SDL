@@ -242,16 +242,16 @@ SDL_IsXInputDevice(Uint16 vendor_id, Uint16 product_id, const char* hidPath)
         return SDL_FALSE;
     }
 
+    /* If device path contains "IG_" then its an XInput device */
+    /* See: https://docs.microsoft.com/windows/win32/xinput/xinput-and-directinput */
+    if (SDL_strstr(hidPath, "IG_") != NULL) {
+        return SDL_TRUE;
+    }
+
     type = SDL_GetJoystickGameControllerType("", vendor_id, product_id, -1, 0, 0, 0);
     if (type == SDL_CONTROLLER_TYPE_XBOX360 ||
         type == SDL_CONTROLLER_TYPE_XBOXONE ||
         (vendor_id == USB_VENDOR_VALVE && product_id == USB_PRODUCT_STEAM_VIRTUAL_GAMEPAD)) {
-        return SDL_TRUE;
-    }
-
-    /* If device path contains "IG_" then its an XInput device */
-    /* See: https://docs.microsoft.com/windows/win32/xinput/xinput-and-directinput */
-    if (SDL_strstr(hidPath, "IG_") != NULL) {
         return SDL_TRUE;
     }
 

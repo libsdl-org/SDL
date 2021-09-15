@@ -1760,6 +1760,26 @@ METAL_GetMetalCommandEncoder(SDL_Renderer * renderer)
     return (__bridge void*)data.mtlcmdencoder;
 }}
 
+static int
+METAL_SetVSync(SDL_Renderer * renderer, const int vsync)
+{
+#if (defined(__MACOSX__) && defined(MAC_OS_X_VERSION_10_13)) || TARGET_OS_MACCATALYST
+    if (@available(macOS 10.13, *)) {
+        METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
+        if (vsync) {
+            data.mtllayer.displaySyncEnabled = YES;
+            renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
+        } else {
+            data.mtllayer.displaySyncEnabled = NO;
+            renderer->info.flags &= ~SDL_RENDERER_PRESENTVSYNC;
+        }
+        return 0;
+    }
+#endif
+    return SDL_SetError("This Apple OS does not support displaySyncEnabled!");
+}
+
+
 static SDL_Renderer *
 METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
 { @autoreleasepool {
@@ -2010,6 +2030,7 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->RenderPresent = METAL_RenderPresent;
     renderer->DestroyTexture = METAL_DestroyTexture;
     renderer->DestroyRenderer = METAL_DestroyRenderer;
+    renderer->SetVSync = METAL_SetVSync;
     renderer->GetMetalLayer = METAL_GetMetalLayer;
     renderer->GetMetalCommandEncoder = METAL_GetMetalCommandEncoder;
 

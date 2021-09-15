@@ -1,13 +1,12 @@
 Raspberry Pi
-================================================================================
+============
 
 Requirements:
 
 Raspbian (other Linux distros may work as well).
 
-================================================================================
- Features
-================================================================================
+Features
+--------
 
 * Works without X11
 * Hardware accelerated OpenGL ES 2.x
@@ -16,9 +15,8 @@ Raspbian (other Linux distros may work as well).
 * Hotplugging of input devices via UDEV
 
 
-================================================================================
- Raspbian Build Dependencies
-================================================================================
+Raspbian Build Dependencies
+---------------------------
 
 sudo apt-get install libudev-dev libasound2-dev libdbus-1-dev
 
@@ -28,18 +26,17 @@ OpenGL ES 2.x, it usually comes pre-installed, but in any case:
 sudo apt-get install libraspberrypi0 libraspberrypi-bin libraspberrypi-dev
 
 
-================================================================================
- NEON
-================================================================================
+NEON
+----
 
 If your Pi has NEON support, make sure you add -mfpu=neon to your CFLAGS so
 that SDL will select some otherwise-disabled highly-optimized code. The
 original Pi units don't have NEON, the Pi2 probably does, and the Pi3
 definitely does.
 
-================================================================================
- Cross compiling from x86 Linux
-================================================================================
+
+Cross compiling from x86 Linux
+------------------------------
 
 To cross compile SDL for Raspbian from your desktop machine, you'll need a
 Raspbian system root and the cross compilation tools. We'll assume these tools
@@ -92,9 +89,8 @@ To be able to deploy this to /usr/local in the Raspbian system you need to fix u
     
     perl -w -pi -e "s#$PWD/rpi-sdl2-installed#/usr/local#g;" ./rpi-sdl2-installed/lib/libSDL2.la ./rpi-sdl2-installed/lib/pkgconfig/sdl2.pc ./rpi-sdl2-installed/bin/sdl2-config
     
-================================================================================
- Apps don't work or poor video/audio performance
-================================================================================
+Apps don't work or poor video/audio performance
+-----------------------------------------------
 
 If you get sound problems, buffer underruns, etc, run "sudo rpi-update" to 
 update the RPi's firmware. Note that doing so will fix these problems, but it
@@ -108,17 +104,15 @@ See here how to configure this setting: http://elinux.org/RPiconfig
 Using a fixed gpu_mem=128 is the best option (specially if you updated the 
 firmware, using CMA probably won't work, at least it's the current case).
 
-================================================================================
- No input
-================================================================================
+No input
+--------
 
 Make sure you belong to the "input" group.
 
     sudo usermod -aG input `whoami`
 
-================================================================================
- No HDMI Audio
-================================================================================
+No HDMI Audio
+-------------
 
 If you notice that ALSA works but there's no audio over HDMI, try adding:
     
@@ -128,9 +122,8 @@ to your config.txt file and reboot.
 
 Reference: http://www.raspberrypi.org/phpBB3/viewtopic.php?t=5062
 
-================================================================================
- Text Input API support
-================================================================================
+Text Input API support
+----------------------
 
 The Text Input API is supported, with translation of scan codes done via the
 kernel symbol tables. For this to work, SDL needs access to a valid console.
@@ -160,9 +153,9 @@ this determining the CAPS LOCK behavior:
 
     sudo dpkg-reconfigure locales
 
-================================================================================
- OpenGL problems
-================================================================================
+
+OpenGL problems
+---------------
 
 If you have desktop OpenGL headers installed at build time in your RPi or cross 
 compilation environment, support for it will be built in. However, the chipset 
@@ -177,9 +170,8 @@ environment variable:
 
     export SDL_RENDER_DRIVER=opengles2
 
-================================================================================
- Notes
-================================================================================
+Notes
+-----
 
 * When launching apps remotely (via SSH), SDL can prevent local keystrokes from
   leaking into the console only if it has root privileges. Launching apps locally

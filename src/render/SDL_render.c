@@ -3758,10 +3758,12 @@ SDL_RenderGeometryRaw(SDL_Renderer *renderer,
         size_indices = 0;
     }
 
+#if DONT_DRAW_WHILE_HIDDEN
     /* Don't draw while we're hidden */
     if (renderer->hidden) {
         return 0;
     }
+#endif
 
     if (num_vertices < 3) {
         return 0;
@@ -4120,6 +4122,21 @@ SDL_GetBlendModeAlphaOperation(SDL_BlendMode blendMode)
 {
     blendMode = SDL_GetLongBlendMode(blendMode);
     return (SDL_BlendOperation)(((Uint32)blendMode >> 16) & 0xF);
+}
+
+int
+SDL_RenderSetVSync(SDL_Renderer * renderer, int vsync)
+{
+    CHECK_RENDERER_MAGIC(renderer, -1);
+
+    if (vsync != 0 && vsync != 1) {
+        return SDL_Unsupported();
+    }
+
+    if (renderer->SetVSync) {
+        return renderer->SetVSync(renderer, vsync);
+    }
+    return SDL_Unsupported();
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

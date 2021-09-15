@@ -1,0 +1,23 @@
+name: Build (Sony Playstation Vita)
+
+on: [push, pull_request]
+
+defaults:
+  run:
+    shell: sh
+
+jobs:
+  vita:
+    runs-on: ubuntu-latest
+    container: 
+      image: vitasdk/vitasdk:latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install CMake and GNU Make
+      run: |
+        apk update 
+        apk add cmake make
+    - name: Configure CMake
+      run: cmake -S. -Bbuild -DCMAKE_TOOLCHAIN_FILE=${VITASDK}/share/vita.toolchain.cmake -DCMAKE_BUILD_TYPE=Release
+    - name: Build
+      run: cmake --build build

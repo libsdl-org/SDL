@@ -2598,6 +2598,21 @@ D3D11_RenderPresent(SDL_Renderer * renderer)
     }
 }
 
+#if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
+    /* no-op. */
+#else
+static int
+D3D11_SetVSync(SDL_Renderer * renderer, const int vsync)
+{
+    if (vsync) {
+        renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
+    } else {
+        renderer->info.flags &= ~SDL_RENDERER_PRESENTVSYNC;
+    }
+    return 0;
+}
+#endif
+
 SDL_Renderer *
 D3D11_CreateRenderer(SDL_Window * window, Uint32 flags)
 {
@@ -2666,6 +2681,7 @@ D3D11_CreateRenderer(SDL_Window * window, Uint32 flags)
     if ((flags & SDL_RENDERER_PRESENTVSYNC)) {
         renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
     }
+    renderer->SetVSync = D3D11_SetVSync;
 #endif
 
     /* HACK: make sure the SDL_Renderer references the SDL_Window data now, in

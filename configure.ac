@@ -3799,6 +3799,9 @@ case "$host" in
                 ac_default_prefix=$BUILD_PREFIX
             fi
         fi
+        if test x$enable_loadso = xyes; then
+            have_loadso=yes
+        fi
         CheckDeclarationAfterStatement
         CheckDummyVideo
         CheckDiskAudio
@@ -3923,7 +3926,6 @@ case "$host" in
         if test x$enable_loadso = xyes; then
             AC_DEFINE(SDL_LOADSO_WINDOWS, 1, [ ])
             SOURCES="$SOURCES $srcdir/src/loadso/windows/*.c"
-            have_loadso=yes
         fi
         # Set up the system libraries we need
         if test -f /lib/w32api/libuuid.a; then

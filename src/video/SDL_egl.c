@@ -107,7 +107,7 @@
 #define EGL_PLATFORM_DEVICE_EXT 0x0
 #endif
 
-#ifdef SDL_VIDEO_STATIC_ANGLE
+#if defined(SDL_VIDEO_STATIC_ANGLE) || defined(SDL_VIDEO_DRIVER_VITA)
 #define LOAD_FUNC(NAME) \
 _this->egl_data->NAME = (void *)NAME;
 #else
@@ -122,7 +122,6 @@ if (!_this->egl_data->NAME) \
 /* it is allowed to not have some of the EGL extensions on start - attempts to use them will fail later. */
 #define LOAD_FUNC_EGLEXT(NAME) \
     _this->egl_data->NAME = _this->egl_data->eglGetProcAddress(#NAME);
-
 
 static const char * SDL_EGL_GetErrorName(EGLint eglErrorCode)
 {
@@ -245,7 +244,7 @@ SDL_EGL_GetProcAddress(_THIS, const char *proc)
         retval = _this->egl_data->eglGetProcAddress(proc);
     }
 
-    #ifndef __EMSCRIPTEN__  /* LoadFunction isn't needed on Emscripten and will call dlsym(), causing other problems. */
+    #if !defined(__EMSCRIPTEN__) && !defined(SDL_VIDEO_DRIVER_VITA)  /* LoadFunction isn't needed on Emscripten and will call dlsym(), causing other problems. */
     /* Try SDL_LoadFunction() first for EGL <= 1.4, or as a fallback for >= 1.5. */
     if (!retval) {
         static char procname[64];
@@ -344,7 +343,7 @@ SDL_EGL_LoadLibraryOnly(_THIS, const char *egl_path)
     }
 #endif
 
-#ifndef SDL_VIDEO_STATIC_ANGLE
+#if !defined(SDL_VIDEO_STATIC_ANGLE) && !defined(SDL_VIDEO_DRIVER_VITA)
     /* A funny thing, loading EGL.so first does not work on the Raspberry, so we load libGL* first */
     path = SDL_getenv("SDL_VIDEO_GL_DRIVER");
     if (path != NULL) {
@@ -430,6 +429,9 @@ SDL_EGL_LoadLibraryOnly(_THIS, const char *egl_path)
 #endif
 
     _this->egl_data->dll_handle = dll_handle;
+#if SDL_VIDEO_DRIVER_VITA
+    _this->egl_data->egl_dll_handle = egl_dll_handle;
+#endif
 
     /* Load new function pointers */
     LOAD_FUNC(eglGetDisplay);
@@ -498,6 +500,7 @@ SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_displa
     _this->egl_data->egl_display = EGL_NO_DISPLAY;
 
 #if !defined(__WINRT__)
+#if !defined(SDL_VIDEO_DRIVER_VITA)
     if (platform) {
         /* EGL 1.5 allows querying for client version with EGL_NO_DISPLAY
          * --
@@ -522,6 +525,7 @@ SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_displa
             }
         }
     }
+#endif
     /* Try the implementation-specific eglGetDisplay even if eglGetPlatformDisplay fails */
     if (_this->egl_data->egl_display == EGL_NO_DISPLAY) {
         _this->egl_data->egl_display = _this->egl_data->eglGetDisplay(native_display);

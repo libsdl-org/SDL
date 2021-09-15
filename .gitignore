@@ -136,6 +136,7 @@ test/testloadso
 test/testlocale
 test/testlock
 test/testmessage
+test/testmouse
 test/testmultiaudio
 test/testnative
 test/testoverlay2

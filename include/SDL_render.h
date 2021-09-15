@@ -1694,6 +1694,15 @@ extern DECLSPEC void *SDLCALL SDL_RenderGetMetalLayer(SDL_Renderer * renderer);
  */
 extern DECLSPEC void *SDLCALL SDL_RenderGetMetalCommandEncoder(SDL_Renderer * renderer);
 
+/**
+ * Toggle VSync of the given renderer.
+ *
+ * \param renderer The renderer to toggle
+ * \param vsync 1 for on, 0 for off. All other values are reserved
+ * \returns a 0 int on success, or non-zero on failure
+ */
+extern DECLSPEC int SDLCALL SDL_RenderSetVSync(SDL_Renderer* renderer, int vsync);
+
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
 }

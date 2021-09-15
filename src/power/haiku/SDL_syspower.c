@@ -45,7 +45,7 @@
 SDL_bool
 SDL_GetPowerInfo_Haiku(SDL_PowerState * state, int *seconds, int *percent)
 {
-    const int fd = open("/dev/misc/apm", O_RDONLY);
+    const int fd = open("/dev/misc/apm", O_RDONLY | O_CLOEXEC);
     SDL_bool need_details = SDL_FALSE;
     uint16 regs[6];
     uint8 ac_status;

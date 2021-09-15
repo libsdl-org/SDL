@@ -1921,7 +1921,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 ac_aux_dir=
-for ac_dir in $srcdir/../build-scripts; do
+for ac_dir in ../build-scripts "$srcdir"/../build-scripts; do
   if test -f "$ac_dir/install-sh"; then
     ac_aux_dir=$ac_dir
     ac_install_sh="$ac_aux_dir/install-sh -c"
@@ -1937,7 +1937,7 @@ for ac_dir in $srcdir/../build-scripts; do
   fi
 done
 if test -z "$ac_aux_dir"; then
-  as_fn_error $? "cannot find install-sh, install.sh, or shtool in $srcdir/../build-scripts" "$LINENO" 5
+  as_fn_error $? "cannot find install-sh, install.sh, or shtool in ../build-scripts \"$srcdir\"/../build-scripts" "$LINENO" 5
 fi
 
 # These three variables are undocumented and unsupported,

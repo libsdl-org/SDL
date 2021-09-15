@@ -25191,6 +25191,9 @@ $as_echo "#define SDL_TIMER_UNIX 1" >>confdefs.h
                 ac_default_prefix=$BUILD_PREFIX
             fi
         fi
+        if test x$enable_loadso = xyes; then
+            have_loadso=yes
+        fi
         CheckDeclarationAfterStatement
         CheckDummyVideo
         CheckDiskAudio
@@ -25366,7 +25369,6 @@ $as_echo "#define SDL_TIMER_WINDOWS 1" >>confdefs.h
 $as_echo "#define SDL_LOADSO_WINDOWS 1" >>confdefs.h
 
             SOURCES="$SOURCES $srcdir/src/loadso/windows/*.c"
-            have_loadso=yes
         fi
         # Set up the system libraries we need
         if test -f /lib/w32api/libuuid.a; then

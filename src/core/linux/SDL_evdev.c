@@ -725,7 +725,7 @@ SDL_EVDEV_device_added(const char *dev_path, int udev_class)
         return SDL_OutOfMemory();
     }
 
-    item->fd = open(dev_path, O_RDONLY | O_NONBLOCK);
+    item->fd = open(dev_path, O_RDONLY | O_NONBLOCK | O_CLOEXEC);
     if (item->fd < 0) {
         SDL_free(item);
         return SDL_SetError("Unable to open %s", dev_path);

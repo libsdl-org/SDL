@@ -302,7 +302,7 @@ MaybeAddDevice(const char *path)
         }
     }
 
-    fd = open(path, O_RDONLY, 0);
+    fd = open(path, O_RDONLY | O_CLOEXEC, 0);
     if (fd < 0) {
         return -1;
     }
@@ -963,7 +963,7 @@ PrepareJoystickHwdata(SDL_Joystick *joystick, SDL_joylist_item *item)
                                      &joystick->naxes,
                                      &joystick->nhats);
     } else {
-        const int fd = open(item->path, O_RDWR, 0);
+        const int fd = open(item->path, O_RDWR | O_CLOEXEC, 0);
         if (fd < 0) {
             return SDL_SetError("Unable to open %s", item->path);
         }
