@@ -173,7 +173,6 @@ WIN_ResetDeadKeys()
 
     GetKeyboardState(keyboardState);
 
-
     keycode = VK_SPACE;
     scancode = MapVirtualKey(keycode, MAPVK_VK_TO_VSC);
     if (scancode == 0) {
