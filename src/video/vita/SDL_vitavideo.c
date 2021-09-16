@@ -33,6 +33,7 @@
 #include "../../events/SDL_keyboard_c.h"
 
 /* VITA declarations */
+#include <psp2/kernel/processmgr.h>
 #include "SDL_vitavideo.h"
 #include "SDL_vitatouch.h"
 #include "SDL_vitakeyboard.h"
@@ -346,8 +347,8 @@ VITA_RestoreWindow(_THIS, SDL_Window * window)
 void
 VITA_SetWindowGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
 {
-
 }
+
 void
 VITA_DestroyWindow(_THIS, SDL_Window * window)
 {
@@ -555,6 +556,12 @@ void VITA_PumpEvents(_THIS)
 #if !defined(SDL_VIDEO_VITA_PVR)
     SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
 #endif
+
+    if (_this->suspend_screensaver) {
+        // cancel all idle timers to prevent vita going to sleep
+        sceKernelPowerTick(SCE_KERNEL_POWER_TICK_DEFAULT);
+    }
+
     VITA_PollTouch();
     VITA_PollKeyboard();
     VITA_PollMouse();

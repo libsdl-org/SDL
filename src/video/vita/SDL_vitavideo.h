@@ -38,7 +38,6 @@ typedef struct SDL_VideoData
 
     SceWChar16 ime_buffer[SCE_IME_DIALOG_MAX_TEXT_LENGTH];
     SDL_bool ime_active;
-
 } SDL_VideoData;
 
 
