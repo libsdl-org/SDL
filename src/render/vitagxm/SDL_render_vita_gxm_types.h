@@ -61,16 +61,15 @@ typedef struct clear_vertex {
 typedef struct color_vertex {
     float x;
     float y;
-    float z;
     unsigned int color;
 } color_vertex;
 
 typedef struct texture_vertex {
     float x;
     float y;
-    float z;
     float u;
     float v;
+    unsigned int color;
 } texture_vertex;
 
 typedef struct gxm_texture {
@@ -85,7 +84,6 @@ typedef struct gxm_texture {
 typedef struct fragment_programs {
     SceGxmFragmentProgram *color;
     SceGxmFragmentProgram *texture;
-    SceGxmFragmentProgram *textureTint;
 } fragment_programs;
 
 typedef struct blend_fragment_programs {
@@ -103,7 +101,6 @@ typedef struct
     SDL_Texture *texture;
     SDL_Texture *target;
     Uint32 color;
-    Uint32 texture_color;
     SceGxmFragmentProgram *fragment_program;
     SceGxmVertexProgram *vertex_program;
     int last_command;
@@ -162,11 +159,9 @@ typedef struct
     SceGxmFragmentProgram *colorFragmentProgram;
     SceGxmVertexProgram *textureVertexProgram;
     SceGxmFragmentProgram *textureFragmentProgram;
-    SceGxmFragmentProgram *textureTintFragmentProgram;
     SceGxmProgramParameter *clearClearColorParam;
     SceGxmProgramParameter *colorWvpParam;
     SceGxmProgramParameter *textureWvpParam;
-    SceGxmProgramParameter *textureTintColorParam;
 
     SceGxmShaderPatcher *shaderPatcher;
     SceGxmVertexProgram *clearVertexProgram;
@@ -178,7 +173,6 @@ typedef struct
     SceGxmShaderPatcherId colorFragmentProgramId;
     SceGxmShaderPatcherId textureVertexProgramId;
     SceGxmShaderPatcherId textureFragmentProgramId;
-    SceGxmShaderPatcherId textureTintFragmentProgramId;
 
     SceUID patcherBufferUid;
     SceUID patcherVertexUsseUid;

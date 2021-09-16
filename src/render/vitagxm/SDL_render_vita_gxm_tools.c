@@ -164,7 +164,6 @@ free_fragment_programs(VITA_GXM_RenderData *data, fragment_programs *out)
 {
     sceGxmShaderPatcherReleaseFragmentProgram(data->shaderPatcher, out->color);
     sceGxmShaderPatcherReleaseFragmentProgram(data->shaderPatcher, out->texture);
-    sceGxmShaderPatcherReleaseFragmentProgram(data->shaderPatcher, out->textureTint);
 }
 
 static void
@@ -202,21 +201,6 @@ make_fragment_programs(VITA_GXM_RenderData *data, fragment_programs *out,
         SDL_LogError(SDL_LOG_CATEGORY_RENDER, "Patcher create fragment failed: %d\n", err);
         return;
     }
-
-    err = sceGxmShaderPatcherCreateFragmentProgram(
-        data->shaderPatcher,
-        data->textureTintFragmentProgramId,
-        SCE_GXM_OUTPUT_REGISTER_FORMAT_UCHAR4,
-        0,
-        blend_info,
-        textureVertexProgramGxp,
-        &out->textureTint
-    );
-
-    if (err != 0) {
-        SDL_LogError(SDL_LOG_CATEGORY_RENDER, "Patcher create fragment failed: %d\n", err);
-        return;
-    }
 }
 
 
@@ -232,22 +216,18 @@ set_stencil_mask(VITA_GXM_RenderData *data, float x, float y, float w, float h)
 
     vertices[0].x = x;
     vertices[0].y = y;
-    vertices[0].z = +0.5f;
     vertices[0].color = 0;
 
     vertices[1].x = x + w;
     vertices[1].y = y;
-    vertices[1].z = +0.5f;
     vertices[1].color = 0;
 
     vertices[2].x = x;
     vertices[2].y = y + h;
-    vertices[2].z = +0.5f;
     vertices[2].color = 0;
 
     vertices[3].x = x + w;
     vertices[3].y = y + h;
-    vertices[3].z = +0.5f;
     vertices[3].color = 0;
 
     data->drawstate.fragment_program = data->colorFragmentProgram;
@@ -654,12 +634,6 @@ gxm_init(SDL_Renderer *renderer)
         return err;
     }
 
-    err = sceGxmProgramCheck(textureTintFragmentProgramGxp);
-    if (err != 0) {
-        SDL_LogError(SDL_LOG_CATEGORY_RENDER, "check program (texture tint fragment) failed: %d\n", err);
-        return err;
-    }
-
     // register programs with the patcher
     err = sceGxmShaderPatcherRegisterProgram(data->shaderPatcher, clearVertexProgramGxp, &data->clearVertexProgramId);
     if (err != 0) {
@@ -696,13 +670,6 @@ gxm_init(SDL_Renderer *renderer)
         SDL_LogError(SDL_LOG_CATEGORY_RENDER, "register program (texture fragment) failed: %d\n", err);
         return err;
     }
-
-    err = sceGxmShaderPatcherRegisterProgram(data->shaderPatcher, textureTintFragmentProgramGxp, &data->textureTintFragmentProgramId);
-    if (err != 0) {
-        SDL_LogError(SDL_LOG_CATEGORY_RENDER, "register program (texture tint fragment) failed: %d\n", err);
-        return err;
-    }
-
 
     {
         // get attributes by name to create vertex format bindings
@@ -789,15 +756,15 @@ gxm_init(SDL_Renderer *renderer)
         // create color vertex format
         SceGxmVertexAttribute colorVertexAttributes[2];
         SceGxmVertexStream colorVertexStreams[1];
-        /* x,y,z: 3 float 32 bits */
+        /* x,y: 2 float 32 bits */
         colorVertexAttributes[0].streamIndex = 0;
         colorVertexAttributes[0].offset = 0;
         colorVertexAttributes[0].format = SCE_GXM_ATTRIBUTE_FORMAT_F32;
-        colorVertexAttributes[0].componentCount = 3; // (x, y, z)
+        colorVertexAttributes[0].componentCount = 2; // (x, y)
         colorVertexAttributes[0].regIndex = sceGxmProgramParameterGetResourceIndex(paramColorPositionAttribute);
         /* color: 4 unsigned char  = 32 bits */
         colorVertexAttributes[1].streamIndex = 0;
-        colorVertexAttributes[1].offset = 12; // (x, y, z) * 4 = 12 bytes
+        colorVertexAttributes[1].offset = 8; // (x, y) * 4 = 8 bytes
         colorVertexAttributes[1].format = SCE_GXM_ATTRIBUTE_FORMAT_U8N;
         colorVertexAttributes[1].componentCount = 4; // (color)
         colorVertexAttributes[1].regIndex = sceGxmProgramParameterGetResourceIndex(paramColorColorAttribute);
@@ -826,22 +793,29 @@ gxm_init(SDL_Renderer *renderer)
     {
         const SceGxmProgramParameter *paramTexturePositionAttribute = sceGxmProgramFindParameterByName(textureVertexProgramGxp, "aPosition");
         const SceGxmProgramParameter *paramTextureTexcoordAttribute = sceGxmProgramFindParameterByName(textureVertexProgramGxp, "aTexcoord");
+        const SceGxmProgramParameter *paramTextureColorAttribute = sceGxmProgramFindParameterByName(textureVertexProgramGxp, "aColor");
 
         // create texture vertex format
-        SceGxmVertexAttribute textureVertexAttributes[2];
+        SceGxmVertexAttribute textureVertexAttributes[3];
         SceGxmVertexStream textureVertexStreams[1];
-        /* x,y,z: 3 float 32 bits */
+        /* x,y: 2 float 32 bits */
         textureVertexAttributes[0].streamIndex = 0;
         textureVertexAttributes[0].offset = 0;
         textureVertexAttributes[0].format = SCE_GXM_ATTRIBUTE_FORMAT_F32;
-        textureVertexAttributes[0].componentCount = 3; // (x, y, z)
+        textureVertexAttributes[0].componentCount = 2; // (x, y)
         textureVertexAttributes[0].regIndex = sceGxmProgramParameterGetResourceIndex(paramTexturePositionAttribute);
         /* u,v: 2 floats 32 bits */
         textureVertexAttributes[1].streamIndex = 0;
-        textureVertexAttributes[1].offset = 12; // (x, y, z) * 4 = 12 bytes
+        textureVertexAttributes[1].offset = 8; // (x, y) * 4 = 8 bytes
         textureVertexAttributes[1].format = SCE_GXM_ATTRIBUTE_FORMAT_F32;
         textureVertexAttributes[1].componentCount = 2; // (u, v)
         textureVertexAttributes[1].regIndex = sceGxmProgramParameterGetResourceIndex(paramTextureTexcoordAttribute);
+        /* r,g,b,a: 4 unsigned chars 32 bits */
+        textureVertexAttributes[2].streamIndex = 0;
+        textureVertexAttributes[2].offset = 16; // (x, y, u, v) * 4 = 16 bytes
+        textureVertexAttributes[2].format = SCE_GXM_ATTRIBUTE_FORMAT_U8N;
+        textureVertexAttributes[2].componentCount = 4; // (r, g, b, a)
+        textureVertexAttributes[2].regIndex = sceGxmProgramParameterGetResourceIndex(paramTextureColorAttribute);
         // 16 bit (short) indices
         textureVertexStreams[0].stride = sizeof(texture_vertex);
         textureVertexStreams[0].indexSource = SCE_GXM_INDEX_SOURCE_INDEX_16BIT;
@@ -851,13 +825,13 @@ gxm_init(SDL_Renderer *renderer)
             data->shaderPatcher,
             data->textureVertexProgramId,
             textureVertexAttributes,
-            2,
+            3,
             textureVertexStreams,
             1,
             &data->textureVertexProgram
         );
         if (err != 0) {
-            SDL_LogError(SDL_LOG_CATEGORY_RENDER, "create program (texture vertex) failed: %d\n", err);
+            SDL_LogError(SDL_LOG_CATEGORY_RENDER, "create program (texture vertex) failed: %x\n", err);
             return err;
         }
 
@@ -876,7 +850,6 @@ gxm_init(SDL_Renderer *renderer)
 
         data->colorFragmentProgram = in->color;
         data->textureFragmentProgram = in->texture;
-        data->textureTintFragmentProgram = in->textureTint;
 
     }
 
@@ -884,7 +857,6 @@ gxm_init(SDL_Renderer *renderer)
     data->clearClearColorParam = (SceGxmProgramParameter *)sceGxmProgramFindParameterByName(clearFragmentProgramGxp, "uClearColor");
     data->colorWvpParam = (SceGxmProgramParameter *)sceGxmProgramFindParameterByName(colorVertexProgramGxp, "wvp");
     data->textureWvpParam = (SceGxmProgramParameter *)sceGxmProgramFindParameterByName(textureVertexProgramGxp, "wvp");
-    data->textureTintColorParam = (SceGxmProgramParameter *)sceGxmProgramFindParameterByName(textureTintFragmentProgramGxp, "uTintColor");
 
     // Allocate memory for the memory pool
     data->pool_addr[0] = mem_gpu_alloc(
@@ -963,7 +935,6 @@ void gxm_finish(SDL_Renderer *renderer)
     sceGxmShaderPatcherUnregisterProgram(data->shaderPatcher, data->colorFragmentProgramId);
     sceGxmShaderPatcherUnregisterProgram(data->shaderPatcher, data->colorVertexProgramId);
     sceGxmShaderPatcherUnregisterProgram(data->shaderPatcher, data->textureFragmentProgramId);
-    sceGxmShaderPatcherUnregisterProgram(data->shaderPatcher, data->textureTintFragmentProgramId);
     sceGxmShaderPatcherUnregisterProgram(data->shaderPatcher, data->textureVertexProgramId);
 
     sceGxmShaderPatcherDestroy(data->shaderPatcher);
