@@ -36,20 +36,18 @@
 #endif
 
 /* The __atomic_load_n() intrinsic showed up in different times for different compilers. */
-#if defined(HAVE_GCC_ATOMICS)
-# if defined(__clang__)
-#   if __has_builtin(__atomic_load_n)
-      /* !!! FIXME: this advertises as available in the NDK but uses an external symbol we don't have.
-         It might be in a later NDK or we might need an extra library? --ryan. */
-#     if !defined(__ANDROID__)
-#       define HAVE_ATOMIC_LOAD_N 1
-#     endif
-#   endif
-# elif defined(__GNUC__)
+#if defined(__clang__)
+#  if __has_builtin(__atomic_load_n) || defined(HAVE_GCC_ATOMICS)
+     /* !!! FIXME: this advertises as available in the NDK but uses an external symbol we don't have.
+        It might be in a later NDK or we might need an extra library? --ryan. */
+#    if !defined(__ANDROID__)
+#      define HAVE_ATOMIC_LOAD_N 1
+#    endif
+#  endif
+#elif defined(__GNUC__)
 #   if (__GNUC__ >= 5)
 #     define HAVE_ATOMIC_LOAD_N 1
 #   endif
-# endif
 #endif
 
 #if defined(__WATCOMC__) && defined(__386__)
