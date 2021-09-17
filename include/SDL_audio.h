@@ -437,6 +437,8 @@ extern DECLSPEC const char *SDLCALL SDL_GetAudioDeviceName(int index,
  * \param spec The SDL_AudioSpec to be initialized by this function.
  * \returns 0 on success, nonzero on error
  *
+ * \since This function is available since SDL 2.0.16.
+ *
  * \sa SDL_GetNumAudioDevices
  */
 extern DECLSPEC int SDLCALL SDL_GetAudioDeviceSpec(int index,
