@@ -818,6 +818,8 @@ extern DECLSPEC int SDLCALL SDL_SoftStretch(SDL_Surface * src,
 
 /**
  * Perform bilinear scaling between two surfaces of the same format, 32BPP.
+ *
+ * \since This function is available since SDL 2.0.16.
  */
 extern DECLSPEC int SDLCALL SDL_SoftStretchLinear(SDL_Surface * src,
                                             const SDL_Rect * srcrect,
