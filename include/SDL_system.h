@@ -50,6 +50,8 @@ typedef void (SDLCALL * SDL_WindowsMessageHook)(void *userdata, void *hWnd, unsi
  *
  * \param callback The SDL_WindowsMessageHook function to call.
  * \param userdata a pointer to pass to every iteration of `callback`
+ *
+ * \since This function is available since SDL 2.0.16.
  */
 extern DECLSPEC void SDLCALL SDL_SetWindowsMessageHook(SDL_WindowsMessageHook callback, void *userdata);
 
@@ -95,6 +97,8 @@ typedef struct ID3D11Device ID3D11Device;
  * \param renderer the renderer from which to get the associated D3D11 device
  * \returns the D3D11 device associated with given renderer or NULL if it is
  *          not a D3D11 renderer; call SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 2.0.16.
  */
 extern DECLSPEC ID3D11Device* SDLCALL SDL_RenderGetD3D11Device(SDL_Renderer * renderer);
 
