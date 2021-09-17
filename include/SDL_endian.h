@@ -106,7 +106,7 @@ extern "C" {
 
 #if HAS_BUILTIN_BSWAP16
 #define SDL_Swap16(x) __builtin_bswap16(x)
-#elif defined(__i386__) && !HAS_BROKEN_BSWAP \
+#elif defined(__i386__) && !HAS_BROKEN_BSWAP
 SDL_FORCE_INLINE Uint16
 SDL_Swap16(Uint16 x)
 {
