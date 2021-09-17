@@ -342,6 +342,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_AndroidRequestPermission(const char *permis
  * \param xoffset set this parameter only when gravity >=0
  * \param yoffset set this parameter only when gravity >=0
  * \returns 0 if success, -1 if any error occurs.
+ *
+ * \since This function is available since SDL 2.0.16.
  */
 extern DECLSPEC int SDLCALL SDL_AndroidShowToast(const char* message, int duration, int gravity, int xoffset, int yoffset);
 
