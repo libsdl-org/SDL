@@ -787,6 +787,8 @@ extern DECLSPEC int SDLCALL SDL_JoystickSetLED(SDL_Joystick *joystick, Uint8 red
  * \param data The data to send to the joystick
  * \param size The size of the data to send to the joystick
  * \returns 0, or -1 if this joystick or driver doesn't support effect packets
+ *
+ * \since This function is available since SDL 2.0.16.
  */
 extern DECLSPEC int SDLCALL SDL_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size);
 

@@ -846,6 +846,8 @@ extern DECLSPEC int SDLCALL SDL_GameControllerSetLED(SDL_GameController *gamecon
  * \param size The size of the data to send to the controller
  * \returns 0, or -1 if this controller or driver doesn't support effect
  *          packets
+ *
+ * \since This function is available since SDL 2.0.16.
  */
 extern DECLSPEC int SDLCALL SDL_GameControllerSendEffect(SDL_GameController *gamecontroller, const void *data, int size);
 
