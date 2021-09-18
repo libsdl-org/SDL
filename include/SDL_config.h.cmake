@@ -231,7 +231,7 @@
 #       define HAVE_IMMINTRIN_H 1
 #    endif
 #  endif
-#else  /* non-Apple platforms can use the normal CMake check for this.
+#else  /* non-Apple platforms can use the normal CMake check for this. */
 #  cmakedefine HAVE_IMMINTRIN_H 1
 #endif
 
