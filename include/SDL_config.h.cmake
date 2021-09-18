@@ -222,7 +222,19 @@
 #cmakedefine HAVE_INOTIFY_INIT 1
 #cmakedefine HAVE_INOTIFY_INIT1 1
 #cmakedefine HAVE_INOTIFY 1
-#cmakedefine HAVE_IMMINTRIN_H 1
+
+/* Apple platforms might be building universal binaries, where Intel builds
+   can use immintrin.h but other architectures can't. */
+#ifdef __APPLE__
+#  if defined(__has_include) && (defined(__i386__) || defined(__x86_64))
+#    if __has_include(<immintrin.h>)
+#       define HAVE_IMMINTRIN_H 1
+#    endif
+#  endif
+#else  /* non-Apple platforms can use the normal CMake check for this.
+#  cmakedefine HAVE_IMMINTRIN_H 1
+#endif
+
 #cmakedefine HAVE_LIBUDEV_H 1
 #cmakedefine HAVE_LIBSAMPLERATE_H 1
 #cmakedefine HAVE_LIBDECOR_H  1
