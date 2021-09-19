@@ -788,7 +788,7 @@ GLES2_QueueCopy(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * t
     int color;
     GLfloat minx, miny, maxx, maxy;
     GLfloat minu, maxu, minv, maxv;
-    const size_t vertlen = 4 * (2 * sizeof (float) + sizeof (int) + 2 * sizeof (float));
+    const size_t vertlen = 6 * (2 * sizeof (float) + sizeof (int) + 2 * sizeof (float));
     GLfloat *verts = (GLfloat *) SDL_AllocateRenderVertices(renderer, vertlen, 0, &cmd->data.draw.first);
 
     if (!verts) {
@@ -813,11 +813,28 @@ GLES2_QueueCopy(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * t
     minv = (GLfloat) srcrect->y / texture->h;
     maxv = (GLfloat) (srcrect->y + srcrect->h) / texture->h;
 
+    /* set these up as GL_TRIANGLES instead of GL_TRIANGLE_STRIP; it's more
+       vertices, but we can then draw unconnected pieces in a single draw
+       call if there are several draws in a row using the same texture
+       (such as a particle system or texture atlas). */
     *(verts++) = minx;
     *(verts++) = miny;
     *((int *)verts++) = color;
     *(verts++) = minu;
     *(verts++) = minv;
+
+    *(verts++) = maxx;
+    *(verts++) = miny;
+    *((int *)verts++) = color;
+    *(verts++) = maxu;
+    *(verts++) = minv;
+
+    *(verts++) = minx;
+    *(verts++) = maxy;
+    *((int *)verts++) = color;
+    *(verts++) = minu;
+    *(verts++) = maxv;
+
 
     *(verts++) = maxx;
     *(verts++) = miny;
@@ -855,7 +872,7 @@ GLES2_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture *
     const GLfloat centery = center->y + dstrect->y;
     GLfloat minx, miny, maxx, maxy;
     GLfloat minu, maxu, minv, maxv;
-    const size_t vertlen = 4 * (2 * sizeof (float) + sizeof (int) + (2 + 2 + 2) * sizeof (float));
+    const size_t vertlen = 6 * (2 * sizeof (float) + sizeof (int) + (2 + 2 + 2) * sizeof (float));
     GLfloat *verts = (GLfloat *) SDL_AllocateRenderVertices(renderer, vertlen, 0, &cmd->data.draw.first);
 
     if (!verts) {
@@ -889,14 +906,38 @@ GLES2_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture *
     minv = ((GLfloat) srcquad->y) / ((GLfloat) texture->h);
     maxv = ((GLfloat) (srcquad->y + srcquad->h)) / ((GLfloat) texture->h);
 
-
     cmd->data.draw.count = 1;
+
+    /* set these up as GL_TRIANGLES instead of GL_TRIANGLE_STRIP; it's more
+       vertices, but we can then draw unconnected pieces in a single draw
+       call if there are several draws in a row using the same texture
+       (such as a particle system or texture atlas). */
 
     *(verts++) = minx;
     *(verts++) = miny;
     *((int *)verts++) = color;
     *(verts++) = minu;
     *(verts++) = minv;
+    *(verts++) = s;
+    *(verts++) = c;
+    *(verts++) = centerx;
+    *(verts++) = centery;
+
+    *(verts++) = maxx;
+    *(verts++) = miny;
+    *((int *)verts++) = color;
+    *(verts++) = maxu;
+    *(verts++) = minv;
+    *(verts++) = s;
+    *(verts++) = c;
+    *(verts++) = centerx;
+    *(verts++) = centery;
+
+    *(verts++) = minx;
+    *(verts++) = maxy;
+    *((int *)verts++) = color;
+    *(verts++) = minu;
+    *(verts++) = maxv;
     *(verts++) = s;
     *(verts++) = c;
     *(verts++) = centerx;
@@ -1375,9 +1416,34 @@ GLES2_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
 
             case SDL_RENDERCMD_COPY:
             case SDL_RENDERCMD_COPY_EX: {
-                if (SetCopyState(renderer, cmd) == 0) {
-                    data->glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+                /* as long as we have the same copy command in a row, with the
+                   same texture, we can combine them all into a single draw call. */
+                SDL_Texture *thistexture = cmd->data.draw.texture;
+                const SDL_RenderCommandType thiscmdtype = cmd->command;
+                SDL_RenderCommand *finalcmd = cmd;
+                SDL_RenderCommand *nextcmd = cmd->next;
+                int quads = 1;
+                while (nextcmd != NULL) {
+                    const SDL_RenderCommandType nextcmdtype = nextcmd->command;
+                    if (nextcmdtype != thiscmdtype) {
+                        /* SETDRAWCOLOR commands are safe because copy color is set in the vbo per-vertex. */
+                        if ((nextcmdtype != SDL_RENDERCMD_SETDRAWCOLOR) && (nextcmdtype != SDL_RENDERCMD_NO_OP)) {
+                            break;  /* can't go any further on this draw call, different render command up next. */
+                        }
+                    } else if (nextcmd->data.draw.texture != thistexture) {
+                        break;  /* can't go any further on this draw call, different texture copy up next. */
+                    } else {
+                        finalcmd = nextcmd;  /* we can combine copy operations here. Mark this one as the furthest okay command. */
+                        quads++;
+                    }
+                    nextcmd = nextcmd->next;
                 }
+
+                if (SetCopyState(renderer, cmd) == 0) {
+                    data->glDrawArrays(GL_TRIANGLES, 0, quads * 6);
+                }
+
+                cmd = finalcmd;  /* skip any copy commands we just combined in here. */
                 break;
             }
 
