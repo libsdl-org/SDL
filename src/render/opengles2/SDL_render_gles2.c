@@ -691,9 +691,9 @@ GLES2_QueueDrawLines(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_
     const SDL_bool colorswap = (renderer->target && (renderer->target->format == SDL_PIXELFORMAT_ARGB8888 || renderer->target->format == SDL_PIXELFORMAT_RGB888));
     int color;
     int i;
-    const size_t vertlen = (2 * sizeof (float) + sizeof (int)) * count;
+    GLfloat prevx, prevy;
+    const size_t vertlen = ((2 * sizeof (float)) + sizeof (int)) * count;
     GLfloat *verts = (GLfloat *) SDL_AllocateRenderVertices(renderer, vertlen, 0, &cmd->data.draw.first);
-
     if (!verts) {
         return -1;
     }
@@ -706,33 +706,31 @@ GLES2_QueueDrawLines(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_
 
     cmd->data.draw.count = count;
 
-    /* Offset to hit the center of the pixel. */
-    for (i = 0; i < count; i++) {
-        *(verts++) = 0.5f + points[i].x;
-        *(verts++) = 0.5f + points[i].y;
+    /* 0.5f offset to hit the center of the pixel. */
+    prevx = 0.5f + points->x;
+    prevy = 0.5f + points->y;
+    *(verts++) = prevx;
+    *(verts++) = prevy;
+    *((int *)verts++) = color;
+
+    /* bump the end of each line segment out a quarter of a pixel, to provoke
+       the diamond-exit rule. Without this, you won't just drop the last
+       pixel of the last line segment, but you might also drop pixels at the
+       edge of any given line segment along the way too. */
+    for (i = 1; i < count; i++) {
+        const GLfloat xstart = prevx;
+        const GLfloat ystart = prevy;
+        const GLfloat xend = points[i].x + 0.5f;  /* 0.5f to hit pixel center. */
+        const GLfloat yend = points[i].y + 0.5f;
+        /* bump a little in the direction we are moving in. */
+        const GLfloat deltax = xend - xstart;
+        const GLfloat deltay = yend - ystart;
+        const GLfloat angle = SDL_atan2f(deltay, deltax);
+        prevx = xend + (SDL_cosf(angle) * 0.25f);
+        prevy = yend + (SDL_sinf(angle) * 0.25f);
+        *(verts++) = prevx;
+        *(verts++) = prevy;
         *((int *)verts++) = color;
-    }
-
-    /* Make the last line segment one pixel longer, to satisfy the
-       diamond-exit rule. */
-    verts -= 3 + 3;
-    {
-        const GLfloat xstart = verts[0];
-        const GLfloat ystart = verts[1];
-        const GLfloat xend = verts[3 + 0];
-        const GLfloat yend = verts[3 + 1];
-
-        if (ystart == yend) {  /* horizontal line */
-            verts[(xend > xstart) ? 3 + 0: 0] += 1.0f;
-        } else if (xstart == xend) {  /* vertical line */
-            verts[(yend > ystart) ? 3 + 1: 1] += 1.0f;
-        } else {  /* bump a pixel in the direction we are moving in. */
-            const GLfloat deltax = xend - xstart;
-            const GLfloat deltay = yend - ystart;
-            const GLfloat angle = SDL_atan2f(deltay, deltax);
-            verts[3 + 0] += SDL_cosf(angle);
-            verts[3 + 1] += SDL_sinf(angle);
-        }
     }
 
     return 0;
