@@ -1699,174 +1699,6 @@ D3D11_QueueFillRects(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_
 }
 
 static int
-D3D11_QueueCopy(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * texture,
-             const SDL_Rect * srcrect, const SDL_FRect * dstrect)
-{
-    VertexPositionColor *verts = (VertexPositionColor *) SDL_AllocateRenderVertices(renderer, 4 * sizeof (VertexPositionColor), 0, &cmd->data.draw.first);
-    const float r = (float)(cmd->data.draw.r / 255.0f);
-    const float g = (float)(cmd->data.draw.g / 255.0f);
-    const float b = (float)(cmd->data.draw.b / 255.0f);
-    const float a = (float)(cmd->data.draw.a / 255.0f);
-    const float minu = (float) srcrect->x / texture->w;
-    const float maxu = (float) (srcrect->x + srcrect->w) / texture->w;
-    const float minv = (float) srcrect->y / texture->h;
-    const float maxv = (float) (srcrect->y + srcrect->h) / texture->h;
-
-    if (!verts) {
-        return -1;
-    }
-
-    cmd->data.draw.count = 1;
-
-    verts->pos.x = dstrect->x;
-    verts->pos.y = dstrect->y;
-    verts->pos.z = 0.0f;
-    verts->tex.x = minu;
-    verts->tex.y = minv;
-    verts->color.x = r;
-    verts->color.y = g;
-    verts->color.z = b;
-    verts->color.w = a;
-    verts++;
-
-    verts->pos.x = dstrect->x;
-    verts->pos.y = dstrect->y + dstrect->h;
-    verts->pos.z = 0.0f;
-    verts->tex.x = minu;
-    verts->tex.y = maxv;
-    verts->color.x = r;
-    verts->color.y = g;
-    verts->color.z = b;
-    verts->color.w = a;
-    verts++;
-
-    verts->pos.x = dstrect->x + dstrect->w;
-    verts->pos.y = dstrect->y;
-    verts->pos.z = 0.0f;
-    verts->tex.x = maxu;
-    verts->tex.y = minv;
-    verts->color.x = r;
-    verts->color.y = g;
-    verts->color.z = b;
-    verts->color.w = a;
-    verts++;
-
-    verts->pos.x = dstrect->x + dstrect->w;
-    verts->pos.y = dstrect->y + dstrect->h;
-    verts->pos.z = 0.0f;
-    verts->tex.x = maxu;
-    verts->tex.y = maxv;
-    verts->color.x = r;
-    verts->color.y = g;
-    verts->color.z = b;
-    verts->color.w = a;
-    verts++;
-
-    return 0;
-}
-
-static int
-D3D11_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * texture,
-               const SDL_Rect * srcrect, const SDL_FRect * dstrect,
-               const double angle, const SDL_FPoint *center, const SDL_RendererFlip flip)
-{
-    VertexPositionColor *verts = (VertexPositionColor *) SDL_AllocateRenderVertices(renderer, 5 * sizeof (VertexPositionColor), 0, &cmd->data.draw.first);
-    const float r = (float)(cmd->data.draw.r / 255.0f);
-    const float g = (float)(cmd->data.draw.g / 255.0f);
-    const float b = (float)(cmd->data.draw.b / 255.0f);
-    const float a = (float)(cmd->data.draw.a / 255.0f);
-    float minx, miny, maxx, maxy;
-    float minu, maxu, minv, maxv;
-
-    if (!verts) {
-        return -1;
-    }
-
-    cmd->data.draw.count = 1;
-
-    minx = -center->x;
-    maxx = dstrect->w - center->x;
-    miny = -center->y;
-    maxy = dstrect->h - center->y;
-
-    if (flip & SDL_FLIP_HORIZONTAL) {
-        minu = (float) (srcrect->x + srcrect->w) / texture->w;
-        maxu = (float) srcrect->x / texture->w;
-    } else {
-        minu = (float) srcrect->x / texture->w;
-        maxu = (float) (srcrect->x + srcrect->w) / texture->w;
-    }
-
-    if (flip & SDL_FLIP_VERTICAL) {
-        minv = (float) (srcrect->y + srcrect->h) / texture->h;
-        maxv = (float) srcrect->y / texture->h;
-    } else {
-        minv = (float) srcrect->y / texture->h;
-        maxv = (float) (srcrect->y + srcrect->h) / texture->h;
-    }
-
-
-
-    verts->pos.x = minx;
-    verts->pos.y = miny;
-    verts->pos.z = 0.0f;
-    verts->color.x = r;
-    verts->color.y = g;
-    verts->color.z = b;
-    verts->color.w = a;
-    verts->tex.x = minu;
-    verts->tex.y = minv;
-    verts++;
-
-    verts->pos.x = minx;
-    verts->pos.y = maxy;
-    verts->pos.z = 0.0f;
-    verts->color.x = r;
-    verts->color.y = g;
-    verts->color.z = b;
-    verts->color.w = a;
-    verts->tex.x = minu;
-    verts->tex.y = maxv;
-    verts++;
-
-    verts->pos.x = maxx;
-    verts->pos.y = miny;
-    verts->pos.z = 0.0f;
-    verts->color.x = r;
-    verts->color.y = g;
-    verts->color.z = b;
-    verts->color.w = a;
-    verts->tex.x = maxu;
-    verts->tex.y = minv;
-    verts++;
-
-    verts->pos.x = maxx;
-    verts->pos.y = maxy;
-    verts->pos.z = 0.0f;
-    verts->color.x = r;
-    verts->color.y = g;
-    verts->color.z = b;
-    verts->color.w = a;
-    verts->tex.x = maxu;
-    verts->tex.y = maxv;
-    verts++;
-
-    verts->pos.x = dstrect->x + center->x;  /* X translation */
-    verts->pos.y = dstrect->y + center->y;  /* Y translation */
-    verts->pos.z = (float)(M_PI * (float) angle / 180.0f);  /* rotation */
-    verts->color.x = 0;
-    verts->color.y = 0;
-    verts->color.z = 0;
-    verts->color.w = 0;
-    verts->tex.x = 0.0f;
-    verts->tex.y = 0.0f;
-    verts++;
-
-    return 0;
-}
-
-#if SDL_HAVE_RENDER_GEOMETRY
-static int
 D3D11_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
                     const float *xy, int xy_stride, const int *color, int color_stride, const float *uv, int uv_stride,
                     int num_vertices, const void *indices, int num_indices, int size_indices,
@@ -1921,7 +1753,6 @@ D3D11_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture 
     }
     return 0;
 }
-#endif
 
 static int
 D3D11_UpdateVertexBuffer(SDL_Renderer *renderer,
@@ -2382,30 +2213,13 @@ D3D11_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
                 break;
             }
 
-            case SDL_RENDERCMD_COPY: {
-                const size_t first = cmd->data.draw.first;
-                const size_t start = first / sizeof (VertexPositionColor);
-                D3D11_SetCopyState(renderer, cmd, NULL);
-                D3D11_DrawPrimitives(renderer, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, start, 4);
+            case SDL_RENDERCMD_COPY: /* unsued */
                 break;
-            }
 
-            case SDL_RENDERCMD_COPY_EX: {
-                const size_t first = cmd->data.draw.first;
-                const size_t start = first / sizeof (VertexPositionColor);
-                const VertexPositionColor *verts = (VertexPositionColor *) (((Uint8 *) vertices) + first);
-                const VertexPositionColor *transvert = verts + 4;
-                const float translatex = transvert->pos.x;
-                const float translatey = transvert->pos.y;
-                const float rotation = transvert->pos.z;
-                const Float4X4 matrix = MatrixMultiply(MatrixRotationZ(rotation), MatrixTranslation(translatex, translatey, 0));
-                D3D11_SetCopyState(renderer, cmd, &matrix);
-                D3D11_DrawPrimitives(renderer, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, start, 4);
+            case SDL_RENDERCMD_COPY_EX: /* unused */
                 break;
-            }
 
             case SDL_RENDERCMD_GEOMETRY: {
-#if SDL_HAVE_RENDER_GEOMETRY
                 SDL_Texture *texture = cmd->data.draw.texture;
                 const size_t count = cmd->data.draw.count;
                 const size_t first = cmd->data.draw.first;
@@ -2418,7 +2232,6 @@ D3D11_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
                 }
 
                 D3D11_DrawPrimitives(renderer, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST, start, count);
-#endif
                 break;
             }
 
@@ -2650,11 +2463,7 @@ D3D11_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->QueueDrawPoints = D3D11_QueueDrawPoints;
     renderer->QueueDrawLines = D3D11_QueueDrawPoints;  /* lines and points queue vertices the same way. */
     renderer->QueueFillRects = D3D11_QueueFillRects;
-    renderer->QueueCopy = D3D11_QueueCopy;
-    renderer->QueueCopyEx = D3D11_QueueCopyEx;
-#if SDL_HAVE_RENDER_GEOMETRY
     renderer->QueueGeometry = D3D11_QueueGeometry;
-#endif
     renderer->RunCommandQueue = D3D11_RunCommandQueue;
     renderer->RenderReadPixels = D3D11_RenderReadPixels;
     renderer->RenderPresent = D3D11_RenderPresent;
