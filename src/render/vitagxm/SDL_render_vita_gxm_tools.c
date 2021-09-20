@@ -1056,6 +1056,7 @@ create_gxm_texture(VITA_GXM_RenderData *data, unsigned int w, unsigned int h, Sc
         const uint32_t alignedHeight = ALIGN(h, SCE_GXM_TILE_SIZEY);
         uint32_t sampleCount = alignedWidth*alignedHeight;
         uint32_t depthStrideInSamples = alignedWidth;
+        const uint32_t alignedColorSurfaceStride = ALIGN(w, 8);
 
         int err = sceGxmColorSurfaceInit(
             &texture->gxm_colorsurface,
@@ -1065,7 +1066,7 @@ create_gxm_texture(VITA_GXM_RenderData *data, unsigned int w, unsigned int h, Sc
             SCE_GXM_OUTPUT_REGISTER_SIZE_32BIT,
             w,
             h,
-            w,
+            alignedColorSurfaceStride,
             texture_data
         );
 
