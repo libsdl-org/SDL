@@ -21087,38 +21087,6 @@ _ACEOF
             fi
             have_video=yes
 
-            { $as_echo "$as_me:${as_lineno-$LINENO}: checking for const parameter to XextAddDisplay" >&5
-$as_echo_n "checking for const parameter to XextAddDisplay... " >&6; }
-            have_const_param_XextAddDisplay=no
-            cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-              #include <X11/Xlib.h>
-              #include <X11/Xproto.h>
-              #include <X11/extensions/Xext.h>
-              #include <X11/extensions/extutil.h>
-              extern XExtDisplayInfo* XextAddDisplay(XExtensionInfo* a,Display* b,_Xconst char* c,XExtensionHooks* d,int e,XPointer f);
-
-int
-main ()
-{
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
-
-            have_const_param_XextAddDisplay=yes
-
-$as_echo "#define SDL_VIDEO_DRIVER_X11_CONST_PARAM_XEXTADDDISPLAY 1" >>confdefs.h
-
-
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-            { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_const_param_XextAddDisplay" >&5
-$as_echo "$have_const_param_XextAddDisplay" >&6; }
-
                         { $as_echo "$as_me:${as_lineno-$LINENO}: checking for XGenericEvent" >&5
 $as_echo_n "checking for XGenericEvent... " >&6; }
             have_XGenericEvent=no

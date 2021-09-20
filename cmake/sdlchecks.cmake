@@ -462,16 +462,6 @@ macro(CheckX11)
       endif()
 
       set(CMAKE_REQUIRED_LIBRARIES ${X11_LIB} ${X11_LIB})
-      check_c_source_compiles("
-          #include <X11/Xlib.h>
-          #include <X11/Xproto.h>
-          #include <X11/extensions/Xext.h>
-          #include <X11/extensions/extutil.h>
-          extern XExtDisplayInfo* XextAddDisplay(XExtensionInfo* a,Display* b,_Xconst char* c,XExtensionHooks* d,int e,XPointer f);
-          int main(int argc, char **argv) {}" HAVE_CONST_XEXT_ADDDISPLAY)
-      if(HAVE_CONST_XEXT_ADDDISPLAY)
-        set(SDL_VIDEO_DRIVER_X11_CONST_PARAM_XEXTADDDISPLAY 1)
-      endif()
 
       check_c_source_compiles("
           #include <X11/Xlib.h>

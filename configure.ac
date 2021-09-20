@@ -1824,20 +1824,6 @@ CheckX11()
             fi
             have_video=yes
 
-            AC_MSG_CHECKING(for const parameter to XextAddDisplay)
-            have_const_param_XextAddDisplay=no
-            AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
-              #include <X11/Xlib.h>
-              #include <X11/Xproto.h>
-              #include <X11/extensions/Xext.h>
-              #include <X11/extensions/extutil.h>
-              extern XExtDisplayInfo* XextAddDisplay(XExtensionInfo* a,Display* b,_Xconst char* c,XExtensionHooks* d,int e,XPointer f);
-            ]],[])], [
-            have_const_param_XextAddDisplay=yes
-            AC_DEFINE([SDL_VIDEO_DRIVER_X11_CONST_PARAM_XEXTADDDISPLAY], 1, [ ])
-            ],[])
-            AC_MSG_RESULT($have_const_param_XextAddDisplay)
-
             dnl AC_CHECK_LIB(X11, XGetEventData, AC_DEFINE(SDL_VIDEO_DRIVER_X11_SUPPORTS_GENERIC_EVENTS, 1, [Have XGenericEvent]))
             AC_MSG_CHECKING([for XGenericEvent])
             have_XGenericEvent=no

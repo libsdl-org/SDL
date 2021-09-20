@@ -140,15 +140,6 @@ SDL_X11_SYM(int,XWindowEvent,(Display* a,Window b,long c,XEvent* d),(a,b,c,d),re
 SDL_X11_SYM(Status,XWithdrawWindow,(Display* a,Window b,int c),(a,b,c),return)
 SDL_X11_SYM(VisualID,XVisualIDFromVisual,(Visual* a),(a),return)
 SDL_X11_SYM(char*,XGetDefault,(Display* a,char* b, char* c),(a,b,c),return)
-#if SDL_VIDEO_DRIVER_X11_CONST_PARAM_XEXTADDDISPLAY
-SDL_X11_SYM(XExtDisplayInfo*,XextAddDisplay,(XExtensionInfo* a,Display* b,_Xconst char* c,XExtensionHooks* d,int e,XPointer f),(a,b,c,d,e,f),return)
-#else
-SDL_X11_SYM(XExtDisplayInfo*,XextAddDisplay,(XExtensionInfo* a,Display* b,char* c,XExtensionHooks* d,int e,XPointer f),(a,b,c,d,e,f),return)
-#endif
-SDL_X11_SYM(XExtensionInfo*,XextCreateExtension,(void),(),return)
-SDL_X11_SYM(void,XextDestroyExtension,(XExtensionInfo* a),(a),)
-SDL_X11_SYM(XExtDisplayInfo*,XextFindDisplay,(XExtensionInfo* a,Display* b),(a,b),return)
-SDL_X11_SYM(int,XextRemoveDisplay,(XExtensionInfo* a,Display* b),(a,b),return)
 SDL_X11_SYM(Bool,XQueryExtension,(Display* a,_Xconst char* b,int* c,int* d,int* e),(a,b,c,d,e),return)
 SDL_X11_SYM(char *,XDisplayString,(Display* a),(a),return)
 SDL_X11_SYM(int,XGetErrorText,(Display* a,int b,char* c,int d),(a,b,c,d),return)

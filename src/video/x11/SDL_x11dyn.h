@@ -39,7 +39,6 @@
 
 #include <X11/Xproto.h>
 #include <X11/extensions/Xext.h>
-#include <X11/extensions/extutil.h>
 
 #ifndef NO_SHARED_MEMORY
 #include <sys/ipc.h>
