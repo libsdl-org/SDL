@@ -57,10 +57,6 @@ SDL_PROC(void, glViewport, (GLint, GLint, GLsizei, GLsizei))
 SDL_PROC_OES(void, glBindFramebufferOES, (GLenum, GLuint))
 SDL_PROC_OES(void, glFramebufferTexture2DOES, (GLenum, GLenum, GLenum, GLuint, GLint))
 SDL_PROC_OES(GLenum, glCheckFramebufferStatusOES, (GLenum))
-SDL_PROC(void, glPushMatrix, (void))
-SDL_PROC(void, glTranslatef, (GLfloat, GLfloat, GLfloat))
-SDL_PROC(void, glRotatef, (GLfloat, GLfloat, GLfloat, GLfloat))
-SDL_PROC(void, glPopMatrix, (void))
 SDL_PROC_OES(void, glDeleteFramebuffersOES, (GLsizei, const GLuint*))
 
 /* vi: set ts=4 sw=4 expandtab: */
