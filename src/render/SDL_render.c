@@ -572,7 +572,6 @@ QueueCmdCopyEx(SDL_Renderer *renderer, SDL_Texture * texture,
     return retval;
 }
 
-#if SDL_HAVE_RENDER_GEOMETRY
 static int
 QueueCmdGeometry(SDL_Renderer *renderer, SDL_Texture *texture,
         const float *xy, int xy_stride,
@@ -600,7 +599,6 @@ QueueCmdGeometry(SDL_Renderer *renderer, SDL_Texture *texture,
     }
     return retval;
 }
-#endif
 
 static int UpdateLogicalSize(SDL_Renderer *renderer);
 
@@ -845,7 +843,7 @@ void VerifyDrawQueueFunctions(const SDL_Renderer *renderer)
     SDL_assert(renderer->QueueDrawPoints != NULL);
     SDL_assert(renderer->QueueDrawLines != NULL);
     SDL_assert(renderer->QueueFillRects != NULL);
-    SDL_assert(renderer->QueueCopy != NULL);
+    SDL_assert(renderer->QueueCopy != NULL || renderer->QueueGeometry != NULL);
     SDL_assert(renderer->RunCommandQueue != NULL);
 }
 
@@ -3245,14 +3243,72 @@ SDL_RenderCopyF(SDL_Renderer * renderer, SDL_Texture * texture,
         texture = texture->native;
     }
 
-    real_dstrect.x *= renderer->scale.x;
-    real_dstrect.y *= renderer->scale.y;
-    real_dstrect.w *= renderer->scale.x;
-    real_dstrect.h *= renderer->scale.y;
-
     texture->last_command_generation = renderer->render_command_generation;
 
-    retval = QueueCmdCopy(renderer, texture, &real_srcrect, &real_dstrect);
+    if (renderer->QueueGeometry && renderer->QueueCopy == NULL) {
+        float xy[8];
+        const int xy_stride = 2 * sizeof (float);
+        SDL_Color col, color[4];
+        const int color_stride = sizeof (SDL_Color);
+        float uv[8];
+        const int uv_stride = 2 * sizeof (float);
+        const int num_vertices = 4;
+        const int indices[6] = {0, 1, 2, 0, 2, 3};
+        const int num_indices = 6;
+        const int size_indices = 4;
+        float minu, minv, maxu, maxv;
+        float minx, miny, maxx, maxy;
+
+        SDL_GetTextureColorMod(texture, &col.r, &col.g, &col.b);
+        SDL_GetTextureAlphaMod(texture, &col.a);
+
+        color[0] = col;
+        color[1] = col;
+        color[2] = col;
+        color[3] = col;
+
+        minu = (float) (real_srcrect.x) / (float) texture->w;
+        minv = (float) (real_srcrect.y) / (float) texture->h;
+        maxu = (float) (real_srcrect.x + real_srcrect.w) / (float) texture->w;
+        maxv = (float) (real_srcrect.y + real_srcrect.h) / (float) texture->h;
+
+        minx = real_dstrect.x;
+        miny = real_dstrect.y;
+        maxx = real_dstrect.x + real_dstrect.w;
+        maxy = real_dstrect.y + real_dstrect.h;
+
+        uv[0] = minu;
+        uv[1] = minv;
+        uv[2] = maxu;
+        uv[3] = minv;
+        uv[4] = maxu;
+        uv[5] = maxv;
+        uv[6] = minu;
+        uv[7] = maxv;
+
+        xy[0] = minx;
+        xy[1] = miny;
+        xy[2] = maxx;
+        xy[3] = miny;
+        xy[4] = maxx;
+        xy[5] = maxy;
+        xy[6] = minx;
+        xy[7] = maxy;
+
+        retval = QueueCmdGeometry(renderer, texture,
+                xy, xy_stride, (int *)color, color_stride, uv, uv_stride,
+                num_vertices,
+                indices, num_indices, size_indices,
+                renderer->scale.x, renderer->scale.y);
+    } else {
+
+        real_dstrect.x *= renderer->scale.x;
+        real_dstrect.y *= renderer->scale.y;
+        real_dstrect.w *= renderer->scale.x;
+        real_dstrect.h *= renderer->scale.y;
+
+        retval = QueueCmdCopy(renderer, texture, &real_srcrect, &real_dstrect);
+    }
     return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
 }
 
@@ -3303,7 +3359,7 @@ SDL_RenderCopyExF(SDL_Renderer * renderer, SDL_Texture * texture,
     if (renderer != texture->renderer) {
         return SDL_SetError("Texture was not created with this renderer");
     }
-    if (!renderer->QueueCopyEx) {
+    if (!renderer->QueueCopyEx && !renderer->QueueGeometry) {
         return SDL_SetError("Renderer does not support RenderCopyEx");
     }
 
@@ -3342,17 +3398,112 @@ SDL_RenderCopyExF(SDL_Renderer * renderer, SDL_Texture * texture,
         real_center.y = real_dstrect.h / 2.0f;
     }
 
-    real_dstrect.x *= renderer->scale.x;
-    real_dstrect.y *= renderer->scale.y;
-    real_dstrect.w *= renderer->scale.x;
-    real_dstrect.h *= renderer->scale.y;
-
-    real_center.x *= renderer->scale.x;
-    real_center.y *= renderer->scale.y;
-
     texture->last_command_generation = renderer->render_command_generation;
 
-    retval = QueueCmdCopyEx(renderer, texture, &real_srcrect, &real_dstrect, angle, &real_center, flip);
+    if (renderer->QueueGeometry && renderer->QueueCopyEx == NULL) {
+        float xy[8];
+        const int xy_stride = 2 * sizeof (float);
+        SDL_Color col, color[4];
+        const int color_stride = sizeof (SDL_Color);
+        float uv[8];
+        const int uv_stride = 2 * sizeof (float);
+        const int num_vertices = 4;
+        const int indices[6] = {0, 1, 2, 0, 2, 3};
+        const int num_indices = 6;
+        const int size_indices = 4;
+        float minu, minv, maxu, maxv;
+        float minx, miny, maxx, maxy;
+        float centerx, centery;
+
+        float s_minx, s_miny, s_maxx, s_maxy;
+        float c_minx, c_miny, c_maxx, c_maxy;
+
+        const float radian_angle = (float)((M_PI * angle) / 180.0);
+        const float s = SDL_sin(radian_angle);
+        const float c = SDL_cos(radian_angle);
+
+        SDL_GetTextureColorMod(texture, &col.r, &col.g, &col.b);
+        SDL_GetTextureAlphaMod(texture, &col.a);
+
+        color[0] = col;
+        color[1] = col;
+        color[2] = col;
+        color[3] = col;
+
+        minu = (float) (real_srcrect.x) / (float) texture->w;
+        minv = (float) (real_srcrect.y) / (float) texture->h;
+        maxu = (float) (real_srcrect.x + real_srcrect.w) / (float) texture->w;
+        maxv = (float) (real_srcrect.y + real_srcrect.h) / (float) texture->h;
+
+        centerx = real_center.x + real_dstrect.x;
+        centery = real_center.y + real_dstrect.y;
+
+        if (flip & SDL_FLIP_HORIZONTAL) {
+            minx = real_dstrect.x + real_dstrect.w;
+            maxx = real_dstrect.x;
+        } else {
+            minx = real_dstrect.x;
+            maxx = real_dstrect.x + real_dstrect.w;
+        }
+
+        if (flip & SDL_FLIP_VERTICAL) {
+            miny = real_dstrect.y + real_dstrect.h;
+            maxy = real_dstrect.y;
+        } else {
+            miny = real_dstrect.y;
+            maxy = real_dstrect.y + real_dstrect.h;
+        }
+
+        uv[0] = minu;
+        uv[1] = minv;
+        uv[2] = maxu;
+        uv[3] = minv;
+        uv[4] = maxu;
+        uv[5] = maxv;
+        uv[6] = minu;
+        uv[7] = maxv;
+
+        /* apply rotation with 2x2 matrix ( c -s )
+         *                                ( s  c ) */
+        s_minx = s * (minx - centerx);
+        s_miny = s * (miny - centery);
+        s_maxx = s * (maxx - centerx);
+        s_maxy = s * (maxy - centery);
+        c_minx = c * (minx - centerx);
+        c_miny = c * (miny - centery);
+        c_maxx = c * (maxx - centerx);
+        c_maxy = c * (maxy - centery);
+
+        /* (minx, miny) */
+        xy[0] = (c_minx - s_miny) + centerx;
+        xy[1] = (s_minx + c_miny) + centery;
+        /* (maxx, miny) */
+        xy[2] = (c_maxx - s_miny) + centerx;
+        xy[3] = (s_maxx + c_miny) + centery;
+        /* (maxx, maxy) */
+        xy[4] = (c_maxx - s_maxy) + centerx;
+        xy[5] = (s_maxx + c_maxy) + centery;
+        /* (minx, maxy) */
+        xy[6] = (c_minx - s_maxy) + centerx;
+        xy[7] = (s_minx + c_maxy) + centery;
+
+        retval = QueueCmdGeometry(renderer, texture,
+                xy, xy_stride, (int *)color, color_stride, uv, uv_stride,
+                num_vertices,
+                indices, num_indices, size_indices,
+                renderer->scale.x, renderer->scale.y);
+    } else {
+
+        real_dstrect.x *= renderer->scale.x;
+        real_dstrect.y *= renderer->scale.y;
+        real_dstrect.w *= renderer->scale.x;
+        real_dstrect.h *= renderer->scale.y;
+
+        real_center.x *= renderer->scale.x;
+        real_center.y *= renderer->scale.y;
+
+        retval = QueueCmdCopyEx(renderer, texture, &real_srcrect, &real_dstrect, angle, &real_center, flip);
+    }
     return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
 }
 
@@ -3375,7 +3526,6 @@ SDL_RenderGeometry(SDL_Renderer *renderer,
     return SDL_RenderGeometryRaw(renderer, texture, xy, xy_stride, color, color_stride, uv, uv_stride, num_vertices, indices, num_indices, size_indices);
 }
 
-#if SDL_HAVE_RENDER_GEOMETRY
 static int
 remap_one_indice(
         int prev,
@@ -3718,7 +3868,6 @@ end:
 
     return retval;
 }
-#endif
 
 int
 SDL_RenderGeometryRaw(SDL_Renderer *renderer,
@@ -3729,7 +3878,6 @@ SDL_RenderGeometryRaw(SDL_Renderer *renderer,
                                   int num_vertices,
                                   const void *indices, int num_indices, int size_indices)
 {
-#if SDL_HAVE_RENDER_GEOMETRY
     int i;
     int retval = 0;
     int count = indices ? num_indices : num_vertices;
@@ -3832,9 +3980,6 @@ SDL_RenderGeometryRaw(SDL_Renderer *renderer,
             renderer->scale.x, renderer->scale.y);
 
     return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
-#else
-    return SDL_SetError("SDL not built with RenderGeometry support");
-#endif
 }
 
 
