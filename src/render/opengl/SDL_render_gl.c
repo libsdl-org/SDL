@@ -950,108 +950,6 @@ GL_QueueFillRects(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FRe
 }
 
 static int
-GL_QueueCopy(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * texture,
-             const SDL_Rect * srcrect, const SDL_FRect * dstrect)
-{
-    GL_TextureData *texturedata = (GL_TextureData *) texture->driverdata;
-    GLfloat minx, miny, maxx, maxy;
-    GLfloat minu, maxu, minv, maxv;
-    GLfloat *verts = (GLfloat *) SDL_AllocateRenderVertices(renderer, 8 * sizeof (GLfloat), 0, &cmd->data.draw.first);
-
-    if (!verts) {
-        return -1;
-    }
-
-    cmd->data.draw.count = 1;
-
-    minx = dstrect->x;
-    miny = dstrect->y;
-    maxx = dstrect->x + dstrect->w;
-    maxy = dstrect->y + dstrect->h;
-
-    minu = (GLfloat) srcrect->x / texture->w;
-    minu *= texturedata->texw;
-    maxu = (GLfloat) (srcrect->x + srcrect->w) / texture->w;
-    maxu *= texturedata->texw;
-    minv = (GLfloat) srcrect->y / texture->h;
-    minv *= texturedata->texh;
-    maxv = (GLfloat) (srcrect->y + srcrect->h) / texture->h;
-    maxv *= texturedata->texh;
-
-    cmd->data.draw.count = 1;
-    *(verts++) = minx;
-    *(verts++) = miny;
-    *(verts++) = maxx;
-    *(verts++) = maxy;
-    *(verts++) = minu;
-    *(verts++) = maxu;
-    *(verts++) = minv;
-    *(verts++) = maxv;
-    return 0;
-}
-
-static int
-GL_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * texture,
-               const SDL_Rect * srcrect, const SDL_FRect * dstrect,
-               const double angle, const SDL_FPoint *center, const SDL_RendererFlip flip)
-{
-    GL_TextureData *texturedata = (GL_TextureData *) texture->driverdata;
-    GLfloat minx, miny, maxx, maxy;
-    GLfloat centerx, centery;
-    GLfloat minu, maxu, minv, maxv;
-    GLfloat *verts = (GLfloat *) SDL_AllocateRenderVertices(renderer, 11 * sizeof (GLfloat), 0, &cmd->data.draw.first);
-
-    if (!verts) {
-        return -1;
-    }
-
-    centerx = center->x;
-    centery = center->y;
-
-    if (flip & SDL_FLIP_HORIZONTAL) {
-        minx =  dstrect->w - centerx;
-        maxx = -centerx;
-    }
-    else {
-        minx = -centerx;
-        maxx =  dstrect->w - centerx;
-    }
-
-    if (flip & SDL_FLIP_VERTICAL) {
-        miny =  dstrect->h - centery;
-        maxy = -centery;
-    }
-    else {
-        miny = -centery;
-        maxy =  dstrect->h - centery;
-    }
-
-    minu = (GLfloat) srcrect->x / texture->w;
-    minu *= texturedata->texw;
-    maxu = (GLfloat) (srcrect->x + srcrect->w) / texture->w;
-    maxu *= texturedata->texw;
-    minv = (GLfloat) srcrect->y / texture->h;
-    minv *= texturedata->texh;
-    maxv = (GLfloat) (srcrect->y + srcrect->h) / texture->h;
-    maxv *= texturedata->texh;
-
-    cmd->data.draw.count = 1;
-    *(verts++) = minx;
-    *(verts++) = miny;
-    *(verts++) = maxx;
-    *(verts++) = maxy;
-    *(verts++) = minu;
-    *(verts++) = maxu;
-    *(verts++) = minv;
-    *(verts++) = maxv;
-    *(verts++) = (GLfloat) dstrect->x + centerx;
-    *(verts++) = (GLfloat) dstrect->y + centery;
-    *(verts++) = (GLfloat) angle;
-    return 0;
-}
-
-#if SDL_HAVE_RENDER_GEOMETRY
-static int
 GL_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
         const float *xy, int xy_stride, const int *color, int color_stride, const float *uv, int uv_stride,
         int num_vertices, const void *indices, int num_indices, int size_indices,
@@ -1108,7 +1006,6 @@ GL_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *te
     }
     return 0;
 }
-#endif
 
 static void
 SetDrawState(GL_RenderData *data, const SDL_RenderCommand *cmd, const GL_Shader shader)
@@ -1389,65 +1286,13 @@ GL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
                 break;
             }
 
-            case SDL_RENDERCMD_COPY: {
-                const GLfloat *verts = (GLfloat *) (((Uint8 *) vertices) + cmd->data.draw.first);
-                const GLfloat minx = verts[0];
-                const GLfloat miny = verts[1];
-                const GLfloat maxx = verts[2];
-                const GLfloat maxy = verts[3];
-                const GLfloat minu = verts[4];
-                const GLfloat maxu = verts[5];
-                const GLfloat minv = verts[6];
-                const GLfloat maxv = verts[7];
-                SetCopyState(data, cmd);
-                data->glBegin(GL_TRIANGLE_STRIP);
-                data->glTexCoord2f(minu, minv);
-                data->glVertex2f(minx, miny);
-                data->glTexCoord2f(maxu, minv);
-                data->glVertex2f(maxx, miny);
-                data->glTexCoord2f(minu, maxv);
-                data->glVertex2f(minx, maxy);
-                data->glTexCoord2f(maxu, maxv);
-                data->glVertex2f(maxx, maxy);
-                data->glEnd();
+            case SDL_RENDERCMD_COPY: /* unused */
                 break;
-            }
 
-            case SDL_RENDERCMD_COPY_EX: {
-                const GLfloat *verts = (GLfloat *) (((Uint8 *) vertices) + cmd->data.draw.first);
-                const GLfloat minx = verts[0];
-                const GLfloat miny = verts[1];
-                const GLfloat maxx = verts[2];
-                const GLfloat maxy = verts[3];
-                const GLfloat minu = verts[4];
-                const GLfloat maxu = verts[5];
-                const GLfloat minv = verts[6];
-                const GLfloat maxv = verts[7];
-                const GLfloat translatex = verts[8];
-                const GLfloat translatey = verts[9];
-                const GLdouble angle = verts[10];
-                SetCopyState(data, cmd);
-
-                /* Translate to flip, rotate, translate to position */
-                data->glPushMatrix();
-                data->glTranslatef(translatex, translatey, 0.0f);
-                data->glRotated(angle, 0.0, 0.0, 1.0);
-                data->glBegin(GL_TRIANGLE_STRIP);
-                data->glTexCoord2f(minu, minv);
-                data->glVertex2f(minx, miny);
-                data->glTexCoord2f(maxu, minv);
-                data->glVertex2f(maxx, miny);
-                data->glTexCoord2f(minu, maxv);
-                data->glVertex2f(minx, maxy);
-                data->glTexCoord2f(maxu, maxv);
-                data->glVertex2f(maxx, maxy);
-                data->glEnd();
-                data->glPopMatrix();
+            case SDL_RENDERCMD_COPY_EX: /* unused */
                 break;
-            }
 
             case SDL_RENDERCMD_GEOMETRY: {
-#if SDL_HAVE_RENDER_GEOMETRY
                 const GLfloat *verts = (GLfloat *) (((Uint8 *) vertices) + cmd->data.draw.first);
                 SDL_Texture *texture = cmd->data.draw.texture;
                 const size_t count = cmd->data.draw.count;
@@ -1485,7 +1330,6 @@ GL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
                     data->glEnd();
                     data->glColor4f(currentColor[0], currentColor[1], currentColor[2], currentColor[3]);
                 }
-#endif
                 break;
            }
 
@@ -1801,11 +1645,7 @@ GL_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->QueueDrawPoints = GL_QueueDrawPoints;
     renderer->QueueDrawLines = GL_QueueDrawLines;
     renderer->QueueFillRects = GL_QueueFillRects;
-    renderer->QueueCopy = GL_QueueCopy;
-    renderer->QueueCopyEx = GL_QueueCopyEx;
-#if SDL_HAVE_RENDER_GEOMETRY
     renderer->QueueGeometry = GL_QueueGeometry;
-#endif
     renderer->RunCommandQueue = GL_RunCommandQueue;
     renderer->RenderReadPixels = GL_RenderReadPixels;
     renderer->RenderPresent = GL_RenderPresent;
