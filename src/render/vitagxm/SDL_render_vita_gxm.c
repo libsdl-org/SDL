@@ -1241,7 +1241,16 @@ VITA_GXM_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     if(vita_texture->tex == 0)
         return;
 
-    sceGxmFinish(data->gxm_context);
+    // make sure that texture isn't used
+    if (data->drawing) {
+        sceGxmEndScene(data->gxm_context, NULL, NULL);
+        data->drawing = SDL_FALSE;
+        sceGxmFinish(data->gxm_context);
+        StartDrawing(renderer);
+    }
+    else {
+        sceGxmFinish(data->gxm_context);
+    }
 
     free_gxm_texture(vita_texture->tex);
 
