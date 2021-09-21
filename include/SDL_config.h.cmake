@@ -509,7 +509,7 @@ typedef unsigned long uintptr_t;
 #  endif /* if (stdint.h isn't available) */
 #else /* __WIN32__ */
 #  if !defined(_STDINT_H_) && !defined(HAVE_STDINT_H) && !defined(_HAVE_STDINT_H)
-#    if defined(__GNUC__) || defined(__DMC__) || defined(__WATCOMC__)
+#    if defined(__GNUC__) || defined(__DMC__) || defined(__WATCOMC__) || defined(__BORLANDC__) || defined(__CODEGEARC__)
 #define HAVE_STDINT_H	1
 #    elif defined(_MSC_VER)
 typedef signed __int8 int8_t;
