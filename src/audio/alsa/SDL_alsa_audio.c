@@ -289,12 +289,46 @@ static void swizzle_alsa_channels_6_##T(void *buffer, const Uint32 bufferlen) { 
     } \
 }
 
-SWIZ6(Uint64)
-SWIZ6(Uint32)
-SWIZ6(Uint16)
-SWIZ6(Uint8)
 
+/* !!! FIXME: is there a channel swizzler in alsalib instead? */
+/* !!! FIXME: this screams for a SIMD shuffle operation. */
+/*
+ * https://docs.microsoft.com/en-us/windows-hardware/drivers/audio/mapping-stream-formats-to-speaker-configurations
+ * For Linux ALSA, this appears to be FL-FR-RL-RR-C-LFE-SL-SR
+ *  and for Windows DirectX [and CoreAudio], this is FL-FR-C-LFE-SL-SR-RL-RR"
+ */
+#define SWIZ8(T) \
+static void swizzle_alsa_channels_8_##T(void *buffer, const Uint32 bufferlen) { \
+    T *ptr = (T *) buffer; \
+    Uint32 i; \
+    for (i = 0; i < bufferlen; i++, ptr += 6) { \
+        const T center = ptr[2]; \
+        const T subwoofer = ptr[3]; \
+        const T side_left = ptr[4]; \
+        const T side_right = ptr[5]; \
+        const T rear_left = ptr[6]; \
+        const T rear_right = ptr[7]; \
+        ptr[2] = rear_left; \
+        ptr[3] = rear_right; \
+        ptr[4] = center; \
+        ptr[5] = subwoofer; \
+        ptr[6] = side_left; \
+        ptr[7] = side_right; \
+    } \
+}
+
+#define CHANNEL_SWIZZLE(x) \
+    x(Uint64) \
+    x(Uint32) \
+    x(Uint16) \
+    x(Uint8)
+
+CHANNEL_SWIZZLE(SWIZ6)
+CHANNEL_SWIZZLE(SWIZ8)
+
+#undef CHANNEL_SWIZZLE
 #undef SWIZ6
+#undef SWIZ8
 
 
 /*
@@ -304,17 +338,23 @@ SWIZ6(Uint8)
 static void
 swizzle_alsa_channels(_THIS, void *buffer, Uint32 bufferlen)
 {
-    if (this->spec.channels == 6) {
-        switch (SDL_AUDIO_BITSIZE(this->spec.format)) {
-            case 8: swizzle_alsa_channels_6_Uint8(buffer, bufferlen); break;
-            case 16: swizzle_alsa_channels_6_Uint16(buffer, bufferlen); break;
-            case 32: swizzle_alsa_channels_6_Uint32(buffer, bufferlen); break;
-            case 64: swizzle_alsa_channels_6_Uint64(buffer, bufferlen); break;
-            default: SDL_assert(!"unhandled bitsize"); break;
-        }
-    }
+    switch (this->spec.channels) {
+        #define CHANSWIZ(chans) \
+        case chans: \
+            switch ((this->spec.format & (0xFF))) { \
+                case 8: swizzle_alsa_channels_##chans##_Uint8(buffer, bufferlen); break; \
+                case 16: swizzle_alsa_channels_##chans##_Uint16(buffer, bufferlen); break; \
+                case 32: swizzle_alsa_channels_##chans##_Uint32(buffer, bufferlen); break; \
+                case 64: swizzle_alsa_channels_##chans##_Uint64(buffer, bufferlen); break; \
+                default: SDL_assert(!"unhandled bitsize"); break; \
+            } \
+            return;
 
-    /* !!! FIXME: update this for 7.1 if needed, later. */
+        CHANSWIZ(6);
+        CHANSWIZ(8);
+        #undef CHANSWIZ
+        default: break;
+    }
 }
 
 #ifdef SND_CHMAP_API_VERSION
