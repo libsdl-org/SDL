@@ -274,42 +274,25 @@ ALSA_WaitDevice(_THIS)
 
 /* !!! FIXME: is there a channel swizzler in alsalib instead? */
 /*
- * http://bugzilla.libsdl.org/show_bug.cgi?id=110
+ * https://bugzilla.libsdl.org/show_bug.cgi?id=110
  * "For Linux ALSA, this is FL-FR-RL-RR-C-LFE
  *  and for Windows DirectX [and CoreAudio], this is FL-FR-C-LFE-RL-RR"
  */
-#define SWIZ6(T, buf, numframes) \
-    T *ptr = (T *) buf; \
+#define SWIZ6(T) \
+static void swizzle_alsa_channels_6_##T(void *buffer, const Uint32 bufferlen) { \
+    T *ptr = (T *) buffer; \
     Uint32 i; \
-    for (i = 0; i < numframes; i++, ptr += 6) { \
+    for (i = 0; i < bufferlen; i++, ptr += 6) { \
         T tmp; \
         tmp = ptr[2]; ptr[2] = ptr[4]; ptr[4] = tmp; \
         tmp = ptr[3]; ptr[3] = ptr[5]; ptr[5] = tmp; \
-    }
-
-static void
-swizzle_alsa_channels_6_64bit(void *buffer, Uint32 bufferlen)
-{
-    SWIZ6(Uint64, buffer, bufferlen);
+    } \
 }
 
-static void
-swizzle_alsa_channels_6_32bit(void *buffer, Uint32 bufferlen)
-{
-    SWIZ6(Uint32, buffer, bufferlen);
-}
-
-static void
-swizzle_alsa_channels_6_16bit(void *buffer, Uint32 bufferlen)
-{
-    SWIZ6(Uint16, buffer, bufferlen);
-}
-
-static void
-swizzle_alsa_channels_6_8bit(void *buffer, Uint32 bufferlen)
-{
-    SWIZ6(Uint8, buffer, bufferlen);
-}
+SWIZ6(Uint64)
+SWIZ6(Uint32)
+SWIZ6(Uint16)
+SWIZ6(Uint8)
 
 #undef SWIZ6
 
@@ -323,10 +306,10 @@ swizzle_alsa_channels(_THIS, void *buffer, Uint32 bufferlen)
 {
     if (this->spec.channels == 6) {
         switch (SDL_AUDIO_BITSIZE(this->spec.format)) {
-            case 8: swizzle_alsa_channels_6_8bit(buffer, bufferlen); break;
-            case 16: swizzle_alsa_channels_6_16bit(buffer, bufferlen); break;
-            case 32: swizzle_alsa_channels_6_32bit(buffer, bufferlen); break;
-            case 64: swizzle_alsa_channels_6_64bit(buffer, bufferlen); break;
+            case 8: swizzle_alsa_channels_6_Uint8(buffer, bufferlen); break;
+            case 16: swizzle_alsa_channels_6_Uint16(buffer, bufferlen); break;
+            case 32: swizzle_alsa_channels_6_Uint32(buffer, bufferlen); break;
+            case 64: swizzle_alsa_channels_6_Uint64(buffer, bufferlen); break;
             default: SDL_assert(!"unhandled bitsize"); break;
         }
     }
