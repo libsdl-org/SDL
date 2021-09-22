@@ -1459,7 +1459,7 @@ GL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
                 }
 
                 {
-                    int j;
+                    size_t j;
                     float currentColor[4];
                     data->glGetFloatv(GL_CURRENT_COLOR, currentColor);
                     data->glBegin(GL_TRIANGLES);
