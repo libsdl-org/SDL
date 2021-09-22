@@ -141,14 +141,12 @@ static int get_dricount(void)
 
     if (!(stat(KMSDRM_DRI_PATH, &sb) == 0
                 && S_ISDIR(sb.st_mode))) {
-        printf("The path %s cannot be opened or is not available\n",
-               KMSDRM_DRI_PATH);
+        /*printf("The path %s cannot be opened or is not available\n", KMSDRM_DRI_PATH);*/
         return 0;
     }
 
     if (access(KMSDRM_DRI_PATH, F_OK) == -1) {
-        printf("The path %s cannot be opened\n",
-               KMSDRM_DRI_PATH);
+        /*printf("The path %s cannot be opened\n", KMSDRM_DRI_PATH);*/
         return 0;
     }
 

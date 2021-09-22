@@ -529,7 +529,7 @@ LINUX_InotifyJoystickDetect(void)
     while (remain > 0) {
         if (buf.event.len > 0) {
             if (StrHasPrefix(buf.event.name, "event") &&
-                StrIsInteger(buf.event.name + strlen ("event"))) {
+                StrIsInteger(buf.event.name + SDL_strlen ("event"))) {
                 char path[PATH_MAX];
 
                 SDL_snprintf(path, SDL_arraysize(path), "/dev/input/%s", buf.event.name);
@@ -547,7 +547,7 @@ LINUX_InotifyJoystickDetect(void)
         remain -= len;
 
         if (remain != 0) {
-            memmove (&buf.storage[0], &buf.storage[len], remain);
+            SDL_memmove (&buf.storage[0], &buf.storage[len], remain);
         }
     }
 }

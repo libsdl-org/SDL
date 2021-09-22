@@ -437,18 +437,18 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
         }
 
         /* Get the list of displays supported by this plane. */
-        supported_displays = (VkDisplayKHR*)malloc(sizeof(VkDisplayKHR) * supported_displays_count);
+        supported_displays = (VkDisplayKHR*)SDL_malloc(sizeof(VkDisplayKHR) * supported_displays_count);
         vkGetDisplayPlaneSupportedDisplaysKHR(gpu, i,
             &supported_displays_count, supported_displays);
 
-	/* The plane must be bound to the chosen display, or not in use.
+        /* The plane must be bound to the chosen display, or not in use.
            If none of these is true, iterate to another plane. */
-	if (!((plane_props[i].currentDisplay == display) ||
-	      (plane_props[i].currentDisplay == VK_NULL_HANDLE))) 
+        if (!((plane_props[i].currentDisplay == display) ||
+              (plane_props[i].currentDisplay == VK_NULL_HANDLE))) 
             continue;
 
-	/* Iterate the list of displays supported by this plane
-	   in order to find out if the chosen display is among them. */
+        /* Iterate the list of displays supported by this plane
+           in order to find out if the chosen display is among them. */
         plane_supports_display = SDL_FALSE;
         for (j = 0; j < supported_displays_count; j++) {
             if (supported_displays[j] == display) {
@@ -457,9 +457,10 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
             }
         }
 
-	/* Free the list of displays supported by this plane. */
-        if (supported_displays)
-	    free(supported_displays);
+        /* Free the list of displays supported by this plane. */
+        if (supported_displays) {
+            SDL_free(supported_displays);
+        }
 
         /* If the display is not supported by this plane, iterate to the next plane. */
         if (!plane_supports_display) {
@@ -469,9 +470,9 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
         /* Want a plane that supports the alpha mode we have chosen. */
         vkGetDisplayPlaneCapabilitiesKHR(gpu, display_mode, i, &plane_caps);
         if (plane_caps.supportedAlpha == alpha_mode) {
-	    /* Yep, this plane is alright. */
-	    plane = i;
-	    break;
+            /* Yep, this plane is alright. */
+            plane = i;
+            break;
         }
     }
 

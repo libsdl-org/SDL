@@ -482,7 +482,7 @@ HIDAPI_UpdateDiscovery()
                 if (buf.event.len > 0 &&
                     !SDL_HIDAPI_discovery.m_bHaveDevicesChanged) {
                     if (StrHasPrefix(buf.event.name, "hidraw") &&
-                        StrIsInteger(buf.event.name + strlen ("hidraw"))) {
+                        StrIsInteger(buf.event.name + SDL_strlen ("hidraw"))) {
                         SDL_HIDAPI_discovery.m_bHaveDevicesChanged = SDL_TRUE;
                         /* We found an hidraw change. We still continue to
                          * drain the inotify fd to avoid leaving old
@@ -494,7 +494,7 @@ HIDAPI_UpdateDiscovery()
                 remain -= len;
 
                 if (remain != 0) {
-                    memmove(&buf.storage[0], &buf.storage[len], remain);
+                    SDL_memmove(&buf.storage[0], &buf.storage[len], remain);
                 }
             }
         }

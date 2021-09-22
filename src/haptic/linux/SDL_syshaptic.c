@@ -166,7 +166,7 @@ SDL_SYS_HapticInit(void)
     i = 0;
     for (j = 0; j < MAX_HAPTICS; ++j) {
 
-        snprintf(path, PATH_MAX, joydev_pattern, i++);
+        SDL_snprintf(path, PATH_MAX, joydev_pattern, i++);
         MaybeAddDevice(path);
     }
 

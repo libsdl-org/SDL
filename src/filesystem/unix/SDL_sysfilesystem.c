@@ -245,7 +245,7 @@ SDL_GetBasePath(void)
 
     if (retval != NULL) {
         /* try to shrink buffer... */
-        char *ptr = (char *) SDL_realloc(retval, strlen(retval) + 1);
+        char *ptr = (char *) SDL_realloc(retval, SDL_strlen(retval) + 1);
         if (ptr != NULL)
             retval = ptr;  /* oh well if it failed. */
     }
