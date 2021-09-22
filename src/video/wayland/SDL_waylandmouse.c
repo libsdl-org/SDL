@@ -95,6 +95,7 @@ wayland_get_system_cursor(SDL_VideoData *vdata, Wayland_CursorData *cdata, float
             return SDL_FALSE;
         }
         theme = WAYLAND_wl_cursor_theme_load(NULL, size, vdata->shm);
+        vdata->cursor_themes[vdata->num_cursor_themes].size = size;
         vdata->cursor_themes[vdata->num_cursor_themes++].theme = theme;
     }
 
