@@ -42,12 +42,18 @@ struct qt_windowmanager;
 #endif /* SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH */
 
 typedef struct {
+    struct wl_cursor_theme *theme;
+    int size;
+} SDL_WaylandCursorTheme;
+
+typedef struct {
     struct wl_display *display;
     int display_disconnected;
     struct wl_registry *registry;
     struct wl_compositor *compositor;
     struct wl_shm *shm;
-    struct wl_cursor_theme *cursor_theme;
+    SDL_WaylandCursorTheme *cursor_themes;
+    int num_cursor_themes;
     struct wl_pointer *pointer;
     struct {
         struct xdg_wm_base *xdg;
