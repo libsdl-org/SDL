@@ -28,6 +28,7 @@
 
 
 HCURSOR SDL_cursor = NULL;
+static SDL_Cursor *SDL_blank_cursor = NULL;
 
 static int rawInputEnableCount = 0;
 
@@ -160,6 +161,16 @@ WIN_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y)
 }
 
 static SDL_Cursor *
+WIN_CreateBlankCursor()
+{
+    SDL_Surface *surface = SDL_CreateRGBSurfaceWithFormat(0, 32, 32, 32, SDL_PIXELFORMAT_ARGB8888);
+    if (surface) {
+        return WIN_CreateCursor(surface, 0, 0);
+    }
+    return NULL;
+}
+
+static SDL_Cursor *
 WIN_CreateSystemCursor(SDL_SystemCursor id)
 {
     SDL_Cursor *cursor;
@@ -210,6 +221,9 @@ WIN_FreeCursor(SDL_Cursor * cursor)
 static int
 WIN_ShowCursor(SDL_Cursor * cursor)
 {
+    if (!cursor) {
+        cursor = SDL_blank_cursor;
+    }
     if (cursor) {
         SDL_cursor = (HCURSOR)cursor->driverdata;
     } else {
@@ -309,6 +323,8 @@ WIN_InitMouse(_THIS)
     mouse->GetGlobalMouseState = WIN_GetGlobalMouseState;
 
     SDL_SetDefaultCursor(WIN_CreateDefaultCursor());
+
+    SDL_blank_cursor = WIN_CreateBlankCursor();
 }
 
 void
@@ -317,6 +333,10 @@ WIN_QuitMouse(_THIS)
     if (rawInputEnableCount) {  /* force RAWINPUT off here. */
         rawInputEnableCount = 1;
         ToggleRawInput(SDL_FALSE);
+    }
+
+    if (SDL_blank_cursor) {
+        SDL_FreeCursor(SDL_blank_cursor);
     }
 }
 
