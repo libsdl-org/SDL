@@ -120,6 +120,7 @@ test/testevdev
 test/testfile
 test/testfilesystem
 test/testgamecontroller
+test/testgeometry
 test/testgesture
 test/testgl2
 test/testgles
