@@ -117,8 +117,7 @@ typedef struct SDL_EGL_VideoData
 
 
     /* whether EGL display was offscreen */
-    int is_offscreen;
-
+    SDL_bool is_offscreen;
 } SDL_EGL_VideoData;
 
 /* OpenGLES functions */

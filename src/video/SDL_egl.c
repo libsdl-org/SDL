@@ -546,7 +546,7 @@ SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_displa
     /* Get the EGL version with a valid egl_display, for EGL <= 1.4 */
     SDL_EGL_GetVersion(_this);
 
-    _this->egl_data->is_offscreen = 0;
+    _this->egl_data->is_offscreen = SDL_FALSE;
 
     return 0;
 }
@@ -634,7 +634,7 @@ SDL_EGL_InitializeOffscreen(_THIS, int device)
     /* Get the EGL version with a valid egl_display, for EGL <= 1.4 */
     SDL_EGL_GetVersion(_this);
 
-    _this->egl_data->is_offscreen = 1;
+    _this->egl_data->is_offscreen = SDL_TRUE;
 
     return 0;
 }
