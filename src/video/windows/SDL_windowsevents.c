@@ -731,6 +731,10 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 }
             }
 
+            if (data->in_title_click || data->focus_click_pending) {
+                break;
+            }
+
             GetRawInputData(hRawInput, RID_INPUT, &inp, &size, sizeof(RAWINPUTHEADER));
 
             /* Mouse data (ignoring synthetic mouse events generated for touchscreens) */
