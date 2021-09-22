@@ -270,7 +270,7 @@ static void dynapi_warn(const char *msg)
     /* SDL_ShowSimpleMessageBox() is a too heavy for here. */
     #if defined(WIN32) || defined(_WIN32) || defined(__CYGWIN__)
     MessageBoxA(NULL, msg, caption, MB_OK | MB_ICONERROR);
-    #else
+    #elif defined(HAVE_STDIO_H)
     fprintf(stderr, "\n\n%s\n%s\n\n", caption, msg);
     fflush(stderr);
     #endif
