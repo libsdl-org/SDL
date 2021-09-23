@@ -508,12 +508,74 @@ QueueCmdDrawLines(SDL_Renderer *renderer, const SDL_FPoint * points, const int c
 static int
 QueueCmdFillRects(SDL_Renderer *renderer, const SDL_FRect * rects, const int count)
 {
-    SDL_RenderCommand *cmd = PrepQueueCmdDrawSolid(renderer, SDL_RENDERCMD_FILL_RECTS);
+    SDL_RenderCommand *cmd;
     int retval = -1;
+    int use_geometry = renderer->QueueGeometry && ! (renderer->info.flags & SDL_RENDERER_SOFTWARE);
+
+    cmd = PrepQueueCmdDrawSolid(renderer, (use_geometry ? SDL_RENDERCMD_GEOMETRY : SDL_RENDERCMD_FILL_RECTS));
+
     if (cmd != NULL) {
-        retval = renderer->QueueFillRects(renderer, cmd, rects, count);
-        if (retval < 0) {
-            cmd->command = SDL_RENDERCMD_NO_OP;
+        if (use_geometry) {
+            SDL_bool isstack1;
+            SDL_bool isstack2;
+            float *xy = SDL_small_alloc(float, 4 * 2 * count, &isstack1);
+            int *indices = SDL_small_alloc(int, 6 * count, &isstack2);
+
+            if (xy && indices) {
+                int i;
+                float *ptr_xy = xy;
+                int *ptr_indices = indices;
+                SDL_Color col;
+                const int xy_stride = 2 * sizeof (float);
+                const int color_stride = 0;
+                const int num_vertices = 4 * count;
+                const int num_indices = 6 * count;
+                const int size_indices = 4;
+
+                SDL_GetRenderDrawColor(renderer, &col.r, &col.g, &col.b, &col.a);
+                
+                for (i = 0; i < count; ++i) {
+                    float minx, miny, maxx, maxy;
+
+                    minx = rects[i].x;
+                    miny = rects[i].y;
+                    maxx = rects[i].x + rects[i].w;
+                    maxy = rects[i].y + rects[i].h;
+
+                    *ptr_xy++ = minx;
+                    *ptr_xy++ = miny;
+                    *ptr_xy++ = maxx;
+                    *ptr_xy++ = miny;
+                    *ptr_xy++ = maxx;
+                    *ptr_xy++ = maxy;
+                    *ptr_xy++ = minx;
+                    *ptr_xy++ = maxy;
+
+                    *ptr_indices++ = 0;
+                    *ptr_indices++ = 1;
+                    *ptr_indices++ = 2;
+                    *ptr_indices++ = 0;
+                    *ptr_indices++ = 2;
+                    *ptr_indices++ = 3;
+                }
+
+                retval = renderer->QueueGeometry(renderer, cmd, NULL,
+                        xy, xy_stride, &col, color_stride, NULL, 0,
+                        num_vertices, indices, num_indices, size_indices,
+                        1.0f, 1.0f);
+
+                if (retval < 0) {
+                    cmd->command = SDL_RENDERCMD_NO_OP;
+                }
+
+                SDL_small_free(xy, isstack1);
+                SDL_small_free(indices, isstack2);
+            }
+        } else {
+            retval = renderer->QueueFillRects(renderer, cmd, rects, count);
+            if (retval < 0) {
+                cmd->command = SDL_RENDERCMD_NO_OP;
+            }
         }
     }
     return retval;
