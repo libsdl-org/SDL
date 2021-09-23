@@ -731,10 +731,6 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 }
             }
 
-            if (data->in_title_click || data->focus_click_pending) {
-                break;
-            }
-
             GetRawInputData(hRawInput, RID_INPUT, &inp, &size, sizeof(RAWINPUTHEADER));
 
             /* Mouse data (ignoring synthetic mouse events generated for touchscreens) */
@@ -807,8 +803,9 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                             } else {
                                 SDL_SendMouseMotion(data->window, mouseID, 1, relX, relY);
 
-                                if (x < boundsRect.left || x > boundsRect.right ||
-                                    y < boundsRect.top || y > boundsRect.bottom) {
+								if (!data->in_title_click && !data->focus_click_pending &&
+									(x < boundsRect.left || x > boundsRect.right ||
+									 y < boundsRect.top || y > boundsRect.bottom)) {
                                     /* Warp back to the opposite side, assuming more motion in the current direction */
                                     int warpX;
                                     int warpY;
