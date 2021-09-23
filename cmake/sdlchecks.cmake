@@ -597,7 +597,7 @@ endmacro()
 # - HAVE_SDL_LOADSO opt
 macro(CheckWayland)
   if(VIDEO_WAYLAND)
-    pkg_check_modules(WAYLAND wayland-client wayland-scanner wayland-egl wayland-cursor egl xkbcommon)
+    pkg_check_modules(WAYLAND wayland-client wayland-scanner wayland-egl wayland-cursor egl "xkbcommon>=0.5.0")
     pkg_check_modules(WAYLAND_SCANNER_1_15 "wayland-scanner>=1.15")
 
     if(WAYLAND_FOUND AND HAVE_VIDEO_OPENGL_EGL)
