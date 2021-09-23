@@ -27,6 +27,6 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-extern unsigned int X11_KeySymToUcs4(KeySym keysym);
+extern unsigned int SDL_KeySymToUcs4(Uint32 keysym);
 
 #endif /* _imKStoUCS_h */
