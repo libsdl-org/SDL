@@ -115,9 +115,8 @@ typedef struct SDL_EGL_VideoData
 
     /* Atomic functions end */
 
-
-    /* whether EGL display was offscreen */
-    SDL_bool is_offscreen;
+    SDL_bool is_offscreen;  /* whether EGL display was offscreen */
+    EGLenum apitype;  /* EGL_OPENGL_ES_API, EGL_OPENGL_API, etc */
 } SDL_EGL_VideoData;
 
 /* OpenGLES functions */
