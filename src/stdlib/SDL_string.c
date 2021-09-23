@@ -28,10 +28,14 @@
 
 #include "SDL_stdinc.h"
 
-#if !defined(HAVE_VSSCANF) || !defined(HAVE_STRTOL) || !defined(HAVE_STRTOUL)  || !defined(HAVE_STRTOLL) || !defined(HAVE_STRTOULL) || !defined(HAVE_STRTOD)
+#if defined(_MSC_VER) && _MSC_VER <= 1800
+/* Visual Studio 2013 tries to link with _vacopy in the C runtime. Newer versions do an inline assignment */
+#undef va_copy
+#define va_copy(dst, src)   dst = src
+#endif
+
 #define SDL_isupperhex(X)   (((X) >= 'A') && ((X) <= 'F'))
 #define SDL_islowerhex(X)   (((X) >= 'a') && ((X) <= 'f'))
-#endif
 
 #define UTF8_IsLeadByte(c) ((c) >= 0xC0 && (c) <= 0xF4)
 #define UTF8_IsTrailingByte(c) ((c) >= 0x80 && (c) <= 0xBF)
