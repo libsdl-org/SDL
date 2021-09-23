@@ -60,6 +60,7 @@
 #include <unistd.h>
 #include <xkbcommon/xkbcommon.h>
 #include <xkbcommon/xkbcommon-compose.h>
+#include "../../events/imKStoUCS.h"
 
 /* Weston uses a ratio of 10 units per scroll tick */
 #define WAYLAND_WHEEL_AXIS_UNIT 10
@@ -870,7 +871,7 @@ Wayland_keymap_iter(struct xkb_keymap *keymap, xkb_keycode_t key, void *data)
         }
 
         if (WAYLAND_xkb_keymap_key_get_syms_by_level(keymap, key, sdlKeymap->layout, 0, &syms) > 0) {
-            uint32_t keycode = WAYLAND_xkb_keysym_to_utf32(syms[0]);
+            uint32_t keycode = SDL_KeySymToUcs4(syms[0]);
             if (keycode) {
                 sdlKeymap->keymap[scancode] = keycode;
             } else {

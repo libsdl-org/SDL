@@ -24,10 +24,9 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-#include "../../SDL_internal.h"
+#include "../SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_X11
-#include <X11/X.h>
+#if SDL_VIDEO_DRIVER_X11 || SDL_VIDEO_DRIVER_WAYLAND
 #include "imKStoUCS.h"
 
 static unsigned short const keysym_to_unicode_1a1_1ff[] = {
@@ -294,7 +293,7 @@ static unsigned short const keysym_to_unicode_20a0_20ac[] = {
 };
 
 unsigned int
-X11_KeySymToUcs4(KeySym keysym)
+SDL_KeySymToUcs4(Uint32 keysym)
 {
     /* 'Unicode keysym' */
     if ((keysym & 0xff000000) == 0x01000000)

@@ -31,7 +31,7 @@
 #include <X11/keysym.h>
 #include <X11/XKBlib.h>
 
-#include "imKStoUCS.h"
+#include "../../events/imKStoUCS.h"
 
 #ifdef X_HAVE_UTF8_STRING
 #include <locale.h>
@@ -205,7 +205,7 @@ X11_KeyCodeToUcs4(_THIS, KeyCode keycode, unsigned char group)
         return 0;
     }
 
-    return X11_KeySymToUcs4(keysym);
+    return SDL_KeySymToUcs4(keysym);
 }
 
 KeySym
