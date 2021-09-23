@@ -1199,6 +1199,7 @@ GLES2_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
                 /* as long as we have the same copy command in a row, with the
                    same texture, we can combine them all into a single draw call. */
                 SDL_Texture *thistexture = cmd->data.draw.texture;
+                SDL_BlendMode thisblend = cmd->data.draw.blend;
                 const SDL_RenderCommandType thiscmdtype = cmd->command;
                 SDL_RenderCommand *finalcmd = cmd;
                 SDL_RenderCommand *nextcmd = cmd->next;
@@ -1211,8 +1212,8 @@ GLES2_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
                         if ((nextcmdtype != SDL_RENDERCMD_SETDRAWCOLOR) && (nextcmdtype != SDL_RENDERCMD_NO_OP)) {
                             break;  /* can't go any further on this draw call, different render command up next. */
                         }
-                    } else if (nextcmd->data.draw.texture != thistexture) {
-                        break;  /* can't go any further on this draw call, different texture copy up next. */
+                    } else if (nextcmd->data.draw.texture != thistexture || nextcmd->data.draw.blend != thisblend) {
+                        break;  /* can't go any further on this draw call, different texture/blendmode copy up next. */
                     } else {
                         finalcmd = nextcmd;  /* we can combine copy operations here. Mark this one as the furthest okay command. */
                         count += cmd->data.draw.count;
