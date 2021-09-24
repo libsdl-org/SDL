@@ -904,7 +904,7 @@ void VerifyDrawQueueFunctions(const SDL_Renderer *renderer)
     SDL_assert(renderer->QueueSetDrawColor != NULL);
     SDL_assert(renderer->QueueDrawPoints != NULL);
     SDL_assert(renderer->QueueDrawLines != NULL);
-    SDL_assert(renderer->QueueFillRects != NULL);
+    SDL_assert(renderer->QueueFillRects != NULL || renderer->QueueGeometry != NULL);
     SDL_assert(renderer->QueueCopy != NULL || renderer->QueueGeometry != NULL);
     SDL_assert(renderer->RunCommandQueue != NULL);
 }
@@ -3310,8 +3310,8 @@ SDL_RenderCopyF(SDL_Renderer * renderer, SDL_Texture * texture,
     if (renderer->QueueGeometry && renderer->QueueCopy == NULL) {
         float xy[8];
         const int xy_stride = 2 * sizeof (float);
-        SDL_Color col, color[4];
-        const int color_stride = sizeof (SDL_Color);
+        SDL_Color color;
+        const int color_stride = 0;
         float uv[8];
         const int uv_stride = 2 * sizeof (float);
         const int num_vertices = 4;
@@ -3321,13 +3321,8 @@ SDL_RenderCopyF(SDL_Renderer * renderer, SDL_Texture * texture,
         float minu, minv, maxu, maxv;
         float minx, miny, maxx, maxy;
 
-        SDL_GetTextureColorMod(texture, &col.r, &col.g, &col.b);
-        SDL_GetTextureAlphaMod(texture, &col.a);
-
-        color[0] = col;
-        color[1] = col;
-        color[2] = col;
-        color[3] = col;
+        SDL_GetTextureColorMod(texture, &color.r, &color.g, &color.b);
+        SDL_GetTextureAlphaMod(texture, &color.a);
 
         minu = (float) (real_srcrect.x) / (float) texture->w;
         minv = (float) (real_srcrect.y) / (float) texture->h;
@@ -3358,7 +3353,7 @@ SDL_RenderCopyF(SDL_Renderer * renderer, SDL_Texture * texture,
         xy[7] = maxy;
 
         retval = QueueCmdGeometry(renderer, texture,
-                xy, xy_stride, (int *)color, color_stride, uv, uv_stride,
+                xy, xy_stride, (int *)&color, color_stride, uv, uv_stride,
                 num_vertices,
                 indices, num_indices, size_indices,
                 renderer->scale.x, renderer->scale.y);
@@ -3465,8 +3460,8 @@ SDL_RenderCopyExF(SDL_Renderer * renderer, SDL_Texture * texture,
     if (renderer->QueueGeometry && renderer->QueueCopyEx == NULL) {
         float xy[8];
         const int xy_stride = 2 * sizeof (float);
-        SDL_Color col, color[4];
-        const int color_stride = sizeof (SDL_Color);
+        SDL_Color color;
+        const int color_stride = 0;
         float uv[8];
         const int uv_stride = 2 * sizeof (float);
         const int num_vertices = 4;
@@ -3484,13 +3479,8 @@ SDL_RenderCopyExF(SDL_Renderer * renderer, SDL_Texture * texture,
         const float s = SDL_sin(radian_angle);
         const float c = SDL_cos(radian_angle);
 
-        SDL_GetTextureColorMod(texture, &col.r, &col.g, &col.b);
-        SDL_GetTextureAlphaMod(texture, &col.a);
-
-        color[0] = col;
-        color[1] = col;
-        color[2] = col;
-        color[3] = col;
+        SDL_GetTextureColorMod(texture, &color.r, &color.g, &color.b);
+        SDL_GetTextureAlphaMod(texture, &color.a);
 
         minu = (float) (real_srcrect.x) / (float) texture->w;
         minv = (float) (real_srcrect.y) / (float) texture->h;
@@ -3550,7 +3540,7 @@ SDL_RenderCopyExF(SDL_Renderer * renderer, SDL_Texture * texture,
         xy[7] = (s_minx + c_maxy) + centery;
 
         retval = QueueCmdGeometry(renderer, texture,
-                xy, xy_stride, (int *)color, color_stride, uv, uv_stride,
+                xy, xy_stride, (int *)&color, color_stride, uv, uv_stride,
                 num_vertices,
                 indices, num_indices, size_indices,
                 renderer->scale.x, renderer->scale.y);
