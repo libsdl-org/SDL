@@ -531,6 +531,7 @@ QueueCmdFillRects(SDL_Renderer *renderer, const SDL_FRect * rects, const int cou
                 const int num_vertices = 4 * count;
                 const int num_indices = 6 * count;
                 const int size_indices = 4;
+                int cur_indice = 0;
 
                 SDL_GetRenderDrawColor(renderer, &col.r, &col.g, &col.b, &col.a);
                 
@@ -551,12 +552,13 @@ QueueCmdFillRects(SDL_Renderer *renderer, const SDL_FRect * rects, const int cou
                     *ptr_xy++ = minx;
                     *ptr_xy++ = maxy;
 
-                    *ptr_indices++ = 0;
-                    *ptr_indices++ = 1;
-                    *ptr_indices++ = 2;
-                    *ptr_indices++ = 0;
-                    *ptr_indices++ = 2;
-                    *ptr_indices++ = 3;
+                    *ptr_indices++ = cur_indice + 0;
+                    *ptr_indices++ = cur_indice + 1;
+                    *ptr_indices++ = cur_indice + 2;
+                    *ptr_indices++ = cur_indice + 0;
+                    *ptr_indices++ = cur_indice + 2;
+                    *ptr_indices++ = cur_indice + 3;
+                    cur_indice += 4;
                 }
 
                 retval = renderer->QueueGeometry(renderer, cmd, NULL,
