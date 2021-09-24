@@ -1118,22 +1118,6 @@ GLES2_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
                 break;
             }
 
-            case SDL_RENDERCMD_DRAW_POINTS: {
-                if (SetDrawState(data, cmd, GLES2_IMAGESOURCE_SOLID) == 0) {
-                    data->glDrawArrays(GL_POINTS, 0, (GLsizei) cmd->data.draw.count);
-                }
-                break;
-            }
-
-            case SDL_RENDERCMD_DRAW_LINES: {
-                const size_t count = cmd->data.draw.count;
-                SDL_assert(count >= 2);
-                if (SetDrawState(data, cmd, GLES2_IMAGESOURCE_SOLID) == 0) {
-                    data->glDrawArrays(GL_LINE_STRIP, 0, (GLsizei) count);
-                }
-                break;
-            }
-
             case SDL_RENDERCMD_FILL_RECTS: /* unused */
                 break;
 
@@ -1143,6 +1127,8 @@ GLES2_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
             case SDL_RENDERCMD_COPY_EX: /* unused */
                 break;
 
+            case SDL_RENDERCMD_DRAW_POINTS:
+            case SDL_RENDERCMD_DRAW_LINES:
             case SDL_RENDERCMD_GEOMETRY: {
                 /* as long as we have the same copy command in a row, with the
                    same texture, we can combine them all into a single draw call. */
@@ -1176,7 +1162,13 @@ GLES2_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
                 }
 
                 if (ret == 0) {
-                    data->glDrawArrays(GL_TRIANGLES, 0, (GLsizei) count);
+                    int op = GL_TRIANGLES; /* SDL_RENDERCMD_GEOMETRY */
+                    if (thiscmdtype == SDL_RENDERCMD_DRAW_POINTS) {
+                        op = GL_POINTS; 
+                    } else if (thiscmdtype == SDL_RENDERCMD_DRAW_LINES) {
+                        op = GL_LINE_STRIP; 
+                    }
+                    data->glDrawArrays(op, 0, (GLsizei) count);
                 }
 
                 cmd = finalcmd;  /* skip any copy commands we just combined in here. */
