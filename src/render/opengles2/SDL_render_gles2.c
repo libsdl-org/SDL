@@ -732,50 +732,6 @@ GLES2_QueueDrawLines(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_
 }
 
 static int
-GLES2_QueueFillRects(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FRect * rects, int count)
-{
-    const SDL_bool colorswap = (renderer->target && (renderer->target->format == SDL_PIXELFORMAT_ARGB8888 || renderer->target->format == SDL_PIXELFORMAT_RGB888));
-    int color;
-    const size_t vertlen = 4 * (2 * sizeof (float) + sizeof (int)) * count;
-    GLfloat *verts = (GLfloat *) SDL_AllocateRenderVertices(renderer, vertlen, 0, &cmd->data.draw.first);
-    int i;
-
-    if (!verts) {
-        return -1;
-    }
-
-    if (colorswap == 0) {
-        color = (cmd->data.draw.r << 0) | (cmd->data.draw.g << 8) | (cmd->data.draw.b << 16) | (cmd->data.draw.a << 24);
-    } else {
-        color = (cmd->data.draw.r << 16) | (cmd->data.draw.g << 8) | (cmd->data.draw.b << 0) | (cmd->data.draw.a << 24);
-    }
-
-    cmd->data.draw.count = count;
-
-    for (i = 0; i < count; i++) {
-        const SDL_FRect *rect = &rects[i];
-        const GLfloat minx = rect->x;
-        const GLfloat maxx = rect->x + rect->w;
-        const GLfloat miny = rect->y;
-        const GLfloat maxy = rect->y + rect->h;
-        *(verts++) = minx;
-        *(verts++) = miny;
-        *((int *)verts++) = color;
-        *(verts++) = maxx;
-        *(verts++) = miny;
-        *((int *)verts++) = color;
-        *(verts++) = minx;
-        *(verts++) = maxy;
-        *((int *)verts++) = color;
-        *(verts++) = maxx;
-        *(verts++) = maxy;
-        *((int *)verts++) = color;
-    }
-
-    return 0;
-}
-
-static int
 GLES2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
         const float *xy, int xy_stride, const int *color, int color_stride, const float *uv, int uv_stride,
         int num_vertices, const void *indices, int num_indices, int size_indices,
@@ -1178,16 +1134,8 @@ GLES2_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
                 break;
             }
 
-            case SDL_RENDERCMD_FILL_RECTS: {
-                const size_t count = cmd->data.draw.count;
-                size_t offset = 0;
-                if (SetDrawState(data, cmd, GLES2_IMAGESOURCE_SOLID) == 0) {
-                    for (i = 0; i < count; ++i, offset += 4) {
-                        data->glDrawArrays(GL_TRIANGLE_STRIP, (GLsizei) offset, 4);
-                    }
-                }
+            case SDL_RENDERCMD_FILL_RECTS: /* unused */
                 break;
-            }
 
             case SDL_RENDERCMD_COPY: /* unused */
                 break;
@@ -2046,7 +1994,6 @@ GLES2_CreateRenderer(SDL_Window *window, Uint32 flags)
     renderer->QueueSetDrawColor   = GLES2_QueueSetViewport;  /* SetViewport and SetDrawColor are (currently) no-ops. */
     renderer->QueueDrawPoints     = GLES2_QueueDrawPoints;
     renderer->QueueDrawLines      = GLES2_QueueDrawLines;
-    renderer->QueueFillRects      = GLES2_QueueFillRects;
     renderer->QueueGeometry       = GLES2_QueueGeometry;
     renderer->RunCommandQueue     = GLES2_RunCommandQueue;
     renderer->RenderReadPixels    = GLES2_RenderReadPixels;
