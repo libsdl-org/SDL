@@ -37,6 +37,8 @@
 #include <windows.h>
 #include <basetyps.h>   /* for REFIID with broken mingw.org headers */
 
+#include "SDL_rect.h"
+
 /* Routines to convert from UTF8 to native Windows text */
 #define WIN_StringToUTF8W(S) SDL_iconv_string("UTF-8", "UTF-16LE", (char *)(S), (SDL_wcslen(S)+1)*sizeof(WCHAR))
 #define WIN_UTF8ToStringW(S) (WCHAR *)SDL_iconv_string("UTF-16LE", "UTF-8", (char *)(S), SDL_strlen(S)+1)
@@ -80,6 +82,10 @@ extern char *WIN_LookupAudioDeviceName(const WCHAR *name, const GUID *guid);
 /* Checks to see if two GUID are the same. */
 extern BOOL WIN_IsEqualGUID(const GUID * a, const GUID * b);
 extern BOOL WIN_IsEqualIID(REFIID a, REFIID b);
+
+/* Convert between SDL_rect and RECT */
+extern void WIN_RECTToRect(const RECT *winrect, SDL_Rect *sdlrect);
+extern void WIN_RectToRECT(const SDL_Rect *sdlrect, RECT *winrect);
 
 #endif /* _INCLUDED_WINDOWS_H */
 
