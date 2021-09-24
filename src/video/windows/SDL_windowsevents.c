@@ -905,7 +905,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                             } else {
                                 SDL_SendMouseMotion(data->window, mouseID, 1, relX, relY);
 
-								if (!data->in_title_click && !data->focus_click_pending) {
+                                if (!data->in_title_click && !data->focus_click_pending) {
                                     WarpWithinBoundsRect(x, y, &boundsRect);
                                 }
                             }
