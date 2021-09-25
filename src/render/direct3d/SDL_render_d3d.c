@@ -832,52 +832,6 @@ D3D_QueueDrawPoints(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_F
 }
 
 static int
-D3D_QueueFillRects(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FRect * rects, int count)
-{
-    const DWORD color = D3DCOLOR_ARGB(cmd->data.draw.a, cmd->data.draw.r, cmd->data.draw.g, cmd->data.draw.b);
-    const size_t vertslen = count * sizeof (Vertex) * 4;
-    Vertex *verts = (Vertex *) SDL_AllocateRenderVertices(renderer, vertslen, 0, &cmd->data.draw.first);
-    int i;
-
-    if (!verts) {
-        return -1;
-    }
-
-    SDL_memset(verts, '\0', vertslen);
-    cmd->data.draw.count = count;
-
-    for (i = 0; i < count; i++) {
-        const SDL_FRect *rect = &rects[i];
-        const float minx = rect->x;
-        const float maxx = rect->x + rect->w;
-        const float miny = rect->y;
-        const float maxy = rect->y + rect->h;
-
-        verts->x = minx;
-        verts->y = miny;
-        verts->color = color;
-        verts++;
-
-        verts->x = maxx;
-        verts->y = miny;
-        verts->color = color;
-        verts++;
-
-        verts->x = maxx;
-        verts->y = maxy;
-        verts->color = color;
-        verts++;
-
-        verts->x = minx;
-        verts->y = maxy;
-        verts->color = color;
-        verts++;
-    }
-
-    return 0;
-}
-
-static int
 D3D_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
         const float *xy, int xy_stride, const int *color, int color_stride, const float *uv, int uv_stride,
         int num_vertices, const void *indices, int num_indices, int size_indices,
@@ -1277,23 +1231,8 @@ D3D_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *verti
                 break;
             }
 
-            case SDL_RENDERCMD_FILL_RECTS: {
-                const size_t count = cmd->data.draw.count;
-                const size_t first = cmd->data.draw.first;
-                SetDrawState(data, cmd);
-                if (vbo) {
-                    size_t offset = 0;
-                    for (i = 0; i < count; ++i, offset += 4) {
-                        IDirect3DDevice9_DrawPrimitive(data->device, D3DPT_TRIANGLEFAN, (UINT) ((first / sizeof (Vertex)) + offset), 2);
-                    }
-                } else {
-                    const Vertex *verts = (Vertex *) (((Uint8 *) vertices) + first);
-                    for (i = 0; i < count; ++i, verts += 4) {
-                        IDirect3DDevice9_DrawPrimitiveUP(data->device, D3DPT_TRIANGLEFAN, 2, verts, sizeof (Vertex));
-                    }
-                }
+            case SDL_RENDERCMD_FILL_RECTS: /* unused */
                 break;
-            }
 
             case SDL_RENDERCMD_COPY: /* unused */
                 break;
@@ -1622,7 +1561,6 @@ D3D_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->QueueSetDrawColor = D3D_QueueSetViewport;  /* SetViewport and SetDrawColor are (currently) no-ops. */
     renderer->QueueDrawPoints = D3D_QueueDrawPoints;
     renderer->QueueDrawLines = D3D_QueueDrawPoints;  /* lines and points queue vertices the same way. */
-    renderer->QueueFillRects = D3D_QueueFillRects;
     renderer->QueueGeometry = D3D_QueueGeometry;
     renderer->RunCommandQueue = D3D_RunCommandQueue;
     renderer->RenderReadPixels = D3D_RenderReadPixels;

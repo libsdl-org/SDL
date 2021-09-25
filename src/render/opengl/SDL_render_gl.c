@@ -980,28 +980,6 @@ GL_QueueDrawLines(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FPo
 }
 
 static int
-GL_QueueFillRects(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FRect * rects, int count)
-{
-    GLfloat *verts = (GLfloat *) SDL_AllocateRenderVertices(renderer, count * 4 * sizeof (GLfloat), 0, &cmd->data.draw.first);
-    int i;
-
-    if (!verts) {
-        return -1;
-    }
-
-    cmd->data.draw.count = count;
-    for (i = 0; i < count; i++) {
-        const SDL_FRect *rect = &rects[i];
-        *(verts++) = rect->x;
-        *(verts++) = rect->y;
-        *(verts++) = rect->x + rect->w;
-        *(verts++) = rect->y + rect->h;
-    }
-
-    return 0;
-}
-
-static int
 GL_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
         const float *xy, int xy_stride, const int *color, int color_stride, const float *uv, int uv_stride,
         int num_vertices, const void *indices, int num_indices, int size_indices,
@@ -1282,15 +1260,8 @@ GL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
                 break;
             }
 
-            case SDL_RENDERCMD_FILL_RECTS: {
-                const size_t count = cmd->data.draw.count;
-                const GLfloat *verts = (GLfloat *) (((Uint8 *) vertices) + cmd->data.draw.first);
-                SetDrawState(data, cmd, SHADER_SOLID);
-                for (i = 0; i < count; ++i, verts += 4) {
-                    data->glRectf(verts[0], verts[1], verts[2], verts[3]);
-                }
+            case SDL_RENDERCMD_FILL_RECTS: /* unused */
                 break;
-            }
 
             case SDL_RENDERCMD_COPY: /* unused */
                 break;
@@ -1676,7 +1647,6 @@ GL_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->QueueSetDrawColor = GL_QueueSetViewport;  /* SetViewport and SetDrawColor are (currently) no-ops. */
     renderer->QueueDrawPoints = GL_QueueDrawPoints;
     renderer->QueueDrawLines = GL_QueueDrawLines;
-    renderer->QueueFillRects = GL_QueueFillRects;
     renderer->QueueGeometry = GL_QueueGeometry;
     renderer->RunCommandQueue = GL_RunCommandQueue;
     renderer->RenderReadPixels = GL_RenderReadPixels;

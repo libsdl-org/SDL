@@ -1146,52 +1146,6 @@ METAL_QueueDrawLines(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_
 }
 
 static int
-METAL_QueueFillRects(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FRect * rects, int count)
-{
-    const int color = (cmd->data.draw.r << 0) | (cmd->data.draw.g << 8) | (cmd->data.draw.b << 16) | (cmd->data.draw.a << 24);
-    const size_t vertlen = 4 * (2 * sizeof (float) + sizeof (int)) * count;
-    float *verts = (float *) SDL_AllocateRenderVertices(renderer, vertlen, DEVICE_ALIGN(8), &cmd->data.draw.first);
-    if (!verts) {
-        return -1;
-    }
-
-    cmd->data.draw.count = count;
-
-    /* Quads in the following vertex order (matches the quad index buffer):
-     * 1---3
-     * | \ |
-     * 0---2
-     */
-    for (int i = 0; i < count; i++, rects++) {
-        if ((rects->w <= 0.0f) || (rects->h <= 0.0f)) {
-            cmd->data.draw.count--;
-        } else {
-            *(verts++) = rects->x;
-            *(verts++) = rects->y + rects->h;
-            *((int *)verts++) = color;
-
-            *(verts++) = rects->x;
-            *(verts++) = rects->y;
-            *((int *)verts++) = color;
-
-            *(verts++) = rects->x + rects->w;
-            *(verts++) = rects->y + rects->h;
-            *((int *)verts++) = color;
-
-            *(verts++) = rects->x + rects->w;
-            *(verts++) = rects->y;
-            *((int *)verts++) = color;
-        }
-    }
-
-    if (cmd->data.draw.count == 0) {
-        cmd->command = SDL_RENDERCMD_NO_OP;  // nothing to do, just skip this one later.
-    }
-
-    return 0;
-}
-
-static int
 METAL_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
         const float *xy, int xy_stride, const int *color, int color_stride, const float *uv, int uv_stride,
         int num_vertices, const void *indices, int num_indices, int size_indices,
@@ -1459,33 +1413,13 @@ METAL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
                 break;
             }
 
-            case SDL_RENDERCMD_FILL_RECTS: {
-                const size_t count = cmd->data.draw.count;
-                const size_t maxcount = UINT16_MAX / 4;
-                SetDrawState(renderer, cmd, SDL_METAL_FRAGMENT_SOLID, CONSTANTS_OFFSET_IDENTITY, mtlbufvertex, &statecache);
-                if (count == 1) {
-                    [data.mtlcmdencoder drawPrimitives:MTLPrimitiveTypeTriangleStrip vertexStart:0 vertexCount:4];
-                } else {
-                    /* Our index buffer has 16 bit indices, so we can only draw
-                     * 65k vertices (16k rects) at a time. */
-                    for (size_t i = 0; i < count; i += maxcount) {
-                        /* Set the vertex buffer offset for our current positions.
-                         * The vertex buffer itself was bound in SetDrawState. */
-                        [data.mtlcmdencoder setVertexBufferOffset:cmd->data.draw.first + i*sizeof(float)*8 atIndex:0];
-                        [data.mtlcmdencoder drawIndexedPrimitives:MTLPrimitiveTypeTriangle
-                                                       indexCount:SDL_min(maxcount, count - i) * 6
-                                                        indexType:MTLIndexTypeUInt16
-                                                      indexBuffer:data.mtlbufquadindices
-                                                indexBufferOffset:0];
-                    }
-                }
+            case SDL_RENDERCMD_FILL_RECTS: /* unused */
                 break;
-            }
 
             case SDL_RENDERCMD_COPY: /* unused */
                 break;
 
-            case SDL_RENDERCMD_COPY_EX: /* unused */ 
+            case SDL_RENDERCMD_COPY_EX: /* unused */
                 break;
 
             case SDL_RENDERCMD_GEOMETRY: {
@@ -1881,7 +1815,6 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->QueueSetDrawColor = METAL_QueueSetDrawColor;
     renderer->QueueDrawPoints = METAL_QueueDrawPoints;
     renderer->QueueDrawLines = METAL_QueueDrawLines;
-    renderer->QueueFillRects = METAL_QueueFillRects;
     renderer->QueueGeometry = METAL_QueueGeometry;
     renderer->RunCommandQueue = METAL_RunCommandQueue;
     renderer->RenderReadPixels = METAL_RenderReadPixels;
