@@ -602,37 +602,6 @@ GLES_QueueDrawLines(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_F
 }
 
 static int
-GLES_QueueFillRects(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FRect * rects, int count)
-{
-    GLfloat *verts = (GLfloat *) SDL_AllocateRenderVertices(renderer, count * 8 * sizeof (GLfloat), 0, &cmd->data.draw.first);
-    int i;
-
-    if (!verts) {
-        return -1;
-    }
-
-    cmd->data.draw.count = count;
-
-    for (i = 0; i < count; i++) {
-        const SDL_FRect *rect = &rects[i];
-        const GLfloat minx = rect->x;
-        const GLfloat maxx = rect->x + rect->w;
-        const GLfloat miny = rect->y;
-        const GLfloat maxy = rect->y + rect->h;
-        *(verts++) = minx;
-        *(verts++) = miny;
-        *(verts++) = maxx;
-        *(verts++) = miny;
-        *(verts++) = minx;
-        *(verts++) = maxy;
-        *(verts++) = maxx;
-        *(verts++) = maxy;
-    }
-
-    return 0;
-}
-
-static int
 GLES_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
         const float *xy, int xy_stride, const int *color, int color_stride, const float *uv, int uv_stride,
         int num_vertices, const void *indices, int num_indices, int size_indices,
@@ -892,17 +861,8 @@ GLES_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vert
                 break;
             }
 
-            case SDL_RENDERCMD_FILL_RECTS: {
-                const size_t count = cmd->data.draw.count;
-                const GLfloat *verts = (GLfloat *) (((Uint8 *) vertices) + cmd->data.draw.first);
-                GLsizei offset = 0;
-                SetDrawState(data, cmd);
-                data->glVertexPointer(2, GL_FLOAT, 0, verts);
-                for (i = 0; i < count; ++i, offset += 4) {
-                    data->glDrawArrays(GL_TRIANGLE_STRIP, offset, 4);
-                }
+            case SDL_RENDERCMD_FILL_RECTS: /* unused */
                 break;
-            }
 
             case SDL_RENDERCMD_COPY: /* unused */
                 break;
@@ -1164,7 +1124,6 @@ GLES_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->QueueSetDrawColor = GLES_QueueSetViewport;  /* SetViewport and SetDrawColor are (currently) no-ops. */
     renderer->QueueDrawPoints = GLES_QueueDrawPoints;
     renderer->QueueDrawLines = GLES_QueueDrawLines;
-    renderer->QueueFillRects = GLES_QueueFillRects;
     renderer->QueueGeometry = GLES_QueueGeometry;
     renderer->RunCommandQueue = GLES_RunCommandQueue;
     renderer->RenderReadPixels = GLES_RenderReadPixels;

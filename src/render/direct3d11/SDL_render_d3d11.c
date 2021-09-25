@@ -1634,71 +1634,6 @@ D3D11_QueueDrawPoints(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL
 }
 
 static int
-D3D11_QueueFillRects(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FRect * rects, int count)
-{
-    VertexPositionColor *verts = (VertexPositionColor *) SDL_AllocateRenderVertices(renderer, count * 4 * sizeof (VertexPositionColor), 0, &cmd->data.draw.first);
-    const float r = (float)(cmd->data.draw.r / 255.0f);
-    const float g = (float)(cmd->data.draw.g / 255.0f);
-    const float b = (float)(cmd->data.draw.b / 255.0f);
-    const float a = (float)(cmd->data.draw.a / 255.0f);
-    int i;
-
-    if (!verts) {
-        return -1;
-    }
-
-    cmd->data.draw.count = count;
-
-    for (i = 0; i < count; i++) {
-        verts->pos.x = rects[i].x;
-        verts->pos.y = rects[i].y;
-        verts->pos.z = 0.0f;
-        verts->tex.x = 0.0f;
-        verts->tex.y = 0.0f;
-        verts->color.x = r;
-        verts->color.y = g;
-        verts->color.z = b;
-        verts->color.w = a;
-        verts++;
-
-        verts->pos.x = rects[i].x;
-        verts->pos.y = rects[i].y + rects[i].h;
-        verts->pos.z = 0.0f;
-        verts->tex.x = 0.0f;
-        verts->tex.y = 0.0f;
-        verts->color.x = r;
-        verts->color.y = g;
-        verts->color.z = b;
-        verts->color.w = a;
-        verts++;
-
-        verts->pos.x = rects[i].x + rects[i].w;
-        verts->pos.y = rects[i].y;
-        verts->pos.z = 0.0f;
-        verts->tex.x = 0.0f;
-        verts->tex.y = 0.0f;
-        verts->color.x = r;
-        verts->color.y = g;
-        verts->color.z = b;
-        verts->color.w = a;
-        verts++;
-
-        verts->pos.x = rects[i].x + rects[i].w;
-        verts->pos.y = rects[i].y + rects[i].h;
-        verts->pos.z = 0.0f;
-        verts->tex.x = 0.0f;
-        verts->tex.y = 0.0f;
-        verts->color.x = r;
-        verts->color.y = g;
-        verts->color.z = b;
-        verts->color.w = a;
-        verts++;
-    }
-
-    return 0;
-}
-
-static int
 D3D11_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
                     const float *xy, int xy_stride, const int *color, int color_stride, const float *uv, int uv_stride,
                     int num_vertices, const void *indices, int num_indices, int size_indices,
@@ -2201,19 +2136,10 @@ D3D11_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
                 break;
             }
 
-            case SDL_RENDERCMD_FILL_RECTS: {
-                const size_t count = cmd->data.draw.count;
-                const size_t first = cmd->data.draw.first;
-                const size_t start = first / sizeof (VertexPositionColor);
-                size_t offset = 0;
-                D3D11_SetDrawState(renderer, cmd, rendererData->pixelShaders[SHADER_SOLID], 0, NULL, NULL, NULL);
-                for (i = 0; i < count; i++, offset += 4) {
-                    D3D11_DrawPrimitives(renderer, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, start + offset, 4);
-                }
+            case SDL_RENDERCMD_FILL_RECTS: /* unused */
                 break;
-            }
 
-            case SDL_RENDERCMD_COPY: /* unsued */
+            case SDL_RENDERCMD_COPY: /* unused */
                 break;
 
             case SDL_RENDERCMD_COPY_EX: /* unused */
