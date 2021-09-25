@@ -305,7 +305,35 @@ extern DECLSPEC void SDLCALL SDL_UnlockSurface(SDL_Surface * surface);
 /**
  * Load a BMP image from a seekable SDL data stream.
  *
- * The new surface should be freed with SDL_FreeSurface().
+ * The new surface should be freed with SDL_FreeSurface(). Not doing so will
+ * result in a memory leak.
+ *
+ * src is an open SDL_RWops buffer, typically loaded with SDL_RWFromFile.
+ * Alternitavely, you might also use the macro SDL_LoadBMP to load a bitmap
+ * from a file, convert it to an SDL_Surface and then close the file.
+ *
+ * === Code Example ===
+ *
+ * ```c++
+ * const char *image_path = "myimage.bmp";
+ *
+ * /* "rb" will "read binary" files */
+ * SDL_RWops *file = SDL_RWFromFile(image_path, "rb");
+ *
+ * /* freesrc is true so the file automatically closes */
+ * SDL_Surface *image = SDL_LoadBMP_RW(file, SDL_TRUE);
+ *
+ * /* Let the user know if the file failed to load */
+ * if (!image) {
+ *     printf("Failed to load image at %s: %s\n", image_path, SDL_GetError());
+ *     return;
+ * }
+ *
+ * /* Do something with image here. */
+ *
+ * /* Make sure to eventually release the surface resource */
+ * SDL_FreeSurface(image);
+ * ```
  *
  * \param src the data stream for the surface
  * \param freesrc non-zero to close the stream after being read
@@ -313,6 +341,7 @@ extern DECLSPEC void SDLCALL SDL_UnlockSurface(SDL_Surface * surface);
  *          error; call SDL_GetError() for more information.
  *
  * \sa SDL_FreeSurface
+ * \sa SDL_RWFromFile
  * \sa SDL_LoadBMP
  * \sa SDL_SaveBMP_RW
  */
