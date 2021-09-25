@@ -639,12 +639,19 @@ Wayland_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info)
 #ifdef HAVE_LIBDECOR_H
         if (viddata->shell.libdecor && data->shell_surface.libdecor.frame != NULL) {
             info->info.wl.xdg_surface = libdecor_frame_get_xdg_surface(data->shell_surface.libdecor.frame);
+            if (version >= SDL_VERSIONNUM(2, 0, 17)) {
+                info->info.wl.xdg_toplevel = libdecor_frame_get_xdg_toplevel(data->shell_surface.libdecor.frame);
+            }
         } else
 #endif
         if (viddata->shell.xdg && data->shell_surface.xdg.surface != NULL) {
             info->info.wl.xdg_surface = data->shell_surface.xdg.surface;
+            if (version >= SDL_VERSIONNUM(2, 0, 17)) {
+                info->info.wl.xdg_toplevel = data->shell_surface.xdg.roleobj.toplevel;
+            }
         } else {
             info->info.wl.xdg_surface = NULL;
+            info->info.wl.xdg_toplevel = NULL;
         }
     }
 
