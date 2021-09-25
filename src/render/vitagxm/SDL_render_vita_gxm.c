@@ -93,8 +93,6 @@ static int VITA_GXM_RenderDrawPoints(SDL_Renderer *renderer, const SDL_RenderCom
 
 static int VITA_GXM_RenderDrawLines(SDL_Renderer *renderer, const SDL_RenderCommand *cmd);
 
-static int VITA_GXM_QueueFillRects(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FRect * rects, int count);
-
 static int VITA_GXM_RenderFillRects(SDL_Renderer *renderer, const SDL_RenderCommand *cmd);
 
 
@@ -244,7 +242,6 @@ VITA_GXM_CreateRenderer(SDL_Window *window, Uint32 flags)
     renderer->QueueSetDrawColor = VITA_GXM_QueueSetDrawColor;
     renderer->QueueDrawPoints = VITA_GXM_QueueDrawPoints;
     renderer->QueueDrawLines = VITA_GXM_QueueDrawLines;
-    renderer->QueueFillRects = VITA_GXM_QueueFillRects;
     renderer->QueueGeometry = VITA_GXM_QueueGeometry;
     renderer->RunCommandQueue = VITA_GXM_RunCommandQueue;
     renderer->RenderReadPixels = VITA_GXM_RenderReadPixels;
@@ -505,47 +502,6 @@ VITA_GXM_QueueDrawLines(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const S
         vertex[i*2+1].y = points[i+1].y;
         vertex[i*2+1].color = color;
     }
-
-    return 0;
-}
-
-static int
-VITA_GXM_QueueFillRects(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FRect * rects, int count)
-{
-    int color;
-    color_vertex *vertices;
-    VITA_GXM_RenderData *data = (VITA_GXM_RenderData *) renderer->driverdata;
-
-    cmd->data.draw.count = count;
-    color = data->drawstate.color;
-
-    vertices = (color_vertex *)pool_memalign(
-            data,
-            4 * count * sizeof(color_vertex), // 4 vertices * count
-            sizeof(color_vertex));
-
-    for (int i =0; i < count; i++)
-    {
-        const SDL_FRect *rect = &rects[i];
-
-        vertices[4*i+0].x = rect->x;
-        vertices[4*i+0].y = rect->y;
-        vertices[4*i+0].color = color;
-
-        vertices[4*i+1].x = rect->x + rect->w;
-        vertices[4*i+1].y = rect->y;
-        vertices[4*i+1].color = color;
-
-        vertices[4*i+2].x = rect->x;
-        vertices[4*i+2].y = rect->y + rect->h;
-        vertices[4*i+2].color = color;
-
-        vertices[4*i+3].x = rect->x + rect->w;
-        vertices[4*i+3].y = rect->y + rect->h;
-        vertices[4*i+3].color = color;
-    }
-
-    cmd->data.draw.first = (size_t)vertices;
 
     return 0;
 }
@@ -887,11 +843,8 @@ VITA_GXM_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *
                 break;
             }
 
-            case SDL_RENDERCMD_FILL_RECTS: {
-                SetDrawState(data, cmd);
-                VITA_GXM_RenderFillRects(renderer, cmd);
+            case SDL_RENDERCMD_FILL_RECTS: /* unused */
                 break;
-            }
 
             case SDL_RENDERCMD_COPY: /* unused */
                 break;
