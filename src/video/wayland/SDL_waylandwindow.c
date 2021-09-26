@@ -651,7 +651,9 @@ Wayland_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info)
             }
         } else {
             info->info.wl.xdg_surface = NULL;
-            info->info.wl.xdg_toplevel = NULL;
+            if (version >= SDL_VERSIONNUM(2, 0, 17)) {
+                info->info.wl.xdg_toplevel = NULL;
+            }
         }
     }
 
