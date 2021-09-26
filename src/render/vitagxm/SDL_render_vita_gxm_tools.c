@@ -1011,7 +1011,7 @@ gxm_texture_get_datap(const gxm_texture *texture)
 gxm_texture *
 create_gxm_texture(VITA_GXM_RenderData *data, unsigned int w, unsigned int h, SceGxmTextureFormat format, unsigned int isRenderTarget)
 {
-    gxm_texture *texture = SDL_malloc(sizeof(gxm_texture));
+    gxm_texture *texture = SDL_calloc(1, sizeof(gxm_texture));
     const int tex_size =  ((w + 7) & ~ 7) * h * tex_format_to_bytespp(format);
     void *texture_data;
 
