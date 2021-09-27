@@ -60,6 +60,9 @@ wayland_get_system_cursor(SDL_VideoData *vdata, Wayland_CursorData *cdata, float
     struct wl_cursor_theme *theme = NULL;
     struct wl_cursor *cursor;
 
+    char *xcursor_size;
+    int size = 0;
+
     SDL_Window *focus;
     SDL_WindowData *focusdata;
     int i;
@@ -70,7 +73,13 @@ wayland_get_system_cursor(SDL_VideoData *vdata, Wayland_CursorData *cdata, float
      * for real, but for now this is a pretty safe bet.
      * -flibit
      */
-    int size = 24;
+    xcursor_size = SDL_getenv("XCURSOR_SIZE");
+    if (xcursor_size != NULL) {
+        size = SDL_atoi(xcursor_size);
+    }
+    if (size <= 0) {
+        size = 24;
+    }
 
     /* First, find the appropriate theme based on the current scale... */
     focus = SDL_GetMouse()->focus;
@@ -94,7 +103,7 @@ wayland_get_system_cursor(SDL_VideoData *vdata, Wayland_CursorData *cdata, float
             SDL_OutOfMemory();
             return SDL_FALSE;
         }
-        theme = WAYLAND_wl_cursor_theme_load(NULL, size, vdata->shm);
+        theme = WAYLAND_wl_cursor_theme_load(SDL_getenv("XCURSOR_THEME"), size, vdata->shm);
         vdata->cursor_themes[vdata->num_cursor_themes].size = size;
         vdata->cursor_themes[vdata->num_cursor_themes++].theme = theme;
     }
