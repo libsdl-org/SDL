@@ -1275,7 +1275,7 @@ SDL_vsscanf(const char *text, const char *fmt, va_list ap)
                             }
                         }
                     }
-                    /* Fall through to %d handling */
+                    SDL_FALLTHROUGH;
                 case 'd':
                     if (inttype == DO_LONGLONG) {
                         Sint64 value;
@@ -1323,13 +1323,13 @@ SDL_vsscanf(const char *text, const char *fmt, va_list ap)
                     if (radix == 10) {
                         radix = 8;
                     }
-                    /* Fall through to unsigned handling */
+                    SDL_FALLTHROUGH;
                 case 'x':
                 case 'X':
                     if (radix == 10) {
                         radix = 16;
                     }
-                    /* Fall through to unsigned handling */
+                    SDL_FALLTHROUGH;
                 case 'u':
                     if (inttype == DO_LONGLONG) {
                         Uint64 value = 0;
@@ -1815,7 +1815,7 @@ SDL_vsnprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, const char *fmt, 
                 case 'p':
                 case 'x':
                     info.force_case = SDL_CASE_LOWER;
-                    /* Fall through to 'X' handling */
+                    SDL_FALLTHROUGH;
                 case 'X':
                     if (info.force_case == SDL_CASE_NOCHANGE) {
                         info.force_case = SDL_CASE_UPPER;
@@ -1826,12 +1826,12 @@ SDL_vsnprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, const char *fmt, 
                     if (*fmt == 'p') {
                         inttype = DO_LONG;
                     }
-                    /* Fall through to unsigned handling */
+                    SDL_FALLTHROUGH;
                 case 'o':
                     if (info.radix == 10) {
                         info.radix = 8;
                     }
-                    /* Fall through to unsigned handling */
+                    SDL_FALLTHROUGH;
                 case 'u':
                     info.force_sign = SDL_FALSE;
                     if (info.precision >= 0) {
