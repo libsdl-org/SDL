@@ -1010,18 +1010,14 @@ SDL_EGL_CreateContext(_THIS, EGLSurface egl_surface)
         }
     }
 
-    if (_this->gl_config.no_error) {
 #ifdef EGL_KHR_create_context_no_error
+    if (_this->gl_config.no_error) {
         if (SDL_EGL_HasExtension(_this, SDL_EGL_DISPLAY_EXTENSION, "EGL_KHR_create_context_no_error")) {
             attribs[attr++] = EGL_CONTEXT_OPENGL_NO_ERROR_KHR;
             attribs[attr++] = _this->gl_config.no_error;
-        } else
-#endif
-        {
-            SDL_SetError("EGL implementation does not support no_error contexts");
-            return NULL;
         }
     }
+#endif
 
     attribs[attr++] = EGL_NONE;
 
