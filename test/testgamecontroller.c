@@ -386,7 +386,7 @@ loop(void *arg)
             if (event.key.keysym.sym != SDLK_ESCAPE) {
                 break;
             }
-            /* Fall through to signal quit */
+            SDL_FALLTHROUGH;
         case SDL_QUIT:
             done = SDL_TRUE;
             break;
