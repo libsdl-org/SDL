@@ -496,25 +496,13 @@ SDL_FORCE_INLINE void SDL_memset4(void *dst, Uint32 val, size_t dwords)
     if (dwords == 0) {
         return;
     }
-
-    /* !!! FIXME: there are better ways to do this, but this is just to clean this up for now. */
-    #ifdef __clang__
-    #pragma clang diagnostic push
-    #pragma clang diagnostic ignored "-Wimplicit-fallthrough"
-    #endif
-
     switch (dwords % 4) {
-        case 0: do {    *_p++ = _val;   /* fallthrough */
-        case 3:         *_p++ = _val;   /* fallthrough */
-        case 2:         *_p++ = _val;   /* fallthrough */
-        case 1:         *_p++ = _val;   /* fallthrough */
+        case 0: do {    *_p++ = _val;   SDL_FALLTHROUGH;
+        case 3:         *_p++ = _val;   SDL_FALLTHROUGH;
+        case 2:         *_p++ = _val;   SDL_FALLTHROUGH;
+        case 1:         *_p++ = _val;
         } while ( --_n );
     }
-
-    #ifdef __clang__
-    #pragma clang diagnostic pop
-    #endif
-
 #endif
 }
 

@@ -164,3 +164,24 @@
 #endif
 #endif /* NULL */
 #endif /* ! Mac OS X - breaks precompiled headers */
+
+#ifndef SDL_FALLTHROUGH
+#if (defined(__cplusplus) && __cplusplus >= 201703L) || \
+    (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 202000L)
+#define SDL_FALLTHROUGH [[fallthrough]]
+#else
+#if defined(__has_attribute)
+#define _HAS_FALLTHROUGH __has_attribute(__fallthrough__)
+#else
+#define _HAS_FALLTHROUGH 0
+#endif /* __has_attribute */
+#if _HAS_FALLTHROUGH && \
+    ((defined(__GNUC__) && __GNUC__ >= 7) || \
+    (defined(__clang_major__) && __clang_major__ >= 10))
+#define SDL_FALLTHROUGH __attribute__((__fallthrough__))
+#else
+#define SDL_FALLTHROUGH do {} while (0) /* fallthrough */
+#endif /* _HAS_FALLTHROUGH */
+#undef _HAS_FALLTHROUGH
+#endif /* C++17 or C2x */
+#endif /* SDL_FALLTHROUGH not defined */
