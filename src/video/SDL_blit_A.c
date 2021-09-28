@@ -575,6 +575,61 @@ BlitRGBtoRGBPixelAlpha(SDL_BlitInfo * info)
     }
 }
 
+/* fast ARGB888->(A)BGR888 blending with pixel alpha */
+static void
+BlitRGBtoBGRPixelAlpha(SDL_BlitInfo * info)
+{
+    int width = info->dst_w;
+    int height = info->dst_h;
+    Uint32 *srcp = (Uint32 *) info->src;
+    int srcskip = info->src_skip >> 2;
+    Uint32 *dstp = (Uint32 *) info->dst;
+    int dstskip = info->dst_skip >> 2;
+
+    while (height--) {
+        /* *INDENT-OFF* */
+        DUFFS_LOOP4({
+        Uint32 dalpha;
+        Uint32 d;
+        Uint32 s1;
+        Uint32 d1;
+        Uint32 s = *srcp;
+        Uint32 alpha = s >> 24;
+        /* FIXME: Here we special-case opaque alpha since the
+           compositioning used (>>8 instead of /255) doesn't handle
+           it correctly. Also special-case alpha=0 for speed?
+           Benchmark this! */
+        if (alpha) {
+          /*
+           * take out the middle component (green), and process
+           * the other two in parallel. One multiply less.
+           */
+          s1 = s & 0xff00ff;
+          s1 = (s1 >> 16) | (s1 << 16);
+          s &= 0xff00;
+
+          if (alpha == SDL_ALPHA_OPAQUE) {
+              *dstp = 0xff000000 | s | s1;
+          } else {
+            d = *dstp;
+            dalpha = d >> 24;
+            d1 = d & 0xff00ff;
+            d1 = (d1 + ((s1 - d1) * alpha >> 8)) & 0xff00ff;
+            d &= 0xff00;
+            d = (d + ((s - d) * alpha >> 8)) & 0xff00;
+            dalpha = alpha + (dalpha * (alpha ^ 0xFF) >> 8);
+            *dstp = d1 | d | (dalpha << 24);
+          }
+        }
+        ++srcp;
+        ++dstp;
+        }, width);
+        /* *INDENT-ON* */
+        srcp += srcskip;
+        dstp += dstskip;
+    }
+}
+
 #ifdef __3dNOW__
 /* fast (as in MMX with prefetch) ARGB888->(A)RGB888 blending with pixel alpha */
 static void
@@ -1406,6 +1461,12 @@ SDL_CalculateBlitA(SDL_Surface * surface)
                         return BlitRGBtoRGBPixelAlphaARMSIMD;
 #endif
                     return BlitRGBtoRGBPixelAlpha;
+                }
+            } else if (sf->Rmask == df->Bmask
+                && sf->Gmask == df->Gmask
+                && sf->Bmask == df->Rmask && sf->BytesPerPixel == 4) {
+                if (sf->Amask == 0xff000000) {
+                    return BlitRGBtoBGRPixelAlpha;
                 }
             }
             return BlitNtoNPixelAlpha;
