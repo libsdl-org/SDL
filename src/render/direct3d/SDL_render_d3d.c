@@ -1908,9 +1908,6 @@ D3D_CreateRenderer(SDL_Window * window, Uint32 flags)
     IDirect3DDevice9_GetDeviceCaps(data->device, &caps);
     renderer->info.max_texture_width = caps.MaxTextureWidth;
     renderer->info.max_texture_height = caps.MaxTextureHeight;
-    if (caps.NumSimultaneousRTs >= 2) {
-        renderer->info.flags |= SDL_RENDERER_TARGETTEXTURE;
-    }
 
     if (caps.PrimitiveMiscCaps & D3DPMISCCAPS_SEPARATEALPHABLEND) {
         data->enableSeparateAlphaBlend = SDL_TRUE;
