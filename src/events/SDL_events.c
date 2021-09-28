@@ -891,26 +891,36 @@ SDL_WaitEventTimeout(SDL_Event * event, int timeout)
         }
     }
 
-    for (;;) {
-        SDL_PumpEvents();
-        switch (SDL_PeepEvents(event, 1, SDL_GETEVENT, SDL_FIRSTEVENT, SDL_LASTEVENT)) {
-        case -1:
-            return 0;
-        case 0:
-            if (timeout == 0) {
-                /* Polling and no events, just return */
+    switch (SDL_PeepEvents(event, 1, SDL_GETEVENT, SDL_FIRSTEVENT, SDL_LASTEVENT)) {
+    case -1:
+        return 0;
+    case 0:
+        /* No old events, let's enter a pump-and-check loop. */
+        for (;;) {
+            SDL_PumpEvents();
+            switch (SDL_PeepEvents(event, 1, SDL_GETEVENT, SDL_FIRSTEVENT, SDL_LASTEVENT)) {
+            case -1:
                 return 0;
+            case 0:
+                if (timeout == 0) {
+                    /* Polling and no new events, just return */
+                    return 0;
+                }
+                if (timeout > 0 && SDL_TICKS_PASSED(SDL_GetTicks(), expiration)) {
+                    /* Timeout expired and no new events */
+                    return 0;
+                }
+                SDL_Delay(1);
+                break;
+            default:
+                /* Has new events */
+                return 1;
             }
-            if (timeout > 0 && SDL_TICKS_PASSED(SDL_GetTicks(), expiration)) {
-                /* Timeout expired and no events */
-                return 0;
-            }
-            SDL_Delay(1);
-            break;
-        default:
-            /* Has events */
-            return 1;
         }
+        return 0;
+    default:
+        /* Has old events */
+        return 1;
     }
 }
 

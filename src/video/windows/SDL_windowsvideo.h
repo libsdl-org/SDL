@@ -189,6 +189,9 @@ typedef struct SDL_VideoData
     TSFSink *ime_uielemsink;
     TSFSink *ime_ippasink;
 
+    int mousemove_only_pumps;
+    MSG mousemove_last;
+
     BYTE pre_hook_key_state[256];
     UINT _SDL_WAKEUP;
 } SDL_VideoData;
