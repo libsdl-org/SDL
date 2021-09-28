@@ -27,6 +27,14 @@
 #include "../SDL_egl_c.h"
 #endif
 
+typedef enum
+{
+    SDL_MOUSE_EVENT_SOURCE_UNKNOWN,
+    SDL_MOUSE_EVENT_SOURCE_MOUSE,
+    SDL_MOUSE_EVENT_SOURCE_TOUCH,
+    SDL_MOUSE_EVENT_SOURCE_PEN,
+} SDL_MOUSE_EVENT_SOURCE;
+
 typedef struct
 {
     SDL_Window *window;
@@ -53,6 +61,8 @@ typedef struct
     SDL_bool in_window_deactivation;
     RECT cursor_clipped_rect;
     SDL_Point last_raw_mouse_position;
+    SDL_MOUSE_EVENT_SOURCE mousemove_source;
+    LPARAM mousemove_position;
     struct SDL_VideoData *videodata;
 #if SDL_VIDEO_OPENGL_EGL  
     EGLSurface egl_surface;

@@ -420,14 +420,6 @@ static SDL_bool isWin10FCUorNewer = SDL_FALSE;
 #define MI_WP_SIGNATURE_MASK    0xFFFFFF00
 #define IsTouchEvent(dw) ((dw) & MI_WP_SIGNATURE_MASK) == MI_WP_SIGNATURE
 
-typedef enum
-{
-    SDL_MOUSE_EVENT_SOURCE_UNKNOWN,
-    SDL_MOUSE_EVENT_SOURCE_MOUSE,
-    SDL_MOUSE_EVENT_SOURCE_TOUCH,
-    SDL_MOUSE_EVENT_SOURCE_PEN,
-} SDL_MOUSE_EVENT_SOURCE;
-
 static SDL_MOUSE_EVENT_SOURCE GetMouseMessageSource()
 {
     LPARAM extrainfo = GetMessageExtraInfo();
@@ -598,6 +590,37 @@ WIN_KeyboardHookProc(int nCode, WPARAM wParam, LPARAM lParam)
     return 1;
 }
 
+static void
+WIN_HandleMouseMove(SDL_WindowData *data, SDL_MOUSE_EVENT_SOURCE source, LPARAM lParam)
+{
+    /* See the huge comment in WIN_PumpEvents as to why this is handled in a special manner.
+       TL;DR: Windows likes to combine mouse moves and give us more when we ask for it,
+       but asking for it too much ends up getting the event loop stuck until the mouse stops. */
+    SDL_Mouse *mouse = SDL_GetMouse();
+    if (!mouse->relative_mode || mouse->relative_mode_warp) {
+        /* Only generate mouse events for real mouse */
+        if (source != SDL_MOUSE_EVENT_SOURCE_TOUCH &&
+            lParam != data->last_pointer_update) {
+            SDL_SendMouseMotion(data->window, 0, 0, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+            if (isWin10FCUorNewer && mouse->relative_mode_warp &&
+                (data->window->flags & SDL_WINDOW_INPUT_FOCUS) != 0) {
+                /* To work around #3931, Win10 bug introduced in Fall Creators Update, where
+                    SetCursorPos() (SDL_WarpMouseInWindow()) doesn't reliably generate mouse events anymore,
+                    after each windows mouse event generate a fake event for the middle of the window
+                    if relative_mode_warp is used */
+                int center_x = 0, center_y = 0;
+                SDL_GetWindowSize(data->window, &center_x, &center_y);
+                center_x /= 2;
+                center_y /= 2;
+                SDL_SendMouseMotion(data->window, 0, 0, center_x, center_y);
+            }
+        }
+    } else {
+        /* We still need to update focus */
+        SDL_SetMouseFocus(data->window);
+    }
+}
+
 LRESULT CALLBACK
 WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -740,28 +763,14 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
     case WM_MOUSEMOVE:
         {
-            SDL_Mouse *mouse = SDL_GetMouse();
-            if (!mouse->relative_mode || mouse->relative_mode_warp) {
-                /* Only generate mouse events for real mouse */
-                if (GetMouseMessageSource() != SDL_MOUSE_EVENT_SOURCE_TOUCH &&
-                    lParam != data->last_pointer_update) {
-                    SDL_SendMouseMotion(data->window, 0, 0, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
-                    if (isWin10FCUorNewer && mouse->relative_mode_warp &&
-                        (data->window->flags & SDL_WINDOW_INPUT_FOCUS) != 0) {
-                        /* To work around #3931, Win10 bug introduced in Fall Creators Update, where
-                           SetCursorPos() (SDL_WarpMouseInWindow()) doesn't reliably generate mouse events anymore,
-                           after each windows mouse event generate a fake event for the middle of the window
-                           if relative_mode_warp is used */
-                        int center_x = 0, center_y = 0;
-                        SDL_GetWindowSize(data->window, &center_x, &center_y);
-                        center_x /= 2;
-                        center_y /= 2;
-                        SDL_SendMouseMotion(data->window, 0, 0, center_x, center_y);
-                    }
-                }
+            SDL_MOUSE_EVENT_SOURCE source = GetMouseMessageSource();
+            if (source == SDL_MOUSE_EVENT_SOURCE_UNKNOWN ||
+                source == SDL_MOUSE_EVENT_SOURCE_TOUCH) {
+                WIN_HandleMouseMove(data, source, lParam);
             } else {
-                /* We still need to update focus */
-                SDL_SetMouseFocus(data->window);
+                /* Don't fully handle real mouse moves immediately - check WIN_PumpEvents for more info. */
+                data->mousemove_source = source;
+                data->mousemove_position = lParam;
             }
         }
         /* don't break here, fall through to check the wParam like the button presses */
@@ -1533,41 +1542,27 @@ WIN_SendWakeupEvent(_THIS, SDL_Window *window)
     PostMessage(data->hwnd, data->videodata->_SDL_WAKEUP, 0, 0);
 }
 
-static SDL_bool
-WIN_TranslateDispatchMessage(MSG* msg, DWORD start_ticks, int *new_messages)
+static void
+WIN_HandlePendingMouseMoves(_THIS)
 {
-    if (g_WindowsMessageHook) {
-        g_WindowsMessageHook(g_WindowsMessageHookData, msg->hwnd, msg->message, msg->wParam, msg->lParam);
+    for (SDL_Window *window = _this->windows; window != NULL; window = window->next) {
+        SDL_WindowData *windowdata = window->driverdata;
+        if (windowdata != NULL && windowdata->mousemove_source != SDL_MOUSE_EVENT_SOURCE_UNKNOWN) {
+            WIN_HandleMouseMove(windowdata, windowdata->mousemove_source, windowdata->mousemove_position);
+            windowdata->mousemove_source = SDL_MOUSE_EVENT_SOURCE_UNKNOWN;
+        }
     }
-
-    /* Always translate the message in case it's a non-SDL window (e.g. with Qt integration) */
-    TranslateMessage(msg);
-    DispatchMessage(msg);
-
-    /* Make sure we don't busy loop here forever if there are lots of events coming in */
-    if (SDL_TICKS_PASSED(msg->time, start_ticks)) {
-        /* We might get a few new messages generated by the Steam overlay or other application hooks
-           In this case those messages will be processed before any pending input, so we want to continue after those messages.
-           (thanks to Peter Deayton for his investigation here)
-         */
-        const int MAX_NEW_MESSAGES = 3;
-        ++*new_messages;
-        return *new_messages > MAX_NEW_MESSAGES;
-    }
-
-    return SDL_FALSE;
 }
 
 void
 WIN_PumpEvents(_THIS)
 {
     const Uint8 *keystate;
-    MSG msg, mousemove;
-    SDL_bool mousemove_new = SDL_FALSE;
+    MSG msg;
     DWORD start_ticks = GetTickCount();
     int new_messages = 0;
     int mousemoves = 0;
-    SDL_VideoData *data = _this->driverdata;
+    SDL_VideoData* data = _this->driverdata;
 
     if (g_WindowsEnableMessageLoop) {
         /* There are as many WM_MOUSEMOVEs as we are asking for.
@@ -1579,78 +1574,83 @@ WIN_PumpEvents(_THIS)
            call WIN_WindowProc with WM_NCHITTEST and WM_SETCURSOR as if those were *sent* (not posted) messages.
 
            One huge problem is that SDL_PollEvent can call SDL_PumpEvents, which then goes *through the entire msg loop*!
-           High frequency mice can overwhelm the poll loop easily on some PCs, especially with the extra
-           handling above happening on *every peek*! (For reference, a 1kHz mouse can already tank an i7-7700K on bad days.)
+           High frequency mice can keep generating msgs and thus overwhelm poll loops easily on some PCs, especially with the extra
+           handling above happening on *every poll*! (For reference, a 1kHz mouse can already tank an i7-7700K on bad days.)
            We thus must make sure to not overwhelm poll loops and cut off the stream of mouse events,
            instead of waiting for the user to decide where to put their mouse before leaving the event loop.
 
-           Having "start_ticks" match the loop start would also solve that, but this must keep existing peek loop setups as-is. */
+           Having "start_ticks" match the loop start would also solve that, but this must keep existing poll loop setups as-is. */
         const int MAX_MOUSEMOVES_PER_PUMP = 2;
         const int MAX_MOUSEMOVE_PUMPS = 3;
 
-#if 1
-
-        if (data->mousemove_last.message == WM_MOUSEMOVE) {
-            /* There's still a mouse move left over from the last pump. */
-            mousemove = data->mousemove_last;
-            mousemove_new = SDL_TRUE;
-            data->mousemove_last.message = 0;
-        }
+        /* Check for mouse moves left over from the last pump.
+           If there are any left, handle them immediately before all new msgs in the queue to avoid ending up in
+           an awkward spot without any new mouse moves and handling the previous pump's moves way too late. */
+        WIN_HandlePendingMouseMoves(_this);
 
         while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
-            if (msg.message == WM_MOUSEMOVE) {
-                if (GetMouseMessageSource() == SDL_MOUSE_EVENT_SOURCE_MOUSE) {
-                    /* We should only care about the last real mouse movement. */
-                    mousemove = msg;
-                    mousemove_new = SDL_TRUE;
-                    /* Remove everything that was added to the queue before we started this loop,
-                       treat anything added afterwards as auto-generated. */
-                    if (SDL_TICKS_PASSED(msg.time, start_ticks)) {
-                        /* Very likely an autogenerated mouse move, indicating the end of the normal queue.
-                           Anything sent or posted by an overlay should've been handled by now.
-                           Let's make sure to hit N consecutive mouse moves before dropping out too soon though... */
-                        ++mousemoves;
-                        if (mousemoves >= MAX_MOUSEMOVES_PER_PUMP) {
-                            break;
-                        }
-                        continue;
-                    } else {
-                        /* Let's check if there are any newer mouse moves which are worth handling instead. */
-                        continue;
-                    }
-                } else {
-                    /* Non-mouse mouse movement? Let's handle it normally. */
-                    mousemoves = 0;
+            if (msg.message == WM_MOUSEMOVE &&
+                GetMouseMessageSource() != SDL_MOUSE_EVENT_SOURCE_TOUCH &&
+                SDL_TICKS_PASSED(msg.time, start_ticks)) {
+                /* We should only care about the last real mouse movement, but need to
+                   go through everything that was added to the queue before we started this loop.
+                   Treat anything added afterwards as auto-generated, indicating the end of the normal queue.
+                   Anything sent or posted by an overlay should've been handled by now.
+                   Let's make sure to hit N consecutive mouse moves before dropping out too soon though... */
+                ++mousemoves;
+            } else {
+                /* Touch mouse movement or anything that was already on the queue - let's be safe here. */
+                data->mousemove_only_pumps = 0;
+                mousemoves = 0;
+            }
+
+            if (g_WindowsMessageHook) {
+                g_WindowsMessageHook(g_WindowsMessageHookData, msg.hwnd, msg.message, msg.wParam, msg.lParam);
+            }
+
+            /* Always translate the message in case it's a non-SDL window (e.g. with Qt integration) */
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+
+            /* Make sure we don't busy loop here forever if there are lots of events coming in */
+            if (SDL_TICKS_PASSED(msg.time, start_ticks)) {
+                /* We might get a few new messages generated by the Steam overlay or other application hooks
+                   In this case those messages will be processed before any pending input, so we want to continue after those messages.
+                   (thanks to Peter Deayton for his investigation here)
+                 */
+                const int MAX_NEW_MESSAGES = 3;
+                ++new_messages;
+                if (new_messages > MAX_NEW_MESSAGES) {
+                    break;
                 }
             }
 
-            /* Handle all other messages normally and reset the mousemove-only pump counter. */
-            data->mousemove_only_pumps = 0;
-            if (WIN_TranslateDispatchMessage(&msg, start_ticks, &new_messages)) {
+            /* Auto-generated mouse moves at the end of the queue are nasty and make Windows send
+               additional events as part of PeekMessage. Let's avoid getting too many of those. */
+            if (mousemoves >= MAX_MOUSEMOVES_PER_PUMP) {
                 break;
             }
         }
 
-        /* Process the last WM_MOUSEMOVE, but only N consecutive mousemove-only pumps. */
-        if (mousemove_new) {
+        /* Handle the last WM_MOUSEMOVE, but only N consecutive mousemove-only pumps. */
+        if (mousemoves > 0) {
             ++data->mousemove_only_pumps;
-            if (data->mousemove_only_pumps < MAX_MOUSEMOVE_PUMPS) {
-                WIN_TranslateDispatchMessage(&mousemove, start_ticks, &new_messages);
-            } else {
+            /* Feel free to turn up your mouse poll rate, change this to #if 0 and attach Spy++
+               (or another slow msg handling hook) to see why this is important. */
+#if 1
+            if (data->mousemove_only_pumps >= MAX_MOUSEMOVE_PUMPS) {
                 /* Process this mouse move next pump to give event loops an opportunity to leave. */
-                data->mousemove_last = mousemove;
                 data->mousemove_only_pumps = 0;
-            }
-        }
-
-#else
-        /* The good old classic message loop for future reference. */
-        while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
-            if (WIN_TranslateDispatchMessage(&msg, start_ticks, &new_messages)) {
-                break;
-            }
-        }
+            } else
 #endif
+            {
+                /* Finally handle the mouse move(s) ourselves, making it visible to our own event handling.
+                   Auto-generated mouse move messages appear at the end of the message queue anyway,
+                   which means that this shouldn't be too "out of order" after all, unless something decided to
+                   put fake mouse moves into the message queue. */
+                WIN_HandlePendingMouseMoves(_this);
+            }
+        }
     }
 
     /* Windows loses a shift KEYUP event when you have both pressed at once and let go of one.
