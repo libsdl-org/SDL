@@ -156,8 +156,9 @@ RISCOS_InitEvents(_THIS)
         driverdata->key_pressed[i] = 255;
 
     status = (_kernel_osbyte(202, 0, 255) & 0xFF);
-    SDL_ToggleModState(KMOD_NUM,  (status & (1 << 2)) == 0);
-    SDL_ToggleModState(KMOD_CAPS, (status & (1 << 4)) == 0);
+    SDL_ToggleModState(KMOD_NUM,    (status & (1 << 2)) == 0);
+    SDL_ToggleModState(KMOD_CAPS,   (status & (1 << 4)) == 0);
+    SDL_ToggleModState(KMOD_SCROLL, (status & (1 << 1)) != 0);
 
     /* Disable escape. */
     _kernel_osbyte(229, 1, 0);
