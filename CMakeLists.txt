@@ -212,19 +212,8 @@ if(UNIX OR MINGW OR MSYS OR (USE_CLANG AND NOT WINDOWS) OR VITA)
   set(OPT_DEF_LIBC ON)
 endif()
 
-# Default flags, if not set otherwise
-if("$ENV{CFLAGS}" STREQUAL "")
-  if(CMAKE_BUILD_TYPE STREQUAL "")
-    if(USE_GCC OR USE_CLANG)
-      set(CMAKE_C_FLAGS "-g -O3")
-    endif()
-  endif()
-else()
-  set(CMAKE_C_FLAGS "$ENV{CFLAGS}")
-  list(APPEND EXTRA_CFLAGS "$ENV{CFLAGS}")
-endif()
-if(NOT ("$ENV{CFLAGS}" STREQUAL "")) # Hackish, but does the trick on Win32
-  list(APPEND EXTRA_LDFLAGS "$ENV{LDFLAGS}")
+if(NOT ("$ENV{CFLAGS}" STREQUAL ""))
+  message(WARNING "SDL's CMakeLists.txt no longer checks the CFLAGS environment. Please use CMake's CMAKE_C_FLAGS and CMAKE_BUILD_TYPE variables directly.")
 endif()
 
 if(MSVC)
