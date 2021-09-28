@@ -464,7 +464,7 @@ extern DECLSPEC size_t SDLCALL SDL_SIMDGetAlignment(void);
  *
  * \param len The length, in bytes, of the block to allocate. The actual
  *            allocated block might be larger due to padding, etc.
- * \returns a pointer to thenewly-allocated block, NULL if out of memory.
+ * \returns a pointer to the newly-allocated block, NULL if out of memory.
  *
  * \sa SDL_SIMDAlignment
  * \sa SDL_SIMDRealloc

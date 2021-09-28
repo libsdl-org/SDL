@@ -521,7 +521,7 @@ extern DECLSPEC int SDLCALL SDL_GetAudioDeviceSpec(int index,
  * For example, if you ask for float32 audio format, but the sound card only
  * supports int16, SDL will set the hardware to int16. If you had set
  * SDL_AUDIO_ALLOW_FORMAT_CHANGE, SDL will change the format in the `obtained`
- * structure. If that flag was *not* set, SDL will prepare to convert your
+ * structure. If that flag was *not'' set, SDL will prepare to convert your
  * callback's float32 audio to int16 before feeding it to the hardware and
  * will keep the originally requested format in the `obtained` structure.
  *
@@ -994,10 +994,9 @@ extern DECLSPEC void SDLCALL SDL_MixAudioFormat(Uint8 * dst,
  * You should not call SDL_LockAudio() on the device before queueing; SDL
  * handles locking internally for this function.
  *
- * Note that SDL2
- * [https://discourse.libsdl.org/t/sdl2-support-for-planar-audio/31263/3 does
- * not support planar audio]. You will need to resample from planar audio
- * formats into a non-planar one (see SDL_AudioFormat) before queuing audio.
+ * Note that SDL2 does not support planar audio. You will need to resample
+ * from planar audio formats into a non-planar one (see SDL_AudioFormat)
+ * before queuing audio.
  *
  * \param dev the device ID to which we will queue audio
  * \param data the data to queue to the device for later playback

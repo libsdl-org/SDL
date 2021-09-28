@@ -640,7 +640,7 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_ConvertSurface
  *          call SDL_GetError() for more information.
  *
  * \sa SDL_AllocFormat
- * \sa SDL_ConvertSurfaceFormat
+ * \sa SDL_ConvertSurface
  * \sa SDL_CreateRGBSurface
  */
 extern DECLSPEC SDL_Surface *SDLCALL SDL_ConvertSurfaceFormat
