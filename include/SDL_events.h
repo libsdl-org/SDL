@@ -87,6 +87,8 @@ typedef enum
 
     SDL_LOCALECHANGED,  /**< The user's locale preferences have changed. */
 
+    SDL_POLLSENTINEL, /**< Signals the end of an event poll cycle */
+
     /* Display events */
     SDL_DISPLAYEVENT   = 0x150,  /**< Display state change */
 
