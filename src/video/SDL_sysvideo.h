@@ -307,6 +307,7 @@ struct SDL_VideoDevice
     void (*StartTextInput) (_THIS);
     void (*StopTextInput) (_THIS);
     void (*SetTextInputRect) (_THIS, SDL_Rect *rect);
+    void (*ClearComposition) (_THIS);
 
     /* Screen keyboard */
     SDL_bool (*HasScreenKeyboardSupport) (_THIS);

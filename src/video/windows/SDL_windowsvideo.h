@@ -151,6 +151,7 @@ typedef struct SDL_VideoData
     SDL_bool ime_available;
     HWND ime_hwnd_main;
     HWND ime_hwnd_current;
+    SDL_bool ime_suppress_endcomposition_event;
     HIMC ime_himc;
 
     WCHAR ime_composition[SDL_TEXTEDITINGEVENT_TEXT_SIZE];

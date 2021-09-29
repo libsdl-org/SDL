@@ -224,6 +224,7 @@
 #define SDL_GetKeyName SDL_GetKeyName_REAL
 #define SDL_GetKeyFromName SDL_GetKeyFromName_REAL
 #define SDL_StartTextInput SDL_StartTextInput_REAL
+#define SDL_ClearComposition SDL_ClearComposition_REAL
 #define SDL_IsTextInputActive SDL_IsTextInputActive_REAL
 #define SDL_StopTextInput SDL_StopTextInput_REAL
 #define SDL_SetTextInputRect SDL_SetTextInputRect_REAL
