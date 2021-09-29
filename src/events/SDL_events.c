@@ -874,6 +874,17 @@ SDL_WaitEventTimeout(SDL_Event * event, int timeout)
     SDL_Window *wakeup_window;
     Uint32 expiration = 0;
 
+    /* First check for existing events */
+    switch (SDL_PeepEvents(event, 1, SDL_GETEVENT, SDL_FIRSTEVENT, SDL_LASTEVENT)) {
+    case -1:
+        return 0;
+    case 0:
+        break;
+    default:
+        /* Has existing events */
+        return 1;
+    }
+
     if (timeout > 0)
         expiration = SDL_GetTicks() + timeout;
 
