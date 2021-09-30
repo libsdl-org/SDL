@@ -211,10 +211,6 @@ if(UNIX OR MINGW OR MSYS OR (USE_CLANG AND NOT WINDOWS) OR VITA)
   set(OPT_DEF_LIBC ON)
 endif()
 
-if(NOT ("$ENV{CFLAGS}" STREQUAL ""))
-  message(WARNING "SDL's CMakeLists.txt no longer checks the CFLAGS environment. Please use CMake's CMAKE_C_FLAGS and CMAKE_BUILD_TYPE variables directly.")
-endif()
-
 if(MSVC)
   option(FORCE_STATIC_VCRT "Force /MT for static VC runtimes" OFF)
   if(FORCE_STATIC_VCRT)
