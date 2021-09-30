@@ -136,13 +136,20 @@ sub wikify_chunk {
     #print("\n\nWIKIFY CHUNK:\n\n$str\n\n\n");
 
     if ($wikitype eq 'mediawiki') {
+        # convert `code` things first, so they aren't mistaken for other markdown items.
+        my $codedstr = '';
+        while ($str =~ s/\A(.*?)\`(.*?)\`//ms) {
+            my $codeblock = $2;
+            $codedstr .= wikify_chunk($wikitype, $1, undef, undef);
+            # Convert obvious SDL things to wikilinks, even inside `code` blocks.
+            $codeblock =~ s/\b(SDL_[a-zA-Z0-9_]+)/[[$1]]/gms;
+            $codedstr .= "<code>$codeblock</code>";
+        }
+
         # Convert obvious SDL things to wikilinks.
         $str =~ s/\b(SDL_[a-zA-Z0-9_]+)/[[$1]]/gms;
 
         # Make some Markdown things into MediaWiki...
-
-        # <code></code> is also popular.  :/
-        $str =~ s/\`(.*?)\`/<code>$1<\/code>/gms;
 
         # bold+italic
         $str =~ s/\*\*\*(.*?)\*\*\*/'''''$1'''''/gms;
@@ -155,6 +162,8 @@ sub wikify_chunk {
 
         # bullets
         $str =~ s/^\- /* /gm;
+
+        $str = $codedstr . $str;
 
         if (defined $code) {
             $str .= "<syntaxhighlight lang='$codelang'>$code<\/syntaxhighlight>";
