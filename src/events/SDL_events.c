@@ -932,9 +932,9 @@ SDL_WaitEventTimeout(SDL_Event * event, int timeout)
             if (timeout == 0 && SDL_GetEventState(SDL_POLLSENTINEL) == SDL_ENABLE) {
                 /* We are at the start of a poll cycle with at least one new event.
                    Add a sentinel event to mark the end of the cycle. */
-                SDL_Event event;
-                event.type = SDL_POLLSENTINEL;
-                SDL_PushEvent(&event);
+                SDL_Event sentinel;
+                sentinel.type = SDL_POLLSENTINEL;
+                SDL_PushEvent(&sentinel);
             }
             /* Has events */
             return 1;
