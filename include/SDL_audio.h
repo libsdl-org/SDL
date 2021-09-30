@@ -521,7 +521,7 @@ extern DECLSPEC int SDLCALL SDL_GetAudioDeviceSpec(int index,
  * For example, if you ask for float32 audio format, but the sound card only
  * supports int16, SDL will set the hardware to int16. If you had set
  * SDL_AUDIO_ALLOW_FORMAT_CHANGE, SDL will change the format in the `obtained`
- * structure. If that flag was *not'' set, SDL will prepare to convert your
+ * structure. If that flag was *not* set, SDL will prepare to convert your
  * callback's float32 audio to int16 before feeding it to the hardware and
  * will keep the originally requested format in the `obtained` structure.
  *
