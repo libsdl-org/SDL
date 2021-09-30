@@ -7,6 +7,11 @@ include("${CMAKE_CURRENT_LIST_DIR}/SDL2Targets.cmake")
 # from vcpkg and from building myself with cmake from latest git
 # AND on Linux when building SDL2 (tested current git) with CMake
 
+# TODO: support purely static builds
+if(NOT TARGET SDL2::SDL2)
+  return()
+endif()
+
 # the headers are easy - but note that this adds both .../include/ and .../include/SDL2/
 # while the SDL2_INCLUDE_DIRS of sdl2-config.cmake only add ...include/SDL2/
 # But at least if building worked with sdl2-config.cmake it will also work with this.
