@@ -324,6 +324,22 @@ DirectFB_AcquireVidLayer(SDL_Renderer * renderer, SDL_Texture * texture)
     return 1;
 }
 
+
+/* Copy the SDL_Surface palette to the DirectFB texture palette */
+void DirectFB_SetTexturePalette(SDL_Renderer *renderer, SDL_Texture *texture, SDL_Palette *pal)
+{
+    int i;
+    DFBColor dfbpal[256];
+    DirectFB_TextureData *data = (DirectFB_TextureData *) texture->driverdata;
+    for (i = 0; i < pal->ncolors; i++) {
+            dfbpal[i].a = pal->colors[i].a;
+            dfbpal[i].r = pal->colors[i].r;
+            dfbpal[i].g = pal->colors[i].g;
+            dfbpal[i].b = pal->colors[i].b;
+    }
+    data->palette->SetEntries(data->palette, dfbpal, pal->ncolors, 0);
+}
+
 static int
 DirectFB_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 {
