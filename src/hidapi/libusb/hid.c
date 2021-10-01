@@ -40,7 +40,7 @@
 #include <libusb.h>
 #include <locale.h> /* setlocale */
 
-#include "hidapi.h"
+#include "../hidapi/hidapi.h"
 
 #ifdef NAMESPACE
 namespace NAMESPACE
