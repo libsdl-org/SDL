@@ -4041,6 +4041,14 @@ SDL_StartTextInput(void)
     }
 }
 
+void
+SDL_ClearComposition(void)
+{
+    if (_this && _this->ClearComposition) {
+        _this->ClearComposition(_this);
+    }
+}
+
 SDL_bool
 SDL_IsTextInputActive(void)
 {

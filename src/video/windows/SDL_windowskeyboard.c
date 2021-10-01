@@ -36,6 +36,7 @@ static void IME_Init(SDL_VideoData *videodata, HWND hwnd);
 static void IME_Enable(SDL_VideoData *videodata, HWND hwnd);
 static void IME_Disable(SDL_VideoData *videodata, HWND hwnd);
 static void IME_Quit(SDL_VideoData *videodata);
+static void IME_ClearComposition(SDL_VideoData *videodata);
 #endif /* !SDL_DISABLE_WINDOWS_IME */
 
 #ifndef MAPVK_VK_TO_VSC
@@ -262,6 +263,12 @@ WIN_SetTextInputRect(_THIS, SDL_Rect *rect)
 
         ImmReleaseContext(videodata->ime_hwnd_current, himc);
     }
+}
+
+void WIN_ClearComposition(_THIS)
+{
+    SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
+    IME_ClearComposition(videodata);
 }
 
 static SDL_bool
@@ -766,6 +773,37 @@ IME_GetCompositionString(SDL_VideoData *videodata, HIMC himc, DWORD string)
     }
 
     videodata->ime_composition[length] = 0;
+
+    // Get the correct caret position if we've selected a candidate from the candidate window
+    if (videodata->ime_cursor == 0 && length > 0) {
+        int32_t start = 0;
+        int32_t end = 0;
+
+        length = ImmGetCompositionStringW(himc, GCS_COMPATTR, NULL, 0);
+        if (length > 0) {
+            uint8_t* attributes = (uint8_t*)SDL_malloc(length);
+            ImmGetCompositionString(himc, GCS_COMPATTR, attributes, length);
+
+            for (start = 0; start < length; ++start) {
+                if (attributes[start] == ATTR_TARGET_CONVERTED ||
+                    attributes[start] == ATTR_TARGET_NOTCONVERTED)
+                    break;
+            }
+
+            for (end = start; end < length; ++end) {
+                if (attributes[end] != ATTR_TARGET_CONVERTED &&
+                    attributes[end] != ATTR_TARGET_NOTCONVERTED)
+                    break;
+            }
+
+            if (start == length) {
+                start = 0;
+                end = length;
+            }
+        }
+
+        videodata->ime_cursor = end;
+    }
 }
 
 static void
@@ -904,14 +942,17 @@ IME_HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam, SDL_VideoD
     case WM_IME_SETCONTEXT:
         *lParam = 0;
         break;
-    case WM_IME_STARTCOMPOSITION:
+    case WM_IME_STARTCOMPOSITION: 
+        videodata->ime_suppress_endcomposition_event = SDL_FALSE;
         trap = SDL_TRUE;
         break;
     case WM_IME_COMPOSITION:
         trap = SDL_TRUE;
         himc = ImmGetContext(hwnd);
         if (*lParam & GCS_RESULTSTR) {
+            videodata->ime_suppress_endcomposition_event = SDL_TRUE;
             IME_GetCompositionString(videodata, himc, GCS_RESULTSTR);
+            SDL_SendEditingText("", 0, 0);
             IME_SendInputEvent(videodata);
         }
         if (*lParam & GCS_COMPSTR) {
@@ -927,7 +968,9 @@ IME_HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam, SDL_VideoD
         videodata->ime_composition[0] = 0;
         videodata->ime_readingstring[0] = 0;
         videodata->ime_cursor = 0;
-        SDL_SendEditingText("", 0, 0);
+        if (videodata->ime_suppress_endcomposition_event == SDL_FALSE)
+            SDL_SendEditingText("", 0, 0);
+        videodata->ime_suppress_endcomposition_event = SDL_FALSE;
         break;
     case WM_IME_NOTIFY:
         switch (wParam) {
