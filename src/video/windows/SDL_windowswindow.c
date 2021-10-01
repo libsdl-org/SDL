@@ -281,15 +281,8 @@ SetupWindowData(_THIS, SDL_Window * window, HWND hwnd, HWND parent, SDL_bool cre
     }
     if (GetFocus() == hwnd) {
         window->flags |= SDL_WINDOW_INPUT_FOCUS;
-        SDL_SetKeyboardFocus(data->window);
-
-        if (window->flags & SDL_WINDOW_MOUSE_GRABBED) {
-            RECT rect;
-            GetClientRect(hwnd, &rect);
-            ClientToScreen(hwnd, (LPPOINT) & rect);
-            ClientToScreen(hwnd, (LPPOINT) & rect + 1);
-            ClipCursor(&rect);
-        }
+        SDL_SetKeyboardFocus(window);
+        WIN_UpdateClipCursor(window);
     }
 
     /* Enable multi-touch */
