@@ -637,7 +637,6 @@ DirectFB_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Textu
         int num_vertices, const void *indices, int num_indices, int size_indices,
         float scale_x, float scale_y)
 {
-    DirectFB_TextureData *texturedata = NULL;
     int i;
     int count = indices ? num_indices : num_vertices;
     float *verts;
@@ -646,10 +645,6 @@ DirectFB_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Textu
     verts = (float *) SDL_AllocateRenderVertices(renderer, count * sz * sizeof (float), 0, &cmd->data.draw.first);
     if (!verts) {
         return -1;
-    }
-
-    if (texture) {
-        texturedata = (DirectFB_TextureData *) texture->driverdata;
     }
 
     cmd->data.draw.count = count;
@@ -721,15 +716,6 @@ DirectFB_QueueCopy(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture 
 
     return 0;
 }
-
-static int
-DirectFB_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * texture,
-               const SDL_Rect * srcrect, const SDL_FRect * dstrect,
-               const double angle, const SDL_FPoint *center, const SDL_RendererFlip flip)
-{
-    return SDL_Unsupported();
-}
-
 
 static int
 DirectFB_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertices, size_t vertsize)
@@ -1025,9 +1011,8 @@ DirectFB_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *
                 break;
             }
 
-
-            case SDL_RENDERCMD_COPY_EX:
-                break;  /* unsupported */
+            case SDL_RENDERCMD_COPY_EX: /* unused */
+                break;
 
             case SDL_RENDERCMD_NO_OP:
                 break;
@@ -1199,7 +1184,6 @@ DirectFB_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->QueueGeometry = DirectFB_QueueGeometry;
     renderer->QueueFillRects = DirectFB_QueueFillRects;
     renderer->QueueCopy = DirectFB_QueueCopy;
-    renderer->QueueCopyEx = DirectFB_QueueCopyEx;
     renderer->RunCommandQueue = DirectFB_RunCommandQueue;
     renderer->RenderPresent = DirectFB_RenderPresent;
 
