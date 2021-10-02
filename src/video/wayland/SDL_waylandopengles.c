@@ -151,7 +151,7 @@ Wayland_GLES_SwapWindow(_THIS, SDL_Window *window)
 
             /* Make sure we're not competing with SDL_PumpEvents() for any new
              * events, or one of us may end up blocking in wl_display_dispatch */
-            if (SDL_TryLockMutex(videodata->display_dispatch_lock)) {
+            if (SDL_TryLockMutex(videodata->display_dispatch_lock) != 0) {
                 continue;
             }
 
