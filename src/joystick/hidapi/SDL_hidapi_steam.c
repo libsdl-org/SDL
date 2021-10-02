@@ -421,13 +421,15 @@ static int ReadResponse( hid_device *dev, uint8_t uBuffer[65], int nExpectedResp
 //---------------------------------------------------------------------------
 // Reset steam controller (unmap buttons and pads) and re-fetch capability bits
 //---------------------------------------------------------------------------
-static bool ResetSteamController( hid_device *dev, bool bSuppressErrorSpew )
+static bool ResetSteamController( hid_device *dev, bool bSuppressErrorSpew, uint32_t *punUpdateRateUS )
 {
     // Firmware quirk: Set Feature and Get Feature requests always require a 65-byte buffer.
     unsigned char buf[65];
-    int res = -1;
+    int res = -1, i;
     int nSettings = 0;
     int nAttributesLength;
+    FeatureReportMsg *msg;
+    uint32_t unUpdateRateUS = 9000; // Good default rate
     
     DPRINTF( "ResetSteamController hid=%p\n", dev );
 
@@ -459,7 +461,33 @@ static bool ResetSteamController( hid_device *dev, bool bSuppressErrorSpew )
             printf( "Bad GET_ATTRIBUTES_VALUES response for controller %p\n", dev );
         return false;
     }
-    
+
+    msg = (FeatureReportMsg *)&buf[1];
+    for ( i = 0; i < (int)msg->header.length / sizeof( ControllerAttribute ); ++i )
+    {
+        uint8_t unAttribute = msg->payload.getAttributes.attributes[i].attributeTag;
+        uint32_t unValue = msg->payload.getAttributes.attributes[i].attributeValue;
+
+        switch ( unAttribute )
+        {
+        case ATTRIB_UNIQUE_ID:
+            break;
+        case ATTRIB_PRODUCT_ID:
+            break;
+        case ATTRIB_CAPABILITIES:
+            break;
+        case ATTRIB_CONNECTION_INTERVAL_IN_US:
+            unUpdateRateUS = unValue;
+            break;
+        default:
+            break;
+        }
+    }
+    if ( punUpdateRateUS )
+    {
+        *punUpdateRateUS = unUpdateRateUS;
+    }
+
     // Clear digital button mappings
     buf[0] = 0;
     buf[1] = ID_CLEAR_DIGITAL_MAPPINGS;
@@ -1002,6 +1030,8 @@ static SDL_bool
 HIDAPI_DriverSteam_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     SDL_DriverSteam_Context *ctx;
+    uint32_t update_rate_in_us = 0;
+    float update_rate_in_hz = 0.0f;
 
     ctx = (SDL_DriverSteam_Context *)SDL_calloc(1, sizeof(*ctx));
     if (!ctx) {
@@ -1017,8 +1047,12 @@ HIDAPI_DriverSteam_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystic
     }
     hid_set_nonblocking(device->dev, 1);
 
-    if (!ResetSteamController(device->dev, false)) {
+    if (!ResetSteamController(device->dev, false, &update_rate_in_us)) {
+        SDL_SetError("Couldn't reset controller");
         goto error;
+    }
+    if (update_rate_in_us > 0) {
+        update_rate_in_hz = 1000000.0f / update_rate_in_us;
     }
 
     InitializeSteamControllerPacketAssembler(&ctx->m_assembler);
@@ -1027,8 +1061,8 @@ HIDAPI_DriverSteam_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystic
     joystick->nbuttons = 17;
     joystick->naxes = SDL_CONTROLLER_AXIS_MAX;
 
-    SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, 0.0f);
-    SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, 0.0f);
+    SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, update_rate_in_hz);
+    SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, update_rate_in_hz);
 
     return SDL_TRUE;
 

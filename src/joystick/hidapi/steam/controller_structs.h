@@ -23,6 +23,43 @@
 
 #pragma pack(1)
 
+#define HID_FEATURE_REPORT_BYTES 64
+
+// Header for all host <==> target messages
+typedef struct
+{
+	unsigned char type;
+	unsigned char length;
+} FeatureReportHeader;
+
+// Generic controller attribute structure
+typedef struct
+{
+	unsigned char attributeTag;
+	uint32_t attributeValue;
+} ControllerAttribute;
+
+// Generic controller settings structure
+typedef struct
+{
+	ControllerAttribute attributes[ ( HID_FEATURE_REPORT_BYTES - sizeof( FeatureReportHeader ) ) / sizeof( ControllerAttribute ) ];
+} MsgGetAttributes;
+
+
+// This is the only message struct that application code should use to interact with feature request messages. Any new
+// messages should be added to the union. The structures defined here should correspond to the ones defined in
+// ValveDeviceCore.cpp.
+//
+typedef struct
+{
+	FeatureReportHeader header;
+	union
+	{
+		MsgGetAttributes				getAttributes;
+	} payload;
+
+} FeatureReportMsg;
+
 // Roll this version forward anytime that you are breaking compatibility of existing
 // message types within ValveInReport_t or the header itself.  Hopefully this should
 // be super rare and instead you shoudl just add new message payloads to the union,
