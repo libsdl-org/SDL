@@ -234,7 +234,7 @@ Wayland_PumpEvents(_THIS)
     /* If we're trying to dispatch the display in another thread,
      * we could trigger a race condition and end up blocking
      * in wl_display_dispatch() */
-    if (SDL_TryLockMutex(d->display_dispatch_lock)) {
+    if (SDL_TryLockMutex(d->display_dispatch_lock) != 0) {
         return;
     }
 
