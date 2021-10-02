@@ -962,6 +962,7 @@ static bool UpdateSteamControllerState( const uint8_t *pData, int nDataSize, Ste
 /*****************************************************************************************************/
 
 typedef struct {
+    SDL_bool report_sensors;
     SteamControllerPacketAssembler m_assembler;
     SteamControllerStateInternal_t m_state;
     SteamControllerStateInternal_t m_last_state;
@@ -1026,6 +1027,9 @@ HIDAPI_DriverSteam_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystic
     joystick->nbuttons = 17;
     joystick->naxes = SDL_CONTROLLER_AXIS_MAX;
 
+    SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, 0.0f);
+    SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, 0.0f);
+
     return SDL_TRUE;
 
 error:
@@ -1080,8 +1084,25 @@ HIDAPI_DriverSteam_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *j
 static int
 HIDAPI_DriverSteam_SetSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, SDL_bool enabled)
 {
-    /* You should use the full Steam Input API for sensor support */
-    return SDL_Unsupported();
+    SDL_DriverSteam_Context *ctx = (SDL_DriverSteam_Context *)device->context;
+    unsigned char buf[65];
+    int nSettings = 0;
+
+    memset( buf, 0, 65 );
+    buf[1] = ID_SET_SETTINGS_VALUES;
+    if (enabled) {
+        ADD_SETTING( SETTING_GYRO_MODE, 0x18 /* SETTING_GYRO_SEND_RAW_ACCEL | SETTING_GYRO_MODE_SEND_RAW_GYRO */ );
+    } else {
+        ADD_SETTING( SETTING_GYRO_MODE, 0x00 /* SETTING_GYRO_MODE_OFF */ );
+    }
+    buf[2] = nSettings*3;
+    if (SetFeatureReport( device->dev, buf, 3+nSettings*3 ) < 0) {
+        return SDL_SetError("Couldn't write feature report");
+    }
+
+    ctx->report_sensors = enabled;
+
+    return 0;
 }
 
 static SDL_bool
@@ -1177,6 +1198,20 @@ HIDAPI_DriverSteam_UpdateDevice(SDL_HIDAPI_Device *device)
             SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_LEFTY, ~ctx->m_state.sLeftStickY);
             SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_RIGHTX, ctx->m_state.sRightPadX);
             SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_RIGHTY, ~ctx->m_state.sRightPadY);
+
+            if (ctx->report_sensors) {
+                float values[3];
+
+                values[0] = (ctx->m_state.sGyroX / 32767.0f) * (2000.0f * (M_PI / 180.0f));
+                values[1] = (ctx->m_state.sGyroZ / 32767.0f) * (2000.0f * (M_PI / 180.0f));
+                values[2] = (ctx->m_state.sGyroY / 32767.0f) * (2000.0f * (M_PI / 180.0f));
+                SDL_PrivateJoystickSensor(joystick, SDL_SENSOR_GYRO, values, 3);
+
+                values[0] = (ctx->m_state.sAccelX / 32767.0f) * 2.0f * SDL_STANDARD_GRAVITY;
+                values[1] = (ctx->m_state.sAccelZ / 32767.0f) * 2.0f * SDL_STANDARD_GRAVITY;
+                values[2] = (-ctx->m_state.sAccelY / 32767.0f) * 2.0f * SDL_STANDARD_GRAVITY;
+                SDL_PrivateJoystickSensor(joystick, SDL_SENSOR_ACCEL, values, 3);
+            }
 
             ctx->m_last_state = ctx->m_state;
         }
