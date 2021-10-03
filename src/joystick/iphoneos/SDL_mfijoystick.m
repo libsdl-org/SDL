@@ -1522,6 +1522,263 @@ SDL_bool IOS_SupportedHIDDevice(IOHIDDeviceRef device)
 }
 #endif
 
+#if defined(SDL_JOYSTICK_MFI) && defined(ENABLE_PHYSICAL_INPUT_PROFILE)
+static void
+GetAppleSFSymbolsNameForElement(GCControllerElement *element, char *name)
+{
+    if (@available(macos 11.0, iOS 14.0, tvOS 14.0, *)) {
+        if (element) {
+            [element.sfSymbolsName getCString: name maxLength: 255 encoding: NSASCIIStringEncoding];
+        }
+    }
+}
+
+static GCControllerDirectionPad *
+GetDirectionalPadForController(GCController *controller)
+{
+    if (controller.extendedGamepad) {
+        return controller.extendedGamepad.dpad;
+    }
+
+    if (controller.gamepad) {
+        return controller.gamepad.dpad;
+    }
+
+    if (controller.microGamepad) {
+        return controller.microGamepad.dpad;
+    }
+
+    return nil;
+}
+#endif
+
+
+static char elementName[256];
+
+const char *
+SDL_GameControllerGetAppleSFSymbolsNameForButton(SDL_GameController *gamecontroller, SDL_GameControllerButton button)
+{
+    elementName[0] = '\0';
+    if (!gamecontroller) {
+        return elementName;
+    }
+    if (SDL_GameControllerGetJoystick(gamecontroller)->driver != &SDL_IOS_JoystickDriver) {
+        return elementName;
+    }
+#if defined(SDL_JOYSTICK_MFI) && defined(ENABLE_PHYSICAL_INPUT_PROFILE)
+    if (@available(iOS 14.0, tvOS 14.0, macOS 11.0, *)) {
+        GCController *controller = SDL_GameControllerGetJoystick(gamecontroller)->hwdata->controller;
+        if ([controller respondsToSelector:@selector(physicalInputProfile)]) {
+            NSDictionary<NSString *,GCControllerElement *> *elements = controller.physicalInputProfile.elements;
+            switch (button)
+            {
+                case SDL_CONTROLLER_BUTTON_INVALID: {
+                    break;
+                }
+
+                case SDL_CONTROLLER_BUTTON_A: {
+                    GetAppleSFSymbolsNameForElement(elements[GCInputButtonA], elementName);
+                    break;
+                }
+
+                case SDL_CONTROLLER_BUTTON_B: {
+                    GetAppleSFSymbolsNameForElement(elements[GCInputButtonB], elementName);
+                    break;
+                }
+
+                case SDL_CONTROLLER_BUTTON_X: {
+                    GetAppleSFSymbolsNameForElement(elements[GCInputButtonX], elementName);
+                    break;
+                }
+
+                case SDL_CONTROLLER_BUTTON_Y: {
+                    GetAppleSFSymbolsNameForElement(elements[GCInputButtonY], elementName);
+                    break;
+                }
+
+                case SDL_CONTROLLER_BUTTON_BACK: {
+                    GetAppleSFSymbolsNameForElement(elements[GCInputButtonOptions], elementName);
+                    break;
+                }
+
+                case SDL_CONTROLLER_BUTTON_GUIDE: {
+                    GetAppleSFSymbolsNameForElement(elements[GCInputButtonHome], elementName);
+                    break;
+                }
+
+                case SDL_CONTROLLER_BUTTON_START: {
+                    GetAppleSFSymbolsNameForElement(elements[GCInputButtonMenu], elementName);
+                    break;
+                }
+
+                case SDL_CONTROLLER_BUTTON_LEFTSTICK: {
+                    GetAppleSFSymbolsNameForElement(elements[GCInputLeftThumbstickButton], elementName);
+                    break;
+                }
+
+                case SDL_CONTROLLER_BUTTON_RIGHTSTICK: {
+                    GetAppleSFSymbolsNameForElement(elements[GCInputRightThumbstickButton], elementName);
+                    break;
+                }
+
+                case SDL_CONTROLLER_BUTTON_LEFTSHOULDER: {
+                    GetAppleSFSymbolsNameForElement(elements[GCInputLeftShoulder], elementName);
+                    break;
+                }
+
+                case SDL_CONTROLLER_BUTTON_RIGHTSHOULDER: {
+                    GetAppleSFSymbolsNameForElement(elements[GCInputRightShoulder], elementName);
+                    break;
+                }
+
+                case SDL_CONTROLLER_BUTTON_DPAD_UP: {
+                    GCControllerDirectionPad * dpad = GetDirectionalPadForController(controller);
+                    if (dpad) {
+                        GetAppleSFSymbolsNameForElement(dpad.up, elementName);
+                        if (SDL_strlen(elementName) == 0) {
+                            SDL_strlcpy( elementName, "dpad.up.fill", 255 );
+                        }
+                    }
+                    break;
+                }
+
+                case SDL_CONTROLLER_BUTTON_DPAD_DOWN: {
+                    GCControllerDirectionPad * dpad = GetDirectionalPadForController(controller);
+                    if (dpad) {
+                        GetAppleSFSymbolsNameForElement(dpad.down, elementName);
+                        if (SDL_strlen(elementName) == 0) {
+                            SDL_strlcpy( elementName, "dpad.down.fill", 255 );
+                        }
+                    }
+                    break;
+                }
+
+                case SDL_CONTROLLER_BUTTON_DPAD_LEFT: {
+                    GCControllerDirectionPad * dpad = GetDirectionalPadForController(controller);
+                    if (dpad) {
+                        GetAppleSFSymbolsNameForElement(dpad.left, elementName);
+                        if (SDL_strlen(elementName) == 0) {
+                            SDL_strlcpy( elementName, "dpad.left.fill", 255 );
+                        }
+                    }
+                    break;
+                }
+
+                case SDL_CONTROLLER_BUTTON_DPAD_RIGHT: {
+                    GCControllerDirectionPad * dpad = GetDirectionalPadForController(controller);
+                    if (dpad) {
+                        GetAppleSFSymbolsNameForElement(dpad.right, elementName);
+                        if (SDL_strlen(elementName) == 0) {
+                            SDL_strlcpy( elementName, "dpad.right.fill", 255 );
+                        }
+                    }
+                    break;
+                }
+
+                case SDL_CONTROLLER_BUTTON_MISC1: {
+                    GetAppleSFSymbolsNameForElement(elements[GCInputDualShockTouchpadButton], elementName);
+                    break;
+                }
+
+                case SDL_CONTROLLER_BUTTON_PADDLE1: {
+                    GetAppleSFSymbolsNameForElement(elements[GCInputXboxPaddleOne], elementName);
+                    break;
+                }
+
+                case SDL_CONTROLLER_BUTTON_PADDLE2: {
+                    GetAppleSFSymbolsNameForElement(elements[GCInputXboxPaddleTwo], elementName);
+                    break;
+                }
+
+                case SDL_CONTROLLER_BUTTON_PADDLE3: {
+                    GetAppleSFSymbolsNameForElement(elements[GCInputXboxPaddleThree], elementName);
+                    break;
+                }
+
+                case SDL_CONTROLLER_BUTTON_PADDLE4: {
+                    GetAppleSFSymbolsNameForElement(elements[GCInputXboxPaddleFour], elementName);
+                    break;
+                }
+
+                case SDL_CONTROLLER_BUTTON_TOUCHPAD: {
+                    GetAppleSFSymbolsNameForElement(elements[GCInputDualShockTouchpadButton], elementName);
+                    break;
+                }
+
+                case SDL_CONTROLLER_BUTTON_MAX: {
+                    break;
+                }
+            }
+        }
+    }
+#endif
+    return elementName;
+}
+
+
+const char *
+SDL_GameControllerGetAppleSFSymbolsNameForAxis(SDL_GameController *gamecontroller, SDL_GameControllerAxis axis)
+{
+    elementName[0] = '\0';
+    if (!gamecontroller) {
+        return elementName;
+    }
+    if (SDL_GameControllerGetJoystick(gamecontroller)->driver != &SDL_IOS_JoystickDriver) {
+        return elementName;
+    }
+#if defined(SDL_JOYSTICK_MFI) && defined(ENABLE_PHYSICAL_INPUT_PROFILE)
+    if (@available(iOS 14.0, tvOS 14.0, macOS 11.0, *)) {
+        GCController *controller = SDL_GameControllerGetJoystick(gamecontroller)->hwdata->controller;
+        if ([controller respondsToSelector:@selector(physicalInputProfile)]) {
+            NSDictionary<NSString *,GCControllerElement *> *elements = controller.physicalInputProfile.elements;
+            switch (axis)
+            {
+
+                case SDL_CONTROLLER_AXIS_INVALID:
+                    break;
+
+                case SDL_CONTROLLER_AXIS_LEFTX:{
+                    GetAppleSFSymbolsNameForElement(elements[GCInputLeftThumbstick], elementName);
+                    break;
+                }
+
+                case SDL_CONTROLLER_AXIS_LEFTY: {
+                    GetAppleSFSymbolsNameForElement(elements[GCInputLeftThumbstick], elementName);
+                    break;
+                }
+
+                case SDL_CONTROLLER_AXIS_RIGHTX: {
+                    GetAppleSFSymbolsNameForElement(elements[GCInputRightThumbstick], elementName);
+                    break;
+                }
+
+                case SDL_CONTROLLER_AXIS_RIGHTY: {
+                    GetAppleSFSymbolsNameForElement(elements[GCInputRightThumbstick], elementName);
+                    break;
+                }
+
+                case SDL_CONTROLLER_AXIS_TRIGGERLEFT: {
+                    GetAppleSFSymbolsNameForElement(elements[GCInputLeftTrigger], elementName);
+                    break;
+                }
+
+                case SDL_CONTROLLER_AXIS_TRIGGERRIGHT: {
+                    GetAppleSFSymbolsNameForElement(elements[GCInputRightTrigger], elementName);
+                    break;
+                }
+
+                case SDL_CONTROLLER_AXIS_MAX: {
+                    break;
+                }
+            }
+        }
+    }
+#endif
+    return elementName;
+}
+
+
+
 SDL_JoystickDriver SDL_IOS_JoystickDriver =
 {
     IOS_JoystickInit,
