@@ -887,9 +887,9 @@ SDL_WaitEventTimeout(SDL_Event * event, int timeout)
     case 0:
         break;
     default:
-        /* Check whether we have reached the end of the poll cycle */
+        /* Check whether we have reached the end of the poll cycle, and no more events are left */
         if (timeout == 0 && event && event->type == SDL_POLLSENTINEL) {
-            return 0;
+            return SDL_PeepEvents(event, 1, SDL_GETEVENT, SDL_FIRSTEVENT, SDL_LASTEVENT) == 1;
         }
         /* Has existing events */
         return 1;
