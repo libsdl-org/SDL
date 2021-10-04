@@ -932,7 +932,7 @@ int SDL_atoi(const char *string)
 #ifdef HAVE_ATOI
     return atoi(string);
 #else
-    return SDL_strtol(string, NULL, 0);
+    return SDL_strtol(string, NULL, 10);
 #endif /* HAVE_ATOI */
 }
 
