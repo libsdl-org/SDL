@@ -3514,6 +3514,18 @@ CheckVirtualJoystick()
     fi
 }
 
+dnl Set up the Translator joystick driver.
+CheckTranslatorJoystick()
+{
+    AC_ARG_ENABLE(joystick-translator,
+[AS_HELP_STRING([--enable-joystick-translator], [enable joystick translator [default=yes]])],
+                  , enable_joystick_translator=yes)
+    if test x$enable_joystick = xyes -a x$enable_joystick_translator = xyes; then
+        AC_DEFINE(SDL_JOYSTICK_TRANSLATOR, 1, [ ])
+        SOURCES="$SOURCES $srcdir/src/joystick/translator/*.c"
+    fi
+}
+
 dnl Do this on all platforms, before everything else (other things might want to override it).
 CheckWarnAll
 CheckNoStrictAliasing
@@ -4293,6 +4305,9 @@ esac
 
 dnl Permit use of virtual joystick APIs on any platform (subject to configure options)
 CheckVirtualJoystick
+
+dnl Permit use of translator joysticks on any platform (subject to configure options)
+CheckTranslatorJoystick
 
 # Check whether to install sdl2-config
 AC_MSG_CHECKING(whether to install sdl2-config)

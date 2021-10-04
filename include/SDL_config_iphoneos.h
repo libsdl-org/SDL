@@ -148,6 +148,7 @@
 /*#define SDL_JOYSTICK_HIDAPI 1*/
 #define SDL_JOYSTICK_MFI 1
 #define SDL_JOYSTICK_VIRTUAL    1
+/* #undef SDL_JOYSTICK_TRANSLATOR */
 
 #ifdef __TVOS__
 #define SDL_SENSOR_DUMMY    1

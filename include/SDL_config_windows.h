@@ -229,6 +229,7 @@ typedef unsigned int uintptr_t;
 #define SDL_JOYSTICK_RAWINPUT   1
 #endif
 #define SDL_JOYSTICK_VIRTUAL    1
+/* #undef SDL_JOYSTICK_TRANSLATOR */
 #ifdef SDL_WINDOWS10_SDK
 #define SDL_JOYSTICK_WGI    1
 #endif
