@@ -56,6 +56,15 @@ static unsigned int __attribute__((aligned(16))) DisplayList[262144];
 #define COL4444(r,g,b,a)    ((r>>4) | ((g>>4)<<4) | ((b>>4)<<8) | ((a>>4)<<12))
 #define COL8888(r,g,b,a)    ((r) | ((g)<<8) | ((b)<<16) | ((a)<<24))
 
+typedef struct
+{
+    SDL_bool viewport_dirty;
+    SDL_Rect viewport;
+    SDL_bool cliprect_enabled_dirty;
+    SDL_bool cliprect_enabled;
+    SDL_bool cliprect_dirty;
+    SDL_Rect cliprect;
+} PSP_DrawStateCache;
 
 typedef struct
 {
@@ -70,6 +79,7 @@ typedef struct
     unsigned int    currentColor;
     int             currentBlendMode;
 
+    PSP_DrawStateCache drawstate;
 } PSP_RenderData;
 
 
@@ -346,12 +356,6 @@ PSP_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     return 0;
 }
 
-static int
-PSP_SetTextureColorMod(SDL_Renderer * renderer, SDL_Texture * texture)
-{
-    return SDL_Unsupported();
-}
-
 void
 TextureActivate(SDL_Texture * texture)
 {
@@ -373,6 +377,9 @@ TextureActivate(SDL_Texture * texture)
     sceGuTexFunc(GU_TFX_REPLACE, GU_TCC_RGBA);
 }
 
+static int
+PSP_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
+                 const SDL_Rect * rect, void **pixels, int *pitch);
 
 static int
 PSP_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
@@ -469,7 +476,7 @@ PSP_QueueDrawPoints(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_F
 static int
 PSP_QueueFillRects(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FRect * rects, int count)
 {
-    VertV *verts = (GLfloat *) SDL_AllocateRenderVertices(renderer, count * 2 * sizeof (VertV), 4, &cmd->data.draw.first);
+    VertV *verts = (VertV *) SDL_AllocateRenderVertices(renderer, count * 2 * sizeof (VertV), 4, &cmd->data.draw.first);
     int i;
 
     if (!verts) {
@@ -691,7 +698,6 @@ static int
 PSP_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertices, size_t vertsize)
 {
     PSP_RenderData *data = (PSP_RenderData *) renderer->driverdata;
-    size_t i;
 
     StartDrawing(renderer);
 
@@ -952,7 +958,6 @@ PSP_CreateRenderer(SDL_Window * window, Uint32 flags)
 
     renderer->WindowEvent = PSP_WindowEvent;
     renderer->CreateTexture = PSP_CreateTexture;
-    renderer->SetTextureColorMod = PSP_SetTextureColorMod;
     renderer->UpdateTexture = PSP_UpdateTexture;
     renderer->LockTexture = PSP_LockTexture;
     renderer->UnlockTexture = PSP_UnlockTexture;
