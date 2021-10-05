@@ -2592,14 +2592,14 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${EXTRA_CFLAGS}")
 
 # Always build SDLmain
 if(NOT WINDOWS_STORE)
-add_library(SDL2main STATIC ${SDLMAIN_SOURCES})
-# alias target for in-tree builds
-add_library(SDL2::SDL2main ALIAS SDL2main)
-target_include_directories(SDL2main PUBLIC "$<BUILD_INTERFACE:${SDL2_SOURCE_DIR}/include>" $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}> $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/SDL2>)
-set(_INSTALL_LIBS "SDL2main")
-if (NOT ANDROID)
-  set_target_properties(SDL2main PROPERTIES DEBUG_POSTFIX "${SDL_CMAKE_DEBUG_POSTFIX}")
-endif()
+  add_library(SDL2main STATIC ${SDLMAIN_SOURCES})
+  # alias target for in-tree builds
+  add_library(SDL2::SDL2main ALIAS SDL2main)
+  target_include_directories(SDL2main PUBLIC "$<BUILD_INTERFACE:${SDL2_SOURCE_DIR}/include>" $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}> $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/SDL2>)
+  set(_INSTALL_LIBS "SDL2main")
+  if (NOT ANDROID)
+    set_target_properties(SDL2main PROPERTIES DEBUG_POSTFIX "${SDL_CMAKE_DEBUG_POSTFIX}")
+  endif()
 endif()
 
 if (ANDROID AND HAVE_HIDAPI)
