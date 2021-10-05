@@ -5,13 +5,23 @@ endif()
 cmake_minimum_required(VERSION 3.11.0)
 project(SDL2 C CXX)
 
-if(WINDOWS_STORE)
-  add_definitions(-DSDL_BUILDING_WINRT=1 -ZW)
-endif()
-
 if (HAIKU)
   set(LINKER_LANGUAGE CXX)
 endif()
+
+# This is a virtual "library" that just exists to collect up compiler and
+#  linker options that used to be global to this CMake project. When you
+#  specify it as part of a real library's target_link_libraries(), that
+#  library will also gain all those build options too. This is meant to
+#  modularize old calls to the global add_definitions and include_directories,
+#  etc. See https://github.com/libsdl-org/SDL/issues/4150
+add_library(sdl-build-options INTERFACE)
+
+if(WINDOWS_STORE)
+  target_compile_definitions(sdl-build-options INTERFACE "-DSDL_BUILDING_WINRT=1")
+  target_compile_options(sdl-build-options INTERFACE "-ZW")
+endif()
+
 
 # !!! FIXME: this should probably do "MACOSX_RPATH ON" as a target property
 # !!! FIXME:  for the SDL2 shared library (so you get an
@@ -254,7 +264,7 @@ set(ORIG_CMAKE_REQUIRED_FLAGS ${CMAKE_REQUIRED_FLAGS})
 
 if(CYGWIN)
   # We build SDL on cygwin without the UNIX emulation layer
-  include_directories("-I/usr/include/mingw")
+  target_include_directories(sdl-build-options INTERFACE "/usr/include/mingw")
   set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -mno-cygwin")
   check_c_source_compiles("int main(int argc, char **argv) {}"
     HAVE_GCC_NO_CYGWIN)
@@ -266,13 +276,15 @@ if(CYGWIN)
   set(SDL_CFLAGS "${SDL_CFLAGS} -I/usr/include/mingw")
 endif()
 
-add_definitions(-DUSING_GENERATED_CONFIG_H)
 # General includes
-include_directories(${SDL2_BINARY_DIR}/include ${SDL2_SOURCE_DIR}/include)
+target_compile_definitions(sdl-build-options INTERFACE "-DUSING_GENERATED_CONFIG_H")
+target_include_directories(sdl-build-options BEFORE INTERFACE "${SDL2_BINARY_DIR}/include")
+target_include_directories(sdl-build-options INTERFACE "${SDL2_SOURCE_DIR}/include")
 if(USE_GCC OR USE_CLANG)
+  # !!! FIXME: do we _need_ to mess with CMAKE_C_FLAGS here?
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -idirafter \"${SDL2_SOURCE_DIR}/src/video/khronos\"")
 else()
-  include_directories(${SDL2_SOURCE_DIR}/src/video/khronos)
+  target_include_directories(sdl-build-options INTERFACE "${SDL2_SOURCE_DIR}/src/video/khronos")
 endif()
 
 # All these ENABLED_BY_DEFAULT vars will default to ON if not specified, so
@@ -458,11 +470,11 @@ endif()
 set(HAVE_ASSERTIONS ${SDL_ASSERTIONS})
 
 if(NOT SDL_BACKGROUNDING_SIGNAL STREQUAL "OFF")
-  add_definitions("-DSDL_BACKGROUNDING_SIGNAL=${SDL_BACKGROUNDING_SIGNAL}")
+  target_compile_definitions(sdl-build-options INTERFACE "-DSDL_BACKGROUNDING_SIGNAL=${SDL_BACKGROUNDING_SIGNAL}")
 endif()
 
 if(NOT SDL_FOREGROUNDING_SIGNAL STREQUAL "OFF")
-  add_definitions("-DSDL_FOREGROUNDING_SIGNAL=${SDL_FOREGROUNDING_SIGNAL}")
+  target_compile_definitions(sdl-build-options INTERFACE "-DSDL_FOREGROUNDING_SIGNAL=${SDL_FOREGROUNDING_SIGNAL}")
 endif()
 
 # Compiler option evaluation
@@ -809,7 +821,7 @@ if(SDL_LIBC)
       set(HAVE_ALLOCA 1)
     endif()
     set(HAVE_M_PI 1)
-    add_definitions(-D_USE_MATH_DEFINES) # needed for M_PI
+    target_compile_definitions(sdl-build-options INTERFACE "-D_USE_MATH_DEFINES") # needed for M_PI
     set(STDC_HEADERS 1)
   else()
     set(HAVE_LIBC TRUE)
@@ -1078,7 +1090,7 @@ if(ANDROID)
     find_library(ANDROID_LOG_LIBRARY log)
     find_library(ANDROID_LIBRARY_LIBRARY android)
     list(APPEND EXTRA_LIBS ${ANDROID_DL_LIBRARY} ${ANDROID_LOG_LIBRARY} ${ANDROID_LIBRARY_LIBRARY})
-    add_definitions(-DGL_GLEXT_PROTOTYPES)
+    target_compile_definitions(sdl-build-options INTERFACE "-DGL_GLEXT_PROTOTYPES")
 
     if (HAVE_HIDAPI)
         list(APPEND EXTRA_LIBS hidapi)
@@ -1118,7 +1130,7 @@ if(ANDROID)
 elseif(EMSCRIPTEN)
   # Hide noisy warnings that intend to aid mostly during initial stages of porting a new
   # project. Uncomment at will for verbose cross-compiling -I/../ path info.
-  add_definitions(-Wno-warn-absolute-paths)
+  target_compile_options(sdl-build-options INTERFACE "-Wno-warn-absolute-paths")
   if(SDL_AUDIO)
     set(SDL_AUDIO_DRIVER_EMSCRIPTEN 1)
     file(GLOB EM_AUDIO_SOURCES ${SDL2_SOURCE_DIR}/src/audio/emscripten/*.c)
@@ -1287,7 +1299,7 @@ elseif(UNIX AND NOT APPLE AND NOT ANDROID AND NOT RISCOS AND NOT HAIKU)
       pkg_search_module(DBUS dbus-1 dbus)
       if(DBUS_FOUND)
         set(HAVE_DBUS_DBUS_H TRUE)
-        include_directories(${DBUS_INCLUDE_DIRS})
+        target_include_directories(sdl-build-options INTERFACE "${DBUS_INCLUDE_DIRS}")
         list(APPEND EXTRA_LIBS ${DBUS_LIBRARIES})
         # Fcitx need only dbus.
         set(HAVE_FCITX TRUE)
@@ -1296,20 +1308,20 @@ elseif(UNIX AND NOT APPLE AND NOT ANDROID AND NOT RISCOS AND NOT HAIKU)
       pkg_search_module(IBUS ibus-1.0 ibus)
       if(IBUS_FOUND)
         set(HAVE_IBUS_IBUS_H TRUE)
-        include_directories(${IBUS_INCLUDE_DIRS})
+        target_include_directories(sdl-build-options INTERFACE "${IBUS_INCLUDE_DIRS}")
         list(APPEND EXTRA_LIBS ${IBUS_LIBRARIES})
       endif()
 
       if (HAVE_IBUS_IBUS_H OR HAVE_FCITX)
         set(SDL_USE_IME TRUE)
-        add_definitions(-DSDL_USE_IME)   # !!! FIXME: why isn't this a definition and not in SDL_config.h.cmake?
+        target_compile_definitions(sdl-build-options INTERFACE "-DSDL_USE_IME")   # !!! FIXME: why isn't this a definition and not in SDL_config.h.cmake?
       endif()
         
       if(FREEBSD AND NOT HAVE_INOTIFY)
         pkg_search_module(INOTIFY libinotify)
         if(INOTIFY_FOUND)
           set(HAVE_INOTIFY 1)
-          include_directories(${INOTIFY_INCLUDE_DIRS})
+          target_include_directories(sdl-build-options INTERFACE "${INOTIFY_INCLUDE_DIRS}")
           list(APPEND EXTRA_LIBS ${INOTIFY_LIBRARIES})
         endif()
       endif()
@@ -1499,8 +1511,8 @@ elseif(WINDOWS)
       set(HAVE_DIRECTX TRUE)
       if(NOT CMAKE_COMPILER_IS_MINGW AND NOT USE_WINSDK_DIRECTX)
       # TODO: change $ENV{DXSDL_DIR} to get the path from the include checks
-        link_directories($ENV{DXSDK_DIR}\\lib\\${PROCESSOR_ARCH})
-        include_directories($ENV{DXSDK_DIR}\\Include)
+        target_link_directories(sdl-build-options INTERFACE "$$ENV{DXSDK_DIR}\\lib\\${PROCESSOR_ARCH}")
+        target_include_directories(sdl-build-options INTERFACE "$ENV{DXSDK_DIR}\\Include")
       endif()
     endif()
     set(CMAKE_REQUIRED_FLAGS ${ORIG_CMAKE_REQUIRED_FLAGS})
@@ -2201,7 +2213,7 @@ elseif(VITA)
       check_include_file(gpu_es4/psp2_pvr_hint.h HAVE_PVR_H)
 
       if(HAVE_PVR_H)
-        add_definitions("-D__psp2__")
+        target_compile_definitions(sdl-build-options INTERFACE "-D__psp2__")
         set(SDL_VIDEO_OPENGL_EGL 1)
         set(HAVE_OPENGLES TRUE)
         set(SDL_VIDEO_OPENGL_ES 1)
@@ -2264,11 +2276,11 @@ elseif(VITA)
   set_property(SOURCE ${SDL2_SOURCE_DIR}/src/video/arm/pixman-arm-simd-asm.S PROPERTY LANGUAGE C)
   set_property(SOURCE ${SDL2_SOURCE_DIR}/src/video/arm/pixman-arm-neon-asm.S PROPERTY LANGUAGE C)
 
-  add_definitions("-D__VITA__")
-  add_definitions("-Dmemcpy=sceClibMemcpy")
-  add_definitions("-Dmemset=sceClibMemset")
-  add_definitions("-Dmemmove=sceClibMemmove")
-  add_definitions("-Dmemcmp=sceClibMemcmp")
+  target_compile_definitions(sdl-build-options INTERFACE "-D__VITA__")
+  target_compile_definitions(sdl-build-options INTERFACE "-Dmemcpy=sceClibMemcpy")
+  target_compile_definitions(sdl-build-options INTERFACE "-Dmemset=sceClibMemset")
+  target_compile_definitions(sdl-build-options INTERFACE "-Dmemmove=sceClibMemmove")
+  target_compile_definitions(sdl-build-options INTERFACE "-Dmemcmp=sceClibMemcmp")
 
 #  CheckPTHREAD()
 
@@ -2606,6 +2618,14 @@ if (ANDROID AND HAVE_HIDAPI)
   set(_INSTALL_LIBS ${_INSTALL_LIBS} "hidapi")
 endif()
 
+if(ANDROID)
+  target_include_directories(sdl-build-options INTERFACE "${ANDROID_NDK}/sources/android/cpufeatures")
+endif()
+
+if(IOS OR TVOS)
+  target_compile_options(sdl-build-options INTERFACE "-fobjc-arc")
+endif()
+
 if(SDL_SHARED)
   add_library(SDL2 SHARED ${SOURCE_FILES} ${VERSION_SOURCES})
   # alias target for in-tree builds
@@ -2639,14 +2659,12 @@ if(SDL_SHARED)
   endif()
   set(_INSTALL_LIBS "SDL2" ${_INSTALL_LIBS})
   target_link_libraries(SDL2 PRIVATE ${EXTRA_LIBS} ${EXTRA_LDFLAGS})
-  target_include_directories(SDL2 PUBLIC "$<BUILD_INTERFACE:${SDL2_SOURCE_DIR}/include>" $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}> $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/SDL2>)
-  if(ANDROID)
-    target_include_directories(SDL2 PRIVATE ${ANDROID_NDK}/sources/android/cpufeatures)
-  else()
+  target_include_directories(SDL2 BEFORE PRIVATE "${SDL2_BINARY_DIR}/include")
+  target_include_directories(SDL2 PUBLIC "$<BUILD_INTERFACE:${SDL2_SOURCE_DIR}/include>;$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>;$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/SDL2>")
+  # This picks up all the compiler options and such we've accumulated up to here.
+  target_link_libraries(SDL2 PRIVATE $<BUILD_INTERFACE:sdl-build-options>)
+  if(NOT ANDROID)
     set_target_properties(SDL2 PROPERTIES DEBUG_POSTFIX "${SDL_CMAKE_DEBUG_POSTFIX}")
-  endif()
-  if(IOS OR TVOS)
-    set_property(TARGET SDL2 APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
   endif()
 endif()
 
@@ -2689,15 +2707,13 @@ if(SDL_STATIC)
   # TODO: Win32 platforms keep the same suffix .lib for import and static
   # libraries - do we need to consider this?
   set(_INSTALL_LIBS "SDL2-static" ${_INSTALL_LIBS})
-  target_link_libraries(SDL2-static ${EXTRA_LIBS} ${EXTRA_LDFLAGS})
+  target_link_libraries(SDL2-static PRIVATE ${EXTRA_LIBS} ${EXTRA_LDFLAGS})
+  target_include_directories(SDL2-static BEFORE PRIVATE "${SDL2_BINARY_DIR}/include")
   target_include_directories(SDL2-static PUBLIC "$<BUILD_INTERFACE:${SDL2_SOURCE_DIR}/include>" $<INSTALL_INTERFACE:include> $<INSTALL_INTERFACE:include/SDL2>)
-  if(ANDROID)
-    target_include_directories(SDL2-static PRIVATE ${ANDROID_NDK}/sources/android/cpufeatures)
-  else()
+  # This picks up all the compiler options and such we've accumulated up to here.
+  target_link_libraries(SDL2-static PRIVATE $<BUILD_INTERFACE:sdl-build-options>)
+  if(NOT ANDROID)
     set_target_properties(SDL2-static PROPERTIES DEBUG_POSTFIX "${SDL_CMAKE_DEBUG_POSTFIX}")
-  endif()
-  if(IOS OR TVOS)
-    set_property(TARGET SDL2-static APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
   endif()
 endif()
 
@@ -2706,7 +2722,6 @@ endif()
 if(SDL_TEST)
   file(GLOB TEST_SOURCES ${SDL2_SOURCE_DIR}/src/test/*.c)
   add_library(SDL2_test STATIC ${TEST_SOURCES})
-
   add_subdirectory(test)
 endif()
 

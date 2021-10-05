@@ -621,12 +621,9 @@ macro(CheckWayland)
         set(WAYLAND_SCANNER_CODE_MODE "code")
       endif()
 
-      link_directories(
-          ${WAYLAND_LIBRARY_DIRS}
-      )
-      include_directories(
-          ${WAYLAND_INCLUDE_DIRS}
-      )
+      target_link_directories(sdl-build-options INTERFACE "${WAYLAND_LIBRARY_DIRS}")
+      target_include_directories(sdl-build-options INTERFACE "${WAYLAND_INCLUDE_DIRS}")
+
       set(HAVE_WAYLAND TRUE)
       set(HAVE_SDL_VIDEO TRUE)
 
@@ -635,7 +632,7 @@ macro(CheckWayland)
 
       # We have to generate some protocol interface code for some unstable Wayland features.
       file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/wayland-generated-protocols")
-      include_directories("${CMAKE_CURRENT_BINARY_DIR}/wayland-generated-protocols")
+      target_include_directories(sdl-build-options INTERFACE "${CMAKE_CURRENT_BINARY_DIR}/wayland-generated-protocols")
 
       file(GLOB WAYLAND_PROTOCOLS_XML RELATIVE "${SDL2_SOURCE_DIR}/wayland-protocols/" "${SDL2_SOURCE_DIR}/wayland-protocols/*.xml")
       foreach(_XML ${WAYLAND_PROTOCOLS_XML})
@@ -670,8 +667,8 @@ macro(CheckWayland)
         if(LIBDECOR_FOUND)
             set(HAVE_WAYLAND_LIBDECOR TRUE)
             set(HAVE_LIBDECOR_H 1)
-            link_directories(${LIBDECOR_LIBRARY_DIRS})
-            include_directories(${LIBDECOR_INCLUDE_DIRS})
+            target_link_directories(sdl-build-options INTERFACE "${LIBDECOR_LIBRARY_DIRS}")
+            target_include_directories(sdl-build-options INTERFACE "${LIBDECOR_INCLUDE_DIRS}")
             if(SDL_WAYLAND_LIBDECOR_SHARED AND NOT HAVE_SDL_LOADSO)
                 message_warn("You must have SDL_LoadObject() support for dynamic libdecor loading")
             endif()
@@ -1187,6 +1184,7 @@ macro(CheckRPI)
       file(GLOB VIDEO_RPI_SOURCES ${SDL2_SOURCE_DIR}/src/video/raspberry/*.c)
       set(SOURCE_FILES ${SOURCE_FILES} ${VIDEO_RPI_SOURCES})
       list(APPEND EXTRA_LIBS ${VIDEO_RPI_LIBRARIES})
+      # !!! FIXME: shouldn't be using CMAKE_C_FLAGS, right?
       set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${VIDEO_RPI_INCLUDE_FLAGS} ${VIDEO_RPI_LIBRARY_FLAGS}")
       list(APPEND EXTRA_LDFLAGS ${VIDEO_RPI_LDFLAGS})
     endif()
@@ -1206,9 +1204,7 @@ macro(CheckKMSDRM)
       link_directories(
         ${KMSDRM_LIBRARY_DIRS}
       )
-      include_directories(
-        ${KMSDRM_INCLUDE_DIRS}
-      )
+      target_include_directories(sdl-build-options INTERFACE "${KMSDRM_INCLUDE_DIRS}")
       set(HAVE_KMSDRM TRUE)
       set(HAVE_SDL_VIDEO TRUE)
 
