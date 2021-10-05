@@ -128,8 +128,12 @@ elseif(APPLE)
     set(MACOSX TRUE)
   elseif(CMAKE_SYSTEM_NAME MATCHES ".*tvOS.*")
     set(TVOS TRUE)
+  elseif(CMAKE_SYSTEM_NAME MATCHES ".*iOS.*")
+    # !!! FIXME: remove the version check when we start requiring >= 3.14.0
+    if(CMAKE_VERSION VERSION_LESS 3.14)
+      set(IOS TRUE)
+    endif()
   endif()
-  # TODO: iOS?
 elseif(CMAKE_SYSTEM_NAME MATCHES "BeOS.*")
   message_error("BeOS support has been removed as of SDL 2.0.2.")
 elseif(CMAKE_SYSTEM_NAME MATCHES "Haiku.*")
