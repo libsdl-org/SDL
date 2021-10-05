@@ -313,6 +313,8 @@ if (NOT DEFINED SDL_SHARED_ENABLED_BY_DEFAULT)
   endif()
 endif()
 
+set(LONGESTOPTIONNAME 0)  # set_option and friends will change this.
+
 set(SDL_SUBSYSTEMS
     Atomic Audio Video Render Events Joystick Haptic Power Threads Timers
     File Loadso CPUinfo Filesystem Dlopen Sensor Locale)
@@ -2533,10 +2535,9 @@ message(STATUS "")
 message(STATUS "Options:")
 list(SORT ALLOPTIONS)
 foreach(_OPT ${ALLOPTIONS})
-  # Longest option is SDL_WAYLAND_LIBDECOR_SHARED = 27 characters
   # Get the padding
   string(LENGTH ${_OPT} _OPTLEN)
-  math(EXPR _PADLEN "28 - ${_OPTLEN}")
+  math(EXPR _PADLEN "(${LONGESTOPTIONNAME} + 1) - ${_OPTLEN}")
   string(RANDOM LENGTH ${_PADLEN} ALPHABET " " _PADDING)
   message_tested_option(${_OPT} ${_PADDING})
 endforeach()
