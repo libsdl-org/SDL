@@ -138,7 +138,7 @@ Wayland_GLES_SwapWindow(_THIS, SDL_Window *window)
 
             /* !!! FIXME: this is just the crucial piece of Wayland_PumpEvents */
             WAYLAND_wl_display_flush(display);
-            if (WAYLAND_wl_display_dispatch_pending(display) > 0) {
+            if (WAYLAND_wl_display_dispatch_queue_pending(display, data->frame_event_queue) > 0) {
                 /* We dispatched some pending events. Check if the frame callback happened. */
                 continue;
             }
@@ -161,7 +161,7 @@ Wayland_GLES_SwapWindow(_THIS, SDL_Window *window)
                 break;
             }
 
-            WAYLAND_wl_display_dispatch(display);
+            WAYLAND_wl_display_dispatch_queue(display, data->frame_event_queue);
             SDL_UnlockMutex(videodata->display_dispatch_lock);
         }
         SDL_AtomicSet(&data->swap_interval_ready, 0);
