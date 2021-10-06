@@ -53,6 +53,8 @@ typedef struct {
     SDL_VideoData *waylandData;
     struct wl_surface *surface;
     struct wl_callback *frame_callback;
+    struct wl_event_queue *frame_event_queue;
+    struct wl_surface *frame_surface_wrapper;
     union {
 #ifdef HAVE_LIBDECOR_H
         SDL_libdecor_surface libdecor;
