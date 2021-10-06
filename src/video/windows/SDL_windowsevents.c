@@ -374,13 +374,34 @@ WIN_UpdateFocus(SDL_Window *window)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
     HWND hwnd = data->hwnd;
+    SDL_bool had_focus = (SDL_GetKeyboardFocus() == window) ? SDL_TRUE : SDL_FALSE;
+    SDL_bool has_focus = (GetForegroundWindow() == hwnd) ? SDL_TRUE : SDL_FALSE;
+
+    if (had_focus == has_focus) {
+        return;
+    }
 
     if (GetForegroundWindow() == hwnd) {
         POINT cursorPos;
 
-        if (SDL_GetKeyboardFocus() != window) {
-            SDL_SetKeyboardFocus(window);
+        SDL_bool swapButtons = GetSystemMetrics(SM_SWAPBUTTON) != 0;
+        if (GetAsyncKeyState(VK_LBUTTON)) {
+            data->focus_click_pending |= !swapButtons ? SDL_BUTTON_LMASK : SDL_BUTTON_RMASK;
         }
+        if (GetAsyncKeyState(VK_RBUTTON)) {
+            data->focus_click_pending |= !swapButtons ? SDL_BUTTON_RMASK : SDL_BUTTON_LMASK;
+        }
+        if (GetAsyncKeyState(VK_MBUTTON)) {
+            data->focus_click_pending |= SDL_BUTTON_MMASK;
+        }
+        if (GetAsyncKeyState(VK_XBUTTON1)) {
+            data->focus_click_pending |= SDL_BUTTON_X1MASK;
+        }
+        if (GetAsyncKeyState(VK_XBUTTON2)) {
+            data->focus_click_pending |= SDL_BUTTON_X2MASK;
+        }
+
+        SDL_SetKeyboardFocus(window);
 
         GetCursorPos(&cursorPos);
         ScreenToClient(hwnd, &cursorPos);
@@ -403,10 +424,8 @@ WIN_UpdateFocus(SDL_Window *window)
 
         data->in_window_deactivation = SDL_TRUE;
 
-        if (SDL_GetKeyboardFocus() == window) {
-            SDL_SetKeyboardFocus(NULL);
-            WIN_ResetDeadKeys();
-        }
+        SDL_SetKeyboardFocus(NULL);
+        WIN_ResetDeadKeys();
 
         if (GetClipCursor(&rect) && SDL_memcmp(&rect, &data->cursor_clipped_rect, sizeof(rect)) == 0) {
             ClipCursor(NULL);
@@ -716,34 +735,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
     case WM_ACTIVATE:
         {
-            BOOL minimized;
-
-            minimized = HIWORD(wParam);
-            if (!minimized && (LOWORD(wParam) != WA_INACTIVE)) {
-                if (LOWORD(wParam) == WA_CLICKACTIVE) {
-                    SDL_bool swapButtons = GetSystemMetrics(SM_SWAPBUTTON) != 0;
-                    if (GetAsyncKeyState(VK_LBUTTON)) {
-                        data->focus_click_pending |= !swapButtons ? SDL_BUTTON_LMASK : SDL_BUTTON_RMASK;
-                    }
-                    if (GetAsyncKeyState(VK_RBUTTON)) {
-                        data->focus_click_pending |= !swapButtons ? SDL_BUTTON_RMASK : SDL_BUTTON_LMASK;
-                    }
-                    if (GetAsyncKeyState(VK_MBUTTON)) {
-                        data->focus_click_pending |= SDL_BUTTON_MMASK;
-                    }
-                    if (GetAsyncKeyState(VK_XBUTTON1)) {
-                        data->focus_click_pending |= SDL_BUTTON_X1MASK;
-                    }
-                    if (GetAsyncKeyState(VK_XBUTTON2)) {
-                        data->focus_click_pending |= SDL_BUTTON_X2MASK;
-                    }
-                }
-
-                SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_SHOWN, 0, 0);
-
-            }
         }
-        returnCode = 0;
         break;
 
     case WM_POINTERUPDATE:
