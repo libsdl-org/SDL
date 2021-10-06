@@ -68,10 +68,10 @@ if( sdl2implib AND sdl2mainimplib AND sdl2implibdbg AND sdl2mainimplibdbg )
 	set(SDL2_LIBRARIES $<IF:$<CONFIG:Debug>,${sdl2mainimplibdbg},${sdl2mainimplib}>   $<IF:$<CONFIG:Debug>,${sdl2implibdbg},${sdl2implib}>)
 else()
 	if( (NOT sdl2implib) AND sdl2implibdbg ) # if we only have a debug version of the lib
-		set(sdl2implib sdl2implibdbg)
+		set(sdl2implib ${sdl2implibdbg})
 	endif()
 	if( (NOT sdl2mainimplib) AND sdl2mainimplibdbg ) # if we only have a debug version of the lib
-		set(sdl2mainimplib sdl2mainimplibdbg)
+		set(sdl2mainimplib ${sdl2mainimplibdbg})
 	endif()
 
 	if( sdl2implib AND sdl2mainimplib )
