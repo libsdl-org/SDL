@@ -761,6 +761,10 @@ SDL_WarpMouseInWindow(SDL_Window * window, int x, int y)
         return;
     }
 
+    if ((window->flags & SDL_WINDOW_MINIMIZED) == SDL_WINDOW_MINIMIZED) {
+        return;
+    }
+
     if (mouse->WarpMouse) {
         mouse->WarpMouse(window, x, y);
     } else {
