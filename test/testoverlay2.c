@@ -24,11 +24,11 @@
 
 #include "SDL.h"
 
-#include "testyuv_cvt.h"
 #include "testutils.h"
 
 #define MOOSEPIC_W 64
 #define MOOSEPIC_H 88
+#define MOOSEPIC_COLORS 84
 
 #define MOOSEFRAME_SIZE   (MOOSEPIC_W * MOOSEPIC_H)
 #define MOOSEFRAMES_COUNT 10
@@ -142,7 +142,7 @@ SDL_Color MooseColors[84] = {
 };
 /* *INDENT-ON* */ /* clang-format on */
 
-Uint8 MooseFrame[MOOSEFRAMES_COUNT][MOOSEFRAME_SIZE * 2];
+Uint8 MooseFrame[MOOSEFRAMES_COUNT][MOOSEFRAME_SIZE];
 SDL_Texture *MooseTexture;
 SDL_Rect displayrect;
 int window_w;
@@ -170,7 +170,6 @@ PrintUsage(char *argv0)
     SDL_Log("\n");
     SDL_Log("    -fps <frames per second>\n");
     SDL_Log("    -nodelay\n");
-    SDL_Log("    -format <fmt> (one of the: YV12, IYUV, YUY2, UYVY, YVYU)\n");
     SDL_Log("    -scale <scale factor> (initial scale of the overlay)\n");
     SDL_Log("    -help (shows this help)\n");
     SDL_Log("\n");
@@ -238,10 +237,8 @@ void loop()
 
 int main(int argc, char **argv)
 {
-    Uint8 *RawMooseData;
     SDL_RWops *handle;
     SDL_Window *window;
-    int j;
     int fps = 12;
     int nodelay = 0;
     int scale = 5;
@@ -310,28 +307,20 @@ int main(int argc, char **argv)
         break;
     }
 
-    RawMooseData = (Uint8 *)SDL_malloc(MOOSEFRAME_SIZE * MOOSEFRAMES_COUNT);
-    if (RawMooseData == NULL) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Can't allocate memory for movie !\n");
-        quit(1);
-    }
-
     /* load the trojan moose images */
     filename = GetResourceFilename(NULL, "moose.dat");
     if (filename == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory\n");
-        SDL_free(RawMooseData);
         return -1;
     }
     handle = SDL_RWFromFile(filename, "rb");
     SDL_free(filename);
     if (handle == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Can't find the file moose.dat !\n");
-        SDL_free(RawMooseData);
         quit(2);
     }
 
-    SDL_RWread(handle, RawMooseData, MOOSEFRAME_SIZE, MOOSEFRAMES_COUNT);
+    SDL_RWread(handle, MooseFrame, MOOSEFRAME_SIZE, MOOSEFRAMES_COUNT);
 
     SDL_RWclose(handle);
 
@@ -345,45 +334,22 @@ int main(int argc, char **argv)
                               SDL_WINDOW_RESIZABLE);
     if (window == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't set create window: %s\n", SDL_GetError());
-        SDL_free(RawMooseData);
         quit(4);
     }
 
     renderer = SDL_CreateRenderer(window, -1, 0);
     if (renderer == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't set create renderer: %s\n", SDL_GetError());
-        SDL_free(RawMooseData);
         quit(4);
     }
 
-    MooseTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_YV12, SDL_TEXTUREACCESS_STREAMING, MOOSEPIC_W, MOOSEPIC_H);
+    MooseTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_INDEX8, SDL_TEXTUREACCESS_STREAMING, MOOSEPIC_W, MOOSEPIC_H);
     if (MooseTexture == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't set create texture: %s\n", SDL_GetError());
-        SDL_free(RawMooseData);
         quit(5);
     }
-    /* Uncomment this to check vertex color with a YUV texture */
-    /* SDL_SetTextureColorMod(MooseTexture, 0xff, 0x80, 0x80); */
 
-    for (i = 0; i < MOOSEFRAMES_COUNT; i++) {
-        Uint8 MooseFrameRGB[MOOSEFRAME_SIZE * 3];
-        Uint8 *rgb;
-        Uint8 *frame;
-
-        rgb = MooseFrameRGB;
-        frame = RawMooseData + i * MOOSEFRAME_SIZE;
-        for (j = 0; j < MOOSEFRAME_SIZE; ++j) {
-            rgb[0] = MooseColors[frame[j]].r;
-            rgb[1] = MooseColors[frame[j]].g;
-            rgb[2] = MooseColors[frame[j]].b;
-            rgb += 3;
-        }
-        ConvertRGBtoYUV(SDL_PIXELFORMAT_YV12, MooseFrameRGB, MOOSEPIC_W * 3, MooseFrame[i], MOOSEPIC_W, MOOSEPIC_H,
-                        SDL_GetYUVConversionModeForResolution(MOOSEPIC_W, MOOSEPIC_H),
-                        0, 100);
-    }
-
-    SDL_free(RawMooseData);
+    SDL_SetTexturePalette(MooseTexture, MooseColors, 0, MOOSEPIC_COLORS);
 
     /* set the start frame */
     i = 0;

@@ -286,7 +286,7 @@ endif
 endif
 endif
 
-testoverlay2$(EXE): $(srcdir)/testoverlay2.c $(srcdir)/testyuv_cvt.c $(srcdir)/testutils.c
+testoverlay2$(EXE): $(srcdir)/testoverlay2.c $(srcdir)/testutils.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
 testplatform$(EXE): $(srcdir)/testplatform.c

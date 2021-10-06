@@ -88,9 +88,6 @@ testautomation.exe: $(TAOBJS)
 testnative.exe: $(TNOBJS)
   wlink SYS $(SYSTEM) libpath $(LIBPATH) lib {$(LIBS)} op q op el file {$<} name $@
 
-testoverlay2.exe: testoverlay2.obj testyuv_cvt.obj
-  wlink SYS $(SYSTEM) libpath $(LIBPATH) lib {$(LIBS)} op q op el file {$<} name $@
-
 testyuv.exe: testyuv.obj testyuv_cvt.obj
   wlink SYS $(SYSTEM) libpath $(LIBPATH) lib {$(LIBS)} op q op el file {$<} name $@
 
