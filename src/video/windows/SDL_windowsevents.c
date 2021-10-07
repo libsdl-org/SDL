@@ -1550,6 +1550,16 @@ WIN_PumpEvents(_THIS)
                 g_WindowsMessageHook(g_WindowsMessageHookData, msg.hwnd, msg.message, msg.wParam, msg.lParam);
             }
 
+            /* Don't dispatch any mouse motion queued prior to or including the last mouse warp */
+            if (msg.message == WM_MOUSEMOVE && SDL_last_warp_time) {
+                if (!SDL_TICKS_PASSED(msg.time, (SDL_last_warp_time + 1))) {
+                    continue;
+                }
+
+                /* This mouse message happened after the warp */
+                SDL_last_warp_time = 0;
+            }
+
             /* Always translate the message in case it's a non-SDL window (e.g. with Qt integration) */
             TranslateMessage(&msg);
             DispatchMessage(&msg);

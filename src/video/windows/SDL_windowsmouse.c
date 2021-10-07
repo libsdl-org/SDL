@@ -27,6 +27,7 @@
 #include "../../events/SDL_mouse_c.h"
 
 
+DWORD SDL_last_warp_time = 0;
 HCURSOR SDL_cursor = NULL;
 static SDL_Cursor *SDL_blank_cursor = NULL;
 
@@ -253,16 +254,11 @@ WIN_WarpMouse(SDL_Window * window, int x, int y)
     SetCursorPos(pt.x, pt.y);
 
     /* Flush any pending mouse motion and simulate motion for this warp */
-    {
-        SDL_Mouse *mouse = SDL_GetMouse();
-        const SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
-        MSG msg;
-
-        while (PeekMessage(&msg, data->hwnd, WM_MOUSEMOVE, WM_MOUSEMOVE, PM_REMOVE)) {
-            continue;
-        }
-        SDL_SendMouseMotion(window, mouse->mouseID, 0, x, y);
+    SDL_last_warp_time = GetTickCount();
+    if (!SDL_last_warp_time) {
+        SDL_last_warp_time = 1;
     }
+    SDL_SendMouseMotion(window, SDL_GetMouse()->mouseID, 0, x, y);
 }
 
 static int
