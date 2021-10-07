@@ -251,6 +251,18 @@ WIN_WarpMouse(SDL_Window * window, int x, int y)
     pt.y = y;
     ClientToScreen(hwnd, &pt);
     SetCursorPos(pt.x, pt.y);
+
+    /* Flush any pending mouse motion and simulate motion for this warp */
+    {
+        SDL_Mouse *mouse = SDL_GetMouse();
+        const SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+        MSG msg;
+
+        while (PeekMessage(&msg, data->hwnd, WM_MOUSEMOVE, WM_MOUSEMOVE, PM_REMOVE)) {
+            continue;
+        }
+        SDL_SendMouseMotion(window, mouse->mouseID, 0, x, y);
+    }
 }
 
 static int
