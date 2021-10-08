@@ -652,6 +652,12 @@ SDLTest_PrintDisplayOrientation(char* text, size_t maxlen, SDL_DisplayOrientatio
     case SDL_ORIENTATION_PORTRAIT_FLIPPED:
         SDL_snprintfcat(text, maxlen, "PORTRAIT_FLIPPED");
         break;
+    case SDL_RENDERER_TARGETTEXTURE:
+        fprintf(stderr, "TargetTexture");
+        break;
+    case SDL_RENDERER_TRANSFORM:
+        fprintf(stderr, "Transform");
+        break;    
     default:
         SDL_snprintfcat(text, maxlen, "0x%8.8x", orientation);
         break;

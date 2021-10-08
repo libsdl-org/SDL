@@ -267,7 +267,7 @@ SDL_PROC_UNUSED(void, glMaterialiv,
                 (GLenum face, GLenum pname, const GLint * params))
 SDL_PROC(void, glMatrixMode, (GLenum mode))
 SDL_PROC_UNUSED(void, glMultMatrixd, (const GLdouble * m))
-SDL_PROC_UNUSED(void, glMultMatrixf, (const GLfloat * m))
+SDL_PROC(void, glMultMatrixf, (const GLfloat * m))
 SDL_PROC_UNUSED(void, glNewList, (GLuint list, GLenum mode))
 SDL_PROC_UNUSED(void, glNormal3b, (GLbyte nx, GLbyte ny, GLbyte nz))
 SDL_PROC_UNUSED(void, glNormal3bv, (const GLbyte * v))

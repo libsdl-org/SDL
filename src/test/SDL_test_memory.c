@@ -25,6 +25,7 @@
 #include "SDL_test_crc32.h"
 #include "SDL_test_memory.h"
 
+#undef HAVE_LIBUNWIND_H
 #ifdef HAVE_LIBUNWIND_H
 #include <libunwind.h>
 #endif

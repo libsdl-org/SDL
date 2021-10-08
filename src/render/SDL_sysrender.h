@@ -32,6 +32,11 @@
 
 typedef struct SDL_RenderDriver SDL_RenderDriver;
 
+typedef struct
+{
+    float m[4][4]; //row first
+} SDL_FMatrix;
+
 /* Define the SDL texture structure */
 struct SDL_Texture
 {
@@ -158,6 +163,8 @@ struct SDL_Renderer
     int (*SetRenderTarget) (SDL_Renderer * renderer, SDL_Texture * texture);
     int (*RenderReadPixels) (SDL_Renderer * renderer, const SDL_Rect * rect,
                              Uint32 format, void * pixels, int pitch);
+    int (*PushTransformMatrix)(SDL_Renderer * renderer, const SDL_FMatrix *matrix);
+    int (*PopTransformMatrix)(SDL_Renderer * renderer);
     void (*RenderPresent) (SDL_Renderer * renderer);
     void (*DestroyTexture) (SDL_Renderer * renderer, SDL_Texture * texture);
 

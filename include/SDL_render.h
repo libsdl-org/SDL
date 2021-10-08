@@ -68,8 +68,10 @@ typedef enum
                                                      acceleration */
     SDL_RENDERER_PRESENTVSYNC = 0x00000004,     /**< Present is synchronized
                                                      with the refresh rate */
-    SDL_RENDERER_TARGETTEXTURE = 0x00000008     /**< The renderer supports
+    SDL_RENDERER_TARGETTEXTURE = 0x00000008,     /**< The renderer supports
                                                      rendering to texture */
+    SDL_RENDERER_TRANSFORM = 0x00000010     /**< The renderer supports
+                                                     transform */
 } SDL_RendererFlags;
 
 /**
@@ -1307,6 +1309,86 @@ extern DECLSPEC int SDLCALL SDL_RenderCopyEx(SDL_Renderer * renderer,
                                            const double angle,
                                            const SDL_Point *center,
                                            const SDL_RendererFlip flip);
+
+/**
+ *  \brief push a rotation to the transform stack
+ *
+ *  \param renderer The renderer affected by this transform.
+ *  \param angle    An angle in degrees that indicates the rotation that will be applied to next drawing operations
+ *  \param center   A pointer to a point indicating rotation center
+ *
+ *  Each renderer has a tranform stack in order to change the destination of next drawing operation.
+ *  It doesn't chage the viewport so after a transform "push", it doesn't reflect the entire drawing area.
+ *  Each "push" are cumulative, see SDL_RenderPopTransform for undoing the transform.
+ *
+ *  This particular function introduce a rotation for next drawing operation.
+ *
+ *  This function will fail if renderer doesn't support SDL_RENDERER_TRANSFORM in flags.
+ *
+ *  \return 0 on success, or -1 on error
+ */
+extern DECLSPEC int SDLCALL SDL_RenderPushTransformRotation(SDL_Renderer * renderer,
+															const double angle,
+                                                            const SDL_Point *center);
+
+/**
+ *  \brief push a rotation to the transform stack
+ *
+ *  \param renderer The renderer affected by this transform.
+ *  \param offsetx   the scaling factor for the X axis
+ *  \param offsety   the scaling factor for the Y axis
+ *
+ *  Each renderer has a tranform stack in order to change the destination of next drawing operation.
+ *  It doesn't chage the viewport so after a transform "push", it doesn't reflect the entire drawing area.
+ *  Each "push" are cumulative, see SDL_RenderPopTransform for undoing the transform.
+ *
+ *  This particular function introduce a translation for next drawing operation.
+ *
+ *  This function will fail if renderer doesn't support SDL_RENDERER_TRANSFORM in flags.
+ *
+ *  \return 0 on success, or -1 on error
+ */
+extern DECLSPEC int SDLCALL SDL_RenderPushTransformTranslation(SDL_Renderer * renderer,
+															   int offsetx, int offsety);
+
+/**
+ *  \brief push a rotation to the transform stack
+ *
+ *  \param renderer The renderer affected by this transform.
+ *  \param scalex   the scaling factor for the X axis
+ *  \param scaley   the scaling factor for the Y axis
+ *
+ *  Each renderer has a tranform stack in order to change the destination of next drawing operation.
+ *  It doesn't chage the viewport so after a transform "push", it doesn't reflect the entire drawing area.
+ *  Each "push" are cumulative, see SDL_RenderPopTransform for undoing the transform.
+ *
+ *  This particular function introduce a scale for next drawing operation.
+ *
+ *  This function will fail if renderer doesn't support SDL_RENDERER_TRANSFORM in flags.
+ *
+ *  \return 0 on success, or -1 on error
+ */
+extern DECLSPEC int SDLCALL SDL_RenderPushTransformScale(SDL_Renderer * renderer,
+												         float scalex, float scaley);
+
+/**
+ *  \brief push a rotation to the transform stack
+ *
+ *  \param renderer The renderer affected by this transform.
+ *
+ *  Each renderer has a tranform stack in order to change the destination of next drawing operation.
+ *  It doesn't chage the viewport so after a transform "push", it doesn't reflect the entire drawing area.
+ *  Each "push" are cumulative, see SDL_RenderPopTransform for undoing the transform.
+ *
+ *  This particular function pop one transform from the stack (ie it undo the last tranform push).
+ *
+ *  This function will fail if renderer doesn't support SDL_RENDERER_TRANSFORM in flags.
+ *
+ *  \return 0 on success, or -1 on error
+ */
+extern DECLSPEC int SDLCALL SDL_RenderPopTransform(SDL_Renderer * renderer);
+
+
 
 
 /**

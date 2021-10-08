@@ -60,6 +60,11 @@ this should probably be removed at some point in the future.  --ryan. */
         return retval; \
     }
 
+#define CHECK_TRANSFORM(renderer) \
+    if ((renderer->info.flags & SDL_RENDERER_TRANSFORM) == 0) { \
+        return SDL_SetError("Renderer doesn't support transform"); \
+    } 
+
 /* Predefined blend modes */
 #define SDL_COMPOSE_BLENDMODE(srcColorFactor, dstColorFactor, colorOperation, \
                               srcAlphaFactor, dstAlphaFactor, alphaOperation) \
@@ -203,7 +208,6 @@ DebugLogRenderCommands(const SDL_RenderCommand *cmd)
                         (int) cmd->data.draw.b, (int) cmd->data.draw.a,
                         (int) cmd->data.draw.blend, cmd->data.draw.texture);
                 break;
-
 
             case SDL_RENDERCMD_COPY_EX:
                 SDL_Log(" %u. copyex (first=%u, count=%u, r=%d, g=%d, b=%d, a=%d, blend=%d, tex=%p)", i++,
@@ -1943,6 +1947,117 @@ SDL_LockTextureNative(SDL_Texture * texture, const SDL_Rect * rect,
     *pitch = texture->pitch;
     return 0;
 }
+
+
+static void MatrixMultiply(SDL_FMatrix *result, const SDL_FMatrix *m2, const SDL_FMatrix *m1)
+{
+    int i,j;
+    for (i=0; i<4; i++)
+    {
+        for (j=0; j<4; j++)
+        {
+            result->m[i][j] = m1->m[i][0] * m2->m[0][j] + m1->m[i][1] * m2->m[1][j] + m1->m[i][2] * m2->m[2][j] + m1->m[i][3] * m2->m[3][j];
+        }
+    }
+}
+
+static void MatrixIdentity(SDL_FMatrix *result)
+{
+    result->m[0][0] = 1.0f;   result->m[0][1] = 0.0f;   result->m[0][2] = 0.0f;   result->m[0][3] = 0.0f;
+    result->m[1][0] = 0.0f;   result->m[1][1] = 1.0f;   result->m[1][2] = 0.0f;   result->m[1][3] = 0.0f;
+    result->m[2][0] = 0.0f;   result->m[2][1] = 0.0f;   result->m[2][2] = 1.0f;   result->m[2][3] = 0.0f;
+    result->m[3][0] = 0.0f;   result->m[3][1] = 0.0f;   result->m[3][2] = 0.0f;   result->m[3][3] = 1.0f;
+}
+
+static void MatrixRotate(SDL_FMatrix *result, const double angle)
+{
+    double radangle;
+
+    radangle = angle * (M_PI / 180.0);
+
+    MatrixIdentity(result);
+    result->m[0][0] = SDL_cos(radangle);   result->m[0][1] = -SDL_sin(radangle);
+    result->m[1][0] = SDL_sin(radangle);   result->m[1][1] = SDL_cos(radangle);     
+}
+
+static void MatrixTranslate(SDL_FMatrix *result, int offsetx, int offsety)
+{
+    MatrixIdentity(result);
+    result->m[0][3] = offsetx;
+    result->m[1][3] = offsety;     
+}
+
+static void MatrixScale(SDL_FMatrix *result,  float scalex, float scaley)
+{
+    MatrixIdentity(result);
+    result->m[0][0] = scalex;
+    result->m[1][1] = scaley;     
+}
+
+int
+SDL_RenderPushTransformRotation(SDL_Renderer * renderer, const double angle, const SDL_Point *center)
+{
+    SDL_FMatrix m;
+    SDL_FMatrix m1;
+    SDL_FMatrix m2;
+
+    SDL_Point real_center;
+    SDL_Rect viewport;
+    
+    CHECK_RENDERER_MAGIC(renderer, -1);
+    CHECK_TRANSFORM(renderer);
+
+    if (center) {
+         real_center = *center;
+    } else {
+        SDL_RenderGetViewport(renderer, &viewport);
+        real_center.x = viewport.w/2;
+        real_center.y = viewport.h/2;
+    }
+    MatrixTranslate(&m1, -real_center.x, -real_center.y);
+    MatrixRotate(&m2, angle);
+    MatrixMultiply(&m, &m1, &m2);
+    MatrixTranslate(&m1, real_center.x, real_center.y);
+    MatrixMultiply(&m2, &m, &m1);
+
+    return renderer->PushTransformMatrix(renderer, &m2);
+}
+
+int
+SDL_RenderPushTransformTranslation(SDL_Renderer * renderer, int offsetx, int offsety)
+{
+    SDL_FMatrix m;
+
+    CHECK_RENDERER_MAGIC(renderer, -1);
+    CHECK_TRANSFORM(renderer);
+
+    MatrixTranslate(&m, offsetx, offsety);
+
+    return renderer->PushTransformMatrix(renderer, &m);
+}
+
+int
+SDL_RenderPushTransformScale(SDL_Renderer * renderer, float scalex, float scaley)
+{
+    SDL_FMatrix m;
+
+    CHECK_RENDERER_MAGIC(renderer, -1);
+    CHECK_TRANSFORM(renderer);
+
+    MatrixScale(&m, scalex, scaley);
+
+    return renderer->PushTransformMatrix(renderer, &m);
+}
+
+int
+SDL_RenderPopTransform(SDL_Renderer * renderer)
+{
+    CHECK_RENDERER_MAGIC(renderer, -1);
+    CHECK_TRANSFORM(renderer);
+
+    return renderer->PopTransformMatrix(renderer);
+}
+
 
 int
 SDL_LockTexture(SDL_Texture * texture, const SDL_Rect * rect,

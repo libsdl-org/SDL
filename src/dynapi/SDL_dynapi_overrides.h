@@ -822,3 +822,7 @@
 #define SDL_RenderSetVSync SDL_RenderSetVSync_REAL
 #define SDL_asprintf SDL_asprintf_REAL
 #define SDL_vasprintf SDL_vasprintf_REAL
+#define SDL_RenderPushTransformRotation SDL_RenderPushTransformRotation_REAL
+#define SDL_RenderPushTransformTranslation SDL_RenderPushTransformTranslation_REAL
+#define SDL_RenderPushTransformScale SDL_RenderPushTransformScale_REAL
+#define SDL_RenderPopTransform SDL_RenderPopTransform_REAL

@@ -20,6 +20,7 @@
 #include <emscripten/emscripten.h>
 #endif
 
+#include "SDL_test.h"
 #include "SDL_test_common.h"
 
 #define NUM_OBJECTS 100
@@ -74,8 +75,8 @@ DrawPoints(SDL_Renderer * renderer)
         SDL_SetRenderDrawColor(renderer, 255, (Uint8) current_color,
                                (Uint8) current_color, (Uint8) current_alpha);
 
-        x = rand() % viewport.w;
-        y = rand() % viewport.h;
+        x = SDLTest_RandomIntegerInRange(0,viewport.w);
+        y = SDLTest_RandomIntegerInRange(0,viewport.h);
         SDL_RenderDrawPoint(renderer, x, y);
     }
 }
@@ -123,10 +124,10 @@ DrawLines(SDL_Renderer * renderer)
             SDL_RenderDrawLine(renderer, 0, viewport.h / 2, viewport.w - 1, viewport.h / 2);
             SDL_RenderDrawLine(renderer, viewport.w / 2, 0, viewport.w / 2, viewport.h - 1);
         } else {
-            x1 = (rand() % (viewport.w*2)) - viewport.w;
-            x2 = (rand() % (viewport.w*2)) - viewport.w;
-            y1 = (rand() % (viewport.h*2)) - viewport.h;
-            y2 = (rand() % (viewport.h*2)) - viewport.h;
+            x1 = SDLTest_RandomIntegerInRange(0,viewport.w);
+            x2 = SDLTest_RandomIntegerInRange(0,viewport.w);
+            y1 = SDLTest_RandomIntegerInRange(0,viewport.h);
+            y2 = SDLTest_RandomIntegerInRange(0,viewport.h);
             SDL_RenderDrawLine(renderer, x1, y1, x2, y2);
         }
     }
@@ -169,11 +170,12 @@ DrawRects(SDL_Renderer * renderer)
         SDL_SetRenderDrawColor(renderer, 255, (Uint8) current_color,
                                (Uint8) current_color, (Uint8) current_alpha);
 
-        rect.w = rand() % (viewport.h / 2);
-        rect.h = rand() % (viewport.h / 2);
-        rect.x = (rand() % (viewport.w*2) - viewport.w) - (rect.w / 2);
-        rect.y = (rand() % (viewport.h*2) - viewport.h) - (rect.h / 2);
+        rect.w = SDLTest_RandomIntegerInRange(0,viewport.w / 2);
+        rect.h = SDLTest_RandomIntegerInRange(0,viewport.h / 2);
+        rect.x = SDLTest_RandomIntegerInRange(0,viewport.w / 2);
+        rect.y = SDLTest_RandomIntegerInRange(0,viewport.h / 2);
         SDL_RenderFillRect(renderer, &rect);
+        SDL_RenderDrawRect(renderer, &viewport);
     }
 }
 
@@ -195,11 +197,28 @@ loop()
         SDL_SetRenderDrawColor(renderer, 0xA0, 0xA0, 0xA0, 0xFF);
         SDL_RenderClear(renderer);
 
+        {
+            SDL_Rect viewport;
+            SDL_Point center;
+            float scale=1/1.0;
+            int angle = 2;
+            SDL_RenderGetViewport(renderer, &viewport);
+            center.x = viewport.w/2;
+            center.y = viewport.h/2;
+            SDL_RenderPushTransformRotation(renderer, angle, &center);
+            SDL_RenderPushTransformScale(renderer,scale,scale);
+        }
+
         DrawRects(renderer);
         DrawLines(renderer);
         DrawPoints(renderer);
 
         SDL_RenderPresent(renderer);
+
+        SDL_RenderPopTransform(renderer);
+        SDL_RenderPopTransform(renderer);
+
+
     }
 #ifdef __EMSCRIPTEN__
     if (done) {
@@ -283,7 +302,7 @@ main(int argc, char *argv[])
     if (!SDLTest_CommonInit(state)) {
         return 2;
     }
-
+    SDLTest_FuzzerInit(0);
     /* Create the windows and initialize the renderers */
     for (i = 0; i < state->num_windows; ++i) {
         SDL_Renderer *renderer = state->renderers[i];

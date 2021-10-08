@@ -1513,6 +1513,61 @@ D3D_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *verti
     return 0;
 }
 
+static int
+D3D_PushTransformMatrix(SDL_Renderer * renderer, const SDL_FMatrix *matrix)
+{
+    D3D_RenderData *data = (D3D_RenderData *) renderer->driverdata;
+    HRESULT result;
+    D3DXMATRIX d3d_matrix;
+    int i,j;
+
+    if (D3D_ActivateRenderer(renderer) < 0) {
+        return -1;
+    }
+
+    for(i=0;i<4;++i) {
+        for(j=0;j<4;++j) {
+            d3d_matrix.m[i][j]=matrix->m[j][i];
+        }
+    }
+    result = ID3DXMatrixStack_Push(data->matrixStack);
+    if (FAILED(result)) {
+        return D3D_SetError("ID3DXMatrixStack::Push()", result);
+    }
+    result = ID3DXMatrixStack_MultMatrix(data->matrixStack,&d3d_matrix);
+    if (FAILED(result)) {
+        return D3D_SetError("ID3DXMatrixStack::MultMatrix()", result);
+    }    
+
+    result = IDirect3DDevice9_SetTransform(data->device, D3DTS_VIEW, ID3DXMatrixStack_GetTop(data->matrixStack));
+    if (FAILED(result)) {
+        return D3D_SetError("IDirect3DDevice9::SetTransform()", result);
+    }
+
+    return 0;
+}
+
+static int
+D3D_PopTransformMatrix(SDL_Renderer * renderer)
+{
+    D3D_RenderData *data = (D3D_RenderData *) renderer->driverdata;
+    HRESULT result;
+
+    if (D3D_ActivateRenderer(renderer) < 0) {
+        return -1;
+    }
+
+    result = ID3DXMatrixStack_Pop(data->matrixStack);
+    if (FAILED(result)) {
+        return D3D_SetError("ID3DXMatrixStack::Pop()", result);
+    }
+
+    result = IDirect3DDevice9_SetTransform(data->device, D3DTS_VIEW, ID3DXMatrixStack_GetTop(data->matrixStack));
+    if (FAILED(result)) {
+        return D3D_SetError("IDirect3DDevice9::SetTransform()", result);
+    }
+    return 0;
+}
 
 static int
 D3D_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
@@ -1819,13 +1874,15 @@ D3D_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->QueueGeometry = D3D_QueueGeometry;
 #endif
     renderer->RunCommandQueue = D3D_RunCommandQueue;
+    renderer->PushTransformMatrix = D3D_PushTransformMatrix;
+    renderer->PopTransformMatrix = D3D_PopTransformMatrix;
     renderer->RenderReadPixels = D3D_RenderReadPixels;
     renderer->RenderPresent = D3D_RenderPresent;
     renderer->DestroyTexture = D3D_DestroyTexture;
     renderer->DestroyRenderer = D3D_DestroyRenderer;
     renderer->SetVSync = D3D_SetVSync;
     renderer->info = D3D_RenderDriver.info;
-    renderer->info.flags = (SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
+    renderer->info.flags = (SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE | SDL_RENDERER_TRANSFORM);
     renderer->driverdata = data;
 
     SDL_VERSION(&windowinfo.version);
@@ -1943,7 +2000,7 @@ SDL_RenderDriver D3D_RenderDriver = {
     D3D_CreateRenderer,
     {
      "direct3d",
-     (SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE),
+     (SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE | SDL_RENDERER_TRANSFORM),
      1,
      {SDL_PIXELFORMAT_ARGB8888},
      0,

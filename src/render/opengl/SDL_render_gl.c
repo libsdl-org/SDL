@@ -1501,6 +1501,42 @@ GL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
 }
 
 static int
+GL_PushTransformMatrix(SDL_Renderer * renderer, const SDL_FMatrix *matrix)
+{
+    GL_RenderData *data = (GL_RenderData *) renderer->driverdata;
+    GLfloat gl_matrix[16];
+    GLfloat gl_topmatrix[16];
+    int i,j;
+
+    GL_ActivateRenderer(renderer);
+
+    for(i=0;i<4;++i) {
+        for(j=0;j<4;++j) {
+            gl_matrix[i+j*4]=matrix->m[i][j];
+        }
+    }
+    data->glMatrixMode(GL_MODELVIEW);
+    data->glPushMatrix();
+    data->glGetFloatv(GL_MODELVIEW_MATRIX,gl_topmatrix);
+    data->glLoadIdentity();
+    data->glMultMatrixf(gl_matrix);
+    data->glMultMatrixf(gl_topmatrix);
+    return 0;
+}
+
+static int
+GL_PopTransformMatrix(SDL_Renderer * renderer)
+{
+    GL_RenderData *data = (GL_RenderData *) renderer->driverdata;
+
+    GL_ActivateRenderer(renderer);
+
+    data->glMatrixMode(GL_MODELVIEW);
+    data->glPopMatrix();
+    return 0;
+}
+
+static int
 GL_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
                     Uint32 pixel_format, void * pixels, int pitch)
 {
@@ -1807,6 +1843,8 @@ GL_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->QueueGeometry = GL_QueueGeometry;
 #endif
     renderer->RunCommandQueue = GL_RunCommandQueue;
+    renderer->PushTransformMatrix = GL_PushTransformMatrix;
+    renderer->PopTransformMatrix = GL_PopTransformMatrix;
     renderer->RenderReadPixels = GL_RenderReadPixels;
     renderer->RenderPresent = GL_RenderPresent;
     renderer->DestroyTexture = GL_DestroyTexture;
@@ -1815,7 +1853,7 @@ GL_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->GL_BindTexture = GL_BindTexture;
     renderer->GL_UnbindTexture = GL_UnbindTexture;
     renderer->info = GL_RenderDriver.info;
-    renderer->info.flags = SDL_RENDERER_ACCELERATED;
+    renderer->info.flags = SDL_RENDERER_ACCELERATED | SDL_RENDERER_TRANSFORM;
     renderer->driverdata = data;
     renderer->window = window;
 
@@ -1969,7 +2007,7 @@ SDL_RenderDriver GL_RenderDriver = {
     GL_CreateRenderer,
     {
      "opengl",
-     (SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE),
+     (SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE | SDL_RENDERER_TRANSFORM),
      4,
      {
          SDL_PIXELFORMAT_ARGB8888,
