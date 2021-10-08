@@ -39,6 +39,8 @@
 #include <d3d9.h>
 #endif
 
+#include <D3dx9math.h>
+
 #include "SDL_shaders_d3d.h"
 
 typedef struct
