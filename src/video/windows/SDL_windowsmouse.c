@@ -236,6 +236,21 @@ WIN_ShowCursor(SDL_Cursor * cursor)
     return 0;
 }
 
+void
+WIN_SetCursorPos(int x, int y)
+{
+    /* We need to jitter the value because otherwise Windows will occasionally inexplicably ignore the SetCursorPos() or SendInput() */
+    SetCursorPos(x, y);
+    SetCursorPos(x+1, y);
+    SetCursorPos(x, y);
+
+    /* Flush any mouse motion prior to or associated with this warp */
+    SDL_last_warp_time = GetTickCount();
+    if (!SDL_last_warp_time) {
+        SDL_last_warp_time = 1;
+    }
+}
+
 static void
 WIN_WarpMouse(SDL_Window * window, int x, int y)
 {
@@ -251,13 +266,9 @@ WIN_WarpMouse(SDL_Window * window, int x, int y)
     pt.x = x;
     pt.y = y;
     ClientToScreen(hwnd, &pt);
-    SetCursorPos(pt.x, pt.y);
+    WIN_SetCursorPos(pt.x, pt.y);
 
-    /* Flush any pending mouse motion and simulate motion for this warp */
-    SDL_last_warp_time = GetTickCount();
-    if (!SDL_last_warp_time) {
-        SDL_last_warp_time = 1;
-    }
+    /* Send the exact mouse motion associated with this warp */
     SDL_SendMouseMotion(window, SDL_GetMouse()->mouseID, 0, x, y);
 }
 

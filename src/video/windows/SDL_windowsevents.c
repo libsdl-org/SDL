@@ -477,11 +477,6 @@ ShouldGenerateWindowCloseOnAltF4(void)
     return !SDL_GetHintBoolean(SDL_HINT_WINDOWS_NO_CLOSE_ON_ALT_F4, SDL_FALSE);
 }
 
-/* Win10 "Fall Creators Update" introduced the bug that SetCursorPos() (as used by SDL_WarpMouseInWindow())
-   doesn't reliably generate WM_MOUSEMOVE events anymore (see #3931) which breaks relative mouse mode via warping.
-   This is used to implement a workaround.. */
-static SDL_bool isWin10FCUorNewer = SDL_FALSE;
-
 /* We want to generate mouse events from mouse and pen, and touch events from touchscreens */
 #define MI_WP_SIGNATURE         0xFF515700
 #define MI_WP_SIGNATURE_MASK    0xFFFFFF00
@@ -581,7 +576,7 @@ WarpWithinBoundsRect(int x, int y, RECT *bounds)
             } else {
                 warpY = SDL_clamp(y, targetTop, targetBottom);
             }
-            SetCursorPos(warpX, warpY);
+            WIN_SetCursorPos(warpX, warpY);
         }
     }
 }
@@ -752,18 +747,6 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 if (GetMouseMessageSource() != SDL_MOUSE_EVENT_SOURCE_TOUCH &&
                     lParam != data->last_pointer_update) {
                     SDL_SendMouseMotion(data->window, 0, 0, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
-                    if (isWin10FCUorNewer && mouse->relative_mode_warp &&
-                        (data->window->flags & SDL_WINDOW_INPUT_FOCUS) != 0) {
-                        /* To work around #3931, Win10 bug introduced in Fall Creators Update, where
-                           SetCursorPos() (SDL_WarpMouseInWindow()) doesn't reliably generate mouse events anymore,
-                           after each windows mouse event generate a fake event for the middle of the window
-                           if relative_mode_warp is used */
-                        int center_x = 0, center_y = 0;
-                        SDL_GetWindowSize(data->window, &center_x, &center_y);
-                        center_x /= 2;
-                        center_y /= 2;
-                        SDL_SendMouseMotion(data->window, 0, 0, center_x, center_y);
-                    }
                 }
             }
         }
@@ -1702,8 +1685,6 @@ SDL_RegisterApp(char *name, Uint32 style, void *hInst)
     if (!RegisterClassEx(&wcex)) {
         return SDL_SetError("Couldn't register application class");
     }
-
-    isWin10FCUorNewer = IsWin10FCUorNewer();
 
     app_registered = 1;
     return 0;
