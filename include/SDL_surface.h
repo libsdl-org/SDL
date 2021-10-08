@@ -811,12 +811,12 @@ extern DECLSPEC int SDLCALL SDL_LowerBlit
      SDL_Surface * dst, SDL_Rect * dstrect);
 
 
- /**
-  * Perform a fast, low quality, stretch blit between two surfaces of the
-  * same format.
-  *
-  * Please use SDL_BlitScaled() instead.
-  */
+/**
+ * Perform a fast, low quality, stretch blit between two surfaces of the
+ * same format.
+ *
+ * Please use SDL_BlitScaled() instead.
+ */
 extern DECLSPEC int SDLCALL SDL_SoftStretch(SDL_Surface * src,
                                             const SDL_Rect * srcrect,
                                             SDL_Surface * dst,
