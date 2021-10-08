@@ -218,8 +218,11 @@ static void SDL_EVDEV_udev_callback(SDL_UDEV_deviceevent udev_event, int udev_cl
 
     switch(udev_event) {
     case SDL_UDEV_DEVICEADDED:
-        if (!(udev_class & (SDL_UDEV_DEVICE_MOUSE | SDL_UDEV_DEVICE_KEYBOARD |
-            SDL_UDEV_DEVICE_TOUCHSCREEN)))
+        if (udev_class & SDL_UDEV_DEVICE_TOUCHPAD) {
+            udev_class |= SDL_UDEV_DEVICE_TOUCHSCREEN;
+        }
+
+        if (!(udev_class & (SDL_UDEV_DEVICE_MOUSE | SDL_UDEV_DEVICE_KEYBOARD | SDL_UDEV_DEVICE_TOUCHSCREEN)))
             return;
 
         if ((udev_class & SDL_UDEV_DEVICE_JOYSTICK))
