@@ -402,14 +402,33 @@ while (readdir(DH)) {
 
         #print("$fn:\n$str\n\n");
 
-        $headerfuncs{$fn} = $str;
-        $headerdecls{$fn} = $decl;
-        $headerfuncslocation{$fn} = $dent;
-        $headerfuncschunk{$fn} = scalar(@contents);
-        $headerfuncshasdoxygen{$fn} = $has_doxygen;
+        # There might be multiple declarations of a function due to #ifdefs,
+        #  and only one of them will have documentation. If we hit an
+        #  undocumented one before, delete the placeholder line we left for
+        #  it so it doesn't accumulate a new blank line on each run.
+        my $skipfn = 0;
+        if (defined $headerfuncshasdoxygen{$fn}) {
+            if ($headerfuncshasdoxygen{$fn} == 0) {  # An undocumented declaration already exists, nuke its placeholder line.
+                delete $contents[$headerfuncschunk{$fn}];  # delete DOES NOT RENUMBER existing elements!
+            } else {  # documented function already existed?
+                $skipfn = 1;  # don't add this copy to the list of functions.
+                if ($has_doxygen) {
+                    print STDERR "WARNING: Function '$fn' appears to be documented in multiple locations. Only keeping the first one we saw!\n";
+                }
+                push @contents, join("\n", @decllines);  # just put the existing declation in as-is.
+            }
+        }
 
-        push @contents, join("\n", @templines);
-        push @contents, join("\n", @decllines);
+        if (!$skipfn) {
+            $headerfuncs{$fn} = $str;
+            $headerdecls{$fn} = $decl;
+            $headerfuncslocation{$fn} = $dent;
+            $headerfuncschunk{$fn} = scalar(@contents);
+            $headerfuncshasdoxygen{$fn} = $has_doxygen;
+            push @contents, join("\n", @templines);
+            push @contents, join("\n", @decllines);
+        }
+
     }
     close(FH);
 
