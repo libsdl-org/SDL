@@ -159,6 +159,7 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateRGBSurface
 
 
 /* !!! FIXME for 2.1: why does this ask for depth? Format provides that. */
+
 /**
  * Allocate a new RGB surface with a specific pixel format.
  *
@@ -218,6 +219,7 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateRGBSurfaceFrom(void *pixels,
                                                               Uint32 Amask);
 
 /* !!! FIXME for 2.1: why does this ask for depth? Format provides that. */
+
 /**
  * Allocate a new RGB surface with with a specific pixel format and existing
  * pixel data.
@@ -812,8 +814,8 @@ extern DECLSPEC int SDLCALL SDL_LowerBlit
 
 
 /**
- * Perform a fast, low quality, stretch blit between two surfaces of the
- * same format.
+ * Perform a fast, low quality, stretch blit between two surfaces of the same
+ * format.
  *
  * Please use SDL_BlitScaled() instead.
  */

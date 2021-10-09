@@ -253,7 +253,46 @@ typedef struct SDL_AudioCVT
  *  order that they are normally initialized by default.
  */
 /* @{ */
+
+/**
+ * Use this function to get the number of built-in audio drivers.
+ *
+ * This function returns a hardcoded number. This never returns a negative
+ * value; if there are no drivers compiled into this build of SDL, this
+ * function returns zero. The presence of a driver in this list does not mean
+ * it will function, it just means SDL is capable of interacting with that
+ * interface. For example, a build of SDL might have esound support, but if
+ * there's no esound server available, SDL's esound driver would fail if used.
+ *
+ * By default, SDL tries all drivers, in its preferred order, until one is
+ * found to be usable.
+ *
+ * \returns the number of built-in audio drivers.
+ *
+ * \since This function is available since SDL 2.0.0.
+ *
+ * \sa SDL_GetAudioDriver
+ */
 extern DECLSPEC int SDLCALL SDL_GetNumAudioDrivers(void);
+
+/**
+ * Use this function to get the name of a built in audio driver.
+ *
+ * The list of audio drivers is given in the order that they are normally
+ * initialized by default; the drivers that seem more reasonable to choose
+ * first (as far as the SDL developers believe) are earlier in the list.
+ *
+ * The names of drivers are all simple, low-ASCII identifiers, like "alsa",
+ * "coreaudio" or "xaudio2". These never have Unicode characters, and are not
+ * meant to be proper names.
+ *
+ * \param index the index of the audio driver; the value ranges from 0 to
+ *              SDL_GetNumAudioDrivers() - 1
+ * \returns the name of the audio driver at the requested index, or NULL if an
+ *          invalid index was specified.
+ *
+ * \sa SDL_GetNumAudioDrivers
+ */
 extern DECLSPEC const char *SDLCALL SDL_GetAudioDriver(int index);
 /* @} */
 
@@ -265,7 +304,32 @@ extern DECLSPEC const char *SDLCALL SDL_GetAudioDriver(int index);
  *            use.  You should normally use SDL_Init() or SDL_InitSubSystem().
  */
 /* @{ */
+
+/**
+ * Use this function to initialize a particular audio driver.
+ *
+ * This function is used internally, and should not be used unless you have a
+ * specific need to designate the audio driver you want to use. You should
+ * normally use SDL_Init() or SDL_InitSubSystem().
+ *
+ * \param driver_name the name of the desired audio driver
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \sa SDL_AudioQuit
+ */
 extern DECLSPEC int SDLCALL SDL_AudioInit(const char *driver_name);
+
+/**
+ * Use this function to shut down audio if you initialized it with
+ * SDL_AudioInit().
+ *
+ * This function is used internally, and should not be used unless you have a
+ * specific need to specify the audio driver you want to use. You should
+ * normally use SDL_Quit() or SDL_QuitSubSystem().
+ *
+ * \sa SDL_AudioInit
+ */
 extern DECLSPEC void SDLCALL SDL_AudioQuit(void);
 /* @} */
 
@@ -296,7 +360,7 @@ extern DECLSPEC const char *SDLCALL SDL_GetCurrentAudioDriver(void);
  *
  * This function is roughly equivalent to:
  *
- * ```c++
+ * ```c
  * SDL_OpenAudioDevice(NULL, 0, desired, obtained, SDL_AUDIO_ALLOW_ANY_CHANGE);
  * ```
  *
@@ -370,7 +434,7 @@ typedef Uint32 SDL_AudioDeviceID;
  * should not be called for each iteration of a loop, but rather once at the
  * start of a loop:
  *
- * ```c++
+ * ```c
  * // Don't do this:
  * for (int i = 0; i < SDL_GetNumAudioDevices(0); i++)
  *
@@ -577,7 +641,34 @@ typedef enum
     SDL_AUDIO_PLAYING,
     SDL_AUDIO_PAUSED
 } SDL_AudioStatus;
+
+/**
+ * This function is a legacy means of querying the audio device.
+ *
+ * New programs might want to use SDL_GetAudioDeviceStatus() instead. This
+ * function is equivalent to calling...
+ *
+ * ```c
+ * SDL_GetAudioDeviceStatus(1);
+ * ```
+ *
+ * ...and is only useful if you used the legacy SDL_OpenAudio() function.
+ *
+ * \returns the SDL_AudioStatus of the audio device opened by SDL_OpenAudio().
+ *
+ * \sa SDL_GetAudioDeviceStatus
+ */
 extern DECLSPEC SDL_AudioStatus SDLCALL SDL_GetAudioStatus(void);
+
+/**
+ * Use this function to get the current audio state of an audio device.
+ *
+ * \param dev the ID of an audio device previously opened with
+ *            SDL_OpenAudioDevice()
+ * \returns the SDL_AudioStatus of the specified audio device.
+ *
+ * \sa SDL_PauseAudioDevice
+ */
 extern DECLSPEC SDL_AudioStatus SDLCALL SDL_GetAudioDeviceStatus(SDL_AudioDeviceID dev);
 /* @} *//* Audio State */
 
@@ -591,7 +682,52 @@ extern DECLSPEC SDL_AudioStatus SDLCALL SDL_GetAudioDeviceStatus(SDL_AudioDevice
  *  Silence will be written to the audio device during the pause.
  */
 /* @{ */
+
+/**
+ * This function is a legacy means of pausing the audio device.
+ *
+ * New programs might want to use SDL_PauseAudioDevice() instead. This
+ * function is equivalent to calling...
+ *
+ * ```c
+ * SDL_PauseAudioDevice(1, pause_on);
+ * ```
+ *
+ * ...and is only useful if you used the legacy SDL_OpenAudio() function.
+ *
+ * \param pause_on non-zero to pause, 0 to unpause
+ *
+ * \sa SDL_GetAudioStatus
+ * \sa SDL_PauseAudioDevice
+ */
 extern DECLSPEC void SDLCALL SDL_PauseAudio(int pause_on);
+
+/**
+ * Use this function to pause and unpause audio playback on a specified
+ * device.
+ *
+ * This function pauses and unpauses the audio callback processing for a given
+ * device. Newly-opened audio devices start in the paused state, so you must
+ * call this function with **pause_on**=0 after opening the specified audio
+ * device to start playing sound. This allows you to safely initialize data
+ * for your callback function after opening the audio device. Silence will be
+ * written to the audio device while paused, and the audio callback is
+ * guaranteed to not be called. Pausing one device does not prevent other
+ * unpaused devices from running their callbacks.
+ *
+ * Pausing state does not stack; even if you pause a device several times, a
+ * single unpause will start the device playing again, and vice versa. This is
+ * different from how SDL_LockAudioDevice() works.
+ *
+ * If you just need to protect a few variables from race conditions vs your
+ * callback, you shouldn't pause the audio device, as it will lead to dropouts
+ * in the audio playback. Instead, you should use SDL_LockAudioDevice().
+ *
+ * \param dev a device opened by SDL_OpenAudioDevice()
+ * \param pause_on non-zero to pause, 0 to unpause
+ *
+ * \sa SDL_LockAudioDevice
+ */
 extern DECLSPEC void SDLCALL SDL_PauseAudioDevice(SDL_AudioDeviceID dev,
                                                   int pause_on);
 /* @} *//* Pause audio functions */
@@ -640,14 +776,14 @@ extern DECLSPEC void SDLCALL SDL_PauseAudioDevice(SDL_AudioDeviceID dev,
  *
  * Example:
  *
- * ```c++
+ * ```c
  * SDL_LoadWAV_RW(SDL_RWFromFile("sample.wav", "rb"), 1, &spec, &buf, &len);
  * ```
  *
  * Note that the SDL_LoadWAV macro does this same thing for you, but in a less
  * messy way:
  *
- * ```c++
+ * ```c
  * SDL_LoadWAV("sample.wav", &spec, &buf, &len);
  * ```
  *
@@ -907,17 +1043,18 @@ extern DECLSPEC void SDLCALL SDL_AudioStreamClear(SDL_AudioStream *stream);
 extern DECLSPEC void SDLCALL SDL_FreeAudioStream(SDL_AudioStream *stream);
 
 #define SDL_MIX_MAXVOLUME 128
+
 /**
  * This function is a legacy means of mixing audio.
  *
- * This function is equivalent to calling
+ * This function is equivalent to calling...
  *
- * ```c++
+ * ```c
  * SDL_MixAudioFormat(dst, src, format, len, volume);
  * ```
  *
- * where `format` is the obtained format of the audio device from the legacy
- * SDL_OpenAudio() function.
+ * ...where `format` is the obtained format of the audio device from the
+ * legacy SDL_OpenAudio() function.
  *
  * \param dst the destination for the mixed audio
  * \param src the source audio buffer to be mixed
@@ -1137,22 +1274,102 @@ extern DECLSPEC void SDLCALL SDL_ClearQueuedAudio(SDL_AudioDeviceID dev);
  *  function or you will cause deadlock.
  */
 /* @{ */
+
+/**
+ * This function is a legacy means of locking the audio device.
+ *
+ * New programs might want to use SDL_LockAudioDevice() instead. This function
+ * is equivalent to calling...
+ *
+ * ```c
+ * SDL_LockAudioDevice(1);
+ * ```
+ *
+ * ...and is only useful if you used the legacy SDL_OpenAudio() function.
+ *
+ * \sa SDL_LockAudioDevice
+ * \sa SDL_UnlockAudio
+ * \sa SDL_UnlockAudioDevice
+ */
 extern DECLSPEC void SDLCALL SDL_LockAudio(void);
+
+/**
+ * Use this function to lock out the audio callback function for a specified
+ * device.
+ *
+ * The lock manipulated by these functions protects the audio callback
+ * function specified in SDL_OpenAudioDevice(). During a
+ * SDL_LockAudioDevice()/SDL_UnlockAudioDevice() pair, you can be guaranteed
+ * that the callback function for that device is not running, even if the
+ * device is not paused. While a device is locked, any other unpaused,
+ * unlocked devices may still run their callbacks.
+ *
+ * Calling this function from inside your audio callback is unnecessary. SDL
+ * obtains this lock before calling your function, and releases it when the
+ * function returns.
+ *
+ * You should not hold the lock longer than absolutely necessary. If you hold
+ * it too long, you'll experience dropouts in your audio playback. Ideally,
+ * your application locks the device, sets a few variables and unlocks again.
+ * Do not do heavy work while holding the lock for a device.
+ *
+ * It is safe to lock the audio device multiple times, as long as you unlock
+ * it an equivalent number of times. The callback will not run until the
+ * device has been unlocked completely in this way. If your application fails
+ * to unlock the device appropriately, your callback will never run, you might
+ * hear repeating bursts of audio, and SDL_CloseAudioDevice() will probably
+ * deadlock.
+ *
+ * Internally, the audio device lock is a mutex; if you lock from two threads
+ * at once, not only will you block the audio callback, you'll block the other
+ * thread.
+ *
+ * \param dev the ID of the device to be locked
+ *
+ * \sa SDL_UnlockAudioDevice
+ */
 extern DECLSPEC void SDLCALL SDL_LockAudioDevice(SDL_AudioDeviceID dev);
+
+/**
+ * This function is a legacy means of unlocking the audio device.
+ *
+ * New programs might want to use SDL_UnlockAudioDevice() instead. This
+ * function is equivalent to calling...
+ *
+ * ```c
+ * SDL_UnlockAudioDevice(1);
+ * ```
+ *
+ * ...and is only useful if you used the legacy SDL_OpenAudio() function.
+ *
+ * \sa SDL_LockAudio
+ * \sa SDL_UnlockAudioDevice
+ */
 extern DECLSPEC void SDLCALL SDL_UnlockAudio(void);
+
+/**
+ * Use this function to unlock the audio callback function for a specified
+ * device.
+ *
+ * This function should be paired with a previous SDL_LockAudioDevice() call.
+ *
+ * \param dev the ID of the device to be unlocked
+ *
+ * \sa SDL_LockAudioDevice
+ */
 extern DECLSPEC void SDLCALL SDL_UnlockAudioDevice(SDL_AudioDeviceID dev);
 /* @} *//* Audio lock functions */
 
 /**
  * This function is a legacy means of closing the audio device.
  *
- * This function is equivalent to calling
+ * This function is equivalent to calling...
  *
- * ```c++
+ * ```c
  * SDL_CloseAudioDevice(1);
  * ```
  *
- * and is only useful if you used the legacy SDL_OpenAudio() function.
+ * ...and is only useful if you used the legacy SDL_OpenAudio() function.
  *
  * \sa SDL_OpenAudio
  */

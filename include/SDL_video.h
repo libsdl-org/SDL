@@ -1046,6 +1046,7 @@ extern DECLSPEC void SDLCALL SDL_SetWindowResizable(SDL_Window * window,
  */
 extern DECLSPEC void SDLCALL SDL_SetWindowAlwaysOnTop(SDL_Window * window,
                                                       SDL_bool on_top);
+
 /**
  * Show a window.
  *
