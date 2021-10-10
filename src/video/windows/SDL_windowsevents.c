@@ -795,8 +795,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             /* Mouse data (ignoring synthetic mouse events generated for touchscreens) */
             if (inp.header.dwType == RIM_TYPEMOUSE) {
                 SDL_MouseID mouseID;
-                if (SDL_GetNumTouchDevices() > 0 &&
-                    (GetMouseMessageSource() == SDL_MOUSE_EVENT_SOURCE_TOUCH || (GetMessageExtraInfo() & 0x82) == 0x82)) {
+                if (SDL_GetNumTouchDevices() > 0 && GetMouseMessageSource() == SDL_MOUSE_EVENT_SOURCE_TOUCH) {
                     break;
                 }
                 mouseID = (SDL_MouseID)(uintptr_t)inp.header.hDevice;
@@ -808,35 +807,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     RAWMOUSE* rawmouse = &inp.data.mouse;
 
                     if ((rawmouse->usFlags & 0x01) == MOUSE_MOVE_RELATIVE) {
-                        POINT pt;
-
                         SDL_SendMouseMotion(data->window, mouseID, 1, (int)rawmouse->lLastX, (int)rawmouse->lLastY);
-
-                        /* Make sure that the mouse doesn't hover over notifications and so forth */
-                        if (GetCursorPos(&pt)) {
-                            int x = pt.x;
-                            int y = pt.y;
-                            RECT screenRect;
-                            RECT hwndRect;
-                            RECT boundsRect;
-
-                            /* Calculate screen rect */
-                            GetDisplayBoundsForPoint(x, y, &screenRect);
-
-                            /* Calculate client rect */
-                            GetClientRect(hwnd, &hwndRect);
-                            ClientToScreen(hwnd, (LPPOINT) & hwndRect);
-                            ClientToScreen(hwnd, (LPPOINT) & hwndRect + 1);
-
-                            /* Calculate bounds rect */
-                            IntersectRect(&boundsRect, &screenRect, &hwndRect);
-                            InflateRect(&boundsRect, -SAFE_AREA_X, -SAFE_AREA_Y);
-
-                            if (!data->in_title_click && !data->focus_click_pending) {
-                                WarpWithinBoundsRect(x, y, &boundsRect);
-                            }
-                        }
-
                     } else if (rawmouse->lLastX || rawmouse->lLastY) {
                         /* This is absolute motion, either using a tablet or mouse over RDP
 
