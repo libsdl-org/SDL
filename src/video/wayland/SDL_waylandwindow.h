@@ -74,6 +74,7 @@ typedef struct {
     int floating_width, floating_height;
 
     SDL_atomic_t swap_interval_ready;
+    SDL_atomic_t pending_egl_resize;
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
     struct qt_extended_surface *extended_surface;

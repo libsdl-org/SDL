@@ -172,6 +172,15 @@ Wayland_GLES_SwapWindow(_THIS, SDL_Window *window)
         return SDL_EGL_SetError("unable to show color buffer in an OS-native window", "eglSwapBuffers");
     }
 
+    /* Resize the egl window if required. */
+    if (SDL_AtomicGet(&data->pending_egl_resize)) {
+        WAYLAND_wl_egl_window_resize(data->egl_window,
+                                        window->w * data->scale_factor,
+                                        window->h * data->scale_factor,
+                                        0, 0);
+        SDL_AtomicSet(&data->pending_egl_resize, 0);
+    }
+
     WAYLAND_wl_display_flush( data->waylandData->display );
 
     return 0;

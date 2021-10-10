@@ -1310,10 +1310,7 @@ Wayland_HandleResize(SDL_Window *window, int width, int height, float scale)
     wl_surface_set_buffer_scale(data->surface, data->scale_factor);
 
     if (data->egl_window) {
-        WAYLAND_wl_egl_window_resize(data->egl_window,
-                                        window->w * data->scale_factor,
-                                        window->h * data->scale_factor,
-                                        0, 0);
+        SDL_AtomicSet(&data->pending_egl_resize, 1);
     }
 
     region = wl_compositor_create_region(data->waylandData->compositor);
