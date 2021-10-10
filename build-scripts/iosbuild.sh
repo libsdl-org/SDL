@@ -20,6 +20,7 @@ fi
 
 BUILD_I386_IOSSIM=YES
 BUILD_X86_64_IOSSIM=YES
+BUILD_ARM64_IOSSIM=YES
 
 BUILD_IOS_ARMV7=YES
 BUILD_IOS_ARMV7S=YES
@@ -55,6 +56,7 @@ echo "PREFIX ..................... ${PREFIX}"
 echo "BUILD_MACOSX_X86_64 ........ ${BUILD_MACOSX_X86_64}"
 echo "BUILD_I386_IOSSIM .......... ${BUILD_I386_IOSSIM}"
 echo "BUILD_X86_64_IOSSIM ........ ${BUILD_X86_64_IOSSIM}"
+echo "BUILD_ARM64_IOSSIM ......... ${BUILD_ARM64_IOSSIM}"
 echo "BUILD_IOS_ARMV7 ............ ${BUILD_IOS_ARMV7}"
 echo "BUILD_IOS_ARMV7S ........... ${BUILD_IOS_ARMV7S}"
 echo "BUILD_IOS_ARM64 ............ ${BUILD_IOS_ARM64}"
@@ -107,6 +109,24 @@ then
         cd ${PREFIX}
         make clean
         ../configure --build=x86_64-apple-${DARWIN} --host=x86_64-ios-${DARWIN} --disable-shared --prefix=${PREFIX}/platform/x86_64-sim "CC=${CC}" "CFLAGS=${CFLAGS} -mios-simulator-version-min=${MIN_SDK_VERSION} -arch x86_64 -isysroot ${IPHONESIMULATOR_SYSROOT}" "CXX=${CXX}" "CXXFLAGS=${CXXFLAGS} -mios-simulator-version-min=${MIN_SDK_VERSION} -arch x86_64 -isysroot ${IPHONESIMULATOR_SYSROOT}" LDFLAGS="-arch x86_64 -mios-simulator-version-min=${MIN_SDK_VERSION} ${LDFLAGS} -L${IPHONESIMULATOR_SYSROOT}/usr/lib/ -L${IPHONESIMULATOR_SYSROOT}/usr/lib/system" || exit 2
+        cp $SRC_DIR/include/SDL_config_iphoneos.h include/SDL_config.h
+        make -j$NJOB || exit 3
+        make install
+    ) || exit $?
+fi
+
+echo "$(tput setaf 2)"
+echo "#############################"
+echo "# arm64 for iPhone Simulator"
+echo "#############################"
+echo "$(tput sgr0)"
+
+if [ "${BUILD_ARM64_IOSSIM}" == "YES" ]
+then
+    (
+        cd ${PREFIX}
+        make clean
+        ../configure --build=x86_64-apple-${DARWIN} --host=arm-ios-${DARWIN} --disable-shared --prefix=${PREFIX}/platform/arm64-sim "CC=${CC}" "CFLAGS=${CFLAGS} -mios-simulator-version-min=${MIN_SDK_VERSION} -arch arm64 -isysroot ${IPHONESIMULATOR_SYSROOT}" "CXX=${CXX}" "CXXFLAGS=${CXXFLAGS} -mios-simulator-version-min=${MIN_SDK_VERSION} -arch arm64 -isysroot ${IPHONESIMULATOR_SYSROOT}" LDFLAGS="-arch arm64 -mios-simulator-version-min=${MIN_SDK_VERSION} ${LDFLAGS} -L${IPHONESIMULATOR_SYSROOT}/usr/lib/ -L${IPHONESIMULATOR_SYSROOT}/usr/lib/system" || exit 2
         cp $SRC_DIR/include/SDL_config_iphoneos.h include/SDL_config.h
         make -j$NJOB || exit 3
         make install
