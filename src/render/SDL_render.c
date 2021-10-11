@@ -63,7 +63,7 @@ this should probably be removed at some point in the future.  --ryan. */
 #define CHECK_TRANSFORM(renderer) \
     if ((renderer->info.flags & SDL_RENDERER_TRANSFORM) == 0) { \
         return SDL_SetError("Renderer doesn't support transform"); \
-    } 
+    }
 
 /* Predefined blend modes */
 #define SDL_COMPOSE_BLENDMODE(srcColorFactor, dstColorFactor, colorOperation, \
@@ -1972,26 +1972,48 @@ static void MatrixIdentity(SDL_FMatrix *result)
 static void MatrixRotate(SDL_FMatrix *result, const double angle)
 {
     double radangle;
+    double c, s;
 
     radangle = angle * (M_PI / 180.0);
 
+    c = SDL_cos(radangle);
+    s = SDL_sin(radangle);
+
     MatrixIdentity(result);
-    result->m[0][0] = SDL_cos(radangle);   result->m[0][1] = -SDL_sin(radangle);
-    result->m[1][0] = SDL_sin(radangle);   result->m[1][1] = SDL_cos(radangle);     
+    result->m[0][0] = c;    result->m[0][1] = -s;
+    result->m[1][0] = s;    result->m[1][1] = c;
 }
+
+
+static void MatrixRotateAxis(SDL_FMatrix *r, const double angle, float x, float y, float z)
+{
+    double radangle;
+    double c, s;
+    radangle = angle * (M_PI / 180.0);
+
+    c = SDL_cos(radangle);
+    s = SDL_sin(radangle);
+    /* (x, y, z) should be normalized */
+    MatrixIdentity(r);
+    r->m[0][0] = x * x * (1.0 - c) + c;         r->m[0][1] = x * y * (1.0 - c) - z * s;     r->m[0][2] = x * z * (1.0 - c) + y * s;
+    r->m[1][0] = y * x * (1.0 - c) + z * s;     r->m[1][1] = y * y * (1.0 - c) + c;         r->m[1][2] = y * z * (1.0 - c) - x * s;
+    r->m[2][0] = z * x * (1.0 - c) - y * s;     r->m[2][1] = z * y * (1.0 - c) + x * s;     r->m[2][2] = z * z * (1.0 - c) + c;
+}
+
+
 
 static void MatrixTranslate(SDL_FMatrix *result, int offsetx, int offsety)
 {
     MatrixIdentity(result);
     result->m[0][3] = offsetx;
-    result->m[1][3] = offsety;     
+    result->m[1][3] = offsety;
 }
 
 static void MatrixScale(SDL_FMatrix *result,  float scalex, float scaley)
 {
     MatrixIdentity(result);
     result->m[0][0] = scalex;
-    result->m[1][1] = scaley;     
+    result->m[1][1] = scaley;
 }
 
 int
@@ -2003,7 +2025,7 @@ SDL_RenderPushTransformRotation(SDL_Renderer * renderer, const double angle, con
 
     SDL_Point real_center;
     SDL_Rect viewport;
-    
+
     CHECK_RENDERER_MAGIC(renderer, -1);
     CHECK_TRANSFORM(renderer);
 
@@ -2021,6 +2043,59 @@ SDL_RenderPushTransformRotation(SDL_Renderer * renderer, const double angle, con
     MatrixMultiply(&m2, &m, &m1);
 
     return renderer->PushTransformMatrix(renderer, &m2);
+}
+
+int
+SDL_RenderPushTransformRotationAxis(SDL_Renderer *renderer, const double angle, const SDL_Point *center, float x, float y, float z)
+{
+    SDL_FMatrix m;
+    SDL_FMatrix m1;
+    SDL_FMatrix m2;
+
+    SDL_Point real_center;
+    SDL_Rect viewport;
+
+    CHECK_RENDERER_MAGIC(renderer, -1);
+    CHECK_TRANSFORM(renderer);
+
+    if (center) {
+         real_center = *center;
+    } else {
+        SDL_RenderGetViewport(renderer, &viewport);
+        real_center.x = viewport.w/2;
+        real_center.y = viewport.h/2;
+    }
+    MatrixTranslate(&m1, -real_center.x, -real_center.y);
+    MatrixRotateAxis(&m2, angle, x, y, z);
+    MatrixMultiply(&m, &m1, &m2);
+    MatrixTranslate(&m1, real_center.x, real_center.y);
+    MatrixMultiply(&m2, &m, &m1);
+
+    return renderer->PushTransformMatrix(renderer, &m2);
+}
+
+
+int
+SDL_RenderPushProjection(SDL_Renderer *renderer, float angleOfView, float near, float far)
+{
+    SDL_FMatrix m;
+    float scale;
+
+    CHECK_RENDERER_MAGIC(renderer, -1);
+    CHECK_TRANSFORM(renderer);
+
+    MatrixIdentity(&m);
+
+    /* basic projection matrix */
+    scale = 1 / SDL_tan(angleOfView * 0.5 * M_PI / 180);
+    m.m[0][0] = scale; // scale the x coordinates of the projected point
+    m.m[1][1] = scale; // scale the y coordinates of the projected point
+    m.m[2][2] = -far / (far - near); // used to remap z to [0,1]
+    m.m[3][2] = -far * near / (far - near); // used to remap z [0,1]
+    m.m[2][3] = -1; // set w = -z
+    m.m[3][3] = 0;
+
+    return renderer->PushProjectionMatrix(renderer, &m);
 }
 
 int
@@ -2057,6 +2132,16 @@ SDL_RenderPopTransform(SDL_Renderer * renderer)
 
     return renderer->PopTransformMatrix(renderer);
 }
+
+int
+SDL_RenderPopProjection(SDL_Renderer * renderer)
+{
+    CHECK_RENDERER_MAGIC(renderer, -1);
+    CHECK_TRANSFORM(renderer);
+
+    return renderer->PopProjectionMatrix(renderer);
+}
+
 
 
 int

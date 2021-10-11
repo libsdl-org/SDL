@@ -467,7 +467,7 @@ D3D_UpdateTextureRep(IDirect3DDevice9 *device, D3D_TextureRep *texture, int x, i
     d3drect.right = x + w;
     d3drect.top = y;
     d3drect.bottom = y + h;
-    
+
     result = IDirect3DTexture9_LockRect(texture->staging, 0, &locked, &d3drect, 0);
     if (FAILED(result)) {
         return D3D_SetError("LockRect()", result);
@@ -1539,7 +1539,7 @@ D3D_PushTransformMatrix(SDL_Renderer * renderer, const SDL_FMatrix *matrix)
     result = ID3DXMatrixStack_MultMatrix(data->matrixStack,&d3d_matrix);
     if (FAILED(result)) {
         return D3D_SetError("ID3DXMatrixStack::MultMatrix()", result);
-    }    
+    }
 
     result = IDirect3DDevice9_SetTransform(data->device, D3DTS_VIEW, ID3DXMatrixStack_GetTop(data->matrixStack));
     if (FAILED(result)) {

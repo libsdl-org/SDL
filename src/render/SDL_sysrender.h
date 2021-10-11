@@ -164,7 +164,9 @@ struct SDL_Renderer
     int (*RenderReadPixels) (SDL_Renderer * renderer, const SDL_Rect * rect,
                              Uint32 format, void * pixels, int pitch);
     int (*PushTransformMatrix)(SDL_Renderer * renderer, const SDL_FMatrix *matrix);
+    int (*PushProjectionMatrix)(SDL_Renderer * renderer, const SDL_FMatrix *matrix);
     int (*PopTransformMatrix)(SDL_Renderer * renderer);
+    int (*PopProjectionMatrix)(SDL_Renderer * renderer);
     void (*RenderPresent) (SDL_Renderer * renderer);
     void (*DestroyTexture) (SDL_Renderer * renderer, SDL_Texture * texture);
 

@@ -893,3 +893,6 @@ SDL_DYNAPI_PROC(int,SDL_RenderPushTransformRotation,(SDL_Renderer *a, const doub
 SDL_DYNAPI_PROC(int,SDL_RenderPushTransformTranslation,(SDL_Renderer *a, int b, int c),(a,b,c),return)
 SDL_DYNAPI_PROC(int,SDL_RenderPushTransformScale,(SDL_Renderer *a, float b, float c),(a,b,c),return)
 SDL_DYNAPI_PROC(int,SDL_RenderPopTransform,(SDL_Renderer *a),(a),return)
+SDL_DYNAPI_PROC(int,SDL_RenderPushTransformRotationAxis,(SDL_Renderer *a, const double b, const SDL_Point *c, float d, float e, float f),(a,b,c,d,e,f),return)
+SDL_DYNAPI_PROC(int,SDL_RenderPushProjection,(SDL_Renderer *a, float b, float c, float d),(a,b,c,d),return)
+SDL_DYNAPI_PROC(int,SDL_RenderPopProjection,(SDL_Renderer *a),(a),return)

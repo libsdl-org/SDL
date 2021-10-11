@@ -1525,6 +1525,34 @@ GL_PushTransformMatrix(SDL_Renderer * renderer, const SDL_FMatrix *matrix)
 }
 
 static int
+GL_PushProjectionMatrix(SDL_Renderer * renderer, const SDL_FMatrix *matrix)
+{
+    GL_RenderData *data = (GL_RenderData *) renderer->driverdata;
+    GLfloat gl_matrix[16];
+    GLfloat gl_topmatrix[16];
+    int i,j;
+
+    GL_ActivateRenderer(renderer);
+
+    for(i=0;i<4;++i) {
+        for(j=0;j<4;++j) {
+            gl_matrix[i+j*4]=matrix->m[i][j];
+        }
+    }
+    data->glMatrixMode(GL_PROJECTION);
+    data->glPushMatrix();
+    data->glGetFloatv(GL_PROJECTION_MATRIX,gl_topmatrix);
+    data->glLoadIdentity();
+    data->glMultMatrixf(gl_matrix);
+    data->glMultMatrixf(gl_topmatrix);
+
+    data->glMatrixMode(GL_MODELVIEW);
+    return 0;
+}
+
+
+
+static int
 GL_PopTransformMatrix(SDL_Renderer * renderer)
 {
     GL_RenderData *data = (GL_RenderData *) renderer->driverdata;
@@ -1535,6 +1563,22 @@ GL_PopTransformMatrix(SDL_Renderer * renderer)
     data->glPopMatrix();
     return 0;
 }
+
+static int
+GL_PopProjectionMatrix(SDL_Renderer * renderer)
+{
+    GL_RenderData *data = (GL_RenderData *) renderer->driverdata;
+
+    GL_ActivateRenderer(renderer);
+
+    data->glMatrixMode(GL_PROJECTION);
+    data->glPopMatrix();
+
+    data->glMatrixMode(GL_MODELVIEW);
+
+    return 0;
+}
+
 
 static int
 GL_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
@@ -1844,7 +1888,9 @@ GL_CreateRenderer(SDL_Window * window, Uint32 flags)
 #endif
     renderer->RunCommandQueue = GL_RunCommandQueue;
     renderer->PushTransformMatrix = GL_PushTransformMatrix;
+    renderer->PushProjectionMatrix = GL_PushProjectionMatrix;
     renderer->PopTransformMatrix = GL_PopTransformMatrix;
+    renderer->PopProjectionMatrix = GL_PopProjectionMatrix;
     renderer->RenderReadPixels = GL_RenderReadPixels;
     renderer->RenderPresent = GL_RenderPresent;
     renderer->DestroyTexture = GL_DestroyTexture;

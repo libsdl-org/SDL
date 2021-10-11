@@ -1328,8 +1328,19 @@ extern DECLSPEC int SDLCALL SDL_RenderCopyEx(SDL_Renderer * renderer,
  *  \return 0 on success, or -1 on error
  */
 extern DECLSPEC int SDLCALL SDL_RenderPushTransformRotation(SDL_Renderer * renderer,
-															const double angle,
+                                                            const double angle,
                                                             const SDL_Point *center);
+
+extern DECLSPEC int SDLCALL SDL_RenderPushTransformRotationAxis(SDL_Renderer * renderer,
+                                                            const double angle,
+                                                            const SDL_Point *center,
+                                                            float x, float y, float z);
+
+extern DECLSPEC int SDLCALL SDL_RenderPushProjection(SDL_Renderer *renderer,
+                                                            float angleOfView,
+                                                            float near,
+                                                            float far);
+
 
 /**
  *  \brief push a rotation to the transform stack
@@ -1349,7 +1360,7 @@ extern DECLSPEC int SDLCALL SDL_RenderPushTransformRotation(SDL_Renderer * rende
  *  \return 0 on success, or -1 on error
  */
 extern DECLSPEC int SDLCALL SDL_RenderPushTransformTranslation(SDL_Renderer * renderer,
-															   int offsetx, int offsety);
+                                                               int offsetx, int offsety);
 
 /**
  *  \brief push a rotation to the transform stack
@@ -1369,7 +1380,7 @@ extern DECLSPEC int SDLCALL SDL_RenderPushTransformTranslation(SDL_Renderer * re
  *  \return 0 on success, or -1 on error
  */
 extern DECLSPEC int SDLCALL SDL_RenderPushTransformScale(SDL_Renderer * renderer,
-												         float scalex, float scaley);
+                                                         float scalex, float scaley);
 
 /**
  *  \brief push a rotation to the transform stack
@@ -1387,6 +1398,7 @@ extern DECLSPEC int SDLCALL SDL_RenderPushTransformScale(SDL_Renderer * renderer
  *  \return 0 on success, or -1 on error
  */
 extern DECLSPEC int SDLCALL SDL_RenderPopTransform(SDL_Renderer * renderer);
+extern DECLSPEC int SDLCALL SDL_RenderPopProjection(SDL_Renderer * renderer);
 
 
 
