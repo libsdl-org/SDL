@@ -123,9 +123,6 @@ typedef void (__cdecl * pfnSDL_CurrentEndThread) (unsigned code);
 #define SDL_endthread _endthreadex
 #endif
 
-/**
- *  Create a thread.
- */
 extern DECLSPEC SDL_Thread *SDLCALL
 SDL_CreateThread(SDL_ThreadFunction fn, const char *name, void *data,
                  pfnSDL_CurrentBeginThread pfnBeginThread,
@@ -138,9 +135,6 @@ SDL_CreateThreadWithStackSize(int (SDLCALL * fn) (void *),
                  pfnSDL_CurrentEndThread pfnEndThread);
 
 
-/**
- *  Create a thread.
- */
 #if defined(SDL_CreateThread) && SDL_DYNAMIC_API
 #undef SDL_CreateThread
 #define SDL_CreateThread(fn, name, data) SDL_CreateThread_REAL(fn, name, data, (pfnSDL_CurrentBeginThread)SDL_beginthread, (pfnSDL_CurrentEndThread)SDL_endthread)
