@@ -1331,16 +1331,23 @@ extern DECLSPEC int SDLCALL SDL_RenderPushTransformRotation(SDL_Renderer * rende
                                                             const double angle,
                                                             const SDL_Point *center);
 
+/**
+ * Rotation around the axis defined by the vector (x, y, z) and point center
+ *
+ * (x,y,z) must be normalized
+ *
+ */
 extern DECLSPEC int SDLCALL SDL_RenderPushTransformRotationAxis(SDL_Renderer * renderer,
                                                             const double angle,
                                                             const SDL_Point *center,
                                                             float x, float y, float z);
-
+/* Push a simple projection matrix
+ * Should be popped with SDL_RenderPopProjection
+ */
 extern DECLSPEC int SDLCALL SDL_RenderPushProjection(SDL_Renderer *renderer,
                                                             float angleOfView,
                                                             float near,
                                                             float far);
-
 
 /**
  *  \brief push a rotation to the transform stack
