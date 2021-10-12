@@ -285,6 +285,8 @@ WIN_WarpMouse(SDL_Window * window, int x, int y)
     /* FIXME: Without per-monitor DPI awareness, rounding errors can occur, even at 100% scaling. */
     SDL_zero(input);
     input.type = INPUT_MOUSE;
+
+    /* TODO: Cache these system metrics */
     input.mi.dx = ScaleScreenCoord(pt.x - GetSystemMetrics(SM_XVIRTUALSCREEN), 65535, GetSystemMetrics(SM_CXVIRTUALSCREEN));
     input.mi.dy = ScaleScreenCoord(pt.y - GetSystemMetrics(SM_YVIRTUALSCREEN), 65535, GetSystemMetrics(SM_CYVIRTUALSCREEN));
     input.mi.dwFlags = MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_VIRTUALDESK | MOUSEEVENTF_MOVE_NOCOALESCE;
@@ -311,18 +313,7 @@ WIN_SetRelativeMouseMode(SDL_bool enabled)
 static int
 WIN_CaptureMouse(SDL_Window *window)
 {
-    if (!window) {
-        SDL_Window *focusWin = SDL_GetKeyboardFocus();
-        if (focusWin) {
-            WIN_OnWindowEnter(SDL_GetVideoDevice(), focusWin);  /* make sure WM_MOUSELEAVE messages are (re)enabled. */
-        }
-    }
-
-    /* While we were thinking of SetCapture() when designing this API in SDL,
-       we didn't count on the fact that SetCapture() only tracks while the
-       left mouse button is held down! Instead, we listen for raw mouse input
-       and manually query the mouse when it leaves the window. :/ */
-    return ToggleRawInput(window != NULL);
+    return 0;
 }
 
 static Uint32
