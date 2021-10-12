@@ -282,6 +282,7 @@ WIN_WarpMouse(SDL_Window * window, int x, int y)
     pt.y = y;
     ClientToScreen(data->hwnd, &pt);
 
+    /* TODO: Add fallback for pre-vista */
     /* FIXME: Without per-monitor DPI awareness, rounding errors can occur, even at 100% scaling. */
     SDL_zero(input);
     input.type = INPUT_MOUSE;

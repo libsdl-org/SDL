@@ -791,10 +791,9 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             HRAWINPUT hRawInput = (HRAWINPUT)lParam;
             RAWINPUT inp;
             UINT size = sizeof(inp);
-            const SDL_bool isRelative = mouse->relative_mode || mouse->relative_mode_warp;
 
             /* Relative mouse motion is delivered to the window with keyboard focus */
-            if (!isRelative || data->window != SDL_GetKeyboardFocus()) {
+            if (!mouse->relative_mode || mouse->relative_mode_warp || data->window != SDL_GetKeyboardFocus()) {
                 break;
             }
 
@@ -807,91 +806,88 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     break;
                 }
                 mouseID = (SDL_MouseID)(uintptr_t)inp.header.hDevice;
-                if (isRelative) {
-                    /* FIXME: Add a hint to control this? */
-                    const int SAFE_AREA_X = 64;
-                    const int SAFE_AREA_Y = 256;
+                /* FIXME: Add a hint to control this? */
+                const int SAFE_AREA_X = 64;
+                const int SAFE_AREA_Y = 256;
 
-                    RAWMOUSE* rawmouse = &inp.data.mouse;
+                RAWMOUSE* rawmouse = &inp.data.mouse;
 
-                    if ((rawmouse->usFlags & 0x01) == MOUSE_MOVE_RELATIVE) {
-                        SDL_SendMouseMotion(data->window, mouseID, 1, (int)rawmouse->lLastX, (int)rawmouse->lLastY);
-                    } else if (rawmouse->lLastX || rawmouse->lLastY) {
-                        /* This is absolute motion, either using a tablet or mouse over RDP
+                if ((rawmouse->usFlags & 0x01) == MOUSE_MOVE_RELATIVE) {
+                    SDL_SendMouseMotion(data->window, mouseID, 1, (int)rawmouse->lLastX, (int)rawmouse->lLastY);
+                } else if (rawmouse->lLastX || rawmouse->lLastY) {
+                    /* This is absolute motion, either using a tablet or mouse over RDP
 
-                           Notes on how RDP appears to work, as of Windows 10 2004:
-                            - SetCursorPos() calls are cached, with multiple calls coalesced into a single call that's sent to the RDP client. If the last call to SetCursorPos() has the same value as the last one that was sent to the client, it appears to be ignored and not sent. This means that we need to jitter the SetCursorPos() position slightly in order for the recentering to work correctly.
-                            - User mouse motion is coalesced with SetCursorPos(), so the WM_INPUT positions we see will not necessarily match the positon we requested with SetCursorPos().
-                            - SetCursorPos() outside of the bounds of the focus window appears not to do anything.
-                            - SetCursorPos() while the cursor is NULL doesn't do anything
+                        Notes on how RDP appears to work, as of Windows 10 2004:
+                        - SetCursorPos() calls are cached, with multiple calls coalesced into a single call that's sent to the RDP client. If the last call to SetCursorPos() has the same value as the last one that was sent to the client, it appears to be ignored and not sent. This means that we need to jitter the SetCursorPos() position slightly in order for the recentering to work correctly.
+                        - User mouse motion is coalesced with SetCursorPos(), so the WM_INPUT positions we see will not necessarily match the positon we requested with SetCursorPos().
+                        - SetCursorPos() outside of the bounds of the focus window appears not to do anything.
+                        - SetCursorPos() while the cursor is NULL doesn't do anything
 
-                           We handle this by creating a safe area within the application window, and when the mouse leaves that safe area, we warp back to the opposite side. Any single motion > 50% of the safe area is assumed to be a warp and ignored.
-                        */
-                        SDL_bool remote_desktop = GetSystemMetrics(SM_REMOTESESSION) ? SDL_TRUE : SDL_FALSE;
-                        SDL_bool virtual_desktop = (rawmouse->usFlags & MOUSE_VIRTUAL_DESKTOP) ? SDL_TRUE : SDL_FALSE;
-                        SDL_bool normalized_coordinates = ((rawmouse->usFlags & 0x40) == 0) ? SDL_TRUE : SDL_FALSE;
-                        int w = GetSystemMetrics(virtual_desktop ? SM_CXVIRTUALSCREEN : SM_CXSCREEN);
-                        int h = GetSystemMetrics(virtual_desktop ? SM_CYVIRTUALSCREEN : SM_CYSCREEN);
-                        int x = normalized_coordinates ? (int)(((float)rawmouse->lLastX / 65535.0f) * w) : (int)rawmouse->lLastX;
-                        int y = normalized_coordinates ? (int)(((float)rawmouse->lLastY / 65535.0f) * h) : (int)rawmouse->lLastY;
-                        int relX, relY;
+                        We handle this by creating a safe area within the application window, and when the mouse leaves that safe area, we warp back to the opposite side. Any single motion > 50% of the safe area is assumed to be a warp and ignored.
+                    */
+                    SDL_bool remote_desktop = GetSystemMetrics(SM_REMOTESESSION) ? SDL_TRUE : SDL_FALSE;
 
-                        /* Calculate relative motion */
-                        if (data->last_raw_mouse_position.x == 0 && data->last_raw_mouse_position.y == 0) {
-                            data->last_raw_mouse_position.x = x;
-                            data->last_raw_mouse_position.y = y;
-                        }
-                        relX = (int)(x - data->last_raw_mouse_position.x);
-                        relY = (int)(y - data->last_raw_mouse_position.y);
+                    /* TODO: Shouldn this also offset SM_[X/Y]VIRTUALSCREEN? */
+                    SDL_bool virtual_desktop = (rawmouse->usFlags & MOUSE_VIRTUAL_DESKTOP) ? SDL_TRUE : SDL_FALSE;
+                    SDL_bool normalized_coordinates = ((rawmouse->usFlags & 0x40) == 0) ? SDL_TRUE : SDL_FALSE;
+                    int w = GetSystemMetrics(virtual_desktop ? SM_CXVIRTUALSCREEN : SM_CXSCREEN);
+                    int h = GetSystemMetrics(virtual_desktop ? SM_CYVIRTUALSCREEN : SM_CYSCREEN);
+                    int x = normalized_coordinates ? (int)(((float)rawmouse->lLastX / 65535.0f) * w) : (int)rawmouse->lLastX;
+                    int y = normalized_coordinates ? (int)(((float)rawmouse->lLastY / 65535.0f) * h) : (int)rawmouse->lLastY;
+                    int relX, relY;
 
-                        if (remote_desktop) {
-                            RECT screenRect;
-                            RECT hwndRect;
-                            RECT boundsRect;
-                            int boundsWidth, boundsHeight;
-
-                            /* Calculate screen rect */
-                            GetDisplayBoundsForPoint(x, y, &screenRect);
-
-                            /* Calculate client rect */
-                            GetClientRect(hwnd, &hwndRect);
-                            ClientToScreen(hwnd, (LPPOINT) & hwndRect);
-                            ClientToScreen(hwnd, (LPPOINT) & hwndRect + 1);
-
-                            /* Calculate bounds rect */
-                            IntersectRect(&boundsRect, &screenRect, &hwndRect);
-                            InflateRect(&boundsRect, -SAFE_AREA_X, -SAFE_AREA_Y);
-                            boundsWidth = (boundsRect.right - boundsRect.left) + 1;
-                            boundsHeight = (boundsRect.bottom - boundsRect.top) + 1;
-
-                            if ((boundsWidth > 0 && SDL_abs(relX) > (boundsWidth / 2)) ||
-                                (boundsHeight > 0 && SDL_abs(relY) > (boundsHeight / 2))) {
-                                /* Expected motion for warping below, ignore this */
-                            } else {
-                                SDL_SendMouseMotion(data->window, mouseID, 1, relX, relY);
-
-                                if (!data->in_title_click && !data->focus_click_pending) {
-                                    WarpWithinBoundsRect(x, y, &boundsRect);
-                                }
-                            }
-                        } else {
-                            const int MAXIMUM_TABLET_RELATIVE_MOTION = 32;
-                            if (SDL_abs(relX) > MAXIMUM_TABLET_RELATIVE_MOTION ||
-                                SDL_abs(relY) > MAXIMUM_TABLET_RELATIVE_MOTION) {
-                                /* Ignore this motion, probably a pen lift and drop */
-                            } else {
-                                SDL_SendMouseMotion(data->window, mouseID, 1, relX, relY);
-                            }
-                        }
-
+                    /* Calculate relative motion */
+                    if (data->last_raw_mouse_position.x == 0 && data->last_raw_mouse_position.y == 0) {
                         data->last_raw_mouse_position.x = x;
                         data->last_raw_mouse_position.y = y;
                     }
-                    WIN_CheckRawMouseButtons(rawmouse->usButtonFlags, data, mouseID);
+                    relX = (int)(x - data->last_raw_mouse_position.x);
+                    relY = (int)(y - data->last_raw_mouse_position.y);
 
-                } else {
-                    SDL_assert(0 && "Shouldn't happen");
+                    if (remote_desktop) {
+                        RECT screenRect;
+                        RECT hwndRect;
+                        RECT boundsRect;
+                        int boundsWidth, boundsHeight;
+
+                        /* Calculate screen rect */
+                        GetDisplayBoundsForPoint(x, y, &screenRect);
+
+                        /* Calculate client rect */
+                        GetClientRect(hwnd, &hwndRect);
+                        ClientToScreen(hwnd, (LPPOINT) & hwndRect);
+                        ClientToScreen(hwnd, (LPPOINT) & hwndRect + 1);
+
+                        /* Calculate bounds rect */
+                        IntersectRect(&boundsRect, &screenRect, &hwndRect);
+                        InflateRect(&boundsRect, -SAFE_AREA_X, -SAFE_AREA_Y);
+                        boundsWidth = (boundsRect.right - boundsRect.left) + 1;
+                        boundsHeight = (boundsRect.bottom - boundsRect.top) + 1;
+
+                        if ((boundsWidth > 0 && SDL_abs(relX) > (boundsWidth / 2)) ||
+                            (boundsHeight > 0 && SDL_abs(relY) > (boundsHeight / 2))) {
+                            /* Expected motion for warping below, ignore this */
+                        } else {
+                            SDL_SendMouseMotion(data->window, mouseID, 1, relX, relY);
+
+                            if (!data->in_title_click && !data->focus_click_pending) {
+                                WarpWithinBoundsRect(x, y, &boundsRect);
+                            }
+                        }
+                    } else {
+                        const int MAXIMUM_TABLET_RELATIVE_MOTION = 32;
+                        if (SDL_abs(relX) > MAXIMUM_TABLET_RELATIVE_MOTION ||
+                            SDL_abs(relY) > MAXIMUM_TABLET_RELATIVE_MOTION) {
+                            /* Ignore this motion, probably a pen lift and drop */
+                        } else {
+                            SDL_SendMouseMotion(data->window, mouseID, 1, relX, relY);
+                        }
+                    }
+
+                    data->last_raw_mouse_position.x = x;
+                    data->last_raw_mouse_position.y = y;
                 }
+                WIN_CheckRawMouseButtons(rawmouse->usButtonFlags, data, mouseID);
             }
         }
         break;
