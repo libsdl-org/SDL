@@ -111,6 +111,7 @@ int
 Wayland_GLES_SwapWindow(_THIS, SDL_Window *window)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+    SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
     const int swap_interval = _this->egl_data->egl_swapinterval;
 
     /* For windows that we know are hidden, skip swaps entirely, if we don't do
@@ -127,7 +128,6 @@ Wayland_GLES_SwapWindow(_THIS, SDL_Window *window)
 
     /* Control swap interval ourselves. See comments on Wayland_GLES_SetSwapInterval */
     if (swap_interval != 0) {
-        SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
         struct wl_display *display = videodata->display;
         SDL_VideoDisplay *sdldisplay = SDL_GetDisplayForWindow(window);
         /* ~10 frames (or 1 sec), so we'll progress even if throttled to zero. */
@@ -174,10 +174,27 @@ Wayland_GLES_SwapWindow(_THIS, SDL_Window *window)
 
     /* Resize the egl window if required. */
     if (SDL_AtomicGet(&data->pending_egl_resize)) {
+        struct wl_region *region;
         WAYLAND_wl_egl_window_resize(data->egl_window,
                                         window->w * data->scale_factor,
                                         window->h * data->scale_factor,
                                         0, 0);
+
+        wl_surface_set_buffer_scale(data->surface, data->scale_factor);
+
+        region = wl_compositor_create_region(data->waylandData->compositor);
+        wl_region_add(region, 0, 0, window->w, window->h);
+        wl_surface_set_opaque_region(data->surface, region);
+        wl_region_destroy(region);
+
+        /* XXX: This workarounds issues with commiting buffers with old size after
+         * already acknowledging the new size, which can cause protocol violations.
+         * It doesn't fix the first frames after resize being glitched visually,
+         * but at least lets us not be terminated by the compositor.
+         * Can be removed once SDL's resize logic becomes compliant. */
+        if (videodata->shell.xdg && data->shell_surface.xdg.surface) {
+           xdg_surface_set_window_geometry(data->shell_surface.xdg.surface, 0, 0, window->w, window->h);
+        }
         SDL_AtomicSet(&data->pending_egl_resize, 0);
     }
 

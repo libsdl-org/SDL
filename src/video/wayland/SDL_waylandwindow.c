@@ -1307,11 +1307,12 @@ Wayland_HandleResize(SDL_Window *window, int width, int height, float scale)
     window->h = height;
     data->scale_factor = scale;
 
-    wl_surface_set_buffer_scale(data->surface, data->scale_factor);
-
     if (data->egl_window) {
         SDL_AtomicSet(&data->pending_egl_resize, 1);
+        return;
     }
+
+    wl_surface_set_buffer_scale(data->surface, data->scale_factor);
 
     region = wl_compositor_create_region(data->waylandData->compositor);
     wl_region_add(region, 0, 0, window->w, window->h);
@@ -1358,14 +1359,12 @@ void Wayland_SetWindowSize(_THIS, SDL_Window * window)
     }
 #endif
 
-    wl_surface_set_buffer_scale(wind->surface, wind->scale_factor);
-
     if (wind->egl_window) {
-        WAYLAND_wl_egl_window_resize(wind->egl_window,
-                                     window->w * wind->scale_factor,
-                                     window->h * wind->scale_factor,
-                                     0, 0);
+        SDL_AtomicSet(&wind->pending_egl_resize, 1);
+        return;
     }
+
+    wl_surface_set_buffer_scale(wind->surface, wind->scale_factor);
 
 #ifdef HAVE_LIBDECOR_H
     if (data->shell.libdecor && wind->shell_surface.libdecor.frame) {
