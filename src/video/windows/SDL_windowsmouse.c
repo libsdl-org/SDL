@@ -322,6 +322,13 @@ WIN_SetRelativeMouseMode(SDL_bool enabled)
 static int
 WIN_CaptureMouse(SDL_Window *window)
 {
+    if (window) {
+        SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
+        SetCapture(data->hwnd);
+    } else {
+        ReleaseCapture();
+    }
+
     return 0;
 }
 
