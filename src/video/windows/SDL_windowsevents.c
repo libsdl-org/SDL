@@ -801,13 +801,12 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
             /* Mouse data (ignoring synthetic mouse events generated for touchscreens) */
             if (inp.header.dwType == RIM_TYPEMOUSE) {
-                SDL_MouseID mouseID;
+                SDL_MouseID mouseID = (SDL_MouseID)(uintptr_t)inp.header.hDevice;
+                RAWMOUSE* rawmouse = &inp.data.mouse;
+
                 if (SDL_GetNumTouchDevices() > 0 && GetMouseMessageSource() == SDL_MOUSE_EVENT_SOURCE_TOUCH) {
                     break;
                 }
-                mouseID = (SDL_MouseID)(uintptr_t)inp.header.hDevice;
-
-                RAWMOUSE* rawmouse = &inp.data.mouse;
 
                 if ((rawmouse->usFlags & 0x01) == MOUSE_MOVE_RELATIVE) {
                     SDL_SendMouseMotion(data->window, mouseID, 1, (int)rawmouse->lLastX, (int)rawmouse->lLastY);
