@@ -353,11 +353,15 @@ SDL_PrivateSendMouseMotion(SDL_Window * window, SDL_MouseID mouseID, int relativ
         SDL_GetWindowSize(window, &center_x, &center_y);
         center_x /= 2;
         center_y /= 2;
+
+        /* TODO: Avoid assuming center means no movement */
         if (x == center_x && y == center_y) {
             mouse->last_x = center_x;
             mouse->last_y = center_y;
             return 0;
         }
+
+        /* TODO: Avoid warping every frame */
         if (window && (window->flags & SDL_WINDOW_INPUT_FOCUS) != 0) {
             SDL_WarpMouseInWindow(window, center_x, center_y);
         }

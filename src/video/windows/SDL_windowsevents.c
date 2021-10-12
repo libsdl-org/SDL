@@ -939,6 +939,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 #ifdef WM_MOUSELEAVE
     case WM_MOUSELEAVE:
+        /* TODO: Warp back to center when in relative warp mode */
         if (SDL_GetMouseFocus() == data->window && !SDL_GetMouse()->relative_mode && !(data->window->flags & SDL_WINDOW_MOUSE_CAPTURE)) {
             if (!IsIconic(hwnd)) {
                 SDL_Mouse *mouse;
@@ -1512,16 +1513,6 @@ WIN_PumpEvents(_THIS)
         while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
             if (g_WindowsMessageHook) {
                 g_WindowsMessageHook(g_WindowsMessageHookData, msg.hwnd, msg.message, msg.wParam, msg.lParam);
-            }
-
-            /* Don't dispatch any mouse motion queued prior to or including the last mouse warp */
-            if (msg.message == WM_MOUSEMOVE && SDL_last_warp_time) {
-                if (!SDL_TICKS_PASSED(msg.time, (SDL_last_warp_time + 1))) {
-                    continue;
-                }
-
-                /* This mouse message happened after the warp */
-                SDL_last_warp_time = 0;
             }
 
             /* Always translate the message in case it's a non-SDL window (e.g. with Qt integration) */

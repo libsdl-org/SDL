@@ -27,7 +27,6 @@
 #include "../../events/SDL_mouse_c.h"
 
 
-DWORD SDL_last_warp_time = 0;
 HCURSOR SDL_cursor = NULL;
 static SDL_Cursor *SDL_blank_cursor = NULL;
 
@@ -243,20 +242,36 @@ WIN_SetCursorPos(int x, int y)
     SetCursorPos(x, y);
     SetCursorPos(x+1, y);
     SetCursorPos(x, y);
-
-    /* Flush any mouse motion prior to or associated with this warp */
-    SDL_last_warp_time = GetTickCount();
-    if (!SDL_last_warp_time) {
-        SDL_last_warp_time = 1;
-    }
 }
+
+/* TODO: Is this correct? It seems to produce correct results on my multi-monitor setup. */
+static LONG ScaleScreenCoord(LONG a, LONG b, LONG c) {
+    LONG negative = a ^ b ^ c;
+    Uint64 prod;
+    LONG result;
+
+    if (a < 0) a = -a;
+    if (b < 0) b = -b;
+    if (c < 0) c = -c;
+
+    prod = (Uint64)(Uint32)a * (Uint32)b;
+    prod += (Uint32)b / 2;
+    result = (LONG)(prod / (Uint32)c);
+
+    if (negative < 0) result = -result;
+    return result;
+}
+
+#ifndef MOUSEEVENTF_MOVE_NOCOALESCE
+#define MOUSEEVENTF_MOVE_NOCOALESCE 0x2000
+#endif
 
 static void
 WIN_WarpMouse(SDL_Window * window, int x, int y)
 {
     SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
-    HWND hwnd = data->hwnd;
     POINT pt;
+    INPUT input;
 
     /* Don't warp the mouse while we're doing a modal interaction */
     if (data->in_title_click || data->focus_click_pending) {
@@ -265,11 +280,15 @@ WIN_WarpMouse(SDL_Window * window, int x, int y)
 
     pt.x = x;
     pt.y = y;
-    ClientToScreen(hwnd, &pt);
-    WIN_SetCursorPos(pt.x, pt.y);
+    ClientToScreen(data->hwnd, &pt);
 
-    /* Send the exact mouse motion associated with this warp */
-    SDL_SendMouseMotion(window, SDL_GetMouse()->mouseID, 0, x, y);
+    /* FIXME: Without per-monitor DPI awareness, rounding errors can occur, even at 100% scaling. */
+    SDL_zero(input);
+    input.type = INPUT_MOUSE;
+    input.mi.dx = ScaleScreenCoord(pt.x - GetSystemMetrics(SM_XVIRTUALSCREEN), 65535, GetSystemMetrics(SM_CXVIRTUALSCREEN));
+    input.mi.dy = ScaleScreenCoord(pt.y - GetSystemMetrics(SM_YVIRTUALSCREEN), 65535, GetSystemMetrics(SM_CYVIRTUALSCREEN));
+    input.mi.dwFlags = MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_VIRTUALDESK | MOUSEEVENTF_MOVE_NOCOALESCE;
+    SendInput(1, &input, sizeof(input));
 }
 
 static int
