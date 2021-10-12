@@ -742,6 +742,21 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     case WM_MOUSEMOVE:
         {
             SDL_Mouse *mouse = SDL_GetMouse();
+
+            if (!data->mouse_tracked) {
+                data->mouse_tracked = SDL_TRUE;
+
+#ifdef WM_MOUSELEAVE
+                TRACKMOUSEEVENT trackMouseEvent;
+
+                trackMouseEvent.cbSize = sizeof(TRACKMOUSEEVENT);
+                trackMouseEvent.dwFlags = TME_LEAVE;
+                trackMouseEvent.hwndTrack = data->hwnd;
+
+                TrackMouseEvent(&trackMouseEvent);
+#endif /* WM_MOUSELEAVE */
+            }
+
             if (!mouse->relative_mode || mouse->relative_mode_warp) {
                 /* Only generate mouse events for real mouse */
                 if (GetMouseMessageSource() != SDL_MOUSE_EVENT_SOURCE_TOUCH &&
@@ -944,13 +959,8 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             }
         }
 
-        /* When WM_MOUSELEAVE is fired we can be assured that the cursor has left the window.
-           Regardless of relative mode, it is important that mouse focus is reset as there is a potential
-           race condition when in the process of leaving/entering relative mode, resulting in focus never
-           being lost. This then causes a cascading failure where SDL_WINDOWEVENT_ENTER / SDL_WINDOWEVENT_LEAVE
-           can stop firing permanently, due to the focus being in the wrong state and TrackMouseEvent never
-           resubscribing. */
-        SDL_SetMouseFocus(NULL);
+        /* TODO: Should this still reset SDL's mouse focus? */
+        data->mouse_tracked = SDL_FALSE;
 
         returnCode = 0;
         break;

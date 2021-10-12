@@ -53,6 +53,7 @@ typedef struct
     SDL_bool in_window_deactivation;
     RECT cursor_clipped_rect;
     SDL_Point last_raw_mouse_position;
+    SDL_bool mouse_tracked;
     struct SDL_VideoData *videodata;
 #if SDL_VIDEO_OPENGL_EGL  
     EGLSurface egl_surface;
