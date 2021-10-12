@@ -743,18 +743,14 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         {
             SDL_Mouse *mouse = SDL_GetMouse();
 
+            /* https://devblogs.microsoft.com/oldnewthing/20031013-00/?p=42193 */
             if (!data->mouse_tracked) {
+                TRACKMOUSEEVENT tme;
+                tme.cbSize = sizeof(TRACKMOUSEEVENT);
+                tme.dwFlags = TME_LEAVE;
+                tme.hwndTrack = data->hwnd;
+                TrackMouseEvent(&tme);
                 data->mouse_tracked = SDL_TRUE;
-
-#ifdef WM_MOUSELEAVE
-                TRACKMOUSEEVENT trackMouseEvent;
-
-                trackMouseEvent.cbSize = sizeof(TRACKMOUSEEVENT);
-                trackMouseEvent.dwFlags = TME_LEAVE;
-                trackMouseEvent.hwndTrack = data->hwnd;
-
-                TrackMouseEvent(&trackMouseEvent);
-#endif /* WM_MOUSELEAVE */
             }
 
             if (!mouse->relative_mode || mouse->relative_mode_warp) {
@@ -912,7 +908,6 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         }
         break;
 
-#ifdef WM_MOUSELEAVE
     case WM_MOUSELEAVE:
         /* TODO: Warp back to center when in relative warp mode */
         if (SDL_GetMouseFocus() == data->window && !SDL_GetMouse()->relative_mode && !(data->window->flags & SDL_WINDOW_MOUSE_CAPTURE)) {
@@ -940,7 +935,6 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
         returnCode = 0;
         break;
-#endif /* WM_MOUSELEAVE */
 
     case WM_KEYDOWN:
     case WM_SYSKEYDOWN:
@@ -1558,43 +1552,6 @@ WIN_PumpEvents(_THIS)
 
     /* Update mouse capture */
     WIN_UpdateMouseCapture();
-}
-
-/* to work around #3931, a bug introduced in Win10 Fall Creators Update (build nr. 16299)
-   we need to detect the windows version. this struct and the function below does that.
-   usually this struct and the corresponding function (RtlGetVersion) are in <Ntddk.h>
-   but here we just load it dynamically */
-struct SDL_WIN_OSVERSIONINFOW {
-    ULONG dwOSVersionInfoSize;
-    ULONG dwMajorVersion;
-    ULONG dwMinorVersion;
-    ULONG dwBuildNumber;
-    ULONG dwPlatformId;
-    WCHAR szCSDVersion[128];
-};
-
-static SDL_bool
-IsWin10FCUorNewer(void)
-{
-    HMODULE handle = GetModuleHandle(TEXT("ntdll.dll"));
-    if (handle) {
-        typedef LONG(WINAPI* RtlGetVersionPtr)(struct SDL_WIN_OSVERSIONINFOW*);
-        RtlGetVersionPtr getVersionPtr = (RtlGetVersionPtr)GetProcAddress(handle, "RtlGetVersion");
-        if (getVersionPtr != NULL) {
-            struct SDL_WIN_OSVERSIONINFOW info;
-            SDL_zero(info);
-            info.dwOSVersionInfoSize = sizeof(info);
-            if (getVersionPtr(&info) == 0) { /* STATUS_SUCCESS == 0 */
-                if ((info.dwMajorVersion == 10 && info.dwMinorVersion == 0 && info.dwBuildNumber >= 16299) ||
-                    (info.dwMajorVersion == 10 && info.dwMinorVersion > 0) ||
-                    (info.dwMajorVersion > 10))
-                {
-                    return SDL_TRUE;
-                }
-            }
-        }
-    }
-    return SDL_FALSE;
 }
 
 static int app_registered = 0;
