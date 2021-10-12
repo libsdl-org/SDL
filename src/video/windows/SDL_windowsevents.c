@@ -576,7 +576,7 @@ WarpWithinBoundsRect(int x, int y, RECT *bounds)
             } else {
                 warpY = SDL_clamp(y, targetTop, targetBottom);
             }
-            WIN_SetCursorPos(warpX, warpY);
+            SDL_WarpMouseGlobal(warpX, warpY);
         }
     }
 }

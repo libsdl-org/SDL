@@ -235,17 +235,17 @@ WIN_ShowCursor(SDL_Cursor * cursor)
     return 0;
 }
 
-void
-WIN_SetCursorPos(int x, int y)
-{
-    /* We need to jitter the value because otherwise Windows will occasionally inexplicably ignore the SetCursorPos() or SendInput() */
-    SetCursorPos(x, y);
-    SetCursorPos(x+1, y);
-    SetCursorPos(x, y);
-}
+/* https://docs.microsoft.com/en-us/uwp/api/windows.ui.input.preview.injection.inputinjector.injectmouseinput */
+typedef UINT(WINAPI* pfnInjectMouseInput)(MOUSEINPUT*, UINT);
+static pfnInjectMouseInput pInjectMouseInput = NULL;
+static SDL_bool MouseInputWarping = SDL_FALSE;
 
-/* TODO: Is this correct? It seems to produce correct results on my multi-monitor setup. */
-static LONG ScaleScreenCoord(LONG a, LONG b, LONG c) {
+#ifndef MOUSEEVENTF_MOVE_NOCOALESCE
+#define MOUSEEVENTF_MOVE_NOCOALESCE 0x2000
+#endif
+
+static LONG ScaleScreenCoord(LONG a, LONG b, LONG c)
+{
     LONG negative = a ^ b ^ c;
     Uint64 prod;
     LONG result;
@@ -262,16 +262,45 @@ static LONG ScaleScreenCoord(LONG a, LONG b, LONG c) {
     return result;
 }
 
-#ifndef MOUSEEVENTF_MOVE_NOCOALESCE
-#define MOUSEEVENTF_MOVE_NOCOALESCE 0x2000
+static int
+WIN_WarpMouseGlobal(int x, int y)
+{
+    if (MouseInputWarping) {
+        INPUT input;
+        SDL_zero(input);
+        input.type = INPUT_MOUSE;
+        input.mi.dwFlags = MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_MOVE_NOCOALESCE;
+        /* dwExtraInfo must be zero for InjectMouseInput */
+
+        /* TODO: Cache the system metrics and update on WM_DISPLAYCHANGE? */
+#if 1
+        input.mi.dx = ScaleScreenCoord(x - GetSystemMetrics(SM_XVIRTUALSCREEN), 65535, GetSystemMetrics(SM_CXVIRTUALSCREEN));
+        input.mi.dy = ScaleScreenCoord(y - GetSystemMetrics(SM_YVIRTUALSCREEN), 65535, GetSystemMetrics(SM_CYVIRTUALSCREEN));
+        input.mi.dwFlags |= MOUSEEVENTF_VIRTUALDESK;
+#else
+        /* Broken on non-100% dpi monitors */
+        input.mi.dx = ScaleScreenCoord(x, 65535, GetSystemMetrics(SM_CXSCREEN));
+        input.mi.dy = ScaleScreenCoord(y, 65535, GetSystemMetrics(SM_CYSCREEN));
 #endif
+
+        if (pInjectMouseInput) {
+            pInjectMouseInput(&input.mi, 1);
+        } else {
+            /* Without per-monitor DPI awareness, rounding errors can occur, even at 100% scaling. */
+            SendInput(1, &input, sizeof(input));
+        }
+    } else {
+        SetCursorPos(x, y);
+    }
+
+    return 0;
+}
 
 static void
 WIN_WarpMouse(SDL_Window * window, int x, int y)
 {
     SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
     POINT pt;
-    INPUT input;
 
     /* Don't warp the mouse while we're doing a modal interaction */
     if (data->in_title_click || data->focus_click_pending) {
@@ -281,28 +310,7 @@ WIN_WarpMouse(SDL_Window * window, int x, int y)
     pt.x = x;
     pt.y = y;
     ClientToScreen(data->hwnd, &pt);
-
-    /* TODO: Add fallback for pre-vista */
-    /* FIXME: Without per-monitor DPI awareness, rounding errors can occur, even at 100% scaling. */
-    SDL_zero(input);
-    input.type = INPUT_MOUSE;
-
-    /* TODO: Cache these system metrics */
-    input.mi.dx = ScaleScreenCoord(pt.x - GetSystemMetrics(SM_XVIRTUALSCREEN), 65535, GetSystemMetrics(SM_CXVIRTUALSCREEN));
-    input.mi.dy = ScaleScreenCoord(pt.y - GetSystemMetrics(SM_YVIRTUALSCREEN), 65535, GetSystemMetrics(SM_CYVIRTUALSCREEN));
-    input.mi.dwFlags = MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_VIRTUALDESK | MOUSEEVENTF_MOVE_NOCOALESCE;
-    SendInput(1, &input, sizeof(input));
-}
-
-static int
-WIN_WarpMouseGlobal(int x, int y)
-{
-    POINT pt;
-
-    pt.x = x;
-    pt.y = y;
-    SetCursorPos(pt.x, pt.y);
-    return 0;
+    WIN_WarpMouseGlobal(pt.x, pt.y);
 }
 
 static int
@@ -337,6 +345,39 @@ WIN_GetGlobalMouseState(int *x, int *y)
     return retval;
 }
 
+struct SDL_WIN_OSVERSIONINFOW {
+    ULONG dwOSVersionInfoSize;
+    ULONG dwMajorVersion;
+    ULONG dwMinorVersion;
+    ULONG dwBuildNumber;
+    ULONG dwPlatformId;
+    WCHAR szCSDVersion[128];
+};
+
+static SDL_bool
+IsWin10FCUorNewer(void)
+{
+    HMODULE handle = GetModuleHandle(TEXT("ntdll.dll"));
+    if (handle) {
+        typedef LONG(WINAPI* RtlGetVersionPtr)(struct SDL_WIN_OSVERSIONINFOW*);
+        RtlGetVersionPtr getVersionPtr = (RtlGetVersionPtr)GetProcAddress(handle, "RtlGetVersion");
+        if (getVersionPtr != NULL) {
+            struct SDL_WIN_OSVERSIONINFOW info;
+            SDL_zero(info);
+            info.dwOSVersionInfoSize = sizeof(info);
+            if (getVersionPtr(&info) == 0) { /* STATUS_SUCCESS == 0 */
+                if ((info.dwMajorVersion == 10 && info.dwMinorVersion == 0 && info.dwBuildNumber >= 16299) ||
+                    (info.dwMajorVersion == 10 && info.dwMinorVersion > 0) ||
+                    (info.dwMajorVersion > 10))
+                {
+                    return SDL_TRUE;
+                }
+            }
+        }
+    }
+    return SDL_FALSE;
+}
+
 void
 WIN_InitMouse(_THIS)
 {
@@ -355,6 +396,14 @@ WIN_InitMouse(_THIS)
     SDL_SetDefaultCursor(WIN_CreateDefaultCursor());
 
     SDL_blank_cursor = WIN_CreateBlankCursor();
+
+    if (IsWin10FCUorNewer()) {
+        /* SetCursorPos is broken as of Windows 10 build 16299 (Fall Creators Update)
+           It no longer sends mouse WM_MOUSEMOVE, and is sometimes just ignored
+           So instead, use SendInputm or the UWP equivalent InjectMouseInput */
+        pInjectMouseInput = (pfnInjectMouseInput) GetProcAddress(GetModuleHandle(TEXT("user32")), "InjectMouseInput");
+        MouseInputWarping = SDL_TRUE;
+    }
 }
 
 void
