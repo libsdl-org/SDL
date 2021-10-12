@@ -1586,42 +1586,6 @@ WIN_PumpEvents(_THIS)
     WIN_UpdateClipCursorForWindows();
 }
 
-/* to work around #3931, a bug introduced in Win10 Fall Creators Update (build nr. 16299)
-   we need to detect the windows version. this struct and the function below does that.
-   usually this struct and the corresponding function (RtlGetVersion) are in <Ntddk.h>
-   but here we just load it dynamically */
-struct SDL_WIN_OSVERSIONINFOW {
-    ULONG dwOSVersionInfoSize;
-    ULONG dwMajorVersion;
-    ULONG dwMinorVersion;
-    ULONG dwBuildNumber;
-    ULONG dwPlatformId;
-    WCHAR szCSDVersion[128];
-};
-
-static SDL_bool
-IsWin10FCUorNewer(void)
-{
-    HMODULE handle = GetModuleHandle(TEXT("ntdll.dll"));
-    if (handle) {
-        typedef LONG(WINAPI* RtlGetVersionPtr)(struct SDL_WIN_OSVERSIONINFOW*);
-        RtlGetVersionPtr getVersionPtr = (RtlGetVersionPtr)GetProcAddress(handle, "RtlGetVersion");
-        if (getVersionPtr != NULL) {
-            struct SDL_WIN_OSVERSIONINFOW info;
-            SDL_zero(info);
-            info.dwOSVersionInfoSize = sizeof(info);
-            if (getVersionPtr(&info) == 0) { /* STATUS_SUCCESS == 0 */
-                if ((info.dwMajorVersion == 10 && info.dwMinorVersion == 0 && info.dwBuildNumber >= 16299) ||
-                    (info.dwMajorVersion == 10 && info.dwMinorVersion > 0) ||
-                    (info.dwMajorVersion > 10))
-                {
-                    return SDL_TRUE;
-                }
-            }
-        }
-    }
-    return SDL_FALSE;
-}
 
 static int app_registered = 0;
 LPTSTR SDL_Appname = NULL;
