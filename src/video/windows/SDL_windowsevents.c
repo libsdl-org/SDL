@@ -979,8 +979,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
            being lost. This then causes a cascading failure where SDL_WINDOWEVENT_ENTER / SDL_WINDOWEVENT_LEAVE
            can stop firing permanently, due to the focus being in the wrong state and TrackMouseEvent never
            resubscribing. */
-        const SDL_bool isCapture = ((data->window->flags & SDL_WINDOW_MOUSE_CAPTURE) != 0);
-        if (!isCapture)
+        if (!(data->window->flags & SDL_WINDOW_MOUSE_CAPTURE))
             SDL_SetMouseFocus(NULL);
 
         returnCode = 0;
