@@ -154,7 +154,7 @@ SDL_InitSubSystem(Uint32 flags)
     
     if (!SDL_MainIsReady) {
         SDL_SetError("Application didn't initialize properly, did you include SDL_main.h in the file containing your main() function?");
-        return (-1);
+        return -1;
     }
 
     /* Clear the error message */
