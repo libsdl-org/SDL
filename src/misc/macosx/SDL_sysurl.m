@@ -29,8 +29,14 @@ SDL_SYS_OpenURL(const char *url)
 {
     NSString *nsstr = [NSString stringWithUTF8String:url];
     NSURL *nsurl = [NSURL URLWithString:nsstr];
-    return [[NSWorkspace sharedWorkspace] openURL:nsurl] ? 0 : -1;
+    int res = [[NSWorkspace sharedWorkspace] openURL:nsurl] ? 0 : -1;
+
+    if (res == -1) {
+        NSURL *nsurlpath = [NSURL fileURLWithPath:nsstr];
+        return [[NSWorkspace sharedWorkspace] openURL:nsurlpath] ? 0 : -1;
+    }
+
+    return res;
 }}
 
 /* vi: set ts=4 sw=4 expandtab: */
-
