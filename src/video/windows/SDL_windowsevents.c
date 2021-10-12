@@ -806,15 +806,16 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     break;
                 }
                 mouseID = (SDL_MouseID)(uintptr_t)inp.header.hDevice;
-                /* FIXME: Add a hint to control this? */
-                const int SAFE_AREA_X = 64;
-                const int SAFE_AREA_Y = 256;
 
                 RAWMOUSE* rawmouse = &inp.data.mouse;
 
                 if ((rawmouse->usFlags & 0x01) == MOUSE_MOVE_RELATIVE) {
                     SDL_SendMouseMotion(data->window, mouseID, 1, (int)rawmouse->lLastX, (int)rawmouse->lLastY);
                 } else if (rawmouse->lLastX || rawmouse->lLastY) {
+                    /* FIXME: Add a hint to control this? */
+                    const int SAFE_AREA_X = 64;
+                    const int SAFE_AREA_Y = 256;
+
                     /* This is absolute motion, either using a tablet or mouse over RDP
 
                         Notes on how RDP appears to work, as of Windows 10 2004:
