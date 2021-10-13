@@ -60,6 +60,10 @@ extern DECLSPEC Uint32 SDLCALL SDL_GetTicks(void);
  *     // ... do work until timeout has elapsed
  * }
  * ```
+ *
+ * Note that this does not handle tick differences greater
+ * than 2^31 so take care when using the above kind of code
+ * with large timeout delays (tens of days).
  */
 #define SDL_TICKS_PASSED(A, B)  ((Sint32)((B) - (A)) <= 0)
 
