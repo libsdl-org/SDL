@@ -927,6 +927,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         }
 
         /* TODO: Should this still reset SDL's mouse focus? */
+        SDL_SetMouseFocus(NULL);
         data->mouse_tracked = SDL_FALSE;
 
         returnCode = 0;
