@@ -1151,6 +1151,60 @@ extern DECLSPEC Uint8 SDLCALL SDL_EventState(Uint32 type, int state);
  */
 extern DECLSPEC Uint32 SDLCALL SDL_RegisterEvents(int numevents);
 
+typedef void (SDLCALL * SDL_ModalLoopCallback)(void*);
+
+/**
+ * Set a callback to be called during a window modal loop.
+ *
+ * This can be used to run some logic and keep the app running when it is stuck
+ * in a modal loop.
+ *
+ * \param callback the function to call in the window modal loop
+ * \param userdata a pointer that is passed to `callback`
+ *
+ * \since This function is available since SDL 2.24.0.
+ *
+ * \sa SDL_SetModalLoopResizeCallback
+ * \sa SDL_SetModalLoopMoveCallback
+ */
+extern DECLSPEC void SDLCALL SDL_SetModalLoopCallback(SDL_ModalLoopCallback callback, void* userdata);
+
+typedef void (SDLCALL * SDL_ModalLoopResizeCallback)(SDL_Window*, int, int, void*);
+
+/**
+ * Set a callback to be called when a window is resized in a modal loop.
+ *
+ * During a modal loop, you won't get any SDL events, so in order to handle
+ * the window resizing in this case, use this function.
+ *
+ * \param callback the function to call when the window is resized in the modal loop
+ * \param userdata a pointer that is passed to `callback`
+ *
+ * \since This function is available since SDL 2.24.0.
+ *
+ * \sa SDL_SetModalLoopCallback
+ * \sa SDL_SetModalLoopMoveCallback
+ */
+extern DECLSPEC void SDLCALL SDL_SetModalLoopResizeCallback(SDL_ModalLoopResizeCallback resize_callback, void* userdata);
+
+typedef void (SDLCALL * SDL_ModalLoopMoveCallback)(SDL_Window*, int, int, void*);
+
+/**
+ * Set a callback to be called when a window is moved in a modal loop.
+ *
+ * During a modal loop, you won't get any SDL events, so in order to handle
+ * the window move in this case, use this function.
+ *
+ * \param callback the function to call when the window is moved in the modal loop
+ * \param userdata a pointer that is passed to `callback`
+ *
+ * \since This function is available since SDL 2.24.0.
+ *
+ * \sa SDL_SetModalLoopCallback
+ * \sa SDL_SetModalLoopResizeCallback
+ */
+extern DECLSPEC void SDLCALL SDL_SetModalLoopMoveCallback(SDL_ModalLoopMoveCallback move_callback, void* userdata);
+
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
 }

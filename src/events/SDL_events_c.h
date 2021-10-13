@@ -58,6 +58,10 @@ extern void SDL_SendPendingSignalEvents(void);
 extern int SDL_QuitInit(void);
 extern void SDL_QuitQuit(void);
 
+extern void SDL_ExecuteModalLoopCallback(void);
+extern void SDL_ExecuteModalLoopResizeCallback(SDL_Window* window, int w, int h);
+extern void SDL_ExecuteModalLoopMoveCallback(SDL_Window* window, int x, int y);
+
 #endif /* SDL_events_c_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

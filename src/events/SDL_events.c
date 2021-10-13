@@ -1415,4 +1415,59 @@ SDL_EventsQuit(void)
 #endif
 }
 
+static SDL_ModalLoopCallback SDL_modal_loop_callback = NULL;
+static void* SDL_modal_loop_userdata = NULL;
+
+void
+SDL_SetModalLoopCallback(SDL_ModalLoopCallback callback, void* userdata)
+{
+    SDL_modal_loop_callback = callback;
+    SDL_modal_loop_userdata = userdata;
+}
+
+void
+SDL_ExecuteModalLoopCallback(void)
+{
+    if (SDL_modal_loop_callback) {
+        SDL_modal_loop_callback(SDL_modal_loop_userdata);
+    }
+}
+
+static SDL_ModalLoopResizeCallback SDL_modal_loop_resize_callback = NULL;
+static void* SDL_modal_loop_resize_userdata = NULL;
+
+void
+SDL_SetModalLoopResizeCallback(SDL_ModalLoopResizeCallback resizeCallback, void* userdata)
+{
+    SDL_modal_loop_resize_callback = resizeCallback;
+    SDL_modal_loop_resize_userdata = userdata;
+}
+
+extern void
+SDL_ExecuteModalLoopResizeCallback(SDL_Window* window, int w, int h)
+{
+    if (SDL_modal_loop_resize_callback) {
+        SDL_modal_loop_resize_callback(window, w, h, SDL_modal_loop_resize_userdata);
+    }
+}
+
+static SDL_ModalLoopMoveCallback SDL_modal_loop_move_callback = NULL;
+static void* SDL_modal_loop_move_userdata = NULL;
+
+void
+SDL_SetModalLoopMoveCallback(SDL_ModalLoopMoveCallback moveCallback, void* userdata)
+{
+    SDL_modal_loop_move_callback = moveCallback;
+    SDL_modal_loop_move_userdata = userdata;
+}
+
+extern void
+SDL_ExecuteModalLoopMoveCallback(SDL_Window* window, int x, int y)
+{
+    if (SDL_modal_loop_move_callback) {
+        SDL_modal_loop_move_callback(window, x, y, SDL_modal_loop_move_userdata);
+    }
+}
+
+
 /* vi: set ts=4 sw=4 expandtab: */

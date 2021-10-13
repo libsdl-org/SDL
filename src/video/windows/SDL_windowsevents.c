@@ -95,6 +95,9 @@
 #ifndef WM_GETDPISCALEDSIZE
 #define WM_GETDPISCALEDSIZE 0x02E4
 #endif
+#ifndef USER_TIMER_MINIMUM
+#define USER_TIMER_MINIMUM 0x0000000A
+#endif
 
 #ifndef IS_HIGH_SURROGATE
 #define IS_HIGH_SURROGATE(x)   (((x) >= 0xd800) && ((x) <= 0xdbff))
@@ -631,6 +634,8 @@ static void WIN_CheckICMProfileChanged(SDL_Window* window)
         }
     }
 }
+
+static SDL_Window* g_ModalLoopWindow = NULL;
 
 LRESULT CALLBACK
 WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -1203,6 +1208,23 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         }
         break;
 
+    case WM_ENTERSIZEMOVE:
+    case WM_ENTERMENULOOP:
+        {
+            SDL_assert(!g_ModalLoopWindow);
+            g_ModalLoopWindow = data->window;
+            SetTimer(hwnd, (UINT_PTR)g_ModalLoopWindow, USER_TIMER_MINIMUM, NULL);
+        }
+        break;
+
+    case WM_TIMER:
+        {
+            if (g_ModalLoopWindow && wParam == (UINT_PTR)g_ModalLoopWindow) {
+                SDL_ExecuteModalLoopCallback();
+            }
+        }
+        break;
+
     case WM_SIZE:
         {
             switch (wParam) {
@@ -1223,6 +1245,26 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             default:
                 break;
             }
+            if (g_ModalLoopWindow) {
+                SDL_ExecuteModalLoopResizeCallback(g_ModalLoopWindow, LOWORD(lParam), HIWORD(lParam));
+            }
+        }
+        break;
+
+    case WM_MOVE:
+        {
+            if (g_ModalLoopWindow) {
+                SDL_ExecuteModalLoopMoveCallback(g_ModalLoopWindow, LOWORD(lParam), HIWORD(lParam));
+            }
+        }
+        break;
+
+    case WM_EXITSIZEMOVE:
+    case WM_EXITMENULOOP:
+        {
+            SDL_assert(g_ModalLoopWindow);
+            KillTimer(hwnd, (UINT_PTR)g_ModalLoopWindow);
+            g_ModalLoopWindow = NULL;
         }
         break;
 

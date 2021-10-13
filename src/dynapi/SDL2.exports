@@ -849,3 +849,6 @@
 ++'_SDL_HasLASX'.'SDL2.dll'.'SDL_HasLASX'
 ++'_SDL_RenderGetD3D12Device'.'SDL2.dll'.'SDL_RenderGetD3D12Device'
 ++'_SDL_utf8strnlen'.'SDL2.dll'.'SDL_utf8strnlen'
+++'_SDL_SetModalLoopCallback'.'SDL2.dll'.'SDL_SetModalLoopCallback'
+++'_SDL_SetModalLoopResizeCallback'.'SDL2.dll'.'SDL_SetModalLoopResizeCallback'
+++'_SDL_SetModalLoopMoveCallback'.'SDL2.dll'.'SDL_SetModalLoopMoveCallback'
