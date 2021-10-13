@@ -381,10 +381,11 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     public static int getCurrentOrientation() {
         int result = SDL_ORIENTATION_UNKNOWN;
 
-        if (mSingleton == null) {
+        Activity activity = (Activity)getContext();
+        if (activity == null) {
             return result;
         }
-        Display display = SDLActivity.mSingleton.getWindowManager().getDefaultDisplay();
+        Display display = activity.getWindowManager().getDefaultDisplay();
 
         switch (display.getRotation()) {
             case Surface.ROTATION_0:
