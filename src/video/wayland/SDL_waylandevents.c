@@ -1255,16 +1255,21 @@ text_input_preedit_string(void *data,
     char buf[SDL_TEXTEDITINGEVENT_TEXT_SIZE];
     if (text) {
         size_t text_bytes = SDL_strlen(text), i = 0;
-        size_t cursor = 0;
+        int start = 0, length = 0;
+
+        /* calculate utf8 start and length, simulate behaviour of ibus and Windows */
+        if (cursor_begin != -1 && cursor_end != -1) {
+            start = SDL_utf8strllen(text, cursor_begin);
+            length = SDL_utf8strllen(text + cursor_begin, cursor_end);
+        }
 
         do {
             const size_t sz = SDL_utf8strlcpy(buf, text+i, sizeof(buf));
-            const size_t chars = SDL_utf8strlen(buf);
 
-            SDL_SendEditingText(buf, cursor, chars);
+            if (i == 0) SDL_SendEditingText(buf, start, length);
+            else SDL_SendExtendedEditingText(buf, start, length);
 
             i += sz;
-            cursor += chars;
         } while (i < text_bytes);
     } else {
         buf[0] = '\0';

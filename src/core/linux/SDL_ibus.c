@@ -117,8 +117,8 @@ IBus_MessageHandler(DBusConnection *conn, DBusMessage *msg, void *user_data)
         const char *text;
 
         dbus->message_iter_init(msg, &iter);
-        
         text = IBus_GetVariantText(conn, &iter, dbus);
+
         if (text && *text) {
             char buf[SDL_TEXTINPUTEVENT_TEXT_SIZE];
             size_t text_bytes = SDL_strlen(text), i = 0;
@@ -144,16 +144,18 @@ IBus_MessageHandler(DBusConnection *conn, DBusMessage *msg, void *user_data)
         if (text) {
             char buf[SDL_TEXTEDITINGEVENT_TEXT_SIZE];
             size_t text_bytes = SDL_strlen(text), i = 0;
-            size_t cursor = 0;
+            int start;
+
+            dbus->message_iter_next(&iter);
+            dbus->message_iter_get_basic(&iter, &start);
             
             do {
                 const size_t sz = SDL_utf8strlcpy(buf, text+i, sizeof(buf));
-                const size_t chars = SDL_utf8strlen(buf);
                 
-                SDL_SendEditingText(buf, cursor, chars);
+                if (i == 0) SDL_SendEditingText(buf, start, 0);
+                else SDL_SendExtendedEditingText(buf, start, 0);
 
                 i += sz;
-                cursor += chars;
             } while (i < text_bytes);
         }
         

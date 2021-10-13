@@ -84,16 +84,16 @@ GetAppName()
     return SDL_strdup("SDL_App");
 }
 
-size_t Fcitx_GetPreeditString(SDL_DBusContext *dbus, DBusMessage *msg, char **ret) {
+size_t Fcitx_GetPreeditString(SDL_DBusContext *dbus, DBusMessageIter *iter, DBusMessage *msg, char **ret) {
     char *text = NULL, *subtext;
     size_t text_bytes = 0;
-    DBusMessageIter iter, array, sub;
+    DBusMessageIter array, sub;
 
-    dbus->message_iter_init(msg, &iter);
+    dbus->message_iter_init(msg, iter);
     /* Message type is a(si)i, we only need string part */
-    if (dbus->message_iter_get_arg_type(&iter) == DBUS_TYPE_ARRAY) {
+    if (dbus->message_iter_get_arg_type(iter) == DBUS_TYPE_ARRAY) {
         /* First pass: calculate string length */
-        dbus->message_iter_recurse(&iter, &array);
+        dbus->message_iter_recurse(iter, &array);
         while (dbus->message_iter_get_arg_type(&array) == DBUS_TYPE_STRUCT) {
             dbus->message_iter_recurse(&array, &sub);
             if (dbus->message_iter_get_arg_type(&sub) == DBUS_TYPE_STRING) {
@@ -111,7 +111,7 @@ size_t Fcitx_GetPreeditString(SDL_DBusContext *dbus, DBusMessage *msg, char **re
         if (text) {
             char* pivot = text;
             /* Second pass: join all the sub string */
-            dbus->message_iter_recurse(&iter, &array);
+            dbus->message_iter_recurse(iter, &array);
             while (dbus->message_iter_get_arg_type(&array) == DBUS_TYPE_STRUCT) {
                 dbus->message_iter_recurse(&array, &sub);
                 if (dbus->message_iter_get_arg_type(&sub) == DBUS_TYPE_STRING) {
@@ -160,21 +160,33 @@ DBus_MessageFilter(DBusConnection *conn, DBusMessage *msg, void *data)
     }
 
     if (dbus->message_is_signal(msg, FCITX_IC_DBUS_INTERFACE, "UpdateFormattedPreedit")) {
+        DBusMessageIter iter;
+        size_t text_bytes;
         char *text = NULL;
-        size_t text_bytes = Fcitx_GetPreeditString(dbus, msg, &text);
+
+        dbus->message_iter_init(msg, &iter);
+        text_bytes = Fcitx_GetPreeditString(dbus, &iter, msg, &text);
+
         if (text_bytes) {
             char buf[SDL_TEXTEDITINGEVENT_TEXT_SIZE];
             size_t i = 0;
-            size_t cursor = 0;
+
+            int cursor_bytes;
+            int start = 0;
+
+            dbus->message_iter_next(&iter);
+            dbus->message_iter_get_basic(&iter, &cursor_bytes);
+
+            /* calculate utf8 length, simulate behaviour of ibus and Windows */
+            start = SDL_utf8strllen(text, cursor_bytes);
 
             while (i < text_bytes) {
                 const size_t sz = SDL_utf8strlcpy(buf, text + i, sizeof(buf));
-                const size_t chars = SDL_utf8strlen(buf);
 
-                SDL_SendEditingText(buf, cursor, chars);
-
+                if (i == 0) SDL_SendEditingText(buf, start, 0);
+                else SDL_SendExtendedEditingText(buf, start, 0);
+                
                 i += sz;
-                cursor += chars;
             }
             SDL_free(text);
         } else {
