@@ -786,8 +786,10 @@ SDL_PollEvent(SDL_Event * event)
 }
 
 static int
-SDL_WaitEventTimeout_Device(_THIS, SDL_Window *wakeup_window, SDL_Event * event, int timeout)
+SDL_WaitEventTimeout_Device(_THIS, SDL_Window *wakeup_window, SDL_Event * event, Uint32 start, int timeout)
 {
+	int loop_timeout = timeout;
+
     for (;;) {
         /* Pump events on entry and each time we wake to ensure:
            a) All pending events are batch processed after waking up from a wait
@@ -817,7 +819,16 @@ SDL_WaitEventTimeout_Device(_THIS, SDL_Window *wakeup_window, SDL_Event * event,
                 return 1;
             }
             /* No events found in the queue, call WaitEventTimeout to wait for an event. */
-            status = _this->WaitEventTimeout(_this, timeout);
+			if (timeout > 0) {
+				Uint32 elapsed = SDL_GetTicks() - start;
+				if (elapsed >= (Uint32)timeout) {
+					/* Set wakeup_window to NULL without holding the lock. */
+					_this->wakeup_window = NULL;
+					return 0;
+				}
+				loop_timeout = (int)((Uint32)timeout - elapsed);
+			}
+            status = _this->WaitEventTimeout(_this, loop_timeout);
             /* Set wakeup_window to NULL without holding the lock. */
             _this->wakeup_window = NULL;
             if (status <= 0) {
@@ -872,16 +883,19 @@ SDL_WaitEventTimeout(SDL_Event * event, int timeout)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
     SDL_Window *wakeup_window;
+	Uint32 start = 0;
     Uint32 expiration = 0;
 
-    if (timeout > 0)
-        expiration = SDL_GetTicks() + timeout;
+    if (timeout > 0) {
+		start = SDL_GetTicks();
+        expiration = start + timeout;
+	}
 
     if (timeout != 0 && _this && _this->WaitEventTimeout && _this->SendWakeupEvent && !SDL_events_need_polling()) {
         /* Look if a shown window is available to send the wakeup event. */
         wakeup_window = SDL_find_active_window(_this);
         if (wakeup_window) {
-            int status = SDL_WaitEventTimeout_Device(_this, wakeup_window, event, timeout);
+            int status = SDL_WaitEventTimeout_Device(_this, wakeup_window, event, start, timeout);
 
             /* There may be implementation-defined conditions where the backend cannot
                reliably wait for the next event. If that happens, fall back to polling. */
