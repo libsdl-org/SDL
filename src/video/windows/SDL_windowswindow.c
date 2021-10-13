@@ -555,7 +555,7 @@ WIN_ShowWindow(_THIS, SDL_Window * window)
     int nCmdShow;
 
     hwnd = ((SDL_WindowData *)window->driverdata)->hwnd;
-    nCmdShow = SW_SHOW;
+    nCmdShow = SDL_GetHintBoolean(SDL_HINT_WINDOW_NO_ACTIVATION_WHEN_SHOWN, SDL_FALSE) ? SW_SHOWNA : SW_SHOW;
     style = GetWindowLong(hwnd, GWL_EXSTYLE);
     if (style & WS_EX_NOACTIVATE) {
         nCmdShow = SW_SHOWNOACTIVATE;
