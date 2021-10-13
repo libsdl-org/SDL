@@ -51,9 +51,11 @@ static void openslES_PauseDevices(void) {}
 #if !SDL_AUDIO_DISABLED && SDL_AUDIO_DRIVER_AAUDIO
 extern void aaudio_ResumeDevices(void);
 extern void aaudio_PauseDevices(void);
+SDL_bool aaudio_DetectBrokenPlayState( void );
 #else
 static void aaudio_ResumeDevices(void) {}
 static void aaudio_PauseDevices(void) {}
+static SDL_bool aaudio_DetectBrokenPlayState( void ) { return SDL_FALSE; }
 #endif
 
 
@@ -168,6 +170,11 @@ Android_PumpEvents_Blocking(_THIS)
             }
         }
     }
+
+    if ( aaudio_DetectBrokenPlayState() ) {
+        aaudio_PauseDevices();
+        aaudio_ResumeDevices();
+    }
 }
 
 void
@@ -245,6 +252,11 @@ Android_PumpEvents_NonBlocking(_THIS)
                 backup_context = 1;
             }
         }
+    }
+
+    if ( aaudio_DetectBrokenPlayState() ) {
+        aaudio_PauseDevices();
+        aaudio_ResumeDevices();
     }
 }
 
