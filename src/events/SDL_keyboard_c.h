@@ -63,6 +63,9 @@ extern int SDL_SendKeyboardText(const char *text);
 /* Send editing text for selected range from start to end */
 extern int SDL_SendEditingText(const char *text, int start, int end);
 
+/* Send editing text for selected range from start to end, as an extension to the one previously sent */
+extern int SDL_SendExtendedEditingText(const char *text, int start, int end);
+
 /* Shutdown the keyboard subsystem */
 extern void SDL_KeyboardQuit(void);
 

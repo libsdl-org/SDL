@@ -238,6 +238,7 @@ typedef struct SDL_TextEditingEvent
     char text[SDL_TEXTEDITINGEVENT_TEXT_SIZE];  /**< The editing text */
     Sint32 start;                               /**< The start cursor of selected editing text */
     Sint32 length;                              /**< The length of selected editing text */
+    SDL_bool first;                             /**< Whether the input was the first of a new set of events, since multiple are sent when more than 31 bytes are contained in the IME preview */
 } SDL_TextEditingEvent;
 
 

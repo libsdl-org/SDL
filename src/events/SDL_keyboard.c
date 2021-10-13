@@ -876,8 +876,7 @@ SDL_SendKeyboardText(const char *text)
 }
 
 int
-SDL_SendEditingText(const char *text, int start, int length)
-{
+SDL_SendEditingText_F(const char *text, int start, int length, SDL_bool first) {
     SDL_Keyboard *keyboard = &SDL_keyboard;
     int posted;
 
@@ -889,11 +888,27 @@ SDL_SendEditingText(const char *text, int start, int length)
         event.edit.windowID = keyboard->focus ? keyboard->focus->id : 0;
         event.edit.start = start;
         event.edit.length = length;
+        event.edit.first = first;
         SDL_utf8strlcpy(event.edit.text, text, SDL_arraysize(event.edit.text));
         posted = (SDL_PushEvent(&event) > 0);
     }
     return (posted);
 }
+
+/* backwards-compatible function to send the first event */
+int
+SDL_SendEditingText(const char *text, int start, int length)
+{
+    return SDL_SendEditingText_F(text, start, length, SDL_TRUE);
+}
+
+/* new function to mark event as an extension to the previous one */
+int
+SDL_SendExtendedEditingText(const char *text, int start, int length)
+{
+    return SDL_SendEditingText_F(text, start, length, SDL_FALSE);
+}
+
 
 void
 SDL_KeyboardQuit(void)
