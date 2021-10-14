@@ -508,79 +508,6 @@ static SDL_MOUSE_EVENT_SOURCE GetMouseMessageSource()
     return SDL_MOUSE_EVENT_SOURCE_MOUSE;
 }
 
-static void
-GetDisplayBoundsForPoint(int x, int y, RECT *bounds)
-{
-    SDL_VideoDevice *_this = SDL_GetVideoDevice();
-    int i, dist;
-    int closest = -1;
-    int closest_dist = 0x7FFFFFFF;
-    SDL_Point point;
-    SDL_Point delta;
-    SDL_Rect rect;
-
-    point.x = x;
-    point.y = y;
-    for (i = 0; i < _this->num_displays; ++i) {
-        SDL_GetDisplayBounds(i, &rect);
-        if (SDL_EnclosePoints(&point, 1, &rect, NULL)) {
-            WIN_RectToRECT(&rect, bounds);
-            return;
-        }
-
-        delta.x = point.x - (rect.x + rect.w / 2);
-        delta.y = point.y - (rect.y + rect.h / 2);
-        dist = (delta.x*delta.x + delta.y*delta.y);
-        if (dist < closest_dist) {
-            closest = i;
-            closest_dist = dist;
-            WIN_RectToRECT(&rect, bounds);
-        }
-    }
-    if (closest < 0) {
-        bounds->left = 0;
-        bounds->right = GetSystemMetrics(SM_CXSCREEN) - 1;
-        bounds->top = 0;
-        bounds->bottom = GetSystemMetrics(SM_CYSCREEN) - 1;
-    }
-}
-
-static void
-WarpWithinBoundsRect(int x, int y, RECT *bounds)
-{
-    if (x < bounds->left || x > bounds->right || y < bounds->top || y > bounds->bottom) {
-        const int MIN_BOUNDS_SIZE = 32;
-        int boundsWidth = (bounds->right - bounds->left) + 1;
-        int boundsHeight = (bounds->bottom - bounds->top) + 1;
-        if (boundsWidth >= MIN_BOUNDS_SIZE && boundsHeight >= MIN_BOUNDS_SIZE) {
-            /* Warp back to the opposite side, assuming more motion in the current direction */
-            int targetLeft = bounds->right - (boundsWidth * 3) / 4;
-            int targetRight = bounds->left + (boundsWidth * 3) / 4;
-            int targetTop = bounds->bottom - (boundsHeight * 3) / 4;
-            int targetBottom = bounds->top + (boundsHeight * 3) / 4;
-            int warpX;
-            int warpY;
-
-            if (x < bounds->left) {
-                warpX = targetRight;
-            } else if (x > bounds->right) {
-                warpX = targetLeft;
-            } else {
-                warpX = SDL_clamp(x, targetLeft, targetRight);
-            }
-
-            if (y < bounds->top) {
-                warpY = targetBottom;
-            } else if (y > bounds->bottom) {
-                warpY = targetTop;
-            } else {
-                warpY = SDL_clamp(y, targetTop, targetBottom);
-            }
-            WIN_SetCursorPos(warpX, warpY);
-        }
-    }
-}
-
 static SDL_WindowData *
 WIN_GetWindowDataFromHWND(HWND hwnd)
 {
@@ -818,34 +745,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     RAWMOUSE* rawmouse = &inp.data.mouse;
 
                     if ((rawmouse->usFlags & 0x01) == MOUSE_MOVE_RELATIVE) {
-                        POINT pt;
-
                         SDL_SendMouseMotion(data->window, mouseID, 1, (int)rawmouse->lLastX, (int)rawmouse->lLastY);
-
-                        /* Make sure that the mouse doesn't hover over notifications and so forth */
-                        if (GetCursorPos(&pt)) {
-                            int x = pt.x;
-                            int y = pt.y;
-                            RECT screenRect;
-                            RECT hwndRect;
-                            RECT boundsRect;
-
-                            /* Calculate screen rect */
-                            GetDisplayBoundsForPoint(x, y, &screenRect);
-
-                            /* Calculate client rect */
-                            GetClientRect(hwnd, &hwndRect);
-                            ClientToScreen(hwnd, (LPPOINT) & hwndRect);
-                            ClientToScreen(hwnd, (LPPOINT) & hwndRect + 1);
-
-                            /* Calculate bounds rect */
-                            IntersectRect(&boundsRect, &screenRect, &hwndRect);
-                            InflateRect(&boundsRect, -SAFE_AREA_X, -SAFE_AREA_Y);
-
-                            if (!data->in_title_click && !data->focus_click_pending) {
-                                WarpWithinBoundsRect(x, y, &boundsRect);
-                            }
-                        }
 
                     } else if (rawmouse->lLastX || rawmouse->lLastY) {
                         /* This is absolute motion, either using a tablet or mouse over RDP
@@ -876,33 +776,34 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                         relY = (int)(y - data->last_raw_mouse_position.y);
 
                         if (remote_desktop) {
-                            RECT screenRect;
-                            RECT hwndRect;
-                            RECT boundsRect;
-                            int boundsWidth, boundsHeight;
+                            if (!data->in_title_click && !data->focus_click_pending) {
+                                static int wobble;
+                                float floatX = (float)x / w;
+                                float floatY = (float)y / h;
 
-                            /* Calculate screen rect */
-                            GetDisplayBoundsForPoint(x, y, &screenRect);
+                                /* See if the mouse is at the edge of the screen, or in the RDP title bar area */
+                                if (floatX <= 0.01f || floatX >= 0.99f || floatY <= 0.01f || floatY >= 0.99f || y < 32) {
+                                    /* Wobble the cursor position so it's not ignored if the last warp didn't have any effect */
+                                    RECT rect = data->cursor_clipped_rect;
+                                    int warpX = rect.left + ((rect.right - rect.left) / 2) + wobble;
+                                    int warpY = rect.top + ((rect.bottom - rect.top) / 2);
 
-                            /* Calculate client rect */
-                            GetClientRect(hwnd, &hwndRect);
-                            ClientToScreen(hwnd, (LPPOINT) & hwndRect);
-                            ClientToScreen(hwnd, (LPPOINT) & hwndRect + 1);
+                                    WIN_SetCursorPos(warpX, warpY);
 
-                            /* Calculate bounds rect */
-                            IntersectRect(&boundsRect, &screenRect, &hwndRect);
-                            InflateRect(&boundsRect, -SAFE_AREA_X, -SAFE_AREA_Y);
-                            boundsWidth = (boundsRect.right - boundsRect.left) + 1;
-                            boundsHeight = (boundsRect.bottom - boundsRect.top) + 1;
-
-                            if ((boundsWidth > 0 && SDL_abs(relX) > (boundsWidth / 2)) ||
-                                (boundsHeight > 0 && SDL_abs(relY) > (boundsHeight / 2))) {
-                                /* Expected motion for warping below, ignore this */
-                            } else {
-                                SDL_SendMouseMotion(data->window, mouseID, 1, relX, relY);
-
-                                if (!data->in_title_click && !data->focus_click_pending) {
-                                    WarpWithinBoundsRect(x, y, &boundsRect);
+                                    ++wobble;
+                                    if (wobble > 1) {
+                                        wobble = -1;
+                                    }
+                                } else {
+                                    /* Send relative motion if we didn't warp last frame (had good position data)
+                                       We also sometimes get large deltas due to coalesced mouse motion and warping,
+                                       so ignore those.
+                                     */
+                                    const int MAX_RELATIVE_MOTION = (h / 6);
+                                    if (SDL_abs(relX) < MAX_RELATIVE_MOTION &&
+                                        SDL_abs(relY) < MAX_RELATIVE_MOTION) {
+                                        SDL_SendMouseMotion(data->window, mouseID, 1, relX, relY);
+                                    }
                                 }
                             }
                         } else {

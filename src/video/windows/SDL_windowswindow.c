@@ -974,12 +974,33 @@ WIN_UpdateClipCursor(SDL_Window *window)
 
     if ((mouse->relative_mode || (window->flags & SDL_WINDOW_MOUSE_GRABBED)) &&
         (window->flags & SDL_WINDOW_INPUT_FOCUS)) {
-        if (GetClientRect(data->hwnd, &rect) && !IsRectEmpty(&rect)) {
-            ClientToScreen(data->hwnd, (LPPOINT) & rect);
-            ClientToScreen(data->hwnd, (LPPOINT) & rect + 1);
-            if (SDL_memcmp(&rect, &clipped_rect, sizeof(rect)) != 0) {
-                if (ClipCursor(&rect)) {
-                    data->cursor_clipped_rect = rect;
+        if (mouse->relative_mode && !mouse->relative_mode_warp) {
+            if (GetWindowRect(data->hwnd, &rect)) {
+                LONG cx, cy;
+
+                cx = (rect.left + rect.right) / 2;
+                cy = (rect.top + rect.bottom) / 2;
+
+                /* Make an absurdly small clip rect */
+                rect.left = cx - 1;
+                rect.right = cx + 1;
+                rect.top = cy - 1;
+                rect.bottom = cy + 1;
+
+                if (SDL_memcmp(&rect, &clipped_rect, sizeof(rect)) != 0) {
+                    if (ClipCursor(&rect)) {
+                        data->cursor_clipped_rect = rect;
+                    }
+                }
+            }
+        } else {
+            if (GetClientRect(data->hwnd, &rect) && !IsRectEmpty(&rect)) {
+                ClientToScreen(data->hwnd, (LPPOINT) & rect);
+                ClientToScreen(data->hwnd, (LPPOINT) & rect + 1);
+                if (SDL_memcmp(&rect, &clipped_rect, sizeof(rect)) != 0) {
+                    if (ClipCursor(&rect)) {
+                        data->cursor_clipped_rect = rect;
+                    }
                 }
             }
         }
