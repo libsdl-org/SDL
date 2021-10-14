@@ -980,8 +980,10 @@ WIN_UpdateClipCursor(SDL_Window *window)
 
             /* TODO: Add a hint for whether or not to shrink the clip rectangle, perhaps using WM_MOUSELEAVE to detect when to move back to center */
             if (mouse->relative_mode && !mouse->relative_mode_warp) {
-                rect.left = rect.right = (rect.left + rect.right) / 2;
-                rect.top = rect.bottom = (rect.top + rect.bottom) / 2;
+                rect.left = (rect.left + rect.right) / 2;
+                rect.right = rect.left + 1;
+                rect.top = (rect.top + rect.bottom) / 2;
+                rect.bottom = rect.top + 1;
             }
 
             if (SDL_memcmp(&rect, &clipped_rect, sizeof(rect)) != 0) {
@@ -991,7 +993,14 @@ WIN_UpdateClipCursor(SDL_Window *window)
             }
         }
     } else {
-        if (SDL_memcmp(&data->cursor_clipped_rect, &clipped_rect, sizeof(clipped_rect)) == 0) {
+        POINT first, second;
+
+        first.x = clipped_rect.left;
+        first.y = clipped_rect.top;
+        second.x = clipped_rect.right - 1;
+        second.y = clipped_rect.bottom - 1;
+        if (PtInRect(&data->cursor_clipped_rect, first) &&
+            PtInRect(&data->cursor_clipped_rect, second)) {
             ClipCursor(NULL);
             SDL_zero(data->cursor_clipped_rect);
         }
