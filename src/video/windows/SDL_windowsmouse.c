@@ -268,10 +268,9 @@ WIN_WarpMouseGlobal(int x, int y)
     if (MouseInputWarping) {
         INPUT input;
         SDL_zero(input);
+
         input.type = INPUT_MOUSE;
         input.mi.dwFlags = MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_MOVE_NOCOALESCE;
-        /* dwExtraInfo must be zero for InjectMouseInput */
-
         /* TODO: Cache the system metrics and update on WM_DISPLAYCHANGE? */
 #if 1
         input.mi.dx = ScaleScreenCoord(x - GetSystemMetrics(SM_XVIRTUALSCREEN), 65535, GetSystemMetrics(SM_CXVIRTUALSCREEN));
@@ -283,10 +282,14 @@ WIN_WarpMouseGlobal(int x, int y)
         input.mi.dy = ScaleScreenCoord(y, 65535, GetSystemMetrics(SM_CYSCREEN));
 #endif
 
+        /* While SendInput adds the movement to the back of the queue, InjectMouseInput adds it to the front */
+        /* This is problematic since you can receive the events in an incorrect order */
         if (pInjectMouseInput) {
+            /* Requires (time <= GetTickCount()) && (dwExtraInfo == 0) */
             pInjectMouseInput(&input.mi, 1);
         } else {
             /* Without per-monitor DPI awareness, rounding errors can occur, even at 100% scaling. */
+            /* There seems to still be a very small chance of events being dropped with SendInput */
             SendInput(1, &input, sizeof(input));
         }
     } else {
@@ -407,8 +410,8 @@ WIN_InitMouse(_THIS)
     if (IsWin10FCUorNewer()) {
         /* SetCursorPos is broken as of Windows 10 build 16299 (Fall Creators Update)
            It no longer sends mouse WM_MOUSEMOVE, and is sometimes just ignored
-           So instead, use SendInputm or the UWP equivalent InjectMouseInput */
-        pInjectMouseInput = (pfnInjectMouseInput) GetProcAddress(GetModuleHandle(TEXT("user32")), "InjectMouseInput");
+           So instead, use SendInput or the UWP equivalent InjectMouseInput */
+        pInjectMouseInput = (pfnInjectMouseInput) GetProcAddress(GetModuleHandle(TEXT("user32.dll")), "InjectMouseInput");
         MouseInputWarping = SDL_TRUE;
     }
 }
