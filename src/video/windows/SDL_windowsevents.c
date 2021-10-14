@@ -743,14 +743,16 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         {
             SDL_Mouse *mouse = SDL_GetMouse();
 
-            /* https://devblogs.microsoft.com/oldnewthing/20031013-00/?p=42193 */
             if (!data->mouse_tracked) {
-                TRACKMOUSEEVENT tme;
-                tme.cbSize = sizeof(TRACKMOUSEEVENT);
-                tme.dwFlags = TME_LEAVE;
-                tme.hwndTrack = data->hwnd;
-                TrackMouseEvent(&tme);
-                data->mouse_tracked = SDL_TRUE;
+                TRACKMOUSEEVENT trackMouseEvent;
+
+                trackMouseEvent.cbSize = sizeof(TRACKMOUSEEVENT);
+                trackMouseEvent.dwFlags = TME_LEAVE;
+                trackMouseEvent.hwndTrack = data->hwnd;
+
+                if (TrackMouseEvent(&trackMouseEvent)) {
+                    data->mouse_tracked = SDL_TRUE;
+                }
             }
 
             if (!mouse->relative_mode || mouse->relative_mode_warp) {
@@ -792,8 +794,10 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             RAWINPUT inp;
             UINT size = sizeof(inp);
 
+            const SDL_bool isRelative = mouse->relative_mode || mouse->relative_mode_warp;
+
             /* Relative mouse motion is delivered to the window with keyboard focus */
-            if (!mouse->relative_mode || mouse->relative_mode_warp || data->window != SDL_GetKeyboardFocus()) {
+            if (!isRelative || data->window != SDL_GetKeyboardFocus()) {
                 break;
             }
 
@@ -883,9 +887,10 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                             SDL_SendMouseMotion(data->window, mouseID, 1, relX, relY);
                         }
                     }
+                    WIN_CheckRawMouseButtons(rawmouse->usButtonFlags, data, mouseID);
 
-                    data->last_raw_mouse_position.x = x;
-                    data->last_raw_mouse_position.y = y;
+                } else {
+                    SDL_assert(0 && "Shouldn't happen");
                 }
                 WIN_CheckRawMouseButtons(rawmouse->usButtonFlags, data, mouseID);
             }
@@ -926,8 +931,12 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             }
         }
 
-        /* TODO: Should this still reset SDL's mouse focus? */
-        SDL_SetMouseFocus(NULL);
+        /* When WM_MOUSELEAVE is fired we can be assured that the cursor has left the window */
+        if (!(data->window->flags & SDL_WINDOW_MOUSE_CAPTURE)) {
+            SDL_SetMouseFocus(NULL);
+        }
+
+        /* Once we get WM_MOUSELEAVE we're guaranteed that the window is no longer tracked */
         data->mouse_tracked = SDL_FALSE;
 
         returnCode = 0;
@@ -1550,6 +1559,7 @@ WIN_PumpEvents(_THIS)
     /* Update mouse capture */
     WIN_UpdateMouseCapture();
 }
+
 
 static int app_registered = 0;
 LPTSTR SDL_Appname = NULL;

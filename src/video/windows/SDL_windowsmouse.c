@@ -329,6 +329,14 @@ WIN_CaptureMouse(SDL_Window *window)
         SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
         SetCapture(data->hwnd);
     } else {
+        SDL_Window *focus_window = SDL_GetMouseFocus();
+
+        if (focus_window) {
+            SDL_WindowData *data = (SDL_WindowData *)focus_window->driverdata;
+            if (!data->mouse_tracked) {
+                SDL_SetMouseFocus(NULL);
+            }
+        }
         ReleaseCapture();
     }
 

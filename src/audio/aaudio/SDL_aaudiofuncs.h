@@ -22,7 +22,7 @@
 #define SDL_PROC_UNUSED(ret,func,params)
 
 SDL_PROC(const char *, AAudio_convertResultToText, (aaudio_result_t returnCode))
-SDL_PROC_UNUSED(const char *, AAudio_convertStreamStateToText, (aaudio_stream_state_t state))
+SDL_PROC(const char *, AAudio_convertStreamStateToText, (aaudio_stream_state_t state))
 SDL_PROC(aaudio_result_t, AAudio_createStreamBuilder, (AAudioStreamBuilder** builder))
 SDL_PROC_UNUSED(void, AAudioStreamBuilder_setDeviceId, (AAudioStreamBuilder* builder, int32_t deviceId))
 SDL_PROC(void, AAudioStreamBuilder_setSampleRate, (AAudioStreamBuilder* builder, int32_t sampleRate))
@@ -41,7 +41,7 @@ SDL_PROC_UNUSED(void, AAudioStreamBuilder_setSessionId, (AAudioStreamBuilder* bu
 SDL_PROC_UNUSED(void, AAudioStreamBuilder_setPrivacySensitive, (AAudioStreamBuilder* builder, bool privacySensitive)) /* API 30 */
 SDL_PROC_UNUSED(void, AAudioStreamBuilder_setDataCallback, (AAudioStreamBuilder* builder, AAudioStream_dataCallback callback, void *userData))
 SDL_PROC_UNUSED(void, AAudioStreamBuilder_setFramesPerDataCallback, (AAudioStreamBuilder* builder, int32_t numFrames))
-SDL_PROC_UNUSED(void, AAudioStreamBuilder_setErrorCallback, (AAudioStreamBuilder* builder, AAudioStream_errorCallback callback, void *userData))
+SDL_PROC(void, AAudioStreamBuilder_setErrorCallback, (AAudioStreamBuilder* builder, AAudioStream_errorCallback callback, void *userData))
 SDL_PROC(aaudio_result_t , AAudioStreamBuilder_openStream, (AAudioStreamBuilder* builder, AAudioStream** stream))
 SDL_PROC(aaudio_result_t , AAudioStreamBuilder_delete, (AAudioStreamBuilder* builder))
 SDL_PROC_UNUSED(aaudio_result_t , AAudioStream_release, (AAudioStream* stream)) /* API 30 */
@@ -50,7 +50,7 @@ SDL_PROC(aaudio_result_t , AAudioStream_requestStart, (AAudioStream* stream))
 SDL_PROC(aaudio_result_t , AAudioStream_requestPause, (AAudioStream* stream))
 SDL_PROC_UNUSED(aaudio_result_t , AAudioStream_requestFlush, (AAudioStream* stream))
 SDL_PROC(aaudio_result_t , AAudioStream_requestStop, (AAudioStream* stream))
-SDL_PROC_UNUSED(aaudio_stream_state_t, AAudioStream_getState, (AAudioStream* stream))
+SDL_PROC(aaudio_stream_state_t, AAudioStream_getState, (AAudioStream* stream))
 SDL_PROC_UNUSED(aaudio_result_t, AAudioStream_waitForStateChange, (AAudioStream* stream, aaudio_stream_state_t inputState, aaudio_stream_state_t *nextState, int64_t timeoutNanoseconds))
 SDL_PROC(aaudio_result_t, AAudioStream_read, (AAudioStream* stream, void *buffer, int32_t numFrames, int64_t timeoutNanoseconds))
 SDL_PROC(aaudio_result_t, AAudioStream_write, (AAudioStream* stream, const void *buffer, int32_t numFrames, int64_t timeoutNanoseconds))
@@ -71,7 +71,7 @@ SDL_PROC_UNUSED(aaudio_direction_t, AAudioStream_getDirection, (AAudioStream* st
 SDL_PROC_UNUSED(int64_t, AAudioStream_getFramesWritten, (AAudioStream* stream))
 SDL_PROC_UNUSED(int64_t, AAudioStream_getFramesRead, (AAudioStream* stream))
 SDL_PROC_UNUSED(aaudio_session_id_t, AAudioStream_getSessionId, (AAudioStream* stream)) /* API 28 */
-SDL_PROC_UNUSED(aaudio_result_t, AAudioStream_getTimestamp, (AAudioStream* stream, clockid_t clockid, int64_t *framePosition, int64_t *timeNanoseconds))
+SDL_PROC(aaudio_result_t, AAudioStream_getTimestamp, (AAudioStream* stream, clockid_t clockid, int64_t *framePosition, int64_t *timeNanoseconds))
 SDL_PROC_UNUSED(aaudio_usage_t, AAudioStream_getUsage, (AAudioStream* stream)) /* API 28 */
 SDL_PROC_UNUSED(aaudio_content_type_t, AAudioStream_getContentType, (AAudioStream* stream)) /* API 28 */
 SDL_PROC_UNUSED(aaudio_input_preset_t, AAudioStream_getInputPreset, (AAudioStream* stream)) /* API 28 */
