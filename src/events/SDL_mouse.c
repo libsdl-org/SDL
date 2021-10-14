@@ -384,6 +384,8 @@ SDL_PrivateSendMouseMotion(SDL_Window * window, SDL_MouseID mouseID, int relativ
     if (!mouse->has_position) {
         xrel = 0;
         yrel = 0;
+        mouse->x = x;
+        mouse->y = y;
         mouse->has_position = SDL_TRUE;
     } else if (!xrel && !yrel) {  /* Drop events that don't change state */
 #ifdef DEBUG_MOUSE
@@ -765,10 +767,14 @@ SDL_WarpMouseInWindow(SDL_Window * window, int x, int y)
         return;
     }
 
-    if (mouse->WarpMouse) {
+    /* Ignore the previous position when we warp */
+    mouse->has_position = SDL_FALSE;
+
+    if (mouse->WarpMouse &&
+        (!mouse->relative_mode || mouse->relative_mode_warp)) {
         mouse->WarpMouse(window, x, y);
     } else {
-        SDL_SendMouseMotion(window, mouse->mouseID, 0, x, y);
+        SDL_PrivateSendMouseMotion(window, mouse->mouseID, 0, x, y);
     }
 }
 
