@@ -292,18 +292,22 @@ WIN_SetRelativeMouseMode(SDL_bool enabled)
 static int
 WIN_CaptureMouse(SDL_Window *window)
 {
-    if (!window) {
-        SDL_Window *focusWin = SDL_GetKeyboardFocus();
-        if (focusWin) {
-            WIN_OnWindowEnter(SDL_GetVideoDevice(), focusWin);  /* make sure WM_MOUSELEAVE messages are (re)enabled. */
+    if (window) {
+        SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
+        SetCapture(data->hwnd);
+    } else {
+        SDL_Window *focus_window = SDL_GetMouseFocus();
+       
+        if (focus_window) {
+            SDL_WindowData *data = (SDL_WindowData *)focus_window->driverdata;
+            if (!data->mouse_tracked) {
+                SDL_SetMouseFocus(NULL);
+            }
         }
+        ReleaseCapture();
     }
 
-    /* While we were thinking of SetCapture() when designing this API in SDL,
-       we didn't count on the fact that SetCapture() only tracks while the
-       left mouse button is held down! Instead, we listen for raw mouse input
-       and manually query the mouse when it leaves the window. :/ */
-    return ToggleRawInput(window != NULL);
+    return 0;
 }
 
 static Uint32

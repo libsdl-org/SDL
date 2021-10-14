@@ -953,18 +953,6 @@ void WIN_OnWindowEnter(_THIS, SDL_Window * window)
     if (window->flags & SDL_WINDOW_ALWAYS_ON_TOP) {
         WIN_SetWindowPositionInternal(_this, window, SWP_NOCOPYBITS | SWP_NOSIZE | SWP_NOACTIVATE);
     }
-
-#ifdef WM_MOUSELEAVE
-    {
-        TRACKMOUSEEVENT trackMouseEvent;
-
-        trackMouseEvent.cbSize = sizeof(TRACKMOUSEEVENT);
-        trackMouseEvent.dwFlags = TME_LEAVE;
-        trackMouseEvent.hwndTrack = data->hwnd;
-
-        TrackMouseEvent(&trackMouseEvent);
-    }
-#endif /* WM_MOUSELEAVE */
 }
 
 void

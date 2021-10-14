@@ -742,6 +742,19 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     case WM_MOUSEMOVE:
         {
             SDL_Mouse *mouse = SDL_GetMouse();
+
+            if (!data->mouse_tracked) {
+                TRACKMOUSEEVENT trackMouseEvent;
+
+                trackMouseEvent.cbSize = sizeof(TRACKMOUSEEVENT);
+                trackMouseEvent.dwFlags = TME_LEAVE;
+                trackMouseEvent.hwndTrack = data->hwnd;
+
+                if (TrackMouseEvent(&trackMouseEvent)) {
+                    data->mouse_tracked = SDL_TRUE;
+                }
+            }
+
             if (!mouse->relative_mode || mouse->relative_mode_warp) {
                 /* Only generate mouse events for real mouse */
                 if (GetMouseMessageSource() != SDL_MOUSE_EVENT_SOURCE_TOUCH &&
@@ -781,13 +794,10 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             RAWINPUT inp;
             UINT size = sizeof(inp);
             const SDL_bool isRelative = mouse->relative_mode || mouse->relative_mode_warp;
-            const SDL_bool isCapture = ((data->window->flags & SDL_WINDOW_MOUSE_CAPTURE) != 0);
 
             /* Relative mouse motion is delivered to the window with keyboard focus */
             if (!isRelative || data->window != SDL_GetKeyboardFocus()) {
-                if (!isCapture) {
-                    break;
-                }
+                break;
             }
 
             GetRawInputData(hRawInput, RID_INPUT, &inp, &size, sizeof(RAWINPUTHEADER));
@@ -910,28 +920,6 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     }
                     WIN_CheckRawMouseButtons(rawmouse->usButtonFlags, data, mouseID);
 
-                } else if (isCapture) {
-                    /* we check for where Windows thinks the system cursor lives in this case, so we don't really lose mouse accel, etc. */
-                    POINT pt;
-                    RECT hwndRect;
-                    HWND currentHnd;
-
-                    GetCursorPos(&pt);
-                    currentHnd = WindowFromPoint(pt);
-                    ScreenToClient(hwnd, &pt);
-                    GetClientRect(hwnd, &hwndRect);
-
-                    /* if in the window, WM_MOUSEMOVE, etc, will cover it. */
-                    if(currentHnd != hwnd || pt.x < 0 || pt.y < 0 || pt.x > hwndRect.right || pt.y > hwndRect.right) {
-                        SDL_bool swapButtons = GetSystemMetrics(SM_SWAPBUTTON) != 0;
-
-                        SDL_SendMouseMotion(data->window, mouseID, 0, (int)pt.x, (int)pt.y);
-                        SDL_SendMouseButton(data->window, mouseID, GetAsyncKeyState(VK_LBUTTON) & 0x8000 ? SDL_PRESSED : SDL_RELEASED, !swapButtons ? SDL_BUTTON_LEFT : SDL_BUTTON_RIGHT);
-                        SDL_SendMouseButton(data->window, mouseID, GetAsyncKeyState(VK_RBUTTON) & 0x8000 ? SDL_PRESSED : SDL_RELEASED, !swapButtons ? SDL_BUTTON_RIGHT : SDL_BUTTON_LEFT);
-                        SDL_SendMouseButton(data->window, mouseID, GetAsyncKeyState(VK_MBUTTON) & 0x8000 ? SDL_PRESSED : SDL_RELEASED, SDL_BUTTON_MIDDLE);
-                        SDL_SendMouseButton(data->window, mouseID, GetAsyncKeyState(VK_XBUTTON1) & 0x8000 ? SDL_PRESSED : SDL_RELEASED, SDL_BUTTON_X1);
-                        SDL_SendMouseButton(data->window, mouseID, GetAsyncKeyState(VK_XBUTTON2) & 0x8000 ? SDL_PRESSED : SDL_RELEASED, SDL_BUTTON_X2);
-                    }
                 } else {
                     SDL_assert(0 && "Shouldn't happen");
                 }
@@ -951,7 +939,6 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         }
         break;
 
-#ifdef WM_MOUSELEAVE
     case WM_MOUSELEAVE:
         if (SDL_GetMouseFocus() == data->window && !SDL_GetMouse()->relative_mode && !(data->window->flags & SDL_WINDOW_MOUSE_CAPTURE)) {
             if (!IsIconic(hwnd)) {
@@ -973,18 +960,16 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             }
         }
 
-        /* When WM_MOUSELEAVE is fired we can be assured that the cursor has left the window.
-           Regardless of relative mode, it is important that mouse focus is reset as there is a potential
-           race condition when in the process of leaving/entering relative mode, resulting in focus never
-           being lost. This then causes a cascading failure where SDL_WINDOWEVENT_ENTER / SDL_WINDOWEVENT_LEAVE
-           can stop firing permanently, due to the focus being in the wrong state and TrackMouseEvent never
-           resubscribing. */
-        if (!(data->window->flags & SDL_WINDOW_MOUSE_CAPTURE))
+        /* When WM_MOUSELEAVE is fired we can be assured that the cursor has left the window */
+        if (!(data->window->flags & SDL_WINDOW_MOUSE_CAPTURE)) {
             SDL_SetMouseFocus(NULL);
+        }
+
+        /* Once we get WM_MOUSELEAVE we're guaranteed that the window is no longer tracked */
+        data->mouse_tracked = SDL_FALSE;
 
         returnCode = 0;
         break;
-#endif /* WM_MOUSELEAVE */
 
     case WM_KEYDOWN:
     case WM_SYSKEYDOWN:
@@ -1467,6 +1452,31 @@ static void WIN_UpdateClipCursorForWindows()
     }
 }
 
+static void WIN_UpdateMouseCapture()
+{
+    SDL_Window* focusWindow = SDL_GetKeyboardFocus();
+
+    if (focusWindow && (focusWindow->flags & SDL_WINDOW_MOUSE_CAPTURE)) {
+        SDL_WindowData *data = (SDL_WindowData *) focusWindow->driverdata;
+
+        if (!data->mouse_tracked) {
+            POINT pt;
+
+            if (GetCursorPos(&pt) && ScreenToClient(data->hwnd, &pt)) {
+                SDL_bool swapButtons = GetSystemMetrics(SM_SWAPBUTTON) != 0;
+                SDL_MouseID mouseID = SDL_GetMouse()->mouseID;
+
+                SDL_SendMouseMotion(data->window, mouseID, 0, (int)pt.x, (int)pt.y);
+                SDL_SendMouseButton(data->window, mouseID, GetAsyncKeyState(VK_LBUTTON) & 0x8000 ? SDL_PRESSED : SDL_RELEASED, !swapButtons ? SDL_BUTTON_LEFT : SDL_BUTTON_RIGHT);
+                SDL_SendMouseButton(data->window, mouseID, GetAsyncKeyState(VK_RBUTTON) & 0x8000 ? SDL_PRESSED : SDL_RELEASED, !swapButtons ? SDL_BUTTON_RIGHT : SDL_BUTTON_LEFT);
+                SDL_SendMouseButton(data->window, mouseID, GetAsyncKeyState(VK_MBUTTON) & 0x8000 ? SDL_PRESSED : SDL_RELEASED, SDL_BUTTON_MIDDLE);
+                SDL_SendMouseButton(data->window, mouseID, GetAsyncKeyState(VK_XBUTTON1) & 0x8000 ? SDL_PRESSED : SDL_RELEASED, SDL_BUTTON_X1);
+                SDL_SendMouseButton(data->window, mouseID, GetAsyncKeyState(VK_XBUTTON2) & 0x8000 ? SDL_PRESSED : SDL_RELEASED, SDL_BUTTON_X2);
+            }
+        }
+    }
+}
+
 /* A message hook called before TranslateMessage() */
 static SDL_WindowsMessageHook g_WindowsMessageHook = NULL;
 static void *g_WindowsMessageHookData = NULL;
@@ -1584,6 +1594,9 @@ WIN_PumpEvents(_THIS)
 
     /* Update the clipping rect in case someone else has stolen it */
     WIN_UpdateClipCursorForWindows();
+
+    /* Update mouse capture */
+    WIN_UpdateMouseCapture();
 }
 
 
