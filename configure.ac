@@ -4185,6 +4185,9 @@ case "$host" in
         if test x$enable_video_metal = xyes -o x$enable_video_vulkan = xyes; then
             EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-weak_framework,QuartzCore -Wl,-weak_framework,Metal"
         fi
+        if test x$enable_video_opengl = xyes -o x$enable_video_opengles = xyes; then
+            EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,OpenGL"
+        fi
         ;;
     *-nacl|*-pnacl)
         ARCH=nacl

@@ -405,9 +405,13 @@ Cocoa_GL_SetSwapInterval(_THIS, int interval)
 
     nscontext = (NSOpenGLContext*)SDL_GL_GetCurrentContext();
     if (nscontext != nil) {
+        CGLError err;
         value = interval;
-        [nscontext setValues:&value forParameter:NSOpenGLCPSwapInterval];
-        status = 0;
+        if ((err = CGLSetParameter(nscontext.CGLContextObj, kCGLCPSwapInterval, &value)) != kCGLNoError) {
+            status = SDL_SetError("%s", CGLErrorString(err));
+        } else {
+            status = 0;
+        }
     } else {
         status = SDL_SetError("No current OpenGL context");
     }
@@ -425,8 +429,13 @@ Cocoa_GL_GetSwapInterval(_THIS)
 
     nscontext = (NSOpenGLContext*)SDL_GL_GetCurrentContext();
     if (nscontext != nil) {
-        [nscontext getValues:&value forParameter:NSOpenGLCPSwapInterval];
-        status = (int)value;
+        CGLError err;
+        if ((err = CGLGetParameter(nscontext.CGLContextObj, kCGLCPSwapInterval, &value)) != kCGLNoError) {
+            (void)SDL_SetError("%s", CGLErrorString(err));
+            status = 0;
+        } else {
+            status = (int)value;
+        }
     }
 
     return status;
