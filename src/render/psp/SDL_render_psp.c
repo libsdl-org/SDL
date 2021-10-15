@@ -56,6 +56,15 @@ static unsigned int __attribute__((aligned(16))) DisplayList[262144];
 #define COL4444(r,g,b,a)    ((r>>4) | ((g>>4)<<4) | ((b>>4)<<8) | ((a>>4)<<12))
 #define COL8888(r,g,b,a)    ((r) | ((g)<<8) | ((b)<<16) | ((a)<<24))
 
+typedef struct
+{
+    SDL_bool viewport_dirty;
+    SDL_Rect viewport;
+    SDL_bool cliprect_enabled_dirty;
+    SDL_bool cliprect_enabled;
+    SDL_bool cliprect_dirty;
+    SDL_Rect cliprect;
+} PSP_DrawStateCache;
 
 typedef struct
 {
@@ -70,6 +79,7 @@ typedef struct
     unsigned int    currentColor;
     int             currentBlendMode;
 
+    PSP_DrawStateCache drawstate;
 } PSP_RenderData;
 
 
@@ -98,8 +108,21 @@ typedef struct
 {
     float   u, v;
     float   x, y, z;
-
 } VertTV;
+
+typedef struct
+{
+    int     col;
+    float   x, y, z;
+} VertCV;
+
+
+typedef struct
+{
+    float   u, v;
+    int     col;
+    float   x, y, z;
+} VertTCV;
 
 #define PI   3.14159265358979f
 
@@ -346,12 +369,6 @@ PSP_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     return 0;
 }
 
-static int
-PSP_SetTextureColorMod(SDL_Renderer * renderer, SDL_Texture * texture)
-{
-    return SDL_Unsupported();
-}
-
 void
 TextureActivate(SDL_Texture * texture)
 {
@@ -373,6 +390,9 @@ TextureActivate(SDL_Texture * texture)
     sceGuTexFunc(GU_TFX_REPLACE, GU_TCC_RGBA);
 }
 
+static int
+PSP_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
+                 const SDL_Rect * rect, void **pixels, int *pitch);
 
 static int
 PSP_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
@@ -467,9 +487,97 @@ PSP_QueueDrawPoints(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_F
 }
 
 static int
+PSP_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
+        const float *xy, int xy_stride, const int *color, int color_stride, const float *uv, int uv_stride,
+        int num_vertices, const void *indices, int num_indices, int size_indices,
+        float scale_x, float scale_y)
+{
+    int i;
+    int count = indices ? num_indices : num_vertices;
+
+    cmd->data.draw.count = count;
+    size_indices = indices ? size_indices : 0;
+
+    if (texture == NULL) {
+        VertCV *verts;
+        verts = (VertCV *) SDL_AllocateRenderVertices(renderer, count * sizeof (VertCV), 4, &cmd->data.draw.first);
+        if (!verts) {
+            return -1;
+        }
+
+        for (i = 0; i < count; i++) {
+            int j;
+            float *xy_;
+            int col_;
+            if (size_indices == 4) {
+                j = ((const Uint32 *)indices)[i];
+            } else if (size_indices == 2) {
+                j = ((const Uint16 *)indices)[i];
+            } else if (size_indices == 1) {
+                j = ((const Uint8 *)indices)[i];
+            } else {
+                j = i;
+            }
+
+            xy_ = (float *)((char*)xy + j * xy_stride);
+            col_ = *(int *)((char*)color + j * color_stride);
+
+            verts->x = xy_[0] * scale_x;
+            verts->y = xy_[1] * scale_y;
+            verts->z = 0;
+
+            verts->col = col_;
+
+            verts++;
+        }
+    } else {
+        PSP_TextureData *psp_texture = (PSP_TextureData *) texture->driverdata;
+        VertTCV *verts;
+        verts = (VertTCV *) SDL_AllocateRenderVertices(renderer, count * sizeof (VertTCV), 4, &cmd->data.draw.first);
+        if (!verts) {
+            return -1;
+        }
+
+        for (i = 0; i < count; i++) {
+            int j;
+            float *xy_;
+            int col_;
+            float *uv_;
+
+            if (size_indices == 4) {
+                j = ((const Uint32 *)indices)[i];
+            } else if (size_indices == 2) {
+                j = ((const Uint16 *)indices)[i];
+            } else if (size_indices == 1) {
+                j = ((const Uint8 *)indices)[i];
+            } else {
+                j = i;
+            }
+
+            xy_ = (float *)((char*)xy + j * xy_stride);
+            col_ = *(int *)((char*)color + j * color_stride);
+            uv_ = (float *)((char*)uv + j * uv_stride);
+
+            verts->x = xy_[0] * scale_x;
+            verts->y = xy_[1] * scale_y;
+            verts->z = 0;
+
+            verts->col = col_;
+
+            verts->u = uv_[0] * psp_texture->textureWidth;
+            verts->v = uv_[1] * psp_texture->textureHeight;
+
+            verts++;
+        }
+    }
+
+    return 0;
+}
+
+static int
 PSP_QueueFillRects(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FRect * rects, int count)
 {
-    VertV *verts = (GLfloat *) SDL_AllocateRenderVertices(renderer, count * 2 * sizeof (VertV), 4, &cmd->data.draw.first);
+    VertV *verts = (VertV *) SDL_AllocateRenderVertices(renderer, count * 2 * sizeof (VertV), 4, &cmd->data.draw.first);
     int i;
 
     if (!verts) {
@@ -691,7 +799,6 @@ static int
 PSP_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertices, size_t vertsize)
 {
     PSP_RenderData *data = (PSP_RenderData *) renderer->driverdata;
-    size_t i;
 
     StartDrawing(renderer);
 
@@ -847,6 +954,25 @@ PSP_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *verti
                 break;
             }
 
+            case SDL_RENDERCMD_GEOMETRY: {
+                const size_t count = cmd->data.draw.count;
+                if (cmd->data.draw.texture == NULL) {
+                    const VertCV *verts = (VertCV *) (gpumem + cmd->data.draw.first);
+                    sceGuDisable(GU_TEXTURE_2D);
+                    /* In GU_SMOOTH mode */
+                    sceGuDrawArray(GU_TRIANGLES, GU_COLOR_8888|GU_VERTEX_32BITF|GU_TRANSFORM_2D, count, 0, verts);
+                    sceGuEnable(GU_TEXTURE_2D);
+                } else {
+                    const VertTCV *verts = (VertTCV *) (gpumem + cmd->data.draw.first);
+                    TextureActivate(cmd->data.draw.texture);
+                    /* Need to force refresh of blending mode, probably something to FIXME */
+                    PSP_SetBlendMode(renderer, SDL_BLENDMODE_INVALID);
+                    PSP_SetBlendMode(renderer, cmd->data.draw.blend);
+                    sceGuDrawArray(GU_TRIANGLES, GU_TEXTURE_32BITF|GU_COLOR_8888|GU_VERTEX_32BITF|GU_TRANSFORM_2D, count, 0, verts);
+                }
+                break;
+            }
+
             case SDL_RENDERCMD_NO_OP:
                 break;
         }
@@ -952,7 +1078,6 @@ PSP_CreateRenderer(SDL_Window * window, Uint32 flags)
 
     renderer->WindowEvent = PSP_WindowEvent;
     renderer->CreateTexture = PSP_CreateTexture;
-    renderer->SetTextureColorMod = PSP_SetTextureColorMod;
     renderer->UpdateTexture = PSP_UpdateTexture;
     renderer->LockTexture = PSP_LockTexture;
     renderer->UnlockTexture = PSP_UnlockTexture;
@@ -962,6 +1087,7 @@ PSP_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->QueueSetDrawColor = PSP_QueueSetViewport;  /* SetViewport and SetDrawColor are (currently) no-ops. */
     renderer->QueueDrawPoints = PSP_QueueDrawPoints;
     renderer->QueueDrawLines = PSP_QueueDrawPoints;  /* lines and points queue vertices the same way. */
+    renderer->QueueGeometry = PSP_QueueGeometry;
     renderer->QueueFillRects = PSP_QueueFillRects;
     renderer->QueueCopy = PSP_QueueCopy;
     renderer->QueueCopyEx = PSP_QueueCopyEx;
@@ -1023,8 +1149,11 @@ PSP_CreateRenderer(SDL_Window * window, Uint32 flags)
     sceGuEnable(GU_SCISSOR_TEST);
 
     /* Backface culling */
+    /*
+    FIXME: Culling probably un-needed ? It can conflict with SDL_RENDERCMD_GEOMETRY
     sceGuFrontFace(GU_CCW);
     sceGuEnable(GU_CULL_FACE);
+    */
 
     /* Texturing */
     sceGuEnable(GU_TEXTURE_2D);

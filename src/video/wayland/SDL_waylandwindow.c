@@ -146,7 +146,7 @@ handle_surface_frame_done(void *data, struct wl_callback *cb, uint32_t time)
     SDL_AtomicSet(&wind->swap_interval_ready, 1);  /* mark window as ready to present again. */
 
     /* reset this callback to fire again once a new frame was presented and compositor wants the next one. */
-    wind->frame_callback = wl_surface_frame(wind->surface);
+    wind->frame_callback = wl_surface_frame(wind->frame_surface_wrapper);
     wl_callback_destroy(cb);
     wl_callback_add_listener(wind->frame_callback, &surface_frame_listener, data);
 }
@@ -1237,7 +1237,10 @@ int Wayland_CreateWindow(_THIS, SDL_Window *window)
      * window isn't visible.
      */
     if (window->flags & SDL_WINDOW_OPENGL) {
-        data->frame_callback = wl_surface_frame(data->surface);
+        data->frame_event_queue = WAYLAND_wl_display_create_queue(data->waylandData->display);
+        data->frame_surface_wrapper = WAYLAND_wl_proxy_create_wrapper(data->surface);
+        WAYLAND_wl_proxy_set_queue((struct wl_proxy *)data->frame_surface_wrapper, data->frame_event_queue);
+        data->frame_callback = wl_surface_frame(data->frame_surface_wrapper);
         wl_callback_add_listener(data->frame_callback, &surface_frame_listener, data);
     }
 
@@ -1477,6 +1480,8 @@ void Wayland_DestroyWindow(_THIS, SDL_Window *window)
         SDL_free(wind->outputs);
 
         if (wind->frame_callback) {
+            WAYLAND_wl_event_queue_destroy(wind->frame_event_queue);
+            WAYLAND_wl_proxy_wrapper_destroy(wind->frame_surface_wrapper);
             wl_callback_destroy(wind->frame_callback);
         }
 

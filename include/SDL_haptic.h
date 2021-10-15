@@ -820,6 +820,7 @@ typedef union SDL_HapticEffect
 
 
 /* Function prototypes */
+
 /**
  * Count the number of haptic devices attached to the system.
  *

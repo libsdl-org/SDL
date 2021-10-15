@@ -127,7 +127,7 @@ SDL_RLEaccel.obj: SDL_RLEaccel.c
 
 # c99 mode needed because of structs with flexible array members in libusb.h
 SDL_hidapi.obj: SDL_hidapi.c
-    wcc386 $(CFLAGS) -za99 -I"src/hidapi/hidapi" -fo=$^@ $<
+    wcc386 $(CFLAGS) -za99 -fo=$^@ $<
 
 .c: ./src/libm;
 $(LIBM): $(MOBJS)

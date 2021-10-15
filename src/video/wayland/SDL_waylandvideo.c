@@ -169,6 +169,7 @@ Wayland_DeleteDevice(SDL_VideoDevice *device)
         WAYLAND_wl_display_flush(data->display);
         WAYLAND_wl_display_disconnect(data->display);
     }
+    SDL_DestroyMutex(data->display_dispatch_lock);
     SDL_free(data);
     SDL_free(device);
     SDL_WAYLAND_UnloadSymbols();
@@ -200,6 +201,8 @@ Wayland_CreateDevice(int devindex)
     }
 
     data->display = display;
+
+    data->display_dispatch_lock = SDL_CreateMutex();
 
     /* Initialize all variables that we clean on shutdown */
     device = SDL_calloc(1, sizeof(SDL_VideoDevice));

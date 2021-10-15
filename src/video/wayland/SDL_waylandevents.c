@@ -231,11 +231,21 @@ Wayland_PumpEvents(_THIS)
         keyboard_repeat_handle(&input->keyboard_repeat, now);
     }
 
+    /* If we're trying to dispatch the display in another thread,
+     * we could trigger a race condition and end up blocking
+     * in wl_display_dispatch() */
+    if (SDL_TryLockMutex(d->display_dispatch_lock) != 0) {
+        return;
+    }
+
     if (SDL_IOReady(WAYLAND_wl_display_get_fd(d->display), SDL_FALSE, 0)) {
         err = WAYLAND_wl_display_dispatch(d->display);
     } else {
         err = WAYLAND_wl_display_dispatch_pending(d->display);
     }
+
+    SDL_UnlockMutex(d->display_dispatch_lock);
+
     if (err == -1 && !d->display_disconnected) {
         /* Something has failed with the Wayland connection -- for example,
          * the compositor may have shut down and closed its end of the socket,

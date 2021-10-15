@@ -86,6 +86,7 @@ typedef struct {
     char *classname;
 
     int relative_mouse_mode;
+    SDL_mutex *display_dispatch_lock;
 } SDL_VideoData;
 
 typedef struct {

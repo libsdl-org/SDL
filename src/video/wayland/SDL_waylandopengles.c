@@ -127,7 +127,8 @@ Wayland_GLES_SwapWindow(_THIS, SDL_Window *window)
 
     /* Control swap interval ourselves. See comments on Wayland_GLES_SetSwapInterval */
     if (swap_interval != 0) {
-        struct wl_display *display = ((SDL_VideoData *)_this->driverdata)->display;
+        SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
+        struct wl_display *display = videodata->display;
         SDL_VideoDisplay *sdldisplay = SDL_GetDisplayForWindow(window);
         /* ~10 frames (or 1 sec), so we'll progress even if throttled to zero. */
         const Uint32 max_wait = SDL_GetTicks() + (sdldisplay->current_mode.refresh_rate ?
@@ -137,7 +138,7 @@ Wayland_GLES_SwapWindow(_THIS, SDL_Window *window)
 
             /* !!! FIXME: this is just the crucial piece of Wayland_PumpEvents */
             WAYLAND_wl_display_flush(display);
-            if (WAYLAND_wl_display_dispatch_pending(display) > 0) {
+            if (WAYLAND_wl_display_dispatch_queue_pending(display, data->frame_event_queue) > 0) {
                 /* We dispatched some pending events. Check if the frame callback happened. */
                 continue;
             }
@@ -148,12 +149,20 @@ Wayland_GLES_SwapWindow(_THIS, SDL_Window *window)
                 break;
             }
 
+            /* Make sure we're not competing with SDL_PumpEvents() for any new
+             * events, or one of us may end up blocking in wl_display_dispatch */
+            if (SDL_TryLockMutex(videodata->display_dispatch_lock) != 0) {
+                continue;
+            }
+
             if (SDL_IOReady(WAYLAND_wl_display_get_fd(display), SDL_FALSE, max_wait - now) <= 0) {
                 /* Error or timeout expired without any events for us */
+                SDL_UnlockMutex(videodata->display_dispatch_lock);
                 break;
             }
 
-            WAYLAND_wl_display_dispatch(display);
+            WAYLAND_wl_display_dispatch_queue(display, data->frame_event_queue);
+            SDL_UnlockMutex(videodata->display_dispatch_lock);
         }
         SDL_AtomicSet(&data->swap_interval_ready, 0);
     }

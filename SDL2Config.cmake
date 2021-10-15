@@ -1,5 +1,14 @@
 include("${CMAKE_CURRENT_LIST_DIR}/SDL2Targets.cmake")
 
+# on static-only builds create an alias
+if(NOT TARGET SDL2::SDL2 AND TARGET SDL2::SDL2-static)
+  if(CMAKE_VERSION VERSION_LESS "3.18")
+      # Aliasing local targets is not supported on CMake < 3.18, so make it global.
+      set_target_properties(SDL2::SDL2-static PROPERTIES IMPORTED_GLOBAL TRUE)
+  endif()
+  add_library(SDL2::SDL2 ALIAS SDL2::SDL2-static)
+endif()
+
 # provide ${SDL2_LIBRARIES}, ${SDL2_INCLUDE_DIRS} etc, like sdl2-config.cmake does,
 # for compatibility between SDL2 built with autotools and SDL2 built with CMake
 
@@ -59,10 +68,10 @@ if( sdl2implib AND sdl2mainimplib AND sdl2implibdbg AND sdl2mainimplibdbg )
 	set(SDL2_LIBRARIES $<IF:$<CONFIG:Debug>,${sdl2mainimplibdbg},${sdl2mainimplib}>   $<IF:$<CONFIG:Debug>,${sdl2implibdbg},${sdl2implib}>)
 else()
 	if( (NOT sdl2implib) AND sdl2implibdbg ) # if we only have a debug version of the lib
-		set(sdl2implib sdl2implibdbg)
+		set(sdl2implib ${sdl2implibdbg})
 	endif()
 	if( (NOT sdl2mainimplib) AND sdl2mainimplibdbg ) # if we only have a debug version of the lib
-		set(sdl2mainimplib sdl2mainimplibdbg)
+		set(sdl2mainimplib ${sdl2mainimplibdbg})
 	endif()
 
 	if( sdl2implib AND sdl2mainimplib )

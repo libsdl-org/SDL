@@ -147,7 +147,7 @@ struct _joycfg
 /* OS/2 Implementation Function Prototypes */
 static int joyPortOpen(HFILE * hGame);
 static void joyPortClose(HFILE * hGame);
-static int joyGetData(char *joyenv, char *name, char stopchar, size_t maxchars);
+static int joyGetData(const char *joyenv, char *name, char stopchar, size_t maxchars);
 static int joyGetEnv(struct _joycfg * joydata);
 
 
@@ -700,7 +700,7 @@ static void joyPortClose(HFILE * hGame)
 /***************************/
 static int joyGetEnv(struct _joycfg * joydata)
 {
-	char *joyenv;				/* Pointer to tested character */
+	const char *joyenv;		/* Pointer to tested character */
 	char tempnumber[5];		/* Temporary place to put numeric texts */
 
 	joyenv = SDL_getenv("SDL_OS2_JOYSTICK");
@@ -711,30 +711,29 @@ static int joyGetEnv(struct _joycfg * joydata)
 
 	/* If the string name starts with '... get if fully */
 	if (*joyenv == '\'') joyenv += joyGetData(++joyenv,joydata->name,'\'',sizeof(joydata->name));
-
 	/* If not, get it until the next space */
-	else if (*joyenv == '\"') joyenv+=joyGetData(++joyenv,joydata->name,'\"',sizeof(joydata->name));
+	else if (*joyenv == '\"') joyenv += joyGetData(++joyenv,joydata->name,'\"',sizeof(joydata->name));
 	else joyenv += joyGetData(joyenv,joydata->name,' ',sizeof(joydata->name));
 
 	/* Now get the number of axes */
 	while (*joyenv == ' ' && *joyenv != 0) joyenv++; /* jump spaces... */
 	joyenv += joyGetData(joyenv,tempnumber,' ',sizeof(tempnumber));
-	joydata->axes = atoi(tempnumber);
+	joydata->axes = SDL_atoi(tempnumber);
 
 	/* Now get the number of buttons */
 	while (*joyenv == ' ' && *joyenv != 0) joyenv++; /* jump spaces... */
 	joyenv += joyGetData(joyenv,tempnumber,' ',sizeof(tempnumber));
-	joydata->buttons = atoi(tempnumber);
+	joydata->buttons = SDL_atoi(tempnumber);
 
 	/* Now get the number of hats */
 	while (*joyenv == ' ' && *joyenv != 0) joyenv++; /* jump spaces... */
 	joyenv += joyGetData(joyenv,tempnumber,' ',sizeof(tempnumber));
-	joydata->hats = atoi(tempnumber);
+	joydata->hats = SDL_atoi(tempnumber);
 
 	/* Now get the number of balls */
 	while (*joyenv==' ' && *joyenv != 0) joyenv++; /* jump spaces... */
 	joyenv += joyGetData(joyenv,tempnumber,' ',sizeof(tempnumber));
-	joydata->balls = atoi(tempnumber);
+	joydata->balls = SDL_atoi(tempnumber);
 	return 1;
 }
 
@@ -742,7 +741,7 @@ static int joyGetEnv(struct _joycfg * joydata)
 /* Get a text from in the string starting in joyenv until it finds		*/
 /* the stopchar or maxchars is reached. The result is placed in name.	*/
 /************************************************************************/
-static int joyGetData(char *joyenv, char *name, char stopchar, size_t maxchars)
+static int joyGetData(const char *joyenv, char *name, char stopchar, size_t maxchars)
 {
 	char *nameptr;			/* Pointer to the selected character */
 	int chcnt = 0;			/* Count how many characters where copied */

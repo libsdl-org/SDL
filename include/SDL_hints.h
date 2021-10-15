@@ -1633,6 +1633,17 @@ extern "C" {
  */
 #define SDL_HINT_WINDOW_FRAME_USABLE_WHILE_CURSOR_HIDDEN    "SDL_WINDOW_FRAME_USABLE_WHILE_CURSOR_HIDDEN"
 
+/**
+*  \brief  A variable controlling whether the window is activated when the SDL_ShowWindow function is called 
+*
+*  This variable can be set to the following values:
+*    "0"       - The window is activated when the SDL_ShowWindow function is called
+*    "1"       - The window is not activated when the SDL_ShowWindow function is called
+*
+*  By default SDL will activate the window when the SDL_ShowWindow function is called
+*/
+#define SDL_HINT_WINDOW_NO_ACTIVATION_WHEN_SHOWN    "SDL_WINDOW_NO_ACTIVATION_WHEN_SHOWN"
+
 /** \brief Allows back-button-press events on Windows Phone to be marked as handled
  *
  *  Windows Phone devices typically feature a Back button.  When pressed,

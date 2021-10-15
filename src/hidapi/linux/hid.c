@@ -50,7 +50,7 @@
 #include <linux/input.h>
 #include <libudev.h>
 
-#include "hidapi.h"
+#include "../hidapi/hidapi.h"
 
 #ifdef NAMESPACE
 namespace NAMESPACE

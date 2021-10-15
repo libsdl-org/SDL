@@ -369,6 +369,73 @@ WIN_CheckAsyncMouseRelease(SDL_WindowData *data)
     data->mouse_button_flags = 0;
 }
 
+static void
+WIN_UpdateFocus(SDL_Window *window)
+{
+    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+    HWND hwnd = data->hwnd;
+    SDL_bool had_focus = (SDL_GetKeyboardFocus() == window) ? SDL_TRUE : SDL_FALSE;
+    SDL_bool has_focus = (GetForegroundWindow() == hwnd) ? SDL_TRUE : SDL_FALSE;
+
+    if (had_focus == has_focus) {
+        return;
+    }
+
+    if (GetForegroundWindow() == hwnd) {
+        POINT cursorPos;
+
+        SDL_bool swapButtons = GetSystemMetrics(SM_SWAPBUTTON) != 0;
+        if (GetAsyncKeyState(VK_LBUTTON)) {
+            data->focus_click_pending |= !swapButtons ? SDL_BUTTON_LMASK : SDL_BUTTON_RMASK;
+        }
+        if (GetAsyncKeyState(VK_RBUTTON)) {
+            data->focus_click_pending |= !swapButtons ? SDL_BUTTON_RMASK : SDL_BUTTON_LMASK;
+        }
+        if (GetAsyncKeyState(VK_MBUTTON)) {
+            data->focus_click_pending |= SDL_BUTTON_MMASK;
+        }
+        if (GetAsyncKeyState(VK_XBUTTON1)) {
+            data->focus_click_pending |= SDL_BUTTON_X1MASK;
+        }
+        if (GetAsyncKeyState(VK_XBUTTON2)) {
+            data->focus_click_pending |= SDL_BUTTON_X2MASK;
+        }
+
+        SDL_SetKeyboardFocus(window);
+
+        GetCursorPos(&cursorPos);
+        ScreenToClient(hwnd, &cursorPos);
+        SDL_SendMouseMotion(window, 0, 0, cursorPos.x, cursorPos.y);
+
+        WIN_CheckAsyncMouseRelease(data);
+        WIN_UpdateClipCursor(window);
+
+        /*
+         * FIXME: Update keyboard state
+         */
+        WIN_CheckClipboardUpdate(data->videodata);
+
+        SDL_ToggleModState(KMOD_CAPS, (GetKeyState(VK_CAPITAL) & 0x0001) != 0);
+        SDL_ToggleModState(KMOD_NUM, (GetKeyState(VK_NUMLOCK) & 0x0001) != 0);
+        SDL_ToggleModState(KMOD_SCROLL, (GetKeyState(VK_SCROLL) & 0x0001) != 0);
+
+    } else {
+        RECT rect;
+
+        data->in_window_deactivation = SDL_TRUE;
+
+        SDL_SetKeyboardFocus(NULL);
+        WIN_ResetDeadKeys();
+
+        if (GetClipCursor(&rect) && SDL_memcmp(&rect, &data->cursor_clipped_rect, sizeof(rect)) == 0) {
+            ClipCursor(NULL);
+            SDL_zero(data->cursor_clipped_rect);
+        }
+
+        data->in_window_deactivation = SDL_FALSE;
+    }
+}
+
 static BOOL
 WIN_ConvertUTF32toUTF8(UINT32 codepoint, char * text)
 {
@@ -410,11 +477,6 @@ ShouldGenerateWindowCloseOnAltF4(void)
     return !SDL_GetHintBoolean(SDL_HINT_WINDOWS_NO_CLOSE_ON_ALT_F4, SDL_FALSE);
 }
 
-/* Win10 "Fall Creators Update" introduced the bug that SetCursorPos() (as used by SDL_WarpMouseInWindow())
-   doesn't reliably generate WM_MOUSEMOVE events anymore (see #3931) which breaks relative mouse mode via warping.
-   This is used to implement a workaround.. */
-static SDL_bool isWin10FCUorNewer = SDL_FALSE;
-
 /* We want to generate mouse events from mouse and pen, and touch events from touchscreens */
 #define MI_WP_SIGNATURE         0xFF515700
 #define MI_WP_SIGNATURE_MASK    0xFFFFFF00
@@ -444,79 +506,6 @@ static SDL_MOUSE_EVENT_SOURCE GetMouseMessageSource()
         }
     }
     return SDL_MOUSE_EVENT_SOURCE_MOUSE;
-}
-
-static void
-GetDisplayBoundsForPoint(int x, int y, RECT *bounds)
-{
-    SDL_VideoDevice *_this = SDL_GetVideoDevice();
-    int i, dist;
-    int closest = -1;
-    int closest_dist = 0x7FFFFFFF;
-    SDL_Point point;
-    SDL_Point delta;
-    SDL_Rect rect;
-
-    point.x = x;
-    point.y = y;
-    for (i = 0; i < _this->num_displays; ++i) {
-        SDL_GetDisplayBounds(i, &rect);
-        if (SDL_EnclosePoints(&point, 1, &rect, NULL)) {
-            WIN_RectToRECT(&rect, bounds);
-            return;
-        }
-
-        delta.x = point.x - (rect.x + rect.w / 2);
-        delta.y = point.y - (rect.y + rect.h / 2);
-        dist = (delta.x*delta.x + delta.y*delta.y);
-        if (dist < closest_dist) {
-            closest = i;
-            closest_dist = dist;
-            WIN_RectToRECT(&rect, bounds);
-        }
-    }
-    if (closest < 0) {
-        bounds->left = 0;
-        bounds->right = GetSystemMetrics(SM_CXSCREEN) - 1;
-        bounds->top = 0;
-        bounds->bottom = GetSystemMetrics(SM_CYSCREEN) - 1;
-    }
-}
-
-static void
-WarpWithinBoundsRect(int x, int y, RECT *bounds)
-{
-    if (x < bounds->left || x > bounds->right || y < bounds->top || y > bounds->bottom) {
-        const int MIN_BOUNDS_SIZE = 32;
-        int boundsWidth = (bounds->right - bounds->left) + 1;
-        int boundsHeight = (bounds->bottom - bounds->top) + 1;
-        if (boundsWidth >= MIN_BOUNDS_SIZE && boundsHeight >= MIN_BOUNDS_SIZE) {
-            /* Warp back to the opposite side, assuming more motion in the current direction */
-            int targetLeft = bounds->right - (boundsWidth * 3) / 4;
-            int targetRight = bounds->left + (boundsWidth * 3) / 4;
-            int targetTop = bounds->bottom - (boundsHeight * 3) / 4;
-            int targetBottom = bounds->top + (boundsHeight * 3) / 4;
-            int warpX;
-            int warpY;
-
-            if (x < bounds->left) {
-                warpX = targetRight;
-            } else if (x > bounds->right) {
-                warpX = targetLeft;
-            } else {
-                warpX = SDL_clamp(x, targetLeft, targetRight);
-            }
-
-            if (y < bounds->top) {
-                warpY = targetBottom;
-            } else if (y > bounds->bottom) {
-                warpY = targetTop;
-            } else {
-                warpY = SDL_clamp(y, targetTop, targetBottom);
-            }
-            SetCursorPos(warpX, warpY);
-        }
-    }
 }
 
 static SDL_WindowData *
@@ -658,78 +647,17 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         {
             /* Don't immediately clip the cursor in case we're clicking minimize/maximize buttons */
             data->skip_update_clipcursor = SDL_TRUE;
+
+            /* Update the focus here, since it's possible to get WM_ACTIVATE and WM_SETFOCUS without
+               actually being the foreground window, but this appears to get called in all cases where
+               the global foreground window changes to and from this window. */
+            WIN_UpdateFocus(data->window);
         }
         break;
 
     case WM_ACTIVATE:
         {
-            POINT cursorPos;
-            BOOL minimized;
-
-            minimized = HIWORD(wParam);
-            if (!minimized && (LOWORD(wParam) != WA_INACTIVE)) {
-                /* Don't mark the window as shown if it's activated before being shown */
-                if (!IsWindowVisible(hwnd)) {
-                    break;
-                }
-                if (LOWORD(wParam) == WA_CLICKACTIVE) {
-                    SDL_bool swapButtons = GetSystemMetrics(SM_SWAPBUTTON) != 0;
-                    if (GetAsyncKeyState(VK_LBUTTON)) {
-                        data->focus_click_pending |= !swapButtons ? SDL_BUTTON_LMASK : SDL_BUTTON_RMASK;
-                    }
-                    if (GetAsyncKeyState(VK_RBUTTON)) {
-                        data->focus_click_pending |= !swapButtons ? SDL_BUTTON_RMASK : SDL_BUTTON_LMASK;
-                    }
-                    if (GetAsyncKeyState(VK_MBUTTON)) {
-                        data->focus_click_pending |= SDL_BUTTON_MMASK;
-                    }
-                    if (GetAsyncKeyState(VK_XBUTTON1)) {
-                        data->focus_click_pending |= SDL_BUTTON_X1MASK;
-                    }
-                    if (GetAsyncKeyState(VK_XBUTTON2)) {
-                        data->focus_click_pending |= SDL_BUTTON_X2MASK;
-                    }
-                }
-
-                SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_SHOWN, 0, 0);
-                if (SDL_GetKeyboardFocus() != data->window) {
-                    SDL_SetKeyboardFocus(data->window);
-                }
-
-                GetCursorPos(&cursorPos);
-                ScreenToClient(hwnd, &cursorPos);
-                SDL_SendMouseMotion(data->window, 0, 0, cursorPos.x, cursorPos.y);
-
-                WIN_CheckAsyncMouseRelease(data);
-                WIN_UpdateClipCursor(data->window);
-
-                /*
-                 * FIXME: Update keyboard state
-                 */
-                WIN_CheckClipboardUpdate(data->videodata);
-
-                SDL_ToggleModState(KMOD_CAPS, (GetKeyState(VK_CAPITAL) & 0x0001) != 0);
-                SDL_ToggleModState(KMOD_NUM, (GetKeyState(VK_NUMLOCK) & 0x0001) != 0);
-                SDL_ToggleModState(KMOD_SCROLL, (GetKeyState(VK_SCROLL) & 0x0001) != 0);
-            } else {
-                RECT rect;
-
-                data->in_window_deactivation = SDL_TRUE;
-
-                if (SDL_GetKeyboardFocus() == data->window) {
-                    SDL_SetKeyboardFocus(NULL);
-                    WIN_ResetDeadKeys();
-                }
-
-                if (GetClipCursor(&rect) && SDL_memcmp(&rect, &data->cursor_clipped_rect, sizeof(rect)) == 0) {
-                    ClipCursor(NULL);
-                    SDL_zero(data->cursor_clipped_rect);
-                }
-
-                data->in_window_deactivation = SDL_FALSE;
-            }
         }
-        returnCode = 0;
         break;
 
     case WM_POINTERUPDATE:
@@ -741,27 +669,25 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     case WM_MOUSEMOVE:
         {
             SDL_Mouse *mouse = SDL_GetMouse();
+
+            if (!data->mouse_tracked) {
+                TRACKMOUSEEVENT trackMouseEvent;
+
+                trackMouseEvent.cbSize = sizeof(TRACKMOUSEEVENT);
+                trackMouseEvent.dwFlags = TME_LEAVE;
+                trackMouseEvent.hwndTrack = data->hwnd;
+
+                if (TrackMouseEvent(&trackMouseEvent)) {
+                    data->mouse_tracked = SDL_TRUE;
+                }
+            }
+
             if (!mouse->relative_mode || mouse->relative_mode_warp) {
                 /* Only generate mouse events for real mouse */
                 if (GetMouseMessageSource() != SDL_MOUSE_EVENT_SOURCE_TOUCH &&
                     lParam != data->last_pointer_update) {
                     SDL_SendMouseMotion(data->window, 0, 0, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
-                    if (isWin10FCUorNewer && mouse->relative_mode_warp &&
-                        (data->window->flags & SDL_WINDOW_INPUT_FOCUS) != 0) {
-                        /* To work around #3931, Win10 bug introduced in Fall Creators Update, where
-                           SetCursorPos() (SDL_WarpMouseInWindow()) doesn't reliably generate mouse events anymore,
-                           after each windows mouse event generate a fake event for the middle of the window
-                           if relative_mode_warp is used */
-                        int center_x = 0, center_y = 0;
-                        SDL_GetWindowSize(data->window, &center_x, &center_y);
-                        center_x /= 2;
-                        center_y /= 2;
-                        SDL_SendMouseMotion(data->window, 0, 0, center_x, center_y);
-                    }
                 }
-            } else {
-                /* We still need to update focus */
-                SDL_SetMouseFocus(data->window);
             }
         }
         /* don't break here, fall through to check the wParam like the button presses */
@@ -795,13 +721,10 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             RAWINPUT inp;
             UINT size = sizeof(inp);
             const SDL_bool isRelative = mouse->relative_mode || mouse->relative_mode_warp;
-            const SDL_bool isCapture = ((data->window->flags & SDL_WINDOW_MOUSE_CAPTURE) != 0);
 
             /* Relative mouse motion is delivered to the window with keyboard focus */
             if (!isRelative || data->window != SDL_GetKeyboardFocus()) {
-                if (!isCapture) {
-                    break;
-                }
+                break;
             }
 
             GetRawInputData(hRawInput, RID_INPUT, &inp, &size, sizeof(RAWINPUTHEADER));
@@ -822,34 +745,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     RAWMOUSE* rawmouse = &inp.data.mouse;
 
                     if ((rawmouse->usFlags & 0x01) == MOUSE_MOVE_RELATIVE) {
-                        POINT pt;
-
                         SDL_SendMouseMotion(data->window, mouseID, 1, (int)rawmouse->lLastX, (int)rawmouse->lLastY);
-
-                        /* Make sure that the mouse doesn't hover over notifications and so forth */
-                        if (GetCursorPos(&pt)) {
-                            int x = pt.x;
-                            int y = pt.y;
-                            RECT screenRect;
-                            RECT hwndRect;
-                            RECT boundsRect;
-
-                            /* Calculate screen rect */
-                            GetDisplayBoundsForPoint(x, y, &screenRect);
-
-                            /* Calculate client rect */
-                            GetClientRect(hwnd, &hwndRect);
-                            ClientToScreen(hwnd, (LPPOINT) & hwndRect);
-                            ClientToScreen(hwnd, (LPPOINT) & hwndRect + 1);
-
-                            /* Calculate bounds rect */
-                            IntersectRect(&boundsRect, &screenRect, &hwndRect);
-                            InflateRect(&boundsRect, -SAFE_AREA_X, -SAFE_AREA_Y);
-
-                            if (!data->in_title_click && !data->focus_click_pending) {
-                                WarpWithinBoundsRect(x, y, &boundsRect);
-                            }
-                        }
 
                     } else if (rawmouse->lLastX || rawmouse->lLastY) {
                         /* This is absolute motion, either using a tablet or mouse over RDP
@@ -880,33 +776,34 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                         relY = (int)(y - data->last_raw_mouse_position.y);
 
                         if (remote_desktop) {
-                            RECT screenRect;
-                            RECT hwndRect;
-                            RECT boundsRect;
-                            int boundsWidth, boundsHeight;
+                            if (!data->in_title_click && !data->focus_click_pending) {
+                                static int wobble;
+                                float floatX = (float)x / w;
+                                float floatY = (float)y / h;
 
-                            /* Calculate screen rect */
-                            GetDisplayBoundsForPoint(x, y, &screenRect);
+                                /* See if the mouse is at the edge of the screen, or in the RDP title bar area */
+                                if (floatX <= 0.01f || floatX >= 0.99f || floatY <= 0.01f || floatY >= 0.99f || y < 32) {
+                                    /* Wobble the cursor position so it's not ignored if the last warp didn't have any effect */
+                                    RECT rect = data->cursor_clipped_rect;
+                                    int warpX = rect.left + ((rect.right - rect.left) / 2) + wobble;
+                                    int warpY = rect.top + ((rect.bottom - rect.top) / 2);
 
-                            /* Calculate client rect */
-                            GetClientRect(hwnd, &hwndRect);
-                            ClientToScreen(hwnd, (LPPOINT) & hwndRect);
-                            ClientToScreen(hwnd, (LPPOINT) & hwndRect + 1);
+                                    WIN_SetCursorPos(warpX, warpY);
 
-                            /* Calculate bounds rect */
-                            IntersectRect(&boundsRect, &screenRect, &hwndRect);
-                            InflateRect(&boundsRect, -SAFE_AREA_X, -SAFE_AREA_Y);
-                            boundsWidth = (boundsRect.right - boundsRect.left) + 1;
-                            boundsHeight = (boundsRect.bottom - boundsRect.top) + 1;
-
-                            if ((boundsWidth > 0 && SDL_abs(relX) > (boundsWidth / 2)) ||
-                                (boundsHeight > 0 && SDL_abs(relY) > (boundsHeight / 2))) {
-                                /* Expected motion for warping below, ignore this */
-                            } else {
-                                SDL_SendMouseMotion(data->window, mouseID, 1, relX, relY);
-
-                                if (!data->in_title_click && !data->focus_click_pending) {
-                                    WarpWithinBoundsRect(x, y, &boundsRect);
+                                    ++wobble;
+                                    if (wobble > 1) {
+                                        wobble = -1;
+                                    }
+                                } else {
+                                    /* Send relative motion if we didn't warp last frame (had good position data)
+                                       We also sometimes get large deltas due to coalesced mouse motion and warping,
+                                       so ignore those.
+                                     */
+                                    const int MAX_RELATIVE_MOTION = (h / 6);
+                                    if (SDL_abs(relX) < MAX_RELATIVE_MOTION &&
+                                        SDL_abs(relY) < MAX_RELATIVE_MOTION) {
+                                        SDL_SendMouseMotion(data->window, mouseID, 1, relX, relY);
+                                    }
                                 }
                             }
                         } else {
@@ -924,28 +821,6 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     }
                     WIN_CheckRawMouseButtons(rawmouse->usButtonFlags, data, mouseID);
 
-                } else if (isCapture) {
-                    /* we check for where Windows thinks the system cursor lives in this case, so we don't really lose mouse accel, etc. */
-                    POINT pt;
-                    RECT hwndRect;
-                    HWND currentHnd;
-
-                    GetCursorPos(&pt);
-                    currentHnd = WindowFromPoint(pt);
-                    ScreenToClient(hwnd, &pt);
-                    GetClientRect(hwnd, &hwndRect);
-
-                    /* if in the window, WM_MOUSEMOVE, etc, will cover it. */
-                    if(currentHnd != hwnd || pt.x < 0 || pt.y < 0 || pt.x > hwndRect.right || pt.y > hwndRect.right) {
-                        SDL_bool swapButtons = GetSystemMetrics(SM_SWAPBUTTON) != 0;
-
-                        SDL_SendMouseMotion(data->window, mouseID, 0, (int)pt.x, (int)pt.y);
-                        SDL_SendMouseButton(data->window, mouseID, GetAsyncKeyState(VK_LBUTTON) & 0x8000 ? SDL_PRESSED : SDL_RELEASED, !swapButtons ? SDL_BUTTON_LEFT : SDL_BUTTON_RIGHT);
-                        SDL_SendMouseButton(data->window, mouseID, GetAsyncKeyState(VK_RBUTTON) & 0x8000 ? SDL_PRESSED : SDL_RELEASED, !swapButtons ? SDL_BUTTON_RIGHT : SDL_BUTTON_LEFT);
-                        SDL_SendMouseButton(data->window, mouseID, GetAsyncKeyState(VK_MBUTTON) & 0x8000 ? SDL_PRESSED : SDL_RELEASED, SDL_BUTTON_MIDDLE);
-                        SDL_SendMouseButton(data->window, mouseID, GetAsyncKeyState(VK_XBUTTON1) & 0x8000 ? SDL_PRESSED : SDL_RELEASED, SDL_BUTTON_X1);
-                        SDL_SendMouseButton(data->window, mouseID, GetAsyncKeyState(VK_XBUTTON2) & 0x8000 ? SDL_PRESSED : SDL_RELEASED, SDL_BUTTON_X2);
-                    }
                 } else {
                     SDL_assert(0 && "Shouldn't happen");
                 }
@@ -965,7 +840,6 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         }
         break;
 
-#ifdef WM_MOUSELEAVE
     case WM_MOUSELEAVE:
         if (SDL_GetMouseFocus() == data->window && !SDL_GetMouse()->relative_mode && !(data->window->flags & SDL_WINDOW_MOUSE_CAPTURE)) {
             if (!IsIconic(hwnd)) {
@@ -987,17 +861,16 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             }
         }
 
-        /* When WM_MOUSELEAVE is fired we can be assured that the cursor has left the window.
-           Regardless of relative mode, it is important that mouse focus is reset as there is a potential
-           race condition when in the process of leaving/entering relative mode, resulting in focus never
-           being lost. This then causes a cascading failure where SDL_WINDOWEVENT_ENTER / SDL_WINDOWEVENT_LEAVE
-           can stop firing permanently, due to the focus being in the wrong state and TrackMouseEvent never
-           resubscribing. */
-        SDL_SetMouseFocus(NULL);
+        /* When WM_MOUSELEAVE is fired we can be assured that the cursor has left the window */
+        if (!(data->window->flags & SDL_WINDOW_MOUSE_CAPTURE)) {
+            SDL_SetMouseFocus(NULL);
+        }
+
+        /* Once we get WM_MOUSELEAVE we're guaranteed that the window is no longer tracked */
+        data->mouse_tracked = SDL_FALSE;
 
         returnCode = 0;
         break;
-#endif /* WM_MOUSELEAVE */
 
     case WM_KEYDOWN:
     case WM_SYSKEYDOWN:
@@ -1480,6 +1353,31 @@ static void WIN_UpdateClipCursorForWindows()
     }
 }
 
+static void WIN_UpdateMouseCapture()
+{
+    SDL_Window* focusWindow = SDL_GetKeyboardFocus();
+
+    if (focusWindow && (focusWindow->flags & SDL_WINDOW_MOUSE_CAPTURE)) {
+        SDL_WindowData *data = (SDL_WindowData *) focusWindow->driverdata;
+
+        if (!data->mouse_tracked) {
+            POINT pt;
+
+            if (GetCursorPos(&pt) && ScreenToClient(data->hwnd, &pt)) {
+                SDL_bool swapButtons = GetSystemMetrics(SM_SWAPBUTTON) != 0;
+                SDL_MouseID mouseID = SDL_GetMouse()->mouseID;
+
+                SDL_SendMouseMotion(data->window, mouseID, 0, (int)pt.x, (int)pt.y);
+                SDL_SendMouseButton(data->window, mouseID, GetAsyncKeyState(VK_LBUTTON) & 0x8000 ? SDL_PRESSED : SDL_RELEASED, !swapButtons ? SDL_BUTTON_LEFT : SDL_BUTTON_RIGHT);
+                SDL_SendMouseButton(data->window, mouseID, GetAsyncKeyState(VK_RBUTTON) & 0x8000 ? SDL_PRESSED : SDL_RELEASED, !swapButtons ? SDL_BUTTON_RIGHT : SDL_BUTTON_LEFT);
+                SDL_SendMouseButton(data->window, mouseID, GetAsyncKeyState(VK_MBUTTON) & 0x8000 ? SDL_PRESSED : SDL_RELEASED, SDL_BUTTON_MIDDLE);
+                SDL_SendMouseButton(data->window, mouseID, GetAsyncKeyState(VK_XBUTTON1) & 0x8000 ? SDL_PRESSED : SDL_RELEASED, SDL_BUTTON_X1);
+                SDL_SendMouseButton(data->window, mouseID, GetAsyncKeyState(VK_XBUTTON2) & 0x8000 ? SDL_PRESSED : SDL_RELEASED, SDL_BUTTON_X2);
+            }
+        }
+    }
+}
+
 /* A message hook called before TranslateMessage() */
 static SDL_WindowsMessageHook g_WindowsMessageHook = NULL;
 static void *g_WindowsMessageHookData = NULL;
@@ -1538,7 +1436,7 @@ WIN_PumpEvents(_THIS)
 {
     const Uint8 *keystate;
     MSG msg;
-    DWORD start_ticks = GetTickCount();
+    DWORD end_ticks = GetTickCount() + 1;
     int new_messages = 0;
 
     if (g_WindowsEnableMessageLoop) {
@@ -1547,12 +1445,22 @@ WIN_PumpEvents(_THIS)
                 g_WindowsMessageHook(g_WindowsMessageHookData, msg.hwnd, msg.message, msg.wParam, msg.lParam);
             }
 
+            /* Don't dispatch any mouse motion queued prior to or including the last mouse warp */
+            if (msg.message == WM_MOUSEMOVE && SDL_last_warp_time) {
+                if (!SDL_TICKS_PASSED(msg.time, (SDL_last_warp_time + 1))) {
+                    continue;
+                }
+
+                /* This mouse message happened after the warp */
+                SDL_last_warp_time = 0;
+            }
+
             /* Always translate the message in case it's a non-SDL window (e.g. with Qt integration) */
             TranslateMessage(&msg);
             DispatchMessage(&msg);
 
             /* Make sure we don't busy loop here forever if there are lots of events coming in */
-            if (SDL_TICKS_PASSED(msg.time, start_ticks)) {
+            if (SDL_TICKS_PASSED(msg.time, end_ticks)) {
                 /* We might get a few new messages generated by the Steam overlay or other application hooks
                    In this case those messages will be processed before any pending input, so we want to continue after those messages.
                    (thanks to Peter Deayton for his investigation here)
@@ -1587,44 +1495,11 @@ WIN_PumpEvents(_THIS)
 
     /* Update the clipping rect in case someone else has stolen it */
     WIN_UpdateClipCursorForWindows();
+
+    /* Update mouse capture */
+    WIN_UpdateMouseCapture();
 }
 
-/* to work around #3931, a bug introduced in Win10 Fall Creators Update (build nr. 16299)
-   we need to detect the windows version. this struct and the function below does that.
-   usually this struct and the corresponding function (RtlGetVersion) are in <Ntddk.h>
-   but here we just load it dynamically */
-struct SDL_WIN_OSVERSIONINFOW {
-    ULONG dwOSVersionInfoSize;
-    ULONG dwMajorVersion;
-    ULONG dwMinorVersion;
-    ULONG dwBuildNumber;
-    ULONG dwPlatformId;
-    WCHAR szCSDVersion[128];
-};
-
-static SDL_bool
-IsWin10FCUorNewer(void)
-{
-    HMODULE handle = GetModuleHandle(TEXT("ntdll.dll"));
-    if (handle) {
-        typedef LONG(WINAPI* RtlGetVersionPtr)(struct SDL_WIN_OSVERSIONINFOW*);
-        RtlGetVersionPtr getVersionPtr = (RtlGetVersionPtr)GetProcAddress(handle, "RtlGetVersion");
-        if (getVersionPtr != NULL) {
-            struct SDL_WIN_OSVERSIONINFOW info;
-            SDL_zero(info);
-            info.dwOSVersionInfoSize = sizeof(info);
-            if (getVersionPtr(&info) == 0) { /* STATUS_SUCCESS == 0 */
-                if ((info.dwMajorVersion == 10 && info.dwMinorVersion == 0 && info.dwBuildNumber >= 16299) ||
-                    (info.dwMajorVersion == 10 && info.dwMinorVersion > 0) ||
-                    (info.dwMajorVersion > 10))
-                {
-                    return SDL_TRUE;
-                }
-            }
-        }
-    }
-    return SDL_FALSE;
-}
 
 static int app_registered = 0;
 LPTSTR SDL_Appname = NULL;
@@ -1689,8 +1564,6 @@ SDL_RegisterApp(char *name, Uint32 style, void *hInst)
     if (!RegisterClassEx(&wcex)) {
         return SDL_SetError("Couldn't register application class");
     }
-
-    isWin10FCUorNewer = IsWin10FCUorNewer();
 
     app_registered = 1;
     return 0;
