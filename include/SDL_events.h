@@ -160,6 +160,9 @@ typedef enum
     SDL_RENDER_TARGETS_RESET = 0x2000, /**< The render targets have been reset and their contents need to be updated */
     SDL_RENDER_DEVICE_RESET, /**< The device has been reset and all textures need to be recreated */
 
+    /* Internal events */
+    SDL_POLLSENTINEL = 0x7F00, /**< Signals the end of an event poll cycle */
+
     /** Events ::SDL_USEREVENT through ::SDL_LASTEVENT are for your use,
      *  and should be allocated with SDL_RegisterEvents()
      */
@@ -798,7 +801,7 @@ extern DECLSPEC void SDLCALL SDL_FlushEvents(Uint32 minType, Uint32 maxType);
  * If `event` is NULL, it simply returns 1 if there is an event in the queue,
  * but will not remove it from the queue.
  *
- * As this function implicitly calls SDL_PumpEvents(), you can only call this
+ * As this function may implicitly call SDL_PumpEvents(), you can only call this
  * function in the thread that set the video mode.
  *
  * SDL_PollEvent() is the favored way of receiving system events since it can
@@ -838,7 +841,7 @@ extern DECLSPEC int SDLCALL SDL_PollEvent(SDL_Event * event);
  * If `event` is not NULL, the next event is removed from the queue and stored
  * in the SDL_Event structure pointed to by `event`.
  *
- * As this function implicitly calls SDL_PumpEvents(), you can only call this
+ * As this function may implicitly call SDL_PumpEvents(), you can only call this
  * function in the thread that initialized the video subsystem.
  *
  * \param event the SDL_Event structure to be filled in with the next event
@@ -859,7 +862,7 @@ extern DECLSPEC int SDLCALL SDL_WaitEvent(SDL_Event * event);
  * If `event` is not NULL, the next event is removed from the queue and stored
  * in the SDL_Event structure pointed to by `event`.
  *
- * As this function implicitly calls SDL_PumpEvents(), you can only call this
+ * As this function may implicitly call SDL_PumpEvents(), you can only call this
  * function in the thread that initialized the video subsystem.
  *
  * \param event the SDL_Event structure to be filled in with the next event
