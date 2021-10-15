@@ -359,7 +359,11 @@ SDL_PrivateSendMouseMotion(SDL_Window * window, SDL_MouseID mouseID, int relativ
             return 0;
         }
         if (window && (window->flags & SDL_WINDOW_INPUT_FOCUS) != 0) {
-            SDL_WarpMouseInWindow(window, center_x, center_y);
+            if (mouse->WarpMouse) {
+                mouse->WarpMouse(window, center_x, center_y);
+            } else {
+                SDL_PrivateSendMouseMotion(window, mouseID, 0, center_x, center_y);
+            }
         }
     }
 
