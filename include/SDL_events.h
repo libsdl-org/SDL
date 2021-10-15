@@ -811,7 +811,7 @@ extern DECLSPEC void SDLCALL SDL_FlushEvents(Uint32 minType, Uint32 maxType);
  * while (game_is_still_running) {
  *     SDL_Event event;
  *     SDL_PumpEvents();
- *     while (SDL_PeepEvents(&event, 1, SDL_GETEVENT, 0, SDL_LASTEVENT) == 1) {  // poll until all events are handled!
+ *     while (SDL_PeepEvents(&event, 1, SDL_GETEVENT, 0, SDL_LASTEVENT) == 1) {
  *         // decide what to do with this event.
  *     }
  *
