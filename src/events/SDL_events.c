@@ -794,7 +794,7 @@ SDL_PollEvent(SDL_Event * event)
 static int
 SDL_WaitEventTimeout_Device(_THIS, SDL_Window *wakeup_window, SDL_Event * event, Uint32 start, int timeout)
 {
-	int loop_timeout = timeout;
+    int loop_timeout = timeout;
 
     for (;;) {
         /* Pump events on entry and each time we wake to ensure:
@@ -825,15 +825,15 @@ SDL_WaitEventTimeout_Device(_THIS, SDL_Window *wakeup_window, SDL_Event * event,
                 return 1;
             }
             /* No events found in the queue, call WaitEventTimeout to wait for an event. */
-			if (timeout > 0) {
-				Uint32 elapsed = SDL_GetTicks() - start;
-				if (elapsed >= (Uint32)timeout) {
-					/* Set wakeup_window to NULL without holding the lock. */
-					_this->wakeup_window = NULL;
-					return 0;
-				}
-				loop_timeout = (int)((Uint32)timeout - elapsed);
-			}
+            if (timeout > 0) {
+                Uint32 elapsed = SDL_GetTicks() - start;
+                if (elapsed >= (Uint32)timeout) {
+                    /* Set wakeup_window to NULL without holding the lock. */
+                    _this->wakeup_window = NULL;
+                    return 0;
+                }
+                loop_timeout = (int)((Uint32)timeout - elapsed);
+            }
             status = _this->WaitEventTimeout(_this, loop_timeout);
             /* Set wakeup_window to NULL without holding the lock. */
             _this->wakeup_window = NULL;
@@ -889,7 +889,7 @@ SDL_WaitEventTimeout(SDL_Event * event, int timeout)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
     SDL_Window *wakeup_window;
-	Uint32 start = 0;
+    Uint32 start = 0;
     Uint32 expiration = 0;
 
     /* First check for existing events */
@@ -901,16 +901,16 @@ SDL_WaitEventTimeout(SDL_Event * event, int timeout)
     default:
         /* Check whether we have reached the end of the poll cycle, and no more events are left */
         if (timeout == 0 && event && event->type == SDL_POLLSENTINEL) {
-            return SDL_PeepEvents(event, 1, SDL_GETEVENT, SDL_FIRSTEVENT, SDL_LASTEVENT) == 1;
+            return (SDL_PeepEvents(event, 1, SDL_GETEVENT, SDL_FIRSTEVENT, SDL_LASTEVENT) == 1);
         }
         /* Has existing events */
         return 1;
     }
 
     if (timeout > 0) {
-		start = SDL_GetTicks();
+        start = SDL_GetTicks();
         expiration = start + timeout;
-	}
+    }
 
     if (timeout != 0 && _this && _this->WaitEventTimeout && _this->SendWakeupEvent && !SDL_events_need_polling()) {
         /* Look if a shown window is available to send the wakeup event. */
