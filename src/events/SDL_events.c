@@ -378,6 +378,10 @@ SDL_LogEvent(const SDL_Event *event)
 
         #undef SDL_EVENT_CASE
 
+        case SDL_POLLSENTINEL:
+            /* No logging necessary for this one */
+            break;
+
         default:
             if (!name[0]) {
                 SDL_strlcpy(name, "UNKNOWN", sizeof (name));
