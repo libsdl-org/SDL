@@ -738,10 +738,6 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 }
                 mouseID = (SDL_MouseID)(uintptr_t)inp.header.hDevice;
                 if (isRelative) {
-                    /* FIXME: Add a hint to control this? */
-                    const int SAFE_AREA_X = 64;
-                    const int SAFE_AREA_Y = 256;
-
                     RAWMOUSE* rawmouse = &inp.data.mouse;
 
                     if ((rawmouse->usFlags & 0x01) == MOUSE_MOVE_RELATIVE) {
