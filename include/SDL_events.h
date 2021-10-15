@@ -801,8 +801,9 @@ extern DECLSPEC void SDLCALL SDL_FlushEvents(Uint32 minType, Uint32 maxType);
  * As this function implicitly calls SDL_PumpEvents(), you can only call this
  * function in the thread that set the video mode.
  *
- * SDL_PollEvent() is deprecated as some sensors and mice with extremely high
- * update rates can generate events each time this function is called.
+ * SDL_PollEvent() is the favored way of receiving system events since it can
+ * be done from the main loop and does not suspend the main loop while waiting
+ * on an event to be posted.
  *
  * The common practice is to fully process the event queue once every frame,
  * usually as a first step before updating the game's state:
@@ -810,8 +811,7 @@ extern DECLSPEC void SDLCALL SDL_FlushEvents(Uint32 minType, Uint32 maxType);
  * ```c
  * while (game_is_still_running) {
  *     SDL_Event event;
- *     SDL_PumpEvents();
- *     while (SDL_PeepEvents(&event, 1, SDL_GETEVENT, 0, SDL_LASTEVENT) == 1) {
+ *     while (SDL_PollEvent(&event)) {  // poll until all events are handled!
  *         // decide what to do with this event.
  *     }
  *
