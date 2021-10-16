@@ -403,9 +403,12 @@ WIN_UpdateFocus(SDL_Window *window)
 
         SDL_SetKeyboardFocus(window);
 
-        GetCursorPos(&cursorPos);
-        ScreenToClient(hwnd, &cursorPos);
-        SDL_SendMouseMotion(window, 0, 0, cursorPos.x, cursorPos.y);
+        /* In relative mode we are guaranteed to have mouse focus if we have keyboard focus */
+        if (!SDL_GetMouse()->relative_mode) {
+            GetCursorPos(&cursorPos);
+            ScreenToClient(hwnd, &cursorPos);
+            SDL_SendMouseMotion(window, 0, 0, cursorPos.x, cursorPos.y);
+        }
 
         WIN_CheckAsyncMouseRelease(data);
         WIN_UpdateClipCursor(window);
