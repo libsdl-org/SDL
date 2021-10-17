@@ -724,8 +724,13 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             RAWINPUT inp;
             UINT size = sizeof(inp);
 
+            /* We only use raw mouse input in relative mode */
+            if (!mouse->relative_mode || mouse->relative_mode_warp) {
+                break;
+            }
+
             /* Relative mouse motion is delivered to the window with keyboard focus */
-            if ((!mouse->relative_mode && !mouse->relative_mode_warp) || data->window != SDL_GetKeyboardFocus()) {
+            if (data->window != SDL_GetKeyboardFocus()) {
                 break;
             }
 
