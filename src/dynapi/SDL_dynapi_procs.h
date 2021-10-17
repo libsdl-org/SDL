@@ -889,6 +889,3 @@ SDL_DYNAPI_PROC(int,SDL_RenderSetVSync,(SDL_Renderer *a, int b),(a,b),return)
 SDL_DYNAPI_PROC(int,SDL_asprintf,(char **a, SDL_PRINTF_FORMAT_STRING const char *b, ...),(a,b),return)
 #endif
 SDL_DYNAPI_PROC(int,SDL_vasprintf,(char **a, const char *b, va_list c),(a,b,c),return)
-#ifdef __ANDROID__
-SDL_DYNAPI_PROC(int,SDL_AndroidSetInputType,(int a),(a),return)
-#endif
