@@ -316,6 +316,7 @@ static jmethodID midShowToast;
 static jmethodID midSendMessage;
 static jmethodID midSetActivityTitle;
 static jmethodID midSetCustomCursor;
+static jmethodID midSetInputType;
 static jmethodID midSetOrientation;
 static jmethodID midSetRelativeMouseEnabled;
 static jmethodID midSetSystemCursor;
@@ -595,6 +596,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cl
     midSendMessage = (*env)->GetStaticMethodID(env, mActivityClass, "sendMessage", "(II)Z");
     midSetActivityTitle = (*env)->GetStaticMethodID(env, mActivityClass, "setActivityTitle","(Ljava/lang/String;)Z");
     midSetCustomCursor = (*env)->GetStaticMethodID(env, mActivityClass, "setCustomCursor", "(I)Z");
+    midSetInputType = (*env)->GetStaticMethodID(env, mActivityClass, "setInputType", "(I)I");
     midSetOrientation = (*env)->GetStaticMethodID(env, mActivityClass, "setOrientation","(IIZLjava/lang/String;)V");
     midSetRelativeMouseEnabled = (*env)->GetStaticMethodID(env, mActivityClass, "setRelativeMouseEnabled", "(Z)Z");
     midSetSystemCursor = (*env)->GetStaticMethodID(env, mActivityClass, "setSystemCursor", "(I)Z");
@@ -625,6 +627,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cl
         !midSendMessage ||
         !midSetActivityTitle ||
         !midSetCustomCursor ||
+        !midSetInputType ||
         !midSetOrientation ||
         !midSetRelativeMouseEnabled ||
         !midSetSystemCursor ||
@@ -2451,6 +2454,14 @@ SDL_bool SDL_AndroidRequestPermission(const char *permission)
 int SDL_AndroidShowToast(const char* message, int duration, int gravity, int xOffset, int yOffset)
 {
     return Android_JNI_ShowToast(message, duration, gravity, xOffset, yOffset);
+}
+
+int SDL_AndroidSetInputType(int type)
+{
+    int result = 0;
+    JNIEnv *env = Android_JNI_GetEnv();
+    result = (*env)->CallStaticIntMethod(env, mActivityClass, midSetInputType, type);
+    return result;
 }
 
 void Android_JNI_GetManifestEnvironmentVariables(void)

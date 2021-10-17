@@ -102,6 +102,8 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     /** If shared libraries (e.g. SDL or the native application) could not be loaded. */
     public static boolean mBrokenLibraries = true;
 
+    public static int mInputType = 1;
+
     // Main components
     protected static SDLActivity mSingleton;
     protected static SDLSurface mSurface;
@@ -1187,6 +1189,14 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     /**
      * This method is called by SDL using JNI.
      */
+    public static int setInputType(int type) {
+        mInputType = type;
+        return 0;
+    }
+
+    /**
+     * This method is called by SDL using JNI.
+     */
     public static Surface getNativeSurface() {
         if (SDLActivity.mSurface == null) {
             return null;
@@ -2182,7 +2192,14 @@ class DummyEdit extends View implements View.OnKeyListener {
     public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
         ic = new SDLInputConnection(this, true);
 
-        outAttrs.inputType = InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD;
+        if (SDLActivity.mInputType == 0) {
+            /* 0 normal: use input method */
+            outAttrs.inputType = InputType.TYPE_CLASS_TEXT;
+        } else {
+            /* 1 password (default): can not use input method，just use english */
+            outAttrs.inputType = InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD;
+        }
+
         outAttrs.imeOptions = EditorInfo.IME_FLAG_NO_EXTRACT_UI
                 | EditorInfo.IME_FLAG_NO_FULLSCREEN /* API 11 */;
 

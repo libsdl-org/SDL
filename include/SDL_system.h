@@ -395,6 +395,17 @@ extern DECLSPEC SDL_bool SDLCALL SDL_AndroidRequestPermission(const char *permis
  */
 extern DECLSPEC int SDLCALL SDL_AndroidShowToast(const char* message, int duration, int gravity, int xoffset, int yoffset);
 
+/* Set Android IME Input Type
+ * Call this method before calling SDL_StartTextInput()
+ *
+ * \param type
+ *          0 normal: use input method
+ *          1 password (default): can not use input method，just use english
+ *
+ * \returns 0 if success, -1 if any error occurs.
+ */
+extern DECLSPEC int SDLCALL SDL_AndroidSetInputType(int type);
+
 #endif /* __ANDROID__ */
 
 /* Platform specific functions for WinRT */
