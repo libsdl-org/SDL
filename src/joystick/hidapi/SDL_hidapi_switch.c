@@ -1006,11 +1006,27 @@ HIDAPI_DriverSwitch_ActuallyRumbleJoystick(SDL_DriverSwitch_Context *ctx, Uint16
      *
      * More information about these values can be found here:
      * https://github.com/dekuNukem/Nintendo_Switch_Reverse_Engineering/blob/master/rumble_data_table.md
+     *
+     * The switch's rumble doesn't act like a traditional controller with two separate motors attached to
+     * different sized weights. Instead, the two values are like two sine waves that get added together.
+     * You can play around with different combinations here https://www.desmos.com/calculator/0lqas9aq89
+     * There's a fairly narrow frequency range around 100-250Hz that really shakes the controller,
+     * everything else is quite weak. To get a low frequency rumble, you can offset two frequencies
+     * by a target low rumble frequency, which gets you a very noticeable variation in amplitude.
+     * (It'll be much clearer if you click that link and play around a bit)
+     * I picked 0xA4 and 0x3E based on a sweep of values ~40hz apart, because they produced the least rattle
+     * in my controller. This may not extend to other Switch controllers, however.
      */
-    const Uint16 k_usHighFreq = 0x0074;
-    const Uint8  k_ucHighFreqAmp = EncodeRumbleHighAmplitude(high_frequency_rumble);
-    const Uint8  k_ucLowFreq = 0x3D;
-    const Uint16 k_usLowFreqAmp = EncodeRumbleLowAmplitude(low_frequency_rumble);
+
+    /* Maximum low frequency is reached when both values are the same */
+    /* Maximum high frequency is reached with one value at zero */
+    const Uint32 lowOutput = low_frequency_rumble + high_frequency_rumble;
+    const Uint16 highOutput = low_frequency_rumble;
+
+    const Uint16 k_usHighFreq = 0xA4; /* ~194.4Hz */
+    const Uint8  k_ucHighFreqAmp = EncodeRumbleHighAmplitude(highOutput);
+    const Uint8  k_ucLowFreq = 0x3E; /* ~153.2Hz */
+    const Uint16 k_usLowFreqAmp = EncodeRumbleLowAmplitude(SDL_min(lowOutput, SDL_MAX_UINT16));
 
     if (low_frequency_rumble || high_frequency_rumble) {
         EncodeRumble(&ctx->m_RumblePacket.rumbleData[0], k_usHighFreq, k_ucHighFreqAmp, k_ucLowFreq, k_usLowFreqAmp);
