@@ -421,13 +421,11 @@ static int OS2_JoystickOpen(SDL_Joystick *joystick, int device_index)
 	int i;			/* Generic Counter */
 
 	/* allocate memory for system specific hardware data */
-	joystick->hwdata = (struct joystick_hwdata *) SDL_malloc(sizeof(*joystick->hwdata));
-	if (joystick->hwdata == NULL)
+	joystick->hwdata = (struct joystick_hwdata *) SDL_calloc(1, sizeof(*joystick->hwdata));
+	if (!joystick->hwdata)
 	{
 		return SDL_OutOfMemory();
 	}
-	/* Reset Hardware Data */
-	SDL_memset(joystick->hwdata, 0, sizeof(*joystick->hwdata));
 
 	/* ShortCut Pointer */
 	index = device_index;
@@ -440,14 +438,14 @@ static int OS2_JoystickOpen(SDL_Joystick *joystick, int device_index)
 		if ((i < 2) || i < SYS_JoyData[index].axes)
 		{
 			joystick->hwdata->transaxes[i].offset = ((SDL_JOYSTICK_AXIS_MAX + SDL_JOYSTICK_AXIS_MIN)>>1) - SYS_JoyData[index].axes_med[i];
-			joystick->hwdata->transaxes[i].scale1 = (float)abs((SDL_JOYSTICK_AXIS_MIN/SYS_JoyData[index].axes_min[i]));
-			joystick->hwdata->transaxes[i].scale2 = (float)abs((SDL_JOYSTICK_AXIS_MAX/SYS_JoyData[index].axes_max[i]));
+			joystick->hwdata->transaxes[i].scale1 = (float)SDL_abs((SDL_JOYSTICK_AXIS_MIN/SYS_JoyData[index].axes_min[i]));
+			joystick->hwdata->transaxes[i].scale2 = (float)SDL_abs((SDL_JOYSTICK_AXIS_MAX/SYS_JoyData[index].axes_max[i]));
 		}
 		else
 		{
 			joystick->hwdata->transaxes[i].offset = 0;
-			joystick->hwdata->transaxes[i].scale1 = 1.0; /* Just in case */
-			joystick->hwdata->transaxes[i].scale2 = 1.0; /* Just in case */
+			joystick->hwdata->transaxes[i].scale1 = 1.0f; /* Just in case */
+			joystick->hwdata->transaxes[i].scale2 = 1.0f; /* Just in case */
 		}
 	}
 
@@ -567,7 +565,7 @@ static void OS2_JoystickUpdate(SDL_Joystick *joystick)
 	if (SYS_JoyData[index].id == 1) corr = 2;
 	else corr = 0;
 	normbut = 4;	/* Number of normal buttons */
-	if (joystick->nbuttons<normbut) normbut = joystick->nbuttons;
+	if (joystick->nbuttons < normbut) normbut = joystick->nbuttons;
 	for (i = corr; (i-corr) < normbut; ++i)
 	{
 		/*
