@@ -22,10 +22,20 @@
 #define INCL_DOSNLS
 #define INCL_DOSERRORS
 #include <os2.h>
-#include <string.h>
-#include <ctype.h>
 
 #include "os2cp.h"
+
+#ifndef GENICONV_STANDALONE
+#include "../../../SDL_internal.h"
+#else
+#include <string.h>
+#include <ctype.h>
+#define SDL_isspace isspace
+#define SDL_strchr strchr
+#define SDL_memcpy memcpy
+#define SDL_strupr strupr
+#define SDL_strcmp strcmp
+#endif
 
 typedef struct _CP2NAME {
   ULONG ulCode;
@@ -354,28 +364,28 @@ unsigned long os2cpFromName(char *cp)
         return (DosQueryCp(sizeof(aulCP), aulCP, &cCP) != NO_ERROR)? 0 : aulCP[0];
     }
 
-    while (isspace(*cp))
+    while (SDL_isspace(*cp))
         cp++;
 
-    pcEnd = strchr(cp, ' ');
+    pcEnd = SDL_strchr(cp, ' ');
     if (pcEnd == NULL)
-        pcEnd = strchr(cp, '\0');
+        pcEnd = SDL_strchr(cp, '\0');
 
     ulNext = pcEnd - cp;
     if (ulNext >= sizeof(acBuf))
         return 0;
 
-    memcpy(acBuf, cp, ulNext);
+    SDL_memcpy(acBuf, cp, ulNext);
     acBuf[ulNext] = '\0';
-    strupr(acBuf);
+    SDL_strupr(acBuf);
 
-    lCmp = strcmp(aName2CP[0].pszName, acBuf);
+    lCmp = SDL_strcmp(aName2CP[0].pszName, acBuf);
     if (lCmp > 0)
         return 0;
     else if (lCmp == 0)
         return aName2CP[0].ulCode;
 
-    lCmp = strcmp(aName2CP[ulHi].pszName, acBuf);
+    lCmp = SDL_strcmp(aName2CP[ulHi].pszName, acBuf);
     if (lCmp < 0)
         return 0;
     else if (lCmp == 0)
@@ -384,7 +394,7 @@ unsigned long os2cpFromName(char *cp)
     while ((ulHi - ulLo) > 1) {
         ulNext = (ulLo + ulHi) / 2;
 
-        lCmp = strcmp(aName2CP[ulNext].pszName, acBuf);
+        lCmp = SDL_strcmp(aName2CP[ulNext].pszName, acBuf);
         if (lCmp < 0)
             ulLo = ulNext;
         else if (lCmp > 0)
