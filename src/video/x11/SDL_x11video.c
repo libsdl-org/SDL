@@ -184,7 +184,6 @@ X11_CreateDevice(int devindex)
         return NULL;
     }
     device->driverdata = data;
-    device->wakeup_lock = SDL_CreateMutex();
 
     data->global_mouse_changed = SDL_TRUE;
 
