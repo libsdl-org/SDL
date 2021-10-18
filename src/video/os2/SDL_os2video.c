@@ -589,7 +589,7 @@ static MRESULT EXPENTRY wndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
             WinQueryPointerPos(HWND_DESKTOP, &pointl);
             WinMapWindowPoints(HWND_DESKTOP, pWinData->hwnd, &pointl, 1);
             SDL_SendMouseMotion(pWinData->window, 0, 0,
-                                    pointl.x, pWinData->window->h - pointl.y - 1);
+                                pointl.x, pWinData->window->h - pointl.y - 1);
         } else {
             if (SDL_GetKeyboardFocus() == pWinData->window)
                 SDL_SetKeyboardFocus(NULL);
@@ -1444,7 +1444,7 @@ static int OS2_VideoInit(_THIS)
         return SDL_SetError("Window class not successfully registered.");
     }
 
-    if (stricmp(_this->name, OS2DRIVER_NAME_VMAN) == 0)
+    if (SDL_strcasecmp(_this->name, OS2DRIVER_NAME_VMAN) == 0)
         pVData->pOutput = &voVMan;
     else
         pVData->pOutput = &voDive;
