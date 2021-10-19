@@ -162,7 +162,7 @@ GetDisplayModePixelFormat(CGDisplayModeRef vidmode)
 }
 
 static SDL_bool
-GetDisplayMode(_THIS, CGDisplayModeRef vidmode, CFArrayRef modelist, CVDisplayLinkRef link, SDL_DisplayMode *mode)
+GetDisplayMode(_THIS, CGDisplayModeRef vidmode, SDL_bool vidmodeCurrent, CFArrayRef modelist, CVDisplayLinkRef link, SDL_DisplayMode *mode)
 {
     SDL_DisplayModeData *data;
     bool usableForGUI = CGDisplayModeIsUsableForDesktopGUI(vidmode);
@@ -178,7 +178,9 @@ GetDisplayMode(_THIS, CGDisplayModeRef vidmode, CFArrayRef modelist, CVDisplayLi
         return SDL_FALSE;
     }
 
-    if (!HasValidDisplayModeFlags(vidmode)) {
+    /* Don't fail the current mode based on flags because this could prevent Cocoa_InitModes from
+     * succeeding if the current mode lacks certain flags (esp kDisplayModeSafeFlag). */
+    if (!vidmodeCurrent && !HasValidDisplayModeFlags(vidmode)) {
         return SDL_FALSE;
     }
 
@@ -375,7 +377,7 @@ Cocoa_InitModes(_THIS)
             SDL_zero(display);
             /* this returns a stddup'ed string */
             display.name = (char *)Cocoa_GetDisplayName(displays[i]);
-            if (!GetDisplayMode(_this, moderef, NULL, link, &mode)) {
+            if (!GetDisplayMode(_this, moderef, SDL_TRUE, NULL, link, &mode)) {
                 CVDisplayLinkRelease(link);
                 CGDisplayModeRelease(moderef);
                 SDL_free(display.name);
@@ -499,7 +501,7 @@ Cocoa_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
      * sure there are no duplicates so it's safe to always add the desktop mode
      * even in cases where it is in the CopyAllDisplayModes list.
      */
-    if (desktopmoderef && GetDisplayMode(_this, desktopmoderef, NULL, link, &desktopmode)) {
+    if (desktopmoderef && GetDisplayMode(_this, desktopmoderef, SDL_TRUE, NULL, link, &desktopmode)) {
         if (!SDL_AddDisplayMode(display, &desktopmode)) {
             CFRelease(((SDL_DisplayModeData*)desktopmode.driverdata)->modes);
             SDL_free(desktopmode.driverdata);
@@ -546,7 +548,7 @@ Cocoa_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
             CGDisplayModeRef moderef = (CGDisplayModeRef) CFArrayGetValueAtIndex(modes, i);
             SDL_DisplayMode mode;
 
-            if (GetDisplayMode(_this, moderef, modes, link, &mode)) {
+            if (GetDisplayMode(_this, moderef, SDL_FALSE, modes, link, &mode)) {
                 if (!SDL_AddDisplayMode(display, &mode)) {
                     CFRelease(((SDL_DisplayModeData*)mode.driverdata)->modes);
                     SDL_free(mode.driverdata);
