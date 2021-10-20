@@ -663,6 +663,14 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         }
         break;
 
+    case WM_SETFOCUS:
+    case WM_KILLFOCUS:
+        {
+            /* Update the focus in case it's changing between windows in the same application */
+            WIN_UpdateFocus(data->window);
+        }
+        break;
+
     case WM_POINTERUPDATE:
         {
             data->last_pointer_update = lParam;
