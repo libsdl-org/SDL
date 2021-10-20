@@ -1268,6 +1268,10 @@ IOS_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 h
 #ifdef ENABLE_MFI_RUMBLE
     SDL_JoystickDeviceItem *device = joystick->hwdata;
 
+    if (device == NULL) {
+        return SDL_SetError("Controller is no longer connected");
+    }
+
     if (@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)) {
         if (!device->rumble && device->controller && device->controller.haptics) {
             SDL_RumbleContext *rumble = IOS_JoystickInitRumble(device->controller);
@@ -1294,6 +1298,10 @@ IOS_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 ri
 #ifdef ENABLE_MFI_RUMBLE
     SDL_JoystickDeviceItem *device = joystick->hwdata;
 
+    if (device == NULL) {
+        return SDL_SetError("Controller is no longer connected");
+    }
+
     if (@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)) {
         if (!device->rumble && device->controller && device->controller.haptics) {
             SDL_RumbleContext *rumble = IOS_JoystickInitRumble(device->controller);
@@ -1319,8 +1327,14 @@ IOS_JoystickHasLED(SDL_Joystick *joystick)
 {
 #ifdef ENABLE_MFI_LIGHT
     @autoreleasepool {
+        SDL_JoystickDeviceItem *device = joystick->hwdata;
+
+        if (device == NULL) {
+            return SDL_FALSE;
+        }
+
         if (@available(macos 11.0, iOS 14.0, tvOS 14.0, *)) {
-            GCController *controller = joystick->hwdata->controller;
+            GCController *controller = device->controller;
             GCDeviceLight *light = controller.light;
             if (light) {
                 return SDL_TRUE;
@@ -1337,8 +1351,14 @@ IOS_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
 {
 #ifdef ENABLE_MFI_LIGHT
     @autoreleasepool {
+        SDL_JoystickDeviceItem *device = joystick->hwdata;
+
+        if (device == NULL) {
+            return SDL_SetError("Controller is no longer connected");
+        }
+
         if (@available(macos 11.0, iOS 14.0, tvOS 14.0, *)) {
-            GCController *controller = joystick->hwdata->controller;
+            GCController *controller = device->controller;
             GCDeviceLight *light = controller.light;
             if (light) {
                 light.color = [[GCColor alloc] initWithRed:(float)red / 255.0f
@@ -1364,8 +1384,14 @@ IOS_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
 {
 #ifdef ENABLE_MFI_SENSORS
     @autoreleasepool {
+        SDL_JoystickDeviceItem *device = joystick->hwdata;
+
+        if (device == NULL) {
+            return SDL_SetError("Controller is no longer connected");
+        }
+
         if (@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)) {
-            GCController *controller = joystick->hwdata->controller;
+            GCController *controller = device->controller;
             GCMotion *motion = controller.motion;
             if (motion) {
                 motion.sensorsActive = enabled ? YES : NO;
