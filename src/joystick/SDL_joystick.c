@@ -2398,6 +2398,8 @@ SDL_bool SDL_ShouldIgnoreJoystick(const char *name, SDL_JoystickGUID guid)
 
         /* Anne Pro II Keyboard */
         MAKE_VIDPID(0x04d9, 0x8009),  /* OBINLB USB-HID Keyboard */
+
+        MAKE_VIDPID(0x0b05, 0x1958),  /* ROG Chakram Mouse */
     };
 
     unsigned int i;
