@@ -1675,15 +1675,28 @@ GL_BindTexture (SDL_Renderer * renderer, SDL_Texture *texture, float *texw, floa
             data->glActiveTextureARB(GL_TEXTURE0_ARB);
         }
     }
+    if (texturedata->nv12) {
+        if (data->GL_ARB_multitexture_supported) {
+            data->glActiveTextureARB(GL_TEXTURE1_ARB);
+        }
+        data->glBindTexture(textype, texturedata->utexture);
+
+        if (data->GL_ARB_multitexture_supported) {
+            data->glActiveTextureARB(GL_TEXTURE0_ARB);
+        }
+    }
 #endif
     data->glBindTexture(textype, texturedata->texture);
 
     data->drawstate.texturing = SDL_TRUE;
     data->drawstate.texture = texture;
 
-    if(texw) *texw = (float)texturedata->texw;
-    if(texh) *texh = (float)texturedata->texh;
-
+    if (texw) {
+        *texw = (float)texturedata->texw;
+    }
+    if (texh) {
+        *texh = (float)texturedata->texh;
+    }
     return 0;
 }
 
@@ -1701,11 +1714,24 @@ GL_UnbindTexture (SDL_Renderer * renderer, SDL_Texture *texture)
         if (data->GL_ARB_multitexture_supported) {
             data->glActiveTextureARB(GL_TEXTURE2_ARB);
         }
+        data->glBindTexture(textype, 0);
         data->glDisable(textype);
 
         if (data->GL_ARB_multitexture_supported) {
             data->glActiveTextureARB(GL_TEXTURE1_ARB);
         }
+        data->glBindTexture(textype, 0);
+        data->glDisable(textype);
+
+        if (data->GL_ARB_multitexture_supported) {
+            data->glActiveTextureARB(GL_TEXTURE0_ARB);
+        }
+    }
+    if (texturedata->nv12) {
+        if (data->GL_ARB_multitexture_supported) {
+            data->glActiveTextureARB(GL_TEXTURE1_ARB);
+        }
+        data->glBindTexture(textype, 0);
         data->glDisable(textype);
 
         if (data->GL_ARB_multitexture_supported) {
@@ -1713,7 +1739,7 @@ GL_UnbindTexture (SDL_Renderer * renderer, SDL_Texture *texture)
         }
     }
 #endif
-
+    data->glBindTexture(textype, 0);
     data->glDisable(textype);
 
     data->drawstate.texturing = SDL_FALSE;
