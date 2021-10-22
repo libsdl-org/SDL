@@ -324,6 +324,7 @@ void
 UIKit_SetWindowMouseGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
 {
 #if !TARGET_OS_TV
+#if defined(__IPHONE_14_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_14_0
     @autoreleasepool {
         SDL_WindowData *data = (__bridge SDL_WindowData *) window->driverdata;
         SDL_uikitviewcontroller *viewcontroller = data.viewcontroller;
@@ -331,6 +332,7 @@ UIKit_SetWindowMouseGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
             [viewcontroller setNeedsUpdateOfPrefersPointerLocked];
         }
     }
+#endif /* defined(__IPHONE_14_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_14_0 */
 #endif /* !TARGET_OS_TV */
 }
 
