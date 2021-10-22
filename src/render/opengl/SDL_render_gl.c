@@ -123,6 +123,7 @@ typedef struct
     GLfloat texh;
     GLenum format;
     GLenum formattype;
+    GL_Shader shader;
     void *pixels;
     int pitch;
     SDL_Rect locked_rect;
@@ -629,6 +630,57 @@ GL_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
                                  (texture_h+1)/2, 0, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, NULL);
     }
 #endif
+
+    if (texture->format == SDL_PIXELFORMAT_ABGR8888 || texture->format == SDL_PIXELFORMAT_ARGB8888) {
+        data->shader = SHADER_RGBA;
+    } else {
+        data->shader = SHADER_RGB;
+    }
+
+#if SDL_HAVE_YUV
+    if (data->yuv || data->nv12) {
+        switch (SDL_GetYUVConversionModeForResolution(texture->w, texture->h)) {
+            case SDL_YUV_CONVERSION_JPEG:
+                if (data->yuv) {
+                    data->shader = SHADER_YUV_JPEG;
+                } else if (texture->format == SDL_PIXELFORMAT_NV12) {
+                    data->shader = SHADER_NV12_JPEG;
+                } else {
+                    data->shader = SHADER_NV21_JPEG;
+                }
+                break;
+            case SDL_YUV_CONVERSION_BT601:
+                if (data->yuv) {
+                    data->shader = SHADER_YUV_BT601;
+                } else if (texture->format == SDL_PIXELFORMAT_NV12) {
+                    if (SDL_GetHintBoolean("SDL_RENDER_OPENGL_NV12_RG_SHADER", SDL_FALSE)) {
+                        data->shader = SHADER_NV12_RG_BT601;
+                    } else {
+                        data->shader = SHADER_NV12_RA_BT601;
+                    }
+                } else {
+                    data->shader = SHADER_NV21_BT601;
+                }
+                break;
+            case SDL_YUV_CONVERSION_BT709:
+                if (data->yuv) {
+                    data->shader = SHADER_YUV_BT709;
+                } else if (texture->format == SDL_PIXELFORMAT_NV12) {
+                    if (SDL_GetHintBoolean("SDL_RENDER_OPENGL_NV12_RG_SHADER", SDL_FALSE)) {
+                        data->shader = SHADER_NV12_RG_BT709;
+                    } else {
+                        data->shader = SHADER_NV12_RA_BT709;
+                    }
+                } else {
+                    data->shader = SHADER_NV21_BT709;
+                }
+                break;
+            default:
+                SDL_assert(!"unsupported YUV conversion mode");
+                break;
+        }
+    }
+#endif /* SDL_HAVE_YUV */
 
     return GL_CheckError("", renderer);
 }
@@ -1186,54 +1238,8 @@ SetCopyState(GL_RenderData *data, const SDL_RenderCommand *cmd)
 {
     SDL_Texture *texture = cmd->data.draw.texture;
     const GL_TextureData *texturedata = (GL_TextureData *) texture->driverdata;
-    GL_Shader shader;
 
-    if (texture->format == SDL_PIXELFORMAT_ABGR8888 || texture->format == SDL_PIXELFORMAT_ARGB8888) {
-        shader = SHADER_RGBA;
-    } else {
-        shader = SHADER_RGB;
-    }
-
-#if SDL_HAVE_YUV
-    if (data->shaders) {
-        if (texturedata->yuv || texturedata->nv12) {
-            switch (SDL_GetYUVConversionModeForResolution(texture->w, texture->h)) {
-                case SDL_YUV_CONVERSION_JPEG:
-                    if (texturedata->yuv) {
-                        shader = SHADER_YUV_JPEG;
-                    } else if (texture->format == SDL_PIXELFORMAT_NV12) {
-                        shader = SHADER_NV12_JPEG;
-                    } else {
-                        shader = SHADER_NV21_JPEG;
-                    }
-                    break;
-                case SDL_YUV_CONVERSION_BT601:
-                    if (texturedata->yuv) {
-                        shader = SHADER_YUV_BT601;
-                    } else if (texture->format == SDL_PIXELFORMAT_NV12) {
-                        shader = SHADER_NV12_BT601;
-                    } else {
-                        shader = SHADER_NV21_BT601;
-                    }
-                    break;
-                case SDL_YUV_CONVERSION_BT709:
-                    if (texturedata->yuv) {
-                        shader = SHADER_YUV_BT709;
-                    } else if (texture->format == SDL_PIXELFORMAT_NV12) {
-                        shader = SHADER_NV12_BT709;
-                    } else {
-                        shader = SHADER_NV21_BT709;
-                    }
-                    break;
-                default:
-                    SDL_assert(!"unsupported YUV conversion mode");
-                    break;
-            }
-        }
-    }
-#endif
-
-    SetDrawState(data, cmd, shader);
+    SetDrawState(data, cmd, texturedata->shader);
 
     if (texture != data->drawstate.texture) {
         const GLenum textype = data->textype;
