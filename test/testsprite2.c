@@ -435,6 +435,53 @@ loop()
     while (SDL_PollEvent(&event)) {
         SDLTest_CommonEvent(state, &event, &done);
     }
+    
+    static int frame_count = 0;
+    frame_count++;
+    
+    const SDL_MessageBoxButtonData buttons[] = {
+            { /* .flags, .buttonid, .text */        0, 0, "no" },
+            { SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 1, "yes" },
+            { SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, 2, "cancel" },
+        };
+        const SDL_MessageBoxColorScheme colorScheme = {
+            { /* .colors (.r, .g, .b) */
+                /* [SDL_MESSAGEBOX_COLOR_BACKGROUND] */
+                { 255,   0,   0 },
+                /* [SDL_MESSAGEBOX_COLOR_TEXT] */
+                {   0, 255,   0 },
+                /* [SDL_MESSAGEBOX_COLOR_BUTTON_BORDER] */
+                { 255, 255,   0 },
+                /* [SDL_MESSAGEBOX_COLOR_BUTTON_BACKGROUND] */
+                {   0,   0, 255 },
+                /* [SDL_MESSAGEBOX_COLOR_BUTTON_SELECTED] */
+                { 255,   0, 255 }
+            }
+        };
+        const SDL_MessageBoxData messageboxdata = {
+            SDL_MESSAGEBOX_INFORMATION, /* .flags */
+            NULL, /* .window */
+            "example message box", /* .title */
+            "select a button", /* .message */
+            SDL_arraysize(buttons), /* .numbuttons */
+            buttons, /* .buttons */
+            &colorScheme /* .colorScheme */
+        };
+    
+    if (frame_count > 120)
+    {
+        frame_count = 0;
+        int buttonid;
+        if (SDL_ShowMessageBox(&messageboxdata, &buttonid) < 0) {
+            SDL_Log("error displaying message box");
+            //return 1;
+        }
+        if (buttonid == -1) {
+            SDL_Log("no selection");
+        } else {
+            SDL_Log("selection was %s", buttons[buttonid].text);
+        }
+    }
     for (i = 0; i < state->num_windows; ++i) {
         if (state->windows[i] == NULL)
             continue;
@@ -607,12 +654,25 @@ main(int argc, char *argv[])
 #ifdef __EMSCRIPTEN__
     emscripten_set_main_loop(loop, 0, 1);
 #else
-    while (!done) {
-        loop();
+    SDL_bool use_callback_loop = SDL_TRUE;
+    if (use_callback_loop)
+    {
+        // Set up the game to run in the window animation callback on iOS
+        // so that Game Center and so forth works correctly.
+        SDL_iPhoneSetAnimationCallback(state->windows[0], 1, loop, NULL);
+        //while (!done) {
+            //loop();
+            //SDL_iPhoneSetAnimationCallback(state->windows[0], 1, loop, NULL);
+        //}
+    } else
+    {
+        while (!done) {
+            loop();
+        }
     }
 #endif
 
-    quit(0);
+    //quit(0);
     return 0;
 }
 
