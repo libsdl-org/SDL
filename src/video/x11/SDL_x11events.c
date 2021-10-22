@@ -820,6 +820,31 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
 
             X11_UpdateKeymap(_this);
             SDL_SendKeymapChangedEvent();
+        } else if (xevent->type == PropertyNotify && videodata && videodata->windowlist) {
+            char* name_of_atom = X11_XGetAtomName(display, xevent->xproperty.atom);
+
+            if (SDL_strncmp(name_of_atom, "_ICC_PROFILE", sizeof("_ICC_PROFILE") - 1) == 0) {
+                XWindowAttributes attrib;
+                int screennum;
+                for (i = 0; i < videodata->numwindows; ++i) {
+                    if (videodata->windowlist[i] != NULL) {
+                        data = videodata->windowlist[i];
+                        X11_XGetWindowAttributes(display, data->xwindow, &attrib);
+                        screennum = X11_XScreenNumberOfScreen(attrib.screen);
+                        if (screennum == 0 && SDL_strcmp(name_of_atom, "_ICC_PROFILE") == 0) {
+                            SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_ICCPROF_CHANGED, 0, 0);
+                        } else if (SDL_strncmp(name_of_atom, "_ICC_PROFILE_", sizeof("_ICC_PROFILE_") - 1) == 0 && SDL_strlen(name_of_atom) > sizeof("_ICC_PROFILE_") - 1) {
+                            int iccscreennum = SDL_atoi(&name_of_atom[sizeof("_ICC_PROFILE_") - 1]);
+
+                            if (screennum == iccscreennum) {
+                                SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_ICCPROF_CHANGED, 0, 0);
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (name_of_atom) X11_XFree(name_of_atom);
         }
         return;
     }
