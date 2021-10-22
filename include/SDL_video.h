@@ -617,12 +617,13 @@ extern DECLSPEC int SDLCALL SDL_GetWindowDisplayMode(SDL_Window * window,
 
 /**
  * Get the raw ICC profile data for the screen the window is currently on.
+ *
  * Data returned should be freed with SDL_free.
- * 
+ *
  * \param window the window to query
  * \param size the size of the ICC profile
- * \returns the raw ICC profile data on success or NULL on failure;
- * call SDL_GetError() for more information.
+ * \returns the raw ICC profile data on success or NULL on failure; call
+ *          SDL_GetError() for more information.
  */
 extern DECLSPEC void* SDLCALL SDL_GetWindowICCProfile(SDL_Window * window, size_t* size);
 
