@@ -34,6 +34,7 @@
 #include "SDL_mouse.h"
 #include "../../events/SDL_mouse_c.h"
 #include "SDL_waylandvideo.h"
+#include "../SDL_pixels_c.h"
 #include "SDL_waylandevents_c.h"
 
 #include "wayland-cursor.h"
@@ -267,10 +268,6 @@ Wayland_CreateCursor(SDL_Surface *surface, int hot_x, int hot_y)
         }
         cursor->driverdata = (void *) data;
 
-        /* Assume ARGB8888 */
-        SDL_assert(surface->format->format == SDL_PIXELFORMAT_ARGB8888);
-        SDL_assert(surface->pitch == surface->w * 4);
-
         /* Allocate shared memory buffer for this cursor */
         if (create_buffer_from_shm (data,
                                     surface->w,
@@ -282,9 +279,8 @@ Wayland_CreateCursor(SDL_Surface *surface, int hot_x, int hot_y)
             return NULL;
         }
 
-        SDL_memcpy(data->shm_data,
-                   surface->pixels,
-                   surface->h * surface->pitch);
+        /* Wayland requires premultiplied alpha for its surfaces. */
+        SDL_PremultiplySurfaceAlphaToARGB8888(surface, data->shm_data);
 
         data->surface = wl_compositor_create_surface(wd->compositor);
         wl_surface_set_user_data(data->surface, NULL);

@@ -30,6 +30,8 @@
 #include "../../events/SDL_mouse_c.h"
 #include "../../events/default_cursor.h"
 
+#include "../SDL_pixels_c.h"
+
 static SDL_Cursor *KMSDRM_CreateDefaultCursor(void);
 static SDL_Cursor *KMSDRM_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y);
 static int KMSDRM_ShowCursor(SDL_Cursor * cursor);
@@ -57,30 +59,6 @@ static SDL_Cursor *
 KMSDRM_CreateDefaultCursor(void)
 {
     return SDL_CreateCursor(default_cdata, default_cmask, DEFAULT_CWIDTH, DEFAULT_CHEIGHT, DEFAULT_CHOTX, DEFAULT_CHOTY);
-}
-
-/* Converts a pixel from straight-alpha [AA, RR, GG, BB], which the SDL cursor surface has,
-   to premultiplied-alpha [AA. AA*RR, AA*GG, AA*BB].
-   These multiplications have to be done with floats instead of uint32_t's,
-   and the resulting values have to be converted to be relative to the 0-255 interval,
-   where 255 is 1.00 and anything between 0 and 255 is 0.xx. */
-void legacy_alpha_premultiply_ARGB8888 (uint32_t *pixel) {
-
-    uint32_t A, R, G, B;
-
-    /* Component bytes extraction. */
-    A = (*pixel >> (3 << 3)) & 0xFF;
-    R = (*pixel >> (2 << 3)) & 0xFF;
-    G = (*pixel >> (1 << 3)) & 0xFF;
-    B = (*pixel >> (0 << 3)) & 0xFF;
-
-    /* Alpha pre-multiplication of each component. */
-    R = (float)A * ((float)R /255);
-    G = (float)A * ((float)G /255);
-    B = (float)A * ((float)B /255);
-
-    /* ARGB8888 pixel recomposition. */
-    (*pixel) = (((uint32_t)A << 24) | ((uint32_t)R << 16) | ((uint32_t)G << 8)) | ((uint32_t)B << 0);
 }
 
 /* Given a display's driverdata, destroy the cursor BO for it.
@@ -171,10 +149,10 @@ KMSDRM_DumpCursorToBO(SDL_VideoDisplay *display, SDL_Cursor *cursor)
     uint32_t bo_handle;
     size_t bo_stride;
     size_t bufsize;
-    uint32_t *ready_buffer = NULL;
-    uint32_t pixel;
+    uint8_t *ready_buffer = NULL;
+    uint8_t *src_row;
 
-    int i,j;
+    int i;
     int ret;
 
     if (!curdata || !dispdata->cursor_bo) {
@@ -186,21 +164,17 @@ KMSDRM_DumpCursorToBO(SDL_VideoDisplay *display, SDL_Cursor *cursor)
     bo_stride = KMSDRM_gbm_bo_get_stride(dispdata->cursor_bo);
     bufsize = bo_stride * dispdata->cursor_h;
 
-    ready_buffer = (uint32_t*)SDL_calloc(1, bufsize);
+    ready_buffer = (uint8_t*)SDL_calloc(1, bufsize);
 
     if (!ready_buffer) {
         ret = SDL_OutOfMemory();
         goto cleanup;
     }
 
-    /* Copy from the cursor buffer to a buffer that we can dump to the GBM BO,
-       pre-multiplying by alpha each pixel as we go. */
+    /* Copy from the cursor buffer to a buffer that we can dump to the GBM BO. */
     for (i = 0; i < curdata->h; i++) {
-        for (j = 0; j < curdata->w; j++) {
-            pixel = ((uint32_t*)curdata->buffer)[i * curdata->w + j];
-            legacy_alpha_premultiply_ARGB8888 (&pixel);
-            SDL_memcpy(ready_buffer + (i * dispdata->cursor_w) + j, &pixel, 4);
-        }
+    	src_row = &((uint8_t*)curdata->buffer)[i * curdata->w * 4];
+    	SDL_memcpy(ready_buffer + (i * bo_stride), src_row, 4 * curdata->w);
     }
 
     /* Dump the cursor buffer to our GBM BO. */
@@ -271,13 +245,6 @@ KMSDRM_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y)
     curdata = NULL;
     ret = NULL;
 
-    /* All code below assumes ARGB8888 format for the cursor surface,
-       like other backends do. Also, the GBM BO pixels have to be
-       alpha-premultiplied, but the SDL surface we receive has
-       straight-alpha pixels, so we always have to convert. */ 
-    SDL_assert(surface->format->format == SDL_PIXELFORMAT_ARGB8888);
-    SDL_assert(surface->pitch == surface->w * 4);
-
     cursor = (SDL_Cursor *) SDL_calloc(1, sizeof(*cursor));
     if (!cursor) {
         SDL_OutOfMemory();
@@ -298,8 +265,8 @@ KMSDRM_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y)
 
     /* Configure the cursor buffer info.
        This buffer has the original size of the cursor surface we are given. */
-    curdata->buffer_pitch = surface->pitch;
-    curdata->buffer_size = surface->pitch * surface->h;
+    curdata->buffer_pitch = surface->w;
+    curdata->buffer_size = surface->w * surface->h * 4;
     curdata->buffer = (uint32_t*)SDL_malloc(curdata->buffer_size);
 
     if (!curdata->buffer) {
@@ -307,19 +274,11 @@ KMSDRM_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y)
         goto cleanup;
     }
 
-    if (SDL_MUSTLOCK(surface)) {
-        if (SDL_LockSurface(surface) < 0) {
-            /* Could not lock surface */
-            goto cleanup;
-        }
-    }
-
-    /* Copy the surface pixels to the cursor buffer, for future use in ShowCursor() */
-    SDL_memcpy(curdata->buffer, surface->pixels, curdata->buffer_size);
-
-    if (SDL_MUSTLOCK(surface)) {
-        SDL_UnlockSurface(surface);
-    }
+    /* All code below assumes ARGB8888 format for the cursor surface,
+       like other backends do. Also, the GBM BO pixels have to be
+       alpha-premultiplied, but the SDL surface we receive has
+       straight-alpha pixels, so we always have to convert. */ 
+    SDL_PremultiplySurfaceAlphaToARGB8888(surface, curdata->buffer);
 
     cursor->driverdata = curdata;
 
