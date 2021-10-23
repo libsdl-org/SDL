@@ -105,7 +105,7 @@ SDL_TicksQuit(void)
 }
 
 Uint64
-SDL_GetTicks(void)
+SDL_GetTicks64(void)
 {
     struct timeval now;
 
