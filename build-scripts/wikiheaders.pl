@@ -270,6 +270,7 @@ usage() if not defined $wikipath;
 my @standard_wiki_sections = (
     'Draft',
     '[Brief]',
+    'Deprecated',
     'Syntax',
     'Function Parameters',
     'Return Value',
@@ -309,7 +310,7 @@ while (readdir(DH)) {
         my @templines;
         my $str;
         my $has_doxygen = 1;
-        if (/\A\s*extern\s+DECLSPEC/) {  # a function declaration without a doxygen comment?
+        if (/\A\s*extern\s+(SDL_DEPRECATED\s+|)DECLSPEC/) {  # a function declaration without a doxygen comment?
             @templines = ();
             $decl = $_;
             $str = '';
@@ -345,7 +346,7 @@ while (readdir(DH)) {
             $decl = <FH>;
             $decl = '' if not defined $decl;
             chomp($decl);
-            if (not $decl =~ /\A\s*extern\s+DECLSPEC/) {
+            if (not $decl =~ /\A\s*extern\s+(SDL_DEPRECATED\s+|)DECLSPEC/) {
                 #print "Found doxygen but no function sig:\n$str\n\n";
                 foreach (@templines) {
                     push @contents, $_;
@@ -373,8 +374,8 @@ while (readdir(DH)) {
         #print("DECL: [$decl]\n");
 
         my $fn = '';
-        if ($decl =~ /\A\s*extern\s+DECLSPEC\s+(const\s+|)(unsigned\s+|)(.*?)\s*(\*?)\s*SDLCALL\s+(.*?)\s*\((.*?)\);/) {
-            $fn = $5;
+        if ($decl =~ /\A\s*extern\s+(SDL_DEPRECATED\s+|)DECLSPEC\s+(const\s+|)(unsigned\s+|)(.*?)\s*(\*?)\s*SDLCALL\s+(.*?)\s*\((.*?)\);/) {
+            $fn = $6;
             #$decl =~ s/\A\s*extern\s+DECLSPEC\s+(.*?)\s+SDLCALL/$1/;
         } else {
             #print "Found doxygen but no function sig:\n$str\n\n";
@@ -391,9 +392,10 @@ while (readdir(DH)) {
         foreach (@decllines) {
             if ($decl eq '') {
                 $decl = $_;
-                $decl =~ s/\Aextern\s+DECLSPEC\s+(.*?)\s+(\*?)SDLCALL\s+/$1$2 /;
+                $decl =~ s/\Aextern\s+(SDL_DEPRECATED\s+|)DECLSPEC\s+(.*?)\s+(\*?)SDLCALL\s+/$2$3 /;
             } else {
                 my $trimmed = $_;
+                # !!! FIXME: trim space for SDL_DEPRECATED if it was used, too.
                 $trimmed =~ s/\A\s{24}//;  # 24 for shrinking to match the removed "extern DECLSPEC SDLCALL "
                 $decl .= $trimmed;
             }
@@ -561,6 +563,7 @@ if ($copy_direction == 1) {  # --copy-to-headers
         my $returns = %$sectionsref{'Return Value'};
         my $version = %$sectionsref{'Version'};
         my $related = %$sectionsref{'Related Functions'};
+        my $deprecated = %$sectionsref{'Deprecated'};
         my $brief = %$sectionsref{'[Brief]'};
         my $addblank = 0;
         my $str = '';
@@ -584,6 +587,21 @@ if ($copy_direction == 1) {  # --copy-to-headers
         if (defined $remarks) {
             $str .= "\n" if $addblank; $addblank = 1;
             $str .= wordwrap($remarks) . "\n";
+        }
+
+        if (defined $deprecated) {
+            # !!! FIXME: lots of code duplication in all of these.
+            $str .= "\n" if $addblank; $addblank = 1;
+            my $v = dewikify($wikitype, $deprecated);
+            my $whitespacelen = length("\\deprecated") + 1;
+            my $whitespace = ' ' x $whitespacelen;
+            $v = wordwrap($v, -$whitespacelen);
+            my @desclines = split /\n/, $v;
+            my $firstline = shift @desclines;
+            $str .= "\\deprecated $firstline\n";
+            foreach (@desclines) {
+                $str .= "${whitespace}$_\n";
+            }
         }
 
         if (defined $params) {
@@ -775,7 +793,7 @@ if ($copy_direction == 1) {  # --copy-to-headers
 
         my $decl = $headerdecls{$fn};
         #$decl =~ s/\*\s+SDLCALL/ *SDLCALL/;  # Try to make "void * Function" become "void *Function"
-        #$decl =~ s/\A\s*extern\s+DECLSPEC\s+(.*?)\s+(\*?)SDLCALL/$1$2/;
+        #$decl =~ s/\A\s*extern\s+(SDL_DEPRECATED\s+|)DECLSPEC\s+(.*?)\s+(\*?)SDLCALL/$2$3/;
 
         my $syntax = '';
         if ($wikitype eq 'mediawiki') {
@@ -829,6 +847,21 @@ if ($copy_direction == 1) {  # --copy-to-headers
                 }
                 $desc =~ s/[\s\n]+\Z//ms;
                 $sections{'Return Value'} = wordwrap("$retstr " . wikify($wikitype, $desc)) . "\n";
+            } elsif ($l =~ /\A\\deprecated\s+(.*)\Z/) {
+                my $desc = $1;
+                while (@doxygenlines) {
+                    my $subline = $doxygenlines[0];
+                    $subline =~ s/\A\s*//;
+                    last if $subline =~ /\A\\/;  # some sort of doxygen command, assume we're past this thing.
+                    shift @doxygenlines;  # dump this line from the array; we're using it.
+                    if ($subline eq '') {  # empty line, make sure it keeps the newline char.
+                        $desc .= "\n";
+                    } else {
+                        $desc .= " $subline";
+                    }
+                }
+                $desc =~ s/[\s\n]+\Z//ms;
+                $sections{'Deprecated'} = wordwrap(wikify($wikitype, $desc)) . "\n";
             } elsif ($l =~ /\A\\since\s+(.*)\Z/) {
                 my $desc = $1;
                 while (@doxygenlines) {
