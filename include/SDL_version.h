@@ -153,10 +153,20 @@ extern DECLSPEC const char *SDLCALL SDL_GetRevision(void);
  * Obsolete function, do not use.
  *
  * When SDL was hosted in a Mercurial repository, and was built carefully,
- * this would return the revision number that the build was created from.
- * This number was not reliable for several reasons, but more importantly,
- * SDL is now hosted in a git repository, which does not offer numbers at
- * all, only hashes. This function only ever returns zero now. Don't use it.
+ * this would return the revision number that the build was created from. This
+ * number was not reliable for several reasons, but more importantly, SDL is
+ * now hosted in a git repository, which does not offer numbers at all, only
+ * hashes. This function only ever returns zero now. Don't use it.
+ *
+ * Before SDL 2.0.16, this might have returned an unreliable, but non-zero
+ * number.
+ *
+ * \deprecated Use SDL_GetRevision() instead; if SDL was carefully built, it
+ *             will return a git hash.
+ *
+ * \returns zero, always, in modern SDL releases.
+ *
+ * \sa SDL_GetRevision
  */
 extern SDL_DEPRECATED DECLSPEC int SDLCALL SDL_GetRevisionNumber(void);
 
