@@ -58,7 +58,7 @@ static Knob knob = { 0.0f, 0.1f, { 0.0f, 0.0f } };
 static void
 setpix(SDL_Surface *screen, float _x, float _y, unsigned int col)
 {
-    Uint32 *pixmem32;
+    Uint8 *pixmem;
     Uint32 colour;
     Uint8 r, g, b;
     const int x = (int)_x;
@@ -69,9 +69,9 @@ setpix(SDL_Surface *screen, float _x, float _y, unsigned int col)
         return;
     }
 
-    pixmem32 = (Uint32 *) screen->pixels + y * screen->pitch / BPP + x;
+    pixmem = (Uint8 *) screen->pixels + y * screen->pitch + x * screen->format->BytesPerPixel;
 
-    SDL_memcpy(&colour, pixmem32, screen->format->BytesPerPixel);
+    colour = SDL_ReadPixelValue(pixmem, screen->format);
 
     SDL_GetRGB(colour,screen->format,&r,&g,&b);
 
@@ -87,7 +87,7 @@ setpix(SDL_Surface *screen, float _x, float _y, unsigned int col)
     b = (Uint8) (b * (1 - a) + ((col >> 0) & 0xFF) * a);
     colour = SDL_MapRGB(screen->format, r, g, b);
 
-    *pixmem32 = colour;
+    SDL_WritePixelValue(pixmem, screen->format, colour);
 }
 
 #if 0 /* unused */
