@@ -41,8 +41,8 @@ SDL_TicksQuit(void)
     ticks_started = SDL_FALSE;
 }
 
-Uint32
-SDL_GetTicks(void)
+Uint64
+SDL_GetTicks64(void)
 {
     if (!ticks_started) {
         SDL_TicksInit();
