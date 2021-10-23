@@ -597,30 +597,31 @@ endmacro()
 # - HAVE_SDL_LOADSO opt
 macro(CheckWayland)
   if(SDL_WAYLAND)
-    pkg_check_modules(WAYLAND wayland-client wayland-scanner wayland-egl wayland-cursor egl "xkbcommon>=0.5.0")
-    pkg_check_modules(WAYLAND_SCANNER_1_15 "wayland-scanner>=1.15")
-
-    if(WAYLAND_FOUND AND HAVE_OPENGL_EGL)
-      execute_process(
-        COMMAND ${PKG_CONFIG_EXECUTABLE} --variable=wayland_scanner wayland-scanner
-        WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
-        RESULT_VARIABLE WAYLAND_SCANNER_RC
-        OUTPUT_VARIABLE WAYLAND_SCANNER
-        ERROR_QUIET
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-      )
-      if(NOT WAYLAND_SCANNER_RC EQUAL 0)
-        set(WAYLAND_FOUND FALSE)
-      endif()
-    endif()
+    pkg_check_modules(WAYLAND wayland-client wayland-egl wayland-cursor egl "xkbcommon>=0.5.0")
 
     if(WAYLAND_FOUND)
+      find_program(WAYLAND_SCANNER NAMES wayland-scanner REQUIRED)
+      execute_process(
+        COMMAND ${WAYLAND_SCANNER} --version
+        RESULT_VARIABLE WAYLAND_SCANNER_VERSION_RC
+        ERROR_VARIABLE WAYLAND_SCANNER_VERSION
+        ERROR_STRIP_TRAILING_WHITESPACE
+      )
+      if(NOT WAYLAND_SCANNER_VERSION_RC EQUAL 0)
+        message(FATAL "Failed to get wayland-scanner version")
+        set(WAYLAND_FOUND FALSE)
+      endif()
+      string(REPLACE "wayland-scanner " "" WAYLAND_SCANNER_VERSION ${WAYLAND_SCANNER_VERSION})
+
+      string(COMPARE GREATER_EQUAL ${WAYLAND_SCANNER_VERSION} "1.15.0" WAYLAND_SCANNER_1_15_FOUND)
       if(WAYLAND_SCANNER_1_15_FOUND)
         set(WAYLAND_SCANNER_CODE_MODE "private-code")
       else()
         set(WAYLAND_SCANNER_CODE_MODE "code")
       endif()
+    endif()
 
+    if(WAYLAND_FOUND)
       target_link_directories(sdl-build-options INTERFACE "${WAYLAND_LIBRARY_DIRS}")
       target_include_directories(sdl-build-options INTERFACE "${WAYLAND_INCLUDE_DIRS}")
 
