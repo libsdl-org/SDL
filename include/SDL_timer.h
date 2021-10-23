@@ -42,6 +42,10 @@ extern "C" {
  *
  * This value wraps if the program runs for more than ~49 days.
  *
+ * \deprecated This function is deprecated as of SDL 2.0.18; use
+ *             SDL_GetTicks64() instead, where the value doesn't wrap
+ *             every ~49 days.
+ *
  * \returns an unsigned 32-bit value representing the number of milliseconds
  *          since the SDL library initialized.
  *
@@ -49,15 +53,42 @@ extern "C" {
  *
  * \sa SDL_TICKS_PASSED
  */
-extern DECLSPEC Uint32 SDLCALL SDL_GetTicks(void);
+extern SDL_DEPRECATED DECLSPEC Uint32 SDLCALL SDL_GetTicks(void);
 
 /**
- * Compare SDL ticks values, and return true if `A` has passed `B`.
+ * Get the number of milliseconds since SDL library initialization.
+ *
+ * Note that you should not use the SDL_TICKS_PASSED macro with values
+ * returned by this function, as that macro does clever math to compensate
+ * for the 32-bit overflow every ~49 days. 64-bit values can just be safely
+ * compared directly.
  *
  * For example, if you want to wait 100 ms, you could do this:
  *
- * ```c++
- * Uint32 timeout = SDL_GetTicks() + 100;
+ * ```c
+ * const Uint64 timeout = SDL_GetTicks64() + 100;
+ * while (SDL_GetTicks64() < timeout) {
+ *     // ... do work until timeout has elapsed
+ * }
+ * ```
+ *
+ * \returns an unsigned 64-bit value representing the number of milliseconds
+ *          since the SDL library initialized.
+ */
+extern DECLSPEC Uint64 SDLCALL SDL_GetTicks64(void);
+
+/**
+ * Compare 32-bit SDL ticks values, and return true if `A` has passed `B`.
+ *
+ * This should be used with results from SDL_GetTicks(), as this macro
+ * attempts to deal with the 32-bit counter wrapping back to zero every ~49
+ * days, but should _not_ be used with SDL_GetTicks64(), which does not have
+ * that problem.
+ *
+ * For example, if you want to wait 100 ms, you could do this:
+ *
+ * ```c
+ * const Uint32 timeout = SDL_GetTicks() + 100;
  * while (!SDL_TICKS_PASSED(SDL_GetTicks(), timeout)) {
  *     // ... do work until timeout has elapsed
  * }
