@@ -42,6 +42,7 @@ main(int argc, char *argv[])
 {
     int i, desired;
     SDL_TimerID t1, t2, t3;
+    Uint64 start64, now64;
     Uint32 start32, now32;
     Uint64 start, now;
 
@@ -108,12 +109,14 @@ main(int argc, char *argv[])
     SDL_Log("1 million iterations of ticktock took %f ms\n", (double)((now - start)*1000) / SDL_GetPerformanceFrequency());
 
     SDL_Log("Performance counter frequency: %"SDL_PRIu64"\n", SDL_GetPerformanceFrequency());
+    start64 = SDL_GetTicks64();
     start32 = SDL_GetTicks();
     start = SDL_GetPerformanceCounter();
     SDL_Delay(1000);
     now = SDL_GetPerformanceCounter();
+    now64 = SDL_GetTicks64();
     now32 = SDL_GetTicks();
-    SDL_Log("Delay 1 second = %d ms in ticks, %f ms according to performance counter\n", (now32-start32), (double)((now - start)*1000) / SDL_GetPerformanceFrequency());
+    SDL_Log("Delay 1 second = %d ms in ticks, %d ms in ticks64, %f ms according to performance counter\n", (int) (now32-start32), (int) (now64-start64), (double)((now - start)*1000) / SDL_GetPerformanceFrequency());
 
     SDL_Quit();
     return (0);
