@@ -48,7 +48,7 @@ typedef enum
     BOOL inFullscreenTransition;
     PendingWindowOperation pendingWindowOperation;
     BOOL isMoving;
-    int focusClickPending;
+    NSInteger focusClickPending;
     int pendingWindowWarpX, pendingWindowWarpY;
     BOOL isDragAreaRunning;
 }
@@ -64,8 +64,8 @@ typedef enum
 
 -(BOOL) isMoving;
 -(BOOL) isMovingOrFocusClickPending;
--(void) setFocusClickPending:(int) button;
--(void) clearFocusClickPending:(int) button;
+-(void) setFocusClickPending:(NSInteger) button;
+-(void) clearFocusClickPending:(NSInteger) button;
 -(void) setPendingMoveX:(int)x Y:(int)y;
 -(void) windowDidFinishMoving;
 -(void) onMovingOrFocusClickPendingStateCleared;

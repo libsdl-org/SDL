@@ -515,12 +515,12 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
     return isMoving || (focusClickPending != 0);
 }
 
--(void) setFocusClickPending:(int) button
+-(void) setFocusClickPending:(NSInteger) button
 {
     focusClickPending |= (1 << button);
 }
 
--(void) clearFocusClickPending:(int) button
+-(void) clearFocusClickPending:(NSInteger) button
 {
     if ((focusClickPending & (1 << button)) != 0) {
         focusClickPending &= ~(1 << button);
