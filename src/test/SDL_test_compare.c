@@ -42,6 +42,7 @@ int SDLTest_CompareSurfaces(SDL_Surface *surface, SDL_Surface *referenceSurface,
    int i,j;
    int bpp, bpp_reference;
    Uint8 *p, *p_reference;
+   Uint32 p_value = 0, p_reference_value = 0;
    int dist;
    int sampleErrorX = 0, sampleErrorY = 0, sampleDist = 0;
    Uint8 R, G, B, A;
@@ -75,9 +76,15 @@ int SDLTest_CompareSurfaces(SDL_Surface *surface, SDL_Surface *referenceSurface,
       for (i=0; i<surface->w; i++) {
          p  = (Uint8 *)surface->pixels + j * surface->pitch + i * bpp;
          p_reference = (Uint8 *)referenceSurface->pixels + j * referenceSurface->pitch + i * bpp_reference;
+         
+         /* Read a pixel from surface (p) */
+         p_value = SDL_ReadPixelValue(p, surface->format);
 
-         SDL_GetRGBA(*(Uint32*)p, surface->format, &R, &G, &B, &A);
-         SDL_GetRGBA(*(Uint32*)p_reference, referenceSurface->format, &Rd, &Gd, &Bd, &Ad);
+         /* Read a pixel from referenceSurface (p_reference) */
+         p_reference_value = SDL_ReadPixelValue(p_reference, referenceSurface->format);
+
+         SDL_GetRGBA(p_value, surface->format, &R, &G, &B, &A);
+         SDL_GetRGBA(p_reference_value, referenceSurface->format, &Rd, &Gd, &Bd, &Ad);
 
          dist = 0;
          dist += (R-Rd)*(R-Rd);
