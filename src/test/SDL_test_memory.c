@@ -26,6 +26,7 @@
 #include "SDL_test_memory.h"
 
 #ifdef HAVE_LIBUNWIND_H
+#define UNW_LOCAL_ONLY
 #include <libunwind.h>
 #endif
 
