@@ -231,20 +231,18 @@ Wayland_PumpEvents(_THIS)
         keyboard_repeat_handle(&input->keyboard_repeat, now);
     }
 
-    /* If we're trying to dispatch the display in another thread,
-     * we could trigger a race condition and end up blocking
-     * in wl_display_dispatch() */
-    if (SDL_TryLockMutex(d->display_dispatch_lock) != 0) {
-        return;
+    /* wl_display_prepare_read() will return -1 if the default queue is not empty.
+     * If the default queue is empty, it will prepare us for our SDL_IOReady() call. */
+    if (WAYLAND_wl_display_prepare_read(d->display) == 0) {
+        if (SDL_IOReady(WAYLAND_wl_display_get_fd(d->display), SDL_FALSE, 0) > 0) {
+            WAYLAND_wl_display_read_events(d->display);
+        } else {
+            WAYLAND_wl_display_cancel_read(d->display);
+        }
     }
 
-    if (SDL_IOReady(WAYLAND_wl_display_get_fd(d->display), SDL_FALSE, 0)) {
-        err = WAYLAND_wl_display_dispatch(d->display);
-    } else {
-        err = WAYLAND_wl_display_dispatch_pending(d->display);
-    }
-
-    SDL_UnlockMutex(d->display_dispatch_lock);
+    /* Dispatch any pre-existing pending events or new events we may have read */
+    err = WAYLAND_wl_display_dispatch_pending(d->display);
 
     if (err == -1 && !d->display_disconnected) {
         /* Something has failed with the Wayland connection -- for example,
