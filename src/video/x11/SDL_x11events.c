@@ -1586,14 +1586,7 @@ X11_WaitEventTimeout(_THIS, int timeout)
             return 0;
         }
     } else if (timeout > 0) {
-        int display_fd = ConnectionNumber(display);
-        fd_set readset;
-        struct timeval tv_timeout;
-        FD_ZERO(&readset);
-        FD_SET(display_fd, &readset);
-        tv_timeout.tv_sec = (timeout / 1000);
-        tv_timeout.tv_usec = (timeout % 1000) * 1000;
-        if (select(display_fd + 1, &readset, NULL, NULL, &tv_timeout) > 0) {
+        if (SDL_IOReady(ConnectionNumber(display), SDL_FALSE, timeout) > 0) {
             X11_XNextEvent(display, &xevent);
         } else {
             return 0;
