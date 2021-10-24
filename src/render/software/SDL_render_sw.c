@@ -117,9 +117,8 @@ SW_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     texture->driverdata =
         SDL_CreateRGBSurface(0, texture->w, texture->h, bpp, Rmask, Gmask,
                              Bmask, Amask);
-    SDL_SetSurfaceColorMod(texture->driverdata, texture->r, texture->g,
-                           texture->b);
-    SDL_SetSurfaceAlphaMod(texture->driverdata, texture->a);
+    SDL_SetSurfaceColorMod(texture->driverdata, texture->color.r, texture->color.g, texture->color.b);
+    SDL_SetSurfaceAlphaMod(texture->driverdata, texture->color.a);
     SDL_SetSurfaceBlendMode(texture->driverdata, texture->blendMode);
 
     /* Only RLE encode textures without an alpha channel since the RLE coder

@@ -394,9 +394,9 @@ QueueCmdSetClipRect(SDL_Renderer *renderer)
 }
 
 static int
-QueueCmdSetDrawColor(SDL_Renderer *renderer, const Uint8 r, const Uint8 g, const Uint8 b, const Uint8 a)
+QueueCmdSetDrawColor(SDL_Renderer *renderer, SDL_Color *col)
 {
-    const Uint32 color = ((a << 24) | (r << 16) | (g << 8) | b);
+    const Uint32 color = ((col->a << 24) | (col->r << 16) | (col->g << 8) | col->b);
     int retval = 0;
 
     if (!renderer->color_queued || (color != renderer->last_queued_color)) {
@@ -406,10 +406,10 @@ QueueCmdSetDrawColor(SDL_Renderer *renderer, const Uint8 r, const Uint8 g, const
         if (cmd != NULL) {
             cmd->command = SDL_RENDERCMD_SETDRAWCOLOR;
             cmd->data.color.first = 0;  /* render backend will fill this in. */
-            cmd->data.color.r = r;
-            cmd->data.color.g = g;
-            cmd->data.color.b = b;
-            cmd->data.color.a = a;
+            cmd->data.color.r = col->r;
+            cmd->data.color.g = col->g;
+            cmd->data.color.b = col->b;
+            cmd->data.color.a = col->a;
             retval = renderer->QueueSetDrawColor(renderer, cmd);
             if (retval < 0) {
                 cmd->command = SDL_RENDERCMD_NO_OP;
@@ -432,17 +432,33 @@ QueueCmdClear(SDL_Renderer *renderer)
 
     cmd->command = SDL_RENDERCMD_CLEAR;
     cmd->data.color.first = 0;
-    cmd->data.color.r = renderer->r;
-    cmd->data.color.g = renderer->g;
-    cmd->data.color.b = renderer->b;
-    cmd->data.color.a = renderer->a;
+    cmd->data.color.r = renderer->color.r;
+    cmd->data.color.g = renderer->color.g;
+    cmd->data.color.b = renderer->color.b;
+    cmd->data.color.a = renderer->color.a;
     return 0;
 }
 
-static int
-PrepQueueCmdDraw(SDL_Renderer *renderer, const Uint8 r, const Uint8 g, const Uint8 b, const Uint8 a)
+static SDL_RenderCommand *
+PrepQueueCmdDraw(SDL_Renderer *renderer, const SDL_RenderCommandType cmdtype, SDL_Texture *texture)
 {
-    int retval = QueueCmdSetDrawColor(renderer, r, g, b, a);
+    SDL_RenderCommand *cmd = NULL;
+    int retval = 0;
+    SDL_Color *color;
+    SDL_BlendMode blendMode;
+
+    if (texture) {
+        color = &texture->color;
+        blendMode = texture->blendMode;
+    } else {
+        color = &renderer->color;
+        blendMode = renderer->blendMode;
+    }
+
+    if (cmdtype != SDL_RENDERCMD_GEOMETRY) {
+        /* !!! FIXME: drop this draw if viewport w or h is zero. */
+        retval = QueueCmdSetDrawColor(renderer, color);
+    }
 
     /* Set the viewport and clip rect directly before draws, so the backends
      * don't have to worry about that state not being valid at draw time. */
@@ -452,26 +468,19 @@ PrepQueueCmdDraw(SDL_Renderer *renderer, const Uint8 r, const Uint8 g, const Uin
     if (retval == 0 && !renderer->cliprect_queued) {
         retval = QueueCmdSetClipRect(renderer);
     }
-    return retval;
-}
 
-static SDL_RenderCommand *
-PrepQueueCmdDrawSolid(SDL_Renderer *renderer, const SDL_RenderCommandType cmdtype)
-{
-    /* !!! FIXME: drop this draw if viewport w or h is zero. */
-    SDL_RenderCommand *cmd = NULL;
-    if (PrepQueueCmdDraw(renderer, renderer->r, renderer->g, renderer->b, renderer->a) == 0) {
+    if (retval == 0) {
         cmd = AllocateRenderCommand(renderer);
         if (cmd != NULL) {
             cmd->command = cmdtype;
             cmd->data.draw.first = 0;  /* render backend will fill this in. */
             cmd->data.draw.count = 0;  /* render backend will fill this in. */
-            cmd->data.draw.r = renderer->r;
-            cmd->data.draw.g = renderer->g;
-            cmd->data.draw.b = renderer->b;
-            cmd->data.draw.a = renderer->a;
-            cmd->data.draw.blend = renderer->blendMode;
-            cmd->data.draw.texture = NULL;  /* no texture. */
+            cmd->data.draw.r = color->r;
+            cmd->data.draw.g = color->g;
+            cmd->data.draw.b = color->b;
+            cmd->data.draw.a = color->a;
+            cmd->data.draw.blend = blendMode;
+            cmd->data.draw.texture = texture;
         }
     }
     return cmd;
@@ -480,7 +489,7 @@ PrepQueueCmdDrawSolid(SDL_Renderer *renderer, const SDL_RenderCommandType cmdtyp
 static int
 QueueCmdDrawPoints(SDL_Renderer *renderer, const SDL_FPoint * points, const int count)
 {
-    SDL_RenderCommand *cmd = PrepQueueCmdDrawSolid(renderer, SDL_RENDERCMD_DRAW_POINTS);
+    SDL_RenderCommand *cmd = PrepQueueCmdDraw(renderer, SDL_RENDERCMD_DRAW_POINTS, NULL);
     int retval = -1;
     if (cmd != NULL) {
         retval = renderer->QueueDrawPoints(renderer, cmd, points, count);
@@ -494,7 +503,7 @@ QueueCmdDrawPoints(SDL_Renderer *renderer, const SDL_FPoint * points, const int 
 static int
 QueueCmdDrawLines(SDL_Renderer *renderer, const SDL_FPoint * points, const int count)
 {
-    SDL_RenderCommand *cmd = PrepQueueCmdDrawSolid(renderer, SDL_RENDERCMD_DRAW_LINES);
+    SDL_RenderCommand *cmd = PrepQueueCmdDraw(renderer, SDL_RENDERCMD_DRAW_LINES, NULL);
     int retval = -1;
     if (cmd != NULL) {
         retval = renderer->QueueDrawLines(renderer, cmd, points, count);
@@ -512,7 +521,7 @@ QueueCmdFillRects(SDL_Renderer *renderer, const SDL_FRect * rects, const int cou
     int retval = -1;
     int use_geometry = renderer->QueueGeometry && ! (renderer->info.flags & SDL_RENDERER_SOFTWARE);
 
-    cmd = PrepQueueCmdDrawSolid(renderer, (use_geometry ? SDL_RENDERCMD_GEOMETRY : SDL_RENDERCMD_FILL_RECTS));
+    cmd = PrepQueueCmdDraw(renderer, (use_geometry ? SDL_RENDERCMD_GEOMETRY : SDL_RENDERCMD_FILL_RECTS), NULL);
 
     if (cmd != NULL) {
         if (use_geometry) {
@@ -525,16 +534,12 @@ QueueCmdFillRects(SDL_Renderer *renderer, const SDL_FRect * rects, const int cou
                 int i;
                 float *ptr_xy = xy;
                 int *ptr_indices = indices;
-                SDL_Color col;
                 const int xy_stride = 2 * sizeof (float);
-                const int color_stride = 0;
                 const int num_vertices = 4 * count;
                 const int num_indices = 6 * count;
                 const int size_indices = 4;
                 int cur_indice = 0;
 
-                SDL_GetRenderDrawColor(renderer, &col.r, &col.g, &col.b, &col.a);
-                
                 for (i = 0; i < count; ++i) {
                     float minx, miny, maxx, maxy;
 
@@ -562,7 +567,7 @@ QueueCmdFillRects(SDL_Renderer *renderer, const SDL_FRect * rects, const int cou
                 }
 
                 retval = renderer->QueueGeometry(renderer, cmd, NULL,
-                        xy, xy_stride, &col, color_stride, NULL, 0,
+                        xy, xy_stride, (int *) &renderer->color, 0 /* color_stride */, NULL, 0,
                         num_vertices, indices, num_indices, size_indices,
                         1.0f, 1.0f);
 
@@ -583,32 +588,10 @@ QueueCmdFillRects(SDL_Renderer *renderer, const SDL_FRect * rects, const int cou
     return retval;
 }
 
-static SDL_RenderCommand *
-PrepQueueCmdDrawTexture(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_RenderCommandType cmdtype)
-{
-    /* !!! FIXME: drop this draw if viewport w or h is zero. */
-    SDL_RenderCommand *cmd = NULL;
-    if (PrepQueueCmdDraw(renderer, texture->r, texture->g, texture->b, texture->a) == 0) {
-        cmd = AllocateRenderCommand(renderer);
-        if (cmd != NULL) {
-            cmd->command = cmdtype;
-            cmd->data.draw.first = 0;  /* render backend will fill this in. */
-            cmd->data.draw.count = 0;  /* render backend will fill this in. */
-            cmd->data.draw.r = texture->r;
-            cmd->data.draw.g = texture->g;
-            cmd->data.draw.b = texture->b;
-            cmd->data.draw.a = texture->a;
-            cmd->data.draw.blend = texture->blendMode;
-            cmd->data.draw.texture = texture;
-        }
-    }
-    return cmd;
-}
-
 static int
 QueueCmdCopy(SDL_Renderer *renderer, SDL_Texture * texture, const SDL_Rect * srcrect, const SDL_FRect * dstrect)
 {
-    SDL_RenderCommand *cmd = PrepQueueCmdDrawTexture(renderer, texture, SDL_RENDERCMD_COPY);
+    SDL_RenderCommand *cmd = PrepQueueCmdDraw(renderer, SDL_RENDERCMD_COPY, texture);
     int retval = -1;
     if (cmd != NULL) {
         retval = renderer->QueueCopy(renderer, cmd, texture, srcrect, dstrect);
@@ -624,7 +607,7 @@ QueueCmdCopyEx(SDL_Renderer *renderer, SDL_Texture * texture,
                const SDL_Rect * srcquad, const SDL_FRect * dstrect,
                const double angle, const SDL_FPoint *center, const SDL_RendererFlip flip)
 {
-    SDL_RenderCommand *cmd = PrepQueueCmdDrawTexture(renderer, texture, SDL_RENDERCMD_COPY_EX);
+    SDL_RenderCommand *cmd = PrepQueueCmdDraw(renderer, SDL_RENDERCMD_COPY_EX, texture);
     int retval = -1;
     SDL_assert(renderer->QueueCopyEx != NULL);  /* should have caught at higher level. */
     if (cmd != NULL) {
@@ -647,11 +630,7 @@ QueueCmdGeometry(SDL_Renderer *renderer, SDL_Texture *texture,
 {
     SDL_RenderCommand *cmd;
     int retval = -1;
-    if (texture) {
-        cmd = PrepQueueCmdDrawTexture(renderer, texture, SDL_RENDERCMD_GEOMETRY);
-    } else {
-        cmd = PrepQueueCmdDrawSolid(renderer, SDL_RENDERCMD_GEOMETRY);
-    }
+    cmd = PrepQueueCmdDraw(renderer, SDL_RENDERCMD_GEOMETRY, texture);
     if (cmd != NULL) {
         retval = renderer->QueueGeometry(renderer, cmd, texture,
                 xy, xy_stride, color, color_stride, uv, uv_stride,
@@ -1232,10 +1211,10 @@ SDL_CreateTexture(SDL_Renderer * renderer, Uint32 format, int access, int w, int
     texture->access = access;
     texture->w = w;
     texture->h = h;
-    texture->r = 255;
-    texture->g = 255;
-    texture->b = 255;
-    texture->a = 255;
+    texture->color.r = 255;
+    texture->color.g = 255;
+    texture->color.b = 255;
+    texture->color.a = 255;
     texture->scaleMode = SDL_GetScaleMode();
     texture->renderer = renderer;
     texture->next = renderer->textures;
@@ -1490,9 +1469,9 @@ SDL_SetTextureColorMod(SDL_Texture * texture, Uint8 r, Uint8 g, Uint8 b)
     } else {
         texture->modMode &= ~SDL_TEXTUREMODULATE_COLOR;
     }
-    texture->r = r;
-    texture->g = g;
-    texture->b = b;
+    texture->color.r = r;
+    texture->color.g = g;
+    texture->color.b = b;
     if (texture->native) {
         return SDL_SetTextureColorMod(texture->native, r, g, b);
     }
@@ -1506,13 +1485,13 @@ SDL_GetTextureColorMod(SDL_Texture * texture, Uint8 * r, Uint8 * g,
     CHECK_TEXTURE_MAGIC(texture, -1);
 
     if (r) {
-        *r = texture->r;
+        *r = texture->color.r;
     }
     if (g) {
-        *g = texture->g;
+        *g = texture->color.g;
     }
     if (b) {
-        *b = texture->b;
+        *b = texture->color.b;
     }
     return 0;
 }
@@ -1527,7 +1506,7 @@ SDL_SetTextureAlphaMod(SDL_Texture * texture, Uint8 alpha)
     } else {
         texture->modMode &= ~SDL_TEXTUREMODULATE_ALPHA;
     }
-    texture->a = alpha;
+    texture->color.a = alpha;
     if (texture->native) {
         return SDL_SetTextureAlphaMod(texture->native, alpha);
     }
@@ -1540,7 +1519,7 @@ SDL_GetTextureAlphaMod(SDL_Texture * texture, Uint8 * alpha)
     CHECK_TEXTURE_MAGIC(texture, -1);
 
     if (alpha) {
-        *alpha = texture->a;
+        *alpha = texture->color.a;
     }
     return 0;
 }
@@ -2519,10 +2498,10 @@ SDL_SetRenderDrawColor(SDL_Renderer * renderer,
 {
     CHECK_RENDERER_MAGIC(renderer, -1);
 
-    renderer->r = r;
-    renderer->g = g;
-    renderer->b = b;
-    renderer->a = a;
+    renderer->color.r = r;
+    renderer->color.g = g;
+    renderer->color.b = b;
+    renderer->color.a = a;
     return 0;
 }
 
@@ -2533,16 +2512,16 @@ SDL_GetRenderDrawColor(SDL_Renderer * renderer,
     CHECK_RENDERER_MAGIC(renderer, -1);
 
     if (r) {
-        *r = renderer->r;
+        *r = renderer->color.r;
     }
     if (g) {
-        *g = renderer->g;
+        *g = renderer->color.g;
     }
     if (b) {
-        *b = renderer->b;
+        *b = renderer->color.b;
     }
     if (a) {
-        *a = renderer->a;
+        *a = renderer->color.a;
     }
     return 0;
 }
@@ -3312,8 +3291,6 @@ SDL_RenderCopyF(SDL_Renderer * renderer, SDL_Texture * texture,
     if (renderer->QueueGeometry && renderer->QueueCopy == NULL) {
         float xy[8];
         const int xy_stride = 2 * sizeof (float);
-        SDL_Color color;
-        const int color_stride = 0;
         float uv[8];
         const int uv_stride = 2 * sizeof (float);
         const int num_vertices = 4;
@@ -3322,9 +3299,6 @@ SDL_RenderCopyF(SDL_Renderer * renderer, SDL_Texture * texture,
         const int size_indices = 4;
         float minu, minv, maxu, maxv;
         float minx, miny, maxx, maxy;
-
-        SDL_GetTextureColorMod(texture, &color.r, &color.g, &color.b);
-        SDL_GetTextureAlphaMod(texture, &color.a);
 
         minu = (float) (real_srcrect.x) / (float) texture->w;
         minv = (float) (real_srcrect.y) / (float) texture->h;
@@ -3355,7 +3329,7 @@ SDL_RenderCopyF(SDL_Renderer * renderer, SDL_Texture * texture,
         xy[7] = maxy;
 
         retval = QueueCmdGeometry(renderer, texture,
-                xy, xy_stride, (int *)&color, color_stride, uv, uv_stride,
+                xy, xy_stride, (int *)&texture->color, 0 /* color_stride */, uv, uv_stride,
                 num_vertices,
                 indices, num_indices, size_indices,
                 renderer->scale.x, renderer->scale.y);
@@ -3462,8 +3436,6 @@ SDL_RenderCopyExF(SDL_Renderer * renderer, SDL_Texture * texture,
     if (renderer->QueueGeometry && renderer->QueueCopyEx == NULL) {
         float xy[8];
         const int xy_stride = 2 * sizeof (float);
-        SDL_Color color;
-        const int color_stride = 0;
         float uv[8];
         const int uv_stride = 2 * sizeof (float);
         const int num_vertices = 4;
@@ -3480,9 +3452,6 @@ SDL_RenderCopyExF(SDL_Renderer * renderer, SDL_Texture * texture,
         const float radian_angle = (float)((M_PI * angle) / 180.0);
         const float s = SDL_sin(radian_angle);
         const float c = SDL_cos(radian_angle);
-
-        SDL_GetTextureColorMod(texture, &color.r, &color.g, &color.b);
-        SDL_GetTextureAlphaMod(texture, &color.a);
 
         minu = (float) (real_srcrect.x) / (float) texture->w;
         minv = (float) (real_srcrect.y) / (float) texture->h;
@@ -3542,7 +3511,7 @@ SDL_RenderCopyExF(SDL_Renderer * renderer, SDL_Texture * texture,
         xy[7] = (s_minx + c_maxy) + centery;
 
         retval = QueueCmdGeometry(renderer, texture,
-                xy, xy_stride, (int *)&color, color_stride, uv, uv_stride,
+                xy, xy_stride, (int *)&texture->color, 0 /* color_stride */, uv, uv_stride,
                 num_vertices,
                 indices, num_indices, size_indices,
                 renderer->scale.x, renderer->scale.y);

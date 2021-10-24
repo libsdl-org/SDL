@@ -1032,7 +1032,6 @@ GLES2_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
     const SDL_bool colorswap = (renderer->target && (renderer->target->format == SDL_PIXELFORMAT_ARGB8888 || renderer->target->format == SDL_PIXELFORMAT_RGB888));
     const int vboidx = data->current_vertex_buffer;
     const GLuint vbo = data->vertex_buffers[vboidx];
-    size_t i;
 
     if (GLES2_ActivateRenderer(renderer) < 0) {
         return -1;
@@ -1142,10 +1141,7 @@ GLES2_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
                 while (nextcmd != NULL) {
                     const SDL_RenderCommandType nextcmdtype = nextcmd->command;
                     if (nextcmdtype != thiscmdtype) {
-                        /* SETDRAWCOLOR commands are safe because copy color is set in the vbo per-vertex. */
-                        if ((nextcmdtype != SDL_RENDERCMD_SETDRAWCOLOR) && (nextcmdtype != SDL_RENDERCMD_NO_OP)) {
-                            break;  /* can't go any further on this draw call, different render command up next. */
-                        }
+                        break;  /* can't go any further on this draw call, different render command up next. */
                     } else if (nextcmd->data.draw.texture != thistexture || nextcmd->data.draw.blend != thisblend) {
                         break;  /* can't go any further on this draw call, different texture/blendmode copy up next. */
                     } else {

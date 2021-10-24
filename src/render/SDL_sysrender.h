@@ -43,7 +43,7 @@ struct SDL_Texture
     int modMode;                /**< The texture modulation mode */
     SDL_BlendMode blendMode;    /**< The texture blend mode */
     SDL_ScaleMode scaleMode;    /**< The texture scale mode */
-    Uint8 r, g, b, a;           /**< Texture modulation values */
+    SDL_Color color;            /**< Texture modulation values */
 
     SDL_Renderer *renderer;
 
@@ -216,7 +216,7 @@ struct SDL_Renderer
     SDL_Texture *target;
     SDL_mutex *target_mutex;
 
-    Uint8 r, g, b, a;                   /**< Color for drawing operations values */
+    SDL_Color color;                    /**< Color for drawing operations values */
     SDL_BlendMode blendMode;            /**< The drawing blend mode */
 
     SDL_bool always_batch;
