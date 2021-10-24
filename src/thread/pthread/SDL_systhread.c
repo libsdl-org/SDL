@@ -183,17 +183,6 @@ SDL_ThreadID(void)
     return ((SDL_threadID) pthread_self());
 }
 
-#if __LINUX__
-/**
-   \brief Sets the SDL priority (not nice level) for a thread, using setpriority() if appropriate, and RealtimeKit if available.
-   Differs from SDL_LinuxSetThreadPriority in also taking the desired scheduler policy,
-   such as SCHED_OTHER or SCHED_RR.
-
-   \return 0 on success, or -1 on error.
- */
-extern DECLSPEC int SDLCALL SDL_LinuxSetThreadPriorityAndPolicy(Sint64 threadID, int sdlPriority, int schedPolicy);
-#endif
-
 int
 SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
 {

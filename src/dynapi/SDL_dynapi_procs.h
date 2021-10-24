@@ -890,3 +890,6 @@ SDL_DYNAPI_PROC(int,SDL_asprintf,(char **a, SDL_PRINTF_FORMAT_STRING const char 
 #endif
 SDL_DYNAPI_PROC(int,SDL_vasprintf,(char **a, const char *b, va_list c),(a,b,c),return)
 SDL_DYNAPI_PROC(void*,SDL_GetWindowICCProfile,(SDL_Window *a, size_t *b),(a,b),return)
+#ifdef __LINUX__
+SDL_DYNAPI_PROC(int,SDL_LinuxSetThreadPriorityAndPolicy,(Sint64 a, int b, int c),(a,b,c),return)
+#endif
