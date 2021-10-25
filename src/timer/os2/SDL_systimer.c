@@ -42,10 +42,6 @@ typedef unsigned long long  ULLONG;
 static ULONG    ulTmrFreq = 0;
 static ULLONG   ullTmrStart = 0;
 
-/* 32-bit counter fallback...not used if DosTmrQuery* is functioning. */
-static ULONG    ulPrevTmr = 0;
-static Uint64   ui64TmrStartOffset = 0;  /* Used if 32-bit counter overflows. */
-
 void
 SDL_TicksInit(void)
 {
@@ -64,7 +60,6 @@ SDL_TicksInit(void)
     ulTmrFreq = 0; /* Error - use DosQuerySysInfo() for timer. */
     DosQuerySysInfo(QSV_MS_COUNT, QSV_MS_COUNT, &ulTmrStart, sizeof (ULONG));
     ullTmrStart = (ULLONG) ulTmrStart;
-    ulPrevTmr = ulTmrStart;
 }
 
 void
@@ -86,15 +81,10 @@ SDL_GetTicks64(void)
         DosTmrQueryTime((PQWORD)&ullTmrNow);
         ui64Result = (ullTmrNow - ullTmrStart) * 1000 / ulTmrFreq;
     } else {
+        /* note that this counter rolls over to 0 every ~49 days. Fix your system so DosTmrQueryTime works if you need to avoid this. */
         ULONG ulTmrNow;
         DosQuerySysInfo(QSV_MS_COUNT, QSV_MS_COUNT, &ulTmrNow, sizeof (ULONG));
-        if ( ((ULLONG) ulTmrNow) < ulPrevTmr ) {  /* have we overflowed the 32-bit counter since last check? */
-            /* Note that this is incorrect if you went more than ~98 days between calls to SDL_GetTicks64(). */
-            /* One could query QSV_TIME_HIGH and QSV_TIME_LOW here to verify, but it's probably not worth it. */
-            ui64TmrStartOffset += 0xFFFFFFFF;
-        }
-        ui64Result = (((Uint64) ulTmrNow) - ullTmrStart) + ui64TmrStartOffset;
-        ulPrevTmr = ulTmrNow;
+        ui64Result = (((Uint64) ulTmrNow) - ullTmrStart);
     }
 
     return ui64Result;
@@ -105,9 +95,9 @@ SDL_GetPerformanceCounter(void)
 {
     QWORD   qwTmrNow;
 
-    if (ulTmrFreq == 0 || (DosTmrQueryTime(&qwTmrNow) != NO_ERROR))
+    if (ulTmrFreq == 0 || (DosTmrQueryTime(&qwTmrNow) != NO_ERROR)) {
         return SDL_GetTicks64();
-
+    }
     return *((Uint64 *)&qwTmrNow);
 }
 
