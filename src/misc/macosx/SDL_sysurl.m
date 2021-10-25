@@ -27,16 +27,10 @@ int
 SDL_SYS_OpenURL(const char *url)
 { @autoreleasepool
 {
-    NSString *nsstr = [NSString stringWithUTF8String:url];
-    NSURL *nsurl = [NSURL URLWithString:nsstr];
-    int res = [[NSWorkspace sharedWorkspace] openURL:nsurl] ? 0 : -1;
-
-    if (res == -1) {
-        NSURL *nsurlpath = [NSURL fileURLWithPath:nsstr];
-        return [[NSWorkspace sharedWorkspace] openURL:nsurlpath] ? 0 : -1;
-    }
-
-    return res;
+	CFURLRef cfurl = CFURLCreateWithBytes(NULL, (UInt8 *) url, SDL_strlen(url), kCFStringEncodingUTF8,  NULL);
+	OSStatus status = LSOpenCFURLRef(cfurl, NULL);
+	CFRelease(cfurl);
+	return status == noErr ? 0 : -1;
 }}
 
 /* vi: set ts=4 sw=4 expandtab: */
