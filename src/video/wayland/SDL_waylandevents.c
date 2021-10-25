@@ -169,12 +169,13 @@ touch_surface(SDL_TouchID id)
     return NULL;
 }
 
-/* Returns the time till next repeat, or 0 if no key is down. */
-static void
+/* Returns SDL_TRUE if a key repeat event was due */
+static SDL_bool
 keyboard_repeat_handle(SDL_WaylandKeyboardRepeat* repeat_info, uint32_t now)
 {
+    SDL_bool ret = SDL_FALSE;
     if (!repeat_info->is_key_down || !repeat_info->is_initialized) {
-        return;
+        return ret;
     }
     while (repeat_info->next_repeat_ms <= now) {
         if (repeat_info->scancode != SDL_SCANCODE_UNKNOWN) {
@@ -184,7 +185,9 @@ keyboard_repeat_handle(SDL_WaylandKeyboardRepeat* repeat_info, uint32_t now)
             SDL_SendKeyboardText(repeat_info->text);
         }
         repeat_info->next_repeat_ms += 1000 / repeat_info->repeat_rate;
+        ret = SDL_TRUE;
     }
+    return ret;
 }
 
 static void
@@ -208,6 +211,77 @@ keyboard_repeat_set(SDL_WaylandKeyboardRepeat* repeat_info,
         SDL_memcpy(repeat_info->text, text, 8);
     } else {
         repeat_info->text[0] = '\0';
+    }
+}
+
+void
+Wayland_SendWakeupEvent(_THIS, SDL_Window *window)
+{
+    SDL_VideoData *d = _this->driverdata;
+
+    /* TODO: Maybe use a pipe to avoid the compositor round trip? */
+    wl_display_sync(d->display);
+    WAYLAND_wl_display_flush(d->display);
+}
+
+int
+Wayland_WaitEventTimeout(_THIS, int timeout)
+{
+    SDL_VideoData *d = _this->driverdata;
+    struct SDL_WaylandInput *input = d->input;
+    SDL_bool key_repeat_active = SDL_FALSE;
+
+    WAYLAND_wl_display_flush(d->display);
+
+#ifdef SDL_USE_IME
+    if (d->text_input_manager == NULL && SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE) {
+        SDL_IME_PumpEvents();
+    }
+#endif
+
+    /* If key repeat is active, we'll need to cap our maximum wait time to handle repeats */
+    if (input && input->keyboard_repeat.is_initialized && input->keyboard_repeat.is_key_down) {
+        uint32_t now = SDL_GetTicks();
+        if (keyboard_repeat_handle(&input->keyboard_repeat, now)) {
+            /* A repeat key event was already due */
+            return 1;
+        } else {
+            uint32_t next_repeat_wait_time = (input->keyboard_repeat.next_repeat_ms - now) + 1;
+            if (timeout >= 0) {
+                timeout = SDL_min(timeout, next_repeat_wait_time);
+            } else {
+                timeout = next_repeat_wait_time;
+            }
+            key_repeat_active = SDL_TRUE;
+        }
+    }
+
+    /* wl_display_prepare_read() will return -1 if the default queue is not empty.
+     * If the default queue is empty, it will prepare us for our SDL_IOReady() call. */
+    if (WAYLAND_wl_display_prepare_read(d->display) == 0) {
+        if (SDL_IOReady(WAYLAND_wl_display_get_fd(d->display), SDL_FALSE, timeout) > 0) {
+            /* There are new events available to read */
+            WAYLAND_wl_display_read_events(d->display);
+            WAYLAND_wl_display_dispatch_pending(d->display);
+            return 1;
+        } else {
+            /* No events available within the timeout */
+            WAYLAND_wl_display_cancel_read(d->display);
+
+            /* If key repeat is active, we might have woken up to generate a key event */
+            if (key_repeat_active) {
+                uint32_t now = SDL_GetTicks();
+                if (keyboard_repeat_handle(&input->keyboard_repeat, now)) {
+                    return 1;
+                }
+            }
+
+            return 0;
+        }
+    } else {
+        /* We already had pending events */
+        WAYLAND_wl_display_dispatch_pending(d->display);
+        return 1;
     }
 }
 
