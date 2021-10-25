@@ -95,21 +95,33 @@ measure_mode_block(const int *block)
     return blockSize * 4;
 }
 
+static int
+read_mode_variable(int *block, int var)
+{
+    _kernel_swi_regs regs;
+    regs.r[0] = (int)block;
+    regs.r[1] = var;
+    _kernel_swi(OS_ReadModeVariable, &regs, &regs);
+    return regs.r[2];
+}
+
 static int *
-read_mode_block(int *block, SDL_DisplayMode *mode)
+read_mode_block(int *block, SDL_DisplayMode *mode, SDL_bool extended)
 {
     int xres, yres, ncolour, modeflags, log2bpp, rate;
     int *end;
 
-    xres = block[1];
-    yres = block[2];
     if ((block[0] & 0xFF) == 1) {
+        xres = block[1];
+        yres = block[2];
         log2bpp = block[3];
         rate = block[4];
         end = block + 5;
         ncolour = (1 << (1 << log2bpp)) - 1;
         modeflags = MODE_FLAG_TBGR;
     } else if ((block[0] & 0xFF) == 3) {
+        xres = block[1];
+        yres = block[2];
         ncolour = block[3];
         modeflags = block[4];
         log2bpp = block[5];
@@ -117,6 +129,15 @@ read_mode_block(int *block, SDL_DisplayMode *mode)
         end = block + 7;
     } else {
         return NULL;
+    }
+
+    if (extended) {
+        xres = read_mode_variable(block, 11) + 1;
+        yres = read_mode_variable(block, 12) + 1;
+        log2bpp = read_mode_variable(block, 9);
+        end = block + (measure_mode_block(block) / 4);
+        ncolour = read_mode_variable(block, 3);
+        modeflags = read_mode_variable(block, 0);
     }
 
     mode->w = xres;
@@ -153,7 +174,7 @@ RISCOS_InitModes(_THIS)
     }
 
     current_mode = (int *)regs.r[1];
-    if (!read_mode_block(current_mode, &mode)) {
+    if (!read_mode_block(current_mode, &mode, SDL_TRUE)) {
         return SDL_SetError("Unsupported mode block format %d", current_mode[0]);
     }
 
@@ -203,7 +224,7 @@ RISCOS_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
         size_t size;
         void *end;
 
-        end = read_mode_block(pos + 4, &mode);
+        end = read_mode_block(pos + 4, &mode, SDL_FALSE);
         if (!end) {
             continue;
         }
