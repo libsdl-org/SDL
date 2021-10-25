@@ -519,12 +519,12 @@ QueueCmdFillRects(SDL_Renderer *renderer, const SDL_FRect * rects, const int cou
 {
     SDL_RenderCommand *cmd;
     int retval = -1;
-    int use_geometry = renderer->QueueGeometry && ! (renderer->info.flags & SDL_RENDERER_SOFTWARE);
+    const int use_rendergeometry = (renderer->QueueFillRects == NULL);
 
-    cmd = PrepQueueCmdDraw(renderer, (use_geometry ? SDL_RENDERCMD_GEOMETRY : SDL_RENDERCMD_FILL_RECTS), NULL);
+    cmd = PrepQueueCmdDraw(renderer, (use_rendergeometry ? SDL_RENDERCMD_GEOMETRY : SDL_RENDERCMD_FILL_RECTS), NULL);
 
     if (cmd != NULL) {
-        if (use_geometry) {
+        if (use_rendergeometry) {
             SDL_bool isstack1;
             SDL_bool isstack2;
             float *xy = SDL_small_alloc(float, 4 * 2 * count, &isstack1);
@@ -609,7 +609,6 @@ QueueCmdCopyEx(SDL_Renderer *renderer, SDL_Texture * texture,
 {
     SDL_RenderCommand *cmd = PrepQueueCmdDraw(renderer, SDL_RENDERCMD_COPY_EX, texture);
     int retval = -1;
-    SDL_assert(renderer->QueueCopyEx != NULL);  /* should have caught at higher level. */
     if (cmd != NULL) {
         retval = renderer->QueueCopyEx(renderer, cmd, texture, srcquad, dstrect, angle, center, flip);
         if (retval < 0) {
@@ -3249,6 +3248,8 @@ SDL_RenderCopyF(SDL_Renderer * renderer, SDL_Texture * texture,
     SDL_Rect real_srcrect;
     SDL_FRect real_dstrect;
     int retval;
+    int use_rendergeometry;
+
 
     CHECK_RENDERER_MAGIC(renderer, -1);
     CHECK_TEXTURE_MAGIC(texture, -1);
@@ -3263,6 +3264,8 @@ SDL_RenderCopyF(SDL_Renderer * renderer, SDL_Texture * texture,
         return 0;
     }
 #endif
+
+    use_rendergeometry = (renderer->QueueCopy == NULL);
 
     real_srcrect.x = 0;
     real_srcrect.y = 0;
@@ -3288,7 +3291,7 @@ SDL_RenderCopyF(SDL_Renderer * renderer, SDL_Texture * texture,
 
     texture->last_command_generation = renderer->render_command_generation;
 
-    if (renderer->QueueGeometry && renderer->QueueCopy == NULL) {
+    if (use_rendergeometry) {
         float xy[8];
         const int xy_stride = 2 * sizeof (float);
         float uv[8];
@@ -3381,6 +3384,7 @@ SDL_RenderCopyExF(SDL_Renderer * renderer, SDL_Texture * texture,
     SDL_FRect real_dstrect;
     SDL_FPoint real_center;
     int retval;
+    int use_rendergeometry;
 
     if (flip == SDL_FLIP_NONE && (int)(angle/360) == angle/360) { /* fast path when we don't need rotation or flipping */
         return SDL_RenderCopyF(renderer, texture, srcrect, dstrect);
@@ -3402,6 +3406,8 @@ SDL_RenderCopyExF(SDL_Renderer * renderer, SDL_Texture * texture,
         return 0;
     }
 #endif
+
+    use_rendergeometry = (renderer->QueueCopyEx == NULL);
 
     real_srcrect.x = 0;
     real_srcrect.y = 0;
@@ -3433,7 +3439,7 @@ SDL_RenderCopyExF(SDL_Renderer * renderer, SDL_Texture * texture,
 
     texture->last_command_generation = renderer->render_command_generation;
 
-    if (renderer->QueueGeometry && renderer->QueueCopyEx == NULL) {
+    if (use_rendergeometry) {
         float xy[8];
         const int xy_stride = 2 * sizeof (float);
         float uv[8];
