@@ -1085,7 +1085,6 @@ D3D_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *verti
     const int vboidx = data->currentVertexBuffer;
     IDirect3DVertexBuffer9 *vbo = NULL;
     const SDL_bool istarget = renderer->target != NULL;
-    size_t i;
 
     if (D3D_ActivateRenderer(renderer) < 0) {
         return -1;
@@ -1239,7 +1238,7 @@ D3D_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *verti
 
             case SDL_RENDERCMD_COPY_EX: /* unused */
                 break;
-            
+
             case SDL_RENDERCMD_GEOMETRY: {
                 const size_t count = cmd->data.draw.count;
                 const size_t first = cmd->data.draw.first;
