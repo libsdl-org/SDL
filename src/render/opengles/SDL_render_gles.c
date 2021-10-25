@@ -769,7 +769,6 @@ static int
 GLES_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertices, size_t vertsize)
 {
     GLES_RenderData *data = (GLES_RenderData *) renderer->driverdata;
-    size_t i;
 
     if (GLES_ActivateRenderer(renderer) < 0) {
         return -1;
