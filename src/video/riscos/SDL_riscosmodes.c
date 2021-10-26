@@ -86,7 +86,7 @@ RISCOS_ModeToPixelFormat(int ncolour, int modeflags, int log2bpp)
 static size_t
 measure_mode_block(const int *block)
 {
-    size_t blockSize = (block[0] == 2) ? 7 : 5;
+    size_t blockSize = ((block[0] & 0xFF) == 3) ? 7 : 5;
     while(block[blockSize] != -1) {
         blockSize += 2;
     }
@@ -105,18 +105,16 @@ read_mode_variable(int *block, int var)
     return regs.r[2];
 }
 
-static int *
+static SDL_bool
 read_mode_block(int *block, SDL_DisplayMode *mode, SDL_bool extended)
 {
     int xres, yres, ncolour, modeflags, log2bpp, rate;
-    int *end;
 
     if ((block[0] & 0xFF) == 1) {
         xres = block[1];
         yres = block[2];
         log2bpp = block[3];
         rate = block[4];
-        end = block + 5;
         ncolour = (1 << (1 << log2bpp)) - 1;
         modeflags = MODE_FLAG_TBGR;
     } else if ((block[0] & 0xFF) == 3) {
@@ -126,16 +124,14 @@ read_mode_block(int *block, SDL_DisplayMode *mode, SDL_bool extended)
         modeflags = block[4];
         log2bpp = block[5];
         rate = block[6];
-        end = block + 7;
     } else {
-        return NULL;
+        return SDL_FALSE;
     }
 
     if (extended) {
         xres = read_mode_variable(block, 11) + 1;
         yres = read_mode_variable(block, 12) + 1;
         log2bpp = read_mode_variable(block, 9);
-        end = block + (measure_mode_block(block) / 4);
         ncolour = read_mode_variable(block, 3);
         modeflags = read_mode_variable(block, 0);
     }
@@ -145,7 +141,53 @@ read_mode_block(int *block, SDL_DisplayMode *mode, SDL_bool extended)
     mode->format = RISCOS_ModeToPixelFormat(ncolour, modeflags, log2bpp);
     mode->refresh_rate = rate;
 
-    return end;
+    return SDL_TRUE;
+}
+
+static void *
+convert_mode_block(const int *block)
+{
+    int xres, yres, log2bpp, rate, ncolour = 0, modeflags = 0;
+    size_t pos = 0;
+    int *dst;
+
+    if ((block[0] & 0xFF) == 1) {
+        xres = block[1];
+        yres = block[2];
+        log2bpp = block[3];
+        rate = block[4];
+    } else if ((block[0] & 0xFF) == 3) {
+        xres = block[1];
+        yres = block[2];
+        ncolour = block[3];
+        modeflags = block[4];
+        log2bpp = block[5];
+        rate = block[6];
+    } else {
+        return NULL;
+    }
+
+    dst = SDL_malloc(40);
+    if (!dst) {
+        return NULL;
+    }
+
+    dst[pos++] = 1;
+    dst[pos++] = xres;
+    dst[pos++] = yres;
+    dst[pos++] = log2bpp;
+    dst[pos++] = rate;
+    if (ncolour != 0) {
+        dst[pos++] = 3;
+        dst[pos++] = ncolour;
+    }
+    if (modeflags != 0) {
+        dst[pos++] = 0;
+        dst[pos++] = modeflags;
+    }
+    dst[pos++] = -1;
+
+    return dst;
 }
 
 static void *
@@ -221,24 +263,18 @@ RISCOS_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
     }
 
     for (pos = block; pos < (void *)regs.r[6]; pos += *((int *)pos)) {
-        size_t size;
-        void *end;
-
-        end = read_mode_block(pos + 4, &mode, SDL_FALSE);
-        if (!end) {
+        if (!read_mode_block(pos + 4, &mode, SDL_FALSE)) {
             continue;
         }
 
         if (mode.format == SDL_PIXELFORMAT_UNKNOWN)
             continue;
 
-        size = (end - pos) - 4;
-        mode.driverdata = copy_memory(pos + 4, size, size + 4);
+        mode.driverdata = convert_mode_block(pos + 4);
         if (!mode.driverdata) {
             SDL_OutOfMemory();
             break;
         }
-        *((int *)(mode.driverdata + size)) = -1;
 
         if (!SDL_AddDisplayMode(display, &mode)) {
             SDL_free(mode.driverdata);
