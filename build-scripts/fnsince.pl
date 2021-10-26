@@ -70,6 +70,8 @@ $funcs{'SDL_GetBasePath'} = '2.0.1';
 $funcs{'SDL_GetPrefPath'} = '2.0.1';
 $funcs{'SDL_UpdateYUVTexture'} = '2.0.1';
 $funcs{'SDL_GL_GetDrawableSize'} = '2.0.1';
+$funcs{'SDL_Direct3D9GetAdapterIndex'} = '2.0.1';
+$funcs{'SDL_RenderGetD3D9Device'} = '2.0.1';
 
 $funcs{'SDL_GetAssertionHandler'} = '2.0.2';
 $funcs{'SDL_GetDefaultAssertionHandler'} = '2.0.2';
@@ -85,6 +87,13 @@ $funcs{'SDL_asin'} = '2.0.2';
 $funcs{'SDL_vsscanf'} = '2.0.2';
 $funcs{'SDL_DetachThread'} = '2.0.2';
 $funcs{'SDL_GL_ResetAttributes'} = '2.0.2';
+$funcs{'SDL_DXGIGetOutputInfo'} = '2.0.2';
+
+# these are incorrect in the dynapi header, because we forgot to add them
+#  until a later release, but are available in the older release.
+$funcs{'SDL_WinRTGetFSPathUNICODE'} = '2.0.3';
+$funcs{'SDL_WinRTGetFSPathUTF8'} = '2.0.3';
+$funcs{'SDL_WinRTRunApp'} = '2.0.3';
 
 foreach my $release (@releases) {
     foreach my $fn (sort keys %funcs) {
