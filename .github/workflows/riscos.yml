@@ -1,0 +1,28 @@
+name: Build (RISC OS)
+
+on: [push, pull_request]
+
+jobs:
+  autotools:
+    name: autotools
+    runs-on: ubuntu-latest
+    container: riscosdotinfo/riscos-gccsdk-4.7:latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Configure
+      run: ./configure --host=arm-unknown-riscos --disable-gcc-atomics
+    - name: Build
+      run: make -j`nproc`
+
+  cmake:
+    name: CMake
+    runs-on: ubuntu-latest
+    container: riscosdotinfo/riscos-gccsdk-4.7:latest
+    steps:
+    - name: Setup dependencies
+      run: apt-get update && apt-get install -y cmake ninja-build
+    - uses: actions/checkout@v2
+    - name: Configure CMake
+      run: cmake -S. -Bbuild -G Ninja -DCMAKE_TOOLCHAIN_FILE=/home/riscos/env/toolchain-riscos.cmake -DRISCOS=ON -DSDL_GCC_ATOMICS=OFF -DCMAKE_BUILD_TYPE=Release
+    - name: Build
+      run: cmake --build build
