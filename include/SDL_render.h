@@ -666,7 +666,7 @@ extern DECLSPEC int SDLCALL SDL_LockTextureToSurface(SDL_Texture *texture,
  * Unlock a texture, uploading the changes to video memory, if needed.
  *
  * **Warning**: Please note that SDL_LockTexture() is intended to be
- * write-only; it will notguarantee the previous contents of the texture will
+ * write-only; it will not guarantee the previous contents of the texture will
  * be provided. You must fully initialize any area of a texture that you lock
  * before unlocking it, as the pixels might otherwise be uninitialized memory.
  *
