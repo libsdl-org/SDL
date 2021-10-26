@@ -3,6 +3,12 @@
 use warnings;
 use strict;
 use File::Basename;
+use Cwd qw(abs_path);
+
+my $wikipath = undef;
+foreach (@ARGV) {
+    $wikipath = abs_path($_), next if not defined $wikipath;
+}
 
 chdir(dirname(__FILE__));
 chdir('..');
@@ -100,4 +106,58 @@ foreach my $release (@releases) {
         print("$fn: $funcs{$fn}\n") if $funcs{$fn} eq $release;
     }
 }
+
+if (defined $wikipath) {
+    chdir($wikipath);
+    foreach my $fn (keys %funcs) {
+        my $revision = $funcs{$fn};
+        $revision = 'git HEAD (in development, not in an official release yet)' if $revision eq 'HEAD';
+        my $fname = "$fn.mediawiki";
+        if ( ! -f $fname ) {
+            #print STDERR "No such file: $fname\n";
+            next;
+        }
+
+        my @lines = ();
+        open(FH, '<', $fname) or die("Can't open $fname for read: $!\n");
+        my $added = 0;
+        while (<FH>) {
+            chomp;
+            if ((/\A\-\-\-\-/) && (!$added)) {
+                push @lines, "== Version ==";
+                push @lines, "";
+                push @lines, "This function is available since SDL $revision.";
+                push @lines, "";
+                $added = 1;
+            }
+            push @lines, $_;
+            next if not /\A\=\=\s+Version\s+\=\=/;
+            $added = 1;
+            push @lines, "";
+            push @lines, "This function is available since SDL $revision.";
+            push @lines, "";
+            while (<FH>) {
+                chomp;
+                next if not (/\A\=\=\s+/ || /\A\-\-\-\-/);
+                push @lines, $_;
+                last;
+            }
+        }
+        close(FH);
+
+        if (!$added) {
+            push @lines, "== Version ==";
+            push @lines, "";
+            push @lines, "This function is available since SDL $revision.";
+            push @lines, "";
+        }
+
+        open(FH, '>', $fname) or die("Can't open $fname for write: $!\n");
+        foreach (@lines) {
+            print FH "$_\n";
+        }
+        close(FH);
+    }
+}
+
 
