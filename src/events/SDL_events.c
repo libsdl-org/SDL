@@ -44,6 +44,9 @@
 /* An arbitrary limit so we don't have unbounded growth */
 #define SDL_MAX_QUEUED_EVENTS   65535
 
+/* Determines how often we wake to call SDL_PumpEvents() in SDL_WaitEventTimeout_Device() */
+#define PERIODIC_POLL_INTERVAL_MS 3000
+
 typedef struct SDL_EventWatcher {
     SDL_EventFilter callback;
     void *userdata;
@@ -795,10 +798,29 @@ SDL_PollEvent(SDL_Event * event)
     return SDL_WaitEventTimeout(event, 0);
 }
 
+static SDL_bool
+SDL_events_need_periodic_poll() {
+    SDL_bool need_periodic_poll = SDL_FALSE;
+
+#if !SDL_JOYSTICK_DISABLED
+    need_periodic_poll =
+        SDL_WasInit(SDL_INIT_JOYSTICK) &&
+        (!SDL_disabled_events[SDL_JOYAXISMOTION >> 8] || SDL_JoystickEventState(SDL_QUERY));
+#endif
+
+#if !SDL_SENSOR_DISABLED
+    need_periodic_poll = need_periodic_poll ||
+        (SDL_WasInit(SDL_INIT_SENSOR) && !SDL_disabled_events[SDL_SENSORUPDATE >> 8]);
+#endif
+
+    return need_periodic_poll;
+}
+
 static int
 SDL_WaitEventTimeout_Device(_THIS, SDL_Window *wakeup_window, SDL_Event * event, Uint32 start, int timeout)
 {
     int loop_timeout = timeout;
+    SDL_bool need_periodic_poll = SDL_events_need_periodic_poll();
 
     for (;;) {
         /* Pump events on entry and each time we wake to ensure:
@@ -837,6 +859,13 @@ SDL_WaitEventTimeout_Device(_THIS, SDL_Window *wakeup_window, SDL_Event * event,
                     return 0;
                 }
                 loop_timeout = (int)((Uint32)timeout - elapsed);
+            }
+            if (need_periodic_poll) {
+                if (loop_timeout >= 0) {
+                    loop_timeout = SDL_min(loop_timeout, PERIODIC_POLL_INTERVAL_MS);
+                } else {
+                    loop_timeout = PERIODIC_POLL_INTERVAL_MS;
+                }
             }
             status = _this->WaitEventTimeout(_this, loop_timeout);
             /* Set wakeup_window to NULL without holding the lock. */
