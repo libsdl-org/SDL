@@ -97,6 +97,8 @@ extern DECLSPEC SDL_TouchID SDLCALL SDL_GetTouchDevice(int index);
 
 /**
  * Get the type of the given touch device.
+ *
+ * \since This function is available since SDL 2.0.10.
  */
 extern DECLSPEC SDL_TouchDeviceType SDLCALL SDL_GetTouchDeviceType(SDL_TouchID touchID);
 
@@ -122,6 +124,8 @@ extern DECLSPEC int SDLCALL SDL_GetNumTouchFingers(SDL_TouchID touchID);
  * \param index the index of the requested finger
  * \returns a pointer to the SDL_Finger object or NULL if no object at the
  *          given ID and index could be found.
+ *
+ * \since This function is available since SDL 2.0.0.
  *
  * \sa SDL_RecordGesture
  */

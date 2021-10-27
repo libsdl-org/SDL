@@ -72,6 +72,8 @@ typedef enum
  *            a NULL here if you don't care, will return -1 if we can't
  *            determine a value, or we're not running on a battery
  * \returns an SDL_PowerState enum representing the current battery state.
+ *
+ * \since This function is available since SDL 2.0.0.
  */
 extern DECLSPEC SDL_PowerState SDLCALL SDL_GetPowerInfo(int *secs, int *pct);
 

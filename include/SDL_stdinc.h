@@ -415,6 +415,8 @@ typedef void (SDLCALL *SDL_free_func)(void *mem);
 
 /**
  * Get the current set of SDL memory functions
+ *
+ * \since This function is available since SDL 2.0.7.
  */
 extern DECLSPEC void SDLCALL SDL_GetMemoryFunctions(SDL_malloc_func *malloc_func,
                                                     SDL_calloc_func *calloc_func,
@@ -423,6 +425,8 @@ extern DECLSPEC void SDLCALL SDL_GetMemoryFunctions(SDL_malloc_func *malloc_func
 
 /**
  * Replace SDL's memory allocation functions with a custom set
+ *
+ * \since This function is available since SDL 2.0.7.
  */
 extern DECLSPEC int SDLCALL SDL_SetMemoryFunctions(SDL_malloc_func malloc_func,
                                                    SDL_calloc_func calloc_func,
@@ -431,6 +435,8 @@ extern DECLSPEC int SDLCALL SDL_SetMemoryFunctions(SDL_malloc_func malloc_func,
 
 /**
  * Get the number of outstanding (unfreed) allocations
+ *
+ * \since This function is available since SDL 2.0.7.
  */
 extern DECLSPEC int SDLCALL SDL_GetNumAllocations(void);
 
@@ -650,6 +656,8 @@ extern DECLSPEC size_t SDLCALL SDL_iconv(SDL_iconv_t cd, const char **inbuf,
 /**
  * This function converts a string between encodings in one pass, returning a
  * string that must be freed with SDL_free() or NULL on error.
+ *
+ * \since This function is available since SDL 2.0.0.
  */
 extern DECLSPEC char *SDLCALL SDL_iconv_string(const char *tocode,
                                                const char *fromcode,

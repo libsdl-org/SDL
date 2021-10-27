@@ -45,6 +45,8 @@ extern "C" {
  * \returns an unsigned 32-bit value representing the number of milliseconds
  *          since the SDL library initialized.
  *
+ * \since This function is available since SDL 2.0.0.
+ *
  * \sa SDL_TICKS_PASSED
  */
 extern DECLSPEC Uint32 SDLCALL SDL_GetTicks(void);
@@ -78,6 +80,8 @@ extern DECLSPEC Uint32 SDLCALL SDL_GetTicks(void);
  *
  * \returns the current counter value.
  *
+ * \since This function is available since SDL 2.0.0.
+ *
  * \sa SDL_GetPerformanceFrequency
  */
 extern DECLSPEC Uint64 SDLCALL SDL_GetPerformanceCounter(void);
@@ -101,6 +105,8 @@ extern DECLSPEC Uint64 SDLCALL SDL_GetPerformanceFrequency(void);
  * scheduling.
  *
  * \param ms the number of milliseconds to delay
+ *
+ * \since This function is available since SDL 2.0.0.
  */
 extern DECLSPEC void SDLCALL SDL_Delay(Uint32 ms);
 
@@ -147,6 +153,8 @@ typedef int SDL_TimerID;
  * \returns a timer ID or 0 if an error occurs; call SDL_GetError() for more
  *          information.
  *
+ * \since This function is available since SDL 2.0.0.
+ *
  * \sa SDL_RemoveTimer
  */
 extern DECLSPEC SDL_TimerID SDLCALL SDL_AddTimer(Uint32 interval,
@@ -159,6 +167,8 @@ extern DECLSPEC SDL_TimerID SDLCALL SDL_AddTimer(Uint32 interval,
  * \param id the ID of the timer to remove
  * \returns SDL_TRUE if the timer is removed or SDL_FALSE if the timer wasn't
  *          found.
+ *
+ * \since This function is available since SDL 2.0.0.
  *
  * \sa SDL_AddTimer
  */
