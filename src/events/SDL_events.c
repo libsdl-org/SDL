@@ -881,19 +881,20 @@ SDL_WaitEventTimeout_Device(_THIS, SDL_Window *wakeup_window, SDL_Event * event,
     return 0;
 }
 
-static int
+static SDL_bool
 SDL_events_need_polling() {
     SDL_bool need_polling = SDL_FALSE;
 
 #if !SDL_JOYSTICK_DISABLED
-    need_polling = \
-        (!SDL_disabled_events[SDL_JOYAXISMOTION >> 8] || SDL_JoystickEventState(SDL_QUERY)) \
-        && (SDL_NumJoysticks() > 0);
+    need_polling =
+        SDL_WasInit(SDL_INIT_JOYSTICK) &&
+        (!SDL_disabled_events[SDL_JOYAXISMOTION >> 8] || SDL_JoystickEventState(SDL_QUERY)) &&
+        (SDL_NumJoysticks() > 0);
 #endif
 
 #if !SDL_SENSOR_DISABLED
-    need_polling = need_polling || (!SDL_disabled_events[SDL_SENSORUPDATE >> 8] && \
-        (SDL_NumSensors() > 0));
+    need_polling = need_polling ||
+        (SDL_WasInit(SDL_INIT_SENSOR) && !SDL_disabled_events[SDL_SENSORUPDATE >> 8] && (SDL_NumSensors() > 0));
 #endif
 
     return need_polling;
