@@ -885,6 +885,8 @@ enable_video_directfb
 enable_directfb_shared
 enable_video_kmsdrm
 enable_kmsdrm_shared
+enable_video_atomic
+enable_atomic_shared
 enable_video_dummy
 enable_video_opengl
 enable_video_opengles
@@ -1675,6 +1677,8 @@ Optional Features:
                           dynamically load directfb support [default=yes]
   --enable-video-kmsdrm   use KMSDRM video driver [default=yes]
   --enable-kmsdrm-shared  dynamically load kmsdrm support [default=yes]
+  --enable-video-atomic   use ATOMIC video driver [default=yes]
+  --enable-atomic-shared  dynamically load atomic support [default=yes]
   --enable-video-dummy    use dummy video driver [default=yes]
   --enable-video-opengl   include OpenGL support [default=yes]
   --enable-video-opengles include OpenGL ES support [default=yes]
@@ -22325,6 +22329,224 @@ $as_echo "$kmsdrm_shared" >&6; }
     fi
 }
 
+CheckATOMIC()
+{
+    # Check whether --enable-video-atomic was given.
+if test "${enable_video_atomic+set}" = set; then :
+  enableval=$enable_video_atomic;
+else
+  enable_video_atomic=yes
+fi
+
+
+    if  test x$enable_video = xyes && \
+        test x$enable_video_atomic = xyes && \
+        test x$video_opengl_egl = xyes; then
+
+        video_atomic=no
+
+
+pkg_failed=no
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for libdrm >= 1.4.82" >&5
+$as_echo_n "checking for libdrm >= 1.4.82... " >&6; }
+
+if test -n "$LIBDRM_CFLAGS"; then
+    pkg_cv_LIBDRM_CFLAGS="$LIBDRM_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libdrm >= 1.4.82\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libdrm >= 1.4.82") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_LIBDRM_CFLAGS=`$PKG_CONFIG --cflags "libdrm >= 1.4.82" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$LIBDRM_LIBS"; then
+    pkg_cv_LIBDRM_LIBS="$LIBDRM_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libdrm >= 1.4.82\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libdrm >= 1.4.82") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_LIBDRM_LIBS=`$PKG_CONFIG --libs "libdrm >= 1.4.82" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+	        LIBDRM_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libdrm >= 1.4.82" 2>&1`
+        else
+	        LIBDRM_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libdrm >= 1.4.82" 2>&1`
+        fi
+	# Put the nasty error message in config.log where it belongs
+	echo "$LIBDRM_PKG_ERRORS" >&5
+
+	libdrm_avail=no
+elif test $pkg_failed = untried; then
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+	libdrm_avail=no
+else
+	LIBDRM_CFLAGS=$pkg_cv_LIBDRM_CFLAGS
+	LIBDRM_LIBS=$pkg_cv_LIBDRM_LIBS
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+	libdrm_avail=yes
+fi
+
+pkg_failed=no
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for gbm >= 11.1.0" >&5
+$as_echo_n "checking for gbm >= 11.1.0... " >&6; }
+
+if test -n "$LIBGBM_CFLAGS"; then
+    pkg_cv_LIBGBM_CFLAGS="$LIBGBM_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"gbm >= 11.1.0\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "gbm >= 11.1.0") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_LIBGBM_CFLAGS=`$PKG_CONFIG --cflags "gbm >= 11.1.0" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$LIBGBM_LIBS"; then
+    pkg_cv_LIBGBM_LIBS="$LIBGBM_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"gbm >= 11.1.0\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "gbm >= 11.1.0") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_LIBGBM_LIBS=`$PKG_CONFIG --libs "gbm >= 11.1.0" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+	        LIBGBM_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "gbm >= 11.1.0" 2>&1`
+        else
+	        LIBGBM_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "gbm >= 11.1.0" 2>&1`
+        fi
+	# Put the nasty error message in config.log where it belongs
+	echo "$LIBGBM_PKG_ERRORS" >&5
+
+	libgbm_avail=no
+elif test $pkg_failed = untried; then
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+	libgbm_avail=no
+else
+	LIBGBM_CFLAGS=$pkg_cv_LIBGBM_CFLAGS
+	LIBGBM_LIBS=$pkg_cv_LIBGBM_LIBS
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+	libgbm_avail=yes
+fi
+
+        if test x$libdrm_avail = xyes -a x$libgbm_avail = xyes; then
+            video_atomic=yes
+        fi
+
+        if test x$video_atomic = xyes; then
+            # Check whether --enable-atomic-shared was given.
+if test "${enable_atomic_shared+set}" = set; then :
+  enableval=$enable_atomic_shared;
+else
+  enable_atomic_shared=yes
+fi
+
+
+
+$as_echo "#define SDL_VIDEO_DRIVER_ATOMIC 1" >>confdefs.h
+
+            SOURCES="$SOURCES $srcdir/src/video/atomic/*.c"
+            EXTRA_CFLAGS="$EXTRA_CFLAGS $LIBDRM_CFLAGS $LIBGBM_CFLAGS"
+
+            { $as_echo "$as_me:${as_lineno-$LINENO}: checking for atomic video backend dynamic loading support" >&5
+$as_echo_n "checking for atomic video backend dynamic loading support... " >&6; }
+            atomic_shared=no
+            drm_lib=`find_lib "libdrm.so.*" "$DRM_LIBS"`
+            gbm_lib=`find_lib "libgbm.so.*" "$DRM_LIBS"`
+            if test x$have_loadso != xyes && \
+               test x$enable_atomic_shared = xyes; then
+                { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: You must have SDL_LoadObject() support for dynamic atomic loading" >&5
+$as_echo "$as_me: WARNING: You must have SDL_LoadObject() support for dynamic atomic loading" >&2;}
+            fi
+            if test x$have_loadso = xyes && \
+               test x$enable_atomic_shared = xyes && test x$drm_lib != x && test x$gbm_lib != x; then
+                atomic_shared=yes
+
+cat >>confdefs.h <<_ACEOF
+#define SDL_VIDEO_DRIVER_ATOMIC_DYNAMIC "$drm_lib"
+_ACEOF
+
+
+cat >>confdefs.h <<_ACEOF
+#define SDL_VIDEO_DRIVER_ATOMIC_DYNAMIC_GBM "$gbm_lib"
+_ACEOF
+
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_ATOMIC_SHARED "TRUE"
+_ACEOF
+
+                SUMMARY_video="${SUMMARY_video} atomic(dynamic)"
+            else
+                EXTRA_LDFLAGS="$EXTRA_LDFLAGS $LIBDRM_LIBS $LIBGBM_LIBS"
+                SUMMARY_video="${SUMMARY_video} atomic"
+            fi
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: $atomic_shared" >&5
+$as_echo "$atomic_shared" >&6; }
+            have_video=yes
+        fi
+    fi
+}
+
 CheckDummyVideo()
 {
     # Check whether --enable-video-dummy was given.
@@ -24925,9 +25147,10 @@ $as_echo "#define SDL_VIDEO_DRIVER_ANDROID 1" >>confdefs.h
         CheckRPI
         CheckX11
         CheckDirectFB
-        # Need to check for EGL first because KMSDRM and Wayland depends on it.
+        # Need to check for EGL first because KMSDRM, KMSDRM-ATOMIC and Wayland depends on it.
         CheckEGL
         CheckKMSDRM
+        CheckATOMIC
         CheckGLX
         CheckOpenGL
         CheckOpenGLES

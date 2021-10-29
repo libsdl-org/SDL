@@ -113,7 +113,7 @@ typedef void *EGLSurface;
 #endif
 #endif /* SDL_PROTOTYPES_ONLY */
 
-#if defined(SDL_VIDEO_DRIVER_KMSDRM)
+#if defined(SDL_VIDEO_DRIVER_KMSDRM) || defined(SDL_VIDEO_ATOMIC)
 struct gbm_device;
 #endif
 
@@ -327,7 +327,7 @@ struct SDL_SysWMinfo
         } vivante;
 #endif
 
-#if defined(SDL_VIDEO_DRIVER_KMSDRM)
+#if defined(SDL_VIDEO_DRIVER_KMSDRM) || defined(SDL_VIDEO_ATOMIC)
         struct
         {
             int dev_index;               /**< Device index (ex: the X in /dev/dri/cardX) */

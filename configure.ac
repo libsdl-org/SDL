@@ -2288,6 +2288,60 @@ CheckKMSDRM()
     fi
 }
 
+dnl Find ATOMIC
+CheckATOMIC()
+{
+    AC_ARG_ENABLE(video-atomic,
+[AS_HELP_STRING([--enable-video-atomic], [use ATOMIC video driver [default=no]])],
+                  , enable_video_atomic=yes)
+
+    if  test x$enable_video = xyes && \
+        test x$enable_video_atomic = xyes && \
+        test x$video_opengl_egl = xyes; then
+
+        video_atomic=no
+
+        PKG_CHECK_MODULES([LIBDRM], [libdrm >= 1.4.82], libdrm_avail=yes, libdrm_avail=no)
+        PKG_CHECK_MODULES([LIBGBM], [gbm >= 11.1.0], libgbm_avail=yes, libgbm_avail=no)
+
+        if test x$libdrm_avail = xyes -a x$libgbm_avail = xyes; then
+            video_atomic=yes
+        fi
+
+        if test x$video_atomic = xyes; then
+            AC_ARG_ENABLE(atomic-shared,
+[AS_HELP_STRING([--enable-atomic-shared], [dynamically load atomic support [default=yes]])],
+                , enable_atomic_shared=yes)
+
+            AC_DEFINE(SDL_VIDEO_DRIVER_ATOMIC, 1, [ ])
+            SOURCES="$SOURCES $srcdir/src/video/atomic/*.c"
+            EXTRA_CFLAGS="$EXTRA_CFLAGS $LIBDRM_CFLAGS $LIBGBM_CFLAGS"
+
+            AC_MSG_CHECKING(for atomic video backend dynamic loading support)
+            atomic_shared=no
+            drm_lib=[`find_lib "libdrm.so.*" "$DRM_LIBS"`]
+            gbm_lib=[`find_lib "libgbm.so.*" "$DRM_LIBS"`]
+            if test x$have_loadso != xyes && \
+               test x$enable_atomic_shared = xyes; then
+                AC_MSG_WARN([You must have SDL_LoadObject() support for dynamic atomic loading])
+            fi
+            if test x$have_loadso = xyes && \
+               test x$enable_atomic_shared = xyes && test x$drm_lib != x && test x$gbm_lib != x; then
+                atomic_shared=yes
+                AC_DEFINE_UNQUOTED(SDL_VIDEO_DRIVER_ATOMIC_DYNAMIC, "$drm_lib", [ ])
+                AC_DEFINE_UNQUOTED(SDL_VIDEO_DRIVER_ATOMIC_DYNAMIC_GBM, "$gbm_lib", [ ])
+                AC_DEFINE_UNQUOTED(HAVE_ATOMIC_SHARED, "TRUE", [ ])
+                SUMMARY_video="${SUMMARY_video} atomic(dynamic)"
+            else
+                EXTRA_LDFLAGS="$EXTRA_LDFLAGS $LIBDRM_LIBS $LIBGBM_LIBS"
+                SUMMARY_video="${SUMMARY_video} atomic"
+            fi
+            AC_MSG_RESULT($atomic_shared)
+            have_video=yes
+        fi
+    fi
+}
+
 dnl rcg04172001 Set up the Null video driver.
 CheckDummyVideo()
 {
@@ -3585,9 +3639,10 @@ case "$host" in
         CheckRPI
         CheckX11
         CheckDirectFB
-        # Need to check for EGL first because KMSDRM and Wayland depends on it.
+        # Need to check for EGL first because KMSDRM, KMSDRM-ATOMIC and Wayland depends on it.
         CheckEGL
         CheckKMSDRM
+        CheckATOMIC
         CheckGLX
         CheckOpenGL
         CheckOpenGLES
