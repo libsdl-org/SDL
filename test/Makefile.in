@@ -62,6 +62,7 @@ TARGETS = \
 	testsprite2$(EXE) \
 	testspriteminimal$(EXE) \
 	teststreaming$(EXE) \
+	testsurround$(EXE) \
 	testthread$(EXE) \
 	testtimer$(EXE) \
 	testurl$(EXE) \
@@ -93,6 +94,9 @@ loopwave$(EXE): $(srcdir)/loopwave.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
 loopwavequeue$(EXE): $(srcdir)/loopwavequeue.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+testsurround$(EXE): $(srcdir)/testsurround.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
 testresample$(EXE): $(srcdir)/testresample.c
