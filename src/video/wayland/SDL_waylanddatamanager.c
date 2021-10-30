@@ -50,7 +50,7 @@ write_pipe(int fd, const void* buffer, size_t total_length, size_t *pos)
     sigset_t old_sig_set;
     struct timespec zerotime = {0};
 
-    ready = SDL_IOReady(fd, SDL_TRUE, PIPE_MS_TIMEOUT);
+    ready = SDL_IOReady(fd, SDL_IOR_WRITE, PIPE_MS_TIMEOUT);
 
     sigemptyset(&sig_set);
     sigaddset(&sig_set, SIGPIPE);  
@@ -96,7 +96,7 @@ read_pipe(int fd, void** buffer, size_t* total_length, SDL_bool null_terminate)
     ssize_t bytes_read = 0;
     size_t pos = 0;
 
-    ready = SDL_IOReady(fd, SDL_FALSE, PIPE_MS_TIMEOUT);
+    ready = SDL_IOReady(fd, SDL_IOR_READ, PIPE_MS_TIMEOUT);
   
     if (ready == 0) {
         bytes_read = SDL_SetError("Pipe timeout");
