@@ -1536,7 +1536,7 @@ X11_Pending(Display * display)
     }
 
     /* More drastic measures are required -- see if X is ready to talk */
-    if (SDL_IOReady(ConnectionNumber(display), SDL_FALSE, 0)) {
+    if (SDL_IOReady(ConnectionNumber(display), SDL_IOR_READ, 0)) {
         return (X11_XPending(display));
     }
 
@@ -1586,7 +1586,7 @@ X11_WaitEventTimeout(_THIS, int timeout)
             return 0;
         }
     } else if (timeout > 0) {
-        if (SDL_IOReady(ConnectionNumber(display), SDL_FALSE, timeout) > 0) {
+        if (SDL_IOReady(ConnectionNumber(display), SDL_IOR_READ, timeout) > 0) {
             X11_XNextEvent(display, &xevent);
         } else {
             return 0;

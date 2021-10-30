@@ -98,7 +98,7 @@ SUNAUDIO_WaitDevice(_THIS)
         }
     }
 #else
-    SDL_IOReady(this->hidden->audio_fd, SDL_TRUE, -1);
+    SDL_IOReady(this->hidden->audio_fd, SDL_IOR_WRITE, -1);
 #endif
 }
 

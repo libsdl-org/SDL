@@ -259,7 +259,7 @@ Wayland_WaitEventTimeout(_THIS, int timeout)
     /* wl_display_prepare_read() will return -1 if the default queue is not empty.
      * If the default queue is empty, it will prepare us for our SDL_IOReady() call. */
     if (WAYLAND_wl_display_prepare_read(d->display) == 0) {
-        if (SDL_IOReady(WAYLAND_wl_display_get_fd(d->display), SDL_FALSE, timeout) > 0) {
+        if (SDL_IOReady(WAYLAND_wl_display_get_fd(d->display), SDL_IOR_READ, timeout) > 0) {
             /* There are new events available to read */
             WAYLAND_wl_display_read_events(d->display);
             WAYLAND_wl_display_dispatch_pending(d->display);
@@ -308,7 +308,7 @@ Wayland_PumpEvents(_THIS)
     /* wl_display_prepare_read() will return -1 if the default queue is not empty.
      * If the default queue is empty, it will prepare us for our SDL_IOReady() call. */
     if (WAYLAND_wl_display_prepare_read(d->display) == 0) {
-        if (SDL_IOReady(WAYLAND_wl_display_get_fd(d->display), SDL_FALSE, 0) > 0) {
+        if (SDL_IOReady(WAYLAND_wl_display_get_fd(d->display), SDL_IOR_READ, 0) > 0) {
             WAYLAND_wl_display_read_events(d->display);
         } else {
             WAYLAND_wl_display_cancel_read(d->display);
