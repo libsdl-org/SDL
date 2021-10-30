@@ -2738,6 +2738,8 @@ endif()
 ##### Tests #####
 
 if(SDL_TEST)
+  include_directories(BEFORE "${SDL2_BINARY_DIR}/include")
+  include_directories(AFTER "${SDL2_SOURCE_DIR}/include")
   file(GLOB TEST_SOURCES ${SDL2_SOURCE_DIR}/src/test/*.c)
   add_library(SDL2_test STATIC ${TEST_SOURCES})
   add_subdirectory(test)
