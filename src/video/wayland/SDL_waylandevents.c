@@ -58,6 +58,7 @@
 #include <sys/mman.h>
 #include <poll.h>
 #include <unistd.h>
+#include <errno.h>
 #include <xkbcommon/xkbcommon.h>
 #include <xkbcommon/xkbcommon-compose.h>
 #include "../../events/imKStoUCS.h"
@@ -259,12 +260,14 @@ Wayland_WaitEventTimeout(_THIS, int timeout)
     /* wl_display_prepare_read() will return -1 if the default queue is not empty.
      * If the default queue is empty, it will prepare us for our SDL_IOReady() call. */
     if (WAYLAND_wl_display_prepare_read(d->display) == 0) {
-        if (SDL_IOReady(WAYLAND_wl_display_get_fd(d->display), SDL_IOR_READ, timeout) > 0) {
+        /* Use SDL_IOR_NO_RETRY to ensure SIGINT will break us out of our wait */
+        int err = SDL_IOReady(WAYLAND_wl_display_get_fd(d->display), SDL_IOR_READ | SDL_IOR_NO_RETRY, timeout);
+        if (err > 0) {
             /* There are new events available to read */
             WAYLAND_wl_display_read_events(d->display);
             WAYLAND_wl_display_dispatch_pending(d->display);
             return 1;
-        } else {
+        } else if (err == 0) {
             /* No events available within the timeout */
             WAYLAND_wl_display_cancel_read(d->display);
 
@@ -277,6 +280,17 @@ Wayland_WaitEventTimeout(_THIS, int timeout)
             }
 
             return 0;
+        } else {
+            /* Error returned from poll()/select() */
+            WAYLAND_wl_display_cancel_read(d->display);
+
+            if (errno == EINTR) {
+                /* If the wait was interrupted by a signal, we may have generated a
+                 * SDL_QUIT event. Let the caller know to call SDL_PumpEvents(). */
+                return 1;
+            } else {
+                return err;
+            }
         }
     } else {
         /* We already had pending events */

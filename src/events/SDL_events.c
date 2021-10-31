@@ -827,6 +827,7 @@ SDL_WaitEventTimeout_Device(_THIS, SDL_Window *wakeup_window, SDL_Event * event,
            a) All pending events are batch processed after waking up from a wait
            b) Waiting can be completely skipped if events are already available to be pumped
            c) Periodic processing that takes place in some platform PumpEvents() functions happens
+           d) Signals received in WaitEventTimeout() are turned into SDL events
         */
         SDL_PumpEvents();
 
@@ -847,7 +848,6 @@ SDL_WaitEventTimeout_Device(_THIS, SDL_Window *wakeup_window, SDL_Event * event,
             }
             if (status > 0) {
                 /* There is an event, we can return. */
-                SDL_SendPendingSignalEvents();  /* in case we had a signal handler fire, etc. */
                 return 1;
             }
             /* No events found in the queue, call WaitEventTimeout to wait for an event. */
