@@ -83,7 +83,7 @@ SDL_IOReady(int fd, int flags, int timeoutMS)
         result = select(fd + 1, rfdp, wfdp, NULL, tvp);
 #endif /* HAVE_POLL */
 
-    } while ( result < 0 && errno == EINTR );
+    } while ( result < 0 && errno == EINTR && !(flags & SDL_IOR_NO_RETRY));
 
     return result;
 }

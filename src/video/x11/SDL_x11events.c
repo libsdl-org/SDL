@@ -1585,14 +1585,25 @@ X11_WaitEventTimeout(_THIS, int timeout)
         } else {
             return 0;
         }
-    } else if (timeout > 0) {
-        if (SDL_IOReady(ConnectionNumber(display), SDL_IOR_READ, timeout) > 0) {
-            X11_XNextEvent(display, &xevent);
-        } else {
-            return 0;
-        }
     } else {
-        X11_XNextEvent(display, &xevent);
+        /* Use SDL_IOR_NO_RETRY to ensure SIGINT will break us out of our wait */
+        int err = SDL_IOReady(ConnectionNumber(display), SDL_IOR_READ | SDL_IOR_NO_RETRY, timeout);
+        if (err > 0) {
+            X11_XNextEvent(display, &xevent);
+        } else if (err == 0) {
+            /* Timeout */
+            return 0;
+        } else {
+            /* Error returned from poll()/select() */
+
+            if (errno == EINTR) {
+                /* If the wait was interrupted by a signal, we may have generated a
+                 * SDL_QUIT event. Let the caller know to call SDL_PumpEvents(). */
+                return 1;
+            } else {
+                return err;
+            }
+        }
     }
 
     X11_DispatchEvent(_this, &xevent);
