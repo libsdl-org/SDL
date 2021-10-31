@@ -1281,7 +1281,7 @@ elseif(UNIX AND NOT APPLE AND NOT ANDROID AND NOT RISCOS AND NOT HAIKU)
     if(HAVE_INPUT_KD)
       set(SDL_INPUT_LINUXKD 1)
     endif()
-      
+
     if(HAVE_INPUT_KBIO)
       set(SDL_INPUT_FBSDKBIO 1)
     endif()
@@ -1290,7 +1290,7 @@ elseif(UNIX AND NOT APPLE AND NOT ANDROID AND NOT RISCOS AND NOT HAIKU)
     check_include_file("sys/inotify.h" HAVE_SYS_INOTIFY_H)
     check_symbol_exists(inotify_init "sys/inotify.h" HAVE_INOTIFY_INIT)
     check_symbol_exists(inotify_init1 "sys/inotify.h" HAVE_INOTIFY_INIT1)
-      
+
     if(HAVE_SYS_INOTIFY_H AND HAVE_INOTIFY_INIT)
       set(HAVE_INOTIFY 1)
     endif()
@@ -1316,7 +1316,7 @@ elseif(UNIX AND NOT APPLE AND NOT ANDROID AND NOT RISCOS AND NOT HAIKU)
         set(SDL_USE_IME TRUE)
         target_compile_definitions(sdl-build-options INTERFACE "-DSDL_USE_IME")   # !!! FIXME: why isn't this a definition and not in SDL_config.h.cmake?
       endif()
-        
+
       if(FREEBSD AND NOT HAVE_INOTIFY)
         pkg_search_module(INOTIFY libinotify)
         if(INOTIFY_FOUND)
@@ -1358,7 +1358,7 @@ elseif(UNIX AND NOT APPLE AND NOT ANDROID AND NOT RISCOS AND NOT HAIKU)
       set(SOURCE_FILES ${SOURCE_FILES} "${SDL2_SOURCE_DIR}/src/core/linux/SDL_evdev.c")
       set(SOURCE_FILES ${SOURCE_FILES} "${SDL2_SOURCE_DIR}/src/core/linux/SDL_evdev_kbd.c")
     endif()
-      
+
     if(HAVE_INPUT_KBIO)
       set(SOURCE_FILES ${SOURCE_FILES} "${SDL2_SOURCE_DIR}/src/core/freebsd/SDL_evdev_kbd_freebsd.c")
     endif()
@@ -1573,7 +1573,7 @@ elseif(WINDOWS)
     if(WINDOWS_STORE)
       set(SDL_VIDEO_DRIVER_WINRT 1)
       file(GLOB WIN_VIDEO_SOURCES
-        ${SDL2_SOURCE_DIR}/src/video/winrt/*.c 
+        ${SDL2_SOURCE_DIR}/src/video/winrt/*.c
         ${SDL2_SOURCE_DIR}/src/video/winrt/*.cpp
         ${SDL2_SOURCE_DIR}/src/render/direct3d11/*.cpp
         )
@@ -1712,6 +1712,10 @@ elseif(WINDOWS)
     endif()
     if(HAVE_XINPUT_H)
       set(SDL_JOYSTICK_XINPUT 1)
+      if(NOT CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION STREQUAL "")
+        # Has Windows 10 SDK, so has Windows.Gaming.Input
+        set(SDL_JOYSTICK_WGI 1)
+      endif()
     endif()
     if(NOT HAVE_DINPUT_H AND NOT HAVE_XINPUT_H)
       set(SDL_JOYSTICK_WINMM 1)
