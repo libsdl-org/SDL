@@ -160,7 +160,7 @@ main(int argc, char *argv[])
         int j;
         SDL_AudioSpec spec;
         SDL_AudioDeviceID dev;
-        
+
         if (SDL_GetAudioDeviceSpec(i, 0, &spec) != 0) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_GetAudioSpec() failed: %s\n", SDL_GetError());
             continue;
@@ -200,3 +200,4 @@ main(int argc, char *argv[])
     SDL_Quit();
     return 0;
 }
+
