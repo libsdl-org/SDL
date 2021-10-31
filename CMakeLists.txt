@@ -1534,6 +1534,7 @@ elseif(WINDOWS)
       #include <xinput.h>
       XINPUT_STATE_EX s1;
       int main(int argc, char **argv) { }" HAVE_XINPUT_STATE_EX)
+    check_include_file(windows.gaming.input.h HAVE_WINDOWS_GAMING_INPUT_H)
   endif()
 
   # headers needed elsewhere
@@ -1712,8 +1713,7 @@ elseif(WINDOWS)
     endif()
     if(HAVE_XINPUT_H)
       set(SDL_JOYSTICK_XINPUT 1)
-      if(NOT CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION STREQUAL "")
-        # Has Windows 10 SDK, so has Windows.Gaming.Input
+      if(HAVE_WINDOWS_GAMING_INPUT_H)
         set(SDL_JOYSTICK_WGI 1)
       endif()
     endif()
