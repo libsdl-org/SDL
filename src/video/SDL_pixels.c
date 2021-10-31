@@ -1238,19 +1238,18 @@ SDL_PremultiplySurfaceAlphaToARGB8888(SDL_Surface *src, Uint32 *dst)
         SDL_LockSurface(src);
 
     for (y = 0; y < src->h; ++y) {
-        Uint8 *src_px = (Uint8*)(src->pixels) + (y * src->pitch);
+        Uint32 *src_px = (Uint32*)((Uint8 *)src->pixels + (y * src->pitch));
         for (x = 0; x < src->w; ++x) {
             /* Component bytes extraction. */
-            SDL_GetRGBA(*(Uint32*)src_px, src->format, &R, &G, &B, &A);
-            src_px += src->format->BytesPerPixel;
+            SDL_GetRGBA(*src_px++, src->format, &R, &G, &B, &A);
 
             /* Alpha pre-multiplication of each component. */
-            R = (float)A * ((float)R /255);
-            G = (float)A * ((float)G /255);
-            B = (float)A * ((float)B /255);
+            R = ((Uint32)A * R) / 255;
+            G = ((Uint32)A * G) / 255;
+            B = ((Uint32)A * B) / 255;
 
             /* ARGB8888 pixel recomposition. */
-            (*dst++) = (((Uint32)A << 24) | ((Uint32)R << 16) | ((Uint32)G << 8)) | ((Uint32)B << 0);
+            *dst++ = (((Uint32)A << 24) | ((Uint32)R << 16) | ((Uint32)G << 8) | (B << 0));
         }
     }
     if (SDL_MUSTLOCK(src))
