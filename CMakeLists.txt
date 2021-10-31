@@ -254,6 +254,39 @@ set(SDL_CFLAGS "")
 # avoid the DLL having a "lib" prefix
 if(WINDOWS)
   set(CMAKE_SHARED_LIBRARY_PREFIX "")
+  if(MSVC_VERSION GREATER 1910)
+    # MSVC builds should have access to the Windows SDK
+    check_c_source_compiles("
+    #include <sdkddkver.h>
+    #if _WIN32_WINNT < 0x0601  /* Windows 7 */
+    #error Windows 7 SDK is not present
+    #endif
+    int main(int argc, char** argv) { }" HAVE_WINDOWS7_SDK)
+    check_c_source_compiles("
+    #include <sdkddkver.h>
+    #if _WIN32_WINNT < 0x0602  /* Windows 8 */
+    #error Windows 8 SDK is not present
+    #endif
+    int main(int argc, char** argv) { }" HAVE_WINDOWS8_SDK)
+    check_c_source_compiles("
+    #include <sdkddkver.h>
+    #if _WIN32_WINNT < 0x0A00  /* Windows 10 */
+    #error Windows 10 SDK is not present
+    #endif
+    int main(int argc, char** argv) { }" HAVE_WINDOWS10_SDK)
+    if(HAVE_WINDOWS7_SDK)
+      #message(DEBUG "Windows 7 SDK enabled")
+      set(SDL_WINDOWS7_SDK 1)
+    endif()
+    if(HAVE_WINDOWS8_SDK)
+      #message(DEBUG "Windows 8 SDK enabled")
+      set(SDL_WINDOWS8_SDK 1)
+    endif()
+    if(HAVE_WINDOWS10_SDK)
+      #message(DEBUG "Windows 10 SDK enabled")
+      set(SDL_WINDOWS10_SDK 1)
+    endif()
+  endif()
 endif()
 
 # Emscripten toolchain has a nonempty default value for this, and the checks
@@ -275,6 +308,7 @@ if(CYGWIN)
   endif()
   set(SDL_CFLAGS "${SDL_CFLAGS} -I/usr/include/mingw")
 endif()
+
 
 # General includes
 target_compile_definitions(sdl-build-options INTERFACE "-DUSING_GENERATED_CONFIG_H")

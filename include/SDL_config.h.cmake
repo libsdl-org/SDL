@@ -209,6 +209,11 @@
 #cmakedefine HAVE_STDDEF_H 1
 #cmakedefine HAVE_FLOAT_H 1
 
+/* When using recent versions of Visual Studio, do we have the Widnows SDK ? */
+#cmakedefine SDL_WINDOWS7_SDK @SDL_WINDOWS7_SDK@
+#cmakedefine SDL_WINDOWS8_SDK @SDL_WINDOWS8_SDK@
+#cmakedefine SDL_WINDOWS10_SDK @SDL_WINDOWS10_SDK@
+
 #else
 /* We may need some replacement for stdarg.h here */
 #include <stdarg.h>
