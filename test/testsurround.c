@@ -13,9 +13,6 @@
 /* Program to test surround sound audio channels */
 #include "SDL_config.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-
 #include "SDL.h"
 
 static int total_channels;
@@ -97,7 +94,7 @@ void SDLCALL
 fill_buffer(void* unused, Uint8* stream, int len)
 {
     Sint16* buffer = (Sint16*)stream;
-    int samples = len / sizeof(int16_t);
+    int samples = len / sizeof(Sint16);
     static int total_samples = 0;
     int i;
 
