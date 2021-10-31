@@ -3203,8 +3203,8 @@ fi
   if test "x$sdl_prefix$sdl_exec_prefix" = x ; then
 
 pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for SDL" >&5
-$as_echo_n "checking for SDL... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for sdl2 >= $min_sdl_version" >&5
+$as_echo_n "checking for sdl2 >= $min_sdl_version... " >&6; }
 
 if test -n "$SDL_CFLAGS"; then
     pkg_cv_SDL_CFLAGS="$SDL_CFLAGS"
@@ -4030,8 +4030,8 @@ fi
 
 
 pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for LIBUNWIND" >&5
-$as_echo_n "checking for LIBUNWIND... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for libunwind" >&5
+$as_echo_n "checking for libunwind... " >&6; }
 
 if test -n "$LIBUNWIND_CFLAGS"; then
     pkg_cv_LIBUNWIND_CFLAGS="$LIBUNWIND_CFLAGS"
