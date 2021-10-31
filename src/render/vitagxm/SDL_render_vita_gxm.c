@@ -357,12 +357,19 @@ static int
 VITA_GXM_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
     const SDL_Rect *rect, void **pixels, int *pitch)
 {
+    VITA_GXM_RenderData *data = (VITA_GXM_RenderData *) renderer->driverdata;
     VITA_GXM_TextureData *vita_texture = (VITA_GXM_TextureData *) texture->driverdata;
 
     *pixels =
         (void *) ((Uint8 *) gxm_texture_get_datap(vita_texture->tex)
             + (rect->y * vita_texture->pitch) + rect->x * SDL_BYTESPERPIXEL(texture->format));
     *pitch = vita_texture->pitch;
+
+    // make sure that rendering is finished on render target textures
+    if (vita_texture->tex->gxm_rendertarget != NULL) {
+        sceGxmFinish(data->gxm_context);
+    }
+
     return 0;
 }
 
@@ -972,10 +979,6 @@ VITA_GXM_RenderPresent(SDL_Renderer *renderer)
 {
     VITA_GXM_RenderData *data = (VITA_GXM_RenderData *) renderer->driverdata;
     SceCommonDialogUpdateParam updateParam;
-
-    if (data->displayData.wait_vblank) {
-        sceGxmFinish(data->gxm_context);
-    }
 
     data->displayData.address = data->displayBufferData[data->backBufferIndex];
 
