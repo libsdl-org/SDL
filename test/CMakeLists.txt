@@ -18,7 +18,10 @@ if(WINDOWS)
     add_definitions(-Dmain=SDL_main)
 endif()
 
-find_package(OpenGL)
+# CMake incorrectly detects opengl32.lib being present on MSVC ARM64
+if(NOT MSVC OR NOT CMAKE_GENERATOR_PLATFORM STREQUAL "ARM64")
+    find_package(OpenGL)
+endif()
 
 if (OPENGL_FOUND)
 add_definitions(-DHAVE_OPENGL)
