@@ -61,7 +61,7 @@ SDL_GetTicks64(void)
     }
 
     gettimeofday(&now, NULL);
-    return (((Uint64)(now.tv_sec-start.tv_sec)) * 1000) + (((Uint64) (now.tv_usec-start.tv_usec)) / 1000);
+    return (Uint64) (((Sint64) (now.tv_sec - start.tv_sec) * 1000) + ((now.tv_usec - start.tv_usec) / 1000));
 }
 
 Uint64
