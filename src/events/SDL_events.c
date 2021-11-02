@@ -164,10 +164,13 @@ SDL_LogEvent(const SDL_Event *event)
     char name[32];
     char details[128];
 
-    /* mouse/finger motion are spammy, ignore these if they aren't demanded. */
+    /* sensor/mouse/finger motion are spammy, ignore these if they aren't demanded. */
     if ( (SDL_DoEventLogging < 2) &&
             ( (event->type == SDL_MOUSEMOTION) ||
-              (event->type == SDL_FINGERMOTION) ) ) {
+              (event->type == SDL_FINGERMOTION) ||
+              (event->type == SDL_CONTROLLERTOUCHPADMOTION) ||
+              (event->type == SDL_CONTROLLERSENSORUPDATE) ||
+              (event->type == SDL_SENSORUPDATE) ) ) {
         return;
     }
 
@@ -341,6 +344,22 @@ SDL_LogEvent(const SDL_Event *event)
         SDL_EVENT_CASE(SDL_CONTROLLERDEVICEREMAPPED) PRINT_CONTROLLERDEV_EVENT(event); break;
         #undef PRINT_CONTROLLERDEV_EVENT
 
+        #define PRINT_CTOUCHPAD_EVENT(event) \
+            SDL_snprintf(details, sizeof (details), " (timestamp=%u which=%d touchpad=%d finger=%d x=%f y=%f pressure=%f)", \
+                (uint) event->ctouchpad.timestamp, (int) event->ctouchpad.which, \
+                (int) event->ctouchpad.touchpad, (int) event->ctouchpad.finger, \
+                event->ctouchpad.x, event->ctouchpad.y, event->ctouchpad.pressure)
+        SDL_EVENT_CASE(SDL_CONTROLLERTOUCHPADDOWN) PRINT_CTOUCHPAD_EVENT(event); break;
+        SDL_EVENT_CASE(SDL_CONTROLLERTOUCHPADUP) PRINT_CTOUCHPAD_EVENT(event); break;
+        SDL_EVENT_CASE(SDL_CONTROLLERTOUCHPADMOTION) PRINT_CTOUCHPAD_EVENT(event); break;
+        #undef PRINT_CTOUCHPAD_EVENT
+
+       SDL_EVENT_CASE(SDL_CONTROLLERSENSORUPDATE)
+            SDL_snprintf(details, sizeof (details), " (timestamp=%u which=%d sensor=%d data[0]=%f data[1]=%f data[2]=%f)", \
+                (uint) event->csensor.timestamp, (int) event->csensor.which, (int) event->csensor.sensor, \
+                event->csensor.data[0], event->csensor.data[1], event->csensor.data[2]);
+            break;
+
         #define PRINT_FINGER_EVENT(event) \
             SDL_snprintf(details, sizeof (details), " (timestamp=%u touchid=%"SDL_PRIs64" fingerid=%"SDL_PRIs64" x=%f y=%f dx=%f dy=%f pressure=%f)", \
                 (uint) event->tfinger.timestamp, (long long)event->tfinger.touchId, \
@@ -378,6 +397,13 @@ SDL_LogEvent(const SDL_Event *event)
         SDL_EVENT_CASE(SDL_AUDIODEVICEADDED) PRINT_AUDIODEV_EVENT(event); break;
         SDL_EVENT_CASE(SDL_AUDIODEVICEREMOVED) PRINT_AUDIODEV_EVENT(event); break;
         #undef PRINT_AUDIODEV_EVENT
+
+        SDL_EVENT_CASE(SDL_SENSORUPDATE)
+            SDL_snprintf(details, sizeof (details), " (timestamp=%u which=%d data[0]=%f data[1]=%f data[2]=%f data[3]=%f data[4]=%f data[5]=%f)", \
+                (uint) event->sensor.timestamp, (int) event->sensor.which, \
+                event->sensor.data[0], event->sensor.data[1], event->sensor.data[2], \
+                event->sensor.data[3], event->sensor.data[4], event->sensor.data[5]);
+            break;
 
         #undef SDL_EVENT_CASE
 
