@@ -824,3 +824,4 @@
 #define SDL_vasprintf SDL_vasprintf_REAL
 #define SDL_GetWindowICCProfile SDL_GetWindowICCProfile_REAL
 #define SDL_GetTicks64 SDL_GetTicks64_REAL
+#define SDL_LinuxSetThreadPriorityAndPolicy SDL_LinuxSetThreadPriorityAndPolicy_REAL
