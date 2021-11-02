@@ -89,10 +89,6 @@ VITA_GXM_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Textu
 
 static int VITA_GXM_RenderClear(SDL_Renderer *renderer, SDL_RenderCommand *cmd);
 
-static int VITA_GXM_RenderDrawPoints(SDL_Renderer *renderer, const SDL_RenderCommand *cmd);
-
-static int VITA_GXM_RenderDrawLines(SDL_Renderer *renderer, const SDL_RenderCommand *cmd);
-
 static int VITA_GXM_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertices, size_t vertsize);
 
 static int VITA_GXM_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect,
@@ -462,10 +458,9 @@ VITA_GXM_QueueDrawPoints(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const 
 
     int color = data->drawstate.color;
 
-    color_vertex *vertex = (color_vertex *)pool_memalign(
+    color_vertex *vertex = (color_vertex *)pool_malloc(
         data,
-        count * sizeof(color_vertex),
-        sizeof(color_vertex)
+        count * sizeof(color_vertex)
     );
 
     cmd->data.draw.first = (size_t)vertex;
@@ -487,10 +482,9 @@ VITA_GXM_QueueDrawLines(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const S
     VITA_GXM_RenderData *data = (VITA_GXM_RenderData *) renderer->driverdata;
     int color = data->drawstate.color;
 
-    color_vertex *vertex = (color_vertex *)pool_memalign(
+    color_vertex *vertex = (color_vertex *)pool_malloc(
         data,
-        (count-1) * 2 * sizeof(color_vertex),
-        sizeof(color_vertex)
+        (count-1) * 2 * sizeof(color_vertex)
     );
 
     cmd->data.draw.first = (size_t)vertex;
@@ -526,10 +520,9 @@ VITA_GXM_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Textu
     if (texture) {
         texture_vertex *vertices;
 
-        vertices = (texture_vertex *)pool_memalign(
+        vertices = (texture_vertex *)pool_malloc(
                 data,
-                count * sizeof(texture_vertex),
-                sizeof(texture_vertex));
+                count * sizeof(texture_vertex));
 
         if (!vertices) {
             return -1;
@@ -567,10 +560,9 @@ VITA_GXM_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Textu
     } else {
         color_vertex *vertices;
 
-        vertices = (color_vertex *)pool_memalign(
+        vertices = (color_vertex *)pool_malloc(
                 data,
-                count * sizeof(color_vertex),
-                sizeof(color_vertex));
+                count * sizeof(color_vertex));
 
         if (!vertices) {
             return -1;
@@ -634,30 +626,6 @@ VITA_GXM_RenderClear(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
     sceGxmDraw(data->gxm_context, SCE_GXM_PRIMITIVE_TRIANGLES, SCE_GXM_INDEX_FORMAT_U16, data->linearIndices, 3);
 
     data->drawstate.cliprect_dirty = SDL_TRUE;
-    return 0;
-}
-
-
-static int
-VITA_GXM_RenderDrawPoints(SDL_Renderer *renderer, const SDL_RenderCommand *cmd)
-{
-    VITA_GXM_RenderData *data = (VITA_GXM_RenderData *) renderer->driverdata;
-
-    sceGxmSetFrontPolygonMode(data->gxm_context, SCE_GXM_POLYGON_MODE_POINT);
-    sceGxmDraw(data->gxm_context, SCE_GXM_PRIMITIVE_POINTS, SCE_GXM_INDEX_FORMAT_U16, data->linearIndices, cmd->data.draw.count);
-    sceGxmSetFrontPolygonMode(data->gxm_context, SCE_GXM_POLYGON_MODE_TRIANGLE_FILL);
-
-    return 0;
-}
-
-static int
-VITA_GXM_RenderDrawLines(SDL_Renderer *renderer, const SDL_RenderCommand *cmd)
-{
-    VITA_GXM_RenderData *data = (VITA_GXM_RenderData *) renderer->driverdata;
-
-    sceGxmSetFrontPolygonMode(data->gxm_context, SCE_GXM_POLYGON_MODE_LINE);
-    sceGxmDraw(data->gxm_context, SCE_GXM_PRIMITIVE_LINES, SCE_GXM_INDEX_FORMAT_U16, data->linearIndices, cmd->data.draw.count);
-    sceGxmSetFrontPolygonMode(data->gxm_context, SCE_GXM_POLYGON_MODE_TRIANGLE_FILL);
     return 0;
 }
 
@@ -823,18 +791,6 @@ VITA_GXM_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *
                 break;
             }
 
-            case SDL_RENDERCMD_DRAW_POINTS: {
-                SetDrawState(data, cmd);
-                VITA_GXM_RenderDrawPoints(renderer, cmd);
-                break;
-            }
-
-            case SDL_RENDERCMD_DRAW_LINES: {
-                SetDrawState(data, cmd);
-                VITA_GXM_RenderDrawLines(renderer, cmd);
-                break;
-            }
-
             case SDL_RENDERCMD_FILL_RECTS: /* unused */
                 break;
 
@@ -844,19 +800,55 @@ VITA_GXM_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *
             case SDL_RENDERCMD_COPY_EX: /* unused */
                 break;
 
+            case SDL_RENDERCMD_DRAW_POINTS:
+            case SDL_RENDERCMD_DRAW_LINES:
             case SDL_RENDERCMD_GEOMETRY: {
-                SDL_Texture *texture = cmd->data.draw.texture;
+                SDL_Texture *thistexture = cmd->data.draw.texture;
+                SDL_BlendMode thisblend = cmd->data.draw.blend;
+                const SDL_RenderCommandType thiscmdtype = cmd->command;
+                SDL_RenderCommand *finalcmd = cmd;
+                SDL_RenderCommand *nextcmd = cmd->next;
+                size_t count = cmd->data.draw.count;
                 int ret;
+                while (nextcmd != NULL) {
+                    const SDL_RenderCommandType nextcmdtype = nextcmd->command;
+                    if (nextcmdtype != thiscmdtype) {
+                        break;  /* can't go any further on this draw call, different render command up next. */
+                    } else if (nextcmd->data.draw.texture != thistexture || nextcmd->data.draw.blend != thisblend) {
+                        break;  /* can't go any further on this draw call, different texture/blendmode copy up next. */
+                    } else {
+                        finalcmd = nextcmd;  /* we can combine copy operations here. Mark this one as the furthest okay command. */
+                        count += cmd->data.draw.count;
+                    }
+                    nextcmd = nextcmd->next;
+                }
 
-                if (texture) {
+                if (thistexture) {
                     ret = SetCopyState(renderer, cmd);
                 } else {
                     ret = SetDrawState(data, cmd);
                 }
 
                 if (ret == 0) {
-                    sceGxmDraw(data->gxm_context, SCE_GXM_PRIMITIVE_TRIANGLES, SCE_GXM_INDEX_FORMAT_U16, data->linearIndices, cmd->data.draw.count);
+                    int op = SCE_GXM_PRIMITIVE_TRIANGLES;
+
+                    if (thiscmdtype == SDL_RENDERCMD_DRAW_POINTS) {
+                        sceGxmSetFrontPolygonMode(data->gxm_context, SCE_GXM_POLYGON_MODE_POINT);
+                        op = SCE_GXM_PRIMITIVE_POINTS;
+                    } else if (thiscmdtype == SDL_RENDERCMD_DRAW_LINES) {
+                        sceGxmSetFrontPolygonMode(data->gxm_context, SCE_GXM_POLYGON_MODE_LINE);
+                        op = SCE_GXM_PRIMITIVE_LINES;
+                    }
+
+                    sceGxmDraw(data->gxm_context, op, SCE_GXM_INDEX_FORMAT_U16, data->linearIndices, count);
+
+                    if (thiscmdtype == SDL_RENDERCMD_DRAW_POINTS || thiscmdtype == SDL_RENDERCMD_DRAW_LINES) {
+                        sceGxmSetFrontPolygonMode(data->gxm_context, SCE_GXM_POLYGON_MODE_TRIANGLE_FILL);
+                    }
+
                 }
+
+                cmd = finalcmd;  /* skip any copy commands we just combined in here. */
                 break;
             }
 
