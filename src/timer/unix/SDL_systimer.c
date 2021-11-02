@@ -73,6 +73,34 @@ static SDL_bool has_monotonic_time = SDL_FALSE;
 static struct timeval start_tv;
 static SDL_bool ticks_started = SDL_FALSE;
 
+#if HAVE_CLOCK_GETTIME
+static struct timespec
+timespec_diff(const struct timespec start, const struct timespec stop) {
+    struct timespec res;
+    if ((stop.tv_nsec - start.tv_nsec) < 0) {
+            res.tv_sec = stop.tv_sec - start.tv_sec - 1;
+            res.tv_nsec = 1e9 + stop.tv_nsec - start.tv_nsec; // NSEC_PER_SEC
+    } else {
+            res.tv_sec = stop.tv_sec - start.tv_sec;
+            res.tv_nsec = stop.tv_nsec - start.tv_nsec;
+    }
+    return res;
+}
+#endif
+
+static struct timeval
+timeval_diff(const struct timeval start, const struct timeval stop) {
+    struct timeval res;
+    if ((stop.tv_usec - start.tv_usec) < 0) {
+            res.tv_sec = stop.tv_sec - start.tv_sec - 1;
+            res.tv_usec = 1e6 + stop.tv_usec - start.tv_usec; // USEC_PER_SEC
+    } else {
+            res.tv_sec = stop.tv_sec - start.tv_sec;
+            res.tv_usec = stop.tv_usec - start.tv_usec;
+    }
+    return res;
+}
+
 void
 SDL_TicksInit(void)
 {
@@ -107,7 +135,7 @@ SDL_TicksQuit(void)
 Uint64
 SDL_GetTicks64(void)
 {
-    struct timeval now;
+    struct timeval now_tv, diff_tv;
 
     if (!ticks_started) {
         SDL_TicksInit();
@@ -115,9 +143,10 @@ SDL_GetTicks64(void)
 
     if (has_monotonic_time) {
 #if HAVE_CLOCK_GETTIME
-        struct timespec now;
+        struct timespec now, diff;
         clock_gettime(SDL_MONOTONIC_CLOCK, &now);
-        return (((Uint64) (now.tv_sec - start_ts.tv_sec)) * 1000) + (((Uint64) (now.tv_nsec - start_ts.tv_nsec)) / 1000000);
+        diff = timespec_diff(start_ts, now);
+        return (diff.tv_sec * 1000) + (diff.tv_nsec / 1000000);
 #elif defined(__APPLE__)
         const uint64_t now = mach_absolute_time();
         return (Uint64) ((((now - start_mach) * mach_base_info.numer) / mach_base_info.denom) / 1000000);
@@ -127,8 +156,9 @@ SDL_GetTicks64(void)
 #endif
     }
 
-    gettimeofday(&now, NULL);
-    return (((Uint64) (now.tv_sec - start_tv.tv_sec)) * 1000) + (((Uint64) (now.tv_usec - start_tv.tv_usec)) / 1000);
+    gettimeofday(&now_tv, NULL);
+    diff_tv = timeval_diff(start_tv, now_tv);
+    return (diff_tv.tv_sec * 1000) + (diff_tv.tv_usec / 1000);
 }
 
 Uint64
