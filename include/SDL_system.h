@@ -262,6 +262,7 @@ extern DECLSPEC void * SDLCALL SDL_AndroidGetActivity(void);
 /**
  * Query Android API level of the current device.
  *
+ * - API level 31: Android 12
  * - API level 30: Android 11
  * - API level 29: Android 10
  * - API level 28: Android 9
