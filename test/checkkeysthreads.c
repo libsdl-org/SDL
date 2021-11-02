@@ -224,6 +224,7 @@ int
 main(int argc, char *argv[])
 {
     SDL_Window *window;
+    SDL_Renderer *renderer;
     SDL_Thread *thread;
 
     /* Enable standard application logging */
@@ -244,6 +245,12 @@ main(int argc, char *argv[])
                 SDL_GetError());
         quit(2);
     }
+
+    /* On wayland, no window will actually show until something has
+       actually been displayed.
+    */
+    renderer = SDL_CreateRenderer(window, -1, 0);
+    SDL_RenderPresent(renderer);
 
 #if __IPHONEOS__
     /* Creating the context creates the view, which we need to show keyboard */

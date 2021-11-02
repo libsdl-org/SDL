@@ -130,6 +130,8 @@ extern SDLMAIN_DECLSPEC int SDL_main(int argc, char *argv[]);
  * will not be changed it is necessary to define SDL_MAIN_HANDLED before
  * including SDL.h.
  *
+ * \since This function is available since SDL 2.0.0.
+ *
  * \sa SDL_Init
  */
 extern DECLSPEC void SDLCALL SDL_SetMainReady(void);
@@ -138,6 +140,8 @@ extern DECLSPEC void SDLCALL SDL_SetMainReady(void);
 
 /**
  * This can be called to set the application class at startup
+ *
+ * \since This function is available since SDL 2.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_RegisterApp(char *name, Uint32 style, void *hInst);
 extern DECLSPEC void SDLCALL SDL_UnregisterApp(void);
@@ -170,6 +174,8 @@ extern DECLSPEC int SDLCALL SDL_WinRTRunApp(SDL_main_func mainFunction, void * r
  * \param argv The argv parameter from the application's main() function
  * \param mainFunction The SDL app's C-style main(), an SDL_main_func
  * \return the return value from mainFunction
+ *
+ * \since This function is available since SDL 2.0.10.
  */
 extern DECLSPEC int SDLCALL SDL_UIKitRunApp(int argc, char *argv[], SDL_main_func mainFunction);
 

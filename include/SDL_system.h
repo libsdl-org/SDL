@@ -51,7 +51,7 @@ typedef void (SDLCALL * SDL_WindowsMessageHook)(void *userdata, void *hWnd, unsi
  * \param callback The SDL_WindowsMessageHook function to call.
  * \param userdata a pointer to pass to every iteration of `callback`
  *
- * \since This function is available since SDL 2.0.16.
+ * \since This function is available since SDL 2.0.4.
  */
 extern DECLSPEC void SDLCALL SDL_SetWindowsMessageHook(SDL_WindowsMessageHook callback, void *userdata);
 
@@ -136,6 +136,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_DXGIGetOutputInfo( int displayIndex, int *a
  * \param threadID the Unix thread ID to change priority of.
  * \param priority The new, Unix-specific, priority value.
  * \returns 0 on success, or -1 on error.
+ *
+ * \since This function is available since SDL 2.0.9.
  */
 extern DECLSPEC int SDLCALL SDL_LinuxSetThreadPriority(Sint64 threadID, int priority);
 
@@ -283,6 +285,8 @@ extern DECLSPEC void * SDLCALL SDL_AndroidGetActivity(void);
  * - API level 10: Android 2.3.3
  *
  * \returns the Android API level.
+ *
+ * \since This function is available since SDL 2.0.12.
  */
 extern DECLSPEC int SDLCALL SDL_GetAndroidSDKVersion(void);
 
@@ -290,6 +294,8 @@ extern DECLSPEC int SDLCALL SDL_GetAndroidSDKVersion(void);
  * Query if the application is running on Android TV.
  *
  * \returns SDL_TRUE if this is Android TV, SDL_FALSE otherwise.
+ *
+ * \since This function is available since SDL 2.0.8.
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_IsAndroidTV(void);
 
@@ -297,6 +303,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_IsAndroidTV(void);
  * Query if the application is running on a Chromebook.
  *
  * \returns SDL_TRUE if this is a Chromebook, SDL_FALSE otherwise.
+ *
+ * \since This function is available since SDL 2.0.9.
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_IsChromebook(void);
 
@@ -304,11 +312,15 @@ extern DECLSPEC SDL_bool SDLCALL SDL_IsChromebook(void);
  * Query if the application is running on a Samsung DeX docking station.
  *
  * \returns SDL_TRUE if this is a DeX docking station, SDL_FALSE otherwise.
+ *
+ * \since This function is available since SDL 2.0.9.
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_IsDeXMode(void);
 
 /**
  * Trigger the Android system back button behavior.
+ *
+ * \since This function is available since SDL 2.0.9.
  */
 extern DECLSPEC void SDLCALL SDL_AndroidBackButton(void);
 
@@ -379,6 +391,8 @@ extern DECLSPEC const char * SDLCALL SDL_AndroidGetExternalStoragePath(void);
  *
  * \param permission The permission to request.
  * \returns SDL_TRUE if the permission was granted, SDL_FALSE otherwise.
+ *
+ * \since This function is available since SDL 2.0.14.
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_AndroidRequestPermission(const char *permission);
 
@@ -505,6 +519,8 @@ extern DECLSPEC const char * SDLCALL SDL_WinRTGetFSPathUTF8(SDL_WinRT_Path pathT
  * Detects the device family of WinRT plattform at runtime.
  *
  * \returns a value from the SDL_WinRT_DeviceFamily enum.
+ *
+ * \since This function is available since SDL 2.0.8.
  */
 extern DECLSPEC SDL_WinRT_DeviceFamily SDLCALL SDL_WinRTGetDeviceFamily();
 
@@ -516,6 +532,8 @@ extern DECLSPEC SDL_WinRT_DeviceFamily SDLCALL SDL_WinRTGetDeviceFamily();
  * If SDL can't determine this, it will return SDL_FALSE.
  *
  * \returns SDL_TRUE if the device is a tablet, SDL_FALSE otherwise.
+ *
+ * \since This function is available since SDL 2.0.9.
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_IsTablet(void);
 

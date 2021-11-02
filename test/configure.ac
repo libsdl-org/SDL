@@ -192,6 +192,16 @@ if test x$have_SDL_ttf = xyes; then
 fi
 AC_SUBST(SDL_TTF_LIB)
 
+dnl Really, SDL2_test should be linking against libunwind (if it found
+dnl libunwind.h when configured), but SDL2_test is a static library, so
+dnl there's no way for it to link against it. We could make SDL2 depend on
+dnl it, but we don't want all SDL2 build to suddenly gain an extra dependency,
+dnl so just assume that if it's here now, SDL2_test was probably built with it.
+PKG_CHECK_MODULES(LIBUNWIND, libunwind, have_libunwind=yes, have_libunwind=no)
+if test x$have_libunwind = xyes ; then
+   LIBS="$LIBS $LIBUNWIND_LIBS"
+fi
+
 dnl Finally create all the generated files
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT

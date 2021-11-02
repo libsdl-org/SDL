@@ -25794,6 +25794,15 @@ $as_echo "#define SDL_TIMER_UNIX 1" >>confdefs.h
         SOURCES="$SOURCES $srcdir/src/misc/riscos/*.c"
         have_misc=yes
 
+        # Set up files for the video library
+        if test x$enable_video = xyes; then
+
+$as_echo "#define SDL_VIDEO_DRIVER_RISCOS 1" >>confdefs.h
+
+            SOURCES="$SOURCES $srcdir/src/video/riscos/*.c"
+            have_video=yes
+            SUMMARY_video="${SUMMARY_video} riscos"
+        fi
         # Set up files for the filesystem library
         if test x$enable_filesystem = xyes; then
 

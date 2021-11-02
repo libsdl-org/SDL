@@ -1536,7 +1536,7 @@ X11_Pending(Display * display)
     }
 
     /* More drastic measures are required -- see if X is ready to talk */
-    if (SDL_IOReady(ConnectionNumber(display), SDL_FALSE, 0)) {
+    if (SDL_IOReady(ConnectionNumber(display), SDL_IOR_READ, 0)) {
         return (X11_XPending(display));
     }
 
@@ -1585,21 +1585,25 @@ X11_WaitEventTimeout(_THIS, int timeout)
         } else {
             return 0;
         }
-    } else if (timeout > 0) {
-        int display_fd = ConnectionNumber(display);
-        fd_set readset;
-        struct timeval tv_timeout;
-        FD_ZERO(&readset);
-        FD_SET(display_fd, &readset);
-        tv_timeout.tv_sec = (timeout / 1000);
-        tv_timeout.tv_usec = (timeout % 1000) * 1000;
-        if (select(display_fd + 1, &readset, NULL, NULL, &tv_timeout) > 0) {
-            X11_XNextEvent(display, &xevent);
-        } else {
-            return 0;
-        }
     } else {
-        X11_XNextEvent(display, &xevent);
+        /* Use SDL_IOR_NO_RETRY to ensure SIGINT will break us out of our wait */
+        int err = SDL_IOReady(ConnectionNumber(display), SDL_IOR_READ | SDL_IOR_NO_RETRY, timeout);
+        if (err > 0) {
+            X11_XNextEvent(display, &xevent);
+        } else if (err == 0) {
+            /* Timeout */
+            return 0;
+        } else {
+            /* Error returned from poll()/select() */
+
+            if (errno == EINTR) {
+                /* If the wait was interrupted by a signal, we may have generated a
+                 * SDL_QUIT event. Let the caller know to call SDL_PumpEvents(). */
+                return 1;
+            } else {
+                return err;
+            }
+        }
     }
 
     X11_DispatchEvent(_this, &xevent);

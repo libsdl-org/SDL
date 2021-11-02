@@ -497,7 +497,7 @@ void VITA_ShowScreenKeyboard(_THIS, SDL_Window *window)
     SceImeDialogParam param;
     sceImeDialogParamInit(&param);
 
-    param.supportedLanguages = SCE_IME_LANGUAGE_ENGLISH_US;
+    param.supportedLanguages = 0;
     param.languagesForced = SCE_FALSE;
     param.type = SCE_IME_TYPE_DEFAULT;
     param.option = 0;

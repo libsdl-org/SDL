@@ -57,6 +57,8 @@ extern "C" {
  * \returns an opaque pointer to the object handle or NULL if there was an
  *          error; call SDL_GetError() for more information.
  *
+ * \since This function is available since SDL 2.0.0.
+ *
  * \sa SDL_LoadFunction
  * \sa SDL_UnloadObject
  */
@@ -82,6 +84,8 @@ extern DECLSPEC void *SDLCALL SDL_LoadObject(const char *sofile);
  * \returns a pointer to the function or NULL if there was an error; call
  *          SDL_GetError() for more information.
  *
+ * \since This function is available since SDL 2.0.0.
+ *
  * \sa SDL_LoadObject
  * \sa SDL_UnloadObject
  */
@@ -92,6 +96,8 @@ extern DECLSPEC void *SDLCALL SDL_LoadFunction(void *handle,
  * Unload a shared object from memory.
  *
  * \param handle a valid shared object handle returned by SDL_LoadObject()
+ *
+ * \since This function is available since SDL 2.0.0.
  *
  * \sa SDL_LoadFunction
  * \sa SDL_LoadObject

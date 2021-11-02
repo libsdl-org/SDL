@@ -62,6 +62,8 @@ extern "C" {
  *              and ::SDL_WINDOW_FULLSCREEN is always unset.
  * \return the window created, or NULL if window creation failed.
  *
+ * \since This function is available since SDL 2.0.0.
+ *
  * \sa SDL_DestroyWindow
  */
 extern DECLSPEC SDL_Window * SDLCALL SDL_CreateShapedWindow(const char *title,unsigned int x,unsigned int y,unsigned int w,unsigned int h,Uint32 flags);
@@ -72,6 +74,8 @@ extern DECLSPEC SDL_Window * SDLCALL SDL_CreateShapedWindow(const char *title,un
  * \param window The window to query for being shaped.
  * \return SDL_TRUE if the window is a window that can be shaped, SDL_FALSE if
  *         the window is unshaped or NULL.
+ *
+ * \since This function is available since SDL 2.0.0.
  *
  * \sa SDL_CreateShapedWindow
  */
@@ -116,6 +120,8 @@ typedef struct SDL_WindowShapeMode {
  *         argument, or SDL_NONSHAPEABLE_WINDOW if the SDL_Window given does
  *         not reference a valid shaped window.
  *
+ * \since This function is available since SDL 2.0.0.
+ *
  * \sa SDL_WindowShapeMode
  * \sa SDL_GetShapedWindowMode
  */
@@ -132,6 +138,8 @@ extern DECLSPEC int SDLCALL SDL_SetWindowShape(SDL_Window *window,SDL_Surface *s
  *         SDL_NONSHAPEABLE_WINDOW if the SDL_Window given is not a shaped
  *         window, or SDL_WINDOW_LACKS_SHAPE if the SDL_Window given is a
  *         shapeable window currently lacking a shape.
+ *
+ * \since This function is available since SDL 2.0.0.
  *
  * \sa SDL_WindowShapeMode
  * \sa SDL_SetWindowShape

@@ -98,6 +98,8 @@ typedef int SDL_SpinLock;
  * \returns SDL_TRUE if the lock succeeded, SDL_FALSE if the lock is already
  *          held.
  *
+ * \since This function is available since SDL 2.0.0.
+ *
  * \sa SDL_AtomicLock
  * \sa SDL_AtomicUnlock
  */
@@ -110,6 +112,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_AtomicTryLock(SDL_SpinLock *lock);
  * doing. Please be careful using any sort of spinlock!***
  *
  * \param lock a pointer to a lock variable
+ *
+ * \since This function is available since SDL 2.0.0.
  *
  * \sa SDL_AtomicTryLock
  * \sa SDL_AtomicUnlock
@@ -173,6 +177,8 @@ extern _inline void SDL_CompilerBarrier (void);
  *
  * For more information on these semantics, take a look at the blog post:
  * http://preshing.com/20120913/acquire-and-release-semantics
+ *
+ * \since This function is available since SDL 2.0.6.
  */
 extern DECLSPEC void SDLCALL SDL_MemoryBarrierReleaseFunction(void);
 extern DECLSPEC void SDLCALL SDL_MemoryBarrierAcquireFunction(void);
@@ -268,6 +274,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_AtomicCAS(SDL_atomic_t *a, int oldval, int 
  * \param v the desired value
  * \returns the previous value of the atomic variable.
  *
+ * \since This function is available since SDL 2.0.2.
+ *
  * \sa SDL_AtomicGet
  */
 extern DECLSPEC int SDLCALL SDL_AtomicSet(SDL_atomic_t *a, int v);
@@ -280,6 +288,8 @@ extern DECLSPEC int SDLCALL SDL_AtomicSet(SDL_atomic_t *a, int v);
  *
  * \param a a pointer to an SDL_atomic_t variable
  * \returns the current value of an atomic variable.
+ *
+ * \since This function is available since SDL 2.0.2.
  *
  * \sa SDL_AtomicSet
  */
@@ -296,6 +306,8 @@ extern DECLSPEC int SDLCALL SDL_AtomicGet(SDL_atomic_t *a);
  * \param a a pointer to an SDL_atomic_t variable to be modified
  * \param v the desired value to add
  * \returns the previous value of the atomic variable.
+ *
+ * \since This function is available since SDL 2.0.2.
  *
  * \sa SDL_AtomicDecRef
  * \sa SDL_AtomicIncRef
@@ -348,6 +360,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_AtomicCASPtr(void **a, void *oldval, void *
  * \param v the desired pointer value
  * \returns the previous value of the pointer.
  *
+ * \since This function is available since SDL 2.0.2.
+ *
  * \sa SDL_AtomicCASPtr
  * \sa SDL_AtomicGetPtr
  */
@@ -361,6 +375,8 @@ extern DECLSPEC void* SDLCALL SDL_AtomicSetPtr(void **a, void* v);
  *
  * \param a a pointer to a pointer
  * \returns the current value of a pointer.
+ *
+ * \since This function is available since SDL 2.0.2.
  *
  * \sa SDL_AtomicCASPtr
  * \sa SDL_AtomicSetPtr

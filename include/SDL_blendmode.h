@@ -175,7 +175,7 @@ typedef enum
  * \returns an SDL_BlendMode that represents the chosen factors and
  *          operations.
  *
- * \since This function is available in SDL 2.0.6.
+ * \since This function is available since SDL 2.0.6.
  *
  * \sa SDL_SetRenderDrawBlendMode
  * \sa SDL_GetRenderDrawBlendMode

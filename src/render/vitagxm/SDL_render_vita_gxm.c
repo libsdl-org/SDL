@@ -81,28 +81,17 @@ static int VITA_GXM_QueueSetDrawColor(SDL_Renderer * renderer, SDL_RenderCommand
 static int VITA_GXM_QueueDrawPoints(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FPoint * points, int count);
 static int VITA_GXM_QueueDrawLines(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FPoint * points, int count);
 
-static int VITA_GXM_QueueCopy(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * texture,
-    const SDL_Rect * srcrect, const SDL_FRect * dstrect);
-
-static int VITA_GXM_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * texture,
-    const SDL_Rect * srcrect, const SDL_FRect * dstrect,
-    const double angle, const SDL_FPoint *center, const SDL_RendererFlip flip);
-
-#if SDL_HAVE_RENDER_GEOMETRY
 static int
 VITA_GXM_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
         const float *xy, int xy_stride, const int *color, int color_stride, const float *uv, int uv_stride,
         int num_vertices, const void *indices, int num_indices, int size_indices,
         float scale_x, float scale_y);
-#endif
 
 static int VITA_GXM_RenderClear(SDL_Renderer *renderer, SDL_RenderCommand *cmd);
 
 static int VITA_GXM_RenderDrawPoints(SDL_Renderer *renderer, const SDL_RenderCommand *cmd);
 
 static int VITA_GXM_RenderDrawLines(SDL_Renderer *renderer, const SDL_RenderCommand *cmd);
-
-static int VITA_GXM_QueueFillRects(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FRect * rects, int count);
 
 static int VITA_GXM_RenderFillRects(SDL_Renderer *renderer, const SDL_RenderCommand *cmd);
 
@@ -253,12 +242,7 @@ VITA_GXM_CreateRenderer(SDL_Window *window, Uint32 flags)
     renderer->QueueSetDrawColor = VITA_GXM_QueueSetDrawColor;
     renderer->QueueDrawPoints = VITA_GXM_QueueDrawPoints;
     renderer->QueueDrawLines = VITA_GXM_QueueDrawLines;
-    renderer->QueueFillRects = VITA_GXM_QueueFillRects;
-    renderer->QueueCopy = VITA_GXM_QueueCopy;
-    renderer->QueueCopyEx = VITA_GXM_QueueCopyEx;
-#if SDL_HAVE_RENDER_GEOMETRY
     renderer->QueueGeometry = VITA_GXM_QueueGeometry;
-#endif
     renderer->RunCommandQueue = VITA_GXM_RunCommandQueue;
     renderer->RenderReadPixels = VITA_GXM_RenderReadPixels;
     renderer->RenderPresent = VITA_GXM_RenderPresent;
@@ -373,12 +357,19 @@ static int
 VITA_GXM_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
     const SDL_Rect *rect, void **pixels, int *pitch)
 {
+    VITA_GXM_RenderData *data = (VITA_GXM_RenderData *) renderer->driverdata;
     VITA_GXM_TextureData *vita_texture = (VITA_GXM_TextureData *) texture->driverdata;
 
     *pixels =
         (void *) ((Uint8 *) gxm_texture_get_datap(vita_texture->tex)
             + (rect->y * vita_texture->pitch) + rect->x * SDL_BYTESPERPIXEL(texture->format));
     *pitch = vita_texture->pitch;
+
+    // make sure that rendering is finished on render target textures
+    if (vita_texture->tex->gxm_rendertarget != NULL) {
+        sceGxmFinish(data->gxm_context);
+    }
+
     return 0;
 }
 
@@ -523,191 +514,6 @@ VITA_GXM_QueueDrawLines(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const S
 }
 
 static int
-VITA_GXM_QueueFillRects(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FRect * rects, int count)
-{
-    int color;
-    color_vertex *vertices;
-    VITA_GXM_RenderData *data = (VITA_GXM_RenderData *) renderer->driverdata;
-
-    cmd->data.draw.count = count;
-    color = data->drawstate.color;
-
-    vertices = (color_vertex *)pool_memalign(
-            data,
-            4 * count * sizeof(color_vertex), // 4 vertices * count
-            sizeof(color_vertex));
-
-    for (int i =0; i < count; i++)
-    {
-        const SDL_FRect *rect = &rects[i];
-
-        vertices[4*i+0].x = rect->x;
-        vertices[4*i+0].y = rect->y;
-        vertices[4*i+0].color = color;
-
-        vertices[4*i+1].x = rect->x + rect->w;
-        vertices[4*i+1].y = rect->y;
-        vertices[4*i+1].color = color;
-
-        vertices[4*i+2].x = rect->x;
-        vertices[4*i+2].y = rect->y + rect->h;
-        vertices[4*i+2].color = color;
-
-        vertices[4*i+3].x = rect->x + rect->w;
-        vertices[4*i+3].y = rect->y + rect->h;
-        vertices[4*i+3].color = color;
-    }
-
-    cmd->data.draw.first = (size_t)vertices;
-
-    return 0;
-}
-
-#define degToRad(x) ((x)*M_PI/180.f)
-
-void MathSincos(float r, float *s, float *c)
-{
-    *s = SDL_sin(r);
-    *c = SDL_cos(r);
-}
-
-static int
-VITA_GXM_QueueCopy(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * texture,
-    const SDL_Rect * srcrect, const SDL_FRect * dstrect)
-{
-    texture_vertex *vertices;
-    float u0, v0, u1, v1;
-    VITA_GXM_RenderData *data = (VITA_GXM_RenderData *) renderer->driverdata;
-    Uint32 texture_color = (cmd->data.draw.r << 0) | (cmd->data.draw.g << 8) | (cmd->data.draw.b << 16) | (cmd->data.draw.a << 24);
-
-    cmd->data.draw.count = 1;
-
-    vertices = (texture_vertex *)pool_memalign(
-            data,
-            4 * sizeof(texture_vertex), // 4 vertices
-            sizeof(texture_vertex));
-
-    cmd->data.draw.first = (size_t)vertices;
-    cmd->data.draw.texture = texture;
-
-    u0 = (float)srcrect->x / (float)texture->w;
-    v0 = (float)srcrect->y / (float)texture->h;
-    u1 = (float)(srcrect->x + srcrect->w) / (float)texture->w;
-    v1 = (float)(srcrect->y + srcrect->h) / (float)texture->h;
-
-    vertices[0].x = dstrect->x;
-    vertices[0].y = dstrect->y;
-    vertices[0].color = texture_color;
-    vertices[0].u = u0;
-    vertices[0].v = v0;
-
-    vertices[1].x = dstrect->x + dstrect->w;
-    vertices[1].y = dstrect->y;
-    vertices[1].color = texture_color;
-    vertices[1].u = u1;
-    vertices[1].v = v0;
-
-    vertices[2].x = dstrect->x;
-    vertices[2].y = dstrect->y + dstrect->h;
-    vertices[2].color = texture_color;
-    vertices[2].u = u0;
-    vertices[2].v = v1;
-
-    vertices[3].x = dstrect->x + dstrect->w;
-    vertices[3].y = dstrect->y + dstrect->h;
-    vertices[3].color = texture_color;
-    vertices[3].u = u1;
-    vertices[3].v = v1;
-
-    return 0;
-}
-
-static int
-VITA_GXM_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * texture,
-    const SDL_Rect * srcrect, const SDL_FRect * dstrect,
-    const double angle, const SDL_FPoint *center, const SDL_RendererFlip flip)
-{
-    VITA_GXM_RenderData *data = (VITA_GXM_RenderData *) renderer->driverdata;
-
-    texture_vertex *vertices;
-    float u0, v0, u1, v1;
-    float x0, y0, x1, y1;
-    float s, c;
-    const float centerx = center->x + dstrect->x;
-    const float centery = center->y + dstrect->y;
-    Uint32 texture_color = (cmd->data.draw.r << 0) | (cmd->data.draw.g << 8) | (cmd->data.draw.b << 16) | (cmd->data.draw.a << 24);
-
-    cmd->data.draw.count = 1;
-
-    vertices = (texture_vertex *)pool_memalign(
-            data,
-            4 * sizeof(texture_vertex), // 4 vertices
-            sizeof(texture_vertex));
-
-    cmd->data.draw.first = (size_t)vertices;
-    cmd->data.draw.texture = texture;
-
-    if (flip & SDL_FLIP_HORIZONTAL) {
-        x0 = dstrect->x + dstrect->w;
-        x1 = dstrect->x;
-    } else {
-        x0 = dstrect->x;
-        x1 = dstrect->x + dstrect->w;
-    }
-
-    if (flip & SDL_FLIP_VERTICAL) {
-        y0 = dstrect->y + dstrect->h;
-        y1 = dstrect->y;
-    } else {
-        y0 = dstrect->y;
-        y1 = dstrect->y + dstrect->h;
-    }
-
-    u0 = (float)srcrect->x / (float)texture->w;
-    v0 = (float)srcrect->y / (float)texture->h;
-    u1 = (float)(srcrect->x + srcrect->w) / (float)texture->w;
-    v1 = (float)(srcrect->y + srcrect->h) / (float)texture->h;
-
-    MathSincos(degToRad(angle), &s, &c);
-
-    vertices[0].x = x0 - centerx;
-    vertices[0].y = y0 - centery;
-    vertices[0].u = u0;
-    vertices[0].v = v0;
-    vertices[0].color = texture_color;
-
-    vertices[1].x = x1 - centerx;
-    vertices[1].y = y0 - centery;
-    vertices[1].u = u1;
-    vertices[1].v = v0;
-    vertices[1].color = texture_color;
-
-    vertices[2].x = x0 - centerx;
-    vertices[2].y = y1 - centery;
-    vertices[2].u = u0;
-    vertices[2].v = v1;
-    vertices[2].color = texture_color;
-
-    vertices[3].x = x1 - centerx;
-    vertices[3].y = y1 - centery;
-    vertices[3].u = u1;
-    vertices[3].v = v1;
-    vertices[3].color = texture_color;
-
-    for (int i = 0; i < 4; ++i)
-    {
-        float _x = vertices[i].x;
-        float _y = vertices[i].y;
-        vertices[i].x = _x * c - _y * s + centerx;
-        vertices[i].y = _x * s + _y * c + centery;
-    }
-
-    return 0;
-}
-
-
-#if SDL_HAVE_RENDER_GEOMETRY
-static int
 VITA_GXM_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
         const float *xy, int xy_stride, const int *color, int color_stride, const float *uv, int uv_stride,
         int num_vertices, const void *indices, int num_indices, int size_indices,
@@ -801,7 +607,6 @@ VITA_GXM_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Textu
 
     return 0;
 }
-#endif
 
 static int
 VITA_GXM_RenderClear(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
@@ -1045,22 +850,16 @@ VITA_GXM_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *
                 break;
             }
 
-            case SDL_RENDERCMD_FILL_RECTS: {
-                SetDrawState(data, cmd);
-                VITA_GXM_RenderFillRects(renderer, cmd);
+            case SDL_RENDERCMD_FILL_RECTS: /* unused */
                 break;
-            }
 
-            case SDL_RENDERCMD_COPY:
-            case SDL_RENDERCMD_COPY_EX: {
-                SetCopyState(renderer, cmd);
-                sceGxmDraw(data->gxm_context, SCE_GXM_PRIMITIVE_TRIANGLE_STRIP, SCE_GXM_INDEX_FORMAT_U16, data->linearIndices, 4 * cmd->data.draw.count);
-
+            case SDL_RENDERCMD_COPY: /* unused */
                 break;
-            }
+
+            case SDL_RENDERCMD_COPY_EX: /* unused */
+                break;
 
             case SDL_RENDERCMD_GEOMETRY: {
-#if SDL_HAVE_RENDER_GEOMETRY
                 SDL_Texture *texture = cmd->data.draw.texture;
                 int ret;
 
@@ -1073,7 +872,6 @@ VITA_GXM_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *
                 if (ret == 0) {
                     sceGxmDraw(data->gxm_context, SCE_GXM_PRIMITIVE_TRIANGLES, SCE_GXM_INDEX_FORMAT_U16, data->linearIndices, cmd->data.draw.count);
                 }
-#endif
                 break;
             }
 
@@ -1181,10 +979,6 @@ VITA_GXM_RenderPresent(SDL_Renderer *renderer)
 {
     VITA_GXM_RenderData *data = (VITA_GXM_RenderData *) renderer->driverdata;
     SceCommonDialogUpdateParam updateParam;
-
-    if (data->displayData.wait_vblank) {
-        sceGxmFinish(data->gxm_context);
-    }
 
     data->displayData.address = data->displayBufferData[data->backBufferIndex];
 

@@ -79,7 +79,7 @@ jobs:
         sudo meson install -C build
     - uses: actions/checkout@v2
     - name: Configure CMake
-      run: cmake -B build ${{ matrix.platform.flags }}
+      run: cmake -B build -DSDL_TEST=ON ${{ matrix.platform.flags }}
     - name: Build
       run: cmake --build build/
 

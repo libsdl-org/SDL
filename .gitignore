@@ -157,6 +157,7 @@ test/testshape
 test/testsprite2
 test/testspriteminimal
 test/teststreaming
+test/testsurround
 test/testthread
 test/testtimer
 test/testurl

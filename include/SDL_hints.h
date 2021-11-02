@@ -1816,6 +1816,8 @@ typedef enum
  * \param priority the SDL_HintPriority level for the hint
  * \returns SDL_TRUE if the hint was set, SDL_FALSE otherwise.
  *
+ * \since This function is available since SDL 2.0.0.
+ *
  * \sa SDL_GetHint
  * \sa SDL_SetHint
  */
@@ -1834,6 +1836,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_SetHintWithPriority(const char *name,
  * \param value the value of the hint variable
  * \returns SDL_TRUE if the hint was set, SDL_FALSE otherwise.
  *
+ * \since This function is available since SDL 2.0.0.
+ *
  * \sa SDL_GetHint
  * \sa SDL_SetHintWithPriority
  */
@@ -1845,6 +1849,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_SetHint(const char *name,
  *
  * \param name the hint to query
  * \returns the string value of a hint or NULL if the hint isn't set.
+ *
+ * \since This function is available since SDL 2.0.0.
  *
  * \sa SDL_SetHint
  * \sa SDL_SetHintWithPriority
@@ -1912,6 +1918,8 @@ extern DECLSPEC void SDLCALL SDL_DelHintCallback(const char *name,
  * Clear all hints.
  *
  * This function is automatically called during SDL_Quit().
+ *
+ * \since This function is available since SDL 2.0.0.
  */
 extern DECLSPEC void SDLCALL SDL_ClearHints(void);
 

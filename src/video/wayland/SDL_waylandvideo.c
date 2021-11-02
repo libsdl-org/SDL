@@ -169,7 +169,9 @@ Wayland_DeleteDevice(SDL_VideoDevice *device)
         WAYLAND_wl_display_flush(data->display);
         WAYLAND_wl_display_disconnect(data->display);
     }
-    SDL_DestroyMutex(data->display_dispatch_lock);
+    if (device->wakeup_lock) {
+        SDL_DestroyMutex(device->wakeup_lock);
+    }
     SDL_free(data);
     SDL_free(device);
     SDL_WAYLAND_UnloadSymbols();
@@ -202,8 +204,6 @@ Wayland_CreateDevice(int devindex)
 
     data->display = display;
 
-    data->display_dispatch_lock = SDL_CreateMutex();
-
     /* Initialize all variables that we clean on shutdown */
     device = SDL_calloc(1, sizeof(SDL_VideoDevice));
     if (!device) {
@@ -215,6 +215,7 @@ Wayland_CreateDevice(int devindex)
     }
 
     device->driverdata = data;
+    device->wakeup_lock = SDL_CreateMutex();
 
     /* Set the function pointers */
     device->VideoInit = Wayland_VideoInit;
@@ -225,6 +226,8 @@ Wayland_CreateDevice(int devindex)
     device->SuspendScreenSaver = Wayland_SuspendScreenSaver;
 
     device->PumpEvents = Wayland_PumpEvents;
+    device->WaitEventTimeout = Wayland_WaitEventTimeout;
+    device->SendWakeupEvent = Wayland_SendWakeupEvent;
 
     device->GL_SwapWindow = Wayland_GLES_SwapWindow;
     device->GL_GetSwapInterval = Wayland_GLES_GetSwapInterval;
