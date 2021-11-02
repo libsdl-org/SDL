@@ -65,7 +65,7 @@ static int aaudio_LoadFunctions(AAUDIO_Data *data)
 void aaudio_errorCallback( AAudioStream *stream, void *userData, aaudio_result_t error );
 void aaudio_errorCallback( AAudioStream *stream, void *userData, aaudio_result_t error )
 {
-	LOGI( "SDL aaudio_errorCallback: %d - %s", error, ctx.AAudio_convertResultToText( error ) );
+    LOGI( "SDL aaudio_errorCallback: %d - %s", error, ctx.AAudio_convertResultToText( error ) );
 }
 
 #define LIB_AAUDIO_SO "libaaudio.so"
@@ -115,7 +115,7 @@ aaudio_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
         ctx.AAudioStreamBuilder_setFormat(ctx.builder, format);
     }
 
-	ctx.AAudioStreamBuilder_setErrorCallback( ctx.builder, aaudio_errorCallback, private );
+    ctx.AAudioStreamBuilder_setErrorCallback( ctx.builder, aaudio_errorCallback, private );
 
     LOGI("AAudio Try to open %u hz %u bit chan %u %s samples %u",
           this->spec.freq, SDL_AUDIO_BITSIZE(this->spec.format),
@@ -274,11 +274,20 @@ aaudio_Init(SDL_AudioDriverImpl *impl)
     aaudio_result_t res;
     LOGI(__func__);
 
+    /* AAudio was introduced in Android 8.0, but has reference counting crash issues in that release,
+     * so don't use it until 8.1.
+     *
+     * See https://github.com/google/oboe/issues/40 for more information.
+     */
+    if (SDL_GetAndroidSDKVersion() < 27) {
+        return 0;
+    }
+
     SDL_zero(ctx);
 
     ctx.handle = SDL_LoadObject(LIB_AAUDIO_SO);
     if (ctx.handle == NULL) {
-        LOGI("SDL Failed to found " LIB_AAUDIO_SO);
+        LOGI("SDL couldn't find " LIB_AAUDIO_SO);
         goto failure;
     }
 
