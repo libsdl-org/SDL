@@ -117,7 +117,7 @@ SDL_GetTicks64(void)
 #if HAVE_CLOCK_GETTIME
         struct timespec now;
         clock_gettime(SDL_MONOTONIC_CLOCK, &now);
-        return (((Uint64) (now.tv_sec - start_ts.tv_sec)) * 1000) + (((Uint64) (now.tv_nsec - start_ts.tv_nsec)) / 1000000);
+        return (Uint64) (((Sint64) (now.tv_sec - start_ts.tv_sec) * 1000) + ((now.tv_nsec - start_ts.tv_nsec) / 1000000));
 #elif defined(__APPLE__)
         const uint64_t now = mach_absolute_time();
         return (Uint64) ((((now - start_mach) * mach_base_info.numer) / mach_base_info.denom) / 1000000);
@@ -128,7 +128,7 @@ SDL_GetTicks64(void)
     }
 
     gettimeofday(&now, NULL);
-    return (((Uint64) (now.tv_sec - start_tv.tv_sec)) * 1000) + (((Uint64) (now.tv_usec - start_tv.tv_usec)) / 1000);
+    return (Uint64) (((Sint64) (now.tv_sec - start_tv.tv_sec) * 1000) + ((now.tv_usec - start_tv.tv_usec) / 1000));
 }
 
 Uint64
