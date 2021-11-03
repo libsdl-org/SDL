@@ -24071,6 +24071,18 @@ $as_echo "#define HAVE_XINPUT_STATE_EX 1" >>confdefs.h
         fi
     fi
 
+    ac_fn_c_check_header_mongrel "$LINENO" "windows.gaming.input.h" "ac_cv_header_windows_gaming_input_h" "$ac_includes_default"
+if test "x$ac_cv_header_windows_gaming_input_h" = xyes; then :
+  have_wgi=yes
+fi
+
+
+    if test x$have_wgi = xyes; then
+
+$as_echo "#define HAVE_WINDOWS_GAMING_INPUT_H 1" >>confdefs.h
+
+    fi
+
     ac_fn_c_check_header_mongrel "$LINENO" "mmdeviceapi.h" "ac_cv_header_mmdeviceapi_h" "$ac_includes_default"
 if test "x$ac_cv_header_mmdeviceapi_h" = xyes; then :
   have_wasapi=yes
@@ -25238,10 +25250,15 @@ $as_echo "#define SDL_AUDIO_DRIVER_WASAPI 1" >>confdefs.h
 
 $as_echo "#define SDL_JOYSTICK_RAWINPUT 1" >>confdefs.h
 
-            if test x$have_dinput = xyes -o x$have_xinput = xyes; then
+            if test x$have_dinput = xyes -o x$have_xinput = xyes -o x$have_wgi = xyes; then
                 if test x$have_xinput = xyes; then
 
 $as_echo "#define SDL_JOYSTICK_XINPUT 1" >>confdefs.h
+
+                fi
+                if test x$have_wgi = xyes; then
+
+$as_echo "#define SDL_JOYSTICK_WGI 1" >>confdefs.h
 
                 fi
                 if test x$have_dinput = xyes; then

@@ -3199,6 +3199,11 @@ XINPUT_STATE_EX s1;
         fi
     fi
 
+    AC_CHECK_HEADER(windows.gaming.input.h, have_wgi=yes)
+    if test x$have_wgi = xyes; then
+        AC_DEFINE(HAVE_WINDOWS_GAMING_INPUT_H, 1, [ ])
+    fi
+
     AC_CHECK_HEADER(mmdeviceapi.h, have_wasapi=yes)
     if test x$have_wasapi = xyes; then
         AC_DEFINE(HAVE_MMDEVICEAPI_H, 1, [ ])
@@ -3846,9 +3851,12 @@ case "$host" in
         # Set up files for the joystick library
         if test x$enable_joystick = xyes; then
             AC_DEFINE(SDL_JOYSTICK_RAWINPUT, 1, [ ])
-            if test x$have_dinput = xyes -o x$have_xinput = xyes; then
+            if test x$have_dinput = xyes -o x$have_xinput = xyes -o x$have_wgi = xyes; then
                 if test x$have_xinput = xyes; then
                     AC_DEFINE(SDL_JOYSTICK_XINPUT, 1, [ ])
+                fi
+                if test x$have_wgi = xyes; then
+                    AC_DEFINE(SDL_JOYSTICK_WGI, 1, [ ])
                 fi
                 if test x$have_dinput = xyes; then
                     AC_DEFINE(SDL_JOYSTICK_DINPUT, 1, [ ])
