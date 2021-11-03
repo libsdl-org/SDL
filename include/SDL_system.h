@@ -180,6 +180,8 @@ extern DECLSPEC int SDLCALL SDL_LinuxSetThreadPriority(Sint64 threadID, int prio
  */
 extern DECLSPEC int SDLCALL SDL_iPhoneSetAnimationCallback(SDL_Window * window, int interval, void (*callback)(void*), void *callbackParam);
 
+extern DECLSPEC void SDLCALL SDL_iPhoneRunOnMainLoop(void (*callback)(void));
+
 #define SDL_iOSSetEventPump(enabled) SDL_iPhoneSetEventPump(enabled)
 
 /**
