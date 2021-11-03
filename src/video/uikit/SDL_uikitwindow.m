@@ -486,6 +486,13 @@ SDL_iPhoneSetAnimationCallback(SDL_Window * window, int interval, void (*callbac
 
     return 0;
 }
+    
+void SDL_iPhoneRunOnMainLoop(void (*callback)(void))
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        callback();
+    });
+}
 
 #endif /* SDL_VIDEO_DRIVER_UIKIT */
 

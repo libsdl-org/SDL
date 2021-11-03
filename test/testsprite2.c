@@ -503,7 +503,10 @@ loop()
         next_fps_check = now + fps_check_delay;
         frames = 0;
     }
+}
 
+void LoopWrapper() {
+    SDL_iPhoneRunOnMainLoop(loop);
 }
 
 int
@@ -659,7 +662,7 @@ main(int argc, char *argv[])
     {
         // Set up the game to run in the window animation callback on iOS
         // so that Game Center and so forth works correctly.
-        SDL_iPhoneSetAnimationCallback(state->windows[0], 1, loop, NULL);
+        SDL_iPhoneSetAnimationCallback(state->windows[0], 1, LoopWrapper, NULL);
         //while (!done) {
             //loop();
             //SDL_iPhoneSetAnimationCallback(state->windows[0], 1, loop, NULL);
@@ -669,10 +672,10 @@ main(int argc, char *argv[])
         while (!done) {
             loop();
         }
+        quit(0);
     }
 #endif
 
-    //quit(0);
     return 0;
 }
 

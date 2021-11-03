@@ -175,6 +175,16 @@ SDL_HideHomeIndicatorHintChanged(void *userdata, const char *name, const char *o
     displayLink = nil;
 }
 
+- (void)pauseAnimation
+{
+    [displayLink removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+}
+
+- (void)resumeAnimation
+{
+    [displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+}
+
 - (void)doLoop:(CADisplayLink*)sender
 {
     /* Don't run the game loop while a messagebox is up */
@@ -545,6 +555,20 @@ GetWindowViewController(SDL_Window * window)
     SDL_WindowData *data = (__bridge SDL_WindowData *)window->driverdata;
 
     return data.viewcontroller;
+}
+
+void UIKit_PauseDisplayLink(_THIS, SDL_Window *window) {
+    @autoreleasepool {
+        SDL_uikitviewcontroller *vc = GetWindowViewController(window);
+        [vc pauseAnimation];
+    }
+}
+
+void UIKit_ResumeDisplayLink(_THIS, SDL_Window *window) {
+    @autoreleasepool {
+        SDL_uikitviewcontroller *vc = GetWindowViewController(window);
+        [vc resumeAnimation];
+    }
 }
 
 SDL_bool

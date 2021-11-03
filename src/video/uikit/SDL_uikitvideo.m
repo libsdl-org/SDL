@@ -106,6 +106,9 @@ UIKit_CreateDevice(int devindex)
         device->IsScreenKeyboardShown = UIKit_IsScreenKeyboardShown;
         device->SetTextInputRect = UIKit_SetTextInputRect;
 #endif
+        
+        device->PauseDisplayLink = UIKit_PauseDisplayLink;
+        device->ResumeDisplayLink = UIKit_ResumeDisplayLink;
 
         device->SetClipboardText = UIKit_SetClipboardText;
         device->GetClipboardText = UIKit_GetClipboardText;
