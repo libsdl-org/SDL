@@ -91,7 +91,7 @@ typedef unsigned int uintptr_t;
 #if defined(_WIN32_MAXVER) && _WIN32_MAXVER >= 0x0A00  /* Windows 10 SDK */
 #define HAVE_WINDOWS_GAMING_INPUT_H 1
 #endif
-#if defined(_WIN32_MAXVER) && _WIN32_MAXVER >= 0x0601  /* Windows 7 SDK */
+#if defined(_WIN32_MAXVER) && _WIN32_MAXVER >= 0x0602  /* Windows 8 SDK */
 #define HAVE_D3D11_H 1
 #endif
 #define HAVE_MMDEVICEAPI_H 1
