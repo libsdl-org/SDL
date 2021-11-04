@@ -854,3 +854,6 @@
 #define SDL_GameControllerHasRumble SDL_GameControllerHasRumble_REAL
 #define SDL_GameControllerHasRumbleTriggers SDL_GameControllerHasRumbleTriggers_REAL
 #define SDL_hid_ble_scan SDL_hid_ble_scan_REAL
+#define SDL_GL_CreateImageDmabuf SDL_GL_CreateImageDmabuf_REAL
+#define SDL_GL_DestroyImageDmabuf SDL_GL_DestroyImageDmabuf_REAL
+#define SDL_UpdateTextureOES SDL_UpdateTextureOES_REAL

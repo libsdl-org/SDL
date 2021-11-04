@@ -278,6 +278,27 @@ typedef enum
     SDL_GL_CONTEXT_RESET_LOSE_CONTEXT    = 0x0001
 } SDL_GLContextResetNotification;
 
+typedef void *SDL_GLImageKHR;
+
+struct SDL_Dmabuf {
+    int fd;
+    uint32_t offset;
+    uint32_t stride;
+    size_t size;
+    void *virt;
+};
+typedef struct SDL_Dmabuf SDL_Dmabuf;
+
+struct SDL_ImageDmabuf {
+    uint32_t format;
+    int width;
+    int height;
+    uint64_t modifier;
+    int num_plane;
+    SDL_Dmabuf planes[8];
+};
+typedef struct SDL_ImageDmabuf SDL_ImageDmabuf;
+
 /* Function prototypes */
 
 /**
@@ -2057,6 +2078,8 @@ extern DECLSPEC void SDLCALL SDL_GL_SwapWindow(SDL_Window * window);
  */
 extern DECLSPEC void SDLCALL SDL_GL_DeleteContext(SDL_GLContext context);
 
+extern DECLSPEC SDL_GLImageKHR SDLCALL SDL_GL_CreateImageDmabuf(const SDL_ImageDmabuf *buffer);
+extern DECLSPEC SDL_bool SDLCALL SDL_GL_DestroyImageDmabuf(SDL_GLImageKHR image);
 /* @} *//* OpenGL support functions */
 
 

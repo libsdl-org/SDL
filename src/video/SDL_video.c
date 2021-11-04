@@ -3993,6 +3993,38 @@ SDL_GL_DeleteContext(SDL_GLContext context)
     _this->GL_DeleteContext(_this, context);
 }
 
+SDL_GLImageKHR
+SDL_GL_CreateImageDmabuf(const SDL_ImageDmabuf *buffer)
+{
+    if (!_this) {
+        return NULL;
+    } else if (SDL_GL_GetCurrentContext() == NULL) {
+        SDL_SetError("No OpenGL context has been made current");
+        return NULL;
+    } else if (_this->GL_CreateImageDmabuf) {
+        return _this->GL_CreateImageDmabuf(_this, buffer);
+    } else {
+        SDL_SetError("Create Image dmabuf is not supported");
+        return NULL;
+    }
+}
+
+SDL_bool
+SDL_GL_DestroyImageDmabuf(SDL_GLImageKHR image)
+{
+    if (!_this) {
+        return SDL_FALSE;
+    } else if (SDL_GL_GetCurrentContext() == NULL) {
+        SDL_SetError("No OpenGL context has been made current");
+        return SDL_FALSE;
+    } else if (_this->GL_DestroyImageDmabuf) {
+        return _this->GL_DestroyImageDmabuf(_this, image);
+    } else {
+        SDL_SetError("Destroy Image dmabuf is not supported");
+        return SDL_FALSE;
+    }
+}
+
 #if 0                           /* FIXME */
 /*
  * Utility function used by SDL_WM_SetIcon(); flags & 1 for color key, flags

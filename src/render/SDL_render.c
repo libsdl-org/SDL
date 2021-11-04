@@ -1959,7 +1959,35 @@ int SDL_UpdateNVTexture(SDL_Texture * texture, const SDL_Rect * rect,
 #endif
 }
 
+int SDL_UpdateTextureOES(SDL_Texture * texture,
+                                const SDL_ImageDmabuf *buffer)
+{
+    SDL_Renderer *renderer;
 
+    CHECK_TEXTURE_MAGIC(texture, -1);
+    if (!buffer || !buffer->num_plane) {
+        return SDL_InvalidParamError("buffer");
+    }
+    if (texture->format != SDL_PIXELFORMAT_EXTERNAL_OES) {
+        return SDL_SetError("Texture format must by EXTERNAL OES");
+    }
+
+    if (texture->yuv) {
+        return SDL_InvalidParamError("format");
+    }
+    SDL_assert(!texture->native);
+    renderer = texture->renderer;
+    if (!IsSupportedFormat(renderer, buffer->format)) {
+        return SDL_InvalidParamError("format");
+    }
+    SDL_assert(renderer->UpdateTextureOES);
+    if (!renderer->UpdateTextureOES)
+        return SDL_Unsupported();
+    if (FlushRenderCommandsIfTextureNeeded(texture) < 0) {
+        return -1;
+    }
+    return renderer->UpdateTextureOES(renderer, texture, buffer);
+}
 
 #if SDL_HAVE_YUV
 static int

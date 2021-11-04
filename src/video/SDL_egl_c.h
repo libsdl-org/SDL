@@ -42,6 +42,7 @@ typedef struct SDL_EGL_VideoData
     EGLint egl_required_visual_id;
     SDL_bool is_offscreen;  /* whether EGL display was offscreen */
     EGLenum apitype;  /* EGL_OPENGL_ES_API, EGL_OPENGL_API, etc */
+    SDL_bool has_dma_buf_import_modifiers;
     
     EGLDisplay(EGLAPIENTRY *eglGetDisplay) (NativeDisplayType display);
     EGLDisplay(EGLAPIENTRY *eglGetPlatformDisplay) (EGLenum platform,
@@ -115,6 +116,10 @@ typedef struct SDL_EGL_VideoData
 
     EGLint(EGLAPIENTRY *eglClientWaitSyncKHR)(EGLDisplay dpy, EGLSyncKHR sync, EGLint flags, EGLTimeKHR timeout);
 
+    EGLImageKHR(EGLAPIENTRY *eglCreateImageKHR)(EGLDisplay dpy, EGLContext ctx, EGLenum target, EGLClientBuffer buffer, const EGLint *attrib_list);
+
+    EGLBoolean(EGLAPIENTRY *eglDestroyImageKHR)(EGLDisplay dpy, EGLImageKHR image);
+
     /* Atomic functions end */
 } SDL_EGL_VideoData;
 
@@ -141,6 +146,8 @@ extern int SDL_EGL_GetSwapInterval(_THIS);
 extern void SDL_EGL_DeleteContext(_THIS, SDL_GLContext context);
 extern EGLSurface *SDL_EGL_CreateSurface(_THIS, NativeWindowType nw);
 extern void SDL_EGL_DestroySurface(_THIS, EGLSurface egl_surface);
+extern SDL_GLImageKHR SDL_EGL_CreateImageDmabuf(_THIS, const SDL_ImageDmabuf *buffer);
+extern SDL_bool SDL_EGL_DestroyImageDmabuf(_THIS, SDL_GLImageKHR image);
 
 extern EGLSurface SDL_EGL_CreateOffscreenSurface(_THIS, int width, int height);
 /* Assumes that LoadLibraryOnly() has succeeded */

@@ -641,6 +641,8 @@ extern DECLSPEC int SDLCALL SDL_UpdateNVTexture(SDL_Texture * texture,
                                                  const Uint8 *Yplane, int Ypitch,
                                                  const Uint8 *UVplane, int UVpitch);
 
+extern DECLSPEC int SDLCALL SDL_UpdateTextureOES(SDL_Texture * texture,
+                                const SDL_ImageDmabuf *buffer);
 /**
  * Lock a portion of the texture for **write-only** pixel access.
  *

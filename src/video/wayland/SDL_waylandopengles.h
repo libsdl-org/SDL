@@ -44,6 +44,8 @@ extern int Wayland_GLES_SwapWindow(_THIS, SDL_Window * window);
 extern int Wayland_GLES_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context);
 extern void Wayland_GLES_GetDrawableSize(_THIS, SDL_Window * window, int * w, int * h);
 extern void Wayland_GLES_DeleteContext(_THIS, SDL_GLContext context);
+extern SDL_GLImageKHR Wayland_GLES_CreateImageDmabuf(_THIS, const SDL_ImageDmabuf *buffer);
+extern SDL_bool Wayland_GLES_DestroyImageDmabuf(_THIS, SDL_GLImageKHR image);
 
 #endif /* SDL_waylandopengles_h_ */
 

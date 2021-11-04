@@ -1606,6 +1606,34 @@ GLES2_UpdateTextureNV(SDL_Renderer * renderer, SDL_Texture * texture,
 #endif
 
 static int
+GLES2_UpdateTextureOES(SDL_Renderer * renderer, SDL_Texture * texture,
+                            const SDL_ImageDmabuf *buffer)
+{
+    GLES2_RenderData *data = (GLES2_RenderData *)renderer->driverdata;
+    GLES2_TextureData *tdata = (GLES2_TextureData *)texture->driverdata;
+    SDL_GLImageKHR image;
+
+    GLES2_ActivateRenderer(renderer);
+    if (!buffer || buffer->width <= 0 || buffer->height <= 0) {
+        return 0;
+    }
+
+    image = SDL_GL_CreateImageDmabuf(buffer);
+    if (!image) {
+        return SDL_SetError("Failed to create dmabuf image");
+    }
+
+    data->drawstate.texture = NULL;  /* we trash this state. */
+    data->glActiveTexture(GL_TEXTURE0);
+    data->glBindTexture(tdata->texture_type, tdata->texture);
+    data->glEGLImageTargetTexture2DOES(tdata->texture_type, image);
+    GL_CheckError("glEGLImageTargetTexture2DOES()", renderer);
+    SDL_GL_DestroyImageDmabuf(image);
+
+    return 0;
+}
+
+static int
 GLES2_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_Rect *rect,
                   void **pixels, int *pitch)
 {
@@ -1974,6 +2002,7 @@ GLES2_CreateRenderer(SDL_Window *window, Uint32 flags)
     renderer->UpdateTextureYUV    = GLES2_UpdateTextureYUV;
     renderer->UpdateTextureNV     = GLES2_UpdateTextureNV;
 #endif
+    renderer->UpdateTextureOES    = GLES2_UpdateTextureOES;
     renderer->LockTexture         = GLES2_LockTexture;
     renderer->UnlockTexture       = GLES2_UnlockTexture;
     renderer->SetTextureScaleMode = GLES2_SetTextureScaleMode;

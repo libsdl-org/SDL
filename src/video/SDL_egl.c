@@ -35,6 +35,7 @@
 #include "SDL_egl_c.h"
 #include "SDL_loadso.h"
 #include "SDL_hints.h"
+#include "SDL_drm_fourcc.h"
 
 #ifdef EGL_KHR_create_context
 /* EGL_OPENGL_ES3_BIT_KHR was added in version 13 of the extension. */
@@ -462,6 +463,8 @@ SDL_EGL_LoadLibraryOnly(_THIS, const char *egl_path)
     LOAD_FUNC_EGLEXT(eglDupNativeFenceFDANDROID);
     LOAD_FUNC_EGLEXT(eglWaitSyncKHR);
     LOAD_FUNC_EGLEXT(eglClientWaitSyncKHR);
+    LOAD_FUNC_EGLEXT(eglCreateImageKHR);
+    LOAD_FUNC_EGLEXT(eglDestroyImageKHR);
     /* Atomic functions end */
 
     if (path) {
@@ -547,6 +550,11 @@ SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_displa
     SDL_EGL_GetVersion(_this);
 
     _this->egl_data->is_offscreen = SDL_FALSE;
+    if (SDL_EGL_HasExtension(_this, SDL_EGL_DISPLAY_EXTENSION, "EGL_EXT_image_dma_buf_import_modifiers")) {
+        _this->egl_data->has_dma_buf_import_modifiers = SDL_TRUE;
+    } else {
+        _this->egl_data->has_dma_buf_import_modifiers = SDL_FALSE;
+    }
 
     return 0;
 }
@@ -1273,15 +1281,111 @@ SDL_EGL_CreateOffscreenSurface(_THIS, int width, int height)
 }
 
 void
-SDL_EGL_DestroySurface(_THIS, EGLSurface egl_surface) 
+SDL_EGL_DestroySurface(_THIS, EGLSurface egl_surface)
 {
     if (!_this->egl_data) {
         return;
     }
-    
+
     if (egl_surface != EGL_NO_SURFACE) {
         _this->egl_data->eglDestroySurface(_this->egl_data->egl_display, egl_surface);
     }
+}
+
+SDL_GLImageKHR SDL_EGL_CreateImageDmabuf(_THIS, const SDL_ImageDmabuf *buffer)
+{
+    EGLint eglImgAttrs[64];
+    unsigned int atti = 0;
+    EGLImageKHR image;
+    uint32_t format;
+
+    SDL_assert(_this->egl_data->eglCreateImageKHR);
+    if (!_this->egl_data->eglCreateImageKHR)
+        return NULL;
+    if (!buffer || !buffer->num_plane)
+        return NULL;
+
+    switch (buffer->format) {
+    case SDL_PIXELFORMAT_NV12:
+        format = DRM_FORMAT_NV12;
+        break;
+    case SDL_PIXELFORMAT_IYUV:
+        format = DRM_FORMAT_YUV420;
+        break;
+    default:
+        return NULL;
+    }
+
+    eglImgAttrs[atti++] = EGL_WIDTH;
+    eglImgAttrs[atti++] = buffer->width;
+    eglImgAttrs[atti++] = EGL_HEIGHT;
+    eglImgAttrs[atti++] = buffer->height;
+    eglImgAttrs[atti++] = EGL_LINUX_DRM_FOURCC_EXT;
+    eglImgAttrs[atti++] = format;
+
+    if (buffer->num_plane > 0 && buffer->planes[0].fd >= 0) {
+        eglImgAttrs[atti++] = EGL_DMA_BUF_PLANE0_FD_EXT;
+        eglImgAttrs[atti++] = buffer->planes[0].fd;
+        eglImgAttrs[atti++] = EGL_DMA_BUF_PLANE0_OFFSET_EXT;
+        eglImgAttrs[atti++] = buffer->planes[0].offset;
+        eglImgAttrs[atti++] = EGL_DMA_BUF_PLANE0_PITCH_EXT;
+        eglImgAttrs[atti++] = buffer->planes[0].stride;
+        if (_this->egl_data->has_dma_buf_import_modifiers) {
+            eglImgAttrs[atti++] = EGL_DMA_BUF_PLANE0_MODIFIER_LO_EXT;
+            eglImgAttrs[atti++] = buffer->modifier & 0xFFFFFFFF;
+            eglImgAttrs[atti++] = EGL_DMA_BUF_PLANE0_MODIFIER_HI_EXT;
+            eglImgAttrs[atti++] = buffer->modifier >> 32;
+        }
+    }
+
+    if (buffer->num_plane > 1 && buffer->planes[1].fd >= 0) {
+        eglImgAttrs[atti++] = EGL_DMA_BUF_PLANE1_FD_EXT;
+        eglImgAttrs[atti++] = buffer->planes[1].fd;
+        eglImgAttrs[atti++] = EGL_DMA_BUF_PLANE1_OFFSET_EXT;
+        eglImgAttrs[atti++] = buffer->planes[1].offset;
+        eglImgAttrs[atti++] = EGL_DMA_BUF_PLANE1_PITCH_EXT;
+        eglImgAttrs[atti++] = buffer->planes[1].stride;
+        if (_this->egl_data->has_dma_buf_import_modifiers) {
+            eglImgAttrs[atti++] = EGL_DMA_BUF_PLANE1_MODIFIER_LO_EXT;
+            eglImgAttrs[atti++] = buffer->modifier & 0xFFFFFFFF;
+            eglImgAttrs[atti++] = EGL_DMA_BUF_PLANE1_MODIFIER_HI_EXT;
+            eglImgAttrs[atti++] = buffer->modifier >> 32;
+        }
+    }
+
+    if (buffer->num_plane > 2 && buffer->planes[2].fd >= 0) {
+        eglImgAttrs[atti++] = EGL_DMA_BUF_PLANE2_FD_EXT;
+        eglImgAttrs[atti++] = buffer->planes[2].fd;
+        eglImgAttrs[atti++] = EGL_DMA_BUF_PLANE2_OFFSET_EXT;
+        eglImgAttrs[atti++] = buffer->planes[2].offset;
+        eglImgAttrs[atti++] = EGL_DMA_BUF_PLANE2_PITCH_EXT;
+        eglImgAttrs[atti++] = buffer->planes[2].stride;
+        if (_this->egl_data->has_dma_buf_import_modifiers) {
+            eglImgAttrs[atti++] = EGL_DMA_BUF_PLANE2_MODIFIER_LO_EXT;
+            eglImgAttrs[atti++] = buffer->modifier & 0xFFFFFFFF;
+            eglImgAttrs[atti++] = EGL_DMA_BUF_PLANE2_MODIFIER_HI_EXT;
+            eglImgAttrs[atti++] = buffer->modifier >> 32;
+        }
+    }
+
+    eglImgAttrs[atti++] = EGL_NONE;
+
+    image = _this->egl_data->eglCreateImageKHR(_this->egl_data->egl_display,
+                                                EGL_NO_CONTEXT,
+                                                EGL_LINUX_DMA_BUF_EXT,
+                                                NULL,
+                                                eglImgAttrs);
+
+    return (SDL_GLImageKHR)image;
+}
+
+SDL_bool SDL_EGL_DestroyImageDmabuf(_THIS, SDL_GLImageKHR image)
+{
+    SDL_assert(_this->egl_data->eglDestroyImageKHR);
+    if (!_this->egl_data->eglDestroyImageKHR)
+        return SDL_FALSE;
+
+    return _this->egl_data->eglDestroyImageKHR(_this->egl_data->egl_display, image);
 }
 
 #endif /* SDL_VIDEO_OPENGL_EGL */

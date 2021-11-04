@@ -239,6 +239,8 @@ Wayland_CreateDevice(int devindex)
     device->GL_UnloadLibrary = Wayland_GLES_UnloadLibrary;
     device->GL_GetProcAddress = Wayland_GLES_GetProcAddress;
     device->GL_DeleteContext = Wayland_GLES_DeleteContext;
+    device->GL_CreateImageDmabuf = Wayland_GLES_CreateImageDmabuf;
+    device->GL_DestroyImageDmabuf = Wayland_GLES_DestroyImageDmabuf;
 
     device->CreateSDLWindow = Wayland_CreateWindow;
     device->ShowWindow = Wayland_ShowWindow;

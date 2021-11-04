@@ -221,6 +221,16 @@ Wayland_GLES_DeleteContext(_THIS, SDL_GLContext context)
     WAYLAND_wl_display_flush( ((SDL_VideoData*)_this->driverdata)->display );
 }
 
+SDL_GLImageKHR Wayland_GLES_CreateImageDmabuf(_THIS, const SDL_ImageDmabuf *buffer)
+{
+    return SDL_EGL_CreateImageDmabuf(_this, buffer);
+}
+
+SDL_bool Wayland_GLES_DestroyImageDmabuf(_THIS, SDL_GLImageKHR image)
+{
+    return SDL_EGL_DestroyImageDmabuf(_this, image);
+}
+
 #endif /* SDL_VIDEO_DRIVER_WAYLAND && SDL_VIDEO_OPENGL_EGL */
 
 /* vi: set ts=4 sw=4 expandtab: */
