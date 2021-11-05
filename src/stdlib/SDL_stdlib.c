@@ -499,7 +499,7 @@ int SDL_abs(int x)
 #if defined(HAVE_ABS)
     return abs(x);
 #else
-    return ((x) < 0 ? -(x) : (x));
+    return (x < 0) ? -x : x;
 #endif
 }
 
