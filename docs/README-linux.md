@@ -11,7 +11,7 @@ default configuration parameters.
 
 Build Dependencies
 --------------------------------------------------------------------------------
-    
+
 Ubuntu 20.04, all available features enabled:
 
     sudo apt-get install build-essential git make cmake autoconf automake \
@@ -22,9 +22,21 @@ Ubuntu 20.04, all available features enabled:
     fcitx-libs-dev libsamplerate0-dev libsndio-dev libwayland-dev \
     libxkbcommon-dev libdrm-dev libgbm-dev
 
+Fedora 35, all available features enabled:
+
+    sudo yum install gcc git-core make cmake autoconf automake libtool \
+    alsa-lib-devel pulseaudio-libs-devel nas-devel pipewire-devel \
+    libX11-devel libXext-devel libXrandr-devel libXcursor-devel libXi-devel \
+    libXinerama-devel libXxf86vm-devel libXScrnSaver-devel mesa-libGL-devel \
+    dbus-devel systemd-devel mesa-libGLES-devel mesa-libEGL-devel ibus-devel \
+    fcitx-devel libsamplerate-devel wayland-devel wayland-protocols-devel \
+    libxkbcommon-devel libdrm-devel mesa-libgbm-devel vulkan-devel libusb-devel \
+    pipewire-jack-audio-connection-kit-devel libdecor-devel
+
 NOTES:
 - This includes all the audio targets except arts and esd, because Ubuntu
   (and/or Debian) pulled their packages, but in theory SDL still supports them.
+  The sndio audio target is also unavailable on Fedora.
 - libsamplerate0-dev lets SDL optionally link to libresamplerate at runtime
   for higher-quality audio resampling. SDL will work without it if the library
   is missing, so it's safe to build in support even if the end user doesn't
