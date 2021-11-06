@@ -25,9 +25,16 @@
 
 #include "SDL_platform.h"
 
-/* winsdkver.h defines _WIN32_MAXVER for SDK version detection. It is present since at least the Windows 7 SDK.
- * Define NO_WINSDKVER_H if your SDK version doesn't provide this, or use CMake which can detect it automatically. */
-#ifndef NO_WINSDKVER_H
+/* winsdkver.h defines _WIN32_MAXVER for SDK version detection. It is present since at least the Windows 7 SDK,
+ * but out of caution we'll only use it if the compiler supports __has_include() to confirm its presence.
+ * If your compiler doesn't support __has_include() but you have winsdkver.h, define HAVE_WINSDKVER_H.  */
+#if !defined(HAVE_WINSDKVER_H) && defined(__has_include)
+#if __has_include(<winsdkver.h>)
+#define HAVE_WINSDKVER_H 1
+#endif
+#endif
+
+#ifdef HAVE_WINSDKVER_H
 #include <winsdkver.h>
 #endif
 
