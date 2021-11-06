@@ -685,13 +685,15 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
     case WM_ACTIVATE:
         {
+            /* Update the focus in case we changed focus to a child window and then away from the application */
+            WIN_UpdateFocus(data->window);
         }
         break;
 
     case WM_SETFOCUS:
     case WM_KILLFOCUS:
         {
-            /* Update the focus in case it's changing between windows in the same application */
+            /* Update the focus in case it's changing between top-level windows in the same application */
             WIN_UpdateFocus(data->window);
         }
         break;
