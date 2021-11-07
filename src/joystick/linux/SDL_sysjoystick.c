@@ -963,7 +963,12 @@ PrepareJoystickHwdata(SDL_Joystick *joystick, SDL_joylist_item *item)
                                      &joystick->naxes,
                                      &joystick->nhats);
     } else {
-        const int fd = open(item->path, O_RDWR | O_CLOEXEC, 0);
+        /* Try read-write first, so we can do rumble */
+        int fd = open(item->path, O_RDWR | O_CLOEXEC, 0);
+        if (fd < 0) {
+            /* Try read-only again, at least we'll get events in this case */
+            fd = open(item->path, O_RDONLY | O_CLOEXEC, 0);
+        }
         if (fd < 0) {
             return SDL_SetError("Unable to open %s", item->path);
         }
