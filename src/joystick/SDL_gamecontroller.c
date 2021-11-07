@@ -1531,16 +1531,17 @@ SDL_GameControllerMappingForIndex(int mapping_index)
             char *pMappingString;
             char pchGUID[33];
             size_t needed;
+            const char *platform = SDL_GetPlatform();
 
             SDL_JoystickGetGUIDString(mapping->guid, pchGUID, sizeof(pchGUID));
-            /* allocate enough memory for GUID + ',' + name + ',' + mapping + \0 */
-            needed = SDL_strlen(pchGUID) + 1 + SDL_strlen(mapping->name) + 1 + SDL_strlen(mapping->mapping) + 1;
+            /* allocate enough memory for GUID + ',' + name + ',' + mapping + platform:PLATFORM + \0 */
+            needed = SDL_strlen(pchGUID) + 1 + SDL_strlen(mapping->name) + 1 + SDL_strlen(mapping->mapping) + SDL_strlen(SDL_CONTROLLER_PLATFORM_FIELD) + SDL_strlen(platform) + 1;
             pMappingString = SDL_malloc(needed);
             if (!pMappingString) {
                 SDL_OutOfMemory();
                 return NULL;
             }
-            SDL_snprintf(pMappingString, needed, "%s,%s,%s", pchGUID, mapping->name, mapping->mapping);
+            SDL_snprintf(pMappingString, needed, "%s,%s,%s%s%s", pchGUID, mapping->name, mapping->mapping, SDL_CONTROLLER_PLATFORM_FIELD, platform);
             return pMappingString;
         }
         --mapping_index;
@@ -1559,15 +1560,17 @@ SDL_GameControllerMappingForGUID(SDL_JoystickGUID guid)
     if (mapping) {
         char pchGUID[33];
         size_t needed;
+        const char *platform = SDL_GetPlatform();
+
         SDL_JoystickGetGUIDString(guid, pchGUID, sizeof(pchGUID));
-        /* allocate enough memory for GUID + ',' + name + ',' + mapping + \0 */
-        needed = SDL_strlen(pchGUID) + 1 + SDL_strlen(mapping->name) + 1 + SDL_strlen(mapping->mapping) + 1;
+        /* allocate enough memory for GUID + ',' + name + ',' + mapping + platform:PLATFORM + \0 */
+        needed = SDL_strlen(pchGUID) + 1 + SDL_strlen(mapping->name) + 1 + SDL_strlen(mapping->mapping) + SDL_strlen(SDL_CONTROLLER_PLATFORM_FIELD) + SDL_strlen(platform) + 1;
         pMappingString = SDL_malloc(needed);
         if (!pMappingString) {
             SDL_OutOfMemory();
             return NULL;
         }
-        SDL_snprintf(pMappingString, needed, "%s,%s,%s", pchGUID, mapping->name, mapping->mapping);
+        SDL_snprintf(pMappingString, needed, "%s,%s,%s%s%s", pchGUID, mapping->name, mapping->mapping, SDL_CONTROLLER_PLATFORM_FIELD, platform);
     }
     return pMappingString;
 }
