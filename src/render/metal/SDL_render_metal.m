@@ -1029,13 +1029,6 @@ METAL_SetRenderTarget(SDL_Renderer * renderer, SDL_Texture * texture)
 }}
 
 
-// normalize a value from 0.0f to len into 0.0f to 1.0f.
-static inline float
-normtex(const float _val, const float len)
-{
-    return _val / len;
-}
-
 static int
 METAL_QueueSetViewport(SDL_Renderer * renderer, SDL_RenderCommand *cmd)
 {

@@ -1085,13 +1085,17 @@ IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
 
 -(void)cleanup
 {
-    if (self.player != nil) {
-        [self.player cancelAndReturnError:nil];
-        self.player = nil;
-    }
-    if (self.engine != nil) {
-        [self.engine stopWithCompletionHandler:nil];
-        self.engine = nil;
+    @autoreleasepool {
+        if (@available(macos 11.0, iOS 14.0, tvOS 14.0, *)) {
+            if (self.player != nil) {
+                [self.player cancelAndReturnError:nil];
+                self.player = nil;
+            }
+            if (self.engine != nil) {
+                [self.engine stopWithCompletionHandler:nil];
+                self.engine = nil;
+            }
+        }
     }
 }
 
