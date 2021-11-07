@@ -894,3 +894,5 @@ SDL_DYNAPI_PROC(Uint64,SDL_GetTicks64,(void),(),return)
 #ifdef __LINUX__
 SDL_DYNAPI_PROC(int,SDL_LinuxSetThreadPriorityAndPolicy,(Sint64 a, int b, int c),(a,b,c),return)
 #endif
+SDL_DYNAPI_PROC(const char*,SDL_GameControllerGetAppleSFSymbolsNameForButton,(SDL_GameController *a, SDL_GameControllerButton b),(a,b),return)
+SDL_DYNAPI_PROC(const char*,SDL_GameControllerGetAppleSFSymbolsNameForAxis,(SDL_GameController *a, SDL_GameControllerAxis b),(a,b),return)

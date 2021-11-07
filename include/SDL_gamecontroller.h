@@ -936,7 +936,11 @@ extern DECLSPEC void SDLCALL SDL_GameControllerClose(SDL_GameController *gamecon
  *
  * \param gamecontroller the controller to query
  * \param button a button on the game controller
+ * \returns the sfSymbolsName or NULL if the name can't be found
  *
+ * \since This function is available since SDL 2.0.18.
+ *
+ * \sa SDL_GameControllerGetAppleSFSymbolsNameForAxis
  */
 extern DECLSPEC const char* SDLCALL SDL_GameControllerGetAppleSFSymbolsNameForButton(SDL_GameController *gamecontroller, SDL_GameControllerButton button);
 
@@ -945,10 +949,13 @@ extern DECLSPEC const char* SDLCALL SDL_GameControllerGetAppleSFSymbolsNameForBu
  *
  * \param gamecontroller the controller to query
  * \param button an axis on the game controller
+ * \returns the sfSymbolsName or NULL if the name can't be found
  *
+ * \since This function is available since SDL 2.0.18.
+ *
+ * \sa SDL_GameControllerGetAppleSFSymbolsNameForButton
  */
 extern DECLSPEC const char* SDLCALL SDL_GameControllerGetAppleSFSymbolsNameForAxis(SDL_GameController *gamecontroller, SDL_GameControllerAxis axis);
-
 
 
 /* Ends C function definitions when using C++ */
