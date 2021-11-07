@@ -587,8 +587,7 @@ public class HIDDeviceManager {
                 int flags;
                 if (Build.VERSION.SDK_INT >= 23) {
                     flags = PendingIntent.FLAG_IMMUTABLE;
-                }
-                else {
+                } else {
                     flags = 0;
                 }
                 mUsbManager.requestPermission(usbDevice, PendingIntent.getBroadcast(mContext, 0, new Intent(HIDDeviceManager.ACTION_USB_PERMISSION), flags));
