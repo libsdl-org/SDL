@@ -238,7 +238,12 @@ SDL_IsXInputDevice(Uint16 vendor_id, Uint16 product_id, const char* hidPath)
 {
     SDL_GameControllerType type;
 
-    if (!SDL_XINPUT_Enabled()) {
+    /* XInput and RawInput backends will pick up XInput-compatible devices */
+    if (!SDL_XINPUT_Enabled()
+#ifdef SDL_JOYSTICK_RAWINPUT
+        && !RAWINPUT_IsEnabled()
+#endif
+        ) {
         return SDL_FALSE;
     }
 

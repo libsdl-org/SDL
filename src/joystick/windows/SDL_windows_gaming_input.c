@@ -98,7 +98,12 @@ SDL_IsXInputDevice(Uint16 vendor, Uint16 product)
     UINT i, raw_device_count = 0;
     LONG vidpid = MAKELONG(vendor, product);
 
-    if (!SDL_XINPUT_Enabled()) {
+    /* XInput and RawInput backends will pick up XInput-compatible devices */
+    if (!SDL_XINPUT_Enabled()
+#ifdef SDL_JOYSTICK_RAWINPUT
+        && !RAWINPUT_IsEnabled()
+#endif
+        ) {
         return SDL_FALSE;
     }
 
