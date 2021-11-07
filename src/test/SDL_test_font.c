@@ -3118,7 +3118,7 @@ struct SDLTest_CharTextureCache {
 /*!
 \brief List of per-renderer caches for 8x8 pixel font textures created at runtime.
 */
-static SDL_Texture *SDLTest_CharTextureCacheList;
+static struct SDLTest_CharTextureCache *SDLTest_CharTextureCacheList;
 
 int SDLTest_DrawCharacter(SDL_Renderer *renderer, int x, int y, char c)
 {
