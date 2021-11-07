@@ -1585,7 +1585,7 @@ GetDirectionalPadForController(GCController *controller)
 static char elementName[256];
 
 const char *
-SDL_GameControllerGetAppleSFSymbolsNameForButton(SDL_GameController *gamecontroller, SDL_GameControllerButton button)
+IOS_GameControllerGetAppleSFSymbolsNameForButton(SDL_GameController *gamecontroller, SDL_GameControllerButton button)
 {
     elementName[0] = '\0';
 #if defined(SDL_JOYSTICK_MFI) && defined(ENABLE_PHYSICAL_INPUT_PROFILE)
@@ -1697,9 +1697,8 @@ SDL_GameControllerGetAppleSFSymbolsNameForButton(SDL_GameController *gamecontrol
     return elementName;
 }
 
-
 const char *
-SDL_GameControllerGetAppleSFSymbolsNameForAxis(SDL_GameController *gamecontroller, SDL_GameControllerAxis axis)
+IOS_GameControllerGetAppleSFSymbolsNameForAxis(SDL_GameController *gamecontroller, SDL_GameControllerAxis axis)
 {
     elementName[0] = '\0';
 #if defined(SDL_JOYSTICK_MFI) && defined(ENABLE_PHYSICAL_INPUT_PROFILE)
@@ -1737,7 +1736,6 @@ SDL_GameControllerGetAppleSFSymbolsNameForAxis(SDL_GameController *gamecontrolle
 #endif
     return *elementName ? elementName : NULL;
 }
-
 
 
 SDL_JoystickDriver SDL_IOS_JoystickDriver =
