@@ -2682,8 +2682,8 @@ const char *
 SDL_GameControllerGetAppleSFSymbolsNameForButton(SDL_GameController *gamecontroller, SDL_GameControllerButton button)
 {
 #if defined(SDL_JOYSTICK_MFI)
-    const char *IOS_SDL_GameControllerGetAppleSFSymbolsNameForButton(SDL_GameController *gamecontroller, SDL_GameControllerButton button);
-    return IOS_SDL_GameControllerGetAppleSFSymbolsNameForButton(gamecontroller, button);
+    const char *IOS_GameControllerGetAppleSFSymbolsNameForButton(SDL_GameController *gamecontroller, SDL_GameControllerButton button);
+    return IOS_GameControllerGetAppleSFSymbolsNameForButton(gamecontroller, button);
 #else
     return NULL;
 #endif
@@ -2693,8 +2693,8 @@ const char *
 SDL_GameControllerGetAppleSFSymbolsNameForAxis(SDL_GameController *gamecontroller, SDL_GameControllerAxis axis)
 {
 #if defined(SDL_JOYSTICK_MFI)
-    const char *IOS_SDL_GameControllerGetAppleSFSymbolsNameForAxis(SDL_GameController *gamecontroller, SDL_GameControllerAxis axis);
-    return IOS_SDL_GameControllerGetAppleSFSymbolsNameForAxis(gamecontroller, axis);
+    const char *IOS_GameControllerGetAppleSFSymbolsNameForAxis(SDL_GameController *gamecontroller, SDL_GameControllerAxis axis);
+    return IOS_GameControllerGetAppleSFSymbolsNameForAxis(gamecontroller, axis);
 #else
     return NULL;
 #endif
