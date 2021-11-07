@@ -948,7 +948,7 @@ extern DECLSPEC const char* SDLCALL SDL_GameControllerGetAppleSFSymbolsNameForBu
  * Return the sfSymbolsName for a given axis on a game controller on Apple platforms.
  *
  * \param gamecontroller the controller to query
- * \param button an axis on the game controller
+ * \param axis an axis on the game controller
  * \returns the sfSymbolsName or NULL if the name can't be found
  *
  * \since This function is available since SDL 2.0.18.
