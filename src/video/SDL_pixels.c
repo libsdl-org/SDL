@@ -1291,10 +1291,14 @@ SDL_PremultiplySurfaceAlphaToARGB8888(SDL_Surface *src, Uint32 *dst)
         SDL_LockSurface(src);
 
     for (y = 0; y < src->h; ++y) {
-        Uint32 *src_px = (Uint32*)((Uint8 *)src->pixels + (y * src->pitch));
+        Uint8 *src_px = (Uint8 *)src->pixels + (y * src->pitch);
         for (x = 0; x < src->w; ++x) {
+            /* Get the next pixel's value. */
+            Uint32 pixel_value = SDL_ReadPixelValue(src_px, src->format);
+            src_px += src->format->BytesPerPixel;
+
             /* Component bytes extraction. */
-            SDL_GetRGBA(*src_px++, src->format, &R, &G, &B, &A);
+            SDL_GetRGBA(pixel_value, src->format, &R, &G, &B, &A);
 
             /* Alpha pre-multiplication of each component. */
             R = ((Uint32)A * R) / 255;
