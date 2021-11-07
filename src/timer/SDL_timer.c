@@ -28,6 +28,8 @@
 
 /* #define DEBUG_TIMERS */
 
+#if !defined(__EMSCRIPTEN__) || !SDL_THREADS_DISABLED
+
 typedef struct _SDL_Timer
 {
     int timerID;
@@ -369,6 +371,116 @@ SDL_RemoveTimer(SDL_TimerID id)
     }
     return canceled;
 }
+
+#else
+
+#include <emscripten/emscripten.h>
+
+typedef struct _SDL_TimerMap
+{
+    int timerID;
+    int timeoutID;
+    struct _SDL_TimerMap *next;
+} SDL_TimerMap;
+
+typedef struct {
+    int nextID;
+    SDL_TimerMap *timermap;
+} SDL_TimerData;
+
+static SDL_TimerData SDL_timer_data;
+
+static void
+SDL_Emscripten_TimerHelper(SDL_TimerMap *entry, Uint32 interval, SDL_TimerCallback callback, void *param)
+{
+    Uint32 new_timeout;
+
+    new_timeout = callback(interval, param);
+
+    if (new_timeout != 0) {
+        entry->timeoutID = EM_ASM_INT({
+            return Browser.safeSetTimeout(function() {
+                dynCall('viiii', $0, [$1, $2, $3, $4]);
+            }, $2);
+        }, &SDL_Emscripten_TimerHelper, entry, interval, callback, param);
+    }
+}
+
+int
+SDL_TimerInit(void)
+{
+    return 0;
+}
+
+void
+SDL_TimerQuit(void)
+{
+    SDL_TimerData *data = &SDL_timer_data;
+    SDL_TimerMap *entry;
+
+    while (data->timermap) {
+        entry = data->timermap;
+        data->timermap = entry->next;
+        SDL_free(entry);
+    }
+}
+
+SDL_TimerID
+SDL_AddTimer(Uint32 interval, SDL_TimerCallback callback, void *param)
+{
+    SDL_TimerData *data = &SDL_timer_data;
+    SDL_TimerMap *entry;
+
+    entry = (SDL_TimerMap *)SDL_malloc(sizeof(*entry));
+    if (!entry) {
+        SDL_OutOfMemory();
+        return 0;
+    }
+    entry->timerID = ++data->nextID;
+
+    entry->timeoutID = EM_ASM_INT({
+        return Browser.safeSetTimeout(function() {
+            dynCall('viiii', $0, [$1, $2, $3, $4]);
+        }, $2);
+    }, &SDL_Emscripten_TimerHelper, entry, interval, callback, param);
+
+    entry->next = data->timermap;
+    data->timermap = entry;
+
+    return entry->timerID;
+}
+
+SDL_bool
+SDL_RemoveTimer(SDL_TimerID id)
+{
+    SDL_TimerData *data = &SDL_timer_data;
+    SDL_TimerMap *prev, *entry;
+
+    /* Find the timer */
+    prev = NULL;
+    for (entry = data->timermap; entry; prev = entry, entry = entry->next) {
+        if (entry->timerID == id) {
+            if (prev) {
+                prev->next = entry->next;
+            } else {
+                data->timermap = entry->next;
+            }
+            break;
+        }
+    }
+
+    if (entry) {
+        EM_ASM_({
+            window.clearTimeout($0);
+        }, entry->timeoutID);
+        SDL_free(entry);
+
+        return SDL_TRUE;
+    }
+    return SDL_FALSE;
+}
+
+#endif
 
 /* This is a legacy support function; SDL_GetTicks() returns a Uint32,
    which wraps back to zero every ~49 days. The newer SDL_GetTicks64()
