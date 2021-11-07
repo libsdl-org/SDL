@@ -627,6 +627,57 @@ extern DECLSPEC void SDLCALL SDL_GetRGBA(Uint32 pixel,
  */
 extern DECLSPEC void SDLCALL SDL_CalculateGammaRamp(float gamma, Uint16 * ramp);
 
+/**
+ * Read one pixel's worth of data for a given pixel format.
+ *
+ * This is probably not the function you're looking for for general purpose
+ * rendering! Use SDL_Renderer or the SDL_Surface functions instead if you can:
+ * they'll be much faster, and are harder to misuse.
+ *
+ * If you're using this function to read from an SDL_Surface, you'll want to
+ * lock the surface first with SDL_LockSurface, and calculate the pointer to
+ * the pixel you wish to read from the pixel's coordinates, the surface pitch
+ * and the surface format's BytesPerPixel.
+ * The return value of this should usually be passed to SDL_GetRGB or
+ * SDL_GetRGBA. 
+ *
+ * \param data a pointer to the pixel's data
+ * \param format an SDL_PixelFormat structure describing the format of the pixel
+ * \returns a pixel value suitable for passing to SDL_GetRGB or SDL_GetRGBA
+ *
+ * \since This function is available since SDL 2.0.18
+ *
+ * \sa SDL_WritePixelValue
+ * \sa SDL_GetRGB
+ * \sa SDL_GetRGBA
+ */
+extern DECLSPEC Uint32 SDLCALL SDL_ReadPixelValue(void *data, SDL_PixelFormat *format);
+
+/**
+ * Write one pixel's worth of data for a given pixel format.
+ *
+ * This is probably not the function you're looking for for general purpose
+ * rendering! Use SDL_Renderer or the SDL_Surface functions instead if you can:
+ * they'll be much faster, and are harder to misuse.
+ *
+ * If you're using this function to write to an SDL_Surface, you'll want to
+ * lock the surface first with SDL_LockSurface, and calculate the pointer to
+ * the pixel you wish to read from the pixel's coordinates, the surface pitch
+ * and the surface format's BytesPerPixel.
+ * The value passed to this function should usually be calculated with
+ * SDL_MapRGB or SDL_MapRGBA.
+ *
+ * \param data a pointer to the memory where the pixel data is to be written
+ * \param format an SDL_PixelFormat structure describing the format of the pixel
+ * \param value a pixel value in the format you'd get from SDL_MapRGB or SDL_MapRGBA
+ *
+ * \since This function is available since SDL 2.0.18
+ *
+ * \sa SDL_ReadPixelValue
+ * \sa SDL_MapRGB
+ * \sa SDL_MapRGBA
+ */
+extern DECLSPEC void SDLCALL SDL_WritePixelValue(void *data, SDL_PixelFormat *format, Uint32 value);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

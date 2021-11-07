@@ -1227,6 +1227,59 @@ SDL_CalculateGammaRamp(float gamma, Uint16 * ramp)
     }
 }
 
+Uint32
+SDL_ReadPixelValue(void *data, SDL_PixelFormat *format)
+{
+    Uint8 *src_px = (Uint8 *)data;
+
+    /* Return the correct number of bytes in the correct endianness */
+    switch(format->BytesPerPixel) {
+        case 1:
+            return *src_px;
+        case 2:
+            return *(Uint16*)src_px;
+        case 3:
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+            return ((Uint32)src_px[0] << 16) | ((Uint32)src_px[1] << 8) | ((Uint32)src_px[2] << 0);
+#else
+            return ((Uint32)src_px[2] << 16) | ((Uint32)src_px[1] << 8) | ((Uint32)src_px[0] << 0);
+#endif
+        case 4:
+            return *(Uint32*)src_px;
+    }
+
+    /* Invalid pixel format. */
+    return 0;
+}
+
+void
+SDL_WritePixelValue(void *data, SDL_PixelFormat *format, Uint32 value)
+{
+    Uint8 *pixmem = (Uint8 *)data;
+    switch(format->BytesPerPixel) {
+        case 1:
+            *pixmem = value;
+            break;
+        case 2:
+            *(Uint16*)pixmem = value;
+            break;
+        case 3:
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+            pixmem[0] = (value >> 16) & 0xFF;
+            pixmem[1] = (value >> 8) & 0xFF;
+            pixmem[2] = (value >> 0) & 0xFF;
+#else
+            pixmem[2] = (value >> 16) & 0xFF;
+            pixmem[1] = (value >> 8) & 0xFF;
+            pixmem[0] = (value >> 0) & 0xFF;
+#endif
+            break;
+        case 4:
+            *(Uint32*)pixmem = value;
+            break;
+    }
+}
+
 /* Creates a copy of an ARGB8888-format surface's pixels with premultiplied alpha */
 void
 SDL_PremultiplySurfaceAlphaToARGB8888(SDL_Surface *src, Uint32 *dst)

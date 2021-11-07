@@ -894,3 +894,5 @@ SDL_DYNAPI_PROC(Uint64,SDL_GetTicks64,(void),(),return)
 #ifdef __LINUX__
 SDL_DYNAPI_PROC(int,SDL_LinuxSetThreadPriorityAndPolicy,(Sint64 a, int b, int c),(a,b,c),return)
 #endif
+SDL_DYNAPI_PROC(Uint32,SDL_ReadPixelValue,(void *a, SDL_PixelFormat *b),(a,b),return)
+SDL_DYNAPI_PROC(void,SDL_WritePixelValue,(void *a, SDL_PixelFormat *b, Uint32 c),(a,b,c),)

@@ -825,3 +825,5 @@
 #define SDL_GetWindowICCProfile SDL_GetWindowICCProfile_REAL
 #define SDL_GetTicks64 SDL_GetTicks64_REAL
 #define SDL_LinuxSetThreadPriorityAndPolicy SDL_LinuxSetThreadPriorityAndPolicy_REAL
+#define SDL_ReadPixelValue SDL_ReadPixelValue_REAL
+#define SDL_WritePixelValue SDL_WritePixelValue_REAL
