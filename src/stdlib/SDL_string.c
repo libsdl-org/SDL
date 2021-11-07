@@ -1636,51 +1636,38 @@ SDL_PrintFloat(char *text, size_t maxlen, SDL_FormatInfo *info, double arg)
 {
     size_t length = 0;
 
-    if (arg) {
-        /* This isn't especially accurate, but hey, it's easy. :) */
-        unsigned long value;
+    /* This isn't especially accurate, but hey, it's easy. :) */
+    unsigned long value;
 
-        if (arg < 0) {
-            if (length < maxlen) {
-                text[length] = '-';
-            }
-            ++length;
-            arg = -arg;
-        } else if (info->force_sign) {
-            if (length < maxlen) {
-                text[length] = '+';
-            }
-            ++length;
-        }
-        value = (unsigned long) arg;
-        length += SDL_PrintUnsignedLong(TEXT_AND_LEN_ARGS, NULL, value);
-        arg -= value;
-        if (info->precision < 0) {
-            info->precision = 6;
-        }
-        if (info->force_type || info->precision > 0) {
-            int mult = 10;
-            if (length < maxlen) {
-                text[length] = '.';
-            }
-            ++length;
-            while (info->precision-- > 0) {
-                value = (unsigned long) (arg * mult);
-                length += SDL_PrintUnsignedLong(TEXT_AND_LEN_ARGS, NULL, value);
-                arg -= (double) value / mult;
-                mult *= 10;
-            }
-        }
-    } else {
+    if (arg < 0) {
         if (length < maxlen) {
-            text[length] = '0';
+            text[length] = '-';
         }
         ++length;
-        if (info->force_type) {
-            if (length < maxlen) {
-                text[length] = '.';
-            }
-            ++length;
+        arg = -arg;
+    } else if (info->force_sign) {
+        if (length < maxlen) {
+            text[length] = '+';
+        }
+        ++length;
+    }
+    value = (unsigned long) arg;
+    length += SDL_PrintUnsignedLong(TEXT_AND_LEN_ARGS, NULL, value);
+    arg -= value;
+    if (info->precision < 0) {
+        info->precision = 6;
+    }
+    if (info->force_type || info->precision > 0) {
+        int mult = 10;
+        if (length < maxlen) {
+            text[length] = '.';
+        }
+        ++length;
+        while (info->precision-- > 0) {
+            value = (unsigned long) (arg * mult);
+            length += SDL_PrintUnsignedLong(TEXT_AND_LEN_ARGS, NULL, value);
+            arg -= (double) value / mult;
+            mult *= 10;
         }
     }
 
