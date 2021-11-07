@@ -146,6 +146,26 @@ extern "C" {
 #define SDL_HINT_ANDROID_TRAP_BACK_BUTTON "SDL_ANDROID_TRAP_BACK_BUTTON"
 
 /**
+ *  \brief Specify an application name.
+ * 
+ * This hint lets you specify the application name sent to the OS when
+ * required. For example, this will often appear in volume control applets for
+ * audio streams, and in lists of applications which are inhibiting the
+ * screensaver.  You should use a string that describes your program ("My Game
+ * 2: The Revenge")
+ *
+ * Setting this to "" or leaving it unset will have SDL use a reasonable
+ * default: probably the application's name or "SDL Application" if SDL
+ * doesn't have any better information.
+ *
+ * Note that, for audio streams, this can be overridden with
+ * SDL_HINT_AUDIO_DEVICE_APP_NAME.
+ *
+ * On targets where this is not supported, this hint does nothing.
+ */
+#define SDL_HINT_APP_NAME "SDL_APP_NAME"
+
+/**
  *  \brief  A variable controlling whether controllers used with the Apple TV
  *  generate UI events.
  *
@@ -199,8 +219,9 @@ extern "C" {
  * that describes your program ("My Game 2: The Revenge")
  *
  * Setting this to "" or leaving it unset will have SDL use a reasonable
- * default: probably the application's name or "SDL Application" if SDL
- * doesn't have any better information.
+ * default: this will be the name set with SDL_HINT_APP_NAME, if that hint is
+ * set. Otherwise, it'll probably the application's name or "SDL Application"
+ * if SDL doesn't have any better information.
  *
  * On targets where this is not supported, this hint does nothing.
  */
@@ -537,6 +558,15 @@ extern "C" {
 #define SDL_HINT_IME_INTERNAL_EDITING "SDL_IME_INTERNAL_EDITING"
 
 /**
+ * \brief A variable to control whether certain IMEs should show native UI components (such as the Candidate List) instead of suppressing them.
+ *
+ * The variable can be set to the following values:
+ *   "0"       - Native UI components are not display. (default)
+ *   "1"       - Native UI components are displayed.
+ */
+#define SDL_HINT_IME_SHOW_UI "SDL_IME_SHOW_UI"
+
+/**
  * \brief  A variable controlling whether the home indicator bar on iPhone X
  *         should be hidden.
  *
@@ -711,8 +741,10 @@ extern "C" {
  *  \brief  A variable controlling whether the Home button LED should be turned on when a Nintendo Switch controller is opened
  *
  *  This variable can be set to the following values:
- *    "0"       - home button LED is left off
- *    "1"       - home button LED is turned on (the default)
+ *    "0"       - home button LED is turned off
+ *    "1"       - home button LED is turned on
+ *
+ *  By default the Home button LED state is not changed.
  */
 #define SDL_HINT_JOYSTICK_HIDAPI_SWITCH_HOME_LED "SDL_JOYSTICK_HIDAPI_SWITCH_HOME_LED"
 
@@ -927,6 +959,22 @@ extern "C" {
 #define SDL_HINT_ORIENTATIONS "SDL_IOS_ORIENTATIONS"
 
 /**
+ *  \brief  A variable controlling the use of a sentinel event when polling the event queue
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - Disable poll sentinels
+ *    "1"       - Enable poll sentinels
+ *
+ *  When polling for events, SDL_PumpEvents is used to gather new events from devices.
+ *  If a device keeps producing new events between calls to SDL_PumpEvents, a poll loop will
+ *  become stuck until the new events stop.
+ *  This is most noticable when moving a high frequency mouse.
+ *
+ *  By default, poll sentinels are enabled.
+ */
+#define SDL_HINT_POLL_SENTINEL "SDL_POLL_SENTINEL"
+
+/**
  *  \brief Override for SDL_GetPreferredLocales()
  *
  *  If set, this will be favored over anything the OS might report for the
@@ -1102,6 +1150,26 @@ extern "C" {
 #define SDL_HINT_RPI_VIDEO_LAYER           "SDL_RPI_VIDEO_LAYER"
 
 /**
+ *  \brief Specify an "activity name" for screensaver inhibition.
+ *
+ * Some platforms, notably Linux desktops, list the applications which are
+ * inhibiting the screensaver or other power-saving features.
+ *
+ * This hint lets you specify the "activity name" sent to the OS when
+ * SDL_DisableScreenSaver() is used (or the screensaver is automatically
+ * disabled). The contents of this hint are used when the screensaver is
+ * disabled. You should use a string that describes what your program is doing
+ * (and, therefore, why the screensaver is disabled).  For example, "Playing a
+ * game" or "Watching a video".
+ * 
+ * Setting this to "" or leaving it unset will have SDL use a reasonable
+ * default: "Playing a game" or something similar.
+ *
+ * On targets where this is not supported, this hint does nothing.
+ */
+#define SDL_HINT_SCREENSAVER_INHIBIT_ACTIVITY_NAME "SDL_SCREENSAVER_INHIBIT_ACTIVITY_NAME"
+
+/**
  *  \brief Specifies whether SDL_THREAD_PRIORITY_TIME_CRITICAL should be treated as realtime.
  *
  *  On some platforms, like Linux, a realtime priority thread may be subject to restrictions
@@ -1217,6 +1285,17 @@ extern "C" {
  * - Raspberry Pi (raspberrypi)
  */
 #define SDL_HINT_VIDEO_DOUBLE_BUFFER      "SDL_VIDEO_DOUBLE_BUFFER"
+
+/**
+ * \brief A variable controlling whether the EGL window is allowed to be
+ * composited as transparent, rather than opaque.
+ *
+ * Most window systems will always render windows opaque, even if the surface
+ * format has an alpha channel. This is not always true, however, so by default
+ * SDL will try to enforce opaque composition. To override this behavior, you
+ * can set this hint to "1".
+ */
+#define SDL_HINT_VIDEO_EGL_ALLOW_TRANSPARENCY "SDL_VIDEO_EGL_ALLOW_TRANSPARENCY"
 
 /**
  * \brief A variable controlling whether the graphics context is externally managed.
@@ -1484,9 +1563,6 @@ extern "C" {
  *        They offer better performance, allocate no kernel ressources and
  *        use less memory. SDL will fall back to Critical Sections on older
  *        OS versions or if forced to by this hint.
- *        This also affects Condition Variables. When SRW mutexes are used,
- *        SDL will use Windows Condition Variables as well. Else, a generic
- *        SDL_cond implementation will be used that works with all mutexes.
  *
  *  This variable can be set to the following values:
  *    "0"       - Use SRW Locks when available. If not, fall back to Critical Sections. (default)
@@ -1556,6 +1632,17 @@ extern "C" {
  *  By default SDL will allow interaction with the window frame when the cursor is hidden
  */
 #define SDL_HINT_WINDOW_FRAME_USABLE_WHILE_CURSOR_HIDDEN    "SDL_WINDOW_FRAME_USABLE_WHILE_CURSOR_HIDDEN"
+
+/**
+*  \brief  A variable controlling whether the window is activated when the SDL_ShowWindow function is called 
+*
+*  This variable can be set to the following values:
+*    "0"       - The window is activated when the SDL_ShowWindow function is called
+*    "1"       - The window is not activated when the SDL_ShowWindow function is called
+*
+*  By default SDL will activate the window when the SDL_ShowWindow function is called
+*/
+#define SDL_HINT_WINDOW_NO_ACTIVATION_WHEN_SHOWN    "SDL_WINDOW_NO_ACTIVATION_WHEN_SHOWN"
 
 /** \brief Allows back-button-press events on Windows Phone to be marked as handled
  *
@@ -1729,6 +1816,8 @@ typedef enum
  * \param priority the SDL_HintPriority level for the hint
  * \returns SDL_TRUE if the hint was set, SDL_FALSE otherwise.
  *
+ * \since This function is available since SDL 2.0.0.
+ *
  * \sa SDL_GetHint
  * \sa SDL_SetHint
  */
@@ -1747,6 +1836,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_SetHintWithPriority(const char *name,
  * \param value the value of the hint variable
  * \returns SDL_TRUE if the hint was set, SDL_FALSE otherwise.
  *
+ * \since This function is available since SDL 2.0.0.
+ *
  * \sa SDL_GetHint
  * \sa SDL_SetHintWithPriority
  */
@@ -1758,6 +1849,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_SetHint(const char *name,
  *
  * \param name the hint to query
  * \returns the string value of a hint or NULL if the hint isn't set.
+ *
+ * \since This function is available since SDL 2.0.0.
  *
  * \sa SDL_SetHint
  * \sa SDL_SetHintWithPriority
@@ -1825,6 +1918,8 @@ extern DECLSPEC void SDLCALL SDL_DelHintCallback(const char *name,
  * Clear all hints.
  *
  * This function is automatically called during SDL_Quit().
+ *
+ * \since This function is available since SDL 2.0.0.
  */
 extern DECLSPEC void SDLCALL SDL_ClearHints(void);
 

@@ -248,6 +248,24 @@ WIN_IsEqualIID(REFIID a, REFIID b)
     return (SDL_memcmp(a, b, sizeof (*a)) == 0);
 }
 
+void
+WIN_RECTToRect(const RECT *winrect, SDL_Rect *sdlrect)
+{
+    sdlrect->x = winrect->left;
+    sdlrect->w = (winrect->right - winrect->left) + 1;
+    sdlrect->y = winrect->top;
+    sdlrect->h = (winrect->bottom - winrect->top) + 1;
+}
+
+void
+WIN_RectToRECT(const SDL_Rect *sdlrect, RECT *winrect)
+{
+    winrect->left = sdlrect->x;
+    winrect->right = sdlrect->x + sdlrect->w - 1;
+    winrect->top = sdlrect->y;
+    winrect->bottom = sdlrect->y + sdlrect->h - 1;
+}
+
 #endif /* __WIN32__ || __WINRT__ */
 
 /* vi: set ts=4 sw=4 expandtab: */

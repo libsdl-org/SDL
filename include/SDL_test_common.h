@@ -215,9 +215,10 @@ void SDLTest_CommonQuit(SDLTest_CommonState * state);
  *
  * \param renderer The renderer to draw to.
  * \param window The window whose information should be displayed.
+ * \param usedHeight Returns the height used, so the caller can draw more below.
  *
  */
-void SDLTest_CommonDrawWindowInfo(SDL_Renderer * renderer, SDL_Window * window);
+void SDLTest_CommonDrawWindowInfo(SDL_Renderer * renderer, SDL_Window * window, int * usedHeight);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

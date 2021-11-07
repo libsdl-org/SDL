@@ -78,7 +78,7 @@ SDL_EVDEV_GuessDeviceClass(unsigned long bitmask_ev[NBITS(EV_MAX)],
         if (test_bit(BTN_STYLUS, bitmask_key) || test_bit(BTN_TOOL_PEN, bitmask_key)) {
             ; /* ID_INPUT_TABLET */
         } else if (test_bit(BTN_TOOL_FINGER, bitmask_key) && !test_bit(BTN_TOOL_PEN, bitmask_key)) {
-            ; /* ID_INPUT_TOUCHPAD */
+            devclass |= SDL_UDEV_DEVICE_TOUCHPAD; /* ID_INPUT_TOUCHPAD */
         } else if (test_bit(BTN_MOUSE, bitmask_key)) {
             devclass |= SDL_UDEV_DEVICE_MOUSE; /* ID_INPUT_MOUSE */
         } else if (test_bit(BTN_TOUCH, bitmask_key)) {

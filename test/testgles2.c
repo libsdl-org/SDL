@@ -22,7 +22,9 @@
 
 #if defined(__IPHONEOS__) || defined(__ANDROID__) || defined(__EMSCRIPTEN__) || defined(__NACL__) \
     || defined(__WINDOWS__) || defined(__LINUX__)
+#ifndef HAVE_OPENGLES2
 #define HAVE_OPENGLES2
+#endif
 #endif
 
 #ifdef HAVE_OPENGLES2

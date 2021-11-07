@@ -240,7 +240,7 @@ BSD_JoystickInit(void)
     }
     for (i = 0; i < MAX_JOY_JOYS; i++) {
         SDL_snprintf(s, SDL_arraysize(s), "/dev/joy%d", i);
-        fd = open(s, O_RDONLY);
+        fd = open(s, O_RDONLY | O_CLOEXEC);
         if (fd != -1) {
             joynames[numjoysticks++] = SDL_strdup(s);
             close(fd);
@@ -357,7 +357,7 @@ BSD_JoystickOpen(SDL_Joystick *joy, int device_index)
     int fd;
     int i;
 
-    fd = open(path, O_RDONLY);
+    fd = open(path, O_RDONLY | O_CLOEXEC);
     if (fd == -1) {
         return SDL_SetError("%s: %s", path, strerror(errno));
     }
@@ -426,7 +426,7 @@ BSD_JoystickOpen(SDL_Joystick *joy, int device_index)
             str[i] = UGETW(usd.usd_desc.bString[i]);
         }
         str[i] = '\0';
-        asprintf(&new_name, "%s @ %s", str, path);
+        SDL_asprintf(&new_name, "%s @ %s", str, path);
         if (new_name != NULL) {
             SDL_free(joydevnames[numjoysticks]);
             joydevnames[numjoysticks] = new_name;

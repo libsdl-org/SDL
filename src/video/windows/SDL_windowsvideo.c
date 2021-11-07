@@ -165,6 +165,7 @@ WIN_CreateDevice(int devindex)
     device->SetWindowAlwaysOnTop = WIN_SetWindowAlwaysOnTop;
     device->SetWindowFullscreen = WIN_SetWindowFullscreen;
     device->SetWindowGammaRamp = WIN_SetWindowGammaRamp;
+    device->GetWindowICCProfile = WIN_GetWindowICCProfile;
     device->GetWindowGammaRamp = WIN_GetWindowGammaRamp;
     device->SetWindowMouseGrab = WIN_SetWindowMouseGrab;
     device->SetWindowKeyboardGrab = WIN_SetWindowKeyboardGrab;

@@ -564,194 +564,98 @@ static int
 GLES_QueueDrawLines(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FPoint * points, int count)
 {
     int i;
+    GLfloat prevx, prevy;
     const size_t vertlen = (sizeof (GLfloat) * 2) * count;
     GLfloat *verts = (GLfloat *) SDL_AllocateRenderVertices(renderer, vertlen, 0, &cmd->data.draw.first);
+
     if (!verts) {
         return -1;
     }
     cmd->data.draw.count = count;
 
-    /* Offset to hit the center of the pixel. */
-    for (i = 0; i < count; i++) {
-        *(verts++) = 0.5f + points[i].x;
-        *(verts++) = 0.5f + points[i].y;
+    /* 0.5f offset to hit the center of the pixel. */
+    prevx = 0.5f + points->x;
+    prevy = 0.5f + points->y;
+    *(verts++) = prevx;
+    *(verts++) = prevy;
+
+    /* bump the end of each line segment out a quarter of a pixel, to provoke
+       the diamond-exit rule. Without this, you won't just drop the last
+       pixel of the last line segment, but you might also drop pixels at the
+       edge of any given line segment along the way too. */
+    for (i = 1; i < count; i++) {
+        const GLfloat xstart = prevx;
+        const GLfloat ystart = prevy;
+        const GLfloat xend = points[i].x + 0.5f;  /* 0.5f to hit pixel center. */
+        const GLfloat yend = points[i].y + 0.5f;
+        /* bump a little in the direction we are moving in. */
+        const GLfloat deltax = xend - xstart;
+        const GLfloat deltay = yend - ystart;
+        const GLfloat angle = SDL_atan2f(deltay, deltax);
+        prevx = xend + (SDL_cosf(angle) * 0.25f);
+        prevy = yend + (SDL_sinf(angle) * 0.25f);
+        *(verts++) = prevx;
+        *(verts++) = prevy;
     }
 
-    /* Make the last line segment one pixel longer, to satisfy the
-       diamond-exit rule. */
-    verts -= 4;
-    {
-        const GLfloat xstart = verts[0];
-        const GLfloat ystart = verts[1];
-        const GLfloat xend = verts[2];
-        const GLfloat yend = verts[3];
+    return 0;
+}
 
-        if (ystart == yend) {  /* horizontal line */
-            verts[(xend > xstart) ? 2 : 0] += 1.0f;
-        } else if (xstart == xend) {  /* vertical line */
-            verts[(yend > ystart) ? 3 : 1] += 1.0f;
-        } else {  /* bump a pixel in the direction we are moving in. */
-            const GLfloat deltax = xend - xstart;
-            const GLfloat deltay = yend - ystart;
-            const GLfloat angle = SDL_atan2f(deltay, deltax);
-            verts[2] += SDL_cosf(angle);
-            verts[3] += SDL_sinf(angle);
+static int
+GLES_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
+        const float *xy, int xy_stride, const int *color, int color_stride, const float *uv, int uv_stride,
+        int num_vertices, const void *indices, int num_indices, int size_indices,
+        float scale_x, float scale_y)
+{
+    GLES_TextureData *texturedata = NULL;
+    int i;
+    int count = indices ? num_indices : num_vertices;
+    GLfloat *verts;
+    int sz = 2 + 4 + (texture ? 2 : 0);
+
+    verts = (GLfloat *) SDL_AllocateRenderVertices(renderer, count * sz * sizeof (GLfloat), 0, &cmd->data.draw.first);
+    if (!verts) {
+        return -1;
+    }
+
+    if (texture) {
+        texturedata = (GLES_TextureData *) texture->driverdata;
+    }
+
+    cmd->data.draw.count = count;
+    size_indices = indices ? size_indices : 0;
+
+    for (i = 0; i < count; i++) {
+        int j;
+        float *xy_;
+        SDL_Color col_;
+        if (size_indices == 4) {
+            j = ((const Uint32 *)indices)[i];
+        } else if (size_indices == 2) {
+            j = ((const Uint16 *)indices)[i];
+        } else if (size_indices == 1) {
+            j = ((const Uint8 *)indices)[i];
+        } else {
+            j = i;
+        }
+
+        xy_ = (float *)((char*)xy + j * xy_stride);
+        col_ = *(SDL_Color *)((char*)color + j * color_stride);
+
+        *(verts++) = xy_[0] * scale_x;
+        *(verts++) = xy_[1] * scale_y;
+
+        *(verts++) = col_.r * inv255f;
+        *(verts++) = col_.g * inv255f;
+        *(verts++) = col_.b * inv255f;
+        *(verts++) = col_.a * inv255f;
+
+        if (texture) {
+            float *uv_ = (float *)((char*)uv + j * uv_stride);
+            *(verts++) = uv_[0] * texturedata->texw;
+            *(verts++) = uv_[1] * texturedata->texh;
         }
     }
-
-    return 0;
-}
-
-static int
-GLES_QueueFillRects(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FRect * rects, int count)
-{
-    GLfloat *verts = (GLfloat *) SDL_AllocateRenderVertices(renderer, count * 8 * sizeof (GLfloat), 0, &cmd->data.draw.first);
-    int i;
-
-    if (!verts) {
-        return -1;
-    }
-
-    cmd->data.draw.count = count;
-
-    for (i = 0; i < count; i++) {
-        const SDL_FRect *rect = &rects[i];
-        const GLfloat minx = rect->x;
-        const GLfloat maxx = rect->x + rect->w;
-        const GLfloat miny = rect->y;
-        const GLfloat maxy = rect->y + rect->h;
-        *(verts++) = minx;
-        *(verts++) = miny;
-        *(verts++) = maxx;
-        *(verts++) = miny;
-        *(verts++) = minx;
-        *(verts++) = maxy;
-        *(verts++) = maxx;
-        *(verts++) = maxy;
-    }
-
-    return 0;
-}
-
-static int
-GLES_QueueCopy(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * texture,
-                          const SDL_Rect * srcrect, const SDL_FRect * dstrect)
-{
-    GLES_TextureData *texturedata = (GLES_TextureData *) texture->driverdata;
-    GLfloat minx, miny, maxx, maxy;
-    GLfloat minu, maxu, minv, maxv;
-    GLfloat *verts = (GLfloat *) SDL_AllocateRenderVertices(renderer, 16 * sizeof (GLfloat), 0, &cmd->data.draw.first);
-
-    if (!verts) {
-        return -1;
-    }
-
-    cmd->data.draw.count = 1;
-
-    minx = dstrect->x;
-    miny = dstrect->y;
-    maxx = dstrect->x + dstrect->w;
-    maxy = dstrect->y + dstrect->h;
-
-    minu = (GLfloat) srcrect->x / texture->w;
-    minu *= texturedata->texw;
-    maxu = (GLfloat) (srcrect->x + srcrect->w) / texture->w;
-    maxu *= texturedata->texw;
-    minv = (GLfloat) srcrect->y / texture->h;
-    minv *= texturedata->texh;
-    maxv = (GLfloat) (srcrect->y + srcrect->h) / texture->h;
-    maxv *= texturedata->texh;
-
-    *(verts++) = minx;
-    *(verts++) = miny;
-    *(verts++) = maxx;
-    *(verts++) = miny;
-    *(verts++) = minx;
-    *(verts++) = maxy;
-    *(verts++) = maxx;
-    *(verts++) = maxy;
-
-    *(verts++) = minu;
-    *(verts++) = minv;
-    *(verts++) = maxu;
-    *(verts++) = minv;
-    *(verts++) = minu;
-    *(verts++) = maxv;
-    *(verts++) = maxu;
-    *(verts++) = maxv;
-
-    return 0;
-}
-
-static int
-GLES_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * texture,
-                        const SDL_Rect * srcquad, const SDL_FRect * dstrect,
-                        const double angle, const SDL_FPoint *center, const SDL_RendererFlip flip)
-{
-    GLES_TextureData *texturedata = (GLES_TextureData *) texture->driverdata;
-    GLfloat minx, miny, maxx, maxy;
-    GLfloat centerx, centery;
-    GLfloat minu, maxu, minv, maxv;
-    GLfloat *verts = (GLfloat *) SDL_AllocateRenderVertices(renderer, 19 * sizeof (GLfloat), 0, &cmd->data.draw.first);
-
-    if (!verts) {
-        return -1;
-    }
-
-    centerx = center->x;
-    centery = center->y;
-
-    if (flip & SDL_FLIP_HORIZONTAL) {
-        minx =  dstrect->w - centerx;
-        maxx = -centerx;
-    }
-    else {
-        minx = -centerx;
-        maxx =  dstrect->w - centerx;
-    }
-
-    if (flip & SDL_FLIP_VERTICAL) {
-        miny =  dstrect->h - centery;
-        maxy = -centery;
-    }
-    else {
-        miny = -centery;
-        maxy =  dstrect->h - centery;
-    }
-
-    minu = (GLfloat) srcquad->x / texture->w;
-    minu *= texturedata->texw;
-    maxu = (GLfloat) (srcquad->x + srcquad->w) / texture->w;
-    maxu *= texturedata->texw;
-    minv = (GLfloat) srcquad->y / texture->h;
-    minv *= texturedata->texh;
-    maxv = (GLfloat) (srcquad->y + srcquad->h) / texture->h;
-    maxv *= texturedata->texh;
-
-    cmd->data.draw.count = 1;
-
-    *(verts++) = minx;
-    *(verts++) = miny;
-    *(verts++) = maxx;
-    *(verts++) = miny;
-    *(verts++) = minx;
-    *(verts++) = maxy;
-    *(verts++) = maxx;
-    *(verts++) = maxy;
-
-    *(verts++) = minu;
-    *(verts++) = minv;
-    *(verts++) = maxu;
-    *(verts++) = minv;
-    *(verts++) = minu;
-    *(verts++) = maxv;
-    *(verts++) = maxu;
-    *(verts++) = maxv;
-
-    *(verts++) = (GLfloat) dstrect->x + centerx;
-    *(verts++) = (GLfloat) dstrect->y + centery;
-    *(verts++) = (GLfloat) angle;
-
     return 0;
 }
 
@@ -865,7 +769,6 @@ static int
 GLES_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertices, size_t vertsize)
 {
     GLES_RenderData *data = (GLES_RenderData *) renderer->driverdata;
-    size_t i;
 
     if (GLES_ActivateRenderer(renderer) < 0) {
         return -1;
@@ -874,7 +777,15 @@ GLES_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vert
     data->drawstate.target = renderer->target;
 
     if (!renderer->target) {
-        SDL_GL_GetDrawableSize(renderer->window, &data->drawstate.drawablew, &data->drawstate.drawableh);
+        int w, h;
+        SDL_GL_GetDrawableSize(renderer->window, &w, &h);
+        if ((w != data->drawstate.drawablew) || (h != data->drawstate.drawableh)) {
+            data->drawstate.viewport_dirty = SDL_TRUE;  // if the window dimensions changed, invalidate the current viewport, etc.
+            data->drawstate.cliprect_dirty = SDL_TRUE;
+            data->drawstate.drawablew = w;
+            data->drawstate.drawableh = h;
+        }
+
     }
 
     while (cmd) {
@@ -949,42 +860,38 @@ GLES_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vert
                 break;
             }
 
-            case SDL_RENDERCMD_FILL_RECTS: {
+            case SDL_RENDERCMD_FILL_RECTS: /* unused */
+                break;
+
+            case SDL_RENDERCMD_COPY: /* unused */
+                break;
+
+            case SDL_RENDERCMD_COPY_EX: /* unused */
+                break;
+
+            case SDL_RENDERCMD_GEOMETRY: {
+                const GLfloat *verts = (GLfloat *) (((Uint8 *) vertices) + cmd->data.draw.first);
+                SDL_Texture *texture = cmd->data.draw.texture;
                 const size_t count = cmd->data.draw.count;
-                const GLfloat *verts = (GLfloat *) (((Uint8 *) vertices) + cmd->data.draw.first);
-                GLsizei offset = 0;
-                SetDrawState(data, cmd);
-                data->glVertexPointer(2, GL_FLOAT, 0, verts);
-                for (i = 0; i < count; ++i, offset += 4) {
-                    data->glDrawArrays(GL_TRIANGLE_STRIP, offset, 4);
+                int stride = (2 + 4 + (texture ? 2 : 0)) * sizeof (float);
+
+                if (texture) {
+                    SetCopyState(data, cmd);
+                } else {
+                    SetDrawState(data, cmd);
                 }
-                break;
-            }
 
-            case SDL_RENDERCMD_COPY: {
-                const GLfloat *verts = (GLfloat *) (((Uint8 *) vertices) + cmd->data.draw.first);
-                SetCopyState(data, cmd);
-                data->glVertexPointer(2, GL_FLOAT, 0, verts);
-                data->glTexCoordPointer(2, GL_FLOAT, 0, verts + 8);
-                data->glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-                break;
-            }
+                data->glEnableClientState(GL_COLOR_ARRAY);
 
-            case SDL_RENDERCMD_COPY_EX: {
-                const GLfloat *verts = (GLfloat *) (((Uint8 *) vertices) + cmd->data.draw.first);
-                const GLfloat translatex = verts[16];
-                const GLfloat translatey = verts[17];
-                const GLfloat angle = verts[18];
-                SetCopyState(data, cmd);
-                data->glVertexPointer(2, GL_FLOAT, 0, verts);
-                data->glTexCoordPointer(2, GL_FLOAT, 0, verts + 8);
+                data->glVertexPointer(2, GL_FLOAT, stride, verts);
+                data->glColorPointer(4, GL_FLOAT, stride, verts + 2);
+                if (texture) {
+                    data->glTexCoordPointer(2, GL_FLOAT, stride, verts + 2 + 4);
+                }
 
-                /* Translate to flip, rotate, translate to position */
-                data->glPushMatrix();
-                data->glTranslatef(translatex, translatey, 0.0f);
-                data->glRotatef(angle, 0.0, 0.0, 1.0);
-                data->glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-                data->glPopMatrix();
+                data->glDrawArrays(GL_TRIANGLES, 0, (GLsizei) count);
+
+                data->glDisableClientState(GL_COLOR_ARRAY);
                 break;
             }
 
@@ -1141,6 +1048,27 @@ static int GLES_UnbindTexture (SDL_Renderer * renderer, SDL_Texture *texture)
     return 0;
 }
 
+static int
+GLES_SetVSync(SDL_Renderer * renderer, const int vsync)
+{
+    int retval;
+    if (vsync) {
+        retval = SDL_GL_SetSwapInterval(1);
+    } else {
+        retval = SDL_GL_SetSwapInterval(0);
+    }
+    if (retval != 0) {
+        return retval;
+    }
+    if (SDL_GL_GetSwapInterval() > 0) {
+        renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
+    } else {
+        renderer->info.flags &= ~SDL_RENDERER_PRESENTVSYNC;
+    }
+    return retval;
+}
+
+
 static SDL_Renderer *
 GLES_CreateRenderer(SDL_Window * window, Uint32 flags)
 {
@@ -1195,14 +1123,13 @@ GLES_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->QueueSetDrawColor = GLES_QueueSetViewport;  /* SetViewport and SetDrawColor are (currently) no-ops. */
     renderer->QueueDrawPoints = GLES_QueueDrawPoints;
     renderer->QueueDrawLines = GLES_QueueDrawLines;
-    renderer->QueueFillRects = GLES_QueueFillRects;
-    renderer->QueueCopy = GLES_QueueCopy;
-    renderer->QueueCopyEx = GLES_QueueCopyEx;
+    renderer->QueueGeometry = GLES_QueueGeometry;
     renderer->RunCommandQueue = GLES_RunCommandQueue;
     renderer->RenderReadPixels = GLES_RenderReadPixels;
     renderer->RenderPresent = GLES_RenderPresent;
     renderer->DestroyTexture = GLES_DestroyTexture;
     renderer->DestroyRenderer = GLES_DestroyRenderer;
+    renderer->SetVSync = GLES_SetVSync;
     renderer->GL_BindTexture = GLES_BindTexture;
     renderer->GL_UnbindTexture = GLES_UnbindTexture;
     renderer->info = GLES_RenderDriver.info;

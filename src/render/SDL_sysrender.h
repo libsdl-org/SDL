@@ -43,7 +43,7 @@ struct SDL_Texture
     int modMode;                /**< The texture modulation mode */
     SDL_BlendMode blendMode;    /**< The texture blend mode */
     SDL_ScaleMode scaleMode;    /**< The texture scale mode */
-    Uint8 r, g, b, a;           /**< Texture modulation values */
+    SDL_Color color;            /**< Texture modulation values */
 
     SDL_Renderer *renderer;
 
@@ -75,7 +75,8 @@ typedef enum
     SDL_RENDERCMD_DRAW_LINES,
     SDL_RENDERCMD_FILL_RECTS,
     SDL_RENDERCMD_COPY,
-    SDL_RENDERCMD_COPY_EX
+    SDL_RENDERCMD_COPY_EX,
+    SDL_RENDERCMD_GEOMETRY
 } SDL_RenderCommandType;
 
 typedef struct SDL_RenderCommand
@@ -128,6 +129,11 @@ struct SDL_Renderer
     int (*QueueCopyEx) (SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * texture,
                         const SDL_Rect * srcquad, const SDL_FRect * dstrect,
                         const double angle, const SDL_FPoint *center, const SDL_RendererFlip flip);
+    int (*QueueGeometry) (SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
+                          const float *xy, int xy_stride, const int *color, int color_stride, const float *uv, int uv_stride,
+                          int num_vertices, const void *indices, int num_indices, int size_indices,
+                          float scale_x, float scale_y);
+
     int (*RunCommandQueue) (SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertices, size_t vertsize);
     int (*UpdateTexture) (SDL_Renderer * renderer, SDL_Texture * texture,
                           const SDL_Rect * rect, const void *pixels,
@@ -154,6 +160,8 @@ struct SDL_Renderer
     void (*DestroyTexture) (SDL_Renderer * renderer, SDL_Texture * texture);
 
     void (*DestroyRenderer) (SDL_Renderer * renderer);
+
+    int (*SetVSync) (SDL_Renderer * renderer, int vsync);
 
     int (*GL_BindTexture) (SDL_Renderer * renderer, SDL_Texture *texture, float *texw, float *texh);
     int (*GL_UnbindTexture) (SDL_Renderer * renderer, SDL_Texture *texture);
@@ -208,7 +216,7 @@ struct SDL_Renderer
     SDL_Texture *target;
     SDL_mutex *target_mutex;
 
-    Uint8 r, g, b, a;                   /**< Color for drawing operations values */
+    SDL_Color color;                    /**< Color for drawing operations values */
     SDL_BlendMode blendMode;            /**< The drawing blend mode */
 
     SDL_bool always_batch;

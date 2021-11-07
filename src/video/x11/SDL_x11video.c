@@ -184,7 +184,6 @@ X11_CreateDevice(int devindex)
         return NULL;
     }
     device->driverdata = data;
-    device->wakeup_lock = SDL_CreateMutex();
 
     data->global_mouse_changed = SDL_TRUE;
 
@@ -216,6 +215,7 @@ X11_CreateDevice(int devindex)
     device->GetDisplayBounds = X11_GetDisplayBounds;
     device->GetDisplayUsableBounds = X11_GetDisplayUsableBounds;
     device->GetDisplayDPI = X11_GetDisplayDPI;
+    device->GetWindowICCProfile = X11_GetWindowICCProfile;
     device->SetDisplayMode = X11_SetDisplayMode;
     device->SuspendScreenSaver = X11_SuspendScreenSaver;
     device->PumpEvents = X11_PumpEvents;

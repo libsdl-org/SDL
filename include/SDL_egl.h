@@ -24,7 +24,11 @@
  *
  *  This is a simple file to encapsulate the EGL API headers.
  */
-#if !defined(_MSC_VER) && !defined(__ANDROID__)
+#if !defined(_MSC_VER) && !defined(__ANDROID__) && !defined(SDL_USE_BUILTIN_OPENGL_DEFINITIONS)
+
+#if defined(__vita__) || defined(__psp2__)
+#include <psp2/types.h>
+#endif
 
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
@@ -1671,6 +1675,5 @@ EGLAPI EGLuint64NV EGLAPIENTRY eglGetSystemTimeNV (void);
 #endif
 
 #endif /* __eglext_h_ */
-
 
 #endif /* _MSC_VER */

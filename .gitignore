@@ -120,6 +120,7 @@ test/testevdev
 test/testfile
 test/testfilesystem
 test/testgamecontroller
+test/testgeometry
 test/testgesture
 test/testgl2
 test/testgles
@@ -136,6 +137,7 @@ test/testloadso
 test/testlocale
 test/testlock
 test/testmessage
+test/testmouse
 test/testmultiaudio
 test/testnative
 test/testoverlay2
@@ -155,6 +157,7 @@ test/testshape
 test/testsprite2
 test/testspriteminimal
 test/teststreaming
+test/testsurround
 test/testthread
 test/testtimer
 test/testurl

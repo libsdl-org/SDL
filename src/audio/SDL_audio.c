@@ -972,12 +972,20 @@ SDL_AudioInit(const char *driver_name)
         driver_name = SDL_getenv("SDL_AUDIODRIVER");
     }
 
-    if (driver_name != NULL) {
+    if (driver_name != NULL && *driver_name != 0) {
         const char *driver_attempt = driver_name;
         while (driver_attempt != NULL && *driver_attempt != 0 && !initialized) {
             const char *driver_attempt_end = SDL_strchr(driver_attempt, ',');
             size_t driver_attempt_len = (driver_attempt_end != NULL) ? (driver_attempt_end - driver_attempt)
                                                                      : SDL_strlen(driver_attempt);
+#if SDL_AUDIO_DRIVER_PULSEAUDIO
+            /* SDL 1.2 uses the name "pulse", so we'll support both. */
+            if (driver_attempt_len == SDL_strlen("pulse") &&
+                (SDL_strncasecmp(driver_attempt, "pulse", driver_attempt_len) == 0)) {
+                driver_attempt = "pulseaudio";
+                driver_attempt_len = SDL_strlen("pulseaudio");
+            }
+#endif
 
             for (i = 0; bootstrap[i]; ++i) {
                 if ((driver_attempt_len == SDL_strlen(bootstrap[i]->name)) &&

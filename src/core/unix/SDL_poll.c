@@ -34,9 +34,11 @@
 
 
 int
-SDL_IOReady(int fd, SDL_bool forWrite, int timeoutMS)
+SDL_IOReady(int fd, int flags, int timeoutMS)
 {
     int result;
+
+    SDL_assert(flags & (SDL_IOR_READ | SDL_IOR_WRITE));
 
     /* Note: We don't bother to account for elapsed time if we get EINTR */
     do
@@ -45,10 +47,12 @@ SDL_IOReady(int fd, SDL_bool forWrite, int timeoutMS)
         struct pollfd info;
 
         info.fd = fd;
-        if (forWrite) {
-            info.events = POLLOUT;
-        } else {
-            info.events = POLLIN | POLLPRI;
+        info.events = 0;
+        if (flags & SDL_IOR_READ) {
+            info.events |= POLLIN | POLLPRI;
+        }
+        if (flags & SDL_IOR_WRITE) {
+            info.events |= POLLOUT;
         }
         result = poll(&info, 1, timeoutMS);
 #else
@@ -59,14 +63,15 @@ SDL_IOReady(int fd, SDL_bool forWrite, int timeoutMS)
         /* If this assert triggers we'll corrupt memory here */
         SDL_assert(fd >= 0 && fd < FD_SETSIZE);
 
-        if (forWrite) {
-            FD_ZERO(&wfdset);
-            FD_SET(fd, &wfdset);
-            wfdp = &wfdset;
-        } else {
+        if (flags & SDL_IOR_READ) {
             FD_ZERO(&rfdset);
             FD_SET(fd, &rfdset);
             rfdp = &rfdset;
+        }
+        if (flags & SDL_IOR_WRITE) {
+            FD_ZERO(&wfdset);
+            FD_SET(fd, &wfdset);
+            wfdp = &wfdset;
         }
 
         if (timeoutMS >= 0) {
@@ -78,7 +83,7 @@ SDL_IOReady(int fd, SDL_bool forWrite, int timeoutMS)
         result = select(fd + 1, rfdp, wfdp, NULL, tvp);
 #endif /* HAVE_POLL */
 
-    } while ( result < 0 && errno == EINTR );
+    } while ( result < 0 && errno == EINTR && !(flags & SDL_IOR_NO_RETRY));
 
     return result;
 }

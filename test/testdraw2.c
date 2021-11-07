@@ -32,6 +32,8 @@ static int cycle_direction = 1;
 static int current_alpha = 255;
 static int current_color = 255;
 static SDL_BlendMode blendMode = SDL_BLENDMODE_NONE;
+static Uint32 next_fps_check, frames;
+static const Uint32 fps_check_delay = 5000;
 
 int done;
 
@@ -178,6 +180,7 @@ DrawRects(SDL_Renderer * renderer)
 void
 loop()
 {
+    Uint32 now;
     int i;
     SDL_Event event;
 
@@ -203,13 +206,23 @@ loop()
         emscripten_cancel_main_loop();
     }
 #endif
+    frames++;
+    now = SDL_GetTicks();
+    if (SDL_TICKS_PASSED(now, next_fps_check)) {
+        /* Print out some timing information */
+        const Uint32 then = next_fps_check - fps_check_delay;
+        const double fps = ((double) frames * 1000) / (now - then);
+        SDL_Log("%2.2f frames per second\n", fps);
+        next_fps_check = now + fps_check_delay;
+        frames = 0;
+    }
+
 }
 
 int
 main(int argc, char *argv[])
 {
     int i;
-    Uint32 then, now, frames;
 
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
@@ -256,7 +269,12 @@ main(int argc, char *argv[])
             }
         }
         if (consumed < 0) {
-            static const char *options[] = { "[--blend none|blend|add|mod]", "[--cyclecolor]", "[--cyclealpha]", NULL };
+            static const char *options[] = { 
+                "[--blend none|blend|add|mod]", 
+                "[--cyclecolor]",
+                "[--cyclealpha]",
+                "[num_objects]",
+                NULL };
             SDLTest_CommonLogUsage(state, argv[0], options);
             return 1;
         }
@@ -278,27 +296,20 @@ main(int argc, char *argv[])
 
     /* Main render loop */
     frames = 0;
-    then = SDL_GetTicks();
+    next_fps_check = SDL_GetTicks() + fps_check_delay;
     done = 0;
 
 #ifdef __EMSCRIPTEN__
     emscripten_set_main_loop(loop, 0, 1);
 #else
     while (!done) {
-        ++frames;
         loop();
-        }
+    }
 #endif
 
 
     SDLTest_CommonQuit(state);
 
-    /* Print out some timing information */
-    now = SDL_GetTicks();
-    if (now > then) {
-        double fps = ((double) frames * 1000) / (now - then);
-        SDL_Log("%2.2f frames per second\n", fps);
-    }
     return 0;
 }
 

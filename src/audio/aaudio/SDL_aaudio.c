@@ -62,6 +62,12 @@ static int aaudio_LoadFunctions(AAUDIO_Data *data)
     return 0;
 }
 
+void aaudio_errorCallback( AAudioStream *stream, void *userData, aaudio_result_t error );
+void aaudio_errorCallback( AAudioStream *stream, void *userData, aaudio_result_t error )
+{
+    LOGI( "SDL aaudio_errorCallback: %d - %s", error, ctx.AAudio_convertResultToText( error ) );
+}
+
 #define LIB_AAUDIO_SO "libaaudio.so"
 
 static int
@@ -108,6 +114,8 @@ aaudio_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
         }
         ctx.AAudioStreamBuilder_setFormat(ctx.builder, format);
     }
+
+    ctx.AAudioStreamBuilder_setErrorCallback( ctx.builder, aaudio_errorCallback, private );
 
     LOGI("AAudio Try to open %u hz %u bit chan %u %s samples %u",
           this->spec.freq, SDL_AUDIO_BITSIZE(this->spec.format),
@@ -266,11 +274,20 @@ aaudio_Init(SDL_AudioDriverImpl *impl)
     aaudio_result_t res;
     LOGI(__func__);
 
+    /* AAudio was introduced in Android 8.0, but has reference counting crash issues in that release,
+     * so don't use it until 8.1.
+     *
+     * See https://github.com/google/oboe/issues/40 for more information.
+     */
+    if (SDL_GetAndroidSDKVersion() < 27) {
+        return 0;
+    }
+
     SDL_zero(ctx);
 
     ctx.handle = SDL_LoadObject(LIB_AAUDIO_SO);
     if (ctx.handle == NULL) {
-        LOGI("SDL Failed to found " LIB_AAUDIO_SO);
+        LOGI("SDL couldn't find " LIB_AAUDIO_SO);
         goto failure;
     }
 
@@ -410,6 +427,33 @@ void aaudio_ResumeDevices(void)
             }
         }
     }
+}
+
+/*
+ We can sometimes get into a state where AAudioStream_write() will just block forever until we pause and unpause.
+ None of the standard state queries indicate any problem in my testing. And the error callback doesn't actually get called.
+ But, AAudioStream_getTimestamp() does return AAUDIO_ERROR_INVALID_STATE
+*/
+SDL_bool aaudio_DetectBrokenPlayState( void )
+{
+    if ( !audioDevice || !audioDevice->hidden ) {
+        return SDL_FALSE;
+    }
+
+    struct SDL_PrivateAudioData *private = audioDevice->hidden;
+
+    int64_t framePosition, timeNanoseconds;
+    aaudio_result_t res = ctx.AAudioStream_getTimestamp( private->stream, CLOCK_MONOTONIC, &framePosition, &timeNanoseconds );
+    if ( res == AAUDIO_ERROR_INVALID_STATE ) {
+        aaudio_stream_state_t currentState = ctx.AAudioStream_getState( private->stream );
+        /* AAudioStream_getTimestamp() will also return AAUDIO_ERROR_INVALID_STATE while the stream is still initially starting. But we only care if it silently went invalid while playing. */
+        if ( currentState == AAUDIO_STREAM_STATE_STARTED ) {
+            LOGI( "SDL aaudio_DetectBrokenPlayState: detected invalid audio device state: AAudioStream_getTimestamp result=%d, framePosition=%lld, timeNanoseconds=%lld, getState=%d", (int)res, (long long)framePosition, (long long)timeNanoseconds, (int)currentState );
+            return SDL_TRUE;
+        }
+    }
+
+    return SDL_FALSE;
 }
 
 #endif /* SDL_AUDIO_DRIVER_AAUDIO */

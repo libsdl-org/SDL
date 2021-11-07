@@ -1530,7 +1530,7 @@ CheckWayland()
         video_wayland=no
         if  test x$video_opengl_egl = xyes && \
             test x$video_opengles_v2 = xyes; then
-            if $PKG_CONFIG --exists wayland-client wayland-scanner wayland-egl wayland-cursor egl xkbcommon ; then
+            if $PKG_CONFIG --exists wayland-client wayland-scanner wayland-egl wayland-cursor egl 'xkbcommon >= 0.5.0'; then
                 WAYLAND_CFLAGS=`$PKG_CONFIG --cflags wayland-client wayland-egl wayland-cursor xkbcommon`
                 WAYLAND_LIBS=`$PKG_CONFIG --libs wayland-client wayland-egl wayland-cursor xkbcommon`
                 WAYLAND_SCANNER=`$PKG_CONFIG --variable=wayland_scanner wayland-scanner`
@@ -1823,20 +1823,6 @@ CheckX11()
                 SUMMARY_video="${SUMMARY_video} x11"
             fi
             have_video=yes
-
-            AC_MSG_CHECKING(for const parameter to XextAddDisplay)
-            have_const_param_XextAddDisplay=no
-            AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
-              #include <X11/Xlib.h>
-              #include <X11/Xproto.h>
-              #include <X11/extensions/Xext.h>
-              #include <X11/extensions/extutil.h>
-              extern XExtDisplayInfo* XextAddDisplay(XExtensionInfo* a,Display* b,_Xconst char* c,XExtensionHooks* d,int e,XPointer f);
-            ]],[])], [
-            have_const_param_XextAddDisplay=yes
-            AC_DEFINE([SDL_VIDEO_DRIVER_X11_CONST_PARAM_XEXTADDDISPLAY], 1, [ ])
-            ],[])
-            AC_MSG_RESULT($have_const_param_XextAddDisplay)
 
             dnl AC_CHECK_LIB(X11, XGetEventData, AC_DEFINE(SDL_VIDEO_DRIVER_X11_SUPPORTS_GENERIC_EVENTS, 1, [Have XGenericEvent]))
             AC_MSG_CHECKING([for XGenericEvent])
@@ -2598,6 +2584,10 @@ CheckVulkan()
             AC_MSG_WARN([Vulkan does not work on this configuration.])
         fi
     fi
+    if test x$have_loadso != xyes; then
+        AC_MSG_WARN([Vulkan support is available, but disabled because there's no loadso.])
+        enable_video_vulkan=no
+    fi
     if test x$enable_video_vulkan = xyes; then
         AC_DEFINE(SDL_VIDEO_VULKAN, 1, [ ])
         SUMMARY_video="${SUMMARY_video} vulkan"
@@ -3209,6 +3199,11 @@ XINPUT_STATE_EX s1;
         fi
     fi
 
+    AC_CHECK_HEADER(windows.gaming.input.h, have_wgi=yes)
+    if test x$have_wgi = xyes; then
+        AC_DEFINE(HAVE_WINDOWS_GAMING_INPUT_H, 1, [ ])
+    fi
+
     AC_CHECK_HEADER(mmdeviceapi.h, have_wasapi=yes)
     if test x$have_wasapi = xyes; then
         AC_DEFINE(HAVE_MMDEVICEAPI_H, 1, [ ])
@@ -3795,6 +3790,9 @@ case "$host" in
                 ac_default_prefix=$BUILD_PREFIX
             fi
         fi
+        if test x$enable_loadso = xyes; then
+            have_loadso=yes
+        fi
         CheckDeclarationAfterStatement
         CheckDummyVideo
         CheckDiskAudio
@@ -3853,9 +3851,12 @@ case "$host" in
         # Set up files for the joystick library
         if test x$enable_joystick = xyes; then
             AC_DEFINE(SDL_JOYSTICK_RAWINPUT, 1, [ ])
-            if test x$have_dinput = xyes -o x$have_xinput = xyes; then
+            if test x$have_dinput = xyes -o x$have_xinput = xyes -o x$have_wgi = xyes; then
                 if test x$have_xinput = xyes; then
                     AC_DEFINE(SDL_JOYSTICK_XINPUT, 1, [ ])
+                fi
+                if test x$have_wgi = xyes; then
+                    AC_DEFINE(SDL_JOYSTICK_WGI, 1, [ ])
                 fi
                 if test x$have_dinput = xyes; then
                     AC_DEFINE(SDL_JOYSTICK_DINPUT, 1, [ ])
@@ -3919,7 +3920,6 @@ case "$host" in
         if test x$enable_loadso = xyes; then
             AC_DEFINE(SDL_LOADSO_WINDOWS, 1, [ ])
             SOURCES="$SOURCES $srcdir/src/loadso/windows/*.c"
-            have_loadso=yes
         fi
         # Set up the system libraries we need
         if test -f /lib/w32api/libuuid.a; then
@@ -4285,6 +4285,19 @@ case "$host" in
         SOURCES="$SOURCES $srcdir/src/misc/riscos/*.c"
         have_misc=yes
 
+        # Set up files for the video library
+        if test x$enable_video = xyes; then
+            AC_DEFINE(SDL_VIDEO_DRIVER_RISCOS, 1, [ ])
+            SOURCES="$SOURCES $srcdir/src/video/riscos/*.c"
+            have_video=yes
+            SUMMARY_video="${SUMMARY_video} riscos"
+        fi
+        # Set up files for the filesystem library
+        if test x$enable_filesystem = xyes; then
+            AC_DEFINE(SDL_FILESYSTEM_RISCOS, 1, [ ])
+            SOURCES="$SOURCES $srcdir/src/filesystem/riscos/*.c"
+            have_filesystem=yes
+        fi
         # Set up files for the timer library
         if test x$enable_timers = xyes; then
             AC_DEFINE(SDL_TIMER_UNIX, 1, [ ])

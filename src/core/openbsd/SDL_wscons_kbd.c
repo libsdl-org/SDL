@@ -416,7 +416,7 @@ static SDL_WSCONS_input_data* SDL_WSCONS_Init_Keyboard(const char* dev)
     if (!input) {
         return input;
     }
-    input->fd = open(dev,O_RDWR | O_NONBLOCK);
+    input->fd = open(dev,O_RDWR | O_NONBLOCK | O_CLOEXEC);
     if (input->fd == -1) {
         free(input);
         input = NULL;

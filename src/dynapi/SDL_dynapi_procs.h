@@ -882,3 +882,17 @@ SDL_DYNAPI_PROC(int,SDL_JoystickSendEffect,(SDL_Joystick *a, const void *b, int 
 SDL_DYNAPI_PROC(float,SDL_GameControllerGetSensorDataRate,(SDL_GameController *a, SDL_SensorType b),(a,b),return)
 SDL_DYNAPI_PROC(int,SDL_SetTextureUserData,(SDL_Texture *a, void *b),(a,b),return)
 SDL_DYNAPI_PROC(void*,SDL_GetTextureUserData,(SDL_Texture *a),(a),return)
+SDL_DYNAPI_PROC(int,SDL_RenderGeometry,(SDL_Renderer *a, SDL_Texture *b, const SDL_Vertex *c, int d, const int *e, int f),(a,b,c,d,e,f),return)
+SDL_DYNAPI_PROC(int,SDL_RenderGeometryRaw,(SDL_Renderer *a, SDL_Texture *b, const float *c, int d, const int *e, int f, const float *g, int h, int i, const void *j, int k, int l),(a,b,c,d,e,f,g,h,i,j,k,l),return)
+SDL_DYNAPI_PROC(int,SDL_RenderSetVSync,(SDL_Renderer *a, int b),(a,b),return)
+#if !SDL_DYNAPI_PROC_NO_VARARGS
+SDL_DYNAPI_PROC(int,SDL_asprintf,(char **a, SDL_PRINTF_FORMAT_STRING const char *b, ...),(a,b),return)
+#endif
+SDL_DYNAPI_PROC(int,SDL_vasprintf,(char **a, const char *b, va_list c),(a,b,c),return)
+SDL_DYNAPI_PROC(void*,SDL_GetWindowICCProfile,(SDL_Window *a, size_t *b),(a,b),return)
+SDL_DYNAPI_PROC(Uint64,SDL_GetTicks64,(void),(),return)
+#ifdef __LINUX__
+SDL_DYNAPI_PROC(int,SDL_LinuxSetThreadPriorityAndPolicy,(Sint64 a, int b, int c),(a,b,c),return)
+#endif
+SDL_DYNAPI_PROC(const char*,SDL_GameControllerGetAppleSFSymbolsNameForButton,(SDL_GameController *a, SDL_GameControllerButton b),(a,b),return)
+SDL_DYNAPI_PROC(const char*,SDL_GameControllerGetAppleSFSymbolsNameForAxis,(SDL_GameController *a, SDL_GameControllerAxis b),(a,b),return)

@@ -2675,4 +2675,26 @@ SDL_GameControllerHandleDelayedGuideButton(SDL_Joystick *joystick)
     }
 }
 
+const char *
+SDL_GameControllerGetAppleSFSymbolsNameForButton(SDL_GameController *gamecontroller, SDL_GameControllerButton button)
+{
+#if defined(SDL_JOYSTICK_MFI)
+    const char *IOS_SDL_GameControllerGetAppleSFSymbolsNameForButton(SDL_GameController *gamecontroller, SDL_GameControllerButton button);
+    return IOS_SDL_GameControllerGetAppleSFSymbolsNameForButton(gamecontroller, button);
+#else
+    return NULL;
+#endif
+}
+
+const char *
+SDL_GameControllerGetAppleSFSymbolsNameForAxis(SDL_GameController *gamecontroller, SDL_GameControllerAxis axis)
+{
+#if defined(SDL_JOYSTICK_MFI)
+    const char *IOS_SDL_GameControllerGetAppleSFSymbolsNameForAxis(SDL_GameController *gamecontroller, SDL_GameControllerAxis axis);
+    return IOS_SDL_GameControllerGetAppleSFSymbolsNameForAxis(gamecontroller, axis);
+#else
+    return NULL;
+#endif
+}
+
 /* vi: set ts=4 sw=4 expandtab: */

@@ -6,14 +6,22 @@ project(SDL2 C)
 remove_definitions(-DUSING_GENERATED_CONFIG_H)
 link_libraries(SDL2_test SDL2-static)
 
-# FIXME: Parent directory CMakeLists.txt only sets these for mingw/cygwin,
-# but we need them for VS as well.
 if(WINDOWS)
+    # mingw32 must come before SDL2main to link successfully
+    if(MINGW OR CYGWIN)
+        link_libraries(mingw32)
+    endif()
+
+    # FIXME: Parent directory CMakeLists.txt only sets these for mingw/cygwin,
+    # but we need them for VS as well.
     link_libraries(SDL2main)
     add_definitions(-Dmain=SDL_main)
 endif()
 
-find_package(OpenGL)
+# CMake incorrectly detects opengl32.lib being present on MSVC ARM64
+if(NOT MSVC OR NOT CMAKE_GENERATOR_PLATFORM STREQUAL "ARM64")
+    find_package(OpenGL)
+endif()
 
 if (OPENGL_FOUND)
 add_definitions(-DHAVE_OPENGL)
@@ -23,6 +31,7 @@ add_executable(checkkeys checkkeys.c)
 add_executable(checkkeysthreads checkkeysthreads.c)
 add_executable(loopwave loopwave.c)
 add_executable(loopwavequeue loopwavequeue.c)
+add_executable(testsurround testsurround.c)
 add_executable(testresample testresample.c)
 add_executable(testaudioinfo testaudioinfo.c)
 
@@ -42,6 +51,7 @@ add_executable(testdropfile testdropfile.c)
 add_executable(testerror testerror.c)
 add_executable(testfile testfile.c)
 add_executable(testgamecontroller testgamecontroller.c)
+add_executable(testgeometry testgeometry.c)
 add_executable(testgesture testgesture.c)
 add_executable(testgl2 testgl2.c)
 add_executable(testgles testgles.c)
@@ -56,6 +66,7 @@ add_executable(testjoystick testjoystick.c)
 add_executable(testkeys testkeys.c)
 add_executable(testloadso testloadso.c)
 add_executable(testlock testlock.c)
+add_executable(testmouse testmouse.c)
 
 if(APPLE)
     add_executable(testnative testnative.c
@@ -102,21 +113,8 @@ target_link_libraries(testshader OpenGL::GL)
 target_link_libraries(testgl2 OpenGL::GL)
 endif()
 
-# HACK: Dummy target to cause the resource files to be copied to the build directory.
-# Need to make it an executable so we can use the TARGET_FILE_DIR generator expression.
-# This is needed so they get copied to the correct Debug/Release subdirectory in Xcode.
-file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/resources_dummy.c "int main(int argc, const char **argv){ return 1; }\n")
-add_executable(SDL2_test_resources ${CMAKE_CURRENT_BINARY_DIR}/resources_dummy.c)
-
 file(GLOB RESOURCE_FILES *.bmp *.wav *.hex moose.dat utf8.txt)
-foreach(RESOURCE_FILE ${RESOURCE_FILES})
-    add_custom_command(TARGET SDL2_test_resources POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different ${RESOURCE_FILE} $<TARGET_FILE_DIR:SDL2_test_resources>)
-endforeach(RESOURCE_FILE)
-
 file(COPY ${RESOURCE_FILES} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-
-# TODO: Might be easier to make all targets depend on the resources...?
-
 set(NEEDS_RESOURCES
     testscale
     testrendercopyex
@@ -138,7 +136,9 @@ set(NEEDS_RESOURCES
     testmultiaudio
 )
 foreach(APP IN LISTS NEEDS_RESOURCES)
-    add_dependencies(${APP} SDL2_test_resources)
+    foreach(RESOURCE_FILE ${RESOURCE_FILES})
+        add_custom_command(TARGET ${APP} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different ${RESOURCE_FILE} $<TARGET_FILE_DIR:${APP}>)
+    endforeach(RESOURCE_FILE)
     if(APPLE)
         # Make sure resource files get installed into macOS/iOS .app bundles.  
         target_sources(${APP} PRIVATE "${RESOURCE_FILES}")

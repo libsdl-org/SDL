@@ -482,4 +482,14 @@ SDL_RemoveTimer(SDL_TimerID id)
 
 #endif
 
+/* This is a legacy support function; SDL_GetTicks() returns a Uint32,
+   which wraps back to zero every ~49 days. The newer SDL_GetTicks64()
+   doesn't have this problem, so we just wrap that function and clamp to
+   the low 32-bits for binary compatibility. */
+Uint32
+SDL_GetTicks(void)
+{
+    return (Uint32) (SDL_GetTicks64() & 0xFFFFFFFF);
+}
+
 /* vi: set ts=4 sw=4 expandtab: */

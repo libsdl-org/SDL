@@ -204,7 +204,7 @@
 #cmakedefine HAVE_POLL 1
 #cmakedefine HAVE__EXIT 1
 
-#elif __WIN32__
+#elif defined(__WIN32__)
 #cmakedefine HAVE_STDARG_H 1
 #cmakedefine HAVE_STDDEF_H 1
 #cmakedefine HAVE_FLOAT_H 1
@@ -222,7 +222,19 @@
 #cmakedefine HAVE_INOTIFY_INIT 1
 #cmakedefine HAVE_INOTIFY_INIT1 1
 #cmakedefine HAVE_INOTIFY 1
-#cmakedefine HAVE_IMMINTRIN_H 1
+
+/* Apple platforms might be building universal binaries, where Intel builds
+   can use immintrin.h but other architectures can't. */
+#ifdef __APPLE__
+#  if defined(__has_include) && (defined(__i386__) || defined(__x86_64))
+#    if __has_include(<immintrin.h>)
+#       define HAVE_IMMINTRIN_H 1
+#    endif
+#  endif
+#else  /* non-Apple platforms can use the normal CMake check for this. */
+#  cmakedefine HAVE_IMMINTRIN_H 1
+#endif
+
 #cmakedefine HAVE_LIBUDEV_H 1
 #cmakedefine HAVE_LIBSAMPLERATE_H 1
 #cmakedefine HAVE_LIBDECOR_H  1
@@ -233,6 +245,7 @@
 #cmakedefine HAVE_DSOUND_H @HAVE_DSOUND_H@
 #cmakedefine HAVE_DINPUT_H @HAVE_DINPUT_H@
 #cmakedefine HAVE_XINPUT_H @HAVE_XINPUT_H@
+#cmakedefine HAVE_WINDOWS_GAMING_INPUT_H @HAVE_WINDOWS_GAMING_INPUT_H@
 #cmakedefine HAVE_DXGI_H @HAVE_DXGI_H@
 
 #cmakedefine HAVE_MMDEVICEAPI_H @HAVE_MMDEVICEAPI_H@
@@ -307,6 +320,7 @@
 #cmakedefine SDL_INPUT_FBSDKBIO @SDL_INPUT_FBSDKBIO@
 #cmakedefine SDL_JOYSTICK_ANDROID @SDL_JOYSTICK_ANDROID@
 #cmakedefine SDL_JOYSTICK_HAIKU @SDL_JOYSTICK_HAIKU@
+#cmakedefine SDL_JOYSTICK_WGI @SDL_JOYSTICK_WGI@
 #cmakedefine SDL_JOYSTICK_DINPUT @SDL_JOYSTICK_DINPUT@
 #cmakedefine SDL_JOYSTICK_XINPUT @SDL_JOYSTICK_XINPUT@
 #cmakedefine SDL_JOYSTICK_DUMMY @SDL_JOYSTICK_DUMMY@
@@ -379,6 +393,7 @@
 #cmakedefine SDL_VIDEO_DRIVER_VIVANTE_VDK @SDL_VIDEO_DRIVER_VIVANTE_VDK@
 #cmakedefine SDL_VIDEO_DRIVER_OS2 @SDL_VIDEO_DRIVER_OS2@
 #cmakedefine SDL_VIDEO_DRIVER_QNX @SDL_VIDEO_DRIVER_QNX@
+#cmakedefine SDL_VIDEO_DRIVER_RISCOS @SDL_VIDEO_DRIVER_RISCOS@
 
 #cmakedefine SDL_VIDEO_DRIVER_KMSDRM @SDL_VIDEO_DRIVER_KMSDRM@
 #cmakedefine SDL_VIDEO_DRIVER_KMSDRM_DYNAMIC @SDL_VIDEO_DRIVER_KMSDRM_DYNAMIC@
@@ -410,7 +425,6 @@
 #cmakedefine SDL_VIDEO_DRIVER_X11_XSHAPE @SDL_VIDEO_DRIVER_X11_XSHAPE@
 #cmakedefine SDL_VIDEO_DRIVER_X11_XVIDMODE @SDL_VIDEO_DRIVER_X11_XVIDMODE@
 #cmakedefine SDL_VIDEO_DRIVER_X11_SUPPORTS_GENERIC_EVENTS @SDL_VIDEO_DRIVER_X11_SUPPORTS_GENERIC_EVENTS@
-#cmakedefine SDL_VIDEO_DRIVER_X11_CONST_PARAM_XEXTADDDISPLAY @SDL_VIDEO_DRIVER_X11_CONST_PARAM_XEXTADDDISPLAY@
 #cmakedefine SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM @SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM@
 #cmakedefine SDL_VIDEO_DRIVER_VITA @SDL_VIDEO_DRIVER_VITA@
 
@@ -458,6 +472,7 @@
 #cmakedefine SDL_FILESYSTEM_HAIKU @SDL_FILESYSTEM_HAIKU@
 #cmakedefine SDL_FILESYSTEM_COCOA @SDL_FILESYSTEM_COCOA@
 #cmakedefine SDL_FILESYSTEM_DUMMY @SDL_FILESYSTEM_DUMMY@
+#cmakedefine SDL_FILESYSTEM_RISCOS @SDL_FILESYSTEM_RISCOS@
 #cmakedefine SDL_FILESYSTEM_UNIX @SDL_FILESYSTEM_UNIX@
 #cmakedefine SDL_FILESYSTEM_WINDOWS @SDL_FILESYSTEM_WINDOWS@
 #cmakedefine SDL_FILESYSTEM_EMSCRIPTEN @SDL_FILESYSTEM_EMSCRIPTEN@
@@ -481,6 +496,7 @@
 #cmakedefine SDL_IPHONE_LAUNCHSCREEN @SDL_IPHONE_LAUNCHSCREEN@
 
 #cmakedefine SDL_VIDEO_VITA_PIB @SDL_VIDEO_VITA_PIB@
+#cmakedefine SDL_VIDEO_VITA_PVR @SDL_VIDEO_VITA_PVR@
 
 #if !defined(__WIN32__) && !defined(__WINRT__)
 #  if !defined(_STDINT_H_) && !defined(_STDINT_H) && !defined(HAVE_STDINT_H) && !defined(_HAVE_STDINT_H)
@@ -497,7 +513,7 @@ typedef unsigned long uintptr_t;
 #  endif /* if (stdint.h isn't available) */
 #else /* __WIN32__ */
 #  if !defined(_STDINT_H_) && !defined(HAVE_STDINT_H) && !defined(_HAVE_STDINT_H)
-#    if defined(__GNUC__) || defined(__DMC__) || defined(__WATCOMC__)
+#    if defined(__GNUC__) || defined(__DMC__) || defined(__WATCOMC__) || defined(__BORLANDC__) || defined(__CODEGEARC__)
 #define HAVE_STDINT_H	1
 #    elif defined(_MSC_VER)
 typedef signed __int8 int8_t;

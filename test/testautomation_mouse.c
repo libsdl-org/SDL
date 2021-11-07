@@ -527,6 +527,7 @@ mouse_getMouseFocus(void *arg)
     SDLTest_AssertPass("SDL_WarpMouseInWindow(...,%i,%i)", x, y);
 
     /* Pump events to update focus state */
+    SDL_Delay(100);
     SDL_PumpEvents();
     SDLTest_AssertPass("SDL_PumpEvents()");
 

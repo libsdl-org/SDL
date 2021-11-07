@@ -87,7 +87,7 @@ static LONG APIENTRY cbAudioWriteEvent(ULONG ulStatus, PMCI_MIX_BUFFER pBuffer,
         debug_os2("DosPostEventSem(), rc = %u", ulRC);
     }
 
-    return 1; /* It seems, return value is not matter. */
+    return 1; /* return value doesn't seem to matter. */
 }
 
 static LONG APIENTRY cbAudioReadEvent(ULONG ulStatus, PMCI_MIX_BUFFER pBuffer,
@@ -133,7 +133,7 @@ static void OS2_DetectDevices(void)
         return;
     }
 
-    ulDevicesNum = atol(stMCISysInfo.pszReturn);
+    ulDevicesNum = SDL_strtoul(stMCISysInfo.pszReturn, NULL, 10);
 
     for (stSysInfoParams.ulNumber = 0; stSysInfoParams.ulNumber < ulDevicesNum;
          stSysInfoParams.ulNumber++) {
@@ -151,7 +151,7 @@ static void OS2_DetectDevices(void)
         /* Get textual product description. */
         stSysInfoParams.ulItem = MCI_SYSINFO_QUERY_DRIVER;
         stSysInfoParams.pSysInfoParm = &stLogDevice;
-        strcpy(stLogDevice.szInstallName, stSysInfoParams.pszReturn);
+        SDL_strlcpy(stLogDevice.szInstallName, stSysInfoParams.pszReturn, MAX_DEVICE_NAME);
         ulRC = mciSendCommand(0, MCI_SYSINFO, MCI_WAIT | MCI_SYSINFO_ITEM,
                               &stSysInfoParams, 0);
         if (ulRC != NO_ERROR) {
@@ -211,10 +211,8 @@ static void OS2_CloseDevice(_THIS)
         return;
 
     /* Close up audio */
-    if (pAData->usDeviceId != (USHORT)~0) {
-        /* Device is open. */
-        if (pAData->stMCIMixSetup.ulBitsPerSample != 0) {
-            /* Mixer was initialized. */
+    if (pAData->usDeviceId != (USHORT)~0) { /* Device is open. */
+        if (pAData->stMCIMixSetup.ulBitsPerSample != 0) { /* Mixer was initialized. */
             ulRC = mciSendCommand(pAData->usDeviceId, MCI_MIXSETUP,
                                   MCI_WAIT | MCI_MIXSETUP_DEINIT,
                                   &pAData->stMCIMixSetup, 0);
@@ -223,8 +221,7 @@ static void OS2_CloseDevice(_THIS)
             }
         }
 
-        if (pAData->cMixBuffers != 0) {
-            /* Buffers was allocated. */
+        if (pAData->cMixBuffers != 0) { /* Buffers was allocated. */
             MCI_BUFFER_PARMS    stMCIBuffer;
 
             stMCIBuffer.ulBufferSize = pAData->aMixBuffers[0].ulBufferLength;
@@ -410,15 +407,13 @@ static int OS2_OpenDevice(_THIS, void *handle, const char *devname,
         pAData->aMixBuffers[ulIdx].ulBufferLength = stMCIBuffer.ulBufferSize;
         pAData->aMixBuffers[ulIdx].ulUserParm     = (ULONG)pAData;
 
-        memset(((PMCI_MIX_BUFFER)stMCIBuffer.pBufList)[ulIdx].pBuffer,
-                _this->spec.silence, stMCIBuffer.ulBufferSize);
+        SDL_memset(((PMCI_MIX_BUFFER)stMCIBuffer.pBufList)[ulIdx].pBuffer,
+                   _this->spec.silence, stMCIBuffer.ulBufferSize);
     }
 
     /* Write buffers to kick off the amp mixer */
-    /*pAData->ulQueuedBuf = 1;//stMCIBuffer.ulNumBuffers */
     ulRC = pAData->stMCIMixSetup.pmixWrite(pAData->stMCIMixSetup.ulMixHandle,
-                                           pAData->aMixBuffers,
-                                           1 /*stMCIBuffer.ulNumBuffers*/);
+                                           pAData->aMixBuffers, 1);
     if (ulRC != MCIERR_SUCCESS) {
         _mixIOError("pmixWrite", ulRC);
         return -1;

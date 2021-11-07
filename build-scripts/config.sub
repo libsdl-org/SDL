@@ -4,7 +4,7 @@
 
 # shellcheck disable=SC2006,SC2268 # see below for rationale
 
-timestamp='2021-07-03'
+timestamp='2021-08-14'
 
 # This file is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -121,9 +121,11 @@ esac
 
 # Split fields of configuration type
 # shellcheck disable=SC2162
+saved_IFS=$IFS
 IFS="-" read field1 field2 field3 field4 <<EOF
 $1
 EOF
+IFS=$saved_IFS
 
 # Separate into logical components for further validation
 case $1 in
@@ -170,6 +172,10 @@ case $1 in
 					# Prevent following clause from handling this valid os
 					sun*os*)
 						basic_machine=$field1
+						basic_os=$field2
+						;;
+					zephyr*)
+						basic_machine=$field1-unknown
 						basic_os=$field2
 						;;
 					# Manufacturers
@@ -931,9 +937,11 @@ case $basic_machine in
 
 	*-*)
 		# shellcheck disable=SC2162
+		saved_IFS=$IFS
 		IFS="-" read cpu vendor <<EOF
 $basic_machine
 EOF
+		IFS=$saved_IFS
 		;;
 	# We use `pc' rather than `unknown'
 	# because (1) that's what they normally are, and
@@ -1313,9 +1321,11 @@ case $basic_os in
 		;;
 	*-*)
 		# shellcheck disable=SC2162
+		saved_IFS=$IFS
 		IFS="-" read kernel os <<EOF
 $basic_os
 EOF
+		IFS=$saved_IFS
 		;;
 	# Default OS when just kernel was specified
 	nto*)
@@ -1697,7 +1707,7 @@ fi
 # Now, validate our (potentially fixed-up) OS.
 case $os in
 	# Sometimes we do "kernel-libc", so those need to count as OSes.
-	musl* | newlib* | uclibc*)
+	musl* | newlib* | relibc* | uclibc*)
 		;;
 	# Likewise for "kernel-abi"
 	eabi* | gnueabi*)
@@ -1738,7 +1748,7 @@ case $os in
 	     | skyos* | haiku* | rdos* | toppers* | drops* | es* \
 	     | onefs* | tirtos* | phoenix* | fuchsia* | redox* | bme* \
 	     | midnightbsd* | amdhsa* | unleashed* | emscripten* | wasi* \
-	     | nsk* | powerunix* | genode* | zvmoe* | qnx* | emx*)
+	     | nsk* | powerunix* | genode* | zvmoe* | qnx* | emx* | zephyr*)
 		;;
 	# This one is extra strict with allowed versions
 	sco3.2v2 | sco3.2v[4-9]* | sco5v6*)
@@ -1755,11 +1765,12 @@ esac
 # As a final step for OS-related things, validate the OS-kernel combination
 # (given a valid OS), if there is a kernel.
 case $kernel-$os in
-	linux-gnu* | linux-dietlibc* | linux-android* | linux-newlib* | linux-musl* | linux-uclibc* )
+	linux-gnu* | linux-dietlibc* | linux-android* | linux-newlib* \
+		   | linux-musl* | linux-relibc* | linux-uclibc* )
 		;;
 	uclinux-uclibc* )
 		;;
-	-dietlibc* | -newlib* | -musl* | -uclibc* )
+	-dietlibc* | -newlib* | -musl* | -relibc* | -uclibc* )
 		# These are just libc implementations, not actual OSes, and thus
 		# require a kernel.
 		echo "Invalid configuration \`$1': libc \`$os' needs explicit kernel." 1>&2

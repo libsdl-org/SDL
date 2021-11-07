@@ -40,6 +40,8 @@ typedef struct SDL_EGL_VideoData
     int egl_surfacetype;
     int egl_version_major, egl_version_minor;
     EGLint egl_required_visual_id;
+    SDL_bool is_offscreen;  /* whether EGL display was offscreen */
+    EGLenum apitype;  /* EGL_OPENGL_ES_API, EGL_OPENGL_API, etc */
     
     EGLDisplay(EGLAPIENTRY *eglGetDisplay) (NativeDisplayType display);
     EGLDisplay(EGLAPIENTRY *eglGetPlatformDisplay) (EGLenum platform,
@@ -114,11 +116,6 @@ typedef struct SDL_EGL_VideoData
     EGLint(EGLAPIENTRY *eglClientWaitSyncKHR)(EGLDisplay dpy, EGLSyncKHR sync, EGLint flags, EGLTimeKHR timeout);
 
     /* Atomic functions end */
-
-
-    /* whether EGL display was offscreen */
-    int is_offscreen;
-
 } SDL_EGL_VideoData;
 
 /* OpenGLES functions */

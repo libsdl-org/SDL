@@ -31,6 +31,14 @@
 #include <pipewire/extensions/metadata.h>
 #include <spa/param/audio/format-utils.h>
 
+/* Older versions of Pipewire may not define this, but it's safe to pass at
+ * runtime even if older installations don't recognize it.
+ * Taken from src/pipewire/keys.h
+ */
+#ifndef PW_KEY_NODE_RATE
+#define PW_KEY_NODE_RATE "node.rate"
+#endif
+
 /*
  * These seem to be sane limits as Pipewire
  * uses them in several of it's own modules.
@@ -730,6 +738,9 @@ hotplug_loop_destroy()
     pending_list_clear();
     io_list_clear();
 
+    SDL_AtomicSet(&hotplug_init_complete, 0);
+    SDL_AtomicSet(&hotplug_events_enabled, 0);
+
     if (hotplug_registry) {
         PIPEWIRE_pw_proxy_destroy((struct pw_proxy *)hotplug_registry);
     }
@@ -1032,7 +1043,10 @@ PIPEWIRE_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     /* Get the hints for the application name, stream name and role */
     app_name = SDL_GetHint(SDL_HINT_AUDIO_DEVICE_APP_NAME);
     if (!app_name || *app_name == '\0') {
-        app_name = "SDL Application";
+        app_name = SDL_GetHint(SDL_HINT_APP_NAME);
+        if (!app_name || *app_name == '\0') {   
+            app_name = "SDL Application";
+        }
     }
 
     stream_name = SDL_GetHint(SDL_HINT_AUDIO_DEVICE_STREAM_NAME);
@@ -1110,6 +1124,7 @@ PIPEWIRE_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     PIPEWIRE_pw_properties_set(props, PW_KEY_NODE_NAME, stream_name);
     PIPEWIRE_pw_properties_set(props, PW_KEY_NODE_DESCRIPTION, stream_name);
     PIPEWIRE_pw_properties_setf(props, PW_KEY_NODE_LATENCY, "%u/%i", adjusted_samples, this->spec.freq);
+    PIPEWIRE_pw_properties_setf(props, PW_KEY_NODE_RATE, "1/%u", this->spec.freq);
     PIPEWIRE_pw_properties_set(props, PW_KEY_NODE_ALWAYS_PROCESS, "true");
 
     /*

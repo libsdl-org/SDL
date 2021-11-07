@@ -48,7 +48,7 @@ typedef enum
     BOOL inFullscreenTransition;
     PendingWindowOperation pendingWindowOperation;
     BOOL isMoving;
-    int focusClickPending;
+    NSInteger focusClickPending;
     int pendingWindowWarpX, pendingWindowWarpY;
     BOOL isDragAreaRunning;
 }
@@ -64,8 +64,8 @@ typedef enum
 
 -(BOOL) isMoving;
 -(BOOL) isMovingOrFocusClickPending;
--(void) setFocusClickPending:(int) button;
--(void) clearFocusClickPending:(int) button;
+-(void) setFocusClickPending:(NSInteger) button;
+-(void) clearFocusClickPending:(NSInteger) button;
 -(void) setPendingMoveX:(int)x Y:(int)y;
 -(void) windowDidFinishMoving;
 -(void) onMovingOrFocusClickPendingStateCleared;
@@ -80,6 +80,7 @@ typedef enum
 -(void) windowDidBecomeKey:(NSNotification *) aNotification;
 -(void) windowDidResignKey:(NSNotification *) aNotification;
 -(void) windowDidChangeBackingProperties:(NSNotification *) aNotification;
+-(void) windowDidChangeScreenProfile:(NSNotification *) aNotification;
 -(void) windowWillEnterFullScreen:(NSNotification *) aNotification;
 -(void) windowDidEnterFullScreen:(NSNotification *) aNotification;
 -(void) windowWillExitFullScreen:(NSNotification *) aNotification;
@@ -151,6 +152,7 @@ extern void Cocoa_SetWindowResizable(_THIS, SDL_Window * window, SDL_bool resiza
 extern void Cocoa_SetWindowAlwaysOnTop(_THIS, SDL_Window * window, SDL_bool on_top);
 extern void Cocoa_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display, SDL_bool fullscreen);
 extern int Cocoa_SetWindowGammaRamp(_THIS, SDL_Window * window, const Uint16 * ramp);
+extern void* Cocoa_GetWindowICCProfile(_THIS, SDL_Window * window, size_t * size);
 extern int Cocoa_GetWindowGammaRamp(_THIS, SDL_Window * window, Uint16 * ramp);
 extern void Cocoa_SetWindowMouseGrab(_THIS, SDL_Window * window, SDL_bool grabbed);
 extern void Cocoa_DestroyWindow(_THIS, SDL_Window * window);

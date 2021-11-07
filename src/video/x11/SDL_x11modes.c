@@ -849,6 +849,16 @@ X11_InitModes(_THIS)
     if (_this->num_displays == 0) {
         return SDL_SetError("No available displays");
     }
+
+#if SDL_VIDEO_DRIVER_X11_XVIDMODE
+    if (use_vidmode) {  /* we intend to remove support for XVidMode soon. */
+        SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO, "SDL is using XVidMode to manage your displays!");
+        SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO, "This almost always means either SDL was misbuilt");
+        SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO, "or your X server is insufficient. Please check your setup!");
+        SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO, "Fullscreen and/or multiple displays will not work well.");
+    }
+#endif
+
     return 0;
 }
 

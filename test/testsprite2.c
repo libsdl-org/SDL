@@ -39,6 +39,7 @@ static int sprite_w, sprite_h;
 static SDL_BlendMode blendMode = SDL_BLENDMODE_BLEND;
 static Uint32 next_fps_check, frames;
 static const Uint32 fps_check_delay = 5000;
+static int use_rendergeometry = 0;
 
 /* Number of iterations to move sprites - used for visual tests. */
 /* -1: infinite random moves (default); >=0: enables N deterministic moves */
@@ -175,7 +176,38 @@ MoveSprites(SDL_Renderer * renderer, SDL_Texture * sprite)
     temp.y = 1;
     temp.w = sprite_w;
     temp.h = sprite_h;
-    SDL_RenderFillRect(renderer, &temp);
+    if (use_rendergeometry == 0) {
+        SDL_RenderFillRect(renderer, &temp);
+    } else {
+        /* Draw two triangles, filled, uniform */
+        SDL_Color color;
+        SDL_Vertex verts[3];
+        SDL_zeroa(verts);
+        color.r = 0xFF;
+        color.g = 0xFF;
+        color.b = 0xFF;
+        color.a = 0xFF;
+
+        verts[0].position.x = (float)temp.x;
+        verts[0].position.y = (float)temp.y;
+        verts[0].color = color;
+
+        verts[1].position.x = (float)temp.x + temp.w;
+        verts[1].position.y = (float)temp.y;
+        verts[1].color = color;
+
+        verts[2].position.x = (float)temp.x + temp.w;
+        verts[2].position.y = (float)temp.y + temp.h;
+        verts[2].color = color;
+
+        SDL_RenderGeometry(renderer, NULL, verts, 3, NULL, 0);
+
+        verts[1].position.x = (float)temp.x;
+        verts[1].position.y = (float)temp.y + temp.h;
+        verts[1].color = color;
+
+        SDL_RenderGeometry(renderer, NULL, verts, 3, NULL, 0);
+    }
     SDL_RenderCopy(renderer, sprite, NULL, &temp);
     temp.x = viewport.w-sprite_w-1;
     temp.y = 1;
@@ -220,7 +252,7 @@ MoveSprites(SDL_Renderer * renderer, SDL_Texture * sprite)
             }
 
         }
-        
+
         /* Countdown sprite-move iterations and disable color changes at iteration end - used for visual tests. */
         if (iterations > 0) {
             iterations--;
@@ -232,11 +264,160 @@ MoveSprites(SDL_Renderer * renderer, SDL_Texture * sprite)
     }
 
     /* Draw sprites */
-    for (i = 0; i < num_sprites; ++i) {
-        position = &positions[i];
+    if (use_rendergeometry == 0) {
+        for (i = 0; i < num_sprites; ++i) {
+            position = &positions[i];
 
-        /* Blit the sprite onto the screen */
-        SDL_RenderCopy(renderer, sprite, NULL, position);
+            /* Blit the sprite onto the screen */
+            SDL_RenderCopy(renderer, sprite, NULL, position);
+        }
+    } else if (use_rendergeometry == 1) {
+        /*
+         *   0--1
+         *   | /|
+         *   |/ |
+         *   3--2
+         *
+         *  Draw sprite2 as triangles that can be recombined as rect by software renderer
+         */
+        SDL_Vertex *verts = (SDL_Vertex *) SDL_malloc(num_sprites * sizeof (SDL_Vertex) * 6);
+        SDL_Vertex *verts2 = verts;
+        if (verts) {
+            SDL_Color color;
+            SDL_GetTextureColorMod(sprite, &color.r, &color.g, &color.b);
+            SDL_GetTextureAlphaMod(sprite, &color.a);
+            for (i = 0; i < num_sprites; ++i) {
+                position = &positions[i];
+                /* 0 */
+                verts->position.x = (float)position->x;
+                verts->position.y = (float)position->y;
+                verts->color = color;
+                verts->tex_coord.x = 0.0f;
+                verts->tex_coord.y = 0.0f;
+                verts++;
+                /* 1 */
+                verts->position.x = (float)position->x + position->w;
+                verts->position.y = (float)position->y;
+                verts->color = color;
+                verts->tex_coord.x = 1.0f;
+                verts->tex_coord.y = 0.0f;
+                verts++;
+                /* 2 */
+                verts->position.x = (float)position->x + position->w;
+                verts->position.y = (float)position->y + position->h;
+                verts->color = color;
+                verts->tex_coord.x = 1.0f;
+                verts->tex_coord.y = 1.0f;
+                verts++;
+                /* 0 */
+                verts->position.x = (float)position->x;
+                verts->position.y = (float)position->y;
+                verts->color = color;
+                verts->tex_coord.x = 0.0f;
+                verts->tex_coord.y = 0.0f;
+                verts++;
+                /* 2 */
+                verts->position.x = (float)position->x + position->w;
+                verts->position.y = (float)position->y + position->h;
+                verts->color = color;
+                verts->tex_coord.x = 1.0f;
+                verts->tex_coord.y = 1.0f;
+                verts++;
+                /* 3 */
+                verts->position.x = (float)position->x;
+                verts->position.y = (float)position->y + position->h;
+                verts->color = color;
+                verts->tex_coord.x = 0.0f;
+                verts->tex_coord.y = 1.0f;
+                verts++;
+            }
+
+            /* Blit sprites as triangles onto the screen */
+            SDL_RenderGeometry(renderer, sprite, verts2, num_sprites * 6, NULL, 0);
+            SDL_free(verts2);
+        }
+    } else if (use_rendergeometry == 2) {
+        /*   0-----1
+         *   |\ A /|
+         *   | \ / |
+         *   |D 2 B|
+         *   | / \ |
+         *   |/ C \|
+         *   3-----4
+         *
+         * Draw sprite2 as triangles that can *not* be recombined as rect by software renderer
+         * Use an 'indices' array
+         */
+        SDL_Vertex *verts = (SDL_Vertex *) SDL_malloc(num_sprites * sizeof (SDL_Vertex) * 5);
+        SDL_Vertex *verts2 = verts;
+        int *indices = (int *) SDL_malloc(num_sprites * sizeof (int) * 4 * 3);
+        int *indices2 = indices;
+        if (verts && indices) {
+            int pos = 0;
+            SDL_Color color;
+            SDL_GetTextureColorMod(sprite, &color.r, &color.g, &color.b);
+            SDL_GetTextureAlphaMod(sprite, &color.a);
+            for (i = 0; i < num_sprites; ++i) {
+                position = &positions[i];
+                /* 0 */
+                verts->position.x = (float)position->x;
+                verts->position.y = (float)position->y;
+                verts->color = color;
+                verts->tex_coord.x = 0.0f;
+                verts->tex_coord.y = 0.0f;
+                verts++;
+                /* 1 */
+                verts->position.x = (float)position->x + position->w;
+                verts->position.y = (float)position->y;
+                verts->color = color;
+                verts->tex_coord.x = 1.0f;
+                verts->tex_coord.y = 0.0f;
+                verts++;
+                /* 2 */
+                verts->position.x = (float)position->x + position->w / 2.0f;
+                verts->position.y = (float)position->y + position->h / 2.0f;
+                verts->color = color;
+                verts->tex_coord.x = 0.5f;
+                verts->tex_coord.y = 0.5f;
+                verts++;
+                /* 3 */
+                verts->position.x = (float)position->x;
+                verts->position.y = (float)position->y + position->h;
+                verts->color = color;
+                verts->tex_coord.x = 0.0f;
+                verts->tex_coord.y = 1.0f;
+                verts++;
+                /* 4 */
+                verts->position.x = (float)position->x + position->w;
+                verts->position.y = (float)position->y + position->h;
+                verts->color = color;
+                verts->tex_coord.x = 1.0f;
+                verts->tex_coord.y = 1.0f;
+                verts++;
+                /* A */
+                *indices++ = pos + 0;
+                *indices++ = pos + 1;
+                *indices++ = pos + 2;
+                /* B */
+                *indices++ = pos + 1;
+                *indices++ = pos + 2;
+                *indices++ = pos + 4;
+                /* C */
+                *indices++ = pos + 3;
+                *indices++ = pos + 2;
+                *indices++ = pos + 4;
+                /* D */
+                *indices++ = pos + 3;
+                *indices++ = pos + 2;
+                *indices++ = pos + 0;
+                pos += 5;
+            }
+        }
+
+        /* Blit sprites as triangles onto the screen */
+        SDL_RenderGeometry(renderer, sprite, verts2, num_sprites * 5, indices2, num_sprites * 4 * 3);
+        SDL_free(verts2);
+        SDL_free(indices2);
     }
 
     /* Update the screen! */
@@ -331,6 +512,20 @@ main(int argc, char *argv[])
             } else if (SDL_strcasecmp(argv[i], "--cyclealpha") == 0) {
                 cycle_alpha = SDL_TRUE;
                 consumed = 1;
+            } else if (SDL_strcasecmp(argv[i], "--use-rendergeometry") == 0) {
+                if (argv[i + 1]) {
+                    if (SDL_strcasecmp(argv[i + 1], "mode1") == 0) {
+                        /* Draw sprite2 as triangles that can be recombined as rect by software renderer */
+                        use_rendergeometry = 1;
+                    } else if (SDL_strcasecmp(argv[i + 1], "mode2") == 0) {
+                        /* Draw sprite2 as triangles that can *not* be recombined as rect by software renderer
+                         * Use an 'indices' array */
+                        use_rendergeometry = 2;
+                    } else {
+                        return -1;
+                    }
+                }
+                consumed = 2;
             } else if (SDL_isdigit(*argv[i])) {
                 num_sprites = SDL_atoi(argv[i]);
                 consumed = 1;
@@ -340,7 +535,15 @@ main(int argc, char *argv[])
             }
         }
         if (consumed < 0) {
-            static const char *options[] = { "[--blend none|blend|add|mod]", "[--cyclecolor]", "[--cyclealpha]", "[--iterations N]", "[num_sprites]", "[icon.bmp]", NULL };
+            static const char *options[] = {
+                "[--blend none|blend|add|mod]",
+                "[--cyclecolor]",
+                "[--cyclealpha]",
+                "[--iterations N]",
+                "[--use-rendergeometry mode1|mode2]",
+                "[num_sprites]",
+                "[icon.bmp]",
+                NULL };
             SDLTest_CommonLogUsage(state, argv[0], options);
             quit(1);
         }
@@ -374,7 +577,7 @@ main(int argc, char *argv[])
         quit(2);
     }
 
-    /* Position sprites and set their velocities using the fuzzer */ 
+    /* Position sprites and set their velocities using the fuzzer */
     if (iterations >= 0) {
         /* Deterministic seed - used for visual tests */
         seed = (Uint64)iterations;

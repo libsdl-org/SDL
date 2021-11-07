@@ -415,6 +415,17 @@ void SSE_FUNCTION_NAME(uint32_t width, uint32_t height,
 #error Unknown RGB pixel size
 #endif
 
+#if YUV_FORMAT == YUV_FORMAT_NV12
+	/* For NV12 formats (where U/V are interleaved)
+	 * SSE READ_UV does an invalid read access at the very last pixel.
+	 * As a workaround. Make sure not to decode the last column using assembly but with STD fallback path.
+	 * see https://github.com/libsdl-org/SDL/issues/4841
+	 */
+	const int fix_read_nv12 = ((width & 31) == 0);
+#else
+	const int fix_read_nv12 = 0;
+#endif
+
 	if (width >= 32) {
 		uint32_t xpos, ypos;
 		for(ypos=0; ypos<(height-(uv_y_sample_interval-1)); ypos+=uv_y_sample_interval)
@@ -427,7 +438,7 @@ void SSE_FUNCTION_NAME(uint32_t width, uint32_t height,
 			uint8_t *rgb_ptr1=RGB+ypos*RGB_stride,
 				*rgb_ptr2=RGB+(ypos+1)*RGB_stride;
 			
-			for(xpos=0; xpos<(width-31); xpos+=32)
+			for(xpos=0; xpos<(width-31) - fix_read_nv12; xpos+=32)
 			{
 				YUV2RGB_32
 				{
@@ -464,6 +475,9 @@ void SSE_FUNCTION_NAME(uint32_t width, uint32_t height,
 	/* Catch the right column, if needed */
 	{
 		int converted = (width & ~31);
+		if (fix_read_nv12) {
+			converted -= 32;
+		}
 		if (converted != width)
 		{
 			const uint8_t *y_ptr=Y+converted*y_pixel_stride,

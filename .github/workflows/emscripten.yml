@@ -1,0 +1,16 @@
+name: Build (Emscripten)
+
+on: [push, pull_request]
+
+jobs:
+  emscripten:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: mymindstorm/setup-emsdk@v10
+        with:
+          version: 2.0.27
+      - name: Configure CMake
+        run: emcmake cmake -B build
+      - name: Build
+        run: cmake --build build/

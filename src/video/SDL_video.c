@@ -100,6 +100,9 @@ static VideoBootStrap *bootstrap[] = {
 #if SDL_VIDEO_DRIVER_KMSDRM
     &KMSDRM_bootstrap,
 #endif
+#if SDL_VIDEO_DRIVER_RISCOS
+    &RISCOS_bootstrap,
+#endif
 #if SDL_VIDEO_DRIVER_RPI
     &RPI_bootstrap,
 #endif
@@ -489,7 +492,7 @@ SDL_VideoInit(const char *driver_name)
     if (driver_name == NULL) {
         driver_name = SDL_getenv("SDL_VIDEODRIVER");
     }
-    if (driver_name != NULL) {
+    if (driver_name != NULL && *driver_name != 0) {
         const char *driver_attempt = driver_name;
         while(driver_attempt != NULL && *driver_attempt != 0 && video == NULL) {
             const char* driver_attempt_end = SDL_strchr(driver_attempt, ',');
@@ -1207,6 +1210,16 @@ SDL_GetWindowDisplayMode(SDL_Window * window, SDL_DisplayMode * mode)
     return 0;
 }
 
+void*
+SDL_GetWindowICCProfile(SDL_Window * window, size_t* size)
+{
+    if (!_this->GetWindowICCProfile) {
+        SDL_Unsupported();
+        return NULL;
+    }
+    return _this->GetWindowICCProfile(_this, window, size);
+}
+
 Uint32
 SDL_GetWindowPixelFormat(SDL_Window * window)
 {
@@ -1628,6 +1641,7 @@ SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
     window->brightness = 1.0f;
     window->next = _this->windows;
     window->is_destroying = SDL_FALSE;
+    window->display_index = SDL_GetWindowDisplayIndex(window);
 
     if (_this->windows) {
         _this->windows->prev = window;
@@ -1707,6 +1721,7 @@ SDL_CreateWindowFrom(const void *data)
         return NULL;
     }
 
+    window->display_index = SDL_GetWindowDisplayIndex(window);
     PrepareDragAndDropSupport(window);
 
     return window;
@@ -2844,10 +2859,27 @@ SDL_OnWindowHidden(SDL_Window * window)
 void
 SDL_OnWindowResized(SDL_Window * window)
 {
+    int display_index = SDL_GetWindowDisplayIndex(window);
     window->surface_valid = SDL_FALSE;
 
     if (!window->is_destroying) {
         SDL_SendWindowEvent(window, SDL_WINDOWEVENT_SIZE_CHANGED, window->w, window->h);
+
+        if (display_index != window->display_index && display_index != -1) {
+            window->display_index = display_index;
+            SDL_SendWindowEvent(window, SDL_WINDOWEVENT_DISPLAY_CHANGED, window->display_index, 0);
+        }
+    }
+}
+
+void
+SDL_OnWindowMoved(SDL_Window * window)
+{
+    int display_index = SDL_GetWindowDisplayIndex(window);
+
+    if (!window->is_destroying && display_index != window->display_index && display_index != -1) {
+        window->display_index = display_index;
+        SDL_SendWindowEvent(window, SDL_WINDOWEVENT_DISPLAY_CHANGED, window->display_index, 0);
     }
 }
 
@@ -2897,7 +2929,9 @@ SDL_OnWindowFocusGained(SDL_Window * window)
 
     if (mouse && mouse->relative_mode) {
         SDL_SetMouseFocus(window);
-        SDL_WarpMouseInWindow(window, window->w/2, window->h/2);
+        if (mouse->relative_mode_warp) {
+            SDL_WarpMouseInWindow(window, window->w/2, window->h/2);
+        }
     }
 
     SDL_UpdateWindowGrab(window);
@@ -4121,11 +4155,14 @@ SDL_IsScreenKeyboardShown(SDL_Window *window)
 #if SDL_VIDEO_DRIVER_OS2
 #include "os2/SDL_os2messagebox.h"
 #endif
+#if SDL_VIDEO_DRIVER_RISCOS
+#include "riscos/SDL_riscosmessagebox.h"
+#endif
 #if SDL_VIDEO_DRIVER_VITA
 #include "vita/SDL_vitamessagebox.h"
 #endif
 
-#if SDL_VIDEO_DRIVER_WINDOWS || SDL_VIDEO_DRIVER_WINRT || SDL_VIDEO_DRIVER_COCOA || SDL_VIDEO_DRIVER_UIKIT || SDL_VIDEO_DRIVER_X11 || SDL_VIDEO_DRIVER_WAYLAND || SDL_VIDEO_DRIVER_HAIKU || SDL_VIDEO_DRIVER_OS2
+#if SDL_VIDEO_DRIVER_WINDOWS || SDL_VIDEO_DRIVER_WINRT || SDL_VIDEO_DRIVER_COCOA || SDL_VIDEO_DRIVER_UIKIT || SDL_VIDEO_DRIVER_X11 || SDL_VIDEO_DRIVER_WAYLAND || SDL_VIDEO_DRIVER_HAIKU || SDL_VIDEO_DRIVER_OS2 || SDL_VIDEO_DRIVER_RISCOS
 static SDL_bool SDL_MessageboxValidForDriver(const SDL_MessageBoxData *messageboxdata, SDL_SYSWM_TYPE drivertype)
 {
     SDL_SysWMinfo info;
@@ -4242,6 +4279,13 @@ SDL_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
     if (retval == -1 &&
         SDL_MessageboxValidForDriver(messageboxdata, SDL_SYSWM_OS2) &&
         OS2_ShowMessageBox(messageboxdata, buttonid) == 0) {
+        retval = 0;
+    }
+#endif
+#if SDL_VIDEO_DRIVER_RISCOS
+    if (retval == -1 &&
+        SDL_MessageboxValidForDriver(messageboxdata, SDL_SYSWM_RISCOS) &&
+        RISCOS_ShowMessageBox(messageboxdata, buttonid) == 0) {
         retval = 0;
     }
 #endif

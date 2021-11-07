@@ -166,7 +166,7 @@ SDL_SYS_HapticInit(void)
     i = 0;
     for (j = 0; j < MAX_HAPTICS; ++j) {
 
-        snprintf(path, PATH_MAX, joydev_pattern, i++);
+        SDL_snprintf(path, PATH_MAX, joydev_pattern, i++);
         MaybeAddDevice(path);
     }
 
@@ -260,7 +260,7 @@ MaybeAddDevice(const char *path)
     }
 
     /* try to open */
-    fd = open(path, O_RDWR, 0);
+    fd = open(path, O_RDWR | O_CLOEXEC, 0);
     if (fd < 0) {
         return -1;
     }
@@ -375,7 +375,7 @@ SDL_SYS_HapticName(int index)
     item = HapticByDevIndex(index);
     /* Open the haptic device. */
     name = NULL;
-    fd = open(item->fname, O_RDONLY, 0);
+    fd = open(item->fname, O_RDONLY | O_CLOEXEC, 0);
 
     if (fd >= 0) {
 
@@ -453,7 +453,7 @@ SDL_SYS_HapticOpen(SDL_Haptic * haptic)
 
     item = HapticByDevIndex(haptic->index);
     /* Open the character device */
-    fd = open(item->fname, O_RDWR, 0);
+    fd = open(item->fname, O_RDWR | O_CLOEXEC, 0);
     if (fd < 0) {
         return SDL_SetError("Haptic: Unable to open %s: %s",
                             item->fname, strerror(errno));
@@ -483,7 +483,7 @@ SDL_SYS_HapticMouse(void)
 
     for (item = SDL_hapticlist; item; item = item->next) {
         /* Open the device. */
-        fd = open(item->fname, O_RDWR, 0);
+        fd = open(item->fname, O_RDWR | O_CLOEXEC, 0);
         if (fd < 0) {
             return SDL_SetError("Haptic: Unable to open %s: %s",
                                 item->fname, strerror(errno));
@@ -570,7 +570,7 @@ SDL_SYS_HapticOpenFromJoystick(SDL_Haptic * haptic, SDL_Joystick * joystick)
         return SDL_SetError("Haptic: Joystick doesn't have Haptic capabilities");
     }
 
-    fd = open(joystick->hwdata->fname, O_RDWR, 0);
+    fd = open(joystick->hwdata->fname, O_RDWR | O_CLOEXEC, 0);
     if (fd < 0) {
         return SDL_SetError("Haptic: Unable to open %s: %s",
                             joystick->hwdata->fname, strerror(errno));

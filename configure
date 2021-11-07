@@ -19897,7 +19897,7 @@ $as_echo_n "checking for Wayland support... " >&6; }
         video_wayland=no
         if  test x$video_opengl_egl = xyes && \
             test x$video_opengles_v2 = xyes; then
-            if $PKG_CONFIG --exists wayland-client wayland-scanner wayland-egl wayland-cursor egl xkbcommon ; then
+            if $PKG_CONFIG --exists wayland-client wayland-scanner wayland-egl wayland-cursor egl 'xkbcommon >= 0.5.0'; then
                 WAYLAND_CFLAGS=`$PKG_CONFIG --cflags wayland-client wayland-egl wayland-cursor xkbcommon`
                 WAYLAND_LIBS=`$PKG_CONFIG --libs wayland-client wayland-egl wayland-cursor xkbcommon`
                 WAYLAND_SCANNER=`$PKG_CONFIG --variable=wayland_scanner wayland-scanner`
@@ -21086,38 +21086,6 @@ _ACEOF
                 SUMMARY_video="${SUMMARY_video} x11"
             fi
             have_video=yes
-
-            { $as_echo "$as_me:${as_lineno-$LINENO}: checking for const parameter to XextAddDisplay" >&5
-$as_echo_n "checking for const parameter to XextAddDisplay... " >&6; }
-            have_const_param_XextAddDisplay=no
-            cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-              #include <X11/Xlib.h>
-              #include <X11/Xproto.h>
-              #include <X11/extensions/Xext.h>
-              #include <X11/extensions/extutil.h>
-              extern XExtDisplayInfo* XextAddDisplay(XExtensionInfo* a,Display* b,_Xconst char* c,XExtensionHooks* d,int e,XPointer f);
-
-int
-main ()
-{
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
-
-            have_const_param_XextAddDisplay=yes
-
-$as_echo "#define SDL_VIDEO_DRIVER_X11_CONST_PARAM_XEXTADDDISPLAY 1" >>confdefs.h
-
-
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-            { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_const_param_XextAddDisplay" >&5
-$as_echo "$have_const_param_XextAddDisplay" >&6; }
 
                         { $as_echo "$as_me:${as_lineno-$LINENO}: checking for XGenericEvent" >&5
 $as_echo_n "checking for XGenericEvent... " >&6; }
@@ -22901,6 +22869,11 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 $as_echo "$as_me: WARNING: Vulkan does not work on this configuration." >&2;}
         fi
     fi
+    if test x$have_loadso != xyes; then
+        { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Vulkan support is available, but disabled because there's no loadso." >&5
+$as_echo "$as_me: WARNING: Vulkan support is available, but disabled because there's no loadso." >&2;}
+        enable_video_vulkan=no
+    fi
     if test x$enable_video_vulkan = xyes; then
 
 $as_echo "#define SDL_VIDEO_VULKAN 1" >>confdefs.h
@@ -24098,6 +24071,18 @@ $as_echo "#define HAVE_XINPUT_STATE_EX 1" >>confdefs.h
         fi
     fi
 
+    ac_fn_c_check_header_mongrel "$LINENO" "windows.gaming.input.h" "ac_cv_header_windows_gaming_input_h" "$ac_includes_default"
+if test "x$ac_cv_header_windows_gaming_input_h" = xyes; then :
+  have_wgi=yes
+fi
+
+
+    if test x$have_wgi = xyes; then
+
+$as_echo "#define HAVE_WINDOWS_GAMING_INPUT_H 1" >>confdefs.h
+
+    fi
+
     ac_fn_c_check_header_mongrel "$LINENO" "mmdeviceapi.h" "ac_cv_header_mmdeviceapi_h" "$ac_includes_default"
 if test "x$ac_cv_header_mmdeviceapi_h" = xyes; then :
   have_wasapi=yes
@@ -25186,6 +25171,9 @@ $as_echo "#define SDL_TIMER_UNIX 1" >>confdefs.h
                 ac_default_prefix=$BUILD_PREFIX
             fi
         fi
+        if test x$enable_loadso = xyes; then
+            have_loadso=yes
+        fi
         CheckDeclarationAfterStatement
         CheckDummyVideo
         CheckDiskAudio
@@ -25262,10 +25250,15 @@ $as_echo "#define SDL_AUDIO_DRIVER_WASAPI 1" >>confdefs.h
 
 $as_echo "#define SDL_JOYSTICK_RAWINPUT 1" >>confdefs.h
 
-            if test x$have_dinput = xyes -o x$have_xinput = xyes; then
+            if test x$have_dinput = xyes -o x$have_xinput = xyes -o x$have_wgi = xyes; then
                 if test x$have_xinput = xyes; then
 
 $as_echo "#define SDL_JOYSTICK_XINPUT 1" >>confdefs.h
+
+                fi
+                if test x$have_wgi = xyes; then
+
+$as_echo "#define SDL_JOYSTICK_WGI 1" >>confdefs.h
 
                 fi
                 if test x$have_dinput = xyes; then
@@ -25361,7 +25354,6 @@ $as_echo "#define SDL_TIMER_WINDOWS 1" >>confdefs.h
 $as_echo "#define SDL_LOADSO_WINDOWS 1" >>confdefs.h
 
             SOURCES="$SOURCES $srcdir/src/loadso/windows/*.c"
-            have_loadso=yes
         fi
         # Set up the system libraries we need
         if test -f /lib/w32api/libuuid.a; then
@@ -25819,6 +25811,23 @@ $as_echo "#define SDL_TIMER_UNIX 1" >>confdefs.h
         SOURCES="$SOURCES $srcdir/src/misc/riscos/*.c"
         have_misc=yes
 
+        # Set up files for the video library
+        if test x$enable_video = xyes; then
+
+$as_echo "#define SDL_VIDEO_DRIVER_RISCOS 1" >>confdefs.h
+
+            SOURCES="$SOURCES $srcdir/src/video/riscos/*.c"
+            have_video=yes
+            SUMMARY_video="${SUMMARY_video} riscos"
+        fi
+        # Set up files for the filesystem library
+        if test x$enable_filesystem = xyes; then
+
+$as_echo "#define SDL_FILESYSTEM_RISCOS 1" >>confdefs.h
+
+            SOURCES="$SOURCES $srcdir/src/filesystem/riscos/*.c"
+            have_filesystem=yes
+        fi
         # Set up files for the timer library
         if test x$enable_timers = xyes; then
 

@@ -169,6 +169,9 @@ Wayland_DeleteDevice(SDL_VideoDevice *device)
         WAYLAND_wl_display_flush(data->display);
         WAYLAND_wl_display_disconnect(data->display);
     }
+    if (device->wakeup_lock) {
+        SDL_DestroyMutex(device->wakeup_lock);
+    }
     SDL_free(data);
     SDL_free(device);
     SDL_WAYLAND_UnloadSymbols();
@@ -212,6 +215,7 @@ Wayland_CreateDevice(int devindex)
     }
 
     device->driverdata = data;
+    device->wakeup_lock = SDL_CreateMutex();
 
     /* Set the function pointers */
     device->VideoInit = Wayland_VideoInit;
@@ -222,6 +226,8 @@ Wayland_CreateDevice(int devindex)
     device->SuspendScreenSaver = Wayland_SuspendScreenSaver;
 
     device->PumpEvents = Wayland_PumpEvents;
+    device->WaitEventTimeout = Wayland_WaitEventTimeout;
+    device->SendWakeupEvent = Wayland_SendWakeupEvent;
 
     device->GL_SwapWindow = Wayland_GLES_SwapWindow;
     device->GL_GetSwapInterval = Wayland_GLES_GetSwapInterval;
@@ -495,7 +501,6 @@ display_handle_global(void *data, struct wl_registry *registry, uint32_t id,
         xdg_wm_base_add_listener(d->shell.xdg, &shell_listener_xdg, NULL);
     } else if (SDL_strcmp(interface, "wl_shm") == 0) {
         d->shm = wl_registry_bind(registry, id, &wl_shm_interface, 1);
-        d->cursor_theme = WAYLAND_wl_cursor_theme_load(NULL, 32, d->shm);
     } else if (SDL_strcmp(interface, "zwp_relative_pointer_manager_v1") == 0) {
         Wayland_display_add_relative_pointer_manager(d, id);
     } else if (SDL_strcmp(interface, "zwp_pointer_constraints_v1") == 0) {
@@ -618,7 +623,7 @@ Wayland_VideoQuit(_THIS)
     SDL_VideoData *data = _this->driverdata;
     int i, j;
 
-    Wayland_FiniMouse ();
+    Wayland_FiniMouse(data);
 
     for (i = 0; i < _this->num_displays; ++i) {
         SDL_VideoDisplay *display = &_this->displays[i];
@@ -670,9 +675,6 @@ Wayland_VideoQuit(_THIS)
 
     if (data->shm)
         wl_shm_destroy(data->shm);
-
-    if (data->cursor_theme)
-        WAYLAND_wl_cursor_theme_destroy(data->cursor_theme);
 
     if (data->shell.xdg)
         xdg_wm_base_destroy(data->shell.xdg);

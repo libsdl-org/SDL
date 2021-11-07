@@ -215,7 +215,7 @@ loop(void)
 
 #if VERBOSE
             case SDL_FINGERMOTION:
-                SDL_Log("Finger: %"SDL_PRIs64",x: %f, y: %f",event.tfinger.fingerId,
+                SDL_Log("Finger: %"SDL_PRIs64", x: %f, y: %f",event.tfinger.fingerId,
                         event.tfinger.x,event.tfinger.y);
                 break;
 

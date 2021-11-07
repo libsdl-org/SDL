@@ -4,6 +4,7 @@ These are test programs for the SDL library:
 	checkkeys	Watch the key events to check the keyboard
 	loopwave	Audio test -- loop playing a WAV file
 	loopwavequeue	Audio test -- loop playing a WAV file with SDL_QueueAudio
+	testsurround	Audio test -- play test tone on each audio channel
 	testaudioinfo	Lists audio device capabilities
 	testerror	Tests multi-threaded error handling
 	testfile	Tests RWops layer
@@ -14,6 +15,7 @@ These are test programs for the SDL library:
 	testloadso	Tests the loadable library layer
 	testlocale  Test Locale API
 	testlock	Hacked up test of multi-threading and locking
+	testmouse	Tests mouse coordinates
 	testmultiaudio	Tests using several audio devices
 	testoverlay2	Tests the overlay flickering/scaling during playback.
 	testplatform	Tests types, endianness and cpu capabilities

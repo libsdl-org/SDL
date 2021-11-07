@@ -11,7 +11,7 @@ LIBFILE = geniconv.lib
 
 all: $(LIBFILE) test.exe .symbolic
 
-CFLAGS = -I$(%WATCOM)/h/os2 -I$(%WATCOM)/h -I. -bt=os2 -q -d0 -w2
+CFLAGS = -I$(%WATCOM)/h/os2 -I$(%WATCOM)/h -I. -bt=os2 -q -d0 -w2 -DGENICONV_STANDALONE=1
 
 SRCS = geniconv.c os2cp.c os2iconv.c
 SRCS+= sys2utf8.c

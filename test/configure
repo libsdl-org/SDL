@@ -584,6 +584,8 @@ PACKAGE_URL=
 ac_unique_file="loopwave.c"
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
+LIBUNWIND_LIBS
+LIBUNWIND_CFLAGS
 SDL_TTF_LIB
 XLIB
 GLES2LIB
@@ -681,7 +683,9 @@ PKG_CONFIG_LIBDIR
 SDL_CFLAGS
 SDL_LIBS
 XMKMF
-CPP'
+CPP
+LIBUNWIND_CFLAGS
+LIBUNWIND_LIBS'
 
 
 # Initialize some variables set by options.
@@ -1323,6 +1327,10 @@ Some influential environment variables:
   SDL_LIBS    linker flags for SDL, overriding pkg-config
   XMKMF       Path to xmkmf, Makefile generator for X Window System
   CPP         C preprocessor
+  LIBUNWIND_CFLAGS
+              C compiler flags for LIBUNWIND, overriding pkg-config
+  LIBUNWIND_LIBS
+              linker flags for LIBUNWIND, overriding pkg-config
 
 Use these variables to override the choices made by `configure' or to help
 it to find libraries and programs with nonstandard names/locations.
@@ -1921,7 +1929,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 ac_aux_dir=
-for ac_dir in $srcdir/../build-scripts; do
+for ac_dir in ../build-scripts "$srcdir"/../build-scripts; do
   if test -f "$ac_dir/install-sh"; then
     ac_aux_dir=$ac_dir
     ac_install_sh="$ac_aux_dir/install-sh -c"
@@ -1937,7 +1945,7 @@ for ac_dir in $srcdir/../build-scripts; do
   fi
 done
 if test -z "$ac_aux_dir"; then
-  as_fn_error $? "cannot find install-sh, install.sh, or shtool in $srcdir/../build-scripts" "$LINENO" 5
+  as_fn_error $? "cannot find install-sh, install.sh, or shtool in ../build-scripts \"$srcdir\"/../build-scripts" "$LINENO" 5
 fi
 
 # These three variables are undocumented and unsupported,
@@ -3195,8 +3203,8 @@ fi
   if test "x$sdl_prefix$sdl_exec_prefix" = x ; then
 
 pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for SDL" >&5
-$as_echo_n "checking for SDL... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for sdl2 >= $min_sdl_version" >&5
+$as_echo_n "checking for sdl2 >= $min_sdl_version... " >&6; }
 
 if test -n "$SDL_CFLAGS"; then
     pkg_cv_SDL_CFLAGS="$SDL_CFLAGS"
@@ -4019,6 +4027,79 @@ if test x$have_SDL_ttf = xyes; then
     SDL_TTF_LIB="-lSDL2_ttf"
 fi
 
+
+
+pkg_failed=no
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for libunwind" >&5
+$as_echo_n "checking for libunwind... " >&6; }
+
+if test -n "$LIBUNWIND_CFLAGS"; then
+    pkg_cv_LIBUNWIND_CFLAGS="$LIBUNWIND_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libunwind\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libunwind") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_LIBUNWIND_CFLAGS=`$PKG_CONFIG --cflags "libunwind" 2>/dev/null`
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$LIBUNWIND_LIBS"; then
+    pkg_cv_LIBUNWIND_LIBS="$LIBUNWIND_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libunwind\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libunwind") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_LIBUNWIND_LIBS=`$PKG_CONFIG --libs "libunwind" 2>/dev/null`
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+	        LIBUNWIND_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "libunwind" 2>&1`
+        else
+	        LIBUNWIND_PKG_ERRORS=`$PKG_CONFIG --print-errors "libunwind" 2>&1`
+        fi
+	# Put the nasty error message in config.log where it belongs
+	echo "$LIBUNWIND_PKG_ERRORS" >&5
+
+	have_libunwind=no
+elif test $pkg_failed = untried; then
+     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+	have_libunwind=no
+else
+	LIBUNWIND_CFLAGS=$pkg_cv_LIBUNWIND_CFLAGS
+	LIBUNWIND_LIBS=$pkg_cv_LIBUNWIND_LIBS
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+	have_libunwind=yes
+fi
+if test x$have_libunwind = xyes ; then
+   LIBS="$LIBS $LIBUNWIND_LIBS"
+fi
 
 ac_config_files="$ac_config_files Makefile"
 

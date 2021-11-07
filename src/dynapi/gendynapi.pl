@@ -55,7 +55,7 @@ while (my $d = readdir(HEADERS)) {
     open(HEADER, '<', $header) or die("Can't open $header: $!\n");
     while (<HEADER>) {
         chomp;
-        next if not /\A\s*extern\s+DECLSPEC/;
+        next if not /\A\s*extern\s+(SDL_DEPRECATED\s+|)DECLSPEC/;
         my $decl = "$_ ";
         if (not $decl =~ /\)\s*;/) {
             while (<HEADER>) {
@@ -70,13 +70,13 @@ while (my $d = readdir(HEADERS)) {
         $decl =~ s/\s+\Z//;
         #print("DECL: [$decl]\n");
 
-        if ($decl =~ /\A\s*extern\s+DECLSPEC\s+(const\s+|)(unsigned\s+|)(.*?)\s*(\*?)\s*SDLCALL\s+(.*?)\s*\((.*?)\);/) {
-            my $rc = "$1$2$3$4";
-            my $fn = $5;
+        if ($decl =~ /\A\s*extern\s+(SDL_DEPRECATED\s+|)DECLSPEC\s+(const\s+|)(unsigned\s+|)(.*?)\s*(\*?)\s*SDLCALL\s+(.*?)\s*\((.*?)\);/) {
+            my $rc = "$2$3$4$5";
+            my $fn = $6;
 
             next if $existing{$fn};   # already slotted into the jump table.
 
-            my @params = split(',', $6);
+            my @params = split(',', $7);
 
             #print("rc == '$rc', fn == '$fn', params == '$params'\n");
 

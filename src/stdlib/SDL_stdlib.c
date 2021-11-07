@@ -52,22 +52,22 @@ SDL_atanf(float x)
 }
 
 double
-SDL_atan2(double x, double y)
+SDL_atan2(double y, double x)
 {
 #if defined(HAVE_ATAN2)
-    return atan2(x, y);
+    return atan2(y, x);
 #else
-    return SDL_uclibc_atan2(x, y);
+    return SDL_uclibc_atan2(y, x);
 #endif
 }
 
 float
-SDL_atan2f(float x, float y)
+SDL_atan2f(float y, float x)
 {
 #if defined(HAVE_ATAN2F)
-    return atan2f(x, y);
+    return atan2f(y, x);
 #else
-    return (float)SDL_atan2((double)x, (double)y);
+    return (float)SDL_atan2((double)y, (double)x);
 #endif
 }
 
@@ -444,7 +444,7 @@ SDL_sin(double x)
 #endif
 }
 
-float 
+float
 SDL_sinf(float x)
 {
 #if defined(HAVE_SINF)
@@ -499,7 +499,7 @@ int SDL_abs(int x)
 #if defined(HAVE_ABS)
     return abs(x);
 #else
-    return ((x) < 0 ? -(x) : (x));
+    return (x < 0) ? -x : x;
 #endif
 }
 

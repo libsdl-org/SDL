@@ -820,6 +820,31 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
 
             X11_UpdateKeymap(_this);
             SDL_SendKeymapChangedEvent();
+        } else if (xevent->type == PropertyNotify && videodata && videodata->windowlist) {
+            char* name_of_atom = X11_XGetAtomName(display, xevent->xproperty.atom);
+
+            if (SDL_strncmp(name_of_atom, "_ICC_PROFILE", sizeof("_ICC_PROFILE") - 1) == 0) {
+                XWindowAttributes attrib;
+                int screennum;
+                for (i = 0; i < videodata->numwindows; ++i) {
+                    if (videodata->windowlist[i] != NULL) {
+                        data = videodata->windowlist[i];
+                        X11_XGetWindowAttributes(display, data->xwindow, &attrib);
+                        screennum = X11_XScreenNumberOfScreen(attrib.screen);
+                        if (screennum == 0 && SDL_strcmp(name_of_atom, "_ICC_PROFILE") == 0) {
+                            SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_ICCPROF_CHANGED, 0, 0);
+                        } else if (SDL_strncmp(name_of_atom, "_ICC_PROFILE_", sizeof("_ICC_PROFILE_") - 1) == 0 && SDL_strlen(name_of_atom) > sizeof("_ICC_PROFILE_") - 1) {
+                            int iccscreennum = SDL_atoi(&name_of_atom[sizeof("_ICC_PROFILE_") - 1]);
+
+                            if (screennum == iccscreennum) {
+                                SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_ICCPROF_CHANGED, 0, 0);
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (name_of_atom) X11_XFree(name_of_atom);
         }
         return;
     }
@@ -1228,7 +1253,7 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
             printf("window %p: ButtonPress (X11 button = %d)\n", data, xevent->xbutton.button);
 #endif
             if (X11_IsWheelEvent(display,xevent,&xticks, &yticks)) {
-                SDL_SendMouseWheel(data->window, 0, (float) xticks, (float) yticks, SDL_MOUSEWHEEL_NORMAL);
+                SDL_SendMouseWheel(data->window, 0, (float) -xticks, (float) yticks, SDL_MOUSEWHEEL_NORMAL);
             } else {
                 SDL_bool ignore_click = SDL_FALSE;
                 int button = xevent->xbutton.button;
@@ -1511,7 +1536,7 @@ X11_Pending(Display * display)
     }
 
     /* More drastic measures are required -- see if X is ready to talk */
-    if (SDL_IOReady(ConnectionNumber(display), SDL_FALSE, 0)) {
+    if (SDL_IOReady(ConnectionNumber(display), SDL_IOR_READ, 0)) {
         return (X11_XPending(display));
     }
 
@@ -1560,21 +1585,25 @@ X11_WaitEventTimeout(_THIS, int timeout)
         } else {
             return 0;
         }
-    } else if (timeout > 0) {
-        int display_fd = ConnectionNumber(display);
-        fd_set readset;
-        struct timeval tv_timeout;
-        FD_ZERO(&readset);
-        FD_SET(display_fd, &readset);
-        tv_timeout.tv_sec = (timeout / 1000);
-        tv_timeout.tv_usec = (timeout % 1000) * 1000;
-        if (select(display_fd + 1, &readset, NULL, NULL, &tv_timeout) > 0) {
-            X11_XNextEvent(display, &xevent);
-        } else {
-            return 0;
-        }
     } else {
-        X11_XNextEvent(display, &xevent);
+        /* Use SDL_IOR_NO_RETRY to ensure SIGINT will break us out of our wait */
+        int err = SDL_IOReady(ConnectionNumber(display), SDL_IOR_READ | SDL_IOR_NO_RETRY, timeout);
+        if (err > 0) {
+            X11_XNextEvent(display, &xevent);
+        } else if (err == 0) {
+            /* Timeout */
+            return 0;
+        } else {
+            /* Error returned from poll()/select() */
+
+            if (errno == EINTR) {
+                /* If the wait was interrupted by a signal, we may have generated a
+                 * SDL_QUIT event. Let the caller know to call SDL_PumpEvents(). */
+                return 1;
+            } else {
+                return err;
+            }
+        }
     }
 
     X11_DispatchEvent(_this, &xevent);

@@ -621,7 +621,7 @@ static SDL_bool BReadDeviceInfo(SDL_DriverSwitch_Context *ctx)
         ctx->m_eControllerType = (ESwitchDeviceInfoControllerType)reply->deviceInfo.ucDeviceType;
 
         // Bytes 4-9: MAC address (big-endian)
-        memcpy(ctx->m_rgucMACAddress, reply->deviceInfo.rgucMACAddress, sizeof(ctx->m_rgucMACAddress));
+        SDL_memcpy(ctx->m_rgucMACAddress, reply->deviceInfo.rgucMACAddress, sizeof(ctx->m_rgucMACAddress));
 
         return SDL_TRUE;
     }
@@ -936,10 +936,13 @@ HIDAPI_DriverSwitch_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joysti
 
         /* Set the LED state */
         if (ctx->m_bHasHomeLED) {
-            if (SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_SWITCH_HOME_LED, SDL_TRUE)) {
-                SetHomeLED(ctx, 100);
-            } else {
-                SetHomeLED(ctx, 0);
+            const char *hint = SDL_GetHint(SDL_HINT_JOYSTICK_HIDAPI_SWITCH_HOME_LED);
+            if (hint && *hint) {
+                if (SDL_GetStringBoolean(hint, SDL_TRUE)) {
+                    SetHomeLED(ctx, 100);
+                } else {
+                    SetHomeLED(ctx, 0);
+                }
             }
         }
         SetSlotLED(ctx, (joystick->instance_id % 4));

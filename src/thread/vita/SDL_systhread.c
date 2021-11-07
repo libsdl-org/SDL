@@ -34,6 +34,15 @@
 #include <psp2/types.h>
 #include <psp2/kernel/threadmgr.h>
 
+#define VITA_THREAD_STACK_SIZE_MIN 0x1000 // 4KiB
+#define VITA_THREAD_STACK_SIZE_MAX 0x2000000 // 32MiB
+#define VITA_THREAD_STACK_SIZE_DEFAULT 0x10000 // 64KiB
+#define VITA_THREAD_NAME_MAX 32
+
+#define VITA_THREAD_PRIORITY_LOW 191
+#define VITA_THREAD_PRIORITY_NORMAL 160
+#define VITA_THREAD_PRIORITY_HIGH 112
+#define VITA_THREAD_PRIORITY_TIME_CRITICAL 64
 
 static int ThreadEntry(SceSize args, void *argp)
 {
@@ -43,17 +52,34 @@ static int ThreadEntry(SceSize args, void *argp)
 
 int SDL_SYS_CreateThread(SDL_Thread *thread)
 {
-    SceKernelThreadInfo info;
-    int priority = 32;
+    char thread_name[VITA_THREAD_NAME_MAX];
+    size_t stack_size = VITA_THREAD_STACK_SIZE_DEFAULT;
 
-    /* Set priority of new thread to the same as the current thread */
-    info.size = sizeof(SceKernelThreadInfo);
-    if (sceKernelGetThreadInfo(sceKernelGetThreadId(), &info) == 0) {
-        priority = info.currentPriority;
+    SDL_strlcpy(thread_name, "SDL thread", VITA_THREAD_NAME_MAX);
+    if (thread->name) {
+        SDL_strlcpy(thread_name, thread->name, VITA_THREAD_NAME_MAX);
     }
 
-    thread->handle = sceKernelCreateThread("SDL thread", ThreadEntry,
-                           priority, 0x10000, 0, 0, NULL);
+    if (thread->stacksize) {
+        if (thread->stacksize < VITA_THREAD_STACK_SIZE_MIN) {
+            thread->stacksize = VITA_THREAD_STACK_SIZE_MIN;
+        }
+        if (thread->stacksize > VITA_THREAD_STACK_SIZE_MAX) {
+            thread->stacksize = VITA_THREAD_STACK_SIZE_MAX;
+        }
+        stack_size = thread->stacksize;
+    }
+
+    /* Create new thread with the same priority as the current thread */
+    thread->handle = sceKernelCreateThread(
+        thread_name, // name
+        ThreadEntry, // function to run
+        0, // priority. 0 means priority of calling thread
+        stack_size, // stack size
+        0, // attibutes. always 0
+        0, // cpu affinity mask. 0 = all CPUs
+        NULL // opt. always NULL
+    );
 
     if (thread->handle < 0) {
         return SDL_SetError("sceKernelCreateThread() failed");
@@ -81,28 +107,29 @@ void SDL_SYS_WaitThread(SDL_Thread *thread)
 
 void SDL_SYS_DetachThread(SDL_Thread *thread)
 {
-    /* !!! FIXME: is this correct? */
-    sceKernelDeleteThread(thread->handle);
-}
-
-void SDL_SYS_KillThread(SDL_Thread *thread)
-{
-    sceKernelDeleteThread(thread->handle);
+    /* Do nothing. */
 }
 
 int SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
 {
-    int value;
+    int value = VITA_THREAD_PRIORITY_NORMAL;
 
-    if (priority == SDL_THREAD_PRIORITY_LOW) {
-        value = 19;
-    } else if (priority == SDL_THREAD_PRIORITY_HIGH) {
-        value = -20;
-    } else {
-        value = 0;
+    switch(priority) {
+        case SDL_THREAD_PRIORITY_LOW:
+            value = VITA_THREAD_PRIORITY_LOW;
+            break;
+        case SDL_THREAD_PRIORITY_NORMAL:
+            value = VITA_THREAD_PRIORITY_NORMAL;
+            break;
+        case SDL_THREAD_PRIORITY_HIGH:
+            value = VITA_THREAD_PRIORITY_HIGH;
+            break;
+        case SDL_THREAD_PRIORITY_TIME_CRITICAL:
+            value = VITA_THREAD_PRIORITY_TIME_CRITICAL;
+            break;
     }
 
-    return sceKernelChangeThreadPriority(sceKernelGetThreadId(),value);
+    return sceKernelChangeThreadPriority(0, value);
 
 }
 

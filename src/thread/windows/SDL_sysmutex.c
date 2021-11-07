@@ -169,11 +169,6 @@ static const SDL_mutex_impl_t SDL_mutex_impl_srw =
  * Fallback Mutex implementation using Critical Sections (before Win 7)
  */
 
-typedef struct SDL_mutex_cs
-{
-    CRITICAL_SECTION cs;
-} SDL_mutex_cs;
-
 /* Create a mutex */
 static SDL_mutex *
 SDL_CreateMutex_cs(void)

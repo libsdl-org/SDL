@@ -133,7 +133,7 @@ static BOOL _getSDLPixelFormatData(SDL_PixelFormat *pSDLPixelFormat,
 
     default:
 /*      printf("Unknown color encoding: %.4s\n", fccColorEncoding);*/
-        memset(pSDLPixelFormat, 0, sizeof(SDL_PixelFormat));
+        SDL_memset(pSDLPixelFormat, 0, sizeof(SDL_PixelFormat));
         return FALSE;
     }
 
@@ -403,7 +403,7 @@ static MRESULT _wmDrop(WINDATA *pWinData, PDRAGINFO pDragInfo)
             pDragItem->hstrSourceName != NULLHANDLE) {
             /* Get file name from the item. */
             DrgQueryStrName(pDragItem->hstrContainerName, sizeof(acFName), acFName);
-            pcFName = strchr(acFName, '\0');
+            pcFName = SDL_strchr(acFName, '\0');
             DrgQueryStrName(pDragItem->hstrSourceName,
                             sizeof(acFName) - (pcFName - acFName), pcFName);
 
@@ -428,7 +428,7 @@ static MRESULT _wmDrop(WINDATA *pWinData, PDRAGINFO pDragInfo)
     return (MRESULT)FALSE;
 }
 
-MRESULT EXPENTRY wndFrameProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
+static MRESULT EXPENTRY wndFrameProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
     HWND    hwndClient = WinQueryWindow(hwnd, QW_BOTTOM);
     WINDATA * pWinData = (WINDATA *)WinQueryWindowULong(hwndClient, 0);
@@ -535,7 +535,7 @@ MRESULT EXPENTRY wndFrameProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return pWinData->fnWndFrameProc(hwnd, msg, mp1, mp2);
 }
 
-MRESULT EXPENTRY wndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
+static MRESULT EXPENTRY wndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
     WINDATA *pWinData = (WINDATA *)WinQueryWindowULong(hwnd, 0);
 
@@ -589,7 +589,7 @@ MRESULT EXPENTRY wndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
             WinQueryPointerPos(HWND_DESKTOP, &pointl);
             WinMapWindowPoints(HWND_DESKTOP, pWinData->hwnd, &pointl, 1);
             SDL_SendMouseMotion(pWinData->window, 0, 0,
-                                    pointl.x, pWinData->window->h - pointl.y - 1);
+                                pointl.x, pWinData->window->h - pointl.y - 1);
         } else {
             if (SDL_GetKeyboardFocus() == pWinData->window)
                 SDL_SetKeyboardFocus(NULL);
@@ -691,7 +691,7 @@ MRESULT EXPENTRY wndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 }
 
 
-/*  SDL routnes.
+/*  SDL routines.
  *  ------------
  */
 
@@ -1343,9 +1343,9 @@ static int OS2_SetClipboardText(_THIS, const char *text)
     debug_os2("Enter");
     if (pszText == NULL)
         return -1;
-    cbText = SDL_strlen(pszText);
+    cbText = SDL_strlen(pszText) + 1;
 
-    ulRC = DosAllocSharedMem((PPVOID)&pszClipboard, 0, cbText + 1,
+    ulRC = DosAllocSharedMem((PPVOID)&pszClipboard, 0, cbText,
                               PAG_COMMIT | PAG_READ | PAG_WRITE |
                               OBJ_GIVEABLE | OBJ_GETTABLE | OBJ_TILE);
     if (ulRC != NO_ERROR) {
@@ -1354,7 +1354,7 @@ static int OS2_SetClipboardText(_THIS, const char *text)
         return -1;
     }
 
-    strcpy(pszClipboard, pszText);
+    SDL_memcpy(pszClipboard, pszText, cbText);
     SDL_free(pszText);
 
     if (!WinOpenClipbrd(pVData->hab)) {
@@ -1444,7 +1444,7 @@ static int OS2_VideoInit(_THIS)
         return SDL_SetError("Window class not successfully registered.");
     }
 
-    if (stricmp(_this->name, OS2DRIVER_NAME_VMAN) == 0)
+    if (SDL_strcasecmp(_this->name, OS2DRIVER_NAME_VMAN) == 0)
         pVData->pOutput = &voVMan;
     else
         pVData->pOutput = &voDive;

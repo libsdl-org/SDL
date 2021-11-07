@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2015 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -24,10 +24,12 @@
 
 #include "../../SDL_internal.h"
 #include "../SDL_sysvideo.h"
+#include "../SDL_egl_c.h"
 
 #include <psp2/types.h>
 #include <psp2/display.h>
 #include <psp2/ime_dialog.h>
+#include <psp2/sysmodule.h>
 
 typedef struct SDL_VideoData
 {
@@ -36,7 +38,6 @@ typedef struct SDL_VideoData
 
     SceWChar16 ime_buffer[SCE_IME_DIALOG_MAX_TEXT_LENGTH];
     SDL_bool ime_active;
-
 } SDL_VideoData;
 
 
@@ -51,7 +52,10 @@ typedef struct SDL_WindowData
     SDL_bool uses_gles;
     SceUID buffer_uid;
     void* buffer;
-
+#if defined(SDL_VIDEO_VITA_PVR)
+    EGLSurface egl_surface;
+    EGLContext egl_context;
+#endif
 } SDL_WindowData;
 
 extern SDL_Window * Vita_Window;

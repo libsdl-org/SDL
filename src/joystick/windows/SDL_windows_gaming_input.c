@@ -166,6 +166,12 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
     HRESULT hr;
     __x_ABI_CWindows_CGaming_CInput_CIRawGameController *controller = NULL;
 
+    /* We can get delayed calls to InvokeAdded() after WGI_JoystickQuit(). Do nothing if WGI is deinitialized.
+     * FIXME: Can we tell if WGI has been quit and reinitialized prior to a delayed callback? */
+    if (wgi.statics == NULL) {
+        return S_OK;
+    }
+
     hr = IUnknown_QueryInterface((IUnknown *)e, &IID_IRawGameController, (void **)&controller);
     if (SUCCEEDED(hr)) {
         char *name = NULL;

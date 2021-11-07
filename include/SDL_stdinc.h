@@ -415,6 +415,8 @@ typedef void (SDLCALL *SDL_free_func)(void *mem);
 
 /**
  * Get the current set of SDL memory functions
+ *
+ * \since This function is available since SDL 2.0.7.
  */
 extern DECLSPEC void SDLCALL SDL_GetMemoryFunctions(SDL_malloc_func *malloc_func,
                                                     SDL_calloc_func *calloc_func,
@@ -423,6 +425,8 @@ extern DECLSPEC void SDLCALL SDL_GetMemoryFunctions(SDL_malloc_func *malloc_func
 
 /**
  * Replace SDL's memory allocation functions with a custom set
+ *
+ * \since This function is available since SDL 2.0.7.
  */
 extern DECLSPEC int SDLCALL SDL_SetMemoryFunctions(SDL_malloc_func malloc_func,
                                                    SDL_calloc_func calloc_func,
@@ -431,6 +435,8 @@ extern DECLSPEC int SDLCALL SDL_SetMemoryFunctions(SDL_malloc_func malloc_func,
 
 /**
  * Get the number of outstanding (unfreed) allocations
+ *
+ * \since This function is available since SDL 2.0.7.
  */
 extern DECLSPEC int SDLCALL SDL_GetNumAllocations(void);
 
@@ -444,7 +450,7 @@ extern DECLSPEC int SDLCALL SDL_abs(int x);
 /* NOTE: these double-evaluate their arguments, so you should never have side effects in the parameters */
 #define SDL_min(x, y) (((x) < (y)) ? (x) : (y))
 #define SDL_max(x, y) (((x) > (y)) ? (x) : (y))
-#define SDL_clamp(x, a, b) ((x) < (a)) ? (a) : (((x) > (b)) ? (b) : (x))
+#define SDL_clamp(x, a, b) (((x) < (a)) ? (a) : (((x) > (b)) ? (b) : (x)))
 
 extern DECLSPEC int SDLCALL SDL_isalpha(int x);
 extern DECLSPEC int SDLCALL SDL_isalnum(int x);
@@ -566,6 +572,8 @@ extern DECLSPEC int SDLCALL SDL_sscanf(const char *text, SDL_SCANF_FORMAT_STRING
 extern DECLSPEC int SDLCALL SDL_vsscanf(const char *text, const char *fmt, va_list ap);
 extern DECLSPEC int SDLCALL SDL_snprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, SDL_PRINTF_FORMAT_STRING const char *fmt, ... ) SDL_PRINTF_VARARG_FUNC(3);
 extern DECLSPEC int SDLCALL SDL_vsnprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, const char *fmt, va_list ap);
+extern DECLSPEC int SDLCALL SDL_asprintf(char **strp, SDL_PRINTF_FORMAT_STRING const char *fmt, ...) SDL_PRINTF_VARARG_FUNC(2);
+extern DECLSPEC int SDLCALL SDL_vasprintf(char **strp, const char *fmt, va_list ap);
 
 #ifndef HAVE_M_PI
 #ifndef M_PI
@@ -573,14 +581,28 @@ extern DECLSPEC int SDLCALL SDL_vsnprintf(SDL_OUT_Z_CAP(maxlen) char *text, size
 #endif
 #endif
 
+/**
+ * Use this function to compute arc cosine of `x`.
+ *
+ * The definition of `y = acos(x)` is `x = cos(y)`.
+ *
+ * Domain: `-1 <= x <= 1`
+ *
+ * Range: `0 <= y <= Pi`
+ *
+ * \param x floating point value, in radians.
+ * \returns arc cosine of `x`.
+ *
+ * \since This function is available since SDL 2.0.2.
+ */
 extern DECLSPEC double SDLCALL SDL_acos(double x);
 extern DECLSPEC float SDLCALL SDL_acosf(float x);
 extern DECLSPEC double SDLCALL SDL_asin(double x);
 extern DECLSPEC float SDLCALL SDL_asinf(float x);
 extern DECLSPEC double SDLCALL SDL_atan(double x);
 extern DECLSPEC float SDLCALL SDL_atanf(float x);
-extern DECLSPEC double SDLCALL SDL_atan2(double x, double y);
-extern DECLSPEC float SDLCALL SDL_atan2f(float x, float y);
+extern DECLSPEC double SDLCALL SDL_atan2(double y, double x);
+extern DECLSPEC float SDLCALL SDL_atan2f(float y, float x);
 extern DECLSPEC double SDLCALL SDL_ceil(double x);
 extern DECLSPEC float SDLCALL SDL_ceilf(float x);
 extern DECLSPEC double SDLCALL SDL_copysign(double x, double y);
@@ -630,9 +652,12 @@ extern DECLSPEC int SDLCALL SDL_iconv_close(SDL_iconv_t cd);
 extern DECLSPEC size_t SDLCALL SDL_iconv(SDL_iconv_t cd, const char **inbuf,
                                          size_t * inbytesleft, char **outbuf,
                                          size_t * outbytesleft);
+
 /**
  * This function converts a string between encodings in one pass, returning a
  * string that must be freed with SDL_free() or NULL on error.
+ *
+ * \since This function is available since SDL 2.0.0.
  */
 extern DECLSPEC char *SDLCALL SDL_iconv_string(const char *tocode,
                                                const char *fromcode,

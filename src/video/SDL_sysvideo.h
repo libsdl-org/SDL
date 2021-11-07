@@ -83,6 +83,7 @@ struct SDL_Window
     int max_w, max_h;
     Uint32 flags;
     Uint32 last_fullscreen_flags;
+    Uint32 display_index;
 
     /* Stored position and size for windowed mode */
     SDL_Rect windowed;
@@ -233,6 +234,7 @@ struct SDL_VideoDevice
     void (*SetWindowFullscreen) (_THIS, SDL_Window * window, SDL_VideoDisplay * display, SDL_bool fullscreen);
     int (*SetWindowGammaRamp) (_THIS, SDL_Window * window, const Uint16 * ramp);
     int (*GetWindowGammaRamp) (_THIS, SDL_Window * window, Uint16 * ramp);
+    void* (*GetWindowICCProfile) (_THIS, SDL_Window * window, size_t* size);
     void (*SetWindowMouseGrab) (_THIS, SDL_Window * window, SDL_bool grabbed);
     void (*SetWindowKeyboardGrab) (_THIS, SDL_Window * window, SDL_bool grabbed);
     void (*DestroyWindow) (_THIS, SDL_Window * window);
@@ -435,6 +437,7 @@ extern VideoBootStrap UIKIT_bootstrap;
 extern VideoBootStrap Android_bootstrap;
 extern VideoBootStrap PSP_bootstrap;
 extern VideoBootStrap VITA_bootstrap;
+extern VideoBootStrap RISCOS_bootstrap;
 extern VideoBootStrap RPI_bootstrap;
 extern VideoBootStrap KMSDRM_bootstrap;
 extern VideoBootStrap KMSDRM_LEGACY_bootstrap;
@@ -466,6 +469,7 @@ extern SDL_bool SDL_HasWindows(void);
 
 extern void SDL_OnWindowShown(SDL_Window * window);
 extern void SDL_OnWindowHidden(SDL_Window * window);
+extern void SDL_OnWindowMoved(SDL_Window * window);
 extern void SDL_OnWindowResized(SDL_Window * window);
 extern void SDL_OnWindowMinimized(SDL_Window * window);
 extern void SDL_OnWindowRestored(SDL_Window * window);

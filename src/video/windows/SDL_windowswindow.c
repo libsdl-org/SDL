@@ -281,15 +281,8 @@ SetupWindowData(_THIS, SDL_Window * window, HWND hwnd, HWND parent, SDL_bool cre
     }
     if (GetFocus() == hwnd) {
         window->flags |= SDL_WINDOW_INPUT_FOCUS;
-        SDL_SetKeyboardFocus(data->window);
-
-        if (window->flags & SDL_WINDOW_MOUSE_GRABBED) {
-            RECT rect;
-            GetClientRect(hwnd, &rect);
-            ClientToScreen(hwnd, (LPPOINT) & rect);
-            ClientToScreen(hwnd, (LPPOINT) & rect + 1);
-            ClipCursor(&rect);
-        }
+        SDL_SetKeyboardFocus(window);
+        WIN_UpdateClipCursor(window);
     }
 
     /* Enable multi-touch */
@@ -562,7 +555,7 @@ WIN_ShowWindow(_THIS, SDL_Window * window)
     int nCmdShow;
 
     hwnd = ((SDL_WindowData *)window->driverdata)->hwnd;
-    nCmdShow = SW_SHOW;
+    nCmdShow = SDL_GetHintBoolean(SDL_HINT_WINDOW_NO_ACTIVATION_WHEN_SHOWN, SDL_FALSE) ? SW_SHOWNA : SW_SHOW;
     style = GetWindowLong(hwnd, GWL_EXSTYLE);
     if (style & WS_EX_NOACTIVATE) {
         nCmdShow = SW_SHOWNOACTIVATE;
@@ -730,6 +723,32 @@ WIN_SetWindowGammaRamp(_THIS, SDL_Window * window, const Uint16 * ramp)
         DeleteDC(hdc);
     }
     return succeeded ? 0 : -1;
+}
+
+void*
+WIN_GetWindowICCProfile(_THIS, SDL_Window * window, size_t * size)
+{
+    SDL_VideoDisplay* display = SDL_GetDisplayForWindow(window);
+    SDL_DisplayData* data = (SDL_DisplayData*)display->driverdata;
+    HDC hdc;
+    BOOL succeeded = FALSE;
+    WCHAR filename[MAX_PATH];
+    DWORD fileNameSize = MAX_PATH;
+    void* iccProfileData = NULL;
+
+    hdc = CreateDCW(data->DeviceName, NULL, NULL, NULL);
+    if (hdc) {
+        succeeded = GetICMProfileW(hdc, &fileNameSize, filename);
+        DeleteDC(hdc);
+    }
+
+    if (succeeded) {
+        iccProfileData = SDL_LoadFile(WIN_StringToUTF8(filename), size);
+        if (!iccProfileData)
+            SDL_SetError("Could not open ICC profile");
+    }
+
+    return iccProfileData;
 }
 
 int
@@ -960,18 +979,6 @@ void WIN_OnWindowEnter(_THIS, SDL_Window * window)
     if (window->flags & SDL_WINDOW_ALWAYS_ON_TOP) {
         WIN_SetWindowPositionInternal(_this, window, SWP_NOCOPYBITS | SWP_NOSIZE | SWP_NOACTIVATE);
     }
-
-#ifdef WM_MOUSELEAVE
-    {
-        TRACKMOUSEEVENT trackMouseEvent;
-
-        trackMouseEvent.cbSize = sizeof(TRACKMOUSEEVENT);
-        trackMouseEvent.dwFlags = TME_LEAVE;
-        trackMouseEvent.hwndTrack = data->hwnd;
-
-        TrackMouseEvent(&trackMouseEvent);
-    }
-#endif /* WM_MOUSELEAVE */
 }
 
 void
@@ -993,12 +1000,33 @@ WIN_UpdateClipCursor(SDL_Window *window)
 
     if ((mouse->relative_mode || (window->flags & SDL_WINDOW_MOUSE_GRABBED)) &&
         (window->flags & SDL_WINDOW_INPUT_FOCUS)) {
-        if (GetClientRect(data->hwnd, &rect) && !IsRectEmpty(&rect)) {
-            ClientToScreen(data->hwnd, (LPPOINT) & rect);
-            ClientToScreen(data->hwnd, (LPPOINT) & rect + 1);
-            if (SDL_memcmp(&rect, &clipped_rect, sizeof(rect)) != 0) {
-                if (ClipCursor(&rect)) {
-                    data->cursor_clipped_rect = rect;
+        if (mouse->relative_mode && !mouse->relative_mode_warp) {
+            if (GetWindowRect(data->hwnd, &rect)) {
+                LONG cx, cy;
+
+                cx = (rect.left + rect.right) / 2;
+                cy = (rect.top + rect.bottom) / 2;
+
+                /* Make an absurdly small clip rect */
+                rect.left = cx - 1;
+                rect.right = cx + 1;
+                rect.top = cy - 1;
+                rect.bottom = cy + 1;
+
+                if (SDL_memcmp(&rect, &clipped_rect, sizeof(rect)) != 0) {
+                    if (ClipCursor(&rect)) {
+                        data->cursor_clipped_rect = rect;
+                    }
+                }
+            }
+        } else {
+            if (GetClientRect(data->hwnd, &rect) && !IsRectEmpty(&rect)) {
+                ClientToScreen(data->hwnd, (LPPOINT) & rect);
+                ClientToScreen(data->hwnd, (LPPOINT) & rect + 1);
+                if (SDL_memcmp(&rect, &clipped_rect, sizeof(rect)) != 0) {
+                    if (ClipCursor(&rect)) {
+                        data->cursor_clipped_rect = rect;
+                    }
                 }
             }
         }

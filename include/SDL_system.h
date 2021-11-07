@@ -50,6 +50,8 @@ typedef void (SDLCALL * SDL_WindowsMessageHook)(void *userdata, void *hWnd, unsi
  *
  * \param callback The SDL_WindowsMessageHook function to call.
  * \param userdata a pointer to pass to every iteration of `callback`
+ *
+ * \since This function is available since SDL 2.0.4.
  */
 extern DECLSPEC void SDLCALL SDL_SetWindowsMessageHook(SDL_WindowsMessageHook callback, void *userdata);
 
@@ -95,6 +97,8 @@ typedef struct ID3D11Device ID3D11Device;
  * \param renderer the renderer from which to get the associated D3D11 device
  * \returns the D3D11 device associated with given renderer or NULL if it is
  *          not a D3D11 renderer; call SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 2.0.16.
  */
 extern DECLSPEC ID3D11Device* SDLCALL SDL_RenderGetD3D11Device(SDL_Renderer * renderer);
 
@@ -132,8 +136,22 @@ extern DECLSPEC SDL_bool SDLCALL SDL_DXGIGetOutputInfo( int displayIndex, int *a
  * \param threadID the Unix thread ID to change priority of.
  * \param priority The new, Unix-specific, priority value.
  * \returns 0 on success, or -1 on error.
+ *
+ * \since This function is available since SDL 2.0.9.
  */
 extern DECLSPEC int SDLCALL SDL_LinuxSetThreadPriority(Sint64 threadID, int priority);
+
+/**
+ * Sets the priority (not nice level) and scheduling policy for a thread.
+ *
+ * This uses setpriority() if possible, and RealtimeKit if available.
+ *
+ * \param threadID The Unix thread ID to change priority of.
+ * \param sdlPriority The new SDL_ThreadPriority value.
+ * \param schedPolicy The new scheduling policy (SCHED_FIFO, SCHED_RR, SCHED_OTHER, etc...)
+ * \returns 0 on success, or -1 on error.
+ */
+extern DECLSPEC int SDLCALL SDL_LinuxSetThreadPriorityAndPolicy(Sint64 threadID, int sdlPriority, int schedPolicy);
  
 #endif /* __LINUX__ */
 	
@@ -141,9 +159,57 @@ extern DECLSPEC int SDLCALL SDL_LinuxSetThreadPriority(Sint64 threadID, int prio
 #ifdef __IPHONEOS__
 
 #define SDL_iOSSetAnimationCallback(window, interval, callback, callbackParam) SDL_iPhoneSetAnimationCallback(window, interval, callback, callbackParam)
+
+/**
+ * Use this function to set the animation callback on Apple iOS.
+ *
+ * The function prototype for `callback` is:
+ *
+ * ```c
+ * void callback(void* callbackParam);
+ * ```
+ *
+ * Where its parameter, `callbackParam`, is what was passed as `callbackParam`
+ * to SDL_iPhoneSetAnimationCallback().
+ *
+ * This function is only available on Apple iOS.
+ *
+ * For more information see:
+ * [README-ios.md](https://hg.libsdl.org/SDL/file/default/docs/README-ios.md)
+ *
+ * This functions is also accessible using the macro
+ * SDL_iOSSetAnimationCallback() since SDL 2.0.4.
+ *
+ * \param window the window for which the animation callback should be set
+ * \param interval the number of frames after which **callback** will be
+ *                 called
+ * \param callback the function to call for every frame.
+ * \param callbackParam a pointer that is passed to `callback`.
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 2.0.0.
+ *
+ * \sa SDL_iPhoneSetEventPump
+ */
 extern DECLSPEC int SDLCALL SDL_iPhoneSetAnimationCallback(SDL_Window * window, int interval, void (*callback)(void*), void *callbackParam);
 
 #define SDL_iOSSetEventPump(enabled) SDL_iPhoneSetEventPump(enabled)
+
+/**
+ * Use this function to enable or disable the SDL event pump on Apple iOS.
+ *
+ * This function is only available on Apple iOS.
+ *
+ * This functions is also accessible using the macro SDL_iOSSetEventPump()
+ * since SDL 2.0.4.
+ *
+ * \param enabled SDL_TRUE to enable the event pump, SDL_FALSE to disable it
+ *
+ * \since This function is available since SDL 2.0.0.
+ *
+ * \sa SDL_iPhoneSetAnimationCallback
+ */
 extern DECLSPEC void SDLCALL SDL_iPhoneSetEventPump(SDL_bool enabled);
 
 #endif /* __IPHONEOS__ */
@@ -196,6 +262,7 @@ extern DECLSPEC void * SDLCALL SDL_AndroidGetActivity(void);
 /**
  * Query Android API level of the current device.
  *
+ * - API level 31: Android 12
  * - API level 30: Android 11
  * - API level 29: Android 10
  * - API level 28: Android 9
@@ -219,6 +286,8 @@ extern DECLSPEC void * SDLCALL SDL_AndroidGetActivity(void);
  * - API level 10: Android 2.3.3
  *
  * \returns the Android API level.
+ *
+ * \since This function is available since SDL 2.0.12.
  */
 extern DECLSPEC int SDLCALL SDL_GetAndroidSDKVersion(void);
 
@@ -226,6 +295,8 @@ extern DECLSPEC int SDLCALL SDL_GetAndroidSDKVersion(void);
  * Query if the application is running on Android TV.
  *
  * \returns SDL_TRUE if this is Android TV, SDL_FALSE otherwise.
+ *
+ * \since This function is available since SDL 2.0.8.
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_IsAndroidTV(void);
 
@@ -233,6 +304,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_IsAndroidTV(void);
  * Query if the application is running on a Chromebook.
  *
  * \returns SDL_TRUE if this is a Chromebook, SDL_FALSE otherwise.
+ *
+ * \since This function is available since SDL 2.0.9.
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_IsChromebook(void);
 
@@ -240,11 +313,15 @@ extern DECLSPEC SDL_bool SDLCALL SDL_IsChromebook(void);
  * Query if the application is running on a Samsung DeX docking station.
  *
  * \returns SDL_TRUE if this is a DeX docking station, SDL_FALSE otherwise.
+ *
+ * \since This function is available since SDL 2.0.9.
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_IsDeXMode(void);
 
 /**
  * Trigger the Android system back button behavior.
+ *
+ * \since This function is available since SDL 2.0.9.
  */
 extern DECLSPEC void SDLCALL SDL_AndroidBackButton(void);
 
@@ -315,6 +392,8 @@ extern DECLSPEC const char * SDLCALL SDL_AndroidGetExternalStoragePath(void);
  *
  * \param permission The permission to request.
  * \returns SDL_TRUE if the permission was granted, SDL_FALSE otherwise.
+ *
+ * \since This function is available since SDL 2.0.14.
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_AndroidRequestPermission(const char *permission);
 
@@ -338,6 +417,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_AndroidRequestPermission(const char *permis
  * \param xoffset set this parameter only when gravity >=0
  * \param yoffset set this parameter only when gravity >=0
  * \returns 0 if success, -1 if any error occurs.
+ *
+ * \since This function is available since SDL 2.0.16.
  */
 extern DECLSPEC int SDLCALL SDL_AndroidShowToast(const char* message, int duration, int gravity, int xoffset, int yoffset);
 
@@ -439,6 +520,8 @@ extern DECLSPEC const char * SDLCALL SDL_WinRTGetFSPathUTF8(SDL_WinRT_Path pathT
  * Detects the device family of WinRT plattform at runtime.
  *
  * \returns a value from the SDL_WinRT_DeviceFamily enum.
+ *
+ * \since This function is available since SDL 2.0.8.
  */
 extern DECLSPEC SDL_WinRT_DeviceFamily SDLCALL SDL_WinRTGetDeviceFamily();
 
@@ -450,6 +533,8 @@ extern DECLSPEC SDL_WinRT_DeviceFamily SDLCALL SDL_WinRTGetDeviceFamily();
  * If SDL can't determine this, it will return SDL_FALSE.
  *
  * \returns SDL_TRUE if the device is a tablet, SDL_FALSE otherwise.
+ *
+ * \since This function is available since SDL 2.0.9.
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_IsTablet(void);
 

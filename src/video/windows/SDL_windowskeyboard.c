@@ -23,6 +23,7 @@
 #if SDL_VIDEO_DRIVER_WINDOWS
 
 #include "SDL_windowsvideo.h"
+#include "SDL_hints.h"
 
 #include "../../events/SDL_keyboard_c.h"
 #include "../../events/scancodes_windows.h"
@@ -245,13 +246,28 @@ WIN_SetTextInputRect(_THIS, SDL_Rect *rect)
     himc = ImmGetContext(videodata->ime_hwnd_current);
     if (himc)
     {
-        COMPOSITIONFORM cf;
-        cf.ptCurrentPos.x = videodata->ime_rect.x;
-        cf.ptCurrentPos.y = videodata->ime_rect.y;
-        cf.dwStyle = CFS_FORCE_POSITION;
-        ImmSetCompositionWindow(himc, &cf);
+        COMPOSITIONFORM cof;
+        CANDIDATEFORM caf;
+
+        cof.dwStyle = CFS_FORCE_POSITION;
+        cof.ptCurrentPos.x = videodata->ime_rect.x;
+        cof.ptCurrentPos.y = videodata->ime_rect.y;
+        ImmSetCompositionWindow(himc, &cof);
+
+        caf.dwIndex = 0;
+        caf.dwStyle = CFS_CANDIDATEPOS;
+        caf.ptCurrentPos.x = videodata->ime_rect.x;
+        caf.ptCurrentPos.y = videodata->ime_rect.y;
+        ImmSetCandidateWindow(himc, &caf);
+
         ImmReleaseContext(videodata->ime_hwnd_current, himc);
     }
+}
+
+static SDL_bool
+WIN_ShouldShowNativeUI()
+{
+    return SDL_GetHintBoolean(SDL_HINT_IME_SHOW_UI, SDL_FALSE);
 }
 
 #ifdef SDL_DISABLE_WINDOWS_IME
@@ -371,7 +387,10 @@ IME_Init(SDL_VideoData *videodata, HWND hwnd)
     videodata->ime_available = SDL_TRUE;
     IME_UpdateInputLocale(videodata);
     IME_SetupAPI(videodata);
-    videodata->ime_uiless = UILess_SetupSinks(videodata);
+    if (WIN_ShouldShowNativeUI())
+        videodata->ime_uiless = SDL_FALSE;
+    else
+        videodata->ime_uiless = UILess_SetupSinks(videodata);
     IME_UpdateInputLocale(videodata);
     IME_Disable(videodata, hwnd);
 }
@@ -736,13 +755,16 @@ IME_GetCompositionString(SDL_VideoData *videodata, HIMC himc, DWORD string)
 
     length /= sizeof(videodata->ime_composition[0]);
     videodata->ime_cursor = LOWORD(ImmGetCompositionStringW(himc, GCS_CURSORPOS, 0, 0));
-    if (videodata->ime_cursor < SDL_arraysize(videodata->ime_composition) && videodata->ime_composition[videodata->ime_cursor] == 0x3000) {
+    if (videodata->ime_cursor > 0 &&
+        videodata->ime_cursor < SDL_arraysize(videodata->ime_composition) &&
+        videodata->ime_composition[videodata->ime_cursor] == 0x3000) {
         int i;
         for (i = videodata->ime_cursor + 1; i < length; ++i)
             videodata->ime_composition[i - 1] = videodata->ime_composition[i];
 
         --length;
     }
+
     videodata->ime_composition[length] = 0;
 }
 

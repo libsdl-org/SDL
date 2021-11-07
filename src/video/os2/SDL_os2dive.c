@@ -302,10 +302,10 @@ static BOOL voUpdate(PVODATA pVOData, HWND hwnd, SDL_Rect *pSDLRects,
             debug_os2("Not enough stack size");
             return FALSE;
         }
-        memset(pbLineMask, 0, pVOData->ulHeight);
+        SDL_memset(pbLineMask, 0, pVOData->ulHeight);
 
         for ( ; ((LONG)cSDLRects) > 0; cSDLRects--, pSDLRects++) {
-            memset(&pbLineMask[pSDLRects->y], 1, pSDLRects->h);
+            SDL_memset(&pbLineMask[pSDLRects->y], 1, pSDLRects->h);
         }
 
         ulRC = DiveBlitImageLines(pVOData->hDive, pVOData->ulDIVEBufNum,

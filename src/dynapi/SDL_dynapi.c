@@ -89,6 +89,12 @@ static void SDL_InitDynamicAPI(void);
         va_end(ap); \
         return retval; \
     } \
+    _static int SDLCALL SDL_asprintf##name(char **strp, SDL_PRINTF_FORMAT_STRING const char *fmt, ...) { \
+        int retval; va_list ap; initcall; va_start(ap, fmt); \
+        retval = jump_table.SDL_vasprintf(strp, fmt, ap); \
+        va_end(ap); \
+        return retval; \
+    } \
     _static void SDLCALL SDL_Log##name(SDL_PRINTF_FORMAT_STRING const char *fmt, ...) { \
         va_list ap; initcall; va_start(ap, fmt); \
         jump_table.SDL_LogMessageV(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO, fmt, ap); \
@@ -270,7 +276,7 @@ static void dynapi_warn(const char *msg)
     /* SDL_ShowSimpleMessageBox() is a too heavy for here. */
     #if defined(WIN32) || defined(_WIN32) || defined(__CYGWIN__)
     MessageBoxA(NULL, msg, caption, MB_OK | MB_ICONERROR);
-    #else
+    #elif defined(HAVE_STDIO_H)
     fprintf(stderr, "\n\n%s\n%s\n\n", caption, msg);
     fflush(stderr);
     #endif

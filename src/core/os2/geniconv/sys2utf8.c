@@ -20,7 +20,15 @@
 */
 
 #include "geniconv.h"
+
+#ifndef GENICONV_STANDALONE
+#include "../../../SDL_internal.h"
+#else
 #include <stdlib.h>
+#define SDL_malloc malloc
+#define SDL_realloc realloc
+#define SDL_free free
+#endif
 
 int StrUTF8(int fToUTF8, char *pcDst, int cbDst, char *pcSrc, int cbSrc)
 {
@@ -83,25 +91,25 @@ int StrUTF8(int fToUTF8, char *pcDst, int cbDst, char *pcSrc, int cbSrc)
 char *StrUTF8New(int fToUTF8, char *pcStr, int cbStr)
 {
     int   cbNewStr = (((cbStr > 4)? cbStr : 4) + 1) * 2;
-    char *pszNewStr = (char *) malloc(cbNewStr);
+    char *pszNewStr = (char *) SDL_malloc(cbNewStr);
 
     if (pszNewStr == NULL)
         return NULL;
 
     cbNewStr = StrUTF8(fToUTF8, pszNewStr, cbNewStr, pcStr, cbStr);
     if (cbNewStr != -1) {
-        pcStr = (char *) realloc(pszNewStr, cbNewStr + ((fToUTF8)? 1 : sizeof(short)));
+        pcStr = (char *) SDL_realloc(pszNewStr, cbNewStr + ((fToUTF8)? 1 : sizeof(short)));
         if (pcStr)
             return pcStr;
     }
 
-    free(pszNewStr);
+    SDL_free(pszNewStr);
     return NULL;
 }
 
 void StrUTF8Free(char *pszStr)
 {
-    free(pszStr);
+    SDL_free(pszStr);
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

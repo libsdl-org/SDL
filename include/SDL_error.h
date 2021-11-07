@@ -58,6 +58,8 @@ extern "C" {
  *            any
  * \returns always -1.
  *
+ * \since This function is available since SDL 2.0.0.
+ *
  * \sa SDL_ClearError
  * \sa SDL_GetError
  */
@@ -72,11 +74,11 @@ extern DECLSPEC int SDLCALL SDL_SetError(SDL_PRINTF_FORMAT_STRING const char *fm
  *
  * The message is only applicable when an SDL function has signaled an error.
  * You must check the return values of SDL function calls to determine when to
- * appropriately call SDL_GetError(). You should _not_ use the results of
+ * appropriately call SDL_GetError(). You should *not* use the results of
  * SDL_GetError() to decide if an error has occurred! Sometimes SDL will set
  * an error string even when reporting success.
  *
- * SDL will _not_ clear the error string for successful API calls. You _must_
+ * SDL will *not* clear the error string for successful API calls. You *must*
  * check return values for failure cases before you can assume the error
  * string applies.
  *
@@ -92,6 +94,8 @@ extern DECLSPEC int SDLCALL SDL_SetError(SDL_PRINTF_FORMAT_STRING const char *fm
  *          when an SDL function has signaled an error. You must check the
  *          return values of SDL function calls to determine when to
  *          appropriately call SDL_GetError().
+ *
+ * \since This function is available since SDL 2.0.0.
  *
  * \sa SDL_ClearError
  * \sa SDL_SetError
@@ -109,12 +113,16 @@ extern DECLSPEC const char *SDLCALL SDL_GetError(void);
  * \param maxlen The size of the buffer pointed to by the errstr parameter
  * \returns the pointer passed in as the `errstr` parameter.
  *
+ * \since This function is available since SDL 2.0.14.
+ *
  * \sa SDL_GetError
  */
 extern DECLSPEC char * SDLCALL SDL_GetErrorMsg(char *errstr, int maxlen);
 
 /**
  * Clear any previous error message for this thread.
+ *
+ * \since This function is available since SDL 2.0.0.
  *
  * \sa SDL_GetError
  * \sa SDL_SetError

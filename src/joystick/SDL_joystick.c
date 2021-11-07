@@ -1757,8 +1757,13 @@ SDL_CreateJoystickName(Uint16 vendor, Uint16 product, const char *vendor_name, c
         size_t prefixlen = SDL_strlen(replacements[i].prefix);
         if (SDL_strncasecmp(name, replacements[i].prefix, prefixlen) == 0) {
             size_t replacementlen = SDL_strlen(replacements[i].replacement);
-            SDL_memcpy(name, replacements[i].replacement, replacementlen);
-            SDL_memmove(name+replacementlen, name+prefixlen, (len-prefixlen+1));
+            if (replacementlen <= prefixlen) {
+                SDL_memcpy(name, replacements[i].replacement, replacementlen);
+                SDL_memmove(name+replacementlen, name+prefixlen, (len-prefixlen)+1);
+                len -= (prefixlen - replacementlen);
+            } else {
+                /* FIXME: Need to handle the expand case by reallocating the string */
+            }
             break;
         }
     }
@@ -1768,11 +1773,9 @@ SDL_CreateJoystickName(Uint16 vendor, Uint16 product, const char *vendor_name, c
         int matchlen = PrefixMatch(name, &name[i]);
         if (matchlen > 0 && name[matchlen-1] == ' ') {
             SDL_memmove(name, name+matchlen, len-matchlen+1);
-            len -= matchlen;
             break;
         } else if (matchlen > 0 && name[matchlen] == ' ') {
             SDL_memmove(name, name+matchlen+1, len-matchlen);
-            len -= (matchlen + 1);
             break;
         }
     }
@@ -2393,8 +2396,9 @@ SDL_bool SDL_ShouldIgnoreJoystick(const char *name, SDL_JoystickGUID guid)
         /* Additional entries                                            */
         /*****************************************************************/
 
-        /* Anne Pro II Keyboard */
         MAKE_VIDPID(0x04d9, 0x8009),  /* OBINLB USB-HID Keyboard */
+        MAKE_VIDPID(0x0b05, 0x1958),  /* ROG Chakram Mouse */
+        MAKE_VIDPID(0x26ce, 0x01a2),  /* ASRock LED Controller */
     };
 
     unsigned int i;

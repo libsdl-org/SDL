@@ -26,8 +26,11 @@
 
 #include "SDL_stdinc.h"
 
+#define SDL_IOR_READ           0x1
+#define SDL_IOR_WRITE          0x2
+#define SDL_IOR_NO_RETRY       0x4
 
-extern int SDL_IOReady(int fd, SDL_bool forWrite, int timeoutMS);
+extern int SDL_IOReady(int fd, int flags, int timeoutMS);
 
 #endif /* SDL_poll_h_ */
 
