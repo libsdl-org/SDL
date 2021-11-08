@@ -1095,10 +1095,6 @@ if(ANDROID)
     list(APPEND EXTRA_LIBS ${ANDROID_DL_LIBRARY} ${ANDROID_LOG_LIBRARY} ${ANDROID_LIBRARY_LIBRARY})
     target_compile_definitions(sdl-build-options INTERFACE "-DGL_GLEXT_PROTOTYPES")
 
-    if (HAVE_HIDAPI)
-        list(APPEND EXTRA_LIBS hidapi)
-    endif()
-
     #enable gles
     if(SDL_OPENGLES)
       set(SDL_VIDEO_OPENGL_EGL 1)
@@ -1701,10 +1697,6 @@ elseif(WINDOWS)
 
   if(SDL_JOYSTICK)
     CheckHIDAPI()
-    # TODO: Remove this hid.c block when SDL_hidapi.c is supported on Windows!
-    if(HAVE_HIDAPI)
-      set(SOURCE_FILES ${SOURCE_FILES} ${SDL2_SOURCE_DIR}/src/hidapi/windows/hid.c)
-    endif()
     if(NOT WINDOWS_STORE)
       set(SDL_JOYSTICK_RAWINPUT 1)
     endif()
@@ -2635,10 +2627,6 @@ if(NOT WINDOWS_STORE)
   endif()
 endif()
 
-if (ANDROID AND HAVE_HIDAPI)
-  set(_INSTALL_LIBS ${_INSTALL_LIBS} "hidapi")
-endif()
-
 if(ANDROID)
   target_include_directories(sdl-build-options INTERFACE "${ANDROID_NDK}/sources/android/cpufeatures")
 endif()
@@ -2686,24 +2674,6 @@ if(SDL_SHARED)
   target_link_libraries(SDL2 PRIVATE $<BUILD_INTERFACE:sdl-build-options>)
   if(NOT ANDROID)
     set_target_properties(SDL2 PROPERTIES DEBUG_POSTFIX "${SDL_CMAKE_DEBUG_POSTFIX}")
-  endif()
-endif()
-
-if(ANDROID)
-  if(HAVE_HIDAPI)
-    add_library(hidapi SHARED ${SDL2_SOURCE_DIR}/src/hidapi/android/hid.cpp)
-    # alias target for in-tree builds
-    add_library(SDL2::hidapi ALIAS hidapi)
-  endif()
-
-  if(MSVC AND NOT SDL_LIBC)
-    # Don't try to link with the default set of libraries.
-    set_target_properties(hidapi PROPERTIES LINK_FLAGS_RELEASE "/NODEFAULTLIB")
-    set_target_properties(hidapi PROPERTIES LINK_FLAGS_DEBUG "/NODEFAULTLIB")
-    set_target_properties(hidapi PROPERTIES STATIC_LIBRARY_FLAGS "/NODEFAULTLIB")
-  endif()
-  if(HAVE_HIDAPI)
-    target_link_libraries(hidapi log)
   endif()
 endif()
 
