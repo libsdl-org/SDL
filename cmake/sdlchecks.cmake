@@ -1142,10 +1142,8 @@ macro(CheckHIDAPI)
       set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${LIBUSB_CFLAGS} \"-I${SDL2_SOURCE_DIR}/src/hidapi/hidapi\"")
       if(NOT HIDAPI_SKIP_LIBUSB)
         if(HIDAPI_ONLY_LIBUSB)
-          set(SOURCE_FILES ${SOURCE_FILES} ${SDL2_SOURCE_DIR}/src/hidapi/libusb/hid.c)
           list(APPEND EXTRA_LIBS ${LIBUSB_LIBS})
         else()
-          set(SOURCE_FILES ${SOURCE_FILES} ${SDL2_SOURCE_DIR}/src/hidapi/SDL_hidapi.c)
           # libusb is loaded dynamically, so don't add it to EXTRA_LIBS
           FindLibraryAndSONAME("usb-1.0")
           set(SDL_LIBUSB_DYNAMIC "\"${USB_LIB_SONAME}\"")
@@ -1154,7 +1152,6 @@ macro(CheckHIDAPI)
     endif()
   endif()
 endmacro()
-
 
 # Requires:
 # - n/a
