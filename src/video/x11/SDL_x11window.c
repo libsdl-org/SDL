@@ -734,6 +734,9 @@ X11_SetWindowTitle(_THIS, SDL_Window * window)
 
     Atom UTF8_STRING = data->videodata->UTF8_STRING;
     Atom _NET_WM_NAME = data->videodata->_NET_WM_NAME;
+    Atom WM_NAME = data->videodata->WM_NAME;
+
+    X11_XChangeProperty(display, data->xwindow, WM_NAME, UTF8_STRING, 8, 0, (const unsigned char *) title, strlen(title));
 
     status = X11_XChangeProperty(display, data->xwindow, _NET_WM_NAME, UTF8_STRING, 8, 0, (const unsigned char *) title, strlen(title));
 
