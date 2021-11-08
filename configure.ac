@@ -1749,6 +1749,7 @@ CheckX11()
                     xcursor_lib='/opt/X11/lib/libXcursor.1.dylib'
                     xinerama_lib='/opt/X11/lib/libXinerama.1.dylib'
                     xinput_lib='/opt/X11/lib/libXi.6.dylib'
+                    xfixes_lib='/opt/X11/lib/libXfixes.3.dylib'
                     xrandr_lib='/opt/X11/lib/libXrandr.2.dylib'
                     xrender_lib='/opt/X11/lib/libXrender.1.dylib'
                     xss_lib='/opt/X11/lib/libXss.1.dylib'
@@ -1760,6 +1761,7 @@ CheckX11()
                     xcursor_lib='libXcursor.so'
                     xinerama_lib='libXinerama.so'
                     xinput_lib='libXi.so'
+                    xfixes_lib='libXfixes.so'
                     xrandr_lib='libXrandr.so'
                     xrender_lib='libXrender.so'
                     xss_lib='libXss.so'
@@ -1771,6 +1773,7 @@ CheckX11()
                     xcursor_lib=[`find_lib "libXcursor.so.*" "$X_LIBS -L/usr/X11/$base_libdir -L/usr/X11R6/$base_libdir" | sed 's/.*\/\(.*\)/\1/; q'`]
                     xinerama_lib=[`find_lib "libXinerama.so.*" "$X_LIBS -L/usr/X11/$base_libdir -L/usr/X11R6/$base_libdir" | sed 's/.*\/\(.*\)/\1/; q'`]
                     xinput_lib=[`find_lib "libXi.so.*" "$X_LIBS -L/usr/X11/$base_libdir -L/usr/X11R6/$base_libdir" | sed 's/.*\/\(.*\)/\1/; q'`]
+                    xfixes_lib=[`find_lib "libXfixes.so.*" "$X_LIBS -L/usr/X11/$base_libdir -L/usr/X11R6/$base_libdir" | sed 's/.*\/\(.*\)/\1/; q'`]
                     xrandr_lib=[`find_lib "libXrandr.so.*" "$X_LIBS -L/usr/X11/$base_libdir -L/usr/X11R6/$base_libdir" | sed 's/.*\/\(.*\)/\1/; q'`]
                     xrender_lib=[`find_lib "libXrender.so.*" "$X_LIBS -L/usr/X11/$base_libdir -L/usr/X11R6/$base_libdir" | sed 's/.*\/\(.*\)/\1/; q'`]
                     xss_lib=[`find_lib "libXss.so.*" "$X_LIBS -L/usr/X11/$base_libdir -L/usr/X11R6/$base_libdir" | sed 's/.*\/\(.*\)/\1/; q'`]
@@ -1957,6 +1960,34 @@ XITouchClassInfo *t;
                     SUMMARY_video_x11="${SUMMARY_video_x11} xinput2_multitouch"
                     ],[])
                 AC_MSG_RESULT($have_xinput2_multitouch)
+            fi
+            AC_ARG_ENABLE(video-x11-xfixes,
+[AS_HELP_STRING([--enable-video-x11-xfixes], [enable X11 Xfixes support [default=yes]])],
+                            , enable_video_x11_xfixes=yes)
+            if test x$enable_video_x11_xfixes = xyes; then
+                definitely_enable_video_x11_xfixes=no
+                AC_CHECK_HEADER(X11/extensions/Xfixes.h,
+                                have_xfixes_h_hdr=yes,
+                                have_xfixes_h_hdr=no,
+                                [#include <X11/Xlib.h>
+                                ])
+                if test x$have_xfixes_h_hdr = xyes; then
+                    if test x$enable_x11_shared = xyes && test x$xfixes_lib != x ; then
+                        echo "-- dynamic libXfixes -> $xfixes_lib"
+                        AC_DEFINE_UNQUOTED(SDL_VIDEO_DRIVER_X11_DYNAMIC_XFIXES, "$xfixes_lib", [ ])
+                        definitely_enable_video_x11_xfixes=yes
+                    else
+                        AC_CHECK_LIB(Xfixes, XFixesCreatePointerBarrier, have_xfixes_lib=yes)
+                        if test x$have_xfixes_lib = xyes ; then
+                            EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lXfixes"
+                            definitely_enable_video_x11_xfixes=yes
+                        fi
+                    fi
+                fi
+            fi
+            if test x$definitely_enable_video_x11_xfixes = xyes; then
+                AC_DEFINE(SDL_VIDEO_DRIVER_X11_XFIXES, 1, [ ])
+                SUMMARY_video_x11="${SUMMARY_video_x11} xfixes"
             fi
             AC_ARG_ENABLE(video-x11-xrandr,
 [AS_HELP_STRING([--enable-video-x11-xrandr], [enable X11 Xrandr extension for fullscreen [default=yes]])],

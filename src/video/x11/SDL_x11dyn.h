@@ -58,6 +58,9 @@
 #if SDL_VIDEO_DRIVER_X11_XINPUT2
 #include <X11/extensions/XInput2.h>
 #endif
+#if SDL_VIDEO_DRIVER_X11_XFIXES
+#include <X11/extensions/Xfixes.h>
+#endif
 #if SDL_VIDEO_DRIVER_X11_XRANDR
 #include <X11/extensions/Xrandr.h>
 #endif
