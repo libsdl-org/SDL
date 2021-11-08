@@ -1974,7 +1974,7 @@ XITouchClassInfo *t;
                 if test x$have_xfixes_h_hdr = xyes; then
                     if test x$enable_x11_shared = xyes && test x$xfixes_lib != x ; then
                         echo "-- dynamic libXfixes -> $xfixes_lib"
-                        AC_DEFINE_UNQUOTED(SDL_VIDEO_DRIVER_X11_DYNAMIC_XFIXES, "$xfixes_lib", [ ])
+                        AC_DEFINE_UNQUOTED(SDL_VIDEO_DRIVER_X11_DYNAMIC_XFIXES, "$xfixes_lib", [])
                         definitely_enable_video_x11_xfixes=yes
                     else
                         AC_CHECK_LIB(Xfixes, XFixesCreatePointerBarrier, have_xfixes_lib=yes)
@@ -1986,7 +1986,7 @@ XITouchClassInfo *t;
                 fi
             fi
             if test x$definitely_enable_video_x11_xfixes = xyes; then
-                AC_DEFINE(SDL_VIDEO_DRIVER_X11_XFIXES, 1, [ ])
+                AC_DEFINE(SDL_VIDEO_DRIVER_X11_XFIXES, 1, [])
                 SUMMARY_video_x11="${SUMMARY_video_x11} xfixes"
             fi
             AC_ARG_ENABLE(video-x11-xrandr,
