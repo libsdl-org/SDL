@@ -96,6 +96,7 @@ WIN_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y)
     const size_t pad = (sizeof (size_t) * 8);  /* 32 or 64, or whatever. */
     SDL_Cursor *cursor;
     HICON hicon;
+    HICON hcursor;
     HDC hdc;
     BITMAPV4HEADER bmh;
     LPVOID pixels;
@@ -150,11 +151,20 @@ WIN_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y)
         return NULL;
     }
 
+    /* The cursor returned by CreateIconIndirect does not respect system cursor size
+        preference, use CopyImage to duplicate the cursor with desired sizes */
+    hcursor = CopyImage(hicon, IMAGE_CURSOR, 0, 0, LR_COPYDELETEORG | LR_DEFAULTSIZE);
+    if (!hcursor) {
+        DestroyIcon(hicon);
+        WIN_SetError("CopyImage()");
+        return NULL;
+    }
+
     cursor = SDL_calloc(1, sizeof(*cursor));
     if (cursor) {
-        cursor->driverdata = hicon;
+        cursor->driverdata = hcursor;
     } else {
-        DestroyIcon(hicon);
+        DestroyIcon(hcursor);
         SDL_OutOfMemory();
     }
 
