@@ -623,20 +623,38 @@ SDL_SendMouseWheel(SDL_Window * window, SDL_MouseID mouseID, float x, float y, S
         return 0;
     }
 
+    if (x > 0.0f) {
+        if (mouse->accumulated_wheel_x < 0.0f) {
+            mouse->accumulated_wheel_x = 0.0f;
+        }
+    } else if (x < 0.0f) {
+        if (mouse->accumulated_wheel_x > 0.0f) {
+            mouse->accumulated_wheel_x = 0.0f;
+        }
+    }
     mouse->accumulated_wheel_x += x;
-    if (mouse->accumulated_wheel_x > 0) {
+    if (mouse->accumulated_wheel_x > 0.0f) {
         integral_x = (int)SDL_floor(mouse->accumulated_wheel_x);
-    } else if (mouse->accumulated_wheel_x < 0) {
+    } else if (mouse->accumulated_wheel_x < 0.0f) {
         integral_x = (int)SDL_ceil(mouse->accumulated_wheel_x);
     } else {
         integral_x = 0;
     }
     mouse->accumulated_wheel_x -= integral_x;
 
+    if (y > 0.0f) {
+        if (mouse->accumulated_wheel_y < 0.0f) {
+            mouse->accumulated_wheel_y = 0.0f;
+        }
+    } else if (y < 0.0f) {
+        if (mouse->accumulated_wheel_y > 0.0f) {
+            mouse->accumulated_wheel_y = 0.0f;
+        }
+    }
     mouse->accumulated_wheel_y += y;
-    if (mouse->accumulated_wheel_y > 0) {
+    if (mouse->accumulated_wheel_y > 0.0f) {
         integral_y = (int)SDL_floor(mouse->accumulated_wheel_y);
-    } else if (mouse->accumulated_wheel_y < 0) {
+    } else if (mouse->accumulated_wheel_y < 0.0f) {
         integral_y = (int)SDL_ceil(mouse->accumulated_wheel_y);
     } else {
         integral_y = 0;
