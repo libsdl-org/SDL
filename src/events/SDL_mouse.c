@@ -650,12 +650,10 @@ SDL_SendMouseWheel(SDL_Window * window, SDL_MouseID mouseID, float x, float y, S
         event.type = SDL_MOUSEWHEEL;
         event.wheel.windowID = mouse->focus ? mouse->focus->id : 0;
         event.wheel.which = mouseID;
-#if 0 /* Uncomment this when it goes in for SDL 2.1 */
-        event.wheel.preciseX = x;
-        event.wheel.preciseY = y;
-#endif
         event.wheel.x = integral_x;
         event.wheel.y = integral_y;
+        event.wheel.preciseX = x;
+        event.wheel.preciseY = y;
         event.wheel.direction = (Uint32)direction;
         posted = (SDL_PushEvent(&event) > 0);
     }
