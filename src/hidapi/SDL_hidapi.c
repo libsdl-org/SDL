@@ -33,7 +33,7 @@
 #include "SDL_hidapi.h"
 #include "SDL_hidapi_c.h"
 
-#ifndef SDL_DISABLE_HIDAPI
+#if !SDL_HIDAPI_DISABLED
 
 /* Platform HIDAPI Implementation */
 
@@ -350,7 +350,7 @@ SDL_libusb_get_string_descriptor(libusb_device_handle *dev,
 
 #endif /* SDL_LIBUSB_DYNAMIC */
 
-#endif /* !SDL_DISABLE_HIDAPI */
+#endif /* !SDL_HIDAPI_DISABLED */
 
 /* Shared HIDAPI Implementation */
 
@@ -469,7 +469,7 @@ DeleteHIDDeviceWrapper(HIDDeviceWrapper *device)
         return retval; \
     }
 
-#ifndef SDL_DISABLE_HIDAPI
+#if !SDL_HIDAPI_DISABLED
 
 #define COPY_IF_EXISTS(var) \
     if (pSrc->var != NULL) { \
@@ -506,7 +506,7 @@ CopyHIDDeviceInfo(struct SDL_hid_device_info *pSrc, struct SDL_hid_device_info *
 #undef COPY_IF_EXISTS
 #undef WCOPY_IF_EXISTS
 
-#endif /* SDL_DISABLE_HIDAPI */
+#endif /* !SDL_HIDAPI_DISABLED */
 
 static SDL_bool SDL_hidapi_wasinit = SDL_FALSE;
 

@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#ifndef SDL_DISABLE_HIDAPI
+#if !SDL_HIDAPI_DISABLED
 
 #define hid_init                        PLATFORM_hid_init
 #define hid_exit                        PLATFORM_hid_exit
@@ -961,4 +961,4 @@ HID_API_EXPORT const wchar_t* HID_API_CALL hid_error(hid_device *dev)
 	return NULL;
 }
 
-#endif /* !SDL_DISABLE_HIDAPI */
+#endif /* !SDL_HIDAPI_DISABLED */
