@@ -140,7 +140,7 @@ Wayland_SetTextInputRect(_THIS, SDL_Rect *rect)
 SDL_bool
 Wayland_HasScreenKeyboardSupport(_THIS)
 {
-    /* In reality we just want to return tru when the screen keyboard is the
+    /* In reality we just want to return true when the screen keyboard is the
      * _only_ way to get text input. So, in addition to checking for the text
      * input protocol, make sure we don't have any physical keyboards either.
      */
