@@ -334,7 +334,7 @@ endif()
 set(LONGESTOPTIONNAME 0)  # set_option and friends will change this.
 
 set(SDL_SUBSYSTEMS
-    Atomic Audio Video Render Events Joystick Haptic Power Threads Timers
+    Atomic Audio Video Render Events Joystick Haptic Hidapi Power Threads Timers
     File Loadso CPUinfo Filesystem Dlopen Sensor Locale)
 foreach(_SUB ${SDL_SUBSYSTEMS})
   string(TOUPPER ${_SUB} _OPT)
@@ -1116,8 +1116,7 @@ if(ANDROID)
     #if defined(__ARM_ARCH) && __ARM_ARCH < 7
     #error Vulkan doesn't work on this configuration
     #endif
-    int main()
-    {
+    int main(void) {
         return 0;
     }
     " VULKAN_PASSED_ANDROID_CHECKS)
@@ -1928,8 +1927,7 @@ elseif(APPLE)
         #if (!TARGET_CPU_X86_64 && !TARGET_CPU_ARM64)
         #error Metal doesn't work on this configuration
         #endif
-        int main()
-        {
+        int main(void) {
             return 0;
         }
         " HAVE_FRAMEWORK_METAL)
