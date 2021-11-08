@@ -846,7 +846,12 @@ SDL_hid_device *SDL_hid_open_path(const char *path, int bExclusive /* = false */
 int SDL_hid_write(SDL_hid_device *device, const unsigned char *data, size_t length)
 {
     HIDDeviceWrapper *wrapper = UnwrapHIDDevice(device);
-    int result = wrapper->backend->hid_write(wrapper->device, data, length);
+    int result;
+
+    if (!wrapper) {
+        return -1;
+    }
+    result = wrapper->backend->hid_write(wrapper->device, data, length);
     if (result < 0) {
         SDL_SetHIDAPIError(wrapper->backend->hid_error(wrapper->device));
     }
@@ -856,7 +861,12 @@ int SDL_hid_write(SDL_hid_device *device, const unsigned char *data, size_t leng
 int SDL_hid_read_timeout(SDL_hid_device *device, unsigned char *data, size_t length, int milliseconds)
 {
     HIDDeviceWrapper *wrapper = UnwrapHIDDevice(device);
-    int result = wrapper->backend->hid_read_timeout(wrapper->device, data, length, milliseconds);
+    int result;
+
+    if (!wrapper) {
+        return -1;
+    }
+    result = wrapper->backend->hid_read_timeout(wrapper->device, data, length, milliseconds);
     if (result < 0) {
         SDL_SetHIDAPIError(wrapper->backend->hid_error(wrapper->device));
     }
@@ -866,7 +876,12 @@ int SDL_hid_read_timeout(SDL_hid_device *device, unsigned char *data, size_t len
 int SDL_hid_read(SDL_hid_device *device, unsigned char *data, size_t length)
 {
     HIDDeviceWrapper *wrapper = UnwrapHIDDevice(device);
-    int result = wrapper->backend->hid_read(wrapper->device, data, length);
+    int result;
+
+    if (!wrapper) {
+        return -1;
+    }
+    result = wrapper->backend->hid_read(wrapper->device, data, length);
     if (result < 0) {
         SDL_SetHIDAPIError(wrapper->backend->hid_error(wrapper->device));
     }
@@ -876,7 +891,12 @@ int SDL_hid_read(SDL_hid_device *device, unsigned char *data, size_t length)
 int SDL_hid_set_nonblocking(SDL_hid_device *device, int nonblock)
 {
     HIDDeviceWrapper *wrapper = UnwrapHIDDevice(device);
-    int result = wrapper->backend->hid_set_nonblocking(wrapper->device, nonblock);
+    int result;
+
+    if (!wrapper) {
+        return -1;
+    }
+    result = wrapper->backend->hid_set_nonblocking(wrapper->device, nonblock);
     if (result < 0) {
         SDL_SetHIDAPIError(wrapper->backend->hid_error(wrapper->device));
     }
@@ -886,7 +906,12 @@ int SDL_hid_set_nonblocking(SDL_hid_device *device, int nonblock)
 int SDL_hid_send_feature_report(SDL_hid_device *device, const unsigned char *data, size_t length)
 {
     HIDDeviceWrapper *wrapper = UnwrapHIDDevice(device);
-    int result = wrapper->backend->hid_send_feature_report(wrapper->device, data, length);
+    int result;
+
+    if (!wrapper) {
+        return -1;
+    }
+    result = wrapper->backend->hid_send_feature_report(wrapper->device, data, length);
     if (result < 0) {
         SDL_SetHIDAPIError(wrapper->backend->hid_error(wrapper->device));
     }
@@ -896,7 +921,12 @@ int SDL_hid_send_feature_report(SDL_hid_device *device, const unsigned char *dat
 int SDL_hid_get_feature_report(SDL_hid_device *device, unsigned char *data, size_t length)
 {
     HIDDeviceWrapper *wrapper = UnwrapHIDDevice(device);
-    int result = wrapper->backend->hid_get_feature_report(wrapper->device, data, length);
+    int result;
+
+    if (!wrapper) {
+        return -1;
+    }
+    result = wrapper->backend->hid_get_feature_report(wrapper->device, data, length);
     if (result < 0) {
         SDL_SetHIDAPIError(wrapper->backend->hid_error(wrapper->device));
     }
@@ -906,14 +936,22 @@ int SDL_hid_get_feature_report(SDL_hid_device *device, unsigned char *data, size
 void SDL_hid_close(SDL_hid_device *device)
 {
     HIDDeviceWrapper *wrapper = UnwrapHIDDevice(device);
-    wrapper->backend->hid_close(wrapper->device);
-    DeleteHIDDeviceWrapper(wrapper);
+
+    if (wrapper) {
+        wrapper->backend->hid_close(wrapper->device);
+        DeleteHIDDeviceWrapper(wrapper);
+    }
 }
 
 int SDL_hid_get_manufacturer_string(SDL_hid_device *device, wchar_t *string, size_t maxlen)
 {
     HIDDeviceWrapper *wrapper = UnwrapHIDDevice(device);
-    int result = wrapper->backend->hid_get_manufacturer_string(wrapper->device, string, maxlen);
+    int result;
+
+    if (!wrapper) {
+        return -1;
+    }
+    result = wrapper->backend->hid_get_manufacturer_string(wrapper->device, string, maxlen);
     if (result < 0) {
         SDL_SetHIDAPIError(wrapper->backend->hid_error(wrapper->device));
     }
@@ -923,7 +961,12 @@ int SDL_hid_get_manufacturer_string(SDL_hid_device *device, wchar_t *string, siz
 int SDL_hid_get_product_string(SDL_hid_device *device, wchar_t *string, size_t maxlen)
 {
     HIDDeviceWrapper *wrapper = UnwrapHIDDevice(device);
-    int result = wrapper->backend->hid_get_product_string(wrapper->device, string, maxlen);
+    int result;
+
+    if (!wrapper) {
+        return -1;
+    }
+    result = wrapper->backend->hid_get_product_string(wrapper->device, string, maxlen);
     if (result < 0) {
         SDL_SetHIDAPIError(wrapper->backend->hid_error(wrapper->device));
     }
@@ -933,7 +976,12 @@ int SDL_hid_get_product_string(SDL_hid_device *device, wchar_t *string, size_t m
 int SDL_hid_get_serial_number_string(SDL_hid_device *device, wchar_t *string, size_t maxlen)
 {
     HIDDeviceWrapper *wrapper = UnwrapHIDDevice(device);
-    int result = wrapper->backend->hid_get_serial_number_string(wrapper->device, string, maxlen);
+    int result;
+
+    if (!wrapper) {
+        return -1;
+    }
+    result = wrapper->backend->hid_get_serial_number_string(wrapper->device, string, maxlen);
     if (result < 0) {
         SDL_SetHIDAPIError(wrapper->backend->hid_error(wrapper->device));
     }
@@ -943,7 +991,12 @@ int SDL_hid_get_serial_number_string(SDL_hid_device *device, wchar_t *string, si
 int SDL_hid_get_indexed_string(SDL_hid_device *device, int string_index, wchar_t *string, size_t maxlen)
 {
     HIDDeviceWrapper *wrapper = UnwrapHIDDevice(device);
-    int result = wrapper->backend->hid_get_indexed_string(wrapper->device, string_index, string, maxlen);
+    int result;
+
+    if (!wrapper) {
+        return -1;
+    }
+    result = wrapper->backend->hid_get_indexed_string(wrapper->device, string_index, string, maxlen);
     if (result < 0) {
         SDL_SetHIDAPIError(wrapper->backend->hid_error(wrapper->device));
     }
