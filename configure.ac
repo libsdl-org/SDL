@@ -408,6 +408,7 @@ SOURCES="$SOURCES $srcdir/src/dynapi/*.c"
 SOURCES="$SOURCES $srcdir/src/events/*.c"
 SOURCES="$SOURCES $srcdir/src/file/*.c"
 SOURCES="$SOURCES $srcdir/src/haptic/*.c"
+SOURCES="$SOURCES $srcdir/src/hidapi/*.c"
 SOURCES="$SOURCES $srcdir/src/joystick/*.c"
 SOURCES="$SOURCES $srcdir/src/libm/*.c"
 SOURCES="$SOURCES $srcdir/src/misc/*.c"
@@ -3386,6 +3387,10 @@ CheckHIDAPI()
 [AS_HELP_STRING([--enable-hidapi-libusb], [use libusb for low level joystick drivers [default=maybe]])],
                   , enable_hidapi_libusb=maybe)
 
+    if test x$enable_hidapi != xyes; then
+        AC_DEFINE(SDL_HIDAPI_DISABLED, 1, [ ])
+    fi
+
     if test x$enable_joystick = xyes -a x$enable_hidapi = xyes; then
         case "$host" in
             # libusb does not support iOS
@@ -3413,9 +3418,7 @@ CheckHIDAPI()
 
         if test x$hidapi_support = xyes; then
             AC_DEFINE(SDL_JOYSTICK_HIDAPI, 1, [ ])
-            EXTRA_CFLAGS="$EXTRA_CFLAGS -I$srcdir/src/hidapi/hidapi"
             SOURCES="$SOURCES $srcdir/src/joystick/hidapi/*.c"
-            SOURCES="$SOURCES $srcdir/src/hidapi/SDL_hidapi.c"
 
             if test x$have_libusb_h = xyes; then
                 EXTRA_CFLAGS="$EXTRA_CFLAGS $LIBUSB_CFLAGS"
@@ -3441,6 +3444,8 @@ CheckHIDAPI()
                     AC_DEFINE_UNQUOTED(SDL_LIBUSB_DYNAMIC, "$libusb_lib", [ ])
                 fi
             fi
+        else
+            AC_DEFINE(SDL_HIDAPI_DISABLED, 1, [ ])
         fi
 
         AC_MSG_CHECKING(for hidapi support)

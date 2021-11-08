@@ -17312,6 +17312,7 @@ SOURCES="$SOURCES $srcdir/src/dynapi/*.c"
 SOURCES="$SOURCES $srcdir/src/events/*.c"
 SOURCES="$SOURCES $srcdir/src/file/*.c"
 SOURCES="$SOURCES $srcdir/src/haptic/*.c"
+SOURCES="$SOURCES $srcdir/src/hidapi/*.c"
 SOURCES="$SOURCES $srcdir/src/joystick/*.c"
 SOURCES="$SOURCES $srcdir/src/libm/*.c"
 SOURCES="$SOURCES $srcdir/src/misc/*.c"
@@ -24546,6 +24547,12 @@ else
 fi
 
 
+    if test x$enable_hidapi != xyes; then
+
+$as_echo "#define SDL_HIDAPI_DISABLED 1" >>confdefs.h
+
+    fi
+
     if test x$enable_joystick = xyes -a x$enable_hidapi = xyes; then
         case "$host" in
             # libusb does not support iOS
@@ -24652,9 +24659,7 @@ fi
 
 $as_echo "#define SDL_JOYSTICK_HIDAPI 1" >>confdefs.h
 
-            EXTRA_CFLAGS="$EXTRA_CFLAGS -I$srcdir/src/hidapi/hidapi"
             SOURCES="$SOURCES $srcdir/src/joystick/hidapi/*.c"
-            SOURCES="$SOURCES $srcdir/src/hidapi/SDL_hidapi.c"
 
             if test x$have_libusb_h = xyes; then
                 EXTRA_CFLAGS="$EXTRA_CFLAGS $LIBUSB_CFLAGS"
@@ -24685,6 +24690,10 @@ _ACEOF
 
                 fi
             fi
+        else
+
+$as_echo "#define SDL_HIDAPI_DISABLED 1" >>confdefs.h
+
         fi
 
         { $as_echo "$as_me:${as_lineno-$LINENO}: checking for hidapi support" >&5
