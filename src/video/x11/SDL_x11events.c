@@ -31,6 +31,7 @@
 #include "SDL_x11video.h"
 #include "SDL_x11touch.h"
 #include "SDL_x11xinput2.h"
+#include "SDL_x11xfixes.h"
 #include "../../core/unix/SDL_poll.h"
 #include "../../events/SDL_events_c.h"
 #include "../../events/SDL_mouse_c.h"
@@ -869,6 +870,16 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
             mouse->last_x = xevent->xcrossing.x;
             mouse->last_y = xevent->xcrossing.y;
 
+#if SDL_VIDEO_DRIVER_X11_XFIXES
+            {
+                /* Only create the barriers if we have input focus */
+                SDL_WindowData* windowdata = (SDL_WindowData *) data->window->driverdata;
+                if ((data->pointer_barrier_active == SDL_TRUE) && windowdata->window->flags & SDL_WINDOW_INPUT_FOCUS) {
+                    X11_ConfineCursorWithFlags(_this, windowdata->window, &windowdata->barrier_rect, X11_BARRIER_HANDLED_BY_EVENT);
+                }
+            }
+#endif
+
             if (!mouse->relative_mode) {
                 SDL_SendMouseMotion(data->window, 0, 0, xevent->xcrossing.x, xevent->xcrossing.y);
             }
@@ -974,6 +985,13 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
                 data->pending_focus = PENDING_FOCUS_OUT;
                 data->pending_focus_time = SDL_GetTicks() + PENDING_FOCUS_TIME;
             }
+
+#if SDL_VIDEO_DRIVER_X11_XFIXES
+            /* Disable confinement if it is activated. */
+            if (data->pointer_barrier_active == SDL_TRUE) {
+                X11_ConfineCursorWithFlags(_this, data->window, NULL, X11_BARRIER_HANDLED_BY_EVENT);
+            }
+#endif /* SDL_VIDEO_DRIVER_X11_XFIXES */
         }
         break;
 
@@ -1059,6 +1077,13 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
             } else {
                 X11_DispatchUnmapNotify(data);
             }
+
+#if SDL_VIDEO_DRIVER_X11_XFIXES
+            /* Disable confiment if the window gets hidden. */
+            if (data->pointer_barrier_active == SDL_TRUE) {
+                X11_ConfineCursorWithFlags(_this, data->window, NULL, X11_BARRIER_HANDLED_BY_EVENT);
+            }
+#endif /* SDL_VIDEO_DRIVER_X11_XFIXES */
         }
         break;
 
@@ -1068,6 +1093,13 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
             printf("window %p: MapNotify!\n", data);
 #endif
             X11_DispatchMapNotify(data);
+
+#if SDL_VIDEO_DRIVER_X11_XFIXES
+            /* Enable confiment if it was activated. */
+            if (data->pointer_barrier_active == SDL_TRUE) {
+                X11_ConfineCursorWithFlags(_this, data->window, &data->barrier_rect, X11_BARRIER_HANDLED_BY_EVENT);
+            }
+#endif /* SDL_VIDEO_DRIVER_X11_XFIXES */
         }
         break;
 

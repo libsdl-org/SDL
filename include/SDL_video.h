@@ -1498,6 +1498,23 @@ extern DECLSPEC int SDLCALL SDL_SetWindowModalFor(SDL_Window * modal_window, SDL
 extern DECLSPEC int SDLCALL SDL_SetWindowInputFocus(SDL_Window * window);
 
 /**
+ * Confines the cursor in the specified rect area of a window.
+ *
+ * Note that this does NOT grab the cursor, it only defines the area a cursor
+ * is restricted to when the window has mouse focus.
+ *
+ * \param window The window that will be associated with the barrier.
+ * \param rect A rectangle area in window-relative coordinates. If NULL the
+ *  barrier for the specified window will be destroyed.
+ *
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \sa SDL_SetWindowGrab
+ */
+extern DECLSPEC int SDLCALL SDL_SetWindowMouseRect(SDL_Window * window, const SDL_Rect * rect);
+
+/**
  * Set the gamma ramp for the display that owns a given window.
  *
  * Set the gamma translation table for the red, green, and blue channels of

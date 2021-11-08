@@ -2833,6 +2833,16 @@ SDL_GetGrabbedWindow(void)
 }
 
 int
+SDL_SetWindowMouseRect(SDL_Window * window, const SDL_Rect * rect)
+{
+    CHECK_WINDOW_MAGIC(window, -1);
+    if (!_this->SetWindowMouseRect) {
+        return SDL_Unsupported();
+    }
+    return _this->SetWindowMouseRect(_this, window, rect);
+}
+
+int
 SDL_FlashWindow(SDL_Window * window, SDL_FlashOperation operation)
 {
     CHECK_WINDOW_MAGIC(window, -1);

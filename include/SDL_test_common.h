@@ -73,6 +73,7 @@ typedef struct
     int window_minH;
     int window_maxW;
     int window_maxH;
+    SDL_Rect confine;
     int logical_w;
     int logical_h;
     float scale;
