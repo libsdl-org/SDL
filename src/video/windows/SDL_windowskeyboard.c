@@ -249,15 +249,23 @@ WIN_SetTextInputRect(_THIS, SDL_Rect *rect)
         COMPOSITIONFORM cof;
         CANDIDATEFORM caf;
 
-        cof.dwStyle = CFS_FORCE_POSITION;
+        cof.dwStyle = CFS_RECT;
         cof.ptCurrentPos.x = videodata->ime_rect.x;
         cof.ptCurrentPos.y = videodata->ime_rect.y;
+        cof.rcArea.left = videodata->ime_rect.x;
+        cof.rcArea.right = videodata->ime_rect.x + videodata->ime_rect.w;
+        cof.rcArea.top = videodata->ime_rect.y;
+        cof.rcArea.bottom = videodata->ime_rect.y + videodata->ime_rect.h;
         ImmSetCompositionWindow(himc, &cof);
 
         caf.dwIndex = 0;
-        caf.dwStyle = CFS_CANDIDATEPOS;
+        caf.dwStyle = CFS_EXCLUDE;
         caf.ptCurrentPos.x = videodata->ime_rect.x;
         caf.ptCurrentPos.y = videodata->ime_rect.y;
+        caf.rcArea.left = videodata->ime_rect.x;
+        caf.rcArea.right = videodata->ime_rect.x + videodata->ime_rect.w;
+        caf.rcArea.top = videodata->ime_rect.y;
+        caf.rcArea.bottom = videodata->ime_rect.y + videodata->ime_rect.h;
         ImmSetCandidateWindow(himc, &caf);
 
         ImmReleaseContext(videodata->ime_hwnd_current, himc);
