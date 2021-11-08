@@ -305,7 +305,7 @@ static int WriteSegmentToSteamControllerPacketAssembler( SteamControllerPacketAs
 
 #define BLE_MAX_READ_RETRIES    8
 
-static int SetFeatureReport( hid_device *dev, unsigned char uBuffer[65], int nActualDataLen )
+static int SetFeatureReport( SDL_hid_device *dev, unsigned char uBuffer[65], int nActualDataLen )
 {
     int nRet = -1;
     bool bBle = true; // only wireless/BLE for now, though macOS could do wired in the future
@@ -339,7 +339,7 @@ static int SetFeatureReport( hid_device *dev, unsigned char uBuffer[65], int nAc
             pBufferPtr += nBytesInPacket;
             nSegmentNumber++;
             
-            nRet = hid_send_feature_report( dev, uPacketBuffer, sizeof( uPacketBuffer ) );
+            nRet = SDL_hid_send_feature_report( dev, uPacketBuffer, sizeof( uPacketBuffer ) );
             DPRINTF("SetFeatureReport() ret = %d\n", nRet);
         }
     }
@@ -347,7 +347,7 @@ static int SetFeatureReport( hid_device *dev, unsigned char uBuffer[65], int nAc
     return nRet;
 }
 
-static int GetFeatureReport( hid_device *dev, unsigned char uBuffer[65] )
+static int GetFeatureReport( SDL_hid_device *dev, unsigned char uBuffer[65] )
 {
     int nRet = -1;
     bool bBle = true;
@@ -366,7 +366,7 @@ static int GetFeatureReport( hid_device *dev, unsigned char uBuffer[65] )
         {
             memset( uSegmentBuffer, 0, sizeof( uSegmentBuffer ) );
             uSegmentBuffer[ 0 ] = BLE_REPORT_NUMBER;
-            nRet = hid_get_feature_report( dev, uSegmentBuffer, sizeof( uSegmentBuffer ) );
+            nRet = SDL_hid_get_feature_report( dev, uSegmentBuffer, sizeof( uSegmentBuffer ) );
             DPRINTF( "GetFeatureReport ble ret=%d\n", nRet );
             HEXDUMP( uSegmentBuffer, nRet );
             
@@ -400,7 +400,7 @@ static int GetFeatureReport( hid_device *dev, unsigned char uBuffer[65] )
     return nRet;
 }
 
-static int ReadResponse( hid_device *dev, uint8_t uBuffer[65], int nExpectedResponse )
+static int ReadResponse( SDL_hid_device *dev, uint8_t uBuffer[65], int nExpectedResponse )
 {
     int nRet = GetFeatureReport( dev, uBuffer );
 
@@ -421,7 +421,7 @@ static int ReadResponse( hid_device *dev, uint8_t uBuffer[65], int nExpectedResp
 //---------------------------------------------------------------------------
 // Reset steam controller (unmap buttons and pads) and re-fetch capability bits
 //---------------------------------------------------------------------------
-static bool ResetSteamController( hid_device *dev, bool bSuppressErrorSpew, uint32_t *punUpdateRateUS )
+static bool ResetSteamController( SDL_hid_device *dev, bool bSuppressErrorSpew, uint32_t *punUpdateRateUS )
 {
     // Firmware quirk: Set Feature and Get Feature requests always require a 65-byte buffer.
     unsigned char buf[65];
@@ -606,18 +606,18 @@ buf[3+nSettings*3+2] = ((uint16_t)VALUE)>>8; \
 //---------------------------------------------------------------------------
 // Read from a Steam Controller
 //---------------------------------------------------------------------------
-static int ReadSteamController( hid_device *dev, uint8_t *pData, int nDataSize )
+static int ReadSteamController( SDL_hid_device *dev, uint8_t *pData, int nDataSize )
 {
     memset( pData, 0, nDataSize );
     pData[ 0 ] = BLE_REPORT_NUMBER; // hid_read will also overwrite this with the same value, 0x03
-    return hid_read( dev, pData, nDataSize );
+    return SDL_hid_read( dev, pData, nDataSize );
 }
 
 
 //---------------------------------------------------------------------------
 // Close a Steam Controller
 //---------------------------------------------------------------------------
-static void CloseSteamController( hid_device *dev )
+static void CloseSteamController( SDL_hid_device *dev )
 {
     // Switch the Steam Controller back to lizard mode so it works with the OS
     unsigned char buf[65];
@@ -1040,12 +1040,12 @@ HIDAPI_DriverSteam_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystic
     }
     device->context = ctx;
 
-    device->dev = hid_open_path(device->path, 0);
+    device->dev = SDL_hid_open_path(device->path, 0);
     if (!device->dev) {
         SDL_SetError("Couldn't open %s", device->path);
         goto error;
     }
-    hid_set_nonblocking(device->dev, 1);
+    SDL_hid_set_nonblocking(device->dev, 1);
 
     if (!ResetSteamController(device->dev, false, &update_rate_in_us)) {
         SDL_SetError("Couldn't reset controller");
@@ -1070,7 +1070,7 @@ error:
     SDL_LockMutex(device->dev_lock);
     {
         if (device->dev) {
-            hid_close(device->dev);
+            SDL_hid_close(device->dev);
             device->dev = NULL;
         }
         if (device->context) {
@@ -1266,7 +1266,7 @@ HIDAPI_DriverSteam_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joysti
     {
         CloseSteamController(device->dev);
 
-        hid_close(device->dev);
+        SDL_hid_close(device->dev);
         device->dev = NULL;
 
         SDL_free(device->context);

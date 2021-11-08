@@ -20,7 +20,26 @@
 */
 #include "../../SDL_internal.h"
 
-#ifdef SDL_JOYSTICK_HIDAPI
+#ifndef SDL_DISABLE_HIDAPI
+
+#define hid_init                        PLATFORM_hid_init
+#define hid_exit                        PLATFORM_hid_exit
+#define hid_enumerate                   PLATFORM_hid_enumerate
+#define hid_free_enumeration            PLATFORM_hid_free_enumeration
+#define hid_open                        PLATFORM_hid_open
+#define hid_open_path                   PLATFORM_hid_open_path
+#define hid_write                       PLATFORM_hid_write
+#define hid_read_timeout                PLATFORM_hid_read_timeout
+#define hid_read                        PLATFORM_hid_read
+#define hid_set_nonblocking             PLATFORM_hid_set_nonblocking
+#define hid_send_feature_report         PLATFORM_hid_send_feature_report
+#define hid_get_feature_report          PLATFORM_hid_get_feature_report
+#define hid_close                       PLATFORM_hid_close
+#define hid_get_manufacturer_string     PLATFORM_hid_get_manufacturer_string
+#define hid_get_product_string          PLATFORM_hid_get_product_string
+#define hid_get_serial_number_string    PLATFORM_hid_get_serial_number_string
+#define hid_get_indexed_string          PLATFORM_hid_get_indexed_string
+#define hid_error                       PLATFORM_hid_error
 
 #include <CoreBluetooth/CoreBluetooth.h>
 #include <QuartzCore/QuartzCore.h>
@@ -737,7 +756,12 @@ void HID_API_EXPORT HID_API_CALL hid_ble_scan( bool bStart )
 	}
 }
 
-hid_device * HID_API_EXPORT hid_open_path( const char *path, int bExclusive /* = false */ )
+HID_API_EXPORT hid_device * HID_API_CALL hid_open(unsigned short vendor_id, unsigned short product_id, const wchar_t *serial_number)
+{
+	return NULL;
+}
+
+HID_API_EXPORT hid_device * HID_API_CALL hid_open_path( const char *path, int bExclusive /* = false */ )
 {
 	hid_device *result = NULL;
 	NSString *nssPath = [NSString stringWithUTF8String:path];
@@ -851,6 +875,11 @@ int HID_API_EXPORT_CALL hid_get_serial_number_string(hid_device *dev, wchar_t *s
 	return 0;
 }
 
+int HID_API_EXPORT_CALL hid_get_indexed_string(hid_device *dev, int string_index, wchar_t *string, size_t maxlen)
+{
+	return -1;
+}
+
 int HID_API_EXPORT hid_write(hid_device *dev, const unsigned char *data, size_t length)
 {
     HIDBLEDevice *device_handle = (__bridge HIDBLEDevice *)dev->device_handle;
@@ -927,4 +956,9 @@ int HID_API_EXPORT hid_read_timeout(hid_device *dev, unsigned char *data, size_t
 	return result;
 }
 
-#endif /* SDL_JOYSTICK_HIDAPI */
+HID_API_EXPORT const wchar_t* HID_API_CALL hid_error(hid_device *dev)
+{
+	return NULL;
+}
+
+#endif /* !SDL_DISABLE_HIDAPI */

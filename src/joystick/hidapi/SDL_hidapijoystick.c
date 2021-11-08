@@ -767,17 +767,7 @@ HIDAPI_JoystickInit(void)
     }
 #endif
 
-#if defined(__MACOSX__) || defined(__IPHONEOS__) || defined(__TVOS__)
-    /* The hidapi framwork is weak-linked on Apple platforms */
-    int HID_API_EXPORT HID_API_CALL hid_init(void) __attribute__((weak_import));
-
-    if (hid_init == NULL) {
-        SDL_SetError("Couldn't initialize hidapi, framework not available");
-        return -1;
-    }
-#endif /* __MACOSX__ || __IPHONEOS__ || __TVOS__ */
-
-    if (hid_init() < 0) {
+    if (SDL_hid_init() < 0) {
         SDL_SetError("Couldn't initialize hidapi");
         return -1;
     }
@@ -874,7 +864,7 @@ HIDAPI_ConvertString(const wchar_t *wide_string)
 }
 
 static void
-HIDAPI_AddDevice(struct hid_device_info *info)
+HIDAPI_AddDevice(struct SDL_hid_device_info *info)
 {
     SDL_HIDAPI_Device *device;
     SDL_HIDAPI_Device *curr, *last = NULL;
@@ -994,6 +984,7 @@ HIDAPI_AddDevice(struct hid_device_info *info)
 
     HIDAPI_SetupDeviceDriver(device);
 
+#define DEBUG_HIDAPI
 #ifdef DEBUG_HIDAPI
     SDL_Log("Added HIDAPI device '%s' VID 0x%.4x, PID 0x%.4x, version %d, serial %s, interface %d, interface_class %d, interface_subclass %d, interface_protocol %d, usage page 0x%.4x, usage 0x%.4x, path = %s, driver = %s (%s)\n", device->name, device->vendor_id, device->product_id, device->version, device->serial ? device->serial : "NONE", device->interface_number, device->interface_class, device->interface_subclass, device->interface_protocol, device->usage_page, device->usage, device->path, device->driver ? device->driver->hint : "NONE", device->driver && device->driver->enabled ? "ENABLED" : "DISABLED");
 #endif
@@ -1038,7 +1029,7 @@ static void
 HIDAPI_UpdateDeviceList(void)
 {
     SDL_HIDAPI_Device *device;
-    struct hid_device_info *devs, *info;
+    struct SDL_hid_device_info *devs, *info;
 
     SDL_LockJoysticks();
 
@@ -1051,7 +1042,7 @@ HIDAPI_UpdateDeviceList(void)
 
     /* Enumerate the devices */
     if (SDL_HIDAPI_numdrivers > 0) {
-        devs = hid_enumerate(0, 0);
+        devs = SDL_hid_enumerate(0, 0);
         if (devs) {
             for (info = devs; info; info = info->next) {
                 device = HIDAPI_GetJoystickByInfo(info->path, info->vendor_id, info->product_id);
@@ -1061,7 +1052,7 @@ HIDAPI_UpdateDeviceList(void)
                     HIDAPI_AddDevice(info);
                 }
             }
-            hid_free_enumeration(devs);
+            SDL_hid_free_enumeration(devs);
         }
     }
 
@@ -1495,7 +1486,7 @@ HIDAPI_JoystickQuit(void)
     SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI,
                         SDL_HIDAPIDriverHintChanged, NULL);
 
-    hid_exit();
+    SDL_hid_exit();
 
     shutting_down = SDL_FALSE;
     initialized = SDL_FALSE;

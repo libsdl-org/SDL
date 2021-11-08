@@ -237,6 +237,9 @@
     <ClInclude Include="..\..\include\SDL_hints.h">
       <Filter>API Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\SDL_hidapi.h">
+      <Filter>API Headers</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\include\SDL_joystick.h">
       <Filter>API Headers</Filter>
     </ClInclude>

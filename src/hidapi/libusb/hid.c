@@ -31,8 +31,6 @@
 #include "SDL_thread.h"
 #include "SDL_mutex.h"
 
-#ifdef SDL_JOYSTICK_HIDAPI
-
 #if defined(HAVE__WCSDUP) && !defined(HAVE_WCSDUP)
 #define wcsdup _wcsdup
 #endif
@@ -1742,5 +1740,3 @@ uint16_t get_usb_code_for_current_locale(void)
 #ifdef NAMESPACE
 }
 #endif
-
-#endif /* SDL_JOYSTICK_HIDAPI */
