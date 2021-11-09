@@ -2201,6 +2201,7 @@ SDLTest_CommonDrawWindowInfo(SDL_Renderer * renderer, SDL_Window * window, int *
     SDL_Rect rect;
     SDL_DisplayMode mode;
     float ddpi, hdpi, vdpi;
+    float scaleX, scaleY;
     Uint32 flags;
     const int windowDisplayIndex = SDL_GetWindowDisplayIndex(window);
     SDL_RendererInfo info;
@@ -2240,6 +2241,17 @@ SDLTest_CommonDrawWindowInfo(SDL_Renderer * renderer, SDL_Window * window, int *
     SDL_RenderGetViewport(renderer, &rect);
     SDL_snprintf(text, sizeof(text), "SDL_RenderGetViewport: %d,%d, %dx%d",
                  rect.x, rect.y, rect.w, rect.h);
+    SDLTest_DrawString(renderer, 0, textY, text);
+    textY += lineHeight;
+
+    SDL_RenderGetScale(renderer, &scaleX, &scaleY);
+    SDL_snprintf(text, sizeof(text), "SDL_RenderGetScale: %f,%f",
+                 scaleX, scaleY);
+    SDLTest_DrawString(renderer, 0, textY, text);
+    textY += lineHeight;
+
+    SDL_RenderGetLogicalSize(renderer, &w, &h);
+    SDL_snprintf(text, sizeof(text), "SDL_RenderGetLogicalSize: %dx%d", w, h);
     SDLTest_DrawString(renderer, 0, textY, text);
     textY += lineHeight;
 
