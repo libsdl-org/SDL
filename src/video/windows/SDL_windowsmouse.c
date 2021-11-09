@@ -154,8 +154,9 @@ WIN_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y)
     /* The cursor returned by CreateIconIndirect does not respect system cursor size
         preference, use CopyImage to duplicate the cursor with desired sizes */
     hcursor = CopyImage(hicon, IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE);
+    DestroyIcon(hicon);
+
     if (!hcursor) {
-        DestroyIcon(hicon);
         WIN_SetError("CopyImage()");
         return NULL;
     }
