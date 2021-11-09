@@ -1033,10 +1033,10 @@ WIN_UpdateClipCursor(SDL_Window *window)
                 if (window->mouse_rect.w > 0 && window->mouse_rect.h > 0) {
                     RECT mouse_rect, intersection;
 
-                    mouse_rect.left = rect.left + data->mouse_rect.x;
-                    mouse_rect.top = rect.top + data->mouse_rect.y;
-                    mouse_rect.right = mouse_rect.left + data->mouse_rect.w - 1;
-                    mouse_rect.bottom = mouse_rect.top + data->mouse_rect.h - 1;
+                    mouse_rect.left = rect.left + window->mouse_rect.x;
+                    mouse_rect.top = rect.top + window->mouse_rect.y;
+                    mouse_rect.right = mouse_rect.left + window->mouse_rect.w - 1;
+                    mouse_rect.bottom = mouse_rect.top + window->mouse_rect.h - 1;
                     if (IntersectRect(&intersection, &rect, &mouse_rect)) {
                         SDL_memcpy(&rect, &intersection, sizeof(rect));
                     } else if ((window->flags & SDL_WINDOW_MOUSE_GRABBED) != 0) {
