@@ -815,7 +815,7 @@ void WIN_UngrabKeyboard(SDL_Window *window)
 }
 
 int
-WIN_SetWindowMouseRect(_THIS, SDL_Window * window, SDL_Rect * rect)
+WIN_SetWindowMouseRect(_THIS, SDL_Window * window, const SDL_Rect * rect)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
 

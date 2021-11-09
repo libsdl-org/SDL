@@ -322,6 +322,67 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
     return SDL_TRUE;
 }
 
+static SDL_bool
+ShouldAdjustCoordinatesForGrab(SDL_Window * window)
+{
+    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+
+    if (!data || [data->listener isMovingOrFocusClickPending]) {
+        return SDL_FALSE;
+    }
+
+    if (!(window->flags & SDL_WINDOW_INPUT_FOCUS)) {
+        return SDL_FALSE;
+    }
+
+    if ((window->flags & SDL_WINDOW_MOUSE_GRABBED) || (data->mouse_rect.w > 0 && data->mouse_rect.h > 0)) {
+        return SDL_TRUE;
+    }
+    return SDL_FALSE;
+}
+
+static SDL_bool
+AdjustCoordinatesForGrab(SDL_Window * window, int x, int y, CGPoint *adjusted)
+{
+    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+
+    if (data->mouse_rect.w > 0 && data->mouse_rect.h > 0) {
+        SDL_Rect window_rect;
+        SDL_Rect mouse_rect;
+
+        window_rect.x = 0;
+        window_rect.y = 0;
+        window_rect.w = window->w;
+        window_rect.h = window->h;
+
+        if (SDL_IntersectRect(&data->mouse_rect, &window_rect, &mouse_rect)) {
+            int left = window->x + mouse_rect.x;
+            int right = left + mouse_rect.w - 1;
+            int top = window->y + mouse_rect.y;
+            int bottom = top + mouse_rect.h - 1;
+            if (x < left || x > right || y < top || y > bottom) {
+                adjusted->x = SDL_clamp(x, left, right);
+                adjusted->y = SDL_clamp(y, top, bottom);
+                return SDL_TRUE;
+            }
+            return SDL_FALSE;
+        }
+    }
+
+    if ((window->flags & SDL_WINDOW_MOUSE_GRABBED) != 0) {
+        int left = window->x;
+        int right = left + window->w - 1;
+        int top = window->y;
+        int bottom = top + window->h - 1;
+        if (x < left || x > right || y < top || y > bottom) {
+            adjusted->x = SDL_clamp(x, left, right);
+            adjusted->y = SDL_clamp(y, top, bottom);
+            return SDL_TRUE;
+        }
+    }
+    return SDL_FALSE;
+}
+
 
 @implementation Cocoa_WindowListener
 
@@ -1156,28 +1217,12 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
     x = (int)point.x;
     y = (int)(window->h - point.y);
 
-    if (window->flags & SDL_WINDOW_MOUSE_GRABBED) {
-        if (x < 0 || x >= window->w || y < 0 || y >= window->h) {
-            if (x < 0) {
-                x = 0;
-            } else if (x >= window->w) {
-                x = window->w - 1;
-            }
-            if (y < 0) {
-                y = 0;
-            } else if (y >= window->h) {
-                y = window->h - 1;
-            }
-
-            CGPoint cgpoint;
-            cgpoint.x = window->x + x;
-            cgpoint.y = window->y + y;
-
-            CGDisplayMoveCursorToPoint(kCGDirectMainDisplay, cgpoint);
-            CGAssociateMouseAndMouseCursorPosition(YES);
-
-            Cocoa_HandleMouseWarp(cgpoint.x, cgpoint.y);
-        }
+    CGPoint cgpoint;
+    if (ShouldAdjustCoordinatesForGrab(window) &&
+        AdjustCoordinatesForGrab(window, window->x + x, window->y + y, &cgpoint)) {
+        Cocoa_HandleMouseWarp(cgpoint.x, cgpoint.y);
+        CGDisplayMoveCursorToPoint(kCGDirectMainDisplay, cgpoint);
+        CGAssociateMouseAndMouseCursorPosition(YES);
     }
 
     SDL_SendMouseMotion(window, mouseID, 0, x, y);
@@ -2048,27 +2093,49 @@ Cocoa_GetWindowGammaRamp(_THIS, SDL_Window * window, Uint16 * ramp)
     return 0;
 }
 
+int
+Cocoa_SetWindowMouseRect(_THIS, SDL_Window * window, const SDL_Rect * rect)
+{
+    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+
+    if (rect) {
+        SDL_memcpy(&data->mouse_rect, rect, sizeof(*rect));
+    } else {
+        SDL_zero(data->mouse_rect);
+    }
+
+    /* Move the cursor to the nearest point in the mouse rect */
+    if (ShouldAdjustCoordinatesForGrab(window)) {
+        int x, y;
+        CGPoint cgpoint;
+
+        SDL_GetGlobalMouseState(&x, &y);
+        if (AdjustCoordinatesForGrab(window, x, y, &cgpoint)) {
+            Cocoa_HandleMouseWarp(cgpoint.x, cgpoint.y);
+            CGDisplayMoveCursorToPoint(kCGDirectMainDisplay, cgpoint);
+        }
+    }
+    return 0;
+}
+
 void
 Cocoa_SetWindowMouseGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
 
     /* Move the cursor to the nearest point in the window */
-    if (grabbed && data && ![data->listener isMovingOrFocusClickPending]) {
+    if (ShouldAdjustCoordinatesForGrab(window)) {
         int x, y;
         CGPoint cgpoint;
 
-        SDL_GetMouseState(&x, &y);
-        cgpoint.x = window->x + x;
-        cgpoint.y = window->y + y;
-
-        Cocoa_HandleMouseWarp(cgpoint.x, cgpoint.y);
-
-        DLog("Returning cursor to (%g, %g)", cgpoint.x, cgpoint.y);
-        CGDisplayMoveCursorToPoint(kCGDirectMainDisplay, cgpoint);
+        SDL_GetGlobalMouseState(&x, &y);
+        if (AdjustCoordinatesForGrab(window, x, y, &cgpoint)) {
+            Cocoa_HandleMouseWarp(cgpoint.x, cgpoint.y);
+            CGDisplayMoveCursorToPoint(kCGDirectMainDisplay, cgpoint);
+        }
     }
 
-    if ( data && (window->flags & SDL_WINDOW_FULLSCREEN) ) {
+    if (data && (window->flags & SDL_WINDOW_FULLSCREEN)) {
         if (SDL_ShouldAllowTopmost() && (window->flags & SDL_WINDOW_INPUT_FOCUS)
             && ![data->listener isInFullscreenSpace]) {
             /* OpenGL is rendering to the window, so make it visible! */
