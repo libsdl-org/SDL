@@ -235,6 +235,7 @@ struct SDL_VideoDevice
     int (*SetWindowGammaRamp) (_THIS, SDL_Window * window, const Uint16 * ramp);
     int (*GetWindowGammaRamp) (_THIS, SDL_Window * window, Uint16 * ramp);
     void* (*GetWindowICCProfile) (_THIS, SDL_Window * window, size_t* size);
+    int (*SetWindowMouseRect)(_THIS, SDL_Window * window, const SDL_Rect * rect);
     void (*SetWindowMouseGrab) (_THIS, SDL_Window * window, SDL_bool grabbed);
     void (*SetWindowKeyboardGrab) (_THIS, SDL_Window * window, SDL_bool grabbed);
     void (*DestroyWindow) (_THIS, SDL_Window * window);
@@ -243,7 +244,6 @@ struct SDL_VideoDevice
     void (*DestroyWindowFramebuffer) (_THIS, SDL_Window * window);
     void (*OnWindowEnter) (_THIS, SDL_Window * window);
     int (*FlashWindow) (_THIS, SDL_Window * window, SDL_FlashOperation operation);
-    int (*SetWindowMouseRect)(_THIS, SDL_Window * window, const SDL_Rect * rect);
 
     /* * * */
     /*

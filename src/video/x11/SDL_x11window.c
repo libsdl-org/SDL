@@ -331,12 +331,6 @@ SetupWindowData(_THIS, SDL_Window * window, Window w, BOOL created)
         }
     }
 
-#if SDL_VIDEO_DRIVER_X11_XFIXES
-    data->pointer_barrier_active = SDL_FALSE;
-    SDL_memset(&data->barrier, 0, sizeof(data->barrier));
-    SDL_memset(&data->barrier_rect, 0, sizeof(SDL_Rect));
-#endif /* SDL_VIDEO_DRIVER_X11_XFIXES */
-
     /* All done! */
     window->driverdata = data;
     return 0;
