@@ -2630,6 +2630,7 @@ if(NOT WINDOWS_STORE)
   add_library(SDL2main STATIC ${SDLMAIN_SOURCES})
   # alias target for in-tree builds
   add_library(SDL2::SDL2main ALIAS SDL2main)
+  target_include_directories(SDL2main BEFORE PRIVATE "${SDL2_BINARY_DIR}/include")
   target_include_directories(SDL2main PUBLIC "$<BUILD_INTERFACE:${SDL2_SOURCE_DIR}/include>" $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}> $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/SDL2>)
   set(_INSTALL_LIBS "SDL2main")
   if (NOT ANDROID)
