@@ -37,6 +37,8 @@
 
 /* Platform HIDAPI Implementation */
 
+#define hid_device                      PLATFORM_hid_device
+#define hid_device_                     PLATFORM_hid_device_
 #define hid_init                        PLATFORM_hid_init
 #define hid_exit                        PLATFORM_hid_exit
 #define hid_enumerate                   PLATFORM_hid_enumerate
@@ -109,6 +111,8 @@ static const SDL_UDEV_Symbols *udev_ctx = NULL;
 #define udev_ctx 1
 #endif
 
+#undef hid_device
+#undef hid_device_
 #undef hid_init
 #undef hid_exit
 #undef hid_enumerate
@@ -142,6 +146,8 @@ static const SDL_UDEV_Symbols *udev_ctx = NULL;
 
 /* DRIVER HIDAPI Implementation */
 
+#define hid_device                      DRIVER_hid_device
+#define hid_device_                     DRIVER_hid_device_
 #define hid_init                        DRIVER_hid_init
 #define hid_exit                        DRIVER_hid_exit
 #define hid_enumerate                   DRIVER_hid_enumerate
@@ -168,6 +174,8 @@ static const SDL_UDEV_Symbols *udev_ctx = NULL;
 #error Need a driver hid.c for this platform!
 #endif
 
+#undef hid_device
+#undef hid_device_
 #undef hid_init
 #undef hid_exit
 #undef hid_enumerate
@@ -275,6 +283,8 @@ static struct
 #define libusb_handle_events                   libusb_ctx.handle_events
 #define libusb_handle_events_completed         libusb_ctx.handle_events_completed
 
+#define hid_device                      LIBUSB_hid_device
+#define hid_device_                     LIBUSB_hid_device_
 #define hid_init                        LIBUSB_hid_init
 #define hid_exit                        LIBUSB_hid_exit
 #define hid_enumerate                   LIBUSB_hid_enumerate
@@ -323,6 +333,8 @@ SDL_libusb_get_string_descriptor(libusb_device_handle *dev,
 #undef HIDAPI_H__
 #include "libusb/hid.c"
 
+#undef hid_device
+#undef hid_device_
 #undef hid_init
 #undef hid_exit
 #undef hid_enumerate
@@ -355,18 +367,18 @@ SDL_libusb_get_string_descriptor(libusb_device_handle *dev,
 /* Shared HIDAPI Implementation */
 
 struct hidapi_backend {
-    int  (*hid_write)(SDL_hid_device* device, const unsigned char* data, size_t length);
-    int  (*hid_read_timeout)(SDL_hid_device* device, unsigned char* data, size_t length, int milliseconds);
-    int  (*hid_read)(SDL_hid_device* device, unsigned char* data, size_t length);
-    int  (*hid_set_nonblocking)(SDL_hid_device* device, int nonblock);
-    int  (*hid_send_feature_report)(SDL_hid_device* device, const unsigned char* data, size_t length);
-    int  (*hid_get_feature_report)(SDL_hid_device* device, unsigned char* data, size_t length);
-    void (*hid_close)(SDL_hid_device* device);
-    int  (*hid_get_manufacturer_string)(SDL_hid_device* device, wchar_t* string, size_t maxlen);
-    int  (*hid_get_product_string)(SDL_hid_device* device, wchar_t* string, size_t maxlen);
-    int  (*hid_get_serial_number_string)(SDL_hid_device* device, wchar_t* string, size_t maxlen);
-    int  (*hid_get_indexed_string)(SDL_hid_device* device, int string_index, wchar_t* string, size_t maxlen);
-    const wchar_t* (*hid_error)(SDL_hid_device* device);
+    int  (*hid_write)(void* device, const unsigned char* data, size_t length);
+    int  (*hid_read_timeout)(void* device, unsigned char* data, size_t length, int milliseconds);
+    int  (*hid_read)(void* device, unsigned char* data, size_t length);
+    int  (*hid_set_nonblocking)(void* device, int nonblock);
+    int  (*hid_send_feature_report)(void* device, const unsigned char* data, size_t length);
+    int  (*hid_get_feature_report)(void* device, unsigned char* data, size_t length);
+    void (*hid_close)(void* device);
+    int  (*hid_get_manufacturer_string)(void* device, wchar_t* string, size_t maxlen);
+    int  (*hid_get_product_string)(void* device, wchar_t* string, size_t maxlen);
+    int  (*hid_get_serial_number_string)(void* device, wchar_t* string, size_t maxlen);
+    int  (*hid_get_indexed_string)(void* device, int string_index, wchar_t* string, size_t maxlen);
+    const wchar_t* (*hid_error)(void* device);
 };
 
 #if HAVE_PLATFORM_BACKEND
@@ -420,43 +432,30 @@ static const struct hidapi_backend LIBUSB_Backend = {
 };
 #endif /* SDL_LIBUSB_DYNAMIC */
 
-typedef struct _HIDDeviceWrapper HIDDeviceWrapper;
-struct _HIDDeviceWrapper
+struct SDL_hid_device_
 {
     const void *magic;
-    SDL_hid_device *device;
+    void *device;
     const struct hidapi_backend *backend;
 };
 static char device_magic;
 
 #if HAVE_PLATFORM_BACKEND || HAVE_DRIVER_BACKEND || defined(SDL_LIBUSB_DYNAMIC)
 
-static HIDDeviceWrapper *
-CreateHIDDeviceWrapper(SDL_hid_device *device, const struct hidapi_backend *backend)
+static SDL_hid_device *
+CreateHIDDeviceWrapper(void *device, const struct hidapi_backend *backend)
 {
-    HIDDeviceWrapper *wrapper = (HIDDeviceWrapper *)SDL_malloc(sizeof(*wrapper));
+    SDL_hid_device *wrapper = (SDL_hid_device *)SDL_malloc(sizeof(*wrapper));
     wrapper->magic = &device_magic;
     wrapper->device = device;
     wrapper->backend = backend;
     return wrapper;
 }
 
-static SDL_hid_device *
-WrapHIDDevice(HIDDeviceWrapper *wrapper)
-{
-    return (SDL_hid_device *)wrapper;
-}
-
 #endif /* HAVE_PLATFORM_BACKEND || HAVE_DRIVER_BACKEND || SDL_LIBUSB_DYNAMIC */
 
-static HIDDeviceWrapper *
-UnwrapHIDDevice(SDL_hid_device *device)
-{
-    return (HIDDeviceWrapper *)device;
-}
-
 static void
-DeleteHIDDeviceWrapper(HIDDeviceWrapper *device)
+DeleteHIDDeviceWrapper(SDL_hid_device *device)
 {
     device->magic = NULL;
     SDL_free(device);
@@ -777,7 +776,7 @@ void SDL_hid_free_enumeration(struct SDL_hid_device_info *devs)
 SDL_hid_device *SDL_hid_open(unsigned short vendor_id, unsigned short product_id, const wchar_t *serial_number)
 {
 #if HAVE_PLATFORM_BACKEND || HAVE_DRIVER_BACKEND || defined(SDL_LIBUSB_DYNAMIC)
-    SDL_hid_device *pDevice = NULL;
+    void *pDevice = NULL;
 
     if (SDL_hid_init() != 0) {
         return NULL;
@@ -785,27 +784,21 @@ SDL_hid_device *SDL_hid_open(unsigned short vendor_id, unsigned short product_id
 
 #if HAVE_PLATFORM_BACKEND
     if (udev_ctx &&
-        (pDevice = (SDL_hid_device*) PLATFORM_hid_open(vendor_id, product_id, serial_number)) != NULL) {
-
-        HIDDeviceWrapper *wrapper = CreateHIDDeviceWrapper(pDevice, &PLATFORM_Backend);
-        return WrapHIDDevice(wrapper);
+        (pDevice = PLATFORM_hid_open(vendor_id, product_id, serial_number)) != NULL) {
+        return CreateHIDDeviceWrapper(pDevice, &PLATFORM_Backend);
     }
 #endif /* HAVE_PLATFORM_BACKEND */
 
 #if HAVE_DRIVER_BACKEND
-    if ((pDevice = (SDL_hid_device*) DRIVER_hid_open(vendor_id, product_id, serial_number)) != NULL) {
-
-        HIDDeviceWrapper *wrapper = CreateHIDDeviceWrapper(pDevice, &DRIVER_Backend);
-        return WrapHIDDevice(wrapper);
+    if ((pDevice = DRIVER_hid_open(vendor_id, product_id, serial_number)) != NULL) {
+        return CreateHIDDeviceWrapper(pDevice, &DRIVER_Backend);
     }
 #endif /* HAVE_DRIVER_BACKEND */
 
 #ifdef SDL_LIBUSB_DYNAMIC
     if (libusb_ctx.libhandle &&
-        (pDevice = (SDL_hid_device*) LIBUSB_hid_open(vendor_id, product_id, serial_number)) != NULL) {
-
-        HIDDeviceWrapper *wrapper = CreateHIDDeviceWrapper(pDevice, &LIBUSB_Backend);
-        return WrapHIDDevice(wrapper);
+        (pDevice = LIBUSB_hid_open(vendor_id, product_id, serial_number)) != NULL) {
+        return CreateHIDDeviceWrapper(pDevice, &LIBUSB_Backend);
     }
 #endif /* SDL_LIBUSB_DYNAMIC */
 
@@ -817,7 +810,7 @@ SDL_hid_device *SDL_hid_open(unsigned short vendor_id, unsigned short product_id
 SDL_hid_device *SDL_hid_open_path(const char *path, int bExclusive /* = false */)
 {
 #if HAVE_PLATFORM_BACKEND || HAVE_DRIVER_BACKEND || defined(SDL_LIBUSB_DYNAMIC)
-    SDL_hid_device *pDevice = NULL;
+    void *pDevice = NULL;
 
     if (SDL_hid_init() != 0) {
         return NULL;
@@ -825,27 +818,21 @@ SDL_hid_device *SDL_hid_open_path(const char *path, int bExclusive /* = false */
 
 #if HAVE_PLATFORM_BACKEND
     if (udev_ctx &&
-        (pDevice = (SDL_hid_device*) PLATFORM_hid_open_path(path, bExclusive)) != NULL) {
-
-        HIDDeviceWrapper *wrapper = CreateHIDDeviceWrapper(pDevice, &PLATFORM_Backend);
-        return WrapHIDDevice(wrapper);
+        (pDevice = PLATFORM_hid_open_path(path, bExclusive)) != NULL) {
+        return CreateHIDDeviceWrapper(pDevice, &PLATFORM_Backend);
     }
 #endif /* HAVE_PLATFORM_BACKEND */
 
 #if HAVE_DRIVER_BACKEND
-    if ((pDevice = (SDL_hid_device*) DRIVER_hid_open_path(path, bExclusive)) != NULL) {
-
-        HIDDeviceWrapper *wrapper = CreateHIDDeviceWrapper(pDevice, &DRIVER_Backend);
-        return WrapHIDDevice(wrapper);
+    if ((pDevice = DRIVER_hid_open_path(path, bExclusive)) != NULL) {
+        return CreateHIDDeviceWrapper(pDevice, &DRIVER_Backend);
     }
 #endif /* HAVE_DRIVER_BACKEND */
 
 #ifdef SDL_LIBUSB_DYNAMIC
     if (libusb_ctx.libhandle &&
-        (pDevice = (SDL_hid_device*) LIBUSB_hid_open_path(path, bExclusive)) != NULL) {
-
-        HIDDeviceWrapper *wrapper = CreateHIDDeviceWrapper(pDevice, &LIBUSB_Backend);
-        return WrapHIDDevice(wrapper);
+        (pDevice = LIBUSB_hid_open_path(path, bExclusive)) != NULL) {
+        return CreateHIDDeviceWrapper(pDevice, &LIBUSB_Backend);
     }
 #endif /* SDL_LIBUSB_DYNAMIC */
 
@@ -856,150 +843,138 @@ SDL_hid_device *SDL_hid_open_path(const char *path, int bExclusive /* = false */
 
 int SDL_hid_write(SDL_hid_device *device, const unsigned char *data, size_t length)
 {
-    HIDDeviceWrapper *wrapper = UnwrapHIDDevice(device);
     int result;
 
-    CHECK_DEVICE_MAGIC(wrapper, -1);
+    CHECK_DEVICE_MAGIC(device, -1);
 
-    result = wrapper->backend->hid_write(wrapper->device, data, length);
+    result = device->backend->hid_write(device->device, data, length);
     if (result < 0) {
-        SDL_SetHIDAPIError(wrapper->backend->hid_error(wrapper->device));
+        SDL_SetHIDAPIError(device->backend->hid_error(device->device));
     }
     return result;
 }
 
 int SDL_hid_read_timeout(SDL_hid_device *device, unsigned char *data, size_t length, int milliseconds)
 {
-    HIDDeviceWrapper *wrapper = UnwrapHIDDevice(device);
     int result;
 
-    CHECK_DEVICE_MAGIC(wrapper, -1);
+    CHECK_DEVICE_MAGIC(device, -1);
 
-    result = wrapper->backend->hid_read_timeout(wrapper->device, data, length, milliseconds);
+    result = device->backend->hid_read_timeout(device->device, data, length, milliseconds);
     if (result < 0) {
-        SDL_SetHIDAPIError(wrapper->backend->hid_error(wrapper->device));
+        SDL_SetHIDAPIError(device->backend->hid_error(device->device));
     }
     return result;
 }
 
 int SDL_hid_read(SDL_hid_device *device, unsigned char *data, size_t length)
 {
-    HIDDeviceWrapper *wrapper = UnwrapHIDDevice(device);
     int result;
 
-    CHECK_DEVICE_MAGIC(wrapper, -1);
+    CHECK_DEVICE_MAGIC(device, -1);
 
-    result = wrapper->backend->hid_read(wrapper->device, data, length);
+    result = device->backend->hid_read(device->device, data, length);
     if (result < 0) {
-        SDL_SetHIDAPIError(wrapper->backend->hid_error(wrapper->device));
+        SDL_SetHIDAPIError(device->backend->hid_error(device->device));
     }
     return result;
 }
 
 int SDL_hid_set_nonblocking(SDL_hid_device *device, int nonblock)
 {
-    HIDDeviceWrapper *wrapper = UnwrapHIDDevice(device);
     int result;
 
-    CHECK_DEVICE_MAGIC(wrapper, -1);
+    CHECK_DEVICE_MAGIC(device, -1);
 
-    result = wrapper->backend->hid_set_nonblocking(wrapper->device, nonblock);
+    result = device->backend->hid_set_nonblocking(device->device, nonblock);
     if (result < 0) {
-        SDL_SetHIDAPIError(wrapper->backend->hid_error(wrapper->device));
+        SDL_SetHIDAPIError(device->backend->hid_error(device->device));
     }
     return result;
 }
 
 int SDL_hid_send_feature_report(SDL_hid_device *device, const unsigned char *data, size_t length)
 {
-    HIDDeviceWrapper *wrapper = UnwrapHIDDevice(device);
     int result;
 
-    CHECK_DEVICE_MAGIC(wrapper, -1);
+    CHECK_DEVICE_MAGIC(device, -1);
 
-    result = wrapper->backend->hid_send_feature_report(wrapper->device, data, length);
+    result = device->backend->hid_send_feature_report(device->device, data, length);
     if (result < 0) {
-        SDL_SetHIDAPIError(wrapper->backend->hid_error(wrapper->device));
+        SDL_SetHIDAPIError(device->backend->hid_error(device->device));
     }
     return result;
 }
 
 int SDL_hid_get_feature_report(SDL_hid_device *device, unsigned char *data, size_t length)
 {
-    HIDDeviceWrapper *wrapper = UnwrapHIDDevice(device);
     int result;
 
-    CHECK_DEVICE_MAGIC(wrapper, -1);
+    CHECK_DEVICE_MAGIC(device, -1);
 
-    result = wrapper->backend->hid_get_feature_report(wrapper->device, data, length);
+    result = device->backend->hid_get_feature_report(device->device, data, length);
     if (result < 0) {
-        SDL_SetHIDAPIError(wrapper->backend->hid_error(wrapper->device));
+        SDL_SetHIDAPIError(device->backend->hid_error(device->device));
     }
     return result;
 }
 
 void SDL_hid_close(SDL_hid_device *device)
 {
-    HIDDeviceWrapper *wrapper = UnwrapHIDDevice(device);
+    CHECK_DEVICE_MAGIC(device,);
 
-    CHECK_DEVICE_MAGIC(wrapper,);
-
-    wrapper->backend->hid_close(wrapper->device);
-    DeleteHIDDeviceWrapper(wrapper);
+    device->backend->hid_close(device->device);
+    DeleteHIDDeviceWrapper(device);
 }
 
 int SDL_hid_get_manufacturer_string(SDL_hid_device *device, wchar_t *string, size_t maxlen)
 {
-    HIDDeviceWrapper *wrapper = UnwrapHIDDevice(device);
     int result;
 
-    CHECK_DEVICE_MAGIC(wrapper, -1);
+    CHECK_DEVICE_MAGIC(device, -1);
 
-    result = wrapper->backend->hid_get_manufacturer_string(wrapper->device, string, maxlen);
+    result = device->backend->hid_get_manufacturer_string(device->device, string, maxlen);
     if (result < 0) {
-        SDL_SetHIDAPIError(wrapper->backend->hid_error(wrapper->device));
+        SDL_SetHIDAPIError(device->backend->hid_error(device->device));
     }
     return result;
 }
 
 int SDL_hid_get_product_string(SDL_hid_device *device, wchar_t *string, size_t maxlen)
 {
-    HIDDeviceWrapper *wrapper = UnwrapHIDDevice(device);
     int result;
 
-    CHECK_DEVICE_MAGIC(wrapper, -1);
+    CHECK_DEVICE_MAGIC(device, -1);
 
-    result = wrapper->backend->hid_get_product_string(wrapper->device, string, maxlen);
+    result = device->backend->hid_get_product_string(device->device, string, maxlen);
     if (result < 0) {
-        SDL_SetHIDAPIError(wrapper->backend->hid_error(wrapper->device));
+        SDL_SetHIDAPIError(device->backend->hid_error(device->device));
     }
     return result;
 }
 
 int SDL_hid_get_serial_number_string(SDL_hid_device *device, wchar_t *string, size_t maxlen)
 {
-    HIDDeviceWrapper *wrapper = UnwrapHIDDevice(device);
     int result;
 
-    CHECK_DEVICE_MAGIC(wrapper, -1);
+    CHECK_DEVICE_MAGIC(device, -1);
 
-    result = wrapper->backend->hid_get_serial_number_string(wrapper->device, string, maxlen);
+    result = device->backend->hid_get_serial_number_string(device->device, string, maxlen);
     if (result < 0) {
-        SDL_SetHIDAPIError(wrapper->backend->hid_error(wrapper->device));
+        SDL_SetHIDAPIError(device->backend->hid_error(device->device));
     }
     return result;
 }
 
 int SDL_hid_get_indexed_string(SDL_hid_device *device, int string_index, wchar_t *string, size_t maxlen)
 {
-    HIDDeviceWrapper *wrapper = UnwrapHIDDevice(device);
     int result;
 
-    CHECK_DEVICE_MAGIC(wrapper, -1);
+    CHECK_DEVICE_MAGIC(device, -1);
 
-    result = wrapper->backend->hid_get_indexed_string(wrapper->device, string_index, string, maxlen);
+    result = device->backend->hid_get_indexed_string(device->device, string_index, string, maxlen);
     if (result < 0) {
-        SDL_SetHIDAPIError(wrapper->backend->hid_error(wrapper->device));
+        SDL_SetHIDAPIError(device->backend->hid_error(device->device));
     }
     return result;
 }
@@ -1009,7 +984,7 @@ int SDL_hid_get_indexed_string(SDL_hid_device *device, int string_index, wchar_t
 void SDL_EnableGameCubeAdaptors(void)
 {
 #ifdef SDL_LIBUSB_DYNAMIC
-    libusb_context *usb_context = NULL;
+    libusb_context *context = NULL;
     libusb_device **devs = NULL;
     libusb_device_handle *handle = NULL;
     struct libusb_device_descriptor desc;
@@ -1020,8 +995,8 @@ void SDL_EnableGameCubeAdaptors(void)
         return;
     }
 
-    if (libusb_init(&usb_context) == 0) {
-        num_devs = libusb_get_device_list(usb_context, &devs);
+    if (libusb_init(&context) == 0) {
+        num_devs = libusb_get_device_list(context, &devs);
         for (i = 0; i < num_devs; ++i) {
             if (libusb_get_device_descriptor(devs[i], &desc) != 0) {
                 continue;
@@ -1055,7 +1030,7 @@ void SDL_EnableGameCubeAdaptors(void)
 
         libusb_free_device_list(devs, 1);
 
-        libusb_exit(usb_context);
+        libusb_exit(context);
     }
 #endif /* SDL_LIBUSB_DYNAMIC */
 }
