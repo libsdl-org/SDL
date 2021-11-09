@@ -814,7 +814,7 @@ void WIN_UngrabKeyboard(SDL_Window *window)
     }
 }
 
-void
+int
 WIN_SetWindowMouseRect(_THIS, SDL_Window * window, SDL_Rect * rect)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
@@ -825,6 +825,8 @@ WIN_SetWindowMouseRect(_THIS, SDL_Window * window, SDL_Rect * rect)
         SDL_zero(data->mouse_rect);
     }
     WIN_UpdateClipCursor(window);
+
+    return 0;
 }
 
 void
