@@ -1154,14 +1154,34 @@ Wayland_MinimizeWindow(_THIS, SDL_Window * window)
 }
 
 void
+Wayland_SetWindowMouseRect(_THIS, SDL_Window *window)
+{
+    SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
+
+    /* This may look suspiciously like SetWindowGrab, despite SetMouseRect not
+     * implicitly doing a grab. And you're right! Wayland doesn't let us mess
+     * around with mouse focus whatsoever, so it just happens to be that the
+     * work that we can do in these two functions ends up being the same.
+     *
+     * Just know that this call lets you confine with a rect, SetWindowGrab
+     * lets you confine without a rect.
+     */
+    if (SDL_RectEmpty(&window->mouse_rect) && !(window->flags & SDL_WINDOW_MOUSE_GRABBED)) {
+        Wayland_input_unconfine_pointer(data->input, window);
+    } else {
+        Wayland_input_confine_pointer(data->input, window);
+    }
+}
+
+void
 Wayland_SetWindowMouseGrab(_THIS, SDL_Window *window, SDL_bool grabbed)
 {
     SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
 
     if (grabbed) {
-        Wayland_input_confine_pointer(window, data->input);
-    } else {
-        Wayland_input_unconfine_pointer(data->input);
+        Wayland_input_confine_pointer(data->input, window);
+    } else if (SDL_RectEmpty(&window->mouse_rect)) {
+        Wayland_input_unconfine_pointer(data->input, window);
     }
 }
 

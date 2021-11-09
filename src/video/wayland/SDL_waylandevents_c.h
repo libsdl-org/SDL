@@ -50,8 +50,6 @@ struct SDL_WaylandInput {
     SDL_WaylandDataDevice *data_device;
     SDL_WaylandTextInput *text_input;
     struct zwp_relative_pointer_v1 *relative_pointer;
-    struct zwp_confined_pointer_v1 *confined_pointer;
-    SDL_Window *confined_pointer_window;
     SDL_WindowData *pointer_focus;
     SDL_WindowData *keyboard_focus;
     uint32_t pointer_enter_serial;
@@ -98,8 +96,8 @@ extern void Wayland_display_destroy_pointer_constraints(SDL_VideoData *d);
 extern int Wayland_input_lock_pointer(struct SDL_WaylandInput *input);
 extern int Wayland_input_unlock_pointer(struct SDL_WaylandInput *input);
 
-extern int Wayland_input_confine_pointer(SDL_Window *window, struct SDL_WaylandInput *input);
-extern int Wayland_input_unconfine_pointer(struct SDL_WaylandInput *input);
+extern int Wayland_input_confine_pointer(struct SDL_WaylandInput *input, SDL_Window *window);
+extern int Wayland_input_unconfine_pointer(struct SDL_WaylandInput *input, SDL_Window *window);
 
 extern void Wayland_display_add_relative_pointer_manager(SDL_VideoData *d, uint32_t id);
 extern void Wayland_display_destroy_relative_pointer_manager(SDL_VideoData *d);
