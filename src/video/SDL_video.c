@@ -2045,10 +2045,10 @@ SDL_SetWindowPosition(SDL_Window * window, int x, int y)
 
         SDL_GetDisplayBounds(displayIndex, &bounds);
         if (SDL_WINDOWPOS_ISCENTERED(x)) {
-            x = bounds.x + (bounds.w - window->w) / 2;
+            x = bounds.x + (bounds.w - window->windowed.w) / 2;
         }
         if (SDL_WINDOWPOS_ISCENTERED(y)) {
-            y = bounds.y + (bounds.h - window->h) / 2;
+            y = bounds.y + (bounds.h - window->windowed.h) / 2;
         }
     }
 
