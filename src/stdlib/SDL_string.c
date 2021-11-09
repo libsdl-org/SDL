@@ -34,8 +34,10 @@
 #define va_copy(dst, src)   dst = src
 #endif
 
+#if !defined(HAVE_VSSCANF) || !defined(HAVE_STRTOL) || !defined(HAVE_STRTOUL) || !defined(HAVE_STRTOD) || !defined(HAVE_STRTOLL) || !defined(HAVE_STRTOULL)
 #define SDL_isupperhex(X)   (((X) >= 'A') && ((X) <= 'F'))
 #define SDL_islowerhex(X)   (((X) >= 'a') && ((X) <= 'f'))
+#endif
 
 #define UTF8_IsLeadByte(c) ((c) >= 0xC0 && (c) <= 0xF4)
 #define UTF8_IsTrailingByte(c) ((c) >= 0x80 && (c) <= 0xBF)
