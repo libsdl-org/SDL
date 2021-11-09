@@ -989,7 +989,8 @@ extern DECLSPEC void SDLCALL SDL_RenderGetScale(SDL_Renderer * renderer,
  * \param logicalX the pointer filled with the logical x cooridnate
  * \param logicalY the pointer filled with the logical y coordinate
  *  
- * \since idk
+ * \since This function is available since SDL 2.0.20.
+ * 
  * \sa SDL_RenderGetScale
  * \sa SDL_RenderSetScale
  * \sa SDL_RenderGetLogicalSize
