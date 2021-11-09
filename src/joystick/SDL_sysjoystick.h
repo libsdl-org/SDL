@@ -36,6 +36,7 @@ typedef struct _SDL_JoystickAxisInfo
     SDL_bool has_initial_value; /* Whether we've seen a value on the axis yet */
     SDL_bool has_second_value;  /* Whether we've seen a second value on the axis yet */
     SDL_bool sent_initial_value; /* Whether we've sent the initial axis value */
+    SDL_bool sending_initial_value; /* Whether we are sending the initial axis value */
 } SDL_JoystickAxisInfo;
 
 typedef struct _SDL_JoystickTouchpadFingerInfo
