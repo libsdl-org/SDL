@@ -912,3 +912,4 @@ SDL_DYNAPI_PROC(int,SDL_hid_get_product_string,(SDL_hid_device *a, wchar_t *b, s
 SDL_DYNAPI_PROC(int,SDL_hid_get_serial_number_string,(SDL_hid_device *a, wchar_t *b, size_t c),(a,b,c),return)
 SDL_DYNAPI_PROC(int,SDL_hid_get_indexed_string,(SDL_hid_device *a, int b, wchar_t *c, size_t d),(a,b,c,d),return)
 SDL_DYNAPI_PROC(int,SDL_SetWindowMouseRect,(SDL_Window *a, const SDL_Rect *b),(a,b),return)
+SDL_DYNAPI_PROC(void,SDL_RealCoordinatesToLogicalCoordinates,(SDL_Renderer *a, int b, int c, int *d, int *e),(a,b,c,d,e),)
