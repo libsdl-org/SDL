@@ -1382,6 +1382,36 @@ extern DECLSPEC SDL_bool SDLCALL SDL_GetWindowMouseGrab(SDL_Window * window);
 extern DECLSPEC SDL_Window * SDLCALL SDL_GetGrabbedWindow(void);
 
 /**
+ * Confines the cursor to the specified area of a window.
+ *
+ * Note that this does NOT grab the cursor, it only defines the area a cursor
+ * is restricted to when the window has mouse focus.
+ *
+ * \param window The window that will be associated with the barrier.
+ * \param rect A rectangle area in window-relative coordinates. If NULL the
+ *  barrier for the specified window will be destroyed.
+ *
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \sa SDL_GetWindowMouseRect
+ * \sa SDL_SetWindowGrab
+ */
+extern DECLSPEC int SDLCALL SDL_SetWindowMouseRect(SDL_Window * window, const SDL_Rect * rect);
+
+/**
+ * Get the mouse confinement rectangle of a window.
+ *
+ * \param window The window to query
+ *
+ * \returns A pointer to the mouse confinement rectangle of a window,
+ *          or NULL if there isn't one.
+ *
+ * \sa SDL_SetWindowMouseRect
+ */
+extern DECLSPEC const SDL_Rect * SDLCALL SDL_GetWindowMouseRect(SDL_Window * window);
+
+/**
  * Set the brightness (gamma multiplier) for a given window's display.
  *
  * Despite the name and signature, this method sets the brightness of the
@@ -1496,23 +1526,6 @@ extern DECLSPEC int SDLCALL SDL_SetWindowModalFor(SDL_Window * modal_window, SDL
  * \sa SDL_RaiseWindow
  */
 extern DECLSPEC int SDLCALL SDL_SetWindowInputFocus(SDL_Window * window);
-
-/**
- * Confines the cursor in the specified rect area of a window.
- *
- * Note that this does NOT grab the cursor, it only defines the area a cursor
- * is restricted to when the window has mouse focus.
- *
- * \param window The window that will be associated with the barrier.
- * \param rect A rectangle area in window-relative coordinates. If NULL the
- *  barrier for the specified window will be destroyed.
- *
- * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information.
- *
- * \sa SDL_SetWindowGrab
- */
-extern DECLSPEC int SDLCALL SDL_SetWindowMouseRect(SDL_Window * window, const SDL_Rect * rect);
 
 /**
  * Set the gamma ramp for the display that owns a given window.

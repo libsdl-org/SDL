@@ -124,7 +124,6 @@ struct SDL_WindowData
     SDL_bool created;
     SDL_bool inWindowFullscreenTransition;
     NSInteger flash_request;
-    SDL_Rect mouse_rect;
     Cocoa_WindowListener *listener;
     struct SDL_VideoData *videodata;
 #if SDL_VIDEO_OPENGL_EGL
@@ -155,7 +154,7 @@ extern void Cocoa_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDispl
 extern int Cocoa_SetWindowGammaRamp(_THIS, SDL_Window * window, const Uint16 * ramp);
 extern void* Cocoa_GetWindowICCProfile(_THIS, SDL_Window * window, size_t * size);
 extern int Cocoa_GetWindowGammaRamp(_THIS, SDL_Window * window, Uint16 * ramp);
-extern int Cocoa_SetWindowMouseRect(_THIS, SDL_Window * window, const SDL_Rect * rect);
+extern void Cocoa_SetWindowMouseRect(_THIS, SDL_Window * window);
 extern void Cocoa_SetWindowMouseGrab(_THIS, SDL_Window * window, SDL_bool grabbed);
 extern void Cocoa_DestroyWindow(_THIS, SDL_Window * window);
 extern SDL_bool Cocoa_GetWindowWMInfo(_THIS, SDL_Window * window, struct SDL_SysWMinfo *info);

@@ -814,19 +814,10 @@ void WIN_UngrabKeyboard(SDL_Window *window)
     }
 }
 
-int
-WIN_SetWindowMouseRect(_THIS, SDL_Window * window, const SDL_Rect * rect)
+void
+WIN_SetWindowMouseRect(_THIS, SDL_Window * window)
 {
-    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
-
-    if (rect) {
-        SDL_memcpy(&data->mouse_rect, rect, sizeof(*rect));
-    } else {
-        SDL_zero(data->mouse_rect);
-    }
     WIN_UpdateClipCursor(window);
-
-    return 0;
 }
 
 void
@@ -1014,7 +1005,7 @@ WIN_UpdateClipCursor(SDL_Window *window)
     }
 
     if ((mouse->relative_mode || (window->flags & SDL_WINDOW_MOUSE_GRABBED) ||
-         (data->mouse_rect.w > 0 && data->mouse_rect.h > 0)) &&
+         (window->mouse_rect.w > 0 && window->mouse_rect.h > 0)) &&
         (window->flags & SDL_WINDOW_INPUT_FOCUS)) {
         if (mouse->relative_mode && !mouse->relative_mode_warp) {
             if (GetWindowRect(data->hwnd, &rect)) {
@@ -1039,7 +1030,7 @@ WIN_UpdateClipCursor(SDL_Window *window)
             if (GetClientRect(data->hwnd, &rect)) {
                 ClientToScreen(data->hwnd, (LPPOINT) & rect);
                 ClientToScreen(data->hwnd, (LPPOINT) & rect + 1);
-                if (data->mouse_rect.w > 0 && data->mouse_rect.h > 0) {
+                if (window->mouse_rect.w > 0 && window->mouse_rect.h > 0) {
                     RECT mouse_rect, intersection;
 
                     mouse_rect.left = rect.left + data->mouse_rect.x;

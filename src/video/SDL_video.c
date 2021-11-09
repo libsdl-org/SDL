@@ -2836,10 +2836,29 @@ int
 SDL_SetWindowMouseRect(SDL_Window * window, const SDL_Rect * rect)
 {
     CHECK_WINDOW_MAGIC(window, -1);
-    if (!_this->SetWindowMouseRect) {
-        return SDL_Unsupported();
+
+    if (rect) {
+        SDL_memcpy(&window->mouse_rect, rect, sizeof(*rect));
+    } else {
+        SDL_zero(window->mouse_rect);
     }
-    return _this->SetWindowMouseRect(_this, window, rect);
+
+    if (_this->SetWindowMouseRect) {
+        _this->SetWindowMouseRect(_this, window);
+    }
+    return 0;
+}
+
+const SDL_Rect *
+SDL_GetWindowMouseRect(SDL_Window * window)
+{
+    CHECK_WINDOW_MAGIC(window, NULL);
+
+    if (SDL_RectEmpty(&window->mouse_rect)) {
+        return NULL;
+    } else {
+        return &window->mouse_rect;
+    }
 }
 
 int

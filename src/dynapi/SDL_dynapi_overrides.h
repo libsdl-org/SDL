@@ -843,3 +843,4 @@
 #define SDL_hid_get_serial_number_string SDL_hid_get_serial_number_string_REAL
 #define SDL_hid_get_indexed_string SDL_hid_get_indexed_string_REAL
 #define SDL_SetWindowMouseRect SDL_SetWindowMouseRect_REAL
+#define SDL_GetWindowMouseRect SDL_GetWindowMouseRect_REAL

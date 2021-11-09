@@ -1079,7 +1079,7 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
             }
 
 #if SDL_VIDEO_DRIVER_X11_XFIXES
-            /* Disable confiment if the window gets hidden. */
+            /* Disable confinement if the window gets hidden. */
             if (data->pointer_barrier_active == SDL_TRUE) {
                 X11_ConfineCursorWithFlags(_this, data->window, NULL, X11_BARRIER_HANDLED_BY_EVENT);
             }
@@ -1095,7 +1095,7 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
             X11_DispatchMapNotify(data);
 
 #if SDL_VIDEO_DRIVER_X11_XFIXES
-            /* Enable confiment if it was activated. */
+            /* Enable confinement if it was activated. */
             if (data->pointer_barrier_active == SDL_TRUE) {
                 X11_ConfineCursorWithFlags(_this, data->window, &data->barrier_rect, X11_BARRIER_HANDLED_BY_EVENT);
             }

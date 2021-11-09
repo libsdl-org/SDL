@@ -103,6 +103,8 @@ struct SDL_Window
     SDL_bool is_destroying;
     SDL_bool is_dropping;       /* drag/drop in progress, expecting SDL_SendDropComplete(). */
 
+    SDL_Rect mouse_rect;
+
     SDL_WindowShaper *shaper;
 
     SDL_HitTest hit_test;
@@ -235,7 +237,7 @@ struct SDL_VideoDevice
     int (*SetWindowGammaRamp) (_THIS, SDL_Window * window, const Uint16 * ramp);
     int (*GetWindowGammaRamp) (_THIS, SDL_Window * window, Uint16 * ramp);
     void* (*GetWindowICCProfile) (_THIS, SDL_Window * window, size_t* size);
-    int (*SetWindowMouseRect)(_THIS, SDL_Window * window, const SDL_Rect * rect);
+    void (*SetWindowMouseRect)(_THIS, SDL_Window * window);
     void (*SetWindowMouseGrab) (_THIS, SDL_Window * window, SDL_bool grabbed);
     void (*SetWindowKeyboardGrab) (_THIS, SDL_Window * window, SDL_bool grabbed);
     void (*DestroyWindow) (_THIS, SDL_Window * window);

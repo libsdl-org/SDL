@@ -335,7 +335,7 @@ ShouldAdjustCoordinatesForGrab(SDL_Window * window)
         return SDL_FALSE;
     }
 
-    if ((window->flags & SDL_WINDOW_MOUSE_GRABBED) || (data->mouse_rect.w > 0 && data->mouse_rect.h > 0)) {
+    if ((window->flags & SDL_WINDOW_MOUSE_GRABBED) || (window->mouse_rect.w > 0 && window->mouse_rect.h > 0)) {
         return SDL_TRUE;
     }
     return SDL_FALSE;
@@ -344,9 +344,7 @@ ShouldAdjustCoordinatesForGrab(SDL_Window * window)
 static SDL_bool
 AdjustCoordinatesForGrab(SDL_Window * window, int x, int y, CGPoint *adjusted)
 {
-    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
-
-    if (data->mouse_rect.w > 0 && data->mouse_rect.h > 0) {
+    if (window->mouse_rect.w > 0 && window->mouse_rect.h > 0) {
         SDL_Rect window_rect;
         SDL_Rect mouse_rect;
 
@@ -355,7 +353,7 @@ AdjustCoordinatesForGrab(SDL_Window * window, int x, int y, CGPoint *adjusted)
         window_rect.w = window->w;
         window_rect.h = window->h;
 
-        if (SDL_IntersectRect(&data->mouse_rect, &window_rect, &mouse_rect)) {
+        if (SDL_IntersectRect(&window->mouse_rect, &window_rect, &mouse_rect)) {
             int left = window->x + mouse_rect.x;
             int right = left + mouse_rect.w - 1;
             int top = window->y + mouse_rect.y;
@@ -2093,17 +2091,9 @@ Cocoa_GetWindowGammaRamp(_THIS, SDL_Window * window, Uint16 * ramp)
     return 0;
 }
 
-int
-Cocoa_SetWindowMouseRect(_THIS, SDL_Window * window, const SDL_Rect * rect)
+void
+Cocoa_SetWindowMouseRect(_THIS, SDL_Window * window)
 {
-    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
-
-    if (rect) {
-        SDL_memcpy(&data->mouse_rect, rect, sizeof(*rect));
-    } else {
-        SDL_zero(data->mouse_rect);
-    }
-
     /* Move the cursor to the nearest point in the mouse rect */
     if (ShouldAdjustCoordinatesForGrab(window)) {
         int x, y;
@@ -2115,7 +2105,6 @@ Cocoa_SetWindowMouseRect(_THIS, SDL_Window * window, const SDL_Rect * rect)
             CGDisplayMoveCursorToPoint(kCGDirectMainDisplay, cgpoint);
         }
     }
-    return 0;
 }
 
 void

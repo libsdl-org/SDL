@@ -73,10 +73,23 @@ X11_XfixesIsInitialized()
     return xfixes_initialized;
 }
 
-int
-X11_SetWindowMouseRect(_THIS, SDL_Window * window, const SDL_Rect * rect)
+void
+X11_SetWindowMouseRect(_THIS, SDL_Window * window)
 {
-    return X11_ConfineCursorWithFlags(_this, window, rect, 0);
+    if (SDL_RectEmpty(window->mouse_rect)) {
+        X11_ConfineCursorWithFlags(_this, window, NULL, 0);
+    } else {
+        if (window->flags & SDL_WINDOW_INPUT_FOCUS) {
+            X11_ConfineCursorWithFlags(_this, window, &window->mouse_rect, 0);
+        } else {
+            /* Save the state for when we get focus again */
+            SDL_WindowData *wdata = (SDL_WindowData *) window->driverdata;
+
+            SDL_memcpy(&wdata->barrier_rect, &window->mouse_rect, sizeof(wdata->barrier_rect));
+
+            wdata->pointer_barrier_active = SDL_TRUE;
+        }
+    }
 }
 
 int
@@ -102,7 +115,7 @@ X11_ConfineCursorWithFlags(_THIS, SDL_Window * window, const SDL_Rect * rect, in
     wdata = (SDL_WindowData *) window->driverdata;
 
     /* If user did not specify an area to confine, destroy the barrier that was/is assigned to
-     * this window it was assigned*/
+     * this window it was assigned */
     if (rect) {
         int x1, y1, x2, y2;
         SDL_Rect bounds;
