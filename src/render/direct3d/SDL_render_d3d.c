@@ -1425,6 +1425,12 @@ D3D_Reset(SDL_Renderer * renderer)
     SDL_Texture *texture;
     int i;
 
+    /* Cancel any scene that we've started */
+    if (!data->beginScene) {
+        IDirect3DDevice9_EndScene(data->device);
+        data->beginScene = SDL_TRUE;
+    }
+
     /* Release the default render target before reset */
     if (data->defaultRenderTarget) {
         IDirect3DSurface9_Release(data->defaultRenderTarget);
