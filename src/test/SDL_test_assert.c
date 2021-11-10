@@ -104,7 +104,7 @@ void SDLTest_AssertPass(SDL_PRINTF_FORMAT_STRING const char *assertDescription, 
 
         /* Log pass message */
     SDLTest_AssertsPassed++;
-    SDLTest_Log(SDLTEST_ASSERT_CHECK_FORMAT, logMessage, "Pass");
+    SDLTest_Log(SDLTEST_ASSERT_CHECK_FORMAT, logMessage, "Passed");
 }
 
 /*
