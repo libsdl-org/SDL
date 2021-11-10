@@ -80,6 +80,7 @@ HDRS = \
 	SDL_gamecontroller.h \
 	SDL_gesture.h \
 	SDL_haptic.h \
+	SDL_hidapi.h \
 	SDL_hints.h \
 	SDL_joystick.h \
 	SDL_keyboard.h \

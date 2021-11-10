@@ -65,6 +65,7 @@ typedef struct {
     struct SDL_WaylandInput *keyboard_device;
     EGLSurface egl_surface;
     struct zwp_locked_pointer_v1 *locked_pointer;
+    struct zwp_confined_pointer_v1 *confined_pointer;
     struct zxdg_toplevel_decoration_v1 *server_decoration;
     struct zwp_keyboard_shortcuts_inhibitor_v1 *key_inhibitor;
     struct zwp_idle_inhibitor_v1 *idle_inhibitor;
@@ -93,6 +94,7 @@ extern void Wayland_SetWindowFullscreen(_THIS, SDL_Window * window,
                                         SDL_bool fullscreen);
 extern void Wayland_MaximizeWindow(_THIS, SDL_Window * window);
 extern void Wayland_MinimizeWindow(_THIS, SDL_Window * window);
+extern void Wayland_SetWindowMouseRect(_THIS, SDL_Window * window);
 extern void Wayland_SetWindowMouseGrab(_THIS, SDL_Window * window, SDL_bool grabbed);
 extern void Wayland_SetWindowKeyboardGrab(_THIS, SDL_Window *window, SDL_bool grabbed);
 extern void Wayland_RestoreWindow(_THIS, SDL_Window * window);

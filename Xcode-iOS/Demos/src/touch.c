@@ -81,6 +81,7 @@ main(int argc, char *argv[])
     SDL_Event event;
     SDL_Window *window;         /* main window */
     SDL_Renderer *renderer;
+    SDL_Texture *target;
     int done;                   /* does user want to quit? */
     int w, h;
 
@@ -100,29 +101,38 @@ main(int argc, char *argv[])
     initializeTexture(renderer);
 
     /* fill canvass initially with all black */
+    target = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET, w, h);
+    SDL_SetRenderTarget(renderer, target);
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
-    SDL_RenderPresent(renderer);
+    SDL_SetRenderTarget(renderer, NULL);
 
     done = 0;
-    while (!done && SDL_WaitEvent(&event)) {
-        switch (event.type) {
-        case SDL_QUIT:
-            done = 1;
-            break;
-        case SDL_MOUSEMOTION:
-            state = SDL_GetMouseState(&x, &y);  /* get its location */
-            SDL_GetRelativeMouseState(&dx, &dy);        /* find how much the mouse moved */
-            if (state & SDL_BUTTON_LMASK) {     /* is the mouse (touch) down? */
-                drawLine(renderer, x - dx, y - dy, dx, dy);       /* draw line segment */
-                SDL_RenderPresent(renderer);
+    while (!done) {
+        while (SDL_PollEvent(&event) == 1) {
+            switch (event.type) {
+            case SDL_QUIT:
+                done = 1;
+                break;
+            case SDL_MOUSEMOTION:
+                state = SDL_GetMouseState(&x, &y);  /* get its location */
+                SDL_GetRelativeMouseState(&dx, &dy);        /* find how much the mouse moved */
+                if (state & SDL_BUTTON_LMASK) {     /* is the mouse (touch) down? */
+                    SDL_SetRenderTarget(renderer, target);
+                    drawLine(renderer, x - dx, y - dy, dx, dy);       /* draw line segment */
+                    SDL_SetRenderTarget(renderer, NULL);
+                }
+                break;
             }
-            break;
         }
+
+        SDL_RenderCopy(renderer, target, NULL, NULL);
+        SDL_RenderPresent(renderer);
     }
 
     /* cleanup */
     SDL_DestroyTexture(brush);
+    SDL_DestroyTexture(target);
     SDL_Quit();
 
     return 0;

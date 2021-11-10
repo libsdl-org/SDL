@@ -247,6 +247,7 @@ Wayland_CreateDevice(int devindex)
     device->SetWindowFullscreen = Wayland_SetWindowFullscreen;
     device->MaximizeWindow = Wayland_MaximizeWindow;
     device->MinimizeWindow = Wayland_MinimizeWindow;
+    device->SetWindowMouseRect = Wayland_SetWindowMouseRect;
     device->SetWindowMouseGrab = Wayland_SetWindowMouseGrab;
     device->SetWindowKeyboardGrab = Wayland_SetWindowKeyboardGrab;
     device->RestoreWindow = Wayland_RestoreWindow;

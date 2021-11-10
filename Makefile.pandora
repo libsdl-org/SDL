@@ -25,6 +25,7 @@ SOURCES =
 	./src/filesystem/unix/*.c \
 	./src/haptic/*.c \
 	./src/haptic/linux/*.c \
+	./src/hidapi/*.c \
 	./src/joystick/*.c \
 	./src/joystick/linux/*.c \
 	./src/loadso/dlopen/*.c \

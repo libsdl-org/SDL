@@ -459,7 +459,7 @@ ChoosePipelineState(METAL_RenderData *data, METAL_ShaderPipelines *pipelines, SD
     return MakePipelineState(data, cache, [NSString stringWithFormat:@" (blend=custom 0x%x)", blendmode], blendmode);
 }
 
-static void
+static SDL_bool
 METAL_ActivateRenderCommandEncoder(SDL_Renderer * renderer, MTLLoadAction load, MTLClearColor *clear_color, id<MTLBuffer> vertex_buffer)
 {
     METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
@@ -481,10 +481,16 @@ METAL_ActivateRenderCommandEncoder(SDL_Renderer * renderer, MTLLoadAction load, 
                     load = MTLLoadActionDontCare;
                 }
             }
-            mtltexture = data.mtlbackbuffer.texture;
+            if (data.mtlbackbuffer != nil) {
+                mtltexture = data.mtlbackbuffer.texture;
+            }
         }
 
-        SDL_assert(mtltexture);
+        /* mtltexture can be nil here if macOS refused to give us a drawable,
+           which apparently can happen for minimized windows, etc. */
+        if (mtltexture == nil) {
+            return SDL_FALSE;
+        }
 
         if (load == MTLLoadActionClear) {
             SDL_assert(clear_color != NULL);
@@ -517,6 +523,8 @@ METAL_ActivateRenderCommandEncoder(SDL_Renderer * renderer, MTLLoadAction load, 
         //  or whatever. This means we can _always_ batch rendering commands!
         [data.mtlcmdbuffer enqueue];
     }
+
+    return SDL_TRUE;
 }
 
 static void
@@ -1205,7 +1213,7 @@ typedef struct
     size_t color_offset;
 } METAL_DrawStateCache;
 
-static void
+static SDL_bool
 SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, const SDL_MetalFragmentFunction shader,
              const size_t constants_offset, id<MTLBuffer> mtlbufvertex, METAL_DrawStateCache *statecache)
 {
@@ -1214,7 +1222,9 @@ SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, const SDL_Met
     size_t first = cmd->data.draw.first;
     id<MTLRenderPipelineState> newpipeline;
 
-    METAL_ActivateRenderCommandEncoder(renderer, MTLLoadActionLoad, NULL, statecache->vertex_buffer);
+    if (!METAL_ActivateRenderCommandEncoder(renderer, MTLLoadActionLoad, NULL, statecache->vertex_buffer)) {
+        return SDL_FALSE;
+    }
 
     if (statecache->viewport_dirty) {
         MTLViewport viewport;
@@ -1268,9 +1278,10 @@ SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, const SDL_Met
     }
 
     [data.mtlcmdencoder setVertexBufferOffset:first atIndex:0]; /* position/texcoords */
+    return SDL_TRUE;
 }
 
-static void
+static SDL_bool
 SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, const size_t constants_offset,
              id<MTLBuffer> mtlbufvertex, METAL_DrawStateCache *statecache)
 {
@@ -1278,7 +1289,9 @@ SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, const size_t 
     SDL_Texture *texture = cmd->data.draw.texture;
     METAL_TextureData *texturedata = (__bridge METAL_TextureData *)texture->driverdata;
 
-    SetDrawState(renderer, cmd, texturedata.fragmentFunction, constants_offset, mtlbufvertex, statecache);
+    if (!SetDrawState(renderer, cmd, texturedata.fragmentFunction, constants_offset, mtlbufvertex, statecache)) {
+        return SDL_FALSE;
+    }
 
     if (texture != statecache->texture) {
         METAL_TextureData *oldtexturedata = NULL;
@@ -1296,6 +1309,7 @@ SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, const size_t 
         }
         statecache->texture = texture;
     }
+    return SDL_TRUE;
 }
 
 static int
@@ -1393,6 +1407,7 @@ METAL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
                 MTLClearColor color = MTLClearColorMake(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f);
 
                 // get new command encoder, set up with an initial clear operation.
+                // (this might fail, and future draw operations will notice.)
                 METAL_ActivateRenderCommandEncoder(renderer, MTLLoadActionClear, &color, mtlbufvertex);
                 break;
             }
@@ -1401,8 +1416,9 @@ METAL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
             case SDL_RENDERCMD_DRAW_LINES: {
                 const size_t count = cmd->data.draw.count;
                 const MTLPrimitiveType primtype = (cmd->command == SDL_RENDERCMD_DRAW_POINTS) ? MTLPrimitiveTypePoint : MTLPrimitiveTypeLineStrip;
-                SetDrawState(renderer, cmd, SDL_METAL_FRAGMENT_SOLID, CONSTANTS_OFFSET_HALF_PIXEL_TRANSFORM, mtlbufvertex, &statecache);
-                [data.mtlcmdencoder drawPrimitives:primtype vertexStart:0 vertexCount:count];
+                if (SetDrawState(renderer, cmd, SDL_METAL_FRAGMENT_SOLID, CONSTANTS_OFFSET_HALF_PIXEL_TRANSFORM, mtlbufvertex, &statecache)) {
+                    [data.mtlcmdencoder drawPrimitives:primtype vertexStart:0 vertexCount:count];
+                }
                 break;
             }
 
@@ -1420,11 +1436,13 @@ METAL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
                 SDL_Texture *texture = cmd->data.draw.texture;
 
                 if (texture) {
-                    SetCopyState(renderer, cmd, CONSTANTS_OFFSET_IDENTITY, mtlbufvertex, &statecache);
-                    [data.mtlcmdencoder drawPrimitives:MTLPrimitiveTypeTriangle vertexStart:0 vertexCount:count];
+                    if (SetCopyState(renderer, cmd, CONSTANTS_OFFSET_IDENTITY, mtlbufvertex, &statecache)) {
+                        [data.mtlcmdencoder drawPrimitives:MTLPrimitiveTypeTriangle vertexStart:0 vertexCount:count];
+                    }
                 } else {
-                    SetDrawState(renderer, cmd, SDL_METAL_FRAGMENT_SOLID, CONSTANTS_OFFSET_IDENTITY, mtlbufvertex, &statecache);
-                    [data.mtlcmdencoder drawPrimitives:MTLPrimitiveTypeTriangle vertexStart:0 vertexCount:count];
+                    if (SetDrawState(renderer, cmd, SDL_METAL_FRAGMENT_SOLID, CONSTANTS_OFFSET_IDENTITY, mtlbufvertex, &statecache)) {
+                        [data.mtlcmdencoder drawPrimitives:MTLPrimitiveTypeTriangle vertexStart:0 vertexCount:count];
+                    }
                 }
                 break;
             }
@@ -1443,7 +1461,9 @@ METAL_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
                     Uint32 pixel_format, void * pixels, int pitch)
 { @autoreleasepool {
     METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
-    METAL_ActivateRenderCommandEncoder(renderer, MTLLoadActionLoad, NULL, nil);
+    if (!METAL_ActivateRenderCommandEncoder(renderer, MTLLoadActionLoad, NULL, nil)) {
+        return SDL_SetError("Failed to activate render command encoder (is your window in the background?");
+    }
 
     [data.mtlcmdencoder endEncoding];
     id<MTLTexture> mtltexture = data.mtlpassdesc.colorAttachments[0].texture;
@@ -1488,20 +1508,28 @@ static void
 METAL_RenderPresent(SDL_Renderer * renderer)
 { @autoreleasepool {
     METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
+    SDL_bool ready = SDL_TRUE;
 
     // If we don't have a command buffer, we can't present, so activate to get one.
     if (data.mtlcmdencoder == nil) {
         // We haven't even gotten a backbuffer yet? Clear it to black. Otherwise, load the existing data.
         if (data.mtlbackbuffer == nil) {
             MTLClearColor color = MTLClearColorMake(0.0f, 0.0f, 0.0f, 1.0f);
-            METAL_ActivateRenderCommandEncoder(renderer, MTLLoadActionClear, &color, nil);
+            ready = METAL_ActivateRenderCommandEncoder(renderer, MTLLoadActionClear, &color, nil);
         } else {
-            METAL_ActivateRenderCommandEncoder(renderer, MTLLoadActionLoad, NULL, nil);
+            ready = METAL_ActivateRenderCommandEncoder(renderer, MTLLoadActionLoad, NULL, nil);
         }
     }
 
     [data.mtlcmdencoder endEncoding];
-    [data.mtlcmdbuffer presentDrawable:data.mtlbackbuffer];
+
+    // If we don't have a drawable to present, don't try to present it.
+    //  But we'll still try to commit the command buffer in case it was already enqueued.
+    if (ready) {
+        SDL_assert(data.mtlbackbuffer != nil);
+        [data.mtlcmdbuffer presentDrawable:data.mtlbackbuffer];
+    }
+
     [data.mtlcmdbuffer commit];
 
     data.mtlcmdencoder = nil;
@@ -1544,6 +1572,9 @@ METAL_GetMetalLayer(SDL_Renderer * renderer)
 static void *
 METAL_GetMetalCommandEncoder(SDL_Renderer * renderer)
 { @autoreleasepool {
+    // note that data.mtlcmdencoder can be nil if METAL_ActivateRenderCommandEncoder fails.
+    //  Before SDL 2.0.18, it might have returned a non-nil encoding that might not have been
+    //  usable for presentation. Check your return values!
     METAL_ActivateRenderCommandEncoder(renderer, MTLLoadActionLoad, NULL, nil);
     METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
     return (__bridge void*)data.mtlcmdencoder;

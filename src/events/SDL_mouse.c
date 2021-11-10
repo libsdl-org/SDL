@@ -416,24 +416,42 @@ SDL_PrivateSendMouseMotion(SDL_Window * window, SDL_MouseID mouseID, int relativ
     /* make sure that the pointers find themselves inside the windows,
        unless we have the mouse captured. */
     if (window && ((window->flags & SDL_WINDOW_MOUSE_CAPTURE) == 0)) {
-        int x_max = 0, y_max = 0;
+        int x_min = 0, x_max = 0;
+        int y_min = 0, y_max = 0;
+        const SDL_Rect *confine = SDL_GetWindowMouseRect(window);
 
         SDL_GetWindowSize(window, &x_max, &y_max);
         --x_max;
         --y_max;
 
+        if (confine) {
+            SDL_Rect window_rect;
+            SDL_Rect mouse_rect;
+
+            window_rect.x = 0;
+            window_rect.y = 0;
+            window_rect.w = x_max + 1;
+            window_rect.h = y_max + 1;
+            if (SDL_IntersectRect(confine, &window_rect, &mouse_rect)) {
+                x_min = mouse_rect.x;
+                y_min = mouse_rect.y;
+                x_max = x_min + mouse_rect.w - 1;
+                y_min = y_min + mouse_rect.h - 1;
+            }
+        }
+
         if (mouse->x > x_max) {
             mouse->x = x_max;
         }
-        if (mouse->x < 0) {
-            mouse->x = 0;
+        if (mouse->x < x_min) {
+            mouse->x = x_min;
         }
 
         if (mouse->y > y_max) {
             mouse->y = y_max;
         }
-        if (mouse->y < 0) {
-            mouse->y = 0;
+        if (mouse->y < y_min) {
+            mouse->y = y_min;
         }
     }
 
