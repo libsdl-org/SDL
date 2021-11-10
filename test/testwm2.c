@@ -52,7 +52,7 @@ quit(int rc)
 
 /* Draws the modes menu, and stores the mode index under the mouse in highlighted_mode */
 static void
-draw_modes_menu(SDL_Window* window, SDL_Renderer* renderer, SDL_Rect viewport)
+draw_modes_menu(SDL_Window *window, SDL_Renderer *renderer, SDL_Rect viewport)
 {
     SDL_DisplayMode mode;
     char text[1024];
@@ -68,7 +68,14 @@ draw_modes_menu(SDL_Window* window, SDL_Renderer* renderer, SDL_Rect viewport)
 
     /* Get mouse position */
     if (SDL_GetMouseFocus() == window) {
-        SDL_GetMouseState(&mouse_pos.x, &mouse_pos.y);
+        int window_x, window_y;
+        float logical_x, logical_y;
+
+        SDL_GetMouseState(&window_x, &window_y);
+        SDL_RenderWindowToLogical(renderer, window_x, window_y, &logical_x, &logical_y);
+
+        mouse_pos.x = (int)logical_x;
+        mouse_pos.y = (int)logical_y;
     }
 
     x = 0;

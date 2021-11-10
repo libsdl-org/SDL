@@ -980,6 +980,48 @@ extern DECLSPEC void SDLCALL SDL_RenderGetScale(SDL_Renderer * renderer,
                                                float *scaleX, float *scaleY);
 
 /**
+ * Get logical coordinates of point in renderer when given real coordinates of point in window.
+ * Logical coordinates will differ from real coordinates when render is scaled and logical renderer size set
+ * 
+ * \param renderer the renderer from which the logical coordinates should be calcualted
+ * \param windowX the real X coordinate in the window
+ * \param windowY the real Y coordinate in the window
+ * \param logicalX the pointer filled with the logical x coordinate
+ * \param logicalY the pointer filled with the logical y coordinate
+ *  
+ * \since This function is available since SDL 2.0.20.
+ * 
+ * \sa SDL_RenderGetScale
+ * \sa SDL_RenderSetScale
+ * \sa SDL_RenderGetLogicalSize
+ * \sa SDL_RenderSetLogicalSize
+ */
+extern DECLSPEC void SDLCALL SDL_RenderWindowToLogical(SDL_Renderer * renderer, 
+                                                            int windowX, int windowY, 
+                                                            float *logicalX, float *logicalY);
+                                                  
+                                                  /**
+ * Get real coordinates of point in window when given logical coordinates of point in renderer.
+ * Logical coordinates will differ from real coordinates when render is scaled and logical renderer size set
+ * 
+ * \param renderer the renderer from which the window coordinates should be calculated
+ * \param logicalX the logical x coordinate
+ * \param logicalY the logical y coordinate
+ * \param windowX the pointer filled with the real X coordinate in the window
+ * \param windowY the pointer filled with the real Y coordinate in the window
+ 
+ *  
+ * \since This function is available since SDL 2.0.20.
+ * 
+ * \sa SDL_RenderGetScale
+ * \sa SDL_RenderSetScale
+ * \sa SDL_RenderGetLogicalSize
+ * \sa SDL_RenderSetLogicalSize
+ */
+extern DECLSPEC void SDLCALL SDL_RenderLogicalToWindow(SDL_Renderer * renderer, 
+                                                            float logicalX, float logicalY,
+                                                            int *windowX, int *windowY);
+/**
  * Set the color used for drawing operations (Rect, Line and Clear).
  *
  * Set the color for drawing or filling rectangles, lines, and points, and for

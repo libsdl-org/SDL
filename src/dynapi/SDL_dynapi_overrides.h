@@ -844,3 +844,5 @@
 #define SDL_hid_get_indexed_string SDL_hid_get_indexed_string_REAL
 #define SDL_SetWindowMouseRect SDL_SetWindowMouseRect_REAL
 #define SDL_GetWindowMouseRect SDL_GetWindowMouseRect_REAL
+#define SDL_RenderWindowToLogical SDL_RenderWindowToLogical_REAL
+#define SDL_RenderLogicalToWindow SDL_RenderLogicalToWindow_REAL
