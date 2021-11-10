@@ -989,7 +989,7 @@ extern DECLSPEC void SDLCALL SDL_RenderGetScale(SDL_Renderer * renderer,
  * \param logicalX the pointer filled with the logical x coordinate
  * \param logicalY the pointer filled with the logical y coordinate
  *  
- * \since This function is available since SDL 2.0.20.
+ * \since This function is available since SDL 2.0.18.
  * 
  * \sa SDL_RenderGetScale
  * \sa SDL_RenderSetScale
@@ -1011,7 +1011,7 @@ extern DECLSPEC void SDLCALL SDL_RenderWindowToLogical(SDL_Renderer * renderer,
  * \param windowY the pointer filled with the real Y coordinate in the window
  
  *  
- * \since This function is available since SDL 2.0.20.
+ * \since This function is available since SDL 2.0.18.
  * 
  * \sa SDL_RenderGetScale
  * \sa SDL_RenderSetScale
