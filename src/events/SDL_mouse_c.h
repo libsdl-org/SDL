@@ -35,6 +35,12 @@ struct SDL_Cursor
 
 typedef struct
 {
+    SDL_MouseID mouseID;
+    Uint32 buttonstate;
+} SDL_MouseInputSource;
+
+typedef struct
+{
     int last_x, last_y;
     Uint32 last_timestamp;
     Uint8 click_count;
@@ -82,7 +88,6 @@ typedef struct
     int last_x, last_y;         /* the last reported x and y coordinates */
     float accumulated_wheel_x;
     float accumulated_wheel_y;
-    Uint32 buttonstate;
     SDL_bool has_position;
     SDL_bool relative_mode;
     SDL_bool relative_mode_warp;
@@ -95,6 +100,10 @@ typedef struct
     SDL_bool touch_mouse_events;
     SDL_bool mouse_touch_events;
     SDL_bool was_touch_mouse_events; /* Was a touch-mouse event pending? */
+
+    /* Data for input source state */
+    int num_sources;
+    SDL_MouseInputSource *sources;
 
     /* Data for double-click tracking */
     int num_clickstates;
