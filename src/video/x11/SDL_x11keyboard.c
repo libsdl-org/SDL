@@ -278,7 +278,7 @@ X11_InitKeyboard(_THIS)
         int xkb_major = XkbMajorVersion;
         int xkb_minor = XkbMinorVersion;
 
-        if (X11_XkbQueryExtension(data->display, NULL, NULL, NULL, &xkb_major, &xkb_minor)) {
+        if (X11_XkbQueryExtension(data->display, NULL, &data->xkb_event, NULL, &xkb_major, &xkb_minor)) {
             data->xkb = X11_XkbGetMap(data->display, XkbAllClientInfoMask, XkbUseCoreKbd);
         }
 

@@ -143,6 +143,7 @@ typedef struct SDL_VideoData
 #if SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM
     XkbDescPtr xkb;
 #endif
+    int xkb_event;
 
     KeyCode filter_code;
     Time    filter_time;

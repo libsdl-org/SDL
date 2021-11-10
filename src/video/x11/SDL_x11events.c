@@ -808,7 +808,8 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
             if (SDL_GetKeyboardFocus() != NULL) {
                 X11_ReconcileKeyboardState(_this);
             }
-        } else if (xevent->type == MappingNotify || xkbEvent->any.xkb_type == XkbStateNotify) {
+        } else if (xevent->type == MappingNotify ||
+                   (xevent->type == videodata->xkb_event && xkbEvent->any.xkb_type == XkbStateNotify)) {
             /* Has the keyboard layout changed? */
             const int request = xevent->xmapping.request;
 
