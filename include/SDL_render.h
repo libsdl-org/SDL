@@ -998,7 +998,8 @@ extern DECLSPEC void SDLCALL SDL_RenderGetScale(SDL_Renderer * renderer,
  */
 extern DECLSPEC void SDLCALL SDL_RenderWindowToLogical(SDL_Renderer * renderer, 
                                                             int windowX, int windowY, 
-                                                            int *logicalX, int *logicalY);
+                                                            float *logicalX, float *logicalY);
+                                                  
 /**
  * Set the color used for drawing operations (Rect, Line and Clear).
  *

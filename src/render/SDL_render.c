@@ -2492,7 +2492,7 @@ SDL_RenderGetScale(SDL_Renderer * renderer, float *scaleX, float *scaleY)
 }
 
 void
-SDL_RenderWindowToLogical(SDL_Renderer * renderer, int windowX, int windowY, int *logicalX, int *logicalY){
+SDL_RenderWindowToLogical(SDL_Renderer * renderer, int windowX, int windowY, float *logicalX, float *logicalY){
     int window_w;
     int window_h;
     int window_midpoint_x, window_midpoint_y;
