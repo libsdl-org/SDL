@@ -44,10 +44,18 @@ my @releases = sort {
     return 0;  # still here? They matched completely?!
 } @unsorted_releases;
 
+# this happens to work for how SDL versions things at the moment.
+my $current_release = $releases[-1];
+my @current_release_segments = split /\./, $current_release;
+@current_release_segments[2] = '' . ($current_release_segments[2] + 2);
+my $next_release = join('.', @current_release_segments);
+
 #print("\n\nSORTED\n");
 #foreach (@releases) {
 #    print "$_\n";
 #}
+#print("\nCURRENT RELEASE: $current_release\n");
+#print("NEXT RELEASE: $next_release\n\n");
 
 push @releases, 'HEAD';
 
@@ -112,7 +120,7 @@ if (not defined $wikipath) {
         chdir($wikipath);
         foreach my $fn (keys %funcs) {
             my $revision = $funcs{$fn};
-            $revision = 'git HEAD (in development, not in an official release yet)' if $revision eq 'HEAD';
+            $revision = $next_release if $revision eq 'HEAD';
             my $fname = "$fn.mediawiki";
             if ( ! -f $fname ) {
                 #print STDERR "No such file: $fname\n";
