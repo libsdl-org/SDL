@@ -50,42 +50,6 @@ quit(int rc)
     exit(rc);
 }
 
-static SDL_Point
-get_mouse_pos_in_renderer(SDL_Window *window, SDL_Renderer *renderer)
-{
-    SDL_Point mouse_pos;
-    int win_w, win_h;
-    int out_w, out_h;
-    SDL_Rect renderer_viewport;
-    float scale_x, scale_y;
-
-    SDL_GetMouseState(&mouse_pos.x, &mouse_pos.y);
-    SDL_GetWindowSize(window, &win_w, &win_h);
-    SDL_GetRendererOutputSize(renderer, &out_w, &out_h);
-    SDL_RenderGetViewport(renderer, &renderer_viewport);
-    SDL_RenderGetScale(renderer, &scale_x, &scale_y);
-
-    /* Scale viewport to pixels */
-    renderer_viewport.x *= scale_x;
-    renderer_viewport.y *= scale_y;
-    renderer_viewport.w *= scale_x;
-    renderer_viewport.h *= scale_y;
-
-    /* Scale mouse pos to pixels */
-    mouse_pos.x *= ((float)out_w / (float)win_w);
-    mouse_pos.y *= ((float)out_h / (float)win_h);
-
-    /* Subtract viewport origin (in pixels) from mouse */
-    mouse_pos.x -= renderer_viewport.x;
-    mouse_pos.y -= renderer_viewport.y;
-
-    /* Scale mouse pos back to logical units */
-    mouse_pos.x /= scale_x;
-    mouse_pos.y /= scale_y;
-
-    return mouse_pos;
-}
-
 /* Draws the modes menu, and stores the mode index under the mouse in highlighted_mode */
 static void
 draw_modes_menu(SDL_Window *window, SDL_Renderer *renderer, SDL_Rect viewport)
@@ -104,7 +68,14 @@ draw_modes_menu(SDL_Window *window, SDL_Renderer *renderer, SDL_Rect viewport)
 
     /* Get mouse position */
     if (SDL_GetMouseFocus() == window) {
-        mouse_pos = get_mouse_pos_in_renderer(window, renderer);
+        int window_x, window_y;
+        float logical_x, logical_y;
+
+        SDL_GetMouseState(&window_x, &window_y);
+        SDL_RenderWindowToLogical(renderer, window_x, window_y, &logical_x, &logical_y);
+
+        mouse_pos.x = (int)logical_x;
+        mouse_pos.y = (int)logical_y;
     }
 
     x = 0;
