@@ -1887,8 +1887,9 @@ SDL_vsnprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, const char *fmt, 
             }
         } else {
             if (length < maxlen) {
-                text[length] = *fmt++;
+                text[length] = *fmt;
             }
+            ++fmt;
             ++length;
         }
     }

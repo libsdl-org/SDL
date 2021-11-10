@@ -64,6 +64,12 @@ stdlib_snprintf(void *arg)
   SDLTest_AssertPass("Call to SDL_snprintf(NULL, 0, \"%%s\", \"foo\")");
   SDLTest_AssertCheck(result == 3, "Check result value, expected: 3, got: %d", result);
 
+  result = SDL_snprintf(text, 2, "%s\n", "foo");
+  expected = "f";
+  SDLTest_AssertPass("Call to SDL_snprintf(\"%%s\\n\", \"foo\") with buffer size 2");
+  SDLTest_AssertCheck(SDL_strcmp(text, expected) == 0, "Check text, expected: %s, got: %s", expected, text);
+  SDLTest_AssertCheck(result == 4, "Check result value, expected: 4, got: %d", result);
+
   result = SDL_snprintf(text, sizeof(text), "%f", 0.0);
   predicted = SDL_snprintf(NULL, 0, "%f", 0.0);
   expected = "0.000000";
