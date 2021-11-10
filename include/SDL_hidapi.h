@@ -167,6 +167,8 @@ extern DECLSPEC SDL_hid_device_info * SDLCALL SDL_hid_enumerate(unsigned short v
  *
  * \param devs Pointer to a list of struct_device returned from
  *             SDL_hid_enumerate().
+ *
+ * \since This function is available since SDL 2.0.18.
  */
 extern DECLSPEC void SDLCALL SDL_hid_free_enumeration(SDL_hid_device_info *devs);
 
@@ -338,6 +340,8 @@ extern DECLSPEC int SDLCALL SDL_hid_get_feature_report(SDL_hid_device *dev, unsi
  * Close a HID device.
  *
  * \param dev A device handle returned from SDL_hid_open().
+ *
+ * \since This function is available since SDL 2.0.18.
  */
 extern DECLSPEC void SDLCALL SDL_hid_close(SDL_hid_device *dev);
 

@@ -151,6 +151,8 @@ extern DECLSPEC int SDLCALL SDL_LinuxSetThreadPriority(Sint64 threadID, int prio
  * \param schedPolicy The new scheduling policy (SCHED_FIFO, SCHED_RR,
  *                    SCHED_OTHER, etc...)
  * \returns 0 on success, or -1 on error.
+ *
+ * \since This function is available since SDL 2.0.18.
  */
 extern DECLSPEC int SDLCALL SDL_LinuxSetThreadPriorityAndPolicy(Sint64 threadID, int sdlPriority, int schedPolicy);
  

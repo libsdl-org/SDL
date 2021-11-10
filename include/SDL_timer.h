@@ -76,6 +76,8 @@ extern DECLSPEC Uint32 SDLCALL SDL_GetTicks(void);
  *
  * \returns an unsigned 64-bit value representing the number of milliseconds
  *          since the SDL library initialized.
+ *
+ * \since This function is available since SDL 2.0.18.
  */
 extern DECLSPEC Uint64 SDLCALL SDL_GetTicks64(void);
 

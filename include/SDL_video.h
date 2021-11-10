@@ -651,8 +651,7 @@ extern DECLSPEC int SDLCALL SDL_GetWindowDisplayMode(SDL_Window * window,
  * \returns the raw ICC profile data on success or NULL on failure; call
  *          SDL_GetError() for more information.
  *
- * \since This function is available since SDL git HEAD (in development, not
- *        in an official release yet).
+ * \since This function is available since SDL 2.0.18.
  */
 extern DECLSPEC void* SDLCALL SDL_GetWindowICCProfile(SDL_Window * window, size_t* size);
 
@@ -1393,6 +1392,8 @@ extern DECLSPEC SDL_Window * SDLCALL SDL_GetGrabbedWindow(void);
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
+ * \since This function is available since SDL 2.0.18.
+ *
  * \sa SDL_GetWindowMouseRect
  * \sa SDL_SetWindowGrab
  */
@@ -1404,6 +1405,8 @@ extern DECLSPEC int SDLCALL SDL_SetWindowMouseRect(SDL_Window * window, const SD
  * \param window The window to query
  * \returns A pointer to the mouse confinement rectangle of a window, or NULL
  *          if there isn't one.
+ *
+ * \since This function is available since SDL 2.0.18.
  *
  * \sa SDL_SetWindowMouseRect
  */

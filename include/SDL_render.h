@@ -530,8 +530,7 @@ extern DECLSPEC int SDLCALL SDL_GetTextureScaleMode(SDL_Texture * texture,
  * \param userdata the pointer to associate with the texture.
  * \returns 0 on success, or -1 if the texture is not valid.
  *
- * \since This function is available since SDL git HEAD (in development, not
- *        in an official release yet).
+ * \since This function is available since SDL 2.0.18.
  *
  * \sa SDL_GetTextureUserData
  */
@@ -545,8 +544,7 @@ extern DECLSPEC int SDLCALL SDL_SetTextureUserData(SDL_Texture * texture,
  * \return the pointer associated with the texture, or NULL if the texture is
  *         not valid.
  *
- * \since This function is available since SDL git HEAD (in development, not
- *        in an official release yet).
+ * \since This function is available since SDL 2.0.18.
  *
  * \sa SDL_SetTextureUserData
  */
@@ -1614,8 +1612,7 @@ extern DECLSPEC int SDLCALL SDL_RenderCopyExF(SDL_Renderer * renderer,
  * \param num_indices Number of indices.
  * \return 0 on success, or -1 if the operation is not supported
  *
- * \since This function is available since SDL git HEAD (in development, not
- *        in an official release yet).
+ * \since This function is available since SDL 2.0.18.
  *
  * \sa SDL_Vertex
  */
@@ -1643,8 +1640,7 @@ extern DECLSPEC int SDLCALL SDL_RenderGeometry(SDL_Renderer *renderer,
  * \param size_indices Index size: 1 (byte), 2 (short), 4 (int)
  * \return 0 on success, or -1 if the operation is not supported
  *
- * \since This function is available since SDL git HEAD (in development, not
- *        in an official release yet).
+ * \since This function is available since SDL 2.0.18.
  */
 extern DECLSPEC int SDLCALL SDL_RenderGeometryRaw(SDL_Renderer *renderer,
                                                SDL_Texture *texture,
@@ -1875,8 +1871,7 @@ extern DECLSPEC void *SDLCALL SDL_RenderGetMetalCommandEncoder(SDL_Renderer * re
  * \param vsync 1 for on, 0 for off. All other values are reserved
  * \returns a 0 int on success, or non-zero on failure
  *
- * \since This function is available since SDL git HEAD (in development, not
- *        in an official release yet).
+ * \since This function is available since SDL 2.0.18.
  */
 extern DECLSPEC int SDLCALL SDL_RenderSetVSync(SDL_Renderer* renderer, int vsync);
 
