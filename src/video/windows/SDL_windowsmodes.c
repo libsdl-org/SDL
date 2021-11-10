@@ -23,6 +23,7 @@
 #if SDL_VIDEO_DRIVER_WINDOWS
 
 #include "SDL_windowsvideo.h"
+#include "../../events/SDL_displayevents_c.h"
 
 /* Windows CE compatibility */
 #ifndef CDS_FULLSCREEN
@@ -211,6 +212,13 @@ WIN_AddDisplay(_THIS, HMONITOR hMonitor, const MONITORINFOEXW *info, SDL_bool se
         if (SDL_wcscmp(driverdata->DeviceName, info->szDevice) == 0) {
             driverdata->MonitorHandle = hMonitor;
             driverdata->IsValid = SDL_TRUE;
+
+            if (!_this->setting_display_mode) {
+                SDL_ResetDisplayModes(i);
+                SDL_SetCurrentDisplayMode(&_this->displays[i], &mode);
+                SDL_SetDesktopDisplayMode(&_this->displays[i], &mode);
+                SDL_SendDisplayEvent(&_this->displays[i], SDL_DISPLAYEVENT_ORIENTATION, orientation);
+            }
             return SDL_FALSE;
         }
     }
@@ -405,7 +413,7 @@ WIN_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
     DWORD i;
     SDL_DisplayMode mode;
 
-    for (i = 0;; ++i) {
+    for (i = 0; ; ++i) {
         if (!WIN_GetDisplayMode(_this, data->DeviceName, i, &mode, NULL)) {
             break;
         }
