@@ -8,6 +8,10 @@ This is a list of major changes in SDL's version history.
 Android:
 * Added support for audio output and capture using AAudio
 
+iOS:
+* Added documentation that the UIApplicationSupportsIndirectInputEvents key must be set to true in your application's Info.plist in order to get real Bluetooth mouse events.
+
+
 ---------------------------------------------------------------------------
 2.0.16:
 ---------------------------------------------------------------------------

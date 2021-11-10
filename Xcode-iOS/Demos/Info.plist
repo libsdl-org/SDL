@@ -30,5 +30,7 @@
 	<string>iOS Launch Screen</string>
 	<key>UISupportedInterfaceOrientations</key>
 	<array/>
+	<key>UIApplicationSupportsIndirectInputEvents</key>
+	<true/>
 </dict>
 </plist>
