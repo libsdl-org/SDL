@@ -1389,8 +1389,7 @@ extern DECLSPEC SDL_Window * SDLCALL SDL_GetGrabbedWindow(void);
  *
  * \param window The window that will be associated with the barrier.
  * \param rect A rectangle area in window-relative coordinates. If NULL the
- *  barrier for the specified window will be destroyed.
- *
+ *             barrier for the specified window will be destroyed.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -1403,9 +1402,8 @@ extern DECLSPEC int SDLCALL SDL_SetWindowMouseRect(SDL_Window * window, const SD
  * Get the mouse confinement rectangle of a window.
  *
  * \param window The window to query
- *
- * \returns A pointer to the mouse confinement rectangle of a window,
- *          or NULL if there isn't one.
+ * \returns A pointer to the mouse confinement rectangle of a window, or NULL
+ *          if there isn't one.
  *
  * \sa SDL_SetWindowMouseRect
  */

@@ -980,17 +980,21 @@ extern DECLSPEC void SDLCALL SDL_RenderGetScale(SDL_Renderer * renderer,
                                                float *scaleX, float *scaleY);
 
 /**
- * Get logical coordinates of point in renderer when given real coordinates of point in window.
- * Logical coordinates will differ from real coordinates when render is scaled and logical renderer size set
- * 
- * \param renderer the renderer from which the logical coordinates should be calcualted
+ * Get logical coordinates of point in renderer when given real coordinates of
+ * point in window.
+ *
+ * Logical coordinates will differ from real coordinates when render is scaled
+ * and logical renderer size set
+ *
+ * \param renderer the renderer from which the logical coordinates should be
+ *                 calcualted
  * \param windowX the real X coordinate in the window
  * \param windowY the real Y coordinate in the window
  * \param logicalX the pointer filled with the logical x coordinate
  * \param logicalY the pointer filled with the logical y coordinate
- *  
+ *
  * \since This function is available since SDL 2.0.18.
- * 
+ *
  * \sa SDL_RenderGetScale
  * \sa SDL_RenderSetScale
  * \sa SDL_RenderGetLogicalSize
@@ -1021,6 +1025,7 @@ extern DECLSPEC void SDLCALL SDL_RenderWindowToLogical(SDL_Renderer * renderer,
 extern DECLSPEC void SDLCALL SDL_RenderLogicalToWindow(SDL_Renderer * renderer, 
                                                             float logicalX, float logicalY,
                                                             int *windowX, int *windowY);
+
 /**
  * Set the color used for drawing operations (Rect, Line and Clear).
  *
@@ -1848,8 +1853,8 @@ extern DECLSPEC void *SDLCALL SDL_RenderGetMetalLayer(SDL_Renderer * renderer);
  * This function returns `void *`, so SDL doesn't have to include Metal's
  * headers, but it can be safely cast to an `id<MTLRenderCommandEncoder>`.
  *
- * Note that as of SDL 2.0.18, this will return NULL if Metal refuses to
- * give SDL a drawable to render to, which might happen if the window is
+ * Note that as of SDL 2.0.18, this will return NULL if Metal refuses to give
+ * SDL a drawable to render to, which might happen if the window is
  * hidden/minimized/offscreen. This doesn't apply to command encoders for
  * render targets, just the window's backbacker. Check your return values!
  *

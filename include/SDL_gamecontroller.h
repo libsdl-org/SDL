@@ -932,7 +932,8 @@ extern DECLSPEC int SDLCALL SDL_GameControllerSendEffect(SDL_GameController *gam
 extern DECLSPEC void SDLCALL SDL_GameControllerClose(SDL_GameController *gamecontroller);
 
 /**
- * Return the sfSymbolsName for a given button on a game controller on Apple platforms.
+ * Return the sfSymbolsName for a given button on a game controller on Apple
+ * platforms.
  *
  * \param gamecontroller the controller to query
  * \param button a button on the game controller
@@ -945,7 +946,8 @@ extern DECLSPEC void SDLCALL SDL_GameControllerClose(SDL_GameController *gamecon
 extern DECLSPEC const char* SDLCALL SDL_GameControllerGetAppleSFSymbolsNameForButton(SDL_GameController *gamecontroller, SDL_GameControllerButton button);
 
 /**
- * Return the sfSymbolsName for a given axis on a game controller on Apple platforms.
+ * Return the sfSymbolsName for a given axis on a game controller on Apple
+ * platforms.
  *
  * \param gamecontroller the controller to query
  * \param axis an axis on the game controller

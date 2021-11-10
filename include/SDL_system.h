@@ -148,7 +148,8 @@ extern DECLSPEC int SDLCALL SDL_LinuxSetThreadPriority(Sint64 threadID, int prio
  *
  * \param threadID The Unix thread ID to change priority of.
  * \param sdlPriority The new SDL_ThreadPriority value.
- * \param schedPolicy The new scheduling policy (SCHED_FIFO, SCHED_RR, SCHED_OTHER, etc...)
+ * \param schedPolicy The new scheduling policy (SCHED_FIFO, SCHED_RR,
+ *                    SCHED_OTHER, etc...)
  * \returns 0 on success, or -1 on error.
  */
 extern DECLSPEC int SDLCALL SDL_LinuxSetThreadPriorityAndPolicy(Sint64 threadID, int sdlPriority, int schedPolicy);
