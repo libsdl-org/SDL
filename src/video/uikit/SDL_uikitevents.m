@@ -234,7 +234,9 @@ static void OnGCMouseConnected(GCMouse *mouse) API_AVAILABLE(macos(11.0), ios(14
 
     mouse.mouseInput.mouseMovedHandler = ^(GCMouseInput *mouse, float deltaX, float deltaY)
     {
-        SDL_SendMouseMotion(SDL_GetMouseFocus(), mouseID, SDL_TRUE, (int)deltaX, -(int)deltaY);
+        if (SDL_GCMouseRelativeMode()) {
+            SDL_SendMouseMotion(SDL_GetMouseFocus(), mouseID, 1, (int)deltaX, -(int)deltaY);
+        }
     };
 
     dispatch_queue_t queue = dispatch_queue_create( "org.libsdl.input.mouse", DISPATCH_QUEUE_SERIAL );
