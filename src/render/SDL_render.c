@@ -2492,7 +2492,7 @@ SDL_RenderGetScale(SDL_Renderer * renderer, float *scaleX, float *scaleY)
 }
 
 void
-SDL_RealCoordinatesToLogicalCoordinates(SDL_Renderer * renderer, int realX, int realY, int *logicalX, int *logicalY){
+SDL_RenderWindowToLogical(SDL_Renderer * renderer, int windowX, int windowY, int *logicalX, int *logicalY){
     int window_w;
     int window_h;
     int window_midpoint_x, window_midpoint_y;
@@ -2520,8 +2520,8 @@ SDL_RealCoordinatesToLogicalCoordinates(SDL_Renderer * renderer, int realX, int 
     window_renderer_midpoint_delta_x = window_midpoint_x - renderer_midpoint_x;
     window_renderer_midpoint_delta_y = window_midpoint_y - renderer_midpoint_y;
 
-    renderer_real_x = realX - window_renderer_midpoint_delta_x; 
-    renderer_real_y = realY - window_renderer_midpoint_delta_y;
+    renderer_real_x = windowX - window_renderer_midpoint_delta_x; 
+    renderer_real_y = windowY - window_renderer_midpoint_delta_y;
 
     *logicalX = (float)renderer_real_x / (float)renderer_real_w * (float)renderer->logical_w; 
     *logicalY = (float)renderer_real_y / (float)renderer_real_h * (float)renderer->logical_h; 

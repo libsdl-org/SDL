@@ -984,8 +984,8 @@ extern DECLSPEC void SDLCALL SDL_RenderGetScale(SDL_Renderer * renderer,
  * Logical coordinates will differ from real coordinates when render is scaled and logical renderer size set
  * 
  * \param renderer the renderer from which the logical coordinates should be calcualted
- * \param realX the real X coordinate in the window
- * \param realY the real Y coordinate in the window
+ * \param windowX the real X coordinate in the window
+ * \param windowY the real Y coordinate in the window
  * \param logicalX the pointer filled with the logical x coordinate
  * \param logicalY the pointer filled with the logical y coordinate
  *  
@@ -996,8 +996,8 @@ extern DECLSPEC void SDLCALL SDL_RenderGetScale(SDL_Renderer * renderer,
  * \sa SDL_RenderGetLogicalSize
  * \sa SDL_RenderSetLogicalSize
  */
-extern DECLSPEC void SDLCALL SDL_RealCoordinatesToLogicalCoordinates(SDL_Renderer * renderer, 
-                                                            int realX, int realY, 
+extern DECLSPEC void SDLCALL SDL_RenderWindowToLogical(SDL_Renderer * renderer, 
+                                                            int windowX, int windowY, 
                                                             int *logicalX, int *logicalY);
 /**
  * Set the color used for drawing operations (Rect, Line and Clear).
