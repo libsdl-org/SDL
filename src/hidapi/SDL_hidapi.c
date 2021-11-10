@@ -462,7 +462,6 @@ DeleteHIDDeviceWrapper(SDL_hid_device *device)
 }
 
 #define CHECK_DEVICE_MAGIC(device, retval) \
-    SDL_assert(device && device->magic == &device_magic); \
     if (!device || device->magic != &device_magic) { \
         SDL_SetError("Invalid device"); \
         return retval; \
