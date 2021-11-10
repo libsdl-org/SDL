@@ -815,6 +815,12 @@ void WIN_UngrabKeyboard(SDL_Window *window)
 }
 
 void
+WIN_SetWindowMouseRect(_THIS, SDL_Window * window)
+{
+    WIN_UpdateClipCursor(window);
+}
+
+void
 WIN_SetWindowMouseGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
 {
     WIN_UpdateClipCursor(window);
@@ -998,7 +1004,8 @@ WIN_UpdateClipCursor(SDL_Window *window)
         return;
     }
 
-    if ((mouse->relative_mode || (window->flags & SDL_WINDOW_MOUSE_GRABBED)) &&
+    if ((mouse->relative_mode || (window->flags & SDL_WINDOW_MOUSE_GRABBED) ||
+         (window->mouse_rect.w > 0 && window->mouse_rect.h > 0)) &&
         (window->flags & SDL_WINDOW_INPUT_FOCUS)) {
         if (mouse->relative_mode && !mouse->relative_mode_warp) {
             if (GetWindowRect(data->hwnd, &rect)) {
@@ -1020,12 +1027,32 @@ WIN_UpdateClipCursor(SDL_Window *window)
                 }
             }
         } else {
-            if (GetClientRect(data->hwnd, &rect) && !IsRectEmpty(&rect)) {
+            if (GetClientRect(data->hwnd, &rect)) {
                 ClientToScreen(data->hwnd, (LPPOINT) & rect);
                 ClientToScreen(data->hwnd, (LPPOINT) & rect + 1);
+                if (window->mouse_rect.w > 0 && window->mouse_rect.h > 0) {
+                    RECT mouse_rect, intersection;
+
+                    mouse_rect.left = rect.left + window->mouse_rect.x;
+                    mouse_rect.top = rect.top + window->mouse_rect.y;
+                    mouse_rect.right = mouse_rect.left + window->mouse_rect.w - 1;
+                    mouse_rect.bottom = mouse_rect.top + window->mouse_rect.h - 1;
+                    if (IntersectRect(&intersection, &rect, &mouse_rect)) {
+                        SDL_memcpy(&rect, &intersection, sizeof(rect));
+                    } else if ((window->flags & SDL_WINDOW_MOUSE_GRABBED) != 0) {
+                        /* Mouse rect was invalid, just do the normal grab */
+                    } else {
+                        SDL_zero(rect);
+                    }
+                }
                 if (SDL_memcmp(&rect, &clipped_rect, sizeof(rect)) != 0) {
-                    if (ClipCursor(&rect)) {
-                        data->cursor_clipped_rect = rect;
+                    if (!IsRectEmpty(&rect)) {
+                        if (ClipCursor(&rect)) {
+                            data->cursor_clipped_rect = rect;
+                        }
+                    } else {
+                        ClipCursor(NULL);
+                        SDL_zero(data->cursor_clipped_rect);
                     }
                 }
             }

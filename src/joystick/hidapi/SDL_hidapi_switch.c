@@ -346,13 +346,13 @@ static int ReadInput(SDL_DriverSwitch_Context *ctx)
         return 0;
     }
 
-    return hid_read_timeout(ctx->device->dev, ctx->m_rgucReadBuffer, sizeof(ctx->m_rgucReadBuffer), 0);
+    return SDL_hid_read_timeout(ctx->device->dev, ctx->m_rgucReadBuffer, sizeof(ctx->m_rgucReadBuffer), 0);
 }
 
 static int WriteOutput(SDL_DriverSwitch_Context *ctx, const Uint8 *data, int size)
 {
 #ifdef SWITCH_SYNCHRONOUS_WRITES
-    return hid_write(ctx->device->dev, data, size);
+    return SDL_hid_write(ctx->device->dev, data, size);
 #else
     /* Use the rumble thread for general asynchronous writes */
     if (SDL_HIDAPI_LockRumble() < 0) {
@@ -856,7 +856,7 @@ HIDAPI_DriverSwitch_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joysti
     ctx->device = device;
     device->context = ctx;
 
-    device->dev = hid_open_path(device->path, 0);
+    device->dev = SDL_hid_open_path(device->path, 0);
     if (!device->dev) {
         SDL_SetError("Couldn't open %s", device->path);
         goto error;
@@ -986,7 +986,7 @@ error:
     SDL_LockMutex(device->dev_lock);
     {
         if (device->dev) {
-            hid_close(device->dev);
+            SDL_hid_close(device->dev);
             device->dev = NULL;
         }
         if (device->context) {
@@ -1530,7 +1530,7 @@ HIDAPI_DriverSwitch_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joyst
 
     SDL_LockMutex(device->dev_lock);
     {
-        hid_close(device->dev);
+        SDL_hid_close(device->dev);
         device->dev = NULL;
 
         SDL_free(device->context);

@@ -28,6 +28,7 @@ OBJS= src/SDL.o \
       src/file/SDL_rwops.o \
       src/haptic/SDL_haptic.o \
       src/haptic/dummy/SDL_syshaptic.o \
+      src/hidapi/SDL_hidapi.o \
       src/joystick/SDL_joystick.o \
       src/joystick/SDL_gamecontroller.o \
       src/joystick/psp/SDL_sysjoystick.o \

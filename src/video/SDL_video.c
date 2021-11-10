@@ -2045,10 +2045,10 @@ SDL_SetWindowPosition(SDL_Window * window, int x, int y)
 
         SDL_GetDisplayBounds(displayIndex, &bounds);
         if (SDL_WINDOWPOS_ISCENTERED(x)) {
-            x = bounds.x + (bounds.w - window->w) / 2;
+            x = bounds.x + (bounds.w - window->windowed.w) / 2;
         }
         if (SDL_WINDOWPOS_ISCENTERED(y)) {
-            y = bounds.y + (bounds.h - window->h) / 2;
+            y = bounds.y + (bounds.h - window->windowed.h) / 2;
         }
     }
 
@@ -2829,6 +2829,35 @@ SDL_GetGrabbedWindow(void)
         return _this->grabbed_window;
     } else {
         return NULL;
+    }
+}
+
+int
+SDL_SetWindowMouseRect(SDL_Window * window, const SDL_Rect * rect)
+{
+    CHECK_WINDOW_MAGIC(window, -1);
+
+    if (rect) {
+        SDL_memcpy(&window->mouse_rect, rect, sizeof(*rect));
+    } else {
+        SDL_zero(window->mouse_rect);
+    }
+
+    if (_this->SetWindowMouseRect) {
+        _this->SetWindowMouseRect(_this, window);
+    }
+    return 0;
+}
+
+const SDL_Rect *
+SDL_GetWindowMouseRect(SDL_Window * window)
+{
+    CHECK_WINDOW_MAGIC(window, NULL);
+
+    if (SDL_RectEmpty(&window->mouse_rect)) {
+        return NULL;
+    } else {
+        return &window->mouse_rect;
     }
 }
 

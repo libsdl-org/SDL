@@ -97,7 +97,6 @@ SDL_X11_SYM(int,XMapRaised,(Display* a,Window b),(a,b),return)
 SDL_X11_SYM(Status,XMatchVisualInfo,(Display* a,int b,int c,int d,XVisualInfo* e),(a,b,c,d,e),return)
 SDL_X11_SYM(int,XMissingExtension,(Display* a,_Xconst char* b),(a,b),return)
 SDL_X11_SYM(int,XMoveWindow,(Display* a,Window b,int c,int d),(a,b,c,d),return)
-SDL_X11_SYM(int,XNextEvent,(Display* a,XEvent* b),(a,b),return)
 SDL_X11_SYM(Display*,XOpenDisplay,(_Xconst char* a),(a),return)
 SDL_X11_SYM(Status,XInitThreads,(void),(),return)
 SDL_X11_SYM(int,XPeekEvent,(Display* a,XEvent* b),(a,b),return)
@@ -157,6 +156,14 @@ SDL_X11_SYM(SDL_X11_XESetWireToEventRetType,XESetWireToEvent,(Display* a,int b,S
 SDL_X11_SYM(SDL_X11_XESetEventToWireRetType,XESetEventToWire,(Display* a,int b,SDL_X11_XESetEventToWireRetType c),(a,b,c),return)
 SDL_X11_SYM(void,XRefreshKeyboardMapping,(XMappingEvent *a),(a),)
 SDL_X11_SYM(int,XQueryTree,(Display* a,Window b,Window* c,Window* d,Window** e,unsigned int* f),(a,b,c,d,e,f),return)
+
+#if SDL_VIDEO_DRIVER_X11_XFIXES
+SDL_X11_MODULE(XFIXES)
+SDL_X11_SYM(PointerBarrier, XFixesCreatePointerBarrier, (Display* a, Window b, int c, int d, int e, int f, int g, int h, int *i),(a,b,c,d,e,f,g,h,i),return)
+SDL_X11_SYM(void, XFixesDestroyPointerBarrier, (Display* a, PointerBarrier b), (a,b),)
+SDL_X11_SYM(int, XIBarrierReleasePointer,(Display* a,  int b, PointerBarrier c, BarrierEventID d), (a,b,c,d), return)
+SDL_X11_SYM(Status, XFixesQueryVersion,(Display* a, int* b, int* c), (a,b,c), return)
+#endif
 
 #if SDL_VIDEO_DRIVER_X11_SUPPORTS_GENERIC_EVENTS
 SDL_X11_SYM(Bool,XGetEventData,(Display* a,XGenericEventCookie* b),(a,b),return)

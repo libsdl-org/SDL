@@ -36,6 +36,7 @@
 #include "SDL_x11shape.h"
 #include "SDL_x11touch.h"
 #include "SDL_x11xinput2.h"
+#include "SDL_x11xfixes.h"
 
 #if SDL_VIDEO_OPENGL_EGL
 #include "SDL_x11opengles.h"
@@ -187,6 +188,10 @@ X11_CreateDevice(int devindex)
 
     data->global_mouse_changed = SDL_TRUE;
 
+#if SDL_VIDEO_DRIVER_X11_XFIXES
+    data->active_cursor_confined_window = NULL;
+#endif /* SDL_VIDEO_DRIVER_X11_XFIXES */
+
     data->display = x11_display;
     data->request_display = X11_XOpenDisplay(display);
     if (data->request_display == NULL) {
@@ -255,6 +260,10 @@ X11_CreateDevice(int devindex)
     device->SetWindowHitTest = X11_SetWindowHitTest;
     device->AcceptDragAndDrop = X11_AcceptDragAndDrop;
     device->FlashWindow = X11_FlashWindow;
+
+#if SDL_VIDEO_DRIVER_X11_XFIXES
+    device->SetWindowMouseRect = X11_SetWindowMouseRect;
+#endif /* SDL_VIDEO_DRIVER_X11_XFIXES */
 
     device->shape_driver.CreateShaper = X11_CreateShaper;
     device->shape_driver.SetWindowShape = X11_SetWindowShape;
@@ -405,6 +414,7 @@ X11_VideoInit(_THIS)
     GET_ATOM(WM_PROTOCOLS);
     GET_ATOM(WM_DELETE_WINDOW);
     GET_ATOM(WM_TAKE_FOCUS);
+    GET_ATOM(WM_NAME);
     GET_ATOM(_NET_WM_STATE);
     GET_ATOM(_NET_WM_STATE_HIDDEN);
     GET_ATOM(_NET_WM_STATE_FOCUSED);
@@ -445,6 +455,10 @@ X11_VideoInit(_THIS)
     }
 
     X11_InitXinput2(_this);
+
+#ifdef SDL_VIDEO_DRIVER_X11_XFIXES
+    X11_InitXfixes(_this);
+#endif /* SDL_VIDEO_DRIVER_X11_XFIXES */
 
     if (X11_InitKeyboard(_this) != 0) {
         return -1;

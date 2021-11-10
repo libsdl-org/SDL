@@ -32,7 +32,7 @@
 #include "../SDL_sysjoystick.h"
 #include "SDL_hidapijoystick_c.h"
 #include "SDL_hidapi_rumble.h"
-#include "../../hidapi/SDL_hidapi.h"
+#include "../../hidapi/SDL_hidapi_c.h"
 
 
 #ifdef SDL_JOYSTICK_HIDAPI_GAMECUBE
@@ -129,7 +129,7 @@ HIDAPI_DriverGameCube_InitDevice(SDL_HIDAPI_Device *device)
         return SDL_FALSE;
     }
 
-    device->dev = hid_open_path(device->path, 0);
+    device->dev = SDL_hid_open_path(device->path, 0);
     if (!device->dev) {
         SDL_free(ctx);
         SDL_SetError("Couldn't open %s", device->path);
@@ -154,7 +154,7 @@ HIDAPI_DriverGameCube_InitDevice(SDL_HIDAPI_Device *device)
         }
     } else {
         /* This is all that's needed to initialize the device. Really! */
-        if (hid_write(device->dev, &initMagic, sizeof(initMagic)) != sizeof(initMagic)) {
+        if (SDL_hid_write(device->dev, &initMagic, sizeof(initMagic)) != sizeof(initMagic)) {
             SDL_SetError("Couldn't initialize WUP-028");
             goto error;
         }
@@ -163,7 +163,7 @@ HIDAPI_DriverGameCube_InitDevice(SDL_HIDAPI_Device *device)
         SDL_Delay(10);
 
         /* Add all the applicable joysticks */
-        while ((size = hid_read_timeout(device->dev, packet, sizeof(packet), 0)) > 0) {
+        while ((size = SDL_hid_read_timeout(device->dev, packet, sizeof(packet), 0)) > 0) {
 #ifdef DEBUG_GAMECUBE_PROTOCOL
             HIDAPI_DumpPacket("Nintendo GameCube packet: size = %d", packet, size);
 #endif
@@ -204,7 +204,7 @@ error:
     SDL_LockMutex(device->dev_lock);
     {
         if (device->dev) {
-            hid_close(device->dev);
+            SDL_hid_close(device->dev);
             device->dev = NULL;
         }
         if (device->context) {
@@ -389,7 +389,7 @@ HIDAPI_DriverGameCube_UpdateDevice(SDL_HIDAPI_Device *device)
     int size;
 
     /* Read input packet */
-    while ((size = hid_read_timeout(device->dev, packet, sizeof(packet), 0)) > 0) {
+    while ((size = SDL_hid_read_timeout(device->dev, packet, sizeof(packet), 0)) > 0) {
 #ifdef DEBUG_GAMECUBE_PROTOCOL
         //HIDAPI_DumpPacket("Nintendo GameCube packet: size = %d", packet, size);
 #endif
@@ -510,7 +510,7 @@ HIDAPI_DriverGameCube_FreeDevice(SDL_HIDAPI_Device *device)
 
     SDL_LockMutex(device->dev_lock);
     {
-        hid_close(device->dev);
+        SDL_hid_close(device->dev);
         device->dev = NULL;
 
         SDL_free(device->context);

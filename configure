@@ -873,6 +873,7 @@ enable_video_x11_xcursor
 enable_video_x11_xdbe
 enable_video_x11_xinerama
 enable_video_x11_xinput
+enable_video_x11_xfixes
 enable_video_x11_xrandr
 enable_video_x11_scrnsaver
 enable_video_x11_xshape
@@ -1658,6 +1659,8 @@ Optional Features:
   --enable-video-x11-xinput
                           enable X11 XInput extension for manymouse, tablets,
                           etc [default=yes]
+  --enable-video-x11-xfixes
+                          enable X11 Xfixes support [default=yes]
   --enable-video-x11-xrandr
                           enable X11 Xrandr extension for fullscreen
                           [default=yes]
@@ -17312,6 +17315,7 @@ SOURCES="$SOURCES $srcdir/src/dynapi/*.c"
 SOURCES="$SOURCES $srcdir/src/events/*.c"
 SOURCES="$SOURCES $srcdir/src/file/*.c"
 SOURCES="$SOURCES $srcdir/src/haptic/*.c"
+SOURCES="$SOURCES $srcdir/src/hidapi/*.c"
 SOURCES="$SOURCES $srcdir/src/joystick/*.c"
 SOURCES="$SOURCES $srcdir/src/libm/*.c"
 SOURCES="$SOURCES $srcdir/src/misc/*.c"
@@ -20995,6 +20999,7 @@ fi
                     xcursor_lib='/opt/X11/lib/libXcursor.1.dylib'
                     xinerama_lib='/opt/X11/lib/libXinerama.1.dylib'
                     xinput_lib='/opt/X11/lib/libXi.6.dylib'
+                    xfixes_lib='/opt/X11/lib/libXfixes.3.dylib'
                     xrandr_lib='/opt/X11/lib/libXrandr.2.dylib'
                     xrender_lib='/opt/X11/lib/libXrender.1.dylib'
                     xss_lib='/opt/X11/lib/libXss.1.dylib'
@@ -21006,6 +21011,7 @@ fi
                     xcursor_lib='libXcursor.so'
                     xinerama_lib='libXinerama.so'
                     xinput_lib='libXi.so'
+                    xfixes_lib='libXfixes.so'
                     xrandr_lib='libXrandr.so'
                     xrender_lib='libXrender.so'
                     xss_lib='libXss.so'
@@ -21017,6 +21023,7 @@ fi
                     xcursor_lib=`find_lib "libXcursor.so.*" "$X_LIBS -L/usr/X11/$base_libdir -L/usr/X11R6/$base_libdir" | sed 's/.*\/\(.*\)/\1/; q'`
                     xinerama_lib=`find_lib "libXinerama.so.*" "$X_LIBS -L/usr/X11/$base_libdir -L/usr/X11R6/$base_libdir" | sed 's/.*\/\(.*\)/\1/; q'`
                     xinput_lib=`find_lib "libXi.so.*" "$X_LIBS -L/usr/X11/$base_libdir -L/usr/X11R6/$base_libdir" | sed 's/.*\/\(.*\)/\1/; q'`
+                    xfixes_lib=`find_lib "libXfixes.so.*" "$X_LIBS -L/usr/X11/$base_libdir -L/usr/X11R6/$base_libdir" | sed 's/.*\/\(.*\)/\1/; q'`
                     xrandr_lib=`find_lib "libXrandr.so.*" "$X_LIBS -L/usr/X11/$base_libdir -L/usr/X11R6/$base_libdir" | sed 's/.*\/\(.*\)/\1/; q'`
                     xrender_lib=`find_lib "libXrender.so.*" "$X_LIBS -L/usr/X11/$base_libdir -L/usr/X11R6/$base_libdir" | sed 's/.*\/\(.*\)/\1/; q'`
                     xss_lib=`find_lib "libXss.so.*" "$X_LIBS -L/usr/X11/$base_libdir -L/usr/X11R6/$base_libdir" | sed 's/.*\/\(.*\)/\1/; q'`
@@ -21468,6 +21475,86 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
                 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_xinput2_multitouch" >&5
 $as_echo "$have_xinput2_multitouch" >&6; }
+            fi
+            # Check whether --enable-video-x11-xfixes was given.
+if test "${enable_video_x11_xfixes+set}" = set; then :
+  enableval=$enable_video_x11_xfixes;
+else
+  enable_video_x11_xfixes=yes
+fi
+
+            if test x$enable_video_x11_xfixes = xyes; then
+                definitely_enable_video_x11_xfixes=no
+                ac_fn_c_check_header_compile "$LINENO" "X11/extensions/Xfixes.h" "ac_cv_header_X11_extensions_Xfixes_h" "#include <X11/Xlib.h>
+
+"
+if test "x$ac_cv_header_X11_extensions_Xfixes_h" = xyes; then :
+  have_xfixes_h_hdr=yes
+else
+  have_xfixes_h_hdr=no
+fi
+
+
+                if test x$have_xfixes_h_hdr = xyes; then
+                    if test x$enable_x11_shared = xyes && test x$xfixes_lib != x ; then
+                        echo "-- dynamic libXfixes -> $xfixes_lib"
+                        cat >>confdefs.h <<_ACEOF
+#define SDL_VIDEO_DRIVER_X11_DYNAMIC_XFIXES "$xfixes_lib"
+_ACEOF
+
+                        definitely_enable_video_x11_xfixes=yes
+                    else
+                        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for XFixesCreatePointerBarrier in -lXfixes" >&5
+$as_echo_n "checking for XFixesCreatePointerBarrier in -lXfixes... " >&6; }
+if ${ac_cv_lib_Xfixes_XFixesCreatePointerBarrier+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lXfixes  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char XFixesCreatePointerBarrier ();
+int
+main ()
+{
+return XFixesCreatePointerBarrier ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_Xfixes_XFixesCreatePointerBarrier=yes
+else
+  ac_cv_lib_Xfixes_XFixesCreatePointerBarrier=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_Xfixes_XFixesCreatePointerBarrier" >&5
+$as_echo "$ac_cv_lib_Xfixes_XFixesCreatePointerBarrier" >&6; }
+if test "x$ac_cv_lib_Xfixes_XFixesCreatePointerBarrier" = xyes; then :
+  have_xfixes_lib=yes
+fi
+
+                        if test x$have_xfixes_lib = xyes ; then
+                            EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lXfixes"
+                            definitely_enable_video_x11_xfixes=yes
+                        fi
+                    fi
+                fi
+            fi
+            if test x$definitely_enable_video_x11_xfixes = xyes; then
+                $as_echo "#define SDL_VIDEO_DRIVER_X11_XFIXES 1" >>confdefs.h
+
+                SUMMARY_video_x11="${SUMMARY_video_x11} xfixes"
             fi
             # Check whether --enable-video-x11-xrandr was given.
 if test "${enable_video_x11_xrandr+set}" = set; then :
@@ -24546,6 +24633,12 @@ else
 fi
 
 
+    if test x$enable_hidapi != xyes; then
+
+$as_echo "#define SDL_HIDAPI_DISABLED 1" >>confdefs.h
+
+    fi
+
     if test x$enable_joystick = xyes -a x$enable_hidapi = xyes; then
         case "$host" in
             # libusb does not support iOS
@@ -24652,9 +24745,7 @@ fi
 
 $as_echo "#define SDL_JOYSTICK_HIDAPI 1" >>confdefs.h
 
-            EXTRA_CFLAGS="$EXTRA_CFLAGS -I$srcdir/src/hidapi/hidapi"
             SOURCES="$SOURCES $srcdir/src/joystick/hidapi/*.c"
-            SOURCES="$SOURCES $srcdir/src/hidapi/SDL_hidapi.c"
 
             if test x$have_libusb_h = xyes; then
                 EXTRA_CFLAGS="$EXTRA_CFLAGS $LIBUSB_CFLAGS"
@@ -24685,6 +24776,10 @@ _ACEOF
 
                 fi
             fi
+        else
+
+$as_echo "#define SDL_HIDAPI_DISABLED 1" >>confdefs.h
+
         fi
 
         { $as_echo "$as_me:${as_lineno-$LINENO}: checking for hidapi support" >&5

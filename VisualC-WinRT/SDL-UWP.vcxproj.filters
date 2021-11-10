@@ -69,6 +69,9 @@
     <ClInclude Include="..\include\SDL_hints.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\SDL_hidapi.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\include\SDL_input.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -537,6 +540,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\haptic\SDL_haptic.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\hidapi\SDL_hidapi.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\joystick\dummy\SDL_sysjoystick.c">

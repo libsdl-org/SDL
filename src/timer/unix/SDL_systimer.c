@@ -107,8 +107,6 @@ SDL_TicksQuit(void)
 Uint64
 SDL_GetTicks64(void)
 {
-    struct timeval now;
-
     if (!ticks_started) {
         SDL_TicksInit();
     }
@@ -125,10 +123,11 @@ SDL_GetTicks64(void)
         SDL_assert(SDL_FALSE);
         return 0;
 #endif
+    } else {
+        struct timeval now;
+        gettimeofday(&now, NULL);
+        return (Uint64)(((Sint64)(now.tv_sec - start_tv.tv_sec) * 1000) + ((now.tv_usec - start_tv.tv_usec) / 1000));
     }
-
-    gettimeofday(&now, NULL);
-    return (Uint64)(((Sint64)(now.tv_sec - start_tv.tv_sec) * 1000) + ((now.tv_usec - start_tv.tv_usec) / 1000));
 }
 
 Uint64

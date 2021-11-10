@@ -12,6 +12,7 @@ jobs:
         shell: ${{ matrix.platform.shell }}
 
     strategy:
+      fail-fast: false
       matrix:
         platform:
         - { name: Windows (x64),     os: windows-latest, shell: pwsh, flags: -A x64 }

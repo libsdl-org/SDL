@@ -2491,6 +2491,73 @@ SDL_RenderGetScale(SDL_Renderer * renderer, float *scaleX, float *scaleY)
     }
 }
 
+void
+SDL_RenderWindowToLogical(SDL_Renderer * renderer, int windowX, int windowY, float *logicalX, float *logicalY){
+    int window_w;
+    int window_h;
+    int window_midpoint_x, window_midpoint_y;
+    int renderer_real_w, renderer_real_h;
+    int renderer_midpoint_x, renderer_midpoint_y;
+    int window_renderer_midpoint_delta_x, window_renderer_midpoint_delta_y;
+    int renderer_real_x, renderer_real_y;
+
+    CHECK_RENDERER_MAGIC(renderer, );
+
+    SDL_GetWindowSize(renderer->window, &window_w, &window_h);
+    
+    window_midpoint_x = window_w>>1;
+    window_midpoint_y = window_h>>1;
+
+    renderer_real_w = (float)renderer->logical_w*renderer->scale.x;
+    renderer_real_h = (float)renderer->logical_h*renderer->scale.y;
+
+    renderer_midpoint_x = renderer_real_w>>1;
+    renderer_midpoint_y = renderer_real_h>>1;
+
+    /* Compare with midpoints because a renderer that is logically sized will be centered and have a border
+     if the window aspect ratio differs from the renderer's.
+    */
+    window_renderer_midpoint_delta_x = window_midpoint_x - renderer_midpoint_x;
+    window_renderer_midpoint_delta_y = window_midpoint_y - renderer_midpoint_y;
+
+    renderer_real_x = windowX - window_renderer_midpoint_delta_x; 
+    renderer_real_y = windowY - window_renderer_midpoint_delta_y;
+
+    *logicalX = (float)renderer_real_x / (float)renderer_real_w * (float)renderer->logical_w; 
+    *logicalY = (float)renderer_real_y / (float)renderer_real_h * (float)renderer->logical_h; 
+}
+
+void SDLCALL SDL_RenderLogicalToWindow(SDL_Renderer * renderer, float logicalX, float logicalY, int *windowX, int *windowY){
+    int window_w;
+    int window_h;
+    int window_midpoint_x, window_midpoint_y;
+    int renderer_real_w, renderer_real_h;
+    int renderer_midpoint_x, renderer_midpoint_y;
+    int window_renderer_midpoint_delta_x, window_renderer_midpoint_delta_y;
+
+    CHECK_RENDERER_MAGIC(renderer, );
+
+    SDL_GetWindowSize(renderer->window, &window_w, &window_h);
+    
+    window_midpoint_x = window_w>>1;
+    window_midpoint_y = window_h>>1;
+
+    renderer_real_w = (float)renderer->logical_w*renderer->scale.x;
+    renderer_real_h = (float)renderer->logical_h*renderer->scale.y;
+
+    renderer_midpoint_x = renderer_real_w>>1;
+    renderer_midpoint_y = renderer_real_h>>1;
+
+    /* Compare with midpoints because a renderer that is logically sized will be centered and have a border
+     if the window aspect ratio differs from the renderer's.
+    */
+    window_renderer_midpoint_delta_x = window_midpoint_x - renderer_midpoint_x;
+    window_renderer_midpoint_delta_y = window_midpoint_y - renderer_midpoint_y;
+
+    *windowX = ((float)renderer_real_w * logicalX / (float)renderer->logical_w) + (float)window_renderer_midpoint_delta_x;
+    *windowY = ((float)renderer_real_h * logicalY / (float)renderer->logical_h) + (float)window_renderer_midpoint_delta_y;
+}
+
 int
 SDL_SetRenderDrawColor(SDL_Renderer * renderer,
                        Uint8 r, Uint8 g, Uint8 b, Uint8 a)

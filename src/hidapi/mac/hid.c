@@ -21,8 +21,6 @@
  ********************************************************/
 #include "../../SDL_internal.h"
 
-#ifdef SDL_JOYSTICK_HIDAPI
-
 /* See Apple Technical Note TN2187 for details on IOHidManager. */
 
 #include <IOKit/hid/IOHIDManager.h>
@@ -1191,5 +1189,3 @@ int main(void)
 	return 0;
 }
 #endif
-
-#endif /* SDL_JOYSTICK_HIDAPI */

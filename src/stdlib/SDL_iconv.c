@@ -146,6 +146,11 @@ static struct
     { "US-ASCII", ENCODING_ASCII },
     { "8859-1", ENCODING_LATIN1 },
     { "ISO-8859-1", ENCODING_LATIN1 },
+#ifdef __WIN32__
+    { "WCHAR_T", ENCODING_UTF16LE },
+#else
+    { "WCHAR_T", ENCODING_UCS4NATIVE },
+#endif
     { "UTF8", ENCODING_UTF8 },
     { "UTF-8", ENCODING_UTF8 },
     { "UTF16", ENCODING_UTF16 },

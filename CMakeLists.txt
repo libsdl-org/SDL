@@ -2,7 +2,7 @@ if(${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_BINARY_DIR})
   message(FATAL_ERROR "Prevented in-tree build. Please create a build directory outside of the SDL source code and run \"cmake -S ${CMAKE_SOURCE_DIR} -B .\" from there")
 endif()
 
-cmake_minimum_required(VERSION 3.11.0)
+cmake_minimum_required(VERSION 3.0.0)
 project(SDL2 C CXX)
 
 if (HAIKU)
@@ -18,6 +18,7 @@ endif()
 add_library(sdl-build-options INTERFACE)
 
 if(WINDOWS_STORE)
+  cmake_minimum_required(VERSION 3.11.0)
   target_compile_definitions(sdl-build-options INTERFACE "-DSDL_BUILDING_WINRT=1")
   target_compile_options(sdl-build-options INTERFACE "-ZW")
 endif()
@@ -225,6 +226,14 @@ if(UNIX OR MINGW OR MSYS OR (USE_CLANG AND NOT WINDOWS) OR VITA)
   set(OPT_DEF_LIBC ON)
 endif()
 
+if(NOT ("$ENV{CFLAGS}" STREQUAL ""))
+  if(CMAKE_VERSION VERSION_LESS 3.11.0)
+     message(WARNING "SDL's CMakeLists.txt no longer checks the CFLAGS environment.")
+     message(WARNING "Please use CMake's CMAKE_C_FLAGS and CMAKE_BUILD_TYPE variables directly.")
+     message(WARNING "Or upgrade to CMake >= 3.11.0, which respects the CFLAGS environment var.")
+  endif()
+endif()
+
 if(MSVC)
   option(SDL_FORCE_STATIC_VCRT "Force /MT for static VC runtimes" OFF)
   if(SDL_FORCE_STATIC_VCRT)
@@ -334,7 +343,7 @@ endif()
 set(LONGESTOPTIONNAME 0)  # set_option and friends will change this.
 
 set(SDL_SUBSYSTEMS
-    Atomic Audio Video Render Events Joystick Haptic Power Threads Timers
+    Atomic Audio Video Render Events Joystick Haptic Hidapi Power Threads Timers
     File Loadso CPUinfo Filesystem Dlopen Sensor Locale)
 foreach(_SUB ${SDL_SUBSYSTEMS})
   string(TOUPPER ${_SUB} _OPT)
@@ -392,7 +401,7 @@ set_option(SDL_RPATH               "Use an rpath when linking SDL" ${UNIX_SYS})
 set_option(SDL_CLOCK_GETTIME       "Use clock_gettime() instead of gettimeofday()" OFF)
 set_option(SDL_X11                 "Use X11 video driver" ${UNIX_SYS})
 dep_option(SDL_X11_SHARED          "Dynamically load X11 support" ON "SDL_X11" OFF)
-set(SDL_X11_OPTIONS Xcursor Xinerama XInput Xrandr Xscrnsaver XShape Xvm)
+set(SDL_X11_OPTIONS Xcursor Xinerama XInput Xfixes Xrandr Xscrnsaver XShape Xvm)
 foreach(_SUB ${SDL_X11_OPTIONS})
   string(TOUPPER "SDL_X11_${_SUB}" _OPT)
   dep_option(${_OPT}               "Enable ${_SUB} support" ON "SDL_X11" OFF)
@@ -442,6 +451,7 @@ file(GLOB SOURCE_FILES
   ${SDL2_SOURCE_DIR}/src/events/*.c
   ${SDL2_SOURCE_DIR}/src/file/*.c
   ${SDL2_SOURCE_DIR}/src/haptic/*.c
+  ${SDL2_SOURCE_DIR}/src/hidapi/*.c
   ${SDL2_SOURCE_DIR}/src/libm/*.c
   ${SDL2_SOURCE_DIR}/src/locale/*.c
   ${SDL2_SOURCE_DIR}/src/misc/*.c
@@ -1045,6 +1055,9 @@ if(ANDROID)
   endif()
   if(SDL_JOYSTICK)
     CheckHIDAPI()
+    if(HAVE_HIDAPI)
+      set(SOURCE_FILES ${SOURCE_FILES} ${SDL2_SOURCE_DIR}/src/hidapi/android/hid.cpp)
+    endif()
     set(SDL_JOYSTICK_ANDROID 1)
     file(GLOB ANDROID_JOYSTICK_SOURCES ${SDL2_SOURCE_DIR}/src/joystick/android/*.c ${SDL2_SOURCE_DIR}/src/joystick/steam/*.c)
     set(SOURCE_FILES ${SOURCE_FILES} ${ANDROID_JOYSTICK_SOURCES})
@@ -1094,10 +1107,6 @@ if(ANDROID)
     list(APPEND EXTRA_LIBS ${ANDROID_DL_LIBRARY} ${ANDROID_LOG_LIBRARY} ${ANDROID_LIBRARY_LIBRARY})
     target_compile_definitions(sdl-build-options INTERFACE "-DGL_GLEXT_PROTOTYPES")
 
-    if (HAVE_HIDAPI)
-        list(APPEND EXTRA_LIBS hidapi)
-    endif()
-
     #enable gles
     if(SDL_OPENGLES)
       set(SDL_VIDEO_OPENGL_EGL 1)
@@ -1116,8 +1125,7 @@ if(ANDROID)
     #if defined(__ARM_ARCH) && __ARM_ARCH < 7
     #error Vulkan doesn't work on this configuration
     #endif
-    int main()
-    {
+    int main(void) {
         return 0;
     }
     " VULKAN_PASSED_ANDROID_CHECKS)
@@ -1700,10 +1708,6 @@ elseif(WINDOWS)
 
   if(SDL_JOYSTICK)
     CheckHIDAPI()
-    # TODO: Remove this hid.c block when SDL_hidapi.c is supported on Windows!
-    if(HAVE_HIDAPI)
-      set(SOURCE_FILES ${SOURCE_FILES} ${SDL2_SOURCE_DIR}/src/hidapi/windows/hid.c)
-    endif()
     if(NOT WINDOWS_STORE)
       set(SDL_JOYSTICK_RAWINPUT 1)
     endif()
@@ -1932,8 +1936,7 @@ elseif(APPLE)
         #if (!TARGET_CPU_X86_64 && !TARGET_CPU_ARM64)
         #error Metal doesn't work on this configuration
         #endif
-        int main()
-        {
+        int main(void) {
             return 0;
         }
         " HAVE_FRAMEWORK_METAL)
@@ -2627,15 +2630,12 @@ if(NOT WINDOWS_STORE)
   add_library(SDL2main STATIC ${SDLMAIN_SOURCES})
   # alias target for in-tree builds
   add_library(SDL2::SDL2main ALIAS SDL2main)
+  target_include_directories(SDL2main BEFORE PRIVATE "${SDL2_BINARY_DIR}/include")
   target_include_directories(SDL2main PUBLIC "$<BUILD_INTERFACE:${SDL2_SOURCE_DIR}/include>" $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}> $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/SDL2>)
   set(_INSTALL_LIBS "SDL2main")
   if (NOT ANDROID)
     set_target_properties(SDL2main PROPERTIES DEBUG_POSTFIX "${SDL_CMAKE_DEBUG_POSTFIX}")
   endif()
-endif()
-
-if (ANDROID AND HAVE_HIDAPI)
-  set(_INSTALL_LIBS ${_INSTALL_LIBS} "hidapi")
 endif()
 
 if(ANDROID)
@@ -2685,24 +2685,6 @@ if(SDL_SHARED)
   target_link_libraries(SDL2 PRIVATE $<BUILD_INTERFACE:sdl-build-options>)
   if(NOT ANDROID)
     set_target_properties(SDL2 PROPERTIES DEBUG_POSTFIX "${SDL_CMAKE_DEBUG_POSTFIX}")
-  endif()
-endif()
-
-if(ANDROID)
-  if(HAVE_HIDAPI)
-    add_library(hidapi SHARED ${SDL2_SOURCE_DIR}/src/hidapi/android/hid.cpp)
-    # alias target for in-tree builds
-    add_library(SDL2::hidapi ALIAS hidapi)
-  endif()
-
-  if(MSVC AND NOT SDL_LIBC)
-    # Don't try to link with the default set of libraries.
-    set_target_properties(hidapi PROPERTIES LINK_FLAGS_RELEASE "/NODEFAULTLIB")
-    set_target_properties(hidapi PROPERTIES LINK_FLAGS_DEBUG "/NODEFAULTLIB")
-    set_target_properties(hidapi PROPERTIES STATIC_LIBRARY_FLAGS "/NODEFAULTLIB")
-  endif()
-  if(HAVE_HIDAPI)
-    target_link_libraries(hidapi log)
   endif()
 endif()
 

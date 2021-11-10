@@ -31,6 +31,7 @@
 #include "SDL_x11video.h"
 #include "SDL_x11touch.h"
 #include "SDL_x11xinput2.h"
+#include "SDL_x11xfixes.h"
 #include "../../core/unix/SDL_poll.h"
 #include "../../events/SDL_events_c.h"
 #include "../../events/SDL_mouse_c.h"
@@ -869,6 +870,16 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
             mouse->last_x = xevent->xcrossing.x;
             mouse->last_y = xevent->xcrossing.y;
 
+#if SDL_VIDEO_DRIVER_X11_XFIXES
+            {
+                /* Only create the barriers if we have input focus */
+                SDL_WindowData* windowdata = (SDL_WindowData *) data->window->driverdata;
+                if ((data->pointer_barrier_active == SDL_TRUE) && windowdata->window->flags & SDL_WINDOW_INPUT_FOCUS) {
+                    X11_ConfineCursorWithFlags(_this, windowdata->window, &windowdata->barrier_rect, X11_BARRIER_HANDLED_BY_EVENT);
+                }
+            }
+#endif
+
             if (!mouse->relative_mode) {
                 SDL_SendMouseMotion(data->window, 0, 0, xevent->xcrossing.x, xevent->xcrossing.y);
             }
@@ -974,6 +985,13 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
                 data->pending_focus = PENDING_FOCUS_OUT;
                 data->pending_focus_time = SDL_GetTicks() + PENDING_FOCUS_TIME;
             }
+
+#if SDL_VIDEO_DRIVER_X11_XFIXES
+            /* Disable confinement if it is activated. */
+            if (data->pointer_barrier_active == SDL_TRUE) {
+                X11_ConfineCursorWithFlags(_this, data->window, NULL, X11_BARRIER_HANDLED_BY_EVENT);
+            }
+#endif /* SDL_VIDEO_DRIVER_X11_XFIXES */
         }
         break;
 
@@ -1059,6 +1077,13 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
             } else {
                 X11_DispatchUnmapNotify(data);
             }
+
+#if SDL_VIDEO_DRIVER_X11_XFIXES
+            /* Disable confinement if the window gets hidden. */
+            if (data->pointer_barrier_active == SDL_TRUE) {
+                X11_ConfineCursorWithFlags(_this, data->window, NULL, X11_BARRIER_HANDLED_BY_EVENT);
+            }
+#endif /* SDL_VIDEO_DRIVER_X11_XFIXES */
         }
         break;
 
@@ -1068,6 +1093,13 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
             printf("window %p: MapNotify!\n", data);
 #endif
             X11_DispatchMapNotify(data);
+
+#if SDL_VIDEO_DRIVER_X11_XFIXES
+            /* Enable confinement if it was activated. */
+            if (data->pointer_barrier_active == SDL_TRUE) {
+                X11_ConfineCursorWithFlags(_this, data->window, &data->barrier_rect, X11_BARRIER_HANDLED_BY_EVENT);
+            }
+#endif /* SDL_VIDEO_DRIVER_X11_XFIXES */
         }
         break;
 
@@ -1525,23 +1557,21 @@ X11_HandleFocusChanges(_THIS)
         }
     }
 }
-/* Ack!  X11_XPending() actually performs a blocking read if no events available */
-static int
-X11_Pending(Display * display)
+
+static Bool
+isAnyEvent(Display *display, XEvent *ev, XPointer arg)
 {
-    /* Flush the display connection and look to see if events are queued */
-    X11_XFlush(display);
-    if (X11_XEventsQueued(display, QueuedAlready)) {
-        return (1);
+    return True;
+}
+
+static SDL_bool
+X11_PollEvent(Display *display, XEvent *event)
+{
+    if (!X11_XCheckIfEvent(display, event, isAnyEvent, NULL)) {
+        return SDL_FALSE;
     }
 
-    /* More drastic measures are required -- see if X is ready to talk */
-    if (SDL_IOReady(ConnectionNumber(display), SDL_IOR_READ, 0)) {
-        return (X11_XPending(display));
-    }
-
-    /* Oh well, nothing is ready .. */
-    return (0);
+    return SDL_TRUE;
 }
 
 void
@@ -1579,17 +1609,21 @@ X11_WaitEventTimeout(_THIS, int timeout)
 
     SDL_zero(xevent);
 
-    if (timeout == 0) {
-        if (X11_Pending(display)) {
-            X11_XNextEvent(display, &xevent);
-        } else {
-            return 0;
-        }
+    /* Flush and poll to grab any events already read and queued */
+    X11_XFlush(display);
+    if (X11_PollEvent(display, &xevent)) {
+        /* Fall through */
+    } else if (timeout == 0) {
+        return 0;
     } else {
         /* Use SDL_IOR_NO_RETRY to ensure SIGINT will break us out of our wait */
         int err = SDL_IOReady(ConnectionNumber(display), SDL_IOR_READ | SDL_IOR_NO_RETRY, timeout);
         if (err > 0) {
-            X11_XNextEvent(display, &xevent);
+            if (!X11_PollEvent(display, &xevent)) {
+                /* Someone may have beat us to reading the fd. Return 1 here to
+                 * trigger the normal spurious wakeup logic in the event core. */
+                return 1;
+            }
         } else if (err == 0) {
             /* Timeout */
             return 0;
@@ -1647,8 +1681,7 @@ X11_PumpEvents(_THIS)
     SDL_zero(xevent);
 
     /* Keep processing pending events */
-    while (X11_Pending(data->display)) {
-        X11_XNextEvent(data->display, &xevent);
+    while (X11_PollEvent(data->display, &xevent)) {
         X11_DispatchEvent(_this, &xevent);
     }
 

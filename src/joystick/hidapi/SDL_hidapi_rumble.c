@@ -80,7 +80,7 @@ static int SDL_HIDAPI_RumbleThread(void *data)
 #ifdef DEBUG_RUMBLE
                 HIDAPI_DumpPacket("Rumble packet: size = %d", request->data, request->size);
 #endif
-                hid_write(request->device->dev, request->data, request->size);
+                SDL_hid_write(request->device->dev, request->data, request->size);
             }
             SDL_UnlockMutex(request->device->dev_lock);
             (void)SDL_AtomicDecRef(&request->device->rumble_pending);

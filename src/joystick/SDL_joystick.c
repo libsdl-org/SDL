@@ -1344,7 +1344,7 @@ SDL_PrivateJoystickAxis(SDL_Joystick *joystick, Uint8 axis, Sint16 value)
         info->value = value;
         info->zero = value;
         info->has_initial_value = SDL_TRUE;
-    } else if (value == info->value) {
+    } else if (value == info->value && !info->sending_initial_value) {
         return 0;
     } else {
         info->has_second_value = SDL_TRUE;
@@ -1356,15 +1356,17 @@ SDL_PrivateJoystickAxis(SDL_Joystick *joystick, Uint8 axis, Sint16 value)
             return 0;
         }
         info->sent_initial_value = SDL_TRUE;
-        info->value = ~value; /* Just so we pass the check above */
+        info->sending_initial_value = SDL_TRUE;
         SDL_PrivateJoystickAxis(joystick, axis, info->initial_value);
+        info->sending_initial_value = SDL_FALSE;
     }
 
     /* We ignore events if we don't have keyboard focus, except for centering
      * events.
      */
     if (SDL_PrivateJoystickShouldIgnoreEvent()) {
-        if ((value > info->zero && value >= info->value) ||
+        if (info->sending_initial_value ||
+            (value > info->zero && value >= info->value) ||
             (value < info->zero && value <= info->value)) {
             return 0;
         }
@@ -2721,6 +2723,13 @@ int SDL_PrivateJoystickTouchpad(SDL_Joystick *joystick, int touchpad, int finger
     }
 #endif
 
+    /* We ignore events if we don't have keyboard focus, except for touch release */
+    if (SDL_PrivateJoystickShouldIgnoreEvent()) {
+        if (event_type != SDL_CONTROLLERTOUCHPADUP) {
+            return 0;
+        }
+    }
+
     /* Update internal joystick state */
     finger_info->state = state;
     finger_info->x = x;
@@ -2749,6 +2758,11 @@ int SDL_PrivateJoystickSensor(SDL_Joystick *joystick, SDL_SensorType type, const
 {
     int i;
     int posted = 0;
+
+    /* We ignore events if we don't have keyboard focus */
+    if (SDL_PrivateJoystickShouldIgnoreEvent()) {
+        return 0;
+    }
 
     for (i = 0; i < joystick->nsensors; ++i) {
         SDL_JoystickSensorInfo *sensor = &joystick->sensors[i];

@@ -416,24 +416,42 @@ SDL_PrivateSendMouseMotion(SDL_Window * window, SDL_MouseID mouseID, int relativ
     /* make sure that the pointers find themselves inside the windows,
        unless we have the mouse captured. */
     if (window && ((window->flags & SDL_WINDOW_MOUSE_CAPTURE) == 0)) {
-        int x_max = 0, y_max = 0;
+        int x_min = 0, x_max = 0;
+        int y_min = 0, y_max = 0;
+        const SDL_Rect *confine = SDL_GetWindowMouseRect(window);
 
         SDL_GetWindowSize(window, &x_max, &y_max);
         --x_max;
         --y_max;
 
+        if (confine) {
+            SDL_Rect window_rect;
+            SDL_Rect mouse_rect;
+
+            window_rect.x = 0;
+            window_rect.y = 0;
+            window_rect.w = x_max + 1;
+            window_rect.h = y_max + 1;
+            if (SDL_IntersectRect(confine, &window_rect, &mouse_rect)) {
+                x_min = mouse_rect.x;
+                y_min = mouse_rect.y;
+                x_max = x_min + mouse_rect.w - 1;
+                y_min = y_min + mouse_rect.h - 1;
+            }
+        }
+
         if (mouse->x > x_max) {
             mouse->x = x_max;
         }
-        if (mouse->x < 0) {
-            mouse->x = 0;
+        if (mouse->x < x_min) {
+            mouse->x = x_min;
         }
 
         if (mouse->y > y_max) {
             mouse->y = y_max;
         }
-        if (mouse->y < 0) {
-            mouse->y = 0;
+        if (mouse->y < y_min) {
+            mouse->y = y_min;
         }
     }
 
@@ -623,20 +641,38 @@ SDL_SendMouseWheel(SDL_Window * window, SDL_MouseID mouseID, float x, float y, S
         return 0;
     }
 
+    if (x > 0.0f) {
+        if (mouse->accumulated_wheel_x < 0.0f) {
+            mouse->accumulated_wheel_x = 0.0f;
+        }
+    } else if (x < 0.0f) {
+        if (mouse->accumulated_wheel_x > 0.0f) {
+            mouse->accumulated_wheel_x = 0.0f;
+        }
+    }
     mouse->accumulated_wheel_x += x;
-    if (mouse->accumulated_wheel_x > 0) {
+    if (mouse->accumulated_wheel_x > 0.0f) {
         integral_x = (int)SDL_floor(mouse->accumulated_wheel_x);
-    } else if (mouse->accumulated_wheel_x < 0) {
+    } else if (mouse->accumulated_wheel_x < 0.0f) {
         integral_x = (int)SDL_ceil(mouse->accumulated_wheel_x);
     } else {
         integral_x = 0;
     }
     mouse->accumulated_wheel_x -= integral_x;
 
+    if (y > 0.0f) {
+        if (mouse->accumulated_wheel_y < 0.0f) {
+            mouse->accumulated_wheel_y = 0.0f;
+        }
+    } else if (y < 0.0f) {
+        if (mouse->accumulated_wheel_y > 0.0f) {
+            mouse->accumulated_wheel_y = 0.0f;
+        }
+    }
     mouse->accumulated_wheel_y += y;
-    if (mouse->accumulated_wheel_y > 0) {
+    if (mouse->accumulated_wheel_y > 0.0f) {
         integral_y = (int)SDL_floor(mouse->accumulated_wheel_y);
-    } else if (mouse->accumulated_wheel_y < 0) {
+    } else if (mouse->accumulated_wheel_y < 0.0f) {
         integral_y = (int)SDL_ceil(mouse->accumulated_wheel_y);
     } else {
         integral_y = 0;
@@ -650,12 +686,10 @@ SDL_SendMouseWheel(SDL_Window * window, SDL_MouseID mouseID, float x, float y, S
         event.type = SDL_MOUSEWHEEL;
         event.wheel.windowID = mouse->focus ? mouse->focus->id : 0;
         event.wheel.which = mouseID;
-#if 0 /* Uncomment this when it goes in for SDL 2.1 */
-        event.wheel.preciseX = x;
-        event.wheel.preciseY = y;
-#endif
         event.wheel.x = integral_x;
         event.wheel.y = integral_y;
+        event.wheel.preciseX = x;
+        event.wheel.preciseY = y;
         event.wheel.direction = (Uint32)direction;
         posted = (SDL_PushEvent(&event) > 0);
     }

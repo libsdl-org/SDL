@@ -47,7 +47,7 @@ SRCS+= SDL_audio.c SDL_audiocvt.c SDL_audiodev.c SDL_audiotypecvt.c SDL_mixer.c 
 SRCS+= SDL_events.c SDL_quit.c SDL_keyboard.c SDL_mouse.c SDL_windowevents.c &
        SDL_clipboardevents.c SDL_dropevents.c SDL_displayevents.c SDL_gesture.c &
        SDL_sensor.c SDL_touch.c
-SRCS+= SDL_haptic.c SDL_gamecontroller.c SDL_joystick.c
+SRCS+= SDL_haptic.c SDL_hidapi.c SDL_gamecontroller.c SDL_joystick.c
 SRCS+= SDL_render.c yuv_rgb.c SDL_yuv.c SDL_yuv_sw.c SDL_blendfillrect.c &
        SDL_blendline.c SDL_blendpoint.c SDL_drawline.c SDL_drawpoint.c &
        SDL_render_sw.c SDL_rotate.c SDL_triangle.c
@@ -60,9 +60,7 @@ SRCS+= SDL_syscond.c SDL_sysmutex.c SDL_syssem.c SDL_systhread.c SDL_systls.c
 SRCS+= SDL_systimer.c
 SRCS+= SDL_sysloadso.c
 SRCS+= SDL_sysfilesystem.c
-SRCS+= SDL_os2joystick.c SDL_syshaptic.c SDL_sysjoystick.c
-SRCS+= SDL_virtualjoystick.c
-SRCS+= SDL_hidapi.c
+SRCS+= SDL_os2joystick.c SDL_syshaptic.c SDL_sysjoystick.c SDL_virtualjoystick.c
 SRCS+= SDL_hidapijoystick.c SDL_hidapi_rumble.c SDL_hidapi_gamecube.c SDL_hidapi_luna.c SDL_hidapi_ps4.c SDL_hidapi_ps5.c SDL_hidapi_stadia.c SDL_hidapi_switch.c SDL_hidapi_xbox360.c SDL_hidapi_xbox360w.c SDL_hidapi_xboxone.c SDL_hidapi_steam.c
 SRCS+= SDL_dummyaudio.c SDL_diskaudio.c
 SRCS+= SDL_nullvideo.c SDL_nullframebuffer.c SDL_nullevents.c

@@ -15,6 +15,7 @@ SOURCES = \
 	src/file/*.c \
 	src/haptic/*.c \
 	src/haptic/dummy/*.c \
+	src/hidapi/*.c \
 	src/joystick/*.c \
 	src/joystick/dummy/*.c \
 	src/loadso/dummy/*.c \

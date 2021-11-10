@@ -32,6 +32,7 @@
 #include "SDL_x11mouse.h"
 #include "SDL_x11shape.h"
 #include "SDL_x11xinput2.h"
+#include "SDL_x11xfixes.h"
 
 #if SDL_VIDEO_OPENGL_EGL
 #include "SDL_x11opengles.h"
@@ -734,6 +735,9 @@ X11_SetWindowTitle(_THIS, SDL_Window * window)
 
     Atom UTF8_STRING = data->videodata->UTF8_STRING;
     Atom _NET_WM_NAME = data->videodata->_NET_WM_NAME;
+    Atom WM_NAME = data->videodata->WM_NAME;
+
+    X11_XChangeProperty(display, data->xwindow, WM_NAME, UTF8_STRING, 8, 0, (const unsigned char *) title, strlen(title));
 
     status = X11_XChangeProperty(display, data->xwindow, _NET_WM_NAME, UTF8_STRING, 8, 0, (const unsigned char *) title, strlen(title));
 
@@ -1778,6 +1782,13 @@ X11_DestroyWindow(_THIS, SDL_Window * window)
             X11_XFlush(display);
         }
         SDL_free(data);
+
+#if SDL_VIDEO_DRIVER_X11_XFIXES
+        /* If the pointer barriers are active for this, deactivate it.*/
+        if (videodata->active_cursor_confined_window == window) {
+            X11_DestroyPointerBarrier(_this, window);
+        }
+#endif /* SDL_VIDEO_DRIVER_X11_XFIXES */
     }
     window->driverdata = NULL;
 }

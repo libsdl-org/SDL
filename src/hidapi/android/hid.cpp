@@ -22,6 +22,27 @@
 //
 //          This layer glues the hidapi API to Android's USB and BLE stack.
 
+#if !SDL_HIDAPI_DISABLED
+
+#define hid_init                        PLATFORM_hid_init
+#define hid_exit                        PLATFORM_hid_exit
+#define hid_enumerate                   PLATFORM_hid_enumerate
+#define hid_free_enumeration            PLATFORM_hid_free_enumeration
+#define hid_open                        PLATFORM_hid_open
+#define hid_open_path                   PLATFORM_hid_open_path
+#define hid_write                       PLATFORM_hid_write
+#define hid_read_timeout                PLATFORM_hid_read_timeout
+#define hid_read                        PLATFORM_hid_read
+#define hid_set_nonblocking             PLATFORM_hid_set_nonblocking
+#define hid_send_feature_report         PLATFORM_hid_send_feature_report
+#define hid_get_feature_report          PLATFORM_hid_get_feature_report
+#define hid_close                       PLATFORM_hid_close
+#define hid_get_manufacturer_string     PLATFORM_hid_get_manufacturer_string
+#define hid_get_product_string          PLATFORM_hid_get_product_string
+#define hid_get_serial_number_string    PLATFORM_hid_get_serial_number_string
+#define hid_get_indexed_string          PLATFORM_hid_get_indexed_string
+#define hid_error                       PLATFORM_hid_error
+
 #include <jni.h>
 #include <android/log.h>
 #include <pthread.h>
@@ -1264,3 +1285,5 @@ int hid_exit(void)
 }
 
 }
+
+#endif /* SDL_HIDAPI_DISABLED */
