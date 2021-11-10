@@ -4271,6 +4271,8 @@ SDL_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
     if (!mbdata.message) mbdata.message = "";
     messageboxdata = &mbdata;
 
+    SDL_ClearError();
+
     if (_this && _this->ShowMessageBox) {
         retval = _this->ShowMessageBox(_this, messageboxdata, buttonid);
     }
@@ -4352,7 +4354,11 @@ SDL_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
     }
 #endif
     if (retval == -1) {
-        SDL_SetError("No message system available");
+        const char *error = SDL_GetError();
+
+        if (!*error) {
+            SDL_SetError("No message system available");
+        }
     }
 
     if (current_window) {
