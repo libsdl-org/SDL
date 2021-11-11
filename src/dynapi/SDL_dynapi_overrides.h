@@ -829,8 +829,11 @@
 #define SDL_GameControllerGetAppleSFSymbolsNameForAxis SDL_GameControllerGetAppleSFSymbolsNameForAxis_REAL
 #define SDL_hid_init SDL_hid_init_REAL
 #define SDL_hid_exit SDL_hid_exit_REAL
+#define SDL_hid_device_change_count SDL_hid_device_change_count_REAL
 #define SDL_hid_enumerate SDL_hid_enumerate_REAL
 #define SDL_hid_free_enumeration SDL_hid_free_enumeration_REAL
+#define SDL_hid_open SDL_hid_open_REAL
+#define SDL_hid_open_path SDL_hid_open_path_REAL
 #define SDL_hid_write SDL_hid_write_REAL
 #define SDL_hid_read_timeout SDL_hid_read_timeout_REAL
 #define SDL_hid_read SDL_hid_read_REAL
@@ -846,9 +849,6 @@
 #define SDL_GetWindowMouseRect SDL_GetWindowMouseRect_REAL
 #define SDL_RenderWindowToLogical SDL_RenderWindowToLogical_REAL
 #define SDL_RenderLogicalToWindow SDL_RenderLogicalToWindow_REAL
-#define SDL_hid_device_change_count SDL_hid_device_change_count_REAL
-#define SDL_hid_open SDL_hid_open_REAL
-#define SDL_hid_open_path SDL_hid_open_path_REAL
 #define SDL_JoystickHasRumble SDL_JoystickHasRumble_REAL
 #define SDL_JoystickHasRumbleTriggers SDL_JoystickHasRumbleTriggers_REAL
 #define SDL_GameControllerHasRumble SDL_GameControllerHasRumble_REAL
