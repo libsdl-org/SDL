@@ -918,3 +918,7 @@ SDL_DYNAPI_PROC(void,SDL_RenderLogicalToWindow,(SDL_Renderer *a, float b, float 
 SDL_DYNAPI_PROC(Uint32,SDL_hid_device_change_count,(void),(),return)
 SDL_DYNAPI_PROC(SDL_hid_device*,SDL_hid_open,(unsigned short a, unsigned short b, const wchar_t *c),(a,b,c),return)
 SDL_DYNAPI_PROC(SDL_hid_device*,SDL_hid_open_path,(const char *a, int b),(a,b),return)
+SDL_DYNAPI_PROC(SDL_bool,SDL_JoystickHasRumble,(SDL_Joystick *a),(a),return)
+SDL_DYNAPI_PROC(SDL_bool,SDL_JoystickHasRumbleTriggers,(SDL_Joystick *a),(a),return)
+SDL_DYNAPI_PROC(SDL_bool,SDL_GameControllerHasRumble,(SDL_GameController *a),(a),return)
+SDL_DYNAPI_PROC(SDL_bool,SDL_GameControllerHasRumbleTriggers,(SDL_GameController *a),(a),return)

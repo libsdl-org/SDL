@@ -168,6 +168,14 @@ static void AddController(int device_index, SDL_bool verbose)
         SDL_GameControllerSetSensorEnabled(gamecontroller, SDL_SENSOR_GYRO, SDL_TRUE);
     }
 
+    if (SDL_GameControllerHasRumble(gamecontroller)) {
+        SDL_Log("Rumble supported");
+    }
+
+    if (SDL_GameControllerHasRumbleTriggers(gamecontroller)) {
+        SDL_Log("Trigger rumble supported");
+    }
+
     UpdateWindowTitle();
 }
 
