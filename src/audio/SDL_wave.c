@@ -1715,7 +1715,7 @@ WaveCheckFormat(WaveFile *file, size_t datalength)
         if (file->facthint == FactStrict && file->fact.status <= 0) {
             return SDL_SetError("Missing fact chunk in WAVE file");
         }
-        SDL_FALLTHROUGH;
+        /* fallthrough */
     case PCM_CODE:
         /* All supported formats require a non-zero bit depth. */
         if (file->chunk.size < 16) {
@@ -1854,7 +1854,7 @@ WaveLoad(SDL_RWops *src, WaveFile *file, SDL_AudioSpec *spec, Uint8 **audio_buf,
             RIFFend = RIFFchunk.position + SDL_MAX_UINT32;
             break;
         }
-        SDL_FALLTHROUGH;
+        /* fallthrough */
     case RiffSizeForce:
         RIFFend = RIFFchunk.position + RIFFchunk.length;
         RIFFlengthknown = SDL_TRUE;

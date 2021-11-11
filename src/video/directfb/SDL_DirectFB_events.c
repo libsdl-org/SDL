@@ -261,7 +261,7 @@ ProcessWindowEvent(_THIS, SDL_Window *sdlwin, DFBWindowEvent * evt)
                 SDL_SendWindowEvent(sdlwin, SDL_WINDOWEVENT_MOVED,
                                     evt->x, evt->y);
             }
-            SDL_FALLTHROUGH;
+            /* fall throught */
         case DWET_SIZE:
             /* FIXME: what about < 0 */
             evt->w -= (windata->theme.right_size + windata->theme.left_size);

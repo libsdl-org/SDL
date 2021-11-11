@@ -186,7 +186,7 @@ loop(void *arg)
                 (event.key.keysym.sym != SDLK_AC_BACK)) {
                 break;
             }
-            SDL_FALLTHROUGH;
+            /* Fall through to signal quit */
         case SDL_FINGERDOWN:
         case SDL_MOUSEBUTTONDOWN:
         case SDL_QUIT:

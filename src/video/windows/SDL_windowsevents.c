@@ -729,7 +729,6 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             }
         }
         /* don't break here, fall through to check the wParam like the button presses */
-        SDL_FALLTHROUGH;
     case WM_LBUTTONUP:
     case WM_RBUTTONUP:
     case WM_MBUTTONUP:

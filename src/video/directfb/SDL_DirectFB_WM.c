@@ -323,7 +323,7 @@ DirectFB_WM_ProcessEvent(_THIS, SDL_Window * window, DFBWindowEvent * evt)
                 }
                 if (window->flags & SDL_WINDOW_MAXIMIZED)
                     return 1;
-                SDL_FALLTHROUGH;
+                /* fall through */
             default:
                 windata->wm_grab = pos;
                 if (grabbed_window != NULL)

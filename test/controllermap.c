@@ -562,7 +562,7 @@ WatchJoystick(SDL_Joystick * joystick)
                 if ((event.key.keysym.sym != SDLK_ESCAPE)) {
                     break;
                 }
-                SDL_FALLTHROUGH;
+                /* Fall through to signal quit */
             case SDL_QUIT:
                 done = SDL_TRUE;
                 break;
@@ -755,7 +755,7 @@ main(int argc, char *argv[])
                 if ((event.key.keysym.sym != SDLK_ESCAPE)) {
                     break;
                 }
-                SDL_FALLTHROUGH;
+                /* Fall through to signal quit */
             case SDL_QUIT:
                 done = SDL_TRUE;
                 break;
