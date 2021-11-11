@@ -826,15 +826,23 @@ int HID_API_EXPORT hid_set_nonblocking(hid_device *dev, int nonblock)
 	return 0; /* Success */
 }
 
-
 int HID_API_EXPORT hid_send_feature_report(hid_device *dev, const unsigned char *data, size_t length)
 {
+	static const int MAX_RETRIES = 50;
+	int retry;
 	int res;
 
-	res = ioctl(dev->device_handle, HIDIOCSFEATURE(length), data);
-	if (res < 0)
-		perror("ioctl (SFEATURE)");
+	for (retry = 0; retry < MAX_RETRIES; ++retry) {
+		res = ioctl(dev->device_handle, HIDIOCSFEATURE(length), data);
+		if (res < 0 && errno == EPIPE) {
+			/* Try again... */
+			continue;
+		}
 
+		if (res < 0)
+			perror("ioctl (SFEATURE)");
+		break;
+	}
 	return res;
 }
 
