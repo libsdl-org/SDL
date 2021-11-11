@@ -226,7 +226,7 @@ extern DECLSPEC void SDLCALL SDL_hid_free_enumeration(SDL_hid_device_info *devs)
  *
  * \since This function is available since SDL 2.0.18.
  */
-SDL_hid_device * SDL_hid_open(unsigned short vendor_id, unsigned short product_id, const wchar_t *serial_number);
+extern DECLSPEC SDL_hid_device * SDLCALL SDL_hid_open(unsigned short vendor_id, unsigned short product_id, const wchar_t *serial_number);
 
 /**
  * Open a HID device by its path name.
@@ -241,7 +241,7 @@ SDL_hid_device * SDL_hid_open(unsigned short vendor_id, unsigned short product_i
  *
  * \since This function is available since SDL 2.0.18.
  */
-SDL_hid_device * SDL_hid_open_path(const char *path, int bExclusive /* = false */);
+extern DECLSPEC SDL_hid_device * SDLCALL SDL_hid_open_path(const char *path, int bExclusive /* = false */);
 
 /**
  * Write an Output report to a HID device.

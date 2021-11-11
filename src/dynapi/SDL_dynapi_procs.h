@@ -916,3 +916,5 @@ SDL_DYNAPI_PROC(const SDL_Rect*,SDL_GetWindowMouseRect,(SDL_Window *a),(a),retur
 SDL_DYNAPI_PROC(void,SDL_RenderWindowToLogical,(SDL_Renderer *a, int b, int c, float *d, float *e),(a,b,c,d,e),)
 SDL_DYNAPI_PROC(void,SDL_RenderLogicalToWindow,(SDL_Renderer *a, float b, float c, int *d, int *e),(a,b,c,d,e),)
 SDL_DYNAPI_PROC(Uint32,SDL_hid_device_change_count,(void),(),return)
+SDL_DYNAPI_PROC(SDL_hid_device*,SDL_hid_open,(unsigned short a, unsigned short b, const wchar_t *c),(a,b,c),return)
+SDL_DYNAPI_PROC(SDL_hid_device*,SDL_hid_open_path,(const char *a, int b),(a,b),return)
