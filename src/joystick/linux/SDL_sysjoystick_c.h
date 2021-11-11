@@ -56,6 +56,11 @@ struct joystick_hwdata
     SDL_bool has_key[KEY_MAX];
     SDL_bool has_abs[ABS_MAX];
 
+    /* Support for the classic joystick interface */
+    SDL_bool classic;
+    Uint16 *key_pam;
+    Uint8 *abs_pam;
+
     struct axis_correct
     {
         SDL_bool use_deadzones;

@@ -817,6 +817,24 @@ extern "C" {
 #define SDL_HINT_KMSDRM_REQUIRE_DRM_MASTER      "SDL_KMSDRM_REQUIRE_DRM_MASTER"
 
  /**
+  *  \brief  A comma separated list of devices to open as joysticks
+  *
+  *  This variable is currently only used by the Linux joystick driver.
+  */
+#define SDL_HINT_JOYSTICK_DEVICE "SDL_JOYSTICK_DEVICE"
+
+ /**
+  *  \brief  A variable controlling whether to use the classic /dev/input/js* joystick interface or the newer /dev/input/event* joystick interface on Linux
+  *
+  *  This variable can be set to the following values:
+  *    "0"       - Use /dev/input/event*
+  *    "1"       - Use /dev/input/js*
+  *
+  *  By default the /dev/input/event* interfaces are used
+  */
+#define SDL_HINT_LINUX_JOYSTICK_CLASSIC "SDL_LINUX_JOYSTICK_CLASSIC"
+
+ /**
   *  \brief  A variable controlling whether joysticks on Linux adhere to their HID-defined deadzones or return unfiltered values.
   *
   *  This variable can be set to the following values:
