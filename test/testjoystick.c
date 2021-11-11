@@ -78,15 +78,18 @@ PrintJoystick(SDL_Joystick *joystick)
         break;
     }
     SDL_Log("Joystick\n");
-    SDL_Log("       name: %s\n", SDL_JoystickName(joystick));
-    SDL_Log("       type: %s\n", type);
-    SDL_Log("       axes: %d\n", SDL_JoystickNumAxes(joystick));
-    SDL_Log("      balls: %d\n", SDL_JoystickNumBalls(joystick));
-    SDL_Log("       hats: %d\n", SDL_JoystickNumHats(joystick));
-    SDL_Log("    buttons: %d\n", SDL_JoystickNumButtons(joystick));
-    SDL_Log("instance id: %d\n", SDL_JoystickInstanceID(joystick));
-    SDL_Log("       guid: %s\n", guid);
-    SDL_Log("    VID/PID: 0x%.4x/0x%.4x\n", SDL_JoystickGetVendor(joystick), SDL_JoystickGetProduct(joystick));
+    SDL_Log("          name: %s\n", SDL_JoystickName(joystick));
+    SDL_Log("          type: %s\n", type);
+    SDL_Log("           LED: %s\n", SDL_JoystickHasLED(joystick) ? "yes" : "no");
+    SDL_Log("        rumble: %s\n", SDL_JoystickHasRumble(joystick) ? "yes" : "no");
+    SDL_Log("trigger rumble: %s\n", SDL_JoystickHasRumbleTriggers(joystick) ? "yes" : "no");
+    SDL_Log("          axes: %d\n", SDL_JoystickNumAxes(joystick));
+    SDL_Log("         balls: %d\n", SDL_JoystickNumBalls(joystick));
+    SDL_Log("          hats: %d\n", SDL_JoystickNumHats(joystick));
+    SDL_Log("       buttons: %d\n", SDL_JoystickNumButtons(joystick));
+    SDL_Log("   instance id: %d\n", SDL_JoystickInstanceID(joystick));
+    SDL_Log("          guid: %s\n", guid);
+    SDL_Log("       VID/PID: 0x%.4x/0x%.4x\n", SDL_JoystickGetVendor(joystick), SDL_JoystickGetProduct(joystick));
 }
 
 static void

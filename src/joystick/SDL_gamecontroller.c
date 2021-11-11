@@ -2450,6 +2450,18 @@ SDL_GameControllerHasLED(SDL_GameController *gamecontroller)
     return SDL_JoystickHasLED(SDL_GameControllerGetJoystick(gamecontroller));
 }
 
+SDL_bool
+SDL_GameControllerHasRumble(SDL_GameController *gamecontroller)
+{
+    return SDL_JoystickHasRumble(SDL_GameControllerGetJoystick(gamecontroller));
+}
+
+SDL_bool
+SDL_GameControllerHasRumbleTriggers(SDL_GameController *gamecontroller)
+{
+    return SDL_JoystickHasRumbleTriggers(SDL_GameControllerGetJoystick(gamecontroller));
+}
+
 int
 SDL_GameControllerSetLED(SDL_GameController *gamecontroller, Uint8 red, Uint8 green, Uint8 blue)
 {

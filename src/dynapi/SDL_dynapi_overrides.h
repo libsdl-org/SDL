@@ -849,3 +849,7 @@
 #define SDL_hid_device_change_count SDL_hid_device_change_count_REAL
 #define SDL_hid_open SDL_hid_open_REAL
 #define SDL_hid_open_path SDL_hid_open_path_REAL
+#define SDL_JoystickHasRumble SDL_JoystickHasRumble_REAL
+#define SDL_JoystickHasRumbleTriggers SDL_JoystickHasRumbleTriggers_REAL
+#define SDL_GameControllerHasRumble SDL_GameControllerHasRumble_REAL
+#define SDL_GameControllerHasRumbleTriggers SDL_GameControllerHasRumbleTriggers_REAL

@@ -951,6 +951,42 @@ SDL_JoystickHasLED(SDL_Joystick *joystick)
     return result;
 }
 
+SDL_bool
+SDL_JoystickHasRumble(SDL_Joystick *joystick)
+{
+    SDL_bool result;
+
+    if (!SDL_PrivateJoystickValid(joystick)) {
+        return SDL_FALSE;
+    }
+
+    SDL_LockJoysticks();
+
+    result = (joystick->driver->GetCapabilities(joystick) & SDL_JOYCAP_RUMBLE) != 0;
+
+    SDL_UnlockJoysticks();
+
+    return result;
+}
+
+SDL_bool
+SDL_JoystickHasRumbleTriggers(SDL_Joystick *joystick)
+{
+    SDL_bool result;
+
+    if (!SDL_PrivateJoystickValid(joystick)) {
+        return SDL_FALSE;
+    }
+
+    SDL_LockJoysticks();
+
+    result = (joystick->driver->GetCapabilities(joystick) & SDL_JOYCAP_RUMBLE_TRIGGERS) != 0;
+
+    SDL_UnlockJoysticks();
+
+    return result;
+}
+
 int
 SDL_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
 {

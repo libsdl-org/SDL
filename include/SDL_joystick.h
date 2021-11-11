@@ -818,6 +818,8 @@ extern DECLSPEC Uint8 SDLCALL SDL_JoystickGetButton(SDL_Joystick *joystick,
  * \returns 0, or -1 if rumble isn't supported on this joystick
  *
  * \since This function is available since SDL 2.0.9.
+ *
+ * \sa SDL_JoystickHasRumble
  */
 extern DECLSPEC int SDLCALL SDL_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms);
 
@@ -841,6 +843,8 @@ extern DECLSPEC int SDLCALL SDL_JoystickRumble(SDL_Joystick *joystick, Uint16 lo
  * \returns 0, or -1 if trigger rumble isn't supported on this joystick
  *
  * \since This function is available since SDL 2.0.14.
+ *
+ * \sa SDL_JoystickHasRumbleTriggers
  */
 extern DECLSPEC int SDLCALL SDL_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble, Uint32 duration_ms);
 
@@ -856,6 +860,30 @@ extern DECLSPEC int SDLCALL SDL_JoystickRumbleTriggers(SDL_Joystick *joystick, U
  * \since This function is available since SDL 2.0.14.
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_JoystickHasLED(SDL_Joystick *joystick);
+
+/**
+ * Query whether a joystick has rumble support.
+ *
+ * \param joystick The joystick to query
+ * \return SDL_TRUE if the joystick has rumble, SDL_FALSE otherwise.
+ *
+ * \since This function is available since SDL 2.0.18.
+ *
+ * \sa SDL_JoystickRumble
+ */
+extern DECLSPEC SDL_bool SDLCALL SDL_JoystickHasRumble(SDL_Joystick *joystick);
+
+/**
+ * Query whether a joystick has rumble support on triggers.
+ *
+ * \param joystick The joystick to query
+ * \return SDL_TRUE if the joystick has trigger rumble, SDL_FALSE otherwise.
+ *
+ * \since This function is available since SDL 2.0.18.
+ *
+ * \sa SDL_JoystickRumbleTriggers
+ */
+extern DECLSPEC SDL_bool SDLCALL SDL_JoystickHasRumbleTriggers(SDL_Joystick *joystick);
 
 /**
  * Update a joystick's LED color.
