@@ -901,8 +901,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_GameControllerHasLED(SDL_GameController *ga
  * Query whether a game controller has rumble support.
  *
  * \param gamecontroller The controller to query
- * \returns SDL_TRUE, or SDL_FALSE if this controller does not have
- *          rumble support
+ * \returns SDL_TRUE, or SDL_FALSE if this controller does not have rumble
+ *          support
  *
  * \since This function is available since SDL 2.0.18.
  *
@@ -914,8 +914,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_GameControllerHasRumble(SDL_GameController 
  * Query whether a game controller has rumble support on triggers.
  *
  * \param gamecontroller The controller to query
- * \returns SDL_TRUE, or SDL_FALSE if this controller does not have
- *          trigger rumble support
+ * \returns SDL_TRUE, or SDL_FALSE if this controller does not have trigger
+ *          rumble support
  *
  * \since This function is available since SDL 2.0.18.
  *
