@@ -1326,28 +1326,30 @@ IOS_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 ri
 #endif
 }
 
-static SDL_bool
-IOS_JoystickHasLED(SDL_Joystick *joystick)
+static Uint32
+IOS_JoystickGetCapabilities(SDL_Joystick *joystick)
 {
+    Uint32 result = 0;
+
 #ifdef ENABLE_MFI_LIGHT
     @autoreleasepool {
         SDL_JoystickDeviceItem *device = joystick->hwdata;
 
         if (device == NULL) {
-            return SDL_FALSE;
+            return 0;
         }
 
         if (@available(macos 11.0, iOS 14.0, tvOS 14.0, *)) {
             GCController *controller = device->controller;
             GCDeviceLight *light = controller.light;
             if (light) {
-                return SDL_TRUE;
+                result |= SDL_JOYCAP_LED;
             }
         }
     }
 #endif /* ENABLE_MFI_LIGHT */
 
-    return SDL_FALSE;
+    return result;
 }
 
 static int
@@ -1751,7 +1753,7 @@ SDL_JoystickDriver SDL_IOS_JoystickDriver =
     IOS_JoystickOpen,
     IOS_JoystickRumble,
     IOS_JoystickRumbleTriggers,
-    IOS_JoystickHasLED,
+    IOS_JoystickGetCapabilities,
     IOS_JoystickSetLED,
     IOS_JoystickSendEffect,
     IOS_JoystickSetSensorsEnabled,

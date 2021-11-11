@@ -598,10 +598,10 @@ HIDAPI_DriverPS4_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick 
     return SDL_Unsupported();
 }
 
-static SDL_bool
-HIDAPI_DriverPS4_HasJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
+static Uint32
+HIDAPI_DriverPS4_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
-    return SDL_TRUE;
+    return SDL_JOYCAP_LED;
 }
 
 static int
@@ -935,7 +935,7 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverPS4 =
     HIDAPI_DriverPS4_OpenJoystick,
     HIDAPI_DriverPS4_RumbleJoystick,
     HIDAPI_DriverPS4_RumbleJoystickTriggers,
-    HIDAPI_DriverPS4_HasJoystickLED,
+    HIDAPI_DriverPS4_GetJoystickCapabilities,
     HIDAPI_DriverPS4_SetJoystickLED,
     HIDAPI_DriverPS4_SendJoystickEffect,
     HIDAPI_DriverPS4_SetJoystickSensorsEnabled,

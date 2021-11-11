@@ -132,10 +132,10 @@ HIDAPI_DriverLuna_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick
     return SDL_Unsupported();
 }
 
-static SDL_bool
-HIDAPI_DriverLuna_HasJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
+static Uint32
+HIDAPI_DriverLuna_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
-    return SDL_FALSE;
+    return 0;
 }
 
 static int
@@ -441,7 +441,7 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverLuna =
     HIDAPI_DriverLuna_OpenJoystick,
     HIDAPI_DriverLuna_RumbleJoystick,
     HIDAPI_DriverLuna_RumbleJoystickTriggers,
-    HIDAPI_DriverLuna_HasJoystickLED,
+    HIDAPI_DriverLuna_GetJoystickCapabilities,
     HIDAPI_DriverLuna_SetJoystickLED,
     HIDAPI_DriverLuna_SendJoystickEffect,
     HIDAPI_DriverLuna_SetJoystickSensorsEnabled,

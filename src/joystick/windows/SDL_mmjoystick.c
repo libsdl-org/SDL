@@ -334,9 +334,9 @@ WINMM_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 
     return SDL_Unsupported();
 }
 
-static SDL_bool WINMM_JoystickHasLED(SDL_Joystick *joystick)
+static Uint32 WINMM_JoystickGetCapabilities(SDL_Joystick *joystick)
 {
-    return SDL_FALSE;
+    return 0;
 }
 
 static int
@@ -500,7 +500,7 @@ SDL_JoystickDriver SDL_WINMM_JoystickDriver =
     WINMM_JoystickOpen,
     WINMM_JoystickRumble,
     WINMM_JoystickRumbleTriggers,
-    WINMM_JoystickHasLED,
+    WINMM_JoystickGetCapabilities,
     WINMM_JoystickSetLED,
     WINMM_JoystickSendEffect,
     WINMM_JoystickSetSensorsEnabled,

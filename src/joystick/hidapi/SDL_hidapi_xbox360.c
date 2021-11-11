@@ -203,11 +203,11 @@ HIDAPI_DriverXbox360_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joyst
     return SDL_Unsupported();
 }
 
-static SDL_bool
-HIDAPI_DriverXbox360_HasJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
+static Uint32
+HIDAPI_DriverXbox360_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
-    /* Doesn't have an RGB LED, so don't return true here */
-    return SDL_FALSE;
+    /* Doesn't have an RGB LED, so don't return SDL_JOYCAP_LED here */
+    return 0;
 }
 
 static int
@@ -346,7 +346,7 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXbox360 =
     HIDAPI_DriverXbox360_OpenJoystick,
     HIDAPI_DriverXbox360_RumbleJoystick,
     HIDAPI_DriverXbox360_RumbleJoystickTriggers,
-    HIDAPI_DriverXbox360_HasJoystickLED,
+    HIDAPI_DriverXbox360_GetJoystickCapabilities,
     HIDAPI_DriverXbox360_SetJoystickLED,
     HIDAPI_DriverXbox360_SendJoystickEffect,
     HIDAPI_DriverXbox360_SetJoystickSensorsEnabled,

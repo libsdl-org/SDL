@@ -658,10 +658,14 @@ WINDOWS_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint1
     return SDL_Unsupported();
 }
 
-static SDL_bool
-WINDOWS_JoystickHasLED(SDL_Joystick *joystick)
+static Uint32
+WINDOWS_JoystickGetCapabilities(SDL_Joystick *joystick)
 {
-    return SDL_FALSE;
+    if (joystick->hwdata->bXInputDevice) {
+        return SDL_XINPUT_JoystickGetCapabilities(joystick);
+    } else {
+        return SDL_DINPUT_JoystickGetCapabilities(joystick);
+    }
 }
 
 static int
@@ -758,7 +762,7 @@ SDL_JoystickDriver SDL_WINDOWS_JoystickDriver =
     WINDOWS_JoystickOpen,
     WINDOWS_JoystickRumble,
     WINDOWS_JoystickRumbleTriggers,
-    WINDOWS_JoystickHasLED,
+    WINDOWS_JoystickGetCapabilities,
     WINDOWS_JoystickSetLED,
     WINDOWS_JoystickSendEffect,
     WINDOWS_JoystickSetSensorsEnabled,

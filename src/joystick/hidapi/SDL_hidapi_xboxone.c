@@ -422,12 +422,17 @@ HIDAPI_DriverXboxOne_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joyst
     return HIDAPI_DriverXboxOne_UpdateRumble(device);
 }
 
-static SDL_bool
-HIDAPI_DriverXboxOne_HasJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
+static Uint32
+HIDAPI_DriverXboxOne_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     SDL_DriverXboxOne_Context *ctx = (SDL_DriverXboxOne_Context *)device->context;
+    Uint32 result = 0;
 
-    return ctx->has_color_led;
+    if (ctx->has_color_led) {
+        result |= SDL_JOYCAP_LED;
+    }
+
+    return result;
 }
 
 static int
@@ -1126,7 +1131,7 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXboxOne =
     HIDAPI_DriverXboxOne_OpenJoystick,
     HIDAPI_DriverXboxOne_RumbleJoystick,
     HIDAPI_DriverXboxOne_RumbleJoystickTriggers,
-    HIDAPI_DriverXboxOne_HasJoystickLED,
+    HIDAPI_DriverXboxOne_GetJoystickCapabilities,
     HIDAPI_DriverXboxOne_SetJoystickLED,
     HIDAPI_DriverXboxOne_SendJoystickEffect,
     HIDAPI_DriverXboxOne_SetJoystickSensorsEnabled,
