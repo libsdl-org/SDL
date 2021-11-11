@@ -813,6 +813,7 @@ enable_render
 enable_events
 enable_joystick
 enable_haptic
+enable_hidapi
 enable_sensor
 enable_power
 enable_filesystem
@@ -903,7 +904,7 @@ enable_pthread_sem
 enable_directx
 enable_xinput
 enable_wasapi
-enable_hidapi
+enable_hidapi_joystick
 enable_hidapi_libusb
 enable_clock_gettime
 enable_rpath
@@ -1587,6 +1588,7 @@ Optional Features:
   --enable-joystick       Enable the joystick subsystem [default=yes]
   --enable-haptic         Enable the haptic (force feedback) subsystem
                           [default=yes]
+  --enable-hidapi         Enable the HIDAPI subsystem [default=yes]
   --enable-sensor         Enable the sensor subsystem [default=yes]
   --enable-power          Enable the power subsystem [default=yes]
   --enable-filesystem     Enable the filesystem subsystem [default=yes]
@@ -1698,7 +1700,8 @@ Optional Features:
   --enable-directx        use DirectX for Windows audio/video [default=yes]
   --enable-xinput         use Xinput for Windows [default=yes]
   --enable-wasapi         use the Windows WASAPI audio driver [default=yes]
-  --enable-hidapi         use HIDAPI for low level joystick drivers
+  --enable-hidapi-joystick
+                          use HIDAPI for low level joystick drivers
                           [default=yes]
   --enable-hidapi-libusb  use libusb for low level joystick drivers
                           [default=maybe]
@@ -17430,6 +17433,20 @@ $as_echo "#define SDL_HAPTIC_DISABLED 1" >>confdefs.h
 else
     SUMMARY_modules="${SUMMARY_modules} haptic"
 fi
+# Check whether --enable-hidapi was given.
+if test "${enable_hidapi+set}" = set; then :
+  enableval=$enable_hidapi;
+else
+  enable_hidapi=yes
+fi
+
+if test x$enable_hidapi != xyes; then
+
+$as_echo "#define SDL_HIDAPI_DISABLED 1" >>confdefs.h
+
+else
+    SUMMARY_modules="${SUMMARY_modules} hidapi"
+fi
 # Check whether --enable-sensor was given.
 if test "${enable_sensor+set}" = set; then :
   enableval=$enable_sensor;
@@ -24618,11 +24635,11 @@ $as_echo "#define SDL_JOYSTICK_USBHID 1" >>confdefs.h
 
 CheckHIDAPI()
 {
-    # Check whether --enable-hidapi was given.
-if test "${enable_hidapi+set}" = set; then :
-  enableval=$enable_hidapi;
+    # Check whether --enable-hidapi-joystick was given.
+if test "${enable_hidapi_joystick+set}" = set; then :
+  enableval=$enable_hidapi_joystick;
 else
-  enable_hidapi=yes
+  enable_hidapi_joystick=yes
 fi
 
     # Check whether --enable-hidapi-libusb was given.
@@ -24633,13 +24650,7 @@ else
 fi
 
 
-    if test x$enable_hidapi != xyes; then
-
-$as_echo "#define SDL_HIDAPI_DISABLED 1" >>confdefs.h
-
-    fi
-
-    if test x$enable_joystick = xyes -a x$enable_hidapi = xyes; then
+    if test x$enable_hidapi = xyes; then
         case "$host" in
             # libusb does not support iOS
             *-ios-* )
@@ -24742,11 +24753,6 @@ fi
         fi
 
         if test x$hidapi_support = xyes; then
-
-$as_echo "#define SDL_JOYSTICK_HIDAPI 1" >>confdefs.h
-
-            SOURCES="$SOURCES $srcdir/src/joystick/hidapi/*.c"
-
             if test x$have_libusb_h = xyes; then
                 EXTRA_CFLAGS="$EXTRA_CFLAGS $LIBUSB_CFLAGS"
                 if test x$require_hidapi_libusb = xyes; then
@@ -24786,6 +24792,13 @@ $as_echo "#define SDL_HIDAPI_DISABLED 1" >>confdefs.h
 $as_echo_n "checking for hidapi support... " >&6; }
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: $hidapi_support" >&5
 $as_echo "$hidapi_support" >&6; }
+    fi
+
+    if test x$enable_joystick = xyes -a x$hidapi_support = xyes -a x$enable_hidapi_joystick = xyes; then
+
+$as_echo "#define SDL_JOYSTICK_HIDAPI 1" >>confdefs.h
+
+        SOURCES="$SOURCES $srcdir/src/joystick/hidapi/*.c"
     fi
 }
 

@@ -482,6 +482,14 @@ if test x$enable_haptic != xyes; then
 else
     SUMMARY_modules="${SUMMARY_modules} haptic"
 fi
+AC_ARG_ENABLE(hidapi,
+[AS_HELP_STRING([--enable-hidapi], [Enable the HIDAPI subsystem [default=yes]])],
+              , enable_hidapi=yes)
+if test x$enable_hidapi != xyes; then
+    AC_DEFINE(SDL_HIDAPI_DISABLED, 1, [ ])
+else
+    SUMMARY_modules="${SUMMARY_modules} hidapi"
+fi
 AC_ARG_ENABLE(sensor,
 [AS_HELP_STRING([--enable-sensor], [Enable the sensor subsystem [default=yes]])],
               , enable_sensor=yes)
@@ -3411,18 +3419,14 @@ CheckUSBHID()
 dnl Check for HIDAPI joystick drivers
 CheckHIDAPI()
 {
-    AC_ARG_ENABLE(hidapi,
-[AS_HELP_STRING([--enable-hidapi], [use HIDAPI for low level joystick drivers [default=yes]])],
-                  , enable_hidapi=yes)
+    AC_ARG_ENABLE(hidapi-joystick,
+[AS_HELP_STRING([--enable-hidapi-joystick], [use HIDAPI for low level joystick drivers [default=yes]])],
+                  , enable_hidapi_joystick=yes)
     AC_ARG_ENABLE(hidapi-libusb,
 [AS_HELP_STRING([--enable-hidapi-libusb], [use libusb for low level joystick drivers [default=maybe]])],
                   , enable_hidapi_libusb=maybe)
 
-    if test x$enable_hidapi != xyes; then
-        AC_DEFINE(SDL_HIDAPI_DISABLED, 1, [ ])
-    fi
-
-    if test x$enable_joystick = xyes -a x$enable_hidapi = xyes; then
+    if test x$enable_hidapi = xyes; then
         case "$host" in
             # libusb does not support iOS
             *-ios-* )
@@ -3448,9 +3452,6 @@ CheckHIDAPI()
         fi
 
         if test x$hidapi_support = xyes; then
-            AC_DEFINE(SDL_JOYSTICK_HIDAPI, 1, [ ])
-            SOURCES="$SOURCES $srcdir/src/joystick/hidapi/*.c"
-
             if test x$have_libusb_h = xyes; then
                 EXTRA_CFLAGS="$EXTRA_CFLAGS $LIBUSB_CFLAGS"
                 if test x$require_hidapi_libusb = xyes; then
@@ -3481,6 +3482,11 @@ CheckHIDAPI()
 
         AC_MSG_CHECKING(for hidapi support)
         AC_MSG_RESULT($hidapi_support)
+    fi
+
+    if test x$enable_joystick = xyes -a x$hidapi_support = xyes -a x$enable_hidapi_joystick = xyes; then
+        AC_DEFINE(SDL_JOYSTICK_HIDAPI, 1, [ ])
+        SOURCES="$SOURCES $srcdir/src/joystick/hidapi/*.c"
     fi
 }
 
