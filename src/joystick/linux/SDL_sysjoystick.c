@@ -1193,7 +1193,13 @@ LINUX_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 
 static Uint32
 LINUX_JoystickGetCapabilities(SDL_Joystick *joystick)
 {
-    return 0;
+    Uint32 result = 0;
+
+    if (joystick->hwdata->ff_rumble || joystick->hwdata->ff_sine) {
+        result |= SDL_JOYCAP_RUMBLE;
+    }
+
+    return result;
 }
 
 static int

@@ -942,7 +942,18 @@ DARWIN_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16
 static Uint32
 DARWIN_JoystickGetCapabilities(SDL_Joystick *joystick)
 {
-    return 0;
+    recDevice *device = joystick->hwdata;
+    Uint32 result = 0;
+
+    if (!device) {
+        return 0;
+    }
+
+    if (device->ffservice) {
+        result |= SDL_JOYCAP_RUMBLE;
+    }
+
+    return result;
 }
 
 static int

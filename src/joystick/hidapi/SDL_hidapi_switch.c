@@ -1109,8 +1109,15 @@ HIDAPI_DriverSwitch_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joysti
 static Uint32
 HIDAPI_DriverSwitch_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
-    /* Doesn't have an RGB LED, so don't return SDL_JOYCAP_LED here */
-    return 0;
+    SDL_DriverSwitch_Context *ctx = (SDL_DriverSwitch_Context *)device->context;
+    Uint32 result = 0;
+
+    if (!ctx->m_bInputOnly) {
+        /* Doesn't have an RGB LED, so don't return SDL_JOYCAP_LED here */
+        result |= SDL_JOYCAP_RUMBLE;
+    }
+
+    return result;
 }
 
 static int

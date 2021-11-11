@@ -123,6 +123,8 @@ struct _SDL_Joystick
 
 /* Joystick capability flags for GetCapabilities() */
 #define SDL_JOYCAP_LED              0x01
+#define SDL_JOYCAP_RUMBLE           0x02
+#define SDL_JOYCAP_RUMBLE_TRIGGERS  0x04
 
 /* Macro to combine a USB vendor ID and product ID into a single Uint32 value */
 #define MAKE_VIDPID(VID, PID)   (((Uint32)(VID))<<16|(PID))

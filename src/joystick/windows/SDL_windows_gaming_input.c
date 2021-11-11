@@ -668,7 +668,14 @@ WGI_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 ri
 static Uint32
 WGI_JoystickGetCapabilities(SDL_Joystick *joystick)
 {
-    return 0;
+    struct joystick_hwdata *hwdata = joystick->hwdata;
+
+    if (hwdata->gamepad) {
+        /* FIXME: Can WGI even tell us if trigger rumble is supported? */
+        return SDL_JOYCAP_RUMBLE | SDL_JOYCAP_RUMBLE_TRIGGERS;
+    } else {
+        return 0;
+    }
 }
 
 static int

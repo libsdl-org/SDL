@@ -927,7 +927,13 @@ SDL_DINPUT_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, 
 Uint32
 SDL_DINPUT_JoystickGetCapabilities(SDL_Joystick * joystick)
 {
-    return 0;
+    Uint32 result = 0;
+
+    if (joystick->hwdata->Capabilities.dwFlags & DIDC_FORCEFEEDBACK) {
+        result |= SDL_JOYCAP_RUMBLE;
+    }
+
+    return result;
 }
 
 static Uint8

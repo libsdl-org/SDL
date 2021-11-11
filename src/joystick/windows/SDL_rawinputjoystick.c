@@ -40,6 +40,7 @@
 #include "SDL_timer.h"
 #include "../usb_ids.h"
 #include "../SDL_sysjoystick.h"
+#include "../controller_type.h"
 #include "../../core/windows/SDL_windows.h"
 #include "../../core/windows/SDL_hid.h"
 #include "../hidapi/SDL_hidapijoystick_c.h"
@@ -102,6 +103,7 @@ typedef struct _SDL_RAWINPUT_Device
     Uint16 version;
     SDL_JoystickGUID guid;
     SDL_bool is_xinput;
+    SDL_bool is_xboxone;
     PHIDP_PREPARSED_DATA preparsed_data;
 
     HANDLE hDevice;
@@ -114,6 +116,7 @@ typedef struct _SDL_RAWINPUT_Device
 struct joystick_hwdata
 {
     SDL_bool is_xinput;
+    SDL_bool is_xboxone;
     PHIDP_PREPARSED_DATA preparsed_data;
     ULONG max_data_length;
     HIDP_DATA *data;
@@ -705,6 +708,7 @@ RAWINPUT_AddDevice(HANDLE hDevice)
     device->product_id = (Uint16)rdi.hid.dwProductId;
     device->version = (Uint16)rdi.hid.dwVersionNumber;
     device->is_xinput = SDL_TRUE;
+    device->is_xboxone = GuessControllerType(device->vendor_id, device->product_id) == k_eControllerType_XBoxOneController;
 
     {
         const Uint16 vendor = device->vendor_id;
@@ -1054,6 +1058,7 @@ RAWINPUT_JoystickOpen(SDL_Joystick *joystick, int device_index)
     }
 
     ctx->is_xinput = device->is_xinput;
+    ctx->is_xboxone = device->is_xboxone;
     ctx->preparsed_data = device->preparsed_data;
     ctx->max_data_length = SDL_HidP_MaxDataListLength(HidP_Input, ctx->preparsed_data);
     ctx->data = (HIDP_DATA *)SDL_malloc(ctx->max_data_length * sizeof(*ctx->data));
@@ -1280,6 +1285,25 @@ RAWINPUT_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint
 static Uint32
 RAWINPUT_JoystickGetCapabilities(SDL_Joystick *joystick)
 {
+    RAWINPUT_DeviceContext *ctx = joystick->hwdata;
+    Uint32 result = 0;
+
+#ifdef SDL_JOYSTICK_RAWINPUT_XINPUT
+    if (ctx->is_xinput) {
+        result |= SDL_JOYCAP_RUMBLE;
+    }
+#endif
+
+#ifdef SDL_JOYSTICK_RAWINPUT_WGI
+    if (ctx->is_xinput) {
+        result |= SDL_JOYCAP_RUMBLE;
+
+        if (ctx->is_xboxone) {
+            result |= SDL_JOYCAP_RUMBLE_TRIGGERS;
+        }
+    }
+#endif
+
     return 0;
 }
 
