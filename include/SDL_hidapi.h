@@ -155,8 +155,8 @@ extern DECLSPEC int SDLCALL SDL_hid_exit(void);
  * that anything has changed, but you can call SDL_hid_enumerate() to get an
  * updated device list.
  *
- * Calling this function for the first time may cause a thread or other
- * system resource to be allocated to track device change notifications.
+ * Calling this function for the first time may cause a thread or other system
+ * resource to be allocated to track device change notifications.
  *
  * \returns a change counter that is incremented with each potential device
  *          change, or 0 if device change detection isn't available.
