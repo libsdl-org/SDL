@@ -232,7 +232,7 @@
 #    endif
 #  endif
 #else  /* non-Apple platforms can use the normal CMake check for this. */
-#  cmakedefine HAVE_IMMINTRIN_H 1
+#cmakedefine HAVE_IMMINTRIN_H 1
 #endif
 
 #cmakedefine HAVE_LIBUDEV_H 1
