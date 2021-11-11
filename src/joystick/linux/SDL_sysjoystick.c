@@ -1190,10 +1190,10 @@ LINUX_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 
     return SDL_Unsupported();
 }
 
-static SDL_bool
-LINUX_JoystickHasLED(SDL_Joystick *joystick)
+static Uint32
+LINUX_JoystickGetCapabilities(SDL_Joystick *joystick)
 {
-    return SDL_FALSE;
+    return 0;
 }
 
 static int
@@ -1790,7 +1790,7 @@ SDL_JoystickDriver SDL_LINUX_JoystickDriver =
     LINUX_JoystickOpen,
     LINUX_JoystickRumble,
     LINUX_JoystickRumbleTriggers,
-    LINUX_JoystickHasLED,
+    LINUX_JoystickGetCapabilities,
     LINUX_JoystickSetLED,
     LINUX_JoystickSendEffect,
     LINUX_JoystickSetSensorsEnabled,

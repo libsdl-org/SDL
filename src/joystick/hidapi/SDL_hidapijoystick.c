@@ -894,15 +894,15 @@ HIDAPI_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16
     return result;
 }
 
-static SDL_bool
-HIDAPI_JoystickHasLED(SDL_Joystick *joystick)
+static Uint32
+HIDAPI_JoystickGetCapabilities(SDL_Joystick *joystick)
 {
-    SDL_bool result = SDL_FALSE;
+    Uint32 result = 0;
 
     if (joystick->hwdata) {
         SDL_HIDAPI_Device *device = joystick->hwdata->device;
 
-        result = device->driver->HasJoystickLED(device, joystick);
+        result = device->driver->GetJoystickCapabilities(device, joystick);
     }
 
     return result;
@@ -1042,7 +1042,7 @@ SDL_JoystickDriver SDL_HIDAPI_JoystickDriver =
     HIDAPI_JoystickOpen,
     HIDAPI_JoystickRumble,
     HIDAPI_JoystickRumbleTriggers,
-    HIDAPI_JoystickHasLED,
+    HIDAPI_JoystickGetCapabilities,
     HIDAPI_JoystickSetLED,
     HIDAPI_JoystickSendEffect,
     HIDAPI_JoystickSetSensorsEnabled,

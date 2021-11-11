@@ -1277,10 +1277,10 @@ RAWINPUT_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint
 #endif
 }
 
-static SDL_bool
-RAWINPUT_JoystickHasLED(SDL_Joystick *joystick)
+static Uint32
+RAWINPUT_JoystickGetCapabilities(SDL_Joystick *joystick)
 {
-    return SDL_FALSE;
+    return 0;
 }
 
 static int
@@ -1928,7 +1928,7 @@ SDL_JoystickDriver SDL_RAWINPUT_JoystickDriver =
     RAWINPUT_JoystickOpen,
     RAWINPUT_JoystickRumble,
     RAWINPUT_JoystickRumbleTriggers,
-    RAWINPUT_JoystickHasLED,
+    RAWINPUT_JoystickGetCapabilities,
     RAWINPUT_JoystickSetLED,
     RAWINPUT_JoystickSendEffect,
     RAWINPUT_JoystickSetSensorsEnabled,

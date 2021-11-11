@@ -665,10 +665,10 @@ WGI_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 ri
     }
 }
 
-static SDL_bool
-WGI_JoystickHasLED(SDL_Joystick *joystick)
+static Uint32
+WGI_JoystickGetCapabilities(SDL_Joystick *joystick)
 {
-    return SDL_FALSE;
+    return 0;
 }
 
 static int
@@ -876,7 +876,7 @@ SDL_JoystickDriver SDL_WGI_JoystickDriver =
     WGI_JoystickOpen,
     WGI_JoystickRumble,
     WGI_JoystickRumbleTriggers,
-    WGI_JoystickHasLED,
+    WGI_JoystickGetCapabilities,
     WGI_JoystickSetLED,
     WGI_JoystickSendEffect,
     WGI_JoystickSetSensorsEnabled,

@@ -944,7 +944,7 @@ SDL_JoystickHasLED(SDL_Joystick *joystick)
 
     SDL_LockJoysticks();
 
-    result = joystick->driver->HasLED(joystick);
+    result = (joystick->driver->GetCapabilities(joystick) & SDL_JOYCAP_LED) != 0;
 
     SDL_UnlockJoysticks();
 

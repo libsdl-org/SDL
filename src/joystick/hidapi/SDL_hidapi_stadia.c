@@ -126,10 +126,10 @@ HIDAPI_DriverStadia_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joysti
     return SDL_Unsupported();
 }
 
-static SDL_bool
-HIDAPI_DriverStadia_HasJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
+static Uint32
+HIDAPI_DriverStadia_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
-    return SDL_FALSE;
+    return 0;
 }
 
 static int
@@ -315,7 +315,7 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverStadia =
     HIDAPI_DriverStadia_OpenJoystick,
     HIDAPI_DriverStadia_RumbleJoystick,
     HIDAPI_DriverStadia_RumbleJoystickTriggers,
-    HIDAPI_DriverStadia_HasJoystickLED,
+    HIDAPI_DriverStadia_GetJoystickCapabilities,
     HIDAPI_DriverStadia_SetJoystickLED,
     HIDAPI_DriverStadia_SendJoystickEffect,
     HIDAPI_DriverStadia_SetJoystickSensorsEnabled,
