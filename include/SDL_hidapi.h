@@ -62,6 +62,14 @@
 #ifndef SDL_hidapi_h_
 #define SDL_hidapi_h_
 
+#include "SDL_stdinc.h"
+
+#include "begin_code.h"
+/* Set up for C function definitions, even when using C++ */
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  *  \brief  A handle representing an open HID device
  */
@@ -112,6 +120,7 @@ typedef struct SDL_hid_device_info
     /** Pointer to the next device */
     struct SDL_hid_device_info *next;
 } SDL_hid_device_info;
+
 
 /**
  * Initialize the HIDAPI library.
@@ -422,6 +431,12 @@ extern DECLSPEC int SDLCALL SDL_hid_get_serial_number_string(SDL_hid_device *dev
  * \since This function is available since SDL 2.0.18.
  */
 extern DECLSPEC int SDLCALL SDL_hid_get_indexed_string(SDL_hid_device *dev, int string_index, wchar_t *string, size_t maxlen);
+
+/* Ends C function definitions when using C++ */
+#ifdef __cplusplus
+}
+#endif
+#include "close_code.h"
 
 #endif /* SDL_hidapi_h_ */
 
