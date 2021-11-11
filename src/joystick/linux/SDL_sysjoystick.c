@@ -631,7 +631,7 @@ LINUX_JoystickInit(void)
 
 #if SDL_USE_LIBUDEV
     if (enumeration_method == ENUMERATION_UNSET) {
-        if (!SDL_GetHintBoolean("SDL_JOYSTICK_DISABLE_UDEV", SDL_FALSE)) {
+        if (SDL_GetHintBoolean("SDL_JOYSTICK_DISABLE_UDEV", SDL_FALSE)) {
             SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
                          "udev disabled by SDL_JOYSTICK_DISABLE_UDEV");
             enumeration_method = ENUMERATION_FALLBACK;
