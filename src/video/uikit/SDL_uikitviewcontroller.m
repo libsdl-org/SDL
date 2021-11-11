@@ -250,14 +250,7 @@ SDL_HideHomeIndicatorHintChanged(void *userdata, const char *name, const char *o
 
 - (BOOL)prefersPointerLocked
 {
-    SDL_VideoDevice *_this = SDL_GetVideoDevice();
-    
-    if (SDL_HasGCMouse() &&
-        (SDL_GCMouseRelativeMode() || _this->grabbed_window == window)) {
-        return YES;
-    } else {
-        return NO;
-    }
+    return SDL_GCMouseRelativeMode() ? YES : NO;
 }
 
 #endif /* !TARGET_OS_TV */

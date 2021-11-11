@@ -24,9 +24,10 @@
 
 #include "../../events/SDL_events_c.h"
 
-#include "SDL_uikitvideo.h"
 #include "SDL_uikitevents.h"
 #include "SDL_uikitopengles.h"
+#include "SDL_uikitvideo.h"
+#include "SDL_uikitwindow.h"
 
 #import <Foundation/Foundation.h>
 
@@ -184,20 +185,20 @@ static id mouse_connect_observer = nil;
 static id mouse_disconnect_observer = nil;
 static bool mouse_relative_mode = SDL_FALSE;
 
-static void UpdateMouseGrab()
+static void UpdatePointerLock()
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
     SDL_Window *window;
 
     for (window = _this->windows; window != NULL; window = window->next) {
-        SDL_UpdateWindowGrab(window);
+        UIKit_UpdatePointerLock(_this, window);
     }
 }
 
 static int SetGCMouseRelativeMode(SDL_bool enabled)
 {
     mouse_relative_mode = enabled;
-    UpdateMouseGrab();
+    UpdatePointerLock();
     return 0;
 }
 
@@ -245,7 +246,7 @@ static void OnGCMouseConnected(GCMouse *mouse) API_AVAILABLE(macos(11.0), ios(14
 
     ++mice_connected;
 
-    UpdateMouseGrab();
+    UpdatePointerLock();
 }
 
 static void OnGCMouseDisconnected(GCMouse *mouse) API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0))
@@ -262,7 +263,7 @@ static void OnGCMouseDisconnected(GCMouse *mouse) API_AVAILABLE(macos(11.0), ios
         button.pressedChangedHandler = nil;
     }
 
-    UpdateMouseGrab();
+    UpdatePointerLock();
 }
 
 void SDL_InitGCMouse(void)

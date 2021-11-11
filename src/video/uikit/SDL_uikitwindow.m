@@ -323,6 +323,12 @@ UIKit_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display
 void
 UIKit_SetWindowMouseGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
 {
+    /* There really isn't a concept of window grab or cursor confinement on iOS */
+}
+
+void
+UIKit_UpdatePointerLock(_THIS, SDL_Window * window)
+{
 #if !TARGET_OS_TV
 #if defined(__IPHONE_14_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_14_0
     @autoreleasepool {

@@ -160,7 +160,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 
 #if !TARGET_OS_TV && defined(__IPHONE_13_4)
 - (UIPointerRegion *)pointerInteraction:(UIPointerInteraction *)interaction regionForRequest:(UIPointerRegionRequest *)request defaultRegion:(UIPointerRegion *)defaultRegion API_AVAILABLE(ios(13.4)){
-    if (request != nil && (!SDL_HasGCMouse() || !SDL_GCMouseRelativeMode())) {
+    if (request != nil && !SDL_GCMouseRelativeMode()) {
         CGPoint origin = self.bounds.origin;
         CGPoint point = request.location;
 
