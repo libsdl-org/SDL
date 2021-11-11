@@ -1573,6 +1573,7 @@ LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
         SDL_OutOfMemory();
         return SDL_FALSE;
     }
+    SDL_memcpy(&joystick->guid, &item->guid, sizeof(item->guid));
 
     joystick->hwdata = (struct joystick_hwdata *)
         SDL_calloc(1, sizeof(*joystick->hwdata));
@@ -1611,14 +1612,27 @@ LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
         out->b.target = joystick->hwdata->key_map[BTN_B];
     }
 
-    if (joystick->hwdata->has_key[BTN_X]) {
-        out->x.kind = EMappingKind_Button;
-        out->x.target = joystick->hwdata->key_map[BTN_X];
-    }
+    /* Xbox controllers use BTN_X and BTN_Y, and PS4 controllers use BTN_WEST and BTN_NORTH */
+    if (SDL_JoystickGetVendor(joystick) == USB_VENDOR_SONY) {
+        if (joystick->hwdata->has_key[BTN_WEST]) {
+            out->x.kind = EMappingKind_Button;
+            out->x.target = joystick->hwdata->key_map[BTN_WEST];
+        }
 
-    if (joystick->hwdata->has_key[BTN_Y]) {
-        out->y.kind = EMappingKind_Button;
-        out->y.target = joystick->hwdata->key_map[BTN_Y];
+        if (joystick->hwdata->has_key[BTN_NORTH]) {
+            out->y.kind = EMappingKind_Button;
+            out->y.target = joystick->hwdata->key_map[BTN_NORTH];
+        }
+    } else {
+        if (joystick->hwdata->has_key[BTN_X]) {
+            out->x.kind = EMappingKind_Button;
+            out->x.target = joystick->hwdata->key_map[BTN_X];
+        }
+
+        if (joystick->hwdata->has_key[BTN_Y]) {
+            out->y.kind = EMappingKind_Button;
+            out->y.target = joystick->hwdata->key_map[BTN_Y];
+        }
     }
 
     if (joystick->hwdata->has_key[BTN_SELECT]) {
