@@ -103,7 +103,7 @@ SDL_UDEV_hotplug_update_available(void)
 {
     if (_this->udev_mon != NULL) {
         const int fd = _this->syms.udev_monitor_get_fd(_this->udev_mon);
-        if (SDL_IOReady(fd, SDL_FALSE, 0)) {
+        if (SDL_IOReady(fd, SDL_IOR_READ, 0)) {
             return SDL_TRUE;
         }
     }
