@@ -846,3 +846,4 @@
 #define SDL_GetWindowMouseRect SDL_GetWindowMouseRect_REAL
 #define SDL_RenderWindowToLogical SDL_RenderWindowToLogical_REAL
 #define SDL_RenderLogicalToWindow SDL_RenderLogicalToWindow_REAL
+#define SDL_hid_device_change_count SDL_hid_device_change_count_REAL

@@ -122,9 +122,13 @@ typedef struct SDL_hid_device_info
  * be called at the beginning of execution however, if there is a chance of
  * HIDAPI handles being opened by different threads simultaneously.
  *
+ * Each call to this function should have a matching call to SDL_hid_exit()
+ *
  * \returns 0 on success and -1 on error.
  *
  * \since This function is available since SDL 2.0.18.
+ *
+ * \sa SDL_hid_exit
  */
 extern DECLSPEC int SDLCALL SDL_hid_init(void);
 
@@ -137,8 +141,31 @@ extern DECLSPEC int SDLCALL SDL_hid_init(void);
  * \returns 0 on success and -1 on error.
  *
  * \since This function is available since SDL 2.0.18.
+ *
+ * \sa SDL_hid_init
  */
 extern DECLSPEC int SDLCALL SDL_hid_exit(void);
+
+/**
+ * Check to see if devices may have been added or removed.
+ *
+ * Enumerating the HID devices is an expensive operation, so you can call this
+ * to see if there have been any system device changes since the last call to
+ * this function. A change in the counter returned doesn't necessarily mean
+ * that anything has changed, but you can call SDL_hid_enumerate() to get an
+ * updated device list.
+ *
+ * Calling this function for the first time may cause a thread or other
+ * system resource to be allocated to track device change notifications.
+ *
+ * \returns a change counter that is incremented with each potential device
+ *          change, or 0 if device change detection isn't available.
+ *
+ * \since This function is available since SDL 2.0.18.
+ *
+ * \sa SDL_hid_enumerate
+ */
+extern DECLSPEC Uint32 SDLCALL SDL_hid_device_change_count(void);
 
 /**
  * Enumerate the HID Devices.
@@ -157,6 +184,8 @@ extern DECLSPEC int SDLCALL SDL_hid_exit(void);
  *          SDL_hid_free_enumeration().
  *
  * \since This function is available since SDL 2.0.18.
+ *
+ * \sa SDL_hid_device_change_count
  */
 extern DECLSPEC SDL_hid_device_info * SDLCALL SDL_hid_enumerate(unsigned short vendor_id, unsigned short product_id);
 

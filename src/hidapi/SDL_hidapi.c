@@ -31,9 +31,482 @@
 
 #include "SDL_loadso.h"
 #include "SDL_hidapi.h"
+#include "SDL_thread.h"
+#include "SDL_timer.h"
 #include "SDL_hidapi_c.h"
 
 #if !SDL_HIDAPI_DISABLED
+
+#if defined(__WIN32__)
+#include "../core/windows/SDL_windows.h"
+#endif
+
+#if defined(__MACOSX__)
+#include <CoreFoundation/CoreFoundation.h>
+#include <mach/mach.h>
+#include <IOKit/IOKitLib.h>
+#include <IOKit/hid/IOHIDDevice.h>
+#include <IOKit/usb/USBSpec.h>
+#endif
+
+#include "../core/linux/SDL_udev.h"
+#ifdef SDL_USE_LIBUDEV
+#include <poll.h>
+#include <unistd.h>
+#endif
+
+#ifdef HAVE_INOTIFY
+#include <unistd.h>  /* just in case we didn't use that SDL_USE_LIBUDEV block... */
+#include <errno.h>              /* errno, strerror */
+#include <fcntl.h>
+#include <limits.h>             /* For the definition of NAME_MAX */
+#include <sys/inotify.h>
+#endif
+
+#if defined(SDL_USE_LIBUDEV)
+typedef enum
+{
+    ENUMERATION_UNSET,
+    ENUMERATION_LIBUDEV,
+    ENUMERATION_FALLBACK
+} LinuxEnumerationMethod;
+
+static LinuxEnumerationMethod linux_enumeration_method = ENUMERATION_UNSET;
+#endif
+
+#if defined(HAVE_INOTIFY)
+static int inotify_fd = -1;
+#endif
+
+#if defined(SDL_USE_LIBUDEV)
+static const SDL_UDEV_Symbols * usyms = NULL;
+#endif
+
+static struct
+{
+    SDL_bool m_bInitialized;
+    Uint32 m_unDeviceChangeCounter;
+    SDL_bool m_bCanGetNotifications;
+    Uint32 m_unLastDetect;
+
+#if defined(__WIN32__)
+    SDL_threadID m_nThreadID;
+    WNDCLASSEXA m_wndClass;
+    HWND m_hwndMsg;
+    HDEVNOTIFY m_hNotify;
+    double m_flLastWin32MessageCheck;
+#endif
+
+#if defined(__MACOSX__)
+    IONotificationPortRef m_notificationPort;
+    mach_port_t m_notificationMach;
+#endif
+
+#if defined(SDL_USE_LIBUDEV)
+    struct udev *m_pUdev;
+    struct udev_monitor *m_pUdevMonitor;
+    int m_nUdevFd;
+#endif
+} SDL_HIDAPI_discovery;
+
+
+#ifdef __WIN32__
+struct _DEV_BROADCAST_HDR
+{
+    DWORD       dbch_size;
+    DWORD       dbch_devicetype;
+    DWORD       dbch_reserved;
+};
+
+typedef struct _DEV_BROADCAST_DEVICEINTERFACE_A
+{
+    DWORD       dbcc_size;
+    DWORD       dbcc_devicetype;
+    DWORD       dbcc_reserved;
+    GUID        dbcc_classguid;
+    char        dbcc_name[ 1 ];
+} DEV_BROADCAST_DEVICEINTERFACE_A, *PDEV_BROADCAST_DEVICEINTERFACE_A;
+
+typedef struct  _DEV_BROADCAST_HDR      DEV_BROADCAST_HDR;
+#define DBT_DEVICEARRIVAL               0x8000  /* system detected a new device */
+#define DBT_DEVICEREMOVECOMPLETE        0x8004  /* device was removed from the system */
+#define DBT_DEVTYP_DEVICEINTERFACE      0x00000005  /* device interface class */
+#define DBT_DEVNODES_CHANGED            0x0007
+#define DBT_CONFIGCHANGED               0x0018
+#define DBT_DEVICETYPESPECIFIC          0x8005  /* type specific event */
+#define DBT_DEVINSTSTARTED              0x8008  /* device installed and started */
+
+#include <initguid.h>
+DEFINE_GUID(GUID_DEVINTERFACE_USB_DEVICE, 0xA5DCBF10L, 0x6530, 0x11D2, 0x90, 0x1F, 0x00, 0xC0, 0x4F, 0xB9, 0x51, 0xED);
+
+static LRESULT CALLBACK ControllerWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    switch (message) {
+    case WM_DEVICECHANGE:
+        switch (wParam) {
+        case DBT_DEVICEARRIVAL:
+        case DBT_DEVICEREMOVECOMPLETE:
+            if (((DEV_BROADCAST_HDR*)lParam)->dbch_devicetype == DBT_DEVTYP_DEVICEINTERFACE) {
+                ++SDL_HIDAPI_discovery.m_unDeviceChangeCounter;
+            }
+            break;
+        }
+        return TRUE;
+    }
+
+    return DefWindowProc(hwnd, message, wParam, lParam);
+}
+#endif /* __WIN32__ */
+
+
+#if defined(__MACOSX__)
+static void CallbackIOServiceFunc(void *context, io_iterator_t portIterator)
+{
+    /* Must drain the iterator, or we won't receive new notifications */
+    io_object_t entry;
+    while ((entry = IOIteratorNext(portIterator)) != 0) {
+        IOObjectRelease(entry);
+        ++SDL_HIDAPI_discovery.m_unDeviceChangeCounter;
+    }
+}
+#endif /* __MACOSX__ */
+
+#ifdef HAVE_INOTIFY
+#ifdef HAVE_INOTIFY_INIT1
+static int SDL_inotify_init1(void) {
+    return inotify_init1(IN_NONBLOCK | IN_CLOEXEC);
+}
+#else
+static int SDL_inotify_init1(void) {
+    int fd = inotify_init();
+    if (fd  < 0) return -1;
+    fcntl(fd, F_SETFL, O_NONBLOCK);
+    fcntl(fd, F_SETFD, FD_CLOEXEC);
+    return fd;
+}
+#endif
+
+static int
+StrHasPrefix(const char *string, const char *prefix)
+{
+    return (SDL_strncmp(string, prefix, SDL_strlen(prefix)) == 0);
+}
+
+static int
+StrIsInteger(const char *string)
+{
+    const char *p;
+
+    if (*string == '\0') {
+        return 0;
+    }
+
+    for (p = string; *p != '\0'; p++) {
+        if (*p < '0' || *p > '9') {
+            return 0;
+        }
+    }
+
+    return 1;
+}
+#endif /* HAVE_INOTIFY */
+
+static void
+HIDAPI_InitializeDiscovery()
+{
+    SDL_HIDAPI_discovery.m_bInitialized = SDL_TRUE;
+    SDL_HIDAPI_discovery.m_unDeviceChangeCounter = 1;
+    SDL_HIDAPI_discovery.m_bCanGetNotifications = SDL_FALSE;
+    SDL_HIDAPI_discovery.m_unLastDetect = 0;
+
+#if defined(__WIN32__)
+    SDL_HIDAPI_discovery.m_nThreadID = SDL_ThreadID();
+
+    SDL_zero(SDL_HIDAPI_discovery.m_wndClass);
+    SDL_HIDAPI_discovery.m_wndClass.hInstance = GetModuleHandle(NULL);
+    SDL_HIDAPI_discovery.m_wndClass.lpszClassName = "SDL_HIDAPI_DEVICE_DETECTION";
+    SDL_HIDAPI_discovery.m_wndClass.lpfnWndProc = ControllerWndProc;      /* This function is called by windows */
+    SDL_HIDAPI_discovery.m_wndClass.cbSize = sizeof(WNDCLASSEX);
+
+    RegisterClassExA(&SDL_HIDAPI_discovery.m_wndClass);
+    SDL_HIDAPI_discovery.m_hwndMsg = CreateWindowExA(0, "SDL_HIDAPI_DEVICE_DETECTION", NULL, 0, 0, 0, 0, 0, HWND_MESSAGE, NULL, NULL, NULL);
+
+    {
+        DEV_BROADCAST_DEVICEINTERFACE_A devBroadcast;
+
+        SDL_zero(devBroadcast);
+        devBroadcast.dbcc_size = sizeof( devBroadcast );
+        devBroadcast.dbcc_devicetype = DBT_DEVTYP_DEVICEINTERFACE;
+        devBroadcast.dbcc_classguid = GUID_DEVINTERFACE_USB_DEVICE;
+
+        /* DEVICE_NOTIFY_ALL_INTERFACE_CLASSES is important, makes GUID_DEVINTERFACE_USB_DEVICE ignored,
+         * but that seems to be necessary to get a notice after each individual usb input device actually
+         * installs, rather than just as the composite device is seen.
+         */
+        SDL_HIDAPI_discovery.m_hNotify = RegisterDeviceNotification( SDL_HIDAPI_discovery.m_hwndMsg, &devBroadcast, DEVICE_NOTIFY_WINDOW_HANDLE | DEVICE_NOTIFY_ALL_INTERFACE_CLASSES );
+        SDL_HIDAPI_discovery.m_bCanGetNotifications = ( SDL_HIDAPI_discovery.m_hNotify != 0 );
+    }
+#endif /* __WIN32__ */
+
+#if defined(__MACOSX__)
+    SDL_HIDAPI_discovery.m_notificationPort = IONotificationPortCreate(kIOMasterPortDefault);
+    if (SDL_HIDAPI_discovery.m_notificationPort) {
+        {
+            io_iterator_t portIterator = 0;
+            io_object_t entry;
+            IOReturn result = IOServiceAddMatchingNotification(
+                SDL_HIDAPI_discovery.m_notificationPort,
+                kIOFirstMatchNotification,
+                IOServiceMatching(kIOHIDDeviceKey),
+                CallbackIOServiceFunc, NULL, &portIterator);
+
+            if (result == 0) {
+                /* Must drain the existing iterator, or we won't receive new notifications */
+                while ((entry = IOIteratorNext(portIterator)) != 0) {
+                    IOObjectRelease(entry);
+                }
+            } else {
+                IONotificationPortDestroy(SDL_HIDAPI_discovery.m_notificationPort);
+                SDL_HIDAPI_discovery.m_notificationPort = nil;
+            }
+        }
+        {
+            io_iterator_t portIterator = 0;
+            io_object_t entry;
+            IOReturn result = IOServiceAddMatchingNotification(
+                SDL_HIDAPI_discovery.m_notificationPort,
+                kIOTerminatedNotification,
+                IOServiceMatching(kIOHIDDeviceKey),
+                CallbackIOServiceFunc, NULL, &portIterator);
+
+            if (result == 0) {
+                /* Must drain the existing iterator, or we won't receive new notifications */
+                while ((entry = IOIteratorNext(portIterator)) != 0) {
+                    IOObjectRelease(entry);
+                }
+            } else {
+                IONotificationPortDestroy(SDL_HIDAPI_discovery.m_notificationPort);
+                SDL_HIDAPI_discovery.m_notificationPort = nil;
+            }
+        }
+    }
+
+    SDL_HIDAPI_discovery.m_notificationMach = MACH_PORT_NULL;
+    if (SDL_HIDAPI_discovery.m_notificationPort) {
+        SDL_HIDAPI_discovery.m_notificationMach = IONotificationPortGetMachPort(SDL_HIDAPI_discovery.m_notificationPort);
+    }
+
+    SDL_HIDAPI_discovery.m_bCanGetNotifications = (SDL_HIDAPI_discovery.m_notificationMach != MACH_PORT_NULL);
+
+#endif // __MACOSX__
+
+#if defined(SDL_USE_LIBUDEV)
+    if (linux_enumeration_method == ENUMERATION_LIBUDEV) {
+        SDL_HIDAPI_discovery.m_pUdev = NULL;
+        SDL_HIDAPI_discovery.m_pUdevMonitor = NULL;
+        SDL_HIDAPI_discovery.m_nUdevFd = -1;
+
+        usyms = SDL_UDEV_GetUdevSyms();
+        if (usyms) {
+            SDL_HIDAPI_discovery.m_pUdev = usyms->udev_new();
+        }
+        if (SDL_HIDAPI_discovery.m_pUdev) {
+            SDL_HIDAPI_discovery.m_pUdevMonitor = usyms->udev_monitor_new_from_netlink(SDL_HIDAPI_discovery.m_pUdev, "udev");
+            if (SDL_HIDAPI_discovery.m_pUdevMonitor) {
+                usyms->udev_monitor_enable_receiving(SDL_HIDAPI_discovery.m_pUdevMonitor);
+                SDL_HIDAPI_discovery.m_nUdevFd = usyms->udev_monitor_get_fd(SDL_HIDAPI_discovery.m_pUdevMonitor);
+                SDL_HIDAPI_discovery.m_bCanGetNotifications = SDL_TRUE;
+            }
+        }
+    }
+    else
+#endif /* SDL_USE_LIBUDEV */
+    {
+#if defined(HAVE_INOTIFY)
+        inotify_fd = SDL_inotify_init1();
+
+        if (inotify_fd < 0) {
+            SDL_LogWarn(SDL_LOG_CATEGORY_INPUT,
+                        "Unable to initialize inotify, falling back to polling: %s",
+                        strerror(errno));
+            return;
+        }
+
+        /* We need to watch for attribute changes in addition to
+         * creation, because when a device is first created, it has
+         * permissions that we can't read. When udev chmods it to
+         * something that we maybe *can* read, we'll get an
+         * IN_ATTRIB event to tell us. */
+        if (inotify_add_watch(inotify_fd, "/dev",
+                              IN_CREATE | IN_DELETE | IN_MOVE | IN_ATTRIB) < 0) {
+            close(inotify_fd);
+            inotify_fd = -1;
+            SDL_LogWarn(SDL_LOG_CATEGORY_INPUT,
+                        "Unable to add inotify watch, falling back to polling: %s",
+                        strerror (errno));
+            return;
+        }
+
+        SDL_HIDAPI_discovery.m_bCanGetNotifications = SDL_TRUE;
+#endif /* HAVE_INOTIFY */
+    }
+}
+
+static void
+HIDAPI_UpdateDiscovery()
+{
+    if (!SDL_HIDAPI_discovery.m_bInitialized) {
+        HIDAPI_InitializeDiscovery();
+    }
+
+    if (!SDL_HIDAPI_discovery.m_bCanGetNotifications) {
+        const Uint32 SDL_HIDAPI_DETECT_INTERVAL_MS = 3000;  /* Update every 3 seconds */
+        Uint32 now = SDL_GetTicks();
+        if (!SDL_HIDAPI_discovery.m_unLastDetect || SDL_TICKS_PASSED(now, SDL_HIDAPI_discovery.m_unLastDetect + SDL_HIDAPI_DETECT_INTERVAL_MS)) {
+            ++SDL_HIDAPI_discovery.m_unDeviceChangeCounter;
+            SDL_HIDAPI_discovery.m_unLastDetect = now;
+        }
+        return;
+    }
+
+#if defined(__WIN32__)
+#if 0 /* just let the usual SDL_PumpEvents loop dispatch these, fixing bug 4286. --ryan. */
+    /* We'll only get messages on the same thread that created the window */
+    if (SDL_ThreadID() == SDL_HIDAPI_discovery.m_nThreadID) {
+        MSG msg;
+        while (PeekMessage(&msg, SDL_HIDAPI_discovery.m_hwndMsg, 0, 0, PM_NOREMOVE)) {
+            if (GetMessageA(&msg, SDL_HIDAPI_discovery.m_hwndMsg, 0, 0) != 0) {
+                TranslateMessage(&msg);
+                DispatchMessage(&msg);
+            }
+        }
+    }
+#endif
+#endif /* __WIN32__ */
+
+#if defined(__MACOSX__)
+    if (SDL_HIDAPI_discovery.m_notificationPort) {
+        struct { mach_msg_header_t hdr; char payload[ 4096 ]; } msg;
+        while (mach_msg(&msg.hdr, MACH_RCV_MSG | MACH_RCV_TIMEOUT, 0, sizeof(msg), SDL_HIDAPI_discovery.m_notificationMach, 0, MACH_PORT_NULL) == KERN_SUCCESS) {
+            IODispatchCalloutFromMessage(NULL, &msg.hdr, SDL_HIDAPI_discovery.m_notificationPort);
+        }
+    }
+#endif
+
+#if defined(SDL_USE_LIBUDEV)
+    if (linux_enumeration_method == ENUMERATION_LIBUDEV) {
+        if (SDL_HIDAPI_discovery.m_nUdevFd >= 0) {
+            /* Drain all notification events.
+             * We don't expect a lot of device notifications so just
+             * do a new discovery on any kind or number of notifications.
+             * This could be made more restrictive if necessary.
+             */
+            for (;;) {
+                struct pollfd PollUdev;
+                struct udev_device *pUdevDevice;
+
+                PollUdev.fd = SDL_HIDAPI_discovery.m_nUdevFd;
+                PollUdev.events = POLLIN;
+                if (poll(&PollUdev, 1, 0) != 1) {
+                    break;
+                }
+
+                pUdevDevice = usyms->udev_monitor_receive_device(SDL_HIDAPI_discovery.m_pUdevMonitor);
+                if (pUdevDevice) {
+                    const char *action = NULL;
+                    action = usyms->udev_device_get_action(pUdevDevice);
+                    if (!action || SDL_strcmp(action, "add") == 0 || SDL_strcmp(action, "remove") == 0) {
+                        ++SDL_HIDAPI_discovery.m_unDeviceChangeCounter;
+                    }
+                    usyms->udev_device_unref(pUdevDevice);
+                }
+            }
+        }
+    }
+    else
+#endif /* SDL_USE_LIBUDEV */
+    {
+#if defined(HAVE_INOTIFY)
+        if (inotify_fd >= 0) {
+            union
+            {
+                struct inotify_event event;
+                char storage[4096];
+                char enough_for_inotify[sizeof (struct inotify_event) + NAME_MAX + 1];
+            } buf;
+            ssize_t bytes;
+            size_t remain = 0;
+            size_t len;
+
+            bytes = read(inotify_fd, &buf, sizeof (buf));
+
+            if (bytes > 0) {
+                remain = (size_t) bytes;
+            }
+
+            while (remain > 0) {
+                if (buf.event.len > 0) {
+                    if (StrHasPrefix(buf.event.name, "hidraw") &&
+                        StrIsInteger(buf.event.name + SDL_strlen ("hidraw"))) {
+                        ++SDL_HIDAPI_discovery.m_unDeviceChangeCounter;
+                        /* We found an hidraw change. We still continue to
+                         * drain the inotify fd to avoid leaving old
+                         * notifications in the queue. */
+                    }
+                }
+
+                len = sizeof (struct inotify_event) + buf.event.len;
+                remain -= len;
+
+                if (remain != 0) {
+                    SDL_memmove(&buf.storage[0], &buf.storage[len], remain);
+                }
+            }
+        }
+#endif /* HAVE_INOTIFY */
+    }
+}
+
+static void
+HIDAPI_ShutdownDiscovery()
+{
+    if (!SDL_HIDAPI_discovery.m_bInitialized) {
+        return;
+    }
+
+#if defined(__WIN32__)
+    if (SDL_HIDAPI_discovery.m_hNotify)
+        UnregisterDeviceNotification(SDL_HIDAPI_discovery.m_hNotify);
+
+    if (SDL_HIDAPI_discovery.m_hwndMsg) {
+        DestroyWindow(SDL_HIDAPI_discovery.m_hwndMsg);
+    }
+
+    UnregisterClassA(SDL_HIDAPI_discovery.m_wndClass.lpszClassName, SDL_HIDAPI_discovery.m_wndClass.hInstance);
+#endif
+
+#if defined(__MACOSX__)
+    if (SDL_HIDAPI_discovery.m_notificationPort) {
+        IONotificationPortDestroy(SDL_HIDAPI_discovery.m_notificationPort);
+    }
+#endif
+
+#if defined(SDL_USE_LIBUDEV)
+    if (linux_enumeration_method == ENUMERATION_LIBUDEV &&
+        usyms) {
+        if (SDL_HIDAPI_discovery.m_pUdevMonitor) {
+            usyms->udev_monitor_unref(SDL_HIDAPI_discovery.m_pUdevMonitor);
+        }
+        if (SDL_HIDAPI_discovery.m_pUdev) {
+            usyms->udev_unref(SDL_HIDAPI_discovery.m_pUdev);
+        }
+        SDL_UDEV_ReleaseUdevSyms();
+        usyms = NULL;
+    }
+#endif
+
+    SDL_HIDAPI_discovery.m_bInitialized = SDL_FALSE;
+}
 
 /* Platform HIDAPI Implementation */
 
@@ -506,7 +979,7 @@ CopyHIDDeviceInfo(struct SDL_hid_device_info *pSrc, struct SDL_hid_device_info *
 
 #endif /* !SDL_HIDAPI_DISABLED */
 
-static SDL_bool SDL_hidapi_wasinit = SDL_FALSE;
+static int SDL_hidapi_refcount = 0;
 
 static void SDL_SetHIDAPIError( const wchar_t *error )
 {
@@ -523,7 +996,8 @@ int SDL_hid_init(void)
 {
     int attempts = 0, success = 0;
 
-    if (SDL_hidapi_wasinit == SDL_TRUE) {
+    if (SDL_hidapi_refcount > 0) {
+        ++SDL_hidapi_refcount;
         return 0;
     }
 
@@ -589,7 +1063,7 @@ int SDL_hid_init(void)
         return -1;
     }
 
-    SDL_hidapi_wasinit = SDL_TRUE;
+    ++SDL_hidapi_refcount;
     return 0;
 }
 
@@ -597,10 +1071,18 @@ int SDL_hid_exit(void)
 {
     int result = 0;
 
-    if (SDL_hidapi_wasinit == SDL_FALSE) {
+    if (SDL_hidapi_refcount == 0) {
         return 0;
     }
-    SDL_hidapi_wasinit = SDL_FALSE;
+    if (SDL_hidapi_refcount > 0) {
+        --SDL_hidapi_refcount;
+        return 0;
+    }
+    SDL_hidapi_refcount = 0;
+
+#if !SDL_HIDAPI_DISABLED
+    HIDAPI_ShutdownDiscovery();
+#endif
 
 #if HAVE_PLATFORM_BACKEND
     if (udev_ctx) {
@@ -617,6 +1099,28 @@ int SDL_hid_exit(void)
 #endif /* SDL_LIBUSB_DYNAMIC */
 
     return result;
+}
+
+Uint32 SDL_hid_device_change_count(void)
+{
+    Uint32 counter = 0;
+
+#if !SDL_HIDAPI_DISABLED
+    if (SDL_hidapi_refcount == 0 && SDL_hid_init() != 0) {
+        return 0;
+    }
+
+    HIDAPI_UpdateDiscovery();
+
+    if (SDL_HIDAPI_discovery.m_unDeviceChangeCounter == 0) {
+        /* Counter wrapped! */
+        ++SDL_HIDAPI_discovery.m_unDeviceChangeCounter;
+    }
+    counter = SDL_HIDAPI_discovery.m_unDeviceChangeCounter;
+
+#endif /* !SDL_HIDAPI_DISABLED */
+
+    return counter;
 }
 
 struct SDL_hid_device_info *SDL_hid_enumerate(unsigned short vendor_id, unsigned short product_id)
@@ -636,7 +1140,7 @@ struct SDL_hid_device_info *SDL_hid_enumerate(unsigned short vendor_id, unsigned
 #endif
     struct SDL_hid_device_info *devs = NULL, *last = NULL, *new_dev;
 
-    if (SDL_hid_init() != 0) {
+    if (SDL_hidapi_refcount == 0 && SDL_hid_init() != 0) {
         return NULL;
     }
 
@@ -777,7 +1281,7 @@ SDL_hid_device *SDL_hid_open(unsigned short vendor_id, unsigned short product_id
 #if HAVE_PLATFORM_BACKEND || HAVE_DRIVER_BACKEND || defined(SDL_LIBUSB_DYNAMIC)
     void *pDevice = NULL;
 
-    if (SDL_hid_init() != 0) {
+    if (SDL_hidapi_refcount == 0 && SDL_hid_init() != 0) {
         return NULL;
     }
 
@@ -811,7 +1315,7 @@ SDL_hid_device *SDL_hid_open_path(const char *path, int bExclusive /* = false */
 #if HAVE_PLATFORM_BACKEND || HAVE_DRIVER_BACKEND || defined(SDL_LIBUSB_DYNAMIC)
     void *pDevice = NULL;
 
-    if (SDL_hid_init() != 0) {
+    if (SDL_hidapi_refcount == 0 && SDL_hid_init() != 0) {
         return NULL;
     }
 
