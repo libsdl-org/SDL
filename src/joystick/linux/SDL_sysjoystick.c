@@ -85,7 +85,7 @@ typedef enum
 
 static EnumerationMethod enumeration_method = ENUMERATION_UNSET;
 
-static SDL_bool IsJoystickDeviceNode(const char *node);
+static SDL_bool IsJoystickJSNode(const char *node);
 static int MaybeAddDevice(const char *path);
 static int MaybeRemoveDevice(const char *path);
 
@@ -186,8 +186,7 @@ IsJoystick(int fd, char **name_return, SDL_JoystickGUID *guid)
     char product_string[128];
 
     if (ioctl(fd, JSIOCGNAME(sizeof(product_string)), product_string) >= 0) {
-        inpid.vendor = 0;
-        inpid.product = 0;
+        SDL_zero(inpid);
     } else {
         /* When udev is enabled we only get joystick devices here, so there's no need to test them */
         if (enumeration_method != ENUMERATION_LIBUDEV && !GuessIsJoystick(fd)) {
@@ -261,8 +260,14 @@ static void joystick_udev_callback(SDL_UDEV_deviceevent udev_type, int udev_clas
             if (!(udev_class & SDL_UDEV_DEVICE_JOYSTICK)) {
                 return;
             }
-            if (SDL_classic_joysticks && !IsJoystickDeviceNode(devpath)) {
-                return;
+            if (SDL_classic_joysticks) {
+                if (!IsJoystickJSNode(devpath)) {
+                    return;
+                }
+            } else {
+                if (IsJoystickJSNode(devpath)) {
+                    return;
+                }
             }
             MaybeAddDevice(devpath);
             break;
@@ -518,16 +523,32 @@ StrIsInteger(const char *string)
 }
 
 static SDL_bool
-IsJoystickDeviceNode(const char *node)
+IsJoystickJSNode(const char *node)
 {
     const char *last_slash = SDL_strrchr(node, '/');
     if (last_slash) {
         node = last_slash + 1;
     }
+    return (StrHasPrefix(node, "js") && StrIsInteger(node + 2));
+}
+
+static SDL_bool
+IsJoystickEventNode(const char *node)
+{
+    const char *last_slash = SDL_strrchr(node, '/');
+    if (last_slash) {
+        node = last_slash + 1;
+    }
+    return (StrHasPrefix(node, "event") && StrIsInteger(node + 5));
+}
+
+static SDL_bool
+IsJoystickDeviceNode(const char *node)
+{
     if (SDL_classic_joysticks) {
-        return (StrHasPrefix(node, "js") && StrIsInteger(node + 2));
+        return IsJoystickJSNode(node);
     } else {
-        return (StrHasPrefix(node, "event") && StrIsInteger(node + 5));
+        return IsJoystickEventNode(node);
     }
 }
 
@@ -958,6 +979,8 @@ ConfigJoystick(SDL_Joystick *joystick, int fd)
                 joystick->hwdata->key_pam = NULL;
                 key_pam_size = 0;
             }
+        } else {
+            key_pam_size = 0;
         }
         for (i = 0; i < key_pam_size; ++i) {
             Uint16 code = joystick->hwdata->key_pam[i];
@@ -977,6 +1000,8 @@ ConfigJoystick(SDL_Joystick *joystick, int fd)
                 joystick->hwdata->abs_pam = NULL;
                 abs_pam_size = 0;
             }
+        } else {
+            abs_pam_size = 0;
         }
         for (i = 0; i < abs_pam_size; ++i) {
             Uint8 code = joystick->hwdata->abs_pam[i];
