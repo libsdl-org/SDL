@@ -1003,13 +1003,6 @@ HIDAPI_JoystickQuit(void)
 
     SDL_HIDAPI_QuitRumble();
 
-#if defined(HAVE_INOTIFY)
-    if (inotify_fd >= 0) {
-        close(inotify_fd);
-        inotify_fd = -1;
-    }
-#endif
-
     while (SDL_HIDAPI_devices) {
         HIDAPI_DelDevice(SDL_HIDAPI_devices);
     }

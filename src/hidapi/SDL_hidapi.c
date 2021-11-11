@@ -492,18 +492,28 @@ HIDAPI_ShutdownDiscovery()
 #endif
 
 #if defined(SDL_USE_LIBUDEV)
-    if (linux_enumeration_method == ENUMERATION_LIBUDEV &&
-        usyms) {
-        if (SDL_HIDAPI_discovery.m_pUdevMonitor) {
-            usyms->udev_monitor_unref(SDL_HIDAPI_discovery.m_pUdevMonitor);
+    if (linux_enumeration_method == ENUMERATION_LIBUDEV) {
+        if (usyms) {
+            if (SDL_HIDAPI_discovery.m_pUdevMonitor) {
+                usyms->udev_monitor_unref(SDL_HIDAPI_discovery.m_pUdevMonitor);
+            }
+            if (SDL_HIDAPI_discovery.m_pUdev) {
+                usyms->udev_unref(SDL_HIDAPI_discovery.m_pUdev);
+            }
+            SDL_UDEV_ReleaseUdevSyms();
+            usyms = NULL;
         }
-        if (SDL_HIDAPI_discovery.m_pUdev) {
-            usyms->udev_unref(SDL_HIDAPI_discovery.m_pUdev);
-        }
-        SDL_UDEV_ReleaseUdevSyms();
-        usyms = NULL;
     }
+    else
+#endif /* SDL_USE_LIBUDEV */
+    {
+#if defined(HAVE_INOTIFY)
+        if (inotify_fd >= 0) {
+            close(inotify_fd);
+            inotify_fd = -1;
+        }
 #endif
+    }
 
     SDL_HIDAPI_discovery.m_bInitialized = SDL_FALSE;
 }
