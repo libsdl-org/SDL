@@ -3,9 +3,9 @@ Simple DirectMedia Layer 2 for OS/2 & eComStation
 SDL port for OS/2, authored by Andrey Vasilkin <digi@os2.snc.ru>, 2016
 
 
-OpenGL, joystick and audio capture not supported by this port.
+OpenGL and audio capture not supported by this port.
 
-Additional environment variables (optional) for OS/2 version:
+Additional optional environment variables:
 
 SDL_AUDIO_SHARE
   Values: 0 or 1, default is 0
