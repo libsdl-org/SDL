@@ -56,6 +56,12 @@
 #ifndef SYN_DROPPED
 #define SYN_DROPPED 3
 #endif
+#ifndef BTN_NORTH
+#define BTN_NORTH       0x133
+#endif
+#ifndef BTN_WEST
+#define BTN_WEST        0x134
+#endif
 #ifndef BTN_DPAD_UP
 #define BTN_DPAD_UP     0x220
 #endif
