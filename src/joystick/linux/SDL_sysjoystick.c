@@ -178,7 +178,7 @@ GuessIsJoystick(int fd)
 }
 
 static int
-IsJoystick(int fd, char **name_return, SDL_JoystickGUID *guid)
+IsJoystick(const char *path, int fd, char **name_return, SDL_JoystickGUID *guid)
 {
     struct input_id inpid;
     Uint16 *guid16 = (Uint16 *)guid->data;
@@ -187,6 +187,9 @@ IsJoystick(int fd, char **name_return, SDL_JoystickGUID *guid)
 
     if (ioctl(fd, JSIOCGNAME(sizeof(product_string)), product_string) >= 0) {
         SDL_zero(inpid);
+#if SDL_USE_LIBUDEV
+        SDL_UDEV_GetProductInfo(path, &inpid.vendor, &inpid.product, &inpid.version);
+#endif
     } else {
         /* When udev is enabled we only get joystick devices here, so there's no need to test them */
         if (enumeration_method != ENUMERATION_LIBUDEV && !GuessIsJoystick(fd)) {
@@ -326,7 +329,7 @@ MaybeAddDevice(const char *path)
     SDL_Log("Checking %s\n", path);
 #endif
 
-    isstick = IsJoystick(fd, &name, &guid);
+    isstick = IsJoystick(path, fd, &name, &guid);
     close(fd);
     if (!isstick) {
         return -1;
