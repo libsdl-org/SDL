@@ -954,6 +954,17 @@ QtExtendedSurface_OnHintChanged(void *userdata, const char *name,
         const char *oldValue, const char *newValue)
 {
     struct qt_extended_surface *qt_extended_surface = userdata;
+    int i;
+
+    static struct {
+        const char *name;
+        int32_t value;
+    } orientations[] = {
+        { "portrait", QT_EXTENDED_SURFACE_ORIENTATION_PRIMARYORIENTATION },
+        { "landscape", QT_EXTENDED_SURFACE_ORIENTATION_LANDSCAPEORIENTATION },
+        { "inverted-portrait", QT_EXTENDED_SURFACE_ORIENTATION_INVERTEDPORTRAITORIENTATION },
+        { "inverted-landscape", QT_EXTENDED_SURFACE_ORIENTATION_INVERTEDLANDSCAPEORIENTATION }
+    };
 
     if (name == NULL) {
         return;
@@ -963,14 +974,21 @@ QtExtendedSurface_OnHintChanged(void *userdata, const char *name,
         int32_t orientation = QT_EXTENDED_SURFACE_ORIENTATION_PRIMARYORIENTATION;
 
         if (newValue != NULL) {
-            if (SDL_strcmp(newValue, "portrait") == 0) {
-                orientation = QT_EXTENDED_SURFACE_ORIENTATION_PORTRAITORIENTATION;
-            } else if (SDL_strcmp(newValue, "landscape") == 0) {
-                orientation = QT_EXTENDED_SURFACE_ORIENTATION_LANDSCAPEORIENTATION;
-            } else if (SDL_strcmp(newValue, "inverted-portrait") == 0) {
-                orientation = QT_EXTENDED_SURFACE_ORIENTATION_INVERTEDPORTRAITORIENTATION;
-            } else if (SDL_strcmp(newValue, "inverted-landscape") == 0) {
-                orientation = QT_EXTENDED_SURFACE_ORIENTATION_INVERTEDLANDSCAPEORIENTATION;
+            const char *value_attempt = newValue;
+            while (value_attempt != NULL && *value_attempt != 0) {
+                const char *value_attempt_end = SDL_strchr(value_attempt, ',');
+                size_t value_attempt_len = (value_attempt_end != NULL) ? (value_attempt_end - value_attempt)
+                                                                       : SDL_strlen(value_attempt);
+
+                for (i = 0; i < SDL_arraysize(orientations); i += 1) {
+                    if ((value_attempt_len == SDL_strlen(orientations[i].name)) &&
+                        (SDL_strncasecmp(orientations[i].name, value_attempt, value_attempt_len) == 0)) {
+                        orientation |= orientations[i].value;
+                        break;
+                    }
+                }
+
+                value_attempt = (value_attempt_end != NULL) ? (value_attempt_end + 1) : NULL;
             }
         }
 
