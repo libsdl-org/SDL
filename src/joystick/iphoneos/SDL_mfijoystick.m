@@ -1331,7 +1331,6 @@ IOS_JoystickGetCapabilities(SDL_Joystick *joystick)
 {
     Uint32 result = 0;
 
-#ifdef ENABLE_MFI_LIGHT
     @autoreleasepool {
         SDL_JoystickDeviceItem *device = joystick->hwdata;
 
@@ -1341,13 +1340,25 @@ IOS_JoystickGetCapabilities(SDL_Joystick *joystick)
 
         if (@available(macos 11.0, iOS 14.0, tvOS 14.0, *)) {
             GCController *controller = device->controller;
-            GCDeviceLight *light = controller.light;
-            if (light) {
+#ifdef ENABLE_MFI_LIGHT
+            if (controller.light) {
                 result |= SDL_JOYCAP_LED;
             }
+#endif /* ENABLE_MFI_LIGHT */
+
+#ifdef ENABLE_MFI_RUMBLE
+            if (controller.haptics) {
+                for (GCHapticsLocality locality in controller.haptics.supportedLocalities) {
+                    if ([locality isEqualToString:GCHapticsLocalityHandles]) {
+                        result |= SDL_JOYCAP_RUMBLE;
+                    } else if ([locality isEqualToString:GCHapticsLocalityTriggers]) {
+                        result |= SDL_JOYCAP_RUMBLE_TRIGGERS;
+                    }
+                }
+            }
+#endif /* ENABLE_MFI_RUMBLE */
         }
     }
-#endif /* ENABLE_MFI_LIGHT */
 
     return result;
 }

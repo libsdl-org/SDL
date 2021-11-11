@@ -135,7 +135,13 @@ HIDAPI_DriverLuna_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick
 static Uint32
 HIDAPI_DriverLuna_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
-    return 0;
+    Uint32 result = 0;
+
+    if (device->product_id == BLUETOOTH_PRODUCT_LUNA_CONTROLLER) {
+        result |= SDL_JOYCAP_RUMBLE;
+    }
+
+    return result;
 }
 
 static int

@@ -506,7 +506,7 @@ SDL_XINPUT_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, 
 Uint32
 SDL_XINPUT_JoystickGetCapabilities(SDL_Joystick * joystick)
 {
-    return 0;
+    return SDL_JOYCAP_RUMBLE;
 }
 
 void

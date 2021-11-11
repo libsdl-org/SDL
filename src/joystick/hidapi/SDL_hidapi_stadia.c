@@ -129,7 +129,7 @@ HIDAPI_DriverStadia_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joysti
 static Uint32
 HIDAPI_DriverStadia_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
-    return 0;
+    return SDL_JOYCAP_RUMBLE;
 }
 
 static int

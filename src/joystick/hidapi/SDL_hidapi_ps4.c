@@ -601,7 +601,14 @@ HIDAPI_DriverPS4_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick 
 static Uint32
 HIDAPI_DriverPS4_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
-    return SDL_JOYCAP_LED;
+    SDL_DriverPS4_Context *ctx = (SDL_DriverPS4_Context *)device->context;
+    Uint32 result = 0;
+
+    if (ctx->enhanced_mode && ctx->effects_supported) {
+        result |= SDL_JOYCAP_LED | SDL_JOYCAP_RUMBLE;
+    }
+
+    return result;
 }
 
 static int

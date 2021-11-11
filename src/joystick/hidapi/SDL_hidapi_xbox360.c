@@ -207,7 +207,7 @@ static Uint32
 HIDAPI_DriverXbox360_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     /* Doesn't have an RGB LED, so don't return SDL_JOYCAP_LED here */
-    return 0;
+    return SDL_JOYCAP_RUMBLE;
 }
 
 static int

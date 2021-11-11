@@ -467,7 +467,23 @@ HIDAPI_DriverGameCube_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joys
 static Uint32
 HIDAPI_DriverGameCube_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
-    return 0;
+    SDL_DriverGameCube_Context *ctx = (SDL_DriverGameCube_Context *)device->context;
+    Uint32 result = 0;
+
+    if (!ctx->pc_mode) {
+        Uint8 i;
+
+        for (i = 0; i < MAX_CONTROLLERS; i += 1) {
+            if (joystick->instance_id == ctx->joysticks[i]) {
+                if (!ctx->wireless[i] && ctx->rumbleAllowed[i]) {
+                    result |= SDL_JOYCAP_RUMBLE;
+                    break;
+                }
+            }
+        }
+    }
+
+    return result;
 }
 
 static int
