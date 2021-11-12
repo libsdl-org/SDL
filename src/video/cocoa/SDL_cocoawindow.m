@@ -423,7 +423,7 @@ Cocoa_UpdateClipCursor(SDL_Window * window)
             rect.origin.y = [nswindow contentLayoutRect].size.height - mouse_rect.y - mouse_rect.h;
             rect.size.width = mouse_rect.w;
             rect.size.height = mouse_rect.h;
-            data->nswindow.mouseConfinementRect = rect;
+            nswindow.mouseConfinementRect = rect;
         }
     } else {
         /* Move the cursor to the nearest point in the window */
