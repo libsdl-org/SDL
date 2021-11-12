@@ -1,9 +1,7 @@
 # Open Watcom makefile to build SDL2 tests for OS/2
 # wmake -f Makefile.os2
 
-BINPATH = .
-
-INCPATH = -I$(%WATCOM)/h/os2 -I$(%WATCOM)/h -I../include
+INCPATH = -I"$(%WATCOM)/h/os2" -I"$(%WATCOM)/h" -I"../include"
 
 CFLAGS = $(INCPATH) -bt=os2 -d0 -q -bm -5s -fp5 -fpi87 -sg -oteanbmier -ei
 CFLAGS+= -wx -wcd=303
@@ -28,7 +26,8 @@ TARGETS = testatomic.exe testdisplayinfo.exe testbounds.exe testdraw2.exe &
           checkkeysthreads.exe testmouse.exe &
           controllermap.exe testhaptic.exe testqsort.exe testresample.exe &
           testaudioinfo.exe testaudiocapture.exe loopwave.exe loopwavequeue.exe &
-          testyuv.exe testgl2.exe testvulkan.exe testnative.exe testautomation.exe
+          testsurround.exe testyuv.exe testgl2.exe testvulkan.exe testnative.exe &
+          testautomation.exe
 
 # SDL2test.lib sources (../src/test)
 CSRCS = SDL_test_assert.c SDL_test_common.c SDL_test_compare.c &
@@ -89,7 +88,6 @@ testime.exe: testime.obj
   wlink SYS os2v2 libpath $(LIBPATH) lib {$(LIBS) $(TTFLIBS)} op q op el file {$<} name $@
 
 clean: .SYMBOLIC
-  @echo * Clean tests in $(BINPATH)
   @if exist *.obj rm *.obj
   @if exist *.err rm *.err
 
