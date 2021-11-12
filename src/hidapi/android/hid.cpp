@@ -306,7 +306,7 @@ private:
 
 static jbyteArray NewByteArray( JNIEnv* env, const uint8_t *pData, size_t nDataLen )
 {
-	jbyteArray array = env->NewByteArray( nDataLen );
+	jbyteArray array = env->NewByteArray( (jsize)nDataLen );
 	jbyte *pBuf = env->GetByteArrayElements( array, NULL );
 	memcpy( pBuf, pData, nDataLen );
 	env->ReleaseByteArrayElements( array, pBuf, 0 );
@@ -578,7 +578,7 @@ public:
 //			 data[0], data[1], data[2], data[3],
 //			 data[4], data[5], data[6], data[7]);
 
-		return nDataLen;
+		return (int)nDataLen;
 	}
 
 	int SendOutputReport( const unsigned char *pData, size_t nDataLen )
@@ -710,7 +710,7 @@ public:
 			m_featureReport.clear();
 			LOGV( "=== Got %u bytes", uBytesToCopy );
 
-			return uBytesToCopy;
+			return (int)uBytesToCopy;
 		}
 	}
 
