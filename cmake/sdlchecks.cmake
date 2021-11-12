@@ -525,14 +525,15 @@ macro(CheckX11)
         endif()
       endif()
 
-      if(SDL_X11_XFIXES AND HAVE_XFIXES_H)
+      # check along with XInput2.h because we use Xfixes with XIBarrierReleasePointer
+      if(SDL_X11_XFIXES AND HAVE_XFIXES_H AND HAVE_XINPUT2_H)
         if(HAVE_X11_SHARED AND XFIXES_LIB)
           set(SDL_VIDEO_DRIVER_X11_DYNAMIC_XFIXES "\"${XFIXES_LIB_SONAME}\"")
         else()
           list(APPEND EXTRA_LIBS ${XFIXES_LIB})
         endif()
         set(SDL_VIDEO_DRIVER_X11_XFIXES 1)
-        set(HAVE_VIDEO_X11_XFIXES TRUE)
+        set(HAVE_X11_XFIXES TRUE)
       endif()
 
       if(SDL_X11_XRANDR AND HAVE_XRANDR_H)

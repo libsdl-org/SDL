@@ -1974,11 +1974,13 @@ XITouchClassInfo *t;
                             , enable_video_x11_xfixes=yes)
             if test x$enable_video_x11_xfixes = xyes; then
                 definitely_enable_video_x11_xfixes=no
+                # check along with XInput2.h because we use Xfixes with XIBarrierReleasePointer
                 AC_CHECK_HEADER(X11/extensions/Xfixes.h,
                                 have_xfixes_h_hdr=yes,
                                 have_xfixes_h_hdr=no,
                                 [#include <X11/Xlib.h>
-                                ])
+                                 #include <X11/Xproto.h>
+                                 #include <X11/extensions/XInput2.h>])
                 if test x$have_xfixes_h_hdr = xyes; then
                     if test x$enable_x11_shared = xyes && test x$xfixes_lib != x ; then
                         echo "-- dynamic libXfixes -> $xfixes_lib"
