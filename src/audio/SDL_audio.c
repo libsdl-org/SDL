@@ -960,7 +960,7 @@ SDL_AudioInit(const char *driver_name)
     int initialized = 0;
     int tried_to_init = 0;
 
-    if (SDL_WasInit(SDL_INIT_AUDIO)) {
+    if (SDL_GetCurrentAudioDriver()) {
         SDL_AudioQuit();        /* shutdown driver if already running. */
     }
 
@@ -1091,7 +1091,7 @@ SDL_GetNumAudioDevices(int iscapture)
 {
     int retval = 0;
 
-    if (!SDL_WasInit(SDL_INIT_AUDIO)) {
+    if (!SDL_GetCurrentAudioDriver()) {
         return -1;
     }
 
@@ -1116,7 +1116,7 @@ SDL_GetAudioDeviceName(int index, int iscapture)
 {
     const char *retval = NULL;
 
-    if (!SDL_WasInit(SDL_INIT_AUDIO)) {
+    if (!SDL_GetCurrentAudioDriver()) {
         SDL_SetError("Audio subsystem is not initialized");
         return NULL;
     }
@@ -1160,7 +1160,7 @@ SDL_GetAudioDeviceSpec(int index, int iscapture, SDL_AudioSpec *spec)
 
     SDL_zerop(spec);
 
-    if (!SDL_WasInit(SDL_INIT_AUDIO)) {
+    if (!SDL_GetCurrentAudioDriver()) {
         return SDL_SetError("Audio subsystem is not initialized");
     }
 
@@ -1308,7 +1308,7 @@ open_audio_device(const char *devname, int iscapture,
     void *handle = NULL;
     int i = 0;
 
-    if (!SDL_WasInit(SDL_INIT_AUDIO)) {
+    if (!SDL_GetCurrentAudioDriver()) {
         SDL_SetError("Audio subsystem is not initialized");
         return 0;
     }
