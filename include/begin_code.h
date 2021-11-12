@@ -176,7 +176,7 @@
 #define _HAS_FALLTHROUGH 0
 #endif /* __has_attribute */
 #if _HAS_FALLTHROUGH && \
-    ((defined(__GNUC__) && __GNUC__ >= 7) || \
+   ((defined(__GNUC__) && __GNUC__ >= 7) || \
     (defined(__clang_major__) && __clang_major__ >= 10))
 #define SDL_FALLTHROUGH __attribute__((__fallthrough__))
 #else
