@@ -16,7 +16,7 @@ Ubuntu 20.04, all available features enabled:
 
     sudo apt-get install build-essential git make cmake autoconf automake \
     libtool pkg-config libasound2-dev libpulse-dev libaudio-dev libjack-dev \
-    libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxi-dev \
+    libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxfixes-dev libxi-dev \
     libxinerama-dev libxxf86vm-dev libxss-dev libgl1-mesa-dev libdbus-1-dev \
     libudev-dev libgles2-mesa-dev libegl1-mesa-dev libibus-1.0-dev \
     fcitx-libs-dev libsamplerate0-dev libsndio-dev libwayland-dev \
@@ -26,12 +26,13 @@ Fedora 35, all available features enabled:
 
     sudo yum install gcc git-core make cmake autoconf automake libtool \
     alsa-lib-devel pulseaudio-libs-devel nas-devel pipewire-devel \
-    libX11-devel libXext-devel libXrandr-devel libXcursor-devel libXi-devel \
-    libXinerama-devel libXxf86vm-devel libXScrnSaver-devel mesa-libGL-devel \
-    dbus-devel systemd-devel mesa-libGLES-devel mesa-libEGL-devel ibus-devel \
-    fcitx-devel libsamplerate-devel wayland-devel wayland-protocols-devel \
-    libxkbcommon-devel libdrm-devel mesa-libgbm-devel vulkan-devel libusb-devel \
-    pipewire-jack-audio-connection-kit-devel libdecor-devel
+    libX11-devel libXext-devel libXrandr-devel libXcursor-devel libXfixes-devel \
+    libXi-devel libXinerama-devel libXxf86vm-devel libXScrnSaver-devel \
+    dbus-devel ibus-devel fcitx-devel systemd-devel mesa-libGL-devel \
+    libxkbcommon-devel mesa-libGLES-devel mesa-libEGL-devel vulkan-devel \
+    wayland-devel wayland-protocols-devel libdrm-devel mesa-libgbm-devel \
+    libusb-devel pipewire-jack-audio-connection-kit-devel libdecor-devel \
+    libsamplerate-devel
 
 NOTES:
 - This includes all the audio targets except arts and esd, because Ubuntu
