@@ -113,6 +113,9 @@ hints_setHint(void *arg)
     /* Capture current value */
     originalValue = (char *)SDL_GetHint((char*)_HintsEnum[i]);
     SDLTest_AssertPass("Call to SDL_GetHint(%s)", (char*)_HintsEnum[i]);
+
+    /* Copy the original value, since it will be freed when we set it again */
+    originalValue = originalValue ? SDL_strdup(originalValue) : NULL;
     
     /* Set value (twice) */
     for (j=1; j<=2; j++) {
@@ -138,6 +141,7 @@ hints_setHint(void *arg)
       result == SDL_TRUE || result == SDL_FALSE, 
       "Verify valid result was returned, got: %i",
       (int)result);
+    SDL_free(originalValue);
   }
   
   SDL_free(value);
