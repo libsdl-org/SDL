@@ -57,8 +57,8 @@ static VOID _wmInitDlg(HWND hwnd, MSGBOXDLGDATA *pDlgData)
       HWND  hwnd;   /* Button window handle. */
       ULONG ulCX;   /* Button width in dialog coordinates. */
     } aButtons[32];
-    RECTL      rectlItem;
-    HAB        hab = WinQueryAnchorBlock(hwnd);
+    RECTL   rectlItem;
+    HAB     hab = WinQueryAnchorBlock(hwnd);
 
     /* --- Align the buttons to the right/bottom. --- */
 
@@ -66,9 +66,9 @@ static VOID _wmInitDlg(HWND hwnd, MSGBOXDLGDATA *pDlgData)
     hEnum = WinBeginEnumWindows(hwnd);
 
     while ((hWndNext = WinGetNextWindow(hEnum)) != NULLHANDLE) {
-        if (WinQueryClassName(hWndNext, sizeof(acBuf), acBuf) == 0)
+        if (WinQueryClassName(hWndNext, sizeof(acBuf), acBuf) == 0) {
             continue;
-
+        }
         if (SDL_strcmp(acBuf, "#3") == 0) { /* Class name of button. */
             if (cButtons < sizeof(aButtons) / sizeof(struct _BUTTON)) {
                 aButtons[cButtons].hwnd = hWndNext;
@@ -92,7 +92,7 @@ static VOID _wmInitDlg(HWND hwnd, MSGBOXDLGDATA *pDlgData)
         /* Convert text size to dialog coordinates. */
         WinMapDlgPoints(hwnd, &aptText[TXTBOX_TOPRIGHT], 1, FALSE);
         /* Add vertical and horizontal space for button's frame (dialog coord.). */
-        if (aptText[TXTBOX_TOPRIGHT].x < 30) {/* Minimal button width. */
+        if (aptText[TXTBOX_TOPRIGHT].x < 30) {          /* Minimal button width. */
             aptText[TXTBOX_TOPRIGHT].x = 30;
         } else {
             aptText[TXTBOX_TOPRIGHT].x += 4;
@@ -233,15 +233,19 @@ static HWND _makeDlg(const SDL_MessageBoxData *messageboxdata)
                  cbTitle       +  /* First item data - frame title + ZERO. */
                  cbText        +  /* Second item data - ststic text + ZERO.*/
                  3;               /* Third item data - system icon Id.     */
+
     /* Button items datas - text for buttons. */
     for (ulIdx = 0; ulIdx < cSDLBtnData; ulIdx++) {
         pszBtnText = (PSZ)pSDLBtnData[ulIdx].text;
         cbTemplate += (pszBtnText == NULL)? 1 : (SDL_strlen(pszBtnText) + 1);
     }
+
     /* Presentation parameter space. */
-    if (pSDLColors != NULL)
-        cbTemplate += 26 /* PP for frame. */ + 26 /* PP for static text. */ +
+    if (pSDLColors != NULL) {
+        cbTemplate += 26 /* PP for frame.       */ +
+                      26 /* PP for static text. */ +
                      (48 * cSDLBtnData); /* PP for buttons. */
+    }
 
     /* Allocate memory for the dialog template. */
     pTemplate = (PDLGTEMPLATE) SDL_malloc(cbTemplate);
@@ -330,7 +334,7 @@ static HWND _makeDlg(const SDL_MessageBoxData *messageboxdata)
     if (pszText != NULL) {
         SDL_memcpy(pcDlgData, pszText, cbText);
     } else {
-      *pcDlgData = '\0';
+        *pcDlgData = '\0';
     }
     pcDlgData += pDlgItem->cchText;
 
@@ -432,7 +436,7 @@ static HWND _makeDlg(const SDL_MessageBoxData *messageboxdata)
 
         pDlgItem->id = IDD_PB_FIRST + ulIdx;  /* an ID value */
         if (pSDLColors == NULL)
-          pDlgItem->offPresParams = 0;
+            pDlgItem->offPresParams = 0;
         else {
             /* Presentation parameter for the button - dialog colors. */
             pDlgItem->offPresParams = pcDlgData - (PCHAR)pTemplate;
