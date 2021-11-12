@@ -431,6 +431,15 @@ extern DECLSPEC int SDLCALL SDL_hid_get_serial_number_string(SDL_hid_device *dev
  */
 extern DECLSPEC int SDLCALL SDL_hid_get_indexed_string(SDL_hid_device *dev, int string_index, wchar_t *string, size_t maxlen);
 
+/**
+ * Start or stop a BLE scan on iOS and tvOS to pair Steam Controllers
+ *
+ * \param active SDL_TRUE to start the scan, SDL_FALSE to stop the scan
+ *
+ * \since This function is available since SDL 2.0.18.
+ */
+extern DECLSPEC void SDLCALL SDL_hid_ble_scan(SDL_bool active);
+
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
 }

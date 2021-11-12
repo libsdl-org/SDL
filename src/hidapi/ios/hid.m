@@ -743,7 +743,7 @@ int HID_API_EXPORT HID_API_CALL hid_exit(void)
 	return 0;
 }
 
-void HID_API_EXPORT HID_API_CALL hid_ble_scan( bool bStart )
+void HID_API_EXPORT HID_API_CALL hid_ble_scan( int bStart )
 {
 	HIDBLEManager *bleManager = HIDBLEManager.sharedInstance;
 	if ( bStart )

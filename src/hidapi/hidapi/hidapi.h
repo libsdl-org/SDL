@@ -406,6 +406,10 @@ namespace NAMESPACE {
 		*/
 		HID_API_EXPORT const wchar_t* HID_API_CALL hid_error(hid_device *dev);
 
+#if __IPHONEOS__ || __TVOS__
+		HID_API_EXPORT void HID_API_CALL hid_ble_scan(int active);
+#endif
+
 #if defined(__cplusplus) && !defined(NAMESPACE)
 }
 #endif

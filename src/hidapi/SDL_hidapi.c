@@ -1492,6 +1492,13 @@ int SDL_hid_get_indexed_string(SDL_hid_device *device, int string_index, wchar_t
     return result;
 }
 
+void SDL_hid_ble_scan(SDL_bool active)
+{
+#if __IPHONEOS__ || __TVOS__
+    hid_ble_scan(active);
+#endif
+}
+
 #ifdef HAVE_ENABLE_GAMECUBE_ADAPTORS
 /* This is needed to enable input for Nyko and EVORETRO GameCube adaptors */
 void SDL_EnableGameCubeAdaptors(void)

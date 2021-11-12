@@ -853,3 +853,4 @@
 #define SDL_JoystickHasRumbleTriggers SDL_JoystickHasRumbleTriggers_REAL
 #define SDL_GameControllerHasRumble SDL_GameControllerHasRumble_REAL
 #define SDL_GameControllerHasRumbleTriggers SDL_GameControllerHasRumbleTriggers_REAL
+#define SDL_hid_ble_scan SDL_hid_ble_scan_REAL
