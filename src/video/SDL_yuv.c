@@ -1839,7 +1839,7 @@ SDL_ConvertPixels_YUV_to_YUV(int width, int height,
         return SDL_SetError("SDL_ConvertPixels_YUV_to_YUV: Unsupported YUV conversion: %s -> %s", SDL_GetPixelFormatName(src_format), SDL_GetPixelFormatName(dst_format));
     }
 #else
-	return SDL_SetError("SDL not built with YUV support");
+    return SDL_SetError("SDL not built with YUV support");
 #endif
 }
 

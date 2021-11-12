@@ -341,7 +341,7 @@ static HWND _makeDlg(const SDL_MessageBoxData *messageboxdata)
     pDlgItem->cx = 147;
     pDlgItem->cy = 62;  /* It will be used. */
 
-    pDlgItem->id = IDD_TEXT_MESSAGE;	  /* an ID value */
+    pDlgItem->id = IDD_TEXT_MESSAGE;      /* an ID value */
     if (pSDLColors == NULL)
         pDlgItem->offPresParams = 0;
     else {

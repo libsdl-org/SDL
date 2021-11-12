@@ -57,8 +57,8 @@ ANDROIDAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     test_format = SDL_FirstAudioFormat(this->spec.format);
     while (test_format != 0) { /* no "UNKNOWN" constant */
         if ((test_format == AUDIO_U8) ||
-			(test_format == AUDIO_S16) ||
-			(test_format == AUDIO_F32)) {
+            (test_format == AUDIO_S16) ||
+            (test_format == AUDIO_F32)) {
             this->spec.format = test_format;
             break;
         }

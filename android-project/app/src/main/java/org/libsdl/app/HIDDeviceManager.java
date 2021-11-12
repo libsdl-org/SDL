@@ -554,7 +554,7 @@ public class HIDDeviceManager {
         if (usbDevice != null && !mUsbManager.hasPermission(usbDevice)) {
             HIDDeviceOpenPending(deviceID);
             try {
-				final int FLAG_MUTABLE = 0x02000000; // PendingIntent.FLAG_MUTABLE, but don't require SDK 31
+                final int FLAG_MUTABLE = 0x02000000; // PendingIntent.FLAG_MUTABLE, but don't require SDK 31
                 int flags;
                 if (Build.VERSION.SDK_INT >= 31) {
                     flags = FLAG_MUTABLE;

@@ -151,7 +151,7 @@ static DWORD CALLBACK
 SDL_DeviceNotificationFunc(HCMNOTIFICATION hNotify, PVOID context, CM_NOTIFY_ACTION action, PCM_NOTIFY_EVENT_DATA eventData, DWORD event_data_size)
 {
     if (action == CM_NOTIFY_ACTION_DEVICEINTERFACEARRIVAL ||
-	    action == CM_NOTIFY_ACTION_DEVICEINTERFACEREMOVAL) {
+        action == CM_NOTIFY_ACTION_DEVICEINTERFACEREMOVAL) {
         s_bWindowsDeviceChanged = SDL_TRUE;
     }
     return ERROR_SUCCESS;
@@ -179,15 +179,15 @@ SDL_CreateDeviceNotificationFunc(void)
         CM_Register_Notification = (CM_Register_NotificationFunc)GetProcAddress(cfgmgr32_lib_handle, "CM_Register_Notification");
         CM_Unregister_Notification = (CM_Unregister_NotificationFunc)GetProcAddress(cfgmgr32_lib_handle, "CM_Unregister_Notification");
         if (CM_Register_Notification && CM_Unregister_Notification) {
-			CM_NOTIFY_FILTER notify_filter;
+            CM_NOTIFY_FILTER notify_filter;
 
             SDL_zero(notify_filter);
-			notify_filter.cbSize = sizeof(notify_filter);
-			notify_filter.FilterType = CM_NOTIFY_FILTER_TYPE_DEVICEINTERFACE;
-			notify_filter.u.DeviceInterface.ClassGuid = GUID_DEVINTERFACE_HID;
-			if (CM_Register_Notification(&notify_filter, NULL, SDL_DeviceNotificationFunc, &s_DeviceNotificationFuncHandle) == CR_SUCCESS) {
+            notify_filter.cbSize = sizeof(notify_filter);
+            notify_filter.FilterType = CM_NOTIFY_FILTER_TYPE_DEVICEINTERFACE;
+            notify_filter.u.DeviceInterface.ClassGuid = GUID_DEVINTERFACE_HID;
+            if (CM_Register_Notification(&notify_filter, NULL, SDL_DeviceNotificationFunc, &s_DeviceNotificationFuncHandle) == CR_SUCCESS) {
                 return SDL_TRUE;
-			}
+            }
         }
     }
 

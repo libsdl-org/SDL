@@ -350,14 +350,14 @@ CPU_haveAltiVec(void)
 static int
 CPU_haveARMSIMD(void)
 {
-	return 1;
+    return 1;
 }
 
 #elif !defined(__arm__)
 static int
 CPU_haveARMSIMD(void)
 {
-	return 0;
+    return 0;
 }
 
 #elif defined(__LINUX__)
@@ -391,20 +391,20 @@ CPU_haveARMSIMD(void)
 static int
 CPU_haveARMSIMD(void)
 {
-	_kernel_swi_regs regs;
-	regs.r[0] = 0;
-	if (_kernel_swi(OS_PlatformFeatures, &regs, &regs) != NULL)
-		return 0;
+    _kernel_swi_regs regs;
+    regs.r[0] = 0;
+    if (_kernel_swi(OS_PlatformFeatures, &regs, &regs) != NULL)
+        return 0;
 
-	if (!(regs.r[0] & (1<<31)))
-		return 0;
+    if (!(regs.r[0] & (1<<31)))
+        return 0;
 
-	regs.r[0] = 34;
-	regs.r[1] = 29;
-	if (_kernel_swi(OS_PlatformFeatures, &regs, &regs) != NULL)
-		return 0;
+    regs.r[0] = 34;
+    regs.r[1] = 29;
+    if (_kernel_swi(OS_PlatformFeatures, &regs, &regs) != NULL)
+        return 0;
 
-	return regs.r[0];
+    return regs.r[0];
 }
 
 #else

@@ -653,7 +653,7 @@ SDL_SYS_HapticOpenFromJoystick(SDL_Haptic * haptic, SDL_Joystick * joystick)
 
     return SDL_SYS_HapticOpenFromService(haptic, joystick->hwdata->ffservice);
 #else
-	return -1;
+    return -1;
 #endif
 }
 

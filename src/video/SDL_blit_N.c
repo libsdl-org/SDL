@@ -40,11 +40,11 @@
 /* Functions to blit from N-bit surfaces to other surfaces */
 
 enum blit_features {
-	BLIT_FEATURE_NONE = 0,
-	BLIT_FEATURE_HAS_MMX = 1,
-	BLIT_FEATURE_HAS_ALTIVEC = 2,
-	BLIT_FEATURE_ALTIVEC_DONT_USE_PREFETCH = 4,
-	BLIT_FEATURE_HAS_ARM_SIMD = 8
+    BLIT_FEATURE_NONE = 0,
+    BLIT_FEATURE_HAS_MMX = 1,
+    BLIT_FEATURE_HAS_ALTIVEC = 2,
+    BLIT_FEATURE_ALTIVEC_DONT_USE_PREFETCH = 4,
+    BLIT_FEATURE_HAS_ARM_SIMD = 8
 };
 
 #if SDL_ALTIVEC_BLITTERS
@@ -943,14 +943,14 @@ void Blit_BGR888_RGB888ARMSIMDAsm(int32_t w, int32_t h, uint32_t *dst, int32_t d
 static void
 Blit_BGR888_RGB888ARMSIMD(SDL_BlitInfo * info)
 {
-	int32_t width = info->dst_w;
-	int32_t height = info->dst_h;
-	uint32_t *dstp = (uint32_t *)info->dst;
-	int32_t dststride = width + (info->dst_skip >> 2);
-	uint32_t *srcp = (uint32_t *)info->src;
-	int32_t srcstride = width + (info->src_skip >> 2);
+    int32_t width = info->dst_w;
+    int32_t height = info->dst_h;
+    uint32_t *dstp = (uint32_t *)info->dst;
+    int32_t dststride = width + (info->dst_skip >> 2);
+    uint32_t *srcp = (uint32_t *)info->src;
+    int32_t srcstride = width + (info->src_skip >> 2);
 
-	Blit_BGR888_RGB888ARMSIMDAsm(width, height, dstp, dststride, srcp, srcstride);
+    Blit_BGR888_RGB888ARMSIMDAsm(width, height, dstp, dststride, srcp, srcstride);
 }
 
 void Blit_RGB444_RGB888ARMSIMDAsm(int32_t w, int32_t h, uint32_t *dst, int32_t dst_stride, uint16_t *src, int32_t src_stride);
@@ -958,14 +958,14 @@ void Blit_RGB444_RGB888ARMSIMDAsm(int32_t w, int32_t h, uint32_t *dst, int32_t d
 static void
 Blit_RGB444_RGB888ARMSIMD(SDL_BlitInfo * info)
 {
-	int32_t width = info->dst_w;
-	int32_t height = info->dst_h;
-	uint32_t *dstp = (uint32_t *)info->dst;
-	int32_t dststride = width + (info->dst_skip >> 2);
-	uint16_t *srcp = (uint16_t *)info->src;
-	int32_t srcstride = width + (info->src_skip >> 1);
+    int32_t width = info->dst_w;
+    int32_t height = info->dst_h;
+    uint32_t *dstp = (uint32_t *)info->dst;
+    int32_t dststride = width + (info->dst_skip >> 2);
+    uint16_t *srcp = (uint16_t *)info->src;
+    int32_t srcstride = width + (info->src_skip >> 1);
 
-	Blit_RGB444_RGB888ARMSIMDAsm(width, height, dstp, dststride, srcp, srcstride);
+    Blit_RGB444_RGB888ARMSIMDAsm(width, height, dstp, dststride, srcp, srcstride);
 }
 #endif
 

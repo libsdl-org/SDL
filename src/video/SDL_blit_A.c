@@ -397,14 +397,14 @@ void BlitARGBto565PixelAlphaARMSIMDAsm(int32_t w, int32_t h, uint16_t *dst, int3
 static void
 BlitARGBto565PixelAlphaARMSIMD(SDL_BlitInfo * info)
 {
-	int32_t width = info->dst_w;
-	int32_t height = info->dst_h;
-	uint16_t *dstp = (uint16_t *)info->dst;
-	int32_t dststride = width + (info->dst_skip >> 1);
-	uint32_t *srcp = (uint32_t *)info->src;
-	int32_t srcstride = width + (info->src_skip >> 2);
+    int32_t width = info->dst_w;
+    int32_t height = info->dst_h;
+    uint16_t *dstp = (uint16_t *)info->dst;
+    int32_t dststride = width + (info->dst_skip >> 1);
+    uint32_t *srcp = (uint32_t *)info->src;
+    int32_t srcstride = width + (info->src_skip >> 2);
 
-	BlitARGBto565PixelAlphaARMSIMDAsm(width, height, dstp, dststride, srcp, srcstride);
+    BlitARGBto565PixelAlphaARMSIMDAsm(width, height, dstp, dststride, srcp, srcstride);
 }
 
 void BlitRGBtoRGBPixelAlphaARMSIMDAsm(int32_t w, int32_t h, uint32_t *dst, int32_t dst_stride, uint32_t *src, int32_t src_stride);
@@ -444,14 +444,14 @@ void BlitRGBtoRGBPixelAlphaARMNEONAsm(int32_t w, int32_t h, uint32_t *dst, int32
 static void
 BlitRGBtoRGBPixelAlphaARMNEON(SDL_BlitInfo * info)
 {
-	int32_t width = info->dst_w;
-	int32_t height = info->dst_h;
-	uint32_t *dstp = (uint32_t *)info->dst;
-	int32_t dststride = width + (info->dst_skip >> 2);
-	uint32_t *srcp = (uint32_t *)info->src;
-	int32_t srcstride = width + (info->src_skip >> 2);
+    int32_t width = info->dst_w;
+    int32_t height = info->dst_h;
+    uint32_t *dstp = (uint32_t *)info->dst;
+    int32_t dststride = width + (info->dst_skip >> 2);
+    uint32_t *srcp = (uint32_t *)info->src;
+    int32_t srcstride = width + (info->src_skip >> 2);
 
-	BlitRGBtoRGBPixelAlphaARMNEONAsm(width, height, dstp, dststride, srcp, srcstride);
+    BlitRGBtoRGBPixelAlphaARMNEONAsm(width, height, dstp, dststride, srcp, srcstride);
 }
 #endif
 

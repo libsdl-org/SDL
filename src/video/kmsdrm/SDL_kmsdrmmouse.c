@@ -173,8 +173,8 @@ KMSDRM_DumpCursorToBO(SDL_VideoDisplay *display, SDL_Cursor *cursor)
 
     /* Copy from the cursor buffer to a buffer that we can dump to the GBM BO. */
     for (i = 0; i < curdata->h; i++) {
-    	src_row = &((uint8_t*)curdata->buffer)[i * curdata->w * 4];
-    	SDL_memcpy(ready_buffer + (i * bo_stride), src_row, 4 * curdata->w);
+        src_row = &((uint8_t*)curdata->buffer)[i * curdata->w * 4];
+        SDL_memcpy(ready_buffer + (i * bo_stride), src_row, 4 * curdata->w);
     }
 
     /* Dump the cursor buffer to our GBM BO. */

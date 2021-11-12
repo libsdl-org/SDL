@@ -695,7 +695,7 @@ WASAPI_ThreadDeinit(_THIS)
 void
 WASAPI_BeginLoopIteration(_THIS)
 {
-	/* no-op. */
+    /* no-op. */
 }
 
 static void

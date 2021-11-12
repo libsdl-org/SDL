@@ -2513,23 +2513,23 @@ SDL_bool Android_JNI_SetRelativeMouseEnabled(SDL_bool enabled)
 SDL_bool Android_JNI_RequestPermission(const char *permission)
 {
     JNIEnv *env = Android_JNI_GetEnv();
-	const int requestCode = 1;
+    const int requestCode = 1;
 
-	/* Wait for any pending request on another thread */
-	while (SDL_AtomicGet(&bPermissionRequestPending) == SDL_TRUE) {
-		SDL_Delay(10);
-	}
-	SDL_AtomicSet(&bPermissionRequestPending, SDL_TRUE);
+    /* Wait for any pending request on another thread */
+    while (SDL_AtomicGet(&bPermissionRequestPending) == SDL_TRUE) {
+        SDL_Delay(10);
+    }
+    SDL_AtomicSet(&bPermissionRequestPending, SDL_TRUE);
 
     jstring jpermission = (*env)->NewStringUTF(env, permission);
     (*env)->CallStaticVoidMethod(env, mActivityClass, midRequestPermission, jpermission, requestCode);
     (*env)->DeleteLocalRef(env, jpermission);
 
-	/* Wait for the request to complete */
-	while (SDL_AtomicGet(&bPermissionRequestPending) == SDL_TRUE) {
-		SDL_Delay(10);
-	}
-	return bPermissionRequestResult;
+    /* Wait for the request to complete */
+    while (SDL_AtomicGet(&bPermissionRequestPending) == SDL_TRUE) {
+        SDL_Delay(10);
+    }
+    return bPermissionRequestResult;
 }
 
 /* Show toast notification */
