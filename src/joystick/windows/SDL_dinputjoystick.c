@@ -558,6 +558,7 @@ EnumJoystickPresentCallback(LPCDIDEVICEINSTANCE pDeviceInstance, LPVOID pContext
     Uint16 vendor = 0;
     Uint16 product = 0;
     LPDIRECTINPUTDEVICE8 device = NULL;
+    BOOL result = DIENUM_CONTINUE;
 
     /* We are only supporting HID devices. */
     CHECK((pDeviceInstance->dwDevType & DIDEVTYPE_HID) != 0);
@@ -567,7 +568,7 @@ EnumJoystickPresentCallback(LPCDIDEVICEINSTANCE pDeviceInstance, LPVOID pContext
 
     if (vendor == pData->vendor && product == pData->product) {
         pData->present = SDL_TRUE;
-        return DIENUM_STOP; /* get next device, please */
+        result = DIENUM_STOP; /* found it */
     }
 
 err:
@@ -575,7 +576,7 @@ err:
         IDirectInputDevice8_Release(device);
     }
 
-    return DIENUM_CONTINUE; /* get next device, please */
+    return result;
 #undef CHECK
 }
 
