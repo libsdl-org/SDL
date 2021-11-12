@@ -991,6 +991,7 @@ ALSA_Deinitialize(void)
         SDL_free(dev->name);
         SDL_free(dev);
     }
+    hotplug_devices = NULL;
 
     UnloadALSALibrary();
 }
