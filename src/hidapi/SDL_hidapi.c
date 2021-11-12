@@ -1084,8 +1084,8 @@ int SDL_hid_exit(void)
     if (SDL_hidapi_refcount == 0) {
         return 0;
     }
+    --SDL_hidapi_refcount;
     if (SDL_hidapi_refcount > 0) {
-        --SDL_hidapi_refcount;
         return 0;
     }
     SDL_hidapi_refcount = 0;
