@@ -45,9 +45,9 @@ SOURCES = \
 	./src/timer/*.c \
 	./src/timer/unix/*.c \
 	./src/video/*.c \
+	./src/video/yuv2rgb/*.c \
 	./src/video/dummy/*.c \
-	./src/video/pandora/*.c \
-	
+	./src/video/pandora/*.c
 
 OBJECTS = $(shell echo $(SOURCES) | sed -e 's,\.c,\.o,g')
 
