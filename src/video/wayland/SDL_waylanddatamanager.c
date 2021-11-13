@@ -396,8 +396,9 @@ Wayland_data_device_clear_selection(SDL_WaylandDataDevice *data_device)
 
     if (data_device == NULL || data_device->data_device == NULL) {
         status = SDL_SetError("Invalid Data Device");
-    } else if (data_device->selection_source != 0) {
+    } else if (data_device->selection_source != NULL) {
         wl_data_device_set_selection(data_device->data_device, NULL, 0);
+        Wayland_data_source_destroy(data_device->selection_source);
         data_device->selection_source = NULL;
     }
     return status;
@@ -443,6 +444,9 @@ Wayland_data_device_set_selection(SDL_WaylandDataDevice *data_device,
                 wl_data_device_set_selection(data_device->data_device,
                                              source->source,
                                              data_device->selection_serial); 
+            }
+            if (data_device->selection_source != NULL) {
+                Wayland_data_source_destroy(data_device->selection_source);
             }
             data_device->selection_source = source;
         }
