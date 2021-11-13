@@ -139,7 +139,7 @@ SDL_X11_SYM(int,XWarpPointer,(Display* a,Window b,Window c,int d,int e,unsigned 
 SDL_X11_SYM(int,XWindowEvent,(Display* a,Window b,long c,XEvent* d),(a,b,c,d),return)
 SDL_X11_SYM(Status,XWithdrawWindow,(Display* a,Window b,int c),(a,b,c),return)
 SDL_X11_SYM(VisualID,XVisualIDFromVisual,(Visual* a),(a),return)
-SDL_X11_SYM(char*,XGetDefault,(Display* a,char* b, char* c),(a,b,c),return)
+SDL_X11_SYM(char*,XGetDefault,(Display* a,_Xconst char* b, _Xconst char* c),(a,b,c),return)
 SDL_X11_SYM(Bool,XQueryExtension,(Display* a,_Xconst char* b,int* c,int* d,int* e),(a,b,c,d,e),return)
 SDL_X11_SYM(char *,XDisplayString,(Display* a),(a),return)
 SDL_X11_SYM(int,XGetErrorText,(Display* a,int b,char* c,int d),(a,b,c,d),return)
