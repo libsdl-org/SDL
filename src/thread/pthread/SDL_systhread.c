@@ -286,7 +286,7 @@ SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
 void
 SDL_SYS_WaitThread(SDL_Thread * thread)
 {
-    if (thread->state.value != SDL_THREAD_STATE_ZOMBIE) {
+    if (SDL_AtomicGet(&thread->state) != SDL_THREAD_STATE_ZOMBIE) {
         pthread_join(thread->handle, 0);
     }
 }
