@@ -40,11 +40,11 @@
 #include "SDL_rect.h"
 
 /* Routines to convert from UTF8 to native Windows text */
-#define WIN_StringToUTF8W(S) SDL_iconv_string("UTF-8", "UTF-16LE", (char *)(S), (SDL_wcslen(S)+1)*sizeof(WCHAR))
-#define WIN_UTF8ToStringW(S) (WCHAR *)SDL_iconv_string("UTF-16LE", "UTF-8", (char *)(S), SDL_strlen(S)+1)
+#define WIN_StringToUTF8W(S) SDL_iconv_string("UTF-8", "UTF-16LE", (const char *)(S), (SDL_wcslen(S)+1)*sizeof(WCHAR))
+#define WIN_UTF8ToStringW(S) (WCHAR *)SDL_iconv_string("UTF-16LE", "UTF-8", (const char *)(S), SDL_strlen(S)+1)
 /* !!! FIXME: UTF8ToString() can just be a SDL_strdup() here. */
-#define WIN_StringToUTF8A(S) SDL_iconv_string("UTF-8", "ASCII", (char *)(S), (SDL_strlen(S)+1))
-#define WIN_UTF8ToStringA(S) SDL_iconv_string("ASCII", "UTF-8", (char *)(S), SDL_strlen(S)+1)
+#define WIN_StringToUTF8A(S) SDL_iconv_string("UTF-8", "ASCII", (const char *)(S), (SDL_strlen(S)+1))
+#define WIN_UTF8ToStringA(S) SDL_iconv_string("ASCII", "UTF-8", (const char *)(S), SDL_strlen(S)+1)
 #if UNICODE
 #define WIN_StringToUTF8 WIN_StringToUTF8W
 #define WIN_UTF8ToString WIN_UTF8ToStringW
