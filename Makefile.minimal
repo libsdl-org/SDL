@@ -5,9 +5,10 @@ CFLAGS  = -g -O2 $(INCLUDE)
 AR	= ar
 RANLIB	= ranlib
 
-TARGET  = libSDL.a
+TARGET  = libSDL2.a
 SOURCES = \
 	src/*.c \
+	src/atomic/*.c \
 	src/audio/*.c \
 	src/audio/dummy/*.c \
 	src/cpuinfo/*.c \
@@ -30,11 +31,13 @@ SOURCES = \
 	src/sensor/*.c \
 	src/sensor/dummy/*.c \
 	src/stdlib/*.c \
+	src/libm/*.c \
 	src/thread/*.c \
 	src/thread/generic/*.c \
 	src/timer/*.c \
 	src/timer/dummy/*.c \
 	src/video/*.c \
+	src/video/yuv2rgb/*.c \
 	src/video/dummy/*.c \
 
 OBJECTS = $(shell echo $(SOURCES) | sed -e 's,\.c,\.o,g')
