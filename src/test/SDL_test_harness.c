@@ -316,7 +316,7 @@ SDLTest_RunTest(SDLTest_TestSuiteReference *testSuite, const SDLTest_TestCaseRef
 }
 
 /* Prints summary of all suites/tests contained in the given reference */
-#if 0 
+#if 0
 static void SDLTest_LogTestSuiteSummary(SDLTest_TestSuiteReference *testSuites)
 {
     int suiteCounter;
@@ -377,8 +377,8 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
     SDLTest_TestSuiteReference *testSuite;
     const SDLTest_TestCaseReference *testCase;
     const char *runSeed = NULL;
-    char *currentSuiteName;
-    char *currentTestName;
+    const char *currentSuiteName;
+    const char *currentTestName;
     Uint64 execKey;
     float runStartSeconds;
     float suiteStartSeconds;
@@ -388,9 +388,9 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
     float testEndSeconds;
     float runtime;
     int suiteFilter = 0;
-    char *suiteFilterName = NULL;
+    const char *suiteFilterName = NULL;
     int testFilter = 0;
-    char *testFilterName = NULL;
+    const char *testFilterName = NULL;
     SDL_bool forceTestRun = SDL_FALSE;
     int testResult = 0;
     int runResult = 0;
@@ -418,7 +418,6 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
     } else {
         runSeed = userRunSeed;
     }
-
 
     /* Reset per-run counters */
     totalTestFailedCount = 0;
