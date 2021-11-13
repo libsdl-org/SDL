@@ -16,6 +16,8 @@
 #include <emscripten/emscripten.h>
 #endif
 
+#include <stdlib.h> /* exit() */
+
 #ifdef __IPHONEOS__
 #define SCREEN_WIDTH    320
 #define SCREEN_HEIGHT   480
@@ -27,10 +29,8 @@
 static SDL_Window *window;
 static SDL_Renderer *renderer;
 
-typedef struct Line Line;
-
-typedef struct Line {
-    Line *next;
+typedef struct _Line {
+    struct _Line *next;
 
     int x1, y1, x2, y2;
     Uint8 r, g, b;
