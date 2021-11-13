@@ -286,11 +286,12 @@ SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
 void
 SDL_SYS_WaitThread(SDL_Thread * thread)
 {
-    pthread_join(thread->handle, 0);
+    if (thread->state.value != SDL_THREAD_STATE_ZOMBIE) {
+        pthread_join(thread->handle, 0);
+    }
 }
 
-void
-SDL_SYS_DetachThread(SDL_Thread * thread)
+void SDL_SYS_DetachThread(SDL_Thread * thread)
 {
     pthread_detach(thread->handle);
 }
