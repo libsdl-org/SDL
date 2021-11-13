@@ -6,6 +6,8 @@ AR	= ar
 RANLIB	= ranlib
 
 TARGET  = libSDL2.a
+TESTTARGET = libSDL2_test.a
+
 SOURCES = \
 	src/*.c \
 	src/atomic/*.c \
@@ -40,13 +42,20 @@ SOURCES = \
 	src/video/yuv2rgb/*.c \
 	src/video/dummy/*.c \
 
-OBJECTS = $(shell echo $(SOURCES) | sed -e 's,\.c,\.o,g')
+TSOURCES = src/test/*.c
 
-all: $(TARGET)
+OBJECTS = $(shell echo $(SOURCES) | sed -e 's,\.c,\.o,g')
+TOBJECTS= $(shell echo $(TSOURCES) | sed -e 's,\.c,\.o,g')
+
+all: $(TARGET) $(TESTTARGET)
 
 $(TARGET): $(OBJECTS)
 	$(AR) crv $@ $^
 	$(RANLIB) $@
 
+$(TESTTARGET): $(TOBJECTS)
+	$(AR) crv $@ $^
+	$(RANLIB) $@
+
 clean:
-	rm -f $(TARGET) $(OBJECTS)
+	rm -f $(TARGET) $(TESTTARGET) $(OBJECTS) $(TOBJECTS)
