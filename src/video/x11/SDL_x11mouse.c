@@ -195,6 +195,8 @@ X11_CreatePixmapCursor(SDL_Surface * surface, int hot_x, int hot_y)
                                  &fg, &bg, hot_x, hot_y);
     X11_XFreePixmap(display, data_pixmap);
     X11_XFreePixmap(display, mask_pixmap);
+    SDL_free(data_bits);
+    SDL_free(mask_bits);
 
     return cursor;
 }
