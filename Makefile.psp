@@ -36,6 +36,10 @@ OBJS= src/SDL.o \
       src/power/SDL_power.o \
       src/power/psp/SDL_syspower.o \
       src/filesystem/dummy/SDL_sysfilesystem.o \
+      src/locale/SDL_locale.o \
+      src/locale/dummy/SDL_syslocale.o \
+      src/misc/SDL_url.o \
+      src/misc/dummy/SDL_sysurl.o \
       src/render/SDL_render.o \
       src/render/SDL_yuv_sw.o \
       src/render/psp/SDL_render_psp.o \

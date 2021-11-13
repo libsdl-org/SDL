@@ -21,6 +21,10 @@ SOURCES = \
 	src/loadso/dummy/*.c \
 	src/power/*.c \
 	src/filesystem/dummy/*.c \
+	src/locale/*.c \
+	src/locale/dummy/*.c \
+	src/misc/*.c \
+	src/misc/dummy/*.c \
 	src/render/*.c \
 	src/render/software/*.c \
 	src/sensor/*.c \

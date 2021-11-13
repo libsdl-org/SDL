@@ -29,6 +29,10 @@ SOURCES =
 	./src/joystick/*.c \
 	./src/joystick/linux/*.c \
 	./src/loadso/dlopen/*.c \
+	./src/locale/*.c \
+	./src/locale/unix/*.c \
+	./src/misc/*.c \
+	./src/misc/unix/*.c \
 	./src/power/*.c \
 	./src/sensor/*.c \
 	./src/sensor/dummy/*.c \
