@@ -656,10 +656,11 @@ ALSA_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
 #ifdef SND_CHMAP_API_VERSION
     chmap = ALSA_snd_pcm_get_chmap(pcm_handle);
     if (chmap) {
-        ALSA_snd_pcm_chmap_print(chmap, sizeof(chmap_str), chmap_str);
-        if (SDL_strcmp("FL FR FC LFE RL RR", chmap_str) == 0 ||
-            SDL_strcmp("FL FR FC LFE SL SR", chmap_str) == 0) {
-            this->hidden->swizzle_func = no_swizzle;
+        if (ALSA_snd_pcm_chmap_print(chmap, sizeof(chmap_str), chmap_str) > 0) {
+            if (SDL_strcmp("FL FR FC LFE RL RR", chmap_str) == 0 ||
+                SDL_strcmp("FL FR FC LFE SL SR", chmap_str) == 0) {
+                this->hidden->swizzle_func = no_swizzle;
+            }
         }
         free(chmap);
     }
