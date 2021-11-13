@@ -201,8 +201,7 @@ static void
 HIDAPI_SetupDeviceDriver(SDL_HIDAPI_Device *device)
 {
     if (device->driver) {
-        /* Already setup */
-        return;
+        return; /* Already setup */
     }
 
     device->driver = HIDAPI_GetDeviceDriver(device);
@@ -224,8 +223,7 @@ static void
 HIDAPI_CleanupDeviceDriver(SDL_HIDAPI_Device *device)
 {
     if (!device->driver) {
-        /* Already cleaned up */
-        return;
+        return; /* Already cleaned up */
     }
 
     /* Disconnect any joysticks */
@@ -395,10 +393,13 @@ HIDAPI_ConvertString(const wchar_t *wide_string)
     if (wide_string) {
         string = SDL_iconv_string("UTF-8", "WCHAR_T", (char*)wide_string, (SDL_wcslen(wide_string)+1)*sizeof(wchar_t));
         if (!string) {
-            if (sizeof(wchar_t) == sizeof(Uint16)) {
+            switch (sizeof(wchar_t)) {
+            case 2:
                 string = SDL_iconv_string("UTF-8", "UCS-2-INTERNAL", (char*)wide_string, (SDL_wcslen(wide_string)+1)*sizeof(wchar_t));
-            } else if (sizeof(wchar_t) == sizeof(Uint32)) {
+                break;
+            case 4:
                 string = SDL_iconv_string("UTF-8", "UCS-4-INTERNAL", (char*)wide_string, (SDL_wcslen(wide_string)+1)*sizeof(wchar_t));
+                break;
             }
         }
     }
