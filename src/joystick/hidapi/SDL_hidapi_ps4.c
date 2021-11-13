@@ -415,7 +415,7 @@ HIDAPI_DriverPS4_TickleBluetooth(SDL_HIDAPI_Device *device)
     /* This is just a dummy packet that should have no effect, since we don't set the CRC */
     Uint8 data[78];
 
-    SDL_zero(data);
+    SDL_zeroa(data);
 
     data[0] = k_EPS4ReportIdBluetoothEffects;
     data[1] = 0xC0;  /* Magic value HID + CRC */
@@ -639,7 +639,7 @@ HIDAPI_DriverPS4_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joy
         HIDAPI_DriverPS4_SetEnhancedMode(device, joystick);
     }
 
-    SDL_zero(data);
+    SDL_zeroa(data);
 
     if (ctx->is_bluetooth) {
         data[0] = k_EPS4ReportIdBluetoothEffects;

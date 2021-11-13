@@ -471,7 +471,7 @@ HIDAPI_DriverPS5_TickleBluetooth(SDL_HIDAPI_Device *device)
     /* This is just a dummy packet that should have no effect, since we don't set the CRC */
     Uint8 data[78];
 
-    SDL_zero(data);
+    SDL_zeroa(data);
 
     data[0] = k_EPS5ReportIdBluetoothEffects;
     data[1] = 0x02;  /* Magic value */
@@ -703,7 +703,7 @@ HIDAPI_DriverPS5_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joy
         HIDAPI_DriverPS5_SetEnhancedMode(device, joystick);
     }
 
-    SDL_zero(data);
+    SDL_zeroa(data);
 
     if (ctx->is_bluetooth) {
         data[0] = k_EPS5ReportIdBluetoothEffects;
