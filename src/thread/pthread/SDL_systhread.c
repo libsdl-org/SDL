@@ -291,7 +291,8 @@ SDL_SYS_WaitThread(SDL_Thread * thread)
     }
 }
 
-void SDL_SYS_DetachThread(SDL_Thread * thread)
+void 
+SDL_SYS_DetachThread(SDL_Thread * thread)
 {
     pthread_detach(thread->handle);
 }
