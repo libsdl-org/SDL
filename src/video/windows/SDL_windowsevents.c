@@ -1542,7 +1542,7 @@ HINSTANCE SDL_Instance = NULL;
 
 /* Register the class for this application */
 int
-SDL_RegisterApp(char *name, Uint32 style, void *hInst)
+SDL_RegisterApp(const char *name, Uint32 style, void *hInst)
 {
     const char *hint;
     WNDCLASSEX wcex;
