@@ -13,17 +13,17 @@ android {
         if (buildAsApplication) {
             applicationId "org.libsdl.app"
         }
-        minSdkVersion 16
+        minSdkVersion 18
         targetSdkVersion 26
         versionCode 1
         versionName "1.0"
         externalNativeBuild {
             ndkBuild {
-                arguments "APP_PLATFORM=android-16"
+                arguments "APP_PLATFORM=android-18"
                 abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'
             }
             // cmake {
-            //     arguments "-DANDROID_APP_PLATFORM=android-16", "-DANDROID_STL=c++_static"
+            //     arguments "-DANDROID_APP_PLATFORM=android-18", "-DANDROID_STL=c++_static"
             //     // abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'
             //     abiFilters 'arm64-v8a'
             // }
