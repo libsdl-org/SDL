@@ -749,7 +749,8 @@ keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
                        uint32_t format, int fd, uint32_t size)
 {
     struct SDL_WaylandInput *input = data;
-    char *map_str, *locale;
+    char *map_str;
+    const char *locale;
 
     if (!data) {
         close(fd);
