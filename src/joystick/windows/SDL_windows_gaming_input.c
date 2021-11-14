@@ -103,7 +103,7 @@ SDL_IsXInputDevice(Uint16 vendor, Uint16 product)
 #ifdef SDL_JOYSTICK_RAWINPUT
         && !RAWINPUT_IsEnabled()
 #endif
-        ) {
+      ) {
         return SDL_FALSE;
     }
 
@@ -424,12 +424,14 @@ static __FIEventHandler_1_Windows__CGaming__CInput__CRawGameController controlle
 static int
 WGI_JoystickInit(void)
 {
+    HMODULE hModule;
+    HRESULT hr;
+
     if (FAILED(WIN_CoInitialize())) {
         return SDL_SetError("CoInitialize() failed");
     }
 
-    HRESULT hr;
-    HMODULE hModule = LoadLibraryA("combase.dll");
+    hModule = LoadLibraryA("combase.dll");
     if (hModule != NULL) {
         typedef HRESULT (WINAPI *WindowsCreateStringReference_t)(PCWSTR sourceString, UINT32 length, HSTRING_HEADER *hstringHeader, HSTRING* string);
         typedef HRESULT (WINAPI *WindowsDeleteString_t)(HSTRING string);

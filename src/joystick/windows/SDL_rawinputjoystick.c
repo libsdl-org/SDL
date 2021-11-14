@@ -452,12 +452,12 @@ RAWINPUT_UpdateWindowsGamingInput()
     wgi_state.dirty = SDL_FALSE;
 
     if (wgi_state.need_device_list_update) {
+        HRESULT hr;
+        __FIVectorView_1_Windows__CGaming__CInput__CGamepad *gamepads;
         wgi_state.need_device_list_update = SDL_FALSE;
         for (ii = 0; ii < wgi_state.per_gamepad_count; ii++) {
             wgi_state.per_gamepad[ii]->connected = SDL_FALSE;
         }
-        HRESULT hr;
-        __FIVectorView_1_Windows__CGaming__CInput__CGamepad *gamepads;
 
         hr = __x_ABI_CWindows_CGaming_CInput_CIGamepadStatics_get_Gamepads(wgi_state.gamepad_statics, &gamepads);
         if (SUCCEEDED(hr)) {
@@ -482,13 +482,15 @@ RAWINPUT_UpdateWindowsGamingInput()
                         }
                         if (!found) {
                             /* New device, add it */
+                            WindowsGamingInputGamepadState *gamepad_state;
+
                             wgi_state.per_gamepad_count++;
                             wgi_state.per_gamepad = SDL_realloc(wgi_state.per_gamepad, sizeof(wgi_state.per_gamepad[0]) * wgi_state.per_gamepad_count);
                             if (!wgi_state.per_gamepad) {
                                 SDL_OutOfMemory();
                                 return;
                             }
-                            WindowsGamingInputGamepadState *gamepad_state = SDL_calloc(1, sizeof(*gamepad_state));
+                            gamepad_state = SDL_calloc(1, sizeof(*gamepad_state));
                             if (!gamepad_state) {
                                 SDL_OutOfMemory();
                                 return;
@@ -534,6 +536,10 @@ RAWINPUT_InitWindowsGamingInput(RAWINPUT_DeviceContext *ctx)
     wgi_state.need_device_list_update = SDL_TRUE;
     wgi_state.ref_count++;
     if (!wgi_state.initialized) {
+        static const IID SDL_IID_IGamepadStatics = { 0x8BBCE529, 0xD49C, 0x39E9, { 0x95, 0x60, 0xE4, 0x7D, 0xDE, 0x96, 0xB7, 0xC8 } };
+        HRESULT hr;
+        HMODULE hModule;
+
         /* I think this takes care of RoInitialize() in a way that is compatible with the rest of SDL */
         if (FAILED(WIN_CoInitialize())) {
             return;
@@ -541,9 +547,7 @@ RAWINPUT_InitWindowsGamingInput(RAWINPUT_DeviceContext *ctx)
         wgi_state.initialized = SDL_TRUE;
         wgi_state.dirty = SDL_TRUE;
 
-        static const IID SDL_IID_IGamepadStatics = { 0x8BBCE529, 0xD49C, 0x39E9, { 0x95, 0x60, 0xE4, 0x7D, 0xDE, 0x96, 0xB7, 0xC8 } };
-        HRESULT hr;
-        HMODULE hModule = LoadLibraryA("combase.dll");
+        hModule = LoadLibraryA("combase.dll");
         if (hModule != NULL) {
             typedef HRESULT (WINAPI *WindowsCreateStringReference_t)(PCWSTR sourceString, UINT32 length, HSTRING_HEADER *hstringHeader, HSTRING* string);
             typedef HRESULT (WINAPI *RoGetActivationFactory_t)(HSTRING activatableClassId, REFIID iid, void** factory);
