@@ -1250,7 +1250,18 @@ AdjustCoordinatesForGrab(SDL_Window * window, int x, int y, CGPoint *adjusted)
 {
     /* probably a MacBook trackpad; make this look like a synthesized event.
        This is backwards from reality, but better matches user expectations. */
-    const BOOL istrackpad = ([theEvent subtype] == NSEventSubtypeMouseEvent);
+    BOOL istrackpad = NO;
+    @try {
+        istrackpad = ([theEvent subtype] == NSEventSubtypeMouseEvent);
+    }
+    @catch (NSException *e) {
+        /* if NSEvent type doesn't have subtype, such as NSEventTypeBeginGesture on
+         * macOS 10.5 to 10.10, then NSInternalInconsistencyException is thrown.
+         * This still prints a message to terminal so catching it's not an ideal solution.
+         *
+         * *** Assertion failure in -[NSEvent subtype]
+         */
+    }
 
     NSSet *touches = [theEvent touchesMatchingPhase:NSTouchPhaseAny inView:nil];
     const SDL_TouchID touchID = istrackpad ? SDL_MOUSE_TOUCHID : (SDL_TouchID)(intptr_t)[[touches anyObject] device];
@@ -1301,7 +1312,18 @@ AdjustCoordinatesForGrab(SDL_Window * window, int x, int y, CGPoint *adjusted)
 
     /* probably a MacBook trackpad; make this look like a synthesized event.
        This is backwards from reality, but better matches user expectations. */
-    const BOOL istrackpad = ([theEvent subtype] == NSEventSubtypeMouseEvent);
+    BOOL istrackpad = NO;
+    @try {
+        istrackpad = ([theEvent subtype] == NSEventSubtypeMouseEvent);
+    }
+    @catch (NSException *e) {
+        /* if NSEvent type doesn't have subtype, such as NSEventTypeBeginGesture on
+         * macOS 10.5 to 10.10, then NSInternalInconsistencyException is thrown.
+         * This still prints a message to terminal so catching it's not an ideal solution.
+         *
+         * *** Assertion failure in -[NSEvent subtype]
+         */
+    }
 
     for (NSTouch *touch in touches) {
         const SDL_TouchID touchId = istrackpad ? SDL_MOUSE_TOUCHID : (SDL_TouchID)(intptr_t)[touch device];
