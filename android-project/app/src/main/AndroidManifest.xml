@@ -38,8 +38,8 @@
         android:name="android.hardware.microphone"
         android:required="false" /> -->
 
-    <!-- Allow writing to external storage -->
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <!-- Allow downloading to external storage -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="22" />
     <!-- Allow access to Bluetooth devices -->
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <!-- Allow access to the vibrator -->
