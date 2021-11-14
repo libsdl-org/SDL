@@ -38,7 +38,7 @@
         android:name="android.hardware.microphone"
         android:required="false" /> -->
 
-    <!-- Allow downloading to external storage -->
+    <!-- Allow downloading to the external storage on Android 5.1 and older -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="22" />
     <!-- Allow access to Bluetooth devices -->
     <uses-permission android:name="android.permission.BLUETOOTH" />
