@@ -23,21 +23,9 @@ There are three build targets:
 Build SDL for iOS from the command line
 ==============================================================================
 
-1. cd (PATH WHERE THE SDL CODE IS)/build-scripts
-2. ./iosbuild.sh
+1. cd (PATH WHERE THE SDL CODE IS)
+2. xcodebuild -project Xcode/SDL/SDL.xcodeproj -target 'Static Library-iOS' -configuration Release -sdk iphoneos13.2 clean build
 
-If everything goes fine, you should see a build/ios directory, inside there's
-two directories "lib" and "include". 
-"include" contains a copy of the SDL headers that you'll need for your project,
-make sure to configure XCode to look for headers there.
-"lib" contains find two files, libSDL2.a and libSDL2main.a, you have to add both 
-to your XCode project. These libraries contain three architectures in them,
-armv6 for legacy devices, armv7, and i386 (for the simulator).
-By default, iosbuild.sh will autodetect the SDK version you have installed using 
-xcodebuild -showsdks, and build for iOS >= 3.0, you can override this behaviour 
-by setting the MIN_OS_VERSION variable, ie:
-
-MIN_OS_VERSION=4.2 ./iosbuild.sh
 
 Using the Simple DirectMedia Layer for iOS
 ==============================================================================
