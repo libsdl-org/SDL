@@ -428,7 +428,7 @@ SDL_PrivateSendMouseMotion(SDL_Window * window, SDL_MouseID mouseID, int relativ
                 x_min = mouse_rect.x;
                 y_min = mouse_rect.y;
                 x_max = x_min + mouse_rect.w - 1;
-                y_min = y_min + mouse_rect.h - 1;
+                y_max = y_min + mouse_rect.h - 1;
             }
         }
 
