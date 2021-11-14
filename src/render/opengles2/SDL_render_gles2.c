@@ -569,10 +569,18 @@ GLES2_SelectProgram(GLES2_RenderData *data, GLES2_ImageSource source, int w, int
             ftype = GLES2_SHADER_FRAGMENT_TEXTURE_NV12_JPEG;
             break;
         case SDL_YUV_CONVERSION_BT601:
-            ftype = GLES2_SHADER_FRAGMENT_TEXTURE_NV12_BT601;
+            if (SDL_GetHintBoolean("SDL_RENDER_OPENGL_NV12_RG_SHADER", SDL_FALSE)) {
+                ftype = GLES2_SHADER_FRAGMENT_TEXTURE_NV12_RG_BT601;
+            } else {
+                ftype = GLES2_SHADER_FRAGMENT_TEXTURE_NV12_RA_BT601;
+            }
             break;
         case SDL_YUV_CONVERSION_BT709:
-            ftype = GLES2_SHADER_FRAGMENT_TEXTURE_NV12_BT709;
+            if (SDL_GetHintBoolean("SDL_RENDER_OPENGL_NV12_RG_SHADER", SDL_FALSE)) {
+                ftype = GLES2_SHADER_FRAGMENT_TEXTURE_NV12_RG_BT709;
+            } else {
+                ftype = GLES2_SHADER_FRAGMENT_TEXTURE_NV12_RA_BT709;
+            }
             break;
         default:
             SDL_SetError("Unsupported YUV conversion mode: %d\n", SDL_GetYUVConversionModeForResolution(w, h));
