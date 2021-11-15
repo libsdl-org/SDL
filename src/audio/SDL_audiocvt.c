@@ -456,6 +456,7 @@ SDL_ConvertStereoTo51(SDL_AudioCVT * cvt, SDL_AudioFormat format)
         lf = src[0];
         rf = src[1];
         ce = (lf + rf) * 0.5f;
+        /* Constant 0.571f is approx 4/7 not to saturate */
         dst[0] = 0.571f * (lf + (lf - 0.5f * ce));  /* FL */
         dst[1] = 0.571f * (rf + (rf - 0.5f * ce));  /* FR */
         dst[2] = ce;  /* FC */
@@ -492,6 +493,7 @@ SDL_ConvertQuadTo51(SDL_AudioCVT * cvt, SDL_AudioFormat format)
         lb = src[2];
         rb = src[3];
         ce = (lf + rf) * 0.5f;
+        /* Constant 0.571f is approx 4/7 not to saturate */
         dst[0] = 0.571f * (lf + (lf - 0.5f * ce)); /* FL */
         dst[1] = 0.571f * (rf + (rf - 0.5f * ce));  /* FR */
         dst[2] = ce;  /* FC */
