@@ -55,12 +55,19 @@
 #ifndef MAC_OS_X_VERSION_10_12
 #define NSEventModifierFlagCapsLock NSAlphaShiftKeyMask
 #endif
+#ifndef NSAppKitVersionNumber10_13_2
+#define NSAppKitVersionNumber10_13_2    1561.2
+#endif
 #ifndef NSAppKitVersionNumber10_14
-#define NSAppKitVersionNumber10_14 1671
+#define NSAppKitVersionNumber10_14      1671
+#endif
+
+@interface NSWindow (SDL)
+#if MAC_OS_X_VERSION_MAX_ALLOWED < 101000 /* Added in the 10.10 SDK */
+@property (readonly) NSRect contentLayoutRect;
 #endif
 
 /* This is available as of 10.13.2, but isn't in public headers */
-@interface NSWindow (SDL)
 @property (nonatomic) NSRect mouseConfinementRect;
 @end
 
@@ -391,7 +398,7 @@ Cocoa_UpdateClipCursor(SDL_Window * window)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
 
-    if (@available(macOS 10.13.2, *)) {
+    if (NSAppKitVersionNumber >= NSAppKitVersionNumber10_13_2) {
         NSWindow *nswindow = data->nswindow;
         SDL_Rect mouse_rect;
 
@@ -1280,7 +1287,7 @@ Cocoa_UpdateClipCursor(SDL_Window * window)
     x = (int)point.x;
     y = (int)(window->h - point.y);
 
-    if (@available(macOS 10.13.2, *)) {
+    if (NSAppKitVersionNumber >= NSAppKitVersionNumber10_13_2) {
         /* Mouse grab is taken care of by the confinement rect */
     } else {
         CGPoint cgpoint;
