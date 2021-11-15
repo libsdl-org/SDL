@@ -1148,7 +1148,7 @@ GLES2_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
                 int ret;
                 while (nextcmd != NULL) {
                     const SDL_RenderCommandType nextcmdtype = nextcmd->command;
-                    if (nextcmdtype != thiscmdtype) {
+                    if (nextcmdtype != thiscmdtype || thiscmdtype == SDL_RENDERCMD_DRAW_LINES) {
                         break;  /* can't go any further on this draw call, different render command up next. */
                     } else if (nextcmd->data.draw.texture != thistexture || nextcmd->data.draw.blend != thisblend) {
                         break;  /* can't go any further on this draw call, different texture/blendmode copy up next. */
