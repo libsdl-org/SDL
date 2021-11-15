@@ -92,8 +92,10 @@ typedef struct {
     struct wl_output *output;
     float scale_factor;
     int x, y, width, height, refresh, transform;
+    SDL_DisplayOrientation orientation;
     int physical_width, physical_height;
     float ddpi, hdpi, vdpi;
+    int index;
     SDL_VideoDisplay placeholder;
     SDL_bool done;
 } SDL_WaylandOutputData;

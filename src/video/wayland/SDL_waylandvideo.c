@@ -302,12 +302,50 @@ display_handle_geometry(void *data,
 {
     SDL_WaylandOutputData *driverdata = data;
 
+    if (driverdata->done) {
+        SDL_ResetDisplayModes(driverdata->index);
+
+        /* The display has officially started over. */
+        driverdata->done = SDL_FALSE;
+    }
+
     driverdata->x = x;
     driverdata->y = y;
     driverdata->physical_width = physical_width;
     driverdata->physical_height = physical_height;
-    driverdata->placeholder.name = SDL_strdup(model);
+    if (driverdata->index == -1) {
+        driverdata->placeholder.name = SDL_strdup(model);
+    }
+
     driverdata->transform = transform;
+    #define TF_CASE(in, out) \
+        case WL_OUTPUT_TRANSFORM_##in: \
+            driverdata->orientation = SDL_ORIENTATION_##out; \
+            break;
+    if (driverdata->physical_width >= driverdata->physical_height) {
+        switch (transform) {
+            TF_CASE(NORMAL, LANDSCAPE)
+            TF_CASE(90, PORTRAIT)
+            TF_CASE(180, LANDSCAPE_FLIPPED)
+            TF_CASE(270, PORTRAIT_FLIPPED)
+            TF_CASE(FLIPPED, LANDSCAPE_FLIPPED)
+            TF_CASE(FLIPPED_90, PORTRAIT_FLIPPED)
+            TF_CASE(FLIPPED_180, LANDSCAPE)
+            TF_CASE(FLIPPED_270, PORTRAIT)
+        }
+    } else {
+        switch (transform) {
+            TF_CASE(NORMAL, PORTRAIT)
+            TF_CASE(90, LANDSCAPE)
+            TF_CASE(180, PORTRAIT_FLIPPED)
+            TF_CASE(270, LANDSCAPE_FLIPPED)
+            TF_CASE(FLIPPED, PORTRAIT_FLIPPED)
+            TF_CASE(FLIPPED_90, LANDSCAPE_FLIPPED)
+            TF_CASE(FLIPPED_180, PORTRAIT)
+            TF_CASE(FLIPPED_270, LANDSCAPE)
+        }
+    }
+    #undef TF_CASE
 }
 
 static void
@@ -322,6 +360,7 @@ display_handle_mode(void *data,
     SDL_DisplayMode mode;
 
     if (flags & WL_OUTPUT_MODE_CURRENT) {
+        /* Don't rotate this yet, handle_done will do it later */
         driverdata->width = width;
         driverdata->height = height;
         driverdata->refresh = refresh;
@@ -344,7 +383,11 @@ display_handle_mode(void *data,
     }
     mode.refresh_rate = refresh / 1000; /* mHz to Hz */
     mode.driverdata = driverdata->output;
-    SDL_AddDisplayMode(&driverdata->placeholder, &mode);
+    if (driverdata->index > -1) {
+        SDL_AddDisplayMode(SDL_GetDisplay(driverdata->index), &mode);
+    } else {
+        SDL_AddDisplayMode(&driverdata->placeholder, &mode);
+    }
 }
 
 static void
@@ -353,6 +396,7 @@ display_handle_done(void *data,
 {
     SDL_WaylandOutputData* driverdata = data;
     SDL_DisplayMode mode;
+    SDL_VideoDisplay *dpy;
 
     if (driverdata->done)
         return;
@@ -392,14 +436,28 @@ display_handle_done(void *data,
     }
     mode.refresh_rate = driverdata->refresh / 1000; /* mHz to Hz */
     mode.driverdata = driverdata->output;
-    SDL_AddDisplayMode(&driverdata->placeholder, &mode);
-    driverdata->placeholder.current_mode = mode;
-    driverdata->placeholder.desktop_mode = mode;
 
-    driverdata->placeholder.driverdata = driverdata;
-    SDL_AddVideoDisplay(&driverdata->placeholder, SDL_FALSE);
-    SDL_free(driverdata->placeholder.name);
-    SDL_zero(driverdata->placeholder);
+    if (driverdata->index > -1) {
+        dpy = SDL_GetDisplay(driverdata->index);
+    } else {
+        dpy = &driverdata->placeholder;
+    }
+
+    SDL_AddDisplayMode(dpy, &mode);
+    SDL_SetCurrentDisplayMode(dpy, &mode);
+    SDL_SetDesktopDisplayMode(dpy, &mode);
+
+    if (driverdata->index == -1) {
+        /* First time getting display info, create the VideoDisplay */
+        driverdata->placeholder.driverdata = driverdata;
+        driverdata->index = SDL_AddVideoDisplay(&driverdata->placeholder, SDL_FALSE);
+        SDL_free(driverdata->placeholder.name);
+        SDL_zero(driverdata->placeholder);
+
+        dpy = SDL_GetDisplay(driverdata->index);
+    }
+
+    SDL_SendDisplayEvent(dpy, SDL_DISPLAYEVENT_ORIENTATION, driverdata->orientation);
 }
 
 static void
@@ -433,6 +491,7 @@ Wayland_add_display(SDL_VideoData *d, uint32_t id)
     SDL_zerop(data);
     data->output = output;
     data->scale_factor = 1.0;
+    data->index = -1;
 
     wl_output_add_listener(output, &output_listener, data);
     SDL_WAYLAND_register_output(output);
