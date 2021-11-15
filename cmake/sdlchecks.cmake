@@ -859,7 +859,7 @@ endmacro()
 # PTHREAD_CFLAGS
 # PTHREAD_LIBS
 macro(CheckPTHREAD)
-  if(SDL_PTHREADS)
+  if(SDL_THREADS AND SDL_PTHREADS)
     if(ANDROID)
       # the android libc provides built-in support for pthreads, so no
       # additional linking or compile flags are necessary
