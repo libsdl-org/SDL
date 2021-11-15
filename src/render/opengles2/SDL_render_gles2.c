@@ -1144,6 +1144,7 @@ GLES2_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
                         /* let's group non joined lines */
                         SDL_RenderCommand *finalcmd = cmd;
                         SDL_RenderCommand *nextcmd = cmd->next;
+                        SDL_BlendMode thisblend = cmd->data.draw.blend;
 
                         while (nextcmd != NULL) {
                             const SDL_RenderCommandType nextcmdtype = nextcmd->command;
@@ -1151,6 +1152,8 @@ GLES2_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
                                 break;  /* can't go any further on this draw call, different render command up next. */
                             } else if (nextcmd->data.draw.count != 2) {
                                 break;  /* can't go any further on this draw call, those are joined lines */
+                            } else if (nextcmd->data.draw.blend != thisblend) {
+                                break;  /* can't go any further on this draw call, different blendmode copy up next. */
                             } else {
                                 finalcmd = nextcmd;  /* we can combine copy operations here. Mark this one as the furthest okay command. */
                                 count += cmd->data.draw.count;
