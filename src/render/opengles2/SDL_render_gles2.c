@@ -1136,7 +1136,31 @@ GLES2_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
 
             case SDL_RENDERCMD_DRAW_LINES: {
                 if (SetDrawState(data, cmd, GLES2_IMAGESOURCE_SOLID) == 0) {
-                    data->glDrawArrays(GL_LINE_STRIP, 0, (GLsizei) cmd->data.draw.count);
+                    size_t count = cmd->data.draw.count;
+                    if (count > 2) {
+                        /* joined lines cannot be grouped */
+                        data->glDrawArrays(GL_LINE_STRIP, 0, (GLsizei)count);
+                    } else {
+                        /* let's group non joined lines */
+                        SDL_RenderCommand *finalcmd = cmd;
+                        SDL_RenderCommand *nextcmd = cmd->next;
+
+                        while (nextcmd != NULL) {
+                            const SDL_RenderCommandType nextcmdtype = nextcmd->command;
+                            if (nextcmdtype != SDL_RENDERCMD_DRAW_LINES) {
+                                break;  /* can't go any further on this draw call, different render command up next. */
+                            } else if (nextcmd->data.draw.count != 2) {
+                                break;  /* can't go any further on this draw call, those are joined lines */
+                            } else {
+                                finalcmd = nextcmd;  /* we can combine copy operations here. Mark this one as the furthest okay command. */
+                                count += cmd->data.draw.count;
+                            }
+                            nextcmd = nextcmd->next;
+                        }
+
+                        data->glDrawArrays(GL_LINES, 0, (GLsizei)count);
+                        cmd = finalcmd;  /* skip any copy commands we just combined in here. */
+                    }
                 }
                 break;
             }
