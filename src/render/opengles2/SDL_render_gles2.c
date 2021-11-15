@@ -1134,8 +1134,14 @@ GLES2_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
             case SDL_RENDERCMD_COPY_EX: /* unused */
                 break;
 
+            case SDL_RENDERCMD_DRAW_LINES: {
+                if (SetDrawState(data, cmd, GLES2_IMAGESOURCE_SOLID) == 0) {
+                    data->glDrawArrays(GL_LINE_STRIP, 0, (GLsizei) cmd->data.draw.count);
+                }
+                break;
+            }
+
             case SDL_RENDERCMD_DRAW_POINTS:
-            case SDL_RENDERCMD_DRAW_LINES:
             case SDL_RENDERCMD_GEOMETRY: {
                 /* as long as we have the same copy command in a row, with the
                    same texture, we can combine them all into a single draw call. */
@@ -1148,7 +1154,7 @@ GLES2_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
                 int ret;
                 while (nextcmd != NULL) {
                     const SDL_RenderCommandType nextcmdtype = nextcmd->command;
-                    if (nextcmdtype != thiscmdtype || thiscmdtype == SDL_RENDERCMD_DRAW_LINES) {
+                    if (nextcmdtype != thiscmdtype) {
                         break;  /* can't go any further on this draw call, different render command up next. */
                     } else if (nextcmd->data.draw.texture != thistexture || nextcmd->data.draw.blend != thisblend) {
                         break;  /* can't go any further on this draw call, different texture/blendmode copy up next. */
@@ -1169,8 +1175,6 @@ GLES2_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
                     int op = GL_TRIANGLES; /* SDL_RENDERCMD_GEOMETRY */
                     if (thiscmdtype == SDL_RENDERCMD_DRAW_POINTS) {
                         op = GL_POINTS; 
-                    } else if (thiscmdtype == SDL_RENDERCMD_DRAW_LINES) {
-                        op = GL_LINE_STRIP; 
                     }
                     data->glDrawArrays(op, 0, (GLsizei) count);
                 }
