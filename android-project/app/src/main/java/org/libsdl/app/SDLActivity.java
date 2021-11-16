@@ -499,8 +499,8 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         // If we do, the normal hardware back button will no longer work and people have to use home,
         // but the mouse right click will work.
         //
-        String trapBack = SDLActivity.nativeGetHint("SDL_ANDROID_TRAP_BACK_BUTTON");
-        if ((trapBack != null) && trapBack.equals("1")) {
+        boolean trapBack = SDLActivity.nativeGetHintBoolean("SDL_ANDROID_TRAP_BACK_BUTTON", false);
+        if (trapBack) {
             // Exit and let the mouse handler handle this button (if appropriate)
             return;
         }
@@ -803,6 +803,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     public static native void onNativeSurfaceChanged();
     public static native void onNativeSurfaceDestroyed();
     public static native String nativeGetHint(String name);
+    public static native boolean nativeGetHintBoolean(String name, boolean default_value);
     public static native void nativeSetenv(String name, String value);
     public static native void onNativeOrientationChanged(int orientation);
     public static native void nativeAddTouch(int touchId, String name);

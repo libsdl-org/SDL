@@ -148,6 +148,10 @@ JNIEXPORT jstring JNICALL SDL_JAVA_INTERFACE(nativeGetHint)(
         JNIEnv *env, jclass cls,
         jstring name);
 
+JNIEXPORT jboolean JNICALL SDL_JAVA_INTERFACE(nativeGetHintBoolean)(
+        JNIEnv *env, jclass cls,
+        jstring name, jboolean default_value);
+
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetenv)(
         JNIEnv *env, jclass cls,
         jstring name, jstring value);
@@ -189,6 +193,7 @@ static JNINativeMethod SDLActivity_tab[] = {
     { "nativeResume",               "()V", SDL_JAVA_INTERFACE(nativeResume) },
     { "nativeFocusChanged",         "(Z)V", SDL_JAVA_INTERFACE(nativeFocusChanged) },
     { "nativeGetHint",              "(Ljava/lang/String;)Ljava/lang/String;", SDL_JAVA_INTERFACE(nativeGetHint) },
+    { "nativeGetHintBoolean",       "(Ljava/lang/String;Z)Z", SDL_JAVA_INTERFACE(nativeGetHintBoolean) },
     { "nativeSetenv",               "(Ljava/lang/String;Ljava/lang/String;)V", SDL_JAVA_INTERFACE(nativeSetenv) },
     { "onNativeOrientationChanged", "(I)V", SDL_JAVA_INTERFACE(onNativeOrientationChanged) },
     { "nativeAddTouch",             "(ILjava/lang/String;)V", SDL_JAVA_INTERFACE(nativeAddTouch) },
@@ -1301,6 +1306,19 @@ JNIEXPORT jstring JNICALL SDL_JAVA_INTERFACE(nativeGetHint)(
     const char *hint = SDL_GetHint(utfname);
 
     jstring result = (*env)->NewStringUTF(env, hint);
+    (*env)->ReleaseStringUTFChars(env, name, utfname);
+
+    return result;
+}
+
+JNIEXPORT jboolean JNICALL SDL_JAVA_INTERFACE(nativeGetHintBoolean)(
+                                    JNIEnv *env, jclass cls,
+                                    jstring name, jboolean default_value)
+{
+    jboolean result;
+
+    const char *utfname = (*env)->GetStringUTFChars(env, name, NULL);
+    result = SDL_GetHintBoolean(utfname, default_value);
     (*env)->ReleaseStringUTFChars(env, name, utfname);
 
     return result;
