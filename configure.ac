@@ -3475,19 +3475,17 @@ CheckHIDAPI()
                     if test x$libusb_lib = x; then
                         libusb_lib=[`find_lib "libusb-1.0.so.*" "" | sed 's/.*\/\(.*\)/\1/; q'`]
                     fi
-                    AC_DEFINE_UNQUOTED(SDL_LIBUSB_DYNAMIC, "$libusb_lib", [ ])
+                    AC_DEFINE_UNQUOTED(SDL_LIBUSB_DYNAMIC, "$libusb_lib", [])
                 fi
             fi
-        else
-            AC_DEFINE(SDL_HIDAPI_DISABLED, 1, [ ])
         fi
 
-        AC_MSG_CHECKING(for hidapi support)
+        AC_MSG_CHECKING(for hidapi joystick support)
         AC_MSG_RESULT($hidapi_support)
     fi
 
     if test x$enable_joystick = xyes -a x$hidapi_support = xyes -a x$enable_hidapi_joystick = xyes; then
-        AC_DEFINE(SDL_JOYSTICK_HIDAPI, 1, [ ])
+        AC_DEFINE(SDL_JOYSTICK_HIDAPI, 1, [])
         SOURCES="$SOURCES $srcdir/src/joystick/hidapi/*.c"
     fi
 }

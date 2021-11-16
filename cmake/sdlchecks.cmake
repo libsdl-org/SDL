@@ -1172,8 +1172,6 @@ macro(CheckHIDAPI)
       file(GLOB HIDAPI_JOYSTICK_SOURCES ${SDL2_SOURCE_DIR}/src/joystick/hidapi/*.c)
       set(SOURCE_FILES ${SOURCE_FILES} ${HIDAPI_JOYSTICK_SOURCES})
     endif()
-  else()
-    set(SDL_HIDAPI_DISABLED 1)
   endif()
 endmacro()
 
