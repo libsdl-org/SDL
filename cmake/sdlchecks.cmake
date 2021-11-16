@@ -39,7 +39,6 @@ macro(CheckDLOPEN)
       set(HAVE_DLOPEN TRUE)
     endif()
   endif()
-
   if(HAVE_DLOPEN)
     if(_DLLIB)
       set(CMAKE_REQUIRED_LIBRARIES ${_DLLIB})
@@ -144,7 +143,6 @@ macro(CheckPipewire)
         endif()
     endif()
 endmacro()
-
 
 # Requires:
 # - PkgCheckModules
