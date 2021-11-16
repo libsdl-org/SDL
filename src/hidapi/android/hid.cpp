@@ -18,11 +18,16 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+#include "../../SDL_internal.h"
+
 // Purpose: A wrapper implementing "HID" API for Android
 //
 //          This layer glues the hidapi API to Android's USB and BLE stack.
 
 #if !SDL_HIDAPI_DISABLED
+
+#include "SDL_hints.h"
+#include "../../core/android/SDL_android.h"
 
 #define hid_init                        PLATFORM_hid_init
 #define hid_exit                        PLATFORM_hid_exit
@@ -371,15 +376,47 @@ static void FreeHIDDeviceInfo( hid_device_info *pInfo )
 
 static jclass  g_HIDDeviceManagerCallbackClass;
 static jobject g_HIDDeviceManagerCallbackHandler;
+static jmethodID g_midHIDDeviceManagerInitialize;
 static jmethodID g_midHIDDeviceManagerOpen;
 static jmethodID g_midHIDDeviceManagerSendOutputReport;
 static jmethodID g_midHIDDeviceManagerSendFeatureReport;
 static jmethodID g_midHIDDeviceManagerGetFeatureReport;
 static jmethodID g_midHIDDeviceManagerClose;
+static bool g_initialized = false;
 
 static uint64_t get_timespec_ms( const struct timespec &ts )
 {
 	return (uint64_t)ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
+}
+
+static void ExceptionCheck( JNIEnv *env, const char *pszClassName, const char *pszMethodName )
+{
+	if ( env->ExceptionCheck() )
+	{
+		// Get our exception
+		jthrowable jExcept = env->ExceptionOccurred();
+
+		// Clear the exception so we can call JNI again
+		env->ExceptionClear();
+
+		// Get our exception message
+		jclass jExceptClass = env->GetObjectClass( jExcept );
+		jmethodID jMessageMethod = env->GetMethodID( jExceptClass, "getMessage", "()Ljava/lang/String;" );
+		jstring jMessage = (jstring)( env->CallObjectMethod( jExcept, jMessageMethod ) );
+		const char *pszMessage = env->GetStringUTFChars( jMessage, NULL );
+
+		// ...and log it.
+		LOGE( "%s%s%s threw an exception: %s",
+			pszClassName ? pszClassName : "",
+			pszClassName ? "::" : "",
+			pszMethodName, pszMessage );
+
+		// Cleanup
+		env->ReleaseStringUTFChars( jMessage, pszMessage );
+		env->DeleteLocalRef( jMessage );
+		env->DeleteLocalRef( jExceptClass );
+		env->DeleteLocalRef( jExcept );
+	}
 }
 
 class CHIDDevice
@@ -441,29 +478,7 @@ public:
 
 	void ExceptionCheck( JNIEnv *env, const char *pszMethodName )
 	{
-		if ( env->ExceptionCheck() )
-		{
-			// Get our exception
-			jthrowable jExcept = env->ExceptionOccurred();
-
-			// Clear the exception so we can call JNI again
-			env->ExceptionClear();
-
-			// Get our exception message
-			jclass jExceptClass = env->GetObjectClass( jExcept );
-			jmethodID jMessageMethod = env->GetMethodID( jExceptClass, "getMessage", "()Ljava/lang/String;" );
-			jstring jMessage = (jstring)( env->CallObjectMethod( jExcept, jMessageMethod ) );
-			const char *pszMessage = env->GetStringUTFChars( jMessage, NULL );
-
-			// ...and log it.
-			LOGE( "CHIDDevice::%s threw an exception: %s", pszMethodName, pszMessage );
-
-			// Cleanup
-			env->ReleaseStringUTFChars( jMessage, pszMessage );
-			env->DeleteLocalRef( jMessage );
-			env->DeleteLocalRef( jExceptClass );
-			env->DeleteLocalRef( jExcept );
-		}
+		::ExceptionCheck( env, "CHIDDevice", pszMethodName );
 	}
 
 	bool BOpen()
@@ -852,6 +867,11 @@ JNIEXPORT void JNICALL HID_DEVICE_MANAGER_JAVA_INTERFACE(HIDDeviceRegisterCallba
 	if ( objClass )
 	{
 		g_HIDDeviceManagerCallbackClass = reinterpret_cast< jclass >( env->NewGlobalRef( objClass ) );
+		g_midHIDDeviceManagerInitialize = env->GetMethodID( g_HIDDeviceManagerCallbackClass, "initialize", "(ZZ)Z" );
+		if ( !g_midHIDDeviceManagerInitialize )
+		{
+			__android_log_print(ANDROID_LOG_ERROR, TAG, "HIDDeviceRegisterCallback: callback class missing initialize" );
+		}
 		g_midHIDDeviceManagerOpen = env->GetMethodID( g_HIDDeviceManagerCallbackClass, "openDevice", "(I)Z" );
 		if ( !g_midHIDDeviceManagerOpen )
 		{
@@ -891,6 +911,7 @@ JNIEXPORT void JNICALL HID_DEVICE_MANAGER_JAVA_INTERFACE(HIDDeviceReleaseCallbac
 		g_HIDDeviceManagerCallbackClass = NULL;
 		env->DeleteGlobalRef( g_HIDDeviceManagerCallbackHandler );
 		g_HIDDeviceManagerCallbackHandler = NULL;
+		g_initialized = false;
 	}
 }
 
@@ -1025,6 +1046,33 @@ extern "C"
 
 int hid_init(void)
 {
+	if ( !g_initialized )
+	{
+		// Make sure thread is attached to JVM/env
+		JNIEnv *env;
+		g_JVM->AttachCurrentThread( &env, NULL );
+		pthread_setspecific( g_ThreadKey, (void*)env );
+
+		if ( !g_HIDDeviceManagerCallbackHandler )
+		{
+			LOGV( "hid_init() without callback handler" );
+			return -1;
+		}
+
+        // Bluetooth is currently only used for Steam Controllers, so check that hint
+        // before initializing Bluetooth, which will prompt the user for permission.
+		bool init_usb = true;
+		bool init_bluetooth = false;
+        if (SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_STEAM, SDL_FALSE)) {
+			if (SDL_GetAndroidSDKVersion() < 31 ||
+				Android_JNI_RequestPermission("android.permission.BLUETOOTH_CONNECT")) {
+				init_bluetooth = true;
+			}
+        }
+		env->CallBooleanMethod( g_HIDDeviceManagerCallbackHandler, g_midHIDDeviceManagerInitialize, init_usb, init_bluetooth );
+		ExceptionCheck( env, NULL, "hid_init" );
+		g_initialized = true;	// Regardless of result, so it's only called once
+	}
 	return 0;
 }
 

@@ -334,6 +334,7 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXbox360W =
 {
     SDL_HINT_JOYSTICK_HIDAPI_XBOX,
     SDL_TRUE,
+    SDL_TRUE,
     HIDAPI_DriverXbox360W_IsSupportedDevice,
     HIDAPI_DriverXbox360W_GetDeviceName,
     HIDAPI_DriverXbox360W_InitDevice,

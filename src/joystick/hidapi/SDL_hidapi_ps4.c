@@ -933,6 +933,7 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverPS4 =
 {
     SDL_HINT_JOYSTICK_HIDAPI_PS4,
     SDL_TRUE,
+    SDL_TRUE,
     HIDAPI_DriverPS4_IsSupportedDevice,
     HIDAPI_DriverPS4_GetDeviceName,
     HIDAPI_DriverPS4_InitDevice,

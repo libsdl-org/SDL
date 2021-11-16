@@ -119,9 +119,6 @@ public class HIDDeviceManager {
         {
             mNextDeviceId = mSharedPreferences.getInt("next_device_id", 0);
         }
-
-        initializeUSB();
-        initializeBluetooth();
     }
 
     public Context getContext() {
@@ -349,7 +346,8 @@ public class HIDDeviceManager {
     private void initializeBluetooth() {
         Log.d(TAG, "Initializing Bluetooth");
 
-        if (mContext.getPackageManager().checkPermission(android.Manifest.permission.BLUETOOTH, mContext.getPackageName()) != PackageManager.PERMISSION_GRANTED) {
+        if (Build.VERSION.SDK_INT <= 30 &&
+            mContext.getPackageManager().checkPermission(android.Manifest.permission.BLUETOOTH, mContext.getPackageName()) != PackageManager.PERMISSION_GRANTED) {
             Log.d(TAG, "Couldn't initialize Bluetooth, missing android.permission.BLUETOOTH");
             return;
         }
@@ -540,6 +538,18 @@ public class HIDDeviceManager {
     //////////////////////////////////////////////////////////////////////////////////////////////////////
     ////////// JNI interface functions
     //////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public boolean initialize(boolean usb, boolean bluetooth) {
+        Log.v(TAG, "initialize(" + usb + ", " + bluetooth + ")");
+
+        if (usb) {
+            initializeUSB();
+        }
+        if (bluetooth) {
+            initializeBluetooth();
+        }
+        return true;
+    }
 
     public boolean openDevice(int deviceID) {
         Log.v(TAG, "openDevice deviceID=" + deviceID);

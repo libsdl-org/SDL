@@ -22,6 +22,8 @@
 
 #if !SDL_HIDAPI_DISABLED
 
+#include "SDL_hints.h"
+
 #define hid_init                        PLATFORM_hid_init
 #define hid_exit                        PLATFORM_hid_exit
 #define hid_enumerate                   PLATFORM_hid_enumerate
@@ -227,24 +229,29 @@ typedef enum
 		sharedInstance = [HIDBLEManager new];
 		sharedInstance.nPendingScans = 0;
 		sharedInstance.nPendingPairs = 0;
-		
-		[[NSNotificationCenter defaultCenter] addObserver:sharedInstance selector:@selector(appWillResignActiveNotification:) name: UIApplicationWillResignActiveNotification object:nil];
-		[[NSNotificationCenter defaultCenter] addObserver:sharedInstance selector:@selector(appDidBecomeActiveNotification:) name:UIApplicationDidBecomeActiveNotification object:nil];
 
-		// receive reports on a high-priority serial-queue. optionally put writes on the serial queue to avoid logical
-		// race conditions talking to the controller from multiple threads, although BLE fragmentation/assembly means
-		// that we can still screw this up.
-		// most importantly we need to consume reports at a high priority to avoid the OS thinking we aren't really
-		// listening to the BLE device, as iOS on slower devices may stop delivery of packets to the app WITHOUT ACTUALLY
-		// DISCONNECTING FROM THE DEVICE if we don't react quickly enough to their delivery.
-		// see also the error-handling states in the peripheral delegate to re-open the device if it gets closed
-		sharedInstance.bleSerialQueue = dispatch_queue_create( "com.valvesoftware.steamcontroller.ble", DISPATCH_QUEUE_SERIAL );
-		dispatch_set_target_queue( sharedInstance.bleSerialQueue, dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_HIGH, 0 ) );
+        // Bluetooth is currently only used for Steam Controllers, so check that hint
+        // before initializing Bluetooth, which will prompt the user for permission.
+		if ( SDL_GetHintBoolean( SDL_HINT_JOYSTICK_HIDAPI_STEAM, SDL_FALSE ) )
+		{
+			[[NSNotificationCenter defaultCenter] addObserver:sharedInstance selector:@selector(appWillResignActiveNotification:) name: UIApplicationWillResignActiveNotification object:nil];
+			[[NSNotificationCenter defaultCenter] addObserver:sharedInstance selector:@selector(appDidBecomeActiveNotification:) name:UIApplicationDidBecomeActiveNotification object:nil];
 
-		// creating a CBCentralManager will always trigger a future centralManagerDidUpdateState:
-		// where any scanning gets started or connecting to existing peripherals happens, it's never already in a
-		// powered-on state for a newly launched application.
-		sharedInstance.centralManager = [[CBCentralManager alloc] initWithDelegate:sharedInstance queue:sharedInstance.bleSerialQueue];
+			// receive reports on a high-priority serial-queue. optionally put writes on the serial queue to avoid logical
+			// race conditions talking to the controller from multiple threads, although BLE fragmentation/assembly means
+			// that we can still screw this up.
+			// most importantly we need to consume reports at a high priority to avoid the OS thinking we aren't really
+			// listening to the BLE device, as iOS on slower devices may stop delivery of packets to the app WITHOUT ACTUALLY
+			// DISCONNECTING FROM THE DEVICE if we don't react quickly enough to their delivery.
+			// see also the error-handling states in the peripheral delegate to re-open the device if it gets closed
+			sharedInstance.bleSerialQueue = dispatch_queue_create( "com.valvesoftware.steamcontroller.ble", DISPATCH_QUEUE_SERIAL );
+			dispatch_set_target_queue( sharedInstance.bleSerialQueue, dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_HIGH, 0 ) );
+
+			// creating a CBCentralManager will always trigger a future centralManagerDidUpdateState:
+			// where any scanning gets started or connecting to existing peripherals happens, it's never already in a
+			// powered-on state for a newly launched application.
+			sharedInstance.centralManager = [[CBCentralManager alloc] initWithDelegate:sharedInstance queue:sharedInstance.bleSerialQueue];
+		}
 		sharedInstance.deviceMap = [[NSMapTable alloc] initWithKeyOptions:NSMapTableWeakMemory valueOptions:NSMapTableStrongMemory capacity:4];
 	});
 	return sharedInstance;
@@ -284,6 +291,11 @@ typedef enum
 	static uint64_t s_unLastUpdateTick = 0;
 	static mach_timebase_info_data_t s_timebase_info;
 	
+	if ( self.centralManager == nil )
+    {
+		return 0;
+    }
+
 	if (s_timebase_info.denom == 0)
 	{
 		mach_timebase_info( &s_timebase_info );
@@ -329,6 +341,11 @@ typedef enum
 // manual API for folks to start & stop scanning
 - (void)startScan:(int)duration
 {
+	if ( self.centralManager == nil )
+	{
+		return;
+	}
+
 	NSLog( @"BLE: requesting scan for %d seconds", duration );
 	@synchronized (self)
 	{
@@ -348,6 +365,11 @@ typedef enum
 
 - (void)stopScan
 {
+	if ( self.centralManager == nil )
+	{
+		return;
+	}
+
 	NSLog( @"BLE: stopping scan" );
 	@synchronized (self)
 	{

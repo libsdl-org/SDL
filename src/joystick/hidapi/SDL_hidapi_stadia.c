@@ -306,6 +306,7 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverStadia =
 {
     SDL_HINT_JOYSTICK_HIDAPI_STADIA,
     SDL_TRUE,
+    SDL_TRUE,
     HIDAPI_DriverStadia_IsSupportedDevice,
     HIDAPI_DriverStadia_GetDeviceName,
     HIDAPI_DriverStadia_InitDevice,

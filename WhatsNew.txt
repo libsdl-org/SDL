@@ -11,9 +11,11 @@ Linux:
 
 Android:
 * Added support for audio output and capture using AAudio on Android 8.1 and newer
+* Steam Controller support is disabled by default, and can be enabled by setting the hint SDL_HINT_JOYSTICK_HIDAPI_STEAM to "1" before calling SDL_Init()
 
 iOS:
 * Added documentation that the UIApplicationSupportsIndirectInputEvents key must be set to true in your application's Info.plist in order to get real Bluetooth mouse events.
+* Steam Controller support is disabled by default, and can be enabled by setting the hint SDL_HINT_JOYSTICK_HIDAPI_STEAM to "1" before calling SDL_Init()
 
 
 ---------------------------------------------------------------------------

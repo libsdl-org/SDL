@@ -1284,6 +1284,7 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSteam =
 {
     SDL_HINT_JOYSTICK_HIDAPI_STEAM,
     SDL_TRUE,
+    SDL_FALSE,
     HIDAPI_DriverSteam_IsSupportedDevice,
     HIDAPI_DriverSteam_GetDeviceName,
     HIDAPI_DriverSteam_InitDevice,

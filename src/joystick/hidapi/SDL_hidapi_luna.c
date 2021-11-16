@@ -438,6 +438,7 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverLuna =
 {
     SDL_HINT_JOYSTICK_HIDAPI_LUNA,
     SDL_TRUE,
+    SDL_TRUE,
     HIDAPI_DriverLuna_IsSupportedDevice,
     HIDAPI_DriverLuna_GetDeviceName,
     HIDAPI_DriverLuna_InitDevice,

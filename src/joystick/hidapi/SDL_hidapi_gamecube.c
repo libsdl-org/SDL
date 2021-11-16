@@ -539,6 +539,7 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverGameCube =
 {
     SDL_HINT_JOYSTICK_HIDAPI_GAMECUBE,
     SDL_TRUE,
+    SDL_TRUE,
     HIDAPI_DriverGameCube_IsSupportedDevice,
     HIDAPI_DriverGameCube_GetDeviceName,
     HIDAPI_DriverGameCube_InitDevice,
