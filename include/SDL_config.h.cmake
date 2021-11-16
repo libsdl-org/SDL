@@ -494,6 +494,9 @@
 /* Enable dynamic libsamplerate support */
 #cmakedefine SDL_LIBSAMPLERATE_DYNAMIC @SDL_LIBSAMPLERATE_DYNAMIC@
 
+/* Enable ime support */
+#cmakedefine SDL_USE_IME @SDL_USE_IME@
+
 /* Platform specific definitions */
 #cmakedefine SDL_IPHONE_KEYBOARD @SDL_IPHONE_KEYBOARD@
 #cmakedefine SDL_IPHONE_LAUNCHSCREEN @SDL_IPHONE_LAUNCHSCREEN@

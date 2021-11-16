@@ -414,6 +414,7 @@ macro(CheckX11)
     check_include_file(X11/extensions/Xrender.h HAVE_XRENDER_H)
     check_include_file(X11/extensions/scrnsaver.h HAVE_XSS_H)
     check_include_file(X11/extensions/shape.h HAVE_XSHAPE_H)
+    check_include_files("X11/Xlib.h;X11/extensions/Xdbe.h" HAVE_XDBE_H)
     check_include_files("X11/Xlib.h;X11/extensions/xf86vmode.h" HAVE_XF86VM_H)
     check_include_files("X11/Xlib.h;X11/Xproto.h;X11/extensions/Xext.h" HAVE_XEXT_H)
 
@@ -485,6 +486,11 @@ macro(CheckX11)
           list(APPEND EXTRA_LIBS ${XCURSOR_LIB})
         endif()
         set(SDL_VIDEO_DRIVER_X11_XCURSOR 1)
+      endif()
+
+      if(SDL_X11_XDBE AND HAVE_XDBE_H)
+        set(HAVE_X11_XDBE TRUE)
+        set(SDL_VIDEO_DRIVER_X11_XDBE 1)
       endif()
 
       if(SDL_X11_XINERAMA AND HAVE_XINERAMA_H)
@@ -963,7 +969,13 @@ macro(CheckPTHREAD)
       check_include_files("pthread.h" HAVE_PTHREAD_H)
       check_include_files("pthread_np.h" HAVE_PTHREAD_NP_H)
       if (HAVE_PTHREAD_H)
-        check_symbol_exists(pthread_setname_np "pthread.h" HAVE_PTHREAD_SETNAME_NP)
+        check_c_source_compiles("
+            #define _GNU_SOURCE 1
+            #include <pthread.h>
+            int main(int argc, char **argv) {
+              pthread_setname_np(pthread_self(), \"\");
+              return 0;
+            }" HAVE_PTHREAD_SETNAME_NP)
         if (HAVE_PTHREAD_NP_H)
           check_symbol_exists(pthread_set_name_np "pthread.h;pthread_np.h" HAVE_PTHREAD_SET_NAME_NP)
         endif()
