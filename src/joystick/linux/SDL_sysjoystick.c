@@ -112,7 +112,7 @@ typedef struct SDL_joylist_item
     SDL_GamepadMapping *mapping;
 } SDL_joylist_item;
 
-static SDL_bool SDL_classic_joysticks = SDL_TRUE;
+static SDL_bool SDL_classic_joysticks = SDL_FALSE;
 static SDL_joylist_item *SDL_joylist = NULL;
 static SDL_joylist_item *SDL_joylist_tail = NULL;
 static int numjoysticks = 0;
