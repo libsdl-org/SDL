@@ -21517,7 +21517,8 @@ fi
                 if test x$have_xfixes_h_hdr = xyes; then
                     if test x$enable_x11_shared = xyes && test x$xfixes_lib != x ; then
                         echo "-- dynamic libXfixes -> $xfixes_lib"
-                        cat >>confdefs.h <<_ACEOF
+
+cat >>confdefs.h <<_ACEOF
 #define SDL_VIDEO_DRIVER_X11_DYNAMIC_XFIXES "$xfixes_lib"
 _ACEOF
 
@@ -21571,7 +21572,8 @@ fi
                 fi
             fi
             if test x$definitely_enable_video_x11_xfixes = xyes; then
-                $as_echo "#define SDL_VIDEO_DRIVER_X11_XFIXES 1" >>confdefs.h
+
+$as_echo "#define SDL_VIDEO_DRIVER_X11_XFIXES 1" >>confdefs.h
 
                 SUMMARY_video_x11="${SUMMARY_video_x11} xfixes"
             fi
@@ -24225,7 +24227,8 @@ fi
 
 CheckDLOPEN()
 {
-    $as_echo "#define DYNAPI_NEEDS_DLOPEN 1" >>confdefs.h
+
+$as_echo "#define DYNAPI_NEEDS_DLOPEN 1" >>confdefs.h
 
 
     ac_fn_c_check_header_mongrel "$LINENO" "dlfcn.h" "ac_cv_header_dlfcn_h" "$ac_includes_default"
@@ -24325,10 +24328,12 @@ $as_echo_n "checking for dlopen... " >&6; }
 $as_echo "$have_dlopen" >&6; }
 
     if test x$have_dlfcn_h = xyes -a x$have_dlopen = xyes; then
-       $as_echo "#define HAVE_DLOPEN 1" >>confdefs.h
+
+$as_echo "#define HAVE_DLOPEN 1" >>confdefs.h
 
        if test x$enable_loadso = xyes; then
-          $as_echo "#define SDL_LOADSO_DLOPEN 1" >>confdefs.h
+
+$as_echo "#define SDL_LOADSO_DLOPEN 1" >>confdefs.h
 
           SOURCES="$SOURCES $srcdir/src/loadso/dlopen/*.c"
           have_loadso=yes
@@ -24777,7 +24782,8 @@ $as_echo "$as_me: WARNING: You must have SDL_LoadObject() support for dynamic li
                     if test x$libusb_lib = x; then
                         libusb_lib=`find_lib "libusb-1.0.so.*" "" | sed 's/.*\/\(.*\)/\1/; q'`
                     fi
-                    cat >>confdefs.h <<_ACEOF
+
+cat >>confdefs.h <<_ACEOF
 #define SDL_LIBUSB_DYNAMIC "$libusb_lib"
 _ACEOF
 
@@ -24792,7 +24798,8 @@ $as_echo "$hidapi_support" >&6; }
     fi
 
     if test x$enable_joystick = xyes -a x$hidapi_support = xyes -a x$enable_hidapi_joystick = xyes; then
-        $as_echo "#define SDL_JOYSTICK_HIDAPI 1" >>confdefs.h
+
+$as_echo "#define SDL_JOYSTICK_HIDAPI 1" >>confdefs.h
 
         SOURCES="$SOURCES $srcdir/src/joystick/hidapi/*.c"
     fi

@@ -1984,7 +1984,7 @@ XITouchClassInfo *t;
                 if test x$have_xfixes_h_hdr = xyes; then
                     if test x$enable_x11_shared = xyes && test x$xfixes_lib != x ; then
                         echo "-- dynamic libXfixes -> $xfixes_lib"
-                        AC_DEFINE_UNQUOTED(SDL_VIDEO_DRIVER_X11_DYNAMIC_XFIXES, "$xfixes_lib", [])
+                        AC_DEFINE_UNQUOTED(SDL_VIDEO_DRIVER_X11_DYNAMIC_XFIXES, "$xfixes_lib", [ ])
                         definitely_enable_video_x11_xfixes=yes
                     else
                         AC_CHECK_LIB(Xfixes, XFixesCreatePointerBarrier, have_xfixes_lib=yes)
@@ -1996,7 +1996,7 @@ XITouchClassInfo *t;
                 fi
             fi
             if test x$definitely_enable_video_x11_xfixes = xyes; then
-                AC_DEFINE(SDL_VIDEO_DRIVER_X11_XFIXES, 1, [])
+                AC_DEFINE(SDL_VIDEO_DRIVER_X11_XFIXES, 1, [ ])
                 SUMMARY_video_x11="${SUMMARY_video_x11} xfixes"
             fi
             AC_ARG_ENABLE(video-x11-xrandr,
@@ -3264,7 +3264,7 @@ dnl Check for the dlfcn.h interface for dynamically loading objects
 dnl NOTE: CheckDLOPEN is called only for relevant platforms
 CheckDLOPEN()
 {
-    AC_DEFINE(DYNAPI_NEEDS_DLOPEN,1,[])
+    AC_DEFINE(DYNAPI_NEEDS_DLOPEN, 1, [ ])
 
     AC_CHECK_HEADER(dlfcn.h,have_dlfcn_h=yes,have_dlfcn_h=no)
 
@@ -3275,9 +3275,9 @@ CheckDLOPEN()
     AC_MSG_RESULT($have_dlopen)
 
     if test x$have_dlfcn_h = xyes -a x$have_dlopen = xyes; then
-       AC_DEFINE(HAVE_DLOPEN,1,[])
+       AC_DEFINE(HAVE_DLOPEN, 1, [ ])
        if test x$enable_loadso = xyes; then
-          AC_DEFINE(SDL_LOADSO_DLOPEN,1,[])
+          AC_DEFINE(SDL_LOADSO_DLOPEN, 1, [ ])
           SOURCES="$SOURCES $srcdir/src/loadso/dlopen/*.c"
           have_loadso=yes
        fi
@@ -3475,7 +3475,7 @@ CheckHIDAPI()
                     if test x$libusb_lib = x; then
                         libusb_lib=[`find_lib "libusb-1.0.so.*" "" | sed 's/.*\/\(.*\)/\1/; q'`]
                     fi
-                    AC_DEFINE_UNQUOTED(SDL_LIBUSB_DYNAMIC, "$libusb_lib", [])
+                    AC_DEFINE_UNQUOTED(SDL_LIBUSB_DYNAMIC, "$libusb_lib", [ ])
                 fi
             fi
         fi
@@ -3485,7 +3485,7 @@ CheckHIDAPI()
     fi
 
     if test x$enable_joystick = xyes -a x$hidapi_support = xyes -a x$enable_hidapi_joystick = xyes; then
-        AC_DEFINE(SDL_JOYSTICK_HIDAPI, 1, [])
+        AC_DEFINE(SDL_JOYSTICK_HIDAPI, 1, [ ])
         SOURCES="$SOURCES $srcdir/src/joystick/hidapi/*.c"
     fi
 }
