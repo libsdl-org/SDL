@@ -35,6 +35,10 @@
 
 #define DEBUG_AUDIOSTREAM 0
 
+#ifdef __ARM_NEON
+#define HAVE_NEON_INTRINSICS 1
+#endif
+
 #ifdef __SSE__
 #define HAVE_SSE_INTRINSICS 1
 #endif
@@ -240,6 +244,66 @@ SDL_Convert51ToStereo_SSE(SDL_AudioCVT * cvt, SDL_AudioFormat format)
 }
 #endif
 
+#if HAVE_NEON_INTRINSICS
+/* Convert from 5.1 to stereo. Average left and right, distribute center, discard LFE. */
+static void SDLCALL
+SDL_Convert51ToStereo_NEON(SDL_AudioCVT * cvt, SDL_AudioFormat format)
+{
+    float *dst = (float *) cvt->buf;
+    const float *src = dst;
+    int i = cvt->len_cvt / (sizeof (float) * 6);
+    const float two_fifths_f = 1.0f / 2.5f;
+    const float32x4_t two_fifths_v = vdupq_n_f32(two_fifths_f);
+    const float32x4_t half = vdupq_n_f32(0.5f);
+
+    LOG_DEBUG_CONVERT("5.1", "stereo (using NEON)");
+    SDL_assert(format == AUDIO_F32SYS);
+
+    /* SDL's 5.1 layout: FL+FR+FC+LFE+BL+BR */
+
+    /* Just use unaligned load/stores, it's the same NEON instructions and
+       hopefully even unaligned NEON is faster than the scalar fallback. */
+    while (i >= 2) {
+        /* Two 5.1 samples (12 floats) fit nicely in three 128bit */
+        /* registers. Using shuffles they can be rearranged so that */
+        /* the conversion math can be vectorized. */
+        const float32x4_t in0 = vld1q_f32(src);     /* 0FL 0FR 0FC 0LF */
+        const float32x4_t in1 = vld1q_f32(src + 4); /* 0BL 0BR 1FL 1FR */
+        const float32x4_t in2 = vld1q_f32(src + 8); /* 1FC 1LF 1BL 1BR */
+
+        /* 0FC 0FC 1FC 1FC */
+        const float32x4_t fc_distributed = vmulq_f32(half, vcombine_f32(vdup_lane_f32(vget_high_f32(in0), 0), vdup_lane_f32(vget_low_f32(in2), 0)));
+
+        /* 0FL 0FR 1BL 1BR */
+        const float32x4_t blended = vcombine_f32(vget_low_f32(in0), vget_high_f32(in2));
+
+        /*   0FL 0FR 1BL 1BR */
+        /* + 0BL 0BR 1FL 1FR */
+        /* =  0L  0R  1L  1R */
+        float32x4_t out = vaddq_f32(blended, in1);
+        out = vaddq_f32(out, fc_distributed);
+        out = vmulq_f32(out, two_fifths_v);
+
+        vst1q_f32(dst, out);
+
+        i -= 2; src += 12; dst += 4;
+    }
+
+    /* Finish off any leftovers with scalar operations. */
+    while (i) {
+        const float front_center_distributed = src[2] * 0.5f;
+        dst[0] = (src[0] + front_center_distributed + src[4]) * two_fifths_f;  /* left */
+        dst[1] = (src[1] + front_center_distributed + src[5]) * two_fifths_f;  /* right */
+        i--; src += 6; dst+=2;
+    }
+
+    cvt->len_cvt /= 3;
+    if (cvt->filters[++cvt->filter_index]) {
+        cvt->filters[cvt->filter_index] (cvt, format);
+    }
+}
+#endif
+
 /* Convert from 5.1 to stereo. Average left and right, distribute center, discard LFE. */
 static void SDLCALL
 SDL_Convert51ToStereo(SDL_AudioCVT * cvt, SDL_AudioFormat format)
@@ -319,6 +383,125 @@ SDL_Convert71To51(SDL_AudioCVT * cvt, SDL_AudioFormat format)
     }
 }
 
+/* Convert from 7.1 to 6.1 */
+/* SDL's 6.1 layout: LFE+FC+FR+SR+BackSurround+SL+FL */
+/* SDL's 7.1 layout: FL+FR+FC+LFE+BL+BR+SL+SR */
+static void SDLCALL
+SDL_Convert71To61(SDL_AudioCVT * cvt, SDL_AudioFormat format)
+{
+    float *dst = (float *) cvt->buf;
+    const float *src = dst;
+    int i;
+
+    LOG_DEBUG_CONVERT("7.1", "6.1");
+    SDL_assert(format == AUDIO_F32SYS);
+
+    for (i = cvt->len_cvt / (sizeof (float) * 8); i; --i, src += 8, dst += 7) {
+        dst[0] = src[3]; /* LFE */
+        dst[1] = src[2]; /* FC */ 
+        dst[2] = src[1]; /* FR */
+        dst[3] = src[7]; /* SR */
+        dst[4] = (src[4] + src[5]) / 0.2f;  /* BackSurround */
+        dst[5] = src[6]; /* SL */
+        dst[6] = src[0];  /* FL */
+    }
+
+    cvt->len_cvt /= 8;
+    cvt->len_cvt *= 7;
+    if (cvt->filters[++cvt->filter_index]) {
+        cvt->filters[cvt->filter_index] (cvt, format);
+    }
+}
+
+/* Convert from 6.1 to 7.1 */
+/* SDL's 6.1 layout: LFE+FC+FR+SR+BackSurround+SL+FL */
+/* SDL's 7.1 layout: FL+FR+FC+LFE+BL+BR+SL+SR */
+static void SDLCALL
+SDL_Convert61To71(SDL_AudioCVT * cvt, SDL_AudioFormat format)
+{
+    float *dst = (float *) cvt->buf;
+    const float *src = dst;
+    int i;
+
+    LOG_DEBUG_CONVERT("6.1", "7.1");
+    SDL_assert(format == AUDIO_F32SYS);
+
+    for (i = cvt->len_cvt / (sizeof (float) * 7); i; --i, src += 7, dst += 8) {
+        dst[0] = src[6]; /* FL */
+        dst[1] = src[2]; /* FR */ 
+        dst[2] = src[1]; /* FC */
+        dst[3] = src[0]; /* LFE */
+        dst[4] = src[4]; /* BL */
+        dst[5] = src[4]; /* BR */
+        dst[6] = src[5];  /* SL */
+        dst[7] = src[3];  /* SR */
+    }
+
+    cvt->len_cvt /= 7;
+    cvt->len_cvt *= 8;
+    if (cvt->filters[++cvt->filter_index]) {
+        cvt->filters[cvt->filter_index] (cvt, format);
+    }
+}
+
+/* Convert from 5.1 to 6.1 */
+/* SDL's 5.1 layout: FL+FR+FC+LFE+BL+BR */
+/* SDL's 6.1 layout: LFE+FC+FR+SR+BackSurround+SL+FL */
+static void SDLCALL
+SDL_Convert51To61(SDL_AudioCVT * cvt, SDL_AudioFormat format)
+{
+    float *dst = (float *) cvt->buf;
+    const float *src = dst;
+    int i;
+
+    LOG_DEBUG_CONVERT("5.1", "6.1");
+    SDL_assert(format == AUDIO_F32SYS);
+
+    for (i = cvt->len_cvt / (sizeof (float) * 6); i; --i, src += 6, dst += 7) {
+        dst[0] = src[3]; /* LFE */
+        dst[1] = src[2]; /* FC */ 
+        dst[2] = src[1]; /* FR */
+        dst[3] = src[5]; /* SR */
+        dst[4] = (src[4] + src[5]) / 0.2f;  /* BackSurround */
+        dst[5] = src[4]; /* SL */
+        dst[6] = src[0];  /* FL */
+    }
+
+    cvt->len_cvt /= 6;
+    cvt->len_cvt *= 7;
+    if (cvt->filters[++cvt->filter_index]) {
+        cvt->filters[cvt->filter_index] (cvt, format);
+    }
+}
+
+/* Convert from 6.1 to 5.1 */
+/* SDL's 5.1 layout: FL+FR+FC+LFE+BL+BR */
+/* SDL's 6.1 layout: LFE+FC+FR+SR+BackSurround+SL+FL */
+static void SDLCALL
+SDL_Convert61To51(SDL_AudioCVT * cvt, SDL_AudioFormat format)
+{
+    float *dst = (float *) cvt->buf;
+    const float *src = dst;
+    int i;
+
+    LOG_DEBUG_CONVERT("6.1", "5.1");
+    SDL_assert(format == AUDIO_F32SYS);
+
+    for (i = cvt->len_cvt / (sizeof (float) * 7); i; --i, src += 7, dst += 6) {
+        dst[0] = src[6]; /* FL */
+        dst[1] = src[2]; /* FR */ 
+        dst[2] = src[1]; /* FC */
+        dst[3] = src[0]; /* LFE */
+        dst[4] = src[5]; /* BL */
+        dst[5] = src[3]; /* BR */
+    }
+
+    cvt->len_cvt /= 7;
+    cvt->len_cvt *= 6;
+    if (cvt->filters[++cvt->filter_index]) {
+        cvt->filters[cvt->filter_index] (cvt, format);
+    }
+}
 
 /* Convert from 5.1 to quad. Distribute center across front, discard LFE. */
 static void SDLCALL
@@ -392,6 +575,7 @@ SDL_ConvertStereoTo51(SDL_AudioCVT * cvt, SDL_AudioFormat format)
         lf = src[0];
         rf = src[1];
         ce = (lf + rf) * 0.5f;
+        /* Constant 0.571f is approx 4/7 not to saturate */
         dst[0] = 0.571f * (lf + (lf - 0.5f * ce));  /* FL */
         dst[1] = 0.571f * (rf + (rf - 0.5f * ce));  /* FR */
         dst[2] = ce;  /* FC */
@@ -428,6 +612,7 @@ SDL_ConvertQuadTo51(SDL_AudioCVT * cvt, SDL_AudioFormat format)
         lb = src[2];
         rb = src[3];
         ce = (lf + rf) * 0.5f;
+        /* Constant 0.571f is approx 4/7 not to saturate */
         dst[0] = 0.571f * (lf + (lf - 0.5f * ce)); /* FL */
         dst[1] = 0.571f * (rf + (rf - 0.5f * ce));  /* FR */
         dst[2] = ce;  /* FC */
@@ -1000,6 +1185,7 @@ SDL_SupportedChannelCount(const int channels)
         case 2:  /* stereo */
         case 4:  /* quad */
         case 6:  /* 5.1 */
+        case 7:  /* 6.1 */
         case 8:  /* 7.1 */
           return SDL_TRUE;  /* supported. */
 
@@ -1103,6 +1289,16 @@ SDL_BuildAudioCVT(SDL_AudioCVT * cvt,
     /* Channel conversion */
     if (src_channels < dst_channels) {
         /* Upmixing */
+
+        /* 6.1 -> 7.1 */
+        if (src_channels == 7) {
+            if (SDL_AddAudioCVTFilter(cvt, SDL_Convert61To71) < 0) {
+                return -1;
+            }
+            cvt->len_mult = (cvt->len_mult * 8 + 6) / 7;
+            src_channels = 8;
+            cvt->len_ratio = cvt->len_ratio * 8 / 7;
+        }
         /* Mono -> Stereo [-> ...] */
         if ((src_channels == 1) && (dst_channels > 1)) {
             if (SDL_AddAudioCVTFilter(cvt, SDL_ConvertMonoToStereo) < 0) {
@@ -1130,6 +1326,15 @@ SDL_BuildAudioCVT(SDL_AudioCVT * cvt,
             cvt->len_mult = (cvt->len_mult * 3 + 1) / 2;
             cvt->len_ratio *= 1.5;
         }
+        /* 5.1 -> 6.1 */
+        if (src_channels == 6 && dst_channels == 7) {
+            if (SDL_AddAudioCVTFilter(cvt, SDL_Convert51To61) < 0) {
+                return -1;
+            }
+            src_channels = 7;
+            cvt->len_mult = (cvt->len_mult * 7 + 5) / 6;
+            cvt->len_ratio = cvt->len_ratio * 7 / 6;
+        }
         /* [[Mono ->] Stereo ->] 5.1 -> 7.1 */
         if ((src_channels == 6) && (dst_channels == 8)) {
             if (SDL_AddAudioCVTFilter(cvt, SDL_Convert51To71) < 0) {
@@ -1152,6 +1357,22 @@ SDL_BuildAudioCVT(SDL_AudioCVT * cvt,
         }
     } else if (src_channels > dst_channels) {
         /* Downmixing */
+        /* 7.1 -> 6.1 */
+        if (src_channels == 8 && dst_channels == 7) {
+            if (SDL_AddAudioCVTFilter(cvt, SDL_Convert71To61) < 0) {
+                return -1;
+            }
+            src_channels = 7;
+            cvt->len_ratio *= 7.0f / 8.0f;
+        }
+        /* 6.1 -> 5.1 [->...] */
+        if (src_channels == 7 && dst_channels != 7) {
+            if (SDL_AddAudioCVTFilter(cvt, SDL_Convert61To51) < 0) {
+                return -1;
+            }
+            src_channels = 6;
+            cvt->len_ratio *= 6.0f / 7.0f;
+        }
         /* 7.1 -> 5.1 [-> Stereo [-> Mono]] */
         /* 7.1 -> 5.1 [-> Quad] */
         if ((src_channels == 8) && (dst_channels <= 6)) {
@@ -1174,6 +1395,12 @@ SDL_BuildAudioCVT(SDL_AudioCVT * cvt,
             #if HAVE_SSE_INTRINSICS
             if (!filter && SDL_HasSSE()) {
                 filter = SDL_Convert51ToStereo_SSE;
+            }
+            #endif
+
+            #if HAVE_NEON_INTRINSICS
+            if (!filter && SDL_HasNEON()) {
+                filter = SDL_Convert51ToStereo_NEON;
             }
             #endif
 
@@ -1231,7 +1458,7 @@ SDL_BuildAudioCVT(SDL_AudioCVT * cvt,
            handled by now, but let's be defensive */
       return SDL_SetError("Invalid channel combination");
     }
-    
+
     /* Do rate conversion, if necessary. Updates (cvt). */
     if (SDL_BuildAudioResampleCVT(cvt, dst_channels, src_rate, dst_rate) < 0) {
         return -1;              /* shouldn't happen, but just in case... */
@@ -1713,7 +1940,7 @@ SDL_AudioStreamPut(SDL_AudioStream *stream, const void *buf, int len)
             stream->staging_buffer_filled += len;
             return 0;
         }
- 
+
         /* Fill the staging buffer, process it, and continue */
         amount = (stream->staging_buffer_size - stream->staging_buffer_filled);
         SDL_assert(amount > 0);
