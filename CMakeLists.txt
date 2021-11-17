@@ -199,6 +199,11 @@ endif()
 if(CMAKE_C_COMPILER_ID MATCHES "Clang")
   set(USE_CLANG TRUE)
   set(OPT_DEF_ASM TRUE)
+  # Visual Studio 2019 v16.2 added support for Clang/LLVM.
+  # Check if a Visual Studio project is being generated with the Clang toolset.
+  if(MSVC)
+    set(MSVC_CLANG TRUE)
+  endif()
 elseif(CMAKE_COMPILER_IS_GNUCC)
   set(USE_GCC TRUE)
   set(OPT_DEF_ASM TRUE)
@@ -214,7 +219,7 @@ if(USE_GCC OR USE_CLANG)
 endif()
 
 # Default option knobs
-if(APPLE OR ARCH_64)
+if(APPLE OR ARCH_64 OR MSVC_CLANG)
   if(NOT "${CMAKE_OSX_ARCHITECTURES}" MATCHES "arm")
     set(OPT_DEF_SSEMATH ON)
   endif()
@@ -288,7 +293,8 @@ endif()
 target_compile_definitions(sdl-build-options INTERFACE "-DUSING_GENERATED_CONFIG_H")
 target_include_directories(sdl-build-options BEFORE INTERFACE "${SDL2_BINARY_DIR}/include")
 target_include_directories(sdl-build-options INTERFACE "${SDL2_SOURCE_DIR}/include")
-if(USE_GCC OR USE_CLANG)
+# Note: The clang toolset for Visual Studio does not support the '-idirafter' option.
+if(USE_GCC OR (USE_CLANG AND NOT MSVC_CLANG))
   # !!! FIXME: do we _need_ to mess with CMAKE_C_FLAGS here?
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -idirafter \"${SDL2_SOURCE_DIR}/src/video/khronos\"")
 else()
@@ -2667,7 +2673,8 @@ if(SDL_SHARED)
       SOVERSION ${LT_REVISION}
       OUTPUT_NAME "SDL2")
   endif()
-  if(MSVC AND NOT SDL_LIBC)
+  # Note: The clang toolset for Visual Studio does not support /NODEFAULTLIB.
+  if(MSVC AND NOT SDL_LIBC AND NOT MSVC_CLANG)
     # Don't try to link with the default set of libraries.
     if(NOT WINDOWS_STORE)
       set_target_properties(SDL2 PROPERTIES LINK_FLAGS_RELEASE "/NODEFAULTLIB")
@@ -2699,7 +2706,8 @@ if(SDL_STATIC)
     # clobbered, when the suffix is realized via subsequent rename.
   endif()
   set_target_properties(SDL2-static PROPERTIES POSITION_INDEPENDENT_CODE ${SDL_STATIC_PIC})
-  if(MSVC AND NOT SDL_LIBC)
+  # Note: The clang toolset for Visual Studio does not support /NODEFAULTLIB.
+  if(MSVC AND NOT SDL_LIBC AND NOT MSVC_CLANG)
     set_target_properties(SDL2-static PROPERTIES LINK_FLAGS_RELEASE "/NODEFAULTLIB")
     set_target_properties(SDL2-static PROPERTIES LINK_FLAGS_DEBUG "/NODEFAULTLIB")
     set_target_properties(SDL2-static PROPERTIES STATIC_LIBRARY_FLAGS "/NODEFAULTLIB")
