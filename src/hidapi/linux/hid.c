@@ -215,7 +215,7 @@ static int uses_numbered_reports(__u8 *report_descriptor, __u32 size) {
  * strings pointed to by serial_number_utf8 and product_name_utf8 after use.
  */
 static int
-parse_uevent_info(const char *uevent, int *bus_type,
+parse_uevent_info(const char *uevent, unsigned *bus_type,
 	unsigned short *vendor_id, unsigned short *product_id,
 	char **serial_number_utf8, char **product_name_utf8)
 {
@@ -298,7 +298,7 @@ static int is_BLE(hid_device *dev)
 		if (hid_dev) {
 			unsigned short dev_vid = 0;
 			unsigned short dev_pid = 0;
-			int bus_type = 0;
+			unsigned bus_type = 0;
 			char *serial_number_utf8 = NULL;
 			char *product_name_utf8 = NULL;
 
@@ -336,8 +336,8 @@ static int get_device_string(hid_device *dev, enum device_string_id key, wchar_t
 	struct udev_device *udev_dev, *parent, *hid_dev;
 	struct stat s;
 	int ret = -1;
-        char *serial_number_utf8 = NULL;
-        char *product_name_utf8 = NULL;
+	char *serial_number_utf8 = NULL;
+	char *product_name_utf8 = NULL;
 	char *tmp;
 
 	/* Create the udev object */
@@ -363,7 +363,7 @@ static int get_device_string(hid_device *dev, enum device_string_id key, wchar_t
 		if (hid_dev) {
 			unsigned short dev_vid;
 			unsigned short dev_pid;
-			int bus_type;
+			unsigned bus_type;
 			size_t retm;
 
 			ret = parse_uevent_info(
@@ -431,8 +431,8 @@ static int get_device_string(hid_device *dev, enum device_string_id key, wchar_t
 	}
 
 end:
-        free(serial_number_utf8);
-        free(product_name_utf8);
+	free(serial_number_utf8);
+	free(product_name_utf8);
 
 	udev_device_unref(udev_dev);
 	/* parent and hid_dev don't need to be (and can't be) unref'd.
@@ -501,7 +501,7 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 		unsigned short dev_pid;
 		char *serial_number_utf8 = NULL;
 		char *product_name_utf8 = NULL;
-		int bus_type;
+		unsigned bus_type;
 		int result;
 
 		/* Get the filename of the /sys entry for the device
@@ -849,24 +849,25 @@ int HID_API_EXPORT hid_send_feature_report(hid_device *dev, const unsigned char 
 int HID_API_EXPORT hid_get_feature_report(hid_device *dev, unsigned char *data, size_t length)
 {
 	int res;
-    unsigned char report = data[0];
+	unsigned char report = data[0];
 
-    res = ioctl(dev->device_handle, HIDIOCGFEATURE(length), data);
-    if (res < 0)
-        perror("ioctl (GFEATURE)");
-    else if (dev->needs_ble_hack) {
-        /* Versions of BlueZ before 5.56 don't include the report in the data, and versions of BlueZ >= 5.56 include 2 copies of the report.
-         * We'll fix it so that there is a single copy of the report in both cases
-        */
-        if (data[0] == report && data[1] == report) {
-            memmove(&data[0], &data[1], res);
-        } else if (data[0] != report) {
-            memmove(&data[1], &data[0], res);
-            data[0] = report;
-            ++res;
-        }
-    }
-    return res;
+	res = ioctl(dev->device_handle, HIDIOCGFEATURE(length), data);
+	if (res < 0)
+		perror("ioctl (GFEATURE)");
+	else if (dev->needs_ble_hack) {
+		/* Versions of BlueZ before 5.56 don't include the report in the data,
+		 * and versions of BlueZ >= 5.56 include 2 copies of the report.
+		 * We'll fix it so that there is a single copy of the report in both cases
+		 */
+		if (data[0] == report && data[1] == report) {
+			memmove(&data[0], &data[1], res);
+		} else if (data[0] != report) {
+			memmove(&data[1], &data[0], res);
+			data[0] = report;
+			++res;
+		}
+	}
+	return res;
 }
 
 
@@ -896,6 +897,10 @@ int HID_API_EXPORT_CALL hid_get_serial_number_string(hid_device *dev, wchar_t *s
 
 int HID_API_EXPORT_CALL hid_get_indexed_string(hid_device *dev, int string_index, wchar_t *string, size_t maxlen)
 {
+	(void)dev;
+	(void)string_index;
+	(void)string;
+	(void)maxlen;
 	return -1;
 }
 
