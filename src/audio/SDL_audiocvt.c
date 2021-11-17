@@ -383,6 +383,125 @@ SDL_Convert71To51(SDL_AudioCVT * cvt, SDL_AudioFormat format)
     }
 }
 
+/* Convert from 7.1 to 6.1 */
+/* SDL's 6.1 layout: LFE+FC+FR+SR+BackSurround+SL+FL */
+/* SDL's 7.1 layout: FL+FR+FC+LFE+BL+BR+SL+SR */
+static void SDLCALL
+SDL_Convert71To61(SDL_AudioCVT * cvt, SDL_AudioFormat format)
+{
+    float *dst = (float *) cvt->buf;
+    const float *src = dst;
+    int i;
+
+    LOG_DEBUG_CONVERT("7.1", "6.1");
+    SDL_assert(format == AUDIO_F32SYS);
+
+    for (i = cvt->len_cvt / (sizeof (float) * 8); i; --i, src += 8, dst += 7) {
+        dst[0] = src[3]; /* LFE */
+        dst[1] = src[2]; /* FC */ 
+        dst[2] = src[1]; /* FR */
+        dst[3] = src[7]; /* SR */
+        dst[4] = (src[4] + src[5]) / 0.2f;  /* BackSurround */
+        dst[5] = src[6]; /* SL */
+        dst[6] = src[0];  /* FL */
+    }
+
+    cvt->len_cvt /= 8;
+    cvt->len_cvt *= 7;
+    if (cvt->filters[++cvt->filter_index]) {
+        cvt->filters[cvt->filter_index] (cvt, format);
+    }
+}
+
+/* Convert from 6.1 to 7.1 */
+/* SDL's 6.1 layout: LFE+FC+FR+SR+BackSurround+SL+FL */
+/* SDL's 7.1 layout: FL+FR+FC+LFE+BL+BR+SL+SR */
+static void SDLCALL
+SDL_Convert61To71(SDL_AudioCVT * cvt, SDL_AudioFormat format)
+{
+    float *dst = (float *) cvt->buf;
+    const float *src = dst;
+    int i;
+
+    LOG_DEBUG_CONVERT("6.1", "7.1");
+    SDL_assert(format == AUDIO_F32SYS);
+
+    for (i = cvt->len_cvt / (sizeof (float) * 7); i; --i, src += 7, dst += 8) {
+        dst[0] = src[6]; /* FL */
+        dst[1] = src[2]; /* FR */ 
+        dst[2] = src[1]; /* FC */
+        dst[3] = src[0]; /* LFE */
+        dst[4] = src[4]; /* BL */
+        dst[5] = src[4]; /* BR */
+        dst[6] = src[5];  /* SL */
+        dst[7] = src[3];  /* SR */
+    }
+
+    cvt->len_cvt /= 7;
+    cvt->len_cvt *= 8;
+    if (cvt->filters[++cvt->filter_index]) {
+        cvt->filters[cvt->filter_index] (cvt, format);
+    }
+}
+
+/* Convert from 5.1 to 6.1 */
+/* SDL's 5.1 layout: FL+FR+FC+LFE+BL+BR */
+/* SDL's 6.1 layout: LFE+FC+FR+SR+BackSurround+SL+FL */
+static void SDLCALL
+SDL_Convert51To61(SDL_AudioCVT * cvt, SDL_AudioFormat format)
+{
+    float *dst = (float *) cvt->buf;
+    const float *src = dst;
+    int i;
+
+    LOG_DEBUG_CONVERT("5.1", "6.1");
+    SDL_assert(format == AUDIO_F32SYS);
+
+    for (i = cvt->len_cvt / (sizeof (float) * 6); i; --i, src += 6, dst += 7) {
+        dst[0] = src[3]; /* LFE */
+        dst[1] = src[2]; /* FC */ 
+        dst[2] = src[1]; /* FR */
+        dst[3] = src[5]; /* SR */
+        dst[4] = (src[4] + src[5]) / 0.2f;  /* BackSurround */
+        dst[5] = src[4]; /* SL */
+        dst[6] = src[0];  /* FL */
+    }
+
+    cvt->len_cvt /= 6;
+    cvt->len_cvt *= 7;
+    if (cvt->filters[++cvt->filter_index]) {
+        cvt->filters[cvt->filter_index] (cvt, format);
+    }
+}
+
+/* Convert from 6.1 to 5.1 */
+/* SDL's 5.1 layout: FL+FR+FC+LFE+BL+BR */
+/* SDL's 6.1 layout: LFE+FC+FR+SR+BackSurround+SL+FL */
+static void SDLCALL
+SDL_Convert61To51(SDL_AudioCVT * cvt, SDL_AudioFormat format)
+{
+    float *dst = (float *) cvt->buf;
+    const float *src = dst;
+    int i;
+
+    LOG_DEBUG_CONVERT("6.1", "5.1");
+    SDL_assert(format == AUDIO_F32SYS);
+
+    for (i = cvt->len_cvt / (sizeof (float) * 7); i; --i, src += 7, dst += 6) {
+        dst[0] = src[6]; /* FL */
+        dst[1] = src[2]; /* FR */ 
+        dst[2] = src[1]; /* FC */
+        dst[3] = src[0]; /* LFE */
+        dst[4] = src[5]; /* BL */
+        dst[5] = src[3]; /* BR */
+    }
+
+    cvt->len_cvt /= 7;
+    cvt->len_cvt *= 6;
+    if (cvt->filters[++cvt->filter_index]) {
+        cvt->filters[cvt->filter_index] (cvt, format);
+    }
+}
 
 /* Convert from 5.1 to quad. Distribute center across front, discard LFE. */
 static void SDLCALL
@@ -1066,6 +1185,7 @@ SDL_SupportedChannelCount(const int channels)
         case 2:  /* stereo */
         case 4:  /* quad */
         case 6:  /* 5.1 */
+        case 7:  /* 6.1 */
         case 8:  /* 7.1 */
           return SDL_TRUE;  /* supported. */
 
@@ -1169,6 +1289,16 @@ SDL_BuildAudioCVT(SDL_AudioCVT * cvt,
     /* Channel conversion */
     if (src_channels < dst_channels) {
         /* Upmixing */
+
+        /* 6.1 -> 7.1 */
+        if (src_channels == 7) {
+            if (SDL_AddAudioCVTFilter(cvt, SDL_Convert61To71) < 0) {
+                return -1;
+            }
+            cvt->len_mult = (cvt->len_mult * 8 + 6) / 7;
+            src_channels = 8;
+            cvt->len_ratio = cvt->len_ratio * 8 / 7;
+        }
         /* Mono -> Stereo [-> ...] */
         if ((src_channels == 1) && (dst_channels > 1)) {
             if (SDL_AddAudioCVTFilter(cvt, SDL_ConvertMonoToStereo) < 0) {
@@ -1196,6 +1326,15 @@ SDL_BuildAudioCVT(SDL_AudioCVT * cvt,
             cvt->len_mult = (cvt->len_mult * 3 + 1) / 2;
             cvt->len_ratio *= 1.5;
         }
+        /* 5.1 -> 6.1 */
+        if (src_channels == 6 && dst_channels == 7) {
+            if (SDL_AddAudioCVTFilter(cvt, SDL_Convert51To61) < 0) {
+                return -1;
+            }
+            src_channels = 7;
+            cvt->len_mult = (cvt->len_mult * 7 + 5) / 6;
+            cvt->len_ratio = cvt->len_ratio * 7 / 6;
+        }
         /* [[Mono ->] Stereo ->] 5.1 -> 7.1 */
         if ((src_channels == 6) && (dst_channels == 8)) {
             if (SDL_AddAudioCVTFilter(cvt, SDL_Convert51To71) < 0) {
@@ -1218,6 +1357,22 @@ SDL_BuildAudioCVT(SDL_AudioCVT * cvt,
         }
     } else if (src_channels > dst_channels) {
         /* Downmixing */
+        /* 7.1 -> 6.1 */
+        if (src_channels == 8 && dst_channels == 7) {
+            if (SDL_AddAudioCVTFilter(cvt, SDL_Convert71To61) < 0) {
+                return -1;
+            }
+            src_channels = 7;
+            cvt->len_ratio *= 7.0f / 8.0f;
+        }
+        /* 6.1 -> 5.1 [->...] */
+        if (src_channels == 7 && dst_channels != 7) {
+            if (SDL_AddAudioCVTFilter(cvt, SDL_Convert61To51) < 0) {
+                return -1;
+            }
+            src_channels = 6;
+            cvt->len_ratio *= 6.0f / 7.0f;
+        }
         /* 7.1 -> 5.1 [-> Stereo [-> Mono]] */
         /* 7.1 -> 5.1 [-> Quad] */
         if ((src_channels == 8) && (dst_channels <= 6)) {
