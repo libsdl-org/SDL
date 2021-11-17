@@ -30,20 +30,17 @@
 
 #include "SDL_stdinc.h"
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER) && (_MSC_VER >= 1400)
 /* As of Clang 11, '_m_prefetchw' is conflicting with the winnt.h's version,
    so we define the needed '_m_prefetch' here as a pseudo-header, until the issue is fixed. */
-
 #ifdef __clang__
 #ifndef __PRFCHWINTRIN_H
 #define __PRFCHWINTRIN_H
-
 static __inline__ void __attribute__((__always_inline__, __nodebug__))
 _m_prefetch(void *__P)
 {
   __builtin_prefetch (__P, 0, 3 /* _MM_HINT_T0 */);
 }
-
 #endif /* __PRFCHWINTRIN_H */
 #endif /* __clang__ */
 
@@ -112,7 +109,7 @@ extern "C" {
 
 #if HAS_BUILTIN_BSWAP16
 #define SDL_Swap16(x) __builtin_bswap16(x)
-#elif defined(_MSC_VER)
+#elif defined(_MSC_VER) && (_MSC_VER >= 1400)
 #pragma intrinsic(_byteswap_ushort)
 #define SDL_Swap16(x) _byteswap_ushort(x)
 #elif defined(__i386__) && !HAS_BROKEN_BSWAP
@@ -168,7 +165,7 @@ SDL_Swap16(Uint16 x)
 
 #if HAS_BUILTIN_BSWAP32
 #define SDL_Swap32(x) __builtin_bswap32(x)
-#elif defined(_MSC_VER)
+#elif defined(_MSC_VER) && (_MSC_VER >= 1400)
 #pragma intrinsic(_byteswap_ulong)
 #define SDL_Swap32(x) _byteswap_ulong(x)
 #elif defined(__i386__) && !HAS_BROKEN_BSWAP
@@ -227,7 +224,7 @@ SDL_Swap32(Uint32 x)
 
 #if HAS_BUILTIN_BSWAP64
 #define SDL_Swap64(x) __builtin_bswap64(x)
-#elif defined(_MSC_VER)
+#elif defined(_MSC_VER) && (_MSC_VER >= 1400)
 #pragma intrinsic(_byteswap_uint64)
 #define SDL_Swap64(x) _byteswap_uint64(x)
 #elif defined(__i386__) && !HAS_BROKEN_BSWAP
