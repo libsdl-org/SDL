@@ -15,13 +15,15 @@ jobs:
       fail-fast: false
       matrix:
         platform:
-        - { name: Windows (x64),     os: windows-latest, shell: pwsh, flags: -A x64 }
-        - { name: Windows (x86),     os: windows-latest, shell: pwsh, flags: -A Win32 }
-        - { name: Windows (ARM64),   os: windows-latest, shell: pwsh, flags: -A ARM64 }
-        - { name: Windows (mingw32), os: windows-latest, shell: 'msys2 {0}', msystem: mingw32, msys-env: mingw-w64-i686 }
-        - { name: Windows (mingw64), os: windows-latest, shell: 'msys2 {0}', msystem: mingw64, msys-env: mingw-w64-x86_64 }
-        - { name: Linux,             os: ubuntu-20.04,   shell: sh,   flags: -GNinja }
-        - { name: MacOS,             os: macos-latest,   shell: sh }
+        - { name: Windows (x64),          os: windows-latest, shell: pwsh, flags: -A x64 }
+        - { name: Windows (x86),          os: windows-latest, shell: pwsh, flags: -A Win32 }
+        - { name: Windows (clang-cl x64), os: windows-latest, shell: pwsh, flags: -T ClangCL -A x64 }
+        - { name: Windows (clang-cl x86), os: windows-latest, shell: pwsh, flags: -T ClangCL -A Win32 }
+        - { name: Windows (ARM64),        os: windows-latest, shell: pwsh, flags: -A ARM64 }
+        - { name: Windows (mingw32),      os: windows-latest, shell: 'msys2 {0}', msystem: mingw32, msys-env: mingw-w64-i686 }
+        - { name: Windows (mingw64),      os: windows-latest, shell: 'msys2 {0}', msystem: mingw64, msys-env: mingw-w64-x86_64 }
+        - { name: Linux,                  os: ubuntu-20.04,   shell: sh,   flags: -GNinja }
+        - { name: MacOS,                  os: macos-latest,   shell: sh }
 
     steps:
     - name: Set up MSYS2
