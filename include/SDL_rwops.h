@@ -542,9 +542,6 @@ extern DECLSPEC size_t SDLCALL SDL_RWwrite(SDL_RWops *context,
  * Note that if this fails to flush the stream to disk, this function reports
  * an error, but the SDL_RWops is still invalid once this function returns.
  *
- * SDL_RWclose() is actually a macro that calls the SDL_RWops's `close` method
- * appropriately, to simplify application development.
- *
  * Prior to SDL 2.0.10, this function was a macro.
  *
  * \param context SDL_RWops structure to close
