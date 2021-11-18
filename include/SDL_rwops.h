@@ -385,7 +385,7 @@ extern DECLSPEC void SDLCALL SDL_FreeRW(SDL_RWops * area);
 #define RW_SEEK_END 2       /**< Seek relative to the end of data */
 
 /**
- * Use this macro to get the size of the data stream in an SDL_RWops.
+ * Use this function to get the size of the data stream in an SDL_RWops.
  *
  * Prior to SDL 2.0.10, this function was a macro.
  *
