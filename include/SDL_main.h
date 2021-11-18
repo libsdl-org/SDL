@@ -130,7 +130,7 @@ extern SDLMAIN_DECLSPEC int SDL_main(int argc, char *argv[]);
  * will not be changed it is necessary to define SDL_MAIN_HANDLED before
  * including SDL.h.
  *
- * \since This function is available since SDL 2.0.2.
+ * \since This function is available since SDL 2.0.0.
  *
  * \sa SDL_Init
  */
@@ -141,7 +141,7 @@ extern DECLSPEC void SDLCALL SDL_SetMainReady(void);
 /**
  * This can be called to set the application class at startup
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 2.0.2.
  */
 extern DECLSPEC int SDLCALL SDL_RegisterApp(const char *name, Uint32 style, void *hInst);
 extern DECLSPEC void SDLCALL SDL_UnregisterApp(void);
