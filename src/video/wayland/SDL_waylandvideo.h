@@ -90,6 +90,7 @@ typedef struct {
 
 typedef struct {
     struct wl_output *output;
+    uint32_t registry_id;
     float scale_factor;
     int x, y, width, height, refresh, transform;
     SDL_DisplayOrientation orientation;
