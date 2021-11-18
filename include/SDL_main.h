@@ -130,7 +130,7 @@ extern SDLMAIN_DECLSPEC int SDL_main(int argc, char *argv[]);
  * will not be changed it is necessary to define SDL_MAIN_HANDLED before
  * including SDL.h.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 2.0.2.
  *
  * \sa SDL_Init
  */
