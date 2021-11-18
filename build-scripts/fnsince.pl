@@ -87,7 +87,7 @@ $funcs{'SDL_GL_GetDrawableSize'} = '2.0.1';
 $funcs{'SDL_Direct3D9GetAdapterIndex'} = '2.0.1';
 $funcs{'SDL_RenderGetD3D9Device'} = '2.0.1';
 
-$funcs{'SDL_SetMainReady'} = '2.0.2';
+$funcs{'SDL_RegisterApp'} = '2.0.2';
 $funcs{'SDL_GetAssertionHandler'} = '2.0.2';
 $funcs{'SDL_GetDefaultAssertionHandler'} = '2.0.2';
 $funcs{'SDL_AtomicAdd'} = '2.0.2';
