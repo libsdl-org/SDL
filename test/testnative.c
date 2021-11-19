@@ -53,7 +53,7 @@ quit(int rc)
 }
 
 SDL_Texture *
-LoadSprite(SDL_Renderer *renderer, char *file)
+LoadSprite(SDL_Renderer *renderer, const char *file)
 {
     SDL_Surface *temp;
     SDL_Texture *sprite;

@@ -19,7 +19,7 @@ report_power(void)
 {
     int seconds, percent;
     const SDL_PowerState state = SDL_GetPowerInfo(&seconds, &percent);
-    char *statestr = NULL;
+    const char *statestr = NULL;
 
     SDL_Log("SDL-reported power info...\n");
     switch (state) {
@@ -55,7 +55,7 @@ report_power(void)
         SDL_Log("Time left: unknown\n");
     } else {
         SDL_Log("Time left: %d minutes, %d seconds\n", (int) (seconds / 60),
-               (int) (seconds % 60));
+                (int) (seconds % 60));
     }
 }
 

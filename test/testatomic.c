@@ -19,13 +19,13 @@
 */
 
 static
-char *
-tf(SDL_bool tf)
+const char *
+tf(SDL_bool _tf)
 {
-    static char *t = "TRUE";
-    static char *f = "FALSE";
+    static const char *t = "TRUE";
+    static const char *f = "FALSE";
 
-    if (tf)
+    if (_tf)
     {
        return t;
     }

@@ -168,8 +168,8 @@ keyboard_getKeyFromScancode(void *arg)
 int
 keyboard_getKeyName(void *arg)
 {
-   char *result;
-   char *expected;
+   const char *result;
+   const char *expected;
 
    /* Case where key has a 1 character name */
    expected = "3";
@@ -225,8 +225,8 @@ int
 keyboard_getScancodeNameNegative(void *arg)
 {
    SDL_Scancode scancode;
-   char *result;
-   char *expected = "";
+   const char *result;
+   const char *expected = "";
 
    /* Clear error message */
    SDL_ClearError();
@@ -252,8 +252,8 @@ int
 keyboard_getKeyNameNegative(void *arg)
 {
    SDL_Keycode keycode;
-   char *result;
-   char *expected = "";
+   const char *result;
+   const char *expected = "";
 
    /* Unknown keycode */
    keycode = SDLK_UNKNOWN;
@@ -612,7 +612,7 @@ _checkInvalidNameError()
 int
 keyboard_getScancodeFromNameNegative(void *arg)
 {
-   char *name;
+   const char *name;
    SDL_Scancode scancode;
 
    /* Clear error message */
@@ -625,9 +625,9 @@ keyboard_getScancodeFromNameNegative(void *arg)
    if (name == NULL) {
       return TEST_ABORTED;
    }
-   scancode = SDL_GetScancodeFromName((const char *)name);
+   scancode = SDL_GetScancodeFromName(name);
    SDLTest_AssertPass("Call to SDL_GetScancodeFromName('%s')", name);
-   SDL_free(name);
+   SDL_free((void *)name);
    SDLTest_AssertCheck(scancode == SDL_SCANCODE_UNKNOWN, "Validate return value from SDL_GetScancodeFromName, expected: %i, got: %i", SDL_SCANCODE_UNKNOWN, scancode);
    _checkInvalidNameError();
 

@@ -42,6 +42,8 @@ main(int argc, char *argv[])
         "UCS4",
         "UCS-4",
     };
+
+    const char * fname;
     char buffer[BUFSIZ];
     char *ucs4;
     char *test[2];
@@ -52,12 +54,10 @@ main(int argc, char *argv[])
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
-    if (!argv[1]) {
-        argv[1] = "utf8.txt";
-    }
-    file = fopen(argv[1], "rb");
+    fname = (argc < 2) ? "utf8.txt" : argv[1];
+    file = fopen(fname, "rb");
     if (!file) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unable to open %s\n", argv[1]);
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unable to open %s\n", fname);
         return (1);
     }
 

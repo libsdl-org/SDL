@@ -98,7 +98,7 @@ SDLTest_GenerateRunSeed(const int length)
 *
 */
 static Uint64
-SDLTest_GenerateExecKey(const char *runSeed, char *suiteName, char *testName, int iteration)
+SDLTest_GenerateExecKey(const char *runSeed, const char *suiteName, const char *testName, int iteration)
 {
     SDLTest_Md5Context md5Context;
     Uint64 *keys;
