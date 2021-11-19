@@ -869,7 +869,7 @@ KMSDRM_DestroySurfaces(_THIS, SDL_Window *window)
     /**********************************************/
     /* Wait for last issued pageflip to complete. */
     /**********************************************/
-    KMSDRM_WaitPageflip(_this, windata);
+    /*KMSDRM_WaitPageflip(_this, windata);*/
 
     /***********************************************************************/
     /* Restore the original CRTC configuration: configue the crtc with the */
