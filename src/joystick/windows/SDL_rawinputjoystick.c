@@ -1857,9 +1857,9 @@ RAWINPUT_WindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     LRESULT result = -1;
 
-    SDL_LockMutex(SDL_RAWINPUT_mutex);
-
     if (SDL_RAWINPUT_inited) {
+        SDL_LockMutex(SDL_RAWINPUT_mutex);
+
         switch (msg) {
             case WM_INPUT_DEVICE_CHANGE:
             {
@@ -1903,9 +1903,9 @@ RAWINPUT_WindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
             result = 0;
             break;
         }
-    }
 
-    SDL_UnlockMutex(SDL_RAWINPUT_mutex);
+        SDL_UnlockMutex(SDL_RAWINPUT_mutex);
+    }
 
     if (result >= 0) {
         return result;
@@ -1920,8 +1920,6 @@ RAWINPUT_JoystickQuit(void)
         return;
     }
 
-    SDL_LockMutex(SDL_RAWINPUT_mutex);
-
     while (SDL_RAWINPUT_devices) {
         RAWINPUT_DelDevice(SDL_RAWINPUT_devices, SDL_FALSE);
     }
@@ -1932,7 +1930,6 @@ RAWINPUT_JoystickQuit(void)
 
     SDL_RAWINPUT_inited = SDL_FALSE;
 
-    SDL_UnlockMutex(SDL_RAWINPUT_mutex);
     SDL_DestroyMutex(SDL_RAWINPUT_mutex);
     SDL_RAWINPUT_mutex = NULL;
 }
