@@ -298,7 +298,7 @@ HIDAPI_InitializeDiscovery()
 
     SDL_HIDAPI_discovery.m_bCanGetNotifications = (SDL_HIDAPI_discovery.m_notificationMach != MACH_PORT_NULL);
 
-#endif // __MACOSX__
+#endif /* __MACOSX__ */
 
 #if defined(SDL_USE_LIBUDEV)
     if (linux_enumeration_method == ENUMERATION_LIBUDEV) {
@@ -550,7 +550,7 @@ HIDAPI_ShutdownDiscovery()
 #undef HIDAPI_H__
 #if __LINUX__
 
-#include "../../core/linux/SDL_udev.h"
+#include "../core/linux/SDL_udev.h"
 #if SDL_USE_LIBUDEV
 static const SDL_UDEV_Symbols *udev_ctx = NULL;
 
