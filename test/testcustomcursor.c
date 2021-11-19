@@ -128,7 +128,7 @@ init_system_cursor(const char *image[])
       }
     }
   }
-  sscanf(image[4+row], "%d,%d", &hot_x, &hot_y);
+  SDL_sscanf(image[4+row], "%d,%d", &hot_x, &hot_y);
   return SDL_CreateCursor(data, mask, 32, 32, hot_x, hot_y);
 }
 
