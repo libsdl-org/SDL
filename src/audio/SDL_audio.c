@@ -1268,6 +1268,7 @@ prepare_audiospec(const SDL_AudioSpec * orig, SDL_AudioSpec * prepared)
     case 2:                    /* Stereo */
     case 4:                    /* Quadrophonic */
     case 6:                    /* 5.1 surround */
+    case 7:                    /* 6.1 surround */
     case 8:                    /* 7.1 surround */
         break;
     default:
