@@ -73,7 +73,7 @@ TARGETS = \
 	testyuv$(EXE) \
 	torturethread$(EXE) \
 
-	
+
 @OPENGL_TARGETS@ += testgl2$(EXE) testshader$(EXE)
 @OPENGLES1_TARGETS@ += testgles$(EXE)
 @OPENGLES2_TARGETS@ += testgles2$(EXE)
@@ -333,7 +333,6 @@ testlocale$(EXE): $(srcdir)/testlocale.c
 
 testmouse$(EXE): $(srcdir)/testmouse.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
-
 
 
 clean:
