@@ -50,7 +50,7 @@ public class SDLAudioManager
         }
 
         /* AudioTrack has sample rate limitation of 48000 (fixed in 5.0.2) */
-        if (Build.VERSION.SDK_INT < 23) {
+        if (Build.VERSION.SDK_INT < 22) {
             if (sampleRate < 8000) {
                 sampleRate = 8000;
             } else if (sampleRate > 48000) {
