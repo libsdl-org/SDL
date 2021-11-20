@@ -230,13 +230,18 @@ the "New Project" and "Add target" menus. What could be easier?
 
 Some of you won't want to use the Stationary so I'll give some tips:
 
-* Create a new "Cocoa Application"
-* Remove "main.c" from your project
-* Remove "MainMenu.nib" from your project
+(this is accurate as of Xcode 12.5.)
+
+* Click "File" -> "New" -> "Project...
+* Choose "macOS" and then "App" from the "Application" section.
+* Fill out the options in the next window. User interface is "XIB" and
+  Language is "Objective-C".
+* Remove "main.m" from your project
+* Remove "MainMenu.xib" from your project
+* Remove "AppDelegates.*" from your project
 * Add "$(HOME)/Library/Frameworks/SDL.framework/Headers" to include path
 * Add "$(HOME)/Library/Frameworks" to the frameworks search path
 * Add "-framework SDL -framework Foundation -framework AppKit" to "OTHER_LDFLAGS"
-* Set the "Main Nib File" under "Application Settings" to "SDLMain.nib"
 * Add your files
 * Clean and build
 
