@@ -888,6 +888,7 @@ enable_directfb_shared
 enable_video_kmsdrm
 enable_kmsdrm_shared
 enable_video_dummy
+enable_video_offscreen
 enable_video_opengl
 enable_video_opengles
 enable_video_opengles1
@@ -1681,6 +1682,8 @@ Optional Features:
   --enable-video-kmsdrm   use KMSDRM video driver [default=yes]
   --enable-kmsdrm-shared  dynamically load kmsdrm support [default=yes]
   --enable-video-dummy    use dummy video driver [default=yes]
+  --enable-video-offscreen
+                          use offscreen video driver [default=no]
   --enable-video-opengl   include OpenGL support [default=yes]
   --enable-video-opengles include OpenGL ES support [default=yes]
   --enable-video-opengles1
@@ -22452,6 +22455,25 @@ $as_echo "#define SDL_VIDEO_DRIVER_DUMMY 1" >>confdefs.h
     fi
 }
 
+CheckOffscreenVideo()
+{
+    # Check whether --enable-video-offscreen was given.
+if test "${enable_video_offscreen+set}" = set; then :
+  enableval=$enable_video_offscreen;
+else
+  enable_video_offscreen=no
+fi
+
+    if test x$enable_video_offscreen = xyes; then
+
+$as_echo "#define SDL_VIDEO_DRIVER_OFFSCREEN 1" >>confdefs.h
+
+        SOURCES="$SOURCES $srcdir/src/video/offscreen/*.c"
+        have_video=yes
+        SUMMARY_video="${SUMMARY_video} offscreen"
+    fi
+}
+
 CheckQNXVideo()
 {
     if test x$enable_video = xyes; then
@@ -25028,6 +25050,7 @@ $as_echo "#define SDL_VIDEO_DRIVER_ANDROID 1" >>confdefs.h
         CheckVisibilityHidden
         CheckDeclarationAfterStatement
         CheckDummyVideo
+        CheckOffscreenVideo
         CheckDiskAudio
         CheckDummyAudio
         CheckDLOPEN
@@ -25287,6 +25310,7 @@ $as_echo "#define SDL_TIMER_UNIX 1" >>confdefs.h
         fi
         CheckDeclarationAfterStatement
         CheckDummyVideo
+        CheckOffscreenVideo
         CheckDiskAudio
         CheckDummyAudio
         CheckWINDOWS
@@ -25533,6 +25557,7 @@ fi
         ARCH=haiku
         ac_default_prefix=/boot/system
         CheckDummyVideo
+        CheckOffscreenVideo
         CheckDiskAudio
         CheckDummyAudio
         CheckDLOPEN
@@ -25599,6 +25624,7 @@ $as_echo "#define SDL_FILESYSTEM_HAIKU 1" >>confdefs.h
         CheckVisibilityHidden
         CheckDeclarationAfterStatement
         CheckDummyVideo
+        CheckOffscreenVideo
         CheckDiskAudio
         CheckDummyAudio
         CheckDLOPEN
@@ -25724,6 +25750,7 @@ $as_echo "#define SDL_VIDEO_RENDER_OGL_ES2 1" >>confdefs.h
         CheckVisibilityHidden
         CheckDeclarationAfterStatement
         CheckDummyVideo
+        CheckOffscreenVideo
         CheckDiskAudio
         CheckDummyAudio
         CheckDLOPEN
@@ -25820,6 +25847,7 @@ $as_echo "#define SDL_TIMER_UNIX 1" >>confdefs.h
         CheckNativeClient
         CheckDummyAudio
         CheckDummyVideo
+        CheckOffscreenVideo
         CheckInputEvents
         CheckPTHREAD
 
@@ -25862,6 +25890,7 @@ $as_echo "#define SDL_AUDIO_DRIVER_EMSCRIPTEN 1" >>confdefs.h
         CheckVisibilityHidden
         CheckDeclarationAfterStatement
         CheckDummyVideo
+        CheckOffscreenVideo
         CheckDiskAudio
         CheckDummyAudio
         CheckPTHREAD
@@ -25912,6 +25941,7 @@ $as_echo "#define SDL_TIMER_UNIX 1" >>confdefs.h
         CheckVisibilityHidden
         CheckDeclarationAfterStatement
         CheckDummyVideo
+        CheckOffscreenVideo
         CheckDiskAudio
         CheckDummyAudio
         CheckDLOPEN

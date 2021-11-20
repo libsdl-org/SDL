@@ -2344,6 +2344,19 @@ CheckDummyVideo()
     fi
 }
 
+CheckOffscreenVideo()
+{
+    AC_ARG_ENABLE(video-offscreen,
+[AS_HELP_STRING([--enable-video-offscreen], [use offscreen video driver [default=no]])],
+                  , enable_video_offscreen=no)
+    if test x$enable_video_offscreen = xyes; then
+        AC_DEFINE(SDL_VIDEO_DRIVER_OFFSCREEN, 1, [ ])
+        SOURCES="$SOURCES $srcdir/src/video/offscreen/*.c"
+        have_video=yes
+        SUMMARY_video="${SUMMARY_video} offscreen"
+    fi
+}
+
 dnl Set up the QNX video driver if enabled
 CheckQNXVideo()
 {
@@ -3612,6 +3625,7 @@ case "$host" in
         CheckVisibilityHidden
         CheckDeclarationAfterStatement
         CheckDummyVideo
+        CheckOffscreenVideo
         CheckDiskAudio
         CheckDummyAudio
         CheckDLOPEN
@@ -3837,6 +3851,7 @@ case "$host" in
         fi
         CheckDeclarationAfterStatement
         CheckDummyVideo
+        CheckOffscreenVideo
         CheckDiskAudio
         CheckDummyAudio
         CheckWINDOWS
@@ -3998,6 +4013,7 @@ case "$host" in
         ARCH=haiku
         ac_default_prefix=/boot/system
         CheckDummyVideo
+        CheckOffscreenVideo
         CheckDiskAudio
         CheckDummyAudio
         CheckDLOPEN
@@ -4054,6 +4070,7 @@ case "$host" in
         CheckVisibilityHidden
         CheckDeclarationAfterStatement
         CheckDummyVideo
+        CheckOffscreenVideo
         CheckDiskAudio
         CheckDummyAudio
         CheckDLOPEN
@@ -4157,6 +4174,7 @@ case "$host" in
         CheckVisibilityHidden
         CheckDeclarationAfterStatement
         CheckDummyVideo
+        CheckOffscreenVideo
         CheckDiskAudio
         CheckDummyAudio
         CheckDLOPEN
@@ -4241,6 +4259,7 @@ case "$host" in
         CheckNativeClient
         CheckDummyAudio
         CheckDummyVideo
+        CheckOffscreenVideo
         CheckInputEvents
         CheckPTHREAD
 
@@ -4275,6 +4294,7 @@ case "$host" in
         CheckVisibilityHidden
         CheckDeclarationAfterStatement
         CheckDummyVideo
+        CheckOffscreenVideo
         CheckDiskAudio
         CheckDummyAudio
         CheckPTHREAD
@@ -4317,6 +4337,7 @@ case "$host" in
         CheckVisibilityHidden
         CheckDeclarationAfterStatement
         CheckDummyVideo
+        CheckOffscreenVideo
         CheckDiskAudio
         CheckDummyAudio
         CheckDLOPEN
