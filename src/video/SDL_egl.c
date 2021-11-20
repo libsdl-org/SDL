@@ -566,7 +566,7 @@ SDL_EGL_InitializeOffscreen(_THIS, int device)
     EGLint num_egl_devices = 0;
     const char *egl_device_hint;
 
-    if (_this->gl_config.driver_loaded != 1) {
+    if (_this->gl_config.driver_loaded <= 0) {
         return SDL_SetError("SDL_EGL_LoadLibraryOnly() has not been called or has failed.");
     }
 
