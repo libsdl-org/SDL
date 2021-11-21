@@ -1150,16 +1150,44 @@ Cocoa_UpdateClipCursor(SDL_Window * window)
     return NO;  /* not a special area, carry on. */
 }
 
+static int
+Cocoa_SendMouseButtonClicks(SDL_Mouse * mouse, NSEvent *theEvent, SDL_Window * window, const Uint8 state, const Uint8 button)
+{
+    const SDL_MouseID mouseID = mouse->mouseID;
+    const int clicks = (int) [theEvent clickCount];
+    SDL_Window *focus = SDL_GetKeyboardFocus();
+    int rc;
+
+    // macOS will send non-left clicks to background windows without raising them, so we need to
+    //  temporarily adjust the mouse position when this happens, as `mouse` will be tracking
+    //  the position in the currently-focused window. We don't (currently) send a mousemove
+    //  event for the background window, this just makes sure the button is reported at the
+    //  correct position in its own event.
+    if ( focus && ([theEvent window] == ((SDL_WindowData *) focus->driverdata)->nswindow) ) {
+        rc = SDL_SendMouseButtonClicks(window, mouseID, state, button, clicks);
+    } else {
+printf("BACKGROUND CLICK!\n"); fflush(stdout);
+        const int orig_x = mouse->x;
+        const int orig_y = mouse->y;
+        const NSPoint point = [theEvent locationInWindow];
+        mouse->x = (int) point.x;
+        mouse->y = (int) (window->h - point.y);
+        rc = SDL_SendMouseButtonClicks(window, mouseID, state, button, clicks);
+        mouse->x = orig_x;
+        mouse->y = orig_y;
+    }
+
+    return rc;
+}
+
 - (void)mouseDown:(NSEvent *)theEvent
 {
-    const SDL_Mouse *mouse = SDL_GetMouse();
+    SDL_Mouse *mouse = SDL_GetMouse();
     if (!mouse) {
         return;
     }
 
-    const SDL_MouseID mouseID = mouse->mouseID;
     int button;
-    int clicks;
 
     /* Ignore events that aren't inside the client area (i.e. title bar.) */
     if ([theEvent window]) {
@@ -1196,9 +1224,7 @@ Cocoa_UpdateClipCursor(SDL_Window * window)
         break;
     }
 
-    clicks = (int) [theEvent clickCount];
-
-    SDL_SendMouseButtonClicks(_data->window, mouseID, SDL_PRESSED, button, clicks);
+    Cocoa_SendMouseButtonClicks(mouse, theEvent, _data->window, SDL_PRESSED, button);
 }
 
 - (void)rightMouseDown:(NSEvent *)theEvent
@@ -1213,14 +1239,12 @@ Cocoa_UpdateClipCursor(SDL_Window * window)
 
 - (void)mouseUp:(NSEvent *)theEvent
 {
-    const SDL_Mouse *mouse = SDL_GetMouse();
+    SDL_Mouse *mouse = SDL_GetMouse();
     if (!mouse) {
         return;
     }
 
-    const SDL_MouseID mouseID = mouse->mouseID;
     int button;
-    int clicks;
 
     if ([self processHitTest:theEvent]) {
         SDL_SendWindowEvent(_data->window, SDL_WINDOWEVENT_HIT_TEST, 0, 0);
@@ -1247,9 +1271,7 @@ Cocoa_UpdateClipCursor(SDL_Window * window)
         break;
     }
 
-    clicks = (int) [theEvent clickCount];
-
-    SDL_SendMouseButtonClicks(_data->window, mouseID, SDL_RELEASED, button, clicks);
+    Cocoa_SendMouseButtonClicks(mouse, theEvent, _data->window, SDL_RELEASED, button);
 }
 
 - (void)rightMouseUp:(NSEvent *)theEvent
