@@ -2270,6 +2270,11 @@ UpdateLogicalSize(SDL_Renderer *renderer)
         } else {
             scale = (float)(h / renderer->logical_h);
         }
+
+        if (scale < 1.0f) {
+            scale = 1.0f;
+        }
+
         viewport.w = (int)SDL_floor(renderer->logical_w * scale);
         viewport.x = (w - viewport.w) / 2;
         viewport.h = (int)SDL_floor(renderer->logical_h * scale);
