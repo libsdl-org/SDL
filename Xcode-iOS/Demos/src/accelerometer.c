@@ -58,7 +58,7 @@ render(SDL_Renderer *renderer, int w, int h, double deltaTime)
         ay * SDL_IPHONE_MAX_GFORCE / SINT16_MAX * GRAVITY_CONSTANT *
         deltaMilliseconds;
 
-    speed = sqrt(shipData.vx * shipData.vx + shipData.vy * shipData.vy);
+    speed = SDL_sqrt(shipData.vx * shipData.vx + shipData.vy * shipData.vy);
 
     if (speed > 0) {
         /* compensate for friction */

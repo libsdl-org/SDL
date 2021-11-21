@@ -71,7 +71,7 @@ X11_ResizeWindowShape(SDL_Window* window) {
             return SDL_SetError("Could not allocate memory for shaped-window bitmap.");
         }
     }
-    memset(data->bitmap,0,data->bitmapsize);
+    SDL_memset(data->bitmap,0,data->bitmapsize);
 
     window->shaper->userx = window->x;
     window->shaper->usery = window->y;

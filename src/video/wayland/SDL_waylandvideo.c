@@ -601,7 +601,7 @@ display_handle_global(void *data, struct wl_registry *registry, uint32_t id,
         d->idle_inhibit_manager = wl_registry_bind(d->registry, id, &zwp_idle_inhibit_manager_v1_interface, 1);
     } else if (SDL_strcmp(interface, "xdg_activation_v1") == 0) {
         d->activation_manager = wl_registry_bind(d->registry, id, &xdg_activation_v1_interface, 1);
-    } else if (strcmp(interface, "zwp_text_input_manager_v3") == 0) {
+    } else if (SDL_strcmp(interface, "zwp_text_input_manager_v3") == 0) {
         Wayland_add_text_input_manager(d, id, version);
     } else if (SDL_strcmp(interface, "wl_data_device_manager") == 0) {
         Wayland_add_data_device_manager(d, id, version);

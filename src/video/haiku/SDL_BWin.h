@@ -193,7 +193,7 @@ class SDL_BWin:public BDirectWindow
             if (_clips == NULL)
                 _clips = (clipping_rect *)malloc(_num_clips*sizeof(clipping_rect));
             if(_clips) {
-                memcpy(_clips, info->clip_list,
+                SDL_memcpy(_clips, info->clip_list,
                     _num_clips*sizeof(clipping_rect));
 
                 _bits = (uint8*) info->bits;

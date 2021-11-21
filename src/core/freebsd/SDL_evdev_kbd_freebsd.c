@@ -268,7 +268,7 @@ SDL_EVDEV_kbd_init(void)
             kbd->key_map = &keymap_default_us_acc;
         }
         /* Allow inhibiting keyboard mute with env. variable for debugging etc. */
-        if (getenv("SDL_INPUT_FREEBSD_KEEP_KBD") == NULL) {
+        if (SDL_getenv("SDL_INPUT_FREEBSD_KEEP_KBD") == NULL) {
             /* Take keyboard from console and open the actual keyboard device.
              * Ensures that the keystrokes do not leak through to the console.
              */

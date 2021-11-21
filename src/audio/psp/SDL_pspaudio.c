@@ -90,7 +90,7 @@ PSPAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
         return SDL_SetError("Couldn't reserve hardware channel");
     }
 
-    memset(this->hidden->rawbuf, 0, mixlen);
+    SDL_memset(this->hidden->rawbuf, 0, mixlen);
     for (i = 0; i < NUM_BUFFERS; i++) {
         this->hidden->mixbufs[i] = &this->hidden->rawbuf[i * this->spec.size];
     }

@@ -82,7 +82,7 @@ readSymLink(const char *path)
 #if defined(__OPENBSD__)
 static char *search_path_for_binary(const char *bin)
 {
-    char *envr = getenv("PATH");
+    char *envr = SDL_getenv("PATH");
     size_t alloc_size;
     char *exe = NULL;
     char *start = envr;

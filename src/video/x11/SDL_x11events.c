@@ -270,19 +270,19 @@ static char* X11_URIToLocal(char* uri) {
     char *file = NULL;
     SDL_bool local;
 
-    if (memcmp(uri,"file:/",6) == 0) uri += 6;      /* local file? */
-    else if (strstr(uri,":/") != NULL) return file; /* wrong scheme */
+    if (SDL_memcmp(uri,"file:/",6) == 0) uri += 6;      /* local file? */
+    else if (SDL_strstr(uri,":/") != NULL) return file; /* wrong scheme */
 
     local = uri[0] != '/' || (uri[0] != '\0' && uri[1] == '/');
 
     /* got a hostname? */
     if (!local && uri[0] == '/' && uri[2] != '/') {
-      char* hostname_end = strchr(uri+1, '/');
+      char* hostname_end = SDL_strchr(uri+1, '/');
       if (hostname_end != NULL) {
           char hostname[ 257 ];
           if (gethostname(hostname, 255) == 0) {
             hostname[ 256 ] = '\0';
-            if (memcmp(uri+1, hostname, hostname_end - (uri+1)) == 0) {
+            if (SDL_memcmp(uri+1, hostname, hostname_end - (uri+1)) == 0) {
                 uri = hostname_end + 1;
                 local = SDL_TRUE;
             }
@@ -1186,7 +1186,7 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
 
 
                 /* reply with status */
-                memset(&m, 0, sizeof(XClientMessageEvent));
+                SDL_memset(&m, 0, sizeof(XClientMessageEvent));
                 m.type = ClientMessage;
                 m.display = xevent->xclient.display;
                 m.window = xevent->xclient.data.l[0];
@@ -1204,7 +1204,7 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
             else if(xevent->xclient.message_type == videodata->XdndDrop) {
                 if (data->xdnd_req == None) {
                     /* say again - not interested! */
-                    memset(&m, 0, sizeof(XClientMessageEvent));
+                    SDL_memset(&m, 0, sizeof(XClientMessageEvent));
                     m.type = ClientMessage;
                     m.display = xevent->xclient.display;
                     m.window = xevent->xclient.data.l[0];
@@ -1583,7 +1583,7 @@ X11_SendWakeupEvent(_THIS, SDL_Window *window)
     Window xwindow = ((SDL_WindowData *) window->driverdata)->xwindow;
     XClientMessageEvent event;
 
-    memset(&event, 0, sizeof(XClientMessageEvent));
+    SDL_memset(&event, 0, sizeof(XClientMessageEvent));
     event.type = ClientMessage;
     event.display = req_display;
     event.send_event = True;

@@ -100,7 +100,7 @@ VITAAUD_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
 
     sceAudioOutSetVolume(this->hidden->channel, SCE_AUDIO_VOLUME_FLAG_L_CH|SCE_AUDIO_VOLUME_FLAG_R_CH, vols);
 
-    memset(this->hidden->rawbuf, 0, mixlen);
+    SDL_memset(this->hidden->rawbuf, 0, mixlen);
     for (i = 0; i < NUM_BUFFERS; i++) {
         this->hidden->mixbufs[i] = &this->hidden->rawbuf[i * this->spec.size];
     }

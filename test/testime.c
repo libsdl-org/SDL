@@ -648,12 +648,12 @@ int main(int argc, char *argv[])
     }
     for (argc--, argv++; argc > 0; argc--, argv++)
     {
-        if (strcmp(argv[0], "--help") == 0) {
+        if (SDL_strcmp(argv[0], "--help") == 0) {
             usage();
             return 0;
         }
 
-        else if (strcmp(argv[0], "--font") == 0)
+        else if (SDL_strcmp(argv[0], "--font") == 0)
         {
             argc--;
             argv++;

@@ -59,7 +59,7 @@ SDL_GetPowerInfo_Haiku(SDL_PowerState * state, int *seconds, int *percent)
         return SDL_FALSE;       /* maybe some other method will work? */
     }
 
-    memset(regs, '\0', sizeof(regs));
+    SDL_memset(regs, '\0', sizeof(regs));
     regs[0] = APM_FUNC_OFFSET + APM_FUNC_GET_POWER_STATUS;
     regs[1] = APM_DEVICE_ALL;
     rc = ioctl(fd, APM_BIOS_CALL, regs);

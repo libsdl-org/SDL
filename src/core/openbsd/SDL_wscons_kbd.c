@@ -509,7 +509,7 @@ static void put_utf8(SDL_WSCONS_input_data* input, uint c)
 static void Translate_to_text(SDL_WSCONS_input_data* input, keysym_t ksym)
 {
     if (KS_GROUP(ksym) == KS_GROUP_Keypad) {
-        if (isprint(ksym & 0xFF)) ksym &= 0xFF;
+        if (SDL_isprint(ksym & 0xFF)) ksym &= 0xFF;
     }
     switch(ksym) {
     case KS_Escape:
@@ -526,7 +526,7 @@ static void Translate_to_text(SDL_WSCONS_input_data* input, keysym_t ksym)
     if (input->text_len > 0) {
         input->text[input->text_len] = '\0';
         SDL_SendKeyboardText(input->text);
-        /*memset(input->text, 0, sizeof(input->text));*/
+        /*SDL_memset(input->text, 0, sizeof(input->text));*/
         input->text_len = 0;
         input->text[0] = 0;
     }
