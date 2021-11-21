@@ -705,7 +705,7 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_ConvertSurfaceFormat
  * \param height the height of the block to copy, in pixels
  * \param src_format an SDL_PixelFormatEnum value of the `src` pixels format
  * \param src a pointer to the source pixels
- * \param src_pitch the pitch of the block to copy, in bytes
+ * \param src_pitch the pitch of the source pixels, in bytes
  * \param dst_format an SDL_PixelFormatEnum value of the `dst` pixels format
  * \param dst a pointer to be filled in with new pixel data
  * \param dst_pitch the pitch of the destination pixels, in bytes
@@ -719,6 +719,32 @@ extern DECLSPEC int SDLCALL SDL_ConvertPixels(int width, int height,
                                               const void * src, int src_pitch,
                                               Uint32 dst_format,
                                               void * dst, int dst_pitch);
+
+/**
+ * Premultiply the alpha on a block of pixels.
+ *
+ * This is safe to use with src == dst, but not for other overlapping areas.
+ *
+ * This function is currently only implemented for SDL_PIXELFORMAT_ARGB8888.
+ *
+ * \param width the width of the block to convert, in pixels
+ * \param height the height of the block to convert, in pixels
+ * \param src_format an SDL_PixelFormatEnum value of the `src` pixels format
+ * \param src a pointer to the source pixels
+ * \param src_pitch the pitch of the source pixels, in bytes
+ * \param dst_format an SDL_PixelFormatEnum value of the `dst` pixels format
+ * \param dst a pointer to be filled in with premultiplied pixel data
+ * \param dst_pitch the pitch of the destination pixels, in bytes
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 2.0.18.
+ */
+extern DECLSPEC int SDLCALL SDL_PremultiplyAlpha(int width, int height,
+                                                 Uint32 src_format,
+                                                 const void * src, int src_pitch,
+                                                 Uint32 dst_format,
+                                                 void * dst, int dst_pitch);
 
 /**
  * Perform a fast fill of a rectangle with a specific color.

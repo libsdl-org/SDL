@@ -278,7 +278,9 @@ KMSDRM_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y)
        like other backends do. Also, the GBM BO pixels have to be
        alpha-premultiplied, but the SDL surface we receive has
        straight-alpha pixels, so we always have to convert. */ 
-    SDL_PremultiplySurfaceAlphaToARGB8888(surface, curdata->buffer);
+    SDL_PremultiplyAlpha(surface->w, surface->h,
+                         surface->format->format, surface->pixels, surface->pitch,
+                         SDL_PIXELFORMAT_ARGB8888, curdata->buffer, surface->w * 4);
 
     cursor->driverdata = curdata;
 

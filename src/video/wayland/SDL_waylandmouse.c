@@ -280,7 +280,9 @@ Wayland_CreateCursor(SDL_Surface *surface, int hot_x, int hot_y)
         }
 
         /* Wayland requires premultiplied alpha for its surfaces. */
-        SDL_PremultiplySurfaceAlphaToARGB8888(surface, data->shm_data);
+        SDL_PremultiplyAlpha(surface->w, surface->h,
+                             surface->format->format, surface->pixels, surface->pitch,
+                             SDL_PIXELFORMAT_ARGB8888, data->shm_data, surface->w * 4);
 
         data->surface = wl_compositor_create_surface(wd->compositor);
         wl_surface_set_user_data(data->surface, NULL);
@@ -447,4 +449,7 @@ Wayland_FiniMouse(SDL_VideoData *data)
     }
     SDL_free(data->cursor_themes);
 }
+
 #endif  /* SDL_VIDEO_DRIVER_WAYLAND */
+
+/* vi: set ts=4 sw=4 expandtab: */

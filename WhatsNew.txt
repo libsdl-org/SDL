@@ -5,6 +5,9 @@ This is a list of major changes in SDL's version history.
 2.0.18:
 ---------------------------------------------------------------------------
 
+General:
+* Added SDL_PremultiplyAlpha() to premultiply alpha on a block of SDL_PIXELFORMAT_ARGB8888 pixels
+
 Linux:
 * Added the hint SDL_HINT_LINUX_JOYSTICK_CLASSIC to control whether /dev/input/js* or /dev/input/event* are used as joystick devices
 * Added the hint SDL_HINT_JOYSTICK_DEVICE to allow the user to specify devices that will be opened in addition to the normal joystick detection

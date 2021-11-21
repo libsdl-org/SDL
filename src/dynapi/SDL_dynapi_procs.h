@@ -923,3 +923,4 @@ SDL_DYNAPI_PROC(SDL_bool,SDL_JoystickHasRumbleTriggers,(SDL_Joystick *a),(a),ret
 SDL_DYNAPI_PROC(SDL_bool,SDL_GameControllerHasRumble,(SDL_GameController *a),(a),return)
 SDL_DYNAPI_PROC(SDL_bool,SDL_GameControllerHasRumbleTriggers,(SDL_GameController *a),(a),return)
 SDL_DYNAPI_PROC(void,SDL_hid_ble_scan,(SDL_bool a),(a),)
+SDL_DYNAPI_PROC(int,SDL_PremultiplyAlpha,(int a, int b, Uint32 c, const void *d, int e, Uint32 f, void *g, int h),(a,b,c,d,e,f,g,h),return)

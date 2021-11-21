@@ -1381,7 +1381,12 @@ int SDL_ConvertPixels(int width, int height,
     void *nonconst_src = (void *) src;
     int ret;
 
-    /* Check to make sure we are blitting somewhere, so we don't crash */
+    if (!src) {
+        return SDL_InvalidParamError("src");
+    }
+    if (!src_pitch) {
+        return SDL_InvalidParamError("src_pitch");
+    }
     if (!dst) {
         return SDL_InvalidParamError("dst");
     }
@@ -1438,6 +1443,68 @@ int SDL_ConvertPixels(int width, int height,
     SDL_InvalidateMap(src_surface.map);
 
     return ret;
+}
+
+/*
+ * Premultiply the alpha on a block of pixels
+ *
+ * This is currently only implemented for SDL_PIXELFORMAT_ARGB8888
+ *
+ * Here are some ideas for optimization:
+ * https://github.com/Wizermil/premultiply_alpha/tree/master/premultiply_alpha
+ * https://developer.arm.com/documentation/101964/0201/Pre-multiplied-alpha-channel-data
+ */
+int SDL_PremultiplyAlpha(int width, int height,
+                         Uint32 src_format, const void * src, int src_pitch,
+                         Uint32 dst_format, void * dst, int dst_pitch)
+{
+    int c;
+    Uint32 srcpixel;
+    Uint32 srcR, srcG, srcB, srcA;
+    Uint32 dstpixel;
+    Uint32 dstR, dstG, dstB, dstA;
+
+    if (!src) {
+        return SDL_InvalidParamError("src");
+    }
+    if (!src_pitch) {
+        return SDL_InvalidParamError("src_pitch");
+    }
+    if (!dst) {
+        return SDL_InvalidParamError("dst");
+    }
+    if (!dst_pitch) {
+        return SDL_InvalidParamError("dst_pitch");
+    }
+    if (src_format != SDL_PIXELFORMAT_ARGB8888) {
+        return SDL_InvalidParamError("src_format");
+    }
+    if (dst_format != SDL_PIXELFORMAT_ARGB8888) {
+        return SDL_InvalidParamError("dst_format");
+    }
+
+    while (height--) {
+        const Uint32 *src_px = (const Uint32 *)src;
+        Uint32 *dst_px = (Uint32 *)dst;
+        for (c = width; c; --c) {
+            /* Component bytes extraction. */
+            srcpixel = *src_px++;
+            RGBA_FROM_ARGB8888(srcpixel, srcR, srcG, srcB, srcA);
+
+            /* Alpha pre-multiplication of each component. */
+            dstA = srcA;
+            dstR = (srcA * srcR) / 255;
+            dstG = (srcA * srcG) / 255;
+            dstB = (srcA * srcB) / 255;
+
+            /* ARGB8888 pixel recomposition. */
+            ARGB8888_FROM_RGBA(dstpixel, dstR, dstG, dstB, dstA);
+            *dst_px++ = dstpixel;
+        }
+        src = (const Uint8 *)src + src_pitch;
+        dst = (Uint8 *)dst + dst_pitch;
+    }
+    return 0;
 }
 
 /*

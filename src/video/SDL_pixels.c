@@ -1227,33 +1227,4 @@ SDL_CalculateGammaRamp(float gamma, Uint16 * ramp)
     }
 }
 
-/* Creates a copy of an ARGB8888-format surface's pixels with premultiplied alpha */
-void
-SDL_PremultiplySurfaceAlphaToARGB8888(SDL_Surface *src, Uint32 *dst)
-{
-    Uint8 A, R, G, B;
-    int x, y;
-
-    if (SDL_MUSTLOCK(src))
-        SDL_LockSurface(src);
-
-    for (y = 0; y < src->h; ++y) {
-        Uint32 *src_px = (Uint32*)((Uint8 *)src->pixels + (y * src->pitch));
-        for (x = 0; x < src->w; ++x) {
-            /* Component bytes extraction. */
-            SDL_GetRGBA(*src_px++, src->format, &R, &G, &B, &A);
-
-            /* Alpha pre-multiplication of each component. */
-            R = ((Uint32)A * R) / 255;
-            G = ((Uint32)A * G) / 255;
-            B = ((Uint32)A * B) / 255;
-
-            /* ARGB8888 pixel recomposition. */
-            *dst++ = (((Uint32)A << 24) | ((Uint32)R << 16) | ((Uint32)G << 8) | (B << 0));
-        }
-    }
-    if (SDL_MUSTLOCK(src))
-        SDL_UnlockSurface(src);
-}
-
 /* vi: set ts=4 sw=4 expandtab: */
