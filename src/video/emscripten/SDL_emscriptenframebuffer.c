@@ -119,7 +119,7 @@ int Emscripten_UpdateWindowFramebuffer(_THIS, SDL_Window * window, const SDL_Rec
             //      }
             // the following code is faster though, because
             // .set() is almost free - easily 10x faster due to
-            // native memcpy efficiencies, and the remaining loop
+            // native SDL_memcpy efficiencies, and the remaining loop
             // just stores, not load + store, so it is faster
             data32.set(HEAP32.subarray(src, src + num));
             var data8 = SDL2.data8;

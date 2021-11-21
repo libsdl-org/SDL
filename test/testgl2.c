@@ -238,10 +238,10 @@ main(int argc, char *argv[])
         consumed = SDLTest_CommonArg(state, i);
         if (consumed == 0) {
             if (SDL_strcasecmp(argv[i], "--fsaa") == 0 && i+1 < argc) {
-                fsaa = atoi(argv[i+1]);
+                fsaa = SDL_atoi(argv[i+1]);
                 consumed = 2;
             } else if (SDL_strcasecmp(argv[i], "--accel") == 0 && i+1 < argc) {
-                accel = atoi(argv[i+1]);
+                accel = SDL_atoi(argv[i+1]);
                 consumed = 2;
             } else {
                 consumed = -1;

@@ -201,7 +201,7 @@ static int readBoolEnv(const char *env_name, int def_val)
 
     stemp = SDL_getenv(env_name);
     if (stemp)
-        return atoi(stemp);
+        return SDL_atoi(stemp);
     else
         return def_val;
 }

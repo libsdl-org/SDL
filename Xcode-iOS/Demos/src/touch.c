@@ -21,7 +21,7 @@ void
 drawLine(SDL_Renderer *renderer, float startx, float starty, float dx, float dy)
 {
 
-    float distance = sqrt(dx * dx + dy * dy);   /* length of line segment (pythagoras) */
+    float distance = SDL_sqrt(dx * dx + dy * dy);   /* length of line segment (pythagoras) */
     int iterations = distance / PIXELS_PER_ITERATION + 1;       /* number of brush sprites to draw for the line */
     float dx_prime = dx / iterations;   /* x-shift per iteration */
     float dy_prime = dy / iterations;   /* y-shift per iteration */

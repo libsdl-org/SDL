@@ -35,7 +35,6 @@
 #include <fcntl.h>              /* O_RDWR */
 #include <limits.h>             /* INT_MAX */
 #include <errno.h>              /* errno, strerror */
-#include <math.h>               /* atan2 */
 #include <sys/stat.h>           /* stat */
 
 /* Just in case. */
@@ -713,10 +712,10 @@ SDL_SYS_ToDirection(Uint16 *dest, SDL_HapticDirection * src)
         else {
             float f = SDL_atan2(src->dir[1], src->dir[0]);    /* Ideally we'd use fixed point math instead of floats... */
                     /*
-                      atan2 takes the parameters: Y-axis-value and X-axis-value (in that order)
+                      SDL_atan2 takes the parameters: Y-axis-value and X-axis-value (in that order)
                        - Y-axis-value is the second coordinate (from center to SOUTH)
                        - X-axis-value is the first coordinate (from center to EAST)
-                        We add 36000, because atan2 also returns negative values. Then we practically
+                        We add 36000, because SDL_atan2 also returns negative values. Then we practically
                         have the first spherical value. Therefore we proceed as in case
                         SDL_HAPTIC_SPHERICAL and add another 9000 to get the polar value.
                       --> add 45000 in total

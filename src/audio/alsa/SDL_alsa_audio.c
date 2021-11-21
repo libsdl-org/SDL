@@ -779,7 +779,7 @@ add_device(const int iscapture, const char *name, void *hint, ALSA_Device **pSee
     /* some strings have newlines, like "HDA NVidia, HDMI 0\nHDMI Audio Output".
        just chop the extra lines off, this seems to get a reasonable device
        name without extra details. */
-    if ((ptr = strchr(desc, '\n')) != NULL) {
+    if ((ptr = SDL_strchr(desc, '\n')) != NULL) {
         *ptr = '\0';
     }
 

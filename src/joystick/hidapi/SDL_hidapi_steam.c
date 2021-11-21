@@ -220,7 +220,7 @@ static void hexdump( const uint8_t *ptr, int len )
 
 static void ResetSteamControllerPacketAssembler( SteamControllerPacketAssembler *pAssembler )
 {
-    memset( pAssembler->uBuffer, 0, sizeof( pAssembler->uBuffer ) );
+    SDL_memset( pAssembler->uBuffer, 0, sizeof( pAssembler->uBuffer ) );
     pAssembler->nExpectedSegmentNumber = 0;
 }
 
@@ -279,7 +279,7 @@ static int WriteSegmentToSteamControllerPacketAssembler( SteamControllerPacketAs
             }
         }
         
-        memcpy( pAssembler->uBuffer + nSegmentNumber * MAX_REPORT_SEGMENT_PAYLOAD_SIZE,
+        SDL_memcpy( pAssembler->uBuffer + nSegmentNumber * MAX_REPORT_SEGMENT_PAYLOAD_SIZE,
                pSegment + 2, // ignore header and report number
                MAX_REPORT_SEGMENT_PAYLOAD_SIZE );
         
@@ -294,7 +294,7 @@ static int WriteSegmentToSteamControllerPacketAssembler( SteamControllerPacketAs
     else
     {
         // Just pass through
-        memcpy( pAssembler->uBuffer,
+        SDL_memcpy( pAssembler->uBuffer,
                pSegment,
                nSegmentLength );
         return nSegmentLength;
@@ -331,10 +331,10 @@ static int SetFeatureReport( SDL_hid_device *dev, unsigned char uBuffer[65], int
             nActualDataLen -= nBytesInPacket;
 
             // Construct packet
-            memset( uPacketBuffer, 0, sizeof( uPacketBuffer ) );
+            SDL_memset( uPacketBuffer, 0, sizeof( uPacketBuffer ) );
             uPacketBuffer[ 0 ] = BLE_REPORT_NUMBER;
             uPacketBuffer[ 1 ] = GetSegmentHeader( nSegmentNumber, nActualDataLen == 0 );
-            memcpy( &uPacketBuffer[ 2 ], pBufferPtr, nBytesInPacket );
+            SDL_memcpy( &uPacketBuffer[ 2 ], pBufferPtr, nBytesInPacket );
             
             pBufferPtr += nBytesInPacket;
             nSegmentNumber++;
@@ -364,7 +364,7 @@ static int GetFeatureReport( SDL_hid_device *dev, unsigned char uBuffer[65] )
         
         while( nRetries < BLE_MAX_READ_RETRIES )
         {
-            memset( uSegmentBuffer, 0, sizeof( uSegmentBuffer ) );
+            SDL_memset( uSegmentBuffer, 0, sizeof( uSegmentBuffer ) );
             uSegmentBuffer[ 0 ] = BLE_REPORT_NUMBER;
             nRet = SDL_hid_get_feature_report( dev, uSegmentBuffer, sizeof( uSegmentBuffer ) );
             DPRINTF( "GetFeatureReport ble ret=%d\n", nRet );
@@ -386,7 +386,7 @@ static int GetFeatureReport( SDL_hid_device *dev, unsigned char uBuffer[65] )
                 {
                     // Leave space for "report number"
                     uBuffer[ 0 ] = 0;
-                    memcpy( uBuffer + 1, assembler.uBuffer, nPacketLength );
+                    SDL_memcpy( uBuffer + 1, assembler.uBuffer, nPacketLength );
                     return nPacketLength;
                 }
             }
@@ -500,7 +500,7 @@ static bool ResetSteamController( SDL_hid_device *dev, bool bSuppressErrorSpew, 
     }
     
     // Reset the default settings
-    memset( buf, 0, 65 );
+    SDL_memset( buf, 0, 65 );
     buf[1] = ID_LOAD_DEFAULT_SETTINGS;
     buf[2] = 0;
     res = SetFeatureReport( dev, buf, 3 );
@@ -518,7 +518,7 @@ buf[3+nSettings*3+1] = ((uint16_t)VALUE)&0xFF; \
 buf[3+nSettings*3+2] = ((uint16_t)VALUE)>>8; \
 ++nSettings;
     
-    memset( buf, 0, 65 );
+    SDL_memset( buf, 0, 65 );
     buf[1] = ID_SET_SETTINGS_VALUES;
     ADD_SETTING( SETTING_WIRELESS_PACKET_VERSION, 2 );
     ADD_SETTING( SETTING_LEFT_TRACKPAD_MODE, TRACKPAD_NONE );
@@ -547,7 +547,7 @@ buf[3+nSettings*3+2] = ((uint16_t)VALUE)>>8; \
     int iRetry;
     for ( iRetry = 0; iRetry < 2; ++iRetry )
     {
-        memset( buf, 0, 65 );
+        SDL_memset( buf, 0, 65 );
         buf[1] = ID_GET_DIGITAL_MAPPINGS;
         buf[2] = 1; // one byte - requesting from index 0
         buf[3] = 0;
@@ -580,7 +580,7 @@ buf[3+nSettings*3+2] = ((uint16_t)VALUE)>>8; \
     }
     
     // Set our new mappings
-    memset( buf, 0, 65 );
+    SDL_memset( buf, 0, 65 );
     buf[1] = ID_SET_DIGITAL_MAPPINGS;
     buf[2] = 6; // 2 settings x 3 bytes
     buf[3] = IO_DIGITAL_BUTTON_RIGHT_TRIGGER;
@@ -608,7 +608,7 @@ buf[3+nSettings*3+2] = ((uint16_t)VALUE)>>8; \
 //---------------------------------------------------------------------------
 static int ReadSteamController( SDL_hid_device *dev, uint8_t *pData, int nDataSize )
 {
-    memset( pData, 0, nDataSize );
+    SDL_memset( pData, 0, nDataSize );
     pData[ 0 ] = BLE_REPORT_NUMBER; // hid_read will also overwrite this with the same value, 0x03
     return SDL_hid_read( dev, pData, nDataSize );
 }
@@ -624,18 +624,18 @@ static void CloseSteamController( SDL_hid_device *dev )
     int nSettings = 0;
     
     // Reset digital button mappings
-    memset( buf, 0, 65 );
+    SDL_memset( buf, 0, 65 );
     buf[1] = ID_SET_DEFAULT_DIGITAL_MAPPINGS;
     SetFeatureReport( dev, buf, 2 );
 
     // Reset the default settings
-    memset( buf, 0, 65 );
+    SDL_memset( buf, 0, 65 );
     buf[1] = ID_LOAD_DEFAULT_SETTINGS;
     buf[2] = 0;
     SetFeatureReport( dev, buf, 3 );
 
     // Reset mouse mode for lizard mode
-    memset( buf, 0, 65 );
+    SDL_memset( buf, 0, 65 );
     buf[1] = ID_SET_SETTINGS_VALUES;
     ADD_SETTING( SETTING_RIGHT_TRACKPAD_MODE, TRACKPAD_ABSOLUTE_MOUSE );
     buf[2] = nSettings*3;
@@ -695,14 +695,14 @@ static void FormatStatePacketUntilGyro( SteamControllerStateInternal_t *pState, 
     // 15 degrees in rad
     const float flRotationAngle = 0.261799f;
 
-    memset(pState, 0, offsetof(SteamControllerStateInternal_t, sBatteryLevel));
+    SDL_memset(pState, 0, offsetof(SteamControllerStateInternal_t, sBatteryLevel));
 
     //pState->eControllerType = m_eControllerType;
     pState->eControllerType = 2; // k_eControllerType_SteamController;
     pState->unPacketNum = pStatePacket->unPacketNum;
 
     // We have a chunk of trigger data in the packet format here, so zero it out afterwards
-    memcpy(&pState->ulButtons, &pStatePacket->ButtonTriggerData.ulButtons, 8);
+    SDL_memcpy(&pState->ulButtons, &pStatePacket->ButtonTriggerData.ulButtons, 8);
     pState->ulButtons &= ~0xFFFF000000LL;
 
     // The firmware uses this bit to tell us what kind of data is packed into the left two axises
@@ -822,7 +822,7 @@ static bool UpdateBLESteamControllerState( const uint8_t *pData, int nDataSize, 
     ucOptionDataMask |= (uint32_t)(*pData++) << 8;
     if ( ucOptionDataMask & k_EBLEButtonChunk1 )
     {
-        memcpy( &pState->ulButtons, pData, 3 );
+        SDL_memcpy( &pState->ulButtons, pData, 3 );
         pData += 3;
     }
     if ( ucOptionDataMask & k_EBLEButtonChunk2 )
@@ -844,14 +844,14 @@ static bool UpdateBLESteamControllerState( const uint8_t *pData, int nDataSize, 
         // This doesn't handle any of the special headcrab stuff for raw joystick which is OK for now since that FW doesn't support
         // this protocol yet either
         int nLength = sizeof( pState->sLeftStickX ) + sizeof( pState->sLeftStickY );
-        memcpy( &pState->sLeftStickX, pData, nLength );
+        SDL_memcpy( &pState->sLeftStickX, pData, nLength );
         pData += nLength;
     }
     if ( ucOptionDataMask & k_EBLELeftTrackpadChunk )
     {
         int nLength = sizeof( pState->sLeftPadX ) + sizeof( pState->sLeftPadY );
         int nPadOffset;
-        memcpy( &pState->sLeftPadX, pData, nLength );
+        SDL_memcpy( &pState->sLeftPadX, pData, nLength );
         if ( pState->ulButtons & STEAM_LEFTPAD_FINGERDOWN_MASK )
             nPadOffset = 1000;
         else
@@ -867,7 +867,7 @@ static bool UpdateBLESteamControllerState( const uint8_t *pData, int nDataSize, 
         int nLength = sizeof( pState->sRightPadX ) + sizeof( pState->sRightPadY );
         int nPadOffset = 0;
 
-        memcpy( &pState->sRightPadX, pData, nLength );
+        SDL_memcpy( &pState->sRightPadX, pData, nLength );
 
         if ( pState->ulButtons & STEAM_RIGHTPAD_FINGERDOWN_MASK )
             nPadOffset = 1000;
@@ -882,19 +882,19 @@ static bool UpdateBLESteamControllerState( const uint8_t *pData, int nDataSize, 
     if ( ucOptionDataMask & k_EBLEIMUAccelChunk )
     {
         int nLength = sizeof( pState->sAccelX ) + sizeof( pState->sAccelY ) + sizeof( pState->sAccelZ );
-        memcpy( &pState->sAccelX, pData, nLength );
+        SDL_memcpy( &pState->sAccelX, pData, nLength );
         pData += nLength;
     }
     if ( ucOptionDataMask & k_EBLEIMUGyroChunk )
     {
         int nLength = sizeof( pState->sAccelX ) + sizeof( pState->sAccelY ) + sizeof( pState->sAccelZ );
-        memcpy( &pState->sGyroX, pData, nLength );
+        SDL_memcpy( &pState->sGyroX, pData, nLength );
         pData += nLength;
     }
     if ( ucOptionDataMask & k_EBLEIMUQuatChunk )
     {
         int nLength = sizeof( pState->sGyroQuatW ) + sizeof( pState->sGyroQuatX ) + sizeof( pState->sGyroQuatY ) + sizeof( pState->sGyroQuatZ );
-        memcpy( &pState->sGyroQuatW, pData, nLength );
+        SDL_memcpy( &pState->sGyroQuatW, pData, nLength );
         pData += nLength;
     }
     return true;
@@ -1122,7 +1122,7 @@ HIDAPI_DriverSteam_SetSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *jo
     unsigned char buf[65];
     int nSettings = 0;
 
-    memset( buf, 0, 65 );
+    SDL_memset( buf, 0, 65 );
     buf[1] = ID_SET_SETTINGS_VALUES;
     if (enabled) {
         ADD_SETTING( SETTING_GYRO_MODE, 0x18 /* SETTING_GYRO_SEND_RAW_ACCEL | SETTING_GYRO_MODE_SEND_RAW_GYRO */ );

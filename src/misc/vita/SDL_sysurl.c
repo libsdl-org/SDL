@@ -35,7 +35,7 @@ SDL_SYS_OpenURL(const char *url)
     sceAppUtilInit(&init_param, &boot_param);
     SDL_zero(browser_param);
     browser_param.str = url;
-    browser_param.strlen = strlen(url);
+    browser_param.strlen = SDL_strlen(url);
     sceAppUtilLaunchWebBrowser(&browser_param);
     return 0;
 }

@@ -377,8 +377,8 @@ CPU_haveARMSIMD(void)
             {
                 const char *plat = (const char *) aux.a_un.a_val;
                 if (plat) {
-                    arm_simd = strncmp(plat, "v6l", 3) == 0 ||
-                               strncmp(plat, "v7l", 3) == 0;
+                    arm_simd = SDL_strncmp(plat, "v6l", 3) == 0 ||
+                               SDL_strncmp(plat, "v7l", 3) == 0;
                 }
             }
         }

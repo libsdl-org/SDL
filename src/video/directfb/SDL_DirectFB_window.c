@@ -227,7 +227,7 @@ DirectFB_SetWindowIcon(_THIS, SDL_Window * window, SDL_Surface * icon)
 
         p = surface->pixels;
         for (i = 0; i < surface->h; i++)
-            memcpy((char *) dest + i * pitch,
+            SDL_memcpy((char *) dest + i * pitch,
                    (char *) p + i * surface->pitch, 4 * surface->w);
 
         SDL_DFB_CHECK(windata->icon->Unlock(windata->icon));

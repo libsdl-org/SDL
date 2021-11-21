@@ -163,8 +163,8 @@ process_shader(GLuint *shader, const char * source, GLint shader_type)
 }
 
 /* Notes on a_angle:
-   * It is a vector containing sin and cos for rotation matrix
-   * To get correct rotation for most cases when a_angle is disabled cos
+   * It is a vector containing sine and cosine for rotation matrix
+   * To get correct rotation for most cases when a_angle is disabled SDL_cos
      value is decremented by 1.0 to get proper output with 0.0 which is
      default value
 */

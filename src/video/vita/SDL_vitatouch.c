@@ -90,7 +90,7 @@ VITA_PollTouch(void)
     if (Vita_Window == NULL)
         return;
 
-    memcpy(touch_old, touch, sizeof(touch_old));
+    SDL_memcpy(touch_old, touch, sizeof(touch_old));
 
     for(port = 0; port < SCE_TOUCH_PORT_MAX_NUM; port++) {
         /** Skip polling of Touch Device if environment variable is set **/

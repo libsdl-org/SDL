@@ -358,7 +358,7 @@ GetXftDPI(Display* dpy)
     }
 
     /*
-     * It's possible for SDL_atoi to call strtol, if it fails due to a
+     * It's possible for SDL_atoi to call SDL_strtol, if it fails due to a
      * overflow or an underflow, it will return LONG_MAX or LONG_MIN and set
      * errno to ERANGE. So we need to check for this so we dont get crazy dpi
      * values

@@ -53,7 +53,6 @@
 #include <pthread.h>
 #include <errno.h>	// For ETIMEDOUT and ECONNRESET
 #include <stdlib.h> // For malloc() and free()
-#include <string.h>	// For memcpy()
 
 #define TAG "hidapi"
 
@@ -196,7 +195,7 @@ public:
 		}
 
 		m_nSize = nSize;
-		memcpy( m_pData, pData, nSize );
+		SDL_memcpy( m_pData, pData, nSize );
 	}
 
 	void clear()
@@ -313,7 +312,7 @@ static jbyteArray NewByteArray( JNIEnv* env, const uint8_t *pData, size_t nDataL
 {
 	jbyteArray array = env->NewByteArray( (jsize)nDataLen );
 	jbyte *pBuf = env->GetByteArrayElements( array, NULL );
-	memcpy( pBuf, pData, nDataLen );
+	SDL_memcpy( pBuf, pData, nDataLen );
 	env->ReleaseByteArrayElements( array, pBuf, 0 );
 
 	return array;
@@ -324,7 +323,7 @@ static char *CreateStringFromJString( JNIEnv *env, const jstring &sString )
 	size_t nLength = env->GetStringUTFLength( sString );
 	const char *pjChars = env->GetStringUTFChars( sString, NULL );
 	char *psString = (char*)malloc( nLength + 1 );
-	memcpy( psString, pjChars, nLength );
+	SDL_memcpy( psString, pjChars, nLength );
 	psString[ nLength ] = '\0';
 	env->ReleaseStringUTFChars( sString, pjChars );
 	return psString;
@@ -347,9 +346,9 @@ static wchar_t *CreateWStringFromJString( JNIEnv *env, const jstring &sString )
 
 static wchar_t *CreateWStringFromWString( const wchar_t *pwSrc )
 {
-	size_t nLength = wcslen( pwSrc );
+	size_t nLength = SDL_wcslen( pwSrc );
 	wchar_t *pwString = (wchar_t*)malloc( ( nLength + 1 ) * sizeof( wchar_t ) );
-	memcpy( pwString, pwSrc, nLength * sizeof( wchar_t ) );
+	SDL_memcpy( pwString, pwSrc, nLength * sizeof( wchar_t ) );
 	pwString[ nLength ] = '\0';
 	return pwString;
 }
@@ -358,7 +357,7 @@ static hid_device_info *CopyHIDDeviceInfo( const hid_device_info *pInfo )
 {
 	hid_device_info *pCopy = new hid_device_info;
 	*pCopy = *pInfo;
-	pCopy->path = strdup( pInfo->path );
+	pCopy->path = SDL_strdup( pInfo->path );
 	pCopy->product_string = CreateWStringFromWString( pInfo->product_string );
 	pCopy->manufacturer_string = CreateWStringFromWString( pInfo->manufacturer_string );
 	pCopy->serial_number = CreateWStringFromWString( pInfo->serial_number );
@@ -579,12 +578,12 @@ public:
 		if ( m_bIsBLESteamController )
 		{
 			data[0] = 0x03;
-			memcpy( data + 1, buffer.data(), nDataLen );
+			SDL_memcpy( data + 1, buffer.data(), nDataLen );
 			++nDataLen;
 		}
 		else
 		{
-			memcpy( data, buffer.data(), nDataLen );
+			SDL_memcpy( data, buffer.data(), nDataLen );
 		}
 		m_vecData.pop_front();
 
@@ -721,7 +720,7 @@ public:
 			}
 
 			size_t uBytesToCopy = m_featureReport.size() > nDataLen ? nDataLen : m_featureReport.size();
-			memcpy( pData, m_featureReport.data(), uBytesToCopy );
+			SDL_memcpy( pData, m_featureReport.data(), uBytesToCopy );
 			m_featureReport.clear();
 			LOGV( "=== Got %u bytes", uBytesToCopy );
 
@@ -921,7 +920,7 @@ JNIEXPORT void JNICALL HID_DEVICE_MANAGER_JAVA_INTERFACE(HIDDeviceConnected)(JNI
 	LOGV( "HIDDeviceConnected() id=%d VID/PID = %.4x/%.4x, interface %d\n", nDeviceID, nVendorId, nProductId, nInterface );
 
 	hid_device_info *pInfo = new hid_device_info;
-	memset( pInfo, 0, sizeof( *pInfo ) );
+	SDL_memset( pInfo, 0, sizeof( *pInfo ) );
 	pInfo->path = CreateStringFromJString( env, sIdentifier );
 	pInfo->vendor_id = nVendorId;
 	pInfo->product_id = nProductId;
@@ -1120,7 +1119,7 @@ HID_API_EXPORT hid_device * HID_API_CALL hid_open_path(const char *path, int bEx
 		hid_mutex_guard l( &g_DevicesMutex );
 		for ( hid_device_ref<CHIDDevice> pCurr = g_Devices; pCurr; pCurr = pCurr->next )
 		{
-			if ( strcmp( pCurr->GetDeviceInfo()->path, path ) == 0 ) 
+			if ( SDL_strcmp( pCurr->GetDeviceInfo()->path, path ) == 0 ) 
 			{
 				hid_device *pValue = pCurr->GetDevice();
 				if ( pValue )

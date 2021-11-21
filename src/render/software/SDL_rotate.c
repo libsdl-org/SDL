@@ -184,7 +184,7 @@ computeSourceIncrements90(SDL_Surface * src, int bpp, int angle, int flipx, int 
     if (signy < 0) sp += (src->h-1)*src->pitch;                                                             \
                                                                                                             \
     for (dy = 0; dy < dst->h; sp += sincy, dp += dincy, dy++) {                                             \
-        if (sincx == sizeof(pixelType)) { /* if advancing src and dest equally, use memcpy */               \
+        if (sincx == sizeof(pixelType)) { /* if advancing src and dest equally, use SDL_memcpy */           \
             SDL_memcpy(dp, sp, dst->w*sizeof(pixelType));                                                   \
             sp += dst->w*sizeof(pixelType);                                                                 \
             dp += dst->w*sizeof(pixelType);                                                                 \
@@ -439,7 +439,7 @@ SDLgfx_rotateSurface(SDL_Surface * src, double angle, int centerx, int centery, 
     if (!(is8bit || (src->format->BitsPerPixel == 32 && src->format->Amask)))
         return NULL;
 
-    /* Calculate target factors from sin/cos and zoom */
+    /* Calculate target factors from sine/cosine and zoom */
     sangleinv = sangle*65536.0;
     cangleinv = cangle*65536.0;
 

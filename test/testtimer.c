@@ -72,7 +72,7 @@ main(int argc, char *argv[])
     /* Start the timer */
     desired = 0;
     if (argv[1]) {
-        desired = atoi(argv[1]);
+        desired = SDL_atoi(argv[1]);
     }
     if (desired == 0) {
         desired = DEFAULT_RESOLUTION;
