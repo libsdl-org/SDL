@@ -1166,7 +1166,6 @@ Cocoa_SendMouseButtonClicks(SDL_Mouse * mouse, NSEvent *theEvent, SDL_Window * w
     if ( focus && ([theEvent window] == ((SDL_WindowData *) focus->driverdata)->nswindow) ) {
         rc = SDL_SendMouseButtonClicks(window, mouseID, state, button, clicks);
     } else {
-printf("BACKGROUND CLICK!\n"); fflush(stdout);
         const int orig_x = mouse->x;
         const int orig_y = mouse->y;
         const NSPoint point = [theEvent locationInWindow];
