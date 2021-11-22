@@ -313,7 +313,7 @@ WaveDebugDumpFormat(WaveFile *file, Uint32 rifflen, Uint32 fmtlen, Uint32 datale
 
     SDL_LogDebug(SDL_LOG_CATEGORY_AUDIO, "%s", dumpstr);
 
-    free(dumpstr);
+    SDL_free(dumpstr);
 }
 #endif
 
