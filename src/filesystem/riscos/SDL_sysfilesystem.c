@@ -181,7 +181,7 @@ SDL_GetPrefPath(const char *org, const char *app)
     dir = (char *) SDL_malloc(len);
     if (!dir) {
         SDL_OutOfMemory();
-        free(canon);
+        SDL_free(canon);
         return NULL;
     }
 

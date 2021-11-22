@@ -925,7 +925,7 @@ void gxm_finish(SDL_Renderer *renderer)
         sceGxmSyncObjectDestroy(data->displayBufferSync[i]);
     }
 
-    // free the depth and stencil buffer
+    // Free the depth and stencil buffer
     mem_gpu_free(data->depthBufferUid);
     mem_gpu_free(data->stencilBufferUid);
 
@@ -1040,7 +1040,7 @@ create_gxm_texture(VITA_GXM_RenderData *data, unsigned int w, unsigned int h, Sc
     }
 
     if (!texture_data) {
-        free(texture);
+        SDL_free(texture);
         return NULL;
     }
 
