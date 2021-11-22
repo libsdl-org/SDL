@@ -121,7 +121,7 @@ SDL_ClearDataQueue(SDL_DataQueue *queue, const size_t slack)
     queue->queued_bytes = 0;
     queue->pool = packet;
 
-    /* Optionally keep some slack in the pool to reduce malloc pressure. */
+    /* Optionally keep some slack in the pool to reduce memory allocation pressure. */
     for (i = 0; packet && (i < slackpackets); i++) {
         prev = packet;
         packet = packet->next;
