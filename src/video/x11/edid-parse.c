@@ -522,7 +522,7 @@ decode_check_sum (const uchar *edid,
 MonitorInfo *
 decode_edid (const uchar *edid)
 {
-    MonitorInfo *info = calloc (1, sizeof (MonitorInfo));
+    MonitorInfo *info = SDL_calloc (1, sizeof (MonitorInfo));
 
     decode_check_sum (edid, info);
     
@@ -534,8 +534,8 @@ decode_edid (const uchar *edid)
         !decode_established_timings (edid, info) ||
         !decode_standard_timings (edid, info) ||
         !decode_descriptors (edid, info)) {
-        free(info);
-	return NULL;
+        SDL_free(info);
+        return NULL;
     }
     
     return info;

@@ -322,7 +322,7 @@ SetXRandRDisplayName(Display *dpy, Atom EDID, char *name, const size_t namelen, 
                     dump_monitor_info(info);
 #endif
                     SDL_strlcpy(name, info->dsc_product_name, namelen);
-                    free(info);
+                    SDL_free(info);
                 }
                 X11_XFree(prop);
             }
