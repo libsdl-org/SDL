@@ -592,7 +592,7 @@ if(SDL_ASSEMBLY)
     # TODO: Those all seem to be quite GCC specific - needs to be
     # reworked for better compiler support
     set(HAVE_ASSEMBLY TRUE)
-    if(MMX)
+    if(SDL_MMX)
       set(CMAKE_REQUIRED_FLAGS "-mmmx")
       check_c_source_compiles("
           #ifdef __MINGW32__
@@ -709,8 +709,9 @@ if(SDL_ASSEMBLY)
             list(APPEND EXTRA_CFLAGS "-mfpmath=387")
           endif()
         endif()
-        set(HAVE_SSEMATH TRUE)
       endif()
+    else()
+      set(HAVE_SSEMATH TRUE)
     endif()
 
     check_include_file("immintrin.h" HAVE_IMMINTRIN_H)
@@ -993,7 +994,7 @@ if(SDL_VIDEO)
     set(SDL_VIDEO_DRIVER_DUMMY 1)
     file(GLOB VIDEO_DUMMY_SOURCES ${SDL2_SOURCE_DIR}/src/video/dummy/*.c)
     set(SOURCE_FILES ${SOURCE_FILES} ${VIDEO_DUMMY_SOURCES})
-    set(HAVE_DUMMY TRUE)
+    set(HAVE_DUMMYVIDEO TRUE)
     set(HAVE_SDL_VIDEO TRUE)
   endif()
   if(SDL_OFFSCREEN)
@@ -1572,6 +1573,7 @@ elseif(WINDOWS)
 
     if(SDL_WASAPI AND HAVE_AUDIOCLIENT_H AND HAVE_MMDEVICEAPI_H)
       set(SDL_AUDIO_DRIVER_WASAPI 1)
+      set(HAVE_WASAPI TRUE)
       file(GLOB WASAPI_AUDIO_SOURCES ${SDL2_SOURCE_DIR}/src/audio/wasapi/*.c)
       if(WINDOWS_STORE)
         list(APPEND WASAPI_AUDIO_SOURCES ${SDL2_SOURCE_DIR}/src/audio/wasapi/SDL_wasapi_winrt.cpp)
@@ -1675,8 +1677,6 @@ elseif(WINDOWS)
     )
   endif()
 
-  # TODO: in configure.ac the check for timers is set on
-  # cygwin | mingw32* - does this include mingw32CE?
   if(SDL_TIMERS)
     set(SDL_TIMER_WINDOWS 1)
     file(GLOB TIMER_SOURCES ${SDL2_SOURCE_DIR}/src/timer/windows/*.c)
@@ -1726,6 +1726,7 @@ elseif(WINDOWS)
     endif()
     if(HAVE_XINPUT_H)
       set(SDL_JOYSTICK_XINPUT 1)
+      set(HAVE_XINPUT TRUE)
       if(HAVE_WINDOWS_GAMING_INPUT_H)
         set(SDL_JOYSTICK_WGI 1)
       endif()
@@ -1774,6 +1775,7 @@ elseif(APPLE)
     set(SDL_FRAMEWORK_CARBON 1)
   endif()
   set(SDL_FRAMEWORK_FOUNDATION 1)
+  set(SDL_FRAMEWORK_COREVIDEO 1)
 
   # Requires the darwin file implementation
   if(SDL_FILE)
@@ -1782,8 +1784,6 @@ elseif(APPLE)
     # !!! FIXME: modern CMake doesn't need "LANGUAGE C" for Objective-C.
     set_source_files_properties(${EXTRA_SOURCES} PROPERTIES LANGUAGE C)
     set(HAVE_SDL_FILE TRUE)
-    # !!! FIXME: why is COREVIDEO inside this if() block?
-    set(SDL_FRAMEWORK_COREVIDEO 1)
   else()
     message_error("SDL_FILE must be enabled to build on MacOS X")
   endif()
@@ -2219,7 +2219,6 @@ elseif(VITA)
     file(GLOB VITA_VIDEO_SOURCES ${SDL2_SOURCE_DIR}/src/video/vita/*.c)
     set(SOURCE_FILES ${SOURCE_FILES} ${VITA_VIDEO_SOURCES})
     set(HAVE_SDL_VIDEO TRUE)
-
 
     if(VIDEO_VITA_PIB)
       check_include_file(pib.h HAVE_PIGS_IN_BLANKET_H)
