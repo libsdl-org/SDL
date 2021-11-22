@@ -43,13 +43,13 @@ SDL_sem *SDL_CreateSemaphore(Uint32 initial_value)
 {
     SDL_sem *sem;
 
-    sem = (SDL_sem *) malloc(sizeof(*sem));
+    sem = (SDL_sem *) SDL_malloc(sizeof(*sem));
     if (sem != NULL) {
         /* TODO: Figure out the limit on the maximum value. */
         sem->semid = sceKernelCreateSema("SDL sema", 0, initial_value, 255, NULL);
         if (sem->semid < 0) {
             SDL_SetError("Couldn't create semaphore");
-            free(sem);
+            SDL_free(sem);
             sem = NULL;
         }
     } else {
@@ -68,7 +68,7 @@ void SDL_DestroySemaphore(SDL_sem *sem)
             sem->semid = 0;
         }
 
-        free(sem);
+        SDL_free(sem);
     }
 }
 
