@@ -96,7 +96,7 @@ typedef struct WaveChunk
     Uint32 fourcc;   /* FOURCC of the chunk. */
     Uint32 length;   /* Size of the chunk data. */
     Sint64 position; /* Position of the data in the stream. */
-    Uint8 *data;     /* When allocated, this points to the chunk data. length is used for the malloc size. */
+    Uint8 *data;     /* When allocated, this points to the chunk data. length is used for the memory allocation size. */
     size_t size;     /* Number of bytes in data that could be read from the stream. Can be smaller than length. */
 } WaveChunk;
 
