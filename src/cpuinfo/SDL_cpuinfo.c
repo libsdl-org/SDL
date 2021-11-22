@@ -1063,7 +1063,7 @@ SDL_SIMDAlloc(const size_t len)
     Uint8 *retval = NULL;
     Uint8 *ptr = (Uint8 *) SDL_malloc(padded + alignment + sizeof (void *));
     if (ptr) {
-        /* store the actual malloc pointer right before our aligned pointer. */
+        /* store the actual allocated pointer right before our aligned pointer. */
         retval = ptr + sizeof (void *);
         retval += alignment - (((size_t) retval) % alignment);
         *(((void **) retval) - 1) = ptr;
@@ -1097,7 +1097,7 @@ SDL_SIMDRealloc(void *mem, const size_t len)
         return NULL; /* Out of memory, bail! */
     }
 
-    /* Store the actual malloc pointer right before our aligned pointer. */
+    /* Store the actual allocated pointer right before our aligned pointer. */
     retval = ptr + sizeof (void *);
     retval += alignment - (((size_t) retval) % alignment);
 
@@ -1115,7 +1115,7 @@ SDL_SIMDRealloc(void *mem, const size_t len)
         }
     }
 
-    /* Actually store the malloc pointer, finally. */
+    /* Actually store the allocated pointer, finally. */
     *(((void **) retval) - 1) = ptr;
     return retval;
 }
