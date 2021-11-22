@@ -33,7 +33,7 @@ Compiling:
 
 Open Watcom 1.9 or newer is tested. For the new Open Watcom V2 fork, see:
 https://github.com/open-watcom/ and https://open-watcom.github.io
-WATCOM ervironment variable must to be set to the Open Watcom install
+WATCOM environment variable must to be set to the Open Watcom install
 directory. To compile, run: wmake -f Makefile.os2
 
 
