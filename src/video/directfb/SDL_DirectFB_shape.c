@@ -34,7 +34,7 @@ DirectFB_CreateShaper(SDL_Window* window) {
     SDL_ShapeData* data;
     int resized_properly;
 
-    result = malloc(sizeof(SDL_WindowShaper));
+    result = SDL_malloc(sizeof(SDL_WindowShaper));
     result->window = window;
     result->mode.mode = ShapeModeDefault;
     result->mode.parameters.binarizationCutoff = 1;
