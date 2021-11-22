@@ -37,7 +37,7 @@
 static char *
 SDL_unixify_std(const char *ro_path, char *buffer, size_t buf_len, int filetype)
 {
-    const char *const in_buf = buffer; /* = NULL if we malloc the buffer.  */
+    const char *const in_buf = buffer; /* = NULL if we allocate the buffer.  */
 
     if (!buffer) {
         /* This matches the logic in __unixify, with an additional byte for the
