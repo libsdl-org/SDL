@@ -347,7 +347,7 @@ SDL_CreateWindowTexture(SDL_VideoDevice *unused, SDL_Window * window, Uint32 * f
     data->pitch = (((window->w * data->bytes_per_pixel) + 3) & ~3);
 
     {
-        /* Make static analysis happy about potential malloc(0) calls. */
+        /* Make static analysis happy about potential SDL_malloc(0) calls. */
         const size_t allocsize = window->h * data->pitch;
         data->pixels = SDL_malloc((allocsize > 0) ? allocsize : 1);
         if (!data->pixels) {

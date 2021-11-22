@@ -54,7 +54,7 @@ SDL_HandleSIG(int sig)
     signal(sig, SDL_HandleSIG);
 
     /* Send a quit event next time the event loop pumps. */
-    /* We can't send it in signal handler; malloc() might be interrupted! */
+    /* We can't send it in signal handler; SDL_malloc() might be interrupted! */
     if ((sig == SIGINT) || (sig == SIGTERM)) {
         send_quit_pending = SDL_TRUE;
     }
