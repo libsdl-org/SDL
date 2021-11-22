@@ -234,7 +234,7 @@ ParseConfig(char* file, SDLVisualTest_HarnessState* state)
         argv = (char**)SDL_malloc((num_params + 1) * sizeof(char*));
         if(!argv)
         {
-            SDLTest_LogError("malloc() failed.");
+            SDLTest_LogError("SDL_malloc() failed.");
             SDL_RWclose(rw);
             return 0;
         }

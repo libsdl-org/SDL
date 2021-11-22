@@ -241,7 +241,7 @@ ScreenshotWindow(HWND hwnd, char* filename, SDL_bool only_client_area)
         goto screenshotwindow_cleanup_capturebitmap;
     }
 
-    /* free resources */
+    /* Free resources */
 
 screenshotwindow_cleanup_capturebitmap:
     if(!DeleteObject(capturebitmap))
@@ -297,7 +297,7 @@ ScreenshotHwnd(HWND hwnd, LPARAM lparam)
     filename = (char*)SDL_malloc(len * sizeof(char));
     if(!filename)
     {
-        SDLTest_LogError("malloc() failed");
+        SDLTest_LogError("SDL_malloc() failed");
         return FALSE;
     }
 

@@ -48,7 +48,7 @@ SDLVisualTest_VerifyScreenshots(char* args, char* test_dir, char* verify_dir)
     verify_path = (char*)SDL_malloc(verify_len * sizeof(char));
     if(!verify_path)
     {
-        SDLTest_LogError("malloc() failed");
+        SDLTest_LogError("SDL_malloc() failed");
         return_code = -1;
         goto verifyscreenshots_cleanup_generic;
     }
@@ -78,7 +78,7 @@ SDLVisualTest_VerifyScreenshots(char* args, char* test_dir, char* verify_dir)
     test_path = (char*)SDL_malloc(test_len * sizeof(char));
     if(!test_path)
     {
-        SDLTest_LogError("malloc() failed");
+        SDLTest_LogError("SDL_malloc() failed");
         return_code = -1;
         goto verifyscreenshots_cleanup_verifybmp;
     }

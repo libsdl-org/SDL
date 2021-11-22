@@ -96,7 +96,7 @@ TokenizeHelper(char* str, char** tokens, int num_tokens, int max_token_len)
         if(!tokens[index])
         {
             int i;
-            SDLTest_LogError("malloc() failed.");
+            SDLTest_LogError("SDL_malloc() failed.");
             for(i = 0; i < index; i++)
                 SDL_free(tokens[i]);
             return 0;
@@ -215,7 +215,7 @@ SDLVisualTest_ParseArgsToArgv(char* args)
     argv = (char**)SDL_malloc((num_tokens + 2) * sizeof(char*));
     if(!argv)
     {
-        SDLTest_LogError("malloc() failed.");
+        SDLTest_LogError("SDL_malloc() failed.");
         return NULL;
     }
 
