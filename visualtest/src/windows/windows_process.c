@@ -61,7 +61,7 @@ SDL_LaunchProcess(char* file, char* args, SDL_ProcessInfo* pinfo)
     working_directory = (char*)SDL_malloc(path_length + 1);
     if(!working_directory)
     {
-        SDLTest_LogError("Could not allocate working_directory - malloc() failed.");
+        SDLTest_LogError("Could not allocate working_directory - SDL_malloc() failed.");
         return 0;
     }
 
@@ -80,7 +80,7 @@ SDL_LaunchProcess(char* file, char* args, SDL_ProcessInfo* pinfo)
     command_line = (char*)SDL_malloc(path_length + args_length + 2);
     if(!command_line)
     {
-        SDLTest_LogError("Could not allocate command_line - malloc() failed.");
+        SDLTest_LogError("Could not allocate command_line - SDL_malloc() failed.");
         return 0;
     }
     SDL_memcpy(command_line, file, path_length);

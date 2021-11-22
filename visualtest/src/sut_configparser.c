@@ -61,7 +61,7 @@ SDLVisualTest_ParseSUTConfig(char* file, SDLVisualTest_SUTConfig* config)
                       sizeof(SDLVisualTest_SUTOption));
     if(!config->options)
     {
-        SDLTest_LogError("malloc() failed");
+        SDLTest_LogError("SDL_malloc() failed");
         SDL_RWclose(rw);
         return 0;
     }
