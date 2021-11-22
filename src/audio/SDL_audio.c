@@ -687,7 +687,7 @@ SDL_ClearQueuedAudio(SDL_AudioDeviceID devid)
     /* Blank out the device and release the mutex. Free it afterwards. */
     current_audio.impl.LockDevice(device);
 
-    /* Keep up to two packets in the pool to reduce future malloc pressure. */
+    /* Keep up to two packets in the pool to reduce future memory allocation pressure. */
     SDL_ClearDataQueue(device->buffer_queue, SDL_AUDIOBUFFERQUEUE_PACKETLEN * 2);
 
     current_audio.impl.UnlockDevice(device);
