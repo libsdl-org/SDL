@@ -190,7 +190,7 @@ typedef struct
 
 
 // Wireless firmware quirk: the firmware intentionally signals "failure" when performing
-// SET_FEATURE / GET_FEATURE when it actually means "pending radio round-trip". The only
+// SET_FEATURE / GET_FEATURE when it actually means "pending radio roundtrip". The only
 // way to make SET_FEATURE / GET_FEATURE work is to loop several times with a sleep. If
 // it takes more than 50ms to get the response for SET_FEATURE / GET_FEATURE, we assume
 // that the controller has failed.
