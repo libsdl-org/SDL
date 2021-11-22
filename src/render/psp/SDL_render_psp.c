@@ -221,7 +221,7 @@ TextureSwizzle(PSP_TextureData *psp_texture)
     unsigned int *src = (unsigned int*) psp_texture->data;
 
     unsigned char *data = NULL;
-    data = malloc(psp_texture->size);
+    data = SDL_malloc(psp_texture->size);
 
     int j;
 
@@ -246,7 +246,7 @@ TextureSwizzle(PSP_TextureData *psp_texture)
             blockaddress += rowblocksadd;
     }
 
-    free(psp_texture->data);
+    SDL_free(psp_texture->data);
     psp_texture->data = data;
     psp_texture->swizzled = SDL_TRUE;
 
@@ -272,7 +272,7 @@ int TextureUnswizzle(PSP_TextureData *psp_texture)
 
     unsigned char *data = NULL;
 
-    data = malloc(psp_texture->size);
+    data = SDL_malloc(psp_texture->size);
 
     if(!data)
         return 0;
@@ -308,7 +308,7 @@ int TextureUnswizzle(PSP_TextureData *psp_texture)
         ydst += dstrow;
     }
 
-    free(psp_texture->data);
+    SDL_free(psp_texture->data);
 
     psp_texture->data = data;
 
