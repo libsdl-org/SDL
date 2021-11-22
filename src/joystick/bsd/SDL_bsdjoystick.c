@@ -552,7 +552,7 @@ BSD_JoystickUpdate(SDL_Joystick *joy)
 
     if (joy->hwdata->type == BSDJOY_JOY) {
         while (read(joy->hwdata->fd, &gameport, sizeof gameport) == sizeof gameport) {
-            if (abs(x - gameport.x) > 8) {
+            if (SDL_abs(x - gameport.x) > 8) {
                 x = gameport.x;
                 if (x < xmin) {
                     xmin = x;
@@ -569,7 +569,7 @@ BSD_JoystickUpdate(SDL_Joystick *joy)
                 v *= 32768 / ((xmax - xmin + 1) / 2);
                 SDL_PrivateJoystickAxis(joy, 0, v);
             }
-            if (abs(y - gameport.y) > 8) {
+            if (SDL_abs(y - gameport.y) > 8) {
                 y = gameport.y;
                 if (y < ymin) {
                     ymin = y;
