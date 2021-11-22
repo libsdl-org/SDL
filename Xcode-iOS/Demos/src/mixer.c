@@ -111,7 +111,7 @@ loadSound(const char *file, struct sound *s)
         if (SDL_ConvertAudio(&cvt) == -1) {     /* convert the sound */
             fatalError("could not convert .wav");
         }
-        SDL_free(s->buffer);    /* free the original (unconverted) buffer */
+        SDL_free(s->buffer);    /* Free the original (unconverted) buffer */
         s->buffer = cvt.buf;    /* point sound buffer to converted buffer */
         s->length = cvt.len_cvt;        /* set sound buffer's new length */
     }
