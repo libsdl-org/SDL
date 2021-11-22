@@ -16389,7 +16389,6 @@ case "$host" in
         cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-
 int
 main ()
 {
@@ -16421,7 +16420,6 @@ case "$host" in
         LDFLAGS="$LDFLAGS -Wl,--dynamicbase"
         cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-
 
 int
 main ()
@@ -16455,7 +16453,6 @@ case "$host" in
         cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-
 int
 main ()
 {
@@ -16487,7 +16484,6 @@ case "$host" in
         LDFLAGS="$LDFLAGS -Wl,--high-entropy-va"
         cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-
 
 int
 main ()
@@ -26150,7 +26146,6 @@ $as_echo_n "checking for linker option --enable-new-dtags... " >&6; }
     LDFLAGS="$LDFLAGS -Wl,--enable-new-dtags"
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-
 
 int
 main ()

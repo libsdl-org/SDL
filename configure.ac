@@ -248,8 +248,7 @@ case "$host" in
     *)
         save_LDFLAGS="$LDFLAGS"
         LDFLAGS="$LDFLAGS -Wl,--no-undefined"
-        AC_LINK_IFELSE([AC_LANG_PROGRAM([[
-        ]],[])], [
+        AC_LINK_IFELSE([AC_LANG_PROGRAM([],[])], [
         have_no_undefined=yes
         BUILD_LDFLAGS="$BUILD_LDFLAGS -Wl,--no-undefined"
         ],[])
@@ -264,8 +263,7 @@ case "$host" in
     *)
         save_LDFLAGS="$LDFLAGS"
         LDFLAGS="$LDFLAGS -Wl,--dynamicbase"
-        AC_LINK_IFELSE([AC_LANG_PROGRAM([[
-        ]],[])], [
+        AC_LINK_IFELSE([AC_LANG_PROGRAM([],[])], [
         have_dynamicbase=yes
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,--dynamicbase"
         ],[])
@@ -280,8 +278,7 @@ case "$host" in
     *)
         save_LDFLAGS="$LDFLAGS"
         LDFLAGS="$LDFLAGS -Wl,--nxcompat"
-        AC_LINK_IFELSE([AC_LANG_PROGRAM([[
-        ]],[])], [
+        AC_LINK_IFELSE([AC_LANG_PROGRAM([],[])], [
         have_nxcompat=yes
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,--nxcompat"
         ],[])
@@ -296,8 +293,7 @@ case "$host" in
     *)
         save_LDFLAGS="$LDFLAGS"
         LDFLAGS="$LDFLAGS -Wl,--high-entropy-va"
-        AC_LINK_IFELSE([AC_LANG_PROGRAM([[
-        ]],[])], [
+        AC_LINK_IFELSE([AC_LANG_PROGRAM([],[])], [
         have_high_entropy_va=yes
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,--high-entropy-va"
         ],[])
@@ -3817,7 +3813,7 @@ case "$host" in
         fi
         # Set up files for udev hotplugging support
         if test x$enable_libudev = xyes && test x$have_libudev_h_hdr = xyes; then
-            SOURCES="$SOURCES $srcdir/src/core/linux/SDL_udev.c"               
+            SOURCES="$SOURCES $srcdir/src/core/linux/SDL_udev.c"
         fi
         # Set up files for evdev input
         if test x$use_input_events = xyes; then
@@ -4516,8 +4512,7 @@ if test "x$enable_rpath" = "xyes" -a "x$enable_shared" = "xyes"; then
     have_enable_new_dtags=no
     save_LDFLAGS="$LDFLAGS"
     LDFLAGS="$LDFLAGS -Wl,--enable-new-dtags"
-    AC_LINK_IFELSE([AC_LANG_PROGRAM([[
-    ]],[])], [
+    AC_LINK_IFELSE([AC_LANG_PROGRAM([],[])], [
     have_enable_new_dtags=yes
     SDL_RLD_FLAGS="$SDL_RLD_FLAGS -Wl,--enable-new-dtags"
     ],[])
