@@ -85,7 +85,7 @@ glGetConfig(EGLConfig *pconf, int *pformat)
     }
 
     // Allocate enough memory for all configurations.
-    egl_configs = malloc(egl_num_configs * sizeof(*egl_configs));
+    egl_configs = SDL_malloc(egl_num_configs * sizeof(*egl_configs));
     if (egl_configs == NULL) {
         return -1;
     }
@@ -94,7 +94,7 @@ glGetConfig(EGLConfig *pconf, int *pformat)
     rc = eglGetConfigs(egl_disp, egl_configs, egl_num_configs,
                        &egl_num_configs);
     if (rc != EGL_TRUE) {
-        free(egl_configs);
+        SDL_free(egl_configs);
         return -1;
     }
 
@@ -119,7 +119,7 @@ glGetConfig(EGLConfig *pconf, int *pformat)
         break;
     }
 
-    free(egl_configs);
+    SDL_free(egl_configs);
     *pconf = egl_conf;
     *pformat = chooseFormat(egl_conf);
 
