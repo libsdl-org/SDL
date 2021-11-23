@@ -847,7 +847,7 @@ PSP_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *verti
                 const Uint8 g = cmd->data.color.g;
                 const Uint8 b = cmd->data.color.b;
                 const Uint8 a = cmd->data.color.a;
-                const Uint32 color = ((a << 24) | (b << 16) | (g << 8) | r);
+                const Uint32 color = (((Uint32)a << 24) | (b << 16) | (g << 8) | r);
                 /* !!! FIXME: we could cache drawstate like clear color */
                 sceGuClearColor(color);
                 sceGuClearDepth(0);
@@ -862,7 +862,7 @@ PSP_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *verti
                 const Uint8 g = cmd->data.draw.g;
                 const Uint8 b = cmd->data.draw.b;
                 const Uint8 a = cmd->data.draw.a;
-                const Uint32 color = ((a << 24) | (b << 16) | (g << 8) | r);
+                const Uint32 color = (((Uint32)a << 24) | (b << 16) | (g << 8) | r);
                 /* !!! FIXME: we could cache draw state like color, texturing, etc */
                 sceGuColor(color);
                 sceGuDisable(GU_TEXTURE_2D);
@@ -880,7 +880,7 @@ PSP_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *verti
                 const Uint8 g = cmd->data.draw.g;
                 const Uint8 b = cmd->data.draw.b;
                 const Uint8 a = cmd->data.draw.a;
-                const Uint32 color = ((a << 24) | (b << 16) | (g << 8) | r);
+                const Uint32 color = (((Uint32)a << 24) | (b << 16) | (g << 8) | r);
                 /* !!! FIXME: we could cache draw state like color, texturing, etc */
                 sceGuColor(color);
                 sceGuDisable(GU_TEXTURE_2D);
@@ -898,7 +898,7 @@ PSP_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *verti
                 const Uint8 g = cmd->data.draw.g;
                 const Uint8 b = cmd->data.draw.b;
                 const Uint8 a = cmd->data.draw.a;
-                const Uint32 color = ((a << 24) | (b << 16) | (g << 8) | r);
+                const Uint32 color = (((Uint32)a << 24) | (b << 16) | (g << 8) | r);
                 /* !!! FIXME: we could cache draw state like color, texturing, etc */
                 sceGuColor(color);
                 sceGuDisable(GU_TEXTURE_2D);

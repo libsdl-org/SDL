@@ -673,9 +673,9 @@ GLES2_QueueDrawPoints(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL
     }
 
     if (colorswap == 0) {
-        color = (cmd->data.draw.r << 0) | (cmd->data.draw.g << 8) | (cmd->data.draw.b << 16) | (cmd->data.draw.a << 24);
+        color = (cmd->data.draw.r << 0) | (cmd->data.draw.g << 8) | (cmd->data.draw.b << 16) | ((Uint32)cmd->data.draw.a << 24);
     } else {
-        color = (cmd->data.draw.r << 16) | (cmd->data.draw.g << 8) | (cmd->data.draw.b << 0) | (cmd->data.draw.a << 24);
+        color = (cmd->data.draw.r << 16) | (cmd->data.draw.g << 8) | (cmd->data.draw.b << 0) | ((Uint32)cmd->data.draw.a << 24);
     }
 
     cmd->data.draw.count = count;
@@ -702,9 +702,9 @@ GLES2_QueueDrawLines(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_
     }
 
     if (colorswap == 0) {
-        color = (cmd->data.draw.r << 0) | (cmd->data.draw.g << 8) | (cmd->data.draw.b << 16) | (cmd->data.draw.a << 24);
+        color = (cmd->data.draw.r << 0) | (cmd->data.draw.g << 8) | (cmd->data.draw.b << 16) | ((Uint32)cmd->data.draw.a << 24);
     } else {
-        color = (cmd->data.draw.r << 16) | (cmd->data.draw.g << 8) | (cmd->data.draw.b << 0) | (cmd->data.draw.a << 24);
+        color = (cmd->data.draw.r << 16) | (cmd->data.draw.g << 8) | (cmd->data.draw.b << 0) | ((Uint32)cmd->data.draw.a << 24);
     }
 
     cmd->data.draw.count = count;
@@ -786,7 +786,7 @@ GLES2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture 
             g = (col_ >> 8) & 0xff;
             b = (col_ >> 16) & 0xff;
             a = (col_ >> 24) & 0xff;
-            col_ = (r << 16) | (g << 8) | (b << 0) | (a << 24);
+            col_ = (r << 16) | (g << 8) | (b << 0) | ((Uint32)a << 24);
             *((int *)verts++) = col_;
         }
 
@@ -1106,7 +1106,7 @@ GLES2_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
                 const Uint8 g = cmd->data.color.g;
                 const Uint8 b = colorswap ? cmd->data.color.r : cmd->data.color.b;
                 const Uint8 a = cmd->data.color.a;
-                const Uint32 color = ((a << 24) | (r << 16) | (g << 8) | b);
+                const Uint32 color = (((Uint32)a << 24) | (r << 16) | (g << 8) | b);
                 if (color != data->drawstate.clear_color) {
                     const GLfloat fr = ((GLfloat) r) * inv255f;
                     const GLfloat fg = ((GLfloat) g) * inv255f;

@@ -446,7 +446,7 @@ VITA_GXM_QueueSetDrawColor(SDL_Renderer * renderer, SDL_RenderCommand *cmd)
     const Uint8 g = cmd->data.color.g;
     const Uint8 b = cmd->data.color.b;
     const Uint8 a = cmd->data.color.a;
-    data->drawstate.color = ((a << 24) | (b << 16) | (g << 8) | r);
+    data->drawstate.color = (((Uint32)a << 24) | (b << 16) | (g << 8) | r);
 
     return 0;
 }

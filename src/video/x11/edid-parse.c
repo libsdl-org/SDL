@@ -76,7 +76,7 @@ decode_vendor_and_product_identification (const uchar *edid, MonitorInfo *info)
 
     /* Serial Number */
     info->serial_number =
-	edid[0x0c] | edid[0x0d] << 8 | edid[0x0e] << 16 | edid[0x0f] << 24;
+	edid[0x0c] | edid[0x0d] << 8 | edid[0x0e] << 16 | (Uint32)edid[0x0f] << 24;
 
     /* Week and Year */
     is_model_year = FALSE;

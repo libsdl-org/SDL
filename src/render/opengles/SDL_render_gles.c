@@ -667,7 +667,7 @@ SetDrawState(GLES_RenderData *data, const SDL_RenderCommand *cmd)
     const Uint8 g = cmd->data.draw.g;
     const Uint8 b = cmd->data.draw.b;
     const Uint8 a = cmd->data.draw.a;
-    const Uint32 color = ((a << 24) | (r << 16) | (g << 8) | b);
+    const Uint32 color = (((Uint32)a << 24) | (r << 16) | (g << 8) | b);
 
     if (color != data->drawstate.color) {
         const GLfloat fr = ((GLfloat) r) * inv255f;
@@ -821,7 +821,7 @@ GLES_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vert
                 const Uint8 g = cmd->data.color.g;
                 const Uint8 b = cmd->data.color.b;
                 const Uint8 a = cmd->data.color.a;
-                const Uint32 color = ((a << 24) | (r << 16) | (g << 8) | b);
+                const Uint32 color = (((Uint32)a << 24) | (r << 16) | (g << 8) | b);
                 if (color != data->drawstate.clear_color) {
                     const GLfloat fr = ((GLfloat) r) * inv255f;
                     const GLfloat fg = ((GLfloat) g) * inv255f;
