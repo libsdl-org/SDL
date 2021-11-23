@@ -27,7 +27,6 @@
 #endif
 
 static SDL_Window *window;
-static SDL_Renderer *renderer;
 
 typedef struct _Line {
     struct _Line *next;
@@ -74,8 +73,9 @@ AppendLine(Line *line)
 }
 
 void
-loop(void)
+loop(void *arg)
 {
+    SDL_Renderer *renderer = (SDL_Renderer *)arg;
     SDL_Event event;
 
     /* Check for events */
@@ -146,6 +146,8 @@ loop(void)
 int
 main(int argc, char *argv[])
 {
+    SDL_Renderer *renderer;
+
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
@@ -173,10 +175,10 @@ main(int argc, char *argv[])
 
     /* Main render loop */
 #ifdef __EMSCRIPTEN__
-    emscripten_set_main_loop(loop, 0, 1);
+    emscripten_set_main_loop_arg(loop, renderer, 0, 1);
 #else
     while (!done) {
-        loop();
+        loop(renderer);
     }
 #endif
 
