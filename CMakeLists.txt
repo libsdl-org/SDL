@@ -256,6 +256,15 @@ if(MSVC)
       string(REGEX REPLACE "/RTC(su|[1su])" "" ${flag_var} "${${flag_var}}")
     endforeach(flag_var)
   endif()
+
+  if(MSVC_CLANG)
+    # clang-cl treats '/W4' as '-Wall -Wextra' -- we don't need -Wextra.
+    foreach(flag_var
+        CMAKE_C_FLAGS CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE
+        CMAKE_C_FLAGS_MINSIZEREL CMAKE_C_FLAGS_RELWITHDEBINFO)
+      string(REGEX REPLACE "/W4" "/W3" ${flag_var} "${${flag_var}}")
+    endforeach(flag_var)
+  endif()
 endif()
 
 # Those are used for pkg-config and friends, so that the SDL2.pc, sdl2-config,
@@ -495,8 +504,12 @@ endif()
 # Compiler option evaluation
 if(USE_GCC OR USE_CLANG)
   # Check for -Wall first, so later things can override pieces of it.
+  # Note: clang-cl treats -Wall as -Weverything (which is very loud),
+  #       /W3 as -Wall, and /W4 as -Wall -Wextra.  So: /W3 is enough.
   check_c_compiler_flag(-Wall HAVE_GCC_WALL)
-  if(HAVE_GCC_WALL)
+  if(MSVC_CLANG)
+    list(APPEND EXTRA_CFLAGS "/W3")
+  elseif(HAVE_GCC_WALL)
     list(APPEND EXTRA_CFLAGS "-Wall")
     if(HAIKU)
       set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-multichar")
