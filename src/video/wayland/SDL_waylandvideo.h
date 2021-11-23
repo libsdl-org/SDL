@@ -47,6 +47,7 @@ typedef struct {
 } SDL_WaylandCursorTheme;
 
 typedef struct {
+    SDL_bool initializing;
     struct wl_display *display;
     int display_disconnected;
     struct wl_registry *registry;
@@ -89,6 +90,7 @@ typedef struct {
 } SDL_VideoData;
 
 typedef struct {
+    SDL_VideoData *videodata;
     struct wl_output *output;
     uint32_t registry_id;
     float scale_factor;

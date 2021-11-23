@@ -202,6 +202,7 @@ Wayland_CreateDevice(int devindex)
         return NULL;
     }
 
+    data->initializing = SDL_TRUE;
     data->display = display;
 
     /* Initialize all variables that we clean on shutdown */
@@ -449,15 +450,15 @@ display_handle_done(void *data,
 
     if (driverdata->index == -1) {
         /* First time getting display info, create the VideoDisplay */
+        SDL_bool send_event = driverdata->videodata->initializing ? SDL_FALSE : SDL_TRUE;
+        driverdata->placeholder.orientation = driverdata->orientation;
         driverdata->placeholder.driverdata = driverdata;
-        driverdata->index = SDL_AddVideoDisplay(&driverdata->placeholder, SDL_TRUE);
+        driverdata->index = SDL_AddVideoDisplay(&driverdata->placeholder, send_event);
         SDL_free(driverdata->placeholder.name);
         SDL_zero(driverdata->placeholder);
-
-        dpy = SDL_GetDisplay(driverdata->index);
+    } else {
+        SDL_SendDisplayEvent(dpy, SDL_DISPLAYEVENT_ORIENTATION, driverdata->orientation);
     }
-
-    SDL_SendDisplayEvent(dpy, SDL_DISPLAYEVENT_ORIENTATION, driverdata->orientation);
 }
 
 static void
@@ -489,6 +490,7 @@ Wayland_add_display(SDL_VideoData *d, uint32_t id)
     }
     data = SDL_malloc(sizeof *data);
     SDL_zerop(data);
+    data->videodata = d;
     data->output = output;
     data->registry_id = id;
     data->scale_factor = 1.0;
@@ -678,6 +680,8 @@ Wayland_VideoInit(_THIS)
     WAYLAND_wl_display_flush(data->display);
 
     Wayland_InitKeyboard(_this);
+
+    data->initializing = SDL_FALSE;
 
     return 0;
 }
