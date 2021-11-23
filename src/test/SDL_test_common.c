@@ -1473,9 +1473,17 @@ SDLTest_PrintEvent(SDL_Event * event)
     switch (event->type) {
     case SDL_DISPLAYEVENT:
         switch (event->display.event) {
+        case SDL_DISPLAYEVENT_CONNECTED:
+            SDL_Log("SDL EVENT: Display %" SDL_PRIu32 " connected",
+                    event->display.display);
+            break;
         case SDL_DISPLAYEVENT_ORIENTATION:
             SDL_Log("SDL EVENT: Display %" SDL_PRIu32 " changed orientation to %s",
                     event->display.display, DisplayOrientationName(event->display.data1));
+            break;
+        case SDL_DISPLAYEVENT_DISCONNECTED:
+            SDL_Log("SDL EVENT: Display %" SDL_PRIu32 " disconnected",
+                    event->display.display);
             break;
         default:
             SDL_Log("SDL EVENT: Display %" SDL_PRIu32 " got unknown event 0x%4.4x",
