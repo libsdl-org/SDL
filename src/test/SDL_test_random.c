@@ -83,7 +83,8 @@ unsigned int SDLTest_Random(SDLTest_RandomContext * rndContext)
 
   if (rndContext==NULL) return -1;
 
-  xh = rndContext->x >> 16, xl = rndContext->x & 65535;
+  xh = rndContext->x >> 16;
+  xl = rndContext->x & 65535;
   rndContext->x = rndContext->x * rndContext->a + rndContext->c;
   rndContext->c =
     xh * rndContext->ah + ((xh * rndContext->al) >> 16) +

@@ -38,7 +38,7 @@
 #include "SDL_waylandevents_c.h"
 
 #include "wayland-cursor.h"
-
+#include "SDL_waylandmouse.h"
 
 
 typedef struct {

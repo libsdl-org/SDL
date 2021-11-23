@@ -23,13 +23,13 @@
 #include "SDL_ibus.h"
 #include "SDL_fcitx.h"
 
-typedef SDL_bool (*_SDL_IME_Init)();
-typedef void (*_SDL_IME_Quit)();
+typedef SDL_bool (*_SDL_IME_Init)(void);
+typedef void (*_SDL_IME_Quit)(void);
 typedef void (*_SDL_IME_SetFocus)(SDL_bool);
-typedef void (*_SDL_IME_Reset)();
+typedef void (*_SDL_IME_Reset)(void);
 typedef SDL_bool (*_SDL_IME_ProcessKeyEvent)(Uint32, Uint32);
 typedef void (*_SDL_IME_UpdateTextRect)(SDL_Rect *);
-typedef void (*_SDL_IME_PumpEvents)();
+typedef void (*_SDL_IME_PumpEvents)(void);
 
 static _SDL_IME_Init SDL_IME_Init_Real = NULL;
 static _SDL_IME_Quit SDL_IME_Quit_Real = NULL;

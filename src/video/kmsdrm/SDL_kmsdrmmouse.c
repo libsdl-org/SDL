@@ -119,7 +119,7 @@ KMSDRM_CreateCursorBO (SDL_VideoDisplay *display) {
 } 
 
 /* Remove a cursor buffer from a display's DRM cursor BO. */
-int
+static int
 KMSDRM_RemoveCursorFromBO(SDL_VideoDisplay *display)
 {
     int ret = 0;
@@ -138,7 +138,7 @@ KMSDRM_RemoveCursorFromBO(SDL_VideoDisplay *display)
 }
 
 /* Dump a cursor buffer to a display's DRM cursor BO.  */
-int
+static int
 KMSDRM_DumpCursorToBO(SDL_VideoDisplay *display, SDL_Cursor *cursor)
 {
     SDL_DisplayData *dispdata = (SDL_DisplayData *) display->driverdata;
@@ -403,8 +403,6 @@ KMSDRM_WarpMouseGlobal(int x, int y)
     } else {
         return SDL_SetError("No mouse or current cursor.");
     }
-
-    return 0;
 }
 
 void

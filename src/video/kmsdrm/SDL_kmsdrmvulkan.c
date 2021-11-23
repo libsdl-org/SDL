@@ -182,7 +182,7 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
                                   VkInstance instance,
                                   VkSurfaceKHR *surface)
 {
-    VkPhysicalDevice gpu;
+    VkPhysicalDevice gpu = NULL;
     uint32_t gpu_count;
     uint32_t display_count;
     uint32_t mode_count;

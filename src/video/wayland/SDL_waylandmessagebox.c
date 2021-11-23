@@ -31,6 +31,8 @@
 #include <string.h> /* strerr */
 #include <errno.h>
 
+#include "SDL_waylandmessagebox.h"
+
 #define MAX_BUTTONS             8       /* Maximum number of buttons supported */
 
 int
@@ -186,7 +188,6 @@ Wayland_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
             return SDL_SetError("Waiting on zenity failed: %s", strerror(errno));
         }
     }
-    return 0;
 }
 
 #endif /* SDL_VIDEO_DRIVER_WAYLAND */

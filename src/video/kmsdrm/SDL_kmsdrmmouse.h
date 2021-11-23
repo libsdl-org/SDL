@@ -48,7 +48,7 @@ extern void KMSDRM_QuitMouse(_THIS);
 
 extern void KMSDRM_CreateCursorBO(SDL_VideoDisplay *display);
 extern void KMSDRM_DestroyCursorBO(_THIS, SDL_VideoDisplay *display);
-extern void KMSDRM_InitCursor();
+extern void KMSDRM_InitCursor(void);
 
 #endif /* SDL_KMSDRM_mouse_h_ */
 

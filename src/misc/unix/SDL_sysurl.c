@@ -65,8 +65,6 @@ SDL_SYS_OpenURL(const char *url)
             return SDL_SetError("Waiting on xdg-open failed: %s", strerror(errno));
         }
     }
-
-    return 0;
 }
 
 /* vi: set ts=4 sw=4 expandtab: */
