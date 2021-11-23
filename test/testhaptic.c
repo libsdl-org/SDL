@@ -25,7 +25,7 @@ static SDL_Haptic *haptic;
  * prototypes
  */
 static void abort_execution(void);
-static void HapticPrintSupported(SDL_Haptic * haptic);
+static void HapticPrintSupported(SDL_Haptic *);
 
 
 /**
@@ -310,13 +310,13 @@ abort_execution(void)
  * Displays information about the haptic device.
  */
 static void
-HapticPrintSupported(SDL_Haptic * haptic)
+HapticPrintSupported(SDL_Haptic * ptr)
 {
     unsigned int supported;
 
-    supported = SDL_HapticQuery(haptic);
+    supported = SDL_HapticQuery(ptr);
     SDL_Log("   Supported effects [%d effects, %d playing]:\n",
-           SDL_HapticNumEffects(haptic), SDL_HapticNumEffectsPlaying(haptic));
+           SDL_HapticNumEffects(ptr), SDL_HapticNumEffectsPlaying(ptr));
     if (supported & SDL_HAPTIC_CONSTANT)
         SDL_Log("      constant\n");
     if (supported & SDL_HAPTIC_SINE)
