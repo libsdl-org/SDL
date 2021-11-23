@@ -871,7 +871,7 @@ SDL_MapRGBA(const SDL_PixelFormat * format, Uint8 r, Uint8 g, Uint8 b,
         return (r >> format->Rloss) << format->Rshift
             | (g >> format->Gloss) << format->Gshift
             | (b >> format->Bloss) << format->Bshift
-            | ((a >> format->Aloss) << format->Ashift & format->Amask);
+            | ((Uint32)(a >> format->Aloss) << format->Ashift & format->Amask);
     } else {
         return SDL_FindColor(format->palette, r, g, b, a);
     }
@@ -983,7 +983,7 @@ Map1toN(SDL_PixelFormat * src, Uint8 Rmod, Uint8 Gmod, Uint8 Bmod, Uint8 Amod,
         Uint8 G = (Uint8) ((pal->colors[i].g * Gmod) / 255);
         Uint8 B = (Uint8) ((pal->colors[i].b * Bmod) / 255);
         Uint8 A = (Uint8) ((pal->colors[i].a * Amod) / 255);
-        ASSEMBLE_RGBA(&map[i * bpp], dst->BytesPerPixel, dst, R, G, B, A);
+        ASSEMBLE_RGBA(&map[i * bpp], dst->BytesPerPixel, dst, (Uint32)R, (Uint32)G, (Uint32)B, (Uint32)A);
     }
     return (map);
 }
