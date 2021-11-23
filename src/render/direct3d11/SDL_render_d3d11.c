@@ -770,7 +770,11 @@ D3D11_CreateSwapChain(SDL_Renderer * renderer, int w, int h)
     if (usingXAML) {
         swapChainDesc.Scaling = DXGI_SCALING_STRETCH;
     } else {
-        swapChainDesc.Scaling = DXGI_SCALING_NONE;
+        if (WIN_IsWindows8OrGreater()) {
+            swapChainDesc.Scaling = DXGI_SCALING_NONE;
+        } else {
+            swapChainDesc.Scaling = DXGI_SCALING_STRETCH;
+        }
     }
     swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL; /* All Windows Store apps must use this SwapEffect. */
 #endif
@@ -953,11 +957,13 @@ D3D11_CreateWindowSizeDependentResources(SDL_Renderer * renderer)
      *
      * TODO, WinRT: reexamine the docs for IDXGISwapChain1::SetRotation, see if might be available, usable, and prudent-to-call on WinPhone 8.1
      */
-    if (data->swapEffect == DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL) {
-        result = IDXGISwapChain1_SetRotation(data->swapChain, data->rotation);
-        if (FAILED(result)) {
-            WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("IDXGISwapChain1::SetRotation"), result);
-            goto done;
+    if (WIN_IsWindows8OrGreater()) {
+        if (data->swapEffect == DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL) {
+            result = IDXGISwapChain1_SetRotation(data->swapChain, data->rotation);
+            if (FAILED(result)) {
+                WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("IDXGISwapChain1::SetRotation"), result);
+                goto done;
+            }
         }
     }
 #endif
