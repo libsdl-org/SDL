@@ -3915,8 +3915,6 @@ case "$host" in
                     AC_DEFINE(SDL_JOYSTICK_DINPUT, 1, [ ])
                     EXTRA_LDFLAGS="$EXTRA_LDFLAGS -ldinput8 -ldxguid -ldxerr8"
                 fi
-            else
-                AC_DEFINE(SDL_JOYSTICK_WINMM, 1, [ ])
             fi
             SOURCES="$SOURCES $srcdir/src/joystick/windows/*.c"
             have_joystick=yes

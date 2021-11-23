@@ -25398,10 +25398,6 @@ $as_echo "#define SDL_JOYSTICK_DINPUT 1" >>confdefs.h
 
                     EXTRA_LDFLAGS="$EXTRA_LDFLAGS -ldinput8 -ldxguid -ldxerr8"
                 fi
-            else
-
-$as_echo "#define SDL_JOYSTICK_WINMM 1" >>confdefs.h
-
             fi
             SOURCES="$SOURCES $srcdir/src/joystick/windows/*.c"
             have_joystick=yes
