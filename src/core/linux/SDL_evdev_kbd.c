@@ -219,7 +219,7 @@ static void kbd_cleanup(void)
     ioctl(kbd->console_fd, KDSKBMODE, kbd->old_kbd_mode);
 }
 
-void
+static void
 SDL_EVDEV_kbd_reraise_signal(int sig)
 {
     raise(sig);

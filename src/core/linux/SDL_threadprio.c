@@ -108,7 +108,9 @@ rtkit_initialize_realtime_thread()
     int nLimit = RLIMIT_RTTIME;
     pid_t nPid = 0; //self
     int nSchedPolicy = sched_getscheduler(nPid) | SCHED_RESET_ON_FORK;
-    struct sched_param schedParam = {};
+    struct sched_param schedParam;
+
+    SDL_zero(schedParam);
 
     // Requirement #1: Set RLIMIT_RTTIME
     err = getrlimit(nLimit, &rlimit);
