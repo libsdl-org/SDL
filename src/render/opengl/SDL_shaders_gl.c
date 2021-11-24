@@ -285,6 +285,25 @@ static const char *shader_source[NUM_SHADERS][2] = {
 "    gl_FragColor = texture2D(tex0, v_texCoord) * v_color;\n"
 "}"
     },
+
+    /* SHADER_PALETTE */
+    {
+        /* vertex shader */
+        TEXTURE_VERTEX_SHADER,
+        /* fragment shader */
+"varying vec4 v_color;\n"
+"varying vec2 v_texCoord;\n"
+"uniform sampler2D tex0;\n"
+"uniform sampler2D tex1; // Palette \n"
+"\n"
+"void main()\n"
+"{\n"
+"    float index = texture2D(tex0, v_texCoord).r * 255.0;\n"
+"    vec4 rgba = texture2D(tex1, vec2((index + 0.5) / 256.0, 0.5));\n"
+"    gl_FragColor = rgba * v_color;\n"
+"}"
+    },
+
 #if SDL_HAVE_YUV
     /* SHADER_YUV_JPEG */
     {
