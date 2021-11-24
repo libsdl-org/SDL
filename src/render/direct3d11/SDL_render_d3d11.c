@@ -700,7 +700,10 @@ D3D11_GetRotationForCurrentRenderTarget(SDL_Renderer * renderer)
 static int
 D3D11_GetViewportAlignedD3DRect(SDL_Renderer * renderer, const SDL_Rect * sdlRect, D3D11_RECT * outRect, BOOL includeViewportOffset)
 {
+    D3D11_RenderData *data = (D3D11_RenderData *) renderer->driverdata;
     const int rotation = D3D11_GetRotationForCurrentRenderTarget(renderer);
+    const SDL_Rect *viewport = &data->currentViewport;
+
     switch (rotation) {
         case DXGI_MODE_ROTATION_IDENTITY:
             outRect->left = sdlRect->x;
@@ -708,27 +711,27 @@ D3D11_GetViewportAlignedD3DRect(SDL_Renderer * renderer, const SDL_Rect * sdlRec
             outRect->top = sdlRect->y;
             outRect->bottom = sdlRect->y + sdlRect->h;
             if (includeViewportOffset) {
-                outRect->left += renderer->viewport.x;
-                outRect->right += renderer->viewport.x;
-                outRect->top += renderer->viewport.y;
-                outRect->bottom += renderer->viewport.y;
+                outRect->left += viewport->x;
+                outRect->right += viewport->x;
+                outRect->top += viewport->y;
+                outRect->bottom += viewport->y;
             }
             break;
         case DXGI_MODE_ROTATION_ROTATE270:
             outRect->left = sdlRect->y;
             outRect->right = sdlRect->y + sdlRect->h;
-            outRect->top = renderer->viewport.w - sdlRect->x - sdlRect->w;
-            outRect->bottom = renderer->viewport.w - sdlRect->x;
+            outRect->top = viewport->w - sdlRect->x - sdlRect->w;
+            outRect->bottom = viewport->w - sdlRect->x;
             break;
         case DXGI_MODE_ROTATION_ROTATE180:
-            outRect->left = renderer->viewport.w - sdlRect->x - sdlRect->w;
-            outRect->right = renderer->viewport.w - sdlRect->x;
-            outRect->top = renderer->viewport.h - sdlRect->y - sdlRect->h;
-            outRect->bottom = renderer->viewport.h - sdlRect->y;
+            outRect->left = viewport->w - sdlRect->x - sdlRect->w;
+            outRect->right = viewport->w - sdlRect->x;
+            outRect->top = viewport->h - sdlRect->y - sdlRect->h;
+            outRect->bottom = viewport->h - sdlRect->y;
             break;
         case DXGI_MODE_ROTATION_ROTATE90:
-            outRect->left = renderer->viewport.h - sdlRect->y - sdlRect->h;
-            outRect->right = renderer->viewport.h - sdlRect->y;
+            outRect->left = viewport->h - sdlRect->y - sdlRect->h;
+            outRect->right = viewport->h - sdlRect->y;
             outRect->top = sdlRect->x;
             outRect->bottom = sdlRect->x + sdlRect->h;
             break;
