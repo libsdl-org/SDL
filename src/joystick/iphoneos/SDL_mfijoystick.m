@@ -328,7 +328,10 @@ IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controlle
         device->nhats = 1; /* d-pad */
         device->nbuttons = nbuttons;
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     } else if (controller.gamepad) {
+#pragma clang diagnostic pop
         int nbuttons = 0;
 
         /* These buttons are part of the original MFi spec */
@@ -405,12 +408,15 @@ IOS_AddJoystickDevice(GCController *controller, SDL_bool accelerometer)
     SDL_JoystickDeviceItem *device = deviceList;
 
 #if TARGET_OS_TV
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     if (!SDL_GetHintBoolean(SDL_HINT_TV_REMOTE_AS_JOYSTICK, SDL_TRUE)) {
         /* Ignore devices that aren't actually controllers (e.g. remotes), they'll be handled as keyboard input */
         if (controller && !controller.extendedGamepad && !controller.gamepad && controller.microGamepad) {
             return;
         }
     }
+#pragma clang diagnostic pop
 #endif
 
     while (device != NULL) {
@@ -507,7 +513,10 @@ IOS_RemoveJoystickDevice(SDL_JoystickDeviceItem *device)
             /* The controller was explicitly retained in the struct, so it
              * should be explicitly released before freeing the struct. */
             GCController *controller = CFBridgingRelease((__bridge CFTypeRef)(device->controller));
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
             controller.controllerPausedHandler = nil;
+#pragma clang diagnostic pop
             device->controller = nil;
         }
     }
@@ -708,11 +717,14 @@ IOS_JoystickOpen(SDL_Joystick *joystick, int device_index)
 #ifdef SDL_JOYSTICK_MFI
             if (device->uses_pause_handler) {
                 GCController *controller = device->controller;
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
                 controller.controllerPausedHandler = ^(GCController *c) {
                     if (joystick->hwdata) {
                         ++joystick->hwdata->num_pause_presses;
                     }
                 };
+#pragma clang diagnostic pop
             }
 
 #ifdef ENABLE_MFI_SENSORS
@@ -964,6 +976,8 @@ IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
             }
 #endif /* ENABLE_MFI_SENSORS */
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
         } else if (controller.gamepad) {
             GCGamepad *gamepad = controller.gamepad;
 
@@ -985,6 +999,8 @@ IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
                 SDL_PrivateJoystickButton(joystick, i, buttons[i]);
             }
         }
+#pragma clang diagnostic pop
+
 #if TARGET_OS_TV
         else if (controller.microGamepad) {
             GCMicroGamepad *gamepad = controller.microGamepad;
@@ -1468,7 +1484,12 @@ IOS_JoystickClose(SDL_Joystick *joystick)
         } else if (device->controller) {
 #ifdef SDL_JOYSTICK_MFI
             GCController *controller = device->controller;
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
             controller.controllerPausedHandler = nil;
+#pragma clang diagnostic pop
+
             controller.playerIndex = -1;
 
 #ifdef ENABLE_MFI_SYSTEM_GESTURE_STATE
@@ -1535,9 +1556,12 @@ IOS_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
 SDL_bool IOS_SupportedHIDDevice(IOHIDDeviceRef device)
 {
     if (is_macos11()) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunguarded-availability-new"
         if ([GCController supportsHIDDevice:device]) {
             return SDL_TRUE;
         }
+#pragma clang diagnostic pop
 
         /* GCController supportsHIDDevice may return false if the device hasn't been
          * seen by the framework yet, so check a few controllers we know are supported.
@@ -1584,9 +1608,12 @@ GetDirectionalPadForController(GCController *controller)
         return controller.extendedGamepad.dpad;
     }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     if (controller.gamepad) {
         return controller.gamepad.dpad;
     }
+#pragma clang diagnostic pop
 
     if (controller.microGamepad) {
         return controller.microGamepad.dpad;
