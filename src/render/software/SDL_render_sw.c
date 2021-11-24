@@ -214,18 +214,9 @@ SW_QueueDrawPoints(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FP
 
     cmd->data.draw.count = count;
 
-    if (renderer->viewport.x || renderer->viewport.y) {
-        const int x = renderer->viewport.x;
-        const int y = renderer->viewport.y;
-        for (i = 0; i < count; i++, verts++, points++) {
-            verts->x = (int)(x + points->x);
-            verts->y = (int)(y + points->y);
-        }
-    } else {
-        for (i = 0; i < count; i++, verts++, points++) {
-            verts->x = (int)points->x;
-            verts->y = (int)points->y;
-        }
+    for (i = 0; i < count; i++, verts++, points++) {
+        verts->x = (int)points->x;
+        verts->y = (int)points->y;
     }
 
     return 0;
@@ -243,23 +234,11 @@ SW_QueueFillRects(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FRe
 
     cmd->data.draw.count = count;
 
-    if (renderer->viewport.x || renderer->viewport.y) {
-        const int x = renderer->viewport.x;
-        const int y = renderer->viewport.y;
-
-        for (i = 0; i < count; i++, verts++, rects++) {
-            verts->x = (int)(x + rects->x);
-            verts->y = (int)(y + rects->y);
-            verts->w = SDL_max((int)rects->w, 1);
-            verts->h = SDL_max((int)rects->h, 1);
-        }
-    } else {
-        for (i = 0; i < count; i++, verts++, rects++) {
-            verts->x = (int)rects->x;
-            verts->y = (int)rects->y;
-            verts->w = SDL_max((int)rects->w, 1);
-            verts->h = SDL_max((int)rects->h, 1);
-        }
+    for (i = 0; i < count; i++, verts++, rects++) {
+        verts->x = (int)rects->x;
+        verts->y = (int)rects->y;
+        verts->w = SDL_max((int)rects->w, 1);
+        verts->h = SDL_max((int)rects->h, 1);
     }
 
     return 0;
@@ -280,13 +259,8 @@ SW_QueueCopy(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * text
     SDL_memcpy(verts, srcrect, sizeof (SDL_Rect));
     verts++;
 
-    if (renderer->viewport.x || renderer->viewport.y) {
-        verts->x = (int)(renderer->viewport.x + dstrect->x);
-        verts->y = (int)(renderer->viewport.y + dstrect->y);
-    } else {
-        verts->x = (int)dstrect->x;
-        verts->y = (int)dstrect->y;
-    }
+    verts->x = (int)dstrect->x;
+    verts->y = (int)dstrect->y;
     verts->w = (int)dstrect->w;
     verts->h = (int)dstrect->h;
 
@@ -317,13 +291,8 @@ SW_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * te
 
     SDL_memcpy(&verts->srcrect, srcrect, sizeof (SDL_Rect));
 
-    if (renderer->viewport.x || renderer->viewport.y) {
-        verts->dstrect.x = (int)(renderer->viewport.x + dstrect->x);
-        verts->dstrect.y = (int)(renderer->viewport.y + dstrect->y);
-    } else {
-        verts->dstrect.x = (int)dstrect->x;
-        verts->dstrect.y = (int)dstrect->y;
-    }
+    verts->dstrect.x = (int)dstrect->x;
+    verts->dstrect.y = (int)dstrect->y;
     verts->dstrect.w = (int)dstrect->w;
     verts->dstrect.h = (int)dstrect->h;
     verts->angle = angle;
@@ -618,8 +587,8 @@ SW_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *te
             ptr->src.x = (int)(uv_[0] * texture->w);
             ptr->src.y = (int)(uv_[1] * texture->h);
 
-            ptr->dst.x = (int)(xy_[0] * scale_x + renderer->viewport.x);
-            ptr->dst.y = (int)(xy_[1] * scale_y + renderer->viewport.y);
+            ptr->dst.x = (int)(xy_[0] * scale_x);
+            ptr->dst.y = (int)(xy_[1] * scale_y);
             trianglepoint_2_fixedpoint(&ptr->dst);
 
             ptr->color = col_;
@@ -646,8 +615,8 @@ SW_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *te
             xy_ = (float *)((char*)xy + j * xy_stride);
             col_ = *(SDL_Color *)((char*)color + j * color_stride);
 
-            ptr->dst.x = (int)(xy_[0] * scale_x + renderer->viewport.x);
-            ptr->dst.y = (int)(xy_[1] * scale_y + renderer->viewport.y);
+            ptr->dst.x = (int)(xy_[0] * scale_x);
+            ptr->dst.y = (int)(xy_[1] * scale_y);
             trianglepoint_2_fixedpoint(&ptr->dst);
 
             ptr->color = col_;
@@ -755,9 +724,19 @@ SW_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
                 const Uint8 b = cmd->data.draw.b;
                 const Uint8 a = cmd->data.draw.a;
                 const int count = (int) cmd->data.draw.count;
-                const SDL_Point *verts = (SDL_Point *) (((Uint8 *) vertices) + cmd->data.draw.first);
+                SDL_Point *verts = (SDL_Point *) (((Uint8 *) vertices) + cmd->data.draw.first);
                 const SDL_BlendMode blend = cmd->data.draw.blend;
                 SetDrawState(surface, &drawstate);
+
+                /* Apply viewport */
+                if (drawstate.viewport->x || drawstate.viewport->y) {
+                    int i;
+                    for (i = 0; i < count; i++) {
+                        verts[i].x += drawstate.viewport->x;
+                        verts[i].y += drawstate.viewport->y;
+                    }
+                }
+
                 if (blend == SDL_BLENDMODE_NONE) {
                     SDL_DrawPoints(surface, verts, count, SDL_MapRGBA(surface->format, r, g, b, a));
                 } else {
@@ -772,9 +751,19 @@ SW_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
                 const Uint8 b = cmd->data.draw.b;
                 const Uint8 a = cmd->data.draw.a;
                 const int count = (int) cmd->data.draw.count;
-                const SDL_Point *verts = (SDL_Point *) (((Uint8 *) vertices) + cmd->data.draw.first);
+                SDL_Point *verts = (SDL_Point *) (((Uint8 *) vertices) + cmd->data.draw.first);
                 const SDL_BlendMode blend = cmd->data.draw.blend;
                 SetDrawState(surface, &drawstate);
+
+                /* Apply viewport */
+                if (drawstate.viewport->x || drawstate.viewport->y) {
+                    int i;
+                    for (i = 0; i < count; i++) {
+                        verts[i].x += drawstate.viewport->x;
+                        verts[i].y += drawstate.viewport->y;
+                    }
+                }
+
                 if (blend == SDL_BLENDMODE_NONE) {
                     SDL_DrawLines(surface, verts, count, SDL_MapRGBA(surface->format, r, g, b, a));
                 } else {
@@ -789,9 +778,19 @@ SW_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
                 const Uint8 b = cmd->data.draw.b;
                 const Uint8 a = cmd->data.draw.a;
                 const int count = (int) cmd->data.draw.count;
-                const SDL_Rect *verts = (SDL_Rect *) (((Uint8 *) vertices) + cmd->data.draw.first);
+                SDL_Rect *verts = (SDL_Rect *) (((Uint8 *) vertices) + cmd->data.draw.first);
                 const SDL_BlendMode blend = cmd->data.draw.blend;
                 SetDrawState(surface, &drawstate);
+
+                /* Apply viewport */
+                if (drawstate.viewport->x || drawstate.viewport->y) {
+                    int i;
+                    for (i = 0; i < count; i++) {
+                        verts[i].x += drawstate.viewport->x;
+                        verts[i].y += drawstate.viewport->y;
+                    }
+                }
+
                 if (blend == SDL_BLENDMODE_NONE) {
                     SDL_FillRects(surface, verts, count, SDL_MapRGBA(surface->format, r, g, b, a));
                 } else {
@@ -811,6 +810,12 @@ SW_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
 
                 PrepTextureForCopy(cmd);
 
+                /* Apply viewport */
+                if (drawstate.viewport->x || drawstate.viewport->y) {
+                    dstrect->x += drawstate.viewport->x;
+                    dstrect->y += drawstate.viewport->y;
+                }
+
                 if ( srcrect->w == dstrect->w && srcrect->h == dstrect->h ) {
                     SDL_BlitSurface(src, srcrect, surface, dstrect);
                 } else {
@@ -824,9 +829,16 @@ SW_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
             }
 
             case SDL_RENDERCMD_COPY_EX: {
-                const CopyExData *copydata = (CopyExData *) (((Uint8 *) vertices) + cmd->data.draw.first);
+                CopyExData *copydata = (CopyExData *) (((Uint8 *) vertices) + cmd->data.draw.first);
                 SetDrawState(surface, &drawstate);
                 PrepTextureForCopy(cmd);
+
+                /* Apply viewport */
+                if (drawstate.viewport->x || drawstate.viewport->y) {
+                    copydata->dstrect.x += drawstate.viewport->x;
+                    copydata->dstrect.y += drawstate.viewport->y;
+                }
+
                 SW_RenderCopyEx(renderer, surface, cmd->data.draw.texture, &copydata->srcrect,
                                 &copydata->dstrect, copydata->angle, &copydata->center, copydata->flip);
                 break;
@@ -847,6 +859,20 @@ SW_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
                     GeometryCopyData *ptr = (GeometryCopyData *) verts;
 
                     PrepTextureForCopy(cmd);
+
+                    /* Apply viewport */
+                    if (drawstate.viewport->x || drawstate.viewport->y) {
+                        int i;
+                        SDL_Point vp;
+                        vp.x = drawstate.viewport->x;
+                        vp.y = drawstate.viewport->y;
+                        trianglepoint_2_fixedpoint(&vp);
+                        for (i = 0; i < count; i++) {
+                            ptr[i].dst.x += vp.x;
+                            ptr[i].dst.y += vp.y;
+                        }
+                    }
+
                     for (i = 0; i < count; i += 3, ptr += 3) {
                         SDL_SW_BlitTriangle(
                                 src,
@@ -857,6 +883,20 @@ SW_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
                     }
                 } else {
                     GeometryFillData *ptr = (GeometryFillData *) verts;
+
+                    /* Apply viewport */
+                    if (drawstate.viewport->x || drawstate.viewport->y) {
+                        int i;
+                        SDL_Point vp;
+                        vp.x = drawstate.viewport->x;
+                        vp.y = drawstate.viewport->y;
+                        trianglepoint_2_fixedpoint(&vp);
+                        for (i = 0; i < count; i++) {
+                            ptr[i].dst.x += vp.x;
+                            ptr[i].dst.y += vp.y;
+                        }
+                    }
+
                     for (i = 0; i < count; i += 3, ptr += 3) {
                         SDL_SW_FillTriangle(surface, &(ptr[0].dst), &(ptr[1].dst), &(ptr[2].dst), blend, ptr[0].color, ptr[1].color, ptr[2].color);
                     }
