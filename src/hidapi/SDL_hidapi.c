@@ -1098,6 +1098,9 @@ int SDL_hid_exit(void)
     if (udev_ctx) {
         result |= PLATFORM_hid_exit();
     }
+#if __LINUX__
+    SDL_UDEV_ReleaseUdevSyms();
+#endif /* __LINUX __ */
 #endif /* HAVE_PLATFORM_BACKEND */
 
 #ifdef SDL_LIBUSB_DYNAMIC
