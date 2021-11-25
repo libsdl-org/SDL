@@ -150,7 +150,7 @@ SDL_Swap16(Uint16 x)
     return x;
 }
 #elif defined(__WATCOMC__) && defined(__386__)
-extern _inline Uint16 SDL_Swap16(Uint16);
+extern __inline Uint16 SDL_Swap16(Uint16);
 #pragma aux SDL_Swap16 = \
   "xchg al, ah" \
   parm   [ax]   \
@@ -208,7 +208,7 @@ SDL_Swap32(Uint32 x)
     return x;
 }
 #elif defined(__WATCOMC__) && defined(__386__)
-extern _inline Uint32 SDL_Swap32(Uint32);
+extern __inline Uint32 SDL_Swap32(Uint32);
 #pragma aux SDL_Swap32 = \
   "bswap eax"  \
   parm   [eax] \
@@ -251,7 +251,7 @@ SDL_Swap64(Uint64 x)
     return x;
 }
 #elif defined(__WATCOMC__) && defined(__386__)
-extern _inline Uint64 SDL_Swap64(Uint64);
+extern __inline Uint64 SDL_Swap64(Uint64);
 #pragma aux SDL_Swap64 = \
   "bswap eax"     \
   "bswap edx"     \
