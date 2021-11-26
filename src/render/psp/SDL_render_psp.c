@@ -80,6 +80,8 @@ typedef struct
     int             currentBlendMode;
 
     PSP_DrawStateCache drawstate;
+
+    SDL_bool        vblank_not_reached;                  /**< wether vblank wasn't reached */
 } PSP_RenderData;
 
 
@@ -173,6 +175,12 @@ TextureNextPow2(unsigned int w)
         n <<= 1;
 
     return n;
+}
+
+static void psp_on_vblank(u32 sub, PSP_RenderData *data)
+{
+   if (data)
+      data->vblank_not_reached = SDL_FALSE;
 }
 
 
@@ -1009,8 +1017,9 @@ PSP_RenderPresent(SDL_Renderer * renderer)
     sceGuFinish();
     sceGuSync(0,0);
 
-/*  if(data->vsync) */
+    if ((data->vsync) && (data->vblank_not_reached))
         sceDisplayWaitVblankStart();
+    data->vblank_not_reached = SDL_TRUE;
 
     data->backbuffer = data->frontbuffer;
     data->frontbuffer = vabsptr(sceGuSwapBuffers());
@@ -1044,6 +1053,10 @@ PSP_DestroyRenderer(SDL_Renderer * renderer)
 
         StartDrawing(renderer);
 
+        sceKernelDisableSubIntr(PSP_VBLANK_INT, 0);
+        sceKernelReleaseSubIntrHandler(PSP_VBLANK_INT,0);
+        sceDisplayWaitVblankStart();
+        sceGuDisplay(GU_FALSE);
         sceGuTerm();
 /*      vfree(data->backbuffer); */
 /*      vfree(data->frontbuffer); */
@@ -1178,6 +1191,11 @@ PSP_CreateRenderer(SDL_Window * window, Uint32 flags)
     sceGuSync(0,0);
     sceDisplayWaitVblankStartCB();
     sceGuDisplay(GU_TRUE);
+
+    /* Improve performance when VSYC is enabled and it is not reaching the 60 FPS */
+    data->vblank_not_reached = SDL_TRUE;
+    sceKernelRegisterSubIntrHandler(PSP_VBLANK_INT, 0, psp_on_vblank, data);
+    sceKernelEnableSubIntr(PSP_VBLANK_INT, 0);
 
     return renderer;
 }
