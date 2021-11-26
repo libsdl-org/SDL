@@ -258,7 +258,7 @@ if(MSVC)
   endif()
 
   if(MSVC_CLANG)
-    # clang-cl treats '/W4' as '-Wall -Wextra' -- we don't need -Wextra.
+    # clang-cl treats /W4 as '-Wall -Wextra' -- we don't need -Wextra
     foreach(flag_var
         CMAKE_C_FLAGS CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE
         CMAKE_C_FLAGS_MINSIZEREL CMAKE_C_FLAGS_RELWITHDEBINFO)
