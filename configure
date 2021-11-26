@@ -1651,7 +1651,7 @@ Optional Features:
                           [default=yes]
   --enable-libdecor-shared
                           dynamically load libdecor [default=yes]
-  --enable-video-rpi      use Raspberry Pi video driver [default=yes]
+  --enable-video-rpi      use Raspberry Pi 2/3 video driver [default=yes]
   --enable-video-x11      use X11 video driver [default=yes]
   --enable-x11-shared     dynamically load X11 support [default=maybe]
   --enable-video-x11-xcursor
@@ -20220,17 +20220,20 @@ fi
         # Add the Raspberry Pi compiler flags and libraries
         CFLAGS="$CFLAGS $RPI_CFLAGS"; LIBS="$LIBS $RPI_LIBS"
 
-        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for Raspberry Pi" >&5
-$as_echo_n "checking for Raspberry Pi... " >&6; }
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for Raspberry Pi 2/3" >&5
+$as_echo_n "checking for Raspberry Pi 2/3... " >&6; }
         have_video_rpi=no
         cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
           #include <bcm_host.h>
+          #include <EGL/eglplatform.h>
 
 int
 main ()
 {
+
+	  EGL_DISPMANX_WINDOW_T window;
 
           bcm_host_init();
 

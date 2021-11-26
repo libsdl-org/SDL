@@ -1674,7 +1674,7 @@ CheckNativeClient()
 CheckRPI()
 {
     AC_ARG_ENABLE(video-rpi,
-[AS_HELP_STRING([--enable-video-rpi], [use Raspberry Pi video driver [default=yes]])],
+[AS_HELP_STRING([--enable-video-rpi], [use Raspberry Pi 2/3 video driver [default=yes]])],
                   , enable_video_rpi=yes)
     if test x$enable_video = xyes -a x$enable_video_rpi = xyes; then
         PKG_CHECK_MODULES([RPI], [bcm_host brcmegl], video_rpi=yes, video_rpi=no)
@@ -1695,11 +1695,14 @@ CheckRPI()
         # Add the Raspberry Pi compiler flags and libraries
         CFLAGS="$CFLAGS $RPI_CFLAGS"; LIBS="$LIBS $RPI_LIBS"
 
-        AC_MSG_CHECKING(for Raspberry Pi)
+        AC_MSG_CHECKING(for Raspberry Pi 2/3)
         have_video_rpi=no
         AC_LINK_IFELSE([AC_LANG_PROGRAM([[
           #include <bcm_host.h>
+          #include <EGL/eglplatform.h>
         ]], [[
+	  EGL_DISPMANX_WINDOW_T window;
+
           bcm_host_init();
         ]])], [have_video_rpi=yes],[])
         AC_MSG_RESULT($have_video_rpi)
