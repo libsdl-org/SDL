@@ -30,6 +30,9 @@
 #include "../core/android/SDL_android.h"
 #include "../video/android/SDL_androidvideo.h"
 #endif
+#if SDL_VIDEO_DRIVER_RPI
+#include <unistd.h>
+#endif
 
 #include "SDL_sysvideo.h"
 #include "SDL_egl_c.h"
