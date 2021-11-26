@@ -186,12 +186,12 @@ struct SDL_Renderer
     SDL_bool integer_scale;
 
     /* The drawable area within the window */
-    SDL_Rect viewport;
-    SDL_Rect viewport_backup;
+    SDL_FRect viewport;
+    SDL_FRect viewport_backup;
 
     /* The clip rectangle within the window */
-    SDL_Rect clip_rect;
-    SDL_Rect clip_rect_backup;
+    SDL_FRect clip_rect;
+    SDL_FRect clip_rect_backup;
 
     /* Wether or not the clipping rectangle is used. */
     SDL_bool clipping_enabled;
@@ -226,8 +226,8 @@ struct SDL_Renderer
     SDL_RenderCommand *render_commands_pool;
     Uint32 render_command_generation;
     Uint32 last_queued_color;
-    SDL_Rect last_queued_viewport;
-    SDL_Rect last_queued_cliprect;
+    SDL_FRect last_queued_viewport;
+    SDL_FRect last_queued_cliprect;
     SDL_bool last_queued_cliprect_enabled;
     SDL_bool color_queued;
     SDL_bool viewport_queued;

@@ -356,7 +356,10 @@ QueueCmdSetViewport(SDL_Renderer *renderer)
         if (cmd != NULL) {
             cmd->command = SDL_RENDERCMD_SETVIEWPORT;
             cmd->data.viewport.first = 0;  /* render backend will fill this in. */
-            SDL_memcpy(&cmd->data.viewport.rect, &renderer->viewport, sizeof (renderer->viewport));
+            cmd->data.viewport.rect.x = renderer->viewport.x;
+            cmd->data.viewport.rect.y = renderer->viewport.y;
+            cmd->data.viewport.rect.w = renderer->viewport.w;
+            cmd->data.viewport.rect.h = renderer->viewport.h;
             retval = renderer->QueueSetViewport(renderer, cmd);
             if (retval < 0) {
                 cmd->command = SDL_RENDERCMD_NO_OP;
@@ -382,7 +385,10 @@ QueueCmdSetClipRect(SDL_Renderer *renderer)
         } else {
             cmd->command = SDL_RENDERCMD_SETCLIPRECT;
             cmd->data.cliprect.enabled = renderer->clipping_enabled;
-            SDL_memcpy(&cmd->data.cliprect.rect, &renderer->clip_rect, sizeof (cmd->data.cliprect.rect));
+            cmd->data.cliprect.rect.x = renderer->clip_rect.x;
+            cmd->data.cliprect.rect.y = renderer->clip_rect.y;
+            cmd->data.cliprect.rect.w = renderer->clip_rect.w;
+            cmd->data.cliprect.rect.h = renderer->clip_rect.h;
             SDL_memcpy(&renderer->last_queued_cliprect, &renderer->clip_rect, sizeof (SDL_Rect));
             renderer->last_queued_cliprect_enabled = renderer->clipping_enabled;
             renderer->cliprect_queued = SDL_TRUE;
@@ -667,7 +673,7 @@ SDL_GetRenderDriverInfo(int index, SDL_RendererInfo * info)
 #endif
 }
 
-static void GetWindowViewportValues(SDL_Renderer *renderer, int *logical_w, int *logical_h, SDL_Rect *viewport, SDL_FPoint *scale)
+static void GetWindowViewportValues(SDL_Renderer *renderer, int *logical_w, int *logical_h, SDL_FRect *viewport, SDL_FPoint *scale)
 {
     SDL_LockMutex(renderer->target_mutex);
     *logical_w = renderer->target ? renderer->logical_w_backup : renderer->logical_w;
@@ -756,7 +762,7 @@ SDL_RendererEventWatch(void *userdata, SDL_Event *event)
         SDL_Window *window = SDL_GetWindowFromID(event->motion.windowID);
         if (window == renderer->window) {
             int logical_w, logical_h;
-            SDL_Rect viewport;
+            SDL_FRect viewport;
             SDL_FPoint scale;
             GetWindowViewportValues(renderer, &logical_w, &logical_h, &viewport, &scale);
             if (logical_w) {
@@ -783,7 +789,7 @@ SDL_RendererEventWatch(void *userdata, SDL_Event *event)
         SDL_Window *window = SDL_GetWindowFromID(event->button.windowID);
         if (window == renderer->window) {
             int logical_w, logical_h;
-            SDL_Rect viewport;
+            SDL_FRect viewport;
             SDL_FPoint scale;
             GetWindowViewportValues(renderer, &logical_w, &logical_h, &viewport, &scale);
             if (logical_w) {
@@ -798,7 +804,7 @@ SDL_RendererEventWatch(void *userdata, SDL_Event *event)
                event->type == SDL_FINGERMOTION) {
         int logical_w, logical_h;
         float physical_w, physical_h;
-        SDL_Rect viewport;
+        SDL_FRect viewport;
         SDL_FPoint scale;
         GetWindowViewportValues(renderer, &logical_w, &logical_h, &viewport, &scale);
 
@@ -2183,8 +2189,8 @@ SDL_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
     }
 
     if (texture) {
-        renderer->viewport.x = 0;
-        renderer->viewport.y = 0;
+        renderer->viewport.x = 0.0f;
+        renderer->viewport.y = 0.0f;
         renderer->viewport.w = texture->w;
         renderer->viewport.h = texture->h;
         SDL_zero(renderer->clip_rect);
@@ -2393,16 +2399,19 @@ SDL_RenderSetViewport(SDL_Renderer * renderer, const SDL_Rect * rect)
     CHECK_RENDERER_MAGIC(renderer, -1);
 
     if (rect) {
-        renderer->viewport.x = (int)SDL_floor(rect->x * renderer->scale.x);
-        renderer->viewport.y = (int)SDL_floor(rect->y * renderer->scale.y);
-        renderer->viewport.w = (int)SDL_floor(rect->w * renderer->scale.x);
-        renderer->viewport.h = (int)SDL_floor(rect->h * renderer->scale.y);
+        renderer->viewport.x = rect->x * renderer->scale.x;
+        renderer->viewport.y = rect->y * renderer->scale.y;
+        renderer->viewport.w = rect->w * renderer->scale.x;
+        renderer->viewport.h = rect->h * renderer->scale.y;
     } else {
-        renderer->viewport.x = 0;
-        renderer->viewport.y = 0;
-        if (SDL_GetRendererOutputSize(renderer, &renderer->viewport.w, &renderer->viewport.h) < 0) {
+        int w, h;
+        renderer->viewport.x = 0.0f;
+        renderer->viewport.y = 0.0f;
+        if (SDL_GetRendererOutputSize(renderer, &w, &h) < 0) {
             return -1;
         }
+        renderer->viewport.w = w;
+        renderer->viewport.h = h;
     }
     retval = QueueCmdSetViewport(renderer);
     return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
@@ -2414,10 +2423,10 @@ SDL_RenderGetViewport(SDL_Renderer * renderer, SDL_Rect * rect)
     CHECK_RENDERER_MAGIC(renderer, );
 
     if (rect) {
-        rect->x = (int)(renderer->viewport.x / renderer->scale.x);
-        rect->y = (int)(renderer->viewport.y / renderer->scale.y);
-        rect->w = (int)(renderer->viewport.w / renderer->scale.x);
-        rect->h = (int)(renderer->viewport.h / renderer->scale.y);
+        rect->x = renderer->viewport.x / renderer->scale.x;
+        rect->y = renderer->viewport.y / renderer->scale.y;
+        rect->w = renderer->viewport.w / renderer->scale.x;
+        rect->h = renderer->viewport.h / renderer->scale.y;
     }
 }
 
@@ -2438,10 +2447,10 @@ SDL_RenderSetClipRect(SDL_Renderer * renderer, const SDL_Rect * rect)
 
     if (rect) {
         renderer->clipping_enabled = SDL_TRUE;
-        renderer->clip_rect.x = (int)SDL_floor(rect->x * renderer->scale.x);
-        renderer->clip_rect.y = (int)SDL_floor(rect->y * renderer->scale.y);
-        renderer->clip_rect.w = (int)SDL_floor(rect->w * renderer->scale.x);
-        renderer->clip_rect.h = (int)SDL_floor(rect->h * renderer->scale.y);
+        renderer->clip_rect.x = rect->x * renderer->scale.x;
+        renderer->clip_rect.y = rect->y * renderer->scale.y;
+        renderer->clip_rect.w = rect->w * renderer->scale.x;
+        renderer->clip_rect.h = rect->h * renderer->scale.y;
     } else {
         renderer->clipping_enabled = SDL_FALSE;
         SDL_zero(renderer->clip_rect);
@@ -2457,10 +2466,10 @@ SDL_RenderGetClipRect(SDL_Renderer * renderer, SDL_Rect * rect)
     CHECK_RENDERER_MAGIC(renderer, )
 
     if (rect) {
-        rect->x = (int)(renderer->clip_rect.x / renderer->scale.x);
-        rect->y = (int)(renderer->clip_rect.y / renderer->scale.y);
-        rect->w = (int)(renderer->clip_rect.w / renderer->scale.x);
-        rect->h = (int)(renderer->clip_rect.h / renderer->scale.y);
+        rect->x = renderer->clip_rect.x / renderer->scale.x;
+        rect->y = renderer->clip_rect.y / renderer->scale.y;
+        rect->w = renderer->clip_rect.w / renderer->scale.x;
+        rect->h = renderer->clip_rect.h / renderer->scale.y;
     }
 }
 
