@@ -152,7 +152,7 @@ void _ReadWriteBarrier(void);
 /* This is correct for all CPUs when using GCC or Solaris Studio 12.1+. */
 #define SDL_CompilerBarrier()   __asm__ __volatile__ ("" : : : "memory")
 #elif defined(__WATCOMC__)
-extern _inline void SDL_CompilerBarrier (void);
+extern __inline void SDL_CompilerBarrier(void);
 #pragma aux SDL_CompilerBarrier = "" parm [] modify exact [];
 #else
 #define SDL_CompilerBarrier()   \

@@ -53,14 +53,14 @@
 #if defined(__WATCOMC__) && defined(__386__)
 SDL_COMPILE_TIME_ASSERT(intsize, 4==sizeof(int));
 #define HAVE_WATCOM_ATOMICS
-extern _inline int _SDL_xchg_watcom(volatile int *a, int v);
+extern __inline int _SDL_xchg_watcom(volatile int *a, int v);
 #pragma aux _SDL_xchg_watcom = \
   "lock xchg [ecx], eax" \
   parm [ecx] [eax] \
   value [eax] \
   modify exact [eax];
 
-extern _inline unsigned char _SDL_cmpxchg_watcom(volatile int *a, int newval, int oldval);
+extern __inline unsigned char _SDL_cmpxchg_watcom(volatile int *a, int newval, int oldval);
 #pragma aux _SDL_cmpxchg_watcom = \
   "lock cmpxchg [edx], ecx" \
   "setz al" \
@@ -68,7 +68,7 @@ extern _inline unsigned char _SDL_cmpxchg_watcom(volatile int *a, int newval, in
   value [al] \
   modify exact [eax];
 
-extern _inline int _SDL_xadd_watcom(volatile int *a, int v);
+extern __inline int _SDL_xadd_watcom(volatile int *a, int v);
 #pragma aux _SDL_xadd_watcom = \
   "lock xadd [ecx], eax" \
   parm [ecx] [eax] \

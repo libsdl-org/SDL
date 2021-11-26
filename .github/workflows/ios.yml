@@ -1,0 +1,20 @@
+name: Build (iOS/tvOS)
+
+on: [push, pull_request]
+
+jobs:
+  Build:
+    name: ${{ matrix.platform.name }}
+    runs-on: macos-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+        - { name: iOS, target: Static Library-iOS, sdk: iphoneos }
+        - { name: tvOS, target: Static Library-tvOS, sdk: appletvos }
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build
+        run: xcodebuild -project Xcode/SDL/SDL.xcodeproj -target '${{ matrix.platform.target }}' -configuration Release -sdk ${{ matrix.platform.sdk }} clean build

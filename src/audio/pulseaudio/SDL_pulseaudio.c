@@ -368,7 +368,7 @@ PULSEAUDIO_WaitDevice(_THIS)
             SDL_OpenedAudioDeviceDisconnected(this);
             return;
         }
-        if (PULSEAUDIO_pa_stream_writable_size(h->stream) >= h->mixlen) {
+        if (PULSEAUDIO_pa_stream_writable_size(h->stream) >= (h->mixlen/8)) {
             return;
         }
     }

@@ -1282,7 +1282,9 @@ extern DECLSPEC int SDLCALL SDL_UpdateWindowSurfaceRects(SDL_Window * window,
 /**
  * Set a window's input grab mode.
  *
- * When input is grabbed the mouse is confined to the window.
+ * When input is grabbed, the mouse is confined to the window. This function
+ * will also grab the keyboard if `SDL_HINT_GRAB_KEYBOARD` is set. To grab the
+ * keyboard without also grabbing the mouse, use SDL_SetWindowKeyboardGrab().
  *
  * If the caller enables a grab while another window is currently grabbed, the
  * other window loses its grab in favor of the caller's window.
@@ -1301,6 +1303,19 @@ extern DECLSPEC void SDLCALL SDL_SetWindowGrab(SDL_Window * window,
 /**
  * Set a window's keyboard grab mode.
  *
+ * Keyboard grab enables capture of system keyboard shortcuts like Alt+Tab or
+ * the Meta/Super key. Note that not all system keyboard shortcuts can be
+ * captured by applications (one example is Ctrl+Alt+Del on Windows).
+ *
+ * This is primarily intended for specialized applications such as VNC clients
+ * or VM frontends. Normal games should not use keyboard grab.
+ *
+ * When keyboard grab is enabled, SDL will continue to handle Alt+Tab when the
+ * window is full-screen to ensure the user is not trapped in your
+ * application. If you have a custom keyboard shortcut to exit fullscreen
+ * mode, you may suppress this behavior with
+ * `SDL_HINT_ALLOW_ALT_TAB_WHILE_GRABBED`.
+ *
  * If the caller enables a grab while another window is currently grabbed, the
  * other window loses its grab in favor of the caller's window.
  *
@@ -1318,6 +1333,8 @@ extern DECLSPEC void SDLCALL SDL_SetWindowKeyboardGrab(SDL_Window * window,
 
 /**
  * Set a window's mouse grab mode.
+ *
+ * Mouse grab confines the mouse cursor to the window.
  *
  * \param window The window for which the mouse grab mode should be set.
  *
@@ -1395,7 +1412,7 @@ extern DECLSPEC SDL_Window * SDLCALL SDL_GetGrabbedWindow(void);
  * \since This function is available since SDL 2.0.18.
  *
  * \sa SDL_GetWindowMouseRect
- * \sa SDL_SetWindowGrab
+ * \sa SDL_SetWindowMouseGrab
  */
 extern DECLSPEC int SDLCALL SDL_SetWindowMouseRect(SDL_Window * window, const SDL_Rect * rect);
 

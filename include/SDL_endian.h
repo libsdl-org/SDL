@@ -135,13 +135,6 @@ SDL_Swap16(Uint16 x)
   __asm__("rlwimi %0,%2,8,16,23": "=&r"(result):"0"(x >> 8), "r"(x));
     return (Uint16)result;
 }
-#elif defined(__aarch64__)
-SDL_FORCE_INLINE Uint16
-SDL_Swap16(Uint16 x)
-{
-  __asm__("rev16 %w1, %w0" : "=r"(x) : "r"(x));
-  return x;
-}
 #elif (defined(__m68k__) && !defined(__mcoldfire__))
 SDL_FORCE_INLINE Uint16
 SDL_Swap16(Uint16 x)
@@ -150,7 +143,7 @@ SDL_Swap16(Uint16 x)
     return x;
 }
 #elif defined(__WATCOMC__) && defined(__386__)
-extern _inline Uint16 SDL_Swap16(Uint16);
+extern __inline Uint16 SDL_Swap16(Uint16);
 #pragma aux SDL_Swap16 = \
   "xchg al, ah" \
   parm   [ax]   \
@@ -193,13 +186,6 @@ SDL_Swap32(Uint32 x)
   __asm__("rlwimi %0,%2,24,0,7"  : "=&r"(result): "0" (result), "r"(x));
     return result;
 }
-#elif defined(__aarch64__)
-SDL_FORCE_INLINE Uint32
-SDL_Swap32(Uint32 x)
-{
-  __asm__("rev %w1, %w0": "=r"(x):"r"(x));
-  return x;
-}
 #elif (defined(__m68k__) && !defined(__mcoldfire__))
 SDL_FORCE_INLINE Uint32
 SDL_Swap32(Uint32 x)
@@ -208,7 +194,7 @@ SDL_Swap32(Uint32 x)
     return x;
 }
 #elif defined(__WATCOMC__) && defined(__386__)
-extern _inline Uint32 SDL_Swap32(Uint32);
+extern __inline Uint32 SDL_Swap32(Uint32);
 #pragma aux SDL_Swap32 = \
   "bswap eax"  \
   parm   [eax] \
@@ -251,7 +237,7 @@ SDL_Swap64(Uint64 x)
     return x;
 }
 #elif defined(__WATCOMC__) && defined(__386__)
-extern _inline Uint64 SDL_Swap64(Uint64);
+extern __inline Uint64 SDL_Swap64(Uint64);
 #pragma aux SDL_Swap64 = \
   "bswap eax"     \
   "bswap edx"     \

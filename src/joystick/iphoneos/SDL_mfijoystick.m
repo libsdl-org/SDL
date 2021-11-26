@@ -1473,7 +1473,6 @@ IOS_JoystickClose(SDL_Joystick *joystick)
 
 #ifdef ENABLE_MFI_SYSTEM_GESTURE_STATE
             if (@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)) {
-                GCController *controller = joystick->hwdata->controller;
                 for (id key in controller.physicalInputProfile.buttons) {
                     GCControllerButtonInput *button = controller.physicalInputProfile.buttons[key];
                     if ([button isBoundToSystemGesture]) {
