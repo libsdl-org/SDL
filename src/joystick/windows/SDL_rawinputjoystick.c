@@ -561,7 +561,7 @@ RAWINPUT_InitWindowsGamingInput(RAWINPUT_DeviceContext *ctx)
 
                 hr = WindowsCreateStringReferenceFunc(pNamespace, (UINT32)SDL_wcslen(pNamespace), &hNamespaceStringHeader, &hNamespaceString);
                 if (SUCCEEDED(hr)) {
-                    RoGetActivationFactoryFunc(hNamespaceString, &SDL_IID_IGamepadStatics, &wgi_state.gamepad_statics);
+                    RoGetActivationFactoryFunc(hNamespaceString, &SDL_IID_IGamepadStatics, (void **)&wgi_state.gamepad_statics);
                 }
             }
             FreeLibrary(hModule);
@@ -1277,7 +1277,7 @@ RAWINPUT_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint
         gamepad_state->vibration.RightTrigger = (DOUBLE)right_rumble / SDL_MAX_UINT16;
         hr = __x_ABI_CWindows_CGaming_CInput_CIGamepad_put_Vibration(gamepad_state->gamepad, gamepad_state->vibration);
         if (!SUCCEEDED(hr)) {
-            return SDL_SetError("Setting vibration failed: 0x%x\n", hr);
+            return SDL_SetError("Setting vibration failed: 0x%lx\n", hr);
         }
     }
     return 0;
@@ -1548,7 +1548,7 @@ RAWINPUT_UpdateOtherAPIs(SDL_Joystick *joystick)
         SDL_bool new_correlation_count = 0;
         if (RAWINPUT_MissingWindowsGamingInputSlot()) {
             Uint8 correlation_id;
-            WindowsGamingInputGamepadState *slot_idx;
+            WindowsGamingInputGamepadState *slot_idx = NULL;
             if (RAWINPUT_GuessWindowsGamingInputSlot(&match_state_xinput, &correlation_id, &slot_idx)) {
                 /* we match exactly one WindowsGamingInput device */
                 /* Probably can do without wgi_correlation_count, just check and clear wgi_slot to NULL, unless we need
