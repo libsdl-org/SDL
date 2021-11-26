@@ -6,15 +6,39 @@ This is a list of major changes in SDL's version history.
 ---------------------------------------------------------------------------
 
 General:
+* The SDL wiki documentation and development headers are automatically kept in sync
+* Each function has information about in which version of SDL it was introduced
+* Added the hint SDL_HINT_APP_NAME to let SDL know the name of your application for various places it might show up in system information
+* Added SDL_RenderGeometry() and SDL_RenderGeometryRaw() to allow rendering of arbitrary shapes using the SDL 2D render API
+* Added SDL_SetTextureUserData() and SDL_GetTextureUserData() to associate application data with an SDL texture
+* Added SDL_RenderWindowToLogical() and SDL_RenderLogicalToWindow() to convert between window coordinates and logical render coordinates
+* Added SDL_RenderSetVSync() to change whether a renderer present is synchronized with vblank at runtime
 * Added SDL_PremultiplyAlpha() to premultiply alpha on a block of SDL_PIXELFORMAT_ARGB8888 pixels
+* Added a window event SDL_WINDOWEVENT_DISPLAY_CHANGED which is sent when a window changes what display it's centered on
+* Added SDL_GetWindowICCProfile() to query a window's ICC profile, and a window event SDL_WINDOWEVENT_ICCPROF_CHANGED that is sent when it changes
+* Added the hint SDL_HINT_VIDEO_EGL_ALLOW_TRANSPARENCY to allow EGL windows to be transparent instead of opaque
+* SDL_WaitEvent() has been redesigned to use less CPU in most cases
+* Added SDL_SetWindowMouseRect() and SDL_GetWindowMouseRect() to confine the mouse cursor to an area of a window
+* You can now read precise mouse wheel motion using 'preciseX' and 'preciseY' event fields
+* Added SDL_GameControllerHasRumble() and SDL_GameControllerHasRumbleTriggers() to query whether a game controller supports rumble
+* Added SDL_JoystickHasRumble() and SDL_JoystickHasRumbleTriggers() to query whether a joystick supports rumble
+* SDL's hidapi implementation is now available as a public API in SDL_hidapi.h
+
+Windows:
+* Added the hint SDL_HINT_IME_SHOW_UI to show native UI components instead of hiding them (defaults off)
 
 Linux:
+* Added the hint SDL_HINT_SCREENSAVER_INHIBIT_ACTIVITY_NAME to set the activity that's displayed by the system when the screensaver is disabled
 * Added the hint SDL_HINT_LINUX_JOYSTICK_CLASSIC to control whether /dev/input/js* or /dev/input/event* are used as joystick devices
 * Added the hint SDL_HINT_JOYSTICK_DEVICE to allow the user to specify devices that will be opened in addition to the normal joystick detection
+* Added SDL_LinuxSetThreadPriorityAndPolicy() for more control over a thread priority on Linux
 
 Android:
 * Added support for audio output and capture using AAudio on Android 8.1 and newer
 * Steam Controller support is disabled by default, and can be enabled by setting the hint SDL_HINT_JOYSTICK_HIDAPI_STEAM to "1" before calling SDL_Init()
+
+Apple Arcade:
+* Added SDL_GameControllerGetAppleSFSymbolsNameForButton() and SDL_GameControllerGetAppleSFSymbolsNameForAxis() to support Apple Arcade titles
 
 iOS:
 * Added documentation that the UIApplicationSupportsIndirectInputEvents key must be set to true in your application's Info.plist in order to get real Bluetooth mouse events.
