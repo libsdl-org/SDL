@@ -27,6 +27,9 @@ General:
 Windows:
 * Added the hint SDL_HINT_IME_SHOW_UI to show native UI components instead of hiding them (defaults off)
 
+Windows/UWP:
+* WGI is used instead of XInput for better controller support in UWP apps
+
 Linux:
 * Added the hint SDL_HINT_SCREENSAVER_INHIBIT_ACTIVITY_NAME to set the activity that's displayed by the system when the screensaver is disabled
 * Added the hint SDL_HINT_LINUX_JOYSTICK_CLASSIC to control whether /dev/input/js* or /dev/input/event* are used as joystick devices
