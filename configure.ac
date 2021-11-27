@@ -1701,8 +1701,7 @@ CheckRPI()
           #include <bcm_host.h>
           #include <EGL/eglplatform.h>
         ]], [[
-	  EGL_DISPMANX_WINDOW_T window;
-
+          EGL_DISPMANX_WINDOW_T window;
           bcm_host_init();
         ]])], [have_video_rpi=yes],[])
         AC_MSG_RESULT($have_video_rpi)
@@ -3296,6 +3295,19 @@ CheckDLOPEN()
     fi
 }
 
+CheckO_CLOEXEC()
+{
+    AC_MSG_CHECKING(for O_CLOEXEC)
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+#include <fcntl.h>
+int flag = O_CLOEXEC;
+        ]],[])], [have_o_cloexec=yes],[have_o_cloexec=no])
+    AC_MSG_RESULT($have_o_cloexec)
+    if test $have_o_cloexec = yes; then
+       AC_DEFINE(HAVE_O_CLOEXEC, 1, [ ])
+    fi
+}
+
 dnl Check for the usbhid(3) library on *BSD
 CheckUSBHID()
 {
@@ -3630,6 +3642,7 @@ case "$host" in
         CheckDLOPEN
         CheckARM
         CheckNEON
+        CheckO_CLOEXEC
         CheckOSS
         CheckALSA
         CheckPipewire
@@ -3862,10 +3875,8 @@ case "$host" in
 
         # Set up the core platform files
         SOURCES="$SOURCES $srcdir/src/core/windows/*.c"
-
         SOURCES="$SOURCES $srcdir/src/misc/windows/*.c"
         have_misc=yes
-
         # Use the Windows locale APIs.
         SOURCES="$SOURCES $srcdir/src/locale/windows/*.c"
         have_locale=yes
@@ -4014,6 +4025,7 @@ case "$host" in
         CheckDiskAudio
         CheckDummyAudio
         CheckDLOPEN
+        CheckO_CLOEXEC
         CheckHaikuVideo
         CheckHaikuGL
         CheckPTHREAD
@@ -4071,6 +4083,7 @@ case "$host" in
         CheckDiskAudio
         CheckDummyAudio
         CheckDLOPEN
+        CheckO_CLOEXEC
         CheckMETAL
         CheckVulkan
         CheckPTHREAD
@@ -4175,6 +4188,7 @@ case "$host" in
         CheckDiskAudio
         CheckDummyAudio
         CheckDLOPEN
+        CheckO_CLOEXEC
         CheckCOCOA
         CheckMETAL
         CheckX11
@@ -4259,6 +4273,7 @@ case "$host" in
         CheckOffscreenVideo
         CheckInputEvents
         CheckPTHREAD
+        CheckO_CLOEXEC
 
         # Set up files for the timer library
         if test x$enable_timers = xyes; then
@@ -4338,6 +4353,7 @@ case "$host" in
         CheckDiskAudio
         CheckDummyAudio
         CheckDLOPEN
+        CheckO_CLOEXEC
         CheckOSS
         CheckPTHREAD
         CheckClockGettime

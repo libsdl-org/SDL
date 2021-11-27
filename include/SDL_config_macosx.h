@@ -144,6 +144,10 @@
 # endif
 #endif
 
+#if (MAC_OS_X_VERSION_MAX_ALLOWED >= 1070)
+#define HAVE_O_CLOEXEC 1
+#endif
+
 #define HAVE_GCC_ATOMICS 1
 
 /* Enable various audio drivers */
