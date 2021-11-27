@@ -357,9 +357,16 @@ void SDL_WinRTApp::Run()
     {
         // TODO, WinRT: pass the C-style main() a reasonably realistic
         // representation of command line arguments.
-        int argc = 0;
-        char **argv = NULL;
+        int argc = 1;
+        char **argv = (char **)SDL_malloc(2 * sizeof(*argv));
+        if (!argv) {
+            return;
+        }
+        argv[0] = SDL_strdup("WinRTApp");
+        argv[1] = NULL;
         WINRT_SDLAppEntryPoint(argc, argv);
+        SDL_free(argv[0]);
+        SDL_free(argv);
     }
 }
 
