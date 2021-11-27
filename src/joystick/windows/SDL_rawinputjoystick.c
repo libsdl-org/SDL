@@ -1308,7 +1308,7 @@ RAWINPUT_JoystickGetCapabilities(SDL_Joystick *joystick)
     }
 #endif
 
-    return 0;
+    return result;
 }
 
 static int
