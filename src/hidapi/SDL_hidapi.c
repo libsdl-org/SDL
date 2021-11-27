@@ -691,33 +691,33 @@ static struct
 {
     void* libhandle;
 
-    int (*init)(libusb_context **ctx);
-    void (*exit)(libusb_context *ctx);
-    ssize_t (*get_device_list)(libusb_context *ctx, libusb_device ***list);
-    void (*free_device_list)(libusb_device **list, int unref_devices);
-    int (*get_device_descriptor)(libusb_device *dev, struct libusb_device_descriptor *desc);
-    int (*get_active_config_descriptor)(libusb_device *dev,    struct libusb_config_descriptor **config);
-    int (*get_config_descriptor)(
+    int (LIBUSB_CALL *init)(libusb_context **ctx);
+    void (LIBUSB_CALL *exit)(libusb_context *ctx);
+    ssize_t (LIBUSB_CALL *get_device_list)(libusb_context *ctx, libusb_device ***list);
+    void (LIBUSB_CALL *free_device_list)(libusb_device **list, int unref_devices);
+    int (LIBUSB_CALL *get_device_descriptor)(libusb_device *dev, struct libusb_device_descriptor *desc);
+    int (LIBUSB_CALL *get_active_config_descriptor)(libusb_device *dev,    struct libusb_config_descriptor **config);
+    int (LIBUSB_CALL *get_config_descriptor)(
         libusb_device *dev,
         uint8_t config_index,
         struct libusb_config_descriptor **config
     );
-    void (*free_config_descriptor)(struct libusb_config_descriptor *config);
-    uint8_t (*get_bus_number)(libusb_device *dev);
-    uint8_t (*get_device_address)(libusb_device *dev);
-    int (*open)(libusb_device *dev, libusb_device_handle **dev_handle);
-    void (*close)(libusb_device_handle *dev_handle);
-    int (*claim_interface)(libusb_device_handle *dev_handle, int interface_number);
-    int (*release_interface)(libusb_device_handle *dev_handle, int interface_number);
-    int (*kernel_driver_active)(libusb_device_handle *dev_handle, int interface_number);
-    int (*detach_kernel_driver)(libusb_device_handle *dev_handle, int interface_number);
-    int (*attach_kernel_driver)(libusb_device_handle *dev_handle, int interface_number);
-    int (*set_interface_alt_setting)(libusb_device_handle *dev, int interface_number, int alternate_setting);
-    struct libusb_transfer * (*alloc_transfer)(int iso_packets);
-    int (*submit_transfer)(struct libusb_transfer *transfer);
-    int (*cancel_transfer)(struct libusb_transfer *transfer);
-    void (*free_transfer)(struct libusb_transfer *transfer);
-    int (*control_transfer)(
+    void (LIBUSB_CALL *free_config_descriptor)(struct libusb_config_descriptor *config);
+    uint8_t (LIBUSB_CALL *get_bus_number)(libusb_device *dev);
+    uint8_t (LIBUSB_CALL *get_device_address)(libusb_device *dev);
+    int (LIBUSB_CALL *open)(libusb_device *dev, libusb_device_handle **dev_handle);
+    void (LIBUSB_CALL *close)(libusb_device_handle *dev_handle);
+    int (LIBUSB_CALL *claim_interface)(libusb_device_handle *dev_handle, int interface_number);
+    int (LIBUSB_CALL *release_interface)(libusb_device_handle *dev_handle, int interface_number);
+    int (LIBUSB_CALL *kernel_driver_active)(libusb_device_handle *dev_handle, int interface_number);
+    int (LIBUSB_CALL *detach_kernel_driver)(libusb_device_handle *dev_handle, int interface_number);
+    int (LIBUSB_CALL *attach_kernel_driver)(libusb_device_handle *dev_handle, int interface_number);
+    int (LIBUSB_CALL *set_interface_alt_setting)(libusb_device_handle *dev, int interface_number, int alternate_setting);
+    struct libusb_transfer * (LIBUSB_CALL *alloc_transfer)(int iso_packets);
+    int (LIBUSB_CALL *submit_transfer)(struct libusb_transfer *transfer);
+    int (LIBUSB_CALL *cancel_transfer)(struct libusb_transfer *transfer);
+    void (LIBUSB_CALL *free_transfer)(struct libusb_transfer *transfer);
+    int (LIBUSB_CALL *control_transfer)(
         libusb_device_handle *dev_handle,
         uint8_t request_type,
         uint8_t bRequest,
@@ -727,7 +727,7 @@ static struct
         uint16_t wLength,
         unsigned int timeout
     );
-    int (*interrupt_transfer)(
+    int (LIBUSB_CALL *interrupt_transfer)(
         libusb_device_handle *dev_handle,
         unsigned char endpoint,
         unsigned char *data,
@@ -735,8 +735,8 @@ static struct
         int *actual_length,
         unsigned int timeout
     );
-    int (*handle_events)(libusb_context *ctx);
-    int (*handle_events_completed)(libusb_context *ctx, int *completed);
+    int (LIBUSB_CALL *handle_events)(libusb_context *ctx);
+    int (LIBUSB_CALL *handle_events_completed)(libusb_context *ctx, int *completed);
 } libusb_ctx;
 
 #define libusb_init                            libusb_ctx.init
