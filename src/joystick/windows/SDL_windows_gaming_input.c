@@ -456,8 +456,8 @@ WGI_JoystickInit(void)
 #else
     HMODULE hModule = LoadLibraryA("combase.dll");
     if (hModule != NULL) {
-        WindowsCreateStringReference_t WindowsCreateStringReferenceFunc = (WindowsCreateStringReference_t)GetProcAddress(hModule, "WindowsCreateStringReference");
-        RoGetActivationFactory_t RoGetActivationFactoryFunc = (RoGetActivationFactory_t)GetProcAddress(hModule, "RoGetActivationFactory");
+        WindowsCreateStringReferenceFunc = (WindowsCreateStringReference_t)GetProcAddress(hModule, "WindowsCreateStringReference");
+        RoGetActivationFactoryFunc = (RoGetActivationFactory_t)GetProcAddress(hModule, "RoGetActivationFactory");
     }
 #endif /* __WINRT__ */
     if (WindowsCreateStringReferenceFunc && RoGetActivationFactoryFunc) {
