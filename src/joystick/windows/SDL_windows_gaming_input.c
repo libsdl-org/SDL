@@ -532,6 +532,24 @@ WGI_JoystickInit(void)
         if (!SUCCEEDED(hr)) {
             SDL_SetError("add_RawGameControllerRemoved() failed: 0x%lx\n", hr);
         }
+
+        __FIVectorView_1_Windows__CGaming__CInput__CRawGameController *controllers;
+        hr = __x_ABI_CWindows_CGaming_CInput_CIRawGameControllerStatics_get_RawGameControllers(wgi.statics, &controllers);
+        if (SUCCEEDED(hr)) {
+            unsigned i, count = 0;
+
+            hr = __FIVectorView_1_Windows__CGaming__CInput__CRawGameController_get_Size(controllers, &count);
+            if (SUCCEEDED(hr)) {
+                for (i = 0; i < count; ++i) {
+                    __x_ABI_CWindows_CGaming_CInput_CIRawGameController *e = NULL;
+
+                    hr = __FIVectorView_1_Windows__CGaming__CInput__CRawGameController_GetAt(controllers, i, &e);
+                    if (SUCCEEDED(hr) && e) {
+                        IEventHandler_CRawGameControllerVtbl_InvokeAdded(&controller_added, (IInspectable *)controllers, e);
+                    }
+                }
+            }
+        }
     }
 
     return 0;
