@@ -447,8 +447,6 @@
     <ClInclude Include="..\include\SDL_misc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="..\src\atomic\SDL_atomic.c">
       <Filter>Source Files</Filter>
     </ClCompile>

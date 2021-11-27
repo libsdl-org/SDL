@@ -698,7 +698,7 @@ WINRT_CreateWindow(_THIS, SDL_Window * window)
             data->egl_surface = _this->egl_data->eglCreateWindowSurface(
                 _this->egl_data->egl_display,
                 _this->egl_data->egl_config,
-                coreWindowAsIInspectable,
+                (NativeWindowType)coreWindowAsIInspectable,
                 NULL);
             if (data->egl_surface == NULL) {
                 return SDL_EGL_SetError("unable to create EGL native-window surface", "eglCreateWindowSurface");
