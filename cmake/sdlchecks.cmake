@@ -53,6 +53,14 @@ macro(CheckDLOPEN)
   endif()
 endmacro()
 
+macro(CheckO_CLOEXEC)
+  check_c_source_compiles("
+    #include <fcntl.h>
+    int flag = O_CLOEXEC;
+    int main(void) {
+   }" HAVE_O_CLOEXEC)
+endmacro()
+
 # Requires:
 # - n/a
 macro(CheckOSS)

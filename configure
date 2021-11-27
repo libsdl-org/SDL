@@ -20233,8 +20233,7 @@ int
 main ()
 {
 
-	  EGL_DISPMANX_WINDOW_T window;
-
+          EGL_DISPMANX_WINDOW_T window;
           bcm_host_init();
 
   ;
@@ -24362,6 +24361,39 @@ $as_echo "#define SDL_LOADSO_DLOPEN 1" >>confdefs.h
     fi
 }
 
+CheckO_CLOEXEC()
+{
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for O_CLOEXEC" >&5
+$as_echo_n "checking for O_CLOEXEC... " >&6; }
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <fcntl.h>
+int flag = O_CLOEXEC;
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  have_o_cloexec=yes
+else
+  have_o_cloexec=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_o_cloexec" >&5
+$as_echo "$have_o_cloexec" >&6; }
+    if test $have_o_cloexec = yes; then
+
+$as_echo "#define HAVE_O_CLOEXEC 1" >>confdefs.h
+
+    fi
+}
+
 CheckUSBHID()
 {
     case "$host" in
@@ -25055,6 +25087,7 @@ $as_echo "#define SDL_VIDEO_DRIVER_ANDROID 1" >>confdefs.h
         CheckDLOPEN
         CheckARM
         CheckNEON
+        CheckO_CLOEXEC
         CheckOSS
         CheckALSA
         CheckPipewire
@@ -25321,10 +25354,8 @@ $as_echo "#define SDL_TIMER_UNIX 1" >>confdefs.h
 
         # Set up the core platform files
         SOURCES="$SOURCES $srcdir/src/core/windows/*.c"
-
         SOURCES="$SOURCES $srcdir/src/misc/windows/*.c"
         have_misc=yes
-
         # Use the Windows locale APIs.
         SOURCES="$SOURCES $srcdir/src/locale/windows/*.c"
         have_locale=yes
@@ -25556,6 +25587,7 @@ fi
         CheckDiskAudio
         CheckDummyAudio
         CheckDLOPEN
+        CheckO_CLOEXEC
         CheckHaikuVideo
         CheckHaikuGL
         CheckPTHREAD
@@ -25623,6 +25655,7 @@ $as_echo "#define SDL_FILESYSTEM_HAIKU 1" >>confdefs.h
         CheckDiskAudio
         CheckDummyAudio
         CheckDLOPEN
+        CheckO_CLOEXEC
         CheckMETAL
         CheckVulkan
         CheckPTHREAD
@@ -25749,6 +25782,7 @@ $as_echo "#define SDL_VIDEO_RENDER_OGL_ES2 1" >>confdefs.h
         CheckDiskAudio
         CheckDummyAudio
         CheckDLOPEN
+        CheckO_CLOEXEC
         CheckCOCOA
         CheckMETAL
         CheckX11
@@ -25845,6 +25879,7 @@ $as_echo "#define SDL_TIMER_UNIX 1" >>confdefs.h
         CheckOffscreenVideo
         CheckInputEvents
         CheckPTHREAD
+        CheckO_CLOEXEC
 
         # Set up files for the timer library
         if test x$enable_timers = xyes; then
@@ -25940,6 +25975,7 @@ $as_echo "#define SDL_TIMER_UNIX 1" >>confdefs.h
         CheckDiskAudio
         CheckDummyAudio
         CheckDLOPEN
+        CheckO_CLOEXEC
         CheckOSS
         CheckPTHREAD
         CheckClockGettime
