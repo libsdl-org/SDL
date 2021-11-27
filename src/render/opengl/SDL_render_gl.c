@@ -1169,6 +1169,12 @@ GL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
         }
     }
 
+#ifdef __MACOSX__
+    // On macOS, moving the window seems to invalidate the OpenGL viewport state,
+    // so don't bother trying to persist it across frames; always reset it.
+    // Workaround for: https://github.com/libsdl-org/SDL/issues/1504
+    data->drawstate.viewport_dirty = SDL_TRUE;
+#endif
 
     while (cmd) {
         switch (cmd->command) {
