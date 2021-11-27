@@ -222,8 +222,12 @@ static ULONG STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_Release(__FI
     return 1;
 }
 
-static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdded(__FIEventHandler_1_Windows__CGaming__CInput__CRawGameController * This, IInspectable *sender, __x_ABI_CWindows_CGaming_CInput_CIRawGameController *e)
+static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdded(__FIEventHandler_1_Windows__CGaming__CInput__CRawGameController * This, IInspectable *sender, __x_ABI_CWindows_CGaming_CInput_CIRawGameController **_e)
 {
+    /* The function prototype is incorrect, _e is actually __x_ABI_CWindows_CGaming_CInput_CIRawGameController *
+       You'll get a crash if you try to indirect it and use it as the prototype suggests
+    */
+    __x_ABI_CWindows_CGaming_CInput_CIRawGameController *e = (__x_ABI_CWindows_CGaming_CInput_CIRawGameController *)_e;
     HRESULT hr;
     __x_ABI_CWindows_CGaming_CInput_CIRawGameController *controller = NULL;
 
@@ -383,8 +387,12 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
     return S_OK;
 }
 
-static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeRemoved(__FIEventHandler_1_Windows__CGaming__CInput__CRawGameController * This, IInspectable *sender, __x_ABI_CWindows_CGaming_CInput_CIRawGameController *e)
+static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeRemoved(__FIEventHandler_1_Windows__CGaming__CInput__CRawGameController * This, IInspectable *sender, __x_ABI_CWindows_CGaming_CInput_CIRawGameController **_e)
 {
+    /* The function prototype is incorrect, _e is actually __x_ABI_CWindows_CGaming_CInput_CIRawGameController *
+       You'll get a crash if you try to indirect it and use it as the prototype suggests
+    */
+    __x_ABI_CWindows_CGaming_CInput_CIRawGameController *e = (__x_ABI_CWindows_CGaming_CInput_CIRawGameController *)_e;
     HRESULT hr;
     __x_ABI_CWindows_CGaming_CInput_CIRawGameController *controller = NULL;
 
@@ -439,22 +447,25 @@ static __FIEventHandler_1_Windows__CGaming__CInput__CRawGameController controlle
 static int
 WGI_JoystickInit(void)
 {
+    typedef HRESULT (WINAPI *WindowsCreateStringReference_t)(PCWSTR sourceString, UINT32 length, HSTRING_HEADER *hstringHeader, HSTRING* string);
+    typedef HRESULT (WINAPI *RoGetActivationFactory_t)(HSTRING activatableClassId, REFIID iid, void** factory);
+
+    WindowsCreateStringReference_t WindowsCreateStringReferenceFunc = NULL;
+    RoGetActivationFactory_t RoGetActivationFactoryFunc = NULL;
+#ifndef __WINRT__
+    HMODULE hModule;
+#endif
     HRESULT hr;
 
     if (FAILED(WIN_CoInitialize())) {
         return SDL_SetError("CoInitialize() failed");
     }
 
-    typedef HRESULT (WINAPI *WindowsCreateStringReference_t)(PCWSTR sourceString, UINT32 length, HSTRING_HEADER *hstringHeader, HSTRING* string);
-    typedef HRESULT (WINAPI *RoGetActivationFactory_t)(HSTRING activatableClassId, REFIID iid, void** factory);
-
-    WindowsCreateStringReference_t WindowsCreateStringReferenceFunc = NULL;
-    RoGetActivationFactory_t RoGetActivationFactoryFunc = NULL;
 #ifdef __WINRT__
     WindowsCreateStringReferenceFunc = WindowsCreateStringReference;
     RoGetActivationFactoryFunc = RoGetActivationFactory;
 #else
-    HMODULE hModule = LoadLibraryA("combase.dll");
+    hModule = LoadLibraryA("combase.dll");
     if (hModule != NULL) {
         WindowsCreateStringReferenceFunc = (WindowsCreateStringReference_t)GetProcAddress(hModule, "WindowsCreateStringReference");
         RoGetActivationFactoryFunc = (RoGetActivationFactory_t)GetProcAddress(hModule, "RoGetActivationFactory");
@@ -523,6 +534,8 @@ WGI_JoystickInit(void)
 #endif
 
     if (wgi.statics) {
+        __FIVectorView_1_Windows__CGaming__CInput__CRawGameController *controllers;
+
         hr = __x_ABI_CWindows_CGaming_CInput_CIRawGameControllerStatics_add_RawGameControllerAdded(wgi.statics, &controller_added, &wgi.controller_added_token);
         if (!SUCCEEDED(hr)) {
             SDL_SetError("add_RawGameControllerAdded() failed: 0x%lx\n", hr);
@@ -533,7 +546,6 @@ WGI_JoystickInit(void)
             SDL_SetError("add_RawGameControllerRemoved() failed: 0x%lx\n", hr);
         }
 
-        __FIVectorView_1_Windows__CGaming__CInput__CRawGameController *controllers;
         hr = __x_ABI_CWindows_CGaming_CInput_CIRawGameControllerStatics_get_RawGameControllers(wgi.statics, &controllers);
         if (SUCCEEDED(hr)) {
             unsigned i, count = 0;
@@ -541,11 +553,11 @@ WGI_JoystickInit(void)
             hr = __FIVectorView_1_Windows__CGaming__CInput__CRawGameController_get_Size(controllers, &count);
             if (SUCCEEDED(hr)) {
                 for (i = 0; i < count; ++i) {
-                    __x_ABI_CWindows_CGaming_CInput_CIRawGameController *e = NULL;
+                    __x_ABI_CWindows_CGaming_CInput_CIRawGameController *controller = NULL;
 
-                    hr = __FIVectorView_1_Windows__CGaming__CInput__CRawGameController_GetAt(controllers, i, &e);
-                    if (SUCCEEDED(hr) && e) {
-                        IEventHandler_CRawGameControllerVtbl_InvokeAdded(&controller_added, (IInspectable *)controllers, e);
+                    hr = __FIVectorView_1_Windows__CGaming__CInput__CRawGameController_GetAt(controllers, i, &controller);
+                    if (SUCCEEDED(hr) && controller) {
+                        IEventHandler_CRawGameControllerVtbl_InvokeAdded(&controller_added, NULL, (__x_ABI_CWindows_CGaming_CInput_CIRawGameController **)controller);
                     }
                 }
             }
@@ -827,7 +839,7 @@ WGI_JoystickQuit(void)
 {
     if (wgi.statics) {
         while (wgi.controller_count > 0) {
-            IEventHandler_CRawGameControllerVtbl_InvokeRemoved(&controller_removed, NULL, (__x_ABI_CWindows_CGaming_CInput_CIRawGameController *)wgi.controllers[wgi.controller_count - 1].controller);
+            IEventHandler_CRawGameControllerVtbl_InvokeRemoved(&controller_removed, NULL, (__x_ABI_CWindows_CGaming_CInput_CIRawGameController **)wgi.controllers[wgi.controller_count - 1].controller);
         }
         if (wgi.controllers) {
             SDL_free(wgi.controllers);
