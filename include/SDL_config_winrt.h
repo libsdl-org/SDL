@@ -201,8 +201,13 @@ typedef unsigned int uintptr_t;
 #define SDL_HAPTIC_DISABLED 1
 #else
 #define SDL_JOYSTICK_VIRTUAL    1
+#if (NTDDI_VERSION >= NTDDI_WIN10)
+#define SDL_JOYSTICK_WGI    1
+#define SDL_HAPTIC_DISABLED 1
+#else
 #define SDL_JOYSTICK_XINPUT 1
 #define SDL_HAPTIC_XINPUT   1
+#endif /* WIN10 */
 #endif
 
 /* WinRT doesn't have HIDAPI available */

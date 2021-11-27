@@ -253,6 +253,7 @@
     <ClCompile Include="..\src\joystick\virtual\SDL_virtualjoystick.c" />
     <ClCompile Include="..\src\joystick\windows\SDL_dinputjoystick.c" />
     <ClCompile Include="..\src\joystick\windows\SDL_windowsjoystick.c" />
+    <ClCompile Include="..\src\joystick\windows\SDL_windows_gaming_input.c" />
     <ClCompile Include="..\src\joystick\windows\SDL_xinputjoystick.c" />
     <ClCompile Include="..\src\loadso\windows\SDL_sysloadso.c" />
     <ClCompile Include="..\src\locale\SDL_locale.c" />
