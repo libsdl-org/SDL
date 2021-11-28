@@ -117,6 +117,8 @@ extern int X11_SetWindowHitTest(SDL_Window *window, SDL_bool enabled);
 extern void X11_AcceptDragAndDrop(SDL_Window * window, SDL_bool accept);
 extern int X11_FlashWindow(_THIS, SDL_Window * window, SDL_FlashOperation operation);
 
+bool SDL_X11_SetWindowTitle(Display* display, Window xwindow, char* string);
+
 #endif /* SDL_x11window_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */
