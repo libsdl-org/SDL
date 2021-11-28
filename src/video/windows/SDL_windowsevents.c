@@ -780,7 +780,11 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     (GetMouseMessageSource() == SDL_MOUSE_EVENT_SOURCE_TOUCH || (GetMessageExtraInfo() & 0x82) == 0x82)) {
                     break;
                 }
-                mouseID = (SDL_MouseID)(uintptr_t)inp.header.hDevice;
+                /* We do all of our mouse state checking against mouse ID 0
+                 * We would only use the actual hDevice if we were tracking
+                 * all mouse motion independently, and never using mouse ID 0.
+                 */
+                mouseID = 0; /* (SDL_MouseID)(uintptr_t)inp.header.hDevice; */
                 rawmouse = &inp.data.mouse;
 
                 if ((rawmouse->usFlags & 0x01) == MOUSE_MOVE_RELATIVE) {
