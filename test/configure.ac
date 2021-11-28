@@ -92,7 +92,7 @@ AC_SUBST(ISWINDOWS)
 AC_SUBST(ISUNIX)
 
 dnl Check for SDL
-SDL_VERSION=2.0.0
+SDL_VERSION=2.0.18
 AM_PATH_SDL2($SDL_VERSION,
             :,
 	    AC_MSG_ERROR([*** SDL version $SDL_VERSION not found!])
