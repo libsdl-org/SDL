@@ -404,11 +404,10 @@ X11_MessageBoxCreateWindow( SDL_MessageBoxDataX11 *data )
     int x, y;
     XSizeHints *sizehints;
     XSetWindowAttributes wnd_attr;
-    Atom _NET_WM_WINDOW_TYPE, _NET_WM_WINDOW_TYPE_DIALOG, _NET_WM_NAME;
+    Atom _NET_WM_WINDOW_TYPE, _NET_WM_WINDOW_TYPE_DIALOG;
     Display *display = data->display;
     SDL_WindowData *windowdata = NULL;
     const SDL_MessageBoxData *messageboxdata = data->messageboxdata;
-    char *title_locale = NULL;
 
     if ( messageboxdata->window ) {
         SDL_DisplayData *displaydata =
@@ -452,32 +451,7 @@ X11_MessageBoxCreateWindow( SDL_MessageBoxDataX11 *data )
         X11_XSetTransientForHint( display, data->window, windowdata->xwindow );
     }
 
-    X11_XStoreName( display, data->window, messageboxdata->title );
-    _NET_WM_NAME = X11_XInternAtom(display, "_NET_WM_NAME", False);
-
-    title_locale = SDL_iconv_utf8_locale(messageboxdata->title);
-    if (title_locale) {
-        XTextProperty titleprop;
-        Status status = X11_XStringListToTextProperty(&title_locale, 1, &titleprop);
-        SDL_free(title_locale);
-        if (status) {
-            X11_XSetTextProperty(display, data->window, &titleprop, XA_WM_NAME);
-            X11_XFree(titleprop.value);
-        }
-    }
-
-#ifdef X_HAVE_UTF8_STRING
-    if (SDL_X11_HAVE_UTF8) {
-        XTextProperty titleprop;
-        Status status = X11_Xutf8TextListToTextProperty(display, (char **) &messageboxdata->title, 1,
-                                            XUTF8StringStyle, &titleprop);
-        if (status == Success) {
-            X11_XSetTextProperty(display, data->window, &titleprop,
-                                 _NET_WM_NAME);
-            X11_XFree(titleprop.value);
-        }
-    }
-#endif
+    SDL_X11_SetWindowTitle(display, data->window, (char*)messageboxdata->title);
 
     /* Let the window manager know this is a dialog box */
     _NET_WM_WINDOW_TYPE = X11_XInternAtom(display, "_NET_WM_WINDOW_TYPE", False);

@@ -460,6 +460,14 @@ X11_VideoInit(_THIS)
     X11_InitXfixes(_this);
 #endif /* SDL_VIDEO_DRIVER_X11_XFIXES */
 
+#ifndef X_HAVE_UTF8_STRING
+    SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "X server doesn't support UTF8_STRING, a feature introduced in 2000! This is likely to become a hard error in a future libSDL2.");
+#endif
+
+    if (X11_XSupportsLocale() != True) {
+        return SDL_SetError("Current locale not supported by X server, cannot continue.");
+    }
+
     if (X11_InitKeyboard(_this) != 0) {
         return -1;
     }
