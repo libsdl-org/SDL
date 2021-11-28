@@ -222,12 +222,8 @@ static ULONG STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_Release(__FI
     return 1;
 }
 
-static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdded(__FIEventHandler_1_Windows__CGaming__CInput__CRawGameController * This, IInspectable *sender, __x_ABI_CWindows_CGaming_CInput_CIRawGameController **_e)
+static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdded(__FIEventHandler_1_Windows__CGaming__CInput__CRawGameController * This, IInspectable *sender, __x_ABI_CWindows_CGaming_CInput_CIRawGameController *e)
 {
-    /* The function prototype is incorrect, _e is actually __x_ABI_CWindows_CGaming_CInput_CIRawGameController *
-       You'll get a crash if you try to indirect it and use it as the prototype suggests
-    */
-    __x_ABI_CWindows_CGaming_CInput_CIRawGameController *e = (__x_ABI_CWindows_CGaming_CInput_CIRawGameController *)_e;
     HRESULT hr;
     __x_ABI_CWindows_CGaming_CInput_CIRawGameController *controller = NULL;
 
@@ -387,12 +383,8 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
     return S_OK;
 }
 
-static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeRemoved(__FIEventHandler_1_Windows__CGaming__CInput__CRawGameController * This, IInspectable *sender, __x_ABI_CWindows_CGaming_CInput_CIRawGameController **_e)
+static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeRemoved(__FIEventHandler_1_Windows__CGaming__CInput__CRawGameController * This, IInspectable *sender, __x_ABI_CWindows_CGaming_CInput_CIRawGameController *e)
 {
-    /* The function prototype is incorrect, _e is actually __x_ABI_CWindows_CGaming_CInput_CIRawGameController *
-       You'll get a crash if you try to indirect it and use it as the prototype suggests
-    */
-    __x_ABI_CWindows_CGaming_CInput_CIRawGameController *e = (__x_ABI_CWindows_CGaming_CInput_CIRawGameController *)_e;
     HRESULT hr;
     __x_ABI_CWindows_CGaming_CInput_CIRawGameController *controller = NULL;
 
@@ -557,7 +549,7 @@ WGI_JoystickInit(void)
 
                     hr = __FIVectorView_1_Windows__CGaming__CInput__CRawGameController_GetAt(controllers, i, &controller);
                     if (SUCCEEDED(hr) && controller) {
-                        IEventHandler_CRawGameControllerVtbl_InvokeAdded(&controller_added, NULL, (__x_ABI_CWindows_CGaming_CInput_CIRawGameController **)controller);
+                        IEventHandler_CRawGameControllerVtbl_InvokeAdded(&controller_added, NULL, controller);
                     }
                 }
             }
@@ -839,7 +831,7 @@ WGI_JoystickQuit(void)
 {
     if (wgi.statics) {
         while (wgi.controller_count > 0) {
-            IEventHandler_CRawGameControllerVtbl_InvokeRemoved(&controller_removed, NULL, (__x_ABI_CWindows_CGaming_CInput_CIRawGameController **)wgi.controllers[wgi.controller_count - 1].controller);
+            IEventHandler_CRawGameControllerVtbl_InvokeRemoved(&controller_removed, NULL, wgi.controllers[wgi.controller_count - 1].controller);
         }
         if (wgi.controllers) {
             SDL_free(wgi.controllers);
