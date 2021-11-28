@@ -73,7 +73,6 @@ typedef struct
     int window_minH;
     int window_maxW;
     int window_maxH;
-    SDL_Rect confine;
     int logical_w;
     int logical_h;
     float scale;
@@ -115,6 +114,10 @@ typedef struct
     int gl_minor_version;
     int gl_debug;
     int gl_profile_mask;
+
+    /* Additional fields added in 2.0.18 */
+    SDL_Rect confine;
+
 } SDLTest_CommonState;
 
 #include "begin_code.h"
