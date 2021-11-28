@@ -495,6 +495,7 @@ SDL_EGL_GetVersion(_THIS) {
 int
 SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_display, EGLenum platform)
 {
+    EGLint major, minor;
     int library_load_retcode = SDL_EGL_LoadLibraryOnly(_this, egl_path);
     if (library_load_retcode != 0) {
         return library_load_retcode;
@@ -511,6 +512,22 @@ SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_displa
          * Therefore SDL_EGL_GetVersion() shouldn't work with uninitialized display.
          * - it actually doesn't work on Android that has 1.5 egl client
          * - it works on desktop X11 (using SDL_VIDEO_X11_FORCE_EGL=1) */
+#if defined(SDL_VIDEO_DRIVER_ROCKCHIP)
+	if (SDL_EGL_HasExtension(_this, SDL_EGL_CLIENT_EXTENSION, "EGL_EXT_platform_base")) {
+	    _this->egl_data->eglGetPlatformDisplayEXT = SDL_EGL_GetProcAddress(_this, "eglGetPlatformDisplayEXT");
+	     if (_this->egl_data->eglGetPlatformDisplayEXT) {
+		 _this->egl_data->egl_display = _this->egl_data->eglGetPlatformDisplayEXT(platform, native_display, NULL);
+	     } else {
+		 if (_this->egl_data->eglGetPlatformDisplay) {
+		     _this->egl_data->egl_display = _this->egl_data->eglGetPlatformDisplay(platform, native_display, NULL);
+		  }
+	     }
+	} else {
+	     if (_this->egl_data->eglGetPlatformDisplay) {
+		 _this->egl_data->egl_display = _this->egl_data->eglGetPlatformDisplay(platform, native_display, NULL);
+	     }
+	}
+#else
         SDL_EGL_GetVersion(_this);
 
         if (_this->egl_data->egl_version_major == 1 && _this->egl_data->egl_version_minor == 5) {
@@ -527,6 +544,8 @@ SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_displa
                 }
             }
         }
+
+#endif
     }
 #endif
     /* Try the implementation-specific eglGetDisplay even if eglGetPlatformDisplay fails */
@@ -539,7 +558,7 @@ SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_displa
         return SDL_SetError("Could not get EGL display");
     }
 
-    if (_this->egl_data->eglInitialize(_this->egl_data->egl_display, NULL, NULL) != EGL_TRUE) {
+    if (_this->egl_data->eglInitialize(_this->egl_data->egl_display, &major, &minor) != EGL_TRUE) {
         _this->gl_config.driver_loaded = 0;
         *_this->gl_config.driver_path = '\0';
         return SDL_SetError("Could not initialize EGL");

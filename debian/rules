@@ -3,7 +3,8 @@
 DEB_HOST_ARCH_CPU ?= $(shell dpkg-architecture -qDEB_HOST_ARCH_CPU)
 DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
 
-confflags = --disable-rpath --disable-video-directfb \
+confflags = ${DEB_CONFIG} \
+            --disable-rpath --disable-video-directfb \
             --disable-nas --disable-esd --disable-arts
 
 # These flags can be used to create a package directly linking with external libraries and having the appropriate package dependencies

@@ -1721,6 +1721,16 @@ CheckRPI()
     fi
 }
 
+CheckRockchip()
+{
+    AC_ARG_ENABLE(video-rockchip,
+[AS_HELP_STRING([--enable-video-rockchip], [use Rockchip video driver with mali blob [default=no]])],
+                  , enable_video_rockchip=no)
+    if test x$enable_video = xyes -a x$enable_video_rockchip = xyes; then
+        AC_DEFINE(SDL_VIDEO_DRIVER_ROCKCHIP, 1, [ ])
+    fi
+}
+
 dnl Find the X11 include and library directories
 CheckX11()
 {
@@ -2396,7 +2406,15 @@ CheckGLX()
         AC_MSG_RESULT($video_opengl_glx)
         if test x$video_opengl_glx = xyes; then
             AC_DEFINE(SDL_VIDEO_OPENGL, 1, [ ])
-            AC_DEFINE(SDL_VIDEO_OPENGL_GLX, 1, [ ])
+            #
+            # Disable GLX on ROCKCHIP platform with mali blob.
+            # This make sure SDL loads OpenGLES2 with HW acceleration
+            #
+            if test x$enable_video_rockchip = xyes; then
+                AC_MSG_WARN([GLX disabled for ROCKCHIP HW acceleration])
+            else
+                AC_DEFINE(SDL_VIDEO_OPENGL_GLX, 1, [ ])
+            fi
         fi
     fi
 }
@@ -3656,6 +3674,8 @@ case "$host" in
         CheckLibSampleRate
         # Need to check for Raspberry PI first and add platform specific compiler flags, otherwise the test for GLES fails!
         CheckRPI
+        # Need for ffmpeg / EGLES2 SDL Rockchip
+        CheckRockchip
         CheckX11
         CheckDirectFB
         # Need to check for EGL first because KMSDRM and Wayland depends on it.
