@@ -24,5 +24,7 @@
 	<string>1.0</string>
 	<key>LSRequiresIPhoneOS</key>
 	<false/>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>Steam Link would like to use Bluetooth controllers for input.</string>
 </dict>
 </plist>
