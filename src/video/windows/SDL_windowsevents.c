@@ -1476,6 +1476,7 @@ WIN_PumpEvents(_THIS)
     MSG msg;
     DWORD end_ticks = GetTickCount() + 1;
     int new_messages = 0;
+    SDL_Window *focusWindow;
 
     if (g_WindowsEnableMessageLoop) {
         while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
@@ -1523,12 +1524,18 @@ WIN_PumpEvents(_THIS)
     if ((keystate[SDL_SCANCODE_RSHIFT] == SDL_PRESSED) && !(GetKeyState(VK_RSHIFT) & 0x8000)) {
         SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_RSHIFT);
     }
-    /* The Windows key state gets lost when using Windows+Space or Windows+G shortcuts */
-    if ((keystate[SDL_SCANCODE_LGUI] == SDL_PRESSED) && !(GetKeyState(VK_LWIN) & 0x8000)) {
-        SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_LGUI);
-    }
-    if ((keystate[SDL_SCANCODE_RGUI] == SDL_PRESSED) && !(GetKeyState(VK_RWIN) & 0x8000)) {
-        SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_RGUI);
+
+    /* The Windows key state gets lost when using Windows+Space or Windows+G shortcuts and
+       not grabbing the keyboard. Note: If we *are* grabbing the keyboard, GetKeyState()
+       will return inaccurate results for VK_LWIN and VK_RWIN but we don't need it anyway. */
+    focusWindow = SDL_GetKeyboardFocus();
+    if (!focusWindow || !(focusWindow->flags & SDL_WINDOW_KEYBOARD_GRABBED)) {
+        if ((keystate[SDL_SCANCODE_LGUI] == SDL_PRESSED) && !(GetKeyState(VK_LWIN) & 0x8000)) {
+            SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_LGUI);
+        }
+        if ((keystate[SDL_SCANCODE_RGUI] == SDL_PRESSED) && !(GetKeyState(VK_RWIN) & 0x8000)) {
+            SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_RGUI);
+        }
     }
 
     /* Update the clipping rect in case someone else has stolen it */
