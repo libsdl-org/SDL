@@ -1885,10 +1885,10 @@ int SDL_X11_SetWindowTitle(Display* display, Window xwindow, char* title) {
     if (conv == 0) {
         X11_XSetTextProperty(display, xwindow, &titleprop, XA_WM_NAME);
         X11_XFree(titleprop.value);
-    // we know this can't be a locale error as we checked X locale validity
+    /* we know this can't be a locale error as we checked X locale validity */
     } else if (conv < 0) {
         return SDL_OutOfMemory();
-    } else { // conv > 0
+    } else { /* conv > 0 */
         SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "%d characters were not convertable to the current locale!", conv);
         return 0;
     }
