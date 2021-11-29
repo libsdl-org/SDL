@@ -262,6 +262,7 @@ SetupWindowData(_THIS, SDL_Window * window, Window w, BOOL created)
     }
     data->window = window;
     data->xwindow = w;
+
 #ifdef X_HAVE_UTF8_STRING
     if (SDL_X11_HAVE_UTF8 && videodata->im) {
         data->ic =
@@ -716,11 +717,11 @@ X11_GetWindowTitle(_THIS, Window xwindow)
                     0L, 8192L, False, XA_STRING, &real_type, &real_format,
                     &items_read, &items_left, &propdata);
         if (status == Success && propdata) {
-            SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Failed to convert _WM_NAME title expecting UTF8! Title: %s", title);
+            SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Failed to convert WM_NAME title expecting UTF8! Title: %s", title);
             title = SDL_iconv_string("UTF-8", "", SDL_static_cast(char*, propdata), items_read+1);
             X11_XFree(propdata);
         } else {
-            SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Could not get any window title response from Xorg, returning empty string!");
+            SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Could not get any window title response from Xorg, returning empty string!");
             title = SDL_strdup("");
         }
     }
@@ -1871,22 +1872,25 @@ X11_FlashWindow(_THIS, SDL_Window * window, SDL_FlashOperation operation)
     return 0;
 }
 
-bool SDL_X11_SetWindowTitle(Display* display, Window xwindow, char* title) {
+int SDL_X11_SetWindowTitle(Display* display, Window xwindow, char* title) {
     Atom _NET_WM_NAME = X11_XInternAtom(display, "_NET_WM_NAME", False);
     XTextProperty titleprop;
-    int conv = X11_XmbTextListToTextProperty(display, (char**) &title, 1, XStdICCTextStyle, &titleprop);
+    int conv = X11_XmbTextListToTextProperty(display, (char**) &title, 1, XTextStyle, &titleprop);
     Status status;
+
+    if (X11_XSupportsLocale() != True) {
+        return SDL_SetError("Current locale not supported by X server, cannot continue.");
+    }
 
     if (conv == 0) {
         X11_XSetTextProperty(display, xwindow, &titleprop, XA_WM_NAME);
         X11_XFree(titleprop.value);
-    // we know this can't be a locale error as we checked X locale validity in X11_VideoInit
-    } else if (conv <= 0) {
-        SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "X11 reporting it's out of memory");
-        return EXIT_FAILURE;
-    } else { // conv >= 0
-        SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO, "%d characters were not convertable to the current locale!", conv);
-        return EXIT_FAILURE;
+    // we know this can't be a locale error as we checked X locale validity
+    } else if (conv < 0) {
+        return SDL_OutOfMemory();
+    } else { // conv > 0
+        SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "%d characters were not convertable to the current locale!", conv);
+        return 0;
     }
 
 #ifdef X_HAVE_UTF8_STRING
@@ -1895,13 +1899,12 @@ bool SDL_X11_SetWindowTitle(Display* display, Window xwindow, char* title) {
         X11_XSetTextProperty(display, xwindow, &titleprop, _NET_WM_NAME);
         X11_XFree(titleprop.value);
     } else {
-        SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Failed to convert title to UTF8! Bad encoding, or bad Xorg encoding? Window title: «%s»", title);
-        return EXIT_FAILURE;
+        return SDL_SetError("Failed to convert title to UTF8! Bad encoding, or bad Xorg encoding? Window title: «%s»", title);
     }
 #endif
 
     X11_XFlush(display);
-    return EXIT_SUCCESS;
+    return 0;
 }
 
 #endif /* SDL_VIDEO_DRIVER_X11 */
