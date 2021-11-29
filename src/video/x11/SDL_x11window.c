@@ -717,8 +717,8 @@ X11_GetWindowTitle(_THIS, Window xwindow)
                     0L, 8192L, False, XA_STRING, &real_type, &real_format,
                     &items_read, &items_left, &propdata);
         if (status == Success && propdata) {
-            SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Failed to convert WM_NAME title expecting UTF8! Title: %s", title);
             title = SDL_iconv_string("UTF-8", "", SDL_static_cast(char*, propdata), items_read+1);
+            SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Failed to convert WM_NAME title expecting UTF8! Title: %s", title);
             X11_XFree(propdata);
         } else {
             SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Could not get any window title response from Xorg, returning empty string!");
