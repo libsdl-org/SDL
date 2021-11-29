@@ -302,8 +302,17 @@ display_handle_geometry(void *data,
 
 {
     SDL_WaylandOutputData *driverdata = data;
+    SDL_VideoDisplay *display;
+    int i;
 
     if (driverdata->done) {
+        /* Clear the wl_output ref so Reset doesn't free it */
+        display = SDL_GetDisplay(driverdata->index);
+        for (i = 0; i < display->num_display_modes; i += 1) {
+            display->display_modes[i].driverdata = NULL;
+        }
+
+        /* Okay, now it's safe to reset */
         SDL_ResetDisplayModes(driverdata->index);
 
         /* The display has officially started over. */
