@@ -132,7 +132,7 @@
 #define SDL_THREAD_PSP  1
 
 /* Enable the PSP timer support (src/timer/psp/\*.c) */
-#define SDL_TIMERS_PSP  1
+#define SDL_TIMER_PSP  1
 
 /* Enable the PSP joystick driver (src/joystick/psp/\*.c) */
 #define SDL_JOYSTICK_PSP        1
