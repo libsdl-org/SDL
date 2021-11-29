@@ -27,7 +27,7 @@
 #define libm_hidden_def(x)
 #define strong_alias(x, y)
 
-#ifndef __HAIKU__ /* already defined in a system header. */
+#if !defined(__HAIKU__) && !defined(__PSP__) /* already defined in a system header. */
 typedef unsigned int u_int32_t;
 #endif
 
