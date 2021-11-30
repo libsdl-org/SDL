@@ -7529,8 +7529,9 @@ if AC_TRY_EVAL(ac_compile); then
     -L* | -R* | -l*)
        # Some compilers place space between "-{L,R}" and the path.
        # Remove the space.
-       if test x-L = "$p" ||
-          test x-R = "$p"; then
+       if test x-L = "x$p" ||
+          test x-R = "x$p" ||
+          test x-l = "x$p"; then
 	 prev=$p
 	 continue
        fi
