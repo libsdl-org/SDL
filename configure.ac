@@ -4416,8 +4416,9 @@ case "$host" in
 
         # Set up the core platform files
         SOURCES="$SOURCES $srcdir/src/core/os2/*.c"
-        # FIXME: use system iconv() if available?
-        SOURCES="$SOURCES $srcdir/src/core/os2/geniconv/*.c"
+        if test x$ac_cv_func_iconv != xyes -o x$ac_cv_header_iconv_h != xyes; then
+            SOURCES="$SOURCES $srcdir/src/core/os2/geniconv/*.c"
+        fi
         # Use the Unix locale APIs.
         SOURCES="$SOURCES $srcdir/src/locale/unix/*.c"
         have_locale=yes
