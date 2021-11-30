@@ -239,8 +239,8 @@ Some of you won't want to use the Stationary so I'll give some tips:
 * Remove "main.m" from your project
 * Remove "MainMenu.xib" from your project
 * Remove "AppDelegates.*" from your project
-* Add "$(HOME)/Library/Frameworks/SDL.framework/Headers" to include path
-* Add "$(HOME)/Library/Frameworks" to the frameworks search path
+* Add "\$(HOME)/Library/Frameworks/SDL.framework/Headers" to include path
+* Add "\$(HOME)/Library/Frameworks" to the frameworks search path
 * Add "-framework SDL -framework Foundation -framework AppKit" to "OTHER_LDFLAGS"
 * Add your files
 * Clean and build
