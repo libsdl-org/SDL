@@ -8224,7 +8224,7 @@ func_mode_link ()
 	    elif test -n "$soname_spec"; then
 	      # bleh windows
 	      case $host in
-	      *cygwin* | mingw* | *cegcc* | *os2*)
+	      *cygwin* | mingw* | *cegcc*)  # | *os2* # SDL customization: removed OS/2 versioning support.
 	        func_arith $current - $age
 		major=$func_arith_result
 		versuffix=-$major

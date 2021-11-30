@@ -2950,15 +2950,17 @@ openbsd* | bitrig*)
 
 os2*)
   libname_spec='$name'
-  version_type=windows
   shrext_cmds=.dll
-  need_version=no
   need_lib_prefix=no
   # OS/2 can only load a DLL with a base name of 8 characters or less.
-  soname_spec='`test -n "$os2dllname" && libname="$os2dllname";
-    v=$($ECHO $release$versuffix | tr -d .-);
-    n=$($ECHO $libname | cut -b -$((8 - ${#v})) | tr . _);
-    $ECHO $n$v`$shared_ext'
+# SDL customization: removed versioning support.
+# version_type=windows
+# need_version=no
+# soname_spec='`test -n "$os2dllname" && libname="$os2dllname";
+#   v=$($ECHO $release$versuffix | tr -d .-);
+#   n=$($ECHO $libname | cut -b -$((8 - ${#v})) | tr . _);
+#   $ECHO $n$v`$shared_ext'
+  soname_spec='`test -n "$os2dllname" && libname=$os2dllname; $ECHO $libname | cut -b -8 | tr . _`$shared_ext'
   library_names_spec='${libname}_dll.$libext'
   dynamic_linker='OS/2 ld.exe'
   shlibpath_var=BEGINLIBPATH
