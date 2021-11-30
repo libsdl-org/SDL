@@ -132,42 +132,39 @@ GetDeviceForIndex(int device_index)
 static BOOL
 IsControllerPS4(GCController *controller)
 {
-    if (@available(macOS 10.15, iOS 13.0, tvOS 13.0, *)) {
-        if ([controller.productCategory isEqualToString:@"DualShock 4"]) {
-            return TRUE;
-        }
-    } else {
-        if ([controller.vendorName containsString: @"DUALSHOCK"]) {
-            return TRUE;
-        }
+#if !((__IPHONE_OS_VERSION_MAX_ALLOWED >= 130000) || (__APPLETV_OS_VERSION_MAX_ALLOWED >= 130000) || (__MAC_OS_VERSION_MAX_ALLOWED >= 1500000))
+    if ([controller.productCategory isEqualToString:@"DualShock 4"]) {
+        return TRUE;
+    }
+#endif
+    if ([controller.vendorName containsString: @"DUALSHOCK"]) {
+        return TRUE;
     }
     return FALSE;
 }
 static BOOL
 IsControllerPS5(GCController *controller)
 {
-    if (@available(macOS 10.15, iOS 13.0, tvOS 13.0, *)) {
-        if ([controller.productCategory isEqualToString:@"DualSense"]) {
-            return TRUE;
-        }
-    } else {
-        if ([controller.vendorName containsString: @"DualSense"]) {
-            return TRUE;
-        }
+#if !((__IPHONE_OS_VERSION_MAX_ALLOWED >= 130000) || (__APPLETV_OS_VERSION_MAX_ALLOWED >= 130000) || (__MAC_OS_VERSION_MAX_ALLOWED >= 1500000))
+    if ([controller.productCategory isEqualToString:@"DualSense"]) {
+        return TRUE;
+    }
+#endif
+    if ([controller.vendorName containsString: @"DualSense"]) {
+        return TRUE;
     }
     return FALSE;
 }
 static BOOL
 IsControllerXbox(GCController *controller)
 {
-    if (@available(macOS 10.15, iOS 13.0, tvOS 13.0, *)) {
-        if ([controller.productCategory isEqualToString:@"Xbox One"]) {
-            return TRUE;
-        }
-    } else {
-        if ([controller.vendorName containsString: @"Xbox"]) {
-            return TRUE;
-        }
+#if !((__IPHONE_OS_VERSION_MAX_ALLOWED >= 130000) || (__APPLETV_OS_VERSION_MAX_ALLOWED >= 130000) || (__MAC_OS_VERSION_MAX_ALLOWED >= 1500000))
+    if ([controller.productCategory isEqualToString:@"Xbox One"]) {
+        return TRUE;
+    }
+#endif
+    if ([controller.vendorName containsString: @"Xbox"]) {
+        return TRUE;
     }
     return FALSE;
 }
