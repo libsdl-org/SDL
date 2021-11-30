@@ -73,6 +73,7 @@ KMSDRM_DestroyCursorBO (_THIS, SDL_VideoDisplay *display)
     if (dispdata->cursor_bo) {
         KMSDRM_gbm_bo_destroy(dispdata->cursor_bo);
         dispdata->cursor_bo = NULL;
+        dispdata->cursor_bo_drm_fd = -1;
     }
 }
 
@@ -116,6 +117,8 @@ KMSDRM_CreateCursorBO (SDL_VideoDisplay *display) {
         SDL_SetError("Could not create GBM cursor BO");
         return;
     }
+
+    dispdata->cursor_bo_drm_fd = viddata->drm_fd;
 } 
 
 /* Remove a cursor buffer from a display's DRM cursor BO. */
@@ -384,11 +387,9 @@ KMSDRM_WarpMouseGlobal(int x, int y)
 
         /* And now update the cursor graphic position on screen. */
         if (dispdata->cursor_bo) {
-            int drm_fd;
             int ret = 0;
 
-            drm_fd = KMSDRM_gbm_device_get_fd(KMSDRM_gbm_bo_get_device(dispdata->cursor_bo));
-            ret = KMSDRM_drmModeMoveCursor(drm_fd, dispdata->crtc->crtc_id, x, y);
+            ret = KMSDRM_drmModeMoveCursor(dispdata->cursor_bo_drm_fd, dispdata->crtc->crtc_id, x, y);
 
             if (ret) {
                 SDL_SetError("drmModeMoveCursor() failed.");
@@ -437,7 +438,6 @@ static void
 KMSDRM_MoveCursor(SDL_Cursor * cursor)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
-    int drm_fd;
     int ret = 0;
 
     /* We must NOT call SDL_SendMouseMotion() here or we will enter recursivity!
@@ -452,9 +452,7 @@ KMSDRM_MoveCursor(SDL_Cursor * cursor)
             return;
         }
 
-        drm_fd = KMSDRM_gbm_device_get_fd(KMSDRM_gbm_bo_get_device(dispdata->cursor_bo));
-
-        ret = KMSDRM_drmModeMoveCursor(drm_fd, dispdata->crtc->crtc_id, mouse->x, mouse->y);
+        ret = KMSDRM_drmModeMoveCursor(dispdata->cursor_bo_drm_fd, dispdata->crtc->crtc_id, mouse->x, mouse->y);
 
         if (ret) {
             SDL_SetError("drmModeMoveCursor() failed.");
