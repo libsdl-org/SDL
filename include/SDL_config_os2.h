@@ -80,6 +80,11 @@
 #define HAVE_FLOAT_H 1
 #define HAVE_SIGNAL_H 1
 
+#if 0 /* see Makefile */
+#define HAVE_ICONV 1
+#define HAVE_ICONV_H 1
+#endif
+
 /* #undef HAVE_DLOPEN */
 #define HAVE_MALLOC 1
 #define HAVE_CALLOC 1
