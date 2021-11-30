@@ -2202,26 +2202,35 @@ m4_defun([_LT_CMD_STRIPLIB],
 striplib=
 old_striplib=
 AC_MSG_CHECKING([whether stripping libraries is possible])
-if test -n "$STRIP" && $STRIP -V 2>&1 | $GREP "GNU strip" >/dev/null; then
-  test -z "$old_striplib" && old_striplib="$STRIP --strip-debug"
-  test -z "$striplib" && striplib="$STRIP --strip-unneeded"
-  AC_MSG_RESULT([yes])
+if test -z "$STRIP"; then
+  AC_MSG_RESULT([no])
 else
-# FIXME - insert some real tests, host_os isn't really good enough
-  case $host_os in
-  darwin*)
-    if test -n "$STRIP"; then
+  if $STRIP -V 2>&1 | $GREP "GNU strip" >/dev/null; then
+    old_striplib="$STRIP --strip-debug"
+    striplib="$STRIP --strip-unneeded"
+    AC_MSG_RESULT([yes])
+  else
+    case $host_os in
+    darwin*)
+      # FIXME - insert some real tests, host_os isn't really good enough
       striplib="$STRIP -x"
       old_striplib="$STRIP -S"
       AC_MSG_RESULT([yes])
-    else
+      ;;
+    freebsd*)
+      if $STRIP -V 2>&1 | $GREP "elftoolchain" >/dev/null; then
+        old_striplib="$STRIP --strip-debug"
+        striplib="$STRIP --strip-unneeded"
+        AC_MSG_RESULT([yes])
+      else
+        AC_MSG_RESULT([no])
+      fi
+      ;;
+    *)
       AC_MSG_RESULT([no])
-    fi
-    ;;
-  *)
-    AC_MSG_RESULT([no])
-    ;;
-  esac
+      ;;
+    esac
+  fi
 fi
 _LT_DECL([], [old_striplib], [1], [Commands to strip libraries])
 _LT_DECL([], [striplib], [1])
