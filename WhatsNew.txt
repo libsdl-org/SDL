@@ -25,6 +25,7 @@ General:
 * SDL's hidapi implementation is now available as a public API in SDL_hidapi.h
 
 Windows:
+* Improved relative mouse motion over Windows Remote Desktop
 * Added the hint SDL_HINT_IME_SHOW_UI to show native UI components instead of hiding them (defaults off)
 
 Windows/UWP:
