@@ -23,7 +23,7 @@
 
 #if defined(__OS2__)
 
-#include "geniconv/geniconv.h"
+#include "SDL_os2.h"
 
 /* SDL_OS2Quit() will be called from SDL_QuitSubSystem() */
 void SDL_OS2Quit(void)

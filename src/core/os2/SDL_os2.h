@@ -23,7 +23,6 @@
 
 #include "SDL_log.h"
 #include "SDL_stdinc.h"
-#include "geniconv/geniconv.h"
 
 #ifdef OS2DEBUG
 #if (OS2DEBUG-0 >= 2)
@@ -39,8 +38,8 @@
 
 #endif /* OS2DEBUG */
 
-
 /* StrUTF8New() - geniconv/sys2utf8.c */
+#include "geniconv/geniconv.h"
 #define OS2_SysToUTF8(S) StrUTF8New(1,         (S), SDL_strlen((S)) + 1)
 #define OS2_UTF8ToSys(S) StrUTF8New(0, (char *)(S), SDL_strlen((S)) + 1)
 
