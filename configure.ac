@@ -3183,6 +3183,21 @@ CheckWINDOWS()
     CheckStackBoundary
 }
 
+dnl Determine whether the compiler can produce OS/2 executables
+CheckOS2()
+{
+    AC_MSG_CHECKING(OS/2 compiler)
+    have_os2_gcc=no
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <os2.h>]],
+     [])],[have_os2_gcc=yes],[])
+    AC_MSG_RESULT($have_os2_gcc)
+    if test x$have_os2_gcc != xyes; then
+       AC_MSG_ERROR([
+*** Your compiler ($CC) does not produce OS/2 executables!
+       ])
+    fi
+}
+
 dnl Find the DirectX includes and libraries
 CheckDIRECTX()
 {
@@ -4379,6 +4394,78 @@ case "$host" in
             AC_DEFINE(SDL_TIMER_UNIX, 1, [ ])
             SOURCES="$SOURCES $srcdir/src/timer/unix/*.c"
             have_timers=yes
+        fi
+        ;;
+    *-*-os2*)
+        ARCH=os2
+        if test "$build" != "$host"; then # cross-compiling
+            # Default cross-compile location
+            ac_default_prefix=/@unixroot/usr/local/cross-tools/$host
+        else
+            # Look for the location of the tools and install there
+            if test "$BUILD_PREFIX" != ""; then
+                ac_default_prefix=$BUILD_PREFIX
+            fi
+        fi
+        EXTRA_CFLAGS="$EXTRA_CFLAGS -DOS2EMX_PLAIN_CHAR"
+        CheckOS2
+        CheckDeclarationAfterStatement
+        CheckDummyVideo
+        CheckDiskAudio
+        CheckDummyAudio
+
+        # Set up the core platform files
+        SOURCES="$SOURCES $srcdir/src/core/os2/*.c"
+        # FIXME: use system iconv() if available?
+        SOURCES="$SOURCES $srcdir/src/core/os2/geniconv/*.c"
+        # Use the Unix locale APIs.
+        SOURCES="$SOURCES $srcdir/src/locale/unix/*.c"
+        have_locale=yes
+        # Set up files for the video library
+        if test x$enable_video = xyes; then
+            AC_DEFINE(SDL_VIDEO_DRIVER_OS2, 1, [ ])
+            SOURCES="$SOURCES $srcdir/src/video/os2/*.c"
+            have_video=yes
+            SUMMARY_video="${SUMMARY_video} os/2"
+        fi
+        # Set up files for the audio library
+        if test x$enable_audio = xyes; then
+            AC_DEFINE(SDL_AUDIO_DRIVER_OS2, 1, [ ])
+            SOURCES="$SOURCES $srcdir/src/audio/os2/*.c"
+            have_audio=yes
+            SUMMARY_audio="${SUMMARY_audio} os/2"
+            EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lmmpm2"
+        fi
+        # Set up files for the thread library
+        if test x$enable_threads = xyes; then
+            AC_DEFINE(SDL_THREAD_OS2, 1, [ ])
+            SOURCES="$SOURCES $srcdir/src/thread/os2/*.c"
+            SOURCES="$SOURCES $srcdir/src/thread/generic/SDL_syscond.c"
+            have_threads=yes
+        fi
+        # Set up files for the timer library
+        if test x$enable_timers = xyes; then
+            AC_DEFINE(SDL_TIMER_OS2, 1, [ ])
+            SOURCES="$SOURCES $srcdir/src/timer/os2/*.c"
+            have_timers=yes
+        fi
+        # Set up files for the shared object loading library
+        if test x$enable_loadso = xyes; then
+            AC_DEFINE(SDL_LOADSO_OS2, 1, [ ])
+            SOURCES="$SOURCES $srcdir/src/loadso/os2/*.c"
+            have_loadso=yes
+        fi
+        # Set up files for the filesystem library
+        if test x$enable_filesystem = xyes; then
+            AC_DEFINE(SDL_FILESYSTEM_OS2, 1, [ ])
+            SOURCES="$SOURCES $srcdir/src/filesystem/os2/*.c"
+            have_filesystem=yes
+        fi
+        # Set up files for the joystick library
+        if test x$enable_joystick = xyes; then
+            AC_DEFINE(SDL_JOYSTICK_OS2, 1, [ ])
+            SOURCES="$SOURCES $srcdir/src/joystick/os2/*.c"
+            have_joystick=yes
         fi
         ;;
     *)

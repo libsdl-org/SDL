@@ -18,6 +18,7 @@ dnl  (Haiku, for example, sets none of these.)
 ISUNIX="false"
 ISWINDOWS="false"
 ISMACOSX="false"
+ISOS2="false"
 
 dnl Figure out which math library to use
 case "$host" in
@@ -32,7 +33,7 @@ case "$host" in
         MATHLIB=""
         SYS_GL_LIBS="-lGL"
         ;;
-    *-*-darwin* )
+    *-*-darwin*)
         ISMACOSX="true"
         EXE=""
         MATHLIB=""
@@ -64,14 +65,20 @@ case "$host" in
         MATHLIB=""
         SYS_GL_LIBS="-lGLES_CM"
         ;;
-    *-*-emscripten* )
+    *-*-emscripten*)
         dnl This should really be .js, but we need to specify extra flags when compiling to js
         EXE=".bc"
         MATHLIB=""
         SYS_GL_LIBS=""
         ;;
-    *-*-riscos* )
+    *-*-riscos*)
         EXE=",e1f"
+        MATHLIB=""
+        SYS_GL_LIBS=""
+        ;;
+    *-*-os2*)
+        ISOS2="true"
+        EXE=".exe"
         MATHLIB=""
         SYS_GL_LIBS=""
         ;;
@@ -90,6 +97,7 @@ AC_SUBST(MATHLIB)
 AC_SUBST(ISMACOSX)
 AC_SUBST(ISWINDOWS)
 AC_SUBST(ISUNIX)
+AC_SUBST(ISOS2)
 
 dnl Check for SDL
 SDL_VERSION=2.0.18
