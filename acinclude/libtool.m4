@@ -2553,13 +2553,15 @@ cygwin* | mingw* | pw32* | cegcc*)
     case $host_os in
     cygwin*)
       # Cygwin DLLs use 'cyg' prefix rather than 'lib'
-      soname_spec='`echo $libname | sed -e 's/^lib/cyg/'``echo $release | $SED -e 's/[[.]]/-/g'`$versuffix$shared_ext'
+      #soname_spec='`echo $libname | sed -e 's/^lib/cyg/'``echo $release | $SED -e 's/[[.]]/-/g'`$versuffix$shared_ext'
+      soname_spec='`echo $libname | sed -e 's/^lib//'`$shared_ext' # SDL customization
 m4_if([$1], [],[
       sys_lib_search_path_spec="$sys_lib_search_path_spec /usr/lib/w32api"])
       ;;
     mingw* | cegcc*)
       # MinGW DLLs use traditional 'lib' prefix
-      soname_spec='$libname`echo $release | $SED -e 's/[[.]]/-/g'`$versuffix$shared_ext'
+      #soname_spec='$libname`echo $release | $SED -e 's/[[.]]/-/g'`$versuffix$shared_ext'
+      soname_spec='`echo $libname | $SED -e 's/^lib//'`$shared_ext' # SDL customization
       ;;
     pw32*)
       # pw32 DLLs use 'pw' prefix rather than 'lib'
@@ -3469,6 +3471,7 @@ cygwin*)
   # func_win32_libid is a shell function defined in ltmain.sh
   lt_cv_deplibs_check_method='file_magic ^x86 archive import|^x86 DLL'
   lt_cv_file_magic_cmd='func_win32_libid'
+  lt_cv_deplibs_check_method=pass_all # SDL customization
   ;;
 
 mingw* | pw32*)
@@ -3483,6 +3486,7 @@ mingw* | pw32*)
     lt_cv_deplibs_check_method='file_magic file format (pei*-i386(.*architecture: i386)?|pe-arm-wince|pe-x86-64)'
     lt_cv_file_magic_cmd='$OBJDUMP -f'
   fi
+  lt_cv_deplibs_check_method=pass_all # SDL customization
   ;;
 
 cegcc*)
