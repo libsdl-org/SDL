@@ -21,10 +21,11 @@ Using the Simple DirectMedia Layer for iOS
 4. Select the project in the main view, go to the "Info" tab and under "Custom iOS Target Properties" remove the line "Main storyboard file base name"
 5. Select the project in the main view, go to the "Build Settings" tab, select "All", and edit "Header Search Path" and drag over the SDL "Public Headers" folder from the left
 6. Select the project in the main view, go to the "Build Phases" tab, select "Link Binary With Libraries", and add SDL2.framework from "Framework-iOS"
-7. In the main view, expand SDL -> Library Source -> main -> uikit and drag SDL_uikit_main.c into your game files
-8. Add the source files that you would normally have for an SDL program, making sure to have #include "SDL.h" at the top of the file containing your main() function.
-9. Add any assets that your application needs.
-10. Enjoy!
+7. Select the project in the main view, go to the "General" tab, scroll down to "Frameworks, Libraries, and Embedded Content", and select "Embed & Sign" for the SDL library.
+8. In the main view, expand SDL -> Library Source -> main -> uikit and drag SDL_uikit_main.c into your game files
+9. Add the source files that you would normally have for an SDL program, making sure to have #include "SDL.h" at the top of the file containing your main() function.
+10. Add any assets that your application needs.
+11. Enjoy!
 
 
 TODO: Add information regarding App Store requirements such as icons, etc.
