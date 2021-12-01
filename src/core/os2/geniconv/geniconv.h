@@ -28,7 +28,7 @@
 #ifndef GENICONV_H
 #define GENICONV_H
 
-#include <iconv.h>
+#include "iconv.h"
 
 #ifdef iconv_open
 #undef iconv_open

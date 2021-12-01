@@ -95,7 +95,6 @@ SDL_KMSDRM_SYM(int,drmModeSetPlane,(int fd, uint32_t plane_id, uint32_t crtc_id,
 /* Planes stuff ends. */
 
 SDL_KMSDRM_MODULE(GBM)
-SDL_KMSDRM_SYM(int,gbm_device_get_fd,(struct gbm_device *gbm))
 SDL_KMSDRM_SYM(int,gbm_device_is_format_supported,(struct gbm_device *gbm,
                                                    uint32_t format, uint32_t usage))
 SDL_KMSDRM_SYM(void,gbm_device_destroy,(struct gbm_device *gbm))

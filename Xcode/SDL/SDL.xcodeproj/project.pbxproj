@@ -3493,8 +3493,6 @@
 		F3ADAB912576F0B400A6B1D9 /* SDL_sysurl.m in Sources */ = {isa = PBXBuildFile; fileRef = F3ADAB8D2576F0B300A6B1D9 /* SDL_sysurl.m */; };
 		F3ADAB922576F0B400A6B1D9 /* SDL_sysurl.m in Sources */ = {isa = PBXBuildFile; fileRef = F3ADAB8D2576F0B300A6B1D9 /* SDL_sysurl.m */; };
 		F3ADAB932576F0B400A6B1D9 /* SDL_sysurl.m in Sources */ = {isa = PBXBuildFile; fileRef = F3ADAB8D2576F0B300A6B1D9 /* SDL_sysurl.m */; };
-		F3CB963A26B5E10A00B9C980 /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A5B023E2513D00DCD162 /* SDL_uikit_main.c */; };
-		F3CB963B26B5E14400B9C980 /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A5B023E2513D00DCD162 /* SDL_uikit_main.c */; };
 		F3F07D5A269640160074468B /* SDL_hidapi_luna.c in Sources */ = {isa = PBXBuildFile; fileRef = F3F07D59269640160074468B /* SDL_hidapi_luna.c */; };
 		F3F07D5B269640160074468B /* SDL_hidapi_luna.c in Sources */ = {isa = PBXBuildFile; fileRef = F3F07D59269640160074468B /* SDL_hidapi_luna.c */; };
 		F3F07D5C269640160074468B /* SDL_hidapi_luna.c in Sources */ = {isa = PBXBuildFile; fileRef = F3F07D59269640160074468B /* SDL_hidapi_luna.c */; };
@@ -4006,8 +4004,6 @@
 		F3984CCF25BCC92800374F43 /* SDL_hidapi_stadia.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_stadia.c; sourceTree = "<group>"; };
 		F3A4909D2554D38500E92A8B /* SDL_hidapi_ps5.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_ps5.c; sourceTree = "<group>"; };
 		F3ADAB8D2576F0B300A6B1D9 /* SDL_sysurl.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDL_sysurl.m; sourceTree = "<group>"; };
-		F3CB94BA26B5E0A400B9C980 /* libSDLmain.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libSDLmain.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		F3CB963826B5E0A600B9C980 /* libSDLmain.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libSDLmain.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		F3F07D59269640160074468B /* SDL_hidapi_luna.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_luna.c; sourceTree = "<group>"; };
 		F59C710300D5CB5801000001 /* ReadMe.txt */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = ReadMe.txt; sourceTree = "<group>"; };
 		F59C710600D5CB5801000001 /* SDL.info */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = SDL.info; sourceTree = "<group>"; };
@@ -4160,20 +4156,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		F3CB94B526B5E0A400B9C980 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		F3CB963326B5E0A600B9C980 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -4265,8 +4247,6 @@
 				A769B23D23E259AE00872273 /* libSDL2.a */,
 				A75FCEB323E25AB700529352 /* libSDL2.dylib */,
 				A75FD06C23E25AC700529352 /* libSDL2.dylib */,
-				F3CB94BA26B5E0A400B9C980 /* libSDLmain.a */,
-				F3CB963826B5E0A600B9C980 /* libSDLmain.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -7089,20 +7069,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		F3CB933F26B5E0A400B9C980 /* Headers */ = {
-			isa = PBXHeadersBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		F3CB94BD26B5E0A600B9C980 /* Headers */ = {
-			isa = PBXHeadersBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
@@ -7306,46 +7272,6 @@
 			productReference = DB31407717554B71006C0E22 /* libSDL2.dylib */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
-		F3CB933E26B5E0A400B9C980 /* SDLmain-iOS */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = F3CB94B726B5E0A400B9C980 /* Build configuration list for PBXNativeTarget "SDLmain-iOS" */;
-			buildPhases = (
-				F3CB933F26B5E0A400B9C980 /* Headers */,
-				F3CB93F026B5E0A400B9C980 /* Sources */,
-				F3CB94B526B5E0A400B9C980 /* Frameworks */,
-				F3CB94B626B5E0A400B9C980 /* Rez */,
-			);
-			buildRules = (
-			);
-			comments = "This produces libSDLmain.a, which provides a main() for use with your application";
-			dependencies = (
-			);
-			name = "SDLmain-iOS";
-			productInstallPath = /usr/local/lib;
-			productName = "Static Library";
-			productReference = F3CB94BA26B5E0A400B9C980 /* libSDLmain.a */;
-			productType = "com.apple.product-type.library.static";
-		};
-		F3CB94BC26B5E0A600B9C980 /* SDLmain-tvOS */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = F3CB963526B5E0A600B9C980 /* Build configuration list for PBXNativeTarget "SDLmain-tvOS" */;
-			buildPhases = (
-				F3CB94BD26B5E0A600B9C980 /* Headers */,
-				F3CB956E26B5E0A600B9C980 /* Sources */,
-				F3CB963326B5E0A600B9C980 /* Frameworks */,
-				F3CB963426B5E0A600B9C980 /* Rez */,
-			);
-			buildRules = (
-			);
-			comments = "This produces libSDLmain.a, which provides a main() for use with your application";
-			dependencies = (
-			);
-			name = "SDLmain-tvOS";
-			productInstallPath = /usr/local/lib;
-			productName = "Static Library";
-			productReference = F3CB963826B5E0A600B9C980 /* libSDLmain.a */;
-			productType = "com.apple.product-type.library.static";
-		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -7368,8 +7294,6 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				F3CB933E26B5E0A400B9C980 /* SDLmain-iOS */,
-				F3CB94BC26B5E0A600B9C980 /* SDLmain-tvOS */,
 				BECDF5FE0761BA81005FE872 /* Framework */,
 				A7D88A1423E2437C00DCD162 /* Framework-iOS */,
 				A7D88BC923E24BED00DCD162 /* Framework-tvOS */,
@@ -7451,20 +7375,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		DB31407317554B71006C0E22 /* Rez */ = {
-			isa = PBXRezBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		F3CB94B626B5E0A400B9C980 /* Rez */ = {
-			isa = PBXRezBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		F3CB963426B5E0A600B9C980 /* Rez */ = {
 			isa = PBXRezBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -9165,22 +9075,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		F3CB93F026B5E0A400B9C980 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				F3CB963A26B5E10A00B9C980 /* SDL_uikit_main.c in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		F3CB956E26B5E0A600B9C980 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				F3CB963B26B5E14400B9C980 /* SDL_uikit_main.c in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -9528,54 +9422,6 @@
 			};
 			name = Release;
 		};
-		F3CB94B826B5E0A400B9C980 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CLANG_ENABLE_OBJC_ARC = YES;
-				CLANG_LINK_OBJC_RUNTIME = NO;
-				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
-				PRODUCT_NAME = SDLmain;
-				SKIP_INSTALL = YES;
-				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
-			};
-			name = Debug;
-		};
-		F3CB94B926B5E0A400B9C980 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CLANG_ENABLE_OBJC_ARC = YES;
-				CLANG_LINK_OBJC_RUNTIME = NO;
-				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
-				PRODUCT_NAME = SDLmain;
-				SKIP_INSTALL = YES;
-				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
-			};
-			name = Release;
-		};
-		F3CB963626B5E0A600B9C980 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CLANG_ENABLE_OBJC_ARC = YES;
-				CLANG_LINK_OBJC_RUNTIME = NO;
-				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
-				PRODUCT_NAME = SDLmain;
-				SKIP_INSTALL = YES;
-				SUPPORTED_PLATFORMS = "appletvsimulator appletvos";
-			};
-			name = Debug;
-		};
-		F3CB963726B5E0A600B9C980 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CLANG_ENABLE_OBJC_ARC = YES;
-				CLANG_LINK_OBJC_RUNTIME = NO;
-				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
-				PRODUCT_NAME = SDLmain;
-				SKIP_INSTALL = YES;
-				SUPPORTED_PLATFORMS = "appletvsimulator appletvos";
-			};
-			name = Release;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -9674,24 +9520,6 @@
 			buildConfigurations = (
 				DB31407517554B71006C0E22 /* Debug */,
 				DB31407617554B71006C0E22 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Debug;
-		};
-		F3CB94B726B5E0A400B9C980 /* Build configuration list for PBXNativeTarget "SDLmain-iOS" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				F3CB94B826B5E0A400B9C980 /* Debug */,
-				F3CB94B926B5E0A400B9C980 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Debug;
-		};
-		F3CB963526B5E0A600B9C980 /* Build configuration list for PBXNativeTarget "SDLmain-tvOS" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				F3CB963626B5E0A600B9C980 /* Debug */,
-				F3CB963726B5E0A600B9C980 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

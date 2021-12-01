@@ -1,9 +1,15 @@
 # Open Watcom makefile to build SDL2.dll for OS/2
 # wmake -f Makefile.os2
+#
+# If you have libiconv installed, you can compile against it
+# by specifying LIBICONV=1, e.g.:
+# wmake -f Makefile.os2 LIBICONV=1
 
 LIBNAME = SDL2
-VERSION = 2.0.18
+VERSION = 2.0.19
 DESCRIPTION = Simple DirectMedia Layer 2
+
+LIBICONV=0
 
 LIBHOME = .
 DLLFILE = $(LIBHOME)/$(LIBNAME).dll
@@ -12,11 +18,9 @@ LNKFILE = $(LIBNAME).lnk
 
 INCPATH = -I"$(%WATCOM)/h/os2" -I"$(%WATCOM)/h"
 INCPATH+= -Iinclude
-INCPATH+= -I"src/core/os2" -I"src/core/os2/geniconv"
 
 LIBM = libm.lib
-LIBS = mmpm2.lib libuls.lib libconv.lib $(LIBM)
-
+LIBS = mmpm2.lib $(LIBM)
 CFLAGS = -bt=os2 -d0 -q -bm -5s -fp5 -fpi87 -sg -oteanbmier -ei
 # max warnings:
 CFLAGS+= -wx
@@ -24,6 +28,13 @@ CFLAGS+= -wx
 CFLAGS+= -wcd=303
 # building dll:
 CFLAGS+= -bd
+# iconv:
+!ifeq LIBICONV 1
+CFLAGS+= -DHAVE_ICONV=1 -DHAVE_ICONV_H=1
+LIBS+= iconv.lib
+!else
+LIBS+= libuls.lib libconv.lib
+!endif
 # the include paths :
 CFLAGS+= $(INCPATH)
 # building SDL itself (for DECLSPEC):
@@ -68,7 +79,10 @@ SRCS+= SDL_dummysensor.c
 SRCS+= SDL_locale.c SDL_syslocale.c
 SRCS+= SDL_url.c SDL_sysurl.c
 
-SRCS+= SDL_os2.c geniconv.c os2cp.c os2iconv.c sys2utf8.c
+SRCS+= SDL_os2.c
+!ifeq LIBICONV 0
+SRCS+= geniconv.c os2cp.c os2iconv.c sys2utf8.c
+!endif
 SRCS+= SDL_os2audio.c
 SRCS+= SDL_os2video.c SDL_os2util.c SDL_os2dive.c SDL_os2vman.c &
        SDL_os2mouse.c SDL_os2messagebox.c
@@ -83,7 +97,8 @@ MOBJS= $(MSRCS:.c=.obj)
 
 .c: ./src;./src/dynapi;./src/audio;./src/cpuinfo;./src/events;./src/file;./src/haptic;./src/joystick;./src/power;./src/render;./src/render/software;./src/sensor;./src/stdlib;./src/thread;./src/timer;./src/video;./src/video/yuv2rgb;./src/atomic;./src/audio/disk;
 .c: ./src/haptic/dummy;./src/joystick/dummy;./src/joystick/virtual;./src/audio/dummy;./src/video/dummy;./src/sensor/dummy;
-.c: ./src/core/os2;./src/core/os2/geniconv;./src/audio/os2;./src/loadso/os2;./src/filesystem/os2;./src/joystick/os2;./src/thread/os2;./src/timer/os2;./src/video/os2;
+.c: ./src/core/os2;./src/audio/os2;./src/loadso/os2;./src/filesystem/os2;./src/joystick/os2;./src/thread/os2;./src/timer/os2;./src/video/os2;
+.c: ./src/core/os2/geniconv;
 .c: ./src/locale/;./src/locale/unix;./src/misc;./src/misc/dummy;./src/joystick/hidapi;./src/hidapi
 
 all: $(DLLFILE) $(LIBFILE) .symbolic

@@ -352,12 +352,14 @@ SDL_WINDOWS_SensorInit(void)
 
     hr = CoCreateInstance(&SDL_CLSID_SensorManager, NULL, CLSCTX_INPROC_SERVER, &SDL_IID_SensorManager, (LPVOID *) &SDL_sensor_manager);
     if (FAILED(hr)) {
-        return WIN_SetErrorFromHRESULT("Couldn't create the sensor manager", hr);
+        /* If we can't create a sensor manager (i.e. on Wine), we won't have any sensors, but don't fail the init */
+        return 0; /* WIN_SetErrorFromHRESULT("Couldn't create the sensor manager", hr); */
     }
 
     hr = ISensorManager_SetEventSink(SDL_sensor_manager, &sensor_manager_events);
     if (FAILED(hr)) {
         ISensorManager_Release(SDL_sensor_manager);
+        SDL_sensor_manager = NULL;
         return WIN_SetErrorFromHRESULT("Couldn't set the sensor manager event sink", hr);
     }
 

@@ -45,8 +45,9 @@ WIN_SetErrorFromHRESULT(const char *prefix, HRESULT hr)
     TCHAR buffer[1024];
     char *message;
     TCHAR *p = buffer;
-    FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, hr, 0,
+    DWORD c = FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, hr, 0,
                   buffer, SDL_arraysize(buffer), NULL);
+    buffer[c] = 0;
     /* kill CR/LF that FormatMessage() sticks at the end */
     while (*p) {
         if (*p == '\r') {

@@ -119,7 +119,7 @@ static int s_arrBindingOrder[] = {
     SDL_CONTROLLER_BUTTON_PADDLE2,
     SDL_CONTROLLER_BUTTON_PADDLE3,
     SDL_CONTROLLER_BUTTON_PADDLE4,
-    -1,
+    SDL_CONTROLLER_BUTTON_TOUCHPAD,
 };
 SDL_COMPILE_TIME_ASSERT(s_arrBindingOrder, SDL_arraysize(s_arrBindingOrder) == BINDING_COUNT);
 
@@ -167,6 +167,7 @@ static SDL_bool s_bBindingComplete;
 static SDL_Window *window;
 static SDL_Renderer *screen;
 static SDL_bool done = SDL_FALSE;
+static SDL_bool bind_touchpad = SDL_FALSE;
 
 SDL_Texture *
 LoadTexture(SDL_Renderer *renderer, const char *file, SDL_bool transparent)
@@ -229,6 +230,13 @@ SetCurrentBinding(int iBinding)
     }
 
     if (s_arrBindingOrder[iBinding] == -1)
+    {
+        SetCurrentBinding(iBinding + 1);
+        return;
+    }
+
+    if (s_arrBindingOrder[iBinding] == SDL_CONTROLLER_BUTTON_TOUCHPAD &&
+        !bind_touchpad)
     {
         SetCurrentBinding(iBinding + 1);
         return;
@@ -729,6 +737,10 @@ main(int argc, char *argv[])
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
         exit(1);
+    }
+
+    if (argv[1] && SDL_strcmp(argv[1], "--bind-touchpad") == 0) {
+        bind_touchpad = SDL_TRUE;
     }
 
     /* Create a window to display joystick axis position */

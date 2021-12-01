@@ -8,41 +8,27 @@ Requirements: Mac OS X 10.8 or later and the iOS 7+ SDK.
 
 Instructions:
 
-1.  Open SDL.xcodeproj (located in Xcode/SDL) in Xcode.
-2.  Select your desired target, and hit build.
-
-There are three build targets:
-- libSDL.a:
-	Build SDL as a statically linked library
-- testsdl:
-	Build a test program (there are known test failures which are fine)
-- Template:
-	Package a project template together with the SDL for iPhone static libraries and copies of the SDL headers.  The template includes proper references to the SDL library and headers, skeleton code for a basic SDL program, and placeholder graphics for the application icon and startup screen.
-
-
-Build SDL for iOS from the command line
-==============================================================================
-
-1. cd (PATH WHERE THE SDL CODE IS)
-2. xcodebuild -project Xcode/SDL/SDL.xcodeproj -target 'Static Library-iOS' -configuration Release -sdk iphoneos13.2 clean build
+1. Open SDL.xcodeproj (located in Xcode/SDL) in Xcode.
+2. Select your desired target, and hit build.
 
 
 Using the Simple DirectMedia Layer for iOS
 ==============================================================================
 
-FIXME: This needs to be updated for the latest methods
+1. Run Xcode and create a new project using the iOS Game template, selecting the Objective C language and Metal game technology.
+2. In the main view, delete all files except for Assets and LaunchScreen
+3. Right click the project in the main view, select "Add Files...", and add the SDL project, Xcode/SDL/SDL.xcodeproj
+4. Select the project in the main view, go to the "Info" tab and under "Custom iOS Target Properties" remove the line "Main storyboard file base name"
+5. Select the project in the main view, go to the "Build Settings" tab, select "All", and edit "Header Search Path" and drag over the SDL "Public Headers" folder from the left
+6. Select the project in the main view, go to the "Build Phases" tab, select "Link Binary With Libraries", and add SDL2.framework from "Framework-iOS"
+7. Select the project in the main view, go to the "General" tab, scroll down to "Frameworks, Libraries, and Embedded Content", and select "Embed & Sign" for the SDL library.
+8. In the main view, expand SDL -> Library Source -> main -> uikit and drag SDL_uikit_main.c into your game files
+9. Add the source files that you would normally have for an SDL program, making sure to have #include "SDL.h" at the top of the file containing your main() function.
+10. Add any assets that your application needs.
+11. Enjoy!
 
-Here is the easiest method:
-1.  Build the SDL library (libSDL2.a) and the iPhone SDL Application template.
-2.  Install the iPhone SDL Application template by copying it to one of Xcode's template directories.  I recommend creating a directory called "SDL" in "/Developer/Platforms/iOS.platform/Developer/Library/Xcode/Project Templates/" and placing it there.
-3.  Start a new project using the template.  The project should be immediately ready for use with SDL.
 
-Here is a more manual method:
-1.  Create a new iOS view based application.
-2.  Build the SDL static library (libSDL2.a) for iOS and include them in your project.  Xcode will ignore the library that is not currently of the correct architecture, hence your app will work both on iOS and in the iOS Simulator.
-3.  Include the SDL header files in your project.
-4.  Remove the ApplicationDelegate.h and ApplicationDelegate.m files -- SDL for iOS provides its own UIApplicationDelegate.  Remove MainWindow.xib -- SDL for iOS produces its user interface programmatically.
-5.  Delete the contents of main.m and program your app as a regular SDL program instead.  You may replace main.m with your own main.c, but you must tell Xcode not to use the project prefix file, as it includes Objective-C code.
+TODO: Add information regarding App Store requirements such as icons, etc.
 
 
 Notes -- Retina / High-DPI and window sizes

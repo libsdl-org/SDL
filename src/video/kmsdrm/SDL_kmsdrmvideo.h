@@ -77,6 +77,7 @@ typedef struct SDL_DisplayData
        where we may not have an SDL_Cursor at all (so no SDL_Cursor driverdata).
        There's only one cursor GBM BO because we only support one cursor. */
     struct gbm_bo *cursor_bo;
+    int cursor_bo_drm_fd;
     uint64_t cursor_w, cursor_h;
 
     SDL_bool default_cursor_init;

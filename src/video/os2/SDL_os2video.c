@@ -320,10 +320,15 @@ static VOID _wmChar(WINDATA *pWinData, MPARAM mp1, MPARAM mp2)
     }
 
     if ((ulFlags & KC_CHAR) != 0) {
-        CHAR    acUTF8[4];
-        LONG    lRC = StrUTF8(1, acUTF8, sizeof(acUTF8), (PSZ)&ulCharCode, 1);
-
-        SDL_SendKeyboardText((lRC > 0)? acUTF8 : (PSZ)&ulCharCode);
+#if defined(HAVE_ICONV) && defined(HAVE_ICONV_H)
+        char *utf8 = SDL_iconv_string("UTF-8", "", (char *)&ulCharCode, 1);
+        SDL_SendKeyboardText((utf8 && *utf8) ? utf8 : (char *)&ulCharCode);
+        SDL_free(utf8);
+#else
+        char utf8[4];
+        int rc = StrUTF8(1, utf8, sizeof(utf8), (char *)&ulCharCode, 1);
+        SDL_SendKeyboardText((rc > 0) ? utf8 : (char *) &ulCharCode);
+#endif
     }
 }
 
