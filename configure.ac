@@ -4407,7 +4407,8 @@ case "$host" in
                 ac_default_prefix=$BUILD_PREFIX
             fi
         fi
-        EXTRA_CFLAGS="$EXTRA_CFLAGS -DOS2EMX_PLAIN_CHAR"
+        enable_static=no # disable static builds
+        EXTRA_CFLAGS="$EXTRA_CFLAGS -DBUILD_SDL -DOS2EMX_PLAIN_CHAR"
         CheckOS2
         CheckDeclarationAfterStatement
         CheckDummyVideo
