@@ -8,6 +8,7 @@ This is a list of major changes in SDL's version history.
 General:
 * The SDL wiki documentation and development headers are automatically kept in sync
 * Each function has information about in which version of SDL it was introduced
+* SDL-specific CMake options are now prefixed with 'SDL_'. Be sure to update your CMake build scripts accordingly!
 * Added the hint SDL_HINT_APP_NAME to let SDL know the name of your application for various places it might show up in system information
 * Added SDL_RenderGeometry() and SDL_RenderGeometryRaw() to allow rendering of arbitrary shapes using the SDL 2D render API
 * Added SDL_SetTextureUserData() and SDL_GetTextureUserData() to associate application data with an SDL texture
