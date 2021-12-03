@@ -1292,7 +1292,7 @@ SDLTest_CommonInit(SDLTest_CommonState * state)
             SDL_GetWindowSize(state->windows[i], &w, &h);
             if (!(state->window_flags & SDL_WINDOW_RESIZABLE) &&
                 (w != state->window_w || h != state->window_h)) {
-                printf("Window requested size %dx%d, got %dx%d\n", state->window_w, state->window_h, w, h);
+                SDL_Log("Window requested size %dx%d, got %dx%d\n", state->window_w, state->window_h, w, h);
                 state->window_w = w;
                 state->window_h = h;
             }
@@ -1970,7 +1970,7 @@ SDLTest_CommonEvent(SDLTest_CommonState * state, SDL_Event * event, int *done)
             if (withControl) {
                 /* Ctrl-C copy awesome text! */
                 SDL_SetClipboardText("SDL rocks!\nYou know it!");
-                printf("Copied text to clipboard\n");
+                SDL_Log("Copied text to clipboard\n");
             }
             if (withAlt) {
                 /* Alt-C toggle a render clip rectangle */
@@ -2006,9 +2006,9 @@ SDLTest_CommonEvent(SDLTest_CommonState * state, SDL_Event * event, int *done)
                 /* Ctrl-V paste awesome text! */
                 char *text = SDL_GetClipboardText();
                 if (*text) {
-                    printf("Clipboard: %s\n", text);
+                    SDL_Log("Clipboard: %s\n", text);
                 } else {
-                    printf("Clipboard is empty\n");
+                    SDL_Log("Clipboard is empty\n");
                 }
                 SDL_free(text);
             }
