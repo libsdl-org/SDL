@@ -205,7 +205,7 @@ Fcitx_SetCapabilities(void *data,
         const char *internal_editing)
 {
     FcitxClient *client = (FcitxClient *)data;
-    Uint32 caps = 0;
+    Uint64 caps = 0;
     if (!client->ic_path) {
         return;
     }
