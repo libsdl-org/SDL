@@ -473,15 +473,19 @@ Cocoa_HandleMouseWheel(SDL_Window *window, NSEvent *event)
         }
     }
 
-    if (x > 0) {
-        x = SDL_ceil(x);
-    } else if (x < 0) {
-        x = SDL_floor(x);
-    }
-    if (y > 0) {
-        y = SDL_ceil(y);
-    } else if (y < 0) {
-        y = SDL_floor(y);
+    /* For discrete scroll events from conventional mice, always send a full tick.
+       For continuous scroll events from trackpads, send fractional deltas for smoother scrolling. */
+    if (![event respondsToSelector:@selector(hasPreciseScrollingDeltas)] || ![event hasPreciseScrollingDeltas]) {
+        if (x > 0) {
+            x = SDL_ceil(x);
+        } else if (x < 0) {
+            x = SDL_floor(x);
+        }
+        if (y > 0) {
+            y = SDL_ceil(y);
+        } else if (y < 0) {
+            y = SDL_floor(y);
+        }
     }
 
     SDL_SendMouseWheel(window, mouseID, x, y, direction);
