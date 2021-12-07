@@ -57,6 +57,10 @@
 #define ABS_MT_TRACKING_ID  0x39
 #define ABS_MT_PRESSURE     0x3a
 #endif
+#ifndef REL_WHEEL_HI_RES
+#define REL_WHEEL_HI_RES    0x0b
+#define REL_HWHEEL_HI_RES   0x0c
+#endif
 
 typedef struct SDL_evdevlist_item
 {
@@ -91,6 +95,9 @@ typedef struct SDL_evdevlist_item
         } * slots;
 
     } * touchscreen_data;
+
+    SDL_bool high_res_wheel;
+    SDL_bool high_res_hwheel;
 
     struct SDL_evdevlist_item *next;
 } SDL_evdevlist_item;
@@ -378,10 +385,20 @@ SDL_EVDEV_Poll(void)
                         SDL_SendMouseMotion(mouse->focus, mouse->mouseID, SDL_TRUE, 0, events[i].value);
                         break;
                     case REL_WHEEL:
-                        SDL_SendMouseWheel(mouse->focus, mouse->mouseID, 0, events[i].value, SDL_MOUSEWHEEL_NORMAL);
+                        if (!item->high_res_wheel)
+                            SDL_SendMouseWheel(mouse->focus, mouse->mouseID, 0, events[i].value, SDL_MOUSEWHEEL_NORMAL);
+                        break;
+                    case REL_WHEEL_HI_RES:
+                        SDL_assert(item->high_res_wheel);
+                        SDL_SendMouseWheel(mouse->focus, mouse->mouseID, 0, events[i].value / 120.0f, SDL_MOUSEWHEEL_NORMAL);
                         break;
                     case REL_HWHEEL:
-                        SDL_SendMouseWheel(mouse->focus, mouse->mouseID, events[i].value, 0, SDL_MOUSEWHEEL_NORMAL);
+                        if (!item->high_res_hwheel)
+                            SDL_SendMouseWheel(mouse->focus, mouse->mouseID, events[i].value, 0, SDL_MOUSEWHEEL_NORMAL);
+                        break;
+                    case REL_HWHEEL_HI_RES:
+                        SDL_assert(item->high_res_hwheel);
+                        SDL_SendMouseWheel(mouse->focus, mouse->mouseID, events[i].value / 120.0f, 0, SDL_MOUSEWHEEL_NORMAL);
                         break;
                     default:
                         break;
@@ -715,6 +732,7 @@ SDL_EVDEV_device_added(const char *dev_path, int udev_class)
 {
     int ret;
     SDL_evdevlist_item *item;
+    unsigned long relbit[NBITS(REL_MAX)] = { 0 };
 
     /* Check to make sure it's not already in list. */
     for (item = _this->first; item != NULL; item = item->next) {
@@ -741,11 +759,17 @@ SDL_EVDEV_device_added(const char *dev_path, int udev_class)
         return SDL_OutOfMemory();
     }
 
+    if (ioctl(item->fd, EVIOCGBIT(EV_REL, sizeof(relbit)), relbit) >= 0) {
+        item->high_res_wheel = test_bit(REL_WHEEL_HI_RES, relbit);
+        item->high_res_hwheel = test_bit(REL_HWHEEL_HI_RES, relbit);
+    }
+
     if (udev_class & SDL_UDEV_DEVICE_TOUCHSCREEN) {
         item->is_touchscreen = 1;
 
         if ((ret = SDL_EVDEV_init_touchscreen(item)) < 0) {
             close(item->fd);
+            SDL_free(item->path);
             SDL_free(item);
             return ret;
         }
