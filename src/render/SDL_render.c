@@ -2738,7 +2738,7 @@ SDL_RenderDrawPointsF(SDL_Renderer * renderer,
     CHECK_RENDERER_MAGIC(renderer, -1);
 
     if (!points) {
-        return SDL_SetError("SDL_RenderDrawFPoints(): Passed NULL points");
+        return SDL_SetError("SDL_RenderDrawPointsF(): Passed NULL points");
     }
     if (count < 1) {
         return 0;
