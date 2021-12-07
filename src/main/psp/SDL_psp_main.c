@@ -8,6 +8,7 @@
 #include "SDL_main.h"
 #include <pspkernel.h>
 #include <pspthreadman.h>
+#include <stdlib.h>
 
 #ifdef main
     #undef main
