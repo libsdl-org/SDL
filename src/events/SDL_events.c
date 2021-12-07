@@ -287,9 +287,10 @@ SDL_LogEvent(const SDL_Event *event)
 
 
         SDL_EVENT_CASE(SDL_MOUSEWHEEL)
-            SDL_snprintf(details, sizeof (details), " (timestamp=%u windowid=%u which=%u x=%d y=%d direction=%s)",
+            SDL_snprintf(details, sizeof (details), " (timestamp=%u windowid=%u which=%u x=%d y=%d preciseX=%f preciseY=%f direction=%s)",
                     (uint) event->wheel.timestamp, (uint) event->wheel.windowID,
                     (uint) event->wheel.which, (int) event->wheel.x, (int) event->wheel.y,
+                    event->wheel.preciseX, event->wheel.preciseY,
                     event->wheel.direction == SDL_MOUSEWHEEL_NORMAL ? "normal" : "flipped");
             break;
 
