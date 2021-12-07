@@ -24,6 +24,7 @@
 */
 
 PSP_MODULE_INFO("SDL App", 0, 1, 0);
+PSP_MAIN_THREAD_ATTR(THREAD_ATTR_VFPU | THREAD_ATTR_USER);
 
 int sdl_psp_exit_callback(int arg1, int arg2, void *common)
 {
