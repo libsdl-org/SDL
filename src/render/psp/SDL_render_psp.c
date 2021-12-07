@@ -210,6 +210,7 @@ TextureSwizzle(PSP_TextureData *psp_texture)
 {
     int bytewidth, height;
     int rowblocks, rowblocksadd;
+    int i, j;
     unsigned int blockaddress = 0;
     unsigned int *src = NULL;
     unsigned char *data = NULL;
@@ -227,13 +228,13 @@ TextureSwizzle(PSP_TextureData *psp_texture)
 
     data = SDL_malloc(psp_texture->size);
 
-    for(int j = 0; j < height; j++, blockaddress += 16)
+    for(j = 0; j < height; j++, blockaddress += 16)
     {
         unsigned int *block;
 
         block = (unsigned int*)&data[blockaddress];
 
-        for(int i = 0; i < rowblocks; i++)
+        for(i = 0; i < rowblocks; i++)
         {
             *block++ = *src++;
             *block++ = *src++;
@@ -257,6 +258,8 @@ int TextureUnswizzle(PSP_TextureData *psp_texture)
     int bytewidth, height;
     int widthblocks, heightblocks;
     int dstpitch, dstrow;
+    int blockx, blocky;
+    int j;
     unsigned int *src = NULL;
     unsigned char *data = NULL;
     unsigned char *ydst = NULL;
@@ -284,17 +287,17 @@ int TextureUnswizzle(PSP_TextureData *psp_texture)
 
     ydst = (unsigned char *)data;
 
-    for(int blocky = 0; blocky < heightblocks; ++blocky)
+    for(blocky = 0; blocky < heightblocks; ++blocky)
     {
         unsigned char *xdst = ydst;
 
-        for(int blockx = 0; blockx < widthblocks; ++blockx)
+        for(blockx = 0; blockx < widthblocks; ++blockx)
         {
             unsigned int *block;
 
             block = (unsigned int*)xdst;
 
-            for(int j = 0; j < 8; ++j)
+            for(j = 0; j < 8; ++j)
             {
                 *(block++) = *(src++);
                 *(block++) = *(src++);
@@ -702,16 +705,14 @@ PSP_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * t
     const float width = dstrect->w - centerx;
     const float height = dstrect->h - centery;
     float s, c;
+    float cw, sw, ch, sh;
 
     float u0 = srcrect->x;
     float v0 = srcrect->y;
     float u1 = srcrect->x + srcrect->w;
     float v1 = srcrect->y + srcrect->h;
 
-    const float cw = c * width;
-    const float sw = s * width;
-    const float ch = c * height;
-    const float sh = s * height;
+
 
     if (!verts) {
         return -1;
@@ -720,6 +721,11 @@ PSP_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * t
     cmd->data.draw.count = 1;
 
     MathSincos(degToRad(angle), &s, &c);
+
+    float cw = c * width;
+    float sw = s * width;
+    float ch = c * height;
+    float sh = s * height;
 
     if (flip & SDL_FLIP_VERTICAL) {
         Swap(&v0, &v1);
