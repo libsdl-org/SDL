@@ -425,7 +425,6 @@ ReleaseWasapiDevice(_THIS)
 {
     if (this->hidden->client) {
         IAudioClient_Stop(this->hidden->client);
-        IAudioClient_SetEventHandle(this->hidden->client, NULL);
         IAudioClient_Release(this->hidden->client);
         this->hidden->client = NULL;
     }

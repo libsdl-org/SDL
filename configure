@@ -22123,17 +22123,31 @@ fi
             if test x$enable_video_x11_xfixes = xyes; then
                 definitely_enable_video_x11_xfixes=no
                 # check along with XInput2.h because we use Xfixes with XIBarrierReleasePointer
-                ac_fn_c_check_header_compile "$LINENO" "X11/extensions/Xfixes.h" "ac_cv_header_X11_extensions_Xfixes_h" "#include <X11/Xlib.h>
-                                 #include <X11/Xproto.h>
-                                 #include <X11/extensions/XInput2.h>
-"
-if test "x$ac_cv_header_X11_extensions_Xfixes_h" = xyes; then :
+                { $as_echo "$as_me:${as_lineno-$LINENO}: checking for X11/extensions/Xfixes.h" >&5
+$as_echo_n "checking for X11/extensions/Xfixes.h... " >&6; }
+                cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+                    #include <X11/Xlib.h>
+                    #include <X11/Xproto.h>
+                    #include <X11/extensions/XInput2.h>
+                    #include <X11/extensions/Xfixes.h>
+int
+main ()
+{
+BarrierEventID b;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
   have_xfixes_h_hdr=yes
 else
   have_xfixes_h_hdr=no
 fi
-
-
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+                { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_xfixes_h_hdr" >&5
+$as_echo "$have_xfixes_h_hdr" >&6; }
                 if test x$have_xfixes_h_hdr = xyes; then
                     if test x$enable_x11_shared = xyes && test x$xfixes_lib != x ; then
                         echo "-- dynamic libXfixes -> $xfixes_lib"
@@ -26668,7 +26682,8 @@ $as_echo "#define SDL_TIMER_UNIX 1" >>confdefs.h
                 ac_default_prefix=$BUILD_PREFIX
             fi
         fi
-        EXTRA_CFLAGS="$EXTRA_CFLAGS -DOS2EMX_PLAIN_CHAR"
+        enable_static=no # disable static builds
+        EXTRA_CFLAGS="$EXTRA_CFLAGS -DBUILD_SDL -DOS2EMX_PLAIN_CHAR"
         CheckOS2
         CheckDeclarationAfterStatement
         CheckDummyVideo

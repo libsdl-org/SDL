@@ -224,7 +224,7 @@ if(APPLE OR ARCH_64 OR MSVC_CLANG)
     set(OPT_DEF_SSEMATH ON)
   endif()
 endif()
-if(UNIX OR MINGW OR MSYS OR (USE_CLANG AND NOT WINDOWS) OR VITA)
+if(UNIX OR MINGW OR MSYS OR (USE_CLANG AND NOT WINDOWS) OR VITA OR PSP)
   set(OPT_DEF_LIBC ON)
 endif()
 
@@ -328,7 +328,7 @@ if(EMSCRIPTEN)
   set(SDL_CPUINFO_ENABLED_BY_DEFAULT OFF)
 endif()
 
-if(VITA)
+if(VITA OR PSP)
   set(SDL_SHARED_ENABLED_BY_DEFAULT OFF)
   set(SDL_LOADSO_ENABLED_BY_DEFAULT OFF)
 endif()
@@ -914,12 +914,14 @@ if(SDL_LIBC)
     endif()
 
     check_library_exists(iconv iconv_open "" HAVE_LIBICONV)
-    check_library_exists(c iconv_open "" HAVE_BUILTIN_ICONV)
-    if(HAVE_BUILTIN_ICONV)
-      set(HAVE_ICONV 1)
-    elseif(HAVE_LIBICONV)
+    if(HAVE_LIBICONV)
       list(APPEND EXTRA_LIBS iconv)
       set(HAVE_ICONV 1)
+    else()
+      check_library_exists(c iconv_open "" HAVE_BUILTIN_ICONV)
+      if(HAVE_BUILTIN_ICONV)
+        set(HAVE_ICONV 1)
+      endif()
     endif()
 
     if(NOT APPLE)
@@ -2351,6 +2353,62 @@ elseif(VITA)
   target_compile_definitions(sdl-build-options INTERFACE "-Dmemcmp=sceClibMemcmp")
 
 #  CheckPTHREAD()
+
+elseif(PSP)
+
+ file(GLOB PSP_MAIN_SOURCES ${SDL2_SOURCE_DIR}/src/main/psp/*.c)
+ set(SDLMAIN_SOURCES ${SDLMAIN_SOURCES} ${PSP_MAIN_SOURCES})
+
+  if(SDL_AUDIO)
+    set(SDL_AUDIO_DRIVER_PSP 1)
+    file(GLOB PSP_AUDIO_SOURCES ${SDL2_SOURCE_DIR}/src/audio/psp/*.c)
+    set(SOURCE_FILES ${SOURCE_FILES} ${PSP_AUDIO_SOURCES})
+    set(HAVE_SDL_AUDIO TRUE)
+  endif()
+  if(SDL_JOYSTICK)
+    set(SDL_JOYSTICK_PSP 1)
+    file(GLOB PSP_JOYSTICK_SOURCES ${SDL2_SOURCE_DIR}/src/joystick/psp/*.c)
+    set(SOURCE_FILES ${SOURCE_FILES} ${PSP_JOYSTICK_SOURCES})
+    set(HAVE_SDL_JOYSTICK TRUE)
+  endif()
+  if(SDL_POWER)
+    set(SDL_POWER_PSP 1)
+    file(GLOB PSP_POWER_SOURCES ${SDL2_SOURCE_DIR}/src/power/psp/*.c)
+    set(SOURCE_FILES ${SOURCE_FILES} ${PSP_POWER_SOURCES})
+    set(HAVE_SDL_POWER TRUE)
+  endif()
+  if(SDL_THREADS)
+    set(SDL_THREAD_PSP 1)
+    file(GLOB PSP_THREAD_SOURCES ${SDL2_SOURCE_DIR}/src/thread/generic/SDL_systls.c ${SDL2_SOURCE_DIR}/src/thread/psp/*.c)
+    set(SOURCE_FILES ${SOURCE_FILES} ${PSP_THREAD_SOURCES})
+    set(HAVE_SDL_THREADS TRUE)
+  endif()
+  if(SDL_TIMERS)
+    set(SDL_TIMER_PSP 1)
+    file(GLOB PSP_TIMER_SOURCES ${SDL2_SOURCE_DIR}/src/timer/psp/*.c)
+    set(SOURCE_FILES ${SOURCE_FILES} ${PSP_TIMER_SOURCES})
+    set(HAVE_SDL_TIMERS TRUE)
+  endif()
+  if(SDL_VIDEO)
+    set(SDL_VIDEO_DRIVER_PSP 1)
+    set(SDL_VIDEO_RENDER_PSP 1)
+    file(GLOB PSP_VIDEO_SOURCES ${SDL2_SOURCE_DIR}/src/video/psp/*.c)
+    set(SOURCE_FILES ${SOURCE_FILES} ${PSP_VIDEO_SOURCES})
+    set(SDL_VIDEO_OPENGL 1)
+    set(HAVE_SDL_VIDEO TRUE)
+  endif()
+
+  list(APPEND EXTRA_LIBS
+      pspctrl
+      psphprm
+      pspge
+      pspgu
+      pspdisplay
+      pspvfpu
+      pspaudio
+      pspvram
+      GL
+    )
 
 endif()
 

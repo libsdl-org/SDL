@@ -418,7 +418,7 @@ macro(CheckX11)
     check_include_file(X11/extensions/Xinerama.h HAVE_XINERAMA_H)
     check_include_file(X11/extensions/XInput2.h HAVE_XINPUT2_H)
     check_include_file(X11/extensions/Xrandr.h HAVE_XRANDR_H)
-    check_include_file(X11/extensions/Xfixes.h HAVE_XFIXES_H)
+    check_include_file(X11/extensions/Xfixes.h HAVE_XFIXES_H_)
     check_include_file(X11/extensions/Xrender.h HAVE_XRENDER_H)
     check_include_file(X11/extensions/scrnsaver.h HAVE_XSS_H)
     check_include_file(X11/extensions/shape.h HAVE_XSHAPE_H)
@@ -538,6 +538,15 @@ macro(CheckX11)
       endif()
 
       # check along with XInput2.h because we use Xfixes with XIBarrierReleasePointer
+      if(SDL_X11_XFIXES AND HAVE_XFIXES_H_ AND HAVE_XINPUT2_H)
+        check_c_source_compiles("
+            #include <X11/Xlib.h>
+            #include <X11/Xproto.h>
+            #include <X11/extensions/XInput2.h>
+            #include <X11/extensions/Xfixes.h>
+            BarrierEventID b;
+            int main(void) { }" HAVE_XFIXES_H)
+      endif()
       if(SDL_X11_XFIXES AND HAVE_XFIXES_H AND HAVE_XINPUT2_H)
         if(HAVE_X11_SHARED AND XFIXES_LIB)
           set(SDL_VIDEO_DRIVER_X11_DYNAMIC_XFIXES "\"${XFIXES_LIB_SONAME}\"")
