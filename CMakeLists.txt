@@ -2391,11 +2391,11 @@ elseif(PSP)
   endif()
   if(SDL_VIDEO)
     set(SDL_VIDEO_DRIVER_PSP 1)
+    set(SDL_VIDEO_RENDER_PSP 1)
     file(GLOB PSP_VIDEO_SOURCES ${SDL2_SOURCE_DIR}/src/video/psp/*.c)
     set(SOURCE_FILES ${SOURCE_FILES} ${PSP_VIDEO_SOURCES})
-    set(HAVE_SDL_VIDEO TRUE)
     set(SDL_VIDEO_OPENGL 1)
-    set(HAVE_VIDEO_OPENGL TRUE)
+    set(HAVE_SDL_VIDEO TRUE)
   endif()
 
   list(APPEND EXTRA_LIBS
