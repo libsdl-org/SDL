@@ -862,7 +862,6 @@ SW_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
 
                     /* Apply viewport */
                     if (drawstate.viewport->x || drawstate.viewport->y) {
-                        int i;
                         SDL_Point vp;
                         vp.x = drawstate.viewport->x;
                         vp.y = drawstate.viewport->y;
@@ -886,7 +885,6 @@ SW_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
 
                     /* Apply viewport */
                     if (drawstate.viewport->x || drawstate.viewport->y) {
-                        int i;
                         SDL_Point vp;
                         vp.x = drawstate.viewport->x;
                         vp.y = drawstate.viewport->y;
