@@ -2940,31 +2940,29 @@ SDL_RenderDrawLines(SDL_Renderer * renderer,
     if (!fpoints) {
         return SDL_OutOfMemory();
     }
+
     for (i = 0; i < count; ++i) {
-        fpoints[i].x = points[i].x * renderer->scale.x;
-        fpoints[i].y = points[i].y * renderer->scale.y;
+        fpoints[i].x = points[i].x;
+        fpoints[i].y = points[i].y;
     }
 
-    retval = QueueCmdDrawLines(renderer, fpoints, count);
+    retval = SDL_RenderDrawLinesF(renderer, fpoints, count);
 
     SDL_small_free(fpoints, isstack);
 
-    return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
+    return retval;
 }
 
 int
 SDL_RenderDrawLinesF(SDL_Renderer * renderer,
                      const SDL_FPoint * points, int count)
 {
-    SDL_FPoint *fpoints;
-    int i;
     int retval;
-    SDL_bool isstack;
 
     CHECK_RENDERER_MAGIC(renderer, -1);
 
     if (!points) {
-        return SDL_SetError("SDL_RenderDrawLines(): Passed NULL points");
+        return SDL_SetError("SDL_RenderDrawLinesF(): Passed NULL points");
     }
     if (count < 2) {
         return 0;
@@ -2981,18 +2979,7 @@ SDL_RenderDrawLinesF(SDL_Renderer * renderer,
         return RenderDrawLinesWithRectsF(renderer, points, count);
     }
 
-    fpoints = SDL_small_alloc(SDL_FPoint, count, &isstack);
-    if (!fpoints) {
-        return SDL_OutOfMemory();
-    }
-    for (i = 0; i < count; ++i) {
-        fpoints[i].x = points[i].x * renderer->scale.x;
-        fpoints[i].y = points[i].y * renderer->scale.y;
-    }
-
-    retval = QueueCmdDrawLines(renderer, fpoints, count);
-
-    SDL_small_free(fpoints, isstack);
+    retval = QueueCmdDrawLines(renderer, points, count);
 
     return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
 }
