@@ -8,7 +8,6 @@
 #include "SDL_main.h"
 #include <pspkernel.h>
 #include <pspthreadman.h>
-#include <stdlib.h>
 
 #ifdef main
     #undef main
@@ -45,7 +44,7 @@ int sdl_psp_callback_thread(SceSize args, void *argp)
 
 int sdl_psp_setup_callbacks(void)
 {
-    int thid = 0;
+    int thid;
     thid = sceKernelCreateThread("update_thread",
                      sdl_psp_callback_thread, 0x11, 0xFA0, 0, 0);
     if(thid >= 0)
