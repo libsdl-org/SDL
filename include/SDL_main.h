@@ -83,6 +83,15 @@
 */
 #define SDL_MAIN_NEEDED
 
+#elif defined(__PSP__)
+/* On PSP SDL provides a main function that sets the module info,
+   activates the GPU and starts the thread required to be able to exit
+   the software.
+
+   If you provide this yourself, you may define SDL_MAIN_HANDLED
+ */
+#define SDL_MAIN_AVAILABLE
+
 #endif
 #endif /* SDL_MAIN_HANDLED */
 
