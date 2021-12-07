@@ -1,4 +1,5 @@
 TARGET_LIB = libSDL2.a
+EXTRA_TARGETS = libSDL2main.a
 OBJS= src/SDL.o \
       src/SDL_assert.o \
       src/SDL_dataqueue.o \
@@ -92,6 +93,9 @@ OBJS= src/SDL.o \
       src/video/psp/SDL_pspmouse.o \
       src/video/yuv2rgb/yuv_rgb.o
 
+SDLMAIN_OBJ = src/main/psp/SDL_psp_main.o
+EXTRA_CLEAN = $(SDLMAIN_OBJ)
+
 INCDIR = ./include
 CFLAGS = -g -O2 -G0 -Wall -D__PSP__ -DHAVE_OPENGL
 CXXFLAGS = $(CFLAGS) -fno-exceptions -fno-rtti
@@ -105,3 +109,6 @@ LIBS = -lGL -lGLU -lglut -lz \
 PSPSDK=$(shell psp-config --pspsdk-path)
 include $(PSPSDK)/lib/build.mak
 
+libSDL2main.a: $(SDLMAIN_OBJ)
+	$(AR) cru $@ $^
+	$(RANLIB) $@
