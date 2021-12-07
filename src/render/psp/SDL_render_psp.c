@@ -165,10 +165,9 @@ void Swap(float *a, float *b)
 static int
 TextureNextPow2(unsigned int w)
 {
+    unsigned int n = 2;
     if(w == 0)
         return 0;
-
-    unsigned int n = 2;
 
     while(w > n)
         n <<= 1;
@@ -209,31 +208,32 @@ StartDrawing(SDL_Renderer * renderer)
 int
 TextureSwizzle(PSP_TextureData *psp_texture)
 {
+    int bytewidth, height;
+    int rowblocks, rowblocksadd;
+    unsigned int blockaddress = 0;
+    unsigned int *src = NULL;
+    unsigned char *data = NULL;
+
     if(psp_texture->swizzled)
         return 1;
 
-    int bytewidth = psp_texture->textureWidth*(psp_texture->bits>>3);
-    int height = psp_texture->size / bytewidth;
+    bytewidth = psp_texture->textureWidth*(psp_texture->bits>>3);
+    height = psp_texture->size / bytewidth;
 
-    int rowblocks = (bytewidth>>4);
-    int rowblocksadd = (rowblocks-1)<<7;
-    unsigned int blockaddress = 0;
-    unsigned int *src = (unsigned int*) psp_texture->data;
+    rowblocks = (bytewidth>>4);
+    rowblocksadd = (rowblocks-1)<<7;
 
-    unsigned char *data = NULL;
+    src = (unsigned int*) psp_texture->data;
+
     data = SDL_malloc(psp_texture->size);
 
-    int j;
-
-    for(j = 0; j < height; j++, blockaddress += 16)
+    for(int j = 0; j < height; j++, blockaddress += 16)
     {
         unsigned int *block;
 
         block = (unsigned int*)&data[blockaddress];
 
-        int i;
-
-        for(i = 0; i < rowblocks; i++)
+        for(int i = 0; i < rowblocks; i++)
         {
             *block++ = *src++;
             *block++ = *src++;
@@ -254,23 +254,26 @@ TextureSwizzle(PSP_TextureData *psp_texture)
 }
 int TextureUnswizzle(PSP_TextureData *psp_texture)
 {
+    int bytewidth, height;
+    int widthblocks, heightblocks;
+    int dstpitch, dstrow;
+    unsigned int *src = NULL;
+    unsigned char *data = NULL;
+    unsigned char *ydst = NULL;
+
     if(!psp_texture->swizzled)
         return 1;
 
-    int blockx, blocky;
+    bytewidth = psp_texture->textureWidth*(psp_texture->bits>>3);
+    height = psp_texture->size / bytewidth;
 
-    int bytewidth = psp_texture->textureWidth*(psp_texture->bits>>3);
-    int height = psp_texture->size / bytewidth;
+    widthblocks = bytewidth/16;
+    heightblocks = height/8;
 
-    int widthblocks = bytewidth/16;
-    int heightblocks = height/8;
+    dstpitch = (bytewidth - 16)/4;
+    dstrow = bytewidth * 8;
 
-    int dstpitch = (bytewidth - 16)/4;
-    int dstrow = bytewidth * 8;
-
-    unsigned int *src = (unsigned int*) psp_texture->data;
-
-    unsigned char *data = NULL;
+    src = (unsigned int*) psp_texture->data;
 
     data = SDL_malloc(psp_texture->size);
 
@@ -279,21 +282,19 @@ int TextureUnswizzle(PSP_TextureData *psp_texture)
 
     sceKernelDcacheWritebackAll();
 
-    int j;
+    ydst = (unsigned char *)data;
 
-    unsigned char *ydst = (unsigned char *)data;
-
-    for(blocky = 0; blocky < heightblocks; ++blocky)
+    for(int blocky = 0; blocky < heightblocks; ++blocky)
     {
         unsigned char *xdst = ydst;
 
-        for(blockx = 0; blockx < widthblocks; ++blockx)
+        for(int blockx = 0; blockx < widthblocks; ++blockx)
         {
             unsigned int *block;
 
             block = (unsigned int*)xdst;
 
-            for(j = 0; j < 8; ++j)
+            for(int j = 0; j < 8; ++j)
             {
                 *(block++) = *(src++);
                 *(block++) = *(src++);
@@ -707,6 +708,10 @@ PSP_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * t
     float u1 = srcrect->x + srcrect->w;
     float v1 = srcrect->y + srcrect->h;
 
+    const float cw = c * width;
+    const float sw = s * width;
+    const float ch = c * height;
+    const float sh = s * height;
 
     if (!verts) {
         return -1;
@@ -715,11 +720,6 @@ PSP_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * t
     cmd->data.draw.count = 1;
 
     MathSincos(degToRad(angle), &s, &c);
-
-    const float cw = c * width;
-    const float sw = s * width;
-    const float ch = c * height;
-    const float sh = s * height;
 
     if (flip & SDL_FLIP_VERTICAL) {
         Swap(&v0, &v1);
@@ -799,7 +799,7 @@ static int
 PSP_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertices, size_t vertsize)
 {
     PSP_RenderData *data = (PSP_RenderData *) renderer->driverdata;
-
+    Uint8 *gpumem = NULL;
     StartDrawing(renderer);
 
     /* note that before the renderer interface change, this would do extrememly small
@@ -808,7 +808,7 @@ PSP_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *verti
        I don't know what the limits on PSP hardware are. It might be useful to have
        rendering backends report a reasonable maximum, so the higher level can flush
        if we appear to be exceeding that. */
-    Uint8 *gpumem = (Uint8 *) sceGuGetMemory(vertsize);
+    gpumem = (Uint8 *) sceGuGetMemory(vertsize);
     if (!gpumem) {
         return SDL_SetError("Couldn't obtain a %d-byte vertex buffer!", (int) vertsize);
     }
