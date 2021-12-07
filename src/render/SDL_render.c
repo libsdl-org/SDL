@@ -356,10 +356,11 @@ QueueCmdSetViewport(SDL_Renderer *renderer)
         if (cmd != NULL) {
             cmd->command = SDL_RENDERCMD_SETVIEWPORT;
             cmd->data.viewport.first = 0;  /* render backend will fill this in. */
-            cmd->data.viewport.rect.x = renderer->viewport.x;
-            cmd->data.viewport.rect.y = renderer->viewport.y;
-            cmd->data.viewport.rect.w = renderer->viewport.w;
-            cmd->data.viewport.rect.h = renderer->viewport.h;
+            /* Convert SDL_FRect to SDL_Rect */
+            cmd->data.viewport.rect.x = (int)SDL_floor(renderer->viewport.x);
+            cmd->data.viewport.rect.y = (int)SDL_floor(renderer->viewport.y);
+            cmd->data.viewport.rect.w = (int)SDL_floor(renderer->viewport.w);
+            cmd->data.viewport.rect.h = (int)SDL_floor(renderer->viewport.h);
             retval = renderer->QueueSetViewport(renderer, cmd);
             if (retval < 0) {
                 cmd->command = SDL_RENDERCMD_NO_OP;
@@ -385,10 +386,11 @@ QueueCmdSetClipRect(SDL_Renderer *renderer)
         } else {
             cmd->command = SDL_RENDERCMD_SETCLIPRECT;
             cmd->data.cliprect.enabled = renderer->clipping_enabled;
-            cmd->data.cliprect.rect.x = renderer->clip_rect.x;
-            cmd->data.cliprect.rect.y = renderer->clip_rect.y;
-            cmd->data.cliprect.rect.w = renderer->clip_rect.w;
-            cmd->data.cliprect.rect.h = renderer->clip_rect.h;
+            /* Convert SDL_FRect to SDL_Rect */
+            cmd->data.cliprect.rect.x = (int)SDL_floor(renderer->clip_rect.x);
+            cmd->data.cliprect.rect.y = (int)SDL_floor(renderer->clip_rect.y);
+            cmd->data.cliprect.rect.w = (int)SDL_floor(renderer->clip_rect.w);
+            cmd->data.cliprect.rect.h = (int)SDL_floor(renderer->clip_rect.h);
             SDL_memcpy(&renderer->last_queued_cliprect, &renderer->clip_rect, sizeof (SDL_Rect));
             renderer->last_queued_cliprect_enabled = renderer->clipping_enabled;
             renderer->cliprect_queued = SDL_TRUE;
@@ -2423,10 +2425,10 @@ SDL_RenderGetViewport(SDL_Renderer * renderer, SDL_Rect * rect)
     CHECK_RENDERER_MAGIC(renderer, );
 
     if (rect) {
-        rect->x = renderer->viewport.x / renderer->scale.x;
-        rect->y = renderer->viewport.y / renderer->scale.y;
-        rect->w = renderer->viewport.w / renderer->scale.x;
-        rect->h = renderer->viewport.h / renderer->scale.y;
+        rect->x = (int)SDL_floor(renderer->viewport.x / renderer->scale.x);
+        rect->y = (int)SDL_floor(renderer->viewport.y / renderer->scale.y);
+        rect->w = (int)SDL_floor(renderer->viewport.w / renderer->scale.x);
+        rect->h = (int)SDL_floor(renderer->viewport.h / renderer->scale.y);
     }
 }
 
@@ -2466,10 +2468,10 @@ SDL_RenderGetClipRect(SDL_Renderer * renderer, SDL_Rect * rect)
     CHECK_RENDERER_MAGIC(renderer, )
 
     if (rect) {
-        rect->x = renderer->clip_rect.x / renderer->scale.x;
-        rect->y = renderer->clip_rect.y / renderer->scale.y;
-        rect->w = renderer->clip_rect.w / renderer->scale.x;
-        rect->h = renderer->clip_rect.h / renderer->scale.y;
+        rect->x = (int)SDL_floor(renderer->clip_rect.x / renderer->scale.x);
+        rect->y = (int)SDL_floor(renderer->clip_rect.y / renderer->scale.y);
+        rect->w = (int)SDL_floor(renderer->clip_rect.w / renderer->scale.x);
+        rect->h = (int)SDL_floor(renderer->clip_rect.h / renderer->scale.y);
     }
 }
 
@@ -4078,10 +4080,10 @@ SDL_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
         format = SDL_GetWindowPixelFormat(renderer->window);
     }
 
-    real_rect.x = renderer->viewport.x;
-    real_rect.y = renderer->viewport.y;
-    real_rect.w = renderer->viewport.w;
-    real_rect.h = renderer->viewport.h;
+    real_rect.x = (int)SDL_floor(renderer->viewport.x);
+    real_rect.y = (int)SDL_floor(renderer->viewport.y);
+    real_rect.w = (int)SDL_floor(renderer->viewport.w);
+    real_rect.h = (int)SDL_floor(renderer->viewport.h);
     if (rect) {
         if (!SDL_IntersectRect(rect, &real_rect, &real_rect)) {
             return 0;
