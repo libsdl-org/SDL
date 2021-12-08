@@ -1,8 +1,8 @@
 # Open Watcom makefile to build SDL2.dll for OS/2
 # wmake -f Makefile.os2
 #
-# If you have libiconv installed, you can compile against it
-# by specifying LIBICONV=1, e.g.:
+# If you have GNU libiconv installed (iconv2.dll), you
+# can compile against it by specifying LIBICONV=1, e.g.:
 # wmake -f Makefile.os2 LIBICONV=1
 
 LIBNAME = SDL2
@@ -10,8 +10,7 @@ VERSION = 2.0.19
 DESCRIPTION = Simple DirectMedia Layer 2
 
 LIBICONV=0
-# iconv.lib or iconv2.lib:
-ICONVLIB=iconv.lib
+ICONVLIB=$(LIBICONV_LIB)
 
 LIBHOME = .
 DLLFILE = $(LIBHOME)/$(LIBNAME).dll
@@ -31,6 +30,7 @@ CFLAGS+= -wcd=303
 # building dll:
 CFLAGS+= -bd
 # iconv:
+LIBICONV_LIB=iconv2.lib
 !ifeq LIBICONV 1
 CFLAGS+= -DHAVE_ICONV=1 -DHAVE_ICONV_H=1
 LIBS+= $(ICONVLIB)
@@ -105,7 +105,7 @@ MOBJS= $(MSRCS:.c=.obj)
 
 all: $(DLLFILE) $(LIBFILE) .symbolic
 
-$(DLLFILE): $(OBJS) $(LIBM) $(LNKFILE)
+$(DLLFILE): $(OBJS) $(LIBM) $(LIBICONV_LIB) $(LNKFILE)
     @echo * Linking: $@
     wlink @$(LNKFILE)
 
@@ -148,6 +148,9 @@ SDL_hidapi.obj: SDL_hidapi.c
 $(LIBM): $(MOBJS)
     wlib -q -b -n -c -pa -s -t -zld -ii -io $@ $(MOBJS)
 
+$(LIBICONV_LIB):  "src/core/os2/iconv2.lbc"
+    wlib -q -b -n -c -pa -s -t -zld -ii -io $@ @$<
+
 $(LNKFILE):
     @echo * Creating linker file: $@
     @%create $@
@@ -170,6 +173,7 @@ clean: .SYMBOLIC
     @if exist *.err rm *.err
     @if exist $(LNKFILE) rm $(LNKFILE)
     @if exist $(LIBM) rm $(LIBM)
+    @if exist $(LIBICONV_LIB) rm $(LIBICONV_LIB)
 
 distclean: .SYMBOLIC clean
     @if exist $(LIBHOME)/*.exp rm $(LIBHOME)/*.exp
