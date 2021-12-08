@@ -115,6 +115,7 @@ X11_CreateWindowFramebuffer(_THIS, SDL_Window * window, Uint32 * format,
                 shmdt(shminfo->shmaddr);
             } else {
                 /* Done! */
+                data->ximage->byte_order = (SDL_BYTEORDER == SDL_BIG_ENDIAN) ? MSBFirst : LSBFirst;
                 data->use_mitshm = SDL_TRUE;
                 *pixels = shminfo->shmaddr;
                 return 0;
@@ -135,6 +136,7 @@ X11_CreateWindowFramebuffer(_THIS, SDL_Window * window, Uint32 * format,
         SDL_free(*pixels);
         return SDL_SetError("Couldn't create XImage");
     }
+    data->ximage->byte_order = (SDL_BYTEORDER == SDL_BIG_ENDIAN) ? MSBFirst : LSBFirst;
     return 0;
 }
 
