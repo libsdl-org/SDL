@@ -10,6 +10,8 @@ VERSION = 2.0.19
 DESCRIPTION = Simple DirectMedia Layer 2
 
 LIBICONV=0
+# iconv.lib or iconv2.lib:
+ICONVLIB=iconv.lib
 
 LIBHOME = .
 DLLFILE = $(LIBHOME)/$(LIBNAME).dll
@@ -19,7 +21,7 @@ LNKFILE = $(LIBNAME).lnk
 INCPATH = -I"$(%WATCOM)/h/os2" -I"$(%WATCOM)/h"
 INCPATH+= -Iinclude
 
-LIBM = libm.lib
+LIBM = SDL2libm.lib
 LIBS = mmpm2.lib $(LIBM)
 CFLAGS = -bt=os2 -d0 -q -bm -5s -fp5 -fpi87 -sg -oteanbmier -ei
 # max warnings:
@@ -31,7 +33,7 @@ CFLAGS+= -bd
 # iconv:
 !ifeq LIBICONV 1
 CFLAGS+= -DHAVE_ICONV=1 -DHAVE_ICONV_H=1
-LIBS+= iconv.lib
+LIBS+= $(ICONVLIB)
 !else
 LIBS+= libuls.lib libconv.lib
 !endif
