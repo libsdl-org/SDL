@@ -55,6 +55,7 @@ struct GL_ShaderContext
     PFNGLUNIFORM1IARBPROC glUniform1iARB;
     PFNGLUNIFORM1FARBPROC glUniform1fARB;
     PFNGLUSEPROGRAMOBJECTARBPROC glUseProgramObjectARB;
+    PFNGLBINDATTRIBLOCATIONPROC glBindAttribLocation;
 
     SDL_bool GL_ARB_texture_rectangle_supported;
 
@@ -62,23 +63,29 @@ struct GL_ShaderContext
 };
 
 #define COLOR_VERTEX_SHADER                                     \
+"attribute vec2 a_position;"                                    \
+"attribute vec4 a_color;"                                       \
+"attribute vec2 a_texCoord;"                                    \
 "varying vec4 v_color;\n"                                       \
 "\n"                                                            \
 "void main()\n"                                                 \
 "{\n"                                                           \
-"    gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;\n" \
-"    v_color = gl_Color;\n"                                     \
+"    gl_Position = gl_ModelViewProjectionMatrix * vec4(a_position, 0.0, 1.0);\n"\
+"    v_color = a_color;\n"                                      \
 "}"                                                             \
 
 #define TEXTURE_VERTEX_SHADER                                   \
+"attribute vec2 a_position;"                                    \
+"attribute vec4 a_color;"                                       \
+"attribute vec2 a_texCoord;"                                    \
 "varying vec4 v_color;\n"                                       \
 "varying vec2 v_texCoord;\n"                                    \
 "\n"                                                            \
 "void main()\n"                                                 \
 "{\n"                                                           \
-"    gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;\n" \
-"    v_color = gl_Color;\n"                                     \
-"    v_texCoord = vec2(gl_MultiTexCoord0);\n"                   \
+"    gl_Position = gl_ModelViewProjectionMatrix * vec4(a_position, 0.0, 1.0);\n"\
+"    v_color = a_color;\n"                                      \
+"    v_texCoord = a_texCoord;\n"                                \
 "}"                                                             \
 
 #define JPEG_SHADER_CONSTANTS                                   \
@@ -464,6 +471,11 @@ CompileShaderProgram(GL_ShaderContext *ctx, int index, GL_ShaderData *data)
     /* ... and in the darkness bind them */
     ctx->glAttachObjectARB(data->program, data->vert_shader);
     ctx->glAttachObjectARB(data->program, data->frag_shader);
+
+    ctx->glBindAttribLocation(data->program, GL_ATTRIBUTE_POSITION, "a_position");
+    ctx->glBindAttribLocation(data->program, GL_ATTRIBUTE_COLOR, "a_color");
+    ctx->glBindAttribLocation(data->program, GL_ATTRIBUTE_TEXCOORD, "a_texCoord");
+
     ctx->glLinkProgramARB(data->program);
 
     /* Set up some uniform variables */
@@ -527,6 +539,7 @@ GL_CreateShaderContext(void)
         ctx->glUniform1iARB = (PFNGLUNIFORM1IARBPROC) SDL_GL_GetProcAddress("glUniform1iARB");
         ctx->glUniform1fARB = (PFNGLUNIFORM1FARBPROC) SDL_GL_GetProcAddress("glUniform1fARB");
         ctx->glUseProgramObjectARB = (PFNGLUSEPROGRAMOBJECTARBPROC) SDL_GL_GetProcAddress("glUseProgramObjectARB");
+        ctx->glBindAttribLocation = (PFNGLBINDATTRIBLOCATIONPROC) SDL_GL_GetProcAddress("glBindAttribLocation");
         if (ctx->glGetError &&
             ctx->glAttachObjectARB &&
             ctx->glCompileShaderARB &&
@@ -540,7 +553,8 @@ GL_CreateShaderContext(void)
             ctx->glShaderSourceARB &&
             ctx->glUniform1iARB &&
             ctx->glUniform1fARB &&
-            ctx->glUseProgramObjectARB) {
+            ctx->glUseProgramObjectARB &&
+            ctx->glBindAttribLocation) {
             shaders_supported = SDL_TRUE;
         }
     }

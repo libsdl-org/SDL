@@ -112,7 +112,7 @@ SDL_PROC_UNUSED(void, glDepthMask, (GLboolean flag))
 SDL_PROC_UNUSED(void, glDepthRange, (GLclampd zNear, GLclampd zFar))
 SDL_PROC(void, glDisable, (GLenum cap))
 SDL_PROC_UNUSED(void, glDisableClientState, (GLenum array))
-SDL_PROC_UNUSED(void, glDrawArrays, (GLenum mode, GLint first, GLsizei count))
+SDL_PROC(void, glDrawArrays, (GLenum mode, GLint first, GLsizei count))
 SDL_PROC_UNUSED(void, glDrawBuffer, (GLenum mode))
 SDL_PROC_UNUSED(void, glDrawElements,
                 (GLenum mode, GLsizei count, GLenum type,
@@ -474,5 +474,13 @@ SDL_PROC_UNUSED(void, glVertexPointer,
                 (GLint size, GLenum type, GLsizei stride,
                  const GLvoid * pointer))
 SDL_PROC(void, glViewport, (GLint x, GLint y, GLsizei width, GLsizei height))
-
+SDL_PROC(void, glGenBuffers, (GLsizei, GLuint *))
+SDL_PROC(void, glDeleteBuffers, (GLsizei, const GLuint *))
+SDL_PROC(void, glBindBuffer, (GLenum, GLuint))
+SDL_PROC(void, glBufferData, (GLenum, GLsizeiptr, const GLvoid *, GLenum))
+SDL_PROC(void, glBufferSubData, (GLenum, GLintptr, GLsizeiptr, const GLvoid *))
+SDL_PROC(void, glEnableVertexAttribArray, (GLuint))
+SDL_PROC(void, glDisableVertexAttribArray, (GLuint))
+SDL_PROC(void, glVertexAttribPointer, (GLuint, GLint, GLenum, GLboolean, GLsizei, const void *))
+SDL_PROC(void, glBindAttribLocation, (GLuint, GLuint, const char *))
 /* vi: set ts=4 sw=4 expandtab: */

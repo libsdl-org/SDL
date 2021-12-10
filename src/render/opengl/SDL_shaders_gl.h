@@ -26,6 +26,16 @@
 
 /* OpenGL shader implementation */
 
+
+typedef enum
+{
+    GL_ATTRIBUTE_POSITION = 0,
+    GL_ATTRIBUTE_COLOR = 1,
+    GL_ATTRIBUTE_TEXCOORD = 2,
+} GL_Attribute;
+
+
+
 typedef enum {
     SHADER_INVALID = -1,
     SHADER_NONE,
