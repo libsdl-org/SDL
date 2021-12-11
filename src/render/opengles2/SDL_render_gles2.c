@@ -480,7 +480,7 @@ GLES2_CacheShader(GLES2_RenderData *data, GLES2_ShaderType type, GLenum shader_t
 {
     GLuint id;
     GLint compileSuccessful = GL_FALSE;
-    const Uint8 *shader_src = GLES2_GetShader(type);
+    const char *shader_src = (char *)GLES2_GetShader(type);
 
     if (!shader_src) {
         SDL_SetError("No shader src");
@@ -489,7 +489,7 @@ GLES2_CacheShader(GLES2_RenderData *data, GLES2_ShaderType type, GLenum shader_t
 
     /* Compile */
     id = data->glCreateShader(shader_type);
-    data->glShaderSource(id, 1, (const char**)&shader_src, NULL);
+    data->glShaderSource(id, 1, &shader_src, NULL);
     data->glCompileShader(id);
     data->glGetShaderiv(id, GL_COMPILE_STATUS, &compileSuccessful);
 
