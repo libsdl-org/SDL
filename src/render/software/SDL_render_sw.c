@@ -1030,17 +1030,24 @@ SW_CreateRenderer(SDL_Window * window, Uint32 flags)
 {
     const char *hint;
     SDL_Surface *surface;
+    SDL_bool no_hint_set;
 
     /* Set the vsync hint based on our flags, if it's not already set */
     hint = SDL_GetHint(SDL_HINT_RENDER_VSYNC);
     if (!hint || !*hint) {
+        no_hint_set = SDL_TRUE;
+    } else {
+        no_hint_set = SDL_FALSE;
+    }
+
+    if (no_hint_set) {
         SDL_SetHint(SDL_HINT_RENDER_VSYNC, (flags & SDL_RENDERER_PRESENTVSYNC) ? "1" : "0");
     }
 
     surface = SDL_GetWindowSurface(window);
 
     /* Reset the vsync hint if we set it above */
-    if (!hint || !*hint) {
+    if (no_hint_set) {
         SDL_SetHint(SDL_HINT_RENDER_VSYNC, "");
     }
 

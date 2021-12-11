@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <malloc.h> /* memalign() */
 
 #include "SDL_audio.h"
 #include "SDL_error.h"
@@ -38,10 +39,10 @@
 #include <psp2/audioout.h>
 
 #define SCE_AUDIO_SAMPLE_ALIGN(s)   (((s) + 63) & ~63)
-#define SCE_AUDIO_MAX_VOLUME      0x8000
+#define SCE_AUDIO_MAX_VOLUME    0x8000
 
 /* The tag name used by VITA audio */
-#define VITAAUD_DRIVER_NAME         "vita"
+#define VITAAUD_DRIVER_NAME     "vita"
 
 static int
 VITAAUD_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
@@ -135,10 +136,11 @@ static void VITAAUD_CloseDevice(_THIS)
     }
 
     if (this->hidden->rawbuf != NULL) {
-        free(this->hidden->rawbuf);
+        free(this->hidden->rawbuf);         /* this uses memalign(), not SDL_malloc(). */
         this->hidden->rawbuf = NULL;
     }
 }
+
 static void VITAAUD_ThreadInit(_THIS)
 {
     /* Increase the priority of this audio thread by 1 to put it
@@ -152,11 +154,9 @@ static void VITAAUD_ThreadInit(_THIS)
     }
 }
 
-
 static int
 VITAAUD_Init(SDL_AudioDriverImpl * impl)
 {
-
     /* Set the function pointers */
     impl->OpenDevice = VITAAUD_OpenDevice;
     impl->PlayDevice = VITAAUD_PlayDevice;
@@ -167,19 +167,16 @@ VITAAUD_Init(SDL_AudioDriverImpl * impl)
 
     /* VITA audio device */
     impl->OnlyHasDefaultOutputDevice = 1;
-/*
+    /*
     impl->HasCaptureSupport = 1;
-
     impl->OnlyHasDefaultInputDevice = 1;
-*/
+    */
     return 1;   /* this audio target is available. */
 }
 
 AudioBootStrap VITAAUD_bootstrap = {
     "vita", "VITA audio driver", VITAAUD_Init, 0
 };
-
- /* SDL_AUDI */
 
 #endif /* SDL_AUDIO_DRIVER_VITA */
 

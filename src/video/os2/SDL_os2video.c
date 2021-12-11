@@ -394,7 +394,7 @@ static MRESULT _wmDrop(WINDATA *pWinData, PDRAGINFO pDragInfo)
 {
     ULONG       ulIdx;
     PDRAGITEM   pDragItem;
-    CHAR        acFName[_MAX_PATH];
+    CHAR        acFName[CCHMAXPATH];
     PCHAR       pcFName;
 
     if (!DrgAccessDraginfo(pDragInfo))

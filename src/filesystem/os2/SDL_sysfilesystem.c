@@ -25,9 +25,9 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* System dependent filesystem routines                                */
 
+#include "../../core/os2/SDL_os2.h"
 #include "SDL_error.h"
 #include "SDL_filesystem.h"
-#include "../../core/os2/SDL_os2.h"
 
 #define INCL_DOSFILEMGR
 #define INCL_DOSPROCESS
@@ -43,7 +43,7 @@ SDL_GetBasePath(void)
     ULONG   ulRC = DosGetInfoBlocks(&tib, &pib);
     PCHAR   pcEnd;
     ULONG   cbResult;
-    CHAR    acBuf[_MAX_PATH];
+    CHAR    acBuf[CCHMAXPATH];
 
     if (ulRC != NO_ERROR) {
         debug_os2("DosGetInfoBlocks() failed, rc = %u", ulRC);
@@ -73,7 +73,7 @@ char *
 SDL_GetPrefPath(const char *org, const char *app)
 {
     PSZ     pszPath;
-    CHAR    acBuf[_MAX_PATH];
+    CHAR    acBuf[CCHMAXPATH];
     int     lPosApp, lPosOrg;
     PSZ     pszApp, pszOrg;
 

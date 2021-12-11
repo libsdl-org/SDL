@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <malloc.h> /* memalign() */
 
 #include "SDL_audio.h"
 #include "SDL_error.h"
@@ -38,7 +39,7 @@
 #include <pspthreadman.h>
 
 /* The tag name used by PSP audio */
-#define PSPAUDIO_DRIVER_NAME         "psp"
+#define PSPAUDIO_DRIVER_NAME    "psp"
 
 static int
 PSPAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
@@ -116,6 +117,7 @@ static void PSPAUDIO_WaitDevice(_THIS)
 {
     /* Because we block when sending audio, there's no need for this function to do anything. */
 }
+
 static Uint8 *PSPAUDIO_GetDeviceBuf(_THIS)
 {
     return this->hidden->mixbufs[this->hidden->next_buffer];
@@ -126,7 +128,7 @@ static void PSPAUDIO_CloseDevice(_THIS)
     if (this->hidden->channel >= 0) {
         sceAudioChRelease(this->hidden->channel);
     }
-    free(this->hidden->rawbuf);  /* this uses memalign(), not SDL_malloc(). */
+    free(this->hidden->rawbuf); /* this uses memalign(), not SDL_malloc(). */
     SDL_free(this->hidden);
 }
 
@@ -143,7 +145,6 @@ static void PSPAUDIO_ThreadInit(_THIS)
     }
 }
 
-
 static int
 PSPAUDIO_Init(SDL_AudioDriverImpl * impl)
 {
@@ -157,14 +158,9 @@ PSPAUDIO_Init(SDL_AudioDriverImpl * impl)
 
     /* PSP audio device */
     impl->OnlyHasDefaultOutputDevice = 1;
-/*
-    impl->HasCaptureSupport = 1;
-
-    impl->OnlyHasDefaultCaptureDevice = 1;
-*/
     /*
-    impl->DetectDevices = DSOUND_DetectDevices;
-    impl->Deinitialize = DSOUND_Deinitialize;
+    impl->HasCaptureSupport = 1;
+    impl->OnlyHasDefaultCaptureDevice = 1;
     */
     return 1;   /* this audio target is available. */
 }
@@ -172,8 +168,6 @@ PSPAUDIO_Init(SDL_AudioDriverImpl * impl)
 AudioBootStrap PSPAUDIO_bootstrap = {
     "psp", "PSP audio driver", PSPAUDIO_Init, 0
 };
-
- /* SDL_AUDI */
 
 #endif /* SDL_AUDIO_DRIVER_PSP */
 

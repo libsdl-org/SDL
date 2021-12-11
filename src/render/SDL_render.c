@@ -545,6 +545,7 @@ QueueCmdFillRects(SDL_Renderer *renderer, const SDL_FRect * rects, const int cou
                 const int num_indices = 6 * count;
                 const int size_indices = 4;
                 int cur_indice = 0;
+                int color = (renderer->color.r << 0) | (renderer->color.g << 8) | (renderer->color.b << 16) | ((Uint32)renderer->color.a << 24);
 
                 for (i = 0; i < count; ++i) {
                     float minx, miny, maxx, maxy;
@@ -573,7 +574,7 @@ QueueCmdFillRects(SDL_Renderer *renderer, const SDL_FRect * rects, const int cou
                 }
 
                 retval = renderer->QueueGeometry(renderer, cmd, NULL,
-                        xy, xy_stride, (int *) &renderer->color, 0 /* color_stride */, NULL, 0,
+                        xy, xy_stride, &color, 0 /* color_stride */, NULL, 0,
                         num_vertices, indices, num_indices, size_indices,
                         1.0f, 1.0f);
 
@@ -3339,6 +3340,7 @@ SDL_RenderCopyF(SDL_Renderer * renderer, SDL_Texture * texture,
         const int size_indices = 4;
         float minu, minv, maxu, maxv;
         float minx, miny, maxx, maxy;
+        int color = (texture->color.r << 0) | (texture->color.g << 8) | (texture->color.b << 16) | ((Uint32)texture->color.a << 24);
 
         minu = (float) (real_srcrect.x) / (float) texture->w;
         minv = (float) (real_srcrect.y) / (float) texture->h;
@@ -3369,7 +3371,7 @@ SDL_RenderCopyF(SDL_Renderer * renderer, SDL_Texture * texture,
         xy[7] = maxy;
 
         retval = QueueCmdGeometry(renderer, texture,
-                xy, xy_stride, (int *)&texture->color, 0 /* color_stride */, uv, uv_stride,
+                xy, xy_stride, &color, 0 /* color_stride */, uv, uv_stride,
                 num_vertices,
                 indices, num_indices, size_indices,
                 renderer->scale.x, renderer->scale.y);
@@ -3495,6 +3497,7 @@ SDL_RenderCopyExF(SDL_Renderer * renderer, SDL_Texture * texture,
         const float radian_angle = (float)((M_PI * angle) / 180.0);
         const float s = SDL_sinf(radian_angle);
         const float c = SDL_cosf(radian_angle);
+        int color = (texture->color.r << 0) | (texture->color.g << 8) | (texture->color.b << 16) | ((Uint32)texture->color.a << 24);
 
         minu = (float) (real_srcrect.x) / (float) texture->w;
         minv = (float) (real_srcrect.y) / (float) texture->h;
@@ -3554,7 +3557,7 @@ SDL_RenderCopyExF(SDL_Renderer * renderer, SDL_Texture * texture,
         xy[7] = (s_minx + c_maxy) + centery;
 
         retval = QueueCmdGeometry(renderer, texture,
-                xy, xy_stride, (int *)&texture->color, 0 /* color_stride */, uv, uv_stride,
+                xy, xy_stride, &color, 0 /* color_stride */, uv, uv_stride,
                 num_vertices,
                 indices, num_indices, size_indices,
                 renderer->scale.x, renderer->scale.y);

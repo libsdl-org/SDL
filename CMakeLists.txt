@@ -2201,6 +2201,7 @@ elseif(RISCOS)
   if(SDL_AUDIO)
     CheckOSS()
   endif()
+
 elseif(VITA)
   # SDL_spinlock.c Needs to be compiled in ARM mode.
   check_c_compiler_flag(-marm HAVE_ARM_MODE)
@@ -2281,7 +2282,6 @@ elseif(VITA)
 
     if(VIDEO_VITA_PVR)
       check_include_file(gpu_es4/psp2_pvr_hint.h HAVE_PVR_H)
-
       if(HAVE_PVR_H)
         target_compile_definitions(sdl-build-options INTERFACE "-D__psp2__")
         set(SDL_VIDEO_OPENGL_EGL 1)
@@ -2330,7 +2330,6 @@ elseif(VITA)
           taihen_stub
         )
     endif()
-
   endif()
 
   set(HAVE_ARMSIMD TRUE)
@@ -2355,7 +2354,6 @@ elseif(VITA)
 #  CheckPTHREAD()
 
 elseif(PSP)
-
  file(GLOB PSP_MAIN_SOURCES ${SDL2_SOURCE_DIR}/src/main/psp/*.c)
  set(SDLMAIN_SOURCES ${SDLMAIN_SOURCES} ${PSP_MAIN_SOURCES})
 
@@ -2409,7 +2407,6 @@ elseif(PSP)
       pspvram
       GL
     )
-
 endif()
 
 if(SDL_VULKAN AND NOT SDL_LOADSO)

@@ -66,6 +66,25 @@
 /* Weston uses a ratio of 10 units per scroll tick */
 #define WAYLAND_WHEEL_AXIS_UNIT 10
 
+static const struct {
+    xkb_keysym_t keysym;
+    SDL_KeyCode keycode;
+} KeySymToSDLKeyCode[] = {
+    { XKB_KEY_Shift_L, SDLK_LSHIFT },
+    { XKB_KEY_Shift_R, SDLK_RSHIFT },
+    { XKB_KEY_Control_L, SDLK_LCTRL },
+    { XKB_KEY_Control_R, SDLK_RCTRL },
+    { XKB_KEY_Caps_Lock, SDLK_CAPSLOCK },
+    { XKB_KEY_Alt_L, SDLK_LALT },
+    { XKB_KEY_Alt_R, SDLK_RALT },
+    { XKB_KEY_Meta_L, SDLK_LGUI },
+    { XKB_KEY_Meta_R, SDLK_RGUI },
+    { XKB_KEY_Super_L, SDLK_LGUI },
+    { XKB_KEY_Super_R, SDLK_RGUI },
+    { XKB_KEY_Hyper_L, SDLK_LGUI },
+    { XKB_KEY_Hyper_R, SDLK_RGUI },
+};
+
 struct SDL_WaylandTouchPoint {
     SDL_TouchID id;
     float x;
@@ -82,6 +101,19 @@ struct SDL_WaylandTouchPointList {
 };
 
 static struct SDL_WaylandTouchPointList touch_points = {NULL, NULL};
+
+static SDL_KeyCode
+Wayland_KeySymToSDLKeyCode(xkb_keysym_t keysym)
+{
+    int i;
+
+    for (i = 0; i < SDL_arraysize(KeySymToSDLKeyCode); ++i) {
+        if (keysym == KeySymToSDLKeyCode[i].keysym) {
+            return KeySymToSDLKeyCode[i].keycode;
+        }
+    }
+    return SDLK_UNKNOWN;
+}
 
 static void
 touch_add(SDL_TouchID id, float x, float y, struct wl_surface *surface)
@@ -969,6 +1001,11 @@ Wayland_keymap_iter(struct xkb_keymap *keymap, xkb_keycode_t key, void *data)
 
         if (WAYLAND_xkb_keymap_key_get_syms_by_level(keymap, key, sdlKeymap->layout, 0, &syms) > 0) {
             uint32_t keycode = SDL_KeySymToUcs4(syms[0]);
+
+            if (!keycode) {
+                keycode = Wayland_KeySymToSDLKeyCode(syms[0]);
+            }
+
             if (keycode) {
                 sdlKeymap->keymap[scancode] = keycode;
             } else {
