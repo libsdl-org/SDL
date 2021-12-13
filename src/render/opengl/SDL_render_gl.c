@@ -72,6 +72,9 @@ typedef struct
     SDL_bool cliprect_dirty;
     SDL_Rect cliprect;
     SDL_bool texturing;
+    SDL_bool vertex_array;
+    SDL_bool color_array;
+    SDL_bool texture_array;
     Uint32 color;
     Uint32 clear_color;
 } GL_DrawStateCache;
@@ -989,9 +992,9 @@ GL_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *te
     int i;
     int count = indices ? num_indices : num_vertices;
     GLfloat *verts;
-    int sz = 2 + 4 + (texture ? 2 : 0);
+    size_t sz = 2 * sizeof(GLfloat) + 4 * sizeof(Uint8) + (texture ? 2 : 0) * sizeof(GLfloat);
 
-    verts = (GLfloat *) SDL_AllocateRenderVertices(renderer, count * sz * sizeof (GLfloat), 0, &cmd->data.draw.first);
+    verts = (GLfloat *) SDL_AllocateRenderVertices(renderer, count * sz, 0, &cmd->data.draw.first);
     if (!verts) {
         return -1;
     }
@@ -1006,7 +1009,6 @@ GL_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *te
     for (i = 0; i < count; i++) {
         int j;
         float *xy_;
-        SDL_Color col_;
         if (size_indices == 4) {
             j = ((const Uint32 *)indices)[i];
         } else if (size_indices == 2) {
@@ -1018,15 +1020,13 @@ GL_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *te
         }
 
         xy_ = (float *)((char*)xy + j * xy_stride);
-        col_ = *(SDL_Color *)((char*)color + j * color_stride);
 
         *(verts++) = xy_[0] * scale_x;
         *(verts++) = xy_[1] * scale_y;
 
-        *(verts++) = col_.r * inv255f;
-        *(verts++) = col_.g * inv255f;
-        *(verts++) = col_.b * inv255f;
-        *(verts++) = col_.a * inv255f;
+        /* Not really a float, but it is still 4 bytes and will be cast to the
+           right type in the graphics driver. */
+        *(verts++) = *(float*)((char*)color + j * color_stride);
 
         if (texture) {
             float *uv_ = (float *)((char*)uv + j * uv_stride);
@@ -1041,6 +1041,9 @@ static void
 SetDrawState(GL_RenderData *data, const SDL_RenderCommand *cmd, const GL_Shader shader)
 {
     const SDL_BlendMode blend = cmd->data.draw.blend;
+    SDL_bool vertex_array;
+    SDL_bool color_array;
+    SDL_bool texture_array;
 
     if (data->drawstate.viewport_dirty) {
         const SDL_bool istarget = data->drawstate.target != NULL;
@@ -1106,6 +1109,41 @@ SetDrawState(GL_RenderData *data, const SDL_RenderCommand *cmd, const GL_Shader 
             data->drawstate.texturing = SDL_TRUE;
         }
     }
+
+    vertex_array = cmd->command == SDL_RENDERCMD_DRAW_POINTS
+        || cmd->command == SDL_RENDERCMD_DRAW_LINES
+        || cmd->command == SDL_RENDERCMD_GEOMETRY;
+    color_array = cmd->command == SDL_RENDERCMD_GEOMETRY;
+    texture_array = cmd->data.draw.texture != NULL;
+
+    if (vertex_array != data->drawstate.vertex_array) {
+        if (vertex_array) {
+            data->glEnableClientState(GL_VERTEX_ARRAY);
+        } else {
+            data->glDisableClientState(GL_VERTEX_ARRAY);
+        }
+        data->drawstate.vertex_array = vertex_array;
+    }
+
+    if (color_array != data->drawstate.color_array) {
+        if (color_array) {
+            data->glEnableClientState(GL_COLOR_ARRAY);
+        } else {
+            data->glDisableClientState(GL_COLOR_ARRAY);
+        }
+        data->drawstate.color_array = color_array;
+    }
+
+    /* This is a little awkward but should avoid texcoord arrays getting into
+       a bad state if SDL_GL_BindTexture/UnbindTexture are called. */
+    if (texture_array != data->drawstate.texture_array) {
+        if (texture_array) {
+            data->glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+        } else {
+            data->glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+        }
+        data->drawstate.texture_array = texture_array;
+    }
 }
 
 static void
@@ -1151,7 +1189,6 @@ GL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
 {
     /* !!! FIXME: it'd be nice to use a vertex buffer instead of immediate mode... */
     GL_RenderData *data = (GL_RenderData *) renderer->driverdata;
-    size_t i;
 
     if (GL_ActivateRenderer(renderer) < 0) {
         return -1;
@@ -1185,10 +1222,7 @@ GL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
                 const Uint8 a = cmd->data.color.a;
                 const Uint32 color = (((Uint32)a << 24) | (r << 16) | (g << 8) | b);
                 if (color != data->drawstate.color) {
-                    data->glColor4f((GLfloat) r * inv255f,
-                                    (GLfloat) g * inv255f,
-                                    (GLfloat) b * inv255f,
-                                    (GLfloat) a * inv255f);
+                    data->glColor4ub((GLubyte) r, (GLubyte) g, (GLubyte) b, (GLubyte) a);
                     data->drawstate.color = color;
                 }
                 break;
@@ -1245,11 +1279,10 @@ GL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
                 const size_t count = cmd->data.draw.count;
                 const GLfloat *verts = (GLfloat *) (((Uint8 *) vertices) + cmd->data.draw.first);
                 SetDrawState(data, cmd, SHADER_SOLID);
-                data->glBegin(GL_POINTS);
-                for (i = 0; i < count; i++, verts += 2) {
-                    data->glVertex2f(verts[0], verts[1]);
-                }
-                data->glEnd();
+
+                /* SetDrawState handles glEnableClientState. */
+                data->glVertexPointer(2, GL_FLOAT, sizeof(float) * 2, verts);
+                data->glDrawArrays(GL_POINTS, 0, (GLsizei) count);
                 break;
             }
 
@@ -1258,11 +1291,10 @@ GL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
                 const size_t count = cmd->data.draw.count;
                 SDL_assert(count >= 2);
                 SetDrawState(data, cmd, SHADER_SOLID);
-                data->glBegin(GL_LINE_STRIP);
-                for (i = 0; i < count; ++i, verts += 2) {
-                    data->glVertex2f(verts[0], verts[1]);
-                }
-                data->glEnd();
+
+                /* SetDrawState handles glEnableClientState. */
+                data->glVertexPointer(2, GL_FLOAT, sizeof(float) * 2, verts);
+                data->glDrawArrays(GL_LINE_STRIP, 0, (GLsizei) count);
                 break;
             }
 
@@ -1287,31 +1319,26 @@ GL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
                 }
 
                 {
-                    size_t j;
-                    float currentColor[4];
-                    data->glGetFloatv(GL_CURRENT_COLOR, currentColor);
-                    data->glBegin(GL_TRIANGLES);
-                    for (j = 0; j < count; ++j)
-                    {
-                        const GLfloat x = *(verts++);
-                        const GLfloat y = *(verts++);
+                    Uint32 color = data->drawstate.color;
+                    GLubyte a = (GLubyte)((color >> 24) & 0xFF);
+                    GLubyte r = (GLubyte)((color >> 16) & 0xFF);
+                    GLubyte g = (GLubyte)((color >> 8) & 0xFF);
+                    GLubyte b = (GLubyte)((color >> 0) & 0xFF);
 
-                        const GLfloat r = *(verts++);
-                        const GLfloat g = *(verts++);
-                        const GLfloat b = *(verts++);
-                        const GLfloat a = *(verts++);
-
-                        data->glColor4f(r, g, b, a);
-
-                        if (texture) {
-                            GLfloat u = *(verts++);
-                            GLfloat v = *(verts++);
-                            data->glTexCoord2f(u,v);
-                        }
-                        data->glVertex2f(x, y);
+                    /* SetDrawState handles glEnableClientState. */
+                    if (texture) {
+                        data->glVertexPointer(2, GL_FLOAT, sizeof(float) * 5, verts + 0);
+                        data->glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(float) * 5, verts + 2);
+                        data->glTexCoordPointer(2, GL_FLOAT, sizeof(float) * 5, verts + 3);
+                    } else {
+                        data->glVertexPointer(2, GL_FLOAT, sizeof(float) * 3, verts + 0);
+                        data->glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(float) * 3, verts + 2);
                     }
-                    data->glEnd();
-                    data->glColor4f(currentColor[0], currentColor[1], currentColor[2], currentColor[3]);
+
+                    data->glDrawArrays(GL_TRIANGLES, 0, (GLsizei) count);
+
+                    /* Restore previously set color when we're done. */
+                    data->glColor4ub(r, g, b, a);
                 }
                 break;
            }
@@ -1322,6 +1349,21 @@ GL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
         }
 
         cmd = cmd->next;
+    }
+
+    /* Turn off vertex array state when we're done, in case external code
+       relies on it being off. */
+    if (data->drawstate.vertex_array) {
+        data->glDisableClientState(GL_VERTEX_ARRAY);
+        data->drawstate.vertex_array = SDL_FALSE;
+    }
+    if (data->drawstate.color_array) {
+        data->glDisableClientState(GL_COLOR_ARRAY);
+        data->drawstate.color_array = SDL_FALSE;
+    }
+    if (data->drawstate.texture_array) {
+        data->glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+        data->drawstate.texture_array = SDL_FALSE;
     }
 
     return GL_CheckError("", renderer);
@@ -1790,7 +1832,7 @@ GL_CreateRenderer(SDL_Window * window, Uint32 flags)
     data->glDisable(GL_SCISSOR_TEST);
     data->glDisable(data->textype);
     data->glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-    data->glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+    data->glColor4ub(255, 255, 255, 255);
     /* This ended up causing video discrepancies between OpenGL and Direct3D */
     /* data->glEnable(GL_LINE_SMOOTH); */
 
