@@ -2330,20 +2330,25 @@ elseif(VITA)
           taihen_stub
         )
     endif()
+    if(HAVE_VITA_PVR)
+        list(PREPEND EXTRA_LIBS
+          SceIme_stub
+        )
+    endif()
   endif()
 
-  set(HAVE_ARMSIMD TRUE)
-  set(SDL_ARM_SIMD_BLITTERS 1)
-  file(GLOB ARMSIMD_SOURCES ${SDL2_SOURCE_DIR}/src/video/arm/pixman-arm-simd*.S)
-  set(SOURCE_FILES ${SOURCE_FILES} ${ARMSIMD_SOURCES})
+#  set(HAVE_ARMSIMD TRUE)
+#  set(SDL_ARM_SIMD_BLITTERS 1)
+#  file(GLOB ARMSIMD_SOURCES ${SDL2_SOURCE_DIR}/src/video/arm/pixman-arm-simd*.S)
+#  set(SOURCE_FILES ${SOURCE_FILES} ${ARMSIMD_SOURCES})
 
-  set(HAVE_ARMNEON TRUE)
-  set(SDL_ARM_NEON_BLITTERS 1)
-  file(GLOB ARMNEON_SOURCES ${SDL2_SOURCE_DIR}/src/video/arm/pixman-arm-neon*.S)
-  set(SOURCE_FILES ${SOURCE_FILES} ${ARMNEON_SOURCES})
+#  set(HAVE_ARMNEON TRUE)
+#  set(SDL_ARM_NEON_BLITTERS 1)
+#  file(GLOB ARMNEON_SOURCES ${SDL2_SOURCE_DIR}/src/video/arm/pixman-arm-neon*.S)
+#  set(SOURCE_FILES ${SOURCE_FILES} ${ARMNEON_SOURCES})
 
-  set_property(SOURCE ${SDL2_SOURCE_DIR}/src/video/arm/pixman-arm-simd-asm.S PROPERTY LANGUAGE C)
-  set_property(SOURCE ${SDL2_SOURCE_DIR}/src/video/arm/pixman-arm-neon-asm.S PROPERTY LANGUAGE C)
+#  set_property(SOURCE ${SDL2_SOURCE_DIR}/src/video/arm/pixman-arm-simd-asm.S PROPERTY LANGUAGE C)
+#  set_property(SOURCE ${SDL2_SOURCE_DIR}/src/video/arm/pixman-arm-neon-asm.S PROPERTY LANGUAGE C)
 
   target_compile_definitions(sdl-build-options INTERFACE "-D__VITA__")
   target_compile_definitions(sdl-build-options INTERFACE "-Dmemcpy=sceClibMemcpy")
