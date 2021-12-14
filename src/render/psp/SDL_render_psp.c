@@ -112,16 +112,16 @@ typedef struct
 
 typedef struct
 {
-    int     col;
-    float   x, y, z;
+    SDL_Color col;
+    float     x, y, z;
 } VertCV;
 
 
 typedef struct
 {
-    float   u, v;
-    int     col;
-    float   x, y, z;
+    float     u, v;
+    SDL_Color col;
+    float     x, y, z;
 } VertTCV;
 
 #define PI   3.14159265358979f
@@ -492,7 +492,7 @@ PSP_QueueDrawPoints(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_F
 
 static int
 PSP_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
-        const float *xy, int xy_stride, const int *color, int color_stride, const float *uv, int uv_stride,
+        const float *xy, int xy_stride, const SDL_Color *color, int color_stride, const float *uv, int uv_stride,
         int num_vertices, const void *indices, int num_indices, int size_indices,
         float scale_x, float scale_y)
 {
@@ -512,7 +512,7 @@ PSP_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *t
         for (i = 0; i < count; i++) {
             int j;
             float *xy_;
-            int col_;
+            SDL_Color col_;
             if (size_indices == 4) {
                 j = ((const Uint32 *)indices)[i];
             } else if (size_indices == 2) {
@@ -524,7 +524,7 @@ PSP_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *t
             }
 
             xy_ = (float *)((char*)xy + j * xy_stride);
-            col_ = *(int *)((char*)color + j * color_stride);
+            col_ = *(SDL_Color *)((char*)color + j * color_stride);
 
             verts->x = xy_[0] * scale_x;
             verts->y = xy_[1] * scale_y;
@@ -545,7 +545,7 @@ PSP_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *t
         for (i = 0; i < count; i++) {
             int j;
             float *xy_;
-            int col_;
+            SDL_Color col_;
             float *uv_;
 
             if (size_indices == 4) {
@@ -559,7 +559,7 @@ PSP_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *t
             }
 
             xy_ = (float *)((char*)xy + j * xy_stride);
-            col_ = *(int *)((char*)color + j * color_stride);
+            col_ = *(SDL_Color *)((char*)color + j * color_stride);
             uv_ = (float *)((char*)uv + j * uv_stride);
 
             verts->x = xy_[0] * scale_x;
