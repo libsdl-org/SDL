@@ -51,7 +51,7 @@
 
 #include "SDL_config.h"
 
-#ifndef HAVE_O_CLOEXEC
+#if !defined(O_CLOEXEC) && !defined(HAVE_O_CLOEXEC)
 #define O_CLOEXEC                       0
 #endif
 
