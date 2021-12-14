@@ -663,26 +663,30 @@ static int
 GLES2_QueueDrawPoints(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FPoint * points, int count)
 {
     const SDL_bool colorswap = (renderer->target && (renderer->target->format == SDL_PIXELFORMAT_ARGB8888 || renderer->target->format == SDL_PIXELFORMAT_RGB888));
-    int color;
     const size_t vertlen = (2 * sizeof (float) + sizeof (int)) * count;
     GLfloat *verts = (GLfloat *) SDL_AllocateRenderVertices(renderer, vertlen, 0, &cmd->data.draw.first);
     int i;
+    SDL_Color color;
+    color.r = cmd->data.draw.r;
+    color.g = cmd->data.draw.g;
+    color.b = cmd->data.draw.b;
+    color.a = cmd->data.draw.a;
 
     if (!verts) {
         return -1;
     }
 
-    if (colorswap == 0) {
-        color = (cmd->data.draw.r << 0) | (cmd->data.draw.g << 8) | (cmd->data.draw.b << 16) | ((Uint32)cmd->data.draw.a << 24);
-    } else {
-        color = (cmd->data.draw.r << 16) | (cmd->data.draw.g << 8) | (cmd->data.draw.b << 0) | ((Uint32)cmd->data.draw.a << 24);
+    if (colorswap) {
+        Uint8 r = color.r;
+        color.r = color.b;
+        color.b = r;
     }
 
     cmd->data.draw.count = count;
     for (i = 0; i < count; i++) {
         *(verts++) = 0.5f + points[i].x;
         *(verts++) = 0.5f + points[i].y;
-        *((int *)verts++) = color;
+        *((SDL_Color *)verts++) = color;
     }
 
     return 0;
@@ -692,19 +696,24 @@ static int
 GLES2_QueueDrawLines(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FPoint * points, int count)
 {
     const SDL_bool colorswap = (renderer->target && (renderer->target->format == SDL_PIXELFORMAT_ARGB8888 || renderer->target->format == SDL_PIXELFORMAT_RGB888));
-    int color;
     int i;
     GLfloat prevx, prevy;
     const size_t vertlen = ((2 * sizeof (float)) + sizeof (int)) * count;
     GLfloat *verts = (GLfloat *) SDL_AllocateRenderVertices(renderer, vertlen, 0, &cmd->data.draw.first);
+    SDL_Color color;
+    color.r = cmd->data.draw.r;
+    color.g = cmd->data.draw.g;
+    color.b = cmd->data.draw.b;
+    color.a = cmd->data.draw.a;
+
     if (!verts) {
         return -1;
     }
 
-    if (colorswap == 0) {
-        color = (cmd->data.draw.r << 0) | (cmd->data.draw.g << 8) | (cmd->data.draw.b << 16) | ((Uint32)cmd->data.draw.a << 24);
-    } else {
-        color = (cmd->data.draw.r << 16) | (cmd->data.draw.g << 8) | (cmd->data.draw.b << 0) | ((Uint32)cmd->data.draw.a << 24);
+    if (colorswap) {
+        Uint8 r = color.r;
+        color.r = color.b;
+        color.b = r;
     }
 
     cmd->data.draw.count = count;
@@ -714,7 +723,7 @@ GLES2_QueueDrawLines(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_
     prevy = 0.5f + points->y;
     *(verts++) = prevx;
     *(verts++) = prevy;
-    *((int *)verts++) = color;
+    *((SDL_Color*)verts++) = color;
 
     /* bump the end of each line segment out a quarter of a pixel, to provoke
        the diamond-exit rule. Without this, you won't just drop the last
@@ -733,7 +742,7 @@ GLES2_QueueDrawLines(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_
         prevy = yend + (SDL_sinf(angle) * 0.25f);
         *(verts++) = prevx;
         *(verts++) = prevy;
-        *((int *)verts++) = color;
+        *((SDL_Color*)verts++) = color;
     }
 
     return 0;
@@ -741,7 +750,7 @@ GLES2_QueueDrawLines(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_
 
 static int
 GLES2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
-        const float *xy, int xy_stride, const int *color, int color_stride, const float *uv, int uv_stride,
+        const float *xy, int xy_stride, const SDL_Color *color, int color_stride, const float *uv, int uv_stride,
         int num_vertices, const void *indices, int num_indices, int size_indices,
         float scale_x, float scale_y)
 {
@@ -761,7 +770,7 @@ GLES2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture 
     for (i = 0; i < count; i++) {
         int j;
         float *xy_;
-        int col_;
+        SDL_Color col_;
         if (size_indices == 4) {
             j = ((const Uint32 *)indices)[i];
         } else if (size_indices == 2) {
@@ -773,22 +782,18 @@ GLES2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture 
         }
 
         xy_ = (float *)((char*)xy + j * xy_stride);
-        col_ = *(int *)((char*)color + j * color_stride);
+        col_ = *(SDL_Color *)((char*)color + j * color_stride);
 
         *(verts++) = xy_[0] * scale_x;
         *(verts++) = xy_[1] * scale_y;
 
-        if (colorswap == 0) {
-            *((int *)verts++) = col_;
-        } else {
-            Uint8 r, g, b, a;
-            r = (col_ >> 0) & 0xff;
-            g = (col_ >> 8) & 0xff;
-            b = (col_ >> 16) & 0xff;
-            a = (col_ >> 24) & 0xff;
-            col_ = (r << 16) | (g << 8) | (b << 0) | ((Uint32)a << 24);
-            *((int *)verts++) = col_;
+        if (colorswap) {
+            Uint8 r = col_.r;
+            col_.r = col_.b;
+            col_.b = r;
         }
+
+        *((SDL_Color *)verts++) = col_;
 
         if (texture) {
             float *uv_ = (float *)((char*)uv + j * uv_stride);

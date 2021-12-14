@@ -83,7 +83,7 @@ static int VITA_GXM_QueueDrawLines(SDL_Renderer * renderer, SDL_RenderCommand *c
 
 static int
 VITA_GXM_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
-        const float *xy, int xy_stride, const int *color, int color_stride, const float *uv, int uv_stride,
+        const float *xy, int xy_stride, const SDL_Color *color, int color_stride, const float *uv, int uv_stride,
         int num_vertices, const void *indices, int num_indices, int size_indices,
         float scale_x, float scale_y);
 
@@ -442,11 +442,10 @@ VITA_GXM_QueueSetDrawColor(SDL_Renderer * renderer, SDL_RenderCommand *cmd)
 {
     VITA_GXM_RenderData *data = (VITA_GXM_RenderData *) renderer->driverdata;
 
-    const Uint8 r = cmd->data.color.r;
-    const Uint8 g = cmd->data.color.g;
-    const Uint8 b = cmd->data.color.b;
-    const Uint8 a = cmd->data.color.a;
-    data->drawstate.color = (((Uint32)a << 24) | (b << 16) | (g << 8) | r);
+    data->drawstate.color.r = cmd->data.color.r;
+    data->drawstate.color.g = cmd->data.color.g;
+    data->drawstate.color.b = cmd->data.color.b;
+    data->drawstate.color.a = cmd->data.color.a;
 
     return 0;
 }
@@ -456,7 +455,7 @@ VITA_GXM_QueueDrawPoints(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const 
 {
     VITA_GXM_RenderData *data = (VITA_GXM_RenderData *) renderer->driverdata;
 
-    int color = data->drawstate.color;
+    SDL_Color color = data->drawstate.color;
 
     color_vertex *vertex = (color_vertex *)pool_malloc(
         data,
@@ -480,7 +479,7 @@ static int
 VITA_GXM_QueueDrawLines(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FPoint * points, int count)
 {
     VITA_GXM_RenderData *data = (VITA_GXM_RenderData *) renderer->driverdata;
-    int color = data->drawstate.color;
+    SDL_Color color = data->drawstate.color;
 
     color_vertex *vertex = (color_vertex *)pool_malloc(
         data,
@@ -506,7 +505,7 @@ VITA_GXM_QueueDrawLines(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const S
 
 static int
 VITA_GXM_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
-        const float *xy, int xy_stride, const int *color, int color_stride, const float *uv, int uv_stride,
+        const float *xy, int xy_stride, const SDL_Color *color, int color_stride, const float *uv, int uv_stride,
         int num_vertices, const void *indices, int num_indices, int size_indices,
         float scale_x, float scale_y)
 {
@@ -533,7 +532,7 @@ VITA_GXM_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Textu
             int j;
             float *xy_;
             float *uv_;
-            int col_;
+            SDL_Color col_;
             if (size_indices == 4) {
                 j = ((const Uint32 *)indices)[i];
             } else if (size_indices == 2) {
@@ -545,7 +544,7 @@ VITA_GXM_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Textu
             }
 
             xy_ = (float *)((char*)xy + j * xy_stride);
-            col_ = *(int *)((char*)color + j * color_stride);
+            col_ = *(SDL_Color *)((char*)color + j * color_stride);
             uv_ = (float *)((char*)uv + j * uv_stride);
 
             vertices[i].x = xy_[0] * scale_x;
@@ -572,7 +571,7 @@ VITA_GXM_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Textu
         for (i = 0; i < count; i++) {
             int j;
             float *xy_;
-            int col_;
+            SDL_Color col_;
             if (size_indices == 4) {
                 j = ((const Uint32 *)indices)[i];
             } else if (size_indices == 2) {
@@ -584,7 +583,7 @@ VITA_GXM_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Textu
             }
 
             xy_ = (float *)((char*)xy + j * xy_stride);
-            col_ = *(int *)((char*)color + j * color_stride);
+            col_ = *(SDL_Color *)((char*)color + j * color_stride);
 
             vertices[i].x = xy_[0] * scale_x;
             vertices[i].y = xy_[1] * scale_y;
