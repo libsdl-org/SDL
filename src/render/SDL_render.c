@@ -628,7 +628,7 @@ QueueCmdCopyEx(SDL_Renderer *renderer, SDL_Texture * texture,
 static int
 QueueCmdGeometry(SDL_Renderer *renderer, SDL_Texture *texture,
         const float *xy, int xy_stride,
-        const int *color, int color_stride,
+        const SDL_Color *color, int color_stride,
         const float *uv, int uv_stride,
         int num_vertices,
         const void *indices, int num_indices, int size_indices,
@@ -639,7 +639,8 @@ QueueCmdGeometry(SDL_Renderer *renderer, SDL_Texture *texture,
     cmd = PrepQueueCmdDraw(renderer, SDL_RENDERCMD_GEOMETRY, texture);
     if (cmd != NULL) {
         retval = renderer->QueueGeometry(renderer, cmd, texture,
-                xy, xy_stride, color, color_stride, uv, uv_stride,
+                xy, xy_stride,
+                (const int *)color, color_stride, uv, uv_stride,
                 num_vertices, indices, num_indices, size_indices,
                 scale_x, scale_y);
         if (retval < 0) {
@@ -2648,7 +2649,9 @@ RenderDrawPointsWithRects(SDL_Renderer * renderer,
         frects[i].h = renderer->scale.y;
     }
 
-    retval = QueueCmdFillRects(renderer, frects, count);
+    if (count) {
+        retval = QueueCmdFillRects(renderer, frects, count);
+    }
 
     SDL_small_free(frects, isstack);
 
@@ -2720,7 +2723,9 @@ RenderDrawPointsWithRectsF(SDL_Renderer * renderer,
         frects[i].h = renderer->scale.y;
     }
 
-    retval = QueueCmdFillRects(renderer, frects, count);
+    if (count) {
+        retval = QueueCmdFillRects(renderer, frects, count);
+    }
 
     SDL_small_free(frects, isstack);
 
@@ -3340,7 +3345,6 @@ SDL_RenderCopyF(SDL_Renderer * renderer, SDL_Texture * texture,
         const int size_indices = 4;
         float minu, minv, maxu, maxv;
         float minx, miny, maxx, maxy;
-        int color = (texture->color.r << 0) | (texture->color.g << 8) | (texture->color.b << 16) | ((Uint32)texture->color.a << 24);
 
         minu = (float) (real_srcrect.x) / (float) texture->w;
         minv = (float) (real_srcrect.y) / (float) texture->h;
@@ -3371,7 +3375,7 @@ SDL_RenderCopyF(SDL_Renderer * renderer, SDL_Texture * texture,
         xy[7] = maxy;
 
         retval = QueueCmdGeometry(renderer, texture,
-                xy, xy_stride, &color, 0 /* color_stride */, uv, uv_stride,
+                xy, xy_stride, &texture->color, 0 /* color_stride */, uv, uv_stride,
                 num_vertices,
                 indices, num_indices, size_indices,
                 renderer->scale.x, renderer->scale.y);
@@ -3497,7 +3501,6 @@ SDL_RenderCopyExF(SDL_Renderer * renderer, SDL_Texture * texture,
         const float radian_angle = (float)((M_PI * angle) / 180.0);
         const float s = SDL_sinf(radian_angle);
         const float c = SDL_cosf(radian_angle);
-        int color = (texture->color.r << 0) | (texture->color.g << 8) | (texture->color.b << 16) | ((Uint32)texture->color.a << 24);
 
         minu = (float) (real_srcrect.x) / (float) texture->w;
         minv = (float) (real_srcrect.y) / (float) texture->h;
@@ -3557,7 +3560,7 @@ SDL_RenderCopyExF(SDL_Renderer * renderer, SDL_Texture * texture,
         xy[7] = (s_minx + c_maxy) + centery;
 
         retval = QueueCmdGeometry(renderer, texture,
-                xy, xy_stride, &color, 0 /* color_stride */, uv, uv_stride,
+                xy, xy_stride, &texture->color, 0 /* color_stride */, uv, uv_stride,
                 num_vertices,
                 indices, num_indices, size_indices,
                 renderer->scale.x, renderer->scale.y);
@@ -3582,15 +3585,18 @@ SDL_RenderGeometry(SDL_Renderer *renderer,
                                const SDL_Vertex *vertices, int num_vertices,
                                const int *indices, int num_indices)
 {
-    const float *xy = &vertices[0].position.x;
-    int xy_stride = sizeof (SDL_Vertex);
-    const int *color = (int *)&vertices[0].color.r;
-    int color_stride = sizeof (SDL_Vertex);
-    const float *uv = &vertices[0].tex_coord.x;
-    int uv_stride = sizeof (SDL_Vertex);
-    int size_indices = 4;
-
-    return SDL_RenderGeometryRaw(renderer, texture, xy, xy_stride, color, color_stride, uv, uv_stride, num_vertices, indices, num_indices, size_indices);
+    if (vertices) {
+        const float *xy = &vertices[0].position.x;
+        int xy_stride = sizeof (SDL_Vertex);
+        const SDL_Color *color = &vertices[0].color;
+        int color_stride = sizeof (SDL_Vertex);
+        const float *uv = &vertices[0].tex_coord.x;
+        int uv_stride = sizeof (SDL_Vertex);
+        int size_indices = 4;
+        return SDL_RenderGeometryRaw(renderer, texture, xy, xy_stride, color, color_stride, uv, uv_stride, num_vertices, indices, num_indices, size_indices);
+    } else {
+        return SDL_InvalidParamError("vertices");
+    }
 }
 
 static int
@@ -3599,7 +3605,7 @@ remap_one_indice(
         int k,
         SDL_Texture *texture,
         const float *xy, int xy_stride,
-        const int *color, int color_stride,
+        const SDL_Color *color, int color_stride,
         const float *uv, int uv_stride)
 {
     const float *xy0_, *xy1_, *uv0_, *uv1_;
@@ -3638,7 +3644,7 @@ remap_indices(
         int k,
         SDL_Texture *texture,
         const float *xy, int xy_stride,
-        const int *color, int color_stride,
+        const SDL_Color *color, int color_stride,
         const float *uv, int uv_stride)
 {
     int i;
@@ -3661,7 +3667,7 @@ static int SDLCALL
 SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
                          SDL_Texture *texture,
                          const float *xy, int xy_stride,
-                         const int *color, int color_stride,
+                         const SDL_Color *color, int color_stride,
                          const float *uv, int uv_stride,
                          int num_vertices,
                          const void *indices, int num_indices, int size_indices)
@@ -3940,7 +3946,7 @@ int
 SDL_RenderGeometryRaw(SDL_Renderer *renderer,
                                   SDL_Texture *texture,
                                   const float *xy, int xy_stride,
-                                  const int *color, int color_stride,
+                                  const SDL_Color *color, int color_stride,
                                   const float *uv, int uv_stride,
                                   int num_vertices,
                                   const void *indices, int num_indices, int size_indices)
