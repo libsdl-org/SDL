@@ -80,6 +80,8 @@ typedef struct
     int             currentBlendMode;
 
     PSP_DrawStateCache drawstate;
+
+    SDL_bool        vblank_not_reached;                  /**< wether vblank wasn't reached */
 } PSP_RenderData;
 
 
@@ -112,16 +114,16 @@ typedef struct
 
 typedef struct
 {
-    int     col;
-    float   x, y, z;
+    SDL_Color col;
+    float     x, y, z;
 } VertCV;
 
 
 typedef struct
 {
-    float   u, v;
-    int     col;
-    float   x, y, z;
+    float     u, v;
+    SDL_Color col;
+    float     x, y, z;
 } VertTCV;
 
 #define PI   3.14159265358979f
@@ -173,6 +175,12 @@ TextureNextPow2(unsigned int w)
         n <<= 1;
 
     return n;
+}
+
+static void psp_on_vblank(u32 sub, PSP_RenderData *data)
+{
+   if (data)
+      data->vblank_not_reached = SDL_FALSE;
 }
 
 
@@ -251,6 +259,7 @@ TextureSwizzle(PSP_TextureData *psp_texture)
     psp_texture->data = data;
     psp_texture->swizzled = SDL_TRUE;
 
+    sceKernelDcacheWritebackRange(psp_texture->data, psp_texture->size);
     return 1;
 }
 int TextureUnswizzle(PSP_TextureData *psp_texture)
@@ -282,8 +291,6 @@ int TextureUnswizzle(PSP_TextureData *psp_texture)
 
     if(!data)
         return 0;
-
-    sceKernelDcacheWritebackAll();
 
     ydst = (unsigned char *)data;
 
@@ -318,6 +325,7 @@ int TextureUnswizzle(PSP_TextureData *psp_texture)
 
     psp_texture->swizzled = SDL_FALSE;
 
+    sceKernelDcacheWritebackRange(psp_texture->data, psp_texture->size);
     return 1;
 }
 
@@ -492,7 +500,7 @@ PSP_QueueDrawPoints(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_F
 
 static int
 PSP_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
-        const float *xy, int xy_stride, const int *color, int color_stride, const float *uv, int uv_stride,
+        const float *xy, int xy_stride, const SDL_Color *color, int color_stride, const float *uv, int uv_stride,
         int num_vertices, const void *indices, int num_indices, int size_indices,
         float scale_x, float scale_y)
 {
@@ -512,7 +520,7 @@ PSP_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *t
         for (i = 0; i < count; i++) {
             int j;
             float *xy_;
-            int col_;
+            SDL_Color col_;
             if (size_indices == 4) {
                 j = ((const Uint32 *)indices)[i];
             } else if (size_indices == 2) {
@@ -524,7 +532,7 @@ PSP_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *t
             }
 
             xy_ = (float *)((char*)xy + j * xy_stride);
-            col_ = *(int *)((char*)color + j * color_stride);
+            col_ = *(SDL_Color *)((char*)color + j * color_stride);
 
             verts->x = xy_[0] * scale_x;
             verts->y = xy_[1] * scale_y;
@@ -545,7 +553,7 @@ PSP_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *t
         for (i = 0; i < count; i++) {
             int j;
             float *xy_;
-            int col_;
+            SDL_Color col_;
             float *uv_;
 
             if (size_indices == 4) {
@@ -559,7 +567,7 @@ PSP_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *t
             }
 
             xy_ = (float *)((char*)xy + j * xy_stride);
-            col_ = *(int *)((char*)color + j * color_stride);
+            col_ = *(SDL_Color *)((char*)color + j * color_stride);
             uv_ = (float *)((char*)uv + j * uv_stride);
 
             verts->x = xy_[0] * scale_x;
@@ -1009,8 +1017,9 @@ PSP_RenderPresent(SDL_Renderer * renderer)
     sceGuFinish();
     sceGuSync(0,0);
 
-/*  if(data->vsync) */
+    if ((data->vsync) && (data->vblank_not_reached))
         sceDisplayWaitVblankStart();
+    data->vblank_not_reached = SDL_TRUE;
 
     data->backbuffer = data->frontbuffer;
     data->frontbuffer = vabsptr(sceGuSwapBuffers());
@@ -1044,6 +1053,10 @@ PSP_DestroyRenderer(SDL_Renderer * renderer)
 
         StartDrawing(renderer);
 
+        sceKernelDisableSubIntr(PSP_VBLANK_INT, 0);
+        sceKernelReleaseSubIntrHandler(PSP_VBLANK_INT,0);
+        sceDisplayWaitVblankStart();
+        sceGuDisplay(GU_FALSE);
         sceGuTerm();
 /*      vfree(data->backbuffer); */
 /*      vfree(data->frontbuffer); */
@@ -1178,6 +1191,11 @@ PSP_CreateRenderer(SDL_Window * window, Uint32 flags)
     sceGuSync(0,0);
     sceDisplayWaitVblankStartCB();
     sceGuDisplay(GU_TRUE);
+
+    /* Improve performance when VSYC is enabled and it is not reaching the 60 FPS */
+    data->vblank_not_reached = SDL_TRUE;
+    sceKernelRegisterSubIntrHandler(PSP_VBLANK_INT, 0, psp_on_vblank, data);
+    sceKernelEnableSubIntr(PSP_VBLANK_INT, 0);
 
     return renderer;
 }

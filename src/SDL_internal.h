@@ -51,6 +51,7 @@
 
 #include "SDL_config.h"
 
+/* If you run into a warning that O_CLOEXEC is redefined, update the SDL configuration header for your platform to add HAVE_O_CLOEXEC */
 #ifndef HAVE_O_CLOEXEC
 #define O_CLOEXEC                       0
 #endif

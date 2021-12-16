@@ -833,7 +833,7 @@ D3D_QueueDrawPoints(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_F
 
 static int
 D3D_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
-        const float *xy, int xy_stride, const int *color, int color_stride, const float *uv, int uv_stride,
+        const float *xy, int xy_stride, const SDL_Color *color, int color_stride, const float *uv, int uv_stride,
         int num_vertices, const void *indices, int num_indices, int size_indices,
         float scale_x, float scale_y)
 {
@@ -1090,46 +1090,48 @@ D3D_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *verti
         return -1;
     }
 
-    /* upload the new VBO data for this set of commands. */
-    vbo = data->vertexBuffers[vboidx];
-    if (data->vertexBufferSize[vboidx] < vertsize) {
-        const DWORD usage = D3DUSAGE_DYNAMIC | D3DUSAGE_WRITEONLY;
-        const DWORD fvf = D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1;
+    if (vertices) {
+        /* upload the new VBO data for this set of commands. */
+        vbo = data->vertexBuffers[vboidx];
+        if (data->vertexBufferSize[vboidx] < vertsize) {
+            const DWORD usage = D3DUSAGE_DYNAMIC | D3DUSAGE_WRITEONLY;
+            const DWORD fvf = D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1;
+            if (vbo) {
+                IDirect3DVertexBuffer9_Release(vbo);
+            }
+
+            if (FAILED(IDirect3DDevice9_CreateVertexBuffer(data->device, (UINT) vertsize, usage, fvf, D3DPOOL_DEFAULT, &vbo, NULL))) {
+                vbo = NULL;
+            }
+            data->vertexBuffers[vboidx] = vbo;
+            data->vertexBufferSize[vboidx] = vbo ? vertsize : 0;
+        }
+
         if (vbo) {
-            IDirect3DVertexBuffer9_Release(vbo);
-        }
-
-        if (FAILED(IDirect3DDevice9_CreateVertexBuffer(data->device, (UINT) vertsize, usage, fvf, D3DPOOL_DEFAULT, &vbo, NULL))) {
-            vbo = NULL;
-        }
-        data->vertexBuffers[vboidx] = vbo;
-        data->vertexBufferSize[vboidx] = vbo ? vertsize : 0;
-    }
-
-    if (vbo) {
-        void *ptr;
-        if (FAILED(IDirect3DVertexBuffer9_Lock(vbo, 0, (UINT) vertsize, &ptr, D3DLOCK_DISCARD))) {
-            vbo = NULL;  /* oh well, we'll do immediate mode drawing.  :(  */
-        } else {
-            SDL_memcpy(ptr, vertices, vertsize);
-            if (FAILED(IDirect3DVertexBuffer9_Unlock(vbo))) {
+            void *ptr;
+            if (FAILED(IDirect3DVertexBuffer9_Lock(vbo, 0, (UINT) vertsize, &ptr, D3DLOCK_DISCARD))) {
                 vbo = NULL;  /* oh well, we'll do immediate mode drawing.  :(  */
+            } else {
+                SDL_memcpy(ptr, vertices, vertsize);
+                if (FAILED(IDirect3DVertexBuffer9_Unlock(vbo))) {
+                    vbo = NULL;  /* oh well, we'll do immediate mode drawing.  :(  */
+                }
             }
         }
-    }
 
-    /* cycle through a few VBOs so D3D has some time with the data before we replace it. */
-    if (vbo) {
-        data->currentVertexBuffer++;
-        if (data->currentVertexBuffer >= SDL_arraysize(data->vertexBuffers)) {
-            data->currentVertexBuffer = 0;
+        /* cycle through a few VBOs so D3D has some time with the data before we replace it. */
+        if (vbo) {
+            data->currentVertexBuffer++;
+            if (data->currentVertexBuffer >= SDL_arraysize(data->vertexBuffers)) {
+                data->currentVertexBuffer = 0;
+            }
+        } else if (!data->reportedVboProblem) {
+            SDL_LogError(SDL_LOG_CATEGORY_RENDER, "SDL failed to get a vertex buffer for this Direct3D 9 rendering batch!");
+            SDL_LogError(SDL_LOG_CATEGORY_RENDER, "Dropping back to a slower method.");
+            SDL_LogError(SDL_LOG_CATEGORY_RENDER, "This might be a brief hiccup, but if performance is bad, this is probably why.");
+            SDL_LogError(SDL_LOG_CATEGORY_RENDER, "This error will not be logged again for this renderer.");
+            data->reportedVboProblem = SDL_TRUE;
         }
-    } else if (!data->reportedVboProblem) {
-        SDL_LogError(SDL_LOG_CATEGORY_RENDER, "SDL failed to get a vertex buffer for this Direct3D 9 rendering batch!");
-        SDL_LogError(SDL_LOG_CATEGORY_RENDER, "Dropping back to a slower method.");
-        SDL_LogError(SDL_LOG_CATEGORY_RENDER, "This might be a brief hiccup, but if performance is bad, this is probably why.");
-        SDL_LogError(SDL_LOG_CATEGORY_RENDER, "This error will not be logged again for this renderer.");
-        data->reportedVboProblem = SDL_TRUE;
     }
 
     IDirect3DDevice9_SetStreamSource(data->device, 0, vbo, 0, sizeof (Vertex));

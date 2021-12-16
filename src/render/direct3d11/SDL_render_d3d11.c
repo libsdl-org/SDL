@@ -63,8 +63,8 @@ extern ISwapChainBackgroundPanelNative * WINRT_GlobalSwapChainBackgroundPanelNat
 #define SAFE_RELEASE(X) if ((X)) { IUnknown_Release(SDL_static_cast(IUnknown*, X)); X = NULL; }
 
 
-/* !!! FIXME: vertex buffer bandwidth could be significantly lower; move color to a uniform, only use UV coords
-   !!! FIXME:  when textures are needed, and don't ever pass Z, since it's always zero. */
+/* !!! FIXME: vertex buffer bandwidth could be lower; only use UV coords when
+   !!! FIXME:  textures are needed. */
 
 /* Vertex shader, common values */
 typedef struct
@@ -76,9 +76,9 @@ typedef struct
 /* Per-vertex data */
 typedef struct
 {
-    Float3 pos;
+    Float2 pos;
     Float2 tex;
-    Float4 color;
+    SDL_Color color;
 } VertexPositionColor;
 
 /* Per-texture data */
@@ -1614,11 +1614,12 @@ static int
 D3D11_QueueDrawPoints(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FPoint * points, int count)
 {
     VertexPositionColor *verts = (VertexPositionColor *) SDL_AllocateRenderVertices(renderer, count * sizeof (VertexPositionColor), 0, &cmd->data.draw.first);
-    const float r = (float)(cmd->data.draw.r / 255.0f);
-    const float g = (float)(cmd->data.draw.g / 255.0f);
-    const float b = (float)(cmd->data.draw.b / 255.0f);
-    const float a = (float)(cmd->data.draw.a / 255.0f);
     int i;
+    SDL_Color color;
+    color.r = cmd->data.draw.r;
+    color.g = cmd->data.draw.g;
+    color.b = cmd->data.draw.b;
+    color.a = cmd->data.draw.a;
 
     if (!verts) {
         return -1;
@@ -1629,13 +1630,9 @@ D3D11_QueueDrawPoints(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL
     for (i = 0; i < count; i++) {
         verts->pos.x = points[i].x + 0.5f;
         verts->pos.y = points[i].y + 0.5f;
-        verts->pos.z = 0.0f;
         verts->tex.x = 0.0f;
         verts->tex.y = 0.0f;
-        verts->color.x = r;
-        verts->color.y = g;
-        verts->color.z = b;
-        verts->color.w = a;
+        verts->color = color;
         verts++;
     }
 
@@ -1644,7 +1641,7 @@ D3D11_QueueDrawPoints(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL
 
 static int
 D3D11_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
-                    const float *xy, int xy_stride, const int *color, int color_stride, const float *uv, int uv_stride,
+                    const float *xy, int xy_stride, const SDL_Color *color, int color_stride, const float *uv, int uv_stride,
                     int num_vertices, const void *indices, int num_indices, int size_indices,
                     float scale_x, float scale_y)
 {
@@ -1662,7 +1659,6 @@ D3D11_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture 
     for (i = 0; i < count; i++) {
         int j;
         float *xy_;
-        SDL_Color col_;
         if (size_indices == 4) {
             j = ((const Uint32 *)indices)[i];
         } else if (size_indices == 2) {
@@ -1674,15 +1670,10 @@ D3D11_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture 
         }
 
         xy_ = (float *)((char*)xy + j * xy_stride);
-        col_ = *(SDL_Color *)((char*)color + j * color_stride);
 
         verts->pos.x = xy_[0] * scale_x;
         verts->pos.y = xy_[1] * scale_y;
-        verts->pos.z = 0.0f;
-        verts->color.x = col_.r / 255.0f;
-        verts->color.y = col_.g / 255.0f;
-        verts->color.z = col_.b / 255.0f;
-        verts->color.w = col_.a / 255.0f;
+        verts->color = *(SDL_Color*)((char*)color + j * color_stride);
 
         if (texture) {
             float *uv_ = (float *)((char*)uv + j * uv_stride);

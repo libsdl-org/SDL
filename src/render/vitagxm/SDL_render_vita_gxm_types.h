@@ -61,7 +61,7 @@ typedef struct clear_vertex {
 typedef struct color_vertex {
     float x;
     float y;
-    unsigned int color;
+    SDL_Color color;
 } color_vertex;
 
 typedef struct texture_vertex {
@@ -69,7 +69,7 @@ typedef struct texture_vertex {
     float y;
     float u;
     float v;
-    unsigned int color;
+    SDL_Color color;
 } texture_vertex;
 
 typedef struct gxm_texture {
@@ -100,7 +100,7 @@ typedef struct
     SDL_bool viewport_dirty;
     SDL_Texture *texture;
     SDL_Texture *target;
-    Uint32 color;
+    SDL_Color color;
     SceGxmFragmentProgram *fragment_program;
     SceGxmVertexProgram *vertex_program;
     int last_command;
@@ -110,7 +110,7 @@ typedef struct
     SDL_bool cliprect_dirty;
     SDL_Rect cliprect;
     SDL_bool texturing;
-    Uint32 clear_color;
+    SDL_Color clear_color;
     int drawablew;
     int drawableh;
 } gxm_drawstate_cache;
