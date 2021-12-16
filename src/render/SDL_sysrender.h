@@ -107,6 +107,13 @@ typedef struct SDL_RenderCommand
 } SDL_RenderCommand;
 
 
+typedef struct SDL_VertexSolid
+{
+    SDL_FPoint position;
+    SDL_Color  color;
+} SDL_VertexSolid;
+
+
 /* Define the SDL renderer structure */
 struct SDL_Renderer
 {
