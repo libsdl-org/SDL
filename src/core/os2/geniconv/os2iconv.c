@@ -73,7 +73,8 @@ static int _createUconvObj(const char *code, UconvObject *uobj)
 {
     UniChar uc_code[MAX_CP_NAME_LEN];
     int i;
-    const char *ch = code;
+    const unsigned char *ch =
+         (const unsigned char *)code;
 
     if (code == NULL)
         uc_code[0] = 0;
