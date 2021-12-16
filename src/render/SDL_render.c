@@ -3585,11 +3585,11 @@ SDL_RenderGeometry(SDL_Renderer *renderer,
                                const int *indices, int num_indices)
 {
     if (vertices) {
-        const float *xy = &vertices->position;
+        const float *xy = &vertices->position.x;
         int xy_stride = sizeof (SDL_Vertex);
         const SDL_Color *color = &vertices->color;
         int color_stride = sizeof (SDL_Vertex);
-        const float *uv = &vertices->tex_coord;
+        const float *uv = &vertices->tex_coord.x;
         int uv_stride = sizeof (SDL_Vertex);
         int size_indices = 4;
         return SDL_RenderGeometryRaw(renderer, texture, xy, xy_stride, color, color_stride, uv, uv_stride, num_vertices, indices, num_indices, size_indices);
