@@ -1516,7 +1516,7 @@ GLES2_TexSubImage2D(GLES2_RenderData *data, GLenum target, GLint xoffset, GLint 
     }
 
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
-    {
+    if (format == GL_RGBA) {
         int i;
         Uint32 *src32 = (Uint32 *)src;
         blob2 = (Uint32 *)SDL_malloc(src_pitch * height);
