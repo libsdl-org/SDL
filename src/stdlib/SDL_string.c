@@ -670,7 +670,7 @@ SDL_utf8strlen(const char *str)
 {
     size_t retval = 0;
     const char *p = str;
-    char ch;
+    unsigned char ch;
 
     while ((ch = *(p++)) != 0) {
         /* if top two bits are 1 and 0, it's a continuation byte. */
