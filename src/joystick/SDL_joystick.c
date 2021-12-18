@@ -1713,7 +1713,7 @@ PrefixMatch(const char *a, const char *b)
 {
     int matchlen = 0;
     while (*a && *b) {
-        if (SDL_tolower(*a++) == SDL_tolower(*b++)) {
+        if (SDL_tolower((unsigned char) *a++) == SDL_tolower((unsigned char) *b++)) {
             ++matchlen;
         } else {
             break;
