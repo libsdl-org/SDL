@@ -92,7 +92,6 @@ macro(LISTTOSTRREV _LIST _OUTPUT)
   endforeach()
 endmacro()
 
-
 macro(CHECK_OBJC_SOURCE_COMPILES SOURCE VAR)
   set(PREV_REQUIRED_DEFS "${CMAKE_REQUIRED_DEFINITIONS}")
   set(CMAKE_REQUIRED_DEFINITIONS "-x objective-c ${PREV_REQUIRED_DEFS}")
@@ -100,3 +99,8 @@ macro(CHECK_OBJC_SOURCE_COMPILES SOURCE VAR)
   set(CMAKE_REQUIRED_DEFINITIONS "${PREV_REQUIRED_DEFS}")
 endmacro()
 
+if(CMAKE_VERSION VERSION_LESS 3.13.0)
+  macro(target_link_directories _TARGET _SCOPE)
+    link_directories(${ARGN})
+  endmacro()
+endif()
