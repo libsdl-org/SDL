@@ -3271,7 +3271,14 @@ XINPUT_STATE_EX s1;
         fi
     fi
 
-    AC_CHECK_HEADER(windows.gaming.input.h, have_wgi=yes)
+    AC_MSG_CHECKING(for windows.gaming.input.h)
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+#define COBJMACROS
+#include <windows.gaming.input.h>
+__x_ABI_CWindows_CGaming_CInput_CIGamepadStatics2 *s2;
+        ]],[])], [have_wgi=yes],[have_wgi=no])
+    AC_MSG_RESULT($have_wgi)
+
     if test x$have_wgi = xyes; then
         AC_DEFINE(HAVE_WINDOWS_GAMING_INPUT_H, 1, [ ])
     fi
