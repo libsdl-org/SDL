@@ -23060,7 +23060,7 @@ _ACEOF
 $as_echo "$kmsdrm_shared" >&6; }
             if test x$kmsdrm_shared = xyes; then
                 echo "-- dynamic libdrm -> $drm_lib"
-                echo "-- dynamic libgmb -> $gbm_lib"
+                echo "-- dynamic libgbm -> $gbm_lib"
             fi
             have_video=yes
         fi

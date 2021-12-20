@@ -2325,7 +2325,7 @@ CheckKMSDRM()
             AC_MSG_RESULT($kmsdrm_shared)
             if test x$kmsdrm_shared = xyes; then
                 echo "-- dynamic libdrm -> $drm_lib"
-                echo "-- dynamic libgmb -> $gbm_lib"
+                echo "-- dynamic libgbm -> $gbm_lib"
             fi
             have_video=yes
         fi
