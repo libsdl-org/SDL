@@ -325,7 +325,6 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x045e, 0x02fd ), k_eControllerType_XBoxOneController, "Xbox One S Controller" },	// Microsoft X-Box One S pad (Bluetooth)
 	{ MAKE_CONTROLLER_ID( 0x045e, 0x02ff ), k_eControllerType_XBoxOneController, NULL },	// Microsoft X-Box One controller with XBOXGIP driver on Windows
 	{ MAKE_CONTROLLER_ID( 0x045e, 0x0b00 ), k_eControllerType_XBoxOneController, "Xbox One Elite 2 Controller" },	// Microsoft X-Box One Elite Series 2 pad
-	{ MAKE_CONTROLLER_ID( 0x045e, 0x0b02 ), k_eControllerType_XBoxOneController, "Xbox One Elite 2 Controller" },	// Microsoft X-Box One Elite Series 2 pad (Bluetooth)
 	{ MAKE_CONTROLLER_ID( 0x045e, 0x0b05 ), k_eControllerType_XBoxOneController, "Xbox One Elite 2 Controller" },	// Microsoft X-Box One Elite Series 2 pad (Bluetooth)
 	{ MAKE_CONTROLLER_ID( 0x045e, 0x0b0a ), k_eControllerType_XBoxOneController, "Xbox Adaptive Controller" },	// Microsoft X-Box Adaptive pad
 	{ MAKE_CONTROLLER_ID( 0x045e, 0x0b0c ), k_eControllerType_XBoxOneController, "Xbox Adaptive Controller" },	// Microsoft X-Box Adaptive pad (Bluetooth)
