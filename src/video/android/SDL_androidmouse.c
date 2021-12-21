@@ -113,6 +113,10 @@ Android_CreateSystemCursor(SDL_SystemCursor id)
 static void
 Android_FreeCursor(SDL_Cursor * cursor)
 {
+    SDL_AndroidCursorData *data = (SDL_AndroidCursorData*) cursor->driverdata;
+    if (data->custom_cursor != 0) {
+        Android_JNI_DestroyCustomCursor(data->custom_cursor);
+    }
     SDL_free(cursor->driverdata);
     SDL_free(cursor);
 }
