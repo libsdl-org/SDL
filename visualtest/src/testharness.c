@@ -49,8 +49,8 @@ static SDLVisualTest_ActionNode* current; /* the current action being performed 
 static SDL_TimerID action_timer, kill_timer;
 
 /* returns a char* to be passed as the format argument of a printf-style function. */
-static char*
-usage()
+static const char*
+usage(void)
 {
     return "Usage: \n%s --sutapp xyz"
            " [--sutargs abc | --parameter-config xyz.parameters"
@@ -462,7 +462,7 @@ main(int argc, char* argv[])
 
     if(state.sut_config.num_options > 0)
     {
-        char* variator_name = state.variator_type == SDL_VARIATOR_RANDOM ?
+        const char* variator_name = (state.variator_type == SDL_VARIATOR_RANDOM) ?
                               "RANDOM" : "EXHAUSTIVE";
         if(state.num_variations > 0)
             SDLTest_Log("Testing SUT with variator: %s for %d variations",

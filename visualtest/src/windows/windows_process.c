@@ -15,7 +15,7 @@
 #if defined(__WIN32__)
 
 void
-LogLastError(char* str)
+LogLastError(const char* str)
 {
     LPVOID buffer;
     DWORD dw = GetLastError();

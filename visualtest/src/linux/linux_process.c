@@ -20,11 +20,11 @@
 #include <errno.h>
 
 static void
-LogLastError(char* str)
+LogLastError(const char* str)
 {
-    char* error = (char*)strerror(errno);
+    const char* error = strerror(errno);
     if(!str || !error)
-    	return;
+        return;
     SDLTest_LogError("%s: %s", str, error);
 }
 

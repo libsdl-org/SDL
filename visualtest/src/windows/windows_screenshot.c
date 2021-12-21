@@ -16,7 +16,7 @@
 #if defined(__WIN32__)
 #include <windows.h>
 
-void LogLastError(char* str);
+void LogLastError(const char* str);
 
 static int img_num;
 static SDL_ProcessInfo screenshot_pinfo;
