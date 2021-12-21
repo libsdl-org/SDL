@@ -174,7 +174,7 @@ CloseWindowCallback(HWND hwnd, LPARAM lparam)
     GetWindowThreadProcessId(hwnd, &pid);
     if(pid == pinfo->pi.dwProcessId)
     {
-        DWORD result;
+        DWORD_PTR result;
         if(!SendMessageTimeout(hwnd, WM_CLOSE, 0, 0, SMTO_BLOCK,
                                1000, &result))
         {

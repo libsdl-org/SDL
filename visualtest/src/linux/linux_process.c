@@ -8,16 +8,16 @@
 
 #include <SDL.h>
 #include <SDL_test.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <unistd.h>
-#include <errno.h>
 
 #include "SDL_visualtest_process.h"
 #include "SDL_visualtest_harness_argparser.h"
 #include "SDL_visualtest_parsehelper.h"
 
 #if defined(__LINUX__)
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <unistd.h>
+#include <errno.h>
 
 static void
 LogLastError(char* str)
