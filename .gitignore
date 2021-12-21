@@ -86,15 +86,6 @@ VisualC/tests/testscale/icon.bmp
 VisualC/tests/testscale/sample.bmp
 VisualC/tests/testsprite2/icon.bmp
 VisualC/tests/testyuv/testyuv.bmp
-VisualC/visualtest/icon.bmp
-VisualC/visualtest/testquit.actions
-VisualC/visualtest/testquit.config
-VisualC/visualtest/testquit.exe
-VisualC/visualtest/testquit.parameters
-VisualC/visualtest/testsprite2.exe
-VisualC/visualtest/testsprite2_sample.actions
-VisualC/visualtest/testsprite2_sample.config
-VisualC/visualtest/testsprite2_sample.parameters
 
 # for Android
 android-project/local.properties
