@@ -2,15 +2,13 @@ dnl Process this file with autoconf to produce a configure script.
 AC_INIT([sdlvisualtest], [0.01], [apoorvupreti@gmail.com])
 
 dnl Detect the canonical build and host environments
-AC_CONFIG_AUX_DIRS($srcdir/../build-scripts)
+AC_CONFIG_AUX_DIR([../build-scripts])
 AC_CANONICAL_HOST
 
 dnl Check for tools
-
 AC_PROG_CC
 
 dnl Check for compiler environment
-
 AC_C_CONST
 
 dnl We only care about this for building testnative at the moment, so these
@@ -22,7 +20,7 @@ ISMACOSX="false"
 
 dnl Figure out which math or extra library to use
 case "$host" in
-    *-*-cygwin* | *-*-mingw32*)
+    *-*-cygwin* | *-*-mingw*)
         ISWINDOWS="true"
         EXE=".exe"
         MATHLIB=""
@@ -35,17 +33,16 @@ case "$host" in
         EXTRALIB=""
         SYS_GL_LIBS="-lGL"
         ;;
-    *-*-darwin* )
+    *-*-darwin*)
         ISMACOSX="true"
         EXE=""
         MATHLIB=""
         EXTRALIB=""
-
         ;;
     *-*-aix*)
         ISUNIX="true"
         EXE=""
-        if test x$ac_cv_prog_gcc = xyes; then
+        if test x$ac_cv_c_compiler_gnu = xyes; then
             CFLAGS="-mthreads"
         fi
         MATHLIB=""
@@ -159,8 +156,13 @@ if test x$have_SDL_ttf = xyes; then
 fi
 AC_SUBST(SDL_TTF_LIB)
 
+PKG_CHECK_MODULES(LIBUNWIND, libunwind, have_libunwind=yes, have_libunwind=no)
+if test x$have_libunwind = xyes ; then
+   LIBS="$LIBS $LIBUNWIND_LIBS"
+fi
+
 dnl Finally create all the generated files
 dnl AC_OUTPUT([Makefile])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([Makefile])
-AC_OUTPUT()
+AC_OUTPUT

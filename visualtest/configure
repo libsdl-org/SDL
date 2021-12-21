@@ -586,11 +586,13 @@ PACKAGE_URL=''
 
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
+LIBUNWIND_LIBS
+LIBUNWIND_CFLAGS
 SDL_TTF_LIB
 GLLIB
 CPP
 XMKMF
-SDL_CONFIG
+SDL2_CONFIG
 SDL_LIBS
 SDL_CFLAGS
 PKG_CONFIG_LIBDIR
@@ -678,7 +680,9 @@ PKG_CONFIG_LIBDIR
 SDL_CFLAGS
 SDL_LIBS
 XMKMF
-CPP'
+CPP
+LIBUNWIND_CFLAGS
+LIBUNWIND_LIBS'
 
 
 # Initialize some variables set by options.
@@ -1322,6 +1326,10 @@ Some influential environment variables:
   SDL_LIBS    linker flags for SDL, overriding pkg-config
   XMKMF       Path to xmkmf, Makefile generator for X Window System
   CPP         C preprocessor
+  LIBUNWIND_CFLAGS
+              C compiler flags for LIBUNWIND, overriding pkg-config
+  LIBUNWIND_LIBS
+              linker flags for LIBUNWIND, overriding pkg-config
 
 Use these variables to override the choices made by `configure' or to help
 it to find libraries and programs with nonstandard names/locations.
@@ -1919,7 +1927,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 ac_aux_dir=
-for ac_dir in $srcdir/../build-scripts; do
+for ac_dir in ../build-scripts "$srcdir"/../build-scripts; do
   if test -f "$ac_dir/install-sh"; then
     ac_aux_dir=$ac_dir
     ac_install_sh="$ac_aux_dir/install-sh -c"
@@ -1935,7 +1943,7 @@ for ac_dir in $srcdir/../build-scripts; do
   fi
 done
 if test -z "$ac_aux_dir"; then
-  as_fn_error $? "cannot find install-sh, install.sh, or shtool in $srcdir/../build-scripts" "$LINENO" 5
+  as_fn_error $? "cannot find install-sh, install.sh, or shtool in ../build-scripts \"$srcdir\"/../build-scripts" "$LINENO" 5
 fi
 
 # These three variables are undocumented and unsupported,
@@ -2016,7 +2024,6 @@ shift; shift
 host_os=$*
 IFS=$ac_save_IFS
 case $host_os in *\ *) host_os=`echo "$host_os" | sed 's/ /-/g'`;; esac
-
 
 
 
@@ -2811,7 +2818,6 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
-
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for an ANSI C-conforming const" >&5
 $as_echo_n "checking for an ANSI C-conforming const... " >&6; }
 if ${ac_cv_c_const+:} false; then :
@@ -2899,7 +2905,7 @@ ISWINDOWS="false"
 ISMACOSX="false"
 
 case "$host" in
-    *-*-cygwin* | *-*-mingw32*)
+    *-*-cygwin* | *-*-mingw*)
         ISWINDOWS="true"
         EXE=".exe"
         MATHLIB=""
@@ -2912,12 +2918,11 @@ case "$host" in
         EXTRALIB=""
         SYS_GL_LIBS="-lGL"
         ;;
-    *-*-darwin* )
+    *-*-darwin*)
         ISMACOSX="true"
         EXE=""
         MATHLIB=""
         EXTRALIB=""
-
         ;;
     *-*-aix*)
         ISUNIX="true"
@@ -3153,8 +3158,8 @@ fi
   if test "x$sdl_prefix$sdl_exec_prefix" = x ; then
 
 pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for SDL" >&5
-$as_echo_n "checking for SDL... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for sdl2 >= $min_sdl_version" >&5
+$as_echo_n "checking for sdl2 >= $min_sdl_version... " >&6; }
 
 if test -n "$SDL_CFLAGS"; then
     pkg_cv_SDL_CFLAGS="$SDL_CFLAGS"
@@ -3224,21 +3229,21 @@ fi
     sdl_pc=no
     if test x$sdl_exec_prefix != x ; then
       sdl_config_args="$sdl_config_args --exec-prefix=$sdl_exec_prefix"
-      if test x${SDL_CONFIG+set} != xset ; then
-        SDL_CONFIG=$sdl_exec_prefix/bin/sdl2-config
+      if test x${SDL2_CONFIG+set} != xset ; then
+        SDL2_CONFIG=$sdl_exec_prefix/bin/sdl2-config
       fi
     fi
     if test x$sdl_prefix != x ; then
       sdl_config_args="$sdl_config_args --prefix=$sdl_prefix"
-      if test x${SDL_CONFIG+set} != xset ; then
-        SDL_CONFIG=$sdl_prefix/bin/sdl2-config
+      if test x${SDL2_CONFIG+set} != xset ; then
+        SDL2_CONFIG=$sdl_prefix/bin/sdl2-config
       fi
     fi
   fi
 
   if test "x$sdl_pc" = xyes ; then
     no_sdl=""
-    SDL_CONFIG="pkg-config sdl2"
+    SDL2_CONFIG="pkg-config sdl2"
   else
     as_save_PATH="$PATH"
     if test "x$prefix" != xNONE && test "$cross_compiling" != yes; then
@@ -3248,12 +3253,12 @@ fi
 set dummy sdl2-config; ac_word=$2
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
 $as_echo_n "checking for $ac_word... " >&6; }
-if ${ac_cv_path_SDL_CONFIG+:} false; then :
+if ${ac_cv_path_SDL2_CONFIG+:} false; then :
   $as_echo_n "(cached) " >&6
 else
-  case $SDL_CONFIG in
+  case $SDL2_CONFIG in
   [\\/]* | ?:[\\/]*)
-  ac_cv_path_SDL_CONFIG="$SDL_CONFIG" # Let the user override the test with a path.
+  ac_cv_path_SDL2_CONFIG="$SDL2_CONFIG" # Let the user override the test with a path.
   ;;
   *)
   as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
@@ -3263,7 +3268,7 @@ do
   test -z "$as_dir" && as_dir=.
     for ac_exec_ext in '' $ac_executable_extensions; do
   if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_path_SDL_CONFIG="$as_dir/$ac_word$ac_exec_ext"
+    ac_cv_path_SDL2_CONFIG="$as_dir/$ac_word$ac_exec_ext"
     $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
     break 2
   fi
@@ -3271,14 +3276,14 @@ done
   done
 IFS=$as_save_IFS
 
-  test -z "$ac_cv_path_SDL_CONFIG" && ac_cv_path_SDL_CONFIG="no"
+  test -z "$ac_cv_path_SDL2_CONFIG" && ac_cv_path_SDL2_CONFIG="no"
   ;;
 esac
 fi
-SDL_CONFIG=$ac_cv_path_SDL_CONFIG
-if test -n "$SDL_CONFIG"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $SDL_CONFIG" >&5
-$as_echo "$SDL_CONFIG" >&6; }
+SDL2_CONFIG=$ac_cv_path_SDL2_CONFIG
+if test -n "$SDL2_CONFIG"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $SDL2_CONFIG" >&5
+$as_echo "$SDL2_CONFIG" >&6; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
@@ -3290,17 +3295,17 @@ fi
 $as_echo_n "checking for SDL - version >= $min_sdl_version... " >&6; }
     no_sdl=""
 
-    if test "$SDL_CONFIG" = "no" ; then
+    if test "$SDL2_CONFIG" = "no" ; then
       no_sdl=yes
     else
-      SDL_CFLAGS=`$SDL_CONFIG $sdl_config_args --cflags`
-      SDL_LIBS=`$SDL_CONFIG $sdl_config_args --libs`
+      SDL_CFLAGS=`$SDL2_CONFIG $sdl_config_args --cflags`
+      SDL_LIBS=`$SDL2_CONFIG $sdl_config_args --libs`
 
-      sdl_major_version=`$SDL_CONFIG $sdl_config_args --version | \
+      sdl_major_version=`$SDL2_CONFIG $sdl_config_args --version | \
              sed 's/\([0-9]*\).\([0-9]*\).\([0-9]*\)/\1/'`
-      sdl_minor_version=`$SDL_CONFIG $sdl_config_args --version | \
+      sdl_minor_version=`$SDL2_CONFIG $sdl_config_args --version | \
              sed 's/\([0-9]*\).\([0-9]*\).\([0-9]*\)/\2/'`
-      sdl_micro_version=`$SDL_CONFIG $sdl_config_args --version | \
+      sdl_micro_version=`$SDL2_CONFIG $sdl_config_args --version | \
              sed 's/\([0-9]*\).\([0-9]*\).\([0-9]*\)/\3/'`
       if test "x$enable_sdltest" = "xyes" ; then
         ac_save_CFLAGS="$CFLAGS"
@@ -3318,38 +3323,16 @@ else
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include "SDL.h"
-
-char*
-my_strdup (char *str)
-{
-  char *new_str;
-
-  if (str)
-    {
-      new_str = (char *)malloc ((strlen (str) + 1) * sizeof(char));
-      strcpy (new_str, str);
-    }
-  else
-    new_str = NULL;
-
-  return new_str;
-}
 
 int main (int argc, char *argv[])
 {
   int major, minor, micro;
-  char *tmp_version;
+  FILE *fp = fopen("conf.sdltest", "w");
 
-  /* This hangs on some systems (?)
-  system ("touch conf.sdltest");
-  */
-  { FILE *fp = fopen("conf.sdltest", "a"); if ( fp ) fclose(fp); }
+  if (fp) fclose(fp);
 
-  /* HP/UX 9 (%@#!) writes to sscanf strings */
-  tmp_version = my_strdup("$min_sdl_version");
-  if (sscanf(tmp_version, "%d.%d.%d", &major, &minor, &micro) != 3) {
+  if (sscanf("$min_sdl_version", "%d.%d.%d", &major, &minor, &micro) != 3) {
      printf("%s, bad version string\n", "$min_sdl_version");
      exit(1);
    }
@@ -3365,7 +3348,7 @@ int main (int argc, char *argv[])
       printf("\n*** 'sdl2-config --version' returned %d.%d.%d, but the minimum version\n", $sdl_major_version, $sdl_minor_version, $sdl_micro_version);
       printf("*** of SDL required is %d.%d.%d. If sdl2-config is correct, then it is\n", major, minor, micro);
       printf("*** best to upgrade to the required version.\n");
-      printf("*** If sdl2-config was wrong, set the environment variable SDL_CONFIG\n");
+      printf("*** If sdl2-config was wrong, set the environment variable SDL2_CONFIG\n");
       printf("*** to point to the correct copy of sdl2-config, and remove the file\n");
       printf("*** config.cache before re-running configure\n");
       return 1;
@@ -3399,10 +3382,10 @@ $as_echo "no" >&6; }
   if test "x$no_sdl" = x ; then
      :
   else
-     if test "$SDL_CONFIG" = "no" ; then
+     if test "$SDL2_CONFIG" = "no" ; then
        echo "*** The sdl2-config script installed by SDL could not be found"
        echo "*** If SDL was installed in PREFIX, make sure PREFIX/bin is in"
-       echo "*** your path, or set the SDL_CONFIG environment variable to the"
+       echo "*** your path, or set the SDL2_CONFIG environment variable to the"
        echo "*** full path to sdl2-config."
      else
        if test -f conf.sdltest ; then
@@ -3445,7 +3428,7 @@ else
    echo "*** The test program failed to compile or link. See the file config.log for the"
           echo "*** exact error that occured. This usually means SDL was incorrectly installed"
           echo "*** or that you have moved SDL since it was installed. In the latter case, you"
-          echo "*** may want to edit the sdl2-config script: $SDL_CONFIG"
+          echo "*** may want to edit the sdl2-config script: $SDL2_CONFIG"
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
@@ -3624,8 +3607,34 @@ else
   $as_echo_n "(cached) " >&6
 else
   # One or both of the vars are not set, and there is no cached value.
-ac_x_includes=no ac_x_libraries=no
-rm -f -r conftest.dir
+ac_x_includes=no
+ac_x_libraries=no
+# Do we need to do anything special at all?
+ac_save_LIBS=$LIBS
+LIBS="-lX11 $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <X11/Xlib.h>
+int
+main ()
+{
+XrmInitialize ()
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  # We can compile and link X programs with no special options.
+  ac_x_includes=
+  ac_x_libraries=
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS="$ac_save_LIBS"
+# If that didn't work, only try xmkmf and filesystem searches
+# for native compilation.
+if test x"$ac_x_includes" = xno && test "$cross_compiling" = no; then :
+  rm -f -r conftest.dir
 if mkdir conftest.dir; then
   cd conftest.dir
   cat >Imakefile <<'_ACEOF'
@@ -3664,7 +3673,7 @@ _ACEOF
   rm -f -r conftest.dir
 fi
 
-# Standard set of common directories for X headers.
+  # Standard set of common directories for X headers.
 # Check X11 before X11Rn because it is often a symlink to the current release.
 ac_x_header_dirs='
 /usr/X11/include
@@ -3690,6 +3699,8 @@ ac_x_header_dirs='
 /usr/local/include/X11R6
 /usr/local/include/X11R5
 /usr/local/include/X11R4
+
+/opt/X11/include
 
 /usr/X386/include
 /usr/x386/include
@@ -3764,15 +3775,17 @@ rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 fi # $ac_x_libraries = no
 
+fi
+# Record the results.
 case $ac_x_includes,$ac_x_libraries in #(
-  no,* | *,no | *\'*)
+  no,* | *,no | *\'*) :
     # Didn't find X, or a directory has "'" in its name.
-    ac_cv_have_x="have_x=no";; #(
-  *)
+    ac_cv_have_x="have_x=no" ;; #(
+  *) :
     # Record where we found X for the cache.
     ac_cv_have_x="have_x=yes\
 	ac_x_includes='$ac_x_includes'\
-	ac_x_libraries='$ac_x_libraries'"
+	ac_x_libraries='$ac_x_libraries'" ;;
 esac
 fi
 ;; #(
@@ -3924,6 +3937,79 @@ if test x$have_SDL_ttf = xyes; then
     SDL_TTF_LIB="-lSDL2_ttf"
 fi
 
+
+
+pkg_failed=no
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for libunwind" >&5
+$as_echo_n "checking for libunwind... " >&6; }
+
+if test -n "$LIBUNWIND_CFLAGS"; then
+    pkg_cv_LIBUNWIND_CFLAGS="$LIBUNWIND_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libunwind\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libunwind") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_LIBUNWIND_CFLAGS=`$PKG_CONFIG --cflags "libunwind" 2>/dev/null`
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$LIBUNWIND_LIBS"; then
+    pkg_cv_LIBUNWIND_LIBS="$LIBUNWIND_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libunwind\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libunwind") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_LIBUNWIND_LIBS=`$PKG_CONFIG --libs "libunwind" 2>/dev/null`
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+	        LIBUNWIND_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "libunwind" 2>&1`
+        else
+	        LIBUNWIND_PKG_ERRORS=`$PKG_CONFIG --print-errors "libunwind" 2>&1`
+        fi
+	# Put the nasty error message in config.log where it belongs
+	echo "$LIBUNWIND_PKG_ERRORS" >&5
+
+	have_libunwind=no
+elif test $pkg_failed = untried; then
+     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+	have_libunwind=no
+else
+	LIBUNWIND_CFLAGS=$pkg_cv_LIBUNWIND_CFLAGS
+	LIBUNWIND_LIBS=$pkg_cv_LIBUNWIND_LIBS
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+	have_libunwind=yes
+fi
+if test x$have_libunwind = xyes ; then
+   LIBS="$LIBS $LIBUNWIND_LIBS"
+fi
 
 ac_config_headers="$ac_config_headers config.h"
 

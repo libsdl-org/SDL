@@ -1,6 +1,6 @@
 /* See LICENSE.txt for the full license governing this code. */
 /**
- * \file screenshot.c 
+ * \file screenshot.c
  *
  * Source file for the screenshot API.
  */

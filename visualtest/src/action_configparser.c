@@ -36,6 +36,9 @@ FreeAction(SDLVisualTest_Action* action)
             action->extra.process.args = NULL;
         }
         break;
+
+      default:
+        break;
     }
 }
 

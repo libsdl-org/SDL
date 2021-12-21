@@ -1,10 +1,9 @@
 /* See LICENSE.txt for the full license governing this code. */
 /**
- * \file windows_process.c 
+ * \file windows_process.c
  *
  * Source file for the process API on windows.
  */
-
 
 #include <SDL.h>
 #include <SDL_test.h>

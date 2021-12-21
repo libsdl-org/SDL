@@ -196,4 +196,13 @@ SDL_KillProcess(SDL_ProcessInfo* pinfo, SDL_ProcessExitStatus* ps)
     return 1;
 }
 
+/* each window of the process will have a screenshot taken. The file name will be
+   prefix-i.png for the i'th window. */
+int
+SDLVisualTest_ScreenshotProcess(SDL_ProcessInfo* pinfo, char* prefix)
+{
+    SDLTest_LogError("Screenshot process not implemented");
+    return 0;
+}
+
 #endif

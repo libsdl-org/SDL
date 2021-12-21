@@ -1,6 +1,6 @@
 /* See LICENSE.txt for the full license governing this code. */
 /**
- *  \file testharness.c 
+ *  \file testharness.c
  *
  *  Source file for the test harness.
  */
@@ -82,10 +82,10 @@ ActionTimerCallback(Uint32 interval, void* param)
     Uint32 next_action_time;
 
     /* push an event to handle the action */
+    SDL_zero(userevent);
     userevent.type = SDL_USEREVENT;
     userevent.code = ACTION_TIMER_EVENT;
     userevent.data1 = &current->action;
-    userevent.data2 = NULL;
 
     event.type = SDL_USEREVENT;
     event.user = userevent;
@@ -110,10 +110,9 @@ KillTimerCallback(Uint32 interval, void* param)
     SDL_Event event;
     SDL_UserEvent userevent;
 
+    SDL_zero(userevent);
     userevent.type = SDL_USEREVENT;
     userevent.code = KILL_TIMER_EVENT;
-    userevent.data1 = NULL;
-    userevent.data2 = NULL;
 
     event.type = SDL_USEREVENT;
     event.user = userevent;
@@ -181,7 +180,7 @@ ProcessAction(SDLVisualTest_Action* action, int* sut_running, char* args)
             if(SDL_IsProcessRunning(&action_process) > 0)
             {
                 SDLTest_LogError("Process %s took too long too complete."
-                                    " Force killing...", action->extra);
+                                 " Force killing...", action->extra.process.path);
                 if(!SDL_KillProcess(&action_process, &ps))
                 {
                     SDLTest_LogError("SDL_KillProcess() failed");
@@ -519,7 +518,7 @@ main(int argc, char* argv[])
         }
         goto cleanup_variator;
     }
- 
+
     goto cleanup_sdl;
 
 cleanup_variator:
