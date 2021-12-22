@@ -656,9 +656,7 @@ RAWINPUT_ReleaseDevice(SDL_RAWINPUT_Device *device)
 #endif /* SDL_JOYSTICK_RAWINPUT_XINPUT */
 
     if (SDL_AtomicDecRef(&device->refcount)) {
-        if (device->preparsed_data) {
-            SDL_HidD_FreePreparsedData(device->preparsed_data);
-        }
+        SDL_free(device->preparsed_data);
         SDL_free(device->name);
         SDL_free(device);
     }
@@ -683,9 +681,8 @@ RAWINPUT_AddDevice(HANDLE hDevice)
     SDL_RAWINPUT_Device *device = NULL;
     SDL_RAWINPUT_Device *curr, *last;
     RID_DEVICE_INFO rdi;
-    UINT rdi_size = sizeof(rdi);
+    UINT size;
     char dev_name[MAX_PATH];
-    UINT name_size = SDL_arraysize(dev_name);
     HANDLE hFile = INVALID_HANDLE_VALUE;
 
     /* Make sure we're not trying to add the same device twice */
@@ -694,11 +691,13 @@ RAWINPUT_AddDevice(HANDLE hDevice)
     }
 
     /* Figure out what kind of device it is */
-    CHECK(GetRawInputDeviceInfoA(hDevice, RIDI_DEVICEINFO, &rdi, &rdi_size) != (UINT)-1);
+    size = sizeof(rdi);
+    CHECK(GetRawInputDeviceInfoA(hDevice, RIDI_DEVICEINFO, &rdi, &size) != (UINT)-1);
     CHECK(rdi.dwType == RIM_TYPEHID);
 
     /* Get the device "name" (HID Path) */
-    CHECK(GetRawInputDeviceInfoA(hDevice, RIDI_DEVICENAME, dev_name, &name_size) != (UINT)-1);
+    size = SDL_arraysize(dev_name);
+    CHECK(GetRawInputDeviceInfoA(hDevice, RIDI_DEVICENAME, dev_name, &size) != (UINT)-1);
     /* Only take XInput-capable devices */
     CHECK(SDL_strstr(dev_name, "IG_") != NULL);
 #ifdef SDL_JOYSTICK_HIDAPI
@@ -713,6 +712,12 @@ RAWINPUT_AddDevice(HANDLE hDevice)
     device->version = (Uint16)rdi.hid.dwVersionNumber;
     device->is_xinput = SDL_TRUE;
     device->is_xboxone = GuessControllerType(device->vendor_id, device->product_id) == k_eControllerType_XBoxOneController;
+
+    /* Get HID Top-Level Collection Preparsed Data */
+    size = 0;
+    CHECK(GetRawInputDeviceInfoA(hDevice, RIDI_PREPARSEDDATA, NULL, &size) != (UINT)-1);
+    CHECK(device->preparsed_data = (PHIDP_PREPARSED_DATA)SDL_calloc(size, sizeof(BYTE)));
+    CHECK(GetRawInputDeviceInfoA(hDevice, RIDI_PREPARSEDDATA, device->preparsed_data, &size) != (UINT)-1);
 
     {
         const Uint16 vendor = device->vendor_id;
@@ -758,8 +763,6 @@ RAWINPUT_AddDevice(HANDLE hDevice)
             SDL_free(product_string);
         }
     }
-
-    CHECK(SDL_HidD_GetPreparsedData(hFile, &device->preparsed_data));
 
     CloseHandle(hFile);
     hFile = INVALID_HANDLE_VALUE;
@@ -1269,7 +1272,7 @@ RAWINPUT_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint
 {
 #if defined(SDL_JOYSTICK_RAWINPUT_WGI)
     RAWINPUT_DeviceContext *ctx = joystick->hwdata;
-    
+
     if (ctx->wgi_correlated) {
         WindowsGamingInputGamepadState *gamepad_state = ctx->wgi_slot;
         HRESULT hr;
@@ -1851,7 +1854,7 @@ RAWINPUT_UnregisterNotifications()
         return;
     }
 }
-    
+
 LRESULT CALLBACK
 RAWINPUT_WindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
