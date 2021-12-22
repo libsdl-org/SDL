@@ -173,7 +173,7 @@ PSP_VideoInit(_THIS)
     display.current_mode = current_mode;
     SDL_AddDisplayMode(&display, &current_mode);
 
-    SDL_AddVideoDisplay(&display);
+    SDL_AddVideoDisplay(&display, SDL_FALSE);
     return 1;
 }
 
