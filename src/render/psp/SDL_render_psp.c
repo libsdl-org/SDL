@@ -56,12 +56,6 @@ static unsigned int __attribute__((aligned(16))) DisplayList[262144];
 #define COL4444(r,g,b,a)    ((r>>4) | ((g>>4)<<4) | ((b>>4)<<8) | ((a>>4)<<12))
 #define COL8888(r,g,b,a)    ((r) | ((g)<<8) | ((b)<<16) | ((a)<<24))
 
-//#define LOGGING
-#ifdef LOGGING
-#define LOG(...) printf(__VA_ARGS__)
-#else
-#define LOG(...)
-#endif
 /**
  * Holds psp specific texture data
  *
@@ -234,7 +228,6 @@ LRUTargetRelink(PSP_TextureData* psp_texture) {
 
 static void
 LRUTargetPushFront(PSP_RenderData* data, PSP_TextureData* psp_texture) {
-    LOG("Pushing %p (%dKB) front.\n", (void*)psp_texture, psp_texture->size / 1024);
     psp_texture->nexthotw = data->most_recent_target;
     if(data->most_recent_target) {
         data->most_recent_target->prevhotw = psp_texture;
@@ -247,7 +240,6 @@ LRUTargetPushFront(PSP_RenderData* data, PSP_TextureData* psp_texture) {
 
 static void
 LRUTargetRemove(PSP_RenderData* data, PSP_TextureData* psp_texture) {
-    LOG("Removing %p (%dKB).\n", (void*)psp_texture, psp_texture->size/1024);
     LRUTargetRelink(psp_texture);
     if(data->most_recent_target == psp_texture) {
         data->most_recent_target = psp_texture->nexthotw;
@@ -261,33 +253,12 @@ LRUTargetRemove(PSP_RenderData* data, PSP_TextureData* psp_texture) {
 
 static void
 LRUTargetBringFront(PSP_RenderData* data, PSP_TextureData* psp_texture) {
-    //LOG("Bringing %p (%dKB) front.\n", (void*)psp_texture, psp_texture->size/1024);
     if(data->most_recent_target == psp_texture) {
         return; //nothing to do
     }
     LRUTargetRemove(data, psp_texture);
     LRUTargetPushFront(data, psp_texture);
 }
-
-#ifdef LOGGING
-static void
-LRUWalk(PSP_RenderData* data) {
-    PSP_TextureData* tex = data->most_recent_target;
-    LOG("================\nLRU STATE:\n");
-    size_t size = 0;
-    while(tex) {
-        LOG("Tex %p (%dKB)\n", (void*)tex, tex->size/1024);
-        size+= tex->size;
-        if(tex->nexthotw && tex->nexthotw->prevhotw != tex) {
-            LOG("Spurious link!\n");
-        }
-        tex = tex->nexthotw;
-    }
-    LOG("Total Size : %dKB\n", size/1024);
-    size_t latest_size = data->least_recent_target ? data->least_recent_target->size : 0;
-    LOG("Least recent %p (%dKB)\n================\n", data->least_recent_target, latest_size / 1024);
-}
-#endif
 
 static void
 TextureStorageFree(void* storage) {
@@ -469,11 +440,7 @@ TextureSpillLRU(PSP_RenderData* data, size_t wanted) {
         if(TextureSpillToSram(data, lru) < 0) {
             return -1;
         }
-        LOG("Spilled %p (%dKB) to ram\n", (void*)lru, lru->size/1024);
         LRUTargetRemove(data, lru);
-        #ifdef LOGGING
-        LRUWalk(data);
-        #endif
     } else {
         SDL_SetError("Could not spill more VRAM to system memory. VRAM : %dKB,(%dKB), wanted %dKB", vmemavail()/1024, vlargestblock()/1024, wanted/1024);
         return -1; //Asked to spill but there nothing to spill
@@ -494,6 +461,8 @@ TextureSpillTargetsForSpace(PSP_RenderData* data, size_t size)
 
 static int
 TextureBindAsTarget(PSP_RenderData* data, PSP_TextureData* psp_texture) {
+    unsigned int dstFormat;
+
     if(!InVram(psp_texture->data)) {
         // Bring back the texture in vram
         if(TextureSpillTargetsForSpace(data, psp_texture->size) < 0) {
@@ -504,10 +473,10 @@ TextureBindAsTarget(PSP_RenderData* data, PSP_TextureData* psp_texture) {
         }
     }
     LRUTargetBringFront(data, psp_texture);
-    //LRUWalk(data);
     sceGuDrawBufferList(psp_texture->format, vrelptr(psp_texture->data), psp_texture->textureWidth);
+
     // Stencil alpha dst hack
-    unsigned int dstFormat = psp_texture->format;
+    dstFormat = psp_texture->format;
     if(dstFormat == GU_PSM_5551) {
         sceGuEnable(GU_STENCIL_TEST);
         sceGuStencilOp(GU_REPLACE, GU_REPLACE, GU_REPLACE);
@@ -568,9 +537,6 @@ PSP_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
         psp_texture->data = valloc(psp_texture->size);
         if(psp_texture->data) {
             LRUTargetPushFront(data, psp_texture);
-            #ifdef LOGGING
-            LRUWalk(data);
-            #endif
         }
     } else {
         psp_texture->data = SDL_calloc(1, psp_texture->size);
