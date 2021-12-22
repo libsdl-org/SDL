@@ -115,8 +115,8 @@ SDL_MixAudioFormat(Uint8 * dst, const Uint8 * src, SDL_AudioFormat format,
             Sint8 *dst8, *src8;
             Sint8 src_sample;
             int dst_sample;
-            const int max_audioval = ((1 << (8 - 1)) - 1);
-            const int min_audioval = -(1 << (8 - 1));
+            const int max_audioval = SDL_MAX_SINT8;
+            const int min_audioval = SDL_MIN_SINT8;
 
             src8 = (Sint8 *) src;
             dst8 = (Sint8 *) dst;
@@ -125,12 +125,11 @@ SDL_MixAudioFormat(Uint8 * dst, const Uint8 * src, SDL_AudioFormat format,
                 ADJUST_VOLUME(src_sample, volume);
                 dst_sample = *dst8 + src_sample;
                 if (dst_sample > max_audioval) {
-                    *dst8 = max_audioval;
+                    dst_sample = max_audioval;
                 } else if (dst_sample < min_audioval) {
-                    *dst8 = min_audioval;
-                } else {
-                    *dst8 = dst_sample;
+                    dst_sample = min_audioval;
                 }
+                *dst8 = dst_sample;
                 ++dst8;
                 ++src8;
             }
@@ -141,14 +140,14 @@ SDL_MixAudioFormat(Uint8 * dst, const Uint8 * src, SDL_AudioFormat format,
         {
             Sint16 src1, src2;
             int dst_sample;
-            const int max_audioval = ((1 << (16 - 1)) - 1);
-            const int min_audioval = -(1 << (16 - 1));
+            const int max_audioval = SDL_MAX_SINT16;
+            const int min_audioval = SDL_MIN_SINT16;
 
             len /= 2;
             while (len--) {
-                src1 = ((src[1]) << 8 | src[0]);
+                src1 = SDL_SwapLE16(*(Sint16 *)src);
                 ADJUST_VOLUME(src1, volume);
-                src2 = ((dst[1]) << 8 | dst[0]);
+                src2 = SDL_SwapLE16(*(Sint16 *)dst);
                 src += 2;
                 dst_sample = src1 + src2;
                 if (dst_sample > max_audioval) {
@@ -156,9 +155,7 @@ SDL_MixAudioFormat(Uint8 * dst, const Uint8 * src, SDL_AudioFormat format,
                 } else if (dst_sample < min_audioval) {
                     dst_sample = min_audioval;
                 }
-                dst[0] = dst_sample & 0xFF;
-                dst_sample >>= 8;
-                dst[1] = dst_sample & 0xFF;
+                *(Sint16 *)dst = SDL_SwapLE16(dst_sample);
                 dst += 2;
             }
         }
@@ -168,14 +165,14 @@ SDL_MixAudioFormat(Uint8 * dst, const Uint8 * src, SDL_AudioFormat format,
         {
             Sint16 src1, src2;
             int dst_sample;
-            const int max_audioval = ((1 << (16 - 1)) - 1);
-            const int min_audioval = -(1 << (16 - 1));
+            const int max_audioval = SDL_MAX_SINT16;
+            const int min_audioval = SDL_MIN_SINT16;
 
             len /= 2;
             while (len--) {
-                src1 = ((src[0]) << 8 | src[1]);
+                src1 = SDL_SwapBE16(*(Sint16 *)src);
                 ADJUST_VOLUME(src1, volume);
-                src2 = ((dst[0]) << 8 | dst[1]);
+                src2 = SDL_SwapBE16(*(Sint16 *)src);
                 src += 2;
                 dst_sample = src1 + src2;
                 if (dst_sample > max_audioval) {
@@ -183,9 +180,7 @@ SDL_MixAudioFormat(Uint8 * dst, const Uint8 * src, SDL_AudioFormat format,
                 } else if (dst_sample < min_audioval) {
                     dst_sample = min_audioval;
                 }
-                dst[1] = dst_sample & 0xFF;
-                dst_sample >>= 8;
-                dst[0] = dst_sample & 0xFF;
+                *(Sint16 *)dst = SDL_SwapBE16(dst_sample);
                 dst += 2;
             }
         }
@@ -195,21 +190,19 @@ SDL_MixAudioFormat(Uint8 * dst, const Uint8 * src, SDL_AudioFormat format,
         {
             Uint16 src1, src2;
             int dst_sample;
-            const int max_audioval = 0xFFFF;
+            const int max_audioval = SDL_MAX_UINT16;
 
             len /= 2;
             while (len--) {
-                src1 = ((src[1]) << 8 | src[0]);
+                src1 = SDL_SwapLE16(*(Uint16 *)src);
                 ADJUST_VOLUME(src1, volume);
-                src2 = ((dst[1]) << 8 | dst[0]);
+                src2 = SDL_SwapLE16(*(Uint16 *)dst);
                 src += 2;
                 dst_sample = src1 + src2;
                 if (dst_sample > max_audioval) {
                     dst_sample = max_audioval;
                 }
-                dst[0] = dst_sample & 0xFF;
-                dst_sample >>= 8;
-                dst[1] = dst_sample & 0xFF;
+                *(Uint16 *)dst = SDL_SwapLE16(dst_sample);
                 dst += 2;
             }
         }
@@ -219,21 +212,19 @@ SDL_MixAudioFormat(Uint8 * dst, const Uint8 * src, SDL_AudioFormat format,
         {
             Uint16 src1, src2;
             int dst_sample;
-            const int max_audioval = 0xFFFF;
+            const int max_audioval = SDL_MAX_UINT16;
 
             len /= 2;
             while (len--) {
-                src1 = ((src[0]) << 8 | src[1]);
+                src1 = SDL_SwapBE16(*(Uint16 *)src);
                 ADJUST_VOLUME(src1, volume);
-                src2 = ((dst[0]) << 8 | dst[1]);
+                src2 = SDL_SwapBE16(*(Uint16 *)dst);
                 src += 2;
                 dst_sample = src1 + src2;
                 if (dst_sample > max_audioval) {
                     dst_sample = max_audioval;
                 }
-                dst[1] = dst_sample & 0xFF;
-                dst_sample >>= 8;
-                dst[0] = dst_sample & 0xFF;
+                *(Uint16 *)dst = SDL_SwapBE16(dst_sample);
                 dst += 2;
             }
         }
@@ -245,8 +236,8 @@ SDL_MixAudioFormat(Uint8 * dst, const Uint8 * src, SDL_AudioFormat format,
             Uint32 *dst32 = (Uint32 *) dst;
             Sint64 src1, src2;
             Sint64 dst_sample;
-            const Sint64 max_audioval = ((((Sint64) 1) << (32 - 1)) - 1);
-            const Sint64 min_audioval = -(((Sint64) 1) << (32 - 1));
+            const Sint64 max_audioval = SDL_MAX_SINT32;
+            const Sint64 min_audioval = SDL_MIN_SINT32;
 
             len /= 4;
             while (len--) {
@@ -271,8 +262,8 @@ SDL_MixAudioFormat(Uint8 * dst, const Uint8 * src, SDL_AudioFormat format,
             Uint32 *dst32 = (Uint32 *) dst;
             Sint64 src1, src2;
             Sint64 dst_sample;
-            const Sint64 max_audioval = ((((Sint64) 1) << (32 - 1)) - 1);
-            const Sint64 min_audioval = -(((Sint64) 1) << (32 - 1));
+            const Sint64 max_audioval = SDL_MAX_SINT32;
+            const Sint64 min_audioval = SDL_MIN_SINT32;
 
             len /= 4;
             while (len--) {
