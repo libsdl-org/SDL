@@ -1201,10 +1201,18 @@ PSP_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *verti
                     sceGuEnable(GU_TEXTURE_2D);
                 } else {
                     const VertTCV *verts = (VertTCV *) (gpumem + cmd->data.draw.first);
+                    const Uint8 a = cmd->data.draw.a;
+                    const Uint8 r = cmd->data.draw.r;
+                    const Uint8 g = cmd->data.draw.g;
+                    const Uint8 b = cmd->data.draw.b;
+                    PSP_BlendState state = {
+                        .color = GU_RGBA(r,g,b,a),
+                        .texture = NULL,
+                        .mode = cmd->data.draw.blend,
+                        .shadeModel = GU_FLAT
+                    };
                     TextureActivate(cmd->data.draw.texture);
-                    /* Need to force refresh of blending mode, probably something to FIXME */
-                    PSP_SetBlendMode(renderer, SDL_BLENDMODE_INVALID);
-                    PSP_SetBlendMode(renderer, cmd->data.draw.blend);
+                    PSP_SetBlendState(renderer, &state);
                     sceGuDrawArray(GU_TRIANGLES, GU_TEXTURE_32BITF|GU_COLOR_8888|GU_VERTEX_32BITF|GU_TRANSFORM_2D, count, 0, verts);
                 }
                 break;
