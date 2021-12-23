@@ -18,7 +18,7 @@ CountTokens(char* args)
     int state; /* current state of the DFA */
 
     if(!args)
-    	return -1;
+        return -1;
 
     index = 0;
     state = 0;

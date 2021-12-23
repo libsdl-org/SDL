@@ -23060,7 +23060,7 @@ _ACEOF
 $as_echo "$kmsdrm_shared" >&6; }
             if test x$kmsdrm_shared = xyes; then
                 echo "-- dynamic libdrm -> $drm_lib"
-                echo "-- dynamic libgmb -> $gbm_lib"
+                echo "-- dynamic libgbm -> $gbm_lib"
             fi
             have_video=yes
         fi
@@ -24861,11 +24861,31 @@ $as_echo "#define HAVE_XINPUT_STATE_EX 1" >>confdefs.h
         fi
     fi
 
-    ac_fn_c_check_header_mongrel "$LINENO" "windows.gaming.input.h" "ac_cv_header_windows_gaming_input_h" "$ac_includes_default"
-if test "x$ac_cv_header_windows_gaming_input_h" = xyes; then :
-  have_wgi=yes
-fi
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for windows.gaming.input.h" >&5
+$as_echo_n "checking for windows.gaming.input.h... " >&6; }
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
 
+#define COBJMACROS
+#include <windows.gaming.input.h>
+__x_ABI_CWindows_CGaming_CInput_CIGamepadStatics2 *s2;
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  have_wgi=yes
+else
+  have_wgi=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_wgi" >&5
+$as_echo "$have_wgi" >&6; }
 
     if test x$have_wgi = xyes; then
 

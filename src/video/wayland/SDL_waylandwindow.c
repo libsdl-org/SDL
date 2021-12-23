@@ -289,6 +289,9 @@ handle_configure_xdg_toplevel(void *data,
     } else {
         /* For fullscreen, foolishly do what the compositor says. If it's wrong,
          * don't blame us, we were explicitly instructed to do this.
+         *
+         * UPDATE: Nope, sure enough a compositor sends 0,0. This is a known bug:
+         * https://bugs.kde.org/show_bug.cgi?id=444962
          */
         if (width != 0 && height != 0) {
             window->w = width;

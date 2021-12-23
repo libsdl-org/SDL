@@ -169,8 +169,8 @@ SDL_InitSubSystem(Uint32 flags)
         flags |= SDL_INIT_JOYSTICK;
     }
 
-    if ((flags & (SDL_INIT_VIDEO|SDL_INIT_JOYSTICK))) {
-        /* video or joystick implies events */
+    if ((flags & (SDL_INIT_VIDEO|SDL_INIT_JOYSTICK|SDL_INIT_AUDIO))) {
+        /* video or joystick or audio implies events */
         flags |= SDL_INIT_EVENTS;
     }
 

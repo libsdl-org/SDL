@@ -1568,7 +1568,11 @@ elseif(WINDOWS)
       #include <xinput.h>
       XINPUT_STATE_EX s1;
       int main(int argc, char **argv) { }" HAVE_XINPUT_STATE_EX)
-    check_include_file(windows.gaming.input.h HAVE_WINDOWS_GAMING_INPUT_H)
+    check_c_source_compiles("
+      #define COBJMACROS
+      #include <windows.gaming.input.h>
+      __x_ABI_CWindows_CGaming_CInput_CIGamepadStatics2 *s2;
+      int main(int argc, char **argv) { }" HAVE_WINDOWS_GAMING_INPUT_H)
   endif()
 
   # headers needed elsewhere
@@ -2656,7 +2660,7 @@ if (SDL_ASAN)
   asan_check_add_debug_flag("leak")
   # The object size sanitizer has no effect on unoptimized builds on Clang,
   # but causes warnings.
-  if((NOT USE_CLANG) OR (CMAKE_BUILD_TYPE STREQUAL ""))
+  if((NOT USE_CLANG) OR ("${CMAKE_BUILD_TYPE}" STREQUAL ""))
     asan_check_add_debug_flag("object-size")
   endif()
 endif()
@@ -2685,7 +2689,7 @@ foreach(_OPT ${ALLOPTIONS})
   string(RANDOM LENGTH ${_PADLEN} ALPHABET " " _PADDING)
   message_tested_option(${_OPT} ${_PADDING})
 endforeach()
-if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
   message(STATUS "")
   message(STATUS " CMAKE_C_FLAGS_DEBUG:   ${CMAKE_C_FLAGS_DEBUG}")
   message(STATUS " CMAKE_CXX_FLAGS_DEBUG: ${CMAKE_CXX_FLAGS_DEBUG}")

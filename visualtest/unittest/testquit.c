@@ -64,7 +64,7 @@ main(int argc, char** argv)
 
         if(consumed < 0)
         {
-            static const char *options = { "[--exit-code N]", "[--crash]", "[--hang]", NULL };
+            static const char *options[] = { "[--exit-code N]", "[--crash]", "[--hang]", NULL };
             SDLTest_CommonLogUsage(state, argv[0], options);
             SDLTest_CommonQuit(state);
             return 1;

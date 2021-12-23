@@ -137,7 +137,7 @@ int SDLVisualTest_InsertIntoActionQueue(SDLVisualTest_ActionQueue* queue,
  *
  * \return 1 on success, 0 on failure.
  */
-int SDLVisualTest_ParseActionConfig(char* file, SDLVisualTest_ActionQueue* queue);
+int SDLVisualTest_ParseActionConfig(const char* file, SDLVisualTest_ActionQueue* queue);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

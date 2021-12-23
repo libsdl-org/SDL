@@ -1713,7 +1713,7 @@ PrefixMatch(const char *a, const char *b)
 {
     int matchlen = 0;
     while (*a && *b) {
-        if (SDL_tolower(*a++) == SDL_tolower(*b++)) {
+        if (SDL_tolower((unsigned char) *a++) == SDL_tolower((unsigned char) *b++)) {
             ++matchlen;
         } else {
             break;
@@ -2646,18 +2646,18 @@ void SDL_JoystickGetGUIDString(SDL_JoystickGUID guid, char *pszGUID, int cbGUID)
  * Input  : c -
  * Output : unsigned char
  *-----------------------------------------------------------------------------*/
-static unsigned char nibble(char c)
+static unsigned char nibble(unsigned char c)
 {
     if ((c >= '0') && (c <= '9')) {
-        return (unsigned char)(c - '0');
+        return (c - '0');
     }
 
     if ((c >= 'A') && (c <= 'F')) {
-        return (unsigned char)(c - 'A' + 0x0a);
+        return (c - 'A' + 0x0a);
     }
 
     if ((c >= 'a') && (c <= 'f')) {
-        return (unsigned char)(c - 'a' + 0x0a);
+        return (c - 'a' + 0x0a);
     }
 
     /* received an invalid character, and no real way to return an error */
@@ -2681,7 +2681,7 @@ SDL_JoystickGUID SDL_JoystickGetGUIDFromString(const char *pchGUID)
 
     p = (Uint8 *)&guid;
     for (i = 0; (i < len) && ((p - (Uint8 *)&guid) < maxoutputbytes); i+=2, p++) {
-        *p = (nibble(pchGUID[i]) << 4) | nibble(pchGUID[i+1]);
+        *p = (nibble((unsigned char)pchGUID[i]) << 4) | nibble((unsigned char)pchGUID[i+1]);
     }
 
     return guid;

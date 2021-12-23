@@ -8,23 +8,23 @@
 
 #include <SDL.h>
 #include <SDL_test.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <unistd.h>
-#include <errno.h>
 
 #include "SDL_visualtest_process.h"
 #include "SDL_visualtest_harness_argparser.h"
 #include "SDL_visualtest_parsehelper.h"
 
 #if defined(__LINUX__)
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <unistd.h>
+#include <errno.h>
 
 static void
-LogLastError(char* str)
+LogLastError(const char* str)
 {
-    char* error = (char*)strerror(errno);
+    const char* error = strerror(errno);
     if(!str || !error)
-    	return;
+        return;
     SDLTest_LogError("%s: %s", str, error);
 }
 
@@ -194,6 +194,15 @@ SDL_KillProcess(SDL_ProcessInfo* pinfo, SDL_ProcessExitStatus* ps)
     ps->exit_success = WIFEXITED(status);
     ps->exit_status = WEXITSTATUS(status);
     return 1;
+}
+
+/* each window of the process will have a screenshot taken. The file name will be
+   prefix-i.png for the i'th window. */
+int
+SDLVisualTest_ScreenshotProcess(SDL_ProcessInfo* pinfo, char* prefix)
+{
+    SDLTest_LogError("Screenshot process not implemented");
+    return 0;
 }
 
 #endif

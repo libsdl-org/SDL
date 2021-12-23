@@ -118,6 +118,7 @@ int Android_JNI_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *bu
 
 /* Cursor support */
 int Android_JNI_CreateCustomCursor(SDL_Surface *surface, int hot_x, int hot_y);
+void Android_JNI_DestroyCustomCursor(int cursorID);
 SDL_bool Android_JNI_SetCustomCursor(int cursorID);
 SDL_bool Android_JNI_SetSystemCursor(int cursorID);
 

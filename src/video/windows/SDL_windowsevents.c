@@ -306,6 +306,9 @@ WIN_CheckWParamMouseButtons(WPARAM wParam, SDL_WindowData *data, SDL_MouseID mou
 static void
 WIN_CheckRawMouseButtons(ULONG rawButtons, SDL_WindowData *data, SDL_MouseID mouseID)
 {
+    // Add a flag to distinguish raw mouse buttons from wParam above
+    rawButtons |= 0x8000000;
+
     if (rawButtons != data->mouse_button_flags) {
         Uint32 mouseFlags = SDL_GetMouseState(NULL, NULL);
         SDL_bool swapButtons = GetSystemMetrics(SM_SWAPBUTTON) != 0;
