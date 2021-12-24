@@ -475,12 +475,9 @@ Cocoa_GetDisplayDPI(_THIS, SDL_VideoDisplay * display, float * ddpi, float * hdp
                     CGFloat height = CGDisplayModeGetPixelHeight(m);
                     CGFloat HiDPIWidth = CGDisplayModeGetWidth(m);
                     
-                    BOOL isNative = (CGDisplayModeGetIOFlags(m) & kDisplayModeNativeFlag) ? true : false;
-                    CFRelease(m);
-                    
                     //Only check 1x mode
                     if(width == HiDPIWidth) {
-                        if(isNative) {
+                        if (CGDisplayModeGetIOFlags(m) & kDisplayModeNativeFlag) {
                             displayNativeSize.width = width;
                             displayNativeSize.height = height;
                             break;
