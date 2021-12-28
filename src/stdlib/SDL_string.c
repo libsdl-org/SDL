@@ -295,7 +295,7 @@ SDL_memset(SDL_OUT_BYTECAP(len) void *dst, int c, size_t len)
         }
     }
 
-    value4 = (c | (c << 8) | (c << 16) | (c << 24));
+    value4 = ((Uint32)c | ((Uint32)c << 8) | ((Uint32)c << 16) | ((Uint32)c << 24));
     dstp4 = (Uint32 *) dstp1;
     left = (len % 4);
     len /= 4;
