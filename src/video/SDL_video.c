@@ -3842,10 +3842,23 @@ SDL_GL_GetAttribute(SDL_GLattr attr, int *value)
     }
 
     if (attachmentattrib && isAtLeastGL3((const char *) glGetStringFunc(GL_VERSION))) {
-        glGetFramebufferAttachmentParameterivFunc = SDL_GL_GetProcAddress("glGetFramebufferAttachmentParameteriv");
+        /* glGetFramebufferAttachmentParameteriv needs to operate on the window framebuffer for this, so bind FBO 0 if necessary. */
+        GLint current_fbo = 0;
+        void (APIENTRY *glGetIntegervFunc) (GLenum pname, GLint * params) = SDL_GL_GetProcAddress("glGetIntegerv");
+        void (APIENTRY *glBindFramebufferFunc) (GLenum target, GLuint fbo) = SDL_GL_GetProcAddress("glBindFramebuffer");
+        if (glGetIntegervFunc && glBindFramebufferFunc) {
+            glGetIntegervFunc(GL_DRAW_FRAMEBUFFER_BINDING, &current_fbo);
+        }
 
+        glGetFramebufferAttachmentParameterivFunc = SDL_GL_GetProcAddress("glGetFramebufferAttachmentParameteriv");
         if (glGetFramebufferAttachmentParameterivFunc) {
+            if (glBindFramebufferFunc && (current_fbo != 0)) {
+                glBindFramebufferFunc(GL_DRAW_FRAMEBUFFER, 0);
+            }
             glGetFramebufferAttachmentParameterivFunc(GL_FRAMEBUFFER, attachment, attachmentattrib, (GLint *) value);
+            if (glBindFramebufferFunc && (current_fbo != 0)) {
+                glBindFramebufferFunc(GL_DRAW_FRAMEBUFFER, current_fbo);
+            }
         } else {
             return -1;
         }

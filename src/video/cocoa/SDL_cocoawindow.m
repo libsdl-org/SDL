@@ -465,6 +465,7 @@ Cocoa_UpdateClipCursor(SDL_Window * window)
     pendingWindowOperation = PENDING_OPERATION_NONE;
     isMoving = NO;
     isDragAreaRunning = NO;
+    pendingWindowWarpX = pendingWindowWarpY = INT_MAX;
 
     center = [NSNotificationCenter defaultCenter];
 
