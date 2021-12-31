@@ -24,6 +24,7 @@
 #define _SDL_aaudio_h
 
 #include "../SDL_sysaudio.h"
+#include <stdbool.h>
 #include <aaudio/AAudio.h>
 
 /* Hidden "this" pointer for the audio functions */
