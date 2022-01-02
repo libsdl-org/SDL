@@ -461,9 +461,9 @@ Cocoa_GetDisplayDPI(_THIS, SDL_VideoDisplay * display, float * ddpi, float * hdp
     for (NSScreen *screen in screens) {
         const CGDirectDisplayID dpyid = (const CGDirectDisplayID ) [[[screen deviceDescription] objectForKey:@"NSScreenNumber"] unsignedIntValue];
         if (dpyid == data->display) {
-        
+#ifdef MAC_OS_X_VERSION_10_8
             /* Neither CGDisplayScreenSize(description's NSScreenNumber) nor [NSScreen backingScaleFactor] can calculate the correct dpi in macOS. E.g. backingScaleFactor is always 2 in all display modes for rMBP 16" */
-            if (@available(macOS 10.8, *)) {
+            if (floor(NSAppKitVersionNumber) > NSAppKitVersionNumber10_7) {
                 CFStringRef dmKeys[1] = { kCGDisplayShowDuplicateLowResolutionModes };
                 CFBooleanRef dmValues[1] = { kCFBooleanTrue };
                 CFDictionaryRef dmOptions = CFDictionaryCreate(kCFAllocatorDefault, (const void**) dmKeys, (const void**) dmValues, 1, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks );
@@ -492,14 +492,15 @@ Cocoa_GetDisplayDPI(_THIS, SDL_VideoDisplay * display, float * ddpi, float * hdp
                 }
                 CFRelease(allDisplayModes);
                 CFRelease(dmOptions);
-            } else if (@available(macOS 10.7, *)) {
+            } else
+#endif
+            if (floor(NSAppKitVersionNumber) > NSAppKitVersionNumber10_6) {
                 // fallback for 10.7
                 scaleFactor = [screen backingScaleFactor];
                 displayNativeSize.width = displayNativeSize.width * scaleFactor;
                 displayNativeSize.height = displayNativeSize.height * scaleFactor;
                 break;
             }
-            
         }
     }
 
