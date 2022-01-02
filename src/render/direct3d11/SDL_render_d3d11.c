@@ -487,6 +487,11 @@ D3D11_CreateDeviceResources(SDL_Renderer * renderer)
         creationFlags |= D3D11_CREATE_DEVICE_DEBUG;
     }
 
+    /* Create a single-threaded device unless the app requests otherwise. */
+    if (!SDL_GetHintBoolean(SDL_HINT_RENDER_DIRECT3D_THREADSAFE, SDL_FALSE)) {
+        creationFlags |= D3D11_CREATE_DEVICE_SINGLETHREADED;
+    }
+
     /* Create the Direct3D 11 API device object and a corresponding context. */
     result = D3D11CreateDeviceFunc(
         data->dxgiAdapter,
