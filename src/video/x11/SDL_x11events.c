@@ -1602,10 +1602,6 @@ X11_WaitEventTimeout(_THIS, int timeout)
     SDL_VideoData *videodata = (SDL_VideoData *) _this->driverdata;
     Display *display;
     XEvent xevent;
-
-    if (!videodata) {
-        return 0;
-    }
     display = videodata->display;
 
     SDL_zero(xevent);
