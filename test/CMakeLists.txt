@@ -158,6 +158,7 @@ if(NOT PSP)
 endif()
 
 if(PSP)
+    # Build EBOOT files if building for PSP
     set(BUILD_EBOOT
         ${NEEDS_RESOURCES}
         testoffscreen
@@ -215,32 +216,32 @@ if(PSP)
             ICON_PATH       NULL
             BACKGROUND_PATH NULL
             PREVIEW_PATH    NULL
-            BUILD_PRX
-            ENC_PRX
         )
         add_custom_command(
             TARGET ${APP} POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E make_directory
-            $<TARGET_FILE_DIR:${ARG_TARGET}>/psp-${APP}
+            $<TARGET_FILE_DIR:${ARG_TARGET}>/sdl-${APP}
         )
         add_custom_command(
             TARGET ${APP} POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E rename
             $<TARGET_FILE_DIR:${ARG_TARGET}>/EBOOT.PBP
-            $<TARGET_FILE_DIR:${ARG_TARGET}>/psp-${APP}/EBOOT.PBP
+            $<TARGET_FILE_DIR:${ARG_TARGET}>/sdl-${APP}/EBOOT.PBP
         )
-        add_custom_command(
-            TARGET ${APP} POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E rename
-            $<TARGET_FILE_DIR:${ARG_TARGET}>/${APP}
-            $<TARGET_FILE_DIR:${ARG_TARGET}>/psp-${APP}/${APP}
-        )
-        add_custom_command(
-            TARGET ${APP} POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E rename
-            $<TARGET_FILE_DIR:${ARG_TARGET}>/${APP}.prx
-            $<TARGET_FILE_DIR:${ARG_TARGET}>/psp-${APP}/${APP}.prx
-        )
+        if(${BUILD_PRX})
+            add_custom_command(
+                TARGET ${APP} POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy
+                $<TARGET_FILE_DIR:${ARG_TARGET}>/${APP}
+                $<TARGET_FILE_DIR:${ARG_TARGET}>/sdl-${APP}/${APP}
+            )
+            add_custom_command(
+                TARGET ${APP} POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E rename
+                $<TARGET_FILE_DIR:${ARG_TARGET}>/${APP}.prx
+                $<TARGET_FILE_DIR:${ARG_TARGET}>/sdl-${APP}/${APP}.prx
+            )
+        endif()
         add_custom_command(
             TARGET ${APP} POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E remove
