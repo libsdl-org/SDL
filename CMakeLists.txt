@@ -2412,6 +2412,7 @@ elseif(PSP)
   endif()
 
   list(APPEND EXTRA_LIBS
+      psppower
       pspctrl
       psphprm
       pspge
