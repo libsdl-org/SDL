@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
   Copyright (C) 2018-2019 EXL <exlmotodev@gmail.com>
 
   This software is provided 'as-is', without any express or implied

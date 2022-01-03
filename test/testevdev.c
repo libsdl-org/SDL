@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
   Copyright (C) 2020 Collabora Ltd.
 
   This software is provided 'as-is', without any express or implied
