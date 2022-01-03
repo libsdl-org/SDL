@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -119,8 +119,8 @@ void trianglepoint_2_fixedpoint(SDL_Point *a) {
     a->y <<= FP_BITS;
 }
 
-/* bounding rect of three points */
-static void bounding_rect(const SDL_Point *a, const SDL_Point *b, const SDL_Point *c, SDL_Rect *r)
+/* bounding rect of three points (in fixed point) */
+static void bounding_rect_fixedpoint(const SDL_Point *a, const SDL_Point *b, const SDL_Point *c, SDL_Rect *r)
 {
     int min_x = SDL_min(a->x, SDL_min(b->x, c->x));
     int max_x = SDL_max(a->x, SDL_max(b->x, c->x));
@@ -132,6 +132,20 @@ static void bounding_rect(const SDL_Point *a, const SDL_Point *b, const SDL_Poin
     r->w = (max_x - min_x) >> FP_BITS;
     r->h = (max_y - min_y) >> FP_BITS;
 }
+
+/* bounding rect of three points */
+static void bounding_rect(const SDL_Point *a, const SDL_Point *b, const SDL_Point *c, SDL_Rect *r)
+{
+    int min_x = SDL_min(a->x, SDL_min(b->x, c->x));
+    int max_x = SDL_max(a->x, SDL_max(b->x, c->x));
+    int min_y = SDL_min(a->y, SDL_min(b->y, c->y));
+    int max_y = SDL_max(a->y, SDL_max(b->y, c->y));
+    r->x = min_x;
+    r->y = min_y;
+    r->w = (max_x - min_x);
+    r->h = (max_y - min_y);
+}
+
 
 /* Triangle rendering, using Barycentric coordinates (w0, w1, w2)
  *
@@ -232,7 +246,7 @@ int SDL_SW_FillTriangle(SDL_Surface *dst, SDL_Point *d0, SDL_Point *d1, SDL_Poin
         }
     }
 
-    bounding_rect(d0, d1, d2, &dstrect);
+    bounding_rect_fixedpoint(d0, d1, d2, &dstrect);
 
     {
         /* Clip triangle rect with surface rect */
@@ -438,7 +452,6 @@ int SDL_SW_BlitTriangle(
 
     SDL_BlendMode blend;
 
-    SDL_Rect srcrect;
     SDL_Rect dstrect;
 
     SDL_Point s2_x_area;
@@ -495,10 +508,28 @@ int SDL_SW_BlitTriangle(
 
     is_uniform = COLOR_EQ(c0, c1) && COLOR_EQ(c1, c2);
 
-    bounding_rect(s0, s1, s2, &srcrect);
-    bounding_rect(d0, d1, d2, &dstrect);
+    bounding_rect_fixedpoint(d0, d1, d2, &dstrect);
 
     SDL_GetSurfaceBlendMode(src, &blend);
+
+    /* TRIANGLE_GET_TEXTCOORD interpolates up to the max values included, so reduce by 1 */
+    {
+        SDL_Rect srcrect;
+        int maxx, maxy;
+        bounding_rect(s0, s1, s2, &srcrect);
+        maxx = srcrect.x + srcrect.w;
+        maxy = srcrect.y + srcrect.h;
+        if (srcrect.w > 0) {
+            if (s0->x == maxx) s0->x--;
+            if (s1->x == maxx) s1->x--;
+            if (s2->x == maxx) s2->x--;
+        }
+        if (srcrect.h > 0) {
+            if (s0->y == maxy) s0->y--;
+            if (s1->y == maxy) s1->y--;
+            if (s2->y == maxy) s2->y--;
+        }
+    }
 
     if (is_uniform) {
         // SDL_GetSurfaceColorMod(src, &r, &g, &b);
