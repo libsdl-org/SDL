@@ -1,0 +1,28 @@
+name: Build (OS/2)
+
+on: [push, pull_request]
+
+jobs:
+  os2:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Cache OpenWatcom
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-openwatcom
+        with:
+          path: ~/openwatcom
+          key: ${{ runner.os }}-build-${{ env.cache-name }}
+
+      - name: Download OpenWatcom if not cached
+        run: if [ ! -d ~/openwatcom/binl64 ]; then wget 'https://github.com/open-watcom/open-watcom-v2/releases/download/Current-build/open-watcom-2_0-c-linux-x64' -o ~/ow.zip && mkdir -p ~/openwatcom && cd ~/openwatcom && unzip ~/ow.zip ; fi
+        shell: bash
+
+      - name: Build
+        run: build-scripts/os2-buildbot.sh
+        shell: bash
+        env:
+          WATCOM: ~/openwatcom
+
