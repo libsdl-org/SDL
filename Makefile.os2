@@ -122,9 +122,6 @@ SDL_syscond.obj: "src/thread/generic/SDL_syscond.c"
 SDL_cpuinfo.obj: SDL_cpuinfo.c
     wcc386 $(CFLAGS) -wcd=200 -fo=$^@ $<
 
-SDL_rwops.obj: SDL_rwops.c
-    wcc386 $(CFLAGS) -wcd=136 -fo=$^@ $<
-
 SDL_wave.obj: SDL_wave.c
     wcc386 $(CFLAGS) -wcd=124 -fo=$^@ $<
 
