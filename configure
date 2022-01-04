@@ -20747,8 +20747,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 CheckRPI()
 {
     # Check whether --enable-video-rpi was given.
-if test "${enable_video
-+set}" = set; then :
+if test "${enable_video_rpi+set}" = set; then :
   enableval=$enable_video_rpi;
 else
   enable_video_rpi=yes
