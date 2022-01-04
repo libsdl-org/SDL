@@ -2411,6 +2411,7 @@ CheckGLX()
         AC_MSG_RESULT($video_opengl_glx)
         if test x$video_opengl_glx = xyes; then
             AC_DEFINE(SDL_VIDEO_OPENGL, 1, [ ])
+            AC_DEFINE(SDL_VIDEO_OPENGL_GLX, 1, [ ])	    
         fi
     fi
 }
