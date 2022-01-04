@@ -25803,6 +25803,8 @@ $as_echo "#define SDL_VIDEO_DRIVER_ANDROID 1" >>confdefs.h
         CheckLibSampleRate
         # Need to check for Raspberry PI first and add platform specific compiler flags, otherwise the test for GLES fails!
         CheckRPI
+        # Need to set ROCKCHIP video driver for 3D hw accel with ffplay / OpenGL ES 2/3 in SDL (Rockchip device)
+        CheckRockchip
         CheckX11
         CheckDirectFB
         # Need to check for EGL first because KMSDRM and Wayland depends on it.
