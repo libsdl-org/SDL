@@ -21,8 +21,6 @@ jobs:
         shell: bash
 
       - name: Build
-        run: build-scripts/os2-buildbot.sh
-        shell: bash
-        env:
-          WATCOM: ~/openwatcom
+        run: WATCOM="$HOME/openwatcom" build-scripts/os2-buildbot.sh
+        shell: bash         
 
