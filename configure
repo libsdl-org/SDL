@@ -23188,9 +23188,18 @@ $as_echo "$video_opengl_glx" >&6; }
 
 $as_echo "#define SDL_VIDEO_OPENGL 1" >>confdefs.h
 
+            #
+            # Disable GLX on ROCKCHIP platform with mali blob.
+            # This make sure SDL loads OpenGLES 2 / 3 with HW acceleration
+            #
+            if test x$enable_video_rockchip = xyes; then
+                { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: GLX disabled for ROCKCHIP HW acceleration with mali" >&5
+$as_echo "$as_me: WARNING: GLX disabled for ROCKCHIP HW acceleration with mali" >&2;}
+            else
 
 $as_echo "#define SDL_VIDEO_OPENGL_GLX 1" >>confdefs.h
 
+            fi
         fi
     fi
 }
