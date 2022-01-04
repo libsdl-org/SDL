@@ -40,6 +40,11 @@
 /* For GET_X_LPARAM, GET_Y_LPARAM. */
 #include <windowsx.h>
 
+/* For WM_TABLET_QUERYSYSTEMGESTURESTATUS et. al. */
+#if HAVE_TPCSHRD_H
+#include <tpcshrd.h>
+#endif /* HAVE_TPCSHRD_H */
+
 /* #define WMMSG_DEBUG */
 #ifdef WMMSG_DEBUG
 #include <stdio.h>
@@ -1283,6 +1288,25 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             return 0;
         }
         break;
+
+#if HAVE_TPCSHRD_H
+
+    case WM_TABLET_QUERYSYSTEMGESTURESTATUS:
+        /* See https://msdn.microsoft.com/en-us/library/windows/desktop/bb969148(v=vs.85).aspx .
+         * If we're handling our own touches, we don't want any gestures.
+         * Not all of these settings are documented.
+         * The use of the undocumented ones was suggested by https://github.com/bjarkeck/GCGJ/blob/master/Monogame/Windows/WinFormsGameForm.cs . */
+        return TABLET_DISABLE_PRESSANDHOLD |    /*  disables press and hold (right-click) gesture */
+            TABLET_DISABLE_PENTAPFEEDBACK |     /*  disables UI feedback on pen up (waves) */
+            TABLET_DISABLE_PENBARRELFEEDBACK |  /*  disables UI feedback on pen button down (circle) */
+            TABLET_DISABLE_TOUCHUIFORCEON |
+            TABLET_DISABLE_TOUCHUIFORCEOFF |
+            TABLET_DISABLE_TOUCHSWITCH |
+            TABLET_DISABLE_FLICKS |             /*  disables pen flicks (back, forward, drag down, drag up) */
+            TABLET_DISABLE_SMOOTHSCROLLING |
+            TABLET_DISABLE_FLICKFALLBACKKEYS;
+
+#endif /* HAVE_TPCSHRD_H */
 
     case WM_DROPFILES:
         {
