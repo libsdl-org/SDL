@@ -869,6 +869,7 @@ enable_wayland_shared
 enable_libdecor
 enable_libdecor_shared
 enable_video_rpi
+enable_video_rockchip
 enable_video_x11
 with_x
 enable_x11_shared
@@ -942,7 +943,8 @@ PULSEAUDIO_CFLAGS
 PULSEAUDIO_LIBS
 FUSIONSOUND_CFLAGS
 FUSIONSOUND_LIBS
-RPI_CFLAGS
+
+_CFLAGS
 RPI_LIBS
 XMKMF
 DIRECTFB_CFLAGS
@@ -1655,6 +1657,8 @@ Optional Features:
   --enable-libdecor-shared
                           dynamically load libdecor [default=yes]
   --enable-video-rpi      use Raspberry Pi 2/3 video driver [default=yes]
+  --enable-video-rockchip use Rockchip video driver with mali blob
+                          [default=no]
   --enable-video-x11      use X11 video driver [default=yes]
   --enable-x11-shared     dynamically load X11 support [default=maybe]
   --enable-video-x11-xcursor
@@ -20744,7 +20748,8 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 CheckRPI()
 {
     # Check whether --enable-video-rpi was given.
-if test "${enable_video_rpi+set}" = set; then :
+if test "${enable_video
++set}" = set; then :
   enableval=$enable_video_rpi;
 else
   enable_video_rpi=yes
@@ -20881,6 +20886,23 @@ $as_echo "#define SDL_VIDEO_DRIVER_RPI 1" >>confdefs.h
 
             SUMMARY_video="${SUMMARY_video} rpi"
         fi
+    fi
+}
+
+CheckRockchip()
+{
+    # Check whether --enable-video-rockchip was given.
+if test "${enable_video_rockchip+set}" = set; then :
+  enableval=$enable_video_rockchip;
+else
+  enable_video_rockchip=no
+fi
+
+    if test x$enable_video = xyes -a x$enable_video_rockchip = xyes; then
+
+$as_echo "#define SDL_VIDEO_DRIVER_ROCKCHIP 1" >>confdefs.h
+$as_echo "#define SDL_HINT_VIDEO_X11_FORCE_EGL 1" >>confdefs.h
+
     fi
 }
 
