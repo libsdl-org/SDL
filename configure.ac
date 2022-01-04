@@ -3693,7 +3693,7 @@ case "$host" in
         CheckLibSampleRate
         # Need to check for Raspberry PI first and add platform specific compiler flags, otherwise the test for GLES fails!
         CheckRPI
-        # Need for ffmpeg / EGLES2 SDL Rockchip
+        # Need to set ROCKCHIP video driver for 3D hw accel with ffplay / OpenGL ES 2/3 in SDL (Rockchip device)
         CheckRockchip
         CheckX11
         CheckDirectFB
