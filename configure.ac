@@ -2411,7 +2411,15 @@ CheckGLX()
         AC_MSG_RESULT($video_opengl_glx)
         if test x$video_opengl_glx = xyes; then
             AC_DEFINE(SDL_VIDEO_OPENGL, 1, [ ])
-            AC_DEFINE(SDL_VIDEO_OPENGL_GLX, 1, [ ])	    
+            #
+            # Disable GLX on ROCKCHIP platform with mali blob.
+            # This make sure SDL loads OpenGLES 2 / 3 with HW acceleration
+            #
+            if test x$enable_video_rockchip = xyes; then
+                AC_MSG_WARN([GLX disabled for ROCKCHIP HW acceleration with mali])
+            else
+                AC_DEFINE(SDL_VIDEO_OPENGL_GLX, 1, [ ])
+            fi
         fi
     fi
 }
