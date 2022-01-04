@@ -1728,6 +1728,7 @@ CheckRockchip()
                   , enable_video_rockchip=no)
     if test x$enable_video = xyes -a x$enable_video_rockchip = xyes; then
         AC_DEFINE(SDL_VIDEO_DRIVER_ROCKCHIP, 1, [ ])
+	AC_DEFINE(SDL_HINT_VIDEO_X11_FORCE_EGL, 1, [ ])
     fi
 }
 
@@ -2410,15 +2411,6 @@ CheckGLX()
         AC_MSG_RESULT($video_opengl_glx)
         if test x$video_opengl_glx = xyes; then
             AC_DEFINE(SDL_VIDEO_OPENGL, 1, [ ])
-            #
-            # Disable GLX on ROCKCHIP platform with mali blob.
-            # This make sure SDL loads OpenGLES2 with HW acceleration
-            #
-            if test x$enable_video_rockchip = xyes; then
-                AC_MSG_WARN([GLX disabled for ROCKCHIP HW acceleration])
-            else
-                AC_DEFINE(SDL_VIDEO_OPENGL_GLX, 1, [ ])
-            fi
         fi
     fi
 }
