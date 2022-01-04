@@ -17,7 +17,7 @@ jobs:
           key: ${{ runner.os }}-build-${{ env.cache-name }}
 
       - name: Download OpenWatcom if not cached
-        run: if [ ! -d ~/openwatcom/binl64 ]; then wget 'https://github.com/open-watcom/open-watcom-v2/releases/download/Current-build/open-watcom-2_0-c-linux-x64' -o ~/ow.zip && mkdir -p ~/openwatcom && cd ~/openwatcom && unzip ~/ow.zip ; fi
+        run: if [ ! -d ~/openwatcom/binl64 ]; then wget 'https://github.com/open-watcom/open-watcom-v2/releases/download/Current-build/open-watcom-2_0-c-linux-x64' -O ~/ow.zip && mkdir -p ~/openwatcom && cd ~/openwatcom && unzip ~/ow.zip ; fi
         shell: bash
 
       - name: Build
