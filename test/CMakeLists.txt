@@ -196,7 +196,6 @@ if(PSP)
         testdisplayinfo
         teststreaming
         testgeometry
-        testgesture
         testfile
         testdraw2
         testviewport
