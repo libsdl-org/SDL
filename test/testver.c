@@ -35,13 +35,13 @@ main(int argc, char *argv[])
     SDL_Log("Compiled with SDL older than 2.0\n");
 #endif
     SDL_VERSION(&compiled);
-    SDL_Log("Compiled version: %d.%d.%d (%s)\n",
+    SDL_Log("Compiled version: %d.%d.%d.%d (%s)\n",
            compiled.major, compiled.minor, compiled.patch,
-           SDL_REVISION);
+           SDL_REVISION_NUMBER, SDL_REVISION);
     SDL_GetVersion(&linked);
-    SDL_Log("Linked version: %d.%d.%d (%s)\n",
+    SDL_Log("Linked version: %d.%d.%d.%d (%s)\n",
            linked.major, linked.minor, linked.patch,
-           SDL_GetRevision());
+           SDL_GetRevisionNumber(), SDL_GetRevision());
     SDL_Quit();
     return (0);
 }
