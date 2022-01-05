@@ -134,37 +134,8 @@ endif()
 
 file(GLOB RESOURCE_FILES *.bmp *.wav *.hex moose.dat utf8.txt)
 file(COPY ${RESOURCE_FILES} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-set(NEEDS_RESOURCES
-    testscale
-    testrendercopyex
-    controllermap
-    testyuv
-    testgamecontroller
-    testshape
-    testshader
-    testspriteminimal
-    testautomation
-    testcustomcursor
-    testrendertarget
-    testsprite2
-    loopwave
-    loopwavequeue
-    testresample
-    testaudiohotplug
-    testmultiaudio
-    testime
-    testiconv
-    testoverlay2
-    teststreaming
-    testviewport
-)
-if(NOT PSP)
-    set(NEEDS_RESOURCES ${NEEDS_RESOURCES} testnative)
-endif()
-
 if(PSP)
-    # Build EBOOT files if building for PSP
-    set(BUILD_EBOOT
+    set(NEEDS_RESOURCES
         testscale
         testrendercopyex
         controllermap
@@ -181,6 +152,43 @@ if(PSP)
         testresample
         testaudiohotplug
         testmultiaudio
+        testiconv
+        testoverlay2
+        teststreaming
+        testviewport
+    )
+else()
+    set(NEEDS_RESOURCES
+        testscale
+        testrendercopyex
+        controllermap
+        testyuv
+        testgamecontroller
+        testshape
+        testshader
+        testspriteminimal
+        testautomation
+        testcustomcursor
+        testrendertarget
+        testsprite2
+        loopwave
+        loopwavequeue
+        testresample
+        testaudiohotplug
+        testmultiaudio
+        testime
+        testnative
+        testiconv
+        testoverlay2
+        teststreaming
+        testviewport
+    )
+endif()
+
+if(PSP)
+    # Build EBOOT files if building for PSP
+    set(BUILD_EBOOT
+        ${NEEDS_RESOURCES}
         testoffscreen
         testbounds
         testgl2
