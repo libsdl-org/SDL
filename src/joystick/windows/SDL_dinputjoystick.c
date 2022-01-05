@@ -585,6 +585,10 @@ SDL_DINPUT_JoystickPresent(Uint16 vendor_id, Uint16 product_id, Uint16 version_n
 {
     Joystick_PresentData data;
 
+    if (dinput == NULL) {
+        return SDL_FALSE;
+    }
+
     data.vendor = vendor_id;
     data.product = product_id;
     data.present = SDL_FALSE;

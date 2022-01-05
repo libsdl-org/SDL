@@ -134,27 +134,55 @@ endif()
 
 file(GLOB RESOURCE_FILES *.bmp *.wav *.hex moose.dat utf8.txt)
 file(COPY ${RESOURCE_FILES} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-set(NEEDS_RESOURCES
-    testscale
-    testrendercopyex
-    controllermap
-    testyuv
-    testgamecontroller
-    testshape
-    testshader
-    testspriteminimal
-    testautomation
-    testcustomcursor
-    testrendertarget
-    testsprite2
-    loopwave
-    loopwavequeue
-    testresample
-    testaudiohotplug
-    testmultiaudio
-)
-if(NOT PSP)
-    set(NEEDS_RESOURCES ${NEEDS_RESOURCES} testnative)
+if(PSP)
+    set(NEEDS_RESOURCES
+        testscale
+        testrendercopyex
+        controllermap
+        testyuv
+        testgamecontroller
+        testshape
+        testshader
+        testspriteminimal
+        testautomation
+        testrendertarget
+        testsprite2
+        loopwave
+        loopwavequeue
+        testresample
+        testaudiohotplug
+        testmultiaudio
+        testiconv
+        testoverlay2
+        teststreaming
+        testviewport
+    )
+else()
+    set(NEEDS_RESOURCES
+        testscale
+        testrendercopyex
+        controllermap
+        testyuv
+        testgamecontroller
+        testshape
+        testshader
+        testspriteminimal
+        testautomation
+        testcustomcursor
+        testrendertarget
+        testsprite2
+        loopwave
+        loopwavequeue
+        testresample
+        testaudiohotplug
+        testmultiaudio
+        testime
+        testnative
+        testiconv
+        testoverlay2
+        teststreaming
+        testviewport
+    )
 endif()
 
 if(PSP)
@@ -162,25 +190,16 @@ if(PSP)
     set(BUILD_EBOOT
         ${NEEDS_RESOURCES}
         testoffscreen
-        testvulkan
         testbounds
-        testhotplug
-        testgles2
-        testhaptic
-        testrelative
         testgl2
         testsem
         testdisplayinfo
-        testgles
         teststreaming
         testgeometry
-        testgesture
         testfile
-        testdropfile
         testdraw2
         testviewport
         testhittesting
-        checkkeys
         testoverlay2
         testver
         testdrawchessboard
@@ -191,19 +210,14 @@ if(PSP)
         testerror
         testatomic
         testjoystick
-        testrumble
         testiconv
         testfilesystem
         testplatform
         testthread
-        testkeys
         testloadso
-        testmouse
         testqsort
-        testime
         testaudioinfo
         testlock
-        checkkeysthreads
         testtimer
         testpower
         testwm2

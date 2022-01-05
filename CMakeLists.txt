@@ -23,6 +23,11 @@ if(WINDOWS_STORE)
   target_compile_options(sdl-build-options INTERFACE "-ZW")
 endif()
 
+# Build in parallel under Visual Studio. Not enabled by default.
+if(MSVC)
+  target_compile_options(sdl-build-options INTERFACE "/MP")
+endif(MSVC)
+
 
 # !!! FIXME: this should probably do "MACOSX_RPATH ON" as a target property
 # !!! FIXME:  for the SDL2 shared library (so you get an

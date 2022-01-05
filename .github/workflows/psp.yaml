@@ -13,6 +13,6 @@ jobs:
         apk update 
         apk add cmake gmp mpc1 mpfr4 make
     - name: Configure CMake
-      run: cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=$PSPDEV/psp/share/pspdev.cmake
+      run: cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=$PSPDEV/psp/share/pspdev.cmake -DSDL_TEST=ON
     - name: Build
       run: cmake --build build
