@@ -56,6 +56,9 @@ SDL_GetPrefPath(const char *org, const char *app)
     SDL_InvalidParamError("app");
     return NULL;
   }
+  if(!org) {
+    org = "";
+  }
 
   len = SDL_strlen(base) + SDL_strlen(org) + SDL_strlen(app) + 4;
   retval = (char *) SDL_malloc(len);
@@ -71,6 +74,6 @@ SDL_GetPrefPath(const char *org, const char *app)
   return retval;
 }
 
-#endif /* SDL_FILESYSTEM_DUMMY || SDL_FILESYSTEM_DISABLED */
+#endif /* SDL_FILESYSTEM_PSP */
 
 /* vi: set ts=4 sw=4 expandtab: */
