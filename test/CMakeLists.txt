@@ -165,27 +165,34 @@ endif()
 if(PSP)
     # Build EBOOT files if building for PSP
     set(BUILD_EBOOT
-        ${NEEDS_RESOURCES}
+        testscale
+        testrendercopyex
+        controllermap
+        testyuv
+        testgamecontroller
+        testshape
+        testshader
+        testspriteminimal
+        testautomation
+        testrendertarget
+        testsprite2
+        loopwave
+        loopwavequeue
+        testresample
+        testaudiohotplug
+        testmultiaudio
         testoffscreen
-        testvulkan
         testbounds
-        testhotplug
-        testgles2
-        testhaptic
-        testrelative
         testgl2
         testsem
         testdisplayinfo
-        testgles
         teststreaming
         testgeometry
         testgesture
         testfile
-        testdropfile
         testdraw2
         testviewport
         testhittesting
-        checkkeys
         testoverlay2
         testver
         testdrawchessboard
@@ -196,19 +203,14 @@ if(PSP)
         testerror
         testatomic
         testjoystick
-        testrumble
         testiconv
         testfilesystem
         testplatform
         testthread
-        testkeys
         testloadso
-        testmouse
         testqsort
-        testime
         testaudioinfo
         testlock
-        checkkeysthreads
         testtimer
         testpower
         testwm2
