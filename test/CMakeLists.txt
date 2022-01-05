@@ -152,6 +152,11 @@ set(NEEDS_RESOURCES
     testresample
     testaudiohotplug
     testmultiaudio
+    testime
+    testiconv
+    testoverlay2
+    teststreaming
+    testviewport
 )
 if(NOT PSP)
     set(NEEDS_RESOURCES ${NEEDS_RESOURCES} testnative)
