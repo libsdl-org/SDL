@@ -64,9 +64,9 @@ SDL_GetPrefPath(const char *org, const char *app)
   retval = (char *) SDL_malloc(len);
     
   if (*org) {
-    SDL_snprintf(retval, len, "%s/%s/%s/", base, org, app);
+    SDL_snprintf(retval, len, "%s%s/%s/", base, org, app);
   } else {
-    SDL_snprintf(retval, len, "%s/%s/", base, app);
+    SDL_snprintf(retval, len, "%s%s/", base, app);
   }
   free(base);
 
