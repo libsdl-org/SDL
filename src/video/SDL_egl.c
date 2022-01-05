@@ -516,8 +516,6 @@ SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_displa
         if (_this->egl_data->egl_version_major == 1 && _this->egl_data->egl_version_minor == 5) {
             LOAD_FUNC(eglGetPlatformDisplay);
         }
-        /* ROCKCHIP video driver with GBM (cli) and mali blob will fail to get egl_display here,
-	   use SDL_EGL_CLIENT_EXTENSION instead - remove this comment when tested */
         if (_this->egl_data->eglGetPlatformDisplay) {
             _this->egl_data->egl_display = _this->egl_data->eglGetPlatformDisplay(platform, (void *)(uintptr_t)native_display, NULL);
         }
