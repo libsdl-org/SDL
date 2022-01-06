@@ -59,6 +59,7 @@ static SDL_EventWatcher *SDL_event_watchers = NULL;
 static int SDL_event_watchers_count = 0;
 static SDL_bool SDL_event_watchers_dispatching = SDL_FALSE;
 static SDL_bool SDL_event_watchers_removed = SDL_FALSE;
+static SDL_atomic_t SDL_sentinel_pending;
 
 typedef struct {
     Uint32 bits[8];
@@ -479,6 +480,7 @@ SDL_StopEventLoop(void)
     SDL_EventQ.free = NULL;
     SDL_EventQ.wmmsg_used = NULL;
     SDL_EventQ.wmmsg_free = NULL;
+    SDL_AtomicSet(&SDL_sentinel_pending, 0);
 
     /* Clear disabled event state */
     for (i = 0; i < SDL_arraysize(SDL_disabled_events); ++i) {
@@ -574,7 +576,9 @@ SDL_AddEvent(SDL_Event * event)
     }
 
     entry->event = *event;
-    if (event->type == SDL_SYSWMEVENT) {
+    if (event->type == SDL_POLLSENTINEL) {
+        SDL_AtomicAdd(&SDL_sentinel_pending, 1);
+    } else if (event->type == SDL_SYSWMEVENT) {
         entry->msg = *event->syswm.msg;
         entry->event.syswm.msg = &entry->msg;
     }
@@ -620,6 +624,10 @@ SDL_CutEvent(SDL_EventEntry *entry)
         SDL_EventQ.tail = entry->prev;
     }
 
+    if (entry->event.type == SDL_POLLSENTINEL) {
+        SDL_AtomicAdd(&SDL_sentinel_pending, -1);
+    }
+
     entry->next = SDL_EventQ.free;
     SDL_EventQ.free = entry;
     SDL_assert(SDL_AtomicGet(&SDL_EventQ.count) > 0);
@@ -648,9 +656,9 @@ SDL_SendWakeupEvent()
 }
 
 /* Lock the event queue, take a peep at it, and unlock it */
-int
-SDL_PeepEvents(SDL_Event * events, int numevents, SDL_eventaction action,
-               Uint32 minType, Uint32 maxType)
+static int
+SDL_PeepEventsInternal(SDL_Event * events, int numevents, SDL_eventaction action,
+               Uint32 minType, Uint32 maxType, SDL_bool include_sentinel)
 {
     int i, used;
 
@@ -713,7 +721,9 @@ SDL_PeepEvents(SDL_Event * events, int numevents, SDL_eventaction action,
                             SDL_CutEvent(entry);
                         }
                     }
-                    ++used;
+                    if (type != SDL_POLLSENTINEL || include_sentinel) {
+                        ++used;
+                    }
                 }
             }
         }
@@ -729,6 +739,12 @@ SDL_PeepEvents(SDL_Event * events, int numevents, SDL_eventaction action,
     }
 
     return (used);
+}
+int
+SDL_PeepEvents(SDL_Event * events, int numevents, SDL_eventaction action,
+               Uint32 minType, Uint32 maxType)
+{
+    return SDL_PeepEventsInternal(events, numevents, action, minType, maxType, SDL_FALSE);
 }
 
 SDL_bool
@@ -815,6 +831,14 @@ SDL_PumpEvents(void)
 #endif
 
     SDL_SendPendingSignalEvents();  /* in case we had a signal handler fire, etc. */
+
+    if (SDL_GetEventState(SDL_POLLSENTINEL) == SDL_ENABLE) {
+        SDL_Event sentinel;
+
+        SDL_zero(sentinel);
+        sentinel.type = SDL_POLLSENTINEL;
+        SDL_PushEvent(&sentinel);
+    }
 }
 
 /* Public functions */
@@ -952,17 +976,27 @@ SDL_WaitEventTimeout(SDL_Event * event, int timeout)
     SDL_Window *wakeup_window;
     Uint32 start = 0;
     Uint32 expiration = 0;
+    SDL_bool include_sentinel = (timeout == 0) ? SDL_TRUE : SDL_FALSE;
+
+    /* If there isn't a poll sentinel event pending, pump events and add one */
+    if (SDL_AtomicGet(&SDL_sentinel_pending) == 0) {
+        SDL_PumpEvents();
+    }
 
     /* First check for existing events */
-    switch (SDL_PeepEvents(event, 1, SDL_GETEVENT, SDL_FIRSTEVENT, SDL_LASTEVENT)) {
+    switch (SDL_PeepEventsInternal(event, 1, SDL_GETEVENT, SDL_FIRSTEVENT, SDL_LASTEVENT, include_sentinel)) {
     case -1:
         return 0;
     case 0:
+        if (timeout == 0) {
+            /* No events available, and no timeout */
+            return 0;
+        }
         break;
     default:
-        /* Check whether we have reached the end of the poll cycle, and no more events are left */
-        if (timeout == 0 && event && event->type == SDL_POLLSENTINEL) {
-            return (SDL_PeepEvents(event, 1, SDL_GETEVENT, SDL_FIRSTEVENT, SDL_LASTEVENT) == 1);
+        if (event && event->type == SDL_POLLSENTINEL) {
+            /* Reached the end of a poll cycle, and no timeout */
+            return 0;
         }
         /* Has existing events */
         return 1;
@@ -973,7 +1007,7 @@ SDL_WaitEventTimeout(SDL_Event * event, int timeout)
         expiration = start + timeout;
     }
 
-    if (timeout != 0 && _this && _this->WaitEventTimeout && _this->SendWakeupEvent && !SDL_events_need_polling()) {
+    if (_this && _this->WaitEventTimeout && _this->SendWakeupEvent && !SDL_events_need_polling()) {
         /* Look if a shown window is available to send the wakeup event. */
         wakeup_window = SDL_find_active_window(_this);
         if (wakeup_window) {
@@ -993,10 +1027,6 @@ SDL_WaitEventTimeout(SDL_Event * event, int timeout)
         case -1:
             return 0;
         case 0:
-            if (timeout == 0) {
-                /* Polling and no events, just return */
-                return 0;
-            }
             if (timeout > 0 && SDL_TICKS_PASSED(SDL_GetTicks(), expiration)) {
                 /* Timeout expired and no events */
                 return 0;
@@ -1004,13 +1034,6 @@ SDL_WaitEventTimeout(SDL_Event * event, int timeout)
             SDL_Delay(1);
             break;
         default:
-            if (timeout == 0 && SDL_GetEventState(SDL_POLLSENTINEL) == SDL_ENABLE) {
-                /* We are at the start of a poll cycle with at least one new event.
-                   Add a sentinel event to mark the end of the cycle. */
-                SDL_Event sentinel;
-                sentinel.type = SDL_POLLSENTINEL;
-                SDL_PushEvent(&sentinel);
-            }
             /* Has events */
             return 1;
         }
