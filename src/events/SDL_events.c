@@ -647,10 +647,17 @@ SDL_SendWakeupEvent()
     return 0;
 }
 
+/* Flags that can be passed to PeepEventsInternal */
+enum
+{
+    PEEP_EVENTS_FLAGS_IF_SENTINEL_EXISTS = (1 << 0),
+    PEEP_EVENTS_FLAGS_NONE = 0
+};
+
 /* Lock the event queue, take a peep at it, and unlock it */
-int
-SDL_PeepEvents(SDL_Event * events, int numevents, SDL_eventaction action,
-               Uint32 minType, Uint32 maxType)
+static int
+PeepEventsInternal(SDL_Event * events, int numevents, SDL_eventaction action,
+                   Uint32 minType, Uint32 maxType, Uint32 flags)
 {
     int i, used;
 
@@ -665,7 +672,24 @@ SDL_PeepEvents(SDL_Event * events, int numevents, SDL_eventaction action,
     /* Lock the event queue */
     used = 0;
     if (!SDL_EventQ.lock || SDL_LockMutex(SDL_EventQ.lock) == 0) {
-        if (action == SDL_ADDEVENT) {
+        SDL_bool skip = SDL_FALSE;
+
+        if (flags & PEEP_EVENTS_FLAGS_IF_SENTINEL_EXISTS) {
+            const SDL_EventEntry *entry;
+
+            skip = SDL_TRUE;
+
+            for (entry = SDL_EventQ.head; entry; entry = entry->next) {
+                if (entry->event.type == SDL_POLLSENTINEL) {
+                    skip = SDL_FALSE;
+                    break;
+                }
+            }
+        }
+
+        if (skip) {
+            /* do nothing */
+        } else if (action == SDL_ADDEVENT) {
             for (i = 0; i < numevents; ++i) {
                 used += SDL_AddEvent(&events[i]);
             }
@@ -731,16 +755,23 @@ SDL_PeepEvents(SDL_Event * events, int numevents, SDL_eventaction action,
     return (used);
 }
 
+int
+SDL_PeepEvents(SDL_Event * events, int numevents, SDL_eventaction action,
+               Uint32 minType, Uint32 maxType)
+{
+    return PeepEventsInternal(events, numevents, action, minType, maxType, PEEP_EVENTS_FLAGS_NONE);
+}
+
 SDL_bool
 SDL_HasEvent(Uint32 type)
 {
-    return (SDL_PeepEvents(NULL, 0, SDL_PEEKEVENT, type, type) > 0);
+    return (PeepEventsInternal(NULL, 0, SDL_PEEKEVENT, type, type, PEEP_EVENTS_FLAGS_NONE) > 0);
 }
 
 SDL_bool
 SDL_HasEvents(Uint32 minType, Uint32 maxType)
 {
-    return (SDL_PeepEvents(NULL, 0, SDL_PEEKEVENT, minType, maxType) > 0);
+    return (PeepEventsInternal(NULL, 0, SDL_PEEKEVENT, minType, maxType, PEEP_EVENTS_FLAGS_NONE) > 0);
 }
 
 void
@@ -859,7 +890,7 @@ SDL_WaitEventTimeout_Device(_THIS, SDL_Window *wakeup_window, SDL_Event * event,
         SDL_PumpEvents();
 
         if (!_this->wakeup_lock || SDL_LockMutex(_this->wakeup_lock) == 0) {
-            int status = SDL_PeepEvents(event, 1, SDL_GETEVENT, SDL_FIRSTEVENT, SDL_LASTEVENT);
+            int status = PeepEventsInternal(event, 1, SDL_GETEVENT, SDL_FIRSTEVENT, SDL_LASTEVENT, PEEP_EVENTS_FLAGS_NONE);
             /* If status == 0 we are going to block so wakeup will be needed. */
             if (status == 0) {
                 _this->wakeup_window = wakeup_window;
@@ -954,18 +985,26 @@ SDL_WaitEventTimeout(SDL_Event * event, int timeout)
     Uint32 expiration = 0;
 
     /* First check for existing events */
-    switch (SDL_PeepEvents(event, 1, SDL_GETEVENT, SDL_FIRSTEVENT, SDL_LASTEVENT)) {
+    switch (PeepEventsInternal(event, 1, SDL_GETEVENT, SDL_FIRSTEVENT, SDL_LASTEVENT, PEEP_EVENTS_FLAGS_IF_SENTINEL_EXISTS)) {
     case -1:
         return 0;
     case 0:
+        /* Either the queue is empty, or the queue only contains
+         * non-sentinel events. Fall through to the slow path, which
+         * polls the windowing system for events, to avoid custom events
+         * being able to starve the windowing system event source
+         * (as in #5136). */
         break;
     default:
-        /* Check whether we have reached the end of the poll cycle, and no more events are left */
-        if (timeout == 0 && event && event->type == SDL_POLLSENTINEL) {
-            return (SDL_PeepEvents(event, 1, SDL_GETEVENT, SDL_FIRSTEVENT, SDL_LASTEVENT) == 1);
+        /* There is a sentinel event in the queue from a previous poll
+         * cycle. We don't want to start a new poll cycle until we have
+         * drained the queue at least as far as the sentinel event.
+         * Don't return the sentinel event itself to the caller; if the
+         * sentinel event is the head of the queue, we just fall through
+         * to starting a new poll cycle. */
+        if (event && event->type != SDL_POLLSENTINEL) {
+            return 1;
         }
-        /* Has existing events */
-        return 1;
     }
 
     if (timeout > 0) {
@@ -989,7 +1028,7 @@ SDL_WaitEventTimeout(SDL_Event * event, int timeout)
 
     for (;;) {
         SDL_PumpEvents();
-        switch (SDL_PeepEvents(event, 1, SDL_GETEVENT, SDL_FIRSTEVENT, SDL_LASTEVENT)) {
+        switch (PeepEventsInternal(event, 1, SDL_GETEVENT, SDL_FIRSTEVENT, SDL_LASTEVENT, PEEP_EVENTS_FLAGS_NONE)) {
         case -1:
             return 0;
         case 0:
@@ -1062,7 +1101,7 @@ SDL_PushEvent(SDL_Event * event)
         }
     }
 
-    if (SDL_PeepEvents(event, 1, SDL_ADDEVENT, 0, 0) <= 0) {
+    if (PeepEventsInternal(event, 1, SDL_ADDEVENT, 0, 0, PEEP_EVENTS_FLAGS_NONE) <= 0) {
         return -1;
     }
 
