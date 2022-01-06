@@ -984,6 +984,7 @@ SDL_WaitEventTimeout(SDL_Event * event, int timeout)
     }
 
     /* First check for existing events */
+retry:
     switch (SDL_PeepEventsInternal(event, 1, SDL_GETEVENT, SDL_FIRSTEVENT, SDL_LASTEVENT, include_sentinel)) {
     case -1:
         return 0;
@@ -995,7 +996,11 @@ SDL_WaitEventTimeout(SDL_Event * event, int timeout)
         break;
     default:
         if (event && event->type == SDL_POLLSENTINEL) {
-            /* Reached the end of a poll cycle, and no timeout */
+            /* Reached the end of a poll cycle, and not willing to wait */
+            if (SDL_AtomicGet(&SDL_sentinel_pending) > 0) {
+                /* We have another sentinel pending, skip this and keep going */
+                goto retry;
+            }
             return 0;
         }
         /* Has existing events */
