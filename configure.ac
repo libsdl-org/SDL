@@ -1729,6 +1729,7 @@ CheckRockchip()
     if test x$enable_video = xyes -a x$enable_video_rockchip = xyes; then
         AC_DEFINE(SDL_VIDEO_DRIVER_ROCKCHIP, 1, [ ])
 	AC_DEFINE(SDL_HINT_VIDEO_X11_FORCE_EGL, 1, [ ])
+	SUMMARY_video="${SUMMARY_video} rockchip"
     fi
 }
 
