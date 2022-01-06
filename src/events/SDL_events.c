@@ -974,8 +974,7 @@ SDL_WaitEventTimeout(SDL_Event * event, int timeout)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
     SDL_Window *wakeup_window;
-    Uint32 start = 0;
-    Uint32 expiration = 0;
+    Uint32 start, expiration;
     SDL_bool include_sentinel = (timeout == 0) ? SDL_TRUE : SDL_FALSE;
 
     /* If there isn't a poll sentinel event pending, pump events and add one */
@@ -1006,10 +1005,15 @@ retry:
         /* Has existing events */
         return 1;
     }
+    /* We should have completely handled timeout == 0 above */
+    SDL_assert(timeout != 0);
 
     if (timeout > 0) {
         start = SDL_GetTicks();
         expiration = start + timeout;
+    } else {
+        start = 0;
+        expiration = 0;
     }
 
     if (_this && _this->WaitEventTimeout && _this->SendWakeupEvent && !SDL_events_need_polling()) {
