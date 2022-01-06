@@ -1845,17 +1845,6 @@ SDL_RecreateWindow(SDL_Window * window, Uint32 flags)
         need_gl_load  = SDL_TRUE;
     }
 
-    if ((window->flags & SDL_WINDOW_METAL) != (flags & SDL_WINDOW_METAL)) {
-        if (flags & SDL_WINDOW_METAL) {
-            need_gl_load = SDL_TRUE;
-        } else {
-            need_gl_unload = SDL_TRUE;
-        }
-    } else if (window->flags & SDL_WINDOW_METAL) {
-        need_gl_unload = SDL_TRUE;
-        need_gl_load  = SDL_TRUE;
-    }
-
     if ((window->flags & SDL_WINDOW_VULKAN) != (flags & SDL_WINDOW_VULKAN)) {
         if (flags & SDL_WINDOW_VULKAN) {
             need_vulkan_load = SDL_TRUE;
