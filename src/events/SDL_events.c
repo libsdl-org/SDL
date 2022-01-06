@@ -989,7 +989,7 @@ SDL_WaitEventTimeout(SDL_Event * event, int timeout)
         return 0;
     case 0:
         if (timeout == 0) {
-            /* No events available, and no timeout */
+            /* No events available, and not willing to wait */
             return 0;
         }
         break;
