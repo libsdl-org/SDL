@@ -100,6 +100,7 @@ typedef unsigned int uintptr_t;
 
 #define HAVE_MMDEVICEAPI_H 1
 #define HAVE_AUDIOCLIENT_H 1
+#define HAVE_TPCSHRD_H 1
 
 #define HAVE_LIBC 1
 #define STDC_HEADERS 1

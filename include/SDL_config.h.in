@@ -240,6 +240,7 @@
 
 #undef HAVE_MMDEVICEAPI_H
 #undef HAVE_AUDIOCLIENT_H
+#undef HAVE_TPCSHRD_H
 #undef HAVE_SENSORSAPI_H
 
 /* SDL internal assertion support */

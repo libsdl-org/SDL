@@ -3971,6 +3971,10 @@ case "$host" in
                 have_haptic=yes
             fi
         fi
+        AC_CHECK_HEADER(tpcshrd.h,have_tpcshrd_h=yes)
+        if test x$have_tpcshrd_h = xyes; then
+            AC_DEFINE(HAVE_TPCSHRD_H, 1, [ ])
+        fi
         # Set up files for the sensor library
         AC_CHECK_HEADER(sensorsapi.h,have_winsensors=yes,have_winsensors=no)
         if test x$have_winsensors = xyes; then
