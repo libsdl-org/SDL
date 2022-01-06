@@ -721,9 +721,14 @@ SDL_PeepEventsInternal(SDL_Event * events, int numevents, SDL_eventaction action
                             SDL_CutEvent(entry);
                         }
                     }
-                    if (type != SDL_POLLSENTINEL || include_sentinel) {
-                        ++used;
+                    if (type == SDL_POLLSENTINEL) {
+                        /* Special handling for the sentinel event */
+                        if (!include_sentinel || SDL_AtomicGet(&SDL_sentinel_pending) > 0) {
+                            /* Skip it, we don't want to include it or there's another one pending */
+                            continue;
+                        }
                     }
+                    ++used;
                 }
             }
         }
@@ -983,7 +988,6 @@ SDL_WaitEventTimeout(SDL_Event * event, int timeout)
     }
 
     /* First check for existing events */
-retry:
     switch (SDL_PeepEventsInternal(event, 1, SDL_GETEVENT, SDL_FIRSTEVENT, SDL_LASTEVENT, include_sentinel)) {
     case -1:
         return 0;
@@ -996,10 +1000,6 @@ retry:
     default:
         if (event && event->type == SDL_POLLSENTINEL) {
             /* Reached the end of a poll cycle, and not willing to wait */
-            if (SDL_AtomicGet(&SDL_sentinel_pending) > 0) {
-                /* We have another sentinel pending, skip this and keep going */
-                goto retry;
-            }
             return 0;
         }
         /* Has existing events */
