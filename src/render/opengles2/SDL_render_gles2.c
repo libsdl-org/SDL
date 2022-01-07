@@ -693,63 +693,6 @@ GLES2_QueueDrawPoints(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL
 }
 
 static int
-GLES2_QueueDrawLines(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FPoint * points, int count)
-{
-    const SDL_bool colorswap = (renderer->target && (renderer->target->format == SDL_PIXELFORMAT_ARGB8888 || renderer->target->format == SDL_PIXELFORMAT_RGB888));
-    int i;
-    GLfloat prevx, prevy;
-    SDL_VertexSolid *verts = (SDL_VertexSolid *) SDL_AllocateRenderVertices(renderer, count * sizeof(*verts), 0, &cmd->data.draw.first);
-    SDL_Color color;
-    color.r = cmd->data.draw.r;
-    color.g = cmd->data.draw.g;
-    color.b = cmd->data.draw.b;
-    color.a = cmd->data.draw.a;
-
-    if (!verts) {
-        return -1;
-    }
-
-    if (colorswap) {
-        Uint8 r = color.r;
-        color.r = color.b;
-        color.b = r;
-    }
-
-    cmd->data.draw.count = count;
-
-    /* 0.5f offset to hit the center of the pixel. */
-    prevx = 0.5f + points->x;
-    prevy = 0.5f + points->y;
-    verts->position.x = prevx;
-    verts->position.y = prevy;
-    verts->color = color;
-    verts++;
-
-    /* bump the end of each line segment out a quarter of a pixel, to provoke
-       the diamond-exit rule. Without this, you won't just drop the last
-       pixel of the last line segment, but you might also drop pixels at the
-       edge of any given line segment along the way too. */
-    for (i = 1; i < count; i++) {
-        const GLfloat xstart = prevx;
-        const GLfloat ystart = prevy;
-        const GLfloat xend = points[i].x + 0.5f;  /* 0.5f to hit pixel center. */
-        const GLfloat yend = points[i].y + 0.5f;
-        /* bump a little in the direction we are moving in. */
-        const GLfloat deltax = xend - xstart;
-        const GLfloat deltay = yend - ystart;
-        const GLfloat angle = SDL_atan2f(deltay, deltax);
-        prevx = xend + (SDL_cosf(angle) * 0.25f);
-        prevy = yend + (SDL_sinf(angle) * 0.25f);
-        verts->position.x = prevx;
-        verts->position.y = prevy;
-        verts->color = color;
-        verts++;
-    }
-
-    return 0;
-}
-
-static int
 GLES2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
         const float *xy, int xy_stride, const SDL_Color *color, int color_stride, const float *uv, int uv_stride,
         int num_vertices, const void *indices, int num_indices, int size_indices,
@@ -1183,39 +1126,8 @@ GLES2_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
             case SDL_RENDERCMD_COPY_EX: /* unused */
                 break;
 
-            case SDL_RENDERCMD_DRAW_LINES: {
-                if (SetDrawState(data, cmd, GLES2_IMAGESOURCE_SOLID) == 0) {
-                    size_t count = cmd->data.draw.count;
-                    if (count > 2) {
-                        /* joined lines cannot be grouped */
-                        data->glDrawArrays(GL_LINE_STRIP, 0, (GLsizei)count);
-                    } else {
-                        /* let's group non joined lines */
-                        SDL_RenderCommand *finalcmd = cmd;
-                        SDL_RenderCommand *nextcmd = cmd->next;
-                        SDL_BlendMode thisblend = cmd->data.draw.blend;
-
-                        while (nextcmd != NULL) {
-                            const SDL_RenderCommandType nextcmdtype = nextcmd->command;
-                            if (nextcmdtype != SDL_RENDERCMD_DRAW_LINES) {
-                                break;  /* can't go any further on this draw call, different render command up next. */
-                            } else if (nextcmd->data.draw.count != 2) {
-                                break;  /* can't go any further on this draw call, those are joined lines */
-                            } else if (nextcmd->data.draw.blend != thisblend) {
-                                break;  /* can't go any further on this draw call, different blendmode copy up next. */
-                            } else {
-                                finalcmd = nextcmd;  /* we can combine copy operations here. Mark this one as the furthest okay command. */
-                                count += cmd->data.draw.count;
-                            }
-                            nextcmd = nextcmd->next;
-                        }
-
-                        data->glDrawArrays(GL_LINES, 0, (GLsizei)count);
-                        cmd = finalcmd;  /* skip any copy commands we just combined in here. */
-                    }
-                }
+            case SDL_RENDERCMD_DRAW_LINES: /* unused */
                 break;
-            }
 
             case SDL_RENDERCMD_DRAW_POINTS:
             case SDL_RENDERCMD_GEOMETRY: {
@@ -2095,7 +2007,6 @@ GLES2_CreateRenderer(SDL_Window *window, Uint32 flags)
     renderer->QueueSetViewport    = GLES2_QueueSetViewport;
     renderer->QueueSetDrawColor   = GLES2_QueueSetViewport;  /* SetViewport and SetDrawColor are (currently) no-ops. */
     renderer->QueueDrawPoints     = GLES2_QueueDrawPoints;
-    renderer->QueueDrawLines      = GLES2_QueueDrawLines;
     renderer->QueueGeometry       = GLES2_QueueGeometry;
     renderer->RunCommandQueue     = GLES2_RunCommandQueue;
     renderer->RenderReadPixels    = GLES2_RenderReadPixels;
