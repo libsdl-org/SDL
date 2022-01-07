@@ -2962,7 +2962,7 @@ int
 SDL_RenderDrawLinesF(SDL_Renderer * renderer,
                      const SDL_FPoint * points, int count)
 {
-    int retval;
+    int retval = 0;
 
     CHECK_RENDERER_MAGIC(renderer, -1);
 
@@ -2984,7 +2984,126 @@ SDL_RenderDrawLinesF(SDL_Renderer * renderer,
         return RenderDrawLinesWithRectsF(renderer, points, count);
     }
 
-    retval = QueueCmdDrawLines(renderer, points, count);
+    if (!(renderer->info.flags & SDL_RENDERER_SOFTWARE) && renderer->QueueGeometry) {
+        SDL_bool isstack1;
+        SDL_bool isstack2;
+        float *xy = SDL_small_alloc(float, 4 * 2 * count, &isstack1);
+        int *indices = SDL_small_alloc(int,
+                  (4) * 3 * (count - 1)
+                + (2) * 3 * (count)
+                , &isstack2);
+
+        if (xy && indices) {
+            int i;
+            float *ptr_xy = xy;
+            int *ptr_indices = indices;
+            const int xy_stride = 2 * sizeof (float);
+            int num_vertices = 4 * count;
+            int num_indices = 0;
+            const int size_indices = 4;
+            int cur_indice = -4;
+            const int is_looping = (points[0].x == points[count - 1].x && points[0].y == points[count - 1].y);
+            SDL_FPoint p; /* previous point */
+            p.x = p.y = 0.0f;
+            /*       p            q
+
+                    0----1------ 4----5
+                    | \  |``\    | \  |
+                    |  \ |   ` `\|  \ |
+                    3----2-------7----6
+            */
+            for (i = 0; i < count; ++i) {
+                SDL_FPoint q = points[i]; /* current point */
+
+                *ptr_xy++ = q.x;
+                *ptr_xy++ = q.y;
+                *ptr_xy++ = q.x + 1.0f;
+                *ptr_xy++ = q.y;
+                *ptr_xy++ = q.x + 1.0f;
+                *ptr_xy++ = q.y + 1.0f;
+                *ptr_xy++ = q.x;
+                *ptr_xy++ = q.y + 1.0f;
+
+#define ADD_TRIANGLE(i1, i2, i3)                    \
+                *ptr_indices++ = cur_indice + i1;   \
+                *ptr_indices++ = cur_indice + i2;   \
+                *ptr_indices++ = cur_indice + i3;   \
+                num_indices += 3;                   \
+
+                /* closed polyline, don´t draw twice the point */
+                if (i || is_looping == 0) {
+                    ADD_TRIANGLE(4, 5, 6)
+                    ADD_TRIANGLE(4, 6, 7)
+                }
+
+                /* first point only, no segment */
+                if (i == 0) {
+                    p = q;
+                    cur_indice += 4;
+                    continue;
+                }
+
+                /* draw segment */
+                if (p.y == q.y) {
+                    if (p.x < q.x) {
+                        ADD_TRIANGLE(1, 4, 7)
+                        ADD_TRIANGLE(1, 7, 2)
+                    } else {
+                        ADD_TRIANGLE(5, 0, 3)
+                        ADD_TRIANGLE(5, 3, 6)
+                    }
+                } else if (p.x == q.x) {
+                    if (p.y < q.y) {
+                        ADD_TRIANGLE(2, 5, 4)
+                        ADD_TRIANGLE(2, 4, 3)
+                    } else {
+                        ADD_TRIANGLE(6, 1, 0)
+                        ADD_TRIANGLE(6, 0, 7)
+                    }
+                } else {
+                    if (p.y < q.y) {
+                        if (p.x < q.x) {
+                            ADD_TRIANGLE(1, 5, 4)
+                            ADD_TRIANGLE(1, 4, 2)
+                            ADD_TRIANGLE(2, 4, 7)
+                            ADD_TRIANGLE(2, 7, 3)
+                        } else {
+                            ADD_TRIANGLE(4, 0, 5)
+                            ADD_TRIANGLE(5, 0, 3)
+                            ADD_TRIANGLE(5, 3, 6)
+                            ADD_TRIANGLE(6, 3, 2)
+                        }
+                    } else {
+                        if (p.x < q.x) {
+                            ADD_TRIANGLE(0, 4, 7)
+                            ADD_TRIANGLE(0, 7, 1)
+                            ADD_TRIANGLE(1, 7, 6)
+                            ADD_TRIANGLE(1, 6, 2)
+                        } else {
+                            ADD_TRIANGLE(6, 5, 1)
+                            ADD_TRIANGLE(6, 1, 0)
+                            ADD_TRIANGLE(7, 6, 0)
+                            ADD_TRIANGLE(7, 0, 3)
+                        }
+                    }
+                }
+
+                p = q;
+                cur_indice += 4;
+            }
+
+            retval = QueueCmdGeometry(renderer, NULL,
+                    xy, xy_stride, &renderer->color, 0 /* color_stride */, NULL, 0,
+                    num_vertices, indices, num_indices, size_indices,
+                    1.0f, 1.0f);
+
+            SDL_small_free(xy, isstack1);
+            SDL_small_free(indices, isstack2);
+        }
+
+    } else {
+        retval = QueueCmdDrawLines(renderer, points, count);
+    }
 
     return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
 }

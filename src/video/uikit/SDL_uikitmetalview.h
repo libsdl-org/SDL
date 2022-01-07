@@ -38,7 +38,6 @@
 #import <Metal/Metal.h>
 #import <QuartzCore/CAMetalLayer.h>
 
-#define METALVIEW_TAG 255
 
 @interface SDL_uikitmetalview : SDL_uikitview
 

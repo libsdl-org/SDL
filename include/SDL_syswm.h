@@ -98,6 +98,10 @@ typedef struct _UIViewController UIViewController;
 typedef Uint32 GLuint;
 #endif
 
+#if defined(SDL_VIDEO_VULKAN) || defined(SDL_VIDEO_METAL)
+#define SDL_METALVIEW_TAG 255
+#endif
+
 #if defined(SDL_VIDEO_DRIVER_ANDROID)
 typedef struct ANativeWindow ANativeWindow;
 typedef void *EGLSurface;
