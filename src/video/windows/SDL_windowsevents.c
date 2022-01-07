@@ -695,6 +695,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
     case WM_SETFOCUS:
     case WM_KILLFOCUS:
+    case WM_ENTERIDLE:
         {
             /* Update the focus in case it's changing between top-level windows in the same application */
             WIN_UpdateFocus(data->window);
