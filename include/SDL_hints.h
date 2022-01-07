@@ -413,6 +413,19 @@ extern "C" {
 #define SDL_HINT_EVENT_LOGGING   "SDL_EVENT_LOGGING"
 
 /**
+ *  \brief  A variable controlling whether raising the window should be done more forcefully
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - No forcing (the default)
+ *    "1"       - Extra level of forcing
+ *
+ *  At present, this is only an issue under MS Windows, which makes it nearly impossible to
+ *  programmatically move a window to the foreground, for "security" reasons. See
+ *  http://stackoverflow.com/a/34414846 for a discussion.
+ */
+#define SDL_HINT_FORCE_RAISEWINDOW    "SDL_HINT_FORCE_RAISEWINDOW"
+
+/**
  *  \brief  A variable controlling how 3D acceleration is used to accelerate the SDL screen surface.
  *
  *  SDL can try to accelerate the SDL screen surface by using streaming
