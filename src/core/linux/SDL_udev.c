@@ -309,11 +309,7 @@ SDL_UDEV_LoadLibrary(void)
 
     /* See if there is a udev library already loaded */
     if (SDL_UDEV_load_syms() == 0) {
-#ifdef SDL_VIDEO_DRIVER_ROCKCHIP
-	SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, "ROCKCHIP platform, Fix me! (UDEV)");
-#else
         return 0;
-#endif
     }
 
 #ifdef SDL_UDEV_DYNAMIC
