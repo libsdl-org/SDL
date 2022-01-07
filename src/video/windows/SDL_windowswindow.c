@@ -573,8 +573,38 @@ WIN_HideWindow(_THIS, SDL_Window * window)
 void
 WIN_RaiseWindow(_THIS, SDL_Window * window)
 {
+    /* If desired, raise the window more forcefully.
+     * Technique taken from http://stackoverflow.com/questions/916259/ .
+     * Specifically, http://stackoverflow.com/a/34414846 .
+     *
+     * The issue is that Microsoft has gone through a lot of trouble to make it
+     * nearly impossible to programmatically move a window to the foreground,
+     * for "security" reasons. Apparently, the following song-and-dance gets
+     * around their objections. */
+    SDL_bool bForce = SDL_GetHintBoolean(SDL_HINT_FORCE_RAISEWINDOW, SDL_FALSE);
+
+    HWND hCurWnd = NULL;
+    DWORD dwMyID = 0u;
+    DWORD dwCurID = 0u;
+
     HWND hwnd = ((SDL_WindowData *) window->driverdata)->hwnd;
+    if(bForce)
+    {
+        hCurWnd = GetForegroundWindow();
+        dwMyID = GetCurrentThreadId();
+        dwCurID = GetWindowThreadProcessId(hCurWnd, NULL);
+        ShowWindow(hwnd, SW_RESTORE);
+        AttachThreadInput(dwCurID, dwMyID, TRUE);
+        SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
+        SetWindowPos(hwnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
+    }
     SetForegroundWindow(hwnd);
+    if (bForce)
+    {
+        AttachThreadInput(dwCurID, dwMyID, FALSE);
+        SetFocus(hwnd);
+        SetActiveWindow(hwnd);
+    }
 }
 
 void
