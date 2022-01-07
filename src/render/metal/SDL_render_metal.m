@@ -32,6 +32,7 @@
 #import <QuartzCore/CAMetalLayer.h>
 
 #ifdef __MACOSX__
+#import <AppKit/NSWindow.h>
 #import <AppKit/NSView.h>
 #endif
 
@@ -1565,7 +1566,11 @@ METAL_DestroyRenderer(SDL_Renderer * renderer)
 
         DestroyAllPipelines(data.allpipelines, data.pipelinescount);
 
-        SDL_Metal_DestroyView(data.mtlview);
+        /* Release the metal view instead of destroying it,
+           in case we want to use it later (recreating the renderer)
+         */
+        /* SDL_Metal_DestroyView(data.mtlview); */
+        CFBridgingRelease(data.mtlview);
     }
 
     SDL_free(renderer);
@@ -1608,6 +1613,33 @@ METAL_SetVSync(SDL_Renderer * renderer, const int vsync)
     return SDL_SetError("This Apple OS does not support displaySyncEnabled!");
 }
 
+static SDL_MetalView GetWindowView(SDL_Window *window)
+{
+    SDL_SysWMinfo info;
+
+    SDL_VERSION(&info.version);
+    if (SDL_GetWindowWMInfo(window, &info)) {
+#ifdef __MACOSX__
+        if (info.subsystem == SDL_SYSWM_COCOA) {
+            NSView *view = info.info.cocoa.window.contentView;
+            if (view.subviews.count > 0) {
+                view = view.subviews[0];
+                if (view.tag == SDL_METALVIEW_TAG) {
+                    return (SDL_MetalView)CFBridgingRetain(view);
+                }
+            }
+        }
+#else
+        if (info.subsystem == SDL_SYSWM_UIKIT) {
+            UIView *view = info.info.uikit.window.rootViewController.view;
+            if (view.tag == SDL_METALVIEW_TAG) {
+                return (SDL_MetalView)CFBridgingRetain(view);
+            }
+        }
+#endif
+    }
+    return nil;
+}
 
 static SDL_Renderer *
 METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
@@ -1659,7 +1691,10 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
         return NULL;
     }
 
-    view = SDL_Metal_CreateView(window);
+    view = GetWindowView(window);
+    if (view == nil) {
+        view = SDL_Metal_CreateView(window);
+    }
 
     if (view == NULL) {
 #if !__has_feature(objc_arc)
@@ -1679,7 +1714,11 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
 #if !__has_feature(objc_arc)
         [mtldevice release];
 #endif
-        SDL_Metal_DestroyView(view);
+        /* Release the metal view instead of destroying it,
+           in case we want to use it later (recreating the renderer)
+         */
+        /* SDL_Metal_DestroyView(view); */
+        CFBridgingRelease(view);
         SDL_free(renderer);
         if (changed_window) {
             SDL_RecreateWindow(window, window_flags);
