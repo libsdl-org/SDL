@@ -17,6 +17,8 @@ jobs:
         platform:
         - { name: Windows (x64),          os: windows-latest, shell: pwsh, flags: -A x64 }
         - { name: Windows (x86),          os: windows-latest, shell: pwsh, flags: -A Win32 }
+        - { name: Windows VS2022 (x64),          os: windows-2022, shell: pwsh, flags: -A x64 }
+        - { name: Windows VS2022 (x86),          os: windows-2022, shell: pwsh, flags: -A Win32 }
         - { name: Windows (clang-cl x64), os: windows-latest, shell: pwsh, flags: -T ClangCL -A x64 }
         - { name: Windows (clang-cl x86), os: windows-latest, shell: pwsh, flags: -T ClangCL -A Win32 }
         - { name: Windows (ARM64),        os: windows-latest, shell: pwsh, flags: -A ARM64 }
