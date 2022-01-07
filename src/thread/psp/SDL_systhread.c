@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -95,13 +95,13 @@ int SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
     int value;
 
     if (priority == SDL_THREAD_PRIORITY_LOW) {
-        value = 19;
+        value = 111;
     } else if (priority == SDL_THREAD_PRIORITY_HIGH) {
-        value = -10;
+        value = 32;
     } else if (priority == SDL_THREAD_PRIORITY_TIME_CRITICAL) {
-        value = -20;
+        value = 16;
     } else {
-        value = 0;
+        value = 50;
     }
 
     return sceKernelChangeThreadPriority(sceKernelGetThreadId(),value);

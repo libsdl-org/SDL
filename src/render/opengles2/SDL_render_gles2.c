@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -1486,6 +1486,9 @@ static int
 GLES2_TexSubImage2D(GLES2_RenderData *data, GLenum target, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid *pixels, GLint pitch, GLint bpp)
 {
     Uint8 *blob = NULL;
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+    Uint32 *blob2 = NULL;
+#endif
     Uint8 *src;
     int src_pitch;
     int y;
@@ -1512,10 +1515,33 @@ GLES2_TexSubImage2D(GLES2_RenderData *data, GLenum target, GLint xoffset, GLint 
         src = blob;
     }
 
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+    if (format == GL_RGBA) {
+        int i;
+        Uint32 *src32 = (Uint32 *)src;
+        blob2 = (Uint32 *)SDL_malloc(src_pitch * height);
+        if (!blob2) {
+            if (blob) {
+                SDL_free(blob);
+            }
+            return SDL_OutOfMemory();
+        }
+        for (i = 0; i < (src_pitch * height) / 4; i++) {
+            blob2[i] = SDL_Swap32(src32[i]);
+        }
+        src = (Uint8 *) blob2;
+    }
+#endif
+
     data->glTexSubImage2D(target, 0, xoffset, yoffset, width, height, format, type, src);
     if (blob) {
         SDL_free(blob);
     }
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+    if (blob2) {
+        SDL_free(blob2);
+    }
+#endif
     return 0;
 }
 

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -860,7 +860,7 @@ static void SDL_PrivateGameControllerParseElement(SDL_GameController *gamecontro
         invert_input = SDL_TRUE;
     }
 
-    if (szJoystickButton[0] == 'a' && SDL_isdigit(szJoystickButton[1])) {
+    if (szJoystickButton[0] == 'a' && SDL_isdigit((unsigned char) szJoystickButton[1])) {
         bind.inputType = SDL_CONTROLLER_BINDTYPE_AXIS;
         bind.input.axis.axis = SDL_atoi(&szJoystickButton[1]);
         if (half_axis_input == '+') {
@@ -878,11 +878,11 @@ static void SDL_PrivateGameControllerParseElement(SDL_GameController *gamecontro
             bind.input.axis.axis_min = bind.input.axis.axis_max;
             bind.input.axis.axis_max = tmp;
         }
-    } else if (szJoystickButton[0] == 'b' && SDL_isdigit(szJoystickButton[1])) {
+    } else if (szJoystickButton[0] == 'b' && SDL_isdigit((unsigned char) szJoystickButton[1])) {
         bind.inputType = SDL_CONTROLLER_BINDTYPE_BUTTON;
         bind.input.button = SDL_atoi(&szJoystickButton[1]);
-    } else if (szJoystickButton[0] == 'h' && SDL_isdigit(szJoystickButton[1]) &&
-               szJoystickButton[2] == '.' && SDL_isdigit(szJoystickButton[3])) {
+    } else if (szJoystickButton[0] == 'h' && SDL_isdigit((unsigned char) szJoystickButton[1]) &&
+               szJoystickButton[2] == '.' && SDL_isdigit((unsigned char) szJoystickButton[3])) {
         int hat = SDL_atoi(&szJoystickButton[1]);
         int mask = SDL_atoi(&szJoystickButton[3]);
         bind.inputType = SDL_CONTROLLER_BINDTYPE_HAT;

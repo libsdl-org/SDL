@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -303,6 +303,7 @@ static jmethodID midClipboardGetText;
 static jmethodID midClipboardHasText;
 static jmethodID midClipboardSetText;
 static jmethodID midCreateCustomCursor;
+static jmethodID midDestroyCustomCursor;
 static jmethodID midGetContext;
 static jmethodID midGetDisplayDPI;
 static jmethodID midGetManifestEnvironmentVariables;
@@ -582,6 +583,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cl
     midClipboardHasText = (*env)->GetStaticMethodID(env, mActivityClass, "clipboardHasText", "()Z");
     midClipboardSetText = (*env)->GetStaticMethodID(env, mActivityClass, "clipboardSetText", "(Ljava/lang/String;)V");
     midCreateCustomCursor = (*env)->GetStaticMethodID(env, mActivityClass, "createCustomCursor", "([IIIII)I");
+    midDestroyCustomCursor = (*env)->GetStaticMethodID(env, mActivityClass, "destroyCustomCursor", "(I)V");
     midGetContext = (*env)->GetStaticMethodID(env, mActivityClass, "getContext","()Landroid/content/Context;");
     midGetDisplayDPI = (*env)->GetStaticMethodID(env, mActivityClass, "getDisplayDPI", "()Landroid/util/DisplayMetrics;");
     midGetManifestEnvironmentVariables = (*env)->GetStaticMethodID(env, mActivityClass, "getManifestEnvironmentVariables", "()Z");
@@ -612,6 +614,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cl
         !midClipboardHasText ||
         !midClipboardSetText ||
         !midCreateCustomCursor ||
+        !midDestroyCustomCursor ||
         !midGetContext ||
         !midGetDisplayDPI ||
         !midGetManifestEnvironmentVariables ||
@@ -2503,6 +2506,12 @@ int Android_JNI_CreateCustomCursor(SDL_Surface *surface, int hot_x, int hot_y)
     return custom_cursor;
 }
 
+void Android_JNI_DestroyCustomCursor(int cursorID)
+{
+    JNIEnv *env = Android_JNI_GetEnv();
+    (*env)->CallStaticVoidMethod(env, mActivityClass, midDestroyCustomCursor, cursorID);
+    return;
+}
 
 SDL_bool Android_JNI_SetCustomCursor(int cursorID)
 {

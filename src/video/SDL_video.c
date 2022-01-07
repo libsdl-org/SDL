@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -465,6 +465,10 @@ SDL_VideoInit(const char *driver_name)
     SDL_VideoDevice *video;
     int index;
     int i;
+    SDL_bool init_events = SDL_FALSE;
+    SDL_bool init_keyboard = SDL_FALSE;
+    SDL_bool init_mouse = SDL_FALSE;
+    SDL_bool init_touch = SDL_FALSE;
 
     /* Check to make sure we don't overwrite '_this' */
     if (_this != NULL) {
@@ -476,12 +480,22 @@ SDL_VideoInit(const char *driver_name)
 #endif
 
     /* Start the event loop */
-    if (SDL_InitSubSystem(SDL_INIT_EVENTS) < 0 ||
-        SDL_KeyboardInit() < 0 ||
-        SDL_MouseInit() < 0 ||
-        SDL_TouchInit() < 0) {
-        return -1;
+    if (SDL_InitSubSystem(SDL_INIT_EVENTS) < 0) {
+        goto pre_driver_error;
     }
+    init_events = SDL_TRUE;
+    if (SDL_KeyboardInit() < 0) {
+        goto pre_driver_error;
+    }
+    init_keyboard = SDL_TRUE;
+    if (SDL_MouseInit() < 0) {
+        goto pre_driver_error;
+    }
+    init_mouse = SDL_TRUE;
+    if (SDL_TouchInit() < 0) {
+        goto pre_driver_error;
+    }
+    init_touch = SDL_TRUE;
 
     /* Select the proper video driver */
     i = index = 0;
@@ -516,10 +530,15 @@ SDL_VideoInit(const char *driver_name)
     }
     if (video == NULL) {
         if (driver_name) {
-            return SDL_SetError("%s not available", driver_name);
+            SDL_SetError("%s not available", driver_name);
+            goto pre_driver_error;
         }
-        return SDL_SetError("No available video device");
+        SDL_SetError("No available video device");
+        goto pre_driver_error;
     }
+    
+    /* From this point on, use SDL_VideoQuit to cleanup on error, rather than
+    pre_driver_error. */
     _this = video;
     _this->name = bootstrap[i]->name;
     _this->next_object_id = 1;
@@ -575,6 +594,22 @@ SDL_VideoInit(const char *driver_name)
 
     /* We're ready to go! */
     return 0;
+
+pre_driver_error:
+    SDL_assert(_this == NULL);
+    if (init_touch) {
+        SDL_TouchQuit();
+    }
+    if (init_mouse) {
+        SDL_MouseQuit();
+    }
+    if (init_keyboard) {
+        SDL_KeyboardQuit();
+    }
+    if (init_events) {
+        SDL_QuitSubSystem(SDL_INIT_EVENTS);
+    }
+    return -1;
 }
 
 const char *
@@ -3807,10 +3842,23 @@ SDL_GL_GetAttribute(SDL_GLattr attr, int *value)
     }
 
     if (attachmentattrib && isAtLeastGL3((const char *) glGetStringFunc(GL_VERSION))) {
-        glGetFramebufferAttachmentParameterivFunc = SDL_GL_GetProcAddress("glGetFramebufferAttachmentParameteriv");
+        /* glGetFramebufferAttachmentParameteriv needs to operate on the window framebuffer for this, so bind FBO 0 if necessary. */
+        GLint current_fbo = 0;
+        void (APIENTRY *glGetIntegervFunc) (GLenum pname, GLint * params) = SDL_GL_GetProcAddress("glGetIntegerv");
+        void (APIENTRY *glBindFramebufferFunc) (GLenum target, GLuint fbo) = SDL_GL_GetProcAddress("glBindFramebuffer");
+        if (glGetIntegervFunc && glBindFramebufferFunc) {
+            glGetIntegervFunc(GL_DRAW_FRAMEBUFFER_BINDING, &current_fbo);
+        }
 
+        glGetFramebufferAttachmentParameterivFunc = SDL_GL_GetProcAddress("glGetFramebufferAttachmentParameteriv");
         if (glGetFramebufferAttachmentParameterivFunc) {
+            if (glBindFramebufferFunc && (current_fbo != 0)) {
+                glBindFramebufferFunc(GL_DRAW_FRAMEBUFFER, 0);
+            }
             glGetFramebufferAttachmentParameterivFunc(GL_FRAMEBUFFER, attachment, attachmentattrib, (GLint *) value);
+            if (glBindFramebufferFunc && (current_fbo != 0)) {
+                glBindFramebufferFunc(GL_DRAW_FRAMEBUFFER, current_fbo);
+            }
         } else {
             return -1;
         }

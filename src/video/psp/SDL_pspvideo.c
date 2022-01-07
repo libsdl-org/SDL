@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -158,7 +158,6 @@ PSP_VideoInit(_THIS)
     current_mode.refresh_rate = 60;
     /* 32 bpp for default */
     current_mode.format = SDL_PIXELFORMAT_ABGR8888;
-
     current_mode.driverdata = NULL;
 
     SDL_zero(display);
@@ -166,8 +165,15 @@ PSP_VideoInit(_THIS)
     display.current_mode = current_mode;
     display.driverdata = NULL;
 
-    SDL_AddVideoDisplay(&display, SDL_FALSE);
+    SDL_AddDisplayMode(&display, &current_mode);
 
+    /* 16 bpp secondary mode */
+    current_mode.format = SDL_PIXELFORMAT_BGR565;
+    display.desktop_mode = current_mode;
+    display.current_mode = current_mode;
+    SDL_AddDisplayMode(&display, &current_mode);
+
+    SDL_AddVideoDisplay(&display, SDL_FALSE);
     return 1;
 }
 

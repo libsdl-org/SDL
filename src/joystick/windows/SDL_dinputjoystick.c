@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -584,6 +584,10 @@ SDL_bool
 SDL_DINPUT_JoystickPresent(Uint16 vendor_id, Uint16 product_id, Uint16 version_number)
 {
     Joystick_PresentData data;
+
+    if (dinput == NULL) {
+        return SDL_FALSE;
+    }
 
     data.vendor = vendor_id;
     data.product = product_id;

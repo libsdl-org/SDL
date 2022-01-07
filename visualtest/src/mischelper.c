@@ -1,5 +1,5 @@
 /**
- * \file mischelper.c 
+ * \file mischelper.c
  *
  * Source file with miscellaneous helper functions.
  */

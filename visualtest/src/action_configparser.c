@@ -36,6 +36,9 @@ FreeAction(SDLVisualTest_Action* action)
             action->extra.process.args = NULL;
         }
         break;
+
+      default:
+        break;
     }
 }
 
@@ -256,7 +259,7 @@ SDLVisualTest_InsertIntoActionQueue(SDLVisualTest_ActionQueue* queue,
 }
 
 int
-SDLVisualTest_ParseActionConfig(char* file, SDLVisualTest_ActionQueue* queue)
+SDLVisualTest_ParseActionConfig(const char* file, SDLVisualTest_ActionQueue* queue)
 {
     char line[MAX_ACTION_LINE_LENGTH];
     SDLVisualTest_RWHelperBuffer buffer;

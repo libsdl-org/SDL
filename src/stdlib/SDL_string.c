@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -42,7 +42,7 @@
 #define UTF8_IsLeadByte(c) ((c) >= 0xC0 && (c) <= 0xF4)
 #define UTF8_IsTrailingByte(c) ((c) >= 0x80 && (c) <= 0xBF)
 
-static int UTF8_TrailingBytes(unsigned char c)
+static unsigned UTF8_TrailingBytes(unsigned char c)
 {
     if (c >= 0xC0 && c <= 0xDF)
         return 1;
@@ -295,7 +295,7 @@ SDL_memset(SDL_OUT_BYTECAP(len) void *dst, int c, size_t len)
         }
     }
 
-    value4 = (c | (c << 8) | (c << 16) | (c << 24));
+    value4 = ((Uint32)c | ((Uint32)c << 8) | ((Uint32)c << 16) | ((Uint32)c << 24));
     dstp4 = (Uint32 *) dstp1;
     left = (len % 4);
     len /= 4;
@@ -638,7 +638,7 @@ SDL_utf8strlcpy(SDL_OUT_Z_CAP(dst_bytes) char *dst, const char *src, size_t dst_
     size_t src_bytes = SDL_strlen(src);
     size_t bytes = SDL_min(src_bytes, dst_bytes - 1);
     size_t i = 0;
-    char trailing_bytes = 0;
+    unsigned char trailing_bytes = 0;
     if (bytes)
     {
         unsigned char c = (unsigned char)src[bytes - 1];
@@ -670,7 +670,7 @@ SDL_utf8strlen(const char *str)
 {
     size_t retval = 0;
     const char *p = str;
-    char ch;
+    unsigned char ch;
 
     while ((ch = *(p++)) != 0) {
         /* if top two bits are 1 and 0, it's a continuation byte. */

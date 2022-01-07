@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -251,6 +251,7 @@
 
 #cmakedefine HAVE_MMDEVICEAPI_H @HAVE_MMDEVICEAPI_H@
 #cmakedefine HAVE_AUDIOCLIENT_H @HAVE_AUDIOCLIENT_H@
+#cmakedefine HAVE_TPCSHRD_H @HAVE_TPCSHRD_H@
 #cmakedefine HAVE_SENSORSAPI_H @HAVE_SENSORSAPI_H@
 
 #cmakedefine HAVE_XINPUT_GAMEPAD_EX @HAVE_XINPUT_GAMEPAD_EX@
@@ -488,6 +489,7 @@
 #cmakedefine SDL_FILESYSTEM_EMSCRIPTEN @SDL_FILESYSTEM_EMSCRIPTEN@
 #cmakedefine SDL_FILESYSTEM_OS2 @SDL_FILESYSTEM_OS2@
 #cmakedefine SDL_FILESYSTEM_VITA @SDL_FILESYSTEM_VITA@
+#cmakedefine SDL_FILESYSTEM_PSP @SDL_FILESYSTEM_PSP@
 
 /* Enable assembly routines */
 #cmakedefine SDL_ASSEMBLY_ROUTINES @SDL_ASSEMBLY_ROUTINES@

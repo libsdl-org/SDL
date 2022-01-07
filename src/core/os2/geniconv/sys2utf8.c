@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -30,40 +30,42 @@
 #define SDL_free free
 #endif
 
-int StrUTF8(int fToUTF8, char *pcDst, int cbDst, char *pcSrc, int cbSrc)
+int StrUTF8(int to_utf8, char *dst, int c_dst, char *src, int c_src)
 {
     size_t  rc;
-    char   *pcDstStart = pcDst;
+    char   *dststart = dst;
     iconv_t cd;
-    char   *pszToCP, *pszFromCP;
-    int     fError = 0;
+    char   *tocp, *fromcp;
+    int     err = 0;
 
-    if (cbDst < 4)
+    if (c_dst < 4) {
         return -1;
-
-    if (fToUTF8) {
-        pszToCP   = "UTF-8";
-        pszFromCP = "";
-    } else {
-        pszToCP   = "";
-        pszFromCP = "UTF-8";
     }
 
-    cd = iconv_open(pszToCP, pszFromCP);
-    if (cd == (iconv_t)-1)
-        return -1;
+    if (to_utf8) {
+        tocp   = "UTF-8";
+        fromcp = "";
+    } else {
+        tocp   = "";
+        fromcp = "UTF-8";
+    }
 
-    while (cbSrc > 0) {
-        rc = iconv(cd, &pcSrc, (size_t *)&cbSrc, &pcDst, (size_t *)&cbDst);
+    cd = iconv_open(tocp, fromcp);
+    if (cd == (iconv_t)-1) {
+        return -1;
+    }
+
+    while (c_src > 0) {
+        rc = iconv(cd, &src, (size_t *)&c_src, &dst, (size_t *)&c_dst);
         if (rc == (size_t)-1) {
             if (errno == EILSEQ) {
                 /* Try to skip invalid character */
-                pcSrc++;
-                cbSrc--;
+                src++;
+                c_src--;
                 continue;
             }
 
-            fError = 1;
+            err = 1;
             break;
         }
     }
@@ -71,45 +73,47 @@ int StrUTF8(int fToUTF8, char *pcDst, int cbDst, char *pcSrc, int cbSrc)
     iconv_close(cd);
 
     /* Write trailing ZERO (1 byte for UTF-8, 2 bytes for the system cp) */
-    if (fToUTF8) {
-        if (cbDst < 1) {
-            pcDst--;
-            fError = 1; /* The destination buffer overflow */
+    if (to_utf8) {
+        if (c_dst < 1) {
+            dst--;
+            err = 1;    /* The destination buffer overflow */
         }
-        *pcDst = '\0';
+        *dst = '\0';
     } else {
-        if (cbDst < 2) {
-            pcDst -= (cbDst == 0)? 2 : 1;
-            fError = 1; /* The destination buffer overflow */
+        if (c_dst < 2) {
+            dst -= (c_dst == 0) ? 2 : 1;
+            err = 1;    /* The destination buffer overflow */
         }
-        *((short *)pcDst) = '\0';
+        *((short *)dst) = '\0';
     }
 
-    return (fError) ? -1 : (pcDst - pcDstStart);
+    return (err) ? -1 : (dst - dststart);
 }
 
-char *StrUTF8New(int fToUTF8, char *pcStr, int cbStr)
+char *StrUTF8New(int to_utf8, char *str, int c_str)
 {
-    int   cbNewStr = (((cbStr > 4)? cbStr : 4) + 1) * 2;
-    char *pszNewStr = (char *) SDL_malloc(cbNewStr);
+    int   c_newstr = (((c_str > 4) ? c_str : 4) + 1) * 2;
+    char *  newstr = (char *) SDL_malloc(c_newstr);
 
-    if (pszNewStr == NULL)
+    if (newstr == NULL) {
         return NULL;
-
-    cbNewStr = StrUTF8(fToUTF8, pszNewStr, cbNewStr, pcStr, cbStr);
-    if (cbNewStr != -1) {
-        pcStr = (char *) SDL_realloc(pszNewStr, cbNewStr + ((fToUTF8)? 1 : sizeof(short)));
-        if (pcStr)
-            return pcStr;
     }
 
-    SDL_free(pszNewStr);
+    c_newstr = StrUTF8(to_utf8, newstr, c_newstr, str, c_str);
+    if (c_newstr != -1) {
+        str = (char *) SDL_realloc(newstr, c_newstr + ((to_utf8) ? 1 : sizeof(short)));
+        if (str) {
+            return str;
+        }
+    }
+
+    SDL_free(newstr);
     return NULL;
 }
 
-void StrUTF8Free(char *pszStr)
+void StrUTF8Free(char *str)
 {
-    SDL_free(pszStr);
+    SDL_free(str);
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

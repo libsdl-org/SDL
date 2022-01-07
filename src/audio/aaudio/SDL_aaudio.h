@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -24,6 +24,7 @@
 #define _SDL_aaudio_h
 
 #include "../SDL_sysaudio.h"
+#include <stdbool.h>
 #include <aaudio/AAudio.h>
 
 /* Hidden "this" pointer for the audio functions */

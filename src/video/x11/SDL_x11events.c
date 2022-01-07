@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -1602,10 +1602,6 @@ X11_WaitEventTimeout(_THIS, int timeout)
     SDL_VideoData *videodata = (SDL_VideoData *) _this->driverdata;
     Display *display;
     XEvent xevent;
-
-    if (!videodata) {
-        return 0;
-    }
     display = videodata->display;
 
     SDL_zero(xevent);

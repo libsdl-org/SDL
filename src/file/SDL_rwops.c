@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -166,8 +166,7 @@ vita_file_size(SDL_RWops * context)
         return SDL_SetError("vita_file_size: invalid context/file not opened");
     }
 
-    if (sceIoGetstatByFd(context->hidden.vitaio.h, &st) < 0)
-    {
+    if (sceIoGetstatByFd(context->hidden.vitaio.h, &st) < 0) {
         return SDL_SetError("vita_file_size: could not get file size");
     }
     return st.st_size;
@@ -215,9 +214,9 @@ vita_file_read(SDL_RWops * context, void *ptr, size_t size, size_t maxnum)
 
     total_need = size * maxnum;
 
-    if (!context || context->hidden.vitaio.h < 0
-        || !total_need)
+    if (!context || context->hidden.vitaio.h < 0 || !total_need) {
         return 0;
+    }
 
     if (context->hidden.vitaio.buffer.left > 0) {
         void *data = (char *) context->hidden.vitaio.buffer.data +
@@ -261,9 +260,9 @@ vita_file_write(SDL_RWops * context, const void *ptr, size_t size,
 
     total_bytes = size * num;
 
-    if (!context || context->hidden.vitaio.h < 0
-        || total_bytes <= 0 || !size)
+    if (!context || context->hidden.vitaio.h < 0 || !size || !total_bytes) {
         return 0;
+    }
 
     if (context->hidden.vitaio.buffer.left) {
         sceIoLseek(context->hidden.vitaio.h, -(SceOff)context->hidden.vitaio.buffer.left, SCE_SEEK_CUR);
@@ -433,9 +432,9 @@ windows_file_read(SDL_RWops * context, void *ptr, size_t size, size_t maxnum)
 
     total_need = size * maxnum;
 
-    if (!context || context->hidden.windowsio.h == INVALID_HANDLE_VALUE
-        || !total_need)
+    if (!context || context->hidden.windowsio.h == INVALID_HANDLE_VALUE || !total_need) {
         return 0;
+    }
 
     if (context->hidden.windowsio.buffer.left > 0) {
         void *data = (char *) context->hidden.windowsio.buffer.data +
@@ -488,9 +487,9 @@ windows_file_write(SDL_RWops * context, const void *ptr, size_t size,
 
     total_bytes = size * num;
 
-    if (!context || context->hidden.windowsio.h == INVALID_HANDLE_VALUE
-        || total_bytes <= 0 || !size)
+    if (!context || context->hidden.windowsio.h == INVALID_HANDLE_VALUE || !size || !total_bytes) {
         return 0;
+    }
 
     if (context->hidden.windowsio.buffer.left) {
         SetFilePointer(context->hidden.windowsio.h,
@@ -709,8 +708,7 @@ mem_read(SDL_RWops * context, void *ptr, size_t size, size_t maxnum)
     size_t mem_available;
 
     total_bytes = (maxnum * size);
-    if ((maxnum <= 0) || (size <= 0)
-        || ((total_bytes / maxnum) != size)) {
+    if (!maxnum || !size || ((total_bytes / maxnum) != size)) {
         return 0;
     }
 

@@ -1482,6 +1482,19 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     /**
      * This method is called by SDL using JNI.
      */
+    public static void destroyCustomCursor(int cursorID) {
+        if (Build.VERSION.SDK_INT >= 24) {
+            try {
+                mCursors.remove(cursorID);
+            } catch (Exception e) {
+            }
+        }
+        return;
+    }
+
+    /**
+     * This method is called by SDL using JNI.
+     */
     public static boolean setCustomCursor(int cursorID) {
 
         if (Build.VERSION.SDK_INT >= 24) {

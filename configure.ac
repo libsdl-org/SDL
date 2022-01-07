@@ -2325,7 +2325,7 @@ CheckKMSDRM()
             AC_MSG_RESULT($kmsdrm_shared)
             if test x$kmsdrm_shared = xyes; then
                 echo "-- dynamic libdrm -> $drm_lib"
-                echo "-- dynamic libgmb -> $gbm_lib"
+                echo "-- dynamic libgbm -> $gbm_lib"
             fi
             have_video=yes
         fi
@@ -3271,7 +3271,14 @@ XINPUT_STATE_EX s1;
         fi
     fi
 
-    AC_CHECK_HEADER(windows.gaming.input.h, have_wgi=yes)
+    AC_MSG_CHECKING(for windows.gaming.input.h)
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+#define COBJMACROS
+#include <windows.gaming.input.h>
+__x_ABI_CWindows_CGaming_CInput_CIGamepadStatics2 *s2;
+        ]],[])], [have_wgi=yes],[have_wgi=no])
+    AC_MSG_RESULT($have_wgi)
+
     if test x$have_wgi = xyes; then
         AC_DEFINE(HAVE_WINDOWS_GAMING_INPUT_H, 1, [ ])
     fi
@@ -3963,6 +3970,10 @@ case "$host" in
                 SOURCES="$SOURCES $srcdir/src/haptic/windows/*.c"
                 have_haptic=yes
             fi
+        fi
+        AC_CHECK_HEADER(tpcshrd.h,have_tpcshrd_h=yes)
+        if test x$have_tpcshrd_h = xyes; then
+            AC_DEFINE(HAVE_TPCSHRD_H, 1, [ ])
         fi
         # Set up files for the sensor library
         AC_CHECK_HEADER(sensorsapi.h,have_winsensors=yes,have_winsensors=no)

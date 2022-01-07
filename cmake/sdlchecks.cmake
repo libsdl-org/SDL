@@ -646,11 +646,11 @@ macro(CheckWayland)
       endif()
       string(REPLACE "wayland-scanner " "" WAYLAND_SCANNER_VERSION ${WAYLAND_SCANNER_VERSION})
 
-      string(COMPARE GREATER_EQUAL ${WAYLAND_SCANNER_VERSION} "1.15.0" WAYLAND_SCANNER_1_15_FOUND)
-      if(WAYLAND_SCANNER_1_15_FOUND)
-        set(WAYLAND_SCANNER_CODE_MODE "private-code")
-      else()
+      string(COMPARE LESS ${WAYLAND_SCANNER_VERSION} "1.15.0" WAYLAND_SCANNER_PRE_1_15)
+      if(WAYLAND_SCANNER_PRE_1_15)
         set(WAYLAND_SCANNER_CODE_MODE "code")
+      else()
+        set(WAYLAND_SCANNER_CODE_MODE "private-code")
       endif()
     endif()
 
@@ -1221,7 +1221,11 @@ macro(CheckRPI)
     set(CMAKE_REQUIRED_LIBRARIES "${VIDEO_RPI_LIBRARIES}")
     check_c_source_compiles("
         #include <bcm_host.h>
-        int main(int argc, char **argv) {}" HAVE_RPI)
+        #include <EGL/eglplatform.h>
+        int main(int argc, char **argv) {
+          EGL_DISPMANX_WINDOW_T window;
+          bcm_host_init();
+        }" HAVE_RPI)
     set(CMAKE_REQUIRED_FLAGS "${ORIG_CMAKE_REQUIRED_FLAGS}")
     set(CMAKE_REQUIRED_LIBRARIES)
 

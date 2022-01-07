@@ -1,6 +1,6 @@
 /* See LICENSE.txt for the full license governing this code. */
 /**
- * \file windows_screenshot.c 
+ * \file windows_screenshot.c
  *
  * Source file for the screenshot API on windows.
  */
@@ -14,9 +14,9 @@
 #endif
 
 #if defined(__WIN32__)
-#include <Windows.h>
+#include <windows.h>
 
-void LogLastError(char* str);
+void LogLastError(const char* str);
 
 static int img_num;
 static SDL_ProcessInfo screenshot_pinfo;

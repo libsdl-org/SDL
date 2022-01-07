@@ -23,6 +23,11 @@ if(WINDOWS_STORE)
   target_compile_options(sdl-build-options INTERFACE "-ZW")
 endif()
 
+# Build in parallel under Visual Studio. Not enabled by default.
+if(MSVC)
+  target_compile_options(sdl-build-options INTERFACE "/MP")
+endif(MSVC)
+
 
 # !!! FIXME: this should probably do "MACOSX_RPATH ON" as a target property
 # !!! FIXME:  for the SDL2 shared library (so you get an
@@ -1568,10 +1573,15 @@ elseif(WINDOWS)
       #include <xinput.h>
       XINPUT_STATE_EX s1;
       int main(int argc, char **argv) { }" HAVE_XINPUT_STATE_EX)
-    check_include_file(windows.gaming.input.h HAVE_WINDOWS_GAMING_INPUT_H)
+    check_c_source_compiles("
+      #define COBJMACROS
+      #include <windows.gaming.input.h>
+      __x_ABI_CWindows_CGaming_CInput_CIGamepadStatics2 *s2;
+      int main(int argc, char **argv) { }" HAVE_WINDOWS_GAMING_INPUT_H)
   endif()
 
   # headers needed elsewhere
+  check_include_file(tpcshrd.h HAVE_TPCSHRD_H)
   check_include_file(mmdeviceapi.h HAVE_MMDEVICEAPI_H)
   check_include_file(audioclient.h HAVE_AUDIOCLIENT_H)
   check_include_file(sensorsapi.h HAVE_SENSORSAPI_H)
@@ -2368,6 +2378,12 @@ elseif(PSP)
     set(SOURCE_FILES ${SOURCE_FILES} ${PSP_AUDIO_SOURCES})
     set(HAVE_SDL_AUDIO TRUE)
   endif()
+  if(SDL_FILESYSTEM)
+    set(SDL_FILESYSTEM_PSP 1)
+    file(GLOB PSP_FILESYSTEM_SOURCES ${SDL2_SOURCE_DIR}/src/filesystem/psp/*.c)
+    set(SOURCE_FILES ${SOURCE_FILES} ${PSP_FILESYSTEM_SOURCES})
+    set(HAVE_SDL_FILESYSTEM TRUE)
+  endif()
   if(SDL_JOYSTICK)
     set(SDL_JOYSTICK_PSP 1)
     file(GLOB PSP_JOYSTICK_SOURCES ${SDL2_SOURCE_DIR}/src/joystick/psp/*.c)
@@ -2402,6 +2418,7 @@ elseif(PSP)
   endif()
 
   list(APPEND EXTRA_LIBS
+      psppower
       pspctrl
       psphprm
       pspge
@@ -2656,7 +2673,7 @@ if (SDL_ASAN)
   asan_check_add_debug_flag("leak")
   # The object size sanitizer has no effect on unoptimized builds on Clang,
   # but causes warnings.
-  if((NOT USE_CLANG) OR (CMAKE_BUILD_TYPE STREQUAL ""))
+  if((NOT USE_CLANG) OR ("${CMAKE_BUILD_TYPE}" STREQUAL ""))
     asan_check_add_debug_flag("object-size")
   endif()
 endif()
@@ -2685,7 +2702,7 @@ foreach(_OPT ${ALLOPTIONS})
   string(RANDOM LENGTH ${_PADLEN} ALPHABET " " _PADDING)
   message_tested_option(${_OPT} ${_PADDING})
 endforeach()
-if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
   message(STATUS "")
   message(STATUS " CMAKE_C_FLAGS_DEBUG:   ${CMAKE_C_FLAGS_DEBUG}")
   message(STATUS " CMAKE_CXX_FLAGS_DEBUG: ${CMAKE_CXX_FLAGS_DEBUG}")

@@ -14,6 +14,7 @@ foreach (@ARGV) {
     $copy_direction = 1, next if $_ eq '--copy-to-headers';
     $copy_direction = 1, next if $_ eq '--copy-to-header';
     $copy_direction = -1, next if $_ eq '--copy-to-wiki';
+    $copy_direction = -2, next if $_ eq '--copy-to-manpages';
     $srcpath = $_, next if not defined $srcpath;
     $wikipath = $_, next if not defined $wikipath;
 }
@@ -199,6 +200,9 @@ sub wikify {
 }
 
 
+my $dewikify_mode = 'md';
+my $dewikify_manpage_code_indent = 1;
+
 sub dewikify_chunk {
     my $wikitype = shift;
     my $str = shift;
@@ -207,30 +211,67 @@ sub dewikify_chunk {
 
     #print("\n\nDEWIKIFY CHUNK:\n\n$str\n\n\n");
 
-    if ($wikitype eq 'mediawiki') {
-        # Doxygen supports Markdown (and it just simply looks better than MediaWiki
-        # when looking at the raw headers), so do some conversions here as necessary.
+    if ($dewikify_mode eq 'md') {
+        if ($wikitype eq 'mediawiki') {
+            # Doxygen supports Markdown (and it just simply looks better than MediaWiki
+            # when looking at the raw headers), so do some conversions here as necessary.
 
-        $str =~ s/\[\[(SDL_[a-zA-Z0-9_]+)\]\]/$1/gms;  # Dump obvious wikilinks.
+            $str =~ s/\[\[(SDL_[a-zA-Z0-9_]+)\]\]/$1/gms;  # Dump obvious wikilinks.
 
-        # <code></code> is also popular.  :/
-        $str =~ s/\<code>(.*?)<\/code>/`$1`/gms;
+            # <code></code> is also popular.  :/
+            $str =~ s/\<code>(.*?)<\/code>/`$1`/gms;
 
-        # bold+italic
-        $str =~ s/\'''''(.*?)'''''/***$1***/gms;
+            # bold+italic
+            $str =~ s/'''''(.*?)'''''/***$1***/gms;
 
-        # bold
-        $str =~ s/\'''(.*?)'''/**$1**/gms;
+            # bold
+            $str =~ s/'''(.*?)'''/**$1**/gms;
 
-        # italic
-        $str =~ s/\''(.*?)''/*$1*/gms;
+            # italic
+            $str =~ s/''(.*?)''/*$1*/gms;
 
-        # bullets
-        $str =~ s/^\* /- /gm;
-    }
+            # bullets
+            $str =~ s/^\* /- /gm;
+        }
 
-    if (defined $code) {
-        $str .= "```$codelang$code```";
+        if (defined $code) {
+            $str .= "```$codelang$code```";
+        }
+    } elsif ($dewikify_mode eq 'manpage') {
+        $str =~ s/\./\\[char46]/gms;  # make sure these can't become control codes.
+        if ($wikitype eq 'mediawiki') {
+            $str =~ s/\s*\[\[(SDL_[a-zA-Z0-9_]+)\]\]\s*/\n.BR $1\n/gms;  # Dump obvious wikilinks.
+
+            # <code></code> is also popular.  :/
+            $str =~ s/\s*\<code>(.*?)<\/code>\s*/\n.BR $1\n/gms;
+
+            # bold+italic
+            $str =~ s/\s*'''''(.*?)'''''\s*/\n.BI $1\n/gms;
+
+            # bold
+            $str =~ s/\s*'''(.*?)'''\s*/\n.B $1\n/gms;
+
+            # italic
+            $str =~ s/\s*''(.*?)''\s*/\n.I $1\n/gms;
+
+            # bullets
+            $str =~ s/^\* /\n\\\(bu /gm;
+        } else {
+            die("Unexpected wikitype when converting to manpages\n");   # !!! FIXME: need to handle Markdown wiki pages.
+        }
+
+        if (defined $code) {
+            $code =~ s/\A\n+//gms;
+            $code =~ s/\n+\Z//gms;
+            if ($dewikify_manpage_code_indent) {
+                $str .= "\n.IP\n"
+            } else {
+                $str .= "\n.PP\n"
+            }
+            $str .= ".EX\n$code\n.EE\n.PP\n";
+        }
+    } else {
+        die("Unexpected dewikify_mode\n");
     }
 
     #print("\n\nDEWIKIFY CHUNK DONE:\n\n$str\n\n\n");
@@ -260,7 +301,7 @@ sub dewikify {
 }
 
 sub usage {
-    die("USAGE: $0 <source code git clone path> <wiki git clone path> [--copy-to-headers|--copy-to-wiki] [--warn-about-missing]\n\n");
+    die("USAGE: $0 <source code git clone path> <wiki git clone path> [--copy-to-headers|--copy-to-wiki|--copy-to-manpages] [--warn-about-missing]\n\n");
 }
 
 usage() if not defined $srcpath;
@@ -551,6 +592,7 @@ if ($warn_about_missing) {
 if ($copy_direction == 1) {  # --copy-to-headers
     my %changed_headers = ();
 
+    $dewikify_mode = 'md';
     $wordwrap_mode = 'md';   # the headers use Markdown format.
 
     foreach (keys %headerfuncs) {
@@ -740,7 +782,7 @@ if ($copy_direction == 1) {  # --copy-to-headers
         my $fn = $_;
         next if not $headerfuncshasdoxygen{$fn};
         my $wikitype = defined $wikitypes{$fn} ? $wikitypes{$fn} : 'mediawiki';  # default to MediaWiki for new stuff FOR NOW.
-        die("Unexpected wikitype '$wikitype'\n") if (($wikitype ne 'mediawiki') and ($wikitype ne 'md'));
+        die("Unexpected wikitype '$wikitype'\n") if (($wikitype ne 'mediawiki') and ($wikitype ne 'md') and ($wikitype ne 'manpage'));
 
         #print("$fn\n"); next;
 
@@ -1008,6 +1050,205 @@ if ($copy_direction == 1) {  # --copy-to-headers
         print FH "\n\n";
         close(FH);
         rename($path, "$wikipath/$_.${wikitype}") or die("Can't rename '$path' to '$wikipath/$_.${wikitype}': $!\n");
+    }
+
+} elsif ($copy_direction == -2) { # --copy-to-manpages
+    # This only takes from the wiki data, since it has sections we omit from the headers, like code examples.
+
+    my $manpath = "$srcpath/man";
+    mkdir($manpath);
+
+    $dewikify_mode = 'manpage';
+    $wordwrap_mode = 'manpage';
+
+    my $introtxt = '';
+    if (0) {
+    open(FH, '<', "$srcpath/LICENSE.txt") or die("Can't open '$srcpath/LICENSE.txt': $!\n");
+    while (<FH>) {
+        chomp;
+        $introtxt .= ".\\\" $_\n";
+    }
+    close(FH);
+    }
+
+    my $gitrev = `cd "$srcpath" ; git rev-list HEAD~..`;
+    chomp($gitrev);
+
+    open(FH, '<', "$srcpath/include/SDL_version.h") or die("Can't open '$srcpath/include/SDL_version.h': $!\n");
+    my $majorver = 0;
+    my $minorver = 0;
+    my $patchver = 0;
+    while (<FH>) {
+        chomp;
+        if (/\A\#define SDL_MAJOR_VERSION\s+(\d+)\Z/) {
+            $majorver = int($1);
+        } elsif (/\A\#define SDL_MINOR_VERSION\s+(\d+)\Z/) {
+            $minorver = int($1);
+        } elsif (/\A\#define SDL_PATCHLEVEL\s+(\d+)\Z/) {
+            $patchver = int($1);
+        }
+    }
+    close(FH);
+    my $sdlversion = "$majorver.$minorver.$patchver";
+
+    foreach (keys %headerfuncs) {
+        my $fn = $_;
+        next if not defined $wikifuncs{$fn};  # don't have a page for that function, skip it.
+        my $wikitype = $wikitypes{$fn};
+        my $sectionsref = $wikifuncs{$fn};
+        my $remarks = %$sectionsref{'Remarks'};
+        my $params = %$sectionsref{'Function Parameters'};
+        my $returns = %$sectionsref{'Return Value'};
+        my $version = %$sectionsref{'Version'};
+        my $related = %$sectionsref{'Related Functions'};
+        my $examples = %$sectionsref{'Code Examples'};
+        my $deprecated = %$sectionsref{'Deprecated'};
+        my $brief = %$sectionsref{'[Brief]'};
+        my $decl = $headerdecls{$fn};
+        my $str = '';
+
+        $brief = "$brief";
+        $brief =~ s/\A[\s\n]*\= .*? \=\s*?\n+//ms;
+        $brief =~ s/\A[\s\n]*\=\= .*? \=\=\s*?\n+//ms;
+        $brief =~ s/\A(.*?\.) /$1\n/;  # \brief should only be one sentence, delimited by a period+space. Split if necessary.
+        my @briefsplit = split /\n/, $brief;
+        $brief = shift @briefsplit;
+        $brief = dewikify($wikitype, $brief);
+
+        if (defined $remarks) {
+            $remarks = dewikify($wikitype, join("\n", @briefsplit) . $remarks);
+        }
+
+        $str .= $introtxt;
+
+        $str .= ".\\\" This manpage content is licensed under Creative Commons\n";
+        $str .= ".\\\"  Attribution 4.0 International (CC BY 4.0)\n";
+        $str .= ".\\\"   https://creativecommons.org/licenses/by/4.0/\n";
+        $str .= ".\\\" This manpage was generated from SDL's wiki page for $fn:\n";
+        $str .= ".\\\"   https://wiki.libsdl.org/$fn\n";
+        $str .= ".\\\" Generated with SDL/build-scripts/wikiheaders.pl\n";
+        $str .= ".\\\"  revision $gitrev\n" if $gitrev ne '';
+        $str .= ".\\\" Please report issues in this manpage's content at:\n";
+        $str .= ".\\\"   https://github.com/libsdl-org/sdlwiki/issues/new?title=Feedback%20on%20page%20$fn\n";
+        $str .= ".\\\" Please report issues in the generation of this manpage from the wiki at:\n";
+        $str .= ".\\\"   https://github.com/libsdl-org/SDL/issues/new?title=Misgenerated%20manpage%20for%20$fn\n";
+        $str .= ".\\\" SDL can be found at https://libsdl.org/\n";
+
+        $str .= ".TH $fn 3 \"SDL $sdlversion\" \"Simple Directmedia Layer\" \"SDL$majorver FUNCTIONS\"\n";
+        $str .= ".SH NAME\n";
+
+        $str .= "$fn";
+        $str .= " \\- $brief" if (defined $brief);
+        $str .= "\n";
+
+        $str .= ".SH SYNOPSIS\n";
+        $str .= ".nf\n";
+        $str .= ".B #include \\(dqSDL.h\\(dq\n";
+        $str .= ".PP\n";
+
+        my @decllines = split /\n/, $decl;
+        foreach (@decllines) {
+            $str .= ".BI \"$_\n";
+        }
+        $str .= ".fi\n";
+
+        if (defined $remarks) {
+            $str .= ".SH DESCRIPTION\n";
+            $str .= $remarks . "\n";
+        }
+
+        if (defined $deprecated) {
+            $str .= ".SH DEPRECATED\n";
+            $str .= dewikify($wikitype, $deprecated) . "\n";
+        }
+
+        if (defined $params) {
+            $str .= ".SH FUNCTION PARAMETERS\n";
+            my @lines = split /\n/, $params;
+            if ($wikitype eq 'mediawiki') {
+                die("Unexpected data parsing MediaWiki table") if (shift @lines ne '{|');  # Dump the '{|' start
+                while (scalar(@lines) >= 3) {
+                    my $name = shift @lines;
+                    my $desc = shift @lines;
+                    my $terminator = shift @lines;  # the '|-' or '|}' line.
+                    last if ($terminator ne '|-') and ($terminator ne '|}');  # we seem to have run out of table.
+                    $name =~ s/\A\|\s*//;
+                    $name =~ s/\A\*\*(.*?)\*\*/$1/;
+                    $name =~ s/\A\'\'\'(.*?)\'\'\'/$1/;
+                    $desc =~ s/\A\|\s*//;
+                    $desc = dewikify($wikitype, $desc);
+                    #print STDERR "FN: $fn   NAME: $name   DESC: $desc TERM: $terminator\n";
+
+                    $str .= ".TP\n";
+                    $str .= ".I $name\n";
+                    $str .= "$desc\n";
+                }
+            } else {
+                die("write me");
+            }
+        }
+
+        if (defined $returns) {
+            $str .= ".SH RETURN VALUE\n";
+            $str .= dewikify($wikitype, $returns) . "\n";
+        }
+
+        if (defined $examples) {
+            $str .= ".SH CODE EXAMPLES\n";
+            $dewikify_manpage_code_indent = 0;
+            $str .= dewikify($wikitype, $examples) . "\n";
+            $dewikify_manpage_code_indent = 1;
+        }
+
+        if (defined $version) {
+            $str .= ".SH AVAILABILITY\n";
+            $str .= dewikify($wikitype, $version) . "\n";
+        }
+
+        if (defined $related) {
+            $str .= ".SH SEE ALSO\n";
+            # !!! FIXME: lots of code duplication in all of these.
+            my $v = dewikify($wikitype, $related);
+            my @desclines = split /\n/, $v;
+            my $nextstr = '';
+            foreach (@desclines) {
+                s/\A(\:|\* )//;
+                s/\(\)\Z//;  # Convert "SDL_Func()" to "SDL_Func"
+                s/\A\.BR\s+//;  # dewikify added this, but we want to handle it.
+                s/\A\s+//;
+                s/\s+\Z//;
+                next if $_ eq '';
+                $str .= "$nextstr.BR $_ (3)";
+                $nextstr = ",\n";
+            }
+            $str .= "\n";
+        }
+
+        if (0) {
+        $str .= ".SH COPYRIGHT\n";
+        $str .= "This manpage is licensed under\n";
+        $str .= ".UR https://creativecommons.org/licenses/by/4.0/\n";
+        $str .= "Creative Commons Attribution 4.0 International (CC BY 4.0)\n";
+        $str .= ".UE\n";
+        $str .= ".PP\n";
+        $str .= "This manpage was generated from\n";
+        $str .= ".UR https://wiki.libsdl.org/$fn\n";
+        $str .= "SDL's wiki\n";
+        $str .= ".UE\n";
+        $str .= "using SDL/build-scripts/wikiheaders.pl";
+        $str .= " revision $gitrev" if $gitrev ne '';
+        $str .= ".\n";
+        $str .= "Please report issues in this manpage at\n";
+        $str .= ".UR https://github.com/libsdl-org/sdlwiki/issues/new\n";
+        $str .= "our bugtracker!\n";
+        $str .= ".UE\n";
+        }
+
+        my $path = "$manpath/$_.3.tmp";
+        open(FH, '>', $path) or die("Can't open '$path': $!\n");
+        print FH $str;
+        close(FH);
+        rename($path, "$manpath/$_.3") or die("Can't rename '$path' to '$manpath/$_.3': $!\n");
     }
 }
 

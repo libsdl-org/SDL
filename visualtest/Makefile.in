@@ -1,15 +1,20 @@
 # Makefile to build the SDL tests
+
 srcdir  = @srcdir@
 CC      = @CC@
 EXE	= @EXE@
 CFLAGS  = @CFLAGS@ -I../include -I./include
 LIBS	= @LIBS@
+
 TARGETS = \
 	testharness$(EXE) \
 	testquit$(EXE)
+
 all: Makefile $(TARGETS)
+
 Makefile: $(srcdir)/Makefile.in
 	$(SHELL) config.status $@
+
 testharness$(EXE): $(srcdir)/src/action_configparser.c \
 		   $(srcdir)/src/harness_argparser.c \
 		   $(srcdir)/src/rwhelper.c \
@@ -27,8 +32,10 @@ testharness$(EXE): $(srcdir)/src/action_configparser.c \
 		   $(srcdir)/src/windows/windows_process.c \
 		   $(srcdir)/src/windows/windows_screenshot.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
 testquit$(EXE): $(srcdir)/unittest/testquit.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
 clean:
 	rm -f $(TARGETS)
 distclean: clean

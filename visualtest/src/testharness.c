@@ -1,6 +1,6 @@
 /* See LICENSE.txt for the full license governing this code. */
 /**
- *  \file testharness.c 
+ *  \file testharness.c
  *
  *  Source file for the test harness.
  */
@@ -49,8 +49,8 @@ static SDLVisualTest_ActionNode* current; /* the current action being performed 
 static SDL_TimerID action_timer, kill_timer;
 
 /* returns a char* to be passed as the format argument of a printf-style function. */
-static char*
-usage()
+static const char*
+usage(void)
 {
     return "Usage: \n%s --sutapp xyz"
            " [--sutargs abc | --parameter-config xyz.parameters"
@@ -82,10 +82,10 @@ ActionTimerCallback(Uint32 interval, void* param)
     Uint32 next_action_time;
 
     /* push an event to handle the action */
+    SDL_zero(userevent);
     userevent.type = SDL_USEREVENT;
     userevent.code = ACTION_TIMER_EVENT;
     userevent.data1 = &current->action;
-    userevent.data2 = NULL;
 
     event.type = SDL_USEREVENT;
     event.user = userevent;
@@ -110,10 +110,9 @@ KillTimerCallback(Uint32 interval, void* param)
     SDL_Event event;
     SDL_UserEvent userevent;
 
+    SDL_zero(userevent);
     userevent.type = SDL_USEREVENT;
     userevent.code = KILL_TIMER_EVENT;
-    userevent.data1 = NULL;
-    userevent.data2 = NULL;
 
     event.type = SDL_USEREVENT;
     event.user = userevent;
@@ -181,7 +180,7 @@ ProcessAction(SDLVisualTest_Action* action, int* sut_running, char* args)
             if(SDL_IsProcessRunning(&action_process) > 0)
             {
                 SDLTest_LogError("Process %s took too long too complete."
-                                    " Force killing...", action->extra);
+                                 " Force killing...", action->extra.process.path);
                 if(!SDL_KillProcess(&action_process, &ps))
                 {
                     SDLTest_LogError("SDL_KillProcess() failed");
@@ -463,7 +462,7 @@ main(int argc, char* argv[])
 
     if(state.sut_config.num_options > 0)
     {
-        char* variator_name = state.variator_type == SDL_VARIATOR_RANDOM ?
+        const char* variator_name = (state.variator_type == SDL_VARIATOR_RANDOM) ?
                               "RANDOM" : "EXHAUSTIVE";
         if(state.num_variations > 0)
             SDLTest_Log("Testing SUT with variator: %s for %d variations",
@@ -519,7 +518,7 @@ main(int argc, char* argv[])
         }
         goto cleanup_variator;
     }
- 
+
     goto cleanup_sdl;
 
 cleanup_variator:

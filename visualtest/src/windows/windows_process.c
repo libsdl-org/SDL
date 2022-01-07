@@ -1,10 +1,9 @@
 /* See LICENSE.txt for the full license governing this code. */
 /**
- * \file windows_process.c 
+ * \file windows_process.c
  *
  * Source file for the process API on windows.
  */
-
 
 #include <SDL.h>
 #include <SDL_test.h>
@@ -16,7 +15,7 @@
 #if defined(__WIN32__)
 
 void
-LogLastError(char* str)
+LogLastError(const char* str)
 {
     LPVOID buffer;
     DWORD dw = GetLastError();
@@ -175,7 +174,7 @@ CloseWindowCallback(HWND hwnd, LPARAM lparam)
     GetWindowThreadProcessId(hwnd, &pid);
     if(pid == pinfo->pi.dwProcessId)
     {
-        DWORD result;
+        DWORD_PTR result;
         if(!SendMessageTimeout(hwnd, WM_CLOSE, 0, 0, SMTO_BLOCK,
                                1000, &result))
         {

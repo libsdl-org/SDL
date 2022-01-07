@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -454,28 +454,68 @@ Cocoa_GetDisplayDPI(_THIS, SDL_VideoDisplay * display, float * ddpi, float * hdp
     /* we need the backingScaleFactor for Retina displays, which is only exposed through NSScreen, not CGDisplay, afaik, so find our screen... */
     CGFloat scaleFactor = 1.0f;
     NSArray *screens = [NSScreen screens];
+    NSSize displayNativeSize;
+    displayNativeSize.width = (int) CGDisplayPixelsWide(data->display);
+    displayNativeSize.height = (int) CGDisplayPixelsHigh(data->display);
+    
     for (NSScreen *screen in screens) {
         const CGDirectDisplayID dpyid = (const CGDirectDisplayID ) [[[screen deviceDescription] objectForKey:@"NSScreenNumber"] unsignedIntValue];
         if (dpyid == data->display) {
-            if ([screen respondsToSelector:@selector(backingScaleFactor)]) {  // Mac OS X 10.7 and later
+#ifdef MAC_OS_X_VERSION_10_8
+            /* Neither CGDisplayScreenSize(description's NSScreenNumber) nor [NSScreen backingScaleFactor] can calculate the correct dpi in macOS. E.g. backingScaleFactor is always 2 in all display modes for rMBP 16" */
+            if (floor(NSAppKitVersionNumber) > NSAppKitVersionNumber10_7) {
+                CFStringRef dmKeys[1] = { kCGDisplayShowDuplicateLowResolutionModes };
+                CFBooleanRef dmValues[1] = { kCFBooleanTrue };
+                CFDictionaryRef dmOptions = CFDictionaryCreate(kCFAllocatorDefault, (const void**) dmKeys, (const void**) dmValues, 1, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks );
+                CFArrayRef allDisplayModes = CGDisplayCopyAllDisplayModes(dpyid, dmOptions);
+                CFIndex n = CFArrayGetCount(allDisplayModes);
+                for(CFIndex i = 0; i < n; ++i) {
+                    CGDisplayModeRef m = (CGDisplayModeRef)CFArrayGetValueAtIndex(allDisplayModes, i);
+                    CGFloat width = CGDisplayModeGetPixelWidth(m);
+                    CGFloat height = CGDisplayModeGetPixelHeight(m);
+                    CGFloat HiDPIWidth = CGDisplayModeGetWidth(m);
+                    
+                    //Only check 1x mode
+                    if(width == HiDPIWidth) {
+                        if (CGDisplayModeGetIOFlags(m) & kDisplayModeNativeFlag) {
+                            displayNativeSize.width = width;
+                            displayNativeSize.height = height;
+                            break;
+                        }
+                        
+                        //Get the largest size even if kDisplayModeNativeFlag is not present e.g. iMac 27-Inch with 5K Retina
+                        if(width > displayNativeSize.width) {
+                            displayNativeSize.width = width;
+                            displayNativeSize.height = height;
+                        }
+                    }
+                }
+                CFRelease(allDisplayModes);
+                CFRelease(dmOptions);
+            } else
+#endif
+            if (floor(NSAppKitVersionNumber) > NSAppKitVersionNumber10_6) {
+                // fallback for 10.7
                 scaleFactor = [screen backingScaleFactor];
+                displayNativeSize.width = displayNativeSize.width * scaleFactor;
+                displayNativeSize.height = displayNativeSize.height * scaleFactor;
                 break;
             }
         }
     }
 
     const CGSize displaySize = CGDisplayScreenSize(data->display);
-    const int pixelWidth =  (int) CGDisplayPixelsWide(data->display);
-    const int pixelHeight = (int) CGDisplayPixelsHigh(data->display);
+    const int pixelWidth =  displayNativeSize.width;
+    const int pixelHeight = displayNativeSize.height;
 
     if (ddpi) {
-        *ddpi = (SDL_ComputeDiagonalDPI(pixelWidth, pixelHeight, displaySize.width / MM_IN_INCH, displaySize.height / MM_IN_INCH)) * scaleFactor;
+        *ddpi = (SDL_ComputeDiagonalDPI(pixelWidth, pixelHeight, displaySize.width / MM_IN_INCH, displaySize.height / MM_IN_INCH));
     }
     if (hdpi) {
-        *hdpi = (pixelWidth * MM_IN_INCH / displaySize.width) * scaleFactor;
+        *hdpi = (pixelWidth * MM_IN_INCH / displaySize.width);
     }
     if (vdpi) {
-        *vdpi = (pixelHeight * MM_IN_INCH / displaySize.height) * scaleFactor;
+        *vdpi = (pixelHeight * MM_IN_INCH / displaySize.height);
     }
 
     return 0;
