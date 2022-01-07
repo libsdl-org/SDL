@@ -259,7 +259,16 @@ Cocoa_WarpMouse(SDL_Window * window, int x, int y)
 static int
 Cocoa_SetRelativeMouseMode(SDL_bool enabled)
 {
-    /* We will re-apply the relative mode when the window gets focus, if it
+    CGError result;
+    if (enabled) {
+        DLog("Turning on.");
+        result = CGAssociateMouseAndMouseCursorPosition(NO);
+        if (result != kCGErrorSuccess) {
+            return SDL_SetError("CGAssociateMouseAndMouseCursorPosition() failed");
+        }
+    }
+
+    /* We will re-apply the non-relative mode when the window gets focus, if it
      * doesn't have focus right now.
      */
     SDL_Window *window = SDL_GetMouseFocus();
@@ -267,7 +276,7 @@ Cocoa_SetRelativeMouseMode(SDL_bool enabled)
       return 0;
     }
 
-    /* We will re-apply the relative mode when the window finishes being moved,
+    /* We will re-apply the non-relative mode when the window finishes being moved,
      * if it is being moved right now.
      */
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
@@ -275,17 +284,14 @@ Cocoa_SetRelativeMouseMode(SDL_bool enabled)
         return 0;
     }
 
-    CGError result;
-    if (enabled) {
-        DLog("Turning on.");
-        result = CGAssociateMouseAndMouseCursorPosition(NO);
-    } else {
+    if (!enabled) {
         DLog("Turning off.");
         result = CGAssociateMouseAndMouseCursorPosition(YES);
+        if (result != kCGErrorSuccess) {
+            return SDL_SetError("CGAssociateMouseAndMouseCursorPosition() failed");
+        }
     }
-    if (result != kCGErrorSuccess) {
-        return SDL_SetError("CGAssociateMouseAndMouseCursorPosition() failed");
-    }
+
 
     /* The hide/unhide calls are redundant most of the time, but they fix
      * https://bugzilla.libsdl.org/show_bug.cgi?id=2550
