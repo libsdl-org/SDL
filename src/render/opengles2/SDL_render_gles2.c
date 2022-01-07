@@ -683,8 +683,8 @@ GLES2_QueueDrawPoints(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL
 
     cmd->data.draw.count = count;
     for (i = 0; i < count; i++) {
-        verts->position.y = 0.5f + points[i].x;
-        verts->position.x = 0.5f + points[i].y;
+        verts->position.x = 0.5f + points[i].x;
+        verts->position.y = 0.5f + points[i].y;
         verts->color = color;
         verts++;
     }
