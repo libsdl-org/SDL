@@ -189,7 +189,6 @@ if(PSP)
     # Build EBOOT files if building for PSP
     set(BUILD_EBOOT
         ${NEEDS_RESOURCES}
-        testoffscreen
         testbounds
         testgl2
         testsem

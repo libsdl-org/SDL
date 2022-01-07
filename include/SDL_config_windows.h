@@ -103,6 +103,7 @@ typedef unsigned int uintptr_t;
 #endif
 #define HAVE_MMDEVICEAPI_H 1
 #define HAVE_AUDIOCLIENT_H 1
+#define HAVE_TPCSHRD_H 1
 #define HAVE_SENSORSAPI_H 1
 #if (defined(_M_IX86) || defined(_M_X64) || defined(_M_AMD64)) && (defined(_MSC_VER) && _MSC_VER >= 1600)
 #define HAVE_IMMINTRIN_H 1
