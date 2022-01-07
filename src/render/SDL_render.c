@@ -890,7 +890,7 @@ void VerifyDrawQueueFunctions(const SDL_Renderer *renderer)
     SDL_assert(renderer->QueueSetViewport != NULL);
     SDL_assert(renderer->QueueSetDrawColor != NULL);
     SDL_assert(renderer->QueueDrawPoints != NULL);
-    SDL_assert(renderer->QueueDrawLines != NULL);
+    SDL_assert(renderer->QueueDrawLines != NULL || renderer->QueueGeometry != NULL);
     SDL_assert(renderer->QueueFillRects != NULL || renderer->QueueGeometry != NULL);
     SDL_assert(renderer->QueueCopy != NULL || renderer->QueueGeometry != NULL);
     SDL_assert(renderer->RunCommandQueue != NULL);
@@ -2963,6 +2963,7 @@ SDL_RenderDrawLinesF(SDL_Renderer * renderer,
                      const SDL_FPoint * points, int count)
 {
     int retval = 0;
+    int use_rendergeometry;
 
     CHECK_RENDERER_MAGIC(renderer, -1);
 
@@ -2983,8 +2984,10 @@ SDL_RenderDrawLinesF(SDL_Renderer * renderer,
     if (renderer->scale.x != 1.0f || renderer->scale.y != 1.0f) {
         return RenderDrawLinesWithRectsF(renderer, points, count);
     }
+    
+    use_rendergeometry = (renderer->QueueDrawLines == NULL);
 
-    if (!(renderer->info.flags & SDL_RENDERER_SOFTWARE) && renderer->QueueGeometry) {
+    if (use_rendergeometry) {
         SDL_bool isstack1;
         SDL_bool isstack2;
         float *xy = SDL_small_alloc(float, 4 * 2 * count, &isstack1);
