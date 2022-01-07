@@ -809,7 +809,7 @@ SDL_FlushEvents(Uint32 minType, Uint32 maxType)
 
 /* Run the system dependent event loops */
 void
-SDL_PumpEventsInternal(SDL_bool push_sentinel)
+SDL_PumpEvents()
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
 
@@ -836,20 +836,6 @@ SDL_PumpEventsInternal(SDL_bool push_sentinel)
 #endif
 
     SDL_SendPendingSignalEvents();  /* in case we had a signal handler fire, etc. */
-
-    if (push_sentinel && SDL_GetEventState(SDL_POLLSENTINEL) == SDL_ENABLE) {
-        SDL_Event sentinel;
-
-        SDL_zero(sentinel);
-        sentinel.type = SDL_POLLSENTINEL;
-        SDL_PushEvent(&sentinel);
-    }
-}
-
-void
-SDL_PumpEvents()
-{
-    SDL_PumpEventsInternal(SDL_FALSE);
 }
 
 /* Public functions */
@@ -891,7 +877,7 @@ SDL_WaitEventTimeout_Device(_THIS, SDL_Window *wakeup_window, SDL_Event * event,
            c) Periodic processing that takes place in some platform PumpEvents() functions happens
            d) Signals received in WaitEventTimeout() are turned into SDL events
         */
-        SDL_PumpEventsInternal(SDL_TRUE);
+        SDL_PumpEvents();
 
         if (!_this->wakeup_lock || SDL_LockMutex(_this->wakeup_lock) == 0) {
             int status = SDL_PeepEvents(event, 1, SDL_GETEVENT, SDL_FIRSTEVENT, SDL_LASTEVENT);
@@ -990,7 +976,15 @@ SDL_WaitEventTimeout(SDL_Event * event, int timeout)
 
     /* If there isn't a poll sentinel event pending, pump events and add one */
     if (SDL_AtomicGet(&SDL_sentinel_pending) == 0) {
-        SDL_PumpEventsInternal(SDL_TRUE);
+        SDL_PumpEvents();
+
+        if (SDL_GetEventState(SDL_POLLSENTINEL) == SDL_ENABLE) {
+            SDL_Event sentinel;
+
+            SDL_zero(sentinel);
+            sentinel.type = SDL_POLLSENTINEL;
+            SDL_PushEvent(&sentinel);
+        }
     }
 
     /* First check for existing events */
@@ -1037,7 +1031,7 @@ SDL_WaitEventTimeout(SDL_Event * event, int timeout)
     }
 
     for (;;) {
-        SDL_PumpEventsInternal(SDL_TRUE);
+        SDL_PumpEvents();
         switch (SDL_PeepEvents(event, 1, SDL_GETEVENT, SDL_FIRSTEVENT, SDL_LASTEVENT)) {
         case -1:
             return 0;
