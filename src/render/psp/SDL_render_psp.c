@@ -1120,23 +1120,8 @@ PSP_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *verti
                 break;
             }
 
-            case SDL_RENDERCMD_DRAW_LINES: {
-                const size_t count = cmd->data.draw.count;
-                const VertV *verts = (VertV *) (gpumem + cmd->data.draw.first);
-                const Uint8 r = cmd->data.draw.r;
-                const Uint8 g = cmd->data.draw.g;
-                const Uint8 b = cmd->data.draw.b;
-                const Uint8 a = cmd->data.draw.a;
-                PSP_BlendState state = {
-                    .color = GU_RGBA(r,g,b,a),
-                    .texture = NULL,
-                    .mode = cmd->data.draw.blend,
-                    .shadeModel = GU_FLAT
-                };
-                PSP_SetBlendState(data, &state);
-                sceGuDrawArray(GU_LINE_STRIP, GU_VERTEX_32BITF|GU_TRANSFORM_2D, count, 0, verts);
+            case SDL_RENDERCMD_DRAW_LINES: /* unused */
                 break;
-            }
 
             case SDL_RENDERCMD_FILL_RECTS: {
                 const size_t count = cmd->data.draw.count;
@@ -1339,7 +1324,6 @@ PSP_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->QueueSetViewport = PSP_QueueSetViewport;
     renderer->QueueSetDrawColor = PSP_QueueSetViewport;  /* SetViewport and SetDrawColor are (currently) no-ops. */
     renderer->QueueDrawPoints = PSP_QueueDrawPoints;
-    renderer->QueueDrawLines = PSP_QueueDrawPoints;  /* lines and points queue vertices the same way. */
     renderer->QueueGeometry = PSP_QueueGeometry;
     renderer->QueueFillRects = PSP_QueueFillRects;
     renderer->QueueCopy = PSP_QueueCopy;
