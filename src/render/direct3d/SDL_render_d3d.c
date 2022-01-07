@@ -1207,30 +1207,8 @@ D3D_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *verti
                 break;
             }
 
-            case SDL_RENDERCMD_DRAW_LINES: {
-                const size_t count = cmd->data.draw.count;
-                const size_t first = cmd->data.draw.first;
-                const Vertex *verts = (Vertex *) (((Uint8 *) vertices) + first);
-
-                /* DirectX 9 has the same line rasterization semantics as GDI,
-                   so we need to close the endpoint of the line with a second draw call. */
-                const SDL_bool close_endpoint = ((count == 2) || (verts[0].x != verts[count-1].x) || (verts[0].y != verts[count-1].y));
-
-                SetDrawState(data, cmd);
-
-                if (vbo) {
-                    IDirect3DDevice9_DrawPrimitive(data->device, D3DPT_LINESTRIP, (UINT) (first / sizeof (Vertex)), (UINT) (count - 1));
-                    if (close_endpoint) {
-                        IDirect3DDevice9_DrawPrimitive(data->device, D3DPT_POINTLIST, (UINT) ((first / sizeof (Vertex)) + (count - 1)), 1);
-                    }
-                } else {
-                    IDirect3DDevice9_DrawPrimitiveUP(data->device, D3DPT_LINESTRIP, (UINT) (count - 1), verts, sizeof (Vertex));
-                    if (close_endpoint) {
-                        IDirect3DDevice9_DrawPrimitiveUP(data->device, D3DPT_POINTLIST, 1, &verts[count-1], sizeof (Vertex));
-                    }
-                }
+            case SDL_RENDERCMD_DRAW_LINES: /* unused */
                 break;
-            }
 
             case SDL_RENDERCMD_FILL_RECTS: /* unused */
                 break;
@@ -1567,7 +1545,6 @@ D3D_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->QueueSetViewport = D3D_QueueSetViewport;
     renderer->QueueSetDrawColor = D3D_QueueSetViewport;  /* SetViewport and SetDrawColor are (currently) no-ops. */
     renderer->QueueDrawPoints = D3D_QueueDrawPoints;
-    renderer->QueueDrawLines = D3D_QueueDrawPoints;  /* lines and points queue vertices the same way. */
     renderer->QueueGeometry = D3D_QueueGeometry;
     renderer->RunCommandQueue = D3D_RunCommandQueue;
     renderer->RenderReadPixels = D3D_RenderReadPixels;
