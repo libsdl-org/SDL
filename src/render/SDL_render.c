@@ -3013,20 +3013,16 @@ SDL_RenderDrawLinesF(SDL_Renderer * renderer,
                     3----2-------7----6
             */
             for (i = 0; i < count; ++i) {
-                SDL_FPoint q; /* current point */
+                SDL_FPoint q = points[i]; /* current point */
 
-                q = points[i];
-                q.x += 0.5f;
-                q.y += 0.5f;
-
-                *ptr_xy++ = SDL_floorf(q.x);
-                *ptr_xy++ = SDL_floorf(q.y);
-                *ptr_xy++ = SDL_floorf(q.x) + 1.0f;
-                *ptr_xy++ = SDL_floorf(q.y);
-                *ptr_xy++ = SDL_floorf(q.x) + 1.0f;
-                *ptr_xy++ = SDL_floorf(q.y) + 1.0f;
-                *ptr_xy++ = SDL_floorf(q.x);
-                *ptr_xy++ = SDL_floorf(q.y) + 1.0f;
+                *ptr_xy++ = q.x;
+                *ptr_xy++ = q.y;
+                *ptr_xy++ = q.x + 1.0f;
+                *ptr_xy++ = q.y;
+                *ptr_xy++ = q.x + 1.0f;
+                *ptr_xy++ = q.y + 1.0f;
+                *ptr_xy++ = q.x;
+                *ptr_xy++ = q.y + 1.0f;
 
 #define ADD_TRIANGLE(i1, i2, i3)                    \
                 *ptr_indices++ = cur_indice + i1;   \
