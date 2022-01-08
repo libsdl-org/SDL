@@ -1111,8 +1111,7 @@ SetDrawState(GL_RenderData *data, const SDL_RenderCommand *cmd, const GL_Shader 
         }
     }
 
-    vertex_array = cmd->command == SDL_RENDERCMD_DRAW_POINTS
-        || cmd->command == SDL_RENDERCMD_DRAW_LINES
+    vertex_array = cmd->command == SDL_RENDERCMD_DRAW_LINES
         || cmd->command == SDL_RENDERCMD_GEOMETRY;
     color_array = cmd->command == SDL_RENDERCMD_GEOMETRY;
     texture_array = cmd->data.draw.texture != NULL;
@@ -1190,6 +1189,7 @@ GL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
 {
     /* !!! FIXME: it'd be nice to use a vertex buffer instead of immediate mode... */
     GL_RenderData *data = (GL_RenderData *) renderer->driverdata;
+    size_t i;
 
     if (GL_ActivateRenderer(renderer) < 0) {
         return -1;
@@ -1280,10 +1280,11 @@ GL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
                 const size_t count = cmd->data.draw.count;
                 const GLfloat *verts = (GLfloat *) (((Uint8 *) vertices) + cmd->data.draw.first);
                 SetDrawState(data, cmd, SHADER_SOLID);
-
-                /* SetDrawState handles glEnableClientState. */
-                data->glVertexPointer(2, GL_FLOAT, sizeof(float) * 2, verts);
-                data->glDrawArrays(GL_POINTS, 0, (GLsizei) count);
+                data->glBegin(GL_POINTS);
+                for (i = 0; i < count; i++, verts += 2) {
+                    data->glVertex2f(verts[0], verts[1]);
+                }
+                data->glEnd();
                 break;
             }
 
