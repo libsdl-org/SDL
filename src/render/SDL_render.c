@@ -2789,7 +2789,7 @@ static int plotLineLow(SDL_Renderer *renderer, float x0, float y0, float x1, flo
     float dy = y1 - y0;
     int yi = 1;
     float x, y, D;
-    int count = (x1 - x0 + 1);
+    int count = (int)SDL_ceilf(x1 - x0 + 1);
     SDL_bool isstack;
     SDL_FPoint *points = SDL_small_alloc(SDL_FPoint, count, &isstack);
     SDL_FPoint *tmp = points;
@@ -2812,6 +2812,7 @@ static int plotLineLow(SDL_Renderer *renderer, float x0, float y0, float x1, flo
             D += 2*dy;
         }
     }
+    SDL_assert((tmp - points) == count);
 
     if (renderer->scale.x != 1.0f || renderer->scale.y != 1.0f) {
         retval = RenderDrawPointsWithRectsF(renderer, points, count);
@@ -2831,7 +2832,7 @@ static int plotLineHigh(SDL_Renderer *renderer, float x0, float y0, float x1, fl
     float dy = y1 - y0;
     int xi = 1;
     float x, y, D;
-    int count = (y1 - y0 + 1);
+    int count = (int)SDL_ceilf(y1 - y0 + 1);
     SDL_bool isstack;
     SDL_FPoint *points = SDL_small_alloc(SDL_FPoint, count, &isstack);
     SDL_FPoint *tmp = points;
@@ -2854,6 +2855,7 @@ static int plotLineHigh(SDL_Renderer *renderer, float x0, float y0, float x1, fl
             D += 2*dx;
         }
     }
+    SDL_assert((tmp - points) == count);
 
     if (renderer->scale.x != 1.0f || renderer->scale.y != 1.0f) {
         retval = RenderDrawPointsWithRectsF(renderer, points, count);
