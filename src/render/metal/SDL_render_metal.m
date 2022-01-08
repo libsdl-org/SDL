@@ -1108,6 +1108,56 @@ METAL_QueueDrawPoints(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL
 }
 
 static int
+METAL_QueueDrawLines(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FPoint * points, int count)
+{
+    const SDL_Color color = {
+        cmd->data.draw.r,
+        cmd->data.draw.g,
+        cmd->data.draw.b,
+        cmd->data.draw.a
+    };
+
+    SDL_assert(count >= 2);  /* should have been checked at the higher level. */
+
+    const size_t vertlen = (2 * sizeof (float) + sizeof (SDL_Color)) * count;
+    float *verts = (float *) SDL_AllocateRenderVertices(renderer, vertlen, DEVICE_ALIGN(8), &cmd->data.draw.first);
+    if (!verts) {
+        return -1;
+    }
+    cmd->data.draw.count = count;
+
+    for (int i = 0; i < count; i++, points++) {
+        *(verts++) = points->x;
+        *(verts++) = points->y;
+        *((SDL_Color *)verts++) = color;
+    }
+
+    /* If the line segment is completely horizontal or vertical,
+       make it one pixel longer, to satisfy the diamond-exit rule.
+       We should probably do this for diagonal lines too, but we'd have to
+       do some trigonometry to figure out the correct pixel and generally
+       when we have problems with pixel perfection, it's for straight lines
+       that are missing a pixel that frames something and not arbitrary
+       angles. Maybe !!! FIXME for later, though. */
+
+    points -= 2;  /* update the last line. */
+    verts -= 2 + 1;
+
+    const float xstart = points[0].x;
+    const float ystart = points[0].y;
+    const float xend = points[1].x;
+    const float yend = points[1].y;
+
+    if (ystart == yend) {  /* horizontal line */
+        verts[0] += (xend > xstart) ? 1.0f : -1.0f;
+    } else if (xstart == xend) {  /* vertical line */
+        verts[1] += (yend > ystart) ? 1.0f : -1.0f;
+    }
+
+    return 0;
+}
+
+static int
 METAL_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
         const float *xy, int xy_stride, const SDL_Color *color, int color_stride, const float *uv, int uv_stride,
         int num_vertices, const void *indices, int num_indices, int size_indices,
@@ -1372,17 +1422,15 @@ METAL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
                 break;
             }
 
-            case SDL_RENDERCMD_DRAW_POINTS: {
+            case SDL_RENDERCMD_DRAW_POINTS:
+            case SDL_RENDERCMD_DRAW_LINES: {
                 const size_t count = cmd->data.draw.count;
-                const MTLPrimitiveType primtype = MTLPrimitiveTypePoint;
+                const MTLPrimitiveType primtype = (cmd->command == SDL_RENDERCMD_DRAW_POINTS) ? MTLPrimitiveTypePoint : MTLPrimitiveTypeLineStrip;
                 if (SetDrawState(renderer, cmd, SDL_METAL_FRAGMENT_SOLID, CONSTANTS_OFFSET_HALF_PIXEL_TRANSFORM, mtlbufvertex, &statecache)) {
                     [data.mtlcmdencoder drawPrimitives:primtype vertexStart:0 vertexCount:count];
                 }
                 break;
             }
-            
-            case SDL_RENDERCMD_DRAW_LINES: /* unused */
-                break;
 
             case SDL_RENDERCMD_FILL_RECTS: /* unused */
                 break;
@@ -1838,6 +1886,7 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->QueueSetViewport = METAL_QueueSetViewport;
     renderer->QueueSetDrawColor = METAL_QueueSetDrawColor;
     renderer->QueueDrawPoints = METAL_QueueDrawPoints;
+    renderer->QueueDrawLines = METAL_QueueDrawLines;
     renderer->QueueGeometry = METAL_QueueGeometry;
     renderer->RunCommandQueue = METAL_RunCommandQueue;
     renderer->RenderReadPixels = METAL_RenderReadPixels;

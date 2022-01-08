@@ -561,6 +561,47 @@ GLES_QueueDrawPoints(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_
 }
 
 static int
+GLES_QueueDrawLines(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FPoint * points, int count)
+{
+    int i;
+    GLfloat prevx, prevy;
+    const size_t vertlen = (sizeof (GLfloat) * 2) * count;
+    GLfloat *verts = (GLfloat *) SDL_AllocateRenderVertices(renderer, vertlen, 0, &cmd->data.draw.first);
+
+    if (!verts) {
+        return -1;
+    }
+    cmd->data.draw.count = count;
+
+    /* 0.5f offset to hit the center of the pixel. */
+    prevx = 0.5f + points->x;
+    prevy = 0.5f + points->y;
+    *(verts++) = prevx;
+    *(verts++) = prevy;
+
+    /* bump the end of each line segment out a quarter of a pixel, to provoke
+       the diamond-exit rule. Without this, you won't just drop the last
+       pixel of the last line segment, but you might also drop pixels at the
+       edge of any given line segment along the way too. */
+    for (i = 1; i < count; i++) {
+        const GLfloat xstart = prevx;
+        const GLfloat ystart = prevy;
+        const GLfloat xend = points[i].x + 0.5f;  /* 0.5f to hit pixel center. */
+        const GLfloat yend = points[i].y + 0.5f;
+        /* bump a little in the direction we are moving in. */
+        const GLfloat deltax = xend - xstart;
+        const GLfloat deltay = yend - ystart;
+        const GLfloat angle = SDL_atan2f(deltay, deltax);
+        prevx = xend + (SDL_cosf(angle) * 0.25f);
+        prevy = yend + (SDL_sinf(angle) * 0.25f);
+        *(verts++) = prevx;
+        *(verts++) = prevy;
+    }
+
+    return 0;
+}
+
+static int
 GLES_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
         const float *xy, int xy_stride, const SDL_Color *color, int color_stride, const float *uv, int uv_stride,
         int num_vertices, const void *indices, int num_indices, int size_indices,
@@ -809,8 +850,15 @@ GLES_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vert
                 break;
             }
 
-            case SDL_RENDERCMD_DRAW_LINES: /* unused */
-                break;                             
+            case SDL_RENDERCMD_DRAW_LINES: {
+                const GLfloat *verts = (GLfloat *) (((Uint8 *) vertices) + cmd->data.draw.first);
+                const size_t count = cmd->data.draw.count;
+                SDL_assert(count >= 2);
+                SetDrawState(data, cmd);
+                data->glVertexPointer(2, GL_FLOAT, 0, verts);
+                data->glDrawArrays(GL_LINE_STRIP, 0, (GLsizei) count);
+                break;
+            }
 
             case SDL_RENDERCMD_FILL_RECTS: /* unused */
                 break;
@@ -1074,6 +1122,7 @@ GLES_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->QueueSetViewport = GLES_QueueSetViewport;
     renderer->QueueSetDrawColor = GLES_QueueSetViewport;  /* SetViewport and SetDrawColor are (currently) no-ops. */
     renderer->QueueDrawPoints = GLES_QueueDrawPoints;
+    renderer->QueueDrawLines = GLES_QueueDrawLines;
     renderer->QueueGeometry = GLES_QueueGeometry;
     renderer->RunCommandQueue = GLES_RunCommandQueue;
     renderer->RenderReadPixels = GLES_RenderReadPixels;
