@@ -1057,6 +1057,8 @@ if ($copy_direction == 1) {  # --copy-to-headers
 
     my $manpath = "$srcpath/man";
     mkdir($manpath);
+    $manpath .= "/man3";
+    mkdir($manpath);
 
     $dewikify_mode = 'manpage';
     $wordwrap_mode = 'manpage';
