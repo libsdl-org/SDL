@@ -1004,9 +1004,22 @@ SDL_WaitEventTimeout(SDL_Event * event, int timeout)
         }
         break;
     default:
-        if (event && event->type == SDL_POLLSENTINEL) {
-            /* Reached the end of a poll cycle, and not willing to wait */
-            return 0;
+        if (include_sentinel) {
+            if (event) {
+                if (event->type == SDL_POLLSENTINEL) {
+                    /* Reached the end of a poll cycle, and not willing to wait */
+                    return 0;
+                }
+            } else {
+                /* Need to peek the next event to check for sentinel */
+                SDL_Event dummy;
+
+                if (SDL_PeepEventsInternal(&dummy, 1, SDL_PEEKEVENT, SDL_FIRSTEVENT, SDL_LASTEVENT, SDL_TRUE) &&
+                    dummy.type == SDL_POLLSENTINEL) {
+                    /* Reached the end of a poll cycle, and not willing to wait */
+                    return 0;
+                }
+            }
         }
         /* Has existing events */
         return 1;
