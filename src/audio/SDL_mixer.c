@@ -84,6 +84,7 @@ static const Uint8 mix8[] = {
 /* The volume ranges from 0 - 128 */
 #define ADJUST_VOLUME(s, v) (s = (s*v)/SDL_MIX_MAXVOLUME)
 #define ADJUST_VOLUME_U8(s, v)  (s = (((s-128)*v)/SDL_MIX_MAXVOLUME)+128)
+#define ADJUST_VOLUME_U16(s, v)  (s = (((s-32768)*v)/SDL_MIX_MAXVOLUME)+32768)
 
 
 void
@@ -190,18 +191,22 @@ SDL_MixAudioFormat(Uint8 * dst, const Uint8 * src, SDL_AudioFormat format,
         {
             Uint16 src1, src2;
             int dst_sample;
-            const int max_audioval = SDL_MAX_UINT16;
+            const int max_audioval = SDL_MAX_SINT16;
+            const int min_audioval = SDL_MIN_SINT16;
 
             len /= 2;
             while (len--) {
                 src1 = SDL_SwapLE16(*(Uint16 *)src);
-                ADJUST_VOLUME(src1, volume);
+                ADJUST_VOLUME_U16(src1, volume);
                 src2 = SDL_SwapLE16(*(Uint16 *)dst);
                 src += 2;
-                dst_sample = src1 + src2;
+                dst_sample = src1 + src2 - 32768 * 2;
                 if (dst_sample > max_audioval) {
                     dst_sample = max_audioval;
+                } else if (dst_sample < min_audioval) {
+                    dst_sample = min_audioval;
                 }
+                dst_sample += 32768;
                 *(Uint16 *)dst = SDL_SwapLE16(dst_sample);
                 dst += 2;
             }
@@ -212,18 +217,22 @@ SDL_MixAudioFormat(Uint8 * dst, const Uint8 * src, SDL_AudioFormat format,
         {
             Uint16 src1, src2;
             int dst_sample;
-            const int max_audioval = SDL_MAX_UINT16;
+            const int max_audioval = SDL_MAX_SINT16;
+            const int min_audioval = SDL_MIN_SINT16;
 
             len /= 2;
             while (len--) {
                 src1 = SDL_SwapBE16(*(Uint16 *)src);
-                ADJUST_VOLUME(src1, volume);
+                ADJUST_VOLUME_U16(src1, volume);
                 src2 = SDL_SwapBE16(*(Uint16 *)dst);
                 src += 2;
-                dst_sample = src1 + src2;
+                dst_sample = src1 + src2 - 32768 * 2;
                 if (dst_sample > max_audioval) {
                     dst_sample = max_audioval;
+                } else if (dst_sample < min_audioval) {
+                    dst_sample = min_audioval;
                 }
+                dst_sample += 32768;
                 *(Uint16 *)dst = SDL_SwapBE16(dst_sample);
                 dst += 2;
             }
