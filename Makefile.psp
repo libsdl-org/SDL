@@ -1,3 +1,6 @@
+# The threads code require a rather new PSP SDK with SceLwMutexWorkarea:
+# https://github.com/pspdev/pspsdk/commit/276d9e3ca6fb26479ad050c21431b2a40f518365
+#
 TARGET_LIB = libSDL2.a
 EXTRA_TARGETS = libSDL2main.a
 OBJS= src/SDL.o \
@@ -36,7 +39,7 @@ OBJS= src/SDL.o \
       src/joystick/virtual/SDL_virtualjoystick.o \
       src/power/SDL_power.o \
       src/power/psp/SDL_syspower.o \
-      src/filesystem/dummy/SDL_sysfilesystem.o \
+      src/filesystem/psp/SDL_sysfilesystem.o \
       src/locale/SDL_locale.o \
       src/locale/dummy/SDL_syslocale.o \
       src/misc/SDL_url.o \

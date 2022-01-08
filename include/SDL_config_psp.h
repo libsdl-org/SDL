@@ -25,8 +25,6 @@
 
 #include "SDL_platform.h"
 
-
-
 #ifdef __GNUC__
 #define HAVE_GCC_SYNC_LOCK_TEST_AND_SET 1
 #endif
@@ -34,7 +32,7 @@
 #define HAVE_GCC_ATOMICS    1
 
 #define STDC_HEADERS    1
-#define HAVE_ALLOCA_H       1
+#define HAVE_ALLOCA_H   1
 #define HAVE_CTYPE_H    1
 #define HAVE_INTTYPES_H 1
 #define HAVE_LIMITS_H   1
@@ -152,8 +150,8 @@
 
 #define SDL_POWER_PSP          1
 
-/* !!! FIXME: what does PSP do for filesystem stuff? */
-#define SDL_FILESYSTEM_DUMMY   1
+/* Enable the PSP filesystem support (src/filesystem/psp/\*.c) */
+#define SDL_FILESYSTEM_PSP     1
 
 /* PSP doesn't have haptic device (src/haptic/dummy/\*.c) */
 #define SDL_HAPTIC_DISABLED    1
@@ -163,6 +161,5 @@
 
 /* PSP can't load shared object (src/loadso/dummy/\*.c) */
 #define SDL_LOADSO_DISABLED    1
-
 
 #endif /* SDL_config_psp_h_ */
