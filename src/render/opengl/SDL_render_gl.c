@@ -1026,7 +1026,8 @@ GL_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *te
 
         /* Not really a float, but it is still 4 bytes and will be cast to the
            right type in the graphics driver. */
-        *(verts++) = *(float*)((char*)color + j * color_stride);
+        SDL_memcpy(verts, ((char*)color + j * color_stride), sizeof(*color));
+        ++verts;
 
         if (texture) {
             float *uv_ = (float *)((char*)uv + j * uv_stride);
