@@ -210,7 +210,7 @@ keyboard_repeat_handle(SDL_WaylandKeyboardRepeat* repeat_info, uint32_t now)
     if (!repeat_info->is_key_down || !repeat_info->is_initialized) {
         return ret;
     }
-    while (repeat_info->next_repeat_ms <= now) {
+    while ((now - repeat_info->next_repeat_ms) < 0x80000000U) {
         if (repeat_info->scancode != SDL_SCANCODE_UNKNOWN) {
             SDL_SendKeyboardKey(SDL_PRESSED, repeat_info->scancode);
         }
