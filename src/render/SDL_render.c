@@ -2904,13 +2904,13 @@ SDL_RenderDrawLinesF(SDL_Renderer * renderer,
     }
 #endif
 
-    use_rendergeometry = (renderer->QueueDrawLines == NULL);
+    use_rendergeometry = 1;
 
-    if (renderer->scale.x != 1.0f || renderer->scale.y != 1.0f) {
-        retval = RenderDrawLinesWithRectsF(renderer, points, count);
-    } else if (use_rendergeometry) {
+    if (use_rendergeometry) {
         SDL_bool isstack1;
         SDL_bool isstack2;
+        const float scale_x = renderer->scale.x;
+        const float scale_y = renderer->scale.y;
         float *xy = SDL_small_alloc(float, 4 * 2 * count, &isstack1);
         int *indices = SDL_small_alloc(int,
                   (4) * 3 * (count - 1)
@@ -2939,14 +2939,17 @@ SDL_RenderDrawLinesF(SDL_Renderer * renderer,
             for (i = 0; i < count; ++i) {
                 SDL_FPoint q = points[i]; /* current point */
 
+                q.x *= scale_x;
+                q.y *= scale_y;
+
                 *ptr_xy++ = q.x;
                 *ptr_xy++ = q.y;
-                *ptr_xy++ = q.x + 1.0f;
+                *ptr_xy++ = q.x + scale_x;
                 *ptr_xy++ = q.y;
-                *ptr_xy++ = q.x + 1.0f;
-                *ptr_xy++ = q.y + 1.0f;
+                *ptr_xy++ = q.x + scale_x;
+                *ptr_xy++ = q.y + scale_y;
                 *ptr_xy++ = q.x;
-                *ptr_xy++ = q.y + 1.0f;
+                *ptr_xy++ = q.y + scale_y;
 
 #define ADD_TRIANGLE(i1, i2, i3)                    \
                 *ptr_indices++ = cur_indice + i1;   \
@@ -3025,6 +3028,8 @@ SDL_RenderDrawLinesF(SDL_Renderer * renderer,
             SDL_small_free(indices, isstack2);
         }
 
+    } else if (renderer->scale.x != 1.0f || renderer->scale.y != 1.0f) {
+        retval = RenderDrawLinesWithRectsF(renderer, points, count);
     } else {
         retval = QueueCmdDrawLines(renderer, points, count);
     }
