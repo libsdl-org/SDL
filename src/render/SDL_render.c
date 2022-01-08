@@ -3022,7 +3022,7 @@ SDL_RenderDrawLinesF(SDL_Renderer * renderer,
     use_rendergeometry = 1;
 
     if (use_renderpoints) {
-        retval = RenderDrawLinesWithPointsF(renderer, points, count);
+        retval = RenderDrawLinesWithRectsF(renderer, points, count);
     } else if (use_rendergeometry) {
         SDL_bool isstack1;
         SDL_bool isstack2;
