@@ -6,7 +6,7 @@
 # wmake -f Makefile.os2 LIBICONV=1
 
 LIBNAME = SDL2
-VERSION = 2.0.19
+VERSION = 2.0.20
 DESCRIPTION = Simple DirectMedia Layer 2
 
 LIBICONV=0
