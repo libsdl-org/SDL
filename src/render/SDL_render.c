@@ -2690,8 +2690,8 @@ SDL_RenderDrawPoints(SDL_Renderer * renderer,
             return SDL_OutOfMemory();
         }
         for (i = 0; i < count; ++i) {
-            fpoints[i].x = points[i].x * renderer->scale.x;
-            fpoints[i].y = points[i].y * renderer->scale.y;
+            fpoints[i].x = (float) points[i].x;
+            fpoints[i].y = (float) points[i].y;
         }
 
         retval = QueueCmdDrawPoints(renderer, fpoints, count);
@@ -2734,10 +2734,7 @@ int
 SDL_RenderDrawPointsF(SDL_Renderer * renderer,
                       const SDL_FPoint * points, int count)
 {
-    SDL_FPoint *fpoints;
-    int i;
     int retval;
-    SDL_bool isstack;
 
     CHECK_RENDERER_MAGIC(renderer, -1);
 
@@ -2758,18 +2755,7 @@ SDL_RenderDrawPointsF(SDL_Renderer * renderer,
     if (renderer->scale.x != 1.0f || renderer->scale.y != 1.0f) {
         retval = RenderDrawPointsWithRectsF(renderer, points, count);
     } else {
-        fpoints = SDL_small_alloc(SDL_FPoint, count, &isstack);
-        if (!fpoints) {
-            return SDL_OutOfMemory();
-        }
-        for (i = 0; i < count; ++i) {
-            fpoints[i].x = points[i].x * renderer->scale.x;
-            fpoints[i].y = points[i].y * renderer->scale.y;
-        }
-
-        retval = QueueCmdDrawPoints(renderer, fpoints, count);
-
-        SDL_small_free(fpoints, isstack);
+        retval = QueueCmdDrawPoints(renderer, points, count);
     }
     return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
 }
