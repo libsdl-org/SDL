@@ -373,6 +373,7 @@ WIN_QuitMouse(_THIS)
 
     if (SDL_blank_cursor) {
         SDL_FreeCursor(SDL_blank_cursor);
+        SDL_free(SDL_blank_cursor);
     }
 }
 
