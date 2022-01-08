@@ -2654,7 +2654,7 @@ RenderDrawPointsWithRects(SDL_Renderer * renderer,
 
     SDL_small_free(frects, isstack);
 
-    return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
+    return retval;
 }
 
 int
@@ -2683,22 +2683,21 @@ SDL_RenderDrawPoints(SDL_Renderer * renderer,
 #endif
 
     if (renderer->scale.x != 1.0f || renderer->scale.y != 1.0f) {
-        return RenderDrawPointsWithRects(renderer, points, count);
+        retval = RenderDrawPointsWithRects(renderer, points, count);
+    } else {
+        fpoints = SDL_small_alloc(SDL_FPoint, count, &isstack);
+        if (!fpoints) {
+            return SDL_OutOfMemory();
+        }
+        for (i = 0; i < count; ++i) {
+            fpoints[i].x = points[i].x * renderer->scale.x;
+            fpoints[i].y = points[i].y * renderer->scale.y;
+        }
+
+        retval = QueueCmdDrawPoints(renderer, fpoints, count);
+
+        SDL_small_free(fpoints, isstack);
     }
-
-    fpoints = SDL_small_alloc(SDL_FPoint, count, &isstack);
-    if (!fpoints) {
-        return SDL_OutOfMemory();
-    }
-    for (i = 0; i < count; ++i) {
-        fpoints[i].x = points[i].x * renderer->scale.x;
-        fpoints[i].y = points[i].y * renderer->scale.y;
-    }
-
-    retval = QueueCmdDrawPoints(renderer, fpoints, count);
-
-    SDL_small_free(fpoints, isstack);
-
     return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
 }
 
@@ -2728,7 +2727,7 @@ RenderDrawPointsWithRectsF(SDL_Renderer * renderer,
 
     SDL_small_free(frects, isstack);
 
-    return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
+    return retval;
 }
 
 int
@@ -2757,22 +2756,21 @@ SDL_RenderDrawPointsF(SDL_Renderer * renderer,
 #endif
 
     if (renderer->scale.x != 1.0f || renderer->scale.y != 1.0f) {
-        return RenderDrawPointsWithRectsF(renderer, points, count);
+        retval = RenderDrawPointsWithRectsF(renderer, points, count);
+    } else {
+        fpoints = SDL_small_alloc(SDL_FPoint, count, &isstack);
+        if (!fpoints) {
+            return SDL_OutOfMemory();
+        }
+        for (i = 0; i < count; ++i) {
+            fpoints[i].x = points[i].x * renderer->scale.x;
+            fpoints[i].y = points[i].y * renderer->scale.y;
+        }
+
+        retval = QueueCmdDrawPoints(renderer, fpoints, count);
+
+        SDL_small_free(fpoints, isstack);
     }
-
-    fpoints = SDL_small_alloc(SDL_FPoint, count, &isstack);
-    if (!fpoints) {
-        return SDL_OutOfMemory();
-    }
-    for (i = 0; i < count; ++i) {
-        fpoints[i].x = points[i].x * renderer->scale.x;
-        fpoints[i].y = points[i].y * renderer->scale.y;
-    }
-
-    retval = QueueCmdDrawPoints(renderer, fpoints, count);
-
-    SDL_small_free(fpoints, isstack);
-
     return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
 }
 
@@ -2799,63 +2797,6 @@ SDL_RenderDrawLineF(SDL_Renderer * renderer, float x1, float y1, float x2, float
 }
 
 static int
-RenderDrawLinesWithRects(SDL_Renderer * renderer,
-                     const SDL_Point * points, const int count)
-{
-    SDL_FRect *frect;
-    SDL_FRect *frects;
-    SDL_FPoint fpoints[2];
-    int i, nrects = 0;
-    int retval = 0;
-    SDL_bool isstack;
-
-    frects = SDL_small_alloc(SDL_FRect, count-1, &isstack);
-    if (!frects) {
-        return SDL_OutOfMemory();
-    }
-
-    for (i = 0; i < count-1; ++i) {
-        if (points[i].x == points[i+1].x) {
-            const int minY = SDL_min(points[i].y, points[i+1].y);
-            const int maxY = SDL_max(points[i].y, points[i+1].y);
-
-            frect = &frects[nrects++];
-            frect->x = points[i].x * renderer->scale.x;
-            frect->y = minY * renderer->scale.y;
-            frect->w = renderer->scale.x;
-            frect->h = (maxY - minY + 1) * renderer->scale.y;
-        } else if (points[i].y == points[i+1].y) {
-            const int minX = SDL_min(points[i].x, points[i+1].x);
-            const int maxX = SDL_max(points[i].x, points[i+1].x);
-
-            frect = &frects[nrects++];
-            frect->x = minX * renderer->scale.x;
-            frect->y = points[i].y * renderer->scale.y;
-            frect->w = (maxX - minX + 1) * renderer->scale.x;
-            frect->h = renderer->scale.y;
-        } else {
-            /* FIXME: We can't use a rect for this line... */
-            fpoints[0].x = points[i].x * renderer->scale.x;
-            fpoints[0].y = points[i].y * renderer->scale.y;
-            fpoints[1].x = points[i+1].x * renderer->scale.x;
-            fpoints[1].y = points[i+1].y * renderer->scale.y;
-            retval += QueueCmdDrawLines(renderer, fpoints, 2);
-        }
-    }
-
-    if (nrects) {
-        retval += QueueCmdFillRects(renderer, frects, nrects);
-    }
-
-    SDL_small_free(frects, isstack);
-
-    if (retval < 0) {
-        retval = -1;
-    }
-    return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
-}
-
-static int
 RenderDrawLinesWithRectsF(SDL_Renderer * renderer,
                           const SDL_FPoint * points, const int count)
 {
@@ -2873,8 +2814,8 @@ RenderDrawLinesWithRectsF(SDL_Renderer * renderer,
 
     for (i = 0; i < count-1; ++i) {
         if (points[i].x == points[i+1].x) {
-            const int minY = (int)SDL_min(points[i].y, points[i+1].y);
-            const int maxY = (int)SDL_max(points[i].y, points[i+1].y);
+            const float minY = SDL_min(points[i].y, points[i+1].y);
+            const float maxY = SDL_max(points[i].y, points[i+1].y);
 
             frect = &frects[nrects++];
             frect->x = points[i].x * renderer->scale.x;
@@ -2882,8 +2823,8 @@ RenderDrawLinesWithRectsF(SDL_Renderer * renderer,
             frect->w = renderer->scale.x;
             frect->h = (maxY - minY + 1) * renderer->scale.y;
         } else if (points[i].y == points[i+1].y) {
-            const int minX = (int)SDL_min(points[i].x, points[i+1].x);
-            const int maxX = (int)SDL_max(points[i].x, points[i+1].x);
+            const float minX = SDL_min(points[i].x, points[i+1].x);
+            const float maxX = SDL_max(points[i].x, points[i+1].x);
 
             frect = &frects[nrects++];
             frect->x = minX * renderer->scale.x;
@@ -2909,7 +2850,7 @@ RenderDrawLinesWithRectsF(SDL_Renderer * renderer,
     if (retval < 0) {
         retval = -1;
     }
-    return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
+    return retval;
 }
 
 int
@@ -2936,10 +2877,6 @@ SDL_RenderDrawLines(SDL_Renderer * renderer,
         return 0;
     }
 #endif
-
-    if (renderer->scale.x != 1.0f || renderer->scale.y != 1.0f) {
-        return RenderDrawLinesWithRects(renderer, points, count);
-    }
 
     fpoints = SDL_small_alloc(SDL_FPoint, count, &isstack);
     if (!fpoints) {
@@ -2981,13 +2918,11 @@ SDL_RenderDrawLinesF(SDL_Renderer * renderer,
     }
 #endif
 
-    if (renderer->scale.x != 1.0f || renderer->scale.y != 1.0f) {
-        return RenderDrawLinesWithRectsF(renderer, points, count);
-    }
-    
     use_rendergeometry = (renderer->QueueDrawLines == NULL);
 
-    if (use_rendergeometry) {
+    if (renderer->scale.x != 1.0f || renderer->scale.y != 1.0f) {
+        retval = RenderDrawLinesWithRectsF(renderer, points, count);
+    } else if (use_rendergeometry) {
         SDL_bool isstack1;
         SDL_bool isstack2;
         float *xy = SDL_small_alloc(float, 4 * 2 * count, &isstack1);
