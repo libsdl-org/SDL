@@ -2843,7 +2843,7 @@ static int plotLineLow(SDL_Renderer *renderer, float x0, float y0, float x1, flo
             D += 2*dy;
         }
     }
-    render_count = (tmp - points);
+    render_count = (int)(tmp - points);
 
     if (!draw_last) {
         --render_count;
@@ -2901,7 +2901,7 @@ static int plotLineHigh(SDL_Renderer *renderer, float x0, float y0, float x1, fl
             D += 2*dx;
         }
     }
-    render_count = (tmp - points);
+    render_count = (int)(tmp - points);
 
     if (!draw_last) {
         --render_count;
