@@ -2807,7 +2807,7 @@ SDL_RenderDrawLineF(SDL_Renderer * renderer, float x1, float y1, float x2, float
     return SDL_RenderDrawLinesF(renderer, points, 2);
 }
 
-static int plotLineLow(SDL_Renderer *renderer, float x0, float y0, float x1, float y1)
+static int plotLineLow(SDL_Renderer *renderer, float x0, float y0, float x1, float y1, SDL_bool draw_first, SDL_bool draw_last)
 {
     int retval = 0;
     float dx = x1 - x0;
@@ -2818,6 +2818,8 @@ static int plotLineLow(SDL_Renderer *renderer, float x0, float y0, float x1, flo
     SDL_bool isstack;
     SDL_FPoint *points = SDL_small_alloc(SDL_FPoint, count, &isstack);
     SDL_FPoint *tmp = points;
+    SDL_FPoint *render_points;
+    int render_count;
 
     if (!points) {
         return SDL_OutOfMemory();
@@ -2843,10 +2845,21 @@ static int plotLineLow(SDL_Renderer *renderer, float x0, float y0, float x1, flo
     }
     SDL_assert((tmp - points) == count);
 
-    if (renderer->scale.x != 1.0f || renderer->scale.y != 1.0f) {
-        retval = RenderDrawPointsWithRectsF(renderer, points, count);
+    if (draw_last) {
+        render_count = count;
     } else {
-        retval = QueueCmdDrawPoints(renderer, points, count);
+        render_count = count - 1;
+    }
+    if (draw_first) {
+        render_points = points;
+    } else {
+        render_points = points+1;
+        --render_count;
+    }
+    if (renderer->scale.x != 1.0f || renderer->scale.y != 1.0f) {
+        retval = RenderDrawPointsWithRectsF(renderer, render_points, render_count);
+    } else {
+        retval = QueueCmdDrawPoints(renderer, render_points, render_count);
     }
 
     SDL_small_free(points, isstack);
@@ -2854,7 +2867,7 @@ static int plotLineLow(SDL_Renderer *renderer, float x0, float y0, float x1, flo
     return retval;
 }
 
-static int plotLineHigh(SDL_Renderer *renderer, float x0, float y0, float x1, float y1)
+static int plotLineHigh(SDL_Renderer *renderer, float x0, float y0, float x1, float y1, SDL_bool draw_first, SDL_bool draw_last)
 {
     int retval = 0;
     float dx = x1 - x0;
@@ -2865,6 +2878,8 @@ static int plotLineHigh(SDL_Renderer *renderer, float x0, float y0, float x1, fl
     SDL_bool isstack;
     SDL_FPoint *points = SDL_small_alloc(SDL_FPoint, count, &isstack);
     SDL_FPoint *tmp = points;
+    SDL_FPoint *render_points;
+    int render_count;
 
     if (!points) {
         return SDL_OutOfMemory();
@@ -2890,10 +2905,21 @@ static int plotLineHigh(SDL_Renderer *renderer, float x0, float y0, float x1, fl
     }
     SDL_assert((tmp - points) == count);
 
-    if (renderer->scale.x != 1.0f || renderer->scale.y != 1.0f) {
-        retval = RenderDrawPointsWithRectsF(renderer, points, count);
+    if (draw_last) {
+        render_count = count;
     } else {
-        retval = QueueCmdDrawPoints(renderer, points, count);
+        render_count = count - 1;
+    }
+    if (draw_first) {
+        render_points = points;
+    } else {
+        render_points = points+1;
+        --render_count;
+    }
+    if (renderer->scale.x != 1.0f || renderer->scale.y != 1.0f) {
+        retval = RenderDrawPointsWithRectsF(renderer, render_points, render_count);
+    } else {
+        retval = QueueCmdDrawPoints(renderer, render_points, render_count);
     }
 
     SDL_small_free(points, isstack);
@@ -2901,48 +2927,35 @@ static int plotLineHigh(SDL_Renderer *renderer, float x0, float y0, float x1, fl
     return retval;
 }
 
-static int plotLineBresenham(SDL_Renderer *renderer, float x0, float y0, float x1, float y1)
+static int plotLineBresenham(SDL_Renderer *renderer, float x0, float y0, float x1, float y1, SDL_bool draw_last)
 {
     if (SDL_fabs(y1 - y0) < SDL_fabs(x1 - x0)) {
         if (x0 > x1) {
-            return plotLineLow(renderer, x1, y1, x0, y0);
+            return plotLineLow(renderer, x1, y1, x0, y0, draw_last, SDL_TRUE);
         } else {
-            return plotLineLow(renderer, x0, y0, x1, y1);
+            return plotLineLow(renderer, x0, y0, x1, y1, SDL_TRUE, draw_last);
         }
     } else {
         if (y0 > y1) {
-            return plotLineHigh(renderer, x1, y1, x0, y0);
+            return plotLineHigh(renderer, x1, y1, x0, y0, draw_last, SDL_TRUE);
         } else {
-            return plotLineHigh(renderer, x0, y0, x1, y1);
+            return plotLineHigh(renderer, x0, y0, x1, y1, SDL_TRUE, draw_last);
         }
     }
-}
-
-static int
-RenderDrawLinesWithPointsF(SDL_Renderer * renderer,
-                          const SDL_FPoint * points, const int count)
-{
-    int i;
-    int retval = 0;
-
-    for (i = 0; i < count-1; ++i, ++points) {
-        retval += plotLineBresenham(renderer, points[0].x, points[0].y, points[1].x, points[1].y);
-    }
-    if (retval < 0) {
-        retval = -1;
-    }
-    return retval;
 }
 
 static int
 RenderDrawLinesWithRectsF(SDL_Renderer * renderer,
                           const SDL_FPoint * points, const int count)
 {
+    const float scale_x = renderer->scale.x;
+    const float scale_y = renderer->scale.y;
     SDL_FRect *frect;
     SDL_FRect *frects;
     int i, nrects = 0;
     int retval = 0;
     SDL_bool isstack;
+    SDL_bool draw_last = SDL_FALSE;
 
     frects = SDL_small_alloc(SDL_FRect, count-1, &isstack);
     if (!frects) {
@@ -2950,26 +2963,37 @@ RenderDrawLinesWithRectsF(SDL_Renderer * renderer,
     }
 
     for (i = 0; i < count-1; ++i) {
+        if (i == count-2) {
+            if (points[0].x != points[count-1].x || points[0].y != points[count-1].y) {
+                draw_last = SDL_TRUE;
+            }
+        }
         if (points[i].x == points[i+1].x) {
             const float minY = SDL_min(points[i].y, points[i+1].y);
             const float maxY = SDL_max(points[i].y, points[i+1].y);
 
             frect = &frects[nrects++];
-            frect->x = points[i].x * renderer->scale.x;
-            frect->y = minY * renderer->scale.y;
-            frect->w = renderer->scale.x;
-            frect->h = (maxY - minY + 1) * renderer->scale.y;
+            frect->x = points[i].x * scale_x;
+            frect->y = minY * scale_y;
+            frect->w = scale_x;
+            frect->h = (maxY - minY + draw_last) * scale_y;
+            if (!draw_last && points[i+1].y < points[i].y) {
+                frect->y += scale_y;
+            }
         } else if (points[i].y == points[i+1].y) {
             const float minX = SDL_min(points[i].x, points[i+1].x);
             const float maxX = SDL_max(points[i].x, points[i+1].x);
 
             frect = &frects[nrects++];
-            frect->x = minX * renderer->scale.x;
-            frect->y = points[i].y * renderer->scale.y;
-            frect->w = (maxX - minX + 1) * renderer->scale.x;
-            frect->h = renderer->scale.y;
+            frect->x = minX * scale_x;
+            frect->y = points[i].y * scale_y;
+            frect->w = (maxX - minX + draw_last) * scale_x;
+            frect->h = scale_y;
+            if (!draw_last && points[i+1].x < points[i].x) {
+                frect->x += scale_x;
+            }
         } else {
-            retval += RenderDrawLinesWithPointsF(renderer, &points[i], 2);
+            retval += plotLineBresenham(renderer, points[i].x, points[i].y, points[i+1].x, points[i+1].y, draw_last);
         }
     }
 
