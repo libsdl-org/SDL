@@ -731,13 +731,13 @@ SDL_RendererEventWatch(void *userdata, SDL_Event *event)
                     if (renderer->target) {
                         renderer->viewport_backup.x = 0;
                         renderer->viewport_backup.y = 0;
-                        renderer->viewport_backup.w = w;
-                        renderer->viewport_backup.h = h;
+                        renderer->viewport_backup.w = (float) w;
+                        renderer->viewport_backup.h = (float) h;
                     } else {
                         renderer->viewport.x = 0;
                         renderer->viewport.y = 0;
-                        renderer->viewport.w = w;
-                        renderer->viewport.h = h;
+                        renderer->viewport.w = (float) w;
+                        renderer->viewport.h = (float) h;
                         QueueCmdSetViewport(renderer);
                         FlushRenderCommandsIfNotBatching(renderer);
                     }
@@ -2194,8 +2194,8 @@ SDL_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
     if (texture) {
         renderer->viewport.x = 0.0f;
         renderer->viewport.y = 0.0f;
-        renderer->viewport.w = texture->w;
-        renderer->viewport.h = texture->h;
+        renderer->viewport.w = (float) texture->w;
+        renderer->viewport.h = (float) texture->h;
         SDL_zero(renderer->clip_rect);
         renderer->clipping_enabled = SDL_FALSE;
         renderer->scale.x = 1.0f;
@@ -2408,13 +2408,13 @@ SDL_RenderSetViewport(SDL_Renderer * renderer, const SDL_Rect * rect)
         renderer->viewport.h = rect->h * renderer->scale.y;
     } else {
         int w, h;
-        renderer->viewport.x = 0.0f;
-        renderer->viewport.y = 0.0f;
         if (SDL_GetRendererOutputSize(renderer, &w, &h) < 0) {
             return -1;
         }
-        renderer->viewport.w = w;
-        renderer->viewport.h = h;
+        renderer->viewport.x = 0.0f;
+        renderer->viewport.y = 0.0f;
+        renderer->viewport.w = (float) w;
+        renderer->viewport.h = (float) h;
     }
     retval = QueueCmdSetViewport(renderer);
     return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
@@ -2947,8 +2947,8 @@ SDL_RenderDrawLines(SDL_Renderer * renderer,
     }
 
     for (i = 0; i < count; ++i) {
-        fpoints[i].x = points[i].x;
-        fpoints[i].y = points[i].y;
+        fpoints[i].x = (float) points[i].x;
+        fpoints[i].y = (float) points[i].y;
     }
 
     retval = SDL_RenderDrawLinesF(renderer, fpoints, count);
