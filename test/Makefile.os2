@@ -57,7 +57,7 @@ all: $(TARGETS)
 .c: ../src/test
 
 $(TESTLIB): $(COBJS)
-  wlib -q -b -n -c $@ $(COBJS)
+  wlib -q -b -n -c -pa -s -t -zld -ii -io $@ $(COBJS)
 
 .obj.exe:
   @%make $(TESTLIB)
