@@ -222,7 +222,7 @@ static ULONG STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_Release(__FI
     return 1;
 }
 
-static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdded(__FIEventHandler_1_Windows__CGaming__CInput__CRawGameController * This, IInspectable *sender, __x_ABI_CWindows_CGaming_CInput_CIRawGameController *e)
+static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdded(__FIEventHandler_1_Windows__CGaming__CInput__CRawGameController * This, IInspectable *sender, __x_ABI_CWindows_CGaming_CInput_CIRawGameController **e)
 {
     HRESULT hr;
     __x_ABI_CWindows_CGaming_CInput_CIRawGameController *controller = NULL;
@@ -233,7 +233,7 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
         return S_OK;
     }
 
-    hr = __x_ABI_CWindows_CGaming_CInput_CIRawGameController_QueryInterface(e, &IID_IRawGameController, (void **)&controller);
+    hr = __x_ABI_CWindows_CGaming_CInput_CIRawGameController_QueryInterface(*e, &IID_IRawGameController, (void **)&controller);
     if (SUCCEEDED(hr)) {
         char *name = NULL;
         SDL_JoystickGUID guid;
@@ -383,12 +383,12 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
     return S_OK;
 }
 
-static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeRemoved(__FIEventHandler_1_Windows__CGaming__CInput__CRawGameController * This, IInspectable *sender, __x_ABI_CWindows_CGaming_CInput_CIRawGameController *e)
+static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeRemoved(__FIEventHandler_1_Windows__CGaming__CInput__CRawGameController * This, IInspectable *sender, __x_ABI_CWindows_CGaming_CInput_CIRawGameController **e)
 {
     HRESULT hr;
     __x_ABI_CWindows_CGaming_CInput_CIRawGameController *controller = NULL;
 
-    hr = __x_ABI_CWindows_CGaming_CInput_CIRawGameController_QueryInterface(e, &IID_IRawGameController, (void **)&controller);
+    hr = __x_ABI_CWindows_CGaming_CInput_CIRawGameController_QueryInterface(*e, &IID_IRawGameController, (void **)&controller);
     if (SUCCEEDED(hr)) {
         int i;
 
@@ -549,7 +549,7 @@ WGI_JoystickInit(void)
 
                     hr = __FIVectorView_1_Windows__CGaming__CInput__CRawGameController_GetAt(controllers, i, &controller);
                     if (SUCCEEDED(hr) && controller) {
-                        IEventHandler_CRawGameControllerVtbl_InvokeAdded(&controller_added, NULL, controller);
+                        IEventHandler_CRawGameControllerVtbl_InvokeAdded(&controller_added, NULL, &controller);
                     }
                 }
             }
@@ -831,7 +831,7 @@ WGI_JoystickQuit(void)
 {
     if (wgi.statics) {
         while (wgi.controller_count > 0) {
-            IEventHandler_CRawGameControllerVtbl_InvokeRemoved(&controller_removed, NULL, wgi.controllers[wgi.controller_count - 1].controller);
+            IEventHandler_CRawGameControllerVtbl_InvokeRemoved(&controller_removed, NULL, &wgi.controllers[wgi.controller_count - 1].controller);
         }
         if (wgi.controllers) {
             SDL_free(wgi.controllers);
