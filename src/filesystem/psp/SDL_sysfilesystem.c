@@ -51,7 +51,7 @@ SDL_GetPrefPath(const char *org, const char *app)
 {
   char *retval = NULL;
   size_t len;
-  const char *base = SDL_GetBasePath();
+  char *base = SDL_GetBasePath();
   if (!app) {
     SDL_InvalidParamError("app");
     return NULL;
@@ -62,7 +62,7 @@ SDL_GetPrefPath(const char *org, const char *app)
 
   len = SDL_strlen(base) + SDL_strlen(org) + SDL_strlen(app) + 4;
   retval = (char *) SDL_malloc(len);
-    
+
   if (*org) {
     SDL_snprintf(retval, len, "%s%s/%s/", base, org, app);
   } else {
