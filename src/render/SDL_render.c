@@ -2832,7 +2832,7 @@ static int plotLineLow(SDL_Renderer *renderer, float x0, float y0, float x1, flo
 
     D = (2 * dy) - dx;
     y = y0;
-    for (x = x0; x <= x1; ++x) {
+    for (render_count = 0, x = x0; x <= x1; ++x, ++render_count) {
         tmp->x = x;
         tmp->y = y;
         tmp++;
@@ -2843,12 +2843,9 @@ static int plotLineLow(SDL_Renderer *renderer, float x0, float y0, float x1, flo
             D += 2*dy;
         }
     }
-    SDL_assert((tmp - points) == count);
 
-    if (draw_last) {
-        render_count = count;
-    } else {
-        render_count = count - 1;
+    if (!draw_last) {
+        --render_count;
     }
     if (draw_first) {
         render_points = points;
@@ -2892,7 +2889,7 @@ static int plotLineHigh(SDL_Renderer *renderer, float x0, float y0, float x1, fl
 
     D = (2 * dx) - dy;
     x = x0;
-    for (y = y0; y <= y1; ++y) {
+    for (render_count = 0, y = y0; y <= y1; ++y, ++render_count) {
         tmp->x = x;
         tmp->y = y;
         tmp++;
@@ -2903,12 +2900,9 @@ static int plotLineHigh(SDL_Renderer *renderer, float x0, float y0, float x1, fl
             D += 2*dx;
         }
     }
-    SDL_assert((tmp - points) == count);
 
-    if (draw_last) {
-        render_count = count;
-    } else {
-        render_count = count - 1;
+    if (!draw_last) {
+        --render_count;
     }
     if (draw_first) {
         render_points = points;
