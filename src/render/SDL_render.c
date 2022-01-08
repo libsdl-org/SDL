@@ -896,6 +896,26 @@ void VerifyDrawQueueFunctions(const SDL_Renderer *renderer)
     SDL_assert(renderer->RunCommandQueue != NULL);
 }
 
+static SDL_RenderLineMethod SDL_GetRenderLineMethod()
+{
+    const char *hint = SDL_GetHint(SDL_HINT_RENDER_LINE_METHOD);
+
+    int method = 0;
+    if (hint) {
+        method = SDL_atoi(hint);
+    }
+    switch (method) {
+    case 1:
+        return SDL_RENDERLINEMETHOD_POINTS;
+    case 2:
+        return SDL_RENDERLINEMETHOD_LINES;
+    case 3:
+        return SDL_RENDERLINEMETHOD_GEOMETRY;
+    default:
+        return SDL_RENDERLINEMETHOD_POINTS;
+    }
+}
+
 SDL_Renderer *
 SDL_CreateRenderer(SDL_Window * window, int index, Uint32 flags)
 {
@@ -1011,6 +1031,8 @@ SDL_CreateRenderer(SDL_Window * window, int index, Uint32 flags)
 
     renderer->relative_scaling = SDL_GetHintBoolean(SDL_HINT_MOUSE_RELATIVE_SCALING, SDL_TRUE);
 
+    renderer->line_method = SDL_GetRenderLineMethod();
+
     if (SDL_GetWindowFlags(window) & (SDL_WINDOW_HIDDEN|SDL_WINDOW_MINIMIZED)) {
         renderer->hidden = SDL_TRUE;
     } else {
@@ -1061,6 +1083,9 @@ SDL_CreateSoftwareRenderer(SDL_Surface * surface)
 
         /* new textures start at zero, so we start at 1 so first render doesn't flush by accident. */
         renderer->render_command_generation = 1;
+
+        /* Software renderer always uses line method, for speed */
+        renderer->line_method = SDL_RENDERLINEMETHOD_LINES;
 
         SDL_RenderSetViewport(renderer, NULL);
     }
@@ -2794,6 +2819,10 @@ static int plotLineLow(SDL_Renderer *renderer, float x0, float y0, float x1, flo
     SDL_FPoint *points = SDL_small_alloc(SDL_FPoint, count, &isstack);
     SDL_FPoint *tmp = points;
 
+    if (!points) {
+        return SDL_OutOfMemory();
+    }
+
     if (dy < 0) {
         yi = -1;
         dy = -dy;
@@ -2836,6 +2865,10 @@ static int plotLineHigh(SDL_Renderer *renderer, float x0, float y0, float x1, fl
     SDL_bool isstack;
     SDL_FPoint *points = SDL_small_alloc(SDL_FPoint, count, &isstack);
     SDL_FPoint *tmp = points;
+
+    if (!points) {
+        return SDL_OutOfMemory();
+    }
 
     if (dx < 0) {
         xi = -1;
@@ -2999,8 +3032,6 @@ SDL_RenderDrawLinesF(SDL_Renderer * renderer,
                      const SDL_FPoint * points, int count)
 {
     int retval = 0;
-    int use_renderpoints;
-    int use_rendergeometry;
 
     CHECK_RENDERER_MAGIC(renderer, -1);
 
@@ -3018,12 +3049,9 @@ SDL_RenderDrawLinesF(SDL_Renderer * renderer,
     }
 #endif
 
-    use_renderpoints = 1;
-    use_rendergeometry = 1;
-
-    if (use_renderpoints) {
+    if (renderer->line_method == SDL_RENDERLINEMETHOD_POINTS) {
         retval = RenderDrawLinesWithRectsF(renderer, points, count);
-    } else if (use_rendergeometry) {
+    } else if (renderer->line_method == SDL_RENDERLINEMETHOD_GEOMETRY) {
         SDL_bool isstack1;
         SDL_bool isstack2;
         const float scale_x = renderer->scale.x;
