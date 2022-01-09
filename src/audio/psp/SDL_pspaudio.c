@@ -64,6 +64,7 @@ PSPAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
         format = PSP_AUDIO_FORMAT_MONO;
     } else {
         format = PSP_AUDIO_FORMAT_STEREO;
+        this->spec.channels = 2;  /* we're forcing the hardware to stereo. */
     }
 
     /*  PSP has some limitations with the Audio. It fully supports 44.1KHz (Mono & Stereo),
@@ -73,7 +74,6 @@ PSPAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
         this->hidden->channel = sceAudioChReserve(PSP_AUDIO_NEXT_CHANNEL, this->spec.samples, format);
     } else {
         this->hidden->channel = sceAudioSRCChReserve(this->spec.samples, this->spec.freq, 2);
-        this->spec.channels = 2;  /* we're forcing the hardware to stereo. */
     }
     
     if (this->hidden->channel < 0) {
