@@ -2807,137 +2807,83 @@ SDL_RenderDrawLineF(SDL_Renderer * renderer, float x1, float y1, float x2, float
     return SDL_RenderDrawLinesF(renderer, points, 2);
 }
 
-static int plotLineLow(SDL_Renderer *renderer, float x0, float y0, float x1, float y1, SDL_bool draw_first, SDL_bool draw_last)
+static int RenderDrawLineBresenham(SDL_Renderer *renderer, int x1, int y1, int x2, int y2, SDL_bool draw_last)
 {
-    int retval = 0;
-    float dx = x1 - x0;
-    float dy = y1 - y0;
-    int yi = 1;
-    float x, y, D;
-    int count = (int)SDL_ceilf(x1 - x0 + 1);
+    int i, deltax, deltay, numpixels;
+    int d, dinc1, dinc2;
+    int x, xinc1, xinc2;
+    int y, yinc1, yinc2;
+    int retval;
     SDL_bool isstack;
-    SDL_FPoint *points = SDL_small_alloc(SDL_FPoint, count, &isstack);
-    SDL_FPoint *tmp = points;
-    SDL_FPoint *render_points;
-    int render_count;
+    SDL_FPoint *points;
 
+    deltax = SDL_abs(x2 - x1);
+    deltay = SDL_abs(y2 - y1);
+
+    if (deltax >= deltay) {
+        numpixels = deltax + 1;
+        d = (2 * deltay) - deltax;
+        dinc1 = deltay * 2;
+        dinc2 = (deltay - deltax) * 2;
+        xinc1 = 1;
+        xinc2 = 1;
+        yinc1 = 0;
+        yinc2 = 1;
+    } else {
+        numpixels = deltay + 1;
+        d = (2 * deltax) - deltay;
+        dinc1 = deltax * 2;
+        dinc2 = (deltax - deltay) * 2;
+        xinc1 = 0;
+        xinc2 = 1;
+        yinc1 = 1;
+        yinc2 = 1;
+    }
+
+    if (x1 > x2) {
+        xinc1 = -xinc1;
+        xinc2 = -xinc2;
+    }
+    if (y1 > y2) {
+        yinc1 = -yinc1;
+        yinc2 = -yinc2;
+    }
+
+    x = x1;
+    y = y1;
+
+    if (!draw_last) {
+        --numpixels;
+    }
+
+    points = SDL_small_alloc(SDL_FPoint, numpixels, &isstack);
     if (!points) {
         return SDL_OutOfMemory();
     }
+    for (i = 0; i < numpixels; ++i) {
+        points[i].x = (float)x;
+        points[i].y = (float)y;
 
-    if (dy < 0) {
-        yi = -1;
-        dy = -dy;
-    }
-
-    D = (2 * dy) - dx;
-    y = y0;
-    for (x = x0; x <= x1; ++x) {
-        tmp->x = x;
-        tmp->y = y;
-        tmp++;
-        if (D > 0) {
-            y += yi;
-            D += 2 * (dy - dx);
+        if (d < 0) {
+            d += dinc1;
+            x += xinc1;
+            y += yinc1;
         } else {
-            D += 2*dy;
+            d += dinc2;
+            x += xinc2;
+            y += yinc2;
         }
     }
-    render_count = (int)(tmp - points);
 
-    if (!draw_last) {
-        --render_count;
-    }
-    if (draw_first) {
-        render_points = points;
-    } else {
-        render_points = points+1;
-        --render_count;
-    }
     if (renderer->scale.x != 1.0f || renderer->scale.y != 1.0f) {
-        retval = RenderDrawPointsWithRectsF(renderer, render_points, render_count);
+        retval = RenderDrawPointsWithRectsF(renderer, points, numpixels);
     } else {
-        retval = QueueCmdDrawPoints(renderer, render_points, render_count);
+        retval = QueueCmdDrawPoints(renderer, points, numpixels);
     }
 
     SDL_small_free(points, isstack);
 
     return retval;
-}
-
-static int plotLineHigh(SDL_Renderer *renderer, float x0, float y0, float x1, float y1, SDL_bool draw_first, SDL_bool draw_last)
-{
-    int retval = 0;
-    float dx = x1 - x0;
-    float dy = y1 - y0;
-    int xi = 1;
-    float x, y, D;
-    int count = (int)SDL_ceilf(y1 - y0 + 1);
-    SDL_bool isstack;
-    SDL_FPoint *points = SDL_small_alloc(SDL_FPoint, count, &isstack);
-    SDL_FPoint *tmp = points;
-    SDL_FPoint *render_points;
-    int render_count;
-
-    if (!points) {
-        return SDL_OutOfMemory();
-    }
-
-    if (dx < 0) {
-        xi = -1;
-        dx = -dx;
-    }
-
-    D = (2 * dx) - dy;
-    x = x0;
-    for (y = y0; y <= y1; ++y) {
-        tmp->x = x;
-        tmp->y = y;
-        tmp++;
-        if (D > 0) {
-            x += xi;
-            D += 2 * (dx - dy);
-        } else {
-            D += 2*dx;
-        }
-    }
-    render_count = (int)(tmp - points);
-
-    if (!draw_last) {
-        --render_count;
-    }
-    if (draw_first) {
-        render_points = points;
-    } else {
-        render_points = points+1;
-        --render_count;
-    }
-    if (renderer->scale.x != 1.0f || renderer->scale.y != 1.0f) {
-        retval = RenderDrawPointsWithRectsF(renderer, render_points, render_count);
-    } else {
-        retval = QueueCmdDrawPoints(renderer, render_points, render_count);
-    }
-
-    SDL_small_free(points, isstack);
-
-    return retval;
-}
-
-static int plotLineBresenham(SDL_Renderer *renderer, float x0, float y0, float x1, float y1, SDL_bool draw_last)
-{
-    if (SDL_fabs(y1 - y0) < SDL_fabs(x1 - x0)) {
-        if (x0 > x1) {
-            return plotLineLow(renderer, x1, y1, x0, y0, draw_last, SDL_TRUE);
-        } else {
-            return plotLineLow(renderer, x0, y0, x1, y1, SDL_TRUE, draw_last);
-        }
-    } else {
-        if (y0 > y1) {
-            return plotLineHigh(renderer, x1, y1, x0, y0, draw_last, SDL_TRUE);
-        } else {
-            return plotLineHigh(renderer, x0, y0, x1, y1, SDL_TRUE, draw_last);
-        }
-    }
 }
 
 static int
@@ -2997,7 +2943,8 @@ RenderDrawLinesWithRectsF(SDL_Renderer * renderer,
                 frect->x += scale_x;
             }
         } else {
-            retval += plotLineBresenham(renderer, points[i].x, points[i].y, points[i+1].x, points[i+1].y, draw_last);
+            retval += RenderDrawLineBresenham(renderer, (int)points[i].x, (int)points[i].y,
+                                                        (int)points[i+1].x, (int)points[i+1].y, draw_last);
         }
         drew_line = SDL_TRUE;
     }
