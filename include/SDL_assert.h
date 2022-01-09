@@ -76,6 +76,7 @@ assert can have unique static variables associated with it.
 #endif
 #define SDL_FILE    __FILE__
 #define SDL_LINE    __LINE__
+#define SDL_STATIC_ASSERT(COND,MSG) typedef char static_assertion_##MSG[(COND)?1:-1];
 
 /*
 sizeof (x) makes the compiler still parse the expression even without
