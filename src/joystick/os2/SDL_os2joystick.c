@@ -184,6 +184,7 @@ static int OS2_JoystickInit(void)
 		joyPortClose(&hJoyPort);
 		return SDL_SetError("Could not read joystick port.");
 	}
+	maxdevs = 0;
 	if (stGameParms.useA != 0) maxdevs++;
 	if (stGameParms.useB != 0) maxdevs++;
 	if (maxdevs > MAX_JOYSTICKS) maxdevs = MAX_JOYSTICKS;
