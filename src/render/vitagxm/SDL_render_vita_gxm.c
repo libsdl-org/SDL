@@ -817,7 +817,7 @@ VITA_GXM_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *
                         break;  /* can't go any further on this draw call, different texture/blendmode copy up next. */
                     } else {
                         finalcmd = nextcmd;  /* we can combine copy operations here. Mark this one as the furthest okay command. */
-                        count += cmd->data.draw.count;
+                        count += nextcmd->data.draw.count;
                     }
                     nextcmd = nextcmd->next;
                 }
