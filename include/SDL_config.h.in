@@ -264,6 +264,7 @@
 #undef SDL_POWER_DISABLED
 #undef SDL_FILESYSTEM_DISABLED
 #undef SDL_LOCALE_DISABLED
+#undef SDL_MISC_DISABLED
 
 /* Enable various audio drivers */
 #undef SDL_AUDIO_DRIVER_AAUDIO
