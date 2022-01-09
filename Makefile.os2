@@ -4,6 +4,11 @@
 # If you have GNU libiconv installed (iconv2.dll), you
 # can compile against it by specifying LIBICONV=1, e.g.:
 # wmake -f Makefile.os2 LIBICONV=1
+#
+# If you have libusb-1.0 installed (usb100.dll, libusb.h), you
+# can compile hidapi joystick support against it (experimental)
+# by specifying HIDAPI=1, e.g.:
+# wmake -f Makefile.os2 HIDAPI=1
 
 LIBNAME = SDL2
 VERSION = 2.0.20
@@ -41,6 +46,10 @@ CFLAGS_DLL+= -DHAVE_ICONV=1 -DHAVE_ICONV_H=1
 LIBS+= $(ICONVLIB)
 !else
 LIBS+= libuls.lib libconv.lib
+!endif
+# hidapi (libusb):
+!ifeq HIDAPI 1
+CFLAGS_DLL+= -DHAVE_LIBUSB_H=1
 !endif
 # building SDL itself (for DECLSPEC):
 CFLAGS_DLL+= -DBUILD_SDL

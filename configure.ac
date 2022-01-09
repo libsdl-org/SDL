@@ -3489,6 +3489,9 @@ CheckHIDAPI()
                 enable_hidapi_libusb=yes
                 require_hidapi_libusb=yes
                 ;;
+           *-*-os2* )
+                enable_hidapi_libusb=yes
+                ;;
         esac
 
         hidapi_support=yes
@@ -3520,6 +3523,9 @@ CheckHIDAPI()
                             ;;
                         *-*-cygwin* | *-*-mingw* )
                             libusb_lib="libusb-1.0.dll"
+                            ;;
+                        *-*-os2* )
+                            libusb_lib="usb100.dll"
                             ;;
                     esac
                     if test x$libusb_lib = x; then
@@ -4429,6 +4435,7 @@ case "$host" in
         CheckDummyVideo
         CheckDiskAudio
         CheckDummyAudio
+        CheckHIDAPI
 
         # Set up the core platform files
         SOURCES="$SOURCES $srcdir/src/core/os2/*.c"

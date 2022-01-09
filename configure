@@ -25403,6 +25403,9 @@ fi
                 enable_hidapi_libusb=yes
                 require_hidapi_libusb=yes
                 ;;
+           *-*-os2* )
+                enable_hidapi_libusb=yes
+                ;;
         esac
 
         hidapi_support=yes
@@ -25512,6 +25515,9 @@ $as_echo "$as_me: WARNING: You must have SDL_LoadObject() support for dynamic li
                             ;;
                         *-*-cygwin* | *-*-mingw* )
                             libusb_lib="libusb-1.0.dll"
+                            ;;
+                        *-*-os2* )
+                            libusb_lib="usb100.dll"
                             ;;
                     esac
                     if test x$libusb_lib = x; then
@@ -26720,6 +26726,7 @@ $as_echo "#define SDL_TIMER_UNIX 1" >>confdefs.h
         CheckDummyVideo
         CheckDiskAudio
         CheckDummyAudio
+        CheckHIDAPI
 
         # Set up the core platform files
         SOURCES="$SOURCES $srcdir/src/core/os2/*.c"
