@@ -1152,17 +1152,19 @@ if(ANDROID)
       list(APPEND EXTRA_LIBS ${OpenGLES1_LIBRARY} ${OpenGLES2_LIBRARY})
     endif()
 
-    CHECK_C_SOURCE_COMPILES("
-    #if defined(__ARM_ARCH) && __ARM_ARCH < 7
-    #error Vulkan doesn't work on this configuration
-    #endif
-    int main(void) {
-        return 0;
-    }
-    " VULKAN_PASSED_ANDROID_CHECKS)
-    if(NOT VULKAN_PASSED_ANDROID_CHECKS)
-      set(SDL_VULKAN OFF)
-      message(STATUS "Vulkan doesn't work on this configuration")
+    if(SDL_VULKAN)
+      CHECK_C_SOURCE_COMPILES("
+      #if defined(__ARM_ARCH) && __ARM_ARCH < 7
+      #error Vulkan doesn't work on this configuration
+      #endif
+      int main(void) {
+          return 0;
+      }
+      " VULKAN_PASSED_ANDROID_CHECKS)
+      if(VULKAN_PASSED_ANDROID_CHECKS)
+        set(SDL_VIDEO_VULKAN 1)
+        set(HAVE_VULKAN TRUE)
+      endif()
     endif()
   endif()
 
@@ -1277,6 +1279,11 @@ elseif(UNIX AND NOT APPLE AND NOT ANDROID AND NOT RISCOS AND NOT HAIKU)
     CheckOpenGLES()
     CheckWayland()
     CheckVivante()
+    # FIXME: implement CheckVulkan()
+    if(SDL_VULKAN)
+      set(SDL_VIDEO_VULKAN 1)
+      set(HAVE_VULKAN TRUE)
+    endif()
   endif()
 
   if(UNIX)
@@ -1749,6 +1756,11 @@ elseif(WINDOWS)
       set(SDL_VIDEO_RENDER_OGL_ES2 1)
       set(HAVE_OPENGLES TRUE)
     endif()
+
+    if(SDL_VULKAN)
+      set(SDL_VIDEO_VULKAN 1)
+      set(HAVE_VULKAN TRUE)
+    endif()
   endif()
 
   if(SDL_HIDAPI)
@@ -2020,23 +2032,21 @@ elseif(APPLE)
       if(HAVE_FRAMEWORK_METAL)
         set(SDL_FRAMEWORK_METAL 1)
         set(SDL_FRAMEWORK_QUARTZCORE 1)
-      else()
-        set(SDL_VULKAN 0)
-        set(SDL_METAL 0)
-        set(SDL_RENDER_METAL 0)
+        if(SDL_VULKAN)
+          set(SDL_VIDEO_VULKAN 1)
+          set(HAVE_VULKAN TRUE)
+        endif()
+        if(SDL_METAL)
+          set(SDL_VIDEO_METAL 1)
+          set(HAVE_METAL TRUE)
+        endif()
+        if(SDL_RENDER_METAL)
+          file(GLOB RENDER_METAL_SOURCES ${SDL2_SOURCE_DIR}/src/render/metal/*.m)
+          set(SOURCE_FILES ${SOURCE_FILES} ${RENDER_METAL_SOURCES})
+          set(SDL_VIDEO_RENDER_METAL 1)
+          set(HAVE_RENDER_METAL TRUE)
+        endif()
       endif()
-    endif()
-
-    if(SDL_METAL)
-      set(SDL_VIDEO_METAL 1)
-      set(HAVE_METAL TRUE)
-    endif()
-
-    if(SDL_RENDER_METAL)
-      file(GLOB RENDER_METAL_SOURCES ${SDL2_SOURCE_DIR}/src/render/metal/*.m)
-      set(SOURCE_FILES ${SOURCE_FILES} ${RENDER_METAL_SOURCES})
-      set(SDL_VIDEO_RENDER_METAL 1)
-      set(HAVE_RENDER_METAL TRUE)
     endif()
   endif()
 
@@ -2527,14 +2537,10 @@ elseif(OS2)
   endif()
 endif()
 
-if(SDL_VULKAN AND NOT SDL_LOADSO)
+if(HAVE_VULKAN AND NOT SDL_LOADSO)
   message(STATUS "Vulkan support is available, but disabled because there's no loadso.")
-  set(SDL_VULKAN OFF)
-endif()
-
-if(SDL_VULKAN)
-  set(SDL_VIDEO_VULKAN 1)
-  set(HAVE_VULKAN TRUE)
+  set(HAVE_VULKAN FALSE)
+  set(SDL_VIDEO_VULKAN 0)
 endif()
 
 # Dummies
