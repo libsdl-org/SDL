@@ -822,6 +822,7 @@ enable_filesystem
 enable_threads
 enable_timers
 enable_file
+enable_misc
 enable_loadso
 enable_cpuinfo
 enable_assembly
@@ -1599,6 +1600,7 @@ Optional Features:
   --enable-threads        Enable the threading subsystem [default=yes]
   --enable-timers         Enable the timer subsystem [default=yes]
   --enable-file           Enable the file subsystem [default=yes]
+  --enable-misc           Enable the misc subsystem [default=yes]
   --enable-loadso         Enable the shared object loading subsystem
                           [default=yes]
   --enable-cpuinfo        Enable the cpuinfo subsystem [default=yes]
@@ -18100,6 +18102,20 @@ $as_echo "#define SDL_FILESYSTEM_DISABLED 1" >>confdefs.h
 else
     SUMMARY_modules="${SUMMARY_modules} filesystem"
 fi
+# Check whether --enable-misc was given.
+if test "${enable_misc+set}" = set; then :
+  enableval=$enable_misc;
+else
+  enable_misc=yes
+fi
+
+if test x$enable_misc != xyes; then
+
+$as_echo "#define SDL_MISC_DISABLED 1" >>confdefs.h
+
+else
+    SUMMARY_modules="${SUMMARY_modules} misc"
+fi
 # Check whether --enable-threads was given.
 if test "${enable_threads+set}" = set; then :
   enableval=$enable_threads;
@@ -25818,8 +25834,11 @@ $as_echo "#define SDL_VIDEO_DRIVER_ANDROID 1" >>confdefs.h
         CheckRPATH
         CheckVivanteVideo
 
-        SOURCES="$SOURCES $srcdir/src/misc/unix/*.c"
-        have_misc=yes
+        # Set up files for the misc library
+        if test x$enable_misc = xyes; then
+            SOURCES="$SOURCES $srcdir/src/misc/unix/*.c"
+            have_misc=yes
+        fi
 
         SOURCES="$SOURCES $srcdir/src/locale/unix/*.c"
         have_locale=yes
@@ -26035,8 +26054,11 @@ $as_echo "#define SDL_TIMER_UNIX 1" >>confdefs.h
 
         # Set up the core platform files
         SOURCES="$SOURCES $srcdir/src/core/windows/*.c"
-        SOURCES="$SOURCES $srcdir/src/misc/windows/*.c"
-        have_misc=yes
+        # Set up files for the misc library
+        if test x$enable_misc = xyes; then
+            SOURCES="$SOURCES $srcdir/src/misc/windows/*.c"
+            have_misc=yes
+        fi
         # Use the Windows locale APIs.
         SOURCES="$SOURCES $srcdir/src/locale/windows/*.c"
         have_locale=yes
@@ -26323,10 +26345,11 @@ $as_echo "#define SDL_FILESYSTEM_HAIKU 1" >>confdefs.h
             SOURCES="$SOURCES $srcdir/src/filesystem/haiku/*.cc"
             have_filesystem=yes
         fi
-
-        SOURCES="$SOURCES $srcdir/src/misc/haiku/*.cc"
-        have_misc=yes
-
+        # Set up files for the misc library
+        if test x$enable_misc = xyes; then
+            SOURCES="$SOURCES $srcdir/src/misc/haiku/*.cc"
+            have_misc=yes
+        fi
         # Set up files for the locale library
         SOURCES="$SOURCES $srcdir/src/locale/haiku/*.cc"
         have_locale=yes
@@ -26350,9 +26373,11 @@ $as_echo "#define SDL_FILESYSTEM_HAIKU 1" >>confdefs.h
         CheckVulkan
         CheckPTHREAD
 
-        SOURCES="$SOURCES $srcdir/src/misc/ios/*.m"
-        have_misc=yes
-
+        # Set up files for the misc library
+        if test x$enable_misc = xyes; then
+            SOURCES="$SOURCES $srcdir/src/misc/ios/*.m"
+            have_misc=yes
+        fi
         # Set up files for the locale library
         SOURCES="$SOURCES $srcdir/src/locale/macosx/*.m"
         have_locale=yes
@@ -26484,9 +26509,11 @@ $as_echo "#define SDL_VIDEO_RENDER_OGL_ES2 1" >>confdefs.h
         CheckPTHREAD
         CheckHIDAPI
 
-        SOURCES="$SOURCES $srcdir/src/misc/macosx/*.m"
-        have_misc=yes
-
+        # Set up files for the misc library
+        if test x$enable_misc = xyes; then
+            SOURCES="$SOURCES $srcdir/src/misc/macosx/*.m"
+            have_misc=yes
+        fi
         # Set up files for the locale library
         SOURCES="$SOURCES $srcdir/src/locale/macosx/*.m"
         have_locale=yes
@@ -26673,9 +26700,11 @@ $as_echo "#define SDL_TIMER_UNIX 1" >>confdefs.h
         CheckPTHREAD
         CheckClockGettime
 
-        SOURCES="$SOURCES $srcdir/src/misc/riscos/*.c"
-        have_misc=yes
-
+        # Set up files for the misc library
+        if test x$enable_misc = xyes; then
+            SOURCES="$SOURCES $srcdir/src/misc/riscos/*.c"
+            have_misc=yes
+        fi
         # Set up files for the video library
         if test x$enable_video = xyes; then
 
