@@ -1038,7 +1038,7 @@ GL_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *te
     return 0;
 }
 
-static void
+static int
 SetDrawState(GL_RenderData *data, const SDL_RenderCommand *cmd, const GL_Shader shader)
 {
     const SDL_BlendMode blend = cmd->data.draw.blend;
@@ -1145,9 +1145,11 @@ SetDrawState(GL_RenderData *data, const SDL_RenderCommand *cmd, const GL_Shader 
         }
         data->drawstate.texture_array = texture_array;
     }
+
+    return 0;
 }
 
-static void
+static int
 SetCopyState(GL_RenderData *data, const SDL_RenderCommand *cmd)
 {
     SDL_Texture *texture = cmd->data.draw.texture;
@@ -1183,6 +1185,8 @@ SetCopyState(GL_RenderData *data, const SDL_RenderCommand *cmd)
 
         data->drawstate.texture = texture;
     }
+
+    return 0;
 }
 
 static int
@@ -1244,6 +1248,7 @@ GL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
                     data->drawstate.cliprect_enabled = cmd->data.cliprect.enabled;
                     data->drawstate.cliprect_enabled_dirty = SDL_TRUE;
                 }
+
                 if (SDL_memcmp(&data->drawstate.cliprect, rect, sizeof (SDL_Rect)) != 0) {
                     SDL_memcpy(&data->drawstate.cliprect, rect, sizeof (SDL_Rect));
                     data->drawstate.cliprect_dirty = SDL_TRUE;
@@ -1272,30 +1277,6 @@ GL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
                 }
 
                 data->glClear(GL_COLOR_BUFFER_BIT);
-
-                break;
-            }
-
-            case SDL_RENDERCMD_DRAW_POINTS: {
-                const size_t count = cmd->data.draw.count;
-                const GLfloat *verts = (GLfloat *) (((Uint8 *) vertices) + cmd->data.draw.first);
-                SetDrawState(data, cmd, SHADER_SOLID);
-
-                /* SetDrawState handles glEnableClientState. */
-                data->glVertexPointer(2, GL_FLOAT, sizeof(float) * 2, verts);
-                data->glDrawArrays(GL_POINTS, 0, (GLsizei) count);
-                break;
-            }
-
-            case SDL_RENDERCMD_DRAW_LINES: {
-                const GLfloat *verts = (GLfloat *) (((Uint8 *) vertices) + cmd->data.draw.first);
-                const size_t count = cmd->data.draw.count;
-                SDL_assert(count >= 2);
-                SetDrawState(data, cmd, SHADER_SOLID);
-
-                /* SetDrawState handles glEnableClientState. */
-                data->glVertexPointer(2, GL_FLOAT, sizeof(float) * 2, verts);
-                data->glDrawArrays(GL_LINE_STRIP, 0, (GLsizei) count);
                 break;
             }
 
@@ -1308,42 +1289,113 @@ GL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
             case SDL_RENDERCMD_COPY_EX: /* unused */
                 break;
 
-            case SDL_RENDERCMD_GEOMETRY: {
-                const GLfloat *verts = (GLfloat *) (((Uint8 *) vertices) + cmd->data.draw.first);
-                SDL_Texture *texture = cmd->data.draw.texture;
-                const size_t count = cmd->data.draw.count;
-
-                if (texture) {
-                    SetCopyState(data, cmd);
-                } else {
-                    SetDrawState(data, cmd, SHADER_SOLID);
-                }
-
-                {
-                    Uint32 color = data->drawstate.color;
-                    GLubyte a = (GLubyte)((color >> 24) & 0xFF);
-                    GLubyte r = (GLubyte)((color >> 16) & 0xFF);
-                    GLubyte g = (GLubyte)((color >> 8) & 0xFF);
-                    GLubyte b = (GLubyte)((color >> 0) & 0xFF);
+            case SDL_RENDERCMD_DRAW_LINES: {
+                if (SetDrawState(data, cmd, SHADER_SOLID) == 0) {
+                    size_t count = cmd->data.draw.count;
+                    const GLfloat *verts = (GLfloat *) (((Uint8 *) vertices) + cmd->data.draw.first);
 
                     /* SetDrawState handles glEnableClientState. */
-                    if (texture) {
-                        data->glVertexPointer(2, GL_FLOAT, sizeof(float) * 5, verts + 0);
-                        data->glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(float) * 5, verts + 2);
-                        data->glTexCoordPointer(2, GL_FLOAT, sizeof(float) * 5, verts + 3);
+                    data->glVertexPointer(2, GL_FLOAT, sizeof(float) * 2, verts);
+
+                    if (count > 2) {
+                        /* joined lines cannot be grouped */
+                        data->glDrawArrays(GL_LINE_STRIP, 0, (GLsizei)count);
                     } else {
-                        data->glVertexPointer(2, GL_FLOAT, sizeof(float) * 3, verts + 0);
-                        data->glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(float) * 3, verts + 2);
+                        /* let's group non joined lines */
+                        SDL_RenderCommand *finalcmd = cmd;
+                        SDL_RenderCommand *nextcmd = cmd->next;
+                        SDL_BlendMode thisblend = cmd->data.draw.blend;
+
+                        while (nextcmd != NULL) {
+                            const SDL_RenderCommandType nextcmdtype = nextcmd->command;
+                            if (nextcmdtype != SDL_RENDERCMD_DRAW_LINES) {
+                                break;  /* can't go any further on this draw call, different render command up next. */
+                            } else if (nextcmd->data.draw.count != 2) {
+                                break;  /* can't go any further on this draw call, those are joined lines */
+                            } else if (nextcmd->data.draw.blend != thisblend) {
+                                break;  /* can't go any further on this draw call, different blendmode copy up next. */
+                            } else {
+                                finalcmd = nextcmd;  /* we can combine copy operations here. Mark this one as the furthest okay command. */
+                                count += nextcmd->data.draw.count;
+                            }
+                            nextcmd = nextcmd->next;
+                        }
+
+                        data->glDrawArrays(GL_LINES, 0, (GLsizei)count);
+                        cmd = finalcmd;  /* skip any copy commands we just combined in here. */
                     }
-
-                    data->glDrawArrays(GL_TRIANGLES, 0, (GLsizei) count);
-
-                    /* Restore previously set color when we're done. */
-                    data->glColor4ub(r, g, b, a);
                 }
                 break;
-           }
+            }
 
+            case SDL_RENDERCMD_DRAW_POINTS:
+            case SDL_RENDERCMD_GEOMETRY: {
+                /* as long as we have the same copy command in a row, with the
+                   same texture, we can combine them all into a single draw call. */
+                SDL_Texture *thistexture = cmd->data.draw.texture;
+                SDL_BlendMode thisblend = cmd->data.draw.blend;
+                const SDL_RenderCommandType thiscmdtype = cmd->command;
+                SDL_RenderCommand *finalcmd = cmd;
+                SDL_RenderCommand *nextcmd = cmd->next;
+                size_t count = cmd->data.draw.count;
+                int ret;
+                while (nextcmd != NULL) {
+                    const SDL_RenderCommandType nextcmdtype = nextcmd->command;
+                    if (nextcmdtype != thiscmdtype) {
+                        break;  /* can't go any further on this draw call, different render command up next. */
+                    } else if (nextcmd->data.draw.texture != thistexture || nextcmd->data.draw.blend != thisblend) {
+                        break;  /* can't go any further on this draw call, different texture/blendmode copy up next. */
+                    } else {
+                        finalcmd = nextcmd;  /* we can combine copy operations here. Mark this one as the furthest okay command. */
+                        count += nextcmd->data.draw.count;
+                    }
+                    nextcmd = nextcmd->next;
+                }
+
+                if (thistexture) {
+                    ret = SetCopyState(data, cmd);
+                } else {
+                    ret = SetDrawState(data, cmd, SHADER_SOLID);
+                }
+
+                if (ret == 0) {
+                    const GLfloat *verts = (GLfloat *) (((Uint8 *) vertices) + cmd->data.draw.first);
+                    int op = GL_TRIANGLES; /* SDL_RENDERCMD_GEOMETRY */
+                    if (thiscmdtype == SDL_RENDERCMD_DRAW_POINTS) {
+                        op = GL_POINTS;
+                    }
+
+                    if (thiscmdtype == SDL_RENDERCMD_DRAW_POINTS) {
+                        /* SetDrawState handles glEnableClientState. */
+                        data->glVertexPointer(2, GL_FLOAT, sizeof(float) * 2, verts);
+                    } else {
+                        /* SetDrawState handles glEnableClientState. */
+                        if (thistexture) {
+                            data->glVertexPointer(2, GL_FLOAT, sizeof(float) * 5, verts + 0);
+                            data->glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(float) * 5, verts + 2);
+                            data->glTexCoordPointer(2, GL_FLOAT, sizeof(float) * 5, verts + 3);
+                        } else {
+                            data->glVertexPointer(2, GL_FLOAT, sizeof(float) * 3, verts + 0);
+                            data->glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(float) * 3, verts + 2);
+                        }
+                    }
+
+                    data->glDrawArrays(op, 0, (GLsizei) count);
+
+                    /* Restore previously set color when we're done. */
+                    if (thiscmdtype != SDL_RENDERCMD_DRAW_POINTS) {
+                        Uint32 color = data->drawstate.color;
+                        GLubyte a = (GLubyte)((color >> 24) & 0xFF);
+                        GLubyte r = (GLubyte)((color >> 16) & 0xFF);
+                        GLubyte g = (GLubyte)((color >> 8) & 0xFF);
+                        GLubyte b = (GLubyte)((color >> 0) & 0xFF);
+                        data->glColor4ub(r, g, b, a);
+                    }
+                }
+
+                cmd = finalcmd;  /* skip any copy commands we just combined in here. */
+                break;
+            }
 
             case SDL_RENDERCMD_NO_OP:
                 break;
