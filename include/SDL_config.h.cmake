@@ -493,6 +493,12 @@
 #cmakedefine SDL_FILESYSTEM_VITA @SDL_FILESYSTEM_VITA@
 #cmakedefine SDL_FILESYSTEM_PSP @SDL_FILESYSTEM_PSP@
 
+/* Enable misc subsystem */
+#cmakedefine SDL_MISC_DUMMY @SDL_MISC_DUMMY@
+
+/* Enable locale subsystem */
+#cmakedefine SDL_LOCALE_DUMMY @SDL_LOCALE_DUMMY@
+
 /* Enable assembly routines */
 #cmakedefine SDL_ASSEMBLY_ROUTINES @SDL_ASSEMBLY_ROUTINES@
 #cmakedefine SDL_ALTIVEC_BLITTERS @SDL_ALTIVEC_BLITTERS@
