@@ -823,6 +823,7 @@ enable_threads
 enable_timers
 enable_file
 enable_misc
+enable_locale
 enable_loadso
 enable_cpuinfo
 enable_assembly
@@ -1601,6 +1602,7 @@ Optional Features:
   --enable-timers         Enable the timer subsystem [default=yes]
   --enable-file           Enable the file subsystem [default=yes]
   --enable-misc           Enable the misc subsystem [default=yes]
+  --enable-locale         Enable the locale subsystem [default=yes]
   --enable-loadso         Enable the shared object loading subsystem
                           [default=yes]
   --enable-cpuinfo        Enable the cpuinfo subsystem [default=yes]
@@ -18116,6 +18118,20 @@ $as_echo "#define SDL_MISC_DISABLED 1" >>confdefs.h
 else
     SUMMARY_modules="${SUMMARY_modules} misc"
 fi
+# Check whether --enable-locale was given.
+if test "${enable_locale+set}" = set; then :
+  enableval=$enable_locale;
+else
+  enable_locale=yes
+fi
+
+if test x$enable_locale != xyes; then
+
+$as_echo "#define SDL_LOCALE_DISABLED 1" >>confdefs.h
+
+else
+    SUMMARY_modules="${SUMMARY_modules} locale"
+fi
 # Check whether --enable-threads was given.
 if test "${enable_threads+set}" = set; then :
   enableval=$enable_threads;
@@ -25839,10 +25855,11 @@ $as_echo "#define SDL_VIDEO_DRIVER_ANDROID 1" >>confdefs.h
             SOURCES="$SOURCES $srcdir/src/misc/unix/*.c"
             have_misc=yes
         fi
-
-        SOURCES="$SOURCES $srcdir/src/locale/unix/*.c"
-        have_locale=yes
-
+        # Set up files for the locale library
+        if test x$enable_locale = xyes; then
+            SOURCES="$SOURCES $srcdir/src/locale/unix/*.c"
+            have_locale=yes
+        fi
         # Set up files for the audio library
         if test x$enable_audio = xyes; then
           case $ARCH in
@@ -26060,9 +26077,10 @@ $as_echo "#define SDL_TIMER_UNIX 1" >>confdefs.h
             have_misc=yes
         fi
         # Use the Windows locale APIs.
-        SOURCES="$SOURCES $srcdir/src/locale/windows/*.c"
-        have_locale=yes
-
+        if test x$enable_locale = xyes; then
+            SOURCES="$SOURCES $srcdir/src/locale/windows/*.c"
+            have_locale=yes
+        fi
         # Set up files for the video library
         if test x$enable_video = xyes; then
 
@@ -26351,9 +26369,10 @@ $as_echo "#define SDL_FILESYSTEM_HAIKU 1" >>confdefs.h
             have_misc=yes
         fi
         # Set up files for the locale library
-        SOURCES="$SOURCES $srcdir/src/locale/haiku/*.cc"
-        have_locale=yes
-
+        if test x$enable_locale = xyes; then
+            SOURCES="$SOURCES $srcdir/src/locale/haiku/*.cc"
+            have_locale=yes
+        fi
         # The Haiku platform requires special setup.
         SOURCES="$srcdir/src/main/haiku/*.cc $SOURCES"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lroot -lbe -lmedia -lgame -ldevice -ltextencoding"
@@ -26379,9 +26398,10 @@ $as_echo "#define SDL_FILESYSTEM_HAIKU 1" >>confdefs.h
             have_misc=yes
         fi
         # Set up files for the locale library
-        SOURCES="$SOURCES $srcdir/src/locale/macosx/*.m"
-        have_locale=yes
-
+        if test x$enable_locale = xyes; then
+            SOURCES="$SOURCES $srcdir/src/locale/macosx/*.m"
+            have_locale=yes
+        fi
         # Set up files for the audio library
         if test x$enable_audio = xyes; then
 
@@ -26515,9 +26535,10 @@ $as_echo "#define SDL_VIDEO_RENDER_OGL_ES2 1" >>confdefs.h
             have_misc=yes
         fi
         # Set up files for the locale library
-        SOURCES="$SOURCES $srcdir/src/locale/macosx/*.m"
-        have_locale=yes
-
+        if test x$enable_locale = xyes; then
+            SOURCES="$SOURCES $srcdir/src/locale/macosx/*.m"
+            have_locale=yes
+        fi
         # Set up files for the audio library
         if test x$enable_audio = xyes; then
 
@@ -26683,8 +26704,10 @@ $as_echo "#define SDL_TIMER_UNIX 1" >>confdefs.h
             have_timers=yes
         fi
         # Set up files for the locale library
-        SOURCES="$SOURCES $srcdir/src/locale/emscripten/*.c"
-        have_locale=yes
+        if test x$enable_locale = xyes; then
+            SOURCES="$SOURCES $srcdir/src/locale/emscripten/*.c"
+            have_locale=yes
+        fi
         ;;
     *-*-riscos*)
         ARCH=riscos
@@ -26757,8 +26780,10 @@ $as_echo "#define SDL_TIMER_UNIX 1" >>confdefs.h
             SOURCES="$SOURCES $srcdir/src/core/os2/geniconv/*.c"
         fi
         # Use the Unix locale APIs.
-        SOURCES="$SOURCES $srcdir/src/locale/unix/*.c"
-        have_locale=yes
+        if test x$enable_locale = xyes; then
+            SOURCES="$SOURCES $srcdir/src/locale/unix/*.c"
+            have_locale=yes
+        fi
         # Set up files for the video library
         if test x$enable_video = xyes; then
 
@@ -26856,9 +26881,19 @@ INSTALL_SDL2_CONFIG=$enable_sdl2_config
 # Verify that we have all the platform specific files we need
 
 if test x$have_misc != xyes; then
+    if test x$enable_misc = xyes; then
+
+$as_echo "#define SDL_MISC_DUMMY 1" >>confdefs.h
+
+    fi
     SOURCES="$SOURCES $srcdir/src/misc/dummy/*.c"
 fi
 if test x$have_locale != xyes; then
+    if test x$enable_locale = xyes; then
+
+$as_echo "#define SDL_LOCALE_DUMMY 1" >>confdefs.h
+
+    fi
     SOURCES="$SOURCES $srcdir/src/locale/dummy/*.c"
 fi
 if test x$have_joystick != xyes; then
@@ -26904,7 +26939,7 @@ fi
 if test x$have_filesystem != xyes; then
     if test x$enable_filesystem = xyes; then
 
-$as_echo "#define SDL_FILESYSTEM_DISABLED 1" >>confdefs.h
+$as_echo "#define SDL_FILESYSTEM_DUMMY 1" >>confdefs.h
 
     fi
     SOURCES="$SOURCES $srcdir/src/filesystem/dummy/*.c"
