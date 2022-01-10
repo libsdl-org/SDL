@@ -585,7 +585,7 @@ pointer_handle_axis_common_v1(struct SDL_WaylandInput *input,
                 y = 0 - (float)wl_fixed_to_double(value);
                 break;
             case WL_POINTER_AXIS_HORIZONTAL_SCROLL:
-                x = 0 - (float)wl_fixed_to_double(value);
+                x = (float)wl_fixed_to_double(value);
                 y = 0;
                 break;
             default:
@@ -629,7 +629,7 @@ pointer_handle_axis_common(struct SDL_WaylandInput *input, SDL_bool discrete,
                      * processed a discrete axis event before so we ignore it */
                     break;
                 }
-                input->pointer_curr_axis_info.x = 0 - (float)wl_fixed_to_double(value);
+                input->pointer_curr_axis_info.x = (float)wl_fixed_to_double(value);
                 break;
         }
     }
