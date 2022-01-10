@@ -1614,6 +1614,7 @@ extern DECLSPEC int SDLCALL SDL_RenderCopyExF(SDL_Renderer * renderer,
  *
  * \since This function is available since SDL 2.0.18.
  *
+ * \sa SDL_RenderGeometryRaw
  * \sa SDL_Vertex
  */
 extern DECLSPEC int SDLCALL SDL_RenderGeometry(SDL_Renderer *renderer,
