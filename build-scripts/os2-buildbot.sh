@@ -12,7 +12,6 @@ if [ -z "$WATCOM" ]; then
     echo "This is often something like '/usr/local/share/watcom'" 1>&2
     exit 1
 fi
-
 export PATH="$WATCOM/binl:$PATH"
 
 ZIPFILE="$1"
@@ -31,8 +30,8 @@ rm -f $ZIPFILE
 wmake -f Makefile.os2
 rm -rf $ZIPDIR
 mkdir -p $ZIPDIR
-chmod a+r SDL2.lib SDL2.dll
-mv SDL2.lib SDL2.dll $ZIPDIR/
+chmod 644 SDL2.dll SDL2.lib SDL2test.lib
+mv SDL2.dll SDL2.lib SDL2test.lib $ZIPDIR/
 cp -R include $ZIPDIR/
 zip -9r "buildbot/$ZIPFILE" $ZIPDIR
 

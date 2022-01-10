@@ -1212,7 +1212,7 @@ PSP_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *verti
                         .shadeModel = GU_FLAT
                     };
                     TextureActivate(cmd->data.draw.texture);
-                    PSP_SetBlendState(renderer, &state);
+                    PSP_SetBlendState(data, &state);
                     sceGuDrawArray(GU_TRIANGLES, GU_TEXTURE_32BITF|GU_COLOR_8888|GU_VERTEX_32BITF|GU_TRANSFORM_2D, count, 0, verts);
                 }
                 break;

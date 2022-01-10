@@ -66,12 +66,12 @@ include(${SDL2_SOURCE_DIR}/cmake/sdlchecks.cmake)
 # set SDL_BINARY_AGE and SDL_INTERFACE_AGE to 0.
 set(SDL_MAJOR_VERSION 2)
 set(SDL_MINOR_VERSION 0)
-set(SDL_MICRO_VERSION 19)
-set(SDL_INTERFACE_AGE 1)
-set(SDL_BINARY_AGE 19)
+set(SDL_MICRO_VERSION 20)
+set(SDL_INTERFACE_AGE 2)
+set(SDL_BINARY_AGE 20)
 set(SDL_VERSION "${SDL_MAJOR_VERSION}.${SDL_MINOR_VERSION}.${SDL_MICRO_VERSION}")
 # the following should match the versions in Xcode project file:
-set(DYLIB_CURRENT_VERSION 19.0.0)
+set(DYLIB_CURRENT_VERSION 19.2.0)
 set(DYLIB_COMPATIBILITY_VERSION 1.0.0)
 
 # Set defaults preventing destination file conflicts
@@ -2754,7 +2754,6 @@ if(NOT WINDOWS_STORE)
   add_library(SDL2::SDL2main ALIAS SDL2main)
   target_include_directories(SDL2main BEFORE PRIVATE "${SDL2_BINARY_DIR}/include")
   target_include_directories(SDL2main PUBLIC "$<BUILD_INTERFACE:${SDL2_SOURCE_DIR}/include>" $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}> $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/SDL2>)
-  set(_INSTALL_LIBS "SDL2main")
   if (NOT ANDROID)
     set_target_properties(SDL2main PROPERTIES DEBUG_POSTFIX "${SDL_CMAKE_DEBUG_POSTFIX}")
   endif()
@@ -2800,7 +2799,6 @@ if(SDL_SHARED)
     endif()
     set_target_properties(SDL2 PROPERTIES STATIC_LIBRARY_FLAGS "/NODEFAULTLIB")
   endif()
-  set(_INSTALL_LIBS "SDL2" ${_INSTALL_LIBS})
   target_link_libraries(SDL2 PRIVATE ${EXTRA_LIBS} ${EXTRA_LDFLAGS})
   target_include_directories(SDL2 BEFORE PRIVATE "${SDL2_BINARY_DIR}/include")
   target_include_directories(SDL2 PUBLIC "$<BUILD_INTERFACE:${SDL2_SOURCE_DIR}/include>;$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>;$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/SDL2>")
@@ -2832,7 +2830,6 @@ if(SDL_STATIC)
   endif()
   # TODO: Win32 platforms keep the same suffix .lib for import and static
   # libraries - do we need to consider this?
-  set(_INSTALL_LIBS "SDL2-static" ${_INSTALL_LIBS})
   target_link_libraries(SDL2-static PRIVATE ${EXTRA_LIBS} ${EXTRA_LDFLAGS})
   target_include_directories(SDL2-static BEFORE PRIVATE "${SDL2_BINARY_DIR}/include")
   target_include_directories(SDL2-static PUBLIC "$<BUILD_INTERFACE:${SDL2_SOURCE_DIR}/include>" $<INSTALL_INTERFACE:include> $<INSTALL_INTERFACE:include/SDL2>)
@@ -2854,10 +2851,26 @@ if(SDL_TEST)
 endif()
 
 ##### Installation targets #####
-install(TARGETS ${_INSTALL_LIBS} EXPORT SDL2Targets
-  LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-  ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-  RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
+if(SDL_SHARED)
+  install(TARGETS SDL2 EXPORT SDL2Targets
+    LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+    ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+    RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
+endif()
+
+if(NOT WINDOWS_STORE)
+  install(TARGETS SDL2main EXPORT SDL2mainTargets
+    LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+    ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+    RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
+endif()
+
+if(SDL_STATIC)
+  install(TARGETS SDL2-static EXPORT SDL2staticTargets
+    LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+    ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+    RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
+endif()
 
 ##### Export files #####
 if (WINDOWS AND NOT MINGW)
@@ -2872,11 +2885,30 @@ write_basic_package_version_file("${CMAKE_BINARY_DIR}/SDL2ConfigVersion.cmake"
   COMPATIBILITY AnyNewerVersion
 )
 
-install(EXPORT SDL2Targets
-  FILE SDL2Targets.cmake
-  NAMESPACE SDL2::
-  DESTINATION ${PKG_PREFIX}
-)
+if(SDL_SHARED)
+  install(EXPORT SDL2Targets
+    FILE SDL2Targets.cmake
+    NAMESPACE SDL2::
+    DESTINATION ${PKG_PREFIX}
+  )
+endif()
+
+if(NOT WINDOWS_STORE)
+  install(EXPORT SDL2mainTargets
+    FILE SDL2mainTargets.cmake
+    NAMESPACE SDL2::
+    DESTINATION ${PKG_PREFIX}
+  )
+endif()
+
+if(SDL_STATIC)
+  install(EXPORT SDL2staticTargets
+    FILE SDL2staticTargets.cmake
+    NAMESPACE SDL2::
+    DESTINATION ${PKG_PREFIX}
+  )
+endif()
+
 install(
   FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/SDL2Config.cmake

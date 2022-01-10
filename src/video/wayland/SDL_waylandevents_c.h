@@ -36,6 +36,8 @@ typedef struct {
     SDL_bool is_initialized;
 
     SDL_bool is_key_down;
+    uint32_t wl_press_time; // Key press time as reported by the Wayland API
+    uint32_t sdl_press_time; // Key press time expressed in SDL ticks
     uint32_t next_repeat_ms;
     uint32_t scancode;
     char text[8];

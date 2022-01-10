@@ -39,7 +39,7 @@
 #
 
 # Base version of SDL, used for packaging purposes
-$SDLVersion = "2.0.19"
+$SDLVersion = "2.0.20"
 
 # Gets the .bat file that sets up an MSBuild environment, given one of
 # Visual Studio's, "PlatformToolset"s.

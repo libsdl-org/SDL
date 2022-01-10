@@ -184,6 +184,7 @@ static int OS2_JoystickInit(void)
 		joyPortClose(&hJoyPort);
 		return SDL_SetError("Could not read joystick port.");
 	}
+	maxdevs = 0;
 	if (stGameParms.useA != 0) maxdevs++;
 	if (stGameParms.useB != 0) maxdevs++;
 	if (maxdevs > MAX_JOYSTICKS) maxdevs = MAX_JOYSTICKS;
@@ -708,10 +709,18 @@ static int joyGetEnv(struct _joycfg * joydata)
 	while (*joyenv == ' ' && *joyenv != 0) joyenv++; /* jump spaces... */
 
 	/* If the string name starts with '... get if fully */
-	if (*joyenv == '\'') joyenv += joyGetData(++joyenv,joydata->name,'\'',sizeof(joydata->name));
+	if (*joyenv == '\'') {
+		joyenv++;
+		joyenv += joyGetData(joyenv,joydata->name,'\'',sizeof(joydata->name));
+	}
 	/* If not, get it until the next space */
-	else if (*joyenv == '\"') joyenv += joyGetData(++joyenv,joydata->name,'\"',sizeof(joydata->name));
-	else joyenv += joyGetData(joyenv,joydata->name,' ',sizeof(joydata->name));
+	else if (*joyenv == '\"') {
+		joyenv++;
+		joyenv += joyGetData(joyenv,joydata->name,'\"',sizeof(joydata->name));
+	}
+	else {
+		joyenv += joyGetData(joyenv,joydata->name, ' ',sizeof(joydata->name));
+	}
 
 	/* Now get the number of axes */
 	while (*joyenv == ' ' && *joyenv != 0) joyenv++; /* jump spaces... */

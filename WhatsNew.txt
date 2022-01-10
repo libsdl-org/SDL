@@ -2,6 +2,22 @@
 This is a list of major changes in SDL's version history.
 
 ---------------------------------------------------------------------------
+2.0.20:
+---------------------------------------------------------------------------
+
+General:
+* SDL_RenderGeometryRaw() takes a pointer to SDL_Color, not int. You can cast color data in SDL_PIXELFORMAT_RGBA32 format (SDL_PIXELFORMAT_ABGR8888 on little endian systems) for this parameter.
+* Improved accuracy of horizontal and vertical line drawing when using OpenGL or OpenGLES
+* Added the hint SDL_HINT_RENDER_LINE_METHOD to control the method of line drawing used, to select speed, correctness, and compatibility.
+
+Windows:
+* Fixed size of custom cursors
+
+Linux:
+* Fixed hotplug controller detection, broken in 2.0.18
+
+
+---------------------------------------------------------------------------
 2.0.18:
 ---------------------------------------------------------------------------
 
