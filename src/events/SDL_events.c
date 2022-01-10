@@ -808,7 +808,7 @@ SDL_FlushEvents(Uint32 minType, Uint32 maxType)
 }
 
 /* Run the system dependent event loops */
-void
+static void
 SDL_PumpEventsInternal(SDL_bool push_sentinel)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
