@@ -527,6 +527,14 @@ if test x$enable_file != xyes; then
 else
     SUMMARY_modules="${SUMMARY_modules} file"
 fi
+AC_ARG_ENABLE(misc,
+[AS_HELP_STRING([--enable-misc], [Enable the misc subsystem [default=yes]])],
+              , enable_misc=yes)
+if test x$enable_misc != xyes; then
+    AC_DEFINE(SDL_MISC_DISABLED, 1, [ ])
+else
+    SUMMARY_modules="${SUMMARY_modules} misc"
+fi
 AC_ARG_ENABLE(loadso,
 [AS_HELP_STRING([--enable-loadso], [Enable the shared object loading subsystem [default=yes]])],
               , enable_loadso=yes)
@@ -3715,8 +3723,11 @@ case "$host" in
         CheckRPATH
         CheckVivanteVideo
 
-        SOURCES="$SOURCES $srcdir/src/misc/unix/*.c"
-        have_misc=yes
+        # Set up files for the misc library
+        if test x$enable_misc = xyes; then
+            SOURCES="$SOURCES $srcdir/src/misc/unix/*.c"
+            have_misc=yes
+        fi
 
         SOURCES="$SOURCES $srcdir/src/locale/unix/*.c"
         have_locale=yes
@@ -3898,8 +3909,11 @@ case "$host" in
 
         # Set up the core platform files
         SOURCES="$SOURCES $srcdir/src/core/windows/*.c"
-        SOURCES="$SOURCES $srcdir/src/misc/windows/*.c"
-        have_misc=yes
+        # Set up files for the misc library
+        if test x$enable_misc = xyes; then
+            SOURCES="$SOURCES $srcdir/src/misc/windows/*.c"
+            have_misc=yes
+        fi
         # Use the Windows locale APIs.
         SOURCES="$SOURCES $srcdir/src/locale/windows/*.c"
         have_locale=yes
@@ -4086,10 +4100,11 @@ dnl BeOS support removed after SDL 2.0.1. Haiku still works.  --ryan.
             SOURCES="$SOURCES $srcdir/src/filesystem/haiku/*.cc"
             have_filesystem=yes
         fi
-
-        SOURCES="$SOURCES $srcdir/src/misc/haiku/*.cc"
-        have_misc=yes
-
+        # Set up files for the misc library
+        if test x$enable_misc = xyes; then
+            SOURCES="$SOURCES $srcdir/src/misc/haiku/*.cc"
+            have_misc=yes
+        fi
         # Set up files for the locale library
         SOURCES="$SOURCES $srcdir/src/locale/haiku/*.cc"
         have_locale=yes
@@ -4113,9 +4128,11 @@ dnl BeOS support removed after SDL 2.0.1. Haiku still works.  --ryan.
         CheckVulkan
         CheckPTHREAD
 
-        SOURCES="$SOURCES $srcdir/src/misc/ios/*.m"
-        have_misc=yes
-
+        # Set up files for the misc library
+        if test x$enable_misc = xyes; then
+            SOURCES="$SOURCES $srcdir/src/misc/ios/*.m"
+            have_misc=yes
+        fi
         # Set up files for the locale library
         SOURCES="$SOURCES $srcdir/src/locale/macosx/*.m"
         have_locale=yes
@@ -4225,9 +4242,11 @@ dnl BeOS support removed after SDL 2.0.1. Haiku still works.  --ryan.
         CheckPTHREAD
         CheckHIDAPI
 
-        SOURCES="$SOURCES $srcdir/src/misc/macosx/*.m"
-        have_misc=yes
-
+        # Set up files for the misc library
+        if test x$enable_misc = xyes; then
+            SOURCES="$SOURCES $srcdir/src/misc/macosx/*.m"
+            have_misc=yes
+        fi
         # Set up files for the locale library
         SOURCES="$SOURCES $srcdir/src/locale/macosx/*.m"
         have_locale=yes
@@ -4386,9 +4405,11 @@ dnl BeOS support removed after SDL 2.0.1. Haiku still works.  --ryan.
         CheckPTHREAD
         CheckClockGettime
 
-        SOURCES="$SOURCES $srcdir/src/misc/riscos/*.c"
-        have_misc=yes
-
+        # Set up files for the misc library
+        if test x$enable_misc = xyes; then
+            SOURCES="$SOURCES $srcdir/src/misc/riscos/*.c"
+            have_misc=yes
+        fi
         # Set up files for the video library
         if test x$enable_video = xyes; then
             AC_DEFINE(SDL_VIDEO_DRIVER_RISCOS, 1, [ ])
