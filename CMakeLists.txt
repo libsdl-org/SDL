@@ -370,6 +370,10 @@ foreach(_SUB ${SDL_SUBSYSTEMS})
   option(SDL_${_OPT} "Enable the ${_SUB} subsystem" ${SDL_${_OPT}_ENABLED_BY_DEFAULT})
 endforeach()
 
+# Allow some projects to be built conditionally.
+set_option(SDL2_DISABLE_SDL2MAIN   "Disable building/installation of SDL2main" OFF)
+set_option(SDL2_DISABLE_UNINSTALL  "Disable uninstallation of SDL2" OFF)
+
 option_string(SDL_ASSERTIONS "Enable internal sanity checks (auto/disabled/release/enabled/paranoid)" "auto")
 #set_option(SDL_DEPENDENCY_TRACKING "Use gcc -MMD -MT dependency tracking" ON)
 set_option(SDL_LIBC                "Use the system C library" ${OPT_DEF_LIBC})
@@ -1786,8 +1790,11 @@ elseif(WINDOWS)
   if(MINGW OR CYGWIN)
     list(APPEND EXTRA_LIBS mingw32)
     list(APPEND EXTRA_LDFLAGS "-mwindows")
-    set(SDL_CFLAGS "${SDL_CFLAGS} -Dmain=SDL_main")
-    list(APPEND SDL_LIBS "-lmingw32" "-lSDL2main" "-mwindows")
+    list(APPEND SDL_LIBS "-lmingw32" "-mwindows")
+    if(NOT SDL2_DISABLE_SDL2MAIN)
+      set(SDL_CFLAGS "${SDL_CFLAGS} -Dmain=SDL_main")
+      list(APPEND SDL_LIBS "-lSDL2main")
+    endif(NOT SDL2_DISABLE_SDL2MAIN)
   endif()
 
 elseif(APPLE)
@@ -2818,8 +2825,8 @@ endif()
 # Ensure that the extra cflags are used at compile time
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${EXTRA_CFLAGS}")
 
-# Always build SDLmain
-if(NOT WINDOWS_STORE)
+if(NOT WINDOWS_STORE AND NOT SDL2_DISABLE_SDL2MAIN)
+  # Build SDLmain
   add_library(SDL2main STATIC ${SDLMAIN_SOURCES})
   # alias target for in-tree builds
   add_library(SDL2::SDL2main ALIAS SDL2main)
@@ -2929,7 +2936,7 @@ if(SDL_SHARED)
     RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
 endif()
 
-if(NOT WINDOWS_STORE)
+if(NOT WINDOWS_STORE AND NOT SDL2_DISABLE_SDL2MAIN)
   install(TARGETS SDL2main EXPORT SDL2mainTargets
     LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
     ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
@@ -2964,7 +2971,7 @@ if(SDL_SHARED)
   )
 endif()
 
-if(NOT WINDOWS_STORE)
+if(NOT WINDOWS_STORE AND NOT SDL2_DISABLE_SDL2MAIN)
   install(EXPORT SDL2mainTargets
     FILE SDL2mainTargets.cmake
     NAMESPACE SDL2::
@@ -3030,6 +3037,7 @@ endif()
 
 ##### Uninstall target #####
 
+if(NOT SDL2_DISABLE_UNINSTALL)
 if(NOT TARGET uninstall)
   configure_file(
       "${CMAKE_CURRENT_SOURCE_DIR}/cmake_uninstall.cmake.in"
@@ -3039,3 +3047,4 @@ if(NOT TARGET uninstall)
   add_custom_target(uninstall
       COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
 endif()
+endif(NOT SDL2_DISABLE_UNINSTALL)
