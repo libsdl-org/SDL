@@ -4588,7 +4588,7 @@ if test x$have_threads != xyes; then
 fi
 if test x$have_timers != xyes; then
     if test x$enable_timers = xyes; then
-        AC_DEFINE(SDL_TIMERS_DISABLED, 1, [ ])
+        AC_DEFINE(SDL_TIMER_DUMMY, 1, [ ])
     fi
     SOURCES="$SOURCES $srcdir/src/timer/dummy/*.c"
 fi
