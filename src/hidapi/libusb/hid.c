@@ -31,9 +31,24 @@
 #include "SDL_thread.h"
 #include "SDL_mutex.h"
 
-#if defined(HAVE__WCSDUP) && !defined(HAVE_WCSDUP)
+#ifndef HAVE_WCSDUP
+#ifdef HAVE__WCSDUP
 #define wcsdup _wcsdup
+#else
+#define wcsdup _dupwcs
+static wchar_t *_dupwcs(const wchar_t *src)
+{
+    wchar_t *dst = NULL;
+    if (src) {
+        size_t len = SDL_wcslen(src) + 1;
+        len *= sizeof(wchar_t);
+        dst = (wchar_t *) malloc(len);
+        if (dst) memcpy(dst, src, len);
+    }
+    return dst;
+}
 #endif
+#endif /* HAVE_WCSDUP */
 
 #include <libusb.h>
 #include <locale.h> /* setlocale */
