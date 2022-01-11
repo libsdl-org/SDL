@@ -1170,6 +1170,8 @@ macro(CheckHIDAPI)
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${LIBUSB_CFLAGS}")
         if(HIDAPI_ONLY_LIBUSB)
           list(APPEND EXTRA_LIBS ${LIBUSB_LIBS})
+        elseif(OS2)
+          set(SDL_LIBUSB_DYNAMIC "\"usb100.dll\"")
         else()
           # libusb is loaded dynamically, so don't add it to EXTRA_LIBS
           FindLibraryAndSONAME("usb-1.0")
