@@ -40,6 +40,9 @@
 #ifndef MAC_OS_X_VERSION_10_13
 #define NSAppKitVersionNumber10_12 1504
 #endif
+#if (IOGRAPHICSTYPES_REV < 40)
+#define kDisplayModeNativeFlag 0x02000000
+#endif
 
 
 static void
