@@ -26931,7 +26931,7 @@ fi
 if test x$have_timers != xyes; then
     if test x$enable_timers = xyes; then
 
-$as_echo "#define SDL_TIMERS_DISABLED 1" >>confdefs.h
+$as_echo "#define SDL_TIMER_DUMMY 1" >>confdefs.h
 
     fi
     SOURCES="$SOURCES $srcdir/src/timer/dummy/*.c"

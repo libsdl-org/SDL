@@ -208,7 +208,7 @@ SDL_InitSubSystem(Uint32 flags)
 
     /* Initialize the timer subsystem */
     if ((flags & SDL_INIT_TIMER)){
-#if !SDL_TIMERS_DISABLED
+#if !SDL_TIMERS_DISABLED && !SDL_TIMER_DUMMY
         if (SDL_PrivateShouldInitSubsystem(SDL_INIT_TIMER)) {
             if (SDL_TimerInit() < 0) {
                 goto quit_and_error;
@@ -402,7 +402,7 @@ SDL_QuitSubSystem(Uint32 flags)
     }
 #endif
 
-#if !SDL_TIMERS_DISABLED
+#if !SDL_TIMERS_DISABLED && !SDL_TIMER_DUMMY
     if ((flags & SDL_INIT_TIMER)) {
         if (SDL_PrivateShouldQuitSubsystem(SDL_INIT_TIMER)) {
             SDL_TimerQuit();
