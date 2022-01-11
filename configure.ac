@@ -4600,7 +4600,7 @@ if test x$have_filesystem != xyes; then
 fi
 if test x$have_loadso != xyes; then
     if test x$enable_loadso = xyes; then
-        AC_DEFINE(SDL_LOADSO_DISABLED, 1, [ ])
+        AC_DEFINE(SDL_LOADSO_DUMMY, 1, [ ])
     fi
     SOURCES="$SOURCES $srcdir/src/loadso/dummy/*.c"
 fi

@@ -26947,7 +26947,7 @@ fi
 if test x$have_loadso != xyes; then
     if test x$enable_loadso = xyes; then
 
-$as_echo "#define SDL_LOADSO_DISABLED 1" >>confdefs.h
+$as_echo "#define SDL_LOADSO_DUMMY 1" >>confdefs.h
 
     fi
     SOURCES="$SOURCES $srcdir/src/loadso/dummy/*.c"
