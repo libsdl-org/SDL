@@ -186,7 +186,7 @@ SDL_ThreadID(void)
 int
 SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
 {
-#if __NACL__ || __RISCOS__
+#if __NACL__ || __RISCOS__ || __OS2__
     /* FIXME: Setting thread priority does not seem to be supported in NACL */
     return 0;
 #else
