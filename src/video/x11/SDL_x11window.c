@@ -392,6 +392,7 @@ X11_CreateWindow(_THIS, SDL_Window * window)
     long compositor = 1;
     Atom _NET_WM_PID;
     long fevent = 0;
+    const char *hint = NULL;
 
 #if SDL_VIDEO_OPENGL_GLX || SDL_VIDEO_OPENGL_EGL
     const char *forced_visual_id = SDL_GetHint(SDL_HINT_VIDEO_X11_WINDOW_VISUALID);
@@ -591,6 +592,8 @@ X11_CreateWindow(_THIS, SDL_Window * window)
         wintype_name = "_NET_WM_WINDOW_TYPE_TOOLTIP";
     } else if (window->flags & SDL_WINDOW_POPUP_MENU) {
         wintype_name = "_NET_WM_WINDOW_TYPE_POPUP_MENU";
+    } else if ( ((hint = SDL_GetHint(SDL_HINT_X11_WINDOW_TYPE)) != NULL) && *hint ) {
+        wintype_name = hint;
     } else {
         wintype_name = "_NET_WM_WINDOW_TYPE_NORMAL";
         compositor = 1;  /* disable compositing for "normal" windows */
