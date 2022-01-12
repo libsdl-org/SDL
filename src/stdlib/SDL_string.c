@@ -32,9 +32,7 @@
 /* Visual Studio 2013 tries to link with _vacopy in the C runtime. Newer versions do an inline assignment */
 #undef va_copy
 #define va_copy(dst, src)   dst = src
-#endif
-
-#if __GNUC__ == 2
+#elif defined(__GNUC__) && (__GNUC__ < 3)
 #define va_copy(to, from)   __va_copy(to, from)
 #endif
 
