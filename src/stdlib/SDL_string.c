@@ -34,6 +34,10 @@
 #define va_copy(dst, src)   dst = src
 #endif
 
+#if __GNUC__ == 2
+#define va_copy(to, from)   __va_copy(to, from)
+#endif
+
 #if !defined(HAVE_VSSCANF) || !defined(HAVE_STRTOL) || !defined(HAVE_STRTOUL) || !defined(HAVE_STRTOD) || !defined(HAVE_STRTOLL) || !defined(HAVE_STRTOULL)
 #define SDL_isupperhex(X)   (((X) >= 'A') && ((X) <= 'F'))
 #define SDL_islowerhex(X)   (((X) >= 'a') && ((X) <= 'f'))
