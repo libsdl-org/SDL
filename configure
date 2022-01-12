@@ -17954,7 +17954,12 @@ SOURCES="$SOURCES $srcdir/src/locale/*.c"
 if test "${enable_atomic+set}" = set; then :
   enableval=$enable_atomic;
 else
-  enable_atomic=yes
+  case "$host" in
+        *-*-emscripten*)
+                enable_atomic=no;;
+        *)
+                enable_atomic=yes;;
+  esac
 fi
 
 if test x$enable_atomic != xyes; then

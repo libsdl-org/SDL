@@ -415,9 +415,18 @@ SOURCES="$SOURCES $srcdir/src/locale/*.c"
 
 dnl Enable/disable various subsystems of the SDL library
 
+case "$host" in
+    *-*-emscripten*)
+        default_atomic=no
+        ;;
+    *)
+        default_atomic=yes
+        ;;
+esac
+
 AC_ARG_ENABLE(atomic,
 [AS_HELP_STRING([--enable-atomic], [Enable the atomic operations subsystem [default=yes]])],
-              , enable_atomic=yes)
+              , enable_atomic=$default_atomic)
 if test x$enable_atomic != xyes; then
     AC_DEFINE(SDL_ATOMIC_DISABLED, 1, [ ])
 else
