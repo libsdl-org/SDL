@@ -2439,7 +2439,6 @@ elseif(PSP)
 
 elseif(OS2)
   list(APPEND EXTRA_CFLAGS "-DOS2EMX_PLAIN_CHAR")
-  list(APPEND EXTRA_CFLAGS "-DBUILD_SDL")
 
   file(GLOB CORE_SOURCES ${SDL2_SOURCE_DIR}/src/core/os2/*.c)
   set(SOURCE_FILES ${SOURCE_FILES} ${CORE_SOURCES})
@@ -2858,6 +2857,13 @@ if(SDL_SHARED)
       VERSION ${LT_VERSION}
       SOVERSION ${LT_MAJOR}
       OUTPUT_NAME "SDL2-${LT_RELEASE}")
+  elseif(OS2)
+    set_target_properties(SDL2 PROPERTIES
+        DEFINE_SYMBOL BUILD_SDL)
+    set_target_properties(SDL2 PROPERTIES
+      VERSION ${LT_VERSION}
+      SOVERSION ${LT_MAJOR}
+      OUTPUT_NAME "SDL2")
   else()
     if(WINDOWS OR CYGWIN)
       set_target_properties(SDL2 PROPERTIES
