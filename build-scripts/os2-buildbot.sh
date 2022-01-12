@@ -12,7 +12,7 @@ if [ -z "$WATCOM" ]; then
     echo "This is often something like '/usr/local/share/watcom'" 1>&2
     exit 1
 fi
-export PATH="$WATCOM/binl:$PATH"
+export PATH="$WATCOM/binl64:$PATH"
 
 ZIPFILE="$1"
 if [ -z $1 ]; then
