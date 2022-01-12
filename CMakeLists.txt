@@ -2544,6 +2544,16 @@ endif()
 # so it always adds a dummy, without checking, if it was actually requested.
 # This leads to missing internal references on building, since the
 # src/X/*.c does not get included.
+if(NOT HAVE_SDL_AUDIO)
+  set(SDL_AUDIO_DRIVER_DUMMY 1)
+  file(GLOB AUDIO_SOURCES ${SDL2_SOURCE_DIR}/src/audio/dummy/*.c)
+  set(SOURCE_FILES ${SOURCE_FILES} ${AUDIO_SOURCES})
+endif()
+if(NOT HAVE_SDL_VIDEO)
+  set(SDL_VIDEO_DRIVER_DUMMY 1)
+  file(GLOB VIDEO_SOURCES ${SDL2_SOURCE_DIR}/src/video/dummy/*.c)
+  set(SOURCE_FILES ${SOURCE_FILES} ${VIDEO_SOURCES})
+endif()
 if(NOT HAVE_SDL_JOYSTICK)
   set(SDL_JOYSTICK_DUMMY 1)
   if(SDL_JOYSTICK AND NOT APPLE) # results in unresolved symbols on OSX
