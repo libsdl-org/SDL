@@ -2857,17 +2857,13 @@ if(SDL_SHARED)
       VERSION ${LT_VERSION}
       SOVERSION ${LT_MAJOR}
       OUTPUT_NAME "SDL2-${LT_RELEASE}")
-  elseif(OS2)
-    set_target_properties(SDL2 PROPERTIES
-        DEFINE_SYMBOL BUILD_SDL)
-    set_target_properties(SDL2 PROPERTIES
-      VERSION ${LT_VERSION}
-      SOVERSION ${LT_MAJOR}
-      OUTPUT_NAME "SDL2")
   else()
     if(WINDOWS OR CYGWIN)
       set_target_properties(SDL2 PROPERTIES
         DEFINE_SYMBOL DLL_EXPORT)
+    elseif(OS2)
+      set_target_properties(SDL2 PROPERTIES
+        DEFINE_SYMBOL BUILD_SDL)
     endif()
     set_target_properties(SDL2 PROPERTIES
       VERSION ${SDL_VERSION}
