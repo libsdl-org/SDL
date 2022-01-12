@@ -87,7 +87,7 @@ static id keyboard_disconnect_observer = nil;
 static void OnGCKeyboardConnected(GCKeyboard *keyboard) API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0))
 {
     keyboard_connected = SDL_TRUE;
-    keyboard.keyboardInput.keyChangedHandler = ^(GCKeyboardInput *keyboard, GCControllerButtonInput *key, GCKeyCode keyCode, BOOL pressed)
+    keyboard.keyboardInput.keyChangedHandler = ^(GCKeyboardInput *kbrd, GCControllerButtonInput *key, GCKeyCode keyCode, BOOL pressed)
     {
         SDL_SendKeyboardKey(pressed ? SDL_PRESSED : SDL_RELEASED, (SDL_Scancode)keyCode);
     };
@@ -225,15 +225,15 @@ static void OnGCMouseConnected(GCMouse *mouse) API_AVAILABLE(macos(11.0), ios(14
     };
 
     int auxiliary_button = SDL_BUTTON_X1;
-    for (GCControllerButtonInput *button in mouse.mouseInput.auxiliaryButtons) {
-        button.pressedChangedHandler = ^(GCControllerButtonInput *button, float value, BOOL pressed)
+    for (GCControllerButtonInput *btn in mouse.mouseInput.auxiliaryButtons) {
+        btn.pressedChangedHandler = ^(GCControllerButtonInput *button, float value, BOOL pressed)
         {
             OnGCMouseButtonChanged(mouseID, auxiliary_button, pressed);
         };
         ++auxiliary_button;
     }
 
-    mouse.mouseInput.mouseMovedHandler = ^(GCMouseInput *mouse, float deltaX, float deltaY)
+    mouse.mouseInput.mouseMovedHandler = ^(GCMouseInput *mouseInput, float deltaX, float deltaY)
     {
         if (SDL_GCMouseRelativeMode()) {
             SDL_SendMouseMotion(SDL_GetMouseFocus(), mouseID, 1, (int)deltaX, -(int)deltaY);
