@@ -86,7 +86,7 @@ UIKit_ShowMessageBoxAlertController(const SDL_MessageBoxData *messageboxdata, in
 
         action = [UIAlertAction actionWithTitle:@(sdlButton->text)
                                 style:style
-                                handler:^(UIAlertAction *action) {
+                                handler:^(UIAlertAction *alertAction) {
                                     clickedindex = (int)(sdlButton - messageboxdata->buttons);
                                 }];
         [alert addAction:action];

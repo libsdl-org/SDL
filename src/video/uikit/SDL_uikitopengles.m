@@ -162,8 +162,8 @@ UIKit_GL_CreateContext(_THIS, SDL_Window * window)
         }
 
         if (_this->gl_config.share_with_current_context) {
-            EAGLContext *context = (__bridge EAGLContext *) SDL_GL_GetCurrentContext();
-            sharegroup = context.sharegroup;
+            EAGLContext *currContext = (__bridge EAGLContext *) SDL_GL_GetCurrentContext();
+            sharegroup = currContext.sharegroup;
         }
 
         if (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
