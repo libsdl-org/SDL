@@ -4567,6 +4567,18 @@ AC_SUBST([INSTALL_SDL2_CONFIG], [$enable_sdl2_config])
 
 # Verify that we have all the platform specific files we need
 
+if test x$have_audio != xyes; then
+    if test x$enable_audio = xyes; then
+        AC_DEFINE(SDL_AUDIO_DRIVER_DUMMY, 1, [ ])
+    fi
+    SOURCES="$SOURCES $srcdir/src/audio/dummy/*.c"
+fi
+if test x$have_video != xyes; then
+    if test x$enable_video = xyes; then
+        AC_DEFINE(SDL_VIDEO_DRIVER_DUMMY, 1, [ ])
+    fi
+    SOURCES="$SOURCES $srcdir/src/video/dummy/*.c"
+fi
 if test x$have_misc != xyes; then
     if test x$enable_misc = xyes; then
         AC_DEFINE(SDL_MISC_DUMMY, 1, [ ])
