@@ -1298,6 +1298,7 @@ CheckDiskAudio()
         AC_DEFINE(SDL_AUDIO_DRIVER_DISK, 1, [ ])
         SOURCES="$SOURCES $srcdir/src/audio/disk/*.c"
         SUMMARY_audio="${SUMMARY_audio} disk"
+        have_audio=yes
     fi
 }
 
@@ -1311,6 +1312,7 @@ CheckDummyAudio()
         AC_DEFINE(SDL_AUDIO_DRIVER_DUMMY, 1, [ ])
         SOURCES="$SOURCES $srcdir/src/audio/dummy/*.c"
         SUMMARY_audio="${SUMMARY_audio} dummy"
+        have_audio=yes
     fi
 }
 
@@ -1684,8 +1686,10 @@ CheckNativeClient()
         SDLMAIN_SOURCES="$srcdir/src/main/nacl/*.c"
         SOURCES="$SOURCES $srcdir/src/audio/nacl/*.c"
         SUMMARY_audio="${SUMMARY_audio} nacl"
+        have_audio=yes
         SOURCES="$SOURCES $srcdir/src/video/nacl/*.c"
         SUMMARY_video="${SUMMARY_video} nacl opengles2"
+        have_video=yes
         ],[])
 }
 
@@ -1735,6 +1739,7 @@ CheckRPI()
             SOURCES="$SOURCES $srcdir/src/video/raspberry/*.c"
             AC_DEFINE(SDL_VIDEO_DRIVER_RPI, 1, [ ])
             SUMMARY_video="${SUMMARY_video} rpi"
+            have_video=yes
         fi
     fi
 }
@@ -3659,6 +3664,7 @@ case "$host" in
                     SOURCES="$SOURCES $srcdir/src/core/android/*.c $srcdir/src/video/android/*.c"
                     AC_DEFINE(SDL_VIDEO_DRIVER_ANDROID, 1, [ ])
                     SUMMARY_video="${SUMMARY_video} android"
+                    have_video=yes
                 fi
                 ;;
             *-*-linux*)         ARCH=linux ;;
@@ -4218,6 +4224,8 @@ dnl BeOS support removed after SDL 2.0.1. Haiku still works.  --ryan.
         AC_DEFINE(SDL_VIDEO_RENDER_OGL_ES, 1, [ ])
         AC_DEFINE(SDL_VIDEO_RENDER_OGL_ES2, 1, [ ])
         SOURCES="$SOURCES $srcdir/src/video/uikit/*.m"
+        SUMMARY_video="${SUMMARY_video} uikit"
+        have_video=yes
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lm -liconv -lobjc"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,AVFoundation"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,AudioToolbox"
