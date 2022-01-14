@@ -83,7 +83,7 @@
 #endif
 
 #if 1
-#define DEBUG_GAMEPAD_MAPPINGS 1
+#define DEBUG_GAMEPAD_MAPPING 1
 #endif
 
 typedef enum
@@ -1357,7 +1357,7 @@ HandleHat(SDL_Joystick *stick, int hatidx, int axis, int value)
         if (value <= correct->minimum[axis]) {
             correct->minimum[axis] = value;
             value = 0;
-        } else if (!correct->use_deadzones || value < correct->minimum[axis] / 2) {
+        } else if (!correct->use_deadzones || value < correct->minimum[axis] / 3) {
             value = 0;
         } else {
             value = 1;
@@ -1366,7 +1366,7 @@ HandleHat(SDL_Joystick *stick, int hatidx, int axis, int value)
         if (value >= correct->maximum[axis]) {
             correct->maximum[axis] = value;
             value = 2;
-        } else if (!correct->use_deadzones || value > correct->maximum[axis] / 2) {
+        } else if (!correct->use_deadzones || value > correct->maximum[axis] / 3) {
             value = 2;
         } else {
             value = 1;
@@ -1716,7 +1716,7 @@ LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
         if (item->mapping) {
             SDL_memcpy(out, item->mapping, sizeof(*out));
 #ifdef DEBUG_GAMEPAD_MAPPING
-            SDL_Log("Prior mapping for device %d: %s", device_index, out);
+            SDL_Log("Prior mapping for device %d", device_index);
 #endif
             return SDL_TRUE;
         } else {
@@ -2076,7 +2076,7 @@ LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
         SDL_memcpy(item->mapping, out, sizeof(*out));
     }
 #ifdef DEBUG_GAMEPAD_MAPPING
-    SDL_Log("Generated mapping for device %d: %s", device_index, out);
+    SDL_Log("Generated mapping for device %d", device_index);
 #endif
 
     return SDL_TRUE;
