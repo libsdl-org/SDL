@@ -497,7 +497,7 @@ static Sint16 FilterRightThumb(Sint16 axis)
 static Sint16 FilterTrigger(Sint16 axis)
 {
     if (axis <= XINPUT_GAMEPAD_TRIGGER_THRESHOLD) {
-        return 0;
+        return SDL_MIN_SINT16;
     }
     return axis;
 }
