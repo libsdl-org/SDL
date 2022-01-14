@@ -85,6 +85,7 @@ struct joystick_hwdata
     SDL_bool has_hat[4];
     struct hat_axis_correct
     {
+        SDL_bool use_deadzones;
         int minimum[2];
         int maximum[2];
     } hat_correct[4];
