@@ -873,10 +873,28 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_DEVICE "SDL_JOYSTICK_DEVICE"
 
  /**
+  *  \brief  A variable controlling whether joysticks on Linux will always treat 'hat' axis inputs (ABS_HAT0X - ABS_HAT3Y) as 8-way digital hats without checking whether they may be analog.
+  *
+  *  This variable can be set to the following values:
+  *    "0"       - Only map hat axis inputs to digital hat outputs if the input axes appear to actually be digital (the default)
+  *    "1"       - Always handle the input axes numbered ABS_HAT0X to ABS_HAT3Y as digital hats
+  */
+#define SDL_HINT_LINUX_DIGITAL_HATS "SDL_LINUX_DIGITAL_HATS"
+
+ /**
+  *  \brief  A variable controlling whether digital hats on Linux will apply deadzones to their underlying input axes or use unfiltered values.
+  *
+  *  This variable can be set to the following values:
+  *    "0"       - Return digital hat values based on unfiltered input axis values
+  *    "1"       - Return digital hat values with deadzones on the input axes taken into account (the default)
+  */
+#define SDL_HINT_LINUX_HAT_DEADZONES "SDL_LINUX_HAT_DEADZONES"
+
+ /**
   *  \brief  A variable controlling whether to use the classic /dev/input/js* joystick interface or the newer /dev/input/event* joystick interface on Linux
   *
   *  This variable can be set to the following values:
-  *    "0"       - Use /dev/input/event*
+  *    "0"       - Use /dev/input/event* (the default)
   *    "1"       - Use /dev/input/js*
   *
   *  By default the /dev/input/event* interfaces are used
