@@ -40,12 +40,6 @@
 /* Define this if you want to log all packets from the controller */
 /*#define DEBUG_XBOX_PROTOCOL*/
 
-/* Define this if you want deadzone filtering done at this level.
- * This introduces several issues, so this is disabled by default:
- * https://github.com/libsdl-org/SDL/issues/5227
- */
-/* #define ENABLE_AXIS_FILTERING */
-
 #define CONTROLLER_NEGOTIATION_TIMEOUT_MS   300
 #define CONTROLLER_PREPARE_INPUT_TIMEOUT_MS 50
 
@@ -484,36 +478,6 @@ HIDAPI_DriverXboxOne_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Jo
     return SDL_Unsupported();
 }
 
-static Sint16 FilterLeftThumb(Sint16 axis)
-{
-#ifdef ENABLE_AXIS_FILTERING
-    if (axis <= XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE && axis >= -XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE) {
-        return 0;
-    }
-#endif
-    return axis;
-}
-
-static Sint16 FilterRightThumb(Sint16 axis)
-{
-#ifdef ENABLE_AXIS_FILTERING
-    if (axis <= XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE && axis >= -XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE) {
-        return 0;
-    }
-#endif
-    return axis;
-}
-
-static Sint16 FilterTrigger(Sint16 axis)
-{
-#ifdef ENABLE_AXIS_FILTERING
-    if (axis <= XINPUT_GAMEPAD_TRIGGER_THRESHOLD) {
-        return SDL_MIN_SINT16;
-    }
-#endif
-    return axis;
-}
-
 static void
 HIDAPI_DriverXboxOne_HandleStatePacket(SDL_Joystick *joystick, SDL_DriverXboxOne_Context *ctx, Uint8 *data, int size)
 {
@@ -648,7 +612,7 @@ HIDAPI_DriverXboxOne_HandleStatePacket(SDL_Joystick *joystick, SDL_DriverXboxOne
     if (axis == -32768 && size == 30 && (data[22] & 0x80) != 0) {
         axis = 32767;
     }
-    SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_TRIGGERLEFT, FilterTrigger(axis));
+    SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_TRIGGERLEFT, axis);
 
     axis = ((int)*(Sint16*)(&data[8]) * 64) - 32768;
     if (axis == -32768 && size == 30 && (data[22] & 0x40) != 0) {
@@ -657,16 +621,16 @@ HIDAPI_DriverXboxOne_HandleStatePacket(SDL_Joystick *joystick, SDL_DriverXboxOne
     if (axis == 32704) {
         axis = 32767;
     }
-    SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_TRIGGERRIGHT, FilterTrigger(axis));
+    SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_TRIGGERRIGHT, axis);
 
     axis = *(Sint16*)(&data[10]);
-    SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_LEFTX, FilterLeftThumb(axis));
+    SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_LEFTX, axis);
     axis = *(Sint16*)(&data[12]);
-    SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_LEFTY, FilterLeftThumb(~axis));
+    SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_LEFTY, ~axis);
     axis = *(Sint16*)(&data[14]);
-    SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_RIGHTX, FilterRightThumb(axis));
+    SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_RIGHTX, axis);
     axis = *(Sint16*)(&data[16]);
-    SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_RIGHTY, FilterRightThumb(~axis));
+    SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_RIGHTY, ~axis);
 
     SDL_memcpy(ctx->last_state, data, SDL_min(size, sizeof(ctx->last_state)));
 }
@@ -866,22 +830,22 @@ HIDAPI_DriverXboxOneBluetooth_HandleStatePacket(SDL_Joystick *joystick, SDL_Driv
     if (axis == 32704) {
         axis = 32767;
     }
-    SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_TRIGGERLEFT, FilterTrigger(axis));
+    SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_TRIGGERLEFT, axis);
 
     axis = ((int)*(Sint16*)(&data[11]) * 64) - 32768;
     if (axis == 32704) {
         axis = 32767;
     }
-    SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_TRIGGERRIGHT, FilterTrigger(axis));
+    SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_TRIGGERRIGHT, axis);
 
     axis = (int)*(Uint16*)(&data[1]) - 0x8000;
-    SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_LEFTX, FilterLeftThumb(axis));
+    SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_LEFTX, axis);
     axis = (int)*(Uint16*)(&data[3]) - 0x8000;
-    SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_LEFTY, FilterLeftThumb(axis));
+    SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_LEFTY, axis);
     axis = (int)*(Uint16*)(&data[5]) - 0x8000;
-    SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_RIGHTX, FilterRightThumb(axis));
+    SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_RIGHTX, axis);
     axis = (int)*(Uint16*)(&data[7]) - 0x8000;
-    SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_RIGHTY, FilterRightThumb(axis));
+    SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_RIGHTY, axis);
 
     SDL_memcpy(ctx->last_state, data, SDL_min(size, sizeof(ctx->last_state)));
 }
