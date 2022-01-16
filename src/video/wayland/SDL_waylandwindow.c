@@ -224,14 +224,16 @@ handle_configure_xdg_toplevel(void *data,
              * us a completely stateless, sizeless configure, with which we have
              * to enforce our own state anyway.
              */
-            if (width != 0 && height != 0) {
+            if (width != 0 && height != 0 && (window->w != width || window->h != height)) {
                 window->w = width;
                 window->h = height;
+                wind->needs_resize_event = SDL_TRUE;
             }
 
             /* This part is good though. */
-            if (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
+            if ((window->flags & SDL_WINDOW_ALLOW_HIGHDPI) && wind->scale_factor != driverdata->scale_factor) {
                 wind->scale_factor = driverdata->scale_factor;
+                wind->needs_resize_event = SDL_TRUE;
             }
 
             return;
@@ -284,8 +286,11 @@ handle_configure_xdg_toplevel(void *data,
         }
 
         /* Store this now so the xdg_surface configure knows what to resize to */
-        window->w = width;
-        window->h = height;
+        if (window->w != width || window->h != height) {
+            window->w = width;
+            window->h = height;
+            wind->needs_resize_event = SDL_TRUE;
+        }
     } else {
         /* For fullscreen, foolishly do what the compositor says. If it's wrong,
          * don't blame us, we were explicitly instructed to do this.
@@ -293,14 +298,16 @@ handle_configure_xdg_toplevel(void *data,
          * UPDATE: Nope, sure enough a compositor sends 0,0. This is a known bug:
          * https://bugs.kde.org/show_bug.cgi?id=444962
          */
-        if (width != 0 && height != 0) {
+        if (width != 0 && height != 0 && (window->w != width || window->h != height)) {
             window->w = width;
             window->h = height;
+            wind->needs_resize_event = SDL_TRUE;
         }
 
         /* This part is good though. */
-        if (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
+        if ((window->flags & SDL_WINDOW_ALLOW_HIGHDPI) && wind->scale_factor != driverdata->scale_factor) {
             wind->scale_factor = driverdata->scale_factor;
+            wind->needs_resize_event = SDL_TRUE;
         }
     }
 }
@@ -330,6 +337,7 @@ decoration_frame_configure(struct libdecor_frame *frame,
 
     enum libdecor_window_state window_state;
     int width, height;
+    float scale_factor = wind->scale_factor;
 
     SDL_bool focused = SDL_FALSE;
     SDL_bool fullscreen = SDL_FALSE;
@@ -399,7 +407,7 @@ decoration_frame_configure(struct libdecor_frame *frame,
 
         /* This part is good though. */
         if (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
-            wind->scale_factor = driverdata->scale_factor;
+            scale_factor = driverdata->scale_factor;
         }
     } else if (!(window->flags & SDL_WINDOW_RESIZABLE)) {
         width = window->windowed.w;
@@ -427,7 +435,7 @@ decoration_frame_configure(struct libdecor_frame *frame,
     }
 
     /* Do the resize on the SDL side (this will set window->w/h)... */
-    Wayland_HandleResize(window, width, height, wind->scale_factor);
+    Wayland_HandleResize(window, width, height, scale_factor);
     wind->shell_surface.libdecor.initial_configure_seen = SDL_TRUE;
 
     /* ... then commit the changes on the libdecor side. */
@@ -1341,14 +1349,18 @@ Wayland_HandleResize(SDL_Window *window, int width, int height, float scale)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
     SDL_VideoData *viddata = data->waylandData;
-
     struct wl_region *region;
-    window->w = 0;
-    window->h = 0;
-    SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, width, height);
-    window->w = width;
-    window->h = height;
-    data->scale_factor = scale;
+
+    if (data->needs_resize_event || window->w != width || window->h != height || data->scale_factor != scale) {
+        /* We may have already updated window w/h (or only adjusted scale factor),
+         * so we must override the deduplication logic in the video core */
+        window->w = 0;
+        window->h = 0;
+        SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, width, height);
+        window->w = width;
+        window->h = height;
+        data->needs_resize_event = SDL_FALSE;
+    }
 
     wl_surface_set_buffer_scale(data->surface, data->scale_factor);
 
