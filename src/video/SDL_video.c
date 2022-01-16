@@ -2273,12 +2273,14 @@ SDL_SetWindowSize(SDL_Window * window, int w, int h)
             SDL_UpdateFullscreenMode(window, SDL_TRUE);
         }
     } else {
+        int old_w = window->w;
+        int old_h = window->h;
         window->w = w;
         window->h = h;
         if (_this->SetWindowSize) {
             _this->SetWindowSize(_this, window);
         }
-        if (window->w == w && window->h == h) {
+        if (window->w != old_w || window->h != old_h) {
             /* We didn't get a SDL_WINDOWEVENT_RESIZED event (by design) */
             SDL_OnWindowResized(window);
         }
