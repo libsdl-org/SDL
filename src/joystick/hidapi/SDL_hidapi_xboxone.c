@@ -40,6 +40,12 @@
 /* Define this if you want to log all packets from the controller */
 /*#define DEBUG_XBOX_PROTOCOL*/
 
+/* Define this if you want deadzone filtering done at this level.
+ * This introduces several issues, so this is disabled by default:
+ * https://github.com/libsdl-org/SDL/issues/5227
+ */
+/* #define ENABLE_AXIS_FILTERING */
+
 #define CONTROLLER_NEGOTIATION_TIMEOUT_MS   300
 #define CONTROLLER_PREPARE_INPUT_TIMEOUT_MS 50
 
@@ -480,25 +486,31 @@ HIDAPI_DriverXboxOne_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Jo
 
 static Sint16 FilterLeftThumb(Sint16 axis)
 {
+#ifdef ENABLE_AXIS_FILTERING
     if (axis <= XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE && axis >= -XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE) {
         return 0;
     }
+#endif
     return axis;
 }
 
 static Sint16 FilterRightThumb(Sint16 axis)
 {
+#ifdef ENABLE_AXIS_FILTERING
     if (axis <= XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE && axis >= -XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE) {
         return 0;
     }
+#endif
     return axis;
 }
 
 static Sint16 FilterTrigger(Sint16 axis)
 {
+#ifdef ENABLE_AXIS_FILTERING
     if (axis <= XINPUT_GAMEPAD_TRIGGER_THRESHOLD) {
         return SDL_MIN_SINT16;
     }
+#endif
     return axis;
 }
 
