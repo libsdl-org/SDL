@@ -177,6 +177,12 @@ static SDL_bool HIDAPI_DriverPS4_CanRumble(Uint16 vendor_id, Uint16 product_id)
         (product_id == USB_PRODUCT_RAZER_PANTHERA || product_id == USB_PRODUCT_RAZER_PANTHERA_EVO)) {
         return SDL_FALSE;
     }
+
+    /* The Victrix Pro FS v2 will hang on reboot if we send output reports */
+    if (vendor_id == USB_VENDOR_PDP && product_id == USB_PRODUCT_VICTRIX_FS_PRO_V2) {
+        return SDL_FALSE;
+    }
+
     return SDL_TRUE;
 }
 

@@ -54,6 +54,7 @@
 #define USB_PRODUCT_SONY_DS4_DONGLE                         0x0ba0
 #define USB_PRODUCT_SONY_DS4_SLIM                           0x09cc
 #define USB_PRODUCT_SONY_DS5                                0x0ce6
+#define USB_PRODUCT_VICTRIX_FS_PRO_V2                       0x0207
 #define USB_PRODUCT_XBOX360_XUSB_CONTROLLER                 0x02a1    /* XUSB driver software PID */
 #define USB_PRODUCT_XBOX360_WIRED_CONTROLLER                0x028e
 #define USB_PRODUCT_XBOX360_WIRELESS_RECEIVER               0x0719
