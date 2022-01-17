@@ -1023,8 +1023,7 @@ HIDAPI_DriverSwitch_ActuallyRumbleJoystick(SDL_DriverSwitch_Context *ctx, Uint16
     ctx->m_bRumbleActive = (low_frequency_rumble || high_frequency_rumble) ? SDL_TRUE : SDL_FALSE;
 
     if (!WriteRumble(ctx)) {
-        SDL_SetError("Couldn't send rumble packet");
-        return -1;
+        return SDL_SetError("Couldn't send rumble packet");
     }
     return 0;
 }

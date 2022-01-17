@@ -1523,8 +1523,7 @@ SDL_OpenAudio(SDL_AudioSpec * desired, SDL_AudioSpec * obtained)
 
     /* SDL_OpenAudio() is legacy and can only act on Device ID #1. */
     if (open_devices[0] != NULL) {
-        SDL_SetError("Audio device is already opened");
-        return -1;
+        return SDL_SetError("Audio device is already opened");
     }
 
     if (obtained) {

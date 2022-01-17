@@ -259,8 +259,7 @@ VITA_CreateWindow(_THIS, SDL_Window * window)
     // Vita can only have one window
     if (Vita_Window != NULL)
     {
-        SDL_SetError("Only one window supported");
-        return -1;
+        return SDL_SetError("Only one window supported");
     }
 
     Vita_Window = window;

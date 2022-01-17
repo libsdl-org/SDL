@@ -442,8 +442,8 @@ TextureSpillLRU(PSP_RenderData* data, size_t wanted) {
         }
         LRUTargetRemove(data, lru);
     } else {
-        SDL_SetError("Could not spill more VRAM to system memory. VRAM : %dKB,(%dKB), wanted %dKB", vmemavail()/1024, vlargestblock()/1024, wanted/1024);
-        return -1; //Asked to spill but there nothing to spill
+        // Asked to spill but there nothing to spill
+        return SDL_SetError("Could not spill more VRAM to system memory. VRAM : %dKB,(%dKB), wanted %dKB", vmemavail()/1024, vlargestblock()/1024, wanted/1024);
     }
     return 0;
 }

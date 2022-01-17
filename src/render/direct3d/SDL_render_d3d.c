@@ -584,8 +584,7 @@ D3D_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
     D3D_TextureData *texturedata = (D3D_TextureData *) texture->driverdata;
 
     if (!texturedata) {
-        SDL_SetError("Texture is not currently available");
-        return -1;
+        return SDL_SetError("Texture is not currently available");
     }
 
     if (D3D_UpdateTextureRep(data->device, &texturedata->texture, rect->x, rect->y, rect->w, rect->h, pixels, pitch) < 0) {
@@ -621,8 +620,7 @@ D3D_UpdateTextureYUV(SDL_Renderer * renderer, SDL_Texture * texture,
     D3D_TextureData *texturedata = (D3D_TextureData *) texture->driverdata;
 
     if (!texturedata) {
-        SDL_SetError("Texture is not currently available");
-        return -1;
+        return SDL_SetError("Texture is not currently available");
     }
 
     if (D3D_UpdateTextureRep(data->device, &texturedata->texture, rect->x, rect->y, rect->w, rect->h, Yplane, Ypitch) < 0) {
@@ -647,8 +645,7 @@ D3D_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
     IDirect3DDevice9 *device = data->device;
 
     if (!texturedata) {
-        SDL_SetError("Texture is not currently available");
-        return -1;
+        return SDL_SetError("Texture is not currently available");
     }
 
     texturedata->locked_rect = *rect;
@@ -756,8 +753,7 @@ D3D_SetRenderTargetInternal(SDL_Renderer * renderer, SDL_Texture * texture)
 
     texturedata = (D3D_TextureData *)texture->driverdata;
     if (!texturedata) {
-        SDL_SetError("Texture is not currently available");
-        return -1;
+        return SDL_SetError("Texture is not currently available");
     }
 
     /* Make sure the render target is updated if it was locked and written to */
@@ -942,8 +938,7 @@ SetupTextureState(D3D_RenderData *data, SDL_Texture * texture, LPDIRECT3DPIXELSH
     SDL_assert(*shader == NULL);
 
     if (!texturedata) {
-        SDL_SetError("Texture is not currently available");
-        return -1;
+        return SDL_SetError("Texture is not currently available");
     }
 
     UpdateTextureScaleMode(data, texturedata, 0);

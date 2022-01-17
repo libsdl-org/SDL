@@ -478,8 +478,7 @@ WINRT_InitModes(_THIS)
 
     hr = CreateDXGIFactory1(SDL_IID_IDXGIFactory2, (void **)&dxgiFactory2);
     if (FAILED(hr)) {
-        WIN_SetErrorFromHRESULT(__FUNCTION__ ", CreateDXGIFactory1() failed", hr);
-        return -1;
+        return WIN_SetErrorFromHRESULT(__FUNCTION__ ", CreateDXGIFactory1() failed", hr);
     }
 
     for (int adapterIndex = 0; ; ++adapterIndex) {
@@ -630,14 +629,12 @@ WINRT_CreateWindow(_THIS, SDL_Window * window)
     // Make sure that only one window gets created, at least until multimonitor
     // support is added.
     if (WINRT_GlobalSDLWindow != NULL) {
-        SDL_SetError("WinRT only supports one window");
-        return -1;
+        return SDL_SetError("WinRT only supports one window");
     }
 
     SDL_WindowData *data = new SDL_WindowData;  /* use 'new' here as SDL_WindowData may use WinRT/C++ types */
     if (!data) {
-        SDL_OutOfMemory();
-        return -1;
+        return SDL_OutOfMemory();
     }
     window->driverdata = data;
     data->sdlWindow = window;

@@ -246,8 +246,7 @@ SDL_XINPUT_HapticOpenFromJoystick(SDL_Haptic * haptic, SDL_Joystick * joystick)
         ++index;
     }
 
-    SDL_SetError("Couldn't find joystick in haptic device list");
-    return -1;
+    return SDL_SetError("Couldn't find joystick in haptic device list");
 }
 
 void
