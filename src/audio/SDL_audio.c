@@ -278,11 +278,6 @@ SDL_AudioFlushCapture_Default(_THIS)
 }
 
 static void
-SDL_AudioPrepareToClose_Default(_THIS)
-{                               /* no-op. */
-}
-
-static void
 SDL_AudioCloseDevice_Default(_THIS)
 {                               /* no-op. */
 }
@@ -357,7 +352,6 @@ finish_audio_entry_points_init(void)
     FILL_STUB(GetDeviceBuf);
     FILL_STUB(CaptureFromDevice);
     FILL_STUB(FlushCapture);
-    FILL_STUB(PrepareToClose);
     FILL_STUB(CloseDevice);
     FILL_STUB(LockDevice);
     FILL_STUB(UnlockDevice);
@@ -772,8 +766,6 @@ SDL_RunAudio(void *devicep)
             current_audio.impl.WaitDevice(device);
         }
     }
-
-    current_audio.impl.PrepareToClose(device);
 
     /* Wait for the audio to drain. */
     SDL_Delay(((device->spec.samples * 1000) / device->spec.freq) * 2);
