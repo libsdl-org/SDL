@@ -454,8 +454,7 @@ HIDAPI_DriverGameCube_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *jo
     }
 
     /* Should never get here! */
-    SDL_SetError("Couldn't find joystick");
-    return -1;
+    return SDL_SetError("Couldn't find joystick");
 }
 
 static int

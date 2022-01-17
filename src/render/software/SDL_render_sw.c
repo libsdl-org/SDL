@@ -99,8 +99,7 @@ SW_GetOutputSize(SDL_Renderer * renderer, int *w, int *h)
         return 0;
     }
 
-    SDL_SetError("Software renderer doesn't have an output surface");
-    return -1;
+    return SDL_SetError("Software renderer doesn't have an output surface");
 }
 
 static int

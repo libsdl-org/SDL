@@ -1404,8 +1404,7 @@ int SDL_ConvertPixels(int width, int height,
     }
 #else
     if (SDL_ISPIXELFORMAT_FOURCC(src_format) || SDL_ISPIXELFORMAT_FOURCC(dst_format)) {
-        SDL_SetError("SDL not built with YUV support");
-        return -1;
+        return SDL_SetError("SDL not built with YUV support");
     }
 #endif
 

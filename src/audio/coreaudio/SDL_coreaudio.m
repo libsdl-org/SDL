@@ -1135,8 +1135,7 @@ COREAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     this->hidden->ready_semaphore = NULL;
 
     if ((this->hidden->thread != NULL) && (this->hidden->thread_error != NULL)) {
-        SDL_SetError("%s", this->hidden->thread_error);
-        return -1;
+        return SDL_SetError("%s", this->hidden->thread_error);
     }
 
     return (this->hidden->thread != NULL) ? 0 : -1;

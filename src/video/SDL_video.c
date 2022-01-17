@@ -1879,18 +1879,15 @@ SDL_RecreateWindow(SDL_Window * window, Uint32 flags)
     }
 
     if ((flags & SDL_WINDOW_VULKAN) && (flags & SDL_WINDOW_OPENGL)) {
-        SDL_SetError("Vulkan and OpenGL not supported on same window");
-        return -1;
+        return SDL_SetError("Vulkan and OpenGL not supported on same window");
     }
 
     if ((flags & SDL_WINDOW_METAL) && (flags & SDL_WINDOW_OPENGL)) {
-        SDL_SetError("Metal and OpenGL not supported on same window");
-        return -1;
+        return SDL_SetError("Metal and OpenGL not supported on same window");
     }
 
     if ((flags & SDL_WINDOW_METAL) && (flags & SDL_WINDOW_VULKAN)) {
-        SDL_SetError("Metal and Vulkan not supported on same window");
-        return -1;
+        return SDL_SetError("Metal and Vulkan not supported on same window");
     }
 
     if (need_gl_unload) {
