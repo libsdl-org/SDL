@@ -246,11 +246,6 @@ SDL_AudioThreadDeinit_Default(_THIS)
 }
 
 static void
-SDL_AudioBeginLoopIteration_Default(_THIS)
-{                               /* no-op. */
-}
-
-static void
 SDL_AudioWaitDevice_Default(_THIS)
 {                               /* no-op. */
 }
@@ -346,7 +341,6 @@ finish_audio_entry_points_init(void)
     FILL_STUB(OpenDevice);
     FILL_STUB(ThreadInit);
     FILL_STUB(ThreadDeinit);
-    FILL_STUB(BeginLoopIteration);
     FILL_STUB(WaitDevice);
     FILL_STUB(PlayDevice);
     FILL_STUB(GetDeviceBuf);
@@ -704,7 +698,6 @@ SDL_RunAudio(void *devicep)
 
     /* Loop, filling the audio buffers */
     while (!SDL_AtomicGet(&device->shutdown)) {
-        current_audio.impl.BeginLoopIteration(device);
         data_len = device->callbackspec.size;
 
         /* Fill the current buffer with sound */
@@ -809,8 +802,6 @@ SDL_CaptureAudio(void *devicep)
     while (!SDL_AtomicGet(&device->shutdown)) {
         int still_need;
         Uint8 *ptr;
-
-        current_audio.impl.BeginLoopIteration(device);
 
         if (SDL_AtomicGet(&device->paused)) {
             SDL_Delay(delay);  /* just so we don't cook the CPU. */

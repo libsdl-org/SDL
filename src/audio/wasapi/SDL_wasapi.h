@@ -74,7 +74,6 @@ int WASAPI_ActivateDevice(_THIS, const SDL_bool isrecovery);
 void WASAPI_PlatformThreadInit(_THIS);
 void WASAPI_PlatformThreadDeinit(_THIS);
 void WASAPI_PlatformDeleteActivationHandler(void *handler);
-void WASAPI_BeginLoopIteration(_THIS);
 
 #ifdef __cplusplus
 }
