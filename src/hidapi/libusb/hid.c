@@ -74,12 +74,8 @@ typedef struct _SDL_ThreadBarrier
 
 static int SDL_CreateThreadBarrier(SDL_ThreadBarrier *barrier, Uint32 count)
 {
-	if (barrier == NULL) {
-		return SDL_SetError("barrier must be non-NULL");
-	}
-	if (count == 0) {
-		return SDL_SetError("count must be > 0");
-	}
+	SDL_assert(barrier != NULL);
+	SDL_assert(count != 0);
 
 	barrier->mutex = SDL_CreateMutex();
 	if (barrier->mutex == NULL) {

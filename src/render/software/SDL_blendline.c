@@ -809,7 +809,7 @@ SDL_BlendLine(SDL_Surface * dst, int x1, int y1, int x2, int y2,
     BlendLineFunc func;
 
     if (!dst) {
-        return SDL_SetError("SDL_BlendLine(): Passed NULL destination surface");
+        return SDL_InvalidParamError("SDL_BlendLine(): dst");
     }
 
     func = SDL_CalculateBlendLineFunc(dst->format);

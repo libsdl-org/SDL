@@ -238,7 +238,7 @@ int
 SDL_FillRect(SDL_Surface * dst, const SDL_Rect * rect, Uint32 color)
 {
     if (!dst) {
-        return SDL_SetError("Passed NULL destination surface");
+        return SDL_InvalidParamError("SDL_FillRect(): dst");
     }
 
     /* If 'rect' == NULL, then fill the whole surface */
@@ -306,12 +306,12 @@ SDL_FillRects(SDL_Surface * dst, const SDL_Rect * rects, int count,
     int i;
 
     if (!dst) {
-        return SDL_SetError("Passed NULL destination surface");
+        return SDL_InvalidParamError("SDL_FillRects(): dst");
     }
 
     /* This function doesn't work on surfaces < 8 bpp */
     if (dst->format->BitsPerPixel < 8) {
-        return SDL_SetError("SDL_FillRect(): Unsupported surface format");
+        return SDL_SetError("SDL_FillRects(): Unsupported surface format");
     }
 
     /* Nothing to do */
@@ -321,11 +321,11 @@ SDL_FillRects(SDL_Surface * dst, const SDL_Rect * rects, int count,
 
     /* Perform software fill */
     if (!dst->pixels) {
-        return SDL_SetError("SDL_FillRect(): You must lock the surface");
+        return SDL_SetError("SDL_FillRects(): You must lock the surface");
     }
 
     if (!rects) {
-        return SDL_SetError("SDL_FillRects() passed NULL rects");
+        return SDL_InvalidParamError("SDL_FillRects(): rects");
     }
 
 #if SDL_ARM_NEON_BLITTERS

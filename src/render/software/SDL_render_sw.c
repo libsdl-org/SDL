@@ -977,7 +977,7 @@ SW_CreateRendererForSurface(SDL_Surface * surface)
     SW_RenderData *data;
 
     if (!surface) {
-        SDL_SetError("Can't create renderer for NULL surface");
+        SDL_InvalidParamError("surface");
         return NULL;
     }
 

@@ -73,7 +73,7 @@ SDL_SemTryWait(SDL_sem * sem)
     int retval;
 
     if (!sem) {
-        return SDL_SetError("Passed a NULL semaphore");
+        return SDL_InvalidParamError("sem");
     }
     retval = SDL_MUTEX_TIMEDOUT;
     if (sem_trywait(&sem->sem) == 0) {
@@ -88,7 +88,7 @@ SDL_SemWait(SDL_sem * sem)
     int retval;
 
     if (!sem) {
-        return SDL_SetError("Passed a NULL semaphore");
+        return SDL_InvalidParamError("sem");
     }
 
     do {
@@ -115,7 +115,7 @@ SDL_SemWaitTimeout(SDL_sem * sem, Uint32 timeout)
 #endif
 
     if (!sem) {
-        return SDL_SetError("Passed a NULL semaphore");
+        return SDL_InvalidParamError("sem");
     }
 
     /* Try the easy cases first */
@@ -195,7 +195,7 @@ SDL_SemPost(SDL_sem * sem)
     int retval;
 
     if (!sem) {
-        return SDL_SetError("Passed a NULL semaphore");
+        return SDL_InvalidParamError("sem");
     }
 
     retval = sem_post(&sem->sem);

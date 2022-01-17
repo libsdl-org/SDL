@@ -36,7 +36,7 @@ SDL_LoadObject(const char *sofile)
     LPTSTR tstr;
 
     if (!sofile) {
-        SDL_SetError("NULL sofile");
+        SDL_InvalidParamError("sofile");
         return NULL;
     }
     tstr = WIN_UTF8ToString(sofile);

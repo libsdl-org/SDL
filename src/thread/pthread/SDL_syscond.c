@@ -68,7 +68,7 @@ SDL_CondSignal(SDL_cond * cond)
     int retval;
 
     if (!cond) {
-        return SDL_SetError("Passed a NULL condition variable");
+        return SDL_InvalidParamError("cond");
     }
 
     retval = 0;
@@ -85,7 +85,7 @@ SDL_CondBroadcast(SDL_cond * cond)
     int retval;
 
     if (!cond) {
-        return SDL_SetError("Passed a NULL condition variable");
+        return SDL_InvalidParamError("cond");
     }
 
     retval = 0;
@@ -105,7 +105,7 @@ SDL_CondWaitTimeout(SDL_cond * cond, SDL_mutex * mutex, Uint32 ms)
     struct timespec abstime;
 
     if (!cond) {
-        return SDL_SetError("Passed a NULL condition variable");
+        return SDL_InvalidParamError("cond");
     }
 
 #ifdef HAVE_CLOCK_GETTIME
@@ -148,7 +148,7 @@ int
 SDL_CondWait(SDL_cond * cond, SDL_mutex * mutex)
 {
     if (!cond) {
-        return SDL_SetError("Passed a NULL condition variable");
+        return SDL_InvalidParamError("cond");
     } else if (pthread_cond_wait(&cond->cond, &mutex->id) != 0) {
         return SDL_SetError("pthread_cond_wait() failed");
     }

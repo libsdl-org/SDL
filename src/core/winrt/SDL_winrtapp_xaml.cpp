@@ -115,7 +115,7 @@ SDL_WinRTInitXAMLApp(int (*mainFunction)(int, char **), void * backgroundPanelAs
 
     // Make sure we have a valid XAML element (to draw onto):
     if ( ! backgroundPanelAsIInspectable) {
-        return SDL_SetError("'backgroundPanelAsIInspectable' can't be NULL");
+        return SDL_InvalidParamError("backgroundPanelAsIInspectable");
     }
 
     Platform::Object ^ backgroundPanel = reinterpret_cast<Object ^>((IInspectable *) backgroundPanelAsIInspectable);

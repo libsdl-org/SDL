@@ -144,7 +144,7 @@ SDL_DrawLine(SDL_Surface * dst, int x1, int y1, int x2, int y2, Uint32 color)
     DrawLineFunc func;
 
     if (!dst) {
-        return SDL_SetError("SDL_DrawLine(): Passed NULL destination surface");
+        return SDL_InvalidParamError("SDL_DrawLine(): dst");
     }
 
     func = SDL_CalculateDrawLineFunc(dst->format);
@@ -173,7 +173,7 @@ SDL_DrawLines(SDL_Surface * dst, const SDL_Point * points, int count,
     DrawLineFunc func;
 
     if (!dst) {
-        return SDL_SetError("SDL_DrawLines(): Passed NULL destination surface");
+        return SDL_InvalidParamError("SDL_DrawLines(): dst");
     }
 
     func = SDL_CalculateDrawLineFunc(dst->format);
