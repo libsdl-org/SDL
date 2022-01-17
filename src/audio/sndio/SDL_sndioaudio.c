@@ -357,11 +357,11 @@ SNDIO_DetectDevices(void)
 	SDL_AddAudioDevice(SDL_TRUE, DEFAULT_INPUT_DEVNAME, NULL, (void *) 0x2);
 }
 
-static int
+static SDL_bool
 SNDIO_Init(SDL_AudioDriverImpl * impl)
 {
     if (LoadSNDIOLibrary() < 0) {
-        return 0;
+        return SDL_FALSE;
     }
 
     /* Set the function pointers */
@@ -375,14 +375,14 @@ SNDIO_Init(SDL_AudioDriverImpl * impl)
     impl->Deinitialize = SNDIO_Deinitialize;
     impl->DetectDevices = SNDIO_DetectDevices;
 
-    impl->AllowsArbitraryDeviceNames = 1;
+    impl->AllowsArbitraryDeviceNames = SDL_TRUE;
     impl->HasCaptureSupport = SDL_TRUE;
 
-    return 1;   /* this audio target is available. */
+    return SDL_TRUE;   /* this audio target is available. */
 }
 
 AudioBootStrap SNDIO_bootstrap = {
-    "sndio", "OpenBSD sndio", SNDIO_Init, 0
+    "sndio", "OpenBSD sndio", SNDIO_Init, SDL_FALSE
 };
 
 #endif /* SDL_AUDIO_DRIVER_SNDIO */

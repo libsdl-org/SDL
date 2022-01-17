@@ -84,12 +84,11 @@ typedef struct SDL_AudioDriverImpl
     /* !!! FIXME: add pause(), so we can optimize instead of mixing silence. */
 
     /* Some flags to push duplicate code into the core and reduce #ifdefs. */
-    /* !!! FIXME: these should be SDL_bool */
-    int ProvidesOwnCallbackThread;
-    int HasCaptureSupport;
-    int OnlyHasDefaultOutputDevice;
-    int OnlyHasDefaultCaptureDevice;
-    int AllowsArbitraryDeviceNames;
+    SDL_bool ProvidesOwnCallbackThread;
+    SDL_bool HasCaptureSupport;
+    SDL_bool OnlyHasDefaultOutputDevice;
+    SDL_bool OnlyHasDefaultCaptureDevice;
+    SDL_bool AllowsArbitraryDeviceNames;
 } SDL_AudioDriverImpl;
 
 
@@ -177,8 +176,8 @@ typedef struct AudioBootStrap
 {
     const char *name;
     const char *desc;
-    int (*init) (SDL_AudioDriverImpl * impl);
-    int demand_only;  /* 1==request explicitly, or it won't be available. */
+    SDL_bool (*init) (SDL_AudioDriverImpl * impl);
+    SDL_bool demand_only;  /* 1==request explicitly, or it won't be available. */
 } AudioBootStrap;
 
 /* Not all of these are available in a given build. Use #ifdefs, etc. */

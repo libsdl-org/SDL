@@ -320,16 +320,16 @@ ARTS_Deinitialize(void)
 }
 
 
-static int
+static SDL_bool
 ARTS_Init(SDL_AudioDriverImpl * impl)
 {
     if (LoadARTSLibrary() < 0) {
-        return 0;
+        return SDL_FALSE;
     } else {
         if (SDL_NAME(arts_init) () != 0) {
             UnloadARTSLibrary();
             SDL_SetError("ARTS: arts_init failed (no audio server?)");
-            return 0;
+            return SDL_FALSE;
         }
 
         /* Play a stream so aRts doesn't crash */
@@ -350,14 +350,14 @@ ARTS_Init(SDL_AudioDriverImpl * impl)
     impl->GetDeviceBuf = ARTS_GetDeviceBuf;
     impl->CloseDevice = ARTS_CloseDevice;
     impl->Deinitialize = ARTS_Deinitialize;
-    impl->OnlyHasDefaultOutputDevice = 1;
+    impl->OnlyHasDefaultOutputDevice = SDL_TRUE;
 
-    return 1;   /* this audio target is available. */
+    return SDL_TRUE;   /* this audio target is available. */
 }
 
 
 AudioBootStrap ARTS_bootstrap = {
-    "arts", "Analog RealTime Synthesizer", ARTS_Init, 0
+    "arts", "Analog RealTime Synthesizer", ARTS_Init, SDL_FALSE
 };
 
 #endif /* SDL_AUDIO_DRIVER_ARTS */

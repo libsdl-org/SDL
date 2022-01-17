@@ -268,7 +268,7 @@ aaudio_Deinitialize(void)
     LOGI("End AAUDIO %s", SDL_GetError());
 }
 
-static int
+static SDL_bool
 aaudio_Init(SDL_AudioDriverImpl *impl)
 {
     aaudio_result_t res;
@@ -280,7 +280,7 @@ aaudio_Init(SDL_AudioDriverImpl *impl)
      * See https://github.com/google/oboe/issues/40 for more information.
      */
     if (SDL_GetAndroidSDKVersion() < 27) {
-        return 0;
+        return SDL_FALSE;
     }
 
     SDL_zero(ctx);
@@ -315,12 +315,12 @@ aaudio_Init(SDL_AudioDriverImpl *impl)
 
     /* and the capabilities */
     impl->HasCaptureSupport = SDL_TRUE;
-    impl->OnlyHasDefaultOutputDevice = 1;
-    impl->OnlyHasDefaultCaptureDevice = 1;
+    impl->OnlyHasDefaultOutputDevice = SDL_TRUE;
+    impl->OnlyHasDefaultCaptureDevice = SDL_TRUE;
 
     /* this audio target is available. */
     LOGI("SDL aaudio_Init OK");
-    return 1;
+    return SDL_TRUE;
 
 failure:
     if (ctx.handle) {
@@ -331,11 +331,11 @@ failure:
     }
     ctx.handle = NULL;
     ctx.builder = NULL;
-    return 0;
+    return SDL_FALSE;
 }
 
 AudioBootStrap aaudio_bootstrap = {
-    "AAudio", "AAudio audio driver", aaudio_Init, 0
+    "AAudio", "AAudio audio driver", aaudio_Init, SDL_FALSE
 };
 
 /* Pause (block) all non already paused audio devices by taking their mixer lock */

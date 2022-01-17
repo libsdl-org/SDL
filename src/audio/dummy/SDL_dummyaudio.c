@@ -45,22 +45,22 @@ DUMMYAUDIO_CaptureFromDevice(_THIS, void *buffer, int buflen)
     return buflen;
 }
 
-static int
+static SDL_bool
 DUMMYAUDIO_Init(SDL_AudioDriverImpl * impl)
 {
     /* Set the function pointers */
     impl->OpenDevice = DUMMYAUDIO_OpenDevice;
     impl->CaptureFromDevice = DUMMYAUDIO_CaptureFromDevice;
 
-    impl->OnlyHasDefaultOutputDevice = 1;
-    impl->OnlyHasDefaultCaptureDevice = 1;
+    impl->OnlyHasDefaultOutputDevice = SDL_TRUE;
+    impl->OnlyHasDefaultCaptureDevice = SDL_TRUE;
     impl->HasCaptureSupport = SDL_TRUE;
 
-    return 1;   /* this audio target is available. */
+    return SDL_TRUE;   /* this audio target is available. */
 }
 
 AudioBootStrap DUMMYAUDIO_bootstrap = {
-    "dummy", "SDL dummy audio driver", DUMMYAUDIO_Init, 1
+    "dummy", "SDL dummy audio driver", DUMMYAUDIO_Init, SDL_TRUE
 };
 
 /* vi: set ts=4 sw=4 expandtab: */

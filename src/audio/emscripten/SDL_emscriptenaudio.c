@@ -344,30 +344,29 @@ EMSCRIPTENAUDIO_LockOrUnlockDeviceWithNoMixerLock(SDL_AudioDevice * device)
 {
 }
 
-static int
+static SDL_bool
 EMSCRIPTENAUDIO_Init(SDL_AudioDriverImpl * impl)
 {
-    int available;
-    int capture_available;
+    SDL_bool available, capture_available;
 
     /* Set the function pointers */
     impl->OpenDevice = EMSCRIPTENAUDIO_OpenDevice;
     impl->CloseDevice = EMSCRIPTENAUDIO_CloseDevice;
 
-    impl->OnlyHasDefaultOutputDevice = 1;
+    impl->OnlyHasDefaultOutputDevice = SDL_TRUE;
 
     /* no threads here */
     impl->LockDevice = impl->UnlockDevice = EMSCRIPTENAUDIO_LockOrUnlockDeviceWithNoMixerLock;
-    impl->ProvidesOwnCallbackThread = 1;
+    impl->ProvidesOwnCallbackThread = SDL_TRUE;
 
     /* check availability */
     available = EM_ASM_INT_V({
         if (typeof(AudioContext) !== 'undefined') {
-            return 1;
+            return SDL_TRUE;
         } else if (typeof(webkitAudioContext) !== 'undefined') {
-            return 1;
+            return SDL_TRUE;
         }
-        return 0;
+        return SDL_FALSE;
     });
 
     if (!available) {
@@ -376,11 +375,11 @@ EMSCRIPTENAUDIO_Init(SDL_AudioDriverImpl * impl)
 
     capture_available = available && EM_ASM_INT_V({
         if ((typeof(navigator.mediaDevices) !== 'undefined') && (typeof(navigator.mediaDevices.getUserMedia) !== 'undefined')) {
-            return 1;
+            return SDL_TRUE;
         } else if (typeof(navigator.webkitGetUserMedia) !== 'undefined') {
-            return 1;
+            return SDL_TRUE;
         }
-        return 0;
+        return SDL_FALSE;
     });
 
     impl->HasCaptureSupport = capture_available ? SDL_TRUE : SDL_FALSE;
@@ -390,7 +389,7 @@ EMSCRIPTENAUDIO_Init(SDL_AudioDriverImpl * impl)
 }
 
 AudioBootStrap EMSCRIPTENAUDIO_bootstrap = {
-    "emscripten", "SDL emscripten audio driver", EMSCRIPTENAUDIO_Init, 0
+    "emscripten", "SDL emscripten audio driver", EMSCRIPTENAUDIO_Init, SDL_FALSE
 };
 
 #endif /* SDL_AUDIO_DRIVER_EMSCRIPTEN */

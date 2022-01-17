@@ -133,18 +133,18 @@ NACLAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture) {
     return 0;
 }
 
-static int
+static SDL_bool
 NACLAUDIO_Init(SDL_AudioDriverImpl * impl)
 {
     if (PSGetInstanceId() == 0) {
-        return 0;
+        return SDL_FALSE;
     }
     
     /* Set the function pointers */
     impl->OpenDevice = NACLAUDIO_OpenDevice;
     impl->CloseDevice = NACLAUDIO_CloseDevice;
-    impl->OnlyHasDefaultOutputDevice = 1;
-    impl->ProvidesOwnCallbackThread = 1;
+    impl->OnlyHasDefaultOutputDevice = SDL_TRUE;
+    impl->ProvidesOwnCallbackThread = SDL_TRUE;
     /*
      *    impl->WaitDevice = NACLAUDIO_WaitDevice;
      *    impl->GetDeviceBuf = NACLAUDIO_GetDeviceBuf;
@@ -152,12 +152,12 @@ NACLAUDIO_Init(SDL_AudioDriverImpl * impl)
      *    impl->Deinitialize = NACLAUDIO_Deinitialize;
      */
     
-    return 1;
+    return SDL_TRUE;
 }
 
 AudioBootStrap NACLAUDIO_bootstrap = {
     NACLAUDIO_DRIVER_NAME, "SDL NaCl Audio Driver",
-    NACLAUDIO_Init, 0
+    NACLAUDIO_Init, SDL_FALSE
 };
 
 #endif /* SDL_AUDIO_DRIVER_NACL */

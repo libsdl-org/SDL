@@ -288,11 +288,11 @@ SDL_FS_Deinitialize(void)
 }
 
 
-static int
+static SDL_bool
 SDL_FS_Init(SDL_AudioDriverImpl * impl)
 {
     if (LoadFusionSoundLibrary() < 0) {
-        return 0;
+        return SDL_FALSE;
     } else {
         DirectResult ret;
 
@@ -302,7 +302,7 @@ SDL_FS_Init(SDL_AudioDriverImpl * impl)
             SDL_SetError
                 ("FusionSound: SDL_FS_init failed (FusionSoundInit: %d)",
                  ret);
-            return 0;
+            return SDL_FALSE;
         }
     }
 
@@ -313,14 +313,14 @@ SDL_FS_Init(SDL_AudioDriverImpl * impl)
     impl->GetDeviceBuf = SDL_FS_GetDeviceBuf;
     impl->CloseDevice = SDL_FS_CloseDevice;
     impl->Deinitialize = SDL_FS_Deinitialize;
-    impl->OnlyHasDefaultOutputDevice = 1;
+    impl->OnlyHasDefaultOutputDevice = SDL_TRUE;
 
-    return 1;   /* this audio target is available. */
+    return SDL_TRUE;   /* this audio target is available. */
 }
 
 
 AudioBootStrap FUSIONSOUND_bootstrap = {
-    "fusionsound", "FusionSound", SDL_FS_Init, 0
+    "fusionsound", "FusionSound", SDL_FS_Init, SDL_FALSE
 };
 
 #endif /* SDL_AUDIO_DRIVER_FUSIONSOUND */
