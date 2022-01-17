@@ -691,12 +691,6 @@ WASAPI_ThreadDeinit(_THIS)
     WASAPI_PlatformThreadDeinit(this);
 }
 
-void
-WASAPI_BeginLoopIteration(_THIS)
-{
-    /* no-op. */
-}
-
 static void
 WASAPI_Deinitialize(void)
 {
@@ -727,7 +721,6 @@ WASAPI_Init(SDL_AudioDriverImpl * impl)
     impl->DetectDevices = WASAPI_DetectDevices;
     impl->ThreadInit = WASAPI_ThreadInit;
     impl->ThreadDeinit = WASAPI_ThreadDeinit;
-    impl->BeginLoopIteration = WASAPI_BeginLoopIteration;
     impl->OpenDevice = WASAPI_OpenDevice;
     impl->PlayDevice = WASAPI_PlayDevice;
     impl->WaitDevice = WASAPI_WaitDevice;
