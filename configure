@@ -16999,9 +16999,8 @@ fi
 $as_echo_n "checking for linker option --no-undefined... " >&6; }
 have_no_undefined=no
 case "$host" in
-        *-*-openbsd*)
+    *-*-openbsd*)
         ;;
-
     *)
         save_LDFLAGS="$LDFLAGS"
         LDFLAGS="$LDFLAGS -Wl,--no-undefined"
@@ -17138,7 +17137,7 @@ if test x$enable_libc = xyes; then
 $as_echo "#define HAVE_LIBC 1" >>confdefs.h
 
 
-        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ANSI C header files" >&5
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ANSI C header files" >&5
 $as_echo_n "checking for ANSI C header files... " >&6; }
 if ${ac_cv_header_stdc+:} false; then :
   $as_echo_n "(cached) " >&6
@@ -17264,7 +17263,7 @@ fi
 done
 
 
-        ac_fn_c_check_type "$LINENO" "size_t" "ac_cv_type_size_t" "$ac_includes_default"
+    ac_fn_c_check_type "$LINENO" "size_t" "ac_cv_type_size_t" "$ac_includes_default"
 if test "x$ac_cv_type_size_t" = xyes; then :
 
 else
@@ -17276,7 +17275,7 @@ _ACEOF
 fi
 
 
-          { $as_echo "$as_me:${as_lineno-$LINENO}: checking for M_PI in math.h" >&5
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for M_PI in math.h" >&5
 $as_echo_n "checking for M_PI in math.h... " >&6; }
 if ${ac_cv_define_M_PI+:} false; then :
   $as_echo_n "(cached) " >&6
@@ -17309,11 +17308,7 @@ $as_echo "#define HAVE_M_PI /**/" >>confdefs.h
   fi
 
 
-        case "$host" in
-    *-*-cygwin* | *-*-mingw*)
-        ;;
-    *)
-        # The Ultrix 4.2 mips builtin alloca declared by alloca.h only works
+    # The Ultrix 4.2 mips builtin alloca declared by alloca.h only works
 # for constant arguments.  Useless!
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for working alloca.h" >&5
 $as_echo_n "checking for working alloca.h... " >&6; }
@@ -17499,8 +17494,6 @@ _ACEOF
 
 fi
 
-        ;;
-    esac
 
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for working memcmp" >&5
 $as_echo_n "checking for working memcmp... " >&6; }
@@ -17840,7 +17833,7 @@ $as_echo "#define HAVE_SA_SIGACTION 1" >>confdefs.h
 fi
 
 
-        for ac_header in libunwind.h
+    for ac_header in libunwind.h
 do :
   ac_fn_c_check_header_mongrel "$LINENO" "libunwind.h" "ac_cv_header_libunwind_h" "$ac_includes_default"
 if test "x$ac_cv_header_libunwind_h" = xyes; then :
@@ -18219,7 +18212,7 @@ fi
         fi
     fi
 
-        # Check whether --enable-mmx was given.
+    # Check whether --enable-mmx was given.
 if test "${enable_mmx+set}" = set; then :
   enableval=$enable_mmx;
 else
@@ -20496,7 +20489,7 @@ $as_echo "$have_gcc_Wall" >&6; }
     if test x$have_gcc_Wall = xyes; then
         EXTRA_CFLAGS="$EXTRA_CFLAGS -Wall"
 
-                { $as_echo "$as_me:${as_lineno-$LINENO}: checking for necessary GCC -Wno-multichar option" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for necessary GCC -Wno-multichar option" >&5
 $as_echo_n "checking for necessary GCC -Wno-multichar option... " >&6; }
         need_gcc_Wno_multichar=no
         case "$host" in
@@ -20577,7 +20570,8 @@ fi
                     wayland_client_lib=`find_lib "libwayland-client.so.*" "$WAYLAND_LIBS" | sed 's/.*\/\(.*\)/\1/; q'`
                     wayland_egl_lib=`find_lib "libwayland-egl.so.*" "$WAYLAND_LIBS" | sed 's/.*\/\(.*\)/\1/; q'`
                     if test x$wayland_egl_lib = x; then
-                                                wayland_egl_lib=`find_lib "mesa-egl/libwayland-egl.so.*" "$WAYLAND_LIBS" | sed 's/.*\/\(.*\)/\1/; q'`
+                        # This works in Ubuntu 13.10, maybe others
+                        wayland_egl_lib=`find_lib "mesa-egl/libwayland-egl.so.*" "$WAYLAND_LIBS" | sed 's/.*\/\(.*\)/\1/; q'`
                     fi
                     wayland_cursor_lib=`find_lib "libwayland-cursor.so.*" "$WAYLAND_LIBS" | sed 's/.*\/\(.*\)/\1/; q'`
                     xkbcommon_lib=`find_lib "libxkbcommon.so.*" "$WAYLAND_LIBS" | sed 's/.*\/\(.*\)/\1/; q'`
@@ -21731,7 +21725,7 @@ _ACEOF
             fi
             have_video=yes
 
-                        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for XGenericEvent" >&5
+            { $as_echo "$as_me:${as_lineno-$LINENO}: checking for XGenericEvent" >&5
 $as_echo_n "checking for XGenericEvent... " >&6; }
             have_XGenericEvent=no
             cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -22219,7 +22213,7 @@ else
 fi
 
             if test x$enable_video_x11_xrandr = xyes; then
-                                definitely_enable_video_x11_xrandr=no
+                definitely_enable_video_x11_xrandr=no
                 have_xrandr_h_hdr=no
                 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
@@ -22601,7 +22595,7 @@ fi
 
     if test x$enable_video = xyes -a x$enable_video_cocoa = xyes; then
         save_CFLAGS="$CFLAGS"
-                CFLAGS="$CFLAGS -x objective-c"
+        CFLAGS="$CFLAGS -x objective-c"
         { $as_echo "$as_me:${as_lineno-$LINENO}: checking for Cocoa framework" >&5
 $as_echo_n "checking for Cocoa framework... " >&6; }
         have_cocoa=no
@@ -22654,7 +22648,7 @@ fi
 
     if test x$enable_video = xyes -a x$enable_video_metal = xyes; then
         save_CFLAGS="$CFLAGS"
-                CFLAGS="$CFLAGS -x objective-c"
+        CFLAGS="$CFLAGS -x objective-c"
         { $as_echo "$as_me:${as_lineno-$LINENO}: checking for Metal framework" >&5
 $as_echo_n "checking for Metal framework... " >&6; }
         have_metal=no
@@ -23592,7 +23586,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
                 ;;
             *-*-darwin*)
                 save_CFLAGS="$CFLAGS"
-                                CFLAGS="$CFLAGS -x objective-c"
+                CFLAGS="$CFLAGS -x objective-c"
                 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -23645,7 +23639,7 @@ $as_echo "#define SDL_VIDEO_VULKAN 1" >>confdefs.h
 
 CheckInputEvents()
 {
-            { $as_echo "$as_me:${as_lineno-$LINENO}: checking for Linux 2.4 unified input interface" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for Linux 2.4 unified input interface" >&5
 $as_echo_n "checking for Linux 2.4 unified input interface... " >&6; }
         use_input_events=no
         cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -23681,7 +23675,6 @@ $as_echo "#define SDL_INPUT_LINUXEV 1" >>confdefs.h
 
 CheckInputKD()
 {
-
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for Linux kd.h" >&5
 $as_echo_n "checking for Linux kd.h... " >&6; }
     use_input_kd=no
@@ -24161,7 +24154,7 @@ fi
     if test x$enable_joystick_mfi = xyes; then
         save_CFLAGS="$CFLAGS"
         save_LDFLAGS="$LDFLAGS"
-                CFLAGS="$CFLAGS -x objective-c -fobjc-weak"
+        CFLAGS="$CFLAGS -x objective-c -fobjc-weak"
         LDFLAGS="$LDFLAGS -Wl,-weak_framework,CoreHaptics -Wl,-weak_framework,GameController"
         { $as_echo "$as_me:${as_lineno-$LINENO}: checking for GameController framework" >&5
 $as_echo_n "checking for GameController framework... " >&6; }
@@ -24228,7 +24221,7 @@ else
   enable_pthreads=maybe
 fi
 
-        # Check whether --enable-pthread-sem was given.
+    # Check whether --enable-pthread-sem was given.
 if test "${enable_pthread_sem+set}" = set; then :
   enableval=$enable_pthread_sem;
 else
@@ -26271,13 +26264,11 @@ fi
             SDL_LIBS="-lcygwin $SDL_LIBS"
         fi
         ;;
-
-        *-*-beos*)
+    *-*-beos*)
         as_fn_error $? "
 *** BeOS support has been removed as of SDL 2.0.2.
         " "$LINENO" 5
         ;;
-
     *-*-haiku*)
         ARCH=haiku
         ac_default_prefix=/boot/system
