@@ -335,11 +335,6 @@ SDL_AudioUnlockDevice_Default(SDL_AudioDevice * device)
 }
 
 static void
-SDL_AudioLockOrUnlockDeviceWithNoMixerLock(SDL_AudioDevice * device)
-{
-}
-
-static void
 finish_audio_entry_points_init(void)
 {
     /*
@@ -347,14 +342,6 @@ finish_audio_entry_points_init(void)
      *  blindly call them without having to check for validity first.
      */
 
-    if (current_audio.impl.SkipMixerLock) {
-        if (current_audio.impl.LockDevice == NULL) {
-            current_audio.impl.LockDevice = SDL_AudioLockOrUnlockDeviceWithNoMixerLock;
-        }
-        if (current_audio.impl.UnlockDevice == NULL) {
-            current_audio.impl.UnlockDevice = SDL_AudioLockOrUnlockDeviceWithNoMixerLock;
-        }
-    }
 
 #define FILL_STUB(x) \
         if (current_audio.impl.x == NULL) { \
@@ -1421,7 +1408,7 @@ open_audio_device(const char *devname, int iscapture,
     SDL_AtomicSet(&device->enabled, 1);
 
     /* Create a mutex for locking the sound buffers */
-    if (!current_audio.impl.SkipMixerLock) {
+    if (current_audio.impl.LockDevice == SDL_AudioLockDevice_Default) {
         device->mixer_lock = SDL_CreateMutex();
         if (device->mixer_lock == NULL) {
             close_audio_device(device);

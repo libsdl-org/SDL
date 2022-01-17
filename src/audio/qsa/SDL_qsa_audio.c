@@ -659,7 +659,6 @@ QSA_Init(SDL_AudioDriverImpl * impl)
     impl->UnlockDevice = NULL;
 
     impl->ProvidesOwnCallbackThread = 0;
-    impl->SkipMixerLock = 0;
     impl->HasCaptureSupport = 1;
     impl->OnlyHasDefaultOutputDevice = 0;
     impl->OnlyHasDefaultCaptureDevice = 0;
