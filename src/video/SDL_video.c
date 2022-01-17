@@ -984,7 +984,7 @@ SDL_GetClosestDisplayModeForDisplay(SDL_VideoDisplay * display,
     SDL_DisplayMode *current, *match;
 
     if (!mode || !closest) {
-        SDL_SetError("Missing desired mode or closest mode parameter");
+        SDL_InvalidParamError("mode/closest");
         return NULL;
     }
 

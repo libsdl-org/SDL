@@ -109,7 +109,7 @@ SDL_CondSignal_cv(SDL_cond * _cond)
 {
     SDL_cond_cv *cond = (SDL_cond_cv *)_cond;
     if (!cond) {
-        return SDL_SetError("Passed a NULL condition variable");
+        return SDL_InvalidParamError("cond");
     }
 
     pWakeConditionVariable(&cond->cond);
@@ -122,7 +122,7 @@ SDL_CondBroadcast_cv(SDL_cond * _cond)
 {
     SDL_cond_cv *cond = (SDL_cond_cv *)_cond;
     if (!cond) {
-        return SDL_SetError("Passed a NULL condition variable");
+        return SDL_InvalidParamError("cond");
     }
 
     pWakeAllConditionVariable(&cond->cond);
@@ -138,10 +138,10 @@ SDL_CondWaitTimeout_cv(SDL_cond * _cond, SDL_mutex * _mutex, Uint32 ms)
     int ret;
 
     if (!cond) {
-        return SDL_SetError("Passed a NULL condition variable");
+        return SDL_InvalidParamError("cond");
     }
     if (!_mutex) {
-        return SDL_SetError("Passed a NULL mutex");
+        return SDL_InvalidParamError("mutex");
     }
 
     if (ms == SDL_MUTEX_MAXWAIT) {

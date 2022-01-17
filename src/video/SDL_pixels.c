@@ -677,7 +677,7 @@ int
 SDL_SetPixelFormatPalette(SDL_PixelFormat * format, SDL_Palette *palette)
 {
     if (!format) {
-        return SDL_SetError("SDL_SetPixelFormatPalette() passed NULL format");
+        return SDL_InvalidParamError("SDL_SetPixelFormatPalette(): format");
     }
 
     if (palette && palette->ncolors > (1 << format->BitsPerPixel)) {

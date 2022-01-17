@@ -80,7 +80,7 @@ SDL_TryLockMutex(SDL_mutex * mutex)
 #else
     SceInt32 res = 0;
     if (mutex == NULL) {
-        return SDL_SetError("Passed a NULL mutex");
+        return SDL_InvalidParamError("mutex");
     }
 
     res = sceKernelTryLockLwMutex(&mutex->lock, 1);
@@ -110,7 +110,7 @@ SDL_mutexP(SDL_mutex * mutex)
 #else
     SceInt32 res = 0;
     if (mutex == NULL) {
-        return SDL_SetError("Passed a NULL mutex");
+        return SDL_InvalidParamError("mutex");
     }
 
     res = sceKernelLockLwMutex(&mutex->lock, 1, NULL);
@@ -132,7 +132,7 @@ SDL_mutexV(SDL_mutex * mutex)
     SceInt32 res = 0;
 
     if (mutex == NULL) {
-        return SDL_SetError("Passed a NULL mutex");
+        return SDL_InvalidParamError("mutex");
     }
 
     res = sceKernelUnlockLwMutex(&mutex->lock, 1);

@@ -30,7 +30,7 @@ int
 SDL_DrawPoint(SDL_Surface * dst, int x, int y, Uint32 color)
 {
     if (!dst) {
-        return SDL_SetError("Passed NULL destination surface");
+        return SDL_InvalidParamError("SDL_DrawPoint(): dst");
     }
 
     /* This function doesn't work on surfaces < 8 bpp */
@@ -71,7 +71,7 @@ SDL_DrawPoints(SDL_Surface * dst, const SDL_Point * points, int count,
     int x, y;
 
     if (!dst) {
-        return SDL_SetError("Passed NULL destination surface");
+        return SDL_InvalidParamError("SDL_DrawPoints(): dst");
     }
 
     /* This function doesn't work on surfaces < 8 bpp */

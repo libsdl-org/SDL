@@ -1029,7 +1029,7 @@ SDL_CreateColorCursor(SDL_Surface *surface, int hot_x, int hot_y)
     SDL_Cursor *cursor;
 
     if (!surface) {
-        SDL_SetError("Passed NULL cursor surface");
+        SDL_InvalidParamError("surface");
         return NULL;
     }
 

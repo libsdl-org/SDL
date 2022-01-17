@@ -99,7 +99,7 @@ SDL_CondSignal_generic(SDL_cond * _cond)
 {
     SDL_cond_generic *cond = (SDL_cond_generic *)_cond;
     if (!cond) {
-        return SDL_SetError("Passed a NULL condition variable");
+        return SDL_InvalidParamError("cond");
     }
 
     /* If there are waiting threads not already signalled, then
@@ -124,7 +124,7 @@ SDL_CondBroadcast_generic(SDL_cond * _cond)
 {
     SDL_cond_generic *cond = (SDL_cond_generic *)_cond;
     if (!cond) {
-        return SDL_SetError("Passed a NULL condition variable");
+        return SDL_InvalidParamError("cond");
     }
 
     /* If there are waiting threads not already signalled, then
@@ -181,7 +181,7 @@ SDL_CondWaitTimeout_generic(SDL_cond * _cond, SDL_mutex * mutex, Uint32 ms)
     int retval;
 
     if (!cond) {
-        return SDL_SetError("Passed a NULL condition variable");
+        return SDL_InvalidParamError("cond");
     }
 
     /* Obtain the protection mutex, and increment the number of waiters.

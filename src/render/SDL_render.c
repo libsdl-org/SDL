@@ -48,13 +48,13 @@ this should probably be removed at some point in the future.  --ryan. */
 
 #define CHECK_RENDERER_MAGIC(renderer, retval) \
     if (!renderer || renderer->magic != &renderer_magic) { \
-        SDL_SetError("Invalid renderer"); \
+        SDL_InvalidParamError("renderer"); \
         return retval; \
     }
 
 #define CHECK_TEXTURE_MAGIC(texture, retval) \
     if (!texture || texture->magic != &texture_magic) { \
-        SDL_SetError("Invalid texture"); \
+        SDL_InvalidParamError("texture"); \
         return retval; \
     }
 
@@ -1326,7 +1326,7 @@ SDL_CreateTextureFromSurface(SDL_Renderer * renderer, SDL_Surface * surface)
     CHECK_RENDERER_MAGIC(renderer, NULL);
 
     if (!surface) {
-        SDL_SetError("SDL_CreateTextureFromSurface() passed NULL surface");
+        SDL_InvalidParamError("SDL_CreateTextureFromSurface(): surface");
         return NULL;
     }
 
@@ -2694,7 +2694,7 @@ SDL_RenderDrawPoints(SDL_Renderer * renderer,
     CHECK_RENDERER_MAGIC(renderer, -1);
 
     if (!points) {
-        return SDL_SetError("SDL_RenderDrawPoints(): Passed NULL points");
+        return SDL_InvalidParamError("SDL_RenderDrawPoints(): points");
     }
     if (count < 1) {
         return 0;
@@ -2764,7 +2764,7 @@ SDL_RenderDrawPointsF(SDL_Renderer * renderer,
     CHECK_RENDERER_MAGIC(renderer, -1);
 
     if (!points) {
-        return SDL_SetError("SDL_RenderDrawPointsF(): Passed NULL points");
+        return SDL_InvalidParamError("SDL_RenderDrawPointsF(): points");
     }
     if (count < 1) {
         return 0;
@@ -2973,7 +2973,7 @@ SDL_RenderDrawLines(SDL_Renderer * renderer,
     CHECK_RENDERER_MAGIC(renderer, -1);
 
     if (!points) {
-        return SDL_SetError("SDL_RenderDrawLines(): Passed NULL points");
+        return SDL_InvalidParamError("SDL_RenderDrawLines(): points");
     }
     if (count < 2) {
         return 0;
@@ -3012,7 +3012,7 @@ SDL_RenderDrawLinesF(SDL_Renderer * renderer,
     CHECK_RENDERER_MAGIC(renderer, -1);
 
     if (!points) {
-        return SDL_SetError("SDL_RenderDrawLinesF(): Passed NULL points");
+        return SDL_InvalidParamError("SDL_RenderDrawLinesF(): points");
     }
     if (count < 2) {
         return 0;
@@ -3211,7 +3211,7 @@ SDL_RenderDrawRects(SDL_Renderer * renderer,
     CHECK_RENDERER_MAGIC(renderer, -1);
 
     if (!rects) {
-        return SDL_SetError("SDL_RenderDrawRects(): Passed NULL rects");
+        return SDL_InvalidParamError("SDL_RenderDrawRects(): rects");
     }
     if (count < 1) {
         return 0;
@@ -3241,7 +3241,7 @@ SDL_RenderDrawRectsF(SDL_Renderer * renderer,
     CHECK_RENDERER_MAGIC(renderer, -1);
 
     if (!rects) {
-        return SDL_SetError("SDL_RenderDrawRects(): Passed NULL rects");
+        return SDL_InvalidParamError("SDL_RenderDrawRectsF(): rects");
     }
     if (count < 1) {
         return 0;
@@ -3308,7 +3308,7 @@ SDL_RenderFillRects(SDL_Renderer * renderer,
     CHECK_RENDERER_MAGIC(renderer, -1);
 
     if (!rects) {
-        return SDL_SetError("SDL_RenderFillRects(): Passed NULL rects");
+        return SDL_InvalidParamError("SDL_RenderFillRects(): rects");
     }
     if (count < 1) {
         return 0;
@@ -3351,7 +3351,7 @@ SDL_RenderFillRectsF(SDL_Renderer * renderer,
     CHECK_RENDERER_MAGIC(renderer, -1);
 
     if (!rects) {
-        return SDL_SetError("SDL_RenderFillFRects(): Passed NULL rects");
+        return SDL_InvalidParamError("SDL_RenderFillRectsF(): rects");
     }
     if (count < 1) {
         return 0;
