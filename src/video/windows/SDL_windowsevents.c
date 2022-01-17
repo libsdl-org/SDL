@@ -1579,6 +1579,14 @@ LPTSTR SDL_Appname = NULL;
 Uint32 SDL_Appstyle = 0;
 HINSTANCE SDL_Instance = NULL;
 
+static void WIN_CleanRegisterApp(WNDCLASSEX wcex)
+{
+    if (wcex.hIcon) DestroyIcon(wcex.hIcon);
+    if (wcex.hIconSm) DestroyIcon(wcex.hIconSm);
+    SDL_free(SDL_Appname);
+    SDL_Appname = NULL;
+}
+
 /* Register the class for this application */
 int
 SDL_RegisterApp(const char *name, Uint32 style, void *hInst)
@@ -1592,19 +1600,16 @@ SDL_RegisterApp(const char *name, Uint32 style, void *hInst)
         ++app_registered;
         return (0);
     }
-    if (!name && !SDL_Appname) {
+    SDL_assert(SDL_Appname == NULL);
+    if (!name) {
         name = "SDL_app";
 #if defined(CS_BYTEALIGNCLIENT) || defined(CS_OWNDC)
-        SDL_Appstyle = (CS_BYTEALIGNCLIENT | CS_OWNDC);
+        style = (CS_BYTEALIGNCLIENT | CS_OWNDC);
 #endif
-        SDL_Instance = hInst ? hInst : GetModuleHandle(NULL);
     }
-
-    if (name) {
-        SDL_Appname = WIN_UTF8ToString(name);
-        SDL_Appstyle = style;
-        SDL_Instance = hInst ? hInst : GetModuleHandle(NULL);
-    }
+    SDL_Appname = WIN_UTF8ToString(name);
+    SDL_Appstyle = style;
+    SDL_Instance = hInst ? hInst : GetModuleHandle(NULL);
 
     /* Register the application class */
     wcex.cbSize         = sizeof(WNDCLASSEX);
@@ -1635,6 +1640,7 @@ SDL_RegisterApp(const char *name, Uint32 style, void *hInst)
     }
 
     if (!RegisterClassEx(&wcex)) {
+        WIN_CleanRegisterApp(wcex);
         return SDL_SetError("Couldn't register application class");
     }
 
@@ -1654,14 +1660,14 @@ SDL_UnregisterApp()
     }
     --app_registered;
     if (app_registered == 0) {
+        /* Ensure the icons are initialized. */
+        wcex.hIcon = NULL;
+        wcex.hIconSm = NULL;
         /* Check for any registered window classes. */
         if (GetClassInfoEx(SDL_Instance, SDL_Appname, &wcex)) {
             UnregisterClass(SDL_Appname, SDL_Instance);
-            if (wcex.hIcon) DestroyIcon(wcex.hIcon);
-            if (wcex.hIconSm) DestroyIcon(wcex.hIconSm);
         }
-        SDL_free(SDL_Appname);
-        SDL_Appname = NULL;
+        WIN_CleanRegisterApp(wcex);
     }
 }
 
