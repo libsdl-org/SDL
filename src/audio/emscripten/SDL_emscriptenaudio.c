@@ -339,6 +339,11 @@ EMSCRIPTENAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscaptu
     return 0;
 }
 
+static void
+EMSCRIPTENAUDIO_LockOrUnlockDeviceWithNoMixerLock(SDL_AudioDevice * device)
+{
+}
+
 static int
 EMSCRIPTENAUDIO_Init(SDL_AudioDriverImpl * impl)
 {
@@ -352,7 +357,7 @@ EMSCRIPTENAUDIO_Init(SDL_AudioDriverImpl * impl)
     impl->OnlyHasDefaultOutputDevice = 1;
 
     /* no threads here */
-    impl->SkipMixerLock = 1;
+    impl->LockDevice = impl->UnlockDevice = EMSCRIPTENAUDIO_LockOrUnlockDeviceWithNoMixerLock;
     impl->ProvidesOwnCallbackThread = 1;
 
     /* check availability */

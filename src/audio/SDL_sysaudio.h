@@ -86,7 +86,6 @@ typedef struct SDL_AudioDriverImpl
     /* Some flags to push duplicate code into the core and reduce #ifdefs. */
     /* !!! FIXME: these should be SDL_bool */
     int ProvidesOwnCallbackThread;
-    int SkipMixerLock;
     int HasCaptureSupport;
     int OnlyHasDefaultOutputDevice;
     int OnlyHasDefaultCaptureDevice;
