@@ -575,11 +575,11 @@ DSOUND_Deinitialize(void)
 }
 
 
-static int
+static SDL_bool
 DSOUND_Init(SDL_AudioDriverImpl * impl)
 {
     if (!DSOUND_Load()) {
-        return 0;
+        return SDL_FALSE;
     }
 
     /* Set the function pointers */
@@ -596,11 +596,11 @@ DSOUND_Init(SDL_AudioDriverImpl * impl)
 
     impl->HasCaptureSupport = SDL_TRUE;
 
-    return 1;   /* this audio target is available. */
+    return SDL_TRUE;   /* this audio target is available. */
 }
 
 AudioBootStrap DSOUND_bootstrap = {
-    "directsound", "DirectSound", DSOUND_Init, 0
+    "directsound", "DirectSound", DSOUND_Init, SDL_FALSE
 };
 
 #endif /* SDL_AUDIO_DRIVER_DSOUND */

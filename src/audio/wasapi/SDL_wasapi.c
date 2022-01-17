@@ -713,14 +713,14 @@ WASAPI_Deinitialize(void)
     deviceid_list = NULL;
 }
 
-static int
+static SDL_bool
 WASAPI_Init(SDL_AudioDriverImpl * impl)
 {
     SDL_AtomicSet(&WASAPI_DefaultPlaybackGeneration, 1);
     SDL_AtomicSet(&WASAPI_DefaultCaptureGeneration, 1);
 
     if (WASAPI_PlatformInit() == -1) {
-        return 0;
+        return SDL_FALSE;
     }
 
     /* Set the function pointers */
@@ -736,13 +736,13 @@ WASAPI_Init(SDL_AudioDriverImpl * impl)
     impl->FlushCapture = WASAPI_FlushCapture;
     impl->CloseDevice = WASAPI_CloseDevice;
     impl->Deinitialize = WASAPI_Deinitialize;
-    impl->HasCaptureSupport = 1;
+    impl->HasCaptureSupport = SDL_TRUE;
 
-    return 1;   /* this audio target is available. */
+    return SDL_TRUE;   /* this audio target is available. */
 }
 
 AudioBootStrap WASAPI_bootstrap = {
-    "wasapi", "WASAPI", WASAPI_Init, 0
+    "wasapi", "WASAPI", WASAPI_Init, SDL_FALSE
 };
 
 #endif  /* SDL_AUDIO_DRIVER_WASAPI */

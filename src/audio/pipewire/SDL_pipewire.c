@@ -1223,19 +1223,19 @@ PIPEWIRE_Deinitialize()
     }
 }
 
-static int
+static SDL_bool
 PIPEWIRE_Init(SDL_AudioDriverImpl *impl)
 {
     if (!pipewire_initialized) {
         if (init_pipewire_library() < 0) {
-            return 0;
+            return SDL_FALSE;
         }
 
         pipewire_initialized = SDL_TRUE;
 
         if (hotplug_loop_init() < 0) {
             PIPEWIRE_Deinitialize();
-            return 0;
+            return SDL_FALSE;
         }
     }
 
@@ -1245,13 +1245,13 @@ PIPEWIRE_Init(SDL_AudioDriverImpl *impl)
     impl->CloseDevice   = PIPEWIRE_CloseDevice;
     impl->Deinitialize  = PIPEWIRE_Deinitialize;
 
-    impl->HasCaptureSupport         = 1;
-    impl->ProvidesOwnCallbackThread = 1;
+    impl->HasCaptureSupport         = SDL_TRUE;
+    impl->ProvidesOwnCallbackThread = SDL_TRUE;
 
-    return 1;
+    return SDL_TRUE;
 }
 
-AudioBootStrap PIPEWIRE_bootstrap = { "pipewire", "Pipewire", PIPEWIRE_Init, 0 };
+AudioBootStrap PIPEWIRE_bootstrap = { "pipewire", "Pipewire", PIPEWIRE_Init, SDL_FALSE };
 
 #endif /* SDL_AUDIO_DRIVER_PIPEWIRE */
 

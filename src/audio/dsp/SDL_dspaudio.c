@@ -301,13 +301,13 @@ look_for_devices_test(int fd)
     return 0;
 }
 
-static int
+static SDL_bool
 DSP_Init(SDL_AudioDriverImpl * impl)
 {
     InitTimeDevicesExist = SDL_FALSE;
     SDL_EnumUnixAudioDevices(0, look_for_devices_test);
     if (!InitTimeDevicesExist) {
-        return 0;  /* maybe try a different backend. */
+        return SDL_FALSE;  /* maybe try a different backend. */
     }
 
     /* Set the function pointers */
@@ -319,15 +319,15 @@ DSP_Init(SDL_AudioDriverImpl * impl)
     impl->CaptureFromDevice = DSP_CaptureFromDevice;
     impl->FlushCapture = DSP_FlushCapture;
 
-    impl->AllowsArbitraryDeviceNames = 1;
+    impl->AllowsArbitraryDeviceNames = SDL_TRUE;
     impl->HasCaptureSupport = SDL_TRUE;
 
-    return 1;   /* this audio target is available. */
+    return SDL_TRUE;   /* this audio target is available. */
 }
 
 
 AudioBootStrap DSP_bootstrap = {
-    "dsp", "OSS /dev/dsp standard audio", DSP_Init, 0
+    "dsp", "OSS /dev/dsp standard audio", DSP_Init, SDL_FALSE
 };
 
 #endif /* SDL_AUDIO_DRIVER_OSS */

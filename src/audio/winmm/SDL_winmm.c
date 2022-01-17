@@ -434,7 +434,7 @@ WINMM_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     return 0;                   /* Ready to go! */
 }
 
-static int
+static SDL_bool
 WINMM_Init(SDL_AudioDriverImpl * impl)
 {
     /* Set the function pointers */
@@ -449,11 +449,11 @@ WINMM_Init(SDL_AudioDriverImpl * impl)
 
     impl->HasCaptureSupport = SDL_TRUE;
 
-    return 1;   /* this audio target is available. */
+    return SDL_TRUE;   /* this audio target is available. */
 }
 
 AudioBootStrap WINMM_bootstrap = {
-    "winmm", "Windows Waveform Audio", WINMM_Init, 0
+    "winmm", "Windows Waveform Audio", WINMM_Init, SDL_FALSE
 };
 
 #endif /* SDL_AUDIO_DRIVER_WINMM */

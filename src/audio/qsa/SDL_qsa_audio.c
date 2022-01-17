@@ -635,7 +635,7 @@ QSA_Deinitialize(void)
     qsa_capture_devices = 0;
 }
 
-static int
+static SDL_bool
 QSA_Init(SDL_AudioDriverImpl * impl)
 {
     /* Clear devices array */
@@ -655,19 +655,14 @@ QSA_Init(SDL_AudioDriverImpl * impl)
     impl->GetDeviceBuf = QSA_GetDeviceBuf;
     impl->CloseDevice = QSA_CloseDevice;
     impl->Deinitialize = QSA_Deinitialize;
-    impl->LockDevice = NULL;
-    impl->UnlockDevice = NULL;
 
-    impl->ProvidesOwnCallbackThread = 0;
-    impl->HasCaptureSupport = 1;
-    impl->OnlyHasDefaultOutputDevice = 0;
-    impl->OnlyHasDefaultCaptureDevice = 0;
+    impl->HasCaptureSupport = SDL_TRUE;
 
-    return 1;   /* this audio target is available. */
+    return SDL_TRUE;   /* this audio target is available. */
 }
 
 AudioBootStrap QSAAUDIO_bootstrap = {
-    "qsa", "QNX QSA Audio", QSA_Init, 0
+    "qsa", "QNX QSA Audio", QSA_Init, SDL_FALSE
 };
 
 #endif /* SDL_AUDIO_DRIVER_QSA */

@@ -177,7 +177,7 @@ DISKAUDIO_DetectDevices(void)
     SDL_AddAudioDevice(SDL_TRUE, DEFAULT_INPUT_DEVNAME, NULL, (void *) 0x2);
 }
 
-static int
+static SDL_bool
 DISKAUDIO_Init(SDL_AudioDriverImpl * impl)
 {
     /* Set the function pointers */
@@ -191,14 +191,14 @@ DISKAUDIO_Init(SDL_AudioDriverImpl * impl)
     impl->CloseDevice = DISKAUDIO_CloseDevice;
     impl->DetectDevices = DISKAUDIO_DetectDevices;
 
-    impl->AllowsArbitraryDeviceNames = 1;
+    impl->AllowsArbitraryDeviceNames = SDL_TRUE;
     impl->HasCaptureSupport = SDL_TRUE;
 
-    return 1;   /* this audio target is available. */
+    return SDL_TRUE;   /* this audio target is available. */
 }
 
 AudioBootStrap DISKAUDIO_bootstrap = {
-    "disk", "direct-to-disk audio", DISKAUDIO_Init, 1
+    "disk", "direct-to-disk audio", DISKAUDIO_Init, SDL_TRUE
 };
 
 #endif /* SDL_AUDIO_DRIVER_DISK */

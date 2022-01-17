@@ -423,7 +423,7 @@ static int OS2_OpenDevice(_THIS, void *handle, const char *devname,
 }
 
 
-static int OS2_Init(SDL_AudioDriverImpl * impl)
+static SDL_bool OS2_Init(SDL_AudioDriverImpl * impl)
 {
     /* Set the function pointers */
     impl->DetectDevices = OS2_DetectDevices;
@@ -438,12 +438,12 @@ static int OS2_Init(SDL_AudioDriverImpl * impl)
     impl->FlushCapture = ;
     impl->HasCaptureSupport = SDL_TRUE;
     */
-    return 1; /* this audio target is available. */
+    return SDL_TRUE; /* this audio target is available. */
 }
 
 
 AudioBootStrap OS2AUDIO_bootstrap = {
-    "DART", "OS/2 DART", OS2_Init, 0
+    "DART", "OS/2 DART", OS2_Init, SDL_FALSE
 };
 
 #endif /* SDL_AUDIO_DRIVER_OS2 */

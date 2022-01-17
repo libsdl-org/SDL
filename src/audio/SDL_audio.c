@@ -943,15 +943,14 @@ SDL_GetAudioDriver(int index)
 int
 SDL_AudioInit(const char *driver_name)
 {
-    int i = 0;
-    int initialized = 0;
-    int tried_to_init = 0;
+    int i;
+    SDL_bool initialized = SDL_FALSE, tried_to_init = SDL_FALSE;
 
     if (SDL_GetCurrentAudioDriver()) {
         SDL_AudioQuit();        /* shutdown driver if already running. */
     }
 
-    SDL_zero(current_audio);
+    // SDL_zero(current_audio); -- no need at this point, done before init()
     SDL_zeroa(open_devices);
 
     /* Select the proper audio driver */
@@ -977,7 +976,7 @@ SDL_AudioInit(const char *driver_name)
             for (i = 0; bootstrap[i]; ++i) {
                 if ((driver_attempt_len == SDL_strlen(bootstrap[i]->name)) &&
                     (SDL_strncasecmp(bootstrap[i]->name, driver_attempt, driver_attempt_len) == 0)) {
-                    tried_to_init = 1;
+                    tried_to_init = SDL_TRUE;
                     SDL_zero(current_audio);
                     current_audio.name = bootstrap[i]->name;
                     current_audio.desc = bootstrap[i]->desc;
@@ -994,7 +993,7 @@ SDL_AudioInit(const char *driver_name)
                 continue;
             }
 
-            tried_to_init = 1;
+            tried_to_init = SDL_TRUE;
             SDL_zero(current_audio);
             current_audio.name = bootstrap[i]->name;
             current_audio.desc = bootstrap[i]->desc;

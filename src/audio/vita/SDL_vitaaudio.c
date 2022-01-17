@@ -154,7 +154,7 @@ static void VITAAUD_ThreadInit(_THIS)
     }
 }
 
-static int
+static SDL_bool
 VITAAUD_Init(SDL_AudioDriverImpl * impl)
 {
     /* Set the function pointers */
@@ -166,16 +166,16 @@ VITAAUD_Init(SDL_AudioDriverImpl * impl)
     impl->ThreadInit = VITAAUD_ThreadInit;
 
     /* VITA audio device */
-    impl->OnlyHasDefaultOutputDevice = 1;
+    impl->OnlyHasDefaultOutputDevice = SDL_TRUE;
     /*
-    impl->HasCaptureSupport = 1;
-    impl->OnlyHasDefaultInputDevice = 1;
+    impl->HasCaptureSupport = SDL_TRUE;
+    impl->OnlyHasDefaultInputDevice = SDL_TRUE;
     */
-    return 1;   /* this audio target is available. */
+    return SDL_TRUE;   /* this audio target is available. */
 }
 
 AudioBootStrap VITAAUD_bootstrap = {
-    "vita", "VITA audio driver", VITAAUD_Init, 0
+    "vita", "VITA audio driver", VITAAUD_Init, SDL_FALSE
 };
 
 #endif /* SDL_AUDIO_DRIVER_VITA */

@@ -997,11 +997,11 @@ ALSA_Deinitialize(void)
     UnloadALSALibrary();
 }
 
-static int
+static SDL_bool
 ALSA_Init(SDL_AudioDriverImpl * impl)
 {
     if (LoadALSALibrary() < 0) {
-        return 0;
+        return SDL_FALSE;
     }
 
     /* Set the function pointers */
@@ -1017,12 +1017,12 @@ ALSA_Init(SDL_AudioDriverImpl * impl)
 
     impl->HasCaptureSupport = SDL_TRUE;
 
-    return 1;   /* this audio target is available. */
+    return SDL_TRUE;   /* this audio target is available. */
 }
 
 
 AudioBootStrap ALSA_bootstrap = {
-    "alsa", "ALSA PCM audio", ALSA_Init, 0
+    "alsa", "ALSA PCM audio", ALSA_Init, SDL_FALSE
 };
 
 #endif /* SDL_AUDIO_DRIVER_ALSA */

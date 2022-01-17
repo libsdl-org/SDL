@@ -832,16 +832,16 @@ PULSEAUDIO_Deinitialize(void)
     UnloadPulseAudioLibrary();
 }
 
-static int
+static SDL_bool
 PULSEAUDIO_Init(SDL_AudioDriverImpl * impl)
 {
     if (LoadPulseAudioLibrary() < 0) {
-        return 0;
+        return SDL_FALSE;
     }
 
     if (ConnectToPulseServer(&hotplug_mainloop, &hotplug_context) < 0) {
         UnloadPulseAudioLibrary();
-        return 0;
+        return SDL_FALSE;
     }
 
     include_monitors = SDL_GetHintBoolean(SDL_HINT_AUDIO_INCLUDE_MONITORS, SDL_FALSE);
@@ -859,11 +859,11 @@ PULSEAUDIO_Init(SDL_AudioDriverImpl * impl)
 
     impl->HasCaptureSupport = SDL_TRUE;
 
-    return 1;   /* this audio target is available. */
+    return SDL_TRUE;   /* this audio target is available. */
 }
 
 AudioBootStrap PULSEAUDIO_bootstrap = {
-    "pulseaudio", "PulseAudio", PULSEAUDIO_Init, 0
+    "pulseaudio", "PulseAudio", PULSEAUDIO_Init, SDL_FALSE
 };
 
 #endif /* SDL_AUDIO_DRIVER_PULSEAUDIO */

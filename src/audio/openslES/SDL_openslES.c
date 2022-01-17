@@ -714,13 +714,13 @@ openslES_CloseDevice(_THIS)
     SDL_free(this->hidden);
 }
 
-static int
+static SDL_bool
 openslES_Init(SDL_AudioDriverImpl * impl)
 {
     LOGI("openslES_Init() called");
 
     if (!openslES_CreateEngine()) {
-        return 0;
+        return SDL_FALSE;
     }
 
     LOGI("openslES_Init() - set pointers");
@@ -736,18 +736,18 @@ openslES_Init(SDL_AudioDriverImpl * impl)
     impl->Deinitialize  = openslES_DestroyEngine;
 
     /* and the capabilities */
-    impl->HasCaptureSupport = 1;
-    impl->OnlyHasDefaultOutputDevice = 1;
-    impl->OnlyHasDefaultCaptureDevice = 1;
+    impl->HasCaptureSupport = SDL_TRUE;
+    impl->OnlyHasDefaultOutputDevice = SDL_TRUE;
+    impl->OnlyHasDefaultCaptureDevice = SDL_TRUE;
 
     LOGI("openslES_Init() - success");
 
     /* this audio target is available. */
-    return 1;
+    return SDL_TRUE;
 }
 
 AudioBootStrap openslES_bootstrap = {
-    "openslES", "opensl ES audio driver", openslES_Init, 0
+    "openslES", "opensl ES audio driver", openslES_Init, SDL_FALSE
 };
 
 void openslES_ResumeDevices(void)

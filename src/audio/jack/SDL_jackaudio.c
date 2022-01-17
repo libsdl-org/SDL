@@ -405,18 +405,18 @@ JACK_Deinitialize(void)
     UnloadJackLibrary();
 }
 
-static int
+static SDL_bool
 JACK_Init(SDL_AudioDriverImpl * impl)
 {
     if (LoadJackLibrary() < 0) {
-        return 0;
+        return SDL_FALSE;
     } else {
         /* Make sure a JACK server is running and available. */
         jack_status_t status;
         jack_client_t *client = JACK_jack_client_open("SDL", JackNoStartServer, &status, NULL);
         if (client == NULL) {
             UnloadJackLibrary();
-            return 0;
+            return SDL_FALSE;
         }
         JACK_jack_client_close(client);
     }
@@ -433,11 +433,11 @@ JACK_Init(SDL_AudioDriverImpl * impl)
     impl->OnlyHasDefaultCaptureDevice = SDL_TRUE;
     impl->HasCaptureSupport = SDL_TRUE;
 
-    return 1;   /* this audio target is available. */
+    return SDL_TRUE;   /* this audio target is available. */
 }
 
 AudioBootStrap JACK_bootstrap = {
-    "jack", "JACK Audio Connection Kit", JACK_Init, 0
+    "jack", "JACK Audio Connection Kit", JACK_Init, SDL_FALSE
 };
 
 #endif /* SDL_AUDIO_DRIVER_JACK */

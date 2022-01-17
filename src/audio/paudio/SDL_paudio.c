@@ -485,14 +485,14 @@ PAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     return 0;
 }
 
-static int
+static SDL_bool
 PAUDIO_Init(SDL_AudioDriverImpl * impl)
 {
     /* !!! FIXME: not right for device enum? */
     int fd = OpenAudioPath(NULL, 0, OPEN_FLAGS, 0);
     if (fd < 0) {
         SDL_SetError("PAUDIO: Couldn't open audio device");
-        return 0;
+        return SDL_FALSE;
     }
     close(fd);
 
@@ -502,13 +502,13 @@ PAUDIO_Init(SDL_AudioDriverImpl * impl)
     impl->PlayDevice = PAUDIO_WaitDevice;
     impl->GetDeviceBuf = PAUDIO_GetDeviceBuf;
     impl->CloseDevice = PAUDIO_CloseDevice;
-    impl->OnlyHasDefaultOutputDevice = 1;       /* !!! FIXME: add device enum! */
+    impl->OnlyHasDefaultOutputDevice = SDL_TRUE;       /* !!! FIXME: add device enum! */
 
-    return 1;   /* this audio target is available. */
+    return SDL_TRUE;   /* this audio target is available. */
 }
 
 AudioBootStrap PAUDIO_bootstrap = {
-    "paud", "AIX Paudio", PAUDIO_Init, 0
+    "paud", "AIX Paudio", PAUDIO_Init, SDL_FALSE
 };
 
 #endif /* SDL_AUDIO_DRIVER_PAUDIO */

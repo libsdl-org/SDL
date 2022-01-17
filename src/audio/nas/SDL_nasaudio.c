@@ -423,16 +423,16 @@ NAS_Deinitialize(void)
     UnloadNASLibrary();
 }
 
-static int
+static SDL_bool
 NAS_Init(SDL_AudioDriverImpl * impl)
 {
     if (LoadNASLibrary() < 0) {
-        return 0;
+        return SDL_FALSE;
     } else {
         AuServer *aud = NAS_AuOpenServer("", 0, NULL, 0, NULL, NULL);
         if (aud == NULL) {
             SDL_SetError("NAS: AuOpenServer() failed (no audio server?)");
-            return 0;
+            return SDL_FALSE;
         }
         NAS_AuCloseServer(aud);
     }
@@ -447,15 +447,15 @@ NAS_Init(SDL_AudioDriverImpl * impl)
     impl->CloseDevice = NAS_CloseDevice;
     impl->Deinitialize = NAS_Deinitialize;
 
-    impl->OnlyHasDefaultOutputDevice = 1;
-    impl->OnlyHasDefaultCaptureDevice = 1;
+    impl->OnlyHasDefaultOutputDevice = SDL_TRUE;
+    impl->OnlyHasDefaultCaptureDevice = SDL_TRUE;
     impl->HasCaptureSupport = SDL_TRUE;
 
-    return 1;   /* this audio target is available. */
+    return SDL_TRUE;   /* this audio target is available. */
 }
 
 AudioBootStrap NAS_bootstrap = {
-    "nas", "Network Audio System", NAS_Init, 0
+    "nas", "Network Audio System", NAS_Init, SDL_FALSE
 };
 
 #endif /* SDL_AUDIO_DRIVER_NAS */
