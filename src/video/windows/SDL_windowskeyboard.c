@@ -587,16 +587,16 @@ IME_GetId(SDL_VideoData *videodata, UINT uIndex)
     char szTemp[256];
     HKL hkl = 0;
     DWORD dwLang = 0;
-    if (uIndex >= sizeof(dwRet) / sizeof(dwRet[0]))
-        return 0;
+    SDL_assert(uIndex < sizeof(dwRet) / sizeof(dwRet[0]));
 
     hkl = videodata->ime_hkl;
     if (hklprev == hkl)
         return dwRet[uIndex];
-
     hklprev = hkl;
+
+    SDL_assert(uIndex == 0);
     dwLang = ((DWORD_PTR)hkl & 0xffff);
-    if (videodata->ime_uiless && LANG() == LANG_CHT) {
+    if (videodata->ime_uiless && dwLang == LANG_CHT) {
         dwRet[0] = IMEID_CHT_VER_VISTA;
         dwRet[1] = 0;
         return dwRet[0];
@@ -607,11 +607,11 @@ IME_GetId(SDL_VideoData *videodata, UINT uIndex)
         && hkl != CHT_HKL_HK_CANTONESE
         && hkl != CHS_HKL) {
         dwRet[0] = dwRet[1] = 0;
-        return dwRet[uIndex];
+        return dwRet[0];
     }
     if (ImmGetIMEFileNameA(hkl, szTemp, sizeof(szTemp) - 1) <= 0) {
         dwRet[0] = dwRet[1] = 0;
-        return dwRet[uIndex];
+        return dwRet[0];
     }
     if (!videodata->GetReadingString) {
         #define LCID_INVARIANT MAKELCID(MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US), SORT_DEFAULT)
@@ -621,7 +621,7 @@ IME_GetId(SDL_VideoData *videodata, UINT uIndex)
             && CompareStringA(LCID_INVARIANT, NORM_IGNORECASE, szTemp, -1, CHS_IMEFILENAME1, -1) != 2
             && CompareStringA(LCID_INVARIANT, NORM_IGNORECASE, szTemp, -1, CHS_IMEFILENAME2, -1) != 2) {
             dwRet[0] = dwRet[1] = 0;
-            return dwRet[uIndex];
+            return dwRet[0];
         }
         #undef LCID_INVARIANT
         dwVerSize = GetFileVersionInfoSizeA(szTemp, &dwVerHandle);
@@ -660,7 +660,7 @@ IME_GetId(SDL_VideoData *videodata, UINT uIndex)
         }
     }
     dwRet[0] = dwRet[1] = 0;
-    return dwRet[uIndex];
+    return dwRet[0];
 }
 
 static void
