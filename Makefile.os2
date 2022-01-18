@@ -28,7 +28,7 @@ INCPATH+= -Iinclude
 LIBM = SDL2libm.lib
 TLIB = SDL2test.lib
 LIBS = mmpm2.lib $(LIBM)
-CFLAGS = -bt=os2 -d0 -q -bm -5s -fp5 -fpi87 -sg -oteanbmier -ei
+CFLAGS = -bt=os2 -d0 -q -bm -5s -fp5 -fpi87 -sg -oeatxhn -ei
 # max warnings:
 CFLAGS+= -wx
 # newer OpenWatcom versions enable W303 by default
