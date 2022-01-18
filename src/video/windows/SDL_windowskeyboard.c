@@ -67,7 +67,7 @@ WIN_InitKeyboard(_THIS)
     data->ime_cursor = 0;
 
     data->ime_candlist = SDL_FALSE;
-    SDL_memset(data->ime_candidates, 0, sizeof(data->ime_candidates));
+    data->ime_candidates = NULL;
     data->ime_candcount = 0;
     data->ime_candref = 0;
     data->ime_candsel = 0;
@@ -349,7 +349,7 @@ DEFINE_GUID(IID_ITfThreadMgrEx,                                0x3E90ADE3,0x7594
 #define SUBLANG() SUBLANGID(LANG())
 
 static void IME_UpdateInputLocale(SDL_VideoData *videodata);
-static void IME_ShowCandidateList(SDL_VideoData *videodata);
+static int IME_ShowCandidateList(SDL_VideoData *videodata);
 static void IME_ClearComposition(SDL_VideoData *videodata);
 static void IME_SetWindow(SDL_VideoData* videodata, HWND hwnd);
 static void IME_SetupAPI(SDL_VideoData *videodata);
@@ -801,12 +801,14 @@ IME_SendEditingEvent(SDL_VideoData *videodata)
 static void
 IME_AddCandidate(SDL_VideoData *videodata, UINT i, LPCWSTR candidate)
 {
-    LPWSTR dst = videodata->ime_candidates[i];
+    LPWSTR dst = &videodata->ime_candidates[i * MAX_CANDLENGTH];
+    LPWSTR end = &dst[MAX_CANDLENGTH - 1];
+    SDL_COMPILE_TIME_ASSERT(IME_CANDIDATE_INDEXING_REQUIRES, MAX_CANDLIST == 10);
     *dst++ = (WCHAR)(TEXT('0') + ((i + videodata->ime_candlistindexbase) % 10));
     if (videodata->ime_candvertical)
         *dst++ = TEXT(' ');
 
-    while (*candidate && (SDL_arraysize(videodata->ime_candidates[i]) > (dst - videodata->ime_candidates[i])))
+    while (*candidate && dst < end)
         *dst++ = *candidate++;
 
     *dst = (WCHAR)'\0';
@@ -819,8 +821,8 @@ IME_GetCandidateList(HWND hwnd, SDL_VideoData *videodata)
     DWORD size;
     LPCANDIDATELIST cand_list;
 
-    IME_ShowCandidateList(videodata);
-
+    if (IME_ShowCandidateList(videodata) < 0)
+        return;
     himc = ImmGetContext(hwnd);
     if (!himc)
         return;
@@ -857,7 +859,6 @@ IME_GetCandidateList(HWND hwnd, SDL_VideoData *videodata)
                     videodata->ime_candpgsize = SDL_min(cand_list->dwPageSize == 0 ? MAX_CANDLIST : cand_list->dwPageSize, MAX_CANDLIST);
                     page_start = (cand_list->dwSelection / videodata->ime_candpgsize) * videodata->ime_candpgsize;
                 }
-                SDL_memset(&videodata->ime_candidates, 0, sizeof(videodata->ime_candidates));
                 for (i = page_start, j = 0; (DWORD)i < cand_list->dwCount && j < videodata->ime_candpgsize; i++, j++) {
                     LPCWSTR candidate = (LPCWSTR)((DWORD_PTR)cand_list + cand_list->dwOffset[i]);
                     IME_AddCandidate(videodata, j, candidate);
@@ -873,13 +874,26 @@ IME_GetCandidateList(HWND hwnd, SDL_VideoData *videodata)
     ImmReleaseContext(hwnd, himc);
 }
 
-static void
+static int
 IME_ShowCandidateList(SDL_VideoData *videodata)
 {
+    void *candidates;
+
+    videodata->ime_candcount = 0;
+    candidates = SDL_realloc(videodata->ime_candidates, MAX_CANDSIZE);
+    if (candidates != NULL)
+        videodata->ime_candidates = (WCHAR *)candidates;
+
+    if (videodata->ime_candidates == NULL)
+        return -1;
+
+    SDL_memset(videodata->ime_candidates, 0, MAX_CANDSIZE);
+
     videodata->ime_dirty = SDL_TRUE;
     videodata->ime_candlist = SDL_TRUE;
     IME_DestroyTextures(videodata);
     IME_SendEditingEvent(videodata);
+    return 0;
 }
 
 static void
@@ -995,7 +1009,8 @@ IME_CloseCandidateList(SDL_VideoData *videodata)
 {
     IME_HideCandidateList(videodata);
     videodata->ime_candcount = 0;
-    SDL_memset(videodata->ime_candidates, 0, sizeof(videodata->ime_candidates));
+    SDL_free(videodata->ime_candidates);
+    videodata->ime_candidates = NULL;
 }
 
 static void
@@ -1008,13 +1023,15 @@ UILess_GetCandidateList(SDL_VideoData *videodata, ITfCandidateListUIElement *pca
     DWORD pgstart = 0;
     DWORD pgsize = 0;
     UINT i, j;
+    if (IME_ShowCandidateList(videodata) < 0)
+        return;
+
     pcandlist->lpVtbl->GetSelection(pcandlist, &selection);
     pcandlist->lpVtbl->GetCount(pcandlist, &count);
     pcandlist->lpVtbl->GetCurrentPage(pcandlist, &page);
 
     videodata->ime_candsel = selection;
     videodata->ime_candcount = count;
-    IME_ShowCandidateList(videodata);
 
     pcandlist->lpVtbl->GetPageIndex(pcandlist, 0, 0, &pgcount);
     if (pgcount > 0) {
@@ -1032,8 +1049,6 @@ UILess_GetCandidateList(SDL_VideoData *videodata, ITfCandidateListUIElement *pca
     }
     videodata->ime_candpgsize = SDL_min(pgsize, MAX_CANDLIST);
     videodata->ime_candsel = videodata->ime_candsel - pgstart;
-
-    SDL_memset(videodata->ime_candidates, 0, sizeof(videodata->ime_candidates));
     for (i = pgstart, j = 0; (DWORD)i < count && j < videodata->ime_candpgsize; i++, j++) {
         BSTR bstr;
         if (SUCCEEDED(pcandlist->lpVtbl->GetString(pcandlist, i, &bstr))) {
@@ -1462,7 +1477,7 @@ IME_RenderCandidateList(SDL_VideoData *videodata, HDC hdc)
     SelectObject(hdc, font);
 
     for (i = 0; i < candcount; ++i) {
-        const WCHAR *s = videodata->ime_candidates[i];
+        const WCHAR *s = &videodata->ime_candidates[i * MAX_CANDLENGTH];
         if (!*s)
             break;
 
@@ -1524,7 +1539,7 @@ IME_RenderCandidateList(SDL_VideoData *videodata, HDC hdc)
     SetBkMode(hdc, TRANSPARENT);
 
     for (i = 0; i < candcount; ++i) {
-        const WCHAR *s = videodata->ime_candidates[i];
+        const WCHAR *s = &videodata->ime_candidates[i * MAX_CANDLENGTH];
         int left, top, right, bottom;
         if (!*s)
             break;
