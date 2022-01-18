@@ -349,6 +349,7 @@ DEFINE_GUID(IID_ITfThreadMgrEx,                                0x3E90ADE3,0x7594
 #define SUBLANG() SUBLANGID(LANG())
 
 static void IME_UpdateInputLocale(SDL_VideoData *videodata);
+static void IME_ShowCandidateList(SDL_VideoData *videodata);
 static void IME_ClearComposition(SDL_VideoData *videodata);
 static void IME_SetWindow(SDL_VideoData* videodata, HWND hwnd);
 static void IME_SetupAPI(SDL_VideoData *videodata);
@@ -812,15 +813,23 @@ IME_AddCandidate(SDL_VideoData *videodata, UINT i, LPCWSTR candidate)
 }
 
 static void
-IME_GetCandidateList(HIMC himc, SDL_VideoData *videodata)
+IME_GetCandidateList(HWND hwnd, SDL_VideoData *videodata)
 {
-    LPCANDIDATELIST cand_list = 0;
-    DWORD size = ImmGetCandidateListW(himc, 0, 0, 0);
-    if (size) {
+    HIMC himc;
+    DWORD size;
+    LPCANDIDATELIST cand_list;
+
+    IME_ShowCandidateList(videodata);
+
+    himc = ImmGetContext(hwnd);
+    if (!himc)
+        return;
+    size = ImmGetCandidateListW(himc, 0, 0, 0);
+    if (size != 0) {
         cand_list = (LPCANDIDATELIST)SDL_malloc(size);
-        if (cand_list) {
+        if (cand_list != NULL) {
             size = ImmGetCandidateListW(himc, 0, cand_list, size);
-            if (size) {
+            if (size != 0) {
                 UINT i, j;
                 UINT page_start = 0;
                 videodata->ime_candsel = cand_list->dwSelection;
@@ -845,25 +854,23 @@ IME_GetCandidateList(HIMC himc, SDL_VideoData *videodata)
                     }
                     videodata->ime_candpgsize = i - page_start;
                 } else {
-                    videodata->ime_candpgsize = SDL_min(cand_list->dwPageSize, MAX_CANDLIST);
-                    if (videodata->ime_candpgsize > 0) {
-                        page_start = (cand_list->dwSelection / videodata->ime_candpgsize) * videodata->ime_candpgsize;
-                    } else {
-                        page_start = 0;
-                    }
+                    videodata->ime_candpgsize = SDL_min(cand_list->dwPageSize == 0 ? MAX_CANDLIST : cand_list->dwPageSize, MAX_CANDLIST);
+                    page_start = (cand_list->dwSelection / videodata->ime_candpgsize) * videodata->ime_candpgsize;
                 }
                 SDL_memset(&videodata->ime_candidates, 0, sizeof(videodata->ime_candidates));
-                for (i = page_start, j = 0; (DWORD)i < cand_list->dwCount && j < (int)videodata->ime_candpgsize; i++, j++) {
+                for (i = page_start, j = 0; (DWORD)i < cand_list->dwCount && j < videodata->ime_candpgsize; i++, j++) {
                     LPCWSTR candidate = (LPCWSTR)((DWORD_PTR)cand_list + cand_list->dwOffset[i]);
                     IME_AddCandidate(videodata, j, candidate);
                 }
-                if (PRIMLANG() == LANG_KOREAN || (PRIMLANG() == LANG_CHT && !IME_GetId(videodata, 0)))
-                    videodata->ime_candsel = -1;
+                // TODO: why was this necessary? check ime_candvertical instead? PRIMLANG() never equals LANG_CHT !
+                //if (PRIMLANG() == LANG_KOREAN || (PRIMLANG() == LANG_CHT && !IME_GetId(videodata, 0)))
+                //    videodata->ime_candsel = -1;
 
             }
             SDL_free(cand_list);
         }
     }
+    ImmReleaseContext(hwnd, himc);
 }
 
 static void
@@ -938,13 +945,7 @@ IME_HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam, SDL_VideoD
                 break;
 
             trap = SDL_TRUE;
-            IME_ShowCandidateList(videodata);
-            himc = ImmGetContext(hwnd);
-            if (!himc)
-                break;
-
-            IME_GetCandidateList(himc, videodata);
-            ImmReleaseContext(hwnd, himc);
+            IME_GetCandidateList(hwnd, videodata);
             break;
         case IMN_CLOSECANDIDATE:
             trap = SDL_TRUE;
@@ -1042,8 +1043,9 @@ UILess_GetCandidateList(SDL_VideoData *videodata, ITfCandidateListUIElement *pca
             }
         }
     }
-    if (PRIMLANG() == LANG_KOREAN)
-        videodata->ime_candsel = -1;
+    // TODO: why was this necessary? check ime_candvertical instead?
+    //if (PRIMLANG() == LANG_KOREAN)
+    //    videodata->ime_candsel = -1;
 }
 
 STDMETHODIMP_(ULONG) TSFSink_AddRef(TSFSink *sink)
