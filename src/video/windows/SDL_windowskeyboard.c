@@ -712,26 +712,13 @@ IME_SetWindow(SDL_VideoData* videodata, HWND hwnd)
 static void
 IME_UpdateInputLocale(SDL_VideoData *videodata)
 {
-    static HKL hklprev = 0;
-    videodata->ime_hkl = GetKeyboardLayout(0);
-    if (hklprev == videodata->ime_hkl)
+    HKL hklnext = GetKeyboardLayout(0);
+
+    if (hklnext == videodata->ime_hkl)
         return;
 
-    hklprev = videodata->ime_hkl;
-    switch (PRIMLANG()) {
-    case LANG_CHINESE:
-        videodata->ime_candvertical = SDL_TRUE;
-        if (SUBLANG() == SUBLANG_CHINESE_SIMPLIFIED)
-            videodata->ime_candvertical = SDL_FALSE;
-
-        break;
-    case LANG_JAPANESE:
-        videodata->ime_candvertical = SDL_TRUE;
-        break;
-    case LANG_KOREAN:
-        videodata->ime_candvertical = SDL_FALSE;
-        break;
-    }
+    videodata->ime_hkl = hklnext;
+    videodata->ime_candvertical = (PRIMLANG() == LANG_KOREAN || LANG() == LANG_CHS) ? SDL_FALSE : SDL_TRUE;
 }
 
 static void
