@@ -248,8 +248,7 @@ static void OS2_CloseDevice(_THIS)
     SDL_free(pAData);
 }
 
-static int OS2_OpenDevice(_THIS, void *handle, const char *devname,
-                          int iscapture)
+static int OS2_OpenDevice(_THIS, void *handle, const char *devname)
 {
     SDL_PrivateAudioData *pAData;
     SDL_AudioFormat       SDLAudioFmt;
@@ -258,6 +257,7 @@ static int OS2_OpenDevice(_THIS, void *handle, const char *devname,
     ULONG                 ulRC;
     ULONG                 ulIdx;
     BOOL                  new_freq;
+    SDL_bool              iscapture = _this->iscapture;
 
     new_freq = FALSE;
     SDL_zero(stMCIAmpOpen);
@@ -298,7 +298,7 @@ static int OS2_OpenDevice(_THIS, void *handle, const char *devname,
     }
     pAData->usDeviceId = stMCIAmpOpen.usDeviceID;
 
-    if (iscapture != 0) {
+    if (iscapture) {
         MCI_CONNECTOR_PARMS stMCIConnector;
         MCI_AMP_SET_PARMS   stMCIAmpSet;
         BOOL                fLineIn = _getEnvULong("SDL_AUDIO_LINEIN", 1, 0);
@@ -346,7 +346,7 @@ static int OS2_OpenDevice(_THIS, void *handle, const char *devname,
     pAData->stMCIMixSetup.ulSamplesPerSec = _this->spec.freq;
     pAData->stMCIMixSetup.ulChannels      = _this->spec.channels;
     pAData->stMCIMixSetup.ulDeviceType    = MCI_DEVTYPE_WAVEFORM_AUDIO;
-    if (iscapture == 0) {
+    if (!iscapture) {
         pAData->stMCIMixSetup.ulFormatMode= MCI_PLAY;
         pAData->stMCIMixSetup.pmixEvent   = cbAudioWriteEvent;
     } else {

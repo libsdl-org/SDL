@@ -1027,7 +1027,7 @@ static const struct pw_stream_events stream_input_events  = { PW_VERSION_STREAM_
                                                              .process       = input_callback };
 
 static int
-PIPEWIRE_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
+PIPEWIRE_OpenDevice(_THIS, void *handle, const char *devname)
 {
     /*
      * NOTE: The PW_STREAM_FLAG_RT_PROCESS flag can be set to call the stream
@@ -1048,6 +1048,7 @@ PIPEWIRE_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     const char *                 app_name, *stream_name, *stream_role, *error;
     const Uint32                 node_id = this->handle == NULL ? PW_ID_ANY : PW_HANDLE_TO_ID(this->handle);
     enum pw_stream_state         state;
+    SDL_bool                     iscapture = this->iscapture;
     int                          res;
 
     /* Clamp the period size to sane values */

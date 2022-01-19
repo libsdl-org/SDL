@@ -192,10 +192,11 @@ EMSCRIPTENAUDIO_CloseDevice(_THIS)
 }
 
 static int
-EMSCRIPTENAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
+EMSCRIPTENAUDIO_OpenDevice(_THIS, void *handle, const char *devname)
 {
     SDL_bool valid_format = SDL_FALSE;
     SDL_AudioFormat test_format;
+    SDL_bool iscapture = this->iscapture;
     int result;
 
     /* based on parts of library_sdl.js */

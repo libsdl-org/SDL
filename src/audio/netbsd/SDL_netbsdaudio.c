@@ -202,8 +202,9 @@ NETBSDAUDIO_CloseDevice(_THIS)
 }
 
 static int
-NETBSDAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
+NETBSDAUDIO_OpenDevice(_THIS, void *handle, const char *devname)
 {
+    SDL_bool iscapture = this->iscapture;
     SDL_AudioFormat format = 0;
     audio_info_t info, hwinfo;
     struct audio_prinfo *prinfo = iscapture ? &info.record : &info.play;

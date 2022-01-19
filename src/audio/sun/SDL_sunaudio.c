@@ -188,11 +188,12 @@ SUNAUDIO_CloseDevice(_THIS)
 }
 
 static int
-SUNAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
+SUNAUDIO_OpenDevice(_THIS, void *handle, const char *devname)
 {
 #ifdef AUDIO_SETINFO
     int enc;
 #endif
+    SDL_bool iscapture = this->iscapture;
     int desired_freq = 0;
     const int flags = ((iscapture) ? OPEN_FLAGS_INPUT : OPEN_FLAGS_OUTPUT);
     SDL_AudioFormat format = 0;

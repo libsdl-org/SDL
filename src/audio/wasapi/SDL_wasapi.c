@@ -641,7 +641,7 @@ WASAPI_PrepDevice(_THIS, const SDL_bool updatestream)
 
 
 static int
-WASAPI_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
+WASAPI_OpenDevice(_THIS, void *handle, const char *devname)
 {
     LPCWSTR devid = (LPCWSTR) handle;
 
@@ -656,7 +656,7 @@ WASAPI_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     WASAPI_RefDevice(this);   /* so CloseDevice() will unref to zero. */
 
     if (!devid) {  /* is default device? */
-        this->hidden->default_device_generation = SDL_AtomicGet(iscapture ? &WASAPI_DefaultCaptureGeneration : &WASAPI_DefaultPlaybackGeneration);
+        this->hidden->default_device_generation = SDL_AtomicGet(this->iscapture ? &WASAPI_DefaultCaptureGeneration : &WASAPI_DefaultPlaybackGeneration);
     } else {
         this->hidden->devid = SDL_wcsdup(devid);
         if (!this->hidden->devid) {

@@ -522,7 +522,7 @@ SourceDeviceNameCallback(pa_context *c, const pa_source_info *i, int is_last, vo
 }
 
 static SDL_bool
-FindDeviceName(struct SDL_PrivateAudioData *h, const int iscapture, void *handle)
+FindDeviceName(struct SDL_PrivateAudioData *h, const SDL_bool iscapture, void *handle)
 {
     const uint32_t idx = ((uint32_t) ((size_t) handle)) - 1;
 
@@ -544,7 +544,7 @@ FindDeviceName(struct SDL_PrivateAudioData *h, const int iscapture, void *handle
 }
 
 static int
-PULSEAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
+PULSEAUDIO_OpenDevice(_THIS, void *handle, const char *devname)
 {
     struct SDL_PrivateAudioData *h = NULL;
     Uint16 test_format = 0;
@@ -553,6 +553,7 @@ PULSEAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     pa_channel_map pacmap;
     pa_stream_flags_t flags = 0;
     const char *name = NULL;
+    SDL_bool iscapture = this->iscapture;
     int state = 0;
     int rc = 0;
 

@@ -174,7 +174,7 @@ SDL_FS_CloseDevice(_THIS)
 
 
 static int
-SDL_FS_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
+SDL_FS_OpenDevice(_THIS, void *handle, const char *devname)
 {
     int bytes;
     SDL_AudioFormat test_format = 0, format = 0;

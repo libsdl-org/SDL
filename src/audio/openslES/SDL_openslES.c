@@ -583,14 +583,14 @@ failed:
 }
 
 static int
-openslES_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
+openslES_OpenDevice(_THIS, void *handle, const char *devname)
 {
     this->hidden = (struct SDL_PrivateAudioData *) SDL_calloc(1, (sizeof *this->hidden));
     if (this->hidden == NULL) {
         return SDL_OutOfMemory();
     }
 
-    if (iscapture) {
+    if (this->iscapture) {
         LOGI("openslES_OpenDevice() %s for capture", devname);
         return openslES_CreatePCMRecorder(this);
     } else {

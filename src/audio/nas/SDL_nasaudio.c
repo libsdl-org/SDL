@@ -331,10 +331,11 @@ find_device(_THIS)
 }
 
 static int
-NAS_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
+NAS_OpenDevice(_THIS, void *handle, const char *devname)
 {
     AuElement elms[3];
     int buffer_size;
+    SDL_bool iscapture = this->iscapture;
     SDL_AudioFormat test_format, format;
 
     /* Initialize all variables that we clean on shutdown */

@@ -223,7 +223,7 @@ PAUDIO_CloseDevice(_THIS)
 }
 
 static int
-PAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
+PAUDIO_OpenDevice(_THIS, void *handle, const char *devname)
 {
     const char *workaround = SDL_getenv("SDL_DSP_NOSELECT");
     char audiodev[1024];
