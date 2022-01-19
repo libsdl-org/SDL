@@ -21,7 +21,7 @@
 
 #include "SDL_config.h"
 
-#if defined(SDL_SENSOR_VITA)
+#if defined(SDL_SENSOR_VITA) && !defined(SDL_SENSOR_DISABLED)
 
 #include "SDL_error.h"
 #include "SDL_sensor.h"
@@ -214,6 +214,6 @@ SDL_SensorDriver SDL_VITA_SensorDriver =
     SDL_VITA_SensorQuit,
 };
 
-#endif /* SDL_SENSOR_VITA */
+#endif /* SDL_SENSOR_VITA && !SDL_SENSOR_DISABLED */
 
 /* vi: set ts=4 sw=4 expandtab: */

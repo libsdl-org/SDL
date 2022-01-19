@@ -22,7 +22,7 @@
 
 #include "SDL_config.h"
 
-#if defined(SDL_SENSOR_WINDOWS)
+#if defined(SDL_SENSOR_WINDOWS) && !defined(SDL_SENSOR_DISABLED)
 
 #include "SDL_error.h"
 #include "SDL_mutex.h"
@@ -482,6 +482,6 @@ SDL_SensorDriver SDL_WINDOWS_SensorDriver =
     SDL_WINDOWS_SensorQuit,
 };
 
-#endif /* SDL_SENSOR_WINDOWS */
+#endif /* SDL_SENSOR_WINDOWS !SDL_SENSOR_DISABLED */
 
 /* vi: set ts=4 sw=4 expandtab: */

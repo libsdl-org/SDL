@@ -21,7 +21,7 @@
 
 #include "SDL_config.h"
 
-#ifdef SDL_SENSOR_COREMOTION
+#if defined(SDL_SENSOR_COREMOTION) && !defined(SDL_SENSOR_DISABLED)
 
 /* This is the system specific header for the SDL sensor API */
 #include <CoreMotion/CoreMotion.h>
@@ -229,6 +229,6 @@ SDL_SensorDriver SDL_COREMOTION_SensorDriver =
     SDL_COREMOTION_SensorQuit,
 };
 
-#endif /* SDL_SENSOR_COREMOTION */
+#endif /* SDL_SENSOR_COREMOTION && !SDL_SENSOR_DISABLED */
 
 /* vi: set ts=4 sw=4 expandtab: */

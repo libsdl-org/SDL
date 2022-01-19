@@ -22,7 +22,7 @@
 
 #include "SDL_config.h"
 
-#ifdef SDL_SENSOR_ANDROID
+#if defined(SDL_SENSOR_ANDROID) && !defined(SDL_SENSOR_DISABLED)
 
 /* This is the system specific header for the SDL sensor API */
 #include <android/sensor.h>
@@ -215,6 +215,6 @@ SDL_SensorDriver SDL_ANDROID_SensorDriver =
     SDL_ANDROID_SensorQuit,
 };
 
-#endif /* SDL_SENSOR_ANDROID */
+#endif /* SDL_SENSOR_ANDROID && !SDL_SENSOR_DISABLED */
 
 /* vi: set ts=4 sw=4 expandtab: */
