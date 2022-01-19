@@ -1236,8 +1236,7 @@ SDL_FilterEvents(SDL_EventFilter filter, void *userdata)
 Uint8
 SDL_EventState(Uint32 type, int state)
 {
-    const SDL_bool isdnd = ((state == SDL_DISABLE) || (state == SDL_ENABLE)) &&
-                           ((type == SDL_DROPFILE) || (type == SDL_DROPTEXT));
+    const SDL_bool isde = (state == SDL_DISABLE) || (state == SDL_ENABLE);
     Uint8 current_state;
     Uint8 hi = ((type >> 8) & 0xff);
     Uint8 lo = (type & 0xff);
@@ -1249,44 +1248,32 @@ SDL_EventState(Uint32 type, int state)
         current_state = SDL_ENABLE;
     }
 
-    if (state != current_state)
-    {
-        switch (state) {
-        case SDL_DISABLE:
+    if (isde && state != current_state) {
+        if (state == SDL_DISABLE) {
             /* Disable this event type and discard pending events */
             if (!SDL_disabled_events[hi]) {
                 SDL_disabled_events[hi] = (SDL_DisabledEventBlock*) SDL_calloc(1, sizeof(SDL_DisabledEventBlock));
-                if (!SDL_disabled_events[hi]) {
-                    /* Out of memory, nothing we can do... */
-                    break;
-                }
             }
-            SDL_disabled_events[hi]->bits[lo/32] |= (1 << (lo&31));
-            SDL_FlushEvent(type);
-            break;
-        case SDL_ENABLE:
+            /* Out of memory, nothing we can do... */
+            if (SDL_disabled_events[hi]) {
+                SDL_disabled_events[hi]->bits[lo/32] |= (1 << (lo&31));
+                SDL_FlushEvent(type);
+            }
+        } else { // state == SDL_ENABLE
             SDL_disabled_events[hi]->bits[lo/32] &= ~(1 << (lo&31));
-            break;
-        default:
-            /* Querying state... */
-            break;
         }
 
 #if !SDL_JOYSTICK_DISABLED
-        if (state == SDL_DISABLE || state == SDL_ENABLE) {
-            SDL_CalculateShouldUpdateJoysticks();
-        }
+        SDL_CalculateShouldUpdateJoysticks();
 #endif
 #if !SDL_SENSOR_DISABLED
-        if (state == SDL_DISABLE || state == SDL_ENABLE) {
-            SDL_CalculateShouldUpdateSensors();
-        }
+        SDL_CalculateShouldUpdateSensors();
 #endif
     }
 
     /* turn off drag'n'drop support if we've disabled the events.
        This might change some UI details at the OS level. */
-    if (isdnd) {
+    if (isde && ((type == SDL_DROPFILE) || (type == SDL_DROPTEXT))) {
         SDL_ToggleDragAndDropSupport();
     }
 
