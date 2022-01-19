@@ -404,8 +404,7 @@ add_audio_device(const char *name, SDL_AudioSpec *spec, void *handle, SDL_AudioD
             SDL_UnlockMutex(current_audio.detectionLock);
             SDL_free(item->original_name);
             SDL_free(item);
-            SDL_OutOfMemory();
-            return -1;
+            return SDL_OutOfMemory();
         }
 
         SDL_snprintf(replacement, len, "%s (%d)", name, dupenum + 1);
