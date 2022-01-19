@@ -1664,6 +1664,7 @@ SDL_NewAudioStream(const SDL_AudioFormat src_format,
 
     retval = (SDL_AudioStream *) SDL_calloc(1, sizeof (SDL_AudioStream));
     if (!retval) {
+        SDL_OutOfMemory();
         return NULL;
     }
 
