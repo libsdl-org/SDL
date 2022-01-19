@@ -31,8 +31,22 @@
 #include <pipewire/extensions/metadata.h>
 #include <spa/param/audio/format-utils.h>
 
-/* Older versions of Pipewire may not define this, but it's safe to pass at
- * runtime even if older installations don't recognize it.
+/*
+ * The following keys are defined for compatability when building against older versions of Pipewire
+ * prior to their introduction and can be removed if the minimum required Pipewire version is increased
+ * to or beyond their point of introduction.
+ */
+
+/*
+ * Introduced in 0.3.22
+ * Taken from /src/pipewire/keys.h
+ */
+#ifndef PW_KEY_CONFIG_NAME
+#define PW_KEY_CONFIG_NAME "config.name"
+#endif
+
+/*
+ * Introduced in 0.3.33
  * Taken from src/pipewire/keys.h
  */
 #ifndef PW_KEY_NODE_RATE
@@ -1099,8 +1113,17 @@ PIPEWIRE_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
         return SDL_SetError("Pipewire: Failed to create stream loop (%i)", errno);
     }
 
-    /* Load the rtkit module so Pipewire can set the loop thread to the appropriate priority */
-    props = PIPEWIRE_pw_properties_new(PW_KEY_CONTEXT_PROFILE_MODULES, "default,rtkit", NULL);
+    /*
+     * Load the realtime module so Pipewire can set the loop thread to the appropriate priority.
+     *
+     * NOTE: Pipewire versions 0.3.22 or higher require the PW_KEY_CONFIG_NAME property (with client-rt.conf),
+     *       lower versions require explicitly specifying the 'rtkit' module.
+     *
+     *       PW_KEY_CONTEXT_PROFILE_MODULES is deprecated and can be safely removed if the minimum required
+     *       Pipewire version is increased to 0.3.22 or higher at some point.
+     */
+    props = PIPEWIRE_pw_properties_new(PW_KEY_CONFIG_NAME, "client-rt.conf",
+                                       PW_KEY_CONTEXT_PROFILE_MODULES, "default,rtkit", NULL);
     if (props == NULL) {
         return SDL_SetError("Pipewire: Failed to create stream context properties (%i)", errno);
     }
