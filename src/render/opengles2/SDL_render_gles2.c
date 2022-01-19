@@ -31,7 +31,8 @@
 /* WebGL doesn't offer client-side arrays, so use Vertex Buffer Objects
    on Emscripten, which converts GLES2 into WebGL calls.
    In all other cases, attempt to use client-side arrays, as they tend to
-   be faster. */
+   be dramatically faster when not batching, and about the same when
+   we are. */
 #if defined(__EMSCRIPTEN__)
 #define USE_VERTEX_BUFFER_OBJECTS 1
 #else
