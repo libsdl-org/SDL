@@ -1112,38 +1112,33 @@ SDL_GetAudioDeviceName(int index, int iscapture)
 int
 SDL_GetAudioDeviceSpec(int index, int iscapture, SDL_AudioSpec *spec)
 {
+    SDL_AudioDeviceItem *item;
+    int i, retval;
+
     if (spec == NULL) {
         return SDL_InvalidParamError("spec");
     }
-
-    SDL_zerop(spec);
 
     if (!SDL_GetCurrentAudioDriver()) {
         return SDL_SetError("Audio subsystem is not initialized");
     }
 
-    if (iscapture && !current_audio.impl.HasCaptureSupport) {
-        return SDL_SetError("No capture support");
-    }
-
-    if (index >= 0) {
-        SDL_AudioDeviceItem *item;
-        int i;
-
-        SDL_LockMutex(current_audio.detectionLock);
-        item = iscapture ? current_audio.inputDevices : current_audio.outputDevices;
-        i = iscapture ? current_audio.inputDeviceCount : current_audio.outputDeviceCount;
-        if (index < i) {
-            for (i--; i > index; i--, item = item->next) {
-                SDL_assert(item != NULL);
-            }
+    SDL_LockMutex(current_audio.detectionLock);
+    item = iscapture ? current_audio.inputDevices : current_audio.outputDevices;
+    i = iscapture ? current_audio.inputDeviceCount : current_audio.outputDeviceCount;
+    if (index >= 0 && index < i) {
+        for (i--; i > index; i--, item = item->next) {
             SDL_assert(item != NULL);
-            SDL_memcpy(spec, &item->spec, sizeof(SDL_AudioSpec));
         }
-        SDL_UnlockMutex(current_audio.detectionLock);
+        SDL_assert(item != NULL);
+        SDL_memcpy(spec, &item->spec, sizeof(SDL_AudioSpec));
+        retval = 0;
+    } else {
+        retval = SDL_InvalidParamError("index");
     }
+    SDL_UnlockMutex(current_audio.detectionLock);
 
-    return 0;
+    return retval;
 }
 
 
