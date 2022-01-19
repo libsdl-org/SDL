@@ -99,7 +99,7 @@ static void NACLAUDIO_CloseDevice(SDL_AudioDevice *device) {
 }
 
 static int
-NACLAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture) {
+NACLAUDIO_OpenDevice(_THIS, void *handle, const char *devname) {
     PP_Instance instance = PSGetInstanceId();
     const PPB_Audio *ppb_audio = PSInterfaceAudio();
     const PPB_AudioConfig *ppb_audiocfg = PSInterfaceAudioConfig();

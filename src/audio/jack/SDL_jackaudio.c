@@ -280,12 +280,13 @@ JACK_CloseDevice(_THIS)
 }
 
 static int
-JACK_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
+JACK_OpenDevice(_THIS, void *handle, const char *devname)
 {
     /* Note that JACK uses "output" for capture devices (they output audio
         data to us) and "input" for playback (we input audio data to them).
         Likewise, SDL's playback port will be "output" (we write data out)
         and capture will be "input" (we read data in). */
+    SDL_bool iscapture = this->iscapture;
     const unsigned long sysportflags = iscapture ? JackPortIsOutput : JackPortIsInput;
     const unsigned long sdlportflags = iscapture ? JackPortIsInput : JackPortIsOutput;
     const JackProcessCallback callback = iscapture ? jackProcessCaptureCallback : jackProcessPlaybackCallback;

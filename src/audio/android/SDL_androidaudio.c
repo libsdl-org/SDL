@@ -36,9 +36,10 @@ static SDL_AudioDevice* audioDevice = NULL;
 static SDL_AudioDevice* captureDevice = NULL;
 
 static int
-ANDROIDAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
+ANDROIDAUDIO_OpenDevice(_THIS, void *handle, const char *devname)
 {
     SDL_AudioFormat test_format;
+    SDL_bool iscapture = this->iscapture;
 
     SDL_assert((captureDevice == NULL) || !iscapture);
     SDL_assert((audioDevice == NULL) || iscapture);

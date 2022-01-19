@@ -289,7 +289,7 @@ SDL_AudioFreeDeviceHandle_Default(void *handle)
 
 
 static int
-SDL_AudioOpenDevice_Default(_THIS, void *handle, const char *devname, int iscapture)
+SDL_AudioOpenDevice_Default(_THIS, void *handle, const char *devname)
 {
     return SDL_Unsupported();
 }
@@ -458,7 +458,7 @@ free_device_list(SDL_AudioDeviceItem **devices, int *devCount)
 
 /* The audio backends call this when a new device is plugged in. */
 void
-SDL_AddAudioDevice(const int iscapture, const char *name, SDL_AudioSpec *spec, void *handle)
+SDL_AddAudioDevice(const SDL_bool iscapture, const char *name, SDL_AudioSpec *spec, void *handle)
 {
     const int device_index = iscapture ? add_capture_device(name, spec, handle) : add_output_device(name, spec, handle);
     if (device_index != -1) {
@@ -520,7 +520,7 @@ mark_device_removed(void *handle, SDL_AudioDeviceItem *devices, SDL_bool *remove
 
 /* The audio backends call this when a device is removed from the system. */
 void
-SDL_RemoveAudioDevice(const int iscapture, void *handle)
+SDL_RemoveAudioDevice(const SDL_bool iscapture, void *handle)
 {
     int device_index;
     SDL_AudioDevice *device = NULL;
@@ -1398,7 +1398,7 @@ open_audio_device(const char *devname, int iscapture,
         }
     }
 
-    if (current_audio.impl.OpenDevice(device, handle, devname, iscapture) < 0) {
+    if (current_audio.impl.OpenDevice(device, handle, devname) < 0) {
         close_audio_device(device);
         return 0;
     }

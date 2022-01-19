@@ -121,7 +121,7 @@ QSA_WaitDevice(_THIS)
     /* For example, Vortex 8820 audio driver stucks on second DAC because */
     /* it doesn't exist !                                                 */
     result = SDL_IOReady(this->hidden->audio_fd,
-                         this->hidden->iscapture ? SDL_IOR_READ : SDL_IOR_WRITE,
+                         this->iscapture ? SDL_IOR_READ : SDL_IOR_WRITE,
                          2 * 1000);
     switch (result) {
     case -1:
@@ -180,7 +180,7 @@ QSA_PlayDevice(_THIS)
             } else {
                 if ((errno == EINVAL) || (errno == EIO)) {
                     SDL_zero(cstatus);
-                    if (!this->hidden->iscapture) {
+                    if (!this->iscapture) {
                         cstatus.channel = SND_PCM_CHANNEL_PLAYBACK;
                     } else {
                         cstatus.channel = SND_PCM_CHANNEL_CAPTURE;
@@ -196,7 +196,7 @@ QSA_PlayDevice(_THIS)
 
                     if ((cstatus.status == SND_PCM_STATUS_UNDERRUN) ||
                         (cstatus.status == SND_PCM_STATUS_READY)) {
-                        if (!this->hidden->iscapture) {
+                        if (!this->iscapture) {
                             status =
                                 snd_pcm_plugin_prepare(this->hidden->
                                                        audio_handle,
@@ -240,7 +240,7 @@ static void
 QSA_CloseDevice(_THIS)
 {
     if (this->hidden->audio_handle != NULL) {
-        if (!this->hidden->iscapture) {
+        if (!this->iscapture) {
             /* Finish playing available samples */
             snd_pcm_plugin_flush(this->hidden->audio_handle,
                                  SND_PCM_CHANNEL_PLAYBACK);
@@ -257,9 +257,10 @@ QSA_CloseDevice(_THIS)
 }
 
 static int
-QSA_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
+QSA_OpenDevice(_THIS, void *handle, const char *devname)
 {
     const QSA_Device *device = (const QSA_Device *) handle;
+    SDL_Bool iscapture = this->iscapture;
     int status = 0;
     int format = 0;
     SDL_AudioFormat test_format = 0;
@@ -279,9 +280,6 @@ QSA_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
 
     /* Initialize channel transfer parameters to default */
     QSA_InitAudioParams(&cparams);
-
-    /* Initialize channel direction: capture or playback */
-    this->hidden->iscapture = iscapture ? SDL_TRUE : SDL_FALSE;
 
     if (device != NULL) {
         /* Open requested audio device */
@@ -407,7 +405,7 @@ QSA_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
 
     /* Make sure channel is setup right one last time */
     SDL_zero(csetup);
-    if (!this->hidden->iscapture) {
+    if (!this->iscapture) {
         csetup.channel = SND_PCM_CHANNEL_PLAYBACK;
     } else {
         csetup.channel = SND_PCM_CHANNEL_CAPTURE;
@@ -443,7 +441,7 @@ QSA_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
                this->hidden->pcm_len);
 
     /* get the file descriptor */
-    if (!this->hidden->iscapture) {
+    if (!this->iscapture) {
         this->hidden->audio_fd =
             snd_pcm_file_descriptor(this->hidden->audio_handle,
                                     SND_PCM_CHANNEL_PLAYBACK);
@@ -458,7 +456,7 @@ QSA_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     }
 
     /* Prepare an audio channel */
-    if (!this->hidden->iscapture) {
+    if (!this->iscapture) {
         /* Prepare audio playback */
         status =
             snd_pcm_plugin_prepare(this->hidden->audio_handle,

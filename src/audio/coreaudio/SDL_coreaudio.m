@@ -1015,11 +1015,11 @@ audioqueue_thread(void *arg)
 }
 
 static int
-COREAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
+COREAUDIO_OpenDevice(_THIS, void *handle, const char *devname)
 {
     AudioStreamBasicDescription *strdesc;
     SDL_AudioFormat test_format = SDL_FirstAudioFormat(this->spec.format);
-    int valid_datatype = 0;
+    SDL_bool valid_datatype = SDL_FALSE, iscapture = this->iscapture;
     SDL_AudioDevice **new_open_devices;
 
     /* Initialize all variables that we clean on shutdown */
@@ -1088,7 +1088,7 @@ COREAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
         case AUDIO_S32MSB:
         case AUDIO_F32LSB:
         case AUDIO_F32MSB:
-            valid_datatype = 1;
+            valid_datatype = SDL_TRUE;
             strdesc->mBitsPerChannel = SDL_AUDIO_BITSIZE(this->spec.format);
             if (SDL_AUDIO_ISBIGENDIAN(this->spec.format))
                 strdesc->mFormatFlags |= kLinearPCMFormatFlagIsBigEndian;

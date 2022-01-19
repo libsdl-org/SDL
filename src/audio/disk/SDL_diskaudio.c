@@ -114,7 +114,7 @@ DISKAUDIO_CloseDevice(_THIS)
 
 
 static const char *
-get_filename(const int iscapture, const char *devname)
+get_filename(const SDL_bool iscapture, const char *devname)
 {
     if (devname == NULL) {
         devname = SDL_getenv(iscapture ? DISKENVR_INFILE : DISKENVR_OUTFILE);
@@ -126,9 +126,10 @@ get_filename(const int iscapture, const char *devname)
 }
 
 static int
-DISKAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
+DISKAUDIO_OpenDevice(_THIS, void *handle, const char *devname)
 {
     /* handle != NULL means "user specified the placeholder name on the fake detected device list" */
+    SDL_bool iscapture = _this->iscapture;
     const char *fname = get_filename(iscapture, handle ? NULL : devname);
     const char *envr = SDL_getenv(DISKENVR_IODELAY);
 

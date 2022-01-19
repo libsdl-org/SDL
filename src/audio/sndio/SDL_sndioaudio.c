@@ -237,10 +237,11 @@ SNDIO_CloseDevice(_THIS)
 }
 
 static int
-SNDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
+SNDIO_OpenDevice(_THIS, void *handle, const char *devname)
 {
     SDL_AudioFormat test_format = SDL_FirstAudioFormat(this->spec.format);
     struct sio_par par;
+    SDL_bool iscapture = this->iscapture;
     int status;
 
     this->hidden = (struct SDL_PrivateAudioData *)

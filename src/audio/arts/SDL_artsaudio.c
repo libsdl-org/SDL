@@ -216,7 +216,7 @@ ARTS_Suspend(void)
 }
 
 static int
-ARTS_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
+ARTS_OpenDevice(_THIS, void *handle, const char *devname)
 {
     int rc = 0;
     int bits = 0, frag_spec = 0;

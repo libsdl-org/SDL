@@ -543,9 +543,10 @@ ALSA_set_buffer_size(_THIS, snd_pcm_hw_params_t *params)
 }
 
 static int
-ALSA_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
+ALSA_OpenDevice(_THIS, void *handle, const char *devname)
 {
     int status = 0;
+    SDL_bool iscapture = this->iscapture;
     snd_pcm_t *pcm_handle = NULL;
     snd_pcm_hw_params_t *hwparams = NULL;
     snd_pcm_sw_params_t *swparams = NULL;
