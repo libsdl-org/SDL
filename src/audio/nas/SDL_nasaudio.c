@@ -237,26 +237,6 @@ NAS_CloseDevice(_THIS)
     SDL_free(this->hidden);
 }
 
-static unsigned char
-sdlformat_to_auformat(unsigned int fmt)
-{
-    switch (fmt) {
-    case AUDIO_U8:
-        return AuFormatLinearUnsigned8;
-    case AUDIO_S8:
-        return AuFormatLinearSigned8;
-    case AUDIO_U16LSB:
-        return AuFormatLinearUnsigned16LSB;
-    case AUDIO_U16MSB:
-        return AuFormatLinearUnsigned16MSB;
-    case AUDIO_S16LSB:
-        return AuFormatLinearSigned16LSB;
-    case AUDIO_S16MSB:
-        return AuFormatLinearSigned16MSB;
-    }
-    return AuNone;
-}
-
 static AuBool
 event_handler(AuServer * aud, AuEvent * ev, AuEventHandlerRec * hnd)
 {
@@ -336,7 +316,7 @@ NAS_OpenDevice(_THIS, void *handle, const char *devname)
     AuElement elms[3];
     int buffer_size;
     SDL_bool iscapture = this->iscapture;
-    SDL_AudioFormat test_format, format;
+    SDL_AudioFormat test_format, format = 0;
 
     /* Initialize all variables that we clean on shutdown */
     this->hidden = (struct SDL_PrivateAudioData *)
@@ -347,16 +327,33 @@ NAS_OpenDevice(_THIS, void *handle, const char *devname)
     SDL_zerop(this->hidden);
 
     /* Try for a closest match on audio format */
-    format = 0;
-    for (test_format = SDL_FirstAudioFormat(this->spec.format);
-         !format && test_format;) {
-        format = sdlformat_to_auformat(test_format);
-        if (format == AuNone) {
-            test_format = SDL_NextAudioFormat();
+    for (test_format = SDL_FirstAudioFormat(this->spec.format); test_format; test_format = SDL_NextAudioFormat()) {
+        switch (test_format) {
+        case AUDIO_U8:
+            format = AuFormatLinearUnsigned8;
+            break;
+        case AUDIO_S8:
+            format = AuFormatLinearSigned8;
+            break;
+        case AUDIO_U16LSB:
+            format = AuFormatLinearUnsigned16LSB;
+            break;
+        case AUDIO_U16MSB:
+            format = AuFormatLinearUnsigned16MSB;
+            break;
+        case AUDIO_S16LSB:
+            format = AuFormatLinearSigned16LSB;
+            break;
+        case AUDIO_S16MSB:
+            format = AuFormatLinearSigned16MSB;
+            break;
+        default:
+            continue;
         }
+        break;
     }
-    if (format == 0) {
-        return SDL_SetError("NAS: Couldn't find any hardware audio formats");
+    if (!test_format) {
+        return SDL_SetError("%s: Unsupported audio format", "nas");
     }
     this->spec.format = test_format;
 

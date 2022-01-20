@@ -228,7 +228,7 @@ PAUDIO_OpenDevice(_THIS, void *handle, const char *devname)
     const char *workaround = SDL_getenv("SDL_DSP_NOSELECT");
     char audiodev[1024];
     const char *err = NULL;
-    int format;
+    int flags;
     int bytes_per_sample;
     SDL_AudioFormat test_format;
     audio_init paud_init;
@@ -316,63 +316,44 @@ PAUDIO_OpenDevice(_THIS, void *handle, const char *devname)
     paud_init.channels = this->spec.channels;
 
     /* Try for a closest match on audio format */
-    format = 0;
-    for (test_format = SDL_FirstAudioFormat(this->spec.format);
-         !format && test_format;) {
+    for (test_format = SDL_FirstAudioFormat(this->spec.format); test_format; test_format = SDL_NextAudioFormat()) {
 #ifdef DEBUG_AUDIO
         fprintf(stderr, "Trying format 0x%4.4x\n", test_format);
 #endif
         switch (test_format) {
         case AUDIO_U8:
-            bytes_per_sample = 1;
-            paud_init.bits_per_sample = 8;
-            paud_init.flags = TWOS_COMPLEMENT | FIXED;
-            format = 1;
+            flags = TWOS_COMPLEMENT | FIXED;
             break;
         case AUDIO_S8:
-            bytes_per_sample = 1;
-            paud_init.bits_per_sample = 8;
-            paud_init.flags = SIGNED | TWOS_COMPLEMENT | FIXED;
-            format = 1;
+            flags = SIGNED | TWOS_COMPLEMENT | FIXED;
             break;
         case AUDIO_S16LSB:
-            bytes_per_sample = 2;
-            paud_init.bits_per_sample = 16;
-            paud_init.flags = SIGNED | TWOS_COMPLEMENT | FIXED;
-            format = 1;
+            flags = SIGNED | TWOS_COMPLEMENT | FIXED;
             break;
         case AUDIO_S16MSB:
-            bytes_per_sample = 2;
-            paud_init.bits_per_sample = 16;
-            paud_init.flags = BIG_ENDIAN | SIGNED | TWOS_COMPLEMENT | FIXED;
-            format = 1;
+            flags = BIG_ENDIAN | SIGNED | TWOS_COMPLEMENT | FIXED;
             break;
         case AUDIO_U16LSB:
-            bytes_per_sample = 2;
-            paud_init.bits_per_sample = 16;
-            paud_init.flags = TWOS_COMPLEMENT | FIXED;
-            format = 1;
+            flags = TWOS_COMPLEMENT | FIXED;
             break;
         case AUDIO_U16MSB:
-            bytes_per_sample = 2;
-            paud_init.bits_per_sample = 16;
-            paud_init.flags = BIG_ENDIAN | TWOS_COMPLEMENT | FIXED;
-            format = 1;
+            flags = BIG_ENDIAN | TWOS_COMPLEMENT | FIXED;
             break;
         default:
-            break;
+            continue;
         }
-        if (!format) {
-            test_format = SDL_NextAudioFormat();
-        }
+        break;
     }
-    if (format == 0) {
+    if (!test_format) {
 #ifdef DEBUG_AUDIO
         fprintf(stderr, "Couldn't find any hardware audio formats\n");
 #endif
-        return SDL_SetError("Couldn't find any hardware audio formats");
+        return SDL_SetError("%s: Unsupported audio format", "paud");
     }
     this->spec.format = test_format;
+    paud_init.bits_per_sample = SDL_AUDIO_BITSIZE(test_format);
+    bytes_per_sample = SDL_AUDIO_BITSIZE(test_format) / 8;
+    paud_init.flags = flags;
 
     /*
      * We know the buffer size and the max number of subsequent writes
@@ -406,28 +387,25 @@ PAUDIO_OpenDevice(_THIS, void *handle, const char *devname)
     if (ioctl(fd, AUDIO_INIT, &paud_init) < 0) {
         switch (paud_init.rc) {
         case 1:
-            err = "Couldn't set audio format: DSP can't do play requests";
+            err = "DSP can't do play requests";
             break;
         case 2:
-            err = "Couldn't set audio format: DSP can't do record requests";
+            err = "DSP can't do record requests";
             break;
         case 4:
-            err = "Couldn't set audio format: request was invalid";
+            err = "request was invalid";
             break;
         case 5:
-            err = "Couldn't set audio format: conflict with open's flags";
+            err = "conflict with open's flags";
             break;
         case 6:
-            err = "Couldn't set audio format: out of DSP MIPS or memory";
+            err = "out of DSP MIPS or memory";
             break;
         default:
-            err = "Couldn't set audio format: not documented in sys/audio.h";
+            err = "not documented in sys/audio.h";
             break;
         }
-    }
-
-    if (err != NULL) {
-        return SDL_SetError("Paudio: %s", err);
+        return SDL_SetError("paud: Couldn't set audio format (%s)", err);
     }
 
     /* Allocate mixing buffer */

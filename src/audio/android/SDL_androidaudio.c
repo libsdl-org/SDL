@@ -55,20 +55,18 @@ ANDROIDAUDIO_OpenDevice(_THIS, void *handle, const char *devname)
         return SDL_OutOfMemory();
     }
 
-    test_format = SDL_FirstAudioFormat(this->spec.format);
-    while (test_format != 0) { /* no "UNKNOWN" constant */
+    for (test_format = SDL_FirstAudioFormat(this->spec.format); test_format; test_format = SDL_NextAudioFormat()) {
         if ((test_format == AUDIO_U8) ||
             (test_format == AUDIO_S16) ||
             (test_format == AUDIO_F32)) {
             this->spec.format = test_format;
             break;
         }
-        test_format = SDL_NextAudioFormat();
     }
 
-    if (test_format == 0) {
+    if (!test_format) {
         /* Didn't find a compatible format :( */
-        return SDL_SetError("No compatible audio format!");
+        return SDL_SetError("%s: Unsupported audio format", "android");
     }
 
     if (Android_JNI_OpenAudioDevice(iscapture, &this->spec) < 0) {

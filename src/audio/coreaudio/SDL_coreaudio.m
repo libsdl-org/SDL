@@ -1018,8 +1018,8 @@ static int
 COREAUDIO_OpenDevice(_THIS, void *handle, const char *devname)
 {
     AudioStreamBasicDescription *strdesc;
-    SDL_AudioFormat test_format = SDL_FirstAudioFormat(this->spec.format);
-    SDL_bool valid_datatype = SDL_FALSE, iscapture = this->iscapture;
+    SDL_AudioFormat test_format;
+    SDL_bool iscapture = this->iscapture;
     SDL_AudioDevice **new_open_devices;
 
     /* Initialize all variables that we clean on shutdown */
@@ -1076,8 +1076,7 @@ COREAUDIO_OpenDevice(_THIS, void *handle, const char *devname)
     strdesc->mSampleRate = this->spec.freq;
     strdesc->mFramesPerPacket = 1;
 
-    while ((!valid_datatype) && (test_format)) {
-        this->spec.format = test_format;
+    for (test_format = SDL_FirstAudioFormat(this->spec.format); test_format; test_format = SDL_NextAudioFormat()) {
         /* CoreAudio handles most of SDL's formats natively, but not U16, apparently. */
         switch (test_format) {
         case AUDIO_U8:
@@ -1088,26 +1087,26 @@ COREAUDIO_OpenDevice(_THIS, void *handle, const char *devname)
         case AUDIO_S32MSB:
         case AUDIO_F32LSB:
         case AUDIO_F32MSB:
-            valid_datatype = SDL_TRUE;
-            strdesc->mBitsPerChannel = SDL_AUDIO_BITSIZE(this->spec.format);
-            if (SDL_AUDIO_ISBIGENDIAN(this->spec.format))
-                strdesc->mFormatFlags |= kLinearPCMFormatFlagIsBigEndian;
-
-            if (SDL_AUDIO_ISFLOAT(this->spec.format))
-                strdesc->mFormatFlags |= kLinearPCMFormatFlagIsFloat;
-            else if (SDL_AUDIO_ISSIGNED(this->spec.format))
-                strdesc->mFormatFlags |= kLinearPCMFormatFlagIsSignedInteger;
             break;
 
         default:
-            test_format = SDL_NextAudioFormat();
-            break;
+            continue;
         }
+        break;
     }
 
-    if (!valid_datatype) {      /* shouldn't happen, but just in case... */
+    if (!test_format) {      /* shouldn't happen, but just in case... */
         return SDL_SetError("Unsupported audio format");
     }
+    this->spec.format = test_format;
+    strdesc->mBitsPerChannel = SDL_AUDIO_BITSIZE(test_format);
+    if (SDL_AUDIO_ISBIGENDIAN(test_format))
+        strdesc->mFormatFlags |= kLinearPCMFormatFlagIsBigEndian;
+
+    if (SDL_AUDIO_ISFLOAT(test_format))
+        strdesc->mFormatFlags |= kLinearPCMFormatFlagIsFloat;
+    else if (SDL_AUDIO_ISSIGNED(test_format))
+        strdesc->mFormatFlags |= kLinearPCMFormatFlagIsSignedInteger;
 
     strdesc->mBytesPerFrame = strdesc->mChannelsPerFrame * strdesc->mBitsPerChannel / 8;
     strdesc->mBytesPerPacket = strdesc->mBytesPerFrame * strdesc->mFramesPerPacket;

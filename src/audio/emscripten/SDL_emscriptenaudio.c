@@ -194,7 +194,6 @@ EMSCRIPTENAUDIO_CloseDevice(_THIS)
 static int
 EMSCRIPTENAUDIO_OpenDevice(_THIS, void *handle, const char *devname)
 {
-    SDL_bool valid_format = SDL_FALSE;
     SDL_AudioFormat test_format;
     SDL_bool iscapture = this->iscapture;
     int result;
@@ -229,22 +228,21 @@ EMSCRIPTENAUDIO_OpenDevice(_THIS, void *handle, const char *devname)
         return SDL_SetError("Web Audio API is not available!");
     }
 
-    test_format = SDL_FirstAudioFormat(this->spec.format);
-    while ((!valid_format) && (test_format)) {
+    for (test_format = SDL_FirstAudioFormat(this->spec.format); test_format; test_format = SDL_NextAudioFormat()) {
         switch (test_format) {
         case AUDIO_F32: /* web audio only supports floats */
-            this->spec.format = test_format;
-
-            valid_format = SDL_TRUE;
             break;
+        default:
+            continue;
         }
-        test_format = SDL_NextAudioFormat();
+        break;
     }
 
-    if (!valid_format) {
+    if (!test_format) {
         /* Didn't find a compatible format :( */
-        return SDL_SetError("No compatible audio format!");
+        return SDL_SetError("%s: Unsupported audio format", "emscripten");
     }
+    this->spec.format = test_format;
 
     /* Initialize all variables that we clean on shutdown */
 #if 0  /* !!! FIXME: currently not used. Can we move some stuff off the SDL2 namespace? --ryan. */
