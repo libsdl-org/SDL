@@ -543,7 +543,7 @@ ALSA_set_buffer_size(_THIS, snd_pcm_hw_params_t *params)
 }
 
 static int
-ALSA_OpenDevice(_THIS, void *handle, const char *devname)
+ALSA_OpenDevice(_THIS, const char *devname)
 {
     int status = 0;
     SDL_bool iscapture = this->iscapture;
@@ -570,7 +570,7 @@ ALSA_OpenDevice(_THIS, void *handle, const char *devname)
     /* Open the audio device */
     /* Name of device should depend on # channels in spec */
     status = ALSA_snd_pcm_open(&pcm_handle,
-                get_audio_device(handle, this->spec.channels),
+                get_audio_device(this->handle, this->spec.channels),
                 iscapture ? SND_PCM_STREAM_CAPTURE : SND_PCM_STREAM_PLAYBACK,
                 SND_PCM_NONBLOCK);
 

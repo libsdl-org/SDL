@@ -289,7 +289,7 @@ SDL_AudioFreeDeviceHandle_Default(void *handle)
 
 
 static int
-SDL_AudioOpenDevice_Default(_THIS, void *handle, const char *devname)
+SDL_AudioOpenDevice_Default(_THIS, const char *devname)
 {
     return SDL_Unsupported();
 }
@@ -1383,7 +1383,7 @@ open_audio_device(const char *devname, int iscapture,
         }
     }
 
-    if (current_audio.impl.OpenDevice(device, handle, devname) < 0) {
+    if (current_audio.impl.OpenDevice(device, devname) < 0) {
         close_audio_device(device);
         return 0;
     }

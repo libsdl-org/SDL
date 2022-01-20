@@ -473,14 +473,14 @@ CreateCaptureBuffer(_THIS, const DWORD bufsize, WAVEFORMATEX *wfmt)
 }
 
 static int
-DSOUND_OpenDevice(_THIS, void *handle, const char *devname)
+DSOUND_OpenDevice(_THIS, const char *devname)
 {
     const DWORD numchunks = 8;
     HRESULT result;
     SDL_bool tried_format = SDL_FALSE;
     SDL_bool iscapture = this->iscapture;
     SDL_AudioFormat test_format;
-    LPGUID guid = (LPGUID) handle;
+    LPGUID guid = (LPGUID) this->handle;
     DWORD bufsize;
 
     /* Initialize all variables that we clean on shutdown */

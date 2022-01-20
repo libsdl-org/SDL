@@ -68,7 +68,7 @@ DSP_CloseDevice(_THIS)
 
 
 static int
-DSP_OpenDevice(_THIS, void *handle, const char *devname)
+DSP_OpenDevice(_THIS, const char *devname)
 {
     SDL_bool iscapture = this->iscapture;
     const int flags = ((iscapture) ? OPEN_FLAGS_INPUT : OPEN_FLAGS_OUTPUT);

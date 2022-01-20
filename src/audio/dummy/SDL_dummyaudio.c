@@ -28,7 +28,7 @@
 #include "SDL_dummyaudio.h"
 
 static int
-DUMMYAUDIO_OpenDevice(_THIS, void *handle, const char *devname)
+DUMMYAUDIO_OpenDevice(_THIS, const char *devname)
 {
     _this->hidden = (void *) 0x1;  /* just something non-NULL */
     return 0;                   /* always succeeds. */

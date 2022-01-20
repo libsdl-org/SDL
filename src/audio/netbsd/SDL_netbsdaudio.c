@@ -202,7 +202,7 @@ NETBSDAUDIO_CloseDevice(_THIS)
 }
 
 static int
-NETBSDAUDIO_OpenDevice(_THIS, void *handle, const char *devname)
+NETBSDAUDIO_OpenDevice(_THIS, const char *devname)
 {
     SDL_bool iscapture = this->iscapture;
     SDL_AudioFormat test_format;

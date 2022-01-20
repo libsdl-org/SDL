@@ -126,8 +126,9 @@ get_filename(const SDL_bool iscapture, const char *devname)
 }
 
 static int
-DISKAUDIO_OpenDevice(_THIS, void *handle, const char *devname)
+DISKAUDIO_OpenDevice(_THIS, const char *devname)
 {
+    void *handle = _this->handle;
     /* handle != NULL means "user specified the placeholder name on the fake detected device list" */
     SDL_bool iscapture = _this->iscapture;
     const char *fname = get_filename(iscapture, handle ? NULL : devname);

@@ -188,7 +188,7 @@ SUNAUDIO_CloseDevice(_THIS)
 }
 
 static int
-SUNAUDIO_OpenDevice(_THIS, void *handle, const char *devname)
+SUNAUDIO_OpenDevice(_THIS, const char *devname)
 {
 #ifdef AUDIO_SETINFO
     int enc;

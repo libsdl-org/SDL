@@ -582,7 +582,7 @@ failed:
 }
 
 static int
-openslES_OpenDevice(_THIS, void *handle, const char *devname)
+openslES_OpenDevice(_THIS, const char *devname)
 {
     this->hidden = (struct SDL_PrivateAudioData *) SDL_calloc(1, (sizeof *this->hidden));
     if (this->hidden == NULL) {

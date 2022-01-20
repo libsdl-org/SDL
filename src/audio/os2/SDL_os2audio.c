@@ -248,7 +248,7 @@ static void OS2_CloseDevice(_THIS)
     SDL_free(pAData);
 }
 
-static int OS2_OpenDevice(_THIS, void *handle, const char *devname)
+static int OS2_OpenDevice(_THIS, const char *devname)
 {
     SDL_PrivateAudioData *pAData;
     SDL_AudioFormat       test_format;
@@ -284,7 +284,7 @@ static int OS2_OpenDevice(_THIS, void *handle, const char *devname)
     }
 
     /* Open audio device */
-    stMCIAmpOpen.usDeviceID = (handle != NULL) ? ((ULONG)handle - 1) : 0;
+    stMCIAmpOpen.usDeviceID = (_this->handle != NULL) ? ((ULONG)_this->handle - 1) : 0;
     stMCIAmpOpen.pszDeviceType = (PSZ)MCI_DEVTYPE_AUDIO_AMPMIX;
     ulRC = mciSendCommand(0, MCI_OPEN,
                           (_getEnvULong("SDL_AUDIO_SHARE", 1, 0) != 0)?

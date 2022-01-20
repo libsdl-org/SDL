@@ -237,7 +237,7 @@ SNDIO_CloseDevice(_THIS)
 }
 
 static int
-SNDIO_OpenDevice(_THIS, void *handle, const char *devname)
+SNDIO_OpenDevice(_THIS, const char *devname)
 {
     SDL_AudioFormat test_format;
     struct sio_par par;

@@ -71,7 +71,7 @@ void aaudio_errorCallback( AAudioStream *stream, void *userData, aaudio_result_t
 #define LIB_AAUDIO_SO "libaaudio.so"
 
 static int
-aaudio_OpenDevice(_THIS, void *handle, const char *devname)
+aaudio_OpenDevice(_THIS, const char *devname)
 {
     struct SDL_PrivateAudioData *private;
     SDL_bool iscapture = this->iscapture;

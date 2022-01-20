@@ -636,9 +636,9 @@ WASAPI_PrepDevice(_THIS, const SDL_bool updatestream)
 
 
 static int
-WASAPI_OpenDevice(_THIS, void *handle, const char *devname)
+WASAPI_OpenDevice(_THIS, const char *devname)
 {
-    LPCWSTR devid = (LPCWSTR) handle;
+    LPCWSTR devid = (LPCWSTR) this->handle;
 
     /* Initialize all variables that we clean on shutdown */
     this->hidden = (struct SDL_PrivateAudioData *)

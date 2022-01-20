@@ -257,9 +257,9 @@ QSA_CloseDevice(_THIS)
 }
 
 static int
-QSA_OpenDevice(_THIS, void *handle, const char *devname)
+QSA_OpenDevice(_THIS, const char *devname)
 {
-    const QSA_Device *device = (const QSA_Device *) handle;
+    const QSA_Device *device = (const QSA_Device *) this->handle;
     SDL_Bool iscapture = this->iscapture;
     int status = 0;
     int format = 0;
