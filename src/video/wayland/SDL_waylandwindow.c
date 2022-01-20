@@ -724,7 +724,6 @@ void Wayland_ShowWindow(_THIS, SDL_Window *window)
 {
     SDL_VideoData *c = _this->driverdata;
     SDL_WindowData *data = window->driverdata;
-    SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
 
     /* Detach any previous buffers before resetting everything, otherwise when
      * calling this a second time you'll get an annoying protocol error
@@ -766,7 +765,6 @@ void Wayland_ShowWindow(_THIS, SDL_Window *window)
     if (window->flags & SDL_WINDOW_MINIMIZED) {
         Wayland_MinimizeWindow(_this, window);
     }
-    Wayland_SetWindowFullscreen(_this, window, display, (window->flags & SDL_WINDOW_FULLSCREEN) != 0);
 
     /* We have to wait until the surface gets a "configure" event, or use of
      * this surface will fail. This is a new rule for xdg_shell.
@@ -782,6 +780,12 @@ void Wayland_ShowWindow(_THIS, SDL_Window *window)
     } else
 #endif
     if (c->shell.xdg) {
+        /* Unlike libdecor we need to call this explicitly to prevent a deadlock.
+         * libdecor will call this as part of their configure event!
+         * -flibit
+         */
+        Wayland_SetWindowFullscreen(_this, window, SDL_GetDisplayForWindow(window),
+                                    (window->flags & SDL_WINDOW_FULLSCREEN) != 0);
         if (data->shell_surface.xdg.surface) {
             while (!data->shell_surface.xdg.initial_configure_seen) {
                 WAYLAND_wl_display_flush(c->display);
