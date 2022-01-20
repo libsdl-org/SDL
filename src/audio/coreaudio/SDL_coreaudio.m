@@ -1096,7 +1096,7 @@ COREAUDIO_OpenDevice(_THIS, void *handle, const char *devname)
     }
 
     if (!test_format) {      /* shouldn't happen, but just in case... */
-        return SDL_SetError("Unsupported audio format");
+        return SDL_SetError("%s: Unsupported audio format", "coreaudio");
     }
     this->spec.format = test_format;
     strdesc->mBitsPerChannel = SDL_AUDIO_BITSIZE(test_format);
