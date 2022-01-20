@@ -1027,7 +1027,7 @@ static const struct pw_stream_events stream_input_events  = { PW_VERSION_STREAM_
                                                              .process       = input_callback };
 
 static int
-PIPEWIRE_OpenDevice(_THIS, void *handle, const char *devname)
+PIPEWIRE_OpenDevice(_THIS, const char *devname)
 {
     /*
      * NOTE: The PW_STREAM_FLAG_RT_PROCESS flag can be set to call the stream
@@ -1108,7 +1108,7 @@ PIPEWIRE_OpenDevice(_THIS, void *handle, const char *devname)
         }
     }
 
-    SDL_snprintf(thread_name, sizeof(thread_name), "SDLAudio%c%ld", (iscapture) ? 'C' : 'P', (long)handle);
+    SDL_snprintf(thread_name, sizeof(thread_name), "SDLAudio%c%ld", (iscapture) ? 'C' : 'P', (long)this->handle);
     priv->loop = PIPEWIRE_pw_thread_loop_new(thread_name, NULL);
     if (priv->loop == NULL) {
         return SDL_SetError("Pipewire: Failed to create stream loop (%i)", errno);

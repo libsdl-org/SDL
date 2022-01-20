@@ -42,7 +42,7 @@
 #define PSPAUDIO_DRIVER_NAME    "psp"
 
 static int
-PSPAUDIO_OpenDevice(_THIS, void *handle, const char *devname)
+PSPAUDIO_OpenDevice(_THIS, const char *devname)
 {
     int format, mixlen, i;
 

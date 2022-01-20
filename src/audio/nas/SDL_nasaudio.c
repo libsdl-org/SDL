@@ -311,7 +311,7 @@ find_device(_THIS)
 }
 
 static int
-NAS_OpenDevice(_THIS, void *handle, const char *devname)
+NAS_OpenDevice(_THIS, const char *devname)
 {
     AuElement elms[3];
     int buffer_size;

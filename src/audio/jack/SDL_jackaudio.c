@@ -280,7 +280,7 @@ JACK_CloseDevice(_THIS)
 }
 
 static int
-JACK_OpenDevice(_THIS, void *handle, const char *devname)
+JACK_OpenDevice(_THIS, const char *devname)
 {
     /* Note that JACK uses "output" for capture devices (they output audio
         data to us) and "input" for playback (we input audio data to them).

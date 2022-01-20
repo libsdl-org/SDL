@@ -45,7 +45,7 @@
 #define VITAAUD_DRIVER_NAME     "vita"
 
 static int
-VITAAUD_OpenDevice(_THIS, void *handle, const char *devname)
+VITAAUD_OpenDevice(_THIS, const char *devname)
 {
     int format, mixlen, i, port = SCE_AUDIO_OUT_PORT_TYPE_MAIN;
     int vols[2] = {SCE_AUDIO_MAX_VOLUME, SCE_AUDIO_MAX_VOLUME};

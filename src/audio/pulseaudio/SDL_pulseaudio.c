@@ -544,7 +544,7 @@ FindDeviceName(struct SDL_PrivateAudioData *h, const SDL_bool iscapture, void *h
 }
 
 static int
-PULSEAUDIO_OpenDevice(_THIS, void *handle, const char *devname)
+PULSEAUDIO_OpenDevice(_THIS, const char *devname)
 {
     struct SDL_PrivateAudioData *h = NULL;
     SDL_AudioFormat test_format;
@@ -644,7 +644,7 @@ PULSEAUDIO_OpenDevice(_THIS, void *handle, const char *devname)
         return SDL_SetError("Could not connect to PulseAudio server");
     }
 
-    if (!FindDeviceName(h, iscapture, handle)) {
+    if (!FindDeviceName(h, iscapture, this->handle)) {
         return SDL_SetError("Requested PulseAudio sink/source missing?");
     }
 

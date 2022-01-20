@@ -283,10 +283,11 @@ PrepWaveFormat(_THIS, UINT devId, WAVEFORMATEX *pfmt, const int iscapture)
 }
 
 static int
-WINMM_OpenDevice(_THIS, void *handle, const char *devname)
+WINMM_OpenDevice(_THIS, const char *devname)
 {
     SDL_AudioFormat test_format;
     SDL_bool iscapture = this->iscapture;
+    void *handle = this->handle;
     MMRESULT result;
     WAVEFORMATEX waveformat;
     UINT devId = WAVE_MAPPER;  /* WAVE_MAPPER == choose system's default */

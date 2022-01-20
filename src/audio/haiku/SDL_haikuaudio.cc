@@ -120,7 +120,7 @@ UnmaskSignals(sigset_t * omask)
 
 
 static int
-HAIKUAUDIO_OpenDevice(_THIS, void *handle, const char *devname)
+HAIKUAUDIO_OpenDevice(_THIS, const char *devname)
 {
     media_raw_audio_format format;
     SDL_AudioFormat test_format;

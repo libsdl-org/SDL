@@ -741,8 +741,10 @@ COREAUDIO_CloseDevice(_THIS)
 
 #if MACOSX_COREAUDIO
 static int
-prepare_device(_THIS, void *handle, int iscapture)
+prepare_device(_THIS)
 {
+    void *handle = this->handle;
+    SDL_bool iscapture = this->iscapture;
     AudioDeviceID devid = (AudioDeviceID) ((size_t) handle);
     OSStatus result = noErr;
     UInt32 size = 0;
@@ -983,7 +985,7 @@ audioqueue_thread(void *arg)
                and quits (flagging the audioqueue for shutdown), or toggles to some other system
                output device (in which case we'll try again). */
             const AudioDeviceID prev_devid = this->hidden->deviceID;
-            if (prepare_device(this, this->handle, this->iscapture) && (prev_devid != this->hidden->deviceID)) {
+            if (prepare_device(this) && (prev_devid != this->hidden->deviceID)) {
                 AudioQueueStop(this->hidden->audioQueue, 1);
                 if (assign_device_to_audioqueue(this)) {
                     int i;
@@ -1015,7 +1017,7 @@ audioqueue_thread(void *arg)
 }
 
 static int
-COREAUDIO_OpenDevice(_THIS, void *handle, const char *devname)
+COREAUDIO_OpenDevice(_THIS, const char *devname)
 {
     AudioStreamBasicDescription *strdesc;
     SDL_AudioFormat test_format;
@@ -1112,7 +1114,7 @@ COREAUDIO_OpenDevice(_THIS, void *handle, const char *devname)
     strdesc->mBytesPerPacket = strdesc->mBytesPerFrame * strdesc->mFramesPerPacket;
 
 #if MACOSX_COREAUDIO
-    if (!prepare_device(this, handle, iscapture)) {
+    if (!prepare_device(this)) {
         return -1;
     }
 #endif

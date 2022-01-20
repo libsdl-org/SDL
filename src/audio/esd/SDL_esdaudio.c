@@ -208,7 +208,7 @@ get_progname(void)
 
 
 static int
-ESD_OpenDevice(_THIS, void *handle, const char *devname)
+ESD_OpenDevice(_THIS, const char *devname)
 {
     esd_format_t format = (ESD_STREAM | ESD_PLAY);
     SDL_AudioFormat test_format = 0;
