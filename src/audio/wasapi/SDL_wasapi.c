@@ -550,7 +550,7 @@ WASAPI_PrepDevice(_THIS, const SDL_bool updatestream)
     }
 
     if (!test_format) {
-        return SDL_SetError("WASAPI: Unsupported audio format");
+        return SDL_SetError("%s: Unsupported audio format", "wasapi");
     }
 
     ret = IAudioClient_GetDevicePeriod(client, &default_period, NULL);

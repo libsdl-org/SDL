@@ -177,7 +177,7 @@ static int
 SDL_FS_OpenDevice(_THIS, void *handle, const char *devname)
 {
     int bytes;
-    SDL_AudioFormat test_format = 0, format = 0;
+    SDL_AudioFormat test_format;
     FSSampleFormat fs_format;
     FSStreamDescription desc;
     DirectResult ret;
@@ -191,45 +191,34 @@ SDL_FS_OpenDevice(_THIS, void *handle, const char *devname)
     SDL_zerop(this->hidden);
 
     /* Try for a closest match on audio format */
-    for (test_format = SDL_FirstAudioFormat(this->spec.format);
-         !format && test_format;) {
+    for (test_format = SDL_FirstAudioFormat(this->spec.format); test_format; test_format = SDL_NextAudioFormat()) {
 #ifdef DEBUG_AUDIO
         fprintf(stderr, "Trying format 0x%4.4x\n", test_format);
 #endif
         switch (test_format) {
         case AUDIO_U8:
             fs_format = FSSF_U8;
-            bytes = 1;
-            format = 1;
             break;
         case AUDIO_S16SYS:
             fs_format = FSSF_S16;
-            bytes = 2;
-            format = 1;
             break;
         case AUDIO_S32SYS:
             fs_format = FSSF_S32;
-            bytes = 4;
-            format = 1;
             break;
         case AUDIO_F32SYS:
             fs_format = FSSF_FLOAT;
-            bytes = 4;
-            format = 1;
             break;
         default:
-            format = 0;
-            break;
+            continue;
         }
-        if (!format) {
-            test_format = SDL_NextAudioFormat();
-        }
+        break;
     }
 
-    if (format == 0) {
-        return SDL_SetError("Couldn't find any hardware audio formats");
+    if (!test_format) {
+        return SDL_SetError("%s: Unsupported audio format", "fusionsound");
     }
     this->spec.format = test_format;
+    bytes = SDL_AUDIO_BITSIZE(test_format) / 8;
 
     /* Retrieve the main sound interface. */
     ret = SDL_NAME(FusionSoundCreate) (&this->hidden->fs);

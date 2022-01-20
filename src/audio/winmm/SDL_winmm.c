@@ -285,8 +285,8 @@ PrepWaveFormat(_THIS, UINT devId, WAVEFORMATEX *pfmt, const int iscapture)
 static int
 WINMM_OpenDevice(_THIS, void *handle, const char *devname)
 {
-    SDL_AudioFormat test_format = SDL_FirstAudioFormat(this->spec.format);
-    SDL_bool valid_datatype = SDL_FALSE, iscapture = this->iscapture;
+    SDL_AudioFormat test_format;
+    SDL_bool iscapture = this->iscapture;
     MMRESULT result;
     WAVEFORMATEX waveformat;
     UINT devId = WAVE_MAPPER;  /* WAVE_MAPPER == choose system's default */
@@ -313,7 +313,7 @@ WINMM_OpenDevice(_THIS, void *handle, const char *devname)
     if (this->spec.channels > 2)
         this->spec.channels = 2;        /* !!! FIXME: is this right? */
 
-    while ((!valid_datatype) && (test_format)) {
+    for (test_format = SDL_FirstAudioFormat(this->spec.format); test_format; test_format = SDL_NextAudioFormat()) {
         switch (test_format) {
         case AUDIO_U8:
         case AUDIO_S16:
@@ -321,20 +321,17 @@ WINMM_OpenDevice(_THIS, void *handle, const char *devname)
         case AUDIO_F32:
             this->spec.format = test_format;
             if (PrepWaveFormat(this, devId, &waveformat, iscapture)) {
-                valid_datatype = SDL_TRUE;
-            } else {
-                test_format = SDL_NextAudioFormat();
+                break;
             }
-            break;
-
+            continue;
         default:
-            test_format = SDL_NextAudioFormat();
-            break;
+            continue;
         }
+        break;
     }
 
-    if (!valid_datatype) {
-        return SDL_SetError("Unsupported audio format");
+    if (!test_format) {
+        return SDL_SetError("%s: Unsupported audio format", "winmm");
     }
 
     /* Update the fragment size as size in bytes */

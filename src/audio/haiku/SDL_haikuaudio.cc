@@ -122,9 +122,8 @@ UnmaskSignals(sigset_t * omask)
 static int
 HAIKUAUDIO_OpenDevice(_THIS, void *handle, const char *devname)
 {
-    int valid_datatype = 0;
     media_raw_audio_format format;
-    SDL_AudioFormat test_format = SDL_FirstAudioFormat(_this->spec.format);
+    SDL_AudioFormat test_format;
 
     /* Initialize all variables that we clean on shutdown */
     _this->hidden = new SDL_PrivateAudioData;
@@ -138,9 +137,7 @@ HAIKUAUDIO_OpenDevice(_THIS, void *handle, const char *devname)
     format.byte_order = B_MEDIA_LITTLE_ENDIAN;
     format.frame_rate = (float) _this->spec.freq;
     format.channel_count = _this->spec.channels;        /* !!! FIXME: support > 2? */
-    while ((!valid_datatype) && (test_format)) {
-        valid_datatype = 1;
-        _this->spec.format = test_format;
+    for (test_format = SDL_FirstAudioFormat(_this->spec.format); test_format; test_format = SDL_NextAudioFormat()) {
         switch (test_format) {
         case AUDIO_S8:
             format.format = media_raw_audio_format::B_AUDIO_CHAR;
@@ -178,15 +175,15 @@ HAIKUAUDIO_OpenDevice(_THIS, void *handle, const char *devname)
             break;
 
         default:
-            valid_datatype = 0;
-            test_format = SDL_NextAudioFormat();
-            break;
+            continue;
         }
+        break;
     }
 
-    if (!valid_datatype) {      /* shouldn't happen, but just in case... */
-        return SDL_SetError("Unsupported audio format");
+    if (!test_format) {      /* shouldn't happen, but just in case... */
+        return SDL_SetError("%s: Unsupported audio format", "haiku");
     }
+    _this->spec.format = test_format;
 
     /* Calculate the final parameters for this audio specification */
     SDL_CalculateAudioSpec(&_this->spec);

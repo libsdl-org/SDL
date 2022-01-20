@@ -251,7 +251,7 @@ static void OS2_CloseDevice(_THIS)
 static int OS2_OpenDevice(_THIS, void *handle, const char *devname)
 {
     SDL_PrivateAudioData *pAData;
-    SDL_AudioFormat       SDLAudioFmt;
+    SDL_AudioFormat       test_format;
     MCI_AMP_OPEN_PARMS    stMCIAmpOpen;
     MCI_BUFFER_PARMS      stMCIBuffer;
     ULONG                 ulRC;
@@ -263,14 +263,13 @@ static int OS2_OpenDevice(_THIS, void *handle, const char *devname)
     SDL_zero(stMCIAmpOpen);
     SDL_zero(stMCIBuffer);
 
-    for (SDLAudioFmt = SDL_FirstAudioFormat(_this->spec.format);
-         SDLAudioFmt != 0; SDLAudioFmt = SDL_NextAudioFormat()) {
-        if (SDLAudioFmt == AUDIO_U8 || SDLAudioFmt == AUDIO_S16)
+    for (test_format = SDL_FirstAudioFormat(_this->spec.format); test_format; test_format = SDL_NextAudioFormat()) {
+        if (test_format == AUDIO_U8 || test_format == AUDIO_S16)
             break;
     }
-    if (SDLAudioFmt == 0) {
+    if (!test_format) {
         debug_os2("Unsupported audio format, AUDIO_S16 used");
-        SDLAudioFmt = AUDIO_S16;
+        test_format = AUDIO_S16;
     }
 
     pAData = (SDL_PrivateAudioData *) SDL_calloc(1, sizeof(struct SDL_PrivateAudioData));
@@ -330,7 +329,7 @@ static int OS2_OpenDevice(_THIS, void *handle, const char *devname)
                        &stMCIAmpSet, 0);
     }
 
-    _this->spec.format = SDLAudioFmt;
+    _this->spec.format = test_format;
     _this->spec.channels = _this->spec.channels > 1 ? 2 : 1;
     if (_this->spec.freq < 8000) {
         _this->spec.freq = 8000;
@@ -342,7 +341,7 @@ static int OS2_OpenDevice(_THIS, void *handle, const char *devname)
 
     /* Setup mixer. */
     pAData->stMCIMixSetup.ulFormatTag     = MCI_WAVE_FORMAT_PCM;
-    pAData->stMCIMixSetup.ulBitsPerSample = SDL_AUDIO_BITSIZE(SDLAudioFmt);
+    pAData->stMCIMixSetup.ulBitsPerSample = SDL_AUDIO_BITSIZE(test_format);
     pAData->stMCIMixSetup.ulSamplesPerSec = _this->spec.freq;
     pAData->stMCIMixSetup.ulChannels      = _this->spec.channels;
     pAData->stMCIMixSetup.ulDeviceType    = MCI_DEVTYPE_WAVEFORM_AUDIO;

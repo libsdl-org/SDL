@@ -418,15 +418,14 @@ openslES_CreatePCMPlayer(_THIS)
     /* Just go with signed 16-bit audio as it's the most compatible */
     this->spec.format = AUDIO_S16SYS;
 #else
-    SDL_AudioFormat test_format = SDL_FirstAudioFormat(this->spec.format);
-    while (test_format != 0) {
+    SDL_AudioFormat test_format;
+    for (test_format = SDL_FirstAudioFormat(this->spec.format); test_format; test_format = SDL_NextAudioFormat()) {
         if (SDL_AUDIO_ISSIGNED(test_format) && SDL_AUDIO_ISINT(test_format)) {
             break;
         }
-        test_format = SDL_NextAudioFormat();
     }
 
-    if (test_format == 0) {
+    if (!test_format) {
         /* Didn't find a compatible format : */
         LOGI( "No compatible audio format, using signed 16-bit audio" );
         test_format = AUDIO_S16SYS;
