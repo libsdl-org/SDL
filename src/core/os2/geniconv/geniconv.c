@@ -46,17 +46,17 @@ extern size_t  _System os2_iconv       (iconv_t cd,
                                         char **outbuf, size_t *outbytesleft);
 extern int     _System os2_iconv_close (iconv_t cd);
 
-/* Functions pointers types */
+/* Functions pointers */
 typedef iconv_t (_System *FNICONV_OPEN)(const char*, const char*);
 typedef size_t  (_System *FNICONV)     (iconv_t, char **, size_t *, char **, size_t *);
 typedef int     (_System *FNICONV_CLOSE)(iconv_t);
 
-/* Used DLL module handle */
 static HMODULE         hmIconv = NULLHANDLE;
-/* Functions pointers */
-static FNICONV_OPEN    fn_iconv_open = NULL;
-static FNICONV         fn_iconv = NULL;
-static FNICONV_CLOSE   fn_iconv_close = NULL;
+static FNICONV_OPEN    fn_iconv_open  = os2_iconv_open;
+static FNICONV         fn_iconv       = os2_iconv;
+static FNICONV_CLOSE   fn_iconv_close = os2_iconv_close;
+
+static int geniconv_init = 0;
 
 
 static BOOL _loadDLL(const char *dllname,
@@ -102,9 +102,11 @@ static BOOL _loadDLL(const char *dllname,
 
 static void _init(void)
 {
-    if (fn_iconv_open != NULL) {
+    if (geniconv_init) {
         return; /* Already initialized */
     }
+
+    geniconv_init = 1;
 
     /* Try to load kiconv.dll, iconv2.dll or iconv.dll */
     if (!_loadDLL("KICONV", "_libiconv_open", "_libiconv", "_libiconv_close") &&
@@ -123,16 +125,19 @@ static void _init(void)
  * ----------------
  */
 
-/* Non-standard function for iconv to unload the used dynamic library */
+/* function to unload the used iconv dynamic library */
 void libiconv_clean(void)
 {
+    geniconv_init = 0;
+
+    /* reset the function pointers. */
+    fn_iconv_open  = os2_iconv_open;
+    fn_iconv       = os2_iconv;
+    fn_iconv_close = os2_iconv_close;
+
     if (hmIconv != NULLHANDLE) {
         DosFreeModule(hmIconv);
         hmIconv = NULLHANDLE;
-
-        fn_iconv_open  = NULL;
-        fn_iconv       = NULL;
-        fn_iconv_close = NULL;
     }
 }
 
