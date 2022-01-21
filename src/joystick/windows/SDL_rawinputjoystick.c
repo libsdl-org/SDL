@@ -1491,6 +1491,8 @@ RAWINPUT_HandleStatePacket(SDL_Joystick *joystick, Uint8 *data, int size)
 
     if (ctx->trigger_hack) {
         SDL_bool has_trigger_data = SDL_FALSE;
+        int left_trigger = joystick->naxes - 2;
+        int right_trigger = joystick->naxes - 1;
 
 #ifdef SDL_JOYSTICK_RAWINPUT_XINPUT
         /* Prefer XInput over WindowsGamingInput, it continues to provide data in the background */
@@ -1505,8 +1507,6 @@ RAWINPUT_HandleStatePacket(SDL_Joystick *joystick, Uint8 *data, int size)
         }
 #endif /* SDL_JOYSTICK_RAWINPUT_WGI */
 
-        int left_trigger = joystick->naxes - 2;
-        int right_trigger = joystick->naxes - 1;
 #ifndef SDL_JOYSTICK_RAWINPUT_MATCH_TRIGGERS
         if (!has_trigger_data)
 #endif
