@@ -1271,6 +1271,7 @@ D3D_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
     RECT d3drect;
     D3DLOCKED_RECT locked;
     HRESULT result;
+    int status;
 
     if (data->currentRenderTarget) {
         backBuffer = data->currentRenderTarget;
@@ -1305,7 +1306,7 @@ D3D_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
         return D3D_SetError("LockRect()", result);
     }
 
-    SDL_ConvertPixels(rect->w, rect->h,
+    status = SDL_ConvertPixels(rect->w, rect->h,
                       D3DFMTToPixelFormat(desc.Format), locked.pBits, locked.Pitch,
                       format, pixels, pitch);
 
@@ -1313,7 +1314,7 @@ D3D_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
 
     IDirect3DSurface9_Release(surface);
 
-    return 0;
+    return status;
 }
 
 static void

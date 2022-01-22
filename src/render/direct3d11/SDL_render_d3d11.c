@@ -2235,29 +2235,19 @@ D3D11_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
     /* Copy the data into the desired buffer, converting pixels to the
      * desired format at the same time:
      */
-    if (SDL_ConvertPixels(
+    status = SDL_ConvertPixels(
         rect->w, rect->h,
         D3D11_DXGIFormatToSDLPixelFormat(stagingTextureDesc.Format),
         textureMemory.pData,
         textureMemory.RowPitch,
         format,
         pixels,
-        pitch) != 0) {
-        /* When SDL_ConvertPixels fails, it'll have already set the format.
-         * Get the error message, and attach some extra data to it.
-         */
-        char errorMessage[1024];
-        SDL_snprintf(errorMessage, sizeof(errorMessage), "%s, Convert Pixels failed: %s", __FUNCTION__, SDL_GetError());
-        SDL_SetError("%s", errorMessage);
-        goto done;
-    }
+        pitch);
 
     /* Unmap the texture: */
     ID3D11DeviceContext_Unmap(data->d3dContext,
         (ID3D11Resource *)stagingTexture,
         0);
-
-    status = 0;
 
 done:
     SAFE_RELEASE(backBuffer);
