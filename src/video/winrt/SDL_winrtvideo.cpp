@@ -670,9 +670,8 @@ WINRT_CreateWindow(_THIS, SDL_Window * window)
          * be passed into eglCreateWindowSurface.
          */
         if (SDL_EGL_ChooseConfig(_this) != 0) {
-            char buf[512];
-            SDL_snprintf(buf, sizeof(buf), "SDL_EGL_ChooseConfig failed: %s", SDL_GetError());
-            return SDL_SetError("%s", buf);
+            /* SDL_EGL_ChooseConfig failed, SDL_GetError() should have info */
+            return -1; 
         }
 
         if (video_data->winrtEglWindow) {   /* ... is the 'old' version of ANGLE/WinRT being used? */
