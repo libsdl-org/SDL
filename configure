@@ -26618,6 +26618,9 @@ $as_echo "#define SDL_AUDIO_DRIVER_EMSCRIPTEN 1" >>confdefs.h
         CheckClockGettime
         CheckEmscriptenGLES
 
+        SOURCES="$SOURCES $srcdir/src/misc/emscripten/*.c"
+        have_misc=yes
+
          # Set up files for the power library
         if test x$enable_power = xyes; then
 

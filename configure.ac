@@ -4339,6 +4339,9 @@ dnl BeOS support removed after SDL 2.0.1. Haiku still works.  --ryan.
         CheckClockGettime
         CheckEmscriptenGLES
 
+        SOURCES="$SOURCES $srcdir/src/misc/emscripten/*.c"
+        have_misc=yes
+
          # Set up files for the power library
         if test x$enable_power = xyes; then
             AC_DEFINE(SDL_POWER_EMSCRIPTEN, 1, [ ])
