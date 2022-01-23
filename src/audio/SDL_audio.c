@@ -950,7 +950,6 @@ SDL_AudioInit(const char *driver_name)
         SDL_AudioQuit();        /* shutdown driver if already running. */
     }
 
-    // SDL_zero(current_audio); -- no need at this point, done before init()
     SDL_zeroa(open_devices);
 
     /* Select the proper audio driver */
