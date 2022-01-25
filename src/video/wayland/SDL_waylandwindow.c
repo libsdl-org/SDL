@@ -778,8 +778,8 @@ void Wayland_ShowWindow(_THIS, SDL_Window *window)
          * libdecor will call this as part of their configure event!
          * -flibit
          */
-        Wayland_SetWindowFullscreen(_this, window, SDL_GetDisplayForWindow(window),
-                                    (window->flags & SDL_WINDOW_FULLSCREEN) != 0);
+        SDL_WaylandOutputData *odata = SDL_GetDisplayForWindow(window)->driverdata;
+        SetFullscreen(window, (window->flags & SDL_WINDOW_FULLSCREEN) ? odata->output : NULL);
         if (data->shell_surface.xdg.surface) {
             while (!data->shell_surface.xdg.initial_configure_seen) {
                 WAYLAND_wl_display_flush(c->display);
