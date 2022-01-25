@@ -725,12 +725,6 @@ void Wayland_ShowWindow(_THIS, SDL_Window *window)
     SDL_VideoData *c = _this->driverdata;
     SDL_WindowData *data = window->driverdata;
 
-    /* Detach any previous buffers before resetting everything, otherwise when
-     * calling this a second time you'll get an annoying protocol error
-     */
-    wl_surface_attach(data->surface, NULL, 0, 0);
-    wl_surface_commit(data->surface);
-
     /* Create the shell surface and map the toplevel */
 #ifdef HAVE_LIBDECOR_H
     if (c->shell.libdecor) {
@@ -862,6 +856,10 @@ void Wayland_HideWindow(_THIS, SDL_Window *window)
             wind->shell_surface.xdg.surface = NULL;
         }
     }
+
+    /* Be sure to detach after this is done, otherwise ShowWindow crashes! */
+    wl_surface_attach(wind->surface, NULL, 0, 0);
+    wl_surface_commit(wind->surface);
 }
 
 static void
