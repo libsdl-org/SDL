@@ -414,6 +414,27 @@ SDL_DestroyWindowTexture(SDL_VideoDevice *unused, SDL_Window * window)
 }
 
 
+/* This will switch the video backend from using a software surface to
+   using a GPU texture through the 2D render API, if we think this would
+   be more efficient. This only checks once, on demand. */
+static void
+PrepareWindowFramebuffer()
+{
+    /* Add the renderer framebuffer emulation if desired */
+    if (_this->checked_texture_framebuffer) {
+        return;
+    }
+
+    _this->checked_texture_framebuffer = SDL_TRUE;
+
+    if (ShouldUseTextureFramebuffer()) {
+        _this->CreateWindowFramebuffer = SDL_CreateWindowTexture;
+        _this->UpdateWindowFramebuffer = SDL_UpdateWindowTexture;
+        _this->DestroyWindowFramebuffer = SDL_DestroyWindowTexture;
+    }
+}
+
+
 static int
 cmpmodes(const void *A, const void *B)
 {
@@ -562,13 +583,6 @@ SDL_VideoInit(const char *driver_name)
     if (_this->num_displays == 0) {
         SDL_VideoQuit();
         return SDL_SetError("The video driver did not add any displays");
-    }
-
-    /* Add the renderer framebuffer emulation if desired */
-    if (ShouldUseTextureFramebuffer()) {
-        _this->CreateWindowFramebuffer = SDL_CreateWindowTexture;
-        _this->UpdateWindowFramebuffer = SDL_UpdateWindowTexture;
-        _this->DestroyWindowFramebuffer = SDL_DestroyWindowTexture;
     }
 
     /* Disable the screen saver by default. This is a change from <= 2.0.1,
@@ -1827,9 +1841,13 @@ SDL_RecreateWindow(SDL_Window * window, Uint32 flags)
         window->surface = NULL;
         window->surface_valid = SDL_FALSE;
     }
-    if (_this->DestroyWindowFramebuffer) {
-        _this->DestroyWindowFramebuffer(_this, window);
+
+    if (_this->checked_texture_framebuffer) { /* never checked? No framebuffer to destroy. Don't risk calling the wrong implementation. */
+        if (_this->DestroyWindowFramebuffer) {
+            _this->DestroyWindowFramebuffer(_this, window);
+        }
     }
+
     if (_this->DestroyWindow && !(flags & SDL_WINDOW_FOREIGN)) {
         _this->DestroyWindow(_this, window);
     }
@@ -2547,6 +2565,8 @@ SDL_CreateWindowFramebuffer(SDL_Window * window)
     int bpp;
     Uint32 Rmask, Gmask, Bmask, Amask;
 
+    PrepareWindowFramebuffer();
+
     if (!_this->CreateWindowFramebuffer || !_this->UpdateWindowFramebuffer) {
         return NULL;
     }
@@ -2609,6 +2629,8 @@ SDL_UpdateWindowSurfaceRects(SDL_Window * window, const SDL_Rect * rects,
     if (!window->surface_valid) {
         return SDL_SetError("Window surface is invalid, please call SDL_GetWindowSurface() to get a new surface");
     }
+
+    SDL_assert(_this->checked_texture_framebuffer); /* we should have done this before we had a valid surface. */
 
     return _this->UpdateWindowFramebuffer(_this, window, rects, numrects);
 }
@@ -3138,8 +3160,10 @@ SDL_DestroyWindow(SDL_Window * window)
         window->surface = NULL;
         window->surface_valid = SDL_FALSE;
     }
-    if (_this->DestroyWindowFramebuffer) {
-        _this->DestroyWindowFramebuffer(_this, window);
+    if (_this->checked_texture_framebuffer) { /* never checked? No framebuffer to destroy. Don't risk calling the wrong implementation. */
+        if (_this->DestroyWindowFramebuffer) {
+            _this->DestroyWindowFramebuffer(_this, window);
+        }
     }
     if (_this->DestroyWindow) {
         _this->DestroyWindow(_this, window);

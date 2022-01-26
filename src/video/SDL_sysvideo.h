@@ -330,6 +330,7 @@ struct SDL_VideoDevice
 
     /* * * */
     /* Data common to all drivers */
+    SDL_bool checked_texture_framebuffer;
     SDL_bool is_dummy;
     SDL_bool suspend_screensaver;
     SDL_Window *wakeup_window;
