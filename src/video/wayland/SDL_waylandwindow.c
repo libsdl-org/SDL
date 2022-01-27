@@ -414,9 +414,10 @@ decoration_frame_configure(struct libdecor_frame *frame,
         if (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
             scale_factor = driverdata->scale_factor;
         }
-    } else if (!(window->flags & SDL_WINDOW_RESIZABLE)) {
+    } else if (!(window->flags & SDL_WINDOW_RESIZABLE) || (floating && wind->floating_resize_pending)) {
         width = window->windowed.w;
         height = window->windowed.h;
+        wind->floating_resize_pending = SDL_FALSE;
     } else {
         /* This will never set 0 for width/height unless the function returns false */
         if (!libdecor_configuration_get_content_size(configuration, frame, &width, &height)) {
@@ -1424,6 +1425,8 @@ void Wayland_SetWindowSize(_THIS, SDL_Window * window)
     if (data->shell.libdecor &&
         wind->shell_surface.libdecor.frame &&
         !libdecor_frame_is_floating(wind->shell_surface.libdecor.frame)) {
+            /* Commit the resize when we re-enter floating state */
+            wind->floating_resize_pending = SDL_TRUE;
             return;
     }
 #endif
