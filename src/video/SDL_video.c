@@ -1590,12 +1590,14 @@ SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
     }
 
     /* Some platforms have certain graphics backends enabled by default */
-    if (!_this->is_dummy && !graphics_flags && !SDL_IsVideoContextExternal()) {
+    if (!graphics_flags && !SDL_IsVideoContextExternal()) {
 #if (SDL_VIDEO_OPENGL && __MACOSX__) || (__IPHONEOS__ && !TARGET_OS_MACCATALYST) || __ANDROID__ || __NACL__
-        flags |= SDL_WINDOW_OPENGL;
+        if (_this->GL_CreateContext != NULL) {
+            flags |= SDL_WINDOW_OPENGL;
+        }
 #endif
 #if SDL_VIDEO_METAL && (TARGET_OS_MACCATALYST || __MACOSX__ || __IPHONEOS__)
-        if ((SDL_strcmp(_this->name, "cocoa") == 0) || (SDL_strcmp(_this->name, "uikit") == 0)) {
+        if (_this->Metal_CreateView != NULL) {
             flags |= SDL_WINDOW_METAL;
         }
 #endif
