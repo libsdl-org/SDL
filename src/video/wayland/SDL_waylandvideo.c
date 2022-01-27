@@ -393,7 +393,7 @@ display_handle_mode(void *data,
         mode.w = width;
         mode.h = height;
     }
-    mode.refresh_rate = refresh / 1000; /* mHz to Hz */
+    mode.refresh_rate = (int)SDL_round(refresh / 1000.0); /* mHz to Hz */
     mode.driverdata = driverdata->output;
     if (driverdata->index > -1) {
         SDL_AddDisplayMode(SDL_GetDisplay(driverdata->index), &mode);
@@ -446,7 +446,7 @@ display_handle_done(void *data,
                                                   ((float) driverdata->physical_width) / 25.4f,
                                                   ((float) driverdata->physical_height) / 25.4f);
     }
-    mode.refresh_rate = driverdata->refresh / 1000; /* mHz to Hz */
+    mode.refresh_rate = (int)SDL_round(driverdata->refresh / 1000.0); /* mHz to Hz */
     mode.driverdata = driverdata->output;
 
     if (driverdata->index > -1) {
