@@ -87,6 +87,7 @@ typedef struct {
 
     float scale_factor;
     SDL_bool needs_resize_event;
+    SDL_bool floating_resize_pending;
 } SDL_WindowData;
 
 extern void Wayland_ShowWindow(_THIS, SDL_Window *window);
