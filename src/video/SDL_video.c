@@ -1595,7 +1595,9 @@ SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
         flags |= SDL_WINDOW_OPENGL;
 #endif
 #if SDL_VIDEO_METAL && (TARGET_OS_MACCATALYST || __MACOSX__ || __IPHONEOS__)
-        flags |= SDL_WINDOW_METAL;
+        if ((SDL_strcmp(_this->name, "cocoa") == 0) || (SDL_strcmp(_this->name, "uikit") == 0)) {
+            flags |= SDL_WINDOW_METAL;
+        }
 #endif
     }
 
