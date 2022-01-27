@@ -147,7 +147,7 @@ int VITA_JoystickInit(void)
     // after the app has already started.
 
     SDL_numjoysticks = 1;
-
+    SDL_PrivateJoystickAdded(0);
     // How many additional paired controllers are there?
     sceCtrlGetControllerPortInfo(&myPortInfo);
 
@@ -157,6 +157,7 @@ int VITA_JoystickInit(void)
     {
         if (myPortInfo.port[i]!=SCE_CTRL_TYPE_UNPAIRED)
         {
+            SDL_PrivateJoystickAdded(SDL_numjoysticks);
             SDL_numjoysticks++;
         }
     }
