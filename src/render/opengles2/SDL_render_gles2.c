@@ -857,45 +857,6 @@ GLES2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture 
     return 0;
 }
 
-static void
-SetTextureState(GLES2_RenderData *data, SDL_Texture *texture)
-{
-    if (texture != data->drawstate.texture) {
-        if ((texture != NULL) != data->drawstate.texturing) {
-            if (texture == NULL) {
-                data->glDisableVertexAttribArray((GLenum) GLES2_ATTRIBUTE_TEXCOORD);
-                data->drawstate.texturing = SDL_FALSE;
-            } else {
-                data->glEnableVertexAttribArray((GLenum) GLES2_ATTRIBUTE_TEXCOORD);
-                data->drawstate.texturing = SDL_TRUE;
-            }
-        }
-
-        if (texture) {
-            GLES2_TextureData *tdata = (GLES2_TextureData *) texture->driverdata;
-#if SDL_HAVE_YUV
-            if (tdata->yuv) {
-                data->glActiveTexture(GL_TEXTURE2);
-                data->glBindTexture(tdata->texture_type, tdata->texture_v);
-
-                data->glActiveTexture(GL_TEXTURE1);
-                data->glBindTexture(tdata->texture_type, tdata->texture_u);
-
-                data->glActiveTexture(GL_TEXTURE0);
-            } else if (tdata->nv12) {
-                data->glActiveTexture(GL_TEXTURE1);
-                data->glBindTexture(tdata->texture_type, tdata->texture_u);
-
-                data->glActiveTexture(GL_TEXTURE0);
-            }
-#endif
-            data->glBindTexture(tdata->texture_type, tdata->texture);
-        }
-
-        data->drawstate.texture = texture;
-    }
-}
-
 static int
 SetDrawState(GLES2_RenderData *data, const SDL_RenderCommand *cmd, const GLES2_ImageSource imgsrc, void *vertices)
 {
@@ -937,7 +898,40 @@ SetDrawState(GLES2_RenderData *data, const SDL_RenderCommand *cmd, const GLES2_I
         data->drawstate.cliprect_dirty = SDL_FALSE;
     }
 
-    SetTextureState(data, texture);
+    if (texture != data->drawstate.texture) {
+        if ((texture != NULL) != data->drawstate.texturing) {
+            if (texture == NULL) {
+                data->glDisableVertexAttribArray((GLenum) GLES2_ATTRIBUTE_TEXCOORD);
+                data->drawstate.texturing = SDL_FALSE;
+            } else {
+                data->glEnableVertexAttribArray((GLenum) GLES2_ATTRIBUTE_TEXCOORD);
+                data->drawstate.texturing = SDL_TRUE;
+            }
+        }
+
+        if (texture) {
+            GLES2_TextureData *tdata = (GLES2_TextureData *) texture->driverdata;
+#if SDL_HAVE_YUV
+            if (tdata->yuv) {
+                data->glActiveTexture(GL_TEXTURE2);
+                data->glBindTexture(tdata->texture_type, tdata->texture_v);
+
+                data->glActiveTexture(GL_TEXTURE1);
+                data->glBindTexture(tdata->texture_type, tdata->texture_u);
+
+                data->glActiveTexture(GL_TEXTURE0);
+            } else if (tdata->nv12) {
+                data->glActiveTexture(GL_TEXTURE1);
+                data->glBindTexture(tdata->texture_type, tdata->texture_u);
+
+                data->glActiveTexture(GL_TEXTURE0);
+            }
+#endif
+            data->glBindTexture(tdata->texture_type, tdata->texture);
+        }
+
+        data->drawstate.texture = texture;
+    }
 
     if (texture) {
         stride = sizeof(SDL_Vertex);
@@ -1358,7 +1352,7 @@ GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 
     GLES2_ActivateRenderer(renderer);
 
-    SetTextureState(renderdata, NULL);  /* we trash this state. */
+    renderdata->drawstate.texture = NULL;  /* we trash this state. */
 
     /* Determine the corresponding GLES texture format params */
     switch (texture->format)
@@ -1587,7 +1581,7 @@ GLES2_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_Rect
         return 0;
     }
 
-    SetTextureState(data, NULL);  /* we trash this state. */
+    data->drawstate.texture = NULL;  /* we trash this state. */
 
     /* Create a texture subimage with the supplied data */
     data->glBindTexture(tdata->texture_type, tdata->texture);
@@ -1670,7 +1664,7 @@ GLES2_UpdateTextureYUV(SDL_Renderer * renderer, SDL_Texture * texture,
         return 0;
     }
 
-    SetTextureState(data, NULL);  /* we trash this state. */
+    data->drawstate.texture = NULL;  /* we trash this state. */
 
     data->glBindTexture(tdata->texture_type, tdata->texture_v);
     GLES2_TexSubImage2D(data, tdata->texture_type,
@@ -1721,7 +1715,7 @@ GLES2_UpdateTextureNV(SDL_Renderer * renderer, SDL_Texture * texture,
         return 0;
     }
 
-    SetTextureState(data, NULL);  /* we trash this state. */
+    data->drawstate.texture = NULL;  /* we trash this state. */
 
     data->glBindTexture(tdata->texture_type, tdata->texture_u);
     GLES2_TexSubImage2D(data, tdata->texture_type,
@@ -1842,7 +1836,7 @@ GLES2_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     GLES2_ActivateRenderer(renderer);
 
     if (data->drawstate.texture == texture) {
-        SetTextureState(data, NULL);
+        data->drawstate.texture = NULL;
     }
     if (data->drawstate.target == texture) {
         data->drawstate.target = NULL;
@@ -2195,3 +2189,4 @@ SDL_RenderDriver GLES2_RenderDriver = {
 #endif /* SDL_VIDEO_RENDER_OGL_ES2 && !SDL_RENDER_DISABLED */
 
 /* vi: set ts=4 sw=4 expandtab: */
+
