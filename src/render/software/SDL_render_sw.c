@@ -829,13 +829,31 @@ SW_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
                         /* Scale to an intermediate surface, then blit */
                         if (tmp) {
                             SDL_Rect r;
+                            SDL_BlendMode blendmode;
+                            Uint8 alphaMod, rMod, gMod, bMod;
+
+                            SDL_GetSurfaceBlendMode(src, &blendmode);
+                            SDL_GetSurfaceAlphaMod(src, &alphaMod);
+                            SDL_GetSurfaceColorMod(src, &rMod, &gMod, &bMod);
+
                             r.x = 0;
                             r.y = 0;
                             r.w = dstrect->w;
                             r.h = dstrect->h;
+
+                            SDL_SetSurfaceBlendMode(src, SDL_BLENDMODE_NONE);
+                            SDL_SetSurfaceColorMod(src, 255, 255, 255);
+                            SDL_SetSurfaceAlphaMod(src, 255);
+
                             SDL_PrivateUpperBlitScaled(src, srcrect, tmp, &r, texture->scaleMode);
+
+                            SDL_SetSurfaceColorMod(tmp, rMod, gMod, bMod);
+                            SDL_SetSurfaceAlphaMod(tmp, alphaMod);
+                            SDL_SetSurfaceBlendMode(tmp, blendmode);
+
                             SDL_BlitSurface(tmp, NULL, surface, dstrect);
                             SDL_FreeSurface(tmp);
+                            /* No need to set back r/g/b/a/blendmode to 'src' since it's done in PrepTextureForCopy() */
                         }
                     } else{
                         SDL_PrivateUpperBlitScaled(src, srcrect, surface, dstrect, texture->scaleMode);
