@@ -17950,16 +17950,20 @@ SOURCES="$SOURCES $srcdir/src/video/yuv2rgb/*.c"
 SOURCES="$SOURCES $srcdir/src/locale/*.c"
 
 
+case "$host" in
+    *-*-emscripten*)
+        default_atomic=no
+        ;;
+    *)
+        default_atomic=yes
+        ;;
+esac
+
 # Check whether --enable-atomic was given.
 if test "${enable_atomic+set}" = set; then :
   enableval=$enable_atomic;
 else
-  case "$host" in
-        *-*-emscripten*)
-                enable_atomic=no;;
-        *)
-                enable_atomic=yes;;
-  esac
+  enable_atomic=$default_atomic
 fi
 
 if test x$enable_atomic != xyes; then
@@ -18109,34 +18113,6 @@ $as_echo "#define SDL_FILESYSTEM_DISABLED 1" >>confdefs.h
 else
     SUMMARY_modules="${SUMMARY_modules} filesystem"
 fi
-# Check whether --enable-misc was given.
-if test "${enable_misc+set}" = set; then :
-  enableval=$enable_misc;
-else
-  enable_misc=yes
-fi
-
-if test x$enable_misc != xyes; then
-
-$as_echo "#define SDL_MISC_DISABLED 1" >>confdefs.h
-
-else
-    SUMMARY_modules="${SUMMARY_modules} misc"
-fi
-# Check whether --enable-locale was given.
-if test "${enable_locale+set}" = set; then :
-  enableval=$enable_locale;
-else
-  enable_locale=yes
-fi
-
-if test x$enable_locale != xyes; then
-
-$as_echo "#define SDL_LOCALE_DISABLED 1" >>confdefs.h
-
-else
-    SUMMARY_modules="${SUMMARY_modules} locale"
-fi
 # Check whether --enable-threads was given.
 if test "${enable_threads+set}" = set; then :
   enableval=$enable_threads;
@@ -18178,6 +18154,34 @@ $as_echo "#define SDL_FILE_DISABLED 1" >>confdefs.h
 
 else
     SUMMARY_modules="${SUMMARY_modules} file"
+fi
+# Check whether --enable-misc was given.
+if test "${enable_misc+set}" = set; then :
+  enableval=$enable_misc;
+else
+  enable_misc=yes
+fi
+
+if test x$enable_misc != xyes; then
+
+$as_echo "#define SDL_MISC_DISABLED 1" >>confdefs.h
+
+else
+    SUMMARY_modules="${SUMMARY_modules} misc"
+fi
+# Check whether --enable-locale was given.
+if test "${enable_locale+set}" = set; then :
+  enableval=$enable_locale;
+else
+  enable_locale=yes
+fi
+
+if test x$enable_locale != xyes; then
+
+$as_echo "#define SDL_LOCALE_DISABLED 1" >>confdefs.h
+
+else
+    SUMMARY_modules="${SUMMARY_modules} locale"
 fi
 # Check whether --enable-loadso was given.
 if test "${enable_loadso+set}" = set; then :
