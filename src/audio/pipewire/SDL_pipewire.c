@@ -100,7 +100,6 @@ static enum pw_stream_state (*PIPEWIRE_pw_stream_get_state)(struct pw_stream *st
 static struct pw_buffer *(*PIPEWIRE_pw_stream_dequeue_buffer)(struct pw_stream *);
 static int (*PIPEWIRE_pw_stream_queue_buffer)(struct pw_stream *, struct pw_buffer *);
 static struct pw_properties *(*PIPEWIRE_pw_properties_new)(const char *, ...)SPA_SENTINEL;
-static void (*PIPEWIRE_pw_properties_free)(struct pw_properties *);
 static int (*PIPEWIRE_pw_properties_set)(struct pw_properties *, const char *, const char *);
 static int (*PIPEWIRE_pw_properties_setf)(struct pw_properties *, const char *, const char *, ...) SPA_PRINTF_FUNC(3, 4);
 
@@ -190,7 +189,6 @@ load_pipewire_syms()
     SDL_PIPEWIRE_SYM(pw_stream_dequeue_buffer);
     SDL_PIPEWIRE_SYM(pw_stream_queue_buffer);
     SDL_PIPEWIRE_SYM(pw_properties_new);
-    SDL_PIPEWIRE_SYM(pw_properties_free);
     SDL_PIPEWIRE_SYM(pw_properties_set);
     SDL_PIPEWIRE_SYM(pw_properties_setf);
 
@@ -1128,10 +1126,8 @@ PIPEWIRE_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
         return SDL_SetError("Pipewire: Failed to create stream context properties (%i)", errno);
     }
 
-    /* On success, the context owns the properties object and will free it at destruction time. */
     priv->context = PIPEWIRE_pw_context_new(PIPEWIRE_pw_thread_loop_get_loop(priv->loop), props, 0);
     if (priv->context == NULL) {
-        PIPEWIRE_pw_properties_free(props);
         return SDL_SetError("Pipewire: Failed to create stream context (%i)", errno);
     }
 
@@ -1150,14 +1146,10 @@ PIPEWIRE_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     PIPEWIRE_pw_properties_setf(props, PW_KEY_NODE_RATE, "1/%u", this->spec.freq);
     PIPEWIRE_pw_properties_set(props, PW_KEY_NODE_ALWAYS_PROCESS, "true");
 
-    /*
-     * Create the new stream
-     * On success, the stream owns the properties object and will free it at destruction time.
-     */
+    /* Create the new stream */
     priv->stream = PIPEWIRE_pw_stream_new_simple(PIPEWIRE_pw_thread_loop_get_loop(priv->loop), stream_name, props,
                                                  iscapture ? &stream_input_events : &stream_output_events, this);
     if (priv->stream == NULL) {
-        PIPEWIRE_pw_properties_free(props);
         return SDL_SetError("Pipewire: Failed to create stream (%i)", errno);
     }
 
