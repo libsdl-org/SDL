@@ -490,6 +490,7 @@ SDL_VideoInit(const char *driver_name)
     SDL_bool init_keyboard = SDL_FALSE;
     SDL_bool init_mouse = SDL_FALSE;
     SDL_bool init_touch = SDL_FALSE;
+    const char *env_device_index = SDL_getenv("SDL_VIDEO_DEVICE_INDEX");
 
     /* Check to make sure we don't overwrite '_this' */
     if (_this != NULL) {
@@ -523,6 +524,11 @@ SDL_VideoInit(const char *driver_name)
     video = NULL;
     if (driver_name == NULL) {
         driver_name = SDL_getenv("SDL_VIDEODRIVER");
+    }
+    /* Check first if the user specified a card index */
+    if(env_device_index) {
+        /* Will be 0 anyway if the string is not integer */
+        index = SDL_strtol(env_device_index, NULL, 0);
     }
     if (driver_name != NULL && *driver_name != 0) {
         const char *driver_attempt = driver_name;
