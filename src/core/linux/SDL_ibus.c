@@ -510,8 +510,9 @@ SDL_IBus_ProcessKeyEvent(Uint32 keysym, Uint32 keycode)
     
     if (IBus_CheckConnection(dbus)) {
         Uint32 mods = IBus_ModState();
+        Uint32 ibus_keycode = keycode - 8;
         if (!SDL_DBus_CallMethodOnConnection(ibus_conn, IBUS_SERVICE, input_ctx_path, IBUS_INPUT_INTERFACE, "ProcessKeyEvent",
-                DBUS_TYPE_UINT32, &keysym, DBUS_TYPE_UINT32, &keycode, DBUS_TYPE_UINT32, &mods, DBUS_TYPE_INVALID,
+                DBUS_TYPE_UINT32, &keysym, DBUS_TYPE_UINT32, &ibus_keycode, DBUS_TYPE_UINT32, &mods, DBUS_TYPE_INVALID,
                 DBUS_TYPE_BOOLEAN, &result, DBUS_TYPE_INVALID)) {
             result = 0;
         }
