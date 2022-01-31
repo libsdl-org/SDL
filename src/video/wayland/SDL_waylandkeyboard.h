@@ -27,6 +27,7 @@ typedef struct SDL_WaylandTextInput
 {
     struct zwp_text_input_v3 *text_input;
     SDL_Rect cursor_rect;
+    SDL_bool has_preedit;
 } SDL_WaylandTextInput;
 
 extern int Wayland_InitKeyboard(_THIS);
