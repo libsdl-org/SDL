@@ -894,7 +894,7 @@ extern "C" {
   *  \brief  A variable controlling whether to use the classic /dev/input/js* joystick interface or the newer /dev/input/event* joystick interface on Linux
   *
   *  This variable can be set to the following values:
-  *    "0"       - Use /dev/input/event* (the default)
+  *    "0"       - Use /dev/input/event*
   *    "1"       - Use /dev/input/js*
   *
   *  By default the /dev/input/event* interfaces are used

@@ -78,11 +78,11 @@
 #include "../../core/linux/SDL_evdev_capabilities.h"
 #include "../../core/linux/SDL_udev.h"
 
-#if 1
+#if 0
 #define DEBUG_INPUT_EVENTS 1
 #endif
 
-#if 1
+#if 0
 #define DEBUG_GAMEPAD_MAPPING 1
 #endif
 
