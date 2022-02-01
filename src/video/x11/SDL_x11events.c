@@ -996,8 +996,9 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
         }
         break;
 
-        /* Key press? */
-    case KeyPress:{
+        /* Key press/release? */
+    case KeyPress:
+    case KeyRelease: {
             KeyCode keycode = xevent->xkey.keycode;
             KeySym keysym = NoSymbol;
             char text[SDL_TEXTINPUTEVENT_TEXT_SIZE];
@@ -1005,7 +1006,7 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
             SDL_bool handled_by_ime = SDL_FALSE;
 
 #ifdef DEBUG_XEVENTS
-            printf("window %p: KeyPress (X11 keycode = 0x%X)\n", data, xevent->xkey.keycode);
+            printf("window %p: %s (X11 keycode = 0x%X)\n" data, (xevent->type == KeyPress ? "KeyPress" : "KeyRelease"),  xevent->xkey.keycode);
 #endif
 #if 1
             if (videodata->key_layout[keycode] == SDL_SCANCODE_UNKNOWN && keycode) {
@@ -1021,7 +1022,7 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
             /* */
             SDL_zeroa(text);
 #ifdef X_HAVE_UTF8_STRING
-            if (data->ic) {
+            if (data->ic && xevent->type == KeyPress) {
                 X11_Xutf8LookupString(data->ic, &xevent->xkey, text, sizeof(text),
                                   &keysym, &status);
             } else {
@@ -1033,35 +1034,30 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
 
 #ifdef SDL_USE_IME
             if(SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE){
-                handled_by_ime = SDL_IME_ProcessKeyEvent(keysym, keycode);
+                handled_by_ime = SDL_IME_ProcessKeyEvent(keysym, keycode, (xevent->type == KeyPress ? SDL_PRESSED : SDL_RELEASED));
             }
 #endif
             if (!handled_by_ime) {
-                /* Don't send the key if it looks like a duplicate of a filtered key sent by an IME */
-                if (xevent->xkey.keycode != videodata->filter_code || xevent->xkey.time != videodata->filter_time) {
-                    SDL_SendKeyboardKey(SDL_PRESSED, videodata->key_layout[keycode]);
-                }
-                if(*text) {
-                    SDL_SendKeyboardText(text);
+                if (xevent->type == KeyPress) {
+                    /* Don't send the key if it looks like a duplicate of a filtered key sent by an IME */
+                    if (xevent->xkey.keycode != videodata->filter_code || xevent->xkey.time != videodata->filter_time) {
+                        SDL_SendKeyboardKey(SDL_PRESSED, videodata->key_layout[keycode]);
+                    }
+                    if(*text) {
+                        SDL_SendKeyboardText(text);
+                    }
+                } else {
+                    if (X11_KeyRepeat(display, xevent)) {
+                        /* We're about to get a repeated key down, ignore the key up */
+                        break;
+                    }
+                    SDL_SendKeyboardKey(SDL_RELEASED, videodata->key_layout[keycode]);
                 }
             }
 
-            X11_UpdateUserTime(data, xevent->xkey.time);
-        }
-        break;
-
-        /* Key release? */
-    case KeyRelease:{
-            KeyCode keycode = xevent->xkey.keycode;
-
-#ifdef DEBUG_XEVENTS
-            printf("window %p: KeyRelease (X11 keycode = 0x%X)\n", data, xevent->xkey.keycode);
-#endif
-            if (X11_KeyRepeat(display, xevent)) {
-                /* We're about to get a repeated key down, ignore the key up */
-                break;
+            if (xevent->type == KeyPress) {
+                X11_UpdateUserTime(data, xevent->xkey.time);
             }
-            SDL_SendKeyboardKey(SDL_RELEASED, videodata->key_layout[keycode]);
         }
         break;
 
