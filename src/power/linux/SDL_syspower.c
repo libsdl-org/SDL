@@ -565,7 +565,7 @@ check_upower_device(DBusConnection *conn, const char *path, SDL_PowerState *stat
         return;
     } else if (!ui32) {
         st = SDL_POWERSTATE_NO_BATTERY;
-    } else if (!SDL_DBus_CallMethodOnConnection(conn, UPOWER_DBUS_NODE, path, UPOWER_DEVICE_DBUS_INTERFACE, "Refresh", DBUS_TYPE_INVALID)) {
+    } else if (!SDL_DBus_CallMethodOnConnection(conn, UPOWER_DBUS_NODE, path, UPOWER_DEVICE_DBUS_INTERFACE, "Refresh", DBUS_TYPE_INVALID, DBUS_TYPE_INVALID)) {
 	return;
     } else if (!SDL_DBus_QueryPropertyOnConnection(conn, UPOWER_DBUS_NODE, path, UPOWER_DEVICE_DBUS_INTERFACE, "State", DBUS_TYPE_UINT32, &ui32)) {
         st = SDL_POWERSTATE_UNKNOWN;  /* uh oh */
