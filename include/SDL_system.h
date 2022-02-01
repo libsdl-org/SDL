@@ -425,6 +425,15 @@ extern DECLSPEC SDL_bool SDLCALL SDL_AndroidRequestPermission(const char *permis
  */
 extern DECLSPEC int SDLCALL SDL_AndroidShowToast(const char* message, int duration, int gravity, int xoffset, int yoffset);
 
+/**
+ * Send a user command to SDLActivity
+ * override "boolean onUnhandledMessage(Message msg)" to handle the message
+ *
+ * \param command user command that must be greater or equal to 0x8000
+ * \param param user parameter
+ */
+extern DECLSPEC int SDLCALL SDL_AndroidSendMessage(Uint32 command, int param);
+
 #endif /* __ANDROID__ */
 
 /* Platform specific functions for WinRT */
