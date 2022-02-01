@@ -987,7 +987,9 @@ keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
                 SDL_SendKeyboardText(text);
             }
         }
-        keyboard_repeat_set(&input->keyboard_repeat, time, scancode, has_text, text);
+        if (input->xkb.keymap && WAYLAND_xkb_keymap_key_repeats(input->xkb.keymap, key + 8)) {
+            keyboard_repeat_set(&input->keyboard_repeat, time, scancode, has_text, text);
+        }
     }
 }
 
