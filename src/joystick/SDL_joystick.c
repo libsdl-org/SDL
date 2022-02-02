@@ -386,6 +386,7 @@ SDL_JoystickOpen(int device_index)
     SDL_Joystick *joystick;
     SDL_Joystick *joysticklist;
     const char *joystickname = NULL;
+    SDL_JoystickPowerLevel initial_power_level;
 
     SDL_LockJoysticks();
 
@@ -477,6 +478,11 @@ SDL_JoystickOpen(int device_index)
     SDL_joysticks = joystick;
 
     SDL_UnlockJoysticks();
+
+    /* send initial battery event */
+    initial_power_level = joystick->epowerlevel;
+    joystick->epowerlevel = SDL_JOYSTICK_POWER_UNKNOWN;
+    SDL_PrivateJoystickBatteryLevel(joystick, initial_power_level);
 
     driver->Update(joystick);
 
@@ -2721,7 +2727,19 @@ SDL_JoystickGUID SDL_JoystickGetGUIDFromString(const char *pchGUID)
 /* update the power level for this joystick */
 void SDL_PrivateJoystickBatteryLevel(SDL_Joystick *joystick, SDL_JoystickPowerLevel ePowerLevel)
 {
-    joystick->epowerlevel = ePowerLevel;
+    SDL_assert(joystick->ref_count); /* make sure we are calling this only for update, not for initialisation */
+    if (ePowerLevel != joystick->epowerlevel) {
+#if !SDL_EVENTS_DISABLED
+        if (SDL_GetEventState(SDL_JOYBATTERYUPDATED) == SDL_ENABLE) {
+            SDL_Event event;
+            event.type = SDL_JOYBATTERYUPDATED;
+            event.jbattery.which = joystick->instance_id;
+            event.jbattery.level = ePowerLevel;
+            SDL_PushEvent(&event);
+        }
+#endif /* !SDL_EVENTS_DISABLED */
+        joystick->epowerlevel = ePowerLevel;
+    }
 }
 
 /* return its power level */
