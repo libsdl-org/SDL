@@ -1012,7 +1012,7 @@ stream_state_changed_callback(void *data, enum pw_stream_state old, enum pw_stre
     _THIS = data;
 
     if (state == PW_STREAM_STATE_STREAMING || state == PW_STREAM_STATE_ERROR) {
-        SDL_AtomicSet(&this->hidden->stream_initialized, 1);
+        this->hidden->stream_initialized = 1;
         PIPEWIRE_pw_thread_loop_signal(this->hidden->loop, false);
     }
 }
@@ -1167,7 +1167,7 @@ PIPEWIRE_OpenDevice(_THIS, const char *devname)
 
     /* Wait until the stream is either running or failed */
     PIPEWIRE_pw_thread_loop_lock(priv->loop);
-    if (!SDL_AtomicGet(&priv->stream_initialized)) {
+    if (!priv->stream_initialized) {
         PIPEWIRE_pw_thread_loop_wait(priv->loop);
     }
     PIPEWIRE_pw_thread_loop_unlock(priv->loop);
