@@ -39,8 +39,6 @@
 #include "SDL_config_iphoneos.h"
 #elif defined(__ANDROID__)
 #include "SDL_config_android.h"
-#elif defined(__PSP__)
-#include "SDL_config_psp.h"
 #elif defined(__OS2__)
 #include "SDL_config_os2.h"
 #elif defined(__EMSCRIPTEN__)
