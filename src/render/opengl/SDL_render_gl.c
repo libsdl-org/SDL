@@ -1639,6 +1639,32 @@ GL_SetVSync(SDL_Renderer * renderer, const int vsync)
     return retval;
 }
 
+static SDL_bool
+GL_IsProbablyAccelerated(const GL_RenderData *data)
+{
+    /*const char *vendor = (const char *) data->glGetString(GL_VENDOR);*/
+    const char *renderer = (const char *) data->glGetString(GL_RENDERER);
+
+#ifdef __WINDOWS__
+    if (SDL_strcmp(renderer, "GDI Generic") == 0) {
+        return SDL_FALSE;  /* Microsoft's fallback software renderer. Fix your system! */
+    }
+#endif
+
+#ifdef __APPLE__
+    if (SDL_strcmp(renderer, "Apple Software Renderer") == 0) {
+        return SDL_FALSE;  /* (a probably very old) Apple software-based OpenGL. */
+    }
+#endif
+
+	if (SDL_strcmp(renderer, "Software Rasterizer") == 0) {
+        return SDL_FALSE;  /* (a probably very old) Software Mesa, or some other generic thing. */
+    }
+
+    /* !!! FIXME: swrast? llvmpipe? softpipe? */
+
+    return SDL_TRUE;
+}
 
 static SDL_Renderer *
 GL_CreateRenderer(SDL_Window * window, Uint32 flags)
@@ -1707,7 +1733,7 @@ GL_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->GL_BindTexture = GL_BindTexture;
     renderer->GL_UnbindTexture = GL_UnbindTexture;
     renderer->info = GL_RenderDriver.info;
-    renderer->info.flags = SDL_RENDERER_ACCELERATED;
+    renderer->info.flags = 0;  /* will set some flags below. */
     renderer->driverdata = data;
     renderer->window = window;
 
@@ -1729,6 +1755,10 @@ GL_CreateRenderer(SDL_Window * window, Uint32 flags)
         SDL_free(renderer);
         SDL_free(data);
         goto error;
+    }
+
+    if (GL_IsProbablyAccelerated(data)) {
+        renderer->info.flags |= SDL_RENDERER_ACCELERATED;
     }
 
 #ifdef __MACOSX__
