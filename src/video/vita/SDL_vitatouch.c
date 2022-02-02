@@ -108,17 +108,30 @@ VITA_PollTouch(void)
                 float x = 0;
                 float y = 0;
                 float force = (touch[port].report[i].force - force_info[port].min) / force_info[port].range;
+                int finger_down = 0;
+
+                if (touch_old[port].reportNum > 0) {
+                    for (int j = 0; j < touch_old[port].reportNum; j++) {
+                        if (touch[port].report[i].id == touch_old[port].report[j].id ) {
+                            finger_down = 1;
+                        }
+                    }
+                }
+                
                 VITA_ConvertTouchXYToSDLXY(&x, &y, touch[port].report[i].x, touch[port].report[i].y, port);
                 finger_id = (SDL_FingerID) touch[port].report[i].id;
 
-                // Send an initial touch
-                SDL_SendTouch((SDL_TouchID)port,
-                    finger_id,
-                    Vita_Window,
-                    SDL_TRUE,
-                    x,
-                    y,
-                    force);
+                // Skip if finger was already previously down
+                if(!finger_down) {
+                    // Send an initial touch
+                    SDL_SendTouch((SDL_TouchID)port,
+                        finger_id,
+                        Vita_Window,
+                        SDL_TRUE,
+                        x,
+                        y,
+                        force);
+                }
 
                 // Always send the motion
                 SDL_SendTouchMotion((SDL_TouchID)port,
