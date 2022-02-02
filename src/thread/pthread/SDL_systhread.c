@@ -41,6 +41,10 @@
 #include "../../core/linux/SDL_dbus.h"
 #endif /* __LINUX__ */
 
+#if __RISCOS__
+#  include <errno.h>
+#endif
+
 #if (defined(__LINUX__) || defined(__MACOSX__) || defined(__IPHONEOS__)) && defined(HAVE_DLOPEN)
 #include <dlfcn.h>
 #ifndef RTLD_DEFAULT
