@@ -1248,7 +1248,7 @@ RAWINPUT_JoystickOpen(SDL_Joystick *joystick, int device_index)
         }
     }
 
-    joystick->ePowerLevel = SDL_JOYSTICK_POWER_UNKNOWN;
+    joystick->epowerlevel = SDL_JOYSTICK_POWER_UNKNOWN;
 
     return 0;
 }
