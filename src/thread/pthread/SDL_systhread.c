@@ -137,18 +137,22 @@ SDL_SYS_SetupThread(const char *name)
             #if defined(__MACOSX__) || defined(__IPHONEOS__)
             ppthread_setname_np(name);
             #elif defined(__LINUX__)
-            char namebuf[16]; /* Limited to 16 char */
-            SDL_strlcpy(namebuf, name, sizeof (namebuf));
-            ppthread_setname_np(pthread_self(), namebuf);
+            if (ppthread_setname_np(pthread_self(), name) == ERANGE) {
+                char namebuf[16]; /* Limited to 16 char */
+                SDL_strlcpy(namebuf, name, sizeof (namebuf));
+                ppthread_setname_np(pthread_self(), namebuf);
+            }
             #endif
         }
         #elif HAVE_PTHREAD_SETNAME_NP
             #if defined(__NETBSD__)
             pthread_setname_np(pthread_self(), "%s", name);
             #else
-            char namebuf[16]; /* Limited to 16 char */
-            SDL_strlcpy(namebuf, name, sizeof (namebuf));
-            pthread_setname_np(pthread_self(), namebuf);
+            if (pthread_setname_np(pthread_self(), name) == ERANGE) {
+                char namebuf[16]; /* Limited to 16 char */
+                SDL_strlcpy(namebuf, name, sizeof (namebuf));
+                pthread_setname_np(pthread_self(), namebuf);
+            }
             #endif
         #elif HAVE_PTHREAD_SET_NAME_NP
             pthread_set_name_np(pthread_self(), name);
