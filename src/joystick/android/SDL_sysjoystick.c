@@ -103,6 +103,7 @@ keycode_to_SDL(int keycode)
         case AKEYCODE_BUTTON_THUMBR:
             button = SDL_CONTROLLER_BUTTON_RIGHTSTICK;
             break;
+        case AKEYCODE_MENU:
         case AKEYCODE_BUTTON_START:
             button = SDL_CONTROLLER_BUTTON_START;
             break;
