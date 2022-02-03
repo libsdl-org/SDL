@@ -319,6 +319,7 @@ class SDLJoystickHandler_API19 extends SDLJoystickHandler_API16 {
             KeyEvent.KEYCODE_BUTTON_X,
             KeyEvent.KEYCODE_BUTTON_Y,
             KeyEvent.KEYCODE_BACK,
+            KeyEvent.KEYCODE_MENU,
             KeyEvent.KEYCODE_BUTTON_MODE,
             KeyEvent.KEYCODE_BUTTON_START,
             KeyEvent.KEYCODE_BUTTON_THUMBL,
@@ -360,6 +361,7 @@ class SDLJoystickHandler_API19 extends SDLJoystickHandler_API16 {
             (1 << 2),   // X -> X
             (1 << 3),   // Y -> Y
             (1 << 4),   // BACK -> BACK
+            (1 << 6),   // MENU -> START
             (1 << 5),   // MODE -> GUIDE
             (1 << 6),   // START -> START
             (1 << 7),   // THUMBL -> LEFTSTICK
