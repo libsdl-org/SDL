@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -31,6 +31,7 @@
 #include "SDL_x11video.h"
 #include "SDL_x11touch.h"
 #include "SDL_x11xinput2.h"
+#include "SDL_x11xfixes.h"
 #include "../../core/unix/SDL_poll.h"
 #include "../../events/SDL_events_c.h"
 #include "../../events/SDL_mouse_c.h"
@@ -269,19 +270,19 @@ static char* X11_URIToLocal(char* uri) {
     char *file = NULL;
     SDL_bool local;
 
-    if (memcmp(uri,"file:/",6) == 0) uri += 6;      /* local file? */
-    else if (strstr(uri,":/") != NULL) return file; /* wrong scheme */
+    if (SDL_memcmp(uri,"file:/",6) == 0) uri += 6;      /* local file? */
+    else if (SDL_strstr(uri,":/") != NULL) return file; /* wrong scheme */
 
     local = uri[0] != '/' || (uri[0] != '\0' && uri[1] == '/');
 
     /* got a hostname? */
     if (!local && uri[0] == '/' && uri[2] != '/') {
-      char* hostname_end = strchr(uri+1, '/');
+      char* hostname_end = SDL_strchr(uri+1, '/');
       if (hostname_end != NULL) {
           char hostname[ 257 ];
           if (gethostname(hostname, 255) == 0) {
             hostname[ 256 ] = '\0';
-            if (memcmp(uri+1, hostname, hostname_end - (uri+1)) == 0) {
+            if (SDL_memcmp(uri+1, hostname, hostname_end - (uri+1)) == 0) {
                 uri = hostname_end + 1;
                 local = SDL_TRUE;
             }
@@ -807,7 +808,8 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
             if (SDL_GetKeyboardFocus() != NULL) {
                 X11_ReconcileKeyboardState(_this);
             }
-        } else if (xevent->type == MappingNotify || xkbEvent->any.xkb_type == XkbStateNotify) {
+        } else if (xevent->type == MappingNotify ||
+                   (xevent->type == videodata->xkb_event && xkbEvent->any.xkb_type == XkbStateNotify)) {
             /* Has the keyboard layout changed? */
             const int request = xevent->xmapping.request;
 
@@ -820,6 +822,31 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
 
             X11_UpdateKeymap(_this);
             SDL_SendKeymapChangedEvent();
+        } else if (xevent->type == PropertyNotify && videodata && videodata->windowlist) {
+            char* name_of_atom = X11_XGetAtomName(display, xevent->xproperty.atom);
+
+            if (SDL_strncmp(name_of_atom, "_ICC_PROFILE", sizeof("_ICC_PROFILE") - 1) == 0) {
+                XWindowAttributes attrib;
+                int screennum;
+                for (i = 0; i < videodata->numwindows; ++i) {
+                    if (videodata->windowlist[i] != NULL) {
+                        data = videodata->windowlist[i];
+                        X11_XGetWindowAttributes(display, data->xwindow, &attrib);
+                        screennum = X11_XScreenNumberOfScreen(attrib.screen);
+                        if (screennum == 0 && SDL_strcmp(name_of_atom, "_ICC_PROFILE") == 0) {
+                            SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_ICCPROF_CHANGED, 0, 0);
+                        } else if (SDL_strncmp(name_of_atom, "_ICC_PROFILE_", sizeof("_ICC_PROFILE_") - 1) == 0 && SDL_strlen(name_of_atom) > sizeof("_ICC_PROFILE_") - 1) {
+                            int iccscreennum = SDL_atoi(&name_of_atom[sizeof("_ICC_PROFILE_") - 1]);
+
+                            if (screennum == iccscreennum) {
+                                SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_ICCPROF_CHANGED, 0, 0);
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (name_of_atom) X11_XFree(name_of_atom);
         }
         return;
     }
@@ -843,6 +870,16 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
 
             mouse->last_x = xevent->xcrossing.x;
             mouse->last_y = xevent->xcrossing.y;
+
+#if SDL_VIDEO_DRIVER_X11_XFIXES
+            {
+                /* Only create the barriers if we have input focus */
+                SDL_WindowData* windowdata = (SDL_WindowData *) data->window->driverdata;
+                if ((data->pointer_barrier_active == SDL_TRUE) && windowdata->window->flags & SDL_WINDOW_INPUT_FOCUS) {
+                    X11_ConfineCursorWithFlags(_this, windowdata->window, &windowdata->barrier_rect, X11_BARRIER_HANDLED_BY_EVENT);
+                }
+            }
+#endif
 
             if (!mouse->relative_mode) {
                 SDL_SendMouseMotion(data->window, 0, 0, xevent->xcrossing.x, xevent->xcrossing.y);
@@ -949,6 +986,13 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
                 data->pending_focus = PENDING_FOCUS_OUT;
                 data->pending_focus_time = SDL_GetTicks() + PENDING_FOCUS_TIME;
             }
+
+#if SDL_VIDEO_DRIVER_X11_XFIXES
+            /* Disable confinement if it is activated. */
+            if (data->pointer_barrier_active == SDL_TRUE) {
+                X11_ConfineCursorWithFlags(_this, data->window, NULL, X11_BARRIER_HANDLED_BY_EVENT);
+            }
+#endif /* SDL_VIDEO_DRIVER_X11_XFIXES */
         }
         break;
 
@@ -1034,6 +1078,13 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
             } else {
                 X11_DispatchUnmapNotify(data);
             }
+
+#if SDL_VIDEO_DRIVER_X11_XFIXES
+            /* Disable confinement if the window gets hidden. */
+            if (data->pointer_barrier_active == SDL_TRUE) {
+                X11_ConfineCursorWithFlags(_this, data->window, NULL, X11_BARRIER_HANDLED_BY_EVENT);
+            }
+#endif /* SDL_VIDEO_DRIVER_X11_XFIXES */
         }
         break;
 
@@ -1043,6 +1094,13 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
             printf("window %p: MapNotify!\n", data);
 #endif
             X11_DispatchMapNotify(data);
+
+#if SDL_VIDEO_DRIVER_X11_XFIXES
+            /* Enable confinement if it was activated. */
+            if (data->pointer_barrier_active == SDL_TRUE) {
+                X11_ConfineCursorWithFlags(_this, data->window, &data->barrier_rect, X11_BARRIER_HANDLED_BY_EVENT);
+            }
+#endif /* SDL_VIDEO_DRIVER_X11_XFIXES */
         }
         break;
 
@@ -1128,7 +1186,7 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
 
 
                 /* reply with status */
-                memset(&m, 0, sizeof(XClientMessageEvent));
+                SDL_memset(&m, 0, sizeof(XClientMessageEvent));
                 m.type = ClientMessage;
                 m.display = xevent->xclient.display;
                 m.window = xevent->xclient.data.l[0];
@@ -1146,7 +1204,7 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
             else if(xevent->xclient.message_type == videodata->XdndDrop) {
                 if (data->xdnd_req == None) {
                     /* say again - not interested! */
-                    memset(&m, 0, sizeof(XClientMessageEvent));
+                    SDL_memset(&m, 0, sizeof(XClientMessageEvent));
                     m.type = ClientMessage;
                     m.display = xevent->xclient.display;
                     m.window = xevent->xclient.data.l[0];
@@ -1500,23 +1558,21 @@ X11_HandleFocusChanges(_THIS)
         }
     }
 }
-/* Ack!  X11_XPending() actually performs a blocking read if no events available */
-static int
-X11_Pending(Display * display)
+
+static Bool
+isAnyEvent(Display *display, XEvent *ev, XPointer arg)
 {
-    /* Flush the display connection and look to see if events are queued */
-    X11_XFlush(display);
-    if (X11_XEventsQueued(display, QueuedAlready)) {
-        return (1);
+    return True;
+}
+
+static SDL_bool
+X11_PollEvent(Display *display, XEvent *event)
+{
+    if (!X11_XCheckIfEvent(display, event, isAnyEvent, NULL)) {
+        return SDL_FALSE;
     }
 
-    /* More drastic measures are required -- see if X is ready to talk */
-    if (SDL_IOReady(ConnectionNumber(display), SDL_FALSE, 0)) {
-        return (X11_XPending(display));
-    }
-
-    /* Oh well, nothing is ready .. */
-    return (0);
+    return SDL_TRUE;
 }
 
 void
@@ -1527,7 +1583,7 @@ X11_SendWakeupEvent(_THIS, SDL_Window *window)
     Window xwindow = ((SDL_WindowData *) window->driverdata)->xwindow;
     XClientMessageEvent event;
 
-    memset(&event, 0, sizeof(XClientMessageEvent));
+    SDL_memset(&event, 0, sizeof(XClientMessageEvent));
     event.type = ClientMessage;
     event.display = req_display;
     event.send_event = True;
@@ -1546,35 +1602,39 @@ X11_WaitEventTimeout(_THIS, int timeout)
     SDL_VideoData *videodata = (SDL_VideoData *) _this->driverdata;
     Display *display;
     XEvent xevent;
-
-    if (!videodata) {
-        return 0;
-    }
     display = videodata->display;
 
     SDL_zero(xevent);
 
-    if (timeout == 0) {
-        if (X11_Pending(display)) {
-            X11_XNextEvent(display, &xevent);
-        } else {
-            return 0;
-        }
-    } else if (timeout > 0) {
-        int display_fd = ConnectionNumber(display);
-        fd_set readset;
-        struct timeval tv_timeout;
-        FD_ZERO(&readset);
-        FD_SET(display_fd, &readset);
-        tv_timeout.tv_sec = (timeout / 1000);
-        tv_timeout.tv_usec = (timeout % 1000) * 1000;
-        if (select(display_fd + 1, &readset, NULL, NULL, &tv_timeout) > 0) {
-            X11_XNextEvent(display, &xevent);
-        } else {
-            return 0;
-        }
+    /* Flush and poll to grab any events already read and queued */
+    X11_XFlush(display);
+    if (X11_PollEvent(display, &xevent)) {
+        /* Fall through */
+    } else if (timeout == 0) {
+        return 0;
     } else {
-        X11_XNextEvent(display, &xevent);
+        /* Use SDL_IOR_NO_RETRY to ensure SIGINT will break us out of our wait */
+        int err = SDL_IOReady(ConnectionNumber(display), SDL_IOR_READ | SDL_IOR_NO_RETRY, timeout);
+        if (err > 0) {
+            if (!X11_PollEvent(display, &xevent)) {
+                /* Someone may have beat us to reading the fd. Return 1 here to
+                 * trigger the normal spurious wakeup logic in the event core. */
+                return 1;
+            }
+        } else if (err == 0) {
+            /* Timeout */
+            return 0;
+        } else {
+            /* Error returned from poll()/select() */
+
+            if (errno == EINTR) {
+                /* If the wait was interrupted by a signal, we may have generated a
+                 * SDL_QUIT event. Let the caller know to call SDL_PumpEvents(). */
+                return 1;
+            } else {
+                return err;
+            }
+        }
     }
 
     X11_DispatchEvent(_this, &xevent);
@@ -1618,8 +1678,7 @@ X11_PumpEvents(_THIS)
     SDL_zero(xevent);
 
     /* Keep processing pending events */
-    while (X11_Pending(data->display)) {
-        X11_XNextEvent(data->display, &xevent);
+    while (X11_PollEvent(data->display, &xevent)) {
         X11_DispatchEvent(_this, &xevent);
     }
 

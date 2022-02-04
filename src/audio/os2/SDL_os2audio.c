@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -87,7 +87,7 @@ static LONG APIENTRY cbAudioWriteEvent(ULONG ulStatus, PMCI_MIX_BUFFER pBuffer,
         debug_os2("DosPostEventSem(), rc = %u", ulRC);
     }
 
-    return 1; /* It seems, return value is not matter. */
+    return 1; /* return value doesn't seem to matter. */
 }
 
 static LONG APIENTRY cbAudioReadEvent(ULONG ulStatus, PMCI_MIX_BUFFER pBuffer,
@@ -133,7 +133,7 @@ static void OS2_DetectDevices(void)
         return;
     }
 
-    ulDevicesNum = atol(stMCISysInfo.pszReturn);
+    ulDevicesNum = SDL_strtoul(stMCISysInfo.pszReturn, NULL, 10);
 
     for (stSysInfoParams.ulNumber = 0; stSysInfoParams.ulNumber < ulDevicesNum;
          stSysInfoParams.ulNumber++) {
@@ -151,7 +151,7 @@ static void OS2_DetectDevices(void)
         /* Get textual product description. */
         stSysInfoParams.ulItem = MCI_SYSINFO_QUERY_DRIVER;
         stSysInfoParams.pSysInfoParm = &stLogDevice;
-        strcpy(stLogDevice.szInstallName, stSysInfoParams.pszReturn);
+        SDL_strlcpy(stLogDevice.szInstallName, stSysInfoParams.pszReturn, MAX_DEVICE_NAME);
         ulRC = mciSendCommand(0, MCI_SYSINFO, MCI_WAIT | MCI_SYSINFO_ITEM,
                               &stSysInfoParams, 0);
         if (ulRC != NO_ERROR) {
@@ -211,10 +211,8 @@ static void OS2_CloseDevice(_THIS)
         return;
 
     /* Close up audio */
-    if (pAData->usDeviceId != (USHORT)~0) {
-        /* Device is open. */
-        if (pAData->stMCIMixSetup.ulBitsPerSample != 0) {
-            /* Mixer was initialized. */
+    if (pAData->usDeviceId != (USHORT)~0) { /* Device is open. */
+        if (pAData->stMCIMixSetup.ulBitsPerSample != 0) { /* Mixer was initialized. */
             ulRC = mciSendCommand(pAData->usDeviceId, MCI_MIXSETUP,
                                   MCI_WAIT | MCI_MIXSETUP_DEINIT,
                                   &pAData->stMCIMixSetup, 0);
@@ -223,8 +221,7 @@ static void OS2_CloseDevice(_THIS)
             }
         }
 
-        if (pAData->cMixBuffers != 0) {
-            /* Buffers was allocated. */
+        if (pAData->cMixBuffers != 0) { /* Buffers was allocated. */
             MCI_BUFFER_PARMS    stMCIBuffer;
 
             stMCIBuffer.ulBufferSize = pAData->aMixBuffers[0].ulBufferLength;
@@ -251,29 +248,28 @@ static void OS2_CloseDevice(_THIS)
     SDL_free(pAData);
 }
 
-static int OS2_OpenDevice(_THIS, void *handle, const char *devname,
-                          int iscapture)
+static int OS2_OpenDevice(_THIS, const char *devname)
 {
     SDL_PrivateAudioData *pAData;
-    SDL_AudioFormat       SDLAudioFmt;
+    SDL_AudioFormat       test_format;
     MCI_AMP_OPEN_PARMS    stMCIAmpOpen;
     MCI_BUFFER_PARMS      stMCIBuffer;
     ULONG                 ulRC;
     ULONG                 ulIdx;
     BOOL                  new_freq;
+    SDL_bool              iscapture = _this->iscapture;
 
     new_freq = FALSE;
     SDL_zero(stMCIAmpOpen);
     SDL_zero(stMCIBuffer);
 
-    for (SDLAudioFmt = SDL_FirstAudioFormat(_this->spec.format);
-         SDLAudioFmt != 0; SDLAudioFmt = SDL_NextAudioFormat()) {
-        if (SDLAudioFmt == AUDIO_U8 || SDLAudioFmt == AUDIO_S16)
+    for (test_format = SDL_FirstAudioFormat(_this->spec.format); test_format; test_format = SDL_NextAudioFormat()) {
+        if (test_format == AUDIO_U8 || test_format == AUDIO_S16)
             break;
     }
-    if (SDLAudioFmt == 0) {
+    if (!test_format) {
         debug_os2("Unsupported audio format, AUDIO_S16 used");
-        SDLAudioFmt = AUDIO_S16;
+        test_format = AUDIO_S16;
     }
 
     pAData = (SDL_PrivateAudioData *) SDL_calloc(1, sizeof(struct SDL_PrivateAudioData));
@@ -288,7 +284,7 @@ static int OS2_OpenDevice(_THIS, void *handle, const char *devname,
     }
 
     /* Open audio device */
-    stMCIAmpOpen.usDeviceID = (handle != NULL) ? ((ULONG)handle - 1) : 0;
+    stMCIAmpOpen.usDeviceID = (_this->handle != NULL) ? ((ULONG)_this->handle - 1) : 0;
     stMCIAmpOpen.pszDeviceType = (PSZ)MCI_DEVTYPE_AUDIO_AMPMIX;
     ulRC = mciSendCommand(0, MCI_OPEN,
                           (_getEnvULong("SDL_AUDIO_SHARE", 1, 0) != 0)?
@@ -301,7 +297,7 @@ static int OS2_OpenDevice(_THIS, void *handle, const char *devname,
     }
     pAData->usDeviceId = stMCIAmpOpen.usDeviceID;
 
-    if (iscapture != 0) {
+    if (iscapture) {
         MCI_CONNECTOR_PARMS stMCIConnector;
         MCI_AMP_SET_PARMS   stMCIAmpSet;
         BOOL                fLineIn = _getEnvULong("SDL_AUDIO_LINEIN", 1, 0);
@@ -333,7 +329,7 @@ static int OS2_OpenDevice(_THIS, void *handle, const char *devname,
                        &stMCIAmpSet, 0);
     }
 
-    _this->spec.format = SDLAudioFmt;
+    _this->spec.format = test_format;
     _this->spec.channels = _this->spec.channels > 1 ? 2 : 1;
     if (_this->spec.freq < 8000) {
         _this->spec.freq = 8000;
@@ -345,11 +341,11 @@ static int OS2_OpenDevice(_THIS, void *handle, const char *devname,
 
     /* Setup mixer. */
     pAData->stMCIMixSetup.ulFormatTag     = MCI_WAVE_FORMAT_PCM;
-    pAData->stMCIMixSetup.ulBitsPerSample = SDL_AUDIO_BITSIZE(SDLAudioFmt);
+    pAData->stMCIMixSetup.ulBitsPerSample = SDL_AUDIO_BITSIZE(test_format);
     pAData->stMCIMixSetup.ulSamplesPerSec = _this->spec.freq;
     pAData->stMCIMixSetup.ulChannels      = _this->spec.channels;
     pAData->stMCIMixSetup.ulDeviceType    = MCI_DEVTYPE_WAVEFORM_AUDIO;
-    if (iscapture == 0) {
+    if (!iscapture) {
         pAData->stMCIMixSetup.ulFormatMode= MCI_PLAY;
         pAData->stMCIMixSetup.pmixEvent   = cbAudioWriteEvent;
     } else {
@@ -410,15 +406,13 @@ static int OS2_OpenDevice(_THIS, void *handle, const char *devname,
         pAData->aMixBuffers[ulIdx].ulBufferLength = stMCIBuffer.ulBufferSize;
         pAData->aMixBuffers[ulIdx].ulUserParm     = (ULONG)pAData;
 
-        memset(((PMCI_MIX_BUFFER)stMCIBuffer.pBufList)[ulIdx].pBuffer,
-                _this->spec.silence, stMCIBuffer.ulBufferSize);
+        SDL_memset(((PMCI_MIX_BUFFER)stMCIBuffer.pBufList)[ulIdx].pBuffer,
+                   _this->spec.silence, stMCIBuffer.ulBufferSize);
     }
 
     /* Write buffers to kick off the amp mixer */
-    /*pAData->ulQueuedBuf = 1;//stMCIBuffer.ulNumBuffers */
     ulRC = pAData->stMCIMixSetup.pmixWrite(pAData->stMCIMixSetup.ulMixHandle,
-                                           pAData->aMixBuffers,
-                                           1 /*stMCIBuffer.ulNumBuffers*/);
+                                           pAData->aMixBuffers, 1);
     if (ulRC != MCIERR_SUCCESS) {
         _mixIOError("pmixWrite", ulRC);
         return -1;
@@ -428,7 +422,7 @@ static int OS2_OpenDevice(_THIS, void *handle, const char *devname,
 }
 
 
-static int OS2_Init(SDL_AudioDriverImpl * impl)
+static SDL_bool OS2_Init(SDL_AudioDriverImpl * impl)
 {
     /* Set the function pointers */
     impl->DetectDevices = OS2_DetectDevices;
@@ -443,12 +437,12 @@ static int OS2_Init(SDL_AudioDriverImpl * impl)
     impl->FlushCapture = ;
     impl->HasCaptureSupport = SDL_TRUE;
     */
-    return 1; /* this audio target is available. */
+    return SDL_TRUE; /* this audio target is available. */
 }
 
 
 AudioBootStrap OS2AUDIO_bootstrap = {
-    "DART", "OS/2 DART", OS2_Init, 0
+    "DART", "OS/2 DART", OS2_Init, SDL_FALSE
 };
 
 #endif /* SDL_AUDIO_DRIVER_OS2 */

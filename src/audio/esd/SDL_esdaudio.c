@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -208,7 +208,7 @@ get_progname(void)
 
 
 static int
-ESD_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
+ESD_OpenDevice(_THIS, const char *devname)
 {
     esd_format_t format = (ESD_STREAM | ESD_PLAY);
     SDL_AudioFormat test_format = 0;
@@ -293,11 +293,11 @@ ESD_Deinitialize(void)
     UnloadESDLibrary();
 }
 
-static int
+static SDL_bool
 ESD_Init(SDL_AudioDriverImpl * impl)
 {
     if (LoadESDLibrary() < 0) {
-        return 0;
+        return SDL_FALSE;
     } else {
         int connection = 0;
 
@@ -308,7 +308,7 @@ ESD_Init(SDL_AudioDriverImpl * impl)
         if (connection < 0) {
             UnloadESDLibrary();
             SDL_SetError("ESD: esd_open_sound failed (no audio server?)");
-            return 0;
+            return SDL_FALSE;
         }
         SDL_NAME(esd_close) (connection);
     }
@@ -320,14 +320,14 @@ ESD_Init(SDL_AudioDriverImpl * impl)
     impl->GetDeviceBuf = ESD_GetDeviceBuf;
     impl->CloseDevice = ESD_CloseDevice;
     impl->Deinitialize = ESD_Deinitialize;
-    impl->OnlyHasDefaultOutputDevice = 1;
+    impl->OnlyHasDefaultOutputDevice = SDL_TRUE;
 
-    return 1;   /* this audio target is available. */
+    return SDL_TRUE;   /* this audio target is available. */
 }
 
 
 AudioBootStrap ESD_bootstrap = {
-    "esd", "Enlightened Sound Daemon", ESD_Init, 0
+    "esd", "Enlightened Sound Daemon", ESD_Init, SDL_FALSE
 };
 
 #endif /* SDL_AUDIO_DRIVER_ESD */

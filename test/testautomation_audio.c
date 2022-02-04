@@ -498,7 +498,7 @@ const int _numAudioFormats = 18;
 SDL_AudioFormat _audioFormats[] = { AUDIO_S8, AUDIO_U8, AUDIO_S16LSB, AUDIO_S16MSB, AUDIO_S16SYS, AUDIO_S16, AUDIO_U16LSB,
                 AUDIO_U16MSB, AUDIO_U16SYS, AUDIO_U16, AUDIO_S32LSB, AUDIO_S32MSB, AUDIO_S32SYS, AUDIO_S32,
                                 AUDIO_F32LSB, AUDIO_F32MSB, AUDIO_F32SYS, AUDIO_F32 };
-char *_audioFormatsVerbose[] = { "AUDIO_S8", "AUDIO_U8", "AUDIO_S16LSB", "AUDIO_S16MSB", "AUDIO_S16SYS", "AUDIO_S16", "AUDIO_U16LSB",
+const char *_audioFormatsVerbose[] = { "AUDIO_S8", "AUDIO_U8", "AUDIO_S16LSB", "AUDIO_S16MSB", "AUDIO_S16SYS", "AUDIO_S16", "AUDIO_U16LSB",
                 "AUDIO_U16MSB", "AUDIO_U16SYS", "AUDIO_U16", "AUDIO_S32LSB", "AUDIO_S32MSB", "AUDIO_S32SYS", "AUDIO_S32",
                                 "AUDIO_F32LSB", "AUDIO_F32MSB", "AUDIO_F32SYS", "AUDIO_F32" };
 const int _numAudioChannels = 4;
@@ -697,7 +697,7 @@ int audio_openCloseAndGetAudioStatus()
    SDL_AudioStatus result;
    int i;
    int count;
-   char *device;
+   const char *device;
    SDL_AudioDeviceID id;
    SDL_AudioSpec desired, obtained;
 
@@ -707,7 +707,7 @@ int audio_openCloseAndGetAudioStatus()
    if (count > 0) {
      for (i = 0; i < count; i++) {
        /* Get device name */
-       device = (char *)SDL_GetAudioDeviceName(i, 0);
+       device = SDL_GetAudioDeviceName(i, 0);
        SDLTest_AssertPass("SDL_GetAudioDeviceName(%i,0)", i);
        SDLTest_AssertCheck(device != NULL, "Validate device name is not NULL; got: %s", (device != NULL) ? device : "NULL");
        if (device == NULL) return TEST_ABORTED;
@@ -721,7 +721,7 @@ int audio_openCloseAndGetAudioStatus()
        desired.userdata=NULL;
 
        /* Open device */
-       id = SDL_OpenAudioDevice((const char *)device, 0, &desired, &obtained, SDL_AUDIO_ALLOW_ANY_CHANGE);
+       id = SDL_OpenAudioDevice(device, 0, &desired, &obtained, SDL_AUDIO_ALLOW_ANY_CHANGE);
        SDLTest_AssertPass("SDL_OpenAudioDevice('%s',...)", device);
        SDLTest_AssertCheck(id > 1, "Validate device ID; expected: >=2, got: %i", id);
        if (id > 1) {
@@ -755,7 +755,7 @@ int audio_lockUnlockOpenAudioDevice()
 {
    int i;
    int count;
-   char *device;
+   const char *device;
    SDL_AudioDeviceID id;
    SDL_AudioSpec desired, obtained;
 
@@ -765,7 +765,7 @@ int audio_lockUnlockOpenAudioDevice()
    if (count > 0) {
      for (i = 0; i < count; i++) {
        /* Get device name */
-       device = (char *)SDL_GetAudioDeviceName(i, 0);
+       device = SDL_GetAudioDeviceName(i, 0);
        SDLTest_AssertPass("SDL_GetAudioDeviceName(%i,0)", i);
        SDLTest_AssertCheck(device != NULL, "Validate device name is not NULL; got: %s", (device != NULL) ? device : "NULL");
        if (device == NULL) return TEST_ABORTED;
@@ -779,7 +779,7 @@ int audio_lockUnlockOpenAudioDevice()
        desired.userdata=NULL;
 
        /* Open device */
-       id = SDL_OpenAudioDevice((const char *)device, 0, &desired, &obtained, SDL_AUDIO_ALLOW_ANY_CHANGE);
+       id = SDL_OpenAudioDevice(device, 0, &desired, &obtained, SDL_AUDIO_ALLOW_ANY_CHANGE);
        SDLTest_AssertPass("SDL_OpenAudioDevice('%s',...)", device);
        SDLTest_AssertCheck(id > 1, "Validate device ID; expected: >=2, got: %i", id);
        if (id > 1) {
@@ -917,7 +917,7 @@ int audio_openCloseAudioDeviceConnected()
    int result = -1;
    int i;
    int count;
-   char *device;
+   const char *device;
    SDL_AudioDeviceID id;
    SDL_AudioSpec desired, obtained;
 
@@ -927,7 +927,7 @@ int audio_openCloseAudioDeviceConnected()
    if (count > 0) {
      for (i = 0; i < count; i++) {
        /* Get device name */
-       device = (char *)SDL_GetAudioDeviceName(i, 0);
+       device = SDL_GetAudioDeviceName(i, 0);
        SDLTest_AssertPass("SDL_GetAudioDeviceName(%i,0)", i);
        SDLTest_AssertCheck(device != NULL, "Validate device name is not NULL; got: %s", (device != NULL) ? device : "NULL");
        if (device == NULL) return TEST_ABORTED;
@@ -941,7 +941,7 @@ int audio_openCloseAudioDeviceConnected()
        desired.userdata=NULL;
 
        /* Open device */
-       id = SDL_OpenAudioDevice((const char *)device, 0, &desired, &obtained, SDL_AUDIO_ALLOW_ANY_CHANGE);
+       id = SDL_OpenAudioDevice(device, 0, &desired, &obtained, SDL_AUDIO_ALLOW_ANY_CHANGE);
        SDLTest_AssertPass("SDL_OpenAudioDevice('%s',...)", device);
        SDLTest_AssertCheck(id > 1, "Validate device ID; expected: >1, got: %i", id);
        if (id > 1) {

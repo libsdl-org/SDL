@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -118,6 +118,7 @@ int Android_JNI_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *bu
 
 /* Cursor support */
 int Android_JNI_CreateCustomCursor(SDL_Surface *surface, int hot_x, int hot_y);
+void Android_JNI_DestroyCustomCursor(int cursorID);
 SDL_bool Android_JNI_SetCustomCursor(int cursorID);
 SDL_bool Android_JNI_SetSystemCursor(int cursorID);
 

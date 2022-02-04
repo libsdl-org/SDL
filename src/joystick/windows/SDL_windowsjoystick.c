@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -151,7 +151,7 @@ static DWORD CALLBACK
 SDL_DeviceNotificationFunc(HCMNOTIFICATION hNotify, PVOID context, CM_NOTIFY_ACTION action, PCM_NOTIFY_EVENT_DATA eventData, DWORD event_data_size)
 {
     if (action == CM_NOTIFY_ACTION_DEVICEINTERFACEARRIVAL ||
-	    action == CM_NOTIFY_ACTION_DEVICEINTERFACEREMOVAL) {
+        action == CM_NOTIFY_ACTION_DEVICEINTERFACEREMOVAL) {
         s_bWindowsDeviceChanged = SDL_TRUE;
     }
     return ERROR_SUCCESS;
@@ -179,15 +179,15 @@ SDL_CreateDeviceNotificationFunc(void)
         CM_Register_Notification = (CM_Register_NotificationFunc)GetProcAddress(cfgmgr32_lib_handle, "CM_Register_Notification");
         CM_Unregister_Notification = (CM_Unregister_NotificationFunc)GetProcAddress(cfgmgr32_lib_handle, "CM_Unregister_Notification");
         if (CM_Register_Notification && CM_Unregister_Notification) {
-			CM_NOTIFY_FILTER notify_filter;
+            CM_NOTIFY_FILTER notify_filter;
 
             SDL_zero(notify_filter);
-			notify_filter.cbSize = sizeof(notify_filter);
-			notify_filter.FilterType = CM_NOTIFY_FILTER_TYPE_DEVICEINTERFACE;
-			notify_filter.u.DeviceInterface.ClassGuid = GUID_DEVINTERFACE_HID;
-			if (CM_Register_Notification(&notify_filter, NULL, SDL_DeviceNotificationFunc, &s_DeviceNotificationFuncHandle) == CR_SUCCESS) {
+            notify_filter.cbSize = sizeof(notify_filter);
+            notify_filter.FilterType = CM_NOTIFY_FILTER_TYPE_DEVICEINTERFACE;
+            notify_filter.u.DeviceInterface.ClassGuid = GUID_DEVINTERFACE_HID;
+            if (CM_Register_Notification(&notify_filter, NULL, SDL_DeviceNotificationFunc, &s_DeviceNotificationFuncHandle) == CR_SUCCESS) {
                 return SDL_TRUE;
-			}
+            }
         }
     }
 
@@ -658,10 +658,14 @@ WINDOWS_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint1
     return SDL_Unsupported();
 }
 
-static SDL_bool
-WINDOWS_JoystickHasLED(SDL_Joystick *joystick)
+static Uint32
+WINDOWS_JoystickGetCapabilities(SDL_Joystick *joystick)
 {
-    return SDL_FALSE;
+    if (joystick->hwdata->bXInputDevice) {
+        return SDL_XINPUT_JoystickGetCapabilities(joystick);
+    } else {
+        return SDL_DINPUT_JoystickGetCapabilities(joystick);
+    }
 }
 
 static int
@@ -758,7 +762,7 @@ SDL_JoystickDriver SDL_WINDOWS_JoystickDriver =
     WINDOWS_JoystickOpen,
     WINDOWS_JoystickRumble,
     WINDOWS_JoystickRumbleTriggers,
-    WINDOWS_JoystickHasLED,
+    WINDOWS_JoystickGetCapabilities,
     WINDOWS_JoystickSetLED,
     WINDOWS_JoystickSendEffect,
     WINDOWS_JoystickSetSensorsEnabled,

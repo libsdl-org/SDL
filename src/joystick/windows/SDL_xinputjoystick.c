@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -503,6 +503,12 @@ SDL_XINPUT_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, 
     return 0;
 }
 
+Uint32
+SDL_XINPUT_JoystickGetCapabilities(SDL_Joystick * joystick)
+{
+    return SDL_JOYCAP_RUMBLE;
+}
+
 void
 SDL_XINPUT_JoystickUpdate(SDL_Joystick * joystick)
 {
@@ -577,6 +583,12 @@ int
 SDL_XINPUT_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     return SDL_Unsupported();
+}
+
+Uint32
+SDL_XINPUT_JoystickGetCapabilities(SDL_Joystick * joystick)
+{
+    return 0;
 }
 
 void

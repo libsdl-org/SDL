@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -104,10 +104,9 @@ SDL_TicksQuit(void)
     ticks_started = SDL_FALSE;
 }
 
-Uint32
-SDL_GetTicks(void)
+Uint64
+SDL_GetTicks64(void)
 {
-    Uint32 ticks;
     if (!ticks_started) {
         SDL_TicksInit();
     }
@@ -116,21 +115,19 @@ SDL_GetTicks(void)
 #if HAVE_CLOCK_GETTIME
         struct timespec now;
         clock_gettime(SDL_MONOTONIC_CLOCK, &now);
-        ticks = (Uint32)((now.tv_sec - start_ts.tv_sec) * 1000 + (now.tv_nsec - start_ts.tv_nsec) / 1000000);
+        return (Uint64)(((Sint64)(now.tv_sec - start_ts.tv_sec) * 1000) + ((now.tv_nsec - start_ts.tv_nsec) / 1000000));
 #elif defined(__APPLE__)
-        uint64_t now = mach_absolute_time();
-        ticks = (Uint32)((((now - start_mach) * mach_base_info.numer) / mach_base_info.denom) / 1000000);
+        const uint64_t now = mach_absolute_time();
+        return ((((now - start_mach) * mach_base_info.numer) / mach_base_info.denom) / 1000000);
 #else
         SDL_assert(SDL_FALSE);
-        ticks = 0;
+        return 0;
 #endif
     } else {
         struct timeval now;
-
         gettimeofday(&now, NULL);
-        ticks = (Uint32)((now.tv_sec - start_tv.tv_sec) * 1000 + (now.tv_usec - start_tv.tv_usec) / 1000);
+        return (Uint64)(((Sint64)(now.tv_sec - start_tv.tv_sec) * 1000) + ((now.tv_usec - start_tv.tv_usec) / 1000));
     }
-    return (ticks);
 }
 
 Uint64
@@ -190,6 +187,15 @@ SDL_GetPerformanceFrequency(void)
 void
 SDL_Delay(Uint32 ms)
 {
+    int was_error;
+
+#if HAVE_NANOSLEEP
+    struct timespec elapsed, tv;
+#else
+    struct timeval tv;
+    Uint64 then, now, elapsed;
+#endif
+
 #ifdef __EMSCRIPTEN__
     if (emscripten_has_asyncify() && SDL_GetHintBoolean(SDL_HINT_EMSCRIPTEN_ASYNCIFY, SDL_TRUE)) {
         /* pseudo-synchronous pause, used directly or through e.g. SDL_WaitEvent */
@@ -197,21 +203,13 @@ SDL_Delay(Uint32 ms)
         return;
     }
 #endif
-    int was_error;
-
-#if HAVE_NANOSLEEP
-    struct timespec elapsed, tv;
-#else
-    struct timeval tv;
-    Uint32 then, now, elapsed;
-#endif
 
     /* Set the timeout interval */
 #if HAVE_NANOSLEEP
     elapsed.tv_sec = ms / 1000;
     elapsed.tv_nsec = (ms % 1000) * 1000000;
 #else
-    then = SDL_GetTicks();
+    then = SDL_GetTicks64();
 #endif
     do {
         errno = 0;
@@ -222,13 +220,13 @@ SDL_Delay(Uint32 ms)
         was_error = nanosleep(&tv, &elapsed);
 #else
         /* Calculate the time interval left (in case of interrupt) */
-        now = SDL_GetTicks();
+        now = SDL_GetTicks64();
         elapsed = (now - then);
         then = now;
-        if (elapsed >= ms) {
+        if (elapsed >= ((Uint64)ms)) {
             break;
         }
-        ms -= elapsed;
+        ms -= (Uint32)elapsed;
         tv.tv_sec = ms / 1000;
         tv.tv_usec = (ms % 1000) * 1000;
 

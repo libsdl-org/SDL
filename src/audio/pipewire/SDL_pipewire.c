@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -31,8 +31,22 @@
 #include <pipewire/extensions/metadata.h>
 #include <spa/param/audio/format-utils.h>
 
-/* Older versions of Pipewire may not define this, but it's safe to pass at
- * runtime even if older installations don't recognize it.
+/*
+ * The following keys are defined for compatability when building against older versions of Pipewire
+ * prior to their introduction and can be removed if the minimum required Pipewire version is increased
+ * to or beyond their point of introduction.
+ */
+
+/*
+ * Introduced in 0.3.22
+ * Taken from /src/pipewire/keys.h
+ */
+#ifndef PW_KEY_CONFIG_NAME
+#define PW_KEY_CONFIG_NAME "config.name"
+#endif
+
+/*
+ * Introduced in 0.3.33
  * Taken from src/pipewire/keys.h
  */
 #ifndef PW_KEY_NODE_RATE
@@ -86,7 +100,6 @@ static enum pw_stream_state (*PIPEWIRE_pw_stream_get_state)(struct pw_stream *st
 static struct pw_buffer *(*PIPEWIRE_pw_stream_dequeue_buffer)(struct pw_stream *);
 static int (*PIPEWIRE_pw_stream_queue_buffer)(struct pw_stream *, struct pw_buffer *);
 static struct pw_properties *(*PIPEWIRE_pw_properties_new)(const char *, ...)SPA_SENTINEL;
-static void (*PIPEWIRE_pw_properties_free)(struct pw_properties *);
 static int (*PIPEWIRE_pw_properties_set)(struct pw_properties *, const char *, const char *);
 static int (*PIPEWIRE_pw_properties_setf)(struct pw_properties *, const char *, const char *, ...) SPA_PRINTF_FUNC(3, 4);
 
@@ -176,7 +189,6 @@ load_pipewire_syms()
     SDL_PIPEWIRE_SYM(pw_stream_dequeue_buffer);
     SDL_PIPEWIRE_SYM(pw_stream_queue_buffer);
     SDL_PIPEWIRE_SYM(pw_properties_new);
-    SDL_PIPEWIRE_SYM(pw_properties_free);
     SDL_PIPEWIRE_SYM(pw_properties_set);
     SDL_PIPEWIRE_SYM(pw_properties_setf);
 
@@ -1013,7 +1025,7 @@ static const struct pw_stream_events stream_input_events  = { PW_VERSION_STREAM_
                                                              .process       = input_callback };
 
 static int
-PIPEWIRE_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
+PIPEWIRE_OpenDevice(_THIS, const char *devname)
 {
     /*
      * NOTE: The PW_STREAM_FLAG_RT_PROCESS flag can be set to call the stream
@@ -1034,6 +1046,7 @@ PIPEWIRE_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     const char *                 app_name, *stream_name, *stream_role, *error;
     const Uint32                 node_id = this->handle == NULL ? PW_ID_ANY : PW_HANDLE_TO_ID(this->handle);
     enum pw_stream_state         state;
+    SDL_bool                     iscapture = this->iscapture;
     int                          res;
 
     /* Clamp the period size to sane values */
@@ -1093,22 +1106,29 @@ PIPEWIRE_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
         }
     }
 
-    SDL_snprintf(thread_name, sizeof(thread_name), "SDLAudio%c%ld", (iscapture) ? 'C' : 'P', (long)handle);
+    SDL_snprintf(thread_name, sizeof(thread_name), "SDLAudio%c%ld", (iscapture) ? 'C' : 'P', (long)this->handle);
     priv->loop = PIPEWIRE_pw_thread_loop_new(thread_name, NULL);
     if (priv->loop == NULL) {
         return SDL_SetError("Pipewire: Failed to create stream loop (%i)", errno);
     }
 
-    /* Load the rtkit module so Pipewire can set the loop thread to the appropriate priority */
-    props = PIPEWIRE_pw_properties_new(PW_KEY_CONTEXT_PROFILE_MODULES, "default,rtkit", NULL);
+    /*
+     * Load the realtime module so Pipewire can set the loop thread to the appropriate priority.
+     *
+     * NOTE: Pipewire versions 0.3.22 or higher require the PW_KEY_CONFIG_NAME property (with client-rt.conf),
+     *       lower versions require explicitly specifying the 'rtkit' module.
+     *
+     *       PW_KEY_CONTEXT_PROFILE_MODULES is deprecated and can be safely removed if the minimum required
+     *       Pipewire version is increased to 0.3.22 or higher at some point.
+     */
+    props = PIPEWIRE_pw_properties_new(PW_KEY_CONFIG_NAME, "client-rt.conf",
+                                       PW_KEY_CONTEXT_PROFILE_MODULES, "default,rtkit", NULL);
     if (props == NULL) {
         return SDL_SetError("Pipewire: Failed to create stream context properties (%i)", errno);
     }
 
-    /* On success, the context owns the properties object and will free it at destruction time. */
     priv->context = PIPEWIRE_pw_context_new(PIPEWIRE_pw_thread_loop_get_loop(priv->loop), props, 0);
     if (priv->context == NULL) {
-        PIPEWIRE_pw_properties_free(props);
         return SDL_SetError("Pipewire: Failed to create stream context (%i)", errno);
     }
 
@@ -1127,14 +1147,10 @@ PIPEWIRE_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     PIPEWIRE_pw_properties_setf(props, PW_KEY_NODE_RATE, "1/%u", this->spec.freq);
     PIPEWIRE_pw_properties_set(props, PW_KEY_NODE_ALWAYS_PROCESS, "true");
 
-    /*
-     * Create the new stream
-     * On success, the stream owns the properties object and will free it at destruction time.
-     */
+    /* Create the new stream */
     priv->stream = PIPEWIRE_pw_stream_new_simple(PIPEWIRE_pw_thread_loop_get_loop(priv->loop), stream_name, props,
                                                  iscapture ? &stream_input_events : &stream_output_events, this);
     if (priv->stream == NULL) {
-        PIPEWIRE_pw_properties_free(props);
         return SDL_SetError("Pipewire: Failed to create stream (%i)", errno);
     }
 
@@ -1200,19 +1216,19 @@ PIPEWIRE_Deinitialize()
     }
 }
 
-static int
+static SDL_bool
 PIPEWIRE_Init(SDL_AudioDriverImpl *impl)
 {
     if (!pipewire_initialized) {
         if (init_pipewire_library() < 0) {
-            return 0;
+            return SDL_FALSE;
         }
 
         pipewire_initialized = SDL_TRUE;
 
         if (hotplug_loop_init() < 0) {
             PIPEWIRE_Deinitialize();
-            return 0;
+            return SDL_FALSE;
         }
     }
 
@@ -1222,13 +1238,13 @@ PIPEWIRE_Init(SDL_AudioDriverImpl *impl)
     impl->CloseDevice   = PIPEWIRE_CloseDevice;
     impl->Deinitialize  = PIPEWIRE_Deinitialize;
 
-    impl->HasCaptureSupport         = 1;
-    impl->ProvidesOwnCallbackThread = 1;
+    impl->HasCaptureSupport         = SDL_TRUE;
+    impl->ProvidesOwnCallbackThread = SDL_TRUE;
 
-    return 1;
+    return SDL_TRUE;
 }
 
-AudioBootStrap PIPEWIRE_bootstrap = { "pipewire", "Pipewire", PIPEWIRE_Init, 0 };
+AudioBootStrap PIPEWIRE_bootstrap = { "pipewire", "Pipewire", PIPEWIRE_Init, SDL_FALSE };
 
 #endif /* SDL_AUDIO_DRIVER_PIPEWIRE */
 

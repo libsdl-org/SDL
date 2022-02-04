@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -35,8 +35,7 @@ NACL_CreateWindow(_THIS, SDL_Window * window)
     SDL_VideoData *driverdata = (SDL_VideoData *) _this->driverdata;
     
     if (driverdata->window) {
-        SDL_SetError("NaCl only supports one window");
-        return -1;
+        return SDL_SetError("NaCl only supports one window");
     }
     driverdata->window = window;
 

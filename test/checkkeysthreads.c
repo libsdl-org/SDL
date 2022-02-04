@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -138,9 +138,10 @@ PrintKey(SDL_Keysym * sym, SDL_bool pressed, SDL_bool repeat)
 }
 
 static void
-PrintText(char *eventtype, char *text)
+PrintText(const char *eventtype, const char *text)
 {
-    char *spot, expanded[1024];
+    const char *spot;
+    char expanded[1024];
 
     expanded[0] = '\0';
     for ( spot = text; *spot; ++spot )
@@ -209,7 +210,7 @@ static int SDLCALL ping_thread(void *ptr)
 {
     int cnt;
     SDL_Event sdlevent;
-    memset(&sdlevent, 0 , sizeof(SDL_Event));
+    SDL_memset(&sdlevent, 0 , sizeof(SDL_Event));
     for (cnt = 0; cnt < 10; ++cnt) {
         fprintf(stderr, "sending event (%d/%d) from thread.\n", cnt + 1, 10); fflush(stderr);
         sdlevent.type = SDL_KEYDOWN;
@@ -224,6 +225,7 @@ int
 main(int argc, char *argv[])
 {
     SDL_Window *window;
+    SDL_Renderer *renderer;
     SDL_Thread *thread;
 
     /* Enable standard application logging */
@@ -244,6 +246,12 @@ main(int argc, char *argv[])
                 SDL_GetError());
         quit(2);
     }
+
+    /* On wayland, no window will actually show until something has
+       actually been displayed.
+    */
+    renderer = SDL_CreateRenderer(window, -1, 0);
+    SDL_RenderPresent(renderer);
 
 #if __IPHONEOS__
     /* Creating the context creates the view, which we need to show keyboard */

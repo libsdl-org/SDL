@@ -21,8 +21,6 @@
  ********************************************************/
 #include "../../SDL_internal.h"
 
-#ifdef SDL_JOYSTICK_HIDAPI
-
 /* See Apple Technical Note TN2187 for details on IOHidManager. */
 
 #include <IOKit/hid/IOHIDManager.h>
@@ -33,7 +31,9 @@
 #include <sys/time.h>
 #include <unistd.h>
 
-#include "hidapi.h"
+#include "../hidapi/hidapi.h"
+
+#define VALVE_USB_VID		0x28DE
 
 /* Barrier implementation because Mac OSX doesn't have pthread_barrier.
  It also doesn't have clock_gettime(). So much for POSIX and SUSv2.
@@ -401,20 +401,86 @@ static void hid_device_removal_callback(void *context, IOReturn result,
 	}
 }
 
+static CFDictionaryRef
+create_usage_match(const UInt32 page, const UInt32 usage, int *okay)
+{
+	CFDictionaryRef retval = NULL;
+	CFNumberRef pageNumRef = CFNumberCreate(kCFAllocatorDefault, kCFNumberIntType, &page);
+	CFNumberRef usageNumRef = CFNumberCreate(kCFAllocatorDefault, kCFNumberIntType, &usage);
+	const void *keys[2] = { (void *) CFSTR(kIOHIDDeviceUsagePageKey), (void *) CFSTR(kIOHIDDeviceUsageKey) };
+	const void *vals[2] = { (void *) pageNumRef, (void *) usageNumRef };
+
+	if (pageNumRef && usageNumRef) {
+		retval = CFDictionaryCreate(kCFAllocatorDefault, keys, vals, 2, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+	}
+
+	if (pageNumRef) {
+		CFRelease(pageNumRef);
+	}
+	if (usageNumRef) {
+		CFRelease(usageNumRef);
+	}
+
+	if (!retval) {
+		*okay = 0;
+	}
+
+	return retval;
+}
+
+static CFDictionaryRef
+create_vendor_match(const UInt32 vendor, int *okay)
+{
+	CFDictionaryRef retval = NULL;
+	CFNumberRef vidNumRef = CFNumberCreate(kCFAllocatorDefault, kCFNumberIntType, &vendor);
+	const void *keys[1] = { (void *) CFSTR(kIOHIDVendorIDKey) };
+	const void *vals[1] = { (void *) vidNumRef };
+
+	if (vidNumRef) {
+		retval = CFDictionaryCreate(kCFAllocatorDefault, keys, vals, 1, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+		CFRelease(vidNumRef);
+	}
+
+	if (!retval) {
+		*okay = 0;
+	}
+
+	return retval;
+}
+
 /* Initialize the IOHIDManager. Return 0 for success and -1 for failure. */
 static int init_hid_manager(void)
 {
+	int okay = 1;
+	const void *vals[] = {
+		(void *) create_usage_match(kHIDPage_GenericDesktop, kHIDUsage_GD_Joystick, &okay),
+		(void *) create_usage_match(kHIDPage_GenericDesktop, kHIDUsage_GD_GamePad, &okay),
+		(void *) create_usage_match(kHIDPage_GenericDesktop, kHIDUsage_GD_MultiAxisController, &okay),
+		(void *) create_vendor_match(VALVE_USB_VID, &okay),
+	};
+	const size_t numElements = SDL_arraysize(vals);
+	CFArrayRef matchingArray = okay ? CFArrayCreate(kCFAllocatorDefault, vals, numElements, &kCFTypeArrayCallBacks) : NULL;
+	size_t i;
+
+	for (i = 0; i < numElements; i++) {
+		if (vals[i]) {
+			CFRelease((CFTypeRef) vals[i]);
+		}
+	}
 
 	/* Initialize all the HID Manager Objects */
 	hid_mgr = IOHIDManagerCreate(kCFAllocatorDefault, kIOHIDOptionsTypeNone);
 	if (hid_mgr) {
-		IOHIDManagerSetDeviceMatching(hid_mgr, NULL);
+		IOHIDManagerSetDeviceMatchingMultiple(hid_mgr, matchingArray);
 		IOHIDManagerScheduleWithRunLoop(hid_mgr, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
 		IOHIDManagerRegisterDeviceRemovalCallback(hid_mgr, hid_device_removal_callback, NULL);
-		return 0;
 	}
 	
-	return -1;
+	if (matchingArray != NULL) {
+		CFRelease(matchingArray);
+	}
+
+	return hid_mgr ? 0 : -1;
 }
 
 /* Initialize the IOHIDManager if necessary. This is the public function, and
@@ -1191,5 +1257,3 @@ int main(void)
 	return 0;
 }
 #endif
-
-#endif /* SDL_JOYSTICK_HIDAPI */

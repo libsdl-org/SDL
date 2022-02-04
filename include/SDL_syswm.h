@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -98,6 +98,10 @@ typedef struct _UIViewController UIViewController;
 typedef Uint32 GLuint;
 #endif
 
+#if defined(SDL_VIDEO_VULKAN) || defined(SDL_VIDEO_METAL)
+#define SDL_METALVIEW_TAG 255
+#endif
+
 #if defined(SDL_VIDEO_DRIVER_ANDROID)
 typedef struct ANativeWindow ANativeWindow;
 typedef void *EGLSurface;
@@ -143,7 +147,8 @@ typedef enum
     SDL_SYSWM_VIVANTE,
     SDL_SYSWM_OS2,
     SDL_SYSWM_HAIKU,
-    SDL_SYSWM_KMSDRM
+    SDL_SYSWM_KMSDRM,
+    SDL_SYSWM_RISCOS
 } SDL_SYSWM_TYPE;
 
 /**
@@ -292,6 +297,7 @@ struct SDL_SysWMinfo
             void *shell_surface;                    /**< DEPRECATED Wayland shell_surface (window manager handle) */
             struct wl_egl_window *egl_window;       /**< Wayland EGL window (native window) */
             struct xdg_surface *xdg_surface;        /**< Wayland xdg surface (window manager handle) */
+            struct xdg_toplevel *xdg_toplevel;      /**< Wayland xdg toplevel role */
         } wl;
 #endif
 #if defined(SDL_VIDEO_DRIVER_MIR)  /* no longer available, left for API/ABI compatibility. Remove in 2.1! */

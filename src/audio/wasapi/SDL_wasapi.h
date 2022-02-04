@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -74,7 +74,6 @@ int WASAPI_ActivateDevice(_THIS, const SDL_bool isrecovery);
 void WASAPI_PlatformThreadInit(_THIS);
 void WASAPI_PlatformThreadDeinit(_THIS);
 void WASAPI_PlatformDeleteActivationHandler(void *handler);
-void WASAPI_BeginLoopIteration(_THIS);
 
 #ifdef __cplusplus
 }

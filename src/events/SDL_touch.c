@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -302,8 +302,9 @@ SDL_SendTouch(SDL_TouchID id, SDL_FingerID fingerid, SDL_Window * window,
     finger = SDL_GetFinger(touch, fingerid);
     if (down) {
         if (finger) {
-            /* This finger is already down */
-            return 0;
+            /* This finger is already down.
+               Assume the finger-up for the previous touch was lost, and send it. */
+            SDL_SendTouch(id, fingerid, window, SDL_FALSE, x, y, pressure);
         }
 
         if (SDL_AddFinger(touch, fingerid, x, y, pressure) < 0) {

@@ -1,14 +1,14 @@
 #! /bin/sh
 # Configuration validation subroutine script.
-#   Copyright 1992-2021 Free Software Foundation, Inc.
+#   Copyright 1992-2022 Free Software Foundation, Inc.
 
 # shellcheck disable=SC2006,SC2268 # see below for rationale
 
-timestamp='2021-08-14'
+timestamp='2022-01-03'
 
 # This file is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 3 of the License, or
+# the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
 # This program is distributed in the hope that it will be useful, but
@@ -76,7 +76,7 @@ Report bugs and patches to <config-patches@gnu.org>."
 version="\
 GNU config.sub ($timestamp)
 
-Copyright 1992-2021 Free Software Foundation, Inc.
+Copyright 1992-2022 Free Software Foundation, Inc.
 
 This is free software; see the source for copying conditions.  There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE."
@@ -1020,6 +1020,11 @@ case $cpu-$vendor in
 		;;
 
 	# Here we normalize CPU types with a missing or matching vendor
+	armh-unknown | armh-alt)
+		cpu=armv7l
+		vendor=alt
+		basic_os=${basic_os:-linux-gnueabihf}
+		;;
 	dpx20-unknown | dpx20-bull)
 		cpu=rs6000
 		vendor=bull
@@ -1121,7 +1126,7 @@ case $cpu-$vendor in
 	xscale-* | xscalee[bl]-*)
 		cpu=`echo "$cpu" | sed 's/^xscale/arm/'`
 		;;
-	arm64-*)
+	arm64-* | aarch64le-*)
 		cpu=aarch64
 		;;
 
@@ -1304,7 +1309,7 @@ esac
 if test x$basic_os != x
 then
 
-# First recognize some ad-hoc caes, or perhaps split kernel-os, or else just
+# First recognize some ad-hoc cases, or perhaps split kernel-os, or else just
 # set os.
 case $basic_os in
 	gnu/linux*)
@@ -1748,7 +1753,8 @@ case $os in
 	     | skyos* | haiku* | rdos* | toppers* | drops* | es* \
 	     | onefs* | tirtos* | phoenix* | fuchsia* | redox* | bme* \
 	     | midnightbsd* | amdhsa* | unleashed* | emscripten* | wasi* \
-	     | nsk* | powerunix* | genode* | zvmoe* | qnx* | emx* | zephyr*)
+	     | nsk* | powerunix* | genode* | zvmoe* | qnx* | emx* | zephyr* \
+	     | fiwix* )
 		;;
 	# This one is extra strict with allowed versions
 	sco3.2v2 | sco3.2v[4-9]* | sco5v6*)

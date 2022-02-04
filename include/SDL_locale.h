@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -85,6 +85,8 @@ typedef struct SDL_Locale
  *
  * \return array of locales, terminated with a locale with a NULL language
  *         field. Will return NULL on error.
+ *
+ * \since This function is available since SDL 2.0.14.
  */
 extern DECLSPEC SDL_Locale * SDLCALL SDL_GetPreferredLocales(void);
 

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -45,8 +45,9 @@ WIN_SetErrorFromHRESULT(const char *prefix, HRESULT hr)
     TCHAR buffer[1024];
     char *message;
     TCHAR *p = buffer;
-    FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, hr, 0,
+    DWORD c = FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, hr, 0,
                   buffer, SDL_arraysize(buffer), NULL);
+    buffer[c] = 0;
     /* kill CR/LF that FormatMessage() sticks at the end */
     while (*p) {
         if (*p == '\r') {
@@ -246,6 +247,24 @@ BOOL
 WIN_IsEqualIID(REFIID a, REFIID b)
 {
     return (SDL_memcmp(a, b, sizeof (*a)) == 0);
+}
+
+void
+WIN_RECTToRect(const RECT *winrect, SDL_Rect *sdlrect)
+{
+    sdlrect->x = winrect->left;
+    sdlrect->w = (winrect->right - winrect->left) + 1;
+    sdlrect->y = winrect->top;
+    sdlrect->h = (winrect->bottom - winrect->top) + 1;
+}
+
+void
+WIN_RectToRECT(const SDL_Rect *sdlrect, RECT *winrect)
+{
+    winrect->left = sdlrect->x;
+    winrect->right = sdlrect->x + sdlrect->w - 1;
+    winrect->top = sdlrect->y;
+    winrect->bottom = sdlrect->y + sdlrect->h - 1;
 }
 
 #endif /* __WIN32__ || __WINRT__ */

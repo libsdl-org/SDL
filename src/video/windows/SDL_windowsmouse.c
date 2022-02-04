@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -27,7 +27,9 @@
 #include "../../events/SDL_mouse_c.h"
 
 
+DWORD SDL_last_warp_time = 0;
 HCURSOR SDL_cursor = NULL;
+static SDL_Cursor *SDL_blank_cursor = NULL;
 
 static int rawInputEnableCount = 0;
 
@@ -94,6 +96,7 @@ WIN_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y)
     const size_t pad = (sizeof (size_t) * 8);  /* 32 or 64, or whatever. */
     SDL_Cursor *cursor;
     HICON hicon;
+    HICON hcursor;
     HDC hdc;
     BITMAPV4HEADER bmh;
     LPVOID pixels;
@@ -148,15 +151,35 @@ WIN_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y)
         return NULL;
     }
 
+    /* The cursor returned by CreateIconIndirect does not respect system cursor size
+        preference, use CopyImage to duplicate the cursor with desired sizes */
+    hcursor = CopyImage(hicon, IMAGE_CURSOR, surface->w, surface->h, 0);
+    DestroyIcon(hicon);
+
+    if (!hcursor) {
+        WIN_SetError("CopyImage()");
+        return NULL;
+    }
+
     cursor = SDL_calloc(1, sizeof(*cursor));
     if (cursor) {
-        cursor->driverdata = hicon;
+        cursor->driverdata = hcursor;
     } else {
-        DestroyIcon(hicon);
+        DestroyIcon(hcursor);
         SDL_OutOfMemory();
     }
 
     return cursor;
+}
+
+static SDL_Cursor *
+WIN_CreateBlankCursor()
+{
+    SDL_Surface *surface = SDL_CreateRGBSurfaceWithFormat(0, 32, 32, 32, SDL_PIXELFORMAT_ARGB8888);
+    if (surface) {
+        return WIN_CreateCursor(surface, 0, 0);
+    }
+    return NULL;
 }
 
 static SDL_Cursor *
@@ -210,6 +233,9 @@ WIN_FreeCursor(SDL_Cursor * cursor)
 static int
 WIN_ShowCursor(SDL_Cursor * cursor)
 {
+    if (!cursor) {
+        cursor = SDL_blank_cursor;
+    }
     if (cursor) {
         SDL_cursor = (HCURSOR)cursor->driverdata;
     } else {
@@ -219,6 +245,21 @@ WIN_ShowCursor(SDL_Cursor * cursor)
         SetCursor(SDL_cursor);
     }
     return 0;
+}
+
+void
+WIN_SetCursorPos(int x, int y)
+{
+    /* We need to jitter the value because otherwise Windows will occasionally inexplicably ignore the SetCursorPos() or SendInput() */
+    SetCursorPos(x, y);
+    SetCursorPos(x+1, y);
+    SetCursorPos(x, y);
+
+    /* Flush any mouse motion prior to or associated with this warp */
+    SDL_last_warp_time = GetTickCount();
+    if (!SDL_last_warp_time) {
+        SDL_last_warp_time = 1;
+    }
 }
 
 static void
@@ -236,7 +277,10 @@ WIN_WarpMouse(SDL_Window * window, int x, int y)
     pt.x = x;
     pt.y = y;
     ClientToScreen(hwnd, &pt);
-    SetCursorPos(pt.x, pt.y);
+    WIN_SetCursorPos(pt.x, pt.y);
+
+    /* Send the exact mouse motion associated with this warp */
+    SDL_SendMouseMotion(window, SDL_GetMouse()->mouseID, 0, x, y);
 }
 
 static int
@@ -259,18 +303,22 @@ WIN_SetRelativeMouseMode(SDL_bool enabled)
 static int
 WIN_CaptureMouse(SDL_Window *window)
 {
-    if (!window) {
-        SDL_Window *focusWin = SDL_GetKeyboardFocus();
-        if (focusWin) {
-            WIN_OnWindowEnter(SDL_GetVideoDevice(), focusWin);  /* make sure WM_MOUSELEAVE messages are (re)enabled. */
+    if (window) {
+        SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
+        SetCapture(data->hwnd);
+    } else {
+        SDL_Window *focus_window = SDL_GetMouseFocus();
+       
+        if (focus_window) {
+            SDL_WindowData *data = (SDL_WindowData *)focus_window->driverdata;
+            if (!data->mouse_tracked) {
+                SDL_SetMouseFocus(NULL);
+            }
         }
+        ReleaseCapture();
     }
 
-    /* While we were thinking of SetCapture() when designing this API in SDL,
-       we didn't count on the fact that SetCapture() only tracks while the
-       left mouse button is held down! Instead, we listen for raw mouse input
-       and manually query the mouse when it leaves the window. :/ */
-    return ToggleRawInput(window != NULL);
+    return 0;
 }
 
 static Uint32
@@ -309,6 +357,8 @@ WIN_InitMouse(_THIS)
     mouse->GetGlobalMouseState = WIN_GetGlobalMouseState;
 
     SDL_SetDefaultCursor(WIN_CreateDefaultCursor());
+
+    SDL_blank_cursor = WIN_CreateBlankCursor();
 }
 
 void
@@ -317,6 +367,10 @@ WIN_QuitMouse(_THIS)
     if (rawInputEnableCount) {  /* force RAWINPUT off here. */
         rawInputEnableCount = 1;
         ToggleRawInput(SDL_FALSE);
+    }
+
+    if (SDL_blank_cursor) {
+        SDL_FreeCursor(SDL_blank_cursor);
     }
 }
 

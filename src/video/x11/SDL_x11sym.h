@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -97,7 +97,6 @@ SDL_X11_SYM(int,XMapRaised,(Display* a,Window b),(a,b),return)
 SDL_X11_SYM(Status,XMatchVisualInfo,(Display* a,int b,int c,int d,XVisualInfo* e),(a,b,c,d,e),return)
 SDL_X11_SYM(int,XMissingExtension,(Display* a,_Xconst char* b),(a,b),return)
 SDL_X11_SYM(int,XMoveWindow,(Display* a,Window b,int c,int d),(a,b,c,d),return)
-SDL_X11_SYM(int,XNextEvent,(Display* a,XEvent* b),(a,b),return)
 SDL_X11_SYM(Display*,XOpenDisplay,(_Xconst char* a),(a),return)
 SDL_X11_SYM(Status,XInitThreads,(void),(),return)
 SDL_X11_SYM(int,XPeekEvent,(Display* a,XEvent* b),(a,b),return)
@@ -109,6 +108,7 @@ SDL_X11_SYM(int,XRaiseWindow,(Display* a,Window b),(a,b),return)
 SDL_X11_SYM(int,XReparentWindow,(Display* a,Window b,Window c,int d,int e),(a,b,c,d,e),return)
 SDL_X11_SYM(int,XResetScreenSaver,(Display* a),(a),return)
 SDL_X11_SYM(int,XResizeWindow,(Display* a,Window b,unsigned int c,unsigned int d),(a,b,c,d),return)
+SDL_X11_SYM(int,XScreenNumberOfScreen,(Screen* a),(a),return)
 SDL_X11_SYM(int,XSelectInput,(Display* a,Window b,long c),(a,b,c),return)
 SDL_X11_SYM(Status,XSendEvent,(Display* a,Window b,Bool c,long d,XEvent* e),(a,b,c,d,e),return)
 SDL_X11_SYM(XErrorHandler,XSetErrorHandler,(XErrorHandler a),(a),return)
@@ -139,16 +139,7 @@ SDL_X11_SYM(int,XWarpPointer,(Display* a,Window b,Window c,int d,int e,unsigned 
 SDL_X11_SYM(int,XWindowEvent,(Display* a,Window b,long c,XEvent* d),(a,b,c,d),return)
 SDL_X11_SYM(Status,XWithdrawWindow,(Display* a,Window b,int c),(a,b,c),return)
 SDL_X11_SYM(VisualID,XVisualIDFromVisual,(Visual* a),(a),return)
-SDL_X11_SYM(char*,XGetDefault,(Display* a,char* b, char* c),(a,b,c),return)
-#if SDL_VIDEO_DRIVER_X11_CONST_PARAM_XEXTADDDISPLAY
-SDL_X11_SYM(XExtDisplayInfo*,XextAddDisplay,(XExtensionInfo* a,Display* b,_Xconst char* c,XExtensionHooks* d,int e,XPointer f),(a,b,c,d,e,f),return)
-#else
-SDL_X11_SYM(XExtDisplayInfo*,XextAddDisplay,(XExtensionInfo* a,Display* b,char* c,XExtensionHooks* d,int e,XPointer f),(a,b,c,d,e,f),return)
-#endif
-SDL_X11_SYM(XExtensionInfo*,XextCreateExtension,(void),(),return)
-SDL_X11_SYM(void,XextDestroyExtension,(XExtensionInfo* a),(a),)
-SDL_X11_SYM(XExtDisplayInfo*,XextFindDisplay,(XExtensionInfo* a,Display* b),(a,b),return)
-SDL_X11_SYM(int,XextRemoveDisplay,(XExtensionInfo* a,Display* b),(a,b),return)
+SDL_X11_SYM(char*,XGetDefault,(Display* a,_Xconst char* b, _Xconst char* c),(a,b,c),return)
 SDL_X11_SYM(Bool,XQueryExtension,(Display* a,_Xconst char* b,int* c,int* d,int* e),(a,b,c,d,e),return)
 SDL_X11_SYM(char *,XDisplayString,(Display* a),(a),return)
 SDL_X11_SYM(int,XGetErrorText,(Display* a,int b,char* c,int d),(a,b,c,d),return)
@@ -165,6 +156,16 @@ SDL_X11_SYM(SDL_X11_XESetWireToEventRetType,XESetWireToEvent,(Display* a,int b,S
 SDL_X11_SYM(SDL_X11_XESetEventToWireRetType,XESetEventToWire,(Display* a,int b,SDL_X11_XESetEventToWireRetType c),(a,b,c),return)
 SDL_X11_SYM(void,XRefreshKeyboardMapping,(XMappingEvent *a),(a),)
 SDL_X11_SYM(int,XQueryTree,(Display* a,Window b,Window* c,Window* d,Window** e,unsigned int* f),(a,b,c,d,e,f),return)
+SDL_X11_SYM(Bool,XSupportsLocale,(void),(),return)
+SDL_X11_SYM(Status,XmbTextListToTextProperty,(Display* a,char** b,int c,XICCEncodingStyle d,XTextProperty* e),(a,b,c,d,e),return)
+
+#if SDL_VIDEO_DRIVER_X11_XFIXES
+SDL_X11_MODULE(XFIXES)
+SDL_X11_SYM(PointerBarrier, XFixesCreatePointerBarrier, (Display* a, Window b, int c, int d, int e, int f, int g, int h, int *i),(a,b,c,d,e,f,g,h,i),return)
+SDL_X11_SYM(void, XFixesDestroyPointerBarrier, (Display* a, PointerBarrier b), (a,b),)
+SDL_X11_SYM(int, XIBarrierReleasePointer,(Display* a,  int b, PointerBarrier c, BarrierEventID d), (a,b,c,d), return) /* this is actually Xinput2 */
+SDL_X11_SYM(Status, XFixesQueryVersion,(Display* a, int* b, int* c), (a,b,c), return)
+#endif
 
 #if SDL_VIDEO_DRIVER_X11_SUPPORTS_GENERIC_EVENTS
 SDL_X11_SYM(Bool,XGetEventData,(Display* a,XGenericEventCookie* b),(a,b),return)

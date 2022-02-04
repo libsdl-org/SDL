@@ -24,7 +24,7 @@ mkdir codechecker-buildbot
 cd codechecker-buildbot
 
 # We turn off deprecated declarations, because we don't care about these warnings during static analysis.
-cmake -Wno-dev -DSDL_STATIC=OFF -DCMAKE_BUILD_TYPE=Debug -DASSERTIONS=enabled -DCMAKE_C_FLAGS="-Wno-deprecated-declarations" -DCMAKE_EXPORT_COMPILE_COMMANDS=1 ..
+cmake -Wno-dev -DSDL_STATIC=OFF -DCMAKE_BUILD_TYPE=Debug -DSDL_ASSERTIONS=enabled -DCMAKE_C_FLAGS="-Wno-deprecated-declarations" -DCMAKE_EXPORT_COMPILE_COMMANDS=1 ..
 
 # CMake on macOS adds "-arch arm64" or whatever is appropriate, but this confuses CodeChecker, so strip it out.
 perl -w -pi -e 's/\-arch\s+.*?\s+//g;' compile_commands.json

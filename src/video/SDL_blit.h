@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -479,14 +479,14 @@ do {                                                                    \
 #define DUFFS_LOOP8(pixel_copy_increment, width)                        \
 { int n = (width+7)/8;                                                  \
     switch (width & 7) {                                                \
-    case 0: do {    pixel_copy_increment; /* fallthrough */             \
-    case 7:     pixel_copy_increment;     /* fallthrough */             \
-    case 6:     pixel_copy_increment;     /* fallthrough */             \
-    case 5:     pixel_copy_increment;     /* fallthrough */             \
-    case 4:     pixel_copy_increment;     /* fallthrough */             \
-    case 3:     pixel_copy_increment;     /* fallthrough */             \
-    case 2:     pixel_copy_increment;     /* fallthrough */             \
-    case 1:     pixel_copy_increment;     /* fallthrough */             \
+    case 0: do {    pixel_copy_increment; SDL_FALLTHROUGH;              \
+    case 7:     pixel_copy_increment;     SDL_FALLTHROUGH;              \
+    case 6:     pixel_copy_increment;     SDL_FALLTHROUGH;              \
+    case 5:     pixel_copy_increment;     SDL_FALLTHROUGH;              \
+    case 4:     pixel_copy_increment;     SDL_FALLTHROUGH;              \
+    case 3:     pixel_copy_increment;     SDL_FALLTHROUGH;              \
+    case 2:     pixel_copy_increment;     SDL_FALLTHROUGH;              \
+    case 1:     pixel_copy_increment;                                   \
         } while ( --n > 0 );                                            \
     }                                                                   \
 }
@@ -495,10 +495,10 @@ do {                                                                    \
 #define DUFFS_LOOP4(pixel_copy_increment, width)                        \
 { int n = (width+3)/4;                                                  \
     switch (width & 3) {                                                \
-    case 0: do {    pixel_copy_increment;   /* fallthrough */           \
-    case 3:     pixel_copy_increment;       /* fallthrough */           \
-    case 2:     pixel_copy_increment;       /* fallthrough */           \
-    case 1:     pixel_copy_increment;       /* fallthrough */           \
+    case 0: do {    pixel_copy_increment;   SDL_FALLTHROUGH;            \
+    case 3:     pixel_copy_increment;       SDL_FALLTHROUGH;            \
+    case 2:     pixel_copy_increment;       SDL_FALLTHROUGH;            \
+    case 1:     pixel_copy_increment;                                   \
         } while (--n > 0);                                              \
     }                                                                   \
 }

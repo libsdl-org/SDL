@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -188,22 +188,22 @@ MoveSprites(SDL_Renderer * renderer, SDL_Texture * sprite)
         color.b = 0xFF;
         color.a = 0xFF;
 
-        verts[0].position.x = temp.x;
-        verts[0].position.y = temp.y;
+        verts[0].position.x = (float)temp.x;
+        verts[0].position.y = (float)temp.y;
         verts[0].color = color;
 
-        verts[1].position.x = temp.x + temp.w;
-        verts[1].position.y = temp.y;
+        verts[1].position.x = (float)temp.x + temp.w;
+        verts[1].position.y = (float)temp.y;
         verts[1].color = color;
 
-        verts[2].position.x = temp.x + temp.w;
-        verts[2].position.y = temp.y + temp.h;
+        verts[2].position.x = (float)temp.x + temp.w;
+        verts[2].position.y = (float)temp.y + temp.h;
         verts[2].color = color;
 
         SDL_RenderGeometry(renderer, NULL, verts, 3, NULL, 0);
 
-        verts[1].position.x = temp.x;
-        verts[1].position.y = temp.y + temp.h;
+        verts[1].position.x = (float)temp.x;
+        verts[1].position.y = (float)temp.y + temp.h;
         verts[1].color = color;
 
         SDL_RenderGeometry(renderer, NULL, verts, 3, NULL, 0);
@@ -289,43 +289,43 @@ MoveSprites(SDL_Renderer * renderer, SDL_Texture * sprite)
             for (i = 0; i < num_sprites; ++i) {
                 position = &positions[i];
                 /* 0 */
-                verts->position.x = position->x;
-                verts->position.y = position->y;
+                verts->position.x = (float)position->x;
+                verts->position.y = (float)position->y;
                 verts->color = color;
                 verts->tex_coord.x = 0.0f;
                 verts->tex_coord.y = 0.0f;
                 verts++;
                 /* 1 */
-                verts->position.x = position->x + position->w;
-                verts->position.y = position->y;
+                verts->position.x = (float)position->x + position->w;
+                verts->position.y = (float)position->y;
                 verts->color = color;
                 verts->tex_coord.x = 1.0f;
                 verts->tex_coord.y = 0.0f;
                 verts++;
                 /* 2 */
-                verts->position.x = position->x + position->w;
-                verts->position.y = position->y + position->h;
+                verts->position.x = (float)position->x + position->w;
+                verts->position.y = (float)position->y + position->h;
                 verts->color = color;
                 verts->tex_coord.x = 1.0f;
                 verts->tex_coord.y = 1.0f;
                 verts++;
                 /* 0 */
-                verts->position.x = position->x;
-                verts->position.y = position->y;
+                verts->position.x = (float)position->x;
+                verts->position.y = (float)position->y;
                 verts->color = color;
                 verts->tex_coord.x = 0.0f;
                 verts->tex_coord.y = 0.0f;
                 verts++;
                 /* 2 */
-                verts->position.x = position->x + position->w;
-                verts->position.y = position->y + position->h;
+                verts->position.x = (float)position->x + position->w;
+                verts->position.y = (float)position->y + position->h;
                 verts->color = color;
                 verts->tex_coord.x = 1.0f;
                 verts->tex_coord.y = 1.0f;
                 verts++;
                 /* 3 */
-                verts->position.x = position->x;
-                verts->position.y = position->y + position->h;
+                verts->position.x = (float)position->x;
+                verts->position.y = (float)position->y + position->h;
                 verts->color = color;
                 verts->tex_coord.x = 0.0f;
                 verts->tex_coord.y = 1.0f;
@@ -360,36 +360,36 @@ MoveSprites(SDL_Renderer * renderer, SDL_Texture * sprite)
             for (i = 0; i < num_sprites; ++i) {
                 position = &positions[i];
                 /* 0 */
-                verts->position.x = position->x;
-                verts->position.y = position->y;
+                verts->position.x = (float)position->x;
+                verts->position.y = (float)position->y;
                 verts->color = color;
                 verts->tex_coord.x = 0.0f;
                 verts->tex_coord.y = 0.0f;
                 verts++;
                 /* 1 */
-                verts->position.x = position->x + position->w;
-                verts->position.y = position->y;
+                verts->position.x = (float)position->x + position->w;
+                verts->position.y = (float)position->y;
                 verts->color = color;
                 verts->tex_coord.x = 1.0f;
                 verts->tex_coord.y = 0.0f;
                 verts++;
                 /* 2 */
-                verts->position.x = position->x + position->w / 2.0f;
-                verts->position.y = position->y + position->h / 2.0f;
+                verts->position.x = (float)position->x + position->w / 2.0f;
+                verts->position.y = (float)position->y + position->h / 2.0f;
                 verts->color = color;
                 verts->tex_coord.x = 0.5f;
                 verts->tex_coord.y = 0.5f;
                 verts++;
                 /* 3 */
-                verts->position.x = position->x;
-                verts->position.y = position->y + position->h;
+                verts->position.x = (float)position->x;
+                verts->position.y = (float)position->y + position->h;
                 verts->color = color;
                 verts->tex_coord.x = 0.0f;
                 verts->tex_coord.y = 1.0f;
                 verts++;
                 /* 4 */
-                verts->position.x = position->x + position->w;
-                verts->position.y = position->y + position->h;
+                verts->position.x = (float)position->x + position->w;
+                verts->position.y = (float)position->y + position->h;
                 verts->color = color;
                 verts->tex_coord.x = 1.0f;
                 verts->tex_coord.y = 1.0f;

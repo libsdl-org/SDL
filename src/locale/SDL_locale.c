@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -45,7 +45,7 @@ build_locales_from_csv_string(char *csv)
 
     num_locales++;  /* one more for terminator */
 
-    slen = ((size_t) (ptr - csv)) + 1;  /* strlen(csv) + 1 */
+    slen = ((size_t) (ptr - csv)) + 1;  /* SDL_strlen(csv) + 1 */
     alloclen = slen + (num_locales * sizeof (SDL_Locale));
 
     loc = retval = (SDL_Locale *) SDL_calloc(1, alloclen);

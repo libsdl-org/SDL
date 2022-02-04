@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -653,11 +653,11 @@ static SDL_bool createSwapchain(void)
 
     // Clamp the size to the allowable image extent.
     // SDL_Vulkan_GetDrawableSize()'s result it not always in this range (bug #3287)
-    vulkanContext->swapchainSize.width = SDL_clamp(w,
+    vulkanContext->swapchainSize.width = SDL_clamp((uint32_t) w,
                                                   vulkanContext->surfaceCapabilities.minImageExtent.width,
                                                   vulkanContext->surfaceCapabilities.maxImageExtent.width);
 
-    vulkanContext->swapchainSize.height = SDL_clamp(h,
+    vulkanContext->swapchainSize.height = SDL_clamp((uint32_t) h,
                                                    vulkanContext->surfaceCapabilities.minImageExtent.height,
                                                    vulkanContext->surfaceCapabilities.maxImageExtent.height);
 

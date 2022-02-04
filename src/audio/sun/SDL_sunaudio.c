@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -98,7 +98,7 @@ SUNAUDIO_WaitDevice(_THIS)
         }
     }
 #else
-    SDL_IOReady(this->hidden->audio_fd, SDL_TRUE, -1);
+    SDL_IOReady(this->hidden->audio_fd, SDL_IOR_WRITE, -1);
 #endif
 }
 
@@ -188,11 +188,12 @@ SUNAUDIO_CloseDevice(_THIS)
 }
 
 static int
-SUNAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
+SUNAUDIO_OpenDevice(_THIS, const char *devname)
 {
 #ifdef AUDIO_SETINFO
     int enc;
 #endif
+    SDL_bool iscapture = this->iscapture;
     int desired_freq = 0;
     const int flags = ((iscapture) ? OPEN_FLAGS_INPUT : OPEN_FLAGS_OUTPUT);
     SDL_AudioFormat format = 0;
@@ -394,7 +395,7 @@ snd2au(int sample)
     return (mask & sample);
 }
 
-static int
+static SDL_bool
 SUNAUDIO_Init(SDL_AudioDriverImpl * impl)
 {
     /* Set the function pointers */
@@ -405,13 +406,13 @@ SUNAUDIO_Init(SDL_AudioDriverImpl * impl)
     impl->GetDeviceBuf = SUNAUDIO_GetDeviceBuf;
     impl->CloseDevice = SUNAUDIO_CloseDevice;
 
-    impl->AllowsArbitraryDeviceNames = 1;
+    impl->AllowsArbitraryDeviceNames = SDL_TRUE;
 
-    return 1; /* this audio target is available. */
+    return SDL_TRUE; /* this audio target is available. */
 }
 
 AudioBootStrap SUNAUDIO_bootstrap = {
-    "audio", "UNIX /dev/audio interface", SUNAUDIO_Init, 0
+    "audio", "UNIX /dev/audio interface", SUNAUDIO_Init, SDL_FALSE
 };
 
 #endif /* SDL_AUDIO_DRIVER_SUNAUDIO */

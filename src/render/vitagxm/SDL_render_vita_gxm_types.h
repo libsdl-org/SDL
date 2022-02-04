@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -61,16 +61,15 @@ typedef struct clear_vertex {
 typedef struct color_vertex {
     float x;
     float y;
-    float z;
-    unsigned int color;
+    SDL_Color color;
 } color_vertex;
 
 typedef struct texture_vertex {
     float x;
     float y;
-    float z;
     float u;
     float v;
+    SDL_Color color;
 } texture_vertex;
 
 typedef struct gxm_texture {
@@ -85,7 +84,6 @@ typedef struct gxm_texture {
 typedef struct fragment_programs {
     SceGxmFragmentProgram *color;
     SceGxmFragmentProgram *texture;
-    SceGxmFragmentProgram *textureTint;
 } fragment_programs;
 
 typedef struct blend_fragment_programs {
@@ -102,8 +100,7 @@ typedef struct
     SDL_bool viewport_dirty;
     SDL_Texture *texture;
     SDL_Texture *target;
-    Uint32 color;
-    Uint32 texture_color;
+    SDL_Color color;
     SceGxmFragmentProgram *fragment_program;
     SceGxmVertexProgram *vertex_program;
     int last_command;
@@ -113,7 +110,7 @@ typedef struct
     SDL_bool cliprect_dirty;
     SDL_Rect cliprect;
     SDL_bool texturing;
-    Uint32 clear_color;
+    SDL_Color clear_color;
     int drawablew;
     int drawableh;
 } gxm_drawstate_cache;
@@ -162,11 +159,9 @@ typedef struct
     SceGxmFragmentProgram *colorFragmentProgram;
     SceGxmVertexProgram *textureVertexProgram;
     SceGxmFragmentProgram *textureFragmentProgram;
-    SceGxmFragmentProgram *textureTintFragmentProgram;
     SceGxmProgramParameter *clearClearColorParam;
     SceGxmProgramParameter *colorWvpParam;
     SceGxmProgramParameter *textureWvpParam;
-    SceGxmProgramParameter *textureTintColorParam;
 
     SceGxmShaderPatcher *shaderPatcher;
     SceGxmVertexProgram *clearVertexProgram;
@@ -178,7 +173,6 @@ typedef struct
     SceGxmShaderPatcherId colorFragmentProgramId;
     SceGxmShaderPatcherId textureVertexProgramId;
     SceGxmShaderPatcherId textureFragmentProgramId;
-    SceGxmShaderPatcherId textureTintFragmentProgramId;
 
     SceUID patcherBufferUid;
     SceUID patcherVertexUsseUid;

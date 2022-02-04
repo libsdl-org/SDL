@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -48,7 +48,7 @@ extern void KMSDRM_QuitMouse(_THIS);
 
 extern void KMSDRM_CreateCursorBO(SDL_VideoDisplay *display);
 extern void KMSDRM_DestroyCursorBO(_THIS, SDL_VideoDisplay *display);
-extern void KMSDRM_InitCursor();
+extern void KMSDRM_InitCursor(void);
 
 #endif /* SDL_KMSDRM_mouse_h_ */
 

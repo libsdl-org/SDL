@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -113,6 +113,10 @@ Android_CreateSystemCursor(SDL_SystemCursor id)
 static void
 Android_FreeCursor(SDL_Cursor * cursor)
 {
+    SDL_AndroidCursorData *data = (SDL_AndroidCursorData*) cursor->driverdata;
+    if (data->custom_cursor != 0) {
+        Android_JNI_DestroyCustomCursor(data->custom_cursor);
+    }
     SDL_free(cursor->driverdata);
     SDL_free(cursor);
 }

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -88,7 +88,7 @@ SDL_LockMutex_srw(SDL_mutex * _mutex)
     DWORD this_thread;
 
     if (mutex == NULL) {
-        return SDL_SetError("Passed a NULL mutex");
+        return SDL_InvalidParamError("mutex");
     }
 
     this_thread = GetCurrentThreadId();
@@ -115,7 +115,7 @@ SDL_TryLockMutex_srw(SDL_mutex * _mutex)
     int retval = 0;
 
     if (mutex == NULL) {
-        return SDL_SetError("Passed a NULL mutex");
+        return SDL_InvalidParamError("mutex");
     }
 
     this_thread = GetCurrentThreadId();
@@ -139,7 +139,7 @@ SDL_UnlockMutex_srw(SDL_mutex * _mutex)
     SDL_mutex_srw *mutex = (SDL_mutex_srw *)_mutex;
 
     if (mutex == NULL) {
-        return SDL_SetError("Passed a NULL mutex");
+        return SDL_InvalidParamError("mutex");
     }
 
     if (mutex->owner == GetCurrentThreadId()) {
@@ -168,11 +168,6 @@ static const SDL_mutex_impl_t SDL_mutex_impl_srw =
 /**
  * Fallback Mutex implementation using Critical Sections (before Win 7)
  */
-
-typedef struct SDL_mutex_cs
-{
-    CRITICAL_SECTION cs;
-} SDL_mutex_cs;
 
 /* Create a mutex */
 static SDL_mutex *
@@ -213,7 +208,7 @@ SDL_LockMutex_cs(SDL_mutex * mutex_)
 {
     SDL_mutex_cs *mutex = (SDL_mutex_cs *)mutex_;
     if (mutex == NULL) {
-        return SDL_SetError("Passed a NULL mutex");
+        return SDL_InvalidParamError("mutex");
     }
 
     EnterCriticalSection(&mutex->cs);
@@ -227,7 +222,7 @@ SDL_TryLockMutex_cs(SDL_mutex * mutex_)
     SDL_mutex_cs *mutex = (SDL_mutex_cs *)mutex_;
     int retval = 0;
     if (mutex == NULL) {
-        return SDL_SetError("Passed a NULL mutex");
+        return SDL_InvalidParamError("mutex");
     }
 
     if (TryEnterCriticalSection(&mutex->cs) == 0) {
@@ -242,7 +237,7 @@ SDL_UnlockMutex_cs(SDL_mutex * mutex_)
 {
     SDL_mutex_cs *mutex = (SDL_mutex_cs *)mutex_;
     if (mutex == NULL) {
-        return SDL_SetError("Passed a NULL mutex");
+        return SDL_InvalidParamError("mutex");
     }
 
     LeaveCriticalSection(&mutex->cs);

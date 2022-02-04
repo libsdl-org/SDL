@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -110,6 +110,7 @@ SDL_SendWindowEvent(SDL_Window * window, Uint8 windowevent, int data1,
         }
         window->x = data1;
         window->y = data2;
+        SDL_OnWindowMoved(window);
         break;
     case SDL_WINDOWEVENT_RESIZED:
         if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {

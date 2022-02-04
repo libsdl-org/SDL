@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -30,30 +30,18 @@
 /*************************************************************************************************
  * Vertex/fragment shader source                                                                 *
  *************************************************************************************************/
-/* Notes on a_angle:
-   * It is a vector containing sin and cos for rotation matrix
-   * To get correct rotation for most cases when a_angle is disabled cos
-     value is decremented by 1.0 to get proper output with 0.0 which is
-     default value
-*/
 static const Uint8 GLES2_Vertex_Default[] = " \
     uniform mat4 u_projection; \
     attribute vec2 a_position; \
     attribute vec4 a_color; \
     attribute vec2 a_texCoord; \
-    attribute vec2 a_angle; \
-    attribute vec2 a_center; \
     varying vec2 v_texCoord; \
     varying vec4 v_color; \
     \
     void main() \
     { \
-        float s = a_angle[0]; \
-        float c = a_angle[1] + 1.0; \
-        mat2 rotationMatrix = mat2(c, -s, s, c); \
-        vec2 position = rotationMatrix * (a_position - a_center) + a_center; \
         v_texCoord = a_texCoord; \
-        gl_Position = u_projection * vec4(position, 0.0, 1.0);\
+        gl_Position = u_projection * vec4(a_position, 0.0, 1.0);\
         gl_PointSize = 1.0; \
         v_color = a_color; \
     } \
@@ -166,7 +154,7 @@ static const Uint8 GLES2_Fragment_TextureBGR[] = " \
 "uniform sampler2D u_texture;\n"                                \
 "uniform sampler2D u_texture_u;\n"                              \
 "uniform sampler2D u_texture_v;\n"                              \
-"varying vec4 v_color;\n"                                  \
+"varying vec4 v_color;\n"                                       \
 "varying vec2 v_texCoord;\n"                                    \
 "\n"                                                            \
 
@@ -188,10 +176,10 @@ static const Uint8 GLES2_Fragment_TextureBGR[] = " \
 "\n"                                                            \
 "    // That was easy. :) \n"                                   \
 "    gl_FragColor = vec4(rgb, 1);\n"                            \
-"    gl_FragColor *= v_color;\n"                           \
+"    gl_FragColor *= v_color;\n"                                \
 "}"                                                             \
 
-#define NV12_SHADER_BODY                                        \
+#define NV12_RA_SHADER_BODY                                     \
 "\n"                                                            \
 "void main()\n"                                                 \
 "{\n"                                                           \
@@ -208,7 +196,27 @@ static const Uint8 GLES2_Fragment_TextureBGR[] = " \
 "\n"                                                            \
 "    // That was easy. :) \n"                                   \
 "    gl_FragColor = vec4(rgb, 1);\n"                            \
-"    gl_FragColor *= v_color;\n"                           \
+"    gl_FragColor *= v_color;\n"                                \
+"}"                                                             \
+
+#define NV12_RG_SHADER_BODY                                     \
+"\n"                                                            \
+"void main()\n"                                                 \
+"{\n"                                                           \
+"    mediump vec3 yuv;\n"                                       \
+"    lowp vec3 rgb;\n"                                          \
+"\n"                                                            \
+"    // Get the YUV values \n"                                  \
+"    yuv.x = texture2D(u_texture,   v_texCoord).r;\n"           \
+"    yuv.yz = texture2D(u_texture_u, v_texCoord).rg;\n"         \
+"\n"                                                            \
+"    // Do the color transform \n"                              \
+"    yuv += offset;\n"                                          \
+"    rgb = matrix * yuv;\n"                                     \
+"\n"                                                            \
+"    // That was easy. :) \n"                                   \
+"    gl_FragColor = vec4(rgb, 1);\n"                            \
+"    gl_FragColor *= v_color;\n"                                \
 "}"                                                             \
 
 #define NV21_SHADER_BODY                                        \
@@ -228,7 +236,7 @@ static const Uint8 GLES2_Fragment_TextureBGR[] = " \
 "\n"                                                            \
 "    // That was easy. :) \n"                                   \
 "    gl_FragColor = vec4(rgb, 1);\n"                            \
-"    gl_FragColor *= v_color;\n"                           \
+"    gl_FragColor *= v_color;\n"                                \
 "}"                                                             \
 
 /* YUV to ABGR conversion */
@@ -252,17 +260,27 @@ static const Uint8 GLES2_Fragment_TextureYUVBT709[] = \
 static const Uint8 GLES2_Fragment_TextureNV12JPEG[] = \
         YUV_SHADER_PROLOGUE \
         JPEG_SHADER_CONSTANTS \
-        NV12_SHADER_BODY \
+        NV12_RA_SHADER_BODY \
 ;
-static const Uint8 GLES2_Fragment_TextureNV12BT601[] = \
+static const Uint8 GLES2_Fragment_TextureNV12BT601_RA[] = \
         YUV_SHADER_PROLOGUE \
         BT601_SHADER_CONSTANTS \
-        NV12_SHADER_BODY \
+        NV12_RA_SHADER_BODY \
 ;
-static const Uint8 GLES2_Fragment_TextureNV12BT709[] = \
+static const Uint8 GLES2_Fragment_TextureNV12BT601_RG[] = \
+        YUV_SHADER_PROLOGUE \
+        BT601_SHADER_CONSTANTS \
+        NV12_RG_SHADER_BODY \
+;
+static const Uint8 GLES2_Fragment_TextureNV12BT709_RA[] = \
         YUV_SHADER_PROLOGUE \
         BT709_SHADER_CONSTANTS \
-        NV12_SHADER_BODY \
+        NV12_RA_SHADER_BODY \
+;
+static const Uint8 GLES2_Fragment_TextureNV12BT709_RG[] = \
+        YUV_SHADER_PROLOGUE \
+        BT709_SHADER_CONSTANTS \
+        NV12_RG_SHADER_BODY \
 ;
 
 /* NV21 to ABGR conversion */
@@ -325,10 +343,14 @@ const Uint8 *GLES2_GetShader(GLES2_ShaderType type)
         return GLES2_Fragment_TextureYUVBT709;
     case GLES2_SHADER_FRAGMENT_TEXTURE_NV12_JPEG:
         return GLES2_Fragment_TextureNV12JPEG;
-    case GLES2_SHADER_FRAGMENT_TEXTURE_NV12_BT601:
-        return GLES2_Fragment_TextureNV12BT601;
-    case GLES2_SHADER_FRAGMENT_TEXTURE_NV12_BT709:
-        return GLES2_Fragment_TextureNV12BT709;
+    case GLES2_SHADER_FRAGMENT_TEXTURE_NV12_RA_BT601:
+        return GLES2_Fragment_TextureNV12BT601_RA;
+    case GLES2_SHADER_FRAGMENT_TEXTURE_NV12_RG_BT601:
+        return GLES2_Fragment_TextureNV12BT601_RG;
+    case GLES2_SHADER_FRAGMENT_TEXTURE_NV12_RA_BT709:
+        return GLES2_Fragment_TextureNV12BT709_RA;
+    case GLES2_SHADER_FRAGMENT_TEXTURE_NV12_RG_BT709:
+        return GLES2_Fragment_TextureNV12BT709_RG;
     case GLES2_SHADER_FRAGMENT_TEXTURE_NV21_JPEG:
         return GLES2_Fragment_TextureNV21JPEG;
     case GLES2_SHADER_FRAGMENT_TEXTURE_NV21_BT601:

@@ -47,6 +47,7 @@
     <ClInclude Include="..\include\SDL_filesystem.h" />
     <ClInclude Include="..\include\SDL_haptic.h" />
     <ClInclude Include="..\include\SDL_hints.h" />
+    <ClInclude Include="..\include\SDL_hidapi.h" />
     <ClInclude Include="..\include\SDL_input.h" />
     <ClInclude Include="..\include\SDL_joystick.h" />
     <ClInclude Include="..\include\SDL_keyboard.h" />
@@ -245,12 +246,14 @@
     <ClCompile Include="..\src\haptic\windows\SDL_dinputhaptic.c" />
     <ClCompile Include="..\src\haptic\windows\SDL_windowshaptic.c" />
     <ClCompile Include="..\src\haptic\windows\SDL_xinputhaptic.c" />
+    <ClCompile Include="..\src\hidapi\SDL_hidapi.c" />
     <ClCompile Include="..\src\joystick\dummy\SDL_sysjoystick.c" />
     <ClCompile Include="..\src\joystick\SDL_gamecontroller.c" />
     <ClCompile Include="..\src\joystick\SDL_joystick.c" />
     <ClCompile Include="..\src\joystick\virtual\SDL_virtualjoystick.c" />
     <ClCompile Include="..\src\joystick\windows\SDL_dinputjoystick.c" />
     <ClCompile Include="..\src\joystick\windows\SDL_windowsjoystick.c" />
+    <ClCompile Include="..\src\joystick\windows\SDL_windows_gaming_input.c" />
     <ClCompile Include="..\src\joystick\windows\SDL_xinputjoystick.c" />
     <ClCompile Include="..\src\loadso\windows\SDL_sysloadso.c" />
     <ClCompile Include="..\src\locale\SDL_locale.c" />

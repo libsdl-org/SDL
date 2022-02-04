@@ -3,9 +3,9 @@ Simple DirectMedia Layer 2 for OS/2 & eComStation
 SDL port for OS/2, authored by Andrey Vasilkin <digi@os2.snc.ru>, 2016
 
 
-OpenGL, joystick and audio capture not supported by this port.
+OpenGL and audio capture not supported by this port.
 
-Additional environment variables (optional) for OS/2 version:
+Additional optional environment variables:
 
 SDL_AUDIO_SHARE
   Values: 0 or 1, default is 0
@@ -33,7 +33,7 @@ Compiling:
 
 Open Watcom 1.9 or newer is tested. For the new Open Watcom V2 fork, see:
 https://github.com/open-watcom/ and https://open-watcom.github.io
-WATCOM ervironment variable must to be set to the Open Watcom install
+WATCOM environment variable must to be set to the Open Watcom install
 directory. To compile, run: wmake -f Makefile.os2
 
 
@@ -52,3 +52,41 @@ Installing:
   version installed, close all SDL2 applications before replacing the old
   copy.  Also make sure that any other older versions of DLLs are removed
   from your system.
+
+
+Joysticks in SDL2:
+------------------
+
+The joystick code in SDL2 is a direct forward-port from the SDL-1.2 version.
+Here is the original documentation from SDL-1.2:
+
+The Joystick detection only works for standard joysticks (2 buttons, 2 axes
+and the like). Therefore, if you use a non-standard joystick, you should
+specify its features in the SDL_OS2_JOYSTICK environment variable in a batch
+file or CONFIG.SYS, so SDL applications can provide full capability to your
+device. The syntax is:
+
+SET SDL_OS2_JOYSTICK=[JOYSTICK_NAME] [AXES] [BUTTONS] [HATS] [BALLS]
+
+So, it you have a Gravis GamePad with 4 axes, 2 buttons, 2 hats and 0 balls,
+the line should be:
+
+SET SDL_OS2_JOYSTICK=Gravis_GamePad 4 2 2 0
+
+If you want to add spaces in your joystick name, just surround it with
+quotes or double-quotes:
+
+SET SDL_OS2_JOYSTICK='Gravis GamePad' 4 2 2 0
+
+or
+
+SET SDL_OS2_JOYSTICK="Gravis GamePad" 4 2 2 0
+
+   Note however that Balls and Hats are not supported under OS/2, and the
+value will be ignored... but it is wise to define these correctly because
+in the future those can be supported.
+
+   Also the number of buttons is limited to 2 when using two joysticks,
+4 when using one joystick with 4 axes, 6 when using a joystick with 3 axes
+and 8 when using a joystick with 2 axes. Notice however these are limitations
+of the Joystick Port hardware, not OS/2.

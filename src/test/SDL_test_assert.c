@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -104,7 +104,7 @@ void SDLTest_AssertPass(SDL_PRINTF_FORMAT_STRING const char *assertDescription, 
 
         /* Log pass message */
     SDLTest_AssertsPassed++;
-    SDLTest_Log(SDLTEST_ASSERT_CHECK_FORMAT, logMessage, "Pass");
+    SDLTest_Log(SDLTEST_ASSERT_CHECK_FORMAT, logMessage, "Passed");
 }
 
 /*

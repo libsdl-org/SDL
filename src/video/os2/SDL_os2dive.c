@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -302,10 +302,10 @@ static BOOL voUpdate(PVODATA pVOData, HWND hwnd, SDL_Rect *pSDLRects,
             debug_os2("Not enough stack size");
             return FALSE;
         }
-        memset(pbLineMask, 0, pVOData->ulHeight);
+        SDL_memset(pbLineMask, 0, pVOData->ulHeight);
 
         for ( ; ((LONG)cSDLRects) > 0; cSDLRects--, pSDLRects++) {
-            memset(&pbLineMask[pSDLRects->y], 1, pSDLRects->h);
+            SDL_memset(&pbLineMask[pSDLRects->y], 1, pSDLRects->h);
         }
 
         ulRC = DiveBlitImageLines(pVOData->hDive, pVOData->ulDIVEBufNum,

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -357,9 +357,16 @@ void SDL_WinRTApp::Run()
     {
         // TODO, WinRT: pass the C-style main() a reasonably realistic
         // representation of command line arguments.
-        int argc = 0;
-        char **argv = NULL;
+        int argc = 1;
+        char **argv = (char **)SDL_malloc(2 * sizeof(*argv));
+        if (!argv) {
+            return;
+        }
+        argv[0] = SDL_strdup("WinRTApp");
+        argv[1] = NULL;
         WINRT_SDLAppEntryPoint(argc, argv);
+        SDL_free(argv[0]);
+        SDL_free(argv);
     }
 }
 

@@ -164,7 +164,6 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
      */
     protected String[] getLibraries() {
         return new String[] {
-            "hidapi",
             "SDL2",
             // "SDL2_image",
             // "SDL2_mixer",
@@ -379,10 +378,13 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     }
 
     public static int getCurrentOrientation() {
-        final Context context = SDLActivity.getContext();
-        final Display display = ((WindowManager) context.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
-
         int result = SDL_ORIENTATION_UNKNOWN;
+
+        Activity activity = (Activity)getContext();
+        if (activity == null) {
+            return result;
+        }
+        Display display = activity.getWindowManager().getDefaultDisplay();
 
         switch (display.getRotation()) {
             case Surface.ROTATION_0:
@@ -497,8 +499,8 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         // If we do, the normal hardware back button will no longer work and people have to use home,
         // but the mouse right click will work.
         //
-        String trapBack = SDLActivity.nativeGetHint("SDL_ANDROID_TRAP_BACK_BUTTON");
-        if ((trapBack != null) && trapBack.equals("1")) {
+        boolean trapBack = SDLActivity.nativeGetHintBoolean("SDL_ANDROID_TRAP_BACK_BUTTON", false);
+        if (trapBack) {
             // Exit and let the mouse handler handle this button (if appropriate)
             return;
         }
@@ -801,6 +803,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     public static native void onNativeSurfaceChanged();
     public static native void onNativeSurfaceDestroyed();
     public static native String nativeGetHint(String name);
+    public static native boolean nativeGetHintBoolean(String name, boolean default_value);
     public static native void nativeSetenv(String name, String value);
     public static native void onNativeOrientationChanged(int orientation);
     public static native void nativeAddTouch(int touchId, String name);
@@ -1474,6 +1477,19 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
             return 0;
         }
         return mLastCursorID;
+    }
+
+    /**
+     * This method is called by SDL using JNI.
+     */
+    public static void destroyCustomCursor(int cursorID) {
+        if (Build.VERSION.SDK_INT >= 24) {
+            try {
+                mCursors.remove(cursorID);
+            } catch (Exception e) {
+            }
+        }
+        return;
     }
 
     /**

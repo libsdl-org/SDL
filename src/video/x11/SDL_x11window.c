@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -32,6 +32,7 @@
 #include "SDL_x11mouse.h"
 #include "SDL_x11shape.h"
 #include "SDL_x11xinput2.h"
+#include "SDL_x11xfixes.h"
 
 #if SDL_VIDEO_OPENGL_EGL
 #include "SDL_x11opengles.h"
@@ -261,6 +262,7 @@ SetupWindowData(_THIS, SDL_Window * window, Window w, BOOL created)
     }
     data->window = window;
     data->xwindow = w;
+
 #ifdef X_HAVE_UTF8_STRING
     if (SDL_X11_HAVE_UTF8 && videodata->im) {
         data->ic =
@@ -390,6 +392,7 @@ X11_CreateWindow(_THIS, SDL_Window * window)
     long compositor = 1;
     Atom _NET_WM_PID;
     long fevent = 0;
+    const char *hint = NULL;
 
 #if SDL_VIDEO_OPENGL_GLX || SDL_VIDEO_OPENGL_EGL
     const char *forced_visual_id = SDL_GetHint(SDL_HINT_VIDEO_X11_WINDOW_VISUALID);
@@ -589,6 +592,8 @@ X11_CreateWindow(_THIS, SDL_Window * window)
         wintype_name = "_NET_WM_WINDOW_TYPE_TOOLTIP";
     } else if (window->flags & SDL_WINDOW_POPUP_MENU) {
         wintype_name = "_NET_WM_WINDOW_TYPE_POPUP_MENU";
+    } else if ( ((hint = SDL_GetHint(SDL_HINT_X11_WINDOW_TYPE)) != NULL) && *hint ) {
+        wintype_name = hint;
     } else {
         wintype_name = "_NET_WM_WINDOW_TYPE_NORMAL";
         compositor = 1;  /* disable compositing for "normal" windows */
@@ -670,6 +675,9 @@ X11_CreateWindow(_THIS, SDL_Window * window)
                  PropertyChangeMask | StructureNotifyMask |
                  KeymapStateMask | fevent));
 
+    /* For _ICC_PROFILE. */
+    X11_XSelectInput(display, RootWindow(display, screen), PropertyChangeMask);
+
     X11_XkbSelectEvents(display, XkbUseCoreKbd, XkbStateNotifyMask, XkbStateNotifyMask);
 
     X11_XFlush(display);
@@ -713,8 +721,10 @@ X11_GetWindowTitle(_THIS, Window xwindow)
                     &items_read, &items_left, &propdata);
         if (status == Success && propdata) {
             title = SDL_iconv_string("UTF-8", "", SDL_static_cast(char*, propdata), items_read+1);
+            SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Failed to convert WM_NAME title expecting UTF8! Title: %s", title);
             X11_XFree(propdata);
         } else {
+            SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Could not get any window title response from Xorg, returning empty string!");
             title = SDL_strdup("");
         }
     }
@@ -725,27 +735,11 @@ void
 X11_SetWindowTitle(_THIS, SDL_Window * window)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+    Window xwindow = data->xwindow;
     Display *display = data->videodata->display;
-    Status status;
-    const char *title = window->title ? window->title : "";
+    char *title = window->title ? window->title : "";
 
-    Atom UTF8_STRING = data->videodata->UTF8_STRING;
-    Atom _NET_WM_NAME = data->videodata->_NET_WM_NAME;
-
-    status = X11_XChangeProperty(display, data->xwindow, _NET_WM_NAME, UTF8_STRING, 8, 0, (const unsigned char *) title, strlen(title));
-
-    if (status != 1) {
-        char *x11_error = NULL;
-        char x11_error_locale[256];
-        if (X11_XGetErrorText(display, status, x11_error_locale, sizeof(x11_error_locale)) == Success)
-        {
-            x11_error = SDL_iconv_string("UTF-8", "", x11_error_locale, SDL_strlen(x11_error_locale)+1);
-            SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Error when setting X11 window title to %s: %s\n", title, x11_error);
-            SDL_free(x11_error);
-        }
-    }
-
-    X11_XFlush(display);
+    SDL_X11_SetWindowTitle(display, xwindow, title);
 }
 
 void
@@ -1581,6 +1575,86 @@ X11_SetWindowGammaRamp(_THIS, SDL_Window * window, const Uint16 * ramp)
     return 0;
 }
 
+typedef struct {
+    unsigned char *data;
+    int format, count;
+    Atom type;
+} SDL_x11Prop;
+
+/* Reads property
+   Must call X11_XFree on results
+ */
+static void X11_ReadProperty(SDL_x11Prop *p, Display *disp, Window w, Atom prop)
+{
+    unsigned char *ret=NULL;
+    Atom type;
+    int fmt;
+    unsigned long count;
+    unsigned long bytes_left;
+    int bytes_fetch = 0;
+
+    do {
+        if (ret != 0) X11_XFree(ret);
+        X11_XGetWindowProperty(disp, w, prop, 0, bytes_fetch, False, AnyPropertyType, &type, &fmt, &count, &bytes_left, &ret);
+        bytes_fetch += bytes_left;
+    } while (bytes_left != 0);
+
+    p->data=ret;
+    p->format=fmt;
+    p->count=count;
+    p->type=type;
+}
+
+void*
+X11_GetWindowICCProfile(_THIS, SDL_Window * window, size_t * size)
+{
+    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+    Display *display = data->videodata->display;
+    XWindowAttributes attributes;
+    Atom icc_profile_atom;
+    char icc_atom_string[sizeof("_ICC_PROFILE_") + 12];
+    void* ret_icc_profile_data = NULL;
+    CARD8* icc_profile_data;
+    int real_format;
+    unsigned long real_nitems;
+    SDL_x11Prop atomProp;
+
+    X11_XGetWindowAttributes(display, X11_IsWindowLegacyFullscreen(_this, window) ? data->fswindow : data->xwindow, &attributes);
+    if (X11_XScreenNumberOfScreen(attributes.screen) > 0) {
+        SDL_snprintf(icc_atom_string, sizeof("_ICC_PROFILE_") + 12, "%s%d", "_ICC_PROFILE_", X11_XScreenNumberOfScreen(attributes.screen));
+    } else {
+        SDL_strlcpy(icc_atom_string, "_ICC_PROFILE", sizeof("_ICC_PROFILE"));
+    }
+    X11_XGetWindowAttributes(display, RootWindowOfScreen(attributes.screen), &attributes);
+
+    icc_profile_atom = X11_XInternAtom(display, icc_atom_string, True);
+    if (icc_profile_atom == None) {
+        SDL_SetError("Screen is not calibrated.\n");
+        return NULL;
+    }
+
+    X11_ReadProperty(&atomProp, display, RootWindowOfScreen(attributes.screen), icc_profile_atom);
+    real_format = atomProp.format;
+    real_nitems = atomProp.count;
+    icc_profile_data = atomProp.data;
+    if (real_format == None) {
+        SDL_SetError("Screen is not calibrated.\n");
+        return NULL;
+    }
+
+    ret_icc_profile_data = SDL_malloc(real_nitems);
+    if (!ret_icc_profile_data) {
+        SDL_OutOfMemory();
+        return NULL;
+    }
+
+    SDL_memcpy(ret_icc_profile_data, icc_profile_data, real_nitems);
+    *size = real_nitems;
+    X11_XFree(icc_profile_data);
+    
+    return ret_icc_profile_data;
+}
+
 void
 X11_SetWindowMouseGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
 {
@@ -1606,7 +1680,7 @@ X11_SetWindowMouseGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
         if (!data->videodata->broken_pointer_grab) {
             const unsigned int mask = ButtonPressMask | ButtonReleaseMask | PointerMotionMask | FocusChangeMask;
             int attempts;
-            int result;
+            int result = 0;
 
             /* Try for up to 5000ms (5s) to grab. If it still fails, stop trying. */
             for (attempts = 0; attempts < 100; attempts++) {
@@ -1695,6 +1769,13 @@ X11_DestroyWindow(_THIS, SDL_Window * window)
             X11_XFlush(display);
         }
         SDL_free(data);
+
+#if SDL_VIDEO_DRIVER_X11_XFIXES
+        /* If the pointer barriers are active for this, deactivate it.*/
+        if (videodata->active_cursor_confined_window == window) {
+            X11_DestroyPointerBarrier(_this, window);
+        }
+#endif /* SDL_VIDEO_DRIVER_X11_XFIXES */
     }
     window->driverdata = NULL;
 }
@@ -1791,6 +1872,41 @@ X11_FlashWindow(_THIS, SDL_Window * window, SDL_FlashOperation operation)
 
     X11_XSetWMHints(display, data->xwindow, wmhints);
     X11_XFree(wmhints);
+    return 0;
+}
+
+int SDL_X11_SetWindowTitle(Display* display, Window xwindow, char* title) {
+    Atom _NET_WM_NAME = X11_XInternAtom(display, "_NET_WM_NAME", False);
+    XTextProperty titleprop;
+    int conv = X11_XmbTextListToTextProperty(display, (char**) &title, 1, XTextStyle, &titleprop);
+    Status status;
+
+    if (X11_XSupportsLocale() != True) {
+        return SDL_SetError("Current locale not supported by X server, cannot continue.");
+    }
+
+    if (conv == 0) {
+        X11_XSetTextProperty(display, xwindow, &titleprop, XA_WM_NAME);
+        X11_XFree(titleprop.value);
+    /* we know this can't be a locale error as we checked X locale validity */
+    } else if (conv < 0) {
+        return SDL_OutOfMemory();
+    } else { /* conv > 0 */
+        SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "%d characters were not convertable to the current locale!", conv);
+        return 0;
+    }
+
+#ifdef X_HAVE_UTF8_STRING
+    status = X11_Xutf8TextListToTextProperty(display, (char **) &title, 1, XUTF8StringStyle, &titleprop);
+    if (status == Success) {
+        X11_XSetTextProperty(display, xwindow, &titleprop, _NET_WM_NAME);
+        X11_XFree(titleprop.value);
+    } else {
+        return SDL_SetError("Failed to convert title to UTF8! Bad encoding, or bad Xorg encoding? Window title: «%s»", title);
+    }
+#endif
+
+    X11_XFlush(display);
     return 0;
 }
 

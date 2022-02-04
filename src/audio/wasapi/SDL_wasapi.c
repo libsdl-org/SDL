@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -209,7 +209,7 @@ UpdateAudioStream(_THIS, const SDL_AudioSpec *oldspec)
         }
 
         if (!this->stream) {
-            return -1;
+            return -1; /* SDL_NewAudioStream should have called SDL_SetError. */
         }
     }
 
@@ -425,7 +425,6 @@ ReleaseWasapiDevice(_THIS)
 {
     if (this->hidden->client) {
         IAudioClient_Stop(this->hidden->client);
-        IAudioClient_SetEventHandle(this->hidden->client, NULL);
         IAudioClient_Release(this->hidden->client);
         this->hidden->client = NULL;
     }
@@ -513,9 +512,8 @@ WASAPI_PrepDevice(_THIS, const SDL_bool updatestream)
     IAudioRenderClient *render = NULL;
     IAudioCaptureClient *capture = NULL;
     WAVEFORMATEX *waveformat = NULL;
-    SDL_AudioFormat test_format = SDL_FirstAudioFormat(this->spec.format);
+    SDL_AudioFormat test_format;
     SDL_AudioFormat wasapi_format = 0;
-    SDL_bool valid_format = SDL_FALSE;
     HRESULT ret = S_OK;
     DWORD streamflags = 0;
 
@@ -544,17 +542,15 @@ WASAPI_PrepDevice(_THIS, const SDL_bool updatestream)
     /* Make sure we have a valid format that we can convert to whatever WASAPI wants. */
     wasapi_format = WaveFormatToSDLFormat(waveformat);
 
-    while ((!valid_format) && (test_format)) {
+    for (test_format = SDL_FirstAudioFormat(this->spec.format); test_format; test_format = SDL_NextAudioFormat()) {
         if (test_format == wasapi_format) {
             this->spec.format = test_format;
-            valid_format = SDL_TRUE;
             break;
         }
-        test_format = SDL_NextAudioFormat();
     }
 
-    if (!valid_format) {
-        return SDL_SetError("WASAPI: Unsupported audio format");
+    if (!test_format) {
+        return SDL_SetError("%s: Unsupported audio format", "wasapi");
     }
 
     ret = IAudioClient_GetDevicePeriod(client, &default_period, NULL);
@@ -632,9 +628,7 @@ WASAPI_PrepDevice(_THIS, const SDL_bool updatestream)
     }
 
     if (updatestream) {
-        if (UpdateAudioStream(this, &oldspec) == -1) {
-            return -1;
-        }
+        return UpdateAudioStream(this, &oldspec);
     }
 
     return 0;  /* good to go. */
@@ -642,9 +636,9 @@ WASAPI_PrepDevice(_THIS, const SDL_bool updatestream)
 
 
 static int
-WASAPI_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
+WASAPI_OpenDevice(_THIS, const char *devname)
 {
-    LPCWSTR devid = (LPCWSTR) handle;
+    LPCWSTR devid = (LPCWSTR) this->handle;
 
     /* Initialize all variables that we clean on shutdown */
     this->hidden = (struct SDL_PrivateAudioData *)
@@ -657,7 +651,7 @@ WASAPI_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     WASAPI_RefDevice(this);   /* so CloseDevice() will unref to zero. */
 
     if (!devid) {  /* is default device? */
-        this->hidden->default_device_generation = SDL_AtomicGet(iscapture ? &WASAPI_DefaultCaptureGeneration : &WASAPI_DefaultPlaybackGeneration);
+        this->hidden->default_device_generation = SDL_AtomicGet(this->iscapture ? &WASAPI_DefaultCaptureGeneration : &WASAPI_DefaultPlaybackGeneration);
     } else {
         this->hidden->devid = SDL_wcsdup(devid);
         if (!this->hidden->devid) {
@@ -692,12 +686,6 @@ WASAPI_ThreadDeinit(_THIS)
     WASAPI_PlatformThreadDeinit(this);
 }
 
-void
-WASAPI_BeginLoopIteration(_THIS)
-{
-	/* no-op. */
-}
-
 static void
 WASAPI_Deinitialize(void)
 {
@@ -714,21 +702,20 @@ WASAPI_Deinitialize(void)
     deviceid_list = NULL;
 }
 
-static int
+static SDL_bool
 WASAPI_Init(SDL_AudioDriverImpl * impl)
 {
     SDL_AtomicSet(&WASAPI_DefaultPlaybackGeneration, 1);
     SDL_AtomicSet(&WASAPI_DefaultCaptureGeneration, 1);
 
     if (WASAPI_PlatformInit() == -1) {
-        return 0;
+        return SDL_FALSE;
     }
 
     /* Set the function pointers */
     impl->DetectDevices = WASAPI_DetectDevices;
     impl->ThreadInit = WASAPI_ThreadInit;
     impl->ThreadDeinit = WASAPI_ThreadDeinit;
-    impl->BeginLoopIteration = WASAPI_BeginLoopIteration;
     impl->OpenDevice = WASAPI_OpenDevice;
     impl->PlayDevice = WASAPI_PlayDevice;
     impl->WaitDevice = WASAPI_WaitDevice;
@@ -737,13 +724,13 @@ WASAPI_Init(SDL_AudioDriverImpl * impl)
     impl->FlushCapture = WASAPI_FlushCapture;
     impl->CloseDevice = WASAPI_CloseDevice;
     impl->Deinitialize = WASAPI_Deinitialize;
-    impl->HasCaptureSupport = 1;
+    impl->HasCaptureSupport = SDL_TRUE;
 
-    return 1;   /* this audio target is available. */
+    return SDL_TRUE;   /* this audio target is available. */
 }
 
 AudioBootStrap WASAPI_bootstrap = {
-    "wasapi", "WASAPI", WASAPI_Init, 0
+    "wasapi", "WASAPI", WASAPI_Init, SDL_FALSE
 };
 
 #endif  /* SDL_AUDIO_DRIVER_WASAPI */

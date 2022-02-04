@@ -109,7 +109,7 @@ stepParticles(double deltaTime)
                 }
             } else {
                 float speed =
-                    sqrt(curr->xvel * curr->xvel + curr->yvel * curr->yvel);
+                    SDL_sqrt(curr->xvel * curr->xvel + curr->yvel * curr->yvel);
                 /*      if wind resistance is not powerful enough to stop us completely,
                    then apply winde resistance, otherwise just stop us completely */
                 if (WIND_RESISTANCE * deltaMilliseconds < speed) {
@@ -194,15 +194,15 @@ explodeEmitter(struct particle *emitter)
         /* come up with a random angle and speed for new particle */
         float theta = randomFloat(0, 2.0f * 3.141592);
         float exponent = 3.0f;
-        float speed = randomFloat(0.00, powf(0.17, exponent));
-        speed = powf(speed, 1.0f / exponent);
+        float speed = randomFloat(0.00, SDL_powf(0.17, exponent));
+        speed = SDL_powf(speed, 1.0f / exponent);
 
         /* select the particle at the end of our array */
         struct particle *p = &particles[num_active_particles];
 
         /* set the particles properties */
-        p->xvel = speed * cos(theta);
-        p->yvel = speed * sin(theta);
+        p->xvel = speed * SDL_cos(theta);
+        p->yvel = speed * SDL_sin(theta);
         p->x = emitter->x + emitter->xvel;
         p->y = emitter->y + emitter->yvel;
         p->isActive = 1;
@@ -297,7 +297,7 @@ spawnEmitterParticle(GLfloat x, GLfloat y)
     p->y = screen_h;
     /* set velocity so that terminal point is (x,y) */
     p->xvel = 0;
-    p->yvel = -sqrt(2 * ACCEL * (screen_h - y));
+    p->yvel = -SDL_sqrt(2 * ACCEL * (screen_h - y));
     /* set other attributes */
     p->size = 10 * pointSizeScale;
     p->type = emitter;

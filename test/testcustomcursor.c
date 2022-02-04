@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -128,7 +128,7 @@ init_system_cursor(const char *image[])
       }
     }
   }
-  sscanf(image[4+row], "%d,%d", &hot_x, &hot_y);
+  SDL_sscanf(image[4+row], "%d,%d", &hot_x, &hot_y);
   return SDL_CreateCursor(data, mask, 32, 32, hot_x, hot_y);
 }
 

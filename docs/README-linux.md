@@ -11,20 +11,33 @@ default configuration parameters.
 
 Build Dependencies
 --------------------------------------------------------------------------------
-    
+
 Ubuntu 20.04, all available features enabled:
 
     sudo apt-get install build-essential git make cmake autoconf automake \
     libtool pkg-config libasound2-dev libpulse-dev libaudio-dev libjack-dev \
-    libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxi-dev \
+    libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxfixes-dev libxi-dev \
     libxinerama-dev libxxf86vm-dev libxss-dev libgl1-mesa-dev libdbus-1-dev \
     libudev-dev libgles2-mesa-dev libegl1-mesa-dev libibus-1.0-dev \
     fcitx-libs-dev libsamplerate0-dev libsndio-dev libwayland-dev \
     libxkbcommon-dev libdrm-dev libgbm-dev
 
+Fedora 35, all available features enabled:
+
+    sudo yum install gcc git-core make cmake autoconf automake libtool \
+    alsa-lib-devel pulseaudio-libs-devel nas-devel pipewire-devel \
+    libX11-devel libXext-devel libXrandr-devel libXcursor-devel libXfixes-devel \
+    libXi-devel libXinerama-devel libXxf86vm-devel libXScrnSaver-devel \
+    dbus-devel ibus-devel fcitx-devel systemd-devel mesa-libGL-devel \
+    libxkbcommon-devel mesa-libGLES-devel mesa-libEGL-devel vulkan-devel \
+    wayland-devel wayland-protocols-devel libdrm-devel mesa-libgbm-devel \
+    libusb-devel pipewire-jack-audio-connection-kit-devel libdecor-devel \
+    libsamplerate-devel
+
 NOTES:
 - This includes all the audio targets except arts and esd, because Ubuntu
   (and/or Debian) pulled their packages, but in theory SDL still supports them.
+  The sndio audio target is also unavailable on Fedora.
 - libsamplerate0-dev lets SDL optionally link to libresamplerate at runtime
   for higher-quality audio resampling. SDL will work without it if the library
   is missing, so it's safe to build in support even if the end user doesn't

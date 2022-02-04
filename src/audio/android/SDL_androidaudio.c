@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -36,9 +36,10 @@ static SDL_AudioDevice* audioDevice = NULL;
 static SDL_AudioDevice* captureDevice = NULL;
 
 static int
-ANDROIDAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
+ANDROIDAUDIO_OpenDevice(_THIS, const char *devname)
 {
     SDL_AudioFormat test_format;
+    SDL_bool iscapture = this->iscapture;
 
     SDL_assert((captureDevice == NULL) || !iscapture);
     SDL_assert((audioDevice == NULL) || iscapture);
@@ -54,20 +55,18 @@ ANDROIDAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
         return SDL_OutOfMemory();
     }
 
-    test_format = SDL_FirstAudioFormat(this->spec.format);
-    while (test_format != 0) { /* no "UNKNOWN" constant */
+    for (test_format = SDL_FirstAudioFormat(this->spec.format); test_format; test_format = SDL_NextAudioFormat()) {
         if ((test_format == AUDIO_U8) ||
-			(test_format == AUDIO_S16) ||
-			(test_format == AUDIO_F32)) {
+            (test_format == AUDIO_S16) ||
+            (test_format == AUDIO_F32)) {
             this->spec.format = test_format;
             break;
         }
-        test_format = SDL_NextAudioFormat();
     }
 
-    if (test_format == 0) {
+    if (!test_format) {
         /* Didn't find a compatible format :( */
-        return SDL_SetError("No compatible audio format!");
+        return SDL_SetError("%s: Unsupported audio format", "android");
     }
 
     if (Android_JNI_OpenAudioDevice(iscapture, &this->spec) < 0) {
@@ -120,7 +119,7 @@ ANDROIDAUDIO_CloseDevice(_THIS)
     SDL_free(this->hidden);
 }
 
-static int
+static SDL_bool
 ANDROIDAUDIO_Init(SDL_AudioDriverImpl * impl)
 {
     /* Set the function pointers */
@@ -133,14 +132,14 @@ ANDROIDAUDIO_Init(SDL_AudioDriverImpl * impl)
 
     /* and the capabilities */
     impl->HasCaptureSupport = SDL_TRUE;
-    impl->OnlyHasDefaultOutputDevice = 1;
-    impl->OnlyHasDefaultCaptureDevice = 1;
+    impl->OnlyHasDefaultOutputDevice = SDL_TRUE;
+    impl->OnlyHasDefaultCaptureDevice = SDL_TRUE;
 
-    return 1;   /* this audio target is available. */
+    return SDL_TRUE;   /* this audio target is available. */
 }
 
 AudioBootStrap ANDROIDAUDIO_bootstrap = {
-    "android", "SDL Android audio driver", ANDROIDAUDIO_Init, 0
+    "android", "SDL Android audio driver", ANDROIDAUDIO_Init, SDL_FALSE
 };
 
 /* Pause (block) all non already paused audio devices by taking their mixer lock */

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -82,7 +82,7 @@ readSymLink(const char *path)
 #if defined(__OPENBSD__)
 static char *search_path_for_binary(const char *bin)
 {
-    char *envr = getenv("PATH");
+    char *envr = SDL_getenv("PATH");
     size_t alloc_size;
     char *exe = NULL;
     char *start = envr;
@@ -245,7 +245,7 @@ SDL_GetBasePath(void)
 
     if (retval != NULL) {
         /* try to shrink buffer... */
-        char *ptr = (char *) SDL_realloc(retval, strlen(retval) + 1);
+        char *ptr = (char *) SDL_realloc(retval, SDL_strlen(retval) + 1);
         if (ptr != NULL)
             retval = ptr;  /* oh well if it failed. */
     }

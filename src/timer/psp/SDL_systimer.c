@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#ifdef SDL_TIMERS_PSP
+#ifdef SDL_TIMER_PSP
 
 #include "SDL_thread.h"
 #include "SDL_timer.h"
@@ -51,24 +51,23 @@ SDL_TicksQuit(void)
     ticks_started = SDL_FALSE;
 }
 
-Uint32 SDL_GetTicks(void)
+Uint64
+SDL_GetTicks64(void)
 {
+    struct timeval now;
+
     if (!ticks_started) {
         SDL_TicksInit();
     }
 
-    struct timeval now;
-    Uint32 ticks;
-
     gettimeofday(&now, NULL);
-    ticks=(now.tv_sec-start.tv_sec)*1000+(now.tv_usec-start.tv_usec)/1000;
-    return(ticks);
+    return (Uint64)(((Sint64)(now.tv_sec - start.tv_sec) * 1000) + ((now.tv_usec - start.tv_usec) / 1000));
 }
 
 Uint64
 SDL_GetPerformanceCounter(void)
 {
-    return SDL_GetTicks();
+    return SDL_GetTicks64();
 }
 
 Uint64
@@ -85,7 +84,7 @@ void SDL_Delay(Uint32 ms)
     sceKernelDelayThreadCB(ms * 1000);
 }
 
-#endif /* SDL_TIMERS_PSP */
+#endif /* SDL_TIMER_PSP */
 
 /* vim: ts=4 sw=4
  */

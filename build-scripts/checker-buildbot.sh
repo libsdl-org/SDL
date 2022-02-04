@@ -27,7 +27,7 @@ cd checker-buildbot
 # The -Wno-liblto is new since our checker-279 upgrade, I think; checker otherwise warns "libLTO.dylib relative to clang installed dir not found"
 
 # You might want to do this for CMake-backed builds instead...
-scan-build -o analysis cmake -G Ninja -Wno-dev -DSDL_STATIC=OFF -DCMAKE_BUILD_TYPE=Debug -DASSERTIONS=enabled -DCMAKE_C_FLAGS="-Wno-deprecated-declarations" -DCMAKE_SHARED_LINKER_FLAGS="-Wno-liblto" ..
+scan-build -o analysis cmake -G Ninja -Wno-dev -DSDL_STATIC=OFF -DCMAKE_BUILD_TYPE=Debug -DSDL_ASSERTIONS=enabled -DCMAKE_C_FLAGS="-Wno-deprecated-declarations" -DCMAKE_SHARED_LINKER_FLAGS="-Wno-liblto" ..
 
 # ...or run configure without the scan-build wrapper...
 #CC="$CHECKERDIR/libexec/ccc-analyzer" CFLAGS="-O0 -Wno-deprecated-declarations" LDFLAGS="-Wno-liblto" ../configure --enable-assertions=enabled

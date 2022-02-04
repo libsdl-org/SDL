@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -88,7 +88,7 @@ HIDAPI_DriverStadia_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joysti
         return SDL_FALSE;
     }
 
-    device->dev = hid_open_path(device->path, 0);
+    device->dev = SDL_hid_open_path(device->path, 0);
     if (!device->dev) {
         SDL_SetError("Couldn't open %s", device->path);
         SDL_free(ctx);
@@ -126,10 +126,10 @@ HIDAPI_DriverStadia_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joysti
     return SDL_Unsupported();
 }
 
-static SDL_bool
-HIDAPI_DriverStadia_HasJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
+static Uint32
+HIDAPI_DriverStadia_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
-    return SDL_FALSE;
+    return SDL_JOYCAP_RUMBLE;
 }
 
 static int
@@ -267,7 +267,7 @@ HIDAPI_DriverStadia_UpdateDevice(SDL_HIDAPI_Device *device)
         return SDL_FALSE;
     }
 
-    while ((size = hid_read_timeout(device->dev, data, sizeof(data), 0)) > 0) {
+    while ((size = SDL_hid_read_timeout(device->dev, data, sizeof(data), 0)) > 0) {
 #ifdef DEBUG_STADIA_PROTOCOL
         HIDAPI_DumpPacket("Google Stadia packet: size = %d", data, size);
 #endif
@@ -287,7 +287,7 @@ HIDAPI_DriverStadia_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joyst
     SDL_LockMutex(device->dev_lock);
     {
         if (device->dev) {
-            hid_close(device->dev);
+            SDL_hid_close(device->dev);
             device->dev = NULL;
         }
 
@@ -306,6 +306,7 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverStadia =
 {
     SDL_HINT_JOYSTICK_HIDAPI_STADIA,
     SDL_TRUE,
+    SDL_TRUE,
     HIDAPI_DriverStadia_IsSupportedDevice,
     HIDAPI_DriverStadia_GetDeviceName,
     HIDAPI_DriverStadia_InitDevice,
@@ -315,7 +316,7 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverStadia =
     HIDAPI_DriverStadia_OpenJoystick,
     HIDAPI_DriverStadia_RumbleJoystick,
     HIDAPI_DriverStadia_RumbleJoystickTriggers,
-    HIDAPI_DriverStadia_HasJoystickLED,
+    HIDAPI_DriverStadia_GetJoystickCapabilities,
     HIDAPI_DriverStadia_SetJoystickLED,
     HIDAPI_DriverStadia_SendJoystickEffect,
     HIDAPI_DriverStadia_SetJoystickSensorsEnabled,

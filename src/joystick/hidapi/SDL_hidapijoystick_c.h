@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -27,7 +27,7 @@
 #include "SDL_mutex.h"
 #include "SDL_joystick.h"
 #include "SDL_gamecontroller.h"
-#include "../../hidapi/hidapi/hidapi.h"
+#include "SDL_hidapi.h"
 #include "../usb_ids.h"
 
 /* This is the full set of HIDAPI drivers available */
@@ -70,7 +70,7 @@ typedef struct _SDL_HIDAPI_Device
     struct _SDL_HIDAPI_DeviceDriver *driver;
     void *context;
     SDL_mutex *dev_lock;
-    hid_device *dev;
+    SDL_hid_device *dev;
     SDL_atomic_t rumble_pending;
     int num_joysticks;
     SDL_JoystickID *joysticks;
@@ -88,6 +88,7 @@ typedef struct _SDL_HIDAPI_DeviceDriver
 {
     const char *hint;
     SDL_bool enabled;
+    SDL_bool enabled_default;
     SDL_bool (*IsSupportedDevice)(const char *name, SDL_GameControllerType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol);
     const char *(*GetDeviceName)(Uint16 vendor_id, Uint16 product_id);
     SDL_bool (*InitDevice)(SDL_HIDAPI_Device *device);
@@ -97,7 +98,7 @@ typedef struct _SDL_HIDAPI_DeviceDriver
     SDL_bool (*OpenJoystick)(SDL_HIDAPI_Device *device, SDL_Joystick *joystick);
     int (*RumbleJoystick)(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble);
     int (*RumbleJoystickTriggers)(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble);
-    SDL_bool (*HasJoystickLED)(SDL_HIDAPI_Device *device, SDL_Joystick *joystick);
+    Uint32 (*GetJoystickCapabilities)(SDL_HIDAPI_Device *device, SDL_Joystick *joystick);
     int (*SetJoystickLED)(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue);
     int (*SendJoystickEffect)(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *data, int size);
     int (*SetJoystickSensorsEnabled)(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, SDL_bool enabled);

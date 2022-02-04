@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -56,11 +56,11 @@ static SDL_JoystickDriver *SDL_joystick_drivers[] = {
 #ifdef SDL_JOYSTICK_RAWINPUT /* Before WINDOWS_ driver, as WINDOWS wants to check if this driver is handling things */
     &SDL_RAWINPUT_JoystickDriver,
 #endif
+#if defined(SDL_JOYSTICK_DINPUT) || defined(SDL_JOYSTICK_XINPUT) /* Before WGI driver, as WGI wants to check if this driver is handling things */
+    &SDL_WINDOWS_JoystickDriver,
+#endif
 #if defined(SDL_JOYSTICK_WGI)
     &SDL_WGI_JoystickDriver,
-#endif
-#if defined(SDL_JOYSTICK_DINPUT) || defined(SDL_JOYSTICK_XINPUT)
-    &SDL_WINDOWS_JoystickDriver,
 #endif
 #if defined(SDL_JOYSTICK_WINMM)
     &SDL_WINMM_JoystickDriver,
@@ -343,6 +343,9 @@ SDL_JoystickGetDevicePlayerIndex(int device_index)
 static SDL_bool
 SDL_JoystickAxesCenteredAtZero(SDL_Joystick *joystick)
 {
+#ifdef __WINRT__
+    return SDL_TRUE;
+#else
     static Uint32 zero_centered_joysticks[] = {
         MAKE_VIDPID(0x0e8f, 0x3013),    /* HuiJia SNES USB adapter */
         MAKE_VIDPID(0x05a0, 0x3232),    /* 8Bitdo Zero Gamepad */
@@ -365,6 +368,7 @@ SDL_JoystickAxesCenteredAtZero(SDL_Joystick *joystick)
         }
     }
     return SDL_FALSE;
+#endif /* __WINRT__ */
 }
 
 /*
@@ -759,7 +763,7 @@ SDL_JoystickGetButton(SDL_Joystick *joystick, int button)
 SDL_bool
 SDL_JoystickGetAttached(SDL_Joystick *joystick)
 {
-    if (!SDL_PrivateJoystickValid(joystick)) {
+    if (!joystick) {
         return SDL_FALSE;
     }
 
@@ -944,7 +948,43 @@ SDL_JoystickHasLED(SDL_Joystick *joystick)
 
     SDL_LockJoysticks();
 
-    result = joystick->driver->HasLED(joystick);
+    result = (joystick->driver->GetCapabilities(joystick) & SDL_JOYCAP_LED) != 0;
+
+    SDL_UnlockJoysticks();
+
+    return result;
+}
+
+SDL_bool
+SDL_JoystickHasRumble(SDL_Joystick *joystick)
+{
+    SDL_bool result;
+
+    if (!SDL_PrivateJoystickValid(joystick)) {
+        return SDL_FALSE;
+    }
+
+    SDL_LockJoysticks();
+
+    result = (joystick->driver->GetCapabilities(joystick) & SDL_JOYCAP_RUMBLE) != 0;
+
+    SDL_UnlockJoysticks();
+
+    return result;
+}
+
+SDL_bool
+SDL_JoystickHasRumbleTriggers(SDL_Joystick *joystick)
+{
+    SDL_bool result;
+
+    if (!SDL_PrivateJoystickValid(joystick)) {
+        return SDL_FALSE;
+    }
+
+    SDL_LockJoysticks();
+
+    result = (joystick->driver->GetCapabilities(joystick) & SDL_JOYCAP_RUMBLE_TRIGGERS) != 0;
 
     SDL_UnlockJoysticks();
 
@@ -1095,8 +1135,8 @@ SDL_JoystickQuit(void)
         SDL_JoystickClose(SDL_joysticks);
     }
 
-    /* Quit the joystick setup */
-    for (i = 0; i < SDL_arraysize(SDL_joystick_drivers); ++i) {
+    /* Quit drivers in reverse order to avoid breaking dependencies between drivers */
+    for (i = SDL_arraysize(SDL_joystick_drivers) - 1; i >= 0; --i) {
        SDL_joystick_drivers[i]->Quit();
     }
 
@@ -1344,7 +1384,7 @@ SDL_PrivateJoystickAxis(SDL_Joystick *joystick, Uint8 axis, Sint16 value)
         info->value = value;
         info->zero = value;
         info->has_initial_value = SDL_TRUE;
-    } else if (value == info->value) {
+    } else if (value == info->value && !info->sending_initial_value) {
         return 0;
     } else {
         info->has_second_value = SDL_TRUE;
@@ -1356,15 +1396,17 @@ SDL_PrivateJoystickAxis(SDL_Joystick *joystick, Uint8 axis, Sint16 value)
             return 0;
         }
         info->sent_initial_value = SDL_TRUE;
-        info->value = ~value; /* Just so we pass the check above */
+        info->sending_initial_value = SDL_TRUE;
         SDL_PrivateJoystickAxis(joystick, axis, info->initial_value);
+        info->sending_initial_value = SDL_FALSE;
     }
 
     /* We ignore events if we don't have keyboard focus, except for centering
      * events.
      */
     if (SDL_PrivateJoystickShouldIgnoreEvent()) {
-        if ((value > info->zero && value >= info->value) ||
+        if (info->sending_initial_value ||
+            (value > info->zero && value >= info->value) ||
             (value < info->zero && value <= info->value)) {
             return 0;
         }
@@ -1671,7 +1713,7 @@ PrefixMatch(const char *a, const char *b)
 {
     int matchlen = 0;
     while (*a && *b) {
-        if (SDL_tolower(*a++) == SDL_tolower(*b++)) {
+        if (SDL_tolower((unsigned char) *a++) == SDL_tolower((unsigned char) *b++)) {
             ++matchlen;
         } else {
             break;
@@ -1757,8 +1799,13 @@ SDL_CreateJoystickName(Uint16 vendor, Uint16 product, const char *vendor_name, c
         size_t prefixlen = SDL_strlen(replacements[i].prefix);
         if (SDL_strncasecmp(name, replacements[i].prefix, prefixlen) == 0) {
             size_t replacementlen = SDL_strlen(replacements[i].replacement);
-            SDL_memcpy(name, replacements[i].replacement, replacementlen);
-            SDL_memmove(name+replacementlen, name+prefixlen, (len-prefixlen+1));
+            if (replacementlen <= prefixlen) {
+                SDL_memcpy(name, replacements[i].replacement, replacementlen);
+                SDL_memmove(name+replacementlen, name+prefixlen, (len-prefixlen)+1);
+                len -= (prefixlen - replacementlen);
+            } else {
+                /* FIXME: Need to handle the expand case by reallocating the string */
+            }
             break;
         }
     }
@@ -1768,11 +1815,9 @@ SDL_CreateJoystickName(Uint16 vendor, Uint16 product, const char *vendor_name, c
         int matchlen = PrefixMatch(name, &name[i]);
         if (matchlen > 0 && name[matchlen-1] == ' ') {
             SDL_memmove(name, name+matchlen, len-matchlen+1);
-            len -= matchlen;
             break;
         } else if (matchlen > 0 && name[matchlen] == ' ') {
             SDL_memmove(name, name+matchlen+1, len-matchlen);
-            len -= (matchlen + 1);
             break;
         }
     }
@@ -2104,6 +2149,7 @@ static SDL_bool SDL_IsJoystickProductWheel(Uint32 vidpid)
         MAKE_VIDPID(0x046d, 0xc261),    /* Logitech G920 (initial mode) */
         MAKE_VIDPID(0x046d, 0xc262),    /* Logitech G920 (active mode) */
         MAKE_VIDPID(0x046d, 0xc26e),    /* Logitech G923 */
+        MAKE_VIDPID(0x046d, 0xca03),    /* Logitech Momo Racing */
         MAKE_VIDPID(0x044f, 0xb65d),    /* Thrustmaster Wheel FFB */
         MAKE_VIDPID(0x044f, 0xb66d),    /* Thrustmaster Wheel FFB */
         MAKE_VIDPID(0x044f, 0xb677),    /* Thrustmaster T150 */
@@ -2393,8 +2439,9 @@ SDL_bool SDL_ShouldIgnoreJoystick(const char *name, SDL_JoystickGUID guid)
         /* Additional entries                                            */
         /*****************************************************************/
 
-        /* Anne Pro II Keyboard */
         MAKE_VIDPID(0x04d9, 0x8009),  /* OBINLB USB-HID Keyboard */
+        MAKE_VIDPID(0x0b05, 0x1958),  /* ROG Chakram Mouse */
+        MAKE_VIDPID(0x26ce, 0x01a2),  /* ASRock LED Controller */
     };
 
     unsigned int i;
@@ -2600,18 +2647,18 @@ void SDL_JoystickGetGUIDString(SDL_JoystickGUID guid, char *pszGUID, int cbGUID)
  * Input  : c -
  * Output : unsigned char
  *-----------------------------------------------------------------------------*/
-static unsigned char nibble(char c)
+static unsigned char nibble(unsigned char c)
 {
     if ((c >= '0') && (c <= '9')) {
-        return (unsigned char)(c - '0');
+        return (c - '0');
     }
 
     if ((c >= 'A') && (c <= 'F')) {
-        return (unsigned char)(c - 'A' + 0x0a);
+        return (c - 'A' + 0x0a);
     }
 
     if ((c >= 'a') && (c <= 'f')) {
-        return (unsigned char)(c - 'a' + 0x0a);
+        return (c - 'a' + 0x0a);
     }
 
     /* received an invalid character, and no real way to return an error */
@@ -2635,7 +2682,7 @@ SDL_JoystickGUID SDL_JoystickGetGUIDFromString(const char *pchGUID)
 
     p = (Uint8 *)&guid;
     for (i = 0; (i < len) && ((p - (Uint8 *)&guid) < maxoutputbytes); i+=2, p++) {
-        *p = (nibble(pchGUID[i]) << 4) | nibble(pchGUID[i+1]);
+        *p = (nibble((unsigned char)pchGUID[i]) << 4) | nibble((unsigned char)pchGUID[i+1]);
     }
 
     return guid;
@@ -2717,6 +2764,13 @@ int SDL_PrivateJoystickTouchpad(SDL_Joystick *joystick, int touchpad, int finger
     }
 #endif
 
+    /* We ignore events if we don't have keyboard focus, except for touch release */
+    if (SDL_PrivateJoystickShouldIgnoreEvent()) {
+        if (event_type != SDL_CONTROLLERTOUCHPADUP) {
+            return 0;
+        }
+    }
+
     /* Update internal joystick state */
     finger_info->state = state;
     finger_info->x = x;
@@ -2745,6 +2799,11 @@ int SDL_PrivateJoystickSensor(SDL_Joystick *joystick, SDL_SensorType type, const
 {
     int i;
     int posted = 0;
+
+    /* We ignore events if we don't have keyboard focus */
+    if (SDL_PrivateJoystickShouldIgnoreEvent()) {
+        return 0;
+    }
 
     for (i = 0; i < joystick->nsensors; ++i) {
         SDL_JoystickSensorInfo *sensor = &joystick->sensors[i];

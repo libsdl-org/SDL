@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -122,7 +122,7 @@ SDL_SemTryWait_atom(SDL_sem * _sem)
     LONG count;
 
     if (!sem) {
-        return SDL_SetError("Passed a NULL sem");
+        return SDL_InvalidParamError("sem");
     }
 
     count = sem->count;
@@ -144,7 +144,7 @@ SDL_SemWait_atom(SDL_sem * _sem)
     LONG count;
 
     if (!sem) {
-        return SDL_SetError("Passed a NULL sem");
+        return SDL_InvalidParamError("sem");
     }
 
     for (;;) {
@@ -176,7 +176,7 @@ SDL_SemWaitTimeout_atom(SDL_sem * _sem, Uint32 timeout)
     }
 
     if (!sem) {
-        return SDL_SetError("Passed a NULL sem");
+        return SDL_InvalidParamError("sem");
     }
 
     /**
@@ -219,7 +219,7 @@ SDL_SemValue_atom(SDL_sem * _sem)
     SDL_sem_atom *sem = (SDL_sem_atom *)_sem;
 
     if (!sem) {
-        SDL_SetError("Passed a NULL sem");
+        SDL_InvalidParamError("sem");
         return 0;
     }
 
@@ -232,7 +232,7 @@ SDL_SemPost_atom(SDL_sem * _sem)
     SDL_sem_atom *sem = (SDL_sem_atom *)_sem;
 
     if (!sem) {
-        return SDL_SetError("Passed a NULL sem");
+        return SDL_InvalidParamError("sem");
     }
 
     InterlockedIncrement(&sem->count);
@@ -313,7 +313,7 @@ SDL_SemWaitTimeout_kern(SDL_sem * _sem, Uint32 timeout)
     DWORD dwMilliseconds;
 
     if (!sem) {
-        return SDL_SetError("Passed a NULL sem");
+        return SDL_InvalidParamError("sem");
     }
 
     if (timeout == SDL_MUTEX_MAXWAIT) {
@@ -354,7 +354,7 @@ SDL_SemValue_kern(SDL_sem * _sem)
 {
     SDL_sem_kern *sem = (SDL_sem_kern *)_sem;
     if (!sem) {
-        SDL_SetError("Passed a NULL sem");
+        SDL_InvalidParamError("sem");
         return 0;
     }
     return (Uint32)sem->count;
@@ -365,7 +365,7 @@ SDL_SemPost_kern(SDL_sem * _sem)
 {
     SDL_sem_kern *sem = (SDL_sem_kern *)_sem;
     if (!sem) {
-        return SDL_SetError("Passed a NULL sem");
+        return SDL_InvalidParamError("sem");
     }
     /* Increase the counter in the first place, because
      * after a successful release the semaphore may

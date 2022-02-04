@@ -16,6 +16,8 @@
 	<string>6.0</string>
 	<key>CFBundleName</key>
 	<string>${PRODUCT_NAME}</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.0.0</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleSignature</key>
@@ -28,5 +30,7 @@
 	<string>iOS Launch Screen</string>
 	<key>UISupportedInterfaceOrientations</key>
 	<array/>
+	<key>UIApplicationSupportsIndirectInputEvents</key>
+	<true/>
 </dict>
 </plist>

@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -42,6 +42,7 @@ main(int argc, char *argv[])
 {
     int i, desired;
     SDL_TimerID t1, t2, t3;
+    Uint64 start64, now64;
     Uint32 start32, now32;
     Uint64 start, now;
 
@@ -53,10 +54,25 @@ main(int argc, char *argv[])
         return (1);
     }
 
+    /* Verify SDL_GetTicks* acts monotonically increasing, and not erratic. */
+    SDL_Log("Sanity-checking GetTicks\n");
+    for (i = 0; i < 1000; ++i) {
+        start64 = SDL_GetTicks64();
+        start32 = SDL_GetTicks();
+        SDL_Delay(1);
+        now64 = SDL_GetTicks64() - start64;
+        now32 = SDL_GetTicks() - start32;
+        if (now32 > 100 || now64 > 100) {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "testtimer.c: Delta time erratic at iter %d. Delay 1ms = %d ms in ticks, %d ms in ticks64\n", i, (int)now32, (int)now64);
+            SDL_Quit();
+            return 1;
+        }
+    }
+
     /* Start the timer */
     desired = 0;
     if (argv[1]) {
-        desired = atoi(argv[1]);
+        desired = SDL_atoi(argv[1]);
     }
     if (desired == 0) {
         desired = DEFAULT_RESOLUTION;
@@ -108,12 +124,14 @@ main(int argc, char *argv[])
     SDL_Log("1 million iterations of ticktock took %f ms\n", (double)((now - start)*1000) / SDL_GetPerformanceFrequency());
 
     SDL_Log("Performance counter frequency: %"SDL_PRIu64"\n", SDL_GetPerformanceFrequency());
+    start64 = SDL_GetTicks64();
     start32 = SDL_GetTicks();
     start = SDL_GetPerformanceCounter();
     SDL_Delay(1000);
     now = SDL_GetPerformanceCounter();
+    now64 = SDL_GetTicks64();
     now32 = SDL_GetTicks();
-    SDL_Log("Delay 1 second = %d ms in ticks, %f ms according to performance counter\n", (now32-start32), (double)((now - start)*1000) / SDL_GetPerformanceFrequency());
+    SDL_Log("Delay 1 second = %d ms in ticks, %d ms in ticks64, %f ms according to performance counter\n", (int) (now32-start32), (int) (now64-start64), (double)((now - start)*1000) / SDL_GetPerformanceFrequency());
 
     SDL_Quit();
     return (0);

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -73,7 +73,7 @@ SDL_SemTryWait(SDL_sem * sem)
     int retval;
 
     if (!sem) {
-        return SDL_SetError("Passed a NULL semaphore");
+        return SDL_InvalidParamError("sem");
     }
     retval = SDL_MUTEX_TIMEDOUT;
     if (sem_trywait(&sem->sem) == 0) {
@@ -88,7 +88,7 @@ SDL_SemWait(SDL_sem * sem)
     int retval;
 
     if (!sem) {
-        return SDL_SetError("Passed a NULL semaphore");
+        return SDL_InvalidParamError("sem");
     }
 
     do {
@@ -115,7 +115,7 @@ SDL_SemWaitTimeout(SDL_sem * sem, Uint32 timeout)
 #endif
 
     if (!sem) {
-        return SDL_SetError("Passed a NULL semaphore");
+        return SDL_InvalidParamError("sem");
     }
 
     /* Try the easy cases first */
@@ -195,7 +195,7 @@ SDL_SemPost(SDL_sem * sem)
     int retval;
 
     if (!sem) {
-        return SDL_SetError("Passed a NULL semaphore");
+        return SDL_InvalidParamError("sem");
     }
 
     retval = sem_post(&sem->sem);

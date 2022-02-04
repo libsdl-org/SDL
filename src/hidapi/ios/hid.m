@@ -20,7 +20,28 @@
 */
 #include "../../SDL_internal.h"
 
-#ifdef SDL_JOYSTICK_HIDAPI
+#if !SDL_HIDAPI_DISABLED
+
+#include "SDL_hints.h"
+
+#define hid_init                        PLATFORM_hid_init
+#define hid_exit                        PLATFORM_hid_exit
+#define hid_enumerate                   PLATFORM_hid_enumerate
+#define hid_free_enumeration            PLATFORM_hid_free_enumeration
+#define hid_open                        PLATFORM_hid_open
+#define hid_open_path                   PLATFORM_hid_open_path
+#define hid_write                       PLATFORM_hid_write
+#define hid_read_timeout                PLATFORM_hid_read_timeout
+#define hid_read                        PLATFORM_hid_read
+#define hid_set_nonblocking             PLATFORM_hid_set_nonblocking
+#define hid_send_feature_report         PLATFORM_hid_send_feature_report
+#define hid_get_feature_report          PLATFORM_hid_get_feature_report
+#define hid_close                       PLATFORM_hid_close
+#define hid_get_manufacturer_string     PLATFORM_hid_get_manufacturer_string
+#define hid_get_product_string          PLATFORM_hid_get_product_string
+#define hid_get_serial_number_string    PLATFORM_hid_get_serial_number_string
+#define hid_get_indexed_string          PLATFORM_hid_get_indexed_string
+#define hid_error                       PLATFORM_hid_error
 
 #include <CoreBluetooth/CoreBluetooth.h>
 #include <QuartzCore/QuartzCore.h>
@@ -208,24 +229,29 @@ typedef enum
 		sharedInstance = [HIDBLEManager new];
 		sharedInstance.nPendingScans = 0;
 		sharedInstance.nPendingPairs = 0;
-		
-		[[NSNotificationCenter defaultCenter] addObserver:sharedInstance selector:@selector(appWillResignActiveNotification:) name: UIApplicationWillResignActiveNotification object:nil];
-		[[NSNotificationCenter defaultCenter] addObserver:sharedInstance selector:@selector(appDidBecomeActiveNotification:) name:UIApplicationDidBecomeActiveNotification object:nil];
 
-		// receive reports on a high-priority serial-queue. optionally put writes on the serial queue to avoid logical
-		// race conditions talking to the controller from multiple threads, although BLE fragmentation/assembly means
-		// that we can still screw this up.
-		// most importantly we need to consume reports at a high priority to avoid the OS thinking we aren't really
-		// listening to the BLE device, as iOS on slower devices may stop delivery of packets to the app WITHOUT ACTUALLY
-		// DISCONNECTING FROM THE DEVICE if we don't react quickly enough to their delivery.
-		// see also the error-handling states in the peripheral delegate to re-open the device if it gets closed
-		sharedInstance.bleSerialQueue = dispatch_queue_create( "com.valvesoftware.steamcontroller.ble", DISPATCH_QUEUE_SERIAL );
-		dispatch_set_target_queue( sharedInstance.bleSerialQueue, dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_HIGH, 0 ) );
+        // Bluetooth is currently only used for Steam Controllers, so check that hint
+        // before initializing Bluetooth, which will prompt the user for permission.
+		if ( SDL_GetHintBoolean( SDL_HINT_JOYSTICK_HIDAPI_STEAM, SDL_FALSE ) )
+		{
+			[[NSNotificationCenter defaultCenter] addObserver:sharedInstance selector:@selector(appWillResignActiveNotification:) name: UIApplicationWillResignActiveNotification object:nil];
+			[[NSNotificationCenter defaultCenter] addObserver:sharedInstance selector:@selector(appDidBecomeActiveNotification:) name:UIApplicationDidBecomeActiveNotification object:nil];
 
-		// creating a CBCentralManager will always trigger a future centralManagerDidUpdateState:
-		// where any scanning gets started or connecting to existing peripherals happens, it's never already in a
-		// powered-on state for a newly launched application.
-		sharedInstance.centralManager = [[CBCentralManager alloc] initWithDelegate:sharedInstance queue:sharedInstance.bleSerialQueue];
+			// receive reports on a high-priority serial-queue. optionally put writes on the serial queue to avoid logical
+			// race conditions talking to the controller from multiple threads, although BLE fragmentation/assembly means
+			// that we can still screw this up.
+			// most importantly we need to consume reports at a high priority to avoid the OS thinking we aren't really
+			// listening to the BLE device, as iOS on slower devices may stop delivery of packets to the app WITHOUT ACTUALLY
+			// DISCONNECTING FROM THE DEVICE if we don't react quickly enough to their delivery.
+			// see also the error-handling states in the peripheral delegate to re-open the device if it gets closed
+			sharedInstance.bleSerialQueue = dispatch_queue_create( "com.valvesoftware.steamcontroller.ble", DISPATCH_QUEUE_SERIAL );
+			dispatch_set_target_queue( sharedInstance.bleSerialQueue, dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_HIGH, 0 ) );
+
+			// creating a CBCentralManager will always trigger a future centralManagerDidUpdateState:
+			// where any scanning gets started or connecting to existing peripherals happens, it's never already in a
+			// powered-on state for a newly launched application.
+			sharedInstance.centralManager = [[CBCentralManager alloc] initWithDelegate:sharedInstance queue:sharedInstance.bleSerialQueue];
+		}
 		sharedInstance.deviceMap = [[NSMapTable alloc] initWithKeyOptions:NSMapTableWeakMemory valueOptions:NSMapTableStrongMemory capacity:4];
 	});
 	return sharedInstance;
@@ -265,6 +291,11 @@ typedef enum
 	static uint64_t s_unLastUpdateTick = 0;
 	static mach_timebase_info_data_t s_timebase_info;
 	
+	if ( self.centralManager == nil )
+    {
+		return 0;
+    }
+
 	if (s_timebase_info.denom == 0)
 	{
 		mach_timebase_info( &s_timebase_info );
@@ -310,6 +341,11 @@ typedef enum
 // manual API for folks to start & stop scanning
 - (void)startScan:(int)duration
 {
+	if ( self.centralManager == nil )
+	{
+		return;
+	}
+
 	NSLog( @"BLE: requesting scan for %d seconds", duration );
 	@synchronized (self)
 	{
@@ -329,6 +365,11 @@ typedef enum
 
 - (void)stopScan
 {
+	if ( self.centralManager == nil )
+	{
+		return;
+	}
+
 	NSLog( @"BLE: stopping scan" );
 	@synchronized (self)
 	{
@@ -724,7 +765,7 @@ int HID_API_EXPORT HID_API_CALL hid_exit(void)
 	return 0;
 }
 
-void HID_API_EXPORT HID_API_CALL hid_ble_scan( bool bStart )
+void HID_API_EXPORT HID_API_CALL hid_ble_scan( int bStart )
 {
 	HIDBLEManager *bleManager = HIDBLEManager.sharedInstance;
 	if ( bStart )
@@ -737,7 +778,12 @@ void HID_API_EXPORT HID_API_CALL hid_ble_scan( bool bStart )
 	}
 }
 
-hid_device * HID_API_EXPORT hid_open_path( const char *path, int bExclusive /* = false */ )
+HID_API_EXPORT hid_device * HID_API_CALL hid_open(unsigned short vendor_id, unsigned short product_id, const wchar_t *serial_number)
+{
+	return NULL;
+}
+
+HID_API_EXPORT hid_device * HID_API_CALL hid_open_path( const char *path, int bExclusive /* = false */ )
 {
 	hid_device *result = NULL;
 	NSString *nssPath = [NSString stringWithUTF8String:path];
@@ -851,6 +897,11 @@ int HID_API_EXPORT_CALL hid_get_serial_number_string(hid_device *dev, wchar_t *s
 	return 0;
 }
 
+int HID_API_EXPORT_CALL hid_get_indexed_string(hid_device *dev, int string_index, wchar_t *string, size_t maxlen)
+{
+	return -1;
+}
+
 int HID_API_EXPORT hid_write(hid_device *dev, const unsigned char *data, size_t length)
 {
     HIDBLEDevice *device_handle = (__bridge HIDBLEDevice *)dev->device_handle;
@@ -927,4 +978,9 @@ int HID_API_EXPORT hid_read_timeout(hid_device *dev, unsigned char *data, size_t
 	return result;
 }
 
-#endif /* SDL_JOYSTICK_HIDAPI */
+HID_API_EXPORT const wchar_t* HID_API_CALL hid_error(hid_device *dev)
+{
+	return NULL;
+}
+
+#endif /* !SDL_HIDAPI_DISABLED */

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
   Copyright (C) 2020 Collabora Ltd.
 
   This software is provided 'as-is', without any express or implied
@@ -38,7 +38,8 @@ typedef enum
     SDL_UDEV_DEVICE_JOYSTICK    = 0x0004,
     SDL_UDEV_DEVICE_SOUND       = 0x0008,
     SDL_UDEV_DEVICE_TOUCHSCREEN = 0x0010,
-    SDL_UDEV_DEVICE_ACCELEROMETER = 0x0020
+    SDL_UDEV_DEVICE_ACCELEROMETER = 0x0020,
+    SDL_UDEV_DEVICE_TOUCHPAD    = 0x0040
 } SDL_UDEV_deviceclass;
 
 #define BITS_PER_LONG           (sizeof(unsigned long) * 8)

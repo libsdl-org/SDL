@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -36,33 +36,31 @@
 #endif
 
 /* The __atomic_load_n() intrinsic showed up in different times for different compilers. */
-#if defined(HAVE_GCC_ATOMICS)
-# if defined(__clang__)
-#   if __has_builtin(__atomic_load_n)
-      /* !!! FIXME: this advertises as available in the NDK but uses an external symbol we don't have.
-         It might be in a later NDK or we might need an extra library? --ryan. */
-#     if !defined(__ANDROID__)
-#       define HAVE_ATOMIC_LOAD_N 1
-#     endif
-#   endif
-# elif defined(__GNUC__)
+#if defined(__clang__)
+#  if __has_builtin(__atomic_load_n) || defined(HAVE_GCC_ATOMICS)
+     /* !!! FIXME: this advertises as available in the NDK but uses an external symbol we don't have.
+        It might be in a later NDK or we might need an extra library? --ryan. */
+#    if !defined(__ANDROID__)
+#      define HAVE_ATOMIC_LOAD_N 1
+#    endif
+#  endif
+#elif defined(__GNUC__)
 #   if (__GNUC__ >= 5)
 #     define HAVE_ATOMIC_LOAD_N 1
 #   endif
-# endif
 #endif
 
 #if defined(__WATCOMC__) && defined(__386__)
 SDL_COMPILE_TIME_ASSERT(intsize, 4==sizeof(int));
 #define HAVE_WATCOM_ATOMICS
-extern _inline int _SDL_xchg_watcom(volatile int *a, int v);
+extern __inline int _SDL_xchg_watcom(volatile int *a, int v);
 #pragma aux _SDL_xchg_watcom = \
   "lock xchg [ecx], eax" \
   parm [ecx] [eax] \
   value [eax] \
   modify exact [eax];
 
-extern _inline unsigned char _SDL_cmpxchg_watcom(volatile int *a, int newval, int oldval);
+extern __inline unsigned char _SDL_cmpxchg_watcom(volatile int *a, int newval, int oldval);
 #pragma aux _SDL_cmpxchg_watcom = \
   "lock cmpxchg [edx], ecx" \
   "setz al" \
@@ -70,7 +68,7 @@ extern _inline unsigned char _SDL_cmpxchg_watcom(volatile int *a, int newval, in
   value [al] \
   modify exact [eax];
 
-extern _inline int _SDL_xadd_watcom(volatile int *a, int v);
+extern __inline int _SDL_xadd_watcom(volatile int *a, int v);
 #pragma aux _SDL_xadd_watcom = \
   "lock xadd [ecx], eax" \
   parm [ecx] [eax] \

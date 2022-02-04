@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -31,6 +31,8 @@
 #if SDL_VIDEO_DRIVER_COCOA && (SDL_VIDEO_VULKAN || SDL_VIDEO_METAL)
 
 #include "SDL_events.h"
+#include "SDL_syswm.h"
+
 
 static int SDLCALL
 SDL_MetalViewEventWatch(void *userdata, SDL_Event *event)
@@ -103,7 +105,7 @@ SDL_MetalViewEventWatch(void *userdata, SDL_Event *event)
 
 - (NSInteger)tag
 {
-    return METALVIEW_TAG;
+    return SDL_METALVIEW_TAG;
 }
 
 - (void)updateDrawableSize
@@ -173,7 +175,7 @@ Cocoa_Metal_GetDrawableSize(_THIS, SDL_Window * window, int * w, int * h)
 { @autoreleasepool {
     SDL_WindowData *data = (__bridge SDL_WindowData *)window->driverdata;
     NSView *contentView = data->sdlContentView;
-    SDL_cocoametalview* metalview = [contentView viewWithTag:METALVIEW_TAG];
+    SDL_cocoametalview* metalview = [contentView viewWithTag:SDL_METALVIEW_TAG];
     if (metalview) {
         CAMetalLayer *layer = (CAMetalLayer*)metalview.layer;
         SDL_assert(layer != NULL);

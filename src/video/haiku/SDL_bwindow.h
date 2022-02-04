@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -32,6 +32,7 @@ extern void HAIKU_SetWindowTitle(_THIS, SDL_Window * window);
 extern void HAIKU_SetWindowIcon(_THIS, SDL_Window * window, SDL_Surface * icon);
 extern void HAIKU_SetWindowPosition(_THIS, SDL_Window * window);
 extern void HAIKU_SetWindowSize(_THIS, SDL_Window * window);
+extern void HAIKU_SetWindowMinimumSize(_THIS, SDL_Window * window);
 extern void HAIKU_ShowWindow(_THIS, SDL_Window * window);
 extern void HAIKU_HideWindow(_THIS, SDL_Window * window);
 extern void HAIKU_RaiseWindow(_THIS, SDL_Window * window);

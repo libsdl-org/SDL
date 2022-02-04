@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -73,7 +73,7 @@ SDL_LockMutex(SDL_mutex * mutex)
     HMTX  hMtx = (HMTX)mutex;
 
     if (hMtx == NULLHANDLE)
-        return SDL_SetError("Passed a NULL mutex");
+        return SDL_InvalidParamError("mutex");
 
     ulRC = DosRequestMutexSem(hMtx, SEM_INDEFINITE_WAIT);
     if (ulRC != NO_ERROR) {
@@ -92,7 +92,7 @@ SDL_TryLockMutex(SDL_mutex * mutex)
     HMTX  hMtx = (HMTX)mutex;
 
     if (hMtx == NULLHANDLE)
-        return SDL_SetError("Passed a NULL mutex");
+        return SDL_InvalidParamError("mutex");
 
     ulRC = DosRequestMutexSem(hMtx, SEM_IMMEDIATE_RETURN);
 
@@ -115,7 +115,7 @@ SDL_UnlockMutex(SDL_mutex * mutex)
     HMTX  hMtx = (HMTX)mutex;
 
     if (hMtx == NULLHANDLE)
-        return SDL_SetError("Passed a NULL mutex");
+        return SDL_InvalidParamError("mutex");
 
     ulRC = DosReleaseMutexSem(hMtx);
     if (ulRC != NO_ERROR)

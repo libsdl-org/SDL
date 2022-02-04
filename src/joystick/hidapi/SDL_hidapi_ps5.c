@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -192,11 +192,11 @@ HIDAPI_DriverPS5_GetDeviceName(Uint16 vendor_id, Uint16 product_id)
     return NULL;
 }
 
-static int ReadFeatureReport(hid_device *dev, Uint8 report_id, Uint8 *report, size_t length)
+static int ReadFeatureReport(SDL_hid_device *dev, Uint8 report_id, Uint8 *report, size_t length)
 {
     SDL_memset(report, 0, length);
     report[0] = report_id;
-    return hid_get_feature_report(dev, report, length);
+    return SDL_hid_get_feature_report(dev, report, length);
 }
 
 static void
@@ -471,7 +471,7 @@ HIDAPI_DriverPS5_TickleBluetooth(SDL_HIDAPI_Device *device)
     /* This is just a dummy packet that should have no effect, since we don't set the CRC */
     Uint8 data[78];
 
-    SDL_zero(data);
+    SDL_zeroa(data);
 
     data[0] = k_EPS5ReportIdBluetoothEffects;
     data[1] = 0x02;  /* Magic value */
@@ -553,7 +553,7 @@ HIDAPI_DriverPS5_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
     ctx->joystick = joystick;
     ctx->last_packet = SDL_GetTicks();
 
-    device->dev = hid_open_path(device->path, 0);
+    device->dev = SDL_hid_open_path(device->path, 0);
     if (!device->dev) {
         SDL_free(ctx);
         SDL_SetError("Couldn't open %s", device->path);
@@ -562,7 +562,7 @@ HIDAPI_DriverPS5_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
     device->context = ctx;
 
     /* Read a report to see what mode we're in */
-    size = hid_read_timeout(device->dev, data, sizeof(data), 16);
+    size = SDL_hid_read_timeout(device->dev, data, sizeof(data), 16);
 #ifdef DEBUG_PS5_PROTOCOL
     if (size > 0) {
         HIDAPI_DumpPacket("PS5 first packet: size = %d", data, size);
@@ -663,10 +663,17 @@ HIDAPI_DriverPS5_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick 
     return SDL_Unsupported();
 }
 
-static SDL_bool
-HIDAPI_DriverPS5_HasJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
+static Uint32
+HIDAPI_DriverPS5_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
-    return SDL_TRUE;
+    SDL_DriverPS5_Context *ctx = (SDL_DriverPS5_Context *)device->context;
+    Uint32 result = 0;
+
+    if (ctx->enhanced_mode) {
+        result |= SDL_JOYCAP_LED | SDL_JOYCAP_RUMBLE;
+    }
+
+    return result;
 }
 
 static int
@@ -696,7 +703,7 @@ HIDAPI_DriverPS5_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joy
         HIDAPI_DriverPS5_SetEnhancedMode(device, joystick);
     }
 
-    SDL_zero(data);
+    SDL_zeroa(data);
 
     if (ctx->is_bluetooth) {
         data[0] = k_EPS5ReportIdBluetoothEffects;
@@ -761,7 +768,7 @@ HIDAPI_DriverPS5_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joysti
 }
 
 static void
-HIDAPI_DriverPS5_HandleSimpleStatePacket(SDL_Joystick *joystick, hid_device *dev, SDL_DriverPS5_Context *ctx, PS5SimpleStatePacket_t *packet)
+HIDAPI_DriverPS5_HandleSimpleStatePacket(SDL_Joystick *joystick, SDL_hid_device *dev, SDL_DriverPS5_Context *ctx, PS5SimpleStatePacket_t *packet)
 {
     Sint16 axis;
 
@@ -855,7 +862,7 @@ HIDAPI_DriverPS5_HandleSimpleStatePacket(SDL_Joystick *joystick, hid_device *dev
 }
 
 static void
-HIDAPI_DriverPS5_HandleStatePacket(SDL_Joystick *joystick, hid_device *dev, SDL_DriverPS5_Context *ctx, PS5StatePacket_t *packet)
+HIDAPI_DriverPS5_HandleStatePacket(SDL_Joystick *joystick, SDL_hid_device *dev, SDL_DriverPS5_Context *ctx, PS5StatePacket_t *packet)
 {
     static const float TOUCHPAD_SCALEX = 1.0f / 1920;
     static const float TOUCHPAD_SCALEY = 1.0f / 1070;
@@ -1010,7 +1017,7 @@ HIDAPI_DriverPS5_UpdateDevice(SDL_HIDAPI_Device *device)
         return SDL_FALSE;
     }
 
-    while ((size = hid_read_timeout(device->dev, data, sizeof(data), 0)) > 0) {
+    while ((size = SDL_hid_read_timeout(device->dev, data, sizeof(data), 0)) > 0) {
 #ifdef DEBUG_PS5_PROTOCOL
         HIDAPI_DumpPacket("PS5 packet: size = %d", data, size);
 #endif
@@ -1071,7 +1078,7 @@ HIDAPI_DriverPS5_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick
 
     SDL_LockMutex(device->dev_lock);
     {
-        hid_close(device->dev);
+        SDL_hid_close(device->dev);
         device->dev = NULL;
 
         SDL_free(device->context);
@@ -1089,6 +1096,7 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverPS5 =
 {
     SDL_HINT_JOYSTICK_HIDAPI_PS5,
     SDL_TRUE,
+    SDL_TRUE,
     HIDAPI_DriverPS5_IsSupportedDevice,
     HIDAPI_DriverPS5_GetDeviceName,
     HIDAPI_DriverPS5_InitDevice,
@@ -1098,7 +1106,7 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverPS5 =
     HIDAPI_DriverPS5_OpenJoystick,
     HIDAPI_DriverPS5_RumbleJoystick,
     HIDAPI_DriverPS5_RumbleJoystickTriggers,
-    HIDAPI_DriverPS5_HasJoystickLED,
+    HIDAPI_DriverPS5_GetJoystickCapabilities,
     HIDAPI_DriverPS5_SetJoystickLED,
     HIDAPI_DriverPS5_SendJoystickEffect,
     HIDAPI_DriverPS5_SetJoystickSensorsEnabled,

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -174,6 +174,8 @@ extern DECLSPEC int SDLCALL SDL_ShowMessageBox(const SDL_MessageBoxData *message
  * \param window the parent window, or NULL for no parent
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 2.0.0.
  *
  * \sa SDL_ShowMessageBox
  */

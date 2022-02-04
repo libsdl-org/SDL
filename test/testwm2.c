@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -18,6 +18,7 @@
 #endif
 
 #include "SDL_test_common.h"
+#include "SDL_test_font.h"
 
 static SDLTest_CommonState *state;
 int done;
@@ -39,6 +40,7 @@ static const char *cursorNames[] = {
 int system_cursor = -1;
 SDL_Cursor *cursor = NULL;
 SDL_bool relative_mode = SDL_FALSE;
+int highlighted_mode = -1;
 
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
 static void
@@ -46,6 +48,99 @@ quit(int rc)
 {
     SDLTest_CommonQuit(state);
     exit(rc);
+}
+
+/* Draws the modes menu, and stores the mode index under the mouse in highlighted_mode */
+static void
+draw_modes_menu(SDL_Window *window, SDL_Renderer *renderer, SDL_Rect viewport)
+{
+    SDL_DisplayMode mode;
+    char text[1024];
+    const int lineHeight = 10;
+    const int display_index = SDL_GetWindowDisplayIndex(window);
+    const int num_modes = SDL_GetNumDisplayModes(display_index);
+    int i;
+    int column_chars = 0;
+    int text_length;
+    int x, y;
+    int table_top;
+    SDL_Point mouse_pos = { -1, -1 };
+
+    /* Get mouse position */
+    if (SDL_GetMouseFocus() == window) {
+        int window_x, window_y;
+        float logical_x, logical_y;
+
+        SDL_GetMouseState(&window_x, &window_y);
+        SDL_RenderWindowToLogical(renderer, window_x, window_y, &logical_x, &logical_y);
+
+        mouse_pos.x = (int)logical_x;
+        mouse_pos.y = (int)logical_y;
+    }
+
+    x = 0;
+    y = viewport.y;
+
+    y += lineHeight;
+
+    SDL_snprintf(text, sizeof(text), "Click on a mode to set it with SDL_SetWindowDisplayMode");
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    SDLTest_DrawString(renderer, x, y, text);
+    y += lineHeight;
+
+    SDL_snprintf(text, sizeof(text), "Press Ctrl+Enter to toggle SDL_WINDOW_FULLSCREEN");
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    SDLTest_DrawString(renderer, x, y, text);
+    y += lineHeight;
+
+    table_top = y;
+
+    /* Clear the cached mode under the mouse */
+    if (window == SDL_GetMouseFocus()) {
+        highlighted_mode = -1;
+    }
+
+    for (i = 0; i < num_modes; ++i) {
+        SDL_Rect cell_rect;
+
+        if (0 != SDL_GetDisplayMode(display_index, i, &mode)) {
+            return;
+        }
+
+        SDL_snprintf(text, sizeof(text), "%d: %dx%d@%dHz",
+            i, mode.w, mode.h, mode.refresh_rate);
+
+        /* Update column width */
+        text_length = (int)SDL_strlen(text);
+        column_chars = SDL_max(column_chars, text_length);
+
+        /* Check if under mouse */        
+        cell_rect.x = x;
+        cell_rect.y = y;
+        cell_rect.w = text_length * FONT_CHARACTER_SIZE;
+        cell_rect.h = lineHeight;
+
+        if (SDL_PointInRect(&mouse_pos, &cell_rect)) {
+            SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+
+            /* Update cached mode under the mouse */
+            if (window == SDL_GetMouseFocus()) {
+                highlighted_mode = i;
+            }
+        } else {
+            SDL_SetRenderDrawColor(renderer, 170, 170, 170, 255);
+        }
+
+        SDLTest_DrawString(renderer, x, y, text);
+        y += lineHeight;
+
+        if (y + lineHeight > (viewport.y + viewport.h)) {
+            /* Advance to next column */
+            x += (column_chars + 1) * FONT_CHARACTER_SIZE;
+            y = table_top;
+            column_chars = 0;
+        }
+    }
 }
 
 void
@@ -112,16 +207,40 @@ loop()
                     SDL_SetCursor(cursor);
                 }
             }
+            if (event.type == SDL_MOUSEBUTTONUP) {
+                SDL_Window* window = SDL_GetMouseFocus();
+                if (highlighted_mode != -1 && window != NULL) {
+                    const int display_index = SDL_GetWindowDisplayIndex(window);
+                    SDL_DisplayMode mode;
+                    if (0 != SDL_GetDisplayMode(display_index, highlighted_mode, &mode)) {
+                        SDL_Log("Couldn't get display mode");
+                    } else {
+                        SDL_SetWindowDisplayMode(window, &mode);
+                    }
+                }
+            }
         }
 
         for (i = 0; i < state->num_windows; ++i) {
+            SDL_Window* window = state->windows[i];
             SDL_Renderer *renderer = state->renderers[i];
-            if (renderer != NULL) {
+            if (window != NULL && renderer != NULL) {
+                int y = 0;
+                SDL_Rect viewport, menurect;
+
+                SDL_RenderGetViewport(renderer, &viewport);
+
                 SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
                 SDL_RenderClear(renderer);
 
                 SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-                SDLTest_CommonDrawWindowInfo(renderer, state->windows[i]);
+                SDLTest_CommonDrawWindowInfo(renderer, state->windows[i], &y);
+
+                menurect.x = 0;
+                menurect.y = y;
+                menurect.w = viewport.w;
+                menurect.h = viewport.h - y;
+                draw_modes_menu(window, renderer, menurect);
 
                 SDL_RenderPresent(renderer);
             }

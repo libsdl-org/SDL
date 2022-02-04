@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -39,8 +39,6 @@
 #include "SDL_config_iphoneos.h"
 #elif defined(__ANDROID__)
 #include "SDL_config_android.h"
-#elif defined(__PSP__)
-#include "SDL_config_psp.h"
 #elif defined(__OS2__)
 #include "SDL_config_os2.h"
 #elif defined(__EMSCRIPTEN__)

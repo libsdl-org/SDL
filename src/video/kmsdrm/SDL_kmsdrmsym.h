@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -60,9 +60,9 @@ SDL_KMSDRM_SYM(int,drmModeSetCrtc,(int fd, uint32_t crtcId, uint32_t bufferId,
                                    uint32_t x, uint32_t y, uint32_t *connectors, int count,
                                    drmModeModeInfoPtr mode))
 SDL_KMSDRM_SYM(int,drmModeCrtcGetGamma,(int fd, uint32_t crtc_id, uint32_t size,
-			                              uint16_t *red, uint16_t *green, uint16_t *blue))
+                                        uint16_t *red, uint16_t *green, uint16_t *blue))
 SDL_KMSDRM_SYM(int,drmModeCrtcSetGamma,(int fd, uint32_t crtc_id, uint32_t size,
-			                              uint16_t *red, uint16_t *green, uint16_t *blue))
+                                        uint16_t *red, uint16_t *green, uint16_t *blue))
 SDL_KMSDRM_SYM(int,drmModeSetCursor,(int fd, uint32_t crtcId, uint32_t bo_handle,
                                      uint32_t width, uint32_t height))
 SDL_KMSDRM_SYM(int,drmModeSetCursor2,(int fd, uint32_t crtcId, uint32_t bo_handle,
@@ -95,7 +95,6 @@ SDL_KMSDRM_SYM(int,drmModeSetPlane,(int fd, uint32_t plane_id, uint32_t crtc_id,
 /* Planes stuff ends. */
 
 SDL_KMSDRM_MODULE(GBM)
-SDL_KMSDRM_SYM(int,gbm_device_get_fd,(struct gbm_device *gbm))
 SDL_KMSDRM_SYM(int,gbm_device_is_format_supported,(struct gbm_device *gbm,
                                                    uint32_t format, uint32_t usage))
 SDL_KMSDRM_SYM(void,gbm_device_destroy,(struct gbm_device *gbm))
@@ -104,7 +103,6 @@ SDL_KMSDRM_SYM(unsigned int,gbm_bo_get_width,(struct gbm_bo *bo))
 SDL_KMSDRM_SYM(unsigned int,gbm_bo_get_height,(struct gbm_bo *bo))
 SDL_KMSDRM_SYM(uint32_t,gbm_bo_get_stride,(struct gbm_bo *bo))
 SDL_KMSDRM_SYM(uint32_t,gbm_bo_get_format,(struct gbm_bo *bo))
-SDL_KMSDRM_SYM(uint32_t,gbm_bo_get_offset,(struct gbm_bo *bo, int plane))
 SDL_KMSDRM_SYM(union gbm_bo_handle,gbm_bo_get_handle,(struct gbm_bo *bo))
 SDL_KMSDRM_SYM(int,gbm_bo_write,(struct gbm_bo *bo, const void *buf, size_t count))
 SDL_KMSDRM_SYM(struct gbm_device *,gbm_bo_get_device,(struct gbm_bo *bo))

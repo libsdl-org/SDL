@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -48,7 +48,7 @@ extern "C" {
  *  \return the index of the most significant bit, or -1 if the value is 0.
  */
 #if defined(__WATCOMC__) && defined(__386__)
-extern _inline int _SDL_bsr_watcom (Uint32);
+extern __inline int _SDL_bsr_watcom(Uint32);
 #pragma aux _SDL_bsr_watcom = \
     "bsr eax, eax" \
     parm [eax] nomemory \

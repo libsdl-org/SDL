@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -36,8 +36,10 @@ typedef enum {
     SHADER_YUV_BT601,
     SHADER_YUV_BT709,
     SHADER_NV12_JPEG,
-    SHADER_NV12_BT601,
-    SHADER_NV12_BT709,
+    SHADER_NV12_RA_BT601,
+    SHADER_NV12_RG_BT601,
+    SHADER_NV12_RA_BT709,
+    SHADER_NV12_RG_BT709,
     SHADER_NV21_JPEG,
     SHADER_NV21_BT601,
     SHADER_NV21_BT709,

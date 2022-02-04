@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -220,7 +220,7 @@ SDL_BlendFillRect(SDL_Surface * dst, const SDL_Rect * rect,
     SDL_Rect clipped;
 
     if (!dst) {
-        return SDL_SetError("Passed NULL destination surface");
+        return SDL_InvalidParamError("SDL_BlendFillRect(): dst");
     }
 
     /* This function doesn't work on surfaces < 8 bpp */
@@ -291,7 +291,7 @@ SDL_BlendFillRects(SDL_Surface * dst, const SDL_Rect * rects, int count,
     int status = 0;
 
     if (!dst) {
-        return SDL_SetError("Passed NULL destination surface");
+        return SDL_InvalidParamError("SDL_BlendFillRects(): dst");
     }
 
     /* This function doesn't work on surfaces < 8 bpp */

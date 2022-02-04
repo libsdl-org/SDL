@@ -1,0 +1,15 @@
+name: Build (UWP)
+
+on: [push, pull_request]
+
+jobs:
+  Build:
+    name: UWP-x64
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Configure
+        run: mkdir build; cd build; cmake -Ax64 -DCMAKE_SYSTEM_NAME=WindowsStore -DCMAKE_SYSTEM_VERSION="10.0" -DCMAKE_BUILD_TYPE=Release ..
+      - name: Build
+        run: cd build; cmake --build .

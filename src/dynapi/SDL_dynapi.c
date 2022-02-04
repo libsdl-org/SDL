@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -86,6 +86,12 @@ static void SDL_InitDynamicAPI(void);
     _static int SDLCALL SDL_snprintf##name(SDL_OUT_Z_CAP(maxlen) char *buf, size_t maxlen, SDL_PRINTF_FORMAT_STRING const char *fmt, ...) { \
         int retval; va_list ap; initcall; va_start(ap, fmt); \
         retval = jump_table.SDL_vsnprintf(buf, maxlen, fmt, ap); \
+        va_end(ap); \
+        return retval; \
+    } \
+    _static int SDLCALL SDL_asprintf##name(char **strp, SDL_PRINTF_FORMAT_STRING const char *fmt, ...) { \
+        int retval; va_list ap; initcall; va_start(ap, fmt); \
+        retval = jump_table.SDL_vasprintf(strp, fmt, ap); \
         va_end(ap); \
         return retval; \
     } \
@@ -270,7 +276,7 @@ static void dynapi_warn(const char *msg)
     /* SDL_ShowSimpleMessageBox() is a too heavy for here. */
     #if defined(WIN32) || defined(_WIN32) || defined(__CYGWIN__)
     MessageBoxA(NULL, msg, caption, MB_OK | MB_ICONERROR);
-    #else
+    #elif defined(HAVE_STDIO_H)
     fprintf(stderr, "\n\n%s\n%s\n\n", caption, msg);
     fflush(stderr);
     #endif

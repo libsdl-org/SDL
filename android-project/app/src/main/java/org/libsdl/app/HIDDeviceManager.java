@@ -105,36 +105,6 @@ public class HIDDeviceManager {
     private HIDDeviceManager(final Context context) {
         mContext = context;
 
-        // Make sure we have the HIDAPI library loaded with the native functions
-        try {
-            SDL.loadLibrary("hidapi");
-        } catch (Throwable e) {
-            Log.w(TAG, "Couldn't load hidapi: " + e.toString());
-
-            AlertDialog.Builder builder = new AlertDialog.Builder(context);
-            builder.setCancelable(false);
-            builder.setTitle("SDL HIDAPI Error");
-            builder.setMessage("Please report the following error to the SDL maintainers: " + e.getMessage());
-            builder.setNegativeButton("Quit", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    try {
-                        // If our context is an activity, exit rather than crashing when we can't
-                        // call our native functions.
-                        Activity activity = (Activity)context;
-        
-                        activity.finish();
-                    }
-                    catch (ClassCastException cce) {
-                        // Context wasn't an activity, there's nothing we can do.  Give up and return.
-                    }
-                }
-            });
-            builder.show();
-
-            return;
-        }
-        
         HIDDeviceRegisterCallback();
 
         mSharedPreferences = mContext.getSharedPreferences("hidapi", Context.MODE_PRIVATE);
@@ -149,9 +119,6 @@ public class HIDDeviceManager {
         {
             mNextDeviceId = mSharedPreferences.getInt("next_device_id", 0);
         }
-
-        initializeUSB();
-        initializeBluetooth();
     }
 
     public Context getContext() {
@@ -174,6 +141,9 @@ public class HIDDeviceManager {
 
     private void initializeUSB() {
         mUsbManager = (UsbManager)mContext.getSystemService(Context.USB_SERVICE);
+        if (mUsbManager == null) {
+            return;
+        }
 
         /*
         // Logging
@@ -379,7 +349,8 @@ public class HIDDeviceManager {
     private void initializeBluetooth() {
         Log.d(TAG, "Initializing Bluetooth");
 
-        if (mContext.getPackageManager().checkPermission(android.Manifest.permission.BLUETOOTH, mContext.getPackageName()) != PackageManager.PERMISSION_GRANTED) {
+        if (Build.VERSION.SDK_INT <= 30 &&
+            mContext.getPackageManager().checkPermission(android.Manifest.permission.BLUETOOTH, mContext.getPackageName()) != PackageManager.PERMISSION_GRANTED) {
             Log.d(TAG, "Couldn't initialize Bluetooth, missing android.permission.BLUETOOTH");
             return;
         }
@@ -571,6 +542,18 @@ public class HIDDeviceManager {
     ////////// JNI interface functions
     //////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    public boolean initialize(boolean usb, boolean bluetooth) {
+        Log.v(TAG, "initialize(" + usb + ", " + bluetooth + ")");
+
+        if (usb) {
+            initializeUSB();
+        }
+        if (bluetooth) {
+            initializeBluetooth();
+        }
+        return true;
+    }
+
     public boolean openDevice(int deviceID) {
         Log.v(TAG, "openDevice deviceID=" + deviceID);
         HIDDevice device = getDevice(deviceID);
@@ -584,7 +567,14 @@ public class HIDDeviceManager {
         if (usbDevice != null && !mUsbManager.hasPermission(usbDevice)) {
             HIDDeviceOpenPending(deviceID);
             try {
-                mUsbManager.requestPermission(usbDevice, PendingIntent.getBroadcast(mContext, 0, new Intent(HIDDeviceManager.ACTION_USB_PERMISSION), 0));
+                final int FLAG_MUTABLE = 0x02000000; // PendingIntent.FLAG_MUTABLE, but don't require SDK 31
+                int flags;
+                if (Build.VERSION.SDK_INT >= 31) {
+                    flags = FLAG_MUTABLE;
+                } else {
+                    flags = 0;
+                }
+                mUsbManager.requestPermission(usbDevice, PendingIntent.getBroadcast(mContext, 0, new Intent(HIDDeviceManager.ACTION_USB_PERMISSION), flags));
             } catch (Exception e) {
                 Log.v(TAG, "Couldn't request permission for USB device " + usbDevice);
                 HIDDeviceOpenResult(deviceID, false);

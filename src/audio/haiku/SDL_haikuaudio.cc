@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -120,11 +120,10 @@ UnmaskSignals(sigset_t * omask)
 
 
 static int
-HAIKUAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
+HAIKUAUDIO_OpenDevice(_THIS, const char *devname)
 {
-    int valid_datatype = 0;
     media_raw_audio_format format;
-    SDL_AudioFormat test_format = SDL_FirstAudioFormat(_this->spec.format);
+    SDL_AudioFormat test_format;
 
     /* Initialize all variables that we clean on shutdown */
     _this->hidden = new SDL_PrivateAudioData;
@@ -138,9 +137,7 @@ HAIKUAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     format.byte_order = B_MEDIA_LITTLE_ENDIAN;
     format.frame_rate = (float) _this->spec.freq;
     format.channel_count = _this->spec.channels;        /* !!! FIXME: support > 2? */
-    while ((!valid_datatype) && (test_format)) {
-        valid_datatype = 1;
-        _this->spec.format = test_format;
+    for (test_format = SDL_FirstAudioFormat(_this->spec.format); test_format; test_format = SDL_NextAudioFormat()) {
         switch (test_format) {
         case AUDIO_S8:
             format.format = media_raw_audio_format::B_AUDIO_CHAR;
@@ -178,15 +175,15 @@ HAIKUAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
             break;
 
         default:
-            valid_datatype = 0;
-            test_format = SDL_NextAudioFormat();
-            break;
+            continue;
         }
+        break;
     }
 
-    if (!valid_datatype) {      /* shouldn't happen, but just in case... */
-        return SDL_SetError("Unsupported audio format");
+    if (!test_format) {      /* shouldn't happen, but just in case... */
+        return SDL_SetError("%s: Unsupported audio format", "haiku");
     }
+    _this->spec.format = test_format;
 
     /* Calculate the final parameters for this audio specification */
     SDL_CalculateAudioSpec(&_this->spec);
@@ -216,22 +213,22 @@ HAIKUAUDIO_Deinitialize(void)
     SDL_QuitBeApp();
 }
 
-static int
+static SDL_bool
 HAIKUAUDIO_Init(SDL_AudioDriverImpl * impl)
 {
     /* Initialize the Be Application, if it's not already started */
     if (SDL_InitBeApp() < 0) {
-        return 0;
+        return SDL_FALSE;
     }
 
     /* Set the function pointers */
     impl->OpenDevice = HAIKUAUDIO_OpenDevice;
     impl->CloseDevice = HAIKUAUDIO_CloseDevice;
     impl->Deinitialize = HAIKUAUDIO_Deinitialize;
-    impl->ProvidesOwnCallbackThread = 1;
-    impl->OnlyHasDefaultOutputDevice = 1;
+    impl->ProvidesOwnCallbackThread = SDL_TRUE;
+    impl->OnlyHasDefaultOutputDevice = SDL_TRUE;
 
-    return 1;   /* this audio target is available. */
+    return SDL_TRUE;   /* this audio target is available. */
 }
 
 extern "C"
@@ -239,7 +236,7 @@ extern "C"
     extern AudioBootStrap HAIKUAUDIO_bootstrap;
 }
 AudioBootStrap HAIKUAUDIO_bootstrap = {
-    "haiku", "Haiku BSoundPlayer", HAIKUAUDIO_Init, 0
+    "haiku", "Haiku BSoundPlayer", HAIKUAUDIO_Init, SDL_FALSE
 };
 
 #endif /* SDL_AUDIO_DRIVER_HAIKU */

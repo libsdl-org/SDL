@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -162,8 +162,8 @@ UIKit_GL_CreateContext(_THIS, SDL_Window * window)
         }
 
         if (_this->gl_config.share_with_current_context) {
-            EAGLContext *context = (__bridge EAGLContext *) SDL_GL_GetCurrentContext();
-            sharegroup = context.sharegroup;
+            EAGLContext *currContext = (__bridge EAGLContext *) SDL_GL_GetCurrentContext();
+            sharegroup = currContext.sharegroup;
         }
 
         if (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {

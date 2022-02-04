@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -346,13 +346,13 @@ static int ReadInput(SDL_DriverSwitch_Context *ctx)
         return 0;
     }
 
-    return hid_read_timeout(ctx->device->dev, ctx->m_rgucReadBuffer, sizeof(ctx->m_rgucReadBuffer), 0);
+    return SDL_hid_read_timeout(ctx->device->dev, ctx->m_rgucReadBuffer, sizeof(ctx->m_rgucReadBuffer), 0);
 }
 
 static int WriteOutput(SDL_DriverSwitch_Context *ctx, const Uint8 *data, int size)
 {
 #ifdef SWITCH_SYNCHRONOUS_WRITES
-    return hid_write(ctx->device->dev, data, size);
+    return SDL_hid_write(ctx->device->dev, data, size);
 #else
     /* Use the rumble thread for general asynchronous writes */
     if (SDL_HIDAPI_LockRumble() < 0) {
@@ -418,7 +418,7 @@ static void ConstructSubcommand(SDL_DriverSwitch_Context *ctx, ESwitchSubcommand
     outPacket->commonData.ucPacketType = k_eSwitchOutputReportIDs_RumbleAndSubcommand;
     outPacket->commonData.ucPacketNumber = ctx->m_nCommandNumber;
 
-    SDL_memcpy(&outPacket->commonData.rumbleData, &ctx->m_RumblePacket.rumbleData, sizeof(ctx->m_RumblePacket.rumbleData));
+    SDL_memcpy(outPacket->commonData.rumbleData, ctx->m_RumblePacket.rumbleData, sizeof(ctx->m_RumblePacket.rumbleData));
 
     outPacket->ucSubcommandID = ucCommandID;
     SDL_memcpy(outPacket->rgucSubcommandData, pBuf, ucLen);
@@ -621,7 +621,7 @@ static SDL_bool BReadDeviceInfo(SDL_DriverSwitch_Context *ctx)
         ctx->m_eControllerType = (ESwitchDeviceInfoControllerType)reply->deviceInfo.ucDeviceType;
 
         // Bytes 4-9: MAC address (big-endian)
-        memcpy(ctx->m_rgucMACAddress, reply->deviceInfo.rgucMACAddress, sizeof(ctx->m_rgucMACAddress));
+        SDL_memcpy(ctx->m_rgucMACAddress, reply->deviceInfo.rgucMACAddress, sizeof(ctx->m_rgucMACAddress));
 
         return SDL_TRUE;
     }
@@ -856,7 +856,7 @@ HIDAPI_DriverSwitch_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joysti
     ctx->device = device;
     device->context = ctx;
 
-    device->dev = hid_open_path(device->path, 0);
+    device->dev = SDL_hid_open_path(device->path, 0);
     if (!device->dev) {
         SDL_SetError("Couldn't open %s", device->path);
         goto error;
@@ -986,7 +986,7 @@ error:
     SDL_LockMutex(device->dev_lock);
     {
         if (device->dev) {
-            hid_close(device->dev);
+            SDL_hid_close(device->dev);
             device->dev = NULL;
         }
         if (device->context) {
@@ -1023,8 +1023,7 @@ HIDAPI_DriverSwitch_ActuallyRumbleJoystick(SDL_DriverSwitch_Context *ctx, Uint16
     ctx->m_bRumbleActive = (low_frequency_rumble || high_frequency_rumble) ? SDL_TRUE : SDL_FALSE;
 
     if (!WriteRumble(ctx)) {
-        SDL_SetError("Couldn't send rumble packet");
-        return -1;
+        return SDL_SetError("Couldn't send rumble packet");
     }
     return 0;
 }
@@ -1106,11 +1105,18 @@ HIDAPI_DriverSwitch_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joysti
     return SDL_Unsupported();
 }
 
-static SDL_bool
-HIDAPI_DriverSwitch_HasJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
+static Uint32
+HIDAPI_DriverSwitch_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
-    /* Doesn't have an RGB LED, so don't return true here */
-    return SDL_FALSE;
+    SDL_DriverSwitch_Context *ctx = (SDL_DriverSwitch_Context *)device->context;
+    Uint32 result = 0;
+
+    if (!ctx->m_bInputOnly) {
+        /* Doesn't have an RGB LED, so don't return SDL_JOYCAP_LED here */
+        result |= SDL_JOYCAP_RUMBLE;
+    }
+
+    return result;
 }
 
 static int
@@ -1530,7 +1536,7 @@ HIDAPI_DriverSwitch_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joyst
 
     SDL_LockMutex(device->dev_lock);
     {
-        hid_close(device->dev);
+        SDL_hid_close(device->dev);
         device->dev = NULL;
 
         SDL_free(device->context);
@@ -1548,6 +1554,7 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSwitch =
 {
     SDL_HINT_JOYSTICK_HIDAPI_SWITCH,
     SDL_TRUE,
+    SDL_TRUE,
     HIDAPI_DriverSwitch_IsSupportedDevice,
     HIDAPI_DriverSwitch_GetDeviceName,
     HIDAPI_DriverSwitch_InitDevice,
@@ -1557,7 +1564,7 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSwitch =
     HIDAPI_DriverSwitch_OpenJoystick,
     HIDAPI_DriverSwitch_RumbleJoystick,
     HIDAPI_DriverSwitch_RumbleJoystickTriggers,
-    HIDAPI_DriverSwitch_HasJoystickLED,
+    HIDAPI_DriverSwitch_GetJoystickCapabilities,
     HIDAPI_DriverSwitch_SetJoystickLED,
     HIDAPI_DriverSwitch_SendJoystickEffect,
     HIDAPI_DriverSwitch_SetJoystickSensorsEnabled,

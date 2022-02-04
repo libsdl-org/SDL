@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -939,10 +939,21 @@ DARWIN_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16
     return SDL_Unsupported();
 }
 
-static SDL_bool
-DARWIN_JoystickHasLED(SDL_Joystick *joystick)
+static Uint32
+DARWIN_JoystickGetCapabilities(SDL_Joystick *joystick)
 {
-    return SDL_FALSE;
+    recDevice *device = joystick->hwdata;
+    Uint32 result = 0;
+
+    if (!device) {
+        return 0;
+    }
+
+    if (device->ffservice) {
+        result |= SDL_JOYCAP_RUMBLE;
+    }
+
+    return result;
 }
 
 static int
@@ -1111,7 +1122,7 @@ SDL_JoystickDriver SDL_DARWIN_JoystickDriver =
     DARWIN_JoystickOpen,
     DARWIN_JoystickRumble,
     DARWIN_JoystickRumbleTriggers,
-    DARWIN_JoystickHasLED,
+    DARWIN_JoystickGetCapabilities,
     DARWIN_JoystickSetLED,
     DARWIN_JoystickSendEffect,
     DARWIN_JoystickSetSensorsEnabled,

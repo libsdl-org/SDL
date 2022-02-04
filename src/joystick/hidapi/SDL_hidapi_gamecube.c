@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -32,7 +32,7 @@
 #include "../SDL_sysjoystick.h"
 #include "SDL_hidapijoystick_c.h"
 #include "SDL_hidapi_rumble.h"
-#include "../../hidapi/SDL_hidapi.h"
+#include "../../hidapi/SDL_hidapi_c.h"
 
 
 #ifdef SDL_JOYSTICK_HIDAPI_GAMECUBE
@@ -129,7 +129,7 @@ HIDAPI_DriverGameCube_InitDevice(SDL_HIDAPI_Device *device)
         return SDL_FALSE;
     }
 
-    device->dev = hid_open_path(device->path, 0);
+    device->dev = SDL_hid_open_path(device->path, 0);
     if (!device->dev) {
         SDL_free(ctx);
         SDL_SetError("Couldn't open %s", device->path);
@@ -154,7 +154,7 @@ HIDAPI_DriverGameCube_InitDevice(SDL_HIDAPI_Device *device)
         }
     } else {
         /* This is all that's needed to initialize the device. Really! */
-        if (hid_write(device->dev, &initMagic, sizeof(initMagic)) != sizeof(initMagic)) {
+        if (SDL_hid_write(device->dev, &initMagic, sizeof(initMagic)) != sizeof(initMagic)) {
             SDL_SetError("Couldn't initialize WUP-028");
             goto error;
         }
@@ -163,7 +163,7 @@ HIDAPI_DriverGameCube_InitDevice(SDL_HIDAPI_Device *device)
         SDL_Delay(10);
 
         /* Add all the applicable joysticks */
-        while ((size = hid_read_timeout(device->dev, packet, sizeof(packet), 0)) > 0) {
+        while ((size = SDL_hid_read_timeout(device->dev, packet, sizeof(packet), 0)) > 0) {
 #ifdef DEBUG_GAMECUBE_PROTOCOL
             HIDAPI_DumpPacket("Nintendo GameCube packet: size = %d", packet, size);
 #endif
@@ -204,7 +204,7 @@ error:
     SDL_LockMutex(device->dev_lock);
     {
         if (device->dev) {
-            hid_close(device->dev);
+            SDL_hid_close(device->dev);
             device->dev = NULL;
         }
         if (device->context) {
@@ -389,7 +389,7 @@ HIDAPI_DriverGameCube_UpdateDevice(SDL_HIDAPI_Device *device)
     int size;
 
     /* Read input packet */
-    while ((size = hid_read_timeout(device->dev, packet, sizeof(packet), 0)) > 0) {
+    while ((size = SDL_hid_read_timeout(device->dev, packet, sizeof(packet), 0)) > 0) {
 #ifdef DEBUG_GAMECUBE_PROTOCOL
         //HIDAPI_DumpPacket("Nintendo GameCube packet: size = %d", packet, size);
 #endif
@@ -454,8 +454,7 @@ HIDAPI_DriverGameCube_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *jo
     }
 
     /* Should never get here! */
-    SDL_SetError("Couldn't find joystick");
-    return -1;
+    return SDL_SetError("Couldn't find joystick");
 }
 
 static int
@@ -464,10 +463,26 @@ HIDAPI_DriverGameCube_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joys
     return SDL_Unsupported();
 }
 
-static SDL_bool
-HIDAPI_DriverGameCube_HasJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
+static Uint32
+HIDAPI_DriverGameCube_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
-    return SDL_FALSE;
+    SDL_DriverGameCube_Context *ctx = (SDL_DriverGameCube_Context *)device->context;
+    Uint32 result = 0;
+
+    if (!ctx->pc_mode) {
+        Uint8 i;
+
+        for (i = 0; i < MAX_CONTROLLERS; i += 1) {
+            if (joystick->instance_id == ctx->joysticks[i]) {
+                if (!ctx->wireless[i] && ctx->rumbleAllowed[i]) {
+                    result |= SDL_JOYCAP_RUMBLE;
+                    break;
+                }
+            }
+        }
+    }
+
+    return result;
 }
 
 static int
@@ -510,7 +525,7 @@ HIDAPI_DriverGameCube_FreeDevice(SDL_HIDAPI_Device *device)
 
     SDL_LockMutex(device->dev_lock);
     {
-        hid_close(device->dev);
+        SDL_hid_close(device->dev);
         device->dev = NULL;
 
         SDL_free(device->context);
@@ -523,6 +538,7 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverGameCube =
 {
     SDL_HINT_JOYSTICK_HIDAPI_GAMECUBE,
     SDL_TRUE,
+    SDL_TRUE,
     HIDAPI_DriverGameCube_IsSupportedDevice,
     HIDAPI_DriverGameCube_GetDeviceName,
     HIDAPI_DriverGameCube_InitDevice,
@@ -532,7 +548,7 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverGameCube =
     HIDAPI_DriverGameCube_OpenJoystick,
     HIDAPI_DriverGameCube_RumbleJoystick,
     HIDAPI_DriverGameCube_RumbleJoystickTriggers,
-    HIDAPI_DriverGameCube_HasJoystickLED,
+    HIDAPI_DriverGameCube_GetJoystickCapabilities,
     HIDAPI_DriverGameCube_SetJoystickLED,
     HIDAPI_DriverGameCube_SendJoystickEffect,
     HIDAPI_DriverGameCube_SetJoystickSensorsEnabled,

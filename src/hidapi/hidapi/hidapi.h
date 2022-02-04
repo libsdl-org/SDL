@@ -29,7 +29,12 @@
 
 #include <wchar.h>
 
-#if defined(_WIN32) && !defined(NAMESPACE) && (0) /* SDL: don't export hidapi syms */
+#ifdef SDL_hidapi_h_
+#define SDL_HIDAPI_IMPLEMENTATION
+#define hid_device_info SDL_hid_device_info
+#endif
+
+#if defined(_WIN32) && !defined(NAMESPACE) && !defined(SDL_HIDAPI_IMPLEMENTATION) /* SDL: don't export hidapi syms */
       #define HID_API_EXPORT __declspec(dllexport)
       #define HID_API_CALL
 #else
@@ -53,6 +58,7 @@ namespace NAMESPACE {
 		struct hid_device_;
 		typedef struct hid_device_ hid_device; /**< opaque hidapi structure */
 
+#ifndef SDL_HIDAPI_IMPLEMENTATION
 		/** hidapi info structure */
 		struct hid_device_info {
 			/** Platform-specific device path */
@@ -93,6 +99,7 @@ namespace NAMESPACE {
 			/** Pointer to the next device */
 			struct hid_device_info *next;
 		};
+#endif /* !SDL_HIDAPI_IMPLEMENTATION */
 
 
 		/** @brief Initialize the HIDAPI library.
@@ -398,6 +405,10 @@ namespace NAMESPACE {
 				which occurred or NULL if none has occurred.
 		*/
 		HID_API_EXPORT const wchar_t* HID_API_CALL hid_error(hid_device *dev);
+
+#if __IPHONEOS__ || __TVOS__
+		HID_API_EXPORT void HID_API_CALL hid_ble_scan(int active);
+#endif
 
 #if defined(__cplusplus) && !defined(NAMESPACE)
 }

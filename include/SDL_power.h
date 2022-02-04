@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -72,6 +72,8 @@ typedef enum
  *            a NULL here if you don't care, will return -1 if we can't
  *            determine a value, or we're not running on a battery
  * \returns an SDL_PowerState enum representing the current battery state.
+ *
+ * \since This function is available since SDL 2.0.0.
  */
 extern DECLSPEC SDL_PowerState SDLCALL SDL_GetPowerInfo(int *secs, int *pct);
 

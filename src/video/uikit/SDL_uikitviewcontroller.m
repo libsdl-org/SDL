@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -250,14 +250,7 @@ SDL_HideHomeIndicatorHintChanged(void *userdata, const char *name, const char *o
 
 - (BOOL)prefersPointerLocked
 {
-    SDL_VideoDevice *_this = SDL_GetVideoDevice();
-    
-    if (SDL_HasGCMouse() &&
-        (SDL_GCMouseRelativeMode() || _this->grabbed_window == window)) {
-        return YES;
-    } else {
-        return NO;
-    }
+    return SDL_GCMouseRelativeMode() ? YES : NO;
 }
 
 #endif /* !TARGET_OS_TV */

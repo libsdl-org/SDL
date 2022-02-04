@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -38,14 +38,14 @@ static SDL_Joystick *joystick = NULL;
 static SDL_bool done = SDL_FALSE;
 
 static void
-PrintJoystick(SDL_Joystick *joystick)
+PrintJoystick(SDL_Joystick *joy)
 {
     const char *type;
     char guid[64];
 
-    SDL_assert(SDL_JoystickFromInstanceID(SDL_JoystickInstanceID(joystick)) == joystick);
-    SDL_JoystickGetGUIDString(SDL_JoystickGetGUID(joystick), guid, sizeof (guid));
-    switch (SDL_JoystickGetType(joystick)) {
+    SDL_assert(SDL_JoystickFromInstanceID(SDL_JoystickInstanceID(joy)) == joy);
+    SDL_JoystickGetGUIDString(SDL_JoystickGetGUID(joy), guid, sizeof (guid));
+    switch (SDL_JoystickGetType(joy)) {
     case SDL_JOYSTICK_TYPE_GAMECONTROLLER:
         type = "Game Controller";
         break;
@@ -78,15 +78,18 @@ PrintJoystick(SDL_Joystick *joystick)
         break;
     }
     SDL_Log("Joystick\n");
-    SDL_Log("       name: %s\n", SDL_JoystickName(joystick));
-    SDL_Log("       type: %s\n", type);
-    SDL_Log("       axes: %d\n", SDL_JoystickNumAxes(joystick));
-    SDL_Log("      balls: %d\n", SDL_JoystickNumBalls(joystick));
-    SDL_Log("       hats: %d\n", SDL_JoystickNumHats(joystick));
-    SDL_Log("    buttons: %d\n", SDL_JoystickNumButtons(joystick));
-    SDL_Log("instance id: %d\n", SDL_JoystickInstanceID(joystick));
-    SDL_Log("       guid: %s\n", guid);
-    SDL_Log("    VID/PID: 0x%.4x/0x%.4x\n", SDL_JoystickGetVendor(joystick), SDL_JoystickGetProduct(joystick));
+    SDL_Log("          name: %s\n", SDL_JoystickName(joy));
+    SDL_Log("          type: %s\n", type);
+    SDL_Log("           LED: %s\n", SDL_JoystickHasLED(joy) ? "yes" : "no");
+    SDL_Log("        rumble: %s\n", SDL_JoystickHasRumble(joy) ? "yes" : "no");
+    SDL_Log("trigger rumble: %s\n", SDL_JoystickHasRumbleTriggers(joy) ? "yes" : "no");
+    SDL_Log("          axes: %d\n", SDL_JoystickNumAxes(joy));
+    SDL_Log("         balls: %d\n", SDL_JoystickNumBalls(joy));
+    SDL_Log("          hats: %d\n", SDL_JoystickNumHats(joy));
+    SDL_Log("       buttons: %d\n", SDL_JoystickNumButtons(joy));
+    SDL_Log("   instance id: %d\n", SDL_JoystickInstanceID(joy));
+    SDL_Log("          guid: %s\n", guid);
+    SDL_Log("       VID/PID: 0x%.4x/0x%.4x\n", SDL_JoystickGetVendor(joy), SDL_JoystickGetProduct(joy));
 }
 
 static void
@@ -183,7 +186,7 @@ loop(void *arg)
                 (event.key.keysym.sym != SDLK_AC_BACK)) {
                 break;
             }
-            /* Fall through to signal quit */
+            SDL_FALLTHROUGH;
         case SDL_FINGERDOWN:
         case SDL_MOUSEBUTTONDOWN:
         case SDL_QUIT:

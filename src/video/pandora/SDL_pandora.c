@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -612,7 +612,7 @@ PND_gl_createcontext(_THIS, SDL_Window * window)
 
 #ifdef WIZ_GLES_LITE
     if( !hNativeWnd ) {
-    hNativeWnd = (NativeWindowType)malloc(16*1024);
+    hNativeWnd = (NativeWindowType)SDL_malloc(16*1024);
 
     if(!hNativeWnd)
         printf( "Error: Wiz framebuffer allocatation failed\n" );
@@ -819,7 +819,7 @@ PND_gl_deletecontext(_THIS, SDL_GLContext context)
 #ifdef WIZ_GLES_LITE
     if( hNativeWnd != 0 )
     {
-      free(hNativeWnd);
+      SDL_free(hNativeWnd);
       hNativeWnd = 0;
       printf( "SDL: Wiz framebuffer released\n" );
     }

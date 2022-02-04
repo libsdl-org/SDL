@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -85,6 +85,9 @@ typedef struct SDL_VideoData
     int windowlistlength;
     XID window_group;
     Window clipboard_window;
+#if SDL_VIDEO_DRIVER_X11_XFIXES
+    SDL_Window *active_cursor_confined_window;
+#endif /* SDL_VIDEO_DRIVER_X11_XFIXES */
 
     /* This is true for ICCCM2.0-compliant window managers */
     SDL_bool net_wm;
@@ -93,6 +96,7 @@ typedef struct SDL_VideoData
     Atom WM_PROTOCOLS;
     Atom WM_DELETE_WINDOW;
     Atom WM_TAKE_FOCUS;
+    Atom WM_NAME;
     Atom _NET_WM_STATE;
     Atom _NET_WM_STATE_HIDDEN;
     Atom _NET_WM_STATE_FOCUSED;
@@ -139,6 +143,7 @@ typedef struct SDL_VideoData
 #if SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM
     XkbDescPtr xkb;
 #endif
+    int xkb_event;
 
     KeyCode filter_code;
     Time    filter_time;

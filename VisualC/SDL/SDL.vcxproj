@@ -236,6 +236,7 @@
     <ClInclude Include="..\..\include\SDL_gesture.h" />
     <ClInclude Include="..\..\include\SDL_haptic.h" />
     <ClInclude Include="..\..\include\SDL_hints.h" />
+    <ClInclude Include="..\..\include\SDL_hidapi.h" />
     <ClInclude Include="..\..\include\SDL_joystick.h" />
     <ClInclude Include="..\..\include\SDL_keyboard.h" />
     <ClInclude Include="..\..\include\SDL_keycode.h" />
@@ -327,7 +328,7 @@
     <ClInclude Include="..\..\src\haptic\windows\SDL_windowshaptic_c.h" />
     <ClInclude Include="..\..\src\haptic\windows\SDL_xinputhaptic_c.h" />
     <ClInclude Include="..\..\src\hidapi\hidapi\hidapi.h" />
-    <ClInclude Include="..\..\src\hidapi\SDL_hidapi.h" />
+    <ClInclude Include="..\..\src\hidapi\SDL_hidapi_c.h" />
     <ClInclude Include="..\..\src\joystick\controller_type.h" />
     <ClInclude Include="..\..\src\joystick\hidapi\SDL_hidapijoystick_c.h" />
     <ClInclude Include="..\..\src\joystick\hidapi\SDL_hidapi_rumble.h" />
@@ -489,7 +490,6 @@
     <ClCompile Include="..\..\src\joystick\SDL_joystick.c" />
     <ClCompile Include="..\..\src\joystick\virtual\SDL_virtualjoystick.c" />
     <ClCompile Include="..\..\src\joystick\windows\SDL_dinputjoystick.c" />
-    <ClCompile Include="..\..\src\joystick\windows\SDL_mmjoystick.c" />
     <ClCompile Include="..\..\src\joystick\windows\SDL_rawinputjoystick.c" />
     <ClCompile Include="..\..\src\joystick\windows\SDL_windowsjoystick.c" />
     <ClCompile Include="..\..\src\joystick\windows\SDL_windows_gaming_input.c" />
@@ -559,7 +559,7 @@
     <ClCompile Include="..\..\src\stdlib\SDL_strtokr.c" />
     <ClCompile Include="..\..\src\thread\generic\SDL_syscond.c" />
     <ClCompile Include="..\..\src\thread\SDL_thread.c" />
-    <ClCompile Include="..\..\src\thread\windows\SDL_syscond_srw.c" />
+    <ClCompile Include="..\..\src\thread\windows\SDL_syscond_cv.c" />
     <ClCompile Include="..\..\src\thread\windows\SDL_sysmutex.c" />
     <ClCompile Include="..\..\src\thread\windows\SDL_syssem.c" />
     <ClCompile Include="..\..\src\thread\windows\SDL_systhread.c" />

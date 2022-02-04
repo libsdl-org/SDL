@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -80,7 +80,7 @@ static int SDL_HIDAPI_RumbleThread(void *data)
 #ifdef DEBUG_RUMBLE
                 HIDAPI_DumpPacket("Rumble packet: size = %d", request->data, request->size);
 #endif
-                hid_write(request->device->dev, request->data, request->size);
+                SDL_hid_write(request->device->dev, request->data, request->size);
             }
             SDL_UnlockMutex(request->device->dev_lock);
             (void)SDL_AtomicDecRef(&request->device->rumble_pending);

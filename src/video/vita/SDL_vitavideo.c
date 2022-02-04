@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -33,6 +33,7 @@
 #include "../../events/SDL_keyboard_c.h"
 
 /* VITA declarations */
+#include <psp2/kernel/processmgr.h>
 #include "SDL_vitavideo.h"
 #include "SDL_vitatouch.h"
 #include "SDL_vitakeyboard.h"
@@ -258,8 +259,7 @@ VITA_CreateWindow(_THIS, SDL_Window * window)
     // Vita can only have one window
     if (Vita_Window != NULL)
     {
-        SDL_SetError("Only one window supported");
-        return -1;
+        return SDL_SetError("Only one window supported");
     }
 
     Vita_Window = window;
@@ -346,8 +346,8 @@ VITA_RestoreWindow(_THIS, SDL_Window * window)
 void
 VITA_SetWindowGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
 {
-
 }
+
 void
 VITA_DestroyWindow(_THIS, SDL_Window * window)
 {
@@ -496,7 +496,7 @@ void VITA_ShowScreenKeyboard(_THIS, SDL_Window *window)
     SceImeDialogParam param;
     sceImeDialogParamInit(&param);
 
-    param.supportedLanguages = SCE_IME_LANGUAGE_ENGLISH_US;
+    param.supportedLanguages = 0;
     param.languagesForced = SCE_FALSE;
     param.type = SCE_IME_TYPE_DEFAULT;
     param.option = 0;
@@ -555,6 +555,12 @@ void VITA_PumpEvents(_THIS)
 #if !defined(SDL_VIDEO_VITA_PVR)
     SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
 #endif
+
+    if (_this->suspend_screensaver) {
+        // cancel all idle timers to prevent vita going to sleep
+        sceKernelPowerTick(SCE_KERNEL_POWER_TICK_DEFAULT);
+    }
+
     VITA_PollTouch();
     VITA_PollKeyboard();
     VITA_PollMouse();

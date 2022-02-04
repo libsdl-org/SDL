@@ -1,10 +1,9 @@
 /* See LICENSE.txt for the full license governing this code. */
 /**
- * \file windows_process.c 
+ * \file windows_process.c
  *
  * Source file for the process API on windows.
  */
-
 
 #include <SDL.h>
 #include <SDL_test.h>
@@ -16,7 +15,7 @@
 #if defined(__WIN32__)
 
 void
-LogLastError(char* str)
+LogLastError(const char* str)
 {
     LPVOID buffer;
     DWORD dw = GetLastError();
@@ -61,7 +60,7 @@ SDL_LaunchProcess(char* file, char* args, SDL_ProcessInfo* pinfo)
     working_directory = (char*)SDL_malloc(path_length + 1);
     if(!working_directory)
     {
-        SDLTest_LogError("Could not allocate working_directory - malloc() failed.");
+        SDLTest_LogError("Could not allocate working_directory - SDL_malloc() failed.");
         return 0;
     }
 
@@ -80,7 +79,7 @@ SDL_LaunchProcess(char* file, char* args, SDL_ProcessInfo* pinfo)
     command_line = (char*)SDL_malloc(path_length + args_length + 2);
     if(!command_line)
     {
-        SDLTest_LogError("Could not allocate command_line - malloc() failed.");
+        SDLTest_LogError("Could not allocate command_line - SDL_malloc() failed.");
         return 0;
     }
     SDL_memcpy(command_line, file, path_length);
@@ -175,7 +174,7 @@ CloseWindowCallback(HWND hwnd, LPARAM lparam)
     GetWindowThreadProcessId(hwnd, &pid);
     if(pid == pinfo->pi.dwProcessId)
     {
-        DWORD result;
+        DWORD_PTR result;
         if(!SendMessageTimeout(hwnd, WM_CLOSE, 0, 0, SMTO_BLOCK,
                                1000, &result))
         {

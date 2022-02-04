@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -618,10 +618,10 @@ do { \
     while (height--) { \
         { int n = (width+3)/4; \
             switch (width & 3) { \
-            case 0: do {   op; pixel++; /* fallthrough */ \
-            case 3:        op; pixel++; /* fallthrough */ \
-            case 2:        op; pixel++; /* fallthrough */ \
-            case 1:        op; pixel++; /* fallthrough */ \
+            case 0: do {   op; pixel++; SDL_FALLTHROUGH; \
+            case 3:        op; pixel++; SDL_FALLTHROUGH; \
+            case 2:        op; pixel++; SDL_FALLTHROUGH; \
+            case 1:        op; pixel++; \
                     } while ( --n > 0 ); \
             } \
         } \

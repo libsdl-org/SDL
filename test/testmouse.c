@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -16,6 +16,8 @@
 #include <emscripten/emscripten.h>
 #endif
 
+#include <stdlib.h> /* exit() */
+
 #ifdef __IPHONEOS__
 #define SCREEN_WIDTH    320
 #define SCREEN_HEIGHT   480
@@ -25,12 +27,9 @@
 #endif
 
 static SDL_Window *window;
-static SDL_Renderer *renderer;
 
-typedef struct Line Line;
-
-typedef struct Line {
-    Line *next;
+typedef struct _Line {
+    struct _Line *next;
 
     int x1, y1, x2, y2;
     Uint8 r, g, b;
@@ -74,8 +73,9 @@ AppendLine(Line *line)
 }
 
 void
-loop(void)
+loop(void *arg)
 {
+    SDL_Renderer *renderer = (SDL_Renderer *)arg;
     SDL_Event event;
 
     /* Check for events */
@@ -146,6 +146,8 @@ loop(void)
 int
 main(int argc, char *argv[])
 {
+    SDL_Renderer *renderer;
+
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
@@ -173,10 +175,10 @@ main(int argc, char *argv[])
 
     /* Main render loop */
 #ifdef __EMSCRIPTEN__
-    emscripten_set_main_loop(loop, 0, 1);
+    emscripten_set_main_loop_arg(loop, renderer, 0, 1);
 #else
     while (!done) {
-        loop();
+        loop(renderer);
     }
 #endif
 

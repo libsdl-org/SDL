@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -42,12 +42,19 @@ struct qt_windowmanager;
 #endif /* SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH */
 
 typedef struct {
+    struct wl_cursor_theme *theme;
+    int size;
+} SDL_WaylandCursorTheme;
+
+typedef struct {
+    SDL_bool initializing;
     struct wl_display *display;
     int display_disconnected;
     struct wl_registry *registry;
     struct wl_compositor *compositor;
     struct wl_shm *shm;
-    struct wl_cursor_theme *cursor_theme;
+    SDL_WaylandCursorTheme *cursor_themes;
+    int num_cursor_themes;
     struct wl_pointer *pointer;
     struct {
         struct xdg_wm_base *xdg;
@@ -83,11 +90,15 @@ typedef struct {
 } SDL_VideoData;
 
 typedef struct {
+    SDL_VideoData *videodata;
     struct wl_output *output;
+    uint32_t registry_id;
     float scale_factor;
     int x, y, width, height, refresh, transform;
+    SDL_DisplayOrientation orientation;
     int physical_width, physical_height;
     float ddpi, hdpi, vdpi;
+    int index;
     SDL_VideoDisplay placeholder;
     SDL_bool done;
 } SDL_WaylandOutputData;

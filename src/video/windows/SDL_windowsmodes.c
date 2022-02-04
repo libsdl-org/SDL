@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -23,6 +23,7 @@
 #if SDL_VIDEO_DRIVER_WINDOWS
 
 #include "SDL_windowsvideo.h"
+#include "../../events/SDL_displayevents_c.h"
 
 /* Windows CE compatibility */
 #ifndef CDS_FULLSCREEN
@@ -108,8 +109,50 @@ WIN_UpdateDisplayMode(_THIS, LPCWSTR deviceName, DWORD index, SDL_DisplayMode * 
     }
 }
 
+static SDL_DisplayOrientation
+WIN_GetDisplayOrientation(DEVMODE *mode)
+{
+    int width = mode->dmPelsWidth;
+    int height = mode->dmPelsHeight;
+
+    /* Use unrotated width/height to guess orientation */
+    if (mode->dmDisplayOrientation == DMDO_90 || mode->dmDisplayOrientation == DMDO_270) {
+        int temp = width;
+        width = height;
+        height = temp;
+    }
+
+    if (width >= height) {
+        switch (mode->dmDisplayOrientation) {
+        case DMDO_DEFAULT:
+            return SDL_ORIENTATION_LANDSCAPE;
+        case DMDO_90:
+            return SDL_ORIENTATION_PORTRAIT;
+        case DMDO_180:
+            return SDL_ORIENTATION_LANDSCAPE_FLIPPED;
+        case DMDO_270:
+            return SDL_ORIENTATION_PORTRAIT_FLIPPED;
+        default:
+            return SDL_ORIENTATION_UNKNOWN;
+        }
+    } else {
+        switch (mode->dmDisplayOrientation) {
+        case DMDO_DEFAULT:
+            return SDL_ORIENTATION_PORTRAIT;
+        case DMDO_90:
+            return SDL_ORIENTATION_LANDSCAPE_FLIPPED;
+        case DMDO_180:
+            return SDL_ORIENTATION_PORTRAIT_FLIPPED;
+        case DMDO_270:
+            return SDL_ORIENTATION_LANDSCAPE;
+        default:
+            return SDL_ORIENTATION_UNKNOWN;
+        }
+    }
+}
+
 static SDL_bool
-WIN_GetDisplayMode(_THIS, LPCWSTR deviceName, DWORD index, SDL_DisplayMode * mode)
+WIN_GetDisplayMode(_THIS, LPCWSTR deviceName, DWORD index, SDL_DisplayMode * mode, SDL_DisplayOrientation *orientation)
 {
     SDL_DisplayModeData *data;
     DEVMODE devmode;
@@ -135,6 +178,11 @@ WIN_GetDisplayMode(_THIS, LPCWSTR deviceName, DWORD index, SDL_DisplayMode * mod
 
     /* Fill in the mode information */
     WIN_UpdateDisplayMode(_this, deviceName, index, mode);
+
+    if (orientation) {
+        *orientation = WIN_GetDisplayOrientation(&devmode);
+    }
+
     return SDL_TRUE;
 }
 
@@ -145,13 +193,14 @@ WIN_AddDisplay(_THIS, HMONITOR hMonitor, const MONITORINFOEXW *info, SDL_bool se
     SDL_VideoDisplay display;
     SDL_DisplayData *displaydata;
     SDL_DisplayMode mode;
+    SDL_DisplayOrientation orientation;
     DISPLAY_DEVICEW device;
 
 #ifdef DEBUG_MODES
     SDL_Log("Display: %s\n", WIN_StringToUTF8W(info->szDevice));
 #endif
 
-    if (!WIN_GetDisplayMode(_this, info->szDevice, ENUM_CURRENT_SETTINGS, &mode)) {
+    if (!WIN_GetDisplayMode(_this, info->szDevice, ENUM_CURRENT_SETTINGS, &mode, &orientation)) {
         return SDL_FALSE;
     }
 
@@ -163,6 +212,13 @@ WIN_AddDisplay(_THIS, HMONITOR hMonitor, const MONITORINFOEXW *info, SDL_bool se
         if (SDL_wcscmp(driverdata->DeviceName, info->szDevice) == 0) {
             driverdata->MonitorHandle = hMonitor;
             driverdata->IsValid = SDL_TRUE;
+
+            if (!_this->setting_display_mode) {
+                SDL_ResetDisplayModes(i);
+                SDL_SetCurrentDisplayMode(&_this->displays[i], &mode);
+                SDL_SetDesktopDisplayMode(&_this->displays[i], &mode);
+                SDL_SendDisplayEvent(&_this->displays[i], SDL_DISPLAYEVENT_ORIENTATION, orientation);
+            }
             return SDL_FALSE;
         }
     }
@@ -183,6 +239,7 @@ WIN_AddDisplay(_THIS, HMONITOR hMonitor, const MONITORINFOEXW *info, SDL_bool se
     }
     display.desktop_mode = mode;
     display.current_mode = mode;
+    display.orientation = orientation;
     display.driverdata = displaydata;
     SDL_AddVideoDisplay(&display, send_event);
     SDL_free(display.name);
@@ -356,8 +413,8 @@ WIN_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
     DWORD i;
     SDL_DisplayMode mode;
 
-    for (i = 0;; ++i) {
-        if (!WIN_GetDisplayMode(_this, data->DeviceName, i, &mode)) {
+    for (i = 0; ; ++i) {
+        if (!WIN_GetDisplayMode(_this, data->DeviceName, i, &mode, NULL)) {
             break;
         }
         if (SDL_ISPIXELFORMAT_INDEXED(mode.format)) {

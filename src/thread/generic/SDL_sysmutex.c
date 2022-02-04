@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -78,7 +78,7 @@ SDL_LockMutex(SDL_mutex * mutex)
     SDL_threadID this_thread;
 
     if (mutex == NULL) {
-        return SDL_SetError("Passed a NULL mutex");
+        return SDL_InvalidParamError("mutex");
     }
 
     this_thread = SDL_ThreadID();
@@ -109,7 +109,7 @@ SDL_TryLockMutex(SDL_mutex * mutex)
     SDL_threadID this_thread;
 
     if (mutex == NULL) {
-        return SDL_SetError("Passed a NULL mutex");
+        return SDL_InvalidParamError("mutex");
     }
 
     this_thread = SDL_ThreadID();
@@ -139,7 +139,7 @@ SDL_mutexV(SDL_mutex * mutex)
     return 0;
 #else
     if (mutex == NULL) {
-        return SDL_SetError("Passed a NULL mutex");
+        return SDL_InvalidParamError("mutex");
     }
 
     /* If we don't own the mutex, we can't unlock it */

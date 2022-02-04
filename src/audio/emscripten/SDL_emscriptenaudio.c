@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -192,10 +192,10 @@ EMSCRIPTENAUDIO_CloseDevice(_THIS)
 }
 
 static int
-EMSCRIPTENAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
+EMSCRIPTENAUDIO_OpenDevice(_THIS, const char *devname)
 {
-    SDL_bool valid_format = SDL_FALSE;
     SDL_AudioFormat test_format;
+    SDL_bool iscapture = this->iscapture;
     int result;
 
     /* based on parts of library_sdl.js */
@@ -228,22 +228,21 @@ EMSCRIPTENAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscaptu
         return SDL_SetError("Web Audio API is not available!");
     }
 
-    test_format = SDL_FirstAudioFormat(this->spec.format);
-    while ((!valid_format) && (test_format)) {
+    for (test_format = SDL_FirstAudioFormat(this->spec.format); test_format; test_format = SDL_NextAudioFormat()) {
         switch (test_format) {
         case AUDIO_F32: /* web audio only supports floats */
-            this->spec.format = test_format;
-
-            valid_format = SDL_TRUE;
             break;
+        default:
+            continue;
         }
-        test_format = SDL_NextAudioFormat();
+        break;
     }
 
-    if (!valid_format) {
+    if (!test_format) {
         /* Didn't find a compatible format :( */
-        return SDL_SetError("No compatible audio format!");
+        return SDL_SetError("%s: Unsupported audio format", "emscripten");
     }
+    this->spec.format = test_format;
 
     /* Initialize all variables that we clean on shutdown */
 #if 0  /* !!! FIXME: currently not used. Can we move some stuff off the SDL2 namespace? --ryan. */
@@ -339,30 +338,34 @@ EMSCRIPTENAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscaptu
     return 0;
 }
 
-static int
+static void
+EMSCRIPTENAUDIO_LockOrUnlockDeviceWithNoMixerLock(SDL_AudioDevice * device)
+{
+}
+
+static SDL_bool
 EMSCRIPTENAUDIO_Init(SDL_AudioDriverImpl * impl)
 {
-    int available;
-    int capture_available;
+    SDL_bool available, capture_available;
 
     /* Set the function pointers */
     impl->OpenDevice = EMSCRIPTENAUDIO_OpenDevice;
     impl->CloseDevice = EMSCRIPTENAUDIO_CloseDevice;
 
-    impl->OnlyHasDefaultOutputDevice = 1;
+    impl->OnlyHasDefaultOutputDevice = SDL_TRUE;
 
     /* no threads here */
-    impl->SkipMixerLock = 1;
-    impl->ProvidesOwnCallbackThread = 1;
+    impl->LockDevice = impl->UnlockDevice = EMSCRIPTENAUDIO_LockOrUnlockDeviceWithNoMixerLock;
+    impl->ProvidesOwnCallbackThread = SDL_TRUE;
 
     /* check availability */
     available = EM_ASM_INT_V({
         if (typeof(AudioContext) !== 'undefined') {
-            return 1;
+            return SDL_TRUE;
         } else if (typeof(webkitAudioContext) !== 'undefined') {
-            return 1;
+            return SDL_TRUE;
         }
-        return 0;
+        return SDL_FALSE;
     });
 
     if (!available) {
@@ -371,11 +374,11 @@ EMSCRIPTENAUDIO_Init(SDL_AudioDriverImpl * impl)
 
     capture_available = available && EM_ASM_INT_V({
         if ((typeof(navigator.mediaDevices) !== 'undefined') && (typeof(navigator.mediaDevices.getUserMedia) !== 'undefined')) {
-            return 1;
+            return SDL_TRUE;
         } else if (typeof(navigator.webkitGetUserMedia) !== 'undefined') {
-            return 1;
+            return SDL_TRUE;
         }
-        return 0;
+        return SDL_FALSE;
     });
 
     impl->HasCaptureSupport = capture_available ? SDL_TRUE : SDL_FALSE;
@@ -385,7 +388,7 @@ EMSCRIPTENAUDIO_Init(SDL_AudioDriverImpl * impl)
 }
 
 AudioBootStrap EMSCRIPTENAUDIO_bootstrap = {
-    "emscripten", "SDL emscripten audio driver", EMSCRIPTENAUDIO_Init, 0
+    "emscripten", "SDL emscripten audio driver", EMSCRIPTENAUDIO_Init, SDL_FALSE
 };
 
 #endif /* SDL_AUDIO_DRIVER_EMSCRIPTEN */

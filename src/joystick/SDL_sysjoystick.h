@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -36,6 +36,7 @@ typedef struct _SDL_JoystickAxisInfo
     SDL_bool has_initial_value; /* Whether we've seen a value on the axis yet */
     SDL_bool has_second_value;  /* Whether we've seen a second value on the axis yet */
     SDL_bool sent_initial_value; /* Whether we've sent the initial axis value */
+    SDL_bool sending_initial_value; /* Whether we are sending the initial axis value */
 } SDL_JoystickAxisInfo;
 
 typedef struct _SDL_JoystickTouchpadFingerInfo
@@ -120,6 +121,11 @@ struct _SDL_Joystick
 #define SDL_HARDWARE_BUS_USB        0x03
 #define SDL_HARDWARE_BUS_BLUETOOTH  0x05
 
+/* Joystick capability flags for GetCapabilities() */
+#define SDL_JOYCAP_LED              0x01
+#define SDL_JOYCAP_RUMBLE           0x02
+#define SDL_JOYCAP_RUMBLE_TRIGGERS  0x04
+
 /* Macro to combine a USB vendor ID and product ID into a single Uint32 value */
 #define MAKE_VIDPID(VID, PID)   (((Uint32)(VID))<<16|(PID))
 
@@ -163,8 +169,10 @@ typedef struct _SDL_JoystickDriver
     int (*Rumble)(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble);
     int (*RumbleTriggers)(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble);
 
+    /* Capability detection */
+    Uint32 (*GetCapabilities)(SDL_Joystick *joystick);
+
     /* LED functionality */
-    SDL_bool (*HasLED)(SDL_Joystick *joystick);
     int (*SetLED)(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue);
 
     /* General effects */

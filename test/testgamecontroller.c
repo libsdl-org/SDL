@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -168,6 +168,14 @@ static void AddController(int device_index, SDL_bool verbose)
         SDL_GameControllerSetSensorEnabled(gamecontroller, SDL_SENSOR_GYRO, SDL_TRUE);
     }
 
+    if (SDL_GameControllerHasRumble(gamecontroller)) {
+        SDL_Log("Rumble supported");
+    }
+
+    if (SDL_GameControllerHasRumbleTriggers(gamecontroller)) {
+        SDL_Log("Trigger rumble supported");
+    }
+
     UpdateWindowTitle();
 }
 
@@ -236,12 +244,12 @@ LoadTexture(SDL_Renderer *renderer, const char *file, SDL_bool transparent)
     return texture;
 }
 
-static Uint16 ConvertAxisToRumble(Sint16 axis)
+static Uint16 ConvertAxisToRumble(Sint16 axisval)
 {
     /* Only start rumbling if the axis is past the halfway point */
     const Sint16 half_axis = (Sint16)SDL_ceil(SDL_JOYSTICK_AXIS_MAX / 2.0f);
-    if (axis > half_axis) {
-        return (Uint16)(axis - half_axis) * 4;
+    if (axisval > half_axis) {
+        return (Uint16)(axisval - half_axis) * 4;
     } else {
         return 0;
     }
@@ -386,7 +394,7 @@ loop(void *arg)
             if (event.key.keysym.sym != SDLK_ESCAPE) {
                 break;
             }
-            /* Fall through to signal quit */
+            SDL_FALLTHROUGH;
         case SDL_QUIT:
             done = SDL_TRUE;
             break;
@@ -522,6 +530,7 @@ main(int argc, char *argv[])
     SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_PS4_RUMBLE, "1");
     SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_PS5_RUMBLE, "1");
     SDL_SetHint(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS, "1");
+    SDL_SetHint(SDL_HINT_LINUX_JOYSTICK_DEADZONES, "1");
 
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
@@ -531,7 +540,7 @@ main(int argc, char *argv[])
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
         return 1;
     }
-    
+
     SDL_GameControllerAddMappingsFromFile("gamecontrollerdb.txt");
 
     /* Print information about the mappings */

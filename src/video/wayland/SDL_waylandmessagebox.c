@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -30,6 +30,8 @@
 #include <sys/wait.h> /* waitpid, WIFEXITED, WEXITSTATUS */
 #include <string.h> /* strerr */
 #include <errno.h>
+
+#include "SDL_waylandmessagebox.h"
 
 #define MAX_BUTTONS             8       /* Maximum number of buttons supported */
 
@@ -186,7 +188,6 @@ Wayland_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
             return SDL_SetError("Waiting on zenity failed: %s", strerror(errno));
         }
     }
-    return 0;
 }
 
 #endif /* SDL_VIDEO_DRIVER_WAYLAND */

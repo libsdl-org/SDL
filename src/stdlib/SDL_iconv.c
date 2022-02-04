@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -146,6 +146,11 @@ static struct
     { "US-ASCII", ENCODING_ASCII },
     { "8859-1", ENCODING_LATIN1 },
     { "ISO-8859-1", ENCODING_LATIN1 },
+#if defined(__WIN32__) || defined(__OS2__)
+    { "WCHAR_T", ENCODING_UTF16LE },
+#else
+    { "WCHAR_T", ENCODING_UCS4NATIVE },
+#endif
     { "UTF8", ENCODING_UTF8 },
     { "UTF-8", ENCODING_UTF8 },
     { "UTF16", ENCODING_UTF16 },
@@ -753,7 +758,7 @@ SDL_iconv(SDL_iconv_t cd,
             if (ch > 0x10FFFF) {
                 ch = UNKNOWN_UNICODE;
             }
-            /* fallthrough */
+            SDL_FALLTHROUGH;
         case ENCODING_UCS4BE:
             if (ch > 0x7FFFFFFF) {
                 ch = UNKNOWN_UNICODE;
@@ -775,7 +780,7 @@ SDL_iconv(SDL_iconv_t cd,
             if (ch > 0x10FFFF) {
                 ch = UNKNOWN_UNICODE;
             }
-            /* fallthrough */
+            SDL_FALLTHROUGH;
         case ENCODING_UCS4LE:
             if (ch > 0x7FFFFFFF) {
                 ch = UNKNOWN_UNICODE;
@@ -862,6 +867,7 @@ SDL_iconv_string(const char *tocode, const char *fromcode, const char *inbuf,
                 stringsize *= 2;
                 string = (char *) SDL_realloc(string, stringsize);
                 if (!string) {
+                    SDL_free(oldstring);
                     SDL_iconv_close(cd);
                     return NULL;
                 }
@@ -882,8 +888,7 @@ SDL_iconv_string(const char *tocode, const char *fromcode, const char *inbuf,
             break;
         }
         /* Avoid infinite loops when nothing gets converted */
-        if (oldinbytesleft == inbytesleft)
-        {
+        if (oldinbytesleft == inbytesleft) {
             break;
         }
     }

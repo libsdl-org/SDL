@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -163,6 +163,7 @@
 
 #define SDL_CPUINFO_DISABLED 1
 #define SDL_HAPTIC_DISABLED 1
+#define SDL_HIDAPI_DISABLED 1
 #ifndef __EMSCRIPTEN_PTHREADS__
 #define SDL_THREADS_DISABLED 1
 #endif

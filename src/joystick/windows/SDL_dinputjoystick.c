@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -238,7 +238,12 @@ SDL_IsXInputDevice(Uint16 vendor_id, Uint16 product_id, const char* hidPath)
 {
     SDL_GameControllerType type;
 
-    if (!SDL_XINPUT_Enabled()) {
+    /* XInput and RawInput backends will pick up XInput-compatible devices */
+    if (!SDL_XINPUT_Enabled()
+#ifdef SDL_JOYSTICK_RAWINPUT
+        && !RAWINPUT_IsEnabled()
+#endif
+        ) {
         return SDL_FALSE;
     }
 
@@ -427,7 +432,7 @@ SDL_DINPUT_JoystickInit(void)
 static BOOL CALLBACK
 EnumJoystickDetectCallback(LPCDIDEVICEINSTANCE pDeviceInstance, LPVOID pContext)
 {
-#define CHECK(exp) { if(!(exp)) goto err; }
+#define CHECK(expression) { if(!(expression)) goto err; }
     JoyStick_DeviceData *pNewJoystick = NULL;
     JoyStick_DeviceData *pPrevJoystick = NULL;
     Uint16 *guid16;
@@ -548,11 +553,12 @@ typedef struct
 static BOOL CALLBACK
 EnumJoystickPresentCallback(LPCDIDEVICEINSTANCE pDeviceInstance, LPVOID pContext)
 {
-#define CHECK(exp) { if(!(exp)) goto err; }
+#define CHECK(expression) { if(!(expression)) goto err; }
     Joystick_PresentData *pData = (Joystick_PresentData *)pContext;
     Uint16 vendor = 0;
     Uint16 product = 0;
     LPDIRECTINPUTDEVICE8 device = NULL;
+    BOOL result = DIENUM_CONTINUE;
 
     /* We are only supporting HID devices. */
     CHECK((pDeviceInstance->dwDevType & DIDEVTYPE_HID) != 0);
@@ -562,7 +568,7 @@ EnumJoystickPresentCallback(LPCDIDEVICEINSTANCE pDeviceInstance, LPVOID pContext
 
     if (vendor == pData->vendor && product == pData->product) {
         pData->present = SDL_TRUE;
-        return DIENUM_STOP; /* get next device, please */
+        result = DIENUM_STOP; /* found it */
     }
 
 err:
@@ -570,7 +576,7 @@ err:
         IDirectInputDevice8_Release(device);
     }
 
-    return DIENUM_CONTINUE; /* get next device, please */
+    return result;
 #undef CHECK
 }
 
@@ -578,6 +584,10 @@ SDL_bool
 SDL_DINPUT_JoystickPresent(Uint16 vendor_id, Uint16 product_id, Uint16 version_number)
 {
     Joystick_PresentData data;
+
+    if (dinput == NULL) {
+        return SDL_FALSE;
+    }
 
     data.vendor = vendor_id;
     data.product = product_id;
@@ -919,6 +929,18 @@ SDL_DINPUT_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, 
     return 0;
 }
 
+Uint32
+SDL_DINPUT_JoystickGetCapabilities(SDL_Joystick * joystick)
+{
+    Uint32 result = 0;
+
+    if (joystick->hwdata->Capabilities.dwFlags & DIDC_FORCEFEEDBACK) {
+        result |= SDL_JOYCAP_RUMBLE;
+    }
+
+    return result;
+}
+
 static Uint8
 TranslatePOV(DWORD value)
 {
@@ -1161,6 +1183,12 @@ int
 SDL_DINPUT_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     return SDL_Unsupported();
+}
+
+Uint32
+SDL_DINPUT_JoystickGetCapabilities(SDL_Joystick * joystick)
+{
+    return 0;
 }
 
 void

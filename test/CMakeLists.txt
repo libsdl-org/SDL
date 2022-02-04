@@ -4,16 +4,43 @@ project(SDL2 C)
 # Global settings for all of the test targets
 # FIXME: is this wrong?
 remove_definitions(-DUSING_GENERATED_CONFIG_H)
-link_libraries(SDL2_test SDL2-static)
 
-# FIXME: Parent directory CMakeLists.txt only sets these for mingw/cygwin,
-# but we need them for VS as well.
+if(PSP)
+    link_libraries(
+        SDL2main
+        SDL2_test
+        SDL2-static
+        GL
+        pspvram
+        pspvfpu
+        pspdisplay
+        pspgu
+        pspge
+        pspaudio
+        pspctrl
+        psphprm
+        psppower
+    )
+else()
+    link_libraries(SDL2_test SDL2-static)
+endif()
+
 if(WINDOWS)
+    # mingw32 must come before SDL2main to link successfully
+    if(MINGW OR CYGWIN)
+        link_libraries(mingw32)
+    endif()
+
+    # FIXME: Parent directory CMakeLists.txt only sets these for mingw/cygwin,
+    # but we need them for VS as well.
     link_libraries(SDL2main)
     add_definitions(-Dmain=SDL_main)
 endif()
 
-find_package(OpenGL)
+# CMake incorrectly detects opengl32.lib being present on MSVC ARM64
+if(NOT MSVC OR NOT CMAKE_GENERATOR_PLATFORM STREQUAL "ARM64")
+    find_package(OpenGL)
+endif()
 
 if (OPENGL_FOUND)
 add_definitions(-DHAVE_OPENGL)
@@ -23,6 +50,7 @@ add_executable(checkkeys checkkeys.c)
 add_executable(checkkeysthreads checkkeysthreads.c)
 add_executable(loopwave loopwave.c)
 add_executable(loopwavequeue loopwavequeue.c)
+add_executable(testsurround testsurround.c)
 add_executable(testresample testresample.c)
 add_executable(testaudioinfo testaudioinfo.c)
 
@@ -104,43 +132,145 @@ target_link_libraries(testshader OpenGL::GL)
 target_link_libraries(testgl2 OpenGL::GL)
 endif()
 
-# HACK: Dummy target to cause the resource files to be copied to the build directory.
-# Need to make it an executable so we can use the TARGET_FILE_DIR generator expression.
-# This is needed so they get copied to the correct Debug/Release subdirectory in Xcode.
-file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/resources_dummy.c "int main(int argc, const char **argv){ return 1; }\n")
-add_executable(SDL2_test_resources ${CMAKE_CURRENT_BINARY_DIR}/resources_dummy.c)
-
 file(GLOB RESOURCE_FILES *.bmp *.wav *.hex moose.dat utf8.txt)
-foreach(RESOURCE_FILE ${RESOURCE_FILES})
-    add_custom_command(TARGET SDL2_test_resources POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different ${RESOURCE_FILE} $<TARGET_FILE_DIR:SDL2_test_resources>)
-endforeach(RESOURCE_FILE)
-
 file(COPY ${RESOURCE_FILES} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+if(PSP)
+    set(NEEDS_RESOURCES
+        testscale
+        testrendercopyex
+        controllermap
+        testyuv
+        testgamecontroller
+        testshape
+        testshader
+        testspriteminimal
+        testautomation
+        testrendertarget
+        testsprite2
+        loopwave
+        loopwavequeue
+        testresample
+        testaudiohotplug
+        testmultiaudio
+        testiconv
+        testoverlay2
+        teststreaming
+        testviewport
+    )
+else()
+    set(NEEDS_RESOURCES
+        testscale
+        testrendercopyex
+        controllermap
+        testyuv
+        testgamecontroller
+        testshape
+        testshader
+        testspriteminimal
+        testautomation
+        testcustomcursor
+        testrendertarget
+        testsprite2
+        loopwave
+        loopwavequeue
+        testresample
+        testaudiohotplug
+        testmultiaudio
+        testime
+        testnative
+        testiconv
+        testoverlay2
+        teststreaming
+        testviewport
+    )
+endif()
 
-# TODO: Might be easier to make all targets depend on the resources...?
+if(PSP)
+    # Build EBOOT files if building for PSP
+    set(BUILD_EBOOT
+        ${NEEDS_RESOURCES}
+        testbounds
+        testgl2
+        testsem
+        testdisplayinfo
+        teststreaming
+        testgeometry
+        testfile
+        testdraw2
+        testviewport
+        testhittesting
+        testoverlay2
+        testver
+        testdrawchessboard
+        testsurround
+        testintersections
+        testmessage
+        testaudiocapture
+        testerror
+        testatomic
+        testjoystick
+        testiconv
+        testfilesystem
+        testplatform
+        testthread
+        testloadso
+        testqsort
+        testaudioinfo
+        testlock
+        testtimer
+        testpower
+        testwm2
+        torturethread
+    )
+    foreach(APP IN LISTS BUILD_EBOOT)
+        create_pbp_file(
+            TARGET          ${APP}
+            TITLE           SDL-${APP}
+            ICON_PATH       NULL
+            BACKGROUND_PATH NULL
+            PREVIEW_PATH    NULL
+        )
+        add_custom_command(
+            TARGET ${APP} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E make_directory
+            $<TARGET_FILE_DIR:${ARG_TARGET}>/sdl-${APP}
+        )
+        add_custom_command(
+            TARGET ${APP} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E rename
+            $<TARGET_FILE_DIR:${ARG_TARGET}>/EBOOT.PBP
+            $<TARGET_FILE_DIR:${ARG_TARGET}>/sdl-${APP}/EBOOT.PBP
+        )
+        if(${BUILD_PRX})
+            add_custom_command(
+                TARGET ${APP} POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy
+                $<TARGET_FILE_DIR:${ARG_TARGET}>/${APP}
+                $<TARGET_FILE_DIR:${ARG_TARGET}>/sdl-${APP}/${APP}
+            )
+            add_custom_command(
+                TARGET ${APP} POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E rename
+                $<TARGET_FILE_DIR:${ARG_TARGET}>/${APP}.prx
+                $<TARGET_FILE_DIR:${ARG_TARGET}>/sdl-${APP}/${APP}.prx
+            )
+        endif()
+        add_custom_command(
+            TARGET ${APP} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E remove
+            $<TARGET_FILE_DIR:${ARG_TARGET}>/PARAM.SFO
+        )
+    endforeach()
+endif()
 
-set(NEEDS_RESOURCES
-    testscale
-    testrendercopyex
-    controllermap
-    testyuv
-    testgamecontroller
-    testshape
-    testshader
-    testnative
-    testspriteminimal
-    testautomation
-    testcustomcursor
-    testrendertarget
-    testsprite2
-    loopwave
-    loopwavequeue
-    testresample
-    testaudiohotplug
-    testmultiaudio
-)
 foreach(APP IN LISTS NEEDS_RESOURCES)
-    add_dependencies(${APP} SDL2_test_resources)
+    foreach(RESOURCE_FILE ${RESOURCE_FILES})
+        if(PSP)
+            add_custom_command(TARGET ${APP} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different ${RESOURCE_FILE} $<TARGET_FILE_DIR:${APP}>/sdl-${APP})
+        else()
+            add_custom_command(TARGET ${APP} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different ${RESOURCE_FILE} $<TARGET_FILE_DIR:${APP}>)
+        endif()
+    endforeach(RESOURCE_FILE)
     if(APPLE)
         # Make sure resource files get installed into macOS/iOS .app bundles.  
         target_sources(${APP} PRIVATE "${RESOURCE_FILES}")

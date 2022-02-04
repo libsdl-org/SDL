@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -83,6 +83,15 @@
 */
 #define SDL_MAIN_NEEDED
 
+#elif defined(__PSP__)
+/* On PSP SDL provides a main function that sets the module info,
+   activates the GPU and starts the thread required to be able to exit
+   the software.
+
+   If you provide this yourself, you may define SDL_MAIN_HANDLED
+ */
+#define SDL_MAIN_AVAILABLE
+
 #endif
 #endif /* SDL_MAIN_HANDLED */
 
@@ -130,6 +139,8 @@ extern SDLMAIN_DECLSPEC int SDL_main(int argc, char *argv[]);
  * will not be changed it is necessary to define SDL_MAIN_HANDLED before
  * including SDL.h.
  *
+ * \since This function is available since SDL 2.0.0.
+ *
  * \sa SDL_Init
  */
 extern DECLSPEC void SDLCALL SDL_SetMainReady(void);
@@ -137,9 +148,45 @@ extern DECLSPEC void SDLCALL SDL_SetMainReady(void);
 #ifdef __WIN32__
 
 /**
- * This can be called to set the application class at startup
+ * Register a win32 window class for SDL's use.
+ *
+ * This can be called to set the application window class at startup. It is
+ * safe to call this multiple times, as long as every call is eventually
+ * paired with a call to SDL_UnregisterApp, but a second registration attempt
+ * while a previous registration is still active will be ignored, other than
+ * to increment a counter.
+ *
+ * Most applications do not need to, and should not, call this directly; SDL
+ * will call it when initializing the video subsystem.
+ *
+ * \param name the window class name, in UTF-8 encoding. If NULL, SDL
+ *             currently uses "SDL_app" but this isn't guaranteed.
+ * \param style the value to use in WNDCLASSEX::style. If `name` is NULL, SDL
+ *              currently uses `(CS_BYTEALIGNCLIENT | CS_OWNDC)` regardless of
+ *              what is specified here.
+ * \param hInst the HINSTANCE to use in WNDCLASSEX::hInstance. If zero, SDL
+ *              will use `GetModuleHandle(NULL)` instead.
+ * \returns 0 on success, -1 on error. SDL_GetError() may have details.
+ *
+ * \since This function is available since SDL 2.0.2.
  */
-extern DECLSPEC int SDLCALL SDL_RegisterApp(char *name, Uint32 style, void *hInst);
+extern DECLSPEC int SDLCALL SDL_RegisterApp(const char *name, Uint32 style, void *hInst);
+
+/**
+ * Deregister the win32 window class from an SDL_RegisterApp call.
+ *
+ * This can be called to undo the effects of SDL_RegisterApp.
+ *
+ * Most applications do not need to, and should not, call this directly; SDL
+ * will call it when deinitializing the video subsystem.
+ *
+ * It is safe to call this multiple times, as long as every call is eventually
+ * paired with a prior call to SDL_RegisterApp. The window class will only be
+ * deregistered when the registration counter in SDL_RegisterApp decrements to
+ * zero through calls to this function.
+ *
+ * \since This function is available since SDL 2.0.2.
+ */
 extern DECLSPEC void SDLCALL SDL_UnregisterApp(void);
 
 #endif /* __WIN32__ */
@@ -170,6 +217,8 @@ extern DECLSPEC int SDLCALL SDL_WinRTRunApp(SDL_main_func mainFunction, void * r
  * \param argv The argv parameter from the application's main() function
  * \param mainFunction The SDL app's C-style main(), an SDL_main_func
  * \return the return value from mainFunction
+ *
+ * \since This function is available since SDL 2.0.10.
  */
 extern DECLSPEC int SDLCALL SDL_UIKitRunApp(int argc, char *argv[], SDL_main_func mainFunction);
 

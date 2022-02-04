@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -52,6 +52,8 @@ typedef struct
     SDL_bool windowed_mode_was_maximized;
     SDL_bool in_window_deactivation;
     RECT cursor_clipped_rect;
+    SDL_Point last_raw_mouse_position;
+    SDL_bool mouse_tracked;
     struct SDL_VideoData *videodata;
 #if SDL_VIDEO_OPENGL_EGL  
     EGLSurface egl_surface;
@@ -77,7 +79,9 @@ extern void WIN_SetWindowResizable(_THIS, SDL_Window * window, SDL_bool resizabl
 extern void WIN_SetWindowAlwaysOnTop(_THIS, SDL_Window * window, SDL_bool on_top);
 extern void WIN_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display, SDL_bool fullscreen);
 extern int WIN_SetWindowGammaRamp(_THIS, SDL_Window * window, const Uint16 * ramp);
+extern void* WIN_GetWindowICCProfile(_THIS, SDL_Window * window, size_t * size);
 extern int WIN_GetWindowGammaRamp(_THIS, SDL_Window * window, Uint16 * ramp);
+extern void WIN_SetWindowMouseRect(_THIS, SDL_Window * window);
 extern void WIN_SetWindowMouseGrab(_THIS, SDL_Window * window, SDL_bool grabbed);
 extern void WIN_SetWindowKeyboardGrab(_THIS, SDL_Window * window, SDL_bool grabbed);
 extern void WIN_DestroyWindow(_THIS, SDL_Window * window);

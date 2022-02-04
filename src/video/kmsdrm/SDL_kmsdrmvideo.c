@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -141,14 +141,12 @@ static int get_dricount(void)
 
     if (!(stat(KMSDRM_DRI_PATH, &sb) == 0
                 && S_ISDIR(sb.st_mode))) {
-        printf("The path %s cannot be opened or is not available\n",
-               KMSDRM_DRI_PATH);
+        /*printf("The path %s cannot be opened or is not available\n", KMSDRM_DRI_PATH);*/
         return 0;
     }
 
     if (access(KMSDRM_DRI_PATH, F_OK) == -1) {
-        printf("The path %s cannot be opened\n",
-               KMSDRM_DRI_PATH);
+        /*printf("The path %s cannot be opened\n", KMSDRM_DRI_PATH);*/
         return 0;
     }
 
@@ -473,7 +471,7 @@ KMSDRM_WaitPageflip(_THIS, SDL_WindowData *windata) {
    available on the DRM connector of the display.
    We use the SDL mode list (which we filled in KMSDRM_GetDisplayModes)
    because it's ordered, while the list on the connector is mostly random.*/
-drmModeModeInfo*
+static drmModeModeInfo*
 KMSDRM_GetClosestDisplayMode(SDL_VideoDisplay * display,
 uint32_t width, uint32_t height, uint32_t refresh_rate){
 
@@ -504,7 +502,8 @@ uint32_t width, uint32_t height, uint32_t refresh_rate){
 /*****************************************************************************/
 
 /* Deinitializes the driverdata of the SDL Displays in the SDL display list. */
-void KMSDRM_DeinitDisplays (_THIS) {
+static void
+KMSDRM_DeinitDisplays (_THIS) {
 
     SDL_DisplayData *dispdata;
     int num_displays, i;
@@ -533,7 +532,8 @@ void KMSDRM_DeinitDisplays (_THIS) {
 
 /* Gets a DRM connector, builds an SDL_Display with it, and adds it to the
    list of SDL Displays in _this->displays[]  */
-void KMSDRM_AddDisplay (_THIS, drmModeConnector *connector, drmModeRes *resources) {
+static void
+KMSDRM_AddDisplay (_THIS, drmModeConnector *connector, drmModeRes *resources) {
 
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
     SDL_DisplayData *dispdata = NULL;
@@ -555,6 +555,7 @@ void KMSDRM_AddDisplay (_THIS, drmModeConnector *connector, drmModeRes *resource
     /* Initialize some of the members of the new display's driverdata
        to sane values. */
     dispdata->cursor_bo = NULL;
+    dispdata->cursor_bo_drm_fd = -1;
 
     /* Since we create and show the default cursor on KMSDRM_InitMouse(),
        and we call KMSDRM_InitMouse() when we create a window, we have to know
@@ -721,7 +722,8 @@ cleanup:
    closed when we get to the end of this function.
    This is to be called early, in VideoInit(), because it gets us
    the videomode information, which SDL needs immediately after VideoInit(). */
-int KMSDRM_InitDisplays (_THIS) {
+static int
+KMSDRM_InitDisplays (_THIS) {
 
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
     drmModeRes *resources = NULL;
@@ -815,7 +817,7 @@ cleanup:
    These things are incompatible with Vulkan, which accesses the same resources
    internally so they must be free when trying to build a Vulkan surface.
 */
-int
+static int
 KMSDRM_GBMInit (_THIS, SDL_DisplayData *dispdata)
 {
     SDL_VideoData *viddata = (SDL_VideoData *)_this->driverdata;
@@ -839,7 +841,7 @@ KMSDRM_GBMInit (_THIS, SDL_DisplayData *dispdata)
 }
 
 /* Deinit the Vulkan-incompatible KMSDRM stuff. */
-void
+static void
 KMSDRM_GBMDeinit (_THIS, SDL_DisplayData *dispdata)
 {
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
@@ -860,7 +862,7 @@ KMSDRM_GBMDeinit (_THIS, SDL_DisplayData *dispdata)
     viddata->gbm_init = SDL_FALSE;
 }
 
-void
+static void
 KMSDRM_DestroySurfaces(_THIS, SDL_Window *window)
 {
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
@@ -871,7 +873,7 @@ KMSDRM_DestroySurfaces(_THIS, SDL_Window *window)
     /**********************************************/
     /* Wait for last issued pageflip to complete. */
     /**********************************************/
-    KMSDRM_WaitPageflip(_this, windata);
+    /*KMSDRM_WaitPageflip(_this, windata);*/
 
     /***********************************************************************/
     /* Restore the original CRTC configuration: configue the crtc with the */

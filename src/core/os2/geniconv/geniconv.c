@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -25,78 +25,76 @@
   Andrey Vasilkin, 2016.
 */
 
-#define INCL_DOSMODULEMGR   /* Module Manager values */
-#define INCL_DOSERRORS      /* Error values */
+#define INCL_DOSMODULEMGR   /* Module Manager */
+#define INCL_DOSERRORS      /* Error values   */
 #include <os2.h>
 
 #include "geniconv.h"
 
 /*#define DEBUG*/
-
 #ifdef DEBUG
 # include <stdio.h>
-# define debug(s,...) printf(__func__"(): "##s"\n" ,##__VA_ARGS__)
+# define iconv_debug(s,...) printf(__func__"(): "##s"\n" ,##__VA_ARGS__)
 #else
-# define debug(s,...) do {} while (0)
+# define iconv_debug(s,...) do {} while (0)
 #endif
 
 /* Exports from os2iconv.c */
-extern iconv_t _System os2_iconv_open(const char* tocode, const char* fromcode);
-extern size_t _System os2_iconv(iconv_t cd, char* * inbuf,
-                                size_t *inbytesleft, char* * outbuf,
-                                size_t *outbytesleft);
-extern int _System os2_iconv_close(iconv_t cd);
+extern iconv_t _System os2_iconv_open  (const char* tocode, const char* fromcode);
+extern size_t  _System os2_iconv       (iconv_t cd,
+                                        char **inbuf,  size_t *inbytesleft,
+                                        char **outbuf, size_t *outbytesleft);
+extern int     _System os2_iconv_close (iconv_t cd);
 
-/* Functions pointers types */
-typedef iconv_t _System (*FNICONV_OPEN)(const char* tocode, const char* fromcode);
-typedef size_t _System (*FNICONV)(iconv_t cd, char* * inbuf,
-                                  size_t *inbytesleft, char* * outbuf,
-                                  size_t *outbytesleft);
-typedef int _System (*FNICONV_CLOSE)(iconv_t cd);
-
-/* Used DLL module handle */
-static HMODULE         hmIconv = NULLHANDLE;
 /* Functions pointers */
-static FNICONV_OPEN    fn_iconv_open = NULL;
-static FNICONV         fn_iconv = NULL;
-static FNICONV_CLOSE   fn_iconv_close = NULL;
+typedef iconv_t (_System *FNICONV_OPEN)(const char*, const char*);
+typedef size_t  (_System *FNICONV)     (iconv_t, char **, size_t *, char **, size_t *);
+typedef int     (_System *FNICONV_CLOSE)(iconv_t);
+
+static HMODULE         hmIconv = NULLHANDLE;
+static FNICONV_OPEN    fn_iconv_open  = os2_iconv_open;
+static FNICONV         fn_iconv       = os2_iconv;
+static FNICONV_CLOSE   fn_iconv_close = os2_iconv_close;
+
+static int geniconv_init = 0;
 
 
-static BOOL _loadDLL(PSZ pszName, PSZ pszIconvOpen, PSZ pszIconv,
-                     PSZ pszIconvClose)
+static BOOL _loadDLL(const char *dllname,
+                     const char *sym_iconvopen,
+                     const char *sym_iconv,
+                     const char *sym_iconvclose)
 {
-    ULONG ulRC;
-    CHAR  acError[256];
+    ULONG rc;
+    char  error[256];
 
-    ulRC = DosLoadModule(acError, sizeof(acError), pszName, &hmIconv);
-    if (ulRC != NO_ERROR) {
-        debug("DLL not loaded: %s", &acError);
+    rc = DosLoadModule(error, sizeof(error), dllname, &hmIconv);
+    if (rc != NO_ERROR) {
+        iconv_debug("DLL %s not loaded: %s", dllname, error);
         return FALSE;
     }
 
-    do {
-        ulRC = DosQueryProcAddr(hmIconv, 0, pszIconvOpen, (PFN *)&fn_iconv_open);
-        if (ulRC != NO_ERROR) {
-            debug("Error: cannot find entry %s in %s", pszIconvOpen, pszName);
-            break;
-        }
+    rc = DosQueryProcAddr(hmIconv, 0, sym_iconvopen, (PFN *)&fn_iconv_open);
+    if (rc != NO_ERROR) {
+        iconv_debug("Error: cannot find entry %s in %s", sym_iconvopen, dllname);
+        goto fail;
+    }
 
-        ulRC = DosQueryProcAddr(hmIconv, 0, pszIconv, (PFN *)&fn_iconv);
-        if (ulRC != NO_ERROR) {
-            debug("Error: cannot find entry %s in %s", pszIconv, pszName);
-            break;
-        }
+    rc = DosQueryProcAddr(hmIconv, 0, sym_iconv, (PFN *)&fn_iconv);
+    if (rc != NO_ERROR) {
+        iconv_debug("Error: cannot find entry %s in %s", sym_iconv, dllname);
+        goto fail;
+    }
 
-        ulRC = DosQueryProcAddr(hmIconv, 0, pszIconvClose, (PFN *)&fn_iconv_close);
-        if (ulRC != NO_ERROR) {
-            debug("Error: cannot find entry %s in %s", pszIconvClose, pszName);
-          break;
-        }
+    rc = DosQueryProcAddr(hmIconv, 0, sym_iconvclose, (PFN *)&fn_iconv_close);
+    if (rc != NO_ERROR) {
+        iconv_debug("Error: cannot find entry %s in %s", sym_iconvclose, dllname);
+        goto fail;
+    }
 
-        debug("DLL %s used", pszName);
-        return TRUE;
-    } while (FALSE);
+    iconv_debug("DLL %s used", dllname);
+    return TRUE;
 
+    fail:
     DosFreeModule(hmIconv);
     hmIconv = NULLHANDLE;
     return FALSE;
@@ -104,15 +102,18 @@ static BOOL _loadDLL(PSZ pszName, PSZ pszIconvOpen, PSZ pszIconv,
 
 static void _init(void)
 {
-    if (fn_iconv_open != NULL) /* Already was initialized */
-        return;
+    if (geniconv_init) {
+        return; /* Already initialized */
+    }
+
+    geniconv_init = 1;
 
     /* Try to load kiconv.dll, iconv2.dll or iconv.dll */
     if (!_loadDLL("KICONV", "_libiconv_open", "_libiconv", "_libiconv_close") &&
         !_loadDLL("ICONV2", "_libiconv_open", "_libiconv", "_libiconv_close") &&
         !_loadDLL("ICONV",  "_iconv_open",    "_iconv",    "_iconv_close") ) {
         /* No DLL was loaded - use OS/2 conversion objects API */
-        debug("Uni*() API used");
+        iconv_debug("Uni*() API used");
         fn_iconv_open  = os2_iconv_open;
         fn_iconv       = os2_iconv;
         fn_iconv_close = os2_iconv_close;
@@ -124,16 +125,19 @@ static void _init(void)
  * ----------------
  */
 
-/* Non-standard function for iconv to unload the used dynamic library */
+/* function to unload the used iconv dynamic library */
 void libiconv_clean(void)
 {
+    geniconv_init = 0;
+
+    /* reset the function pointers. */
+    fn_iconv_open  = os2_iconv_open;
+    fn_iconv       = os2_iconv;
+    fn_iconv_close = os2_iconv_close;
+
     if (hmIconv != NULLHANDLE) {
         DosFreeModule(hmIconv);
         hmIconv = NULLHANDLE;
-
-        fn_iconv_open  = NULL;
-        fn_iconv       = NULL;
-        fn_iconv_close = NULL;
     }
 }
 

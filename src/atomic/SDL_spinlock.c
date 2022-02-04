@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -42,7 +42,7 @@
 
 #if defined(__WATCOMC__) && defined(__386__)
 SDL_COMPILE_TIME_ASSERT(locksize, 4==sizeof(SDL_SpinLock));
-extern _inline int _SDL_xchg_watcom(volatile int *a, int v);
+extern __inline int _SDL_xchg_watcom(volatile int *a, int v);
 #pragma aux _SDL_xchg_watcom = \
   "lock xchg [ecx], eax" \
   parm [ecx] [eax] \
@@ -151,7 +151,7 @@ SDL_AtomicTryLock(SDL_SpinLock *lock)
     #define PAUSE_INSTRUCTION() __yield()
 #elif defined(__WATCOMC__) && defined(__386__)
     /* watcom assembler rejects PAUSE if CPU < i686, and it refuses REP NOP as an invalid combination. Hardcode the bytes.  */
-    extern _inline void PAUSE_INSTRUCTION(void);
+    extern __inline void PAUSE_INSTRUCTION(void);
     #pragma aux PAUSE_INSTRUCTION = "db 0f3h,90h"
 #else
     #define PAUSE_INSTRUCTION()

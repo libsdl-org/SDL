@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -137,9 +137,10 @@ PrintKey(SDL_Keysym * sym, SDL_bool pressed, SDL_bool repeat)
 }
 
 static void
-PrintText(char *eventtype, char *text)
+PrintText(const char *eventtype, const char *text)
 {
-    char *spot, expanded[1024];
+    const char *spot;
+    char expanded[1024];
 
     expanded[0] = '\0';
     for ( spot = text; *spot; ++spot )

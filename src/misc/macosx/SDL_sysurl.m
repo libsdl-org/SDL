@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -27,10 +27,10 @@ int
 SDL_SYS_OpenURL(const char *url)
 { @autoreleasepool
 {
-    NSString *nsstr = [NSString stringWithUTF8String:url];
-    NSURL *nsurl = [NSURL URLWithString:nsstr];
-    return [[NSWorkspace sharedWorkspace] openURL:nsurl] ? 0 : -1;
+    CFURLRef cfurl = CFURLCreateWithBytes(NULL, (const UInt8 *) url, SDL_strlen(url), kCFStringEncodingUTF8,  NULL);
+    OSStatus status = LSOpenCFURLRef(cfurl, NULL);
+    CFRelease(cfurl);
+    return status == noErr ? 0 : -1;
 }}
 
 /* vi: set ts=4 sw=4 expandtab: */
-

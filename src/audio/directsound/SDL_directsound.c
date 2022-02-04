@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -473,14 +473,14 @@ CreateCaptureBuffer(_THIS, const DWORD bufsize, WAVEFORMATEX *wfmt)
 }
 
 static int
-DSOUND_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
+DSOUND_OpenDevice(_THIS, const char *devname)
 {
     const DWORD numchunks = 8;
     HRESULT result;
-    SDL_bool valid_format = SDL_FALSE;
     SDL_bool tried_format = SDL_FALSE;
-    SDL_AudioFormat test_format = SDL_FirstAudioFormat(this->spec.format);
-    LPGUID guid = (LPGUID) handle;
+    SDL_bool iscapture = this->iscapture;
+    SDL_AudioFormat test_format;
+    LPGUID guid = (LPGUID) this->handle;
     DWORD bufsize;
 
     /* Initialize all variables that we clean on shutdown */
@@ -510,7 +510,7 @@ DSOUND_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
         }
     }
 
-    while ((!valid_format) && (test_format)) {
+    for (test_format = SDL_FirstAudioFormat(this->spec.format); test_format; test_format = SDL_NextAudioFormat()) {
         switch (test_format) {
         case AUDIO_U8:
         case AUDIO_S16:
@@ -547,19 +547,21 @@ DSOUND_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
                 rc = iscapture ? CreateCaptureBuffer(this, bufsize, &wfmt) : CreateSecondary(this, bufsize, &wfmt);
                 if (rc == 0) {
                     this->hidden->num_buffers = numchunks;
-                    valid_format = SDL_TRUE;
+                    break;
                 }
             }
-            break;
+            continue;
+        default:
+            continue;
         }
-        test_format = SDL_NextAudioFormat();
+        break;
     }
 
-    if (!valid_format) {
+    if (!test_format) {
         if (tried_format) {
             return -1;  /* CreateSecondary() should have called SDL_SetError(). */
         }
-        return SDL_SetError("DirectSound: Unsupported audio format");
+        return SDL_SetError("%s: Unsupported audio format", "directsound");
     }
 
     /* Playback buffers will auto-start playing in DSOUND_WaitDevice() */
@@ -575,11 +577,11 @@ DSOUND_Deinitialize(void)
 }
 
 
-static int
+static SDL_bool
 DSOUND_Init(SDL_AudioDriverImpl * impl)
 {
     if (!DSOUND_Load()) {
-        return 0;
+        return SDL_FALSE;
     }
 
     /* Set the function pointers */
@@ -596,11 +598,11 @@ DSOUND_Init(SDL_AudioDriverImpl * impl)
 
     impl->HasCaptureSupport = SDL_TRUE;
 
-    return 1;   /* this audio target is available. */
+    return SDL_TRUE;   /* this audio target is available. */
 }
 
 AudioBootStrap DSOUND_bootstrap = {
-    "directsound", "DirectSound", DSOUND_Init, 0
+    "directsound", "DirectSound", DSOUND_Init, SDL_FALSE
 };
 
 #endif /* SDL_AUDIO_DRIVER_DSOUND */

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -821,3 +821,39 @@
 #define SDL_RenderGeometry SDL_RenderGeometry_REAL
 #define SDL_RenderGeometryRaw SDL_RenderGeometryRaw_REAL
 #define SDL_RenderSetVSync SDL_RenderSetVSync_REAL
+#define SDL_asprintf SDL_asprintf_REAL
+#define SDL_vasprintf SDL_vasprintf_REAL
+#define SDL_GetWindowICCProfile SDL_GetWindowICCProfile_REAL
+#define SDL_GetTicks64 SDL_GetTicks64_REAL
+#define SDL_LinuxSetThreadPriorityAndPolicy SDL_LinuxSetThreadPriorityAndPolicy_REAL
+#define SDL_GameControllerGetAppleSFSymbolsNameForButton SDL_GameControllerGetAppleSFSymbolsNameForButton_REAL
+#define SDL_GameControllerGetAppleSFSymbolsNameForAxis SDL_GameControllerGetAppleSFSymbolsNameForAxis_REAL
+#define SDL_hid_init SDL_hid_init_REAL
+#define SDL_hid_exit SDL_hid_exit_REAL
+#define SDL_hid_device_change_count SDL_hid_device_change_count_REAL
+#define SDL_hid_enumerate SDL_hid_enumerate_REAL
+#define SDL_hid_free_enumeration SDL_hid_free_enumeration_REAL
+#define SDL_hid_open SDL_hid_open_REAL
+#define SDL_hid_open_path SDL_hid_open_path_REAL
+#define SDL_hid_write SDL_hid_write_REAL
+#define SDL_hid_read_timeout SDL_hid_read_timeout_REAL
+#define SDL_hid_read SDL_hid_read_REAL
+#define SDL_hid_set_nonblocking SDL_hid_set_nonblocking_REAL
+#define SDL_hid_send_feature_report SDL_hid_send_feature_report_REAL
+#define SDL_hid_get_feature_report SDL_hid_get_feature_report_REAL
+#define SDL_hid_close SDL_hid_close_REAL
+#define SDL_hid_get_manufacturer_string SDL_hid_get_manufacturer_string_REAL
+#define SDL_hid_get_product_string SDL_hid_get_product_string_REAL
+#define SDL_hid_get_serial_number_string SDL_hid_get_serial_number_string_REAL
+#define SDL_hid_get_indexed_string SDL_hid_get_indexed_string_REAL
+#define SDL_SetWindowMouseRect SDL_SetWindowMouseRect_REAL
+#define SDL_GetWindowMouseRect SDL_GetWindowMouseRect_REAL
+#define SDL_RenderWindowToLogical SDL_RenderWindowToLogical_REAL
+#define SDL_RenderLogicalToWindow SDL_RenderLogicalToWindow_REAL
+#define SDL_JoystickHasRumble SDL_JoystickHasRumble_REAL
+#define SDL_JoystickHasRumbleTriggers SDL_JoystickHasRumbleTriggers_REAL
+#define SDL_GameControllerHasRumble SDL_GameControllerHasRumble_REAL
+#define SDL_GameControllerHasRumbleTriggers SDL_GameControllerHasRumbleTriggers_REAL
+#define SDL_hid_ble_scan SDL_hid_ble_scan_REAL
+#define SDL_PremultiplyAlpha SDL_PremultiplyAlpha_REAL
+#define SDL_AndroidSendMessage SDL_AndroidSendMessage_REAL

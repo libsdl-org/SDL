@@ -36,6 +36,9 @@ FreeAction(SDLVisualTest_Action* action)
             action->extra.process.args = NULL;
         }
         break;
+
+      default:
+        break;
     }
 }
 
@@ -54,7 +57,7 @@ SDLVisualTest_EnqueueAction(SDLVisualTest_ActionQueue* queue,
                                       sizeof(SDLVisualTest_ActionNode));
     if(!node)
     {
-        SDLTest_LogError("malloc() failed");
+        SDLTest_LogError("SDL_malloc() failed");
         return 0;
     }
     node->action = action;
@@ -220,10 +223,10 @@ SDLVisualTest_InsertIntoActionQueue(SDLVisualTest_ActionQueue* queue,
         return 1;
     }
 
-    newnode = (SDLVisualTest_ActionNode*)malloc(sizeof(SDLVisualTest_ActionNode));
+    newnode = (SDLVisualTest_ActionNode*)SDL_malloc(sizeof(SDLVisualTest_ActionNode));
     if(!newnode)
     {
-        SDLTest_LogError("malloc() failed");
+        SDLTest_LogError("SDL_malloc() failed");
         return 0;
     }
     newnode->action = action;
@@ -256,7 +259,7 @@ SDLVisualTest_InsertIntoActionQueue(SDLVisualTest_ActionQueue* queue,
 }
 
 int
-SDLVisualTest_ParseActionConfig(char* file, SDLVisualTest_ActionQueue* queue)
+SDLVisualTest_ParseActionConfig(const char* file, SDLVisualTest_ActionQueue* queue)
 {
     char line[MAX_ACTION_LINE_LENGTH];
     SDLVisualTest_RWHelperBuffer buffer;
@@ -344,7 +347,7 @@ SDLVisualTest_ParseActionConfig(char* file, SDLVisualTest_ActionQueue* queue)
             path = (char*)SDL_malloc(sizeof(char) * (len + 1));
             if(!path)
             {
-                SDLTest_LogError("malloc() failed");
+                SDLTest_LogError("SDL_malloc() failed");
                 SDLVisualTest_EmptyActionQueue(queue);
                 SDL_RWclose(rw);
                 return 0;
@@ -358,7 +361,7 @@ SDLVisualTest_ParseActionConfig(char* file, SDLVisualTest_ActionQueue* queue)
                 args = (char*)SDL_malloc(sizeof(char) * (len + 1));
                 if(!args)
                 {
-                    SDLTest_LogError("malloc() failed");
+                    SDLTest_LogError("SDL_malloc() failed");
                     SDL_free(path);
                     SDLVisualTest_EmptyActionQueue(queue);
                     SDL_RWclose(rw);

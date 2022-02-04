@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -478,8 +478,7 @@ WINRT_InitModes(_THIS)
 
     hr = CreateDXGIFactory1(SDL_IID_IDXGIFactory2, (void **)&dxgiFactory2);
     if (FAILED(hr)) {
-        WIN_SetErrorFromHRESULT(__FUNCTION__ ", CreateDXGIFactory1() failed", hr);
-        return -1;
+        return WIN_SetErrorFromHRESULT(__FUNCTION__ ", CreateDXGIFactory1() failed", hr);
     }
 
     for (int adapterIndex = 0; ; ++adapterIndex) {
@@ -630,14 +629,12 @@ WINRT_CreateWindow(_THIS, SDL_Window * window)
     // Make sure that only one window gets created, at least until multimonitor
     // support is added.
     if (WINRT_GlobalSDLWindow != NULL) {
-        SDL_SetError("WinRT only supports one window");
-        return -1;
+        return SDL_SetError("WinRT only supports one window");
     }
 
     SDL_WindowData *data = new SDL_WindowData;  /* use 'new' here as SDL_WindowData may use WinRT/C++ types */
     if (!data) {
-        SDL_OutOfMemory();
-        return -1;
+        return SDL_OutOfMemory();
     }
     window->driverdata = data;
     data->sdlWindow = window;
@@ -673,9 +670,8 @@ WINRT_CreateWindow(_THIS, SDL_Window * window)
          * be passed into eglCreateWindowSurface.
          */
         if (SDL_EGL_ChooseConfig(_this) != 0) {
-            char buf[512];
-            SDL_snprintf(buf, sizeof(buf), "SDL_EGL_ChooseConfig failed: %s", SDL_GetError());
-            return SDL_SetError("%s", buf);
+            /* SDL_EGL_ChooseConfig failed, SDL_GetError() should have info */
+            return -1; 
         }
 
         if (video_data->winrtEglWindow) {   /* ... is the 'old' version of ANGLE/WinRT being used? */
@@ -698,7 +694,7 @@ WINRT_CreateWindow(_THIS, SDL_Window * window)
             data->egl_surface = _this->egl_data->eglCreateWindowSurface(
                 _this->egl_data->egl_display,
                 _this->egl_data->egl_config,
-                coreWindowAsIInspectable,
+                (NativeWindowType)coreWindowAsIInspectable,
                 NULL);
             if (data->egl_surface == NULL) {
                 return SDL_EGL_SetError("unable to create EGL native-window surface", "eglCreateWindowSurface");

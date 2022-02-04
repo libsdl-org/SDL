@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -78,7 +78,7 @@ static HMODULE  hmodVMan = NULLHANDLE;
 static FNVMIENTRY *pfnVMIEntry = NULL;
 static ULONG        ulVRAMAddress = 0;
 
-VOID APIENTRY ExitVMan(VOID)
+static VOID APIENTRY ExitVMan(VOID)
 {
     if (ulVRAMAddress != 0 && hmodVMan != NULLHANDLE) {
         pfnVMIEntry(0, VMI_CMD_TERMPROC, NULL, NULL);

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -88,14 +88,14 @@ HIDAPI_DriverXbox360_GetDeviceName(Uint16 vendor_id, Uint16 product_id)
     return NULL;
 }
 
-static SDL_bool SetSlotLED(hid_device *dev, Uint8 slot)
+static SDL_bool SetSlotLED(SDL_hid_device *dev, Uint8 slot)
 {
     const SDL_bool blink = SDL_FALSE;
     Uint8 mode = (blink ? 0x02 : 0x06) + slot;
     Uint8 led_packet[] = { 0x01, 0x03, 0x00 };
 
     led_packet[2] = mode;
-    if (hid_write(dev, led_packet, sizeof(led_packet)) != sizeof(led_packet)) {
+    if (SDL_hid_write(dev, led_packet, sizeof(led_packet)) != sizeof(led_packet)) {
         return SDL_FALSE;
     }
     return SDL_TRUE;
@@ -136,7 +136,7 @@ HIDAPI_DriverXbox360_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joyst
         return SDL_FALSE;
     }
 
-    device->dev = hid_open_path(device->path, 0);
+    device->dev = SDL_hid_open_path(device->path, 0);
     if (!device->dev) {
         SDL_SetError("Couldn't open %s", device->path);
         SDL_free(ctx);
@@ -203,11 +203,11 @@ HIDAPI_DriverXbox360_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joyst
     return SDL_Unsupported();
 }
 
-static SDL_bool
-HIDAPI_DriverXbox360_HasJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
+static Uint32
+HIDAPI_DriverXbox360_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
-    /* Doesn't have an RGB LED, so don't return true here */
-    return SDL_FALSE;
+    /* Doesn't have an RGB LED, so don't return SDL_JOYCAP_LED here */
+    return SDL_JOYCAP_RUMBLE;
 }
 
 static int
@@ -296,7 +296,7 @@ HIDAPI_DriverXbox360_UpdateDevice(SDL_HIDAPI_Device *device)
         return SDL_FALSE;
     }
 
-    while ((size = hid_read_timeout(device->dev, data, sizeof(data), 0)) > 0) {
+    while ((size = SDL_hid_read_timeout(device->dev, data, sizeof(data), 0)) > 0) {
 #ifdef DEBUG_XBOX_PROTOCOL
         HIDAPI_DumpPacket("Xbox 360 packet: size = %d", data, size);
 #endif
@@ -318,7 +318,7 @@ HIDAPI_DriverXbox360_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joys
     SDL_LockMutex(device->dev_lock);
     {
         if (device->dev) {
-            hid_close(device->dev);
+            SDL_hid_close(device->dev);
             device->dev = NULL;
         }
 
@@ -337,6 +337,7 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXbox360 =
 {
     SDL_HINT_JOYSTICK_HIDAPI_XBOX,
     SDL_TRUE,
+    SDL_TRUE,
     HIDAPI_DriverXbox360_IsSupportedDevice,
     HIDAPI_DriverXbox360_GetDeviceName,
     HIDAPI_DriverXbox360_InitDevice,
@@ -346,7 +347,7 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXbox360 =
     HIDAPI_DriverXbox360_OpenJoystick,
     HIDAPI_DriverXbox360_RumbleJoystick,
     HIDAPI_DriverXbox360_RumbleJoystickTriggers,
-    HIDAPI_DriverXbox360_HasJoystickLED,
+    HIDAPI_DriverXbox360_GetJoystickCapabilities,
     HIDAPI_DriverXbox360_SetJoystickLED,
     HIDAPI_DriverXbox360_SendJoystickEffect,
     HIDAPI_DriverXbox360_SetJoystickSensorsEnabled,

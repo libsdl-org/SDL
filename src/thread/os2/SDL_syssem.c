@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -89,7 +89,7 @@ SDL_SemWaitTimeout(SDL_sem * sem, Uint32 timeout)
     ULONG cPost;
 
     if (sem == NULL)
-        return SDL_SetError("Passed a NULL sem");
+        return SDL_InvalidParamError("sem");
 
     if (timeout != SEM_INDEFINITE_WAIT)
         DosQuerySysInfo(QSV_MS_COUNT, QSV_MS_COUNT, &ulStartTime, sizeof(ULONG));
@@ -147,7 +147,7 @@ SDL_SemValue(SDL_sem * sem)
     ULONG ulRC;
 
     if (sem == NULL) {
-        SDL_SetError("Passed a NULL sem");
+        SDL_InvalidParamError("sem");
         return 0;
     }
 
@@ -167,7 +167,7 @@ SDL_SemPost(SDL_sem * sem)
     ULONG ulRC;
 
     if (sem == NULL)
-        return SDL_SetError("Passed a NULL sem");
+        return SDL_InvalidParamError("sem");
 
     ulRC = DosRequestMutexSem(sem->hMtx, SEM_INDEFINITE_WAIT);
     if (ulRC != NO_ERROR)

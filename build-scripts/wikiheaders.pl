@@ -14,6 +14,7 @@ foreach (@ARGV) {
     $copy_direction = 1, next if $_ eq '--copy-to-headers';
     $copy_direction = 1, next if $_ eq '--copy-to-header';
     $copy_direction = -1, next if $_ eq '--copy-to-wiki';
+    $copy_direction = -2, next if $_ eq '--copy-to-manpages';
     $srcpath = $_, next if not defined $srcpath;
     $wikipath = $_, next if not defined $wikipath;
 }
@@ -136,13 +137,20 @@ sub wikify_chunk {
     #print("\n\nWIKIFY CHUNK:\n\n$str\n\n\n");
 
     if ($wikitype eq 'mediawiki') {
+        # convert `code` things first, so they aren't mistaken for other markdown items.
+        my $codedstr = '';
+        while ($str =~ s/\A(.*?)\`(.*?)\`//ms) {
+            my $codeblock = $2;
+            $codedstr .= wikify_chunk($wikitype, $1, undef, undef);
+            # Convert obvious SDL things to wikilinks, even inside `code` blocks.
+            $codeblock =~ s/\b(SDL_[a-zA-Z0-9_]+)/[[$1]]/gms;
+            $codedstr .= "<code>$codeblock</code>";
+        }
+
         # Convert obvious SDL things to wikilinks.
         $str =~ s/\b(SDL_[a-zA-Z0-9_]+)/[[$1]]/gms;
 
         # Make some Markdown things into MediaWiki...
-
-        # <code></code> is also popular.  :/
-        $str =~ s/\`(.*?)\`/<code>$1<\/code>/gms;
 
         # bold+italic
         $str =~ s/\*\*\*(.*?)\*\*\*/'''''$1'''''/gms;
@@ -155,6 +163,8 @@ sub wikify_chunk {
 
         # bullets
         $str =~ s/^\- /* /gm;
+
+        $str = $codedstr . $str;
 
         if (defined $code) {
             $str .= "<syntaxhighlight lang='$codelang'>$code<\/syntaxhighlight>";
@@ -190,6 +200,9 @@ sub wikify {
 }
 
 
+my $dewikify_mode = 'md';
+my $dewikify_manpage_code_indent = 1;
+
 sub dewikify_chunk {
     my $wikitype = shift;
     my $str = shift;
@@ -198,30 +211,67 @@ sub dewikify_chunk {
 
     #print("\n\nDEWIKIFY CHUNK:\n\n$str\n\n\n");
 
-    if ($wikitype eq 'mediawiki') {
-        # Doxygen supports Markdown (and it just simply looks better than MediaWiki
-        # when looking at the raw headers), so do some conversions here as necessary.
+    if ($dewikify_mode eq 'md') {
+        if ($wikitype eq 'mediawiki') {
+            # Doxygen supports Markdown (and it just simply looks better than MediaWiki
+            # when looking at the raw headers), so do some conversions here as necessary.
 
-        $str =~ s/\[\[(SDL_[a-zA-Z0-9_]+)\]\]/$1/gms;  # Dump obvious wikilinks.
+            $str =~ s/\[\[(SDL_[a-zA-Z0-9_]+)\]\]/$1/gms;  # Dump obvious wikilinks.
 
-        # <code></code> is also popular.  :/
-        $str =~ s/\<code>(.*?)<\/code>/`$1`/gms;
+            # <code></code> is also popular.  :/
+            $str =~ s/\<code>(.*?)<\/code>/`$1`/gms;
 
-        # bold+italic
-        $str =~ s/\'''''(.*?)'''''/***$1***/gms;
+            # bold+italic
+            $str =~ s/'''''(.*?)'''''/***$1***/gms;
 
-        # bold
-        $str =~ s/\'''(.*?)'''/**$1**/gms;
+            # bold
+            $str =~ s/'''(.*?)'''/**$1**/gms;
 
-        # italic
-        $str =~ s/\''(.*?)''/*$1*/gms;
+            # italic
+            $str =~ s/''(.*?)''/*$1*/gms;
 
-        # bullets
-        $str =~ s/^\* /- /gm;
-    }
+            # bullets
+            $str =~ s/^\* /- /gm;
+        }
 
-    if (defined $code) {
-        $str .= "```$codelang$code```";
+        if (defined $code) {
+            $str .= "```$codelang$code```";
+        }
+    } elsif ($dewikify_mode eq 'manpage') {
+        $str =~ s/\./\\[char46]/gms;  # make sure these can't become control codes.
+        if ($wikitype eq 'mediawiki') {
+            $str =~ s/\s*\[\[(SDL_[a-zA-Z0-9_]+)\]\]\s*/\n.BR $1\n/gms;  # Dump obvious wikilinks.
+
+            # <code></code> is also popular.  :/
+            $str =~ s/\s*\<code>(.*?)<\/code>\s*/\n.BR $1\n/gms;
+
+            # bold+italic
+            $str =~ s/\s*'''''(.*?)'''''\s*/\n.BI $1\n/gms;
+
+            # bold
+            $str =~ s/\s*'''(.*?)'''\s*/\n.B $1\n/gms;
+
+            # italic
+            $str =~ s/\s*''(.*?)''\s*/\n.I $1\n/gms;
+
+            # bullets
+            $str =~ s/^\* /\n\\\(bu /gm;
+        } else {
+            die("Unexpected wikitype when converting to manpages\n");   # !!! FIXME: need to handle Markdown wiki pages.
+        }
+
+        if (defined $code) {
+            $code =~ s/\A\n+//gms;
+            $code =~ s/\n+\Z//gms;
+            if ($dewikify_manpage_code_indent) {
+                $str .= "\n.IP\n"
+            } else {
+                $str .= "\n.PP\n"
+            }
+            $str .= ".EX\n$code\n.EE\n.PP\n";
+        }
+    } else {
+        die("Unexpected dewikify_mode\n");
     }
 
     #print("\n\nDEWIKIFY CHUNK DONE:\n\n$str\n\n\n");
@@ -251,7 +301,7 @@ sub dewikify {
 }
 
 sub usage {
-    die("USAGE: $0 <source code git clone path> <wiki git clone path> [--copy-to-headers|--copy-to-wiki] [--warn-about-missing]\n\n");
+    die("USAGE: $0 <source code git clone path> <wiki git clone path> [--copy-to-headers|--copy-to-wiki|--copy-to-manpages] [--warn-about-missing]\n\n");
 }
 
 usage() if not defined $srcpath;
@@ -261,6 +311,7 @@ usage() if not defined $wikipath;
 my @standard_wiki_sections = (
     'Draft',
     '[Brief]',
+    'Deprecated',
     'Syntax',
     'Function Parameters',
     'Return Value',
@@ -283,6 +334,7 @@ my %headerfuncs = ();   # $headerfuncs{"SDL_OpenAudio"} -> string of header docu
 my %headerdecls = ();
 my %headerfuncslocation = ();   # $headerfuncslocation{"SDL_OpenAudio"} -> name of header holding SDL_OpenAudio define ("SDL_audio.h" in this case).
 my %headerfuncschunk = ();   # $headerfuncschunk{"SDL_OpenAudio"} -> offset in array in %headers that should be replaced for this function.
+my %headerfuncshasdoxygen = ();   # $headerfuncschunk{"SDL_OpenAudio"} -> 1 if there was no existing doxygen for this function.
 
 my $incpath = "$srcpath/include";
 opendir(DH, $incpath) or die("Can't opendir '$incpath': $!\n");
@@ -295,46 +347,54 @@ while (readdir(DH)) {
 
     while (<FH>) {
         chomp;
-        if (not /\A\/\*\*\s*\Z/) {  # not doxygen comment start?
+        my $decl;
+        my @templines;
+        my $str;
+        my $has_doxygen = 1;
+        if (/\A\s*extern\s+(SDL_DEPRECATED\s+|)DECLSPEC/) {  # a function declaration without a doxygen comment?
+            @templines = ();
+            $decl = $_;
+            $str = '';
+            $has_doxygen = 0;
+        } elsif (not /\A\/\*\*\s*\Z/) {  # not doxygen comment start?
             push @contents, $_;
             next;
-        }
-
-        my @templines = ();
-        push @templines, $_;
-        my $str = '';
-        while (<FH>) {
-            chomp;
-            push @templines, $_;
-            last if /\A\s*\*\/\Z/;
-            if (s/\A\s*\*\s*\`\`\`/```/) {  # this is a hack, but a lot of other code relies on the whitespace being trimmed, but we can't trim it in code blocks...
-                $str .= "$_\n";
-                while (<FH>) {
-                    chomp;
-                    push @templines, $_;
-                    s/\A\s*\*\s?//;
-                    if (s/\A\s*\`\`\`/```/) {
-                        $str .= "$_\n";
-                        last;
-                    } else {
-                        $str .= "$_\n";
+        } else {   # Start of a doxygen comment, parse it out.
+            @templines = ( $_ );
+            while (<FH>) {
+                chomp;
+                push @templines, $_;
+                last if /\A\s*\*\/\Z/;
+                if (s/\A\s*\*\s*\`\`\`/```/) {  # this is a hack, but a lot of other code relies on the whitespace being trimmed, but we can't trim it in code blocks...
+                    $str .= "$_\n";
+                    while (<FH>) {
+                        chomp;
+                        push @templines, $_;
+                        s/\A\s*\*\s?//;
+                        if (s/\A\s*\`\`\`/```/) {
+                            $str .= "$_\n";
+                            last;
+                        } else {
+                            $str .= "$_\n";
+                        }
                     }
+                } else {
+                    s/\A\s*\*\s*//;
+                    $str .= "$_\n";
                 }
-            } else {
-                s/\A\s*\*\s*//;
-                $str .= "$_\n";
             }
-        }
 
-        my $decl = <FH>;
-        chomp($decl);
-        if (not $decl =~ /\A\s*extern\s+DECLSPEC/) {
-            #print "Found doxygen but no function sig:\n$str\n\n";
-            foreach (@templines) {
-                push @contents, $_;
+            $decl = <FH>;
+            $decl = '' if not defined $decl;
+            chomp($decl);
+            if (not $decl =~ /\A\s*extern\s+(SDL_DEPRECATED\s+|)DECLSPEC/) {
+                #print "Found doxygen but no function sig:\n$str\n\n";
+                foreach (@templines) {
+                    push @contents, $_;
+                }
+                push @contents, $decl;
+                next;
             }
-            push @contents, $decl;
-            next;
         }
 
         my @decllines = ( $decl );
@@ -355,8 +415,8 @@ while (readdir(DH)) {
         #print("DECL: [$decl]\n");
 
         my $fn = '';
-        if ($decl =~ /\A\s*extern\s+DECLSPEC\s+(const\s+|)(unsigned\s+|)(.*?)\s*(\*?)\s*SDLCALL\s+(.*?)\s*\((.*?)\);/) {
-            $fn = $5;
+        if ($decl =~ /\A\s*extern\s+(SDL_DEPRECATED\s+|)DECLSPEC\s+(const\s+|)(unsigned\s+|)(.*?)\s*(\*?)\s*SDLCALL\s+(.*?)\s*\((.*?)\);/) {
+            $fn = $6;
             #$decl =~ s/\A\s*extern\s+DECLSPEC\s+(.*?)\s+SDLCALL/$1/;
         } else {
             #print "Found doxygen but no function sig:\n$str\n\n";
@@ -373,9 +433,10 @@ while (readdir(DH)) {
         foreach (@decllines) {
             if ($decl eq '') {
                 $decl = $_;
-                $decl =~ s/\Aextern\s+DECLSPEC\s+(.*?)\s+(\*?)SDLCALL\s+/$1$2 /;
+                $decl =~ s/\Aextern\s+(SDL_DEPRECATED\s+|)DECLSPEC\s+(.*?)\s+(\*?)SDLCALL\s+/$2$3 /;
             } else {
                 my $trimmed = $_;
+                # !!! FIXME: trim space for SDL_DEPRECATED if it was used, too.
                 $trimmed =~ s/\A\s{24}//;  # 24 for shrinking to match the removed "extern DECLSPEC SDLCALL "
                 $decl .= $trimmed;
             }
@@ -384,13 +445,33 @@ while (readdir(DH)) {
 
         #print("$fn:\n$str\n\n");
 
-        $headerfuncs{$fn} = $str;
-        $headerdecls{$fn} = $decl;
-        $headerfuncslocation{$fn} = $dent;
-        $headerfuncschunk{$fn} = scalar(@contents);
+        # There might be multiple declarations of a function due to #ifdefs,
+        #  and only one of them will have documentation. If we hit an
+        #  undocumented one before, delete the placeholder line we left for
+        #  it so it doesn't accumulate a new blank line on each run.
+        my $skipfn = 0;
+        if (defined $headerfuncshasdoxygen{$fn}) {
+            if ($headerfuncshasdoxygen{$fn} == 0) {  # An undocumented declaration already exists, nuke its placeholder line.
+                delete $contents[$headerfuncschunk{$fn}];  # delete DOES NOT RENUMBER existing elements!
+            } else {  # documented function already existed?
+                $skipfn = 1;  # don't add this copy to the list of functions.
+                if ($has_doxygen) {
+                    print STDERR "WARNING: Function '$fn' appears to be documented in multiple locations. Only keeping the first one we saw!\n";
+                }
+                push @contents, join("\n", @decllines);  # just put the existing declation in as-is.
+            }
+        }
 
-        push @contents, join("\n", @templines);
-        push @contents, join("\n", @decllines);
+        if (!$skipfn) {
+            $headerfuncs{$fn} = $str;
+            $headerdecls{$fn} = $decl;
+            $headerfuncslocation{$fn} = $dent;
+            $headerfuncschunk{$fn} = scalar(@contents);
+            $headerfuncshasdoxygen{$fn} = $has_doxygen;
+            push @contents, join("\n", @templines);
+            push @contents, join("\n", @decllines);
+        }
+
     }
     close(FH);
 
@@ -511,9 +592,9 @@ if ($warn_about_missing) {
 if ($copy_direction == 1) {  # --copy-to-headers
     my %changed_headers = ();
 
+    $dewikify_mode = 'md';
     $wordwrap_mode = 'md';   # the headers use Markdown format.
 
-    # if it's not in the headers already, we don't add it, so iterate what we know is already there for changes.
     foreach (keys %headerfuncs) {
         my $fn = $_;
         next if not defined $wikifuncs{$fn};  # don't have a page for that function, skip it.
@@ -524,9 +605,12 @@ if ($copy_direction == 1) {  # --copy-to-headers
         my $returns = %$sectionsref{'Return Value'};
         my $version = %$sectionsref{'Version'};
         my $related = %$sectionsref{'Related Functions'};
+        my $deprecated = %$sectionsref{'Deprecated'};
         my $brief = %$sectionsref{'[Brief]'};
         my $addblank = 0;
         my $str = '';
+
+        $headerfuncshasdoxygen{$fn} = 1;  # Added/changed doxygen for this header.
 
         $brief = dewikify($wikitype, $brief);
         $brief =~ s/\A(.*?\.) /$1\n/;  # \brief should only be one sentence, delimited by a period+space. Split if necessary.
@@ -545,6 +629,21 @@ if ($copy_direction == 1) {  # --copy-to-headers
         if (defined $remarks) {
             $str .= "\n" if $addblank; $addblank = 1;
             $str .= wordwrap($remarks) . "\n";
+        }
+
+        if (defined $deprecated) {
+            # !!! FIXME: lots of code duplication in all of these.
+            $str .= "\n" if $addblank; $addblank = 1;
+            my $v = dewikify($wikitype, $deprecated);
+            my $whitespacelen = length("\\deprecated") + 1;
+            my $whitespace = ' ' x $whitespacelen;
+            $v = wordwrap($v, -$whitespacelen);
+            my @desclines = split /\n/, $v;
+            my $firstline = shift @desclines;
+            $str .= "\\deprecated $firstline\n";
+            foreach (@desclines) {
+                $str .= "${whitespace}$_\n";
+            }
         }
 
         if (defined $params) {
@@ -623,8 +722,15 @@ if ($copy_direction == 1) {  # --copy-to-headers
             }
         }
 
+        my $header = $headerfuncslocation{$fn};
+        my $contentsref = $headers{$header};
+        my $chunk = $headerfuncschunk{$fn};
+
         my @lines = split /\n/, $str;
-        my $output = "/**\n";
+
+        my $addnewline = (($chunk > 0) && ($$contentsref[$chunk-1] ne '')) ? "\n" : '';
+
+        my $output = "$addnewline/**\n";
         foreach (@lines) {
             chomp;
             s/\s*\Z//;
@@ -638,9 +744,6 @@ if ($copy_direction == 1) {  # --copy-to-headers
 
         #print("$fn:\n$output\n\n");
 
-        my $header = $headerfuncslocation{$fn};
-        my $chunk = $headerfuncschunk{$fn};
-        my $contentsref = $headers{$header};
         $$contentsref[$chunk] = $output;
         #$$contentsref[$chunk+1] = $headerdecls{$fn};
 
@@ -648,27 +751,45 @@ if ($copy_direction == 1) {  # --copy-to-headers
     }
 
     foreach (keys %changed_headers) {
-        my $contentsref = $headers{$_};
-        my $path = "$incpath/$_.tmp";
+        my $header = $_;
+
+        # this is kinda inefficient, but oh well.
+        my @removelines = ();
+        foreach (keys %headerfuncslocation) {
+            my $fn = $_;
+            next if $headerfuncshasdoxygen{$fn};
+            next if $headerfuncslocation{$fn} ne $header;
+            # the index of the blank line we put before the function declaration in case we needed to replace it with new content from the wiki.
+            push @removelines, $headerfuncschunk{$fn};
+        }
+
+        my $contentsref = $headers{$header};
+        foreach (@removelines) {
+            delete $$contentsref[$_];  # delete DOES NOT RENUMBER existing elements!
+        }
+
+        my $path = "$incpath/$header.tmp";
         open(FH, '>', $path) or die("Can't open '$path': $!\n");
         foreach (@$contentsref) {
-            print FH "$_\n";
+            print FH "$_\n" if defined $_;
         }
         close(FH);
-        rename($path, "$incpath/$_") or die("Can't rename '$path' to '$incpath/$_': $!\n");
+        rename($path, "$incpath/$header") or die("Can't rename '$path' to '$incpath/$header': $!\n");
     }
 
 } elsif ($copy_direction == -1) { # --copy-to-wiki
     foreach (keys %headerfuncs) {
         my $fn = $_;
+        next if not $headerfuncshasdoxygen{$fn};
         my $wikitype = defined $wikitypes{$fn} ? $wikitypes{$fn} : 'mediawiki';  # default to MediaWiki for new stuff FOR NOW.
-        die("Unexpected wikitype '$wikitype'\n") if (($wikitype ne 'mediawiki') and ($wikitype ne 'md'));
+        die("Unexpected wikitype '$wikitype'\n") if (($wikitype ne 'mediawiki') and ($wikitype ne 'md') and ($wikitype ne 'manpage'));
 
         #print("$fn\n"); next;
 
         $wordwrap_mode = $wikitype;
 
         my $raw = $headerfuncs{$fn};  # raw doxygen text with comment characters stripped from start/end and start of each line.
+        next if not defined $raw;
         $raw =~ s/\A\s*\\brief\s+//;  # Technically we don't need \brief (please turn on JAVADOC_AUTOBRIEF if you use Doxygen), so just in case one is present, strip it.
 
         my @doxygenlines = split /\n/, $raw;
@@ -714,7 +835,7 @@ if ($copy_direction == 1) {  # --copy-to-headers
 
         my $decl = $headerdecls{$fn};
         #$decl =~ s/\*\s+SDLCALL/ *SDLCALL/;  # Try to make "void * Function" become "void *Function"
-        #$decl =~ s/\A\s*extern\s+DECLSPEC\s+(.*?)\s+(\*?)SDLCALL/$1$2/;
+        #$decl =~ s/\A\s*extern\s+(SDL_DEPRECATED\s+|)DECLSPEC\s+(.*?)\s+(\*?)SDLCALL/$2$3/;
 
         my $syntax = '';
         if ($wikitype eq 'mediawiki') {
@@ -768,6 +889,21 @@ if ($copy_direction == 1) {  # --copy-to-headers
                 }
                 $desc =~ s/[\s\n]+\Z//ms;
                 $sections{'Return Value'} = wordwrap("$retstr " . wikify($wikitype, $desc)) . "\n";
+            } elsif ($l =~ /\A\\deprecated\s+(.*)\Z/) {
+                my $desc = $1;
+                while (@doxygenlines) {
+                    my $subline = $doxygenlines[0];
+                    $subline =~ s/\A\s*//;
+                    last if $subline =~ /\A\\/;  # some sort of doxygen command, assume we're past this thing.
+                    shift @doxygenlines;  # dump this line from the array; we're using it.
+                    if ($subline eq '') {  # empty line, make sure it keeps the newline char.
+                        $desc .= "\n";
+                    } else {
+                        $desc .= " $subline";
+                    }
+                }
+                $desc =~ s/[\s\n]+\Z//ms;
+                $sections{'Deprecated'} = wordwrap(wikify($wikitype, $desc)) . "\n";
             } elsif ($l =~ /\A\\since\s+(.*)\Z/) {
                 my $desc = $1;
                 while (@doxygenlines) {
@@ -914,6 +1050,207 @@ if ($copy_direction == 1) {  # --copy-to-headers
         print FH "\n\n";
         close(FH);
         rename($path, "$wikipath/$_.${wikitype}") or die("Can't rename '$path' to '$wikipath/$_.${wikitype}': $!\n");
+    }
+
+} elsif ($copy_direction == -2) { # --copy-to-manpages
+    # This only takes from the wiki data, since it has sections we omit from the headers, like code examples.
+
+    my $manpath = "$srcpath/man";
+    mkdir($manpath);
+    $manpath .= "/man3";
+    mkdir($manpath);
+
+    $dewikify_mode = 'manpage';
+    $wordwrap_mode = 'manpage';
+
+    my $introtxt = '';
+    if (0) {
+    open(FH, '<', "$srcpath/LICENSE.txt") or die("Can't open '$srcpath/LICENSE.txt': $!\n");
+    while (<FH>) {
+        chomp;
+        $introtxt .= ".\\\" $_\n";
+    }
+    close(FH);
+    }
+
+    my $gitrev = `cd "$srcpath" ; git rev-list HEAD~..`;
+    chomp($gitrev);
+
+    open(FH, '<', "$srcpath/include/SDL_version.h") or die("Can't open '$srcpath/include/SDL_version.h': $!\n");
+    my $majorver = 0;
+    my $minorver = 0;
+    my $patchver = 0;
+    while (<FH>) {
+        chomp;
+        if (/\A\#define SDL_MAJOR_VERSION\s+(\d+)\Z/) {
+            $majorver = int($1);
+        } elsif (/\A\#define SDL_MINOR_VERSION\s+(\d+)\Z/) {
+            $minorver = int($1);
+        } elsif (/\A\#define SDL_PATCHLEVEL\s+(\d+)\Z/) {
+            $patchver = int($1);
+        }
+    }
+    close(FH);
+    my $sdlversion = "$majorver.$minorver.$patchver";
+
+    foreach (keys %headerfuncs) {
+        my $fn = $_;
+        next if not defined $wikifuncs{$fn};  # don't have a page for that function, skip it.
+        my $wikitype = $wikitypes{$fn};
+        my $sectionsref = $wikifuncs{$fn};
+        my $remarks = %$sectionsref{'Remarks'};
+        my $params = %$sectionsref{'Function Parameters'};
+        my $returns = %$sectionsref{'Return Value'};
+        my $version = %$sectionsref{'Version'};
+        my $related = %$sectionsref{'Related Functions'};
+        my $examples = %$sectionsref{'Code Examples'};
+        my $deprecated = %$sectionsref{'Deprecated'};
+        my $brief = %$sectionsref{'[Brief]'};
+        my $decl = $headerdecls{$fn};
+        my $str = '';
+
+        $brief = "$brief";
+        $brief =~ s/\A[\s\n]*\= .*? \=\s*?\n+//ms;
+        $brief =~ s/\A[\s\n]*\=\= .*? \=\=\s*?\n+//ms;
+        $brief =~ s/\A(.*?\.) /$1\n/;  # \brief should only be one sentence, delimited by a period+space. Split if necessary.
+        my @briefsplit = split /\n/, $brief;
+        $brief = shift @briefsplit;
+        $brief = dewikify($wikitype, $brief);
+
+        if (defined $remarks) {
+            $remarks = dewikify($wikitype, join("\n", @briefsplit) . $remarks);
+        }
+
+        $str .= $introtxt;
+
+        $str .= ".\\\" This manpage content is licensed under Creative Commons\n";
+        $str .= ".\\\"  Attribution 4.0 International (CC BY 4.0)\n";
+        $str .= ".\\\"   https://creativecommons.org/licenses/by/4.0/\n";
+        $str .= ".\\\" This manpage was generated from SDL's wiki page for $fn:\n";
+        $str .= ".\\\"   https://wiki.libsdl.org/$fn\n";
+        $str .= ".\\\" Generated with SDL/build-scripts/wikiheaders.pl\n";
+        $str .= ".\\\"  revision $gitrev\n" if $gitrev ne '';
+        $str .= ".\\\" Please report issues in this manpage's content at:\n";
+        $str .= ".\\\"   https://github.com/libsdl-org/sdlwiki/issues/new?title=Feedback%20on%20page%20$fn\n";
+        $str .= ".\\\" Please report issues in the generation of this manpage from the wiki at:\n";
+        $str .= ".\\\"   https://github.com/libsdl-org/SDL/issues/new?title=Misgenerated%20manpage%20for%20$fn\n";
+        $str .= ".\\\" SDL can be found at https://libsdl.org/\n";
+
+        $str .= ".TH $fn 3 \"SDL $sdlversion\" \"Simple Directmedia Layer\" \"SDL$majorver FUNCTIONS\"\n";
+        $str .= ".SH NAME\n";
+
+        $str .= "$fn";
+        $str .= " \\- $brief" if (defined $brief);
+        $str .= "\n";
+
+        $str .= ".SH SYNOPSIS\n";
+        $str .= ".nf\n";
+        $str .= ".B #include \\(dqSDL.h\\(dq\n";
+        $str .= ".PP\n";
+
+        my @decllines = split /\n/, $decl;
+        foreach (@decllines) {
+            $str .= ".BI \"$_\n";
+        }
+        $str .= ".fi\n";
+
+        if (defined $remarks) {
+            $str .= ".SH DESCRIPTION\n";
+            $str .= $remarks . "\n";
+        }
+
+        if (defined $deprecated) {
+            $str .= ".SH DEPRECATED\n";
+            $str .= dewikify($wikitype, $deprecated) . "\n";
+        }
+
+        if (defined $params) {
+            $str .= ".SH FUNCTION PARAMETERS\n";
+            my @lines = split /\n/, $params;
+            if ($wikitype eq 'mediawiki') {
+                die("Unexpected data parsing MediaWiki table") if (shift @lines ne '{|');  # Dump the '{|' start
+                while (scalar(@lines) >= 3) {
+                    my $name = shift @lines;
+                    my $desc = shift @lines;
+                    my $terminator = shift @lines;  # the '|-' or '|}' line.
+                    last if ($terminator ne '|-') and ($terminator ne '|}');  # we seem to have run out of table.
+                    $name =~ s/\A\|\s*//;
+                    $name =~ s/\A\*\*(.*?)\*\*/$1/;
+                    $name =~ s/\A\'\'\'(.*?)\'\'\'/$1/;
+                    $desc =~ s/\A\|\s*//;
+                    $desc = dewikify($wikitype, $desc);
+                    #print STDERR "FN: $fn   NAME: $name   DESC: $desc TERM: $terminator\n";
+
+                    $str .= ".TP\n";
+                    $str .= ".I $name\n";
+                    $str .= "$desc\n";
+                }
+            } else {
+                die("write me");
+            }
+        }
+
+        if (defined $returns) {
+            $str .= ".SH RETURN VALUE\n";
+            $str .= dewikify($wikitype, $returns) . "\n";
+        }
+
+        if (defined $examples) {
+            $str .= ".SH CODE EXAMPLES\n";
+            $dewikify_manpage_code_indent = 0;
+            $str .= dewikify($wikitype, $examples) . "\n";
+            $dewikify_manpage_code_indent = 1;
+        }
+
+        if (defined $version) {
+            $str .= ".SH AVAILABILITY\n";
+            $str .= dewikify($wikitype, $version) . "\n";
+        }
+
+        if (defined $related) {
+            $str .= ".SH SEE ALSO\n";
+            # !!! FIXME: lots of code duplication in all of these.
+            my $v = dewikify($wikitype, $related);
+            my @desclines = split /\n/, $v;
+            my $nextstr = '';
+            foreach (@desclines) {
+                s/\A(\:|\* )//;
+                s/\(\)\Z//;  # Convert "SDL_Func()" to "SDL_Func"
+                s/\A\.BR\s+//;  # dewikify added this, but we want to handle it.
+                s/\A\s+//;
+                s/\s+\Z//;
+                next if $_ eq '';
+                $str .= "$nextstr.BR $_ (3)";
+                $nextstr = ",\n";
+            }
+            $str .= "\n";
+        }
+
+        if (0) {
+        $str .= ".SH COPYRIGHT\n";
+        $str .= "This manpage is licensed under\n";
+        $str .= ".UR https://creativecommons.org/licenses/by/4.0/\n";
+        $str .= "Creative Commons Attribution 4.0 International (CC BY 4.0)\n";
+        $str .= ".UE\n";
+        $str .= ".PP\n";
+        $str .= "This manpage was generated from\n";
+        $str .= ".UR https://wiki.libsdl.org/$fn\n";
+        $str .= "SDL's wiki\n";
+        $str .= ".UE\n";
+        $str .= "using SDL/build-scripts/wikiheaders.pl";
+        $str .= " revision $gitrev" if $gitrev ne '';
+        $str .= ".\n";
+        $str .= "Please report issues in this manpage at\n";
+        $str .= ".UR https://github.com/libsdl-org/sdlwiki/issues/new\n";
+        $str .= "our bugtracker!\n";
+        $str .= ".UE\n";
+        }
+
+        my $path = "$manpath/$_.3.tmp";
+        open(FH, '>', $path) or die("Can't open '$path': $!\n");
+        print FH $str;
+        close(FH);
+        rename($path, "$manpath/$_.3") or die("Can't rename '$path' to '$manpath/$_.3': $!\n");
     }
 }
 

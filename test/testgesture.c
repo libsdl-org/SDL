@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -215,7 +215,7 @@ loop(void)
 
 #if VERBOSE
             case SDL_FINGERMOTION:
-                SDL_Log("Finger: %"SDL_PRIs64",x: %f, y: %f",event.tfinger.fingerId,
+                SDL_Log("Finger: %"SDL_PRIs64", x: %f, y: %f",event.tfinger.fingerId,
                         event.tfinger.x,event.tfinger.y);
                 break;
 

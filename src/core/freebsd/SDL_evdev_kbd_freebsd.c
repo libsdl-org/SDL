@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -268,12 +268,12 @@ SDL_EVDEV_kbd_init(void)
             kbd->key_map = &keymap_default_us_acc;
         }
         /* Allow inhibiting keyboard mute with env. variable for debugging etc. */
-        if (getenv("SDL_INPUT_FREEBSD_KEEP_KBD") == NULL) {
+        if (SDL_getenv("SDL_INPUT_FREEBSD_KEEP_KBD") == NULL) {
             /* Take keyboard from console and open the actual keyboard device.
              * Ensures that the keystrokes do not leak through to the console.
              */
             ioctl(kbd->console_fd, CONS_RELKBD, 1ul);
-            asprintf(&devicePath, "/dev/kbd%d", kbd->kbInfo->kb_index);         
+            SDL_asprintf(&devicePath, "/dev/kbd%d", kbd->kbInfo->kb_index);
             kbd->keyboard_fd = open(devicePath, O_WRONLY | O_CLOEXEC);
             if (kbd->keyboard_fd == -1)
             {
@@ -288,7 +288,7 @@ SDL_EVDEV_kbd_init(void)
             if (!SDL_GetHintBoolean(SDL_HINT_NO_SIGNAL_HANDLERS, SDL_FALSE)) {
                 kbd_register_emerg_cleanup(kbd);
             }
-            free(devicePath);
+            SDL_free(devicePath);
         }
         else kbd->keyboard_fd = kbd->console_fd;
     }

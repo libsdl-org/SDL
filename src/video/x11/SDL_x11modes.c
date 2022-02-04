@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -322,7 +322,7 @@ SetXRandRDisplayName(Display *dpy, Atom EDID, char *name, const size_t namelen, 
                     dump_monitor_info(info);
 #endif
                     SDL_strlcpy(name, info->dsc_product_name, namelen);
-                    free(info);
+                    SDL_free(info);
                 }
                 X11_XFree(prop);
             }
@@ -358,7 +358,7 @@ GetXftDPI(Display* dpy)
     }
 
     /*
-     * It's possible for SDL_atoi to call strtol, if it fails due to a
+     * It's possible for SDL_atoi to call SDL_strtol, if it fails due to a
      * overflow or an underflow, it will return LONG_MAX or LONG_MIN and set
      * errno to ERANGE. So we need to check for this so we dont get crazy dpi
      * values

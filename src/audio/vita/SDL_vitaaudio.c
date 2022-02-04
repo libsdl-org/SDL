@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2015 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -25,7 +25,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <malloc.h>
+#include <malloc.h> /* memalign() */
 
 #include "SDL_audio.h"
 #include "SDL_error.h"
@@ -39,13 +39,13 @@
 #include <psp2/audioout.h>
 
 #define SCE_AUDIO_SAMPLE_ALIGN(s)   (((s) + 63) & ~63)
-#define SCE_AUDIO_MAX_VOLUME      0x8000
+#define SCE_AUDIO_MAX_VOLUME    0x8000
 
 /* The tag name used by VITA audio */
-#define VITAAUD_DRIVER_NAME         "vita"
+#define VITAAUD_DRIVER_NAME     "vita"
 
 static int
-VITAAUD_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
+VITAAUD_OpenDevice(_THIS, const char *devname)
 {
     int format, mixlen, i, port = SCE_AUDIO_OUT_PORT_TYPE_MAIN;
     int vols[2] = {SCE_AUDIO_MAX_VOLUME, SCE_AUDIO_MAX_VOLUME};
@@ -100,7 +100,7 @@ VITAAUD_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
 
     sceAudioOutSetVolume(this->hidden->channel, SCE_AUDIO_VOLUME_FLAG_L_CH|SCE_AUDIO_VOLUME_FLAG_R_CH, vols);
 
-    memset(this->hidden->rawbuf, 0, mixlen);
+    SDL_memset(this->hidden->rawbuf, 0, mixlen);
     for (i = 0; i < NUM_BUFFERS; i++) {
         this->hidden->mixbufs[i] = &this->hidden->rawbuf[i * this->spec.size];
     }
@@ -136,10 +136,11 @@ static void VITAAUD_CloseDevice(_THIS)
     }
 
     if (this->hidden->rawbuf != NULL) {
-        free(this->hidden->rawbuf);
+        free(this->hidden->rawbuf);         /* this uses memalign(), not SDL_malloc(). */
         this->hidden->rawbuf = NULL;
     }
 }
+
 static void VITAAUD_ThreadInit(_THIS)
 {
     /* Increase the priority of this audio thread by 1 to put it
@@ -153,11 +154,9 @@ static void VITAAUD_ThreadInit(_THIS)
     }
 }
 
-
-static int
+static SDL_bool
 VITAAUD_Init(SDL_AudioDriverImpl * impl)
 {
-
     /* Set the function pointers */
     impl->OpenDevice = VITAAUD_OpenDevice;
     impl->PlayDevice = VITAAUD_PlayDevice;
@@ -167,20 +166,17 @@ VITAAUD_Init(SDL_AudioDriverImpl * impl)
     impl->ThreadInit = VITAAUD_ThreadInit;
 
     /* VITA audio device */
-    impl->OnlyHasDefaultOutputDevice = 1;
-/*
-    impl->HasCaptureSupport = 1;
-
-    impl->OnlyHasDefaultInputDevice = 1;
-*/
-    return 1;   /* this audio target is available. */
+    impl->OnlyHasDefaultOutputDevice = SDL_TRUE;
+    /*
+    impl->HasCaptureSupport = SDL_TRUE;
+    impl->OnlyHasDefaultInputDevice = SDL_TRUE;
+    */
+    return SDL_TRUE;   /* this audio target is available. */
 }
 
 AudioBootStrap VITAAUD_bootstrap = {
-    "vita", "VITA audio driver", VITAAUD_Init, 0
+    "vita", "VITA audio driver", VITAAUD_Init, SDL_FALSE
 };
-
- /* SDL_AUDI */
 
 #endif /* SDL_AUDIO_DRIVER_VITA */
 

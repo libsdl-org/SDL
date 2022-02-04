@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -65,16 +65,14 @@ int
 SDL_mutexP(SDL_mutex * mutex)
 {
     if (mutex == NULL) {
-        SDL_SetError("Passed a NULL mutex");
-        return -1;
+        return SDL_InvalidParamError("mutex");
     }
 
     try {
         mutex->cpp_mutex.lock();
         return 0;
     } catch (std::system_error & ex) {
-        SDL_SetError("unable to lock a C++ mutex: code=%d; %s", ex.code(), ex.what());
-        return -1;
+        return SDL_SetError("unable to lock a C++ mutex: code=%d; %s", ex.code(), ex.what());
     }
 }
 
@@ -84,7 +82,7 @@ SDL_TryLockMutex(SDL_mutex * mutex)
 {
     int retval = 0;
     if (mutex == NULL) {
-        return SDL_SetError("Passed a NULL mutex");
+        return SDL_InvalidParamError("mutex");
     }
 
     if (mutex->cpp_mutex.try_lock() == false) {
@@ -99,8 +97,7 @@ int
 SDL_mutexV(SDL_mutex * mutex)
 {
     if (mutex == NULL) {
-        SDL_SetError("Passed a NULL mutex");
-        return -1;
+        return SDL_InvalidParamError("mutex");
     }
 
     mutex->cpp_mutex.unlock();

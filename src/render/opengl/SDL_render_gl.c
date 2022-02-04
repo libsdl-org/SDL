@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -72,6 +72,9 @@ typedef struct
     SDL_bool cliprect_dirty;
     SDL_Rect cliprect;
     SDL_bool texturing;
+    SDL_bool vertex_array;
+    SDL_bool color_array;
+    SDL_bool texture_array;
     Uint32 color;
     Uint32 clear_color;
 } GL_DrawStateCache;
@@ -123,6 +126,7 @@ typedef struct
     GLfloat texh;
     GLenum format;
     GLenum formattype;
+    GL_Shader shader;
     void *pixels;
     int pitch;
     SDL_Rect locked_rect;
@@ -630,6 +634,57 @@ GL_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     }
 #endif
 
+    if (texture->format == SDL_PIXELFORMAT_ABGR8888 || texture->format == SDL_PIXELFORMAT_ARGB8888) {
+        data->shader = SHADER_RGBA;
+    } else {
+        data->shader = SHADER_RGB;
+    }
+
+#if SDL_HAVE_YUV
+    if (data->yuv || data->nv12) {
+        switch (SDL_GetYUVConversionModeForResolution(texture->w, texture->h)) {
+            case SDL_YUV_CONVERSION_JPEG:
+                if (data->yuv) {
+                    data->shader = SHADER_YUV_JPEG;
+                } else if (texture->format == SDL_PIXELFORMAT_NV12) {
+                    data->shader = SHADER_NV12_JPEG;
+                } else {
+                    data->shader = SHADER_NV21_JPEG;
+                }
+                break;
+            case SDL_YUV_CONVERSION_BT601:
+                if (data->yuv) {
+                    data->shader = SHADER_YUV_BT601;
+                } else if (texture->format == SDL_PIXELFORMAT_NV12) {
+                    if (SDL_GetHintBoolean("SDL_RENDER_OPENGL_NV12_RG_SHADER", SDL_FALSE)) {
+                        data->shader = SHADER_NV12_RG_BT601;
+                    } else {
+                        data->shader = SHADER_NV12_RA_BT601;
+                    }
+                } else {
+                    data->shader = SHADER_NV21_BT601;
+                }
+                break;
+            case SDL_YUV_CONVERSION_BT709:
+                if (data->yuv) {
+                    data->shader = SHADER_YUV_BT709;
+                } else if (texture->format == SDL_PIXELFORMAT_NV12) {
+                    if (SDL_GetHintBoolean("SDL_RENDER_OPENGL_NV12_RG_SHADER", SDL_FALSE)) {
+                        data->shader = SHADER_NV12_RG_BT709;
+                    } else {
+                        data->shader = SHADER_NV12_RA_BT709;
+                    }
+                } else {
+                    data->shader = SHADER_NV21_BT709;
+                }
+                break;
+            default:
+                SDL_assert(!"unsupported YUV conversion mode");
+                break;
+        }
+    }
+#endif /* SDL_HAVE_YUV */
+
     return GL_CheckError("", renderer);
 }
 
@@ -890,171 +945,46 @@ static int
 GL_QueueDrawLines(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FPoint * points, int count)
 {
     int i;
+    GLfloat prevx, prevy;
     const size_t vertlen = (sizeof (GLfloat) * 2) * count;
     GLfloat *verts = (GLfloat *) SDL_AllocateRenderVertices(renderer, vertlen, 0, &cmd->data.draw.first);
+
     if (!verts) {
         return -1;
     }
     cmd->data.draw.count = count;
 
-    /* Offset to hit the center of the pixel. */
-    for (i = 0; i < count; i++) {
-        *(verts++) = 0.5f + points[i].x;
-        *(verts++) = 0.5f + points[i].y;
-    }
+    /* 0.5f offset to hit the center of the pixel. */
+    prevx = 0.5f + points->x;
+    prevy = 0.5f + points->y;
+    *(verts++) = prevx;
+    *(verts++) = prevy;
 
-    /* Make the last line segment one pixel longer, to satisfy the
-       diamond-exit rule. */
-    verts -= 4;
-    {
-        const GLfloat xstart = verts[0];
-        const GLfloat ystart = verts[1];
-        const GLfloat xend = verts[2];
-        const GLfloat yend = verts[3];
-
-        if (ystart == yend) {  /* horizontal line */
-            verts[(xend > xstart) ? 2 : 0] += 1.0f;
-        } else if (xstart == xend) {  /* vertical line */
-            verts[(yend > ystart) ? 3 : 1] += 1.0f;
-        } else {  /* bump a pixel in the direction we are moving in. */
-            const GLfloat deltax = xend - xstart;
-            const GLfloat deltay = yend - ystart;
-            const GLfloat angle = SDL_atan2f(deltay, deltax);
-            verts[2] += SDL_cosf(angle);
-            verts[3] += SDL_sinf(angle);
-        }
+    /* bump the end of each line segment out a quarter of a pixel, to provoke
+       the diamond-exit rule. Without this, you won't just drop the last
+       pixel of the last line segment, but you might also drop pixels at the
+       edge of any given line segment along the way too. */
+    for (i = 1; i < count; i++) {
+        const GLfloat xstart = prevx;
+        const GLfloat ystart = prevy;
+        const GLfloat xend = points[i].x + 0.5f;  /* 0.5f to hit pixel center. */
+        const GLfloat yend = points[i].y + 0.5f;
+        /* bump a little in the direction we are moving in. */
+        const GLfloat deltax = xend - xstart;
+        const GLfloat deltay = yend - ystart;
+        const GLfloat angle = SDL_atan2f(deltay, deltax);
+        prevx = xend + (SDL_cosf(angle) * 0.25f);
+        prevy = yend + (SDL_sinf(angle) * 0.25f);
+        *(verts++) = prevx;
+        *(verts++) = prevy;
     }
 
     return 0;
 }
 
-static int
-GL_QueueFillRects(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FRect * rects, int count)
-{
-    GLfloat *verts = (GLfloat *) SDL_AllocateRenderVertices(renderer, count * 4 * sizeof (GLfloat), 0, &cmd->data.draw.first);
-    int i;
-
-    if (!verts) {
-        return -1;
-    }
-
-    cmd->data.draw.count = count;
-    for (i = 0; i < count; i++) {
-        const SDL_FRect *rect = &rects[i];
-        *(verts++) = rect->x;
-        *(verts++) = rect->y;
-        *(verts++) = rect->x + rect->w;
-        *(verts++) = rect->y + rect->h;
-    }
-
-    return 0;
-}
-
-static int
-GL_QueueCopy(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * texture,
-             const SDL_Rect * srcrect, const SDL_FRect * dstrect)
-{
-    GL_TextureData *texturedata = (GL_TextureData *) texture->driverdata;
-    GLfloat minx, miny, maxx, maxy;
-    GLfloat minu, maxu, minv, maxv;
-    GLfloat *verts = (GLfloat *) SDL_AllocateRenderVertices(renderer, 8 * sizeof (GLfloat), 0, &cmd->data.draw.first);
-
-    if (!verts) {
-        return -1;
-    }
-
-    cmd->data.draw.count = 1;
-
-    minx = dstrect->x;
-    miny = dstrect->y;
-    maxx = dstrect->x + dstrect->w;
-    maxy = dstrect->y + dstrect->h;
-
-    minu = (GLfloat) srcrect->x / texture->w;
-    minu *= texturedata->texw;
-    maxu = (GLfloat) (srcrect->x + srcrect->w) / texture->w;
-    maxu *= texturedata->texw;
-    minv = (GLfloat) srcrect->y / texture->h;
-    minv *= texturedata->texh;
-    maxv = (GLfloat) (srcrect->y + srcrect->h) / texture->h;
-    maxv *= texturedata->texh;
-
-    cmd->data.draw.count = 1;
-    *(verts++) = minx;
-    *(verts++) = miny;
-    *(verts++) = maxx;
-    *(verts++) = maxy;
-    *(verts++) = minu;
-    *(verts++) = maxu;
-    *(verts++) = minv;
-    *(verts++) = maxv;
-    return 0;
-}
-
-static int
-GL_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * texture,
-               const SDL_Rect * srcrect, const SDL_FRect * dstrect,
-               const double angle, const SDL_FPoint *center, const SDL_RendererFlip flip)
-{
-    GL_TextureData *texturedata = (GL_TextureData *) texture->driverdata;
-    GLfloat minx, miny, maxx, maxy;
-    GLfloat centerx, centery;
-    GLfloat minu, maxu, minv, maxv;
-    GLfloat *verts = (GLfloat *) SDL_AllocateRenderVertices(renderer, 11 * sizeof (GLfloat), 0, &cmd->data.draw.first);
-
-    if (!verts) {
-        return -1;
-    }
-
-    centerx = center->x;
-    centery = center->y;
-
-    if (flip & SDL_FLIP_HORIZONTAL) {
-        minx =  dstrect->w - centerx;
-        maxx = -centerx;
-    }
-    else {
-        minx = -centerx;
-        maxx =  dstrect->w - centerx;
-    }
-
-    if (flip & SDL_FLIP_VERTICAL) {
-        miny =  dstrect->h - centery;
-        maxy = -centery;
-    }
-    else {
-        miny = -centery;
-        maxy =  dstrect->h - centery;
-    }
-
-    minu = (GLfloat) srcrect->x / texture->w;
-    minu *= texturedata->texw;
-    maxu = (GLfloat) (srcrect->x + srcrect->w) / texture->w;
-    maxu *= texturedata->texw;
-    minv = (GLfloat) srcrect->y / texture->h;
-    minv *= texturedata->texh;
-    maxv = (GLfloat) (srcrect->y + srcrect->h) / texture->h;
-    maxv *= texturedata->texh;
-
-    cmd->data.draw.count = 1;
-    *(verts++) = minx;
-    *(verts++) = miny;
-    *(verts++) = maxx;
-    *(verts++) = maxy;
-    *(verts++) = minu;
-    *(verts++) = maxu;
-    *(verts++) = minv;
-    *(verts++) = maxv;
-    *(verts++) = (GLfloat) dstrect->x + centerx;
-    *(verts++) = (GLfloat) dstrect->y + centery;
-    *(verts++) = (GLfloat) angle;
-    return 0;
-}
-
-#if SDL_HAVE_RENDER_GEOMETRY
 static int
 GL_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
-        const float *xy, int xy_stride, const int *color, int color_stride, const float *uv, int uv_stride,
+        const float *xy, int xy_stride, const SDL_Color *color, int color_stride, const float *uv, int uv_stride,
         int num_vertices, const void *indices, int num_indices, int size_indices,
         float scale_x, float scale_y)
 {
@@ -1062,9 +992,9 @@ GL_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *te
     int i;
     int count = indices ? num_indices : num_vertices;
     GLfloat *verts;
-    int sz = 2 + 4 + (texture ? 2 : 0);
+    size_t sz = 2 * sizeof(GLfloat) + 4 * sizeof(Uint8) + (texture ? 2 : 0) * sizeof(GLfloat);
 
-    verts = (GLfloat *) SDL_AllocateRenderVertices(renderer, count * sz * sizeof (GLfloat), 0, &cmd->data.draw.first);
+    verts = (GLfloat *) SDL_AllocateRenderVertices(renderer, count * sz, 0, &cmd->data.draw.first);
     if (!verts) {
         return -1;
     }
@@ -1079,7 +1009,6 @@ GL_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *te
     for (i = 0; i < count; i++) {
         int j;
         float *xy_;
-        SDL_Color col_;
         if (size_indices == 4) {
             j = ((const Uint32 *)indices)[i];
         } else if (size_indices == 2) {
@@ -1091,15 +1020,14 @@ GL_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *te
         }
 
         xy_ = (float *)((char*)xy + j * xy_stride);
-        col_ = *(SDL_Color *)((char*)color + j * color_stride);
 
         *(verts++) = xy_[0] * scale_x;
         *(verts++) = xy_[1] * scale_y;
 
-        *(verts++) = col_.r * inv255f;
-        *(verts++) = col_.g * inv255f;
-        *(verts++) = col_.b * inv255f;
-        *(verts++) = col_.a * inv255f;
+        /* Not really a float, but it is still 4 bytes and will be cast to the
+           right type in the graphics driver. */
+        SDL_memcpy(verts, ((char*)color + j * color_stride), sizeof(*color));
+        ++verts;
 
         if (texture) {
             float *uv_ = (float *)((char*)uv + j * uv_stride);
@@ -1109,12 +1037,14 @@ GL_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *te
     }
     return 0;
 }
-#endif
 
 static void
 SetDrawState(GL_RenderData *data, const SDL_RenderCommand *cmd, const GL_Shader shader)
 {
     const SDL_BlendMode blend = cmd->data.draw.blend;
+    SDL_bool vertex_array;
+    SDL_bool color_array;
+    SDL_bool texture_array;
 
     if (data->drawstate.viewport_dirty) {
         const SDL_bool istarget = data->drawstate.target != NULL;
@@ -1180,6 +1110,40 @@ SetDrawState(GL_RenderData *data, const SDL_RenderCommand *cmd, const GL_Shader 
             data->drawstate.texturing = SDL_TRUE;
         }
     }
+
+    vertex_array = cmd->command == SDL_RENDERCMD_DRAW_LINES
+        || cmd->command == SDL_RENDERCMD_GEOMETRY;
+    color_array = cmd->command == SDL_RENDERCMD_GEOMETRY;
+    texture_array = cmd->data.draw.texture != NULL;
+
+    if (vertex_array != data->drawstate.vertex_array) {
+        if (vertex_array) {
+            data->glEnableClientState(GL_VERTEX_ARRAY);
+        } else {
+            data->glDisableClientState(GL_VERTEX_ARRAY);
+        }
+        data->drawstate.vertex_array = vertex_array;
+    }
+
+    if (color_array != data->drawstate.color_array) {
+        if (color_array) {
+            data->glEnableClientState(GL_COLOR_ARRAY);
+        } else {
+            data->glDisableClientState(GL_COLOR_ARRAY);
+        }
+        data->drawstate.color_array = color_array;
+    }
+
+    /* This is a little awkward but should avoid texcoord arrays getting into
+       a bad state if SDL_GL_BindTexture/UnbindTexture are called. */
+    if (texture_array != data->drawstate.texture_array) {
+        if (texture_array) {
+            data->glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+        } else {
+            data->glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+        }
+        data->drawstate.texture_array = texture_array;
+    }
 }
 
 static void
@@ -1187,54 +1151,8 @@ SetCopyState(GL_RenderData *data, const SDL_RenderCommand *cmd)
 {
     SDL_Texture *texture = cmd->data.draw.texture;
     const GL_TextureData *texturedata = (GL_TextureData *) texture->driverdata;
-    GL_Shader shader;
 
-    if (texture->format == SDL_PIXELFORMAT_ABGR8888 || texture->format == SDL_PIXELFORMAT_ARGB8888) {
-        shader = SHADER_RGBA;
-    } else {
-        shader = SHADER_RGB;
-    }
-
-#if SDL_HAVE_YUV
-    if (data->shaders) {
-        if (texturedata->yuv || texturedata->nv12) {
-            switch (SDL_GetYUVConversionModeForResolution(texture->w, texture->h)) {
-                case SDL_YUV_CONVERSION_JPEG:
-                    if (texturedata->yuv) {
-                        shader = SHADER_YUV_JPEG;
-                    } else if (texture->format == SDL_PIXELFORMAT_NV12) {
-                        shader = SHADER_NV12_JPEG;
-                    } else {
-                        shader = SHADER_NV21_JPEG;
-                    }
-                    break;
-                case SDL_YUV_CONVERSION_BT601:
-                    if (texturedata->yuv) {
-                        shader = SHADER_YUV_BT601;
-                    } else if (texture->format == SDL_PIXELFORMAT_NV12) {
-                        shader = SHADER_NV12_BT601;
-                    } else {
-                        shader = SHADER_NV21_BT601;
-                    }
-                    break;
-                case SDL_YUV_CONVERSION_BT709:
-                    if (texturedata->yuv) {
-                        shader = SHADER_YUV_BT709;
-                    } else if (texture->format == SDL_PIXELFORMAT_NV12) {
-                        shader = SHADER_NV12_BT709;
-                    } else {
-                        shader = SHADER_NV21_BT709;
-                    }
-                    break;
-                default:
-                    SDL_assert(!"unsupported YUV conversion mode");
-                    break;
-            }
-        }
-    }
-#endif
-
-    SetDrawState(data, cmd, shader);
+    SetDrawState(data, cmd, texturedata->shader);
 
     if (texture != data->drawstate.texture) {
         const GLenum textype = data->textype;
@@ -1279,9 +1197,22 @@ GL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
 
     data->drawstate.target = renderer->target;
     if (!data->drawstate.target) {
-        SDL_GL_GetDrawableSize(renderer->window, &data->drawstate.drawablew, &data->drawstate.drawableh);
+        int w, h;
+        SDL_GL_GetDrawableSize(renderer->window, &w, &h);
+        if ((w != data->drawstate.drawablew) || (h != data->drawstate.drawableh)) {
+            data->drawstate.viewport_dirty = SDL_TRUE;  // if the window dimensions changed, invalidate the current viewport, etc.
+            data->drawstate.cliprect_dirty = SDL_TRUE;
+            data->drawstate.drawablew = w;
+            data->drawstate.drawableh = h;
+        }
     }
 
+#ifdef __MACOSX__
+    // On macOS, moving the window seems to invalidate the OpenGL viewport state,
+    // so don't bother trying to persist it across frames; always reset it.
+    // Workaround for: https://github.com/libsdl-org/SDL/issues/1504
+    data->drawstate.viewport_dirty = SDL_TRUE;
+#endif
 
     while (cmd) {
         switch (cmd->command) {
@@ -1290,12 +1221,9 @@ GL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
                 const Uint8 g = cmd->data.color.g;
                 const Uint8 b = cmd->data.color.b;
                 const Uint8 a = cmd->data.color.a;
-                const Uint32 color = ((a << 24) | (r << 16) | (g << 8) | b);
+                const Uint32 color = (((Uint32)a << 24) | (r << 16) | (g << 8) | b);
                 if (color != data->drawstate.color) {
-                    data->glColor4f((GLfloat) r * inv255f,
-                                    (GLfloat) g * inv255f,
-                                    (GLfloat) b * inv255f,
-                                    (GLfloat) a * inv255f);
+                    data->glColor4ub((GLubyte) r, (GLubyte) g, (GLubyte) b, (GLubyte) a);
                     data->drawstate.color = color;
                 }
                 break;
@@ -1328,7 +1256,7 @@ GL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
                 const Uint8 g = cmd->data.color.g;
                 const Uint8 b = cmd->data.color.b;
                 const Uint8 a = cmd->data.color.a;
-                const Uint32 color = ((a << 24) | (r << 16) | (g << 8) | b);
+                const Uint32 color = (((Uint32)a << 24) | (r << 16) | (g << 8) | b);
                 if (color != data->drawstate.clear_color) {
                     const GLfloat fr = ((GLfloat) r) * inv255f;
                     const GLfloat fg = ((GLfloat) g) * inv255f;
@@ -1365,83 +1293,23 @@ GL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
                 const size_t count = cmd->data.draw.count;
                 SDL_assert(count >= 2);
                 SetDrawState(data, cmd, SHADER_SOLID);
-                data->glBegin(GL_LINE_STRIP);
-                for (i = 0; i < count; ++i, verts += 2) {
-                    data->glVertex2f(verts[0], verts[1]);
-                }
-                data->glEnd();
+
+                /* SetDrawState handles glEnableClientState. */
+                data->glVertexPointer(2, GL_FLOAT, sizeof(float) * 2, verts);
+                data->glDrawArrays(GL_LINE_STRIP, 0, (GLsizei) count);
                 break;
             }
 
-            case SDL_RENDERCMD_FILL_RECTS: {
-                const size_t count = cmd->data.draw.count;
-                const GLfloat *verts = (GLfloat *) (((Uint8 *) vertices) + cmd->data.draw.first);
-                SetDrawState(data, cmd, SHADER_SOLID);
-                for (i = 0; i < count; ++i, verts += 4) {
-                    data->glRectf(verts[0], verts[1], verts[2], verts[3]);
-                }
+            case SDL_RENDERCMD_FILL_RECTS: /* unused */
                 break;
-            }
 
-            case SDL_RENDERCMD_COPY: {
-                const GLfloat *verts = (GLfloat *) (((Uint8 *) vertices) + cmd->data.draw.first);
-                const GLfloat minx = verts[0];
-                const GLfloat miny = verts[1];
-                const GLfloat maxx = verts[2];
-                const GLfloat maxy = verts[3];
-                const GLfloat minu = verts[4];
-                const GLfloat maxu = verts[5];
-                const GLfloat minv = verts[6];
-                const GLfloat maxv = verts[7];
-                SetCopyState(data, cmd);
-                data->glBegin(GL_TRIANGLE_STRIP);
-                data->glTexCoord2f(minu, minv);
-                data->glVertex2f(minx, miny);
-                data->glTexCoord2f(maxu, minv);
-                data->glVertex2f(maxx, miny);
-                data->glTexCoord2f(minu, maxv);
-                data->glVertex2f(minx, maxy);
-                data->glTexCoord2f(maxu, maxv);
-                data->glVertex2f(maxx, maxy);
-                data->glEnd();
+            case SDL_RENDERCMD_COPY: /* unused */
                 break;
-            }
 
-            case SDL_RENDERCMD_COPY_EX: {
-                const GLfloat *verts = (GLfloat *) (((Uint8 *) vertices) + cmd->data.draw.first);
-                const GLfloat minx = verts[0];
-                const GLfloat miny = verts[1];
-                const GLfloat maxx = verts[2];
-                const GLfloat maxy = verts[3];
-                const GLfloat minu = verts[4];
-                const GLfloat maxu = verts[5];
-                const GLfloat minv = verts[6];
-                const GLfloat maxv = verts[7];
-                const GLfloat translatex = verts[8];
-                const GLfloat translatey = verts[9];
-                const GLdouble angle = verts[10];
-                SetCopyState(data, cmd);
-
-                /* Translate to flip, rotate, translate to position */
-                data->glPushMatrix();
-                data->glTranslatef(translatex, translatey, 0.0f);
-                data->glRotated(angle, 0.0, 0.0, 1.0);
-                data->glBegin(GL_TRIANGLE_STRIP);
-                data->glTexCoord2f(minu, minv);
-                data->glVertex2f(minx, miny);
-                data->glTexCoord2f(maxu, minv);
-                data->glVertex2f(maxx, miny);
-                data->glTexCoord2f(minu, maxv);
-                data->glVertex2f(minx, maxy);
-                data->glTexCoord2f(maxu, maxv);
-                data->glVertex2f(maxx, maxy);
-                data->glEnd();
-                data->glPopMatrix();
+            case SDL_RENDERCMD_COPY_EX: /* unused */
                 break;
-            }
 
             case SDL_RENDERCMD_GEOMETRY: {
-#if SDL_HAVE_RENDER_GEOMETRY
                 const GLfloat *verts = (GLfloat *) (((Uint8 *) vertices) + cmd->data.draw.first);
                 SDL_Texture *texture = cmd->data.draw.texture;
                 const size_t count = cmd->data.draw.count;
@@ -1453,33 +1321,27 @@ GL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
                 }
 
                 {
-                    int j;
-                    float currentColor[4];
-                    data->glGetFloatv(GL_CURRENT_COLOR, currentColor);
-                    data->glBegin(GL_TRIANGLES);
-                    for (j = 0; j < count; ++j)
-                    {
-                        const GLfloat x = *(verts++);
-                        const GLfloat y = *(verts++);
+                    Uint32 color = data->drawstate.color;
+                    GLubyte a = (GLubyte)((color >> 24) & 0xFF);
+                    GLubyte r = (GLubyte)((color >> 16) & 0xFF);
+                    GLubyte g = (GLubyte)((color >> 8) & 0xFF);
+                    GLubyte b = (GLubyte)((color >> 0) & 0xFF);
 
-                        const GLfloat r = *(verts++);
-                        const GLfloat g = *(verts++);
-                        const GLfloat b = *(verts++);
-                        const GLfloat a = *(verts++);
-
-                        data->glColor4f(r, g, b, a);
-
-                        if (texture) {
-                            GLfloat u = *(verts++);
-                            GLfloat v = *(verts++);
-                            data->glTexCoord2f(u,v);
-                        }
-                        data->glVertex2f(x, y);
+                    /* SetDrawState handles glEnableClientState. */
+                    if (texture) {
+                        data->glVertexPointer(2, GL_FLOAT, sizeof(float) * 5, verts + 0);
+                        data->glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(float) * 5, verts + 2);
+                        data->glTexCoordPointer(2, GL_FLOAT, sizeof(float) * 5, verts + 3);
+                    } else {
+                        data->glVertexPointer(2, GL_FLOAT, sizeof(float) * 3, verts + 0);
+                        data->glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(float) * 3, verts + 2);
                     }
-                    data->glEnd();
-                    data->glColor4f(currentColor[0], currentColor[1], currentColor[2], currentColor[3]);
+
+                    data->glDrawArrays(GL_TRIANGLES, 0, (GLsizei) count);
+
+                    /* Restore previously set color when we're done. */
+                    data->glColor4ub(r, g, b, a);
                 }
-#endif
                 break;
            }
 
@@ -1489,6 +1351,21 @@ GL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
         }
 
         cmd = cmd->next;
+    }
+
+    /* Turn off vertex array state when we're done, in case external code
+       relies on it being off. */
+    if (data->drawstate.vertex_array) {
+        data->glDisableClientState(GL_VERTEX_ARRAY);
+        data->drawstate.vertex_array = SDL_FALSE;
+    }
+    if (data->drawstate.color_array) {
+        data->glDisableClientState(GL_COLOR_ARRAY);
+        data->drawstate.color_array = SDL_FALSE;
+    }
+    if (data->drawstate.texture_array) {
+        data->glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+        data->drawstate.texture_array = SDL_FALSE;
     }
 
     return GL_CheckError("", renderer);
@@ -1669,15 +1546,28 @@ GL_BindTexture (SDL_Renderer * renderer, SDL_Texture *texture, float *texw, floa
             data->glActiveTextureARB(GL_TEXTURE0_ARB);
         }
     }
+    if (texturedata->nv12) {
+        if (data->GL_ARB_multitexture_supported) {
+            data->glActiveTextureARB(GL_TEXTURE1_ARB);
+        }
+        data->glBindTexture(textype, texturedata->utexture);
+
+        if (data->GL_ARB_multitexture_supported) {
+            data->glActiveTextureARB(GL_TEXTURE0_ARB);
+        }
+    }
 #endif
     data->glBindTexture(textype, texturedata->texture);
 
     data->drawstate.texturing = SDL_TRUE;
     data->drawstate.texture = texture;
 
-    if(texw) *texw = (float)texturedata->texw;
-    if(texh) *texh = (float)texturedata->texh;
-
+    if (texw) {
+        *texw = (float)texturedata->texw;
+    }
+    if (texh) {
+        *texh = (float)texturedata->texh;
+    }
     return 0;
 }
 
@@ -1695,11 +1585,24 @@ GL_UnbindTexture (SDL_Renderer * renderer, SDL_Texture *texture)
         if (data->GL_ARB_multitexture_supported) {
             data->glActiveTextureARB(GL_TEXTURE2_ARB);
         }
+        data->glBindTexture(textype, 0);
         data->glDisable(textype);
 
         if (data->GL_ARB_multitexture_supported) {
             data->glActiveTextureARB(GL_TEXTURE1_ARB);
         }
+        data->glBindTexture(textype, 0);
+        data->glDisable(textype);
+
+        if (data->GL_ARB_multitexture_supported) {
+            data->glActiveTextureARB(GL_TEXTURE0_ARB);
+        }
+    }
+    if (texturedata->nv12) {
+        if (data->GL_ARB_multitexture_supported) {
+            data->glActiveTextureARB(GL_TEXTURE1_ARB);
+        }
+        data->glBindTexture(textype, 0);
         data->glDisable(textype);
 
         if (data->GL_ARB_multitexture_supported) {
@@ -1707,7 +1610,7 @@ GL_UnbindTexture (SDL_Renderer * renderer, SDL_Texture *texture)
         }
     }
 #endif
-
+    data->glBindTexture(textype, 0);
     data->glDisable(textype);
 
     data->drawstate.texturing = SDL_FALSE;
@@ -1794,12 +1697,7 @@ GL_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->QueueSetDrawColor = GL_QueueSetViewport;  /* SetViewport and SetDrawColor are (currently) no-ops. */
     renderer->QueueDrawPoints = GL_QueueDrawPoints;
     renderer->QueueDrawLines = GL_QueueDrawLines;
-    renderer->QueueFillRects = GL_QueueFillRects;
-    renderer->QueueCopy = GL_QueueCopy;
-    renderer->QueueCopyEx = GL_QueueCopyEx;
-#if SDL_HAVE_RENDER_GEOMETRY
     renderer->QueueGeometry = GL_QueueGeometry;
-#endif
     renderer->RunCommandQueue = GL_RunCommandQueue;
     renderer->RenderReadPixels = GL_RenderReadPixels;
     renderer->RenderPresent = GL_RenderPresent;
@@ -1936,7 +1834,7 @@ GL_CreateRenderer(SDL_Window * window, Uint32 flags)
     data->glDisable(GL_SCISSOR_TEST);
     data->glDisable(data->textype);
     data->glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-    data->glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+    data->glColor4ub(255, 255, 255, 255);
     /* This ended up causing video discrepancies between OpenGL and Direct3D */
     /* data->glEnable(GL_LINE_SMOOTH); */
 

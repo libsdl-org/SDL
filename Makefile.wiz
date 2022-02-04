@@ -14,6 +14,7 @@ TARGET_SHARED  = libSDL2.so
 
 SOURCES = \
 	./src/*.c \
+	./src/atomic/*.c \
 	./src/audio/*.c \
 	./src/audio/disk/*.c \
 	./src/audio/dsp/*.c \
@@ -21,11 +22,18 @@ SOURCES = \
 	./src/cpuinfo/*.c \
 	./src/events/*.c \
 	./src/file/*.c \
+	./src/filesystem/unix/*.c \
 	./src/haptic/*.c \
 	./src/haptic/linux/*.c \
+	./src/hidapi/*.c \
 	./src/joystick/*.c \
 	./src/joystick/linux/*.c \
 	./src/loadso/dlopen/*.c \
+	./src/locale/*.c \
+	./src/locale/unix/*.c \
+	./src/misc/*.c \
+	./src/misc/unix/*.c \
+	./src/power/*.c \
 	./src/sensor/*.c \
 	./src/sensor/dummy/*.c \
 	./src/stdlib/*.c \
@@ -37,9 +45,9 @@ SOURCES = \
 	./src/timer/*.c \
 	./src/timer/unix/*.c \
 	./src/video/*.c \
+	./src/video/yuv2rgb/*.c \
 	./src/video/dummy/*.c \
-	./src/video/pandora/*.c \
-	
+	./src/video/pandora/*.c
 
 OBJECTS = $(shell echo $(SOURCES) | sed -e 's,\.c,\.o,g')
 

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -31,7 +31,7 @@
 #include <X11/keysym.h>
 #include <X11/XKBlib.h>
 
-#include "imKStoUCS.h"
+#include "../../events/imKStoUCS.h"
 
 #ifdef X_HAVE_UTF8_STRING
 #include <locale.h>
@@ -205,7 +205,7 @@ X11_KeyCodeToUcs4(_THIS, KeyCode keycode, unsigned char group)
         return 0;
     }
 
-    return X11_KeySymToUcs4(keysym);
+    return SDL_KeySymToUcs4(keysym);
 }
 
 KeySym
@@ -267,7 +267,9 @@ X11_InitKeyboard(_THIS)
     int best_index;
     int distance;
     Bool xkb_repeat = 0;
-    XKeyboardState values = { .global_auto_repeat = AutoRepeatModeOff };
+    XKeyboardState values;
+    SDL_zero(values);
+    values.global_auto_repeat = AutoRepeatModeOff;
     
     X11_XGetKeyboardControl(data->display, &values);
     if (values.global_auto_repeat != AutoRepeatModeOn)
@@ -278,7 +280,7 @@ X11_InitKeyboard(_THIS)
         int xkb_major = XkbMajorVersion;
         int xkb_minor = XkbMinorVersion;
 
-        if (X11_XkbQueryExtension(data->display, NULL, NULL, NULL, &xkb_major, &xkb_minor)) {
+        if (X11_XkbQueryExtension(data->display, NULL, &data->xkb_event, NULL, &xkb_major, &xkb_minor)) {
             data->xkb = X11_XkbGetMap(data->display, XkbAllClientInfoMask, XkbUseCoreKbd);
         }
 

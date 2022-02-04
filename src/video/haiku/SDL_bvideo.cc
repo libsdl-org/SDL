@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -94,6 +94,7 @@ HAIKU_CreateDevice(int devindex)
     device->SetWindowGammaRamp = HAIKU_SetWindowGammaRamp;
     device->GetWindowGammaRamp = HAIKU_GetWindowGammaRamp;
     device->SetWindowMouseGrab = HAIKU_SetWindowMouseGrab;
+    device->SetWindowMinimumSize = HAIKU_SetWindowMinimumSize;
     device->DestroyWindow = HAIKU_DestroyWindow;
     device->GetWindowWMInfo = HAIKU_GetWindowWMInfo;
     device->CreateWindowFramebuffer = HAIKU_CreateWindowFramebuffer;
@@ -190,6 +191,31 @@ HAIKU_FreeCursor(SDL_Cursor * cursor)
     SDL_free(cursor);
 }
 
+static SDL_Cursor *
+HAIKU_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y)
+{
+    SDL_Cursor *cursor;
+    SDL_Surface *converted;
+
+    converted = SDL_ConvertSurfaceFormat(surface, SDL_PIXELFORMAT_ARGB8888, 0);
+    if (!converted) {
+        return NULL;
+    }
+
+	BBitmap *cursorBitmap = new BBitmap(BRect(0, 0, surface->w - 1, surface->h - 1), B_RGBA32);
+	cursorBitmap->SetBits(converted->pixels, converted->h * converted->pitch, 0, B_RGBA32);
+    SDL_FreeSurface(converted);
+
+    cursor = (SDL_Cursor *) SDL_calloc(1, sizeof(*cursor));
+    if (cursor) {
+        cursor->driverdata = (void *)new BCursor(cursorBitmap, BPoint(hot_x, hot_y));
+    } else {
+        return NULL;
+    }
+
+    return cursor;
+}
+
 static int HAIKU_ShowCursor(SDL_Cursor *cursor)
 {
 	SDL_Mouse *mouse = SDL_GetMouse();
@@ -222,7 +248,7 @@ HAIKU_SetRelativeMouseMode(SDL_bool enabled)
 
 	bewin->Lock();
 	if (enabled)
-		_SDL_GLView->SetEventMask(B_POINTER_EVENTS | B_KEYBOARD_EVENTS, B_NO_POINTER_HISTORY);
+		_SDL_GLView->SetEventMask(B_POINTER_EVENTS, B_NO_POINTER_HISTORY);
 	else
 		_SDL_GLView->SetEventMask(0, 0);
 	bewin->Unlock();
@@ -235,6 +261,7 @@ static void HAIKU_MouseInit(_THIS)
 	SDL_Mouse *mouse = SDL_GetMouse();
 	if (!mouse)
 		return;
+	mouse->CreateCursor = HAIKU_CreateCursor;
 	mouse->CreateSystemCursor = HAIKU_CreateSystemCursor;
 	mouse->ShowCursor = HAIKU_ShowCursor;
 	mouse->FreeCursor = HAIKU_FreeCursor;

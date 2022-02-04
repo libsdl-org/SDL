@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -108,7 +108,9 @@ rtkit_initialize_realtime_thread()
     int nLimit = RLIMIT_RTTIME;
     pid_t nPid = 0; //self
     int nSchedPolicy = sched_getscheduler(nPid) | SCHED_RESET_ON_FORK;
-    struct sched_param schedParam = {};
+    struct sched_param schedParam;
+
+    SDL_zero(schedParam);
 
     // Requirement #1: Set RLIMIT_RTTIME
     err = getrlimit(nLimit, &rlimit);

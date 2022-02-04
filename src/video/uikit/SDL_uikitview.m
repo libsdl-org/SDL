@@ -1,6 +1,6 @@
  /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -160,7 +160,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 
 #if !TARGET_OS_TV && defined(__IPHONE_13_4)
 - (UIPointerRegion *)pointerInteraction:(UIPointerInteraction *)interaction regionForRequest:(UIPointerRegionRequest *)request defaultRegion:(UIPointerRegion *)defaultRegion API_AVAILABLE(ios(13.4)){
-    if (request != nil && !SDL_HasGCMouse()) {
+    if (request != nil && !SDL_GCMouseRelativeMode()) {
         CGPoint origin = self.bounds.origin;
         CGPoint point = request.location;
 

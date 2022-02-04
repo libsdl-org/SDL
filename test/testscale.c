@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -47,7 +47,7 @@ quit(int rc)
 }
 
 SDL_Texture *
-LoadTexture(SDL_Renderer *renderer, char *file, SDL_bool transparent)
+LoadTexture(SDL_Renderer *renderer, const char *file, SDL_bool transparent)
 {
     SDL_Surface *temp;
     SDL_Texture *texture;

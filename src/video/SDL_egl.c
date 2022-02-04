@@ -1,6 +1,6 @@
 /*
  *  Simple DirectMedia Layer
- *  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+ *  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
  * 
  *  This software is provided 'as-is', without any express or implied
  *  warranty.  In no event will the authors be held liable for any damages
@@ -29,6 +29,9 @@
 #include <android/native_window.h>
 #include "../core/android/SDL_android.h"
 #include "../video/android/SDL_androidvideo.h"
+#endif
+#if SDL_VIDEO_DRIVER_RPI
+#include <unistd.h>
 #endif
 
 #include "SDL_sysvideo.h"
@@ -546,7 +549,7 @@ SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_displa
     /* Get the EGL version with a valid egl_display, for EGL <= 1.4 */
     SDL_EGL_GetVersion(_this);
 
-    _this->egl_data->is_offscreen = 0;
+    _this->egl_data->is_offscreen = SDL_FALSE;
 
     return 0;
 }
@@ -566,7 +569,7 @@ SDL_EGL_InitializeOffscreen(_THIS, int device)
     EGLint num_egl_devices = 0;
     const char *egl_device_hint;
 
-    if (_this->gl_config.driver_loaded != 1) {
+    if (_this->gl_config.driver_loaded <= 0) {
         return SDL_SetError("SDL_EGL_LoadLibraryOnly() has not been called or has failed.");
     }
 
@@ -634,7 +637,7 @@ SDL_EGL_InitializeOffscreen(_THIS, int device)
     /* Get the EGL version with a valid egl_display, for EGL <= 1.4 */
     SDL_EGL_GetVersion(_this);
 
-    _this->egl_data->is_offscreen = 1;
+    _this->egl_data->is_offscreen = SDL_TRUE;
 
     return 0;
 }
@@ -906,8 +909,7 @@ SDL_EGL_ChooseConfig(_THIS)
     int ret;
 
     if (!_this->egl_data) {
-        /* The EGL library wasn't loaded, SDL_GetError() should have info */
-        return -1;
+        return SDL_SetError("EGL not initialized");
     }
 
     /* Try with EGL_CONFIG_CAVEAT set to EGL_NONE, to avoid any EGL_SLOW_CONFIG or EGL_NON_CONFORMANT_CONFIG */
@@ -940,7 +942,7 @@ SDL_EGL_CreateContext(_THIS, EGLSurface egl_surface)
     SDL_bool profile_es = (profile_mask == SDL_GL_CONTEXT_PROFILE_ES);
 
     if (!_this->egl_data) {
-        /* The EGL library wasn't loaded, SDL_GetError() should have info */
+        SDL_SetError("EGL not initialized");
         return NULL;
     }
 
@@ -1010,27 +1012,24 @@ SDL_EGL_CreateContext(_THIS, EGLSurface egl_surface)
         }
     }
 
-    if (_this->gl_config.no_error) {
 #ifdef EGL_KHR_create_context_no_error
+    if (_this->gl_config.no_error) {
         if (SDL_EGL_HasExtension(_this, SDL_EGL_DISPLAY_EXTENSION, "EGL_KHR_create_context_no_error")) {
             attribs[attr++] = EGL_CONTEXT_OPENGL_NO_ERROR_KHR;
             attribs[attr++] = _this->gl_config.no_error;
-        } else
-#endif
-        {
-            SDL_SetError("EGL implementation does not support no_error contexts");
-            return NULL;
         }
     }
+#endif
 
     attribs[attr++] = EGL_NONE;
 
     /* Bind the API */
     if (profile_es) {
-        _this->egl_data->eglBindAPI(EGL_OPENGL_ES_API);
+        _this->egl_data->apitype = EGL_OPENGL_ES_API;
     } else {
-        _this->egl_data->eglBindAPI(EGL_OPENGL_API);
+        _this->egl_data->apitype = EGL_OPENGL_API;
     }
+    _this->egl_data->eglBindAPI(_this->egl_data->apitype);
 
     egl_context = _this->egl_data->eglCreateContext(_this->egl_data->egl_display,
                                       _this->egl_data->egl_config,
@@ -1044,16 +1043,8 @@ SDL_EGL_CreateContext(_THIS, EGLSurface egl_surface)
     _this->egl_data->egl_swapinterval = 0;
 
     if (SDL_EGL_MakeCurrent(_this, egl_surface, egl_context) < 0) {
-        /* Save the SDL error set by SDL_EGL_MakeCurrent */
-        char errorText[1024];
-        SDL_strlcpy(errorText, SDL_GetError(), SDL_arraysize(errorText));
-
-        /* Delete the context, which may alter the value returned by SDL_GetError() */
+        /* Delete the context */
         SDL_EGL_DeleteContext(_this, egl_context);
-
-        /* Restore the SDL error */
-        SDL_SetError("%s", errorText);
-
         return NULL;
     }
 
@@ -1096,7 +1087,7 @@ SDL_EGL_MakeCurrent(_THIS, EGLSurface egl_surface, SDL_GLContext context)
     EGLContext egl_context = (EGLContext) context;
 
     if (!_this->egl_data) {
-        return SDL_SetError("OpenGL not initialized");
+        return SDL_SetError("EGL not initialized");
     }
 
     if (!_this->egl_data->eglMakeCurrent) {
@@ -1104,8 +1095,13 @@ SDL_EGL_MakeCurrent(_THIS, EGLSurface egl_surface, SDL_GLContext context)
             /* Can't do the nothing there is to do? Probably trying to cleanup a failed startup, just return. */
             return 0;
         } else {
-            return SDL_SetError("OpenGL not initialized");  /* something clearly went wrong somewhere. */
+            return SDL_SetError("EGL not initialized");  /* something clearly went wrong somewhere. */
         }
+    }
+
+    /* Make sure current thread has a valid API bound to it. */
+    if (_this->egl_data->eglBindAPI) {
+        _this->egl_data->eglBindAPI(_this->egl_data->apitype);
     }
 
     /* The android emulator crashes badly if you try to eglMakeCurrent 

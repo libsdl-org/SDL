@@ -18,6 +18,7 @@ dnl  (Haiku, for example, sets none of these.)
 ISUNIX="false"
 ISWINDOWS="false"
 ISMACOSX="false"
+ISOS2="false"
 
 dnl Figure out which math library to use
 case "$host" in
@@ -32,7 +33,7 @@ case "$host" in
         MATHLIB=""
         SYS_GL_LIBS="-lGL"
         ;;
-    *-*-darwin* )
+    *-*-darwin*)
         ISMACOSX="true"
         EXE=""
         MATHLIB=""
@@ -64,14 +65,20 @@ case "$host" in
         MATHLIB=""
         SYS_GL_LIBS="-lGLES_CM"
         ;;
-    *-*-emscripten* )
+    *-*-emscripten*)
         dnl This should really be .js, but we need to specify extra flags when compiling to js
         EXE=".bc"
         MATHLIB=""
         SYS_GL_LIBS=""
         ;;
-    *-*-riscos* )
+    *-*-riscos*)
         EXE=",e1f"
+        MATHLIB=""
+        SYS_GL_LIBS=""
+        ;;
+    *-*-os2*)
+        ISOS2="true"
+        EXE=".exe"
         MATHLIB=""
         SYS_GL_LIBS=""
         ;;
@@ -90,9 +97,10 @@ AC_SUBST(MATHLIB)
 AC_SUBST(ISMACOSX)
 AC_SUBST(ISWINDOWS)
 AC_SUBST(ISUNIX)
+AC_SUBST(ISOS2)
 
 dnl Check for SDL
-SDL_VERSION=2.0.0
+SDL_VERSION=2.0.18
 AM_PATH_SDL2($SDL_VERSION,
             :,
 	    AC_MSG_ERROR([*** SDL version $SDL_VERSION not found!])
@@ -191,6 +199,16 @@ if test x$have_SDL_ttf = xyes; then
     SDL_TTF_LIB="-lSDL2_ttf"
 fi
 AC_SUBST(SDL_TTF_LIB)
+
+dnl Really, SDL2_test should be linking against libunwind (if it found
+dnl libunwind.h when configured), but SDL2_test is a static library, so
+dnl there's no way for it to link against it. We could make SDL2 depend on
+dnl it, but we don't want all SDL2 build to suddenly gain an extra dependency,
+dnl so just assume that if it's here now, SDL2_test was probably built with it.
+PKG_CHECK_MODULES(LIBUNWIND, libunwind, have_libunwind=yes, have_libunwind=no)
+if test x$have_libunwind = xyes ; then
+   LIBS="$LIBS $LIBUNWIND_LIBS"
+fi
 
 dnl Finally create all the generated files
 AC_CONFIG_FILES([Makefile])

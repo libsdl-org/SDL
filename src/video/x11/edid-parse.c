@@ -50,7 +50,7 @@ get_bits (int in, int begin, int end)
 static int
 decode_header (const uchar *edid)
 {
-    if (memcmp (edid, "\x00\xff\xff\xff\xff\xff\xff\x00", 8) == 0)
+    if (SDL_memcmp (edid, "\x00\xff\xff\xff\xff\xff\xff\x00", 8) == 0)
 	return TRUE;
     return FALSE;
 }
@@ -76,7 +76,7 @@ decode_vendor_and_product_identification (const uchar *edid, MonitorInfo *info)
 
     /* Serial Number */
     info->serial_number =
-	edid[0x0c] | edid[0x0d] << 8 | edid[0x0e] << 16 | edid[0x0f] << 24;
+	edid[0x0c] | edid[0x0d] << 8 | edid[0x0e] << 16 | (Uint32)edid[0x0f] << 24;
 
     /* Week and Year */
     is_model_year = FALSE;
@@ -522,7 +522,7 @@ decode_check_sum (const uchar *edid,
 MonitorInfo *
 decode_edid (const uchar *edid)
 {
-    MonitorInfo *info = calloc (1, sizeof (MonitorInfo));
+    MonitorInfo *info = SDL_calloc (1, sizeof (MonitorInfo));
 
     decode_check_sum (edid, info);
     
@@ -534,8 +534,8 @@ decode_edid (const uchar *edid)
         !decode_established_timings (edid, info) ||
         !decode_standard_timings (edid, info) ||
         !decode_descriptors (edid, info)) {
-        free(info);
-	return NULL;
+        SDL_free(info);
+        return NULL;
     }
     
     return info;

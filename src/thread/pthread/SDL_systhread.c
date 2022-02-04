@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -40,6 +40,10 @@
 
 #include "../../core/linux/SDL_dbus.h"
 #endif /* __LINUX__ */
+
+#if __RISCOS__
+#  include <errno.h>
+#endif
 
 #if (defined(__LINUX__) || defined(__MACOSX__) || defined(__IPHONEOS__)) && defined(HAVE_DLOPEN)
 #include <dlfcn.h>
@@ -137,22 +141,29 @@ SDL_SYS_SetupThread(const char *name)
             #if defined(__MACOSX__) || defined(__IPHONEOS__)
             ppthread_setname_np(name);
             #elif defined(__LINUX__)
-            ppthread_setname_np(pthread_self(), name);
+            if (ppthread_setname_np(pthread_self(), name) == ERANGE) {
+                char namebuf[16]; /* Limited to 16 char */
+                SDL_strlcpy(namebuf, name, sizeof (namebuf));
+                ppthread_setname_np(pthread_self(), namebuf);
+            }
             #endif
         }
         #elif HAVE_PTHREAD_SETNAME_NP
             #if defined(__NETBSD__)
             pthread_setname_np(pthread_self(), "%s", name);
             #else
-            pthread_setname_np(pthread_self(), name);
+            if (pthread_setname_np(pthread_self(), name) == ERANGE) {
+                char namebuf[16]; /* Limited to 16 char */
+                SDL_strlcpy(namebuf, name, sizeof (namebuf));
+                pthread_setname_np(pthread_self(), namebuf);
+            }
             #endif
         #elif HAVE_PTHREAD_SET_NAME_NP
             pthread_set_name_np(pthread_self(), name);
         #elif defined(__HAIKU__)
             /* The docs say the thread name can't be longer than B_OS_NAME_LENGTH. */
             char namebuf[B_OS_NAME_LENGTH];
-            SDL_snprintf(namebuf, sizeof (namebuf), "%s", name);
-            namebuf[sizeof (namebuf) - 1] = '\0';
+            SDL_strlcpy(namebuf, name, sizeof (namebuf));
             rename_thread(find_thread(NULL), namebuf);
         #endif
     }
@@ -183,21 +194,10 @@ SDL_ThreadID(void)
     return ((SDL_threadID) pthread_self());
 }
 
-#if __LINUX__
-/**
-   \brief Sets the SDL priority (not nice level) for a thread, using setpriority() if appropriate, and RealtimeKit if available.
-   Differs from SDL_LinuxSetThreadPriority in also taking the desired scheduler policy,
-   such as SCHED_OTHER or SCHED_RR.
-
-   \return 0 on success, or -1 on error.
- */
-extern DECLSPEC int SDLCALL SDL_LinuxSetThreadPriorityAndPolicy(Sint64 threadID, int sdlPriority, int schedPolicy);
-#endif
-
 int
 SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
 {
-#if __NACL__ || __RISCOS__
+#if __NACL__ || __RISCOS__ || __OS2__
     /* FIXME: Setting thread priority does not seem to be supported in NACL */
     return 0;
 #else

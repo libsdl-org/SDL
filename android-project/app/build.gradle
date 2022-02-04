@@ -8,13 +8,13 @@ else {
 }
 
 android {
-    compileSdkVersion 26
+    compileSdkVersion 31
     defaultConfig {
         if (buildAsApplication) {
             applicationId "org.libsdl.app"
         }
         minSdkVersion 16
-        targetSdkVersion 26
+        targetSdkVersion 31
         versionCode 1
         versionName "1.0"
         externalNativeBuild {

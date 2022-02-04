@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -218,7 +218,7 @@ SDL_BlendPoint(SDL_Surface * dst, int x, int y, SDL_BlendMode blendMode, Uint8 r
                Uint8 g, Uint8 b, Uint8 a)
 {
     if (!dst) {
-        return SDL_SetError("Passed NULL destination surface");
+        return SDL_InvalidParamError("SDL_BlendPoint(): dst");
     }
 
     /* This function doesn't work on surfaces < 8 bpp */
@@ -287,7 +287,7 @@ SDL_BlendPoints(SDL_Surface * dst, const SDL_Point * points, int count,
     int status = 0;
 
     if (!dst) {
-        return SDL_SetError("Passed NULL destination surface");
+        return SDL_InvalidParamError("SDL_BlendPoints(): dst");
     }
 
     /* This function doesn't work on surfaces < 8 bpp */

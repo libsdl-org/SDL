@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -413,6 +413,19 @@ extern "C" {
 #define SDL_HINT_EVENT_LOGGING   "SDL_EVENT_LOGGING"
 
 /**
+ *  \brief  A variable controlling whether raising the window should be done more forcefully
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - No forcing (the default)
+ *    "1"       - Extra level of forcing
+ *
+ *  At present, this is only an issue under MS Windows, which makes it nearly impossible to
+ *  programmatically move a window to the foreground, for "security" reasons. See
+ *  http://stackoverflow.com/a/34414846 for a discussion.
+ */
+#define SDL_HINT_FORCE_RAISEWINDOW    "SDL_HINT_FORCE_RAISEWINDOW"
+
+/**
  *  \brief  A variable controlling how 3D acceleration is used to accelerate the SDL screen surface.
  *
  *  SDL can try to accelerate the SDL screen surface by using streaming
@@ -720,9 +733,10 @@ extern "C" {
  *
  *  This variable can be set to the following values:
  *    "0"       - HIDAPI driver is not used
- *    "1"       - HIDAPI driver is used
+ *    "1"       - HIDAPI driver is used for Steam Controllers, which requires Bluetooth access
+ *                and may prompt the user for permission on iOS and Android.
  *
- *  The default is the value of SDL_HINT_JOYSTICK_HIDAPI
+ *  The default is "0"
  */
 #define SDL_HINT_JOYSTICK_HIDAPI_STEAM "SDL_JOYSTICK_HIDAPI_STEAM"
 
@@ -815,6 +829,24 @@ extern "C" {
  *    "1"       - SDL Will require DRM master to use the KMSDRM backend (default)
  */
 #define SDL_HINT_KMSDRM_REQUIRE_DRM_MASTER      "SDL_KMSDRM_REQUIRE_DRM_MASTER"
+
+ /**
+  *  \brief  A comma separated list of devices to open as joysticks
+  *
+  *  This variable is currently only used by the Linux joystick driver.
+  */
+#define SDL_HINT_JOYSTICK_DEVICE "SDL_JOYSTICK_DEVICE"
+
+ /**
+  *  \brief  A variable controlling whether to use the classic /dev/input/js* joystick interface or the newer /dev/input/event* joystick interface on Linux
+  *
+  *  This variable can be set to the following values:
+  *    "0"       - Use /dev/input/event*
+  *    "1"       - Use /dev/input/js*
+  *
+  *  By default the /dev/input/event* interfaces are used
+  */
+#define SDL_HINT_LINUX_JOYSTICK_CLASSIC "SDL_LINUX_JOYSTICK_CLASSIC"
 
  /**
   *  \brief  A variable controlling whether joysticks on Linux adhere to their HID-defined deadzones or return unfiltered values.
@@ -959,6 +991,22 @@ extern "C" {
 #define SDL_HINT_ORIENTATIONS "SDL_IOS_ORIENTATIONS"
 
 /**
+ *  \brief  A variable controlling the use of a sentinel event when polling the event queue
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - Disable poll sentinels
+ *    "1"       - Enable poll sentinels
+ *
+ *  When polling for events, SDL_PumpEvents is used to gather new events from devices.
+ *  If a device keeps producing new events between calls to SDL_PumpEvents, a poll loop will
+ *  become stuck until the new events stop.
+ *  This is most noticable when moving a high frequency mouse.
+ *
+ *  By default, poll sentinels are enabled.
+ */
+#define SDL_HINT_POLL_SENTINEL "SDL_POLL_SENTINEL"
+
+/**
  *  \brief Override for SDL_GetPreferredLocales()
  *
  *  If set, this will be favored over anything the OS might report for the
@@ -1023,6 +1071,19 @@ extern "C" {
  *  will result in undefined behavior.
  */
 #define SDL_HINT_RENDER_BATCHING  "SDL_RENDER_BATCHING"
+
+/**
+ *  \brief  A variable controlling how the 2D render API renders lines
+ *
+ *  This variable can be set to the following values:
+ *    "0"     - Use the default line drawing method (Bresenham's line algorithm as of SDL 2.0.20)
+ *    "1"     - Use the driver point API using Bresenham's line algorithm (correct, draws many points)
+ *    "2"     - Use the driver line API (occasionally misses line endpoints based on hardware driver quirks, was the default before 2.0.20)
+ *    "3"     - Use the driver geometry API (correct, draws thicker diagonal lines)
+ *
+ *  This variable should be set when the renderer is created.
+ */
+#define SDL_HINT_RENDER_LINE_METHOD "SDL_RENDER_LINE_METHOD"
 
 /**
  *  \brief  A variable controlling whether to enable Direct3D 11+'s Debug Layer.
@@ -1547,9 +1608,6 @@ extern "C" {
  *        They offer better performance, allocate no kernel ressources and
  *        use less memory. SDL will fall back to Critical Sections on older
  *        OS versions or if forced to by this hint.
- *        This also affects Condition Variables. When SRW mutexes are used,
- *        SDL will use Windows Condition Variables as well. Else, a generic
- *        SDL_cond implementation will be used that works with all mutexes.
  *
  *  This variable can be set to the following values:
  *    "0"       - Use SRW Locks when available. If not, fall back to Critical Sections. (default)
@@ -1619,6 +1677,17 @@ extern "C" {
  *  By default SDL will allow interaction with the window frame when the cursor is hidden
  */
 #define SDL_HINT_WINDOW_FRAME_USABLE_WHILE_CURSOR_HIDDEN    "SDL_WINDOW_FRAME_USABLE_WHILE_CURSOR_HIDDEN"
+
+/**
+*  \brief  A variable controlling whether the window is activated when the SDL_ShowWindow function is called 
+*
+*  This variable can be set to the following values:
+*    "0"       - The window is activated when the SDL_ShowWindow function is called
+*    "1"       - The window is not activated when the SDL_ShowWindow function is called
+*
+*  By default SDL will activate the window when the SDL_ShowWindow function is called
+*/
+#define SDL_HINT_WINDOW_NO_ACTIVATION_WHEN_SHOWN    "SDL_WINDOW_NO_ACTIVATION_WHEN_SHOWN"
 
 /** \brief Allows back-button-press events on Windows Phone to be marked as handled
  *
@@ -1768,6 +1837,27 @@ extern "C" {
  */
 #define SDL_HINT_AUDIO_INCLUDE_MONITORS "SDL_AUDIO_INCLUDE_MONITORS"
 
+/**
+ *  \brief  A variable that forces X11 windows to create as a custom type.
+ *
+ *  This is currently only used for X11 and ignored elsewhere.
+ *
+ *  During SDL_CreateWindow, SDL uses the _NET_WM_WINDOW_TYPE X11 property
+ *  to report to the window manager the type of window it wants to create.
+ *  This might be set to various things if SDL_WINDOW_TOOLTIP or
+ *  SDL_WINDOW_POPUP_MENU, etc, were specified. For "normal" windows that
+ *  haven't set a specific type, this hint can be used to specify a custom
+ *  type. For example, a dock window might set this to
+ *  "_NET_WM_WINDOW_TYPE_DOCK".
+ *
+ *  If not set or set to "", this hint is ignored. This hint must be set
+ *  before the SDL_CreateWindow() call that it is intended to affect.
+ *
+ *  This hint is available since SDL 2.0.22. Before then, virtual devices are
+ *  always ignored.
+ */
+#define SDL_HINT_X11_WINDOW_TYPE "SDL_X11_WINDOW_TYPE"
+
 
 /**
  *  \brief  An enumeration of hint priorities
@@ -1792,6 +1882,8 @@ typedef enum
  * \param priority the SDL_HintPriority level for the hint
  * \returns SDL_TRUE if the hint was set, SDL_FALSE otherwise.
  *
+ * \since This function is available since SDL 2.0.0.
+ *
  * \sa SDL_GetHint
  * \sa SDL_SetHint
  */
@@ -1810,6 +1902,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_SetHintWithPriority(const char *name,
  * \param value the value of the hint variable
  * \returns SDL_TRUE if the hint was set, SDL_FALSE otherwise.
  *
+ * \since This function is available since SDL 2.0.0.
+ *
  * \sa SDL_GetHint
  * \sa SDL_SetHintWithPriority
  */
@@ -1821,6 +1915,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_SetHint(const char *name,
  *
  * \param name the hint to query
  * \returns the string value of a hint or NULL if the hint isn't set.
+ *
+ * \since This function is available since SDL 2.0.0.
  *
  * \sa SDL_SetHint
  * \sa SDL_SetHintWithPriority
@@ -1888,6 +1984,8 @@ extern DECLSPEC void SDLCALL SDL_DelHintCallback(const char *name,
  * Clear all hints.
  *
  * This function is automatically called during SDL_Quit().
+ *
+ * \since This function is available since SDL 2.0.0.
  */
 extern DECLSPEC void SDLCALL SDL_ClearHints(void);
 

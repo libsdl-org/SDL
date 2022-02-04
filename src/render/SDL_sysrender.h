@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -43,7 +43,7 @@ struct SDL_Texture
     int modMode;                /**< The texture modulation mode */
     SDL_BlendMode blendMode;    /**< The texture blend mode */
     SDL_ScaleMode scaleMode;    /**< The texture scale mode */
-    Uint8 r, g, b, a;           /**< Texture modulation values */
+    SDL_Color color;            /**< Texture modulation values */
 
     SDL_Renderer *renderer;
 
@@ -107,6 +107,21 @@ typedef struct SDL_RenderCommand
 } SDL_RenderCommand;
 
 
+typedef struct SDL_VertexSolid
+{
+    SDL_FPoint position;
+    SDL_Color  color;
+} SDL_VertexSolid;
+
+
+typedef enum
+{
+    SDL_RENDERLINEMETHOD_POINTS,
+    SDL_RENDERLINEMETHOD_LINES,
+    SDL_RENDERLINEMETHOD_GEOMETRY,
+} SDL_RenderLineMethod;
+
+
 /* Define the SDL renderer structure */
 struct SDL_Renderer
 {
@@ -129,12 +144,10 @@ struct SDL_Renderer
     int (*QueueCopyEx) (SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * texture,
                         const SDL_Rect * srcquad, const SDL_FRect * dstrect,
                         const double angle, const SDL_FPoint *center, const SDL_RendererFlip flip);
-#if SDL_HAVE_RENDER_GEOMETRY
     int (*QueueGeometry) (SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
-                          const float *xy, int xy_stride, const int *color, int color_stride, const float *uv, int uv_stride,
+                          const float *xy, int xy_stride, const SDL_Color *color, int color_stride, const float *uv, int uv_stride,
                           int num_vertices, const void *indices, int num_indices, int size_indices,
                           float scale_x, float scale_y);
-#endif
 
     int (*RunCommandQueue) (SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertices, size_t vertsize);
     int (*UpdateTexture) (SDL_Renderer * renderer, SDL_Texture * texture,
@@ -188,12 +201,12 @@ struct SDL_Renderer
     SDL_bool integer_scale;
 
     /* The drawable area within the window */
-    SDL_Rect viewport;
-    SDL_Rect viewport_backup;
+    SDL_FRect viewport;
+    SDL_FRect viewport_backup;
 
     /* The clip rectangle within the window */
-    SDL_Rect clip_rect;
-    SDL_Rect clip_rect_backup;
+    SDL_FRect clip_rect;
+    SDL_FRect clip_rect_backup;
 
     /* Wether or not the clipping rectangle is used. */
     SDL_bool clipping_enabled;
@@ -209,6 +222,9 @@ struct SDL_Renderer
     /* Whether or not to scale relative mouse motion */
     SDL_bool relative_scaling;
 
+    /* The method of drawing lines */
+    SDL_RenderLineMethod line_method;
+
     /* Remainder from scaled relative motion */
     float xrel;
     float yrel;
@@ -218,7 +234,7 @@ struct SDL_Renderer
     SDL_Texture *target;
     SDL_mutex *target_mutex;
 
-    Uint8 r, g, b, a;                   /**< Color for drawing operations values */
+    SDL_Color color;                    /**< Color for drawing operations values */
     SDL_BlendMode blendMode;            /**< The drawing blend mode */
 
     SDL_bool always_batch;
@@ -228,8 +244,8 @@ struct SDL_Renderer
     SDL_RenderCommand *render_commands_pool;
     Uint32 render_command_generation;
     Uint32 last_queued_color;
-    SDL_Rect last_queued_viewport;
-    SDL_Rect last_queued_cliprect;
+    SDL_FRect last_queued_viewport;
+    SDL_FRect last_queued_cliprect;
     SDL_bool last_queued_cliprect_enabled;
     SDL_bool color_queued;
     SDL_bool viewport_queued;

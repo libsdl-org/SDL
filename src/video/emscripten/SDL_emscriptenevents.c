@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -409,7 +409,22 @@ static EM_BOOL
 Emscripten_HandleWheel(int eventType, const EmscriptenWheelEvent *wheelEvent, void *userData)
 {
     SDL_WindowData *window_data = userData;
-    SDL_SendMouseWheel(window_data->window, 0, (float)wheelEvent->deltaX, (float)-wheelEvent->deltaY, SDL_MOUSEWHEEL_NORMAL);
+
+    float deltaY = wheelEvent->deltaY;
+
+    switch (wheelEvent->deltaMode) {
+        case DOM_DELTA_PIXEL:
+            deltaY /= 100; /* 100 pixels make up a step */
+            break;
+        case DOM_DELTA_LINE:
+            deltaY /= 3; /* 3 lines make up a step */
+            break;
+        case DOM_DELTA_PAGE:
+            deltaY *= 80; /* A page makes up 80 steps */
+            break;
+    }
+
+    SDL_SendMouseWheel(window_data->window, 0, (float)wheelEvent->deltaX, -deltaY, SDL_MOUSEWHEEL_NORMAL);
     return SDL_GetEventState(SDL_MOUSEWHEEL) == SDL_ENABLE;
 }
 

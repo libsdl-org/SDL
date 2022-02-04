@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -261,7 +261,7 @@ ProcessWindowEvent(_THIS, SDL_Window *sdlwin, DFBWindowEvent * evt)
                 SDL_SendWindowEvent(sdlwin, SDL_WINDOWEVENT_MOVED,
                                     evt->x, evt->y);
             }
-            /* fall throught */
+            SDL_FALLTHROUGH;
         case DWET_SIZE:
             /* FIXME: what about < 0 */
             evt->w -= (windata->theme.right_size + windata->theme.left_size);
@@ -683,7 +683,7 @@ EnumKeyboards(DFBInputDeviceID device_id,
 #endif
         devdata->keyboard[devdata->num_keyboard].id = device_id;
         devdata->keyboard[devdata->num_keyboard].is_generic = 0;
-        if (!strncmp("X11", desc.name, 3))
+        if (!SDL_strncmp("X11", desc.name, 3))
         {
             devdata->keyboard[devdata->num_keyboard].map = xfree86_scancode_table2;
             devdata->keyboard[devdata->num_keyboard].map_size = SDL_arraysize(xfree86_scancode_table2);

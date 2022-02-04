@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -39,11 +39,11 @@ typedef struct SDL_AudioDevice SDL_AudioDevice;
 /* Audio targets should call this as devices are added to the system (such as
    a USB headset being plugged in), and should also be called for
    for every device found during DetectDevices(). */
-extern void SDL_AddAudioDevice(const int iscapture, const char *name, SDL_AudioSpec *spec, void *handle);
+extern void SDL_AddAudioDevice(const SDL_bool iscapture, const char *name, SDL_AudioSpec *spec, void *handle);
 
 /* Audio targets should call this as devices are removed, so SDL can update
    its list of available devices. */
-extern void SDL_RemoveAudioDevice(const int iscapture, void *handle);
+extern void SDL_RemoveAudioDevice(const SDL_bool iscapture, void *handle);
 
 /* Audio targets should call this if an opened audio device is lost while
    being used. This can happen due to i/o errors, or a device being unplugged,
@@ -65,16 +65,14 @@ extern void SDL_OpenedAudioDeviceDisconnected(SDL_AudioDevice *device);
 typedef struct SDL_AudioDriverImpl
 {
     void (*DetectDevices) (void);
-    int (*OpenDevice) (_THIS, void *handle, const char *devname, int iscapture);
+    int (*OpenDevice) (_THIS, const char *devname);
     void (*ThreadInit) (_THIS); /* Called by audio thread at start */
     void (*ThreadDeinit) (_THIS); /* Called by audio thread at end */
-    void (*BeginLoopIteration)(_THIS);  /* Called by audio thread at top of loop */
     void (*WaitDevice) (_THIS);
     void (*PlayDevice) (_THIS);
     Uint8 *(*GetDeviceBuf) (_THIS);
     int (*CaptureFromDevice) (_THIS, void *buffer, int buflen);
     void (*FlushCapture) (_THIS);
-    void (*PrepareToClose) (_THIS);  /**< Called between run and draining wait for playback devices */
     void (*CloseDevice) (_THIS);
     void (*LockDevice) (_THIS);
     void (*UnlockDevice) (_THIS);
@@ -84,13 +82,11 @@ typedef struct SDL_AudioDriverImpl
     /* !!! FIXME: add pause(), so we can optimize instead of mixing silence. */
 
     /* Some flags to push duplicate code into the core and reduce #ifdefs. */
-    /* !!! FIXME: these should be SDL_bool */
-    int ProvidesOwnCallbackThread;
-    int SkipMixerLock;
-    int HasCaptureSupport;
-    int OnlyHasDefaultOutputDevice;
-    int OnlyHasDefaultCaptureDevice;
-    int AllowsArbitraryDeviceNames;
+    SDL_bool ProvidesOwnCallbackThread;
+    SDL_bool HasCaptureSupport;
+    SDL_bool OnlyHasDefaultOutputDevice;
+    SDL_bool OnlyHasDefaultCaptureDevice;
+    SDL_bool AllowsArbitraryDeviceNames;
 } SDL_AudioDriverImpl;
 
 
@@ -178,8 +174,8 @@ typedef struct AudioBootStrap
 {
     const char *name;
     const char *desc;
-    int (*init) (SDL_AudioDriverImpl * impl);
-    int demand_only;  /* 1==request explicitly, or it won't be available. */
+    SDL_bool (*init) (SDL_AudioDriverImpl * impl);
+    SDL_bool demand_only;  /* 1==request explicitly, or it won't be available. */
 } AudioBootStrap;
 
 /* Not all of these are available in a given build. Use #ifdefs, etc. */

@@ -1131,7 +1131,7 @@ sdltest_randomAsciiString(void *arg)
      SDLTest_AssertCheck(len >= 1 && len <= 255, "Validate that result length; expected: len=[1,255], got: %d", (int) len);
      nonAsciiCharacters = 0;
      for (i=0; i<len; i++) {
-       if (iscntrl(result[i])) {
+       if (SDL_iscntrl(result[i])) {
          nonAsciiCharacters++;
        }
      }
@@ -1169,7 +1169,7 @@ sdltest_randomAsciiStringWithMaximumLength(void *arg)
      SDLTest_AssertCheck(len >= 1 && len <= targetLen, "Validate that result length; expected: len=[1,%d], got: %d", (int) targetLen, (int) len);
      nonAsciiCharacters = 0;
      for (i=0; i<len; i++) {
-       if (iscntrl(result[i])) {
+       if (SDL_iscntrl(result[i])) {
          nonAsciiCharacters++;
        }
      }
@@ -1223,7 +1223,7 @@ sdltest_randomAsciiStringOfSize(void *arg)
      SDLTest_AssertCheck(len == targetLen, "Validate that result length; expected: len=%d, got: %d", (int) targetLen, (int) len);
      nonAsciiCharacters = 0;
      for (i=0; i<len; i++) {
-       if (iscntrl(result[i])) {
+       if (SDL_iscntrl(result[i])) {
          nonAsciiCharacters++;
        }
      }

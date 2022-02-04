@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -144,6 +144,10 @@
 # endif
 #endif
 
+#if (MAC_OS_X_VERSION_MAX_ALLOWED >= 1070)
+#define HAVE_O_CLOEXEC 1
+#endif
+
 #define HAVE_GCC_ATOMICS 1
 
 /* Enable various audio drivers */
@@ -202,7 +206,6 @@
  */
 #define SDL_VIDEO_DRIVER_X11_XINPUT2 1
 #define SDL_VIDEO_DRIVER_X11_SUPPORTS_GENERIC_EVENTS 1
-#define SDL_VIDEO_DRIVER_X11_CONST_PARAM_XEXTADDDISPLAY 1
 #endif
 
 #ifndef SDL_VIDEO_RENDER_OGL

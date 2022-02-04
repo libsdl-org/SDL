@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -809,7 +809,7 @@ SDL_BlendLine(SDL_Surface * dst, int x1, int y1, int x2, int y2,
     BlendLineFunc func;
 
     if (!dst) {
-        return SDL_SetError("SDL_BlendLine(): Passed NULL destination surface");
+        return SDL_InvalidParamError("SDL_BlendLine(): dst");
     }
 
     func = SDL_CalculateBlendLineFunc(dst->format);

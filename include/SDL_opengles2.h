@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -26,7 +26,7 @@
  */
 #include "SDL_config.h"
 
-#ifndef _MSC_VER
+#if !defined(_MSC_VER) && !defined(SDL_USE_BUILTIN_OPENGL_DEFINITIONS)
 
 #ifdef __IPHONEOS__
 #include <OpenGLES/ES2/gl.h>

@@ -39,6 +39,7 @@ More documentation and FAQs are available online at [the wiki](http://wiki.libsd
 - [iOS](README-ios.md)
 - [Linux](README-linux.md)
 - [OS X](README-macosx.md)
+- [OS/2](README-os2.md)
 - [Native Client](README-nacl.md)
 - [Pandora](README-pandora.md)
 - [Supported Platforms](README-platforms.md)
@@ -62,4 +63,3 @@ Enjoy!
 
 
 Sam Lantinga <mailto:slouken@libsdl.org>
-

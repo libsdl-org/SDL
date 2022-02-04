@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -35,7 +35,7 @@ SDL_SYS_OpenURL(const char *url)
     sceAppUtilInit(&init_param, &boot_param);
     SDL_zero(browser_param);
     browser_param.str = url;
-    browser_param.strlen = strlen(url);
+    browser_param.strlen = SDL_strlen(url);
     sceAppUtilLaunchWebBrowser(&browser_param);
     return 0;
 }

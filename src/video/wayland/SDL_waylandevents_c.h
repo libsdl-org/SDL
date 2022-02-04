@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -36,6 +36,8 @@ typedef struct {
     SDL_bool is_initialized;
 
     SDL_bool is_key_down;
+    uint32_t wl_press_time; // Key press time as reported by the Wayland API
+    uint32_t sdl_press_time; // Key press time expressed in SDL ticks
     uint32_t next_repeat_ms;
     uint32_t scancode;
     char text[8];
@@ -50,8 +52,6 @@ struct SDL_WaylandInput {
     SDL_WaylandDataDevice *data_device;
     SDL_WaylandTextInput *text_input;
     struct zwp_relative_pointer_v1 *relative_pointer;
-    struct zwp_confined_pointer_v1 *confined_pointer;
-    SDL_Window *confined_pointer_window;
     SDL_WindowData *pointer_focus;
     SDL_WindowData *keyboard_focus;
     uint32_t pointer_enter_serial;
@@ -83,6 +83,8 @@ struct SDL_WaylandInput {
 };
 
 extern void Wayland_PumpEvents(_THIS);
+extern void Wayland_SendWakeupEvent(_THIS, SDL_Window *window);
+extern int Wayland_WaitEventTimeout(_THIS, int timeout);
 
 extern void Wayland_add_data_device_manager(SDL_VideoData *d, uint32_t id, uint32_t version);
 extern void Wayland_add_text_input_manager(SDL_VideoData *d, uint32_t id, uint32_t version);
@@ -96,8 +98,8 @@ extern void Wayland_display_destroy_pointer_constraints(SDL_VideoData *d);
 extern int Wayland_input_lock_pointer(struct SDL_WaylandInput *input);
 extern int Wayland_input_unlock_pointer(struct SDL_WaylandInput *input);
 
-extern int Wayland_input_confine_pointer(SDL_Window *window, struct SDL_WaylandInput *input);
-extern int Wayland_input_unconfine_pointer(struct SDL_WaylandInput *input);
+extern int Wayland_input_confine_pointer(struct SDL_WaylandInput *input, SDL_Window *window);
+extern int Wayland_input_unconfine_pointer(struct SDL_WaylandInput *input, SDL_Window *window);
 
 extern void Wayland_display_add_relative_pointer_manager(SDL_VideoData *d, uint32_t id);
 extern void Wayland_display_destroy_relative_pointer_manager(SDL_VideoData *d);

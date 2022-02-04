@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -36,6 +36,7 @@
 #include "SDL_x11shape.h"
 #include "SDL_x11touch.h"
 #include "SDL_x11xinput2.h"
+#include "SDL_x11xfixes.h"
 
 #if SDL_VIDEO_OPENGL_EGL
 #include "SDL_x11opengles.h"
@@ -184,9 +185,12 @@ X11_CreateDevice(int devindex)
         return NULL;
     }
     device->driverdata = data;
-    device->wakeup_lock = SDL_CreateMutex();
 
     data->global_mouse_changed = SDL_TRUE;
+
+#if SDL_VIDEO_DRIVER_X11_XFIXES
+    data->active_cursor_confined_window = NULL;
+#endif /* SDL_VIDEO_DRIVER_X11_XFIXES */
 
     data->display = x11_display;
     data->request_display = X11_XOpenDisplay(display);
@@ -216,6 +220,7 @@ X11_CreateDevice(int devindex)
     device->GetDisplayBounds = X11_GetDisplayBounds;
     device->GetDisplayUsableBounds = X11_GetDisplayUsableBounds;
     device->GetDisplayDPI = X11_GetDisplayDPI;
+    device->GetWindowICCProfile = X11_GetWindowICCProfile;
     device->SetDisplayMode = X11_SetDisplayMode;
     device->SuspendScreenSaver = X11_SuspendScreenSaver;
     device->PumpEvents = X11_PumpEvents;
@@ -255,6 +260,10 @@ X11_CreateDevice(int devindex)
     device->SetWindowHitTest = X11_SetWindowHitTest;
     device->AcceptDragAndDrop = X11_AcceptDragAndDrop;
     device->FlashWindow = X11_FlashWindow;
+
+#if SDL_VIDEO_DRIVER_X11_XFIXES
+    device->SetWindowMouseRect = X11_SetWindowMouseRect;
+#endif /* SDL_VIDEO_DRIVER_X11_XFIXES */
 
     device->shape_driver.CreateShaper = X11_CreateShaper;
     device->shape_driver.SetWindowShape = X11_SetWindowShape;
@@ -405,6 +414,7 @@ X11_VideoInit(_THIS)
     GET_ATOM(WM_PROTOCOLS);
     GET_ATOM(WM_DELETE_WINDOW);
     GET_ATOM(WM_TAKE_FOCUS);
+    GET_ATOM(WM_NAME);
     GET_ATOM(_NET_WM_STATE);
     GET_ATOM(_NET_WM_STATE_HIDDEN);
     GET_ATOM(_NET_WM_STATE_FOCUSED);
@@ -445,6 +455,14 @@ X11_VideoInit(_THIS)
     }
 
     X11_InitXinput2(_this);
+
+#ifdef SDL_VIDEO_DRIVER_X11_XFIXES
+    X11_InitXfixes(_this);
+#endif /* SDL_VIDEO_DRIVER_X11_XFIXES */
+
+#ifndef X_HAVE_UTF8_STRING
+#warning X server does not support UTF8_STRING, a feature introduced in 2000! This is likely to become a hard error in a future libSDL2.
+#endif
 
     if (X11_InitKeyboard(_this) != 0) {
         return -1;

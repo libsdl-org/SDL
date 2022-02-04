@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -99,7 +99,7 @@ SDL_CondSignal_generic(SDL_cond * _cond)
 {
     SDL_cond_generic *cond = (SDL_cond_generic *)_cond;
     if (!cond) {
-        return SDL_SetError("Passed a NULL condition variable");
+        return SDL_InvalidParamError("cond");
     }
 
     /* If there are waiting threads not already signalled, then
@@ -124,7 +124,7 @@ SDL_CondBroadcast_generic(SDL_cond * _cond)
 {
     SDL_cond_generic *cond = (SDL_cond_generic *)_cond;
     if (!cond) {
-        return SDL_SetError("Passed a NULL condition variable");
+        return SDL_InvalidParamError("cond");
     }
 
     /* If there are waiting threads not already signalled, then
@@ -181,7 +181,7 @@ SDL_CondWaitTimeout_generic(SDL_cond * _cond, SDL_mutex * mutex, Uint32 ms)
     int retval;
 
     if (!cond) {
-        return SDL_SetError("Passed a NULL condition variable");
+        return SDL_InvalidParamError("cond");
     }
 
     /* Obtain the protection mutex, and increment the number of waiters.

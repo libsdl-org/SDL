@@ -1,6 +1,6 @@
 /*
  Simple DirectMedia Layer
- Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+ Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
  
  This software is provided 'as-is', without any express or implied
  warranty.  In no event will the authors be held liable for any damages
@@ -30,7 +30,9 @@
 
 #if SDL_VIDEO_DRIVER_UIKIT && (SDL_VIDEO_VULKAN || SDL_VIDEO_METAL)
 
-#import "../SDL_sysvideo.h"
+#include "SDL_syswm.h"
+#include "../SDL_sysvideo.h"
+
 #import "SDL_uikitwindow.h"
 #import "SDL_uikitmetalview.h"
 
@@ -47,7 +49,7 @@
                         scale:(CGFloat)scale
 {
     if ((self = [super initWithFrame:frame])) {
-        self.tag = METALVIEW_TAG;
+        self.tag = SDL_METALVIEW_TAG;
         self.layer.contentsScale = scale;
         [self updateDrawableSize];
     }
@@ -122,7 +124,7 @@ UIKit_Metal_GetDrawableSize(_THIS, SDL_Window * window, int * w, int * h)
     @autoreleasepool {
         SDL_WindowData *data = (__bridge SDL_WindowData *)window->driverdata;
         SDL_uikitview *view = (SDL_uikitview*)data.uiwindow.rootViewController.view;
-        SDL_uikitmetalview* metalview = [view viewWithTag:METALVIEW_TAG];
+        SDL_uikitmetalview* metalview = [view viewWithTag:SDL_METALVIEW_TAG];
         if (metalview) {
             CAMetalLayer *layer = (CAMetalLayer*)metalview.layer;
             assert(layer != NULL);

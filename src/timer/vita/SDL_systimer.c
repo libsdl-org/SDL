@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2015 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -51,18 +51,17 @@ SDL_TicksQuit(void)
     ticks_started = SDL_FALSE;
 }
 
-Uint32 SDL_GetTicks(void)
+Uint64
+SDL_GetTicks64(void)
 {
     uint64_t now;
-    Uint32 ticks;
 
     if (!ticks_started) {
         SDL_TicksInit();
     }
 
     now = sceKernelGetProcessTimeWide();
-    ticks = (now - start)/1000;
-    return (ticks);
+    return (Uint64) ((now - start) / 1000);
 }
 
 Uint64

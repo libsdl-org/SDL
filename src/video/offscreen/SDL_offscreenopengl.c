@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -66,7 +66,13 @@ OFFSCREEN_GL_LoadLibrary(_THIS, const char* path)
         return ret;
     }
 
+    /* driver_loaded gets incremented by SDL_GL_LoadLibrary when we return,
+       but SDL_EGL_InitializeOffscreen checks that we're loaded before then,
+       so temporarily bump it since we know that LoadLibraryOnly succeeded. */
+
+    _this->gl_config.driver_loaded++;
     ret = SDL_EGL_InitializeOffscreen(_this, 0);
+    _this->gl_config.driver_loaded--;
     if (ret != 0) {
         return ret;
     }

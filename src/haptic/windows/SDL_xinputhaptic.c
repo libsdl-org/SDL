@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -20,6 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
+#include "SDL.h"
 #include "SDL_error.h"
 #include "SDL_haptic.h"
 #include "../SDL_syshaptic.h"
@@ -47,7 +48,8 @@ SDL_XINPUT_HapticInit(void)
         loaded_xinput = (WIN_LoadXInputDLL() == 0);
     }
 
-    if (loaded_xinput) {
+    /* If the joystick subsystem is active, it will manage adding XInput haptic devices */
+    if (loaded_xinput && !SDL_WasInit(SDL_INIT_JOYSTICK)) {
         DWORD i;
         for (i = 0; i < XUSER_MAX_COUNT; i++) {
             SDL_XINPUT_HapticMaybeAddDevice(i);
@@ -244,8 +246,7 @@ SDL_XINPUT_HapticOpenFromJoystick(SDL_Haptic * haptic, SDL_Joystick * joystick)
         ++index;
     }
 
-    SDL_SetError("Couldn't find joystick in haptic device list");
-    return -1;
+    return SDL_SetError("Couldn't find joystick in haptic device list");
 }
 
 void
