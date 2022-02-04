@@ -1402,6 +1402,7 @@ static SDL_bool OS2_HasClipboardText(_THIS)
 {
     SDL_VideoData *pVData = (SDL_VideoData *)_this->driverdata;
     PSZ pszClipboard;
+    SDL_bool  result;
 
     if (!WinOpenClipbrd(pVData->hab)) {
         debug_os2("WinOpenClipbrd() failed");
@@ -1409,9 +1410,10 @@ static SDL_bool OS2_HasClipboardText(_THIS)
     }
 
     pszClipboard = (PSZ)WinQueryClipbrdData(pVData->hab, CF_TEXT);
+    result = (pszClipboard && *pszClipboard) ? SDL_TRUE : SDL_FALSE;
     WinCloseClipbrd(pVData->hab);
 
-    return (pszClipboard && *pszClipboard) ? SDL_TRUE : SDL_FALSE;
+    return result;
 }
 
 
