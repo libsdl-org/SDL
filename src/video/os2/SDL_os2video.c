@@ -1401,18 +1401,17 @@ static char *OS2_GetClipboardText(_THIS)
 static SDL_bool OS2_HasClipboardText(_THIS)
 {
     SDL_VideoData *pVData = (SDL_VideoData *)_this->driverdata;
-    SDL_bool   fClipboard;
+    PSZ pszClipboard;
 
     if (!WinOpenClipbrd(pVData->hab)) {
         debug_os2("WinOpenClipbrd() failed");
         return SDL_FALSE;
     }
 
-    fClipboard = ((PSZ)WinQueryClipbrdData(pVData->hab, CF_TEXT) != NULL)?
-                   SDL_TRUE : SDL_FALSE;
+    pszClipboard = (PSZ)WinQueryClipbrdData(pVData->hab, CF_TEXT);
     WinCloseClipbrd(pVData->hab);
 
-    return fClipboard;
+    return (pszClipboard && *pszClipboard) ? SDL_TRUE : SDL_FALSE;
 }
 
 
