@@ -2439,7 +2439,10 @@ SDL_bool SDL_ShouldIgnoreJoystick(const char *name, SDL_JoystickGUID guid)
         /* Additional entries                                            */
         /*****************************************************************/
 
-        MAKE_VIDPID(0x04d9, 0x8009),  /* OBINLB USB-HID Keyboard */
+        MAKE_VIDPID(0x04d9, 0x8008),  /* OBINLB USB-HID Keyboard (Anne Pro II) */
+        MAKE_VIDPID(0x04d9, 0x8009),  /* OBINLB USB-HID Keyboard (Anne Pro II) */
+        MAKE_VIDPID(0x04d9, 0xa292),  /* OBINLB USB-HID Keyboard (Anne Pro II) */
+        MAKE_VIDPID(0x04d9, 0xa293),  /* OBINLB USB-HID Keyboard (Anne Pro II) */
         MAKE_VIDPID(0x0b05, 0x1958),  /* ROG Chakram Mouse */
         MAKE_VIDPID(0x26ce, 0x01a2),  /* ASRock LED Controller */
     };
