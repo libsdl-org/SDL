@@ -2345,6 +2345,7 @@ D3D11_CreateRenderer(SDL_Window * window, Uint32 flags)
 
     data = (D3D11_RenderData *) SDL_calloc(1, sizeof(*data));
     if (!data) {
+        SDL_free(renderer);
         SDL_OutOfMemory();
         return NULL;
     }
