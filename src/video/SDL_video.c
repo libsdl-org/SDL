@@ -1570,6 +1570,23 @@ SDL_ContextNotSupported(const char* name)
                  "or not available in current SDL video driver "
                  "(%s) or platform", name, _this->name);
 }
+
+static Uint32
+SDL_DefaultGraphicsBackends()
+{
+#if (SDL_VIDEO_OPENGL && __MACOSX__) || (__IPHONEOS__ && !TARGET_OS_MACCATALYST) || __ANDROID__ || __NACL__
+    if (_this->GL_CreateContext != NULL) {
+        return SDL_WINDOW_OPENGL;
+    }
+#endif
+#if SDL_VIDEO_METAL && (TARGET_OS_MACCATALYST || __MACOSX__ || __IPHONEOS__)
+    if (_this->Metal_CreateView != NULL) {
+        return SDL_WINDOW_METAL;
+    }
+#endif
+    return 0;
+}
+
 SDL_Window *
 SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
 {
@@ -1604,16 +1621,7 @@ SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
 
     /* Some platforms have certain graphics backends enabled by default */
     if (!graphics_flags && !SDL_IsVideoContextExternal()) {
-#if (SDL_VIDEO_OPENGL && __MACOSX__) || (__IPHONEOS__ && !TARGET_OS_MACCATALYST) || __ANDROID__ || __NACL__
-        if (_this->GL_CreateContext != NULL) {
-            flags |= SDL_WINDOW_OPENGL;
-        }
-#endif
-#if SDL_VIDEO_METAL && (TARGET_OS_MACCATALYST || __MACOSX__ || __IPHONEOS__)
-        if (_this->Metal_CreateView != NULL) {
-            flags |= SDL_WINDOW_METAL;
-        }
-#endif
+        flags |= SDL_DefaultGraphicsBackends();
     }
 
     if (flags & SDL_WINDOW_OPENGL) {
