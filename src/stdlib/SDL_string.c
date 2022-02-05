@@ -1070,13 +1070,16 @@ SDL_strcmp(const char *str1, const char *str2)
 #if defined(HAVE_STRCMP)
     return strcmp(str1, str2);
 #else
-    while (*str1 && *str2) {
-        if (*str1 != *str2)
+    int result;
+
+    while(1) {
+        result = (int)((unsigned char) *str1 - (unsigned char) *str2);
+        if (result != 0 || (*str1 == '\0'/* && *str2 == '\0'*/))
             break;
         ++str1;
         ++str2;
     }
-    return (int)((unsigned char) *str1 - (unsigned char) *str2);
+    return result;
 #endif /* HAVE_STRCMP */
 }
 
@@ -1086,17 +1089,20 @@ SDL_strncmp(const char *str1, const char *str2, size_t maxlen)
 #if defined(HAVE_STRNCMP)
     return strncmp(str1, str2, maxlen);
 #else
-    while (*str1 && *str2 && maxlen) {
-        if (*str1 != *str2)
+    int result;
+
+    while (maxlen) {
+        result = (int) (unsigned char) *str1 - (unsigned char) *str2;
+        if (result != 0 || *str1 == '\0'/* && *str2 == '\0'*/)
             break;
         ++str1;
         ++str2;
         --maxlen;
     }
     if (!maxlen) {
-        return 0;
+        result = 0;
     }
-    return (int) ((unsigned char) *str1 - (unsigned char) *str2);
+    return result;
 #endif /* HAVE_STRNCMP */
 }
 
@@ -1108,19 +1114,18 @@ SDL_strcasecmp(const char *str1, const char *str2)
 #elif defined(HAVE__STRICMP)
     return _stricmp(str1, str2);
 #else
-    char a = 0;
-    char b = 0;
-    while (*str1 && *str2) {
+    int a, b, result;
+
+    while (1) {
         a = SDL_toupper((unsigned char) *str1);
         b = SDL_toupper((unsigned char) *str2);
-        if (a != b)
+        result = a - b;
+        if (result != 0 || a == 0 /*&& b == 0*/)
             break;
         ++str1;
         ++str2;
     }
-    a = SDL_toupper((unsigned char) *str1);
-    b = SDL_toupper((unsigned char) *str2);
-    return (int) ((unsigned char) a - (unsigned char) b);
+    return result;
 #endif /* HAVE_STRCASECMP */
 }
 
@@ -1132,24 +1137,21 @@ SDL_strncasecmp(const char *str1, const char *str2, size_t maxlen)
 #elif defined(HAVE__STRNICMP)
     return _strnicmp(str1, str2, maxlen);
 #else
-    char a = 0;
-    char b = 0;
-    while (*str1 && *str2 && maxlen) {
+    int a, b, result;
+
+    while (maxlen) {
         a = SDL_tolower((unsigned char) *str1);
         b = SDL_tolower((unsigned char) *str2);
-        if (a != b)
+        result = a - b;
+        if (result != 0 || a == 0 /*&& b == 0*/)
             break;
         ++str1;
         ++str2;
         --maxlen;
     }
-    if (maxlen == 0) {
-        return 0;
-    } else {
-        a = SDL_tolower((unsigned char) *str1);
-        b = SDL_tolower((unsigned char) *str2);
-        return (int) ((unsigned char) a - (unsigned char) b);
-    }
+    if (maxlen == 0)
+        result = 0;
+    return result;
 #endif /* HAVE_STRNCASECMP */
 }
 
