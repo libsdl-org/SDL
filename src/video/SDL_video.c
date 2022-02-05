@@ -754,29 +754,32 @@ SDL_GetDisplayName(int displayIndex)
 int
 SDL_GetDisplayBounds(int displayIndex, SDL_Rect * rect)
 {
+    SDL_VideoDisplay *display;
+
     CHECK_DISPLAY_INDEX(displayIndex, -1);
 
-    if (rect) {
-        SDL_VideoDisplay *display = &_this->displays[displayIndex];
+    if (!rect)
+        return SDL_InvalidParamError("rect");
 
-        if (_this->GetDisplayBounds) {
-            if (_this->GetDisplayBounds(_this, display, rect) == 0) {
-                return 0;
-            }
-        }
+    display = &_this->displays[displayIndex];
 
-        /* Assume that the displays are left to right */
-        if (displayIndex == 0) {
-            rect->x = 0;
-            rect->y = 0;
-        } else {
-            SDL_GetDisplayBounds(displayIndex-1, rect);
-            rect->x += rect->w;
+    if (_this->GetDisplayBounds) {
+        if (_this->GetDisplayBounds(_this, display, rect) == 0) {
+            return 0;
         }
-        rect->w = display->current_mode.w;
-        rect->h = display->current_mode.h;
     }
-    return 0;  /* !!! FIXME: should this be an error if (rect==NULL) ? */
+
+    /* Assume that the displays are left to right */
+    if (displayIndex == 0) {
+        rect->x = 0;
+        rect->y = 0;
+    } else {
+        SDL_GetDisplayBounds(displayIndex-1, rect);
+        rect->x += rect->w;
+    }
+    rect->w = display->current_mode.w;
+    rect->h = display->current_mode.h;
+    return 0;
 }
 
 static int
@@ -789,25 +792,28 @@ ParseDisplayUsableBoundsHint(SDL_Rect *rect)
 int
 SDL_GetDisplayUsableBounds(int displayIndex, SDL_Rect * rect)
 {
+    SDL_VideoDisplay *display;
+
     CHECK_DISPLAY_INDEX(displayIndex, -1);
 
-    if (rect) {
-        SDL_VideoDisplay *display = &_this->displays[displayIndex];
+    if (!rect)
+        return SDL_InvalidParamError("rect");
 
-        if ((displayIndex == 0) && ParseDisplayUsableBoundsHint(rect)) {
+
+    display = &_this->displays[displayIndex];
+
+    if ((displayIndex == 0) && ParseDisplayUsableBoundsHint(rect)) {
+        return 0;
+    }
+
+    if (_this->GetDisplayUsableBounds) {
+        if (_this->GetDisplayUsableBounds(_this, display, rect) == 0) {
             return 0;
         }
-
-        if (_this->GetDisplayUsableBounds) {
-            if (_this->GetDisplayUsableBounds(_this, display, rect) == 0) {
-                return 0;
-            }
-        }
-
-        /* Oh well, just give the entire display bounds. */
-        return SDL_GetDisplayBounds(displayIndex, rect);
     }
-    return 0;  /* !!! FIXME: should this be an error if (rect==NULL) ? */
+
+    /* Oh well, just give the entire display bounds. */
+    return SDL_GetDisplayBounds(displayIndex, rect);
 }
 
 int
