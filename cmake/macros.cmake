@@ -101,6 +101,7 @@ if(${CMAKE_VERSION} VERSION_LESS "3.16.0")
   endmacro()
 else()
   include(CheckOBJCSourceCompiles)
+  enable_language(OBJC)
 endif()
 
 if(CMAKE_VERSION VERSION_LESS 3.13.0)
