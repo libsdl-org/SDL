@@ -1167,9 +1167,11 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 SDL_SendWindowEvent(data->window,
                     SDL_WINDOWEVENT_MINIMIZED, 0, 0);
                 break;
-            default:
+            case SIZE_RESTORED:
                 SDL_SendWindowEvent(data->window,
                     SDL_WINDOWEVENT_RESTORED, 0, 0);
+                break;
+            default:
                 break;
             }
         }
