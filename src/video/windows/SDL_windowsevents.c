@@ -378,14 +378,14 @@ WIN_CheckAsyncMouseRelease(SDL_WindowData *data)
 }
 
 static void
-WIN_UpdateFocus(SDL_Window *window)
+WIN_UpdateFocus(SDL_Window *window, SDL_bool expect_focus)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
     HWND hwnd = data->hwnd;
     SDL_bool had_focus = (SDL_GetKeyboardFocus() == window) ? SDL_TRUE : SDL_FALSE;
     SDL_bool has_focus = (GetForegroundWindow() == hwnd) ? SDL_TRUE : SDL_FALSE;
 
-    if (had_focus == has_focus) {
+    if (had_focus == has_focus || has_focus != expect_focus) {
         return;
     }
 
@@ -686,7 +686,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             /* Update the focus here, since it's possible to get WM_ACTIVATE and WM_SETFOCUS without
                actually being the foreground window, but this appears to get called in all cases where
                the global foreground window changes to and from this window. */
-            WIN_UpdateFocus(data->window);
+            WIN_UpdateFocus(data->window, !!wParam);
             WIN_CheckICMProfileChanged(data->window);
         }
         break;
@@ -694,16 +694,22 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     case WM_ACTIVATE:
         {
             /* Update the focus in case we changed focus to a child window and then away from the application */
-            WIN_UpdateFocus(data->window);
+            WIN_UpdateFocus(data->window, !!LOWORD(wParam));
         }
         break;
 
     case WM_SETFOCUS:
+        {
+            /* Update the focus in case it's changing between top-level windows in the same application */
+            WIN_UpdateFocus(data->window, SDL_TRUE);
+        }
+        break;
+
     case WM_KILLFOCUS:
     case WM_ENTERIDLE:
         {
             /* Update the focus in case it's changing between top-level windows in the same application */
-            WIN_UpdateFocus(data->window);
+            WIN_UpdateFocus(data->window, SDL_FALSE);
         }
         break;
 
