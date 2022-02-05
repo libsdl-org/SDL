@@ -724,10 +724,12 @@ D3D_UnlockTexture(SDL_Renderer * renderer, SDL_Texture * texture)
             data->drawstate.shader = NULL;
             IDirect3DDevice9_SetPixelShader(data->device, NULL);
             IDirect3DDevice9_SetTexture(data->device, 0, NULL);
+#if 0
             if (texturedata->yuv) {
                 IDirect3DDevice9_SetTexture(data->device, 1, NULL);
                 IDirect3DDevice9_SetTexture(data->device, 2, NULL);
             }
+#endif
         }
     }
 }
