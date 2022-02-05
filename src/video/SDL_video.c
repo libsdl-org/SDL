@@ -3308,7 +3308,7 @@ SDL_GL_LoadLibrary(const char *path)
         retval = 0;
     } else {
         if (!_this->GL_LoadLibrary) {
-            return SDL_SetError("No dynamic GL support in current SDL video driver (%s)", _this->name);
+            return SDL_ContextNotSupported("OpenGL");
         }
         retval = _this->GL_LoadLibrary(_this, path);
     }
