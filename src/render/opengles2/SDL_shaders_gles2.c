@@ -359,8 +359,10 @@ const Uint8 *GLES2_GetShader(GLES2_ShaderType type)
     case GLES2_SHADER_FRAGMENT_TEXTURE_NV21_BT709:
         return GLES2_Fragment_TextureNV21BT709;
 #endif
+#ifdef __ANDROID__
     case GLES2_SHADER_FRAGMENT_TEXTURE_EXTERNAL_OES:
         return GLES2_Fragment_TextureExternalOES;
+#endif
     default:
         return NULL;
     }

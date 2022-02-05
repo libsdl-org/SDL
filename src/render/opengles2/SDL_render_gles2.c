@@ -619,9 +619,11 @@ GLES2_SelectProgram(GLES2_RenderData *data, GLES2_ImageSource source, int w, int
         }
         break;
 #endif /* SDL_HAVE_YUV */
+#ifdef __ANDROID__
     case GLES2_IMAGESOURCE_TEXTURE_EXTERNAL_OES:
         ftype = GLES2_SHADER_FRAGMENT_TEXTURE_EXTERNAL_OES;
         break;
+#endif
     default:
         goto fault;
     }
@@ -1032,9 +1034,11 @@ SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, void *vertice
                 sourceType = GLES2_IMAGESOURCE_TEXTURE_NV21;
                 break;
 #endif
+#ifdef __ANDROID__
             case SDL_PIXELFORMAT_EXTERNAL_OES:
                 sourceType = GLES2_IMAGESOURCE_TEXTURE_EXTERNAL_OES;
                 break;
+#endif
             default:
                 return SDL_SetError("Unsupported texture format");
             }
@@ -1067,9 +1071,11 @@ SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, void *vertice
                 sourceType = GLES2_IMAGESOURCE_TEXTURE_NV21;
                 break;
 #endif
+#ifdef __ANDROID__
             case SDL_PIXELFORMAT_EXTERNAL_OES:
                 sourceType = GLES2_IMAGESOURCE_TEXTURE_EXTERNAL_OES;
                 break;
+#endif
             default:
                 return SDL_SetError("Unsupported texture format");
         }
@@ -1379,6 +1385,7 @@ GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
         type = GL_UNSIGNED_BYTE;
         break;
 #endif
+#ifdef __ANDROID__
     case SDL_PIXELFORMAT_EXTERNAL_OES:
         format = GL_NONE;
         type = GL_NONE;
@@ -1399,7 +1406,7 @@ GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
         return SDL_OutOfMemory();
     }
     data->texture = 0;
-#ifdef GL_TEXTURE_EXTERNAL_OES
+#ifdef __ANDROID__
     data->texture_type = (texture->format == SDL_PIXELFORMAT_EXTERNAL_OES) ? GL_TEXTURE_EXTERNAL_OES : GL_TEXTURE_2D;
 #else
     data->texture_type = GL_TEXTURE_2D;
@@ -1495,7 +1502,11 @@ GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     renderdata->glTexParameteri(data->texture_type, GL_TEXTURE_MAG_FILTER, scaleMode);
     renderdata->glTexParameteri(data->texture_type, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     renderdata->glTexParameteri(data->texture_type, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+#ifdef __ANDROID__
     if (texture->format != SDL_PIXELFORMAT_EXTERNAL_OES) {
+#else
+    {
+#endif
         renderdata->glTexImage2D(data->texture_type, 0, format, texture->w, texture->h, 0, format, type, NULL);
         if (GL_CheckError("glTexImage2D()", renderer) < 0) {
             return -1;
@@ -2142,6 +2153,7 @@ GLES2_CreateRenderer(SDL_Window *window, Uint32 flags)
     renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_NV12;
     renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_NV21;
 #endif
+#ifdef __ANDROID__
     renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_EXTERNAL_OES;
 #endif
 
