@@ -930,7 +930,7 @@ SDL_CreateRenderer(SDL_Window * window, int index, Uint32 flags)
 #endif
 
     if (!window) {
-        SDL_SetError("Invalid window");
+        SDL_InvalidParamError("window");
         goto error;
     }
 
@@ -979,24 +979,24 @@ SDL_CreateRenderer(SDL_Window * window, int index, Uint32 flags)
                 }
             }
         }
-        if (index == n) {
+        if (!renderer) {
             SDL_SetError("Couldn't find matching render driver");
             goto error;
         }
     } else {
-        if (index >= SDL_GetNumRenderDrivers()) {
+        if (index >= n) {
             SDL_SetError("index must be -1 or in the range of 0 - %d",
-                         SDL_GetNumRenderDrivers() - 1);
+                         n - 1);
             goto error;
         }
         /* Create a new renderer instance */
         renderer = render_drivers[index]->CreateRenderer(window, flags);
         batching = SDL_FALSE;
+        if (!renderer) {
+            goto error;
+        }
     }
 
-    if (!renderer) {
-        goto error;
-    }
 
     VerifyDrawQueueFunctions(renderer);
 
