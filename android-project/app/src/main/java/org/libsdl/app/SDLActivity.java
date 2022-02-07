@@ -1204,7 +1204,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
 
         for (int id : ids) {
             InputDevice device = InputDevice.getDevice(id);
-            if (device != null && (device.getSources() & InputDevice.SOURCE_TOUCHSCREEN) != 0) {
+            if (device != null && (device.getSources() & InputDevice.SOURCE_TOUCHSCREEN) == InputDevice.SOURCE_TOUCHSCREEN) {
                 nativeAddTouch(device.getId(), device.getName());
             }
         }
