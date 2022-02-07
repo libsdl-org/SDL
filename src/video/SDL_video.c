@@ -4204,6 +4204,16 @@ SDL_ClearComposition(void)
 }
 
 SDL_bool
+SDL_IsTextInputShown(void)
+{
+    if (_this && _this->IsTextInputShown) {
+        return _this->IsTextInputShown(_this);
+    }
+
+    return SDL_FALSE;
+}
+
+SDL_bool
 SDL_IsTextInputActive(void)
 {
     return (SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE);

@@ -270,6 +270,14 @@ extern DECLSPEC SDL_bool SDLCALL SDL_IsTextInputActive(void);
 extern DECLSPEC void SDLCALL SDL_ClearComposition(void);
 
 /**
+ * Returns if an IME Composite or Candidate window is currently shown.
+ *
+ * \since This function is available since SDL 2.0.21
+ *
+ */
+extern DECLSPEC SDL_bool SDLCALL SDL_IsTextInputShown(void);
+
+/**
  * Stop receiving any text input events.
  *
  * \since This function is available since SDL 2.0.0.

@@ -229,7 +229,6 @@ typedef struct SDL_KeyboardEvent
     SDL_Keysym keysym;  /**< The key that was pressed or released */
 } SDL_KeyboardEvent;
 
-#define SDL_TEXTEDITINGEVENT_TEXT_SIZE (32)
 /**
  *  \brief Keyboard text editing event structure (event.edit.*)
  */
@@ -238,13 +237,11 @@ typedef struct SDL_TextEditingEvent
     Uint32 type;                                /**< ::SDL_TEXTEDITING */
     Uint32 timestamp;                           /**< In milliseconds, populated using SDL_GetTicks() */
     Uint32 windowID;                            /**< The window with keyboard focus, if any */
-    char text[SDL_TEXTEDITINGEVENT_TEXT_SIZE];  /**< The editing text */
+    char* text;                                 /**< The editing text */
     Sint32 start;                               /**< The start cursor of selected editing text */
     Sint32 length;                              /**< The length of selected editing text */
 } SDL_TextEditingEvent;
 
-
-#define SDL_TEXTINPUTEVENT_TEXT_SIZE (32)
 /**
  *  \brief Keyboard text input event structure (event.text.*)
  */
@@ -253,7 +250,7 @@ typedef struct SDL_TextInputEvent
     Uint32 type;                              /**< ::SDL_TEXTINPUT */
     Uint32 timestamp;                         /**< In milliseconds, populated using SDL_GetTicks() */
     Uint32 windowID;                          /**< The window with keyboard focus, if any */
-    char text[SDL_TEXTINPUTEVENT_TEXT_SIZE];  /**< The input text */
+    char* text;                               /**< The input text */
 } SDL_TextInputEvent;
 
 /**
