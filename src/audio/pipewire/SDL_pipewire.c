@@ -262,8 +262,8 @@ static struct spa_hook        hotplug_core_listener;
 static struct spa_list        hotplug_pending_list;
 static struct spa_list        hotplug_io_list;
 static int                    hotplug_init_seq_val;
-static SDL_atomic_t           hotplug_init_complete;
-static SDL_atomic_t           hotplug_events_enabled;
+static SDL_bool               hotplug_init_complete;
+static SDL_bool               hotplug_events_enabled;
 
 static Uint32 pipewire_default_sink_id   = SPA_ID_INVALID;
 static Uint32 pipewire_default_source_id = SPA_ID_INVALID;
@@ -288,7 +288,7 @@ io_list_check_add(struct io_node *node)
     /* Add to the list if the node doesn't already exist */
     spa_list_append(&hotplug_io_list, &node->link);
 
-    if (SDL_AtomicGet(&hotplug_events_enabled)) {
+    if (hotplug_events_enabled) {
         SDL_AddAudioDevice(node->is_capture, node->name, &node->spec, PW_ID_TO_HANDLE(node->id));
     }
 
@@ -311,7 +311,7 @@ io_list_remove(Uint32 id)
         if (n->id == id) {
             spa_list_remove(&n->link);
 
-            if (SDL_AtomicGet(&hotplug_events_enabled)) {
+            if (hotplug_events_enabled) {
                 SDL_RemoveAudioDevice(n->is_capture, PW_ID_TO_HANDLE(id));
             }
 
@@ -445,7 +445,7 @@ core_events_hotplug_init_callback(void *object, uint32_t id, int seq)
         spa_hook_remove(&hotplug_core_listener);
 
         /* Signal that the initial I/O list is populated */
-        SDL_AtomicSet(&hotplug_init_complete, 1);
+        hotplug_init_complete = SDL_TRUE;
         PIPEWIRE_pw_thread_loop_signal(hotplug_loop, false);
     }
 }
@@ -494,7 +494,7 @@ hotplug_core_sync(struct node_object *node)
         node->seq = pw_core_sync(hotplug_core, PW_ID_CORE, node->seq);
     }
 
-    if (!SDL_AtomicGet(&hotplug_init_complete)) {
+    if (!hotplug_init_complete) {
         hotplug_init_seq_val = pw_core_sync(hotplug_core, PW_ID_CORE, hotplug_init_seq_val);
     }
 }
@@ -753,8 +753,8 @@ hotplug_loop_destroy()
     pending_list_clear();
     io_list_clear();
 
-    SDL_AtomicSet(&hotplug_init_complete, 0);
-    SDL_AtomicSet(&hotplug_events_enabled, 0);
+    hotplug_init_complete  = SDL_FALSE;
+    hotplug_events_enabled = SDL_FALSE;
 
     if (hotplug_registry) {
         PIPEWIRE_pw_proxy_destroy((struct pw_proxy *)hotplug_registry);
@@ -781,7 +781,7 @@ PIPEWIRE_DetectDevices()
     PIPEWIRE_pw_thread_loop_lock(hotplug_loop);
 
     /* Wait until the initial registry enumeration is complete */
-    if (!SDL_AtomicGet(&hotplug_init_complete)) {
+    if (!hotplug_init_complete) {
         PIPEWIRE_pw_thread_loop_wait(hotplug_loop);
     }
 
@@ -792,7 +792,7 @@ PIPEWIRE_DetectDevices()
         SDL_AddAudioDevice(io->is_capture, io->name, &io->spec, PW_ID_TO_HANDLE(io->id));
     }
 
-    SDL_AtomicSet(&hotplug_events_enabled, 1);
+    hotplug_events_enabled = SDL_TRUE;
 
     PIPEWIRE_pw_thread_loop_unlock(hotplug_loop);
 }
