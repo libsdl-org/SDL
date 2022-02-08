@@ -229,6 +229,7 @@ typedef struct SDL_KeyboardEvent
     SDL_Keysym keysym;  /**< The key that was pressed or released */
 } SDL_KeyboardEvent;
 
+#define SDL_TEXTEDITINGEVENT_TEXT_SIZE (32)
 /**
  *  \brief Keyboard text editing event structure (event.edit.*)
  */
@@ -243,7 +244,6 @@ typedef struct SDL_TextEditingEvent
 } SDL_TextEditingEvent;
 
 #define SDL_TEXTINPUTEVENT_TEXT_SIZE (32)
-
 /**
  *  \brief Keyboard text input event structure (event.text.*)
  */
