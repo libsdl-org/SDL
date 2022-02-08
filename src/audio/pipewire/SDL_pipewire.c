@@ -744,20 +744,27 @@ hotplug_loop_destroy()
     hotplug_init_complete  = SDL_FALSE;
     hotplug_events_enabled = SDL_FALSE;
 
+    pipewire_default_sink_id   = SPA_ID_INVALID;
+    pipewire_default_source_id = SPA_ID_INVALID;
+
     if (hotplug_registry) {
         PIPEWIRE_pw_proxy_destroy((struct pw_proxy *)hotplug_registry);
+        hotplug_registry = NULL;
     }
 
     if (hotplug_core) {
         PIPEWIRE_pw_core_disconnect(hotplug_core);
+        hotplug_core = NULL;
     }
 
     if (hotplug_context) {
         PIPEWIRE_pw_context_destroy(hotplug_context);
+        hotplug_context = NULL;
     }
 
     if (hotplug_loop) {
         PIPEWIRE_pw_thread_loop_destroy(hotplug_loop);
+        hotplug_loop = NULL;
     }
 }
 
