@@ -63,6 +63,106 @@ import java.util.Locale;
 */
 public class SDLActivity extends Activity implements View.OnSystemUiVisibilityChangeListener {
     private static final String TAG = "SDL";
+/*
+    // Display InputType.SOURCE/CLASS of events and devices
+    //
+    // SDLActivity.debugSource(device.getSources(), "device[" + device.getName() + "]");
+    // SDLActivity.debugSource(event.getSource(), "event");
+    public static void debugSource(int sources, String prefix) {
+        int s = sources;
+        int s_copy = sources;
+        String cls = "";
+        String src = "";
+        int tst = 0;
+        int FLAG_TAINTED = 0x80000000;
+
+        if ((s & InputDevice.SOURCE_CLASS_BUTTON) != 0)     cls += " BUTTON";
+        if ((s & InputDevice.SOURCE_CLASS_JOYSTICK) != 0)   cls += " JOYSTICK";
+        if ((s & InputDevice.SOURCE_CLASS_POINTER) != 0)    cls += " POINTER";
+        if ((s & InputDevice.SOURCE_CLASS_POSITION) != 0)   cls += " POSITION";
+        if ((s & InputDevice.SOURCE_CLASS_TRACKBALL) != 0)  cls += " TRACKBALL";
+
+
+        int s2 = s_copy & ~InputDevice.SOURCE_ANY; // keep class bits
+        s2 &= ~(  InputDevice.SOURCE_CLASS_BUTTON 
+                | InputDevice.SOURCE_CLASS_JOYSTICK
+                | InputDevice.SOURCE_CLASS_POINTER
+                | InputDevice.SOURCE_CLASS_POSITION
+                | InputDevice.SOURCE_CLASS_TRACKBALL);
+
+        if (s2 != 0) cls += "Some_Unkown";
+
+        s2 = s_copy & InputDevice.SOURCE_ANY; // keep source only, no class;
+
+        tst = InputDevice.SOURCE_BLUETOOTH_STYLUS;
+        if ((s & tst) == tst) src += " BLUETOOTH_STYLUS";
+        s2 &= ~tst;
+
+        tst = InputDevice.SOURCE_DPAD;
+        if ((s & tst) == tst) src += " DPAD";
+        s2 &= ~tst;
+
+        tst = InputDevice.SOURCE_GAMEPAD;
+        if ((s & tst) == tst) src += " GAMEPAD";
+        s2 &= ~tst;
+
+        tst = InputDevice.SOURCE_HDMI;
+        if ((s & tst) == tst) src += " HDMI";
+        s2 &= ~tst;
+
+        tst = InputDevice.SOURCE_JOYSTICK;
+        if ((s & tst) == tst) src += " JOYSTICK";
+        s2 &= ~tst;
+
+        tst = InputDevice.SOURCE_KEYBOARD;
+        if ((s & tst) == tst) src += " KEYBOARD";
+        s2 &= ~tst;
+
+        tst = InputDevice.SOURCE_MOUSE;
+        if ((s & tst) == tst) src += " MOUSE";
+        s2 &= ~tst;
+
+        if (Build.VERSION.SDK_INT >= 26) {
+            tst = InputDevice.SOURCE_MOUSE_RELATIVE;
+            if ((s & tst) == tst) src += " MOUSE_RELATIVE";
+            s2 &= ~tst;
+
+            tst = InputDevice.SOURCE_ROTARY_ENCODER;
+            if ((s & tst) == tst) src += " ROTARY_ENCODER";
+            s2 &= ~tst;
+        }
+        tst = InputDevice.SOURCE_STYLUS;
+        if ((s & tst) == tst) src += " STYLUS";
+        s2 &= ~tst;
+
+        tst = InputDevice.SOURCE_TOUCHPAD;
+        if ((s & tst) == tst) src += " TOUCHPAD";
+        s2 &= ~tst;
+
+        tst = InputDevice.SOURCE_TOUCHSCREEN;
+        if ((s & tst) == tst) src += " TOUCHSCREEN";
+        s2 &= ~tst;
+
+        tst = InputDevice.SOURCE_TOUCH_NAVIGATION;
+        if ((s & tst) == tst) src += " TOUCH_NAVIGATION";
+        s2 &= ~tst;
+
+        tst = InputDevice.SOURCE_TRACKBALL;
+        if ((s & tst) == tst) src += " TRACKBALL";
+        s2 &= ~tst;
+
+        tst = InputDevice.SOURCE_ANY;
+        if ((s & tst) == tst) src += " ANY";
+        s2 &= ~tst;
+
+        if (s == FLAG_TAINTED) src += " FLAG_TAINTED";
+        s2 &= ~FLAG_TAINTED;
+
+        if (s2 != 0) src += " Some_Unkown";
+
+        Log.v(TAG, prefix + "int=" + s_copy + " CLASS={" + cls + " } source(s):" + src);
+    }
+*/
 
     public static boolean mIsResumedCalled, mHasFocus;
     public static final boolean mHasMultiWindow = (Build.VERSION.SDK_INT >= 24);
