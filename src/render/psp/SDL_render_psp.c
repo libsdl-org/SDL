@@ -891,14 +891,12 @@ PSP_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * t
     const float width = dstrect->w - centerx;
     const float height = dstrect->h - centery;
     float s, c;
-    float cw, sw, ch, sh;
+    float cw1, sw1, ch1, sh1, cw2, sw2, ch2, sh2;
 
     float u0 = srcrect->x;
     float v0 = srcrect->y;
     float u1 = srcrect->x + srcrect->w;
     float v1 = srcrect->y + srcrect->h;
-
-
 
     if (!verts) {
         return -1;
@@ -908,10 +906,14 @@ PSP_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * t
 
     MathSincos(degToRad(angle), &s, &c);
 
-    cw = c * width;
-    sw = s * width;
-    ch = c * height;
-    sh = s * height;
+    cw1 = c * width;
+    sw1 = s * width;
+    ch1 = c * height;
+    sh1 = s * height;
+    cw2 = c * -centerx;
+    sw2 = s * -centerx;
+    ch2 = c * -centery;
+    sh2 = s * -centery;
 
     if (flip & SDL_FLIP_VERTICAL) {
         Swap(&v0, &v1);
@@ -923,29 +925,29 @@ PSP_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * t
 
     verts->u = u0;
     verts->v = v0;
-    verts->x = x - cw + sh;
-    verts->y = y - sw - ch;
+    verts->x = x + cw1 + sh1;
+    verts->y = y - sw1 + ch1;
     verts->z = 0;
     verts++;
 
     verts->u = u0;
     verts->v = v1;
-    verts->x = x - cw - sh;
-    verts->y = y - sw + ch;
+    verts->x = x + cw1 + sh2;
+    verts->y = y - sw1 + ch2;
     verts->z = 0;
     verts++;
 
     verts->u = u1;
     verts->v = v1;
-    verts->x = x + cw - sh;
-    verts->y = y + sw + ch;
+    verts->x = x + cw2 + sh2;
+    verts->y = y - sw2 + ch2;
     verts->z = 0;
     verts++;
 
     verts->u = u1;
     verts->v = v0;
-    verts->x = x + cw + sh;
-    verts->y = y + sw - ch;
+    verts->x = x + cw2 + sh1;
+    verts->y = y - sw2 + ch1;
     verts->z = 0;
     verts++;
 
