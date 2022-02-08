@@ -1169,7 +1169,7 @@ IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
             return nil;
         }
 
-        __weak typeof(self) weakSelf = self;
+        __weak __typeof(self) weakSelf = self;
         self.engine.stoppedHandler = ^(CHHapticEngineStoppedReason stoppedReason) {
             SDL_RumbleMotor *_this = weakSelf;
             if (_this == nil) {
