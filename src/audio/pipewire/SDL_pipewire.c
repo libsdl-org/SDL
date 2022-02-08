@@ -275,8 +275,6 @@ io_list_check_add(struct io_node *node)
     struct io_node *n;
     SDL_bool        ret = SDL_TRUE;
 
-    PIPEWIRE_pw_thread_loop_lock(hotplug_loop);
-
     /* See if the node is already in the list */
     spa_list_for_each (n, &hotplug_io_list, link) {
         if (n->id == node->id) {
@@ -294,8 +292,6 @@ io_list_check_add(struct io_node *node)
 
 dup_found:
 
-    PIPEWIRE_pw_thread_loop_unlock(hotplug_loop);
-
     return ret;
 }
 
@@ -303,8 +299,6 @@ static void
 io_list_remove(Uint32 id)
 {
     struct io_node *n, *temp;
-
-    PIPEWIRE_pw_thread_loop_lock(hotplug_loop);
 
     /* Find and remove the node from the list */
     spa_list_for_each_safe (n, temp, &hotplug_io_list, link) {
@@ -320,8 +314,6 @@ io_list_remove(Uint32 id)
             break;
         }
     }
-
-    PIPEWIRE_pw_thread_loop_unlock(hotplug_loop);
 }
 
 static void
@@ -329,8 +321,6 @@ io_list_sort()
 {
     struct io_node *default_sink = NULL, *default_source = NULL;
     struct io_node *n, *temp;
-
-    PIPEWIRE_pw_thread_loop_lock(hotplug_loop);
 
     /* Find and move the default nodes to the beginning of the list */
     spa_list_for_each_safe (n, temp, &hotplug_io_list, link) {
@@ -350,8 +340,6 @@ io_list_sort()
     if (default_sink) {
         spa_list_prepend(&hotplug_io_list, &default_sink->link);
     }
-
-    PIPEWIRE_pw_thread_loop_unlock(hotplug_loop);
 }
 
 static void
