@@ -44,7 +44,7 @@ static SDL_Rect textRect, markedRect;
 static SDL_Color lineColor = {0,0,0,255};
 static SDL_Color backColor = {255,255,255,255};
 static SDL_Color textColor = {0,0,0,255};
-static char text[MAX_TEXT_LENGTH], markedText[SDL_TEXTEDITINGEVENT_TEXT_SIZE];
+static char text[MAX_TEXT_LENGTH], markedText[256];
 static int cursor = 0;
 #ifdef HAVE_SDL_TTF
 static TTF_Font *font;
@@ -782,7 +782,7 @@ int main(int argc, char *argv[])
                     SDL_Log("text editing \"%s\", selected range (%d, %d)\n",
                             event.edit.text, event.edit.start, event.edit.length);
 
-                    SDL_strlcpy(markedText, event.edit.text, SDL_TEXTEDITINGEVENT_TEXT_SIZE);
+                    SDL_strlcpy(markedText, event.edit.text, SDL_strlen(event.edit.text));
                     cursor = event.edit.start;
                     Redraw();
                     break;
