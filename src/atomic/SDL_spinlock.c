@@ -28,6 +28,12 @@
 #include "SDL_mutex.h"
 #include "SDL_timer.h"
 
+#if defined(__WIN32__) && defined(__clang__)
+# ifndef HAVE_GCC_ATOMICS
+# define HAVE_GCC_ATOMICS 1
+# endif
+#endif
+
 #if !defined(HAVE_GCC_ATOMICS) && defined(__SOLARIS__)
 #include <atomic.h>
 #endif
