@@ -64,9 +64,9 @@ WIN_InitKeyboard(_THIS)
     data->ime_hwnd_main = 0;
     data->ime_hwnd_current = 0;
     data->ime_himc = 0;
-    data->ime_composition = (WCHAR*)SDL_malloc(32 * sizeof(WCHAR));
+    data->ime_composition_length = 32 * sizeof(WCHAR);
+    data->ime_composition = (WCHAR*)SDL_malloc(data->ime_composition_length);
     data->ime_composition[0] = 0;
-    data->ime_composition_length = 0;
     data->ime_readingstring[0] = 0;
     data->ime_cursor = 0;
 
@@ -767,14 +767,15 @@ static void
 IME_GetCompositionString(SDL_VideoData *videodata, HIMC himc, DWORD string)
 {
     LONG length;
+    DWORD dwLang = ((DWORD_PTR)videodata->ime_hkl & 0xffff);
 
     length = ImmGetCompositionStringW(himc, string, NULL, 0);
     if (length > 0 && videodata->ime_composition_length < length) {
         if (videodata->ime_composition != NULL)
             SDL_free(videodata->ime_composition);
 
-        videodata->ime_composition = (WCHAR*)SDL_malloc(length);
-        videodata->ime_composition_length = length + sizeof(WCHAR);
+        videodata->ime_composition = (WCHAR*)SDL_malloc(length + sizeof(WCHAR));
+        videodata->ime_composition_length = length;
     }
 
     length = ImmGetCompositionStringW(
@@ -789,9 +790,12 @@ IME_GetCompositionString(SDL_VideoData *videodata, HIMC himc, DWORD string)
 
     length /= sizeof(WCHAR);
     videodata->ime_cursor = LOWORD(ImmGetCompositionStringW(himc, GCS_CURSORPOS, 0, 0));
-    if (videodata->ime_cursor > 0 &&
-        videodata->ime_cursor < SDL_arraysize(videodata->ime_composition) &&
-        videodata->ime_composition[videodata->ime_cursor] == 0x3000) {
+    if ((dwLang == LANG_CHT || dwLang == LANG_CHS) &&
+        videodata->ime_cursor > 0 &&
+        videodata->ime_cursor < videodata->ime_composition_length / sizeof(WCHAR) &&
+        (videodata->ime_composition[0] == 0x3000 || videodata->ime_composition[0] == 0x0020)) {
+        // Traditional Chinese IMEs add a placeholder U+3000
+        // Simplified Chinese IMEs seem to add a placholder U+0020 sometimes
         int i;
         for (i = videodata->ime_cursor + 1; i < length; ++i)
             videodata->ime_composition[i - 1] = videodata->ime_composition[i];
@@ -827,6 +831,8 @@ IME_GetCompositionString(SDL_VideoData *videodata, HIMC himc, DWORD string)
                 start = 0;
                 end = length;
             }
+
+            SDL_free(attributes);
         }
 
         videodata->ime_cursor = end;
