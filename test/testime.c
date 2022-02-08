@@ -783,6 +783,7 @@ int main(int argc, char *argv[])
                             event.edit.text, event.edit.start, event.edit.length);
 
                     SDL_strlcpy(markedText, event.edit.text, SDL_strlen(event.edit.text));
+                    SDL_free(event.edit.text);
                     cursor = event.edit.start;
                     Redraw();
                     break;
