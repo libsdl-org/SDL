@@ -927,3 +927,4 @@ SDL_DYNAPI_PROC(int,SDL_PremultiplyAlpha,(int a, int b, Uint32 c, const void *d,
 #ifdef __ANDROID__
 SDL_DYNAPI_PROC(int,SDL_AndroidSendMessage,(Uint32 a, int b),(a,b),return)
 #endif
+SDL_DYNAPI_PROC(const char*,SDL_GetTouchName,(int a),(a),return)
