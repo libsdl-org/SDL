@@ -904,16 +904,16 @@ PSP_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * t
 
     cmd->data.draw.count = 1;
 
-    MathSincos(degToRad(angle), &s, &c);
+    MathSincos(degToRad(360-angle), &s, &c);
 
-    cw1 = c * width;
-    sw1 = s * width;
-    ch1 = c * height;
-    sh1 = s * height;
-    cw2 = c * -centerx;
-    sw2 = s * -centerx;
-    ch2 = c * -centery;
-    sh2 = s * -centery;
+    cw1 = c * -centerx;
+    sw1 = s * -centerx;
+    ch1 = c * -centery;
+    sh1 = s * -centery;
+    cw2 = c * width;
+    sw2 = s * width;
+    ch2 = c * height;
+    sh2 = s * height;
 
     if (flip & SDL_FLIP_VERTICAL) {
         Swap(&v0, &v1);
