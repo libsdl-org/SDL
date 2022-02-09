@@ -1304,7 +1304,10 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
 
         for (int id : ids) {
             InputDevice device = InputDevice.getDevice(id);
-            if (device != null && (device.getSources() & InputDevice.SOURCE_TOUCHSCREEN) == InputDevice.SOURCE_TOUCHSCREEN) {
+            /* Allow SOURCE_TOUCHSCREEN and also Virtual InputDevices because they can send TOUCHSCREEN events */
+            if (device != null && ((device.getSources() & InputDevice.SOURCE_TOUCHSCREEN) == InputDevice.SOURCE_TOUCHSCREEN
+                    || device.isVirtual()) {
+
                 int touchDevId = device.getId();
                 /*
                  * Prevent id to be -1, since it's used in SDL internal for synthetic events
