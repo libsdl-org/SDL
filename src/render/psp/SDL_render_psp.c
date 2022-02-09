@@ -774,14 +774,13 @@ PSP_QueueFillRects(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FR
 
     cmd->data.draw.count = count;
     for (i = 0; i < count; i++, rects++) {
-        const SDL_FRect *rect = &rects[i];
-        verts->x = rect->x;
-        verts->y = rect->y;
+        verts->x = rects->x;
+        verts->y = rects->y;
         verts->z = 0.0f;
         verts++;
 
-        verts->x = rect->x + rect->w;
-        verts->y = rect->y + rect->h;
+        verts->x = rects->x + rects->w + 0.5f;
+        verts->y = rects->y + rects->h + 0.5f;
         verts->z = 0.0f;
         verts++;
     }
