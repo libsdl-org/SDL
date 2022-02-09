@@ -1703,6 +1703,16 @@ SDL_CreateWindowFrom(const void *data)
     }
     _this->windows = window;
 
+#if SDL_VIDEO_VULKAN
+    if (SDL_GetHintBoolean(SDL_HINT_VIDEO_FOREIGN_WINDOW_VULKAN, SDL_FALSE)) {
+        window->flags |= SDL_WINDOW_VULKAN;
+        if (SDL_Vulkan_LoadLibrary(NULL) < 0) {
+            SDL_DestroyWindow(window);
+            return NULL;
+        }
+    }
+#endif
+
     if (_this->CreateSDLWindowFrom(_this, window, data) < 0) {
         SDL_DestroyWindow(window);
         return NULL;
