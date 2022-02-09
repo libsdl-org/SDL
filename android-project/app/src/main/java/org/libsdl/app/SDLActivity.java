@@ -1306,7 +1306,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
             InputDevice device = InputDevice.getDevice(id);
             /* Allow SOURCE_TOUCHSCREEN and also Virtual InputDevices because they can send TOUCHSCREEN events */
             if (device != null && ((device.getSources() & InputDevice.SOURCE_TOUCHSCREEN) == InputDevice.SOURCE_TOUCHSCREEN
-                    || device.isVirtual()) {
+                    || device.isVirtual())) {
 
                 int touchDevId = device.getId();
                 /*
