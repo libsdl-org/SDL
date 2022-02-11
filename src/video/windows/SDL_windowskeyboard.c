@@ -998,10 +998,13 @@ IME_HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam, SDL_VideoD
 
     switch (msg) {
     case WM_KEYDOWN:
-        if (wParam != VK_PROCESSKEY)
-            videodata->ime_uicontext = 0;
-        else
+        if (wParam == VK_PROCESSKEY)
+        {
             videodata->ime_uicontext = 1;
+            trap = SDL_TRUE;
+        }
+        else
+            videodata->ime_uicontext = 0;
         break;
     case WM_INPUTLANGCHANGE:
         IME_InputLangChanged(videodata);
