@@ -374,7 +374,7 @@ WIN_CheckAsyncMouseRelease(SDL_WindowData *data)
     if (!(keyState & 0x8000)) {
         WIN_CheckWParamMouseButton(SDL_FALSE, mouseFlags, swapButtons, data, SDL_BUTTON_X2, 0);
     }
-    data->mouse_button_flags = 0;
+    data->mouse_button_flags = (WPARAM)-1;
 }
 
 static void
