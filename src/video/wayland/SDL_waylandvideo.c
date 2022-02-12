@@ -53,6 +53,10 @@
 #include "xdg-activation-v1-client-protocol.h"
 #include "text-input-unstable-v3-client-protocol.h"
 
+#ifdef SDL_VIDEO_DRIVER_WAYLAND_TABLET
+#include "tablet-unstable-v2-client-protocol.h"
+#endif
+
 #ifdef HAVE_LIBDECOR_H
 #include <libdecor.h>
 #endif
@@ -632,6 +636,14 @@ display_handle_global(void *data, struct wl_registry *registry, uint32_t id,
                 &qt_windowmanager_interface, 1);
         qt_windowmanager_add_listener(d->windowmanager, &windowmanager_listener, d);
 #endif /* SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH */
+
+#ifdef SDL_VIDEO_DRIVER_WAYLAND_TABLET
+    } else if (SDL_strcmp(interface, "zwp_tablet_manager_v2") == 0) {
+        d->tablet_manager = wl_registry_bind(d->registry, id, &zwp_tablet_manager_v2_interface, 1);
+        if (d->input)
+            Wayland_input_add_tablet(d->input, d->tablet_manager);
+#endif /* SDL_VIDEO_DRIVER_WAYLAND_TABLET */
+
     }
 }
 
@@ -778,6 +790,11 @@ Wayland_VideoQuit(_THIS)
 
     Wayland_touch_destroy(data);
 #endif /* SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH */
+
+#ifdef SDL_VIDEO_DRIVER_WAYLAND_TABLET
+    if (data->tablet_manager)
+        zwp_tablet_manager_v2_destroy((struct zwp_tablet_manager_v2*)data->tablet_manager);
+#endif
 
     if (data->data_device_manager)
         wl_data_device_manager_destroy(data->data_device_manager);

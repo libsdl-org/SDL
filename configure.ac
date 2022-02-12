@@ -1550,6 +1550,11 @@ CheckWayland()
 [AS_HELP_STRING([--enable-video-wayland-qt-touch], [QtWayland server support for Wayland video driver [default=yes]])],
                   ,enable_video_wayland_qt_touch=yes)
 
+	AC_ARG_ENABLE(video-wayland-tablet,
+[AS_HELP_STRING([--enable-video-wayland-tablet], [zwp_tablet_v2 protocol support for Wayland video driver [default=yes]])],
+                  ,enable_video_wayland_tablet=yes)
+
+
     if test x$enable_video = xyes -a x$enable_video_wayland = xyes; then
         AC_MSG_CHECKING(for Wayland support)
         video_wayland=no
@@ -1572,6 +1577,9 @@ CheckWayland()
             if test x$enable_video_wayland_qt_touch = xyes; then
                 AC_DEFINE(SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH, 1, [ ])
             fi
+			if test x$enable_video_wayland_tablet = xyes; then
+				AC_DEFINE(SDL_VIDEO_DRIVER_WAYLAND_TABLET, 1, [ ])
+			fi
 
             WAYLAND_SOURCES="$srcdir/src/video/wayland/*.c"
             SOURCES="$SOURCES $WAYLAND_SOURCES"

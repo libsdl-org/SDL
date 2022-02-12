@@ -41,6 +41,11 @@ struct qt_surface_extension;
 struct qt_windowmanager;
 #endif /* SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH */
 
+#ifdef SDL_VIDEO_DRIVER_WAYLAND_TABLET
+//#include "tablet-unstable-v2-protocol.h"
+struct SDL_WaylandTabletManager;
+#endif // SDL_VIDEO_DRIVER_WAYLAND_TABLET
+
 typedef struct {
     struct wl_cursor_theme *theme;
     int size;
@@ -83,6 +88,10 @@ typedef struct {
     struct qt_surface_extension *surface_extension;
     struct qt_windowmanager *windowmanager;
 #endif /* SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH */
+
+#ifdef SDL_VIDEO_DRIVER_WAYLAND_TABLET
+    struct SDL_WaylandTabletManager *tablet_manager;
+#endif
 
     char *classname;
 

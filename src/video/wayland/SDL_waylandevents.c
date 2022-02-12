@@ -41,6 +41,10 @@
 #include "keyboard-shortcuts-inhibit-unstable-v1-client-protocol.h"
 #include "text-input-unstable-v3-client-protocol.h"
 
+#ifdef SDL_VIDEO_DRIVER_WAYLAND_TABLET
+#include "tablet-unstable-v2-client-protocol.h"
+#endif
+
 #ifdef HAVE_LIBDECOR_H
 #include <libdecor.h>
 #endif
@@ -1139,6 +1143,7 @@ static const struct wl_seat_listener seat_listener = {
     seat_handle_name,           // Version 2
 };
 
+
 static void
 data_source_handle_target(void *data, struct wl_data_source *wl_data_source,
                           const char *mime_type)
@@ -1646,6 +1651,344 @@ Wayland_add_text_input_manager(SDL_VideoData *d, uint32_t id, uint32_t version)
     }
 }
 
+#ifdef SDL_VIDEO_DRIVER_WAYLAND_TABLET
+static void
+tablet_tool_handle_type(void* data, struct zwp_tablet_tool_v2* tool, uint32_t type) {
+    /* unimplemented */
+}
+
+static void
+tablet_tool_handle_hardware_serial(void* data, struct zwp_tablet_tool_v2* tool, uint32_t serial_hi, uint32_t serial_lo) {
+    /* unimplemented */
+}
+
+static void
+tablet_tool_handle_hardware_id_wacom(void* data, struct zwp_tablet_tool_v2* tool, uint32_t id_hi, uint32_t id_lo) {
+    /* unimplemented */
+}
+
+static void
+tablet_tool_handle_capability(void* data, struct zwp_tablet_tool_v2* tool, uint32_t capability) {
+    /* unimplemented */
+}
+
+static void
+tablet_tool_handle_done(void* data, struct zwp_tablet_tool_v2* tool) {
+    /* unimplemented */
+}
+
+static void
+tablet_tool_handle_removed(void* data, struct zwp_tablet_tool_v2* tool) {
+    /* unimplemented */
+}
+
+static void
+tablet_tool_handle_proximity_in(void* data, struct zwp_tablet_tool_v2* tool, uint32_t serial, struct zwp_tablet_v2* tablet, struct wl_surface* surface) {
+    struct SDL_WaylandTabletInput* input = data;
+    SDL_WindowData* window;
+
+    if (!surface)
+        return;
+
+    if (!SDL_WAYLAND_own_surface(surface))
+        return;
+
+    window = (SDL_WindowData*)wl_surface_get_user_data(surface);
+
+    if (window) {
+        input->tool_focus = window;
+        input->tool_prox_serial = serial;
+
+        input->is_down = SDL_FALSE;
+
+        input->btn_stylus = SDL_FALSE;
+        input->btn_stylus2 = SDL_FALSE;
+        input->btn_stylus3 = SDL_FALSE;
+
+        SDL_SetMouseFocus(window->sdlwindow);
+        SDL_SetCursor(NULL);
+    }
+}
+
+static void
+tablet_tool_handle_proximity_out(void* data, struct zwp_tablet_tool_v2* tool) {
+    struct SDL_WaylandTabletInput* input = data;
+
+    if (input->tool_focus) {
+        SDL_SetMouseFocus(NULL);
+        input->tool_focus = NULL;
+    }
+}
+
+uint32_t
+tablet_tool_btn_to_sdl_button(struct SDL_WaylandTabletInput* input) {
+    unsigned int tool_btn = input->btn_stylus3 << 2 | input->btn_stylus2 << 1 | input->btn_stylus << 0;
+    switch (tool_btn) {
+        case 0b000:
+            return SDL_BUTTON_LEFT;
+        case 0b001:
+            return SDL_BUTTON_RIGHT;
+        case 0b010:
+            return SDL_BUTTON_MIDDLE;
+        case 0b100:
+            return SDL_BUTTON_X1;
+        default:
+            return SDL_BUTTON_LEFT;
+
+    }
+}
+
+static void
+tablet_tool_handle_down(void* data, struct zwp_tablet_tool_v2* tool, uint32_t serial)
+{
+    struct SDL_WaylandTabletInput* input = data;
+    SDL_WindowData* window = input->tool_focus;
+    input->is_down = SDL_TRUE;
+    if (!window)
+        // tablet_tool_handle_proximity_out gets called when moving over the libdecoration csd.
+        // that sets input->tool_focus (window) to NULL, but handle_{down,up} events are still
+        // received. To prevent SIGSEGV this returns when this is the case.
+        return;
+
+
+    SDL_SendMouseButton(window->sdlwindow, 0, SDL_PRESSED, tablet_tool_btn_to_sdl_button(input));
+}
+
+static void
+tablet_tool_handle_up(void* data, struct zwp_tablet_tool_v2* tool)
+{
+    struct SDL_WaylandTabletInput* input = data;
+    SDL_WindowData* window = input->tool_focus;
+
+    input->is_down = SDL_FALSE;
+
+    if (!window)
+        // tablet_tool_handle_proximity_out gets called when moving over the libdecoration csd.
+        // that sets input->tool_focus (window) to NULL, but handle_{down,up} events are still
+        // received. To prevent SIGSEGV this returns when this is the case.
+        return;
+
+    SDL_SendMouseButton(window->sdlwindow, 0, SDL_RELEASED, tablet_tool_btn_to_sdl_button(input));
+}
+
+static void
+tablet_tool_handle_motion(void* data, struct zwp_tablet_tool_v2* tool, wl_fixed_t sx_w, wl_fixed_t sy_w)
+{
+    struct SDL_WaylandTabletInput* input = data;
+    SDL_WindowData* window = input->tool_focus;
+
+    input->sx_w = sx_w;
+    input->sy_w = sy_w;
+    if (input->tool_focus) {
+        const int sx = wl_fixed_to_int(sx_w);
+        const int sy = wl_fixed_to_int(sy_w);
+        SDL_SendMouseMotion(window->sdlwindow, 0, 0, sx, sy);
+    }
+}
+
+static void
+tablet_tool_handle_pressure(void* data, struct zwp_tablet_tool_v2* tool, uint32_t pressure)
+{
+    /* unimplemented */
+}
+
+static void
+tablet_tool_handle_distance(void* data, struct zwp_tablet_tool_v2* tool, uint32_t distance)
+{
+    /* unimplemented */
+}
+
+static void
+tablet_tool_handle_tilt(void* data, struct zwp_tablet_tool_v2* tool, wl_fixed_t xtilt, wl_fixed_t ytilt)
+{
+    /* unimplemented */
+}
+
+static void
+tablet_tool_handle_button(void* data, struct zwp_tablet_tool_v2* tool, uint32_t serial, uint32_t button, uint32_t state)
+{
+    struct SDL_WaylandTabletInput* input = data;
+
+    if (input->is_down) {
+        tablet_tool_handle_up(data, tool);
+        input->is_down = SDL_TRUE;
+    }
+
+    switch (button) {
+        // see %{_includedir}/linux/input-event-codes.h
+        case 0x14b: // BTN_STYLUS
+            input->btn_stylus = state == ZWP_TABLET_PAD_V2_BUTTON_STATE_PRESSED ? SDL_TRUE : SDL_FALSE;
+            break;
+        case 0x14c: // BTN_STYLUS2
+            input->btn_stylus2 = state == ZWP_TABLET_PAD_V2_BUTTON_STATE_PRESSED ? SDL_TRUE : SDL_FALSE;
+            break;
+        case 0x149: // BTN_STYLUS3
+            input->btn_stylus3 = state == ZWP_TABLET_PAD_V2_BUTTON_STATE_PRESSED ? SDL_TRUE : SDL_FALSE;
+            break;
+    }
+
+    if (input->is_down)
+        tablet_tool_handle_down(data, tool, serial);
+}
+
+static void
+tablet_tool_handle_rotation(void* data, struct zwp_tablet_tool_v2* tool, wl_fixed_t degrees)
+{
+    /* unimplemented */
+}
+
+static void
+tablet_tool_handle_slider(void* data, struct zwp_tablet_tool_v2* tool, int32_t position)
+{
+    /* unimplemented */
+}
+
+static void
+tablet_tool_handle_wheel(void* data, struct zwp_tablet_tool_v2* tool, int32_t degrees, int32_t clicks)
+{
+    /* unimplemented */
+}
+
+static void
+tablet_tool_handle_frame(void* data, struct zwp_tablet_tool_v2* tool, uint32_t time)
+{
+    /* unimplemented */
+}
+
+
+static const struct zwp_tablet_tool_v2_listener tablet_tool_listener = {
+    tablet_tool_handle_type,
+    tablet_tool_handle_hardware_serial,
+    tablet_tool_handle_hardware_id_wacom,
+    tablet_tool_handle_capability,
+    tablet_tool_handle_done,
+    tablet_tool_handle_removed,
+    tablet_tool_handle_proximity_in,
+    tablet_tool_handle_proximity_out,
+    tablet_tool_handle_down,
+    tablet_tool_handle_up,
+    tablet_tool_handle_motion,
+    tablet_tool_handle_pressure,
+    tablet_tool_handle_distance,
+    tablet_tool_handle_tilt,
+    tablet_tool_handle_rotation,
+    tablet_tool_handle_slider,
+    tablet_tool_handle_wheel,
+    tablet_tool_handle_button,
+    tablet_tool_handle_frame
+};
+
+struct SDL_WaylandTabletObjectListNode*
+tablet_object_list_new_node(void* object) {
+    struct SDL_WaylandTabletObjectListNode* node;
+
+    node = SDL_calloc(1, sizeof *node);
+    if (node == NULL)
+        return NULL;
+
+    node->next = NULL;
+    node->object = object;
+
+    return node;
+}
+
+void tablet_object_list_append(struct SDL_WaylandTabletObjectListNode* head, void* object) {
+    if (head->object == NULL) {
+        head->object = object;
+        return;
+    }
+
+    while (head->next)
+        head = head->next;
+
+    head->next = tablet_object_list_new_node(object);
+}
+
+void tablet_object_list_destroy(struct SDL_WaylandTabletObjectListNode* head, void (*deleter)(void* object)) {
+    while (head) {
+        struct SDL_WaylandTabletObjectListNode* next = head->next;
+        if (head->object)
+            (*deleter)(head->object);
+        SDL_free(head);
+        head = next;
+    }
+}
+
+
+static void
+tablet_seat_handle_tablet_added(void* data, struct zwp_tablet_seat_v2* seat, struct zwp_tablet_v2* tablet)
+{
+    struct SDL_WaylandTabletInput* input = data;
+
+    tablet_object_list_append(input->tablets, tablet);
+}
+
+static void
+tablet_seat_handle_tool_added(void* data, struct zwp_tablet_seat_v2* seat, struct zwp_tablet_tool_v2* tool)
+{
+    struct SDL_WaylandTabletInput* input = data;
+
+    zwp_tablet_tool_v2_add_listener(tool, &tablet_tool_listener, data);
+    zwp_tablet_tool_v2_set_user_data(tool, data);
+
+    tablet_object_list_append(input->tools, tool);
+}
+
+static void
+tablet_seat_handle_pad_added(void* data, struct zwp_tablet_seat_v2* seat, struct zwp_tablet_pad_v2* pad)
+{
+    struct SDL_WaylandTabletInput* input = data;
+
+    tablet_object_list_append(input->pads, pad);
+}
+
+static const struct zwp_tablet_seat_v2_listener tablet_seat_listener = {
+    tablet_seat_handle_tablet_added,
+    tablet_seat_handle_tool_added,
+    tablet_seat_handle_pad_added
+};
+
+void
+Wayland_input_add_tablet(struct SDL_WaylandInput *input, struct SDL_WaylandTabletManager* tablet_manager) {
+    struct SDL_WaylandTabletInput* tablet_input;
+
+    if (!tablet_manager)
+        return;
+    if (!input)
+        return;
+    if (!input->seat)
+        return;
+
+    tablet_input = SDL_calloc(1, sizeof *tablet_input);
+    if (tablet_input == NULL)
+        return;
+
+    input->tablet = tablet_input;
+
+    tablet_input->seat = (struct SDL_WaylandTabletSeat*)zwp_tablet_manager_v2_get_tablet_seat((struct zwp_tablet_manager_v2*)tablet_manager, input->seat);
+
+    tablet_input->tablets = tablet_object_list_new_node(NULL);
+    tablet_input->tools = tablet_object_list_new_node(NULL);
+    tablet_input->pads = tablet_object_list_new_node(NULL);
+
+    zwp_tablet_seat_v2_add_listener((struct zwp_tablet_seat_v2*)tablet_input->seat, &tablet_seat_listener, tablet_input);
+}
+
+#define TABLET_OBJECT_LIST_DELETER(fun) (void (*)(void*))fun
+void
+Wayland_input_destroy_tablet(struct SDL_WaylandInput* input) {
+    tablet_object_list_destroy(input->tablet->pads, TABLET_OBJECT_LIST_DELETER(zwp_tablet_pad_v2_destroy));
+    tablet_object_list_destroy(input->tablet->tools, TABLET_OBJECT_LIST_DELETER(zwp_tablet_tool_v2_destroy));
+    tablet_object_list_destroy(input->tablet->tablets, TABLET_OBJECT_LIST_DELETER(zwp_tablet_v2_destroy));
+        
+    zwp_tablet_seat_v2_destroy((struct zwp_tablet_seat_v2*)input->tablet->seat);
+
+    SDL_free(input->tablet);
+    input->tablet = NULL;
+}
+
+#endif // SDL_VIDEO_DRIVER_WAYLAND_TABLET
+
 void
 Wayland_display_add_input(SDL_VideoData *d, uint32_t id, uint32_t version)
 {
@@ -1670,6 +2013,9 @@ Wayland_display_add_input(SDL_VideoData *d, uint32_t id, uint32_t version)
 
     wl_seat_add_listener(input->seat, &seat_listener, input);
     wl_seat_set_user_data(input->seat, input);
+
+    if (d->tablet_manager)
+        Wayland_input_add_tablet(input, d->tablet_manager);
 
     WAYLAND_wl_display_flush(d->display);
 }
@@ -1710,6 +2056,11 @@ void Wayland_display_destroy_input(SDL_VideoData *d)
         SDL_DelTouch(1);
         wl_touch_destroy(input->touch);
     }
+
+#ifdef SDL_VIDEO_DRIVER_WAYLAND_TABLET
+    if (input->tablet)
+        Wayland_input_destroy_tablet(input);
+#endif
 
     if (input->seat)
         wl_seat_destroy(input->seat);

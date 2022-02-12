@@ -681,6 +681,11 @@ macro(CheckWayland)
           set(SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH 1)
       endif()
 
+	  if(SDL_WAYLAND_TABLET)
+		  set(HAVE_WAYLAND_TABLET TRUE)
+		  set(SDL_VIDEO_DRIVER_WAYLAND_TABLET 1)
+	  endif()
+
       if(SDL_WAYLAND_SHARED AND NOT HAVE_SDL_LOADSO)
         message_warn("You must have SDL_LoadObject() support for dynamic Wayland loading")
       endif()

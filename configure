@@ -867,6 +867,7 @@ enable_arm_simd
 enable_arm_neon
 enable_video_wayland
 enable_video_wayland_qt_touch
+enable_video_wayland_tablet
 enable_wayland_shared
 enable_libdecor
 enable_libdecor_shared
@@ -20565,6 +20566,14 @@ else
   enable_video_wayland_qt_touch=yes
 fi
 
+    # Check whether --enable-video-wayland-tablet was given.
+if test "${enable_video_wayland_tablet+set}" = set; then :
+  enableval=$enable_video_wayland_tablet;
+else
+  enable_video_wayland_tablet=yes
+fi
+
+
 
     if test x$enable_video = xyes -a x$enable_video_wayland = xyes; then
         { $as_echo "$as_me:${as_lineno-$LINENO}: checking for Wayland support" >&5
@@ -20596,6 +20605,12 @@ $as_echo "#define SDL_VIDEO_DRIVER_WAYLAND 1" >>confdefs.h
 $as_echo "#define SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH 1" >>confdefs.h
 
             fi
+
+			if test x$enable_video_wayland_tablet = xyes; then
+
+$as_echo "#define SDL_VIDEO_DRIVER_TABLET 1" >>confdefs.h
+
+			fi
 
             WAYLAND_SOURCES="$srcdir/src/video/wayland/*.c"
             SOURCES="$SOURCES $WAYLAND_SOURCES"
