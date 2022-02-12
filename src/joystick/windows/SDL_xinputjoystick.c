@@ -201,9 +201,20 @@ GuessXInputDevice(Uint8 userid, Uint16 *pVID, Uint16 *pPID, Uint16 *pVersion)
                  * userid, but we'll record it so we'll at least be consistent
                  * when the raw device list changes.
                  */
-                *pVID = (Uint16)rdi.hid.dwVendorId;
-                *pPID = (Uint16)rdi.hid.dwProductId;
-                *pVersion = (Uint16)rdi.hid.dwVersionNumber;
+                if (rdi.hid.dwVendorId == USB_VENDOR_VALVE &&
+                    rdi.hid.dwProductId == USB_PRODUCT_STEAM_VIRTUAL_GAMEPAD) {
+                    /* Steam encodes the real device in the path */
+                    int realVID = rdi.hid.dwVendorId;
+                    int realPID = rdi.hid.dwProductId;
+                    SDL_sscanf(devName, "\\\\.\\pipe\\HID#VID_045E&PID_028E&IG_00#%x&%x&", &realVID, &realPID);
+                    *pVID = (Uint16)realVID;
+                    *pPID = (Uint16)realPID;
+                    *pVersion = 0;
+                } else {
+                    *pVID = (Uint16)rdi.hid.dwVendorId;
+                    *pPID = (Uint16)rdi.hid.dwProductId;
+                    *pVersion = (Uint16)rdi.hid.dwVersionNumber;
+                }
                 if (s_arrXInputDevicePath[userid]) {
                     SDL_free(s_arrXInputDevicePath[userid]);
                 }
