@@ -310,8 +310,7 @@ SW_RenderCopyEx(SDL_Renderer * renderer, SDL_Surface *surface, SDL_Texture * tex
     SDL_Rect tmp_rect;
     SDL_Surface *src_clone, *src_rotated, *src_scaled;
     SDL_Surface *mask = NULL, *mask_rotated = NULL;
-    int retval = 0, dstwidth, dstheight, abscenterx, abscentery;
-    double cangle, sangle, px, py, p1x, p1y, p2x, p2y, p3x, p3y, p4x, p4y;
+    int retval = 0;
     SDL_BlendMode blendmode;
     Uint8 alphaMod, rMod, gMod, bMod;
     int applyModulation = SDL_FALSE;
@@ -413,6 +412,9 @@ SW_RenderCopyEx(SDL_Renderer * renderer, SDL_Surface *surface, SDL_Texture * tex
     SDL_SetSurfaceBlendMode(src_clone, blendmode);
 
     if (!retval) {
+        int dstwidth, dstheight;
+        double cangle, sangle;
+
         SDLgfx_rotozoomSurfaceSizeTrig(tmp_rect.w, tmp_rect.h, angle, &dstwidth, &dstheight, &cangle, &sangle);
         src_rotated = SDLgfx_rotateSurface(src_clone, angle, dstwidth/2, dstheight/2, (texture->scaleMode == SDL_ScaleModeNearest) ? 0 : 1, flip & SDL_FLIP_HORIZONTAL, flip & SDL_FLIP_VERTICAL, dstwidth, dstheight, cangle, sangle);
         if (src_rotated == NULL) {
@@ -426,9 +428,12 @@ SW_RenderCopyEx(SDL_Renderer * renderer, SDL_Surface *surface, SDL_Texture * tex
             }
         }
         if (!retval) {
+            double abscenterx, abscentery;
+            double px, py, p1x, p1y, p2x, p2y, p3x, p3y, p4x, p4y;
+
             /* Find out where the new origin is by rotating the four final_rect points around the center and then taking the extremes */
-            abscenterx = final_rect->x + (int)center->x;
-            abscentery = final_rect->y + (int)center->y;
+            abscenterx = final_rect->x + center->x;
+            abscentery = final_rect->y + center->y;
             /* Compensate the angle inversion to match the behaviour of the other backends */
             sangle = -sangle;
 
