@@ -2443,8 +2443,16 @@ SDL_bool SDL_ShouldIgnoreJoystick(const char *name, SDL_JoystickGUID guid)
         MAKE_VIDPID(0x04d9, 0x8009),  /* OBINLB USB-HID Keyboard (Anne Pro II) */
         MAKE_VIDPID(0x04d9, 0xa292),  /* OBINLB USB-HID Keyboard (Anne Pro II) */
         MAKE_VIDPID(0x04d9, 0xa293),  /* OBINLB USB-HID Keyboard (Anne Pro II) */
-        MAKE_VIDPID(0x0b05, 0x1958),  /* ROG Chakram Mouse */
         MAKE_VIDPID(0x26ce, 0x01a2),  /* ASRock LED Controller */
+    };
+
+    static Uint32 rog_chakram_list[] = {
+        MAKE_VIDPID(0x0b05, 0x1958),  /* ROG Chakram Core Mouse */
+        MAKE_VIDPID(0x0b05, 0x18e3),  /* ROG Chakram (wired) Mouse */
+        MAKE_VIDPID(0x0b05, 0x18e5),  /* ROG Chakram (wireless) Mouse */
+        MAKE_VIDPID(0x0b05, 0x1a18),  /* ROG Chakram X (wired) Mouse */
+        MAKE_VIDPID(0x0b05, 0x1a1a),  /* ROG Chakram X (wireless) Mouse */
+        MAKE_VIDPID(0x0b05, 0x1a1c),  /* ROG Chakram X (Bluetooth) Mouse */
     };
 
     unsigned int i;
@@ -2460,6 +2468,13 @@ SDL_bool SDL_ShouldIgnoreJoystick(const char *name, SDL_JoystickGUID guid)
     for (i = 0; i < SDL_arraysize(joystick_blacklist); ++i) {
         if (id == joystick_blacklist[i]) {
             return SDL_TRUE;
+        }
+    }
+    if (!SDL_GetHintBoolean(SDL_HINT_JOYSTICK_ROG_CHAKRAM, SDL_FALSE)) {
+        for (i = 0; i < SDL_arraysize(rog_chakram_list); ++i) {
+            if (id == rog_chakram_list[i]) {
+                return SDL_TRUE;
+            }
         }
     }
 
