@@ -611,12 +611,12 @@ QueueCmdCopy(SDL_Renderer *renderer, SDL_Texture * texture, const SDL_Rect * src
 static int
 QueueCmdCopyEx(SDL_Renderer *renderer, SDL_Texture * texture,
                const SDL_Rect * srcquad, const SDL_FRect * dstrect,
-               const double angle, const SDL_FPoint *center, const SDL_RendererFlip flip)
+               const double angle, const SDL_FPoint *center, const SDL_RendererFlip flip, float scale_x, float scale_y)
 {
     SDL_RenderCommand *cmd = PrepQueueCmdDraw(renderer, SDL_RENDERCMD_COPY_EX, texture);
     int retval = -1;
     if (cmd != NULL) {
-        retval = renderer->QueueCopyEx(renderer, cmd, texture, srcquad, dstrect, angle, center, flip);
+        retval = renderer->QueueCopyEx(renderer, cmd, texture, srcquad, dstrect, angle, center, flip, scale_x, scale_y);
         if (retval < 0) {
             cmd->command = SDL_RENDERCMD_NO_OP;
         }
@@ -3734,15 +3734,7 @@ SDL_RenderCopyExF(SDL_Renderer * renderer, SDL_Texture * texture,
                 renderer->scale.x, renderer->scale.y);
     } else {
 
-        real_dstrect.x *= renderer->scale.x;
-        real_dstrect.y *= renderer->scale.y;
-        real_dstrect.w *= renderer->scale.x;
-        real_dstrect.h *= renderer->scale.y;
-
-        real_center.x *= renderer->scale.x;
-        real_center.y *= renderer->scale.y;
-
-        retval = QueueCmdCopyEx(renderer, texture, &real_srcrect, &real_dstrect, angle, &real_center, flip);
+        retval = QueueCmdCopyEx(renderer, texture, &real_srcrect, &real_dstrect, angle, &real_center, flip, renderer->scale.x, renderer->scale.y);
     }
     return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
 }

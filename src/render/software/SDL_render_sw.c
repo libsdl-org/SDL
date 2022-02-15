@@ -273,12 +273,14 @@ typedef struct CopyExData
     double angle;
     SDL_FPoint center;
     SDL_RendererFlip flip;
+    float scale_x;
+    float scale_y;
 } CopyExData;
 
 static int
 SW_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * texture,
                const SDL_Rect * srcrect, const SDL_FRect * dstrect,
-               const double angle, const SDL_FPoint *center, const SDL_RendererFlip flip)
+               const double angle, const SDL_FPoint *center, const SDL_RendererFlip flip, float scale_x, float scale_y)
 {
     CopyExData *verts = (CopyExData *) SDL_AllocateRenderVertices(renderer, sizeof (CopyExData), 0, &cmd->data.draw.first);
 
@@ -297,14 +299,35 @@ SW_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * te
     verts->angle = angle;
     SDL_memcpy(&verts->center, center, sizeof (SDL_FPoint));
     verts->flip = flip;
+    verts->scale_x = scale_x;
+    verts->scale_y = scale_y;
 
     return 0;
 }
 
 static int
+Blit_to_Screen(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *surface, SDL_Rect *dstrect,
+        float scale_x, float scale_y, SDL_ScaleMode scaleMode)
+{
+    int retval;
+    /* Renderer scaling, if needed */
+    if (scale_x != 1.0f || scale_y != 1.0f) {
+        SDL_Rect r;
+        r.x = (int)((float) dstrect->x * scale_x);
+        r.y = (int)((float) dstrect->y * scale_y);
+        r.w = (int)((float) dstrect->w * scale_x);
+        r.h = (int)((float) dstrect->h * scale_y);
+        retval = SDL_PrivateUpperBlitScaled(src, srcrect, surface, &r, scaleMode);
+    } else {
+        retval = SDL_BlitSurface(src, srcrect, surface, dstrect);
+    }
+    return retval;
+}
+
+static int
 SW_RenderCopyEx(SDL_Renderer * renderer, SDL_Surface *surface, SDL_Texture * texture,
                 const SDL_Rect * srcrect, const SDL_Rect * final_rect,
-                const double angle, const SDL_FPoint * center, const SDL_RendererFlip flip)
+                const double angle, const SDL_FPoint * center, const SDL_RendererFlip flip, float scale_x, float scale_y)
 {
     SDL_Surface *src = (SDL_Surface *) texture->driverdata;
     SDL_Rect tmp_rect;
@@ -475,7 +498,8 @@ SW_RenderCopyEx(SDL_Renderer * renderer, SDL_Surface *surface, SDL_Texture * tex
                     SDL_SetSurfaceAlphaMod(src_rotated, alphaMod);
                     SDL_SetSurfaceColorMod(src_rotated, rMod, gMod, bMod);
                 }
-                retval = SDL_BlitSurface(src_rotated, NULL, surface, &tmp_rect);
+                /* Renderer scaling, if needed */
+                retval = Blit_to_Screen(src_rotated, NULL, surface, &tmp_rect, scale_x, scale_y, texture->scaleMode);
             } else {
                 /* The NONE blend mode requires three steps to get the pixels onto the destination surface.
                  * First, the area where the rotated pixels will be blitted to get set to zero.
@@ -484,7 +508,8 @@ SW_RenderCopyEx(SDL_Renderer * renderer, SDL_Surface *surface, SDL_Texture * tex
                  */
                 SDL_Rect mask_rect = tmp_rect;
                 SDL_SetSurfaceBlendMode(mask_rotated, SDL_BLENDMODE_NONE);
-                retval = SDL_BlitSurface(mask_rotated, NULL, surface, &mask_rect);
+                /* Renderer scaling, if needed */
+                retval = Blit_to_Screen(mask_rotated, NULL, surface, &mask_rect, scale_x, scale_y, texture->scaleMode);
                 if (!retval) {
                     /* The next step copies the alpha value. This is done with the BLEND blend mode and
                      * by modulating the source colors with 0. Since the destination is all zeros, this
@@ -492,7 +517,8 @@ SW_RenderCopyEx(SDL_Renderer * renderer, SDL_Surface *surface, SDL_Texture * tex
                      */
                     SDL_SetSurfaceColorMod(src_rotated, 0, 0, 0);
                     mask_rect = tmp_rect;
-                    retval = SDL_BlitSurface(src_rotated, NULL, surface, &mask_rect);
+                    /* Renderer scaling, if needed */
+                    retval = Blit_to_Screen(src_rotated, NULL, surface, &mask_rect, scale_x, scale_y, texture->scaleMode);
                     if (!retval) {
                         /* The last step gets the color values in place. The ADD blend mode simply adds them to
                          * the destination (where the color values are all zero). However, because the ADD blend
@@ -508,7 +534,8 @@ SW_RenderCopyEx(SDL_Renderer * renderer, SDL_Surface *surface, SDL_Texture * tex
                             retval = -1;
                         } else {
                             SDL_SetSurfaceBlendMode(src_rotated_rgb, SDL_BLENDMODE_ADD);
-                            retval = SDL_BlitSurface(src_rotated_rgb, NULL, surface, &tmp_rect);
+                            /* Renderer scaling, if needed */
+                            retval = Blit_to_Screen(src_rotated_rgb, NULL, surface, &tmp_rect, scale_x, scale_y, texture->scaleMode);
                             SDL_FreeSurface(src_rotated_rgb);
                         }
                     }
@@ -879,7 +906,8 @@ SW_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
                 }
 
                 SW_RenderCopyEx(renderer, surface, cmd->data.draw.texture, &copydata->srcrect,
-                                &copydata->dstrect, copydata->angle, &copydata->center, copydata->flip);
+                                &copydata->dstrect, copydata->angle, &copydata->center, copydata->flip,
+                                copydata->scale_x, copydata->scale_y);
                 break;
             }
 
