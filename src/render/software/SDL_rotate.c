@@ -128,26 +128,26 @@ SDLgfx_rotozoomSurfaceSizeTrig(int width, int height, double angle,
     } else {
         double x, y, cx, cy, sx, sy;
         double radangle;
-        int dstwidthhalf, dstheighthalf;
+        double dstwidth_max, dstheight_max;
         /*
         * Determine destination width and height by rotating a centered source box
         */
         radangle = angle * (M_PI / -180.0); /* reverse the angle because our rotations are clockwise */
         *sangle = SDL_sin(radangle);
         *cangle = SDL_cos(radangle);
-        x = (double)(width / 2);
-        y = (double)(height / 2);
+        x = (double)width;
+        y = (double)height;
         cx = *cangle * x;
         cy = *cangle * y;
         sx = *sangle * x;
         sy = *sangle * y;
 
-        dstwidthhalf = MAX((int)
-            SDL_ceil(MAX(MAX(MAX(SDL_fabs(cx + sy), SDL_fabs(cx - sy)), SDL_fabs(-cx + sy)), SDL_fabs(-cx - sy))), 1);
-        dstheighthalf = MAX((int)
-            SDL_ceil(MAX(MAX(MAX(SDL_fabs(sx + cy), SDL_fabs(sx - cy)), SDL_fabs(-sx + cy)), SDL_fabs(-sx - cy))), 1);
-        *dstwidth = 2 * dstwidthhalf;
-        *dstheight = 2 * dstheighthalf;
+        dstwidth_max = MAX(
+            MAX(MAX(MAX(SDL_fabs(cx + sy), SDL_fabs(cx - sy)), SDL_fabs(-cx + sy)), SDL_fabs(-cx - sy)), 1);
+        dstheight_max = MAX(
+            MAX(MAX(MAX(SDL_fabs(sx + cy), SDL_fabs(sx - cy)), SDL_fabs(-sx + cy)), SDL_fabs(-sx - cy)), 1);
+        *dstwidth = SDL_round(dstwidth_max);
+        *dstheight = SDL_round(dstheight_max);
     }
 }
 
