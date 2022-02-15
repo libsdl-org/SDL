@@ -881,7 +881,7 @@ PSP_QueueCopy(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * tex
 static int
 PSP_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * texture,
                const SDL_Rect * srcrect, const SDL_FRect * dstrect,
-               const double angle, const SDL_FPoint *center, const SDL_RendererFlip flip)
+               const double angle, const SDL_FPoint *center, const SDL_RendererFlip flip, float scale_x, float scale_y)
 {
     VertTV *verts = (VertTV *) SDL_AllocateRenderVertices(renderer, 4 * sizeof (VertTV), 4, &cmd->data.draw.first);
     const float centerx = center->x;
@@ -949,7 +949,20 @@ PSP_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * t
     verts->x = x + cw2 + sh1;
     verts->y = y - sw2 + ch1;
     verts->z = 0;
-    verts++;
+
+    if (scale_x != 1.0f || scale_y != 1.0f) {
+        verts->x *= scale_x;
+        verts->y *= scale_y;
+        verts--;
+        verts->x *= scale_x;
+        verts->y *= scale_y;
+        verts--;
+        verts->x *= scale_x;
+        verts->y *= scale_y;
+        verts--;
+        verts->x *= scale_x;
+        verts->y *= scale_y;
+    }
 
     return 0;
 }
