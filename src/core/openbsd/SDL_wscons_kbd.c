@@ -394,6 +394,7 @@ typedef struct {
     unsigned int text_len;
     keysym_t composebuffer[2];
     unsigned char composelen;
+    int type;
 } SDL_WSCONS_input_data;
 
 static SDL_WSCONS_input_data* inputs[4] = {NULL, NULL, NULL, NULL};
@@ -432,6 +433,7 @@ static SDL_WSCONS_input_data* SDL_WSCONS_Init_Keyboard(const char* dev)
     RETIFIOCTLERR(ioctl(input->fd, WSKBDIO_GETLEDS, &input->ledstate));
     input->origledstate = input->ledstate;
     RETIFIOCTLERR(ioctl(input->fd, WSKBDIO_GETENCODING, &input->encoding));
+    RETIFIOCTLERR(ioctl(input->fd, WSKBDIO_GTYPE, &input->type));
 #ifdef WSKBDIO_SETVERSION
     RETIFIOCTLERR(ioctl(input->fd, WSKBDIO_SETVERSION, &version));
 #endif
@@ -725,7 +727,12 @@ static void updateKeyboard(SDL_WSCONS_input_data* input)
                 }
                 break;
             }
-            Translate_to_keycode(input, type, events[i].value);
+
+            if (input->type == WSKBD_TYPE_USB && events[i].value <= 0xE7)
+                SDL_SendKeyboardKey(type == WSCONS_EVENT_KEY_DOWN ? SDL_PRESSED : SDL_RELEASED, (SDL_Scancode)events[i].value);
+            else 
+                Translate_to_keycode(input, type, events[i].value);
+
             if (type == WSCONS_EVENT_KEY_UP) continue;
 
             if (IS_ALTGR_MODE && !IS_CONTROL_HELD)
