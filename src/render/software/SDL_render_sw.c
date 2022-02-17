@@ -435,59 +435,32 @@ SW_RenderCopyEx(SDL_Renderer * renderer, SDL_Surface *surface, SDL_Texture * tex
     SDL_SetSurfaceBlendMode(src_clone, blendmode);
 
     if (!retval) {
-        int dstwidth, dstheight;
+        SDL_Rect rect_dest;
         double cangle, sangle;
 
-        SDLgfx_rotozoomSurfaceSizeTrig(tmp_rect.w, tmp_rect.h, angle, &dstwidth, &dstheight, &cangle, &sangle);
-        src_rotated = SDLgfx_rotateSurface(src_clone, angle, dstwidth/2, dstheight/2, (texture->scaleMode == SDL_ScaleModeNearest) ? 0 : 1, flip & SDL_FLIP_HORIZONTAL, flip & SDL_FLIP_VERTICAL, dstwidth, dstheight, cangle, sangle);
+        SDLgfx_rotozoomSurfaceSizeTrig(tmp_rect.w, tmp_rect.h, angle, center,
+                &rect_dest, &cangle, &sangle);
+        src_rotated = SDLgfx_rotateSurface(src_clone, angle,
+                (texture->scaleMode == SDL_ScaleModeNearest) ? 0 : 1, flip & SDL_FLIP_HORIZONTAL, flip & SDL_FLIP_VERTICAL,
+                &rect_dest, cangle, sangle, center);
         if (src_rotated == NULL) {
             retval = -1;
         }
         if (!retval && mask != NULL) {
             /* The mask needed for the NONE blend mode gets rotated with the same parameters. */
-            mask_rotated = SDLgfx_rotateSurface(mask, angle, dstwidth/2, dstheight/2, SDL_FALSE, 0, 0, dstwidth, dstheight, cangle, sangle);
+            mask_rotated = SDLgfx_rotateSurface(mask, angle,
+                    SDL_FALSE, 0, 0,
+                    &rect_dest, cangle, sangle, center);
             if (mask_rotated == NULL) {
                 retval = -1;
             }
         }
         if (!retval) {
-            double abscenterx, abscentery;
-            double px, py, p1x, p1y, p2x, p2y, p3x, p3y, p4x, p4y;
 
-            /* Find out where the new origin is by rotating the four final_rect points around the center and then taking the extremes */
-            abscenterx = final_rect->x + center->x;
-            abscentery = final_rect->y + center->y;
-            /* Compensate the angle inversion to match the behaviour of the other backends */
-            sangle = -sangle;
-
-            /* Top Left */
-            px = final_rect->x - abscenterx;
-            py = final_rect->y - abscentery;
-            p1x = px * cangle - py * sangle + abscenterx;
-            p1y = px * sangle + py * cangle + abscentery;
-
-            /* Top Right */
-            px = final_rect->x + final_rect->w - abscenterx;
-            py = final_rect->y - abscentery;
-            p2x = px * cangle - py * sangle + abscenterx;
-            p2y = px * sangle + py * cangle + abscentery;
-
-            /* Bottom Left */
-            px = final_rect->x - abscenterx;
-            py = final_rect->y + final_rect->h - abscentery;
-            p3x = px * cangle - py * sangle + abscenterx;
-            p3y = px * sangle + py * cangle + abscentery;
-
-            /* Bottom Right */
-            px = final_rect->x + final_rect->w - abscenterx;
-            py = final_rect->y + final_rect->h - abscentery;
-            p4x = px * cangle - py * sangle + abscenterx;
-            p4y = px * sangle + py * cangle + abscentery;
-
-            tmp_rect.x = (int)MIN(MIN(p1x, p2x), MIN(p3x, p4x));
-            tmp_rect.y = (int)MIN(MIN(p1y, p2y), MIN(p3y, p4y));
-            tmp_rect.w = dstwidth;
-            tmp_rect.h = dstheight;
+            tmp_rect.x = final_rect->x + rect_dest.x;
+            tmp_rect.y = final_rect->y + rect_dest.y;
+            tmp_rect.w = rect_dest.w;
+            tmp_rect.h = rect_dest.h;
 
             /* The NONE blend mode needs some special care with non-opaque surfaces.
              * Other blend modes or opaque surfaces can be blitted directly.
