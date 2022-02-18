@@ -249,6 +249,7 @@ Assumes dst surface was allocated with the correct dimensions.
 \param flipx Flag indicating horizontal mirroring should be applied.
 \param flipy Flag indicating vertical mirroring should be applied.
 \param smooth Flag indicating anti-aliasing should be used.
+\param dst_rect destination coordinates
 \param center true center.
 */
 static void
@@ -369,29 +370,35 @@ Assumes dst surface was allocated with the correct dimensions.
 
 \param src Source surface.
 \param dst Destination surface.
-\param cx Horizontal center coordinate.
-\param cy Vertical center coordinate.
 \param isin Integer version of sine of angle.
 \param icos Integer version of cosine of angle.
 \param flipx Flag indicating horizontal mirroring should be applied.
 \param flipy Flag indicating vertical mirroring should be applied.
+\param dst_rect destination coordinates
+\param center true center.
 */
 static void
-transformSurfaceY(SDL_Surface * src, SDL_Surface * dst, int cx, int cy, int isin, int icos, int flipx, int flipy)
+transformSurfaceY(SDL_Surface * src, SDL_Surface * dst, int isin, int icos, int flipx, int flipy,
+        const SDL_Rect *rect_dest,
+        const SDL_FPoint *center)
 {
-    int x, y, dx, dy, xd, yd, sdx, sdy, ax, ay;
+    int sw, sh;
+    int cx, cy;
     tColorY *pc;
     int gap;
+    const int fp_half = (1<<15);
+    int y;
 
     /*
     * Variable setup
     */
-    xd = ((src->w - dst->w) << 15);
-    yd = ((src->h - dst->h) << 15);
-    ax = (cx << 16) - (icos * cx);
-    ay = (cy << 16) - (isin * cx);
+    sw = src->w - 1;
+    sh = src->h - 1;
     pc = (tColorY*) dst->pixels;
     gap = dst->pitch - dst->w;
+    cx = (int)(center->x * 65536.0);
+    cy = (int)(center->y * 65536.0);
+
     /*
     * Clear surface to colorkey
     */
@@ -400,15 +407,17 @@ transformSurfaceY(SDL_Surface * src, SDL_Surface * dst, int cx, int cy, int isin
     * Iterate through destination surface
     */
     for (y = 0; y < dst->h; y++) {
-        dy = cy - y;
-        sdx = (ax + (isin * dy)) + xd;
-        sdy = (ay - (icos * dy)) + yd;
+        int x;
+        double src_x = (rect_dest->x + 0 + 0.5 - center->x);
+        double src_y = (rect_dest->y + y + 0.5 - center->y);
+        int sdx = (icos * src_x - isin * src_y) + cx - fp_half;
+        int sdy = (isin * src_x + icos * src_y) + cy - fp_half;
         for (x = 0; x < dst->w; x++) {
-            dx = (sdx >> 16);
-            dy = (sdy >> 16);
+            int dx = (sdx >> 16);
+            int dy = (sdy >> 16);
             if ((unsigned)dx < (unsigned)src->w && (unsigned)dy < (unsigned)src->h) {
-                if (flipx) dx = (src->w-1)-dx;
-                if (flipy) dy = (src->h-1)-dy;
+                if (flipx) dx = sw - dx;
+                if (flipy) dy = sh- dy;
                 *pc = *((tColorY *)src->pixels + src->pitch * dy + dx);
             }
             sdx += icos;
@@ -424,7 +433,7 @@ transformSurfaceY(SDL_Surface * src, SDL_Surface * dst, int cx, int cy, int isin
 \brief Rotates and zooms a surface with different horizontal and vertival scaling factors and optional anti-aliasing.
 
 Rotates a 32-bit or 8-bit 'src' surface to newly created 'dst' surface.
-'angle' is the rotation in degrees, 'centerx' and 'centery' the rotation center. If 'smooth' is set
+'angle' is the rotation in degrees, 'center' the rotation center. If 'smooth' is set
 then the destination 32-bit surface is anti-aliased. 8-bit surfaces must have a colorkey. 32-bit
 surfaces must have a 8888 layout with red, green, blue and alpha masks (any ordering goes).
 The blend mode of the 'src' surface has some effects on generation of the 'dst' surface: The NONE
@@ -467,7 +476,6 @@ SDLgfx_rotateSurface(SDL_Surface * src, double angle, int smooth, int flipx, int
             colorKeyAvailable = SDL_TRUE;
         }
     }
-
     /* This function requires a 32-bit surface or 8-bit surface with a colorkey */
     is8bit = src->format->BitsPerPixel == 8 && colorKeyAvailable;
     if (!(is8bit || (src->format->BitsPerPixel == 32 && src->format->Amask)))
@@ -481,12 +489,14 @@ SDLgfx_rotateSurface(SDL_Surface * src, double angle, int smooth, int flipx, int
     rz_dst = NULL;
     if (is8bit) {
         /* Target surface is 8 bit */
-        rz_dst = SDL_CreateRGBSurface(0, rect_dest->w, rect_dest->h + GUARD_ROWS, 8, 0, 0, 0, 0);
+        rz_dst = SDL_CreateRGBSurfaceWithFormat(0, rect_dest->w, rect_dest->h + GUARD_ROWS, 8, src->format->format);
         if (rz_dst != NULL) {
-            for (i = 0; i < src->format->palette->ncolors; i++) {
-                rz_dst->format->palette->colors[i] = src->format->palette->colors[i];
+            if (src->format->palette) {
+                for (i = 0; i < src->format->palette->ncolors; i++) {
+                    rz_dst->format->palette->colors[i] = src->format->palette->colors[i];
+                }
+                rz_dst->format->palette->ncolors = src->format->palette->ncolors;
             }
-            rz_dst->format->palette->ncolors = src->format->palette->ncolors;
         }
     } else {
         /* Target surface is 32 bit with source RGBA ordering */
@@ -547,8 +557,8 @@ SDLgfx_rotateSurface(SDL_Surface * src, double angle, int smooth, int flipx, int
         if(angle90 >= 0) {
             transformSurfaceY90(src, rz_dst, angle90, flipx, flipy);
         } else {
-            transformSurfaceY(src, rz_dst, rect_dest->w/2, rect_dest->h/2, (int)sangleinv, (int)cangleinv,
-                              flipx, flipy);
+            transformSurfaceY(src, rz_dst, (int)sangleinv, (int)cangleinv,
+                              flipx, flipy, rect_dest, center);
         }
     } else {
         /* Call the 32-bit transformation routine to do the rotation */
