@@ -139,11 +139,11 @@ SDLgfx_rotozoomSurfaceSizeTrig(int width, int height, double angle, const SDL_FP
     rotate(0.5,         height - 0.5, sinangle, cosangle, center, &x2, &y2);
     rotate(width - 0.5, height - 0.5, sinangle, cosangle, center, &x3, &y3);
 
-    minx = SDL_floor( SDL_min( SDL_min(x0, x1), SDL_min(x2, x3) ) );
-    maxx = SDL_ceil(  SDL_max( SDL_max(x0, x1), SDL_max(x2, x3) ) );
+    minx = (int)SDL_floor( SDL_min( SDL_min(x0, x1), SDL_min(x2, x3) ) );
+    maxx = (int)SDL_ceil(  SDL_max( SDL_max(x0, x1), SDL_max(x2, x3) ) );
 
-    miny = SDL_floor( SDL_min( SDL_min(y0, y1), SDL_min(y2, y3) ) );
-    maxy = SDL_ceil(  SDL_max( SDL_max(y0, y1), SDL_max(y2, y3) ) );
+    miny = (int)SDL_floor( SDL_min( SDL_min(y0, y1), SDL_min(y2, y3) ) );
+    maxy = (int)SDL_ceil(  SDL_max( SDL_max(y0, y1), SDL_max(y2, y3) ) );
 
     rect_dest->w = maxx - minx;
     rect_dest->h = maxy - miny;
@@ -284,8 +284,8 @@ transformSurfaceRGBA(SDL_Surface * src, SDL_Surface * dst, int isin, int icos,
             int x;
             double src_x = (rect_dest->x + 0 + 0.5 - center->x);
             double src_y = (rect_dest->y + y + 0.5 - center->y);
-            int sdx = (icos * src_x - isin * src_y) + cx - fp_half;
-            int sdy = (isin * src_x + icos * src_y) + cy - fp_half;
+            int sdx = (int)((icos * src_x - isin * src_y) + cx - fp_half);
+            int sdy = (int)((isin * src_x + icos * src_y) + cy - fp_half);
             for (x = 0; x < dst->w; x++) {
                 int dx = (sdx >> 16);
                 int dy = (sdy >> 16);
@@ -340,8 +340,8 @@ transformSurfaceRGBA(SDL_Surface * src, SDL_Surface * dst, int isin, int icos,
             int x;
             double src_x = (rect_dest->x + 0 + 0.5 - center->x);
             double src_y = (rect_dest->y + y + 0.5 - center->y);
-            int sdx = (icos * src_x - isin * src_y) + cx - fp_half;
-            int sdy = (isin * src_x + icos * src_y) + cy - fp_half;
+            int sdx = (int)((icos * src_x - isin * src_y) + cx - fp_half);
+            int sdy = (int)((isin * src_x + icos * src_y) + cy - fp_half);
             for (x = 0; x < dst->w; x++) {
                 int dx = (sdx >> 16);
                 int dy = (sdy >> 16);
@@ -410,8 +410,8 @@ transformSurfaceY(SDL_Surface * src, SDL_Surface * dst, int isin, int icos, int 
         int x;
         double src_x = (rect_dest->x + 0 + 0.5 - center->x);
         double src_y = (rect_dest->y + y + 0.5 - center->y);
-        int sdx = (icos * src_x - isin * src_y) + cx - fp_half;
-        int sdy = (isin * src_x + icos * src_y) + cy - fp_half;
+        int sdx = (int)((icos * src_x - isin * src_y) + cx - fp_half);
+        int sdy = (int)((isin * src_x + icos * src_y) + cy - fp_half);
         for (x = 0; x < dst->w; x++) {
             int dx = (sdx >> 16);
             int dy = (sdy >> 16);
