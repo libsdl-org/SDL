@@ -625,6 +625,21 @@ extern "C" {
  */
 #define SDL_HINT_JOYSTICK_HIDAPI_GAMECUBE "SDL_JOYSTICK_HIDAPI_GAMECUBE"
 
+/**
+ *  \brief  A variable controlling whether "low_frequency_rumble" and "high_frequency_rumble" is used to implement
+ *          the GameCube controller's 3 rumble modes, Stop(0), Rumble(1), and StopHard(2)
+ *          this is useful for applications that need full compatibility for things like ADSR envelopes.
+ *          Stop is implemented by setting "low_frequency_rumble" to "0" and "high_frequency_rumble" ">0"
+ *          Rumble is both at any arbitrary value,
+ *          StopHard is implemented by setting both "low_frequency_rumble" and "high_frequency_rumble" to "0"
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - Normal rumble behavior is behavior is used (default)
+ *    "1"       - Proper GameCube controller rumble behavior is used
+ *
+ */
+#define SDL_HINT_JOYSTICK_GAMECUBE_RUMBLE_BRAKE "SDL_JOYSTICK_GAMECUBE_RUMBLE_BRAKE"
+
  /**
   *  \brief  A variable controlling whether Switch Joy-Cons should be treated the same as Switch Pro Controllers when using the HIDAPI driver.
   *
