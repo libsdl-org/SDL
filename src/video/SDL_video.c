@@ -199,15 +199,11 @@ SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window * window, Uint32 * fo
                     break;
                 }
             }
-            if (!renderer) {
+            if (!renderer || (SDL_GetRendererInfo(renderer, &info) == -1)) {
+                if (renderer) { SDL_DestroyRenderer(renderer); }
                 return SDL_SetError("Requested renderer for " SDL_HINT_FRAMEBUFFER_ACCELERATION " is not available");
-            } else if (SDL_GetRendererInfo(renderer, &info) == -1) {
-                SDL_DestroyRenderer(renderer);
-                return SDL_SetError("Requested renderer for " SDL_HINT_FRAMEBUFFER_ACCELERATION " is not available");
-            } else if ((info.flags & SDL_RENDERER_ACCELERATED) == 0) {
-                SDL_DestroyRenderer(renderer);
-                return SDL_SetError("Requested renderer for " SDL_HINT_FRAMEBUFFER_ACCELERATION " is not accelerated");
             }
+            /* if it was specifically requested, even if SDL_RENDERER_ACCELERATED isn't set, we'll accept this renderer. */
         } else {
             for (i = 0; i < SDL_GetNumRenderDrivers(); ++i) {
                 SDL_GetRenderDriverInfo(i, &info);
@@ -227,9 +223,7 @@ SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window * window, Uint32 * fo
             }
         }
 
-        /* Both of these checks should be handled above. */
-        SDL_assert(renderer != NULL);
-        SDL_assert(info.flags & SDL_RENDERER_ACCELERATED);
+        SDL_assert(renderer != NULL);  /* should have explicitly checked this above. */
 
         /* Create the data after we successfully create the renderer (bug #1116) */
         data = (SDL_WindowTextureData *)SDL_calloc(1, sizeof(*data));
