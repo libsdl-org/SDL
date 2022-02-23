@@ -1882,7 +1882,7 @@ SDL_GetJoystickGameControllerType(const char *name, Uint16 vendor, Uint16 produc
             0x12ab, /* Unknown */
             0x1430, /* RedOctane */
             0x146b, /* BigBen */
-            0x1532, /* Razer Sabertooth */
+            0x1532, /* Razer */
             0x15e4, /* Numark */
             0x162e, /* Joytech */
             0x1689, /* Razer Onza */
@@ -1911,7 +1911,7 @@ SDL_GetJoystickGameControllerType(const char *name, Uint16 vendor, Uint16 produc
             0x0738, /* Mad Catz */
             0x0e6f, /* PDP */
             0x0f0d, /* Hori */
-            0x1532, /* Razer Wildcat */
+            0x1532, /* Razer */
             0x20d6, /* PowerA */
             0x24c6, /* PowerA */
             0x2e24, /* Hyperkin */
@@ -2443,6 +2443,8 @@ SDL_bool SDL_ShouldIgnoreJoystick(const char *name, SDL_JoystickGUID guid)
         MAKE_VIDPID(0x04d9, 0x8009),  /* OBINLB USB-HID Keyboard (Anne Pro II) */
         MAKE_VIDPID(0x04d9, 0xa292),  /* OBINLB USB-HID Keyboard (Anne Pro II) */
         MAKE_VIDPID(0x04d9, 0xa293),  /* OBINLB USB-HID Keyboard (Anne Pro II) */
+        MAKE_VIDPID(0x1532, 0x0266),  /* Razer Huntman V2 Analog, non-functional DInput device */
+        MAKE_VIDPID(0x1532, 0x0282),  /* Razer Huntman Mini Analog, non-functional DInput device */
         MAKE_VIDPID(0x26ce, 0x01a2),  /* ASRock LED Controller */
     };
 
