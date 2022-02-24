@@ -230,7 +230,7 @@ Emscripten_ShowCursor(SDL_Cursor* cursor)
             curdata = (Emscripten_CursorData *) cursor->driverdata;
 
             if(curdata->system_cursor) {
-                MAIN_THREAD_EM_ASM_INT({
+                MAIN_THREAD_EM_ASM({
                     if (Module['canvas']) {
                         Module['canvas'].style['cursor'] = UTF8ToString($0);
                     }
@@ -239,7 +239,7 @@ Emscripten_ShowCursor(SDL_Cursor* cursor)
             }
         }
         else {
-            MAIN_THREAD_EM_ASM_INT(
+            MAIN_THREAD_EM_ASM(
                 if (Module['canvas']) {
                     Module['canvas'].style['cursor'] = 'none';
                 }
