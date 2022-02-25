@@ -63,7 +63,8 @@ Emscripten_CreateDefaultCursor()
     return Emscripten_CreateCursorFromString("default", SDL_FALSE);
 }
 
-static const char *Emscripten_GetCursorUrl(int w, int h, int hot_x, int hot_y, int pixels)
+static const char*
+Emscripten_GetCursorUrl(int w, int h, int hot_x, int hot_y, void* pixels)
 {
     return (const char *)EM_ASM_INT({
         var w = $0;
@@ -137,7 +138,7 @@ Emscripten_CreateCursor(SDL_Surface* surface, int hot_x, int hot_y)
             conv_surf->pixels
         );
     } else {
-        cursor_url = emscripten_sync_run_in_main_runtime_thread(
+        cursor_url = (const char *)emscripten_sync_run_in_main_runtime_thread(
             EM_FUNC_SIG_IIIIIII,
             Emscripten_GetCursorUrl,
             surface->w,
