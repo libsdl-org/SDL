@@ -367,6 +367,15 @@ extern "C" {
 #define SDL_HINT_EMSCRIPTEN_ASYNCIFY   "SDL_EMSCRIPTEN_ASYNCIFY"
 
 /**
+ *  \brief Specify the CSS selector used for the "default" window/canvas
+ *
+ * This hint only applies to the emscripten platform
+ *
+ * The default value is "#canvas"
+ */
+#define SDL_HINT_EMSCRIPTEN_CANVAS_SELECTOR "SDL_EMSCRIPTEN_CANVAS_SELECTOR"
+
+/**
  *  \brief override the binding element for keyboard inputs for Emscripten builds
  *
  * This hint only applies to the emscripten platform
