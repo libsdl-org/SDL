@@ -235,7 +235,6 @@ Emscripten_ShowCursor(SDL_Cursor* cursor)
                     if (Module['canvas']) {
                         Module['canvas'].style['cursor'] = UTF8ToString($0);
                     }
-                    return 0;
                 }, curdata->system_cursor);
             }
         }
