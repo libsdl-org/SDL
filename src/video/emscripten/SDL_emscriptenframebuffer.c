@@ -59,7 +59,8 @@ int Emscripten_CreateWindowFramebuffer(_THIS, SDL_Window * window, Uint32 * form
     return 0;
 }
 
-static void Emscripten_UpdateWindowFramebufferWorker(SDL_Surface *surface)
+static void
+Emscripten_UpdateWindowFramebufferWorker(SDL_Surface* surface)
 {
     EM_ASM_INT({
         var w = $0;
