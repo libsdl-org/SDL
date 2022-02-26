@@ -94,6 +94,12 @@ Emscripten_GLES_CreateContext(_THIS, SDL_Window * window)
         attribs.majorVersion = 2; /* WebGL 2.0 ~= GLES 3.0 */
 
     window_data = (SDL_WindowData *) window->driverdata;
+
+    if (window_data->gl_context) {
+        SDL_SetError("Cannot create multiple webgl contexts per window");
+        return NULL;
+    }
+
     context = emscripten_webgl_create_context(window_data->canvas_id, &attribs);
 
     if (context < 0) {
@@ -106,6 +112,7 @@ Emscripten_GLES_CreateContext(_THIS, SDL_Window * window)
         return NULL;
     }
 
+    window_data->gl_context = (SDL_GLContext)context;
 
     return (SDL_GLContext)context;
 }
@@ -113,6 +120,18 @@ Emscripten_GLES_CreateContext(_THIS, SDL_Window * window)
 void
 Emscripten_GLES_DeleteContext(_THIS, SDL_GLContext context)
 {
+    SDL_Window *window;
+
+    /* remove the context from its window */
+    for (window = _this->windows; window != NULL; window = window->next) {
+        SDL_WindowData *window_data;
+        window_data = (SDL_WindowData *) window->driverdata;
+
+        if (window_data->gl_context == context) {
+            window_data->gl_context = NULL;
+        }
+    }
+
     emscripten_webgl_destroy_context((EMSCRIPTEN_WEBGL_CONTEXT_HANDLE)context);
 }
 
@@ -129,7 +148,16 @@ Emscripten_GLES_SwapWindow(_THIS, SDL_Window * window)
 int
 Emscripten_GLES_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context)
 {
-    /* ignores window, as it isn't possible to reuse contexts across canvases */
+    /* it isn't possible to reuse contexts across canvases */
+    if (window && context) {
+        SDL_WindowData *window_data;
+        window_data = (SDL_WindowData *) window->driverdata;
+
+        if (context != window_data->gl_context) {
+            return SDL_SetError("Cannot make context current to another window");
+        }
+    }
+
     if (emscripten_webgl_make_context_current((EMSCRIPTEN_WEBGL_CONTEXT_HANDLE)context) != EMSCRIPTEN_RESULT_SUCCESS) {
         return SDL_SetError("Unable to make context current");
     }

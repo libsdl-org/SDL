@@ -33,6 +33,8 @@ typedef struct SDL_WindowData
     SDL_Window *window;
     SDL_Surface *surface;
 
+    SDL_GLContext gl_context;
+
     char *canvas_id;
 
     float pixel_ratio;
