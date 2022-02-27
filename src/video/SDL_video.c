@@ -4135,6 +4135,24 @@ SDL_StartTextInput(void)
     }
 }
 
+void SDL_PauseDisplayLink(void) {
+    SDL_Window *window;
+    window = SDL_GetFocusWindow();
+    
+    if (window && _this && _this->PauseDisplayLink) {
+        _this->PauseDisplayLink(_this, window);
+    }
+}
+
+void SDL_ResumeDisplayLink(void) {
+    SDL_Window *window;
+    window = SDL_GetFocusWindow();
+    
+    if (window && _this && _this->ResumeDisplayLink) {
+        _this->ResumeDisplayLink(_this, window);
+    }
+}
+
 SDL_bool
 SDL_IsTextInputActive(void)
 {
@@ -4310,11 +4328,13 @@ SDL_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
     }
 #endif
 #if SDL_VIDEO_DRIVER_UIKIT
+    SDL_PauseDisplayLink();
     if (retval == -1 &&
         SDL_MessageboxValidForDriver(messageboxdata, SDL_SYSWM_UIKIT) &&
         UIKit_ShowMessageBox(messageboxdata, buttonid) == 0) {
         retval = 0;
     }
+    SDL_ResumeDisplayLink();
 #endif
 #if SDL_VIDEO_DRIVER_WAYLAND
     if (retval == -1 &&

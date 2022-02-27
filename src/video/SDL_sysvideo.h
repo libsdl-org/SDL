@@ -313,6 +313,9 @@ struct SDL_VideoDevice
     void (*ShowScreenKeyboard) (_THIS, SDL_Window *window);
     void (*HideScreenKeyboard) (_THIS, SDL_Window *window);
     SDL_bool (*IsScreenKeyboardShown) (_THIS, SDL_Window *window);
+    
+    void (*PauseDisplayLink)(_THIS, SDL_Window *window);
+    void (*ResumeDisplayLink)(_THIS, SDL_Window *window);
 
     /* Clipboard */
     int (*SetClipboardText) (_THIS, const char *text);

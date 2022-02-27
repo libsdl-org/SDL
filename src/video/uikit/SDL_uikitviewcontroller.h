@@ -49,6 +49,8 @@
 
 - (void)startAnimation;
 - (void)stopAnimation;
+- (void)pauseAnimation;
+- (void)resumeAnimation;
 
 - (void)doLoop:(CADisplayLink*)sender;
 
@@ -89,3 +91,6 @@ void UIKit_HideScreenKeyboard(_THIS, SDL_Window *window);
 SDL_bool UIKit_IsScreenKeyboardShown(_THIS, SDL_Window *window);
 void UIKit_SetTextInputRect(_THIS, SDL_Rect *rect);
 #endif
+
+void UIKit_PauseDisplayLink(_THIS, SDL_Window *window);
+void UIKit_ResumeDisplayLink(_THIS, SDL_Window *window);

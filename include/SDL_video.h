@@ -280,6 +280,9 @@ typedef enum
 
 /* Function prototypes */
 
+extern DECLSPEC void SDLCALL SDL_PauseDisplayLink(void);
+extern DECLSPEC void SDLCALL SDL_ResumeDisplayLink(void);
+
 /**
  * Get the number of video drivers compiled into SDL.
  *
