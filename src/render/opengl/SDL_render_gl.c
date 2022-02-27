@@ -30,8 +30,8 @@
 #include <OpenGL/OpenGL.h>
 #endif
 
-/* To prevent unnecessary window recreation, 
- * these should match the defaults selected in SDL_GL_ResetAttributes 
+/* To prevent unnecessary window recreation,
+ * these should match the defaults selected in SDL_GL_ResetAttributes
  */
 
 #define RENDERER_CONTEXT_MAJOR 2
@@ -879,6 +879,37 @@ GL_SetTextureScaleMode(SDL_Renderer * renderer, SDL_Texture * texture, SDL_Scale
         renderdata->glTexParameteri(textype, GL_TEXTURE_MAG_FILTER, glScaleMode);
     }
 #endif
+}
+
+static GLint
+GL_ConvertWrapMode(SDL_WrapMode wrapMode)
+{
+    switch (wrapMode) {
+    case SDL_WRAPMODE_CLAMP:
+        return GL_CLAMP_TO_EDGE;
+    case SDL_WRAPMODE_REPEAT:
+        return GL_REPEAT;
+    }
+    return GL_INVALID_VALUE;
+}
+
+static SDL_bool
+GL_SupportsWrapMode(SDL_Renderer * renderer, SDL_WrapMode wrapMode)
+{
+    return GL_ConvertWrapMode(wrapMode) != GL_INVALID_VALUE;
+}
+
+static void
+GL_SetTextureWrapMode(SDL_Renderer * renderer, SDL_Texture * texture, SDL_WrapMode wrapMode)
+{
+    GL_RenderData *renderdata = (GL_RenderData *) renderer->driverdata;
+    const GLenum textype = renderdata->textype;
+    GL_TextureData *data = (GL_TextureData *) texture->driverdata;
+    GLint glWrapMode = GL_ConvertWrapMode(wrapMode);
+
+    renderdata->glBindTexture(textype, data->texture);
+    renderdata->glTexParameteri(textype, GL_TEXTURE_WRAP_S, glWrapMode);
+    renderdata->glTexParameteri(textype, GL_TEXTURE_WRAP_T, glWrapMode);
 }
 
 static int
@@ -1771,6 +1802,8 @@ GL_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->LockTexture = GL_LockTexture;
     renderer->UnlockTexture = GL_UnlockTexture;
     renderer->SetTextureScaleMode = GL_SetTextureScaleMode;
+    renderer->SetTextureWrapMode = GL_SetTextureWrapMode;
+    renderer->SupportsWrapMode = GL_SupportsWrapMode;
     renderer->SetRenderTarget = GL_SetRenderTarget;
     renderer->QueueSetViewport = GL_QueueSetViewport;
     renderer->QueueSetDrawColor = GL_QueueSetViewport;  /* SetViewport and SetDrawColor are (currently) no-ops. */

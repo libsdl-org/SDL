@@ -928,3 +928,5 @@ SDL_DYNAPI_PROC(int,SDL_PremultiplyAlpha,(int a, int b, Uint32 c, const void *d,
 SDL_DYNAPI_PROC(int,SDL_AndroidSendMessage,(Uint32 a, int b),(a,b),return)
 #endif
 SDL_DYNAPI_PROC(const char*,SDL_GetTouchName,(int a),(a),return)
+SDL_DYNAPI_PROC(int,SDL_SetTextureWrapMode,(SDL_Texture *a, SDL_WrapMode b),(a,b),return)
+SDL_DYNAPI_PROC(int,SDL_GetTextureWrapMode,(SDL_Texture *a, SDL_WrapMode *b),(a,b),return)
