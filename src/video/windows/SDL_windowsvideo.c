@@ -122,6 +122,16 @@ WIN_CreateDevice(int devindex)
         data->CloseTouchInputHandle = (BOOL (WINAPI *)(HTOUCHINPUT)) SDL_LoadFunction(data->userDLL, "CloseTouchInputHandle");
         data->GetTouchInputInfo = (BOOL (WINAPI *)(HTOUCHINPUT, UINT, PTOUCHINPUT, int)) SDL_LoadFunction(data->userDLL, "GetTouchInputInfo");
         data->RegisterTouchWindow = (BOOL (WINAPI *)(HWND, ULONG)) SDL_LoadFunction(data->userDLL, "RegisterTouchWindow");
+        data->SetProcessDPIAware = (BOOL (WINAPI *)(void)) SDL_LoadFunction(data->userDLL, "SetProcessDPIAware");
+        data->SetProcessDpiAwarenessContext = (BOOL (WINAPI *)(DPI_AWARENESS_CONTEXT)) SDL_LoadFunction(data->userDLL, "SetProcessDpiAwarenessContext");
+        data->SetThreadDpiAwarenessContext = (DPI_AWARENESS_CONTEXT (WINAPI *)(DPI_AWARENESS_CONTEXT)) SDL_LoadFunction(data->userDLL, "SetThreadDpiAwarenessContext");
+        data->GetThreadDpiAwarenessContext = (DPI_AWARENESS_CONTEXT (WINAPI *)(void)) SDL_LoadFunction(data->userDLL, "GetThreadDpiAwarenessContext");
+        data->GetAwarenessFromDpiAwarenessContext = (DPI_AWARENESS (WINAPI *)(DPI_AWARENESS_CONTEXT)) SDL_LoadFunction(data->userDLL, "GetAwarenessFromDpiAwarenessContext");
+        data->EnableNonClientDpiScaling = (BOOL (WINAPI *)(HWND)) SDL_LoadFunction(data->userDLL, "EnableNonClientDpiScaling");
+        data->AdjustWindowRectExForDpi = (BOOL (WINAPI *)(LPRECT, DWORD, BOOL, DWORD, UINT)) SDL_LoadFunction(data->userDLL, "AdjustWindowRectExForDpi");
+        data->GetDpiForWindow = (UINT (WINAPI *)(HWND)) SDL_LoadFunction(data->userDLL, "GetDpiForWindow");
+        data->AreDpiAwarenessContextsEqual = (BOOL (WINAPI *)(DPI_AWARENESS_CONTEXT, DPI_AWARENESS_CONTEXT)) SDL_LoadFunction(data->userDLL, "AreDpiAwarenessContextsEqual");
+        data->IsValidDpiAwarenessContext = (BOOL (WINAPI *)(DPI_AWARENESS_CONTEXT)) SDL_LoadFunction(data->userDLL, "IsValidDpiAwarenessContext");
     } else {
         SDL_ClearError();
     }
@@ -129,6 +139,7 @@ WIN_CreateDevice(int devindex)
     data->shcoreDLL = SDL_LoadObject("SHCORE.DLL");
     if (data->shcoreDLL) {
         data->GetDpiForMonitor = (HRESULT (WINAPI *)(HMONITOR, MONITOR_DPI_TYPE, UINT *, UINT *)) SDL_LoadFunction(data->shcoreDLL, "GetDpiForMonitor");
+        data->SetProcessDpiAwareness = (HRESULT (WINAPI *)(PROCESS_DPI_AWARENESS)) SDL_LoadFunction(data->shcoreDLL, "SetProcessDpiAwareness");
     } else {
         SDL_ClearError();
     }
@@ -233,10 +244,102 @@ VideoBootStrap WINDOWS_bootstrap = {
     "windows", "SDL Windows video driver", WIN_CreateDevice
 };
 
+static BOOL
+WIN_DeclareDPIAwareUnaware(_THIS)
+{
+    SDL_VideoData* data = (SDL_VideoData*)_this->driverdata;
+
+    if (data->SetProcessDpiAwarenessContext) {
+        return data->SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_UNAWARE);
+    } else if (data->SetProcessDpiAwareness) {
+        /* Windows 8.1 */
+        return SUCCEEDED(data->SetProcessDpiAwareness(PROCESS_DPI_UNAWARE));
+    }
+    return FALSE;
+}
+
+static BOOL
+WIN_DeclareDPIAwareSystem(_THIS)
+{
+    SDL_VideoData* data = (SDL_VideoData*)_this->driverdata;
+
+    if (data->SetProcessDpiAwarenessContext) {
+        /* Windows 10, version 1607 */
+        return data->SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_SYSTEM_AWARE);
+    } else if (data->SetProcessDpiAwareness) {
+        /* Windows 8.1 */
+        return SUCCEEDED(data->SetProcessDpiAwareness(PROCESS_SYSTEM_DPI_AWARE));
+    } else if (data->SetProcessDPIAware) {
+        /* Windows Vista */
+        return data->SetProcessDPIAware();
+    }
+    return FALSE;
+}
+
+static BOOL
+WIN_DeclareDPIAwarePerMonitor(_THIS)
+{
+    SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
+
+    if (data->SetProcessDpiAwarenessContext) {
+        /* Windows 10, version 1607 */
+        return data->SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE);
+    } else if (data->SetProcessDpiAwareness) {
+        /* Windows 8.1 */
+        return SUCCEEDED(data->SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE));
+    } else {
+        /* Older OS: fall back to system DPI aware */
+        return WIN_DeclareDPIAwareSystem(_this);
+    }
+    return FALSE;
+}
+
+static BOOL
+WIN_DeclareDPIAwarePerMonitorV2(_THIS)
+{
+    SDL_VideoData* data = (SDL_VideoData*)_this->driverdata;
+
+    /* Declare DPI aware(may have been done in external code or a manifest, as well) */
+    if (data->SetProcessDpiAwarenessContext) {
+        /* Windows 10, version 1607 */
+
+        /* NOTE: SetThreadDpiAwarenessContext doesn't work here with OpenGL - the OpenGL contents
+           end up still getting OS scaled. (tested on Windows 10 21H1 19043.1348, NVIDIA 496.49) */
+        if (data->SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2)) {
+            return TRUE;
+        } else {
+            return WIN_DeclareDPIAwarePerMonitor(_this);
+        }
+    } else {
+        /* Older OS: fall back to per-monitor (or system) */
+        return WIN_DeclareDPIAwarePerMonitor(_this);
+    }
+}
+
+static void
+WIN_InitDPIAwareness(_THIS)
+{
+    const char* hint = SDL_GetHint(SDL_HINT_WINDOWS_DPI_AWARENESS);
+
+    if (hint != NULL) {
+        if (SDL_strcmp(hint, "permonitorv2") == 0) {
+            WIN_DeclareDPIAwarePerMonitorV2(_this);
+        } else if (SDL_strcmp(hint, "permonitor") == 0) {
+            WIN_DeclareDPIAwarePerMonitor(_this);
+        } else if (SDL_strcmp(hint, "system") == 0) {
+            WIN_DeclareDPIAwareSystem(_this);
+        } else if (SDL_strcmp(hint, "unaware") == 0) {
+            WIN_DeclareDPIAwareUnaware(_this);
+        }
+    }
+}
+
 int
 WIN_VideoInit(_THIS)
 {
     SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
+
+    WIN_InitDPIAwareness(_this);
 
     if (WIN_InitModes(_this) < 0) {
         return -1;
@@ -471,6 +574,19 @@ SDL_DXGIGetOutputInfo(int displayIndex, int *adapterIndex, int *outputIndex)
         return SDL_TRUE;
     }
 #endif
+}
+
+SDL_bool
+WIN_IsPerMonitorV2DPIAware(_THIS)
+{
+    SDL_VideoData* data = (SDL_VideoData*) _this->driverdata;
+    
+    if (data->AreDpiAwarenessContextsEqual && data->GetThreadDpiAwarenessContext) {
+        /* Windows 10, version 1607 */
+        return (SDL_bool)data->AreDpiAwarenessContextsEqual(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2,
+                                                            data->GetThreadDpiAwarenessContext());
+    }
+    return SDL_FALSE;
 }
 
 #endif /* SDL_VIDEO_DRIVER_WINDOWS */

@@ -86,9 +86,39 @@ typedef enum MONITOR_DPI_TYPE {
     MDT_DEFAULT = MDT_EFFECTIVE_DPI
 } MONITOR_DPI_TYPE;
 
+typedef enum PROCESS_DPI_AWARENESS {
+    PROCESS_DPI_UNAWARE = 0,
+    PROCESS_SYSTEM_DPI_AWARE = 1,
+    PROCESS_PER_MONITOR_DPI_AWARE = 2
+} PROCESS_DPI_AWARENESS;
+
 #else
 #include <shellscalingapi.h>
 #endif /* WINVER < 0x0603 */
+
+#ifndef _DPI_AWARENESS_CONTEXTS_
+
+typedef enum DPI_AWARENESS {
+    DPI_AWARENESS_INVALID = -1,
+    DPI_AWARENESS_UNAWARE = 0,
+    DPI_AWARENESS_SYSTEM_AWARE = 1,
+    DPI_AWARENESS_PER_MONITOR_AWARE = 2
+} DPI_AWARENESS;
+
+DECLARE_HANDLE(DPI_AWARENESS_CONTEXT);
+
+#define DPI_AWARENESS_CONTEXT_UNAWARE           ((DPI_AWARENESS_CONTEXT)-1)
+#define DPI_AWARENESS_CONTEXT_SYSTEM_AWARE      ((DPI_AWARENESS_CONTEXT)-2)
+#define DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE ((DPI_AWARENESS_CONTEXT)-3)
+
+#endif /* _DPI_AWARENESS_CONTEXTS_ */
+
+/* Windows 10 Creators Update */
+#if NTDDI_VERSION < 0x0A000003
+
+#define DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2 ((DPI_AWARENESS_CONTEXT)-4)
+
+#endif /* NTDDI_VERSION < 0x0A000003 */
 
 typedef BOOL  (*PFNSHFullScreen)(HWND, DWORD);
 typedef void  (*PFCoordTransform)(SDL_Window*, POINT*);
@@ -137,13 +167,24 @@ typedef struct SDL_VideoData
     BOOL (WINAPI *CloseTouchInputHandle)( HTOUCHINPUT );
     BOOL (WINAPI *GetTouchInputInfo)( HTOUCHINPUT, UINT, PTOUCHINPUT, int );
     BOOL (WINAPI *RegisterTouchWindow)( HWND, ULONG );
+    BOOL (WINAPI *SetProcessDPIAware)( void );
+    BOOL (WINAPI *SetProcessDpiAwarenessContext)( DPI_AWARENESS_CONTEXT );
+    DPI_AWARENESS_CONTEXT (WINAPI *SetThreadDpiAwarenessContext)( DPI_AWARENESS_CONTEXT );
+    DPI_AWARENESS_CONTEXT (WINAPI *GetThreadDpiAwarenessContext)( void );
+    DPI_AWARENESS (WINAPI *GetAwarenessFromDpiAwarenessContext)( DPI_AWARENESS_CONTEXT );
+    BOOL (WINAPI *EnableNonClientDpiScaling)( HWND );
+    BOOL (WINAPI *AdjustWindowRectExForDpi)( LPRECT, DWORD, BOOL, DWORD, UINT );
+    UINT (WINAPI *GetDpiForWindow)( HWND );
+    BOOL (WINAPI *AreDpiAwarenessContextsEqual)(DPI_AWARENESS_CONTEXT, DPI_AWARENESS_CONTEXT);
+    BOOL (WINAPI *IsValidDpiAwarenessContext)(DPI_AWARENESS_CONTEXT);
 
     void* shcoreDLL;
     HRESULT (WINAPI *GetDpiForMonitor)( HMONITOR         hmonitor,
                                         MONITOR_DPI_TYPE dpiType,
                                         UINT             *dpiX,
                                         UINT             *dpiY );
-    
+    HRESULT (WINAPI *SetProcessDpiAwareness)(PROCESS_DPI_AWARENESS dpiAwareness);
+
     SDL_bool ime_com_initialized;
     struct ITfThreadMgr *ime_threadmgr;
     SDL_bool ime_initialized;
@@ -202,6 +243,8 @@ extern SDL_bool g_WindowFrameUsableWhileCursorHidden;
 
 typedef struct IDirect3D9 IDirect3D9;
 extern SDL_bool D3D_LoadDLL( void **pD3DDLL, IDirect3D9 **pDirect3D9Interface );
+
+extern SDL_bool WIN_IsPerMonitorV2DPIAware(_THIS);
 
 #endif /* SDL_windowsvideo_h_ */
 
