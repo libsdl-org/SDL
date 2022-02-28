@@ -2452,7 +2452,7 @@ static SDL_Surface *
 SDL_CreateWindowFramebuffer(SDL_Window * window)
 {
     Uint32 format;
-    void *pixels;
+    void *pixels = NULL;
     int pitch;
     int bpp;
     Uint32 Rmask, Gmask, Bmask, Amask;
