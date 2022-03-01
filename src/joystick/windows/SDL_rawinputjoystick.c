@@ -657,7 +657,8 @@ RAWINPUT_QuitWindowsGamingInput(RAWINPUT_DeviceContext *ctx)
             __x_ABI_CWindows_CGaming_CInput_CIGamepadStatics_Release(wgi_state.gamepad_statics);
             wgi_state.gamepad_statics = NULL;
         }
-        WIN_CoUninitialize();
+        /* Workaround for CoUninitialize() crash in NotifyInitializeSpied() */
+        /*WIN_CoUninitialize();*/
         wgi_state.initialized = SDL_FALSE;
     }
 }

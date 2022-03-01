@@ -471,6 +471,7 @@ file(GLOB SOURCE_FILES
   ${SDL2_SOURCE_DIR}/src/dynapi/*.c
   ${SDL2_SOURCE_DIR}/src/events/*.c
   ${SDL2_SOURCE_DIR}/src/file/*.c
+  ${SDL2_SOURCE_DIR}/src/joystick/*.c
   ${SDL2_SOURCE_DIR}/src/haptic/*.c
   ${SDL2_SOURCE_DIR}/src/hidapi/*.c
   ${SDL2_SOURCE_DIR}/src/libm/*.c
@@ -961,10 +962,6 @@ foreach(_SUB ${SDL_SUBSYSTEMS})
     set(SDL_${_OPT}_DISABLED 1)
   endif()
 endforeach()
-if(SDL_JOYSTICK)
-  file(GLOB JOYSTICK_SOURCES ${SDL2_SOURCE_DIR}/src/joystick/*.c)
-  set(SOURCE_FILES ${SOURCE_FILES} ${JOYSTICK_SOURCES})
-endif()
 if(SDL_HAPTIC)
   if(NOT SDL_JOYSTICK)
     # Haptic requires some private functions from the joystick subsystem.
@@ -1783,8 +1780,10 @@ elseif(WINDOWS)
       list(APPEND EXTRA_LIBS dinput8)
     endif()
     if(HAVE_XINPUT_H)
-      set(SDL_JOYSTICK_XINPUT 1)
-      set(HAVE_XINPUT TRUE)
+      if(NOT WINDOWS_STORE)
+        set(SDL_JOYSTICK_XINPUT 1)
+        set(HAVE_XINPUT TRUE)
+      endif()
       if(HAVE_WINDOWS_GAMING_INPUT_H)
         set(SDL_JOYSTICK_WGI 1)
       endif()
@@ -1792,7 +1791,7 @@ elseif(WINDOWS)
     set(HAVE_SDL_JOYSTICK TRUE)
 
     if(SDL_HAPTIC)
-      if(HAVE_DINPUT_H OR HAVE_XINPUT_H)
+      if((HAVE_DINPUT_H OR HAVE_XINPUT_H) AND NOT WINDOWS_STORE)
         file(GLOB HAPTIC_SOURCES ${SDL2_SOURCE_DIR}/src/haptic/windows/*.c)
         if(HAVE_DINPUT_H)
           set(SDL_HAPTIC_DINPUT 1)
@@ -2556,10 +2555,8 @@ if(NOT HAVE_SDL_VIDEO)
 endif()
 if(NOT HAVE_SDL_JOYSTICK)
   set(SDL_JOYSTICK_DUMMY 1)
-  if(SDL_JOYSTICK AND NOT APPLE) # results in unresolved symbols on OSX
-    file(GLOB JOYSTICK_SOURCES ${SDL2_SOURCE_DIR}/src/joystick/dummy/*.c)
-    set(SOURCE_FILES ${SOURCE_FILES} ${JOYSTICK_SOURCES})
-  endif()
+  file(GLOB JOYSTICK_SOURCES ${SDL2_SOURCE_DIR}/src/joystick/dummy/*.c)
+  set(SOURCE_FILES ${SOURCE_FILES} ${JOYSTICK_SOURCES})
 endif()
 if(NOT HAVE_SDL_HAPTIC)
   set(SDL_HAPTIC_DUMMY 1)

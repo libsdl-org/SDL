@@ -611,12 +611,12 @@ QueueCmdCopy(SDL_Renderer *renderer, SDL_Texture * texture, const SDL_Rect * src
 static int
 QueueCmdCopyEx(SDL_Renderer *renderer, SDL_Texture * texture,
                const SDL_Rect * srcquad, const SDL_FRect * dstrect,
-               const double angle, const SDL_FPoint *center, const SDL_RendererFlip flip)
+               const double angle, const SDL_FPoint *center, const SDL_RendererFlip flip, float scale_x, float scale_y)
 {
     SDL_RenderCommand *cmd = PrepQueueCmdDraw(renderer, SDL_RENDERCMD_COPY_EX, texture);
     int retval = -1;
     if (cmd != NULL) {
-        retval = renderer->QueueCopyEx(renderer, cmd, texture, srcquad, dstrect, angle, center, flip);
+        retval = renderer->QueueCopyEx(renderer, cmd, texture, srcquad, dstrect, angle, center, flip, scale_x, scale_y);
         if (retval < 0) {
             cmd->command = SDL_RENDERCMD_NO_OP;
         }
@@ -930,7 +930,7 @@ SDL_CreateRenderer(SDL_Window * window, int index, Uint32 flags)
 #endif
 
     if (!window) {
-        SDL_SetError("Invalid window");
+        SDL_InvalidParamError("window");
         goto error;
     }
 
@@ -979,24 +979,24 @@ SDL_CreateRenderer(SDL_Window * window, int index, Uint32 flags)
                 }
             }
         }
-        if (index == n) {
+        if (!renderer) {
             SDL_SetError("Couldn't find matching render driver");
             goto error;
         }
     } else {
-        if (index >= SDL_GetNumRenderDrivers()) {
+        if (index >= n) {
             SDL_SetError("index must be -1 or in the range of 0 - %d",
-                         SDL_GetNumRenderDrivers() - 1);
+                         n - 1);
             goto error;
         }
         /* Create a new renderer instance */
         renderer = render_drivers[index]->CreateRenderer(window, flags);
         batching = SDL_FALSE;
+        if (!renderer) {
+            goto error;
+        }
     }
 
-    if (!renderer) {
-        goto error;
-    }
 
     VerifyDrawQueueFunctions(renderer);
 
@@ -3734,15 +3734,7 @@ SDL_RenderCopyExF(SDL_Renderer * renderer, SDL_Texture * texture,
                 renderer->scale.x, renderer->scale.y);
     } else {
 
-        real_dstrect.x *= renderer->scale.x;
-        real_dstrect.y *= renderer->scale.y;
-        real_dstrect.w *= renderer->scale.x;
-        real_dstrect.h *= renderer->scale.y;
-
-        real_center.x *= renderer->scale.x;
-        real_center.y *= renderer->scale.y;
-
-        retval = QueueCmdCopyEx(renderer, texture, &real_srcrect, &real_dstrect, angle, &real_center, flip);
+        retval = QueueCmdCopyEx(renderer, texture, &real_srcrect, &real_dstrect, angle, &real_center, flip, renderer->scale.x, renderer->scale.y);
     }
     return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
 }

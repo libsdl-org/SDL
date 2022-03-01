@@ -289,6 +289,10 @@ extern DECLSPEC void SDLCALL SDL_StopTextInput(void);
 /**
  * Set the rectangle used to type Unicode text inputs.
  *
+ * Note: If you want use system native IME window, try to set hint
+ * **SDL_HINT_IME_SHOW_UI** to **1**, otherwise this function won't give you
+ * any feedback.
+ *
  * \param rect the SDL_Rect structure representing the rectangle to receive
  *             text (ignored if NULL)
  *

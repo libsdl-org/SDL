@@ -3,7 +3,7 @@ PS Vita
 SDL port for the Sony Playstation Vita and Sony Playstation TV
 
 Credit to
-* xerpi and rsn8887 for initial (vita2d) port
+* xerpi, cpasjuste and rsn8887 for initial (vita2d) port
 * vitasdk/dolcesdk devs
 * CBPS discord (Namely Graphene and SonicMastr)
 

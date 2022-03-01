@@ -660,7 +660,7 @@ static int
 SDL_PeepEventsInternal(SDL_Event * events, int numevents, SDL_eventaction action,
                Uint32 minType, Uint32 maxType, SDL_bool include_sentinel)
 {
-    int i, used;
+    int i, used, sentinels_expected = 0;
 
     /* Don't look after we've quit */
     if (!SDL_AtomicGet(&SDL_EventQ.active)) {
@@ -723,8 +723,15 @@ SDL_PeepEventsInternal(SDL_Event * events, int numevents, SDL_eventaction action
                     }
                     if (type == SDL_POLLSENTINEL) {
                         /* Special handling for the sentinel event */
-                        if (!include_sentinel || SDL_AtomicGet(&SDL_sentinel_pending) > 0) {
-                            /* Skip it, we don't want to include it or there's another one pending */
+                        if (!include_sentinel) {
+                            /* Skip it, we don't want to include it */
+                            continue;
+                        }
+                        if (!events || action != SDL_GETEVENT) {
+                            ++sentinels_expected;
+                        }
+                        if (SDL_AtomicGet(&SDL_sentinel_pending) > sentinels_expected) {
+                            /* Skip it, there's another one pending */
                             continue;
                         }
                     }
@@ -991,6 +998,7 @@ SDL_WaitEventTimeout(SDL_Event * event, int timeout)
     SDL_Window *wakeup_window;
     Uint32 start, expiration;
     SDL_bool include_sentinel = (timeout == 0) ? SDL_TRUE : SDL_FALSE;
+    int result;
 
     /* If there isn't a poll sentinel event pending, pump events and add one */
     if (SDL_AtomicGet(&SDL_sentinel_pending) == 0) {
@@ -998,33 +1006,34 @@ SDL_WaitEventTimeout(SDL_Event * event, int timeout)
     }
 
     /* First check for existing events */
-    switch (SDL_PeepEventsInternal(event, 1, SDL_GETEVENT, SDL_FIRSTEVENT, SDL_LASTEVENT, include_sentinel)) {
-    case -1:
+    result = SDL_PeepEventsInternal(event, 1, SDL_GETEVENT, SDL_FIRSTEVENT, SDL_LASTEVENT, include_sentinel);
+    if (result < 0) {
         return 0;
-    case 0:
+    }
+    if (include_sentinel) {
+        if (event) {
+            if (event->type == SDL_POLLSENTINEL) {
+                /* Reached the end of a poll cycle, and not willing to wait */
+                return 0;
+            }
+        } else {
+            /* Need to peek the next event to check for sentinel */
+            SDL_Event dummy;
+
+            if (SDL_PeepEventsInternal(&dummy, 1, SDL_PEEKEVENT, SDL_FIRSTEVENT, SDL_LASTEVENT, SDL_TRUE) &&
+                dummy.type == SDL_POLLSENTINEL) {
+                SDL_PeepEventsInternal(&dummy, 1, SDL_GETEVENT, SDL_POLLSENTINEL, SDL_POLLSENTINEL, SDL_TRUE);
+                /* Reached the end of a poll cycle, and not willing to wait */
+                return 0;
+            }
+        }
+    }
+    if (result == 0) {
         if (timeout == 0) {
             /* No events available, and not willing to wait */
             return 0;
         }
-        break;
-    default:
-        if (include_sentinel) {
-            if (event) {
-                if (event->type == SDL_POLLSENTINEL) {
-                    /* Reached the end of a poll cycle, and not willing to wait */
-                    return 0;
-                }
-            } else {
-                /* Need to peek the next event to check for sentinel */
-                SDL_Event dummy;
-
-                if (SDL_PeepEventsInternal(&dummy, 1, SDL_PEEKEVENT, SDL_FIRSTEVENT, SDL_LASTEVENT, SDL_TRUE) &&
-                    dummy.type == SDL_POLLSENTINEL) {
-                    /* Reached the end of a poll cycle, and not willing to wait */
-                    return 0;
-                }
-            }
-        }
+    } else {
         /* Has existing events */
         return 1;
     }

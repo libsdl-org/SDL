@@ -92,6 +92,10 @@ typedef unsigned int uintptr_t;
 # define SIZEOF_VOIDP 4
 #endif
 
+#ifdef __clang__
+# define HAVE_GCC_ATOMICS 1
+#endif
+
 /* Useful headers */
 #define HAVE_DXGI_H 1
 #if WINAPI_FAMILY != WINAPI_FAMILY_PHONE_APP

@@ -1174,7 +1174,7 @@ macro(CheckHIDAPI)
         else()
           # libusb is loaded dynamically, so don't add it to EXTRA_LIBS
           FindLibraryAndSONAME("usb-1.0")
-          set(SDL_LIBUSB_DYNAMIC "\"${USB_LIB_SONAME}\"")
+          set(SDL_LIBUSB_DYNAMIC "\"${USB_1.0_LIB_SONAME}\"")
         endif()
       endif()
     endif()

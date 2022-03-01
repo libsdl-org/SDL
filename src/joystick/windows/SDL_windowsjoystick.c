@@ -256,7 +256,8 @@ SDL_CleanupDeviceNotification(SDL_DeviceNotificationData *data)
     UnregisterClass(data->wincl.lpszClassName, data->wincl.hInstance);
 
     if (data->coinitialized == S_OK) {
-        WIN_CoUninitialize();
+        /* Workaround for CoUninitialize() crash in NotifyInitializeSpied() */
+        /*WIN_CoUninitialize();*/
     }
 }
 
