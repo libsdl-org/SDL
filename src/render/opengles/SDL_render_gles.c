@@ -97,7 +97,6 @@ typedef struct
     SDL_bool GL_OES_blend_subtract_supported;
 
     GLES_DrawStateCache drawstate;
-    SDL_bool generate_mipmaps;
 } GLES_RenderData;
 
 typedef struct
@@ -384,7 +383,10 @@ GLES_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 
     data->format = format;
     data->formattype = type;
-    data->mipmap = renderdata->generate_mipmaps && (data->type == GL_TEXTURE_2D);
+
+    /* Check mipmap texture filtering */
+    data->mipmap = (type == GL_TEXTURE_2D) && SDL_GetHintBoolean(SDL_HINT_RENDER_OPENGL_FILTER_MIPMAP, SDL_FALSE);
+
     switch(texture->scaleMode) {
         case SDL_ScaleModeNearest:
             magnificationScaleMode = GL_NEAREST;
@@ -1204,9 +1206,6 @@ GLES_CreateRenderer(SDL_Window * window, Uint32 flags)
     if (SDL_GL_GetSwapInterval() > 0) {
         renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
     }
-
-    /* Check texture filtering using mipmaps */
-    data->generate_mipmaps = SDL_GetHintBoolean(SDL_HINT_RENDER_OPENGL_FILTER_MIPMAP, SDL_FALSE);
 
     value = 0;
     data->glGetIntegerv(GL_MAX_TEXTURE_SIZE, &value);

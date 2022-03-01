@@ -170,8 +170,6 @@ typedef struct GLES2_RenderData
 #endif
 
     GLES2_DrawStateCache drawstate;
-
-    SDL_bool generate_mipmaps;
 } GLES2_RenderData;
 
 #define GLES2_MAX_CACHED_PROGRAMS 8
@@ -1410,7 +1408,9 @@ GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     data->texture_v = 0;
 #endif
 
-    data->mipmap = renderdata->generate_mipmaps && (data->texture_type == GL_TEXTURE_2D);
+    /* Check mipmap texture filtering */
+    data->mipmap = (data->texture_type == GL_TEXTURE_2D) && SDL_GetHintBoolean(SDL_HINT_RENDER_OPENGL_FILTER_MIPMAP, SDL_FALSE);
+
     switch(texture->scaleMode) {
         case SDL_ScaleModeNearest:
             magnificationScaleMode = GL_NEAREST;
@@ -2220,9 +2220,6 @@ GLES2_CreateRenderer(SDL_Window *window, Uint32 flags)
 #ifdef GL_TEXTURE_EXTERNAL_OES
     renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_EXTERNAL_OES;
 #endif
-
-    /* Check mipmap texture filtering */
-    data->generate_mipmaps = SDL_GetHintBoolean(SDL_HINT_RENDER_OPENGL_FILTER_MIPMAP, SDL_FALSE);
 
     /* Set up parameters for rendering */
     data->glActiveTexture(GL_TEXTURE0);

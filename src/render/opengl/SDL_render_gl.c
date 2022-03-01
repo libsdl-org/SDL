@@ -91,7 +91,6 @@ typedef struct
     GLvoid *next_error_userparam;
 
     GLenum textype;
-    SDL_bool generate_mipmaps;
 
     SDL_bool GL_ARB_texture_non_power_of_two_supported;
     SDL_bool GL_ARB_texture_rectangle_supported;
@@ -530,7 +529,9 @@ GL_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
         data->texh = (GLfloat) texture->h / texture_h;
     }
 
-    data->mipmap = renderdata->generate_mipmaps && (textype == GL_TEXTURE_2D);
+    /* Check mipmap texture filtering */
+    data->mipmap = (textype == GL_TEXTURE_2D) && SDL_GetHintBoolean(SDL_HINT_RENDER_OPENGL_FILTER_MIPMAP, SDL_FALSE);
+
     data->format = format;
     data->formattype = type;
     switch(texture->scaleMode) {
@@ -1947,9 +1948,6 @@ GL_CreateRenderer(SDL_Window * window, Uint32 flags)
     }
     SDL_LogInfo(SDL_LOG_CATEGORY_RENDER, "OpenGL shaders: %s",
                 data->shaders ? "ENABLED" : "DISABLED");
-
-    /* Check mipmap texture filtering */
-    data->generate_mipmaps = SDL_GetHintBoolean(SDL_HINT_RENDER_OPENGL_FILTER_MIPMAP, SDL_FALSE);
 
     /* We support YV12 textures using 3 textures and a shader */
     if (data->shaders && data->num_texture_units >= 3) {
