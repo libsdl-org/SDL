@@ -102,6 +102,7 @@ typedef enum
     SDL_KEYMAPCHANGED,          /**< Keymap changed due to a system event such as an
                                      input language or keyboard layout change.
                                 */
+    SDL_TEXTEDITING_EXT,       /**< Extended keyboard text editing (composition) */
 
     /* Mouse events */
     SDL_MOUSEMOTION    = 0x400, /**< Mouse moved */
@@ -238,10 +239,24 @@ typedef struct SDL_TextEditingEvent
     Uint32 type;                                /**< ::SDL_TEXTEDITING */
     Uint32 timestamp;                           /**< In milliseconds, populated using SDL_GetTicks() */
     Uint32 windowID;                            /**< The window with keyboard focus, if any */
-    char* text;                                 /**< The editing text */
+    char text[SDL_TEXTEDITINGEVENT_TEXT_SIZE];
     Sint32 start;                               /**< The start cursor of selected editing text */
     Sint32 length;                              /**< The length of selected editing text */
 } SDL_TextEditingEvent;
+
+/**
+ *  \brief Extended keyboard text editing event structure (event.edit.*) when text would be
+ *  truncated if stored in the text buffer SDL_TextEditingEvent
+ */
+typedef struct SDL_TextEditingExtEvent
+{
+    Uint32 type;                                /**< ::SDL_TEXTEDITING */
+    Uint32 timestamp;                           /**< In milliseconds, populated using SDL_GetTicks() */
+    Uint32 windowID;                            /**< The window with keyboard focus, if any */
+    char* text;                                 /**< The input text */
+    Sint32 start;                               /**< The start cursor of selected editing text */
+    Sint32 length;                              /**< The length of selected editing text */
+} SDL_TextEditingExtEvent;
 
 #define SDL_TEXTINPUTEVENT_TEXT_SIZE (32)
 /**
@@ -252,7 +267,7 @@ typedef struct SDL_TextInputEvent
     Uint32 type;                              /**< ::SDL_TEXTINPUT */
     Uint32 timestamp;                         /**< In milliseconds, populated using SDL_GetTicks() */
     Uint32 windowID;                          /**< The window with keyboard focus, if any */
-    char* text;                               /**< The input text */
+    char text[SDL_TEXTINPUTEVENT_TEXT_SIZE];  /**< The input text */
 } SDL_TextInputEvent;
 
 /**
@@ -600,6 +615,7 @@ typedef union SDL_Event
     SDL_WindowEvent window;                 /**< Window event data */
     SDL_KeyboardEvent key;                  /**< Keyboard event data */
     SDL_TextEditingEvent edit;              /**< Text editing event data */
+    SDL_TextEditingExtEvent editExt;        /**< Extended text editing event data */
     SDL_TextInputEvent text;                /**< Text input event data */
     SDL_MouseMotionEvent motion;            /**< Mouse motion event data */
     SDL_MouseButtonEvent button;            /**< Mouse button event data */

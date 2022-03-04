@@ -857,6 +857,7 @@ SDL_SendKeyboardText(const char *text)
 {
     SDL_Keyboard *keyboard = &SDL_keyboard;
     int posted;
+    size_t textLen;
 
     /* Don't post text events for unprintable characters */
     if ((unsigned char)*text < ' ' || *text == 127) {
@@ -869,9 +870,21 @@ SDL_SendKeyboardText(const char *text)
         SDL_Event event;
         event.text.type = SDL_TEXTINPUT;
         event.text.windowID = keyboard->focus ? keyboard->focus->id : 0;
-        event.text.text = text ? SDL_strdup(text) : NULL;
-        posted = (SDL_PushEvent(&event) > 0);
+
+        if (SDL_GetHintBoolean(SDL_HINT_IME_SUPPORT_EXTENDED_TEXT, SDL_FALSE) == SDL_TRUE &&
+            (textLen = SDL_strlen(text)) > SDL_arraysize(event.text.text)) {
+            size_t i = 0;
+            while (i < textLen) {
+                i += SDL_utf8strlcpy(event.text.text, text + i, SDL_arraysize(event.text.text));
+                posted = (SDL_PushEvent(&event) > 0);
+            }
+        }
+        else {
+            SDL_utf8strlcpy(event.text.text, text, SDL_arraysize(event.text.text));
+            posted = (SDL_PushEvent(&event) > 0);
+        }
     }
+
     return (posted);
 }
 
@@ -885,13 +898,26 @@ SDL_SendEditingText(const char *text, int start, int length)
     posted = 0;
     if (SDL_GetEventState(SDL_TEXTEDITING) == SDL_ENABLE) {
         SDL_Event event;
-        event.edit.type = SDL_TEXTEDITING;
-        event.edit.windowID = keyboard->focus ? keyboard->focus->id : 0;
-        event.edit.start = start;
-        event.edit.length = length;
-        event.edit.text = text ? SDL_strdup(text) : NULL;
+
+        if (SDL_GetHintBoolean(SDL_HINT_IME_SUPPORT_EXTENDED_TEXT, SDL_FALSE) == SDL_TRUE &&
+            SDL_strlen(text) > SDL_arraysize(event.text.text)) {
+            event.editExt.type = SDL_TEXTEDITING_EXT;
+            event.editExt.windowID = keyboard->focus ? keyboard->focus->id : 0;
+            event.editExt.text = text ? SDL_strdup(text) : NULL;
+            event.editExt.start = start;
+            event.editExt.length = length;
+        }
+        else {
+            event.edit.type = SDL_TEXTEDITING;
+            event.edit.windowID = keyboard->focus ? keyboard->focus->id : 0;
+            event.edit.start = start;
+            event.edit.length = length;
+            SDL_utf8strlcpy(event.edit.text, text, SDL_arraysize(event.edit.text));
+        }
+        
         posted = (SDL_PushEvent(&event) > 0);
     }
+
     return (posted);
 }
 
