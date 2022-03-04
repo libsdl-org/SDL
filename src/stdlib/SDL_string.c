@@ -641,19 +641,16 @@ SDL_utf8strlcpy(SDL_OUT_Z_CAP(dst_bytes) char *dst, const char *src, size_t dst_
     size_t bytes = SDL_min(src_bytes, dst_bytes - 1);
     size_t i = 0;
     unsigned char trailing_bytes = 0;
-    if (bytes)
-    {
+
+    if (bytes) {
         unsigned char c = (unsigned char)src[bytes - 1];
-        if (UTF8_IsLeadByte(c))
+        if (UTF8_IsLeadByte(c)) {
             --bytes;
-        else if (UTF8_IsTrailingByte(c))
-        {
-            for (i = bytes - 1; i != 0; --i)
-            {
+        } else if (UTF8_IsTrailingByte(c)) {
+            for (i = bytes - 1; i != 0; --i) {
                 c = (unsigned char)src[i];
                 trailing_bytes = UTF8_TrailingBytes(c);
-                if (trailing_bytes)
-                {
+                if (trailing_bytes) {
                     if (bytes - i != trailing_bytes + 1)
                         bytes = i;
 
@@ -664,6 +661,7 @@ SDL_utf8strlcpy(SDL_OUT_Z_CAP(dst_bytes) char *dst, const char *src, size_t dst_
         SDL_memcpy(dst, src, bytes);
     }
     dst[bytes] = '\0';
+
     return bytes;
 }
 
