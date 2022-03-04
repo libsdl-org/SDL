@@ -1659,8 +1659,14 @@ void
 X11_SetWindowMouseGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
-    Display *display = data->videodata->display;
+    Display *display;
     SDL_bool oldstyle_fullscreen;
+
+    if (data == NULL) {
+        return;
+    }
+
+    display = data->videodata->display;
 
     /* ICCCM2.0-compliant window managers can handle fullscreen windows
        If we're using XVidMode to change resolution we need to confine
@@ -1719,7 +1725,13 @@ void
 X11_SetWindowKeyboardGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
-    Display *display = data->videodata->display;
+    Display *display;
+
+    if (data == NULL) {
+        return;
+    }
+
+    display = data->videodata->display;
 
     if (grabbed) {
         /* If the window is unmapped, XGrab calls return GrabNotViewable,

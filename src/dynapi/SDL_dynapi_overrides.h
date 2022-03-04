@@ -857,3 +857,4 @@
 #define SDL_hid_ble_scan SDL_hid_ble_scan_REAL
 #define SDL_PremultiplyAlpha SDL_PremultiplyAlpha_REAL
 #define SDL_AndroidSendMessage SDL_AndroidSendMessage_REAL
+#define SDL_GetTouchName SDL_GetTouchName_REAL

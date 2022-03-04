@@ -63,6 +63,16 @@ SDL_GetTouchDevice(int index)
     return SDL_touchDevices[index]->id;
 }
 
+const char*
+SDL_GetTouchName(int index)
+{
+    if (index < 0 || index >= SDL_num_touch) {
+        SDL_SetError("Unknown touch device");
+        return NULL;
+    }
+    return SDL_touchDevices[index]->name;
+}
+
 static int
 SDL_GetTouchIndex(SDL_TouchID id)
 {
@@ -185,6 +195,7 @@ SDL_AddTouch(SDL_TouchID touchID, SDL_TouchDeviceType type, const char *name)
     SDL_touchDevices[index]->num_fingers = 0;
     SDL_touchDevices[index]->max_fingers = 0;
     SDL_touchDevices[index]->fingers = NULL;
+    SDL_touchDevices[index]->name = SDL_strdup(name ? name : "");
 
     /* Record this touch device for gestures */
     /* We could do this on the fly in the gesture code if we wanted */
@@ -452,6 +463,7 @@ SDL_DelTouch(SDL_TouchID id)
         SDL_free(touch->fingers[i]);
     }
     SDL_free(touch->fingers);
+    SDL_free(touch->name);
     SDL_free(touch);
 
     SDL_num_touch--;
