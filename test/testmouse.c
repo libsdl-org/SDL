@@ -100,6 +100,8 @@ loop(void *arg)
             case SDL_BUTTON_LEFT:   active->r = 255; buttons |= SDL_BUTTON_LMASK; break;
             case SDL_BUTTON_MIDDLE: active->g = 255; buttons |= SDL_BUTTON_MMASK; break;
             case SDL_BUTTON_RIGHT:  active->b = 255; buttons |= SDL_BUTTON_RMASK; break;
+            case SDL_BUTTON_X1:     active->r = 255; active->b = 255; buttons |= SDL_BUTTON_X1MASK; break;
+            case SDL_BUTTON_X2:     active->g = 255; active->b = 255; buttons |= SDL_BUTTON_X2MASK; break;
             }
             break;
         case SDL_MOUSEBUTTONUP:
@@ -110,6 +112,8 @@ loop(void *arg)
             case SDL_BUTTON_LEFT:   buttons &= ~SDL_BUTTON_LMASK; break;
             case SDL_BUTTON_MIDDLE: buttons &= ~SDL_BUTTON_MMASK; break;
             case SDL_BUTTON_RIGHT:  buttons &= ~SDL_BUTTON_RMASK; break;
+            case SDL_BUTTON_X1:     buttons &= ~SDL_BUTTON_X1MASK; break;
+            case SDL_BUTTON_X2:     buttons &= ~SDL_BUTTON_X2MASK; break;
             }
 
             if (buttons == 0) {
