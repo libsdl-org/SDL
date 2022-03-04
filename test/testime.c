@@ -44,7 +44,8 @@ static SDL_Rect textRect, markedRect;
 static SDL_Color lineColor = {0,0,0,255};
 static SDL_Color backColor = {255,255,255,255};
 static SDL_Color textColor = {0,0,0,255};
-static char text[MAX_TEXT_LENGTH], markedText[256];
+static size_t markedTextLen = SDL_TEXTEDITINGEVENT_TEXT_SIZE * 2;
+static char text[MAX_TEXT_LENGTH], *markedText;
 static int cursor = 0;
 #ifdef HAVE_SDL_TTF
 static TTF_Font *font;
@@ -447,6 +448,7 @@ void InitInput()
 
     text[0] = 0;
     markedRect = textRect;
+    markedText = (char*)SDL_malloc(markedTextLen);
     markedText[0] = 0;
 
     SDL_StartTextInput();
@@ -759,6 +761,7 @@ int main(int argc, char *argv[])
                             SDL_GetScancodeName(event.key.keysym.scancode),
                             event.key.keysym.sym, SDL_GetKeyName(event.key.keysym.sym));
                     break;
+                }
 
                 case SDL_TEXTINPUT:
                     if (event.text.text[0] == '\0' || event.text.text[0] == '\n' ||
@@ -780,16 +783,30 @@ int main(int argc, char *argv[])
 
                 case SDL_TEXTEDITING:
                     SDL_Log("text editing \"%s\", selected range (%d, %d)\n",
-                            event.edit.text, event.edit.start, event.edit.length);
+                        event.edit.text, event.edit.start, event.edit.length);
 
-                    SDL_strlcpy(markedText, event.edit.text, SDL_strlen(event.edit.text));
-                    SDL_free(event.edit.text);
+                    SDL_strlcpy(markedText, event.edit.text, SDL_TEXTEDITINGEVENT_TEXT_SIZE);
                     cursor = event.edit.start;
                     Redraw();
                     break;
-                }
-                break;
 
+                case SDL_TEXTEDITING_EXT: {
+                    size_t len = SDL_strlen(event.edit.text);
+                    SDL_Log("text editing ext \"%s\", selected range (%d, %d)\n",
+                        event.editExt.text, event.editExt.start, event.editExt.length);
+
+                    if (len > markedTextLen) {
+                        markedTextLen = len;
+                        SDL_free(markedText);
+                        markedText = (char*)SDL_malloc(markedTextLen);
+                    }
+
+                    SDL_strlcpy(markedText, event.editExt.text, len);
+                    SDL_free(event.editExt.text);
+                    cursor = event.editExt.start;
+                    Redraw();
+                    break;
+                }
             }
         }
     }
