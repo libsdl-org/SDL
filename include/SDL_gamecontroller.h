@@ -870,8 +870,8 @@ extern DECLSPEC int SDLCALL SDL_GameControllerRumble(SDL_GameController *gamecon
  *
  * Note that this is rumbling of the _triggers_ and not the game controller as
  * a whole. This is currently only supported on Xbox One controllers. If you
- * want the (more common) whole-controller rumble, use SDL_GameControllerRumble()
- * instead.
+ * want the (more common) whole-controller rumble, use
+ * SDL_GameControllerRumble() instead.
  *
  * \param gamecontroller The controller to vibrate
  * \param left_rumble The intensity of the left trigger rumble motor, from 0
