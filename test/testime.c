@@ -791,7 +791,7 @@ int main(int argc, char *argv[])
                     break;
 
                 case SDL_TEXTEDITING_EXT: {
-                    size_t len = SDL_strlen(event.edit.text);
+                    size_t len = SDL_strlen(event.editExt.text);
                     SDL_Log("text editing ext \"%s\", selected range (%d, %d)\n",
                         event.editExt.text, event.editExt.start, event.editExt.length);
 

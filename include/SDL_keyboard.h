@@ -262,7 +262,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_IsTextInputActive(void);
 /**
  * Dismiss the composition window/IME without disabling the subsystem.
  *
- * \since This function is available since SDL 2.0.16.?
+ * \since This function is available since SDL 2.0.21
  *
  * \sa SDL_StartTextInput
  * \sa SDL_StopTextInput
