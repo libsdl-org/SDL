@@ -173,16 +173,17 @@ X11_InitXinput2(_THIS)
 
         /* find scroll classes */
         for (i = 0; i < ndevices && dev_i < MAX_SCROLLABLE_DEVICES; i++) {
-            scroll_device *sd = scrollable_devices[dev_i];
+            scrollable_device *sd = &scrollable_devices[dev_i];
             XIDeviceInfo *dev = &info[i];
             for (j = 0; j < dev->num_classes; j++) {
+                int dir;
                 XIAnyClassInfo *class = dev->classes[j];
                 XIScrollClassInfo *s = (XIScrollClassInfo*)class;
 
                 if (class->type != XIScrollClass)
                     continue;
 
-                int dir = s->scroll_type == XIScrollTypeVertical;
+                dir = s->scroll_type == XIScrollTypeVertical;
                 sd->source_id = s->sourceid;
                 sd->axis_id[dir] = s->number;
                 sd->line_unit[dir] = s->increment;
@@ -309,7 +310,6 @@ X11_HandleXinput2Event(SDL_VideoData *videodata,XGenericEventCookie *cookie)
             int pointer_emulated = (xev->flags & XIPointerEmulated);
 
             if (! pointer_emulated) {
-                SDL_Mouse *mouse = SDL_GetMouse();
                 if(!mouse->relative_mode || mouse->relative_mode_warp) {
                     SDL_Window *window = xinput2_get_sdlwindow(videodata, xev->event);
                     if (window) {
