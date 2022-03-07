@@ -1973,6 +1973,20 @@ XFreeEventData(display, cookie);
             if test x$definitely_enable_video_x11_xinput = xyes; then
                 SUMMARY_video_x11="${SUMMARY_video_x11} xinput2"
                 AC_DEFINE(SDL_VIDEO_DRIVER_X11_XINPUT2, 1, [ ])
+                AC_MSG_CHECKING(for xinput2 scrollinfo)
+                have_xinput2_scrollinfo=no
+                AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+                    #include <X11/Xlib.h>
+                    #include <X11/Xproto.h>
+                    #include <X11/extensions/XInput2.h>
+                    ]], [[
+XIScrollClassInfo *s;
+                    ]])], [
+                    have_xinput2_scrollinfo=yes
+                    AC_DEFINE([SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_SCROLLINFO], 0, [ ])
+                    SUMMARY_video_x11="${SUMMARY_video_x11} xinput2_scrollinfo"
+                    ],[])
+                AC_MSG_RESULT($have_xinput2_scrollinfo)
                 AC_MSG_CHECKING(for xinput2 multitouch)
                 have_xinput2_multitouch=no
                 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
