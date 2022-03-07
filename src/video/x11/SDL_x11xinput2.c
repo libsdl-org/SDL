@@ -28,21 +28,16 @@
 #include "../../events/SDL_touch_c.h"
 
 #define MAX_AXIS 16
-#define MAX_SCROLLABLE_DEVICES 8
 
 #if SDL_VIDEO_DRIVER_X11_XINPUT2
 static int xinput2_initialized = 0;
-static int xinput2_precise_scroll_supported = 0;
 
 #if SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH
 static int xinput2_multitouch_supported = 0;
 #endif
 
-/* Opcode returned X11_XQueryExtension
- * It will be used in event processing
- * to know that the event came from
- * this extension */
-static int xinput2_opcode;
+#if SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_SCROLLINFO
+static int xinput2_scrollinfo_supported = 0;
 
 typedef struct {
     /* -1 if not present */
@@ -54,7 +49,15 @@ typedef struct {
     double line_unit[2];
 } scrollable_device;
 
+#define MAX_SCROLLABLE_DEVICES 8
 static scrollable_device scrollable_devices[MAX_SCROLLABLE_DEVICES];
+#endif
+
+/* Opcode returned X11_XQueryExtension
+ * It will be used in event processing
+ * to know that the event came from
+ * this extension */
+static int xinput2_opcode;
 
 static void parse_valuators(const double *input_values, const unsigned char *mask,int mask_len,
                             double *output_values,int output_values_len) {
@@ -87,6 +90,98 @@ xinput2_version_atleast(const int version, const int wantmajor, const int wantmi
 {
     return ( version >= ((wantmajor * 1000) + wantminor) );
 }
+
+#if SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_SCROLLINFO
+static void
+xinput2_enumerate_scrollable_devices(Display *display)
+{
+    XIDeviceInfo *info;
+    int ndevices,i,j,k,dev_i=0;
+
+    SDL_memset(scrollable_devices, 0, sizeof(scrollable_devices));
+    for (i = 0; i<MAX_SCROLLABLE_DEVICES; i++) {
+        scrollable_devices[i].source_id = -1;
+    }
+
+    if (!xinput2_scrollinfo_supported)
+        return;
+
+    info = X11_XIQueryDevice(display, XIAllDevices, &ndevices);
+
+    /* find scroll classes */
+    for (i = 0; i < ndevices && dev_i < MAX_SCROLLABLE_DEVICES; i++) {
+        scrollable_device *sd = &scrollable_devices[dev_i];
+        XIDeviceInfo *dev = &info[i];
+        for (j = 0; j < dev->num_classes; j++) {
+            int dir;
+            XIAnyClassInfo *class = dev->classes[j];
+            XIScrollClassInfo *s = (XIScrollClassInfo*)class;
+
+            if (class->type != XIScrollClass)
+                continue;
+
+            dir = s->scroll_type == XIScrollTypeVertical;
+            sd->source_id = s->sourceid;
+            sd->axis_id[dir] = s->number;
+            sd->line_unit[dir] = s->increment;
+        }
+
+        if (scrollable_devices[dev_i].source_id == -1)
+            continue;
+
+        /* find valuator info for each scroll class */
+        for (j = 0; j < dev->num_classes; j++) {
+            XIAnyClassInfo *class = dev->classes[j];
+            XIValuatorClassInfo *v = (XIValuatorClassInfo*)class;
+
+            if (class->type != XIValuatorClass)
+                continue;
+
+            for (k=0; k<2; k++) {
+                if (sd->axis_id[k] == v->number) {
+                    sd->prev_coord[k] = v->value;
+                }
+            }
+        }
+
+        dev_i++;
+    }
+
+    X11_XIFreeDeviceInfo(info);
+}
+
+static void
+xinput2_parse_scrollable_valuators(const XIDeviceEvent *xev)
+{
+    SDL_Mouse *mouse = SDL_GetMouse();            
+    int i,j,k;
+
+    for (i=0; i<MAX_SCROLLABLE_DEVICES; i++) {
+        scrollable_device *sd = &scrollable_devices[i];
+        if (xev->sourceid == sd->source_id) {
+            int values_i=0;
+            for (j=0; j<xev->valuators.mask_len*8; j++) {
+                if (!XIMaskIsSet(xev->valuators.mask, j))
+                    continue;
+
+                for (k = 0; k<2; k++) {
+                    if (sd->axis_id[k] == j) {
+                        double current_val = xev->valuators.values[values_i];
+                        double delta = (sd->prev_coord[k] - current_val)/sd->line_unit[k];
+                        double x = k == 0 ? delta : 0;
+                        double y = k == 1 ? delta : 0;
+                        SDL_SendMouseWheel(mouse->focus,mouse->mouseID, x, y, SDL_MOUSEWHEEL_NORMAL);
+                        sd->prev_coord[k] = current_val;
+                    }
+                }
+
+                values_i++;
+            }
+        }
+    }
+}
+
+#endif /* SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_SCROLLINFO */
 
 #if SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH
 static SDL_Window *
@@ -135,7 +230,7 @@ X11_InitXinput2(_THIS)
     int version = 0;
     XIEventMask eventmask;
     unsigned char mask[3] = { 0,0,0 };
-    int event, err, i;
+    int event, err;
 
     /*
     * Initialize XInput 2
@@ -158,60 +253,15 @@ X11_InitXinput2(_THIS)
     }
 
     xinput2_initialized = 1;
-    xinput2_precise_scroll_supported = xinput2_version_atleast(version, 2, 1);
 
-    SDL_memset(scrollable_devices, 0, sizeof(scrollable_devices));
-    for (i = 0; i<MAX_SCROLLABLE_DEVICES; i++) {
-        scrollable_devices[i].source_id = -1;
+#if SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_SCROLLINFO
+    /* Xinput 2.1 is required to provide precision scrolling info */
+    if (xinput2_version_atleast(version, 2, 1)) {
+        xinput2_scrollinfo_supported = 1;
     }
 
-    if (xinput2_precise_scroll_supported) {
-        XIDeviceInfo *info;
-        int ndevices,j,k,dev_i=0;
-
-        info = X11_XIQueryDevice(data->display, XIAllDevices, &ndevices);
-
-        /* find scroll classes */
-        for (i = 0; i < ndevices && dev_i < MAX_SCROLLABLE_DEVICES; i++) {
-            scrollable_device *sd = &scrollable_devices[dev_i];
-            XIDeviceInfo *dev = &info[i];
-            for (j = 0; j < dev->num_classes; j++) {
-                int dir;
-                XIAnyClassInfo *class = dev->classes[j];
-                XIScrollClassInfo *s = (XIScrollClassInfo*)class;
-
-                if (class->type != XIScrollClass)
-                    continue;
-
-                dir = s->scroll_type == XIScrollTypeVertical;
-                sd->source_id = s->sourceid;
-                sd->axis_id[dir] = s->number;
-                sd->line_unit[dir] = s->increment;
-            }
-
-            if (scrollable_devices[dev_i].source_id == -1)
-                continue;
-
-            /* find valuator info for each scroll class */
-            for (j = 0; j < dev->num_classes; j++) {
-                XIAnyClassInfo *class = dev->classes[j];
-                XIValuatorClassInfo *v = (XIValuatorClassInfo*)class;
-
-                if (class->type != XIValuatorClass)
-                    continue;
-
-                for (k=0; k<2; k++) {
-                    if (sd->axis_id[k] == v->number) {
-                        sd->prev_coord[k] = v->value;
-                    }
-                }
-            }
-
-            dev_i++;
-        }
-
-        X11_XIFreeDeviceInfo(info);
-    }
+    xinput2_enumerate_scrollable_devices(data->display);
+#endif
 
 #if SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH  /* Multitouch needs XInput 2.2 */
     xinput2_multitouch_supported = xinput2_version_atleast(version, 2, 2);
@@ -274,17 +324,19 @@ X11_HandleXinput2Event(SDL_VideoData *videodata,XGenericEventCookie *cookie)
             videodata->global_mouse_changed = SDL_TRUE;
             break;
 
+#if SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_SCROLLINFO || SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH
         case XI_Motion: {
             const XIDeviceEvent *xev = (const XIDeviceEvent *) cookie->data;
-            SDL_Mouse *mouse = SDL_GetMouse();
-            int i,j,k;
+            
+#if SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_SCROLLINFO
+            xinput2_parse_scrollable_valuators(xev);
+#endif
 
 #if SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH
             /* With multitouch, register to receive XI_Motion (which desctivates MotionNotify),
             * so that we can distinguish real mouse motions from synthetic one.  */
-            int pointer_emulated = (xev->flags & XIPointerEmulated);
-
-            if (! pointer_emulated) {
+            if (!(xev->flags & XIPointerEmulated)) {
+                SDL_Mouse *mouse = SDL_GetMouse();
                 if(!mouse->relative_mode || mouse->relative_mode_warp) {
                     SDL_Window *window = xinput2_get_sdlwindow(videodata, xev->event);
                     if (window) {
@@ -294,34 +346,10 @@ X11_HandleXinput2Event(SDL_VideoData *videodata,XGenericEventCookie *cookie)
             }
 #endif
 
-            for (i=0; i<MAX_SCROLLABLE_DEVICES; i++) {
-                scrollable_device *sd = &scrollable_devices[i];
-                if (xev->sourceid == sd->source_id) {
-                    int values_i=0;
-                    for (j=0; j<xev->valuators.mask_len*8; j++) {
-                        if (!XIMaskIsSet(xev->valuators.mask, j))
-                            continue;
-
-                        for (k = 0; k<2; k++) {
-                            if (sd->axis_id[k] == j) {
-                                double current_val = xev->valuators.values[values_i];
-                                double delta = (sd->prev_coord[k] - current_val)/sd->line_unit[k];
-                                double x = k == 0 ? delta : 0;
-                                double y = k == 1 ? delta : 0;
-                                SDL_SendMouseWheel(mouse->focus,mouse->mouseID, x, y, SDL_MOUSEWHEEL_NORMAL);
-                                sd->prev_coord[k] = current_val;
-                            }
-                        }
-
-                        values_i++;
-                    }
-                }
-            }
-
-
             return 1;
             }
             break;
+#endif
 
 #if SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH
         case XI_TouchBegin: {
