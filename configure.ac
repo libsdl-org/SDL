@@ -1983,7 +1983,7 @@ XFreeEventData(display, cookie);
 XIScrollClassInfo *s;
                     ]])], [
                     have_xinput2_scrollinfo=yes
-                    AC_DEFINE([SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_SCROLLINFO], 0, [ ])
+                    AC_DEFINE([SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_SCROLLINFO], 1, [ ])
                     SUMMARY_video_x11="${SUMMARY_video_x11} xinput2_scrollinfo"
                     ],[])
                 AC_MSG_RESULT($have_xinput2_scrollinfo)
