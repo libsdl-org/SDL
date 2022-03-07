@@ -167,7 +167,7 @@ X11_InitXinput2(_THIS)
 
     if (xinput2_precise_scroll_supported) {
         XIDeviceInfo *info;
-        int ndevices,i,j,k,dev_i=0;
+        int ndevices,j,k,dev_i=0;
 
         info = X11_XIQueryDevice(data->display, XIAllDevices, &ndevices);
 
@@ -279,7 +279,21 @@ X11_HandleXinput2Event(SDL_VideoData *videodata,XGenericEventCookie *cookie)
             SDL_Mouse *mouse = SDL_GetMouse();
             int i,j,k;
 
-            /* detect scrolling */
+#if SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH
+            /* With multitouch, register to receive XI_Motion (which desctivates MotionNotify),
+            * so that we can distinguish real mouse motions from synthetic one.  */
+            int pointer_emulated = (xev->flags & XIPointerEmulated);
+
+            if (! pointer_emulated) {
+                if(!mouse->relative_mode || mouse->relative_mode_warp) {
+                    SDL_Window *window = xinput2_get_sdlwindow(videodata, xev->event);
+                    if (window) {
+                        SDL_SendMouseMotion(window, 0, 0, xev->event_x, xev->event_y);
+                    }
+                }
+            }
+#endif
+
             for (i=0; i<MAX_SCROLLABLE_DEVICES; i++) {
                 scrollable_device *sd = &scrollable_devices[i];
                 if (xev->sourceid == sd->source_id) {
@@ -304,20 +318,7 @@ X11_HandleXinput2Event(SDL_VideoData *videodata,XGenericEventCookie *cookie)
                 }
             }
 
-#if SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH
-            /* With multitouch, register to receive XI_Motion (which desctivates MotionNotify),
-            * so that we can distinguish real mouse motions from synthetic one.  */
-            int pointer_emulated = (xev->flags & XIPointerEmulated);
 
-            if (! pointer_emulated) {
-                if(!mouse->relative_mode || mouse->relative_mode_warp) {
-                    SDL_Window *window = xinput2_get_sdlwindow(videodata, xev->event);
-                    if (window) {
-                        SDL_SendMouseMotion(window, 0, 0, xev->event_x, xev->event_y);
-                    }
-                }
-            }
-#endif
             return 1;
             }
             break;
