@@ -37,8 +37,6 @@ static int xinput2_multitouch_supported = 0;
 #endif
 
 #if SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_SCROLLINFO
-static int xinput2_scrollinfo_supported = 0;
-
 typedef struct {
     /* -1 if not present */
     int source_id;
@@ -93,7 +91,7 @@ xinput2_version_atleast(const int version, const int wantmajor, const int wantmi
 
 #if SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_SCROLLINFO
 static void
-xinput2_enumerate_scrollable_devices(Display *display)
+xinput2_enumerate_scrollable_devices(Display *display, SDL_bool supported)
 {
     XIDeviceInfo *info;
     int ndevices,i,j,k,dev_i=0;
@@ -103,7 +101,7 @@ xinput2_enumerate_scrollable_devices(Display *display)
         scrollable_devices[i].source_id = -1;
     }
 
-    if (!xinput2_scrollinfo_supported)
+    if (!supported)
         return;
 
     info = X11_XIQueryDevice(display, XIAllDevices, &ndevices);
@@ -256,11 +254,9 @@ X11_InitXinput2(_THIS)
 
 #if SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_SCROLLINFO
     /* Xinput 2.1 is required to provide precision scrolling info */
-    if (xinput2_version_atleast(version, 2, 1)) {
-        xinput2_scrollinfo_supported = 1;
-    }
+    data->xinput_scrolling = xinput2_version_atleast(version, 2, 1);
 
-    xinput2_enumerate_scrollable_devices(data->display);
+    xinput2_enumerate_scrollable_devices(data->display, data->xinput_scrolling);
 #endif
 
 #if SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH  /* Multitouch needs XInput 2.2 */

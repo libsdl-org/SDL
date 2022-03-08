@@ -173,7 +173,7 @@ static SDL_bool X11_KeyRepeat(Display *display, XEvent *event)
 }
 
 static SDL_bool
-X11_IsWheelEvent(Display * display,XEvent * event,int * xticks,int * yticks)
+X11_IsWheelEvent(XEvent * event,int * xticks,int * yticks)
 {
     /* according to the xlib docs, no specific mouse wheel events exist.
        However, the defacto standard is that the vertical wheel is X buttons
@@ -1285,7 +1285,15 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
 #ifdef DEBUG_XEVENTS
             printf("window %p: ButtonPress (X11 button = %d)\n", data, xevent->xbutton.button);
 #endif
-            if (X11_IsWheelEvent(display,xevent,&xticks, &yticks)) {
+            if (X11_IsWheelEvent(xevent,&xticks, &yticks)) {
+                /* if the system version of xinput2 supports precision scrolling, then
+                it will perform 2 way emulation between the old button system and the
+                new valuator system. handling both results in duplicate events, so if
+                the system supports xinput, we ignore all wheel button events */
+#if SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_SCROLLINFO
+                if (videodata->xinput_scrolling)
+                    break;
+#endif
                 SDL_SendMouseWheel(data->window, 0, (float) -xticks, (float) yticks, SDL_MOUSEWHEEL_NORMAL);
             } else {
                 SDL_bool ignore_click = SDL_FALSE;
@@ -1323,7 +1331,7 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
 #ifdef DEBUG_XEVENTS
             printf("window %p: ButtonRelease (X11 button = %d)\n", data, xevent->xbutton.button);
 #endif
-            if (!X11_IsWheelEvent(display, xevent, &xticks, &yticks)) {
+            if (!X11_IsWheelEvent(xevent, &xticks, &yticks)) {
                 if (button > 7) {
                     /* see explanation at case ButtonPress */
                     button -= (8-SDL_BUTTON_X1);
