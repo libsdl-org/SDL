@@ -666,7 +666,7 @@ X11_CreateWindow(_THIS, SDL_Window * window)
     }
 #endif
 
-    X11_Xinput2SelectTouch(_this, window);
+    X11_Xinput2Select(_this, window);
 
     X11_XSelectInput(display, w,
                  (FocusChangeMask | EnterWindowMask | LeaveWindowMask |

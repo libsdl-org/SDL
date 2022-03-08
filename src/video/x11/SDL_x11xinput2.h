@@ -35,7 +35,7 @@ extern void X11_InitXinput2Multitouch(_THIS);
 extern int X11_HandleXinput2Event(SDL_VideoData *videodata,XGenericEventCookie *cookie);
 extern int X11_Xinput2IsInitialized(void);
 extern int X11_Xinput2IsMultitouchSupported(void);
-extern void X11_Xinput2SelectTouch(_THIS, SDL_Window *window);
+extern void X11_Xinput2Select(_THIS, SDL_Window *window);
 extern void X11_Xinput2GrabTouch(_THIS, SDL_Window *window);
 extern void X11_Xinput2UngrabTouch(_THIS, SDL_Window *window);
 

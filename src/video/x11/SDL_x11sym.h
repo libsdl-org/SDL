@@ -281,6 +281,7 @@ SDL_X11_SYM(void,XIFreeDeviceInfo,(XIDeviceInfo *a),(a),)
 SDL_X11_SYM(int,XISelectEvents,(Display *a,Window b,XIEventMask *c,int d),(a,b,c,d),return)
 SDL_X11_SYM(int,XIGrabTouchBegin,(Display *a,int b,Window c,int d,XIEventMask *e,int f,XIGrabModifiers *g),(a,b,c,d,e,f,g),return)
 SDL_X11_SYM(int,XIUngrabTouchBegin, (Display *a,int b,Window c, int d,XIGrabModifiers *e),(a, b, c, d, e),return)
+SDL_X11_SYM(int, XIGrabEnter, (Display *a, int b, Window c, Cursor d,int e, int f, Bool g, XIEventMask *h, int i, XIGrabModifiers *j), (a, b, c, d, e, f, g, h, i, j), return)
 SDL_X11_SYM(Status,XIQueryVersion,(Display *a,int *b,int *c),(a,b,c),return)
 SDL_X11_SYM(XIEventMask*,XIGetSelectedEvents,(Display *a,Window b,int *c),(a,b,c),return)
 #endif
