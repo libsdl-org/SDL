@@ -429,7 +429,6 @@ X11_Xinput2Select(_THIS, SDL_Window *window)
     XIEventMask eventmask;
     unsigned char mask[5] = { 0, 0, 0, 0, 0 };
     SDL_WindowData *window_data = NULL;
-    XIGrabModifiers mods[1];
 
     data = (SDL_VideoData *) _this->driverdata;
     window_data = (SDL_WindowData*)window->driverdata;
@@ -443,17 +442,10 @@ X11_Xinput2Select(_THIS, SDL_Window *window)
     eventmask.mask = mask;
 
     if (data->xinput_scrolling) {
-        mods[0].modifiers = XIAnyModifier;
+        /* track enter events that inform us that we need to update
+         * the previous scroll coordinates since we cannot track
+         * them outside of our window */
         XISetMask(mask, XI_Enter);
-        /* acquire a passive grab that notifies us when the cursor enters the
-         * window, notifying us that we need to update the previous scroll
-         * coordinates since we cannot track them outside of our window */
-        if (X11_XIGrabEnter(data->display, XIAllMasterDevices, window_data->xwindow,
-            None, GrabModeAsync, GrabModeAsync, 1, &eventmask, 1, mods) != 0) {
-            /* disable xinput scrolling if we cannot reliably acquire this grab
-             * to degrade to button scrolling instead of providing broken events */
-            data->xinput_scrolling = SDL_FALSE;
-        }
     }
 
     if (X11_Xinput2IsMultitouchSupported()) {
