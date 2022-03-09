@@ -2451,9 +2451,9 @@ SDL_SetWindowFullscreen(SDL_Window * window, Uint32 flags)
 static SDL_Surface *
 SDL_CreateWindowFramebuffer(SDL_Window * window)
 {
-    Uint32 format;
+    Uint32 format = 0;
     void *pixels = NULL;
-    int pitch;
+    int pitch = 0;
     int bpp;
     Uint32 Rmask, Gmask, Bmask, Amask;
     SDL_bool created_framebuffer = SDL_FALSE;
