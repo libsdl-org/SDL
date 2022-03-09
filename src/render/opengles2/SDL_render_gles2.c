@@ -1379,6 +1379,7 @@ GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
         type = GL_UNSIGNED_BYTE;
         break;
 #endif
+#ifdef GL_TEXTURE_EXTERNAL_OES
     case SDL_PIXELFORMAT_EXTERNAL_OES:
         format = GL_NONE;
         type = GL_NONE;
@@ -2142,6 +2143,7 @@ GLES2_CreateRenderer(SDL_Window *window, Uint32 flags)
     renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_NV12;
     renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_NV21;
 #endif
+#ifdef GL_TEXTURE_EXTERNAL_OES
     renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_EXTERNAL_OES;
 #endif
 
