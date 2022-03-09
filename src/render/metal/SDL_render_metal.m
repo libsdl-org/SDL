@@ -606,7 +606,7 @@ METAL_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
             mtltexdesc.usage = MTLTextureUsageShaderRead;
         }
     }
-    
+
     id<MTLTexture> mtltexture = [data.mtldevice newTextureWithDescriptor:mtltexdesc];
     if (mtltexture == nil) {
         return SDL_SetError("Texture allocation failed");
@@ -657,10 +657,9 @@ METAL_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
         texturedata.fragmentFunction = SDL_METAL_FRAGMENT_NV12;
     } else if (texture->format == SDL_PIXELFORMAT_NV21) {
         texturedata.fragmentFunction = SDL_METAL_FRAGMENT_NV21;
-    } else {
-#else
+    } else
+#endif
     {
-#endif /* SDL_HAVE_YUV*/
         texturedata.fragmentFunction = SDL_METAL_FRAGMENT_COPY;
     }
 #if SDL_HAVE_YUV
@@ -903,10 +902,9 @@ METAL_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
 #if SDL_HAVE_YUV
     if (texturedata.yuv || texturedata.nv12) {
         buffersize = ((*pitch) * rect->h) + (2 * (*pitch + 1) / 2) * ((rect->h + 1) / 2);
-    } else {
-#else
-    {
+    } else
 #endif
+    {
         buffersize = (*pitch) * rect->h;
     }
 

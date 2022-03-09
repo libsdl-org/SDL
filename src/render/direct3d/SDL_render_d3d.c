@@ -670,10 +670,9 @@ D3D_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
             (void *) ((Uint8 *) texturedata->pixels + rect->y * texturedata->pitch +
                       rect->x * SDL_BYTESPERPIXEL(texture->format));
         *pitch = texturedata->pitch;
-    } else {
-#else
-    {
+    } else
 #endif
+    {
         RECT d3drect;
         D3DLOCKED_RECT locked;
         HRESULT result;
@@ -992,8 +991,10 @@ SetDrawState(D3D_RenderData *data, const SDL_RenderCommand *cmd)
     const SDL_BlendMode blend = cmd->data.draw.blend;
 
     if (texture != data->drawstate.texture) {
+#if SDL_HAVE_YUV
         D3D_TextureData *oldtexturedata = data->drawstate.texture ? (D3D_TextureData *) data->drawstate.texture->driverdata : NULL;
         D3D_TextureData *newtexturedata = texture ? (D3D_TextureData *) texture->driverdata : NULL;
+#endif
         LPDIRECT3DPIXELSHADER9 shader = NULL;
 
         /* disable any enabled textures we aren't going to use, let SetupTextureState() do the rest. */
