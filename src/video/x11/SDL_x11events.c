@@ -1445,6 +1445,14 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
                         SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_RESTORED, 0, 0);
                     }
                 }
+
+                if (changed & SDL_WINDOW_FULLSCREEN) {
+                    if (flags & SDL_WINDOW_FULLSCREEN) {
+                        data->window->flags |= SDL_WINDOW_FULLSCREEN;
+                    } else {
+                        data->window->flags &= ~SDL_WINDOW_FULLSCREEN;
+                    }
+                }
             } else if (xevent->xproperty.atom == videodata->XKLAVIER_STATE) {
                 /* Hack for Ubuntu 12.04 (etc) that doesn't send MappingNotify
                    events when the keyboard layout changes (for example,
