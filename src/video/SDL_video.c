@@ -128,8 +128,6 @@ static VideoBootStrap *bootstrap[] = {
     NULL
 };
 
-static SDL_VideoDevice *_this = NULL;
-
 #define CHECK_WINDOW_MAGIC(window, retval) \
     if (!_this) { \
         SDL_UninitializedVideo(); \
@@ -287,6 +285,8 @@ SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window * window, Uint32 * fo
 
     return 0;
 }
+
+static SDL_VideoDevice *_this = NULL;
 
 static int
 SDL_UpdateWindowTexture(SDL_VideoDevice *unused, SDL_Window * window, const SDL_Rect * rects, int numrects)
