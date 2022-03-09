@@ -259,7 +259,7 @@ static int get_string_property(IOHIDDeviceRef device, CFStringRef prop, wchar_t 
 	
 	buf[0] = 0;
 	
-	if (str) {
+	if (str && CFGetTypeID(str) == CFStringGetTypeID()) {
 		len --;
 		
 		CFIndex str_len = CFStringGetLength(str);
@@ -298,7 +298,7 @@ static int get_string_property_utf8(IOHIDDeviceRef device, CFStringRef prop, cha
 	
 	buf[0] = 0;
 	
-	if (str) {
+	if (str && CFGetTypeID(str) == CFStringGetTypeID()) {
 		len--;
 		
 		CFIndex str_len = CFStringGetLength(str);
