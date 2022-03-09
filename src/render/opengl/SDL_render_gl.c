@@ -1726,8 +1726,8 @@ GL_CreateRenderer(SDL_Window * window, Uint32 flags)
     Uint32 window_flags;
     int profile_mask = 0, major = 0, minor = 0;
     SDL_bool changed_window = SDL_FALSE;
-    SDL_bool isGL2 = SDL_FALSE;
-    const char *verstr = NULL;
+    const char *hint;
+    SDL_bool non_power_of_two_supported = SDL_FALSE;
 
     SDL_GL_GetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, &profile_mask);
     SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &major);
@@ -1847,22 +1847,29 @@ GL_CreateRenderer(SDL_Window * window, Uint32 flags)
         data->glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
     }
 
-    verstr = (const char *) data->glGetString(GL_VERSION);
-    if (verstr) {
-        char verbuf[16];
-        char *ptr;
-        SDL_strlcpy(verbuf, verstr, sizeof (verbuf));
-        ptr = SDL_strchr(verbuf, '.');
-        if (ptr) {
-            *ptr = '\0';
-            if (SDL_atoi(verbuf) >= 2) {
-                isGL2 = SDL_TRUE;
+    hint = SDL_getenv("GL_ARB_texture_non_power_of_two");
+    if (!hint || *hint != '0') {
+        SDL_bool isGL2 = SDL_FALSE;
+        const char *verstr = (const char *)data->glGetString(GL_VERSION);
+        if (verstr) {
+            char verbuf[16];
+            char *ptr;
+            SDL_strlcpy(verbuf, verstr, sizeof (verbuf));
+            ptr = SDL_strchr(verbuf, '.');
+            if (ptr) {
+                *ptr = '\0';
+                if (SDL_atoi(verbuf) >= 2) {
+                    isGL2 = SDL_TRUE;
+                }
             }
+        }
+        if (isGL2 || SDL_GL_ExtensionSupported("GL_ARB_texture_non_power_of_two")) {
+            non_power_of_two_supported = SDL_TRUE;
         }
     }
 
     data->textype = GL_TEXTURE_2D;
-    if (isGL2 || SDL_GL_ExtensionSupported("GL_ARB_texture_non_power_of_two")) {
+    if (non_power_of_two_supported) {
         data->GL_ARB_texture_non_power_of_two_supported = SDL_TRUE;
         data->glGetIntegerv(GL_MAX_TEXTURE_SIZE, &value);
         renderer->info.max_texture_width = value;
