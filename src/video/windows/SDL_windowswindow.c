@@ -60,6 +60,7 @@ static ATOM SDL_HelperWindowClass = 0;
 
 #define STYLE_BASIC         (WS_CLIPSIBLINGS | WS_CLIPCHILDREN)
 #define STYLE_FULLSCREEN    (WS_POPUP)
+#define STYLE_MINIMIZABLE_FULLSCREEN (WS_POPUP | WS_MINIMIZEBOX)
 #define STYLE_BORDERLESS    (WS_POPUP)
 #define STYLE_BORDERLESS_WINDOWED (WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX)
 #define STYLE_NORMAL        (WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX)
@@ -72,7 +73,11 @@ GetWindowStyle(SDL_Window * window)
     DWORD style = 0;
 
     if (window->flags & SDL_WINDOW_FULLSCREEN) {
-        style |= STYLE_FULLSCREEN;
+        if (SDL_GetHintBoolean("SDL_HINT_WINDOWS_MINIMIZABLE_FULLSCREEN", SDL_FALSE)) {
+            style |= STYLE_MINIMIZABLE_FULLSCREEN;
+        } else {
+            style |= STYLE_FULLSCREEN;
+        }
     } else {
         if (window->flags & SDL_WINDOW_BORDERLESS) {
             /* SDL 2.1:
