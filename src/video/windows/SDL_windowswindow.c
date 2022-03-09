@@ -73,7 +73,7 @@ GetWindowStyle(SDL_Window * window)
     DWORD style = 0;
 
     if (window->flags & SDL_WINDOW_FULLSCREEN) {
-        if (SDL_GetHintBoolean("SDL_HINT_WINDOWS_MINIMIZABLE_FULLSCREEN", SDL_FALSE)) {
+        if (SDL_GetHintBoolean(SDL_HINT_WINDOWS_MINIMIZABLE_FULLSCREEN, SDL_FALSE)) {
             style |= STYLE_MINIMIZABLE_FULLSCREEN;
         } else {
             style |= STYLE_FULLSCREEN;

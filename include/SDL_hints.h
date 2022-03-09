@@ -1626,6 +1626,17 @@ extern "C" {
 #define SDL_HINT_WINDOWS_INTRESOURCE_ICON_SMALL "SDL_WINDOWS_INTRESOURCE_ICON_SMALL"
 
 /**
+ *  \brief Tell SDL to include WS_MINIMIZEBOX in the fullscreen window style.
+ *         This makes it possible to minimize fullscreen windows, e.g.
+ *         using Win+Down or clicking the window name in the taskbar.
+ *
+ * The variable can be set to the following values:
+ *   "0"       - Don't include WS_MINIMIZEBOX. (default)
+ *   "1"       - Do include WS_MINIMIZEBOX.
+ */
+#define SDL_HINT_WINDOWS_MINIMIZABLE_FULLSCREEN "SDL_WINDOWS_MINIMIZABLE_FULLSCREEN"
+
+/**
  *  \brief Tell SDL not to generate window-close events for Alt+F4 on Windows.
  *
  * The variable can be set to the following values:
