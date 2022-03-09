@@ -326,10 +326,7 @@ static int get_string_property_utf8(IOHIDDeviceRef device, CFStringRef prop, cha
 
 static int get_serial_number(IOHIDDeviceRef device, wchar_t *buf, size_t len)
 {
-	// This crashes on M1 Macs, tracked by radar bug 79667729
-	//return get_string_property(device, CFSTR(kIOHIDSerialNumberKey), buf, len);
-	buf[0] = 0;
-	return 0;
+	return get_string_property(device, CFSTR(kIOHIDSerialNumberKey), buf, len);
 }
 
 static int get_manufacturer_string(IOHIDDeviceRef device, wchar_t *buf, size_t len)
