@@ -121,6 +121,8 @@ static const Uint8 GLES2_Fragment_TextureBGR[] = " \
     } \
 ";
 
+#if SDL_HAVE_YUV
+
 #define JPEG_SHADER_CONSTANTS                                   \
 "// YUV offset \n"                                              \
 "const vec3 offset = vec3(0, -0.501960814, -0.501960814);\n"    \
@@ -299,6 +301,7 @@ static const Uint8 GLES2_Fragment_TextureNV21BT709[] = \
         BT709_SHADER_CONSTANTS \
         NV21_SHADER_BODY \
 ;
+#endif
 
 /* Custom Android video format texture */
 static const Uint8 GLES2_Fragment_TextureExternalOES[] = " \
