@@ -1430,6 +1430,14 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
                 const Uint32 flags = X11_GetNetWMState(_this, xevent->xproperty.window);
                 const Uint32 changed = flags ^ data->window->flags;
 
+                if (changed & SDL_WINDOW_FULLSCREEN) {
+                    if (flags & SDL_WINDOW_FULLSCREEN) {
+                        SDL_SetWindowFullscreen(data->window, SDL_WINDOW_FULLSCREEN);
+                    } else {
+                        SDL_SetWindowFullscreen(data->window, 0);
+                    }
+                }
+
                 if ((changed & SDL_WINDOW_HIDDEN) || (changed & SDL_WINDOW_FULLSCREEN)) {
                      if (flags & SDL_WINDOW_HIDDEN) {
                          X11_DispatchUnmapNotify(data);
@@ -1446,13 +1454,6 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
                     }
                 }
 
-                if (changed & SDL_WINDOW_FULLSCREEN) {
-                    if (flags & SDL_WINDOW_FULLSCREEN) {
-                        data->window->flags |= SDL_WINDOW_FULLSCREEN;
-                    } else {
-                        data->window->flags &= ~SDL_WINDOW_FULLSCREEN;
-                    }
-                }
             } else if (xevent->xproperty.atom == videodata->XKLAVIER_STATE) {
                 /* Hack for Ubuntu 12.04 (etc) that doesn't send MappingNotify
                    events when the keyboard layout changes (for example,
