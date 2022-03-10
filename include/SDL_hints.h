@@ -580,6 +580,17 @@ extern "C" {
 #define SDL_HINT_IME_SHOW_UI "SDL_IME_SHOW_UI"
 
 /**
+ * \brief A variable to control if extended IME text support is enabled.
+ * If enabled then SDL_TextEditingExtEvent will be issued if the text would be truncated otherwise.
+ * Additionally SDL_TextInputEvent will be dispatched multiple times so that it is not truncated.
+ *
+ * The variable can be set to the following values:
+ *   "0"       - Legacy behavior. Text can be truncated, no heap allocations. (default)
+ *   "1"       - Modern behavior.
+ */
+#define SDL_HINT_IME_SUPPORT_EXTENDED_TEXT "SDL_IME_SUPPORT_EXTENDED_TEXT"
+
+/**
  * \brief  A variable controlling whether the home indicator bar on iPhone X
  *         should be hidden.
  *
