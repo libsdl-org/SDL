@@ -1247,6 +1247,7 @@ SDL_CreateTexture(SDL_Renderer * renderer, Uint32 format, int access, int w, int
     texture->color.b = 255;
     texture->color.a = 255;
     texture->scaleMode = SDL_GetScaleMode();
+    texture->wrapMode = SDL_WRAPMODE_CLAMP;
     texture->renderer = renderer;
     texture->next = renderer->textures;
     if (renderer->textures) {
@@ -1395,7 +1396,7 @@ SDL_CreateTextureFromSurface(SDL_Renderer * renderer, SDL_Surface * surface)
 
     if (format == surface->format->format) {
         if (surface->format->Amask && SDL_HasColorKey(surface)) {
-            /* Surface and Renderer formats are identicals. 
+            /* Surface and Renderer formats are identicals.
              * Intermediate conversion is needed to convert color key to alpha (SDL_ConvertColorkeyToAlpha()). */
             direct_update = SDL_FALSE;
         } else {
@@ -1626,6 +1627,48 @@ SDL_GetTextureUserData(SDL_Texture * texture)
     CHECK_TEXTURE_MAGIC(texture, NULL);
 
     return texture->userdata;
+}
+
+static SDL_bool
+IsSupportedWrapMode(SDL_Renderer * renderer, SDL_WrapMode wrapMode)
+{
+    if (wrapMode == SDL_WRAPMODE_CLAMP) {
+        // Clamping is the default behavior.
+        return SDL_TRUE;
+    }
+    return renderer->SupportsWrapMode && renderer->SupportsWrapMode(renderer, wrapMode);
+}
+
+int
+SDL_SetTextureWrapMode(SDL_Texture * texture, SDL_WrapMode wrapMode)
+{
+    SDL_Renderer *renderer;
+
+    CHECK_TEXTURE_MAGIC(texture, -1);
+
+    renderer = texture->renderer;
+    if (!IsSupportedWrapMode(renderer, wrapMode)) {
+        return SDL_Unsupported();
+    }
+    if (renderer->SetTextureWrapMode) {
+        renderer->SetTextureWrapMode(renderer, texture, wrapMode);
+    }
+    texture->wrapMode = wrapMode;
+    if (texture->native) {
+        return SDL_SetTextureWrapMode(texture->native, wrapMode);
+    }
+    return 0;
+}
+
+int
+SDL_GetTextureWrapMode(SDL_Texture * texture, SDL_WrapMode *wrapMode)
+{
+    CHECK_TEXTURE_MAGIC(texture, -1);
+
+    if (wrapMode) {
+        *wrapMode = texture->wrapMode;
+    }
+    return 0;
 }
 
 #if SDL_HAVE_YUV
@@ -2321,9 +2364,9 @@ UpdateLogicalSize(SDL_Renderer *renderer)
         SDL_RenderSetViewport(renderer, NULL);
     } else if (want_aspect > real_aspect) {
         if (scale_policy == 1) {
-            /* We want a wider aspect ratio than is available - 
-             zoom so logical height matches the real height 
-             and the width will grow off the screen 
+            /* We want a wider aspect ratio than is available -
+             zoom so logical height matches the real height
+             and the width will grow off the screen
              */
             scale = (float)h / renderer->logical_h;
             viewport.y = 0;
@@ -4173,7 +4216,10 @@ SDL_RenderGeometryRaw(SDL_Renderer *renderer,
             const float *uv_ = (const float *)((const char*)uv + i * uv_stride);
             float u = uv_[0];
             float v = uv_[1];
-            if (u < 0.0f || v < 0.0f || u > 1.0f || v > 1.0f) {
+            if (
+                texture->wrapMode == SDL_WRAPMODE_CLAMP &&
+                (u < 0.0f || v < 0.0f || u > 1.0f || v > 1.0f)
+            ) {
                 return SDL_SetError("Values of 'uv' out of bounds %f %f at %d/%d", u, v, i, num_vertices);
             }
         }

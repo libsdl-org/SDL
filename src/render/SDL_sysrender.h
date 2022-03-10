@@ -43,6 +43,7 @@ struct SDL_Texture
     int modMode;                /**< The texture modulation mode */
     SDL_BlendMode blendMode;    /**< The texture blend mode */
     SDL_ScaleMode scaleMode;    /**< The texture scale mode */
+    SDL_WrapMode wrapMode;      /**< The texture wrap mode */
     SDL_Color color;            /**< Texture modulation values */
 
     SDL_Renderer *renderer;
@@ -168,6 +169,8 @@ struct SDL_Renderer
                         const SDL_Rect * rect, void **pixels, int *pitch);
     void (*UnlockTexture) (SDL_Renderer * renderer, SDL_Texture * texture);
     void (*SetTextureScaleMode) (SDL_Renderer * renderer, SDL_Texture * texture, SDL_ScaleMode scaleMode);
+    void (*SetTextureWrapMode) (SDL_Renderer * renderer, SDL_Texture * texture, SDL_WrapMode wrapMode);
+    SDL_bool (*SupportsWrapMode)(SDL_Renderer * renderer, SDL_WrapMode wrapMode);
     int (*SetRenderTarget) (SDL_Renderer * renderer, SDL_Texture * texture);
     int (*RenderReadPixels) (SDL_Renderer * renderer, const SDL_Rect * rect,
                              Uint32 format, void * pixels, int pitch);

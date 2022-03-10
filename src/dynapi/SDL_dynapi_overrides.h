@@ -857,3 +857,5 @@
 #define SDL_PremultiplyAlpha SDL_PremultiplyAlpha_REAL
 #define SDL_AndroidSendMessage SDL_AndroidSendMessage_REAL
 #define SDL_GetTouchName SDL_GetTouchName_REAL
+#define SDL_SetTextureWrapMode SDL_SetTextureWrapMode_REAL
+#define SDL_GetTextureWrapMode SDL_GetTextureWrapMode_REAL
