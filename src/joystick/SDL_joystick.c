@@ -1944,6 +1944,9 @@ SDL_GetJoystickGameControllerType(const char *name, Uint16 vendor, Uint16 produc
         } else if (vendor == 0x0001 && product == 0x0001) {
             type = SDL_CONTROLLER_TYPE_UNKNOWN;
 
+        } else if (vendor == USB_VENDOR_MICROSOFT && product == USB_PRODUCT_XBOX_ONE_XINPUT_CONTROLLER) {
+            type = SDL_CONTROLLER_TYPE_XBOXONE;
+
         } else if ((vendor == USB_VENDOR_AMAZON && product == USB_PRODUCT_AMAZON_LUNA_CONTROLLER) ||
                    (vendor == BLUETOOTH_VENDOR_AMAZON && product == BLUETOOTH_PRODUCT_LUNA_CONTROLLER)) {
             type = SDL_CONTROLLER_TYPE_AMAZON_LUNA;

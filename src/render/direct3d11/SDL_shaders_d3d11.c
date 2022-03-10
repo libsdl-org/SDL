@@ -1886,9 +1886,10 @@ static struct
 {
     const void *shader_data;
     SIZE_T shader_size;
-} D3D11_shaders[] = {
+} D3D11_shaders[NUM_SHADERS] = {
     { D3D11_PixelShader_Colors, sizeof(D3D11_PixelShader_Colors) },
     { D3D11_PixelShader_Textures, sizeof(D3D11_PixelShader_Textures) },
+#if SDL_HAVE_YUV
     { D3D11_PixelShader_YUV_JPEG, sizeof(D3D11_PixelShader_YUV_JPEG) },
     { D3D11_PixelShader_YUV_BT601, sizeof(D3D11_PixelShader_YUV_BT601) },
     { D3D11_PixelShader_YUV_BT709, sizeof(D3D11_PixelShader_YUV_BT709) },
@@ -1898,6 +1899,7 @@ static struct
     { D3D11_PixelShader_NV21_JPEG, sizeof(D3D11_PixelShader_NV21_JPEG) },
     { D3D11_PixelShader_NV21_BT601, sizeof(D3D11_PixelShader_NV21_BT601) },
     { D3D11_PixelShader_NV21_BT709, sizeof(D3D11_PixelShader_NV21_BT709) },
+#endif
 };
 
 int D3D11_CreateVertexShader(ID3D11Device1 *d3dDevice, ID3D11VertexShader **vertexShader, ID3D11InputLayout **inputLayout)

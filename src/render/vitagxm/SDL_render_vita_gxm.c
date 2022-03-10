@@ -217,7 +217,7 @@ VITA_GXM_CreateRenderer(SDL_Window *window, Uint32 flags)
 
     data = (VITA_GXM_RenderData *) SDL_calloc(1, sizeof(VITA_GXM_RenderData));
     if (!data) {
-        VITA_GXM_DestroyRenderer(renderer);
+        SDL_free(renderer);
         SDL_OutOfMemory();
         return NULL;
     }
@@ -226,7 +226,9 @@ VITA_GXM_CreateRenderer(SDL_Window *window, Uint32 flags)
     renderer->SupportsBlendMode = VITA_GXM_SupportsBlendMode;
     renderer->CreateTexture = VITA_GXM_CreateTexture;
     renderer->UpdateTexture = VITA_GXM_UpdateTexture;
+#if SDL_HAVE_YUV
     renderer->UpdateTextureYUV = VITA_GXM_UpdateTextureYUV;
+#endif
     renderer->LockTexture = VITA_GXM_LockTexture;
     renderer->UnlockTexture = VITA_GXM_UnlockTexture;
     renderer->SetTextureScaleMode = VITA_GXM_SetTextureScaleMode;
