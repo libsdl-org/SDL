@@ -27,8 +27,8 @@
 HPOINTER utilCreatePointer(SDL_Surface *surface, ULONG ulHotX, ULONG ulHotY)
 {
     HBITMAP             hbm;
-    BITMAPINFOHEADER2   bmih = { 0 };
-    BITMAPINFO          bmi = { 0 };
+    BITMAPINFOHEADER2   bmih;
+    BITMAPINFO          bmi;
     HPS                 hps;
     PULONG              pulBitmap;
     PULONG              pulDst, pulSrc, pulDstMask;
@@ -40,7 +40,7 @@ HPOINTER utilCreatePointer(SDL_Surface *surface, ULONG ulHotX, ULONG ulHotY)
         return NULLHANDLE;
     }
 
-    pulBitmap = SDL_malloc(surface->h * surface->w * 4 * 2);
+    pulBitmap = (PULONG) SDL_malloc(surface->h * surface->w * 2 * sizeof(ULONG));
     if (pulBitmap == NULL) {
         SDL_OutOfMemory();
         return NULLHANDLE;
@@ -72,6 +72,9 @@ HPOINTER utilCreatePointer(SDL_Surface *surface, ULONG ulHotX, ULONG ulHotY)
     }
 
     /* Create system bitmap object. */
+    SDL_zero(bmih);
+    SDL_zero(bmi);
+
     bmih.cbFix          = sizeof(BITMAPINFOHEADER2);
     bmih.cx             = surface->w;
     bmih.cy             = 2 * surface->h;
