@@ -857,3 +857,5 @@
 #define SDL_PremultiplyAlpha SDL_PremultiplyAlpha_REAL
 #define SDL_AndroidSendMessage SDL_AndroidSendMessage_REAL
 #define SDL_GetTouchName SDL_GetTouchName_REAL
+#define SDL_ClearComposition SDL_ClearComposition_REAL
+#define SDL_IsTextInputShown SDL_IsTextInputShown_REAL
