@@ -245,7 +245,7 @@ typedef struct SDL_TextEditingEvent
 } SDL_TextEditingEvent;
 
 /**
- *  \brief Extended keyboard text editing event structure (event.edit.*) when text would be
+ *  \brief Extended keyboard text editing event structure (event.editExt.*) when text would be
  *  truncated if stored in the text buffer SDL_TextEditingEvent
  */
 typedef struct SDL_TextEditingExtEvent
@@ -253,7 +253,7 @@ typedef struct SDL_TextEditingExtEvent
     Uint32 type;                                /**< ::SDL_TEXTEDITING_EXT */
     Uint32 timestamp;                           /**< In milliseconds, populated using SDL_GetTicks() */
     Uint32 windowID;                            /**< The window with keyboard focus, if any */
-    char* text;                                 /**< The editing text */
+    char* text;                                 /**< The editing text, which should be freed with SDL_free(), and will not be NULL */
     Sint32 start;                               /**< The start cursor of selected editing text */
     Sint32 length;                              /**< The length of selected editing text */
 } SDL_TextEditingExtEvent;
