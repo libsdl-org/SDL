@@ -37,8 +37,10 @@ extern SDL_Window *Android_Window;
 
 typedef struct
 {
+#if SDL_VIDEO_OPENGL_EGL
     EGLSurface egl_surface;
     EGLContext egl_context; /* We use this to preserve the context when losing focus */
+#endif
     SDL_bool   backup_done;
     ANativeWindow *native_window;
     
