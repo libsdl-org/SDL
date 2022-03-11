@@ -761,9 +761,6 @@ IME_ClearComposition(SDL_VideoData *videodata)
 static SDL_bool
 IME_IsTextInputShown(SDL_VideoData* videodata)
 {
-    BOOL result;
-    HIMC himc;
-
     if (!videodata->ime_initialized || !videodata->ime_available || !videodata->ime_enabled)
         return SDL_FALSE;
 
@@ -1130,6 +1127,7 @@ UILess_GetCandidateList(SDL_VideoData *videodata, ITfCandidateListUIElement *pca
     DWORD pgstart = 0;
     DWORD pgsize = 0;
     UINT i, j;
+
     if (IME_ShowCandidateList(videodata) < 0)
         return;
 
