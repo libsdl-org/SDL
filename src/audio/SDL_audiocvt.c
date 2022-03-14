@@ -941,7 +941,7 @@ SDL_BuildAudioTypeCVTToFloat(SDL_AudioCVT *cvt, const SDL_AudioFormat src_fmt)
 {
     int retval = 0;  /* 0 == no conversion necessary. */
 
-    if ((SDL_AUDIO_ISBIGENDIAN(src_fmt) != 0) == (SDL_BYTEORDER == SDL_LIL_ENDIAN)) {
+    if ((SDL_AUDIO_ISBIGENDIAN(src_fmt) != 0) == (SDL_BYTEORDER == SDL_LIL_ENDIAN) && SDL_AUDIO_BITSIZE(src_fmt) > 8) {
         if (SDL_AddAudioCVTFilter(cvt, SDL_Convert_Byteswap) < 0) {
             return -1;
         }
@@ -1018,7 +1018,7 @@ SDL_BuildAudioTypeCVTFromFloat(SDL_AudioCVT *cvt, const SDL_AudioFormat dst_fmt)
         retval = 1;  /* added a converter. */
     }
 
-    if ((SDL_AUDIO_ISBIGENDIAN(dst_fmt) != 0) == (SDL_BYTEORDER == SDL_LIL_ENDIAN)) {
+    if ((SDL_AUDIO_ISBIGENDIAN(dst_fmt) != 0) == (SDL_BYTEORDER == SDL_LIL_ENDIAN) && SDL_AUDIO_BITSIZE(dst_fmt) > 8) {
         if (SDL_AddAudioCVTFilter(cvt, SDL_Convert_Byteswap) < 0) {
             return -1;
         }
@@ -1270,7 +1270,7 @@ SDL_BuildAudioCVT(SDL_AudioCVT * cvt,
         }
 
         /* just a byteswap needed? */
-        if ((src_fmt & ~SDL_AUDIO_MASK_ENDIAN) == (dst_fmt & ~SDL_AUDIO_MASK_ENDIAN)) {
+        if ((src_fmt & ~SDL_AUDIO_MASK_ENDIAN) == (dst_fmt & ~SDL_AUDIO_MASK_ENDIAN) && SDL_AUDIO_BITSIZE(dst_fmt) > 8) {
             if (SDL_AddAudioCVTFilter(cvt, SDL_Convert_Byteswap) < 0) {
                 return -1;
             }
