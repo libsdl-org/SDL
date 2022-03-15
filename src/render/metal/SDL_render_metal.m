@@ -1255,22 +1255,29 @@ SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, const SDL_Met
     }
 
     if (statecache->cliprect_dirty) {
-        MTLScissorRect mtlrect;
+        SDL_Rect output;
+        SDL_Rect clip;
         if (statecache->cliprect_enabled) {
-            const SDL_Rect *rect = &statecache->cliprect;
-            mtlrect.x = statecache->viewport.x + rect->x;
-            mtlrect.y = statecache->viewport.y + rect->y;
-            mtlrect.width = rect->w;
-            mtlrect.height = rect->h;
+            clip = statecache->cliprect;
+            clip.x += statecache->viewport.x;
+            clip.y += statecache->viewport.y;
         } else {
-            mtlrect.x = statecache->viewport.x;
-            mtlrect.y = statecache->viewport.y;
-            mtlrect.width = statecache->viewport.w;
-            mtlrect.height = statecache->viewport.h;
+            clip = statecache->viewport;
         }
-        if (mtlrect.width > 0 && mtlrect.height > 0) {
+
+        /* Set Scissor Rect Validation: w/h must be <= render pass */
+        SDL_zero(output);
+        METAL_GetOutputSize(renderer, &output.w, &output.h);
+
+        if (SDL_IntersectRect(&output, &clip, &clip)) {
+            MTLScissorRect mtlrect;
+            mtlrect.x = clip.x;
+            mtlrect.y = clip.y;
+            mtlrect.width = clip.w;
+            mtlrect.height = clip.h;
             [data.mtlcmdencoder setScissorRect:mtlrect];
         }
+
         statecache->cliprect_dirty = SDL_FALSE;
     }
 
