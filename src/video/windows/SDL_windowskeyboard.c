@@ -276,26 +276,17 @@ WIN_SetTextInputRect(_THIS, SDL_Rect *rect)
     }
 }
 
+
+#ifdef SDL_DISABLE_WINDOWS_IME
+
 void WIN_ClearComposition(_THIS)
 {
-    SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
-    IME_ClearComposition(videodata);
 }
 
 SDL_bool WIN_IsTextInputShown(_THIS)
 {
-    SDL_VideoData* videodata = (SDL_VideoData*)_this->driverdata;
-    return IME_IsTextInputShown(videodata);
+    return SDL_FALSE;
 }
-
-static SDL_bool
-WIN_ShouldShowNativeUI()
-{
-    return SDL_GetHintBoolean(SDL_HINT_IME_SHOW_UI, SDL_FALSE);
-}
-
-#ifdef SDL_DISABLE_WINDOWS_IME
-
 
 SDL_bool
 IME_HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam, SDL_VideoData *videodata)
@@ -377,6 +368,12 @@ static SDL_bool UILess_SetupSinks(SDL_VideoData *videodata);
 static void UILess_ReleaseSinks(SDL_VideoData *videodata);
 static void UILess_EnableUIUpdates(SDL_VideoData *videodata);
 static void UILess_DisableUIUpdates(SDL_VideoData *videodata);
+
+static SDL_bool
+WIN_ShouldShowNativeUI()
+{
+    return SDL_GetHintBoolean(SDL_HINT_IME_SHOW_UI, SDL_FALSE);
+}
 
 static void
 IME_Init(SDL_VideoData *videodata, HWND hwnd)
@@ -1712,6 +1709,18 @@ void IME_Present(SDL_VideoData *videodata)
         IME_Render(videodata);
 
     /* FIXME: Need to show the IME bitmap */
+}
+
+SDL_bool WIN_IsTextInputShown(_THIS)
+{
+    SDL_VideoData* videodata = (SDL_VideoData*)_this->driverdata;
+    return IME_IsTextInputShown(videodata);
+}
+
+void WIN_ClearComposition(_THIS)
+{
+    SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
+    IME_ClearComposition(videodata);
 }
 
 #endif /* SDL_DISABLE_WINDOWS_IME */
