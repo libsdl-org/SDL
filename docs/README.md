@@ -14,7 +14,7 @@ hardware via OpenGL and Direct3D. It is used by video playback software,
 emulators, and popular games including Valve's award winning catalog
 and many Humble Bundle games.
 
-SDL officially supports Windows, Mac OS X, Linux, iOS, and Android.
+SDL officially supports Windows, macOS, Linux, iOS, and Android.
 Support for other platforms may be found in the source code.
 
 SDL is written in C, works natively with C++, and there are bindings 
@@ -38,7 +38,7 @@ More documentation and FAQs are available online at [the wiki](http://wiki.libsd
 - [Git](README-git.md)
 - [iOS](README-ios.md)
 - [Linux](README-linux.md)
-- [OS X](README-macosx.md)
+- [macOS](README-macos.md)
 - [OS/2](README-os2.md)
 - [Native Client](README-nacl.md)
 - [Pandora](README-pandora.md)
