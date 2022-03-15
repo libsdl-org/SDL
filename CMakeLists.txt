@@ -458,8 +458,8 @@ dep_option(SDL_STATIC_PIC      "Static version of the library should be built wi
 set_option(SDL_TEST            "Build the test directory" OFF)
 
 if(VITA)
-    set_option(VIDEO_VITA_PIB  "Build with PSVita piglet gles2 support" OFF)
-    set_option(VIDEO_VITA_PVR  "Build with PSVita PVR gles/gles2 support" OFF)
+  set_option(VIDEO_VITA_PIB  "Build with PSVita piglet gles2 support" OFF)
+  set_option(VIDEO_VITA_PVR  "Build with PSVita PVR gles/gles2 support" OFF)
 endif()
 
 # General source files
@@ -881,7 +881,7 @@ if(SDL_LIBC)
     # TODO: refine the mprotect check
     check_c_source_compiles("#include <sys/types.h>
                              #include <sys/mman.h>
-                             int main() { return 0; }" HAVE_MPROTECT)
+                             int main(void) { return 0; }" HAVE_MPROTECT)
     foreach(_FN
             strtod malloc calloc realloc free getenv setenv putenv unsetenv
             qsort abs bcopy memset memcpy memmove memcmp strlen strlcpy strlcat
@@ -1301,9 +1301,7 @@ elseif(UNIX AND NOT APPLE AND NOT ANDROID AND NOT RISCOS AND NOT HAIKU)
       check_c_source_compiles("
           #include <linux/kd.h>
           #include <linux/keyboard.h>
-
-          int main(int argc, char **argv)
-          {
+          int main(int argc, char **argv) {
               struct kbentry kbe;
               kbe.kb_table = KG_CTRL;
               ioctl(0, KDGKBENT, &kbe);
@@ -1313,9 +1311,7 @@ elseif(UNIX AND NOT APPLE AND NOT ANDROID AND NOT RISCOS AND NOT HAIKU)
       check_c_source_compiles("
           #include <sys/kbio.h>
           #include <sys/ioctl.h>
-
-          int main(int argc, char **argv)
-          {
+          int main(int argc, char **argv) {
               accentmap_t accTable;
               ioctl(0, KDENABIO, 1);
               return 0;

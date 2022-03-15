@@ -530,8 +530,7 @@ macro(CheckX11)
             #include <X11/extensions/XInput2.h>
             int event_type = XI_TouchBegin;
             XITouchClassInfo *t;
-            Status XIAllowTouchEvents(Display *a,int b,unsigned int c,Window d,int f)
-            {
+            Status XIAllowTouchEvents(Display *a,int b,unsigned int c,Window d,int f) {
               return (Status)0;
             }
             int main(int argc, char **argv) { return 0; }" HAVE_XINPUT2_MULTITOUCH)
