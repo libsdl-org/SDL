@@ -46,6 +46,8 @@ SDL_Blit_Slow(SDL_BlitInfo * info)
     SDL_PixelFormat *dst_fmt = info->dst_fmt;
     int srcbpp = src_fmt->BytesPerPixel;
     int dstbpp = dst_fmt->BytesPerPixel;
+    int srcfmt_isnot_2101010 = (src_fmt->format != SDL_PIXELFORMAT_ARGB2101010);
+    int dstfmt_isnot_2101010 = (dst_fmt->format != SDL_PIXELFORMAT_ARGB2101010);
     Uint32 rgbmask = ~src_fmt->Amask;
     Uint32 ckey = info->colorkey & rgbmask;
 
@@ -62,14 +64,19 @@ SDL_Blit_Slow(SDL_BlitInfo * info)
         while (n--) {
             srcx = posx >> 16;
             src = (info->src + (srcy * info->src_pitch) + (srcx * srcbpp));
-            if (src_fmt->Amask) {
-                DISEMBLE_RGBA(src, srcbpp, src_fmt, srcpixel, srcR, srcG,
-                              srcB, srcA);
+            if (srcfmt_isnot_2101010) {
+                if (src_fmt->Amask) {
+                    DISEMBLE_RGBA(src, srcbpp, src_fmt, srcpixel, srcR, srcG, srcB, srcA);
+                } else {
+                    DISEMBLE_RGB(src, srcbpp, src_fmt, srcpixel, srcR, srcG, srcB);
+                    srcA = 0xFF;
+                }
             } else {
-                DISEMBLE_RGB(src, srcbpp, src_fmt, srcpixel, srcR, srcG,
-                             srcB);
-                srcA = 0xFF;
+                /* SDL_PIXELFORMAT_ARGB2101010 */
+                srcpixel = *((Uint32 *)(src));
+                RGBA_FROM_ARGB2101010(srcpixel, srcR, srcG, srcB, srcA);
             }
+
             if (flags & SDL_COPY_COLORKEY) {
                 /* srcpixel isn't set for 24 bpp */
                 if (srcbpp == 3) {
@@ -82,13 +89,17 @@ SDL_Blit_Slow(SDL_BlitInfo * info)
                     continue;
                 }
             }
-            if (dst_fmt->Amask) {
-                DISEMBLE_RGBA(dst, dstbpp, dst_fmt, dstpixel, dstR, dstG,
-                              dstB, dstA);
+            if (dstfmt_isnot_2101010) {
+                if (dst_fmt->Amask) {
+                    DISEMBLE_RGBA(dst, dstbpp, dst_fmt, dstpixel, dstR, dstG, dstB, dstA);
+                } else {
+                    DISEMBLE_RGB(dst, dstbpp, dst_fmt, dstpixel, dstR, dstG, dstB);
+                    dstA = 0xFF;
+                }
             } else {
-                DISEMBLE_RGB(dst, dstbpp, dst_fmt, dstpixel, dstR, dstG,
-                             dstB);
-                dstA = 0xFF;
+                /* SDL_PIXELFORMAT_ARGB2101010 */
+                dstpixel = *((Uint32 *)(dst));
+                RGBA_FROM_ARGB2101010(dstpixel, dstR, dstG, dstB, dstA);
             }
 
             if (flags & SDL_COPY_MODULATE_COLOR) {
@@ -151,10 +162,16 @@ SDL_Blit_Slow(SDL_BlitInfo * info)
                     dstA = 255;
                 break;
             }
-            if (dst_fmt->Amask) {
-                ASSEMBLE_RGBA(dst, dstbpp, dst_fmt, dstR, dstG, dstB, dstA);
+            if (dstfmt_isnot_2101010) {
+                if (dst_fmt->Amask) {
+                    ASSEMBLE_RGBA(dst, dstbpp, dst_fmt, dstR, dstG, dstB, dstA);
+                } else {
+                    ASSEMBLE_RGB(dst, dstbpp, dst_fmt, dstR, dstG, dstB);
+                }
             } else {
-                ASSEMBLE_RGB(dst, dstbpp, dst_fmt, dstR, dstG, dstB);
+                Uint32 Pixel;
+                ARGB2101010_FROM_RGBA(Pixel, dstR, dstG, dstB, dstA);
+                *(Uint32 *)dst = Pixel;
             }
             posx += incx;
             dst += dstbpp;
