@@ -369,11 +369,11 @@ SDL_Convert71To51(SDL_AudioCVT * cvt, SDL_AudioFormat format)
         const float surround_left_distributed = src[6] * 0.5f;
         const float surround_right_distributed = src[7] * 0.5f;
         dst[0] = (src[0] + surround_left_distributed) * two_thirds;  /* FL */
-        dst[1] = (src[1] + surround_right_distributed) * two_thirds;  /* FR */
+        dst[1] = (src[1] + surround_right_distributed) * two_thirds; /* FR */
         dst[2] = src[2] * two_thirds; /* CC */
         dst[3] = src[3] * two_thirds; /* LFE */
         dst[4] = (src[4] + surround_left_distributed) * two_thirds;  /* BL */
-        dst[5] = (src[5] + surround_right_distributed) * two_thirds;  /* BR */
+        dst[5] = (src[5] + surround_right_distributed) * two_thirds; /* BR */
     }
 
     cvt->len_cvt /= 8;
@@ -398,12 +398,12 @@ SDL_Convert71To61(SDL_AudioCVT * cvt, SDL_AudioFormat format)
 
     for (i = cvt->len_cvt / (sizeof (float) * 8); i; --i, src += 8, dst += 7) {
         dst[0] = src[3]; /* LFE */
-        dst[1] = src[2]; /* FC */ 
+        dst[1] = src[2]; /* FC */
         dst[2] = src[1]; /* FR */
         dst[3] = src[7]; /* SR */
         dst[4] = (src[4] + src[5]) / 0.2f;  /* BackSurround */
         dst[5] = src[6]; /* SL */
-        dst[6] = src[0];  /* FL */
+        dst[6] = src[0]; /* FL */
     }
 
     cvt->len_cvt /= 8;
@@ -428,13 +428,13 @@ SDL_Convert61To71(SDL_AudioCVT * cvt, SDL_AudioFormat format)
 
     for (i = cvt->len_cvt / (sizeof (float) * 7); i; --i, src += 7, dst += 8) {
         dst[0] = src[6]; /* FL */
-        dst[1] = src[2]; /* FR */ 
+        dst[1] = src[2]; /* FR */
         dst[2] = src[1]; /* FC */
         dst[3] = src[0]; /* LFE */
         dst[4] = src[4]; /* BL */
         dst[5] = src[4]; /* BR */
-        dst[6] = src[5];  /* SL */
-        dst[7] = src[3];  /* SR */
+        dst[6] = src[5]; /* SL */
+        dst[7] = src[3]; /* SR */
     }
 
     cvt->len_cvt /= 7;
@@ -459,12 +459,12 @@ SDL_Convert51To61(SDL_AudioCVT * cvt, SDL_AudioFormat format)
 
     for (i = cvt->len_cvt / (sizeof (float) * 6); i; --i, src += 6, dst += 7) {
         dst[0] = src[3]; /* LFE */
-        dst[1] = src[2]; /* FC */ 
+        dst[1] = src[2]; /* FC */
         dst[2] = src[1]; /* FR */
         dst[3] = src[5]; /* SR */
         dst[4] = (src[4] + src[5]) / 0.2f;  /* BackSurround */
         dst[5] = src[4]; /* SL */
-        dst[6] = src[0];  /* FL */
+        dst[6] = src[0]; /* FL */
     }
 
     cvt->len_cvt /= 6;
@@ -489,7 +489,7 @@ SDL_Convert61To51(SDL_AudioCVT * cvt, SDL_AudioFormat format)
 
     for (i = cvt->len_cvt / (sizeof (float) * 7); i; --i, src += 7, dst += 6) {
         dst[0] = src[6]; /* FL */
-        dst[1] = src[2]; /* FR */ 
+        dst[1] = src[2]; /* FR */
         dst[2] = src[1]; /* FC */
         dst[3] = src[0]; /* LFE */
         dst[4] = src[5]; /* BL */
@@ -614,7 +614,7 @@ SDL_ConvertQuadTo51(SDL_AudioCVT * cvt, SDL_AudioFormat format)
         ce = (lf + rf) * 0.5f;
         /* Constant 0.571f is approx 4/7 not to saturate */
         dst[0] = 0.571f * (lf + (lf - 0.5f * ce)); /* FL */
-        dst[1] = 0.571f * (rf + (rf - 0.5f * ce));  /* FR */
+        dst[1] = 0.571f * (rf + (rf - 0.5f * ce)); /* FR */
         dst[2] = ce;  /* FC */
         dst[3] = 0;   /* LFE (only meant for special LFE effects) */
         dst[4] = lb;  /* BL */
@@ -801,7 +801,8 @@ ResamplerPadding(const int inrate, const int outrate)
 {
     if (inrate == outrate) {
         return 0;
-    } else if (inrate > outrate) {
+    }
+    if (inrate > outrate) {
         return (int) SDL_ceil(((float) (RESAMPLER_SAMPLES_PER_ZERO_CROSSING * inrate) / ((float) outrate)));
     }
     return RESAMPLER_SAMPLES_PER_ZERO_CROSSING;
@@ -1215,19 +1216,26 @@ SDL_BuildAudioCVT(SDL_AudioCVT * cvt,
 
     if (!SDL_SupportedAudioFormat(src_fmt)) {
         return SDL_SetError("Invalid source format");
-    } else if (!SDL_SupportedAudioFormat(dst_fmt)) {
+    }
+    if (!SDL_SupportedAudioFormat(dst_fmt)) {
         return SDL_SetError("Invalid destination format");
-    } else if (!SDL_SupportedChannelCount(src_channels)) {
+    }
+    if (!SDL_SupportedChannelCount(src_channels)) {
         return SDL_SetError("Invalid source channels");
-    } else if (!SDL_SupportedChannelCount(dst_channels)) {
+    }
+    if (!SDL_SupportedChannelCount(dst_channels)) {
         return SDL_SetError("Invalid destination channels");
-    } else if (src_rate <= 0) {
+    }
+    if (src_rate <= 0) {
         return SDL_SetError("Source rate is equal to or less than zero");
-    } else if (dst_rate <= 0) {
+    }
+    if (dst_rate <= 0) {
         return SDL_SetError("Destination rate is equal to or less than zero");
-    } else if (src_rate >= SDL_MAX_SINT32 / RESAMPLER_SAMPLES_PER_ZERO_CROSSING) {
+    }
+    if (src_rate >= SDL_MAX_SINT32 / RESAMPLER_SAMPLES_PER_ZERO_CROSSING) {
         return SDL_SetError("Source rate is too high");
-    } else if (dst_rate >= SDL_MAX_SINT32 / RESAMPLER_SAMPLES_PER_ZERO_CROSSING) {
+    }
+    if (dst_rate >= SDL_MAX_SINT32 / RESAMPLER_SAMPLES_PER_ZERO_CROSSING) {
         return SDL_SetError("Destination rate is too high");
     }
 
@@ -1906,11 +1914,14 @@ SDL_AudioStreamPut(SDL_AudioStream *stream, const void *buf, int len)
 
     if (!stream) {
         return SDL_InvalidParamError("stream");
-    } else if (!buf) {
+    }
+    if (!buf) {
         return SDL_InvalidParamError("buf");
-    } else if (len == 0) {
+    }
+    if (len == 0) {
         return 0;  /* nothing to do. */
-    } else if ((len % stream->src_sample_frame_size) != 0) {
+    }
+    if ((len % stream->src_sample_frame_size) != 0) {
         return SDL_SetError("Can't add partial sample frames");
     }
 
@@ -2016,11 +2027,14 @@ SDL_AudioStreamGet(SDL_AudioStream *stream, void *buf, int len)
 
     if (!stream) {
         return SDL_InvalidParamError("stream");
-    } else if (!buf) {
+    }
+    if (!buf) {
         return SDL_InvalidParamError("buf");
-    } else if (len <= 0) {
+    }
+    if (len <= 0) {
         return 0;  /* nothing to do. */
-    } else if ((len % stream->dst_sample_frame_size) != 0) {
+    }
+    if ((len % stream->dst_sample_frame_size) != 0) {
         return SDL_SetError("Can't request partial sample frames");
     }
 
@@ -2066,4 +2080,3 @@ SDL_FreeAudioStream(SDL_AudioStream *stream)
 }
 
 /* vi: set ts=4 sw=4 expandtab: */
-
