@@ -9,7 +9,7 @@ To compile and install SDL:
         * Run './configure; make; make install'
 
         Mac OS X with Xcode:
-        * Read docs/README-macosx.md
+        * Read docs/README-macos.md
 
         Mac OS X from the command line:
         * Run './configure; make; make install'
