@@ -1278,7 +1278,10 @@ SDL_BuildAudioCVT(SDL_AudioCVT * cvt,
         }
 
         /* just a byteswap needed? */
-        if ((src_fmt & ~SDL_AUDIO_MASK_ENDIAN) == (dst_fmt & ~SDL_AUDIO_MASK_ENDIAN) && SDL_AUDIO_BITSIZE(dst_fmt) > 8) {
+        if ((src_fmt & ~SDL_AUDIO_MASK_ENDIAN) == (dst_fmt & ~SDL_AUDIO_MASK_ENDIAN)) {
+            if (SDL_AUDIO_BITSIZE(dst_fmt) == 8) {
+                return 0;
+            }
             if (SDL_AddAudioCVTFilter(cvt, SDL_Convert_Byteswap) < 0) {
                 return -1;
             }
