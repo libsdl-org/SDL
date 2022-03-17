@@ -422,6 +422,9 @@ WIN_CreateWindowFrom(_THIS, SDL_Window * window, const void *data)
                     }
                 }
             }
+        } else if (window->flags & SDL_WINDOW_OPENGL) {
+            /* Try to set up the pixel format, if it hasn't been set by the application */
+            WIN_GL_SetupWindow(_this, window);
         }
     }
 #endif

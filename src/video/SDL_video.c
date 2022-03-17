@@ -1676,6 +1676,7 @@ SDL_Window *
 SDL_CreateWindowFrom(const void *data)
 {
     SDL_Window *window;
+    Uint32 flags = SDL_WINDOW_FOREIGN;
 
     if (!_this) {
         SDL_UninitializedVideo();
@@ -1685,6 +1686,37 @@ SDL_CreateWindowFrom(const void *data)
         SDL_Unsupported();
         return NULL;
     }
+
+    if (SDL_GetHintBoolean(SDL_HINT_VIDEO_FOREIGN_WINDOW_OPENGL, SDL_FALSE)) {
+        if (!_this->GL_CreateContext) {
+            SDL_SetError("OpenGL support is either not configured in SDL "
+                         "or not available in current SDL video driver "
+                         "(%s) or platform", _this->name);
+            return NULL;
+        }
+        if (SDL_GL_LoadLibrary(NULL) < 0) {
+            return NULL;
+        }
+        flags |= SDL_WINDOW_OPENGL;
+    }
+
+    if (SDL_GetHintBoolean(SDL_HINT_VIDEO_FOREIGN_WINDOW_VULKAN, SDL_FALSE)) {
+        if (!_this->Vulkan_CreateSurface) {
+            SDL_SetError("Vulkan support is either not configured in SDL "
+                         "or not available in current SDL video driver "
+                         "(%s) or platform", _this->name);
+            return NULL;
+        }
+        if (flags & SDL_WINDOW_OPENGL) {
+            SDL_SetError("Vulkan and OpenGL not supported on same window");
+            return NULL;
+        }
+        if (SDL_Vulkan_LoadLibrary(NULL) < 0) {
+            return NULL;
+        }
+        flags |= SDL_WINDOW_VULKAN;
+    }
+
     window = (SDL_Window *)SDL_calloc(1, sizeof(*window));
     if (!window) {
         SDL_OutOfMemory();
@@ -1692,7 +1724,7 @@ SDL_CreateWindowFrom(const void *data)
     }
     window->magic = &_this->window_magic;
     window->id = _this->next_object_id++;
-    window->flags = SDL_WINDOW_FOREIGN;
+    window->flags = flags;
     window->last_fullscreen_flags = window->flags;
     window->is_destroying = SDL_FALSE;
     window->opacity = 1.0f;
@@ -1702,16 +1734,6 @@ SDL_CreateWindowFrom(const void *data)
         _this->windows->prev = window;
     }
     _this->windows = window;
-
-#if SDL_VIDEO_VULKAN
-    if (SDL_GetHintBoolean(SDL_HINT_VIDEO_FOREIGN_WINDOW_VULKAN, SDL_FALSE)) {
-        window->flags |= SDL_WINDOW_VULKAN;
-        if (SDL_Vulkan_LoadLibrary(NULL) < 0) {
-            SDL_DestroyWindow(window);
-            return NULL;
-        }
-    }
-#endif
 
     if (_this->CreateSDLWindowFrom(_this, window, data) < 0) {
         SDL_DestroyWindow(window);
