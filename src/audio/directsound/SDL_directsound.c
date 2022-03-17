@@ -98,10 +98,8 @@ DSOUND_Load(void)
 static int
 SetDSerror(const char *function, int code)
 {
-    static const char *error;
-    static char errbuf[1024];
+    const char *error;
 
-    errbuf[0] = 0;
     switch (code) {
     case E_NOINTERFACE:
         error = "Unsupported interface -- Is DirectX 8.0 or later installed?";
@@ -137,15 +135,11 @@ SetDSerror(const char *function, int code)
         error = "Function not supported";
         break;
     default:
-        SDL_snprintf(errbuf, SDL_arraysize(errbuf),
-                     "%s: Unknown DirectSound error: 0x%x", function, code);
+        error = "Unknown DirectSound error";
         break;
     }
-    if (!errbuf[0]) {
-        SDL_snprintf(errbuf, SDL_arraysize(errbuf), "%s: %s", function,
-                     error);
-    }
-    return SDL_SetError("%s", errbuf);
+
+    return SDL_SetError("%s: %s (0x%x)", function, error, code);
 }
 
 static void
