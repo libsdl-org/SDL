@@ -2731,9 +2731,7 @@ int SDL_PrivateJoystickTouchpad(SDL_Joystick *joystick, int touchpad, int finger
     SDL_JoystickTouchpadInfo *touchpad_info;
     SDL_JoystickTouchpadFingerInfo *finger_info;
     int posted;
-#if !SDL_EVENTS_DISABLED
     Uint32 event_type;
-#endif
 
     if (touchpad < 0 || touchpad >= joystick->ntouchpads) {
         return 0;
@@ -2777,7 +2775,6 @@ int SDL_PrivateJoystickTouchpad(SDL_Joystick *joystick, int touchpad, int finger
         }
     }
 
-#if !SDL_EVENTS_DISABLED
     if (state == finger_info->state) {
         event_type = SDL_CONTROLLERTOUCHPADMOTION;
     } else if (state) {
@@ -2785,7 +2782,6 @@ int SDL_PrivateJoystickTouchpad(SDL_Joystick *joystick, int touchpad, int finger
     } else {
         event_type = SDL_CONTROLLERTOUCHPADUP;
     }
-#endif
 
     /* We ignore events if we don't have keyboard focus, except for touch release */
     if (SDL_PrivateJoystickShouldIgnoreEvent()) {
