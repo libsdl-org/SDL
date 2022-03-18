@@ -1295,6 +1295,13 @@ RAWINPUT_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uin
     }
 #endif /* SDL_JOYSTICK_RAWINPUT_XINPUT */
 
+    if (!rumbled) {
+#if defined(SDL_JOYSTICK_RAWINPUT_WGI) || defined(SDL_JOYSTICK_RAWINPUT_XINPUT)
+        return SDL_SetError("Controller isn't correlated yet, try hitting a button first");
+#else
+        return SDL_Unsupported();
+#endif
+    }
     return 0;
 }
 
