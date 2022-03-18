@@ -29,6 +29,7 @@
 #include "SDL_pipewire.h"
 
 #include <pipewire/extensions/metadata.h>
+#include <pipewire/impl.h>
 #include <spa/param/audio/format-utils.h>
 
 /*
@@ -90,6 +91,7 @@ static int (*PIPEWIRE_pw_thread_loop_start)(struct pw_thread_loop *);
 static struct pw_context *(*PIPEWIRE_pw_context_new)(struct pw_loop *, struct pw_properties *, size_t);
 static void (*PIPEWIRE_pw_context_destroy)(struct pw_context *);
 static struct pw_core *(*PIPEWIRE_pw_context_connect)(struct pw_context *, struct pw_properties *, size_t);
+static struct pw_impl_module *(*PIPEWIRE_pw_context_load_module)(struct pw_context *context, const char *name, const char *args, struct pw_properties *properties);
 static void (*PIPEWIRE_pw_proxy_add_object_listener)(struct pw_proxy *, struct spa_hook *, const void *, void *);
 static void *(*PIPEWIRE_pw_proxy_get_user_data)(struct pw_proxy *);
 static void (*PIPEWIRE_pw_proxy_destroy)(struct pw_proxy *);
@@ -181,6 +183,7 @@ load_pipewire_syms()
     SDL_PIPEWIRE_SYM(pw_context_new);
     SDL_PIPEWIRE_SYM(pw_context_destroy);
     SDL_PIPEWIRE_SYM(pw_context_connect);
+    SDL_PIPEWIRE_SYM(pw_context_load_module);
     SDL_PIPEWIRE_SYM(pw_proxy_add_object_listener);
     SDL_PIPEWIRE_SYM(pw_proxy_get_user_data);
     SDL_PIPEWIRE_SYM(pw_proxy_destroy);
@@ -1151,6 +1154,14 @@ PIPEWIRE_OpenDevice(_THIS, const char *devname)
     priv->context = PIPEWIRE_pw_context_new(PIPEWIRE_pw_thread_loop_get_loop(priv->loop), props, 0);
     if (priv->context == NULL) {
         return SDL_SetError("Pipewire: Failed to create stream context (%i)", errno);
+    }
+
+    if (!iscapture) {
+        /*
+         * Try to load the null fallback sink.
+         * Failure doesn't matter, and it will automatically be cleaned up by the context on success.
+         */
+        PIPEWIRE_pw_context_load_module(priv->context, "libpipewire-module-fallback-sink", NULL, NULL);
     }
 
     props = PIPEWIRE_pw_properties_new(NULL, NULL);
