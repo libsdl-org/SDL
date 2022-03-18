@@ -361,9 +361,9 @@ EMSCRIPTENAUDIO_Init(SDL_AudioDriverImpl * impl)
     /* check availability */
     available = EM_ASM_INT_V({
         if (typeof(AudioContext) !== 'undefined') {
-            return SDL_TRUE;
+            return true;
         } else if (typeof(webkitAudioContext) !== 'undefined') {
-            return SDL_TRUE;
+            return true;
         }
         return SDL_FALSE;
     });
@@ -374,9 +374,9 @@ EMSCRIPTENAUDIO_Init(SDL_AudioDriverImpl * impl)
 
     capture_available = available && EM_ASM_INT_V({
         if ((typeof(navigator.mediaDevices) !== 'undefined') && (typeof(navigator.mediaDevices.getUserMedia) !== 'undefined')) {
-            return SDL_TRUE;
+            return true;
         } else if (typeof(navigator.webkitGetUserMedia) !== 'undefined') {
-            return SDL_TRUE;
+            return true;
         }
         return SDL_FALSE;
     });
