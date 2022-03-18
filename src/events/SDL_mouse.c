@@ -127,6 +127,22 @@ SDL_MouseTouchEventsChanged(void *userdata, const char *name, const char *oldVal
     }
 }
 
+static void SDLCALL
+SDL_MouseAutoCaptureChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+{
+    SDL_Mouse *mouse = (SDL_Mouse *)userdata;
+    SDL_bool auto_capture = SDL_GetStringBoolean(hint, SDL_TRUE);
+
+    if (auto_capture != mouse->auto_capture) {
+        /* Turn off mouse capture if it's currently active because of button presses */
+        if (!auto_capture && SDL_GetMouseState(NULL, NULL) != 0) {
+            SDL_CaptureMouse(SDL_FALSE);
+        }
+
+        mouse->auto_capture = auto_capture;
+    }
+}
+
 /* Public functions */
 int
 SDL_MouseInit(void)
@@ -152,6 +168,9 @@ SDL_MouseInit(void)
 
     SDL_AddHintCallback(SDL_HINT_MOUSE_TOUCH_EVENTS,
                         SDL_MouseTouchEventsChanged, mouse);
+
+    SDL_AddHintCallback(SDL_HINT_MOUSE_AUTO_CAPTURE,
+                        SDL_MouseAutoCaptureChanged, mouse);
 
     mouse->was_touch_mouse_events = SDL_FALSE; /* no touch to mouse movement event pending */
 
@@ -248,20 +267,7 @@ SDL_UpdateMouseFocus(SDL_Window * window, int x, int y, Uint32 buttonstate, SDL_
         }
     }
 
-/* Linux doesn't give you mouse events outside your window unless you grab
-   the pointer.
-
-   Windows doesn't give you mouse events outside your window unless you call
-   SetCapture().
-
-   Both of these are slightly scary changes, so for now we'll punt and if the
-   mouse leaves the window you'll lose mouse focus and reset button state.
-*/
-#ifdef SUPPORT_DRAG_OUTSIDE_WINDOW
-    if (!inWindow && !buttonstate) {
-#else
     if (!inWindow) {
-#endif
         if (window == mouse->focus) {
 #ifdef DEBUG_MOUSE
             SDL_Log("Mouse left window, synthesizing move & focus lost event\n");
@@ -534,7 +540,8 @@ SDL_PrivateSendMouseButton(SDL_Window * window, SDL_MouseID mouseID, Uint8 state
     Uint32 type;
     Uint32 buttonstate;
     SDL_MouseInputSource *source;
-   
+    SDL_bool had_buttons_pressed = (SDL_GetMouseState(NULL, NULL) ? SDL_TRUE : SDL_FALSE);
+
     source = GetMouseInputSource(mouse, mouseID);
     if (!source) {
         return 0;
@@ -632,6 +639,14 @@ SDL_PrivateSendMouseButton(SDL_Window * window, SDL_MouseID mouseID, Uint8 state
     /* We do this after dispatching event so button releases can lose focus */
     if (window && state == SDL_RELEASED) {
         SDL_UpdateMouseFocus(window, mouse->x, mouse->y, buttonstate, SDL_TRUE);
+    }
+
+    /* Automatically capture the mouse while buttons are pressed */
+    if (mouse->auto_capture) {
+        SDL_bool has_buttons_pressed = (SDL_GetMouseState(NULL, NULL) ? SDL_TRUE : SDL_FALSE);
+        if (has_buttons_pressed != had_buttons_pressed) {
+            SDL_CaptureMouse(has_buttons_pressed);
+        }
     }
 
     return posted;
@@ -758,11 +773,26 @@ SDL_MouseQuit(void)
     }
     mouse->num_clickstates = 0;
 
+    SDL_DelHintCallback(SDL_HINT_MOUSE_DOUBLE_CLICK_TIME,
+                        SDL_MouseDoubleClickTimeChanged, mouse);
+
+    SDL_DelHintCallback(SDL_HINT_MOUSE_DOUBLE_CLICK_RADIUS,
+                        SDL_MouseDoubleClickRadiusChanged, mouse);
+
     SDL_DelHintCallback(SDL_HINT_MOUSE_NORMAL_SPEED_SCALE,
                         SDL_MouseNormalSpeedScaleChanged, mouse);
 
     SDL_DelHintCallback(SDL_HINT_MOUSE_RELATIVE_SPEED_SCALE,
                         SDL_MouseRelativeSpeedScaleChanged, mouse);
+
+    SDL_DelHintCallback(SDL_HINT_TOUCH_MOUSE_EVENTS,
+                        SDL_TouchMouseEventsChanged, mouse);
+
+    SDL_DelHintCallback(SDL_HINT_MOUSE_TOUCH_EVENTS,
+                        SDL_MouseTouchEventsChanged, mouse);
+
+    SDL_DelHintCallback(SDL_HINT_MOUSE_AUTO_CAPTURE,
+                        SDL_MouseAutoCaptureChanged, mouse);
 }
 
 Uint32

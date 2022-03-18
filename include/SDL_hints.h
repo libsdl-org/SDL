@@ -970,6 +970,19 @@ extern "C" {
 #define SDL_HINT_MOUSE_TOUCH_EVENTS    "SDL_MOUSE_TOUCH_EVENTS"
 
 /**
+ *  \brief  A variable controlling whether the mouse is captured while mouse buttons are pressed
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - The mouse is not captured while mouse buttons are pressed
+ *    "1"       - The mouse is captured while mouse buttons are pressed
+ *
+ *  By default the mouse is captured while mouse buttons are pressed so if the mouse is dragged
+ *  outside the window, the application continues to receive mouse events until the button is
+ *  released.
+ */
+#define SDL_HINT_MOUSE_AUTO_CAPTURE    "SDL_MOUSE_AUTO_CAPTURE"
+
+/**
  *  \brief Tell SDL not to catch the SIGINT or SIGTERM signals.
  *
  * This hint only applies to Unix-like platforms, and should set before
