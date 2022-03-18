@@ -858,12 +858,6 @@ void
 WIN_SetWindowMouseGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
 {
     WIN_UpdateClipCursor(window);
-
-    if (grabbed &&
-        (window->flags & SDL_WINDOW_FULLSCREEN) &&
-        (window->flags & SDL_WINDOW_SHOWN)) {
-        WIN_SetWindowPositionInternal(_this, window, SWP_NOCOPYBITS | SWP_NOMOVE | SWP_NOSIZE);
-    }
 }
 
 void
