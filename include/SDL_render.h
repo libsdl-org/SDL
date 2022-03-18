@@ -1662,7 +1662,8 @@ extern DECLSPEC int SDLCALL SDL_RenderGeometryRaw(SDL_Renderer *renderer,
  * Read pixels from the current rendering target to an array of pixels.
  *
  * **WARNING**: This is a very slow operation, and should not be used
- * frequently.
+ * frequently. If you're using this on the main rendering target, it
+ * should be called after rendering and before SDL_RenderPresent().
  *
  * `pitch` specifies the number of bytes between rows in the destination
  * `pixels` data. This allows you to write to a subrectangle or have padded
