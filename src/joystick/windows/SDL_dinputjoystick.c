@@ -1147,8 +1147,7 @@ SDL_DINPUT_JoystickQuit(void)
     }
 
     if (coinitialized) {
-        /* Workaround for CoUninitialize() crash in NotifyInitializeSpied() */
-        /*WIN_CoUninitialize();*/
+        WIN_CoUninitialize();
         coinitialized = SDL_FALSE;
     }
 }
