@@ -264,7 +264,7 @@ SDL_UpdateMouseFocus(SDL_Window * window, int x, int y, Uint32 buttonstate, SDL_
 #endif
         if (window == mouse->focus) {
 #ifdef DEBUG_MOUSE
-            printf("Mouse left window, synthesizing move & focus lost event\n");
+            SDL_Log("Mouse left window, synthesizing move & focus lost event\n");
 #endif
             if (send_mouse_motion) {
                 SDL_PrivateSendMouseMotion(window, mouse->mouseID, 0, x, y);
@@ -276,7 +276,7 @@ SDL_UpdateMouseFocus(SDL_Window * window, int x, int y, Uint32 buttonstate, SDL_
 
     if (window != mouse->focus) {
 #ifdef DEBUG_MOUSE
-        printf("Mouse entered window, synthesizing focus gain & move event\n");
+        SDL_Log("Mouse entered window, synthesizing focus gain & move event\n");
 #endif
         SDL_SetMouseFocus(window);
         if (send_mouse_motion) {
@@ -386,7 +386,7 @@ SDL_PrivateSendMouseMotion(SDL_Window * window, SDL_MouseID mouseID, int relativ
         return 0;
     } else if (!xrel && !yrel) {  /* Drop events that don't change state */
 #ifdef DEBUG_MOUSE
-        printf("Mouse event didn't change state - dropped!\n");
+        SDL_Log("Mouse event didn't change state - dropped!\n");
 #endif
         return 0;
     }
