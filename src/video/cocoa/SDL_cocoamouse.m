@@ -262,9 +262,9 @@ Cocoa_SetRelativeMouseMode(SDL_bool enabled)
     /* We will re-apply the relative mode when the window gets focus, if it
      * doesn't have focus right now.
      */
-    SDL_Window *window = SDL_GetMouseFocus();
+    SDL_Window *window = SDL_GetKeyboardFocus();
     if (!window) {
-      return 0;
+        return 0;
     }
 
     /* We will re-apply the relative mode when the window finishes being moved,
