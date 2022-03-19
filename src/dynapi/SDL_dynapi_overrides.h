@@ -859,3 +859,8 @@
 #define SDL_GetTouchName SDL_GetTouchName_REAL
 #define SDL_ClearComposition SDL_ClearComposition_REAL
 #define SDL_IsTextInputShown SDL_IsTextInputShown_REAL
+#define SDL_HasIntersectionF SDL_HasIntersectionF_REAL
+#define SDL_IntersectFRect SDL_IntersectFRect_REAL
+#define SDL_UnionFRect SDL_UnionFRect_REAL
+#define SDL_EncloseFPoints SDL_EncloseFPoints_REAL
+#define SDL_IntersectFRectAndLine SDL_IntersectFRectAndLine_REAL

@@ -3382,60 +3382,6 @@ SDL_RenderFillRectsF(SDL_Renderer * renderer,
     return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
 }
 
-/* !!! FIXME: move this to a public API if we want to do float versions of all of these later */
-SDL_FORCE_INLINE SDL_bool SDL_FRectEmpty(const SDL_FRect *r)
-{
-    return ((!r) || (r->w <= 0.0f) || (r->h <= 0.0f)) ? SDL_TRUE : SDL_FALSE;
-}
-
-/* !!! FIXME: move this to a public API if we want to do float versions of all of these later */
-static SDL_bool
-SDL_HasIntersectionF(const SDL_FRect * A, const SDL_FRect * B)
-{
-    float Amin, Amax, Bmin, Bmax;
-
-    if (!A) {
-        SDL_InvalidParamError("A");
-        return SDL_FALSE;
-    }
-
-    if (!B) {
-        SDL_InvalidParamError("B");
-        return SDL_FALSE;
-    }
-
-    /* Special cases for empty rects */
-    if (SDL_FRectEmpty(A) || SDL_FRectEmpty(B)) {
-        return SDL_FALSE;
-    }
-
-    /* Horizontal intersection */
-    Amin = A->x;
-    Amax = Amin + A->w;
-    Bmin = B->x;
-    Bmax = Bmin + B->w;
-    if (Bmin > Amin)
-        Amin = Bmin;
-    if (Bmax < Amax)
-        Amax = Bmax;
-    if (Amax <= Amin)
-        return SDL_FALSE;
-
-    /* Vertical intersection */
-    Amin = A->y;
-    Amax = Amin + A->h;
-    Bmin = B->y;
-    Bmax = Bmin + B->h;
-    if (Bmin > Amin)
-        Amin = Bmin;
-    if (Bmax < Amax)
-        Amax = Bmax;
-    if (Amax <= Amin)
-        return SDL_FALSE;
-
-    return SDL_TRUE;
-}
-
 int
 SDL_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
                const SDL_Rect * srcrect, const SDL_Rect * dstrect)
