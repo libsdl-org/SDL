@@ -148,6 +148,7 @@ SDL_UnionRect(const SDL_Rect * A, const SDL_Rect * B, SDL_Rect * result)
     if (SDL_RectEmpty(A)) {
       if (SDL_RectEmpty(B)) {
        /* A and B empty */
+       SDL_zerop(result);
        return;
       } else {
        /* A empty, B not empty */
