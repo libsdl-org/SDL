@@ -24,8 +24,6 @@
 //
 //          This layer glues the hidapi API to Android's USB and BLE stack.
 
-#if !SDL_HIDAPI_DISABLED
-
 #include "SDL_hints.h"
 #include "../../core/android/SDL_android.h"
 
@@ -1335,5 +1333,3 @@ int hid_exit(void)
 }
 
 }
-
-#endif /* SDL_HIDAPI_DISABLED */
