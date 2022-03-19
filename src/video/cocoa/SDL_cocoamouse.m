@@ -253,7 +253,7 @@ Cocoa_WarpMouseGlobal(int x, int y)
 static void
 Cocoa_WarpMouse(SDL_Window * window, int x, int y)
 {
-    Cocoa_WarpMouseGlobal(x + window->x, y + window->y);
+    Cocoa_WarpMouseGlobal(window->x + x, window->y + y);
 }
 
 static int
