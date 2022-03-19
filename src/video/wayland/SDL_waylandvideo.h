@@ -71,6 +71,7 @@ typedef struct {
     struct zwp_idle_inhibit_manager_v1 *idle_inhibit_manager;
     struct xdg_activation_v1 *activation_manager;
     struct zwp_text_input_manager_v3 *text_input_manager;
+    struct zxdg_output_manager_v1 *xdg_output_manager;
 
     EGLDisplay edpy;
     EGLContext context;
@@ -79,6 +80,7 @@ typedef struct {
     struct xkb_context *xkb_context;
     struct SDL_WaylandInput *input;
     struct SDL_WaylandTabletManager *tablet_manager;
+    struct SDL_WaylandOutputData *output_list;
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
     struct SDL_WaylandTouch *touch;
@@ -94,6 +96,7 @@ typedef struct {
 typedef struct {
     SDL_VideoData *videodata;
     struct wl_output *output;
+    struct zxdg_output_v1 *xdg_output;
     uint32_t registry_id;
     float scale_factor;
     int x, y, width, height, refresh, transform;
@@ -102,7 +105,8 @@ typedef struct {
     float ddpi, hdpi, vdpi;
     int index;
     SDL_VideoDisplay placeholder;
-    SDL_bool done;
+    int wl_output_done_count;
+    struct SDL_WaylandOutputData *next;
 } SDL_WaylandOutputData;
 
 /* Needed here to get wl_surface declaration, fixes GitHub#4594 */
