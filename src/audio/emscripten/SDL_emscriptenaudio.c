@@ -365,7 +365,7 @@ EMSCRIPTENAUDIO_Init(SDL_AudioDriverImpl * impl)
         } else if (typeof(webkitAudioContext) !== 'undefined') {
             return true;
         }
-        return SDL_FALSE;
+        return false;
     });
 
     if (!available) {
@@ -378,7 +378,7 @@ EMSCRIPTENAUDIO_Init(SDL_AudioDriverImpl * impl)
         } else if (typeof(navigator.webkitGetUserMedia) !== 'undefined') {
             return true;
         }
-        return SDL_FALSE;
+        return false;
     });
 
     impl->HasCaptureSupport = capture_available ? SDL_TRUE : SDL_FALSE;
