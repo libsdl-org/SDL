@@ -309,6 +309,7 @@ SDL_X11_SYM(XRRPropertyInfo*,XRRQueryOutputProperty,(Display *dpy,RROutput outpu
 SDL_X11_SYM(int,XRRGetOutputProperty,(Display *dpy,RROutput output, Atom property, long offset, long length, Bool _delete, Bool pending, Atom req_type, Atom *actual_type, int *actual_format, unsigned long *nitems, unsigned long *bytes_after, unsigned char **prop),(dpy,output,property,offset,length, _delete, pending, req_type, actual_type, actual_format, nitems, bytes_after, prop),return)
 SDL_X11_SYM(RROutput,XRRGetOutputPrimary,(Display *dpy,Window window),(dpy,window),return)
 SDL_X11_SYM(void,XRRSelectInput,(Display *dpy, Window window, int mask),(dpy,window,mask),)
+SDL_X11_SYM(Status,XRRGetCrtcTransform,(Display *dpy,RRCrtc crtc,XRRCrtcTransformAttributes **attributes),(dpy,crtc,attributes),return)
 #endif
 
 /* MIT-SCREEN-SAVER support */

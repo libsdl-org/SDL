@@ -397,19 +397,26 @@ static SDL_bool SetXRandRModeInfo(Display *display, XRRScreenResources *res, RRC
         if (info->id == modeID) {
             XRRCrtcInfo *crtcinfo;
             Rotation rotation = 0;
+            XFixed scale_w = 0x10000, scale_h = 0x10000;
+            XRRCrtcTransformAttributes *attr;
 
             crtcinfo = X11_XRRGetCrtcInfo(display, res, crtc);
             if (crtcinfo) {
                 rotation = crtcinfo->rotation;
                 X11_XRRFreeCrtcInfo(crtcinfo);
             }
+            if (X11_XRRGetCrtcTransform(display, crtc, &attr) && attr) {
+                scale_w = attr->currentTransform.matrix[0][0];
+                scale_h = attr->currentTransform.matrix[1][1];
+                X11_XFree(attr);
+            }
 
             if (rotation & (XRANDR_ROTATION_LEFT | XRANDR_ROTATION_RIGHT)) {
-                mode->w = info->height;
-                mode->h = info->width;
+                mode->w = (info->height * scale_w + 0xffff) >> 16;
+                mode->h = (info->width * scale_h + 0xffff) >> 16;
             } else {
-                mode->w = info->width;
-                mode->h = info->height;
+                mode->w = (info->width * scale_w + 0xffff) >> 16;
+                mode->h = (info->height * scale_h + 0xffff) >> 16;
             }
             mode->refresh_rate = CalculateXRandRRefreshRate(info);
             ((SDL_DisplayModeData *)mode->driverdata)->xrandr_mode = modeID;
