@@ -620,6 +620,8 @@ display_handle_global(void *data, struct wl_registry *registry, uint32_t id,
         Wayland_add_data_device_manager(d, id, version);
     } else if (SDL_strcmp(interface, "zxdg_decoration_manager_v1") == 0) {
         d->decoration_manager = wl_registry_bind(d->registry, id, &zxdg_decoration_manager_v1_interface, 1);
+    } else if (SDL_strcmp(interface, "wl_shell") == 0) {
+        d->shell.has_wl_shell = SDL_TRUE;
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
     } else if (SDL_strcmp(interface, "qt_touch_extension") == 0) {
@@ -679,6 +681,21 @@ Wayland_VideoInit(_THIS)
         }
     }
 #endif
+
+    /* We need to be sure we're not on an old system that has wl_shell and not
+     * xdg_shell or libdecor. If we've hit this magical combination we need to
+     * bail because there's no way we can support it properly without Xwayland.
+     * -flibit
+     */
+    if (data->shell.has_wl_shell) {
+        if (data->shell.xdg == NULL
+#ifdef HAVE_LIBDECOR_H
+         && data->shell.libdecor == NULL
+#endif
+        ) {
+            return SDL_SetError("SDL Wayland does not support wl_shell systems");
+        }
+    }
 
     // Second roundtrip to receive all output events.
     WAYLAND_wl_display_roundtrip(data->display);
