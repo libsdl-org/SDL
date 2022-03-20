@@ -1,0 +1,30 @@
+name: Build (Sony Playstation 2)
+
+on: [push, pull_request]
+
+jobs:
+  ps2:
+    runs-on: ubuntu-latest
+    container: ps2dev/ps2dev:latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup dependencies
+      run: |
+        apk update 
+        apk add cmake gmp mpc1 mpfr4 make
+    - name: Configure CMake
+      run: cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=$PS2DEV/ps2sdk/ps2dev.cmake -DSDL_TESTS=ON
+    - name: Build
+      run: cmake --build build
+    
+    - name: Get short SHA
+      id: slug
+      run: echo "::set-output name=sha8::$(echo ${GITHUB_SHA} | cut -c1-8)"
+
+    - name: Upload artifacts
+      if: ${{ success() }}
+      uses: actions/upload-artifact@v3
+      with:
+        name: tests-${{ steps.slug.outputs.sha8 }}
+        path: |
+          build/test
