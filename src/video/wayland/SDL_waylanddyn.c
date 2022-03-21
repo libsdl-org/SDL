@@ -30,6 +30,7 @@
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC
 
 #include "SDL_name.h"
+#include "SDL_hints.h"
 #include "SDL_loadso.h"
 
 typedef struct
@@ -150,8 +151,20 @@ SDL_WAYLAND_LoadSymbols(void)
 #include "SDL_waylandsym.h"
 
         if (SDL_WAYLAND_HAVE_WAYLAND_CLIENT) {
-            /* all required symbols loaded. */
-            SDL_ClearError();
+            if (SDL_WAYLAND_HAVE_WAYLAND_CLIENT_1_20) {
+                /* all required symbols loaded. */
+                SDL_ClearError();
+            } else {
+                /* libwayland is old, but we could maybe get away with it? */
+                const char *driver = SDL_GetHint("SDL_VIDEODRIVER");
+                if (!driver || SDL_strcmp(driver, "wayland") != 0) {
+                    /* Video driver was not forced, bail. */
+                    SDL_WAYLAND_UnloadSymbols();
+                    rc = 0;
+                } else {
+                    SDL_ClearError();
+                }
+            }
         } else {
             /* in case something got loaded... */
             SDL_WAYLAND_UnloadSymbols();
