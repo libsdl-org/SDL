@@ -256,6 +256,8 @@ SDL_FORCE_INLINE SDL_bool SDL_FRectEquals(const SDL_FRect *a, const SDL_FRect *b
  * \param B an SDL_FRect structure representing the second rectangle
  * \returns SDL_TRUE if there is an intersection, SDL_FALSE otherwise.
  *
+ * \since This function is available since SDL 2.0.22.
+ *
  * \sa SDL_IntersectRect
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_HasIntersectionF(const SDL_FRect * A,
@@ -272,6 +274,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasIntersectionF(const SDL_FRect * A,
  *               rectangles `A` and `B`
  * \returns SDL_TRUE if there is an intersection, SDL_FALSE otherwise.
  *
+ * \since This function is available since SDL 2.0.22.
+ *
  * \sa SDL_HasIntersectionF
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_IntersectFRect(const SDL_FRect * A,
@@ -285,13 +289,16 @@ extern DECLSPEC SDL_bool SDLCALL SDL_IntersectFRect(const SDL_FRect * A,
  * \param B an SDL_FRect structure representing the second rectangle
  * \param result an SDL_FRect structure filled in with the union of rectangles
  *               `A` and `B`
+ *
+ * \since This function is available since SDL 2.0.22.
  */
 extern DECLSPEC void SDLCALL SDL_UnionFRect(const SDL_FRect * A,
                                             const SDL_FRect * B,
                                             SDL_FRect * result);
 
 /**
- * Calculate a minimal rectangle enclosing a set of points with float precision.
+ * Calculate a minimal rectangle enclosing a set of points with float
+ * precision.
  *
  * If `clip` is not NULL then only points inside of the clipping rectangle are
  * considered.
@@ -304,6 +311,8 @@ extern DECLSPEC void SDLCALL SDL_UnionFRect(const SDL_FRect * A,
  *               rectangle
  * \returns SDL_TRUE if any points were enclosed or SDL_FALSE if all the
  *          points were outside of the clipping rectangle.
+ *
+ * \since This function is available since SDL 2.0.22.
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_EncloseFPoints(const SDL_FPoint * points,
                                                     int count,
@@ -311,7 +320,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_EncloseFPoints(const SDL_FPoint * points,
                                                     SDL_FRect * result);
 
 /**
- * Calculate the intersection of a rectangle and line segment with float precision.
+ * Calculate the intersection of a rectangle and line segment with float
+ * precision.
  *
  * This function is used to clip a line segment to a rectangle. A line segment
  * contained entirely within the rectangle or that does not intersect will
@@ -325,6 +335,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_EncloseFPoints(const SDL_FPoint * points,
  * \param X2 a pointer to the ending X-coordinate of the line
  * \param Y2 a pointer to the ending Y-coordinate of the line
  * \returns SDL_TRUE if there is an intersection, SDL_FALSE otherwise.
+ *
+ * \since This function is available since SDL 2.0.22.
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_IntersectFRectAndLine(const SDL_FRect *
                                                            rect, float *X1,
