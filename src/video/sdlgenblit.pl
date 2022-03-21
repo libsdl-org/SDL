@@ -220,16 +220,82 @@ sub output_copycore
     my $A_is_const_FF = shift;
     my $s = "";
     my $d = "";
+    my $dst_has_alpha = ($dst =~ /A/) ? 1 : 0;
+    my $src_has_alpha = ($src =~ /A/) ? 1 : 0;
+    my $sa = "";
+    my $da = "";
 
-    # Nice and easy...
-    if ( $src eq $dst && !$modulate && !$blend ) {
-        print FILE <<__EOF__;
+    if (!$modulate && !$blend) {
+        # Nice and easy...
+        if ( $src eq $dst ) {
+            print FILE <<__EOF__;
             *dst = *src;
 __EOF__
-        return;
+            return;
+        }
+
+        # Matching color-order
+        $sa = $src;
+        $sa =~ s/[A8]//g;
+        $da = $dst;
+        $da =~ s/[A8]//g;
+        if ($sa eq $da) {
+            if ($dst_has_alpha && $src_has_alpha) {
+                $da = substr $dst, 0, 1;
+                if ($da eq "A") {
+                    # RGBA -> ARGB
+                    print FILE <<__EOF__;
+            pixel = *src;
+            pixel = (pixel >> 8) | (pixel << 24);
+            *dst = pixel;
+__EOF__
+                } else {
+                    # ARGB -> RGBA -- unused
+                    print FILE <<__EOF__;
+            pixel = *src;
+            pixel = (pixel << 8) | A;
+            *dst = pixel;
+__EOF__
+                }
+            } elsif ($dst_has_alpha) {
+                $da = substr $dst, 0, 1;
+                if ($da eq "A") {
+                    # RGB -> ARGB
+                    print FILE <<__EOF__;
+            pixel = *src;
+            pixel |= (A << 24);
+            *dst = pixel;
+__EOF__
+                } else {
+                    # RGB -> RGBA -- unused
+                    print FILE <<__EOF__;
+            pixel = *src;
+            pixel = (pixel << 8) | A;
+            *dst = pixel;
+__EOF__
+                }
+            } else {
+                $sa = substr $src, 0, 1;
+                if ($sa eq "A") {
+                    # ARGB -> RGB
+                    print FILE <<__EOF__;
+            pixel = *src;
+            pixel &= 0xFFFFFF;
+            *dst = pixel;
+__EOF__
+                } else {
+                    # RGBA -> RGB
+                    print FILE <<__EOF__;
+            pixel = *src;
+            pixel >>= 8;
+            *dst = pixel;
+__EOF__
+                }
+            }
+            return;
+        }
     }
 
-    my $dst_has_alpha = ($dst =~ /A/) ? 1 : 0;
     my $ignore_dst_alpha = !$dst_has_alpha && !$blend;
 
     if ( $blend ) {
@@ -366,6 +432,14 @@ sub output_copyfunc
     my $is_modulateA_done = 0;
     my $A_is_const_FF = 0;
 
+    my $sa = $src;
+    my $da = $dst;
+    my $matching_colors = 0;
+
+    $sa =~ s/[A8]//g;
+    $da =~ s/[A8]//g;
+    $matching_colors = (!$modulate && !$blend && ($sa eq $da)) ? 1 : 0;
+
     output_copyfuncname("static void", $src, $dst, $modulate, $blend, $scale, 1, "\n");
     print FILE <<__EOF__;
 {
@@ -424,8 +498,8 @@ __EOF__
         print FILE <<__EOF__;
     Uint32 pixel;
 __EOF__
-        if (!$ignore_dst_alpha && !$src_has_alpha) {
-            if ($modulate){
+        if ( !$ignore_dst_alpha && !$src_has_alpha ) {
+            if ( $modulate ) {
                 $is_modulateA_done = 1;
                 print FILE <<__EOF__;
     const Uint32 A = (flags & SDL_COPY_MODULATE_ALPHA) ? modulateA : 0xFF;
@@ -436,14 +510,18 @@ __EOF__
     const Uint32 A = 0xFF;
 __EOF__
             }
-            print FILE <<__EOF__;
+            if ( !$matching_colors ) {
+                print FILE <<__EOF__;
     Uint32 R, G, B;
 __EOF__
-        } elsif (!$ignore_dst_alpha) {
-            print FILE <<__EOF__;
+            }
+        } elsif ( !$ignore_dst_alpha ) {
+            if ( !$matching_colors ) {
+                print FILE <<__EOF__;
     Uint32 R, G, B, A;
 __EOF__
-        } else {
+            }
+        } elsif ( !$matching_colors ) {
             print FILE <<__EOF__;
     Uint32 R, G, B;
 __EOF__
