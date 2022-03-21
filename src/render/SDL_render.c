@@ -4177,7 +4177,11 @@ SDL_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
     FlushRenderCommands(renderer);  /* we need to render before we read the results. */
 
     if (!format) {
-        format = SDL_GetWindowPixelFormat(renderer->window);
+        if (renderer->target == NULL) {
+            format = SDL_GetWindowPixelFormat(renderer->window);
+        } else {
+            format = renderer->target->format;
+        }
     }
 
     real_rect.x = (int)SDL_floor(renderer->viewport.x);
