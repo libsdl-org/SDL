@@ -625,6 +625,13 @@ display_handle_global(void *data, struct wl_registry *registry, uint32_t id,
     } else if (SDL_strcmp(interface, "zxdg_decoration_manager_v1") == 0) {
         d->decoration_manager = wl_registry_bind(d->registry, id, &zxdg_decoration_manager_v1_interface, 1);
 
+#ifdef SDL_VIDEO_DRIVER_WAYLAND_TABLET
+    } else if (SDL_strcmp(interface, "zwp_tablet_manager_v2") == 0) {
+        d->tablet_manager = wl_registry_bind(d->registry, id, &zwp_tablet_manager_v2_interface, 1);
+        if (d->input)
+            Wayland_input_add_tablet(d->input, d->tablet_manager);
+#endif /* SDL_VIDEO_DRIVER_WAYLAND_TABLET */
+
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
     } else if (SDL_strcmp(interface, "qt_touch_extension") == 0) {
         Wayland_touch_create(d, id);
@@ -636,14 +643,6 @@ display_handle_global(void *data, struct wl_registry *registry, uint32_t id,
                 &qt_windowmanager_interface, 1);
         qt_windowmanager_add_listener(d->windowmanager, &windowmanager_listener, d);
 #endif /* SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH */
-
-#ifdef SDL_VIDEO_DRIVER_WAYLAND_TABLET
-    } else if (SDL_strcmp(interface, "zwp_tablet_manager_v2") == 0) {
-        d->tablet_manager = wl_registry_bind(d->registry, id, &zwp_tablet_manager_v2_interface, 1);
-        if (d->input)
-            Wayland_input_add_tablet(d->input, d->tablet_manager);
-#endif /* SDL_VIDEO_DRIVER_WAYLAND_TABLET */
-
     }
 }
 

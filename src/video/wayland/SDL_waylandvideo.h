@@ -42,7 +42,6 @@ struct qt_windowmanager;
 #endif /* SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH */
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_TABLET
-//#include "tablet-unstable-v2-protocol.h"
 struct SDL_WaylandTabletManager;
 #endif // SDL_VIDEO_DRIVER_WAYLAND_TABLET
 
