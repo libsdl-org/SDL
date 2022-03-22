@@ -728,19 +728,12 @@ SDL_RendererEventWatch(void *userdata, SDL_Event *event)
                         SDL_GetWindowSize(renderer->window, &w, &h);
                     }
 
-                    if (renderer->target) {
-                        renderer->viewport_backup.x = 0;
-                        renderer->viewport_backup.y = 0;
-                        renderer->viewport_backup.w = (float) w;
-                        renderer->viewport_backup.h = (float) h;
-                    } else {
-                        renderer->viewport.x = 0;
-                        renderer->viewport.y = 0;
-                        renderer->viewport.w = (float) w;
-                        renderer->viewport.h = (float) h;
-                        QueueCmdSetViewport(renderer);
-                        FlushRenderCommandsIfNotBatching(renderer);
-                    }
+                    renderer->viewport.x = 0;
+                    renderer->viewport.y = 0;
+                    renderer->viewport.w = (float) w;
+                    renderer->viewport.h = (float) h;
+                    QueueCmdSetViewport(renderer);
+                    FlushRenderCommandsIfNotBatching(renderer);
                 }
 
                 if (saved_target) {
