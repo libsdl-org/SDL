@@ -2507,6 +2507,11 @@ SDL_CreateWindowFramebuffer(SDL_Window * window)
             attempt_texture_framebuffer = SDL_FALSE;
         }
         #endif
+        #if defined(__EMSCRIPTEN__)
+        else {
+            attempt_texture_framebuffer = SDL_FALSE;
+        }
+        #endif
 
         if (attempt_texture_framebuffer) {
             if (SDL_CreateWindowTexture(_this, window, &format, &pixels, &pitch) == -1) {
