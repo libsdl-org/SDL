@@ -191,9 +191,12 @@ typedef struct
 typedef struct
 {
     gxm_texture  *tex;
-    unsigned int    pitch;
-    unsigned int    w;
-    unsigned int    h;
+    unsigned int pitch;
+    unsigned int w;
+    unsigned int h;
+    float wscale;
+    SDL_bool     yuv;
+    SDL_bool     nv12;
 } VITA_GXM_TextureData;
 
 #endif /* SDL_RENDER_VITA_GXM_TYPES_H */
