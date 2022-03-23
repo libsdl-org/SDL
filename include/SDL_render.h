@@ -265,8 +265,10 @@ extern DECLSPEC SDL_Renderer * SDLCALL SDL_GetRenderer(SDL_Window * window);
  * Get the window associated with a renderer.
  *
  * \param renderer the renderer to query
- * \returns the window on success or NULL on failure; call
- *          SDL_GetError() for more information.
+ * \returns the window on success or NULL on failure; call SDL_GetError() for
+ *          more information.
+ *
+ * \since This function is available since SDL 2.0.22.
  */
 extern DECLSPEC SDL_Window * SDLCALL SDL_RenderGetWindow(SDL_Renderer *renderer);
 
