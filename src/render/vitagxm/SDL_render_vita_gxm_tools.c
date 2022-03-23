@@ -117,6 +117,8 @@ tex_format_to_bytespp(SceGxmTextureFormat format)
     case SCE_GXM_TEXTURE_BASE_FORMAT_U8:
     case SCE_GXM_TEXTURE_BASE_FORMAT_S8:
     case SCE_GXM_TEXTURE_BASE_FORMAT_P8:
+    case SCE_GXM_TEXTURE_BASE_FORMAT_YUV420P2: // YUV actually uses 12 bits per pixel. UV planes bits/mem are handled elsewhere
+    case SCE_GXM_TEXTURE_BASE_FORMAT_YUV420P3:
         return 1;
     case SCE_GXM_TEXTURE_BASE_FORMAT_U4U4U4U4:
     case SCE_GXM_TEXTURE_BASE_FORMAT_U8U3U3U2:
@@ -995,25 +997,6 @@ gxm_texture_get_format(const gxm_texture *texture)
     return sceGxmTextureGetFormat(&texture->gxm_tex);
 }
 
-unsigned int
-gxm_texture_get_width(const gxm_texture *texture)
-{
-    return sceGxmTextureGetWidth(&texture->gxm_tex);
-}
-
-unsigned int
-gxm_texture_get_height(const gxm_texture *texture)
-{
-    return sceGxmTextureGetHeight(&texture->gxm_tex);
-}
-
-unsigned int
-gxm_texture_get_stride(const gxm_texture *texture)
-{
-    return ((gxm_texture_get_width(texture) + 7) & ~7)
-        * tex_format_to_bytespp(gxm_texture_get_format(texture));
-}
-
 void *
 gxm_texture_get_datap(const gxm_texture *texture)
 {
@@ -1021,14 +1004,33 @@ gxm_texture_get_datap(const gxm_texture *texture)
 }
 
 gxm_texture *
-create_gxm_texture(VITA_GXM_RenderData *data, unsigned int w, unsigned int h, SceGxmTextureFormat format, unsigned int isRenderTarget)
+create_gxm_texture(VITA_GXM_RenderData *data, unsigned int w, unsigned int h, SceGxmTextureFormat format, unsigned int isRenderTarget, unsigned int *return_w, unsigned int *return_h, unsigned int *return_pitch, float *return_wscale)
 {
     gxm_texture *texture = SDL_calloc(1, sizeof(gxm_texture));
-    const int tex_size =  ((w + 7) & ~ 7) * h * tex_format_to_bytespp(format);
+    int aligned_w = ALIGN(w, 8);
+    int texture_w = w;
+    int tex_size =  aligned_w * h * tex_format_to_bytespp(format);
     void *texture_data;
+    int ret;
+
+    *return_wscale = 1.0f;
+
+    // SCE_GXM_TEXTURE_BASE_FORMAT_YUV420P3/P2 based formats require width aligned to 16
+    if ( (format & 0x9f000000U) == SCE_GXM_TEXTURE_BASE_FORMAT_YUV420P3 || (format & 0x9f000000U) == SCE_GXM_TEXTURE_BASE_FORMAT_YUV420P2) {
+        aligned_w = ALIGN(w, 16);
+        texture_w = aligned_w;
+        tex_size =  aligned_w * h * tex_format_to_bytespp(format);
+        *return_wscale = (float) (w) / texture_w;
+        // add storage for UV planes
+        tex_size += (((aligned_w + 1) / 2) * ((h + 1) / 2)) * 2;
+    }
 
     if (!texture)
         return NULL;
+
+    *return_w = w;
+    *return_h = h;
+    *return_pitch = aligned_w * tex_format_to_bytespp(format);
 
     /* Allocate a GPU buffer for the texture */
     texture_data = mem_gpu_alloc(
@@ -1060,7 +1062,12 @@ create_gxm_texture(VITA_GXM_RenderData *data, unsigned int w, unsigned int h, Sc
     SDL_memset(texture_data, 0, tex_size);
 
     /* Create the gxm texture */
-    sceGxmTextureInitLinear( &texture->gxm_tex, texture_data, format, w, h, 0);
+    ret = sceGxmTextureInitLinear( &texture->gxm_tex, texture_data, format, texture_w, h, 0);
+    if (ret < 0) {
+      free_gxm_texture(texture);
+      SDL_LogError(SDL_LOG_CATEGORY_RENDER, "texture init failed: %x\n", ret);
+      return NULL;
+    }
 
     if (isRenderTarget) {
         void *depthBufferData;
@@ -1084,7 +1091,7 @@ create_gxm_texture(VITA_GXM_RenderData *data, unsigned int w, unsigned int h, Sc
 
         if (err < 0) {
             free_gxm_texture(texture);
-            SDL_LogError(SDL_LOG_CATEGORY_RENDER, "color surface init failed: %d\n", err);
+            SDL_LogError(SDL_LOG_CATEGORY_RENDER, "color surface init failed: %x\n", err);
             return NULL;
         }
 
@@ -1107,7 +1114,7 @@ create_gxm_texture(VITA_GXM_RenderData *data, unsigned int w, unsigned int h, Sc
 
         if (err < 0) {
             free_gxm_texture(texture);
-            SDL_LogError(SDL_LOG_CATEGORY_RENDER, "depth stencil init failed: %d\n", err);
+            SDL_LogError(SDL_LOG_CATEGORY_RENDER, "depth stencil init failed: %x\n", err);
             return NULL;
         }
 
@@ -1132,7 +1139,7 @@ create_gxm_texture(VITA_GXM_RenderData *data, unsigned int w, unsigned int h, Sc
 
             if (err < 0) {
                 free_gxm_texture(texture);
-                SDL_LogError(SDL_LOG_CATEGORY_RENDER, "create render target failed: %d\n", err);
+                SDL_LogError(SDL_LOG_CATEGORY_RENDER, "create render target failed: %x\n", err);
                 return NULL;
             }
         }
