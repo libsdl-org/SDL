@@ -49,6 +49,7 @@ VITAAUD_OpenDevice(_THIS, const char *devname)
 {
     int format, mixlen, i, port = SCE_AUDIO_OUT_PORT_TYPE_MAIN;
     int vols[2] = {SCE_AUDIO_MAX_VOLUME, SCE_AUDIO_MAX_VOLUME};
+    SDL_AudioFormat test_format;
 
     this->hidden = (struct SDL_PrivateAudioData *)
         SDL_malloc(sizeof(*this->hidden));
@@ -56,6 +57,19 @@ VITAAUD_OpenDevice(_THIS, const char *devname)
         return SDL_OutOfMemory();
     }
     SDL_memset(this->hidden, 0, sizeof(*this->hidden));
+
+    for (test_format = SDL_FirstAudioFormat(this->spec.format); test_format; test_format = SDL_NextAudioFormat()) {
+        if ((test_format == AUDIO_U8) ||
+            (test_format == AUDIO_S16)) {
+            this->spec.format = test_format;
+            break;
+        }
+    }
+
+    if(!test_format) {
+        return SDL_SetError("Unsupported audio format");
+    }
+
     switch (this->spec.format & 0xff) {
         case 8:
         case 16:
