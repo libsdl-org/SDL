@@ -133,32 +133,22 @@ static const char *SDL_WAYLAND_output_tag = "sdl-output";
 
 void SDL_WAYLAND_register_surface(struct wl_surface *surface)
 {
-    if (SDL_WAYLAND_HAVE_WAYLAND_CLIENT_1_18) {
-        wl_proxy_set_tag((struct wl_proxy *)surface, &SDL_WAYLAND_surface_tag);
-    }
+    wl_proxy_set_tag((struct wl_proxy *)surface, &SDL_WAYLAND_surface_tag);
 }
 
 void SDL_WAYLAND_register_output(struct wl_output *output)
 {
-    if (SDL_WAYLAND_HAVE_WAYLAND_CLIENT_1_18) {
-        wl_proxy_set_tag((struct wl_proxy *)output, &SDL_WAYLAND_output_tag);
-    }
+    wl_proxy_set_tag((struct wl_proxy *)output, &SDL_WAYLAND_output_tag);
 }
 
 SDL_bool SDL_WAYLAND_own_surface(struct wl_surface *surface)
 {
-    if (SDL_WAYLAND_HAVE_WAYLAND_CLIENT_1_18) {
-        return wl_proxy_get_tag((struct wl_proxy *) surface) == &SDL_WAYLAND_surface_tag;
-    }
-    return SDL_TRUE; /* For older clients we have to assume this is us... */
+    return wl_proxy_get_tag((struct wl_proxy *) surface) == &SDL_WAYLAND_surface_tag;
 }
 
 SDL_bool SDL_WAYLAND_own_output(struct wl_output *output)
 {
-    if (SDL_WAYLAND_HAVE_WAYLAND_CLIENT_1_18) {
-        return wl_proxy_get_tag((struct wl_proxy *) output) == &SDL_WAYLAND_output_tag;
-    }
-    return SDL_TRUE; /* For older clients we have to assume this is us... */
+    return wl_proxy_get_tag((struct wl_proxy *) output) == &SDL_WAYLAND_output_tag;
 }
 
 static void

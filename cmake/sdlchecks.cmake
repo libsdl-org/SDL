@@ -632,7 +632,7 @@ endmacro()
 # - HAVE_SDL_LOADSO opt
 macro(CheckWayland)
   if(SDL_WAYLAND)
-    pkg_check_modules(WAYLAND wayland-client wayland-egl wayland-cursor egl "xkbcommon>=0.5.0")
+    pkg_check_modules(WAYLAND "wayland-client>=1.18" wayland-egl wayland-cursor egl "xkbcommon>=0.5.0")
 
     if(WAYLAND_FOUND)
       find_program(WAYLAND_SCANNER NAMES wayland-scanner REQUIRED)

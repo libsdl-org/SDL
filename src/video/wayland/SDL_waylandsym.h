@@ -72,18 +72,15 @@ SDL_WAYLAND_SYM(void, wl_list_remove, (struct wl_list *))
 SDL_WAYLAND_SYM(int, wl_list_length, (const struct wl_list *))
 SDL_WAYLAND_SYM(int, wl_list_empty, (const struct wl_list *))
 SDL_WAYLAND_SYM(void, wl_list_insert_list, (struct wl_list *, struct wl_list *))
-
-/* These functions are available in Wayland >= 1.4 */
-SDL_WAYLAND_MODULE(WAYLAND_CLIENT_1_4)
 SDL_WAYLAND_SYM(struct wl_proxy *, wl_proxy_marshal_constructor, (struct wl_proxy *, uint32_t opcode, const struct wl_interface *interface, ...))
-
-SDL_WAYLAND_MODULE(WAYLAND_CLIENT_1_10)
 SDL_WAYLAND_SYM(struct wl_proxy *, wl_proxy_marshal_constructor_versioned, (struct wl_proxy *proxy, uint32_t opcode, const struct wl_interface *interface, uint32_t version, ...))
-
-SDL_WAYLAND_MODULE(WAYLAND_CLIENT_1_18)
 SDL_WAYLAND_SYM(void, wl_proxy_set_tag, (struct wl_proxy *, const char * const *))
 SDL_WAYLAND_SYM(const char * const *, wl_proxy_get_tag, (struct wl_proxy *))
 
+/* These were introduced in 1.20 and introduce a handful of build issues.
+ * See GitHub #5376 and #4636
+ * -flibit
+ */
 SDL_WAYLAND_MODULE(WAYLAND_CLIENT_1_20)
 SDL_WAYLAND_SYM(struct wl_proxy*, wl_proxy_marshal_flags, (struct wl_proxy *proxy, uint32_t opcode, const struct wl_interface *interfac, uint32_t version, uint32_t flags, ...))
 SDL_WAYLAND_SYM(struct wl_proxy*, wl_proxy_marshal_array_flags, (struct wl_proxy *proxy, uint32_t opcode, const struct wl_interface *interface, uint32_t version,  uint32_t flags, union wl_argument *args))
