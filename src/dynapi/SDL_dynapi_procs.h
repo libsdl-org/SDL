@@ -935,3 +935,4 @@ SDL_DYNAPI_PROC(SDL_bool,SDL_IntersectFRect,(const SDL_FRect *a, const SDL_FRect
 SDL_DYNAPI_PROC(void,SDL_UnionFRect,(const SDL_FRect *a, const SDL_FRect *b, SDL_FRect *c),(a,b,c),)
 SDL_DYNAPI_PROC(SDL_bool,SDL_EncloseFPoints,(const SDL_FPoint *a, int b, const SDL_FRect *c, SDL_FRect *d),(a,b,c,d),return)
 SDL_DYNAPI_PROC(SDL_bool,SDL_IntersectFRectAndLine,(const SDL_FRect *a, float *b, float *c, float *d, float *e),(a,b,c,d,e),return)
+SDL_DYNAPI_PROC(SDL_Window*,SDL_GetWindow,(SDL_Renderer *a),(a),return)

@@ -1095,6 +1095,13 @@ SDL_GetRenderer(SDL_Window * window)
     return (SDL_Renderer *)SDL_GetWindowData(window, SDL_WINDOWRENDERDATA);
 }
 
+SDL_Window *
+SDL_GetWindow(SDL_Renderer *renderer)
+{
+    CHECK_RENDERER_MAGIC(renderer, NULL);
+    return renderer->window;
+}
+
 int
 SDL_GetRendererInfo(SDL_Renderer * renderer, SDL_RendererInfo * info)
 {
