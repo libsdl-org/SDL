@@ -34,6 +34,7 @@
 
 struct xkb_context;
 struct SDL_WaylandInput;
+struct SDL_WaylandTabletManager;
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
 struct SDL_WaylandTouch;
@@ -77,6 +78,7 @@ typedef struct {
 
     struct xkb_context *xkb_context;
     struct SDL_WaylandInput *input;
+    struct SDL_WaylandTabletManager *tablet_manager;
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
     struct SDL_WaylandTouch *touch;
