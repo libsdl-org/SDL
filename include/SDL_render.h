@@ -268,7 +268,7 @@ extern DECLSPEC SDL_Renderer * SDLCALL SDL_GetRenderer(SDL_Window * window);
  * \returns the window on success or NULL on failure; call
  *          SDL_GetError() for more information.
  */
-extern DECLSPEC SDL_Window * SDLCALL SDL_GetWindow(SDL_Renderer *renderer);
+extern DECLSPEC SDL_Window * SDLCALL SDL_RenderGetWindow(SDL_Renderer *renderer);
 
 /**
  * Get information about a rendering context.
