@@ -167,6 +167,12 @@ Android_MinimizeWindow(_THIS, SDL_Window *window)
     Android_JNI_MinizeWindow();
 }
 
+void Android_SetWindowResizable(_THIS, SDL_Window *window, SDL_bool resizable)
+{
+    /* Set orientation */
+    Android_JNI_SetOrientation(window->w, window->h, window->flags & SDL_WINDOW_RESIZABLE, SDL_GetHint(SDL_HINT_ORIENTATIONS));
+}
+
 void
 Android_DestroyWindow(_THIS, SDL_Window *window)
 {

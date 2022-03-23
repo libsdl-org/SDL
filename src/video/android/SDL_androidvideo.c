@@ -122,6 +122,7 @@ Android_CreateDevice(int devindex)
     device->SetWindowTitle = Android_SetWindowTitle;
     device->SetWindowFullscreen = Android_SetWindowFullscreen;
     device->MinimizeWindow = Android_MinimizeWindow;
+    device->SetWindowResizable = Android_SetWindowResizable;
     device->DestroyWindow = Android_DestroyWindow;
     device->GetWindowWMInfo = Android_GetWindowWMInfo;
 
