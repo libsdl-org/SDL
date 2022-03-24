@@ -1325,7 +1325,7 @@ int Wayland_CreateWindow(_THIS, SDL_Window *window)
         data->egl_surface = SDL_EGL_CreateSurface(_this, (NativeWindowType) data->egl_window);
 
         if (data->egl_surface == EGL_NO_SURFACE) {
-            return SDL_SetError("failed to create an EGL window surface");
+            return -1;    /* SDL_EGL_CreateSurface should have set error */
         }
 #endif
     }
