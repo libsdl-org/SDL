@@ -261,6 +261,7 @@ SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window * window, Uint32 * fo
                                       SDL_TEXTUREACCESS_STREAMING,
                                       window->w, window->h);
     if (!data->texture) {
+        /* codechecker_false_positive [Malloc] Static analyzer doesn't realize allocated `data` is saved to SDL_WINDOWTEXTUREDATA and not leaked here. */
         return -1;
     }
 
@@ -1184,6 +1185,7 @@ SDL_GetWindowDisplayMode(SDL_Window * window, SDL_DisplayMode * mode)
     } else if (!SDL_GetClosestDisplayModeForDisplay(SDL_GetDisplayForWindow(window),
                                              &fullscreen_mode,
                                              &fullscreen_mode)) {
+        SDL_zerop(mode);
         return SDL_SetError("Couldn't find display mode match");
     }
 

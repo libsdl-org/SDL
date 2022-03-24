@@ -3145,9 +3145,10 @@ SDL_RenderDrawLinesF(SDL_Renderer * renderer,
                     num_vertices, indices, num_indices, size_indices,
                     1.0f, 1.0f);
 
-            SDL_small_free(xy, isstack1);
-            SDL_small_free(indices, isstack2);
         }
+
+        SDL_small_free(xy, isstack1);
+        SDL_small_free(indices, isstack2);
 
     } else if (renderer->scale.x != 1.0f || renderer->scale.y != 1.0f) {
         retval = RenderDrawLinesWithRectsF(renderer, points, count);

@@ -384,8 +384,6 @@ SDL_PrivateSendMouseMotion(SDL_Window * window, SDL_MouseID mouseID, int relativ
 
     /* Ignore relative motion when first positioning the mouse */
     if (!mouse->has_position) {
-        xrel = 0;
-        yrel = 0;
         mouse->x = x;
         mouse->y = y;
         mouse->has_position = SDL_TRUE;

@@ -394,6 +394,12 @@ SDL_LoadBMP_RW(SDL_RWops * src, int freesrc)
         break;
     }
 
+    if (biBitCount >= 32) {  /* we shift biClrUsed by this value later. */
+        SDL_SetError("Unsupported or incorrect biBitCount field");
+        was_error = SDL_TRUE;
+        goto done;
+    }
+
     /* Create a compatible surface, note that the colors are RGB ordered */
     surface =
         SDL_CreateRGBSurface(0, biWidth, biHeight, biBitCount, Rmask, Gmask,
