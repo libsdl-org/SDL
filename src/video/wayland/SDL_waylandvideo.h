@@ -47,6 +47,8 @@ typedef struct {
     int size;
 } SDL_WaylandCursorTheme;
 
+typedef struct SDL_WaylandOutputData SDL_WaylandOutputData;
+
 typedef struct {
     SDL_bool initializing;
     struct wl_display *display;
@@ -80,7 +82,7 @@ typedef struct {
     struct xkb_context *xkb_context;
     struct SDL_WaylandInput *input;
     struct SDL_WaylandTabletManager *tablet_manager;
-    struct SDL_WaylandOutputData *output_list;
+    SDL_WaylandOutputData *output_list;
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
     struct SDL_WaylandTouch *touch;
@@ -93,7 +95,7 @@ typedef struct {
     int relative_mouse_mode;
 } SDL_VideoData;
 
-typedef struct {
+struct SDL_WaylandOutputData {
     SDL_VideoData *videodata;
     struct wl_output *output;
     struct zxdg_output_v1 *xdg_output;
@@ -106,8 +108,8 @@ typedef struct {
     int index;
     SDL_VideoDisplay placeholder;
     int wl_output_done_count;
-    struct SDL_WaylandOutputData *next;
-} SDL_WaylandOutputData;
+    SDL_WaylandOutputData *next;
+};
 
 /* Needed here to get wl_surface declaration, fixes GitHub#4594 */
 #include "SDL_waylanddyn.h"

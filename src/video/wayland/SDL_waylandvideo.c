@@ -640,7 +640,8 @@ Wayland_free_display(uint32_t id)
 static void
 Wayland_init_xdg_output(SDL_VideoData *d)
 {
-    for (SDL_WaylandOutputData *node = (SDL_WaylandOutputData*)d->output_list; node != NULL; node = (SDL_WaylandOutputData*)node->next) {
+    SDL_WaylandOutputData *node;
+    for (node = (SDL_WaylandOutputData*)d->output_list; node != NULL; node = (SDL_WaylandOutputData*)node->next) {
         node->xdg_output = zxdg_output_manager_v1_get_xdg_output(node->videodata->xdg_output_manager, node->output);
         zxdg_output_v1_add_listener(node->xdg_output, &xdg_output_listener, node);
     }
