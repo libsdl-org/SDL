@@ -756,7 +756,6 @@ VITA_GXM_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Textu
         float scale_x, float scale_y)
 {
     VITA_GXM_RenderData *data = (VITA_GXM_RenderData *) renderer->driverdata;
-    VITA_GXM_TextureData* vita_texture = (VITA_GXM_TextureData*) texture->driverdata;
     int i;
     int count = indices ? num_indices : num_vertices;
 
@@ -764,6 +763,7 @@ VITA_GXM_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Textu
     size_indices = indices ? size_indices : 0;
 
     if (texture) {
+        VITA_GXM_TextureData* vita_texture = (VITA_GXM_TextureData*) texture->driverdata;
         texture_vertex *vertices;
 
         vertices = (texture_vertex *)pool_malloc(
