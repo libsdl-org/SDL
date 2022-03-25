@@ -147,6 +147,8 @@ SDL_WAYLAND_SYM(int, xkb_keymap_key_get_syms_by_level, (struct xkb_keymap *,
                                                         xkb_layout_index_t,
                                                         const xkb_keysym_t **) )
 SDL_WAYLAND_SYM(uint32_t, xkb_keysym_to_utf32, (xkb_keysym_t) )
+SDL_WAYLAND_SYM(uint32_t, xkb_keymap_mod_get_index, (struct xkb_keymap *,
+                                                      const char *) )
 
 #ifdef HAVE_LIBDECOR_H
 SDL_WAYLAND_MODULE(WAYLAND_LIBDECOR)
