@@ -33,6 +33,7 @@
 #include <psp2/gxm.h>
 #include <psp2/types.h>
 #include <psp2/kernel/sysmem.h>
+#include <psp2/kernel/clib.h>
 
 #include <string.h>
 
@@ -79,6 +80,7 @@ typedef struct gxm_texture {
     SceGxmColorSurface gxm_colorsurface;
     SceGxmDepthStencilSurface gxm_depthstencil;
     SceUID depth_UID;
+    SDL_bool cdram;
 } gxm_texture;
 
 typedef struct fragment_programs {
@@ -186,6 +188,8 @@ typedef struct
     blend_fragment_programs blendFragmentPrograms;
 
     gxm_drawstate_cache drawstate;
+    SceClibMspace texturePool;
+    SceUID texturePoolUID;
 } VITA_GXM_RenderData;
 
 typedef struct

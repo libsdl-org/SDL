@@ -416,28 +416,28 @@ gxm_init(SDL_Renderer *renderer)
     }
 
     // allocate ring buffer memory using default sizes
-    vdmRingBuffer = mem_gpu_alloc(
+    vdmRingBuffer = vita_mem_alloc(
         SCE_KERNEL_MEMBLOCK_TYPE_USER_RW_UNCACHE,
         SCE_GXM_DEFAULT_VDM_RING_BUFFER_SIZE,
         4,
         SCE_GXM_MEMORY_ATTRIB_READ,
         &data->vdmRingBufferUid);
 
-    vertexRingBuffer = mem_gpu_alloc(
+    vertexRingBuffer = vita_mem_alloc(
         SCE_KERNEL_MEMBLOCK_TYPE_USER_RW_UNCACHE,
         SCE_GXM_DEFAULT_VERTEX_RING_BUFFER_SIZE,
         4,
         SCE_GXM_MEMORY_ATTRIB_READ,
         &data->vertexRingBufferUid);
 
-    fragmentRingBuffer = mem_gpu_alloc(
+    fragmentRingBuffer = vita_mem_alloc(
         SCE_KERNEL_MEMBLOCK_TYPE_USER_RW_UNCACHE,
         SCE_GXM_DEFAULT_FRAGMENT_RING_BUFFER_SIZE,
         4,
         SCE_GXM_MEMORY_ATTRIB_READ,
         &data->fragmentRingBufferUid);
 
-    fragmentUsseRingBuffer = mem_fragment_usse_alloc(
+    fragmentUsseRingBuffer = vita_mem_fragment_usse_alloc(
         SCE_GXM_DEFAULT_FRAGMENT_USSE_RING_BUFFER_SIZE,
         &data->fragmentUsseRingBufferUid,
         &fragmentUsseRingBufferOffset);
@@ -482,7 +482,7 @@ gxm_init(SDL_Renderer *renderer)
     for (i = 0; i < VITA_GXM_BUFFERS; i++) {
 
         // allocate memory for display
-        data->displayBufferData[i] = mem_gpu_alloc(
+        data->displayBufferData[i] = vita_mem_alloc(
             SCE_KERNEL_MEMBLOCK_TYPE_USER_CDRAM_RW,
             4 * VITA_GXM_SCREEN_STRIDE * VITA_GXM_SCREEN_HEIGHT,
             SCE_GXM_COLOR_SURFACE_ALIGNMENT,
@@ -527,7 +527,7 @@ gxm_init(SDL_Renderer *renderer)
 
 
     // allocate the depth buffer
-    data->depthBufferData = mem_gpu_alloc(
+    data->depthBufferData = vita_mem_alloc(
         SCE_KERNEL_MEMBLOCK_TYPE_USER_RW_UNCACHE,
         4 * sampleCount,
         SCE_GXM_DEPTHSTENCIL_SURFACE_ALIGNMENT,
@@ -535,7 +535,7 @@ gxm_init(SDL_Renderer *renderer)
         &data->depthBufferUid);
 
     // allocate the stencil buffer
-    data->stencilBufferData = mem_gpu_alloc(
+    data->stencilBufferData = vita_mem_alloc(
         SCE_KERNEL_MEMBLOCK_TYPE_USER_RW_UNCACHE,
         4 * sampleCount,
         SCE_GXM_DEPTHSTENCIL_SURFACE_ALIGNMENT,
@@ -567,19 +567,19 @@ gxm_init(SDL_Renderer *renderer)
 
 
     // allocate memory for buffers and USSE code
-    patcherBuffer = mem_gpu_alloc(
+    patcherBuffer = vita_mem_alloc(
         SCE_KERNEL_MEMBLOCK_TYPE_USER_RW_UNCACHE,
         patcherBufferSize,
         4,
         SCE_GXM_MEMORY_ATTRIB_READ | SCE_GXM_MEMORY_ATTRIB_WRITE,
         &data->patcherBufferUid);
 
-    patcherVertexUsse = mem_vertex_usse_alloc(
+    patcherVertexUsse = vita_mem_vertex_usse_alloc(
         patcherVertexUsseSize,
         &data->patcherVertexUsseUid,
         &patcherVertexUsseOffset);
 
-    patcherFragmentUsse = mem_fragment_usse_alloc(
+    patcherFragmentUsse = vita_mem_fragment_usse_alloc(
         patcherFragmentUsseSize,
         &data->patcherFragmentUsseUid,
         &patcherFragmentUsseOffset);
@@ -730,7 +730,7 @@ gxm_init(SDL_Renderer *renderer)
         }
 
         // create the clear triangle vertex/index data
-        data->clearVertices = (clear_vertex *)mem_gpu_alloc(
+        data->clearVertices = (clear_vertex *)vita_mem_alloc(
             SCE_KERNEL_MEMBLOCK_TYPE_USER_RW_UNCACHE,
             3*sizeof(clear_vertex),
             4,
@@ -742,7 +742,7 @@ gxm_init(SDL_Renderer *renderer)
     // Allocate a 64k * 2 bytes = 128 KiB buffer and store all possible
     // 16-bit indices in linear ascending order, so we can use this for
     // all drawing operations where we don't want to use indexing.
-    data->linearIndices = (uint16_t *)mem_gpu_alloc(
+    data->linearIndices = (uint16_t *)vita_mem_alloc(
         SCE_KERNEL_MEMBLOCK_TYPE_USER_RW_UNCACHE,
         UINT16_MAX*sizeof(uint16_t),
         sizeof(uint16_t),
@@ -873,7 +873,7 @@ gxm_init(SDL_Renderer *renderer)
     data->textureWvpParam = (SceGxmProgramParameter *)sceGxmProgramFindParameterByName(textureVertexProgramGxp, "wvp");
 
     // Allocate memory for the memory pool
-    data->pool_addr[0] = mem_gpu_alloc(
+    data->pool_addr[0] = vita_mem_alloc(
         SCE_KERNEL_MEMBLOCK_TYPE_USER_RW,
         VITA_GXM_POOL_SIZE,
         sizeof(void *),
@@ -881,7 +881,7 @@ gxm_init(SDL_Renderer *renderer)
         &data->poolUid[0]
     );
 
-    data->pool_addr[1] = mem_gpu_alloc(
+    data->pool_addr[1] = vita_mem_alloc(
         SCE_KERNEL_MEMBLOCK_TYPE_USER_RW,
         VITA_GXM_POOL_SIZE,
         sizeof(void *),
@@ -920,28 +920,28 @@ void gxm_finish(SDL_Renderer *renderer)
     free_fragment_programs(data, &data->blendFragmentPrograms.blend_mode_mod);
     free_fragment_programs(data, &data->blendFragmentPrograms.blend_mode_mul);
 
-    mem_gpu_free(data->linearIndicesUid);
-    mem_gpu_free(data->clearVerticesUid);
+    vita_mem_free(data->linearIndicesUid);
+    vita_mem_free(data->clearVerticesUid);
 
     // wait until display queue is finished before deallocating display buffers
     sceGxmDisplayQueueFinish();
 
     // clean up display queue
-    mem_gpu_free(data->depthBufferUid);
+    vita_mem_free(data->depthBufferUid);
 
     for (size_t i = 0; i < VITA_GXM_BUFFERS; i++)
     {
         // clear the buffer then deallocate
         SDL_memset(data->displayBufferData[i], 0, VITA_GXM_SCREEN_HEIGHT * VITA_GXM_SCREEN_STRIDE * 4);
-        mem_gpu_free(data->displayBufferUid[i]);
+        vita_mem_free(data->displayBufferUid[i]);
 
         // destroy the sync object
         sceGxmSyncObjectDestroy(data->displayBufferSync[i]);
     }
 
     // Free the depth and stencil buffer
-    mem_gpu_free(data->depthBufferUid);
-    mem_gpu_free(data->stencilBufferUid);
+    vita_mem_free(data->depthBufferUid);
+    vita_mem_free(data->stencilBufferUid);
 
     // unregister programs and destroy shader patcher
     sceGxmShaderPatcherUnregisterProgram(data->shaderPatcher, data->clearFragmentProgramId);
@@ -952,23 +952,24 @@ void gxm_finish(SDL_Renderer *renderer)
     sceGxmShaderPatcherUnregisterProgram(data->shaderPatcher, data->textureVertexProgramId);
 
     sceGxmShaderPatcherDestroy(data->shaderPatcher);
-    mem_fragment_usse_free(data->patcherFragmentUsseUid);
-    mem_vertex_usse_free(data->patcherVertexUsseUid);
-    mem_gpu_free(data->patcherBufferUid);
+    vita_mem_fragment_usse_free(data->patcherFragmentUsseUid);
+    vita_mem_vertex_usse_free(data->patcherVertexUsseUid);
+    vita_mem_free(data->patcherBufferUid);
 
     // destroy the render target
     sceGxmDestroyRenderTarget(data->renderTarget);
 
     // destroy the gxm context
     sceGxmDestroyContext(data->gxm_context);
-    mem_fragment_usse_free(data->fragmentUsseRingBufferUid);
-    mem_gpu_free(data->fragmentRingBufferUid);
-    mem_gpu_free(data->vertexRingBufferUid);
-    mem_gpu_free(data->vdmRingBufferUid);
+    vita_mem_fragment_usse_free(data->fragmentUsseRingBufferUid);
+    vita_mem_free(data->fragmentRingBufferUid);
+    vita_mem_free(data->vertexRingBufferUid);
+    vita_mem_free(data->vdmRingBufferUid);
     SDL_free(data->contextParams.hostMem);
 
-    mem_gpu_free(data->poolUid[0]);
-    mem_gpu_free(data->poolUid[1]);
+    vita_mem_free(data->poolUid[0]);
+    vita_mem_free(data->poolUid[1]);
+    vita_gpu_mem_destroy(data);
 
     // terminate libgxm
     sceGxmTerminate();
@@ -977,16 +978,20 @@ void gxm_finish(SDL_Renderer *renderer)
 // textures
 
 void
-free_gxm_texture(gxm_texture *texture)
+free_gxm_texture(VITA_GXM_RenderData *data, gxm_texture *texture)
 {
     if (texture) {
         if (texture->gxm_rendertarget) {
             sceGxmDestroyRenderTarget(texture->gxm_rendertarget);
         }
         if (texture->depth_UID) {
-            mem_gpu_free(texture->depth_UID);
+            vita_mem_free(texture->depth_UID);
         }
-        mem_gpu_free(texture->data_UID);
+        if (texture->cdram) {
+            vita_gpu_mem_free(data, sceGxmTextureGetData(&texture->gxm_tex));
+        } else {
+            vita_mem_free(texture->data_UID);
+        }
         SDL_free(texture);
     }
 }
@@ -1033,24 +1038,24 @@ create_gxm_texture(VITA_GXM_RenderData *data, unsigned int w, unsigned int h, Sc
     *return_pitch = aligned_w * tex_format_to_bytespp(format);
 
     /* Allocate a GPU buffer for the texture */
-    texture_data = mem_gpu_alloc(
-        SCE_KERNEL_MEMBLOCK_TYPE_USER_CDRAM_RW,
-        tex_size,
-        SCE_GXM_TEXTURE_ALIGNMENT,
-        SCE_GXM_MEMORY_ATTRIB_READ | SCE_GXM_MEMORY_ATTRIB_WRITE,
-        &texture->data_UID
+    texture_data = vita_gpu_mem_alloc(
+        data,
+        tex_size
     );
 
     /* Try SCE_KERNEL_MEMBLOCK_TYPE_USER_RW_UNCACHE in case we're out of VRAM */
     if (!texture_data) {
         SDL_LogWarn(SDL_LOG_CATEGORY_RENDER, "CDRAM texture allocation failed\n");
-        texture_data = mem_gpu_alloc(
+        texture_data = vita_mem_alloc(
             SCE_KERNEL_MEMBLOCK_TYPE_USER_RW_UNCACHE,
             tex_size,
             SCE_GXM_TEXTURE_ALIGNMENT,
             SCE_GXM_MEMORY_ATTRIB_READ | SCE_GXM_MEMORY_ATTRIB_WRITE,
             &texture->data_UID
         );
+        texture->cdram = 0;
+    } else {
+        texture->cdram = 1;
     }
 
     if (!texture_data) {
@@ -1064,7 +1069,7 @@ create_gxm_texture(VITA_GXM_RenderData *data, unsigned int w, unsigned int h, Sc
     /* Create the gxm texture */
     ret = sceGxmTextureInitLinear( &texture->gxm_tex, texture_data, format, texture_w, h, 0);
     if (ret < 0) {
-      free_gxm_texture(texture);
+      free_gxm_texture(data, texture);
       SDL_LogError(SDL_LOG_CATEGORY_RENDER, "texture init failed: %x\n", ret);
       return NULL;
     }
@@ -1090,13 +1095,13 @@ create_gxm_texture(VITA_GXM_RenderData *data, unsigned int w, unsigned int h, Sc
         );
 
         if (err < 0) {
-            free_gxm_texture(texture);
+            free_gxm_texture(data, texture);
             SDL_LogError(SDL_LOG_CATEGORY_RENDER, "color surface init failed: %x\n", err);
             return NULL;
         }
 
         // allocate it
-        depthBufferData = mem_gpu_alloc(
+        depthBufferData = vita_mem_alloc(
             SCE_KERNEL_MEMBLOCK_TYPE_USER_RW_UNCACHE,
             4*sampleCount,
             SCE_GXM_DEPTHSTENCIL_SURFACE_ALIGNMENT,
@@ -1113,7 +1118,7 @@ create_gxm_texture(VITA_GXM_RenderData *data, unsigned int w, unsigned int h, Sc
             NULL);
 
         if (err < 0) {
-            free_gxm_texture(texture);
+            free_gxm_texture(data, texture);
             SDL_LogError(SDL_LOG_CATEGORY_RENDER, "depth stencil init failed: %x\n", err);
             return NULL;
         }
@@ -1138,7 +1143,7 @@ create_gxm_texture(VITA_GXM_RenderData *data, unsigned int w, unsigned int h, Sc
             texture->gxm_rendertarget = tgt;
 
             if (err < 0) {
-                free_gxm_texture(texture);
+                free_gxm_texture(data, texture);
                 SDL_LogError(SDL_LOG_CATEGORY_RENDER, "create render target failed: %x\n", err);
                 return NULL;
             }
@@ -1188,7 +1193,7 @@ void gxm_init_for_common_dialog(void)
     for (int i = 0; i < VITA_GXM_BUFFERS; i += 1)
     {
         buffer_for_common_dialog[i].displayData.wait_vblank = SDL_TRUE;
-        buffer_for_common_dialog[i].displayData.address = mem_gpu_alloc(
+        buffer_for_common_dialog[i].displayData.address = vita_mem_alloc(
             SCE_KERNEL_MEMBLOCK_TYPE_USER_CDRAM_RW,
             4 * VITA_GXM_SCREEN_STRIDE * VITA_GXM_SCREEN_HEIGHT,
             SCE_GXM_COLOR_SURFACE_ALIGNMENT,
@@ -1236,7 +1241,7 @@ void gxm_term_for_common_dialog(void)
     sceGxmDisplayQueueFinish();
     for (int i = 0; i < VITA_GXM_BUFFERS; i += 1)
     {
-        mem_gpu_free(buffer_for_common_dialog[i].uid);
+        vita_mem_free(buffer_for_common_dialog[i].uid);
         sceGxmSyncObjectDestroy(buffer_for_common_dialog[i].sync);
     }
 }
