@@ -96,6 +96,17 @@ struct SDL_WaylandInput {
         struct xkb_state *state;
         struct xkb_compose_table *compose_table;
         struct xkb_compose_state *compose_state;
+
+        /* Keyboard layout "group" */
+        uint32_t current_group;
+
+        /* Modifier bitshift values */
+        uint32_t idx_shift;
+        uint32_t idx_ctrl;
+        uint32_t idx_alt;
+        uint32_t idx_gui;
+        uint32_t idx_num;
+        uint32_t idx_caps;
     } xkb;
 
     /* information about axis events on current frame */

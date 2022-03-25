@@ -817,6 +817,16 @@ keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
         return;
     }
 
+    #define GET_MOD_INDEX(mod) \
+        WAYLAND_xkb_keymap_mod_get_index(input->xkb.keymap, XKB_MOD_NAME_##mod)
+    input->xkb.idx_shift = 1 << GET_MOD_INDEX(SHIFT);
+    input->xkb.idx_ctrl = 1 << GET_MOD_INDEX(CTRL);
+    input->xkb.idx_alt = 1 << GET_MOD_INDEX(ALT);
+    input->xkb.idx_gui = 1 << GET_MOD_INDEX(LOGO);
+    input->xkb.idx_num = 1 << GET_MOD_INDEX(NUM);
+    input->xkb.idx_caps = 1 << GET_MOD_INDEX(CAPS);
+    #undef GET_MOD_INDEX
+
     input->xkb.state = WAYLAND_xkb_state_new(input->xkb.keymap);
     if (!input->xkb.state) {
         fprintf(stderr, "failed to create XKB state\n");
@@ -831,10 +841,14 @@ keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
      */
 
     /* Look up the preferred locale, falling back to "C" as default */
-    if (!(locale = SDL_getenv("LC_ALL")))
-        if (!(locale = SDL_getenv("LC_CTYPE")))
-            if (!(locale = SDL_getenv("LANG")))
+    if (!(locale = SDL_getenv("LC_ALL"))) {
+        if (!(locale = SDL_getenv("LC_CTYPE"))) {
+            if (!(locale = SDL_getenv("LANG"))) {
                 locale = "C";
+            }
+        }
+    }
+
     /* Set up XKB compose table */
     input->xkb.compose_table = WAYLAND_xkb_compose_table_new_from_locale(input->display->xkb_context,
                                               locale, XKB_COMPOSE_COMPILE_NO_FLAGS);
@@ -1056,26 +1070,24 @@ keyboard_handle_modifiers(void *data, struct wl_keyboard *keyboard,
 {
     struct SDL_WaylandInput *input = data;
     Wayland_Keymap keymap;
-    xkb_mod_index_t shift, ctrl, alt, gui, num, caps;
     uint32_t modstate = (mods_depressed | mods_latched | mods_locked);
-
-    shift = WAYLAND_xkb_keymap_mod_get_index(input->xkb.keymap, XKB_MOD_NAME_SHIFT);
-    ctrl = WAYLAND_xkb_keymap_mod_get_index(input->xkb.keymap, XKB_MOD_NAME_CTRL);
-    alt = WAYLAND_xkb_keymap_mod_get_index(input->xkb.keymap, XKB_MOD_NAME_ALT);
-    gui = WAYLAND_xkb_keymap_mod_get_index(input->xkb.keymap, XKB_MOD_NAME_LOGO);
-    num = WAYLAND_xkb_keymap_mod_get_index(input->xkb.keymap, XKB_MOD_NAME_NUM);
-    caps = WAYLAND_xkb_keymap_mod_get_index(input->xkb.keymap, XKB_MOD_NAME_CAPS);
 
     WAYLAND_xkb_state_update_mask(input->xkb.state, mods_depressed, mods_latched,
                           mods_locked, 0, 0, group);
 
-    SDL_ToggleModState(KMOD_SHIFT, modstate & (1 << shift));
-    SDL_ToggleModState(KMOD_CTRL, modstate & (1 << ctrl));
-    SDL_ToggleModState(KMOD_CAPS, modstate & (1 << alt));
-    SDL_ToggleModState(KMOD_GUI, modstate & (1 << gui));
-    SDL_ToggleModState(KMOD_NUM, modstate & (1 << num));
-    SDL_ToggleModState(KMOD_CAPS, modstate & (1 << caps));
+    SDL_ToggleModState(KMOD_SHIFT, modstate & input->xkb.idx_shift);
+    SDL_ToggleModState(KMOD_CTRL, modstate & input->xkb.idx_ctrl);
+    SDL_ToggleModState(KMOD_ALT, modstate & input->xkb.idx_alt);
+    SDL_ToggleModState(KMOD_GUI, modstate & input->xkb.idx_gui);
+    SDL_ToggleModState(KMOD_NUM, modstate & input->xkb.idx_num);
+    SDL_ToggleModState(KMOD_CAPS, modstate & input->xkb.idx_caps);
 
+    if (group == input->xkb.current_group) {
+        return;
+    }
+
+    /* The layout changed, remap and fire an event */
+    input->xkb.current_group = group;
     keymap.layout = group;
     SDL_GetDefaultKeymap(keymap.keymap);
     WAYLAND_xkb_keymap_key_for_each(input->xkb.keymap,
@@ -2032,6 +2044,7 @@ Wayland_display_add_input(SDL_VideoData *d, uint32_t id, uint32_t version)
     input->seat = wl_registry_bind(d->registry, id, &wl_seat_interface, SDL_min(5, version));
     input->sx_w = wl_fixed_from_int(0);
     input->sy_w = wl_fixed_from_int(0);
+    input->xkb.current_group = ~0;
     d->input = input;
 
     if (d->data_device_manager != NULL) {
