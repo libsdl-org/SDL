@@ -910,6 +910,8 @@ keyboard_input_get_text(char text[8], const struct SDL_WaylandInput *input, uint
     SDL_WindowData *window = input->keyboard_focus;
     const xkb_keysym_t *syms;
     xkb_keysym_t sym;
+    SDL_Keymod mod;
+    SDL_bool caps;
 
     if (!window || window->keyboard_device != input || !input->xkb.state) {
         return SDL_FALSE;
@@ -920,6 +922,24 @@ keyboard_input_get_text(char text[8], const struct SDL_WaylandInput *input, uint
         return SDL_FALSE;
     }
     sym = syms[0];
+
+    /* Wayland is actually pretty cool and sends key codes based on presumed
+     * caps lock state, problem is that it isn't totally accurate if the key
+     * has been remapped, so we have to force caps for our purposes.
+     * -flibit
+     */
+    mod = SDL_GetModState();
+    caps = (
+        /* Caps lock without shift... */
+        ((mod & KMOD_CAPS) && !(mod & KMOD_SHIFT)) ||
+        /* No caps lock with shift... */
+        (!(mod & KMOD_CAPS) && (mod & KMOD_SHIFT))
+    );
+    if (caps) {
+        sym = toupper(sym);
+    } else {
+        sym = tolower(sym);
+    }
 
 #ifdef SDL_USE_IME
     if (SDL_IME_ProcessKeyEvent(sym, key + 8)) {
