@@ -84,6 +84,7 @@ static const struct {
     { XKB_KEY_Super_R, SDLK_RGUI },
     { XKB_KEY_Hyper_L, SDLK_LGUI },
     { XKB_KEY_Hyper_R, SDLK_RGUI },
+    { XKB_KEY_BackSpace, SDLK_BACKSPACE },
 };
 
 struct SDL_WaylandTouchPoint {
