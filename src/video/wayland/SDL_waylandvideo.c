@@ -389,7 +389,7 @@ display_handle_geometry(void *data,
     }
 
     /* Apply the change from wl-output only if xdg-output is not supported */
-    if (driverdata->has_logical_position) {
+    if (!driverdata->has_logical_position) {
         driverdata->x = x;
         driverdata->y = y;
     }
