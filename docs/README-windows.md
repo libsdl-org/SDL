@@ -1,5 +1,16 @@
 # Windows
 
+## LLVM and Intel C++ compiler support
+
+SDL will build with the Visual Studio project files with LLVM-based compilers, such as the Intel oneAPI C++
+compiler, but you'll have to manually add the "-msse3" command line option
+to at least the SDL_audiocvt.c source file, and possibly others. This may
+not be necessary if you build SDL with CMake instead of the included Visual
+Studio solution.
+
+Details are here: https://github.com/libsdl-org/SDL/issues/5186
+
+
 ## OpenGL ES 2.x support
 
 SDL has support for OpenGL ES 2.x under Windows via two alternative
