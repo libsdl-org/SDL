@@ -5,6 +5,12 @@ endif()
 cmake_minimum_required(VERSION 3.0.0)
 project(SDL2 C CXX)
 
+if(APPLE AND NOT IOS)
+  # `enable_language(OBJC)` on iOS causes a CMake configure error
+  # https://github.com/libsdl-org/SDL/issues/5452
+  enable_language(OBJC)
+endif()
+
 if (HAIKU)
   set(LINKER_LANGUAGE CXX)
 endif()
@@ -1882,24 +1888,29 @@ elseif(APPLE)
     else()
       file(GLOB JOYSTICK_SOURCES ${SDL2_SOURCE_DIR}/src/joystick/darwin/*.c)
       set_source_files_properties(${MFI_JOYSTICK_SOURCES} PROPERTIES COMPILE_FLAGS -fobjc-weak)
-      check_objc_source_compiles("
-          #include <AvailabilityMacros.h>
-          #include <TargetConditionals.h>
-          #import <Foundation/Foundation.h>
-          #import <GameController/GameController.h>
-          #if MAC_OS_X_VERSION_MIN_REQUIRED < 1080
-          #error GameController framework doesn't work on this configuration
-          #endif
-          #if TARGET_CPU_X86
-          #error GameController framework doesn't work on this configuration
-          #endif
-          int main() { return 0; }" HAVE_FRAMEWORK_GAMECONTROLLER)
-      check_objc_source_compiles("
-          #include <AvailabilityMacros.h>
-          #include <TargetConditionals.h>
-          #import <Foundation/Foundation.h>
-          #import <CoreHaptics/CoreHaptics.h>
-          int main() { return 0; }" HAVE_FRAMEWORK_COREHAPTICS)
+      if(IOS)
+          set(HAVE_FRAMEWORK_GAMECONTROLLER ON)
+          set(HAVE_FRAMEWORK_COREHAPTICS ON)
+      else()
+        check_objc_source_compiles("
+            #include <AvailabilityMacros.h>
+            #include <TargetConditionals.h>
+            #import <Foundation/Foundation.h>
+            #import <GameController/GameController.h>
+            #if MAC_OS_X_VERSION_MIN_REQUIRED < 1080
+            #error GameController framework doesn't work on this configuration
+            #endif
+            #if TARGET_CPU_X86
+            #error GameController framework doesn't work on this configuration
+            #endif
+            int main() { return 0; }" HAVE_FRAMEWORK_GAMECONTROLLER)
+        check_objc_source_compiles("
+            #include <AvailabilityMacros.h>
+            #include <TargetConditionals.h>
+            #import <Foundation/Foundation.h>
+            #import <CoreHaptics/CoreHaptics.h>
+            int main() { return 0; }" HAVE_FRAMEWORK_COREHAPTICS)
+      endif()
       if(HAVE_FRAMEWORK_GAMECONTROLLER AND HAVE_FRAMEWORK_COREHAPTICS)
         # Only enable MFI if we also have CoreHaptics to ensure rumble works
         set(SDL_JOYSTICK_MFI 1)
@@ -2006,15 +2017,19 @@ elseif(APPLE)
     endif()
 
     if(SDL_VULKAN OR SDL_METAL OR SDL_RENDER_METAL)
-      check_objc_source_compiles("
-        #include <AvailabilityMacros.h>
-        #import <Metal/Metal.h>
-        #import <QuartzCore/CAMetalLayer.h>
+      if(IOS)
+        set(HAVE_FRAMEWORK_METAL ON)
+      else()
+        check_objc_source_compiles("
+          #include <AvailabilityMacros.h>
+          #import <Metal/Metal.h>
+          #import <QuartzCore/CAMetalLayer.h>
 
-        #if (!TARGET_CPU_X86_64 && !TARGET_CPU_ARM64)
-        #error Metal doesn't work on this configuration
-        #endif
-        int main(int argc, char **argv) { return 0; }" HAVE_FRAMEWORK_METAL)
+          #if (!TARGET_CPU_X86_64 && !TARGET_CPU_ARM64)
+          #error Metal doesn't work on this configuration
+          #endif
+          int main(int argc, char **argv) { return 0; }" HAVE_FRAMEWORK_METAL)
+      endif()
       if(HAVE_FRAMEWORK_METAL)
         set(SDL_FRAMEWORK_METAL 1)
         set(SDL_FRAMEWORK_QUARTZCORE 1)
