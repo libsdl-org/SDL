@@ -74,6 +74,7 @@ typedef struct {
     struct xdg_activation_v1 *activation_manager;
     struct zwp_text_input_manager_v3 *text_input_manager;
     struct zxdg_output_manager_v1 *xdg_output_manager;
+    struct wp_viewporter *viewporter;
 
     EGLDisplay edpy;
     EGLContext context;
@@ -101,6 +102,7 @@ struct SDL_WaylandOutputData {
     struct zxdg_output_v1 *xdg_output;
     uint32_t registry_id;
     float scale_factor;
+    int native_width, native_height;
     int x, y, width, height, refresh, transform;
     SDL_DisplayOrientation orientation;
     int physical_width, physical_height;

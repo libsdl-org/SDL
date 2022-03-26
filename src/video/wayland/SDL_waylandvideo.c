@@ -54,6 +54,7 @@
 #include "text-input-unstable-v3-client-protocol.h"
 #include "tablet-unstable-v2-client-protocol.h"
 #include "xdg-output-unstable-v1-client-protocol.h"
+#include "viewporter-client-protocol.h"
 
 #ifdef HAVE_LIBDECOR_H
 #include <libdecor.h>
@@ -278,6 +279,8 @@ Wayland_CreateDevice(int devindex)
 
     device->free = Wayland_DeleteDevice;
 
+    device->disable_display_mode_switching = SDL_TRUE;
+
     return device;
 }
 
@@ -321,6 +324,7 @@ xdg_output_handle_logical_size(void *data, struct zxdg_output_v1 *xdg_output,
             return;
         }
     }
+
     driverdata->width = width;
     driverdata->height = height;
     driverdata->has_logical_size = SDL_TRUE;
@@ -359,6 +363,103 @@ static const struct zxdg_output_v1_listener xdg_output_listener = {
         xdg_output_handle_name,
         xdg_output_handle_description,
 };
+
+static void
+AddEmulatedModes(SDL_VideoDisplay *dpy, SDL_bool rot_90)
+{
+    struct EmulatedMode
+    {
+        int w;
+        int h;
+    };
+
+    /* Resolution lists courtesy of XWayland */
+    const struct EmulatedMode modes_4x3[] = {
+        /* 4:3 (1.33) */
+        { 2048, 1536 },
+        { 1920, 1440 },
+        { 1600, 1200 },
+        { 1440, 1080 },
+        { 1400, 1050 },
+        { 1280, 1024 },
+        { 1280, 960 },
+        { 1152, 864 },
+        { 1024, 768 },
+        { 800, 600 },
+        { 640, 480 },
+        { 320, 240 }
+    };
+
+    const struct EmulatedMode modes_16x10[] = {
+        /* 16:10 (1.6) */
+        { 2560, 1600 },
+        { 1920, 1200 },
+        { 1680, 1050 },
+        { 1440, 900 },
+        { 1280, 800 },
+        { 720, 480 },
+        { 640, 400 },
+        { 320, 200 }
+    };
+
+    const struct EmulatedMode modes_16x9[] = {
+        /* 16:9 (1.77) */
+        { 7680, 4320 },
+        { 6144, 3160 },
+        { 5120, 2880 },
+        { 4096, 2304 },
+        { 3840, 2160 },
+        { 3200, 1800 },
+        { 2880, 1620 },
+        { 2560, 1440 },
+        { 2048, 1152 },
+        { 1920, 1080 },
+        { 1600, 900 },
+        { 1368, 768 },
+        { 1280, 720 },
+        { 1024, 768 },
+        { 864, 486 },
+        { 720, 400 },
+        { 640, 350 }
+    };
+
+    const struct EmulatedMode *mode_list  = NULL;
+    int                        mode_list_size;
+    const int                  native_width  = (float)dpy->display_modes->w;
+    const int                  native_height = (float)dpy->display_modes->h;
+    const float                aspect        = (float)native_width / (float)native_height;
+
+    if (aspect >= 1.7f) { /* 16x9 (1.77) */
+        mode_list      = modes_16x9;
+        mode_list_size = SDL_arraysize(modes_16x9);
+    } else if (aspect >= 1.5f) { /* 16x10 (1.6) */
+        mode_list      = modes_16x10;
+        mode_list_size = SDL_arraysize(modes_16x10);
+    } else if (aspect >= 1.3f) { /* 4x3 (1.33) */
+        mode_list      = modes_4x3;
+        mode_list_size = SDL_arraysize(modes_4x3);
+    } else {
+        return; /* Some weird aspect we don't support */
+    }
+
+    for (int i = 0; i < mode_list_size; ++i) {
+        /* Only add modes that are smaller than the native mode */
+        if ((mode_list[i].w < native_width && mode_list[i].h < native_height) ||
+            (mode_list[i].w < native_width && mode_list[i].h == native_height)) {
+            SDL_DisplayMode mode = *dpy->display_modes;
+
+            if (rot_90) {
+                mode.w = mode_list[i].h;
+                mode.h = mode_list[i].w;
+            } else {
+                mode.w = mode_list[i].w;
+                mode.h = mode_list[i].h;
+            }
+
+            SDL_AddDisplayMode(dpy, &mode);
+        }
+    }
+}
 
 static void
 display_handle_geometry(void *data,
@@ -441,9 +542,11 @@ display_handle_mode(void *data,
                     int refresh)
 {
     SDL_WaylandOutputData* driverdata = data;
-    SDL_DisplayMode mode;
 
     if (flags & WL_OUTPUT_MODE_CURRENT) {
+        driverdata->native_width  = width;
+        driverdata->native_height = height;
+
         /*
          * Don't rotate this yet, wl-output coordinates are transformed in
          * handle_done and xdg-output coordinates are pre-transformed.
@@ -455,29 +558,6 @@ display_handle_mode(void *data,
 
         driverdata->refresh = refresh;
     }
-
-    /* Note that the width/height are NOT multiplied by scale_factor!
-     * This is intentional and is designed to get the unscaled modes, which is
-     * important for high-DPI games intending to use the display mode as the
-     * target drawable size. The scaled desktop mode will be added at the end
-     * when display_handle_done is called (see below).
-     */
-    SDL_zero(mode);
-    mode.format = SDL_PIXELFORMAT_RGB888;
-    if (driverdata->transform & WL_OUTPUT_TRANSFORM_90) {
-        mode.w = height;
-        mode.h = width;
-    } else {
-        mode.w = width;
-        mode.h = height;
-    }
-    mode.refresh_rate = (int)SDL_round(refresh / 1000.0); /* mHz to Hz */
-    mode.driverdata = driverdata->output;
-    if (driverdata->index > -1) {
-        SDL_AddDisplayMode(SDL_GetDisplay(driverdata->index), &mode);
-    } else {
-        SDL_AddDisplayMode(&driverdata->placeholder, &mode);
-    }
 }
 
 static void
@@ -485,7 +565,8 @@ display_handle_done(void *data,
                     struct wl_output *output)
 {
     SDL_WaylandOutputData* driverdata = data;
-    SDL_DisplayMode mode;
+    SDL_VideoData* video = driverdata->videodata;
+    SDL_DisplayMode native_mode, desktop_mode;
     SDL_VideoDisplay *dpy;
 
     /*
@@ -502,19 +583,51 @@ display_handle_done(void *data,
         return;
     }
 
-    SDL_zero(mode);
-    mode.format = SDL_PIXELFORMAT_RGB888;
+    /* The native display resolution */
+    SDL_zero(native_mode);
+    native_mode.format = SDL_PIXELFORMAT_RGB888;
 
-    if (driverdata->has_logical_size) {
-        /* xdg-output dimensions are already transformed, so no need to rotate. */
-        mode.w = driverdata->width;
-        mode.h = driverdata->height;
-    } else if (driverdata->transform & WL_OUTPUT_TRANSFORM_90) {
-        mode.w = driverdata->height / driverdata->scale_factor;
-        mode.h = driverdata->width / driverdata->scale_factor;
+    if (driverdata->transform & WL_OUTPUT_TRANSFORM_90) {
+        native_mode.w = driverdata->native_height;
+        native_mode.h = driverdata->native_width;
     } else {
-        mode.w = driverdata->width / driverdata->scale_factor;
-        mode.h = driverdata->height / driverdata->scale_factor;
+        native_mode.w = driverdata->native_width;
+        native_mode.h = driverdata->native_height;
+    }
+    native_mode.refresh_rate = (int)SDL_round(driverdata->refresh / 1000.0); /* mHz to Hz */
+    native_mode.driverdata   = driverdata->output;
+
+    /* The scaled desktop mode */
+    SDL_zero(desktop_mode);
+    desktop_mode.format = SDL_PIXELFORMAT_RGB888;
+
+    /* Scale the desktop coordinates, if xdg-output isn't present */
+    if (!driverdata->has_logical_size) {
+        driverdata->width /= driverdata->scale_factor;
+        driverdata->height /= driverdata->scale_factor;
+    }
+
+    /* xdg-output dimensions are already transformed, so no need to rotate. */
+    if (driverdata->has_logical_size || !(driverdata->transform & WL_OUTPUT_TRANSFORM_90)) {
+        desktop_mode.w = driverdata->width;
+        desktop_mode.h = driverdata->height;
+    } else {
+        desktop_mode.w = driverdata->height;
+        desktop_mode.h = driverdata->width;
+    }
+    desktop_mode.refresh_rate = (int)SDL_round(driverdata->refresh / 1000.0); /* mHz to Hz */
+    desktop_mode.driverdata = driverdata->output;
+
+    /*
+     * The native display mode is only exposed separately from the desktop size if:
+     * the desktop is scaled and the wp_viewporter protocol is supported.
+     */
+    if (driverdata->scale_factor > 1.0f && video->viewporter != NULL) {
+        if (driverdata->index > -1) {
+            SDL_AddDisplayMode(SDL_GetDisplay(driverdata->index), &native_mode);
+        } else {
+            SDL_AddDisplayMode(&driverdata->placeholder, &native_mode);
+        }
     }
 
     /* Calculate the display DPI */
@@ -542,18 +655,20 @@ display_handle_done(void *data,
                                                   ((float) driverdata->physical_height) / 25.4f);
     }
 
-    mode.refresh_rate = (int)SDL_round(driverdata->refresh / 1000.0); /* mHz to Hz */
-    mode.driverdata = driverdata->output;
-
     if (driverdata->index > -1) {
         dpy = SDL_GetDisplay(driverdata->index);
     } else {
         dpy = &driverdata->placeholder;
     }
 
-    SDL_AddDisplayMode(dpy, &mode);
-    SDL_SetCurrentDisplayMode(dpy, &mode);
-    SDL_SetDesktopDisplayMode(dpy, &mode);
+    SDL_AddDisplayMode(dpy, &desktop_mode);
+    SDL_SetCurrentDisplayMode(dpy, &desktop_mode);
+    SDL_SetDesktopDisplayMode(dpy, &desktop_mode);
+
+    /* Add emulated modes if wp_viewporter is supported. */
+    if (video->viewporter) {
+        AddEmulatedModes(dpy, (driverdata->transform & WL_OUTPUT_TRANSFORM_90) != 0);
+    }
 
     if (driverdata->index == -1) {
         /* First time getting display info, create the VideoDisplay */
@@ -600,7 +715,7 @@ Wayland_add_display(SDL_VideoData *d, uint32_t id)
     data->videodata = d;
     data->output = output;
     data->registry_id = id;
-    data->scale_factor = 1.0;
+    data->scale_factor = 1.0f;
     data->index = -1;
 
     wl_output_add_listener(output, &output_listener, data);
@@ -756,6 +871,8 @@ display_handle_global(void *data, struct wl_registry *registry, uint32_t id,
         version = SDL_min(version, 3); /* Versions 1 through 3 are supported. */
         d->xdg_output_manager = wl_registry_bind(d->registry, id, &zxdg_output_manager_v1_interface, version);
         Wayland_init_xdg_output(d);
+    } else if (SDL_strcmp(interface, "wp_viewporter") == 0) {
+        d->viewporter = wl_registry_bind(d->registry, id, &wp_viewporter_interface, 1);
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
     } else if (SDL_strcmp(interface, "qt_touch_extension") == 0) {
@@ -943,6 +1060,10 @@ Wayland_VideoQuit(_THIS)
 
     if (data->xdg_output_manager) {
         zxdg_output_manager_v1_destroy(data->xdg_output_manager);
+    }
+
+    if (data->viewporter) {
+        wp_viewporter_destroy(data->viewporter);
     }
 
     if (data->compositor)
