@@ -132,15 +132,18 @@ static SDL_bool CompileShader(GLhandleARB shader, const char *source)
     glCompileShaderARB(shader);
     glGetObjectParameterivARB(shader, GL_OBJECT_COMPILE_STATUS_ARB, &status);
     if (status == 0) {
-        GLint length;
+        GLint length = 0;
         char *info;
 
         glGetObjectParameterivARB(shader, GL_OBJECT_INFO_LOG_LENGTH_ARB, &length);
-        info = SDL_stack_alloc(char, length+1);
-        glGetInfoLogARB(shader, length, NULL, info);
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to compile shader:\n%s\n%s", source, info);
-        SDL_stack_free(info);
-
+        info = (char *) SDL_malloc(length + 1);
+        if (!info) {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory!");
+        } else {
+            glGetInfoLogARB(shader, length, NULL, info);
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to compile shader:\n%s\n%s", source, info);
+            SDL_free(info);
+        }
         return SDL_FALSE;
     } else {
         return SDL_TRUE;
@@ -157,15 +160,18 @@ static SDL_bool LinkProgram(ShaderData *data)
 
     glGetObjectParameterivARB(data->program, GL_OBJECT_LINK_STATUS_ARB, &status);
     if (status == 0) {
-        GLint length;
+        GLint length = 0;
         char *info;
 
         glGetObjectParameterivARB(data->program, GL_OBJECT_INFO_LOG_LENGTH_ARB, &length);
-        info = SDL_stack_alloc(char, length+1);
-        glGetInfoLogARB(data->program, length, NULL, info);
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to link program:\n%s", info);
-        SDL_stack_free(info);
-
+        info = (char *) SDL_malloc(length + 1);
+        if (!info) {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory!");
+        } else {
+            glGetInfoLogARB(data->program, length, NULL, info);
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to link program:\n%s", info);
+            SDL_free(info);
+        }
         return SDL_FALSE;
     } else {
         return SDL_TRUE;
