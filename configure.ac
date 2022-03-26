@@ -1631,7 +1631,8 @@ dnl See if libdecor is available
             if test x$enable_libdecor = xyes; then
                 AC_MSG_CHECKING(for libdecor support)
                 AS_IF([$PKG_CONFIG --exists libdecor-0],
-                      [video_libdecor=yes],
+[[                    video_libdecor=yes
+                      DECOR_LIBS=`$PKG_CONFIG --libs libdecor-0`]],
                       [video_libdecor=no])
                 AC_MSG_RESULT($video_libdecor)
                 if test x$video_libdecor = xyes; then
@@ -1646,7 +1647,7 @@ dnl See if libdecor is available
                        enable_libdecor_shared=no
                     fi
 
-                    decor_lib=[`find_lib "libdecor-0.so.*" "" | sed 's/.*\/\(.*\)/\1/; q'`]
+                    decor_lib=[`find_lib "libdecor-0.so.*" "$DECOR_LIBS" | sed 's/.*\/\(.*\)/\1/; q'`]
 
                     if test x$have_loadso != xyes && \
                        test x$enable_libdecor_shared = xyes; then
