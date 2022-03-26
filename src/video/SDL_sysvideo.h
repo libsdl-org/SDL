@@ -345,6 +345,7 @@ struct SDL_VideoDevice
     Uint32 next_object_id;
     char *clipboard_text;
     SDL_bool setting_display_mode;
+    SDL_bool disable_display_mode_switching;
 
     /* * * */
     /* Data used by the GL drivers */

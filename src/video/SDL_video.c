@@ -1339,14 +1339,17 @@ SDL_UpdateFullscreenMode(SDL_Window * window, SDL_bool fullscreen)
                     resized = SDL_FALSE;
                 }
 
-                /* only do the mode change if we want exclusive fullscreen */
-                if ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) != SDL_WINDOW_FULLSCREEN_DESKTOP) {
-                    if (SDL_SetDisplayModeForDisplay(display, &fullscreen_mode) < 0) {
-                        return -1;
-                    }
-                } else {
-                    if (SDL_SetDisplayModeForDisplay(display, NULL) < 0) {
-                        return -1;
+                /* Don't try to change the display mode if the driver doesn't want it. */
+                if (_this->disable_display_mode_switching == SDL_FALSE) {
+                    /* only do the mode change if we want exclusive fullscreen */
+                    if ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) != SDL_WINDOW_FULLSCREEN_DESKTOP) {
+                        if (SDL_SetDisplayModeForDisplay(display, &fullscreen_mode) < 0) {
+                            return -1;
+                        }
+                    } else {
+                        if (SDL_SetDisplayModeForDisplay(display, NULL) < 0) {
+                            return -1;
+                        }
                     }
                 }
 
