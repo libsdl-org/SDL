@@ -294,6 +294,7 @@ xdg_output_handle_logical_position(void *data, struct zxdg_output_v1 *xdg_output
 
     driverdata->x = x;
     driverdata->y = y;
+    driverdata->has_logical_position = SDL_TRUE;
 }
 
 static void
@@ -302,8 +303,25 @@ xdg_output_handle_logical_size(void *data, struct zxdg_output_v1 *xdg_output,
 {
     SDL_WaylandOutputData* driverdata = data;
 
+    if (driverdata->width != 0 && driverdata->height != 0) {
+        /* FIXME: GNOME has a bug where the logical size does not account for
+         * scale, resulting in bogus viewport sizes.
+         *
+         * Until this is fixed, validate the scale, then override if necessary.
+         * -flibit
+         */
+        const float scale = (float) driverdata->width / (float) width;
+        if (scale != driverdata->scale_factor) {
+            SDL_LogWarn(
+                SDL_LOG_CATEGORY_VIDEO,
+                "xdg_output scale did not match, overriding with wl_output scale"
+            );
+            return;
+        }
+    }
     driverdata->width = width;
     driverdata->height = height;
+    driverdata->has_logical_size = SDL_TRUE;
 }
 
 static void
@@ -371,7 +389,7 @@ display_handle_geometry(void *data,
     }
 
     /* Apply the change from wl-output only if xdg-output is not supported */
-    if (driverdata->xdg_output) {
+    if (driverdata->has_logical_position) {
         driverdata->x = x;
         driverdata->y = y;
     }
@@ -428,7 +446,7 @@ display_handle_mode(void *data,
          * Don't rotate this yet, wl-output coordinates are transformed in
          * handle_done and xdg-output coordinates are pre-transformed.
          */
-        if (!driverdata->xdg_output) {
+        if (!driverdata->has_logical_size) {
             driverdata->width  = width;
             driverdata->height = height;
         }
@@ -485,7 +503,7 @@ display_handle_done(void *data,
     SDL_zero(mode);
     mode.format = SDL_PIXELFORMAT_RGB888;
 
-    if (driverdata->xdg_output) {
+    if (driverdata->has_logical_size) {
         /* xdg-output dimensions are already transformed, so no need to rotate. */
         mode.w = driverdata->width;
         mode.h = driverdata->height;
