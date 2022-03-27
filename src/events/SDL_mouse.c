@@ -109,6 +109,28 @@ SDL_TouchMouseEventsChanged(void *userdata, const char *name, const char *oldVal
     mouse->touch_mouse_events = SDL_GetStringBoolean(hint, SDL_TRUE);
 }
 
+#if defined(__vita__)
+static void SDLCALL
+SDL_VitaTouchMouseDeviceChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+{
+    SDL_Mouse *mouse = (SDL_Mouse *)userdata;
+    if (hint) {
+        switch(*hint) {
+        default:
+        case '0':
+            mouse->vita_touch_mouse_device = 0;
+            break;
+        case '1':
+            mouse->vita_touch_mouse_device = 1;
+            break;
+        case '2':
+            mouse->vita_touch_mouse_device = 2;
+            break;
+        }
+    }
+}
+#endif
+
 static void SDLCALL
 SDL_MouseTouchEventsChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
@@ -165,6 +187,11 @@ SDL_MouseInit(void)
 
     SDL_AddHintCallback(SDL_HINT_TOUCH_MOUSE_EVENTS,
                         SDL_TouchMouseEventsChanged, mouse);
+
+#if defined(__vita__)
+    SDL_AddHintCallback(SDL_HINT_VITA_TOUCH_MOUSE_DEVICE,
+                        SDL_VitaTouchMouseDeviceChanged, mouse);
+#endif
 
     SDL_AddHintCallback(SDL_HINT_MOUSE_TOUCH_EVENTS,
                         SDL_MouseTouchEventsChanged, mouse);
