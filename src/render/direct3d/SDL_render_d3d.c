@@ -347,7 +347,8 @@ D3D_WindowEvent(SDL_Renderer * renderer, const SDL_WindowEvent *event)
     }
 }
 
-static D3DBLEND GetBlendFunc(SDL_BlendFactor factor)
+static D3DBLEND
+GetBlendFunc(SDL_BlendFactor factor)
 {
     switch (factor) {
     case SDL_BLENDFACTOR_ZERO:
@@ -370,9 +371,28 @@ static D3DBLEND GetBlendFunc(SDL_BlendFactor factor)
         return D3DBLEND_DESTALPHA;
     case SDL_BLENDFACTOR_ONE_MINUS_DST_ALPHA:
         return D3DBLEND_INVDESTALPHA;
-    default:
-        return (D3DBLEND)0;
+    default: break;
     }
+    return (D3DBLEND) 0;
+}
+
+static D3DBLENDOP
+GetBlendEquation(SDL_BlendOperation operation)
+{
+    switch (operation) {
+    case SDL_BLENDOPERATION_ADD:
+        return D3DBLENDOP_ADD;
+    case SDL_BLENDOPERATION_SUBTRACT:
+        return D3DBLENDOP_SUBTRACT;
+    case SDL_BLENDOPERATION_REV_SUBTRACT:
+        return D3DBLENDOP_REVSUBTRACT;
+    case SDL_BLENDOPERATION_MINIMUM:
+        return D3DBLENDOP_MIN;
+    case SDL_BLENDOPERATION_MAXIMUM:
+        return D3DBLENDOP_MAX;
+    default: break;
+    }
+    return (D3DBLENDOP) 0;
 }
 
 static SDL_bool
@@ -387,14 +407,16 @@ D3D_SupportsBlendMode(SDL_Renderer * renderer, SDL_BlendMode blendMode)
     SDL_BlendOperation alphaOperation = SDL_GetBlendModeAlphaOperation(blendMode);
 
     if (!GetBlendFunc(srcColorFactor) || !GetBlendFunc(srcAlphaFactor) ||
-        !GetBlendFunc(dstColorFactor) || !GetBlendFunc(dstAlphaFactor)) {
+        !GetBlendEquation(colorOperation) ||
+        !GetBlendFunc(dstColorFactor) || !GetBlendFunc(dstAlphaFactor) ||
+        !GetBlendEquation(alphaOperation)) {
         return SDL_FALSE;
     }
-    if ((srcColorFactor != srcAlphaFactor || dstColorFactor != dstAlphaFactor) && !data->enableSeparateAlphaBlend) {
-        return SDL_FALSE;
-    }
-    if (colorOperation != SDL_BLENDOPERATION_ADD || alphaOperation != SDL_BLENDOPERATION_ADD) {
-        return SDL_FALSE;
+
+    if (!data->enableSeparateAlphaBlend) {
+        if ((srcColorFactor != srcAlphaFactor) || (dstColorFactor != dstAlphaFactor) || (colorOperation != alphaOperation)) {
+            return SDL_FALSE;
+        }
     }
     return SDL_TRUE;
 }
@@ -1040,11 +1062,15 @@ SetDrawState(D3D_RenderData *data, const SDL_RenderCommand *cmd)
                                             GetBlendFunc(SDL_GetBlendModeSrcColorFactor(blend)));
             IDirect3DDevice9_SetRenderState(data->device, D3DRS_DESTBLEND,
                                             GetBlendFunc(SDL_GetBlendModeDstColorFactor(blend)));
+            IDirect3DDevice9_SetRenderState(data->device, D3DRS_BLENDOP,
+                                            GetBlendEquation(SDL_GetBlendModeColorOperation(blend)));
             if (data->enableSeparateAlphaBlend) {
                 IDirect3DDevice9_SetRenderState(data->device, D3DRS_SRCBLENDALPHA,
                                                 GetBlendFunc(SDL_GetBlendModeSrcAlphaFactor(blend)));
                 IDirect3DDevice9_SetRenderState(data->device, D3DRS_DESTBLENDALPHA,
                                                 GetBlendFunc(SDL_GetBlendModeDstAlphaFactor(blend)));
+                IDirect3DDevice9_SetRenderState(data->device, D3DRS_BLENDOPALPHA,
+                                                GetBlendEquation(SDL_GetBlendModeAlphaOperation(blend)));
             }
         }
 
