@@ -673,6 +673,8 @@ X_CFLAGS
 XMKMF
 RPI_LIBS
 RPI_CFLAGS
+DECOR_LIBS
+DECOR_CFLAGS
 FUSIONSOUND_LIBS
 FUSIONSOUND_CFLAGS
 ARTSCONFIG
@@ -944,6 +946,8 @@ PULSEAUDIO_CFLAGS
 PULSEAUDIO_LIBS
 FUSIONSOUND_CFLAGS
 FUSIONSOUND_LIBS
+DECOR_CFLAGS
+DECOR_LIBS
 RPI_CFLAGS
 RPI_LIBS
 XMKMF
@@ -1779,6 +1783,9 @@ Some influential environment variables:
               C compiler flags for FUSIONSOUND, overriding pkg-config
   FUSIONSOUND_LIBS
               linker flags for FUSIONSOUND, overriding pkg-config
+  DECOR_CFLAGS
+              C compiler flags for DECOR, overriding pkg-config
+  DECOR_LIBS  linker flags for DECOR, overriding pkg-config
   RPI_CFLAGS  C compiler flags for RPI, overriding pkg-config
   RPI_LIBS    linker flags for RPI, overriding pkg-config
   XMKMF       Path to xmkmf, Makefile generator for X Window System
@@ -20676,17 +20683,79 @@ else
 fi
 
             if test x$enable_libdecor = xyes; then
-                { $as_echo "$as_me:${as_lineno-$LINENO}: checking for libdecor support" >&5
-$as_echo_n "checking for libdecor support... " >&6; }
-                if $PKG_CONFIG --exists libdecor-0; then :
-  video_libdecor=yes
+
+pkg_failed=no
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for libdecor-0" >&5
+$as_echo_n "checking for libdecor-0... " >&6; }
+
+if test -n "$DECOR_CFLAGS"; then
+    pkg_cv_DECOR_CFLAGS="$DECOR_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libdecor-0\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libdecor-0") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_DECOR_CFLAGS=`$PKG_CONFIG --cflags "libdecor-0" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
 else
-  video_libdecor=no
+  pkg_failed=yes
 fi
-                { $as_echo "$as_me:${as_lineno-$LINENO}: result: $video_libdecor" >&5
-$as_echo "$video_libdecor" >&6; }
+ else
+    pkg_failed=untried
+fi
+if test -n "$DECOR_LIBS"; then
+    pkg_cv_DECOR_LIBS="$DECOR_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libdecor-0\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libdecor-0") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_DECOR_LIBS=`$PKG_CONFIG --libs "libdecor-0" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+	        DECOR_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libdecor-0" 2>&1`
+        else
+	        DECOR_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libdecor-0" 2>&1`
+        fi
+	# Put the nasty error message in config.log where it belongs
+	echo "$DECOR_PKG_ERRORS" >&5
+
+	video_libdecor=no
+elif test $pkg_failed = untried; then
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+	video_libdecor=no
+else
+	DECOR_CFLAGS=$pkg_cv_DECOR_CFLAGS
+	DECOR_LIBS=$pkg_cv_DECOR_LIBS
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+	video_libdecor=yes
+fi
                 if test x$video_libdecor = xyes; then
-                    EXTRA_CFLAGS="$EXTRA_CFLAGS `$PKG_CONFIG --cflags libdecor-0`"
+                    EXTRA_CFLAGS="$EXTRA_CFLAGS $DECOR_CFLAGS"
 
 $as_echo "#define HAVE_LIBDECOR_H 1" >>confdefs.h
 
@@ -20699,18 +20768,16 @@ else
 fi
 
 
+                    decor_lib=`find_lib "libdecor-0.so.*" "$DECOR_LIBS" | sed 's/.*\/\(.*\)/\1/; q'`
+
                     if test x$enable_wayland_shared != xyes; then
                        enable_libdecor_shared=no
                     fi
-
-                    decor_lib=`find_lib "libdecor-0.so.*" "" | sed 's/.*\/\(.*\)/\1/; q'`
-
                     if test x$have_loadso != xyes && \
                        test x$enable_libdecor_shared = xyes; then
                         { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: You must have SDL_LoadObject() support for dynamic libdecor loading" >&5
 $as_echo "$as_me: WARNING: You must have SDL_LoadObject() support for dynamic libdecor loading" >&2;}
                     fi
-
                     if test x$have_loadso = xyes && \
                        test x$enable_libdecor_shared = xyes && test x$decor_lib != x; then
                         echo "-- dynamic libdecor -> $decor_lib"
@@ -20720,7 +20787,7 @@ cat >>confdefs.h <<_ACEOF
 _ACEOF
 
                     else
-                        EXTRA_LDFLAGS="$EXTRA_LDFLAGS `$PKG_CONFIG --libs libdecor-0`"
+                        EXTRA_LDFLAGS="$EXTRA_LDFLAGS $DECOR_LIBS"
                     fi
                 fi
             fi
