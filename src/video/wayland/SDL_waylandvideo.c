@@ -307,11 +307,13 @@ xdg_output_handle_logical_size(void *data, struct zxdg_output_v1 *xdg_output,
         /* FIXME: GNOME has a bug where the logical size does not account for
          * scale, resulting in bogus viewport sizes.
          *
-         * Until this is fixed, validate the scale, then override if necessary.
+         * Until this is fixed, validate that _some_ kind of scaling is being
+         * done (we can't match exactly because fractional scaling can't be
+         * detected otherwise), then override if necessary.
          * -flibit
          */
         const float scale = (float) driverdata->width / (float) width;
-        if (scale != driverdata->scale_factor) {
+        if ((scale == 1.0f) && (driverdata->scale_factor != 1.0f)) {
             SDL_LogWarn(
                 SDL_LOG_CATEGORY_VIDEO,
                 "xdg_output scale did not match, overriding with wl_output scale"
