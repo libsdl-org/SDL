@@ -92,6 +92,7 @@ extern DECLSPEC void *SDLCALL SDL_Metal_GetLayer(SDL_MetalView view);
  *
  * \param window SDL_Window from which the drawable size should be queried
  * \param w Pointer to variable for storing the width in pixels, may be NULL
+ * \param h Pointer to variable for storing the height in pixels, may be NULL
  *
  * \since This function is available since SDL 2.0.14.
  *
