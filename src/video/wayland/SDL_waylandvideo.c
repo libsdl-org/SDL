@@ -423,6 +423,7 @@ AddEmulatedModes(SDL_VideoDisplay *dpy, SDL_bool rot_90)
         { 640, 350 }
     };
 
+    int i;
     const struct EmulatedMode *mode_list  = NULL;
     int                        mode_list_size;
     const int                  native_width  = (float)dpy->display_modes->w;
@@ -442,7 +443,7 @@ AddEmulatedModes(SDL_VideoDisplay *dpy, SDL_bool rot_90)
         return; /* Some weird aspect we don't support */
     }
 
-    for (int i = 0; i < mode_list_size; ++i) {
+    for (i = 0; i < mode_list_size; ++i) {
         /* Only add modes that are smaller than the native mode */
         if ((mode_list[i].w < native_width && mode_list[i].h < native_height) ||
             (mode_list[i].w < native_width && mode_list[i].h == native_height)) {
