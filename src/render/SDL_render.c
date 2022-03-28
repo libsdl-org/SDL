@@ -580,10 +580,10 @@ QueueCmdFillRects(SDL_Renderer *renderer, const SDL_FRect * rects, const int cou
                 if (retval < 0) {
                     cmd->command = SDL_RENDERCMD_NO_OP;
                 }
-
-                SDL_small_free(xy, isstack1);
-                SDL_small_free(indices, isstack2);
             }
+            SDL_small_free(xy, isstack1);
+            SDL_small_free(indices, isstack2);
+            
         } else {
             retval = renderer->QueueFillRects(renderer, cmd, rects, count);
             if (retval < 0) {
