@@ -712,13 +712,13 @@ main(int argc, char *argv[])
 
         GL_CHECK(ctx.glGenBuffers(1, &data->position_buffer));
         GL_CHECK(ctx.glBindBuffer(GL_ARRAY_BUFFER, data->position_buffer));
-        GL_CHECK(ctx.glBufferData(GL_ARRAY_BUFFER, sizeof(_vertices) * 4, _vertices, GL_STATIC_DRAW));
+        GL_CHECK(ctx.glBufferData(GL_ARRAY_BUFFER, sizeof(_vertices), _vertices, GL_STATIC_DRAW));
         GL_CHECK(ctx.glVertexAttribPointer(data->attr_position, 3, GL_FLOAT, GL_FALSE, 0, 0));
         GL_CHECK(ctx.glBindBuffer(GL_ARRAY_BUFFER, 0));
 
         GL_CHECK(ctx.glGenBuffers(1, &data->color_buffer));
         GL_CHECK(ctx.glBindBuffer(GL_ARRAY_BUFFER, data->color_buffer));
-        GL_CHECK(ctx.glBufferData(GL_ARRAY_BUFFER, sizeof(_colors) * 4, _colors, GL_STATIC_DRAW));
+        GL_CHECK(ctx.glBufferData(GL_ARRAY_BUFFER, sizeof(_colors), _colors, GL_STATIC_DRAW));
         GL_CHECK(ctx.glVertexAttribPointer(data->attr_color, 3, GL_FLOAT, GL_FALSE, 0, 0));
         GL_CHECK(ctx.glBindBuffer(GL_ARRAY_BUFFER, 0));
 
