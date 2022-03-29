@@ -204,7 +204,8 @@ ConfigureViewport(SDL_Window *window)
         GetFullScreenDimensions(window, &fs_width, &fs_height, &src_width, &src_height);
         SetViewport(window, src_width, src_height, output->width, output->height);
 
-        data->pointer_scale = (float)fs_width / (float)output->width;
+        data->pointer_scale_x = (float)fs_width / (float)output->width;
+        data->pointer_scale_y = (float)fs_height / (float)output->height;
 
         /*
          * If mouse_rect is not empty, re-create the confinement region with the new scale value.
@@ -216,7 +217,8 @@ ConfigureViewport(SDL_Window *window)
         }
     } else {
         UnsetViewport(window);
-        data->pointer_scale = 1.0f;
+        data->pointer_scale_x = 1.0f;
+        data->pointer_scale_y = 1.0f;
 
         /* Re-scale the pointer confinement region */
         if (!SDL_RectEmpty(&window->mouse_rect)) {
@@ -1485,7 +1487,8 @@ int Wayland_CreateWindow(_THIS, SDL_Window *window)
     data->sdlwindow = window;
 
     data->scale_factor = 1.0f;
-    data->pointer_scale = 1.0f;
+    data->pointer_scale_x = 1.0f;
+    data->pointer_scale_y = 1.0f;
 
     if (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
         int i;

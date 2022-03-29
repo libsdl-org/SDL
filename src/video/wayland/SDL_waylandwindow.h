@@ -87,7 +87,8 @@ typedef struct {
     int num_outputs;
 
     float scale_factor;
-    float pointer_scale;
+    float pointer_scale_x;
+    float pointer_scale_y;
     int drawable_width, drawable_height;
     SDL_bool needs_resize_event;
     SDL_bool floating_resize_pending;
