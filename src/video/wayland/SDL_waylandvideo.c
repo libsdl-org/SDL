@@ -374,35 +374,7 @@ AddEmulatedModes(SDL_VideoDisplay *dpy, SDL_bool rot_90)
     };
 
     /* Resolution lists courtesy of XWayland */
-    const struct EmulatedMode modes_4x3[] = {
-        /* 4:3 (1.33) */
-        { 2048, 1536 },
-        { 1920, 1440 },
-        { 1600, 1200 },
-        { 1440, 1080 },
-        { 1400, 1050 },
-        { 1280, 1024 },
-        { 1280, 960 },
-        { 1152, 864 },
-        { 1024, 768 },
-        { 800, 600 },
-        { 640, 480 },
-        { 320, 240 }
-    };
-
-    const struct EmulatedMode modes_16x10[] = {
-        /* 16:10 (1.6) */
-        { 2560, 1600 },
-        { 1920, 1200 },
-        { 1680, 1050 },
-        { 1440, 900 },
-        { 1280, 800 },
-        { 720, 480 },
-        { 640, 400 },
-        { 320, 200 }
-    };
-
-    const struct EmulatedMode modes_16x9[] = {
+    const struct EmulatedMode mode_list[] = {
         /* 16:9 (1.77) */
         { 7680, 4320 },
         { 6144, 3160 },
@@ -417,33 +389,37 @@ AddEmulatedModes(SDL_VideoDisplay *dpy, SDL_bool rot_90)
         { 1600, 900 },
         { 1368, 768 },
         { 1280, 720 },
-        { 1024, 768 },
         { 864, 486 },
-        { 720, 400 },
-        { 640, 350 }
+
+        /* 16:10 (1.6) */
+        { 2560, 1600 },
+        { 1920, 1200 },
+        { 1680, 1050 },
+        { 1440, 900 },
+        { 1280, 800 },
+
+        /* 3:2 (1.5) */
+        { 720, 480 },
+
+        /* 4:3 (1.33) */
+        { 2048, 1536 },
+        { 1920, 1440 },
+        { 1600, 1200 },
+        { 1440, 1080 },
+        { 1400, 1050 },
+        { 1280, 1024 },
+        { 1280, 960 },
+        { 1152, 864 },
+        { 1024, 768 },
+        { 800, 600 },
+        { 640, 480 }
     };
 
     int i;
-    const struct EmulatedMode *mode_list  = NULL;
-    int                        mode_list_size;
-    const int                  native_width  = (float)dpy->display_modes->w;
-    const int                  native_height = (float)dpy->display_modes->h;
-    const float                aspect        = (float)native_width / (float)native_height;
+    const int native_width  = dpy->display_modes->w;
+    const int native_height = dpy->display_modes->h;
 
-    if (aspect >= 1.7f) { /* 16x9 (1.77) */
-        mode_list      = modes_16x9;
-        mode_list_size = SDL_arraysize(modes_16x9);
-    } else if (aspect >= 1.5f) { /* 16x10 (1.6) */
-        mode_list      = modes_16x10;
-        mode_list_size = SDL_arraysize(modes_16x10);
-    } else if (aspect >= 1.3f) { /* 4x3 (1.33) */
-        mode_list      = modes_4x3;
-        mode_list_size = SDL_arraysize(modes_4x3);
-    } else {
-        return; /* Some weird aspect we don't support */
-    }
-
-    for (i = 0; i < mode_list_size; ++i) {
+    for (i = 0; i < SDL_arraysize(mode_list); ++i) {
         /* Only add modes that are smaller than the native mode */
         if ((mode_list[i].w < native_width && mode_list[i].h < native_height) ||
             (mode_list[i].w < native_width && mode_list[i].h == native_height)) {

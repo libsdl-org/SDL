@@ -391,8 +391,8 @@ pointer_handle_motion(void *data, struct wl_pointer *pointer,
     if (input->pointer_focus) {
         const float sx_f = (float)wl_fixed_to_double(sx_w);
         const float sy_f = (float)wl_fixed_to_double(sy_w);
-        const int   sx   = (int)SDL_lroundf(sx_f * window->pointer_scale);
-        const int   sy   = (int)SDL_lroundf(sy_f * window->pointer_scale);
+        const int   sx   = (int)SDL_lroundf(sx_f * window->pointer_scale_x);
+        const int   sy   = (int)SDL_lroundf(sy_f * window->pointer_scale_y);
         SDL_SendMouseMotion(window->sdlwindow, 0, 0, sx, sy);
     }
 }
@@ -719,8 +719,8 @@ touch_handler_down(void *data, struct wl_touch *touch, unsigned int serial,
                    int id, wl_fixed_t fx, wl_fixed_t fy)
 {
     SDL_WindowData *window_data = (SDL_WindowData *)wl_surface_get_user_data(surface);
-    const double dblx = wl_fixed_to_double(fx) * window_data->pointer_scale;
-    const double dbly = wl_fixed_to_double(fy) * window_data->pointer_scale;
+    const double dblx = wl_fixed_to_double(fx) * window_data->pointer_scale_x;
+    const double dbly = wl_fixed_to_double(fy) * window_data->pointer_scale_y;
     const float x = dblx / window_data->sdlwindow->w;
     const float y = dbly / window_data->sdlwindow->h;
 
@@ -752,8 +752,8 @@ touch_handler_motion(void *data, struct wl_touch *touch, unsigned int timestamp,
                      int id, wl_fixed_t fx, wl_fixed_t fy)
 {
     SDL_WindowData *window_data = (SDL_WindowData *)wl_surface_get_user_data(touch_surface(id));
-    const double dblx = wl_fixed_to_double(fx) * window_data->pointer_scale;
-    const double dbly = wl_fixed_to_double(fy) * window_data->pointer_scale;
+    const double dblx = wl_fixed_to_double(fx) * window_data->pointer_scale_x;
+    const double dbly = wl_fixed_to_double(fy) * window_data->pointer_scale_y;
     const float x = dblx / window_data->sdlwindow->w;
     const float y = dbly / window_data->sdlwindow->h;
 
@@ -1821,8 +1821,8 @@ tablet_tool_handle_motion(void* data, struct zwp_tablet_tool_v2* tool, wl_fixed_
     if (input->tool_focus) {
         const float sx_f = (float)wl_fixed_to_double(sx_w);
         const float sy_f = (float)wl_fixed_to_double(sy_w);
-        const int   sx   = (int)SDL_lroundf(sx_f * window->pointer_scale);
-        const int   sy   = (int)SDL_lroundf(sy_f * window->pointer_scale);
+        const int   sx   = (int)SDL_lroundf(sx_f * window->pointer_scale_x);
+        const int   sy   = (int)SDL_lroundf(sy_f * window->pointer_scale_y);
         SDL_SendMouseMotion(window->sdlwindow, 0, 0, sx, sy);
     }
 }
@@ -2351,10 +2351,10 @@ int Wayland_input_confine_pointer(struct SDL_WaylandInput *input, SDL_Window *wi
     } else {
         SDL_Rect scaled_mouse_rect;
 
-        scaled_mouse_rect.x = (int)SDL_floorf((float)window->mouse_rect.x / w->pointer_scale);
-        scaled_mouse_rect.y = (int)SDL_floorf((float)window->mouse_rect.y / w->pointer_scale);
-        scaled_mouse_rect.w = (int)SDL_ceilf((float)window->mouse_rect.w / w->pointer_scale);
-        scaled_mouse_rect.h = (int)SDL_ceilf((float)window->mouse_rect.h / w->pointer_scale);
+        scaled_mouse_rect.x = (int)SDL_floorf((float)window->mouse_rect.x / w->pointer_scale_x);
+        scaled_mouse_rect.y = (int)SDL_floorf((float)window->mouse_rect.y / w->pointer_scale_y);
+        scaled_mouse_rect.w = (int)SDL_ceilf((float)window->mouse_rect.w / w->pointer_scale_x);
+        scaled_mouse_rect.h = (int)SDL_ceilf((float)window->mouse_rect.h / w->pointer_scale_y);
 
         confine_rect = wl_compositor_create_region(d->compositor);
         wl_region_add(confine_rect,
