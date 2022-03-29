@@ -115,8 +115,8 @@ DesktopIsFractionalScaled(SDL_Window *window)
     SDL_WindowData        *data   = window->driverdata;
     SDL_WaylandOutputData *output = (SDL_WaylandOutputData *)SDL_GetDisplayForWindow(window)->driverdata;
 
-    if ((output->native_width != (output->width * data->scale_factor) ||
-         output->native_height != (output->height * data->scale_factor))) {
+    if ((output->native_width != (int)(output->width * data->scale_factor) ||
+         output->native_height != (int)(output->height * data->scale_factor))) {
         return SDL_TRUE;
     }
 
@@ -163,6 +163,43 @@ NeedFullscreenViewport(SDL_Window *window)
     return SDL_FALSE;
 }
 
+static inline SDL_bool
+NeedWindowedViewport(SDL_Window *window)
+{
+    SDL_WindowData *data  = window->driverdata;
+    SDL_VideoData  *video = data->waylandData;
+
+    return !(window->flags & SDL_WINDOW_FULLSCREEN) && (video->viewporter != NULL) &&
+           DesktopIsFractionalScaled(window) && (window->flags & SDL_WINDOW_ALLOW_HIGHDPI);
+}
+
+static void
+GetWindowBufferSize(SDL_Window *window, int *width, int *height)
+{
+    SDL_WindowData        *data   = window->driverdata;
+    SDL_WaylandOutputData *output = (SDL_WaylandOutputData *)SDL_GetDisplayForWindow(window)->driverdata;
+    int                    buf_width;
+    int                    buf_height;
+
+    if (NeedWindowedViewport(window)) {
+        const float frac_scale_x = (float)output->native_width / (float)output->width;
+        const float frac_scale_y = (float)output->native_height / (float)output->height;
+
+        buf_width  = (int)SDL_lroundf(window->w * frac_scale_x);
+        buf_height = (int)SDL_lroundf(window->h * frac_scale_y);
+    } else { /* Windowed or fullscreen with no viewport */
+        buf_width  = window->w * data->scale_factor;
+        buf_height = window->h * data->scale_factor;
+    }
+
+    if (width) {
+        *width = buf_width;
+    }
+    if (height) {
+        *height = buf_height;
+    }
+}
+
 static void
 SetViewport(SDL_Window *window, int src_width, int src_height, int dst_width, int dst_height)
 {
@@ -197,7 +234,7 @@ ConfigureViewport(SDL_Window *window)
     SDL_VideoData         *viddata = data->waylandData;
     SDL_WaylandOutputData *output  = (SDL_WaylandOutputData *)SDL_GetDisplayForWindow(window)->driverdata;
 
-    if ((window->flags & SDL_WINDOW_FULLSCREEN) && NeedFullscreenViewport(window)) {
+    if (NeedFullscreenViewport(window)) {
         int fs_width, fs_height;
         int src_width, src_height;
 
@@ -206,24 +243,27 @@ ConfigureViewport(SDL_Window *window)
 
         data->pointer_scale_x = (float)fs_width / (float)output->width;
         data->pointer_scale_y = (float)fs_height / (float)output->height;
-
-        /*
-         * If mouse_rect is not empty, re-create the confinement region with the new scale value.
-         * If the pointer is locked to the general surface with unspecified coordinates, it will
-         * be confined to the viewport region, so no update is required.
-         */
-        if (!SDL_RectEmpty(&window->mouse_rect)) {
-            Wayland_input_confine_pointer(viddata->input, window);
-        }
     } else {
-        UnsetViewport(window);
+        if (NeedWindowedViewport(window)) {
+            int src_width, src_height;
+
+            GetWindowBufferSize(window, &src_width, &src_height);
+            SetViewport(window, src_width, src_height, window->w, window->h);
+        } else {
+            UnsetViewport(window);
+        }
+
         data->pointer_scale_x = 1.0f;
         data->pointer_scale_y = 1.0f;
+    }
 
-        /* Re-scale the pointer confinement region */
-        if (!SDL_RectEmpty(&window->mouse_rect)) {
-            Wayland_input_confine_pointer(viddata->input, window);
-        }
+    /*
+     * If mouse_rect is not empty, re-create the confinement region with the new scale value.
+     * If the pointer is locked to the general surface with unspecified coordinates, it will
+     * be confined to the viewport region, so no update is required.
+     */
+    if (!SDL_RectEmpty(&window->mouse_rect)) {
+        Wayland_input_confine_pointer(viddata->input, window);
     }
 }
 
@@ -232,7 +272,7 @@ SetDrawScale(SDL_Window *window)
 {
     SDL_WindowData *data = window->driverdata;
 
-    if ((window->flags & SDL_WINDOW_FULLSCREEN) && NeedFullscreenViewport(window)) {
+    if (NeedFullscreenViewport(window)) {
         int fs_width, fs_height;
 
         GetFullScreenDimensions(window, &fs_width, &fs_height, &data->drawable_width, &data->drawable_height);
@@ -240,10 +280,14 @@ SetDrawScale(SDL_Window *window)
         /* Set the buffer scale to 1 since a viewport will be used. */
         wl_surface_set_buffer_scale(data->surface, 1);
     } else {
-        data->drawable_width  = window->w * data->scale_factor;
-        data->drawable_height = window->h * data->scale_factor;
+        GetWindowBufferSize(window, &data->drawable_width, &data->drawable_height);
 
-        wl_surface_set_buffer_scale(data->surface, (int32_t)data->scale_factor);
+        if (NeedWindowedViewport(window)) {
+            /* Set the buffer scale to 1 since a viewport will be used. */
+            wl_surface_set_buffer_scale(data->surface, 1);
+        } else {
+            wl_surface_set_buffer_scale(data->surface, (int32_t)data->scale_factor);
+        }
     }
 }
 
