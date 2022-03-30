@@ -50,6 +50,12 @@ static SDL_SensorDriver *SDL_sensor_drivers[] = {
 #if defined(SDL_SENSOR_DUMMY) || defined(SDL_SENSOR_DISABLED)
     &SDL_DUMMY_SensorDriver
 #endif
+#if defined(SDL_SENSOR_VITA)
+    &SDL_VITA_SensorDriver
+#endif
+#if defined(SDL_SENSOR_PLAYDATE)
+    &SDL_PLAYDATE_SensorDriver
+#endif
 };
 static SDL_mutex *SDL_sensor_lock = NULL; /* This needs to support recursive locks */
 static SDL_Sensor *SDL_sensors SDL_GUARDED_BY(SDL_sensor_lock) = NULL;
