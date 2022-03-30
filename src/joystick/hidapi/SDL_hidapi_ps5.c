@@ -747,7 +747,11 @@ HIDAPI_DriverPS5_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joy
         }
     }
 
-    return SDL_HIDAPI_SendRumbleAndUnlock(device, data, report_size);
+    if (SDL_HIDAPI_SendRumbleAndUnlock(device, data, report_size) != report_size) {
+        return -1;
+    }
+
+    return 0;
 }
 
 static int
