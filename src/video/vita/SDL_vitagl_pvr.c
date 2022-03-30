@@ -106,11 +106,11 @@ VITA_GL_CreateContext(_THIS, SDL_Window * window)
         FB_WIDTH = window->w;
         FB_HEIGHT = window->h;
         set_getprocaddress((void *(*)(const char *))eglGetProcAddress);
-	    set_getmainfbsize(getFBSize);
+	set_getmainfbsize(getFBSize);
         SDL_snprintf(gl_version, 3, "%d%d", temp_major, temp_minor);
         gl4es_setenv("LIBGL_NOTEXRECT", "1", 1); /* Currently broken in driver */
-	    gl4es_setenv("LIBGL_GL", gl_version, 1);
-	    initialize_gl4es();
+	gl4es_setenv("LIBGL_GL", gl_version, 1);
+	initialize_gl4es();
     }
 
     /* Restore gl_config */
