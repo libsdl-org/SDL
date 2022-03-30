@@ -19,8 +19,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef SDL_vitagl_c_h_
-#define SDL_vitagl_c_h_
+#ifndef SDL_vitagles_c_h_
+#define SDL_vitagles_c_h_
 
 
 #include <pib.h>
@@ -39,19 +39,19 @@ typedef struct SDL_GLDriverData {
     uint32_t swapinterval;
 }SDL_GLDriverData;
 
-extern void * VITA_GL_GetProcAddress(_THIS, const char *proc);
-extern int VITA_GL_MakeCurrent(_THIS,SDL_Window * window, SDL_GLContext context);
-extern void VITA_GL_SwapBuffers(_THIS);
+extern void * VITA_GLES_GetProcAddress(_THIS, const char *proc);
+extern int VITA_GLES_MakeCurrent(_THIS,SDL_Window * window, SDL_GLContext context);
+extern void VITA_GLES_SwapBuffers(_THIS);
 
-extern int VITA_GL_SwapWindow(_THIS, SDL_Window * window);
-extern SDL_GLContext VITA_GL_CreateContext(_THIS, SDL_Window * window);
+extern int VITA_GLES_SwapWindow(_THIS, SDL_Window * window);
+extern SDL_GLContext VITA_GLES_CreateContext(_THIS, SDL_Window * window);
 
-extern int VITA_GL_LoadLibrary(_THIS, const char *path);
-extern void VITA_GL_UnloadLibrary(_THIS);
-extern int VITA_GL_SetSwapInterval(_THIS, int interval);
-extern int VITA_GL_GetSwapInterval(_THIS);
+extern int VITA_GLES_LoadLibrary(_THIS, const char *path);
+extern void VITA_GLES_UnloadLibrary(_THIS);
+extern int VITA_GLES_SetSwapInterval(_THIS, int interval);
+extern int VITA_GLES_GetSwapInterval(_THIS);
 
 
-#endif /* SDL_vitagl_c_h_ */
+#endif /* SDL_vitagles_c_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

@@ -2321,6 +2321,7 @@ elseif(VITA)
       check_include_file(gpu_es4/psp2_pvr_hint.h HAVE_PVR_H)
       if(HAVE_PVR_H)
         target_compile_definitions(sdl-build-options INTERFACE "-D__psp2__")
+        check_include_file(gl4esinit.h HAVE_GL4ES_H)
         set(SDL_VIDEO_OPENGL_EGL 1)
         set(HAVE_OPENGLES TRUE)
         set(SDL_VIDEO_OPENGL_ES 1)
@@ -2332,8 +2333,18 @@ elseif(VITA)
           libgpu_es4_ext_stub_weak
           libIMGEGL_stub_weak
         )
+
         set(HAVE_VITA_PVR ON)
         set(SDL_VIDEO_VITA_PVR 1)
+
+        if(HAVE_GL4ES_H)
+          set(HAVE_OPENGL TRUE)
+          set(SDL_VIDEO_OPENGL 1)
+          set(SDL_VIDEO_RENDER_OGL 1)
+          list(APPEND EXTRA_LIBS libGL_stub)
+          set(SDL_VIDEO_VITA_PVR_OGL 1)
+        endif()
+
       else()
         set(HAVE_VITA_PVR OFF)
       endif()
