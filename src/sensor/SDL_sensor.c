@@ -47,6 +47,9 @@ static SDL_SensorDriver *SDL_sensor_drivers[] = {
 #if defined(SDL_SENSOR_VITA)
     &SDL_VITA_SensorDriver
 #endif
+#if defined(SDL_SENSOR_PLAYDATE) \
+    &SDL_PLAYDATE_SensorDriver
+#endif
 };
 static SDL_Sensor *SDL_sensors = NULL;
 static SDL_bool SDL_updating_sensor = SDL_FALSE;

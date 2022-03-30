@@ -18,40 +18,27 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+#include "../../SDL_internal.h"
 
-#ifndef SDL_config_h_
-#define SDL_config_h_
+#ifndef SDL_POWER_DISABLED
+#if SDL_POWER_PLAYDATE
 
-#include "SDL_platform.h"
+#include "SDL_power.h"
+#include "../SDL_syspower.h"
 
-/**
- *  \file SDL_config.h
- */
+#include "pd_api.h"
 
-/* Add any platform that doesn't build using the configure system. */
-#if defined(PLAYDATE)
-#include "SDL_config_playdate.h"
-#elif defined(__WIN32__)
-#include "SDL_config_windows.h"
-#elif defined(__WINRT__)
-#include "SDL_config_winrt.h"
-#elif defined(__MACOSX__)
-#include "SDL_config_macosx.h"
-#elif defined(__IPHONEOS__)
-#include "SDL_config_iphoneos.h"
-#elif defined(__ANDROID__)
-#include "SDL_config_android.h"
-#elif defined(__OS2__)
-#include "SDL_config_os2.h"
-#elif defined(__EMSCRIPTEN__)
-#include "SDL_config_emscripten.h"
-#else
-/* This is a minimal configuration just to get SDL running on new platforms. */
-#include "SDL_config_minimal.h"
-#endif /* platform config */
+SDL_bool
+SDL_GetPowerInfo_Playdate(SDL_PowerState * state, int *seconds, int *percent)
+{
+    *state = SDL_POWERSTATE_UNKNOWN;
+    *seconds = -1;
+    *percent = pd->system->getBatteryPercentage();
 
-#ifdef USING_GENERATED_CONFIG_H
-#error Wrong SDL_config.h, check your include path?
-#endif
+    return SDL_TRUE;
+}
 
-#endif /* SDL_config_h_ */
+#endif /* SDL_POWER_PLAYDATE */
+#endif /* SDL_POWER_DISABLED */
+
+/* vi: set ts=4 sw=4 expandtab: */

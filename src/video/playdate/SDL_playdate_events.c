@@ -18,40 +18,24 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+#include "../../SDL_internal.h"
 
-#ifndef SDL_config_h_
-#define SDL_config_h_
+#if SDL_VIDEO_DRIVER_PLAYDATE
 
-#include "SDL_platform.h"
+/* Being a null driver, there's no event stream. We just define stubs for
+   most of the API. */
 
-/**
- *  \file SDL_config.h
- */
+#include "../../events/SDL_events_c.h"
 
-/* Add any platform that doesn't build using the configure system. */
-#if defined(PLAYDATE)
-#include "SDL_config_playdate.h"
-#elif defined(__WIN32__)
-#include "SDL_config_windows.h"
-#elif defined(__WINRT__)
-#include "SDL_config_winrt.h"
-#elif defined(__MACOSX__)
-#include "SDL_config_macosx.h"
-#elif defined(__IPHONEOS__)
-#include "SDL_config_iphoneos.h"
-#elif defined(__ANDROID__)
-#include "SDL_config_android.h"
-#elif defined(__OS2__)
-#include "SDL_config_os2.h"
-#elif defined(__EMSCRIPTEN__)
-#include "SDL_config_emscripten.h"
-#else
-/* This is a minimal configuration just to get SDL running on new platforms. */
-#include "SDL_config_minimal.h"
-#endif /* platform config */
+#include "SDL_playdate_video.h"
+#include "SDL_playdate_events_c.h"
 
-#ifdef USING_GENERATED_CONFIG_H
-#error Wrong SDL_config.h, check your include path?
-#endif
+void
+PLAYDATE_PumpEvents(_THIS)
+{
+    /* do nothing. */
+}
 
-#endif /* SDL_config_h_ */
+#endif /* SDL_VIDEO_DRIVER_PLAYDATE */
+
+/* vi: set ts=4 sw=4 expandtab: */

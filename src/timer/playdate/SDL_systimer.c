@@ -18,40 +18,60 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+#include "../../SDL_internal.h"
 
-#ifndef SDL_config_h_
-#define SDL_config_h_
+#ifdef SDL_TIMER_PLAYDATE
 
-#include "SDL_platform.h"
+#include "SDL_timer.h"
+#include "pd_api.h"
 
-/**
- *  \file SDL_config.h
- */
+static SDL_bool ticks_started = SDL_FALSE;
 
-/* Add any platform that doesn't build using the configure system. */
-#if defined(PLAYDATE)
-#include "SDL_config_playdate.h"
-#elif defined(__WIN32__)
-#include "SDL_config_windows.h"
-#elif defined(__WINRT__)
-#include "SDL_config_winrt.h"
-#elif defined(__MACOSX__)
-#include "SDL_config_macosx.h"
-#elif defined(__IPHONEOS__)
-#include "SDL_config_iphoneos.h"
-#elif defined(__ANDROID__)
-#include "SDL_config_android.h"
-#elif defined(__OS2__)
-#include "SDL_config_os2.h"
-#elif defined(__EMSCRIPTEN__)
-#include "SDL_config_emscripten.h"
-#else
-/* This is a minimal configuration just to get SDL running on new platforms. */
-#include "SDL_config_minimal.h"
-#endif /* platform config */
+void
+SDL_TicksInit(void)
+{
+    if (ticks_started) {
+        return;
+    }
+    ticks_started = SDL_TRUE;
+}
 
-#ifdef USING_GENERATED_CONFIG_H
-#error Wrong SDL_config.h, check your include path?
-#endif
+void
+SDL_TicksQuit(void)
+{
+    ticks_started = SDL_FALSE;
+}
 
-#endif /* SDL_config_h_ */
+Uint64
+SDL_GetTicks64(void)
+{
+    if (!ticks_started) {
+        SDL_TicksInit();
+    }
+    return pd->system->getCurrentTimeMilliseconds();
+}
+
+Uint64
+SDL_GetPerformanceCounter(void)
+{
+    return SDL_GetTicks();
+}
+
+Uint64
+SDL_GetPerformanceFrequency(void)
+{
+    return 10000;
+}
+
+void
+SDL_Delay(Uint32 ms)
+{
+    unsigned int startTime = pd->system->getCurrentTimeMilliseconds();
+    while(pd->system->getCurrentTimeMilliseconds() - startTime < ms) {
+        // just spin.
+    }
+}
+
+#endif /* SDL_TIMER_PLAYDATE */
+
+/* vi: set ts=4 sw=4 expandtab: */

@@ -101,6 +101,7 @@ extern SDL_SensorDriver SDL_COREMOTION_SensorDriver;
 extern SDL_SensorDriver SDL_WINDOWS_SensorDriver;
 extern SDL_SensorDriver SDL_DUMMY_SensorDriver;
 extern SDL_SensorDriver SDL_VITA_SensorDriver;
+extern SDL_SensorDriver SDL_PLAYDATE_SensorDriver;
 
 #endif /* SDL_syssensor_h_ */
 

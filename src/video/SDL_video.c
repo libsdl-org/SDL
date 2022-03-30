@@ -112,6 +112,9 @@ static VideoBootStrap *bootstrap[] = {
 #if SDL_VIDEO_DRIVER_EMSCRIPTEN
     &Emscripten_bootstrap,
 #endif
+#if SDL_VIDEO_DRIVER_PLAYDATE
+        &PLAYDATE_bootstrap,
+#endif
 #if SDL_VIDEO_DRIVER_QNX
     &QNX_bootstrap,
 #endif
