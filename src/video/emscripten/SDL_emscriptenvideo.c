@@ -174,10 +174,10 @@ Emscripten_GetDisplayUsableBounds(_THIS, SDL_VideoDisplay * display, SDL_Rect * 
     if (rect) {
         rect->x = 0;
         rect->y = 0;
-        rect->w = EM_ASM_INT_V({
+        rect->w = MAIN_THREAD_EM_ASM_INT({
             return window.innerWidth;
         });
-        rect->h = EM_ASM_INT_V({
+        rect->h = MAIN_THREAD_EM_ASM_INT({
             return window.innerHeight;
         });
     }
