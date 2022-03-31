@@ -30,7 +30,7 @@
 #include <OpenGL/OpenGL.h>
 #endif
 
-#ifdef __psp2__
+#ifdef SDL_VIDEO_VITA_PVR_OGL
 #include <GL/gl.h>
 #include <GL/glext.h>
 #endif
@@ -1738,7 +1738,7 @@ GL_CreateRenderer(SDL_Window * window, Uint32 flags)
     SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &major);
     SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &minor);
 
-#ifndef __psp2__
+#ifndef SDL_VIDEO_VITA_PVR_OGL
     window_flags = SDL_GetWindowFlags(window);
     if (!(window_flags & SDL_WINDOW_OPENGL) ||
         profile_mask == SDL_GL_CONTEXT_PROFILE_ES || major != RENDERER_CONTEXT_MAJOR || minor != RENDERER_CONTEXT_MINOR) {

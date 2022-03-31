@@ -94,9 +94,9 @@ VITA_GL_CreateContext(_THIS, SDL_Window * window)
     int temp_minor = _this->gl_config.minor_version;
     int temp_profile = _this->gl_config.profile_mask;
 
-    /* Set version to 2.1 and PROFILE to ES */
+    /* Set version to 2.0 and PROFILE to ES */
     _this->gl_config.major_version = 2;
-    _this->gl_config.minor_version = 1;
+    _this->gl_config.minor_version = 0;
     _this->gl_config.profile_mask = SDL_GL_CONTEXT_PROFILE_ES;
 
     context = SDL_EGL_CreateContext(_this, ((SDL_WindowData *) window->driverdata)->egl_surface);
@@ -106,11 +106,11 @@ VITA_GL_CreateContext(_THIS, SDL_Window * window)
         FB_WIDTH = window->w;
         FB_HEIGHT = window->h;
         set_getprocaddress((void *(*)(const char *))eglGetProcAddress);
-	set_getmainfbsize(getFBSize);
+        set_getmainfbsize(getFBSize);
         SDL_snprintf(gl_version, 3, "%d%d", temp_major, temp_minor);
         gl4es_setenv("LIBGL_NOTEXRECT", "1", 1); /* Currently broken in driver */
-	gl4es_setenv("LIBGL_GL", gl_version, 1);
-	initialize_gl4es();
+        gl4es_setenv("LIBGL_GL", gl_version, 1);
+        initialize_gl4es();
     }
 
     /* Restore gl_config */
