@@ -142,16 +142,20 @@ VITA_Create()
 */
 
 #if defined(SDL_VIDEO_VITA_PIB) || defined(SDL_VIDEO_VITA_PVR)
+#if defined(SDL_VIDEO_VITA_PVR_OGL)
 if(SDL_getenv("VITA_PVR_OGL") != NULL) {
     device->GL_LoadLibrary = VITA_GL_LoadLibrary;
     device->GL_CreateContext = VITA_GL_CreateContext;
     device->GL_GetProcAddress = VITA_GL_GetProcAddress;
-}
-else {
+} else {
+#endif
     device->GL_LoadLibrary = VITA_GLES_LoadLibrary;
     device->GL_CreateContext = VITA_GLES_CreateContext;
     device->GL_GetProcAddress = VITA_GLES_GetProcAddress;
+#if defined(SDL_VIDEO_VITA_PVR_OGL)
 }
+#endif
+
     device->GL_UnloadLibrary = VITA_GLES_UnloadLibrary;
     device->GL_MakeCurrent = VITA_GLES_MakeCurrent;
     device->GL_SetSwapInterval = VITA_GLES_SetSwapInterval;
