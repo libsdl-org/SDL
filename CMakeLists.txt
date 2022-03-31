@@ -2467,6 +2467,7 @@ elseif(PSP)
       pspaudio
       pspvram
       GL
+      SDL2main
     )
 
 elseif(OS2)
