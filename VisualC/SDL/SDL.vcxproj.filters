@@ -401,6 +401,7 @@
     </ClInclude>
     <ClInclude Include="..\..\src\SDL_dataqueue.h" />
     <ClInclude Include="..\..\src\SDL_error_c.h" />
+    <ClInclude Include="..\..\src\SDL_list.h" />
     <ClInclude Include="..\..\include\SDL_metal.h">
       <Filter>API Headers</Filter>
     </ClInclude>
@@ -832,6 +833,7 @@
     <ClCompile Include="..\..\src\SDL_dataqueue.c" />
     <ClCompile Include="..\..\src\SDL_error.c" />
     <ClCompile Include="..\..\src\SDL_hints.c" />
+    <ClCompile Include="..\..\src\SDL_list.c" />
     <ClCompile Include="..\..\src\audio\SDL_audio.c">
       <Filter>audio</Filter>
     </ClCompile>
