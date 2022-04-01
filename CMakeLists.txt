@@ -2902,7 +2902,7 @@ if(IOS OR TVOS)
 endif()
 
 if(PLAYDATE)
-  target_include_directories(sdl-build-options INTERFACE "${SDK}/C_API")
+  target_include_directories(sdl-build-options INTERFACE "${PLAYDATE_SDK_PATH}/C_API")
 endif()
 
 if(SDL_SHARED)
