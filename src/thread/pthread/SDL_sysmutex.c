@@ -36,6 +36,7 @@ struct SDL_mutex
 #if FAKE_RECURSIVE_MUTEX
     int recursive;
     pthread_t owner;
+    pthread_cond_t cond;
 #endif
 };
 
@@ -61,6 +62,11 @@ SDL_CreateMutex(void)
             SDL_free(mutex);
             mutex = NULL;
         }
+#ifdef FAKE_RECURSIVE_MUTEX
+        if (mutex && pthread_cond_init(&mutex->cond, NULL) != 0) {
+            SDL_SetError("pthread_cond_init() failed");
+        }
+#endif
     } else {
         SDL_OutOfMemory();
     }
@@ -72,6 +78,9 @@ SDL_DestroyMutex(SDL_mutex * mutex)
 {
     if (mutex) {
         pthread_mutex_destroy(&mutex->id);
+#ifdef FAKE_RECURSIVE_MUTEX
+        pthread_cond_destroy(&mutex->cond);
+#endif
         SDL_free(mutex);
     }
 }
@@ -90,19 +99,15 @@ SDL_LockMutex(SDL_mutex * mutex)
 
 #if FAKE_RECURSIVE_MUTEX
     this_thread = pthread_self();
-    if (mutex->owner == this_thread) {
-        ++mutex->recursive;
-    } else {
-        /* The order of operations is important.
-           We set the locking thread id after we obtain the lock
-           so unlocks from other threads will fail.
-         */
-        if (pthread_mutex_lock(&mutex->id) == 0) {
-            mutex->owner = this_thread;
-            mutex->recursive = 0;
-        } else {
-            return SDL_SetError("pthread_mutex_lock() failed");
+    if (pthread_mutex_lock(&mutex->id) == 0) {
+        while (mutex->owner && mutex->owner != this_thread) {
+            pthread_cond_wait(&mutex->cond, &mutex->id);
         }
+        mutex->owner = this_thread;
+        ++mutex->recursive;
+        pthread_mutex_unlock(&mutex->id);
+    } else {
+        return SDL_SetError("pthread_mutex_lock() failed");
     }
 #else
     if (pthread_mutex_lock(&mutex->id) != 0) {
@@ -128,22 +133,18 @@ SDL_TryLockMutex(SDL_mutex * mutex)
     retval = 0;
 #if FAKE_RECURSIVE_MUTEX
     this_thread = pthread_self();
-    if (mutex->owner == this_thread) {
-        ++mutex->recursive;
-    } else {
-        /* The order of operations is important.
-         We set the locking thread id after we obtain the lock
-         so unlocks from other threads will fail.
-         */
-        result = pthread_mutex_trylock(&mutex->id);
-        if (result == 0) {
-            mutex->owner = this_thread;
-            mutex->recursive = 0;
-        } else if (result == EBUSY) {
-            retval = SDL_MUTEX_TIMEDOUT;
-        } else {
-            retval = SDL_SetError("pthread_mutex_trylock() failed");
+    result = pthread_mutex_trylock(&mutex->id);
+    if (result == 0) {
+       while (mutex->owner && mutex->owner != this_thread) {
+            pthread_cond_wait(&mutex->cond, &mutex->id);
         }
+        mutex->owner = this_thread;
+        ++mutex->recursive;
+        pthread_mutex_unlock(&mutex->id);
+    } else if (result == EBUSY) {
+        retval = SDL_MUTEX_TIMEDOUT;
+    } else {
+        retval = SDL_SetError("pthread_mutex_trylock() failed");
     }
 #else
     result = pthread_mutex_trylock(&mutex->id);
@@ -166,23 +167,17 @@ SDL_UnlockMutex(SDL_mutex * mutex)
     }
 
 #if FAKE_RECURSIVE_MUTEX
-    /* We can only unlock the mutex if we own it */
-    if (pthread_self() == mutex->owner) {
-        if (mutex->recursive) {
-            --mutex->recursive;
-        } else {
-            /* The order of operations is important.
-               First reset the owner so another thread doesn't lock
-               the mutex and set the ownership before we reset it,
-               then release the lock semaphore.
-             */
+    if (pthread_mutex_lock(&mutex->id) == 0) {
+        SDL_assert(mutex->owner == pthread_self());
+        --mutex->recursive;
+        SDL_assert(mutex->recursive >= 0);
+        if (mutex->recursive == 0) {
             mutex->owner = 0;
-            pthread_mutex_unlock(&mutex->id);
         }
+        pthread_mutex_unlock(&mutex->id);
     } else {
-        return SDL_SetError("mutex not owned by this thread");
+        return SDL_SetError("pthread_mutex_lock() failed");
     }
-
 #else
     if (pthread_mutex_unlock(&mutex->id) != 0) {
         return SDL_SetError("pthread_mutex_unlock() failed");
