@@ -3198,6 +3198,16 @@ CheckWINDOWS()
 
     # This fixes Windows stack alignment with newer GCC
     CheckStackBoundary
+
+    # headers needed elsewhere
+    AC_CHECK_HEADER(tpcshrd.h,have_tpcshrd_h=yes)
+    if test x$have_tpcshrd_h = xyes; then
+        AC_DEFINE(HAVE_TPCSHRD_H, 1, [ ])
+    fi
+    AC_CHECK_HEADER(roapi.h,have_roapi_h=yes)
+    if test x$have_roapi_h = xyes; then
+        AC_DEFINE(HAVE_ROAPI_H, 1, [ ])
+    fi
 }
 
 dnl Determine whether the compiler can produce OS/2 executables
@@ -3998,10 +4008,6 @@ case "$host" in
                 SOURCES="$SOURCES $srcdir/src/haptic/windows/*.c"
                 have_haptic=yes
             fi
-        fi
-        AC_CHECK_HEADER(tpcshrd.h,have_tpcshrd_h=yes)
-        if test x$have_tpcshrd_h = xyes; then
-            AC_DEFINE(HAVE_TPCSHRD_H, 1, [ ])
         fi
         # Set up files for the sensor library
         AC_CHECK_HEADER(sensorsapi.h,have_winsensors=yes,have_winsensors=no)

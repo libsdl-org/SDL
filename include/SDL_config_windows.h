@@ -104,6 +104,7 @@ typedef unsigned int uintptr_t;
 #endif
 #if defined(_WIN32_MAXVER) && _WIN32_MAXVER >= 0x0602  /* Windows 8 SDK */
 #define HAVE_D3D11_H 1
+#define HAVE_ROAPI_H 1
 #endif
 #define HAVE_MMDEVICEAPI_H 1
 #define HAVE_AUDIOCLIENT_H 1

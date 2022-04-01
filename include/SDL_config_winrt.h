@@ -195,6 +195,8 @@ typedef unsigned int uintptr_t;
 #define HAVE_TRUNCF 1
 #define HAVE__FSEEKI64 1
 
+#define HAVE_ROAPI_H  1
+
 /* Enable various audio drivers */
 #define SDL_AUDIO_DRIVER_WASAPI 1
 #define SDL_AUDIO_DRIVER_DISK   1

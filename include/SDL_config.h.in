@@ -242,6 +242,7 @@
 #undef HAVE_AUDIOCLIENT_H
 #undef HAVE_TPCSHRD_H
 #undef HAVE_SENSORSAPI_H
+#undef HAVE_ROAPI_H
 
 /* SDL internal assertion support */
 #undef SDL_DEFAULT_ASSERT_LEVEL

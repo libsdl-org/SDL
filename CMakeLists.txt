@@ -1600,6 +1600,7 @@ elseif(WINDOWS)
 
   # headers needed elsewhere
   check_include_file(tpcshrd.h HAVE_TPCSHRD_H)
+  check_include_file(roapi.h HAVE_ROAPI_H)
   check_include_file(mmdeviceapi.h HAVE_MMDEVICEAPI_H)
   check_include_file(audioclient.h HAVE_AUDIOCLIENT_H)
   check_include_file(sensorsapi.h HAVE_SENSORSAPI_H)
