@@ -26,7 +26,14 @@
 #include "SDL_error.h"
 
 #include <objbase.h>    /* for CoInitialize/CoUninitialize (Win32 only) */
+#if defined(HAVE_ROAPI_H)
 #include <roapi.h>      /* For RoInitialize/RoUninitialize (Win32 only) */
+#else
+typedef enum RO_INIT_TYPE {
+  RO_INIT_SINGLETHREADED = 0,
+  RO_INIT_MULTITHREADED  = 1
+} RO_INIT_TYPE;
+#endif
 
 #ifndef _WIN32_WINNT_VISTA
 #define _WIN32_WINNT_VISTA  0x0600
@@ -36,6 +43,10 @@
 #endif
 #ifndef _WIN32_WINNT_WIN8
 #define _WIN32_WINNT_WIN8   0x0602
+#endif
+
+#ifndef LOAD_LIBRARY_SEARCH_SYSTEM32
+#define LOAD_LIBRARY_SEARCH_SYSTEM32 0x00000800
 #endif
 
 
