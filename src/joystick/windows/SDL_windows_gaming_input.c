@@ -260,10 +260,9 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
             WindowsGetStringRawBufferFunc = WindowsGetStringRawBuffer;
             WindowsDeleteStringFunc = WindowsDeleteString;
 #else
-            HMODULE hModule = LoadLibraryA("combase.dll");
-            if (hModule != NULL) {
-                WindowsGetStringRawBufferFunc = (WindowsGetStringRawBuffer_t)GetProcAddress(hModule, "WindowsGetStringRawBuffer");
-                WindowsDeleteStringFunc = (WindowsDeleteString_t)GetProcAddress(hModule, "WindowsDeleteString");
+            {
+                WindowsGetStringRawBufferFunc = (WindowsGetStringRawBuffer_t)WIN_LoadComBaseFunction("WindowsGetStringRawBuffer");
+                WindowsDeleteStringFunc = (WindowsDeleteString_t)WIN_LoadComBaseFunction("WindowsDeleteString");
             }
 #endif /* __WINRT__ */
             if (WindowsGetStringRawBufferFunc && WindowsDeleteStringFunc) {
@@ -277,11 +276,6 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
                     WindowsDeleteStringFunc(hString);
                 }
             }
-#ifndef __WINRT__
-            if (hModule != NULL) {
-                FreeLibrary(hModule);
-            }
-#endif
             __x_ABI_CWindows_CGaming_CInput_CIRawGameController2_Release(controller2);
         }
         if (!name) {
@@ -444,23 +438,19 @@ WGI_JoystickInit(void)
 
     WindowsCreateStringReference_t WindowsCreateStringReferenceFunc = NULL;
     RoGetActivationFactory_t RoGetActivationFactoryFunc = NULL;
-#ifndef __WINRT__
-    HMODULE hModule;
-#endif
     HRESULT hr;
 
-    if (FAILED(WIN_CoInitialize())) {
-        return SDL_SetError("CoInitialize() failed");
+    if (FAILED(WIN_RoInitialize())) {
+        return SDL_SetError("RoInitialize() failed");
     }
 
 #ifdef __WINRT__
     WindowsCreateStringReferenceFunc = WindowsCreateStringReference;
     RoGetActivationFactoryFunc = RoGetActivationFactory;
 #else
-    hModule = LoadLibraryA("combase.dll");
-    if (hModule != NULL) {
-        WindowsCreateStringReferenceFunc = (WindowsCreateStringReference_t)GetProcAddress(hModule, "WindowsCreateStringReference");
-        RoGetActivationFactoryFunc = (RoGetActivationFactory_t)GetProcAddress(hModule, "RoGetActivationFactory");
+    {
+        WindowsCreateStringReferenceFunc = (WindowsCreateStringReference_t)WIN_LoadComBaseFunction("WindowsCreateStringReference");
+        RoGetActivationFactoryFunc = (RoGetActivationFactory_t)WIN_LoadComBaseFunction("RoGetActivationFactory");
     }
 #endif /* __WINRT__ */
     if (WindowsCreateStringReferenceFunc && RoGetActivationFactoryFunc) {
@@ -519,11 +509,6 @@ WGI_JoystickInit(void)
             }
         }
     }
-#ifndef __WINRT__
-    if (hModule != NULL) {
-        FreeLibrary(hModule);
-    }
-#endif
 
     if (wgi.statics) {
         __FIVectorView_1_Windows__CGaming__CInput__CRawGameController *controllers;
@@ -865,7 +850,7 @@ WGI_JoystickQuit(void)
     }
     SDL_zero(wgi);
 
-    WIN_CoUninitialize();
+    WIN_RoUninitialize();
 }
 
 static SDL_bool

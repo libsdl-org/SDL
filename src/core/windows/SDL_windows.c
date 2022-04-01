@@ -25,7 +25,8 @@
 #include "SDL_windows.h"
 #include "SDL_error.h"
 
-#include <objbase.h>  /* for CoInitialize/CoUninitialize (Win32 only) */
+#include <objbase.h>    /* for CoInitialize/CoUninitialize (Win32 only) */
+#include <roapi.h>      /* For RoInitialize/RoUninitialize (Win32 only) */
 
 #ifndef _WIN32_WINNT_VISTA
 #define _WIN32_WINNT_VISTA  0x0600
@@ -104,51 +105,52 @@ void
 WIN_CoUninitialize(void)
 {
 #ifndef __WINRT__
-    /* Don't uninitialize COM because of what appears to be a bug in Microsoft WGI reference counting.
-     *
-     * If you plug in a non-Xbox controller and let the application run for 30 seconds, then it crashes in CoUninitialize()
-     * with this stack trace:
+    CoUninitialize();
+#endif
+}
 
-        Windows.Gaming.Input.dll!GameController::~GameController(void)	Unknown
-        Windows.Gaming.Input.dll!GameController::`vector deleting destructor'(unsigned int)	Unknown
-        Windows.Gaming.Input.dll!Microsoft::WRL::Details::RuntimeClassImpl<struct Microsoft::WRL::RuntimeClassFlags<1>,1,1,0,struct Windows::Gaming::Input::IGameController,struct Windows::Gaming::Input::IGameControllerBatteryInfo,struct Microsoft::WRL::CloakedIid<struct Windows::Gaming::Input::Internal::IGameControllerPrivate>,class Microsoft::WRL::FtmBase>::Release(void)	Unknown
-        Windows.Gaming.Input.dll!Windows::Gaming::Input::Custom::Details::AggregableRuntimeClass<struct Windows::Gaming::Input::IGamepad,struct Windows::Gaming::Input::IGamepad2,struct Microsoft::WRL::CloakedIid<struct Windows::Gaming::Input::Custom::IGameControllerInputSink>,struct Microsoft::WRL::CloakedIid<struct Windows::Gaming::Input::Custom::IGipGameControllerInputSink>,struct Microsoft::WRL::CloakedIid<struct Windows::Gaming::Input::Custom::IHidGameControllerInputSink>,struct Microsoft::WRL::CloakedIid<struct Windows::Gaming::Input::Custom::IXusbGameControllerInputSink>,class Microsoft::WRL::Details::Nil,class Microsoft::WRL::Details::Nil,class Microsoft::WRL::Details::Nil>::Release(void)	Unknown
-        Windows.Gaming.Input.dll!Microsoft::WRL::ComPtr<`WaitForCompletion<Windows::Foundation::IAsyncOperationWithProgressCompletedHandler<Windows::Storage::Streams::IBuffer *,unsigned int>,Windows::Foundation::IAsyncOperationWithProgress<Windows::Storage::Streams::IBuffer *,unsigned int>>'::`2'::FTMEventDelegate>::~ComPtr<`WaitForCompletion<Windows::Foundation::IAsyncOperationWithProgressCompletedHandler<Windows::Storage::Streams::IBuffer *,unsigned int>,Windows::Foundation::IAsyncOperationWithProgress<Windows::Storage::Streams::IBuffer *,unsigned int>>'::`2'::FTMEventDelegate>()	Unknown
-        Windows.Gaming.Input.dll!`eh vector destructor iterator'(void *,unsigned int,int,void (*)(void *))	Unknown
-        Windows.Gaming.Input.dll!Windows::Gaming::Input::Custom::Details::GameControllerCollection<class Windows::Gaming::Input::RawGameController,struct Windows::Gaming::Input::IRawGameController>::~GameControllerCollection<class Windows::Gaming::Input::RawGameController,struct Windows::Gaming::Input::IRawGameController>(void)	Unknown
-        Windows.Gaming.Input.dll!Windows::Gaming::Input::Custom::Details::GameControllerCollection<class Windows::Gaming::Input::RawGameController,struct Windows::Gaming::Input::IRawGameController>::`vector deleting destructor'(unsigned int)	Unknown
-        Windows.Gaming.Input.dll!Microsoft::WRL::Details::RuntimeClassImpl<struct Microsoft::WRL::RuntimeClassFlags<1>,1,1,0,struct Windows::Foundation::Collections::IIterable<class Windows::Gaming::Input::ArcadeStick *>,struct Windows::Foundation::Collections::IVectorView<class Windows::Gaming::Input::ArcadeStick *>,class Microsoft::WRL::FtmBase>::Release(void)	Unknown
-        Windows.Gaming.Input.dll!Windows::Gaming::Input::Custom::Details::CustomGameControllerFactoryBase<class Windows::Gaming::Input::FlightStick,class Windows::Gaming::Input::FlightStick,struct Windows::Gaming::Input::IFlightStick,struct Windows::Gaming::Input::IFlightStickStatics,class Microsoft::WRL::Details::Nil>::~CustomGameControllerFactoryBase<class Windows::Gaming::Input::FlightStick,class Windows::Gaming::Input::FlightStick,struct Windows::Gaming::Input::IFlightStick,struct Windows::Gaming::Input::IFlightStickStatics,class Microsoft::WRL::Details::Nil>(void)	Unknown
-        Windows.Gaming.Input.dll!Windows::Gaming::Input::Custom::Details::CustomGameControllerFactoryBase<class Windows::Gaming::Input::FlightStick,class Windows::Gaming::Input::FlightStick,struct Windows::Gaming::Input::IFlightStick,struct Windows::Gaming::Input::IFlightStickStatics,class Microsoft::WRL::Details::Nil>::`vector deleting destructor'(unsigned int)	Unknown
-        Windows.Gaming.Input.dll!Microsoft::WRL::ActivationFactory<struct Microsoft::WRL::Implements<class Microsoft::WRL::FtmBase,struct Microsoft::WRL::CloakedIid<struct Windows::Gaming::Input::Custom::ICustomGameControllerFactory> >,struct Windows::Gaming::Input::IFlightStickStatics,class Microsoft::WRL::Details::Nil,0>::Release(void)	Unknown
-        Windows.Gaming.Input.dll!Microsoft::WRL::ComPtr<`WaitForCompletion<Windows::Foundation::IAsyncOperationWithProgressCompletedHandler<Windows::Storage::Streams::IBuffer *,unsigned int>,Windows::Foundation::IAsyncOperationWithProgress<Windows::Storage::Streams::IBuffer *,unsigned int>>'::`2'::FTMEventDelegate>::~ComPtr<`WaitForCompletion<Windows::Foundation::IAsyncOperationWithProgressCompletedHandler<Windows::Storage::Streams::IBuffer *,unsigned int>,Windows::Foundation::IAsyncOperationWithProgress<Windows::Storage::Streams::IBuffer *,unsigned int>>'::`2'::FTMEventDelegate>()	Unknown
-        Windows.Gaming.Input.dll!NtList<struct FactoryManager::FactoryListEntry>::~NtList<struct FactoryManager::FactoryListEntry>(void)	Unknown
-        Windows.Gaming.Input.dll!FactoryManager::`vector deleting destructor'(unsigned int)	Unknown
-        Windows.Gaming.Input.dll!Microsoft::WRL::ActivationFactory<struct Microsoft::WRL::Implements<class Microsoft::WRL::FtmBase,struct Windows::Gaming::Input::Custom::IGameControllerFactoryManagerStatics>,struct Windows::Gaming::Input::Custom::IGameControllerFactoryManagerStatics2,struct Microsoft::WRL::CloakedIid<struct Windows::Gaming::Input::Internal::IGameControllerFactoryManagerStaticsPrivate>,0>::Release(void)	Unknown
-        Windows.Gaming.Input.dll!Microsoft::WRL::Details::TerminateMap(class Microsoft::WRL::Details::ModuleBase *,unsigned short const *,bool)	Unknown
-        Windows.Gaming.Input.dll!Microsoft::WRL::Module<1,class Microsoft::WRL::Details::DefaultModule<1> >::~Module<1,class Microsoft::WRL::Details::DefaultModule<1> >(void)	Unknown
-        Windows.Gaming.Input.dll!Microsoft::WRL::Details::DefaultModule<1>::`vector deleting destructor'(unsigned int)	Unknown
-        Windows.Gaming.Input.dll!`dynamic atexit destructor for 'Microsoft::WRL::Details::StaticStorage<Microsoft::WRL::Details::DefaultModule<1>,0,int>::instance_''()	Unknown
-        Windows.Gaming.Input.dll!__CRT_INIT@12()	Unknown
-        Windows.Gaming.Input.dll!__DllMainCRTStartup()	Unknown
-        ntdll.dll!_LdrxCallInitRoutine@16()	Unknown
-        ntdll.dll!LdrpCallInitRoutine()	Unknown
-        ntdll.dll!LdrpProcessDetachNode()	Unknown
-        ntdll.dll!LdrpUnloadNode()	Unknown
-        ntdll.dll!LdrpDecrementModuleLoadCountEx()	Unknown
-        ntdll.dll!LdrUnloadDll()	Unknown
-        KernelBase.dll!FreeLibrary()	Unknown
-        combase.dll!FreeLibraryWithLogging(LoadOrFreeWhy why, HINSTANCE__ * hMod, const wchar_t * pswzOptionalFileName) Line 193	C++
-        combase.dll!CClassCache::CDllPathEntry::CFinishObject::Finish() Line 3311	C++
-        combase.dll!CClassCache::CFinishComposite::Finish() Line 3421	C++
-        combase.dll!CClassCache::CleanUpDllsForProcess() Line 7009	C++
-        [Inline Frame] combase.dll!CCCleanUpDllsForProcess() Line 8773	C++
-        combase.dll!ProcessUninitialize() Line 2243	C++
-        combase.dll!DecrementProcessInitializeCount() Line 993	C++
-        combase.dll!wCoUninitialize(COleTls & Tls, int fHostThread) Line 4126	C++
-        combase.dll!CoUninitialize() Line 3945	C++
-    */
-    /*CoUninitialize();*/
+void *
+WIN_LoadComBaseFunction(const char *name)
+{
+    static SDL_bool s_bLoaded;
+    static HMODULE s_hComBase;
+   
+    if (!s_bLoaded) {
+       s_hComBase = LoadLibraryEx(TEXT("combase.dll"), NULL, LOAD_LIBRARY_SEARCH_SYSTEM32);
+       s_bLoaded = SDL_TRUE;
+    }
+    if (s_hComBase) {
+        return GetProcAddress(s_hComBase, name);
+    } else {
+        return NULL;
+    }
+}
+
+HRESULT
+WIN_RoInitialize(void)
+{
+#ifdef __WINRT__
+    return S_OK;
+#else
+    typedef HRESULT (*RoInitialize_t)(RO_INIT_TYPE initType);
+    RoInitialize_t RoInitializeFunc = (RoInitialize_t)WIN_LoadComBaseFunction("RoInitialize");
+    if (RoInitializeFunc) {
+        return RoInitializeFunc(RO_INIT_MULTITHREADED);
+    } else {
+        return E_NOINTERFACE;
+    }
+#endif
+}
+
+void
+WIN_RoUninitialize(void)
+{
+#ifndef __WINRT__
+    typedef void (*RoUninitialize_t)(void);
+    RoUninitialize_t RoUninitializeFunc = (RoUninitialize_t)WIN_LoadComBaseFunction("RoUninitialize");
+    if (RoUninitializeFunc) {
+        RoUninitializeFunc();
+    }
 #endif
 }
 

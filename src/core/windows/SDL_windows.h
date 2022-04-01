@@ -63,9 +63,16 @@ extern int WIN_SetErrorFromHRESULT(const char *prefix, HRESULT hr);
 /* Sets an error message based on GetLastError(). Always return -1. */
 extern int WIN_SetError(const char *prefix);
 
+/* Load a function from combase.dll */
+void *WIN_LoadComBaseFunction(const char *name);
+
 /* Wrap up the oddities of CoInitialize() into a common function. */
 extern HRESULT WIN_CoInitialize(void);
 extern void WIN_CoUninitialize(void);
+
+/* Wrap up the oddities of RoInitialize() into a common function. */
+extern HRESULT WIN_RoInitialize(void);
+extern void WIN_RoUninitialize(void);
 
 /* Returns SDL_TRUE if we're running on Windows Vista and newer */
 extern BOOL WIN_IsWindowsVistaOrGreater(void);
