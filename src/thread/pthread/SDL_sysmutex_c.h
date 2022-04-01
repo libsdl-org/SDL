@@ -23,9 +23,20 @@
 #ifndef SDL_mutex_c_h_
 #define SDL_mutex_c_h_
 
+#if !SDL_THREAD_PTHREAD_RECURSIVE_MUTEX && \
+    !SDL_THREAD_PTHREAD_RECURSIVE_MUTEX_NP
+#define FAKE_RECURSIVE_MUTEX 1
+#endif
+
 struct SDL_mutex
 {
     pthread_mutex_t id;
+#if FAKE_RECURSIVE_MUTEX
+    int recursive;
+    pthread_t owner;
+    pthread_mutex_t rec_id;
+    pthread_cond_t rec_cond;
+#endif
 };
 
 #endif /* SDL_mutex_c_h_ */
