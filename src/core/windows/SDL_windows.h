@@ -63,8 +63,10 @@ extern int WIN_SetErrorFromHRESULT(const char *prefix, HRESULT hr);
 /* Sets an error message based on GetLastError(). Always return -1. */
 extern int WIN_SetError(const char *prefix);
 
+#if !defined(__WINRT__)
 /* Load a function from combase.dll */
 void *WIN_LoadComBaseFunction(const char *name);
+#endif
 
 /* Wrap up the oddities of CoInitialize() into a common function. */
 extern HRESULT WIN_CoInitialize(void);

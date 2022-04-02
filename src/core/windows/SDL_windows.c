@@ -120,6 +120,7 @@ WIN_CoUninitialize(void)
 #endif
 }
 
+#ifndef __WINRT__
 void *
 WIN_LoadComBaseFunction(const char *name)
 {
@@ -136,6 +137,7 @@ WIN_LoadComBaseFunction(const char *name)
         return NULL;
     }
 }
+#endif
 
 HRESULT
 WIN_RoInitialize(void)
