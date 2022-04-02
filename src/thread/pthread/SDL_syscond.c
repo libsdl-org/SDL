@@ -110,6 +110,7 @@ SDL_CondWaitTimeout(SDL_cond * cond, SDL_mutex * mutex, Uint32 ms)
     struct timespec abstime;
 #ifdef FAKE_RECURSIVE_MUTEX
     pthread_t this_thread = pthread_self();
+    int prev;
 #endif
 
     if (!cond) {
@@ -134,23 +135,18 @@ SDL_CondWaitTimeout(SDL_cond * cond, SDL_mutex * mutex, Uint32 ms)
 
   tryagain:
 #ifdef FAKE_RECURSIVE_MUTEX
-    while (mutex->owner && mutex->owner != this_thread) {
-        pthread_cond_wait(&mutex->rec_cond, &mutex->rec_id);
-    }
+    // Reset recursive mutex state while waiting on condition variable,
+    // allowing other threads to acquire the mutex.
+    prev = mutex->recursive;
+    mutex->recursive = 0;
+    mutex->owner = 0;
+    pthread_cond_signal(&mutex->rec_cond);
+
     retval = pthread_cond_timedwait(&cond->cond, &mutex->id, &abstime);
 
-    // retval = SDL_TryLockMutex(mutex);
-    // if (retval == 0) {
-    //     retval = pthread_cond_timedwait(&cond->cond, &mutex->id, &abstime);
-    //     SDL_UnlockMutex(mutex);
-    // } else if (retval == SDL_MUTEX_TIMEDOUT) {
-    //     // goto tryagain;
-    //     while (mutex->owner && mutex->owner != pthread_self()) {
-    //         pthread_cond_wait(&mutex->cond, &mutex->id);
-    //     }
-    // } else {
-    //     return retval;
-    // }
+    // Restore recursive mutex state.
+    mutex->recursive = prev;
+    mutex->owner = pthread_self();
 #else
     retval = pthread_cond_timedwait(&cond->cond, &mutex->id, &abstime);
 #endif
@@ -183,7 +179,7 @@ SDL_CondWait(SDL_cond * cond, SDL_mutex * mutex)
     }
 
     // Reset recursive mutex state while waiting on condition variable,
-    // allowing other threads to aquire the mutex.
+    // allowing other threads to acquire the mutex.
     int prev = mutex->recursive;
     mutex->recursive = 0;
     mutex->owner = 0;
