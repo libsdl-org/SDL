@@ -23,7 +23,7 @@ TARGETS = testatomic.exe testdisplayinfo.exe testbounds.exe testdraw2.exe &
           testaudioinfo.exe testaudiocapture.exe loopwave.exe loopwavequeue.exe &
           testsurround.exe testyuv.exe testgl2.exe testvulkan.exe testnative.exe &
           testautomation.exe testaudiohotplug.exe testcustomcursor.exe testmultiaudio.exe &
-          testoffscreen.exe testurl.exe
+          testoffscreen.exe testurl.exe testpalette.exe
 
 noninteractive = &
 	testatomic.exe &

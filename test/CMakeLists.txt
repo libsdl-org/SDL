@@ -163,6 +163,7 @@ elseif(HAVE_X11)
 endif()
 
 add_sdl_test_executable(testoverlay2 NEEDS_RESOURCES testoverlay2.c testutils.c)
+add_sdl_test_executable(testpalette testpalette.c)
 add_sdl_test_executable(testplatform NONINTERACTIVE testplatform.c)
 add_sdl_test_executable(testpower NONINTERACTIVE testpower.c)
 add_sdl_test_executable(testfilesystem NONINTERACTIVE testfilesystem.c)
@@ -269,6 +270,7 @@ if(PSP)
         testlock
         testmessage
         testoverlay2
+        testpalette
         testplatform
         testpower
         testqsort
