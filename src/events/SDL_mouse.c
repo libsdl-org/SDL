@@ -561,7 +561,6 @@ SDL_PrivateSendMouseButton(SDL_Window * window, SDL_MouseID mouseID, Uint8 state
     Uint32 type;
     Uint32 buttonstate;
     SDL_MouseInputSource *source;
-    SDL_bool had_buttons_pressed = (SDL_GetMouseState(NULL, NULL) ? SDL_TRUE : SDL_FALSE);
 
     source = GetMouseInputSource(mouse, mouseID);
     if (!source) {
@@ -1031,14 +1030,12 @@ int
 SDL_CaptureMouse(SDL_bool enabled)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
-    SDL_Window *focus_window;
 
     if (!mouse->CaptureMouse) {
         return SDL_Unsupported();
     }
 
-    focus_window = SDL_GetKeyboardFocus();
-    if (enabled && !focus_window) {
+    if (enabled && SDL_GetKeyboardFocus() == NULL) {
         return SDL_SetError("No window has focus");
     }
     mouse->capture_desired = enabled;
