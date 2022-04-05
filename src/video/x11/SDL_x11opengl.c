@@ -247,11 +247,6 @@ X11_GL_LoadLibrary(_THIS, const char *path)
         X11_GL_UseEGL(_this) ) {
 #if SDL_VIDEO_OPENGL_EGL
         X11_GL_UnloadLibrary(_this);
-        /* Better avoid conflicts! */
-        if (_this->gl_config.dll_handle != NULL ) {
-            GL_UnloadObject(_this->gl_config.dll_handle);
-            _this->gl_config.dll_handle = NULL;
-        }
         _this->GL_LoadLibrary = X11_GLES_LoadLibrary;
         _this->GL_GetProcAddress = X11_GLES_GetProcAddress;
         _this->GL_UnloadLibrary = X11_GLES_UnloadLibrary;
