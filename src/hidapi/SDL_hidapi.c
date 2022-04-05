@@ -1185,9 +1185,9 @@ struct SDL_hid_device_info *SDL_hid_enumerate(unsigned short vendor_id, unsigned
 #ifdef SDL_LIBUSB_DYNAMIC
     if (libusb_ctx.libhandle) {
         usb_devs = LIBUSB_hid_enumerate(vendor_id, product_id);
-  #ifdef DEBUG_HIDAPI
+#ifdef DEBUG_HIDAPI
         SDL_Log("libusb devices found:");
-  #endif
+#endif
         for (usb_dev = usb_devs; usb_dev; usb_dev = usb_dev->next) {
             new_dev = (struct SDL_hid_device_info*) SDL_malloc(sizeof(struct SDL_hid_device_info));
             if (!new_dev) {
@@ -1197,11 +1197,11 @@ struct SDL_hid_device_info *SDL_hid_enumerate(unsigned short vendor_id, unsigned
                 return NULL;
             }
             CopyHIDDeviceInfo(usb_dev, new_dev);
-  #ifdef DEBUG_HIDAPI
+#ifdef DEBUG_HIDAPI
             SDL_Log(" - %ls %ls 0x%.4hx 0x%.4hx",
                     usb_dev->manufacturer_string, usb_dev->product_string,
                     usb_dev->vendor_id, usb_dev->product_id);
-  #endif
+#endif
 
             if (last != NULL) {
                 last->next = new_dev;
