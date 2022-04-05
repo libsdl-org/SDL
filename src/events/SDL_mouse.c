@@ -156,12 +156,8 @@ SDL_MouseAutoCaptureChanged(void *userdata, const char *name, const char *oldVal
     SDL_bool auto_capture = SDL_GetStringBoolean(hint, SDL_TRUE);
 
     if (auto_capture != mouse->auto_capture) {
-        /* Turn off mouse capture if it's currently active because of button presses */
-        if (!auto_capture && SDL_GetMouseState(NULL, NULL) != 0) {
-            SDL_CaptureMouse(SDL_FALSE);
-        }
-
         mouse->auto_capture = auto_capture;
+        SDL_UpdateMouseCapture(SDL_FALSE);
     }
 }
 
@@ -668,10 +664,7 @@ SDL_PrivateSendMouseButton(SDL_Window * window, SDL_MouseID mouseID, Uint8 state
 
     /* Automatically capture the mouse while buttons are pressed */
     if (mouse->auto_capture) {
-        SDL_bool has_buttons_pressed = (SDL_GetMouseState(NULL, NULL) ? SDL_TRUE : SDL_FALSE);
-        if (has_buttons_pressed != had_buttons_pressed) {
-            SDL_CaptureMouse(has_buttons_pressed);
-        }
+        SDL_UpdateMouseCapture(SDL_FALSE);
     }
 
     return posted;
@@ -768,6 +761,7 @@ SDL_MouseQuit(void)
 
     if (mouse->CaptureMouse) {
         SDL_CaptureMouse(SDL_FALSE);
+        SDL_UpdateMouseCapture(SDL_TRUE);
     }
     SDL_SetRelativeMouseMode(SDL_FALSE);
     SDL_ShowCursor(1);
@@ -972,6 +966,8 @@ SDL_SetRelativeMouseMode(SDL_bool enabled)
         if (!enabled) {
             SDL_WarpMouseInWindow(focusWindow, mouse->x, mouse->y);
         }
+
+        SDL_UpdateMouseCapture(SDL_FALSE);
     }
 
     if (!enabled) {
@@ -994,38 +990,60 @@ SDL_GetRelativeMouseMode()
 }
 
 int
+SDL_UpdateMouseCapture(SDL_bool force_release)
+{
+    SDL_Mouse *mouse = SDL_GetMouse();
+    SDL_Window *capture_window = NULL;
+
+    if (!mouse->CaptureMouse) {
+        return 0;
+    }
+
+    if (!force_release) {
+        if (mouse->capture_desired || (mouse->auto_capture && SDL_GetMouseState(NULL, NULL) != 0)) {
+            if (!mouse->relative_mode) {
+                capture_window = SDL_GetKeyboardFocus();
+            }
+        }
+    }
+
+    if (capture_window != mouse->capture_window) {
+        if (mouse->capture_window) {
+            mouse->CaptureMouse(NULL);
+            mouse->capture_window->flags &= ~SDL_WINDOW_MOUSE_CAPTURE;
+            mouse->capture_window = NULL;
+        }
+
+        if (capture_window) {
+            if (mouse->CaptureMouse(capture_window) < 0) {
+                /* CaptureMouse() will have set an error */
+                return -1;
+            }
+            capture_window->flags |= SDL_WINDOW_MOUSE_CAPTURE;
+        }
+
+        mouse->capture_window = capture_window;
+    }
+    return 0;
+}
+
+int
 SDL_CaptureMouse(SDL_bool enabled)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
-    SDL_Window *focusWindow;
-    SDL_bool isCaptured;
+    SDL_Window *focus_window;
 
     if (!mouse->CaptureMouse) {
         return SDL_Unsupported();
     }
 
-    focusWindow = SDL_GetKeyboardFocus();
-
-    isCaptured = focusWindow && (focusWindow->flags & SDL_WINDOW_MOUSE_CAPTURE);
-    if (isCaptured == enabled) {
-        return 0;  /* already done! */
+    focus_window = SDL_GetKeyboardFocus();
+    if (enabled && !focus_window) {
+        return SDL_SetError("No window has focus");
     }
+    mouse->capture_desired = enabled;
 
-    if (enabled) {
-        if (!focusWindow) {
-            return SDL_SetError("No window has focus");
-        } else if (mouse->CaptureMouse(focusWindow) == -1) {
-            return -1;  /* CaptureMouse() should call SetError */
-        }
-        focusWindow->flags |= SDL_WINDOW_MOUSE_CAPTURE;
-    } else {
-        if (mouse->CaptureMouse(NULL) == -1) {
-            return -1;  /* CaptureMouse() should call SetError */
-        }
-        focusWindow->flags &= ~SDL_WINDOW_MOUSE_CAPTURE;
-    }
-
-    return 0;
+    return SDL_UpdateMouseCapture(SDL_FALSE);
 }
 
 SDL_Cursor *
