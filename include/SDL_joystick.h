@@ -829,9 +829,9 @@ extern DECLSPEC int SDLCALL SDL_JoystickRumble(SDL_Joystick *joystick, Uint16 lo
  * Each call to this function cancels any previous trigger rumble effect, and
  * calling it with 0 intensity stops any rumbling.
  *
- * Note that this function is for _trigger_ rumble; the first joystick to
- * support this was the PlayStation 5's DualShock 5 controller. If you want
- * the (more common) whole-controller rumble, use SDL_JoystickRumble()
+ * Note that this is rumbling of the _triggers_ and not the game controller as
+ * a whole. This is currently only supported on Xbox One controllers. If you
+ * want the (more common) whole-controller rumble, use SDL_JoystickRumble()
  * instead.
  *
  * \param joystick The joystick to vibrate

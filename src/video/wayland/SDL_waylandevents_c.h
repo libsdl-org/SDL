@@ -29,6 +29,34 @@
 #include "SDL_waylanddatamanager.h"
 #include "SDL_waylandkeyboard.h"
 
+struct SDL_WaylandTabletSeat;
+
+struct SDL_WaylandTabletObjectListNode {
+    void* object;
+    struct SDL_WaylandTabletObjectListNode* next;
+};
+
+struct SDL_WaylandTabletInput {
+    struct SDL_WaylandTabletSeat* seat;
+
+    struct SDL_WaylandTabletObjectListNode* tablets;
+    struct SDL_WaylandTabletObjectListNode* tools;
+    struct SDL_WaylandTabletObjectListNode* pads;
+
+    SDL_WindowData *tool_focus;
+    uint32_t tool_prox_serial;
+
+    /* Last motion location */
+    wl_fixed_t sx_w;
+    wl_fixed_t sy_w;
+
+    SDL_bool is_down;
+
+    SDL_bool btn_stylus;
+    SDL_bool btn_stylus2;
+    SDL_bool btn_stylus3;
+};
+
 typedef struct {
     // repeat_rate in range of [1, 1000]
     int32_t repeat_rate;
@@ -68,6 +96,17 @@ struct SDL_WaylandInput {
         struct xkb_state *state;
         struct xkb_compose_table *compose_table;
         struct xkb_compose_state *compose_state;
+
+        /* Keyboard layout "group" */
+        uint32_t current_group;
+
+        /* Modifier bitshift values */
+        uint32_t idx_shift;
+        uint32_t idx_ctrl;
+        uint32_t idx_alt;
+        uint32_t idx_gui;
+        uint32_t idx_num;
+        uint32_t idx_caps;
     } xkb;
 
     /* information about axis events on current frame */
@@ -80,6 +119,8 @@ struct SDL_WaylandInput {
     } pointer_curr_axis_info;
 
     SDL_WaylandKeyboardRepeat keyboard_repeat;
+
+    struct SDL_WaylandTabletInput* tablet;
 };
 
 extern void Wayland_PumpEvents(_THIS);
@@ -106,6 +147,9 @@ extern void Wayland_display_destroy_relative_pointer_manager(SDL_VideoData *d);
 
 extern int Wayland_input_grab_keyboard(SDL_Window *window, struct SDL_WaylandInput *input);
 extern int Wayland_input_ungrab_keyboard(SDL_Window *window);
+
+extern void Wayland_input_add_tablet(struct SDL_WaylandInput *input, struct SDL_WaylandTabletManager* tablet_manager);
+extern void Wayland_input_destroy_tablet(struct SDL_WaylandInput *input);
 
 #endif /* SDL_waylandevents_h_ */
 

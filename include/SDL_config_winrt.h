@@ -92,6 +92,10 @@ typedef unsigned int uintptr_t;
 # define SIZEOF_VOIDP 4
 #endif
 
+#ifdef __clang__
+# define HAVE_GCC_ATOMICS 1
+#endif
+
 /* Useful headers */
 #define HAVE_DXGI_H 1
 #if WINAPI_FAMILY != WINAPI_FAMILY_PHONE_APP
@@ -190,6 +194,8 @@ typedef unsigned int uintptr_t;
 #define HAVE_TRUNC  1
 #define HAVE_TRUNCF 1
 #define HAVE__FSEEKI64 1
+
+#define HAVE_ROAPI_H  1
 
 /* Enable various audio drivers */
 #define SDL_AUDIO_DRIVER_WASAPI 1

@@ -227,7 +227,7 @@ HIDAPI_CleanupDeviceDriver(SDL_HIDAPI_Device *device)
     }
 
     /* Disconnect any joysticks */
-    while (device->num_joysticks) {
+    while (device->num_joysticks && device->joysticks) {
         HIDAPI_JoystickDisconnected(device, device->joysticks[0]);
     }
 

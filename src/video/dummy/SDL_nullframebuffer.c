@@ -33,17 +33,13 @@ int SDL_DUMMY_CreateWindowFramebuffer(_THIS, SDL_Window * window, Uint32 * forma
     SDL_Surface *surface;
     const Uint32 surface_format = SDL_PIXELFORMAT_RGB888;
     int w, h;
-    int bpp;
-    Uint32 Rmask, Gmask, Bmask, Amask;
 
     /* Free the old framebuffer surface */
-    surface = (SDL_Surface *) SDL_GetWindowData(window, DUMMY_SURFACE);
-    SDL_FreeSurface(surface);
+    SDL_DUMMY_DestroyWindowFramebuffer(_this, window);
 
     /* Create a new one */
-    SDL_PixelFormatEnumToMasks(surface_format, &bpp, &Rmask, &Gmask, &Bmask, &Amask);
     SDL_GetWindowSize(window, &w, &h);
-    surface = SDL_CreateRGBSurface(0, w, h, bpp, Rmask, Gmask, Bmask, Amask);
+    surface = SDL_CreateRGBSurfaceWithFormat(0, w, h, 0, surface_format);
     if (!surface) {
         return -1;
     }

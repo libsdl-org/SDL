@@ -62,6 +62,7 @@ typedef struct WindowsGamingInputGamepadState WindowsGamingInputGamepadState;
 #define GamepadButtons_GUIDE 0x40000000
 #define COBJMACROS
 #include "windows.gaming.input.h"
+#include <roapi.h>
 #endif
 
 #if defined(SDL_JOYSTICK_RAWINPUT_XINPUT) || defined(SDL_JOYSTICK_RAWINPUT_WGI)
@@ -565,22 +566,24 @@ RAWINPUT_InitWindowsGamingInput(RAWINPUT_DeviceContext *ctx)
     if (!wgi_state.initialized) {
         static const IID SDL_IID_IGamepadStatics = { 0x8BBCE529, 0xD49C, 0x39E9, { 0x95, 0x60, 0xE4, 0x7D, 0xDE, 0x96, 0xB7, 0xC8 } };
         HRESULT hr;
-        HMODULE hModule;
 
-        /* I think this takes care of RoInitialize() in a way that is compatible with the rest of SDL */
-        if (FAILED(WIN_CoInitialize())) {
+        if (FAILED(WIN_RoInitialize())) {
             return;
         }
         wgi_state.initialized = SDL_TRUE;
         wgi_state.dirty = SDL_TRUE;
 
-        hModule = LoadLibraryA("combase.dll");
-        if (hModule != NULL) {
+        {
             typedef HRESULT (WINAPI *WindowsCreateStringReference_t)(PCWSTR sourceString, UINT32 length, HSTRING_HEADER *hstringHeader, HSTRING* string);
             typedef HRESULT (WINAPI *RoGetActivationFactory_t)(HSTRING activatableClassId, REFIID iid, void** factory);
 
-            WindowsCreateStringReference_t WindowsCreateStringReferenceFunc = (WindowsCreateStringReference_t)GetProcAddress(hModule, "WindowsCreateStringReference");
-            RoGetActivationFactory_t RoGetActivationFactoryFunc = (RoGetActivationFactory_t)GetProcAddress(hModule, "RoGetActivationFactory");
+#ifdef __WINRT__
+            WindowsCreateStringReference_t WindowsCreateStringReferenceFunc = WindowsCreateStringReference;
+            RoGetActivationFactory_t RoGetActivationFactoryFunc = RoGetActivationFactory;
+#else
+            WindowsCreateStringReference_t WindowsCreateStringReferenceFunc = (WindowsCreateStringReference_t)WIN_LoadComBaseFunction("WindowsCreateStringReference");
+            RoGetActivationFactory_t RoGetActivationFactoryFunc = (RoGetActivationFactory_t)WIN_LoadComBaseFunction("RoGetActivationFactory");
+#endif
             if (WindowsCreateStringReferenceFunc && RoGetActivationFactoryFunc) {
                 PCWSTR pNamespace = L"Windows.Gaming.Input.Gamepad";
                 HSTRING_HEADER hNamespaceStringHeader;
@@ -591,7 +594,6 @@ RAWINPUT_InitWindowsGamingInput(RAWINPUT_DeviceContext *ctx)
                     RoGetActivationFactoryFunc(hNamespaceString, &SDL_IID_IGamepadStatics, (void **)&wgi_state.gamepad_statics);
                 }
             }
-            FreeLibrary(hModule);
         }
     }
 }
@@ -657,7 +659,7 @@ RAWINPUT_QuitWindowsGamingInput(RAWINPUT_DeviceContext *ctx)
             __x_ABI_CWindows_CGaming_CInput_CIGamepadStatics_Release(wgi_state.gamepad_statics);
             wgi_state.gamepad_statics = NULL;
         }
-        WIN_CoUninitialize();
+        WIN_RoUninitialize();
         wgi_state.initialized = SDL_FALSE;
     }
 }
@@ -921,9 +923,12 @@ RAWINPUT_IsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, co
             return SDL_TRUE;
         }
 
-        /* The Xbox 360 wireless controller shows up as product 0 in WGI */
+        /* The Xbox 360 wireless controller shows up as product 0 in WGI.
+           Try to match it to a Raw Input device via name or known product ID. */
         if (vendor_id == device->vendor_id && product_id == 0 &&
-            name && SDL_strstr(device->name, name) != NULL) {
+            ((name && SDL_strstr(device->name, name) != NULL) ||
+             (device->vendor_id == USB_VENDOR_MICROSOFT &&
+              device->product_id == USB_PRODUCT_XBOX360_XUSB_CONTROLLER))) {
             return SDL_TRUE;
         }
 
@@ -1292,6 +1297,13 @@ RAWINPUT_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uin
     }
 #endif /* SDL_JOYSTICK_RAWINPUT_XINPUT */
 
+    if (!rumbled) {
+#if defined(SDL_JOYSTICK_RAWINPUT_WGI) || defined(SDL_JOYSTICK_RAWINPUT_XINPUT)
+        return SDL_SetError("Controller isn't correlated yet, try hitting a button first");
+#else
+        return SDL_Unsupported();
+#endif
+    }
     return 0;
 }
 

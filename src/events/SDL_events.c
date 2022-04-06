@@ -35,7 +35,7 @@
 #include "SDL_syswm.h"
 
 #undef SDL_PRIs64
-#ifdef __WIN32__
+#if defined(__WIN32__) && !defined(__CYGWIN__)
 #define SDL_PRIs64  "I64d"
 #else
 #define SDL_PRIs64  "lld"
@@ -206,10 +206,27 @@ SDL_LogEvent(const SDL_Event *event)
         SDL_EVENT_CASE(SDL_APP_DIDENTERBACKGROUND) break;
         SDL_EVENT_CASE(SDL_APP_WILLENTERFOREGROUND) break;
         SDL_EVENT_CASE(SDL_APP_DIDENTERFOREGROUND) break;
+        SDL_EVENT_CASE(SDL_LOCALECHANGED) break;
         SDL_EVENT_CASE(SDL_KEYMAPCHANGED) break;
         SDL_EVENT_CASE(SDL_CLIPBOARDUPDATE) break;
         SDL_EVENT_CASE(SDL_RENDER_TARGETS_RESET) break;
         SDL_EVENT_CASE(SDL_RENDER_DEVICE_RESET) break;
+
+        SDL_EVENT_CASE(SDL_DISPLAYEVENT) {
+            char name2[64];
+            switch (event->display.event) {
+                case SDL_DISPLAYEVENT_NONE: SDL_strlcpy(name2, "SDL_DISPLAYEVENT_NONE (THIS IS PROBABLY A BUG!)", sizeof(name2)); break;
+                #define SDL_DISPLAYEVENT_CASE(x) case x: SDL_strlcpy(name2, #x, sizeof (name2)); break
+                SDL_DISPLAYEVENT_CASE(SDL_DISPLAYEVENT_ORIENTATION);
+                SDL_DISPLAYEVENT_CASE(SDL_DISPLAYEVENT_CONNECTED);
+                SDL_DISPLAYEVENT_CASE(SDL_DISPLAYEVENT_DISCONNECTED);
+                #undef SDL_DISPLAYEVENT_CASE
+                default: SDL_strlcpy(name2, "UNKNOWN (bug? fixme?)", sizeof(name2)); break;
+            }
+            SDL_snprintf(details, sizeof (details), " (timestamp=%u display=%u event=%s data1=%d)",
+                        (uint) event->display.timestamp, (uint) event->display.display, name2, (int) event->display.data1);
+            break;
+        }
 
         SDL_EVENT_CASE(SDL_WINDOWEVENT) {
             char name2[64];
@@ -232,6 +249,8 @@ SDL_LogEvent(const SDL_Event *event)
                 SDL_WINDOWEVENT_CASE(SDL_WINDOWEVENT_CLOSE);
                 SDL_WINDOWEVENT_CASE(SDL_WINDOWEVENT_TAKE_FOCUS);
                 SDL_WINDOWEVENT_CASE(SDL_WINDOWEVENT_HIT_TEST);
+                SDL_WINDOWEVENT_CASE(SDL_WINDOWEVENT_ICCPROF_CHANGED);
+                SDL_WINDOWEVENT_CASE(SDL_WINDOWEVENT_DISPLAY_CHANGED);
                 #undef SDL_WINDOWEVENT_CASE
                 default: SDL_strlcpy(name2, "UNKNOWN (bug? fixme?)", sizeof (name2)); break;
             }
@@ -660,12 +679,12 @@ static int
 SDL_PeepEventsInternal(SDL_Event * events, int numevents, SDL_eventaction action,
                Uint32 minType, Uint32 maxType, SDL_bool include_sentinel)
 {
-    int i, used;
+    int i, used, sentinels_expected = 0;
 
     /* Don't look after we've quit */
     if (!SDL_AtomicGet(&SDL_EventQ.active)) {
         /* We get a few spurious events at shutdown, so don't warn then */
-        if (action != SDL_ADDEVENT) {
+        if (action == SDL_GETEVENT) {
             SDL_SetError("The event system has been shut down");
         }
         return (-1);
@@ -723,8 +742,15 @@ SDL_PeepEventsInternal(SDL_Event * events, int numevents, SDL_eventaction action
                     }
                     if (type == SDL_POLLSENTINEL) {
                         /* Special handling for the sentinel event */
-                        if (!include_sentinel || SDL_AtomicGet(&SDL_sentinel_pending) > 0) {
-                            /* Skip it, we don't want to include it or there's another one pending */
+                        if (!include_sentinel) {
+                            /* Skip it, we don't want to include it */
+                            continue;
+                        }
+                        if (!events || action != SDL_GETEVENT) {
+                            ++sentinels_expected;
+                        }
+                        if (SDL_AtomicGet(&SDL_sentinel_pending) > sentinels_expected) {
+                            /* Skip it, there's another one pending */
                             continue;
                         }
                     }
@@ -991,6 +1017,7 @@ SDL_WaitEventTimeout(SDL_Event * event, int timeout)
     SDL_Window *wakeup_window;
     Uint32 start, expiration;
     SDL_bool include_sentinel = (timeout == 0) ? SDL_TRUE : SDL_FALSE;
+    int result;
 
     /* If there isn't a poll sentinel event pending, pump events and add one */
     if (SDL_AtomicGet(&SDL_sentinel_pending) == 0) {
@@ -998,33 +1025,34 @@ SDL_WaitEventTimeout(SDL_Event * event, int timeout)
     }
 
     /* First check for existing events */
-    switch (SDL_PeepEventsInternal(event, 1, SDL_GETEVENT, SDL_FIRSTEVENT, SDL_LASTEVENT, include_sentinel)) {
-    case -1:
+    result = SDL_PeepEventsInternal(event, 1, SDL_GETEVENT, SDL_FIRSTEVENT, SDL_LASTEVENT, include_sentinel);
+    if (result < 0) {
         return 0;
-    case 0:
+    }
+    if (include_sentinel) {
+        if (event) {
+            if (event->type == SDL_POLLSENTINEL) {
+                /* Reached the end of a poll cycle, and not willing to wait */
+                return 0;
+            }
+        } else {
+            /* Need to peek the next event to check for sentinel */
+            SDL_Event dummy;
+
+            if (SDL_PeepEventsInternal(&dummy, 1, SDL_PEEKEVENT, SDL_FIRSTEVENT, SDL_LASTEVENT, SDL_TRUE) &&
+                dummy.type == SDL_POLLSENTINEL) {
+                SDL_PeepEventsInternal(&dummy, 1, SDL_GETEVENT, SDL_POLLSENTINEL, SDL_POLLSENTINEL, SDL_TRUE);
+                /* Reached the end of a poll cycle, and not willing to wait */
+                return 0;
+            }
+        }
+    }
+    if (result == 0) {
         if (timeout == 0) {
             /* No events available, and not willing to wait */
             return 0;
         }
-        break;
-    default:
-        if (include_sentinel) {
-            if (event) {
-                if (event->type == SDL_POLLSENTINEL) {
-                    /* Reached the end of a poll cycle, and not willing to wait */
-                    return 0;
-                }
-            } else {
-                /* Need to peek the next event to check for sentinel */
-                SDL_Event dummy;
-
-                if (SDL_PeepEventsInternal(&dummy, 1, SDL_PEEKEVENT, SDL_FIRSTEVENT, SDL_LASTEVENT, SDL_TRUE) &&
-                    dummy.type == SDL_POLLSENTINEL) {
-                    /* Reached the end of a poll cycle, and not willing to wait */
-                    return 0;
-                }
-            }
-        }
+    } else {
         /* Has existing events */
         return 1;
     }

@@ -380,7 +380,7 @@ X11_GetScrollLockModifierMask(_THIS)
     return num_mask;
 }
 
-static void
+void
 X11_ReconcileKeyboardState(_THIS)
 {
     SDL_VideoData *viddata = (SDL_VideoData *) _this->driverdata;

@@ -886,17 +886,18 @@ SDL_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 h
         result = joystick->driver->Rumble(joystick, low_frequency_rumble, high_frequency_rumble);
     }
 
-    /* Save the rumble value regardless of success, so we don't spam the driver */
-    joystick->low_frequency_rumble = low_frequency_rumble;
-    joystick->high_frequency_rumble = high_frequency_rumble;
+    if (result == 0) {
+        joystick->low_frequency_rumble = low_frequency_rumble;
+        joystick->high_frequency_rumble = high_frequency_rumble;
 
-    if ((low_frequency_rumble || high_frequency_rumble) && duration_ms) {
-        joystick->rumble_expiration = SDL_GetTicks() + SDL_min(duration_ms, SDL_MAX_RUMBLE_DURATION_MS);
-        if (!joystick->rumble_expiration) {
-            joystick->rumble_expiration = 1;
+        if ((low_frequency_rumble || high_frequency_rumble) && duration_ms) {
+            joystick->rumble_expiration = SDL_GetTicks() + SDL_min(duration_ms, SDL_MAX_RUMBLE_DURATION_MS);
+            if (!joystick->rumble_expiration) {
+                joystick->rumble_expiration = 1;
+            }
+        } else {
+            joystick->rumble_expiration = 0;
         }
-    } else {
-        joystick->rumble_expiration = 0;
     }
     SDL_UnlockJoysticks();
 
@@ -920,17 +921,18 @@ SDL_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 ri
         result = joystick->driver->RumbleTriggers(joystick, left_rumble, right_rumble);
     }
 
-    /* Save the rumble value regardless of success, so we don't spam the driver */
-    joystick->left_trigger_rumble = left_rumble;
-    joystick->right_trigger_rumble = right_rumble;
+    if (result == 0) {
+        joystick->left_trigger_rumble = left_rumble;
+        joystick->right_trigger_rumble = right_rumble;
 
-    if ((left_rumble || right_rumble) && duration_ms) {
-        joystick->trigger_rumble_expiration = SDL_GetTicks() + SDL_min(duration_ms, SDL_MAX_RUMBLE_DURATION_MS);
-        if (!joystick->trigger_rumble_expiration) {
-            joystick->trigger_rumble_expiration = 1;
+        if ((left_rumble || right_rumble) && duration_ms) {
+            joystick->trigger_rumble_expiration = SDL_GetTicks() + SDL_min(duration_ms, SDL_MAX_RUMBLE_DURATION_MS);
+            if (!joystick->trigger_rumble_expiration) {
+                joystick->trigger_rumble_expiration = 1;
+            }
+        } else {
+            joystick->trigger_rumble_expiration = 0;
         }
-    } else {
-        joystick->trigger_rumble_expiration = 0;
     }
     SDL_UnlockJoysticks();
 
@@ -1588,10 +1590,12 @@ SDL_JoystickUpdate(void)
 
     for (joystick = SDL_joysticks; joystick; joystick = joystick->next) {
         if (joystick->attached) {
-            /* This should always be true, but seeing a crash in the wild...? */
-            if (joystick->driver) {
-                joystick->driver->Update(joystick);
+            /* This driver should always be != NULL, but seeing a crash in the wild...? */
+            if (!joystick->driver) {
+                continue;  /* nothing we can do, and other things use joystick->driver below here. */
             }
+
+            joystick->driver->Update(joystick);
 
             if (joystick->delayed_guide_button) {
                 SDL_GameControllerHandleDelayedGuideButton(joystick);
@@ -1882,7 +1886,7 @@ SDL_GetJoystickGameControllerType(const char *name, Uint16 vendor, Uint16 produc
             0x12ab, /* Unknown */
             0x1430, /* RedOctane */
             0x146b, /* BigBen */
-            0x1532, /* Razer Sabertooth */
+            0x1532, /* Razer */
             0x15e4, /* Numark */
             0x162e, /* Joytech */
             0x1689, /* Razer Onza */
@@ -1911,7 +1915,7 @@ SDL_GetJoystickGameControllerType(const char *name, Uint16 vendor, Uint16 produc
             0x0738, /* Mad Catz */
             0x0e6f, /* PDP */
             0x0f0d, /* Hori */
-            0x1532, /* Razer Wildcat */
+            0x1532, /* Razer */
             0x20d6, /* PowerA */
             0x24c6, /* PowerA */
             0x2e24, /* Hyperkin */
@@ -1943,6 +1947,9 @@ SDL_GetJoystickGameControllerType(const char *name, Uint16 vendor, Uint16 produc
 
         } else if (vendor == 0x0001 && product == 0x0001) {
             type = SDL_CONTROLLER_TYPE_UNKNOWN;
+
+        } else if (vendor == USB_VENDOR_MICROSOFT && product == USB_PRODUCT_XBOX_ONE_XINPUT_CONTROLLER) {
+            type = SDL_CONTROLLER_TYPE_XBOXONE;
 
         } else if ((vendor == USB_VENDOR_AMAZON && product == USB_PRODUCT_AMAZON_LUNA_CONTROLLER) ||
                    (vendor == BLUETOOTH_VENDOR_AMAZON && product == BLUETOOTH_PRODUCT_LUNA_CONTROLLER)) {
@@ -2153,7 +2160,10 @@ static SDL_bool SDL_IsJoystickProductWheel(Uint32 vidpid)
         MAKE_VIDPID(0x044f, 0xb65d),    /* Thrustmaster Wheel FFB */
         MAKE_VIDPID(0x044f, 0xb66d),    /* Thrustmaster Wheel FFB */
         MAKE_VIDPID(0x044f, 0xb677),    /* Thrustmaster T150 */
-        MAKE_VIDPID(0x044f, 0xb66e),    /* Thrustmaster T300RS */
+        MAKE_VIDPID(0x044f, 0xb696),    /* Thrustmaster T248 */
+        MAKE_VIDPID(0x044f, 0xb66e),    /* Thrustmaster T300RS (normal mode) */
+        MAKE_VIDPID(0x044f, 0xb66f),    /* Thrustmaster T300RS (advanced mode) */
+        MAKE_VIDPID(0x044f, 0xb66d),    /* Thrustmaster T300RS (PS4 mode) */
         MAKE_VIDPID(0x044f, 0xb65e),    /* Thrustmaster T500RS */
         MAKE_VIDPID(0x044f, 0xb664),    /* Thrustmaster TX (initial mode) */
         MAKE_VIDPID(0x044f, 0xb669),    /* Thrustmaster TX (active mode) */
@@ -2439,9 +2449,22 @@ SDL_bool SDL_ShouldIgnoreJoystick(const char *name, SDL_JoystickGUID guid)
         /* Additional entries                                            */
         /*****************************************************************/
 
-        MAKE_VIDPID(0x04d9, 0x8009),  /* OBINLB USB-HID Keyboard */
-        MAKE_VIDPID(0x0b05, 0x1958),  /* ROG Chakram Mouse */
+        MAKE_VIDPID(0x04d9, 0x8008),  /* OBINLB USB-HID Keyboard (Anne Pro II) */
+        MAKE_VIDPID(0x04d9, 0x8009),  /* OBINLB USB-HID Keyboard (Anne Pro II) */
+        MAKE_VIDPID(0x04d9, 0xa292),  /* OBINLB USB-HID Keyboard (Anne Pro II) */
+        MAKE_VIDPID(0x04d9, 0xa293),  /* OBINLB USB-HID Keyboard (Anne Pro II) */
+        MAKE_VIDPID(0x1532, 0x0266),  /* Razer Huntman V2 Analog, non-functional DInput device */
+        MAKE_VIDPID(0x1532, 0x0282),  /* Razer Huntman Mini Analog, non-functional DInput device */
         MAKE_VIDPID(0x26ce, 0x01a2),  /* ASRock LED Controller */
+    };
+
+    static Uint32 rog_chakram_list[] = {
+        MAKE_VIDPID(0x0b05, 0x1958),  /* ROG Chakram Core Mouse */
+        MAKE_VIDPID(0x0b05, 0x18e3),  /* ROG Chakram (wired) Mouse */
+        MAKE_VIDPID(0x0b05, 0x18e5),  /* ROG Chakram (wireless) Mouse */
+        MAKE_VIDPID(0x0b05, 0x1a18),  /* ROG Chakram X (wired) Mouse */
+        MAKE_VIDPID(0x0b05, 0x1a1a),  /* ROG Chakram X (wireless) Mouse */
+        MAKE_VIDPID(0x0b05, 0x1a1c),  /* ROG Chakram X (Bluetooth) Mouse */
     };
 
     unsigned int i;
@@ -2457,6 +2480,13 @@ SDL_bool SDL_ShouldIgnoreJoystick(const char *name, SDL_JoystickGUID guid)
     for (i = 0; i < SDL_arraysize(joystick_blacklist); ++i) {
         if (id == joystick_blacklist[i]) {
             return SDL_TRUE;
+        }
+    }
+    if (!SDL_GetHintBoolean(SDL_HINT_JOYSTICK_ROG_CHAKRAM, SDL_FALSE)) {
+        for (i = 0; i < SDL_arraysize(rog_chakram_list); ++i) {
+            if (id == rog_chakram_list[i]) {
+                return SDL_TRUE;
+            }
         }
     }
 
@@ -2708,9 +2738,7 @@ int SDL_PrivateJoystickTouchpad(SDL_Joystick *joystick, int touchpad, int finger
     SDL_JoystickTouchpadInfo *touchpad_info;
     SDL_JoystickTouchpadFingerInfo *finger_info;
     int posted;
-#if !SDL_EVENTS_DISABLED
     Uint32 event_type;
-#endif
 
     if (touchpad < 0 || touchpad >= joystick->ntouchpads) {
         return 0;
@@ -2754,7 +2782,6 @@ int SDL_PrivateJoystickTouchpad(SDL_Joystick *joystick, int touchpad, int finger
         }
     }
 
-#if !SDL_EVENTS_DISABLED
     if (state == finger_info->state) {
         event_type = SDL_CONTROLLERTOUCHPADMOTION;
     } else if (state) {
@@ -2762,7 +2789,6 @@ int SDL_PrivateJoystickTouchpad(SDL_Joystick *joystick, int touchpad, int finger
     } else {
         event_type = SDL_CONTROLLERTOUCHPADUP;
     }
-#endif
 
     /* We ignore events if we don't have keyboard focus, except for touch release */
     if (SDL_PrivateJoystickShouldIgnoreEvent()) {

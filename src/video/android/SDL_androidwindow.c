@@ -81,6 +81,7 @@ Android_CreateWindow(_THIS, SDL_Window * window)
 
     /* Do not create EGLSurface for Vulkan window since it will then make the window
        incompatible with vkCreateAndroidSurfaceKHR */
+#if SDL_VIDEO_OPENGL_EGL
     if ((window->flags & SDL_WINDOW_OPENGL) != 0) {
         data->egl_surface = SDL_EGL_CreateSurface(_this, (NativeWindowType) data->native_window);
 
@@ -91,6 +92,7 @@ Android_CreateWindow(_THIS, SDL_Window * window)
             goto endfunction;
         }
     }
+#endif
 
     window->driverdata = data;
     Android_Window = window;
@@ -165,6 +167,12 @@ Android_MinimizeWindow(_THIS, SDL_Window *window)
     Android_JNI_MinizeWindow();
 }
 
+void Android_SetWindowResizable(_THIS, SDL_Window *window, SDL_bool resizable)
+{
+    /* Set orientation */
+    Android_JNI_SetOrientation(window->w, window->h, window->flags & SDL_WINDOW_RESIZABLE, SDL_GetHint(SDL_HINT_ORIENTATIONS));
+}
+
 void
 Android_DestroyWindow(_THIS, SDL_Window *window)
 {
@@ -175,9 +183,13 @@ Android_DestroyWindow(_THIS, SDL_Window *window)
 
         if (window->driverdata) {
             SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+
+#if SDL_VIDEO_OPENGL_EGL
             if (data->egl_surface != EGL_NO_SURFACE) {
                 SDL_EGL_DestroySurface(_this, data->egl_surface);
             }
+#endif
+
             if (data->native_window) {
                 ANativeWindow_release(data->native_window);
             }
@@ -198,7 +210,11 @@ Android_GetWindowWMInfo(_THIS, SDL_Window *window, SDL_SysWMinfo *info)
         info->version.minor == SDL_MINOR_VERSION) {
         info->subsystem = SDL_SYSWM_ANDROID;
         info->info.android.window = data->native_window;
+
+#if SDL_VIDEO_OPENGL_EGL
         info->info.android.surface = data->egl_surface;
+#endif
+
         return SDL_TRUE;
     } else {
         SDL_SetError("Application not compiled with SDL %d.%d",

@@ -782,11 +782,22 @@ X11_SetWindowIcon(_THIS, SDL_Window * window, SDL_Surface * icon)
     X11_XFlush(display);
 }
 
+static SDL_bool caught_x11_error = SDL_FALSE;
+static int
+X11_CatchAnyError(Display * d, XErrorEvent * e)
+{
+    /* this may happen during tumultuous times when we are polling anyhow,
+        so just note we had an error and return control. */
+    caught_x11_error = SDL_TRUE;
+    return 0;
+}
+
 void
 X11_SetWindowPosition(_THIS, SDL_Window * window)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
     Display *display = data->videodata->display;
+    int (*prev_handler) (Display *, XErrorEvent *) = NULL;
     unsigned int childCount;
     Window childReturn, root, parent;
     Window* children;
@@ -805,20 +816,27 @@ X11_SetWindowPosition(_THIS, SDL_Window * window)
 
     /* Wait a brief time to see if the window manager decided to let this move happen.
        If the window changes at all, even to an unexpected value, we break out. */
+    X11_XSync(display, False);
+    prev_handler = X11_XSetErrorHandler(X11_CatchAnyError);
+
     timeout = SDL_GetTicks() + 100;
     while (SDL_TRUE) {
         int x, y;
+
+        caught_x11_error = SDL_FALSE;
         X11_XSync(display, False);
         X11_XGetWindowAttributes(display, data->xwindow, &attrs);
         X11_XTranslateCoordinates(display, parent, DefaultRootWindow(display),
                                   attrs.x, attrs.y, &x, &y, &childReturn);
 
-        if ((x != orig_x) || (y != orig_y)) {
-            window->x = x;
-            window->y = y;
-            break;  /* window moved, time to go. */
-        } else if ((x == window->x) && (y == window->y)) {
-            break;  /* we're at the place we wanted to be anyhow, drop out. */
+        if (!caught_x11_error) {
+            if ((x != orig_x) || (y != orig_y)) {
+                window->x = x;
+                window->y = y;
+                break;  /* window moved, time to go. */
+            } else if ((x == window->x) && (y == window->y)) {
+                break;  /* we're at the place we wanted to be anyhow, drop out. */
+            }
         }
 
         if (SDL_TICKS_PASSED(SDL_GetTicks(), timeout)) {
@@ -827,6 +845,9 @@ X11_SetWindowPosition(_THIS, SDL_Window * window)
 
         SDL_Delay(10);
     }
+
+    X11_XSetErrorHandler(prev_handler);
+    caught_x11_error = SDL_FALSE;
 }
 
 void
@@ -892,6 +913,7 @@ X11_SetWindowSize(_THIS, SDL_Window * window)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
     Display *display = data->videodata->display;
+    int (*prev_handler) (Display *, XErrorEvent *) = NULL;
     XWindowAttributes attrs;
     int orig_w, orig_h;
     Uint32 timeout;
@@ -943,19 +965,25 @@ X11_SetWindowSize(_THIS, SDL_Window * window)
         X11_XResizeWindow(display, data->xwindow, window->w, window->h);
     }
 
+    X11_XSync(display, False);
+    prev_handler = X11_XSetErrorHandler(X11_CatchAnyError);
+
     /* Wait a brief time to see if the window manager decided to let this resize happen.
        If the window changes at all, even to an unexpected value, we break out. */
     timeout = SDL_GetTicks() + 100;
     while (SDL_TRUE) {
+        caught_x11_error = SDL_FALSE;
         X11_XSync(display, False);
         X11_XGetWindowAttributes(display, data->xwindow, &attrs);
 
-        if ((attrs.width != orig_w) || (attrs.height != orig_h)) {
-            window->w = attrs.width;
-            window->h = attrs.height;
-            break;  /* window changed, time to go. */
-        } else if ((attrs.width == window->w) && (attrs.height == window->h)) {
-            break;  /* we're at the place we wanted to be anyhow, drop out. */
+        if (!caught_x11_error) {
+            if ((attrs.width != orig_w) || (attrs.height != orig_h)) {
+                window->w = attrs.width;
+                window->h = attrs.height;
+                break;  /* window changed, time to go. */
+            } else if ((attrs.width == window->w) && (attrs.height == window->h)) {
+                break;  /* we're at the place we wanted to be anyhow, drop out. */
+            }
         }
 
         if (SDL_TICKS_PASSED(SDL_GetTicks(), timeout)) {
@@ -964,6 +992,9 @@ X11_SetWindowSize(_THIS, SDL_Window * window)
 
         SDL_Delay(10);
     }
+
+    X11_XSetErrorHandler(prev_handler);
+    caught_x11_error = SDL_FALSE;
 }
 
 int
@@ -1281,6 +1312,20 @@ X11_SetWindowFullscreenViaWM(_THIS, SDL_Window * window, SDL_VideoDisplay * _dis
 
     if (X11_IsWindowMapped(_this, window)) {
         XEvent e;
+        /* !!! FIXME: most of this waiting code is copy/pasted from elsewhere. */
+        int (*prev_handler) (Display *, XErrorEvent *) = NULL;
+        unsigned int childCount;
+        Window childReturn, root, parent;
+        Window* children;
+        XWindowAttributes attrs;
+        int orig_x, orig_y;
+        Uint64 timeout;
+
+        X11_XSync(display, False);
+        X11_XQueryTree(display, data->xwindow, &root, &parent, &children, &childCount);
+        X11_XGetWindowAttributes(display, data->xwindow, &attrs);
+        X11_XTranslateCoordinates(display, parent, DefaultRootWindow(display),
+                                  attrs.x, attrs.y, &orig_x, &orig_y, &childReturn);
 
         if (!(window->flags & SDL_WINDOW_RESIZABLE)) {
             /* Compiz refuses fullscreen toggle if we're not resizable, so update the hints so we
@@ -1330,6 +1375,39 @@ X11_SetWindowFullscreenViaWM(_THIS, SDL_Window * window, SDL_VideoDisplay * _dis
             X11_XSendEvent(display, RootWindow(display, displaydata->screen), 0,
                    SubstructureNotifyMask | SubstructureRedirectMask, &e);
         }
+
+        /* Wait a brief time to see if the window manager decided to let this happen.
+           If the window changes at all, even to an unexpected value, we break out. */
+        X11_XSync(display, False);
+        prev_handler = X11_XSetErrorHandler(X11_CatchAnyError);
+
+        timeout = SDL_GetTicks64() + 100;
+        while (SDL_TRUE) {
+            int x, y;
+
+            caught_x11_error = SDL_FALSE;
+            X11_XSync(display, False);
+            X11_XGetWindowAttributes(display, data->xwindow, &attrs);
+            X11_XTranslateCoordinates(display, parent, DefaultRootWindow(display),
+                                      attrs.x, attrs.y, &x, &y, &childReturn);
+
+            if (!caught_x11_error) {
+                if ((x != orig_x) || (y != orig_y)) {
+                    window->x = x;
+                    window->y = y;
+                    break;  /* window moved, time to go. */
+                }
+            }
+
+            if (SDL_GetTicks64() >= timeout) {
+                break;
+            }
+
+            SDL_Delay(10);
+        }
+
+        X11_XSetErrorHandler(prev_handler);
+        caught_x11_error = SDL_FALSE;
     } else {
         Uint32 flags;
 
@@ -1659,8 +1737,14 @@ void
 X11_SetWindowMouseGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
-    Display *display = data->videodata->display;
+    Display *display;
     SDL_bool oldstyle_fullscreen;
+
+    if (data == NULL) {
+        return;
+    }
+
+    display = data->videodata->display;
 
     /* ICCCM2.0-compliant window managers can handle fullscreen windows
        If we're using XVidMode to change resolution we need to confine
@@ -1719,7 +1803,13 @@ void
 X11_SetWindowKeyboardGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
-    Display *display = data->videodata->display;
+    Display *display;
+
+    if (data == NULL) {
+        return;
+    }
+
+    display = data->videodata->display;
 
     if (grabbed) {
         /* If the window is unmapped, XGrab calls return GrabNotViewable,

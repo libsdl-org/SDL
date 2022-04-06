@@ -29,6 +29,12 @@ LIBM = SDL2libm.lib
 TLIB = SDL2test.lib
 LIBS = mmpm2.lib $(LIBM)
 CFLAGS = -bt=os2 -d0 -q -bm -5s -fp5 -fpi87 -sg -oeatxhn -ei
+# Debug options:
+# - debug messages from OS/2 related code to stdout:
+#CFLAGS+= -DOS2DEBUG
+# - debug messages from OS/2 code via SDL_LogDebug():
+#CFLAGS+= -DOS2DEBUG=2
+
 # max warnings:
 CFLAGS+= -wx
 # newer OpenWatcom versions enable W303 by default
@@ -54,13 +60,7 @@ CFLAGS_DLL+= -DHAVE_LIBUSB_H=1
 # building SDL itself (for DECLSPEC):
 CFLAGS_DLL+= -DBUILD_SDL
 
-# Debug options:
-# - debug messages from OS/2 related code to stdout:
-#CFLAGS+= -DOS2DEBUG
-# - debug messages from OS/2 code via SDL_LogDebug():
-#CFLAGS+= -DOS2DEBUG=2
-
-SRCS = SDL.c SDL_assert.c SDL_error.c SDL_log.c SDL_dataqueue.c SDL_hints.c
+SRCS = SDL.c SDL_assert.c SDL_error.c SDL_log.c SDL_dataqueue.c SDL_hints.c SDL_list.c
 SRCS+= SDL_getenv.c SDL_iconv.c SDL_malloc.c SDL_qsort.c SDL_stdlib.c SDL_string.c SDL_strtokr.c SDL_crc32.c
 SRCS+= SDL_cpuinfo.c SDL_atomic.c SDL_spinlock.c SDL_thread.c SDL_timer.c
 SRCS+= SDL_rwops.c SDL_power.c

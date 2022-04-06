@@ -409,6 +409,8 @@ X11_InitKeyboard(_THIS)
     SDL_IME_Init();
 #endif
 
+    X11_ReconcileKeyboardState(_this);
+
     return 0;
 }
 

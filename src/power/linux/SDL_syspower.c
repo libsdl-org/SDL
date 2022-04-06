@@ -561,20 +561,30 @@ check_upower_device(DBusConnection *conn, const char *path, SDL_PowerState *stat
         return;
     } else if (!ui32) {
         return;  /* we don't care about random devices with batteries, like wireless controllers, etc */
-    } else if (!SDL_DBus_QueryPropertyOnConnection(conn, UPOWER_DBUS_NODE, path, UPOWER_DEVICE_DBUS_INTERFACE, "IsPresent", DBUS_TYPE_BOOLEAN, &ui32)) {
+    }
+
+    if (!SDL_DBus_QueryPropertyOnConnection(conn, UPOWER_DBUS_NODE, path, UPOWER_DEVICE_DBUS_INTERFACE, "IsPresent", DBUS_TYPE_BOOLEAN, &ui32)) {
         return;
-    } else if (!ui32) {
+    }
+    if (!ui32) {
         st = SDL_POWERSTATE_NO_BATTERY;
-    } else if (!SDL_DBus_QueryPropertyOnConnection(conn, UPOWER_DBUS_NODE, path, UPOWER_DEVICE_DBUS_INTERFACE, "State", DBUS_TYPE_UINT32, &ui32)) {
-        st = SDL_POWERSTATE_UNKNOWN;  /* uh oh */
-    } else if (ui32 == 1) {  /* 1 == charging */
-        st = SDL_POWERSTATE_CHARGING;
-    } else if ((ui32 == 2) || (ui32 == 3)) {  /* 2 == discharging, 3 == empty. */
-        st = SDL_POWERSTATE_ON_BATTERY;
-    } else if (ui32 == 4) {   /* 4 == full */
-        st = SDL_POWERSTATE_CHARGED;
     } else {
-        st = SDL_POWERSTATE_UNKNOWN;  /* uh oh */
+        /* Get updated information on the battery status
+         * This can occasionally fail, and we'll just return slightly stale data in that case
+         */
+        SDL_DBus_CallMethodOnConnection(conn, UPOWER_DBUS_NODE, path, UPOWER_DEVICE_DBUS_INTERFACE, "Refresh", DBUS_TYPE_INVALID, DBUS_TYPE_INVALID);
+
+        if (!SDL_DBus_QueryPropertyOnConnection(conn, UPOWER_DBUS_NODE, path, UPOWER_DEVICE_DBUS_INTERFACE, "State", DBUS_TYPE_UINT32, &ui32)) {
+            st = SDL_POWERSTATE_UNKNOWN;  /* uh oh */
+        } else if (ui32 == 1) {  /* 1 == charging */
+            st = SDL_POWERSTATE_CHARGING;
+        } else if ((ui32 == 2) || (ui32 == 3)) {  /* 2 == discharging, 3 == empty. */
+            st = SDL_POWERSTATE_ON_BATTERY;
+        } else if (ui32 == 4) {   /* 4 == full */
+            st = SDL_POWERSTATE_CHARGED;
+        } else {
+            st = SDL_POWERSTATE_UNKNOWN;  /* uh oh */
+        }
     }
 
     if (!SDL_DBus_QueryPropertyOnConnection(conn, UPOWER_DBUS_NODE, path, UPOWER_DEVICE_DBUS_INTERFACE, "Percentage", DBUS_TYPE_DOUBLE, &d)) {

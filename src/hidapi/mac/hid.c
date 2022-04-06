@@ -259,7 +259,7 @@ static int get_string_property(IOHIDDeviceRef device, CFStringRef prop, wchar_t 
 	
 	buf[0] = 0;
 	
-	if (str) {
+	if (str && CFGetTypeID(str) == CFStringGetTypeID()) {
 		len --;
 		
 		CFIndex str_len = CFStringGetLength(str);
@@ -298,7 +298,7 @@ static int get_string_property_utf8(IOHIDDeviceRef device, CFStringRef prop, cha
 	
 	buf[0] = 0;
 	
-	if (str) {
+	if (str && CFGetTypeID(str) == CFStringGetTypeID()) {
 		len--;
 		
 		CFIndex str_len = CFStringGetLength(str);
@@ -326,10 +326,7 @@ static int get_string_property_utf8(IOHIDDeviceRef device, CFStringRef prop, cha
 
 static int get_serial_number(IOHIDDeviceRef device, wchar_t *buf, size_t len)
 {
-	// This crashes on M1 Macs, tracked by radar bug 79667729
-	//return get_string_property(device, CFSTR(kIOHIDSerialNumberKey), buf, len);
-	buf[0] = 0;
-	return 0;
+	return get_string_property(device, CFSTR(kIOHIDSerialNumberKey), buf, len);
 }
 
 static int get_manufacturer_string(IOHIDDeviceRef device, wchar_t *buf, size_t len)
@@ -557,6 +554,7 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 			continue;
 		}
 
+#if 0 // Prefer direct HID support as that has extended functionality
 #if defined(SDL_JOYSTICK_MFI)
 		// We want to prefer Game Controller support where available,
 		// as Apple will likely be requiring that for supported devices.
@@ -564,6 +562,7 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 		if (IOS_SupportedHIDDevice(dev)) {
 			continue;
 		}
+#endif
 #endif
 
 		dev_vid = get_vendor_id(dev);
@@ -573,8 +572,7 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 		if ((vendor_id == 0x0 && product_id == 0x0) ||
 		    (vendor_id == dev_vid && product_id == dev_pid)) {
 			struct hid_device_info *tmp;
-			size_t len;
-			
+
 			/* VID/PID match. Create the record. */
 			tmp = (struct hid_device_info *)calloc(1, sizeof(struct hid_device_info));
 			if (cur_dev) {
@@ -591,7 +589,7 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 			
 			/* Fill out the record */
 			cur_dev->next = NULL;
-			len = make_path(dev, cbuf, sizeof(cbuf));
+			make_path(dev, cbuf, sizeof(cbuf));
 			cur_dev->path = strdup(cbuf);
 			
 			/* Serial Number */
@@ -818,10 +816,9 @@ hid_device * HID_API_EXPORT hid_open_path(const char *path, int bExclusive)
 	CFSetGetValues(device_set, (const void **) device_array);	
 	for (i = 0; i < num_devices; i++) {
 		char cbuf[BUF_LEN];
-		size_t len;
 		IOHIDDeviceRef os_dev = device_array[i];
 		
-		len = make_path(os_dev, cbuf, sizeof(cbuf));
+		make_path(os_dev, cbuf, sizeof(cbuf));
 		if (!strcmp(cbuf, path)) {
 			// Matched Paths. Open this Device.
 			IOReturn ret = IOHIDDeviceOpen(os_dev, kIOHIDOptionsTypeNone);
@@ -834,6 +831,7 @@ hid_device * HID_API_EXPORT hid_open_path(const char *path, int bExclusive)
 				
 				/* Create the buffers for receiving data */
 				dev->max_input_report_len = (CFIndex) get_max_report_length(os_dev);
+				SDL_assert(dev->max_input_report_len > 0);
 				dev->input_report_buf = (uint8_t *)calloc(dev->max_input_report_len, sizeof(uint8_t));
 				
 				/* Create the Run Loop Mode for this device.
@@ -937,11 +935,14 @@ static int return_data(hid_device *dev, unsigned char *data, size_t length)
 	/* Copy the data out of the linked list item (rpt) into the
 	 return buffer (data), and delete the liked list item. */
 	struct input_report *rpt = dev->input_reports;
-	size_t len = (length < rpt->len)? length: rpt->len;
-	memcpy(data, rpt->data, len);
-	dev->input_reports = rpt->next;
-	free(rpt->data);
-	free(rpt);
+	size_t len = 0;
+	if (rpt != NULL) {
+		len = (length < rpt->len)? length: rpt->len;
+		memcpy(data, rpt->data, len);
+		dev->input_reports = rpt->next;
+		free(rpt->data);
+		free(rpt);
+	}
 	return (int)len;
 }
 

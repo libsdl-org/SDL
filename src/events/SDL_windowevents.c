@@ -25,7 +25,7 @@
 #include "SDL_events.h"
 #include "SDL_events_c.h"
 #include "SDL_mouse_c.h"
-
+#include "SDL_hints.h"
 
 static int SDLCALL
 RemovePendingSizeChangedAndResizedEvents(void * userdata, SDL_Event *event)
@@ -201,8 +201,9 @@ SDL_SendWindowEvent(SDL_Window * window, Uint8 windowevent, int data1,
 
     if (windowevent == SDL_WINDOWEVENT_CLOSE) {
         if ( !window->prev && !window->next ) {
-            /* This is the last window in the list so send the SDL_QUIT event */
-            SDL_SendQuit();
+            if (SDL_GetHintBoolean(SDL_HINT_QUIT_ON_LAST_WINDOW_CLOSE, SDL_TRUE)) {
+                SDL_SendQuit();  /* This is the last window in the list so send the SDL_QUIT event */
+            }
         }
     }
 

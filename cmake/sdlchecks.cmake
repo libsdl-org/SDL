@@ -48,6 +48,7 @@ macro(CheckDLOPEN)
        int main(int argc, char **argv) {
          void *handle = dlopen(\"\", RTLD_NOW);
          const char *loaderror = (char *) dlerror();
+         return 0;
        }" HAVE_DLOPEN)
     set(CMAKE_REQUIRED_LIBRARIES)
   endif()
@@ -57,8 +58,7 @@ macro(CheckO_CLOEXEC)
   check_c_source_compiles("
     #include <fcntl.h>
     int flag = O_CLOEXEC;
-    int main(void) {
-   }" HAVE_O_CLOEXEC)
+    int main(int argc, char **argv) { return 0; }" HAVE_O_CLOEXEC)
 endmacro()
 
 # Requires:
@@ -68,12 +68,12 @@ macro(CheckOSS)
     set(OSS_HEADER_FILE "sys/soundcard.h")
     check_c_source_compiles("
         #include <sys/soundcard.h>
-        int main() { int arg = SNDCTL_DSP_SETFRAGMENT; }" OSS_FOUND)
+        int main(int argc, char **argv) { int arg = SNDCTL_DSP_SETFRAGMENT; return 0; }" OSS_FOUND)
     if(NOT OSS_FOUND)
       set(OSS_HEADER_FILE "soundcard.h")
       check_c_source_compiles("
           #include <soundcard.h>
-          int main() { int arg = SNDCTL_DSP_SETFRAGMENT; }" OSS_FOUND)
+          int main(int argc, char **argv) { int arg = SNDCTL_DSP_SETFRAGMENT; return 0; }" OSS_FOUND)
     endif()
 
     if(OSS_FOUND)
@@ -174,7 +174,7 @@ macro(CheckPulseAudio)
         set(SDL_AUDIO_DRIVER_PULSEAUDIO_DYNAMIC "\"${PULSE_SIMPLE_LIB_SONAME}\"")
         set(HAVE_PULSEAUDIO_SHARED TRUE)
       else()
-        list(APPEND EXTRA_LDFLAGS ${PKG_sPULSEAUDIO_LDFLAGS})
+        list(APPEND EXTRA_LDFLAGS ${PKG_PULSEAUDIO_LDFLAGS})
       endif()
       set(HAVE_SDL_AUDIO TRUE)
     endif()
@@ -467,6 +467,8 @@ macro(CheckX11)
         else()
           list(APPEND EXTRA_LIBS ${X11_LIB} ${XEXT_LIB})
         endif()
+      else()
+          list(APPEND EXTRA_LIBS ${X11_LIB} ${XEXT_LIB})
       endif()
 
       set(CMAKE_REQUIRED_LIBRARIES ${X11_LIB} ${X11_LIB})
@@ -479,7 +481,8 @@ macro(CheckX11)
             XGenericEventCookie *cookie = &event.xcookie;
             XNextEvent(display, &event);
             XGetEventData(display, cookie);
-            XFreeEventData(display, cookie); }" HAVE_XGENERICEVENT)
+            XFreeEventData(display, cookie);
+            return 0; }" HAVE_XGENERICEVENT)
       if(HAVE_XGENERICEVENT)
         set(SDL_VIDEO_DRIVER_X11_SUPPORTS_GENERIC_EVENTS 1)
       endif()
@@ -527,11 +530,10 @@ macro(CheckX11)
             #include <X11/extensions/XInput2.h>
             int event_type = XI_TouchBegin;
             XITouchClassInfo *t;
-            Status XIAllowTouchEvents(Display *a,int b,unsigned int c,Window d,int f)
-            {
+            Status XIAllowTouchEvents(Display *a,int b,unsigned int c,Window d,int f) {
               return (Status)0;
             }
-            int main(int argc, char **argv) {}" HAVE_XINPUT2_MULTITOUCH)
+            int main(int argc, char **argv) { return 0; }" HAVE_XINPUT2_MULTITOUCH)
         if(HAVE_XINPUT2_MULTITOUCH)
           set(SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH 1)
         endif()
@@ -545,7 +547,7 @@ macro(CheckX11)
             #include <X11/extensions/XInput2.h>
             #include <X11/extensions/Xfixes.h>
             BarrierEventID b;
-            int main(void) { }" HAVE_XFIXES_H)
+            int main(int argc, char **argv) { return 0; }" HAVE_XFIXES_H)
       endif()
       if(SDL_X11_XFIXES AND HAVE_XFIXES_H AND HAVE_XINPUT2_H)
         if(HAVE_X11_SHARED AND XFIXES_LIB)
@@ -630,7 +632,7 @@ endmacro()
 # - HAVE_SDL_LOADSO opt
 macro(CheckWayland)
   if(SDL_WAYLAND)
-    pkg_check_modules(WAYLAND wayland-client wayland-egl wayland-cursor egl "xkbcommon>=0.5.0")
+    pkg_check_modules(WAYLAND "wayland-client>=1.18" wayland-egl wayland-cursor egl "xkbcommon>=0.5.0")
 
     if(WAYLAND_FOUND)
       find_program(WAYLAND_SCANNER NAMES wayland-scanner REQUIRED)
@@ -775,12 +777,12 @@ macro(CheckVivante)
   if(SDL_VIVANTE)
     check_c_source_compiles("
         #include <gc_vdk.h>
-        int main(int argc, char** argv) {}" HAVE_VIVANTE_VDK)
+        int main(int argc, char** argv) { return 0; }" HAVE_VIVANTE_VDK)
     check_c_source_compiles("
         #define LINUX
         #define EGL_API_FB
         #include <EGL/eglvivante.h>
-        int main(int argc, char** argv) {}" HAVE_VIVANTE_EGL_FB)
+        int main(int argc, char** argv) { return 0; }" HAVE_VIVANTE_EGL_FB)
     if(HAVE_VIVANTE_VDK OR HAVE_VIVANTE_EGL_FB)
       set(HAVE_VIVANTE TRUE)
       set(HAVE_SDL_VIDEO TRUE)
@@ -790,7 +792,9 @@ macro(CheckVivante)
       set(SDL_VIDEO_DRIVER_VIVANTE 1)
       if(HAVE_VIVANTE_VDK)
         set(SDL_VIDEO_DRIVER_VIVANTE_VDK 1)
-        list(APPEND EXTRA_LIBS VDK VIVANTE)
+        find_library(VIVANTE_LIBRARY REQUIRED NAMES VIVANTE vivante drm_vivante)
+        find_library(VIVANTE_VDK_LIBRARY VDK REQUIRED)
+        list(APPEND EXTRA_LIBS ${VIVANTE_LIBRARY} ${VIVANTE_VDK_LIBRARY})
       else()
         set(SDL_CFLAGS "${SDL_CFLAGS} -DLINUX -DEGL_API_FB")
         list(APPEND EXTRA_LIBS EGL)
@@ -805,7 +809,7 @@ macro(CheckGLX)
   if(SDL_OPENGL)
     check_c_source_compiles("
         #include <GL/glx.h>
-        int main(int argc, char** argv) {}" HAVE_OPENGL_GLX)
+        int main(int argc, char** argv) { return 0; }" HAVE_OPENGL_GLX)
     if(HAVE_OPENGL_GLX)
       set(SDL_VIDEO_OPENGL_GLX 1)
     endif()
@@ -824,7 +828,7 @@ macro(CheckEGL)
         #define EGL_NO_X11
         #include <EGL/egl.h>
         #include <EGL/eglext.h>
-        int main (int argc, char** argv) {}" HAVE_OPENGL_EGL)
+        int main (int argc, char** argv) { return 0; }" HAVE_OPENGL_EGL)
     if(HAVE_OPENGL_EGL)
       set(SDL_VIDEO_OPENGL_EGL 1)
     endif()
@@ -838,7 +842,7 @@ macro(CheckOpenGL)
     check_c_source_compiles("
         #include <GL/gl.h>
         #include <GL/glext.h>
-        int main(int argc, char** argv) {}" HAVE_OPENGL)
+        int main(int argc, char** argv) { return 0; }" HAVE_OPENGL)
     if(HAVE_OPENGL)
       set(SDL_VIDEO_OPENGL 1)
       set(SDL_VIDEO_RENDER_OGL 1)
@@ -853,7 +857,7 @@ macro(CheckOpenGLES)
     check_c_source_compiles("
         #include <GLES/gl.h>
         #include <GLES/glext.h>
-        int main (int argc, char** argv) {}" HAVE_OPENGLES_V1)
+        int main (int argc, char** argv) { return 0; }" HAVE_OPENGLES_V1)
     if(HAVE_OPENGLES_V1)
         set(HAVE_OPENGLES TRUE)
         set(SDL_VIDEO_OPENGL_ES 1)
@@ -862,7 +866,7 @@ macro(CheckOpenGLES)
     check_c_source_compiles("
         #include <GLES2/gl2.h>
         #include <GLES2/gl2ext.h>
-        int main (int argc, char** argv) {}" HAVE_OPENGLES_V2)
+        int main (int argc, char** argv) { return 0; }" HAVE_OPENGLES_V2)
     if(HAVE_OPENGLES_V2)
         set(HAVE_OPENGLES TRUE)
         set(SDL_VIDEO_OPENGL_ES2 1)
@@ -1174,7 +1178,7 @@ macro(CheckHIDAPI)
         else()
           # libusb is loaded dynamically, so don't add it to EXTRA_LIBS
           FindLibraryAndSONAME("usb-1.0")
-          set(SDL_LIBUSB_DYNAMIC "\"${USB_LIB_SONAME}\"")
+          set(SDL_LIBUSB_DYNAMIC "\"${USB_1.0_LIB_SONAME}\"")
         endif()
       endif()
     endif()

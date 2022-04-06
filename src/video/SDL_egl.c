@@ -27,7 +27,6 @@
 #endif
 #if SDL_VIDEO_DRIVER_ANDROID
 #include <android/native_window.h>
-#include "../core/android/SDL_android.h"
 #include "../video/android/SDL_androidvideo.h"
 #endif
 #if SDL_VIDEO_DRIVER_RPI
@@ -99,7 +98,7 @@
 #define DEFAULT_OGL_ES "libGLESv1_CM.so.1"
 #endif /* SDL_VIDEO_DRIVER_RPI */
 
-#if SDL_VIDEO_OPENGL
+#if SDL_VIDEO_OPENGL && !SDL_VIDEO_VITA_PVR_OGL
 #include "SDL_opengl.h"
 #endif
 
@@ -530,7 +529,7 @@ SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_displa
     }
 #endif
     /* Try the implementation-specific eglGetDisplay even if eglGetPlatformDisplay fails */
-    if (_this->egl_data->egl_display == EGL_NO_DISPLAY) {
+    if ((_this->egl_data->egl_display == EGL_NO_DISPLAY) && (_this->egl_data->eglGetDisplay != NULL)) {
         _this->egl_data->egl_display = _this->egl_data->eglGetDisplay(native_display);
     }
     if (_this->egl_data->egl_display == EGL_NO_DISPLAY) {
@@ -909,8 +908,7 @@ SDL_EGL_ChooseConfig(_THIS)
     int ret;
 
     if (!_this->egl_data) {
-        /* The EGL library wasn't loaded, SDL_GetError() should have info */
-        return -1;
+        return SDL_SetError("EGL not initialized");
     }
 
     /* Try with EGL_CONFIG_CAVEAT set to EGL_NONE, to avoid any EGL_SLOW_CONFIG or EGL_NON_CONFORMANT_CONFIG */
@@ -943,7 +941,7 @@ SDL_EGL_CreateContext(_THIS, EGLSurface egl_surface)
     SDL_bool profile_es = (profile_mask == SDL_GL_CONTEXT_PROFILE_ES);
 
     if (!_this->egl_data) {
-        /* The EGL library wasn't loaded, SDL_GetError() should have info */
+        SDL_SetError("EGL not initialized");
         return NULL;
     }
 
@@ -1044,16 +1042,8 @@ SDL_EGL_CreateContext(_THIS, EGLSurface egl_surface)
     _this->egl_data->egl_swapinterval = 0;
 
     if (SDL_EGL_MakeCurrent(_this, egl_surface, egl_context) < 0) {
-        /* Save the SDL error set by SDL_EGL_MakeCurrent */
-        char errorText[1024];
-        SDL_strlcpy(errorText, SDL_GetError(), SDL_arraysize(errorText));
-
-        /* Delete the context, which may alter the value returned by SDL_GetError() */
+        /* Delete the context */
         SDL_EGL_DeleteContext(_this, egl_context);
-
-        /* Restore the SDL error */
-        SDL_SetError("%s", errorText);
-
         return NULL;
     }
 
@@ -1071,7 +1061,7 @@ SDL_EGL_CreateContext(_THIS, EGLSurface egl_surface)
             if (SDL_GL_ExtensionSupported("GL_OES_surfaceless_context")) {
                 _this->gl_allow_no_surface = SDL_TRUE;
             }
-#if SDL_VIDEO_OPENGL
+#if SDL_VIDEO_OPENGL && !defined(SDL_VIDEO_DRIVER_VITA)
         } else {
             /* Desktop OpenGL supports it by default from version 3.0 on. */
             void (APIENTRY * glGetIntegervFunc) (GLenum pname, GLint * params);
@@ -1096,7 +1086,7 @@ SDL_EGL_MakeCurrent(_THIS, EGLSurface egl_surface, SDL_GLContext context)
     EGLContext egl_context = (EGLContext) context;
 
     if (!_this->egl_data) {
-        return SDL_SetError("OpenGL not initialized");
+        return SDL_SetError("EGL not initialized");
     }
 
     if (!_this->egl_data->eglMakeCurrent) {
@@ -1104,7 +1094,7 @@ SDL_EGL_MakeCurrent(_THIS, EGLSurface egl_surface, SDL_GLContext context)
             /* Can't do the nothing there is to do? Probably trying to cleanup a failed startup, just return. */
             return 0;
         } else {
-            return SDL_SetError("OpenGL not initialized");  /* something clearly went wrong somewhere. */
+            return SDL_SetError("EGL not initialized");  /* something clearly went wrong somewhere. */
         }
     }
 

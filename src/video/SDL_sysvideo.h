@@ -307,6 +307,8 @@ struct SDL_VideoDevice
     void (*StartTextInput) (_THIS);
     void (*StopTextInput) (_THIS);
     void (*SetTextInputRect) (_THIS, SDL_Rect *rect);
+    void (*ClearComposition) (_THIS);
+    SDL_bool (*IsTextInputShown) (_THIS);
 
     /* Screen keyboard */
     SDL_bool (*HasScreenKeyboardSupport) (_THIS);
@@ -343,6 +345,7 @@ struct SDL_VideoDevice
     Uint32 next_object_id;
     char *clipboard_text;
     SDL_bool setting_display_mode;
+    SDL_bool disable_display_mode_switching;
 
     /* * * */
     /* Data used by the GL drivers */

@@ -100,6 +100,12 @@ typedef struct
     SDL_bool touch_mouse_events;
     SDL_bool mouse_touch_events;
     SDL_bool was_touch_mouse_events; /* Was a touch-mouse event pending? */
+#if defined(__vita__)
+    Uint8 vita_touch_mouse_device;
+#endif
+    SDL_bool auto_capture;
+    SDL_bool capture_desired;
+    SDL_Window *capture_window;
 
     /* Data for input source state */
     int num_sources;
@@ -130,6 +136,9 @@ extern void SDL_SetDefaultCursor(SDL_Cursor * cursor);
 
 /* Set the mouse focus window */
 extern void SDL_SetMouseFocus(SDL_Window * window);
+
+/* Update the mouse capture window */
+extern int SDL_UpdateMouseCapture(SDL_bool force_release);
 
 /* Send a mouse motion event */
 extern int SDL_SendMouseMotion(SDL_Window * window, SDL_MouseID mouseID, int relative, int x, int y);

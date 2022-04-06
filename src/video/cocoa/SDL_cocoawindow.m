@@ -2020,8 +2020,18 @@ Cocoa_SetWindowResizable(_THIS, SDL_Window * window, SDL_bool resizable)
      */
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
     Cocoa_WindowListener *listener = data->listener;
+    NSWindow *nswindow = data->nswindow;
+    SDL_VideoData *videodata = ((SDL_WindowData *) window->driverdata)->videodata;
     if (![listener isInFullscreenSpace]) {
         SetWindowStyle(window, GetWindowStyle(window));
+    }
+    if (videodata->allow_spaces) {
+        if (resizable) {
+            /* resizable windows are Spaces-friendly: they get the "go fullscreen" toggle button on their titlebar. */
+            [nswindow setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
+        } else {
+            [nswindow setCollectionBehavior:NSWindowCollectionBehaviorManaged];
+        }
     }
 }}
 

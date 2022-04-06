@@ -407,6 +407,7 @@ openslES_CreatePCMPlayer(_THIS)
 {
     struct SDL_PrivateAudioData *audiodata = this->hidden;
     SLDataFormat_PCM format_pcm;
+    SLAndroidDataFormat_PCM_EX format_pcm_ex;
     SLresult result;
     int i;
 
@@ -414,30 +415,30 @@ openslES_CreatePCMPlayer(_THIS)
        it can be done as described here:
         https://developer.android.com/ndk/guides/audio/opensl/android-extensions.html#floating-point
     */
-#if 1
-    /* Just go with signed 16-bit audio as it's the most compatible */
-    this->spec.format = AUDIO_S16SYS;
-#else
-    SDL_AudioFormat test_format;
-    for (test_format = SDL_FirstAudioFormat(this->spec.format); test_format; test_format = SDL_NextAudioFormat()) {
-        if (SDL_AUDIO_ISSIGNED(test_format) && SDL_AUDIO_ISINT(test_format)) {
-            break;
+    if(SDL_GetAndroidSDKVersion() >= 21) {
+        SDL_AudioFormat test_format;
+        for (test_format = SDL_FirstAudioFormat(this->spec.format); test_format; test_format = SDL_NextAudioFormat()) {
+            if (SDL_AUDIO_ISSIGNED(test_format)) {
+                break;
+            }
         }
-    }
 
-    if (!test_format) {
-        /* Didn't find a compatible format : */
-        LOGI( "No compatible audio format, using signed 16-bit audio" );
-        test_format = AUDIO_S16SYS;
+        if (!test_format) {
+            /* Didn't find a compatible format : */
+            LOGI( "No compatible audio format, using signed 16-bit audio" );
+            test_format = AUDIO_S16SYS;
+        }
+        this->spec.format = test_format;
+    } else {
+        /* Just go with signed 16-bit audio as it's the most compatible */
+        this->spec.format = AUDIO_S16SYS;
     }
-    this->spec.format = test_format;
-#endif
 
     /* Update the fragment size as size in bytes */
     SDL_CalculateAudioSpec(&this->spec);
 
-    LOGI("Try to open %u hz %u bit chan %u %s samples %u",
-          this->spec.freq, SDL_AUDIO_BITSIZE(this->spec.format),
+    LOGI("Try to open %u hz %s %u bit chan %u %s samples %u",
+          this->spec.freq, SDL_AUDIO_ISFLOAT(this->spec.format) ? "float" : "pcm", SDL_AUDIO_BITSIZE(this->spec.format),
           this->spec.channels, (this->spec.format & 0x1000) ? "BE" : "LE", this->spec.samples);
 
     /* configure audio source */
@@ -488,7 +489,19 @@ openslES_CreatePCMPlayer(_THIS)
         break;
     }
 
-    SLDataSource audioSrc = { &loc_bufq, &format_pcm };
+    if(SDL_AUDIO_ISFLOAT(this->spec.format)) {
+        /* Copy all setup into PCM EX structure */
+        format_pcm_ex.formatType = SL_ANDROID_DATAFORMAT_PCM_EX;
+        format_pcm_ex.endianness = format_pcm.endianness;
+        format_pcm_ex.channelMask = format_pcm.channelMask;
+        format_pcm_ex.numChannels = format_pcm.numChannels;
+        format_pcm_ex.sampleRate = format_pcm.samplesPerSec;
+        format_pcm_ex.bitsPerSample = format_pcm.bitsPerSample;
+        format_pcm_ex.containerSize = format_pcm.containerSize;
+        format_pcm_ex.representation = SL_ANDROID_PCM_REPRESENTATION_FLOAT;
+    }
+
+    SLDataSource audioSrc = { &loc_bufq, SDL_AUDIO_ISFLOAT(this->spec.format) ? (void*)&format_pcm_ex : (void*)&format_pcm };
 
     /* configure audio sink */
     SLDataLocator_OutputMix loc_outmix = { SL_DATALOCATOR_OUTPUTMIX, outputMixObject };

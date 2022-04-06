@@ -67,7 +67,6 @@ RISCOS_PollKeyboard(_THIS)
 
     /* Check for key presses */
     while (key < 0xff) {
-        SDL_bool already_pressed = SDL_FALSE;
         key = _kernel_osbyte(121, key + 1, 0) & 0xff;
         switch (key) {
         case 255:
@@ -83,22 +82,16 @@ RISCOS_PollKeyboard(_THIS)
             break;
 
         default:
-            /* Do we already know of this key? */
+            SDL_SendKeyboardKey(SDL_PRESSED, SDL_RISCOS_translate_keycode(key));
+
+            /* Record the press so we can detect release later. */
             for (i = 0; i < RISCOS_MAX_KEYS_PRESSED; i++) {
                 if (driverdata->key_pressed[i] == key) {
-                    already_pressed = SDL_TRUE;
                     break;
                 }
-            }
-
-            if (!already_pressed) {
-                SDL_SendKeyboardKey(SDL_PRESSED, SDL_RISCOS_translate_keycode(key));
-                /* Record the press so we can detect release later. */
-                for (i = 0; i < RISCOS_MAX_KEYS_PRESSED; i++) {
-                    if (driverdata->key_pressed[i] == 255) {
-                        driverdata->key_pressed[i] = key;
-                        break;
-                    }
+                if (driverdata->key_pressed[i] == 255) {
+                    driverdata->key_pressed[i] = key;
+                    break;
                 }
             }
         }

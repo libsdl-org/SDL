@@ -36,10 +36,260 @@
 #include "xdg-decoration-unstable-v1-client-protocol.h"
 #include "idle-inhibit-unstable-v1-client-protocol.h"
 #include "xdg-activation-v1-client-protocol.h"
+#include "viewporter-client-protocol.h"
 
 #ifdef HAVE_LIBDECOR_H
 #include <libdecor.h>
 #endif
+
+static void
+GetFullScreenDimensions(SDL_Window *window, int *width, int *height, int *drawable_width, int *drawable_height)
+{
+    SDL_WaylandOutputData *output = (SDL_WaylandOutputData *)SDL_GetDisplayForWindow(window)->driverdata;
+
+    int fs_width, fs_height;
+    int buf_width, buf_height;
+
+    /*
+     * Fullscreen desktop mandates a desktop sized window, so that's what applications will get.
+     * If the application is DPI aware, it will need to handle the transformations between the
+     * differently sized window and backbuffer spaces on its own.
+     */
+    if ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN_DESKTOP) {
+        fs_width  = output->width;
+        fs_height = output->height;
+
+        /* If the application is DPI aware, we can expose the true backbuffer size */
+        if (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
+            buf_width  = output->native_width;
+            buf_height = output->native_height;
+        } else {
+            buf_width  = fs_width;
+            buf_height = fs_height;
+        }
+    } else {
+        /*
+         * If a mode was set, use it, otherwise use the native resolution
+         * for DPI aware apps and the desktop size for legacy apps.
+         */
+        if (window->fullscreen_mode.w != 0 && window->fullscreen_mode.h != 0) {
+            fs_width  = window->fullscreen_mode.w;
+            fs_height = window->fullscreen_mode.h;
+        } else if (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
+            fs_width  = output->native_width;
+            fs_height = output->native_height;
+        } else {
+            fs_width  = output->width;
+            fs_height = output->height;
+        }
+
+        buf_width  = fs_width;
+        buf_height = fs_height;
+    }
+
+    if (width) {
+        *width = fs_width;
+    }
+    if (height) {
+        *height = fs_height;
+    }
+    if (drawable_width) {
+        *drawable_width = buf_width;
+    }
+    if (drawable_height) {
+        *drawable_height = buf_height;
+    }
+}
+
+static inline SDL_bool
+DesktopIsScaled(SDL_Window *window)
+{
+    SDL_WindowData *data = window->driverdata;
+
+    return data->scale_factor != 1.0f;
+}
+
+static inline SDL_bool
+DesktopIsFractionalScaled(SDL_Window *window)
+{
+    SDL_WindowData        *data   = window->driverdata;
+    SDL_WaylandOutputData *output = (SDL_WaylandOutputData *)SDL_GetDisplayForWindow(window)->driverdata;
+
+    if ((output->native_width != (int)(output->width * data->scale_factor) ||
+         output->native_height != (int)(output->height * data->scale_factor))) {
+        return SDL_TRUE;
+    }
+
+    return SDL_FALSE;
+}
+
+static SDL_bool
+NeedFullscreenViewport(SDL_Window *window)
+{
+    SDL_WindowData        *data   = window->driverdata;
+    SDL_VideoData         *video  = data->waylandData;
+    SDL_WaylandOutputData *output = (SDL_WaylandOutputData *)SDL_GetDisplayForWindow(window)->driverdata;
+
+    int fs_width, fs_height;
+
+    GetFullScreenDimensions(window, &fs_width, &fs_height, NULL, NULL);
+
+    /*
+     * Fullscreen needs a viewport:
+     *  - If the desktop uses fractional scaling
+     *    - Fullscreen desktop was not requested OR the window is DPI aware
+     *
+     *  - The desktop uses non-fractional scaling
+     *    - Fullscreen desktop was NOT requested
+     *
+     *  - The desktop is not scaled
+     *    - A non-native fullscreen mode was explicitly set by the client
+     */
+    if (video->viewporter != NULL && (window->flags & SDL_WINDOW_FULLSCREEN)) {
+        if (DesktopIsFractionalScaled(window)) {
+            if ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) != SDL_WINDOW_FULLSCREEN_DESKTOP ||
+                (window->flags & SDL_WINDOW_ALLOW_HIGHDPI)) {
+                return SDL_TRUE;
+            }
+        } else if (DesktopIsScaled(window)) {
+            if ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) != SDL_WINDOW_FULLSCREEN_DESKTOP) {
+                return SDL_TRUE;
+            }
+        } else if (fs_width != output->native_width && fs_height != output->native_height) {
+            return SDL_TRUE;
+        }
+    }
+
+    return SDL_FALSE;
+}
+
+static inline SDL_bool
+NeedWindowedViewport(SDL_Window *window)
+{
+    SDL_WindowData *data  = window->driverdata;
+    SDL_VideoData  *video = data->waylandData;
+
+    return !(window->flags & SDL_WINDOW_FULLSCREEN) && (video->viewporter != NULL) &&
+           DesktopIsFractionalScaled(window) && (window->flags & SDL_WINDOW_ALLOW_HIGHDPI);
+}
+
+static void
+GetWindowBufferSize(SDL_Window *window, int *width, int *height)
+{
+    SDL_WindowData        *data   = window->driverdata;
+    SDL_WaylandOutputData *output = (SDL_WaylandOutputData *)SDL_GetDisplayForWindow(window)->driverdata;
+    int                    buf_width;
+    int                    buf_height;
+
+    if (NeedWindowedViewport(window)) {
+        const float frac_scale_x = (float)output->native_width / (float)output->width;
+        const float frac_scale_y = (float)output->native_height / (float)output->height;
+
+        buf_width  = (int)SDL_lroundf(window->w * frac_scale_x);
+        buf_height = (int)SDL_lroundf(window->h * frac_scale_y);
+    } else { /* Windowed or fullscreen with no viewport */
+        buf_width  = window->w * data->scale_factor;
+        buf_height = window->h * data->scale_factor;
+    }
+
+    if (width) {
+        *width = buf_width;
+    }
+    if (height) {
+        *height = buf_height;
+    }
+}
+
+static void
+SetViewport(SDL_Window *window, int src_width, int src_height, int dst_width, int dst_height)
+{
+    SDL_WindowData *wind  = window->driverdata;
+    SDL_VideoData  *video = wind->waylandData;
+
+    if (video->viewporter) {
+        if (wind->viewport == NULL) {
+            wind->viewport = wp_viewporter_get_viewport(video->viewporter, wind->surface);
+        }
+
+        wp_viewport_set_source(wind->viewport, wl_fixed_from_int(0), wl_fixed_from_int(0), wl_fixed_from_int(src_width), wl_fixed_from_int(src_height));
+        wp_viewport_set_destination(wind->viewport, dst_width, dst_height);
+    }
+}
+
+static void
+UnsetViewport(SDL_Window *window)
+{
+    SDL_WindowData *wind = window->driverdata;
+
+    if (wind->viewport) {
+        wp_viewport_destroy(wind->viewport);
+        wind->viewport = NULL;
+    }
+}
+
+static void
+ConfigureViewport(SDL_Window *window)
+{
+    SDL_WindowData        *data    = window->driverdata;
+    SDL_VideoData         *viddata = data->waylandData;
+    SDL_WaylandOutputData *output  = (SDL_WaylandOutputData *)SDL_GetDisplayForWindow(window)->driverdata;
+
+    if (NeedFullscreenViewport(window)) {
+        int fs_width, fs_height;
+        int src_width, src_height;
+
+        GetFullScreenDimensions(window, &fs_width, &fs_height, &src_width, &src_height);
+        SetViewport(window, src_width, src_height, output->width, output->height);
+
+        data->pointer_scale_x = (float)fs_width / (float)output->width;
+        data->pointer_scale_y = (float)fs_height / (float)output->height;
+    } else {
+        if (NeedWindowedViewport(window)) {
+            int src_width, src_height;
+
+            GetWindowBufferSize(window, &src_width, &src_height);
+            SetViewport(window, src_width, src_height, window->w, window->h);
+        } else {
+            UnsetViewport(window);
+        }
+
+        data->pointer_scale_x = 1.0f;
+        data->pointer_scale_y = 1.0f;
+    }
+
+    /*
+     * If mouse_rect is not empty, re-create the confinement region with the new scale value.
+     * If the pointer is locked to the general surface with unspecified coordinates, it will
+     * be confined to the viewport region, so no update is required.
+     */
+    if (!SDL_RectEmpty(&window->mouse_rect)) {
+        Wayland_input_confine_pointer(viddata->input, window);
+    }
+}
+
+static void
+SetDrawScale(SDL_Window *window)
+{
+    SDL_WindowData *data = window->driverdata;
+
+    if (NeedFullscreenViewport(window)) {
+        int fs_width, fs_height;
+
+        GetFullScreenDimensions(window, &fs_width, &fs_height, &data->drawable_width, &data->drawable_height);
+
+        /* Set the buffer scale to 1 since a viewport will be used. */
+        wl_surface_set_buffer_scale(data->surface, 1);
+    } else {
+        GetWindowBufferSize(window, &data->drawable_width, &data->drawable_height);
+
+        if (NeedWindowedViewport(window)) {
+            /* Set the buffer scale to 1 since a viewport will be used. */
+            wl_surface_set_buffer_scale(data->surface, 1);
+        } else {
+            wl_surface_set_buffer_scale(data->surface, (int32_t)data->scale_factor);
+        }
+    }
+}
 
 static void
 SetMinMaxDimensions(SDL_Window *window, SDL_bool commit)
@@ -303,9 +553,14 @@ handle_configure_xdg_toplevel(void *data,
          * UPDATE: Nope, sure enough a compositor sends 0,0. This is a known bug:
          * https://bugs.kde.org/show_bug.cgi?id=444962
          */
-        if (width != 0 && height != 0 && (window->w != width || window->h != height)) {
-            window->w = width;
-            window->h = height;
+        if (!NeedFullscreenViewport(window)) {
+            if (width != 0 && height != 0 && (window->w != width || window->h != height)) {
+                window->w = width;
+                window->h = height;
+                wind->needs_resize_event = SDL_TRUE;
+            }
+        } else {
+            GetFullScreenDimensions(window, &window->w, &window->h, NULL, NULL);
             wind->needs_resize_event = SDL_TRUE;
         }
 
@@ -399,16 +654,22 @@ decoration_frame_configure(struct libdecor_frame *frame,
      * Always assume the configure is wrong.
      */
     if (fullscreen) {
-        /* FIXME: We have been explicitly told to respect the fullscreen size
-         * parameters here, even though they are known to be wrong on GNOME at
-         * bare minimum. If this is wrong, don't blame us, we were explicitly
-         * told to do this.
-         */
-        if (!libdecor_configuration_get_content_size(configuration, frame,
-                                                     &width, &height)) {
-            width = window->w;
-            height = window->h;
+        if (!NeedFullscreenViewport(window)) {
+            /* FIXME: We have been explicitly told to respect the fullscreen size
+             * parameters here, even though they are known to be wrong on GNOME at
+             * bare minimum. If this is wrong, don't blame us, we were explicitly
+             * told to do this.
+             */
+            if (!libdecor_configuration_get_content_size(configuration, frame,
+                                                         &width, &height)) {
+                width  = window->w;
+                height = window->h;
+            }
+        } else {
+            GetFullScreenDimensions(window, &width, &height, NULL, NULL);
         }
+
+        wind->needs_resize_event = SDL_TRUE;
 
         /* This part is good though. */
         if (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
@@ -1269,7 +1530,9 @@ int Wayland_CreateWindow(_THIS, SDL_Window *window)
     data->waylandData = c;
     data->sdlwindow = window;
 
-    data->scale_factor = 1.0;
+    data->scale_factor = 1.0f;
+    data->pointer_scale_x = 1.0f;
+    data->pointer_scale_y = 1.0f;
 
     if (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
         int i;
@@ -1316,16 +1579,18 @@ int Wayland_CreateWindow(_THIS, SDL_Window *window)
     }
 #endif /* SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH */
 
+    data->drawable_width = window->w * data->scale_factor;
+    data->drawable_height = window->h * data->scale_factor;
+
     if (window->flags & SDL_WINDOW_OPENGL) {
-        data->egl_window = WAYLAND_wl_egl_window_create(data->surface,
-                                            window->w * data->scale_factor, window->h * data->scale_factor);
+        data->egl_window = WAYLAND_wl_egl_window_create(data->surface, data->drawable_width, data->drawable_height);
 
 #if SDL_VIDEO_OPENGL_EGL
         /* Create the GLES window surface */
         data->egl_surface = SDL_EGL_CreateSurface(_this, (NativeWindowType) data->egl_window);
 
         if (data->egl_surface == EGL_NO_SURFACE) {
-            return SDL_SetError("failed to create an EGL window surface");
+            return -1;    /* SDL_EGL_CreateSurface should have set error */
         }
 #endif
     }
@@ -1375,12 +1640,13 @@ Wayland_HandleResize(SDL_Window *window, int width, int height, float scale)
         data->needs_resize_event = SDL_FALSE;
     }
 
-    wl_surface_set_buffer_scale(data->surface, data->scale_factor);
+    /* Configure the backbuffer size and scale factors */
+    SetDrawScale(window);
 
     if (data->egl_window) {
         WAYLAND_wl_egl_window_resize(data->egl_window,
-                                        window->w * data->scale_factor,
-                                        window->h * data->scale_factor,
+                                        data->drawable_width,
+                                        data->drawable_height,
                                         0, 0);
     }
 
@@ -1397,6 +1663,9 @@ Wayland_HandleResize(SDL_Window *window, int width, int height, float scale)
     if (viddata->shell.xdg && data->shell_surface.xdg.surface) {
        xdg_surface_set_window_geometry(data->shell_surface.xdg.surface, 0, 0, window->w, window->h);
     }
+
+    /* Update the viewport */
+    ConfigureViewport(window);
 }
 
 void
@@ -1431,12 +1700,12 @@ void Wayland_SetWindowSize(_THIS, SDL_Window * window)
     }
 #endif
 
-    wl_surface_set_buffer_scale(wind->surface, wind->scale_factor);
+    SetDrawScale(window);
 
     if (wind->egl_window) {
         WAYLAND_wl_egl_window_resize(wind->egl_window,
-                                     window->w * wind->scale_factor,
-                                     window->h * wind->scale_factor,
+                                     wind->drawable_width,
+                                     wind->drawable_height,
                                      0, 0);
     }
 
@@ -1547,6 +1816,10 @@ void Wayland_DestroyWindow(_THIS, SDL_Window *window)
 
         if (wind->activation_token) {
             xdg_activation_token_v1_destroy(wind->activation_token);
+        }
+
+        if (wind->viewport) {
+            wp_viewport_destroy(wind->viewport);
         }
 
         SDL_free(wind->outputs);

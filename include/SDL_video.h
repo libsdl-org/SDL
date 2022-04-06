@@ -1337,6 +1337,7 @@ extern DECLSPEC void SDLCALL SDL_SetWindowKeyboardGrab(SDL_Window * window,
  * Mouse grab confines the mouse cursor to the window.
  *
  * \param window The window for which the mouse grab mode should be set.
+ * \param grabbed This is SDL_TRUE to grab mouse, and SDL_FALSE to release.
  *
  * \since This function is available since SDL 2.0.16.
  *

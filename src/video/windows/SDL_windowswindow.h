@@ -49,6 +49,7 @@ typedef struct
     Uint8 focus_click_pending;
     SDL_bool skip_update_clipcursor;
     Uint32 last_updated_clipcursor;
+    SDL_bool mouse_relative_mode_center;
     SDL_bool windowed_mode_was_maximized;
     SDL_bool in_window_deactivation;
     RECT cursor_clipped_rect;
