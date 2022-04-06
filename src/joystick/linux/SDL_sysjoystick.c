@@ -109,6 +109,7 @@ typedef struct SDL_joylist_item
     /* Steam Controller support */
     SDL_bool m_bSteamController;
 
+    SDL_bool checked_mapping;
     SDL_GamepadMapping *mapping;
 } SDL_joylist_item;
 
@@ -1573,9 +1574,13 @@ LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
     SDL_Joystick *joystick;
     SDL_joylist_item *item = JoystickByDevIndex(device_index);
 
-    if (item->mapping) {
-        SDL_memcpy(out, item->mapping, sizeof(*out));
-        return SDL_TRUE;
+    if (item->checked_mapping) {
+        if (item->mapping) {
+            SDL_memcpy(out, item->mapping, sizeof(*out));
+            return SDL_TRUE;
+        } else {
+            return SDL_FALSE;
+        }
     }
 
     /* We temporarily open the device to check how it's configured. Make
@@ -1594,6 +1599,8 @@ LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
         SDL_OutOfMemory();
         return SDL_FALSE;
     }
+
+    item->checked_mapping = SDL_TRUE;
 
     if (PrepareJoystickHwdata(joystick, item) == -1) {
         SDL_free(joystick->hwdata);
