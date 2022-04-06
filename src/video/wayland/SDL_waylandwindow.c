@@ -995,6 +995,21 @@ void Wayland_ShowWindow(_THIS, SDL_Window *window)
     SDL_VideoData *c = _this->driverdata;
     SDL_WindowData *data = window->driverdata;
 
+    /* Detach any previous buffers before resetting everything, otherwise when
+     * calling this a second time you'll get an annoying protocol error!
+     *
+     * FIXME: This was originally moved to HideWindow, which _should_ make
+     * sense, but for whatever reason UE5's popups require that this actually
+     * be in both places at once? Possibly from renderers making commits? I can't
+     * fully remember if this location caused crashes or if I was fixing a pair
+     * of Hide/Show calls. In any case, UE gives us a pretty good test and having
+     * both detach calls passes.
+     *
+     * -flibit
+     */
+    wl_surface_attach(data->surface, NULL, 0, 0);
+    wl_surface_commit(data->surface);
+
     /* Create the shell surface and map the toplevel */
 #ifdef HAVE_LIBDECOR_H
     if (c->shell.libdecor) {
