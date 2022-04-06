@@ -815,12 +815,28 @@ Wayland_move_window(SDL_Window *window,
     int i, numdisplays = SDL_GetNumVideoDisplays();
     for (i = 0; i < numdisplays; i += 1) {
         if (SDL_GetDisplay(i)->driverdata == driverdata) {
-            /* Equivalent of SDL_WINDOWPOS_CENTERED_DISPLAY(i) */
+            /* We want to send a very very specific combination here:
+             *
+             * 1. A coordinate that tells the application what display we're on
+             * 2. Exactly (0, 0)
+             *
+             * Part 1 is useful information but is also really important for
+             * ensuring we end up on the right display for fullscreen, while
+             * part 2 is important because numerous applications use a specific
+             * combination of GetWindowPosition and GetGlobalMouseState, and of
+             * course neither are supported by Wayland. Since global mouse will
+             * fall back to just GetMouseState, we need the window position to
+             * be zero so the cursor math works without it going off in some
+             * random direction. See UE5 Editor for a notable example of this!
+             *
+             * This may be an issue some day if we're ever able to implement
+             * SDL_GetDisplayUsableBounds!
+             *
+             * -flibit
+             */
             SDL_Rect bounds;
             SDL_GetDisplayBounds(i, &bounds);
-            SDL_SendWindowEvent(window, SDL_WINDOWEVENT_MOVED,
-                                bounds.x + (bounds.w - window->w) / 2,
-                                bounds.y + (bounds.h - window->h) / 2);
+            SDL_SendWindowEvent(window, SDL_WINDOWEVENT_MOVED, bounds.x, bounds.y);
             break;
         }
     }
