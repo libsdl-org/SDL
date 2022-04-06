@@ -606,6 +606,26 @@ LINUX_InotifyJoystickDetect(void)
 }
 #endif /* HAVE_INOTIFY */
 
+static int get_event_joystick_index(int event)
+{
+    int joystick_index = -1;
+    int i, count;
+    struct dirent **entries;
+    char path[PATH_MAX];
+
+    SDL_snprintf(path, SDL_arraysize(path), "/sys/class/input/event%d/device", event);
+    count = scandir(path, &entries, NULL, alphasort);
+    for (i = 0; i < count; ++i) {
+        if (SDL_strncmp(entries[i]->d_name, "js", 2) == 0) {
+            joystick_index = SDL_atoi(entries[i]->d_name+2);
+        }
+        free(entries[i]); /* This should NOT be SDL_free() */
+    }
+    free(entries); /* This should NOT be SDL_free() */
+
+    return joystick_index;
+}
+
 /* Detect devices by reading /dev/input. In the inotify code path we
  * have to do this the first time, to detect devices that already existed
  * before we started; in the non-inotify code path we do this repeatedly
@@ -618,10 +638,35 @@ filter_entries(const struct dirent *entry)
 static int
 sort_entries(const struct dirent **a, const struct dirent **b)
 {
-    int numA = SDL_atoi((*a)->d_name+5);
-    int numB = SDL_atoi((*b)->d_name+5);
+    int numA, numB;
+    int offset;
+
+    if (SDL_classic_joysticks) {
+        offset = 2; /* strlen("js") */
+        numA = SDL_atoi((*a)->d_name+offset);
+        numB = SDL_atoi((*b)->d_name+offset);
+    } else {
+        offset = 5; /* strlen("event") */
+        numA = SDL_atoi((*a)->d_name+offset);
+        numB = SDL_atoi((*b)->d_name+offset);
+
+        /* See if we can get the joystick ordering */
+        {
+            int jsA = get_event_joystick_index(numA);
+            int jsB = get_event_joystick_index(numB);
+            if (jsA >= 0 && jsB >= 0) {
+                numA = jsA;
+                numB = jsB;
+            } else if (jsA >= 0) {
+                return -1;
+            } else if (jsB >= 0) {
+                return 1;
+            }
+        }
+    }
     return (numA - numB);
 }
+
 static void
 LINUX_FallbackJoystickDetect(void)
 {
@@ -684,29 +729,7 @@ LINUX_JoystickInit(void)
 
     SDL_classic_joysticks = SDL_GetHintBoolean(SDL_HINT_LINUX_JOYSTICK_CLASSIC, SDL_FALSE);
 
-#if SDL_USE_LIBUDEV
-    if (enumeration_method == ENUMERATION_UNSET) {
-        if (SDL_GetHintBoolean("SDL_JOYSTICK_DISABLE_UDEV", SDL_FALSE)) {
-            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
-                         "udev disabled by SDL_JOYSTICK_DISABLE_UDEV");
-            enumeration_method = ENUMERATION_FALLBACK;
-
-        } else if (access("/.flatpak-info", F_OK) == 0
-                 || access("/run/host/container-manager", F_OK) == 0) {
-            /* Explicitly check `/.flatpak-info` because, for old versions of
-             * Flatpak, this was the only available way to tell if we were in
-             * a Flatpak container. */
-            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
-                         "Container detected, disabling udev integration");
-            enumeration_method = ENUMERATION_FALLBACK;
-
-        } else {
-            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
-                         "Using udev for joystick device discovery");
-            enumeration_method = ENUMERATION_LIBUDEV;
-        }
-    }
-#endif
+    enumeration_method = ENUMERATION_UNSET;
 
     /* First see if the user specified one or more joysticks to use */
     if (devices != NULL) {
@@ -735,6 +758,28 @@ LINUX_JoystickInit(void)
     LINUX_JoystickDetect();
 
 #if SDL_USE_LIBUDEV
+    if (enumeration_method == ENUMERATION_UNSET) {
+        if (SDL_GetHintBoolean("SDL_JOYSTICK_DISABLE_UDEV", SDL_FALSE)) {
+            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                         "udev disabled by SDL_JOYSTICK_DISABLE_UDEV");
+            enumeration_method = ENUMERATION_FALLBACK;
+
+        } else if (access("/.flatpak-info", F_OK) == 0
+                 || access("/run/host/container-manager", F_OK) == 0) {
+            /* Explicitly check `/.flatpak-info` because, for old versions of
+             * Flatpak, this was the only available way to tell if we were in
+             * a Flatpak container. */
+            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                         "Container detected, disabling udev integration");
+            enumeration_method = ENUMERATION_FALLBACK;
+
+        } else {
+            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                         "Using udev for joystick device discovery");
+            enumeration_method = ENUMERATION_LIBUDEV;
+        }
+    }
+
     if (enumeration_method == ENUMERATION_LIBUDEV) {
         if (SDL_UDEV_Init() < 0) {
             return SDL_SetError("Could not initialize UDEV");
