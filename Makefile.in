@@ -19,6 +19,7 @@ distfile = $(distdir).tar.gz
 @SET_MAKE@
 SHELL	= @SHELL@
 CC      = @CC@
+CXX     = @CXX@
 INCLUDE = @INCLUDE@
 CFLAGS  = @BUILD_CFLAGS@
 EXTRA_CFLAGS = @EXTRA_CFLAGS@
