@@ -1003,7 +1003,9 @@ void Wayland_ShowWindow(_THIS, SDL_Window *window)
      * be in both places at once? Possibly from renderers making commits? I can't
      * fully remember if this location caused crashes or if I was fixing a pair
      * of Hide/Show calls. In any case, UE gives us a pretty good test and having
-     * both detach calls passes.
+     * both detach calls passes. This bug may be relevant if I'm wrong:
+     *
+     * https://bugs.kde.org/show_bug.cgi?id=448856
      *
      * -flibit
      */
