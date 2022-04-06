@@ -815,9 +815,12 @@ Wayland_move_window(SDL_Window *window,
     int i, numdisplays = SDL_GetNumVideoDisplays();
     for (i = 0; i < numdisplays; i += 1) {
         if (SDL_GetDisplay(i)->driverdata == driverdata) {
+            /* Equivalent of SDL_WINDOWPOS_CENTERED_DISPLAY(i) */
+            SDL_Rect bounds;
+            SDL_GetDisplayBounds(i, &bounds);
             SDL_SendWindowEvent(window, SDL_WINDOWEVENT_MOVED,
-                                SDL_WINDOWPOS_CENTERED_DISPLAY(i),
-                                SDL_WINDOWPOS_CENTERED_DISPLAY(i));
+                                bounds.x + (bounds.w - window->w) / 2,
+                                bounds.y + (bounds.h - window->h) / 2);
             break;
         }
     }
