@@ -1318,7 +1318,7 @@ X11_SetWindowFullscreenViaWM(_THIS, SDL_Window * window, SDL_VideoDisplay * _dis
         Window childReturn, root, parent;
         Window* children;
         XWindowAttributes attrs;
-        int orig_x, orig_y;
+        int orig_w, orig_h, orig_x, orig_y;
         Uint64 timeout;
 
         X11_XSync(display, False);
@@ -1326,6 +1326,8 @@ X11_SetWindowFullscreenViaWM(_THIS, SDL_Window * window, SDL_VideoDisplay * _dis
         X11_XGetWindowAttributes(display, data->xwindow, &attrs);
         X11_XTranslateCoordinates(display, parent, DefaultRootWindow(display),
                                   attrs.x, attrs.y, &orig_x, &orig_y, &childReturn);
+        orig_w = attrs.width;
+        orig_h = attrs.height;
 
         if (!(window->flags & SDL_WINDOW_RESIZABLE)) {
             /* Compiz refuses fullscreen toggle if we're not resizable, so update the hints so we
@@ -1392,9 +1394,11 @@ X11_SetWindowFullscreenViaWM(_THIS, SDL_Window * window, SDL_VideoDisplay * _dis
                                       attrs.x, attrs.y, &x, &y, &childReturn);
 
             if (!caught_x11_error) {
-                if ((x != orig_x) || (y != orig_y)) {
+                if ((x != orig_x) || (y != orig_y) || (attrs.width != orig_w) || (attrs.height != orig_h)) {
                     window->x = x;
                     window->y = y;
+                    window->w = attrs.width;
+                    window->h = attrs.height;
                     break;  /* window moved, time to go. */
                 }
             }
