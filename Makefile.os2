@@ -140,9 +140,11 @@ SDL_blendpoint.obj: SDL_blendpoint.c
     wcc386 $(CFLAGS_DLL) -wcd=200 -fo=$^@ $<
 SDL_RLEaccel.obj: SDL_RLEaccel.c
     wcc386 $(CFLAGS_DLL) -wcd=201 -fo=$^@ $<
+!ifeq HIDAPI 1
 # c99 mode needed because of structs with flexible array members in libusb.h
 SDL_hidapi.obj: SDL_hidapi.c
     wcc386 $(CFLAGS_DLL) -za99 -fo=$^@ $<
+!endif
 
 $(LIBICONV_LIB):  "src/core/os2/iconv2.lbc"
     @echo * Creating: $@
