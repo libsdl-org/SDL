@@ -408,7 +408,22 @@ X11_ReconcileKeyboardState(_THIS)
         SDL_bool sdlKeyPressed = keyboardState[scancode] == SDL_PRESSED;
 
         if (x11KeyPressed && !sdlKeyPressed) {
-            SDL_SendKeyboardKey(SDL_PRESSED, scancode);
+            /* Only update modifier state for keys that are pressed in another application */
+            switch (SDL_GetKeyFromScancode(scancode)) {
+            case SDLK_LCTRL:
+            case SDLK_RCTRL:
+            case SDLK_LSHIFT:
+            case SDLK_RSHIFT:
+            case SDLK_LALT:
+            case SDLK_RALT:
+            case SDLK_LGUI:
+            case SDLK_RGUI:
+            case SDLK_MODE:
+                SDL_SendKeyboardKey(SDL_PRESSED, scancode);
+                break;
+            default:
+                break;
+            }
         } else if (!x11KeyPressed && sdlKeyPressed) {
             SDL_SendKeyboardKey(SDL_RELEASED, scancode);
         }
