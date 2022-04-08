@@ -241,6 +241,11 @@ ConfigureViewport(SDL_Window *window)
         GetFullScreenDimensions(window, &fs_width, &fs_height, &src_width, &src_height);
         SetViewport(window, src_width, src_height, output->width, output->height);
 
+        data->damage_region.x = 0;
+        data->damage_region.y = 0;
+        data->damage_region.w = output->width;
+        data->damage_region.h = output->height;
+
         data->pointer_scale_x = (float)fs_width / (float)output->width;
         data->pointer_scale_y = (float)fs_height / (float)output->height;
     } else {
@@ -252,6 +257,8 @@ ConfigureViewport(SDL_Window *window)
         } else {
             UnsetViewport(window);
         }
+
+        SDL_zero(data->damage_region);
 
         data->pointer_scale_x = 1.0f;
         data->pointer_scale_y = 1.0f;
@@ -399,6 +406,11 @@ handle_surface_frame_done(void *data, struct wl_callback *cb, uint32_t time)
 {
     SDL_WindowData *wind = (SDL_WindowData *) data;
     SDL_AtomicSet(&wind->swap_interval_ready, 1);  /* mark window as ready to present again. */
+
+    if (!SDL_RectEmpty(&wind->damage_region)) {
+        wl_surface_damage(wind->surface, wind->damage_region.x, wind->damage_region.y,
+                          wind->damage_region.w, wind->damage_region.h);
+    }
 
     /* reset this callback to fire again once a new frame was presented and compositor wants the next one. */
     wind->frame_callback = wl_surface_frame(wind->frame_surface_wrapper);
