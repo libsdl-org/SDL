@@ -324,6 +324,20 @@ GL_GetFBO(GL_RenderData *data, Uint32 w, Uint32 h)
     return result;
 }
 
+static void
+GL_WindowEvent(SDL_Renderer * renderer, const SDL_WindowEvent *event)
+{
+    /* If the window x/y/w/h changed at all, assume the viewport has been
+     * changed behind our backs. x/y changes might seem weird but viewport
+     * resets have been observed on macOS at minimum!
+     */
+    if (event->event == SDL_WINDOWEVENT_SIZE_CHANGED ||
+        event->event == SDL_WINDOWEVENT_MOVED) {
+        GL_RenderData *data = (GL_RenderData *) renderer->driverdata;
+        data->drawstate.viewport_dirty = SDL_TRUE;
+    }
+}
+
 static int
 GL_GetOutputSize(SDL_Renderer * renderer, int *w, int *h)
 {
@@ -1216,13 +1230,6 @@ GL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
         }
     }
 
-#ifdef __MACOSX__
-    // On macOS, moving the window seems to invalidate the OpenGL viewport state,
-    // so don't bother trying to persist it across frames; always reset it.
-    // Workaround for: https://github.com/libsdl-org/SDL/issues/1504
-    data->drawstate.viewport_dirty = SDL_TRUE;
-#endif
-
     while (cmd) {
         switch (cmd->command) {
             case SDL_RENDERCMD_SETDRAWCOLOR: {
@@ -1767,6 +1774,7 @@ GL_CreateRenderer(SDL_Window * window, Uint32 flags)
         goto error;
     }
 
+    renderer->WindowEvent = GL_WindowEvent;
     renderer->GetOutputSize = GL_GetOutputSize;
     renderer->SupportsBlendMode = GL_SupportsBlendMode;
     renderer->CreateTexture = GL_CreateTexture;
