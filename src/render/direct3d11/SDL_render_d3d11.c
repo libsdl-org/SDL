@@ -998,6 +998,16 @@ D3D11_CreateWindowSizeDependentResources(SDL_Renderer * renderer)
         goto done;
     }
 
+    /* Set the swap chain target immediately, so that a target is always set
+     * even before we get to SetDrawState. Without this it's possible to hit
+     * null references in places like ReadPixels!
+     */
+    ID3D11DeviceContext_OMSetRenderTargets(data->d3dContext,
+        1,
+        &data->mainRenderTargetView,
+        NULL
+        );
+
     data->viewportDirty = SDL_TRUE;
 
 done:
