@@ -90,6 +90,7 @@ typedef struct {
     float pointer_scale_x;
     float pointer_scale_y;
     int drawable_width, drawable_height;
+    SDL_Rect damage_region;
     SDL_bool needs_resize_event;
     SDL_bool floating_resize_pending;
 } SDL_WindowData;
