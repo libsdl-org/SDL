@@ -391,8 +391,8 @@ pointer_handle_motion(void *data, struct wl_pointer *pointer,
     if (input->pointer_focus) {
         const float sx_f = (float)wl_fixed_to_double(sx_w);
         const float sy_f = (float)wl_fixed_to_double(sy_w);
-        const int   sx   = (int)SDL_floorf(sx_f * window->pointer_scale_x);
-        const int   sy   = (int)SDL_floorf(sy_f * window->pointer_scale_y);
+        const int   sx   = (int)SDL_floorf((sx_f - window->pointer_offset_x) * window->pointer_scale_x);
+        const int   sy   = (int)SDL_floorf((sy_f - window->pointer_offset_y) * window->pointer_scale_y);
         SDL_SendMouseMotion(window->sdlwindow, 0, 0, sx, sy);
     }
 }
@@ -719,10 +719,10 @@ touch_handler_down(void *data, struct wl_touch *touch, unsigned int serial,
                    int id, wl_fixed_t fx, wl_fixed_t fy)
 {
     SDL_WindowData *window_data = (SDL_WindowData *)wl_surface_get_user_data(surface);
-    const double dblx = wl_fixed_to_double(fx) * window_data->pointer_scale_x;
-    const double dbly = wl_fixed_to_double(fy) * window_data->pointer_scale_y;
-    const float x = dblx / window_data->sdlwindow->w;
-    const float y = dbly / window_data->sdlwindow->h;
+    const double dblx = (wl_fixed_to_double(fx) - window_data->pointer_offset_x) * window_data->pointer_scale_x;
+    const double dbly = (wl_fixed_to_double(fy) - window_data->pointer_offset_y) * window_data->pointer_scale_y;
+    const float x = dblx / (float)window_data->sdlwindow->w;
+    const float y = dbly / (float)window_data->sdlwindow->h;
 
     touch_add(id, x, y, surface);
 
@@ -752,8 +752,8 @@ touch_handler_motion(void *data, struct wl_touch *touch, unsigned int timestamp,
                      int id, wl_fixed_t fx, wl_fixed_t fy)
 {
     SDL_WindowData *window_data = (SDL_WindowData *)wl_surface_get_user_data(touch_surface(id));
-    const double dblx = wl_fixed_to_double(fx) * window_data->pointer_scale_x;
-    const double dbly = wl_fixed_to_double(fy) * window_data->pointer_scale_y;
+    const double dblx = (wl_fixed_to_double(fx) - window_data->pointer_offset_x) * window_data->pointer_scale_x;
+    const double dbly = (wl_fixed_to_double(fy) - window_data->pointer_offset_y) * window_data->pointer_scale_y;
     const float x = dblx / window_data->sdlwindow->w;
     const float y = dbly / window_data->sdlwindow->h;
 
@@ -1824,8 +1824,8 @@ tablet_tool_handle_motion(void* data, struct zwp_tablet_tool_v2* tool, wl_fixed_
     input->sx_w = sx_w;
     input->sy_w = sy_w;
     if (input->tool_focus) {
-        const float sx_f = (float)wl_fixed_to_double(sx_w);
-        const float sy_f = (float)wl_fixed_to_double(sy_w);
+        const float sx_f = (float)wl_fixed_to_double(sx_w) - window->pointer_offset_x;
+        const float sy_f = (float)wl_fixed_to_double(sy_w) - window->pointer_offset_y;
         const int   sx   = (int)SDL_floorf(sx_f * window->pointer_scale_x);
         const int   sy   = (int)SDL_floorf(sy_f * window->pointer_scale_y);
         SDL_SendMouseMotion(window->sdlwindow, 0, 0, sx, sy);
@@ -2197,6 +2197,13 @@ static const struct zwp_relative_pointer_v1_listener relative_pointer_listener =
     relative_pointer_handle_relative_motion,
 };
 
+SDL_FORCE_INLINE struct wl_surface *
+get_input_lock_surface(SDL_Window *window)
+{
+    SDL_WindowData *data = window->driverdata;
+    return data->input_surface ? data->input_surface : data->surface;
+}
+
 static void
 locked_pointer_locked(void *data,
                       struct zwp_locked_pointer_v1 *locked_pointer)
@@ -2227,7 +2234,7 @@ lock_pointer_to_window(SDL_Window *window,
 
     locked_pointer =
         zwp_pointer_constraints_v1_lock_pointer(d->pointer_constraints,
-                                                w->surface,
+                                                get_input_lock_surface(window),
                                                 input->pointer,
                                                 NULL,
                                                 ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_PERSISTENT);
@@ -2356,10 +2363,10 @@ int Wayland_input_confine_pointer(struct SDL_WaylandInput *input, SDL_Window *wi
     } else {
         SDL_Rect scaled_mouse_rect;
 
-        scaled_mouse_rect.x = (int)SDL_floorf((float)window->mouse_rect.x / w->pointer_scale_x);
-        scaled_mouse_rect.y = (int)SDL_floorf((float)window->mouse_rect.y / w->pointer_scale_y);
-        scaled_mouse_rect.w = (int)SDL_ceilf((float)window->mouse_rect.w / w->pointer_scale_x);
-        scaled_mouse_rect.h = (int)SDL_ceilf((float)window->mouse_rect.h / w->pointer_scale_y);
+        scaled_mouse_rect.x = (int)(w->pointer_offset_x + SDL_floorf((float)window->mouse_rect.x / w->pointer_scale_x));
+        scaled_mouse_rect.y = (int)(w->pointer_offset_y + SDL_floorf((float)window->mouse_rect.y / w->pointer_scale_y));
+        scaled_mouse_rect.w = (int)(SDL_ceilf((float)window->mouse_rect.w / w->pointer_scale_x));
+        scaled_mouse_rect.h = (int)(SDL_ceilf((float)window->mouse_rect.h / w->pointer_scale_y));
 
         confine_rect = wl_compositor_create_region(d->compositor);
         wl_region_add(confine_rect,
@@ -2371,7 +2378,7 @@ int Wayland_input_confine_pointer(struct SDL_WaylandInput *input, SDL_Window *wi
 
     confined_pointer =
         zwp_pointer_constraints_v1_confine_pointer(d->pointer_constraints,
-                                                   w->surface,
+                                                   get_input_lock_surface(window),
                                                    input->pointer,
                                                    confine_rect,
                                                    ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_PERSISTENT);
@@ -2406,7 +2413,7 @@ int Wayland_input_grab_keyboard(SDL_Window *window, struct SDL_WaylandInput *inp
 
     w->key_inhibitor =
         zwp_keyboard_shortcuts_inhibit_manager_v1_inhibit_shortcuts(d->key_inhibitor_manager,
-                                                                    w->surface,
+                                                                    get_input_lock_surface(window),
                                                                     input->seat);
 
     return 0;

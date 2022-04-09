@@ -41,11 +41,36 @@ struct SDL_WaylandInput;
 typedef struct {
     SDL_Window *sdlwindow;
     SDL_VideoData *waylandData;
+
+    /* The draw surface and viewport used for displaying scaled output */
     struct wl_surface *surface;
+    struct wp_viewport *draw_viewport;
+
+    /* EGL handles for the draw surface */
+    struct wl_egl_window *egl_window;
+#if SDL_VIDEO_OPENGL_EGL
+    EGLSurface egl_surface;
+#endif
+
+    /*
+     * The mask and input surfaces, buffers, viewports and
+     * subsurfaces used for mode emulation.
+     */
+    struct wl_surface *input_surface;
+    struct wl_surface *mask_surface;
+    struct wp_viewport *input_viewport;
+    struct wp_viewport *mask_viewport;
+    struct wl_buffer *input_surface_buffer;
+    struct wl_buffer *mask_surface_buffer;
+    struct wl_subsurface *draw_subsurface;
+    struct wl_subsurface *mask_subsurface;
+
+    /* The per-frame callback for the draw surface */
     struct wl_callback *frame_callback;
     struct wl_event_queue *frame_event_queue;
     struct wl_surface *frame_surface_wrapper;
 
+    /* Shell surface handles and info */
     union {
 #ifdef HAVE_LIBDECOR_H
         struct {
@@ -74,36 +99,50 @@ typedef struct {
         WAYLAND_SURFACE_LIBDECOR
     } shell_surface_type;
 
-    struct wl_egl_window *egl_window;
+    /* Input, decoration and extension handles */
     struct SDL_WaylandInput *keyboard_device;
-#if SDL_VIDEO_OPENGL_EGL
-    EGLSurface egl_surface;
-#endif
     struct zwp_locked_pointer_v1 *locked_pointer;
     struct zwp_confined_pointer_v1 *confined_pointer;
     struct zxdg_toplevel_decoration_v1 *server_decoration;
     struct zwp_keyboard_shortcuts_inhibitor_v1 *key_inhibitor;
     struct zwp_idle_inhibitor_v1 *idle_inhibitor;
     struct xdg_activation_token_v1 *activation_token;
-    struct wp_viewport *viewport;
 
-    /* floating dimensions for restoring from maximized and fullscreen */
+    /* Floating dimensions for restoring from maximized and fullscreen */
     int floating_width, floating_height;
 
+    /* Swap interval indicator for GLES */
     SDL_atomic_t swap_interval_ready;
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
     struct qt_extended_surface *extended_surface;
 #endif /* SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH */
 
+    /* Output devices on which the window is currently active */
     SDL_WaylandOutputData **outputs;
     int num_outputs;
 
+    /* The current draw surface scale factor */
     float scale_factor;
+
+    /* The scaled size of the draw surface backbuffer */
+    int drawable_width, drawable_height;
+
+    /*
+     * Offset and scale values used for translating
+     * pointer coordinates when using mode emulation.
+     */
     float pointer_scale_x;
     float pointer_scale_y;
-    int drawable_width, drawable_height;
+    float pointer_offset_x;
+    float pointer_offset_y;
+
+    /*
+     * The draw surface damage region used when the output
+     * surface dimensions do not match the backbuffer size.
+     */
     SDL_Rect damage_region;
+
     SDL_bool needs_resize_event;
     SDL_bool floating_resize_pending;
 } SDL_WindowData;

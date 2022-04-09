@@ -545,6 +545,7 @@ display_handle_done(void *data,
     SDL_VideoData* video = driverdata->videodata;
     SDL_DisplayMode native_mode, desktop_mode;
     SDL_VideoDisplay *dpy;
+    const SDL_bool emulate_display_modes = video->viewporter != NULL && SDL_GetHintBoolean(SDL_HINT_WAYLAND_MODE_EMULATION, SDL_TRUE);
 
     /*
      * When using xdg-output, two wl-output.done events will be emitted:
@@ -596,10 +597,11 @@ display_handle_done(void *data,
     desktop_mode.driverdata = driverdata->output;
 
     /*
-     * The native display mode is only exposed separately from the desktop size if:
-     * the desktop is scaled and the wp_viewporter protocol is supported.
+     * The native display mode is only exposed separately from the desktop size if
+     * the desktop is scaled, the wp_viewporter protocol is supported and mode emulation
+     * is enabled.
      */
-    if (driverdata->scale_factor > 1.0f && video->viewporter != NULL) {
+    if (driverdata->scale_factor > 1.0f && emulate_display_modes) {
         if (driverdata->index > -1) {
             SDL_AddDisplayMode(SDL_GetDisplay(driverdata->index), &native_mode);
         } else {
@@ -643,7 +645,7 @@ display_handle_done(void *data,
     SDL_SetDesktopDisplayMode(dpy, &desktop_mode);
 
     /* Add emulated modes if wp_viewporter is supported. */
-    if (video->viewporter) {
+    if (emulate_display_modes) {
         AddEmulatedModes(dpy, (driverdata->transform & WL_OUTPUT_TRANSFORM_90) != 0);
     }
 
@@ -850,6 +852,8 @@ display_handle_global(void *data, struct wl_registry *registry, uint32_t id,
         Wayland_init_xdg_output(d);
     } else if (SDL_strcmp(interface, "wp_viewporter") == 0) {
         d->viewporter = wl_registry_bind(d->registry, id, &wp_viewporter_interface, 1);
+    } else if (SDL_strcmp(interface, "wl_subcompositor") == 0) {
+        d->subcompositor = wl_registry_bind(d->registry, id, &wl_subcompositor_interface, 1);
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
     } else if (SDL_strcmp(interface, "qt_touch_extension") == 0) {
@@ -1073,6 +1077,10 @@ Wayland_VideoQuit(_THIS)
 
     if (data->viewporter) {
         wp_viewporter_destroy(data->viewporter);
+    }
+
+    if (data->subcompositor) {
+        wl_subcompositor_destroy(data->subcompositor);
     }
 
     if (data->compositor)

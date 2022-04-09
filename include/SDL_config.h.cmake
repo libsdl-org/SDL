@@ -203,6 +203,9 @@
 #cmakedefine HAVE_GETAUXVAL 1
 #cmakedefine HAVE_ELF_AUX_INFO 1
 #cmakedefine HAVE_POLL 1
+#cmakedefine HAVE_POSIX_FALLOCATE 1
+#cmakedefine HAVE_MEMFD_CREATE 1
+#cmakedefine HAVE_MKOSTEMP 1
 #cmakedefine HAVE__EXIT 1
 
 #elif defined(__WIN32__)

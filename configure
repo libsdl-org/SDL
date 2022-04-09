@@ -17734,7 +17734,53 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 
-    for ac_func in malloc calloc realloc free getenv setenv putenv unsetenv bsearch qsort abs bcopy memset memcpy memmove wcslen wcslcpy wcslcat _wcsdup wcsdup wcsstr wcscmp wcsncmp wcscasecmp _wcsicmp wcsncasecmp _wcsnicmp strlen strlcpy strlcat _strrev _strupr _strlwr index rindex strchr strrchr strstr strtok_r itoa _ltoa _uitoa _ultoa strtol strtoul _i64toa _ui64toa strtoll strtoull atoi atof strcmp strncmp _stricmp strcasecmp _strnicmp strncasecmp vsscanf vsnprintf fopen64 fseeko fseeko64 sigaction setjmp nanosleep sysconf sysctlbyname getauxval elf_aux_info poll _Exit
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+        #if defined(__linux__) && !defined(_GNU_SOURCE)
+        #define _GNU_SOURCE
+        #endif
+        #include <sys/mman.h>
+
+int
+main ()
+{
+int fd = memfd_create("x", 0);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+
+
+$as_echo "#define HAVE_MEMFD_CREATE 1" >>confdefs.h
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+        #if defined(__linux__) && !defined(_GNU_SOURCE)
+        #define _GNU_SOURCE
+        #endif
+        #include <stdlib.h>
+
+int
+main ()
+{
+int fd = mkostemp("x", 0);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+
+
+$as_echo "#define HAVE_MKOSTEMP 1" >>confdefs.h
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+    for ac_func in malloc calloc realloc free getenv setenv putenv unsetenv bsearch qsort abs bcopy memset memcpy memmove wcslen wcslcpy wcslcat _wcsdup wcsdup wcsstr wcscmp wcsncmp wcscasecmp _wcsicmp wcsncasecmp _wcsnicmp strlen strlcpy strlcat _strrev _strupr _strlwr index rindex strchr strrchr strstr strtok_r itoa _ltoa _uitoa _ultoa strtol strtoul _i64toa _ui64toa strtoll strtoull atoi atof strcmp strncmp _stricmp strcasecmp _strnicmp strncasecmp vsscanf vsnprintf fopen64 fseeko fseeko64 sigaction setjmp nanosleep sysconf sysctlbyname getauxval elf_aux_info poll posix_fallocate _Exit
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"

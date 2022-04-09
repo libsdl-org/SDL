@@ -346,7 +346,23 @@ dnl Checks for library functions.
         AC_DEFINE(HAVE_MPROTECT, 1, [ ])
         ],[]),
     )
-    AC_CHECK_FUNCS(malloc calloc realloc free getenv setenv putenv unsetenv bsearch qsort abs bcopy memset memcpy memmove wcslen wcslcpy wcslcat _wcsdup wcsdup wcsstr wcscmp wcsncmp wcscasecmp _wcsicmp wcsncasecmp _wcsnicmp strlen strlcpy strlcat _strrev _strupr _strlwr index rindex strchr strrchr strstr strtok_r itoa _ltoa _uitoa _ultoa strtol strtoul _i64toa _ui64toa strtoll strtoull atoi atof strcmp strncmp _stricmp strcasecmp _strnicmp strncasecmp vsscanf vsnprintf fopen64 fseeko fseeko64 sigaction setjmp nanosleep sysconf sysctlbyname getauxval elf_aux_info poll _Exit)
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+        #if defined(__linux__) && !defined(_GNU_SOURCE)
+        #define _GNU_SOURCE
+        #endif
+        #include <sys/mman.h>
+      ]],[[int fd = memfd_create("x", 0);]])], [
+      AC_DEFINE(HAVE_MEMFD_CREATE, 1, [ ])], [ ]
+    )
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+        #if defined(__linux__) && !defined(_GNU_SOURCE)
+        #define _GNU_SOURCE
+        #endif
+        #include <stdlib.h>
+      ]],[[int fd = mkostemp("x", 0);]])], [
+      AC_DEFINE(HAVE_MKOSTEMP, 1, [ ])], [ ]
+    )
+    AC_CHECK_FUNCS(malloc calloc realloc free getenv setenv putenv unsetenv bsearch qsort abs bcopy memset memcpy memmove wcslen wcslcpy wcslcat _wcsdup wcsdup wcsstr wcscmp wcsncmp wcscasecmp _wcsicmp wcsncasecmp _wcsnicmp strlen strlcpy strlcat _strrev _strupr _strlwr index rindex strchr strrchr strstr strtok_r itoa _ltoa _uitoa _ultoa strtol strtoul _i64toa _ui64toa strtoll strtoull atoi atof strcmp strncmp _stricmp strcasecmp _strnicmp strncasecmp vsscanf vsnprintf fopen64 fseeko fseeko64 sigaction setjmp nanosleep sysconf sysctlbyname getauxval elf_aux_info poll posix_fallocate _Exit)
 
     AC_CHECK_LIB(m, pow, [LIBS="$LIBS -lm"; EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lm"])
     AC_CHECK_FUNCS(acos acosf asin asinf atan atanf atan2 atan2f ceil ceilf copysign copysignf cos cosf exp expf fabs fabsf floor floorf trunc truncf fmod fmodf log logf log10 log10f lround lroundf pow powf round roundf scalbn scalbnf sin sinf sqrt sqrtf tan tanf)

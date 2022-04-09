@@ -1700,6 +1700,37 @@ extern "C" {
 #define SDL_HINT_WAVE_TRUNCATION   "SDL_WAVE_TRUNCATION"
 
 /**
+ *  \brief  Controls whether fullscreen video mode emulation under Wayland is enabled.
+ *
+ *  Wayland does not support applications changing the display mode, so non-native
+ *  fullscreen video modes are emulated and scaled to the output. By default,
+ *  SDL will expose a set of legacy video modes to applications, assuming that
+ *  the required compositor features are available.
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - Fullscreen video mode emulation is disabled.
+ *    "1"       - Fullscreen video mode emulation is enabled.
+ */
+#define SDL_HINT_WAYLAND_MODE_EMULATION   "SDL_WAYLAND_MODE_EMULATION"
+
+/**
+ *  \brief  Controls whether fullscreen scaling under Wayland is enabled.
+ *
+ *  By default, SDL will scale non-native fullscreen modes to be as large as possible
+ *  while maintaining the aspect ratio and mask the rest of the screen with a black
+ *  border and provide render buffers that match the native display resolution when a
+ *  scaled desktop is used and the window is flagged as DPI-aware. Toggling this
+ *  variable to off will disable all scaling: windowed modes and desktop fullscreen
+ *  will be rendered at the logical instead of native resolution and fullscreen mode
+ *  emulation will display the raw image with no scaling or masking.
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - Output scaling is disabled.
+ *    "1"       - Output scaling is enabled.
+ */
+#define SDL_HINT_WAYLAND_SCALING   "SDL_WAYLAND_SCALING"
+
+/**
  * \brief Tell SDL not to name threads on Windows with the 0x406D1388 Exception.
  *        The 0x406D1388 Exception is a trick used to inform Visual Studio of a
  *        thread's name, but it tends to cause problems with other debuggers,

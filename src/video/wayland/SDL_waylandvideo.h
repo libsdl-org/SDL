@@ -75,6 +75,7 @@ typedef struct {
     struct zwp_text_input_manager_v3 *text_input_manager;
     struct zxdg_output_manager_v1 *xdg_output_manager;
     struct wp_viewporter *viewporter;
+    struct wl_subcompositor *subcompositor;
 
     EGLDisplay edpy;
     EGLContext context;
