@@ -1950,8 +1950,7 @@ extern "C" {
  *  If not set or set to "", this hint is ignored. This hint must be set
  *  before the SDL_CreateWindow() call that it is intended to affect.
  *
- *  This hint is available since SDL 2.0.22. Before then, virtual devices are
- *  always ignored.
+ *  This hint is available since SDL 2.0.22.
  */
 #define SDL_HINT_X11_WINDOW_TYPE "SDL_X11_WINDOW_TYPE"
 
