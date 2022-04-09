@@ -6,7 +6,34 @@ This is a list of major changes in SDL's version history.
 ---------------------------------------------------------------------------
 
 General:
+* Added SDL_RenderGetWindow() to get the window associated with a renderer
+* Added floating point rectangle functions:
+    * SDL_PointInFRect()
+    * SDL_FRectEmpty()
+    * SDL_FRectEquals()
+    * SDL_HasIntersectionF()
+    * SDL_IntersectFRect()
+    * SDL_UnionFRect()
+    * SDL_EncloseFPoints()
+    * SDL_IntersectFRectAndLine()
+* Added SDL_IsTextInputShown() which returns whether the IME window is currently shown
+* Added SDL_ClearComposition() to dismiss the composition window without disabling IME input
+* Added SDL_TEXTEDITING_EXT event for handling long composition text, and a hint SDL_HINT_IME_SUPPORT_EXTENDED_TEXT to enable it
+* Added the hint SDL_HINT_MOUSE_RELATIVE_MODE_CENTER to control whether the mouse should be constrained to the whole window or the center of the window when relative mode is enabled
+* The mouse is now automatically captured when mouse buttons are pressed, and the hint SDL_HINT_MOUSE_AUTO_CAPTURE allows you to control this behavior
+* Added the hint SDL_HINT_VIDEO_FOREIGN_WINDOW_OPENGL to let SDL know that a foreign window will be used with OpenGL
+* Added the hint SDL_HINT_VIDEO_FOREIGN_WINDOW_VULKAN to let SDL know that a foreign window will be used with Vulkan
+* Added the hint SDL_HINT_QUIT_ON_LAST_WINDOW_CLOSE to specify whether an SDL_QUIT event will be delivered when the last application window is closed
 * Added the hint SDL_HINT_JOYSTICK_ROG_CHAKRAM to control whether ROG Chakram mice show up as joysticks
+
+Windows:
+* Added support for SDL_BLENDOPERATION_MINIMUM and SDL_BLENDOPERATION_MAXIMUM to the D3D9 renderer
+
+Linux:
+* Added the hint SDL_HINT_X11_WINDOW_TYPE to specify the _NET_WM_WINDOW_TYPE of SDL windows
+
+Android:
+* Added SDL_AndroidSendMessage() to send a custom command to the SDL java activity
 
 
 ---------------------------------------------------------------------------
