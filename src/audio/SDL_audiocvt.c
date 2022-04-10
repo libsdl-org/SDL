@@ -725,46 +725,64 @@ SDL_ResampleAudio(const int chans, const int inrate, const int outrate,
                         const float *inbuf, const int inbuflen,
                         float *outbuf, const int outbuflen)
 {
-    const double finrate = (double) inrate;
-    const double outtimeincr = 1.0 / ((float) outrate);
-    const double  ratio = ((float) outrate) / ((float) inrate);
+    /* Note that this used to be double, but it looks like we can get by with float in most cases at
+       almost twice the speed on Intel processors, and orders of magnitude more
+       on CPUs that need a software fallback for double calculations. */
+    typedef float ResampleFloatType;
+
+    const ResampleFloatType finrate = (ResampleFloatType) inrate;
+    const ResampleFloatType outtimeincr = ((ResampleFloatType) 1.0f) / ((ResampleFloatType) outrate);
+    const ResampleFloatType ratio = ((float) outrate) / ((float) inrate);
     const int paddinglen = ResamplerPadding(inrate, outrate);
     const int framelen = chans * (int)sizeof (float);
     const int inframes = inbuflen / framelen;
     const int wantedoutframes = (int) ((inbuflen / framelen) * ratio);  /* outbuflen isn't total to write, it's total available. */
     const int maxoutframes = outbuflen / framelen;
     const int outframes = SDL_min(wantedoutframes, maxoutframes);
+    ResampleFloatType outtime = 0.0f;
     float *dst = outbuf;
-    double outtime = 0.0;
     int i, j, chan;
 
     for (i = 0; i < outframes; i++) {
         const int srcindex = (int) (outtime * inrate);
-        const double intime = ((double) srcindex) / finrate;
-        const double innexttime = ((double) (srcindex + 1)) / finrate;
-        const double interpolation1 = 1.0 - ((innexttime - outtime) / (innexttime - intime));
+        const ResampleFloatType intime = ((ResampleFloatType) srcindex) / finrate;
+        const ResampleFloatType innexttime = ((ResampleFloatType) (srcindex + 1)) / finrate;
+        const ResampleFloatType indeltatime = innexttime - intime;
+        const ResampleFloatType interpolation1 = (indeltatime == 0.0f) ? 1.0f : (1.0f - ((innexttime - outtime) / indeltatime));
         const int filterindex1 = (int) (interpolation1 * RESAMPLER_SAMPLES_PER_ZERO_CROSSING);
-        const double interpolation2 = 1.0 - interpolation1;
+        const ResampleFloatType interpolation2 = 1.0f - interpolation1;
         const int filterindex2 = (int) (interpolation2 * RESAMPLER_SAMPLES_PER_ZERO_CROSSING);
 
         for (chan = 0; chan < chans; chan++) {
             float outsample = 0.0f;
 
             /* do this twice to calculate the sample, once for the "left wing" and then same for the right. */
-            /* !!! FIXME: do both wings in one loop */
-            for (j = 0; (filterindex1 + (j * RESAMPLER_SAMPLES_PER_ZERO_CROSSING)) < RESAMPLER_FILTER_SIZE; j++) {
+
+            /* Left wing! split the "srcframe < 0" condition out into a preloop. */
+            for (j = 0; srcindex < j; j++) {
+                const int jsamples = j * RESAMPLER_SAMPLES_PER_ZERO_CROSSING;
                 const int srcframe = srcindex - j;
-                /* !!! FIXME: we can bubble this conditional out of here by doing a pre loop. */
-                const float insample = (srcframe < 0) ? lpadding[((paddinglen + srcframe) * chans) + chan] : inbuf[(srcframe * chans) + chan];
-                outsample += (float)(insample * (ResamplerFilter[filterindex1 + (j * RESAMPLER_SAMPLES_PER_ZERO_CROSSING)] + (interpolation1 * ResamplerFilterDifference[filterindex1 + (j * RESAMPLER_SAMPLES_PER_ZERO_CROSSING)])));
+                const float insample = lpadding[((paddinglen + srcframe) * chans) + chan];
+                outsample += (float)(insample * (ResamplerFilter[filterindex1 + jsamples] + (interpolation1 * ResamplerFilterDifference[filterindex1 + jsamples])));
+            }
+ 
+            /* Finish the left wing now that srcframe >= 0 */
+            for (; (filterindex1 + (j * RESAMPLER_SAMPLES_PER_ZERO_CROSSING)) < RESAMPLER_FILTER_SIZE; j++) {
+                const int jsamples = j * RESAMPLER_SAMPLES_PER_ZERO_CROSSING;
+                const int srcframe = srcindex - j;
+                const float insample = inbuf[(srcframe * chans) + chan];
+                outsample += (float)(insample * (ResamplerFilter[filterindex1 + jsamples] + (interpolation1 * ResamplerFilterDifference[filterindex1 + jsamples])));
             }
 
+            /* Do the right wing! */
             for (j = 0; (filterindex2 + (j * RESAMPLER_SAMPLES_PER_ZERO_CROSSING)) < RESAMPLER_FILTER_SIZE; j++) {
+                const int jsamples = j * RESAMPLER_SAMPLES_PER_ZERO_CROSSING;
                 const int srcframe = srcindex + 1 + j;
                 /* !!! FIXME: we can bubble this conditional out of here by doing a post loop. */
                 const float insample = (srcframe >= inframes) ? rpadding[((srcframe - inframes) * chans) + chan] : inbuf[(srcframe * chans) + chan];
-                outsample += (float)(insample * (ResamplerFilter[filterindex2 + (j * RESAMPLER_SAMPLES_PER_ZERO_CROSSING)] + (interpolation2 * ResamplerFilterDifference[filterindex2 + (j * RESAMPLER_SAMPLES_PER_ZERO_CROSSING)])));
+                outsample += (float)(insample * (ResamplerFilter[filterindex2 + jsamples] + (interpolation2 * ResamplerFilterDifference[filterindex2 + jsamples])));
             }
+
             *(dst++) = outsample;
         }
 
