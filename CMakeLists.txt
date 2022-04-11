@@ -2311,10 +2311,10 @@ elseif(VITA)
         list(APPEND EXTRA_LIBS
           pib
         )
-        set(HAVE_VITA_PIB ON)
+        set(HAVE_VIDEO_VITA_PIB ON)
         set(SDL_VIDEO_VITA_PIB 1)
       else()
-        set(HAVE_VITA_PIB OFF)
+        set(HAVE_VIDEO_VITA_PIB OFF)
       endif()
     endif()
 
@@ -2335,7 +2335,7 @@ elseif(VITA)
           libIMGEGL_stub_weak
         )
 
-        set(HAVE_VITA_PVR ON)
+        set(HAVE_VIDEO_VITA_PVR ON)
         set(SDL_VIDEO_VITA_PVR 1)
 
         if(HAVE_GL4ES_H)
@@ -2347,7 +2347,7 @@ elseif(VITA)
         endif()
 
       else()
-        set(HAVE_VITA_PVR OFF)
+        set(HAVE_VIDEO_VITA_PVR OFF)
       endif()
     endif()
 
