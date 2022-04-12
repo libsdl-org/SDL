@@ -351,6 +351,49 @@ distclean: clean
 	rm -f config.status config.cache config.log
 	rm -rf $(srcdir)/autom4te*
 
+noninteractive = \
+	testatomic$(EXE) \
+	testerror$(EXE) \
+	testevdev$(EXE) \
+	testfilesystem$(EXE) \
+	testkeys$(EXE) \
+	testlocale$(EXE) \
+	testplatform$(EXE) \
+	testpower$(EXE) \
+	testqsort$(EXE) \
+	testthread$(EXE) \
+	testtimer$(EXE) \
+	testver$(EXE) \
+	$(NULL)
+
+needs_audio = \
+	testaudioinfo$(EXE) \
+	testsurround$(EXE) \
+	$(NULL)
+
+needs_display = \
+	testbounds$(EXE) \
+	testdisplayinfo$(EXE) \
+	$(NULL)
+
+TESTS = $(noninteractive) $(needs_audio) $(needs_display)
+
+check:
+	@set -e; \
+	status=0; \
+	export SDL_AUDIODRIVER=dummy; \
+	export SDL_VIDEODRIVER=dummy; \
+	for exe in $(TESTS); do \
+		echo "$$exe..."; \
+		if ./"$$exe"; then \
+			echo "$$exe: OK"; \
+		else \
+			echo "$$exe: FAILED: $$?"; \
+			status=1; \
+		fi; \
+	done; \
+	exit "$$status"
+
 DATA = \
 	axis.bmp \
 	button.bmp \
