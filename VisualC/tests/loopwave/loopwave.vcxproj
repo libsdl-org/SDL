@@ -203,6 +203,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\Test\loopwave.c" />
+    <ClCompile Include="..\..\..\test\testutils.c" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\..\test\sample.wav">
