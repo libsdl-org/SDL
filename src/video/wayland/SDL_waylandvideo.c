@@ -876,6 +876,29 @@ static const struct wl_registry_listener registry_listener = {
     display_handle_global,
     display_remove_global
 };
+ 
+#ifdef HAVE_LIBDECOR_H
+static SDL_bool should_use_libdecor(SDL_VideoData *data)
+{
+    if (!SDL_WAYLAND_HAVE_WAYLAND_LIBDECOR) {
+        return SDL_FALSE;
+    }
+
+    if (!SDL_GetHintBoolean(SDL_HINT_VIDEO_WAYLAND_ALLOW_LIBDECOR, SDL_TRUE)) {
+        return SDL_FALSE;
+    }
+
+    if (SDL_GetHintBoolean(SDL_HINT_VIDEO_WAYLAND_PREFER_LIBDECOR, SDL_FALSE)) {
+        return SDL_TRUE;
+    }
+
+    if (data->decoration_manager) {
+        return SDL_FALSE;
+    }
+
+    return SDL_TRUE;
+}
+#endif
 
 int
 Wayland_VideoInit(_THIS)
@@ -899,7 +922,7 @@ Wayland_VideoInit(_THIS)
 
 #ifdef HAVE_LIBDECOR_H
     /* Don't have server-side decorations? Try client-side instead. */
-    if (!data->decoration_manager && SDL_WAYLAND_HAVE_WAYLAND_LIBDECOR && SDL_GetHintBoolean(SDL_HINT_VIDEO_WAYLAND_ALLOW_LIBDECOR, SDL_TRUE)) {
+    if (should_use_libdecor(data)) {
         data->shell.libdecor = libdecor_new(data->display, &libdecor_interface);
 
         /* If libdecor works, we don't need xdg-shell anymore. */
