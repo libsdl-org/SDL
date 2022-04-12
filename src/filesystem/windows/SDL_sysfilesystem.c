@@ -51,7 +51,7 @@ SDL_GetBasePath(void)
 
         path = (WCHAR *) ptr;
 
-        len = GetModuleFileName(NULL, path, buflen);
+        len = GetModuleFileNameW(NULL, path, buflen);
         /* if it truncated, then len >= buflen - 1 */
         /* if there was enough room (or failure), len < buflen - 1 */
         if (len < buflen - 1) {
