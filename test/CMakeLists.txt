@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.0.0)
 project(SDL2 C)
+include(CTest)
 
 # Global settings for all of the test targets
 # FIXME: is this wrong?
@@ -132,6 +133,34 @@ add_executable(testcustomcursor testcustomcursor.c)
 add_executable(controllermap controllermap.c)
 add_executable(testvulkan testvulkan.c)
 add_executable(testoffscreen testoffscreen.c)
+
+set(NONINTERACTIVE
+    testatomic
+    testerror
+    testfilesystem
+    testkeys
+    testlocale
+    testplatform
+    testpower
+    testqsort
+    testthread
+    testtimer
+    testver
+)
+
+if(LINUX)
+    list(APPEND NONINTERACTIVE testevdev)
+endif()
+
+set(NEEDS_AUDIO
+    testaudioinfo
+    testsurround
+)
+
+set(NEEDS_DISPLAY
+    testbounds
+    testdisplayinfo
+)
 
 if(OPENGL_FOUND)
 add_dependencies(testshader OpenGL::GL)
@@ -306,3 +335,20 @@ if(APPLE)
         endforeach()
     endif()
 endif()
+
+set(TESTS_ENVIRONMENT
+    SDL_AUDIODRIVER=dummy
+    SDL_VIDEODRIVER=dummy
+)
+
+foreach(TESTCASE ${NONINTERACTIVE} ${NEEDS_AUDIO} ${NEEDS_DISPLAY})
+    add_test(
+        NAME ${TESTCASE}
+        COMMAND ${TESTCASE}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    )
+    set_tests_properties(
+        ${TESTCASE}
+        PROPERTIES ENVIRONMENT "${TESTS_ENVIRONMENT}"
+    )
+endforeach()

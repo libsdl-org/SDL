@@ -2980,6 +2980,7 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DSDL_BUILD_MICRO_VERSION=${SDL_MICRO_VERSIO
 ##### Tests #####
 
 if(SDL_TEST)
+  include(CTest)
   include_directories(BEFORE "${SDL2_BINARY_DIR}/include")
   include_directories(AFTER "${SDL2_SOURCE_DIR}/include")
   file(GLOB TEST_SOURCES ${SDL2_SOURCE_DIR}/src/test/*.c)
