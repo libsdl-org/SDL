@@ -364,6 +364,7 @@ DATA = \
 	testgles2_sdf_img_sdf.bmp \
 	testyuv.bmp \
 	unifont-13.0.06.hex \
+	utf8.txt \
 	$(NULL)
 
 ifneq ($(srcdir), .)
