@@ -41,6 +41,7 @@ static const struct
     CLS(SOUND),
     CLS(TOUCHSCREEN),
     CLS(ACCELEROMETER),
+    CLS(TOUCHPAD),
 #undef CLS
     { 0, NULL }
 };
@@ -185,9 +186,7 @@ static const GuessTest guess_tests[] =
       .bus_type = 0x0003,
       .vendor_id = 0x054c,
       .product_id = 0x09cc,
-      /* TODO: Should this be MOUSE? That's what it most closely
-       * resembles */
-      .expected = SDL_UDEV_DEVICE_UNKNOWN,
+      .expected = SDL_UDEV_DEVICE_TOUCHPAD,
       /* SYN, KEY, ABS */
       .ev = { 0x0b },
       /* X, Y, multitouch */
@@ -718,9 +717,7 @@ static const GuessTest guess_tests[] =
       .vendor_id = 0x06cb,
       .product_id = 0x0000,
       .version = 0x0000,
-      /* TODO: Should this be MOUSE? That's what it most closely
-       * resembles */
-      .expected = SDL_UDEV_DEVICE_UNKNOWN,
+      .expected = SDL_UDEV_DEVICE_TOUCHPAD,
       /* SYN, KEY, ABS */
       .ev = { 0x0b },
       /* X, Y, pressure, multitouch */
