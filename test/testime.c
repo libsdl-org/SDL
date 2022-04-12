@@ -23,6 +23,7 @@
 #endif
 
 #include "SDL_test_common.h"
+#include "testutils.h"
 
 #define DEFAULT_PTSIZE 30
 #ifdef HAVE_SDL_TTF
@@ -108,6 +109,7 @@ static int unifont_init(const char *fontname)
     SDL_RWops *hexFile;
     const size_t unifontGlyphSize = UNIFONT_NUM_GLYPHS * sizeof(struct UnifontGlyph);
     const size_t unifontTextureSize = UNIFONT_NUM_TEXTURES * state->num_windows * sizeof(void *);
+    char *filename;
 
     /* Allocate memory for the glyph data so the file can be closed after initialization. */
     unifontGlyph = (struct UnifontGlyph *)SDL_malloc(unifontGlyphSize);
@@ -127,7 +129,13 @@ static int unifont_init(const char *fontname)
     }
     SDL_memset(unifontTexture, 0, unifontTextureSize);
 
-    hexFile = SDL_RWFromFile(fontname, "rb");
+    filename = GetResourceFilename(NULL, fontname);
+    if (filename == NULL) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory\n");
+        return -1;
+    }
+    hexFile = SDL_RWFromFile(filename, "rb");
+    SDL_free(filename);
     if (hexFile == NULL)
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "unifont: Failed to open font file: %s\n", fontname);

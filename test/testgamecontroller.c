@@ -17,6 +17,7 @@
 #include <string.h>
 
 #include "SDL.h"
+#include "testutils.h"
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten/emscripten.h>
@@ -215,34 +216,6 @@ static void DelController(SDL_JoystickID controller)
         gamecontroller = NULL;
     }
     UpdateWindowTitle();
-}
-
-static SDL_Texture *
-LoadTexture(SDL_Renderer *renderer, const char *file, SDL_bool transparent)
-{
-    SDL_Surface *temp = NULL;
-    SDL_Texture *texture = NULL;
-
-    temp = SDL_LoadBMP(file);
-    if (temp == NULL) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't load %s: %s", file, SDL_GetError());
-    } else {
-        /* Set transparent pixel as the pixel at (0,0) */
-        if (transparent) {
-            if (temp->format->BytesPerPixel == 1) {
-                SDL_SetColorKey(temp, SDL_TRUE, *(Uint8 *)temp->pixels);
-            }
-        }
-
-        texture = SDL_CreateTextureFromSurface(renderer, temp);
-        if (!texture) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create texture: %s\n", SDL_GetError());
-        }
-    }
-    if (temp) {
-        SDL_FreeSurface(temp);
-    }
-    return texture;
 }
 
 static Uint16 ConvertAxisToRumble(Sint16 axisval)
@@ -638,10 +611,10 @@ main(int argc, char *argv[])
     /* scale for platforms that don't give you the window size you asked for. */
     SDL_RenderSetLogicalSize(screen, SCREEN_WIDTH, SCREEN_HEIGHT);
 
-    background_front = LoadTexture(screen, "controllermap.bmp", SDL_FALSE);
-    background_back = LoadTexture(screen, "controllermap_back.bmp", SDL_FALSE);
-    button = LoadTexture(screen, "button.bmp", SDL_TRUE);
-    axis = LoadTexture(screen, "axis.bmp", SDL_TRUE);
+    background_front = LoadTexture(screen, "controllermap.bmp", SDL_FALSE, NULL, NULL);
+    background_back = LoadTexture(screen, "controllermap_back.bmp", SDL_FALSE, NULL, NULL);
+    button = LoadTexture(screen, "button.bmp", SDL_TRUE, NULL, NULL);
+    axis = LoadTexture(screen, "axis.bmp", SDL_TRUE, NULL, NULL);
 
     if (!background_front || !background_back || !button || !axis) {
         SDL_DestroyRenderer(screen);
