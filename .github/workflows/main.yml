@@ -36,7 +36,9 @@ jobs:
       if: runner.os == 'Linux'
       run: |
         sudo apt-get update
-        sudo apt-get install wayland-protocols \
+        sudo apt-get install \
+          autoconf \
+          wayland-protocols \
           pkg-config \
           ninja-build \
           libasound2-dev \
@@ -80,4 +82,37 @@ jobs:
       run: cmake -B build -DSDL_TEST=ON ${{ matrix.platform.flags }}
     - name: Build
       run: cmake --build build/ --config Release
-
+    - name: Configure Autotools
+      if: runner.os == 'Linux'
+      run: |
+        set -eu
+        rm -fr build-autotools
+        mkdir build-autotools
+        ./autogen.sh
+        ( cd build-autotools && ../configure )
+        curdir="$(pwd)"
+        multiarch="$(dpkg-architecture -qDEB_HOST_MULTIARCH)"
+        (
+          mkdir -p build-autotools/test
+          cd build-autotools/test
+          ../../test/configure \
+            --x-includes=/usr/include \
+            --x-libraries="/usr/lib/${multiarch}" \
+            SDL_CFLAGS="-I${curdir}/include" \
+            SDL_LIBS="-L${curdir}/build-autotools/build/.libs -lSDL2" \
+            ac_cv_lib_SDL2_ttf_TTF_Init=no \
+            ${NULL+}
+        )
+    - name: Build with Autotools
+      if: runner.os == 'Linux'
+      run: |
+        set -eu
+        curdir="$(pwd)"
+        parallel="$(getconf _NPROCESSORS_ONLN)"
+        make -j"${parallel}" -C build-autotools
+        make -j"${parallel}" -C build-autotools/test
+        rm -fr DESTDIR-autotools
+        mkdir DESTDIR-autotools
+        make -j"${parallel}" -C build-autotools install DESTDIR="${curdir}/DESTDIR-autotools"
+        ( cd DESTDIR-autotools; find ) | LC_ALL=C sort -u
+        make -j"${parallel}" -C build-autotools dist
