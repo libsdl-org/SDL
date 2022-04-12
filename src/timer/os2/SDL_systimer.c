@@ -46,13 +46,15 @@ static ULLONG   ullTmrStart = 0;
 void
 SDL_TicksInit(void)
 {
+    ULONG ulTmrStart;  /* for 32-bit fallback. */
+    ULONG ulRC;
+
     if (ticks_started) {
         return;
     }
     ticks_started = SDL_TRUE;
 
-    ULONG ulTmrStart;  /* for 32-bit fallback. */
-    ULONG ulRC = DosTmrQueryFreq(&ulTmrFreq);
+    ulRC = DosTmrQueryFreq(&ulTmrFreq);
     if (ulRC != NO_ERROR) {
         debug_os2("DosTmrQueryFreq() failed, rc = %u", ulRC);
     } else {
