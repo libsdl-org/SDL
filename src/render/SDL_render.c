@@ -2263,6 +2263,8 @@ SDL_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
 SDL_Texture *
 SDL_GetRenderTarget(SDL_Renderer *renderer)
 {
+    CHECK_RENDERER_MAGIC(renderer, NULL);
+
     return renderer->target;
 }
 
