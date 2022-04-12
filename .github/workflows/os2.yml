@@ -7,20 +7,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-
-      - name: Cache OpenWatcom
-        uses: actions/cache@v2
-        env:
-          cache-name: cache-openwatcom
-        with:
-          path: ~/openwatcom
-          key: ${{ runner.os }}-build-${{ env.cache-name }}
-
-      - name: Download OpenWatcom if not cached
-        run: if [ ! -d ~/openwatcom/binl64 ]; then wget --no-verbose 'https://github.com/open-watcom/open-watcom-v2/releases/download/Current-build/open-watcom-2_0-c-linux-x64' -O ~/ow.zip && mkdir -p ~/openwatcom && cd ~/openwatcom && unzip ~/ow.zip && chmod -R a+rx ~/openwatcom ; fi
-        shell: bash
-
-      - name: Build
-        run: WATCOM="$HOME/openwatcom" build-scripts/os2-buildbot.sh
-        shell: bash         
-
+      - uses: open-watcom/setup-watcom@v0
+      - name: Build SDL2
+        run: |
+          wmake -f Makefile.os2
+      - name: Build tests
+        run: |
+          cd test && wmake -f Makefile.os2
+          cd ..
+      - name: distclean
+        run: |
+          wmake -f Makefile.os2 distclean
+          cd test && wmake -f Makefile.os2 distclean
+          cd ..
