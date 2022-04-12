@@ -31,6 +31,7 @@ Windows:
 
 Linux:
 * Added the hint SDL_HINT_X11_WINDOW_TYPE to specify the _NET_WM_WINDOW_TYPE of SDL windows
+* Added the hint SDL_HINT_VIDEO_WAYLAND_PREFER_LIBDECOR to allow using libdecor with compositors that support xdg-decoration
 
 Android:
 * Added SDL_AndroidSendMessage() to send a custom command to the SDL java activity
