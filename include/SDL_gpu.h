@@ -334,11 +334,19 @@ typedef enum SDL_GpuStencilOperation
     SDL_GPUSTENCILOP_DECREMENTWRAP
 } SDL_GpuStencilOperation;
 
+typedef enum SDL_GpuTopology
+{
+    SDL_GPUTOPOLOGY_POINT,
+    SDL_GPUTOPOLOGY_LINE,
+    SDL_GPUTOPOLOGY_TRIANGLE
+} SDL_GpuTopology;
+
 #define SDL_GPU_MAX_COLOR_ATTACHMENTS 4   /* !!! FIXME: what's a sane number here? */
 #define SDL_GPU_MAX_VERTEX_ATTRIBUTES 32   /* !!! FIXME: what's a sane number here? */
 typedef struct SDL_GpuPipelineDescription
 {
     const char *name;
+    SDL_GpuTopology topology;
     SDL_GpuShader *vertex_shader;
     SDL_GpuShader *fragment_shader;
     Uint32 num_vertex_attributes;
@@ -530,6 +538,10 @@ void SDL_GpuSetRenderPassFragmentBuffer(SDL_GpuRenderPass *pass, SDL_GpuBuffer *
 void SDL_GpuSetRenderPassFragmentSampler(SDL_GpuRenderPass *pass, SDL_GpuSampler *sampler, const Uint32 index);
 void SDL_GpuSetRenderPassFragmentTexture(SDL_GpuRenderPass *pass, SDL_GpuTexture *texture, const Uint32 index);
 
+
+/* You need to have a SDL_GpuPipeline with a matching SDL_GpuTopology when you draw
+   (so if the topology is SDL_GPUTOPOLOGY_TRIANGLE, you can use SDL_GPUPRIM_TRIANGLE or
+   SDL_GPUPRIM_TRIANGLESTRIP but not SDL_GPUPRIM_LINE, etc) */
 typedef enum SDL_GpuPrimitive
 {
     SDL_GPUPRIM_POINT,
