@@ -247,7 +247,7 @@ typedef enum SDL_GpuBlendFactor
     SDL_GPUBLENDFACTOR_ONEMINUSSOURCE1ALPHA
 } SDL_GpuBlendFactor;
 
-typedef struct SDL_GpuColorAttachmentDescription
+typedef struct SDL_GpuPipelineColorAttachmentDescription
 {
     SDL_GpuPixelFormat pixel_format;
     SDL_bool writemask_enabled_red;
@@ -352,7 +352,7 @@ typedef struct SDL_GpuPipelineDescription
     Uint32 num_vertex_attributes;
     SDL_GpuVertexAttributeDescription[SDL_GPU_MAX_VERTEX_ATTRIBUTES];
     Uint32 num_color_attachments;
-    SDL_GpuColorAttachmentDescription[SDL_GPU_MAX_COLOR_ATTACHMENTS];
+    SDL_GpuPipelineColorAttachmentDescription[SDL_GPU_MAX_COLOR_ATTACHMENTS];
     SDL_GpuPixelFormat depth_format;
     SDL_GpuPixelFormat stencil_format;
     SDL_bool depth_write_enabled;
