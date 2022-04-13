@@ -30,6 +30,7 @@ Windows:
 * Added support for SDL_BLENDOPERATION_MINIMUM and SDL_BLENDOPERATION_MAXIMUM to the D3D9 renderer
 
 Linux:
+* Compiling with Wayland support requires libwayland-client version 1.18.0 or later
 * Added the hint SDL_HINT_X11_WINDOW_TYPE to specify the _NET_WM_WINDOW_TYPE of SDL windows
 * Added the hint SDL_HINT_VIDEO_WAYLAND_PREFER_LIBDECOR to allow using libdecor with compositors that support xdg-decoration
 
