@@ -310,27 +310,6 @@ typedef struct SDL_GpuVertexAttributeDescription
     Uint32 index;
 } SDL_GpuVertexAttributeDescription;
 
-#define SDL_GPU_MAX_COLOR_ATTACHMENTS 4   /* !!! FIXME: what's a sane number here? */
-#define SDL_GPU_MAX_VERTEX_ATTRIBUTES 32   /* !!! FIXME: what's a sane number here? */
-typedef struct SDL_GpuPipelineDescription
-{
-    const char *name;
-    SDL_GpuShader *vertex_shader;
-    SDL_GpuShader *fragment_shader;
-    Uint32 num_vertex_attributes;
-    SDL_GpuVertexAttributeDescription[SDL_GPU_MAX_VERTEX_ATTRIBUTES];
-    Uint32 num_color_attachments;
-    SDL_GpuColorAttachmentDescription[SDL_GPU_MAX_COLOR_ATTACHMENTS];
-    SDL_GpuPixelFormat depth_format;
-    SDL_GpuPixelFormat stencil_format;
-} SDL_GpuPipelineDescription;
-
-typedef struct SDL_GpuPipeline SDL_GpuPipeline;
-SDL_GpuPipeline *SDL_GpuCreatePipeline(SDL_GpuDevice *device, const SDL_GpuPipelineDescription *desc);
-void SDL_GpuDestroyPipeline(SDL_GpuPipeline *pipeline);
-
-/* DepthStencil (or rather, state relating to depth and stencil, which get clumped together) is something
-   you cook once into an object and reuse over and over). */
 typedef enum SDL_GpuCompareFunction
 {
     SDL_GPUCMPFUNC_NEVER,
@@ -355,9 +334,19 @@ typedef enum SDL_GpuStencilOperation
     SDL_GPUSTENCILOP_DECREMENTWRAP
 } SDL_GpuStencilOperation;
 
-typedef struct SDL_GpuDepthStencilDescription
+#define SDL_GPU_MAX_COLOR_ATTACHMENTS 4   /* !!! FIXME: what's a sane number here? */
+#define SDL_GPU_MAX_VERTEX_ATTRIBUTES 32   /* !!! FIXME: what's a sane number here? */
+typedef struct SDL_GpuPipelineDescription
 {
     const char *name;
+    SDL_GpuShader *vertex_shader;
+    SDL_GpuShader *fragment_shader;
+    Uint32 num_vertex_attributes;
+    SDL_GpuVertexAttributeDescription[SDL_GPU_MAX_VERTEX_ATTRIBUTES];
+    Uint32 num_color_attachments;
+    SDL_GpuColorAttachmentDescription[SDL_GPU_MAX_COLOR_ATTACHMENTS];
+    SDL_GpuPixelFormat depth_format;
+    SDL_GpuPixelFormat stencil_format;
     SDL_bool depth_write_enabled;
     Uint32 stencil_read_mask;
     Uint32 stencil_write_mask;
@@ -366,11 +355,11 @@ typedef struct SDL_GpuDepthStencilDescription
     SDL_GpuStencilOperation stencil_fail;
     SDL_GpuStencilOperation depth_fail;
     SDL_GpuStencilOperation depth_and_stencil_pass;
-} SDL_GpuDepthStencilDescription;
+} SDL_GpuPipelineDescription;
 
-typedef struct SDL_GpuDepthStencil SDL_GpuDepthStencil;
-SDL_GpuDepthStencil *SDL_GpuCreateDepthStencil(SDL_GpuDevice *device, const SDL_GpuDepthStencilDescription *desc);
-void SDL_GpuDestroyDepthStencil(SDL_GpuDepthStencil *depthstencil);
+typedef struct SDL_GpuPipeline SDL_GpuPipeline;
+SDL_GpuPipeline *SDL_GpuCreatePipeline(SDL_GpuDevice *device, const SDL_GpuPipelineDescription *desc);
+void SDL_GpuDestroyPipeline(SDL_GpuPipeline *pipeline);
 
 
 typedef enum SDL_GpuSamplerAddressMode
@@ -435,7 +424,6 @@ void SDL_GpuDestroySampler(SDL_GpuSampler *sampler);
 typedef struct SDL_GpuStateCache SDL_GpuStateCache;
 SDL_GpuStateCache *SDL_GpuCreateStateCache(const char *name, SDL_GpuDevice *device);
 SDL_GpuPipeline *SDL_GpuGetCachedPipeline(SDL_GpuStateCache *cache, const SDL_GpuPipelineDescription *desc);
-SDL_GpuDepthStencil *SDL_GpuGetCachedDepthStencil(SDL_GpuStateCache *cache, const SDL_GpuDepthStencilDescription *desc);
 SDL_GpuSampler *SDL_GpuGetCachedSampler(SDL_GpuStateCache *cache, const SDL_GpuSamplerDescription *desc);
 void SDL_GpuDestroyStateCache(SDL_GpuStateCache *cache);
 
@@ -515,7 +503,6 @@ SDL_GpuRenderPass *SDL_GpuStartRenderPass(const char *name, SDL_GpuCommandBuffer
  *   as they will take resources to do nothing.
  */
 void SDL_GpuSetRenderPassPipeline(SDL_GpuRenderPass *pass, SDL_GpuPipeline *pipeline);
-void SDL_GpuSetRenderPassDepthStencil(SDL_GpuRenderPass *pass, SDL_GpuDepthStencil *depthstencil);
 
 /* non-zero to fill triangles, SDL_FALSE to just draw lines (wireframe). If never set, the render pass defaults to SDL_TRUE. */
 void SDL_GpuSetRenderPassFillMode(SDL_GpuRenderPass *pass, const SDL_bool filled);
