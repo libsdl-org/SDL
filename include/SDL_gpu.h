@@ -48,6 +48,7 @@ extern "C" {
 
 /*
  * The basic sizzle reel:
+ *
  *  - You work in terms of modern GPU APIs without having to bog down
  *    in their specific minutiae.
  *  - It works on several APIs behind the scenes.
@@ -76,7 +77,7 @@ extern "C" {
  *  Some rules and limitations:
  *  - There is no software renderer, and this API will not make heroic
  *    efforts to work on ancient GPUs and APIs.
- *  - this doesn't expose all of Metal/Vulkan/DX12. We are trying to
+ *  - This doesn't expose all of Metal/Vulkan/DX12. We are trying to
  *    drastically improve on SDL's render API functionality while
  *    keeping it simple-ish. Modern APIs put most of the heavy lifting
  *    into shaders, command queues, and precooked state objects, and
@@ -110,6 +111,9 @@ extern "C" {
  *    to pull lowlevel API handles out of this to use in your own app.
  *    If you want to do this: just copy the source code out of here
  *    into your app, do what you like with it, and don't file a bug report.
+ *    (!!! FIXME: it's been pointed out to me that there's a value in
+ *    getting the lowlevel handles so you can plug them into OpenXR for
+ *    rendering in a VR headset, and this seems worthwhile.)
  *  - The shader compiler is meant to be fast and lightweight. It does
  *    not do heavy optimizations of your code. It's meant to let you
  *    deal with source code at runtime, if you need to generate it on
@@ -123,21 +127,27 @@ extern "C" {
  *    be implemented as a standard piece of the runtime.
  *
  *
- *  some things that modern GPU APIs offer that we aren't (currently) exposing:
+ *  some things that modern GPU APIs offer that we aren't exposing
+ *  (but that does not mean we will _never_ expose)...
  * 
  *  - compute
  *  - geometry shaders
- *  - instancing
  *  - tesselation
  *  - ray tracing
- *  - multisample  ( !!! FIXME: maybe add this)
  *  - device enumeration/selection
  *  - multiple command queues (you can encode multiple command buffers, from multiple threads, though)
- *  - compressed texture formats
  *  - Most of the wild list of uncompressed texture formats.
- *  - texture arrays
  *  - texture slices (with the exception of cubemap faces)
  *
+ *  some things I said no to originally that I was later convinced to support:
+ *
+ *  - multisample
+ *  - texture arrays
+ *  - compressed texture formats
+ *  - instancing
+ */
+
+/*
  *  !!! FIXME: enumerate lowlevel APIs? In theory a Windows machine
  *   could offer all of Direct3D 9-12, Vulkan, OpenGL, GLES, etc...
  */
@@ -167,7 +177,9 @@ typedef enum SDL_GpuTextureType
     SDL_GPUTEXTYPE_1D,
     SDL_GPUTEXTYPE_2D,
     SDL_GPUTEXTYPE_CUBE,
-    SDL_GPUTEXTYPE_3D
+    SDL_GPUTEXTYPE_3D,
+    SDL_GPUTEXTYPE_2D_ARRAY,
+    SDL_GPUTEXTYPE_CUBE_ARRAY
 } SDL_GpuTextureType;
 
 typedef enum SDL_GpuPixelFormat
@@ -179,14 +191,18 @@ typedef enum SDL_GpuPixelFormat
     SDL_GPUPIXELFMT_BGRA8,
     SDL_GPUPIXELFMT_BGRA8_sRGB,
     SDL_GPUPIXELFMT_Depth24_Stencil8
-    /* !!! FIXME: s3tc? pvrtc? */
+    /* !!! FIXME: some sort of YUV format to let movies stream efficiently? */
+}   /* !!! FIXME: s3tc? pvrtc? other compressed formats? We'll need a query for what's supported, and/or guarantee it with a software fallback...? */
 } SDL_GpuPixelFormat;
 
+/* you can specify multiple values OR'd together for texture usage, for example if you are going to render to it and then later
+   sample the rendered-to texture's contents in a shader, you'd want RENDER_TARGET|SHADER_READ */
 typedef enum SDL_GpuTextureUsage
 {
-    SDL_GPUTEXUSAGE_SHADERREAD,
-    SDL_GPUTEXUSAGE_SHADERWRITE,
-    SDL_GPUTEXUSAGE_RENDERTARGET
+    SDL_GPUTEXUSAGE_SHADER_READ = (1 << 0),    /* If you sample from a texture, you need this flag. */
+    SDL_GPUTEXUSAGE_SHADER_WRITE = (1 << 1),
+    SDL_GPUTEXUSAGE_RENDER_TARGET = (1 << 2),   /* Draw to this texture! You don't need to set SHADER_WRITE to use this flag! */
+    SDL_GPUTEXUSAGE_NO_SAMPLE = (1 << 3)   /* You won't sample from this texture at all, just read or write it. */
 } SDL_GpuTextureUsage;
 
 typedef struct SDL_GpuTextureDescription
@@ -194,10 +210,10 @@ typedef struct SDL_GpuTextureDescription
     const char *name;
     SDL_GpuTextureType texture_type;
     SDL_GpuPixelFormat pixel_format;
-    SDL_GpuTextureUsage usage;
+    SDL_GpuTextureUsage usage;  /* OR SDL_GpuTextureUsage values together */
     Uint32 width;
     Uint32 height;
-    Uint32 depth;
+    Uint32 depth_or_slices;
     Uint32 mipmap_levels;
 } SDL_GpuTextureDescription;
 
@@ -334,6 +350,10 @@ typedef enum SDL_GpuStencilOperation
     SDL_GPUSTENCILOP_DECREMENTWRAP
 } SDL_GpuStencilOperation;
 
+/* !!! FIXME: is there ever a time you're going to want to change a given pipeline
+   !!! FIXME:  from TRIANGLE to TRIANGLESTRIP? Maybe we should just put the
+   !!! FIXME:  specific primitive type in the pipeline and take the subtype out of
+   !!! FIXME:  the draw call, to simplify the API. */
 typedef enum SDL_GpuTopology
 {
     SDL_GPUTOPOLOGY_POINT,
@@ -350,9 +370,9 @@ typedef struct SDL_GpuPipelineDescription
     SDL_GpuShader *vertex_shader;
     SDL_GpuShader *fragment_shader;
     Uint32 num_vertex_attributes;
-    SDL_GpuVertexAttributeDescription[SDL_GPU_MAX_VERTEX_ATTRIBUTES];
+    SDL_GpuVertexAttributeDescription[SDL_GPU_MAX_VERTEX_ATTRIBUTES];  /* !!! FIXME: maybe don't hardcode a static array? */
     Uint32 num_color_attachments;
-    SDL_GpuPipelineColorAttachmentDescription[SDL_GPU_MAX_COLOR_ATTACHMENTS];
+    SDL_GpuPipelineColorAttachmentDescription[SDL_GPU_MAX_COLOR_ATTACHMENTS];  /* !!! FIXME: maybe don't hardcode a static array? */
     SDL_GpuPixelFormat depth_format;
     SDL_GpuPixelFormat stencil_format;
     SDL_bool depth_write_enabled;
@@ -559,6 +579,8 @@ typedef enum SDL_GpuIndexType
 
 void SDL_GpuDrawPrimitives(SDL_GpuRenderPass *pass, const SDL_GpuPrimitive primitive, Uint32 vertex_start, Uint32 vertex_count);
 void SDL_GpuDrawIndexedPrimitives(SDL_GpuRenderPass *pass, const SDL_GpuPrimitive primitive, Uint32 index_count, SDL_GpuIndexType index_type, SDL_GpuBuffer *index_buffer, Uint32 index_offset);
+void SDL_GpuDrawInstancedPrimitives(SDL_GpuRenderPass *pass, const SDL_GpuPrimitive primitive, Uint32 vertex_start, Uint32 vertex_count, Uint32 instance_count, Uint32 base_instance);
+void SDL_GpuDrawInstancedIndexedPrimitives(SDL_GpuRenderPass *pass, const SDL_GpuPrimitive primitive, Uint32 index_count, SDL_GpuIndexType index_type, SDL_GpuBuffer *index_buffer, Uint32 index_offset, Uint32 instance_count, Uint32 base_instance);
 
 /* Done encoding this render pass into the command buffer. You can now commit the command buffer or start a new render (or whatever) pass. This `pass` pointer becomes invalid. */
 void SDL_GpuEndRenderPass(SDL_GpuRenderPass *pass);
@@ -609,8 +631,11 @@ int SDL_GpuWaitFence(SDL_GpuFence *fence);
 /*
  * Once you've encoded your command buffer(s), you can submit them to the GPU for executing.
  * Command buffers are executed in the order they are submitted, and the commands in those buffers are executed in the order they were encoded.
+ * Once a command buffer is submitted, its pointer becomes invalid. Create a new one for the next set of commands.
  */
 void SDL_GpuSubmitCommandBuffers(SDL_GpuCommandBuffer **buffers, const Uint32 numcmdbufs, const SDL_bool also_present, SDL_GpuFence *fence);
+
+/* !!! FIXME: add a SDL_GpuAbandonCommandBuffer() function for freeing a buffer without submitting it? */
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
