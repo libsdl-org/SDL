@@ -173,6 +173,19 @@ NeedWindowedViewport(SDL_Window *window)
            DesktopIsFractionalScaled(window) && (window->flags & SDL_WINDOW_ALLOW_HIGHDPI);
 }
 
+/* Never set a fullscreen window size larger than the desktop. */
+SDL_FORCE_INLINE int
+GetWindowWidth(SDL_Window *window)
+{
+    return NeedFullscreenViewport(window) ? ((SDL_WaylandOutputData *)SDL_GetDisplayForWindow(window)->driverdata)->width : window->w;
+}
+
+SDL_FORCE_INLINE int
+GetWindowHeight(SDL_Window *window)
+{
+    return NeedFullscreenViewport(window) ? ((SDL_WaylandOutputData *)SDL_GetDisplayForWindow(window)->driverdata)->height : window->h;
+}
+
 static void
 GetWindowBufferSize(SDL_Window *window, int *width, int *height)
 {
@@ -718,7 +731,7 @@ decoration_frame_configure(struct libdecor_frame *frame,
     wind->shell_surface.libdecor.initial_configure_seen = SDL_TRUE;
 
     /* ... then commit the changes on the libdecor side. */
-    state = libdecor_state_new(width, height);
+    state = libdecor_state_new(GetWindowWidth(window), GetWindowHeight(window));
     libdecor_frame_commit(frame, state, configuration);
     libdecor_state_free(state);
 
@@ -1709,7 +1722,8 @@ Wayland_HandleResize(SDL_Window *window, int width, int height, float scale)
      * but at least lets us not be terminated by the compositor.
      * Can be removed once SDL's resize logic becomes compliant. */
     if (viddata->shell.xdg && data->shell_surface.xdg.surface) {
-       xdg_surface_set_window_geometry(data->shell_surface.xdg.surface, 0, 0, window->w, window->h);
+       xdg_surface_set_window_geometry(data->shell_surface.xdg.surface, 0, 0,
+                                       GetWindowWidth(window), GetWindowHeight(window));
     }
 
     /* Update the viewport */
@@ -1759,7 +1773,7 @@ void Wayland_SetWindowSize(_THIS, SDL_Window * window)
 
 #ifdef HAVE_LIBDECOR_H
     if (data->shell.libdecor && wind->shell_surface.libdecor.frame) {
-        state = libdecor_state_new(window->w, window->h);
+        state = libdecor_state_new(GetWindowWidth(window), GetWindowHeight(window));
         libdecor_frame_commit(wind->shell_surface.libdecor.frame, state, NULL);
         libdecor_state_free(state);
     }
@@ -1776,7 +1790,8 @@ void Wayland_SetWindowSize(_THIS, SDL_Window * window)
 
     /* Update the geometry which may have been set by a hack in Wayland_HandleResize */
     if (data->shell.xdg && wind->shell_surface.xdg.surface) {
-       xdg_surface_set_window_geometry(wind->shell_surface.xdg.surface, 0, 0, window->w, window->h);
+       xdg_surface_set_window_geometry(wind->shell_surface.xdg.surface, 0, 0,
+                                       GetWindowWidth(window), GetWindowHeight(window));
     }
 }
 
