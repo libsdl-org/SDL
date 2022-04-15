@@ -61,6 +61,7 @@ static DevIdList *deviceid_list = NULL;
 /* Some GUIDs we need to know without linking to libraries that aren't available before Vista. */
 static const IID SDL_IID_IAudioRenderClient = { 0xf294acfc, 0x3146, 0x4483,{ 0xa7, 0xbf, 0xad, 0xdc, 0xa7, 0xc2, 0x60, 0xe2 } };
 static const IID SDL_IID_IAudioCaptureClient = { 0xc8adbd64, 0xe71e, 0x48a0,{ 0xa4, 0xde, 0x18, 0x5c, 0x39, 0x5c, 0xd3, 0x17 } };
+static const IID SDL_IID_IAudioClockAdjustment = { 0xf6e4c0a0, 0x46d9, 0x4fb8,{ 0xbe, 0x21, 0x57, 0xa3, 0xef, 0x2b, 0x62, 0x6c } };
 static const GUID SDL_KSDATAFORMAT_SUBTYPE_PCM = { 0x00000001, 0x0000, 0x0010,{ 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71 } };
 static const GUID SDL_KSDATAFORMAT_SUBTYPE_IEEE_FLOAT = { 0x00000003, 0x0000, 0x0010,{ 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71 } };
 
@@ -560,7 +561,7 @@ WASAPI_PrepDevice(_THIS, const SDL_bool updatestream)
 
     /* favor WASAPI's resampler over our own */
     if (this->spec.freq != waveformat->nSamplesPerSec) {
-        streamflags |= (AUDCLNT_STREAMFLAGS_AUTOCONVERTPCM | AUDCLNT_STREAMFLAGS_SRC_DEFAULT_QUALITY);
+        streamflags |= (AUDCLNT_STREAMFLAGS_RATEADJUST | AUDCLNT_STREAMFLAGS_AUTOCONVERTPCM | AUDCLNT_STREAMFLAGS_SRC_DEFAULT_QUALITY);
         waveformat->nSamplesPerSec = this->spec.freq;
         waveformat->nAvgBytesPerSec = waveformat->nSamplesPerSec * waveformat->nChannels * (waveformat->wBitsPerSample / 8);
     }
@@ -569,6 +570,19 @@ WASAPI_PrepDevice(_THIS, const SDL_bool updatestream)
     ret = IAudioClient_Initialize(client, sharemode, streamflags, 0, 0, waveformat, NULL);
     if (FAILED(ret)) {
         return WIN_SetErrorFromHRESULT("WASAPI can't initialize audio client", ret);
+    }
+
+    if (streamflags & AUDCLNT_STREAMFLAGS_RATEADJUST) {
+        IAudioClockAdjustment *adj;
+        ret = IAudioClient_GetService(client, &SDL_IID_IAudioClockAdjustment, (void**) &adj);
+        if (FAILED(ret)) {
+            return WIN_SetErrorFromHRESULT("WASAPI failed to obtain IAudioClockAdjustment", ret);
+        }
+        ret = IAudioClockAdjustment_SetSampleRate(adj, (float) this->spec.freq);
+        if (FAILED(ret)) {
+            return WIN_SetErrorFromHRESULT("WASAPI IAudioClockAdjustment_SetSampleRate failed", ret);
+        }
+        IAudioClockAdjustment_Release(adj);
     }
 
     ret = IAudioClient_SetEventHandle(client, this->hidden->event);
