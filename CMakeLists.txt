@@ -372,6 +372,7 @@ endforeach()
 
 # Allow some projects to be built conditionally.
 set_option(SDL2_DISABLE_SDL2MAIN   "Disable building/installation of SDL2main" OFF)
+set_option(SDL2_DISABLE_INSTALL    "Disable installation of SDL2" OFF)
 set_option(SDL2_DISABLE_UNINSTALL  "Disable uninstallation of SDL2" OFF)
 
 option_string(SDL_ASSERTIONS "Enable internal sanity checks (auto/disabled/release/enabled/paranoid)" "auto")
@@ -2968,6 +2969,7 @@ if(SDL_TEST)
 endif()
 
 ##### Installation targets #####
+if(NOT SDL2_DISABLE_INSTALL)
 if(SDL_SHARED)
   install(TARGETS SDL2 EXPORT SDL2Targets
     LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
@@ -3073,6 +3075,7 @@ if(NOT (WINDOWS OR CYGWIN) OR MINGW)
   # TODO: what about the .spec file? Is it only needed for RPM creation?
   install(FILES "${SDL2_SOURCE_DIR}/sdl2.m4" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/aclocal")
 endif()
+endif(NOT SDL2_DISABLE_INSTALL)
 
 ##### Uninstall target #####
 
