@@ -2970,123 +2970,124 @@ endif()
 
 ##### Installation targets #####
 if(NOT SDL2_DISABLE_INSTALL)
-if(SDL_SHARED)
-  install(TARGETS SDL2 EXPORT SDL2Targets
-    LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-    ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-    RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
-endif()
-
-if(NOT WINDOWS_STORE AND NOT SDL2_DISABLE_SDL2MAIN)
-  install(TARGETS SDL2main EXPORT SDL2mainTargets
-    LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-    ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-    RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
-endif()
-
-if(SDL_STATIC)
-  install(TARGETS SDL2-static EXPORT SDL2staticTargets
-    LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-    ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-    RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
-endif()
-
-##### Export files #####
-if (WINDOWS AND NOT MINGW)
-  set(PKG_PREFIX "cmake")
-else ()
-  set(PKG_PREFIX "${CMAKE_INSTALL_LIBDIR}/cmake/SDL2")
-endif ()
-
-include(CMakePackageConfigHelpers)
-write_basic_package_version_file("${CMAKE_BINARY_DIR}/SDL2ConfigVersion.cmake"
-  VERSION ${SDL_VERSION}
-  COMPATIBILITY AnyNewerVersion
-)
-
-if(SDL_SHARED)
-  install(EXPORT SDL2Targets
-    FILE SDL2Targets.cmake
-    NAMESPACE SDL2::
-    DESTINATION ${PKG_PREFIX}
-  )
-endif()
-
-if(NOT WINDOWS_STORE AND NOT SDL2_DISABLE_SDL2MAIN)
-  install(EXPORT SDL2mainTargets
-    FILE SDL2mainTargets.cmake
-    NAMESPACE SDL2::
-    DESTINATION ${PKG_PREFIX}
-  )
-endif()
-
-if(SDL_STATIC)
-  install(EXPORT SDL2staticTargets
-    FILE SDL2staticTargets.cmake
-    NAMESPACE SDL2::
-    DESTINATION ${PKG_PREFIX}
-  )
-endif()
-
-install(
-  FILES
-    ${CMAKE_CURRENT_SOURCE_DIR}/SDL2Config.cmake
-    ${CMAKE_BINARY_DIR}/SDL2ConfigVersion.cmake
-  DESTINATION ${PKG_PREFIX}
-  COMPONENT Devel
-)
-
-file(GLOB INCLUDE_FILES ${SDL2_SOURCE_DIR}/include/*.h)
-file(GLOB BIN_INCLUDE_FILES ${SDL2_BINARY_DIR}/include/*.h)
-foreach(_FNAME ${BIN_INCLUDE_FILES})
-  get_filename_component(_INCNAME ${_FNAME} NAME)
-  list(REMOVE_ITEM INCLUDE_FILES ${SDL2_SOURCE_DIR}/include/${_INCNAME})
-endforeach()
-list(APPEND INCLUDE_FILES ${BIN_INCLUDE_FILES})
-install(FILES ${INCLUDE_FILES} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/SDL2)
-
-string(TOUPPER "${CMAKE_BUILD_TYPE}" UPPER_BUILD_TYPE)
-if (UPPER_BUILD_TYPE MATCHES DEBUG)
-  set(SOPOSTFIX "${SDL_CMAKE_DEBUG_POSTFIX}")
-else()
-  set(SOPOSTFIX "")
-endif()
-
-if(NOT (WINDOWS OR CYGWIN) OR MINGW)
   if(SDL_SHARED)
-    set(SOEXT ${CMAKE_SHARED_LIBRARY_SUFFIX}) # ".so", ".dylib", etc.
-    get_target_property(SONAME SDL2 OUTPUT_NAME)
-    if(NOT ANDROID AND NOT MINGW AND NOT OS2)
-        install(CODE "
-          execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
-            \"lib${SONAME}${SOPOSTFIX}${SOEXT}\" \"libSDL2${SOPOSTFIX}${SOEXT}\"
-            WORKING_DIRECTORY \"${SDL2_BINARY_DIR}\")")
-        install(FILES ${SDL2_BINARY_DIR}/libSDL2${SOPOSTFIX}${SOEXT} DESTINATION "${CMAKE_INSTALL_LIBDIR}")
-    endif()
+    install(TARGETS SDL2 EXPORT SDL2Targets
+      LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+      ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+      RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
   endif()
-  if(FREEBSD)
-    # FreeBSD uses ${PREFIX}/libdata/pkgconfig
-    install(FILES ${SDL2_BINARY_DIR}/sdl2.pc DESTINATION "libdata/pkgconfig")
+
+  if(NOT WINDOWS_STORE AND NOT SDL2_DISABLE_SDL2MAIN)
+    install(TARGETS SDL2main EXPORT SDL2mainTargets
+      LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+      ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+      RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
+  endif()
+
+  if(SDL_STATIC)
+    install(TARGETS SDL2-static EXPORT SDL2staticTargets
+      LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+      ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+      RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
+  endif()
+
+  ##### Export files #####
+  if (WINDOWS AND NOT MINGW)
+    set(PKG_PREFIX "cmake")
+  else ()
+    set(PKG_PREFIX "${CMAKE_INSTALL_LIBDIR}/cmake/SDL2")
+  endif ()
+
+  include(CMakePackageConfigHelpers)
+  write_basic_package_version_file("${CMAKE_BINARY_DIR}/SDL2ConfigVersion.cmake"
+    VERSION ${SDL_VERSION}
+    COMPATIBILITY AnyNewerVersion
+  )
+
+  if(SDL_SHARED)
+    install(EXPORT SDL2Targets
+      FILE SDL2Targets.cmake
+      NAMESPACE SDL2::
+      DESTINATION ${PKG_PREFIX}
+    )
+  endif()
+
+  if(NOT WINDOWS_STORE AND NOT SDL2_DISABLE_SDL2MAIN)
+    install(EXPORT SDL2mainTargets
+      FILE SDL2mainTargets.cmake
+      NAMESPACE SDL2::
+      DESTINATION ${PKG_PREFIX}
+    )
+  endif()
+
+  if(SDL_STATIC)
+    install(EXPORT SDL2staticTargets
+      FILE SDL2staticTargets.cmake
+      NAMESPACE SDL2::
+      DESTINATION ${PKG_PREFIX}
+    )
+  endif()
+
+  install(
+    FILES
+      ${CMAKE_CURRENT_SOURCE_DIR}/SDL2Config.cmake
+      ${CMAKE_BINARY_DIR}/SDL2ConfigVersion.cmake
+    DESTINATION ${PKG_PREFIX}
+    COMPONENT Devel
+  )
+
+  file(GLOB INCLUDE_FILES ${SDL2_SOURCE_DIR}/include/*.h)
+  file(GLOB BIN_INCLUDE_FILES ${SDL2_BINARY_DIR}/include/*.h)
+  foreach(_FNAME ${BIN_INCLUDE_FILES})
+    get_filename_component(_INCNAME ${_FNAME} NAME)
+    list(REMOVE_ITEM INCLUDE_FILES ${SDL2_SOURCE_DIR}/include/${_INCNAME})
+  endforeach()
+  list(APPEND INCLUDE_FILES ${BIN_INCLUDE_FILES})
+  install(FILES ${INCLUDE_FILES} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/SDL2)
+
+  string(TOUPPER "${CMAKE_BUILD_TYPE}" UPPER_BUILD_TYPE)
+  if (UPPER_BUILD_TYPE MATCHES DEBUG)
+    set(SOPOSTFIX "${SDL_CMAKE_DEBUG_POSTFIX}")
   else()
-    install(FILES ${SDL2_BINARY_DIR}/sdl2.pc
-      DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
+    set(SOPOSTFIX "")
   endif()
-  install(PROGRAMS ${SDL2_BINARY_DIR}/sdl2-config DESTINATION "${CMAKE_INSTALL_BINDIR}")
-  # TODO: what about the .spec file? Is it only needed for RPM creation?
-  install(FILES "${SDL2_SOURCE_DIR}/sdl2.m4" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/aclocal")
+
+  if(NOT (WINDOWS OR CYGWIN) OR MINGW)
+    if(SDL_SHARED)
+      set(SOEXT ${CMAKE_SHARED_LIBRARY_SUFFIX}) # ".so", ".dylib", etc.
+      get_target_property(SONAME SDL2 OUTPUT_NAME)
+      if(NOT ANDROID AND NOT MINGW AND NOT OS2)
+          install(CODE "
+            execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
+              \"lib${SONAME}${SOPOSTFIX}${SOEXT}\" \"libSDL2${SOPOSTFIX}${SOEXT}\"
+              WORKING_DIRECTORY \"${SDL2_BINARY_DIR}\")")
+          install(FILES ${SDL2_BINARY_DIR}/libSDL2${SOPOSTFIX}${SOEXT} DESTINATION "${CMAKE_INSTALL_LIBDIR}")
+      endif()
+    endif()
+    if(FREEBSD)
+      # FreeBSD uses ${PREFIX}/libdata/pkgconfig
+      install(FILES ${SDL2_BINARY_DIR}/sdl2.pc DESTINATION "libdata/pkgconfig")
+    else()
+      install(FILES ${SDL2_BINARY_DIR}/sdl2.pc
+        DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
+    endif()
+    install(PROGRAMS ${SDL2_BINARY_DIR}/sdl2-config DESTINATION "${CMAKE_INSTALL_BINDIR}")
+    # TODO: what about the .spec file? Is it only needed for RPM creation?
+    install(FILES "${SDL2_SOURCE_DIR}/sdl2.m4" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/aclocal")
+  endif()
 endif()
-endif(NOT SDL2_DISABLE_INSTALL)
 
 ##### Uninstall target #####
 
 if(NOT SDL2_DISABLE_UNINSTALL)
-if(NOT TARGET uninstall)
-  configure_file(
-      "${CMAKE_CURRENT_SOURCE_DIR}/cmake_uninstall.cmake.in"
-      "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
-      IMMEDIATE @ONLY)
+  if(NOT TARGET uninstall)
+    configure_file(
+        "${CMAKE_CURRENT_SOURCE_DIR}/cmake_uninstall.cmake.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
+        IMMEDIATE @ONLY)
 
-  add_custom_target(uninstall
-      COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
+    add_custom_target(uninstall
+        COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
+  endif()
 endif()
-endif(NOT SDL2_DISABLE_UNINSTALL)
+
