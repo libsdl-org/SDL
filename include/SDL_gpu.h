@@ -350,23 +350,21 @@ typedef enum SDL_GpuStencilOperation
     SDL_GPUSTENCILOP_DECREMENTWRAP
 } SDL_GpuStencilOperation;
 
-/* !!! FIXME: is there ever a time you're going to want to change a given pipeline
-   !!! FIXME:  from TRIANGLE to TRIANGLESTRIP? Maybe we should just put the
-   !!! FIXME:  specific primitive type in the pipeline and take the subtype out of
-   !!! FIXME:  the draw call, to simplify the API. */
-typedef enum SDL_GpuTopology
+typedef enum SDL_GpuPrimitive
 {
-    SDL_GPUTOPOLOGY_POINT,
-    SDL_GPUTOPOLOGY_LINE,
-    SDL_GPUTOPOLOGY_TRIANGLE
-} SDL_GpuTopology;
+    SDL_GPUPRIM_POINT,
+    SDL_GPUPRIM_LINE,
+    SDL_GPUPRIM_LINESTRIP,
+    SDL_GPUPRIM_TRIANGLE,
+    SDL_GPUPRIM_TRIANGLESTRIP
+} SDL_GpuPrimitive;
 
 #define SDL_GPU_MAX_COLOR_ATTACHMENTS 4   /* !!! FIXME: what's a sane number here? */
 #define SDL_GPU_MAX_VERTEX_ATTRIBUTES 32   /* !!! FIXME: what's a sane number here? */
 typedef struct SDL_GpuPipelineDescription
 {
     const char *name;
-    SDL_GpuTopology topology;
+    SDL_GpuPrimitive primitive;
     SDL_GpuShader *vertex_shader;
     SDL_GpuShader *fragment_shader;
     Uint32 num_vertex_attributes;
@@ -559,17 +557,7 @@ void SDL_GpuSetRenderPassFragmentSampler(SDL_GpuRenderPass *pass, SDL_GpuSampler
 void SDL_GpuSetRenderPassFragmentTexture(SDL_GpuRenderPass *pass, SDL_GpuTexture *texture, const Uint32 index);
 
 
-/* You need to have a SDL_GpuPipeline with a matching SDL_GpuTopology when you draw
-   (so if the topology is SDL_GPUTOPOLOGY_TRIANGLE, you can use SDL_GPUPRIM_TRIANGLE or
-   SDL_GPUPRIM_TRIANGLESTRIP but not SDL_GPUPRIM_LINE, etc) */
-typedef enum SDL_GpuPrimitive
-{
-    SDL_GPUPRIM_POINT,
-    SDL_GPUPRIM_LINE,
-    SDL_GPUPRIM_LINESTRIP,
-    SDL_GPUPRIM_TRIANGLE,
-    SDL_GPUPRIM_TRIANGLESTRIP
-} SDL_GpuPrimitive;
+/* Drawing! */
 
 typedef enum SDL_GpuIndexType
 {
@@ -577,10 +565,10 @@ typedef enum SDL_GpuIndexType
     SDL_GPUINDEXTYPE_UINT32
 } SDL_GpuIndexType;
 
-void SDL_GpuDrawPrimitives(SDL_GpuRenderPass *pass, const SDL_GpuPrimitive primitive, Uint32 vertex_start, Uint32 vertex_count);
-void SDL_GpuDrawIndexedPrimitives(SDL_GpuRenderPass *pass, const SDL_GpuPrimitive primitive, Uint32 index_count, SDL_GpuIndexType index_type, SDL_GpuBuffer *index_buffer, Uint32 index_offset);
-void SDL_GpuDrawInstancedPrimitives(SDL_GpuRenderPass *pass, const SDL_GpuPrimitive primitive, Uint32 vertex_start, Uint32 vertex_count, Uint32 instance_count, Uint32 base_instance);
-void SDL_GpuDrawInstancedIndexedPrimitives(SDL_GpuRenderPass *pass, const SDL_GpuPrimitive primitive, Uint32 index_count, SDL_GpuIndexType index_type, SDL_GpuBuffer *index_buffer, Uint32 index_offset, Uint32 instance_count, Uint32 base_instance);
+void SDL_GpuDraw(SDL_GpuRenderPass *pass, Uint32 vertex_start, Uint32 vertex_count);
+void SDL_GpuDrawIndexed(SDL_GpuRenderPass *pass, Uint32 index_count, SDL_GpuIndexType index_type, SDL_GpuBuffer *index_buffer, Uint32 index_offset);
+void SDL_GpuDrawInstanced(SDL_GpuRenderPass *pass, Uint32 vertex_start, Uint32 vertex_count, Uint32 instance_count, Uint32 base_instance);
+void SDL_GpuDrawInstancedIndexed(SDL_GpuRenderPass *pass, Uint32 index_count, SDL_GpuIndexType index_type, SDL_GpuBuffer *index_buffer, Uint32 index_offset, Uint32 instance_count, Uint32 base_instance);
 
 /* Done encoding this render pass into the command buffer. You can now commit the command buffer or start a new render (or whatever) pass. This `pass` pointer becomes invalid. */
 void SDL_GpuEndRenderPass(SDL_GpuRenderPass *pass);
