@@ -544,6 +544,7 @@ typedef struct SDL_GpuStencilAttachmentDescription
 
 /* start encoding a render pass to a command buffer. You can only encode one type of pass to a command buffer at a time. End this pass to start encoding another. */
 SDL_GpuRenderPass *SDL_GpuStartRenderPass(const char *name, SDL_GpuCommandBuffer *cmdbuf,
+                            SDL_GpuPipeline *initial_pipeline,
                             Uint32 num_color_attachments,
                             const SDL_GpuColorAttachmentDescription *color_attachments,
                             const SDL_GpuDepthAttachmentDescription *depth_attachment,
