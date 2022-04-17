@@ -359,6 +359,27 @@ typedef enum SDL_GpuPrimitive
     SDL_GPUPRIM_TRIANGLESTRIP
 } SDL_GpuPrimitive;
 
+typedef enum SDL_GpuFillMode
+{
+    SDL_GPUFILL_FILL,  /* fill polygons */
+    SDL_GPUFILL_LINE  /* wireframe mode */
+    /* !!! FIXME: Vulkan has POINT and FILL_RECTANGLE_NV here, but Metal and D3D12 do not. */
+} SDL_GpuFillMode;
+
+typedef enum SDL_GpuFrontFace
+{
+    SDL_GPUFRONTFACE_COUNTER_CLOCKWISE,
+    SDL_GPUFRONTFACE_CLOCKWISE
+} SDL_GpuFrontFace;
+
+typedef enum SDL_GpuCullFace
+{
+    SDL_GPUCULLFACE_BACK,
+    SDL_GPUCULLFACE_FRONT,
+    SDL_GPUCULLFACE_NONE
+    /* !!! FIXME: Vulkan lets you cull front-and-back (i.e. - everything) */
+} SDL_GpuCullFace;
+
 #define SDL_GPU_MAX_COLOR_ATTACHMENTS 4   /* !!! FIXME: what's a sane number here? */
 #define SDL_GPU_MAX_VERTEX_ATTRIBUTES 32   /* !!! FIXME: what's a sane number here? */
 typedef struct SDL_GpuPipelineDescription
@@ -376,16 +397,30 @@ typedef struct SDL_GpuPipelineDescription
     SDL_bool depth_write_enabled;
     Uint32 stencil_read_mask;
     Uint32 stencil_write_mask;
+    Uint32 stencil_reference_front;
+    Uint32 stencil_reference_back;
     SDL_GpuCompareFunction depth_function;
     SDL_GpuCompareFunction stencil_function;
     SDL_GpuStencilOperation stencil_fail;
     SDL_GpuStencilOperation depth_fail;
     SDL_GpuStencilOperation depth_and_stencil_pass;
+    SDL_GpuFillMode fill_mode;
+    SDL_GpuFrontFace front_face;
+    SDL_GpuCullFace cull_face;
+    float depth_bias;
+    float depth_bias_scale;
+    float depth_bias_clamp;
 } SDL_GpuPipelineDescription;
 
 typedef struct SDL_GpuPipeline SDL_GpuPipeline;
 SDL_GpuPipeline *SDL_GpuCreatePipeline(SDL_GpuDevice *device, const SDL_GpuPipelineDescription *desc);
 void SDL_GpuDestroyPipeline(SDL_GpuPipeline *pipeline);
+
+/* these make it easier to set up a Pipeline description; set the defaults (or
+   start with an existing pipeline's state) then change what you like. */
+void SDL_GpuDefaultPipelineDescription(SDL_GpuPipelineDescription *desc);
+void SDL_GpuGetPipelineDescription(SDL_GpuPipeline *pipeline, SDL_GpuPipelineDescription *desc);
+
 
 
 typedef enum SDL_GpuSamplerAddressMode
@@ -453,6 +488,8 @@ SDL_GpuPipeline *SDL_GpuGetCachedPipeline(SDL_GpuStateCache *cache, const SDL_Gp
 SDL_GpuSampler *SDL_GpuGetCachedSampler(SDL_GpuStateCache *cache, const SDL_GpuSamplerDescription *desc);
 void SDL_GpuDestroyStateCache(SDL_GpuStateCache *cache);
 
+// !!! FIXME: read/write state caches to disk?
+
 
 /*
  * COMMAND BUFFERS...
@@ -480,13 +517,6 @@ typedef enum SDL_GpuPassInit
     SDL_GPUPASSINIT_LOAD,
     SDL_GPUPASSINIT_CLEAR
 } SDL_GpuPassInit;
-
-typedef enum SDL_GpuCullFace
-{
-    SDL_GPUCULLFACE_BACK,
-    SDL_GPUCULLFACE_FRONT,
-    SDL_GPUCULLFACE_NONE
-} SDL_GpuCullFace;
 
 typedef struct SDL_GpuColorAttachmentDescription
 {
@@ -529,20 +559,6 @@ SDL_GpuRenderPass *SDL_GpuStartRenderPass(const char *name, SDL_GpuCommandBuffer
  *   as they will take resources to do nothing.
  */
 void SDL_GpuSetRenderPassPipeline(SDL_GpuRenderPass *pass, SDL_GpuPipeline *pipeline);
-
-/* non-zero to fill triangles, SDL_FALSE to just draw lines (wireframe). If never set, the render pass defaults to SDL_TRUE. */
-void SDL_GpuSetRenderPassFillMode(SDL_GpuRenderPass *pass, const SDL_bool filled);
-
-/* non-zero to treak clockwise winding as front-facing, SDL_FALSE for counter-clockwise. If never set, the render pass defaults to SDL_TRUE. */
-void SDL_GpuSetRenderPassWinding(SDL_GpuRenderPass *pass, const SDL_bool clockwise);
-
-/* If never set, the render pass defaults to SDL_GPUCULLFACE_BACK. */
-void SDL_GpuSetRenderPassCullMode(SDL_GpuRenderPass *pass, const SDL_GpuCullFace cullfront);
-
-void SDL_GpuSetRenderPassDepthBias(SDL_GpuRenderPass *pass, const float bias, const float scale, const float clamp);
-
-/* If never set, defaults to zero for both front and back. */
-void SDL_GpuSetRenderPassStencilReferenceValues(SDL_GpuRenderPass *pass, const Uint32 front, const Uint32 back);
 
 void SDL_GpuSetRenderPassViewport(SDL_GpuRenderPass *pass, const double x, const double y, const double width, const double height, const double znear, const double zfar);
 void SDL_GpuSetRenderPassScissor(SDL_GpuRenderPass *pass, const Uint32 x, const Uint32 y, const Uint32 width, const Uint32 height);
