@@ -936,7 +936,7 @@ SDL_AudioInit(const char *driver_name)
 
     /* Select the proper audio driver */
     if (driver_name == NULL) {
-        driver_name = SDL_getenv("SDL_AUDIODRIVER");
+        driver_name = SDL_GetHint(SDL_HINT_AUDIODRIVER);
     }
 
     if (driver_name != NULL && *driver_name != 0) {
