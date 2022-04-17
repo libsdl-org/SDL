@@ -425,7 +425,7 @@ SDL_VideoInit(const char *driver_name)
     i = index = 0;
     video = NULL;
     if (driver_name == NULL) {
-        driver_name = SDL_getenv("SDL_VIDEODRIVER");
+        driver_name = SDL_GetHint(SDL_HINT_VIDEODRIVER);
     }
     if (driver_name != NULL && *driver_name != 0) {
         const char *driver_attempt = driver_name;
