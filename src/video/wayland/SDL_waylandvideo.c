@@ -819,7 +819,7 @@ display_handle_global(void *data, struct wl_registry *registry, uint32_t id,
     } else if (SDL_strcmp(interface, "wl_seat") == 0) {
         Wayland_display_add_input(d, id, version);
     } else if (SDL_strcmp(interface, "xdg_wm_base") == 0) {
-        d->shell.xdg = wl_registry_bind(d->registry, id, &xdg_wm_base_interface, 1);
+        d->shell.xdg = wl_registry_bind(d->registry, id, &xdg_wm_base_interface, SDL_min(version, 3));
         xdg_wm_base_add_listener(d->shell.xdg, &shell_listener_xdg, NULL);
     } else if (SDL_strcmp(interface, "wl_shm") == 0) {
         d->shm = wl_registry_bind(registry, id, &wl_shm_interface, 1);
@@ -924,12 +924,6 @@ Wayland_VideoInit(_THIS)
     /* Don't have server-side decorations? Try client-side instead. */
     if (should_use_libdecor(data)) {
         data->shell.libdecor = libdecor_new(data->display, &libdecor_interface);
-
-        /* If libdecor works, we don't need xdg-shell anymore. */
-        if (data->shell.libdecor && data->shell.xdg) {
-            xdg_wm_base_destroy(data->shell.xdg);
-            data->shell.xdg = NULL;
-        }
     }
 #endif
 
