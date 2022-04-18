@@ -476,6 +476,9 @@ ProcessHitTest(struct SDL_WaylandInput *input, uint32_t serial)
         const uint32_t *directions_libdecor = directions;
 #endif
 
+        /* Hit tests shouldn't apply to xdg_popups, right? */
+        SDL_assert(!WINDOW_IS_XDG_POPUP(window));
+
         switch (rc) {
             case SDL_HITTEST_DRAGGABLE:
 #ifdef HAVE_LIBDECOR_H
