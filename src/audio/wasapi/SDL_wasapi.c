@@ -558,12 +558,16 @@ WASAPI_PrepDevice(_THIS, const SDL_bool updatestream)
         return WIN_SetErrorFromHRESULT("WASAPI can't determine minimum device period", ret);
     }
 
+#if 1  /* we're getting reports that WASAPI's resampler introduces distortions, so it's disabled for now. --ryan. */
+    this->spec.freq = waveformat->nSamplesPerSec;  /* force sampling rate so our resampler kicks in, if necessary. */
+#else
     /* favor WASAPI's resampler over our own */
     if (this->spec.freq != waveformat->nSamplesPerSec) {
         streamflags |= (AUDCLNT_STREAMFLAGS_AUTOCONVERTPCM | AUDCLNT_STREAMFLAGS_SRC_DEFAULT_QUALITY);
         waveformat->nSamplesPerSec = this->spec.freq;
         waveformat->nAvgBytesPerSec = waveformat->nSamplesPerSec * waveformat->nChannels * (waveformat->wBitsPerSample / 8);
     }
+#endif
 
     streamflags |= AUDCLNT_STREAMFLAGS_EVENTCALLBACK;
     ret = IAudioClient_Initialize(client, sharemode, streamflags, 0, 0, waveformat, NULL);
