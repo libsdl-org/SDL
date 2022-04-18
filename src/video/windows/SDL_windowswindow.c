@@ -158,7 +158,7 @@ WIN_SetWindowPositionInternal(_THIS, SDL_Window * window, UINT flags)
     int w, h;
 
     /* Figure out what the window area will be */
-    if (SDL_ShouldAllowTopmost() && ((window->flags & (SDL_WINDOW_FULLSCREEN|SDL_WINDOW_INPUT_FOCUS)) == (SDL_WINDOW_FULLSCREEN|SDL_WINDOW_INPUT_FOCUS) || (window->flags & SDL_WINDOW_ALWAYS_ON_TOP))) {
+    if (SDL_ShouldAllowTopmost() && (window->flags & SDL_WINDOW_ALWAYS_ON_TOP)) {
         top = HWND_TOPMOST;
     } else {
         top = HWND_NOTOPMOST;
@@ -741,7 +741,7 @@ WIN_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display, 
         return;
     }
 
-    if (SDL_ShouldAllowTopmost() && ((window->flags & (SDL_WINDOW_FULLSCREEN|SDL_WINDOW_INPUT_FOCUS)) == (SDL_WINDOW_FULLSCREEN|SDL_WINDOW_INPUT_FOCUS) || window->flags & SDL_WINDOW_ALWAYS_ON_TOP)) {
+    if (SDL_ShouldAllowTopmost() && (window->flags & SDL_WINDOW_ALWAYS_ON_TOP)) {
         top = HWND_TOPMOST;
     } else {
         top = HWND_NOTOPMOST;
