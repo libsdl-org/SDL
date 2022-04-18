@@ -636,8 +636,10 @@ filter_entries(const struct dirent *entry)
     return IsJoystickDeviceNode(entry->d_name);
 }
 static int
-sort_entries(const struct dirent **a, const struct dirent **b)
+sort_entries(const void *_a, const void *_b)
 {
+    const struct dirent **a = (const struct dirent **)_a;
+    const struct dirent **b = (const struct dirent **)_b;
     int numA, numB;
     int offset;
 
@@ -682,7 +684,10 @@ LINUX_FallbackJoystickDetect(void)
             struct dirent **entries = NULL;
             char path[PATH_MAX];
 
-            count = scandir("/dev/input", &entries, filter_entries, sort_entries);
+            count = scandir("/dev/input", &entries, filter_entries, NULL);
+            if (count > 1) {
+                qsort(entries, count, sizeof(*entries), sort_entries);
+            }
             for (i = 0; i < count; ++i) {
                 SDL_snprintf(path, SDL_arraysize(path), "/dev/input/%s", entries[i]->d_name);
                 MaybeAddDevice(path);
