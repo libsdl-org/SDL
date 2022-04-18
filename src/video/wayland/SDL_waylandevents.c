@@ -2654,6 +2654,10 @@ int Wayland_input_confine_pointer(struct SDL_WaylandInput *input, SDL_Window *wi
     if (d->relative_mouse_mode)
         return 0;
 
+    /* Don't confine the pointer if it shouldn't be confined. */
+    if (SDL_RectEmpty(&window->mouse_rect) && !(window->flags & SDL_WINDOW_MOUSE_GRABBED))
+        return 0;
+
     if (SDL_RectEmpty(&window->mouse_rect)) {
         confine_rect = NULL;
     } else {

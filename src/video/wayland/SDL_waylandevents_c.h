@@ -132,6 +132,11 @@ struct SDL_WaylandInput {
     SDL_WaylandKeyboardRepeat keyboard_repeat;
 
     struct SDL_WaylandTabletInput* tablet;
+
+    /* are we forcing relative mouse mode? */
+    SDL_bool cursor_visible;
+    SDL_bool relative_mode_override;
+    SDL_bool warp_emulation_prohibited;
 };
 
 extern void Wayland_PumpEvents(_THIS);

@@ -40,6 +40,11 @@
 #include "wayland-cursor.h"
 #include "SDL_waylandmouse.h"
 
+#include "SDL_hints.h"
+#include "../../SDL_hints_c.h"
+
+static int
+Wayland_SetRelativeMouseMode(SDL_bool enabled);
 
 typedef struct {
     struct wl_buffer   *buffer;
@@ -510,9 +515,18 @@ Wayland_ShowCursor(SDL_Cursor *cursor)
         wl_surface_attach(data->surface, data->buffer, 0, 0);
         wl_surface_damage(data->surface, 0, 0, data->w, data->h);
         wl_surface_commit(data->surface);
+
+        input->cursor_visible = SDL_TRUE;
+
+        if (input->relative_mode_override) {
+            Wayland_input_unlock_pointer(input);
+            input->relative_mode_override = SDL_FALSE;
+        }
+	    
     }
     else
     {
+        input->cursor_visible = SDL_FALSE;
         wl_pointer_set_cursor(pointer, input->pointer_enter_serial, NULL, 0, 0);
     }
     
@@ -522,7 +536,20 @@ Wayland_ShowCursor(SDL_Cursor *cursor)
 static void
 Wayland_WarpMouse(SDL_Window *window, int x, int y)
 {
-    SDL_Unsupported();
+    SDL_VideoDevice *vd = SDL_GetVideoDevice();
+    SDL_VideoData *d = vd->driverdata;
+    struct SDL_WaylandInput *input = d->input;
+
+    if (input->cursor_visible == SDL_TRUE) {
+        SDL_Unsupported();
+    } else if (input->warp_emulation_prohibited) {
+        SDL_Unsupported();
+    } else {
+        if (!d->relative_mouse_mode) {
+            Wayland_input_lock_pointer(input);
+            input->relative_mode_override = SDL_TRUE;
+        }
+    }
 }
 
 static int
@@ -537,16 +564,38 @@ Wayland_SetRelativeMouseMode(SDL_bool enabled)
     SDL_VideoDevice *vd = SDL_GetVideoDevice();
     SDL_VideoData *data = (SDL_VideoData *) vd->driverdata;
 
-    if (enabled)
+
+    if (enabled) {
+        /* Disable mouse warp emulation if it's enabled. */
+        if (data->input->relative_mode_override)
+            data->input->relative_mode_override = SDL_FALSE;
+
+        /* If the app has used relative mode before, it probably shouldn't
+         * also be emulating it using repeated mouse warps, so disable
+         * mouse warp emulation by default.
+         */
+        data->input->warp_emulation_prohibited = SDL_TRUE;
         return Wayland_input_lock_pointer(data->input);
-    else
+    } else {
         return Wayland_input_unlock_pointer(data->input);
+    }
+}
+
+static void SDLCALL
+Wayland_EmulateMouseWarpChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+{
+    struct SDL_WaylandInput *input = (struct SDL_WaylandInput *)userdata;
+
+    input->warp_emulation_prohibited = !SDL_GetStringBoolean(hint, !input->warp_emulation_prohibited);
 }
 
 void
 Wayland_InitMouse(void)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
+    SDL_VideoDevice *vd = SDL_GetVideoDevice();
+    SDL_VideoData *d = vd->driverdata;
+    struct SDL_WaylandInput *input = d->input;
 
     mouse->CreateCursor = Wayland_CreateCursor;
     mouse->CreateSystemCursor = Wayland_CreateSystemCursor;
@@ -556,17 +605,27 @@ Wayland_InitMouse(void)
     mouse->WarpMouseGlobal = Wayland_WarpMouseGlobal;
     mouse->SetRelativeMouseMode = Wayland_SetRelativeMouseMode;
 
+    input->relative_mode_override = SDL_FALSE;
+    input->cursor_visible = SDL_TRUE;
+
     SDL_SetDefaultCursor(Wayland_CreateDefaultCursor());
+
+    SDL_AddHintCallback(SDL_HINT_VIDEO_WAYLAND_EMULATE_MOUSE_WARP, 
+                        Wayland_EmulateMouseWarpChanged, input);
 }
 
 void
 Wayland_FiniMouse(SDL_VideoData *data)
 {
+    struct SDL_WaylandInput *input = data->input;
     int i;
     for (i = 0; i < data->num_cursor_themes; i += 1) {
         WAYLAND_wl_cursor_theme_destroy(data->cursor_themes[i].theme);
     }
     SDL_free(data->cursor_themes);
+
+    SDL_DelHintCallback(SDL_HINT_VIDEO_WAYLAND_EMULATE_MOUSE_WARP, 
+                        Wayland_EmulateMouseWarpChanged, input);
 }
 
 #endif  /* SDL_VIDEO_DRIVER_WAYLAND */
