@@ -2476,8 +2476,8 @@ RenderGetViewportSize(SDL_Renderer * renderer, SDL_FRect * rect)
 {
     rect->x = 0.0f;
     rect->y = 0.0f;
-    rect->w = renderer->viewport.w / renderer->scale.x;
-    rect->h = renderer->viewport.h / renderer->scale.y;
+    rect->w = (float)(renderer->viewport.w / renderer->scale.x);
+    rect->h = (float)(renderer->viewport.h / renderer->scale.y);
 }
 
 int
@@ -2555,10 +2555,10 @@ SDL_RenderWindowToLogical(SDL_Renderer * renderer, int windowX, int windowY, flo
     window_physical_y = ((float) windowY) / renderer->dpi_scale.y;
 
     if (logicalX) {
-        *logicalX = (window_physical_x - renderer->viewport.x) / renderer->scale.x;
+        *logicalX = (float)((window_physical_x - renderer->viewport.x) / renderer->scale.x);
     }
     if (logicalY) {
-        *logicalY = (window_physical_y - renderer->viewport.y) / renderer->scale.y;
+        *logicalY = (float)((window_physical_y - renderer->viewport.y) / renderer->scale.y);
     }
 }
 
@@ -2569,8 +2569,8 @@ SDL_RenderLogicalToWindow(SDL_Renderer * renderer, float logicalX, float logical
 
     CHECK_RENDERER_MAGIC(renderer, );
 
-    window_physical_x = (logicalX * renderer->scale.x) + renderer->viewport.x;
-    window_physical_y = (logicalY * renderer->scale.y) + renderer->viewport.y;
+    window_physical_x = (float)((logicalX * renderer->scale.x) + renderer->viewport.x);
+    window_physical_y = (float)((logicalY * renderer->scale.y) + renderer->viewport.y);
 
     if (windowX) {
         *windowX = (int)(window_physical_x * renderer->dpi_scale.x);
