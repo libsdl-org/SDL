@@ -735,7 +735,6 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
     SDL_VideoData *videodata = (SDL_VideoData *) _this->driverdata;
     Display *display;
     SDL_WindowData *data;
-    XEvent xevent;
     int orig_event_type;
     KeyCode orig_keycode;
     XClientMessageEvent m;
@@ -743,9 +742,6 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
 
     SDL_assert(videodata != NULL);
     display = videodata->display;
-
-    SDL_zero(xevent);           /* valgrind fix. --ryan. */
-    X11_XNextEvent(display, &xevent);
 
     /* Save the original keycode for dead keys, which are filtered out by
        the XFilterEvent() call below.
@@ -823,10 +819,13 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
     if (!data) {
         /* The window for KeymapNotify, etc events is 0 */
         if (xevent->type == KeymapNotify) {
+#ifdef DEBUG_XEVENTS
+            printf("window %p: KeymapNotify!\n", data);
+#endif
             if (SDL_GetKeyboardFocus() != NULL) {
                 X11_ReconcileKeyboardState(_this);
             }
-        } else if (xevent.type == MappingNotify) {
+        } else if (xevent->type == MappingNotify) {
             /* Has the keyboard layout changed? */
             const int request = xevent->xmapping.request;
 
@@ -1023,7 +1022,7 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
             SDL_bool handled_by_ime = SDL_FALSE;
 
 #ifdef DEBUG_XEVENTS
-            printf("window %p: %s (X11 keycode = 0x%X)\n" data, (xevent->type == KeyPress ? "KeyPress" : "KeyRelease"),  xevent->xkey.keycode);
+            printf("window %p: %s (X11 keycode = 0x%X)\n", data, (xevent->type == KeyPress ? "KeyPress" : "KeyRelease"), xevent->xkey.keycode);
 #endif
 #if 1
             if (videodata->key_layout[keycode] == SDL_SCANCODE_UNKNOWN && keycode) {
