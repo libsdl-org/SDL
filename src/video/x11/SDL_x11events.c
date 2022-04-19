@@ -733,9 +733,9 @@ static void
 X11_DispatchEvent(_THIS, XEvent *xevent)
 {
     SDL_VideoData *videodata = (SDL_VideoData *) _this->driverdata;
-    XkbEvent* xkbEvent = (XkbEvent*) xevent;
     Display *display;
     SDL_WindowData *data;
+    XEvent xevent;
     int orig_event_type;
     KeyCode orig_keycode;
     XClientMessageEvent m;
@@ -743,6 +743,9 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
 
     SDL_assert(videodata != NULL);
     display = videodata->display;
+
+    SDL_zero(xevent);           /* valgrind fix. --ryan. */
+    X11_XNextEvent(display, &xevent);
 
     /* Save the original keycode for dead keys, which are filtered out by
        the XFilterEvent() call below.
@@ -823,8 +826,7 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
             if (SDL_GetKeyboardFocus() != NULL) {
                 X11_ReconcileKeyboardState(_this);
             }
-        } else if (xevent->type == MappingNotify ||
-                   (xevent->type == videodata->xkb_event && xkbEvent->any.xkb_type == XkbStateNotify)) {
+        } else if (xevent.type == MappingNotify) {
             /* Has the keyboard layout changed? */
             const int request = xevent->xmapping.request;
 
