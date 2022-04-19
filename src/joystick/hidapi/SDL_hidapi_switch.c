@@ -796,6 +796,7 @@ static SDL_bool LoadIMUCalibration(SDL_DriverSwitch_Context* ctx)
 {
     Uint8* pIMUScale;
     SwitchSubcommandInputPacket_t* reply = NULL;
+    Sint16 sAccelRawX, sAccelRawY, sAccelRawZ, sGyroRawX, sGyroRawY, sGyroRawZ;
 
     /* Read Calibration Info */
     SwitchSPIOpData_t readParams;
@@ -804,11 +805,12 @@ static SDL_bool LoadIMUCalibration(SDL_DriverSwitch_Context* ctx)
 
     if (!WriteSubcommand(ctx, k_eSwitchSubcommandIDs_SPIFlashRead, (uint8_t*)&readParams, sizeof(readParams), &reply)) {
         const float accelScale = SDL_STANDARD_GRAVITY / SWITCH_ACCEL_SCALE;
+        const float gyroScale = (float)M_PI / 180.0f / SWITCH_GYRO_SCALE;
+
         ctx->m_IMUScaleData.fAccelScaleX = accelScale;
         ctx->m_IMUScaleData.fAccelScaleY = accelScale;
         ctx->m_IMUScaleData.fAccelScaleZ = accelScale;
 
-        const float gyroScale = (float)M_PI / 180.0f / SWITCH_GYRO_SCALE;
         ctx->m_IMUScaleData.fGyroScaleX = gyroScale;
         ctx->m_IMUScaleData.fGyroScaleY = gyroScale;
         ctx->m_IMUScaleData.fGyroScaleZ = gyroScale;
@@ -819,13 +821,13 @@ static SDL_bool LoadIMUCalibration(SDL_DriverSwitch_Context* ctx)
     /* IMU scale gives us multipliers for converting raw values to real world values */
     pIMUScale = reply->spiReadData.rgucReadData;
 
-    Sint16 sAccelRawX = ((pIMUScale[1] << 8) & 0xF00) | pIMUScale[0];
-    Sint16 sAccelRawY = ((pIMUScale[3] << 8) & 0xF00) | pIMUScale[2];
-    Sint16 sAccelRawZ = ((pIMUScale[5] << 8) & 0xF00) | pIMUScale[4];
+    sAccelRawX = ((pIMUScale[1] << 8) & 0xF00) | pIMUScale[0];
+    sAccelRawY = ((pIMUScale[3] << 8) & 0xF00) | pIMUScale[2];
+    sAccelRawZ = ((pIMUScale[5] << 8) & 0xF00) | pIMUScale[4];
 
-    Sint16 sGyroRawX = ((pIMUScale[13] << 8) & 0xF00) | pIMUScale[12];
-    Sint16 sGyroRawY = ((pIMUScale[15] << 8) & 0xF00) | pIMUScale[14];
-    Sint16 sGyroRawZ = ((pIMUScale[17] << 8) & 0xF00) | pIMUScale[16];
+    sGyroRawX = ((pIMUScale[13] << 8) & 0xF00) | pIMUScale[12];
+    sGyroRawY = ((pIMUScale[15] << 8) & 0xF00) | pIMUScale[14];
+    sGyroRawZ = ((pIMUScale[17] << 8) & 0xF00) | pIMUScale[16];
 
     /* Check for user calibration data. If it's present and set, it'll override the factory settings */
     readParams.unAddress = k_unSPIIMUUserScaleStartOffset;
