@@ -26,7 +26,7 @@
 #include "SDL_render_vita_gxm_memory.h"
 
 void *
-vita_mem_alloc(SceKernelMemBlockType type, unsigned int size, unsigned int alignment, unsigned int attribs, SceUID *uid)
+vita_mem_alloc(unsigned int type, unsigned int size, unsigned int alignment, unsigned int attribs, SceUID *uid)
 {
     void *mem;
 
