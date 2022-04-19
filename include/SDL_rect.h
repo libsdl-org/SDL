@@ -238,14 +238,25 @@ SDL_FORCE_INLINE SDL_bool SDL_FRectEmpty(const SDL_FRect *r)
     return ((!r) || (r->w <= 0.0f) || (r->h <= 0.0f)) ? SDL_TRUE : SDL_FALSE;
 }
 
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
+
 /**
  * Returns true if the two rectangles are equal.
+ *
+ * \warning Compares floats for equality using '==', without an epsilon.
  */
 SDL_FORCE_INLINE SDL_bool SDL_FRectEquals(const SDL_FRect *a, const SDL_FRect *b)
 {
     return (a && b && (a->x == b->x) && (a->y == b->y) &&
             (a->w == b->w) && (a->h == b->h)) ? SDL_TRUE : SDL_FALSE;
 }
+
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
 
 /**
  * Determine whether two rectangles intersect with float precision.
