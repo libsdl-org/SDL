@@ -951,6 +951,7 @@ DeleteHIDDeviceWrapper(SDL_hid_device *device)
     }
 
 #if !SDL_HIDAPI_DISABLED
+#if HAVE_PLATFORM_BACKEND || HAVE_DRIVER_BACKEND || defined(SDL_LIBUSB_DYNAMIC)
 
 #define COPY_IF_EXISTS(var) \
     if (pSrc->var != NULL) { \
@@ -987,6 +988,7 @@ CopyHIDDeviceInfo(struct SDL_hid_device_info *pSrc, struct SDL_hid_device_info *
 #undef COPY_IF_EXISTS
 #undef WCOPY_IF_EXISTS
 
+#endif /* HAVE_PLATFORM_BACKEND || HAVE_DRIVER_BACKEND || SDL_LIBUSB_DYNAMIC */
 #endif /* !SDL_HIDAPI_DISABLED */
 
 static int SDL_hidapi_refcount = 0;
