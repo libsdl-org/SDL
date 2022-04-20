@@ -56,12 +56,12 @@ SDL_CreateMutex(void)
 void
 SDL_DestroyMutex(SDL_mutex * mutex)
 {
-    ULONG ulRC;
     HMTX  hMtx = (HMTX)mutex;
-
-    ulRC = DosCloseMutexSem(hMtx);
-    if (ulRC != NO_ERROR) {
-        debug_os2("DosCloseMutexSem(), rc = %u", ulRC);
+    if (hMtx != NULLHANDLE) {
+        const ULONG ulRC = DosCloseMutexSem(hMtx);
+        if (ulRC != NO_ERROR) {
+            debug_os2("DosCloseMutexSem(), rc = %u", ulRC);
+        }
     }
 }
 
