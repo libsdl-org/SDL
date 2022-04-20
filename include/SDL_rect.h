@@ -239,12 +239,28 @@ SDL_FORCE_INLINE SDL_bool SDL_FRectEmpty(const SDL_FRect *r)
 }
 
 /**
- * Returns true if the two rectangles are equal.
+ * Returns true if the two rectangles are equal, within some given epsilon.
+ *
+ * \since This function is available since SDL 2.0.22.
+ */
+SDL_FORCE_INLINE SDL_bool SDL_FRectEqualsEpsilon(const SDL_FRect *a, const SDL_FRect *b, const float epsilon)
+{
+    return (a && b && ((a == b) ||
+            ((SDL_fabs(a->x - b->x) <= epsilon) &&
+            (SDL_fabs(a->y - b->y) <= epsilon) &&
+            (SDL_fabs(a->w - b->w) <= epsilon) &&
+            (SDL_fabs(a->h - b->h) <= epsilon))))
+            ? SDL_TRUE : SDL_FALSE;
+}
+
+/**
+ * Returns true if the two rectangles are equal, using a default epsilon.
+ *
+ * \since This function is available since SDL 2.0.22.
  */
 SDL_FORCE_INLINE SDL_bool SDL_FRectEquals(const SDL_FRect *a, const SDL_FRect *b)
 {
-    return (a && b && (a->x == b->x) && (a->y == b->y) &&
-            (a->w == b->w) && (a->h == b->h)) ? SDL_TRUE : SDL_FALSE;
+    return SDL_FRectEqualsEpsilon(a, b, SDL_FLT_EPSILON);
 }
 
 /**
