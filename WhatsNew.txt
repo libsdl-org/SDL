@@ -11,6 +11,7 @@ General:
     * SDL_PointInFRect()
     * SDL_FRectEmpty()
     * SDL_FRectEquals()
+    * SDL_FRectEqualsEpsilon()
     * SDL_HasIntersectionF()
     * SDL_IntersectFRect()
     * SDL_UnionFRect()
