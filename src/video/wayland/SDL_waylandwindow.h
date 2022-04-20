@@ -128,7 +128,6 @@ extern int Wayland_SetWindowModalFor(_THIS, SDL_Window * modal_window, SDL_Windo
 extern void Wayland_SetWindowTitle(_THIS, SDL_Window * window);
 extern void Wayland_DestroyWindow(_THIS, SDL_Window *window);
 extern void Wayland_SuspendScreenSaver(_THIS);
-extern int Wayland_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode);
 
 extern SDL_bool
 Wayland_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info);
