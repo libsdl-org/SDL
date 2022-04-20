@@ -668,15 +668,15 @@ Wayland_PopupWatch(void *data, SDL_Event *event)
 {
     if (event->type == SDL_MOUSEMOTION) {
         SDL_Window *window = (SDL_Window *) data;
-        SDL_WindowData *data = window->driverdata;
+        SDL_WindowData *wind = window->driverdata;
 
         /* Coordinates might be relative to the popup, which we don't want */
-        if (event->motion.windowID == data->shell_surface.xdg.roleobj.popup.parentID) {
-            xdg_positioner_set_offset(data->shell_surface.xdg.roleobj.popup.positioner,
+        if (event->motion.windowID == wind->shell_surface.xdg.roleobj.popup.parentID) {
+            xdg_positioner_set_offset(wind->shell_surface.xdg.roleobj.popup.positioner,
                                       event->motion.x + TOOLTIP_CURSOR_OFFSET,
                                       event->motion.y + TOOLTIP_CURSOR_OFFSET);
-            xdg_popup_reposition(data->shell_surface.xdg.roleobj.popup.popup,
-                                 data->shell_surface.xdg.roleobj.popup.positioner,
+            xdg_popup_reposition(wind->shell_surface.xdg.roleobj.popup.popup,
+                                 wind->shell_surface.xdg.roleobj.popup.positioner,
                                  0);
         }
     }
