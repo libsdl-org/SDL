@@ -86,7 +86,7 @@ struct SDL_SysWMinfo;
 #else
 typedef struct _NSWindow NSWindow;
 #endif
-typedef CGWindowID unsigned int;
+typedef unsigned int CGWindowID;
 #endif
 
 #if defined(SDL_VIDEO_DRIVER_UIKIT)
