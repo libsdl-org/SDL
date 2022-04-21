@@ -145,7 +145,7 @@ WIN_RoInitialize(void)
 #ifdef __WINRT__
     return S_OK;
 #else
-    typedef HRESULT (*RoInitialize_t)(RO_INIT_TYPE initType);
+    typedef HRESULT (WINAPI *RoInitialize_t)(RO_INIT_TYPE initType);
     RoInitialize_t RoInitializeFunc = (RoInitialize_t)WIN_LoadComBaseFunction("RoInitialize");
     if (RoInitializeFunc) {
         return RoInitializeFunc(RO_INIT_MULTITHREADED);
@@ -159,7 +159,7 @@ void
 WIN_RoUninitialize(void)
 {
 #ifndef __WINRT__
-    typedef void (*RoUninitialize_t)(void);
+    typedef void (WINAPI *RoUninitialize_t)(void);
     RoUninitialize_t RoUninitializeFunc = (RoUninitialize_t)WIN_LoadComBaseFunction("RoUninitialize");
     if (RoUninitializeFunc) {
         RoUninitializeFunc();
