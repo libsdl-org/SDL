@@ -68,6 +68,7 @@ static struct {
     EventRegistrationToken controller_added_token;
     EventRegistrationToken controller_removed_token;
     int controller_count;
+    SDL_bool ro_initialized;
     WindowsGamingInputControllerState *controllers;
 } wgi;
 
@@ -443,6 +444,7 @@ WGI_JoystickInit(void)
     if (FAILED(WIN_RoInitialize())) {
         return SDL_SetError("RoInitialize() failed");
     }
+    wgi.ro_initialized = SDL_TRUE;
 
 #ifndef __WINRT__
     {
@@ -871,9 +873,12 @@ WGI_JoystickQuit(void)
         __x_ABI_CWindows_CGaming_CInput_CIRawGameControllerStatics_remove_RawGameControllerRemoved(wgi.statics, wgi.controller_removed_token);
         __x_ABI_CWindows_CGaming_CInput_CIRawGameControllerStatics_Release(wgi.statics);
     }
-    SDL_zero(wgi);
 
-    WIN_RoUninitialize();
+    if (wgi.ro_initialized) {
+        WIN_RoUninitialize();
+    }
+
+    SDL_zero(wgi);
 }
 
 static SDL_bool
