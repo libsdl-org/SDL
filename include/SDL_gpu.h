@@ -155,7 +155,7 @@ extern "C" {
 /* !!! FIXME: Enumerate physical devices. Right now this API doesn't allow it. */
 
 typedef struct SDL_GpuDevice SDL_GpuDevice;
-SDL_GpuDevice *SDL_GpuCreateDevice(const char *name);  /* `name` is for debugging, not a specific device name to access. */
+SDL_GpuDevice *SDL_GpuCreateDevice(const char *label);  /* `label` is for debugging, not a specific device name to access. */
 void SDL_GpuDestroyDevice(SDL_GpuDevice *device);
 
 /* CPU buffers live in RAM and can be accessed by the CPU. */
@@ -208,7 +208,7 @@ typedef enum SDL_GpuTextureUsage
 
 typedef struct SDL_GpuTextureDescription
 {
-    const char *name;
+    const char *label;
     SDL_GpuTextureType texture_type;
     SDL_GpuPixelFormat pixel_format;
     SDL_GpuTextureUsage usage;  /* OR SDL_GpuTextureUsage values together */
@@ -388,7 +388,7 @@ typedef enum SDL_GpuCullFace
 #define SDL_GPU_MAX_VERTEX_ATTRIBUTES 32   /* !!! FIXME: what's a sane number here? */
 typedef struct SDL_GpuPipelineDescription
 {
-    const char *name;
+    const char *label;
     SDL_GpuPrimitive primitive;
     SDL_GpuShader *vertex_shader;
     SDL_GpuShader *fragment_shader;
@@ -422,7 +422,7 @@ void SDL_GpuDestroyPipeline(SDL_GpuPipeline *pipeline);
 
 /* these make it easier to set up a Pipeline description; set the defaults (or
    start with an existing pipeline's state) then change what you like.
-   Note that the `name` and shader fields are read-only; do not modify or free them! */
+   Note that the `label` and shader fields are read-only; do not modify or free them! */
 void SDL_GpuDefaultPipelineDescription(SDL_GpuPipelineDescription *desc);
 void SDL_GpuGetPipelineDescription(SDL_GpuPipeline *pipeline, SDL_GpuPipelineDescription *desc);
 
@@ -460,7 +460,7 @@ typedef enum SDL_GpuSamplerMipFilter
 
 typedef struct SDL_GpuSamplerDescription
 {
-    const char *name;
+    const char *label;
     SDL_GpuSamplerAddressMode addrmode_u;
     SDL_GpuSamplerAddressMode addrmode_v;
     SDL_GpuSamplerAddressMode addrmode_r;
@@ -496,7 +496,7 @@ void SDL_GpuDestroySampler(SDL_GpuSampler *sampler);
  *  thread.
  */
 typedef struct SDL_GpuStateCache SDL_GpuStateCache;
-SDL_GpuStateCache *SDL_GpuCreateStateCache(const char *name, SDL_GpuDevice *device);
+SDL_GpuStateCache *SDL_GpuCreateStateCache(const char *label, SDL_GpuDevice *device);
 SDL_GpuPipeline *SDL_GpuGetCachedPipeline(SDL_GpuStateCache *cache, const SDL_GpuPipelineDescription *desc);
 SDL_GpuSampler *SDL_GpuGetCachedSampler(SDL_GpuStateCache *cache, const SDL_GpuSamplerDescription *desc);
 void SDL_GpuDestroyStateCache(SDL_GpuStateCache *cache);
@@ -519,7 +519,7 @@ void SDL_GpuDestroyStateCache(SDL_GpuStateCache *cache);
  *   etc) into the same command buffer.
  */
 typedef struct SDL_GpuCommandBuffer SDL_GpuCommandBuffer;
-SDL_GpuCommandBuffer *SDL_GpuCreateCommandBuffer(const char *name, SDL_GpuDevice *device);
+SDL_GpuCommandBuffer *SDL_GpuCreateCommandBuffer(const char *label, SDL_GpuDevice *device);
 
 
 /* RENDERING PASSES... */
@@ -557,7 +557,7 @@ typedef struct SDL_GpuStencilAttachmentDescription
 
 /* start encoding a render pass to a command buffer. You can only encode one type of pass to a command buffer at a time. End this pass to start encoding another. */
 typedef struct SDL_GpuRenderPass SDL_GpuRenderPass;
-SDL_GpuRenderPass *SDL_GpuStartRenderPass(const char *name, SDL_GpuCommandBuffer *cmdbuf,
+SDL_GpuRenderPass *SDL_GpuStartRenderPass(const char *label, SDL_GpuCommandBuffer *cmdbuf,
                             Uint32 num_color_attachments,
                             const SDL_GpuColorAttachmentDescription *color_attachments,
                             const SDL_GpuDepthAttachmentDescription *depth_attachment,
@@ -605,7 +605,7 @@ void SDL_GpuEndRenderPass(SDL_GpuRenderPass *pass);
 
 /* start encoding a blit pass to a command buffer. You can only encode one type of pass to a command buffer at a time.  End this pass to start encoding another. */
 typedef struct SDL_GpuBlitPass SDL_GpuBlitPass;
-SDL_GpuBlitPass *SDL_GpuStartBlitPass(const char *name, SDL_GpuCommandBuffer *cmdbuf);
+SDL_GpuBlitPass *SDL_GpuStartBlitPass(const char *label, SDL_GpuCommandBuffer *cmdbuf);
 void SDL_GpuCopyBetweenTextures(SDL_GpuBlitPass *pass, SDL_GpuTexture *srctex, Uint32 srcslice, Uint32 srclevel,
                                  Uint32 srcx, Uint32 srcy, Uint32 srcz,
                                  Uint32 srcw, Uint32 srch, Uint32 srcdepth,
