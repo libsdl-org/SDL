@@ -444,6 +444,29 @@ WGI_JoystickInit(void)
         return SDL_SetError("RoInitialize() failed");
     }
 
+#ifndef __WINRT__
+    {
+        /* There seems to be a bug in Windows where a dependency of WGI can be unloaded from memory prior to WGI itself.
+         * This results in Windows_Gaming_Input!GameController::~GameController() invoking an unloaded DLL and crashing.
+         * As a workaround, we will keep a reference to the MTA to prevent COM from unloading DLLs later.
+         * See https://github.com/libsdl-org/SDL/issues/5552 for more details.
+         */
+        static PVOID cookie = NULL;
+        if (!cookie) {
+            typedef HRESULT (WINAPI *CoIncrementMTAUsage_t)(PVOID* pCookie);
+            CoIncrementMTAUsage_t CoIncrementMTAUsageFunc = (CoIncrementMTAUsage_t)WIN_LoadComBaseFunction("CoIncrementMTAUsage");
+            if (CoIncrementMTAUsageFunc) {
+                if (FAILED(CoIncrementMTAUsageFunc(&cookie))) {
+                    return SDL_SetError("CoIncrementMTAUsage() failed");
+                }
+            } else {
+                /* CoIncrementMTAUsage() is present since Win8, so we should never make it here. */
+                return SDL_SetError("CoIncrementMTAUsage() not found");
+            }
+        }
+    }
+#endif
+
 #ifdef __WINRT__
     WindowsCreateStringReferenceFunc = WindowsCreateStringReference;
     RoGetActivationFactoryFunc = RoGetActivationFactory;
