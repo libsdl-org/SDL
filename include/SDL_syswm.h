@@ -86,6 +86,7 @@ struct SDL_SysWMinfo;
 #else
 typedef struct _NSWindow NSWindow;
 #endif
+typedef CGWindowID unsigned int;
 #endif
 
 #if defined(SDL_VIDEO_DRIVER_UIKIT)
@@ -270,6 +271,7 @@ struct SDL_SysWMinfo
 #else
             NSWindow *window;                     /**< The Cocoa window */
 #endif
+            CGWindowID windowNumber;              /**< The CoreGraphics Window ID */
         } cocoa;
 #endif
 #if defined(SDL_VIDEO_DRIVER_UIKIT)
