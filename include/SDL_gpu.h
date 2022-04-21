@@ -154,11 +154,12 @@ extern "C" {
 
 /* !!! FIXME: Enumerate physical devices. Right now this API doesn't allow it. */
 
-typedef struct SDL_GpuDevice *SDL_GpuDevice;
+typedef struct SDL_GpuDevice SDL_GpuDevice;
 SDL_GpuDevice *SDL_GpuCreateDevice(const char *name);  /* `name` is for debugging, not a specific device name to access. */
 void SDL_GpuDestroyDevice(SDL_GpuDevice *device);
 
 /* CPU buffers live in RAM and can be accessed by the CPU. */
+typedef struct SDL_GpuBuffer SDL_GpuBuffer;
 SDL_GpuBuffer *SDL_GpuCreateCPUBuffer(SDL_GpuDevice *device, const Uint32 buflen);
 void *SDL_GpuLockCPUBuffer(SDL_GpuBuffer *buffer, Uint32 *_buflen);
 void SDL_GpuUnlockCPUBuffer(SDL_GpuBuffer *buffer);
@@ -192,7 +193,7 @@ typedef enum SDL_GpuPixelFormat
     SDL_GPUPIXELFMT_BGRA8_sRGB,
     SDL_GPUPIXELFMT_Depth24_Stencil8
     /* !!! FIXME: some sort of YUV format to let movies stream efficiently? */
-}   /* !!! FIXME: s3tc? pvrtc? other compressed formats? We'll need a query for what's supported, and/or guarantee it with a software fallback...? */
+    /* !!! FIXME: s3tc? pvrtc? other compressed formats? We'll need a query for what's supported, and/or guarantee it with a software fallback...? */
 } SDL_GpuPixelFormat;
 
 /* you can specify multiple values OR'd together for texture usage, for example if you are going to render to it and then later
@@ -217,10 +218,12 @@ typedef struct SDL_GpuTextureDescription
     Uint32 mipmap_levels;
 } SDL_GpuTextureDescription;
 
+typedef struct SDL_GpuTexture SDL_GpuTexture;
 SDL_GpuTexture *SDL_GpuCreateTexture(SDL_GpuDevice *device, const SDL_GpuTextureDescription *desc);
 void SDL_GpuDestroyTexture(SDL_GpuTexture *texture);
 
 /* compiling shaders is a different (and optional at runtime) piece, in SDL_gpu_compiler.h */
+typedef struct SDL_GpuShader SDL_GpuShader;
 SDL_GpuShader *SDL_GpuLoadShader(SDL_GpuDevice *device, const Uint8 *bytecode, const Uint32 bytecodelen);
 void SDL_GpuDestroyShader(SDL_GpuShader *shader);
 
@@ -263,6 +266,7 @@ typedef enum SDL_GpuBlendFactor
     SDL_GPUBLENDFACTOR_ONEMINUSSOURCE1ALPHA
 } SDL_GpuBlendFactor;
 
+/* !!! FIXME: let's call this something else. */
 typedef struct SDL_GpuPipelineColorAttachmentDescription
 {
     SDL_GpuPixelFormat pixel_format;
@@ -277,7 +281,7 @@ typedef struct SDL_GpuPipelineColorAttachmentDescription
     SDL_GpuBlendOperation rgb_blend_op;
     SDL_GpuBlendFactor rgb_src_blend_factor;
     SDL_GpuBlendFactor rgb_dst_blend_factor;
-} SDL_GpuColorAttachmentDescription;
+} SDL_GpuPipelineColorAttachmentDescription;
 
 typedef enum SDL_GpuVertexFormat
 {
@@ -389,9 +393,9 @@ typedef struct SDL_GpuPipelineDescription
     SDL_GpuShader *vertex_shader;
     SDL_GpuShader *fragment_shader;
     Uint32 num_vertex_attributes;
-    SDL_GpuVertexAttributeDescription[SDL_GPU_MAX_VERTEX_ATTRIBUTES];  /* !!! FIXME: maybe don't hardcode a static array? */
+    SDL_GpuVertexAttributeDescription vertices[SDL_GPU_MAX_VERTEX_ATTRIBUTES];  /* !!! FIXME: maybe don't hardcode a static array? */
     Uint32 num_color_attachments;
-    SDL_GpuPipelineColorAttachmentDescription[SDL_GPU_MAX_COLOR_ATTACHMENTS];  /* !!! FIXME: maybe don't hardcode a static array? */
+    SDL_GpuPipelineColorAttachmentDescription color_attachments[SDL_GPU_MAX_COLOR_ATTACHMENTS];  /* !!! FIXME: maybe don't hardcode a static array? */
     SDL_GpuPixelFormat depth_format;
     SDL_GpuPixelFormat stencil_format;
     SDL_bool depth_write_enabled;
@@ -417,7 +421,8 @@ SDL_GpuPipeline *SDL_GpuCreatePipeline(SDL_GpuDevice *device, const SDL_GpuPipel
 void SDL_GpuDestroyPipeline(SDL_GpuPipeline *pipeline);
 
 /* these make it easier to set up a Pipeline description; set the defaults (or
-   start with an existing pipeline's state) then change what you like. */
+   start with an existing pipeline's state) then change what you like.
+   Note that the `name` and shader fields are read-only; do not modify or free them! */
 void SDL_GpuDefaultPipelineDescription(SDL_GpuPipelineDescription *desc);
 void SDL_GpuGetPipelineDescription(SDL_GpuPipeline *pipeline, SDL_GpuPipelineDescription *desc);
 
@@ -481,6 +486,14 @@ void SDL_GpuDestroySampler(SDL_GpuSampler *sampler);
  *  or create/cache a new one as needed. You can have multiple caches, so as
  *  to group related states together. You can then dump all the states at
  *  once, perhaps on level load, by deleting a specific cache.
+ *
+ * You do not own objects in these caches; do not destroy them directly. They
+ *  will be destroyed when their owning cache is destroyed.
+ *
+ * Thread safety: each type of cache (pipeline, sampler) has its own internal
+ *  mutex, which it locks during SDL_GpuGetCached* calls. It is not safe to
+ *  call SDL_GpuDestroyStateCache while that cache is being used by another
+ *  thread.
  */
 typedef struct SDL_GpuStateCache SDL_GpuStateCache;
 SDL_GpuStateCache *SDL_GpuCreateStateCache(const char *name, SDL_GpuDevice *device);
@@ -540,11 +553,11 @@ typedef struct SDL_GpuStencilAttachmentDescription
     SDL_GpuTexture *texture;   /* MUST be created with render target support! */
     SDL_GpuPassInit stencil_init;
     Uint32 clear_stencil;
-} SDL_GpuDepthAttachmentDescription;
+} SDL_GpuStencilAttachmentDescription;
 
 /* start encoding a render pass to a command buffer. You can only encode one type of pass to a command buffer at a time. End this pass to start encoding another. */
+typedef struct SDL_GpuRenderPass SDL_GpuRenderPass;
 SDL_GpuRenderPass *SDL_GpuStartRenderPass(const char *name, SDL_GpuCommandBuffer *cmdbuf,
-                            SDL_GpuPipeline *initial_pipeline,
                             Uint32 num_color_attachments,
                             const SDL_GpuColorAttachmentDescription *color_attachments,
                             const SDL_GpuDepthAttachmentDescription *depth_attachment,
@@ -591,6 +604,7 @@ void SDL_GpuDrawInstancedIndexed(SDL_GpuRenderPass *pass, Uint32 index_count, SD
 void SDL_GpuEndRenderPass(SDL_GpuRenderPass *pass);
 
 /* start encoding a blit pass to a command buffer. You can only encode one type of pass to a command buffer at a time.  End this pass to start encoding another. */
+typedef struct SDL_GpuBlitPass SDL_GpuBlitPass;
 SDL_GpuBlitPass *SDL_GpuStartBlitPass(const char *name, SDL_GpuCommandBuffer *cmdbuf);
 void SDL_GpuCopyBetweenTextures(SDL_GpuBlitPass *pass, SDL_GpuTexture *srctex, Uint32 srcslice, Uint32 srclevel,
                                  Uint32 srcx, Uint32 srcy, Uint32 srcz,
