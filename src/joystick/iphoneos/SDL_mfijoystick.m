@@ -330,6 +330,19 @@ IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controlle
             subtype = 1;
         }
 
+        if (SDL_strcmp(name, "Backbone One") == 0) {
+            /* The Backbone app uses the guide and share buttons */
+            if ((device->button_mask & (1 << SDL_CONTROLLER_BUTTON_GUIDE)) != 0) {
+                device->button_mask &= ~(1 << SDL_CONTROLLER_BUTTON_GUIDE);
+                --nbuttons;
+            }
+            if ((device->button_mask & (1 << SDL_CONTROLLER_BUTTON_MISC1)) != 0) {
+                device->button_mask &= ~(1 << SDL_CONTROLLER_BUTTON_MISC1);
+                --nbuttons;
+                device->has_xbox_share_button = SDL_FALSE;
+            }
+        }
+
         device->naxes = 6; /* 2 thumbsticks and 2 triggers */
         device->nhats = 1; /* d-pad */
         device->nbuttons = nbuttons;
