@@ -1322,8 +1322,10 @@ RAWINPUT_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint
         if (!SUCCEEDED(hr)) {
             return SDL_SetError("Setting vibration failed: 0x%lx\n", hr);
         }
+        return 0:
+    } else {
+        return SDL_SetError("Controller isn't correlated yet, try hitting a button first");
     }
-    return 0;
 #else
     return SDL_Unsupported();
 #endif
