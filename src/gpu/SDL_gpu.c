@@ -68,6 +68,11 @@ SDL_GpuCreateTexture(SDL_GpuDevice *device, const SDL_GpuTextureDescription *des
 }
 
 void
+SDL_GpuGetTextureDescription(SDL_GpuTexture *texture, SDL_GpuTextureDescription *desc)
+{
+}
+
+void
 SDL_GpuDestroyTexture(SDL_GpuTexture *texture)
 {
 }

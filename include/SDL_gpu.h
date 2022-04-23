@@ -221,6 +221,7 @@ typedef struct SDL_GpuTextureDescription
 typedef struct SDL_GpuTexture SDL_GpuTexture;
 SDL_GpuTexture *SDL_GpuCreateTexture(SDL_GpuDevice *device, const SDL_GpuTextureDescription *desc);
 void SDL_GpuDestroyTexture(SDL_GpuTexture *texture);
+void SDL_GpuGetTextureDescription(SDL_GpuTexture *texture, SDL_GpuTextureDescription *desc);
 
 /* compiling shaders is a different (and optional at runtime) piece, in SDL_gpu_compiler.h */
 typedef struct SDL_GpuShader SDL_GpuShader;
