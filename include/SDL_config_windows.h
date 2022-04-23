@@ -38,6 +38,18 @@
 #include <winsdkver.h>
 #endif
 
+/* sdkddkver.h defines more specific SDK version numbers. This is needed because older versions of the
+ * Windows 10 SDK have broken declarations for the C API for DirectX 12. */
+#if !defined(HAVE_SDKDDKVER_H) && defined(__has_include)
+#if __has_include(<sdkddkver.h>)
+#define HAVE_SDKDDKVER_H 1
+#endif
+#endif
+
+#ifdef HAVE_SDKDDKVER_H
+#include <sdkddkver.h>
+#endif
+
 /* This is a set of defines to configure the SDL features */
 
 #if !defined(_STDINT_H_) && (!defined(HAVE_STDINT_H) || !_HAVE_STDINT_H)
@@ -105,6 +117,9 @@ typedef unsigned int uintptr_t;
 #if defined(_WIN32_MAXVER) && _WIN32_MAXVER >= 0x0602  /* Windows 8 SDK */
 #define HAVE_D3D11_H 1
 #define HAVE_ROAPI_H 1
+#endif
+#if defined(WDK_NTDDI_VERSION) && WDK_NTDDI_VERSION > 0x0A000008 /* 10.0.19041.0 */
+#define HAVE_D3D12_H 1
 #endif
 #define HAVE_MMDEVICEAPI_H 1
 #define HAVE_AUDIOCLIENT_H 1
@@ -269,6 +284,9 @@ typedef unsigned int uintptr_t;
 #endif
 #if !defined(SDL_VIDEO_RENDER_D3D11) && defined(HAVE_D3D11_H)
 #define SDL_VIDEO_RENDER_D3D11  1
+#endif
+#if !defined(SDL_VIDEO_RENDER_D3D12) && defined(HAVE_D3D12_H)
+#define SDL_VIDEO_RENDER_D3D12  1
 #endif
 
 /* Enable OpenGL support */

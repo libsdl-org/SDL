@@ -856,6 +856,7 @@ SDL_DYNAPI_PROC(long,SDL_lroundf,(float a),(a),return)
 SDL_DYNAPI_PROC(int,SDL_SoftStretchLinear,(SDL_Surface *a, const SDL_Rect *b, SDL_Surface *c, const SDL_Rect *d),(a,b,c,d),return)
 #ifdef __WIN32__
 SDL_DYNAPI_PROC(ID3D11Device*,SDL_RenderGetD3D11Device,(SDL_Renderer *a),(a),return)
+SDL_DYNAPI_PROC(ID3D12Device*,SDL_RenderGetD3D12Device,(SDL_Renderer *a),(a),return)
 #endif
 SDL_DYNAPI_PROC(int,SDL_UpdateNVTexture,(SDL_Texture *a, const SDL_Rect *b, const Uint8 *c, int d, const Uint8 *e, int f),(a,b,c,d,e,f),return)
 SDL_DYNAPI_PROC(void,SDL_SetWindowKeyboardGrab,(SDL_Window *a, SDL_bool b),(a,b),)

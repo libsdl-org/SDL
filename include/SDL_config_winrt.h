@@ -249,6 +249,9 @@ typedef unsigned int uintptr_t;
 /* Enable appropriate renderer(s) */
 #define SDL_VIDEO_RENDER_D3D11  1
 
+/* Disable D3D12 as it's not implemented for WinRT */
+#define SDL_VIDEO_RENDER_D3D12  0
+
 #if SDL_VIDEO_OPENGL_ES2
 #define SDL_VIDEO_RENDER_OGL_ES2 1
 #endif
