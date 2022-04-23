@@ -95,7 +95,7 @@ static SDL_bool render(void)
     color_desc.clear_alpha = 1.0f;
 
     pass = SDL_GpuStartRenderPass("just-clear-the-screen render pass", cmd, 1, &color_desc, NULL, NULL);
-    if (!cmd) {
+    if (!pass) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_GpuStartRenderPass(): %s\n", SDL_GetError());
         quit(2);
     }
