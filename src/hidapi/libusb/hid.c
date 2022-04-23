@@ -1497,6 +1497,7 @@ void HID_API_EXPORT hid_close(hid_device *dev)
 
 	/* Clean up the Transfer objects allocated in read_thread(). */
 	free(dev->transfer->buffer);
+	dev->transfer->buffer = NULL;
 	libusb_free_transfer(dev->transfer);
 
 	/* release the interface */
