@@ -25,8 +25,9 @@
 #include "SDL.h"
 #include "SDL_sysgpu.h"
 
+/* !!! FIXME: change this API to allow selection of a specific GPU? */
 SDL_GpuDevice *
-SDL_GpuCreateDevice(const char *label)
+SDL_GpuCreateDevice(const char *label, SDL_Window *window)
 {
 }
 

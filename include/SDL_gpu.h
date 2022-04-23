@@ -155,7 +155,7 @@ extern "C" {
 /* !!! FIXME: Enumerate physical devices. Right now this API doesn't allow it. */
 
 typedef struct SDL_GpuDevice SDL_GpuDevice;
-SDL_GpuDevice *SDL_GpuCreateDevice(const char *label);  /* `label` is for debugging, not a specific device name to access. */
+SDL_GpuDevice *SDL_GpuCreateDevice(const char *label, SDL_Window *window);  /* `label` is for debugging, not a specific device name to access. */
 void SDL_GpuDestroyDevice(SDL_GpuDevice *device);
 
 /* CPU buffers live in RAM and can be accessed by the CPU. */
