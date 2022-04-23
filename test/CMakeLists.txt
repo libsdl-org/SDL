@@ -360,6 +360,7 @@ add_sdl_test_executable(testcustomcursor SOURCES testcustomcursor.c)
 add_sdl_test_executable(testvulkan NO_C90 SOURCES testvulkan.c)
 add_sdl_test_executable(testoffscreen SOURCES testoffscreen.c)
 add_sdl_test_executable(testpopup SOURCES testpopup.c)
+add_sdl_test_executable(testgpu_simple_clear TESTUTILS SOURCES testgpu_simple_clear.c)
 
 check_c_compiler_flag(-Wformat-overflow HAVE_WFORMAT_OVERFLOW)
 if(HAVE_WFORMAT_OVERFLOW)
