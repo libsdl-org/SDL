@@ -1230,6 +1230,13 @@ GL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
         }
     }
 
+#ifdef __MACOSX__
+    // On macOS on older systems, the OpenGL view change and resize events aren't
+    // necessarily synchronized, so just always reset it.
+    // Workaround for: https://discourse.libsdl.org/t/sdl-2-0-22-prerelease/35306/6
+    data->drawstate.viewport_dirty = SDL_TRUE;
+#endif
+
     while (cmd) {
         switch (cmd->command) {
             case SDL_RENDERCMD_SETDRAWCOLOR: {
