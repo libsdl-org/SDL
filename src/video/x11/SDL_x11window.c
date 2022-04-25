@@ -222,7 +222,7 @@ X11_GetNetWMState(_THIS, Window xwindow)
         }
 
         if (fullscreen == 1) {
-            flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+            flags |= SDL_WINDOW_FULLSCREEN;
         }
 
         /* If the window is unmapped, numItems will be zero and _NET_WM_STATE_HIDDEN

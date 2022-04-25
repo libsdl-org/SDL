@@ -1450,17 +1450,6 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
                     }
                 }
 
-                /* FULLSCREEN_DESKTOP encompasses two bits: SDL_WINDOW_FULLSCREEN, plus a bit to note it's FULLSCREEN_DESKTOP */
-                if (changed & SDL_WINDOW_FULLSCREEN_DESKTOP) {
-                    SDL_VideoDisplay *viddisplay = SDL_GetDisplayForWindow(data->window);
-                    const Uint32 fsmasked = flags & SDL_WINDOW_FULLSCREEN_DESKTOP;
-                    data->window->flags &= ~SDL_WINDOW_FULLSCREEN_DESKTOP;
-                    data->window->flags |= fsmasked;
-                    if (viddisplay) {
-                        viddisplay->fullscreen_window = fsmasked ? data->window : NULL;
-                    }
-                }
-
                 if (changed & SDL_WINDOW_MAXIMIZED) {
                     if (flags & SDL_WINDOW_MAXIMIZED) {
                         SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_MAXIMIZED, 0, 0);
