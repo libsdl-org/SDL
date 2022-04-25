@@ -2197,6 +2197,36 @@ Cocoa_GetWindowICCProfile(_THIS, SDL_Window * window, size_t * size)
     return retIccProfileData;
 }
 
+int Cocoa_GetWindowDisplayIndex(_THIS, SDL_Window * window){
+    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+
+    /* Not recognized via CHECK_WINDOW_MAGIC */
+    if (data == NULL){
+        return 0;
+    }
+
+    /*
+     Considering that we already have the display coordinates in which the window is placed (described via displayframe)
+     instead of checking in which display the window is placed, we should check which SDL display matches the display described
+     via displayframe.
+    */
+    CGRect displayframe = data->nswindow.screen.frame;
+    SDL_Point display_center;
+    SDL_Rect sdl_display_rect;
+    
+    display_center.x = displayframe.origin.x + displayframe.size.width / 2;
+    display_center.y = displayframe.origin.y + displayframe.size.height / 2;
+    
+    for (int i = 0; i < SDL_GetNumVideoDisplays(); i++){
+        SDL_GetDisplayBounds(i, &sdl_display_rect);
+        if (SDL_EnclosePoints(&display_center, 1, &sdl_display_rect, NULL)) {
+            return i;
+        }
+    }
+    SDL_SetError("Couldn't find the display where the window is attached to.");
+    return -1;
+}
+
 int
 Cocoa_GetWindowGammaRamp(_THIS, SDL_Window * window, Uint16 * ramp)
 {

@@ -1060,61 +1060,64 @@ SDL_GetDisplay(int displayIndex)
 int
 SDL_GetWindowDisplayIndex(SDL_Window * window)
 {
-    int displayIndex;
-    int i, dist;
-    int closest = -1;
-    int closest_dist = 0x7FFFFFFF;
-    SDL_Point center;
-    SDL_Point delta;
-    SDL_Rect rect;
-
     CHECK_WINDOW_MAGIC(window, -1);
+    if (_this->GetWindowDisplayIndex) {
+        return _this->GetWindowDisplayIndex(_this, window);
+    } else {
+        int displayIndex;
+        int i, dist;
+        int closest = -1;
+        int closest_dist = 0x7FFFFFFF;
+        SDL_Point center;
+        SDL_Point delta;
+        SDL_Rect rect;
 
-    if (SDL_WINDOWPOS_ISUNDEFINED(window->x) ||
-        SDL_WINDOWPOS_ISCENTERED(window->x)) {
-        displayIndex = (window->x & 0xFFFF);
-        if (displayIndex >= _this->num_displays) {
-            displayIndex = 0;
+        if (SDL_WINDOWPOS_ISUNDEFINED(window->x) ||
+            SDL_WINDOWPOS_ISCENTERED(window->x)) {
+            displayIndex = (window->x & 0xFFFF);
+            if (displayIndex >= _this->num_displays) {
+                displayIndex = 0;
+            }
+            return displayIndex;
         }
-        return displayIndex;
-    }
-    if (SDL_WINDOWPOS_ISUNDEFINED(window->y) ||
-        SDL_WINDOWPOS_ISCENTERED(window->y)) {
-        displayIndex = (window->y & 0xFFFF);
-        if (displayIndex >= _this->num_displays) {
-            displayIndex = 0;
-        }
-        return displayIndex;
-    }
-
-    /* Find the display containing the window */
-    for (i = 0; i < _this->num_displays; ++i) {
-        SDL_VideoDisplay *display = &_this->displays[i];
-
-        if (display->fullscreen_window == window) {
-            return i;
-        }
-    }
-    center.x = window->x + window->w / 2;
-    center.y = window->y + window->h / 2;
-    for (i = 0; i < _this->num_displays; ++i) {
-        SDL_GetDisplayBounds(i, &rect);
-        if (SDL_EnclosePoints(&center, 1, &rect, NULL)) {
-            return i;
+        if (SDL_WINDOWPOS_ISUNDEFINED(window->y) ||
+            SDL_WINDOWPOS_ISCENTERED(window->y)) {
+            displayIndex = (window->y & 0xFFFF);
+            if (displayIndex >= _this->num_displays) {
+                displayIndex = 0;
+            }
+            return displayIndex;
         }
 
-        delta.x = center.x - (rect.x + rect.w / 2);
-        delta.y = center.y - (rect.y + rect.h / 2);
-        dist = (delta.x*delta.x + delta.y*delta.y);
-        if (dist < closest_dist) {
-            closest = i;
-            closest_dist = dist;
+        /* Find the display containing the window */
+        for (i = 0; i < _this->num_displays; ++i) {
+            SDL_VideoDisplay *display = &_this->displays[i];
+
+            if (display->fullscreen_window == window) {
+                return i;
+            }
         }
+        center.x = window->x + window->w / 2;
+        center.y = window->y + window->h / 2;
+        for (i = 0; i < _this->num_displays; ++i) {
+            SDL_GetDisplayBounds(i, &rect);
+            if (SDL_EnclosePoints(&center, 1, &rect, NULL)) {
+                return i;
+            }
+
+            delta.x = center.x - (rect.x + rect.w / 2);
+            delta.y = center.y - (rect.y + rect.h / 2);
+            dist = (delta.x*delta.x + delta.y*delta.y);
+            if (dist < closest_dist) {
+                closest = i;
+                closest_dist = dist;
+            }
+        }
+        if (closest < 0) {
+            SDL_SetError("Couldn't find any displays");
+        }
+        return closest;
     }
-    if (closest < 0) {
-        SDL_SetError("Couldn't find any displays");
-    }
-    return closest;
 }
 
 SDL_VideoDisplay *
