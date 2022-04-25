@@ -103,6 +103,7 @@ Cocoa_CreateDevice(int devindex)
     device->SetWindowGammaRamp = Cocoa_SetWindowGammaRamp;
     device->GetWindowGammaRamp = Cocoa_GetWindowGammaRamp;
     device->GetWindowICCProfile = Cocoa_GetWindowICCProfile;
+    device->GetWindowDisplayIndex = Cocoa_GetWindowDisplayIndex;
     device->SetWindowMouseRect = Cocoa_SetWindowMouseRect;
     device->SetWindowMouseGrab = Cocoa_SetWindowMouseGrab;
     device->SetWindowKeyboardGrab = Cocoa_SetWindowKeyboardGrab;
