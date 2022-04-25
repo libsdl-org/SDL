@@ -936,3 +936,4 @@ SDL_DYNAPI_PROC(void,SDL_UnionFRect,(const SDL_FRect *a, const SDL_FRect *b, SDL
 SDL_DYNAPI_PROC(SDL_bool,SDL_EncloseFPoints,(const SDL_FPoint *a, int b, const SDL_FRect *c, SDL_FRect *d),(a,b,c,d),return)
 SDL_DYNAPI_PROC(SDL_bool,SDL_IntersectFRectAndLine,(const SDL_FRect *a, float *b, float *c, float *d, float *e),(a,b,c,d,e),return)
 SDL_DYNAPI_PROC(SDL_Window*,SDL_RenderGetWindow,(SDL_Renderer *a),(a),return)
+SDL_DYNAPI_PROC(void*,SDL_bsearch,(const void *a, const void *b, size_t c, size_t d, int (*e)(const void *, const void *)),(a,b,c,d,e),return)

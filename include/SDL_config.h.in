@@ -92,6 +92,7 @@
 #undef HAVE_UNSETENV
 #endif
 #undef HAVE_QSORT
+#undef HAVE_BSEARCH
 #undef HAVE_ABS
 #undef HAVE_BCOPY
 #undef HAVE_MEMSET

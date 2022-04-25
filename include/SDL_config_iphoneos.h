@@ -60,6 +60,7 @@
 #define HAVE_SETENV 1
 #define HAVE_UNSETENV   1
 #define HAVE_QSORT  1
+#define HAVE_BSEARCH 1
 #define HAVE_ABS    1
 #define HAVE_BCOPY  1
 #define HAVE_MEMSET 1
@@ -117,7 +118,7 @@
 #define HAVE_LROUNDF 1
 #define HAVE_POW    1
 #define HAVE_POWF   1
-#define HAVE_ROUND 1
+#define HAVE_ROUND  1
 #define HAVE_ROUNDF 1
 #define HAVE_SCALBN 1
 #define HAVE_SCALBNF    1
