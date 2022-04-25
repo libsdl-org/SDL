@@ -11,7 +11,7 @@
 # wmake -f Makefile.os2 HIDAPI=1
 
 LIBNAME = SDL2
-VERSION = 2.0.22
+VERSION = 2.0.23
 DESCRIPTION = Simple DirectMedia Layer 2
 
 LIBICONV=0
