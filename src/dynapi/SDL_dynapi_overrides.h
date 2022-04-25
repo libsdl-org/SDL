@@ -865,3 +865,4 @@
 #define SDL_EncloseFPoints SDL_EncloseFPoints_REAL
 #define SDL_IntersectFRectAndLine SDL_IntersectFRectAndLine_REAL
 #define SDL_RenderGetWindow SDL_RenderGetWindow_REAL
+#define SDL_bsearch SDL_bsearch_REAL

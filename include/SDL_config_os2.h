@@ -106,6 +106,7 @@
 #define HAVE_SETENV 1
 #define HAVE_PUTENV 1
 #define HAVE_QSORT 1
+#define HAVE_BSEARCH 1
 #define HAVE_ABS 1
 #define HAVE_BCOPY 1
 #define HAVE_MEMSET 1
