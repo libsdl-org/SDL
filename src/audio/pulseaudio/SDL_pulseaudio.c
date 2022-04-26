@@ -107,8 +107,6 @@ static int (*PULSEAUDIO_pa_stream_connect_record) (pa_stream *, const char *,
 static pa_stream_state_t (*PULSEAUDIO_pa_stream_get_state) (const pa_stream *);
 static size_t (*PULSEAUDIO_pa_stream_writable_size) (const pa_stream *);
 static size_t (*PULSEAUDIO_pa_stream_readable_size) (const pa_stream *);
-static int (*PULSEAUDIO_pa_stream_begin_write) (pa_stream *, void **, size_t*);
-static int (*PULSEAUDIO_pa_stream_cancel_write) (pa_stream *);
 static int (*PULSEAUDIO_pa_stream_write) (pa_stream *, const void *, size_t,
     pa_free_cb_t, int64_t, pa_seek_mode_t);
 static pa_operation * (*PULSEAUDIO_pa_stream_drain) (pa_stream *,
@@ -119,6 +117,7 @@ static pa_operation * (*PULSEAUDIO_pa_stream_flush) (pa_stream *,
     pa_stream_success_cb_t, void *);
 static int (*PULSEAUDIO_pa_stream_disconnect) (pa_stream *);
 static void (*PULSEAUDIO_pa_stream_unref) (pa_stream *);
+static void (*PULSEAUDIO_pa_stream_set_write_callback)(pa_stream *, pa_stream_request_cb_t, void *);
 
 static int load_pulseaudio_syms(void);
 
@@ -222,8 +221,6 @@ load_pulseaudio_syms(void)
     SDL_PULSEAUDIO_SYM(pa_stream_writable_size);
     SDL_PULSEAUDIO_SYM(pa_stream_readable_size);
     SDL_PULSEAUDIO_SYM(pa_stream_write);
-    SDL_PULSEAUDIO_SYM(pa_stream_begin_write);
-    SDL_PULSEAUDIO_SYM(pa_stream_cancel_write);
     SDL_PULSEAUDIO_SYM(pa_stream_drain);
     SDL_PULSEAUDIO_SYM(pa_stream_disconnect);
     SDL_PULSEAUDIO_SYM(pa_stream_peek);
@@ -232,6 +229,7 @@ load_pulseaudio_syms(void)
     SDL_PULSEAUDIO_SYM(pa_stream_unref);
     SDL_PULSEAUDIO_SYM(pa_channel_map_init_auto);
     SDL_PULSEAUDIO_SYM(pa_strerror);
+    SDL_PULSEAUDIO_SYM(pa_stream_set_write_callback);
     return 0;
 }
 
@@ -359,51 +357,56 @@ ConnectToPulseServer(pa_mainloop **_mainloop, pa_context **_context)
 static void
 PULSEAUDIO_WaitDevice(_THIS)
 {
-    struct SDL_PrivateAudioData *h = this->hidden;
+    /* this is a no-op; we wait in PULSEAUDIO_PlayDevice now. */
+}
 
-    while (SDL_AtomicGet(&this->enabled)) {
+static void WriteCallback(pa_stream *p, size_t nbytes, void *userdata)
+{
+    struct SDL_PrivateAudioData *h = (struct SDL_PrivateAudioData *) userdata;
+    /*printf("PULSEAUDIO WRITE CALLBACK! nbytes=%u\n", (unsigned int) nbytes);*/
+    h->bytes_requested += nbytes;
+}
+
+static void
+PULSEAUDIO_PlayDevice(_THIS)
+{
+    struct SDL_PrivateAudioData *h = this->hidden;
+    int available = h->mixlen;
+    int written = 0;
+    int cpy;
+
+    /*printf("PULSEAUDIO PLAYDEVICE START! mixlen=%d\n", available);*/
+
+    while (SDL_AtomicGet(&this->enabled) && (available > 0)) {
+        cpy = SDL_min(h->bytes_requested, available);
+        if (cpy) {
+            if (PULSEAUDIO_pa_stream_write(h->stream, h->mixbuf + written, cpy, NULL, 0LL, PA_SEEK_RELATIVE) < 0) {
+                SDL_OpenedAudioDeviceDisconnected(this);
+                return;
+            }
+            /*printf("PULSEAUDIO FEED! nbytes=%u\n", (unsigned int) cpy);*/
+            h->bytes_requested -= cpy;
+            written += cpy;
+            available -= cpy;
+        }
+
+        /* let WriteCallback fire if necessary. */
+        /*printf("PULSEAUDIO ITERATE!\n");*/
         if (PULSEAUDIO_pa_context_get_state(h->context) != PA_CONTEXT_READY ||
             PULSEAUDIO_pa_stream_get_state(h->stream) != PA_STREAM_READY ||
             PULSEAUDIO_pa_mainloop_iterate(h->mainloop, 1, NULL) < 0) {
             SDL_OpenedAudioDeviceDisconnected(this);
             return;
         }
-        if (PULSEAUDIO_pa_stream_writable_size(h->stream) >= (h->mixlen/8)) {
-            return;
-        }
     }
-}
 
-static void
-PULSEAUDIO_PlayDevice(_THIS)
-{
-    /* Write the audio data */
-    struct SDL_PrivateAudioData *h = this->hidden;
-    if (SDL_AtomicGet(&this->enabled)) {
-        if (PULSEAUDIO_pa_stream_write(h->stream, h->pabuf, h->mixlen, NULL, 0LL, PA_SEEK_RELATIVE) < 0) {
-            SDL_OpenedAudioDeviceDisconnected(this);
-        }
-    }
+    /*printf("PULSEAUDIO PLAYDEVICE END! written=%d\n", written);*/
 }
 
 static Uint8 *
 PULSEAUDIO_GetDeviceBuf(_THIS)
 {
-    struct SDL_PrivateAudioData *h = this->hidden;
-    size_t nbytes = h->mixlen;
-    int ret;
-
-    ret = PULSEAUDIO_pa_stream_begin_write(h->stream, &h->pabuf, &nbytes);
-
-    if (ret != 0) {
-        /* fall back it intermediate buffer */
-        h->pabuf = h->mixbuf;
-    } else if (nbytes < h->mixlen) {
-        PULSEAUDIO_pa_stream_cancel_write(h->stream);
-        h->pabuf = h->mixbuf;
-    }
-
-    return (Uint8 *)h->pabuf;
+    return this->hidden->mixbuf;
 }
 
 
@@ -604,9 +607,6 @@ PULSEAUDIO_OpenDevice(_THIS, const char *devname)
     paspec.format = format;
 
     /* Calculate the final parameters for this audio specification */
-#ifdef PA_STREAM_ADJUST_LATENCY
-    this->spec.samples /= 2; /* Mix in smaller chunck to avoid underruns */
-#endif
     SDL_CalculateAudioSpec(&this->spec);
 
     /* Allocate mixing buffer */
@@ -623,22 +623,12 @@ PULSEAUDIO_OpenDevice(_THIS, const char *devname)
     paspec.rate = this->spec.freq;
 
     /* Reduced prebuffering compared to the defaults. */
-#ifdef PA_STREAM_ADJUST_LATENCY
     paattr.fragsize = this->spec.size;
-    /* 2x original requested bufsize */
-    paattr.tlength = h->mixlen * 4;
+    paattr.tlength = h->mixlen;
     paattr.prebuf = -1;
     paattr.maxlength = -1;
-    /* -1 can lead to pa_stream_writable_size() >= mixlen never being true */
-    paattr.minreq = h->mixlen;
-    flags = PA_STREAM_ADJUST_LATENCY;
-#else
-    paattr.fragsize = this->spec.size;
-    paattr.tlength = h->mixlen*2;
-    paattr.prebuf = h->mixlen*2;
-    paattr.maxlength = h->mixlen*2;
-    paattr.minreq = h->mixlen;
-#endif
+    paattr.minreq = -1;
+    flags |= PA_STREAM_ADJUST_LATENCY;
 
     if (ConnectToPulseServer(&h->mainloop, &h->context) < 0) {
         return SDL_SetError("Could not connect to PulseAudio server");
@@ -675,6 +665,7 @@ PULSEAUDIO_OpenDevice(_THIS, const char *devname)
     if (iscapture) {
         rc = PULSEAUDIO_pa_stream_connect_record(h->stream, h->device_name, &paattr, flags);
     } else {
+        PULSEAUDIO_pa_stream_set_write_callback(h->stream, WriteCallback, h);
         rc = PULSEAUDIO_pa_stream_connect_playback(h->stream, h->device_name, &paattr, flags, NULL, NULL);
     }
 
