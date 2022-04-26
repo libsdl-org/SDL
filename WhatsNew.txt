@@ -2,6 +2,14 @@
 This is a list of major changes in SDL's version history.
 
 ---------------------------------------------------------------------------
+2.0.24:
+---------------------------------------------------------------------------
+
+General:
+* Added SDL_bsearch() to the stdlib routines
+* Added joystick event SDL_JOYBATTERYUPDATED for when battery status changes.
+
+---------------------------------------------------------------------------
 2.0.22:
 ---------------------------------------------------------------------------
 
