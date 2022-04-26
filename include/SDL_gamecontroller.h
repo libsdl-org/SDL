@@ -290,6 +290,25 @@ extern DECLSPEC SDL_bool SDLCALL SDL_IsGameController(int joystick_index);
 extern DECLSPEC const char *SDLCALL SDL_GameControllerNameForIndex(int joystick_index);
 
 /**
+ * Get the implementation dependent path for the game controller.
+ *
+ * This function can be called before any controllers are opened.
+ *
+ * `joystick_index` is the same as the `device_index` passed to
+ * SDL_JoystickOpen().
+ *
+ * \param joystick_index the device_index of a device, from zero to
+ *                       SDL_NumJoysticks()-1
+ * \returns the implementation-dependent path for the game controller, or NULL
+ *          if there is no path or the index is invalid.
+ *
+ * \since This function is available since SDL 2.0.24.
+ *
+ * \sa SDL_GameControllerPath
+ */
+extern DECLSPEC const char *SDLCALL SDL_GameControllerPathForIndex(int joystick_index);
+
+/**
  * Get the type of a game controller.
  *
  * This can be called before any controllers are opened.
@@ -385,6 +404,23 @@ extern DECLSPEC SDL_GameController *SDLCALL SDL_GameControllerFromPlayerIndex(in
  * \sa SDL_GameControllerOpen
  */
 extern DECLSPEC const char *SDLCALL SDL_GameControllerName(SDL_GameController *gamecontroller);
+
+/**
+ * Get the implementation-dependent path for an opened game controller.
+ *
+ * This is the same path as returned by SDL_GameControllerNameForIndex(), but
+ * it takes a controller identifier instead of the (unstable) device index.
+ *
+ * \param gamecontroller a game controller identifier previously returned by
+ *                       SDL_GameControllerOpen()
+ * \returns the implementation dependent path for the game controller, or NULL
+ *          if there is no path or the identifier passed is invalid.
+ *
+ * \since This function is available since SDL 2.0.24.
+ *
+ * \sa SDL_GameControllerPathForIndex
+ */
+extern DECLSPEC const char *SDLCALL SDL_GameControllerPath(SDL_GameController *gamecontroller);
 
 /**
  * Get the type of this currently opened controller

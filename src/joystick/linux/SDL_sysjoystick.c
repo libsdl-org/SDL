@@ -854,11 +854,16 @@ JoystickByDevIndex(int device_index)
     return item;
 }
 
-/* Function to get the device-dependent name of a joystick */
 static const char *
 LINUX_JoystickGetDeviceName(int device_index)
 {
     return JoystickByDevIndex(device_index)->name;
+}
+
+static const char *
+LINUX_JoystickGetDevicePath(int device_index)
+{
+    return JoystickByDevIndex(device_index)->path;
 }
 
 static int
@@ -1846,6 +1851,7 @@ SDL_JoystickDriver SDL_LINUX_JoystickDriver =
     LINUX_JoystickGetCount,
     LINUX_JoystickDetect,
     LINUX_JoystickGetDeviceName,
+    LINUX_JoystickGetDevicePath,
     LINUX_JoystickGetDevicePlayerIndex,
     LINUX_JoystickSetDevicePlayerIndex,
     LINUX_JoystickGetDeviceGUID,

@@ -151,7 +151,8 @@ static void AddController(int device_index, SDL_bool verbose)
 
     if (verbose) {
         const char *name = SDL_GameControllerName(gamecontroller);
-        SDL_Log("Opened game controller %s\n", name);
+        const char *path = SDL_GameControllerPath(gamecontroller);
+        SDL_Log("Opened game controller %s%s%s\n", name, path ? ", " : "", path ? path : "");
     }
 
     if (SDL_GameControllerHasSensor(gamecontroller, SDL_SENSOR_ACCEL)) {
@@ -560,6 +561,7 @@ main(int argc, char *argv[])
     /* Print information about the controller */
     for (i = 0; i < SDL_NumJoysticks(); ++i) {
         const char *name;
+        const char *path;
         const char *description;
 
         SDL_JoystickGetGUIDString(SDL_JoystickGetDeviceGUID(i),
@@ -568,6 +570,7 @@ main(int argc, char *argv[])
         if (SDL_IsGameController(i)) {
             controller_count++;
             name = SDL_GameControllerNameForIndex(i);
+            path = SDL_GameControllerPathForIndex(i);
             switch (SDL_GameControllerTypeForIndex(i)) {
             case SDL_CONTROLLER_TYPE_AMAZON_LUNA:
                 description = "Amazon Luna Controller";
@@ -603,10 +606,11 @@ main(int argc, char *argv[])
             AddController(i, SDL_FALSE);
         } else {
             name = SDL_JoystickNameForIndex(i);
+            path = SDL_JoystickPathForIndex(i);
             description = "Joystick";
         }
-        SDL_Log("%s %d: %s (guid %s, VID 0x%.4x, PID 0x%.4x, player index = %d)\n",
-            description, i, name ? name : "Unknown", guid,
+        SDL_Log("%s %d: %s%s%s (guid %s, VID 0x%.4x, PID 0x%.4x, player index = %d)\n",
+            description, i, name ? name : "Unknown", path ? ", " : "", path ? path : "", guid,
             SDL_JoystickGetDeviceVendor(i), SDL_JoystickGetDeviceProduct(i), SDL_JoystickGetDevicePlayerIndex(i));
     }
     SDL_Log("There are %d game controller(s) attached (%d joystick(s))\n", controller_count, SDL_NumJoysticks());

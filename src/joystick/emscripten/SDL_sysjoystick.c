@@ -280,6 +280,12 @@ EMSCRIPTEN_JoystickGetDeviceName(int device_index)
     return JoystickByDeviceIndex(device_index)->name;
 }
 
+static const char *
+EMSCRIPTEN_JoystickGetDevicePath(int device_index)
+{
+    return NULL;
+}
+
 static int
 EMSCRIPTEN_JoystickGetDevicePlayerIndex(int device_index)
 {
@@ -444,6 +450,7 @@ SDL_JoystickDriver SDL_EMSCRIPTEN_JoystickDriver =
     EMSCRIPTEN_JoystickGetCount,
     EMSCRIPTEN_JoystickDetect,
     EMSCRIPTEN_JoystickGetDeviceName,
+    EMSCRIPTEN_JoystickGetDevicePath,
     EMSCRIPTEN_JoystickGetDevicePlayerIndex,
     EMSCRIPTEN_JoystickSetDevicePlayerIndex,
     EMSCRIPTEN_JoystickGetDeviceGUID,

@@ -105,6 +105,7 @@ typedef struct _SDL_RAWINPUT_Device
 {
     SDL_atomic_t refcount;
     char *name;
+    char *path;
     Uint16 vendor_id;
     Uint16 product_id;
     Uint16 version;
@@ -691,6 +692,7 @@ RAWINPUT_ReleaseDevice(SDL_RAWINPUT_Device *device)
     if (SDL_AtomicDecRef(&device->refcount)) {
         SDL_free(device->preparsed_data);
         SDL_free(device->name);
+        SDL_free(device->path);
         SDL_free(device);
     }
 }
@@ -796,6 +798,7 @@ RAWINPUT_AddDevice(HANDLE hDevice)
             SDL_free(product_string);
         }
     }
+    device->path = SDL_strdup(dev_name);
 
     CloseHandle(hFile);
     hFile = INVALID_HANDLE_VALUE;
@@ -828,8 +831,12 @@ err:
         CloseHandle(hFile);
     }
     if (device) {
-        if (device->name)
+        if (device->name) {
             SDL_free(device->name);
+        }
+        if (device->path) {
+            SDL_free(device->path);
+        }
         SDL_free(device);
     }
 #undef CHECK
@@ -1030,6 +1037,12 @@ static const char *
 RAWINPUT_JoystickGetDeviceName(int device_index)
 {
     return RAWINPUT_GetDeviceByIndex(device_index)->name;
+}
+
+static const char *
+RAWINPUT_JoystickGetDevicePath(int device_index)
+{
+    return RAWINPUT_GetDeviceByIndex(device_index)->path;
 }
 
 static int
@@ -2009,6 +2022,7 @@ SDL_JoystickDriver SDL_RAWINPUT_JoystickDriver =
     RAWINPUT_JoystickGetCount,
     RAWINPUT_JoystickDetect,
     RAWINPUT_JoystickGetDeviceName,
+    RAWINPUT_JoystickGetDevicePath,
     RAWINPUT_JoystickGetDevicePlayerIndex,
     RAWINPUT_JoystickSetDevicePlayerIndex,
     RAWINPUT_JoystickGetDeviceGUID,

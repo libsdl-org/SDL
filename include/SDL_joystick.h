@@ -153,6 +153,7 @@ extern DECLSPEC void SDLCALL SDL_UnlockJoysticks(void);
  * \since This function is available since SDL 2.0.0.
  *
  * \sa SDL_JoystickName
+ * \sa SDL_JoystickPath
  * \sa SDL_JoystickOpen
  */
 extern DECLSPEC int SDLCALL SDL_NumJoysticks(void);
@@ -173,6 +174,23 @@ extern DECLSPEC int SDLCALL SDL_NumJoysticks(void);
  * \sa SDL_JoystickOpen
  */
 extern DECLSPEC const char *SDLCALL SDL_JoystickNameForIndex(int device_index);
+
+/**
+ * Get the implementation dependent path of a joystick.
+ *
+ * This can be called before any joysticks are opened.
+ *
+ * \param device_index the index of the joystick to query (the N'th joystick
+ *                     on the system)
+ * \returns the path of the selected joystick. If no path can be found, this
+ *          function returns NULL; call SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 2.0.24.
+ *
+ * \sa SDL_JoystickPath
+ * \sa SDL_JoystickOpen
+ */
+extern DECLSPEC const char *SDLCALL SDL_JoystickPathForIndex(int device_index);
 
 /**
  * Get the player index of a joystick, or -1 if it's not available This can be
@@ -418,6 +436,19 @@ extern DECLSPEC int SDLCALL SDL_JoystickSetVirtualHat(SDL_Joystick *joystick, in
  * \sa SDL_JoystickOpen
  */
 extern DECLSPEC const char *SDLCALL SDL_JoystickName(SDL_Joystick *joystick);
+
+/**
+ * Get the implementation dependent path of a joystick.
+ *
+ * \param joystick the SDL_Joystick obtained from SDL_JoystickOpen()
+ * \returns the path of the selected joystick. If no path can be found, this
+ *          function returns NULL; call SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 2.0.24.
+ *
+ * \sa SDL_JoystickPathForIndex
+ */
+extern DECLSPEC const char *SDLCALL SDL_JoystickPath(SDL_Joystick *joystick);
 
 /**
  * Get the player index of an opened joystick.

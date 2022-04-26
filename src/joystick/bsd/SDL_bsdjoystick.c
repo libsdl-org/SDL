@@ -268,9 +268,15 @@ static const char *
 BSD_JoystickGetDeviceName(int device_index)
 {
     if (joydevnames[device_index] != NULL) {
-        return (joydevnames[device_index]);
+        return joydevnames[device_index];
     }
-    return (joynames[device_index]);
+    return joynames[device_index];
+}
+
+static const char *
+BSD_JoystickGetDevicePath(int device_index)
+{
+    return joynames[device_index];
 }
 
 static int
@@ -807,6 +813,7 @@ SDL_JoystickDriver SDL_BSD_JoystickDriver =
     BSD_JoystickGetCount,
     BSD_JoystickDetect,
     BSD_JoystickGetDeviceName,
+    BSD_JoystickGetDevicePath,
     BSD_JoystickGetDevicePlayerIndex,
     BSD_JoystickSetDevicePlayerIndex,
     BSD_JoystickGetDeviceGUID,

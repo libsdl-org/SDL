@@ -586,6 +586,12 @@ WGI_JoystickGetDeviceName(int device_index)
     return wgi.controllers[device_index].name;
 }
 
+static const char *
+WGI_JoystickGetDevicePath(int device_index)
+{
+    return NULL;
+}
+
 static int
 WGI_JoystickGetDevicePlayerIndex(int device_index)
 {
@@ -893,6 +899,7 @@ SDL_JoystickDriver SDL_WGI_JoystickDriver =
     WGI_JoystickGetCount,
     WGI_JoystickDetect,
     WGI_JoystickGetDeviceName,
+    WGI_JoystickGetDevicePath,
     WGI_JoystickGetDevicePlayerIndex,
     WGI_JoystickSetDevicePlayerIndex,
     WGI_JoystickGetDeviceGUID,

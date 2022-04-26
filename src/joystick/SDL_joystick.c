@@ -321,6 +321,28 @@ SDL_JoystickNameForIndex(int device_index)
 }
 
 /*
+ * Get the implementation dependent path of a joystick
+ */
+const char *
+SDL_JoystickPathForIndex(int device_index)
+{
+    SDL_JoystickDriver *driver;
+    const char *path = NULL;
+
+    SDL_LockJoysticks();
+    if (SDL_GetDriverAndJoystickIndex(device_index, &driver, &device_index)) {
+        path = driver->GetDevicePath(device_index);
+    }
+    SDL_UnlockJoysticks();
+
+    /* FIXME: Really we should reference count this path so it doesn't go away after unlock */
+    if (!path) {
+        SDL_Unsupported();
+    }
+    return path;
+}
+
+/*
  *  Get the player index of a joystick, or -1 if it's not available
  */
 int
@@ -386,6 +408,7 @@ SDL_JoystickOpen(int device_index)
     SDL_Joystick *joystick;
     SDL_Joystick *joysticklist;
     const char *joystickname = NULL;
+    const char *joystickpath = NULL;
     SDL_JoystickPowerLevel initial_power_level;
 
     SDL_LockJoysticks();
@@ -434,6 +457,13 @@ SDL_JoystickOpen(int device_index)
         joystick->name = SDL_strdup(joystickname);
     } else {
         joystick->name = NULL;
+    }
+
+    joystickpath = driver->GetDevicePath(device_index);
+    if (joystickpath) {
+        joystick->path = SDL_strdup(joystickpath);
+    } else {
+        joystick->path = NULL;
     }
 
     joystick->guid = driver->GetDeviceGUID(device_index);
@@ -840,6 +870,23 @@ SDL_JoystickName(SDL_Joystick *joystick)
     return joystick->name;
 }
 
+/*
+ * Get the implementation dependent path of this joystick
+ */
+const char *
+SDL_JoystickPath(SDL_Joystick *joystick)
+{
+    if (!SDL_PrivateJoystickValid(joystick)) {
+        return NULL;
+    }
+
+    if (!joystick->path) {
+        SDL_Unsupported();
+        return NULL;
+    }
+    return joystick->path;
+}
+
 /**
  *  Get the player index of an opened joystick, or -1 if it's not available
  */
@@ -1106,6 +1153,7 @@ SDL_JoystickClose(SDL_Joystick *joystick)
     }
 
     SDL_free(joystick->name);
+    SDL_free(joystick->path);
     SDL_free(joystick->serial);
 
     /* Free the data associated with this joystick */

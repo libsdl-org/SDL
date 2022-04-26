@@ -28,7 +28,6 @@
 #include "../SDL_sysjoystick.h"
 #include "../SDL_joystick_c.h"
 
-extern SDL_JoystickDriver SDL_VIRTUAL_JoystickDriver;
 
 static joystick_hwdata * g_VJoys = NULL;
 
@@ -275,6 +274,13 @@ VIRTUAL_JoystickGetDeviceName(int device_index)
 }
 
 
+static const char *
+VIRTUAL_JoystickGetDevicePath(int device_index)
+{
+    return NULL;
+}
+
+
 static int
 VIRTUAL_JoystickGetDevicePlayerIndex(int device_index)
 {
@@ -435,6 +441,7 @@ SDL_JoystickDriver SDL_VIRTUAL_JoystickDriver =
     VIRTUAL_JoystickGetCount,
     VIRTUAL_JoystickDetect,
     VIRTUAL_JoystickGetDeviceName,
+    VIRTUAL_JoystickGetDevicePath,
     VIRTUAL_JoystickGetDevicePlayerIndex,
     VIRTUAL_JoystickSetDevicePlayerIndex,
     VIRTUAL_JoystickGetDeviceGUID,

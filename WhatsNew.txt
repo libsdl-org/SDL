@@ -7,6 +7,11 @@ This is a list of major changes in SDL's version history.
 
 General:
 * Added SDL_bsearch() to the stdlib routines
+* Added functions to get the platform dependent name for a joystick or game controller:
+    * SDL_JoystickPathForIndex()
+    * SDL_JoystickPath()
+    * SDL_GameControllerPathForIndex()
+    * SDL_GameControllerPath()
 * Added joystick event SDL_JOYBATTERYUPDATED for when battery status changes.
 
 ---------------------------------------------------------------------------

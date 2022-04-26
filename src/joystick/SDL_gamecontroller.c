@@ -1732,6 +1732,20 @@ SDL_GameControllerNameForIndex(int device_index)
 }
 
 
+/*
+ * Get the implementation dependent path of a controller
+ */
+const char *
+SDL_GameControllerPathForIndex(int device_index)
+{
+    ControllerMapping_t *pSupportedController = SDL_PrivateGetControllerMapping(device_index);
+    if (pSupportedController) {
+        return SDL_JoystickPathForIndex(device_index);
+    }
+    return NULL;
+}
+
+
 /**
  *  Get the type of a game controller.
  */
@@ -2292,6 +2306,15 @@ SDL_GameControllerName(SDL_GameController *gamecontroller)
     } else {
         return gamecontroller->name;
     }
+}
+
+const char *
+SDL_GameControllerPath(SDL_GameController *gamecontroller)
+{
+    if (!gamecontroller)
+        return NULL;
+
+    return SDL_JoystickPath(SDL_GameControllerGetJoystick(gamecontroller));
 }
 
 SDL_GameControllerType

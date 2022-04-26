@@ -65,6 +65,7 @@ struct _SDL_Joystick
 {
     SDL_JoystickID instance_id; /* Device instance, monotonically increasing from 0 */
     char *name;                 /* Joystick name - system dependent */
+    char *path;                 /* Joystick path - system dependent */
     char *serial;               /* Joystick serial */
     SDL_JoystickGUID guid;      /* Joystick guid */
 
@@ -145,6 +146,9 @@ typedef struct _SDL_JoystickDriver
 
     /* Function to get the device-dependent name of a joystick */
     const char *(*GetDeviceName)(int device_index);
+
+    /* Function to get the device-dependent path of a joystick */
+    const char *(*GetDevicePath)(int device_index);
 
     /* Function to get the player index of a joystick */
     int (*GetDevicePlayerIndex)(int device_index);
