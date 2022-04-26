@@ -2210,7 +2210,7 @@ int Cocoa_GetWindowDisplayIndex(_THIS, SDL_Window * window){
      instead of checking in which display the window is placed, we should check which SDL display matches the display described
      via displayframe.
     */
-    CGRect displayframe = data->nswindow.screen.frame;
+    NSRect displayframe = data->nswindow.screen.frame;
     SDL_Point display_center;
     SDL_Rect sdl_display_rect;
     
