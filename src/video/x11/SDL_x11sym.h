@@ -260,15 +260,6 @@ SDL_X11_SYM(void,XdbeFreeVisualInfo,(XdbeScreenVisualInfo *visual_info),(visual_
 SDL_X11_SYM(XdbeBackBufferAttributes*,XdbeGetBackBufferAttributes,(Display *dpy,XdbeBackBuffer buffer),(dpy,buffer),return)
 #endif
 
-/* Xinerama support */
-#if SDL_VIDEO_DRIVER_X11_XINERAMA
-SDL_X11_MODULE(XINERAMA)
-SDL_X11_SYM(Bool,XineramaIsActive,(Display *a),(a),return)
-SDL_X11_SYM(Bool,XineramaQueryExtension,(Display *a,int *b,int *c),(a,b,c),return)
-SDL_X11_SYM(Status,XineramaQueryVersion,(Display *a,int *b,int *c),(a,b,c),return)
-SDL_X11_SYM(XineramaScreenInfo*,XineramaQueryScreens,(Display *a, int *b),(a,b),return)
-#endif
-
 /* XInput2 support for multiple mice, tablets, etc. */
 #if SDL_VIDEO_DRIVER_X11_XINPUT2
 SDL_X11_MODULE(XINPUT2)
@@ -319,17 +310,6 @@ SDL_X11_SYM(void,XScreenSaverSuspend,(Display *dpy,Bool suspend),(dpy,suspend),r
 #if SDL_VIDEO_DRIVER_X11_XSHAPE
 SDL_X11_MODULE(XSHAPE)
 SDL_X11_SYM(void,XShapeCombineMask,(Display *dpy,Window dest,int dest_kind,int x_off,int y_off,Pixmap src,int op),(dpy,dest,dest_kind,x_off,y_off,src,op),)
-#endif
-
-#if SDL_VIDEO_DRIVER_X11_XVIDMODE
-SDL_X11_MODULE(XVIDMODE)
-SDL_X11_SYM(Bool,XF86VidModeGetAllModeLines,(Display *a,int b,int *c,XF86VidModeModeInfo ***d),(a,b,c,d),return)
-SDL_X11_SYM(Bool,XF86VidModeGetModeLine,(Display *a,int b,int *c,XF86VidModeModeLine *d),(a,b,c,d),return)
-SDL_X11_SYM(Bool,XF86VidModeGetViewPort,(Display *a,int b,int *c,int *d),(a,b,c,d),return)
-SDL_X11_SYM(Bool,XF86VidModeQueryExtension,(Display *a,int *b,int *c),(a,b,c),return)
-SDL_X11_SYM(Bool,XF86VidModeQueryVersion,(Display *a,int *b,int *c),(a,b,c),return)
-SDL_X11_SYM(Bool,XF86VidModeSwitchToMode,(Display *a,int b,XF86VidModeModeInfo *c),(a,b,c),return)
-SDL_X11_SYM(Bool,XF86VidModeLockModeSwitch,(Display *a,int b,int c),(a,b,c),return)
 #endif
 
 #undef SDL_X11_MODULE

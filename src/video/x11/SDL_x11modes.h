@@ -35,35 +35,20 @@ typedef struct
     float hdpi;
     float vdpi;
 
-    int use_xinerama;
-    int use_xrandr;
-    int use_vidmode;
-
-#if SDL_VIDEO_DRIVER_X11_XINERAMA
-    XineramaScreenInfo xinerama_info;
-    int xinerama_screen;
-#endif
+    SDL_bool use_xrandr;
 
 #if SDL_VIDEO_DRIVER_X11_XRANDR
     RROutput xrandr_output;
 #endif
-
-#if SDL_VIDEO_DRIVER_X11_XVIDMODE
-    int vidmode_screen;
-#endif
-
 } SDL_DisplayData;
 
 typedef struct
 {
 #if SDL_VIDEO_DRIVER_X11_XRANDR
     RRMode xrandr_mode;
+#else
+    int unused;  /* just so struct isn't empty. */
 #endif
-
-#if SDL_VIDEO_DRIVER_X11_XVIDMODE
-    XF86VidModeModeInfo vm_mode;
-#endif
-
 } SDL_DisplayModeData;
 
 extern int X11_InitModes(_THIS);

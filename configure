@@ -878,13 +878,11 @@ with_x
 enable_x11_shared
 enable_video_x11_xcursor
 enable_video_x11_xdbe
-enable_video_x11_xinerama
 enable_video_x11_xinput
 enable_video_x11_xfixes
 enable_video_x11_xrandr
 enable_video_x11_scrnsaver
 enable_video_x11_xshape
-enable_video_x11_vm
 enable_video_vivante
 enable_video_cocoa
 enable_video_metal
@@ -1668,8 +1666,6 @@ Optional Features:
   --enable-video-x11-xcursor
                           enable X11 Xcursor support [default=yes]
   --enable-video-x11-xdbe enable X11 Xdbe support [default=yes]
-  --enable-video-x11-xinerama
-                          enable X11 Xinerama support [default=yes]
   --enable-video-x11-xinput
                           enable X11 XInput extension for manymouse, tablets,
                           etc [default=yes]
@@ -1682,7 +1678,6 @@ Optional Features:
                           enable X11 screensaver extension [default=yes]
   --enable-video-x11-xshape
                           enable X11 XShape support [default=yes]
-  --enable-video-x11-vm   use X11 VM extension for fullscreen [default=yes]
   --enable-video-vivante  use Vivante EGL video driver [default=yes]
   --enable-video-cocoa    use Cocoa video driver [default=yes]
   --enable-video-metal    include Metal support [default=yes]
@@ -21741,37 +21736,31 @@ fi
                     x11_lib='/opt/X11/lib/libX11.6.dylib'
                     x11ext_lib='/opt/X11/lib/libXext.6.dylib'
                     xcursor_lib='/opt/X11/lib/libXcursor.1.dylib'
-                    xinerama_lib='/opt/X11/lib/libXinerama.1.dylib'
                     xinput_lib='/opt/X11/lib/libXi.6.dylib'
                     xfixes_lib='/opt/X11/lib/libXfixes.3.dylib'
                     xrandr_lib='/opt/X11/lib/libXrandr.2.dylib'
                     xrender_lib='/opt/X11/lib/libXrender.1.dylib'
                     xss_lib='/opt/X11/lib/libXss.1.dylib'
-                    xvidmode_lib='/opt/X11/lib/libXxf86vm.1.dylib'
                     ;;
                 *-*-openbsd*)
                     x11_lib='libX11.so'
                     x11ext_lib='libXext.so'
                     xcursor_lib='libXcursor.so'
-                    xinerama_lib='libXinerama.so'
                     xinput_lib='libXi.so'
                     xfixes_lib='libXfixes.so'
                     xrandr_lib='libXrandr.so'
                     xrender_lib='libXrender.so'
                     xss_lib='libXss.so'
-                    xvidmode_lib='libXxf86vm.so'
                     ;;
                 *)
                     x11_lib=`find_lib "libX11.so.*" "$X_LIBS -L/usr/X11/$base_libdir -L/usr/X11R6/$base_libdir" | sed 's/.*\/\(.*\)/\1/; q'`
                     x11ext_lib=`find_lib "libXext.so.*" "$X_LIBS -L/usr/X11/$base_libdir -L/usr/X11R6/$base_libdir" | sed 's/.*\/\(.*\)/\1/; q'`
                     xcursor_lib=`find_lib "libXcursor.so.*" "$X_LIBS -L/usr/X11/$base_libdir -L/usr/X11R6/$base_libdir" | sed 's/.*\/\(.*\)/\1/; q'`
-                    xinerama_lib=`find_lib "libXinerama.so.*" "$X_LIBS -L/usr/X11/$base_libdir -L/usr/X11R6/$base_libdir" | sed 's/.*\/\(.*\)/\1/; q'`
                     xinput_lib=`find_lib "libXi.so.*" "$X_LIBS -L/usr/X11/$base_libdir -L/usr/X11R6/$base_libdir" | sed 's/.*\/\(.*\)/\1/; q'`
                     xfixes_lib=`find_lib "libXfixes.so.*" "$X_LIBS -L/usr/X11/$base_libdir -L/usr/X11R6/$base_libdir" | sed 's/.*\/\(.*\)/\1/; q'`
                     xrandr_lib=`find_lib "libXrandr.so.*" "$X_LIBS -L/usr/X11/$base_libdir -L/usr/X11R6/$base_libdir" | sed 's/.*\/\(.*\)/\1/; q'`
                     xrender_lib=`find_lib "libXrender.so.*" "$X_LIBS -L/usr/X11/$base_libdir -L/usr/X11R6/$base_libdir" | sed 's/.*\/\(.*\)/\1/; q'`
                     xss_lib=`find_lib "libXss.so.*" "$X_LIBS -L/usr/X11/$base_libdir -L/usr/X11R6/$base_libdir" | sed 's/.*\/\(.*\)/\1/; q'`
-                    xvidmode_lib=`find_lib "libXxf86vm.so.*" "$X_LIBS -L/usr/X11/$base_libdir -L/usr/X11R6/$base_libdir" | sed 's/.*\/\(.*\)/\1/; q'`
                     ;;
             esac
 
@@ -22022,88 +22011,6 @@ $as_echo "#define SDL_VIDEO_DRIVER_X11_XDBE 1" >>confdefs.h
 
                     SUMMARY_video_x11="${SUMMARY_video_x11} xdbe"
                 fi
-            fi
-            # Check whether --enable-video-x11-xinerama was given.
-if test "${enable_video_x11_xinerama+set}" = set; then :
-  enableval=$enable_video_x11_xinerama;
-else
-  enable_video_x11_xinerama=yes
-fi
-
-            if test x$enable_video_x11_xinerama = xyes; then
-                definitely_enable_video_x11_xinerama=no
-                ac_fn_c_check_header_compile "$LINENO" "X11/extensions/Xinerama.h" "ac_cv_header_X11_extensions_Xinerama_h" "#include <X11/Xlib.h>
-
-"
-if test "x$ac_cv_header_X11_extensions_Xinerama_h" = xyes; then :
-  have_xinerama_h_hdr=yes
-else
-  have_xinerama_h_hdr=no
-fi
-
-
-                if test x$have_xinerama_h_hdr = xyes; then
-                    if test x$enable_x11_shared = xyes && test x$xinerama_lib != x ; then
-                        echo "-- dynamic libXinerama -> $xinerama_lib"
-
-cat >>confdefs.h <<_ACEOF
-#define SDL_VIDEO_DRIVER_X11_DYNAMIC_XINERAMA "$xinerama_lib"
-_ACEOF
-
-                        definitely_enable_video_x11_xinerama=yes
-                    else
-                        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for XineramaQueryExtension in -lXinerama" >&5
-$as_echo_n "checking for XineramaQueryExtension in -lXinerama... " >&6; }
-if ${ac_cv_lib_Xinerama_XineramaQueryExtension+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lXinerama  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char XineramaQueryExtension ();
-int
-main ()
-{
-return XineramaQueryExtension ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_Xinerama_XineramaQueryExtension=yes
-else
-  ac_cv_lib_Xinerama_XineramaQueryExtension=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_Xinerama_XineramaQueryExtension" >&5
-$as_echo "$ac_cv_lib_Xinerama_XineramaQueryExtension" >&6; }
-if test "x$ac_cv_lib_Xinerama_XineramaQueryExtension" = xyes; then :
-  have_xinerama_lib=yes
-fi
-
-                        if test x$have_xinerama_lib = xyes ; then
-                            EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lXinerama"
-                            definitely_enable_video_x11_xinerama=yes
-                        fi
-                    fi
-                fi
-            fi
-            if test x$definitely_enable_video_x11_xinerama = xyes; then
-
-$as_echo "#define SDL_VIDEO_DRIVER_X11_XINERAMA 1" >>confdefs.h
-
-                SUMMARY_video_x11="${SUMMARY_video_x11} xinerama"
             fi
             # Check whether --enable-video-x11-xinput was given.
 if test "${enable_video_x11_xinput+set}" = set; then :
@@ -22516,88 +22423,6 @@ $as_echo "#define SDL_VIDEO_DRIVER_X11_XSHAPE 1" >>confdefs.h
 
                     SUMMARY_video_x11="${SUMMARY_video_x11} xshape"
                 fi
-            fi
-            # Check whether --enable-video-x11-vm was given.
-if test "${enable_video_x11_vm+set}" = set; then :
-  enableval=$enable_video_x11_vm;
-else
-  enable_video_x11_vm=yes
-fi
-
-            if test x$enable_video_x11_vm = xyes; then
-                definitely_enable_video_x11_vm=no
-                ac_fn_c_check_header_compile "$LINENO" "X11/extensions/xf86vmode.h" "ac_cv_header_X11_extensions_xf86vmode_h" "#include <X11/Xlib.h>
-
-"
-if test "x$ac_cv_header_X11_extensions_xf86vmode_h" = xyes; then :
-  have_vm_h_hdr=yes
-else
-  have_vm_h_hdr=no
-fi
-
-
-                if test x$have_vm_h_hdr = xyes; then
-                    if test x$enable_x11_shared = xyes && test x$xvidmode_lib != x ; then
-                        echo "-- dynamic libXxf86vm -> $xvidmode_lib"
-
-cat >>confdefs.h <<_ACEOF
-#define SDL_VIDEO_DRIVER_X11_DYNAMIC_XVIDMODE "$xvidmode_lib"
-_ACEOF
-
-                        definitely_enable_video_x11_vm=yes
-                    else
-                        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for XF86VidModeQueryVersion in -lXxf86vm" >&5
-$as_echo_n "checking for XF86VidModeQueryVersion in -lXxf86vm... " >&6; }
-if ${ac_cv_lib_Xxf86vm_XF86VidModeQueryVersion+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lXxf86vm  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char XF86VidModeQueryVersion ();
-int
-main ()
-{
-return XF86VidModeQueryVersion ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_Xxf86vm_XF86VidModeQueryVersion=yes
-else
-  ac_cv_lib_Xxf86vm_XF86VidModeQueryVersion=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_Xxf86vm_XF86VidModeQueryVersion" >&5
-$as_echo "$ac_cv_lib_Xxf86vm_XF86VidModeQueryVersion" >&6; }
-if test "x$ac_cv_lib_Xxf86vm_XF86VidModeQueryVersion" = xyes; then :
-  have_vm_lib=yes
-fi
-
-                        if test x$have_vm_lib = xyes ; then
-                            EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lXxf86vm"
-                            definitely_enable_video_x11_vm=yes
-                        fi
-                    fi
-                fi
-            fi
-            if test x$definitely_enable_video_x11_vm = xyes; then
-
-$as_echo "#define SDL_VIDEO_DRIVER_X11_XVIDMODE 1" >>confdefs.h
-
-                SUMMARY_video_x11="${SUMMARY_video_x11} xvidmode"
             fi
         fi
     fi

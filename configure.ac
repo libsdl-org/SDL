@@ -1768,37 +1768,31 @@ CheckX11()
                     x11_lib='/opt/X11/lib/libX11.6.dylib'
                     x11ext_lib='/opt/X11/lib/libXext.6.dylib'
                     xcursor_lib='/opt/X11/lib/libXcursor.1.dylib'
-                    xinerama_lib='/opt/X11/lib/libXinerama.1.dylib'
                     xinput_lib='/opt/X11/lib/libXi.6.dylib'
                     xfixes_lib='/opt/X11/lib/libXfixes.3.dylib'
                     xrandr_lib='/opt/X11/lib/libXrandr.2.dylib'
                     xrender_lib='/opt/X11/lib/libXrender.1.dylib'
                     xss_lib='/opt/X11/lib/libXss.1.dylib'
-                    xvidmode_lib='/opt/X11/lib/libXxf86vm.1.dylib'
                     ;;
                 *-*-openbsd*)
                     x11_lib='libX11.so'
                     x11ext_lib='libXext.so'
                     xcursor_lib='libXcursor.so'
-                    xinerama_lib='libXinerama.so'
                     xinput_lib='libXi.so'
                     xfixes_lib='libXfixes.so'
                     xrandr_lib='libXrandr.so'
                     xrender_lib='libXrender.so'
                     xss_lib='libXss.so'
-                    xvidmode_lib='libXxf86vm.so'
                     ;;
                 *)
                     x11_lib=[`find_lib "libX11.so.*" "$X_LIBS -L/usr/X11/$base_libdir -L/usr/X11R6/$base_libdir" | sed 's/.*\/\(.*\)/\1/; q'`]
                     x11ext_lib=[`find_lib "libXext.so.*" "$X_LIBS -L/usr/X11/$base_libdir -L/usr/X11R6/$base_libdir" | sed 's/.*\/\(.*\)/\1/; q'`]
                     xcursor_lib=[`find_lib "libXcursor.so.*" "$X_LIBS -L/usr/X11/$base_libdir -L/usr/X11R6/$base_libdir" | sed 's/.*\/\(.*\)/\1/; q'`]
-                    xinerama_lib=[`find_lib "libXinerama.so.*" "$X_LIBS -L/usr/X11/$base_libdir -L/usr/X11R6/$base_libdir" | sed 's/.*\/\(.*\)/\1/; q'`]
                     xinput_lib=[`find_lib "libXi.so.*" "$X_LIBS -L/usr/X11/$base_libdir -L/usr/X11R6/$base_libdir" | sed 's/.*\/\(.*\)/\1/; q'`]
                     xfixes_lib=[`find_lib "libXfixes.so.*" "$X_LIBS -L/usr/X11/$base_libdir -L/usr/X11R6/$base_libdir" | sed 's/.*\/\(.*\)/\1/; q'`]
                     xrandr_lib=[`find_lib "libXrandr.so.*" "$X_LIBS -L/usr/X11/$base_libdir -L/usr/X11R6/$base_libdir" | sed 's/.*\/\(.*\)/\1/; q'`]
                     xrender_lib=[`find_lib "libXrender.so.*" "$X_LIBS -L/usr/X11/$base_libdir -L/usr/X11R6/$base_libdir" | sed 's/.*\/\(.*\)/\1/; q'`]
                     xss_lib=[`find_lib "libXss.so.*" "$X_LIBS -L/usr/X11/$base_libdir -L/usr/X11R6/$base_libdir" | sed 's/.*\/\(.*\)/\1/; q'`]
-                    xvidmode_lib=[`find_lib "libXxf86vm.so.*" "$X_LIBS -L/usr/X11/$base_libdir -L/usr/X11R6/$base_libdir" | sed 's/.*\/\(.*\)/\1/; q'`]
                     ;;
             esac
 
@@ -1909,34 +1903,6 @@ XFreeEventData(display, cookie);
                     AC_DEFINE(SDL_VIDEO_DRIVER_X11_XDBE, 1, [ ])
                     SUMMARY_video_x11="${SUMMARY_video_x11} xdbe"
                 fi
-            fi
-            AC_ARG_ENABLE(video-x11-xinerama,
-[AS_HELP_STRING([--enable-video-x11-xinerama], [enable X11 Xinerama support [default=yes]])],
-                            , enable_video_x11_xinerama=yes)
-            if test x$enable_video_x11_xinerama = xyes; then
-                definitely_enable_video_x11_xinerama=no
-                AC_CHECK_HEADER(X11/extensions/Xinerama.h,
-                                have_xinerama_h_hdr=yes,
-                                have_xinerama_h_hdr=no,
-                                [#include <X11/Xlib.h>
-                                ])
-                if test x$have_xinerama_h_hdr = xyes; then
-                    if test x$enable_x11_shared = xyes && test x$xinerama_lib != x ; then
-                        echo "-- dynamic libXinerama -> $xinerama_lib"
-                        AC_DEFINE_UNQUOTED(SDL_VIDEO_DRIVER_X11_DYNAMIC_XINERAMA, "$xinerama_lib", [ ])
-                        definitely_enable_video_x11_xinerama=yes
-                    else
-                        AC_CHECK_LIB(Xinerama, XineramaQueryExtension, have_xinerama_lib=yes)
-                        if test x$have_xinerama_lib = xyes ; then
-                            EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lXinerama"
-                            definitely_enable_video_x11_xinerama=yes
-                        fi
-                    fi
-                fi
-            fi
-            if test x$definitely_enable_video_x11_xinerama = xyes; then
-                AC_DEFINE(SDL_VIDEO_DRIVER_X11_XINERAMA, 1, [ ])
-                SUMMARY_video_x11="${SUMMARY_video_x11} xinerama"
             fi
             AC_ARG_ENABLE(video-x11-xinput,
 [AS_HELP_STRING([--enable-video-x11-xinput], [enable X11 XInput extension for manymouse, tablets, etc [default=yes]])],
@@ -2086,34 +2052,6 @@ dnl             XRRScreenResources is only present in Xrandr >= 1.2, we use that
                     AC_DEFINE(SDL_VIDEO_DRIVER_X11_XSHAPE, 1, [ ])
                     SUMMARY_video_x11="${SUMMARY_video_x11} xshape"
                 fi
-            fi
-            AC_ARG_ENABLE(video-x11-vm,
-[AS_HELP_STRING([--enable-video-x11-vm], [use X11 VM extension for fullscreen [default=yes]])],
-                            , enable_video_x11_vm=yes)
-            if test x$enable_video_x11_vm = xyes; then
-                definitely_enable_video_x11_vm=no
-                AC_CHECK_HEADER(X11/extensions/xf86vmode.h,
-                                have_vm_h_hdr=yes,
-                                have_vm_h_hdr=no,
-                                [#include <X11/Xlib.h>
-                                ])
-                if test x$have_vm_h_hdr = xyes; then
-                    if test x$enable_x11_shared = xyes && test x$xvidmode_lib != x ; then
-                        echo "-- dynamic libXxf86vm -> $xvidmode_lib"
-                        AC_DEFINE_UNQUOTED(SDL_VIDEO_DRIVER_X11_DYNAMIC_XVIDMODE, "$xvidmode_lib", [ ])
-                        definitely_enable_video_x11_vm=yes
-                    else
-                        AC_CHECK_LIB(Xxf86vm, XF86VidModeQueryVersion, have_vm_lib=yes)
-                        if test x$have_vm_lib = xyes ; then
-                            EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lXxf86vm"
-                            definitely_enable_video_x11_vm=yes
-                        fi
-                    fi
-                fi
-            fi
-            if test x$definitely_enable_video_x11_vm = xyes; then
-                AC_DEFINE(SDL_VIDEO_DRIVER_X11_XVIDMODE, 1, [ ])
-                SUMMARY_video_x11="${SUMMARY_video_x11} xvidmode"
             fi
         fi
     fi
