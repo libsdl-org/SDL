@@ -147,6 +147,9 @@ SDL_SetMainReady(void)
     SDL_MainIsReady = SDL_TRUE;
 }
 
+void SDL_LogInit(void);
+void SDL_LogQuit(void);
+
 int
 SDL_InitSubSystem(Uint32 flags)
 {
@@ -155,6 +158,8 @@ SDL_InitSubSystem(Uint32 flags)
     if (!SDL_MainIsReady) {
         return SDL_SetError("Application didn't initialize properly, did you include SDL_main.h in the file containing your main() function?");
     }
+
+    SDL_LogInit();
 
     /* Clear the error message */
     SDL_ClearError();
@@ -470,11 +475,12 @@ SDL_Quit(void)
 
     SDL_ClearHints();
     SDL_AssertionsQuit();
-    SDL_LogResetPriorities();
 
 #if SDL_USE_LIBDBUS
     SDL_DBus_Quit();
 #endif
+
+    SDL_LogQuit();
 
     /* Now that every subsystem has been quit, we reset the subsystem refcount
      * and the list of initialized subsystems.

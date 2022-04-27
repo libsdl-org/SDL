@@ -28,6 +28,7 @@
 
 #include "SDL_error.h"
 #include "SDL_log.h"
+#include "SDL_mutex.h"
 
 #if HAVE_STDIO_H
 #include <stdio.h>
@@ -59,6 +60,7 @@ static SDL_LogPriority SDL_application_priority = DEFAULT_APPLICATION_PRIORITY;
 static SDL_LogPriority SDL_test_priority = DEFAULT_TEST_PRIORITY;
 static SDL_LogOutputFunction SDL_log_function = SDL_LogOutput;
 static void *SDL_log_userdata = NULL;
+static SDL_mutex *log_function_mutex = NULL;
 
 static const char *SDL_priority_prefixes[SDL_NUM_LOG_PRIORITIES] = {
     NULL,
@@ -92,6 +94,24 @@ static int SDL_android_priority[SDL_NUM_LOG_PRIORITIES] = {
 };
 #endif /* __ANDROID__ */
 
+void
+SDL_LogInit(void)
+{
+    if (!log_function_mutex) {
+        /* if this fails we'll try to continue without it. */
+        log_function_mutex = SDL_CreateMutex();
+    }
+}
+
+void
+SDL_LogQuit(void)
+{
+    SDL_LogResetPriorities();
+    if (log_function_mutex) {
+        SDL_DestroyMutex(log_function_mutex);
+        log_function_mutex = NULL;
+    }
+}
 
 void
 SDL_LogSetAllPriority(SDL_LogPriority priority)
@@ -298,7 +318,12 @@ SDL_LogMessageV(int category, SDL_LogPriority priority, const char *fmt, va_list
         }
     }
 
+    /* this mutex creation can race if you log from two threads at startup. You should have called SDL_Init first! */
+    if (!log_function_mutex) { log_function_mutex = SDL_CreateMutex(); }
+    if (log_function_mutex) { SDL_LockMutex(log_function_mutex); }
     SDL_log_function(SDL_log_userdata, category, priority, message);
+    if (log_function_mutex) { SDL_UnlockMutex(log_function_mutex); }
+
     SDL_free(message);
 }
 
