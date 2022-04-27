@@ -284,7 +284,7 @@ GetCategoryPrefix(int category)
 void
 SDL_LogMessageV(int category, SDL_LogPriority priority, const char *fmt, va_list ap)
 {
-    char *message;
+    static char message[SDL_MAX_LOG_MESSAGE]
     size_t len;
 
     /* Nothing to do if we don't have an output function */
@@ -302,9 +302,13 @@ SDL_LogMessageV(int category, SDL_LogPriority priority, const char *fmt, va_list
         return;
     }
 
-    message = (char *) SDL_malloc(SDL_MAX_LOG_MESSAGE);
-    if (!message) {
-        return;
+    if (!log_function_mutex) {
+        /* this mutex creation can race if you log from two threads at startup. You should have called SDL_Init first! */
+        log_function_mutex = SDL_CreateMutex();
+    }
+
+    if (log_function_mutex) {
+        SDL_LockMutex(log_function_mutex);
     }
 
     SDL_vsnprintf(message, SDL_MAX_LOG_MESSAGE, fmt, ap);
@@ -318,11 +322,11 @@ SDL_LogMessageV(int category, SDL_LogPriority priority, const char *fmt, va_list
         }
     }
 
-    /* this mutex creation can race if you log from two threads at startup. You should have called SDL_Init first! */
-    if (!log_function_mutex) { log_function_mutex = SDL_CreateMutex(); }
-    if (log_function_mutex) { SDL_LockMutex(log_function_mutex); }
     SDL_log_function(SDL_log_userdata, category, priority, message);
-    if (log_function_mutex) { SDL_UnlockMutex(log_function_mutex); }
+
+    if (log_function_mutex) {
+        SDL_UnlockMutex(log_function_mutex);
+    }
 
     SDL_free(message);
 }
