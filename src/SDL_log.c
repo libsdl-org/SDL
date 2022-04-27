@@ -284,7 +284,7 @@ GetCategoryPrefix(int category)
 void
 SDL_LogMessageV(int category, SDL_LogPriority priority, const char *fmt, va_list ap)
 {
-    static char message[SDL_MAX_LOG_MESSAGE]
+    static char message[SDL_MAX_LOG_MESSAGE];
     size_t len;
 
     /* Nothing to do if we don't have an output function */
