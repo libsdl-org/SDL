@@ -148,6 +148,30 @@ X11_GetPixelFormatFromVisualInfo(Display * display, XVisualInfo * vinfo)
     return SDL_PIXELFORMAT_UNKNOWN;
 }
 
+static int
+GetXftDPI(Display* dpy)
+{
+    char* xdefault_resource;
+    int xft_dpi, err;
+
+    xdefault_resource = X11_XGetDefault(dpy, "Xft", "dpi");
+
+    if(!xdefault_resource) {
+        return 0;
+    }
+
+    /*
+     * It's possible for SDL_atoi to call SDL_strtol, if it fails due to a
+     * overflow or an underflow, it will return LONG_MAX or LONG_MIN and set
+     * errno to ERANGE. So we need to check for this so we dont get crazy dpi
+     * values
+     */
+    xft_dpi = SDL_atoi(xdefault_resource);
+    err = errno;
+
+    return err == ERANGE ? 0 : xft_dpi;
+}
+
 #if SDL_VIDEO_DRIVER_X11_XRANDR
 static SDL_bool
 CheckXRandR(Display * display, int *major, int *minor)
@@ -287,30 +311,6 @@ SetXRandRDisplayName(Display *dpy, Atom EDID, char *name, const size_t namelen, 
 #ifdef X11MODES_DEBUG
     printf("Display name: %s\n", name);
 #endif
-}
-
-static int
-GetXftDPI(Display* dpy)
-{
-    char* xdefault_resource;
-    int xft_dpi, err;
-
-    xdefault_resource = X11_XGetDefault(dpy, "Xft", "dpi");
-
-    if(!xdefault_resource) {
-        return 0;
-    }
-
-    /*
-     * It's possible for SDL_atoi to call SDL_strtol, if it fails due to a
-     * overflow or an underflow, it will return LONG_MAX or LONG_MIN and set
-     * errno to ERANGE. So we need to check for this so we dont get crazy dpi
-     * values
-     */
-    xft_dpi = SDL_atoi(xdefault_resource);
-    err = errno;
-
-    return err == ERANGE ? 0 : xft_dpi;
 }
 
 static int
@@ -478,16 +478,107 @@ X11_InitModes_XRandR(_THIS)
 }
 #endif /* SDL_VIDEO_DRIVER_X11_XRANDR */
 
+/* This is used if there's no better functionality--like XRandR--to use.
+   It won't attempt to supply different display modes at all, but it can
+   enumerate the current displays and their current sizes. */
+static int X11_InitModes_StdXlib(_THIS)
+{
+    /* !!! FIXME: a lot of copy/paste from X11_InitModes_XRandR in this function. */
+    SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
+    Display *dpy = data->display;
+    const int default_screen = DefaultScreen(dpy);
+    Screen *screen = ScreenOfDisplay(dpy, default_screen);
+    int display_mm_width, display_mm_height, xft_dpi, scanline_pad, n, i;
+    SDL_DisplayModeData *modedata;
+    SDL_DisplayData *displaydata;
+    SDL_DisplayMode mode;
+    XPixmapFormatValues *pixmapformats;
+    Uint32 pixelformat;
+    XVisualInfo vinfo;
+    SDL_VideoDisplay display;
+
+    /* note that generally even if you have a multiple physical monitors, ScreenCount(dpy) still only reports ONE screen. */
+
+    if (get_visualinfo(dpy, default_screen, &vinfo) < 0) {
+        return SDL_SetError("Failed to find an X11 visual for the primary display");
+    }
+
+    pixelformat = X11_GetPixelFormatFromVisualInfo(dpy, &vinfo);
+    if (SDL_ISPIXELFORMAT_INDEXED(pixelformat)) {
+        return SDL_SetError("Palettized video modes are no longer supported");
+    }
+
+    SDL_zero(mode);
+    mode.w = WidthOfScreen(screen);
+    mode.h = HeightOfScreen(screen);
+    mode.format = pixelformat;
+    mode.refresh_rate = 0;  /* don't know it, sorry. */
+
+    displaydata = (SDL_DisplayData *) SDL_calloc(1, sizeof(*displaydata));
+    if (!displaydata) {
+        return SDL_OutOfMemory();
+    }
+
+    modedata = (SDL_DisplayModeData *) SDL_calloc(1, sizeof(SDL_DisplayModeData));
+    if (!modedata) {
+        SDL_free(displaydata);
+        return SDL_OutOfMemory();
+    }
+    mode.driverdata = modedata;
+
+    display_mm_width = WidthMMOfScreen(screen);
+    display_mm_height = HeightMMOfScreen(screen);
+
+    displaydata->screen = default_screen;
+    displaydata->visual = vinfo.visual;
+    displaydata->depth = vinfo.depth;
+    displaydata->hdpi = display_mm_width ? (((float) mode.w) * 25.4f / display_mm_width) : 0.0f;
+    displaydata->vdpi = display_mm_height ? (((float) mode.h) * 25.4f / display_mm_height) : 0.0f;
+    displaydata->ddpi = SDL_ComputeDiagonalDPI(mode.w, mode.h, ((float) display_mm_width) / 25.4f,((float) display_mm_height) / 25.4f);
+
+    xft_dpi = GetXftDPI(dpy);
+    if(xft_dpi > 0) {
+        displaydata->hdpi = (float)xft_dpi;
+        displaydata->vdpi = (float)xft_dpi;
+    }
+
+    scanline_pad = SDL_BYTESPERPIXEL(pixelformat) * 8;
+    pixmapformats = X11_XListPixmapFormats(dpy, &n);
+    if (pixmapformats) {
+        for (i = 0; i < n; ++i) {
+            if (pixmapformats[i].depth == vinfo.depth) {
+                scanline_pad = pixmapformats[i].scanline_pad;
+                break;
+            }
+        }
+        X11_XFree(pixmapformats);
+    }
+
+    displaydata->scanline_pad = scanline_pad;
+    displaydata->x = 0;
+    displaydata->y = 0;
+    displaydata->use_xrandr = SDL_FALSE;
+
+    SDL_zero(display);
+    display.name = (char *) "Generic X11 Display";  /* this is just copied and thrown away, it's safe to cast to char* here. */
+    display.desktop_mode = mode;
+    display.current_mode = mode;
+    display.driverdata = displaydata;
+    SDL_AddVideoDisplay(&display, SDL_FALSE);
+
+    return 0;
+}
+
+
 int
 X11_InitModes(_THIS)
 {
-    SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
-
-/* XRandR is the One True Modern Way to do this on X11. If this
-   fails, we just won't report any display modes except the current
-   desktop size. */
+    /* XRandR is the One True Modern Way to do this on X11. If this
+       fails, we just won't report any display modes except the current
+       desktop size. */
 #if SDL_VIDEO_DRIVER_X11_XRANDR
     {
+        SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
         int xrandr_major, xrandr_minor;
         /* require at least XRandR v1.3 */
         if (CheckXRandR(data->display, &xrandr_major, &xrandr_minor) &&
@@ -497,7 +588,8 @@ X11_InitModes(_THIS)
     }
 #endif /* SDL_VIDEO_DRIVER_X11_XRANDR */
 
-    return 0;
+    /* still here? Just set up an extremely basic display. */
+    return X11_InitModes_StdXlib(_this);
 }
 
 void
