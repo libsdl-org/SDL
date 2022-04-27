@@ -492,7 +492,7 @@ X11_InitModes(_THIS)
         /* require at least XRandR v1.3 */
         if (CheckXRandR(data->display, &xrandr_major, &xrandr_minor) &&
             (xrandr_major >= 2 || (xrandr_major == 1 && xrandr_minor >= 3))) {
-            X11_InitModes_XRandR(_this);
+            return X11_InitModes_XRandR(_this);
         }
     }
 #endif /* SDL_VIDEO_DRIVER_X11_XRANDR */
@@ -503,7 +503,6 @@ X11_InitModes(_THIS)
 void
 X11_GetDisplayModes(_THIS, SDL_VideoDisplay * sdl_display)
 {
-    Display *display = ((SDL_VideoData *) _this->driverdata)->display;
     SDL_DisplayData *data = (SDL_DisplayData *) sdl_display->driverdata;
     SDL_DisplayMode mode;
 
@@ -518,6 +517,7 @@ X11_GetDisplayModes(_THIS, SDL_VideoDisplay * sdl_display)
 
 #if SDL_VIDEO_DRIVER_X11_XRANDR
     if (data->use_xrandr) {
+        Display *display = ((SDL_VideoData *) _this->driverdata)->display;
         XRRScreenResources *res;
 
         res = X11_XRRGetScreenResources (display, RootWindow(display, data->screen));
@@ -563,6 +563,7 @@ X11_GetDisplayModes(_THIS, SDL_VideoDisplay * sdl_display)
     }
 }
 
+#if SDL_VIDEO_DRIVER_X11_XRANDR
 /* This catches an error from XRRSetScreenSize, as a workaround for now. */
 /* !!! FIXME: remove this later when we have a better solution. */
 static int (*PreXRRSetScreenSizeErrorHandler)(Display *, XErrorEvent *) = NULL;
@@ -577,20 +578,21 @@ SDL_XRRSetScreenSizeErrHandler(Display *d, XErrorEvent *e)
 
     return PreXRRSetScreenSizeErrorHandler(d, e);
 }
+#endif
 
 int
 X11_SetDisplayMode(_THIS, SDL_VideoDisplay * sdl_display, SDL_DisplayMode * mode)
 {
     SDL_VideoData *viddata = (SDL_VideoData *) _this->driverdata;
-    Display *display = viddata->display;
-    SDL_DisplayData *data = (SDL_DisplayData *) sdl_display->driverdata;
-    SDL_DisplayModeData *modedata = (SDL_DisplayModeData *)mode->driverdata;
-    int mm_width, mm_height;
 
     viddata->last_mode_change_deadline = SDL_GetTicks() + (PENDING_FOCUS_TIME * 2);
 
 #if SDL_VIDEO_DRIVER_X11_XRANDR
     if (data->use_xrandr) {
+        Display *display = viddata->display;
+        SDL_DisplayData *data = (SDL_DisplayData *) sdl_display->driverdata;
+        SDL_DisplayModeData *modedata = (SDL_DisplayModeData *)mode->driverdata;
+        int mm_width, mm_height;
         XRRScreenResources *res;
         XRROutputInfo *output_info;
         XRRCrtcInfo *crtc;
