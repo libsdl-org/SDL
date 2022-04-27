@@ -282,8 +282,7 @@ SDL_LogMessageV(int category, SDL_LogPriority priority, const char *fmt, va_list
         return;
     }
 
-    /* !!! FIXME: why not just "char message[SDL_MAX_LOG_MESSAGE];" ? */
-    message = SDL_stack_alloc(char, SDL_MAX_LOG_MESSAGE);
+    message = (char *) SDL_malloc(SDL_MAX_LOG_MESSAGE);
     if (!message) {
         return;
     }
@@ -300,7 +299,7 @@ SDL_LogMessageV(int category, SDL_LogPriority priority, const char *fmt, va_list
     }
 
     SDL_log_function(SDL_log_userdata, category, priority, message);
-    SDL_stack_free(message);
+    SDL_free(message);
 }
 
 #if defined(__WIN32__) && !defined(HAVE_STDIO_H) && !defined(__WINRT__)
