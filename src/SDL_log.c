@@ -327,8 +327,6 @@ SDL_LogMessageV(int category, SDL_LogPriority priority, const char *fmt, va_list
     if (log_function_mutex) {
         SDL_UnlockMutex(log_function_mutex);
     }
-
-    SDL_free(message);
 }
 
 #if defined(__WIN32__) && !defined(HAVE_STDIO_H) && !defined(__WINRT__)
