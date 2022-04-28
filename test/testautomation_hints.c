@@ -8,7 +8,6 @@
 #include "SDL_test.h"
 
 
-const int _numHintsEnum = 25;
 const char* _HintsEnum[] =
   {
     SDL_HINT_ACCELEROMETER_AS_JOYSTICK,
@@ -62,6 +61,9 @@ const char* _HintsVerbose[] =
     "SDL_XINPUT_ENABLED"
   };
 
+SDL_COMPILE_TIME_ASSERT(HintsEnum, SDL_arraysize(_HintsEnum) == SDL_arraysize(_HintsVerbose));
+
+const int _numHintsEnum = SDL_arraysize(_HintsEnum);
 
 /* Test case functions */
 
