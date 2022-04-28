@@ -330,6 +330,9 @@
     <ClInclude Include="..\src\SDL_internal.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\SDL_log_c.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\src\locale\SDL_syslocale.h">
       <Filter>Source Files</Filter>
     </ClInclude>

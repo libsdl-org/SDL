@@ -47,6 +47,7 @@
 #include "SDL_bits.h"
 #include "SDL_revision.h"
 #include "SDL_assert_c.h"
+#include "SDL_log_c.h"
 #include "events/SDL_events_c.h"
 #include "haptic/SDL_haptic_c.h"
 #include "joystick/SDL_joystick_c.h"
@@ -146,9 +147,6 @@ SDL_SetMainReady(void)
 {
     SDL_MainIsReady = SDL_TRUE;
 }
-
-void SDL_LogInit(void);
-void SDL_LogQuit(void);
 
 int
 SDL_InitSubSystem(Uint32 flags)
