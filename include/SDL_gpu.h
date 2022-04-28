@@ -154,6 +154,9 @@ extern "C" {
 
 /* !!! FIXME: Enumerate physical devices. Right now this API doesn't allow it. */
 
+/* !!! FIXME: Allow windows to share an SDL_GpuDevice */
+/* !!! FIXME: uh, we need a vsync API. */
+
 typedef struct SDL_GpuDevice SDL_GpuDevice;
 SDL_GpuDevice *SDL_GpuCreateDevice(const char *label, SDL_Window *window);  /* `label` is for debugging, not a specific device name to access. */
 void SDL_GpuDestroyDevice(SDL_GpuDevice *device);
