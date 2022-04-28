@@ -757,21 +757,11 @@ SDL_ResampleAudio(const int chans, const int inrate, const int outrate,
             float outsample = 0.0f;
 
             /* do this twice to calculate the sample, once for the "left wing" and then same for the right. */
-
-            /* Left wing! split the "srcframe < 0" condition out into a preloop. */
-            for (j = 0; srcindex < j; j++) {
-                const int jsamples = j * RESAMPLER_SAMPLES_PER_ZERO_CROSSING;
+            for (j = 0; (filterindex1 + (j * RESAMPLER_SAMPLES_PER_ZERO_CROSSING)) < RESAMPLER_FILTER_SIZE; j++) {
                 const int srcframe = srcindex - j;
-                const float insample = lpadding[((paddinglen + srcframe) * chans) + chan];
-                outsample += (float)(insample * (ResamplerFilter[filterindex1 + jsamples] + (interpolation1 * ResamplerFilterDifference[filterindex1 + jsamples])));
-            }
- 
-            /* Finish the left wing now that srcframe >= 0 */
-            for (; (filterindex1 + (j * RESAMPLER_SAMPLES_PER_ZERO_CROSSING)) < RESAMPLER_FILTER_SIZE; j++) {
-                const int jsamples = j * RESAMPLER_SAMPLES_PER_ZERO_CROSSING;
-                const int srcframe = srcindex - j;
-                const float insample = inbuf[(srcframe * chans) + chan];
-                outsample += (float)(insample * (ResamplerFilter[filterindex1 + jsamples] + (interpolation1 * ResamplerFilterDifference[filterindex1 + jsamples])));
+                /* !!! FIXME: we can bubble this conditional out of here by doing a pre loop. */
+                const float insample = (srcframe < 0) ? lpadding[((paddinglen + srcframe) * chans) + chan] : inbuf[(srcframe * chans) + chan];
+                outsample += (float)(insample * (ResamplerFilter[filterindex1 + (j * RESAMPLER_SAMPLES_PER_ZERO_CROSSING)] + (interpolation1 * ResamplerFilterDifference[filterindex1 + (j * RESAMPLER_SAMPLES_PER_ZERO_CROSSING)])));
             }
 
             /* Do the right wing! */
