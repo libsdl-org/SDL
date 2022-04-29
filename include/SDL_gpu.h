@@ -154,11 +154,8 @@ extern "C" {
 
 /* !!! FIXME: Enumerate physical devices. Right now this API doesn't allow it. */
 
-/* !!! FIXME: Allow windows to share an SDL_GpuDevice */
-/* !!! FIXME: uh, we need a vsync API. */
-
 typedef struct SDL_GpuDevice SDL_GpuDevice;
-SDL_GpuDevice *SDL_GpuCreateDevice(const char *label, SDL_Window *window);  /* `label` is for debugging, not a specific device name to access. */
+SDL_GpuDevice *SDL_GpuCreateDevice(const char *label);  /* `label` is for debugging, not a specific device name to access. */
 void SDL_GpuDestroyDevice(SDL_GpuDevice *device);
 
 /* CPU buffers live in RAM and can be accessed by the CPU. */
@@ -655,8 +652,13 @@ int SDL_GpuWaitFence(SDL_GpuFence *fence);
  * Once you've encoded your command buffer(s), you can submit them to the GPU for executing.
  * Command buffers are executed in the order they are submitted, and the commands in those buffers are executed in the order they were encoded.
  * Once a command buffer is submitted, its pointer becomes invalid. Create a new one for the next set of commands.
+ *
+ * If this command buffer is to present to a window, specify a non-NULL present_window. The swapinterval should be 0 (present immediately), 1 (present during vsync),
+ *  or -1 (present during vsync unless we've missed vsync, in which case present immediately). swapinterval is ignored if present_window is NULL. The window
+ *  may be destroyed and recreated on first use if incompatible with the SDL_GpuDevice; as such, it does not need to be created with SDL_WINDOW_OPENGL or _VULKAN,
+ *  etc, as this API will take care of it.
  */
-void SDL_GpuSubmitCommandBuffers(SDL_GpuCommandBuffer **buffers, const Uint32 numcmdbufs, const SDL_bool also_present, SDL_GpuFence *fence);
+void SDL_GpuSubmitCommandBuffers(SDL_GpuCommandBuffer **buffers, const Uint32 numcmdbufs, SDL_Window *present_window, const int swapinterval, SDL_GpuFence *fence);
 
 /* !!! FIXME: add a SDL_GpuAbandonCommandBuffer() function for freeing a buffer without submitting it? */
 
