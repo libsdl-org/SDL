@@ -39,6 +39,9 @@
 #include <android/log.h>
 #endif
 
+/* The size of the stack buffer to use for rendering log messages. */
+#define SDL_MAX_LOG_MESSAGE_STACK 256
+
 #define DEFAULT_PRIORITY                SDL_LOG_PRIORITY_CRITICAL
 #define DEFAULT_ASSERT_PRIORITY         SDL_LOG_PRIORITY_WARN
 #define DEFAULT_APPLICATION_PRIORITY    SDL_LOG_PRIORITY_INFO
@@ -285,8 +288,10 @@ GetCategoryPrefix(int category)
 void
 SDL_LogMessageV(int category, SDL_LogPriority priority, const char *fmt, va_list ap)
 {
-    static char message[SDL_MAX_LOG_MESSAGE];
+    char *message = NULL;
+    char stack_buf[SDL_MAX_LOG_MESSAGE_STACK];
     size_t len;
+    va_list aq;
 
     /* Nothing to do if we don't have an output function */
     if (!SDL_log_function) {
@@ -308,14 +313,24 @@ SDL_LogMessageV(int category, SDL_LogPriority priority, const char *fmt, va_list
         log_function_mutex = SDL_CreateMutex();
     }
 
-    if (log_function_mutex) {
-        SDL_LockMutex(log_function_mutex);
+    /* Render into stack buffer */
+    va_copy(aq, ap);
+    len = SDL_vsnprintf(stack_buf, sizeof(stack_buf), fmt, aq);
+    va_end(aq);
+
+    /* If message truncated, allocate and re-render */
+    if (len >= sizeof(stack_buf)) {
+        message = (char *)SDL_malloc(SDL_MAX_LOG_MESSAGE);
+        if (!message)
+            return;
+        va_copy(aq, ap);
+        len = SDL_vsnprintf(message, SDL_MAX_LOG_MESSAGE, fmt, aq);
+        va_end(aq);
+    } else {
+        message = stack_buf;
     }
 
-    SDL_vsnprintf(message, SDL_MAX_LOG_MESSAGE, fmt, ap);
-
     /* Chop off final endline. */
-    len = SDL_strlen(message);
     if ((len > 0) && (message[len-1] == '\n')) {
         message[--len] = '\0';
         if ((len > 0) && (message[len-1] == '\r')) {  /* catch "\r\n", too. */
@@ -323,10 +338,19 @@ SDL_LogMessageV(int category, SDL_LogPriority priority, const char *fmt, va_list
         }
     }
 
+    if (log_function_mutex) {
+        SDL_LockMutex(log_function_mutex);
+    }
+
     SDL_log_function(SDL_log_userdata, category, priority, message);
 
     if (log_function_mutex) {
         SDL_UnlockMutex(log_function_mutex);
+    }
+
+    /* Free only if dynamically allocated */
+    if (message != stack_buf) {
+        SDL_free(message);
     }
 }
 
