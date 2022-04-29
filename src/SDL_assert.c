@@ -45,6 +45,8 @@
 #include <emscripten.h>
 #endif
 
+/* The size of the stack buffer to use for rendering assert messages. */
+#define SDL_MAX_ASSERT_MESSAGE_STACK 256
 
 static SDL_assert_state SDLCALL
 SDL_PromptAssertion(const SDL_assert_data *data, void *userdata);
@@ -160,30 +162,43 @@ SDL_PromptAssertion(const SDL_assert_data *data, void *userdata)
         {   SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT,
                 SDL_ASSERTION_ALWAYS_IGNORE,    "Always Ignore" }
     };
-    char *message;
     int selected;
+
+    char stack_buf[SDL_MAX_ASSERT_MESSAGE_STACK];
+    char *message = stack_buf;
+    size_t buf_len = sizeof(stack_buf);
+    size_t len;
 
     (void) userdata;  /* unused in default handler. */
 
-    /* !!! FIXME: why is this using SDL_stack_alloc and not just "char message[SDL_MAX_LOG_MESSAGE];" ? */
-    message = SDL_stack_alloc(char, SDL_MAX_LOG_MESSAGE);
-    if (!message) {
-        /* Uh oh, we're in real trouble now... */
-        return SDL_ASSERTION_ABORT;
-    }
-    SDL_snprintf(message, SDL_MAX_LOG_MESSAGE,
-                 "Assertion failure at %s (%s:%d), triggered %u %s:" ENDLINE
-                    "  '%s'",
-                 data->function, data->filename, data->linenum,
-                 data->trigger_count, (data->trigger_count == 1) ? "time" : "times",
-                 data->condition);
+    do {
+        /* Assume the output will fit... */
+        len = SDL_snprintf(message, buf_len,
+            "Assertion failure at %s (%s:%d), triggered %u %s:" ENDLINE "  '%s'",
+                data->function, data->filename, data->linenum,
+                data->trigger_count, (data->trigger_count == 1) ? "time" : "times",
+                data->condition);
+
+        /* .. and if it didn't, allocate a bigger buffer and try again */
+        if (len >= buf_len && message == stack_buf) {
+            buf_len = SDL_MAX_LOG_MESSAGE;
+            message = (char *)SDL_malloc(buf_len);
+            if (!message) {
+                /* Uh oh, we're in real trouble now... */
+                return SDL_ASSERTION_ABORT;
+            }
+            len = 0;
+        }
+    } while (len == 0);
 
     debug_print("\n\n%s\n\n", message);
 
     /* let env. variable override, so unit tests won't block in a GUI. */
     envr = SDL_getenv("SDL_ASSERT");
     if (envr != NULL) {
-        SDL_stack_free(message);
+        if (message != stack_buf) {
+            SDL_free(message);
+        }
 
         if (SDL_strcmp(envr, "abort") == 0) {
             return SDL_ASSERTION_ABORT;
@@ -301,7 +316,9 @@ SDL_PromptAssertion(const SDL_assert_data *data, void *userdata)
         SDL_RestoreWindow(window);
     }
 
-    SDL_stack_free(message);
+    if (message != stack_buf) {
+        SDL_free(message);
+    }
 
     return state;
 }
