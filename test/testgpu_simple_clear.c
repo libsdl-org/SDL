@@ -19,17 +19,14 @@
 #include "SDL_test_common.h"
 #include "SDL_gpu.h"
 
-typedef struct GpuContext
-{
-    SDL_Window *window;
-    SDL_GpuDevice *device;
-} GpuContext;
-
 static SDLTest_CommonState *state;
-static GpuContext *gpuContexts = NULL;  // an array of state->num_windows items
-static GpuContext *gpuContext = NULL;  // for the currently-rendering window
+SDL_GpuDevice *gpuDevice = NULL;
 
-static void shutdownGpu(void);
+static void shutdownGpu(void)
+{
+    SDL_GpuDestroyDevice(gpuDevice);
+    gpuDevice = NULL;
+}
 
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
 static void quit(int rc)
@@ -41,44 +38,25 @@ static void quit(int rc)
 
 static void initGpu(void)
 {
-    int i;
-
-    gpuContexts = (GpuContext *) SDL_calloc(state->num_windows, sizeof (GpuContext));
-    if (!gpuContexts) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory!");
+    gpuDevice = SDL_GpuCreateDevice("The GPU device");
+    if (!gpuDevice) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to create GPU device: %s", SDL_GetError());
         quit(2);
     }
-
-    for (i = 0; i < state->num_windows; ++i) {
-        char label[64];
-        gpuContext = &gpuContexts[i];
-        gpuContext->window = state->windows[i];
-        SDL_snprintf(label, sizeof (label), "Window #%d", i);
-        gpuContext->device = SDL_GpuCreateDevice(label, state->windows[i]);
-    }
 }
 
-static void shutdownGpu(void)
-{
-    if (gpuContexts) {
-        int i;
-        for (i = 0; i < state->num_windows; ++i) {
-            gpuContext = &gpuContexts[i];
-            SDL_GpuDestroyDevice(gpuContext->device);
-        }
-        SDL_free(gpuContexts);
-        gpuContexts = NULL;
-    }
-}
-
-static SDL_bool render(void)
+static void render(SDL_Window *window)
 {
     double currentTime;
     SDL_GpuColorAttachmentDescription color_desc;
     SDL_GpuCommandBuffer *cmd;
     SDL_GpuRenderPass *pass;
 
-    cmd = SDL_GpuCreateCommandBuffer("empty command buffer", gpuContext->device);
+    if (!window) {
+        return;
+    }
+
+    cmd = SDL_GpuCreateCommandBuffer("empty command buffer", gpuDevice);
     if (!cmd) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_GpuCreateCommandBuffer(): %s\n", SDL_GetError());
         quit(2);
@@ -87,7 +65,7 @@ static SDL_bool render(void)
     currentTime = (double)SDL_GetPerformanceCounter() / SDL_GetPerformanceFrequency();
 
     SDL_zero(color_desc);
-    color_desc.texture = SDL_GpuGetBackbuffer(gpuContext->device);
+    color_desc.texture = SDL_GpuGetBackbuffer(gpuDevice, window);
     color_desc.color_init = SDL_GPUPASSINIT_CLEAR;
     color_desc.clear_red = (float)(0.5 + 0.5 * SDL_sin(currentTime));
     color_desc.clear_green = (float)(0.5 + 0.5 * SDL_sin(currentTime + M_PI * 2 / 3));
@@ -101,9 +79,7 @@ static SDL_bool render(void)
     }
 
     /* literally nothing to do, we just start a pass to say "clear the framebuffer to this color," present, and we're done. */
-    SDL_GpuSubmitCommandBuffers(&cmd, 1, SDL_TRUE, NULL);
-
-    return SDL_TRUE;
+    SDL_GpuSubmitCommandBuffers(&cmd, 1, SDL_GPUPRESENT_VSYNC, NULL);
 }
 
 int main(int argc, char **argv)
@@ -137,9 +113,8 @@ int main(int argc, char **argv)
     SDL_Log("Screen BPP    : %d\n", SDL_BITSPERPIXEL(mode.format));
     SDL_GetWindowSize(state->windows[0], &dw, &dh);
     SDL_Log("Window Size   : %d,%d\n", dw, dh);
-    SDL_GpuGetTextureDescription(SDL_GpuGetBackbuffer(gpuContext->device), &texdesc);
+    SDL_GpuGetTextureDescription(SDL_GpuGetBackbuffer(gpuDevice, state->windows[0]), &texdesc);  /* !!! FIXME: probably shouldn't do this. */
     SDL_Log("Draw Size     : %d,%d\n", (int) texdesc.width, (int) texdesc.height);
-    SDL_Log("\n");
 
     /* Main render loop */
     frames = 0;
@@ -155,10 +130,7 @@ int main(int argc, char **argv)
         if (!done) {
             int i;
             for (i = 0; i < state->num_windows; ++i) {
-                if (state->windows[i]) {
-                    gpuContext = &gpuContexts[i];
-                    render();
-                }
+                render(state->windows[i]);
             }
         }
     }
@@ -169,10 +141,8 @@ int main(int argc, char **argv)
         SDL_Log("%2.2f frames per second\n", ((double)frames * 1000) / (now - then));
     }
 
-    shutdownGpu();
-    SDLTest_CommonQuit(state);
+    quit(0);
     return 0;
 }
 
 /* vi: set ts=4 sw=4 expandtab: */
-

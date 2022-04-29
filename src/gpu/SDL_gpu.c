@@ -27,7 +27,7 @@
 
 /* !!! FIXME: change this API to allow selection of a specific GPU? */
 SDL_GpuDevice *
-SDL_GpuCreateDevice(const char *label, SDL_Window *window)
+SDL_GpuCreateDevice(const char *label)
 {
 }
 
@@ -88,7 +88,7 @@ SDL_GpuDestroyShader(SDL_GpuShader *shader)
 }
 
 SDL_GpuTexture *
-SDL_GpuGetBackbuffer(SDL_GpuDevice *device)
+SDL_GpuGetBackbuffer(SDL_GpuDevice *device, SDL_Window *window)
 {
 }
 
@@ -592,7 +592,7 @@ SDL_GpuWaitFence(SDL_GpuFence *fence)
 }
 
 void
-SDL_GpuSubmitCommandBuffers(SDL_GpuCommandBuffer **buffers, const Uint32 numcmdbufs, const SDL_bool also_present, SDL_GpuFence *fence)
+SDL_GpuSubmitCommandBuffers(SDL_GpuCommandBuffer **buffers, const Uint32 numcmdbufs, SDL_GpuPresentType presenttype, SDL_GpuFence *fence)
 {
 }
 

@@ -229,8 +229,19 @@ SDL_GpuShader *SDL_GpuLoadShader(SDL_GpuDevice *device, const Uint8 *bytecode, c
 void SDL_GpuDestroyShader(SDL_GpuShader *shader);
 
 
-/* !!! FIXME: I don't know what this is going to look like yet, this is a placeholder. */
-SDL_GpuTexture *SDL_GpuGetBackbuffer(SDL_GpuDevice *device);
+/*
+ * Get a texture that can be used for rendering to an SDL window. The window
+ * may be destroyed and recreated internally on first use if incompatible with the SDL_GpuDevice!
+ * As such, it does not need to be created with SDL_WINDOW_OPENGL or _VULKAN,
+ * etc, as this API will take care of it.
+ * Do not save this texture beyond using it for a render pass color attachment! It's likely that
+ * a window has multiple textures that it cycles through (and even those might get replaced if
+ * the window is resized or hidden or if the OS just feels like it moment by moment).
+ *
+ * This call may block if you've got every backbuffer from the window in flight, rendering other
+ * frames that haven't completed yet. Use fences if you need to avoid this.
+ */
+SDL_GpuTexture *SDL_GpuGetBackbuffer(SDL_GpuDevice *device, SDL_Window *window);
 
 
 /* PRECOOKED STATE OBJECTS... */
@@ -648,17 +659,24 @@ int SDL_GpuQueryFence(SDL_GpuFence *fence);
 int SDL_GpuResetFence(SDL_GpuFence *fence);
 int SDL_GpuWaitFence(SDL_GpuFence *fence);
 
+
+typedef enum SDL_GpuPresentType
+{
+    SDL_GPUPRESENT_NONE,   /* don't present (not rendering to a window or more command buffers to queue first) */
+    SDL_GPUPRESENT_IMMEDIATE, /* present immediately, don't wait for vsync */
+    SDL_GPUPRESENT_VSYNC,  /* present synced to vertical retrace */
+    SDL_GPUPRESENT_ADAPTIVE_VSYNC  /* vsync if we're running fast enough, immediate if we've missed vsync. If unsupported, this waits for vsync. */
+} SDL_GpuPresentType;
+
 /*
  * Once you've encoded your command buffer(s), you can submit them to the GPU for executing.
  * Command buffers are executed in the order they are submitted, and the commands in those buffers are executed in the order they were encoded.
  * Once a command buffer is submitted, its pointer becomes invalid. Create a new one for the next set of commands.
  *
- * If this command buffer is to present to a window, specify a non-NULL present_window. The swapinterval should be 0 (present immediately), 1 (present during vsync),
- *  or -1 (present during vsync unless we've missed vsync, in which case present immediately). swapinterval is ignored if present_window is NULL. The window
- *  may be destroyed and recreated on first use if incompatible with the SDL_GpuDevice; as such, it does not need to be created with SDL_WINDOW_OPENGL or _VULKAN,
- *  etc, as this API will take care of it.
+ * If this command buffer is to present to a window, specify a non-NULL present_window.
+ *  presenttype is ignored if this isn't a render pass using a window's backbuffer.
  */
-void SDL_GpuSubmitCommandBuffers(SDL_GpuCommandBuffer **buffers, const Uint32 numcmdbufs, SDL_Window *present_window, const int swapinterval, SDL_GpuFence *fence);
+void SDL_GpuSubmitCommandBuffers(SDL_GpuCommandBuffer **buffers, const Uint32 numcmdbufs, SDL_GpuPresentType presenttype, SDL_GpuFence *fence);
 
 /* !!! FIXME: add a SDL_GpuAbandonCommandBuffer() function for freeing a buffer without submitting it? */
 
