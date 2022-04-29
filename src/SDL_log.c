@@ -430,17 +430,10 @@ SDL_LogOutput(void *userdata, int category, SDL_LogPriority priority,
 #elif defined(__APPLE__) && (defined(SDL_VIDEO_DRIVER_COCOA) || defined(SDL_VIDEO_DRIVER_UIKIT))
     /* Technically we don't need Cocoa/UIKit, but that's where this function is defined for now.
     */
-    extern void SDL_NSLog(const char *text);
+    extern void SDL_NSLog(const char *prefix, const char *text);
     {
-        char *text;
-        /* !!! FIXME: why not just "char text[SDL_MAX_LOG_MESSAGE];" ? */
-        text = SDL_stack_alloc(char, SDL_MAX_LOG_MESSAGE);
-        if (text) {
-            SDL_snprintf(text, SDL_MAX_LOG_MESSAGE, "%s: %s", SDL_priority_prefixes[priority], message);
-            SDL_NSLog(text);
-            SDL_stack_free(text);
-            return;
-        }
+        SDL_NSLog(SDL_priority_prefixes[priority], message);
+        return;
     }
 #elif defined(__PSP__)
     {
