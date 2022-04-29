@@ -179,9 +179,9 @@ SDL_PromptAssertion(const SDL_assert_data *data, void *userdata)
                 data->trigger_count, (data->trigger_count == 1) ? "time" : "times",
                 data->condition);
 
-        /* .. and if it didn't, allocate a bigger buffer and try again */
+        /* .. and if it didn't, allocate as much room as we actually need. */
         if (len >= buf_len && message == stack_buf) {
-            buf_len = SDL_MAX_LOG_MESSAGE;
+            buf_len = len + 1;
             message = (char *)SDL_malloc(buf_len);
             if (!message) {
                 /* Uh oh, we're in real trouble now... */
