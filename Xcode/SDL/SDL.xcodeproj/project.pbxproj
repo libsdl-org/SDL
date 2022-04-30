@@ -7172,6 +7172,7 @@
 				A7D88ABF23E2437C00DCD162 /* Sources */,
 				A7D88B4623E2437C00DCD162 /* Frameworks */,
 				A75FDB9F23E4CAFA00529352 /* Embed Frameworks */,
+				F3ED8107281DB8E600C33C5B /* Convert SDL includes to SDL Framework includes */,
 			);
 			buildRules = (
 			);
@@ -7193,6 +7194,7 @@
 				A7D88C7823E24BED00DCD162 /* Sources */,
 				A7D88D0423E24BED00DCD162 /* Frameworks */,
 				A75FDBA223E4CAFF00529352 /* Embed Frameworks */,
+				F3ED8108281DB8F200C33C5B /* Convert SDL includes to SDL Framework includes */,
 			);
 			buildRules = (
 			);
@@ -7234,6 +7236,7 @@
 				BECDF62C0761BA81005FE872 /* Sources */,
 				BECDF6680761BA81005FE872 /* Frameworks */,
 				A75FDB9C23E4CAEF00529352 /* Embed Frameworks */,
+				F3ED8106281DB8A500C33C5B /* Convert SDL includes to SDL Framework includes */,
 			);
 			buildRules = (
 			);
@@ -7423,6 +7426,60 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "# Sign framework\nif [ \"$SDL_CODESIGN_IDENTITY\" != \"\" ]; then\n    codesign --force --deep --sign \"$SDL_CODESIGN_IDENTITY\" $TARGET_BUILD_DIR/SDL2.framework/Versions/A || exit $?\nfi\n\n# clean up the framework, remove headers, extra files\nmkdir -p build/dmg-tmp\ncp -a $TARGET_BUILD_DIR/SDL2.framework build/dmg-tmp/\n\ncp pkg-support/resources/License.txt build/dmg-tmp\ncp pkg-support/resources/ReadMe.txt build/dmg-tmp\n\n# remove the .DS_Store files if any (we may want to provide one in the future for fancy .dmgs)\nfind build/dmg-tmp -name .DS_Store -exec rm -f \"{}\" \\;\n\n# for fancy .dmg\nmkdir -p build/dmg-tmp/.logo\ncp pkg-support/resources/SDL_DS_Store build/dmg-tmp/.DS_Store\ncp pkg-support/sdl_logo.pdf build/dmg-tmp/.logo\n\n# create the dmg\nhdiutil create -ov -fs HFS+ -volname SDL2 -srcfolder build/dmg-tmp build/SDL2.dmg\n\n# clean up\nrm -rf build/dmg-tmp\n";
+		};
+		F3ED8106281DB8A500C33C5B /* Convert SDL includes to SDL Framework includes */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Convert SDL includes to SDL Framework includes";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "cd \"$BUILT_PRODUCTS_DIR/$PUBLIC_HEADERS_FOLDER_PATH\"\nsed -i '' -e 's,#include \"\\(.*\\)\",#include <SDL2/\\1>,' *.h\n";
+		};
+		F3ED8107281DB8E600C33C5B /* Convert SDL includes to SDL Framework includes */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Convert SDL includes to SDL Framework includes";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "cd \"$BUILT_PRODUCTS_DIR/$PUBLIC_HEADERS_FOLDER_PATH\"\nsed -i '' -e 's,#include \"\\(.*\\)\",#include <SDL2/\\1>,' *.h\n";
+		};
+		F3ED8108281DB8F200C33C5B /* Convert SDL includes to SDL Framework includes */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Convert SDL includes to SDL Framework includes";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "cd \"$BUILT_PRODUCTS_DIR/$PUBLIC_HEADERS_FOLDER_PATH\"\nsed -i '' -e 's,#include \"\\(.*\\)\",#include <SDL2/\\1>,' *.h\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
