@@ -663,6 +663,7 @@ SetDrawState(SDL_Surface *surface, SW_DrawStateCache *drawstate)
         const SDL_Rect *cliprect = drawstate->cliprect;
         SDL_assert(viewport != NULL);  /* the higher level should have forced a SDL_RENDERCMD_SETVIEWPORT */
 
+#ifndef __NGAGE__
         if (cliprect != NULL) {
             SDL_Rect clip_rect;
             clip_rect.x = cliprect->x + viewport->x;
@@ -674,6 +675,24 @@ SetDrawState(SDL_Surface *surface, SW_DrawStateCache *drawstate)
         } else {
             SDL_SetClipRect(surface, drawstate->viewport);
         }
+#else
+        if (SDL_RectEmpty(drawstate->viewport))
+        {
+            viewport = NULL;
+        }
+
+        if (cliprect != NULL && viewport != NULL) {
+            SDL_Rect clip_rect;
+            clip_rect.x = cliprect->x + viewport->x;
+            clip_rect.y = cliprect->y + viewport->y;
+            clip_rect.w = cliprect->w;
+            clip_rect.h = cliprect->h;
+            SDL_IntersectRect(viewport, &clip_rect, &clip_rect);
+            SDL_SetClipRect(surface, &clip_rect);
+        } else {
+            SDL_SetClipRect(surface, viewport);
+        }
+#endif
         drawstate->surface_cliprect_dirty = SDL_FALSE;
     }
 }
