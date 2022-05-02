@@ -23,7 +23,6 @@
 #define SDL_config_ngage_h_
 #define SDL_config_h_
 
-#include <stdlib.h>
 #include "SDL_platform.h"
 
 typedef signed char        int8_t;
@@ -39,6 +38,7 @@ typedef unsigned long      uintptr_t;
 #define HAVE_STDARG_H    1
 #define HAVE_STDDEF_H    1
 #define HAVE_STDIO_H     1
+#define HAVE_STDLIB_H    1
 
 #define HAVE_MALLOC      1
 #define SDL_MAIN_NEEDED  1
