@@ -23,7 +23,6 @@
 #define SDL_config_ngage_h_
 #define SDL_config_h_
 
-#include <stdlib.h>
 #include "SDL_platform.h"
 
 typedef signed char        int8_t;
