@@ -51,6 +51,7 @@ More documentation and FAQs are available online at [the wiki](http://wiki.libsd
 - [Windows](README-windows.md)
 - [WinRT](README-winrt.md)
 - [PSVita](README-vita.md)
+- [Nokia N-Gage](README-ngage.md)
 
 If you need help with the library, or just want to discuss SDL related
 issues, you can join the [SDL Discourse](https://discourse.libsdl.org/),
