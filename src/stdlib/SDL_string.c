@@ -28,11 +28,6 @@
 
 #include "SDL_stdinc.h"
 
-#if defined(__NGAGE__)
-#undef va_copy
-#define va_copy(dst, src)   dst = src
-#endif
-
 #if !defined(HAVE_VSSCANF) || !defined(HAVE_STRTOL) || !defined(HAVE_STRTOUL) || !defined(HAVE_STRTOD) || !defined(HAVE_STRTOLL) || !defined(HAVE_STRTOULL)
 #define SDL_isupperhex(X)   (((X) >= 'A') && ((X) <= 'F'))
 #define SDL_islowerhex(X)   (((X) >= 'a') && ((X) <= 'f'))
