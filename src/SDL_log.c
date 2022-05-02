@@ -39,6 +39,11 @@
 #include <android/log.h>
 #endif
 
+#if defined(__NGAGE__)
+#undef va_copy
+#define va_copy(dst, src)   dst = src
+#endif
+
 /* The size of the stack buffer to use for rendering log messages. */
 #define SDL_MAX_LOG_MESSAGE_STACK 256
 

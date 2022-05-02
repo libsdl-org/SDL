@@ -5304,6 +5304,11 @@ History:
 
 #endif /* !HAVE_MALLOC */
 
+#ifdef __NGAGE__
+/* Hack */
+#include <stdlib.h>
+#endif /* __NGAGE */
+
 #ifdef HAVE_MALLOC
 #define real_malloc malloc
 #define real_calloc calloc
