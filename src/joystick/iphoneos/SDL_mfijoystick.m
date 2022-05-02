@@ -180,6 +180,10 @@ IsControllerXbox(GCController *controller)
 static BOOL
 IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controller)
 {
+    if ((@available(macOS 11.3, *)) && !GCController.shouldMonitorBackgroundEvents) {
+        GCController.shouldMonitorBackgroundEvents = YES;
+    }
+
     Uint16 *guid16 = (Uint16 *)device->guid.data;
     Uint16 vendor = 0;
     Uint16 product = 0;
@@ -586,10 +590,6 @@ IOS_JoystickInit(void)
         /* GameController.framework was added in iOS 7. */
         if (![GCController class]) {
             return 0;
-        }
-
-        if (@available(macOS 11.3, iOS 14.5, tvOS 14.5, *)) {
-            GCController.shouldMonitorBackgroundEvents = YES;
         }
 
         /* For whatever reason, this always returns an empty array on
