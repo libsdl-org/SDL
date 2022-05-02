@@ -1279,8 +1279,8 @@ RAWINPUT_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uin
 {
 #if defined(SDL_JOYSTICK_RAWINPUT_WGI) || defined(SDL_JOYSTICK_RAWINPUT_XINPUT)
     RAWINPUT_DeviceContext *ctx = joystick->hwdata;
-    SDL_bool rumbled = SDL_FALSE;
 #endif
+    SDL_bool rumbled = SDL_FALSE;
 
 #ifdef SDL_JOYSTICK_RAWINPUT_WGI
     if (!rumbled && ctx->wgi_correlated) {
@@ -1590,13 +1590,18 @@ RAWINPUT_UpdateOtherAPIs(SDL_Joystick *joystick)
     RAWINPUT_FillMatchState(&match_state_xinput, ctx->match_state);
 
 #ifdef SDL_JOYSTICK_RAWINPUT_WGI
+    #ifdef SDL_JOYSTICK_RAWINPUT_XINPUT
+        SDL_bool xinput_correlated = ctx->xinput_correlated;
+    #else
+        SDL_bool xinput_correlated = SDL_FALSE;
+    #endif
     /* Parallel logic to WINDOWS_XINPUT below */
     RAWINPUT_UpdateWindowsGamingInput();
     if (ctx->wgi_correlated &&
         !joystick->low_frequency_rumble && !joystick->high_frequency_rumble &&
         !joystick->left_trigger_rumble && !joystick->right_trigger_rumble) {
         /* We have been previously correlated, ensure we are still matching, see comments in XINPUT section */
-        if (RAWINPUT_WindowsGamingInputSlotMatches(&match_state_xinput, ctx->wgi_slot, ctx->xinput_correlated)) {
+        if (RAWINPUT_WindowsGamingInputSlotMatches(&match_state_xinput, ctx->wgi_slot, xinput_correlated)) {
             ctx->wgi_uncorrelate_count = 0;
         } else {
             ++ctx->wgi_uncorrelate_count;
@@ -1625,7 +1630,7 @@ RAWINPUT_UpdateOtherAPIs(SDL_Joystick *joystick)
         if (RAWINPUT_MissingWindowsGamingInputSlot()) {
             Uint8 correlation_id;
             WindowsGamingInputGamepadState *slot_idx = NULL;
-            if (RAWINPUT_GuessWindowsGamingInputSlot(&match_state_xinput, &correlation_id, &slot_idx, ctx->xinput_correlated)) {
+            if (RAWINPUT_GuessWindowsGamingInputSlot(&match_state_xinput, &correlation_id, &slot_idx, xinput_correlated)) {
                 /* we match exactly one WindowsGamingInput device */
                 /* Probably can do without wgi_correlation_count, just check and clear wgi_slot to NULL, unless we need
                    even more frames to be sure. */
