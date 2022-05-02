@@ -392,13 +392,14 @@ extern "C" {
 #define SDL_HINT_ENABLE_STEAM_CONTROLLERS "SDL_ENABLE_STEAM_CONTROLLERS"
 
 /**
- *  \brief  A variable controlling whether SDL logs all events pushed onto its internal queue.
+ *  \brief  A variable controlling verbosity of the logging of SDL events pushed onto the internal queue.
  *
- *  This variable can be set to the following values:
+ *  This variable can be set to the following values, from least to most verbose:
  *
  *    "0"     - Don't log any events (default)
- *    "1"     - Log all events except mouse and finger motion, which are pretty spammy.
- *    "2"     - Log all events.
+ *    "1"     - Log most events (other than the really spammy ones).
+ *    "2"     - Include mouse and finger motion events.
+ *    "3"     - Include SDL_SysWMEvent events.
  *
  *  This is generally meant to be used to debug SDL itself, but can be useful
  *  for application developers that need better visibility into what is going
