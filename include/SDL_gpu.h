@@ -685,6 +685,10 @@ typedef enum SDL_GpuPresentType
  */
 void SDL_GpuSubmitCommandBuffers(SDL_GpuCommandBuffer **buffers, const Uint32 numcmdbufs, SDL_GpuPresentType presenttype, SDL_GpuFence *fence);
 
+/* If for some reason you've started encoding command buffers and decide _not_ to submit them to the GPU, you can
+   abandon them, freeing their resources. This can be useful if something unrelated fails halfway through buffer encoding. */
+void SDL_GpuAbandonCommandBuffers(SDL_GpuCommandBuffer **buffers, const Uint32 numcmdbufs);
+
 /* !!! FIXME: add a SDL_GpuAbandonCommandBuffer() function for freeing a buffer without submitting it? */
 
 /* Ends C function definitions when using C++ */

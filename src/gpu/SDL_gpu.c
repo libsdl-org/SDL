@@ -606,4 +606,9 @@ SDL_GpuSubmitCommandBuffers(SDL_GpuCommandBuffer **buffers, const Uint32 numcmdb
 {
 }
 
+void
+SDL_GpuAbandonCommandBuffers(SDL_GpuCommandBuffer **buffers, const Uint32 numcmdbufs)
+{
+}
+
 /* vi: set ts=4 sw=4 expandtab: */
