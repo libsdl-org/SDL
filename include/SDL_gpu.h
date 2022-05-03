@@ -159,17 +159,23 @@ SDL_GpuDevice *SDL_GpuCreateDevice(const char *label);  /* `label` is for debugg
 void SDL_GpuDestroyDevice(SDL_GpuDevice *device);
 
 /* CPU buffers live in RAM and can be accessed by the CPU. */
-typedef struct SDL_GpuBuffer SDL_GpuBuffer;
-SDL_GpuBuffer *SDL_GpuCreateCPUBuffer(SDL_GpuDevice *device, const Uint32 buflen);
-void *SDL_GpuLockCPUBuffer(SDL_GpuBuffer *buffer, Uint32 *_buflen);
-void SDL_GpuUnlockCPUBuffer(SDL_GpuBuffer *buffer);
+typedef struct SDL_GpuCpuBuffer SDL_GpuCpuBuffer;
+SDL_GpuCpuBuffer *SDL_GpuCreateCpuBuffer(const char *label, SDL_GpuDevice *device, const Uint32 buflen, const void *data);
+void SDL_GpuDestroyCpuBuffer(SDL_GpuCpuBuffer *buffer);
+void *SDL_GpuLockCpuBuffer(SDL_GpuCpuBuffer *buffer, Uint32 *_buflen);
+void SDL_GpuUnlockCpuBuffer(SDL_GpuCpuBuffer *buffer);
 
 /*
  * GPU buffers live in GPU-specific memory and can not be accessed by the CPU.
  *  If you need to get data to/from a GPU buffer, encode a blit operation
  *  to move it from/to a CPU buffer. Once in a CPU buffer, you can lock it to access data in your code.
+ * There is no initial `data` pointer here, like CPU buffers have, since there's significantly more
+ *  work to initialize them. If you plan to do an upload to the GPU buffer at the same time as
+ *  you create it, there's a convenience function that will do it at the cost of blocking until the
+ *  upload is complete: SDL_GpuCreateAndInitBuffer
  */
-SDL_GpuBuffer *SDL_GpuCreateBuffer(SDL_GpuDevice *device, const Uint32 length);
+typedef struct SDL_GpuBuffer SDL_GpuBuffer;
+SDL_GpuBuffer *SDL_GpuCreateBuffer(const char *label, SDL_GpuDevice *device, const Uint32 length);
 void SDL_GpuDestroyBuffer(SDL_GpuBuffer *buffer);
 
 
@@ -628,7 +634,8 @@ void SDL_GpuFillBuffer(SDL_GpuBlitPass *pass, SDL_GpuBuffer *buffer, Uint32 offs
 
 void SDL_GpuGenerateMipmaps(SDL_GpuBlitPass *pass, SDL_GpuTexture *texture);
 
-void SDL_GpuCopyBetweenBuffers(SDL_GpuBlitPass *pass, SDL_GpuBuffer *srcbuf, Uint32 srcoffset, SDL_GpuBuffer *dstbuf, Uint32 dstoffset, Uint32 length);
+void SDL_GpuCopyBufferCpuToGpu(SDL_GpuBlitPass *pass, SDL_GpuCpuBuffer *srcbuf, Uint32 srcoffset, SDL_GpuBuffer *dstbuf, Uint32 dstoffset, Uint32 length);
+void SDL_GpuCopyBufferGpuToCpu(SDL_GpuBlitPass *pass, SDL_GpuBuffer *srcbuf, Uint32 srcoffset, SDL_GpuCpuBuffer *dstbuf, Uint32 dstoffset, Uint32 length);
 
 void SDL_GpuCopyFromBufferToTexture(SDL_GpuBlitPass *pass, SDL_GpuBuffer *srcbuf, Uint32 srcoffset,
                                      Uint32 srcpitch, Uint32 srcimgpitch,

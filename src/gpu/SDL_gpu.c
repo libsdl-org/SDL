@@ -36,23 +36,28 @@ SDL_GpuDestroyDevice(SDL_GpuDevice *device)
 {
 }
 
-SDL_GpuBuffer *
-SDL_GpuCreateCPUBuffer(SDL_GpuDevice *device, const Uint32 buflen)
-{
-}
-
-void *
-SDL_GpuLockCPUBuffer(SDL_GpuBuffer *buffer, Uint32 *_buflen)
+SDL_GpuCpuBuffer *
+SDL_GpuCreateCpuBuffer(const char *label, SDL_GpuDevice *device, const Uint32 buflen, const void *data)
 {
 }
 
 void
-SDL_GpuUnlockCPUBuffer(SDL_GpuBuffer *buffer)
+SDL_GpuDestroyCpuBuffer(SDL_GpuCpuBuffer *buffer)
+{
+}
+
+void *
+SDL_GpuLockCpuBuffer(SDL_GpuCpuBuffer *buffer, Uint32 *_buflen)
+{
+}
+
+void
+SDL_GpuUnlockCpuBuffer(SDL_GpuCpuBuffer *buffer)
 {
 }
 
 SDL_GpuBuffer *
-SDL_GpuCreateBuffer(SDL_GpuDevice *device, const Uint32 length)
+SDL_GpuCreateBuffer(const char *label, SDL_GpuDevice *device, const Uint32 length)
 {
 }
 
@@ -540,7 +545,12 @@ SDL_GpuGenerateMipmaps(SDL_GpuBlitPass *pass, SDL_GpuTexture *texture)
 }
 
 void
-SDL_GpuCopyBetweenBuffers(SDL_GpuBlitPass *pass, SDL_GpuBuffer *srcbuf, Uint32 srcoffset, SDL_GpuBuffer *dstbuf, Uint32 dstoffset, Uint32 length)
+SDL_GpuCopyBufferCpuToGpu(SDL_GpuBlitPass *pass, SDL_GpuCpuBuffer *srcbuf, Uint32 srcoffset, SDL_GpuBuffer *dstbuf, Uint32 dstoffset, Uint32 length)
+{
+}
+
+void
+SDL_GpuCopyBufferGpuToCpu(SDL_GpuBlitPass *pass, SDL_GpuBuffer *srcbuf, Uint32 srcoffset, SDL_GpuCpuBuffer *dstbuf, Uint32 dstoffset, Uint32 length)
 {
 }
 
