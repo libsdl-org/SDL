@@ -2965,7 +2965,6 @@ if(SDL_TEST)
   include_directories(AFTER "${SDL2_SOURCE_DIR}/include")
   file(GLOB TEST_SOURCES ${SDL2_SOURCE_DIR}/src/test/*.c)
   add_library(SDL2_test STATIC ${TEST_SOURCES})
-  add_subdirectory(test)
 endif()
 
 ##### Installation targets #####
@@ -3091,3 +3090,8 @@ if(NOT SDL2_DISABLE_UNINSTALL)
   endif()
 endif()
 
+##### Tests subproject (must appear after the install/uninstall targets) #####
+
+if(SDL_TEST)
+  add_subdirectory(test)
+endif()
