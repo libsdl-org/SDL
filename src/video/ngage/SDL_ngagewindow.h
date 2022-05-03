@@ -19,39 +19,27 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef SDL_config_h_
-#define SDL_config_h_
+#ifndef _SDL_ngagewindow_h
+#define _SDL_ngagewindow_h
 
-#include "SDL_platform.h"
+#include "../SDL_sysvideo.h"
+#include "SDL_syswm.h"
 
-/**
- *  \file SDL_config.h
- */
+#include "SDL_ngagevideo.h"
 
-/* Add any platform that doesn't build using the configure system. */
-#if defined(__WIN32__)
-#include "SDL_config_windows.h"
-#elif defined(__WINRT__)
-#include "SDL_config_winrt.h"
-#elif defined(__MACOSX__)
-#include "SDL_config_macosx.h"
-#elif defined(__IPHONEOS__)
-#include "SDL_config_iphoneos.h"
-#elif defined(__ANDROID__)
-#include "SDL_config_android.h"
-#elif defined(__OS2__)
-#include "SDL_config_os2.h"
-#elif defined(__EMSCRIPTEN__)
-#include "SDL_config_emscripten.h"
-#elif defined(__NGAGE__)
-#include "SDL_config_ngage.h"
-#else
-/* This is a minimal configuration just to get SDL running on new platforms. */
-#include "SDL_config_minimal.h"
-#endif /* platform config */
+typedef struct {
+    SDL_Window* sdl_window;
 
-#ifdef USING_GENERATED_CONFIG_H
-#error Wrong SDL_config.h, check your include path?
-#endif
+} NGAGE_Window;
 
-#endif /* SDL_config_h_ */
+
+extern int
+NGAGE_CreateWindow(_THIS, SDL_Window* window);
+
+extern void
+NGAGE_DestroyWindow(_THIS, SDL_Window* window);
+
+#endif /* _SDL_ngagewindow */
+
+/* vi: set ts=4 sw=4 expandtab: */
+

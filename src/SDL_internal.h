@@ -27,7 +27,10 @@
 #endif
 
 /* Do our best to make sure va_copy is working */
-#if defined(_MSC_VER) && _MSC_VER <= 1800
+#if defined(__NGAGE__)
+#undef va_copy
+#define va_copy(dst, src)   dst = src
+#elif defined(_MSC_VER) && _MSC_VER <= 1800
 /* Visual Studio 2013 tries to link with _vacopy in the C runtime. Newer versions do an inline assignment */
 #undef va_copy
 #define va_copy(dst, src)   dst = src
