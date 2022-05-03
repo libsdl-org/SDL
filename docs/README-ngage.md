@@ -22,9 +22,7 @@ Current level of implementation
 The video driver currently provides full screen video support with
 keyboard input.
 
-At the moment only the software renderer works, but clipping had to be
-explicitly deactivated for the platform.  This means that functions such
-as `SDL_RenderSetLogicalSize()` do not work yet.
+At the moment only the software renderer works.
 
 Audio is not yet implemented.
 

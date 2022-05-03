@@ -39,12 +39,22 @@ typedef unsigned long      uintptr_t;
 #define HAVE_STDDEF_H    1
 #define HAVE_STDIO_H     1
 #define HAVE_STDLIB_H    1
-
+#define HAVE_MATH_H      1
+#define HAVE_CEIL        1
+#define HAVE_COPYSIGN    1
+#define HAVE_COS         1
+#define HAVE_EXP         1
+#define HAVE_FABS        1
+#define HAVE_FLOOR       1
+#define HAVE_LOG         1
+#define HAVE_LOG10       1
+#define HAVE_SCALBN      1
+#define HAVE_SIN         1
+#define HAVE_SQRT        1
+#define HAVE_TAN         1
 #define HAVE_MALLOC      1
 #define SDL_MAIN_NEEDED  1
 #define LACKS_SYS_MMAN_H 1
-
-//#define NGAGE_DEBUG 1
 
 /* Enable the N-Gage thread support (src/thread/ngage/\*.c) */
 #define SDL_THREAD_NGAGE 1
@@ -54,10 +64,6 @@ typedef unsigned long      uintptr_t;
 
 /* Enable the N=Hahe video driver (src/video/ngage/\*.c) */
 #define SDL_VIDEO_DRIVER_NGAGE 1
-
-#ifdef __GNUC__
-//#define HAVE_GCC_SYNC_LOCK_TEST_AND_SET 1
-#endif
 
 /* Enable the dummy audio driver (src/audio/dummy/\*.c) */
 #define SDL_AUDIO_DRIVER_DUMMY  1
