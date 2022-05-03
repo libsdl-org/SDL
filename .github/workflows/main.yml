@@ -82,6 +82,13 @@ jobs:
       run: cmake -B build -DSDL_TEST=ON ${{ matrix.platform.flags }}
     - name: Build
       run: cmake --build build/ --config Release
+    - name: Install
+      run: |
+        set -eu
+        cmake --build build/ --config Release
+        rm -fr DESTDIR-cmake
+        DESTDIR=$(pwd)/DESTDIR-cmake cmake --install build/ --config Release
+        ( cd DESTDIR-cmake; find ) | LC_ALL=C sort -u
     - name: Configure Autotools
       if: runner.os == 'Linux'
       run: |
