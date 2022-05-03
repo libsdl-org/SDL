@@ -2503,6 +2503,14 @@ SDL_CreateWindowFramebuffer(SDL_Window * window)
     if (!_this->checked_texture_framebuffer) {
         SDL_bool attempt_texture_framebuffer = SDL_TRUE;
 
+        /* See if the user or application wants to specifically disable the framebuffer */
+        const char *hint = SDL_GetHint(SDL_HINT_FRAMEBUFFER_ACCELERATION);
+        if (hint) {
+            if (*hint == '0' || SDL_strcasecmp(hint, "false") == 0) {
+                attempt_texture_framebuffer = SDL_FALSE;
+            }
+        }
+
         if (_this->is_dummy) {  /* dummy driver never has GPU support, of course. */
             attempt_texture_framebuffer = SDL_FALSE;
         }
