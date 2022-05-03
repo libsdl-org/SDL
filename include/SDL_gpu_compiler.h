@@ -44,7 +44,8 @@ extern "C" {
  * speed over optimization. If one really wants a strong optimizing compiler,
  * one should build an external tool.  :)
  */
-int SDL_GpuCompileShader(const char *src, const Uint32 srclen, const char *type, const char *mainfn, Uint8 **result, Uint32 *resultlen);
+/* !!! FIXME: don't use a string for type, just an enum */
+int SDL_GpuCompileShader(const char *src, const int srclen, const char *type, const char *mainfn, Uint8 **result, Uint32 *resultlen);
 
 /* !!! FIXME: There's probably a lot of other stuff we want to put in here. */
 

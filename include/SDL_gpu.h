@@ -691,6 +691,53 @@ void SDL_GpuAbandonCommandBuffers(SDL_GpuCommandBuffer **buffers, const Uint32 n
 
 /* !!! FIXME: add a SDL_GpuAbandonCommandBuffer() function for freeing a buffer without submitting it? */
 
+
+/* Helper functions. These are optional and built on top of the public API to remove boilerplate from your code. */
+
+/* This makes a GPU buffer, and uploads data to it. This is not a fast call! But it removes a bunch of boilerplate code if you
+   just want to blast data to a GPU buffer. This will submit a command buffer with a blit pass to the device and wait for
+   it to complete. Returns NULL on error, the new GPU buffer otherwise. */
+SDL_GpuBuffer *SDL_GpuCreateAndInitBuffer(const char *label, SDL_GpuDevice *device, const Uint32 buflen, const void *data);
+
+/* Make sure your depth texture matches the window's backbuffer dimensions, if you don't care about managing the depth buffer yourself.
+ * This assumes the depth texture is not still in-flight from a previous frame! If the depth texture needs to be resized, previous contents
+ * will be lost.
+ */
+SDL_GpuTexture *SDL_GpuMatchingDepthTexture(const char *label, SDL_GpuDevice *device, SDL_GpuTexture *backbuffer, SDL_GpuTexture **depth);
+
+/* Since you need to leave a buffer untouched until the GPU is done with it, you often need to keep several buffers of uniforms
+   that you cycle through as the GPU processes prior frames. If you don't want to manage this yourself, you can use a buffer cycle
+   to do it for you. This will cycle through a list of buffers, each new request from the app returning the least-recently-used
+   item, under the presumption that when you get back to that item again it'll be available for reuse.
+   The "Ptr" version gives you the address of the item in the cycle, in case you need to rebuild it: for example, if you have a
+   cycle of depth textures and the window gets resized, you'd use the Ptr version to destroy and recreate the object in the cycle.
+   In normal use, you want the non-Ptr version, though. */
+typedef struct SDL_GpuCpuBufferCycle SDL_GpuCpuBufferCycle;
+SDL_GpuCpuBufferCycle *SDL_GpuCreateCpuBufferCycle(const char *label, SDL_GpuDevice *device, const Uint32 bufsize, const void *data, const Uint32 numbuffers);
+SDL_GpuCpuBuffer *SDL_GpuNextCpuBufferCycle(SDL_GpuCpuBufferCycle *cycle);
+SDL_GpuCpuBuffer **SDL_GpuNextCpuBufferPtrCycle(SDL_GpuCpuBufferCycle *cycle);
+void SDL_GpuDestroyCpuBufferCycle(SDL_GpuCpuBufferCycle *cycle);
+
+typedef struct SDL_GpuBufferCycle SDL_GpuBufferCycle;
+SDL_GpuBufferCycle *SDL_GpuCreateBufferCycle(const char *label, SDL_GpuDevice *device, const Uint32 bufsize, const Uint32 numbuffers);
+SDL_GpuBuffer *SDL_GpuNextBufferCycle(SDL_GpuBufferCycle *cycle);
+SDL_GpuBuffer **SDL_GpuNextBufferPtrCycle(SDL_GpuBufferCycle *cycle);
+void SDL_GpuDestroyBufferCycle(SDL_GpuBufferCycle *cycle);
+
+/* if the texdesc is NULL, you will get a cycle of NULL textures that you can create later with SDL_GpuNextTexturePtrCycle */
+typedef struct SDL_GpuTextureCycle SDL_GpuTextureCycle;
+SDL_GpuTextureCycle *SDL_GpuCreateTextureCycle(const char *label, SDL_GpuDevice *device, const SDL_GpuTextureDescription *texdesc, const Uint32 numtextures);
+SDL_GpuTexture *SDL_GpuNextTextureCycle(SDL_GpuTextureCycle *cycle);
+SDL_GpuTexture **SDL_GpuNextTexturePtrCycle(SDL_GpuTextureCycle *cycle);
+void SDL_GpuDestroyTextureCycle(SDL_GpuTextureCycle *cycle);
+
+typedef struct SDL_GpuFenceCycle SDL_GpuFenceCycle;
+SDL_GpuFenceCycle *SDL_GpuCreateFenceCycle(const char *label, SDL_GpuDevice *device, const Uint32 numfences);
+SDL_GpuFence *SDL_GpuNextFenceCycle(SDL_GpuFenceCycle *cycle);
+SDL_GpuFence **SDL_GpuNextFencePtrCycle(SDL_GpuFenceCycle *cycle);
+void SDL_GpuDestroyFenceCycle(SDL_GpuFenceCycle *cycle);
+
+
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
 }

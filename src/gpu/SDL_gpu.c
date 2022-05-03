@@ -611,4 +611,122 @@ SDL_GpuAbandonCommandBuffers(SDL_GpuCommandBuffer **buffers, const Uint32 numcmd
 {
 }
 
+SDL_GpuBuffer *SDL_GpuCreateAndInitBuffer(const char *label, SDL_GpuDevice *device, const Uint32 buflen, const void *data)
+{
+    SDL_GpuFence *fence = NULL;
+    SDL_GpuCpuBuffer *staging = NULL;
+    SDL_GpuBuffer *gpubuf = NULL;
+    SDL_GpuBuffer *retval = NULL;
+    SDL_GpuCommandBuffer *cmd = NULL;
+    SDL_GpuBlitPass *blit = NULL;
+
+    if (device == NULL) {
+        SDL_InvalidParamError("device");
+        return NULL;
+    } else if (data == NULL) {
+        SDL_InvalidParamError("data");
+        return NULL;
+    }
+
+    if ( ((fence = SDL_GpuCreateFence("Temporary fence for SDL_GpuCreateAndInitBuffer", device)) != NULL) &&
+         ((staging = SDL_GpuCreateCpuBuffer("Staging buffer for SDL_GpuCreateAndInitBuffer", device, buflen, data)) != NULL) &&
+         ((gpubuf = SDL_GpuCreateBuffer(label, device, buflen)) != NULL) &&
+         ((cmd = SDL_GpuCreateCommandBuffer("Command buffer for SDL_GpuCreateAndInitBuffer", device)) != NULL) &&
+         ((blit = SDL_GpuStartBlitPass("Blit pass for SDL_GpuCreateAndInitBuffer", cmd)) != NULL) ) {
+        SDL_GpuCopyBufferCpuToGpu(blit, staging, 0, gpubuf, 0, buflen);
+        SDL_GpuEndBlitPass(blit);
+        SDL_GpuSubmitCommandBuffers(&cmd, 1, SDL_GPUPRESENT_NONE, fence);
+        SDL_GpuWaitFence(fence);  /* so we know it's definitely uploaded */
+        retval = gpubuf;
+    }
+
+    if (!retval) {
+        SDL_GpuEndBlitPass(blit);   /* assume this might be un-ended. */
+        SDL_GpuAbandonCommandBuffers(&cmd, 1);
+        SDL_GpuDestroyBuffer(gpubuf);
+    }
+    SDL_GpuDestroyCpuBuffer(staging);
+    SDL_GpuDestroyFence(fence);
+    return retval;
+}
+
+SDL_GpuTexture *
+SDL_GpuMatchingDepthTexture(const char *label, SDL_GpuDevice *device, SDL_GpuTexture *backbuffer, SDL_GpuTexture **depthtex)
+{
+    SDL_GpuTextureDescription bbtexdesc, depthtexdesc;
+
+    if (!device) {
+        SDL_InvalidParamError("device");
+        return NULL;
+    } else if (!backbuffer) {
+        SDL_InvalidParamError("backbuffer");
+        return NULL;
+    } else if (!depthtex) {
+        SDL_InvalidParamError("depthtex");
+        return NULL;
+    }
+
+    SDL_GpuGetTextureDescription(backbuffer, &bbtexdesc);
+
+    if (*depthtex) {
+        SDL_GpuGetTextureDescription(*depthtex, &depthtexdesc);
+    }
+
+    /* !!! FIXME: check texture_type, pixel_format, etc? */
+    if (!*depthtex || (depthtexdesc.width != bbtexdesc.width) || (depthtexdesc.height != bbtexdesc.height)) {
+        SDL_zero(depthtexdesc);
+        depthtexdesc.label = label;
+        depthtexdesc.texture_type = SDL_GPUTEXTYPE_2D;
+        depthtexdesc.pixel_format = SDL_GPUPIXELFMT_Depth24_Stencil8;
+        depthtexdesc.usage = SDL_GPUTEXUSAGE_RENDER_TARGET;  /* !!! FIXME: does this need shader read or write to be the depth buffer? */
+        depthtexdesc.width = bbtexdesc.width;
+        depthtexdesc.height = bbtexdesc.width;
+        SDL_GpuDestroyTexture(*depthtex);
+        *depthtex = SDL_GpuCreateTexture(device, &depthtexdesc);
+    }
+
+    return *depthtex;
+}
+
+/* various object cycle APIs ... */
+#define SDL_GPUCYCLETYPE SDL_GpuCpuBufferCycle
+#define SDL_GPUCYCLEITEMTYPE SDL_GpuCpuBuffer
+#define SDL_GPUCYCLECREATEFNSIG SDL_GpuCreateCpuBufferCycle(const char *label, SDL_GpuDevice *device, const Uint32 bufsize, const void *data, const Uint32 numitems)
+#define SDL_GPUCYCLENEXTFNNAME SDL_GpuNextCpuBufferCycle
+#define SDL_GPUCYCLENEXTPTRFNNAME SDL_GpuNextCpuBufferPtrCycle
+#define SDL_GPUCYCLEDESTROYFNNAME SDL_GpuDestroyCpuBufferCycle
+#define SDL_GPUCYCLECREATE(lbl, failvar, itemvar) { itemvar = SDL_GpuCreateCpuBuffer(lbl, device, bufsize, data); failvar = (itemvar == NULL); }
+#define SDL_GPUCYCLEDESTROY SDL_GpuDestroyCpuBuffer
+#include "SDL_gpu_cycle_impl.h"
+
+#define SDL_GPUCYCLETYPE SDL_GpuBufferCycle
+#define SDL_GPUCYCLEITEMTYPE SDL_GpuBuffer
+#define SDL_GPUCYCLECREATEFNSIG SDL_GpuCreateBufferCycle(const char *label, SDL_GpuDevice *device, const Uint32 bufsize, const Uint32 numitems)
+#define SDL_GPUCYCLENEXTFNNAME SDL_GpuNextBufferCycle
+#define SDL_GPUCYCLENEXTPTRFNNAME SDL_GpuNextBufferPtrCycle
+#define SDL_GPUCYCLEDESTROYFNNAME SDL_GpuDestroyBufferCycle
+#define SDL_GPUCYCLECREATE(lbl, failvar, itemvar) { itemvar = SDL_GpuCreateBuffer(lbl, device, bufsize); failvar = (itemvar == NULL); }
+#define SDL_GPUCYCLEDESTROY SDL_GpuDestroyBuffer
+#include "SDL_gpu_cycle_impl.h"
+
+#define SDL_GPUCYCLETYPE SDL_GpuTextureCycle
+#define SDL_GPUCYCLEITEMTYPE SDL_GpuTexture
+#define SDL_GPUCYCLECREATEFNSIG SDL_GpuCreateTextureCycle(const char *label, SDL_GpuDevice *device, const SDL_GpuTextureDescription *texdesc, const Uint32 numitems)
+#define SDL_GPUCYCLENEXTFNNAME SDL_GpuNextTextureCycle
+#define SDL_GPUCYCLENEXTPTRFNNAME SDL_GpuNextTexturePtrCycle
+#define SDL_GPUCYCLEDESTROYFNNAME SDL_GpuDestroyTextureCycle
+#define SDL_GPUCYCLECREATE(lbl, failvar, itemvar) { if (texdesc) { SDL_GpuTextureDescription td; SDL_memcpy(&td, texdesc, sizeof (td)); td.label = lbl; itemvar = SDL_GpuCreateTexture(device, &td); failvar = (itemvar == NULL); } else { itemvar = NULL; failvar = SDL_FALSE; } }
+#define SDL_GPUCYCLEDESTROY SDL_GpuDestroyTexture
+#include "SDL_gpu_cycle_impl.h"
+
+#define SDL_GPUCYCLETYPE SDL_GpuFenceCycle
+#define SDL_GPUCYCLEITEMTYPE SDL_GpuFence
+#define SDL_GPUCYCLECREATEFNSIG SDL_GpuCreateFenceCycle(const char *label, SDL_GpuDevice *device, const Uint32 numitems)
+#define SDL_GPUCYCLENEXTFNNAME SDL_GpuNextFenceCycle
+#define SDL_GPUCYCLENEXTPTRFNNAME SDL_GpuNextFencePtrCycle
+#define SDL_GPUCYCLEDESTROYFNNAME SDL_GpuDestroyFenceCycle
+#define SDL_GPUCYCLECREATE(lbl, failvar, itemvar) { itemvar = SDL_GpuCreateFence(lbl, device); failvar = (itemvar == NULL); }
+#define SDL_GPUCYCLEDESTROY SDL_GpuDestroyFence
+#include "SDL_gpu_cycle_impl.h"
+
 /* vi: set ts=4 sw=4 expandtab: */
