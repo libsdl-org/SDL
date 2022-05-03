@@ -58,8 +58,8 @@ include(${SDL2_SOURCE_DIR}/cmake/sdlchecks.cmake)
 
 # See docs/release_checklist.md
 set(SDL_MAJOR_VERSION 2)
-set(SDL_MINOR_VERSION 0)
-set(SDL_MICRO_VERSION 23)
+set(SDL_MINOR_VERSION 23)
+set(SDL_MICRO_VERSION 0)
 set(SDL_INTERFACE_AGE 0)
 set(SDL_BINARY_AGE 23)
 set(SDL_VERSION "${SDL_MAJOR_VERSION}.${SDL_MINOR_VERSION}.${SDL_MICRO_VERSION}")
@@ -74,11 +74,15 @@ set(SDL_CMAKE_DEBUG_POSTFIX "d"
 mark_as_advanced(CMAKE_IMPORT_LIBRARY_SUFFIX SDL_CMAKE_DEBUG_POSTFIX)
 
 # Calculate a libtool-like version number
-math(EXPR LT_CURRENT "${SDL_MICRO_VERSION} - ${SDL_INTERFACE_AGE}")
+math(EXPR LT_CURRENT "${SDL_MINOR_VERSION} - ${SDL_INTERFACE_AGE}")
 math(EXPR LT_AGE "${SDL_BINARY_AGE} - ${SDL_INTERFACE_AGE}")
 math(EXPR LT_MAJOR "${LT_CURRENT}- ${LT_AGE}")
 set(LT_REVISION "${SDL_INTERFACE_AGE}")
-set(LT_RELEASE "${SDL_MAJOR_VERSION}.${SDL_MINOR_VERSION}")
+# For historical reasons, the library name redundantly includes the major
+# version twice: libSDL2-2.0.so.0.
+# TODO: in SDL 3, set the OUTPUT_NAME to plain SDL3, which will simplify
+# it to libSDL3.so.0
+set(LT_RELEASE "2.0")
 set(LT_VERSION "${LT_MAJOR}.${LT_AGE}.${LT_REVISION}")
 
 #message(STATUS "${LT_VERSION} :: ${LT_AGE} :: ${LT_REVISION} :: ${LT_CURRENT} :: ${LT_RELEASE}")
