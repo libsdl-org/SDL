@@ -66,9 +66,10 @@ typedef unsigned int u_int32_t;
  * Math on arm is special:
  * For FPA, float words are always big-endian.
  * For VFP, floats words follow the memory system mode.
+ * For Maverick, float words are always little-endian.
  */
 
-#if (SDL_BYTEORDER == SDL_BIG_ENDIAN)
+#if (SDL_FLOATWORDORDER == SDL_BIG_ENDIAN)
 
 typedef union
 {
