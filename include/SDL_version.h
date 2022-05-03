@@ -83,6 +83,8 @@ typedef struct SDL_version
     (x)->patch = SDL_PATCHLEVEL;                    \
 }
 
+/* TODO: Remove this whole block in SDL 3 */
+#if SDL_MAJOR_VERSION < 3
 /**
  *  This macro turns the version numbers into a numeric value:
  *  \verbatim
@@ -90,15 +92,21 @@ typedef struct SDL_version
     \endverbatim
  *
  *  This assumes that there will never be more than 100 patchlevels.
+ *  This macro will not be available in SDL 3.x.
  */
 #define SDL_VERSIONNUM(X, Y, Z)                     \
     ((X)*1000 + (Y)*100 + (Z))
 
 /**
  *  This is the version number macro for the current SDL version.
+ *
+ *  This macro will not be available in SDL 3.x.
+ *
+ *  Deprecated, use SDL_VERSION_ATLEAST or SDL_VERSION instead.
  */
 #define SDL_COMPILEDVERSION \
     SDL_VERSIONNUM(SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_PATCHLEVEL)
+#endif /* SDL_MAJOR_VERSION < 3 */
 
 /**
  *  This macro will evaluate to true if compiled with SDL at least X.Y.Z.
