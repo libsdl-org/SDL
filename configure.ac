@@ -209,6 +209,10 @@ case "$enable_assertions" in
         ;;
 esac
 
+AC_DEFINE_UNQUOTED([SDL_BUILD_MAJOR_VERSION], $SDL_MAJOR_VERSION, [ ])
+AC_DEFINE_UNQUOTED([SDL_BUILD_MINOR_VERSION], $SDL_MINOR_VERSION, [ ])
+AC_DEFINE_UNQUOTED([SDL_BUILD_MICRO_VERSION], $SDL_MICRO_VERSION, [ ])
+
 dnl See whether we can use gcc style dependency tracking
 AC_ARG_ENABLE(dependency-tracking,
 [AS_HELP_STRING([--enable-dependency-tracking],
