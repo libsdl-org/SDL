@@ -10,16 +10,7 @@ dnl Save the CFLAGS to see whether they were passed in or generated
 orig_CFLAGS="$CFLAGS"
 
 dnl Set various version strings - taken gratefully from the GTk sources
-#
-# Making releases:
-# Edit include/SDL_version.h and change the version, then:
-#   SDL_MICRO_VERSION += 1;
-#   SDL_INTERFACE_AGE += 1;
-#   SDL_BINARY_AGE += 1;
-# if any functions have been added, set SDL_INTERFACE_AGE to 0.
-# if backwards compatibility has been broken,
-# set SDL_BINARY_AGE and SDL_INTERFACE_AGE to 0.
-#
+# See docs/release_checklist.md
 SDL_MAJOR_VERSION=2
 SDL_MINOR_VERSION=0
 SDL_MICRO_VERSION=23
