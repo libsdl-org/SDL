@@ -2,10 +2,22 @@
 This is a list of major changes in SDL's version history.
 
 ---------------------------------------------------------------------------
-2.0.24:
+2.24.0:
 ---------------------------------------------------------------------------
 
 General:
+* New version numbering scheme, similar to GLib and Flatpak.
+    * An even number in the minor version (second component) indicates
+      a production-ready stable release such as 2.24.0, which would have
+      been 2.0.24 under the old system.
+      * The patchlevel (micro version, third component) indicates a
+        bugfix-only update: for example, 2.24.1 would be a bugfix-only
+        release to fix bugs in 2.24.0, without adding new features.
+    * An odd number in the minor version indicates a prerelease such
+      as 2.23.0. Stable distributions should not use these prereleases.
+      * The patchlevel indicates successive prereleases, for example
+        2.23.1 and 2.23.2 would be prereleases during development of
+        the SDL 2.24.0 stable release.
 * Added SDL_bsearch() to the stdlib routines
 * Added functions to get the platform dependent name for a joystick or game controller:
     * SDL_JoystickPathForIndex()
