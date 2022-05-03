@@ -577,7 +577,7 @@ SDL_GpuEndBlitPass(SDL_GpuBlitPass *pass)
 }
 
 SDL_GpuFence *
-SDL_GpuCreateFence(SDL_GpuDevice *device)
+SDL_GpuCreateFence(const char *label, SDL_GpuDevice *device)
 {
 }
 

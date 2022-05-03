@@ -660,7 +660,7 @@ void SDL_GpuEndBlitPass(SDL_GpuBlitPass *pass);
  *  and if it's safe to touch resources that are no longer in-flight.
  */
 typedef struct SDL_GpuFence SDL_GpuFence;
-SDL_GpuFence *SDL_GpuCreateFence(SDL_GpuDevice *device);
+SDL_GpuFence *SDL_GpuCreateFence(const char *label, SDL_GpuDevice *device);
 void SDL_GpuDestroyFence(SDL_GpuFence *fence);
 int SDL_GpuQueryFence(SDL_GpuFence *fence);
 int SDL_GpuResetFence(SDL_GpuFence *fence);
