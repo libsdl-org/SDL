@@ -15,7 +15,7 @@
  * \brief Checks edge cases (0 and infinity) for themselves.
  */
 static int floor_edgeCases(void* args) {
-  static const double edge_cases[] = {INFINITY, -INFINITY, 0.0, -0.0};
+  const double edge_cases[] = {INFINITY, -INFINITY, 0.0, -0.0};
   for (size_t i = 0; i < SDL_arraysize(edge_cases); i++) {
     const double result = SDL_floor(edge_cases[i]);
     SDLTest_AssertCheck(result == edge_cases[i],
@@ -37,8 +37,8 @@ static int floor_nanCase(void* args) {
  * \brief Checks round values (x.0) for themselves
  */
 static int floor_roundNumbersCases(void* args) {
-  static const double round_cases[] = {1.0,   -1.0,   15.0,   -15.0,
-                                       125.0, -125.0, 1024.0, -1024.0};
+  const double round_cases[] = {1.0,   -1.0,   15.0,   -15.0,
+                                125.0, -125.0, 1024.0, -1024.0};
   for (size_t i = 0; i < SDL_arraysize(round_cases); i++) {
     const double result = SDL_floor(round_cases[i]);
     SDLTest_AssertCheck(result == round_cases[i],
@@ -52,7 +52,7 @@ static int floor_roundNumbersCases(void* args) {
  * \brief Checks a set of fractions
  */
 static int floor_fractionCases(void* args) {
-  static const struct {
+  const struct {
     double input, expected;
   } frac_cases[] = {{1.0 / 2.0, 0.0},        {-1.0 / 2.0, -1.0},
                     {4.0 / 3.0, 1.0},        {-4.0 / 3.0, -2.0},
