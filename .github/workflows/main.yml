@@ -17,7 +17,8 @@ jobs:
         platform:
         - { name: Windows (mingw32),      os: windows-latest, shell: 'msys2 {0}', msystem: mingw32, msys-env: mingw-w64-i686 }
         - { name: Windows (mingw64),      os: windows-latest, shell: 'msys2 {0}', msystem: mingw64, msys-env: mingw-w64-x86_64 }
-        - { name: Linux,                  os: ubuntu-20.04,   shell: sh,   flags: -GNinja }
+        - { name: Linux (CMake),          os: ubuntu-20.04,   shell: sh,   flags: -GNinja }
+        - { name: Linux (autotools),      os: ubuntu-20.04,   shell: sh,   autotools: 'true' }
         - { name: MacOS,                  os: macos-latest,   shell: sh }
 
     steps:
@@ -79,27 +80,30 @@ jobs:
         sudo meson install -C build
     - uses: actions/checkout@v2
     - name: Check that versioning is consistent
-      if: runner.os == 'Linux'
+      # We only need to run this once: arbitrarily use the Linux/CMake build
+      if: "runner.os == 'Linux' && ! matrix.platform.autotools"
       run: ./test/versioning.sh
     - name: Configure CMake
+      if: "! matrix.platform.autotools"
       run: cmake -B build -DSDL_TEST=ON -DCMAKE_VERBOSE_MAKEFILE=ON ${{ matrix.platform.flags }}
     - name: Build
+      if: "! matrix.platform.autotools"
       run: cmake --build build/ --config Release
     - name: Run build-time tests
-      if: matrix.platform.shell == 'sh'
+      if: "matrix.platform.shell == 'sh' && ! matrix.platform.autotools"
       run: |
         set -eu
         export SDL_TESTS_QUICK=1
         ctest -VV --test-dir build/
     - name: Install
-      if: matrix.platform.shell == 'sh'
+      if: "matrix.platform.shell == 'sh' && ! matrix.platform.autotools"
       run: |
         set -eu
         rm -fr DESTDIR-cmake
         DESTDIR=$(pwd)/DESTDIR-cmake cmake --install build/ --config Release
         ( cd DESTDIR-cmake; find ) | LC_ALL=C sort -u
     - name: Configure Autotools
-      if: runner.os == 'Linux'
+      if: matrix.platform.autotools
       run: |
         set -eu
         rm -fr build-autotools
@@ -120,14 +124,14 @@ jobs:
             ${NULL+}
         )
     - name: Build with Autotools
-      if: runner.os == 'Linux'
+      if: matrix.platform.autotools
       run: |
         set -eu
         parallel="$(getconf _NPROCESSORS_ONLN)"
         make -j"${parallel}" -C build-autotools V=1
         make -j"${parallel}" -C build-autotools/test V=1
     - name: Run build-time tests with Autotools
-      if: runner.os == 'Linux'
+      if: matrix.platform.autotools
       run: |
         set -eu
         curdir="$(pwd)"
@@ -135,7 +139,7 @@ jobs:
         export SDL_TESTS_QUICK=1
         make -j"${parallel}" -C build-autotools/test check LD_LIBRARY_PATH="${curdir}/build-autotools/build/.libs"
     - name: Install with Autotools
-      if: runner.os == 'Linux'
+      if: matrix.platform.autotools
       run: |
         set -eu
         curdir="$(pwd)"
