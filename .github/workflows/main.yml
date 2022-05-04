@@ -86,6 +86,7 @@ jobs:
     - name: Build
       run: cmake --build build/ --config Release
     - name: Install
+      if: matrix.platform.shell == 'sh'
       run: |
         set -eu
         rm -fr DESTDIR-cmake
