@@ -78,6 +78,9 @@ jobs:
         ninja -v -C build
         sudo meson install -C build
     - uses: actions/checkout@v2
+    - name: Check that versioning is consistent
+      if: runner.os == 'Linux'
+      run: ./test/versioning.sh
     - name: Configure CMake
       run: cmake -B build -DSDL_TEST=ON ${{ matrix.platform.flags }}
     - name: Build

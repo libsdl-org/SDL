@@ -25,6 +25,8 @@
         * if backwards compatibility has been broken,
             increase `DYLIB_COMPATIBILITY_VERSION` (?)
 
+* Run test/versioning.sh to verify that everything is consistent
+
 * Regenerate `configure`
 
 * Do the release
@@ -45,6 +47,8 @@
         `DYLIB_CURRENT_VERSION`, `DYLIB_COMPATIBILITY_VERSION`
         * set second number in `DYLIB_CURRENT_VERSION` to *patchlevel*
 
+* Run test/versioning.sh to verify that everything is consistent
+
 * Regenerate `configure`
 
 * Do the release
@@ -62,6 +66,8 @@
     * Same places as listed above
     * Assume that the next feature release will contain new API/ABI
 
+* Run test/versioning.sh to verify that everything is consistent
+
 ## New development prerelease
 
 * Bump version number from 2.Y.Z to 2.Y.(Z+1) (Y is odd)
@@ -77,6 +83,8 @@
         * set second number in `DYLIB_CURRENT_VERSION` to 0
         * if backwards compatibility has been broken,
             increase `DYLIB_COMPATIBILITY_VERSION` (?)
+
+* Run test/versioning.sh to verify that everything is consistent
 
 * Regenerate `configure`
 
