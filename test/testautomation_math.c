@@ -46,9 +46,10 @@ static int floor_nanCase(void* args) {
  * \brief Checks round values (x.0) for themselves
  */
 static int floor_roundNumbersCases(void* args) {
+  Uint32 i;
   const double round_cases[] = {1.0,   -1.0,   15.0,   -15.0,
                                 125.0, -125.0, 1024.0, -1024.0};
-  for (size_t i = 0; i < SDL_arraysize(round_cases); i++) {
+  for (i = 0; i < SDL_arraysize(round_cases); i++) {
     const double result = SDL_floor(round_cases[i]);
     SDLTest_AssertCheck(result == round_cases[i],
                         "Floor(%.1f), expected %.1f, got %.1f", round_cases[i],
@@ -61,6 +62,7 @@ static int floor_roundNumbersCases(void* args) {
  * \brief Checks a set of fractions
  */
 static int floor_fractionCases(void* args) {
+  Uint32 i;
   const struct {
     double input, expected;
   } frac_cases[] = {{1.0 / 2.0, 0.0},        {-1.0 / 2.0, -1.0},
@@ -68,7 +70,7 @@ static int floor_fractionCases(void* args) {
                     {76.0 / 7.0, 10.0},      {-76.0 / 7.0, -11.0},
                     {535.0 / 8.0, 66.0},     {-535.0 / 8.0, -67.0},
                     {19357.0 / 53.0, 365.0}, {-19357.0 / 53.0, -366.0}};
-  for (size_t i = 0; i < SDL_arraysize(frac_cases); i++) {
+  for (i = 0; i < SDL_arraysize(frac_cases); i++) {
     const double result = SDL_floor(frac_cases[i].input);
     SDLTest_AssertCheck(result == frac_cases[i].expected,
                         "Floor(%f), expected %.1f, got %f", frac_cases[i].input,
@@ -83,10 +85,11 @@ static int floor_fractionCases(void* args) {
 static int floor_rangeTest(void* args) {
   const Uint32 ITERATIONS = 10000000;
   const Uint32 STEP = SDL_MAX_UINT32 / ITERATIONS;
+  Uint32 i;
   double test_value = 0.0;
   SDLTest_AssertPass("Floor: Testing a range of %u values with %u steps",
                      ITERATIONS, STEP);
-  for (Uint32 i = 0; i < ITERATIONS; i++, test_value += STEP) {
+  for (i = 0; i < ITERATIONS; i++, test_value += STEP) {
     double result;
     /* These are tested elsewhere */
     if (isnan(test_value) || isinf(test_value)) {
