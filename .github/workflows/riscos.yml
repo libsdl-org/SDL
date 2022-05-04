@@ -23,6 +23,6 @@ jobs:
       run: apt-get update && apt-get install -y cmake ninja-build
     - uses: actions/checkout@v2
     - name: Configure CMake
-      run: cmake -S. -Bbuild -G Ninja -DCMAKE_TOOLCHAIN_FILE=/home/riscos/env/toolchain-riscos.cmake -DRISCOS=ON -DSDL_GCC_ATOMICS=OFF -DCMAKE_BUILD_TYPE=Release
+      run: cmake -S. -Bbuild -G Ninja -DCMAKE_TOOLCHAIN_FILE=/home/riscos/env/toolchain-riscos.cmake -DRISCOS=ON -DSDL_GCC_ATOMICS=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_VERBOSE_MAKEFILE=ON
     - name: Build
-      run: cmake -v --build build
+      run: cmake --build build

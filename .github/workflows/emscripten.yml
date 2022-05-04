@@ -11,6 +11,6 @@ jobs:
         with:
           version: 2.0.27
       - name: Configure CMake
-        run: emcmake cmake -B build
+        run: emcmake cmake -B build -DCMAKE_VERBOSE_MAKEFILE=ON
       - name: Build
-        run: cmake -v --build build/
+        run: cmake --build build/
