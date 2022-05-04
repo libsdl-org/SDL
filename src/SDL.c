@@ -80,13 +80,8 @@ SDL_COMPILE_TIME_ASSERT(SDL_MINOR_VERSION_min, SDL_MINOR_VERSION >= 0);
 SDL_COMPILE_TIME_ASSERT(SDL_MINOR_VERSION_max, SDL_MINOR_VERSION <= 255);
 
 SDL_COMPILE_TIME_ASSERT(SDL_PATCHLEVEL_min, SDL_PATCHLEVEL >= 0);
-#if SDL_MAJOR_VERSION < 3
-/* Limited by its encoding in SDL_VERSIONNUM */
+/* Limited by its encoding in SDL_VERSIONNUM and in the ABI versions */
 SDL_COMPILE_TIME_ASSERT(SDL_PATCHLEVEL_max, SDL_PATCHLEVEL <= 99);
-#else
-/* Limited only by the need to fit in SDL_version */
-SDL_COMPILE_TIME_ASSERT(SDL_PATCHLEVEL_max, SDL_PATCHLEVEL <= 255);
-#endif
 
 /* This is not declared in any header, although it is shared between some
     parts of SDL, because we don't want anything calling it without an
