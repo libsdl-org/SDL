@@ -82,14 +82,14 @@ jobs:
       if: runner.os == 'Linux'
       run: ./test/versioning.sh
     - name: Configure CMake
-      run: cmake -B build -DSDL_TEST=ON ${{ matrix.platform.flags }}
+      run: cmake -B build -DSDL_TEST=ON -DCMAKE_VERBOSE_MAKEFILE=ON ${{ matrix.platform.flags }}
     - name: Build
-      run: cmake -v --build build/ --config Release
+      run: cmake --build build/ --config Release
     - name: Install
       run: |
         set -eu
         rm -fr DESTDIR-cmake
-        DESTDIR=$(pwd)/DESTDIR-cmake cmake -v --install build/ --config Release
+        DESTDIR=$(pwd)/DESTDIR-cmake cmake --install build/ --config Release
         ( cd DESTDIR-cmake; find ) | LC_ALL=C sort -u
     - name: Configure Autotools
       if: runner.os == 'Linux'

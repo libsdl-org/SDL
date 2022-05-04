@@ -23,7 +23,7 @@ jobs:
     - name: Configure CMake
       run: cmake -B build -DSDL_TEST=ON ${{ matrix.platform.flags }}
     - name: Build CMake
-      run: cmake -v --build build/ --config Release --parallel
+      run: cmake --build build/ --config Release --parallel
 
     - name: Add msbuild to PATH
       if: ${{ matrix.platform.project != '' }}
