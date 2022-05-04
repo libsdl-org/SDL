@@ -54,6 +54,12 @@ main(int argc, char *argv[])
         return (1);
     }
 
+    if (SDL_getenv("SDL_TESTS_QUICK") != NULL) {
+        SDL_Log("Not running slower tests");
+        SDL_Quit();
+        return 0;
+    }
+
     /* Verify SDL_GetTicks* acts monotonically increasing, and not erratic. */
     SDL_Log("Sanity-checking GetTicks\n");
     for (i = 0; i < 1000; ++i) {
