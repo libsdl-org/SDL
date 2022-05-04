@@ -12,7 +12,7 @@ jobs:
     - name: Configure
       run: ./configure --host=arm-unknown-riscos --disable-gcc-atomics
     - name: Build
-      run: make -j`nproc`
+      run: make -j`nproc` V=1
 
   cmake:
     name: CMake
@@ -25,4 +25,4 @@ jobs:
     - name: Configure CMake
       run: cmake -S. -Bbuild -G Ninja -DCMAKE_TOOLCHAIN_FILE=/home/riscos/env/toolchain-riscos.cmake -DRISCOS=ON -DSDL_GCC_ATOMICS=OFF -DCMAKE_BUILD_TYPE=Release
     - name: Build
-      run: cmake --build build
+      run: cmake -v --build build

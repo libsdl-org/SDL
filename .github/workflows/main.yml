@@ -75,19 +75,19 @@ jobs:
         git clone --depth 1 https://gitlab.gnome.org/jadahl/libdecor.git --branch 0.1.0
         cd libdecor
         meson build --buildtype release -Ddemo=false -Ddbus=disabled
-        ninja -C build
+        ninja -v -C build
         sudo meson install -C build
     - uses: actions/checkout@v2
     - name: Configure CMake
       run: cmake -B build -DSDL_TEST=ON ${{ matrix.platform.flags }}
     - name: Build
-      run: cmake --build build/ --config Release
+      run: cmake -v --build build/ --config Release
     - name: Install
       run: |
         set -eu
-        cmake --build build/ --config Release
+        cmake -v --build build/ --config Release
         rm -fr DESTDIR-cmake
-        DESTDIR=$(pwd)/DESTDIR-cmake cmake --install build/ --config Release
+        DESTDIR=$(pwd)/DESTDIR-cmake cmake -v --install build/ --config Release
         ( cd DESTDIR-cmake; find ) | LC_ALL=C sort -u
     - name: Configure Autotools
       if: runner.os == 'Linux'
@@ -116,10 +116,10 @@ jobs:
         set -eu
         curdir="$(pwd)"
         parallel="$(getconf _NPROCESSORS_ONLN)"
-        make -j"${parallel}" -C build-autotools
-        make -j"${parallel}" -C build-autotools/test
+        make -j"${parallel}" -C build-autotools V=1
+        make -j"${parallel}" -C build-autotools/test V=1
         rm -fr DESTDIR-autotools
         mkdir DESTDIR-autotools
-        make -j"${parallel}" -C build-autotools install DESTDIR="${curdir}/DESTDIR-autotools"
+        make -j"${parallel}" -C build-autotools install DESTDIR="${curdir}/DESTDIR-autotools" V=1
         ( cd DESTDIR-autotools; find ) | LC_ALL=C sort -u
-        make -j"${parallel}" -C build-autotools dist
+        make -j"${parallel}" -C build-autotools dist V=1
