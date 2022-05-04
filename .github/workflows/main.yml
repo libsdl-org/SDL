@@ -85,6 +85,12 @@ jobs:
       run: cmake -B build -DSDL_TEST=ON -DCMAKE_VERBOSE_MAKEFILE=ON ${{ matrix.platform.flags }}
     - name: Build
       run: cmake --build build/ --config Release
+    - name: Run build-time tests
+      if: matrix.platform.shell == 'sh'
+      run: |
+        set -eu
+        export SDL_TESTS_QUICK=1
+        ctest -VV --test-dir build/
     - name: Install
       if: matrix.platform.shell == 'sh'
       run: |
@@ -117,10 +123,23 @@ jobs:
       if: runner.os == 'Linux'
       run: |
         set -eu
-        curdir="$(pwd)"
         parallel="$(getconf _NPROCESSORS_ONLN)"
         make -j"${parallel}" -C build-autotools V=1
         make -j"${parallel}" -C build-autotools/test V=1
+    - name: Run build-time tests with Autotools
+      if: runner.os == 'Linux'
+      run: |
+        set -eu
+        curdir="$(pwd)"
+        parallel="$(getconf _NPROCESSORS_ONLN)"
+        export SDL_TESTS_QUICK=1
+        make -j"${parallel}" -C build-autotools/test check LD_LIBRARY_PATH="${curdir}/build-autotools/build/.libs"
+    - name: Install with Autotools
+      if: runner.os == 'Linux'
+      run: |
+        set -eu
+        curdir="$(pwd)"
+        parallel="$(getconf _NPROCESSORS_ONLN)"
         rm -fr DESTDIR-autotools
         mkdir DESTDIR-autotools
         make -j"${parallel}" -C build-autotools install DESTDIR="${curdir}/DESTDIR-autotools" V=1
