@@ -72,8 +72,8 @@ static int floor_fractionCases(void* args) {
  * \brief Checks a range of values between 0 and UINT32_MAX
  */
 static int floor_rangeTest(void* args) {
-  static const Uint32 ITERATIONS = 10000000;
-  static const Uint32 STEP = UINT32_MAX / ITERATIONS;
+  const Uint32 ITERATIONS = 10000000;
+  const Uint32 STEP = SDL_MAX_UINT32 / ITERATIONS;
   double test_value = 0.0;
   SDLTest_AssertPass("Floor: Testing a range of %u values with %u steps",
                      ITERATIONS, STEP);
