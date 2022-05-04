@@ -1586,14 +1586,17 @@ RAWINPUT_UpdateOtherAPIs(SDL_Joystick *joystick)
     int guide_button = joystick->nbuttons - 1;
     int left_trigger = joystick->naxes - 2;
     int right_trigger = joystick->naxes - 1;
+#ifdef SDL_JOYSTICK_RAWINPUT_WGI
+    SDL_bool xinput_correlated;
+#endif
 
     RAWINPUT_FillMatchState(&match_state_xinput, ctx->match_state);
 
 #ifdef SDL_JOYSTICK_RAWINPUT_WGI
     #ifdef SDL_JOYSTICK_RAWINPUT_XINPUT
-        SDL_bool xinput_correlated = ctx->xinput_correlated;
+    xinput_correlated = ctx->xinput_correlated;
     #else
-        SDL_bool xinput_correlated = SDL_FALSE;
+    xinput_correlated = SDL_FALSE;
     #endif
     /* Parallel logic to WINDOWS_XINPUT below */
     RAWINPUT_UpdateWindowsGamingInput();
