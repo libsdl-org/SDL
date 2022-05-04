@@ -709,6 +709,12 @@ main(int argc, char *argv[])
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     RunBasicTest();
+
+    if (SDL_getenv("SDL_TESTS_QUICK") != NULL) {
+        SDL_Log("Not running slower tests");
+        return 0;
+    }
+
     RunEpicTest();
 /* This test is really slow, so don't run it by default */
 #if 0
