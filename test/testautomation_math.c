@@ -15,13 +15,22 @@
  * \brief Checks edge cases (0 and infinity) for themselves.
  */
 static int floor_edgeCases(void* args) {
-  const double edge_cases[] = {INFINITY, -INFINITY, 0.0, -0.0};
-  for (size_t i = 0; i < SDL_arraysize(edge_cases); i++) {
-    const double result = SDL_floor(edge_cases[i]);
-    SDLTest_AssertCheck(result == edge_cases[i],
-                        "Floor(%.1f), expected %.1f, got %.1f", edge_cases[i],
-                        edge_cases[i], result);
-  }
+  double result;
+
+  result = SDL_floor(INFINITY);
+  SDLTest_AssertCheck(INFINITY == result, "Floor(%f), expected %f, got %f",
+                      INFINITY, INFINITY, result);
+  result = SDL_floor(-INFINITY);
+  SDLTest_AssertCheck(-INFINITY == result, "Floor(%f), expected %f, got %f",
+                      -INFINITY, -INFINITY, result);
+
+  result = SDL_floor(0.0);
+  SDLTest_AssertCheck(0.0 == result, "Floor(%.1f), expected %.1f, got %.1f",
+                      0.0, 0.0, result);
+  result = SDL_floor(-0.0);
+  SDLTest_AssertCheck(-0.0 == result, "Floor(%.1f), expected %.1f, got %.1f",
+                      -0.0, -0.0, result);
+
   return TEST_COMPLETED;
 }
 
