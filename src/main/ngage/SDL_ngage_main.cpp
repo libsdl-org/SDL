@@ -1,6 +1,5 @@
 /*
-    EPOC version (originally for SDL 1.2) by Hannu Viitala
-    (hannu.j.viitala@mbnet.fi).
+    SDL_psp_main.c, placed in the public domain by Sam Lantinga  3/13/14
 */
 #include "../../SDL_internal.h"
 
@@ -68,7 +67,8 @@ TInt E32Main()
     {
         oldHeap = User::SwitchHeap(newHeap);
         /* Call stdlib main */
-        ret = main(argc, argv);
+        SDL_SetMainReady();
+        ret = SDL_main(argc, argv);
     }
 
 cleanup:
