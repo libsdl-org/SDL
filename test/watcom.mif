@@ -57,7 +57,8 @@ TASRCS = testautomation.c testautomation_audio.c testautomation_clipboard.c &
          testautomation_render.c testautomation_rwops.c &
          testautomation_sdltest.c testautomation_stdlib.c &
          testautomation_surface.c testautomation_syswm.c &
-         testautomation_timer.c testautomation_video.c
+         testautomation_timer.c testautomation_video.c &
+         testautomation_math.c
 
 OBJS = $(TARGETS:.exe=.obj)
 COBJS = $(CSRCS:.c=.obj)
