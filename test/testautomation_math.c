@@ -2,6 +2,8 @@
  * Math test suite
  */
 
+#include <math.h>
+
 #include "SDL.h"
 #include "SDL_test.h"
 
@@ -76,12 +78,13 @@ static int floor_rangeTest(void* args) {
   SDLTest_AssertPass("Floor: Testing a range of %u values with %u steps",
                      ITERATIONS, STEP);
   for (Uint32 i = 0; i < ITERATIONS; i++, test_value += STEP) {
+    double result;
     /* These are tested elsewhere */
     if (isnan(test_value) || isinf(test_value)) {
       continue;
     }
 
-    const double result = SDL_floor(test_value);
+    result = SDL_floor(test_value);
     if (result != test_value) { /* Only log failures to save performances */
       SDLTest_AssertPass("Floor(%.1f), expected %.1f, got %.1f", test_value,
                          test_value, result);
