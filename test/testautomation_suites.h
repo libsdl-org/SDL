@@ -27,6 +27,7 @@ extern SDLTest_TestSuiteReference syswmTestSuite;
 extern SDLTest_TestSuiteReference timerTestSuite;
 extern SDLTest_TestSuiteReference videoTestSuite;
 extern SDLTest_TestSuiteReference hintsTestSuite;
+extern SDLTest_TestSuiteReference mathTestSuite;
 
 /* All test suites */
 SDLTest_TestSuiteReference *testSuites[] =  {
@@ -48,6 +49,7 @@ SDLTest_TestSuiteReference *testSuites[] =  {
     &timerTestSuite,
     &videoTestSuite,
     &hintsTestSuite,
+    &mathTestSuite,
     NULL
 };
 
