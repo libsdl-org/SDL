@@ -429,6 +429,15 @@ foreach(TESTCASE ${NONINTERACTIVE} ${NEEDS_AUDIO} ${NEEDS_DISPLAY})
         ${TESTCASE}
         PROPERTIES ENVIRONMENT "${TESTS_ENVIRONMENT}"
     )
+    if(SDL_INSTALL_TESTS)
+        set(exe ${TESTCASE})
+        set(installedtestsdir "${CMAKE_INSTALL_FULL_LIBEXECDIR}/installed-tests/SDL2")
+        configure_file(template.test.in "${exe}.test" @ONLY)
+        install(
+            FILES "${CMAKE_CURRENT_BINARY_DIR}/${exe}.test"
+            DESTINATION ${CMAKE_INSTALL_DATADIR}/installed-tests/SDL2
+        )
+    endif()
 endforeach()
 
 if(SDL_INSTALL_TESTS)
