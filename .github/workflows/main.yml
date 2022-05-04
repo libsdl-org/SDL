@@ -39,6 +39,7 @@ jobs:
         sudo apt-get update
         sudo apt-get install \
           autoconf \
+          gnome-desktop-testing \
           wayland-protocols \
           pkg-config \
           ninja-build \
@@ -85,7 +86,7 @@ jobs:
       run: ./test/versioning.sh
     - name: Configure CMake
       if: "! matrix.platform.autotools"
-      run: cmake -B build -DSDL_TEST=ON -DCMAKE_VERBOSE_MAKEFILE=ON ${{ matrix.platform.flags }}
+      run: cmake -B build -DSDL_TEST=ON -DCMAKE_VERBOSE_MAKEFILE=ON -DSDL_INSTALL_TESTS=ON ${{ matrix.platform.flags }}
     - name: Build
       if: "! matrix.platform.autotools"
       run: cmake --build build/ --config Release
@@ -147,5 +148,23 @@ jobs:
         rm -fr DESTDIR-autotools
         mkdir DESTDIR-autotools
         make -j"${parallel}" -C build-autotools install DESTDIR="${curdir}/DESTDIR-autotools" V=1
+        make -j"${parallel}" -C build-autotools/test install DESTDIR="${curdir}/DESTDIR-autotools" V=1
         ( cd DESTDIR-autotools; find ) | LC_ALL=C sort -u
         make -j"${parallel}" -C build-autotools dist V=1
+    - name: Run installed-tests from Autotools
+      if: "runner.os == 'Linux' && matrix.platform.autotools"
+      run: |
+        set -eu
+        parallel="$(getconf _NPROCESSORS_ONLN)"
+        sudo make -j"${parallel}" -C build-autotools install
+        sudo make -j"${parallel}" -C build-autotools/test install
+        export SDL_TESTS_QUICK=1
+        # We need to set LD_LIBRARY_PATH because it isn't in the default
+        # linker search path. We don't need to set XDG_DATA_DIRS for
+        # ginsttest-runner, because /usr/local/share *is* in the default
+        # search path for that.
+        env --chdir=/ \
+            LD_LIBRARY_PATH=/usr/local/lib \
+            SDL_AUDIODRIVER=dummy \
+            SDL_VIDEODRIVER=dummy \
+            ginsttest-runner --tap SDL2
