@@ -71,6 +71,7 @@ SDL_DestroyMutex(SDL_mutex * mutex)
 }
 
 /* Try to lock the mutex */
+#if 0
 int
 SDL_TryLockMutex(SDL_mutex * mutex)
 {
@@ -83,6 +84,7 @@ SDL_TryLockMutex(SDL_mutex * mutex)
     // Not yet implemented.
     return 0;
 }
+#endif
 
 /* Lock the mutex */
 int
