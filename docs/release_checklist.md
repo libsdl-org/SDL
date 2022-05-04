@@ -17,14 +17,10 @@
 
 * Bump ABI version information
 
-    * `configure.ac`: `CMakeLists.txt`: `SDL_INTERFACE_AGE`, `SDL_BINARY_AGE`
-        * `SDL_BINARY_AGE += 1`
-        * set `SDL_INTERFACE_AGE` to 0
-        * if backwards compatibility has been broken,
-            set both `SDL_BINARY_AGE` and `SDL_INTERFACE_AGE` to 0
-    * `Xcode/SDL/SDL.xcodeproj/project.pbxproj`: `DYLIB_CURRENT_VERSION`,
-        `DYLIB_COMPATIBILITY_VERSION`
-        * increment first number in `DYLIB_CURRENT_VERSION`
+    * `CMakeLists.txt`, `Xcode/SDL/SDL.xcodeproj/project.pbxproj`:
+        `DYLIB_CURRENT_VERSION`, `DYLIB_COMPATIBILITY_VERSION`
+        * set first number in `DYLIB_CURRENT_VERSION` to
+            (100 * *minor*) + 1
         * set second number in `DYLIB_CURRENT_VERSION` to 0
         * if backwards compatibility has been broken,
             increase `DYLIB_COMPATIBILITY_VERSION` (?)
@@ -45,12 +41,9 @@
 
 * Bump ABI version information
 
-    * `configure.ac`: `CMakeLists.txt`: `SDL_INTERFACE_AGE`, `SDL_BINARY_AGE`
-        * `SDL_INTERFACE_AGE += 1`
-        * `SDL_BINARY_AGE += 1`
-    * `Xcode/SDL/SDL.xcodeproj/project.pbxproj`: `DYLIB_CURRENT_VERSION`,
-        `DYLIB_COMPATIBILITY_VERSION`
-        * increment second number in `DYLIB_CURRENT_VERSION`
+    * `CMakeLists.txt`, `Xcode/SDL/SDL.xcodeproj/project.pbxproj`:
+        `DYLIB_CURRENT_VERSION`, `DYLIB_COMPATIBILITY_VERSION`
+        * set second number in `DYLIB_CURRENT_VERSION` to *patchlevel*
 
 * Regenerate `configure`
 
@@ -77,8 +70,13 @@
 
 * Bump ABI version information
 
-    * Same places as listed above
-    * Assume that the next feature release will contain new API/ABI
+    * `CMakeLists.txt`, `Xcode/SDL/SDL.xcodeproj/project.pbxproj`:
+        `DYLIB_CURRENT_VERSION`, `DYLIB_COMPATIBILITY_VERSION`
+        * set first number in `DYLIB_CURRENT_VERSION` to
+            (100 * *minor*) + *patchlevel* + 1
+        * set second number in `DYLIB_CURRENT_VERSION` to 0
+        * if backwards compatibility has been broken,
+            increase `DYLIB_COMPATIBILITY_VERSION` (?)
 
 * Regenerate `configure`
 

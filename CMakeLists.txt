@@ -60,12 +60,7 @@ include(${SDL2_SOURCE_DIR}/cmake/sdlchecks.cmake)
 set(SDL_MAJOR_VERSION 2)
 set(SDL_MINOR_VERSION 23)
 set(SDL_MICRO_VERSION 0)
-set(SDL_INTERFACE_AGE 0)
-set(SDL_BINARY_AGE 23)
 set(SDL_VERSION "${SDL_MAJOR_VERSION}.${SDL_MINOR_VERSION}.${SDL_MICRO_VERSION}")
-# the following should match the versions in Xcode project file:
-set(DYLIB_CURRENT_VERSION 24.0.0)
-set(DYLIB_COMPATIBILITY_VERSION 1.0.0)
 
 # Set defaults preventing destination file conflicts
 set(SDL_CMAKE_DEBUG_POSTFIX "d"
@@ -74,9 +69,22 @@ set(SDL_CMAKE_DEBUG_POSTFIX "d"
 mark_as_advanced(CMAKE_IMPORT_LIBRARY_SUFFIX SDL_CMAKE_DEBUG_POSTFIX)
 
 # Calculate a libtool-like version number
-math(EXPR LT_CURRENT "${SDL_MINOR_VERSION} - ${SDL_INTERFACE_AGE}")
+math(EXPR SDL_BINARY_AGE "${SDL_MINOR_VERSION} * 100 + ${SDL_MICRO_VERSION}")
+if(SDL_MINOR_VERSION MATCHES "[02468]$")
+    # Stable branch, 2.24.1 -> libSDL2-2.0.so.0.2400.1
+    set(SDL_INTERFACE_AGE ${SDL_MICRO_VERSION})
+else()
+    # Development branch, 2.23.1 -> libSDL2-2.0.so.0.2301.0
+    set(SDL_INTERFACE_AGE 0)
+endif()
+
+# Increment this if there is an incompatible change - but if that happens,
+# we should rename the library from SDL2 to SDL3, at which point this would
+# reset to 0 anyway.
+set(LT_MAJOR "0")
+
 math(EXPR LT_AGE "${SDL_BINARY_AGE} - ${SDL_INTERFACE_AGE}")
-math(EXPR LT_MAJOR "${LT_CURRENT}- ${LT_AGE}")
+math(EXPR LT_CURRENT "${LT_MAJOR} + ${LT_AGE}")
 set(LT_REVISION "${SDL_INTERFACE_AGE}")
 # For historical reasons, the library name redundantly includes the major
 # version twice: libSDL2-2.0.so.0.
@@ -84,6 +92,16 @@ set(LT_REVISION "${SDL_INTERFACE_AGE}")
 # it to libSDL3.so.0
 set(LT_RELEASE "2.0")
 set(LT_VERSION "${LT_MAJOR}.${LT_AGE}.${LT_REVISION}")
+
+# The following should match the versions in the Xcode project file.
+# Each version is 1 higher than you might expect, for compatibility
+# with libtool: macOS ABI versioning is 1-based, unlike other platforms
+# which are normally 0-based.
+math(EXPR DYLIB_CURRENT_VERSION_MAJOR "${LT_MAJOR} + ${LT_AGE} + 1")
+math(EXPR DYLIB_CURRENT_VERSION_MINOR "${LT_REVISION}")
+math(EXPR DYLIB_COMPAT_VERSION_MAJOR "${LT_MAJOR} + 1")
+set(DYLIB_CURRENT_VERSION "${DYLIB_CURRENT_VERSION_MAJOR}.${DYLIB_CURRENT_VERSION_MINOR}.0")
+set(DYLIB_COMPATIBILITY_VERSION "${DYLIB_COMPAT_VERSION_MAJOR}.0.0")
 
 #message(STATUS "${LT_VERSION} :: ${LT_AGE} :: ${LT_REVISION} :: ${LT_CURRENT} :: ${LT_RELEASE}")
 

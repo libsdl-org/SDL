@@ -14,9 +14,16 @@ dnl Set various version strings - taken gratefully from the GTk sources
 SDL_MAJOR_VERSION=2
 SDL_MINOR_VERSION=23
 SDL_MICRO_VERSION=0
-SDL_INTERFACE_AGE=0
-SDL_BINARY_AGE=23
 SDL_VERSION=$SDL_MAJOR_VERSION.$SDL_MINOR_VERSION.$SDL_MICRO_VERSION
+
+SDL_BINARY_AGE=`expr $SDL_MINOR_VERSION \* 100 + $SDL_MICRO_VERSION`
+AS_CASE(["$SDL_MINOR_VERSION"],
+  [*[02468]],
+    dnl Stable branch, 2.24.1 -> libSDL2-2.0.so.0.2400.1
+    [SDL_INTERFACE_AGE="$SDL_MICRO_VERSION"],
+  [*],
+    dnl Development branch, 2.23.1 -> libSDL2-2.0.so.0.2301.0
+    [SDL_INTERFACE_AGE=0])
 
 AC_SUBST(SDL_MAJOR_VERSION)
 AC_SUBST(SDL_MINOR_VERSION)
@@ -33,9 +40,13 @@ LT_LANG([Windows Resource])
 # version twice: libSDL2-2.0.so.0.
 # TODO: in SDL 3, stop using -release, which will simplify it to libSDL3.so.0
 LT_RELEASE=2.0
-LT_CURRENT=`expr $SDL_MINOR_VERSION - $SDL_INTERFACE_AGE`
-LT_REVISION=$SDL_INTERFACE_AGE
+# Increment this if there is an incompatible change - but if that happens,
+# we should rename the library from SDL2 to SDL3, at which point this would
+# reset to 0 anyway.
+LT_MAJOR=0
 LT_AGE=`expr $SDL_BINARY_AGE - $SDL_INTERFACE_AGE`
+LT_CURRENT=`expr $LT_MAJOR + $LT_AGE`
+LT_REVISION=$SDL_INTERFACE_AGE
 m4_pattern_allow([^LT_])
 
 AC_SUBST(LT_RELEASE)
