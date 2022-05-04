@@ -1019,7 +1019,7 @@ static int
 run_test(void)
 {
     printf("SDL compiled without evdev capability check.\n");
-    return 0;
+    return 1;
 }
 
 #endif
