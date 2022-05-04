@@ -88,7 +88,6 @@ jobs:
     - name: Install
       run: |
         set -eu
-        cmake -v --build build/ --config Release
         rm -fr DESTDIR-cmake
         DESTDIR=$(pwd)/DESTDIR-cmake cmake -v --install build/ --config Release
         ( cd DESTDIR-cmake; find ) | LC_ALL=C sort -u
