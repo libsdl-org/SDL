@@ -77,7 +77,7 @@ static SDL_Scancode ConvertScancode(_THIS, int key)
     switch(key)
     {
         case EStdKeyBackspace:    // Clear key
-            keycode = SDLK_BACKSPACE;
+            keycode = SDLK_CLEAR;
             break;
         case 0x31:                // 1
             keycode = SDLK_1;
@@ -113,22 +113,22 @@ static SDL_Scancode ConvertScancode(_THIS, int key)
             keycode = SDLK_ASTERISK;
             break;
         case EStdKeyHash:         // Hash
-            keycode = SDLK_SLASH;
+            keycode = SDLK_HASH;
             break;
         case EStdKeyDevice0:      // Left softkey
-            keycode = SDLK_F1;
+            keycode = SDLK_LGUI;
             break;
         case EStdKeyDevice1:      // Right softkey
-            keycode = SDLK_F2;
+            keycode = SDLK_RGUI;
             break;
         case EStdKeyApplication0: // Green softkey
-            keycode = SDLK_F3;
+            keycode = SDLK_APP1;
             break;
         case EStdKeyApplication1: // Red softkey
-            keycode = SDLK_F4;
+            keycode = SDLK_APP2;
             break;
         case EStdKeyDevice3:      // Middle softkey
-            keycode = SDLK_RETURN;
+            keycode = SDLK_SELECT;
             break;
         case EStdKeyUpArrow:      // Up arrow
             keycode = SDLK_UP;
