@@ -693,7 +693,7 @@ typedef enum SDL_GpuPresentType
  * If this command buffer is to present to a window, specify a non-NULL present_window.
  *  presenttype is ignored if this isn't a render pass using a window's backbuffer.
  */
-void SDL_GpuSubmitCommandBuffers(SDL_GpuCommandBuffer **buffers, const Uint32 numcmdbufs, SDL_GpuPresentType presenttype, SDL_GpuFence *fence);
+int SDL_GpuSubmitCommandBuffers(SDL_GpuDevice *device, SDL_GpuCommandBuffer **buffers, const Uint32 numcmdbufs, SDL_GpuPresentType presenttype, SDL_GpuFence *fence);
 
 /* If for some reason you've started encoding command buffers and decide _not_ to submit them to the GPU, you can
    abandon them, freeing their resources. This can be useful if something unrelated fails halfway through buffer encoding. */
