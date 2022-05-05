@@ -148,14 +148,23 @@ extern "C" {
  */
 
 /*
- *  !!! FIXME: enumerate lowlevel APIs? In theory a Windows machine
- *   could offer all of Direct3D 9-12, Vulkan, OpenGL, GLES, etc...
+ * You can get a list of driver names that were compiled into this build of
+ * SDL. These are not all guaranteed to _work_ at runtime, but they are the
+ * backends that are potentially available. You do not have to iterate
+ * these; if you request a NULL driver to SDL_GpuCreateDevice, SDL will try
+ * to make the best decision for the current system, but if you want to
+ * try multiple drivers or log them for debugging, etc, here you go.
+ *
+ * The list of drivers is static and based on what was compiled into SDL; it
+ * does not change between calls to these functions.
  */
+Uint32 SDL_GpuGetNumDrivers(void);
+const char *SDL_GpuGetDriverName(Uint32 index);
 
 /* !!! FIXME: Enumerate physical devices. Right now this API doesn't allow it. */
 
 typedef struct SDL_GpuDevice SDL_GpuDevice;
-SDL_GpuDevice *SDL_GpuCreateDevice(const char *label);  /* `label` is for debugging, not a specific device name to access. */
+SDL_GpuDevice *SDL_GpuCreateDevice(const char *label, const char *driver);  /* `label` is for debugging, not a specific device name to access. */
 void SDL_GpuDestroyDevice(SDL_GpuDevice *device);
 
 /* CPU buffers live in RAM and can be accessed by the CPU. */
