@@ -27,11 +27,13 @@
 #include "SDL_gpu.h"
 #include "../SDL_hashtable.h"
 
+
 struct SDL_GpuCpuBuffer
 {
     SDL_GpuDevice *device;
     const char *label;
     Uint32 buflen;
+    void *driverdata;
 };
 
 struct SDL_GpuBuffer
@@ -39,12 +41,14 @@ struct SDL_GpuBuffer
     SDL_GpuDevice *device;
     const char *label;
     Uint32 buflen;
+    void *driverdata;
 };
 
 struct SDL_GpuTexture
 {
     SDL_GpuDevice *device;
     SDL_GpuTextureDescription desc;
+    void *driverdata;
 };
 
 struct SDL_GpuShader
@@ -52,24 +56,28 @@ struct SDL_GpuShader
     SDL_GpuDevice *device;
     const char *label;
     SDL_atomic_t refcount;
+    void *driverdata;
 };
 
 struct SDL_GpuPipeline
 {
     SDL_GpuDevice *device;
     SDL_GpuPipelineDescription desc;
+    void *driverdata;
 };
 
 struct SDL_GpuSampler
 {
     SDL_GpuDevice *device;
     SDL_GpuSamplerDescription desc;
+    void *driverdata;
 };
 
 struct SDL_GpuCommandBuffer
 {
     SDL_GpuDevice *device;
     const char *label;
+    void *driverdata;
 };
 
 struct SDL_GpuRenderPass
@@ -77,6 +85,7 @@ struct SDL_GpuRenderPass
     SDL_GpuDevice *device;
     const char *label;
     SDL_GpuCommandBuffer *cmdbuf;
+    void *driverdata;
 };
 
 struct SDL_GpuBlitPass
@@ -84,17 +93,21 @@ struct SDL_GpuBlitPass
     SDL_GpuDevice *device;
     const char *label;
     SDL_GpuCommandBuffer *cmdbuf;
+    void *driverdata;
 };
 
 struct SDL_GpuFence
 {
     SDL_GpuDevice *device;
     const char *label;
+    void *driverdata;
 };
 
 struct SDL_GpuDevice
 {
     const char *label;
+
+    void *driverdata;
 
     void (*DestroyDevice)(SDL_GpuDevice *device);
 

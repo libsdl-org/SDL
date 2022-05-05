@@ -28,9 +28,7 @@
 extern const SDL_GpuDriver DUMMY_GpuDriver;
 
 static const SDL_GpuDriver *gpu_drivers[] = {
-#if 0
     &DUMMY_GpuDriver
-#endif
 };
 
 Uint32
