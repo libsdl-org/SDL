@@ -1,6 +1,5 @@
 /*
-    EPOC version (originally for SDL 1.2) by Hannu Viitala
-    (hannu.j.viitala@mbnet.fi).
+    SDL_ngage_main.c, originally for SDL 1.2 by Hannu Viitala
 */
 #include "../../SDL_internal.h"
 
@@ -68,7 +67,8 @@ TInt E32Main()
     {
         oldHeap = User::SwitchHeap(newHeap);
         /* Call stdlib main */
-        ret = main(argc, argv);
+        SDL_SetMainReady();
+        ret = SDL_main(argc, argv);
     }
 
 cleanup:
