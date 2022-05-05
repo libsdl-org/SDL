@@ -94,7 +94,7 @@ extern "C" {
  *    work on OpenGL 2 and Direct3D 9, but why bother in modern times?
  *    (then again: maybe we can support enough of this to make many
  *    reasonable apps run on older GL/D3D, and just fail in
- *    SDL_GpuLoadShader on unsupported stuff).
+ *    SDL_GpuCreateShader on unsupported stuff).
  *  - Modern GPUs expect you to draw triangles, lines, or points.
  *    There are no quads or complex polygons. You can build them out of
  *    triangles yourself when you need them.
@@ -227,11 +227,12 @@ typedef struct SDL_GpuTextureDescription
 typedef struct SDL_GpuTexture SDL_GpuTexture;
 SDL_GpuTexture *SDL_GpuCreateTexture(SDL_GpuDevice *device, const SDL_GpuTextureDescription *desc);
 void SDL_GpuDestroyTexture(SDL_GpuTexture *texture);
-void SDL_GpuGetTextureDescription(SDL_GpuTexture *texture, SDL_GpuTextureDescription *desc);
+int SDL_GpuGetTextureDescription(SDL_GpuTexture *texture, SDL_GpuTextureDescription *desc);
 
 /* compiling shaders is a different (and optional at runtime) piece, in SDL_gpu_compiler.h */
 typedef struct SDL_GpuShader SDL_GpuShader;
-SDL_GpuShader *SDL_GpuLoadShader(SDL_GpuDevice *device, const Uint8 *bytecode, const Uint32 bytecodelen);
+SDL_GpuShader *SDL_GpuCreateShader(const char *label, SDL_GpuDevice *device, const Uint8 *bytecode, const Uint32 bytecodelen);  /* !!! FIXME: bytecode type enum? */
+/* !!! FIXME: add a query for platform/gpu specific blob that can be fed back next time for faster load times? */
 void SDL_GpuDestroyShader(SDL_GpuShader *shader);
 
 
