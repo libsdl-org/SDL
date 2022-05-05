@@ -417,6 +417,8 @@ typedef enum
                                        used as a multi-function feature key for selecting
                                        a software defined function shown on the bottom right
                                        of the display. */
+    SDL_SCANCODE_CALL = 289, /**< Used for accepting phone calls. */
+    SDL_SCANCODE_ENDCALL = 290, /**< Used for rejecting phone calls. */
 
     /* @} *//* Mobile keys */
 
