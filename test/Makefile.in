@@ -153,7 +153,7 @@ testautomation$(EXE): $(srcdir)/testautomation.c \
 		      $(srcdir)/testautomation_timer.c \
 		      $(srcdir)/testautomation_video.c \
 		      $(srcdir)/testautomation_hints.c \
-					$(srcdir)/testautomation_math.c
+		      $(srcdir)/testautomation_math.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) 
 
 testmultiaudio$(EXE): $(srcdir)/testmultiaudio.c $(srcdir)/testutils.c
