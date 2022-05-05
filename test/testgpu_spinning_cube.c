@@ -362,10 +362,10 @@ Render(SDL_Window *window, const int windownum)
     SDL_GpuDraw(render, 0, SDL_arraysize(vertex_data));
     SDL_GpuEndRenderPass(render);
 
-    SDL_GpuSubmitCommandBuffers(&cmd, 1, presenttype, NULL);  /* push work to the GPU and tell it to present to the window when done. */
+    SDL_GpuSubmitCommandBuffers(gpu_device, &cmd, 1, presenttype, NULL);  /* push work to the GPU and tell it to present to the window when done. */
 }
 
-static SDL_GpuShader *load_shader(const char *src, const char *type)
+static SDL_GpuShader *load_shader(const char *label, const char *src, const char *type)
 {
     SDL_GpuShader *retval = NULL;
     Uint8 *bytecode = NULL;
@@ -374,7 +374,7 @@ static SDL_GpuShader *load_shader(const char *src, const char *type)
         SDL_Log("Failed to compile %s shader: %s", type, SDL_GetError());
         quit(2);
     }
-    retval = SDL_GpuLoadShader(gpu_device, bytecode, bytecodelen);
+    retval = SDL_GpuCreateShader(label, gpu_device, bytecode, bytecodelen);
     if (!retval) {
         SDL_Log("Failed to load %s shader bytecode: %s", type, SDL_GetError());
         quit(2);
@@ -398,11 +398,11 @@ init_render_state(void)
 
     #define CHECK_CREATE(var, thing) { if (!(var)) { SDL_Log("Failed to create %s: %s\n", thing, SDL_GetError()); quit(2); } }
 
-    gpu_device = SDL_GpuCreateDevice("The GPU device");
+    gpu_device = SDL_GpuCreateDevice("The GPU device", NULL);
     CHECK_CREATE(gpu_device, "GPU device");
 
-    vertex_shader = load_shader(shader_vert_src, "vertex");
-    fragment_shader = load_shader(shader_frag_src, "fragment");
+    vertex_shader = load_shader("Spinning cube vertex shader", shader_vert_src, "vertex");
+    fragment_shader = load_shader("Spinning cube fragment shader", shader_frag_src, "fragment");
 
     /* We just need to upload the static data once. */
     render_state.gpubuf_static = SDL_GpuCreateAndInitBuffer("Static vertex data GPU buffer", gpu_device, sizeof (vertex_data), vertex_data);

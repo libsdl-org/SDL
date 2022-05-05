@@ -38,7 +38,7 @@ static void quit(int rc)
 
 static void initGpu(void)
 {
-    gpuDevice = SDL_GpuCreateDevice("The GPU device");
+    gpuDevice = SDL_GpuCreateDevice("The GPU device", NULL);
     if (!gpuDevice) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to create GPU device: %s", SDL_GetError());
         quit(2);
@@ -79,7 +79,7 @@ static void render(SDL_Window *window)
     }
 
     /* literally nothing to do, we just start a pass to say "clear the framebuffer to this color," present, and we're done. */
-    SDL_GpuSubmitCommandBuffers(&cmd, 1, SDL_GPUPRESENT_VSYNC, NULL);
+    SDL_GpuSubmitCommandBuffers(gpuDevice, &cmd, 1, SDL_GPUPRESENT_VSYNC, NULL);
 }
 
 int main(int argc, char **argv)
