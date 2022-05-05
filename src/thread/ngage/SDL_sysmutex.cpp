@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-/* An implementation of mutexes using semaphores */
+/* An implementation of mutexes using the Symbian API. */
 
 #include <e32std.h>
 
@@ -70,6 +70,22 @@ SDL_DestroyMutex(SDL_mutex * mutex)
     }
 }
 
+/* Try to lock the mutex */
+#if 0
+int
+SDL_TryLockMutex(SDL_mutex * mutex)
+{
+    if (mutex == NULL)
+    {
+        SDL_SetError("Passed a NULL mutex.");
+        return -1;
+    }
+
+    // Not yet implemented.
+    return 0;
+}
+#endif
+
 /* Lock the mutex */
 int
 SDL_LockMutex(SDL_mutex * mutex)
@@ -89,7 +105,7 @@ SDL_LockMutex(SDL_mutex * mutex)
 
 /* Unlock the mutex */
 int
-SDL_mutexV(SDL_mutex * mutex)
+SDL_UnlockMutex(SDL_mutex * mutex)
 {
     if ( mutex == NULL )
     {

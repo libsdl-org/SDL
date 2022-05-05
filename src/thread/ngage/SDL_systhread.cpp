@@ -128,19 +128,6 @@ SDL_SYS_DetachThread(SDL_Thread * thread)
     return;
 }
 
-/* WARNING: This function is really a last resort.
- * Threads should be signaled and then exit by themselves.
- * TerminateThread() doesn't perform stack and DLL cleanup.
- */
-void
-SDL_SYS_KillThread(SDL_Thread *thread)
-{
-    RThread rthread;
-    rthread.SetHandle(thread->handle);
-    rthread.Kill(0);
-    rthread.Close();
-}
-
 #endif /* SDL_THREAD_NGAGE */
 
 /* vim: ts=4 sw=4

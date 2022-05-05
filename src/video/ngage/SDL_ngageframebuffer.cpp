@@ -106,11 +106,16 @@ int SDL_NGAGE_CreateWindowFramebuffer(_THIS, SDL_Window * window, Uint32 * forma
     {
         phdata->NGAGE_FrameBuffer += 32;
     }
-    /*if (phdata->NGAGE_HasFrameBuffer && GetBpp(displayMode) == 12)
-      phdata->NGAGE_FrameBuffer += 16 * 2;
-      if (phdata->NGAGE_HasFrameBuffer && GetBpp(displayMode) == 16)
-      phdata->NGAGE_FrameBuffer += 16 * 2;
-    */
+    #if 0
+    if (phdata->NGAGE_HasFrameBuffer && GetBpp(displayMode) == 12)
+    {
+        phdata->NGAGE_FrameBuffer += 16 * 2;
+    }
+    if (phdata->NGAGE_HasFrameBuffer && GetBpp(displayMode) == 16)
+    {
+        phdata->NGAGE_FrameBuffer += 16 * 2;
+    }
+    #endif
 
     // Get draw device for updating the screen
     TScreenInfoV01 screenInfo2;
@@ -367,11 +372,13 @@ void DirectUpdate(_THIS, int numrects, SDL_Rect *rects)
 
     TUint16* screenBuffer = (TUint16*)phdata->NGAGE_FrameBuffer;
 
-    /*if (phdata->NGAGE_ScreenOrientation == CFbsBitGc::EGraphicsOrientationRotated270)
+#if 0
+    if (phdata->NGAGE_ScreenOrientation == CFbsBitGc::EGraphicsOrientationRotated270)
     {
         // ...
     }
-    else */
+    else
+#endif
     {
         DirectDraw(_this, numrects, rects, screenBuffer);
     }
@@ -385,7 +392,7 @@ void DirectUpdate(_THIS, int numrects, SDL_Rect *rects)
         TInt  aBy   = rects[i].h;
         TRect rect2 = TRect(aAx, aAy, aBx, aBy);
 
-        phdata->NGAGE_DrawDevice->UpdateRegion(rect2); /* Should we update rects parameter area only?? */
+        phdata->NGAGE_DrawDevice->UpdateRegion(rect2); /* Should we update rects parameter area only? */
         phdata->NGAGE_DrawDevice->Update();
     }
 }

@@ -62,7 +62,7 @@ typedef unsigned long      uintptr_t;
 /* Enable the N-Gage timer support (src/timer/ngage/\*.c) */
 #define SDL_TIMER_NGAGE  1
 
-/* Enable the N=Hahe video driver (src/video/ngage/\*.c) */
+/* Enable the N-Gage video driver (src/video/ngage/\*.c) */
 #define SDL_VIDEO_DRIVER_NGAGE 1
 
 /* Enable the dummy audio driver (src/audio/dummy/\*.c) */
