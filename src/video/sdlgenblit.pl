@@ -114,7 +114,7 @@ sub open_file {
 
 #if SDL_HAVE_BLIT_AUTO
 
-/* *INDENT-OFF* */
+/* *INDENT-OFF* */ /* clang-format off */
 
 __EOF__
 }
@@ -122,7 +122,7 @@ __EOF__
 sub close_file {
     my $name = shift;
     print FILE <<__EOF__;
-/* *INDENT-ON* */
+/* *INDENT-ON* */ /* clang-format on */
 
 #endif /* SDL_HAVE_BLIT_AUTO */
 

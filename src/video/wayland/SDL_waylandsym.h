@@ -19,7 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-/* *INDENT-OFF* */
+/* *INDENT-OFF* */ /* clang-format off */
 
 #ifndef SDL_WAYLAND_MODULE
 #define SDL_WAYLAND_MODULE(modname)
@@ -210,6 +210,6 @@ SDL_WAYLAND_SYM(bool, libdecor_configuration_get_window_state, (struct libdecor_
 #undef SDL_WAYLAND_SYM
 #undef SDL_WAYLAND_INTERFACE
 
-/* *INDENT-ON* */
+/* *INDENT-ON* */ /* clang-format on */
 
 /* vi: set ts=4 sw=4 expandtab: */

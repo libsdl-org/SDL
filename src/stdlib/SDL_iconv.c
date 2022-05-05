@@ -126,7 +126,7 @@ static struct
     const char *name;
     int format;
 } encodings[] = {
-/* *INDENT-OFF* */
+/* *INDENT-OFF* */ /* clang-format off */
     { "ASCII", ENCODING_ASCII },
     { "US-ASCII", ENCODING_ASCII },
     { "8859-1", ENCODING_LATIN1 },
@@ -160,7 +160,7 @@ static struct
     { "UCS-4LE", ENCODING_UCS4LE },
     { "UCS-4BE", ENCODING_UCS4BE },
     { "UCS-4-INTERNAL", ENCODING_UCS4NATIVE },
-/* *INDENT-ON* */
+/* *INDENT-ON* */ /* clang-format on */
 };
 
 static const char *
