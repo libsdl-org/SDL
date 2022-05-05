@@ -122,10 +122,10 @@ static SDL_Scancode ConvertScancode(_THIS, int key)
             keycode = SDLK_SOFTRIGHT;
             break;
         case EStdKeyApplication0: // Green softkey
-            keycode = SDLK_F3;
+            keycode = SDLK_CALL;
             break;
         case EStdKeyApplication1: // Red softkey
-            keycode = SDLK_F4;
+            keycode = SDLK_ENDCALL;
             break;
         case EStdKeyDevice3:      // Middle softkey
             keycode = SDLK_RETURN;
