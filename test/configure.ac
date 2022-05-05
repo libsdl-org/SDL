@@ -99,15 +99,6 @@ AC_SUBST(ISWINDOWS)
 AC_SUBST(ISUNIX)
 AC_SUBST(ISOS2)
 
-AC_SUBST([prefix])
-AC_SUBST([exec_prefix])
-AC_SUBST([bindir])
-AC_SUBST([libdir])
-AC_SUBST([libexecdir])
-AC_SUBST([includedir])
-AC_SUBST([datarootdir])
-AC_SUBST([datadir])
-
 dnl Check for SDL
 SDL_VERSION=2.0.18
 AM_PATH_SDL2($SDL_VERSION,
