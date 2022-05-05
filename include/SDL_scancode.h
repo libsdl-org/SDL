@@ -402,6 +402,24 @@ typedef enum
 
     /* @} *//* Usage page 0x0C (additional media keys) */
 
+    /**
+     *  \name Mobile keys
+     *
+     *  These are values that are often used on mobile phones.
+     */
+    /* @{ */
+
+    SDL_SCANCODE_SOFTLEFT = 287, /**< Usually situated below the display on phones and
+                                      used as a multi-function feature key for selecting
+                                      a software defined function shown on the bottom left
+                                      of the display. */
+    SDL_SCANCODE_SOFTRIGHT = 288, /**< Usually situated below the display on phones and
+                                       used as a multi-function feature key for selecting
+                                       a software defined function shown on the bottom right
+                                       of the display. */
+
+    /* @} *//* Mobile keys */
+
     /* Add any other keys here. */
 
     SDL_NUM_SCANCODES = 512 /**< not a key, just marks the number of scancodes
