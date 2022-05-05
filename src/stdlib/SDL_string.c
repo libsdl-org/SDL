@@ -676,6 +676,23 @@ SDL_utf8strlen(const char *str)
 }
 
 size_t
+SDL_utf8strnlen(const char *str, size_t bytes)
+{
+    size_t retval = 0;
+    const char *p = str;
+    unsigned char ch;
+
+    while ((ch = *(p++)) != 0 && bytes-- > 0) {
+        /* if top two bits are 1 and 0, it's a continuation byte. */
+        if ((ch & 0xc0) != 0x80) {
+            retval++;
+        }
+    }
+
+    return retval;
+}
+
+size_t
 SDL_strlcat(SDL_INOUT_Z_CAP(maxlen) char *dst, const char *src, size_t maxlen)
 {
 #if defined(HAVE_STRLCAT)

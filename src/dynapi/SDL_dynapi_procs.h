@@ -951,3 +951,4 @@ SDL_DYNAPI_PROC(SDL_bool,SDL_HasLASX,(void),(),return)
 #ifdef __WIN32__
 SDL_DYNAPI_PROC(ID3D12Device*,SDL_RenderGetD3D12Device,(SDL_Renderer *a),(a),return)
 #endif
+SDL_DYNAPI_PROC(size_t,SDL_utf8strnlen,(const char *a, size_t b),(a,b),return)
