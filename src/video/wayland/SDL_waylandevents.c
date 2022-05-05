@@ -25,6 +25,7 @@
 
 #include "SDL_stdinc.h"
 #include "SDL_timer.h"
+#include "SDL_hints.h"
 
 #include "../../core/unix/SDL_poll.h"
 #include "../../events/SDL_sysevents.h"
@@ -1554,18 +1555,33 @@ text_input_preedit_string(void *data,
     char buf[SDL_TEXTEDITINGEVENT_TEXT_SIZE];
     text_input->has_preedit = SDL_TRUE;
     if (text) {
-        size_t text_bytes = SDL_strlen(text), i = 0;
-        size_t cursor = 0;
-
-        do {
-            const size_t sz = SDL_utf8strlcpy(buf, text+i, sizeof(buf));
-            const size_t chars = SDL_utf8strlen(buf);
-
-            SDL_SendEditingText(buf, cursor, chars);
-
-            i += sz;
-            cursor += chars;
-        } while (i < text_bytes);
+        if (SDL_GetHintBoolean(SDL_HINT_IME_SUPPORT_EXTENDED_TEXT, SDL_FALSE)) {
+            size_t cursor_begin_utf8 = cursor_begin >= 0 ? SDL_utf8strnlen(text, cursor_begin) : -1;
+            size_t cursor_end_utf8 = cursor_end >= 0 ? SDL_utf8strnlen(text, cursor_end) : -1;
+            size_t cursor_size_utf8;
+            if (cursor_end_utf8 >= 0) {
+                if (cursor_begin_utf8 >= 0) {
+                    cursor_size_utf8 = cursor_end_utf8 - cursor_begin_utf8;
+                } else {
+                    cursor_size_utf8 = cursor_end_utf8;
+                }
+            } else {
+                cursor_size_utf8 = -1;
+            }
+            SDL_SendEditingText(text, cursor_begin_utf8, cursor_size_utf8);
+        } else {
+            size_t text_bytes = SDL_strlen(text), i = 0;
+            size_t cursor = 0;
+            do {
+                const size_t sz = SDL_utf8strlcpy(buf, text+i, sizeof(buf));
+                const size_t chars = SDL_utf8strlen(buf);
+    
+                SDL_SendEditingText(buf, cursor, chars);
+    
+                i += sz;
+                cursor += chars;
+            } while (i < text_bytes);
+        }
     } else {
         buf[0] = '\0';
         SDL_SendEditingText(buf, 0, 0);
