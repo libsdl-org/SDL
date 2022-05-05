@@ -2849,22 +2849,21 @@ ac_configure="$SHELL $ac_aux_dir/configure"  # Please don't use this var.
 
 orig_CFLAGS="$CFLAGS"
 
-#
-# Making releases:
-# Edit include/SDL_version.h and change the version, then:
-#   SDL_MICRO_VERSION += 1;
-#   SDL_INTERFACE_AGE += 1;
-#   SDL_BINARY_AGE += 1;
-# if any functions have been added, set SDL_INTERFACE_AGE to 0.
-# if backwards compatibility has been broken,
-# set SDL_BINARY_AGE and SDL_INTERFACE_AGE to 0.
-#
+# See docs/release_checklist.md
 SDL_MAJOR_VERSION=2
-SDL_MINOR_VERSION=0
-SDL_MICRO_VERSION=23
-SDL_INTERFACE_AGE=0
-SDL_BINARY_AGE=23
+SDL_MINOR_VERSION=23
+SDL_MICRO_VERSION=0
 SDL_VERSION=$SDL_MAJOR_VERSION.$SDL_MINOR_VERSION.$SDL_MICRO_VERSION
+
+SDL_BINARY_AGE=`expr $SDL_MINOR_VERSION \* 100 + $SDL_MICRO_VERSION`
+case "$SDL_MINOR_VERSION" in #(
+  *[02468]) :
+        SDL_INTERFACE_AGE="$SDL_MICRO_VERSION" ;; #(
+  *) :
+        SDL_INTERFACE_AGE=0 ;; #(
+  *) :
+     ;;
+esac
 
 
 
@@ -12254,10 +12253,17 @@ CC=$lt_save_CC
 CFLAGS=$lt_save_CFLAGS
 
 
-LT_RELEASE=$SDL_MAJOR_VERSION.$SDL_MINOR_VERSION
-LT_CURRENT=`expr $SDL_MICRO_VERSION - $SDL_INTERFACE_AGE`
-LT_REVISION=$SDL_INTERFACE_AGE
+# For historical reasons, the library name redundantly includes the major
+# version twice: libSDL2-2.0.so.0.
+# TODO: in SDL 3, stop using -release, which will simplify it to libSDL3.so.0
+LT_RELEASE=2.0
+# Increment this if there is an incompatible change - but if that happens,
+# we should rename the library from SDL2 to SDL3, at which point this would
+# reset to 0 anyway.
+LT_MAJOR=0
 LT_AGE=`expr $SDL_BINARY_AGE - $SDL_INTERFACE_AGE`
+LT_CURRENT=`expr $LT_MAJOR + $LT_AGE`
+LT_REVISION=$SDL_INTERFACE_AGE
 
 
 
@@ -16962,6 +16968,22 @@ $as_echo "#define SDL_DEFAULT_ASSERT_LEVEL 3" >>confdefs.h
         as_fn_error $? "*** unknown assertion level. stop." "$LINENO" 5
         ;;
 esac
+
+
+cat >>confdefs.h <<_ACEOF
+#define SDL_BUILD_MAJOR_VERSION $SDL_MAJOR_VERSION
+_ACEOF
+
+
+cat >>confdefs.h <<_ACEOF
+#define SDL_BUILD_MINOR_VERSION $SDL_MINOR_VERSION
+_ACEOF
+
+
+cat >>confdefs.h <<_ACEOF
+#define SDL_BUILD_MICRO_VERSION $SDL_MICRO_VERSION
+_ACEOF
+
 
 # Check whether --enable-dependency-tracking was given.
 if test "${enable_dependency_tracking+set}" = set; then :
