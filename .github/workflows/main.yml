@@ -150,7 +150,18 @@ jobs:
         make -j"${parallel}" -C build-autotools install DESTDIR="${curdir}/DESTDIR-autotools" V=1
         make -j"${parallel}" -C build-autotools/test install DESTDIR="${curdir}/DESTDIR-autotools" V=1
         ( cd DESTDIR-autotools; find ) | LC_ALL=C sort -u
+    - name: Distcheck
+      if: matrix.platform.autotools
+      run: |
+        set -eu
+        parallel="$(getconf _NPROCESSORS_ONLN)"
         make -j"${parallel}" -C build-autotools dist V=1
+        # Similar to Automake `make distcheck`: check that the tarball
+        # release is sufficient to do a new build
+        mkdir distcheck
+        tar -C distcheck -zxf build-autotools/SDL2-*.tar.gz
+        ( cd distcheck/SDL2-* && ./configure )
+        make -j"${parallel}" -C distcheck/SDL2-*
     - name: Run installed-tests from Autotools
       if: "runner.os == 'Linux' && matrix.platform.autotools"
       run: |
