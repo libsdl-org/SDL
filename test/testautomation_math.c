@@ -395,6 +395,128 @@ trunc_rangeTest(void *args)
     return TEST_COMPLETED;
 }
 
+/* SDL_round tests functions */
+
+/**
+ * \brief Checks edge cases (0 and infinity) for themselves.
+ */
+static int
+round_edgeCases(void *args)
+{
+    double result;
+
+    result = SDL_round(INFINITY);
+    SDLTest_AssertCheck(INFINITY == result, "Round(%f), expected %f, got %f",
+                        INFINITY, INFINITY, result);
+    result = SDL_round(-INFINITY);
+    SDLTest_AssertCheck(-INFINITY == result, "Round(%f), expected %f, got %f",
+                        -INFINITY, -INFINITY, result);
+
+    result = SDL_round(0.0);
+    SDLTest_AssertCheck(0.0 == result, "Round(%.1f), expected %.1f, got %.1f",
+                        0.0, 0.0, result);
+    result = SDL_round(-0.0);
+    SDLTest_AssertCheck(-0.0 == result, "Round(%.1f), expected %.1f, got %.1f",
+                        -0.0, -0.0, result);
+
+    return TEST_COMPLETED;
+}
+
+/**
+ * \brief Checks the NaN case.
+ */
+static int
+round_nanCase(void *args)
+{
+    SDLTest_AssertCheck(isnan(SDL_round(NAN)), "Round(nan), expected nan");
+    return TEST_COMPLETED;
+}
+
+/**
+ * \brief Checks round values (x.0) for themselves
+ */
+static int
+round_roundNumbersCases(void *args)
+{
+    Uint32 i;
+    const double round_cases[] = {
+        1.0,
+        -1.0,
+        15.0,
+        -15.0,
+        125.0,
+        -125.0,
+        1024.0,
+        -1024.0
+    };
+    for (i = 0; i < SDL_arraysize(round_cases); i++) {
+        const double result = SDL_round(round_cases[i]);
+        SDLTest_AssertCheck(result == round_cases[i],
+                            "Round(%.1f), expected %.1f, got %.1f", round_cases[i],
+                            round_cases[i], result);
+    }
+    return TEST_COMPLETED;
+}
+
+/**
+ * \brief Checks a set of fractions
+ */
+static int
+round_fractionCases(void *args)
+{
+    Uint32 i;
+    const d_to_d frac_cases[] = {
+        { 1.0 / 2.0, 1.0 },
+        { -1.0 / 2.0, -1.0 },
+        { 4.0 / 3.0, 1.0 },
+        { -4.0 / 3.0, -1.0 },
+        { 76.0 / 7.0, 11.0 },
+        { -76.0 / 7.0, -11.0 },
+        { 535.0 / 8.0, 67.0 },
+        { -535.0 / 8.0, -67.0 },
+        { 19357.0 / 53.0, 365.0 },
+        { -19357.0 / 53.0, -365.0 }
+    };
+    for (i = 0; i < SDL_arraysize(frac_cases); i++) {
+        const double result = SDL_round(frac_cases[i].input);
+        SDLTest_AssertCheck(result == frac_cases[i].expected,
+                            "Round(%f), expected %.1f, got %f", frac_cases[i].input,
+                            frac_cases[i].expected, result);
+    }
+    return TEST_COMPLETED;
+}
+
+/**
+ * \brief Checks a range of values between 0 and UINT32_MAX
+ */
+static int
+round_rangeTest(void *args)
+{
+    const Uint32 ITERATIONS = 10000000;
+    const Uint32 STEP = SDL_MAX_UINT32 / ITERATIONS;
+    Uint32 i;
+    double test_value = 0.0;
+
+    SDLTest_AssertPass("Round: Testing a range of %u values with %u steps",
+                       ITERATIONS, STEP);
+
+    for (i = 0; i < ITERATIONS; i++, test_value += STEP) {
+        double result;
+        /* These are tested elsewhere */
+        if (isnan(test_value) || isinf(test_value)) {
+            continue;
+        }
+
+        result = SDL_round(test_value);
+        if (result != test_value) { /* Only log failures to save performances */
+            SDLTest_AssertPass("Round(%.1f), expected %.1f, got %.1f", test_value,
+                               test_value, result);
+            return TEST_ABORTED;
+        }
+    }
+    return TEST_COMPLETED;
+}
+
 /* ================= Test References ================== */
 
 /* SDL_floor test cases */
@@ -466,10 +588,34 @@ static const SDLTest_TestCaseReference truncTest5 = {
     "Check a range of positive integer", TEST_ENABLED
 };
 
+/* SDL_round test cases */
+
+static const SDLTest_TestCaseReference roundTest1 = {
+    (SDLTest_TestCaseFp) round_edgeCases, "round_edgeCases",
+    "Check positive and negative infinity and 0", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference roundTest2 = {
+    (SDLTest_TestCaseFp) round_nanCase, "round_nanCase",
+    "Check the NaN special case", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference roundTest3 = {
+    (SDLTest_TestCaseFp) round_roundNumbersCases, "round_roundNumberCases",
+    "Check a set of round numbers", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference roundTest4 = {
+    (SDLTest_TestCaseFp) round_fractionCases, "round_fractionCases",
+    "Check a set of fractions", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference roundTest5 = {
+    (SDLTest_TestCaseFp) round_rangeTest, "round_rangeTest",
+    "Check a range of positive integer", TEST_ENABLED
+};
+
 static const SDLTest_TestCaseReference *mathTests[] = {
     &floorTest1, &floorTest2, &floorTest3, &floorTest4, &floorTest5,
     &ceilTest1, &ceilTest2, &ceilTest3, &ceilTest4, &ceilTest5,
     &truncTest1, &truncTest2, &truncTest3, &truncTest4, &truncTest5,
+    &roundTest1, &roundTest2, &roundTest3, &roundTest4, &roundTest5,
     NULL
 };
 
