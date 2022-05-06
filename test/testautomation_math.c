@@ -517,6 +517,74 @@ round_rangeTest(void *args)
     return TEST_COMPLETED;
 }
 
+/* SDL_fabs tests functions */
+
+/**
+ * \brief Checks edge cases (0 and infinity).
+ */
+static int
+fabs_edgeCases(void *args)
+{
+    double result;
+
+    result = SDL_fabs(INFINITY);
+    SDLTest_AssertCheck(INFINITY == result, "Fabs(%f), expected %f, got %f",
+                        INFINITY, INFINITY, result);
+    result = SDL_fabs(-INFINITY);
+    SDLTest_AssertCheck(INFINITY == result, "Fabs(%f), expected %f, got %f",
+                        -INFINITY, INFINITY, result);
+
+    result = SDL_fabs(0.0);
+    SDLTest_AssertCheck(0.0 == result, "Fabs(%.1f), expected %.1f, got %.1f",
+                        0.0, 0.0, result);
+    result = SDL_fabs(-0.0);
+    SDLTest_AssertCheck(0.0 == result, "Fabs(%.1f), expected %.1f, got %.1f",
+                        -0.0, 0.0, result);
+
+    return TEST_COMPLETED;
+}
+
+/**
+ * \brief Checks the NaN case.
+ */
+static int
+fabs_nanCase(void *args)
+{
+    SDLTest_AssertCheck(isnan(SDL_fabs(NAN)), "Fabs(nan), expected nan");
+    return TEST_COMPLETED;
+}
+
+/**
+ * \brief Checks a range of values between 0 and UINT32_MAX
+ */
+static int
+fabs_rangeTest(void *args)
+{
+    const Uint32 ITERATIONS = 10000000;
+    const Uint32 STEP = SDL_MAX_UINT32 / ITERATIONS;
+    Uint32 i;
+    double test_value = 0.0;
+
+    SDLTest_AssertPass("Fabs: Testing a range of %u values with %u steps",
+                       ITERATIONS, STEP);
+
+    for (i = 0; i < ITERATIONS; i++, test_value += STEP) {
+        double result;
+        /* These are tested elsewhere */
+        if (isnan(test_value) || isinf(test_value)) {
+            continue;
+        }
+
+        result = SDL_fabs(test_value);
+        if (result != test_value) { /* Only log failures to save performances */
+            SDLTest_AssertPass("Fabs(%.1f), expected %.1f, got %.1f", test_value,
+                               test_value, result);
+            return TEST_ABORTED;
+        }
+    }
+    return TEST_COMPLETED;
+}
+
 /* ================= Test References ================== */
 
 /* SDL_floor test cases */
@@ -611,11 +679,27 @@ static const SDLTest_TestCaseReference roundTest5 = {
     "Check a range of positive integer", TEST_ENABLED
 };
 
+/* SDL_fabs test cases */
+
+static const SDLTest_TestCaseReference fabsTest1 = {
+    (SDLTest_TestCaseFp) fabs_edgeCases, "fabs_edgeCases",
+    "Check positive and negative infinity and 0", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference fabsTest2 = {
+    (SDLTest_TestCaseFp) fabs_nanCase, "fabs_nanCase",
+    "Check the NaN special case", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference fabsTest3 = {
+    (SDLTest_TestCaseFp) fabs_rangeTest, "fabs_rangeTest",
+    "Check a range of positive integer", TEST_ENABLED
+};
+
 static const SDLTest_TestCaseReference *mathTests[] = {
     &floorTest1, &floorTest2, &floorTest3, &floorTest4, &floorTest5,
     &ceilTest1, &ceilTest2, &ceilTest3, &ceilTest4, &ceilTest5,
     &truncTest1, &truncTest2, &truncTest3, &truncTest4, &truncTest5,
     &roundTest1, &roundTest2, &roundTest3, &roundTest4, &roundTest5,
+    &fabsTest1, &fabsTest2, &fabsTest3,
     NULL
 };
 
