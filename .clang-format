@@ -72,5 +72,15 @@ SpaceInEmptyParentheses: false
 
 UseCRLF: false
 UseTab: Never
+
+ForEachMacros:
+  [
+    "spa_list_for_each",
+    "spa_list_for_each_safe",
+    "wl_list_for_each",
+    "wl_array_for_each",
+    "udev_list_entry_foreach",
+  ]
+
 ---
 
