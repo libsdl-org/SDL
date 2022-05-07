@@ -249,22 +249,27 @@ void SDL_GpuDestroyShader(SDL_GpuShader *shader);
 
 /*
  * Get a texture that can be used for rendering to an SDL window. The SDL_Window
- * may be destroyed and recreated internally on first use if incompatible with the SDL_GpuDevice!
- * As such, it does not need to be created with SDL_WINDOW_OPENGL or _VULKAN,
- * etc, as this API will take care of it.
- * Do not save this texture beyond using it for a render pass color attachment! It's likely that
- * a window has multiple textures that it cycles through (and even those might get replaced if
- * the window is resized or hidden or if the OS just feels like it moment by moment).
+ * may be destroyed and recreated internally on first use if incompatible with
+ * the SDL_GpuDevice! As such, it does not need to be created with
+ * SDL_WINDOW_OPENGL or _VULKAN, etc, as this API will take care of it.
  *
- * This call may block if you've got every backbuffer from the window in flight, rendering other
- * frames that haven't completed yet. Use fences if you need to avoid this.
+ * SDL_Windows can not be used with more than one GPU device at a time (even if
+ * they're both using the same backend).
  *
- * SDL decides if a window backbuffer is in flight when a command buffer that uses the
- * texture from this function as a color attachment in a render pass is submitted with
- * a SDL_GpuPresentType that isn't SDL_GPUPRESENT_NONE. Until then, this function will
- * return the same texture for the same window, in case you plan to do several rendering
- * passes before presenting. Once the backbuffer is in-flight, the next call to this
- * function may block or return a different texture.
+ * Do not save this texture beyond rendering a single frame! It's likely that
+ * a window has multiple textures that it cycles through as it renders and
+ * presents frames (and even those textures might get replaced if the window
+ * is resized or hidden or if the OS just feels like it moment by moment).
+ *
+ * A window backbuffer's texture is considered "in-flight" when a SDL_GpuPresent()
+ * call is made with that texture. Until then, this function will return the same
+ * texture for the same window, in case you plan to do several rendering passes
+ * before presenting. Once a backbuffer is in-flight, the next call to this
+ * function may return a different texture (and/or block until a texture
+ * becomes available; you can use fences to avoid blocking).
+ *
+ * Do not call this function from multiple threads for the same device/window
+ * at the same time.
  */
 SDL_GpuTexture *SDL_GpuGetBackbuffer(SDL_GpuDevice *device, SDL_Window *window);
 
@@ -687,33 +692,30 @@ int SDL_GpuResetFence(SDL_GpuFence *fence);
 int SDL_GpuWaitFence(SDL_GpuFence *fence);
 
 
-typedef enum SDL_GpuPresentType
-{
-    SDL_GPUPRESENT_NONE,   /* don't present (not rendering to a window or more command buffers to queue first) */
-    SDL_GPUPRESENT_IMMEDIATE, /* present immediately, don't wait for vsync */
-    SDL_GPUPRESENT_VSYNC,  /* present synced to vertical retrace */
-    SDL_GPUPRESENT_ADAPTIVE_VSYNC  /* vsync if we're running fast enough, immediate if we've missed vsync. If unsupported, this waits for vsync. */
-} SDL_GpuPresentType;
-
 /*
  * Once you've encoded your command buffer(s), you can submit them to the GPU for executing.
  * Command buffers are executed in the order they are submitted, and the commands in those buffers are executed in the order they were encoded.
  * Once a command buffer is submitted, its pointer becomes invalid. Create a new one for the next set of commands.
- *
- * If this command buffer is to present to a window, specify a presenttype other than SDL_GPUPRESENT_NONE. Any backbuffers that were used
- *  as color attachments in render passes in the submitted set of command buffers will present to the screen, and the next call to SDL_GpuGetBackbuffer
- *  may return different textures for those windows as it cycles through double or triple buffering.
- * `presenttype` is ignored if these command buffers did not contain a render pass using a window's backbuffer. It is legal to present multiple windows
- *  in the same submission, but they will all use the same `presenttype`. Note that presenting a window with vsync will not block here, as this just
- *  queues the request; supply a fence if you need to wait for the presentation to complete.
  */
-int SDL_GpuSubmitCommandBuffers(SDL_GpuDevice *device, SDL_GpuCommandBuffer **buffers, const Uint32 numcmdbufs, SDL_GpuPresentType presenttype, SDL_GpuFence *fence);
+int SDL_GpuSubmitCommandBuffers(SDL_GpuDevice *device, SDL_GpuCommandBuffer **buffers, const Uint32 numcmdbufs, SDL_GpuFence *fence);
 
 /* If for some reason you've started encoding command buffers and decide _not_ to submit them to the GPU, you can
    abandon them, freeing their resources. This can be useful if something unrelated fails halfway through buffer encoding. */
 void SDL_GpuAbandonCommandBuffers(SDL_GpuCommandBuffer **buffers, const Uint32 numcmdbufs);
 
-/* !!! FIXME: add a SDL_GpuAbandonCommandBuffer() function for freeing a buffer without submitting it? */
+/* Present a window's current backbuffer to the display. This will take the current SDL_GpuTexture returned by SDL_GpuGetBackbuffer
+ *  and queue it for presentation. The presentation request is queued after any submitted command buffers, so you should call this
+ *  as soon as you've submitted any command buffers that provide the rendering you'd like to do for the frame without waiting for
+ *  those command buffers to finish processing.
+ * As soon as this call completes, the backbuffer is considered "in-flight."
+ * While the backbuffer is in-flight, the next call to SDL_GpuGetBackbuffer will return a different
+ *  texture and/or block. Do not use this backbuffer again after requesting presentation with it, as its pointer is
+ *  considered invalid and you should request a new one from SDL_GpuGetBackbuffer. Note that presenting a window with vsync will
+ *  not block here, as this just queues the request. You should call this once per frame after rendering to a new backbuffer. If you
+ *  haven't rendered to a backbuffer before presenting (or requested one with SDL_GpuGetBackbuffer), the results of this call are
+ *  undefined.
+ */
+int SDL_GpuPresent(SDL_GpuDevice *device, SDL_Window *window, int swapinterval);
 
 
 /* Helper functions. These are optional and built on top of the public API to remove boilerplate from your code. */

@@ -24,6 +24,8 @@
 
 #include "SDL.h"
 #include "SDL_sysgpu.h"
+#include "../video/SDL_sysvideo.h"
+
 
 extern const SDL_GpuDriver DUMMY_GpuDriver;
 
@@ -338,14 +340,28 @@ SDL_GpuDestroyShader(SDL_GpuShader *shader)
 SDL_GpuTexture *
 SDL_GpuGetBackbuffer(SDL_GpuDevice *device, SDL_Window *window)
 {
+    SDL_GpuTexture *retval = NULL;
     if (!device) {
         SDL_InvalidParamError("device");
-        return NULL;
     } else if (!window) {
         SDL_InvalidParamError("window");
-        return NULL;
+    } else if (window->gpu_device && (window->gpu_device != device)) {
+        SDL_SetError("Window is being used by another GPU device");
+    } else {
+        if (window->gpu_device == NULL) {
+            if (device->ClaimWindow(device, window) == -1) {
+                return NULL;
+            }
+            window->gpu_device = device;
+        }
+
+        if (!window->gpu_backbuffer) {   /* if !NULL, already requested one that isn't yet in-flight for presentation. */
+            window->gpu_backbuffer = device->GetBackbuffer(device, window);
+        }
+
+        retval = (SDL_GpuTexture *) window->gpu_backbuffer;
     }
-    return device->GetBackbuffer(device, window);
+    return retval;
 }
 
 SDL_GpuPipeline *
@@ -1095,7 +1111,7 @@ SDL_GpuWaitFence(SDL_GpuFence *fence)
 }
 
 int
-SDL_GpuSubmitCommandBuffers(SDL_GpuDevice *device, SDL_GpuCommandBuffer **buffers, const Uint32 numcmdbufs, SDL_GpuPresentType presenttype, SDL_GpuFence *fence)
+SDL_GpuSubmitCommandBuffers(SDL_GpuDevice *device, SDL_GpuCommandBuffer **buffers, const Uint32 numcmdbufs, SDL_GpuFence *fence)
 {
     int retval;
     Uint32 i;
@@ -1114,7 +1130,7 @@ SDL_GpuSubmitCommandBuffers(SDL_GpuDevice *device, SDL_GpuCommandBuffer **buffer
         }
     }
 
-    retval = device->SubmitCommandBuffers(device, buffers, numcmdbufs, presenttype, fence);
+    retval = device->SubmitCommandBuffers(device, buffers, numcmdbufs, fence);
 
     if (retval == 0) {
         for (i = 0; i < numcmdbufs; i++) {
@@ -1137,6 +1153,26 @@ SDL_GpuAbandonCommandBuffers(SDL_GpuCommandBuffer **buffers, const Uint32 numcmd
             }
         }
     }
+}
+
+int
+SDL_GpuPresent(SDL_GpuDevice *device, SDL_Window *window, int swapinterval)
+{
+    if (!device) {
+        return SDL_InvalidParamError("device");
+    } else if (!window) {
+        return SDL_InvalidParamError("window");
+    } else if (window->gpu_device != device) {
+        return SDL_SetError("Window is not claimed by this GPU device (call SDL_GpuGetBackbuffer first!)");
+    } else if (!window->gpu_backbuffer) {
+        return SDL_SetError("Window does not have a prepared backbuffer (call SDL_GpuGetBackbuffer first!)");
+    } else if (device->Present(device, window, (SDL_GpuTexture *) window->gpu_backbuffer, swapinterval) == -1) {
+        return -1;
+    }
+
+    window->gpu_backbuffer = NULL;  /* it's in-flight, mark the window as having no current backbuffer. */
+
+    return 0;
 }
 
 SDL_GpuBuffer *SDL_GpuCreateAndInitBuffer(const char *label, SDL_GpuDevice *device, const Uint32 buflen, const void *data)
@@ -1163,7 +1199,7 @@ SDL_GpuBuffer *SDL_GpuCreateAndInitBuffer(const char *label, SDL_GpuDevice *devi
          ((blit = SDL_GpuStartBlitPass("Blit pass for SDL_GpuCreateAndInitBuffer", cmd)) != NULL) ) {
         SDL_GpuCopyBufferCpuToGpu(blit, staging, 0, gpubuf, 0, buflen);
         SDL_GpuEndBlitPass(blit);
-        SDL_GpuSubmitCommandBuffers(device, &cmd, 1, SDL_GPUPRESENT_NONE, fence);
+        SDL_GpuSubmitCommandBuffers(device, &cmd, 1, fence);
         SDL_GpuWaitFence(fence);  /* so we know it's definitely uploaded */
         retval = gpubuf;
     }

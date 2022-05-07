@@ -362,7 +362,8 @@ Render(SDL_Window *window, const int windownum)
     SDL_GpuDraw(render, 0, SDL_arraysize(vertex_data));
     SDL_GpuEndRenderPass(render);
 
-    SDL_GpuSubmitCommandBuffers(gpu_device, &cmd, 1, presenttype, NULL);  /* push work to the GPU and tell it to present to the window when done. */
+    SDL_GpuSubmitCommandBuffers(gpu_device, &cmd, 1, NULL);  /* push work to the GPU and tell it to present to the window when done. */
+    SDL_GpuPresent(gpu_device, window, 1);
 }
 
 static SDL_GpuShader *load_shader(const char *label, const char *src, const char *type)

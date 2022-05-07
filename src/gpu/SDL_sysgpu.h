@@ -111,6 +111,8 @@ struct SDL_GpuDevice
 
     void (*DestroyDevice)(SDL_GpuDevice *device);
 
+    int (*ClaimWindow)(SDL_GpuDevice *device, SDL_Window *window);
+
     int (*CreateCpuBuffer)(SDL_GpuCpuBuffer *buffer, const void *data);
     void (*DestroyCpuBuffer)(SDL_GpuCpuBuffer *buffer);
     void *(*LockCpuBuffer)(SDL_GpuCpuBuffer *buffer);
@@ -134,7 +136,7 @@ struct SDL_GpuDevice
     void (*DestroySampler)(SDL_GpuSampler *sampler);
 
     int (*CreateCommandBuffer)(SDL_GpuCommandBuffer *cmdbuf);
-    int (*SubmitCommandBuffers)(SDL_GpuDevice *device, SDL_GpuCommandBuffer **buffers, const Uint32 numcmdbufs, SDL_GpuPresentType presenttype, SDL_GpuFence *fence);
+    int (*SubmitCommandBuffers)(SDL_GpuDevice *device, SDL_GpuCommandBuffer **buffers, const Uint32 numcmdbufs, SDL_GpuFence *fence);
     void (*AbandonCommandBuffer)(SDL_GpuCommandBuffer *buffer);
 
     int (*StartRenderPass)(SDL_GpuRenderPass *pass, Uint32 num_color_attachments, const SDL_GpuColorAttachmentDescription *color_attachments, const SDL_GpuDepthAttachmentDescription *depth_attachment, const SDL_GpuStencilAttachmentDescription *stencil_attachment);
@@ -164,6 +166,8 @@ struct SDL_GpuDevice
     int (*CopyFromBufferToTexture)(SDL_GpuBlitPass *pass, SDL_GpuBuffer *srcbuf, Uint32 srcoffset, Uint32 srcpitch, Uint32 srcimgpitch, Uint32 srcw, Uint32 srch, Uint32 srcdepth, SDL_GpuTexture *dsttex, Uint32 dstslice, Uint32 dstlevel, Uint32 dstx, Uint32 dsty, Uint32 dstz);
     int (*CopyFromTextureToBuffer)(SDL_GpuBlitPass *pass, SDL_GpuTexture *srctex, Uint32 srcslice, Uint32 srclevel, Uint32 srcx, Uint32 srcy, Uint32 srcz, Uint32 srcw, Uint32 srch, Uint32 srcdepth, SDL_GpuBuffer *dstbuf, Uint32 dstoffset, Uint32 dstpitch, Uint32 dstimgpitch);
     int (*EndBlitPass)(SDL_GpuBlitPass *pass);
+
+    int (*Present)(SDL_GpuDevice *device, SDL_Window *window, SDL_GpuTexture *backbuffer, int swapinterval);
 
     int (*CreateFence)(SDL_GpuFence *fence);
     void (*DestroyFence)(SDL_GpuFence *fence);
