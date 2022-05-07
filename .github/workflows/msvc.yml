@@ -13,6 +13,8 @@ jobs:
         platform:
         - { name: Windows (x64),          flags: -A x64,   project: VisualC/SDL.sln, projectflags: '/p:Platform=x64' }
         - { name: Windows (x86),          flags: -A Win32, project: VisualC/SDL.sln, projectflags: '/p:Platform=Win32' }
+        - { name: Windows static VCRT (x64), flags: -A x64 -DSDL_FORCE_STATIC_VCRT=ON }
+        - { name: Windows static VCRT (x86), flags: -A Win32 -DSDL_FORCE_STATIC_VCRT=ON }
         - { name: Windows (clang-cl x64), flags: -T ClangCL -A x64 }
         - { name: Windows (clang-cl x86), flags: -T ClangCL -A Win32 }
         - { name: Windows (ARM64),        flags: -A ARM64 }
