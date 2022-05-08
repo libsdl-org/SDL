@@ -53,7 +53,7 @@
         NSData *cursorData = [NSData dataWithBytesNoCopy:&cursorBytes[0]
                                                   length:sizeof(cursorBytes)
                                             freeWhenDone:NO];
-        NSImage *cursorImage = [[[NSImage alloc] initWithData:cursorData] autorelease];
+        NSImage *cursorImage = [[NSImage alloc] initWithData:cursorData];
         invisibleCursor = [[NSCursor alloc] initWithImage:cursorImage
                                                   hotSpot:NSZeroPoint];
     }
@@ -75,8 +75,7 @@ Cocoa_CreateDefaultCursor()
     if (nscursor) {
         cursor = SDL_calloc(1, sizeof(*cursor));
         if (cursor) {
-            cursor->driverdata = nscursor;
-            [nscursor retain];
+            cursor->driverdata = (void *)CFBridgingRetain(nscursor);
         }
     }
 
@@ -99,9 +98,7 @@ Cocoa_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y)
     if (nscursor) {
         cursor = SDL_calloc(1, sizeof(*cursor));
         if (cursor) {
-            cursor->driverdata = nscursor;
-        } else {
-            [nscursor release];
+            cursor->driverdata = (void *)CFBridgingRetain(nscursor);
         }
     }
 
@@ -159,8 +156,7 @@ Cocoa_CreateSystemCursor(SDL_SystemCursor id)
         cursor = SDL_calloc(1, sizeof(*cursor));
         if (cursor) {
             /* We'll free it later, so retain it here */
-            [nscursor retain];
-            cursor->driverdata = nscursor;
+            cursor->driverdata = (void *)CFBridgingRetain(nscursor);
         }
     }
 
@@ -171,9 +167,7 @@ static void
 Cocoa_FreeCursor(SDL_Cursor * cursor)
 { @autoreleasepool
 {
-    NSCursor *nscursor = (NSCursor *)cursor->driverdata;
-
-    [nscursor release];
+    CFBridgingRelease(cursor->driverdata);
     SDL_free(cursor);
 }}
 
@@ -184,11 +178,11 @@ Cocoa_ShowCursor(SDL_Cursor * cursor)
     SDL_VideoDevice *device = SDL_GetVideoDevice();
     SDL_Window *window = (device ? device->windows : NULL);
     for (; window != NULL; window = window->next) {
-        SDL_WindowData *driverdata = (SDL_WindowData *)window->driverdata;
+        SDL_WindowData *driverdata = (__bridge SDL_WindowData *)window->driverdata;
         if (driverdata) {
-            [driverdata->nswindow performSelectorOnMainThread:@selector(invalidateCursorRectsForView:)
-                                                   withObject:[driverdata->nswindow contentView]
-                                                waitUntilDone:NO];
+            [driverdata.nswindow performSelectorOnMainThread:@selector(invalidateCursorRectsForView:)
+                                                  withObject:[driverdata.nswindow contentView]
+                                               waitUntilDone:NO];
         }
     }
     return 0;
@@ -214,10 +208,10 @@ Cocoa_WarpMouseGlobal(int x, int y)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
     if (mouse->focus) {
-        SDL_WindowData *data = (SDL_WindowData *) mouse->focus->driverdata;
-        if ([data->listener isMovingOrFocusClickPending]) {
+        SDL_WindowData *data = (__bridge SDL_WindowData *) mouse->focus->driverdata;
+        if ([data.listener isMovingOrFocusClickPending]) {
             DLog("Postponing warp, window being moved or focused.");
-            [data->listener setPendingMoveX:x Y:y];
+            [data.listener setPendingMoveX:x Y:y];
             return 0;
         }
     }
@@ -282,8 +276,8 @@ Cocoa_SetRelativeMouseMode(SDL_bool enabled)
     /* We will re-apply the non-relative mode when the window finishes being moved,
      * if it is being moved right now.
      */
-    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
-    if ([data->listener isMovingOrFocusClickPending]) {
+    SDL_WindowData *data = (__bridge SDL_WindowData *) window->driverdata;
+    if ([data.listener isMovingOrFocusClickPending]) {
         return 0;
     }
 
@@ -360,18 +354,18 @@ Cocoa_HandleTitleButtonEvent(_THIS, NSEvent *event)
     NSWindow *nswindow = [event window];
 
     for (window = _this->windows; window; window = window->next) {
-        SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
-        if (data && data->nswindow == nswindow) {
+        SDL_WindowData *data = (__bridge SDL_WindowData *)window->driverdata;
+        if (data && data.nswindow == nswindow) {
             switch ([event type]) {
             case NSEventTypeLeftMouseDown:
             case NSEventTypeRightMouseDown:
             case NSEventTypeOtherMouseDown:
-                [data->listener setFocusClickPending:[event buttonNumber]];
+                [data.listener setFocusClickPending:[event buttonNumber]];
                 break;
             case NSEventTypeLeftMouseUp:
             case NSEventTypeRightMouseUp:
             case NSEventTypeOtherMouseUp:
-                [data->listener clearFocusClickPending:[event buttonNumber]];
+                [data.listener clearFocusClickPending:[event buttonNumber]];
                 break;
             default:
                 break;

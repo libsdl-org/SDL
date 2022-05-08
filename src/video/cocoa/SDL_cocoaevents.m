@@ -45,7 +45,7 @@ static SDL_Window *FindSDLWindowForNSWindow(NSWindow *win)
     SDL_VideoDevice *device = SDL_GetVideoDevice();
     if (device && device->windows) {
         for (sdlwindow = device->windows; sdlwindow; sdlwindow = sdlwindow->next) {
-            NSWindow *nswindow = ((SDL_WindowData *) sdlwindow->driverdata)->nswindow;
+            NSWindow *nswindow = ((__bridge SDL_WindowData *) sdlwindow->driverdata).nswindow;
             if (win == nswindow)
                 return sdlwindow;
         }
@@ -121,7 +121,6 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
                                  [NSNumber numberWithBool:YES], @"ApplePersistenceIgnoreState",
                                  nil];
     [[NSUserDefaults standardUserDefaults] registerDefaults:appDefaults];
-    [appDefaults release];
 }
 
 @end // SDLApplication
@@ -182,8 +181,6 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
             removeEventHandlerForEventClass:kInternetEventClass
                                  andEventID:kAEGetURL];
     }
-
-    [super dealloc];
 }
 
 - (void)windowWillClose:(NSNotification *)notification;
@@ -374,9 +371,6 @@ CreateApplicationMenus(void)
     /* Create the main menu bar */
     [NSApp setMainMenu:mainMenu];
 
-    [mainMenu release];  /* we're done with it, let NSApp own it. */
-    mainMenu = nil;
-
     /* Create the application menu */
     appName = GetApplicationName();
     appleMenu = [[NSMenu alloc] initWithTitle:@""];
@@ -396,7 +390,6 @@ CreateApplicationMenus(void)
     [menuItem setSubmenu:serviceMenu];
 
     [NSApp setServicesMenu:serviceMenu];
-    [serviceMenu release];
 
     [appleMenu addItem:[NSMenuItem separatorItem]];
 
@@ -417,12 +410,9 @@ CreateApplicationMenus(void)
     menuItem = [[NSMenuItem alloc] initWithTitle:@"" action:nil keyEquivalent:@""];
     [menuItem setSubmenu:appleMenu];
     [[NSApp mainMenu] addItem:menuItem];
-    [menuItem release];
 
     /* Tell the application object that this is now the application menu */
     [NSApp setAppleMenu:appleMenu];
-    [appleMenu release];
-
 
     /* Create the window menu */
     windowMenu = [[NSMenu alloc] initWithTitle:@"Window"];
@@ -442,18 +432,15 @@ CreateApplicationMenus(void)
         menuItem = [[NSMenuItem alloc] initWithTitle:@"Toggle Full Screen" action:@selector(toggleFullScreen:) keyEquivalent:@"f"];
         [menuItem setKeyEquivalentModifierMask:NSEventModifierFlagControl | NSEventModifierFlagCommand];
         [windowMenu addItem:menuItem];
-        [menuItem release];
     }
 
     /* Put menu into the menubar */
     menuItem = [[NSMenuItem alloc] initWithTitle:@"Window" action:nil keyEquivalent:@""];
     [menuItem setSubmenu:windowMenu];
     [[NSApp mainMenu] addItem:menuItem];
-    [menuItem release];
 
     /* Tell the application object that this is now the window menu */
     [NSApp setWindowsMenu:windowMenu];
-    [windowMenu release];
 }
 
 void
@@ -576,7 +563,7 @@ Cocoa_PumpEvents(_THIS)
 void Cocoa_SendWakeupEvent(_THIS, SDL_Window *window)
 { @autoreleasepool
 {
-    NSWindow *nswindow = ((SDL_WindowData *) window->driverdata)->nswindow;
+    NSWindow *nswindow = ((__bridge SDL_WindowData *) window->driverdata).nswindow;
 
     NSEvent* event = [NSEvent otherEventWithType: NSEventTypeApplicationDefined
                                     location: NSMakePoint(0,0)
@@ -595,15 +582,15 @@ void
 Cocoa_SuspendScreenSaver(_THIS)
 { @autoreleasepool
 {
-    SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
+    SDL_VideoData *data = (__bridge SDL_VideoData *)_this->driverdata;
 
-    if (!data->screensaver_use_iopm) {
+    if (!data.screensaver_use_iopm) {
         return;
     }
 
-    if (data->screensaver_assertion) {
-        IOPMAssertionRelease(data->screensaver_assertion);
-        data->screensaver_assertion = 0;
+    if (data.screensaver_assertion) {
+        IOPMAssertionRelease(data.screensaver_assertion);
+        data.screensaver_assertion = kIOPMNullAssertionID;
     }
 
     if (_this->suspend_screensaver) {
@@ -612,11 +599,13 @@ Cocoa_SuspendScreenSaver(_THIS)
          * seen by OS X power users. there's an additional optional human-readable
          * (localized) reason parameter which we don't set.
          */
+        IOPMAssertionID assertion = kIOPMNullAssertionID;
         NSString *name = [GetApplicationName() stringByAppendingString:@" using SDL_DisableScreenSaver"];
         IOPMAssertionCreateWithDescription(kIOPMAssertPreventUserIdleDisplaySleep,
-                                           (CFStringRef) name,
+                                           (__bridge CFStringRef) name,
                                            NULL, NULL, NULL, 0, NULL,
-                                           &data->screensaver_assertion);
+                                           &assertion);
+        data.screensaver_assertion = assertion;
     }
 }}
 
