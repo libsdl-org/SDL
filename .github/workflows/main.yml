@@ -103,7 +103,7 @@ jobs:
       run: |
         cmake --build build/ --config Release --verbose --parallel
     - name: Run build-time tests (CMake)
-      if: "matrix.platform.shell == 'sh' && ! matrix.platform.autotools"
+      if: "! matrix.platform.autotools"
       run: |
         set -eu
         export SDL_TESTS_QUICK=1
