@@ -27,10 +27,16 @@ jobs:
     - name: Configure CMake
       run: cmake -S . -B build `
         -DSDL_TESTS=ON `
+        -DSDL_INSTALL_TESTS=ON `
         ${{ matrix.platform.flags }} `
         -DCMAKE_INSTALL_PREFIX=prefix
     - name: Build CMake
       run: cmake --build build/ --config Release --parallel
+    - name: Run build-time tests
+      if: "! contains(matrix.platform.name, 'ARM')"
+      run: |
+        $env:SDL_TESTS_QUICK=1
+        ctest -VV --test-dir build/ -C Release
     - name: Install CMake
       run: |
         echo "SDL2_DIR=$Env:GITHUB_WORKSPACE/prefix" >> $Env:GITHUB_ENV

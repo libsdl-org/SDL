@@ -13,10 +13,17 @@ jobs:
       - name: Configure CMake
         run: |
           emcmake cmake -S . -B build \
+            -DSDL_TESTS=ON \
+            -DSDL_INSTALL_TESTS=ON \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_INSTALL_PREFIX=prefix
       - name: Build
         run: cmake --build build/ --verbose
+      - name: Run build-time tests
+        run: |
+          set -eu
+          export SDL_TESTS_QUICK=1
+          ctest -VV --test-dir build/
       - name: Install
         run: |
           echo "SDL2_DIR=$(pwd)/prefix" >> $GITHUB_ENV
