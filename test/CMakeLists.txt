@@ -105,7 +105,7 @@ if(APPLE)
                               testutils.c)
 elseif(WINDOWS)
     add_executable(testnative testnative.c testnativew32.c testutils.c)
-elseif(UNIX)
+elseif(SDL_X11)
     add_executable(testnative testnative.c testnativex11.c testutils.c)
     target_link_libraries(testnative X11)
 endif()
@@ -180,7 +180,6 @@ SET(ALL_TESTS
     testmessage
     testmouse
     testmultiaudio
-    testnative
     testoffscreen
     testoverlay2
     testplatform
@@ -224,6 +223,10 @@ set(NONINTERACTIVE
     testtimer
     testver
 )
+
+if(WINDOWS OR APPLE OR SDL_X11)
+    list(APPEND ALL_TESTS testnative)
+endif()
 
 if(LINUX)
     list(APPEND ALL_TESTS testevdev)
@@ -292,12 +295,14 @@ else()
         testaudiohotplug
         testmultiaudio
         testime
-        testnative
         testiconv
         testoverlay2
         teststreaming
         testviewport
     )
+    if(WINDOWS OR APPLE OR SDL_X11)
+        list(APPEND NEEDS_RESOURCES testnative)
+    endif()
 endif()
 
 if(PSP)
