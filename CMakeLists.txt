@@ -2402,6 +2402,7 @@ elseif(VITA)
       SceDisplay_stub
       SceCtrl_stub
       SceAppMgr_stub
+      SceAppUtil_stub
       SceAudio_stub
       SceAudioIn_stub
       SceSysmodule_stub
