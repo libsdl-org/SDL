@@ -17,6 +17,7 @@ jobs:
         - { name: Windows static VCRT (x86), flags: -A Win32 -DSDL_FORCE_STATIC_VCRT=ON }
         - { name: Windows (clang-cl x64), flags: -T ClangCL -A x64 }
         - { name: Windows (clang-cl x86), flags: -T ClangCL -A Win32 }
+        - { name: Windows (ARM),          flags: -A ARM }
         - { name: Windows (ARM64),        flags: -A ARM64 }
         - { name: UWP (x64),              flags: -A x64 -DCMAKE_SYSTEM_NAME=WindowsStore -DCMAKE_SYSTEM_VERSION="10.0" -DSDL_TEST=OFF, project: VisualC-WinRT/SDL-UWP.sln, projectflags: '/p:Platform=x64 /p:WindowsTargetPlatformVersion=10.0.17763.0' }
 
