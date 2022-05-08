@@ -6,12 +6,12 @@
 
 DEVELOPER="`xcode-select -print-path`/Platforms/MacOSX.platform/Developer"
 
-# Intel 64-bit compiler flags (10.6 runtime compatibility)
-CLANG_COMPILE_X64="clang -arch x86_64 -mmacosx-version-min=10.6 \
--DMAC_OS_X_VERSION_MIN_REQUIRED=1060 \
+# Intel 64-bit compiler flags (10.7 runtime compatibility)
+CLANG_COMPILE_X64="clang -arch x86_64 -mmacosx-version-min=10.7 \
+-DMAC_OS_X_VERSION_MIN_REQUIRED=1070 \
 -I/usr/local/include"
 
-CLANG_LINK_X64="-mmacosx-version-min=10.6"
+CLANG_LINK_X64="-mmacosx-version-min=10.7"
 
 # ARM 64-bit compiler flags (11.0 runtime compatibility)
 CLANG_COMPILE_ARM64="clang -arch arm64 -mmacosx-version-min=11.0 \
