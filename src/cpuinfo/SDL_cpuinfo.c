@@ -1058,8 +1058,8 @@ void *
 SDL_SIMDAlloc(const size_t len)
 {
     const size_t alignment = SDL_SIMDGetAlignment();
-    const size_t padding = alignment - (len % alignment);
-    const size_t padded = (padding != alignment) ? (len + padding) : len;
+    const size_t padding = (alignment - (len % alignment)) % alignment;
+    const size_t padded = len + padding;
     Uint8 *retval = NULL;
     Uint8 *ptr = (Uint8 *) SDL_malloc(padded + alignment + sizeof (void *));
     if (ptr) {
@@ -1075,8 +1075,8 @@ void *
 SDL_SIMDRealloc(void *mem, const size_t len)
 {
     const size_t alignment = SDL_SIMDGetAlignment();
-    const size_t padding = alignment - (len % alignment);
-    const size_t padded = (padding != alignment) ? (len + padding) : len;
+    const size_t padding = (alignment - (len % alignment)) % alignment;
+    const size_t padded = len + padding;
     Uint8 *retval = (Uint8*) mem;
     void *oldmem = mem;
     size_t memdiff = 0, ptrdiff;
