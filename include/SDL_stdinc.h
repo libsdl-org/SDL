@@ -752,6 +752,9 @@ SDL_FORCE_INLINE int SDL_size_mul_overflow (size_t a,
 }
 
 #if _SDL_HAS_BUILTIN(__builtin_mul_overflow)
+/* This needs to be wrapped in an inline rather than being a direct #define,
+ * because __builtin_mul_overflow() is type-generic, but we want to be
+ * consistent about interpreting a and b as size_t. */
 SDL_FORCE_INLINE int _SDL_size_mul_overflow_builtin (size_t a,
                                                      size_t b,
                                                      size_t *ret)
@@ -779,6 +782,8 @@ SDL_FORCE_INLINE int SDL_size_add_overflow (size_t a,
 }
 
 #if _SDL_HAS_BUILTIN(__builtin_add_overflow)
+/* This needs to be wrapped in an inline rather than being a direct #define,
+ * the same as the call to __builtin_mul_overflow() above. */
 SDL_FORCE_INLINE int _SDL_size_add_overflow_builtin (size_t a,
                                                      size_t b,
                                                      size_t *ret)
