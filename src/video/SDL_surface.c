@@ -67,6 +67,7 @@ SDL_CalculatePitch(Uint32 format, size_t width)
     return pitch;
 }
 
+/* TODO: In SDL 3, drop the unused flags and depth parameters */
 /*
  * Create an empty RGB surface of the appropriate depth using the given
  * enum SDL_PIXELFORMAT_* format
@@ -174,6 +175,7 @@ SDL_CreateRGBSurfaceWithFormat(Uint32 flags, int width, int height, int depth,
     return surface;
 }
 
+/* TODO: In SDL 3, drop the unused flags parameter */
 /*
  * Create an empty RGB surface of the appropriate depth
  */
@@ -232,6 +234,7 @@ SDL_CreateRGBSurfaceFrom(void *pixels,
     return surface;
 }
 
+/* TODO: In SDL 3, drop the unused depth parameter */
 /*
  * Create an RGB surface from an existing memory buffer using the given given
  * enum SDL_PIXELFORMAT_* format
