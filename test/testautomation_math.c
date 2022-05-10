@@ -585,6 +585,85 @@ fabs_rangeTest(void *args)
     return TEST_COMPLETED;
 }
 
+/* SDL_copysign tests functions */
+
+/**
+ * \brief Checks edge cases (0 and infinity).
+ */
+static int
+copysign_edgeCases(void *args)
+{
+    double result;
+
+    result = SDL_copysign(INFINITY, -1.0);
+    SDLTest_AssertCheck(-INFINITY == result, "Copysign(%f,%.1f), expected %f, got %f",
+                        INFINITY, -1.0, -INFINITY, result);
+    result = SDL_copysign(-INFINITY, 1.0);
+    SDLTest_AssertCheck(INFINITY == result, "Copysign(%f,%.1f), expected %f, got %f",
+                        -INFINITY, 1.0, INFINITY, result);
+
+    result = SDL_copysign(0.0, -1.0);
+    SDLTest_AssertCheck(0.0 == result, "Copysign(%f,%.1f), expected %f, got %f",
+                        0.0, -1.0, 0.0, result);
+    result = SDL_copysign(-0.0, 1.0);
+    SDLTest_AssertCheck(0.0 == result, "Copysign(%f,%.1f), expected %f, got %f",
+                        -0.0, 1.0, 0.0, result);
+
+    return TEST_COMPLETED;
+}
+
+/**
+ * \brief Checks the NaN cases.
+ */
+static int
+copysign_nanCase(void *args)
+{
+    SDLTest_AssertCheck(isnan(SDL_copysign(NAN, 1.0)), "Copysign(nan,1.0), expected nan");
+    SDLTest_AssertCheck(isnan(SDL_copysign(NAN, -1.0)), "Copysign(nan,-1.0), expected nan");
+    return TEST_COMPLETED;
+}
+
+/**
+ * \brief Checks a range of values between 0 and UINT32_MAX
+ */
+static int
+copysign_rangeTest(void *args)
+{
+    const Uint32 ITERATIONS = 10000000;
+    const Uint32 STEP = SDL_MAX_UINT32 / ITERATIONS;
+    Uint32 i;
+    double test_value = 0.0;
+
+    SDLTest_AssertPass("Fabs: Testing a range of %u values with %u steps",
+                       ITERATIONS, STEP);
+
+    for (i = 0; i < ITERATIONS; i++, test_value += STEP) {
+        double result;
+        /* These are tested elsewhere */
+        if (isnan(test_value) || isinf(test_value)) {
+            continue;
+        }
+
+        /* Only log failures to save performances */
+        result = SDL_copysign(test_value, 1.0);
+        if (result != test_value) {
+            SDLTest_AssertPass("Copysign(%.1f,%.1f), expected %.1f, got %.1f",
+                               test_value, 1.0,
+                               test_value, result);
+            return TEST_ABORTED;
+        }
+
+        result = SDL_copysign(test_value, -1.0);
+        if (result != -test_value) {
+            SDLTest_AssertPass("Copysign(%.1f,%.1f), expected %.1f, got %.1f",
+                               test_value, -1.0,
+                               -test_value, result);
+            return TEST_ABORTED;
+        }
+    }
+    return TEST_COMPLETED;
+}
+
 /* ================= Test References ================== */
 
 /* SDL_floor test cases */
@@ -694,12 +773,28 @@ static const SDLTest_TestCaseReference fabsTest3 = {
     "Check a range of positive integer", TEST_ENABLED
 };
 
+/* SDL_copysign test cases */
+
+static const SDLTest_TestCaseReference copysignTest1 = {
+    (SDLTest_TestCaseFp) copysign_edgeCases, "copysign_edgeCases",
+    "Check positive and negative infinity and 0", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference copysignTest2 = {
+    (SDLTest_TestCaseFp) copysign_nanCase, "copysign_nanCase",
+    "Check the NaN special case", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference copysignTest3 = {
+    (SDLTest_TestCaseFp) copysign_rangeTest, "copysign_rangeTest",
+    "Check a range of positive integer", TEST_ENABLED
+};
+
 static const SDLTest_TestCaseReference *mathTests[] = {
     &floorTest1, &floorTest2, &floorTest3, &floorTest4, &floorTest5,
     &ceilTest1, &ceilTest2, &ceilTest3, &ceilTest4, &ceilTest5,
     &truncTest1, &truncTest2, &truncTest3, &truncTest4, &truncTest5,
     &roundTest1, &roundTest2, &roundTest3, &roundTest4, &roundTest5,
     &fabsTest1, &fabsTest2, &fabsTest3,
+    &copysignTest1, &copysignTest2, &copysignTest3,
     NULL
 };
 
