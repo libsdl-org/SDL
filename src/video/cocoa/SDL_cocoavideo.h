@@ -103,8 +103,6 @@ DECLARE_ALERT_STYLE(Critical);
     @property (nonatomic) void *key_layout;
     @property (nonatomic) SDLTranslatorResponder *fieldEdit;
     @property (nonatomic) NSInteger clipboard_count;
-    @property (nonatomic) Uint32 screensaver_activity;
-    @property (nonatomic) BOOL screensaver_use_iopm;
     @property (nonatomic) IOPMAssertionID screensaver_assertion;
     @property (nonatomic) SDL_mutex *swaplock;
 @end

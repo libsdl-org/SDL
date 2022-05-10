@@ -180,7 +180,6 @@ Cocoa_GL_CreateContext(_THIS, SDL_Window * window)
 {
     SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
     SDL_DisplayData *displaydata = (SDL_DisplayData *)display->driverdata;
-    SDL_bool lion_or_later = floor(NSAppKitVersionNumber) > NSAppKitVersionNumber10_6;
     NSOpenGLPixelFormatAttribute attr[32];
     NSOpenGLPixelFormat *fmt;
     SDLOpenGLContext *context;
@@ -214,22 +213,15 @@ Cocoa_GL_CreateContext(_THIS, SDL_Window * window)
         return NULL;
 #endif
     }
-    if ((_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_CORE) && !lion_or_later) {
-        SDL_SetError ("OpenGL Core Profile is not supported on this platform version");
-        return NULL;
-    }
 
     attr[i++] = NSOpenGLPFAAllowOfflineRenderers;
 
-    /* specify a profile if we're on Lion (10.7) or later. */
-    if (lion_or_later) {
-        NSOpenGLPixelFormatAttribute profile = NSOpenGLProfileVersionLegacy;
-        if (_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_CORE) {
-            profile = NSOpenGLProfileVersion3_2Core;
-        }
-        attr[i++] = NSOpenGLPFAOpenGLProfile;
-        attr[i++] = profile;
+    NSOpenGLPixelFormatAttribute profile = NSOpenGLProfileVersionLegacy;
+    if (_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_CORE) {
+        profile = NSOpenGLProfileVersion3_2Core;
     }
+    attr[i++] = NSOpenGLPFAOpenGLProfile;
+    attr[i++] = profile;
 
     attr[i++] = NSOpenGLPFAColorSize;
     attr[i++] = SDL_BYTESPERPIXEL(display->current_mode.format)*8;
@@ -377,11 +369,8 @@ Cocoa_GL_GetDrawableSize(_THIS, SDL_Window * window, int * w, int * h)
     NSRect viewport = [contentView bounds];
 
     if (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
-        /* This gives us the correct viewport for a Retina-enabled view, only
-         * supported on 10.7+. */
-        if ([contentView respondsToSelector:@selector(convertRectToBacking:)]) {
-            viewport = [contentView convertRectToBacking:viewport];
-        }
+        /* This gives us the correct viewport for a Retina-enabled view. */
+        viewport = [contentView convertRectToBacking:viewport];
     }
 
     if (w) {

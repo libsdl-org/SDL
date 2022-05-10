@@ -140,14 +140,7 @@
             aRange.location, aRange.length, windowHeight,
             NSStringFromRect(rect));
 
-#if MAC_OS_X_VERSION_MIN_REQUIRED < 1070
-    if (![window respondsToSelector:@selector(convertRectToScreen:)]) {
-        rect.origin = [window convertBaseToScreen:rect.origin];
-    } else
-#endif
-    {
-        rect = [window convertRectToScreen:rect];
-    }
+    rect = [window convertRectToScreen:rect];
 
     return rect;
 }
