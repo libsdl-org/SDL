@@ -1713,8 +1713,6 @@ Cocoa_CreateWindow(_THIS, SDL_Window * window)
 #endif
 
     if (videodata.allow_spaces) {
-        SDL_assert(floor(NSAppKitVersionNumber) > NSAppKitVersionNumber10_6);
-        SDL_assert([nswindow respondsToSelector:@selector(toggleFullScreen:)]);
         /* we put FULLSCREEN_DESKTOP windows in their own Space, without a toggle button or menubar, later */
         if (window->flags & SDL_WINDOW_RESIZABLE) {
             /* resizable windows are Spaces-friendly: they get the "go fullscreen" toggle button on their titlebar. */
@@ -1738,10 +1736,8 @@ Cocoa_CreateWindow(_THIS, SDL_Window * window)
     #endif
     /* Note: as of the macOS 10.15 SDK, this defaults to YES instead of NO when
      * the NSHighResolutionCapable boolean is set in Info.plist. */
-    if ([contentView respondsToSelector:@selector(setWantsBestResolutionOpenGLSurface:)]) {
-        BOOL highdpi = (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) != 0;
-        [contentView setWantsBestResolutionOpenGLSurface:highdpi];
-    }
+    BOOL highdpi = (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) != 0;
+    [contentView setWantsBestResolutionOpenGLSurface:highdpi];
     #ifdef __clang__
     #pragma clang diagnostic pop
     #endif
@@ -1813,10 +1809,8 @@ Cocoa_CreateWindowFrom(_THIS, SDL_Window * window, const void *data)
     #endif
     /* Note: as of the macOS 10.15 SDK, this defaults to YES instead of NO when
      * the NSHighResolutionCapable boolean is set in Info.plist. */
-    if ([nsview respondsToSelector:@selector(setWantsBestResolutionOpenGLSurface:)]) {
-        BOOL highdpi = (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) != 0;
-        [nsview setWantsBestResolutionOpenGLSurface:highdpi];
-    }
+    BOOL highdpi = (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) != 0;
+    [nsview setWantsBestResolutionOpenGLSurface:highdpi];
     #ifdef __clang__
     #pragma clang diagnostic pop
     #endif

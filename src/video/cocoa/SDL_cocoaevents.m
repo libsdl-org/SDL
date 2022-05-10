@@ -424,15 +424,13 @@ CreateApplicationMenus(void)
 
     [windowMenu addItemWithTitle:@"Zoom" action:@selector(performZoom:) keyEquivalent:@""];
     
-    /* Add the fullscreen toggle menu option, if supported */
-    if (floor(NSAppKitVersionNumber) > NSAppKitVersionNumber10_6) {
-        /* Cocoa should update the title to Enter or Exit Full Screen automatically.
-         * But if not, then just fallback to Toggle Full Screen.
-         */
-        menuItem = [[NSMenuItem alloc] initWithTitle:@"Toggle Full Screen" action:@selector(toggleFullScreen:) keyEquivalent:@"f"];
-        [menuItem setKeyEquivalentModifierMask:NSEventModifierFlagControl | NSEventModifierFlagCommand];
-        [windowMenu addItem:menuItem];
-    }
+    /* Add the fullscreen toggle menu option. */
+    /* Cocoa should update the title to Enter or Exit Full Screen automatically.
+     * But if not, then just fallback to Toggle Full Screen.
+     */
+    menuItem = [[NSMenuItem alloc] initWithTitle:@"Toggle Full Screen" action:@selector(toggleFullScreen:) keyEquivalent:@"f"];
+    [menuItem setKeyEquivalentModifierMask:NSEventModifierFlagControl | NSEventModifierFlagCommand];
+    [windowMenu addItem:menuItem];
 
     /* Put menu into the menubar */
     menuItem = [[NSMenuItem alloc] initWithTitle:@"Window" action:nil keyEquivalent:@""];
@@ -505,19 +503,6 @@ Cocoa_RegisterApp(void)
 int
 Cocoa_PumpEventsUntilDate(_THIS, NSDate *expiration, bool accumulate)
 {
-#if MAC_OS_X_VERSION_MIN_REQUIRED < 1070
-    /* Update activity every 30 seconds to prevent screensaver */
-    SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
-    if (_this->suspend_screensaver && !data->screensaver_use_iopm) {
-        Uint32 now = SDL_GetTicks();
-        if (!data->screensaver_activity ||
-            SDL_TICKS_PASSED(now, data->screensaver_activity + 30000)) {
-            UpdateSystemActivity(UsrActivity);
-            data->screensaver_activity = now;
-        }
-    }
-#endif
-
     for ( ; ; ) {
         NSEvent *event = [NSApp nextEventMatchingMask:NSEventMaskAny untilDate:expiration inMode:NSDefaultRunLoopMode dequeue:YES ];
         if ( event == nil ) {
@@ -583,10 +568,6 @@ Cocoa_SuspendScreenSaver(_THIS)
 { @autoreleasepool
 {
     SDL_VideoData *data = (__bridge SDL_VideoData *)_this->driverdata;
-
-    if (!data.screensaver_use_iopm) {
-        return;
-    }
 
     if (data.screensaver_assertion) {
         IOPMAssertionRelease(data.screensaver_assertion);
