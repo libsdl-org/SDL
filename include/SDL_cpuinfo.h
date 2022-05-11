@@ -501,17 +501,6 @@ extern DECLSPEC size_t SDLCALL SDL_SIMDGetAlignment(void);
 extern DECLSPEC void * SDLCALL SDL_SIMDAlloc(const size_t len);
 
 /**
- * Allocate aligned memory with explicit 'align' parameter.
- * \param len The length, in bytes, of the block to allocate. The actual
- *            allocated block might be larger due to padding, etc.
- * \param alignment alignment requirement
- * \returns a pointer to the newly-allocated block, NULL if out of memory.
- *
- * \sa SDL_SIMDFree
- */
-extern DECLSPEC void * SDLCALL SDL_SIMDAllocAligned(size_t len, size_t alignment);
-
-/**
  * Reallocate memory obtained from SDL_SIMDAlloc
  *
  * It is not valid to use this function on a pointer from anything but
@@ -558,6 +547,42 @@ extern DECLSPEC void * SDLCALL SDL_SIMDRealloc(void *mem, const size_t len);
  * \sa SDL_SIMDRealloc
  */
 extern DECLSPEC void SDLCALL SDL_SIMDFree(void *ptr);
+
+/**
+ * Allocate aligned memory with explicit 'alignment' parameter.
+ * \param alignment alignment requirement
+ * \param size The size, in bytes, of the block to allocate.
+ * \returns a pointer to the newly-allocated block, NULL if out of memory.
+ *
+ * \sa SDL_aligned_free
+ * \sa SDL_aligned_realloc
+ */
+extern DECLSPEC void * SDLCALL SDL_aligned_alloc(size_t alignment, size_t size);
+
+/**
+ * Reallocate memory obtained from SDL_aligned_alloc
+ * \param mem The pointer obtained from SDL_aligned_alloc. This function also
+ *            accepts NULL, at which point this function is the same as
+ *            calling SDL_aligned_alloc with a NULL pointer.
+ * \param alignment alignment requirement
+ * \param size The size, in bytes, of the block to allocate.
+ *
+ * \sa SDL_aligned_free
+ * \sa SDL_aligned_alloc
+ */
+extern DECLSPEC void * SDLCALL SDL_aligned_realloc(void *mem, size_t alignment, size_t size);
+
+/**
+ * Deallocate memory obtained from SDL_aligned_alloc
+ *
+ * \param ptr The pointer, returned from SDL_aligned_alloc or SDL_aligned_realloc, to
+ *            deallocate. NULL is a legal no-op.
+ *
+ *
+ * \sa SDL_aligned_alloc
+ * \sa SDL_aligned_realloc
+ */
+extern DECLSPEC void SDLCALL SDL_aligned_free(void *ptr);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

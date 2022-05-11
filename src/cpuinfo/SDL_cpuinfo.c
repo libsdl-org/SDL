@@ -1066,18 +1066,18 @@ SDL_SIMDAlloc(const size_t len)
         return NULL;
     }
 
-    return SDL_SIMDAllocAligned(to_allocate, alignment);
+    return SDL_aligned_alloc(alignment, to_allocate);
 }
 
 void *
-SDL_SIMDAllocAligned(size_t len, size_t alignment)
+SDL_aligned_alloc(size_t alignment, size_t size)
 {
     Uint8 *retval = NULL;
     Uint8 *ptr;
     size_t to_allocate;
 
     /* Check for overflow */
-    if (SDL_size_add_overflow(len, alignment, &to_allocate) ||
+    if (SDL_size_add_overflow(size, alignment, &to_allocate) ||
         SDL_size_add_overflow(to_allocate, sizeof (void *), &to_allocate)) {
         return NULL;
     }
@@ -1097,15 +1097,28 @@ SDL_SIMDRealloc(void *mem, const size_t len)
 {
     const size_t alignment = SDL_SIMDGetAlignment();
     const size_t padding = (alignment - (len % alignment)) % alignment;
+    size_t to_allocate;
+
+    /* Check for overflow */
+    if (SDL_size_add_overflow(len, padding, &to_allocate)) {
+        return NULL;
+    }
+
+    return SDL_aligned_realloc(mem, alignment, to_allocate);
+}
+
+void *
+SDL_aligned_realloc(void *mem, size_t alignment, size_t size)
+{
     Uint8 *retval = (Uint8*) mem;
     void *oldmem = mem;
     size_t memdiff = 0, ptrdiff;
     Uint8 *ptr;
     size_t to_allocate;
 
-    /* alignment + padding + sizeof (void *) is bounded (a few hundred
-     * bytes max), so no need to check for overflow within that argument */
-    if (SDL_size_add_overflow(len, alignment + padding + sizeof (void *), &to_allocate)) {
+    /* Check for overflow */
+    if (SDL_size_add_overflow(size, alignment, &to_allocate) ||
+        SDL_size_add_overflow(to_allocate, sizeof (void *), &to_allocate)) {
         return NULL;
     }
 
@@ -1134,17 +1147,23 @@ SDL_SIMDRealloc(void *mem, const size_t len)
         if (memdiff != ptrdiff) { /* Delta has changed, copy to new offset! */
             oldmem = (void*) (((uintptr_t) ptr) + memdiff);
 
-            /* Even though the data past the old `len` is undefined, this is the
+            /* Even though the data past the old `size` is undefined, this is the
              * only length value we have, and it guarantees that we copy all the
              * previous memory anyhow.
              */
-            SDL_memmove(retval, oldmem, len);
+            SDL_memmove(retval, oldmem, size);
         }
     }
 
     /* Actually store the allocated pointer, finally. */
     *(((void **) retval) - 1) = ptr;
     return retval;
+}
+
+void
+SDL_aligned_free(void *ptr)
+{
+    return SDL_SIMDFree(ptr);
 }
 
 void
