@@ -90,6 +90,20 @@ static void SDL_AddAssertionToReport(SDL_assert_data *data)
     }
 }
 
+#ifdef __WIN32__
+    #define ENDLINE "\r\n"
+#else
+    #define ENDLINE "\n"
+#endif
+
+static int SDL_RenderAssertMessage(char *buf, size_t buf_len, const SDL_assert_data *data) {
+    return SDL_snprintf(buf, buf_len,
+        "Assertion failure at %s (%s:%d), triggered %u %s:" ENDLINE "  '%s'",
+        data->function, data->filename, data->linenum,
+        data->trigger_count, (data->trigger_count == 1) ? "time" : "times",
+        data->condition
+    );
+}
 
 static void SDL_GenerateAssertionReport(void)
 {
@@ -139,16 +153,9 @@ static SDL_NORETURN void SDL_AbortAssertion(void)
     SDL_ExitProcess(42);
 }
 
-
 static SDL_assert_state SDLCALL
 SDL_PromptAssertion(const SDL_assert_data *data, void *userdata)
 {
-#ifdef __WIN32__
-    #define ENDLINE "\r\n"
-#else
-    #define ENDLINE "\n"
-#endif
-
     const char *envr;
     SDL_assert_state state = SDL_ASSERTION_ABORT;
     SDL_Window *window;
@@ -167,29 +174,32 @@ SDL_PromptAssertion(const SDL_assert_data *data, void *userdata)
     char stack_buf[SDL_MAX_ASSERT_MESSAGE_STACK];
     char *message = stack_buf;
     size_t buf_len = sizeof(stack_buf);
-    size_t len;
+    int len;
 
     (void) userdata;  /* unused in default handler. */
 
-    do {
-        /* Assume the output will fit... */
-        len = SDL_snprintf(message, buf_len,
-            "Assertion failure at %s (%s:%d), triggered %u %s:" ENDLINE "  '%s'",
-                data->function, data->filename, data->linenum,
-                data->trigger_count, (data->trigger_count == 1) ? "time" : "times",
-                data->condition);
+    /* Assume the output will fit... */
+    len = SDL_RenderAssertMessage(message, buf_len, data);
 
-        /* .. and if it didn't, allocate as much room as we actually need. */
-        if (len >= buf_len && message == stack_buf) {
-            buf_len = len + 1;
+    /* .. and if it didn't, try to allocate as much room as we actually need. */
+    if (len >= buf_len) {
+        if (SDL_size_add_overflow(len, 1, &buf_len) == 0) {
             message = (char *)SDL_malloc(buf_len);
-            if (!message) {
-                /* Uh oh, we're in real trouble now... */
-                return SDL_ASSERTION_ABORT;
+            if (message) {
+                len = SDL_RenderAssertMessage(message, buf_len, data);
+            } else {
+                message = stack_buf;
             }
-            len = 0;
         }
-    } while (len == 0);
+    }
+
+    /* Something went very wrong */
+    if (len < 0) {
+        if (message != stack_buf) {
+            SDL_free(message);
+        }
+        return SDL_ASSERTION_ABORT;
+    }
 
     debug_print("\n\n%s\n\n", message);
 
