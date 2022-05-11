@@ -908,6 +908,9 @@ SDL_bool
 Wayland_LoadLibdecor(SDL_VideoData *data, SDL_bool ignore_xdg)
 {
 #ifdef HAVE_LIBDECOR_H
+    if (data->shell.libdecor != NULL) {
+        return SDL_TRUE; /* Already loaded! */
+    }
     if (should_use_libdecor(data, ignore_xdg)) {
         data->shell.libdecor = libdecor_new(data->display, &libdecor_interface);
         return data->shell.libdecor != NULL;
