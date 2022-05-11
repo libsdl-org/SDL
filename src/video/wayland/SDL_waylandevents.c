@@ -476,19 +476,16 @@ ProcessHitTest(struct SDL_WaylandInput *input, uint32_t serial)
         const uint32_t *directions_libdecor = directions;
 #endif
 
-        /* Hit tests shouldn't apply to xdg_popups, right? */
-        SDL_assert(!WINDOW_IS_XDG_POPUP(window));
-
         switch (rc) {
             case SDL_HITTEST_DRAGGABLE:
 #ifdef HAVE_LIBDECOR_H
-                if (input->display->shell.libdecor) {
+                if (window_data->shell_surface_type == WAYLAND_SURFACE_LIBDECOR) {
                     if (window_data->shell_surface.libdecor.frame) {
                         libdecor_frame_move(window_data->shell_surface.libdecor.frame, input->seat, serial);
                     }
                 } else
 #endif
-                if (input->display->shell.xdg) {
+                if (window_data->shell_surface_type == WAYLAND_SURFACE_XDG_TOPLEVEL) {
                     if (window_data->shell_surface.xdg.roleobj.toplevel) {
                         xdg_toplevel_move(window_data->shell_surface.xdg.roleobj.toplevel,
                                           input->seat,
@@ -506,13 +503,13 @@ ProcessHitTest(struct SDL_WaylandInput *input, uint32_t serial)
             case SDL_HITTEST_RESIZE_BOTTOMLEFT:
             case SDL_HITTEST_RESIZE_LEFT:
 #ifdef HAVE_LIBDECOR_H
-                if (input->display->shell.libdecor) {
+                if (window_data->shell_surface_type == WAYLAND_SURFACE_LIBDECOR) {
                     if (window_data->shell_surface.libdecor.frame) {
                         libdecor_frame_resize(window_data->shell_surface.libdecor.frame, input->seat, serial, directions_libdecor[rc - SDL_HITTEST_RESIZE_TOPLEFT]);
                     }
                 } else
 #endif
-                if (input->display->shell.xdg) {
+                if (window_data->shell_surface_type == WAYLAND_SURFACE_XDG_TOPLEVEL) {
                     if (window_data->shell_surface.xdg.roleobj.toplevel) {
                         xdg_toplevel_resize(window_data->shell_surface.xdg.roleobj.toplevel,
                                             input->seat,

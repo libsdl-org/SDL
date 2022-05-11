@@ -32,32 +32,11 @@
 
 struct SDL_WaylandInput;
 
-typedef struct {
-    struct xdg_surface *surface;
-    union {
-        struct xdg_toplevel *toplevel;
-        struct {
-            struct xdg_popup *popup;
-            struct xdg_positioner *positioner;
-            Uint32 parentID;
-            SDL_Window *child;
-        } popup;
-    } roleobj;
-    SDL_bool initial_configure_seen;
-} SDL_xdg_shell_surface;
-
+/* TODO: Remove these helpers, they're from before we had shell_surface_type */
 #define WINDOW_IS_XDG_POPUP(window) \
-    (window->flags & (SDL_WINDOW_TOOLTIP | SDL_WINDOW_POPUP_MENU))
-
-#ifdef HAVE_LIBDECOR_H
-typedef struct {
-    struct libdecor_frame *frame;
-    SDL_bool initial_configure_seen;
-} SDL_libdecor_surface;
-
-#define WINDOW_IS_LIBDECOR(viddata, window) \
-    (viddata->shell.libdecor && !WINDOW_IS_XDG_POPUP(window))
-#endif
+    (((SDL_WindowData*) window->driverdata)->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP)
+#define WINDOW_IS_LIBDECOR(ignoreme, window) \
+    (((SDL_WindowData*) window->driverdata)->shell_surface_type == WAYLAND_SURFACE_LIBDECOR)
 
 typedef struct {
     SDL_Window *sdlwindow;
@@ -66,12 +45,35 @@ typedef struct {
     struct wl_callback *frame_callback;
     struct wl_event_queue *frame_event_queue;
     struct wl_surface *frame_surface_wrapper;
+
     union {
 #ifdef HAVE_LIBDECOR_H
-        SDL_libdecor_surface libdecor;
+        struct {
+            struct libdecor_frame *frame;
+            SDL_bool initial_configure_seen;
+        } libdecor;
 #endif
-        SDL_xdg_shell_surface xdg;
+        struct {
+            struct xdg_surface *surface;
+            union {
+                struct xdg_toplevel *toplevel;
+                struct {
+                    struct xdg_popup *popup;
+                    struct xdg_positioner *positioner;
+                    Uint32 parentID;
+                    SDL_Window *child;
+                } popup;
+            } roleobj;
+            SDL_bool initial_configure_seen;
+        } xdg;
     } shell_surface;
+    enum {
+        WAYLAND_SURFACE_UNKNOWN = 0,
+        WAYLAND_SURFACE_XDG_TOPLEVEL,
+        WAYLAND_SURFACE_XDG_POPUP,
+        WAYLAND_SURFACE_LIBDECOR
+    } shell_surface_type;
+
     struct wl_egl_window *egl_window;
     struct SDL_WaylandInput *keyboard_device;
 #if SDL_VIDEO_OPENGL_EGL
