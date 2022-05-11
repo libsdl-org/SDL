@@ -129,8 +129,6 @@ struct SDL_GpuDevice
     int (*CreateShader)(SDL_GpuShader *shader, const Uint8 *bytecode, const Uint32 bytecodelen);
     void (*DestroyShader)(SDL_GpuShader *shader);
 
-    SDL_GpuTexture *(*GetBackbuffer)(SDL_GpuDevice *device, SDL_Window *window);
-
     int (*CreatePipeline)(SDL_GpuPipeline *pipeline);
     void (*DestroyPipeline)(SDL_GpuPipeline *pipeline);
 
@@ -169,6 +167,7 @@ struct SDL_GpuDevice
     int (*CopyFromTextureToBuffer)(SDL_GpuBlitPass *pass, SDL_GpuTexture *srctex, Uint32 srcslice, Uint32 srclevel, Uint32 srcx, Uint32 srcy, Uint32 srcz, Uint32 srcw, Uint32 srch, Uint32 srcdepth, SDL_GpuBuffer *dstbuf, Uint32 dstoffset, Uint32 dstpitch, Uint32 dstimgpitch);
     int (*EndBlitPass)(SDL_GpuBlitPass *pass);
 
+    int (*GetBackbuffer)(SDL_GpuDevice *device, SDL_Window *window, SDL_GpuTexture *texture);
     int (*Present)(SDL_GpuDevice *device, SDL_Window *window, SDL_GpuTexture *backbuffer, int swapinterval);
 
     int (*CreateFence)(SDL_GpuFence *fence);

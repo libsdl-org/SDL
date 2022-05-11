@@ -349,33 +349,6 @@ SDL_GpuDestroyShader(SDL_GpuShader *shader)
     }
 }
 
-SDL_GpuTexture *
-SDL_GpuGetBackbuffer(SDL_GpuDevice *device, SDL_Window *window)
-{
-    SDL_GpuTexture *retval = NULL;
-    if (!device) {
-        SDL_InvalidParamError("device");
-    } else if (!window) {
-        SDL_InvalidParamError("window");
-    } else if (window->gpu_device && (window->gpu_device != device)) {
-        SDL_SetError("Window is being used by another GPU device");
-    } else {
-        if (window->gpu_device == NULL) {
-            if (device->ClaimWindow(device, window) == -1) {
-                return NULL;
-            }
-            window->gpu_device = device;
-        }
-
-        if (!window->gpu_backbuffer) {   /* if !NULL, already requested one that isn't yet in-flight for presentation. */
-            window->gpu_backbuffer = device->GetBackbuffer(device, window);
-        }
-
-        retval = (SDL_GpuTexture *) window->gpu_backbuffer;
-    }
-    return retval;
-}
-
 SDL_GpuPipeline *
 SDL_GpuCreatePipeline(SDL_GpuDevice *device, const SDL_GpuPipelineDescription *desc)
 {
@@ -1206,6 +1179,51 @@ SDL_GpuAbandonCommandBuffers(SDL_GpuCommandBuffer **buffers, const Uint32 numcmd
             }
         }
     }
+}
+
+SDL_GpuTexture *
+SDL_GpuGetBackbuffer(SDL_GpuDevice *device, SDL_Window *window)
+{
+    SDL_GpuTexture *retval = NULL;
+    if (!device) {
+        SDL_InvalidParamError("device");
+    } else if (!window) {
+        SDL_InvalidParamError("window");
+    } else if (window->gpu_device && (window->gpu_device != device)) {
+        SDL_SetError("Window is being used by another GPU device");
+    } else {
+        if (window->gpu_device == NULL) {
+            if (device->ClaimWindow(device, window) == -1) {
+                return NULL;
+            }
+            window->gpu_device = device;
+        }
+
+        if (!window->gpu_backbuffer) {   /* if !NULL, already requested one that isn't yet in-flight for presentation. */
+            SDL_GpuTextureDescription desc;
+            char label[128];
+            SDL_snprintf(label, sizeof (label), "Window backbuffer frame #%llu ('%s')", (unsigned long long) window->gpu_framenum, window->title);
+            SDL_zero(desc);
+            desc.label = label;
+            desc.texture_type = SDL_GPUTEXTYPE_2D;
+            desc.usage = SDL_GPUTEXUSAGE_RENDER_TARGET;
+            desc.depth_or_slices = 1;
+            desc.mipmap_levels = 1;
+            ALLOC_OBJ_WITH_DESC(SDL_GpuTexture, retval, &desc);
+            if (retval != NULL) {
+                retval->device = device;
+                if (device->GetBackbuffer(device, window, retval) == -1) {   /* backend is expected to fill in width, height, and pixel_format of retval->desc! */
+                    FREE_AND_NULL_OBJ_WITH_DESC(retval);
+                } else {
+                    window->gpu_framenum++;
+                    window->gpu_backbuffer = retval;
+                }
+            }
+        }
+
+        retval = (SDL_GpuTexture *) window->gpu_backbuffer;
+    }
+    return retval;
 }
 
 int

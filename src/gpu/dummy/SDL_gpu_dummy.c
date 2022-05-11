@@ -62,7 +62,6 @@ static int DUMMY_GpuCreateTexture(SDL_GpuTexture *texture) { return 0; }
 static void DUMMY_GpuDestroyTexture(SDL_GpuTexture *texture) {}
 static int DUMMY_GpuCreateShader(SDL_GpuShader *shader, const Uint8 *bytecode, const Uint32 bytecodelen) { return 0; }
 static void DUMMY_GpuDestroyShader(SDL_GpuShader *shader) {}
-static SDL_GpuTexture *DUMMY_GpuGetBackbuffer(SDL_GpuDevice *device, SDL_Window *window) { return NULL; /* !!! FIXME */ }
 static int DUMMY_GpuCreatePipeline(SDL_GpuPipeline *pipeline) { return 0; }
 static void DUMMY_GpuDestroyPipeline(SDL_GpuPipeline *pipeline) {}
 static int DUMMY_GpuCreateSampler(SDL_GpuSampler *sampler) { return 0; }
@@ -96,6 +95,7 @@ static int DUMMY_GpuCopyBufferGpuToGpu(SDL_GpuBlitPass *pass, SDL_GpuBuffer *src
 static int DUMMY_GpuCopyFromBufferToTexture(SDL_GpuBlitPass *pass, SDL_GpuBuffer *srcbuf, Uint32 srcoffset, Uint32 srcpitch, Uint32 srcimgpitch, Uint32 srcw, Uint32 srch, Uint32 srcdepth, SDL_GpuTexture *dsttex, Uint32 dstslice, Uint32 dstlevel, Uint32 dstx, Uint32 dsty, Uint32 dstz) { return 0; }
 static int DUMMY_GpuCopyFromTextureToBuffer(SDL_GpuBlitPass *pass, SDL_GpuTexture *srctex, Uint32 srcslice, Uint32 srclevel, Uint32 srcx, Uint32 srcy, Uint32 srcz, Uint32 srcw, Uint32 srch, Uint32 srcdepth, SDL_GpuBuffer *dstbuf, Uint32 dstoffset, Uint32 dstpitch, Uint32 dstimgpitch) { return 0; }
 static int DUMMY_GpuEndBlitPass(SDL_GpuBlitPass *pass) { return 0; }
+static int DUMMY_GpuGetBackbuffer(SDL_GpuDevice *device, SDL_Window *window, SDL_GpuTexture *texture) { return 0; }
 static int DUMMY_GpuPresent(SDL_GpuDevice *device, SDL_Window *window, SDL_GpuTexture *backbuffer, int swapinterval) { return 0; }
 static int DUMMY_GpuCreateFence(SDL_GpuFence *fence) { return 0; }
 static void DUMMY_GpuDestroyFence(SDL_GpuFence *fence) {}
@@ -118,7 +118,6 @@ DUMMY_GpuCreateDevice(SDL_GpuDevice *device)
     device->DestroyTexture = DUMMY_GpuDestroyTexture;
     device->CreateShader = DUMMY_GpuCreateShader;
     device->DestroyShader = DUMMY_GpuDestroyShader;
-    device->GetBackbuffer = DUMMY_GpuGetBackbuffer;
     device->CreatePipeline = DUMMY_GpuCreatePipeline;
     device->DestroyPipeline = DUMMY_GpuDestroyPipeline;
     device->CreateSampler = DUMMY_GpuCreateSampler;
@@ -152,6 +151,7 @@ DUMMY_GpuCreateDevice(SDL_GpuDevice *device)
     device->CopyFromBufferToTexture = DUMMY_GpuCopyFromBufferToTexture;
     device->CopyFromTextureToBuffer = DUMMY_GpuCopyFromTextureToBuffer;
     device->EndBlitPass = DUMMY_GpuEndBlitPass;
+    device->GetBackbuffer = DUMMY_GpuGetBackbuffer;
     device->Present = DUMMY_GpuPresent;
     device->CreateFence = DUMMY_GpuCreateFence;
     device->DestroyFence = DUMMY_GpuDestroyFence;
