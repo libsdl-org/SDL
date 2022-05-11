@@ -1906,9 +1906,12 @@ int Wayland_CreateWindow(_THIS, SDL_Window *window)
 
     #define IS_POPUP(window) \
         (window->flags & (SDL_WINDOW_TOOLTIP | SDL_WINDOW_POPUP_MENU))
+#ifdef HAVE_LIBDECOR_H
     if (c->shell.libdecor && !IS_POPUP(window)) {
         data->shell_surface_type = WAYLAND_SURFACE_LIBDECOR;
-    } else if (c->shell.xdg) {
+    } else
+#endif
+    if (c->shell.xdg) {
         if (IS_POPUP(window)) {
             data->shell_surface_type = WAYLAND_SURFACE_XDG_POPUP;
         } else {
