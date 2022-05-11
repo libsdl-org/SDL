@@ -32,26 +32,41 @@ typedef struct
 /* SDL_floor tests functions */
 
 /**
- * \brief Checks edge cases (0 and infinity) for themselves.
+ * \brief Checks positive and negative infinity.
  */
 static int
-floor_edgeCases(void *args)
+floor_infCases(void *args)
 {
     double result;
 
     result = SDL_floor(INFINITY);
-    SDLTest_AssertCheck(INFINITY == result, "Floor(%f), expected %f, got %f",
+    SDLTest_AssertCheck(INFINITY == result,
+                        "Floor(%f), expected %f, got %f",
                         INFINITY, INFINITY, result);
+
     result = SDL_floor(-INFINITY);
-    SDLTest_AssertCheck(-INFINITY == result, "Floor(%f), expected %f, got %f",
+    SDLTest_AssertCheck(-INFINITY == result,
+                        "Floor(%f), expected %f, got %f",
                         -INFINITY, -INFINITY, result);
 
-    result = SDL_floor(0.0);
-    SDLTest_AssertCheck(0.0 == result, "Floor(%.1f), expected %.1f, got %.1f",
-                        0.0, 0.0, result);
-    result = SDL_floor(-0.0);
-    SDLTest_AssertCheck(-0.0 == result, "Floor(%.1f), expected %.1f, got %.1f",
-                        -0.0, -0.0, result);
+    return TEST_COMPLETED;
+}
+
+/**
+ * \brief Checks positive and negative zero.
+ */
+static int
+floor_zeroCases(void *args)
+{
+    Uint32 i;
+    const double zero_cases[] = { 0.0, -0.0 };
+
+    for (i = 0; i < SDL_arraysize(zero_cases); i++) {
+        const double result = SDL_floor(zero_cases[i]);
+        SDLTest_AssertCheck(result == zero_cases[i],
+                            "Floor(%.1f), expected %.1f, got %.1f",
+                            zero_cases[i], zero_cases[i], result);
+    }
 
     return TEST_COMPLETED;
 }
@@ -62,7 +77,10 @@ floor_edgeCases(void *args)
 static int
 floor_nanCase(void *args)
 {
-    SDLTest_AssertCheck(isnan(SDL_floor(NAN)), "Floor(nan), expected nan");
+    const double result = SDL_floor(NAN);
+    SDLTest_AssertCheck(isnan(result),
+                        "Floor(nan), expected nan, got %f",
+                        result);
     return TEST_COMPLETED;
 }
 
@@ -154,25 +172,42 @@ floor_rangeTest(void *args)
 /* SDL_ceil tests functions */
 
 /**
- * \brief Checks edge cases (0 and infinity) for themselves.
+ * \brief Checks positive and negative infinity.
  */
 static int
-ceil_edgeCases(void *args)
+ceil_infCases(void *args)
 {
     double result;
 
     result = SDL_ceil(INFINITY);
-    SDLTest_AssertCheck(INFINITY == result, "Ceil(%f), expected %f, got %f",
+    SDLTest_AssertCheck(INFINITY == result,
+                        "Ceil(%f), expected %f, got %f",
                         INFINITY, INFINITY, result);
+
     result = SDL_ceil(-INFINITY);
-    SDLTest_AssertCheck(-INFINITY == result, "Ceil(%f), expected %f, got %f",
+    SDLTest_AssertCheck(-INFINITY == result,
+                        "Ceil(%f), expected %f, got %f",
                         -INFINITY, -INFINITY, result);
 
+    return TEST_COMPLETED;
+}
+
+/**
+ * \brief Checks positive and negative zero.
+ */
+static int
+ceil_zeroCases(void *args)
+{
+    double result;
+
     result = SDL_ceil(0.0);
-    SDLTest_AssertCheck(0.0 == result, "Ceil(%.1f), expected %.1f, got %.1f",
+    SDLTest_AssertCheck(0.0 == result,
+                        "Ceil(%.1f), expected %.1f, got %.1f",
                         0.0, 0.0, result);
+
     result = SDL_ceil(-0.0);
-    SDLTest_AssertCheck(-0.0 == result, "Ceil(%.1f), expected %.1f, got %.1f",
+    SDLTest_AssertCheck(-0.0 == result,
+                        "Ceil(%.1f), expected %.1f, got %.1f",
                         -0.0, -0.0, result);
 
     return TEST_COMPLETED;
@@ -184,7 +219,10 @@ ceil_edgeCases(void *args)
 static int
 ceil_nanCase(void *args)
 {
-    SDLTest_AssertCheck(isnan(SDL_ceil(NAN)), "Ceil(nan), expected nan");
+    const double result = SDL_ceil(NAN);
+    SDLTest_AssertCheck(isnan(result),
+                        "Ceil(nan), expected nan, got %f",
+                        result);
     return TEST_COMPLETED;
 }
 
@@ -276,25 +314,42 @@ ceil_rangeTest(void *args)
 /* SDL_trunc tests functions */
 
 /**
- * \brief Checks edge cases (0 and infinity) for themselves.
+ * \brief Checks positive and negative infinity.
  */
 static int
-trunc_edgeCases(void *args)
+trunc_infCases(void *args)
 {
     double result;
 
     result = SDL_trunc(INFINITY);
-    SDLTest_AssertCheck(INFINITY == result, "Trunc(%f), expected %f, got %f",
+    SDLTest_AssertCheck(INFINITY == result,
+                        "Trunc(%f), expected %f, got %f",
                         INFINITY, INFINITY, result);
+
     result = SDL_trunc(-INFINITY);
-    SDLTest_AssertCheck(-INFINITY == result, "Trunc(%f), expected %f, got %f",
+    SDLTest_AssertCheck(-INFINITY == result,
+                        "Trunc(%f), expected %f, got %f",
                         -INFINITY, -INFINITY, result);
 
+    return TEST_COMPLETED;
+}
+
+/**
+ * \brief Checks positive and negative zero.
+ */
+static int
+trunc_zeroCases(void *args)
+{
+    double result;
+
     result = SDL_trunc(0.0);
-    SDLTest_AssertCheck(0.0 == result, "Trunc(%.1f), expected %.1f, got %.1f",
+    SDLTest_AssertCheck(0.0 == result,
+                        "Trunc(%.1f), expected %.1f, got %.1f",
                         0.0, 0.0, result);
+
     result = SDL_trunc(-0.0);
-    SDLTest_AssertCheck(-0.0 == result, "Trunc(%.1f), expected %.1f, got %.1f",
+    SDLTest_AssertCheck(-0.0 == result,
+                        "Trunc(%.1f), expected %.1f, got %.1f",
                         -0.0, -0.0, result);
 
     return TEST_COMPLETED;
@@ -306,7 +361,10 @@ trunc_edgeCases(void *args)
 static int
 trunc_nanCase(void *args)
 {
-    SDLTest_AssertCheck(isnan(SDL_trunc(NAN)), "Trunc(nan), expected nan");
+    const double result = SDL_trunc(NAN);
+    SDLTest_AssertCheck(isnan(result),
+                        "Trunc(nan), expected nan, got %f",
+                        result);
     return TEST_COMPLETED;
 }
 
@@ -398,25 +456,42 @@ trunc_rangeTest(void *args)
 /* SDL_round tests functions */
 
 /**
- * \brief Checks edge cases (0 and infinity) for themselves.
+ * \brief Checks positive and negative infinity.
  */
 static int
-round_edgeCases(void *args)
+round_infCases(void *args)
 {
     double result;
 
     result = SDL_round(INFINITY);
-    SDLTest_AssertCheck(INFINITY == result, "Round(%f), expected %f, got %f",
+    SDLTest_AssertCheck(INFINITY == result,
+                        "Round(%f), expected %f, got %f",
                         INFINITY, INFINITY, result);
+
     result = SDL_round(-INFINITY);
-    SDLTest_AssertCheck(-INFINITY == result, "Round(%f), expected %f, got %f",
+    SDLTest_AssertCheck(-INFINITY == result,
+                        "Round(%f), expected %f, got %f",
                         -INFINITY, -INFINITY, result);
 
+    return TEST_COMPLETED;
+}
+
+/**
+ * \brief Checks positive and negative zero.
+ */
+static int
+round_zeroCases(void *args)
+{
+    double result;
+
     result = SDL_round(0.0);
-    SDLTest_AssertCheck(0.0 == result, "Round(%.1f), expected %.1f, got %.1f",
+    SDLTest_AssertCheck(0.0 == result,
+                        "Round(%.1f), expected %.1f, got %.1f",
                         0.0, 0.0, result);
+
     result = SDL_round(-0.0);
-    SDLTest_AssertCheck(-0.0 == result, "Round(%.1f), expected %.1f, got %.1f",
+    SDLTest_AssertCheck(-0.0 == result,
+                        "Round(%.1f), expected %.1f, got %.1f",
                         -0.0, -0.0, result);
 
     return TEST_COMPLETED;
@@ -428,7 +503,10 @@ round_edgeCases(void *args)
 static int
 round_nanCase(void *args)
 {
-    SDLTest_AssertCheck(isnan(SDL_round(NAN)), "Round(nan), expected nan");
+    const double result = SDL_round(NAN);
+    SDLTest_AssertCheck(isnan(result),
+                        "Round(nan), expected nan, got %f",
+                        result);
     return TEST_COMPLETED;
 }
 
@@ -520,25 +598,42 @@ round_rangeTest(void *args)
 /* SDL_fabs tests functions */
 
 /**
- * \brief Checks edge cases (0 and infinity).
+ * \brief Checks positive and negative infinity.
  */
 static int
-fabs_edgeCases(void *args)
+fabs_infCases(void *args)
 {
     double result;
 
     result = SDL_fabs(INFINITY);
-    SDLTest_AssertCheck(INFINITY == result, "Fabs(%f), expected %f, got %f",
+    SDLTest_AssertCheck(INFINITY == result,
+                        "Fabs(%f), expected %f, got %f",
                         INFINITY, INFINITY, result);
+
     result = SDL_fabs(-INFINITY);
-    SDLTest_AssertCheck(INFINITY == result, "Fabs(%f), expected %f, got %f",
+    SDLTest_AssertCheck(INFINITY == result,
+                        "Fabs(%f), expected %f, got %f",
                         -INFINITY, INFINITY, result);
 
+    return TEST_COMPLETED;
+}
+
+/**
+ * \brief Checks positive and negative zero
+ */
+static int
+fabs_zeroCases(void *args)
+{
+    double result;
+
     result = SDL_fabs(0.0);
-    SDLTest_AssertCheck(0.0 == result, "Fabs(%.1f), expected %.1f, got %.1f",
+    SDLTest_AssertCheck(0.0 == result,
+                        "Fabs(%.1f), expected %.1f, got %.1f",
                         0.0, 0.0, result);
+
     result = SDL_fabs(-0.0);
-    SDLTest_AssertCheck(0.0 == result, "Fabs(%.1f), expected %.1f, got %.1f",
+    SDLTest_AssertCheck(0.0 == result,
+                        "Fabs(%.1f), expected %.1f, got %.1f",
                         -0.0, 0.0, result);
 
     return TEST_COMPLETED;
@@ -550,7 +645,10 @@ fabs_edgeCases(void *args)
 static int
 fabs_nanCase(void *args)
 {
-    SDLTest_AssertCheck(isnan(SDL_fabs(NAN)), "Fabs(nan), expected nan");
+    const double result = SDL_fabs(NAN);
+    SDLTest_AssertCheck(isnan(result),
+                        "Fabs(nan), expected nan, got %f",
+                        result);
     return TEST_COMPLETED;
 }
 
@@ -588,25 +686,62 @@ fabs_rangeTest(void *args)
 /* SDL_copysign tests functions */
 
 /**
- * \brief Checks edge cases (0 and infinity).
+ * \brief Checks positive and negative inifnity.
  */
 static int
-copysign_edgeCases(void *args)
+copysign_infCases(void *args)
 {
     double result;
 
     result = SDL_copysign(INFINITY, -1.0);
-    SDLTest_AssertCheck(-INFINITY == result, "Copysign(%f,%.1f), expected %f, got %f",
+    SDLTest_AssertCheck(-INFINITY == result,
+                        "Copysign(%f,%.1f), expected %f, got %f",
                         INFINITY, -1.0, -INFINITY, result);
+
+    result = SDL_copysign(INFINITY, 1.0);
+    SDLTest_AssertCheck(INFINITY == result,
+                        "Copysign(%f,%.1f), expected %f, got %f",
+                        INFINITY, 1.0, INFINITY, result);
+
+    result = SDL_copysign(-INFINITY, -1.0);
+    SDLTest_AssertCheck(-INFINITY == result,
+                        "Copysign(%f,%.1f), expected %f, got %f",
+                        -INFINITY, -1.0, -INFINITY, result);
+
     result = SDL_copysign(-INFINITY, 1.0);
-    SDLTest_AssertCheck(INFINITY == result, "Copysign(%f,%.1f), expected %f, got %f",
+    SDLTest_AssertCheck(INFINITY == result,
+                        "Copysign(%f,%.1f), expected %f, got %f",
                         -INFINITY, 1.0, INFINITY, result);
 
+    return TEST_COMPLETED;
+}
+
+/**
+ * \brief Checks positive and negative zero.
+ */
+static int
+copysign_zeroCases(void *args)
+{
+    double result;
+
     result = SDL_copysign(0.0, -1.0);
-    SDLTest_AssertCheck(0.0 == result, "Copysign(%f,%.1f), expected %f, got %f",
-                        0.0, -1.0, 0.0, result);
+    SDLTest_AssertCheck(-0.0 == result,
+                        "Copysign(%f,%.1f), expected %f, got %f",
+                        0.0, -1.0, -0.0, result);
+
+    result = SDL_copysign(0.0, 1.0);
+    SDLTest_AssertCheck(0.0 == result,
+                        "Copysign(%f,%.1f), expected %f, got %f",
+                        0.0, 1.0, 0.0, result);
+
+    result = SDL_copysign(-0.0, -1.0);
+    SDLTest_AssertCheck(-0.0 == result,
+                        "Copysign(%f,%.1f), expected %f, got %f",
+                        -0.0, -1.0, -0.0, result);
+
     result = SDL_copysign(-0.0, 1.0);
-    SDLTest_AssertCheck(0.0 == result, "Copysign(%f,%.1f), expected %f, got %f",
+    SDLTest_AssertCheck(0.0 == result,
+                        "Copysign(%f,%.1f), expected %f, got %f",
                         -0.0, 1.0, 0.0, result);
 
     return TEST_COMPLETED;
@@ -616,10 +751,19 @@ copysign_edgeCases(void *args)
  * \brief Checks the NaN cases.
  */
 static int
-copysign_nanCase(void *args)
+copysign_nanCases(void *args)
 {
-    SDLTest_AssertCheck(isnan(SDL_copysign(NAN, 1.0)), "Copysign(nan,1.0), expected nan");
-    SDLTest_AssertCheck(isnan(SDL_copysign(NAN, -1.0)), "Copysign(nan,-1.0), expected nan");
+    double result;
+
+    result = SDL_copysign(NAN, 1.0);
+    SDLTest_AssertCheck(isnan(result),
+                        "Copysign(nan,1.0), expected nan, got %f",
+                        result);
+
+    result = SDL_copysign(NAN, -1.0);
+    SDLTest_AssertCheck(isnan(result),
+                        "Copysign(nan,-1.0), expected nan, got %f",
+                        result);
     return TEST_COMPLETED;
 }
 
@@ -668,133 +812,166 @@ copysign_rangeTest(void *args)
 
 /* SDL_floor test cases */
 
-static const SDLTest_TestCaseReference floorTest1 = {
-    (SDLTest_TestCaseFp) floor_edgeCases, "floor_edgeCases",
-    "Check positive and negative infinity and 0", TEST_ENABLED
+static const SDLTest_TestCaseReference floorTestInf = {
+    (SDLTest_TestCaseFp) floor_infCases, "floor_infCases",
+    "Check positive and negative infinity", TEST_ENABLED
 };
-static const SDLTest_TestCaseReference floorTest2 = {
+static const SDLTest_TestCaseReference floorTestZero = {
+    (SDLTest_TestCaseFp) floor_zeroCases, "floor_zeroCases",
+    "Check positive and negative zero", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference floorTestNan = {
     (SDLTest_TestCaseFp) floor_nanCase, "floor_nanCase",
     "Check the NaN special case", TEST_ENABLED
 };
-static const SDLTest_TestCaseReference floorTest3 = {
+static const SDLTest_TestCaseReference floorTestRound = {
     (SDLTest_TestCaseFp) floor_roundNumbersCases, "floor_roundNumberCases",
     "Check a set of round numbers", TEST_ENABLED
 };
-static const SDLTest_TestCaseReference floorTest4 = {
+static const SDLTest_TestCaseReference floorTestFraction = {
     (SDLTest_TestCaseFp) floor_fractionCases, "floor_fractionCases",
     "Check a set of fractions", TEST_ENABLED
 };
-static const SDLTest_TestCaseReference floorTest5 = {
+static const SDLTest_TestCaseReference floorTestRange = {
     (SDLTest_TestCaseFp) floor_rangeTest, "floor_rangeTest",
     "Check a range of positive integer", TEST_ENABLED
 };
 
 /* SDL_ceil test cases */
 
-static const SDLTest_TestCaseReference ceilTest1 = {
-    (SDLTest_TestCaseFp) ceil_edgeCases, "ceil_edgeCases",
-    "Check positive and negative infinity and 0", TEST_ENABLED
+static const SDLTest_TestCaseReference ceilTestInf = {
+    (SDLTest_TestCaseFp) ceil_infCases, "ceil_infCases",
+    "Check positive and negative infinity", TEST_ENABLED
 };
-static const SDLTest_TestCaseReference ceilTest2 = {
+static const SDLTest_TestCaseReference ceilTestZero = {
+    (SDLTest_TestCaseFp) ceil_zeroCases, "ceil_zeroCases",
+    "Check positive and negative zero", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference ceilTestNan = {
     (SDLTest_TestCaseFp) ceil_nanCase, "ceil_nanCase",
     "Check the NaN special case", TEST_ENABLED
 };
-static const SDLTest_TestCaseReference ceilTest3 = {
+static const SDLTest_TestCaseReference ceilTestRound = {
     (SDLTest_TestCaseFp) ceil_roundNumbersCases, "ceil_roundNumberCases",
     "Check a set of round numbers", TEST_ENABLED
 };
-static const SDLTest_TestCaseReference ceilTest4 = {
+static const SDLTest_TestCaseReference ceilTestFraction = {
     (SDLTest_TestCaseFp) ceil_fractionCases, "ceil_fractionCases",
     "Check a set of fractions", TEST_ENABLED
 };
-static const SDLTest_TestCaseReference ceilTest5 = {
+static const SDLTest_TestCaseReference ceilTestRange = {
     (SDLTest_TestCaseFp) ceil_rangeTest, "ceil_rangeTest",
     "Check a range of positive integer", TEST_ENABLED
 };
 
 /* SDL_trunc test cases */
 
-static const SDLTest_TestCaseReference truncTest1 = {
-    (SDLTest_TestCaseFp) trunc_edgeCases, "trunc_edgeCases",
-    "Check positive and negative infinity and 0", TEST_ENABLED
+static const SDLTest_TestCaseReference truncTestInf = {
+    (SDLTest_TestCaseFp) trunc_infCases, "trunc_infCases",
+    "Check positive and negative infinity", TEST_ENABLED
 };
-static const SDLTest_TestCaseReference truncTest2 = {
+static const SDLTest_TestCaseReference truncTestZero = {
+    (SDLTest_TestCaseFp) trunc_zeroCases, "trunc_zeroCases",
+    "Check positive and negative zero", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference truncTestNan = {
     (SDLTest_TestCaseFp) trunc_nanCase, "trunc_nanCase",
     "Check the NaN special case", TEST_ENABLED
 };
-static const SDLTest_TestCaseReference truncTest3 = {
+static const SDLTest_TestCaseReference truncTestRound = {
     (SDLTest_TestCaseFp) trunc_roundNumbersCases, "trunc_roundNumberCases",
     "Check a set of round numbers", TEST_ENABLED
 };
-static const SDLTest_TestCaseReference truncTest4 = {
+static const SDLTest_TestCaseReference truncTestFraction = {
     (SDLTest_TestCaseFp) trunc_fractionCases, "trunc_fractionCases",
     "Check a set of fractions", TEST_ENABLED
 };
-static const SDLTest_TestCaseReference truncTest5 = {
+static const SDLTest_TestCaseReference truncTestRange = {
     (SDLTest_TestCaseFp) trunc_rangeTest, "trunc_rangeTest",
     "Check a range of positive integer", TEST_ENABLED
 };
 
 /* SDL_round test cases */
 
-static const SDLTest_TestCaseReference roundTest1 = {
-    (SDLTest_TestCaseFp) round_edgeCases, "round_edgeCases",
-    "Check positive and negative infinity and 0", TEST_ENABLED
+static const SDLTest_TestCaseReference roundTestInf = {
+    (SDLTest_TestCaseFp) round_infCases, "round_infCases",
+    "Check positive and negative infinity", TEST_ENABLED
 };
-static const SDLTest_TestCaseReference roundTest2 = {
+static const SDLTest_TestCaseReference roundTestZero = {
+    (SDLTest_TestCaseFp) round_zeroCases, "round_zeroCases",
+    "Check positive and negative zero", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference roundTestNan = {
     (SDLTest_TestCaseFp) round_nanCase, "round_nanCase",
     "Check the NaN special case", TEST_ENABLED
 };
-static const SDLTest_TestCaseReference roundTest3 = {
+static const SDLTest_TestCaseReference roundTestRound = {
     (SDLTest_TestCaseFp) round_roundNumbersCases, "round_roundNumberCases",
     "Check a set of round numbers", TEST_ENABLED
 };
-static const SDLTest_TestCaseReference roundTest4 = {
+static const SDLTest_TestCaseReference roundTestFraction = {
     (SDLTest_TestCaseFp) round_fractionCases, "round_fractionCases",
     "Check a set of fractions", TEST_ENABLED
 };
-static const SDLTest_TestCaseReference roundTest5 = {
+static const SDLTest_TestCaseReference roundTestRange = {
     (SDLTest_TestCaseFp) round_rangeTest, "round_rangeTest",
     "Check a range of positive integer", TEST_ENABLED
 };
 
 /* SDL_fabs test cases */
 
-static const SDLTest_TestCaseReference fabsTest1 = {
-    (SDLTest_TestCaseFp) fabs_edgeCases, "fabs_edgeCases",
-    "Check positive and negative infinity and 0", TEST_ENABLED
+static const SDLTest_TestCaseReference fabsTestInf = {
+    (SDLTest_TestCaseFp) fabs_infCases, "fabs_infCases",
+    "Check positive and negative infinity", TEST_ENABLED
 };
-static const SDLTest_TestCaseReference fabsTest2 = {
+static const SDLTest_TestCaseReference fabsTestZero = {
+    (SDLTest_TestCaseFp) fabs_zeroCases, "fabs_zeroCases",
+    "Check positive and negative zero", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference fabsTestNan = {
     (SDLTest_TestCaseFp) fabs_nanCase, "fabs_nanCase",
     "Check the NaN special case", TEST_ENABLED
 };
-static const SDLTest_TestCaseReference fabsTest3 = {
+static const SDLTest_TestCaseReference fabsTestRange = {
     (SDLTest_TestCaseFp) fabs_rangeTest, "fabs_rangeTest",
     "Check a range of positive integer", TEST_ENABLED
 };
 
 /* SDL_copysign test cases */
 
-static const SDLTest_TestCaseReference copysignTest1 = {
-    (SDLTest_TestCaseFp) copysign_edgeCases, "copysign_edgeCases",
-    "Check positive and negative infinity and 0", TEST_ENABLED
+static const SDLTest_TestCaseReference copysignTestInf = {
+    (SDLTest_TestCaseFp) copysign_infCases, "copysign_infCases",
+    "Check positive and negative infinity", TEST_ENABLED
 };
-static const SDLTest_TestCaseReference copysignTest2 = {
-    (SDLTest_TestCaseFp) copysign_nanCase, "copysign_nanCase",
-    "Check the NaN special case", TEST_ENABLED
+static const SDLTest_TestCaseReference copysignTestZero = {
+    (SDLTest_TestCaseFp) copysign_zeroCases, "copysign_zeroCases",
+    "Check positive and negative zero", TEST_ENABLED
 };
-static const SDLTest_TestCaseReference copysignTest3 = {
+static const SDLTest_TestCaseReference copysignTestNan = {
+    (SDLTest_TestCaseFp) copysign_nanCases, "copysign_nanCase",
+    "Check the NaN special cases", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference copysignTestRange = {
     (SDLTest_TestCaseFp) copysign_rangeTest, "copysign_rangeTest",
     "Check a range of positive integer", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference *mathTests[] = {
-    &floorTest1, &floorTest2, &floorTest3, &floorTest4, &floorTest5,
-    &ceilTest1, &ceilTest2, &ceilTest3, &ceilTest4, &ceilTest5,
-    &truncTest1, &truncTest2, &truncTest3, &truncTest4, &truncTest5,
-    &roundTest1, &roundTest2, &roundTest3, &roundTest4, &roundTest5,
-    &fabsTest1, &fabsTest2, &fabsTest3,
-    &copysignTest1, &copysignTest2, &copysignTest3,
+    &floorTestInf, &floorTestZero, &floorTestNan,
+    &floorTestRound, &floorTestFraction, &floorTestRange,
+
+    &ceilTestInf, &ceilTestZero, &ceilTestNan,
+    &ceilTestRound, &ceilTestFraction, &ceilTestRange,
+
+    &truncTestInf, &truncTestZero, &truncTestNan,
+    &truncTestRound, &truncTestFraction, &truncTestRange,
+
+    &roundTestInf, &roundTestZero, &roundTestNan,
+    &roundTestRound, &roundTestFraction, &roundTestRange,
+
+    &fabsTestInf, &fabsTestZero, &fabsTestNan, &fabsTestRange,
+
+    &copysignTestInf, &copysignTestZero, &copysignTestNan, &copysignTestRange,
     NULL
 };
 
