@@ -1222,9 +1222,13 @@ RLEAlphaSurface(SDL_Surface * surface)
 
     /* Now that we have it encoded, release the original pixels */
     if (!(surface->flags & SDL_PREALLOC)) {
-        SDL_SIMDFree(surface->pixels);
+        if (surface->flags & SDL_SIMD_ALIGNED) {
+            SDL_SIMDFree(surface->pixels);
+            surface->flags &= ~SDL_SIMD_ALIGNED;
+        } else {
+            SDL_free(surface->pixels);
+        }
         surface->pixels = NULL;
-        surface->flags &= ~SDL_SIMD_ALIGNED;
     }
 
     /* reallocate the buffer to release unused memory */
@@ -1386,9 +1390,13 @@ RLEColorkeySurface(SDL_Surface * surface)
 
     /* Now that we have it encoded, release the original pixels */
     if (!(surface->flags & SDL_PREALLOC)) {
-        SDL_SIMDFree(surface->pixels);
+        if (surface->flags & SDL_SIMD_ALIGNED) {
+            SDL_SIMDFree(surface->pixels);
+            surface->flags &= ~SDL_SIMD_ALIGNED;
+        } else {
+            SDL_free(surface->pixels);
+        }
         surface->pixels = NULL;
-        surface->flags &= ~SDL_SIMD_ALIGNED;
     }
 
     /* reallocate the buffer to release unused memory */
