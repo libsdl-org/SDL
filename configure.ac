@@ -1432,6 +1432,26 @@ CheckNEON()
     fi
 }
 
+dnl See if clang's -fobjc-arc supported.
+dnl  Reference: https://github.com/libsdl-org/SDL/pull/5632
+CheckObjectiveCARC()
+{
+    AC_MSG_CHECKING(for clang -fobjc-arc option)
+    have_clang_objc_arc=no
+
+    save_CFLAGS="$CFLAGS"
+    CFLAGS="$save_CFLAGS -fobjc-arc"
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+    int x = 0;
+    ]],[])], [have_clang_objc_arc=yes],[])
+    AC_MSG_RESULT($have_clang_objc_arc)
+    CFLAGS="$save_CFLAGS"
+
+    if test x$have_clang_objc_arc = xyes; then
+        EXTRA_CFLAGS="$EXTRA_CFLAGS -fobjc-arc"
+    fi
+}
+
 dnl See if GCC's -fvisibility=hidden is supported (gcc4 and later, usually).
 dnl  Details of this flag are here: http://gcc.gnu.org/wiki/Visibility
 CheckVisibilityHidden()
@@ -4197,6 +4217,7 @@ dnl BeOS support removed after SDL 2.0.1. Haiku still works.  --ryan.
         EXTRA_CFLAGS="$EXTRA_CFLAGS -DTARGET_API_MAC_CARBON"
         EXTRA_CFLAGS="$EXTRA_CFLAGS -DTARGET_API_MAC_OSX"
 
+        CheckObjectiveCARC
         CheckVisibilityHidden
         CheckDeclarationAfterStatement
         CheckDummyVideo
