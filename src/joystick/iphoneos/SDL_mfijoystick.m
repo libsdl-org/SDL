@@ -335,11 +335,7 @@ IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controlle
         }
 
         if (SDL_strcmp(name, "Backbone One") == 0) {
-            /* The Backbone app uses the guide and share buttons */
-            if ((device->button_mask & (1 << SDL_CONTROLLER_BUTTON_GUIDE)) != 0) {
-                device->button_mask &= ~(1 << SDL_CONTROLLER_BUTTON_GUIDE);
-                --nbuttons;
-            }
+            /* The Backbone app uses share button */
             if ((device->button_mask & (1 << SDL_CONTROLLER_BUTTON_MISC1)) != 0) {
                 device->button_mask &= ~(1 << SDL_CONTROLLER_BUTTON_MISC1);
                 --nbuttons;

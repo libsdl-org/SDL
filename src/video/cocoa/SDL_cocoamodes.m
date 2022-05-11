@@ -31,9 +31,6 @@
 #include <CoreVideo/CVBase.h>
 #include <CoreVideo/CVDisplayLink.h>
 
-/* we need this for ShowMenuBar() and HideMenuBar(). */
-#include <Carbon/Carbon.h>
-
 /* This gets us MAC_OS_X_VERSION_MIN_REQUIRED... */
 #include <AvailabilityMacros.h>
 
@@ -44,23 +41,6 @@
 #define kDisplayModeNativeFlag 0x02000000
 #endif
 
-
-static void
-Cocoa_ToggleMenuBar(const BOOL show)
-{
-    /* !!! FIXME: keep an eye on this.
-     * ShowMenuBar/HideMenuBar is officially unavailable for 64-bit binaries.
-     *  It happens to work, as of 10.7, but we're going to see if
-     *  we can just simply do without it on newer OSes...
-     */
-#if (MAC_OS_X_VERSION_MIN_REQUIRED < 1070) && !defined(__LP64__)
-    if (show) {
-        ShowMenuBar();
-    } else {
-        HideMenuBar();
-    }
-#endif
-}
 
 static int
 CG_SetError(const char *prefix, CGDisplayErr result)
@@ -306,7 +286,7 @@ Cocoa_GetDisplayName(CGDirectDisplayID displayID)
     /* This API is deprecated in 10.9 with no good replacement (as of 10.15). */
     io_service_t servicePort = CGDisplayIOServicePort(displayID);
     CFDictionaryRef deviceInfo = IODisplayCreateInfoDictionary(servicePort, kIODisplayOnlyPreferredName);
-    NSDictionary *localizedNames = [(NSDictionary *)deviceInfo objectForKey:[NSString stringWithUTF8String:kDisplayProductName]];
+    NSDictionary *localizedNames = [(__bridge NSDictionary *)deviceInfo objectForKey:[NSString stringWithUTF8String:kDisplayProductName]];
     const char* displayName = NULL;
 
     if ([localizedNames count] > 0) {
@@ -497,7 +477,7 @@ Cocoa_GetDisplayDPI(_THIS, SDL_VideoDisplay * display, float * ddpi, float * hdp
                 CFRelease(dmOptions);
             } else
 #endif
-            if (floor(NSAppKitVersionNumber) > NSAppKitVersionNumber10_6) {
+            {
                 // fallback for 10.7
                 scaleFactor = [screen backingScaleFactor];
                 displayNativeSize.width = displayNativeSize.width * scaleFactor;
@@ -646,10 +626,6 @@ Cocoa_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
         } else {
             CGDisplayRelease(displaydata->display);
         }
-
-        if (CGDisplayIsMain(displaydata->display)) {
-            Cocoa_ToggleMenuBar(YES);
-        }
     } else {
         /* Put up the blanking window (a window above all other windows) */
         if (CGDisplayIsMain(displaydata->display)) {
@@ -668,11 +644,6 @@ Cocoa_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
         if (result != kCGErrorSuccess) {
             CG_SetError("CGDisplaySwitchToMode()", result);
             goto ERR_NO_SWITCH;
-        }
-
-        /* Hide the menu bar so it doesn't intercept events */
-        if (CGDisplayIsMain(displaydata->display)) {
-            Cocoa_ToggleMenuBar(NO);
         }
     }
 
@@ -720,7 +691,6 @@ Cocoa_QuitModes(_THIS)
             CFRelease(mode->modes);
         }
     }
-    Cocoa_ToggleMenuBar(YES);
 }
 
 #endif /* SDL_VIDEO_DRIVER_COCOA */

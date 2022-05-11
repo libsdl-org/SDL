@@ -116,16 +116,16 @@ static SDL_Scancode ConvertScancode(_THIS, int key)
             keycode = SDLK_HASH;
             break;
         case EStdKeyDevice0:      // Left softkey
-            keycode = SDLK_LGUI;
+            keycode = SDLK_SOFTLEFT;
             break;
         case EStdKeyDevice1:      // Right softkey
-            keycode = SDLK_RGUI;
+            keycode = SDLK_SOFTRIGHT;
             break;
-        case EStdKeyApplication0: // Green softkey
-            keycode = SDLK_APP1;
+        case EStdKeyApplication0: // Call softkey
+            keycode = SDLK_CALL;
             break;
-        case EStdKeyApplication1: // Red softkey
-            keycode = SDLK_APP2;
+        case EStdKeyApplication1: // End call softkey
+            keycode = SDLK_ENDCALL;
             break;
         case EStdKeyDevice3:      // Middle softkey
             keycode = SDLK_SELECT;

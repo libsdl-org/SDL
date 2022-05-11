@@ -29,7 +29,7 @@
 #include "../SDL_egl_c.h"
 #endif
 
-typedef struct SDL_WindowData SDL_WindowData;
+@class SDL_WindowData;
 
 typedef enum
 {
@@ -114,22 +114,22 @@ typedef enum
 /* *INDENT-ON* */
 
 @class SDLOpenGLContext;
+@class SDL_VideoData;
 
-struct SDL_WindowData
-{
-    SDL_Window *window;
-    NSWindow *nswindow;
-    NSView *sdlContentView;
-    NSMutableArray *nscontexts;
-    SDL_bool created;
-    SDL_bool inWindowFullscreenTransition;
-    NSInteger flash_request;
-    Cocoa_WindowListener *listener;
-    struct SDL_VideoData *videodata;
+@interface SDL_WindowData : NSObject
+    @property (nonatomic) SDL_Window *window;
+    @property (nonatomic) NSWindow *nswindow;
+    @property (nonatomic) NSView *sdlContentView;
+    @property (nonatomic) NSMutableArray *nscontexts;
+    @property (nonatomic) SDL_bool created;
+    @property (nonatomic) SDL_bool inWindowFullscreenTransition;
+    @property (nonatomic) NSInteger flash_request;
+    @property (nonatomic) Cocoa_WindowListener *listener;
+    @property (nonatomic) SDL_VideoData *videodata;
 #if SDL_VIDEO_OPENGL_EGL
-    EGLSurface egl_surface;
+    @property (nonatomic) EGLSurface egl_surface;
 #endif
-};
+@end
 
 extern int Cocoa_CreateWindow(_THIS, SDL_Window * window);
 extern int Cocoa_CreateWindowFrom(_THIS, SDL_Window * window,

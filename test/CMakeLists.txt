@@ -1,5 +1,10 @@
 cmake_minimum_required(VERSION 3.0.0)
 project(SDL2 C)
+include(CTest)
+
+if(SDL_INSTALL_TESTS)
+    include(GNUInstallDirs)
+endif()
 
 # Global settings for all of the test targets
 # FIXME: is this wrong?
@@ -48,8 +53,8 @@ endif()
 
 add_executable(checkkeys checkkeys.c)
 add_executable(checkkeysthreads checkkeysthreads.c)
-add_executable(loopwave loopwave.c)
-add_executable(loopwavequeue loopwavequeue.c)
+add_executable(loopwave loopwave.c testutils.c)
+add_executable(loopwavequeue loopwavequeue.c testutils.c)
 add_executable(testsurround testsurround.c)
 add_executable(testresample testresample.c)
 add_executable(testaudioinfo testaudioinfo.c)
@@ -57,8 +62,8 @@ add_executable(testaudioinfo testaudioinfo.c)
 file(GLOB TESTAUTOMATION_SOURCE_FILES testautomation*.c)
 add_executable(testautomation ${TESTAUTOMATION_SOURCE_FILES})
 
-add_executable(testmultiaudio testmultiaudio.c)
-add_executable(testaudiohotplug testaudiohotplug.c)
+add_executable(testmultiaudio testmultiaudio.c testutils.c)
+add_executable(testaudiohotplug testaudiohotplug.c testutils.c)
 add_executable(testaudiocapture testaudiocapture.c)
 add_executable(testatomic testatomic.c)
 add_executable(testintersections testintersections.c)
@@ -68,9 +73,14 @@ add_executable(testdraw2 testdraw2.c)
 add_executable(testdrawchessboard testdrawchessboard.c)
 add_executable(testdropfile testdropfile.c)
 add_executable(testerror testerror.c)
+
+if(LINUX)
+    add_executable(testevdev testevdev.c)
+endif()
+
 add_executable(testfile testfile.c)
-add_executable(testgamecontroller testgamecontroller.c)
-add_executable(testgeometry testgeometry.c)
+add_executable(testgamecontroller testgamecontroller.c testutils.c)
+add_executable(testgeometry testgeometry.c testutils.c)
 add_executable(testgesture testgesture.c)
 add_executable(testgl2 testgl2.c)
 add_executable(testgles testgles.c)
@@ -79,51 +89,159 @@ add_executable(testhaptic testhaptic.c)
 add_executable(testhotplug testhotplug.c)
 add_executable(testrumble testrumble.c)
 add_executable(testthread testthread.c)
-add_executable(testiconv testiconv.c)
-add_executable(testime testime.c)
+add_executable(testiconv testiconv.c testutils.c)
+add_executable(testime testime.c testutils.c)
 add_executable(testjoystick testjoystick.c)
 add_executable(testkeys testkeys.c)
 add_executable(testloadso testloadso.c)
+add_executable(testlocale testlocale.c)
 add_executable(testlock testlock.c)
 add_executable(testmouse testmouse.c)
 
 if(APPLE)
     add_executable(testnative testnative.c
                               testnativecocoa.m
-                              testnativex11.c)
+                              testnativex11.c
+                              testutils.c)
 elseif(WINDOWS)
-    add_executable(testnative testnative.c testnativew32.c)
-elseif(UNIX)
-    add_executable(testnative testnative.c testnativex11.c)
+    add_executable(testnative testnative.c testnativew32.c testutils.c)
+elseif(SDL_X11)
+    add_executable(testnative testnative.c testnativex11.c testutils.c)
+    target_link_libraries(testnative X11)
 endif()
 
-add_executable(testoverlay2 testoverlay2.c testyuv_cvt.c)
+add_executable(testoverlay2 testoverlay2.c testyuv_cvt.c testutils.c)
 add_executable(testplatform testplatform.c)
 add_executable(testpower testpower.c)
 add_executable(testfilesystem testfilesystem.c)
-add_executable(testrendertarget testrendertarget.c)
-add_executable(testscale testscale.c)
+add_executable(testrendertarget testrendertarget.c testutils.c)
+add_executable(testscale testscale.c testutils.c)
 add_executable(testsem testsem.c)
+add_executable(testsensor testsensor.c)
 add_executable(testshader testshader.c)
 add_executable(testshape testshape.c)
-add_executable(testsprite2 testsprite2.c)
-add_executable(testspriteminimal testspriteminimal.c)
-add_executable(teststreaming teststreaming.c)
+add_executable(testsprite2 testsprite2.c testutils.c)
+add_executable(testspriteminimal testspriteminimal.c testutils.c)
+add_executable(teststreaming teststreaming.c testutils.c)
 add_executable(testtimer testtimer.c)
+add_executable(testurl testurl.c)
 add_executable(testver testver.c)
-add_executable(testviewport testviewport.c)
+add_executable(testviewport testviewport.c testutils.c)
 add_executable(testwm2 testwm2.c)
 add_executable(testyuv testyuv.c testyuv_cvt.c)
 add_executable(torturethread torturethread.c)
-add_executable(testrendercopyex testrendercopyex.c)
+add_executable(testrendercopyex testrendercopyex.c testutils.c)
 add_executable(testmessage testmessage.c)
 add_executable(testdisplayinfo testdisplayinfo.c)
 add_executable(testqsort testqsort.c)
 add_executable(testbounds testbounds.c)
 add_executable(testcustomcursor testcustomcursor.c)
-add_executable(controllermap controllermap.c)
+add_executable(controllermap controllermap.c testutils.c)
 add_executable(testvulkan testvulkan.c)
 add_executable(testoffscreen testoffscreen.c)
+
+SET(ALL_TESTS
+    checkkeys
+    checkkeysthreads
+    controllermap
+    loopwave
+    loopwavequeue
+    testatomic
+    testaudiocapture
+    testaudiohotplug
+    testaudioinfo
+    testautomation
+    testbounds
+    testcustomcursor
+    testdisplayinfo
+    testdraw2
+    testdrawchessboard
+    testdropfile
+    testerror
+    testfile
+    testfilesystem
+    testgamecontroller
+    testgeometry
+    testgesture
+    testgl2
+    testgles
+    testgles2
+    testhaptic
+    testhittesting
+    testhotplug
+    testiconv
+    testime
+    testintersections
+    testjoystick
+    testkeys
+    testloadso
+    testlocale
+    testlock
+    testmessage
+    testmouse
+    testmultiaudio
+    testoffscreen
+    testoverlay2
+    testplatform
+    testpower
+    testqsort
+    testrelative
+    testrendercopyex
+    testrendertarget
+    testresample
+    testrumble
+    testscale
+    testsem
+    testsensor
+    testshader
+    testshape
+    testsprite2
+    testspriteminimal
+    teststreaming
+    testsurround
+    testthread
+    testtimer
+    testurl
+    testver
+    testviewport
+    testvulkan
+    testwm2
+    testyuv
+    torturethread
+)
+
+set(NONINTERACTIVE
+    testatomic
+    testerror
+    testfilesystem
+    testkeys
+    testlocale
+    testplatform
+    testpower
+    testqsort
+    testthread
+    testtimer
+    testver
+)
+
+if(WINDOWS OR APPLE OR SDL_X11)
+    list(APPEND ALL_TESTS testnative)
+endif()
+
+if(LINUX)
+    list(APPEND ALL_TESTS testevdev)
+    list(APPEND NONINTERACTIVE testevdev)
+endif()
+
+set(NEEDS_AUDIO
+    testaudioinfo
+    testsurround
+)
+
+set(NEEDS_DISPLAY
+    testbounds
+    testdisplayinfo
+)
 
 if(OPENGL_FOUND)
 add_dependencies(testshader OpenGL::GL)
@@ -177,12 +295,14 @@ else()
         testaudiohotplug
         testmultiaudio
         testime
-        testnative
         testiconv
         testoverlay2
         teststreaming
         testviewport
     )
+    if(WINDOWS OR APPLE OR SDL_X11)
+        list(APPEND NEEDS_RESOURCES testnative)
+    endif()
 endif()
 
 if(PSP)
@@ -297,4 +417,41 @@ if(APPLE)
             endif()
         endforeach()
     endif()
+endif()
+
+set(TESTS_ENVIRONMENT
+    SDL_AUDIODRIVER=dummy
+    SDL_VIDEODRIVER=dummy
+)
+
+foreach(TESTCASE ${NONINTERACTIVE} ${NEEDS_AUDIO} ${NEEDS_DISPLAY})
+    add_test(
+        NAME ${TESTCASE}
+        COMMAND ${TESTCASE}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    )
+    set_tests_properties(
+        ${TESTCASE}
+        PROPERTIES ENVIRONMENT "${TESTS_ENVIRONMENT}"
+    )
+    if(SDL_INSTALL_TESTS)
+        set(exe ${TESTCASE})
+        set(installedtestsdir "${CMAKE_INSTALL_FULL_LIBEXECDIR}/installed-tests/SDL2")
+        configure_file(template.test.in "${exe}.test" @ONLY)
+        install(
+            FILES "${CMAKE_CURRENT_BINARY_DIR}/${exe}.test"
+            DESTINATION ${CMAKE_INSTALL_DATADIR}/installed-tests/SDL2
+        )
+    endif()
+endforeach()
+
+if(SDL_INSTALL_TESTS)
+    install(
+        TARGETS ${ALL_TESTS}
+        DESTINATION ${CMAKE_INSTALL_LIBEXECDIR}/installed-tests/SDL2
+    )
+    install(
+        FILES ${RESOURCE_FILES}
+        DESTINATION ${CMAKE_INSTALL_LIBEXECDIR}/installed-tests/SDL2
+    )
 endif()

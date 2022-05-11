@@ -1469,9 +1469,7 @@ extern "C" {
  *                SDL_WINDOW_RESIZABLE windows will offer the "fullscreen"
  *                button on their titlebars).
  *
- *  The default value is "1". Spaces are disabled regardless of this hint if
- *   the OS isn't at least Mac OS X Lion (10.7). This hint must be set before
- *   any windows are created.
+ *  The default value is "1". This hint must be set before any windows are created.
  */
 #define SDL_HINT_VIDEO_MAC_FULLSCREEN_SPACES    "SDL_VIDEO_MAC_FULLSCREEN_SPACES"
 

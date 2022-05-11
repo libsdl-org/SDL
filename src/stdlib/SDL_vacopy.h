@@ -18,19 +18,19 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
 
-#ifndef SDL_cocoaclipboard_h_
-#define SDL_cocoaclipboard_h_
+/* Do our best to make sure va_copy is working */
+#if defined(__NGAGE__)
+#undef va_copy
+#define va_copy(dst, src)   dst = src
 
-/* Forward declaration */
-@class SDL_VideoData;
+#elif defined(_MSC_VER) && _MSC_VER <= 1800
+/* Visual Studio 2013 tries to link with _vacopy in the C runtime. Newer versions do an inline assignment */
+#undef va_copy
+#define va_copy(dst, src)   dst = src
 
-extern int Cocoa_SetClipboardText(_THIS, const char *text);
-extern char *Cocoa_GetClipboardText(_THIS);
-extern SDL_bool Cocoa_HasClipboardText(_THIS);
-extern void Cocoa_CheckClipboardUpdate(SDL_VideoData * data);
-
-#endif /* SDL_cocoaclipboard_h_ */
+#elif defined(__GNUC__) && (__GNUC__ < 3)
+#define va_copy(dst, src)   __va_copy(dst, src)
+#endif
 
 /* vi: set ts=4 sw=4 expandtab: */

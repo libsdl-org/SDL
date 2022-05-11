@@ -142,24 +142,6 @@ typedef struct METAL_ShaderPipelines
 @end
 
 @implementation METAL_RenderData
-#if !__has_feature(objc_arc)
-- (void)dealloc
-{
-    [_mtldevice release];
-    [_mtlcmdqueue release];
-    [_mtlcmdbuffer release];
-    [_mtlcmdencoder release];
-    [_mtllibrary release];
-    [_mtlbackbuffer release];
-    [_mtlsamplernearest release];
-    [_mtlsamplerlinear release];
-    [_mtlbufconstants release];
-    [_mtlbufquadindices release];
-    [_mtllayer release];
-    [_mtlpassdesc release];
-    [super dealloc];
-}
-#endif
 @end
 
 @interface METAL_TextureData : NSObject
@@ -178,16 +160,6 @@ typedef struct METAL_ShaderPipelines
 @end
 
 @implementation METAL_TextureData
-#if !__has_feature(objc_arc)
-- (void)dealloc
-{
-    [_mtltexture release];
-    [_mtltexture_uv release];
-    [_mtlsampler release];
-    [_lockedbuffer release];
-    [super dealloc];
-}
-#endif
 @end
 
 static int
@@ -341,13 +313,6 @@ MakePipelineState(METAL_RenderData *data, METAL_PipelineCache *cache,
     pipeline.pipe = (void *)CFBridgingRetain(state);
 
     METAL_PipelineState *states = SDL_realloc(cache->states, (cache->count + 1) * sizeof(pipeline));
-
-#if !__has_feature(objc_arc)
-    [mtlpipedesc release];  // !!! FIXME: can these be reused for each creation, or does the pipeline obtain it?
-    [mtlvertfn release];
-    [mtlfragfn release];
-    [state release];
-#endif
 
     if (states) {
         states[cache->count++] = pipeline;
@@ -632,9 +597,6 @@ METAL_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     if (yuv || nv12) {
         mtltexture_uv = [data.mtldevice newTextureWithDescriptor:mtltexdesc];
         if (mtltexture_uv == nil) {
-#if !__has_feature(objc_arc)
-            [mtltexture release];
-#endif
             return SDL_SetError("Texture allocation failed");
         }
     }
@@ -676,12 +638,6 @@ METAL_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     }
 #endif
     texture->driverdata = (void*)CFBridgingRetain(texturedata);
-
-#if !__has_feature(objc_arc)
-    [texturedata release];
-    [mtltexture release];
-    [mtltexture_uv release];
-#endif
 
     return 0;
 }}
@@ -741,10 +697,6 @@ METAL_UpdateTextureInternal(SDL_Renderer * renderer, METAL_TextureData *textured
     if (stagingtex == nil) {
         return SDL_OutOfMemory();
     }
-
-#if !__has_feature(objc_arc)
-    [stagingtex autorelease];
-#endif
 
     METAL_UploadTextureData(stagingtex, stagingrect, 0, pixels, pitch);
 
@@ -916,11 +868,6 @@ METAL_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
     texturedata.lockedrect = *rect;
     texturedata.lockedbuffer = lockedbuffer;
     *pixels = [lockedbuffer contents];
-
-    /* METAL_TextureData.lockedbuffer retains. */
-#if !__has_feature(objc_arc)
-    [lockedbuffer release];
-#endif
 
     return 0;
 }}
@@ -1209,13 +1156,8 @@ METAL_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture 
 
 typedef struct
 {
-    #if __has_feature(objc_arc)
     __unsafe_unretained id<MTLRenderPipelineState> pipeline;
     __unsafe_unretained id<MTLBuffer> vertex_buffer;
-    #else
-    id<MTLRenderPipelineState> pipeline;
-    id<MTLBuffer> vertex_buffer;
-    #endif
     size_t constants_offset;
     SDL_Texture *texture;
     SDL_bool cliprect_dirty;
@@ -1365,9 +1307,6 @@ METAL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
          * TODO: this buffer is also used for constants. Is performance still
          * good for those, or should we have a managed buffer for them? */
         mtlbufvertex = [data.mtldevice newBufferWithLength:vertsize options:MTLResourceStorageModeShared];
-        #if !__has_feature(objc_arc)
-        [mtlbufvertex autorelease];
-        #endif
         mtlbufvertex.label = @"SDL vertex data";
         SDL_memcpy([mtlbufvertex contents], vertices, vertsize);
 
@@ -1711,9 +1650,6 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
     }
 
     if (view == NULL) {
-#if !__has_feature(objc_arc)
-        [mtldevice release];
-#endif
         SDL_free(renderer);
         if (changed_window) {
             SDL_RecreateWindow(window, window_flags);
@@ -1725,9 +1661,6 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
     data = [[METAL_RenderData alloc] init];
 
     if (data == nil) {
-#if !__has_feature(objc_arc)
-        [mtldevice release];
-#endif
         /* Release the metal view instead of destroying it,
            in case we want to use it later (recreating the renderer)
          */
@@ -1746,7 +1679,7 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
     data.mtlview = view;
 
 #ifdef __MACOSX__
-    layer = (CAMetalLayer *)[(NSView *)view layer];
+    layer = (CAMetalLayer *)[(__bridge NSView *)view layer];
 #else
     layer = (CAMetalLayer *)[(__bridge UIView *)view layer];
 #endif
@@ -1771,9 +1704,6 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
     id<MTLLibrary> mtllibrary = [data.mtldevice newLibraryWithData:mtllibdata error:&err];
     data.mtllibrary = mtllibrary;
     SDL_assert(err == nil);
-#if !__has_feature(objc_arc)
-    dispatch_release(mtllibdata);
-#endif
     data.mtllibrary.label = @"SDL Metal renderer shader library";
 
     /* Do some shader pipeline state loading up-front rather than on demand. */
@@ -1831,9 +1761,6 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
     };
 
     id<MTLBuffer> mtlbufconstantstaging = [data.mtldevice newBufferWithLength:CONSTANTS_LENGTH options:MTLResourceStorageModeShared];
-    #if !__has_feature(objc_arc)
-    [mtlbufconstantstaging autorelease];
-    #endif
 
     char *constantdata = [mtlbufconstantstaging contents];
     SDL_memcpy(constantdata + CONSTANTS_OFFSET_IDENTITY, identitytransform, sizeof(identitytransform));
@@ -1845,9 +1772,6 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
     int quadcount = UINT16_MAX / 4;
     size_t indicessize = sizeof(UInt16) * quadcount * 6;
     id<MTLBuffer> mtlbufquadindicesstaging = [data.mtldevice newBufferWithLength:indicessize options:MTLResourceStorageModeShared];
-#if !__has_feature(objc_arc)
-    [mtlbufquadindicesstaging autorelease];
-#endif
 
     /* Quads in the following vertex order (matches the FillRects vertices):
      * 1---3
@@ -1964,18 +1888,6 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
 
     renderer->info.max_texture_width = maxtexsize;
     renderer->info.max_texture_height = maxtexsize;
-
-#if !__has_feature(objc_arc)
-    [mtlcmdqueue release];
-    [mtllibrary release];
-    [samplerdesc release];
-    [mtlsamplernearest release];
-    [mtlsamplerlinear release];
-    [mtlbufconstants release];
-    [mtlbufquadindices release];
-    [data release];
-    [mtldevice release];
-#endif
 
     return renderer;
 }}

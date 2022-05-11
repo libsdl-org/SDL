@@ -7,7 +7,7 @@ CFLAGS = $(INCPATH) -bt=os2 -d0 -q -bm -5s -fp5 -fpi87 -sg -oteanbmier -ei
 CFLAGS+= -wx -wcd=303
 
 LIBPATH = ..
-LIBS    = SDL2.lib SDL2test.lib
+LIBS    = SDL2.lib SDL2test.lib testutils.lib
 
 #CFLAGS+= -DHAVE_SDL_TTF
 #TTFLIBS = SDL2ttf.lib
@@ -44,7 +44,7 @@ OBJS = $(TARGETS:.exe=.obj)
 COBJS = $(CSRCS:.c=.obj)
 TAOBJS = $(TASRCS:.c=.obj)
 
-all: $(TARGETS)
+all: testutils.lib $(TARGETS)
 
 .c: ../src/test
 
@@ -70,8 +70,10 @@ testyuv.exe: testyuv.obj testyuv_cvt.obj
 testime.exe: testime.obj
   wlink SYS os2v2 libpath $(LIBPATH) lib {$(LIBS) $(TTFLIBS)} op q op el file {$<} name $@
 
+testutils.lib: testutils.obj
+  wlib -q -b -n -c -pa -s -t -zld -ii -io $@ $<
+
 clean: .SYMBOLIC
-  @if exist *.obj rm *.obj
-  @if exist *.err rm *.err
+  rm -f *.obj *.err
 distclean: .SYMBOLIC clean
-  @if exist *.exe rm *.exe
+  rm -f *.exe *.lib
