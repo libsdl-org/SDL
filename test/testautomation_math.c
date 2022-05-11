@@ -35,6 +35,15 @@ typedef struct
 
 /* ================= Test Helpers ================== */
 
+/* OS/2 uses different function signatures for the helpers */
+#ifdef __OS2__
+typedef double(_Syscall *d_to_d_func)(double);
+typedef double(_Syscall *dd_to_d_func)(double, double);
+#else
+typedef double (*d_to_d_func)(double);
+typedef double (*dd_to_d_func)(double, double);
+#endif
+
 /**
  * \brief Runs all the cases on a given function with a signature double -> double
  *
@@ -44,7 +53,7 @@ typedef struct
  * \param cases_size, the size of the cases array.
  */
 static int
-helper_dtod(const char *func_name, double (*func)(double),
+helper_dtod(const char *func_name, d_to_d_func func,
             const d_to_d *cases, const size_t cases_size)
 {
     Uint32 i;
@@ -69,7 +78,7 @@ helper_dtod(const char *func_name, double (*func)(double),
  * \param cases_size, the size of the cases array.
  */
 static int
-helper_ddtod(const char *func_name, double (*func)(double, double),
+helper_ddtod(const char *func_name, dd_to_d_func func,
              const dd_to_d *cases, const size_t cases_size)
 {
     Uint32 i;
@@ -95,7 +104,7 @@ helper_ddtod(const char *func_name, double (*func)(double, double),
  * \param func, the function to call.
  */
 static int
-helper_range(const char *func_name, double (*func)(double))
+helper_range(const char *func_name, d_to_d_func func)
 {
     const Uint32 ITERATIONS = 10000000;
     const Uint32 STEP = SDL_MAX_UINT32 / ITERATIONS;
