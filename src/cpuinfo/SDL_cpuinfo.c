@@ -1163,7 +1163,7 @@ SDL_aligned_realloc(void *mem, size_t alignment, size_t size)
 void
 SDL_aligned_free(void *ptr)
 {
-    return SDL_SIMDFree(ptr);
+    SDL_SIMDFree(ptr);
 }
 
 void
