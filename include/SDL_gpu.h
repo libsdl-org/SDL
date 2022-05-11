@@ -196,12 +196,14 @@ typedef enum SDL_GpuTextureType
     SDL_GPUTEXTYPE_2D,
     SDL_GPUTEXTYPE_CUBE,
     SDL_GPUTEXTYPE_3D,
+    SDL_GPUTEXTYPE_1D_ARRAY,
     SDL_GPUTEXTYPE_2D_ARRAY,
     SDL_GPUTEXTYPE_CUBE_ARRAY
 } SDL_GpuTextureType;
 
 typedef enum SDL_GpuPixelFormat
 {
+    SDL_GPUPIXELFMT_INVALID,
     SDL_GPUPIXELFMT_B5G6R5,
     SDL_GPUPIXELFMT_BGR5A1,
     SDL_GPUPIXELFMT_RGBA8,
@@ -230,8 +232,8 @@ typedef struct SDL_GpuTextureDescription
     SDL_GpuPixelFormat pixel_format;
     SDL_GpuTextureUsage usage;  /* OR SDL_GpuTextureUsage values together */
     Uint32 width;
-    Uint32 height;
-    Uint32 depth_or_slices;
+    Uint32 height;  /* for cubemaps, this must match width. */
+    Uint32 depth_or_slices;  /* must be six for cubemap, multiple of six for cubemap array, depth for 3D texture, array count for arrays, and 1 for everything else. */
     Uint32 mipmap_levels;
 } SDL_GpuTextureDescription;
 
@@ -327,6 +329,7 @@ typedef struct SDL_GpuPipelineColorAttachmentDescription
 
 typedef enum SDL_GpuVertexFormat
 {
+    SDL_GPUVERTFMT_INVALID,
     SDL_GPUVERTFMT_UCHAR2,
     SDL_GPUVERTFMT_UCHAR4,
     SDL_GPUVERTFMT_CHAR2,
@@ -370,6 +373,7 @@ typedef struct SDL_GpuVertexAttributeDescription
     Uint32 offset;
     Uint32 stride;
     Uint32 index;
+    // !!! FIXME: step rate and step function for instancing
 } SDL_GpuVertexAttributeDescription;
 
 typedef enum SDL_GpuCompareFunction
@@ -426,6 +430,18 @@ typedef enum SDL_GpuCullFace
     /* !!! FIXME: Vulkan lets you cull front-and-back (i.e. - everything) */
 } SDL_GpuCullFace;
 
+typedef struct SDL_GpuDepthStecilDescription
+{
+    Uint32 stencil_read_mask;
+    Uint32 stencil_write_mask;
+    Uint32 stencil_reference;
+    SDL_GpuCompareFunction stencil_function;
+    SDL_GpuStencilOperation stencil_fail;
+    SDL_GpuStencilOperation depth_fail;
+    SDL_GpuStencilOperation depth_and_stencil_pass;
+} SDL_GpuDepthStecilDescription;
+
+
 #define SDL_GPU_MAX_COLOR_ATTACHMENTS 4   /* !!! FIXME: what's a sane number here? */
 #define SDL_GPU_MAX_VERTEX_ATTRIBUTES 32   /* !!! FIXME: what's a sane number here? */
 typedef struct SDL_GpuPipelineDescription
@@ -441,15 +457,9 @@ typedef struct SDL_GpuPipelineDescription
     SDL_GpuPixelFormat depth_format;
     SDL_GpuPixelFormat stencil_format;
     SDL_bool depth_write_enabled;
-    Uint32 stencil_read_mask;
-    Uint32 stencil_write_mask;
-    Uint32 stencil_reference_front;
-    Uint32 stencil_reference_back;
     SDL_GpuCompareFunction depth_function;
-    SDL_GpuCompareFunction stencil_function;
-    SDL_GpuStencilOperation stencil_fail;
-    SDL_GpuStencilOperation depth_fail;
-    SDL_GpuStencilOperation depth_and_stencil_pass;
+    SDL_GpuDepthStecilDescription depth_stencil_front;
+    SDL_GpuDepthStecilDescription depth_stencil_back;
     SDL_GpuFillMode fill_mode;
     SDL_GpuFrontFace front_face;
     SDL_GpuCullFace cull_face;
@@ -510,6 +520,7 @@ typedef struct SDL_GpuSamplerDescription
     SDL_GpuSamplerMinMagFilter min_filter;
     SDL_GpuSamplerMinMagFilter mag_filter;
     SDL_GpuSamplerMipFilter mip_filter;
+    Uint32 max_anisotropy;
 } SDL_GpuSamplerDescription;
 
 typedef struct SDL_GpuSampler SDL_GpuSampler;
@@ -562,6 +573,8 @@ void SDL_GpuDestroyStateCache(SDL_GpuStateCache *cache);
  */
 typedef struct SDL_GpuCommandBuffer SDL_GpuCommandBuffer;
 SDL_GpuCommandBuffer *SDL_GpuCreateCommandBuffer(const char *label, SDL_GpuDevice *device);
+
+/* !!! FIXME: push/pop debug groups? */
 
 
 /* RENDERING PASSES... */
@@ -640,7 +653,7 @@ typedef enum SDL_GpuIndexType
 int SDL_GpuDraw(SDL_GpuRenderPass *pass, Uint32 vertex_start, Uint32 vertex_count);
 int SDL_GpuDrawIndexed(SDL_GpuRenderPass *pass, Uint32 index_count, SDL_GpuIndexType index_type, SDL_GpuBuffer *index_buffer, Uint32 index_offset);
 int SDL_GpuDrawInstanced(SDL_GpuRenderPass *pass, Uint32 vertex_start, Uint32 vertex_count, Uint32 instance_count, Uint32 base_instance);
-int SDL_GpuDrawInstancedIndexed(SDL_GpuRenderPass *pass, Uint32 index_count, SDL_GpuIndexType index_type, SDL_GpuBuffer *index_buffer, Uint32 index_offset, Uint32 instance_count, Uint32 base_instance);
+int SDL_GpuDrawInstancedIndexed(SDL_GpuRenderPass *pass, Uint32 index_count, SDL_GpuIndexType index_type, SDL_GpuBuffer *index_buffer, Uint32 index_offset, Uint32 instance_count, Uint32 base_vertex, Uint32 base_instance);
 
 /* Done encoding this render pass into the command buffer. You can now commit the command buffer or start a new render (or whatever) pass. This `pass` pointer becomes invalid. */
 int SDL_GpuEndRenderPass(SDL_GpuRenderPass *pass);

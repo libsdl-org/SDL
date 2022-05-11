@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-/* The high-level gpu subsystem */
+/* The gpu subsystem dummy driver */
 
 #include "SDL.h"
 #include "../SDL_sysgpu.h"
@@ -73,7 +73,7 @@ static void DUMMY_GpuAbandonCommandBuffer(SDL_GpuCommandBuffer *buffer) {}
 static int DUMMY_GpuStartRenderPass(SDL_GpuRenderPass *pass, Uint32 num_color_attachments, const SDL_GpuColorAttachmentDescription *color_attachments, const SDL_GpuDepthAttachmentDescription *depth_attachment, const SDL_GpuStencilAttachmentDescription *stencil_attachment) { return 0; }
 static int DUMMY_GpuSetRenderPassPipeline(SDL_GpuRenderPass *pass, SDL_GpuPipeline *pipeline) { return 0; }
 static int DUMMY_GpuSetRenderPassViewport(SDL_GpuRenderPass *pass, double x, double y, double width, double height, double znear, double zfar) { return 0; }
-static int DUMMY_GpuSetRenderPassScissor(SDL_GpuRenderPass *pass, double x, double y, double width, double height) { return 0; }
+static int DUMMY_GpuSetRenderPassScissor(SDL_GpuRenderPass *pass, Uint32 x, Uint32 y, Uint32 width, Uint32 height) { return 0; }
 static int DUMMY_GpuSetRenderPassBlendConstant(SDL_GpuRenderPass *pass, double red, double green, double blue, double alpha) { return 0; }
 static int DUMMY_GpuSetRenderPassVertexBuffer(SDL_GpuRenderPass *pass, SDL_GpuBuffer *buffer, Uint32 offset, Uint32 index) { return 0; }
 static int DUMMY_GpuSetRenderPassVertexSampler(SDL_GpuRenderPass *pass, SDL_GpuSampler *sampler, Uint32 index) { return 0; }
@@ -84,7 +84,7 @@ static int DUMMY_GpuSetRenderPassFragmentTexture(SDL_GpuRenderPass *pass, SDL_Gp
 static int DUMMY_GpuDraw(SDL_GpuRenderPass *pass, Uint32 vertex_start, Uint32 vertex_count) { return 0; }
 static int DUMMY_GpuDrawIndexed(SDL_GpuRenderPass *pass, Uint32 index_count, SDL_GpuIndexType index_type, SDL_GpuBuffer *index_buffer, Uint32 index_offset) { return 0; }
 static int DUMMY_GpuDrawInstanced(SDL_GpuRenderPass *pass, Uint32 vertex_start, Uint32 vertex_count, Uint32 instance_count, Uint32 base_instance) { return 0; }
-static int DUMMY_GpuDrawInstancedIndexed(SDL_GpuRenderPass *pass, Uint32 index_count, SDL_GpuIndexType index_type, SDL_GpuBuffer *index_buffer, Uint32 index_offset, Uint32 instance_count, Uint32 base_instance) { return 0; }
+static int DUMMY_GpuDrawInstancedIndexed(SDL_GpuRenderPass *pass, Uint32 index_count, SDL_GpuIndexType index_type, SDL_GpuBuffer *index_buffer, Uint32 index_offset, Uint32 instance_count, Uint32 base_vertex, Uint32 base_instance) { return 0; }
 static int DUMMY_GpuEndRenderPass(SDL_GpuRenderPass *pass) { return 0; }
 static int DUMMY_GpuStartBlitPass(SDL_GpuBlitPass *pass) { return 0; }
 static int DUMMY_GpuCopyBetweenTextures(SDL_GpuBlitPass *pass, SDL_GpuTexture *srctex, Uint32 srcslice, Uint32 srclevel, Uint32 srcx, Uint32 srcy, Uint32 srcz, Uint32 srcw, Uint32 srch, Uint32 srcdepth, SDL_GpuTexture *dsttex, Uint32 dstslice, Uint32 dstlevel, Uint32 dstx, Uint32 dsty, Uint32 dstz) { return 0; }

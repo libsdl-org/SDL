@@ -94,15 +94,15 @@ static void *allocate_obj_and_string(const size_t objlen, const char *str, char 
 
 #define ALLOC_OBJ_WITH_DESC(typ, var, dsc) { \
     char *cpystr; \
-    var = (typ *) allocate_obj_and_string(sizeof (typ), dsc->label, &cpystr); \
+    var = (typ *) allocate_obj_and_string(sizeof (typ), (dsc)->label, &cpystr); \
     if (var != NULL) { \
-        SDL_memcpy(&var->desc, dsc, sizeof (*dsc));\
+        SDL_memcpy(&var->desc, dsc, sizeof (*(dsc)));\
         var->desc.label = cpystr; \
     } \
 }
 
 #define FREE_AND_NULL_OBJ_WITH_DESC(obj) { \
-    SDL_free((void *) obj->desc.label); \
+    SDL_free((void *) ((obj)->desc.label)); \
     SDL_free(obj); \
     obj = NULL; \
 }
@@ -269,6 +269,18 @@ SDL_GpuCreateTexture(SDL_GpuDevice *device, const SDL_GpuTextureDescription *des
         SDL_InvalidParamError("device");
     } else if (!desc) {
         SDL_InvalidParamError("desc");
+    } else if (desc->depth_or_slices == 0) {
+        SDL_SetError("depth_or_slices must be > 0");
+    } else if ((desc->texture_type == SDL_GPUTEXTYPE_CUBE) && (desc->depth_or_slices != 6)) {
+        SDL_SetError("depth_or_slices for a cubemap must be 6");
+    } else if ((desc->texture_type == SDL_GPUTEXTYPE_CUBE_ARRAY) && ((desc->depth_or_slices % 6) != 0)) {
+        SDL_SetError("depth_or_slices for a cubemap array must be a multiple of 6");
+    } else if ((desc->texture_type == SDL_GPUTEXTYPE_CUBE_ARRAY) && ((desc->depth_or_slices % 6) != 0)) {
+        SDL_SetError("depth_or_slices for a cubemap array must be a multiple of 6");
+    } else if (((desc->texture_type == SDL_GPUTEXTYPE_1D) || (desc->texture_type == SDL_GPUTEXTYPE_2D)) && (desc->depth_or_slices != 1)) {
+        SDL_SetError("depth_or_slices for 1D and 2D textures must be 1");
+    } else if (((desc->texture_type == SDL_GPUTEXTYPE_CUBE) || (desc->texture_type == SDL_GPUTEXTYPE_CUBE_ARRAY)) && ((desc->width != desc->height))) {
+        SDL_SetError("cubemaps must have the same width and height");
     } else {
         ALLOC_OBJ_WITH_DESC(SDL_GpuTexture, texture, desc);
         if (texture != NULL) {
@@ -372,9 +384,13 @@ SDL_GpuCreatePipeline(SDL_GpuDevice *device, const SDL_GpuPipelineDescription *d
         SDL_InvalidParamError("device");
     } else if (!desc) {
         SDL_InvalidParamError("desc");
-    } else if (desc->vertex_shader && (desc->vertex_shader->device != device)) {
+    } else if (!desc->vertex_shader) {
+        SDL_SetError("vertex shader is NULL");
+    } else if (!desc->fragment_shader) {
+        SDL_SetError("fragment shader is NULL");
+    } else if (desc->vertex_shader->device != device) {
         SDL_SetError("vertex shader is not from this device");
-    } else if (desc->fragment_shader && (desc->fragment_shader->device != device)) {
+    } else if (desc->fragment_shader->device != device) {
         SDL_SetError("fragment shader is not from this device");
     } else {
         ALLOC_OBJ_WITH_DESC(SDL_GpuPipeline, pipeline, desc);
@@ -383,12 +399,8 @@ SDL_GpuCreatePipeline(SDL_GpuDevice *device, const SDL_GpuPipelineDescription *d
             if (device->CreatePipeline(pipeline) == -1) {
                 FREE_AND_NULL_OBJ_WITH_DESC(pipeline);
             } else {
-                if (pipeline->desc.vertex_shader) {
-                    SDL_AtomicIncRef(&pipeline->desc.vertex_shader->refcount);
-                }
-                if (pipeline->desc.fragment_shader) {
-                    SDL_AtomicIncRef(&pipeline->desc.fragment_shader->refcount);
-                }
+                SDL_AtomicIncRef(&desc->vertex_shader->refcount);
+                SDL_AtomicIncRef(&desc->fragment_shader->refcount);
             }
         }
     }
@@ -428,13 +440,19 @@ SDL_GpuDefaultPipelineDescription(SDL_GpuPipelineDescription *desc)
     desc->depth_format = SDL_GPUPIXELFMT_Depth24_Stencil8;
     desc->stencil_format = SDL_GPUPIXELFMT_Depth24_Stencil8;
     desc->depth_write_enabled = SDL_TRUE;
-    desc->stencil_read_mask = 0xFFFFFFFF;
-    desc->stencil_write_mask = 0xFFFFFFFF;
     desc->depth_function = SDL_GPUCMPFUNC_LESS;
-    desc->stencil_function = SDL_GPUCMPFUNC_ALWAYS;
-    desc->stencil_fail = SDL_GPUSTENCILOP_KEEP;
-    desc->depth_fail = SDL_GPUSTENCILOP_KEEP;
-    desc->depth_and_stencil_pass = SDL_GPUSTENCILOP_KEEP;
+    desc->depth_stencil_front.stencil_read_mask = 0xFFFFFFFF;
+    desc->depth_stencil_front.stencil_write_mask = 0xFFFFFFFF;
+    desc->depth_stencil_front.stencil_function = SDL_GPUCMPFUNC_ALWAYS;
+    desc->depth_stencil_front.stencil_fail = SDL_GPUSTENCILOP_KEEP;
+    desc->depth_stencil_front.depth_fail = SDL_GPUSTENCILOP_KEEP;
+    desc->depth_stencil_front.depth_and_stencil_pass = SDL_GPUSTENCILOP_KEEP;
+    desc->depth_stencil_back.stencil_read_mask = 0xFFFFFFFF;
+    desc->depth_stencil_back.stencil_write_mask = 0xFFFFFFFF;
+    desc->depth_stencil_back.stencil_function = SDL_GPUCMPFUNC_ALWAYS;
+    desc->depth_stencil_back.stencil_fail = SDL_GPUSTENCILOP_KEEP;
+    desc->depth_stencil_back.depth_fail = SDL_GPUSTENCILOP_KEEP;
+    desc->depth_stencil_back.depth_and_stencil_pass = SDL_GPUSTENCILOP_KEEP;
     desc->fill_mode = SDL_GPUFILL_FILL;
     desc->front_face = SDL_GPUFRONTFACE_COUNTER_CLOCKWISE;
     desc->cull_face = SDL_GPUCULLFACE_BACK;
@@ -551,15 +569,21 @@ static Uint32 hash_pipeline(const void *key, void *data)
     CRC32_APPEND_VAR(crc, desc->depth_format);
     CRC32_APPEND_VAR(crc, desc->stencil_format);
     CRC32_APPEND_VAR(crc, desc->depth_write_enabled);
-    CRC32_APPEND_VAR(crc, desc->stencil_read_mask);
-    CRC32_APPEND_VAR(crc, desc->stencil_write_mask);
-    CRC32_APPEND_VAR(crc, desc->stencil_reference_front);
-    CRC32_APPEND_VAR(crc, desc->stencil_reference_back);
     CRC32_APPEND_VAR(crc, desc->depth_function);
-    CRC32_APPEND_VAR(crc, desc->stencil_function);
-    CRC32_APPEND_VAR(crc, desc->stencil_fail);
-    CRC32_APPEND_VAR(crc, desc->depth_fail);
-    CRC32_APPEND_VAR(crc, desc->depth_and_stencil_pass);
+    CRC32_APPEND_VAR(crc, desc->depth_stencil_front.stencil_read_mask);
+    CRC32_APPEND_VAR(crc, desc->depth_stencil_front.stencil_write_mask);
+    CRC32_APPEND_VAR(crc, desc->depth_stencil_front.stencil_reference);
+    CRC32_APPEND_VAR(crc, desc->depth_stencil_front.stencil_function);
+    CRC32_APPEND_VAR(crc, desc->depth_stencil_front.stencil_fail);
+    CRC32_APPEND_VAR(crc, desc->depth_stencil_front.depth_fail);
+    CRC32_APPEND_VAR(crc, desc->depth_stencil_front.depth_and_stencil_pass);
+    CRC32_APPEND_VAR(crc, desc->depth_stencil_back.stencil_read_mask);
+    CRC32_APPEND_VAR(crc, desc->depth_stencil_back.stencil_write_mask);
+    CRC32_APPEND_VAR(crc, desc->depth_stencil_back.stencil_reference);
+    CRC32_APPEND_VAR(crc, desc->depth_stencil_back.stencil_function);
+    CRC32_APPEND_VAR(crc, desc->depth_stencil_back.stencil_fail);
+    CRC32_APPEND_VAR(crc, desc->depth_stencil_back.depth_fail);
+    CRC32_APPEND_VAR(crc, desc->depth_stencil_back.depth_and_stencil_pass);
     CRC32_APPEND_VAR(crc, desc->fill_mode);
     CRC32_APPEND_VAR(crc, desc->front_face);
     CRC32_APPEND_VAR(crc, desc->cull_face);
@@ -585,15 +609,21 @@ static SDL_bool keymatch_pipeline(const void *_a, const void *_b, void *data)
          (a->depth_format != b->depth_format) ||
          (a->stencil_format != b->stencil_format) ||
          (a->depth_write_enabled != b->depth_write_enabled) ||
-         (a->stencil_read_mask != b->stencil_read_mask) ||
-         (a->stencil_write_mask != b->stencil_write_mask) ||
-         (a->stencil_reference_front != b->stencil_reference_front) ||
-         (a->stencil_reference_back != b->stencil_reference_back) ||
          (a->depth_function != b->depth_function) ||
-         (a->stencil_function != b->stencil_function) ||
-         (a->stencil_fail != b->stencil_fail) ||
-         (a->depth_fail != b->depth_fail) ||
-         (a->depth_and_stencil_pass != b->depth_and_stencil_pass) ||
+         (a->depth_stencil_front.stencil_read_mask != b->depth_stencil_front.stencil_read_mask) ||
+         (a->depth_stencil_front.stencil_write_mask != b->depth_stencil_front.stencil_write_mask) ||
+         (a->depth_stencil_front.stencil_reference != b->depth_stencil_front.stencil_reference) ||
+         (a->depth_stencil_front.stencil_function != b->depth_stencil_front.stencil_function) ||
+         (a->depth_stencil_front.stencil_fail != b->depth_stencil_front.stencil_fail) ||
+         (a->depth_stencil_front.depth_fail != b->depth_stencil_front.depth_fail) ||
+         (a->depth_stencil_front.depth_and_stencil_pass != b->depth_stencil_front.depth_and_stencil_pass) ||
+         (a->depth_stencil_back.stencil_read_mask != b->depth_stencil_back.stencil_read_mask) ||
+         (a->depth_stencil_back.stencil_write_mask != b->depth_stencil_back.stencil_write_mask) ||
+         (a->depth_stencil_back.stencil_reference != b->depth_stencil_back.stencil_reference) ||
+         (a->depth_stencil_back.stencil_function != b->depth_stencil_back.stencil_function) ||
+         (a->depth_stencil_back.stencil_fail != b->depth_stencil_back.stencil_fail) ||
+         (a->depth_stencil_back.depth_fail != b->depth_stencil_back.depth_fail) ||
+         (a->depth_stencil_back.depth_and_stencil_pass != b->depth_stencil_back.depth_and_stencil_pass) ||
          (a->fill_mode != b->fill_mode) ||
          (a->front_face != b->front_face) ||
          (a->cull_face != b->cull_face) ||
@@ -639,10 +669,9 @@ static SDL_bool keymatch_pipeline(const void *_a, const void *_b, void *data)
 
 void nuke_pipeline(const void *key, const void *value, void *data)
 {
-    SDL_GpuPipelineDescription *desc = (SDL_GpuPipelineDescription *) key;
-    SDL_free((void *) desc->label);
-    SDL_free(desc);
-    SDL_GpuDestroyPipeline((SDL_GpuPipeline *) value);
+    SDL_GpuPipeline *pipeline = (SDL_GpuPipeline *) value;
+    SDL_assert(key == &pipeline->desc);
+    SDL_GpuDestroyPipeline(pipeline);
 }
 
 
@@ -679,10 +708,9 @@ static SDL_bool keymatch_sampler(const void *_a, const void *_b, void *data)
 
 void nuke_sampler(const void *key, const void *value, void *data)
 {
-    SDL_GpuSamplerDescription *desc = (SDL_GpuSamplerDescription *) key;
-    SDL_free((void *) desc->label);
-    SDL_free(desc);
-    SDL_GpuDestroySampler((SDL_GpuSampler *) value);
+    SDL_GpuSampler *sampler = (SDL_GpuSampler *) value;
+    SDL_assert(key == &sampler->desc);
+    SDL_GpuDestroySampler(sampler);
 }
 
 SDL_GpuStateCache *
@@ -786,13 +814,32 @@ SDL_GpuStartRenderPass(const char *label, SDL_GpuCommandBuffer *cmdbuf,
     SDL_GpuRenderPass *pass = NULL;
     if (!cmdbuf) {
         SDL_InvalidParamError("cmdbuf");
+    } else if (cmdbuf->currently_encoding) {
+        SDL_SetError("There is already a pass encoding to this command buffer");
+    } else if (depth_attachment && !depth_attachment->texture) {
+        SDL_SetError("Depth attachment without a texture");
+    } else if (depth_attachment && ((depth_attachment->texture->desc.usage & SDL_GPUTEXUSAGE_RENDER_TARGET) == 0)) {
+        SDL_SetError("Depth attachment texture isn't a render target");
+    } else if (stencil_attachment && !stencil_attachment->texture) {
+        SDL_SetError("Stencil attachment without a texture");
+    } else if (stencil_attachment && ((stencil_attachment->texture->desc.usage & SDL_GPUTEXUSAGE_RENDER_TARGET) == 0)) {
+        SDL_SetError("Stencil attachment texture isn't a render target");
     } else {
+        Uint32 i;
+        for (i = 0; i < num_color_attachments; i++) {
+            if (color_attachments[i].texture && ((color_attachments[i].texture->desc.usage & SDL_GPUTEXUSAGE_RENDER_TARGET) == 0)) {
+                SDL_SetError("Color attachment #%u texture isn't a render target", (unsigned int) i);
+                return NULL;
+            }
+        }
         ALLOC_OBJ_WITH_LABEL(SDL_GpuRenderPass, pass, label);
         if (pass != NULL) {
             pass->device = cmdbuf->device;
             pass->cmdbuf = cmdbuf;
             if (pass->device->StartRenderPass(pass, num_color_attachments, color_attachments, depth_attachment, stencil_attachment) == -1) {
                 FREE_AND_NULL_OBJ_WITH_LABEL(pass);
+            } else {
+                cmdbuf->currently_encoding = SDL_TRUE;
             }
         }
     }
@@ -882,9 +929,9 @@ SDL_GpuDrawInstanced(SDL_GpuRenderPass *pass, Uint32 vertex_start, Uint32 vertex
 }
 
 int
-SDL_GpuDrawInstancedIndexed(SDL_GpuRenderPass *pass, Uint32 index_count, SDL_GpuIndexType index_type, SDL_GpuBuffer *index_buffer, Uint32 index_offset, Uint32 instance_count, Uint32 base_instance)
+SDL_GpuDrawInstancedIndexed(SDL_GpuRenderPass *pass, Uint32 index_count, SDL_GpuIndexType index_type, SDL_GpuBuffer *index_buffer, Uint32 index_offset, Uint32 instance_count, Uint32 base_vertex, Uint32 base_instance)
 {
-    return pass ? pass->device->DrawInstancedIndexed(pass, index_count, index_type, index_buffer, index_offset, instance_count, base_instance) : SDL_InvalidParamError("pass");
+    return pass ? pass->device->DrawInstancedIndexed(pass, index_count, index_type, index_buffer, index_offset, instance_count, base_vertex, base_instance) : SDL_InvalidParamError("pass");
 }
 
 int
@@ -897,6 +944,7 @@ SDL_GpuEndRenderPass(SDL_GpuRenderPass *pass)
 
     retval = pass->device->EndRenderPass(pass);
     if (retval == 0) {
+        pass->cmdbuf->currently_encoding = SDL_FALSE;
         FREE_AND_NULL_OBJ_WITH_LABEL(pass);
     }
     return retval;
@@ -909,6 +957,8 @@ SDL_GpuStartBlitPass(const char *label, SDL_GpuCommandBuffer *cmdbuf)
     SDL_GpuBlitPass *pass = NULL;
     if (!cmdbuf) {
         SDL_InvalidParamError("cmdbuf");
+    } else if (cmdbuf->currently_encoding) {
+        SDL_SetError("There is already a pass encoding to this command buffer");
     } else {
         ALLOC_OBJ_WITH_LABEL(SDL_GpuBlitPass, pass, label);
         if (pass != NULL) {
@@ -916,6 +966,8 @@ SDL_GpuStartBlitPass(const char *label, SDL_GpuCommandBuffer *cmdbuf)
             pass->cmdbuf = cmdbuf;
             if (pass->device->StartBlitPass(pass) == -1) {
                 FREE_AND_NULL_OBJ_WITH_LABEL(pass);
+            } else {
+                cmdbuf->currently_encoding = SDL_TRUE;
             }
         }
     }
@@ -1060,6 +1112,7 @@ SDL_GpuEndBlitPass(SDL_GpuBlitPass *pass)
 
     retval = pass->device->EndBlitPass(pass);
     if (retval == 0) {
+        pass->cmdbuf->currently_encoding = SDL_FALSE;
         FREE_AND_NULL_OBJ_WITH_LABEL(pass);
     }
     return retval;
@@ -1168,9 +1221,13 @@ SDL_GpuPresent(SDL_GpuDevice *device, SDL_Window *window, int swapinterval)
         return SDL_SetError("Window does not have a prepared backbuffer (call SDL_GpuGetBackbuffer first!)");
     } else if (device->Present(device, window, (SDL_GpuTexture *) window->gpu_backbuffer, swapinterval) == -1) {
         return -1;
+    } else {
+        /* Note that we free the memory from our abstract object but we do not destroy the texture.
+           That clean up should have been done by device->Present, since they usually don't work the same way as normal textures! */
+        SDL_GpuTexture *backbuffer = (SDL_GpuTexture *) window->gpu_backbuffer;
+        FREE_AND_NULL_OBJ_WITH_DESC(backbuffer);  /* it's in-flight, mark the window as having no current backbuffer. */
+        window->gpu_backbuffer = NULL;
     }
-
-    window->gpu_backbuffer = NULL;  /* it's in-flight, mark the window as having no current backbuffer. */
 
     return 0;
 }

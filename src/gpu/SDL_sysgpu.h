@@ -77,6 +77,7 @@ struct SDL_GpuCommandBuffer
 {
     SDL_GpuDevice *device;
     const char *label;
+    SDL_bool currently_encoding;
     void *driverdata;
 };
 
@@ -111,6 +112,7 @@ struct SDL_GpuDevice
 
     void (*DestroyDevice)(SDL_GpuDevice *device);
 
+    /* !!! FIXME: we need an UnclaimWindow for when the device (or window!) is being destroyed */
     int (*ClaimWindow)(SDL_GpuDevice *device, SDL_Window *window);
 
     int (*CreateCpuBuffer)(SDL_GpuCpuBuffer *buffer, const void *data);
@@ -142,7 +144,7 @@ struct SDL_GpuDevice
     int (*StartRenderPass)(SDL_GpuRenderPass *pass, Uint32 num_color_attachments, const SDL_GpuColorAttachmentDescription *color_attachments, const SDL_GpuDepthAttachmentDescription *depth_attachment, const SDL_GpuStencilAttachmentDescription *stencil_attachment);
     int (*SetRenderPassPipeline)(SDL_GpuRenderPass *pass, SDL_GpuPipeline *pipeline);
     int (*SetRenderPassViewport)(SDL_GpuRenderPass *pass, double x, double y, double width, double height, double znear, double zfar);
-    int (*SetRenderPassScissor)(SDL_GpuRenderPass *pass, double x, double y, double width, double height);
+    int (*SetRenderPassScissor)(SDL_GpuRenderPass *pass, Uint32 x, Uint32 y, Uint32 width, Uint32 height);
     int (*SetRenderPassBlendConstant)(SDL_GpuRenderPass *pass, double red, double green, double blue, double alpha);
     int (*SetRenderPassVertexBuffer)(SDL_GpuRenderPass *pass, SDL_GpuBuffer *buffer, Uint32 offset, Uint32 index);
     int (*SetRenderPassVertexSampler)(SDL_GpuRenderPass *pass, SDL_GpuSampler *sampler, Uint32 index);
@@ -153,7 +155,7 @@ struct SDL_GpuDevice
     int (*Draw)(SDL_GpuRenderPass *pass, Uint32 vertex_start, Uint32 vertex_count);
     int (*DrawIndexed)(SDL_GpuRenderPass *pass, Uint32 index_count, SDL_GpuIndexType index_type, SDL_GpuBuffer *index_buffer, Uint32 index_offset);
     int (*DrawInstanced)(SDL_GpuRenderPass *pass, Uint32 vertex_start, Uint32 vertex_count, Uint32 instance_count, Uint32 base_instance);
-    int (*DrawInstancedIndexed)(SDL_GpuRenderPass *pass, Uint32 index_count, SDL_GpuIndexType index_type, SDL_GpuBuffer *index_buffer, Uint32 index_offset, Uint32 instance_count, Uint32 base_instance);
+    int (*DrawInstancedIndexed)(SDL_GpuRenderPass *pass, Uint32 index_count, SDL_GpuIndexType index_type, SDL_GpuBuffer *index_buffer, Uint32 index_offset, Uint32 instance_count, Uint32 base_vertex, Uint32 base_instance);
     int (*EndRenderPass)(SDL_GpuRenderPass *pass);
 
     int (*StartBlitPass)(SDL_GpuBlitPass *pass);
