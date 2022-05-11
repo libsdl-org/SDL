@@ -81,7 +81,7 @@ static void render(SDL_Window *window)
     SDL_GpuEndRenderPass(pass);
 
     /* literally nothing to do, we just start a pass to say "clear the framebuffer to this color," present, and we're done. */
-    SDL_GpuSubmitCommandBuffers(gpuDevice, &cmd, 1, NULL);
+    SDL_GpuSubmitCommandBuffer(cmd, NULL);
     SDL_GpuPresent(gpuDevice, window, 1);
 }
 

@@ -679,15 +679,15 @@ int SDL_GpuWaitFence(SDL_GpuFence *fence);
 
 
 /*
- * Once you've encoded your command buffer(s), you can submit them to the GPU for executing.
+ * Once you've encoded your command buffer, you can submit it to the GPU for executing.
  * Command buffers are executed in the order they are submitted, and the commands in those buffers are executed in the order they were encoded.
  * Once a command buffer is submitted, its pointer becomes invalid. Create a new one for the next set of commands.
  */
-int SDL_GpuSubmitCommandBuffers(SDL_GpuDevice *device, SDL_GpuCommandBuffer **buffers, const Uint32 numcmdbufs, SDL_GpuFence *fence);
+int SDL_GpuSubmitCommandBuffer(SDL_GpuCommandBuffer *cmdbuf, SDL_GpuFence *fence);
 
 /* If for some reason you've started encoding command buffers and decide _not_ to submit them to the GPU, you can
    abandon them, freeing their resources. This can be useful if something unrelated fails halfway through buffer encoding. */
-void SDL_GpuAbandonCommandBuffers(SDL_GpuCommandBuffer **buffers, const Uint32 numcmdbufs);
+void SDL_GpuAbandonCommandBuffer(SDL_GpuCommandBuffer *buffer);
 
 /*
  * Get a texture that can be used for rendering to an SDL window. The SDL_Window

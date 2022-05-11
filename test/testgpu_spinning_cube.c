@@ -260,7 +260,6 @@ Render(SDL_Window *window, const int windownum)
 {
     WindowState *winstate = &window_states[windownum];
     SDL_GpuTexture *backbuffer = SDL_GpuGetBackbuffer(gpu_device, window);
-    const SDL_GpuPresentType presenttype = (state->render_flags & SDL_RENDERER_PRESENTVSYNC) ? SDL_GPUPRESENT_VSYNC : SDL_GPUPRESENT_IMMEDIATE;
     SDL_GpuColorAttachmentDescription color_attachment;
     SDL_GpuDepthAttachmentDescription depth_attachment;
     SDL_GpuTexture **depth_texture_ptr;
@@ -362,7 +361,8 @@ Render(SDL_Window *window, const int windownum)
     SDL_GpuDraw(render, 0, SDL_arraysize(vertex_data));
     SDL_GpuEndRenderPass(render);
 
-    SDL_GpuSubmitCommandBuffers(gpu_device, &cmd, 1, NULL);  /* push work to the GPU and tell it to present to the window when done. */
+    /* push work to the GPU and tell it to present to the window when done. */
+    SDL_GpuSubmitCommandBuffer(cmd, NULL);
     SDL_GpuPresent(gpu_device, window, 1);
 }
 

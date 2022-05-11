@@ -1137,47 +1137,31 @@ SDL_GpuWaitFence(SDL_GpuFence *fence)
 }
 
 int
-SDL_GpuSubmitCommandBuffers(SDL_GpuDevice *device, SDL_GpuCommandBuffer **buffers, const Uint32 numcmdbufs, SDL_GpuFence *fence)
+SDL_GpuSubmitCommandBuffer(SDL_GpuCommandBuffer *cmdbuf, SDL_GpuFence *fence)
 {
     int retval;
-    Uint32 i;
 
-    if (!device) {
-        return SDL_InvalidParamError("device");
-    } else if (fence && (fence->device != device)) {
-        return SDL_SetError("Fence is not from this device");
+    if (!cmdbuf) {
+        return SDL_InvalidParamError("cmdbuf");
+    } else if (cmdbuf->currently_encoding) {
+        return SDL_SetError("There is a pass still encoding to command buffer");
+    } else if (fence && (fence->device != cmdbuf->device)) {
+        return SDL_SetError("Fence is not from command buffer's device");
     }
 
-    for (i = 0; i < numcmdbufs; i++) {
-        if (!buffers[i]) {
-            return SDL_SetError("Can't submit a NULL command buffer");
-        } else if (buffers[i]->device != device) {
-            return SDL_SetError("Command buffer is not from this device");
-        }
-    }
-
-    retval = device->SubmitCommandBuffers(device, buffers, numcmdbufs, fence);
-
-    if (retval == 0) {
-        for (i = 0; i < numcmdbufs; i++) {
-            FREE_AND_NULL_OBJ_WITH_LABEL(buffers[i]);
-        }
-    }
+    retval = cmdbuf->device->SubmitCommandBuffer(cmdbuf, fence);
+    FREE_AND_NULL_OBJ_WITH_LABEL(cmdbuf);
 
     return retval;
 }
 
 void
-SDL_GpuAbandonCommandBuffers(SDL_GpuCommandBuffer **buffers, const Uint32 numcmdbufs)
+SDL_GpuAbandonCommandBuffer(SDL_GpuCommandBuffer *buffer)
 {
-    if (buffers) {
-        Uint32 i;
-        for (i = 0; i < numcmdbufs; i++) {
-            if (buffers[i]) {
-                buffers[i]->device->AbandonCommandBuffer(buffers[i]);
-                FREE_AND_NULL_OBJ_WITH_LABEL(buffers[i]);
-            }
-        }
+    if (buffer) {
+        /* !!! FIXME: deal with buffer->currently_encoding */
+        buffer->device->AbandonCommandBuffer(buffer);
+        FREE_AND_NULL_OBJ_WITH_LABEL(buffer);
     }
 }
 
@@ -1274,14 +1258,14 @@ SDL_GpuBuffer *SDL_GpuCreateAndInitBuffer(const char *label, SDL_GpuDevice *devi
          ((blit = SDL_GpuStartBlitPass("Blit pass for SDL_GpuCreateAndInitBuffer", cmd)) != NULL) ) {
         SDL_GpuCopyBufferCpuToGpu(blit, staging, 0, gpubuf, 0, buflen);
         SDL_GpuEndBlitPass(blit);
-        SDL_GpuSubmitCommandBuffers(device, &cmd, 1, fence);
+        SDL_GpuSubmitCommandBuffer(cmd, fence);
         SDL_GpuWaitFence(fence);  /* so we know it's definitely uploaded */
         retval = gpubuf;
     }
 
     if (!retval) {
         SDL_GpuEndBlitPass(blit);   /* assume this might be un-ended. */
-        SDL_GpuAbandonCommandBuffers(&cmd, 1);
+        SDL_GpuAbandonCommandBuffer(cmd);
         SDL_GpuDestroyBuffer(gpubuf);
     }
     SDL_GpuDestroyCpuBuffer(staging);

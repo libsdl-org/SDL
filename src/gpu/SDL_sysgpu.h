@@ -136,9 +136,6 @@ struct SDL_GpuDevice
     void (*DestroySampler)(SDL_GpuSampler *sampler);
 
     int (*CreateCommandBuffer)(SDL_GpuCommandBuffer *cmdbuf);
-    int (*SubmitCommandBuffers)(SDL_GpuDevice *device, SDL_GpuCommandBuffer **buffers, const Uint32 numcmdbufs, SDL_GpuFence *fence);
-    void (*AbandonCommandBuffer)(SDL_GpuCommandBuffer *buffer);
-
     int (*StartRenderPass)(SDL_GpuRenderPass *pass, Uint32 num_color_attachments, const SDL_GpuColorAttachmentDescription *color_attachments, const SDL_GpuDepthAttachmentDescription *depth_attachment, const SDL_GpuStencilAttachmentDescription *stencil_attachment);
     int (*SetRenderPassPipeline)(SDL_GpuRenderPass *pass, SDL_GpuPipeline *pipeline);
     int (*SetRenderPassViewport)(SDL_GpuRenderPass *pass, double x, double y, double width, double height, double znear, double zfar);
@@ -155,6 +152,8 @@ struct SDL_GpuDevice
     int (*DrawInstanced)(SDL_GpuRenderPass *pass, Uint32 vertex_start, Uint32 vertex_count, Uint32 instance_count, Uint32 base_instance);
     int (*DrawInstancedIndexed)(SDL_GpuRenderPass *pass, Uint32 index_count, SDL_GpuIndexType index_type, SDL_GpuBuffer *index_buffer, Uint32 index_offset, Uint32 instance_count, Uint32 base_vertex, Uint32 base_instance);
     int (*EndRenderPass)(SDL_GpuRenderPass *pass);
+    int (*SubmitCommandBuffer)(SDL_GpuCommandBuffer *cmdbuf, SDL_GpuFence *fence);
+    void (*AbandonCommandBuffer)(SDL_GpuCommandBuffer *buffer);
 
     int (*StartBlitPass)(SDL_GpuBlitPass *pass);
     int (*CopyBetweenTextures)(SDL_GpuBlitPass *pass, SDL_GpuTexture *srctex, Uint32 srcslice, Uint32 srclevel, Uint32 srcx, Uint32 srcy, Uint32 srcz, Uint32 srcw, Uint32 srch, Uint32 srcdepth, SDL_GpuTexture *dsttex, Uint32 dstslice, Uint32 dstlevel, Uint32 dstx, Uint32 dsty, Uint32 dstz);
