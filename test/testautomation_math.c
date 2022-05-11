@@ -35,14 +35,8 @@ typedef struct
 
 /* ================= Test Helpers ================== */
 
-/* OS/2 uses different function signatures for the helpers */
-#ifdef __OS2__
-typedef double(_Syscall *d_to_d_func)(double);
-typedef double(_Syscall *dd_to_d_func)(double, double);
-#else
-typedef double (*d_to_d_func)(double);
-typedef double (*dd_to_d_func)(double, double);
-#endif
+typedef double(SDLCALL *d_to_d_func)(double);
+typedef double(SDLCALL *dd_to_d_func)(double, double);
 
 /**
  * \brief Runs all the cases on a given function with a signature double -> double
