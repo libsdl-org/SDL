@@ -683,6 +683,34 @@ Wayland_PopupWatch(void *data, SDL_Event *event)
     return 1;
 }
 
+static void
+handle_configure_zxdg_decoration(void *data,
+                                 struct zxdg_toplevel_decoration_v1 *zxdg_toplevel_decoration_v1,
+                                 uint32_t mode)
+{
+    SDL_Window *window = (SDL_Window *) data;
+    SDL_WindowData *driverdata = (SDL_WindowData *) window->driverdata;
+
+    /* If the compositor tries to force CSD anyway, bail on direct XDG support
+     * and fall back to libdecor, it will handle these events from then on.
+     *
+     * To do this we have to fully unmap, then map with libdecor loaded.
+     */
+    if (mode == ZXDG_TOPLEVEL_DECORATION_V1_MODE_CLIENT_SIDE) {
+        if (!Wayland_LoadLibdecor(driverdata->waylandData, SDL_TRUE)) {
+            /* libdecor isn't available, so no borders for you... oh well */
+            return;
+        }
+        SDL_HideWindow(window);
+        driverdata->shell_surface_type = WAYLAND_SURFACE_LIBDECOR;
+        SDL_ShowWindow(window);
+    }
+}
+
+static const struct zxdg_toplevel_decoration_v1_listener decoration_listener = {
+    handle_configure_zxdg_decoration
+};
+
 #ifdef HAVE_LIBDECOR_H
 static void
 decoration_frame_configure(struct libdecor_frame *frame,
@@ -1258,6 +1286,9 @@ void Wayland_ShowWindow(_THIS, SDL_Window *window)
         /* Create the window decorations */
         if (!WINDOW_IS_XDG_POPUP(window) && data->shell_surface.xdg.roleobj.toplevel && c->decoration_manager) {
             data->server_decoration = zxdg_decoration_manager_v1_get_toplevel_decoration(c->decoration_manager, data->shell_surface.xdg.roleobj.toplevel);
+            zxdg_toplevel_decoration_v1_add_listener(data->server_decoration,
+                                                     &decoration_listener,
+                                                     window);
         }
     } else {
         /* Nothing to see here, just commit. */
@@ -1628,7 +1659,6 @@ void
 Wayland_SetWindowResizable(_THIS, SDL_Window * window, SDL_bool resizable)
 {
 #ifdef HAVE_LIBDECOR_H
-    SDL_VideoData *data = _this->driverdata;
     const SDL_WindowData *wind = window->driverdata;
 
     if (WINDOW_IS_LIBDECOR(data, window)) {
@@ -1873,6 +1903,19 @@ int Wayland_CreateWindow(_THIS, SDL_Window *window)
 
     /* We may need to create an idle inhibitor for this new window */
     Wayland_SuspendScreenSaver(_this);
+
+    #define IS_POPUP(window) \
+        (window->flags & (SDL_WINDOW_TOOLTIP | SDL_WINDOW_POPUP_MENU))
+    if (c->shell.libdecor && !IS_POPUP(window)) {
+        data->shell_surface_type = WAYLAND_SURFACE_LIBDECOR;
+    } else if (c->shell.xdg) {
+        if (IS_POPUP(window)) {
+            data->shell_surface_type = WAYLAND_SURFACE_XDG_POPUP;
+        } else {
+            data->shell_surface_type = WAYLAND_SURFACE_XDG_TOPLEVEL;
+        }
+    } /* All other cases will be WAYLAND_SURFACE_UNKNOWN */
+    #undef IS_POPUP
 
     return 0;
 }
