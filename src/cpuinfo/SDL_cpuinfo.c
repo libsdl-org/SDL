@@ -1058,20 +1058,27 @@ void *
 SDL_SIMDAlloc(const size_t len)
 {
     const size_t alignment = SDL_SIMDGetAlignment();
-    return SDL_SIMDAllocAligned(len, alignment);
+    const size_t padding = (alignment - (len % alignment)) % alignment;
+    size_t to_allocate;
+
+    /* Check for overflow */
+    if (SDL_size_add_overflow(len, padding, &to_allocate)) {
+        return NULL;
+    }
+
+    return SDL_SIMDAllocAligned(to_allocate, alignment);
 }
 
 void *
 SDL_SIMDAllocAligned(size_t len, size_t alignment)
 {
-    const size_t padding = (alignment - (len % alignment)) % alignment;
     Uint8 *retval = NULL;
     Uint8 *ptr;
     size_t to_allocate;
 
-    /* alignment + padding + sizeof (void *) is bounded (a few hundred
-     * bytes max), so no need to check for overflow within that argument */
-    if (SDL_size_add_overflow(len, alignment + padding + sizeof (void *), &to_allocate)) {
+    /* Check for overflow */
+    if (SDL_size_add_overflow(len, alignment, &to_allocate) ||
+        SDL_size_add_overflow(to_allocate, sizeof (void *), &to_allocate)) {
         return NULL;
     }
 
