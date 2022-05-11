@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-/* An implementation of semaphores using mutexes and condition variables */
+/* An implementation of semaphores using the Symbian API. */
 
 #include <e32std.h>
 
