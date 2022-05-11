@@ -501,6 +501,17 @@ extern DECLSPEC size_t SDLCALL SDL_SIMDGetAlignment(void);
 extern DECLSPEC void * SDLCALL SDL_SIMDAlloc(const size_t len);
 
 /**
+ * Allocate aligned memory with explicit 'align' parameter.
+ * \param len The length, in bytes, of the block to allocate. The actual
+ *            allocated block might be larger due to padding, etc.
+ * \param alignment alignment requirement
+ * \returns a pointer to the newly-allocated block, NULL if out of memory.
+ *
+ * \sa SDL_SIMDFree
+ */
+extern DECLSPEC void * SDLCALL SDL_SIMDAllocAligned(size_t len, size_t alignment);
+
+/**
  * Reallocate memory obtained from SDL_SIMDAlloc
  *
  * It is not valid to use this function on a pointer from anything but

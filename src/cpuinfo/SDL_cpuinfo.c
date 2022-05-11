@@ -1058,6 +1058,12 @@ void *
 SDL_SIMDAlloc(const size_t len)
 {
     const size_t alignment = SDL_SIMDGetAlignment();
+    return SDL_SIMDAllocAligned(len, alignment);
+}
+
+void *
+SDL_SIMDAllocAligned(size_t len, size_t alignment)
+{
     const size_t padding = (alignment - (len % alignment)) % alignment;
     Uint8 *retval = NULL;
     Uint8 *ptr;
