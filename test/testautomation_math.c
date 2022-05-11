@@ -27,6 +27,103 @@ typedef struct
     double expected;
 } dd_to_d;
 
+/*
+    NB: You cannot create an array of these structures containing INFINITY or NAN.
+    On platforms such as OS/2, they are defined as 'extern const double' making them
+    not compile-time constant.
+*/
+
+/* ================= Test Helpers ================== */
+
+/**
+ * \brief Runs all the cases on a given function with a signature double -> double
+ *
+ * \param func_name, the name of the tested function.
+ * \param func, the function to call.
+ * \param cases, an array of all the cases.
+ * \param cases_size, the size of the cases array.
+ */
+static int
+helper_dtod(const char *func_name, double (*func)(double),
+            const d_to_d *cases, const size_t cases_size)
+{
+    Uint32 i;
+    for (i = 0; i < cases_size; i++) {
+        const double result = func(cases[i].input);
+        SDLTest_AssertCheck(result == cases[i].expected,
+                            "%s(%f), expected %f, got %f",
+                            func_name,
+                            cases[i].input,
+                            cases[i].expected, result);
+    }
+
+    return TEST_COMPLETED;
+}
+
+/**
+ * \brief Runs all the cases on a given function with a signature (double, double) -> double
+ *
+ * \param func_name, the name of the tested function.
+ * \param func, the function to call.
+ * \param cases, an array of all the cases.
+ * \param cases_size, the size of the cases array.
+ */
+static int
+helper_ddtod(const char *func_name, double (*func)(double, double),
+             const dd_to_d *cases, const size_t cases_size)
+{
+    Uint32 i;
+    for (i = 0; i < cases_size; i++) {
+        const double result = func(cases[i].x_input, cases[i].y_input);
+        SDLTest_AssertCheck(result == cases[i].expected,
+                            "%s(%f,%f), expected %f, got %f",
+                            func_name,
+                            cases[i].x_input, cases[i].y_input,
+                            cases[i].expected, result);
+    }
+
+    return TEST_COMPLETED;
+}
+
+/**
+ * \brief Runs a range of values on a given function with a signature double -> double
+ *
+ * This function is only meant to test functions that returns the input value if it is
+ * integral: f(x) -> x for x in N.
+ *
+ * \param func_name, the name of the tested function.
+ * \param func, the function to call.
+ */
+static int
+helper_range(const char *func_name, double (*func)(double))
+{
+    const Uint32 ITERATIONS = 10000000;
+    const Uint32 STEP = SDL_MAX_UINT32 / ITERATIONS;
+    Uint32 i;
+    double test_value = 0.0;
+
+    SDLTest_AssertPass("%s: Testing a range of %u values with %u steps",
+                       func_name, ITERATIONS, STEP);
+
+    for (i = 0; i < ITERATIONS; i++, test_value += STEP) {
+        double result;
+        /* These are tested elsewhere */
+        if (isnan(test_value) || isinf(test_value)) {
+            continue;
+        }
+
+        result = func(test_value);
+        if (result != test_value) { /* Only log failures to save performances */
+            SDLTest_AssertPass("%s(%.1f), expected %.1f, got %.1f",
+                               func_name, test_value,
+                               test_value, result);
+            return TEST_ABORTED;
+        }
+    }
+
+    return TEST_COMPLETED;
+}
+
 /* ================= Test Case Implementation ================== */
 
 /* SDL_floor tests functions */
@@ -58,17 +155,8 @@ floor_infCases(void *args)
 static int
 floor_zeroCases(void *args)
 {
-    Uint32 i;
-    const double zero_cases[] = { 0.0, -0.0 };
-
-    for (i = 0; i < SDL_arraysize(zero_cases); i++) {
-        const double result = SDL_floor(zero_cases[i]);
-        SDLTest_AssertCheck(result == zero_cases[i],
-                            "Floor(%.1f), expected %.1f, got %.1f",
-                            zero_cases[i], zero_cases[i], result);
-    }
-
-    return TEST_COMPLETED;
+    const d_to_d zero_cases[] = { { 0.0, 0.0 }, { -0.0, -0.0 } };
+    return helper_dtod("Floor", SDL_floor, zero_cases, SDL_arraysize(zero_cases));
 }
 
 /**
@@ -90,24 +178,17 @@ floor_nanCase(void *args)
 static int
 floor_roundNumbersCases(void *args)
 {
-    Uint32 i;
-    const double round_cases[] = {
-        1.0,
-        -1.0,
-        15.0,
-        -15.0,
-        125.0,
-        -125.0,
-        1024.0,
-        -1024.0
+    const d_to_d round_cases[] = {
+        { 1.0, 1.0 },
+        { -1.0, -1.0 },
+        { 15.0, 15.0 },
+        { -15.0, -15.0 },
+        { 125.0, 125.0 },
+        { -125.0, -125.0 },
+        { 1024.0, 1024.0 },
+        { -1024.0, -1024.0 }
     };
-    for (i = 0; i < SDL_arraysize(round_cases); i++) {
-        const double result = SDL_floor(round_cases[i]);
-        SDLTest_AssertCheck(result == round_cases[i],
-                            "Floor(%.1f), expected %.1f, got %.1f", round_cases[i],
-                            round_cases[i], result);
-    }
-    return TEST_COMPLETED;
+    return helper_dtod("Floor", SDL_floor, round_cases, SDL_arraysize(round_cases));
 }
 
 /**
@@ -116,7 +197,6 @@ floor_roundNumbersCases(void *args)
 static int
 floor_fractionCases(void *args)
 {
-    Uint32 i;
     const d_to_d frac_cases[] = {
         { 1.0 / 2.0, 0.0 },
         { -1.0 / 2.0, -1.0 },
@@ -129,13 +209,7 @@ floor_fractionCases(void *args)
         { 19357.0 / 53.0, 365.0 },
         { -19357.0 / 53.0, -366.0 }
     };
-    for (i = 0; i < SDL_arraysize(frac_cases); i++) {
-        const double result = SDL_floor(frac_cases[i].input);
-        SDLTest_AssertCheck(result == frac_cases[i].expected,
-                            "Floor(%f), expected %.1f, got %f", frac_cases[i].input,
-                            frac_cases[i].expected, result);
-    }
-    return TEST_COMPLETED;
+    return helper_dtod("Floor", SDL_floor, frac_cases, SDL_arraysize(frac_cases));
 }
 
 /**
@@ -144,29 +218,7 @@ floor_fractionCases(void *args)
 static int
 floor_rangeTest(void *args)
 {
-    const Uint32 ITERATIONS = 10000000;
-    const Uint32 STEP = SDL_MAX_UINT32 / ITERATIONS;
-    Uint32 i;
-    double test_value = 0.0;
-
-    SDLTest_AssertPass("Floor: Testing a range of %u values with %u steps",
-                       ITERATIONS, STEP);
-
-    for (i = 0; i < ITERATIONS; i++, test_value += STEP) {
-        double result;
-        /* These are tested elsewhere */
-        if (isnan(test_value) || isinf(test_value)) {
-            continue;
-        }
-
-        result = SDL_floor(test_value);
-        if (result != test_value) { /* Only log failures to save performances */
-            SDLTest_AssertPass("Floor(%.1f), expected %.1f, got %.1f", test_value,
-                               test_value, result);
-            return TEST_ABORTED;
-        }
-    }
-    return TEST_COMPLETED;
+    return helper_range("Floor", SDL_floor);
 }
 
 /* SDL_ceil tests functions */
@@ -198,19 +250,8 @@ ceil_infCases(void *args)
 static int
 ceil_zeroCases(void *args)
 {
-    double result;
-
-    result = SDL_ceil(0.0);
-    SDLTest_AssertCheck(0.0 == result,
-                        "Ceil(%.1f), expected %.1f, got %.1f",
-                        0.0, 0.0, result);
-
-    result = SDL_ceil(-0.0);
-    SDLTest_AssertCheck(-0.0 == result,
-                        "Ceil(%.1f), expected %.1f, got %.1f",
-                        -0.0, -0.0, result);
-
-    return TEST_COMPLETED;
+    const d_to_d zero_cases[] = { { 0.0, 0.0 }, { -0.0, -0.0 } };
+    return helper_dtod("Ceil", SDL_ceil, zero_cases, SDL_arraysize(zero_cases));
 }
 
 /**
@@ -232,24 +273,17 @@ ceil_nanCase(void *args)
 static int
 ceil_roundNumbersCases(void *args)
 {
-    Uint32 i;
-    const double round_cases[] = {
-        1.0,
-        -1.0,
-        15.0,
-        -15.0,
-        125.0,
-        -125.0,
-        1024.0,
-        -1024.0
+    const d_to_d round_cases[] = {
+        { 1.0, 1.0 },
+        { -1.0, -1.0 },
+        { 15.0, 15.0 },
+        { -15.0, -15.0 },
+        { 125.0, 125.0 },
+        { -125.0, -125.0 },
+        { 1024.0, 1024.0 },
+        { -1024.0, -1024.0 }
     };
-    for (i = 0; i < SDL_arraysize(round_cases); i++) {
-        const double result = SDL_ceil(round_cases[i]);
-        SDLTest_AssertCheck(result == round_cases[i],
-                            "Ceil(%.1f), expected %.1f, got %.1f", round_cases[i],
-                            round_cases[i], result);
-    }
-    return TEST_COMPLETED;
+    return helper_dtod("Ceil", SDL_ceil, round_cases, SDL_arraysize(round_cases));
 }
 
 /**
@@ -258,7 +292,6 @@ ceil_roundNumbersCases(void *args)
 static int
 ceil_fractionCases(void *args)
 {
-    Uint32 i;
     const d_to_d frac_cases[] = {
         { 1.0 / 2.0, 1.0 },
         { -1.0 / 2.0, -0.0 },
@@ -271,13 +304,7 @@ ceil_fractionCases(void *args)
         { 19357.0 / 53.0, 366.0 },
         { -19357.0 / 53.0, -365.0 }
     };
-    for (i = 0; i < SDL_arraysize(frac_cases); i++) {
-        const double result = SDL_ceil(frac_cases[i].input);
-        SDLTest_AssertCheck(result == frac_cases[i].expected,
-                            "Ceil(%f), expected %.1f, got %f", frac_cases[i].input,
-                            frac_cases[i].expected, result);
-    }
-    return TEST_COMPLETED;
+    return helper_dtod("Ceil", SDL_ceil, frac_cases, SDL_arraysize(frac_cases));
 }
 
 /**
@@ -286,29 +313,7 @@ ceil_fractionCases(void *args)
 static int
 ceil_rangeTest(void *args)
 {
-    const Uint32 ITERATIONS = 10000000;
-    const Uint32 STEP = SDL_MAX_UINT32 / ITERATIONS;
-    Uint32 i;
-    double test_value = 0.0;
-
-    SDLTest_AssertPass("Ceil: Testing a range of %u values with %u steps",
-                       ITERATIONS, STEP);
-
-    for (i = 0; i < ITERATIONS; i++, test_value += STEP) {
-        double result;
-        /* These are tested elsewhere */
-        if (isnan(test_value) || isinf(test_value)) {
-            continue;
-        }
-
-        result = SDL_ceil(test_value);
-        if (result != test_value) { /* Only log failures to save performances */
-            SDLTest_AssertPass("Ceil(%.1f), expected %.1f, got %.1f", test_value,
-                               test_value, result);
-            return TEST_ABORTED;
-        }
-    }
-    return TEST_COMPLETED;
+    return helper_range("Ceil", SDL_ceil);
 }
 
 /* SDL_trunc tests functions */
@@ -340,19 +345,8 @@ trunc_infCases(void *args)
 static int
 trunc_zeroCases(void *args)
 {
-    double result;
-
-    result = SDL_trunc(0.0);
-    SDLTest_AssertCheck(0.0 == result,
-                        "Trunc(%.1f), expected %.1f, got %.1f",
-                        0.0, 0.0, result);
-
-    result = SDL_trunc(-0.0);
-    SDLTest_AssertCheck(-0.0 == result,
-                        "Trunc(%.1f), expected %.1f, got %.1f",
-                        -0.0, -0.0, result);
-
-    return TEST_COMPLETED;
+    const d_to_d zero_cases[] = { { 0.0, 0.0 }, { -0.0, -0.0 } };
+    return helper_dtod("Trunc", SDL_trunc, zero_cases, SDL_arraysize(zero_cases));
 }
 
 /**
@@ -374,24 +368,17 @@ trunc_nanCase(void *args)
 static int
 trunc_roundNumbersCases(void *args)
 {
-    Uint32 i;
-    const double round_cases[] = {
-        1.0,
-        -1.0,
-        15.0,
-        -15.0,
-        125.0,
-        -125.0,
-        1024.0,
-        -1024.0
+    const d_to_d round_cases[] = {
+        { 1.0, 1.0 },
+        { -1.0, -1.0 },
+        { 15.0, 15.0 },
+        { -15.0, -15.0 },
+        { 125.0, 125.0 },
+        { -125.0, -125.0 },
+        { 1024.0, 1024.0 },
+        { -1024.0, -1024.0 }
     };
-    for (i = 0; i < SDL_arraysize(round_cases); i++) {
-        const double result = SDL_trunc(round_cases[i]);
-        SDLTest_AssertCheck(result == round_cases[i],
-                            "Trunc(%.1f), expected %.1f, got %.1f", round_cases[i],
-                            round_cases[i], result);
-    }
-    return TEST_COMPLETED;
+    return helper_dtod("Trunc", SDL_trunc, round_cases, SDL_arraysize(round_cases));
 }
 
 /**
@@ -400,7 +387,6 @@ trunc_roundNumbersCases(void *args)
 static int
 trunc_fractionCases(void *args)
 {
-    Uint32 i;
     const d_to_d frac_cases[] = {
         { 1.0 / 2.0, 0.0 },
         { -1.0 / 2.0, -0.0 },
@@ -413,13 +399,7 @@ trunc_fractionCases(void *args)
         { 19357.0 / 53.0, 365.0 },
         { -19357.0 / 53.0, -365.0 }
     };
-    for (i = 0; i < SDL_arraysize(frac_cases); i++) {
-        const double result = SDL_trunc(frac_cases[i].input);
-        SDLTest_AssertCheck(result == frac_cases[i].expected,
-                            "Trunc(%f), expected %.1f, got %f", frac_cases[i].input,
-                            frac_cases[i].expected, result);
-    }
-    return TEST_COMPLETED;
+    return helper_dtod("Trunc", SDL_trunc, frac_cases, SDL_arraysize(frac_cases));
 }
 
 /**
@@ -428,29 +408,7 @@ trunc_fractionCases(void *args)
 static int
 trunc_rangeTest(void *args)
 {
-    const Uint32 ITERATIONS = 10000000;
-    const Uint32 STEP = SDL_MAX_UINT32 / ITERATIONS;
-    Uint32 i;
-    double test_value = 0.0;
-
-    SDLTest_AssertPass("Trunc: Testing a range of %u values with %u steps",
-                       ITERATIONS, STEP);
-
-    for (i = 0; i < ITERATIONS; i++, test_value += STEP) {
-        double result;
-        /* These are tested elsewhere */
-        if (isnan(test_value) || isinf(test_value)) {
-            continue;
-        }
-
-        result = SDL_trunc(test_value);
-        if (result != test_value) { /* Only log failures to save performances */
-            SDLTest_AssertPass("Trunc(%.1f), expected %.1f, got %.1f", test_value,
-                               test_value, result);
-            return TEST_ABORTED;
-        }
-    }
-    return TEST_COMPLETED;
+    return helper_range("Trunc", SDL_trunc);
 }
 
 /* SDL_round tests functions */
@@ -482,19 +440,8 @@ round_infCases(void *args)
 static int
 round_zeroCases(void *args)
 {
-    double result;
-
-    result = SDL_round(0.0);
-    SDLTest_AssertCheck(0.0 == result,
-                        "Round(%.1f), expected %.1f, got %.1f",
-                        0.0, 0.0, result);
-
-    result = SDL_round(-0.0);
-    SDLTest_AssertCheck(-0.0 == result,
-                        "Round(%.1f), expected %.1f, got %.1f",
-                        -0.0, -0.0, result);
-
-    return TEST_COMPLETED;
+    const d_to_d zero_cases[] = { { 0.0, 0.0 }, { -0.0, -0.0 } };
+    return helper_dtod("Round", SDL_round, zero_cases, SDL_arraysize(zero_cases));
 }
 
 /**
@@ -516,24 +463,17 @@ round_nanCase(void *args)
 static int
 round_roundNumbersCases(void *args)
 {
-    Uint32 i;
-    const double round_cases[] = {
-        1.0,
-        -1.0,
-        15.0,
-        -15.0,
-        125.0,
-        -125.0,
-        1024.0,
-        -1024.0
+    const d_to_d round_cases[] = {
+        { 1.0, 1.0 },
+        { -1.0, -1.0 },
+        { 15.0, 15.0 },
+        { -15.0, -15.0 },
+        { 125.0, 125.0 },
+        { -125.0, -125.0 },
+        { 1024.0, 1024.0 },
+        { -1024.0, -1024.0 }
     };
-    for (i = 0; i < SDL_arraysize(round_cases); i++) {
-        const double result = SDL_round(round_cases[i]);
-        SDLTest_AssertCheck(result == round_cases[i],
-                            "Round(%.1f), expected %.1f, got %.1f", round_cases[i],
-                            round_cases[i], result);
-    }
-    return TEST_COMPLETED;
+    return helper_dtod("Round", SDL_round, round_cases, SDL_arraysize(round_cases));
 }
 
 /**
@@ -542,7 +482,6 @@ round_roundNumbersCases(void *args)
 static int
 round_fractionCases(void *args)
 {
-    Uint32 i;
     const d_to_d frac_cases[] = {
         { 1.0 / 2.0, 1.0 },
         { -1.0 / 2.0, -1.0 },
@@ -555,13 +494,7 @@ round_fractionCases(void *args)
         { 19357.0 / 53.0, 365.0 },
         { -19357.0 / 53.0, -365.0 }
     };
-    for (i = 0; i < SDL_arraysize(frac_cases); i++) {
-        const double result = SDL_round(frac_cases[i].input);
-        SDLTest_AssertCheck(result == frac_cases[i].expected,
-                            "Round(%f), expected %.1f, got %f", frac_cases[i].input,
-                            frac_cases[i].expected, result);
-    }
-    return TEST_COMPLETED;
+    return helper_dtod("Round", SDL_round, frac_cases, SDL_arraysize(frac_cases));
 }
 
 /**
@@ -570,29 +503,7 @@ round_fractionCases(void *args)
 static int
 round_rangeTest(void *args)
 {
-    const Uint32 ITERATIONS = 10000000;
-    const Uint32 STEP = SDL_MAX_UINT32 / ITERATIONS;
-    Uint32 i;
-    double test_value = 0.0;
-
-    SDLTest_AssertPass("Round: Testing a range of %u values with %u steps",
-                       ITERATIONS, STEP);
-
-    for (i = 0; i < ITERATIONS; i++, test_value += STEP) {
-        double result;
-        /* These are tested elsewhere */
-        if (isnan(test_value) || isinf(test_value)) {
-            continue;
-        }
-
-        result = SDL_round(test_value);
-        if (result != test_value) { /* Only log failures to save performances */
-            SDLTest_AssertPass("Round(%.1f), expected %.1f, got %.1f", test_value,
-                               test_value, result);
-            return TEST_ABORTED;
-        }
-    }
-    return TEST_COMPLETED;
+    return helper_range("Round", SDL_round);
 }
 
 /* SDL_fabs tests functions */
@@ -624,19 +535,8 @@ fabs_infCases(void *args)
 static int
 fabs_zeroCases(void *args)
 {
-    double result;
-
-    result = SDL_fabs(0.0);
-    SDLTest_AssertCheck(0.0 == result,
-                        "Fabs(%.1f), expected %.1f, got %.1f",
-                        0.0, 0.0, result);
-
-    result = SDL_fabs(-0.0);
-    SDLTest_AssertCheck(0.0 == result,
-                        "Fabs(%.1f), expected %.1f, got %.1f",
-                        -0.0, 0.0, result);
-
-    return TEST_COMPLETED;
+    const d_to_d zero_cases[] = { { 0.0, 0.0 }, { -0.0, 0.0 } };
+    return helper_dtod("Fabs", SDL_fabs, zero_cases, SDL_arraysize(zero_cases));
 }
 
 /**
@@ -658,29 +558,7 @@ fabs_nanCase(void *args)
 static int
 fabs_rangeTest(void *args)
 {
-    const Uint32 ITERATIONS = 10000000;
-    const Uint32 STEP = SDL_MAX_UINT32 / ITERATIONS;
-    Uint32 i;
-    double test_value = 0.0;
-
-    SDLTest_AssertPass("Fabs: Testing a range of %u values with %u steps",
-                       ITERATIONS, STEP);
-
-    for (i = 0; i < ITERATIONS; i++, test_value += STEP) {
-        double result;
-        /* These are tested elsewhere */
-        if (isnan(test_value) || isinf(test_value)) {
-            continue;
-        }
-
-        result = SDL_fabs(test_value);
-        if (result != test_value) { /* Only log failures to save performances */
-            SDLTest_AssertPass("Fabs(%.1f), expected %.1f, got %.1f", test_value,
-                               test_value, result);
-            return TEST_ABORTED;
-        }
-    }
-    return TEST_COMPLETED;
+    return helper_range("Fabs", SDL_fabs);
 }
 
 /* SDL_copysign tests functions */
@@ -722,29 +600,13 @@ copysign_infCases(void *args)
 static int
 copysign_zeroCases(void *args)
 {
-    double result;
-
-    result = SDL_copysign(0.0, -1.0);
-    SDLTest_AssertCheck(-0.0 == result,
-                        "Copysign(%f,%.1f), expected %f, got %f",
-                        0.0, -1.0, -0.0, result);
-
-    result = SDL_copysign(0.0, 1.0);
-    SDLTest_AssertCheck(0.0 == result,
-                        "Copysign(%f,%.1f), expected %f, got %f",
-                        0.0, 1.0, 0.0, result);
-
-    result = SDL_copysign(-0.0, -1.0);
-    SDLTest_AssertCheck(-0.0 == result,
-                        "Copysign(%f,%.1f), expected %f, got %f",
-                        -0.0, -1.0, -0.0, result);
-
-    result = SDL_copysign(-0.0, 1.0);
-    SDLTest_AssertCheck(0.0 == result,
-                        "Copysign(%f,%.1f), expected %f, got %f",
-                        -0.0, 1.0, 0.0, result);
-
-    return TEST_COMPLETED;
+    const dd_to_d zero_cases[] = {
+        { 0.0, 1.0, 0.0 },
+        { 0.0, -1.0, -0.0 },
+        { -0.0, 1.0, 0.0 },
+        { -0.0, -1.0, -0.0 }
+    };
+    return helper_ddtod("Copysign", SDL_copysign, zero_cases, SDL_arraysize(zero_cases));
 }
 
 /**
