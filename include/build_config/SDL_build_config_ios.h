@@ -195,6 +195,10 @@
 #endif
 
 #if SDL_PLATFORM_SUPPORTS_METAL
+#define SDL_GPU_METAL 1
+#endif
+
+#if SDL_PLATFORM_SUPPORTS_METAL
 #define SDL_VIDEO_METAL 1
 #endif
 

@@ -227,6 +227,9 @@
 #endif
 #endif
 
+/* !!! FIXME: this should be separate config stuff. */
+#define SDL_GPU_METAL SDL_VIDEO_RENDER_METAL
+
 /* Enable OpenGL support */
 #ifndef SDL_VIDEO_OPENGL
 #define SDL_VIDEO_OPENGL    1
