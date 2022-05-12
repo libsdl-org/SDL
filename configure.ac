@@ -583,8 +583,6 @@ AC_ARG_ENABLE(assembly,
 if test x$enable_assembly = xyes; then
     SUMMARY_modules="${SUMMARY_modules} assembly"
 
-    AC_DEFINE(SDL_ASSEMBLY_ROUTINES, 1, [ ])
-
     # Make sure that we don't generate floating point code that would
     # cause illegal instruction exceptions on older processors
     case "$host" in

@@ -635,7 +635,6 @@ endif()
 
 if(SDL_ASSEMBLY)
   if(USE_GCC OR USE_CLANG)
-    set(SDL_ASSEMBLY_ROUTINES 1)
     # TODO: Those all seem to be quite GCC specific - needs to be
     # reworked for better compiler support
     set(HAVE_ASSEMBLY TRUE)
@@ -853,7 +852,6 @@ if(SDL_ASSEMBLY)
     set(HAVE_SSE2 TRUE)
     set(HAVE_SSE3 TRUE)
     check_include_file("immintrin.h" HAVE_IMMINTRIN_H)
-    set(SDL_ASSEMBLY_ROUTINES 1)
   endif()
 endif()
 

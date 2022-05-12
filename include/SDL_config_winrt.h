@@ -257,9 +257,4 @@ typedef unsigned int uintptr_t;
 /* Enable system power support */
 #define SDL_POWER_WINRT 1
 
-/* Enable assembly routines (Win64 doesn't have inline asm) */
-#ifndef _WIN64
-#define SDL_ASSEMBLY_ROUTINES   1
-#endif
-
 #endif /* SDL_config_winrt_h_ */
