@@ -38,11 +38,6 @@
 #import <AppKit/NSView.h>
 #endif
 
-#if !__has_feature(objc_arc)
-#error Please build with ARC support.
-#endif
-
-
 @interface METAL_GpuDeviceData : NSObject
     @property (nonatomic, retain) id<MTLDevice> mtldevice;
     @property (nonatomic, retain) id<MTLCommandQueue> mtlcmdqueue;
