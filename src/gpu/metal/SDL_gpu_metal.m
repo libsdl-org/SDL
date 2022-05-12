@@ -25,7 +25,9 @@
 /* The Apple Metal driver for the GPU subsystem. */
 
 #include "SDL.h"
+#include "SDL_syswm.h"
 #include "../SDL_sysgpu.h"
+#include "../../video/SDL_sysvideo.h"
 
 #include <Availability.h>
 #import <Metal/Metal.h>
@@ -39,6 +41,7 @@
 #if !__has_feature(objc_arc)
 #error Please build with ARC support.
 #endif
+
 
 @interface METAL_GpuDeviceData : NSObject
     @property (nonatomic, retain) id<MTLDevice> mtldevice;
@@ -60,10 +63,10 @@
 
 
 @interface METAL_GpuBufferData : NSObject  // this covers CPU and GPU buffers.
-    @property (nonatomic, retain) id<MTLBuffer> mtlbuf;
+    @property (nonatomic, retain) id<MTLBuffer> mtlbuffer;
 @end
 
-@implementation METAL_GpuWindowData
+@implementation METAL_GpuBufferData
 @end
 
 
@@ -84,18 +87,17 @@
 @interface METAL_GpuPipelineData : NSObject
     @property (nonatomic, retain) id<MTLRenderPipelineState> mtlpipeline;
     @property (nonatomic, retain) id<MTLDepthStencilState> mtldepthstencil;
-
     // these are part of the SDL GPU pipeline but not MTLRenderPipelineState, so we
     // keep a copy and set them when setting a new pipeline state.
-    MTLPrimitiveType mtlprimitive;
-    MTLTriangleFillMode mtlfillmode;
-    MTLWinding mtlfrontface;
-    MTLCullMode mtlcullface;
-    float depth_bias;
-    float depth_bias_scale;
-    float depth_bias_clamp;
-    Uint32 front_stencil_reference;
-    Uint32 back_stencil_reference;
+    @property (nonatomic, assign) MTLPrimitiveType mtlprimitive;
+    @property (nonatomic, assign) MTLTriangleFillMode mtlfillmode;
+    @property (nonatomic, assign) MTLWinding mtlfrontface;
+    @property (nonatomic, assign) MTLCullMode mtlcullface;
+    @property (nonatomic, assign) float depth_bias;
+    @property (nonatomic, assign) float depth_bias_scale;
+    @property (nonatomic, assign) float depth_bias_clamp;
+    @property (nonatomic, assign) Uint32 front_stencil_reference;
+    @property (nonatomic, assign) Uint32 back_stencil_reference;
 @end
 
 @implementation METAL_GpuPipelineData
@@ -120,21 +122,21 @@
     // current state of things, so we don't re-set a currently set state.
     @property (nonatomic, retain) id<MTLRenderPipelineState> mtlpipeline;
     @property (nonatomic, retain) id<MTLDepthStencilState> mtldepthstencil;
-    MTLPrimitiveType mtlprimitive;
-    MTLTriangleFillMode mtlfillmode;
-    MTLWinding mtlfrontface;
-    MTLCullMode mtlcullface;
-    float depth_bias;
-    float depth_bias_scale;
-    float depth_bias_clamp;
-    Uint32 front_stencil_reference;
-    Uint32 back_stencil_reference;
-    MTLViewport viewport;
-    MTLScissorRect scissor;
-    float blend_constant_red;
-    float blend_constant_green;
-    float blend_constant_blue;
-    float blend_constant_alpha;
+    @property (nonatomic, assign) MTLViewport viewport;
+    @property (nonatomic, assign) MTLScissorRect scissor;
+    @property (nonatomic, assign) MTLPrimitiveType mtlprimitive;
+    @property (nonatomic, assign) MTLTriangleFillMode mtlfillmode;
+    @property (nonatomic, assign) MTLWinding mtlfrontface;
+    @property (nonatomic, assign) MTLCullMode mtlcullface;
+    @property (nonatomic, assign) float depth_bias;
+    @property (nonatomic, assign) float depth_bias_scale;
+    @property (nonatomic, assign) float depth_bias_clamp;
+    @property (nonatomic, assign) Uint32 front_stencil_reference;
+    @property (nonatomic, assign) Uint32 back_stencil_reference;
+    @property (nonatomic, assign) float blend_constant_red;
+    @property (nonatomic, assign) float blend_constant_green;
+    @property (nonatomic, assign) float blend_constant_blue;
+    @property (nonatomic, assign) float blend_constant_alpha;
 @end
 
 @implementation METAL_GpuRenderPassData
@@ -147,25 +149,17 @@
 @implementation METAL_GpuBlitPassData
 @end
 
-@interface METAL_GpuFenceData : NSObject
-    @property (nonatomic, assign) SDL_atomic_t flag;
-    @property (nonatomic, assign) SDL_mutex *mutex;
-    @property (nonatomic, assign) SDL_cond *condition;
-@end
-
-@implementation METAL_GpuFenceData
-- (void)dealloc
+// everything else is wrapped in an Objective-C object to let ARC
+// handle memory management and object lifetimes, but this is all
+// SDL objects that need to be manually destroyed and an atomic
+// that doesn't play well with @properties, so I just went with
+// a struct I malloc myself for this one.
+typedef struct METAL_GpuFenceData
 {
-    if (self.mutex) {
-        SDL_DestroyMutex(self.mutex);
-    }
-
-    if (self.condition) {
-        SDL_DestroyCondition(self.condition);
-    }
-}
-@end
-
+    SDL_atomic_t flag;
+    SDL_mutex *mutex;
+    SDL_cond *condition;
+} METAL_GpuFenceData;
 
 #define METAL_PIXFMT_MAPPINGS \
     METAL_MAPPIXFMT(SDL_GPUPIXELFMT_B5G6R5, MTLPixelFormatB5G6R5Unorm) \
@@ -196,6 +190,7 @@ PixelFormatFromMetal(const MTLPixelFormat fmt)
     switch (fmt) {
         #define METAL_MAPPIXFMT(sdlfmt, mtlfmt) case mtlfmt: return sdlfmt;
         METAL_PIXFMT_MAPPINGS
+        default: break;
         #undef METAL_MAPPIXFMT
     }
 
@@ -261,7 +256,7 @@ BlendOpToMetal(const SDL_GpuBlendOperation op)
     }
 
     SDL_assert(!"Unexpected blend operation");
-    return MTLVertexFormatAdd;
+    return MTLBlendOperationAdd;
 }
 
 static MTLBlendFactor
@@ -521,7 +516,7 @@ METAL_GpuClaimWindow(SDL_GpuDevice *device, SDL_Window *window)
         return SDL_OutOfMemory();
     }
 
-    windata.backbuffer = nil;
+    windata.mtldrawable = nil;
 
     if (!(window_flags & SDL_WINDOW_METAL)) {
         changed_window = SDL_TRUE;
@@ -550,7 +545,8 @@ METAL_GpuClaimWindow(SDL_GpuDevice *device, SDL_Window *window)
     layer = (CAMetalLayer *)[(__bridge UIView *)windata.mtlview layer];
 #endif
 
-    layer.device = data.mtldevice;
+    METAL_GpuDeviceData *devdata = (__bridge METAL_GpuDeviceData *) device->driverdata;
+    layer.device = devdata.mtldevice;
     layer.framebufferOnly = NO;
     windata.mtllayer = layer;
 
@@ -571,17 +567,17 @@ METAL_GpuCreateCpuBuffer(SDL_GpuCpuBuffer *buffer, const void *data)
     }
 
     if (data != NULL) {
-        bufferdata.mtlbuf = [devdata->mtldevice newBufferWithBytes:data length:buffer->buflen options:MTLResourceStorageModeShared];
+        bufferdata.mtlbuffer = [devdata.mtldevice newBufferWithBytes:data length:buffer->buflen options:MTLResourceStorageModeShared];
     } else {
-        bufferdata.mtlbuf = [devdata->mtldevice newBufferWithLength:buffer->buflen options:MTLResourceStorageModeShared];
+        bufferdata.mtlbuffer = [devdata.mtldevice newBufferWithLength:buffer->buflen options:MTLResourceStorageModeShared];
     }
 
-    if (bufferdata.mtlbuf == nil) {
+    if (bufferdata.mtlbuffer == nil) {
         SDL_SetError("Failed to create Metal buffer!");
     }
 
     if (buffer->label) {
-        bufferdata.mtlbuf.label = [NSString stringWithUTF8String:buffer->label];
+        bufferdata.mtlbuffer.label = [NSString stringWithUTF8String:buffer->label];
     }
 
     buffer->driverdata = (void *) CFBridgingRetain(bufferdata);
@@ -599,7 +595,7 @@ static void *
 METAL_GpuLockCpuBuffer(SDL_GpuCpuBuffer *buffer)
 {
     METAL_GpuBufferData *bufdata = (__bridge METAL_GpuBufferData *) buffer->driverdata;
-    void *retval = [bufdata->mtlbuf contents];
+    void *retval = [bufdata.mtlbuffer contents];
     SDL_assert(retval != NULL);  // should only return NULL for private (GPU-only) buffers.
     return retval;
 }
@@ -621,13 +617,13 @@ METAL_GpuCreateBuffer(SDL_GpuBuffer *buffer)
         return SDL_OutOfMemory();
     }
 
-    bufferdata.mtlbuf = [devdata->mtldevice newBufferWithLength:buffer->buflen options:MTLResourceStorageModePrivate];
-    if (bufferdata.mtlbuf == nil) {
+    bufferdata.mtlbuffer = [devdata.mtldevice newBufferWithLength:buffer->buflen options:MTLResourceStorageModePrivate];
+    if (bufferdata.mtlbuffer == nil) {
         SDL_SetError("Failed to create Metal buffer!");
     }
 
     if (buffer->label) {
-        bufferdata.mtlbuf.label = [NSString stringWithUTF8String:buffer->label];
+        bufferdata.mtlbuffer.label = [NSString stringWithUTF8String:buffer->label];
     }
 
     buffer->driverdata = (void *) CFBridgingRetain(bufferdata);
@@ -666,12 +662,14 @@ METAL_GpuCreateTexture(SDL_GpuTexture *texture)
         default: return SDL_SetError("Unsupported texture type");
     };
 
+    (void) is_array;  // (we don't actually use this at the moment, silence compiler warning.)
+
     MTLTextureUsage mtltexusage = (MTLTextureUsage) 0;
     if (desc->usage & SDL_GPUTEXUSAGE_SHADER_READ) {
         mtltexusage |= MTLTextureUsageShaderRead;
     }
     if (desc->usage & SDL_GPUTEXUSAGE_SHADER_WRITE) {
-        mtltexusage |= MTLTextureUsageShaderWite;
+        mtltexusage |= MTLTextureUsageShaderWrite;
     }
     if (desc->usage & SDL_GPUTEXUSAGE_RENDER_TARGET) {
         mtltexusage |= MTLTextureUsageRenderTarget;
@@ -682,7 +680,7 @@ METAL_GpuCreateTexture(SDL_GpuTexture *texture)
         return SDL_OutOfMemory();
     }
 
-    texturedata.mtldrawable = nil;
+    texturedata.mtltexture = nil;
 
     // !!! FIXME: does ARC know what to do with these, since it doesn't start with "alloc" or "new"?
     MTLTextureDescriptor *mtltexdesc;
@@ -721,7 +719,7 @@ METAL_GpuCreateTexture(SDL_GpuTexture *texture)
     //mtltexdesc.swizzle = blahblahblah;
 
     METAL_GpuDeviceData *devdata = (__bridge METAL_GpuDeviceData *) texture->device->driverdata;
-    texturedata.mtltexture = [devdata->device newTextureWithDescriptor:mtltexdesc];
+    texturedata.mtltexture = [devdata.mtldevice newTextureWithDescriptor:mtltexdesc];
     if (texturedata.mtltexture == nil) {
         SDL_SetError("Failed to create Metal texture!");
     }
@@ -824,7 +822,7 @@ static int METAL_GpuCreatePipeline(SDL_GpuPipeline *pipeline)
 
     // Not available before iOS 12.
     if ([mtlpipedesc respondsToSelector:@selector(inputPrimitiveTopology)]) {
-        mtltexdesc.inputPrimitiveTopology = PrimitiveTopologyToMetal(desc->primitive);
+        mtlpipedesc.inputPrimitiveTopology = PrimitiveTopologyToMetal(desc->primitive);
     }
 
     // these arrived in later releases, but we _probably_ want the defaults anyhow (and/or we don't support it).
@@ -879,8 +877,8 @@ static int METAL_GpuCreatePipeline(SDL_GpuPipeline *pipeline)
 
     NSError *err = nil;
     METAL_GpuDeviceData *devdata = (__bridge METAL_GpuDeviceData *) pipeline->device->driverdata;
-    pipelinedata.mtldepthstencil = [devdata->mtldevice newDepthStencilStateWithDescriptor:mtldepthstencildesc];
-    pipelinedata.mtlpipeline = [devdata->mtldevice newRenderPipelineStateWithDescriptor:mtlpipedesc error:&err];
+    pipelinedata.mtldepthstencil = [devdata.mtldevice newDepthStencilStateWithDescriptor:mtldepthstencildesc];
+    pipelinedata.mtlpipeline = [devdata.mtldevice newRenderPipelineStateWithDescriptor:mtlpipedesc error:&err];
     pipelinedata.mtlprimitive = PrimitiveToMetal(desc->primitive);
     pipelinedata.mtlfillmode = FillModeToMetal(desc->fill_mode);
     pipelinedata.mtlfrontface = FrontFaceToMetal(desc->front_face);
@@ -934,7 +932,7 @@ METAL_GpuCreateSampler(SDL_GpuSampler *sampler)
     mtlsamplerdesc.minFilter = SamplerMinMagFilterToMetal(desc->min_filter);
     mtlsamplerdesc.magFilter = SamplerMinMagFilterToMetal(desc->mag_filter);
     mtlsamplerdesc.mipFilter = SamplerMipFilterToMetal(desc->mip_filter);
-    mtlsamplerdesc.maxAnistropy = desc->max_anisotropy;
+    mtlsamplerdesc.maxAnisotropy = desc->max_anisotropy;
 
     // !!! FIXME: add these?
     //mtlsamplerdesc.lodMinClamp
@@ -943,8 +941,8 @@ METAL_GpuCreateSampler(SDL_GpuSampler *sampler)
     //mtlsamplerdesc.compareFunction
     //mtlsamplerdesc.supportArgumentBuffers
 
-    METAL_GpuDeviceData *devdata = (__bridge METAL_GpuDeviceData *) pipeline->device->driverdata;
-    samplerdata.mtlsampler = [devdata->mtldevice newSamplerStateWithDescriptor:mtlsamplerdesc];
+    METAL_GpuDeviceData *devdata = (__bridge METAL_GpuDeviceData *) sampler->device->driverdata;
+    samplerdata.mtlsampler = [devdata.mtldevice newSamplerStateWithDescriptor:mtlsamplerdesc];
     if (samplerdata.mtlsampler == nil) {
         return SDL_SetError("Failed to create Metal sampler!");
     }
@@ -1025,7 +1023,7 @@ METAL_GpuStartRenderPass(SDL_GpuRenderPass *pass, Uint32 num_color_attachments, 
         METAL_GpuTextureData *stenciltexturedata = (__bridge METAL_GpuTextureData *) stencil_attachment->texture->driverdata;
         mtlpassdesc.stencilAttachment.texture = stenciltexturedata.mtltexture;
         mtlpassdesc.stencilAttachment.loadAction = LoadActionToMetal(stencil_attachment->stencil_init);
-        mtlpassdesc.stencilAttachment.clearDepth = stencil_attachment->clear_stencil;
+        mtlpassdesc.stencilAttachment.clearStencil = stencil_attachment->clear_stencil;
     }
 
     METAL_GpuCommandBufferData *cmdbufdata = (__bridge METAL_GpuCommandBufferData *) pass->cmdbuf->driverdata;
@@ -1048,16 +1046,10 @@ METAL_GpuStartRenderPass(SDL_GpuRenderPass *pass, Uint32 num_color_attachments, 
     passdata.depth_bias_clamp = 0.0f;
     passdata.front_stencil_reference = 0x00000000;
     passdata.back_stencil_reference = 0x00000000;
-    passdata.viewport.originX = 0.0;
-    passdata.viewport.originY = 0.0;
-    passdata.viewport.width = colatt0 ? (double) colatt0->width : 0.0;
-    passdata.viewport.height = colatt0 ? (double) colatt0->height : 0.0;
-    passdata.viewport.znear = 0.0;
-    passdata.viewport.zfar = 1.0;
-    passdata.scissor.x = 0.0;
-    passdata.scissor.y = 0.0;
-    passdata.scissor.width = colatt0 ? colatt0->width : 0;
-    passdata.scissor.height = colatt0 ? colatt0->height : 0;
+    const MTLViewport initialvp = { 0.0, 0.0, colatt0 ? (double) colatt0->width : 0.0, colatt0 ? (double) colatt0->height : 0.0, 0.0, 1.0 };
+    passdata.viewport = initialvp;
+    const MTLScissorRect initialscis = { 0.0, 0.0, colatt0 ? (double) colatt0->width : 0, colatt0 ? (double) colatt0->height : 0 };
+    passdata.scissor = initialscis;
     passdata.blend_constant_red = 0.0f;
     passdata.blend_constant_green = 0.0f;
     passdata.blend_constant_blue = 0.0f;
@@ -1090,7 +1082,7 @@ METAL_GpuSetRenderPassPipeline(SDL_GpuRenderPass *pass, SDL_GpuPipeline *pipelin
     }
 
     if (passdata.mtlfrontface != pipelinedata.mtlfrontface) {
-        [passdata.mtlpass setFrontFaceWinding:pipelinedata.mtlfrontface];
+        [passdata.mtlpass setFrontFacingWinding:pipelinedata.mtlfrontface];
         passdata.mtlfrontface = pipelinedata.mtlfrontface;
     }
 
@@ -1125,16 +1117,12 @@ static int
 METAL_GpuSetRenderPassViewport(SDL_GpuRenderPass *pass, double x, double y, double width, double height, double znear, double zfar)
 {
     METAL_GpuRenderPassData *passdata = (__bridge METAL_GpuRenderPassData *) pass->driverdata;
-    if ( (x != pass.viewport.originX) || (y != pass.viewport.originY) ||
-         (width != pass.viewport.width) || (height != pass.viewport.height) ||
-         (znear != pass.viewport.znear) || (zfar != pass.viewport.zfar) ) {
-        passdata.viewport.originX = x;
-        passdata.viewport.originY = y;
-        passdata.viewport.width = width;
-        passdata.viewport.height = height;
-        passdata.viewport.znear = znear;
-        passdata.viewport.zfar = zfar;
-        [passdata.mtlpass setViewport:pass.viewport];
+    if ( (x != passdata.viewport.originX) || (y != passdata.viewport.originY) ||
+         (width != passdata.viewport.width) || (height != passdata.viewport.height) ||
+         (znear != passdata.viewport.znear) || (zfar != passdata.viewport.zfar) ) {
+        const MTLViewport vp = { x, y, width, height, znear, zfar };
+        passdata.viewport = vp;
+        [passdata.mtlpass setViewport:vp];
     }
     return 0;
 }
@@ -1143,13 +1131,11 @@ static int
 METAL_GpuSetRenderPassScissor(SDL_GpuRenderPass *pass, Uint32 x, Uint32 y, Uint32 width, Uint32 height)
 {
     METAL_GpuRenderPassData *passdata = (__bridge METAL_GpuRenderPassData *) pass->driverdata;
-    if ( (x != pass.scissor.x) || (y != pass.scissor.y) ||
-         (width != pass.scissor.width) || (height != pass.scissor.height) ) {
-        passdata.scissor.x = x;
-        passdata.scissor.y = y;
-        passdata.scissor.width = width;
-        passdata.scissor.height = height;
-        [passdata.mtlpass setScissorRect:pass.scissor];
+    if ( (x != passdata.scissor.x) || (y != passdata.scissor.y) ||
+         (width != passdata.scissor.width) || (height != passdata.scissor.height) ) {
+        const MTLScissorRect scis = { x, y, width, height };
+        passdata.scissor = scis;
+        [passdata.mtlpass setScissorRect:scis];
     }
     return 0;
 }
@@ -1162,8 +1148,8 @@ METAL_GpuSetRenderPassBlendConstant(SDL_GpuRenderPass *pass, double dred, double
     const float green = (const float) dgreen;
     const float blue = (const float) dblue;
     const float alpha = (const float) dalpha;
-    if ( (red != pass.blend_constant_red) || (green != pass.blend_constant_green) ||
-         (blue != pass.blend_constant_blue) || (height != pass.blend_constant_alpha) ) {
+    if ( (red != passdata.blend_constant_red) || (green != passdata.blend_constant_green) ||
+         (blue != passdata.blend_constant_blue) || (alpha != passdata.blend_constant_alpha) ) {
         passdata.blend_constant_red = red;
         passdata.blend_constant_green = green;
         passdata.blend_constant_blue = blue;
@@ -1178,7 +1164,7 @@ METAL_GpuSetRenderPassVertexBuffer(SDL_GpuRenderPass *pass, SDL_GpuBuffer *buffe
 {
     METAL_GpuRenderPassData *passdata = (__bridge METAL_GpuRenderPassData *) pass->driverdata;
     METAL_GpuBufferData *bufdata = buffer ? (__bridge METAL_GpuBufferData *) buffer->driverdata : nil;
-    [passdata.mtlpass setVertexBuffer:((bufdata == nil) ? nil : bufdata.mltbuffer) offset:offset atIndex:index];
+    [passdata.mtlpass setVertexBuffer:((bufdata == nil) ? nil : bufdata.mtlbuffer) offset:offset atIndex:index];
     return 0;
 }
 
@@ -1187,7 +1173,7 @@ METAL_GpuSetRenderPassVertexSampler(SDL_GpuRenderPass *pass, SDL_GpuSampler *sam
 {
     METAL_GpuRenderPassData *passdata = (__bridge METAL_GpuRenderPassData *) pass->driverdata;
     METAL_GpuSamplerData *samplerdata = sampler ? (__bridge METAL_GpuSamplerData *) sampler->driverdata : nil;
-    [passdata.mtlpass setVertexSamplerState:((samplerdata == nil) ? nil : samplerdata.mltsampler) atIndex:index];
+    [passdata.mtlpass setVertexSamplerState:((samplerdata == nil) ? nil : samplerdata.mtlsampler) atIndex:index];
     return 0;
 }
 
@@ -1196,7 +1182,7 @@ METAL_GpuSetRenderPassVertexTexture(SDL_GpuRenderPass *pass, SDL_GpuTexture *tex
 {
     METAL_GpuRenderPassData *passdata = (__bridge METAL_GpuRenderPassData *) pass->driverdata;
     METAL_GpuTextureData *texturedata = texture ? (__bridge METAL_GpuTextureData *) texture->driverdata : nil;
-    [passdata.mtlpass setVertexTexture:((texturedata == nil) ? nil : texturedata.mlttexture) atIndex:index];
+    [passdata.mtlpass setVertexTexture:((texturedata == nil) ? nil : texturedata.mtltexture) atIndex:index];
     return 0;
 }
 
@@ -1205,7 +1191,7 @@ METAL_GpuSetRenderPassFragmentBuffer(SDL_GpuRenderPass *pass, SDL_GpuBuffer *buf
 {
     METAL_GpuRenderPassData *passdata = (__bridge METAL_GpuRenderPassData *) pass->driverdata;
     METAL_GpuBufferData *bufdata = buffer ? (__bridge METAL_GpuBufferData *) buffer->driverdata : nil;
-    [passdata.mtlpass setFragmentBuffer:((bufdata == nil) ? nil : bufdata.mltbuffer) offset:offset atIndex:index];
+    [passdata.mtlpass setFragmentBuffer:((bufdata == nil) ? nil : bufdata.mtlbuffer) offset:offset atIndex:index];
     return 0;
 }
 
@@ -1214,7 +1200,7 @@ METAL_GpuSetRenderPassFragmentSampler(SDL_GpuRenderPass *pass, SDL_GpuSampler *s
 {
     METAL_GpuRenderPassData *passdata = (__bridge METAL_GpuRenderPassData *) pass->driverdata;
     METAL_GpuSamplerData *samplerdata = sampler ? (__bridge METAL_GpuSamplerData *) sampler->driverdata : nil;
-    [passdata.mtlpass setFragmentSampler:((samplerdata == nil) ? nil : samplerdata.mltsampler) atIndex:index];
+    [passdata.mtlpass setFragmentSamplerState:((samplerdata == nil) ? nil : samplerdata.mtlsampler) atIndex:index];
     return 0;
 }
 
@@ -1223,7 +1209,7 @@ METAL_GpuSetRenderPassFragmentTexture(SDL_GpuRenderPass *pass, SDL_GpuTexture *t
 {
     METAL_GpuRenderPassData *passdata = (__bridge METAL_GpuRenderPassData *) pass->driverdata;
     METAL_GpuTextureData *texturedata = texture ? (__bridge METAL_GpuTextureData *) texture->driverdata : nil;
-    [passdata.mtlpass setFragmentTexture:((texturedata == nil) ? nil : texturedata.mlttexture) atIndex:index];
+    [passdata.mtlpass setFragmentTexture:((texturedata == nil) ? nil : texturedata.mtltexture) atIndex:index];
     return 0;
 }
 
@@ -1240,7 +1226,7 @@ METAL_GpuDrawIndexed(SDL_GpuRenderPass *pass, Uint32 index_count, SDL_GpuIndexTy
 {
     METAL_GpuRenderPassData *passdata = (__bridge METAL_GpuRenderPassData *) pass->driverdata;
     METAL_GpuBufferData *idxbufdata = (__bridge METAL_GpuBufferData *) index_buffer->driverdata;
-    [passdata.mtlpass drawIndexedPrimitives:passdata.mtlprimitive indexCount:index_count indexType:IndexTypeToMetal(index_type) index_buffer:idxbufdata.mtlbuffer indexBufferOffset:index_offset];
+    [passdata.mtlpass drawIndexedPrimitives:passdata.mtlprimitive indexCount:index_count indexType:IndexTypeToMetal(index_type) indexBuffer:idxbufdata.mtlbuffer indexBufferOffset:index_offset];
     return 0;
 }
 
@@ -1257,7 +1243,7 @@ METAL_GpuDrawInstancedIndexed(SDL_GpuRenderPass *pass, Uint32 index_count, SDL_G
 {
     METAL_GpuRenderPassData *passdata = (__bridge METAL_GpuRenderPassData *) pass->driverdata;
     METAL_GpuBufferData *idxbufdata = (__bridge METAL_GpuBufferData *) index_buffer->driverdata;
-    [passdata.mtlpass drawIndexedPrimitives:passdata.mtlprimitive indexCount:index_count indexType:IndexTypeToMetal(index_type) index_buffer:idxbufdata.mtlbuffer indexBufferOffset:index_offset instanceCount:instance_count baseVertex:base_vertex baseInstance:base_instance];
+    [passdata.mtlpass drawIndexedPrimitives:passdata.mtlprimitive indexCount:index_count indexType:IndexTypeToMetal(index_type) indexBuffer:idxbufdata.mtlbuffer indexBufferOffset:index_offset instanceCount:instance_count baseVertex:base_vertex baseInstance:base_instance];
     return 0;
 }
 
@@ -1328,7 +1314,7 @@ BlitPassCopyBetweenBuffers(SDL_GpuBlitPass *pass, void *_srcbufdata, Uint32 srco
     METAL_GpuBlitPassData *passdata = (__bridge METAL_GpuBlitPassData *) pass->driverdata;
     METAL_GpuBufferData *srcbufdata = (__bridge METAL_GpuBufferData *) _srcbufdata;
     METAL_GpuBufferData *dstbufdata = (__bridge METAL_GpuBufferData *) _dstbufdata;
-    [passdata.mtlpass copyFromBuffer:srcbufdata.mtlbuffer sourceOffset:srcoffset toBuffer:dstbufdata.mtlbuffer, destinationOffset:dstoffset size:length];
+    [passdata.mtlpass copyFromBuffer:srcbufdata.mtlbuffer sourceOffset:srcoffset toBuffer:dstbufdata.mtlbuffer destinationOffset:dstoffset size:length];
     return 0;
 }
 
@@ -1354,11 +1340,11 @@ static int
 METAL_GpuCopyFromBufferToTexture(SDL_GpuBlitPass *pass, SDL_GpuBuffer *srcbuf, Uint32 srcoffset, Uint32 srcpitch, Uint32 srcimgpitch, Uint32 srcw, Uint32 srch, Uint32 srcdepth, SDL_GpuTexture *dsttex, Uint32 dstslice, Uint32 dstlevel, Uint32 dstx, Uint32 dsty, Uint32 dstz)
 {
     METAL_GpuBlitPassData *passdata = (__bridge METAL_GpuBlitPassData *) pass->driverdata;
-    METAL_GpuBufferData *srcbufdata = (__bridge METAL_GpuBufferData *) srcbuf->driverddata;
+    METAL_GpuBufferData *srcbufdata = (__bridge METAL_GpuBufferData *) srcbuf->driverdata;
     METAL_GpuTextureData *dsttexdata = (__bridge METAL_GpuTextureData *) dsttex->driverdata;
     [passdata.mtlpass copyFromBuffer:srcbufdata.mtlbuffer
-                      sourceOffset:srcoffset sourceBytesPerRow:srcpitch sourceBytesPerImage:srcimgpitch sourceSize:MTLMakeSize(srcw, srch, srcdepth)
-                      toTexture:dsttxtdata.mtltexture destinationSlice:dstslice destinationLevel:dstlevel destinationOrigin:MTLMakeOrigin(dstx, dsty, dstz)];
+                      sourceOffset:srcoffset sourceBytesPerRow:srcpitch sourceBytesPerImage:srcimgpitch sourceSize:MTLSizeMake(srcw, srch, srcdepth)
+                      toTexture:dsttexdata.mtltexture destinationSlice:dstslice destinationLevel:dstlevel destinationOrigin:MTLOriginMake(dstx, dsty, dstz)];
     return 0;
 }
 
@@ -1367,9 +1353,9 @@ METAL_GpuCopyFromTextureToBuffer(SDL_GpuBlitPass *pass, SDL_GpuTexture *srctex, 
 {
     METAL_GpuBlitPassData *passdata = (__bridge METAL_GpuBlitPassData *) pass->driverdata;
     METAL_GpuTextureData *srctexdata = (__bridge METAL_GpuTextureData *) srctex->driverdata;
-    METAL_GpuBufferData *dstbufdata = (__bridge METAL_GpuBufferData *) dstbuf->driverddata;
+    METAL_GpuBufferData *dstbufdata = (__bridge METAL_GpuBufferData *) dstbuf->driverdata;
     [passdata.mtlpass copyFromTexture:srctexdata.mtltexture
-                      sourceSlice:srcslice sourceLevel:srclevel sourceOrigin:MTLMakeOrigin(srcx, srcy, srcz) sourceSize:MTLMakeSize(srcw, srch, srcdepth)
+                      sourceSlice:srcslice sourceLevel:srclevel sourceOrigin:MTLOriginMake(srcx, srcy, srcz) sourceSize:MTLSizeMake(srcw, srch, srcdepth)
                       toBuffer:dstbufdata.mtlbuffer destinationOffset:dstoffset destinationBytesPerRow:dstpitch destinationBytesPerImage:dstimgpitch];
     return 0;
 }
@@ -1389,11 +1375,11 @@ METAL_GpuSubmitCommandBuffer(SDL_GpuCommandBuffer *cmdbuf, SDL_GpuFence *fence)
     METAL_GpuCommandBufferData *cmdbufdata = (__bridge METAL_GpuCommandBufferData *) cmdbuf->driverdata;
     if (fence) {
         [cmdbufdata.mtlcmdbuf addCompletedHandler:^(id<MTLCommandBuffer> buffer) {
-            METAL_GpuFenceData *fencedata = (__bridge METAL_GpuFenceData *) fence->driverdata;
-            SDL_LockMutex(fencedata.mutex);
-            SDL_AtomicSet(&fencedata.flag, 1);
-            SDL_CondBroadcast(fencedata.condition);
-            SDL_UnlockMutex(fencedata.mutex);
+            METAL_GpuFenceData *fencedata = (METAL_GpuFenceData *) fence->driverdata;
+            SDL_LockMutex(fencedata->mutex);
+            SDL_AtomicSet(&fencedata->flag, 1);
+            SDL_CondBroadcast(fencedata->condition);
+            SDL_UnlockMutex(fencedata->mutex);
         }];
     }
     [cmdbufdata.mtlcmdbuf commit];
@@ -1426,12 +1412,12 @@ METAL_GpuGetBackbuffer(SDL_GpuDevice *device, SDL_Window *window, SDL_GpuTexture
         return SDL_SetError("Failed to get next Metal drawable. Your window might be minimized?");
     }
     texturedata.mtltexture = windata.mtldrawable.texture;
-    texturedata.mtltexture.label = [NSString stringWithUTF8String:texture->label];
+    texturedata.mtltexture.label = [NSString stringWithUTF8String:texture->desc.label];
 
     texture->desc.width = texturedata.mtltexture.width;
     texture->desc.height = texturedata.mtltexture.height;
     texture->desc.pixel_format = PixelFormatFromMetal(texturedata.mtltexture.pixelFormat);
-    if (texture->pixel_format == SDL_GPUPIXELFMT_INVALID) {
+    if (texture->desc.pixel_format == SDL_GPUPIXELFMT_INVALID) {
         SDL_assert(!"Uhoh, we might need to add a new pixel format to SDL_gpu.h");
         windata.mtldrawable = nil;
         return -1;
@@ -1462,24 +1448,27 @@ METAL_GpuPresent(SDL_GpuDevice *device, SDL_Window *window, SDL_GpuTexture *back
 static int
 METAL_GpuCreateFence(SDL_GpuFence *fence)
 {
-    METAL_GpuFenceData *fencedata = [[METAL_GpuFenceData alloc] init];
-    if (fencedata == nil) {
+    METAL_GpuFenceData *fencedata = (METAL_GpuFenceData *) SDL_calloc(1, sizeof (METAL_GpuFenceData));
+    if (fencedata == NULL) {
         return SDL_OutOfMemory();
     }
 
-    fencedata.mutex = SDL_CreateMutex();
-    if (!fencedata.mutex) {
+    fencedata->mutex = SDL_CreateMutex();
+    if (!fencedata->mutex) {
+        SDL_free(fencedata);
         return -1;
     }
 
-    fencedata.condition = SDL_CreateCond();
-    if (!fencedata.condition) {
+    fencedata->condition = SDL_CreateCond();
+    if (!fencedata->condition) {
+        SDL_DestroyMutex(fencedata->mutex);
+        SDL_free(fencedata);
         return -1;
     }
 
-    SDL_AtomicSet(&fencedata.flag, 0);
+    SDL_AtomicSet(&fencedata->flag, 0);
 
-    fence->driverdata = (void *) CFBridgingRetain(fencedata);
+    fence->driverdata = fencedata;
 
     return 0;
 }
@@ -1487,41 +1476,44 @@ METAL_GpuCreateFence(SDL_GpuFence *fence)
 static void
 METAL_GpuDestroyFence(SDL_GpuFence *fence)
 {
-    CFBridgingRelease(fence->driverdata);
+    METAL_GpuFenceData *fencedata = (METAL_GpuFenceData *) fence->driverdata;
+    SDL_DestroyMutex(fencedata->mutex);
+    SDL_DestroyCond(fencedata->condition);
+    SDL_free(fencedata);
 }
 
 static int
 METAL_GpuQueryFence(SDL_GpuFence *fence)
 {
-    METAL_GpuFenceData *fencedata = (__bridge METAL_GpuFenceData *) fence->driverdata;
-    return SDL_AtomicGet(&fencedata.flag);
+    METAL_GpuFenceData *fencedata = (METAL_GpuFenceData *) fence->driverdata;
+    return SDL_AtomicGet(&fencedata->flag);
 }
 
 static int
 METAL_GpuResetFence(SDL_GpuFence *fence)
 {
-    METAL_GpuFenceData *fencedata = (__bridge METAL_GpuFenceData *) fence->driverdata;
-    SDL_AtomicSet(&fencedata.flag, 0);
+    METAL_GpuFenceData *fencedata = (METAL_GpuFenceData *) fence->driverdata;
+    SDL_AtomicSet(&fencedata->flag, 0);
     return 0;
 }
 
 static int
 METAL_GpuWaitFence(SDL_GpuFence *fence)
 {
-    METAL_GpuFenceData *fencedata = (__bridge METAL_GpuFenceData *) fence->driverdata;
+    METAL_GpuFenceData *fencedata = (METAL_GpuFenceData *) fence->driverdata;
 
-    if (SDL_LockMutex(fencedata.mutex) == -1) {
+    if (SDL_LockMutex(fencedata->mutex) == -1) {
         return -1;
     }
 
-    while (SDL_AtomicGet(&fencedata.flag) == 0) {
-        if (SDL_CondWait(fencedata.condition, fencedata.mutex) == -1) {
-            SDL_UnlockMutex(fencedata.mutex);
+    while (SDL_AtomicGet(&fencedata->flag) == 0) {
+        if (SDL_CondWait(fencedata->condition, fencedata->mutex) == -1) {
+            SDL_UnlockMutex(fencedata->mutex);
             return -1;
         }
     }
 
-    SDL_UnlockMutex(fencedata.mutex);
+    SDL_UnlockMutex(fencedata->mutex);
 
     return 0;
 }
@@ -1541,7 +1533,7 @@ IsMetalAvailable(void)
 
     SDL_assert(viddev != NULL);
 
-    if ((SDL_strcmp(viddev, "cocoa") != 0) && (SDL_strcmp(viddev, "uikit") != 0)) {
+    if ((SDL_strcmp(viddev->name, "cocoa") != 0) && (SDL_strcmp(viddev->name, "uikit") != 0)) {
         return SDL_SetError("Metal GPU driver only supports Cocoa and UIKit video targets at the moment.");
     }
 
@@ -1644,5 +1636,7 @@ METAL_GpuCreateDevice(SDL_GpuDevice *device)
 const SDL_GpuDriver METAL_GpuDriver = {
     "metal", METAL_GpuCreateDevice
 };
+
+#endif
 
 /* vi: set ts=4 sw=4 expandtab: */
