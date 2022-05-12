@@ -825,11 +825,13 @@ extern DECLSPEC int SDLCALL SDL_RenderSetLogicalSize(SDL_Renderer * renderer, in
 /**
  * Get device independent resolution for rendering.
  *
- * When using the main rendering target (eg no target texture is set): this may return 0 for `w` and `h` if the SDL_Renderer has never had its
- * logical size set by SDL_RenderSetLogicalSize(). Otherwise it returns the logical width and height.
+ * When using the main rendering target (eg no target texture is set): this
+ * may return 0 for `w` and `h` if the SDL_Renderer has never had its logical
+ * size set by SDL_RenderSetLogicalSize(). Otherwise it returns the logical
+ * width and height.
  *
- * When using a target texture:
- * Never return 0 for `w` and `h` at first. Then it returns the logical width and height that are set.
+ * When using a target texture: Never return 0 for `w` and `h` at first. Then
+ * it returns the logical width and height that are set.
  *
  * \param renderer a rendering context
  * \param w an int to be filled with the width
