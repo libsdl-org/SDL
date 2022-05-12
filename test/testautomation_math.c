@@ -7,6 +7,10 @@
 #include "SDL.h"
 #include "SDL_test.h"
 
+/* Range tests parameters */
+#define RANGE_TEST_ITERATIONS 10000000
+#define RANGE_TEST_STEP       SDL_MAX_UINT32 / RANGE_TEST_ITERATIONS
+
 /* ================= Test Structs ================== */
 
 /**
@@ -100,15 +104,15 @@ helper_ddtod(const char *func_name, dd_to_d_func func,
 static int
 helper_range(const char *func_name, d_to_d_func func)
 {
-    const Uint32 ITERATIONS = 10000000;
-    const Uint32 STEP = SDL_MAX_UINT32 / ITERATIONS;
     Uint32 i;
     double test_value = 0.0;
 
-    SDLTest_AssertPass("%s: Testing a range of %u values with %u steps",
-                       func_name, ITERATIONS, STEP);
+    SDLTest_AssertPass("%s: Testing a range of %u values with steps of %u",
+                       func_name,
+                       RANGE_TEST_ITERATIONS,
+                       RANGE_TEST_STEP);
 
-    for (i = 0; i < ITERATIONS; i++, test_value += STEP) {
+    for (i = 0; i < RANGE_TEST_ITERATIONS; i++, test_value += RANGE_TEST_STEP) {
         double result;
         /* These are tested elsewhere */
         if (isnan(test_value) || isinf(test_value)) {
@@ -638,15 +642,14 @@ copysign_nanCases(void *args)
 static int
 copysign_rangeTest(void *args)
 {
-    const Uint32 ITERATIONS = 10000000;
-    const Uint32 STEP = SDL_MAX_UINT32 / ITERATIONS;
     Uint32 i;
     double test_value = 0.0;
 
-    SDLTest_AssertPass("Fabs: Testing a range of %u values with %u steps",
-                       ITERATIONS, STEP);
+    SDLTest_AssertPass("Copysign: Testing a range of %u values with steps of %u",
+                       RANGE_TEST_ITERATIONS,
+                       RANGE_TEST_STEP);
 
-    for (i = 0; i < ITERATIONS; i++, test_value += STEP) {
+    for (i = 0; i < RANGE_TEST_ITERATIONS; i++, test_value += RANGE_TEST_STEP) {
         double result;
         /* These are tested elsewhere */
         if (isnan(test_value) || isinf(test_value)) {
@@ -835,15 +838,14 @@ fmod_regularCases(void *args)
 static int
 fmod_rangeTest(void *args)
 {
-    const Uint32 ITERATIONS = 10000000;
-    const Uint32 STEP = SDL_MAX_UINT32 / ITERATIONS;
     Uint32 i;
     double test_value = 0.0;
 
-    SDLTest_AssertPass("Fabs: Testing a range of %u values with %u steps",
-                       ITERATIONS, STEP);
+    SDLTest_AssertPass("Fmod: Testing a range of %u values with steps of %u",
+                       RANGE_TEST_ITERATIONS,
+                       RANGE_TEST_STEP);
 
-    for (i = 0; i < ITERATIONS; i++, test_value += STEP) {
+    for (i = 0; i < RANGE_TEST_ITERATIONS; i++, test_value += RANGE_TEST_STEP) {
         double result;
         /* These are tested elsewhere */
         if (isnan(test_value) || isinf(test_value)) {
