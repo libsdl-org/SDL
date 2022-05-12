@@ -673,6 +673,195 @@ copysign_rangeTest(void *args)
     return TEST_COMPLETED;
 }
 
+/* SDL_fmod tests functions */
+
+/**
+ * \brief Checks division of positive and negative inifnity.
+ */
+static int
+fmod_divOfInfCases(void *args)
+{
+    double result;
+
+    result = SDL_fmod(INFINITY, -1.0);
+    SDLTest_AssertCheck(isnan(result),
+                        "Fmod(%f,%.1f), expected %f, got %f",
+                        INFINITY, -1.0, NAN, result);
+
+    result = SDL_fmod(INFINITY, 1.0);
+    SDLTest_AssertCheck(isnan(result),
+                        "Fmod(%f,%.1f), expected %f, got %f",
+                        INFINITY, 1.0, NAN, result);
+
+    result = SDL_fmod(-INFINITY, -1.0);
+    SDLTest_AssertCheck(isnan(result),
+                        "Fmod(%f,%.1f), expected %f, got %f",
+                        -INFINITY, -1.0, NAN, result);
+
+    result = SDL_fmod(-INFINITY, 1.0);
+    SDLTest_AssertCheck(isnan(result),
+                        "Fmod(%f,%.1f), expected %f, got %f",
+                        -INFINITY, 1.0, NAN, result);
+
+    return TEST_COMPLETED;
+}
+
+/**
+ * \brief Checks division by positive and negative inifnity.
+ */
+static int
+fmod_divByInfCases(void *args)
+{
+    double result;
+
+    result = SDL_fmod(1.0, INFINITY);
+    SDLTest_AssertCheck(1.0 == result,
+                        "Fmod(%.1f,%f), expected %f, got %f",
+                        1.0, INFINITY, 1.0, result);
+
+    result = SDL_fmod(-1.0, INFINITY);
+    SDLTest_AssertCheck(-1.0 == result,
+                        "Fmod(%.1f,%f), expected %f, got %f",
+                        -1.0, INFINITY, -1.0, result);
+
+    result = SDL_fmod(1.0, -INFINITY);
+    SDLTest_AssertCheck(1.0 == result,
+                        "Fmod(%.1f,%f), expected %f, got %f",
+                        1.0, -INFINITY, 1.0, result);
+
+    result = SDL_fmod(-1.0, -INFINITY);
+    SDLTest_AssertCheck(-1.0 == result,
+                        "Fmod(%.1f,%f), expected %f, got %f",
+                        -1.0, -INFINITY, -1.0, result);
+
+    return TEST_COMPLETED;
+}
+
+/**
+ * \brief Checks division of positive and negative zero.
+ */
+static int
+fmod_divOfZeroCases(void *args)
+{
+    const dd_to_d zero_cases[] = {
+        { 0.0, 1.0, 0.0 },
+        { 0.0, -1.0, 0.0 },
+        { -0.0, 1.0, -0.0 },
+        { -0.0, -1.0, -0.0 }
+    };
+    return helper_ddtod("Fmod", SDL_fmod, zero_cases, SDL_arraysize(zero_cases));
+}
+
+/**
+ * \brief Checks division by positive and negative zero.
+ */
+static int
+fmod_divByZeroCases(void *args)
+{
+    double result;
+
+    result = SDL_fmod(1.0, 0.0);
+    SDLTest_AssertCheck(isnan(result),
+                        "Fmod(1.0,0.0), expected nan, got %f",
+                        result);
+
+    result = SDL_fmod(-1.0, 0.0);
+    SDLTest_AssertCheck(isnan(result),
+                        "Fmod(-1.0,0.0), expected nan, got %f",
+                        result);
+
+    result = SDL_fmod(1.0, -0.0);
+    SDLTest_AssertCheck(isnan(result),
+                        "Fmod(1.0,-0.0), expected nan, got %f",
+                        result);
+
+    result = SDL_fmod(-1.0, -0.0);
+    SDLTest_AssertCheck(isnan(result),
+                        "Fmod(-1.0,-0.0), expected nan, got %f",
+                        result);
+
+    return TEST_COMPLETED;
+}
+
+/**
+ * \brief Checks the NaN cases.
+ */
+static int
+fmod_nanCases(void *args)
+{
+    double result;
+
+    result = SDL_fmod(NAN, 1.0);
+    SDLTest_AssertCheck(isnan(result),
+                        "Fmod(nan,1.0), expected nan, got %f",
+                        result);
+
+    result = SDL_fmod(NAN, -1.0);
+    SDLTest_AssertCheck(isnan(result),
+                        "Fmod(nan,-1.0), expected nan, got %f",
+                        result);
+
+    result = SDL_fmod(1.0, NAN);
+    SDLTest_AssertCheck(isnan(result),
+                        "Fmod(1.0,nan), expected nan, got %f",
+                        result);
+
+    result = SDL_fmod(-1.0, NAN);
+    SDLTest_AssertCheck(isnan(result),
+                        "Fmod(-1.0,nan), expected nan, got %f",
+                        result);
+
+    return TEST_COMPLETED;
+}
+
+/**
+ * \brief Checks a set of regular values.
+ */
+static int
+fmod_regularCases(void *args)
+{
+    const dd_to_d regular_cases[] = {
+        { 3.5, 2.0, 1.5 },
+        { -6.25, 3.0, -0.25 },
+        { 7.5, 2.5, 0.0 },
+        { 2.0 / 3.0, -1.0 / 3.0, 0.0 }
+    };
+    return helper_ddtod("Fmod", SDL_fmod, regular_cases, SDL_arraysize(regular_cases));
+}
+
+/**
+ * \brief Checks a range of values between 0 and UINT32_MAX
+ */
+static int
+fmod_rangeTest(void *args)
+{
+    const Uint32 ITERATIONS = 10000000;
+    const Uint32 STEP = SDL_MAX_UINT32 / ITERATIONS;
+    Uint32 i;
+    double test_value = 0.0;
+
+    SDLTest_AssertPass("Fabs: Testing a range of %u values with %u steps",
+                       ITERATIONS, STEP);
+
+    for (i = 0; i < ITERATIONS; i++, test_value += STEP) {
+        double result;
+        /* These are tested elsewhere */
+        if (isnan(test_value) || isinf(test_value)) {
+            continue;
+        }
+
+        /* Only log failures to save performances */
+        result = SDL_fmod(test_value, 1.0);
+        if (0.0 != result) {
+            SDLTest_AssertPass("Fmod(%.1f,%.1f), expected %.1f, got %.1f",
+                               test_value, 1.0,
+                               0.0, result);
+            return TEST_ABORTED;
+        }
+    }
+    return TEST_COMPLETED;
+}
+
 /* ================= Test References ================== */
 
 /* SDL_floor test cases */
@@ -813,11 +1002,42 @@ static const SDLTest_TestCaseReference copysignTestZero = {
     "Check positive and negative zero", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference copysignTestNan = {
-    (SDLTest_TestCaseFp) copysign_nanCases, "copysign_nanCase",
+    (SDLTest_TestCaseFp) copysign_nanCases, "copysign_nanCases",
     "Check the NaN special cases", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference copysignTestRange = {
     (SDLTest_TestCaseFp) copysign_rangeTest, "copysign_rangeTest",
+    "Check a range of positive integer", TEST_ENABLED
+};
+
+/* SDL_fmod test cases */
+
+static const SDLTest_TestCaseReference fmodTestDivOfInf = {
+    (SDLTest_TestCaseFp) fmod_divOfInfCases, "fmod_divOfInfCases",
+    "Check division of positive and negative infinity", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference fmodTestDivByInf = {
+    (SDLTest_TestCaseFp) fmod_divByInfCases, "fmod_divByInfCases",
+    "Check division by positive and negative infinity", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference fmodTestDivOfZero = {
+    (SDLTest_TestCaseFp) fmod_divOfZeroCases, "fmod_divOfZeroCases",
+    "Check division of positive and negative zero", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference fmodTestDivByZero = {
+    (SDLTest_TestCaseFp) fmod_divByZeroCases, "fmod_divByZeroCases",
+    "Check division by positive and negative zero", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference fmodTestNan = {
+    (SDLTest_TestCaseFp) fmod_nanCases, "fmod_nanCases",
+    "Check the NaN special cases", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference fmodTestRegular = {
+    (SDLTest_TestCaseFp) fmod_regularCases, "fmod_regularCases",
+    "Check a set of regular values", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference fmodTestRange = {
+    (SDLTest_TestCaseFp) fmod_rangeTest, "fmod_rangeTest",
     "Check a range of positive integer", TEST_ENABLED
 };
 
@@ -837,6 +1057,10 @@ static const SDLTest_TestCaseReference *mathTests[] = {
     &fabsTestInf, &fabsTestZero, &fabsTestNan, &fabsTestRange,
 
     &copysignTestInf, &copysignTestZero, &copysignTestNan, &copysignTestRange,
+
+    &fmodTestDivOfInf, &fmodTestDivByInf, &fmodTestDivOfZero, &fmodTestDivByZero,
+    &fmodTestNan, &fmodTestRegular, &fmodTestRange,
+
     NULL
 };
 
