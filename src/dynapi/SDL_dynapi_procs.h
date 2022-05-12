@@ -942,5 +942,4 @@ SDL_DYNAPI_PROC(const char*,SDL_GameControllerPath,(SDL_GameController *a),(a),r
 SDL_DYNAPI_PROC(const char*,SDL_JoystickPathForIndex,(int a),(a),return)
 SDL_DYNAPI_PROC(const char*,SDL_JoystickPath,(SDL_Joystick *a),(a),return)
 SDL_DYNAPI_PROC(void*,SDL_aligned_alloc,(size_t a, size_t b),(a,b),return)
-SDL_DYNAPI_PROC(void*,SDL_aligned_realloc,(void *a, size_t b, size_t c),(a,b,c),return)
 SDL_DYNAPI_PROC(void,SDL_aligned_free,(void *a),(a),)

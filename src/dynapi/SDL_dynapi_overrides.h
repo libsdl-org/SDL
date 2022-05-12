@@ -871,5 +871,4 @@
 #define SDL_JoystickPathForIndex SDL_JoystickPathForIndex_REAL
 #define SDL_JoystickPath SDL_JoystickPath_REAL
 #define SDL_aligned_alloc SDL_aligned_alloc_REAL
-#define SDL_aligned_realloc SDL_aligned_realloc_REAL
 #define SDL_aligned_free SDL_aligned_free_REAL
