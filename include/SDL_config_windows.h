@@ -301,11 +301,6 @@ typedef unsigned int uintptr_t;
 /* Enable filesystem support */
 #define SDL_FILESYSTEM_WINDOWS  1
 
-/* Enable assembly routines (Win64 doesn't have inline asm) */
-#ifndef _WIN64
-#define SDL_ASSEMBLY_ROUTINES   1
-#endif
-
 #endif /* SDL_config_windows_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */
