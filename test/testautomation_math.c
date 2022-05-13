@@ -11,6 +11,13 @@
 #define RANGE_TEST_ITERATIONS 10000000
 #define RANGE_TEST_STEP       SDL_MAX_UINT32 / RANGE_TEST_ITERATIONS
 
+/* Define the Euler constant */
+#ifndef M_E
+#define EULER 2.7182818284590450907955982984276488423347473144531250
+#else
+#define EULER M_E
+#endif
+
 /* ================= Test Structs ================== */
 
 /**
@@ -864,6 +871,97 @@ fmod_rangeTest(void *args)
     return TEST_COMPLETED;
 }
 
+/* SDL_exp tests functions */
+
+/**
+ * \brief Checks positive and negative infinity.
+ */
+static int
+exp_infCases(void *args)
+{
+    double result;
+
+    result = SDL_exp(INFINITY);
+    SDLTest_AssertCheck(INFINITY == result,
+                        "Exp(%f), expected %f, got %f",
+                        INFINITY, INFINITY, result);
+
+    result = SDL_exp(-INFINITY);
+    SDLTest_AssertCheck(0.0 == result,
+                        "Exp(%f), expected %f, got %f",
+                        -INFINITY, 0.0, result);
+
+    return TEST_COMPLETED;
+}
+
+/**
+ * \brief Checks positive and negative zero.
+ */
+static int
+exp_zeroCases(void *args)
+{
+    const d_to_d zero_cases[] = {
+        { 0.0, 1.0 },
+        { -0.0, 1.0 }
+    };
+    return helper_dtod("Exp", SDL_exp, zero_cases, SDL_arraysize(zero_cases));
+}
+
+/**
+ * \brief Checks for overflow.
+ *
+ * This test is skipped for double types larger than 64 bits.
+ */
+static int
+exp_overflowCase(void *args)
+{
+    double result;
+
+    if (sizeof(double) > 8) {
+        return TEST_SKIPPED;
+    }
+
+    result = SDL_exp(710.0);
+    SDLTest_AssertCheck(isinf(result),
+                        "Exp(%f), expected %f, got %f",
+                        710.0, INFINITY, result);
+    return TEST_COMPLETED;
+}
+
+/**
+ * \brief Checks the base case of 1.0.
+ */
+static int
+exp_baseCase(void *args)
+{
+    const double result = SDL_exp(1.0);
+    SDLTest_AssertCheck(EULER == result,
+                        "Exp(%f), expected %f, got %f",
+                        1.0, EULER, result);
+    return TEST_COMPLETED;
+}
+
+/**
+ * \brief Checks a set of regular cases.
+ */
+static int
+exp_regularCases(void *args)
+{
+    /* Hexadecimal floating constants are not supported on C89 compilers */
+    const d_to_d regular_cases[] = {
+        { -101.0, 1.36853947117385291381565719268793547578002532127613087E-44 },
+        { -15.73, 0.00000014741707833928422931856502906683425990763681 },
+        { -1.0, 0.36787944117144233402427744294982403516769409179688 },
+        { -0.5, 0.60653065971263342426311737654032185673713684082031 },
+        { 0.5, 1.64872127070012819416433558217249810695648193359375 },
+        { 2.25, 9.48773583635852624240669683786109089851379394531250 },
+        { 34.125, 661148770968660.375 },
+        { 112.89, 10653788283588960962604279261058893737879589093376.0 },
+        { 539.483, 1970107755334319939701129934673541628417235942656909222826926175622435588279443011110464355295725187195188154768877850257012251677751742837992843520967922303961718983154427294786640886286983037548604937796221048661733679844353544028160.0 },
+    };
+    return helper_dtod("Exp", SDL_exp, regular_cases, SDL_arraysize(regular_cases));
+}
+
 /* ================= Test References ================== */
 
 /* SDL_floor test cases */
@@ -1043,6 +1141,29 @@ static const SDLTest_TestCaseReference fmodTestRange = {
     "Check a range of positive integer", TEST_ENABLED
 };
 
+/* SDL_exp test cases */
+
+static const SDLTest_TestCaseReference expTestInf = {
+    (SDLTest_TestCaseFp) exp_infCases, "exp_infCases",
+    "Check positive and negative infinity", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference expTestZero = {
+    (SDLTest_TestCaseFp) exp_zeroCases, "exp_zeroCases",
+    "Check for positive and negative zero", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference expTestOverflow = {
+    (SDLTest_TestCaseFp) exp_overflowCase, "exp_overflowCase",
+    "Check for overflow", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference expTestBase = {
+    (SDLTest_TestCaseFp) exp_baseCase, "exp_baseCase",
+    "Check the base case of 1.0", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference expTestRegular = {
+    (SDLTest_TestCaseFp) exp_regularCases, "exp_regularCases",
+    "Check a set of regular values", TEST_ENABLED
+};
+
 static const SDLTest_TestCaseReference *mathTests[] = {
     &floorTestInf, &floorTestZero, &floorTestNan,
     &floorTestRound, &floorTestFraction, &floorTestRange,
@@ -1062,6 +1183,9 @@ static const SDLTest_TestCaseReference *mathTests[] = {
 
     &fmodTestDivOfInf, &fmodTestDivByInf, &fmodTestDivOfZero, &fmodTestDivByZero,
     &fmodTestNan, &fmodTestRegular, &fmodTestRange,
+
+    &expTestInf, &expTestZero, &expTestOverflow,
+    &expTestBase, &expTestRegular,
 
     NULL
 };
