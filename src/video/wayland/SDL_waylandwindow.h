@@ -85,7 +85,7 @@ typedef struct {
     struct zwp_keyboard_shortcuts_inhibitor_v1 *key_inhibitor;
     struct zwp_idle_inhibitor_v1 *idle_inhibitor;
     struct xdg_activation_token_v1 *activation_token;
-    struct wp_viewport *viewport;
+    struct wp_viewport *draw_viewport;
 
     /* floating dimensions for restoring from maximized and fullscreen */
     int floating_width, floating_height;
@@ -103,7 +103,7 @@ typedef struct {
     float pointer_scale_x;
     float pointer_scale_y;
     int drawable_width, drawable_height;
-    SDL_Rect damage_region;
+    SDL_Rect viewport_rect;
     SDL_bool needs_resize_event;
     SDL_bool floating_resize_pending;
 } SDL_WindowData;
