@@ -578,8 +578,9 @@ display_handle_done(void *data,
     SDL_zero(desktop_mode);
     desktop_mode.format = SDL_PIXELFORMAT_RGB888;
 
-    /* Scale the desktop coordinates, if xdg-output isn't present */
-    if (!driverdata->has_logical_size) {
+    if (driverdata->has_logical_size) { /* If xdg-output is present, calculate the true scale of the desktop */
+        driverdata->scale_factor = (float)native_mode.w / (float)driverdata->width;
+    } else  { /* Scale the desktop coordinates, if xdg-output isn't present */
         driverdata->width /= driverdata->scale_factor;
         driverdata->height /= driverdata->scale_factor;
     }

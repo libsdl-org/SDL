@@ -44,6 +44,15 @@
 #include <libdecor.h>
 #endif
 
+SDL_FORCE_INLINE SDL_bool
+FloatEqual(float a, float b)
+{
+    const float diff    = SDL_fabsf(a - b);
+    const float largest = SDL_max(SDL_fabsf(a), SDL_fabsf(b));
+
+    return diff <= largest * SDL_FLT_EPSILON;
+}
+
 static void
 GetFullScreenDimensions(SDL_Window *window, int *width, int *height, int *drawable_width, int *drawable_height)
 {
@@ -104,17 +113,10 @@ GetFullScreenDimensions(SDL_Window *window, int *width, int *height, int *drawab
 }
 
 SDL_FORCE_INLINE SDL_bool
-DesktopIsFractionalScaled(SDL_Window *window)
+SurfaceScaleIsFractional(SDL_Window *window)
 {
-    SDL_WindowData        *data   = window->driverdata;
-    SDL_WaylandOutputData *output = (SDL_WaylandOutputData *)SDL_GetDisplayForWindow(window)->driverdata;
-
-    if ((output->native_width != (int)(output->width * data->scale_factor) ||
-         output->native_height != (int)(output->height * data->scale_factor))) {
-        return SDL_TRUE;
-    }
-
-    return SDL_FALSE;
+    SDL_WindowData *data = window->driverdata;
+    return !FloatEqual(SDL_roundf(data->scale_factor), data->scale_factor);
 }
 
 SDL_FORCE_INLINE SDL_bool
@@ -143,7 +145,7 @@ NeedViewport(SDL_Window *window)
             if (fs_width != output->width || fs_height != output->height) {
                 return SDL_TRUE;
             }
-        } else if (DesktopIsFractionalScaled(window) && (window->flags & SDL_WINDOW_ALLOW_HIGHDPI)) {
+        } else if (SurfaceScaleIsFractional(window) && (window->flags & SDL_WINDOW_ALLOW_HIGHDPI)) {
             return SDL_TRUE;
         }
     }
@@ -169,22 +171,26 @@ GetWindowHeight(SDL_Window *window)
 static void
 GetBufferSize(SDL_Window *window, int *width, int *height)
 {
-    SDL_WindowData        *data   = window->driverdata;
-    SDL_WaylandOutputData *output = (SDL_WaylandOutputData *)SDL_GetDisplayForWindow(window)->driverdata;
-    int                    buf_width;
-    int                    buf_height;
-
+    SDL_WindowData *data = window->driverdata;
+    int             buf_width;
+    int             buf_height;
 
     if (FullscreenModeEmulation(window)) {
         GetFullScreenDimensions(window, NULL, NULL, &buf_width, &buf_height);
     } else if (NeedViewport(window)) {
-        const double frac_scale = (double)output->native_width / (double)output->width;
+        buf_width  = (int)SDL_ceil(window->w * data->scale_factor);
+        buf_height = (int)SDL_ceil(window->h * data->scale_factor);
+    } else {
+        /*
+         * Integer scaled windowed or fullscreen with no viewport
+         *
+         * Round the scale factor up in the unlikely scenario of a compositor
+         * that supports fractional scaling, but not viewports.
+         */
+        int scale_factor = (int)SDL_ceilf(data->scale_factor);
 
-        buf_width  = (int)SDL_ceil(window->w * frac_scale);
-        buf_height = (int)SDL_ceil(window->h * frac_scale);
-    } else { /* Windowed or fullscreen with no viewport */
-        buf_width  = window->w * data->scale_factor;
-        buf_height = window->h * data->scale_factor;
+        buf_width  = window->w * scale_factor;
+        buf_height = window->h * scale_factor;
     }
 
     if (width) {
@@ -230,7 +236,7 @@ ConfigureWindowGeometry(SDL_Window *window)
     SDL_WaylandOutputData *output  = (SDL_WaylandOutputData *)SDL_GetDisplayForWindow(window)->driverdata;
     struct wl_region      *region;
 
-    /* Set the drawable backbuffer size */
+    /* Set the drawable backbuffer size. */
     GetBufferSize(window, &data->drawable_width, &data->drawable_height);
 
     if (data->egl_window) {
@@ -269,7 +275,9 @@ ConfigureWindowGeometry(SDL_Window *window)
             SetDrawSurfaceViewport(window, data->drawable_width, data->drawable_height, window->w, window->h);
         } else {
             UnsetDrawSurfaceViewport(window);
-            wl_surface_set_buffer_scale(data->surface, (int32_t)data->scale_factor);
+
+            /* Round to the next integer in case of a fractional value. */
+            wl_surface_set_buffer_scale(data->surface, (int32_t)SDL_ceilf(data->scale_factor));
         }
 
         SDL_zero(data->viewport_rect);
@@ -507,7 +515,7 @@ handle_configure_xdg_toplevel(void *data,
             }
 
             /* This part is good though. */
-            if ((window->flags & SDL_WINDOW_ALLOW_HIGHDPI) && wind->scale_factor != driverdata->scale_factor) {
+            if ((window->flags & SDL_WINDOW_ALLOW_HIGHDPI) && !FloatEqual(wind->scale_factor, driverdata->scale_factor)) {
                 wind->scale_factor = driverdata->scale_factor;
                 wind->needs_resize_event = SDL_TRUE;
             }
@@ -586,7 +594,7 @@ handle_configure_xdg_toplevel(void *data,
         }
 
         /* This part is good though. */
-        if ((window->flags & SDL_WINDOW_ALLOW_HIGHDPI) && wind->scale_factor != driverdata->scale_factor) {
+        if ((window->flags & SDL_WINDOW_ALLOW_HIGHDPI) && !FloatEqual(wind->scale_factor, driverdata->scale_factor)) {
             wind->scale_factor = driverdata->scale_factor;
             wind->needs_resize_event = SDL_TRUE;
         }
@@ -896,13 +904,11 @@ update_scale_factor(SDL_WindowData *window)
         new_factor = 0.0f;
         for (i = 0; i < window->num_outputs; i++) {
             SDL_WaylandOutputData* driverdata = window->outputs[i];
-            if (driverdata->scale_factor > new_factor) {
-                new_factor = driverdata->scale_factor;
-            }
+            new_factor = SDL_max(new_factor, driverdata->scale_factor);
         }
     }
 
-    if (new_factor != old_factor) {
+    if (!FloatEqual(new_factor, old_factor)) {
         Wayland_HandleResize(window->sdlwindow, window->sdlwindow->w, window->sdlwindow->h, new_factor);
     }
 }
@@ -1800,9 +1806,7 @@ int Wayland_CreateWindow(_THIS, SDL_Window *window)
         int i;
         for (i=0; i < SDL_GetVideoDevice()->num_displays; i++) {
             float scale = ((SDL_WaylandOutputData*)SDL_GetVideoDevice()->displays[i].driverdata)->scale_factor;
-            if (scale > data->scale_factor) {
-                data->scale_factor = scale;
-            }
+            data->scale_factor = SDL_max(data->scale_factor, scale);
         }
     }
 
@@ -1841,8 +1845,8 @@ int Wayland_CreateWindow(_THIS, SDL_Window *window)
     }
 #endif /* SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH */
 
-    data->drawable_width = window->w * data->scale_factor;
-    data->drawable_height = window->h * data->scale_factor;
+    data->drawable_width = SDL_ceilf(window->w * data->scale_factor);
+    data->drawable_height = SDL_ceilf(window->h * data->scale_factor);
 
     if (window->flags & SDL_WINDOW_OPENGL) {
         data->egl_window = WAYLAND_wl_egl_window_create(data->surface, data->drawable_width, data->drawable_height);
@@ -1906,7 +1910,7 @@ Wayland_HandleResize(SDL_Window *window, int width, int height, float scale)
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
     SDL_VideoData *viddata = data->waylandData;
 
-    if (data->needs_resize_event || window->w != width || window->h != height || data->scale_factor != scale) {
+    if (data->needs_resize_event || window->w != width || window->h != height || !FloatEqual(data->scale_factor, scale)) {
         /* We may have already updated window w/h (or only adjusted scale factor),
          * so we must override the deduplication logic in the video core */
         window->w = 0;
@@ -1914,6 +1918,7 @@ Wayland_HandleResize(SDL_Window *window, int width, int height, float scale)
         SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, width, height);
         window->w = width;
         window->h = height;
+        data->scale_factor = scale;
         data->needs_resize_event = SDL_FALSE;
     }
 
