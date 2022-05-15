@@ -182,7 +182,7 @@ SDL_PromptAssertion(const SDL_assert_data *data, void *userdata)
     len = SDL_RenderAssertMessage(message, buf_len, data);
 
     /* .. and if it didn't, try to allocate as much room as we actually need. */
-    if (len >= buf_len) {
+    if (len >= (int)buf_len) {
         if (SDL_size_add_overflow(len, 1, &buf_len) == 0) {
             message = (char *)SDL_malloc(buf_len);
             if (message) {
