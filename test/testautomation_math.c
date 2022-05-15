@@ -1545,6 +1545,92 @@ pow_rangeTest(void *args)
     return TEST_COMPLETED;
 }
 
+/* SDL_sqrt tests functions */
+
+/**
+ * \brief Checks for positive infinity.
+ */
+static int
+sqrt_infCase(void *args)
+{
+    const double result = SDL_sqrt(INFINITY);
+    SDLTest_AssertCheck(INFINITY == result,
+                        "Sqrt(%f), expected %f, got %f",
+                        INFINITY, INFINITY, result);
+    return TEST_COMPLETED;
+}
+
+/**
+ * \brief Checks for the nan case.
+ */
+static int
+sqrt_nanCase(void *args)
+{
+    const double result = SDL_sqrt(NAN);
+    SDLTest_AssertCheck(isnan(result),
+                        "Sqrt(%f), expected %f, got %f",
+                        NAN, NAN, result);
+    return TEST_COMPLETED;
+}
+
+/**
+ * \brief Checks for out of domain values (<0).
+ */
+static int
+sqrt_outOfDomainCases(void *args)
+{
+    double result;
+
+    result = SDL_sqrt(-1.0);
+    SDLTest_AssertCheck(isnan(result),
+                        "Sqrt(%f), expected %f, got %f",
+                        -1.0, NAN, result);
+
+    result = SDL_sqrt(-12345.6789);
+    SDLTest_AssertCheck(isnan(result),
+                        "Sqrt(%f), expected %f, got %f",
+                        -12345.6789, NAN, result);
+
+    result = SDL_sqrt(-INFINITY);
+    SDLTest_AssertCheck(isnan(result),
+                        "Sqrt(%f), expected %f, got %f",
+                        -INFINITY, NAN, result);
+
+    return TEST_COMPLETED;
+}
+
+/**
+ * \brief Checks a set of base cases.
+ */
+static int
+sqrt_baseCases(void *args)
+{
+    const d_to_d base_cases[] = {
+        { -0.0, -0.0 },
+        { 0.0, 0.0 },
+        { 1.0, 1.0 }
+    };
+    return helper_dtod("Sqrt", SDL_sqrt, base_cases, SDL_arraysize(base_cases));
+}
+
+/**
+ * \brief Checks a set of regular cases.
+ */
+static int
+sqrt_regularCases(void *args)
+{
+    const d_to_d regular_cases[] = {
+        { 4.0, 2.0 },
+        { 9.0, 3.0 },
+        { 27.2, 5.21536192416211896727418206864967942237854003906250 },
+        { 240.250, 15.5 },
+        { 1337.0, 36.565010597564445049556525191292166709899902343750 },
+        { 2887.12782400000014604302123188972473144531250, 53.732 },
+        { 65600.0156250, 256.125 }
+    };
+    return helper_dtod("Sqrt", SDL_sqrt, regular_cases, SDL_arraysize(regular_cases));
+}
+
 /* ================= Test References ================== */
 
 /* SDL_floor test cases */
@@ -1852,6 +1938,29 @@ static const SDLTest_TestCaseReference powTestRange = {
     "Check a range of positive integer to the power of 0", TEST_ENABLED
 };
 
+/* SDL_sqrt test cases */
+
+static const SDLTest_TestCaseReference sqrtTestInf = {
+    (SDLTest_TestCaseFp) sqrt_infCase, "sqrt_infCase",
+    "Check positive infinity", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference sqrtTestNan = {
+    (SDLTest_TestCaseFp) sqrt_nanCase, "sqrt_nanCase",
+    "Check the NaN special case", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference sqrtTestDomain = {
+    (SDLTest_TestCaseFp) sqrt_outOfDomainCases, "sqrt_outOfDomainCases",
+    "Check for out of domain values", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference sqrtTestBase = {
+    (SDLTest_TestCaseFp) sqrt_baseCases, "sqrt_baseCases",
+    "Check the base cases", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference sqrtTestRegular = {
+    (SDLTest_TestCaseFp) sqrt_regularCases, "sqrt_regularCases",
+    "Check a set of regular values", TEST_ENABLED
+};
+
 static const SDLTest_TestCaseReference *mathTests[] = {
     &floorTestInf, &floorTestZero, &floorTestNan,
     &floorTestRound, &floorTestFraction, &floorTestRange,
@@ -1886,6 +1995,9 @@ static const SDLTest_TestCaseReference *mathTests[] = {
     &powTestNan1, &powTestNan2, &powTestNan3, &powTestNan4,
     &powTestZero1, &powTestZero2, &powTestZero3, &powTestZero4,
     &powTestRegular, &powTestPowOf2, &powTestRange,
+
+    &sqrtTestInf, &sqrtTestNan, &sqrtTestDomain,
+    &sqrtTestBase, &sqrtTestRegular,
 
     NULL
 };
