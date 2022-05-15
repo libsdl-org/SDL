@@ -119,6 +119,7 @@ struct _SDL_Joystick
 };
 
 /* Device bus definitions */
+#define SDL_HARDWARE_BUS_VIRTUAL    0x00
 #define SDL_HARDWARE_BUS_USB        0x03
 #define SDL_HARDWARE_BUS_BLUETOOTH  0x05
 

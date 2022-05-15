@@ -464,6 +464,100 @@ static int SDLCALL SDL_GameControllerEventWatcher(void *userdata, SDL_Event * ev
     return 1;
 }
 
+/*
+ * Helper function to guess at a mapping for virtual controllers
+ */
+static ControllerMapping_t *SDL_CreateMappingForVirtualController(SDL_JoystickGUID guid)
+{
+    const int face_button_mask = ((1 << SDL_CONTROLLER_BUTTON_A) |
+                                  (1 << SDL_CONTROLLER_BUTTON_B) |
+                                  (1 << SDL_CONTROLLER_BUTTON_X) |
+                                  (1 << SDL_CONTROLLER_BUTTON_Y));
+    SDL_bool existing;
+    char mapping_string[1024];
+    int button_mask;
+    int axis_mask;
+
+    button_mask = SDL_SwapLE16(*(Uint16*)(&guid.data[sizeof(guid.data)-4]));
+    axis_mask = SDL_SwapLE16(*(Uint16*)(&guid.data[sizeof(guid.data)-2]));
+    if (!button_mask && !axis_mask) {
+        return NULL;
+    }
+    if (!(button_mask & face_button_mask)) {
+        /* We don't know what buttons or axes are supported, don't make up a mapping */
+        return NULL;
+    }
+
+    SDL_strlcpy(mapping_string, "none,*,", sizeof(mapping_string));
+
+    if (button_mask & (1 << SDL_CONTROLLER_BUTTON_A)) {
+        SDL_strlcat(mapping_string, "a:b0,", sizeof(mapping_string));
+    }
+    if (button_mask & (1 << SDL_CONTROLLER_BUTTON_B)) {
+        SDL_strlcat(mapping_string, "b:b1,", sizeof(mapping_string));
+    }
+    if (button_mask & (1 << SDL_CONTROLLER_BUTTON_X)) {
+        SDL_strlcat(mapping_string, "x:b2,", sizeof(mapping_string));
+    }
+    if (button_mask & (1 << SDL_CONTROLLER_BUTTON_Y)) {
+        SDL_strlcat(mapping_string, "y:b3,", sizeof(mapping_string));
+    }
+    if (button_mask & (1 << SDL_CONTROLLER_BUTTON_BACK)) {
+        SDL_strlcat(mapping_string, "back:b4,", sizeof(mapping_string));
+    }
+    if (button_mask & (1 << SDL_CONTROLLER_BUTTON_GUIDE)) {
+        SDL_strlcat(mapping_string, "guide:b5,", sizeof(mapping_string));
+    }
+    if (button_mask & (1 << SDL_CONTROLLER_BUTTON_START)) {
+        SDL_strlcat(mapping_string, "start:b6,", sizeof(mapping_string));
+    }
+    if (button_mask & (1 << SDL_CONTROLLER_BUTTON_LEFTSTICK)) {
+        SDL_strlcat(mapping_string, "leftstick:b7,", sizeof(mapping_string));
+    }
+    if (button_mask & (1 << SDL_CONTROLLER_BUTTON_RIGHTSTICK)) {
+        SDL_strlcat(mapping_string, "rightstick:b8,", sizeof(mapping_string));
+    }
+    if (button_mask & (1 << SDL_CONTROLLER_BUTTON_LEFTSHOULDER)) {
+        SDL_strlcat(mapping_string, "leftshoulder:b9,", sizeof(mapping_string));
+    }
+    if (button_mask & (1 << SDL_CONTROLLER_BUTTON_RIGHTSHOULDER)) {
+        SDL_strlcat(mapping_string, "rightshoulder:b10,", sizeof(mapping_string));
+    }
+    if (button_mask & (1 << SDL_CONTROLLER_BUTTON_DPAD_UP)) {
+        SDL_strlcat(mapping_string, "dpup:b11,", sizeof(mapping_string));
+    }
+    if (button_mask & (1 << SDL_CONTROLLER_BUTTON_DPAD_DOWN)) {
+        SDL_strlcat(mapping_string, "dpdown:b12,", sizeof(mapping_string));
+    }
+    if (button_mask & (1 << SDL_CONTROLLER_BUTTON_DPAD_LEFT)) {
+        SDL_strlcat(mapping_string, "dpleft:b13,", sizeof(mapping_string));
+    }
+    if (button_mask & (1 << SDL_CONTROLLER_BUTTON_DPAD_RIGHT)) {
+        SDL_strlcat(mapping_string, "dpright:b14,", sizeof(mapping_string));
+    }
+    if (axis_mask & (1 << SDL_CONTROLLER_AXIS_LEFTX)) {
+        SDL_strlcat(mapping_string, "leftx:a0,", sizeof(mapping_string));
+    }
+    if (axis_mask & (1 << SDL_CONTROLLER_AXIS_LEFTY)) {
+        SDL_strlcat(mapping_string, "lefty:a1,", sizeof(mapping_string));
+    }
+    if (axis_mask & (1 << SDL_CONTROLLER_AXIS_RIGHTX)) {
+        SDL_strlcat(mapping_string, "rightx:a2,", sizeof(mapping_string));
+    }
+    if (axis_mask & (1 << SDL_CONTROLLER_AXIS_RIGHTY)) {
+        SDL_strlcat(mapping_string, "righty:a3,", sizeof(mapping_string));
+    }
+    if (axis_mask & (1 << SDL_CONTROLLER_AXIS_TRIGGERLEFT)) {
+        SDL_strlcat(mapping_string, "lefttrigger:a4,", sizeof(mapping_string));
+    }
+    if (axis_mask & (1 << SDL_CONTROLLER_AXIS_TRIGGERRIGHT)) {
+        SDL_strlcat(mapping_string, "righttrigger:a5,", sizeof(mapping_string));
+    }
+
+    return SDL_PrivateAddMappingForGUID(guid, mapping_string,
+                      &existing, SDL_CONTROLLER_MAPPING_PRIORITY_DEFAULT);
+}
+
 #ifdef __ANDROID__
 /*
  * Helper function to guess at a mapping based on the elements reported for this controller
@@ -696,6 +790,9 @@ static ControllerMapping_t *SDL_PrivateGetControllerMappingForGUID(SDL_JoystickG
             return s_pXInputMapping;
         }
 #endif
+        if (!mapping && SDL_IsJoystickVirtual(guid)) {
+            mapping = SDL_CreateMappingForVirtualController(guid);
+        }
 #ifdef __ANDROID__
         if (!mapping && !SDL_IsJoystickHIDAPI(guid)) {
             mapping = SDL_CreateMappingForAndroidController(guid);

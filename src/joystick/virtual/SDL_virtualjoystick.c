@@ -24,6 +24,7 @@
 
 /* This is the virtual implementation of the SDL joystick API */
 
+#include "SDL_endian.h"
 #include "SDL_virtualjoystick_c.h"
 #include "../SDL_sysjoystick.h"
 #include "../SDL_joystick_c.h"
@@ -94,6 +95,11 @@ SDL_JoystickAttachVirtualInner(SDL_JoystickType type,
 {
     joystick_hwdata *hwdata = NULL;
     int device_index = -1;
+    const Uint16 vendor_id = 0;
+    const Uint16 product_id = 0;
+    Uint16 button_mask = 0;
+    Uint16 axis_mask = 0;
+    Uint16 *guid16;
 
     hwdata = SDL_calloc(1, sizeof(joystick_hwdata));
     if (!hwdata) {
@@ -104,7 +110,69 @@ SDL_JoystickAttachVirtualInner(SDL_JoystickType type,
     hwdata->naxes = naxes;
     hwdata->nbuttons = nbuttons;
     hwdata->nhats = nhats;
-    hwdata->name = "Virtual Joystick";
+
+    switch (type) {
+    case SDL_JOYSTICK_TYPE_GAMECONTROLLER:
+        hwdata->name = "Virtual Controller";
+        break;
+    case SDL_JOYSTICK_TYPE_WHEEL:
+        hwdata->name = "Virtual Wheel";
+        break;
+    case SDL_JOYSTICK_TYPE_ARCADE_STICK:
+        hwdata->name = "Virtual Arcade Stick";
+        break;
+    case SDL_JOYSTICK_TYPE_FLIGHT_STICK:
+        hwdata->name = "Virtual Flight Stick";
+        break;
+    case SDL_JOYSTICK_TYPE_DANCE_PAD:
+        hwdata->name = "Virtual Dance Pad";
+        break;
+    case SDL_JOYSTICK_TYPE_GUITAR:
+        hwdata->name = "Virtual Guitar";
+        break;
+    case SDL_JOYSTICK_TYPE_DRUM_KIT:
+        hwdata->name = "Virtual Drum Kit";
+        break;
+    case SDL_JOYSTICK_TYPE_ARCADE_PAD:
+        hwdata->name = "Virtual Arcade Pad";
+        break;
+    case SDL_JOYSTICK_TYPE_THROTTLE:
+        hwdata->name = "Virtual Throttle";
+        break;
+    default:
+        hwdata->name = "Virtual Joystick";
+        break;
+    }
+
+    if (type == SDL_JOYSTICK_TYPE_GAMECONTROLLER) {
+        int i;
+
+        if (naxes >= 2) {
+            axis_mask |= ((1 << SDL_CONTROLLER_AXIS_LEFTX) | (1 << SDL_CONTROLLER_AXIS_LEFTY));
+        }
+        if (naxes >= 4) {
+            axis_mask |= ((1 << SDL_CONTROLLER_AXIS_RIGHTX) | (1 << SDL_CONTROLLER_AXIS_RIGHTY));
+        }
+        if (naxes >= 6) {
+            axis_mask |= ((1 << SDL_CONTROLLER_AXIS_TRIGGERLEFT) | (1 << SDL_CONTROLLER_AXIS_TRIGGERRIGHT));
+        }
+
+        for (i = 0; i < nbuttons && i < sizeof(Uint16)*8; ++i) {
+            button_mask |= (1 << i);
+        }
+    }
+
+    /* We only need 16 bits for each of these; space them out to fill 128. */
+    /* Byteswap so devices get same GUID on little/big endian platforms. */
+    guid16 = (Uint16 *)hwdata->guid.data;
+    *guid16++ = SDL_SwapLE16(SDL_HARDWARE_BUS_VIRTUAL);
+    *guid16++ = 0;
+    *guid16++ = SDL_SwapLE16(vendor_id);
+    *guid16++ = 0;
+    *guid16++ = SDL_SwapLE16(product_id);
+    *guid16++ = 0;
+    *guid16++ = SDL_SwapLE16(button_mask);
+    *guid16++ = SDL_SwapLE16(axis_mask);
 
     /* Note that this is a Virtual device and what subtype it is */
     hwdata->guid.data[14] = 'v';
@@ -326,6 +394,7 @@ VIRTUAL_JoystickOpen(SDL_Joystick *joystick, int device_index)
         return SDL_SetError("No such device");
     }
     if (hwdata->opened) {
+        /* This should never happen, it's handled by the higher joystick code */
         return SDL_SetError("Joystick already opened");
     }
     joystick->instance_id = hwdata->instance_id;
