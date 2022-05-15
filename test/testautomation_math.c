@@ -1631,6 +1631,113 @@ sqrt_regularCases(void *args)
     return helper_dtod("Sqrt", SDL_sqrt, regular_cases, SDL_arraysize(regular_cases));
 }
 
+/* SDL_scalbn tests functions */
+
+/**
+ * \brief Checks for positive and negative infinity arg.
+ */
+static int
+scalbn_infCases(void *args)
+{
+    double result;
+
+    result = SDL_scalbn(INFINITY, 1);
+    SDLTest_AssertCheck(INFINITY == result,
+                        "Scalbn(%f,%d), expected %f, got %f",
+                        INFINITY, 1, INFINITY, result);
+
+    result = SDL_scalbn(-INFINITY, 1);
+    SDLTest_AssertCheck(-INFINITY == result,
+                        "Scalbn(%f,%d), expected %f, got %f",
+                        -INFINITY, 1, -INFINITY, result);
+
+    return TEST_COMPLETED;
+}
+
+/**
+ * \brief Checks for positive and negative zero arg.
+ */
+static int
+scalbn_baseZeroCases(void *args)
+{
+    double result;
+
+    result = SDL_scalbn(0.0, 1);
+    SDLTest_AssertCheck(0.0 == result,
+                        "Scalbn(%f,%d), expected %f, got %f",
+                        0.0, 1, 0.0, result);
+
+    result = SDL_scalbn(-0.0, 1);
+    SDLTest_AssertCheck(-0.0 == result,
+                        "Scalbn(%f,%d), expected %f, got %f",
+                        -0.0, 1, -0.0, result);
+
+    return TEST_COMPLETED;
+}
+
+/**
+ * \brief Checks for zero exp.
+ */
+static int
+scalbn_expZeroCase(void *args)
+{
+    const double result = SDL_scalbn(42.0, 0);
+    SDLTest_AssertCheck(42.0 == result,
+                        "Scalbn(%f,%d), expected %f, got %f",
+                        42.0, 0, 42.0, result);
+    return TEST_COMPLETED;
+}
+
+/**
+ * \brief Checks for NAN arg.
+ */
+static int
+scalbn_nanCase(void *args)
+{
+    const double result = SDL_scalbn(NAN, 2);
+    SDLTest_AssertCheck(isnan(result),
+                        "Scalbn(%f,%d), expected %f, got %f",
+                        NAN, 2, NAN, result);
+    return TEST_COMPLETED;
+}
+
+/**
+ * \brief Checks a set of regular values.
+ *
+ * This test depends on SDL_pow functionning.
+ */
+static int
+scalbn_regularCases(void *args)
+{
+    double result, expected;
+
+    result = SDL_scalbn(2.0, 2);
+    expected = 2.0 * SDL_pow(FLT_RADIX, 2);
+    SDLTest_AssertCheck(result == expected,
+                        "Scalbn(%f,%d), expected %f, got %f",
+                        2.0, 2, expected, result);
+
+    result = SDL_scalbn(1.0, 13);
+    expected = 1.0 * SDL_pow(FLT_RADIX, 13);
+    SDLTest_AssertCheck(result == expected,
+                        "Scalbn(%f,%d), expected %f, got %f",
+                        1.0, 13, expected, result);
+
+    result = SDL_scalbn(2.0, -5);
+    expected = 2.0 * SDL_pow(FLT_RADIX, -5);
+    SDLTest_AssertCheck(result == expected,
+                        "Scalbn(%f,%d), expected %f, got %f",
+                        2.0, -5, expected, result);
+
+    result = SDL_scalbn(-1.0, -13);
+    expected = -1.0 * SDL_pow(FLT_RADIX, -13);
+    SDLTest_AssertCheck(result == expected,
+                        "Scalbn(%f,%d), expected %f, got %f",
+                        -1.0, -13, expected, result);
+
+    return TEST_COMPLETED;
+}
+
 /* ================= Test References ================== */
 
 /* SDL_floor test cases */
@@ -1961,6 +2068,29 @@ static const SDLTest_TestCaseReference sqrtTestRegular = {
     "Check a set of regular values", TEST_ENABLED
 };
 
+/* SDL_scalbn test cases */
+
+static const SDLTest_TestCaseReference scalbnTestInf = {
+    (SDLTest_TestCaseFp) scalbn_infCases, "scalbn_infCases",
+    "Check positive and negative infinity arg", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference scalbnTestBaseZero = {
+    (SDLTest_TestCaseFp) scalbn_baseZeroCases, "scalbn_baseZeroCases",
+    "Check for positive and negative zero arg", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference scalbnTestExpZero = {
+    (SDLTest_TestCaseFp) scalbn_expZeroCase, "scalbn_expZeroCase",
+    "Check for zero exp", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference scalbnTestNan = {
+    (SDLTest_TestCaseFp) scalbn_nanCase, "scalbn_nanCase",
+    "Check the NaN special case", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference scalbnTestRegular = {
+    (SDLTest_TestCaseFp) scalbn_regularCases, "scalbn_regularCases",
+    "Check a set of regular cases", TEST_ENABLED
+};
+
 static const SDLTest_TestCaseReference *mathTests[] = {
     &floorTestInf, &floorTestZero, &floorTestNan,
     &floorTestRound, &floorTestFraction, &floorTestRange,
@@ -1998,6 +2128,9 @@ static const SDLTest_TestCaseReference *mathTests[] = {
 
     &sqrtTestInf, &sqrtTestNan, &sqrtTestDomain,
     &sqrtTestBase, &sqrtTestRegular,
+
+    &scalbnTestInf, &scalbnTestBaseZero, &scalbnTestExpZero,
+    &scalbnTestNan, &scalbnTestRegular,
 
     NULL
 };
